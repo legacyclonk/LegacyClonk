@@ -63,8 +63,7 @@ public:
 	void ClearPointers(C4Object *pObj);
 	void RecalculateViewports();
 	bool Init();
-	bool InitLoaderScreen(const char *szLoaderSpec, bool fDrawBlackScreenFirst);
-	void EnableLoaderDrawing(); // reset black screen loader flag
+	bool InitLoaderScreen(const char *szLoaderSpec);
 	bool SaveScreenshot(bool fSaveAll);
 	bool DoSaveScreenshot(bool fSaveAll, const char *szFilename);
 	bool SetPalette();
