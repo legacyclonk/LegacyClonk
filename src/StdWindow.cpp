@@ -32,7 +32,7 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 CStdWindow::CStdWindow() : Active(false), hWindow(0) {}
 CStdWindow::~CStdWindow() {}
 
-BOOL CStdWindow::RegisterWindowClass(HINSTANCE hInst)
+bool CStdWindow::RegisterWindowClass(HINSTANCE hInst)
 {
 	WNDCLASSEX WndClass;
 	WndClass.cbSize = sizeof(WNDCLASSEX);
@@ -87,7 +87,7 @@ bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey,
 {
 	if (!RestoreWindowPosition(hWindow, szWindowName, szSubKey, fHidden))
 		ShowWindow(hWindow, SW_SHOWNORMAL);
-	return TRUE;
+	return true;
 }
 
 void CStdWindow::SetTitle(const char *szToTitle)
@@ -310,7 +310,7 @@ void CStdApp::CloseCriticalTimer()
 	}
 }
 
-void CStdApp::ResetTimer(UINT uDelay)
+void CStdApp::ResetTimer(unsigned int uDelay)
 {
 	uCriticalTimerDelay = uDelay;
 	CloseCriticalTimer();

@@ -52,9 +52,9 @@ public:
 	// Access by ID
 	int32_t GetIDCount(C4ID c_id, int32_t iZeroDefVal = 0) const;
 	bool SetIDCount(C4ID c_id, int32_t iCount, bool fAddNewID = false);
-	bool IncreaseIDCount(C4ID c_id, bool fAddNewID = TRUE, int32_t IncreaseBy = 1, bool fRemoveEmpty = false);
+	bool IncreaseIDCount(C4ID c_id, bool fAddNewID = true, int32_t IncreaseBy = 1, bool fRemoveEmpty = false);
 
-	bool DecreaseIDCount(C4ID c_id, bool fRemoveEmptyID = TRUE)
+	bool DecreaseIDCount(C4ID c_id, bool fRemoveEmptyID = true)
 	{
 		return IncreaseIDCount(c_id, false, -1, fRemoveEmptyID);
 	}
@@ -73,8 +73,8 @@ public:
 	bool SwapItems(size_t iIndex1, size_t iIndex2);
 	// Graphics
 	void Draw(C4Facet &cgo, int32_t iSelection,
-		C4DefList &rDefs, DWORD dwCategory,
-		bool fCounts = TRUE, int32_t iAlign = 0) const;
+		C4DefList &rDefs, uint32_t dwCategory,
+		bool fCounts = true, int32_t iAlign = 0) const;
 	// Compiling
 	void CompileFunc(StdCompiler *pComp, bool fValues = true);
 };

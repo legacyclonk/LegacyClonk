@@ -233,7 +233,7 @@ void Container::SetVisibility(bool fToValue)
 
 // Window
 
-void Window::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Window::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// invisible?
 	if (!IsVisible()) return;
@@ -371,7 +371,7 @@ void ScrollBar::OnPosChanged()
 		pScrollWindow->SetScroll(iNewWinScroll);
 }
 
-void ScrollBar::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void ScrollBar::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// inherited
 	Element::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);
@@ -410,7 +410,7 @@ void ScrollBar::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t 
 	if ((fTopDown || fBottomDown) != fPrevDown) GUISound("ArrowHit");
 }
 
-void ScrollBar::DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void ScrollBar::DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// move thumb
 	iScrollPos = GetScrollByPos(iX, iY);
@@ -592,7 +592,7 @@ void ScrollWindow::SetScrollBarEnabled(bool fToVal)
 	UpdateOwnPos();
 }
 
-void ScrollWindow::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void ScrollWindow::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// process wheel: Scroll
 	if (iButton == C4MC_Button_Wheel)
@@ -675,7 +675,7 @@ Control::~Control()
 	delete pKeyContext;
 }
 
-void Control::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Control::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	if (!IsVisible()) return;
 	// inherited

@@ -17,11 +17,11 @@ private:
 public:
 	C4Surface() : CSurface() {};
 
-	BOOL LoadAny(C4Group &hGroup, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
-	BOOL LoadAny(C4GroupSet &hGroupset, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
-	BOOL Load(C4Group &hGroup, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
-	BOOL SavePNG(C4Group &hGroup, const char *szFilename, bool fSaveAlpha = true, bool fApplyGamma = false, bool fSaveOverlayOnly = false);
-	BOOL Copy(C4Surface &fromSfc);
-	BOOL ReadPNG(CStdStream &hGroup);
+	bool LoadAny(C4Group &hGroup, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
+	bool LoadAny(C4GroupSet &hGroupset, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
+	bool Load(C4Group &hGroup, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
+	bool SavePNG(C4Group &hGroup, const char *szFilename, bool fSaveAlpha = true, bool fApplyGamma = false, bool fSaveOverlayOnly = false);
+	bool Copy(C4Surface &fromSfc);
+	bool ReadPNG(CStdStream &hGroup);
 	bool ReadJPEG(CStdStream &hGroup);
 };

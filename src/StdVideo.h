@@ -11,15 +11,15 @@
 #include <io.h>
 #include "StdBuf.h"
 
-BOOL AVIOpenOutput(const char *szFilename,
+bool AVIOpenOutput(const char *szFilename,
 	PAVIFILE *ppAviFile,
 	PAVISTREAM *ppAviStream,
 	int iWidth, int iHeight);
 
-BOOL AVICloseOutput(PAVIFILE *ppAviFile,
+bool AVICloseOutput(PAVIFILE *ppAviFile,
 	PAVISTREAM *ppAviStream);
 
-BOOL AVIPutFrame(PAVISTREAM pAviStream,
+bool AVIPutFrame(PAVISTREAM pAviStream,
 	long lFrame,
 	void *lpInfo, long lInfoSize,
 	void *lpData, long lDataSize);
@@ -74,7 +74,7 @@ public:
 
 	// getting audio data
 	bool OpenAudioStream();
-	BYTE *GetAudioStreamData(size_t *piStreamLength);
+	uint8_t *GetAudioStreamData(size_t *piStreamLength);
 	void CloseAudioStream();
 };
 

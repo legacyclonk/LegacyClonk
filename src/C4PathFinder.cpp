@@ -85,7 +85,7 @@ void C4PathFinderRay::Default()
 
 void C4PathFinderRay::Clear() {}
 
-BOOL C4PathFinderRay::Execute()
+bool C4PathFinderRay::Execute()
 {
 	C4TransferZone *pZone = nullptr;
 	int32_t iX, iY, iLastX, iLastY;
@@ -96,7 +96,7 @@ BOOL C4PathFinderRay::Execute()
 		if (UseZone)
 		{
 			// Mark zone used
-			UseZone->Used = TRUE;
+			UseZone->Used = true;
 			// Target in transfer zone: success
 			if (UseZone->At(TargetX, TargetY))
 			{
@@ -105,7 +105,7 @@ BOOL C4PathFinderRay::Execute()
 				// Set complete path
 				SetCompletePath();
 				// Done
-				pPathFinder->Success = TRUE;
+				pPathFinder->Success = true;
 				Status = C4PF_Ray_Still;
 			}
 			// Continue from other end of zone
@@ -124,7 +124,7 @@ BOOL C4PathFinderRay::Execute()
 				// Still
 				Status = C4PF_Ray_Still;
 			}
-			return TRUE;
+			return true;
 		}
 		// Not in zone: check path to target
 		// Path free: success
@@ -133,9 +133,9 @@ BOOL C4PathFinderRay::Execute()
 			// Set complete path
 			SetCompletePath();
 			// Done
-			pPathFinder->Success = TRUE;
+			pPathFinder->Success = true;
 			Status = C4PF_Ray_Still;
-			return TRUE;
+			return true;
 		}
 		// Path intersected by transfer zone
 		else if (pZone)
@@ -151,7 +151,7 @@ BOOL C4PathFinderRay::Execute()
 			// Still
 			Status = C4PF_Ray_Still;
 			// Continue
-			return TRUE;
+			return true;
 		}
 		// Path intersected by solid
 		else
@@ -166,7 +166,7 @@ BOOL C4PathFinderRay::Execute()
 			// Intersected but no attach found: unexpected failure
 			if (!CrawlAttach) { Status = C4PF_Ray_Failure; break; }
 			// Continue
-			return TRUE;
+			return true;
 		}
 		break;
 
@@ -195,7 +195,7 @@ BOOL C4PathFinderRay::Execute()
 								Status = C4PF_Ray_Failure; break;
 							}
 						// Continue crawling
-						return TRUE;
+						return true;
 					}
 		// Crawl length
 		CrawlLength++;
@@ -232,14 +232,14 @@ BOOL C4PathFinderRay::Execute()
 		break;
 
 	case C4PF_Ray_Still: case C4PF_Ray_Failure: case C4PF_Ray_Deleted:
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 void C4PathFinderRay::Draw(C4FacetEx &cgo)
 {
-	BYTE byColor = CRed;
+	uint8_t byColor = CRed;
 	switch (Status)
 	{
 	case C4PF_Ray_Crawl: byColor = CRed; break;
@@ -278,7 +278,7 @@ void C4PathFinderRay::Draw(C4FacetEx &cgo)
 		CYellow);
 }
 
-BOOL C4PathFinderRay::PathFree(int32_t &rX, int32_t &rY, int32_t iToX, int32_t iToY, C4TransferZone **ppZone)
+bool C4PathFinderRay::PathFree(int32_t &rX, int32_t &rY, int32_t iToX, int32_t iToY, C4TransferZone **ppZone)
 {
 	int32_t d, dx, dy, aincr, bincr, xincr, yincr, x, y;
 	// Y based
@@ -291,13 +291,13 @@ BOOL C4PathFinderRay::PathFree(int32_t &rX, int32_t &rY, int32_t iToX, int32_t i
 		{
 			// Check point free
 			if (PointFree(x, y)) { rY = y; rX = x; }
-			else return FALSE;
+			else return false;
 			// Check transfer zone intersection
 			if (ppZone)
 				if (pPathFinder->TransferZonesEnabled)
 					if (pPathFinder->TransferZones)
 						if (*ppZone = pPathFinder->TransferZones->Find(rX, rY))
-							return FALSE;
+							return false;
 			// Advance
 			if (d >= 0) { x += xincr; d += aincr; }
 			else d += bincr;
@@ -313,27 +313,27 @@ BOOL C4PathFinderRay::PathFree(int32_t &rX, int32_t &rY, int32_t iToX, int32_t i
 		{
 			// Check point free
 			if (PointFree(x, y)) { rY = y; rX = x; }
-			else return FALSE;
+			else return false;
 			// Check transfer zone intersection
 			if (ppZone)
 				if (pPathFinder->TransferZonesEnabled)
 					if (pPathFinder->TransferZones)
 						if (*ppZone = pPathFinder->TransferZones->Find(rX, rY))
-							return FALSE;
+							return false;
 			// Advance
 			if (d >= 0) { y += yincr; d += aincr; }
 			else d += bincr;
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL C4PathFinderRay::Crawl()
+bool C4PathFinderRay::Crawl()
 {
 	// No attach: crawl failure (shouldn't ever get here)
 	if (!CrawlAttach)
-		return FALSE;
+		return false;
 
 	// Last attach lost (don't check on first crawl for that might be a diagonal attach)
 	if (CrawlLength)
@@ -344,9 +344,9 @@ BOOL C4PathFinderRay::Crawl()
 			TurnAttach(CrawlAttach, -Direction);
 			// Safety: new attach not found - unexpected failure
 			if (!IsCrawlAttach(X2, Y2, CrawlAttach))
-				return FALSE;
+				return false;
 			// Corner okay
-			return TRUE;
+			return true;
 		}
 
 	// Check crawl target by attach
@@ -357,14 +357,14 @@ BOOL C4PathFinderRay::Crawl()
 		TurnAttach(CrawlAttach, Direction); iTurned++;
 		// Turned four times: all enclosed, crawl failure
 		if (iTurned == 4)
-			return FALSE;
+			return false;
 	}
 
 	// Crawl by attach
 	CrawlByAttach(X2, Y2, CrawlAttach, Direction);
 
 	// Success
-	return TRUE;
+	return true;
 }
 
 void C4PathFinderRay::SetCompletePath()
@@ -387,12 +387,12 @@ void C4PathFinderRay::SetCompletePath()
 	}
 }
 
-BOOL C4PathFinderRay::PointFree(int32_t iX, int32_t iY)
+bool C4PathFinderRay::PointFree(int32_t iX, int32_t iY)
 {
 	return pPathFinder->PointFree(iX, iY);
 }
 
-BOOL C4PathFinderRay::CrawlTargetFree(int32_t iX, int32_t iY, int32_t iAttach, int32_t iDirection)
+bool C4PathFinderRay::CrawlTargetFree(int32_t iX, int32_t iY, int32_t iAttach, int32_t iDirection)
 {
 	CrawlByAttach(iX, iY, iAttach, iDirection);
 	return PointFree(iX, iY);
@@ -436,7 +436,7 @@ void C4PathFinderRay::CrawlToAttach(int32_t &rX, int32_t &rY, int32_t iAttach)
 	}
 }
 
-BOOL C4PathFinderRay::IsCrawlAttach(int32_t iX, int32_t iY, int32_t iAttach)
+bool C4PathFinderRay::IsCrawlAttach(int32_t iX, int32_t iY, int32_t iAttach)
 {
 	CrawlToAttach(iX, iY, iAttach);
 	return !PointFree(iX, iY);
@@ -471,14 +471,14 @@ int32_t C4PathFinderRay::FindCrawlAttachDiagonal(int32_t iX, int32_t iY, int32_t
 	return C4PF_Crawl_NoAttach;
 }
 
-BOOL C4PathFinderRay::CheckBackRayShorten()
+bool C4PathFinderRay::CheckBackRayShorten()
 {
 	C4PathFinderRay *pRay, *pRay2;
 	int32_t iX, iY;
 	for (pRay = From; pRay; pRay = pRay->From)
 	{
 		// Don't shorten transfer over zones
-		if (pRay->UseZone) return FALSE;
+		if (pRay->UseZone) return false;
 		// Skip self
 		if (pRay == From) continue;
 		// Check shortcut
@@ -492,10 +492,10 @@ BOOL C4PathFinderRay::CheckBackRayShorten()
 			pRay->X2 = X; pRay->Y2 = Y;
 			From = pRay;
 			// Success
-			return TRUE;
+			return true;
 		}
 	}
-	return FALSE;
+	return false;
 }
 
 // C4PathFinder
@@ -516,7 +516,7 @@ void C4PathFinder::Default()
 	SetWaypoint = nullptr;
 	FirstRay = nullptr;
 	WaypointParameter = 0;
-	Success = FALSE;
+	Success = false;
 	TransferZones = nullptr;
 	TransferZonesEnabled = true;
 	Level = 1;
@@ -555,22 +555,22 @@ void C4PathFinder::Draw(C4FacetEx &cgo)
 void C4PathFinder::Run()
 {
 	if (TransferZones) TransferZones->ClearUsed();
-	Success = FALSE;
+	Success = false;
 	while (!Success && Execute());
 	// Notice that ray zone-pointers might be invalid after run
 }
 
-BOOL C4PathFinder::Execute()
+bool C4PathFinder::Execute()
 {
 	// Execute & count rays
-	BOOL fContinue = FALSE;
+	bool fContinue = false;
 	int32_t iRays = 0;
 	for (C4PathFinderRay *pRay = FirstRay; pRay && !Success; pRay = pRay->Next, iRays++)
 		if (pRay->Execute())
-			fContinue = TRUE;
+			fContinue = true;
 
 	// Max ray limit
-	if (iRays >= C4PF_MaxRay) return FALSE;
+	if (iRays >= C4PF_MaxRay) return false;
 
 	// Draw
 	if (Game.GraphicsSystem.ShowPathfinder)
@@ -586,22 +586,22 @@ BOOL C4PathFinder::Execute()
 	return fContinue;
 }
 
-BOOL C4PathFinder::Find(int32_t iFromX, int32_t iFromY, int32_t iToX, int32_t iToY, bool(*fnSetWaypoint)(int32_t, int32_t, intptr_t, intptr_t), intptr_t iWaypointParameter)
+bool C4PathFinder::Find(int32_t iFromX, int32_t iFromY, int32_t iToX, int32_t iToY, bool(*fnSetWaypoint)(int32_t, int32_t, intptr_t, intptr_t), intptr_t iWaypointParameter)
 {
 	// Prepare
 	Clear();
 
 	// Parameter safety
-	if (!fnSetWaypoint) return FALSE;
+	if (!fnSetWaypoint) return false;
 	SetWaypoint = fnSetWaypoint;
 	WaypointParameter = iWaypointParameter;
 
 	// Start & target coordinates must be free
-	if (!PointFree(iFromX, iFromY) || !PointFree(iToX, iToY)) return FALSE;
+	if (!PointFree(iFromX, iFromY) || !PointFree(iToX, iToY)) return false;
 
 	// Add the first two rays
-	if (!AddRay(iFromX, iFromY, iToX, iToY, 0, C4PF_Direction_Left, nullptr)) return FALSE;
-	if (!AddRay(iFromX, iFromY, iToX, iToY, 0, C4PF_Direction_Right, nullptr)) return FALSE;
+	if (!AddRay(iFromX, iFromY, iToX, iToY, 0, C4PF_Direction_Left, nullptr)) return false;
+	if (!AddRay(iFromX, iFromY, iToX, iToY, 0, C4PF_Direction_Right, nullptr)) return false;
 
 	// Run
 	Run();
@@ -610,13 +610,13 @@ BOOL C4PathFinder::Find(int32_t iFromX, int32_t iFromY, int32_t iToX, int32_t iT
 	return Success;
 }
 
-BOOL C4PathFinder::AddRay(int32_t iFromX, int32_t iFromY, int32_t iToX, int32_t iToY, int32_t iDepth, int32_t iDirection, C4PathFinderRay *pFrom, C4TransferZone *pUseZone)
+bool C4PathFinder::AddRay(int32_t iFromX, int32_t iFromY, int32_t iToX, int32_t iToY, int32_t iDepth, int32_t iDirection, C4PathFinderRay *pFrom, C4TransferZone *pUseZone)
 {
 	// Max depth
-	if (iDepth >= C4PF_MaxDepth * Level) return FALSE;
+	if (iDepth >= C4PF_MaxDepth * Level) return false;
 	// Allocate and set new ray
 	C4PathFinderRay *pRay;
-	if (!(pRay = new C4PathFinderRay)) return FALSE;
+	if (!(pRay = new C4PathFinderRay)) return false;
 	pRay->X = iFromX; pRay->Y = iFromY;
 	pRay->X2 = iFromX; pRay->Y2 = iFromY;
 	pRay->TargetX = iToX; pRay->TargetY = iToY;
@@ -627,16 +627,16 @@ BOOL C4PathFinder::AddRay(int32_t iFromX, int32_t iFromY, int32_t iToX, int32_t 
 	pRay->Next = FirstRay;
 	pRay->UseZone = pUseZone;
 	FirstRay = pRay;
-	return TRUE;
+	return true;
 }
 
-BOOL C4PathFinder::SplitRay(C4PathFinderRay *pRay, int32_t iAtX, int32_t iAtY)
+bool C4PathFinder::SplitRay(C4PathFinderRay *pRay, int32_t iAtX, int32_t iAtY)
 {
 	// Max depth
-	if (pRay->Depth >= C4PF_MaxDepth * Level) return FALSE;
+	if (pRay->Depth >= C4PF_MaxDepth * Level) return false;
 	// Allocate and set new ray
 	C4PathFinderRay *pNewRay;
-	if (!(pNewRay = new C4PathFinderRay)) return FALSE;
+	if (!(pNewRay = new C4PathFinderRay)) return false;
 	pNewRay->Status = C4PF_Ray_Still;
 	pNewRay->X = pRay->X; pNewRay->Y = pRay->Y;
 	pNewRay->X2 = iAtX; pNewRay->Y2 = iAtY;
@@ -650,5 +650,5 @@ BOOL C4PathFinder::SplitRay(C4PathFinderRay *pRay, int32_t iAtX, int32_t iAtY)
 	// Adjust split ray
 	pRay->From = pNewRay;
 	pRay->X = iAtX; pRay->Y = iAtY;
-	return TRUE;
+	return true;
 }

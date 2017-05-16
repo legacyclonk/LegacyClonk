@@ -33,7 +33,7 @@ C4FacetEx C4FacetEx::GetPhase(int iPhaseX, int iPhaseY)
 	return fctResult;
 }
 
-void C4FacetEx::DrawLine(int iX1, int iY1, int iX2, int iY2, BYTE bCol1, BYTE bCol2)
+void C4FacetEx::DrawLine(int iX1, int iY1, int iX2, int iY2, uint8_t bCol1, uint8_t bCol2)
 {
 	if (!lpDDraw || !Surface || !Wdt || !Hgt) return;
 	// Scroll position
@@ -48,7 +48,7 @@ void C4FacetEx::DrawLine(int iX1, int iY1, int iX2, int iY2, BYTE bCol1, BYTE bC
 #define DrawBoltR1 7
 #define DrawBoltR2 3
 
-void C4FacetEx::DrawBolt(int iX1, int iY1, int iX2, int iY2, BYTE bCol, BYTE bCol2)
+void C4FacetEx::DrawBolt(int iX1, int iY1, int iX2, int iY2, uint8_t bCol, uint8_t bCol2)
 {
 	if (!lpDDraw || !Surface || !Wdt || !Hgt) return;
 	// Scroll position
@@ -68,8 +68,8 @@ void C4FacetEx::DrawBolt(int iX1, int iY1, int iX2, int iY2, BYTE bCol, BYTE bCo
 	pvtx[6] = iX1 + Y % 3 - 1; pvtx[7] = iY1 + Y % 3 - 1;
 #endif
 	// Draw in surface
-	DWORD dwClr1 = lpDDraw->Pal.GetClr(bCol), dwClr2;
-	DWORD dwClr3 = lpDDraw->Pal.GetClr(bCol2), dwClr4;
+	uint32_t dwClr1 = lpDDraw->Pal.GetClr(bCol), dwClr2;
+	uint32_t dwClr3 = lpDDraw->Pal.GetClr(bCol2), dwClr4;
 	dwClr2 = dwClr1;
 	dwClr4 = dwClr3;
 	lpDDraw->DrawQuadDw(Surface, pvtx, dwClr1, dwClr3, dwClr4, dwClr2);
@@ -77,59 +77,59 @@ void C4FacetEx::DrawBolt(int iX1, int iY1, int iX2, int iY2, BYTE bCol, BYTE bCo
 
 // C4FacetExSurface
 
-BOOL C4FacetExSurface::Create(int iWdt, int iHgt, int iWdt2, int iHgt2)
+bool C4FacetExSurface::Create(int iWdt, int iHgt, int iWdt2, int iHgt2)
 {
 	Clear();
 	// Create surface
 	Face.Default();
-	if (!Face.Create(iWdt, iHgt)) return FALSE;
+	if (!Face.Create(iWdt, iHgt)) return false;
 	// Set facet
 	if (iWdt2 == C4FCT_Full) iWdt2 = Face.Wdt; if (iWdt2 == C4FCT_Height) iWdt2 = Face.Hgt; if (iWdt2 == C4FCT_Width) iWdt2 = Face.Wdt;
 	if (iHgt2 == C4FCT_Full) iHgt2 = Face.Hgt; if (iHgt2 == C4FCT_Height) iHgt2 = Face.Hgt; if (iHgt2 == C4FCT_Width) iHgt2 = Face.Wdt;
 	Set(&Face, 0, 0, iWdt2, iHgt2, 0, 0);
-	return TRUE;
+	return true;
 }
 
-BOOL C4FacetExSurface::CreateClrByOwner(CSurface *pBySurface)
+bool C4FacetExSurface::CreateClrByOwner(CSurface *pBySurface)
 {
 	Clear();
 	// create surface
-	if (!Face.CreateColorByOwner(pBySurface)) return FALSE;
+	if (!Face.CreateColorByOwner(pBySurface)) return false;
 	// set facet
 	Set(&Face, 0, 0, Face.Wdt, Face.Hgt, 0, 0);
 	// success
-	return TRUE;
+	return true;
 }
 
-BOOL C4FacetExSurface::EnsureSize(int iMinWdt, int iMinHgt)
+bool C4FacetExSurface::EnsureSize(int iMinWdt, int iMinHgt)
 {
 	// safety
-	if (!Surface) return FALSE;
+	if (!Surface) return false;
 	// check size
 	int iWdt = Face.Wdt, iHgt = Face.Hgt;
-	if (iWdt >= iMinWdt && iHgt >= iMinHgt) return TRUE;
+	if (iWdt >= iMinWdt && iHgt >= iMinHgt) return true;
 	// create temp surface
 	CSurface *sfcDup = new CSurface(iWdt, iHgt);
-	if (!sfcDup) return FALSE;
+	if (!sfcDup) return false;
 	if (!lpDDraw->BlitSurface(&Face, sfcDup, 0, 0, false))
 	{
-		delete sfcDup; return FALSE;
+		delete sfcDup; return false;
 	}
 	// calc needed size
 	int iDstWdt = Surface->Wdt, iDstHgt = iHgt;
 	while (iDstWdt < iMinWdt) iDstWdt += iWdt;
 	while (iDstHgt < iMinHgt) iDstHgt += iHgt;
 	// recreate this one
-	if (!Face.Create(iDstWdt, iDstHgt)) { delete sfcDup; Clear(); return FALSE; }
+	if (!Face.Create(iDstWdt, iDstHgt)) { delete sfcDup; Clear(); return false; }
 	// blit tiled into it
-	BOOL fSuccess = lpDDraw->BlitSurfaceTile(sfcDup, &Face, 0, 0, iDstWdt, iDstHgt, 0, 0, FALSE);
+	bool fSuccess = lpDDraw->BlitSurfaceTile(sfcDup, &Face, 0, 0, iDstWdt, iDstHgt, 0, 0, false);
 	// del temp surface
 	delete sfcDup;
 	// done
 	return fSuccess;
 }
 
-BOOL C4FacetExSurface::Load(C4Group &hGroup, const char *szName, int iWdt, int iHgt, bool fOwnPal, bool fNoErrIfNotFound)
+bool C4FacetExSurface::Load(C4Group &hGroup, const char *szName, int iWdt, int iHgt, bool fOwnPal, bool fNoErrIfNotFound)
 {
 	Clear();
 	// Entry name
@@ -148,12 +148,12 @@ BOOL C4FacetExSurface::Load(C4Group &hGroup, const char *szName, int iWdt, int i
 		}
 	}
 	// Load surface
-	if (!Face.Load(hGroup, szFilename, fOwnPal, fNoErrIfNotFound)) return FALSE;
+	if (!Face.Load(hGroup, szFilename, fOwnPal, fNoErrIfNotFound)) return false;
 	// Set facet
 	if (iWdt == C4FCT_Full) iWdt = Face.Wdt; if (iWdt == C4FCT_Height) iWdt = Face.Hgt; if (iWdt == C4FCT_Width) iWdt = Face.Wdt;
 	if (iHgt == C4FCT_Full) iHgt = Face.Hgt; if (iHgt == C4FCT_Height) iHgt = Face.Hgt; if (iHgt == C4FCT_Width) iHgt = Face.Wdt;
 	Set(&Face, 0, 0, iWdt, iHgt, 0, 0);
-	return TRUE;
+	return true;
 }
 
 bool C4FacetExSurface::CopyFromSfcMaxSize(C4Surface &srcSfc, int32_t iMaxSize, uint32_t dwColor)

@@ -85,9 +85,9 @@ CStdGamePad::AxisPos CStdGamePad::GetAxisPos(int idAxis)
 			dwAxisMin[idAxis] = Min<uint32_t>(dwAxisMin[idAxis], dwPos);
 			dwAxisMax[idAxis] = Max<uint32_t>(dwAxisMax[idAxis], dwPos);
 			// Calculate center
-			DWORD dwCenter = (dwAxisMin[idAxis] + dwAxisMax[idAxis]) / 2;
+			uint32_t dwCenter = (dwAxisMin[idAxis] + dwAxisMax[idAxis]) / 2;
 			// Trigger range is 30% off center
-			DWORD dwRange = (dwAxisMax[idAxis] - dwCenter) / 3;
+			uint32_t dwRange = (dwAxisMax[idAxis] - dwCenter) / 3;
 			if (dwPos < dwCenter - dwRange) return Low;
 			if (dwPos > dwCenter + dwRange) return High;
 		}
@@ -101,7 +101,7 @@ CStdGamePad::AxisPos CStdGamePad::GetAxisPos(int idAxis)
 	else
 	{
 		// It's a POV head
-		DWORD dwPos = POV2Position(joynfo.dwPOV, idAxis == PAD_Axis_POVy);
+		uint32_t dwPos = POV2Position(joynfo.dwPOV, idAxis == PAD_Axis_POVy);
 		if (dwPos > 130) return High; else if (dwPos < 70) return Low;
 	}
 	return Mid;

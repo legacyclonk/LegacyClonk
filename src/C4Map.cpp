@@ -25,7 +25,7 @@ void C4MapCreator::Reset()
 	Exclusive = -1;
 }
 
-void C4MapCreator::SetPix(int32_t x, int32_t y, BYTE col)
+void C4MapCreator::SetPix(int32_t x, int32_t y, uint8_t col)
 {
 	// Safety
 	if (!Inside<int32_t>(x, 0, MapWdt - 1) || !Inside<int32_t>(y, 0, MapHgt - 1)) return;
@@ -35,7 +35,7 @@ void C4MapCreator::SetPix(int32_t x, int32_t y, BYTE col)
 	MapBuf->SetPix(x, y, col);
 }
 
-void C4MapCreator::DrawLayer(int32_t x, int32_t y, int32_t size, BYTE col)
+void C4MapCreator::DrawLayer(int32_t x, int32_t y, int32_t size, uint8_t col)
 {
 	int32_t cnt, cnt2;
 	for (cnt = 0; cnt < size; cnt++)
@@ -48,7 +48,7 @@ void C4MapCreator::DrawLayer(int32_t x, int32_t y, int32_t size, BYTE col)
 	}
 }
 
-BYTE C4MapCreator::GetPix(int32_t x, int32_t y)
+uint8_t C4MapCreator::GetPix(int32_t x, int32_t y)
 {
 	// Safety
 	if (!Inside<int32_t>(x, 0, MapWdt - 1) || !Inside<int32_t>(y, 0, MapHgt - 1)) return 0;
@@ -58,10 +58,10 @@ BYTE C4MapCreator::GetPix(int32_t x, int32_t y)
 
 void C4MapCreator::Create(CSurface8 *sfcMap,
 	C4SLandscape &rLScape, C4TextureMap &rTexMap,
-	BOOL fLayers, int32_t iPlayerNum)
+	bool fLayers, int32_t iPlayerNum)
 {
 	double fullperiod = 20.0 * pi;
-	BYTE ccol;
+	uint8_t ccol;
 	int32_t cx, cy;
 
 	// Safeties

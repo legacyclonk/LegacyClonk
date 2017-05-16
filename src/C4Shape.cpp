@@ -11,12 +11,12 @@
 #include <C4Wrappers.h>
 #endif
 
-BOOL C4Shape::AddVertex(int32_t iX, int32_t iY)
+bool C4Shape::AddVertex(int32_t iX, int32_t iY)
 {
-	if (VtxNum >= C4D_MaxVertex) return FALSE;
+	if (VtxNum >= C4D_MaxVertex) return false;
 	VtxX[VtxNum] = iX; VtxY[VtxNum] = iY;
 	VtxNum++;
-	return TRUE;
+	return true;
 }
 
 void C4Shape::Default()
@@ -90,13 +90,13 @@ void C4Rect::Set(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt)
 	x = iX; y = iY; Wdt = iWdt; Hgt = iHgt;
 }
 
-BOOL C4Rect::Overlap(C4Rect &rTarget)
+bool C4Rect::Overlap(C4Rect &rTarget)
 {
-	if (x + Wdt <= rTarget.x) return FALSE;
-	if (x >= rTarget.x + rTarget.Wdt) return FALSE;
-	if (y + Hgt <= rTarget.y) return FALSE;
-	if (y >= rTarget.y + rTarget.Hgt) return FALSE;
-	return TRUE;
+	if (x + Wdt <= rTarget.x) return false;
+	if (x >= rTarget.x + rTarget.Wdt) return false;
+	if (y + Hgt <= rTarget.y) return false;
+	if (y >= rTarget.y + rTarget.Hgt) return false;
+	return true;
 }
 
 void C4Rect::Intersect(const C4Rect &r2)
@@ -309,17 +309,17 @@ void C4Shape::GetVertexOutline(C4Rect &rRect)
 	rRect.y = y;
 }
 
-BOOL C4Shape::Attach(int32_t &cx, int32_t &cy, BYTE cnat_pos)
+bool C4Shape::Attach(int32_t &cx, int32_t &cy, uint8_t cnat_pos)
 {
 	// Adjust given position to one pixel before contact
 	// at vertices matching CNAT request.
 
-	BOOL fAttached = FALSE;
+	bool fAttached = false;
 
 #ifdef C4ENGINE
 
 	int32_t vtx, xcnt, ycnt, xcrng, ycrng, xcd, ycd;
-	int32_t motion_x = 0; BYTE cpix;
+	int32_t motion_x = 0; uint8_t cpix;
 
 	// reset attached material
 	AttachMat = MNone;
@@ -421,14 +421,14 @@ BOOL C4Shape::Attach(int32_t &cx, int32_t &cy, BYTE cnat_pos)
 	return fAttached;
 }
 
-BOOL C4Shape::LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int32_t oldx, int32_t oldy)
+bool C4Shape::LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int32_t oldx, int32_t oldy)
 {
 #ifdef C4ENGINE
 
-	if (VtxNum < 2) return FALSE;
+	if (VtxNum < 2) return false;
 
 	// No modification
-	if ((VtxX[cvtx] == tx) && (VtxY[cvtx] == ty)) return TRUE;
+	if ((VtxX[cvtx] == tx) && (VtxY[cvtx] == ty)) return true;
 
 	// Check new path
 	int32_t ix, iy;
@@ -436,7 +436,7 @@ BOOL C4Shape::LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int3
 	{
 		// Okay, set vertex
 		VtxX[cvtx] = tx; VtxY[cvtx] = ty;
-		return TRUE;
+		return true;
 	}
 	else
 	{
@@ -463,30 +463,30 @@ BOOL C4Shape::LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int3
 			ciy = oldy;
 			if (!PathFreeIgnoreVehicle(cix, ciy, tx, ty) || !PathFreeIgnoreVehicle(cix, ciy, VtxX[cvtx + ld], VtxY[cvtx + ld]))
 				if (!PathFreeIgnoreVehicle(cix, ciy, tx, ty) || !PathFreeIgnoreVehicle(cix, ciy, VtxX[cvtx + ld], VtxY[cvtx + ld]))
-					return FALSE; // Found no bend vertex
+					return false; // Found no bend vertex
 		}
 		// Insert bend vertex
 		if (ld > 0)
 		{
-			if (!InsertVertex(cvtx + 1, cix, ciy)) return FALSE;
+			if (!InsertVertex(cvtx + 1, cix, ciy)) return false;
 		}
 		else
 		{
-			if (!InsertVertex(cvtx, cix, ciy)) return FALSE;
+			if (!InsertVertex(cvtx, cix, ciy)) return false;
 			cvtx++;
 		}
 		// Okay, set vertex
 		VtxX[cvtx] = tx; VtxY[cvtx] = ty;
-		return TRUE;
+		return true;
 	}
 #endif
 
-	return FALSE;
+	return false;
 }
 
-BOOL C4Shape::InsertVertex(int32_t iPos, int32_t tx, int32_t ty)
+bool C4Shape::InsertVertex(int32_t iPos, int32_t tx, int32_t ty)
 {
-	if (VtxNum + 1 > C4D_MaxVertex) return FALSE;
+	if (VtxNum + 1 > C4D_MaxVertex) return false;
 	// Insert vertex before iPos
 	for (int32_t cnt = VtxNum; cnt > iPos; cnt--)
 	{
@@ -494,43 +494,43 @@ BOOL C4Shape::InsertVertex(int32_t iPos, int32_t tx, int32_t ty)
 	}
 	VtxX[iPos] = tx; VtxY[iPos] = ty;
 	VtxNum++;
-	return TRUE;
+	return true;
 }
 
-BOOL C4Shape::RemoveVertex(int32_t iPos)
+bool C4Shape::RemoveVertex(int32_t iPos)
 {
-	if (!Inside<int32_t>(iPos, 0, VtxNum - 1)) return FALSE;
+	if (!Inside<int32_t>(iPos, 0, VtxNum - 1)) return false;
 	for (int32_t cnt = iPos; cnt + 1 < VtxNum; cnt++)
 	{
 		VtxX[cnt] = VtxX[cnt + 1]; VtxY[cnt] = VtxY[cnt + 1];
 	}
 	VtxNum--;
-	return TRUE;
+	return true;
 }
 
-BOOL C4Shape::CheckContact(int32_t cx, int32_t cy)
+bool C4Shape::CheckContact(int32_t cx, int32_t cy)
 {
 	// Check all vertices at given object position.
-	// Return TRUE on any contact.
+	// Return true on any contact.
 
 #ifdef C4ENGINE
 
 	for (int32_t cvtx = 0; cvtx < VtxNum; cvtx++)
 		if (!(VtxCNAT[cvtx] & CNAT_NoCollision))
 			if (GBackDensity(cx + VtxX[cvtx], cy + VtxY[cvtx]) >= ContactDensity)
-				return TRUE;
+				return true;
 
 #endif
 
-	return FALSE;
+	return false;
 }
 
-BOOL C4Shape::ContactCheck(int32_t cx, int32_t cy)
+bool C4Shape::ContactCheck(int32_t cx, int32_t cy)
 {
 	// Check all vertices at given object position.
 	// Set ContactCNAT and ContactCount.
 	// Set VtxContactCNAT and VtxContactMat.
-	// Return TRUE on any contact.
+	// Return true on any contact.
 
 #ifdef C4ENGINE
 
@@ -627,7 +627,7 @@ int32_t C4DensityProvider::GetDensity(int32_t x, int32_t y) const
 #endif
 }
 
-int32_t C4Shape::GetVertexContact(int32_t iVtx, DWORD dwCheckMask, int32_t tx, int32_t ty, const C4DensityProvider &rDensityProvider)
+int32_t C4Shape::GetVertexContact(int32_t iVtx, uint32_t dwCheckMask, int32_t tx, int32_t ty, const C4DensityProvider &rDensityProvider)
 {
 	// default check mask
 	if (!dwCheckMask) dwCheckMask = VtxCNAT[iVtx];

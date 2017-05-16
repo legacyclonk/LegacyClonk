@@ -36,7 +36,7 @@ BOOL CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_DESTROY:
-		StoreWindowPosition(hDlg, "Property", Config.GetSubkeyPath("Console"), FALSE);
+		StoreWindowPosition(hDlg, "Property", Config.GetSubkeyPath("Console"), false);
 		break;
 
 	case WM_INITDIALOG:
@@ -84,15 +84,15 @@ C4PropertyDlg::~C4PropertyDlg()
 #endif // WITH_DEVELOPER_MODE
 }
 
-BOOL C4PropertyDlg::Open()
+bool C4PropertyDlg::Open()
 {
 #ifdef _WIN32
-	if (hDialog) return TRUE;
+	if (hDialog) return true;
 	hDialog = CreateDialog(Application.hInstance,
 		MAKEINTRESOURCE(IDD_PROPERTIES),
 		Console.hWindow,
 		(DLGPROC)PropertyDlgProc);
-	if (!hDialog) return FALSE;
+	if (!hDialog) return false;
 	// Set text
 	SetWindowText(hDialog, LoadResStr("IDS_DLG_PROPERTIES"));
 	// Enable controls
@@ -136,12 +136,12 @@ BOOL C4PropertyDlg::Open()
 #endif // WITH_DEVELOPER_MODE
 #endif // _WIN32
 	Active = true;
-	return TRUE;
+	return true;
 }
 
-BOOL C4PropertyDlg::Update(C4ObjectList &rSelection)
+bool C4PropertyDlg::Update(C4ObjectList &rSelection)
 {
-	if (!Active) return FALSE;
+	if (!Active) return false;
 	// Set new selection
 	Selection.Copy(rSelection);
 	// Update input control
@@ -150,9 +150,9 @@ BOOL C4PropertyDlg::Update(C4ObjectList &rSelection)
 	return Update();
 }
 
-BOOL C4PropertyDlg::Update()
+bool C4PropertyDlg::Update()
 {
-	if (!Active) return FALSE;
+	if (!Active) return false;
 
 	StdStrBuf Output;
 
@@ -247,7 +247,7 @@ BOOL C4PropertyDlg::Update()
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
 	gtk_text_buffer_set_text(buffer, C4Language::IconvUtf8(Output.getData()).getData(), -1);
 #endif
-	return TRUE;
+	return true;
 }
 
 void C4PropertyDlg::Default()
@@ -326,7 +326,7 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 		}
 	// Add object script functions
 #ifdef _WIN32
-	BOOL fDivider = FALSE;
+	bool fDivider = false;
 #endif
 	C4AulScriptFunc *pRef;
 	// Object script available
@@ -338,7 +338,7 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 			{
 #ifdef _WIN32
 				// Insert divider if necessary
-				if (!fDivider) { SendMessage(hCombo, CB_INSERTSTRING, 0, (LPARAM)"----------"); fDivider = TRUE; }
+				if (!fDivider) { SendMessage(hCombo, CB_INSERTSTRING, 0, (LPARAM)"----------"); fDivider = true; }
 #endif
 				// Add function
 				SCopy(pRef->Name, OSTR);
@@ -381,7 +381,7 @@ void C4PropertyDlg::OnScriptActivate(GtkWidget *widget, gpointer data)
 
 void C4PropertyDlg::OnWindowHide(GtkWidget *widget, gpointer user_data)
 {
-	static_cast<C4PropertyDlg *>(user_data)->Active = FALSE;
+	static_cast<C4PropertyDlg *>(user_data)->Active = false;
 }
 
 #endif

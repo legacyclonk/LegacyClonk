@@ -44,7 +44,7 @@ void C4Facet::Draw(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, i
 	lpDDraw->Blit(Surface,
 		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
 		sfcTarget,
-		iX, iY, Wdt, Hgt, TRUE);
+		iX, iY, Wdt, Hgt, true);
 #endif
 }
 
@@ -57,10 +57,10 @@ void C4Facet::DrawT(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, 
 	lpDDraw->Blit(Surface,
 		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
 		sfcTarget,
-		iX, iY, Wdt, Hgt, TRUE, pTransform);
+		iX, iY, Wdt, Hgt, true, pTransform);
 }
 
-void C4Facet::DrawT(C4Facet &cgo, BOOL fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform)
+void C4Facet::DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform)
 {
 	if (!lpDDraw || !Surface || !cgo.Surface || !Wdt || !Hgt) return;
 
@@ -86,12 +86,12 @@ void C4Facet::DrawT(C4Facet &cgo, BOOL fAspect, int32_t iPhaseX, int32_t iPhaseY
 	lpDDraw->Blit(Surface,
 		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
 		ccgo.Surface, ccgo.X, ccgo.Y, ccgo.Wdt, ccgo.Hgt,
-		TRUE, pTransform);
+		true, pTransform);
 }
 
 #endif // C4ENGINE
 
-void C4Facet::Draw(C4Facet &cgo, BOOL fAspect, int32_t iPhaseX, int32_t iPhaseY, BOOL fTransparent)
+void C4Facet::Draw(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, bool fTransparent)
 {
 #ifdef C4ENGINE
 	// Valid parameter check
@@ -133,11 +133,11 @@ void C4Facet::DrawFullScreen(C4Facet &cgo)
 		lpDDraw->DrawBoxDw(cgo.Surface, cgo.X + cgo.Wdt - 1, cgo.Y, cgo.X + cgo.Wdt + 2, cgo.Y + cgo.Hgt + 2, 0x00000000);
 	}
 	// normal blit OK
-	Draw(cgo, FALSE);
+	Draw(cgo, false);
 #endif
 }
 
-void C4Facet::DrawClr(C4Facet &cgo, BOOL fAspect, DWORD dwClr)
+void C4Facet::DrawClr(C4Facet &cgo, bool fAspect, uint32_t dwClr)
 {
 	if (!Surface) return;
 	// set ColorByOwner-color
@@ -146,7 +146,7 @@ void C4Facet::DrawClr(C4Facet &cgo, BOOL fAspect, DWORD dwClr)
 	Draw(cgo, fAspect);
 }
 
-void C4Facet::DrawValue2Clr(C4Facet &cgo, int32_t iValue1, int32_t iValue2, DWORD dwClr)
+void C4Facet::DrawValue2Clr(C4Facet &cgo, int32_t iValue1, int32_t iValue2, uint32_t dwClr)
 {
 	// set ColorByOwner-color
 	Surface->SetClr(dwClr);
@@ -164,11 +164,11 @@ void C4Facet::DrawXR(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, in
 		float(X + Wdt * iSectionX), float(Y + Hgt * iSectionY), float(Wdt), float(Hgt),
 		sfcTarget,
 		iX, iY, iWdt, iHgt,
-		TRUE, &rot);
+		true, &rot);
 #endif
 }
 
-void C4Facet::DrawClrMod(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, DWORD dwModClr)
+void C4Facet::DrawClrMod(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, uint32_t dwModClr)
 {
 #ifdef C4ENGINE
 	// set color
@@ -247,7 +247,7 @@ void C4Facet::DrawValue(C4Facet &cgo, int32_t iValue, int32_t iSectionX, int32_t
 	switch (iAlign)
 	{
 	case C4FCT_Center:
-		Draw(cgo, TRUE, iSectionX, iSectionY);
+		Draw(cgo, true, iSectionX, iSectionY);
 		lpDDraw->TextOut(ostr, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
 			cgo.X + cgo.Wdt - 1, cgo.Y + cgo.Hgt - 1, CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 		break;
@@ -258,7 +258,7 @@ void C4Facet::DrawValue(C4Facet &cgo, int32_t iValue, int32_t iSectionX, int32_t
 		lpDDraw->TextOut(ostr, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
 			cgo.X + cgo.Wdt - 1, cgo.Y, CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 		cgo.Set(cgo.Surface, cgo.X + cgo.Wdt - 1 - textwdt - 2 * cgo.Hgt, cgo.Y, 2 * cgo.Hgt, cgo.Hgt);
-		Draw(cgo, TRUE, iSectionX, iSectionY);
+		Draw(cgo, true, iSectionX, iSectionY);
 		break;
 	}
 	}
@@ -273,7 +273,7 @@ void C4Facet::DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t
 	switch (iAlign)
 	{
 	case C4FCT_Center:
-		Draw(cgo, TRUE, iSectionX, iSectionY);
+		Draw(cgo, true, iSectionX, iSectionY);
 		lpDDraw->TextOut(ostr, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
 			cgo.X + cgo.Wdt - 1, cgo.Y + cgo.Hgt - 1, CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 		break;
@@ -285,7 +285,7 @@ void C4Facet::DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t
 		lpDDraw->TextOut(ostr, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
 			cgo.X + cgo.Wdt - 1, cgo.Y, CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 		cgo.Set(cgo.Surface, cgo.X + cgo.Wdt - textwdt, cgo.Y, 2 * cgo.Hgt, cgo.Hgt);
-		Draw(cgo, TRUE, iSectionX, iSectionY);
+		Draw(cgo, true, iSectionX, iSectionY);
 		if (piUsedWidth) *piUsedWidth = textwdt;
 	}
 	break;
@@ -301,7 +301,7 @@ void C4Facet::DrawX(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int
 		float(X + Wdt * iSectionX), float(Y + Hgt * iSectionY), float(Wdt), float(Hgt),
 		sfcTarget,
 		iX, iY, iWdt, iHgt,
-		TRUE);
+		true);
 #endif
 }
 
@@ -319,7 +319,7 @@ void C4Facet::DrawXFloat(SURFACE sfcTarget, float fX, float fY, float fWdt, floa
 		float(X) + ox, float(Y) + oy, float(Wdt) - ox - oxs, float(Hgt) - oy - oys,
 		sfcTarget,
 		iX, iY, iX2 - iX, iY2 - iY,
-		TRUE);
+		true);
 	zx = (iX2 - iX) / (float(Wdt) - ox - oxs);
 	zy = (iY2 - iY) / (float(Hgt) - oy - oys);
 #endif
@@ -333,7 +333,7 @@ void C4Facet::DrawXT(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, in
 		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
 		sfcTarget,
 		iX, iY, iWdt, iHgt,
-		TRUE, pTransform);
+		true, pTransform);
 }
 #endif // C4ENGINE
 

@@ -30,12 +30,12 @@ C4MessageBoard::~C4MessageBoard()
 void C4MessageBoard::Default()
 {
 	Clear();
-	Active = FALSE;
+	Active = false;
 	Delay = -1;
 	Fader = 0;
 	Speed = 2;
 	Output.Default();
-	Startup = FALSE;
+	Startup = false;
 	Empty = true;
 	ScreenFader = 0;
 	iMode = 0;
@@ -45,7 +45,7 @@ void C4MessageBoard::Default()
 
 void C4MessageBoard::Clear()
 {
-	Active = FALSE;
+	Active = false;
 	LogBuffer.Clear();
 	LogBuffer.SetLBWidth(0);
 }
@@ -209,9 +209,9 @@ void C4MessageBoard::Execute()
 	Draw(Output);
 }
 
-void C4MessageBoard::Init(C4Facet &cgo, BOOL fStartup)
+void C4MessageBoard::Init(C4Facet &cgo, bool fStartup)
 {
-	Active = TRUE;
+	Active = true;
 	Output = cgo;
 	Startup = fStartup;
 	iLineHgt = Game.GraphicsResource.FontRegular.iLineHgt;
@@ -273,13 +273,13 @@ void C4MessageBoard::Draw(C4Facet &cgo)
 			// player message color?
 			C4Player *pPlr = GetMessagePlayer(Message);
 
-			DWORD dwColor;
+			uint32_t dwColor;
 			if (pPlr)
 				dwColor = PlrClr2TxtClr(pPlr->ColorDw) & 0xffffff;
 			else
 				dwColor = 0xffffff;
 			// fade out (msg fade)
-			DWORD dwFade;
+			uint32_t dwFade;
 			if (iMsgY < cgo.Y)
 			{
 				dwFade = (0xff - BoundBy((cgo.Y - iMsgY + Max(ScreenFader, 0)) * 256 / Max(iMsgFader, 1) / iLineHgt, 0, 0xff)) << 24;

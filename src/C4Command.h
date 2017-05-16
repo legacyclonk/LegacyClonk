@@ -78,7 +78,7 @@ public:
 	int32_t BaseMode; // 0: subcommand/unmarked base (if failing, base will fail, too); 1: base command; 2: silent base command
 
 public:
-	void Set(int32_t iCommand, C4Object *pObj, C4Object *pTarget, C4Value iTx, int32_t iTy, C4Object *pTarget2, int32_t iData, int32_t iUpdateInterval, BOOL fEvaluated, int32_t iRetries, const char *szText, int32_t iBaseMode);
+	void Set(int32_t iCommand, C4Object *pObj, C4Object *pTarget, C4Value iTx, int32_t iTy, C4Object *pTarget2, int32_t iData, int32_t iUpdateInterval, bool fEvaluated, int32_t iRetries, const char *szText, int32_t iBaseMode);
 	void Clear();
 	void Execute();
 	void ClearPointers(C4Object *pObj);
@@ -99,7 +99,7 @@ protected:
 	void Attack();
 	void Transfer();
 	void Construct();
-	void Finish(BOOL fSuccess = FALSE, const char *szFailMessage = 0);
+	void Finish(bool fSuccess = false, const char *szFailMessage = 0);
 	void Follow();
 	void MoveTo();
 	void Enter();
@@ -122,9 +122,9 @@ protected:
 	void PushTo();
 	void Context();
 	int32_t CallFailed();
-	BOOL JumpControl();
-	BOOL FlightControl();
-	BOOL InitEvaluation();
+	bool JumpControl();
+	bool FlightControl();
+	bool InitEvaluation();
 	int32_t GetExpGain(); // get control counts gained by this command; 1EXP=5 ControlCounts
 	bool CheckMinimumCon(C4Object *pObj);
 };

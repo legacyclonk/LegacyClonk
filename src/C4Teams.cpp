@@ -161,8 +161,8 @@ void C4Team::RecheckPlayers()
 	}
 }
 
-DWORD GenerateRandomPlayerColor(int32_t iTry); // C4PlayerInfo.cpp
-bool IsColorConflict(DWORD dwClr1, DWORD dwClr2); // C4PlayerInfo.cpp
+uint32_t GenerateRandomPlayerColor(int32_t iTry); // C4PlayerInfo.cpp
+bool IsColorConflict(uint32_t dwClr1, uint32_t dwClr2); // C4PlayerInfo.cpp
 
 void C4Team::RecheckColor(C4TeamList &rForList)
 {
@@ -171,7 +171,7 @@ void C4Team::RecheckColor(C4TeamList &rForList)
 	if (!dwClr)
 	{
 		const int defTeamColorCount = 10;
-		DWORD defTeamColorRGB[defTeamColorCount] =
+		uint32_t defTeamColorRGB[defTeamColorCount] =
 		{
 			0xF40000, 0x00C800, 0xFCF41C, 0x2020FF, // red, green, yellow, blue,
 			0xC48444, 0xFFFFFF, 0x848484, 0xFF00EF, // brown, white, grey, pink,
@@ -646,7 +646,7 @@ bool C4TeamList::Save(C4Group &hGroup)
 	{
 		StdStrBuf Buf = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "Teams"));
 		// save it
-		hGroup.Add(C4CFN_Teams, Buf, FALSE, TRUE);
+		hGroup.Add(C4CFN_Teams, Buf, false, true);
 	}
 	catch (StdCompiler::Exception *)
 	{

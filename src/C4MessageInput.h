@@ -113,7 +113,7 @@ public:
 	// Input
 public:
 	bool CloseTypeIn();
-	bool StartTypeIn(bool fObjInput = false, C4Object *pObj = nullptr, bool fUpperCase = FALSE, bool fTeam = false, int32_t iPlr = -1, const StdStrBuf &rsInputQuery = StdStrBuf());
+	bool StartTypeIn(bool fObjInput = false, C4Object *pObj = nullptr, bool fUpperCase = false, bool fTeam = false, int32_t iPlr = -1, const StdStrBuf &rsInputQuery = StdStrBuf());
 	bool KeyStartTypeIn(bool fTeam);
 	bool IsTypeIn();
 	C4ChatInputDialog *GetTypeIn() { return C4ChatInputDialog::GetInstance(); }

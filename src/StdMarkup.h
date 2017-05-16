@@ -16,7 +16,7 @@ public:
 	CMarkupTag() : pPrev(0), pNext(0) {};
 	virtual ~CMarkupTag() {};
 
-	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, DWORD &dwClr) = 0; // assign markup
+	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr) = 0; // assign markup
 	virtual const char *TagName() = 0; // get character string for this tag
 };
 
@@ -26,7 +26,7 @@ class CMarkupTagItalic : public CMarkupTag
 public:
 	CMarkupTagItalic() : CMarkupTag() {}
 
-	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, DWORD &dwClr); // assign markup
+	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr); // assign markup
 	virtual const char *TagName() { return "i"; }
 };
 
@@ -34,12 +34,12 @@ public:
 class CMarkupTagColor : public CMarkupTag
 {
 private:
-	DWORD dwClr; // color
+	uint32_t dwClr; // color
 
 public:
-	CMarkupTagColor(DWORD dwClr) : CMarkupTag(), dwClr(dwClr) {}
+	CMarkupTagColor(uint32_t dwClr) : CMarkupTag(), dwClr(dwClr) {}
 
-	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, DWORD &dwClr); // assign markup
+	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr); // assign markup
 	virtual const char *TagName() { return "c"; }
 };
 
@@ -71,7 +71,7 @@ public:
 	bool Read(const char **ppText, bool fSkip = false); // get markup from text
 	bool SkipTags(const char **ppText); // extract markup from text; return whether end is reached
 
-	void Apply(CBltTransform &rBltTrf, DWORD &dwClr) // assign markup to vertices
+	void Apply(CBltTransform &rBltTrf, uint32_t &dwClr) // assign markup to vertices
 	{
 		for (CMarkupTag *pTag = pTags; pTag; pTag = pTag->pNext) pTag->Apply(rBltTrf, fDoClr, dwClr);
 	}

@@ -39,7 +39,7 @@ class C4Console : public C4ConsoleBase
 public:
 	C4Console();
 	virtual ~C4Console();
-	BOOL Editing;
+	bool Editing;
 	C4PropertyDlg   PropertyDlg;
 	C4ToolsDlg      ToolsDlg;
 	C4ObjectListDlg ObjectListDlg;
@@ -50,7 +50,7 @@ public:
 	virtual CStdWindow *Init(CStdApp *app);
 	void Execute();
 	void ClearPointers(C4Object *pObj);
-	bool Message(const char *szMessage, bool fQuery = FALSE);
+	bool Message(const char *szMessage, bool fQuery = false);
 	void SetCaption(const char *szCaption);
 	bool In(const char *szText);
 	bool Out(const char *szText);
@@ -85,15 +85,19 @@ protected:
 	void EditTitle();
 	void ViewportNew();
 	void HelpAbout();
-	BOOL FileSelect(char *sFilename, int iSize, const char *szFilter, DWORD dwFlags, BOOL fSave = FALSE);
-	BOOL SaveGame(BOOL fSaveGame);
-	BOOL FileSaveAs(BOOL fSaveGame);
-	BOOL FileSave(BOOL fSaveGame);
-	BOOL FileOpen();
-	BOOL FileOpenWPlrs();
-	BOOL FileClose();
-	BOOL FileQuit();
-	BOOL FileRecord();
+#ifdef _WIN32
+	bool FileSelect(char *sFilename, int iSize, const char *szFilter, DWORD    dwFlags, bool fSave = false);
+#else
+	bool FileSelect(char *sFilename, int iSize, const char *szFilter, uint32_t dwFlags, bool fSave = false);
+#endif
+	bool SaveGame(bool fSaveGame);
+	bool FileSaveAs(bool fSaveGame);
+	bool FileSave(bool fSaveGame);
+	bool FileOpen();
+	bool FileOpenWPlrs();
+	bool FileClose();
+	bool FileQuit();
+	bool FileRecord();
 
 	int ScriptCounter;
 	int FrameCounter;
@@ -108,7 +112,7 @@ protected:
 #ifdef _WIN32
 
 	void UpdateMenuText(HMENU hMenu);
-	BOOL AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, BOOL fEnabled = TRUE);
+	bool AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool fEnabled = true);
 
 	virtual bool Win32DialogMessageHandling(MSG *msg)
 	{

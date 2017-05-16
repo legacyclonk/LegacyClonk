@@ -442,7 +442,7 @@ C4ClientPlayerInfos *C4Network2Players::GetLocalPlayerInfoPacket() const
 	return nullptr;
 }
 
-DWORD C4Network2Players::GetClientChatColor(int idForClient, bool fLobby) const
+uint32_t C4Network2Players::GetClientChatColor(int idForClient, bool fLobby) const
 {
 	// return color of first joined player; force to white for unknown
 	// deactivated always white

@@ -54,7 +54,7 @@ void CSurface::Default()
 	PrimarySurfaceLockPitch = 0; PrimarySurfaceLockBits = nullptr;
 	ClipX = ClipY = ClipX2 = ClipY2 = 0;
 	Locked = 0;
-	Attached = FALSE;
+	Attached = false;
 	fPrimary = false;
 #ifdef USE_DIRECTX
 	pSfc = nullptr;
@@ -151,15 +151,15 @@ void CSurface::Clip(int iX, int iY, int iX2, int iY2)
 	ClipX2 = BoundBy(iX2, 0, Wdt - 1); ClipY2 = BoundBy(iY2, 0, Hgt - 1);
 }
 
-BOOL CSurface::Create(int iWdt, int iHgt, bool fOwnPal, bool fIsRenderTarget)
+bool CSurface::Create(int iWdt, int iHgt, bool fOwnPal, bool fIsRenderTarget)
 {
 	Clear(); Default();
 	// check size
-	if (!iWdt || !iHgt) return FALSE;
+	if (!iWdt || !iHgt) return false;
 	Wdt = iWdt; Hgt = iHgt;
 	// create texture: check gfx system
-	if (!lpDDraw) return FALSE;
-	if (!lpDDraw->DeviceReady()) return FALSE;
+	if (!lpDDraw) return false;
+	if (!lpDDraw->DeviceReady()) return false;
 
 	// store color format that will be used
 #ifdef USE_DIRECTX
@@ -176,11 +176,11 @@ BOOL CSurface::Create(int iWdt, int iHgt, bool fOwnPal, bool fIsRenderTarget)
 	byBytesPP = lpDDraw->byByteCnt;
 	this->fIsRenderTarget = fIsRenderTarget;
 	// create textures
-	if (!CreateTextures()) { Clear(); return FALSE; }
+	if (!CreateTextures()) { Clear(); return false; }
 	// update clipping
 	NoClip();
 	// success
-	return TRUE;
+	return true;
 }
 
 bool CSurface::CreateTextures()
@@ -270,12 +270,12 @@ void CSurface::FreeTextures()
 #define HLSMAX RANGE
 #define RGBMAX 255
 
-bool ClrByOwner(DWORD &dwClr) // new style, based on Microsoft Knowledge Base Article - 29240
+bool ClrByOwner(uint32_t &dwClr) // new style, based on Microsoft Knowledge Base Article - 29240
 {
 	int H, L, S;
-	WORD R, G, B;
-	BYTE cMax, cMin;
-	WORD Rdelta, Gdelta, Bdelta;
+	uint16_t R, G, B;
+	uint8_t cMax, cMin;
+	uint16_t Rdelta, Gdelta, Bdelta;
 	// get RGB (from BGR...?)
 	R = GetBValue(dwClr);
 	G = GetGValue(dwClr);
@@ -317,7 +317,7 @@ bool ClrByOwner(DWORD &dwClr) // new style, based on Microsoft Knowledge Base Ar
 	// Not blue
 	if (!(Inside(H, 145, 175) && (S > 100))) return false;
 	// It's blue: make it gray
-	BYTE b = GetRValue(dwClr);
+	uint8_t b = GetRValue(dwClr);
 	dwClr = RGB(b, b, b) | (dwClr & 0xff000000);
 	return true;
 }
@@ -339,7 +339,7 @@ bool CSurface::CreateColorByOwner(CSurface *pBySurface)
 		for (int iX = 0; iX < Wdt; ++iX)
 		{
 			// get pixel
-			DWORD dwPix = pMainSfc->GetPixDw(iX, iY, false);
+			uint32_t dwPix = pMainSfc->GetPixDw(iX, iY, false);
 			// is it a ClrByOwner-px?
 			if (!ClrByOwner(dwPix)) continue;
 			// set in this surface
@@ -367,21 +367,21 @@ bool CSurface::SetAsClrByOwnerOf(CSurface *pOfSurface)
 }
 
 #ifdef USE_DIRECTX
-BOOL CSurface::AttachSfc(IDirect3DSurface9 *sfcSurface)
+bool CSurface::AttachSfc(IDirect3DSurface9 *sfcSurface)
 {
 	Clear(); Default();
 	// store surface
 	if (pD3D)
 	{
 		pSfc = sfcSurface;
-		Attached = TRUE;
+		Attached = true;
 	}
 	fPrimary = true;
 	// get size
 	if (pD3D)
 	{
 		D3DSURFACE_DESC desc;
-		if (pSfc->GetDesc(&desc) != D3D_OK) return FALSE;
+		if (pSfc->GetDesc(&desc) != D3D_OK) return false;
 		Wdt = desc.Width; Hgt = desc.Height;
 	}
 	else if (lpDDraw && lpDDraw->pApp)
@@ -392,10 +392,10 @@ BOOL CSurface::AttachSfc(IDirect3DSurface9 *sfcSurface)
 	}
 	// reset clipping
 	NoClip();
-	return TRUE;
+	return true;
 }
 #else
-BOOL CSurface::AttachSfc(void *sfcSurface)
+bool CSurface::AttachSfc(void *sfcSurface)
 {
 	Clear(); Default();
 	fPrimary = true;
@@ -407,7 +407,7 @@ BOOL CSurface::AttachSfc(void *sfcSurface)
 	}
 	// reset clipping
 	NoClip();
-	return TRUE;
+	return true;
 }
 #endif
 
@@ -438,38 +438,38 @@ bool CSurface::Read(CStdStream &hGroup, bool fOwnPal)
 	int lcnt, iLineRest;
 	CBitmap256Info BitmapInfo;
 	// read bmpinfo-header
-	if (!hGroup.Read(&BitmapInfo, sizeof(CBitmapInfo))) return FALSE;
+	if (!hGroup.Read(&BitmapInfo, sizeof(CBitmapInfo))) return false;
 	// is it 8bpp?
 	if (BitmapInfo.Info.biBitCount == 8)
 	{
-		if (!hGroup.Read(((BYTE *)&BitmapInfo) + sizeof(CBitmapInfo),
+		if (!hGroup.Read(((uint8_t *)&BitmapInfo) + sizeof(CBitmapInfo),
 			Min(sizeof(BitmapInfo) - sizeof(CBitmapInfo), sizeof(BitmapInfo) - sizeof(CBitmapInfo) + BitmapInfo.FileBitsOffset())))
-			return FALSE;
-		if (!hGroup.Advance(BitmapInfo.FileBitsOffset())) return FALSE;
+			return false;
+		if (!hGroup.Advance(BitmapInfo.FileBitsOffset())) return false;
 	}
 	else
 	{
 		// read 24bpp
-		if (BitmapInfo.Info.biBitCount != 24) return FALSE;
-		if (!hGroup.Advance(((CBitmapInfo)BitmapInfo).FileBitsOffset())) return FALSE;
+		if (BitmapInfo.Info.biBitCount != 24) return false;
+		if (!hGroup.Advance(((CBitmapInfo)BitmapInfo).FileBitsOffset())) return false;
 	}
 
 	// Create and lock surface
-	if (!Create(BitmapInfo.Info.biWidth, BitmapInfo.Info.biHeight, fOwnPal)) return FALSE;
-	if (!Lock()) { Clear(); return FALSE; }
+	if (!Create(BitmapInfo.Info.biWidth, BitmapInfo.Info.biHeight, fOwnPal)) return false;
+	if (!Lock()) { Clear(); return false; }
 
 	// create line buffer
 	int iBufSize = DWordAligned(BitmapInfo.Info.biWidth * BitmapInfo.Info.biBitCount / 8);
-	BYTE *pBuf = new BYTE[iBufSize];
+	uint8_t *pBuf = new uint8_t[iBufSize];
 	// Read lines
 	iLineRest = DWordAligned(BitmapInfo.Info.biWidth) - BitmapInfo.Info.biWidth;
 	for (lcnt = Hgt - 1; lcnt >= 0; lcnt--)
 	{
 		if (!hGroup.Read(pBuf, iBufSize))
 		{
-			Clear(); delete[] pBuf; return FALSE;
+			Clear(); delete[] pBuf; return false;
 		}
-		BYTE *pPix = pBuf;
+		uint8_t *pPix = pBuf;
 		for (int x = 0; x < BitmapInfo.Info.biWidth; ++x)
 			switch (BitmapInfo.Info.biBitCount)
 			{
@@ -494,7 +494,7 @@ bool CSurface::Read(CStdStream &hGroup, bool fOwnPal)
 
 	Unlock();
 
-	return TRUE;
+	return true;
 }
 
 bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly)
@@ -524,7 +524,7 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 		for (int y = 0; y < Hgt; ++y)
 			for (int x = 0; x < Wdt; ++x)
 			{
-				DWORD dwClr = GetPixDw(x, y, false);
+				uint32_t dwClr = GetPixDw(x, y, false);
 				if (fApplyGamma) dwClr = lpDDraw->Gamma.ApplyTo(dwClr);
 				png.SetPix(x, y, dwClr);
 			}
@@ -543,11 +543,11 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 	return true;
 }
 
-BOOL CSurface::Wipe()
+bool CSurface::Wipe()
 {
-	if (!ppTex) return FALSE;
+	if (!ppTex) return false;
 	// simply clear it (currently slow...)
-	if (!Lock()) return FALSE;
+	if (!Lock()) return false;
 	for (int i = 0; i < Wdt * Hgt; ++i)
 		if (!fIsBackground)
 			SetPix(i % Wdt, i / Wdt, 0);
@@ -555,22 +555,22 @@ BOOL CSurface::Wipe()
 			SetPixDw(i % Wdt, i / Wdt, 0x00000000);
 	Unlock();
 	// success
-	return TRUE;
+	return true;
 }
 
-BOOL CSurface::GetSurfaceSize(int &irX, int &irY)
+bool CSurface::GetSurfaceSize(int &irX, int &irY)
 {
 	// simply assign stored values
 	irX = Wdt;
 	irY = Hgt;
 	// success
-	return TRUE;
+	return true;
 }
 
-BOOL CSurface::Lock()
+bool CSurface::Lock()
 {
 	// lock main sfc
-	if (pMainSfc) if (!pMainSfc->Lock()) return FALSE;
+	if (pMainSfc) if (!pMainSfc->Lock()) return false;
 	// not yet locked?
 	if (!Locked)
 	{
@@ -581,13 +581,13 @@ BOOL CSurface::Lock()
 			{
 				D3DLOCKED_RECT lock;
 				// locking primary
-				if (!pSfc) return FALSE;
+				if (!pSfc) return false;
 				// lock it
 				if (pSfc->LockRect(&lock, nullptr, 0) != D3D_OK)
-					return FALSE;
+					return false;
 				// store pitch and pointer
 				PrimarySurfaceLockPitch = lock.Pitch;
-				PrimarySurfaceLockBits = (BYTE *)lock.pBits;
+				PrimarySurfaceLockBits = (uint8_t *)lock.pBits;
 			}
 #endif // USE_DIRECTX
 
@@ -596,21 +596,21 @@ BOOL CSurface::Lock()
 		}
 		else
 		{
-			if (!ppTex) return FALSE;
+			if (!ppTex) return false;
 			// lock texture
 			// textures will be locked when needed
 		}
 	}
 	// count lock
-	Locked++; return TRUE;
+	Locked++; return true;
 }
 
-BOOL CSurface::Unlock()
+bool CSurface::Unlock()
 {
 	// unlock main sfc
 	if (pMainSfc) pMainSfc->Unlock();
 	// locked?
-	if (!Locked) return FALSE;
+	if (!Locked) return false;
 	// decrease lock counter; check if zeroed
 	Locked--;
 	if (!Locked)
@@ -621,10 +621,10 @@ BOOL CSurface::Unlock()
 #ifdef USE_DIRECTX
 			if (pD3D)
 			{
-				if (!pSfc) return FALSE;
+				if (!pSfc) return false;
 				// unlocking primary?
 				if (pSfc->UnlockRect() != D3D_OK)
-					return FALSE;
+					return false;
 			}
 			else
 #endif
@@ -632,7 +632,7 @@ BOOL CSurface::Unlock()
 				// emulated primary locks in OpenGL
 				delete PrimarySurfaceLockBits;
 				PrimarySurfaceLockBits = 0;
-				return TRUE;
+				return true;
 			}
 		}
 		else
@@ -643,7 +643,7 @@ BOOL CSurface::Unlock()
 				(*ppTx)->Unlock();
 		}
 	}
-	return TRUE;
+	return true;
 }
 
 bool CSurface::GetTexAt(CTexRef **ppTexRef, int &rX, int &rY)
@@ -684,14 +684,14 @@ bool CSurface::GetLockTexAt(CTexRef **ppTexRef, int &rX, int &rY)
 	return true;
 }
 
-bool CSurface::SetPix(int iX, int iY, BYTE byCol)
+bool CSurface::SetPix(int iX, int iY, uint8_t byCol)
 {
 	return SetPixDw(iX, iY, lpDDrawPal->GetClr(byCol));
 }
 
-DWORD CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
+uint32_t CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 {
-	BYTE *pBuf; int iPitch;
+	uint8_t *pBuf; int iPitch;
 	// backup pos
 	int iX2 = iX; int iY2 = iY;
 	// primary?
@@ -707,7 +707,7 @@ DWORD CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 				glReadPixels(0, 0, Wdt, Hgt, GL_BGR, GL_UNSIGNED_BYTE, PrimarySurfaceLockBits);
 				PrimarySurfaceLockPitch = Wdt * 3;
 			}
-			return *(DWORD *)(PrimarySurfaceLockBits + (Hgt - iY - 1) * PrimarySurfaceLockPitch + iX * 3);
+			return *(uint32_t *)(PrimarySurfaceLockBits + (Hgt - iY - 1) * PrimarySurfaceLockPitch + iX * 3);
 		}
 #endif
 #ifdef USE_DIRECTX
@@ -720,19 +720,19 @@ DWORD CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 			// clip
 			if (iX < 0 || iY < 0 || iX >= Wdt || iY >= Hgt) return 0;
 			// get pixel from primary surface
-			WORD pix16;
+			uint16_t pix16;
 			switch (dwClrFormat)
 			{
 			case D3DFMT_X1R5G5B5:
 				// 16 bit 5-5-5
-				pix16 = *(WORD *)(((BYTE *)PrimarySurfaceLockBits) + iY * PrimarySurfaceLockPitch + iX * 2);
+				pix16 = *(uint16_t *)(((uint8_t *)PrimarySurfaceLockBits) + iY * PrimarySurfaceLockPitch + iX * 2);
 				return ((pix16 & 0x001f) << 3)
 					| ((pix16 & 0x03e0) << 6)
 					| ((pix16 & 0x7c00) << 9);
 
 			case D3DFMT_R5G6B5:
 				// 16 bit 5-6-5
-				pix16 = *(WORD *)(((BYTE *)PrimarySurfaceLockBits) + iY * PrimarySurfaceLockPitch + iX * 2);
+				pix16 = *(uint16_t *)(((uint8_t *)PrimarySurfaceLockBits) + iY * PrimarySurfaceLockPitch + iX * 2);
 				return ((pix16 & 0x001f) << 3)
 					| ((pix16 & 0x07e0) << 5)
 					| ((pix16 & 0xf800) << 8);
@@ -740,7 +740,7 @@ DWORD CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 
 			case D3DFMT_X8R8G8B8:
 				// 32 bit
-				return *(DWORD *)(((BYTE *)PrimarySurfaceLockBits) + iY * PrimarySurfaceLockPitch + iX * 4);
+				return *(uint32_t *)(((uint8_t *)PrimarySurfaceLockBits) + iY * PrimarySurfaceLockPitch + iX * 4);
 			}
 		}
 #endif
@@ -751,27 +751,27 @@ DWORD CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 		if (!ppTex) return 0;
 		CTexRef *pTexRef;
 		if (!GetLockTexAt(&pTexRef, iX, iY)) return 0;
-		pBuf = (BYTE *)pTexRef->texLock.pBits;
+		pBuf = (uint8_t *)pTexRef->texLock.pBits;
 		iPitch = pTexRef->texLock.Pitch;
 	}
 	// get pix of surface
-	DWORD dwPix;
+	uint32_t dwPix;
 	if (byBytesPP == 4)
 	{
 		// 32 bit
-		DWORD *pPix = (DWORD *)(pBuf + iY * iPitch + iX * 4);
+		uint32_t *pPix = (uint32_t *)(pBuf + iY * iPitch + iX * 4);
 		dwPix = *pPix;
 	}
 	else
 	{
 		// 16 bit
-		WORD *pPix = (WORD *)(pBuf + iY * iPitch + iX * 2);
+		uint16_t *pPix = (uint16_t *)(pBuf + iY * iPitch + iX * 2);
 		dwPix = ClrW2Dw(*pPix);
 	}
 	// this is a ColorByOwner-surface?
 	if (pMainSfc)
 	{
-		BYTE byAlpha = BYTE(dwPix >> 24);
+		uint8_t byAlpha = uint8_t(dwPix >> 24);
 		// pix is fully transparent?
 		if (byAlpha == 0xff)
 			// then get the main surfaces's pixel
@@ -793,7 +793,7 @@ DWORD CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 			// does it contain transparency? then blit on main sfc
 			if (byAlpha)
 			{
-				DWORD dwMainPix = pMainSfc->GetPixDw(iX2, iY2, fApplyModulation);
+				uint32_t dwMainPix = pMainSfc->GetPixDw(iX2, iY2, fApplyModulation);
 				BltAlpha(dwMainPix, dwPix); dwPix = dwMainPix;
 			}
 		}
@@ -817,12 +817,12 @@ DWORD CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 bool CSurface::IsPixTransparent(int iX, int iY)
 {
 	// get pixel value
-	DWORD dwPix = GetPixDw(iX, iY, false);
+	uint32_t dwPix = GetPixDw(iX, iY, false);
 	// get alpha value
 	return (dwPix >> 24) >= 128;
 }
 
-bool CSurface::SetPixDw(int iX, int iY, DWORD dwClr)
+bool CSurface::SetPixDw(int iX, int iY, uint32_t dwClr)
 {
 	// clip
 	if ((iX < ClipX) || (iX > ClipX2) || (iY < ClipY) || (iY > ClipY2)) return true;
@@ -855,9 +855,9 @@ bool CSurface::BltPix(int iX, int iY, CSurface *sfcSource, int iSrcX, int iSrcY,
 	if (byBytesPP == 4)
 	{
 		// 32 bit
-		DWORD *pPix32 = (DWORD *)(((BYTE *)pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch + iX * 4);
+		uint32_t *pPix32 = (uint32_t *)(((uint8_t *)pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch + iX * 4);
 		// get source pix as dword
-		DWORD srcPix = sfcSource->GetPixDw(iSrcX, iSrcY, true);
+		uint32_t srcPix = sfcSource->GetPixDw(iSrcX, iSrcY, true);
 		// merge
 		if (!fTransparency)
 		{
@@ -875,9 +875,9 @@ bool CSurface::BltPix(int iX, int iY, CSurface *sfcSource, int iSrcX, int iSrcY,
 	else
 	{
 		// 16 bit
-		WORD *pPix16 = (WORD *)(((BYTE *)pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch + iX * 2);
+		uint16_t *pPix16 = (uint16_t *)(((uint8_t *)pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch + iX * 2);
 		// get source pix as dword
-		DWORD srcPix = sfcSource->GetPixDw(iSrcX, iSrcY, true);
+		uint32_t srcPix = sfcSource->GetPixDw(iSrcX, iSrcY, true);
 		if (!fTransparency)
 		{
 			// set it
@@ -886,7 +886,7 @@ bool CSurface::BltPix(int iX, int iY, CSurface *sfcSource, int iSrcX, int iSrcY,
 		else
 		{
 			// merge in 32 bit
-			DWORD dwDst = ClrW2Dw(*pPix16);
+			uint32_t dwDst = ClrW2Dw(*pPix16);
 			if (lpDDraw->dwBlitMode & C4GFXBLIT_ADDITIVE)
 				BltAlphaAdd(dwDst, srcPix);
 			else
@@ -947,20 +947,20 @@ void CSurface::ClearBoxDw(int iX, int iY, int iWdt, int iHgt)
 	}
 }
 
-bool CSurface::CopyBytes(BYTE *pImageData)
+bool CSurface::CopyBytes(uint8_t *pImageData)
 {
 	// copy image data directly into textures
 	CTexRef **ppCurrTex = ppTex, *pTex = *ppTex;
 	int iSrcPitch = Wdt * byBytesPP; int iLineTotal = 0;
 	for (int iY = 0; iY < iTexY; ++iY)
 	{
-		BYTE *pSource = pImageData + iSrcPitch * iLineTotal;
+		uint8_t *pSource = pImageData + iSrcPitch * iLineTotal;
 		int iLastHeight = pTex->iSize; int iXImgPos = 0;
 		for (int iX = 0; iX < iTexX; ++iX)
 		{
 			pTex = *ppCurrTex++;
 			if (!pTex->Lock()) return false;
-			BYTE *pTarget = (BYTE *)pTex->texLock.pBits;
+			uint8_t *pTarget = (uint8_t *)pTex->texLock.pBits;
 			int iCpyNum = Min(pTex->iSize, Wdt - iXImgPos) * byBytesPP;
 			int iYMax = Min(pTex->iSize, Hgt - iLineTotal);
 			for (int iLine = 0; iLine < iYMax; ++iLine)
@@ -1286,4 +1286,4 @@ void CTexMgr::IntUnlock()
 }
 
 CTexMgr *pTexMgr;
-const BYTE FColors[] = { 31, 16, 39, 47, 55, 63, 71, 79, 87, 95, 23, 30, 99, 103 };
+const uint8_t FColors[] = { 31, 16, 39, 47, 55, 63, 71, 79, 87, 95, 23, 30, 99, 103 };

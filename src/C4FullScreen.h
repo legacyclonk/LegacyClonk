@@ -20,12 +20,12 @@ public:
 	C4FullScreen();
 	~C4FullScreen();
 	void Execute();
-	BOOL ViewportCheck();
+	bool ViewportCheck();
 	void Sec1Timer() { Game.Sec1Timer(); Application.DoSec1Timers(); }
 	bool ShowAbortDlg(); // show game abort dialog (Escape pressed)
 	bool ActivateMenuMain();
 	void CloseMenu();
-	bool MenuKeyControl(BYTE byCom); // direct keyboard callback
+	bool MenuKeyControl(uint8_t byCom); // direct keyboard callback
 	// User requests close
 	virtual void Close();
 	virtual void CharIn(const char *c);

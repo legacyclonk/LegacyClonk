@@ -32,7 +32,7 @@ int C4RankSystem::Init(const char *szRegister,
 #ifdef _WIN32
 	int crank = 0;
 	char rankname[C4MaxName + 1], keyname[30];
-	BOOL Checking = TRUE;
+	bool Checking = true;
 	while (Checking)
 	{
 		sprintf(keyname, "Rank%03d", crank + 1);
@@ -48,7 +48,7 @@ int C4RankSystem::Init(const char *szRegister,
 				&& SetRegistryString(Register, keyname, rankname))
 				crank++;
 			else
-				Checking = FALSE;
+				Checking = false;
 		}
 	}
 	return crank;

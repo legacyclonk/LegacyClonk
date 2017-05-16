@@ -261,7 +261,7 @@ public:
 	void DeactivateInactiveClients(); // host
 
 	// league
-	void LeagueGameEvaluate(const char *szRecordName = nullptr, const BYTE *pRecordSHA = nullptr);
+	void LeagueGameEvaluate(const char *szRecordName = nullptr, const uint8_t *pRecordSHA = nullptr);
 	void LeagueSignupDisable(); // if "internet game" button is switched off in lobby: Remove from league server
 	bool LeagueSignupEnable();  // if "internet game" button is switched on in lobby: (re)Add to league server
 	void InvalidateReference(); // forces a recreation and re-send of the game reference in the next execution cycle
@@ -336,7 +336,7 @@ protected:
 	bool LeagueStart(bool *pCancel);
 	bool LeagueUpdate();
 	bool LeagueUpdateProcessReply();
-	bool LeagueEnd(const char *szRecordName = nullptr, const BYTE *pRecordSHA = nullptr);
+	bool LeagueEnd(const char *szRecordName = nullptr, const uint8_t *pRecordSHA = nullptr);
 
 	// streaming
 	bool StreamIn(bool fFinish);

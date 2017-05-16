@@ -16,14 +16,14 @@ public:
 
 private:
 	StdStrBuf szTitle;
-	DWORD dwColor;
+	uint32_t dwColor;
 
 public:
 	C4Graph();
 	virtual ~C4Graph() {}
 
 	void SetTitle(const char *szNewTitle) { szTitle.Copy(szNewTitle); }
-	void SetColorDw(DWORD dwClr) { dwColor = dwClr; }
+	void SetColorDw(uint32_t dwClr) { dwColor = dwClr; }
 
 	// retrieve timeframe covered by backlog
 	virtual TimeType GetStartTime() const = 0; // inclusively
@@ -39,7 +39,7 @@ public:
 	virtual int GetSeriesCount() const = 0;
 	virtual const C4Graph *GetSeries(int iIndex) const = 0;
 
-	DWORD GetColorDw() const { return dwColor; }
+	uint32_t GetColorDw() const { return dwColor; }
 	const char *GetTitle() const { return szTitle.getData(); }
 
 	// called before drawing procedure: Make sure graph values are up-to-date

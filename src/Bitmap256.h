@@ -13,35 +13,35 @@
 #pragma pack(push, 2)
 typedef struct tagBITMAPFILEHEADER
 {
-	WORD  bfType;
-	DWORD bfSize;
-	WORD  bfReserved1;
-	WORD  bfReserved2;
-	DWORD bfOffBits;
+	uint16_t bfType;
+	uint32_t bfSize;
+	uint16_t bfReserved1;
+	uint16_t bfReserved2;
+	uint32_t bfOffBits;
 } BITMAPFILEHEADER, *LPBITMAPFILEHEADER, *PBITMAPFILEHEADER;
 #pragma pack(pop)
 
 typedef struct tagBITMAPINFOHEADER
 {
-	DWORD   biSize;
-	int32_t biWidth;
-	int32_t biHeight;
-	WORD    biPlanes;
-	WORD    biBitCount;
-	DWORD   biCompression;
-	DWORD   biSizeImage;
-	int32_t biXPelsPerMeter;
-	int32_t biYPelsPerMeter;
-	DWORD   biClrUsed;
-	DWORD   biClrImportant;
+	uint32_t biSize;
+	int32_t  biWidth;
+	int32_t  biHeight;
+	uint16_t biPlanes;
+	uint16_t biBitCount;
+	uint32_t biCompression;
+	uint32_t biSizeImage;
+	int32_t  biXPelsPerMeter;
+	int32_t  biYPelsPerMeter;
+	uint32_t biClrUsed;
+	uint32_t biClrImportant;
 } BITMAPINFOHEADER, *LPBITMAPINFOHEADER, *PBITMAPINFOHEADER;
 
 typedef struct tagRGBQUAD
 {
-	BYTE rgbBlue;
-	BYTE rgbGreen;
-	BYTE rgbRed;
-	BYTE rgbReserved;
+	uint8_t rgbBlue;
+	uint8_t rgbGreen;
+	uint8_t rgbRed;
+	uint8_t rgbReserved;
 } RGBQUAD, *LPRGBQUAD;
 
 #endif
@@ -69,7 +69,7 @@ public:
 
 public:
 	void Default();
-	void Set(int iWdt, int iHgt, BYTE *bypPalette);
+	void Set(int iWdt, int iHgt, uint8_t *bypPalette);
 
 	int FileBitsOffset();
 };

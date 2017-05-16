@@ -21,7 +21,7 @@ C4Weather::~C4Weather()
 	Clear();
 }
 
-void C4Weather::Init(BOOL fScenario)
+void C4Weather::Init(bool fScenario)
 {
 	if (fScenario)
 	{
@@ -107,7 +107,7 @@ void C4Weather::Execute()
 		if (!Random(35))
 			if (Random(100) < LightningLevel)
 				LaunchLightning(Random(GBackWdt), 0,
-					-20, 41, +5, 15, TRUE);
+					-20, 41, +5, 15, true);
 		// Earthquake
 		if (!Random(50))
 			if (Random(100) < EarthquakeLevel)
@@ -123,7 +123,7 @@ void C4Weather::Execute()
 
 void C4Weather::Clear() {}
 
-BOOL C4Weather::LaunchLightning(int32_t x, int32_t y, int32_t xdir, int32_t xrange, int32_t ydir, int32_t yrange, BOOL fDoGamma)
+bool C4Weather::LaunchLightning(int32_t x, int32_t y, int32_t xdir, int32_t xrange, int32_t ydir, int32_t yrange, bool fDoGamma)
 {
 	C4Object *pObj;
 	if (pObj = Game.CreateObject(C4Id("FXL1"), nullptr))
@@ -134,7 +134,7 @@ BOOL C4Weather::LaunchLightning(int32_t x, int32_t y, int32_t xdir, int32_t xran
 			C4VInt(ydir),
 			C4VInt(yrange),
 			C4VBool(!!fDoGamma)));
-	return TRUE;
+	return true;
 }
 
 int32_t C4Weather::GetWind(int32_t x, int32_t y)
@@ -148,12 +148,12 @@ int32_t C4Weather::GetTemperature()
 	return Temperature;
 }
 
-BOOL C4Weather::LaunchVolcano(int32_t mat, int32_t x, int32_t y, int32_t size)
+bool C4Weather::LaunchVolcano(int32_t mat, int32_t x, int32_t y, int32_t size)
 {
 	C4Object *pObj;
 	if (pObj = Game.CreateObject(C4Id("FXV1"), nullptr))
 		pObj->Call(PSF_Activate, &C4AulParSet(C4VInt(x), C4VInt(y), C4VInt(size), C4VInt(mat)));
-	return TRUE;
+	return true;
 }
 
 void C4Weather::Default()
@@ -163,28 +163,28 @@ void C4Weather::Default()
 	Temperature = Climate = 0;
 	TemperatureRange = 30;
 	MeteoriteLevel = VolcanoLevel = EarthquakeLevel = LightningLevel = 0;
-	NoGamma = TRUE;
+	NoGamma = true;
 }
 
-BOOL C4Weather::LaunchEarthquake(int32_t iX, int32_t iY)
+bool C4Weather::LaunchEarthquake(int32_t iX, int32_t iY)
 {
 	C4Object *pObj;
 	if (pObj = Game.CreateObject(C4Id("FXQ1"), nullptr, NO_OWNER, iX, iY))
 		if (!!pObj->Call(PSF_Activate))
-			return TRUE;
-	return FALSE;
+			return true;
+	return false;
 }
 
-BOOL C4Weather::LaunchCloud(int32_t iX, int32_t iY, int32_t iWidth, int32_t iStrength, const char *szPrecipitation)
+bool C4Weather::LaunchCloud(int32_t iX, int32_t iY, int32_t iWidth, int32_t iStrength, const char *szPrecipitation)
 {
-	if (Game.Material.Get(szPrecipitation) == MNone) return FALSE;
+	if (Game.Material.Get(szPrecipitation) == MNone) return false;
 	C4Object *pObj;
 	if (pObj = Game.CreateObject(C4Id("FXP1"), nullptr, NO_OWNER, iX, iY))
 		if (!!pObj->Call(PSF_Activate, &C4AulParSet(C4VInt(Game.Material.Get(szPrecipitation)),
 			C4VInt(iWidth),
 			C4VInt(iStrength))))
-			return TRUE;
-	return FALSE;
+			return true;
+	return false;
 }
 
 void C4Weather::SetWind(int32_t iWind)
@@ -221,7 +221,7 @@ int32_t C4Weather::GetClimate()
 	return Climate;
 }
 
-static DWORD SeasonColors[4][3] =
+static uint32_t SeasonColors[4][3] =
 {
 	{ 0x000000, 0x7f7f90, 0xefefff }, // winter: slightly blue; blued out by temperature
 	{ 0x070f00, 0x90a07f, 0xffffdf }, // spring: green to yellow
@@ -235,13 +235,13 @@ void C4Weather::SetSeasonGamma()
 	// get season num and offset
 	int32_t iSeason1 = (Season / 25) % 4; int32_t iSeason2 = (iSeason1 + 1) % 4;
 	int32_t iSeasonOff1 = BoundBy(Season % 25, 5, 19) - 5; int32_t iSeasonOff2 = 15 - iSeasonOff1;
-	DWORD dwClr[3]; ZeroMemory(dwClr, sizeof(DWORD) * 3);
+	uint32_t dwClr[3]; ZeroMemory(dwClr, sizeof(uint32_t) * 3);
 	// interpolate between season colors
 	for (int32_t i = 0; i < 3; ++i)
 		for (int32_t iChan = 0; iChan < 24; iChan += 8)
 		{
-			BYTE byC1 = BYTE(SeasonColors[iSeason1][i] >> iChan);
-			BYTE byC2 = BYTE(SeasonColors[iSeason2][i] >> iChan);
+			uint8_t byC1 = uint8_t(SeasonColors[iSeason1][i] >> iChan);
+			uint8_t byC2 = uint8_t(SeasonColors[iSeason2][i] >> iChan);
 			int32_t iChanVal = (byC1 * iSeasonOff2 + byC2 * iSeasonOff1) / 15;
 			// red+green: reduce in winter
 			if (Temperature < 0)
@@ -271,7 +271,7 @@ void C4Weather::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(VolcanoLevel,     "VolcanoLevel",     0));
 	pComp->Value(mkNamingAdapt(EarthquakeLevel,  "EarthquakeLevel",  0));
 	pComp->Value(mkNamingAdapt(LightningLevel,   "LightningLevel",   0));
-	pComp->Value(mkNamingAdapt(NoGamma,          "NoGamma",          TRUE));
+	pComp->Value(mkNamingAdapt(NoGamma,          "NoGamma",          true));
 	uint32_t dwGammaDefaults[C4MaxGammaRamps * 3];
 	for (int32_t i = 0; i < C4MaxGammaRamps; ++i)
 	{

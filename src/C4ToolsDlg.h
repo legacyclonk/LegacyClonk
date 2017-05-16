@@ -95,7 +95,7 @@ public:
 #endif
 	int32_t Tool, SelectedTool;
 	int32_t Grade;
-	BOOL ModeIFT;
+	bool ModeIFT;
 	char Material[C4M_MaxName + 1];
 	char Texture[C4M_MaxName + 1];
 
@@ -120,15 +120,15 @@ public:
 	bool PopMaterial();
 	bool ChangeGrade(int32_t iChange);
 	void UpdatePreview();
-	BOOL Open();
-	BOOL SetGrade(int32_t iGrade);
-	BOOL SetTool(int32_t iTool, bool fTemp);
+	bool Open();
+	bool SetGrade(int32_t iGrade);
+	bool SetTool(int32_t iTool, bool fTemp);
 	bool ToggleTool() { return !!SetTool((Tool + 1) % 4, false); }
-	BOOL SetLandscapeMode(int32_t iMode, bool fThroughControl = false);
-	BOOL SetIFT(BOOL fIFT);
+	bool SetLandscapeMode(int32_t iMode, bool fThroughControl = false);
+	bool SetIFT(bool fIFT);
 	bool ToggleIFT() { return !!SetIFT(!ModeIFT); }
-	BOOL SelectTexture(const char *szTexture);
-	BOOL SelectMaterial(const char *szMaterial);
+	bool SelectTexture(const char *szTexture);
+	bool SelectMaterial(const char *szMaterial);
 	void SetAlternateTool();
 	void ResetAlternateTool();
 

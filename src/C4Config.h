@@ -62,8 +62,8 @@ public:
 public:
 	static int GetLanguageSequence(const char *strSource, char *strTarget);
 	void DefaultLanguage();
-	BOOL CreateSaveFolder(const char *strDirectory, const char *strLanguageTitle);
-	void DeterminePaths(BOOL forceWorkingDirectory);
+	bool CreateSaveFolder(const char *strDirectory, const char *strLanguageTitle);
+	void DeterminePaths(bool forceWorkingDirectory);
 	void CompileFunc(StdCompiler *pComp);
 };
 
@@ -244,9 +244,9 @@ public:
 public:
 	const char *GetSubkeyPath(const char *strSubkey);
 	void Default();
-	BOOL Save();
-	BOOL Load(BOOL forceWorkingDirectory = TRUE, const char *szConfigFile = nullptr);
-	BOOL Init();
+	bool Save();
+	bool Load(bool forceWorkingDirectory = true, const char *szConfigFile = nullptr);
+	bool Init();
 	const char *AtExePath(const char *szFilename);
 	const char *AtTempPath(const char *szFilename);
 	const char *AtNetworkPath(const char *szFilename);

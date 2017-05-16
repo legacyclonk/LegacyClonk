@@ -79,7 +79,7 @@ public:
 	void SetID(int32_t inID) { iID = inID; }
 	void SetDerived(int32_t inDerID) { iDerID = inDerID; }
 	void SetLoadable(uint32_t iSize, uint32_t iCRC);
-	void SetFileSHA(BYTE *pSHA) { memcpy(FileSHA, pSHA, SHA_DIGEST_LENGTH); fHasFileSHA = true; }
+	void SetFileSHA(uint8_t *pSHA) { memcpy(FileSHA, pSHA, SHA_DIGEST_LENGTH); fHasFileSHA = true; }
 	void Clear();
 
 	virtual void CompileFunc(StdCompiler *pComp);

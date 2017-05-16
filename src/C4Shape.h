@@ -17,7 +17,7 @@ public:
 public:
 	void Set(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt);
 	void Default();
-	BOOL Overlap(C4Rect &rTarget);
+	bool Overlap(C4Rect &rTarget);
 	void Intersect(const C4Rect &r2);
 	void Add(const C4Rect &r2);
 	bool operator==(const C4Rect &r2) { return !((x - r2.x) | (y - r2.y) | (Wdt - r2.Wdt) | (Hgt - r2.Hgt)); }
@@ -129,16 +129,16 @@ public:
 	void GetVertexOutline(C4Rect &rRect);
 	int32_t GetVertexY(int32_t iVertex);
 	int32_t GetVertexX(int32_t iVertex);
-	BOOL AddVertex(int32_t iX, int32_t iY);
-	BOOL CheckContact(int32_t cx, int32_t cy);
-	BOOL ContactCheck(int32_t cx, int32_t cy);
-	BOOL Attach(int32_t &cx, int32_t &cy, BYTE cnat_pos);
-	BOOL LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int32_t oldx, int32_t oldy);
-	BOOL InsertVertex(int32_t iPos, int32_t tx, int32_t ty);
-	BOOL RemoveVertex(int32_t iPos);
+	bool AddVertex(int32_t iX, int32_t iY);
+	bool CheckContact(int32_t cx, int32_t cy);
+	bool ContactCheck(int32_t cx, int32_t cy);
+	bool Attach(int32_t &cx, int32_t &cy, uint8_t cnat_pos);
+	bool LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int32_t oldx, int32_t oldy);
+	bool InsertVertex(int32_t iPos, int32_t tx, int32_t ty);
+	bool RemoveVertex(int32_t iPos);
 	void CopyFrom(C4Shape rFrom, bool bCpyVertices, bool fCopyVerticesFromSelf);
 	int32_t GetBottomVertex();
-	int32_t GetVertexContact(int32_t iVtx, DWORD dwCheckMask, int32_t tx, int32_t ty, const C4DensityProvider &rDensityProvider = DefaultDensityProvider); // get CNAT-mask for given vertex - does not check range for iVtx!
+	int32_t GetVertexContact(int32_t iVtx, uint32_t dwCheckMask, int32_t tx, int32_t ty, const C4DensityProvider &rDensityProvider = DefaultDensityProvider); // get CNAT-mask for given vertex - does not check range for iVtx!
 	void CreateOwnOriginalCopy(C4Shape &rFrom); // create copy of all vertex members in back area of own buffers
 	void CompileFunc(StdCompiler *pComp, bool fRuntime);
 };

@@ -37,7 +37,7 @@ void C4GameObjects::Init(int32_t iWidth, int32_t iHeight)
 	Sectors.Init(iWidth, iHeight);
 }
 
-BOOL C4GameObjects::Add(C4Object *nObj)
+bool C4GameObjects::Add(C4Object *nObj)
 {
 	// add inactive objects to the inactive list only
 	if (nObj->Status == C4OS_INACTIVE)
@@ -50,13 +50,13 @@ BOOL C4GameObjects::Add(C4Object *nObj)
 		Game.ForeObjects.Add(nObj, C4ObjectList::stMain);
 	// manipulate main list
 	if (!C4ObjectList::Add(nObj, C4ObjectList::stMain))
-		return FALSE;
+		return false;
 	// add to sectors
 	Sectors.Add(nObj, this);
-	return TRUE;
+	return true;
 }
 
-BOOL C4GameObjects::Remove(C4Object *pObj)
+bool C4GameObjects::Remove(C4Object *pObj)
 {
 	// if it's an inactive object, simply remove from the inactiv elist
 	if (pObj->Status == C4OS_INACTIVE) return InactiveObjects.Remove(pObj);
@@ -78,7 +78,7 @@ C4ObjectList &C4GameObjects::ObjectsAt(int ix, int iy)
 void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 {
 	C4Object *obj1, *obj2;
-	DWORD ocf1, ocf2, focf, tocf;
+	uint32_t ocf1, ocf2, focf, tocf;
 
 	// AtObject-Check: Checks for first match of obj1 at obj2
 
@@ -107,7 +107,7 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 						if ((ocf1 & OCF_OnFire) && (ocf2 & OCF_Inflammable))
 							if (!Random(obj2->Def->ContactIncinerate))
 							{
-								obj2->Incinerate(obj1->GetFireCausePlr(), FALSE, obj1); continue;
+								obj2->Incinerate(obj1->GetFireCausePlr(), false, obj1); continue;
 							}
 						// Fight
 						if ((ocf1 & OCF_FightReady) && (ocf2 & OCF_FightReady))
@@ -219,9 +219,9 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 			}
 }
 
-C4Object *C4GameObjects::AtObject(int ctx, int cty, DWORD &ocf, C4Object *exclude)
+C4Object *C4GameObjects::AtObject(int ctx, int cty, uint32_t &ocf, C4Object *exclude)
 {
-	DWORD cocf;
+	uint32_t cocf;
 	C4Object *cObj; C4ObjectLink *clnk;
 
 	for (clnk = ObjectsAt(ctx, cty).First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
@@ -325,7 +325,7 @@ C4ObjResort::C4ObjResort()
 	OrderFunc = nullptr;
 	Next = nullptr;
 	pSortObj = pObjBefore = nullptr;
-	fSortAfter = FALSE;
+	fSortAfter = false;
 }
 
 C4ObjResort::~C4ObjResort() {}
@@ -489,7 +489,7 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 				// FIXME: Inform C4ObjectList about this reorder
 				C4Object *pObj = pCurr->Obj; pCurr->Obj = pCurr2->Obj; pCurr2->Obj = pObj;
 				// and readd to sector lists
-				pCurr->Obj->Unsorted = pCurr2->Obj->Unsorted = TRUE;
+				pCurr->Obj->Unsorted = pCurr2->Obj->Unsorted = true;
 				// grow list section to scan next
 				pNewFirst = pCurr;
 			}
@@ -508,7 +508,7 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 		C4Object *pObj = pCurr->Obj;
 		if (pObj->Status && pObj->Unsorted)
 		{
-			pObj->Unsorted = FALSE;
+			pObj->Unsorted = false;
 			Game.Objects.UpdatePosResort(pObj);
 		}
 	}
@@ -663,19 +663,19 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 	return ObjectCount();
 }
 
-BOOL C4GameObjects::Save(C4Group &hGroup, BOOL fSaveGame, bool fSaveInactive)
+bool C4GameObjects::Save(C4Group &hGroup, bool fSaveGame, bool fSaveInactive)
 {
 	// Save to temp file
 	char szFilename[_MAX_PATH + 1]; SCopy(Config.AtTempPath(C4CFN_ScenarioObjects), szFilename);
-	if (!Save(szFilename, fSaveGame, fSaveInactive)) return FALSE;
+	if (!Save(szFilename, fSaveGame, fSaveInactive)) return false;
 
 	// Move temp file to group
 	hGroup.Move(szFilename, nullptr); // check?
 	// Success
-	return TRUE;
+	return true;
 }
 
-BOOL C4GameObjects::Save(const char *szFilename, BOOL fSaveGame, bool fSaveInactive)
+bool C4GameObjects::Save(const char *szFilename, bool fSaveGame, bool fSaveInactive)
 {
 	// Enumerate
 	Enumerate();
@@ -701,7 +701,7 @@ BOOL C4GameObjects::Save(const char *szFilename, BOOL fSaveGame, bool fSaveInact
 
 	// Error?
 	if (!fSuccess)
-		return FALSE;
+		return false;
 
 	// Write
 	return Buffer.SaveToFile(szFilename);
@@ -729,32 +729,32 @@ void C4GameObjects::UpdatePosResort(C4Object *pObj)
 	Sectors.Add(pObj, this);
 }
 
-BOOL C4GameObjects::OrderObjectBefore(C4Object *pObj1, C4Object *pObj2)
+bool C4GameObjects::OrderObjectBefore(C4Object *pObj1, C4Object *pObj2)
 {
 	// check that this won't screw the category sort
 	if ((pObj1->Category & C4D_SortLimit) < (pObj2->Category & C4D_SortLimit))
-		return FALSE;
+		return false;
 	// reorder
 	if (!C4ObjectList::OrderObjectBefore(pObj1, pObj2))
-		return FALSE;
+		return false;
 	// update area lists
 	UpdatePosResort(pObj1);
 	// done, success
-	return TRUE;
+	return true;
 }
 
-BOOL C4GameObjects::OrderObjectAfter(C4Object *pObj1, C4Object *pObj2)
+bool C4GameObjects::OrderObjectAfter(C4Object *pObj1, C4Object *pObj2)
 {
 	// check that this won't screw the category sort
 	if ((pObj1->Category & C4D_SortLimit) > (pObj2->Category & C4D_SortLimit))
-		return FALSE;
+		return false;
 	// reorder
 	if (!C4ObjectList::OrderObjectAfter(pObj1, pObj2))
-		return FALSE;
+		return false;
 	// update area lists
 	UpdatePosResort(pObj1);
 	// done, success
-	return TRUE;
+	return true;
 }
 
 void C4GameObjects::FixObjectOrder()
@@ -771,7 +771,7 @@ void C4GameObjects::FixObjectOrder()
 		{
 			C4Object *pObj = pLnk->Obj;
 			if (pObj->Unsorted || !pObj->Status) continue;
-			DWORD dwCategory = pObj->Category & C4D_SortLimit;
+			uint32_t dwCategory = pObj->Category & C4D_SortLimit;
 			// must have exactly one SortOrder-bit set
 			if (!dwCategory)
 			{
@@ -780,7 +780,7 @@ void C4GameObjects::FixObjectOrder()
 			}
 			else
 			{
-				DWORD dwCat2 = dwCategory; int i = 0;
+				uint32_t dwCat2 = dwCategory; int i = 0;
 				while (~dwCat2 & 1) { dwCat2 = dwCat2 >> 1; ++i; }
 				if (dwCat2 != 1)
 				{
@@ -814,7 +814,7 @@ void C4GameObjects::FixObjectOrder()
 		{
 			C4Object *pObj = pLnk->Obj;
 			if (pObj->Unsorted || !pObj->Status) continue;
-			DWORD dwCategory = pObj->Category & C4D_SortLimit;
+			uint32_t dwCategory = pObj->Category & C4D_SortLimit;
 			if (dwCategory < dwLastCategory)
 			{
 				// SORT ERROR! (note that pLnkPrev can't be 0)
@@ -861,7 +861,7 @@ void C4GameObjects::ResortUnsorted()
 		{
 			// readd to main object list
 			Remove(cObj);
-			cObj->Unsorted = FALSE;
+			cObj->Unsorted = false;
 			if (!Add(cObj))
 			{
 				// readd failed: Better kill object to prevent leaking...

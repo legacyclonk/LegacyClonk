@@ -63,7 +63,7 @@ void CheckBox::ToggleCheck(bool fByUser)
 	if (pCBHandler) pCBHandler->DoCall(this);
 }
 
-void CheckBox::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void CheckBox::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	if (fEnabled)
 	{

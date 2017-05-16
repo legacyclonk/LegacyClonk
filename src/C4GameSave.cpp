@@ -50,7 +50,7 @@ bool C4GameSave::SaveCore()
 	if (!fInitial)
 	{
 		// NoInitialize: Marks whether object data is contained and not to be created from core
-		rC4S.Head.NoInitialize = TRUE;
+		rC4S.Head.NoInitialize = true;
 		// the SaveGame-value, despite it's name, marks whether exact runtime data is contained
 		// the flag must not be altered for pure
 		rC4S.Head.SaveGame = GetSaveRuntimeData() && IsExact();
@@ -153,9 +153,9 @@ bool C4GameSave::SaveLandscape()
 		if (!GetForceExactLandscape())
 		{
 			// save map
-			if (!Game.Landscape.SaveMap(*pSaveGroup)) return FALSE;
+			if (!Game.Landscape.SaveMap(*pSaveGroup)) return false;
 			// save textures (if changed)
-			if (!Game.Landscape.SaveTextures(*pSaveGroup)) return FALSE;
+			if (!Game.Landscape.SaveTextures(*pSaveGroup)) return false;
 		}
 	}
 	else if (Game.Landscape.Mode != C4LSC_Exact)
@@ -500,7 +500,7 @@ bool C4GameSaveSavegame::OnSaving()
 	// but doing so would be too late when the queue is executed!
 	// TODO: remove it? (-> PeterW ;))
 	if (Game.Network.isEnabled())
-		Game.Input.Add(CID_Synchronize, new C4ControlSynchronize(TRUE));
+		Game.Input.Add(CID_Synchronize, new C4ControlSynchronize(true));
 	else
 		Game.Players.SynchronizeLocalFiles();
 	// OK; save now
@@ -545,7 +545,7 @@ bool C4GameSaveSavegame::WriteDesc(StdStrBuf &sBuf)
 void C4GameSaveRecord::AdjustCore(C4Scenario &rC4S)
 {
 	// specific recording flags
-	rC4S.Head.Replay = TRUE;
+	rC4S.Head.Replay = true;
 	if (!rC4S.Head.Film) rC4S.Head.Film = C4SFilm_Normal; /* default to film */
 	rC4S.Head.Icon = 29;
 	// default record title
@@ -582,6 +582,6 @@ bool C4GameSaveRecord::WriteDesc(StdStrBuf &sBuf)
 void C4GameSaveNetwork::AdjustCore(C4Scenario &rC4S)
 {
 	// specific dynamic flags
-	rC4S.Head.NetworkGame = TRUE;
+	rC4S.Head.NetworkGame = true;
 	rC4S.Head.NetworkRuntimeJoin = !fInitial;
 }

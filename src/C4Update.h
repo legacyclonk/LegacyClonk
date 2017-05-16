@@ -21,8 +21,8 @@ public:
 
 public:
 	void CompileFunc(StdCompiler *pComp);
-	BOOL Load(C4Group &hGroup);
-	BOOL Save(C4Group &hGroup);
+	bool Load(C4Group &hGroup);
+	bool Save(C4Group &hGroup);
 };
 
 #define C4UPD_CHK_OK              0
@@ -34,18 +34,18 @@ public:
 class C4UpdatePackage : public C4UpdatePackageCore
 {
 public:
-	BOOL Load(C4Group *pGroup);
-	BOOL Execute(C4Group *pGroup);
-	static BOOL Optimize(C4Group *pGrpFrom, const char *strTarget);
+	bool Load(C4Group *pGroup);
+	bool Execute(C4Group *pGroup);
+	static bool Optimize(C4Group *pGrpFrom, const char *strTarget);
 	int Check(C4Group *pGroup);
-	BOOL MakeUpdate(const char *strFile1, const char *strFile2, const char *strUpdateFile, const char *strName = nullptr);
+	bool MakeUpdate(const char *strFile1, const char *strFile2, const char *strUpdateFile, const char *strName = nullptr);
 
 protected:
-	BOOL DoUpdate(C4Group *pGrpFrom, class C4GroupEx *pGrpTo, const char *strFileName);
-	BOOL DoGrpUpdate(C4Group *pUpdateData, class C4GroupEx *pGrpTo);
-	static BOOL Optimize(C4Group *pGrpFrom, class C4GroupEx *pGrpTo, const char *strFileName);
+	bool DoUpdate(C4Group *pGrpFrom, class C4GroupEx *pGrpTo, const char *strFileName);
+	bool DoGrpUpdate(C4Group *pUpdateData, class C4GroupEx *pGrpTo);
+	static bool Optimize(C4Group *pGrpFrom, class C4GroupEx *pGrpTo, const char *strFileName);
 
-	BOOL MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGr, BOOL *fModified);
+	bool MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGr, bool *fModified);
 
 	CStdFile Log;
 	void WriteLog(const char *strMsg, ...) GNUC_FORMAT_ATTRIBUTE_O;

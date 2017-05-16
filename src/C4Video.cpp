@@ -137,10 +137,10 @@ bool C4Video::Start(const char *szFilename)
 	if (Config.Graphics.BitDepth == 8)
 		InfoSize += sizeof(RGBQUAD) * 256;
 	BufferSize = InfoSize + DWordAligned(Width) * Height * Config.Graphics.BitDepth / 8;
-	Buffer = new BYTE[BufferSize];
+	Buffer = new uint8_t[BufferSize];
 	// Set bitmap info
 	BITMAPINFO *pInfo = (BITMAPINFO *)Buffer;
-	ZeroMem((BYTE *)pInfo, sizeof(BITMAPINFOHEADER));
+	ZeroMem((uint8_t *)pInfo, sizeof(BITMAPINFOHEADER));
 	pInfo->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pInfo->bmiHeader.biPlanes = 1;
 	pInfo->bmiHeader.biWidth = Width;
@@ -217,7 +217,7 @@ bool C4Video::RecordFrame()
 	int iPitch, iWidth, iHeight;
 	if (!Surface->Lock()) { Log("Video: lock surface failure"); Stop(); return false; }
 	iPitch = Surface->PrimarySurfaceLockPitch;
-	BYTE *bypBits = Surface->PrimarySurfaceLockBits;
+	uint8_t *bypBits = Surface->PrimarySurfaceLockBits;
 	iWidth = Surface->Wdt; iHeight = Surface->Hgt;
 	// Adjust source position
 	if (!AdjustPosition()) { Log("Video: player/viewport failure"); Stop(); return false; }

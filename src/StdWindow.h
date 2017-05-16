@@ -50,14 +50,14 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #define K_MENU VK_APPS
 #define K_PAGEUP VK_PRIOR
 #define K_PAGEDOWN VK_NEXT
-#define KEY_A ((WORD) 'A') // select all in GUI-editbox
-#define KEY_C ((WORD) 'C') // copy in GUI-editbox
-#define KEY_I ((WORD) 'I') // console mode control key
-#define KEY_M ((WORD) 'M') // console mode control key
-#define KEY_T ((WORD) 'T') // console mode control key
-#define KEY_V ((WORD) 'V') // paste in GUI-editbox
-#define KEY_W ((WORD) 'W') // console mode control key
-#define KEY_X ((WORD) 'X') // cut from GUI-editbox
+#define KEY_A ((uint16_t) 'A') // select all in GUI-editbox
+#define KEY_C ((uint16_t) 'C') // copy in GUI-editbox
+#define KEY_I ((uint16_t) 'I') // console mode control key
+#define KEY_M ((uint16_t) 'M') // console mode control key
+#define KEY_T ((uint16_t) 'T') // console mode control key
+#define KEY_V ((uint16_t) 'V') // paste in GUI-editbox
+#define KEY_W ((uint16_t) 'W') // console mode control key
+#define KEY_X ((uint16_t) 'X') // cut from GUI-editbox
 #elif defined(USE_X11)
 #include <X11/keysym.h>
 #include <sys/time.h>
@@ -246,7 +246,7 @@ public:
 	HWND hWindow;
 
 protected:
-	BOOL RegisterWindowClass(HINSTANCE hInst);
+	bool RegisterWindowClass(HINSTANCE hInst);
 	virtual bool Win32DialogMessageHandling(MSG *msg) { return false; };
 
 #elif defined(USE_X11)
@@ -301,7 +301,7 @@ public:
 	bool GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *piYRes, int32_t *piBitDepth, uint32_t iMonitor);
 	bool SetFullScreen(bool fFullScreen, bool fMinimize = true);
 	C4AppHandleResult HandleMessage(unsigned int iTimeout = INFINITE, bool fCheckTimer = true);
-	void ResetTimer(UINT uDelay);
+	void ResetTimer(unsigned int uDelay);
 	CStdWindow *pWindow;
 	bool fQuitMsgReceived; // if true, a quit message has been received and the application should terminate
 	const char *GetCommandLine() { return szCmdLine; }

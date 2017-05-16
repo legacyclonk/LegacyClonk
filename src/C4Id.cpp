@@ -19,7 +19,7 @@ C4ID C4Id(const char *szId)
 	if (SEqual(szId, "NONE"))
 		return 0;
 	// Literal id
-	return (((DWORD)szId[3]) << 24) + (((DWORD)szId[2]) << 16) + (((DWORD)szId[1]) << 8) + ((DWORD)szId[0]);
+	return (((uint32_t)szId[3]) << 24) + (((uint32_t)szId[2]) << 16) + (((uint32_t)szId[1]) << 8) + ((uint32_t)szId[0]);
 }
 
 static char C4IdTextBuffer[5];
@@ -52,14 +52,14 @@ void GetC4IdText(C4ID id, char *sBuf)
 	}
 }
 
-BOOL LooksLikeID(const char *szText)
+bool LooksLikeID(const char *szText)
 {
 	int cnt;
-	if (SLen(szText) != 4) return FALSE;
+	if (SLen(szText) != 4) return false;
 	for (cnt = 0; cnt < 4; cnt++)
 		if (!(Inside(szText[cnt], 'A', 'Z') || Inside(szText[cnt], '0', '9') || (szText[cnt] == '_')))
-			return FALSE;
-	return TRUE;
+			return false;
+	return true;
 }
 
 bool LooksLikeID(C4ID id)
@@ -68,7 +68,7 @@ bool LooksLikeID(C4ID id)
 	if (Inside((int)id, 1, 9999)) return true;
 	for (int cnt = 0; cnt < 4; cnt++)
 	{
-		BYTE b = (BYTE)id & 0xFF;
+		uint8_t b = (uint8_t)id & 0xFF;
 		if (!(Inside((char)b, 'A', 'Z') || Inside((char)b, '0', '9') || (b == '_'))) return false;
 		id >>= 8;
 	}

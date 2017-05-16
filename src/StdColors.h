@@ -9,34 +9,34 @@
 const int FTrans = -1, FWhite = 0, FBlack = 1, FPlayer = 2, FRed = 3;
 const int CBlack = 0, CGray1 = 1, CGray2 = 2, CGray3 = 3, CGray4 = 4, CGray5 = 5, CWhite = 6,
 	CDRed = 7, CDGreen = 8, CDBlue = 9, CRed = 10, CGreen = 11, CLBlue = 12, CYellow = 13, CBlue = 14;
-extern const BYTE FColors[];
+extern const uint8_t FColors[];
 
 // helper function
-#define RGBA(r, g, b, a) (((DWORD)(a) << 24) | (((DWORD)(r) & 0xff) << 16) | (((DWORD)(g) & 0xff) << 8) | ((b) & 0xff))
+#define RGBA(r, g, b, a) (((uint32_t)(a) << 24) | (((uint32_t)(r) & 0xff) << 16) | (((uint32_t)(g) & 0xff) << 8) | ((b) & 0xff))
 
-inline void BltAlpha(DWORD &dwDst, DWORD dwSrc)
+inline void BltAlpha(uint32_t &dwDst, uint32_t dwSrc)
 {
 	// blit one color value w/alpha on another
 	if (dwDst >> 24 == 0xff) { dwDst = dwSrc; return; }
-	BYTE byAlphaDst = BYTE(dwSrc >> 24); BYTE byAlphaSrc = 255 - byAlphaDst;
+	uint8_t byAlphaDst = uint8_t(dwSrc >> 24); uint8_t byAlphaSrc = 255 - byAlphaDst;
 	dwDst = Min<uint32_t>((int(dwDst & 0xff) * byAlphaDst + int(dwSrc & 0xff) * byAlphaSrc) >> 8, 0xff) | // blue
 		Min<uint32_t>((int(dwDst & 0xff00) * byAlphaDst + int(dwSrc & 0xff00) * byAlphaSrc) >> 8 & 0xff00, 0xff00) | // green
 		Min<uint32_t>((int(dwDst & 0xff0000) * byAlphaDst + int(dwSrc & 0xff0000) * byAlphaSrc) >> 8 & 0xff0000, 0xff0000) | // red
 		uint32_t(Max((int)(dwDst >> 24) - byAlphaSrc, 0)) << 24; // alpha
 }
 
-inline void BltAlphaAdd(DWORD &dwDst, DWORD dwSrc)
+inline void BltAlphaAdd(uint32_t &dwDst, uint32_t dwSrc)
 {
 	// blit one color value w/alpha on another in additive mode
 	if (dwDst >> 24 == 0xff) { dwDst = dwSrc; return; }
-	BYTE byAlphaSrc = 255 - BYTE(dwSrc >> 24);
+	uint8_t byAlphaSrc = 255 - uint8_t(dwSrc >> 24);
 	dwDst = Min<uint32_t>((dwDst & 0xff) + ((int(dwSrc & 0xff) * byAlphaSrc) >> 8), 0xff) | // blue
 		Min<uint32_t>((dwDst & 0xff00) + (int(dwSrc >> 8 & 0xff) * byAlphaSrc) & 0x00ffff00, 0xff00) | // green
 		Min<uint32_t>((dwDst & 0xff0000) + (int(dwSrc >> 8 & 0xff00) * byAlphaSrc) & 0xffff0000, 0xff0000) | // red
 		uint32_t(Max((int)(dwDst >> 24) - byAlphaSrc, 0)) << 24; // alpha
 }
 
-inline void ModulateClr(DWORD &dwDst, DWORD dwMod) // modulate two color values
+inline void ModulateClr(uint32_t &dwDst, uint32_t dwMod) // modulate two color values
 {
 	// modulate two color values
 	// get alpha
@@ -48,7 +48,7 @@ inline void ModulateClr(DWORD &dwDst, DWORD dwMod) // modulate two color values
 		uint32_t(Min(iA1 + iA2 - ((iA1 * iA2) >> 8), 255)) << 24; // alpha (=255-(255*iA1)(255*iA2)/255)
 }
 
-inline void ModulateClrA(DWORD &dwDst, DWORD dwMod) // modulate two color values and add alpha value
+inline void ModulateClrA(uint32_t &dwDst, uint32_t dwMod) // modulate two color values and add alpha value
 {
 	// modulate two color values and add alpha value
 	dwDst = (((dwDst & 0xff) * (dwMod & 0xff)) >> 8) | // B
@@ -57,7 +57,7 @@ inline void ModulateClrA(DWORD &dwDst, DWORD dwMod) // modulate two color values
 		Min<uint32_t>((dwDst >> 24) + (dwMod >> 24), 0xff) << 24;
 }
 
-inline void ModulateClrMOD2(DWORD &dwDst, DWORD dwMod) // clr1+clr2-0.5
+inline void ModulateClrMOD2(uint32_t &dwDst, uint32_t dwMod) // clr1+clr2-0.5
 {
 	// signed color addition
 	dwDst = (BoundBy<int>(((int)(dwDst & 0xff) + (dwMod & 0xff) - 0x7f) << 1, 0, 0xff) & 0xff) | // B
@@ -66,7 +66,7 @@ inline void ModulateClrMOD2(DWORD &dwDst, DWORD dwMod) // clr1+clr2-0.5
 		Min<uint32_t>((dwDst >> 24) + (dwMod >> 24), 0xff) << 24;
 }
 
-inline void ModulateClrMonoA(DWORD &dwDst, BYTE byMod, BYTE byA)
+inline void ModulateClrMonoA(uint32_t &dwDst, uint8_t byMod, uint8_t byA)
 {
 	// darken a color value by constant modulation and add an alpha value
 	dwDst = ((dwDst & 0xff) * byMod) >> 8 | // blue
@@ -75,10 +75,10 @@ inline void ModulateClrMonoA(DWORD &dwDst, BYTE byMod, BYTE byA)
 		Min<uint32_t>((dwDst >> 24) + byA, 255) << 24; // alpha
 }
 
-inline DWORD LightenClr(DWORD &dwDst) // enlight a color
+inline uint32_t LightenClr(uint32_t &dwDst) // enlight a color
 {
 	// enlight a color
-	DWORD dw = dwDst;
+	uint32_t dw = dwDst;
 	dwDst = (dw & 0xff808080) | ((dw << 1) & 0xfefefe);
 	if (dw & 0x80) dwDst |= 0xff;
 	if (dw & 0x8000) dwDst |= 0xff00;
@@ -86,7 +86,7 @@ inline DWORD LightenClr(DWORD &dwDst) // enlight a color
 	return dwDst;
 }
 
-inline DWORD LightenClrBy(DWORD &dwDst, int iBy) // enlight a color
+inline uint32_t LightenClrBy(uint32_t &dwDst, int iBy) // enlight a color
 {
 	// enlight a color
 	// quite a desaturating method...
@@ -97,7 +97,7 @@ inline DWORD LightenClrBy(DWORD &dwDst, int iBy) // enlight a color
 	return dwDst;
 }
 
-inline DWORD DarkenClrBy(DWORD &dwDst, int iBy) // darken a color
+inline uint32_t DarkenClrBy(uint32_t &dwDst, int iBy) // darken a color
 {
 	// darken a color
 	// quite a desaturating method...
@@ -108,7 +108,7 @@ inline DWORD DarkenClrBy(DWORD &dwDst, int iBy) // darken a color
 	return dwDst;
 }
 
-inline DWORD PlrClr2TxtClr(DWORD dwClr)
+inline uint32_t PlrClr2TxtClr(uint32_t dwClr)
 {
 	// convert player color to text color, lightening up when necessary
 	int lgt = Max(Max(GetRValue(dwClr), GetGValue(dwClr)), GetBValue(dwClr));
@@ -116,18 +116,18 @@ inline DWORD PlrClr2TxtClr(DWORD dwClr)
 	return dwClr | 0xff000000;
 }
 
-inline DWORD GetClrModulation(DWORD dwSrcClr, DWORD dwDstClr, DWORD &dwBack)
+inline uint32_t GetClrModulation(uint32_t dwSrcClr, uint32_t dwDstClr, uint32_t &dwBack)
 {
 	// get modulation that is necessary to transform dwSrcClr to dwDstClr
 	// does not support alpha values in dwSrcClr and dwDstClr
 	// get source color
-	BYTE sB = BYTE(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
-	BYTE sG = BYTE(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
-	BYTE sR = BYTE(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
+	uint8_t sB = uint8_t(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
+	uint8_t sG = uint8_t(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
+	uint8_t sR = uint8_t(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
 	// get dest color
-	BYTE dB = BYTE(dwDstClr); dwDstClr = dwDstClr >> 8;
-	BYTE dG = BYTE(dwDstClr); dwDstClr = dwDstClr >> 8;
-	BYTE dR = BYTE(dwDstClr); dwDstClr = dwDstClr >> 8;
+	uint8_t dB = uint8_t(dwDstClr); dwDstClr = dwDstClr >> 8;
+	uint8_t dG = uint8_t(dwDstClr); dwDstClr = dwDstClr >> 8;
+	uint8_t dR = uint8_t(dwDstClr); dwDstClr = dwDstClr >> 8;
 	// get difference
 	int cR = (int)dR - sR;
 	int cG = (int)dG - sG;
@@ -150,7 +150,7 @@ inline DWORD GetClrModulation(DWORD dwSrcClr, DWORD dwDstClr, DWORD &dwBack)
 	return RGBA(Min((int)dR * 256 / sR, 255), Min((int)dG * 256 / sG, 255), Min((int)dB * 256 / sB, 255), diffN);
 }
 
-inline DWORD NormalizeColors(DWORD &dwClr1, DWORD &dwClr2, DWORD &dwClr3, DWORD &dwClr4)
+inline uint32_t NormalizeColors(uint32_t &dwClr1, uint32_t &dwClr2, uint32_t &dwClr3, uint32_t &dwClr4)
 {
 	// normalize the colors to a color in the middle
 	// combine clr1 and clr2 to clr1
@@ -163,23 +163,23 @@ inline DWORD NormalizeColors(DWORD &dwClr1, DWORD &dwClr2, DWORD &dwClr3, DWORD 
 	return dwClr2 = dwClr3 = dwClr4 = dwClr1;
 }
 
-inline DWORD InvertRGBAAlpha(DWORD dwFromClr)
+inline uint32_t InvertRGBAAlpha(uint32_t dwFromClr)
 {
 	return (dwFromClr & 0xffffff) | (255 - (dwFromClr >> 24)) << 24;
 }
 
-inline WORD ClrDw2W(DWORD dwClr)
+inline uint16_t ClrDw2W(uint32_t dwClr)
 {
 	return
-		WORD((dwClr & 0x000000f0) >>  4) |
-		WORD((dwClr & 0x0000f000) >>  8) |
-		WORD((dwClr & 0x00f00000) >> 12) |
-		WORD((dwClr & 0xf0000000) >> 16);
+		uint16_t((dwClr & 0x000000f0) >>  4) |
+		uint16_t((dwClr & 0x0000f000) >>  8) |
+		uint16_t((dwClr & 0x00f00000) >> 12) |
+		uint16_t((dwClr & 0xf0000000) >> 16);
 }
 
-inline DWORD ClrW2Dw(WORD wClr)
+inline uint32_t ClrW2Dw(uint16_t wClr)
 {
-	return (DWORD)
+	return (uint32_t)
 		((wClr & 0x000f) <<  4) |
 		((wClr & 0x00f0) <<  8) |
 		((wClr & 0x0f00) << 12) |
@@ -224,10 +224,10 @@ inline bool RGB2rgb(int R, int G, int B, double *pr, double *pg, double *pb, dou
 // a standard pal
 struct CStdPalette
 {
-	BYTE Colors[3 * 256];
-	BYTE Alpha[3 * 256];
+	uint8_t Colors[3 * 256];
+	uint8_t Alpha[3 * 256];
 
-	DWORD GetClr(BYTE byCol)
+	uint32_t GetClr(uint8_t byCol)
 	{
 		return RGB(Colors[byCol * 3 + 2], Colors[byCol * 3 + 1], Colors[byCol * 3]) + (Alpha[byCol] << 24);
 	}

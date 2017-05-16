@@ -7,10 +7,10 @@
 #include <StdBuf.h>
 #include <StdCompiler.h>
 
-BOOL OpenLog();
-BOOL CloseLog();
-BOOL DebugLog(const char *strMessage);
-BOOL DebugLogF(const char *strMessage ...) GNUC_FORMAT_ATTRIBUTE;
+bool OpenLog();
+bool CloseLog();
+bool DebugLog(const char *strMessage);
+bool DebugLogF(const char *strMessage ...) GNUC_FORMAT_ATTRIBUTE;
 
 bool LogFatal(const char *szMessage); // log message and store it as a fatal error
 void ResetFatalError();               // clear any fatal error message

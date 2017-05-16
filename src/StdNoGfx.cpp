@@ -1,10 +1,10 @@
 #include <Standard.h>
 #include <StdNoGfx.h>
 
-BOOL CStdNoGfx::CreateDirectDraw()
+bool CStdNoGfx::CreateDirectDraw()
 {
 	Log("  Graphics disabled");
-	return TRUE;
+	return true;
 }
 
 CStdNoGfx::CStdNoGfx()
@@ -18,7 +18,7 @@ CStdNoGfx::~CStdNoGfx()
 	Clear();
 }
 
-bool CStdNoGfx::CreatePrimarySurfaces(BOOL Fullscreen, int iColorDepth, unsigned int iMonitor)
+bool CStdNoGfx::CreatePrimarySurfaces(bool Fullscreen, int iColorDepth, unsigned int iMonitor)
 {
 	// Save back color depth
 	byByteCnt = iColorDepth / 8;

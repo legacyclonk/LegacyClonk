@@ -13,7 +13,7 @@
 #include <C4FileSelDlg.h>
 #endif
 
-DWORD GenerateRandomPlayerColor(int32_t iTry); // in C4PlayerInfoConflicts.cpp
+uint32_t GenerateRandomPlayerColor(int32_t iTry); // in C4PlayerInfoConflicts.cpp
 
 // ListItem
 
@@ -241,8 +241,8 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateIcon(C4PlayerInfo *pInfo, C4Play
 	bool fHasIcon = fResPresent || pEvaluationPlayer || (!Game.Network.isEnabled() && pInfo);
 	// check whether joined info is present
 	bool fHasJoinedInfo = !!pJoinedInfo;
-	DWORD dwJoinedInfoClr = pJoinedInfo ? pJoinedInfo->GetLobbyColor() : 0;
-	DWORD dwPlayerClr = pInfo ? pInfo->GetLobbyColor() : 0;
+	uint32_t dwJoinedInfoClr = pJoinedInfo ? pJoinedInfo->GetLobbyColor() : 0;
+	uint32_t dwPlayerClr = pInfo ? pInfo->GetLobbyColor() : 0;
 	// already up-to-date?
 	if (fHasIcon == fIconSet && fJoinedInfoSet == fHasJoinedInfo && dwJoinedInfoClr == dwJoinClr && dwPlayerClr == dwPlrClr) return;
 	// update then
@@ -261,7 +261,7 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateIcon(C4PlayerInfo *pInfo, C4Play
 		{
 			// no custom icon: create default by player color
 			pIcon->GetMFacet().Create(C4GUI_IconWdt, C4GUI_IconHgt);
-			Game.GraphicsResource.fctPlayerClr.DrawClr(pIcon->GetMFacet(), TRUE, dwPlayerClr);
+			Game.GraphicsResource.fctPlayerClr.DrawClr(pIcon->GetMFacet(), true, dwPlayerClr);
 		}
 		fIconSet = true;
 	}
@@ -281,13 +281,13 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateIcon(C4PlayerInfo *pInfo, C4Play
 		fctDraw.Wdt = iSizeMax / 2;
 		fctDraw.X = 2;
 		// shadow
-		DWORD dwPrevMod; bool fPrevMod = lpDDraw->GetBlitModulation(dwPrevMod);
+		uint32_t dwPrevMod; bool fPrevMod = lpDDraw->GetBlitModulation(dwPrevMod);
 		Application.DDraw->ActivateBlitModulation(1);
-		Game.GraphicsResource.fctCrewClr.DrawClr(fctDraw, TRUE, dwJoinedInfoClr);
+		Game.GraphicsResource.fctCrewClr.DrawClr(fctDraw, true, dwJoinedInfoClr);
 		if (fPrevMod) lpDDraw->ActivateBlitModulation(dwPrevMod); else lpDDraw->DeactivateBlitModulation();
 		fctDraw.X = 0;
 		// gfx
-		Game.GraphicsResource.fctCrewClr.DrawClr(fctDraw, TRUE, dwJoinedInfoClr);
+		Game.GraphicsResource.fctCrewClr.DrawClr(fctDraw, true, dwJoinedInfoClr);
 	}
 	fJoinedInfoSet = fHasJoinedInfo;
 	dwJoinClr = dwJoinedInfoClr;
@@ -970,7 +970,7 @@ C4PlayerInfoListBox::TeamListItem::TeamListItem(C4PlayerInfoListBox *pForListBox
 	pForListBox->InsertElement(this, pInsertBefore);
 }
 
-void C4PlayerInfoListBox::TeamListItem::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void C4PlayerInfoListBox::TeamListItem::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// double click on team to enter it with all local players
 	if (iButton == C4MC_Button_LeftDouble)

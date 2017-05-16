@@ -180,7 +180,7 @@ void ContextMenu::DrawElement(C4FacetEx &cgo)
 	Draw3DFrame(cgo);
 }
 
-void ContextMenu::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void ContextMenu::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// inherited
 	Window::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);
@@ -410,7 +410,7 @@ Screen *ContextMenu::GetScreen()
 	return Screen::GetScreenS();
 };
 
-bool ContextMenu::CtxMouseInput(CMouse &rMouse, int32_t iButton, int32_t iScreenX, int32_t iScreenY, DWORD dwKeyParam)
+bool ContextMenu::CtxMouseInput(CMouse &rMouse, int32_t iButton, int32_t iScreenX, int32_t iScreenY, uint32_t dwKeyParam)
 {
 	// check submenu
 	if (pSubmenu)
@@ -422,11 +422,11 @@ bool ContextMenu::CtxMouseInput(CMouse &rMouse, int32_t iButton, int32_t iScreen
 	return true;
 }
 
-BOOL ContextMenu::CharIn(const char *c)
+bool ContextMenu::CharIn(const char *c)
 {
 	// forward to submenu
 	if (pSubmenu) return pSubmenu->CharIn(c);
-	return FALSE;
+	return false;
 }
 
 void ContextMenu::Draw(C4FacetEx &cgo)

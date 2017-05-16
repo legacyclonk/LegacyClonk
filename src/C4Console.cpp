@@ -19,18 +19,18 @@
 
 #include <commdlg.h>
 
-BOOL SetMenuItemText(HMENU hMenu, WORD id, const char *szText);
+bool SetMenuItemText(HMENU hMenu, WORD id, const char *szText);
 
 #else
 
 namespace
 {
-	const DWORD OFN_HIDEREADONLY     = 1 << 0;
-	const DWORD OFN_OVERWRITEPROMPT  = 1 << 1;
-	const DWORD OFN_FILEMUSTEXIST    = 1 << 2;
-	const DWORD OFN_ALLOWMULTISELECT = 1 << 3;
+	const uint32_t OFN_HIDEREADONLY     = 1 << 0;
+	const uint32_t OFN_OVERWRITEPROMPT  = 1 << 1;
+	const uint32_t OFN_FILEMUSTEXIST    = 1 << 2;
+	const uint32_t OFN_ALLOWMULTISELECT = 1 << 3;
 
-	const DWORD OFN_EXPLORER         = 0; // ignored
+	const uint32_t OFN_EXPLORER         = 0; // ignored
 }
 
 #ifdef USE_X11
@@ -100,11 +100,11 @@ namespace
 
 C4Console::C4Console()
 {
-	Active = FALSE;
-	Editing = TRUE;
+	Active = false;
+	Editing = true;
 	ScriptCounter = 0;
 	FrameCounter = 0;
-	fGameOpen = FALSE;
+	fGameOpen = false;
 
 #ifdef _WIN32
 	hWindow = nullptr;
@@ -164,7 +164,7 @@ BOOL CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 		return TRUE;
 
 	case WM_DESTROY:
-		StoreWindowPosition(hDlg, "Main", Config.GetSubkeyPath("Console"), FALSE);
+		StoreWindowPosition(hDlg, "Main", Config.GetSubkeyPath("Console"), false);
 		Application.Quit();
 		return TRUE;
 
@@ -215,10 +215,10 @@ BOOL CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 			return TRUE;
 
 		case IDM_FILE_QUIT:         Console.FileQuit();        return TRUE;
-		case IDM_FILE_SAVEAS:       Console.FileSaveAs(FALSE); return TRUE;
-		case IDM_FILE_SAVE:         Console.FileSave(FALSE);   return TRUE;
-		case IDM_FILE_SAVEGAMEAS:   Console.FileSaveAs(TRUE);  return TRUE;
-		case IDM_FILE_SAVEGAME:     Console.FileSave(TRUE);    return TRUE;
+		case IDM_FILE_SAVEAS:       Console.FileSaveAs(false); return TRUE;
+		case IDM_FILE_SAVE:         Console.FileSave(false);   return TRUE;
+		case IDM_FILE_SAVEGAMEAS:   Console.FileSaveAs(true);  return TRUE;
+		case IDM_FILE_SAVEGAME:     Console.FileSave(true);    return TRUE;
 		case IDM_FILE_OPEN:         Console.FileOpen();        return TRUE;
 		case IDM_FILE_RECORD:       Console.FileRecord();      return TRUE;
 		case IDM_FILE_OPENWPLRS:    Console.FileOpenWPlrs();   return TRUE;
@@ -298,9 +298,9 @@ void C4Console::HandleMessage(XEvent &e)
 CStdWindow *C4Console::Init(CStdApp *pApp)
 {
 	// Active
-	Active = TRUE;
+	Active = true;
 	// Editing (enable even if network)
-	Editing = TRUE;
+	Editing = true;
 	// Create dialog window
 #ifdef _WIN32
 	hWindow = CreateDialog(pApp->hInstance, MAKEINTRESOURCE(IDD_CONSOLE), nullptr, ConsoleDlgProc);
@@ -341,7 +341,7 @@ CStdWindow *C4Console::Init(CStdApp *pApp)
 	hbmHalt    = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_HALT));
 	hbmHalt2   = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_HALT2));
 	// Enable controls
-	UpdateHaltCtrls(TRUE);
+	UpdateHaltCtrls(true);
 	EnableControls(fGameOpen);
 	ClearViewportMenu();
 	// Show window and set focus
@@ -357,7 +357,7 @@ CStdWindow *C4Console::Init(CStdApp *pApp)
 
 	// Calls InitGUI
 	CStdWindow *retval = C4ConsoleBase::Init(pApp, LoadResStr("IDS_CNS_CONSOLE"), nullptr, false);
-	UpdateHaltCtrls(TRUE);
+	UpdateHaltCtrls(true);
 	EnableControls(fGameOpen);
 	ClearViewportMenu();
 	return retval;
@@ -577,25 +577,25 @@ GtkWidget *C4Console::InitGUI()
 
 bool C4Console::In(const char *szText)
 {
-	if (!Active || !szText) return FALSE;
+	if (!Active || !szText) return false;
 	// begins with '/'? then it's a command
 	if (*szText == '/')
 	{
 		Game.MessageInput.ProcessCommand(szText);
 		// done
-		return TRUE;
+		return true;
 	}
 	// begins with '#'? then it's a message. Route cia ProcessInput to allow #/sound
 	if (*szText == '#')
 	{
 		Game.MessageInput.ProcessInput(szText + 1);
-		return TRUE;
+		return true;
 	}
 	// editing enabled?
-	if (!EditCursor.EditingOK()) return FALSE;
+	if (!EditCursor.EditingOK()) return false;
 	// pass through network queue
 	Game.Control.DoInput(CID_Script, new C4ControlScript(szText, C4ControlScript::SCOPE_Console, false), CDT_Decide);
-	return TRUE;
+	return true;
 }
 
 bool C4Console::Out(const char *szText)
@@ -666,7 +666,7 @@ void C4Console::DoHalt()
 
 bool C4Console::UpdateStatusBars()
 {
-	if (!Active) return FALSE;
+	if (!Active) return false;
 	// Frame counter
 	if (Game.FrameCounter != FrameCounter)
 	{
@@ -704,12 +704,12 @@ bool C4Console::UpdateStatusBars()
 		gtk_label_set_label(GTK_LABEL(lblTime), OSTR);
 #endif // WITH_DEVELOPER_MODE
 	}
-	return TRUE;
+	return true;
 }
 
 bool C4Console::UpdateHaltCtrls(bool fHalt)
 {
-	if (!Active) return FALSE;
+	if (!Active) return false;
 #ifdef _WIN32
 	SendDlgItemMessage(hWindow, IDC_BUTTONPLAY, BM_SETSTATE, !fHalt, 0);
 	UpdateWindow(GetDlgItem(hWindow, IDC_BUTTONPLAY));
@@ -727,15 +727,15 @@ bool C4Console::UpdateHaltCtrls(bool fHalt)
 	g_signal_handler_unblock(btnHalt, handlerHalt);
 
 #endif // WITH_DEVELOPER_MODE / _WIN32
-	return TRUE;
+	return true;
 }
 
-BOOL C4Console::SaveGame(BOOL fSaveGame)
+bool C4Console::SaveGame(bool fSaveGame)
 {
 	// Network hosts only
 	if (Game.Network.isEnabled() && !Game.Network.isHost())
 	{
-		Message(LoadResStr("IDS_GAME_NOCLIENTSAVE")); return FALSE;
+		Message(LoadResStr("IDS_GAME_NOCLIENTSAVE")); return false;
 	}
 
 	// Can't save to child groups
@@ -744,11 +744,11 @@ BOOL C4Console::SaveGame(BOOL fSaveGame)
 		sprintf(OSTR, LoadResStr("IDS_CNS_NOCHILDSAVE"),
 			GetFilename(Game.ScenarioFile.GetName()));
 		Message(OSTR);
-		return FALSE;
+		return false;
 	}
 
 	// Save game to open scenario file
-	BOOL fOkay = TRUE;
+	bool fOkay = true;
 #ifdef _WIN32
 	SetCursor(LoadCursor(0, IDC_WAIT));
 #elif WITH_DEVELOPER_MODE
@@ -763,18 +763,18 @@ BOOL C4Console::SaveGame(BOOL fSaveGame)
 		pGameSave = new C4GameSaveScenario(!Console.Active || Game.Landscape.Mode == C4LSC_Exact, false);
 	if (!pGameSave->Save(Game.ScenarioFile, false))
 	{
-		Out("Game::Save failed"); fOkay = FALSE;
+		Out("Game::Save failed"); fOkay = false;
 	}
 	delete pGameSave;
 
 	// Close and reopen scenario file to fix file changes
 	if (!Game.ScenarioFile.Close())
 	{
-		Out("ScenarioFile::Close failed"); fOkay = FALSE;
+		Out("ScenarioFile::Close failed"); fOkay = false;
 	}
 	if (!Game.ScenarioFile.Open(Game.ScenarioFilename))
 	{
-		Out("ScenarioFile::Open failed"); fOkay = FALSE;
+		Out("ScenarioFile::Open failed"); fOkay = false;
 	}
 
 #ifdef _WIN32
@@ -790,7 +790,7 @@ BOOL C4Console::SaveGame(BOOL fSaveGame)
 			SCopy(LoadResStr("IDS_CNS_SCRIPTCREATEDOBJECTS"), OSTR, sizeof(OSTR));
 			SAppend(LoadResStr("IDS_CNS_WARNDOUBLE"), OSTR, sizeof(OSTR));
 			Message(OSTR);
-			Game.fScriptCreatedObjects = FALSE;
+			Game.fScriptCreatedObjects = false;
 		}
 
 	// Status report
@@ -800,20 +800,20 @@ BOOL C4Console::SaveGame(BOOL fSaveGame)
 	return fOkay;
 }
 
-BOOL C4Console::FileSave(BOOL fSaveGame)
+bool C4Console::FileSave(bool fSaveGame)
 {
 	// Don't quicksave games over scenarios
 	if (fSaveGame)
 		if (!Game.C4S.Head.SaveGame)
 		{
 			Message(LoadResStr("IDS_CNS_NOGAMEOVERSCEN"));
-			return FALSE;
+			return false;
 		}
 	// Save game
 	return SaveGame(fSaveGame);
 }
 
-BOOL C4Console::FileSaveAs(BOOL fSaveGame)
+bool C4Console::FileSaveAs(bool fSaveGame)
 {
 	// Do save-as dialog
 	char filename[512 + 1];
@@ -821,23 +821,23 @@ BOOL C4Console::FileSaveAs(BOOL fSaveGame)
 	if (!FileSelect(filename, 512,
 		"Clonk 4 Scenario\0*.c4s\0\0",
 		OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
-		TRUE)) return FALSE;
+		true)) return false;
 	DefaultExtension(filename, "c4s");
-	BOOL fOkay = TRUE;
+	bool fOkay = true;
 	// Close current scenario file
-	if (!Game.ScenarioFile.Close()) fOkay = FALSE;
+	if (!Game.ScenarioFile.Close()) fOkay = false;
 	// Copy current scenario file to target
-	if (!C4Group_CopyItem(Game.ScenarioFilename, filename)) fOkay = FALSE;
+	if (!C4Group_CopyItem(Game.ScenarioFilename, filename)) fOkay = false;
 	// Open new scenario file
 	SCopy(filename, Game.ScenarioFilename);
 
 	SetCaption(GetFilename(Game.ScenarioFilename));
-	if (!Game.ScenarioFile.Open(Game.ScenarioFilename)) fOkay = FALSE;
+	if (!Game.ScenarioFile.Open(Game.ScenarioFilename)) fOkay = false;
 	// Failure message
 	if (!fOkay)
 	{
 		sprintf(OSTR, LoadResStr("IDS_CNS_SAVEASERROR"), Game.ScenarioFilename);
-		Message(OSTR); return FALSE;
+		Message(OSTR); return false;
 	}
 	// Save game
 	return SaveGame(fSaveGame);
@@ -845,7 +845,7 @@ BOOL C4Console::FileSaveAs(BOOL fSaveGame)
 
 bool C4Console::Message(const char *szMessage, bool fQuery)
 {
-	if (!Active) return FALSE;
+	if (!Active) return false;
 #ifdef _WIN32
 	return (IDOK == MessageBox(hWindow, szMessage, C4ENGINECAPTION, fQuery ? (MB_OKCANCEL | MB_ICONEXCLAMATION) : MB_ICONEXCLAMATION));
 #elif WITH_DEVELOPER_MODE
@@ -939,36 +939,36 @@ void C4Console::EnableControls(bool fEnable)
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 
-BOOL C4Console::FileOpen()
+bool C4Console::FileOpen()
 {
 	// Get scenario file name
 	char c4sfile[512 + 1] = "";
 	if (!FileSelect(c4sfile, 512,
 		"Clonk 4 Scenario\0*.c4s;*.c4f;Scenario.txt\0\0",
 		OFN_HIDEREADONLY | OFN_FILEMUSTEXIST
-	)) return FALSE;
+	)) return false;
 	// Compose command line
 	char cmdline[2000] = "";
 	SAppend("\"", cmdline, 1999); SAppend(c4sfile, cmdline, 1999); SAppend("\" ", cmdline, 1999);
 	// Open game
 	OpenGame(cmdline);
-	return TRUE;
+	return true;
 }
 
-BOOL C4Console::FileOpenWPlrs()
+bool C4Console::FileOpenWPlrs()
 {
 	// Get scenario file name
 	char c4sfile[512 + 1] = "";
 	if (!FileSelect(c4sfile, 512,
 		"Clonk 4 Scenario\0*.c4s;*.c4f\0\0",
 		OFN_HIDEREADONLY | OFN_FILEMUSTEXIST
-	)) return FALSE;
+	)) return false;
 	// Get player file name(s)
 	char c4pfile[4096 + 1] = "";
 	if (!FileSelect(c4pfile, 4096,
 		"Clonk 4 Player\0*.c4p\0\0",
 		OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT | OFN_EXPLORER
-	)) return FALSE;
+	)) return false;
 	// Compose command line
 	char cmdline[6000] = "";
 	SAppend("\"", cmdline, 5999); SAppend(c4sfile, cmdline, 5999); SAppend("\" ", cmdline, 5999);
@@ -989,15 +989,19 @@ BOOL C4Console::FileOpenWPlrs()
 	}
 	// Open game
 	OpenGame(cmdline);
-	return TRUE;
+	return true;
 }
 
-BOOL C4Console::FileClose()
+bool C4Console::FileClose()
 {
 	return CloseGame();
 }
 
-BOOL C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWORD dwFlags, BOOL fSave)
+#ifdef _WIN32
+bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWORD    dwFlags, bool fSave)
+#else
+bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uint32_t dwFlags, bool fSave)
+#endif
 {
 #ifdef _WIN32
 	OPENFILENAME ofn;
@@ -1011,7 +1015,7 @@ BOOL C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWO
 	ofn.nFileExtension = GetExtension(sFilename) - sFilename;
 	ofn.Flags = dwFlags;
 
-	BOOL fResult;
+	bool fResult;
 	if (fSave)
 		fResult = GetSaveFileName(&ofn);
 	else
@@ -1091,7 +1095,7 @@ BOOL C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWO
 	if (response != GTK_RESPONSE_ACCEPT)
 	{
 		gtk_widget_destroy(dialog);
-		return FALSE;
+		return false;
 	}
 
 	// Build result string
@@ -1133,15 +1137,15 @@ BOOL C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWO
 	}
 
 	gtk_widget_destroy(dialog);
-	return TRUE;
+	return true;
 #endif // WITH_DEVELOPER_MODE / _WIN32
 	return 0;
 }
 
-BOOL C4Console::FileRecord()
+bool C4Console::FileRecord()
 {
 	// only in running mode
-	if (!Game.IsRunning || !Game.Control.IsRuntimeRecordPossible()) return FALSE;
+	if (!Game.IsRunning || !Game.Control.IsRuntimeRecordPossible()) return false;
 	// start record!
 	Game.Control.RequestRuntimeRecord();
 	// disable menuitem
@@ -1150,7 +1154,7 @@ BOOL C4Console::FileRecord()
 #elif WITH_DEVELOPER_MODE
 	gtk_widget_set_sensitive(fileRecord, false);
 #endif
-	return TRUE;
+	return true;
 }
 
 void C4Console::ClearPointers(C4Object *pObj)
@@ -1186,10 +1190,10 @@ void C4Console::Close()
 	Application.Quit();
 }
 
-BOOL C4Console::FileQuit()
+bool C4Console::FileQuit()
 {
 	Close();
-	return TRUE;
+	return true;
 }
 
 #define C4COPYRIGHT_YEAR    "2008" // might make this dynamic some time...
@@ -1214,7 +1218,7 @@ void C4Console::ViewportNew()
 
 bool C4Console::UpdateCursorBar(const char *szCursor)
 {
-	if (!Active) return FALSE;
+	if (!Active) return false;
 #ifdef _WIN32
 	// Cursor
 	SetDlgItemText(hWindow, IDC_STATICCURSOR, szCursor);
@@ -1222,12 +1226,12 @@ bool C4Console::UpdateCursorBar(const char *szCursor)
 #elif WITH_DEVELOPER_MODE
 	gtk_label_set_label(GTK_LABEL(lblCursor), Languages.IconvUtf8(szCursor).getData());
 #endif
-	return TRUE;
+	return true;
 }
 
 bool C4Console::UpdateViewportMenu()
 {
-	if (!Active) return FALSE;
+	if (!Active) return false;
 	ClearViewportMenu();
 #ifdef _WIN32
 	HMENU hMenu = GetSubMenu(GetMenu(hWindow), MenuIndexViewport);
@@ -1245,7 +1249,7 @@ bool C4Console::UpdateViewportMenu()
 		gtk_widget_show(menuItem);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 	}
-	return TRUE;
+	return true;
 }
 
 void C4Console::ClearViewportMenu()
@@ -1266,9 +1270,9 @@ void C4Console::ClearViewportMenu()
 }
 
 #ifdef _WIN32
-BOOL C4Console::AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, BOOL fEnabled)
+bool C4Console::AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool fEnabled)
 {
-	if (!Active) return FALSE;
+	if (!Active) return false;
 	MENUITEMINFO minfo;
 	ZeroMem(&minfo, sizeof(minfo));
 	minfo.cbSize = sizeof(minfo);
@@ -1392,7 +1396,7 @@ void C4Console::UpdateInputCtrl()
 
 bool C4Console::UpdatePlayerMenu()
 {
-	if (!Active) return FALSE;
+	if (!Active) return false;
 	ClearPlayerMenu();
 #ifdef _WIN32
 	HMENU hMenu = GetSubMenu(GetMenu(hWindow), MenuIndexPlayer);
@@ -1416,7 +1420,7 @@ bool C4Console::UpdatePlayerMenu()
 		gtk_widget_set_sensitive(menuItem, (!Game.Network.isEnabled() || Game.Network.isHost()) && Editing);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 	}
-	return TRUE;
+	return true;
 }
 
 void C4Console::ClearPlayerMenu()
@@ -1623,7 +1627,7 @@ bool C4Console::OpenGame(const char *szCmdLine)
 	Default();
 	SetCaption(GetFilename(Game.ScenarioFile.GetName()));
 	// Init game dependent members
-	if (!EditCursor.Init()) return FALSE;
+	if (!EditCursor.Init()) return false;
 	// Default game - only if open before, because we do not want to default out the GUI
 	if (fGameWasOpen) Game.Default();
 
@@ -1632,35 +1636,35 @@ bool C4Console::OpenGame(const char *szCmdLine)
 		Game.ParseCommandLine(szCmdLine);
 
 	// PreInit is required because GUI has been deleted
-	if (!Game.PreInit()) { Game.Clear(); return FALSE; }
+	if (!Game.PreInit()) { Game.Clear(); return false; }
 
 	// Init game
 	if (!Game.Init())
 	{
 		Game.Clear();
-		return FALSE;
+		return false;
 	}
 
 	// Console updates
-	fGameOpen = TRUE;
+	fGameOpen = true;
 	UpdateInputCtrl();
 	EnableControls(fGameOpen);
 	UpdatePlayerMenu();
 	UpdateViewportMenu();
 
-	return TRUE;
+	return true;
 }
 
 bool C4Console::CloseGame()
 {
-	if (!fGameOpen) return FALSE;
+	if (!fGameOpen) return false;
 	Game.Clear();
-	Game.GameOver = FALSE; // No leftover values when exiting on closed game
-	Game.GameOverDlgShown = FALSE;
-	fGameOpen = FALSE;
+	Game.GameOver = false; // No leftover values when exiting on closed game
+	Game.GameOverDlgShown = false;
+	fGameOpen = false;
 	EnableControls(fGameOpen);
 	SetCaption(LoadResStr("IDS_CNS_CONSOLE"));
-	return TRUE;
+	return true;
 }
 
 bool C4Console::TogglePause()
@@ -1723,22 +1727,22 @@ void C4Console::OnFileOpenWPlrs(GtkWidget *item, gpointer data)
 
 void C4Console::OnFileSave(GtkWidget *item, gpointer data)
 {
-	static_cast<C4Console *>(data)->FileSave(FALSE);
+	static_cast<C4Console *>(data)->FileSave(false);
 }
 
 void C4Console::OnFileSaveAs(GtkWidget *item, gpointer data)
 {
-	static_cast<C4Console *>(data)->FileSaveAs(FALSE);
+	static_cast<C4Console *>(data)->FileSaveAs(false);
 }
 
 void C4Console::OnFileSaveGame(GtkWidget *item, gpointer data)
 {
-	static_cast<C4Console *>(data)->FileSave(TRUE);
+	static_cast<C4Console *>(data)->FileSave(true);
 }
 
 void C4Console::OnFileSaveGameAs(GtkWidget *item, gpointer data)
 {
-	static_cast<C4Console *>(data)->FileSaveAs(TRUE);
+	static_cast<C4Console *>(data)->FileSaveAs(true);
 }
 
 void C4Console::OnFileRecord(GtkWidget *item, gpointer data)

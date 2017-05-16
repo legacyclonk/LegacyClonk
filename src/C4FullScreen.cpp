@@ -44,7 +44,7 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 			Game.GraphicsSystem.Execute();
 		// update cursor clip
 		Game.MouseControl.UpdateClip();
-		return FALSE;
+		return false;
 	case WM_PAINT:
 		// Redraw after task switch
 		if (Application.Active)
@@ -52,7 +52,7 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 		break;
 	case WM_TIMER:
 		if (wParam == SEC1_TIMER) { FullScreen.Sec1Timer(); }
-		return TRUE;
+		return true;
 	case WM_DESTROY:
 		Application.Quit();
 		return 0;
@@ -62,7 +62,7 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 	case MM_MCINOTIFY:
 		if (wParam == MCI_NOTIFY_SUCCESSFUL)
 			Application.MusicSystem.NotifySuccess();
-		return TRUE;
+		return true;
 	case WM_KEYUP:
 		if (Game.DoKeyboardInput(wParam, KEYEV_Up, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), false, nullptr))
 			return 0;
@@ -85,14 +85,14 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 		if (Game.pGUI)
 			if (Game.pGUI->CharIn(c))
 				return 0;
-		return FALSE;
+		return false;
 	}
 	case WM_USER_LOG:
 		if (SEqual2((const char *)lParam, "IDS_"))
 			Log(LoadResStr((const char *)lParam));
 		else
 			Log((const char *)lParam);
-		return FALSE;
+		return false;
 	case WM_LBUTTONDOWN:
 		Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDown, LOWORD(lParam), HIWORD(lParam), wParam, nullptr);
 		break;
@@ -123,13 +123,13 @@ void C4FullScreen::HandleMessage(XEvent &e)
 	{
 		// Do not take into account the state of the various modifiers and locks
 		// we don't need that for keyboard control
-		DWORD key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
+		uint32_t key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
 		Game.DoKeyboardInput(key, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), false, nullptr);
 		break;
 	}
 	case KeyRelease:
 	{
-		DWORD key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
+		uint32_t key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
 		Game.DoKeyboardInput(key, KEYEV_Up, e.xkey.state & Mod1Mask, e.xkey.state & ControlMask, e.xkey.state & ShiftMask, false, nullptr);
 		break;
 	}
@@ -219,7 +219,7 @@ void C4FullScreen::HandleMessage(XEvent &e)
 namespace
 {
 	void sdlToC4MCBtn(const SDL_MouseButtonEvent &e,
-		int32_t &button, DWORD &flags)
+		int32_t &button, uint32_t &flags)
 	{
 		static int lastLeftClick = 0, lastRightClick = 0;
 
@@ -338,7 +338,7 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 	case SDL_MOUSEBUTTONUP:
 	case SDL_MOUSEBUTTONDOWN:
 		int32_t button;
-		DWORD flags;
+		uint32_t flags;
 		sdlToC4MCBtn(e.button, button, flags);
 		Game.GraphicsSystem.MouseMove(button, e.button.x, e.button.y, flags, nullptr);
 		break;
@@ -391,11 +391,11 @@ void C4FullScreen::Execute()
 	Game.GraphicsSystem.Execute();
 }
 
-BOOL C4FullScreen::ViewportCheck()
+bool C4FullScreen::ViewportCheck()
 {
 	int iPlrNum; C4Player *pPlr;
 	// Not active
-	if (!Active) return FALSE;
+	if (!Active) return false;
 	// Determine film mode
 	bool fFilm = (Game.C4S.Head.Replay && Game.C4S.Head.Film);
 	// Check viewports
@@ -446,7 +446,7 @@ BOOL C4FullScreen::ViewportCheck()
 			pNoOwnerVp->Init(pPlr->Number, true);
 	}
 	// Done
-	return TRUE;
+	return true;
 }
 
 bool C4FullScreen::ShowAbortDlg()
@@ -482,7 +482,7 @@ void C4FullScreen::CloseMenu()
 	}
 }
 
-bool C4FullScreen::MenuKeyControl(BYTE byCom)
+bool C4FullScreen::MenuKeyControl(uint8_t byCom)
 {
 	if (pMenu) return pMenu->KeyControl(byCom);
 	return false;

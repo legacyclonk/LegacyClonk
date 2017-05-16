@@ -75,7 +75,7 @@ public:
 	void DrawAll(C4FacetEx &cgo, int iPlayer = -1); // draw all objects, including bg
 	void DrawIfCategory(C4FacetEx &cgo, int iPlayer, uint32_t dwCat, bool fInvert); // draw all objects that match dwCat (or don't match if fInvert)
 	void Draw(C4FacetEx &cgo, int iPlayer = -1); // draw all objects
-	void DrawIDList(C4Facet &cgo, int iSelection, C4DefList &rDefs, int32_t dwCategory, C4RegionList *pRegions = nullptr, int iRegionCom = COM_None, BOOL fDrawOneCounts = TRUE);
+	void DrawIDList(C4Facet &cgo, int iSelection, C4DefList &rDefs, int32_t dwCategory, C4RegionList *pRegions = nullptr, int iRegionCom = COM_None, bool fDrawOneCounts = true);
 	void DrawSelectMark(C4FacetEx &cgo);
 	void CloseMenus();
 	void UpdateGraphics(bool fGraphicsChanged);
@@ -88,15 +88,15 @@ public:
 	void ClearDefPointers(C4Def *pDef); // clear all pointers into definition
 	void UpdateDefPointers(C4Def *pDef); // restore any cleared pointers after def reload
 
-	BOOL Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted = nullptr);
-	BOOL Remove(C4Object *pObj);
+	bool Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted = nullptr);
+	bool Remove(C4Object *pObj);
 
-	BOOL AssignInfo();
-	BOOL ValidateOwners();
-	BOOL AssignPlrViewRange();
-	StdStrBuf GetNameList(C4DefList &rDefs, DWORD dwCategory = C4D_All);
-	BOOL IsClear() const;
-	BOOL DenumerateRead();
+	bool AssignInfo();
+	bool ValidateOwners();
+	bool AssignPlrViewRange();
+	StdStrBuf GetNameList(C4DefList &rDefs, uint32_t dwCategory = C4D_All);
+	bool IsClear() const;
+	bool DenumerateRead();
 	void CompileFunc(StdCompiler *pComp, bool fSaveRefs = true, bool fSkipPlayerObjects = false);
 
 	long ObjectNumber(C4Object *pObj);
@@ -111,23 +111,23 @@ public:
 	virtual C4Object *ObjectPointer(int32_t iNumber);
 	C4Object *SafeObjectPointer(int32_t iNumber);
 	C4Object *GetObject(int Index = 0);
-	C4Object *Find(C4ID id, int iOwner = ANY_OWNER, DWORD dwOCF = OCF_All);
+	C4Object *Find(C4ID id, int iOwner = ANY_OWNER, uint32_t dwOCF = OCF_All);
 	C4Object *FindOther(C4ID id, int iOwner = ANY_OWNER);
 
 	C4ObjectLink *GetLink(C4Object *pObj);
 
 	C4ID GetListID(int32_t dwCategory, int Index);
 
-	BOOL OrderObjectBefore(C4Object *pObj1, C4Object *pObj2); // order pObj1 before pObj2
-	BOOL OrderObjectAfter(C4Object *pObj1, C4Object *pObj2); // order pObj1 after pObj2
+	bool OrderObjectBefore(C4Object *pObj1, C4Object *pObj2); // order pObj1 before pObj2
+	bool OrderObjectAfter(C4Object *pObj1, C4Object *pObj2); // order pObj1 after pObj2
 
-	BOOL ShiftContents(C4Object *pNewFirst); // cycle list so pNewFirst is at front
+	bool ShiftContents(C4Object *pNewFirst); // cycle list so pNewFirst is at front
 
 	void DeleteObjects(); // delete all objects and links
 
 	void UpdateScriptPointers(); // update pointers to C4AulScript *
 
-	BOOL CheckSort(C4ObjectList *pList); // check that all objects of this list appear in the other list in the same order
+	bool CheckSort(C4ObjectList *pList); // check that all objects of this list appear in the other list in the same order
 	void CheckCategorySort(); // assertwhether sorting by category is done right
 
 protected:

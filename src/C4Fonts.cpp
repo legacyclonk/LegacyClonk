@@ -312,7 +312,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 	}
 	else
 	{
-		int32_t iDefFontSize; DWORD dwDefWeight = FW_NORMAL;
+		int32_t iDefFontSize; uint32_t dwDefWeight = FW_NORMAL;
 #if defined(_WIN32) && !defined(HAVE_FREETYPE)
 		switch (eType)
 		{

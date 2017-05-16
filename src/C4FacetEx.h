@@ -28,8 +28,8 @@ public:
 	void Set(const C4FacetEx &cpy) { *this = cpy; }
 	void Set(SURFACE nsfc, int nx, int ny, int nwdt, int nhgt, int ntx = 0, int nty = 0);
 
-	void DrawBolt(int iX1, int iY1, int iX2, int iY2, BYTE bCol, BYTE bCol2);
-	void DrawLine(int iX1, int iY1, int iX2, int iY2, BYTE bCol1, BYTE bCol2);
+	void DrawBolt(int iX1, int iY1, int iX2, int iY2, uint8_t bCol, uint8_t bCol2);
+	void DrawLine(int iX1, int iY1, int iX2, int iY2, uint8_t bCol1, uint8_t bCol2);
 	C4FacetEx GetSection(int iSection);
 	C4FacetEx GetPhase(int iPhaseX = 0, int iPhaseY = 0);
 
@@ -67,11 +67,11 @@ public:
 	}
 
 	void Grayscale(int32_t iOffset = 0);
-	BOOL Create(int iWdt, int iHgt, int iWdt2 = C4FCT_Full, int iHgt2 = C4FCT_Full);
+	bool Create(int iWdt, int iHgt, int iWdt2 = C4FCT_Full, int iHgt2 = C4FCT_Full);
 	C4Surface &GetFace() { return Face; } // get internal face
-	BOOL CreateClrByOwner(CSurface *pBySurface);
-	BOOL EnsureSize(int iMinWdt, int iMinHgt);
-	BOOL Load(C4Group &hGroup, const char *szName, int iWdt = C4FCT_Full, int iHgt = C4FCT_Full, bool fOwnPal = false, bool fNoErrIfNotFound = false);
+	bool CreateClrByOwner(CSurface *pBySurface);
+	bool EnsureSize(int iMinWdt, int iMinHgt);
+	bool Load(C4Group &hGroup, const char *szName, int iWdt = C4FCT_Full, int iHgt = C4FCT_Full, bool fOwnPal = false, bool fNoErrIfNotFound = false);
 
 	void GrabFrom(C4FacetExSurface &rSource)
 	{

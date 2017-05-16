@@ -71,7 +71,7 @@ bool Log(const char *msg)
 	return 1;
 }
 
-BOOL LogF(const char *strMessage, ...)
+bool LogF(const char *strMessage, ...)
 {
 	va_list args;
 	va_start(args, strMessage);
@@ -99,7 +99,7 @@ bool ProcessGroup(const char *FilenamePar)
 	LogF("Group: %s", szFilename);
 
 	// Open group file
-	if (hGroup.Open(szFilename, TRUE))
+	if (hGroup.Open(szFilename, true))
 	{
 		// No commands: display contents
 		if (iFirstCommand >= argc)
@@ -256,7 +256,7 @@ bool ProcessGroup(const char *FilenamePar)
 						break;
 					// Make original
 					case 'o':
-						hGroup.MakeOriginal(TRUE);
+						hGroup.MakeOriginal(true);
 						break;
 					// Pack
 					case 'p':
@@ -354,7 +354,7 @@ bool ProcessGroup(const char *FilenamePar)
 						Log("Applying update...");
 						if (C4Group_ApplyUpdate(hGroup))
 						{
-							if (argv[iArg][2] == 'd') fDeleteGroup = TRUE;
+							if (argv[iArg][2] == 'd') fDeleteGroup = true;
 						}
 						else
 							fprintf(stderr, "Update failed.\n");
@@ -400,7 +400,7 @@ bool ProcessGroup(const char *FilenamePar)
 	}
 	free(szFilename);
 	// Done
-	return TRUE;
+	return true;
 }
 
 int RegisterShellExtensions()
@@ -524,7 +524,7 @@ int main(int argc, char *argv[])
 
 	// Load configuration
 	Config.Init();
-	Config.Load(FALSE);
+	Config.Load(false);
 
 	// Init C4Group
 	C4Group_SetMaker(Config.General.Name);

@@ -265,7 +265,7 @@ private:
 		MapPic(const FLOAT_RECT &rcfBounds, const C4Facet &rfct);
 
 	protected:
-		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons - deselect everything if clicked
+		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons - deselect everything if clicked
 		virtual void DrawElement(C4FacetEx &cgo); // draw the image
 	};
 
@@ -334,7 +334,7 @@ public:
 
 	protected:
 		virtual void UpdateOwnPos(); // recalculate item positioning
-		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam);
+		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam);
 
 		void Update() {}
 

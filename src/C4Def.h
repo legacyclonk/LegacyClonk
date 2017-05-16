@@ -96,19 +96,19 @@ const int32_t C4D_Sell     = C4D_StaticBack | C4D_Structure | C4D_Vehicle | C4D_
               C4D_Get      = C4D_Sell,
               C4D_Activate = C4D_Get;
 
-const DWORD C4D_Load_None       = 0,
-            C4D_Load_Picture    = 1,
-            C4D_Load_Bitmap     = 2,
-            C4D_Load_Script     = 4,
-            C4D_Load_Desc       = 8,
-            C4D_Load_ActMap     = 16,
-            C4D_Load_Image      = 32,
-            C4D_Load_Sounds     = 64,
-            C4D_Load_ClonkNames = 128,
-            C4D_Load_RankNames  = 256,
-            C4D_Load_RankFaces  = 512,
-            C4D_Load_RX         = C4D_Load_Bitmap | C4D_Load_Script | C4D_Load_ClonkNames | C4D_Load_Desc | C4D_Load_ActMap | C4D_Load_Sounds | C4D_Load_RankNames | C4D_Load_RankFaces,
-            C4D_Load_Temporary  = 1024;
+const uint32_t C4D_Load_None       = 0,
+               C4D_Load_Picture    = 1,
+               C4D_Load_Bitmap     = 2,
+               C4D_Load_Script     = 4,
+               C4D_Load_Desc       = 8,
+               C4D_Load_ActMap     = 16,
+               C4D_Load_Image      = 32,
+               C4D_Load_Sounds     = 64,
+               C4D_Load_ClonkNames = 128,
+               C4D_Load_RankNames  = 256,
+               C4D_Load_RankFaces  = 512,
+               C4D_Load_RX         = C4D_Load_Bitmap | C4D_Load_Script | C4D_Load_ClonkNames | C4D_Load_Desc | C4D_Load_ActMap | C4D_Load_Sounds | C4D_Load_RankNames | C4D_Load_RankFaces,
+               C4D_Load_Temporary  = 1024;
 
 #define C4D_Blit_Normal   0
 #define C4D_Blit_Additive 1
@@ -258,12 +258,12 @@ public:
 
 public:
 	void Default();
-	BOOL Load(C4Group &hGroup);
+	bool Load(C4Group &hGroup);
 	void CompileFunc(StdCompiler *pComp);
 	const char *GetName() const { return Name.getData(); }
 
 protected:
-	BOOL Compile(const char *szSource, const char *szName);
+	bool Compile(const char *szSource, const char *szName);
 };
 
 class C4Def : public C4DefCore
@@ -314,18 +314,18 @@ protected:
 
 protected:
 	C4Def *Next;
-	BOOL Temporary;
+	bool Temporary;
 
 public:
 	void Clear();
 	void Default();
-	BOOL Load(C4Group &hGroup,
-		DWORD dwLoadWhat, const char *szLanguage,
+	bool Load(C4Group &hGroup,
+		uint32_t dwLoadWhat, const char *szLanguage,
 		class C4SoundSystem *pSoundSystem = nullptr);
-	void Draw(C4Facet &cgo, BOOL fSelected = FALSE, DWORD iColor = 0, C4Object *pObj = nullptr, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
+	void Draw(C4Facet &cgo, bool fSelected = false, uint32_t iColor = 0, C4Object *pObj = nullptr, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
 
 #ifdef C4ENGINE
-	inline C4Facet &GetMainFace(C4DefGraphics *pGraphics, DWORD dwClr = 0) { MainFace.Surface = pGraphics->GetBitmap(dwClr); return MainFace; }
+	inline C4Facet &GetMainFace(C4DefGraphics *pGraphics, uint32_t dwClr = 0) { MainFace.Surface = pGraphics->GetBitmap(dwClr); return MainFace; }
 	int32_t GetValue(C4Object *pInBase, int32_t iBuyPlayer); // get value of def; calling script functions if defined
 	C4PhysicalInfo *GetFairCrewPhysicals(); // get fair crew physicals at current fair crew strength
 	void ClearFairCrewPhysicals(); // remove cached fair crew physicals, will be created fresh on demand
@@ -335,8 +335,8 @@ public:
 
 protected:
 	bool LoadPortraits(C4Group &hGroup);
-	BOOL ColorizeByMaterial(class C4MaterialMap &rMats, BYTE bGBM);
-	BOOL LoadActMap(C4Group &hGroup);
+	bool ColorizeByMaterial(class C4MaterialMap &rMats, uint8_t bGBM);
+	bool LoadActMap(C4Group &hGroup);
 	void CrossMapActMap();
 
 private:
@@ -362,7 +362,7 @@ public:
 	virtual ~C4DefList();
 
 public:
-	BOOL LoadFailure;
+	bool LoadFailure;
 	C4Def **Table[64]; // From space to _; some minor waste of mem
 	bool fTable;
 
@@ -373,27 +373,27 @@ public:
 	void Default();
 	void Clear();
 	int32_t Load(C4Group &hGroup,
-		DWORD dwLoadWhat, const char *szLanguage,
+		uint32_t dwLoadWhat, const char *szLanguage,
 		C4SoundSystem *pSoundSystem = nullptr,
-		BOOL fOverload = FALSE,
-		BOOL fSearchMessage = FALSE, int32_t iMinProgress = 0, int32_t iMaxProgress = 0, bool fLoadSysGroups = true);
+		bool fOverload = false,
+		bool fSearchMessage = false, int32_t iMinProgress = 0, int32_t iMaxProgress = 0, bool fLoadSysGroups = true);
 	int32_t Load(const char *szSearch,
-		DWORD dwLoadWhat, const char *szLanguage,
+		uint32_t dwLoadWhat, const char *szLanguage,
 		C4SoundSystem *pSoundSystem = nullptr,
-		BOOL fOverload = FALSE, int32_t iMinProgress = 0, int32_t iMaxProgress = 0);
+		bool fOverload = false, int32_t iMinProgress = 0, int32_t iMaxProgress = 0);
 	C4Def *ID2Def(C4ID id);
-	C4Def *GetDef(int32_t Index, DWORD dwCategory = C4D_All);
+	C4Def *GetDef(int32_t Index, uint32_t dwCategory = C4D_All);
 	C4Def *GetByPath(const char *szPath);
-	int32_t GetDefCount(DWORD dwCategory = C4D_All);
+	int32_t GetDefCount(uint32_t dwCategory = C4D_All);
 	int32_t GetIndex(C4ID id);
-	int32_t ColorizeByMaterial(C4MaterialMap &rMats, BYTE bGBM);
+	int32_t ColorizeByMaterial(C4MaterialMap &rMats, uint8_t bGBM);
 	int32_t CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, int32_t ver4);
 	int32_t CheckRequireDef();
-	void Draw(C4ID id, C4Facet &cgo, BOOL fSelected, int32_t iColor);
+	void Draw(C4ID id, C4Facet &cgo, bool fSelected, int32_t iColor);
 	void Remove(C4Def *def);
-	BOOL Remove(C4ID id);
-	BOOL Reload(C4Def *pDef, DWORD dwLoadWhat, const char *szLanguage, C4SoundSystem *pSoundSystem = nullptr);
-	BOOL Add(C4Def *ndef, BOOL fOverload);
+	bool Remove(C4ID id);
+	bool Reload(C4Def *pDef, uint32_t dwLoadWhat, const char *szLanguage, C4SoundSystem *pSoundSystem = nullptr);
+	bool Add(C4Def *ndef, bool fOverload);
 	void BuildTable(); // build quick access table
 	void ResetIncludeDependencies(); // resets all pointers into foreign definitions caused by include chains
 #ifdef C4ENGINE

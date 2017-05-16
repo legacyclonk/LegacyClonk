@@ -344,7 +344,7 @@ bool Edit::Paste()
 					// safety...
 					if (!IsGUIValid()) return false;
 					// k, pasted
-					return TRUE;
+					return true;
 				}
 			}
 			// insert new text (may fail due to overfull buffer, in which case parts of the text will be inserted)
@@ -388,7 +388,7 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 	if (iSelectionStart != iSelectionEnd)
 	{
 		// special handling: backspace/del with selection (delete selection)
-		if (op == COP_BACK || op == COP_DELETE) { DeleteSelection(); return TRUE; }
+		if (op == COP_BACK || op == COP_DELETE) { DeleteSelection(); return true; }
 		// no shift pressed: clear selection (even if no cursor movement is done)
 		if (!fShift) Deselect();
 	}
@@ -457,18 +457,18 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 	return true;
 }
 
-BOOL Edit::CharIn(const char *c)
+bool Edit::CharIn(const char *c)
 {
 	// no control codes
-	if (((unsigned char)(c[0])) < ' ' || c[0] == 0x7f) return FALSE;
+	if (((unsigned char)(c[0])) < ' ' || c[0] == 0x7f) return false;
 	// no '|'
-	if (c[0] == '|') return FALSE;
+	if (c[0] == '|') return false;
 	// all extended characters are OK
 	// insert character at cursor position
 	return InsertText(c, true);
 }
 
-void Edit::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Edit::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// inherited first - this may give focus to this element
 	Control::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);
@@ -539,7 +539,7 @@ void Edit::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, D
 	if (iPrevCursorPos != iCursorPos) ScrollCursorInView();
 }
 
-void Edit::DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Edit::DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// update cursor pos
 	int32_t iPrevCursorPos = iCursorPos;
@@ -581,7 +581,7 @@ void Edit::DrawElement(C4FacetEx &cgo)
 		// default frame color
 		Draw3DFrame(cgo);
 	// clipping
-	int cx0, cy0, cx1, cy1; BOOL fClip, fOwnClip;
+	int cx0, cy0, cx1, cy1; bool fClip, fOwnClip;
 	fClip = lpDDraw->GetPrimaryClipper(cx0, cy0, cx1, cy1);
 	fOwnClip = lpDDraw->SetPrimaryClipper(rcClientRect.x + cgo.TargetX - 2, rcClientRect.y + cgo.TargetY, rcClientRect.x + rcClientRect.Wdt + cgo.TargetX + 1, rcClientRect.y + rcClientRect.Hgt + cgo.TargetY);
 	// get usable height of edit field

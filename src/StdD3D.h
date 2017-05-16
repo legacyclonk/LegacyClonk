@@ -86,16 +86,16 @@ public:
 	bool PrepareRendering(SURFACE sfcToSurface); // check if/make rendering possible to given surface
 
 	// Blit
-	void PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool fMod2, bool fExact);
-	BOOL BlitTex2Window(CTexRef *pTexRef, HDC hdcTarget, RECT &rtFrom, RECT &rtTo);
-	BOOL BlitSurface2Window(SURFACE sfcSource, int fX, int fY, int fWdt, int fHgt, HWND hWnd, int tX, int tY, int tWdt, int tHgt);
-	void FillBG(DWORD dwClr = 0);
+	void PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact);
+	bool BlitTex2Window(CTexRef *pTexRef, HDC hdcTarget, RECT &rtFrom, RECT &rtTo);
+	bool BlitSurface2Window(SURFACE sfcSource, int fX, int fY, int fWdt, int fHgt, HWND hWnd, int tX, int tY, int tWdt, int tHgt);
+	void FillBG(uint32_t dwClr = 0);
 
 	// Drawing
-	void DrawQuadDw(SURFACE sfcTarget, int *ipVtx, DWORD dwClr1, DWORD dwClr2, DWORD dwClr3, DWORD dwClr4);
-	void DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, DWORD dwClr);
-	void DrawPixInt(SURFACE sfcDest, float tx, float ty, DWORD dwCol);
-	void DrawPixPrimary(SURFACE sfcDest, int tx, int ty, DWORD dwCol);
+	void DrawQuadDw(SURFACE sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4);
+	void DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr);
+	void DrawPixInt(SURFACE sfcDest, float tx, float ty, uint32_t dwCol);
+	void DrawPixPrimary(SURFACE sfcDest, int tx, int ty, uint32_t dwCol);
 
 	// Gamma
 	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool fForce);
@@ -115,10 +115,10 @@ public:
 	IDirect3DStateBlock9 *CreateStateBlock(bool fTransparent, bool fSolid, bool fBaseTex, bool fAdditive, bool fMod2); // capture state blocks for blitting
 
 protected:
-	BOOL FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iColorDepth, unsigned int iMonitor);
-	virtual bool CreatePrimarySurfaces(BOOL Fullscreen, int iColorDepth, unsigned int iMonitor);
+	bool FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iColorDepth, unsigned int iMonitor);
+	virtual bool CreatePrimarySurfaces(bool Fullscreen, int iColorDepth, unsigned int iMonitor);
 	bool SetOutputAdapter(unsigned int iMonitor);
-	BOOL CreateDirectDraw();
+	bool CreateDirectDraw();
 
 	friend class CSurface;
 	friend class CTexRef;

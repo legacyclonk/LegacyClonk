@@ -275,13 +275,13 @@ C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 				if (!pGroup->OpenAsChild(pParentGroup, szParentfolder + iPos))
 				{
 					LogFatal(FormatString("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), szParentfolder + iPos).getData());
-					delete pGroup; return FALSE;
+					delete pGroup; return false;
 				}
 			}
 			else if (!pGroup->Open(szParentfolder + iPos))
 			{
 				LogFatal(FormatString("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), szParentfolder + iPos).getData());
-				delete pGroup; return FALSE;
+				delete pGroup; return false;
 			}
 			// set this group as new parent
 			pParentGroup = pGroup;
@@ -293,7 +293,7 @@ C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 				iContentsMask = C4GSCnt_Directory;
 			if (!RegisterGroup(*pParentGroup, true, C4GSPrio_Folder + iGroupIndex++, iContentsMask))
 			{
-				delete pParentGroup; LogFatal("RegGrp: internal error"); return FALSE;
+				delete pParentGroup; LogFatal("RegGrp: internal error"); return false;
 			}
 			// advance by file name length
 			iPos += SLen(szParentfolder + iPos);

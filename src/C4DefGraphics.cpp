@@ -190,15 +190,15 @@ bool C4DefGraphics::LoadBitmaps(C4Group &hGroup, bool fColorByOwner)
 	return true;
 }
 
-bool C4DefGraphics::ColorizeByMaterial(int32_t iMat, C4MaterialMap &rMats, BYTE bGBM)
+bool C4DefGraphics::ColorizeByMaterial(int32_t iMat, C4MaterialMap &rMats, uint8_t bGBM)
 {
 	SURFACE sfcBitmap = GetBitmap(); // first bitmap only
 	if (sfcBitmap)
 	{
-		DWORD dwMatColors[C4M_ColsPerMat];
+		uint32_t dwMatColors[C4M_ColsPerMat];
 		for (int32_t i = 0; i < C4M_ColsPerMat; ++i)
 			dwMatColors[i] = rMats.Map[iMat].GetDWordColor(i);
-		Application.DDraw->SurfaceAllowColor(sfcBitmap, dwMatColors, C4M_ColsPerMat, TRUE);
+		Application.DDraw->SurfaceAllowColor(sfcBitmap, dwMatColors, C4M_ColsPerMat, true);
 	}
 	// colorize other graphics
 	if (pNext) return pNext->ColorizeByMaterial(iMat, rMats, bGBM); else return true;
@@ -254,7 +254,7 @@ bool C4DefGraphics::CopyGraphicsFrom(C4DefGraphics &rSource)
 	return true;
 }
 
-void C4DefGraphics::DrawClr(C4Facet &cgo, BOOL fAspect, DWORD dwClr)
+void C4DefGraphics::DrawClr(C4Facet &cgo, bool fAspect, uint32_t dwClr)
 {
 	// create facet and draw it
 	C4Surface *pSfc = BitmapClr ? BitmapClr : Bitmap; if (!pSfc) return;
@@ -619,7 +619,7 @@ void C4GraphicsOverlay::UpdateFacet()
 	}
 }
 
-void C4GraphicsOverlay::Set(Mode aMode, C4DefGraphics *pGfx, const char *szAction, DWORD dwBMode, C4Object *pOvrlObj)
+void C4GraphicsOverlay::Set(Mode aMode, C4DefGraphics *pGfx, const char *szAction, uint32_t dwBMode, C4Object *pOvrlObj)
 {
 	// set values
 	eMode = aMode;
@@ -792,7 +792,7 @@ void C4GraphicsOverlay::DrawPicture(C4Facet &cgo, C4Object *pForObj)
 		if (dwClrModulation != 0xffffff) Application.DDraw->ActivateBlitModulation(dwClrModulation);
 	}
 	// draw at given rect
-	fctBlit.DrawT(cgo, TRUE, iPhase, 0, &C4DrawTransform(Transform, cgo.X + float(cgo.Wdt) / 2, cgo.Y + float(cgo.Hgt) / 2));
+	fctBlit.DrawT(cgo, true, iPhase, 0, &C4DrawTransform(Transform, cgo.X + float(cgo.Wdt) / 2, cgo.Y + float(cgo.Hgt) / 2));
 	// cleanup
 	if (dwBlitMode == C4GFXBLIT_PARENT)
 	{

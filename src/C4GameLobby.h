@@ -130,7 +130,7 @@ public:
 	void OnClientPart(C4Client *pPartClient); // called when a client disconnects
 	bool OnMessage(C4Client *pOfClient, const char *szMessage); // display message in chat window
 	void OnClientSound(C4Client *pOfClient);                    // show that someone played a sound
-	void OnLog(const char *szLogMsg, DWORD dwClr = C4GUI_LogFontClr); // log callback
+	void OnLog(const char *szLogMsg, uint32_t dwClr = C4GUI_LogFontClr); // log callback
 	void OnError(const char *szErrMsg); // error sound + log in red
 	void OnPlayersChange() { UpdatePlayerList(); }
 	void OnClientAddPlayer(const char *szFilename, int32_t idClient);

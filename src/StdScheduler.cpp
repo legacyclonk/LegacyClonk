@@ -49,7 +49,7 @@ StdScheduler::StdScheduler()
 	: ppProcs(nullptr), iProcCnt(0), iProcCapacity(0)
 {
 #ifdef STDSCHEDULER_USE_EVENTS
-	hUnblocker = CreateEvent(nullptr, false, false, nullptr);
+	hUnblocker = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	pEventHandles = nullptr;
 	ppEventProcs = nullptr;
 #else

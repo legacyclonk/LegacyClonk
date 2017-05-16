@@ -32,7 +32,7 @@ void DrawMenuSymbol(int32_t iMenu, C4Facet &cgo, int32_t iOwner, C4Object *cObj)
 {
 	C4Facet ccgo;
 
-	DWORD dwColor = 0;
+	uint32_t dwColor = 0;
 	if (ValidPlr(iOwner)) dwColor = Game.Players.Get(iOwner)->ColorDw;
 
 	switch (iMenu)
@@ -47,14 +47,14 @@ void DrawMenuSymbol(int32_t iMenu, C4Facet &cgo, int32_t iOwner, C4Object *cObj)
 	}
 	break;
 	case C4MN_Buy:
-		Game.GraphicsResource.fctFlagClr.DrawClr(ccgo = cgo.GetFraction(75, 75), TRUE, dwColor);
+		Game.GraphicsResource.fctFlagClr.DrawClr(ccgo = cgo.GetFraction(75, 75), true, dwColor);
 		Game.GraphicsResource.fctWealth.Draw(ccgo = cgo.GetFraction(100, 50, C4FCT_Left, C4FCT_Bottom));
-		Game.GraphicsResource.fctArrow.Draw(ccgo = cgo.GetFraction(70, 70, C4FCT_Right, C4FCT_Center), FALSE, 0);
+		Game.GraphicsResource.fctArrow.Draw(ccgo = cgo.GetFraction(70, 70, C4FCT_Right, C4FCT_Center), false, 0);
 		break;
 	case C4MN_Sell:
-		Game.GraphicsResource.fctFlagClr.DrawClr(ccgo = cgo.GetFraction(75, 75), TRUE, dwColor);
+		Game.GraphicsResource.fctFlagClr.DrawClr(ccgo = cgo.GetFraction(75, 75), true, dwColor);
 		Game.GraphicsResource.fctWealth.Draw(ccgo = cgo.GetFraction(100, 50, C4FCT_Left, C4FCT_Bottom));
-		Game.GraphicsResource.fctArrow.Draw(ccgo = cgo.GetFraction(70, 70, C4FCT_Right, C4FCT_Center), FALSE, 1);
+		Game.GraphicsResource.fctArrow.Draw(ccgo = cgo.GetFraction(70, 70, C4FCT_Right, C4FCT_Center), false, 1);
 		break;
 	}
 }
@@ -151,7 +151,7 @@ void C4MenuItem::DrawElement(C4FacetEx &cgo)
 	}
 	// Draw item symbol:
 	// Draw if there is no text progression at all (TextDisplayProgress==-1, or if it's progressed far enough already (TextDisplayProgress>0)
-	if (Symbol.Surface && TextDisplayProgress) Symbol.DrawClr(cgoItemSymbol, TRUE, dwSymbolClr);
+	if (Symbol.Surface && TextDisplayProgress) Symbol.DrawClr(cgoItemSymbol, true, dwSymbolClr);
 	// Draw item text
 	Application.DDraw->StorePrimaryClipper(); Application.DDraw->SubPrimaryClipper(cgoItemText.X, cgoItemText.Y, cgoItemText.X + cgoItemText.Wdt - 1, cgoItemText.Y + cgoItemText.Hgt - 1);
 	switch (iStyle)
@@ -195,7 +195,7 @@ void C4MenuItem::DrawElement(C4FacetEx &cgo)
 	}
 }
 
-void C4MenuItem::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void C4MenuItem::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// clicky clicky!
 	if (iButton == C4MC_Button_LeftDown)
@@ -229,7 +229,7 @@ void C4MenuItem::MouseEnter(C4GUI::CMouse &rMouse)
 	ParentClass::MouseEnter(rMouse);
 }
 
-void C4MenuItem::DoDragging(C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void C4MenuItem::DoDragging(C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// is this a drag element?
 	if (!IsDragElement()) { rMouse.pDragElement = nullptr; }
@@ -245,7 +245,7 @@ void C4MenuItem::DoDragging(C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, DWORD
 	}
 }
 
-void C4MenuItem::StopDragging(C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void C4MenuItem::StopDragging(C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// drag stop: Nothing to do, really
 	// Mouse up will be processed by regular procedure
@@ -270,16 +270,16 @@ void C4Menu::Default()
 	Style = C4MN_Style_Normal;
 	ItemCount = 0;
 	ItemWidth = ItemHeight = C4SymbolSize;
-	NeedRefill = FALSE;
+	NeedRefill = false;
 	Symbol.Default();
 	Caption[0] = 0;
-	Permanent = FALSE;
+	Permanent = false;
 	Extra = C4MN_Extra_None;
 	ExtraData = 0;
 	DrawMenuControls = Config.Graphics.ShowCommands;
 	TimeOnSelection = 0;
 	Identification = 0;
-	LocationSet = FALSE;
+	LocationSet = false;
 	Columns = Lines = 0;
 	Alignment = C4MN_Align_Right | C4MN_Align_Bottom;
 	VisibleCount = 0;
@@ -357,11 +357,11 @@ bool C4Menu::InitMenu(const char *szEmpty, int32_t iExtra, int32_t iExtraData, i
 	return true;
 }
 
-BOOL C4Menu::AddRefSym(const char *szCaption, const C4FacetEx &fctSymbol, const char *szCommand,
+bool C4Menu::AddRefSym(const char *szCaption, const C4FacetEx &fctSymbol, const char *szCommand,
 	int32_t iCount, C4Object *pObject, const char *szInfoCaption,
 	C4ID idID, const char *szCommand2, bool fOwnValue, int32_t iValue, bool fIsSelectable)
 {
-	if (!IsActive()) return FALSE;
+	if (!IsActive()) return false;
 	// Create new menu item
 	C4MenuItem *pNew = new C4MenuItem(this, ItemCount, szCaption, szCommand, iCount, pObject, szInfoCaption, idID, szCommand2, fOwnValue, iValue, Style, fIsSelectable);
 	// Ref Symbol
@@ -370,11 +370,11 @@ BOOL C4Menu::AddRefSym(const char *szCaption, const C4FacetEx &fctSymbol, const 
 	return AddItem(pNew, szCaption, szCommand, iCount, pObject, szInfoCaption, idID, szCommand2, fOwnValue, iValue, fIsSelectable);
 }
 
-BOOL C4Menu::Add(const char *szCaption, C4FacetExSurface &fctSymbol, const char *szCommand,
+bool C4Menu::Add(const char *szCaption, C4FacetExSurface &fctSymbol, const char *szCommand,
 	int32_t iCount, C4Object *pObject, const char *szInfoCaption,
 	C4ID idID, const char *szCommand2, bool fOwnValue, int32_t iValue, bool fIsSelectable)
 {
-	if (!IsActive()) return FALSE;
+	if (!IsActive()) return false;
 	// Create new menu item
 	C4MenuItem *pNew = new C4MenuItem(this, ItemCount, szCaption, szCommand, iCount, pObject, szInfoCaption, idID, szCommand2, fOwnValue, iValue, Style, fIsSelectable);
 	// Set Symbol
@@ -383,7 +383,7 @@ BOOL C4Menu::Add(const char *szCaption, C4FacetExSurface &fctSymbol, const char 
 	return AddItem(pNew, szCaption, szCommand, iCount, pObject, szInfoCaption, idID, szCommand2, fOwnValue, iValue, fIsSelectable);
 }
 
-BOOL C4Menu::AddItem(C4MenuItem *pNew, const char *szCaption, const char *szCommand,
+bool C4Menu::AddItem(C4MenuItem *pNew, const char *szCaption, const char *szCommand,
 	int32_t iCount, C4Object *pObject, const char *szInfoCaption,
 	C4ID idID, const char *szCommand2, bool fOwnValue, int32_t iValue, bool fIsSelectable)
 {
@@ -412,17 +412,17 @@ BOOL C4Menu::AddItem(C4MenuItem *pNew, const char *szCaption, const char *szComm
 	// adjust scrolling, etc.
 	UpdateScrollBar();
 	// Success
-	return TRUE;
+	return true;
 }
 
-BOOL C4Menu::Control(BYTE byCom, int32_t iData)
+bool C4Menu::Control(uint8_t byCom, int32_t iData)
 {
-	if (!IsActive()) return FALSE;
+	if (!IsActive()) return false;
 
 	switch (byCom)
 	{
 	case COM_MenuEnter: Enter(); break;
-	case COM_MenuEnterAll: Enter(TRUE); break;
+	case COM_MenuEnterAll: Enter(true); break;
 	case COM_MenuClose: TryClose(false, true); break;
 
 	// organize with nicer subfunction...
@@ -465,33 +465,33 @@ BOOL C4Menu::Control(BYTE byCom, int32_t iData)
 		break;
 	}
 
-	return TRUE;
+	return true;
 }
 
-bool C4Menu::KeyControl(BYTE byCom)
+bool C4Menu::KeyControl(uint8_t byCom)
 {
 	// direct keyboard callback
 	if (!IsActive()) return false;
 	return !!Control(byCom, 0);
 }
 
-BOOL C4Menu::IsActive()
+bool C4Menu::IsActive()
 {
 	return fActive;
 }
 
-BOOL C4Menu::Enter(BOOL fRight)
+bool C4Menu::Enter(bool fRight)
 {
 	// Not active
-	if (!IsActive()) return FALSE;
-	if (Style == C4MN_Style_Info) return FALSE;
+	if (!IsActive()) return false;
+	if (Style == C4MN_Style_Info) return false;
 	// Get selected item
 	C4MenuItem *pItem = GetSelectedItem();
 	if (!pItem)
 	{
 		// okay for dialogs: Just close them
 		if (Style == C4MN_Style_Dialog) TryClose(false, true);
-		return TRUE;
+		return true;
 	}
 	// Copy command to buffer (menu might be cleared)
 	char szCommand[_MAX_FNAME + 30 + 1];
@@ -499,12 +499,12 @@ BOOL C4Menu::Enter(BOOL fRight)
 	if (fRight && pItem->Command2[0]) SCopy(pItem->Command2, szCommand);
 
 	// Close if not permanent
-	if (!Permanent) { Close(TRUE); fActive = false; }
+	if (!Permanent) { Close(true); fActive = false; }
 
 	// exec command (note that menu callback may delete this!)
 	MenuCommand(szCommand, false);
 
-	return TRUE;
+	return true;
 }
 
 C4MenuItem *C4Menu::GetItem(int32_t iIndex)
@@ -539,10 +539,10 @@ bool C4Menu::MoveSelection(int32_t iBy, bool fAdjustPosition, bool fDoCalls)
 	return !!SetSelection(iNewSel, fAdjustPosition, fDoCalls);
 }
 
-BOOL C4Menu::SetSelection(int32_t iSelection, bool fAdjustPosition, bool fDoCalls)
+bool C4Menu::SetSelection(int32_t iSelection, bool fAdjustPosition, bool fDoCalls)
 {
 	// Not active
-	if (!IsActive()) return FALSE;
+	if (!IsActive()) return false;
 	// Outside Limits / Selectable
 	C4MenuItem *pNewSel = GetItem(iSelection);
 	if ((iSelection == -1 && !ItemCount) || (pNewSel && pNewSel->IsSelectable))
@@ -575,7 +575,7 @@ BOOL C4Menu::SetSelection(int32_t iSelection, bool fAdjustPosition, bool fDoCall
 	// do selection callback
 	if (fDoCalls) OnSelectionChanged(Selection);
 	// Done
-	return TRUE;
+	return true;
 }
 
 C4MenuItem *C4Menu::GetSelectedItem()
@@ -599,12 +599,12 @@ int32_t C4Menu::GetSelection()
 	return Selection;
 }
 
-BOOL C4Menu::SetPosition(int32_t iPosition)
+bool C4Menu::SetPosition(int32_t iPosition)
 {
-	if (!IsActive()) return FALSE;
+	if (!IsActive()) return false;
 	// update scroll pos, if location is initialized
 	if (IsVisible() && pClientWindow) pClientWindow->SetScroll((iPosition / Columns) * ItemHeight);
-	return TRUE;
+	return true;
 }
 
 int32_t C4Menu::GetIdentification()
@@ -774,7 +774,7 @@ void C4Menu::Draw(C4FacetEx &cgo)
 	if (!IsActive()) return;
 
 	// Location
-	if (!LocationSet) { InitLocation(cgo); LocationSet = TRUE; }
+	if (!LocationSet) { InitLocation(cgo); LocationSet = true; }
 
 	// If drawn by a viewport, then it's made visible
 	SetVisibility(true);
@@ -839,25 +839,25 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 		{
 			// Normal enter
 			cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-			DrawCommandKey(cgoControl, COM_Throw, FALSE, PlrControlKeyName(iPlayer, Com2Control(COM_Throw), true).getData());
+			DrawCommandKey(cgoControl, COM_Throw, false, PlrControlKeyName(iPlayer, Com2Control(COM_Throw), true).getData());
 			cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-			GfxR->fctOKCancel.Draw(cgoControl, TRUE, 0, 0);
+			GfxR->fctOKCancel.Draw(cgoControl, true, 0, 0);
 			// Enter-all on Special2
 			if (pItem && pItem->Command2[0])
 			{
 				cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-				DrawCommandKey(cgoControl, COM_Special2, FALSE, PlrControlKeyName(iPlayer, Com2Control(COM_Special2), true).getData());
+				DrawCommandKey(cgoControl, COM_Special2, false, PlrControlKeyName(iPlayer, Com2Control(COM_Special2), true).getData());
 				cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-				GfxR->fctOKCancel.Draw(cgoControl, TRUE, 2, 1);
+				GfxR->fctOKCancel.Draw(cgoControl, true, 2, 1);
 			}
 		}
 		// Draw menu 'close' command
 		cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-		DrawCommandKey(cgoControl, COM_Dig, FALSE, PlrControlKeyName(iPlayer, Com2Control(COM_Dig), true).getData());
+		DrawCommandKey(cgoControl, COM_Dig, false, PlrControlKeyName(iPlayer, Com2Control(COM_Dig), true).getData());
 		cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
 		// Close command contains "Exit"? Show an exit symbol in the status bar.
 		if (SSearch(CloseCommand.getData(), "\"Exit\"")) GfxR->fctExit.Draw(cgoControl);
-		else GfxR->fctOKCancel.Draw(cgoControl, TRUE, 1, 0);
+		else GfxR->fctOKCancel.Draw(cgoControl, true, 1, 0);
 	}
 
 	// live max magic
@@ -876,7 +876,7 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 	switch (Extra)
 	{
 	case C4MN_Extra_Components:
-		if (pItem) pItem->Components.Draw(cgoExtra, -1, Game.Defs, C4D_All, TRUE, C4FCT_Right | C4FCT_Triple | C4FCT_Half);
+		if (pItem) pItem->Components.Draw(cgoExtra, -1, Game.Defs, C4D_All, true, C4FCT_Right | C4FCT_Triple | C4FCT_Half);
 		break;
 	case C4MN_Extra_Value:
 	{
@@ -903,7 +903,7 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 			Game.GraphicsResource.fctMagic.DrawValue2(cgoExtra, iValue, iUseExtraData, 0, 0, C4FCT_Right);
 			cgoExtra.Wdt = cgoExtra.X - iOriginalX - 5;
 			cgoExtra.X = iOriginalX;
-			pItem->Components.Draw(cgoExtra, -1, Game.Defs, C4D_All, TRUE, C4FCT_Right | C4FCT_Triple | C4FCT_Half);
+			pItem->Components.Draw(cgoExtra, -1, Game.Defs, C4D_All, true, C4FCT_Right | C4FCT_Triple | C4FCT_Half);
 		}
 		break;
 	}
@@ -919,15 +919,15 @@ void C4Menu::SetAlignment(int32_t iAlignment)
 	Alignment = iAlignment;
 }
 
-void C4Menu::SetPermanent(BOOL fPermanent)
+void C4Menu::SetPermanent(bool fPermanent)
 {
 	Permanent = fPermanent;
 }
 
-BOOL C4Menu::RefillInternal()
+bool C4Menu::RefillInternal()
 {
 	// Reset flag
-	NeedRefill = FALSE;
+	NeedRefill = false;
 
 	// do the refill in frozen window (no scrolling update)
 	int32_t iLastItemCount = ItemCount;
@@ -936,7 +936,7 @@ BOOL C4Menu::RefillInternal()
 	bool fSuccess = DoRefillInternal(fRefilled);
 	pClientWindow->UnFreeze();
 	UpdateElementPositions();
-	if (!fSuccess) return FALSE;
+	if (!fSuccess) return false;
 
 	// menu contents may have changed: Adjust menu size and selection
 	if (fRefilled)
@@ -944,12 +944,12 @@ BOOL C4Menu::RefillInternal()
 		// Adjust selection
 		AdjustSelection();
 		// Item count increased: resize
-		if (ItemCount > iLastItemCount) LocationSet = FALSE;
+		if (ItemCount > iLastItemCount) LocationSet = false;
 		// Item count decreased: resize if we are a context menu
-		if ((ItemCount < iLastItemCount) && IsContextMenu()) LocationSet = FALSE;
+		if ((ItemCount < iLastItemCount) && IsContextMenu()) LocationSet = false;
 	}
 	// Success
-	return TRUE;
+	return true;
 }
 
 void C4Menu::ClearItems(bool fResetSelection)
@@ -962,7 +962,7 @@ void C4Menu::ClearItems(bool fResetSelection)
 		// Remember selection for nested menus
 		LastSelection = Selection;
 		SetSelection(-1, true, false);
-		LocationSet = FALSE;
+		LocationSet = false;
 	}
 	UpdateScrollBar();
 }
@@ -979,16 +979,16 @@ void C4Menu::Execute()
 		SetTextProgress(+1, true);
 }
 
-BOOL C4Menu::Refill()
+bool C4Menu::Refill()
 {
-	if (!IsActive()) return FALSE;
+	if (!IsActive()) return false;
 	// Refill (close if failure)
 	if (!RefillInternal())
 	{
-		Close(false); return FALSE;
+		Close(false); return false;
 	}
 	// Success
-	return TRUE;
+	return true;
 }
 
 void C4Menu::AdjustSelection()
@@ -1017,12 +1017,12 @@ void C4Menu::AdjustSelection()
 		SetSelection(iSel, iSel != Selection, true);
 }
 
-BOOL C4Menu::ConvertCom(int32_t &rCom, int32_t &rData, bool fAsyncConversion)
+bool C4Menu::ConvertCom(int32_t &rCom, int32_t &rData, bool fAsyncConversion)
 {
 	// This function converts normal Coms to menu Coms before they are send to the queue
 
 	// Menu not active
-	if (!IsActive()) return FALSE;
+	if (!IsActive()) return false;
 
 	// Convert plain com control to menu com
 	switch (rCom)
@@ -1036,7 +1036,7 @@ BOOL C4Menu::ConvertCom(int32_t &rCom, int32_t &rData, bool fAsyncConversion)
 	case COM_Down:     rCom = COM_MenuDown;     break;
 	case COM_Right:    rCom = COM_MenuRight;    break;
 	// Not a menu com: do nothing
-	default: return TRUE;
+	default: return true;
 	}
 
 	// If text is still progressing, any menu com will complete it first
@@ -1046,14 +1046,14 @@ BOOL C4Menu::ConvertCom(int32_t &rCom, int32_t &rData, bool fAsyncConversion)
 		rCom = COM_MenuShowText;
 
 	// Done
-	return TRUE;
+	return true;
 }
 
-BOOL C4Menu::SetLocation(int32_t iX, int32_t iY)
+bool C4Menu::SetLocation(int32_t iX, int32_t iY)
 {
 	// just set position...
 	SetPos(iX, iY);
-	return TRUE;
+	return true;
 }
 
 bool C4Menu::SetTextProgress(int32_t iToProgress, bool fAdd)

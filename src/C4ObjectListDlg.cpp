@@ -676,7 +676,7 @@ static void icon_cell_data_func(GtkTreeViewColumn *column, GtkCellRenderer *rend
 		surface->Lock();
 		for (int y = 0; y < picture.Hgt; ++y) for (int x = 0; x < picture.Wdt; ++x)
 		{
-			DWORD dw = surface->GetPixDw(picture.x + x, picture.y + y, true);
+			uint32_t dw = surface->GetPixDw(picture.x + x, picture.y + y, true);
 			*pixels = (dw >> 16) & 0xff; ++pixels;
 			*pixels = (dw >> 8) & 0xff; ++pixels;
 			*pixels = (dw) & 0xff; ++pixels;

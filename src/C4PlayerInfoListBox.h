@@ -97,7 +97,7 @@ private:
 
 		bool fIconSet; // whether custom icon has been set
 		bool fJoinedInfoSet; // join info for savegame recreation
-		DWORD dwJoinClr, dwPlrClr; // colors currently reflected in icon
+		uint32_t dwJoinClr, dwPlrClr; // colors currently reflected in icon
 
 	protected:
 		int32_t idClient, idPlayer; // referenced IDs
@@ -149,7 +149,7 @@ private:
 
 	protected:
 		int32_t idClient; // associated network interface ID
-		DWORD dwClientClr; // client color used for chatting
+		uint32_t dwClientClr; // client color used for chatting
 
 		bool fIsShownActive; // whether client was active in last update
 		time_t tLastSoundTime; // now() when the client last issued a sound (display as sound icon). 0 for no sound.
@@ -158,7 +158,7 @@ private:
 		ClientListItem(C4PlayerInfoListBox *pForListBox, const C4ClientCore &rClientInfo, ListItem *pInsertBefore);
 		~ClientListItem() {}
 
-		void SetColor(DWORD dwToClr) // update color of client name label
+		void SetColor(uint32_t dwToClr) // update color of client name label
 		{
 			pNameLabel->SetColor((dwClientClr = dwToClr) | C4GUI_MessageFontAlpha);
 		}
@@ -178,7 +178,7 @@ private:
 	public:
 		void UpdateInfo(); // update for changed player info
 
-		DWORD GetColor() const { return dwClientClr; } // client chat color
+		uint32_t GetColor() const { return dwClientClr; } // client chat color
 		C4Client *GetClient() const; // get client associated with this list item
 		bool IsLocalClientPlayer() const; // whether this player is going to join locally
 		C4GUI::Icons GetCurrentStatusIcon(); // get status icon that shows the current client state
@@ -205,7 +205,7 @@ private:
 		int32_t idTeam; // team ID
 
 	protected:
-		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons
+		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
 		virtual void UpdateOwnPos(); // recalculate item positioning
 
 	public:

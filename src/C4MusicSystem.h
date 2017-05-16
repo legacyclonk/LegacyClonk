@@ -24,7 +24,7 @@ public:
 	void NotifySuccess();
 	bool Init(const char *PlayList = nullptr);
 	bool InitForScenario(C4Group &hGroup);
-	bool Play(const char *szSongname = nullptr, bool fLoop = FALSE);
+	bool Play(const char *szSongname = nullptr, bool fLoop = false);
 	bool Stop();
 	void FadeOut(int fadeout_ms);
 

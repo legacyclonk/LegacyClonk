@@ -66,11 +66,11 @@ void C4EditCursor::Execute()
 	}
 }
 
-BOOL C4EditCursor::Init()
+bool C4EditCursor::Init()
 {
 #ifdef _WIN32
 	if (!(hMenu = LoadMenu(Application.hInstance, MAKEINTRESOURCE(IDR_CONTEXTMENUS))))
-		return FALSE;
+		return false;
 #else // _WIN32
 #ifdef WITH_DEVELOPER_MODE
 	menuContext = gtk_menu_new();
@@ -96,7 +96,7 @@ BOOL C4EditCursor::Init()
 #endif // _WIN32
 	Console.UpdateModeCtrls(Mode);
 
-	return TRUE;
+	return true;
 }
 
 void C4EditCursor::ClearPointers(C4Object *pObj)
@@ -106,7 +106,7 @@ void C4EditCursor::ClearPointers(C4Object *pObj)
 		OnSelectionChanged();
 }
 
-bool C4EditCursor::Move(int32_t iX, int32_t iY, WORD wKeyFlags)
+bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 {
 	// Offset movement
 	int32_t xoff = iX - X; int32_t yoff = iY - Y; X = iX; Y = iY;
@@ -146,10 +146,10 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, WORD wKeyFlags)
 
 	// Update
 	UpdateStatusBar();
-	return TRUE;
+	return true;
 }
 
-BOOL C4EditCursor::UpdateStatusBar()
+bool C4EditCursor::UpdateStatusBar()
 {
 	*OSTR = '\0';
 	switch (Mode)
@@ -174,10 +174,10 @@ void C4EditCursor::OnSelectionChanged()
 	fSelectionChanged = true;
 }
 
-BOOL C4EditCursor::LeftButtonDown(BOOL fControl)
+bool C4EditCursor::LeftButtonDown(bool fControl)
 {
 	// Hold
-	Hold = TRUE;
+	Hold = true;
 
 	switch (Mode)
 	{
@@ -199,7 +199,7 @@ BOOL C4EditCursor::LeftButtonDown(BOOL fControl)
 			// Click on nothing: drag frame
 			if (!Target)
 			{
-				Selection.Clear(); DragFrame = TRUE; X2 = X; Y2 = Y;
+				Selection.Clear(); DragFrame = true; X2 = X; Y2 = Y;
 			}
 		}
 		break;
@@ -208,12 +208,12 @@ BOOL C4EditCursor::LeftButtonDown(BOOL fControl)
 		switch (Console.ToolsDlg.Tool)
 		{
 		case C4TLS_Brush: ApplyToolBrush(); break;
-		case C4TLS_Line: DragLine  = TRUE; X2 = X; Y2 = Y; break;
-		case C4TLS_Rect: DragFrame = TRUE; X2 = X; Y2 = Y; break;
+		case C4TLS_Line: DragLine  = true; X2 = X; Y2 = Y; break;
+		case C4TLS_Rect: DragFrame = true; X2 = X; Y2 = Y; break;
 		case C4TLS_Fill:
 			if (Game.HaltCount)
 			{
-				Hold = FALSE; Console.Message(LoadResStr("IDS_CNS_FILLNOHALT")); return FALSE;
+				Hold = false; Console.Message(LoadResStr("IDS_CNS_FILLNOHALT")); return false;
 			}
 			break;
 		case C4TLS_Picker: ApplyToolPicker(); break;
@@ -224,10 +224,10 @@ BOOL C4EditCursor::LeftButtonDown(BOOL fControl)
 	DropTarget = nullptr;
 
 	OnSelectionChanged();
-	return TRUE;
+	return true;
 }
 
-BOOL C4EditCursor::RightButtonDown(BOOL fControl)
+bool C4EditCursor::RightButtonDown(bool fControl)
 {
 	switch (Mode)
 	{
@@ -257,10 +257,10 @@ BOOL C4EditCursor::RightButtonDown(BOOL fControl)
 	}
 
 	OnSelectionChanged();
-	return TRUE;
+	return true;
 }
 
-BOOL C4EditCursor::LeftButtonUp()
+bool C4EditCursor::LeftButtonUp()
 {
 	// Finish edit/tool
 	switch (Mode)
@@ -284,23 +284,23 @@ BOOL C4EditCursor::LeftButtonUp()
 	}
 
 	// Release
-	Hold = FALSE;
-	DragFrame = FALSE;
-	DragLine = FALSE;
+	Hold = false;
+	DragFrame = false;
+	DragLine = false;
 	DropTarget = nullptr;
 	// Update
 	UpdateStatusBar();
-	return TRUE;
+	return true;
 }
 
 #ifdef _WIN32
 
-BOOL SetMenuItemEnable(HMENU hMenu, WORD id, BOOL fEnable)
+bool SetMenuItemEnable(HMENU hMenu, WORD id, bool fEnable)
 {
 	return EnableMenuItem(hMenu, id, MF_BYCOMMAND | MF_ENABLED | (fEnable ? 0 : MF_GRAYED));
 }
 
-BOOL SetMenuItemText(HMENU hMenu, WORD id, const char *szText)
+bool SetMenuItemText(HMENU hMenu, WORD id, const char *szText)
 {
 	MENUITEMINFO minfo;
 	ZeroMem(&minfo, sizeof(minfo));
@@ -315,7 +315,7 @@ BOOL SetMenuItemText(HMENU hMenu, WORD id, const char *szText)
 
 #endif
 
-BOOL C4EditCursor::RightButtonUp()
+bool C4EditCursor::RightButtonUp()
 {
 	Target = nullptr;
 
@@ -323,12 +323,12 @@ BOOL C4EditCursor::RightButtonUp()
 
 	// Update
 	UpdateStatusBar();
-	return TRUE;
+	return true;
 }
 
 bool C4EditCursor::Delete()
 {
-	if (!EditingOK()) return FALSE;
+	if (!EditingOK()) return false;
 	EMMoveObject(EMMO_Remove, 0, 0, nullptr, &Selection);
 	if (Game.Control.isCtrlHost())
 	{
@@ -337,7 +337,7 @@ bool C4EditCursor::Delete()
 	return true;
 }
 
-BOOL C4EditCursor::OpenPropTools()
+bool C4EditCursor::OpenPropTools()
 {
 	switch (Mode)
 	{
@@ -349,13 +349,13 @@ BOOL C4EditCursor::OpenPropTools()
 		Console.ToolsDlg.Open();
 		break;
 	}
-	return TRUE;
+	return true;
 }
 
-BOOL C4EditCursor::Duplicate()
+bool C4EditCursor::Duplicate()
 {
 	EMMoveObject(EMMO_Duplicate, 0, 0, nullptr, &Selection);
-	return TRUE;
+	return true;
 }
 
 void C4EditCursor::Draw(C4FacetEx &cgo)
@@ -439,10 +439,10 @@ void C4EditCursor::FrameSelection()
 	Console.PropertyDlg.Update(Selection);
 }
 
-BOOL C4EditCursor::In(const char *szText)
+bool C4EditCursor::In(const char *szText)
 {
 	EMMoveObject(EMMO_Script, 0, 0, nullptr, &Selection, szText);
-	return TRUE;
+	return true;
 }
 
 void C4EditCursor::Default()
@@ -454,7 +454,7 @@ void C4EditCursor::Default()
 #ifdef _WIN32
 	hMenu = nullptr;
 #endif
-	Hold = DragFrame = DragLine = FALSE;
+	Hold = DragFrame = DragLine = false;
 	Selection.Default();
 	fSelectionChanged = false;
 }
@@ -467,7 +467,7 @@ void C4EditCursor::Clear()
 	Selection.Clear();
 }
 
-BOOL C4EditCursor::SetMode(int32_t iMode)
+bool C4EditCursor::SetMode(int32_t iMode)
 {
 	// Store focus
 #ifdef _WIN32
@@ -476,21 +476,21 @@ BOOL C4EditCursor::SetMode(int32_t iMode)
 	// Update console buttons (always)
 	Console.UpdateModeCtrls(iMode);
 	// No change
-	if (iMode == Mode) return TRUE;
+	if (iMode == Mode) return true;
 	// Set mode
 	Mode = iMode;
 	// Update prop tools by mode
-	BOOL fOpenPropTools = FALSE;
+	bool fOpenPropTools = false;
 	switch (Mode)
 	{
 	case C4CNS_ModeEdit: case C4CNS_ModePlay:
-		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = TRUE;
+		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = true;
 		Console.ToolsDlg.Clear();
 		if (fOpenPropTools) OpenPropTools();
 		break;
 
 	case C4CNS_ModeDraw:
-		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = TRUE;
+		if (Console.ToolsDlg.Active || Console.PropertyDlg.Active) fOpenPropTools = true;
 		Console.PropertyDlg.Clear();
 		if (fOpenPropTools) OpenPropTools();
 		break;
@@ -503,7 +503,7 @@ BOOL C4EditCursor::SetMode(int32_t iMode)
 	SetFocus(hFocus);
 #endif
 	// Done
-	return TRUE;
+	return true;
 }
 
 bool C4EditCursor::ToggleMode()
@@ -558,9 +558,9 @@ void C4EditCursor::ApplyToolFill()
 	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Game.Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, pTools->Material));
 }
 
-BOOL C4EditCursor::DoContextMenu()
+bool C4EditCursor::DoContextMenu()
 {
-	BOOL fObjectSelected = Selection.ObjectCount();
+	bool fObjectSelected = Selection.ObjectCount();
 #ifdef _WIN32
 	POINT point; GetCursorPos(&point);
 	HMENU hContext = GetSubMenu(hMenu, 0);
@@ -596,7 +596,7 @@ BOOL C4EditCursor::DoContextMenu()
 
 	gtk_menu_popup(GTK_MENU(menuContext), nullptr, nullptr, nullptr, nullptr, 3, 0);
 #endif
-	return TRUE;
+	return true;
 }
 
 void C4EditCursor::GrabContents()
@@ -606,13 +606,13 @@ void C4EditCursor::GrabContents()
 	if (!(pFrom = Selection.GetObject())) return;
 	Selection.Copy(pFrom->Contents);
 	Console.PropertyDlg.Update(Selection);
-	Hold = TRUE;
+	Hold = true;
 
 	// Exit all objects
 	EMMoveObject(EMMO_Exit, 0, 0, nullptr, &Selection);
 }
 
-void C4EditCursor::UpdateDropTarget(WORD wKeyFlags)
+void C4EditCursor::UpdateDropTarget(uint16_t wKeyFlags)
 {
 	C4Object *cobj; C4ObjectLink *clnk;
 
@@ -642,15 +642,15 @@ C4Object *C4EditCursor::GetTarget()
 	return Target;
 }
 
-BOOL C4EditCursor::EditingOK()
+bool C4EditCursor::EditingOK()
 {
 	if (!Console.Editing)
 	{
-		Hold = FALSE;
+		Hold = false;
 		Console.Message(LoadResStr("IDS_CNS_NONETEDIT"));
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 int32_t C4EditCursor::GetMode()
@@ -661,7 +661,7 @@ int32_t C4EditCursor::GetMode()
 void C4EditCursor::ApplyToolPicker()
 {
 	int32_t iMaterial;
-	BYTE byIndex;
+	uint8_t byIndex;
 	switch (Game.Landscape.Mode)
 	{
 	case C4LSC_Static:
@@ -690,7 +690,7 @@ void C4EditCursor::ApplyToolPicker()
 			Console.ToolsDlg.SelectMaterial(C4TLS_MatSky);
 		break;
 	}
-	Hold = FALSE;
+	Hold = false;
 }
 
 void C4EditCursor::EMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList *pObjs, const char *szScript)

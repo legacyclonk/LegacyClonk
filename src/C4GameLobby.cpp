@@ -642,7 +642,7 @@ void MainDlg::OnClientSound(C4Client *pOfClient)
 	}
 }
 
-void MainDlg::OnLog(const char *szLogMsg, DWORD dwClr)
+void MainDlg::OnLog(const char *szLogMsg, uint32_t dwClr)
 {
 	if (pChatBox && C4GUI::GetRes())
 	{

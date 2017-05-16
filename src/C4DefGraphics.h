@@ -27,14 +27,14 @@ public:
 	C4Surface *Bitmap, *BitmapClr;
 	bool fColorBitmapAutoCreated; // if set, the color-by-owner-bitmap has been created automatically by all blue shades of the bitmap
 
-	inline C4Surface *GetBitmap(DWORD dwClr = 0) { if (BitmapClr) { BitmapClr->SetClr(dwClr); return BitmapClr; } else return Bitmap; }
+	inline C4Surface *GetBitmap(uint32_t dwClr = 0) { if (BitmapClr) { BitmapClr->SetClr(dwClr); return BitmapClr; } else return Bitmap; }
 
 	C4DefGraphics(C4Def *pOwnDef = nullptr);
 	virtual ~C4DefGraphics() { Clear(); };
 
 	bool LoadBitmap(C4Group &hGroup, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG, bool fColorByOwner); // load specified graphics from group
 	bool LoadBitmaps(C4Group &hGroup, bool fColorByOwner); // load graphics from group
-	bool ColorizeByMaterial(int32_t iMat, C4MaterialMap &rMats, BYTE bGBM); // colorize all graphics by material
+	bool ColorizeByMaterial(int32_t iMat, C4MaterialMap &rMats, uint8_t bGBM); // colorize all graphics by material
 	C4DefGraphics *Get(const char *szGrpName); // get graphics by name
 	void Clear(); // clear fields; delete additional graphics
 
@@ -50,7 +50,7 @@ public:
 	C4AdditionalDefGraphics *GetNext() { return pNext; }
 	virtual C4PortraitGraphics *IsPortrait() { return nullptr; }
 
-	void DrawClr(C4Facet &cgo, BOOL fAspect = TRUE, DWORD dwClr = 0); // set surface color and draw
+	void DrawClr(C4Facet &cgo, bool fAspect = true, uint32_t dwClr = 0); // set surface color and draw
 
 	friend class C4DefGraphicsPtrBackup;
 };
@@ -172,7 +172,7 @@ protected:
 	C4GraphicsOverlay *pNext; // singly linked list
 
 	void UpdateFacet(); // update fctBlit to reflect current data
-	void Set(Mode aMode, C4DefGraphics *pGfx, const char *szAction, DWORD dwBMode, C4Object *pOvrlObj);
+	void Set(Mode aMode, C4DefGraphics *pGfx, const char *szAction, uint32_t dwBMode, C4Object *pOvrlObj);
 
 public:
 	C4GraphicsOverlay() : eMode(MODE_None), pSourceGfx(nullptr), fctBlit(), dwBlitMode(0), dwClrModulation(0xffffff),
@@ -192,32 +192,32 @@ public:
 	void EnumeratePointers();
 	void DenumeratePointers();
 
-	void SetAsBase(C4DefGraphics *pBaseGfx, DWORD dwBMode) // set in MODE_Base
+	void SetAsBase(C4DefGraphics *pBaseGfx, uint32_t dwBMode) // set in MODE_Base
 	{
 		Set(MODE_Base, pBaseGfx, nullptr, dwBMode, nullptr);
 	}
 
-	void SetAsAction(C4DefGraphics *pBaseGfx, const char *szAction, DWORD dwBMode)
+	void SetAsAction(C4DefGraphics *pBaseGfx, const char *szAction, uint32_t dwBMode)
 	{
 		Set(MODE_Action, pBaseGfx, szAction, dwBMode, nullptr);
 	}
 
-	void SetAsPicture(C4DefGraphics *pBaseGfx, DWORD dwBMode)
+	void SetAsPicture(C4DefGraphics *pBaseGfx, uint32_t dwBMode)
 	{
 		Set(MODE_Picture, pBaseGfx, nullptr, dwBMode, nullptr);
 	}
 
-	void SetAsIngamePicture(C4DefGraphics *pBaseGfx, DWORD dwBMode)
+	void SetAsIngamePicture(C4DefGraphics *pBaseGfx, uint32_t dwBMode)
 	{
 		Set(MODE_IngamePicture, pBaseGfx, nullptr, dwBMode, nullptr);
 	}
 
-	void SetAsObject(C4Object *pOverlayObj, DWORD dwBMode)
+	void SetAsObject(C4Object *pOverlayObj, uint32_t dwBMode)
 	{
 		Set(MODE_Object, nullptr, nullptr, dwBMode, pOverlayObj);
 	}
 
-	void SetAsExtraGraphics(C4DefGraphics *pGfx, DWORD dwBMode)
+	void SetAsExtraGraphics(C4DefGraphics *pGfx, uint32_t dwBMode)
 	{
 		Set(MODE_ExtraGraphics, pGfx, nullptr, dwBMode, nullptr);
 	}

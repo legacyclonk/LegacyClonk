@@ -71,7 +71,7 @@ void C4LogBuffer::DiscardFirstLine()
 	if (!iLineCount) iLineDataPos = iNextLineDataPos = 0;
 }
 
-void C4LogBuffer::AppendSingleLine(const char *szLine, int iLineLength, const char *szIndent, CStdFont *pFont, DWORD dwClr, bool fNewPar)
+void C4LogBuffer::AppendSingleLine(const char *szLine, int iLineLength, const char *szIndent, CStdFont *pFont, uint32_t dwClr, bool fNewPar)
 {
 	// security: do not append empty line
 	if (!szLine || !iLineLength || !*szLine) return;
@@ -149,7 +149,7 @@ void C4LogBuffer::AppendSingleLine(const char *szLine, int iLineLength, const ch
 	}
 }
 
-void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, DWORD dwClr, CStdFont *pFirstLineFont)
+void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwClr, CStdFont *pFirstLineFont)
 {
 	char LineBreakChars[] = { 0x0D, 0x0A, '|' };
 	int32_t iLineBreakCharCount = 2 + fMarkup;
@@ -223,7 +223,7 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, DWORD dwClr, 
 	}
 }
 
-const char *C4LogBuffer::GetLine(int iLineIndex, CStdFont **ppFont, DWORD *pdwClr, bool *pfNewPar) const
+const char *C4LogBuffer::GetLine(int iLineIndex, CStdFont **ppFont, uint32_t *pdwClr, bool *pfNewPar) const
 {
 	// evaluate negative indices
 	if (iLineIndex < 0)

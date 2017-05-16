@@ -183,7 +183,7 @@ public:
 	bool Cast(C4ParticleDef *pOfDef, // create several particles with different speeds and params
 		int32_t iAmount,
 		float x, float y, int32_t level,
-		float a0 = 0.0f, DWORD b0 = 0, float a1 = 0.0f, DWORD b1 = 0,
+		float a0 = 0.0f, uint32_t b0 = 0, float a1 = 0.0f, uint32_t b1 = 0,
 		C4ParticleList *pPxList = nullptr, C4Object *pObj = nullptr);
 
 	C4ParticleDef *GetDef(const char *szName, C4ParticleDef *pExclude = nullptr); // get particle def by name
