@@ -156,11 +156,7 @@ class C4Game
 		int32_t iLobbyTimeout;
     bool fObserve;
 		bool fReferenceDefinitionOverride;
-#ifdef NETWORK
 		bool NetworkActive;
-#else
-		enum { NetworkActive = 0 };
-#endif
 		bool Record;
 		bool Verbose; // default false; set to true only by command line
 		StdStrBuf RecordDumpFile;

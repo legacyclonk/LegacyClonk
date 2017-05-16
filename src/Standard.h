@@ -31,11 +31,6 @@
 #define HAVE_FREETYPE
 #endif //_WIN32, HAVE_CONFIG_H
 
-#if !defined(NETWORK) && !defined(NONETWORK)
-// default
-#define NETWORK 1
-#endif
-
 #ifdef _MSC_VER
 #pragma warning(disable : 4786) // long symbol names
 #endif

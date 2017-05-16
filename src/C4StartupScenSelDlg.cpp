@@ -1426,9 +1426,7 @@ void C4StartupScenSelDlg::OnShown()
 	UpdateSelection();
 	fIsInitialLoading = false;
 	// network activation by dialog type
-#ifdef NETWORK
 	Game.NetworkActive = fStartNetworkGame;
-#endif
 	}
 
 void C4StartupScenSelDlg::OnClosed(bool fOK)

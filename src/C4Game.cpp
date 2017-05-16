@@ -2817,9 +2817,7 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 	// Definitions by registry config
 	SCopy(Config.General.Definitions, DefinitionFilenames);
 	*PlayerFilenames = 0;
-#ifdef NETWORK
 	NetworkActive = FALSE;
-#endif
 
 	// Scan additional parameters from command line
   char szParameter[_MAX_PATH+1];
@@ -2879,7 +2877,6 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 		if (SEqual2NoCase(szParameter, "/startup:"))
 			C4Startup::SetStartScreen(szParameter + 9);
 		// Network
-#ifdef NETWORK
 		if (SEqualNoCase(szParameter, "/network"))
 			NetworkActive = TRUE;
 		if (SEqualNoCase(szParameter, "/nonetwork"))
@@ -2977,7 +2974,6 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 			Config.Network.PortUDP = 11113 + 2*(atoi(szParameter + 8)+1);
 		}
 #endif
-#endif // NETWORK
     }
 
 	// Check for fullscreen switch in command line
@@ -3504,7 +3500,6 @@ C4Object* C4Game::FindObjectByCommand(int32_t iCommand, C4Object *pTarget, C4Val
 BOOL C4Game::InitNetworkFromAddress(const char *szAddress)
 {
 	StdCopyStrBuf strRefQueryFailed(LoadResStr("IDS_NET_REFQUERY_FAILED"));
-#ifdef NETWORK
 	// Query reference
 	C4Network2RefClient RefClient;
 	if(!RefClient.Init() ||
@@ -3553,9 +3548,6 @@ BOOL C4Game::InitNetworkFromAddress(const char *szAddress)
 		delete ppRefs[i];
 	delete[] ppRefs;
 	return fSuccess;
-#else
-	return FALSE;
-#endif
 }
 
 BOOL C4Game::InitNetworkFromReference(const C4Network2Reference &Reference)

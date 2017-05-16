@@ -47,7 +47,6 @@ template <class T> struct unpack_class {
 
 const C4PktHandlingData PktHandlingData[] =
 {
-#ifdef NETWORK
 	// C4Network2IO (network thread)
 	{ PID_Conn,					PC_Network, "Connection Request",					true,		true,		PH_C4Network2IO,					PKT_UNPACK(C4PacketConn)				},
 	{ PID_ConnRe,				PC_Network, "Connection Request Reply",		true,		true,		PH_C4Network2IO,					PKT_UNPACK(C4PacketConnRe)			},
@@ -97,8 +96,7 @@ const C4PktHandlingData PktHandlingData[] =
 	//                       main thread
 	{ PID_ControlPkt,		PC_Network, "Control Paket",							false,	false,  PH_C4GameControlNetwork,	PKT_UNPACK(C4PacketControlPkt)	},
 	{ PID_ExecSyncCtrl,	PC_Network, "Execute Sync Control",				false,	false,  PH_C4GameControlNetwork,	PKT_UNPACK(C4PacketExecSyncCtrl)},
-#endif
-	
+
 	// Control (Isn't send over network, handled only as part of a control list)
 	{ CID_ClientJoin,		PC_Control, "Client Join",								false,	true,		0,	                      PKT_UNPACK(C4ControlClientJoin)	},
 	{ CID_ClientUpdate,	PC_Control, "Client Update",							false,	true,		0,	                      PKT_UNPACK(C4ControlClientUpdate)},

@@ -52,11 +52,9 @@ C4StartupMainDlg::C4StartupMainDlg() : C4StartupDlg(NULL) // create w/o title; i
 	btn->SetToolTip(LoadResStr("IDS_DLGTIP_STARTGAME"));
 	btn->SetCustomGraphics(&C4Startup::Get()->Graphics.barMainButtons, &C4Startup::Get()->Graphics.barMainButtonsDown);
 	pStartButton = btn;
-#ifdef NETWORK
 	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr("IDS_BTN_NETWORKGAME"), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnNetJoinBtn));
 	btn->SetToolTip(LoadResStr("IDS_DLGTIP_NETWORKGAME"));
 	btn->SetCustomGraphics(&C4Startup::Get()->Graphics.barMainButtons, &C4Startup::Get()->Graphics.barMainButtonsDown);
-#endif
 	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr("IDS_DLG_PLAYERSELECTION"), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnPlayerSelectionBtn));
 	btn->SetToolTip(LoadResStr("IDS_DLGTIP_PLAYERSELECTION"));
 	btn->SetCustomGraphics(&C4Startup::Get()->Graphics.barMainButtons, &C4Startup::Get()->Graphics.barMainButtonsDown);
@@ -241,7 +239,6 @@ void C4StartupMainDlg::OnNetJoinBtn(C4GUI::Control *btn)
 
 void C4StartupMainDlg::OnNetJoin(const StdStrBuf &rsHostAddress)
 	{
-#ifdef NETWORK
 	// no IP given: No join
 	if (!rsHostAddress || !*rsHostAddress.getData()) return;
 	// set default startup parameters
@@ -253,7 +250,6 @@ void C4StartupMainDlg::OnNetJoin(const StdStrBuf &rsHostAddress)
 	SCopy(rsHostAddress.getData(), Game.DirectJoinAddress, sizeof(Game.DirectJoinAddress)-1);
 	// start with this set!
 	C4Startup::Get()->Start();
-#endif
 	}
 
 void C4StartupMainDlg::OnOptionsBtn(C4GUI::Control *btn)

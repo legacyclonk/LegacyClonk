@@ -149,9 +149,9 @@ class C4StartupNetDlg : public C4StartupDlg, private C4InteractiveThread::Callba
 		C4GameVersion UpdateVersion; // set if update button is visible: Version to be updated to
 
 		C4Sec1TimerCallback<C4StartupNetDlg> *pSec1Timer; // engine timer hook for list updates
-#ifdef NETWORK
+
 		C4Network2IODiscoverClient DiscoverClient; // disocver client to search for local hosts
-#endif
+
 		int iGameDiscoverInterval;                 // next time until a game discovery is started
 		time_t tLastRefresh;                       // time of last refresh
 		bool fIgnoreUpdate;                        // set after user pressed "No" on a server redirect once
