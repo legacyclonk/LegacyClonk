@@ -17,20 +17,20 @@
 /* Main header to include all others */
 
 #ifndef INC_C4Include
-#define INC_C4Include 
+#define INC_C4Include
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif //HAVE_CONFIG_H
+#endif // HAVE_CONFIG_H
 
 #ifdef _WIN32
-	#define C4_OS "win32"
+#define C4_OS "win32"
 #elif defined(__linux__)
-	#define C4_OS "linux"
+#define C4_OS "linux"
 #elif defined(__APPLE__)
-	#define C4_OS "mac"
+#define C4_OS "mac"
 #else
-	#define C4_OS "unknown";
+#define C4_OS "unknown";
 #endif
 
 #ifdef C4ENGINE
@@ -59,7 +59,7 @@
 //#define SOLIDMASK_DEBUG
 
 // fmod
-#if defined USE_FMOD && !defined HAVE_SDL_MIXER
+#if defined(USE_FMOD) && !defined(HAVE_SDL_MIXER)
 #define C4SOUND_USE_FMOD
 #endif
 
@@ -93,6 +93,7 @@
 #ifdef _WIN32
 #include <mmsystem.h>
 #endif
+
 #include <time.h>
 #include <map>
 #include <vector>

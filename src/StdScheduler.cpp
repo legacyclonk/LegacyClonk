@@ -27,16 +27,19 @@
 #ifdef HAVE_SHARE_H
 #include <share.h>
 #endif
+
 #ifdef _WIN32
+
 #include <process.h>
 #include <mmsystem.h>
 
 static int pipe(int *phandles)
-{ 
+{
 	// This doesn't work with select(), rendering the non-event-solution
 	// unusable for Win32. Oh well, it isn't desirable performance-wise, anyway.
 	return _pipe(phandles, 10, O_BINARY);
 }
+
 #endif
 
 #ifdef HAVE_UNISTD_H
@@ -47,7 +50,7 @@ static int pipe(int *phandles)
 // *** StdSchedulerProc
 
 #ifndef STDSCHEDULER_USE_EVENTS
-static bool FD_INTERSECTS(int n, fd_set * a, fd_set * b)
+static bool FD_INTERSECTS(int n, fd_set *a, fd_set *b)
 {
 	for (int i = 0; i < n; ++i)
 		if (FD_ISSET(i, a) && FD_ISSET(i, b))
@@ -77,11 +80,10 @@ StdScheduler::~StdScheduler()
 	Clear();
 }
 
-
 int StdScheduler::getProc(StdSchedulerProc *pProc)
 {
-	for(int i = 0; i < iProcCnt; i++)
-		if(ppProcs[i] == pProc)
+	for (int i = 0; i < iProcCnt; i++)
+		if (ppProcs[i] == pProc)
 			return i;
 	return -1;
 }
@@ -99,9 +101,9 @@ void StdScheduler::Clear()
 void StdScheduler::Add(StdSchedulerProc *pProc)
 {
 	// Alrady in list?
-	if(hasProc(pProc)) return;
-	// Enlarge 
-	if(iProcCnt >= iProcCapacity) Enlarge(1);
+	if (hasProc(pProc)) return;
+	// Enlarge
+	if (iProcCnt >= iProcCapacity) Enlarge(1);
 	// Add
 	ppProcs[iProcCnt] = pProc;
 	iProcCnt++;
@@ -112,31 +114,31 @@ void StdScheduler::Remove(StdSchedulerProc *pProc)
 	// Search
 	int iPos = getProc(pProc);
 	// Not found?
-	if(iPos >= iProcCnt) return;
+	if (iPos >= iProcCnt) return;
 	// Remove
-	for(int i = iPos + 1; i < iProcCnt; i++)
-		ppProcs[i-1] = ppProcs[i];
+	for (int i = iPos + 1; i < iProcCnt; i++)
+		ppProcs[i - 1] = ppProcs[i];
 	iProcCnt--;
 }
 
 bool StdScheduler::Execute(int iTimeout)
 {
 	// Needs at least one process to work properly
-	if(!iProcCnt) return false;
+	if (!iProcCnt) return false;
 
 	// Get timeout
 	int i; int iProcTimeout;
-	for(i = 0; i < iProcCnt; i++)
-		if((iProcTimeout = ppProcs[i]->GetTimeout()) >= 0)
-			if(iTimeout == -1 || iTimeout > iProcTimeout)
+	for (i = 0; i < iProcCnt; i++)
+		if ((iProcTimeout = ppProcs[i]->GetTimeout()) >= 0)
+			if (iTimeout == -1 || iTimeout > iProcTimeout)
 				iTimeout = iProcTimeout;
 
 #ifdef STDSCHEDULER_USE_EVENTS
 
 	// Collect event handles
 	int iEventCnt = 0; HANDLE hEvent;
-	for(i = 0; i < iProcCnt; i++)
-		if(hEvent = ppProcs[i]->GetEvent())
+	for (i = 0; i < iProcCnt; i++)
+		if (hEvent = ppProcs[i]->GetEvent())
 		{
 			pEventHandles[iEventCnt] = hEvent;
 			ppEventProcs[iEventCnt] = ppProcs[i];
@@ -151,14 +153,14 @@ bool StdScheduler::Execute(int iTimeout)
 
 	bool fSuccess = true;
 
-	if(ret != WAIT_TIMEOUT)
+	if (ret != WAIT_TIMEOUT)
 	{
 		// Which event?
 		int iEventNr = ret - WAIT_OBJECT_0;
 
 		// Execute the signaled proces
-		if(iEventNr < iEventCnt - 1)
-			if(!ppEventProcs[iEventNr]->Execute())
+		if (iEventNr < iEventCnt - 1)
+			if (!ppEventProcs[iEventNr]->Execute())
 			{
 				OnError(ppEventProcs[iEventNr]);
 				fSuccess = false;
@@ -168,14 +170,14 @@ bool StdScheduler::Execute(int iTimeout)
 #else
 
 	// Initialize file descriptor sets
-  fd_set fds[2]; int iMaxFDs = Unblocker[0];
+	fd_set fds[2]; int iMaxFDs = Unblocker[0];
 	FD_ZERO(&fds[0]); FD_ZERO(&fds[1]);
 
 	// Add Unblocker
 	FD_SET(Unblocker[0], &fds[0]);
 
 	// Collect file descriptors
-	for(i = 0; i < iProcCnt; i++)
+	for (i = 0; i < iProcCnt; i++)
 		ppProcs[i]->GetFDs(fds, &iMaxFDs);
 
 	// Build timeout structure
@@ -186,10 +188,10 @@ bool StdScheduler::Execute(int iTimeout)
 
 	bool fSuccess = true;
 
-	if(cnt > 0)
+	if (cnt > 0)
 	{
 		// Unblocker? Flush
-		if(FD_ISSET(Unblocker[0], &fds[0]))
+		if (FD_ISSET(Unblocker[0], &fds[0]))
 		{
 			char c;
 			read(Unblocker[0], &c, 1);
@@ -197,7 +199,7 @@ bool StdScheduler::Execute(int iTimeout)
 
 		// Which process?
 		fd_set test_fds[2];
-		for(i = 0; i < iProcCnt; i++)
+		for (i = 0; i < iProcCnt; i++)
 		{
 			// Get FDs for this process alone
 			int test_iMaxFDs = 0;
@@ -208,7 +210,7 @@ bool StdScheduler::Execute(int iTimeout)
 			if (FD_INTERSECTS(test_iMaxFDs + 1, &test_fds[0], &fds[0]) ||
 				FD_INTERSECTS(test_iMaxFDs + 1, &test_fds[1], &fds[1]))
 			{
-				if(!ppProcs[i]->Execute(0))
+				if (!ppProcs[i]->Execute(0))
 				{
 					OnError(ppProcs[i]);
 					fSuccess = false;
@@ -218,15 +220,15 @@ bool StdScheduler::Execute(int iTimeout)
 	}
 	else if (cnt < 0)
 	{
-		printf("StdScheduler::Execute: select failed %s\n",strerror(errno));
+		printf("StdScheduler::Execute: select failed %s\n", strerror(errno));
 	}
 
 #endif
 
 	// Execute all processes with timeout
-	for(i = 0; i < iProcCnt; i++)
-		if(ppProcs[i]->GetTimeout() == 0)
-			if(!ppProcs[i]->Execute())
+	for (i = 0; i < iProcCnt; i++)
+		if (ppProcs[i]->GetTimeout() == 0)
+			if (!ppProcs[i]->Execute())
 			{
 				OnError(ppProcs[i]);
 				fSuccess = false;
@@ -251,34 +253,31 @@ void StdScheduler::Enlarge(int iBy)
 	// Realloc
 	StdSchedulerProc **ppnProcs = new StdSchedulerProc *[iProcCapacity];
 	// Set data
-	for(int i = 0; i < iProcCnt; i++)
+	for (int i = 0; i < iProcCnt; i++)
 		ppnProcs[i] = ppProcs[i];
 	delete[] ppProcs;
 	ppProcs = ppnProcs;
 #ifdef STDSCHEDULER_USE_EVENTS
 	// Allocate dummy arrays (one handle neede for unlocker!)
-	delete[] pEventHandles; pEventHandles = new HANDLE[iProcCapacity + 1];
-	delete[] ppEventProcs;  ppEventProcs = new StdSchedulerProc *[iProcCapacity];
+	delete[] pEventHandles; pEventHandles = new HANDLE            [iProcCapacity + 1];
+	delete[] ppEventProcs;  ppEventProcs  = new StdSchedulerProc *[iProcCapacity];
 #endif
 }
 
 // *** StdSchedulerThread
 
 StdSchedulerThread::StdSchedulerThread()
-	: fThread(false)
-{
-
-}
+	: fThread(false) {}
 
 StdSchedulerThread::~StdSchedulerThread()
-{	
+{
 	Clear();
 }
 
 void StdSchedulerThread::Clear()
 {
 	// Stop thread
-	if(fThread) Stop();
+	if (fThread) Stop();
 	// Clear scheduler
 	StdScheduler::Clear();
 }
@@ -287,28 +286,28 @@ void StdSchedulerThread::Add(StdSchedulerProc *pProc)
 {
 	// Thread is running? Stop it first
 	bool fGotThread = fThread;
-	if(fGotThread) Stop();
+	if (fGotThread) Stop();
 	// Set
 	StdScheduler::Add(pProc);
 	// Restart
-	if(fGotThread) Start();
+	if (fGotThread) Start();
 }
 
 void StdSchedulerThread::Remove(StdSchedulerProc *pProc)
 {
 	// Thread is running? Stop it first
 	bool fGotThread = fThread;
-	if(fGotThread) Stop();
+	if (fGotThread) Stop();
 	// Set
-  StdScheduler::Remove(pProc);
+	StdScheduler::Remove(pProc);
 	// Restart
-	if(fGotThread) Start();
+	if (fGotThread) Start();
 }
 
 bool StdSchedulerThread::Start()
 {
 	// already running? stop
-	if(fThread) Stop();
+	if (fThread) Stop();
 	// begin thread
 	fRunThreadRun = true;
 #ifdef HAVE_WINTHREAD
@@ -324,7 +323,7 @@ bool StdSchedulerThread::Start()
 void StdSchedulerThread::Stop()
 {
 	// Not running?
-	if(!fThread) return;
+	if (!fThread) return;
 	// Set flag
 	fRunThreadRun = false;
 	// Unblock
@@ -332,7 +331,7 @@ void StdSchedulerThread::Stop()
 #ifdef HAVE_WINTHREAD
 	// Wait for thread to terminate itself
 	HANDLE hThread = reinterpret_cast<HANDLE>(iThread);
-	if(WaitForSingleObject(hThread, 10000) == WAIT_TIMEOUT)
+	if (WaitForSingleObject(hThread, 10000) == WAIT_TIMEOUT)
 		// ... or kill it in case it refuses to do so
 		TerminateThread(hThread, -1);
 #elif HAVE_PTHREAD
@@ -362,22 +361,17 @@ void *StdSchedulerThread::_ThreadFunc(void *pPar)
 unsigned int StdSchedulerThread::ThreadFunc()
 {
 	// Keep calling Execute until someone gets fed up and calls StopThread()
-	while(fRunThreadRun)
+	while (fRunThreadRun)
 		Execute();
-	return(0);
+	return (0);
 }
 
-
-
-StdThread::StdThread() : fStarted(false), fStopSignaled(false)
-{
-
-}
+StdThread::StdThread() : fStarted(false), fStopSignaled(false) {}
 
 void StdThread::SignalStop()
 {
 	// Not running?
-	if(!fStarted) return;
+	if (!fStarted) return;
 	// Set flag
 	fStopSignaled = true;
 }
@@ -385,13 +379,13 @@ void StdThread::SignalStop()
 void StdThread::Stop()
 {
 	// Not running?
-	if(!fStarted) return;
+	if (!fStarted) return;
 	// Set flag
 	fStopSignaled = true;
 #ifdef HAVE_WINTHREAD
 	// Wait for thread to terminate itself
 	HANDLE hThread = reinterpret_cast<HANDLE>(iThread);
-	if(WaitForSingleObject(hThread, 10000) == WAIT_TIMEOUT)
+	if (WaitForSingleObject(hThread, 10000) == WAIT_TIMEOUT)
 		// ... or kill him in case he refuses to do so
 		TerminateThread(hThread, -1);
 #elif HAVE_PTHREAD
@@ -415,9 +409,9 @@ void *StdThread::_ThreadFunc(void *pPar)
 unsigned int StdThread::ThreadFunc()
 {
 	// Keep calling Execute until someone gets fed up and calls Stop()
-	while(!IsStopSignaled())
+	while (!IsStopSignaled())
 		Execute();
-	return(0);
+	return (0);
 }
 
 bool StdThread::IsStopSignaled()

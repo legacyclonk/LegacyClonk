@@ -28,14 +28,14 @@
 // ResolveAppends and ResolveIncludes must be called both
 // for each script. ResolveAppends has to be called first!
 BOOL C4AulScript::ResolveAppends(C4DefList *rDefs)
-	{
+{
 	// resolve children appends
 	for (C4AulScript *s = Child0; s; s = s->Next) s->ResolveAppends(rDefs);
 	// resolve local appends
 	if (State != ASS_PREPARSED) return FALSE;
 	for (C4AListEntry *a = Appends; a; a = a->next())
-		{
-		if((long) a->Var != -1)
+	{
+		if ((long)a->Var != -1)
 		{
 			C4Def *Def = rDefs->ID2Def(C4ID(a->Var));
 			if (Def)
@@ -53,44 +53,44 @@ BOOL C4AulScript::ResolveAppends(C4DefList *rDefs)
 		else
 		{
 			// append to all defs
-			for(int i = 0; i < rDefs->GetDefCount(); i++)
+			for (int i = 0; i < rDefs->GetDefCount(); i++)
 			{
 				C4Def *pDef = rDefs->GetDef(i);
-				if(!pDef) break;
-				if(pDef == Def) continue;
+				if (!pDef) break;
+				if (pDef == Def) continue;
 				// append
 				AppendTo(pDef->Script, true);
 			}
 		}
-		}
-	return TRUE;
 	}
+	return TRUE;
+}
 
 BOOL C4AulScript::ResolveIncludes(C4DefList *rDefs)
-	{
+{
 	// resolve children includes
 	for (C4AulScript *s = Child0; s; s = s->Next) s->ResolveIncludes(rDefs);
 	// Had been preparsed?
-	if(State  != ASS_PREPARSED) return FALSE;
+	if (State != ASS_PREPARSED) return FALSE;
 	// has already been resolved?
-	if(IncludesResolved) return TRUE;
+	if (IncludesResolved) return TRUE;
 	// catch circular includes
 	if (Resolving)
-		{
+	{
 		C4AulParseError(this, "Circular include chain detected - ignoring all includes!").show();
 		IncludesResolved = true;
 		State = ASS_LINKED;
 		return FALSE;
-		}
-	Resolving=true;
+	}
+	Resolving = true;
 	// append all includes to local script
 	for (C4AListEntry *i = Includes; i; i = i->next())
-		{
+	{
 		C4Def *Def = rDefs->ID2Def(C4ID(i->Var));
 		if (Def)
 		{
 			// resolve #includes in included script first (#include-chains :( )
-			if(!((C4AulScript &)Def->Script).IncludesResolved)
+			if (!((C4AulScript &)Def->Script).IncludesResolved)
 				if (!Def->Script.ResolveIncludes(rDefs))
 					continue; // skip this #include
 
@@ -105,16 +105,16 @@ BOOL C4AulScript::ResolveIncludes(C4DefList *rDefs)
 			strcpy(strID, C4IdText(C4ID(i->Var)));
 			Warn("script to #include not found: ", strID);
 		}
-		}
+	}
 	IncludesResolved = true;
 	// includes/appends are resolved now (for this script)
-	Resolving=false;
+	Resolving = false;
 	State = ASS_LINKED;
 	return TRUE;
-	}
+}
 
 void C4AulScript::AppendTo(C4AulScript &Scr, bool bHighPrio)
-	{
+{
 	// definition appends
 	if (Def && Scr.Def) Scr.Def->IncludeDefinition(Def);
 	// append all funcs
@@ -125,7 +125,7 @@ void C4AulScript::AppendTo(C4AulScript &Scr, bool bHighPrio)
 		if (sf = f->SFunc())
 			// no need to append global funcs
 			if (sf->Access != AA_GLOBAL)
-				{
+			{
 				// append: create copy
 				// (if high priority, insert at end, otherwise at the beginning)
 				C4AulScriptFunc *sfc = new C4AulScriptFunc(&Scr, sf->Name, bHighPrio);
@@ -141,28 +141,27 @@ void C4AulScript::AppendTo(C4AulScript &Scr, bool bHighPrio)
 					sfc->LinkedTo = sf;
 					sf->LinkedTo = sfc;
 				}
-				}
+			}
 	// mark as linked
 	// increase code size needed
-	Scr.CodeSize += CodeSize+1;
+	Scr.CodeSize += CodeSize + 1;
 	// append all local vars (if any existing)
 	assert(!Def || this == &Def->Script);
 	assert(&Scr.Def->Script == &Scr);
-	if(LocalNamed.iSize == 0)
+	if (LocalNamed.iSize == 0)
 		return;
-	if(!Scr.Def)
+	if (!Scr.Def)
 	{
 		Warn("could not append local variables to global script!", "");
 		return;
 	}
 	// copy local var definitions
-	for(int ivar = 0; ivar < LocalNamed.iSize; ivar ++)
+	for (int ivar = 0; ivar < LocalNamed.iSize; ivar++)
 		Scr.LocalNamed.AddName(LocalNamed.pNames[ivar]);
-
-	}
+}
 
 void C4AulScript::UnLink()
-	{
+{
 	// unlink children
 	for (C4AulScript *s = Child0; s; s = s->Next) s->UnLink();
 
@@ -170,13 +169,13 @@ void C4AulScript::UnLink()
 	if (Temporary) return;
 
 	// check if byte code needs to be freed
-	if (Code) { delete [] Code; Code = NULL; }
+	if (Code) { delete[] Code; Code = NULL; }
 
 	// delete included/appended functions
-	C4AulFunc* pFunc = Func0;
-	while(pFunc)
+	C4AulFunc *pFunc = Func0;
+	while (pFunc)
 	{
-		C4AulFunc* pNextFunc = pFunc->Next;
+		C4AulFunc *pNextFunc = pFunc->Next;
 
 		// clear stuff that's set in AfterLink
 		pFunc->UnLink();
@@ -190,30 +189,29 @@ void C4AulScript::UnLink()
 	// includes will have to be re-resolved now
 	IncludesResolved = false;
 
-
 	if (State > ASS_PREPARSED) State = ASS_PREPARSED;
-	}
+}
 
 void C4AulScriptFunc::UnLink()
-	{
+{
 	OwnerOverloaded = NULL;
-	
+
 	// clear desc information, ParseDesc will set these later on
 	idImage = C4ID_None;
 	iImagePhase = 0;
 	Condition = NULL;
 	ControlMethod = C4AUL_ControlMethod_All;
 
-	C4AulFunc::UnLink(); 
-	}
+	C4AulFunc::UnLink();
+}
 
 void C4AulScript::AfterLink()
-	{
+{
 	// for all funcs: search functions that have the same name in
 	// the whole script tree (for great fast direct object call)
-	for(C4AulFunc *Func = Func0; Func; Func = Func->Next)
+	for (C4AulFunc *Func = Func0; Func; Func = Func->Next)
 		// same-name ring not yet build for this function name?
-		if(!Func->NextSNFunc && !Func->OverloadedBy)
+		if (!Func->NextSNFunc && !Func->OverloadedBy)
 		{
 			// init
 			Func->NextSNFunc = Func;
@@ -221,26 +219,26 @@ void C4AulScript::AfterLink()
 			// (expect all scripts "behind" this point to be already checked
 			//  - so after-link calls for childs must be done after this).
 			C4AulScript *pPos = this;
-			while(pPos)
+			while (pPos)
 			{
 				// has children? go down in hierarchy
-				if(pPos->Child0)
+				if (pPos->Child0)
 					pPos = pPos->Child0;
 				else
 				{
 					// last child? go up in hierarchy
-					while(!pPos->Next && pPos->Owner)
+					while (!pPos->Next && pPos->Owner)
 						pPos = pPos->Owner;
 					// next node
 					pPos = pPos->Next;
 				}
-				if(!pPos) break;
+				if (!pPos) break;
 				// has function with same name?
 				C4AulFunc *pFn = pPos->GetFunc(Func->Name);
-				if(pFn)
+				if (pFn)
 				{
 					// resolve overloads
-					while(pFn->OverloadedBy) pFn = pFn->OverloadedBy;
+					while (pFn->OverloadedBy) pFn = pFn->OverloadedBy;
 					// link
 					pFn->NextSNFunc = Func->NextSNFunc;
 					Func->NextSNFunc = pFn;
@@ -252,22 +250,20 @@ void C4AulScript::AfterLink()
 }
 
 BOOL C4AulScript::ReloadScript(const char *szPath)
-  {
-  // call for childs
+{
+	// call for childs
 	for (C4AulScript *s = Child0; s; s = s->Next)
-    if(s->ReloadScript(szPath))
-      return TRUE;
-  return FALSE;
-  }
+		if (s->ReloadScript(szPath))
+			return TRUE;
+	return FALSE;
+}
 
 void C4AulScriptEngine::Link(C4DefList *rDefs)
-	{
-
+{
 #ifdef C4ENGINE
 
 	try
-		{
-		
+	{
 		// resolve appends
 		ResolveAppends(rDefs);
 
@@ -288,45 +284,43 @@ void C4AulScriptEngine::Link(C4DefList *rDefs)
 
 		// non-strict scripts?
 		if (nonStrictCnt)
-			{
+		{
 			// warn!
 			// find first non-#strict script
-			C4AulScript *pNonStrictScr=FindFirstNonStrictScript();
+			C4AulScript *pNonStrictScr = FindFirstNonStrictScript();
 			if (pNonStrictScr)
 				pNonStrictScr->Warn("using non-#strict syntax!", NULL);
 			else
-				{
+			{
 				Warn("non-#strict script detected, but def is lost", NULL);
 				Warn("please contact piracy@treffpunktclonk.net for further instructions", NULL);
-				}
-			Warn(FormatString("%d script%s use non-#strict syntax!", nonStrictCnt, (nonStrictCnt != 1 ? "s" : "")).getData(), NULL);
 			}
+			Warn(FormatString("%d script%s use non-#strict syntax!", nonStrictCnt, (nonStrictCnt != 1 ? "s" : "")).getData(), NULL);
+		}
 
 		// update material pointers
 		Game.Material.UpdateScriptPointers();
 
 		// display state
-		sprintf(OSTR, "C4AulScriptEngine linked - %d line%s, %d warning%s, %d error%s", 
-      lineCnt, (lineCnt != 1 ? "s" : ""), warnCnt, (warnCnt != 1 ? "s" : ""), errCnt, (errCnt != 1 ? "s" : ""));
+		sprintf(OSTR, "C4AulScriptEngine linked - %d line%s, %d warning%s, %d error%s",
+			lineCnt, (lineCnt != 1 ? "s" : ""), warnCnt, (warnCnt != 1 ? "s" : ""), errCnt, (errCnt != 1 ? "s" : ""));
 		Log(OSTR);
-    
-    // reset counters
-    warnCnt = errCnt = nonStrictCnt = lineCnt = 0;
-		}
+
+		// reset counters
+		warnCnt = errCnt = nonStrictCnt = lineCnt = 0;
+	}
 	catch (C4AulError *err)
-		{
+	{
 		// error??! show it!
 		err->show();
 		delete err;
-		}
-
-#endif
-
 	}
 
+#endif
+}
 
 void C4AulScriptEngine::ReLink(C4DefList *rDefs)
-	{
+{
 	// unlink scripts
 	UnLink();
 
@@ -344,16 +338,15 @@ void C4AulScriptEngine::ReLink(C4DefList *rDefs)
 
 	// update material pointers
 	Game.Material.UpdateScriptPointers();
-	}
+}
 
 BOOL C4AulScriptEngine::ReloadScript(const char *szScript, C4DefList *pDefs)
-  {
-  // reload  
-  if(!C4AulScript::ReloadScript(szScript))
-    return FALSE;
-  // relink
-  ReLink(pDefs);
-  // ok
-  return TRUE;
-  }
-
+{
+	// reload
+	if (!C4AulScript::ReloadScript(szScript))
+		return FALSE;
+	// relink
+	ReLink(pDefs);
+	// ok
+	return TRUE;
+}

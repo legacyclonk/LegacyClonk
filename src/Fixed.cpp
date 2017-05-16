@@ -23,7 +23,8 @@
 #ifdef USE_FIXED
 
 // static table with sinus values from 0.00 degree to 90.00 degree inclusively
-long SineTable[9001] = {
+long SineTable[9001] =
+{
 	0,
 	11,
 	22,

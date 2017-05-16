@@ -31,21 +31,21 @@ class C4DevmodeDlg
 	// Make sure all developer tools are held in the same window
 #ifdef WITH_DEVELOPER_MODE
 private:
-	static GtkWidget* window;
-	static GtkWidget* notebook;
-	
+	static GtkWidget *window;
+	static GtkWidget *notebook;
+
 	static int x, y;
-	
-	static void OnDestroy(GtkWidget* widget, gpointer user_data);
+
+	static void OnDestroy(GtkWidget *widget, gpointer user_data);
 
 public:
-	static GtkWidget* GetWindow() { return window; }
-	static void AddPage(GtkWidget* widget, GtkWindow* parent, const char* title);
-	static void RemovePage(GtkWidget* widget);
-	static void SwitchPage(GtkWidget* widget);
-	
-	static void SetTitle(GtkWidget* widget, const char* title);
+	static GtkWidget *GetWindow() { return window; }
+	static void AddPage(GtkWidget *widget, GtkWindow *parent, const char *title);
+	static void RemovePage(GtkWidget *widget);
+	static void SwitchPage(GtkWidget *widget);
+
+	static void SetTitle(GtkWidget *widget, const char *title);
 #endif // WITH_DEVELOPER_MODE
 };
 
-#endif //INC_C4DevmodeDlg
+#endif // INC_C4DevmodeDlg

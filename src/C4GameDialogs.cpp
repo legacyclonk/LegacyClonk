@@ -29,43 +29,42 @@
 
 bool C4AbortGameDialog::is_shown = false;
 
-// ---------------------------------------------------
 // C4GameAbortDlg
 
 C4AbortGameDialog::C4AbortGameDialog()
-: fGameHalted(false),
-  C4GUI::ConfirmationDialog(LoadResStr("IDS_HOLD_ABORT"), 
-														LoadResStr("IDS_DLG_ABORT"),
-														NULL,
-														MessageDialog::btnYesNo, 
-														true, 
-														C4GUI::Ico_Exit)
-	{
+	: fGameHalted(false),
+	C4GUI::ConfirmationDialog(LoadResStr("IDS_HOLD_ABORT"),
+		LoadResStr("IDS_DLG_ABORT"),
+		NULL,
+		MessageDialog::btnYesNo,
+		true,
+		C4GUI::Ico_Exit)
+{
 	is_shown = true; // assume dlg will be shown, soon
-	}
+}
 
 C4AbortGameDialog::~C4AbortGameDialog()
-	{
+{
 	is_shown = false;
-	}
+}
 
 void C4AbortGameDialog::OnShown()
+{
+	if (!Game.Network.isEnabled())
 	{
-	if(!Game.Network.isEnabled())
-		{
 		fGameHalted = true;
 		Game.HaltCount++;
-		}
 	}
+}
 
 void C4AbortGameDialog::OnClosed(bool fOK)
-	{
-	if(fGameHalted)
+{
+	if (fGameHalted)
 		Game.HaltCount--;
 	// inherited
 	typedef C4GUI::ConfirmationDialog Base;
 	Base::OnClosed(fOK);
 	// abort
-	if(fOK)
+	if (fOK)
 		Game.Abort();
-	}
+}

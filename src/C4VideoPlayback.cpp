@@ -33,20 +33,20 @@
 #endif // HAVE_LIBSMPEG
 
 void C4VideoFile::Clear()
-	{
+{
 	if (sFilename.getLength())
-		{
-		if (fIsTemp) if (!EraseFile(sFilename.getData()))
-			{
-			LogF("C4VideoFile::Clear: Error deleting temporary video file %s", (const char *) sFilename.getData());
-			}
-		sFilename.Clear();
-		}
-	fIsTemp = false;
-	}
-		
-bool C4VideoFile::Load(const char *szFilename, bool fTemp)
 	{
+		if (fIsTemp) if (!EraseFile(sFilename.getData()))
+		{
+			LogF("C4VideoFile::Clear: Error deleting temporary video file %s", (const char *)sFilename.getData());
+		}
+		sFilename.Clear();
+	}
+	fIsTemp = false;
+}
+
+bool C4VideoFile::Load(const char *szFilename, bool fTemp)
+{
 	// clear previous
 	Clear();
 	// some simple sanity check
@@ -55,65 +55,63 @@ bool C4VideoFile::Load(const char *szFilename, bool fTemp)
 	sFilename.Copy(szFilename);
 	fIsTemp = fTemp;
 	return true;
-	}
+}
 
 bool C4VideoFile::Load(class C4Group &hGrp, const char *szFilename)
-	{
+{
 	// unpacked group?
 	if (!hGrp.IsPacked())
-		{
+	{
 		// then direct file registration is possible
 		StdStrBuf sPath; sPath.Take(hGrp.GetFullName());
 		sFilename.AppendChar(DirectorySeparator);
 		sFilename.Append(szFilename);
 		return Load(sPath.getData());
-		}
+	}
 	// packed group: Extract to temp space
-	char szTempFn[_MAX_PATH+1];
+	char szTempFn[_MAX_PATH + 1];
 	SCopy(Config.AtTempPath(::GetFilename(szFilename)), szTempFn, _MAX_PATH);
 	MakeTempFilename(szTempFn);
 	if (!hGrp.ExtractEntry(szFilename, szTempFn))
 		return false;
 	return Load(szTempFn, true);
-	}
-
-
+}
 
 // C4VideoShowDialog
 
 bool C4VideoShowDialog::LoadVideo(C4VideoFile *pVideoFile)
-	{
+{
 #ifdef _WIN32
 	// load video file
-	if (!AVIFile.OpenFile(pVideoFile->GetFilename(), FullScreen.hWindow, lpDDraw->GetByteCnt()*8)) return false;
+	if (!AVIFile.OpenFile(pVideoFile->GetFilename(), FullScreen.hWindow, lpDDraw->GetByteCnt() * 8)) return false;
 	// prepare surface for display
 	if (!fctBuffer.Create(AVIFile.GetWdt(), AVIFile.GetHgt(), C4FCT_Full, C4FCT_Full)) return false;
 	iStartFrameTime = 0; // no frame shown yet
 	// play audio
 	if (Config.Sound.RXSound && AVIFile.OpenAudioStream())
-		{
-		size_t iAudioDataSize=0;
+	{
+		size_t iAudioDataSize = 0;
 		BYTE *pAudioData = AVIFile.GetAudioStreamData(&iAudioDataSize);
 		if (pAudioData)
-			{
+		{
 			if (pAudioTrack) delete pAudioTrack;
 			pAudioTrack = new C4SoundEffect();
 			if (pAudioTrack->Load(pAudioData, iAudioDataSize, FALSE, false))
-				{
+			{
 				C4SoundInstance *pSoundInst = pAudioTrack->New();
 				if (pSoundInst) pSoundInst->Start();
-				}
 			}
-		AVIFile.CloseAudioStream();
 		}
+		AVIFile.CloseAudioStream();
+	}
 	return true;
-#else
-#ifdef HAVE_LIBSMPEG
+#elif defined(HAVE_LIBSMPEG)
 	// FIXME
 	return false;
 	mpeg_info = new SMPEG_Info;
 	mpeg = SMPEG_new(pVideoFile->GetFilename(), mpeg_info, 0);
-	if (SMPEG_error(mpeg)) {
+	if (SMPEG_error(mpeg))
+	{
 		LogF("smpeg: %s", SMPEG_error(mpeg));
 		return false;
 	}
@@ -126,13 +124,14 @@ bool C4VideoShowDialog::LoadVideo(C4VideoFile *pVideoFile)
 		0x0000FF00,
 		0x00FF0000,
 		0xFF000000);
-	if (!surface) {
+	if (!surface)
+	{
 		LogF("smpeg: %s", SDL_GetError());
 		return false;
 	}
 	SMPEG_setdisplay(mpeg, surface, NULL, NULL);
-	
-        /* Play the movie, using SDL_mixer for audio */
+
+	/* Play the movie, using SDL_mixer for audio */
 	SDL_AudioSpec audiofmt;
 	Uint16 format;
 	int freq, channels;
@@ -144,42 +143,39 @@ bool C4VideoShowDialog::LoadVideo(C4VideoFile *pVideoFile)
 	audiofmt.channels = channels;
 	SMPEG_actualSpec(mpeg, &audiofmt);
 
-        SMPEG_play(mpeg);
+	SMPEG_play(mpeg);
 	/* Hook in the MPEG music mixer */
 	Mix_HookMusic(SMPEG_playAudioSDL, mpeg);
 
 	return true;
-#endif // HAVE_LIBSMPEG
-#endif // _WIN32
+#endif // _WIN32/HAVE_LIBSMPEG
 	return false;
-	}
+}
 
 C4VideoShowDialog::~C4VideoShowDialog()
-	{
+{
 #ifdef _WIN32
 	if (pAudioTrack) delete pAudioTrack;
-#else
-#ifdef HAVE_LIBSMPEG
+#elif defined(HAVE_LIBSMPEG)
 	// FIXME
 	return;
-        /* Stop the movie and unhook SMPEG from the mixer */
-        SMPEG_stop(mpeg);
+	/* Stop the movie and unhook SMPEG from the mixer */
+	SMPEG_stop(mpeg);
 	SMPEG_delete(mpeg);
-        Mix_HookMusic(NULL, NULL);
+	Mix_HookMusic(NULL, NULL);
 	SDL_FreeSurface(surface);
 	delete mpeg_info;
-#endif // HAVE_LIBSMPEG
-#endif // _WIN32
-	}
+#endif // _WIN32/HAVE_LIBSMPEG
+}
 
 void C4VideoShowDialog::VideoDone()
-	{
+{
 	// finished playback
 	if (IsShown()) Close(true);
-	}
+}
 
 void C4VideoShowDialog::DrawElement(C4FacetEx &cgo)
-	{
+{
 	// draw current video frame
 #ifdef _WIN32
 	// get frame to be drawn
@@ -187,78 +183,75 @@ void C4VideoShowDialog::DrawElement(C4FacetEx &cgo)
 	int32_t iGetFrame;
 	if (!iStartFrameTime) iStartFrameTime = iCurrFrameTime;
 	if (!AVIFile.GetFrameByTime(iCurrFrameTime - iStartFrameTime, &iGetFrame))
-		{
+	{
 		// no frame available: Video playback done!
 		// 2do: This will always show the last frame two gfx frames?
 		VideoDone();
-		}
+	}
 	else
-		{
+	{
 		// get available frame
 		AVIFile.GrabFrame(iGetFrame, &(fctBuffer.GetFace()));
-		}
+	}
 	// draw the found frame
 	fctBuffer.Draw(cgo, FALSE);
-#else
-#ifdef HAVE_LIBSMPEG
+#elif defined(HAVE_LIBSMPEG)
 	// FIXME
 	return;
-	CSurface * sfc = &fctBuffer.GetFace();
+	CSurface *sfc = &fctBuffer.GetFace();
 	sfc->Lock();
-	sfc->CopyBytes((BYTE*)surface->pixels);
+	sfc->CopyBytes((BYTE *)surface->pixels);
 	sfc->Unlock();
 	fctBuffer.Draw(cgo, FALSE);
 	if (SMPEG_status(mpeg) != SMPEG_PLAYING)
 		VideoDone();
-#endif // HAVE_LIBSMPEG
-#endif // _WIN32
-	}
-
+#endif // _WIN32/HAVE_LIBSMPEG
+}
 
 // C4VideoPlayer
 
 void C4VideoPlayer::Clear()
-	{
+{
 	// delete all loaded videos
 	C4VideoFile *pDelFile;
 	while (pDelFile = pFirstVideo)
-		{
+	{
 		pFirstVideo = pDelFile->GetNext();
 		delete pDelFile;
-		}
 	}
+}
 
 bool C4VideoPlayer::PreloadVideos(class C4Group &rFromGroup)
-	{
+{
 	// preload all videos from group file
 	rFromGroup.ResetSearch();
-	char szFilename[_MAX_PATH+1];
-	int32_t iNumLoaded = 0; bool fAnyLoaded=false;
+	char szFilename[_MAX_PATH + 1];
+	int32_t iNumLoaded = 0; bool fAnyLoaded = false;
 	while (rFromGroup.FindNextEntry(C4CFN_AnimationFiles, szFilename))
-		{
+	{
 		if (!fAnyLoaded)
-			{
+		{
 			// log message: Only if there are videos, because in 99.99% of the cases, there are none
 			LogF(LoadResStr("IDS_PRC_PRELOADVIDEOS"), rFromGroup.GetName());
 			fAnyLoaded = true;
-			}
+		}
 		C4VideoFile *pVideoFile = new C4VideoFile();
 		if (!pVideoFile->Load(rFromGroup, szFilename))
-			{
+		{
 			LogF("C4VideoPlayer::PreloadVideos: Error preloading video %s from group %s.", szFilename, rFromGroup.GetFullName().getData());
 			delete pVideoFile;
 			continue;
-			}
+		}
 		if (pFirstVideo) pVideoFile->SetNext(pFirstVideo);
 		pFirstVideo = pVideoFile;
 		++iNumLoaded;
-		}
+	}
 	// done loading
 	return true;
-	}
+}
 
 bool C4VideoPlayer::PlayVideo(const char *szVideoFilename)
-	{
+{
 	// video speicifed by filename - uses preload database if possible; otherwise gets video from root video collection
 	// search video file in loaded list
 	C4VideoFile *pVidFile;
@@ -267,34 +260,34 @@ bool C4VideoPlayer::PlayVideo(const char *szVideoFilename)
 			break;
 	bool fTempLoaded = false;
 	if (!pVidFile)
-		{
+	{
 		// video not found: Try loading it from game root
 		pVidFile = new C4VideoFile();
-		if (SCharPos('/', szVideoFilename)>=0 || SCharPos('\\', szVideoFilename)>=0)
-			{
+		if (SCharPos('/', szVideoFilename) >= 0 || SCharPos('\\', szVideoFilename) >= 0)
+		{
 			// subfolders involved: UseC4Group to load the video
-			char szParentPath[_MAX_PATH+1];
+			char szParentPath[_MAX_PATH + 1];
 			if (!GetParentPath(szVideoFilename, szParentPath)) { delete pVidFile; return false; }
 			C4Group Grp;
 			if (!Grp.Open(szParentPath)) { delete pVidFile; return false; }
 			if (!pVidFile->Load(Grp, GetFilename(szVideoFilename))) { delete pVidFile; return false; }
-			}
+		}
 		else
-			{
+		{
 			// Direct filename in Clonk directory
 			if (!pVidFile->Load(szVideoFilename)) { delete pVidFile; return false; }
-			}
-		fTempLoaded = true;
 		}
+		fTempLoaded = true;
+	}
 	// OK, play that video
 	bool fSuccess = PlayVideo(pVidFile);
 	// cleanup
 	if (fTempLoaded) delete pVidFile;
 	return fSuccess;
-	}
+}
 
 bool C4VideoPlayer::PlayVideo(C4VideoFile *pVideoFile)
-	{
+{
 	// safety
 	if (!pVideoFile) return false;
 	// plays the specified video and returns when finished or skipped by user (blocking call)
@@ -304,14 +297,13 @@ bool C4VideoPlayer::PlayVideo(C4VideoFile *pVideoFile)
 	if (!Game.pGUI) return false;
 	C4VideoShowDialog *pVideoDlg = new C4VideoShowDialog();
 	if (!pVideoDlg->LoadVideo(pVideoFile))
-		{
+	{
 		DebugLogF("Error playing video file: %s", pVideoFile->GetFilename());
 		delete pVideoDlg;
 		return false;
-		}
+	}
 	++Game.HaltCount;
 	Game.pGUI->ShowModalDlg(pVideoDlg, true); // ignore result; even an aborted video was shown successfully
 	--Game.HaltCount;
 	return true;
-	}
-
+}

@@ -20,20 +20,19 @@
 #include "C4LangStringTable.h"
 
 struct C4StringTableEntry
-	{
+{
 	const char *pName, *pEntry;
 
 	C4StringTableEntry(const char *pName, const char *pEntry)
 		: pName(pName), pEntry(pEntry) {}
-	};
-
+};
 
 void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget, const char *szParentFilePath)
-	{
+{
 	if (!rBuf.getLength())
-		{
+	{
 		return;
-		}
+	}
 	// grab char ptr from buf
 	const char *Data = rBuf.getData();
 
@@ -42,21 +41,21 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 
 	// read string table
 	char *pStrTblBuf = NULL;
-	if(GetData())
+	if (GetData())
 	{
 		// copy data
-		pStrTblBuf = new char [GetDataSize() + 1];
+		pStrTblBuf = new char[GetDataSize() + 1];
 		SCopy(GetData(), pStrTblBuf, GetDataSize());
 		// find entries
 		const char *pLine = pStrTblBuf;
 		bool found_eq = false;
-		for(char *pPos = pStrTblBuf; *pPos; pPos++)
-			if(*pPos == '\n' || *pPos == '\r')
+		for (char *pPos = pStrTblBuf; *pPos; pPos++)
+			if (*pPos == '\n' || *pPos == '\r')
 			{
 				found_eq = false;
 				*pPos = '\0'; pLine = pPos + 1;
 			}
-			else if(*pPos == '=' && !found_eq)
+			else if (*pPos == '=' && !found_eq)
 			{
 				*pPos = '\0';
 				// We found an '=' sign, so parse everything to end of line from now on, ignoring more '=' signs. Bug #2327.
@@ -69,29 +68,31 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 	// Find Replace Positions
 	int iScriptLen = SLen(Data);
 	struct RP { const char *Pos, *String; unsigned int Len; RP *Next; } *pRPList = NULL, *pRPListEnd = NULL;
-	for(const char *pPos = SSearch(Data, "$"); pPos; pPos = SSearch(pPos, "$"))
+	for (const char *pPos = SSearch(Data, "$"); pPos; pPos = SSearch(pPos, "$"))
 	{
 		// Get name
 		char szStringName[C4MaxName + 1];
 		SCopyUntil(pPos, szStringName, '$', C4MaxName); pPos += SLen(szStringName) + 1;
-		if(*(pPos-1) != '$') continue;
+		if (*(pPos - 1) != '$') continue;
 		// valid?
 		const char *pPos2 = szStringName;
 		while (*pPos2)
-			if(!IsIdentifier(*(pPos2++)))
+			if (!IsIdentifier(*(pPos2++)))
 				break;
-		if(*pPos2) continue;
+		if (*pPos2) continue;
 		// check termination
 		// search in string table
 		const char *pStrTblEntry = NULL;
-		for(unsigned int i = 0; i < Entries.size(); i++)
-			if(SEqual(szStringName, Entries[i].pName))
+		for (unsigned int i = 0; i < Entries.size(); i++)
+			if (SEqual(szStringName, Entries[i].pName))
 			{
 				pStrTblEntry = Entries[i].pEntry; break;
 			}
 		// found?
-		if(!pStrTblEntry) 
-			{ sprintf(OSTR, "%s: string table entry not found: \"%s\"", FilePath[0] ? FilePath : (szParentFilePath ? szParentFilePath : "Unknown"), szStringName); Log(OSTR); continue; }
+		if (!pStrTblEntry)
+		{
+			sprintf(OSTR, "%s: string table entry not found: \"%s\"", FilePath[0] ? FilePath : (szParentFilePath ? szParentFilePath : "Unknown"), szStringName); Log(OSTR); continue;
+		}
 		// add new replace-position entry
 		RP *pnRP = new RP;
 		pnRP->Pos = pPos - SLen(szStringName) - 2;
@@ -109,7 +110,7 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 	pNewBuf = sNewBuf.getMData();
 	// Copy data
 	const char *pRPos = Data; char *pWPos = pNewBuf;
-	for(RP *pRPPos = pRPList; pRPPos; pRPPos = pRPPos->Next)
+	for (RP *pRPPos = pRPList; pRPPos; pRPPos = pRPPos->Next)
 	{
 		// copy preceding string data
 		SCopy(pRPos, pWPos, pRPPos->Pos - pRPos);
@@ -123,7 +124,7 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 	}
 	SCopy(pRPos, pWPos);
 
-	while(pRPList)
+	while (pRPList)
 	{
 		RP *pRP = pRPList;
 		pRPList = pRP->Next;
@@ -131,14 +132,14 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 	}
 
 	// free buffer
-	if(pStrTblBuf) delete [] pStrTblBuf;
+	if (pStrTblBuf) delete[] pStrTblBuf;
 
 	// assign this buf
 	rTarget.Clear();
 	rTarget.Take(sNewBuf);
-	}
+}
 
 void C4LangStringTable::ReplaceStrings(StdStrBuf &rBuf)
-	{
+{
 	ReplaceStrings(rBuf, rBuf, 0);
-	}
+}

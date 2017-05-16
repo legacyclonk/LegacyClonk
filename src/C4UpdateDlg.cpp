@@ -40,19 +40,18 @@ int C4UpdateDlg::pid;
 int C4UpdateDlg::c4group_output[2];
 bool C4UpdateDlg::succeeded;
 
-// --------------------------------------------------
 // C4UpdateDlg
 
 C4UpdateDlg::C4UpdateDlg() : C4GUI::InfoDialog(LoadResStr("IDS_TYPE_UPDATE"), 10)
-	{
+{
 	// initial text update
 	UpdateText();
 	// assume update running
 	UpdateRunning = true;
-	}
+}
 
 void C4UpdateDlg::UpdateText()
-	{
+{
 	if (!UpdateRunning)
 		return;
 #ifdef _WIN32
@@ -65,7 +64,7 @@ void C4UpdateDlg::UpdateText()
 	amount_read = read(c4group_output[0], c4group_output_buf, 512);
 	// error
 	if (amount_read == -1)
-		{
+	{
 		if (errno == EAGAIN)
 			return;
 		StdStrBuf Errormessage = FormatString("read error from c4group: %s", strerror(errno));
@@ -73,80 +72,79 @@ void C4UpdateDlg::UpdateText()
 		AddLine(Errormessage.getData());
 		UpdateRunning = false;
 		succeeded = false;
-		}
+	}
 	// EOF: Update done.
 	else if (amount_read == 0)
-		{
+	{
 		// Close c4group output
 		close(c4group_output[0]);
 		// If c4group did not exit but something else caused EOF, then that's bad. But don't hang.
 		int child_status = 0;
 		if (waitpid(pid, &child_status, WNOHANG) == -1)
-			{
+		{
 			LogF("error in waitpid: %s", strerror(errno));
 			AddLineFmt("error in waitpid: %s", strerror(errno));
 			succeeded = false;
-			}
+		}
 		// check if c4group failed.
 		else if (WIFEXITED(child_status) && WEXITSTATUS(child_status))
-			{
+		{
 			LogF("c4group returned status %d", WEXITSTATUS(child_status));
 			AddLineFmt("c4group returned status %d", WEXITSTATUS(child_status));
 			succeeded = false;
-			}
+		}
 		else if (WIFSIGNALED(child_status))
-			{
+		{
 			LogF("c4group killed with signal %d", WTERMSIG(child_status));
 			AddLineFmt("c4group killed with signal %d", WTERMSIG(child_status));
 			succeeded = false;
-			}
+		}
 		else
-			{
+		{
 			Log("Done.");
 			AddLine("Done.");
-			}
-		UpdateRunning = false;
 		}
+		UpdateRunning = false;
+	}
 	else
-		{
+	{
 		c4group_output_buf[amount_read] = 0;
 		// Fixme: This adds spurious newlines in the middle of the output.
 		LogF("%s", c4group_output_buf);
 		AddLineFmt("%s", c4group_output_buf);
-		}
+	}
 #endif
 
 	// Scroll to bottom
 	if (pTextWin)
-		{
+	{
 		pTextWin->UpdateHeight();
 		pTextWin->ScrollToBottom();
-		}
 	}
+}
 
-// --------------------------------------------------
 // static update application function
 
 static bool IsWindowsVista()
-	{
+{
 #ifdef _WIN32
 	// Determine windows version
 	OSVERSIONINFO ver;
 	ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (GetVersionEx((LPOSVERSIONINFO) &ver))
+	if (GetVersionEx((LPOSVERSIONINFO)&ver))
 		return ((ver.dwMajorVersion == 6) && (ver.dwMinorVersion == 0));
 #endif
 	return false;
-	}
+}
 
 bool C4UpdateDlg::DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *pScreen)
-	{
-	StdStrBuf strUpdateFile,strUpdateURL;
+{
+	StdStrBuf strUpdateFile, strUpdateURL;
 	// Double check for valid update
 	if (!IsValidUpdate(rUpdateVersion)) return false;
 	// Objects major update: we will update to the first minor of the next major version - we can not skip major versions or jump directly to a higher minor of the next major version.
 	if (rUpdateVersion.iVer[2] > C4XVER3)
-		strUpdateFile.Format(C4CFG_UpdateMajor, (int)rUpdateVersion.iVer[0], (int)rUpdateVersion.iVer[1], C4XVER3 + 1, 0, C4_OS);	
+		strUpdateFile.Format(C4CFG_UpdateMajor, (int)rUpdateVersion.iVer[0], (int)rUpdateVersion.iVer[1], C4XVER3 + 1, 0, C4_OS);
 	// Objects version match: engine update only
 	else if ((rUpdateVersion.iVer[2] == C4XVER3) && (rUpdateVersion.iVer[3] == C4XVER4))
 		strUpdateFile.Format(C4CFG_UpdateEngine, (int)rUpdateVersion.iBuild, C4_OS);
@@ -155,7 +153,7 @@ bool C4UpdateDlg::DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *p
 		strUpdateFile.Format(C4CFG_UpdateObjects, (int)rUpdateVersion.iVer[0], (int)rUpdateVersion.iVer[1], (int)rUpdateVersion.iVer[2], (int)rUpdateVersion.iVer[3], (int)rUpdateVersion.iBuild, C4_OS);
 	// Compose full update URL by using update server address and replacing last path element name with the update file
 	int iLastElement = SCharLastPos('/', Config.Network.UpdateServerAddress);
-	if (iLastElement > -1) 
+	if (iLastElement > -1)
 	{
 		strUpdateURL = Config.Network.UpdateServerAddress;
 		strUpdateURL.ReplaceEnd(iLastElement + 1, "");
@@ -163,8 +161,8 @@ bool C4UpdateDlg::DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *p
 	}
 	else
 	{
-		// No last slash in update server address? 
-		// Append update file as new segment instead - maybe somebody wants 
+		// No last slash in update server address?
+		// Append update file as new segment instead - maybe somebody wants
 		// to set up their update server this way
 		strUpdateURL = Config.Network.UpdateServerAddress;
 		strUpdateURL.Append("/");
@@ -180,10 +178,10 @@ bool C4UpdateDlg::DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *p
 		return true;
 	// Apply downloaded update
 	return ApplyUpdate(strLocalFilename.getData(), true, pScreen);
-	}
+}
 
 bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4GUI::Screen *pScreen)
-	{
+{
 	// Determine name of update program
 	StdStrBuf strUpdateProg; strUpdateProg.Copy(C4CFN_UpdateProgram);
 	// Windows: manually append extension because ExtractEntry() cannot properly glob and Extract() doesn't return failure values
@@ -194,7 +192,7 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	if (IsWindowsVista()) strUpdateProgEx.Copy(Config.AtTempPath("setup.exe"));
 	// Extract update program (the update should be applied using the new version)
 	C4Group UpdateGroup, SubGroup;
-	char strSubGroup[1024+1];
+	char strSubGroup[1024 + 1];
 	if (!UpdateGroup.Open(strUpdateFile)) return false;
 	// Look for update program at top level
 	if (!UpdateGroup.ExtractEntry(strUpdateProg.getData(), strUpdateProgEx.getData()))
@@ -202,12 +200,12 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 		if (UpdateGroup.FindEntry(FormatString("cr_*_%s.c4u", C4_OS).getData(), strSubGroup))
 			// Extract update program from sub group
 			if (SubGroup.OpenAsChild(&UpdateGroup, strSubGroup))
-				{
+			{
 				SubGroup.ExtractEntry(strUpdateProg.getData(), strUpdateProgEx.getData());
 				SubGroup.Close();
-				}
+			}
 	UpdateGroup.Close();
-	// Execute update program 
+	// Execute update program
 	LogF(LoadResStr("IDS_PRC_LAUNCHINGUPDATE"));
 	succeeded = true;
 #ifdef _WIN32
@@ -222,56 +220,56 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	if (succeeded) Application.Quit();
 #else
 	if (pipe(c4group_output) == -1)
-		{
+	{
 		Log("Error creating pipe");
 		return false;
-		}
+	}
 	switch (pid = fork())
-		{
-		// Error
-		case -1:
-			Log("Error creating update child process."); 
-			return false;
-		// Child process
-		case 0:
-			// Close unused read end
-			close(c4group_output[0]);
-			// redirect stdout and stderr to the parent
-			dup2(c4group_output[1], STDOUT_FILENO);
-			dup2(c4group_output[1], STDERR_FILENO);
-			if (c4group_output[1] != STDOUT_FILENO && c4group_output[1] != STDERR_FILENO)
-				close(c4group_output[1]);
-			execl(C4CFN_UpdateProgram, C4CFN_UpdateProgram, "-v", strUpdateFile, (fDeleteUpdate ? "-yd" : "-y"), static_cast<char *>(0));
-			printf("execl failed: %s\n", strerror(errno));
-			exit(1);
-		// Parent process
-		default:
-			// Close unused write end
+	{
+	// Error
+	case -1:
+		Log("Error creating update child process.");
+		return false;
+	// Child process
+	case 0:
+		// Close unused read end
+		close(c4group_output[0]);
+		// redirect stdout and stderr to the parent
+		dup2(c4group_output[1], STDOUT_FILENO);
+		dup2(c4group_output[1], STDERR_FILENO);
+		if (c4group_output[1] != STDOUT_FILENO && c4group_output[1] != STDERR_FILENO)
 			close(c4group_output[1]);
-			// disable blocking
-			fcntl(c4group_output[0], F_SETFL, O_NONBLOCK);
-			// Open the update log dialog (this will update itself automatically from c4group_output)
-			pScreen->ShowRemoveDlg(new C4UpdateDlg());
-			break;
-		}
+		execl(C4CFN_UpdateProgram, C4CFN_UpdateProgram, "-v", strUpdateFile, (fDeleteUpdate ? "-yd" : "-y"), static_cast<char *>(0));
+		printf("execl failed: %s\n", strerror(errno));
+		exit(1);
+	// Parent process
+	default:
+		// Close unused write end
+		close(c4group_output[1]);
+		// disable blocking
+		fcntl(c4group_output[0], F_SETFL, O_NONBLOCK);
+		// Open the update log dialog (this will update itself automatically from c4group_output)
+		pScreen->ShowRemoveDlg(new C4UpdateDlg());
+		break;
+	}
 #endif
 	// done
 	return succeeded;
-	}
+}
 
 bool C4UpdateDlg::IsValidUpdate(const C4GameVersion &rNewVer)
 {
 	// Engine or game version mismatch
-	if ( (rNewVer.iVer[0] != C4XVER1) || (rNewVer.iVer[1] != C4XVER2) ) return false;
+	if ((rNewVer.iVer[0] != C4XVER1) || (rNewVer.iVer[1] != C4XVER2)) return false;
 	// Objects major is higher...
-	if ( (rNewVer.iVer[2] > C4XVER3)
-	// ...or objects major is the same and objects minor is higher...
+	if ((rNewVer.iVer[2] > C4XVER3)
+		// ...or objects major is the same and objects minor is higher...
 		|| ((rNewVer.iVer[2] == C4XVER3) && (rNewVer.iVer[3] > C4XVER4))
-	// ...or build number is higher
-		|| (rNewVer.iBuild > C4XVERBUILD) )
+		// ...or build number is higher
+		|| (rNewVer.iBuild > C4XVERBUILD))
 		// Update okay
 		return true;
-	// Otherwise 
+	// Otherwise
 	return false;
 }
 
@@ -287,56 +285,56 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	C4GameVersion UpdateVersion;
 	C4GUI::Dialog *pWaitDlg = NULL;
 	if (C4GUI::IsGUIValid())
-		{
+	{
 		pWaitDlg = new C4GUI::MessageDialog(LoadResStr("IDS_MSG_LOOKINGFORUPDATES"), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnAbort, C4GUI::Ico_Ex_Update, C4GUI::MessageDialog::dsRegular);
 		pWaitDlg->SetDelOnClose(false);
 		pScreen->ShowDialog(pWaitDlg, false);
-		}
+	}
 	C4Network2VersionInfoClient VerChecker;
 	bool fSuccess = false, fAborted = false;
 	StdStrBuf strUpdateRedirect;
 	StdStrBuf strQuery; strQuery.Format("%s?action=version", Config.Network.UpdateServerAddress);
 	if (VerChecker.Init() && VerChecker.SetServer(strQuery.getData()) && VerChecker.QueryVersion())
-		{
+	{
 		VerChecker.SetNotify(&Application.InteractiveThread);
 		Application.InteractiveThread.AddProc(&VerChecker);
 		// wait for version check to terminate
 		while (VerChecker.isBusy())
-			{
+		{
 			C4AppHandleResult hr;
-			while ((hr=Application.HandleMessage()) == HR_Message) { }
+			while ((hr = Application.HandleMessage()) == HR_Message) {}
 			// check for program abort
 			if (hr == HR_Failure) { fAborted = true; break; }
 			// check for dialog close
-			if (pWaitDlg) if (!C4GUI::IsGUIValid() || !pWaitDlg->IsShown())  { fAborted = true; break; }
-			}
+			if (pWaitDlg) if (!C4GUI::IsGUIValid() || !pWaitDlg->IsShown()) { fAborted = true; break; }
+		}
 		if (!fAborted)
-		{	
+		{
 			fSuccess = VerChecker.GetVersion(&UpdateVersion);
 			VerChecker.GetRedirect(strUpdateRedirect);
 		}
 		Application.InteractiveThread.RemoveProc(&VerChecker);
 		VerChecker.SetNotify(NULL);
-		}
+	}
 	if (C4GUI::IsGUIValid() && pWaitDlg) delete pWaitDlg;
 	// User abort
 	if (fAborted)
-		{
+	{
 		return false;
-		}
+	}
 	// Error during update check
 	if (!fSuccess)
-		{
+	{
 		StdStrBuf sError; sError.Copy(LoadResStr("IDS_MSG_UPDATEFAILED"));
 		const char *szErrMsg = VerChecker.GetError();
 		if (szErrMsg)
-			{
+		{
 			sError.Append(": ");
 			sError.Append(szErrMsg);
-			}
+		}
 		pScreen->ShowMessage(sError.getData(), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
 		return false;
-		}
+	}
 
 	// UpdateServer Redirection
 	if ((strUpdateRedirect.getLength() > 0) && !SEqual(strUpdateRedirect.getData(), Config.Network.UpdateServerAddress))
@@ -346,14 +344,14 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 		StdStrBuf sMessage;
 		sMessage.Format(LoadResStr("IDS_NET_SERVERREDIRECTMSG"), newServer);
 		if (pScreen->ShowMessageModal(sMessage.getData(), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
-			{
+		{
 			// apply new server setting
 			SCopy(newServer, Config.Network.UpdateServerAddress, CFG_MaxString);
 			Config.Save();
 			pScreen->ShowMessageModal(LoadResStr("IDS_NET_SERVERREDIRECTDONE"), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_OfficialServer);
 			// abort the update check - user should try again
 			return false;
-			}
+		}
 	}
 
 	// Applicable update available
@@ -378,69 +376,66 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	return false;
 }
 
-
 // *** C4Network2VersionInfoClient
 
 bool C4Network2VersionInfoClient::QueryVersion()
 {
-  // Perform an Query query
-  return Query(NULL, false);
+	// Perform an Query query
+	return Query(NULL, false);
 }
 
 bool C4Network2VersionInfoClient::GetVersion(C4GameVersion *piVerOut)
-	{
+{
 	// Sanity check
-	if(isBusy() || !isSuccess()) return false;
+	if (isBusy() || !isSuccess()) return false;
 	// Parse response
-	piVerOut->Set("", 0,0,0,0, 0);;
+	piVerOut->Set("", 0, 0, 0, 0, 0);;
 	try
 	{
 		CompileFromBuf<StdCompilerINIRead>(mkNamingAdapt(
-				mkNamingAdapt(
-					mkParAdapt(*piVerOut, false),
+			mkNamingAdapt(
+				mkParAdapt(*piVerOut, false),
 				"Version"),
 			C4ENGINENAME), ResultString);
 	}
-	catch(StdCompiler::Exception *pExc)
+	catch (StdCompiler::Exception *pExc)
 	{
 		SetError(pExc->Msg.getData());
 		return false;
 	}
 	// validate version
 	if (!piVerOut->iVer[0])
-		{
+	{
 		SetError(LoadResStr("IDS_ERR_INVALIDREPLYFROMSERVER"));
 		return false;
-		}
+	}
 	// done; version OK!
 	return true;
-	}
+}
 
 bool C4Network2VersionInfoClient::GetRedirect(StdStrBuf &rRedirect)
 {
 	// Sanity check
-	if(isBusy() || !isSuccess()) return false;
+	if (isBusy() || !isSuccess()) return false;
 	StdCopyStrBuf strUpdateRedirect;
 	try
 	{
 		CompileFromBuf<StdCompilerINIRead>(mkNamingAdapt(
-				mkNamingAdapt(mkParAdapt(strUpdateRedirect, StdCompiler::RCT_All), "UpdateServerRedirect", ""),
+			mkNamingAdapt(mkParAdapt(strUpdateRedirect, StdCompiler::RCT_All), "UpdateServerRedirect", ""),
 			C4ENGINENAME), ResultString);
 	}
-	catch(StdCompiler::Exception *pExc)
+	catch (StdCompiler::Exception *pExc)
 	{
 		SetError(pExc->Msg.getData());
 		return false;
 	}
 	// did we get something?
 	if (strUpdateRedirect.getLength() > 0)
-		{
+	{
 		rRedirect.Copy(strUpdateRedirect);
 		return true;
-		}
+	}
 	// no, we didn't
 	rRedirect.Clear();
 	return false;
 }
-
-

@@ -30,42 +30,41 @@
 #include <StdRegistry.h>
 
 C4RankSystem::C4RankSystem()
-  {
+{
 	Default();
-  }
+}
 
-int C4RankSystem::Init(const char *szRegister, 
-											 const char *szDefRanks,
-											 int iRankBase)
-  {
-	
+int C4RankSystem::Init(const char *szRegister,
+	const char *szDefRanks,
+	int iRankBase)
+{
 	// Init
-	SCopy(szRegister,Register,256);
-	RankBase=iRankBase;
+	SCopy(szRegister, Register, 256);
+	RankBase = iRankBase;
 
 	// Check registry for present rank names and set defaults
 #ifdef _WIN32
-	int crank=0;
-	char rankname[C4MaxName+1],keyname[30];
-	BOOL Checking=TRUE;
+	int crank = 0;
+	char rankname[C4MaxName + 1], keyname[30];
+	BOOL Checking = TRUE;
 	while (Checking)
+	{
+		sprintf(keyname, "Rank%03d", crank + 1);
+		if (GetRegistryString(Register, keyname, rankname, C4MaxName + 1))
 		{
-		sprintf(keyname,"Rank%03d",crank+1);
-		if (GetRegistryString(Register,keyname,rankname,C4MaxName+1))
-			{
 			// Rank present
 			crank++;
-			}
+		}
 		else
-			{
+		{
 			// Rank not defined, check for default
-			if (SCopySegment(szDefRanks,crank,rankname,'|',C4MaxName)
-			 && SetRegistryString(Register,keyname,rankname))
+			if (SCopySegment(szDefRanks, crank, rankname, '|', C4MaxName)
+				&& SetRegistryString(Register, keyname, rankname))
 				crank++;
 			else
-				Checking=FALSE;
-			}
+				Checking = FALSE;
 		}
+	}
 	return crank;
 #else
 	// clear any loaded rank names
@@ -73,28 +72,28 @@ int C4RankSystem::Init(const char *szRegister,
 	if (!szDefRanks) return 0;
 	// make a copy
 	szRankNames = new char[strlen(szDefRanks) + 1];
-	strcpy (szRankNames, szDefRanks);
+	strcpy(szRankNames, szDefRanks);
 	// split into substrings by replacing the | with zeros
-	for (char * p = szRankNames; *p; ++p) if (*p == '|')
-		{
+	for (char *p = szRankNames; *p; ++p) if (*p == '|')
+	{
 		*p = 0;
 		++iRankNum;
-		}
-	++ iRankNum; // The last rank is already terminated by zero
+	}
+	++iRankNum; // The last rank is already terminated by zero
 	// build a list of substrings
 	pszRankNames = new char *[iRankNum];
-	char * p = szRankNames;
+	char *p = szRankNames;
 	for (int i = 0; i < iRankNum; ++i)
-		{
+	{
 		pszRankNames[i] = p;
 		p += strlen(p) + 1;
-		}
+	}
 	return iRankNum;
 #endif
-  }
+}
 
 bool C4RankSystem::Load(C4Group &hGroup, const char *szFilenames, int DefRankBase, const char *szLanguage)
-	{
+{
 	// clear any loaded rank names
 	Clear();
 	assert(szFilenames); assert(szLanguage);
@@ -103,22 +102,22 @@ bool C4RankSystem::Load(C4Group &hGroup, const char *szFilenames, int DefRankBas
 	if (!Ranks.LoadEx("Ranks", hGroup, szFilenames, szLanguage)) return false;
 	size_t iSize = Ranks.GetDataSize();
 	if (!iSize) return false;
-	szRankNames=new char[iSize+1];
+	szRankNames = new char[iSize + 1];
 	memcpy(szRankNames, Ranks.GetData(), iSize * sizeof(char));
-	szRankNames[iSize]=0;
+	szRankNames[iSize] = 0;
 	Ranks.Close();
 	// replace line breaks by zero-chars
-	unsigned int i=0;
-	for (; i<iSize; ++i)
-		if (szRankNames[i] == 0x0A || szRankNames[i] == 0x0D) szRankNames[i]=0;
+	unsigned int i = 0;
+	for (; i < iSize; ++i)
+		if (szRankNames[i] == 0x0A || szRankNames[i] == 0x0D) szRankNames[i] = 0;
 	// count names
-	char *pRank0=szRankNames, *pPos=szRankNames;
-	for (i=0; i<iSize; ++i,++pPos)
+	char *pRank0 = szRankNames, *pPos = szRankNames;
+	for (i = 0; i < iSize; ++i, ++pPos)
 		if (!*pPos)
-			{
+		{
 			// zero-character found: content?
-			if (pPos-pRank0>0)
-				{
+			if (pPos - pRank0 > 0)
+			{
 				// rank extension?
 				if (*pRank0 == '*')
 					++iRankExtNum;
@@ -128,199 +127,199 @@ bool C4RankSystem::Load(C4Group &hGroup, const char *szFilenames, int DefRankBas
 					if (SCharPos('=', pRank0) < 0)
 						// count as name!
 						++iRankNum;
-				}
-			// advance pos
-			pRank0=pPos+1;
 			}
+			// advance pos
+			pRank0 = pPos + 1;
+		}
 	// safety
 	if (!iRankNum) { Clear(); return false; }
 	// set default rank base
-	RankBase=DefRankBase;
+	RankBase = DefRankBase;
 	// alloc lists
 	pszRankNames = new char *[iRankNum];
 	if (iRankExtNum) pszRankExtensions = new char *[iRankExtNum];
 	// fill list with names
 	// count names
-	pRank0=szRankNames; pPos=szRankNames;
-	char **pszCurrRank=pszRankNames;
-	char **pszCurrRankExt=pszRankExtensions;
-	for (i=0; i<iSize; ++i,++pPos)
+	pRank0 = szRankNames; pPos = szRankNames;
+	char **pszCurrRank = pszRankNames;
+	char **pszCurrRankExt = pszRankExtensions;
+	for (i = 0; i < iSize; ++i, ++pPos)
 		if (!*pPos)
-			{
+		{
 			// zero-character found: content?
-			if (pPos-pRank0>0)
+			if (pPos - pRank0 > 0)
 				// extension?
 				if (*pRank0 == '*')
-					{
-					*pszCurrRankExt++ = pRank0+1;
-					}
-				// no comment?
+				{
+					*pszCurrRankExt++ = pRank0 + 1;
+				}
+			// no comment?
 				else if (*pRank0 != '#')
-					{
+				{
 					// check if it's a setting
-					int iEqPos=SCharPos('=', pRank0);
+					int iEqPos = SCharPos('=', pRank0);
 					if (iEqPos >= 0)
-						{
+					{
 						// get name and value of setting
-						pRank0[iEqPos]=0; char *szValue=pRank0+iEqPos+1;
+						pRank0[iEqPos] = 0; char *szValue = pRank0 + iEqPos + 1;
 						if (SEqual(pRank0, "Base"))
 							// get rankbase
 							// note that invalid numbers may cause desyncs here...not very likely though :)
 							sscanf(szValue, "%d", &RankBase);
-						}
+					}
 					else
 						// yeeehaa! it's a name! store it, store it!
-						*pszCurrRank++=pRank0;
-					}
+						*pszCurrRank++ = pRank0;
+				}
 			// advance pos
-			pRank0=pPos+1;
-			}
+			pRank0 = pPos + 1;
+		}
 	// check rankbase
-	if (!RankBase) RankBase=1000;
+	if (!RankBase) RankBase = 1000;
 	// ranks read, success
 	return true;
-	}
+}
 
 StdStrBuf C4RankSystem::GetRankName(int iRank, bool fReturnLastIfOver)
-  {
-  if (iRank<0) return StdStrBuf();
+{
+	if (iRank < 0) return StdStrBuf();
 	// if a new-style ranklist is loaded, seek there
 	if (pszRankNames)
-		{
-		if(iRankNum<=0) return StdStrBuf();
+	{
+		if (iRankNum <= 0) return StdStrBuf();
 		// overflow check
-		if (iRank>=iRankNum*(iRankExtNum+1))
-			{
+		if (iRank >= iRankNum * (iRankExtNum + 1))
+		{
 			// rank undefined: Fallback to last rank
 			if (!fReturnLastIfOver) return StdStrBuf();
-			iRank = iRankNum*(iRankExtNum+1)-1;
-			}
+			iRank = iRankNum * (iRankExtNum + 1) - 1;
+		}
 		StdStrBuf sResult;
 		if (iRank >= iRankNum)
-			{
+		{
 			// extended rank composed of two parts
 			int iExtension = iRank / iRankNum - 1;
 			iRank = iRank % iRankNum;
 			sResult.Format(pszRankExtensions[iExtension], pszRankNames[iRank]);
-			}
+		}
 		else
-			{
+		{
 			// simple rank
 			sResult.Ref(pszRankNames[iRank]);
-			}
-		return sResult;
 		}
+		return sResult;
+	}
 #ifdef _WIN32
 	// old-style registry fallback
-	while (iRank>=0)
-		{
+	while (iRank >= 0)
+	{
 		char keyname[30];
-		sprintf(keyname,"Rank%03d",iRank+1);
-		if (GetRegistryString(Register,keyname,RankName,C4MaxName+1))
+		sprintf(keyname, "Rank%03d", iRank + 1);
+		if (GetRegistryString(Register, keyname, RankName, C4MaxName + 1))
 			return StdStrBuf(RankName);
 		if (!fReturnLastIfOver) return StdStrBuf(NULL);
 		--iRank;
-		}
-#endif
-  return StdStrBuf();	
 	}
+#endif
+	return StdStrBuf();
+}
 
 int C4RankSystem::Experience(int iRank)
-  {
-  if (iRank<0) return 0;
-  return (int) ( pow (double(iRank), 1.5) * RankBase );
-  }
+{
+	if (iRank < 0) return 0;
+	return (int)(pow(double(iRank), 1.5) * RankBase);
+}
 
 int C4RankSystem::RankByExperience(int iExp)
-	{
-	int iRank=0;
-	while (Experience(iRank+1)<=iExp) ++iRank;
+{
+	int iRank = 0;
+	while (Experience(iRank + 1) <= iExp) ++iRank;
 	return iRank;
-	}
+}
 
 void C4RankSystem::Clear()
-	{
+{
 	// clear any loaded rank names
-	if (pszRankNames) { delete [] pszRankNames; pszRankNames=NULL; }
-	if (pszRankExtensions) { delete [] pszRankExtensions; pszRankExtensions = NULL; }
-	if (szRankNames) { delete [] szRankNames; szRankNames=NULL; }
+	if (pszRankNames)      { delete[] pszRankNames;      pszRankNames      = NULL; }
+	if (pszRankExtensions) { delete[] pszRankExtensions; pszRankExtensions = NULL; }
+	if (szRankNames)       { delete[] szRankNames;       szRankNames       = NULL; }
 	// reset number of ranks
-	iRankNum=0;
-	iRankExtNum=0;
-	}
+	iRankNum = 0;
+	iRankExtNum = 0;
+}
 
 void C4RankSystem::Default()
-	{
-	Register[0]=0;
-	RankName[0]=0;
-	RankBase=1000;
-	pszRankNames=NULL;
-	szRankNames=NULL;
-	pszRankExtensions=NULL;
-	iRankExtNum=0;
-	}
+{
+	Register[0] = 0;
+	RankName[0] = 0;
+	RankBase = 1000;
+	pszRankNames = NULL;
+	szRankNames = NULL;
+	pszRankExtensions = NULL;
+	iRankExtNum = 0;
+}
 
 #ifdef C4ENGINE
 bool C4RankSystem::DrawRankSymbol(C4FacetExSurface *fctSymbol, int32_t iRank, C4FacetEx *pfctRankSymbols, int32_t iRankSymbolCount, bool fOwnSurface, int32_t iXOff, C4Facet *cgoDrawDirect)
-	{
+{
 	// safety
-	if (iRank<0) iRank = 0;
+	if (iRank < 0) iRank = 0;
 	// symbol by rank
-	int32_t iMaxRankSym,Q;
+	int32_t iMaxRankSym, Q;
 	if (pfctRankSymbols->GetPhaseNum(iMaxRankSym, Q))
+	{
+		if (!iMaxRankSym) iMaxRankSym = 1;
+		int32_t iBaseRank = iRank % iRankSymbolCount;
+		if (iRank / iRankSymbolCount)
 		{
-		if (!iMaxRankSym) iMaxRankSym=1;
-		int32_t iBaseRank=iRank%iRankSymbolCount;
-		if (iRank/iRankSymbolCount)
-			{
 			// extended rank: draw
 			// extension star defaults to captain star; but use extended symbols if they are in the gfx
-			C4Facet fctExtended = (const C4Facet &) Game.GraphicsResource.fctCaptain;
+			C4Facet fctExtended = (const C4Facet &)Game.GraphicsResource.fctCaptain;
 			if (iMaxRankSym > iRankSymbolCount)
-				{
+			{
 				int32_t iExtended = iRank / iRankSymbolCount - 1 + iRankSymbolCount;
 				if (iExtended >= iMaxRankSym)
-					{
+				{
 					// max rank exceeded
 					iExtended = iMaxRankSym - 1;
 					iBaseRank = iRankSymbolCount - 1;
-					}
-				fctExtended = (const C4Facet &) pfctRankSymbols->GetPhase(iExtended);
 				}
+				fctExtended = (const C4Facet &)pfctRankSymbols->GetPhase(iExtended);
+			}
 			int32_t iSize = pfctRankSymbols->Wdt;
 			if (!cgoDrawDirect)
-				{
-				fctSymbol->Create(iSize,iSize);
-				pfctRankSymbols->DrawX(fctSymbol->Surface, 0,0,iSize,iSize,iBaseRank);
-				fctExtended.DrawX(fctSymbol->Surface, 0,0,iSize*2/3,iSize*2/3);
-				}
-			else
-				{
-				pfctRankSymbols->Draw(cgoDrawDirect->Surface,cgoDrawDirect->X+iXOff,cgoDrawDirect->Y,iBaseRank);
-				fctExtended.Draw(cgoDrawDirect->Surface, cgoDrawDirect->X+iXOff-4,cgoDrawDirect->Y-3);
-				}
-			}
-		else
 			{
+				fctSymbol->Create(iSize, iSize);
+				pfctRankSymbols->DrawX(fctSymbol->Surface, 0, 0, iSize, iSize, iBaseRank);
+				fctExtended.DrawX(fctSymbol->Surface, 0, 0, iSize * 2 / 3, iSize * 2 / 3);
+			}
+			else
+			{
+				pfctRankSymbols->Draw(cgoDrawDirect->Surface, cgoDrawDirect->X + iXOff, cgoDrawDirect->Y, iBaseRank);
+				fctExtended.Draw(cgoDrawDirect->Surface, cgoDrawDirect->X + iXOff - 4, cgoDrawDirect->Y - 3);
+			}
+		}
+		else
+		{
 			// regular rank: copy facet
 			if (cgoDrawDirect)
-				{
-				pfctRankSymbols->Draw(cgoDrawDirect->Surface, cgoDrawDirect->X+iXOff,cgoDrawDirect->Y,iBaseRank);
-				}
-			else if (fOwnSurface)
-				{
-				int32_t iSize = pfctRankSymbols->Wdt;
-				fctSymbol->Create(iSize,iSize);
-				pfctRankSymbols->DrawX(fctSymbol->Surface, 0,0,iSize,iSize,iBaseRank);
-				}
-			else
-				{
-				fctSymbol->Set(pfctRankSymbols->GetPhase(iBaseRank));
-				}
+			{
+				pfctRankSymbols->Draw(cgoDrawDirect->Surface, cgoDrawDirect->X + iXOff, cgoDrawDirect->Y, iBaseRank);
 			}
-		return true;
+			else if (fOwnSurface)
+			{
+				int32_t iSize = pfctRankSymbols->Wdt;
+				fctSymbol->Create(iSize, iSize);
+				pfctRankSymbols->DrawX(fctSymbol->Surface, 0, 0, iSize, iSize, iBaseRank);
+			}
+			else
+			{
+				fctSymbol->Set(pfctRankSymbols->GetPhase(iBaseRank));
+			}
 		}
-	return false;
+		return true;
 	}
+	return false;
+}
 
 #endif

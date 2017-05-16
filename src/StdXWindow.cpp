@@ -47,30 +47,34 @@
 
 /* CStdWindow */
 
-CStdWindow::CStdWindow ():
+CStdWindow::CStdWindow() :
 	Active(false)
 #ifdef USE_X11
-	,wnd(0), renderwnd(0), dpy(0), Info(0), Hints(0), HasFocus(false)
+	, wnd(0), renderwnd(0), dpy(0), Info(0), Hints(0), HasFocus(false)
 #endif
+{}
+
+CStdWindow::~CStdWindow()
 {
-}
-CStdWindow::~CStdWindow () {
 	Clear();
 }
-CStdWindow * CStdWindow::Init(CStdApp * pApp) {
+
+CStdWindow *CStdWindow::Init(CStdApp *pApp)
+{
 	return Init(pApp, STD_PRODUCT);
 }
 
-CStdWindow * CStdWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * pParent, bool HideCursor) {
+CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool HideCursor)
+{
 #ifndef USE_X11
 	return this;
 #else
 	Active = true;
 	dpy = pApp->dpy;
 
-	if(!FindInfo() ) return 0;
+	if (!FindInfo()) return 0;
 
-// Various properties
+	// Various properties
 	XSetWindowAttributes attr;
 	attr.border_pixel = 0;
 	attr.background_pixel = 0;
@@ -83,11 +87,11 @@ CStdWindow * CStdWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * p
 		PointerMotionMask |
 		ButtonPressMask |
 		ButtonReleaseMask;
-	attr.colormap = XCreateColormap(dpy, DefaultRootWindow(dpy), ((XVisualInfo*)Info)->visual, AllocNone);
+	attr.colormap = XCreateColormap(dpy, DefaultRootWindow(dpy), ((XVisualInfo *)Info)->visual, AllocNone);
 	unsigned long attrmask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 	Pixmap bitmap;
 	if (HideCursor)
-		{
+	{
 		// Hide the mouse cursor
 		XColor cursor_color;
 		// We do not care what color the invisible cursor has
@@ -95,23 +99,25 @@ CStdWindow * CStdWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * p
 		bitmap = XCreateBitmapFromData(dpy, DefaultRootWindow(dpy), "\000", 1, 1);
 		attr.cursor = XCreatePixmapCursor(dpy, bitmap, bitmap, &cursor_color, &cursor_color, 0, 0);
 		attrmask |= CWCursor;
-		}
+	}
 
 	wnd = XCreateWindow(dpy, DefaultRootWindow(dpy),
-		0, 0, 640, 480, 0, ((XVisualInfo*)Info)->depth, InputOutput, ((XVisualInfo*)Info)->visual,
+		0, 0, 640, 480, 0, ((XVisualInfo *)Info)->depth, InputOutput, ((XVisualInfo *)Info)->visual,
 		attrmask, &attr);
 	if (HideCursor)
-		{
+	{
 		XFreeCursor(dpy, attr.cursor);
 		XFreePixmap(dpy, bitmap);
-		}
-	if (!wnd) {
+	}
+	if (!wnd)
+	{
 		Log("Error creating window.");
 		return 0;
 	}
 	// Update the XWindow->CStdWindow-Map
 	CStdAppPrivate::SetWindow(wnd, this);
-	if (!pApp->Priv->xic && pApp->Priv->xim) {
+	if (!pApp->Priv->xic && pApp->Priv->xim)
+	{
 		pApp->Priv->xic = XCreateIC(pApp->Priv->xim,
 			XNClientWindow, wnd,
 			XNFocusWindow, wnd,
@@ -119,11 +125,14 @@ CStdWindow * CStdWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * p
 			XNResourceName, STD_PRODUCT,
 			XNResourceClass, STD_PRODUCT,
 			NULL);
-		if (!pApp->Priv->xic) {
+		if (!pApp->Priv->xic)
+		{
 			Log("Failed to create input context.");
 			XCloseIM(pApp->Priv->xim);
-			pApp->Priv->xim=0;
-		} else {
+			pApp->Priv->xim = 0;
+		}
+		else
+		{
 			long ic_event_mask;
 			if (XGetICValues(pApp->Priv->xic, XNFilterEvents, &ic_event_mask, NULL) == NULL)
 				attr.event_mask |= ic_event_mask;
@@ -133,34 +142,34 @@ CStdWindow * CStdWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * p
 	}
 	// We want notification of closerequests and be killed if we hang
 	Atom WMProtocols[2];
-	char * WMProtocolnames[] = { "WM_DELETE_WINDOW", "_NET_WM_PING" };
+	char *WMProtocolnames[] = { "WM_DELETE_WINDOW", "_NET_WM_PING" };
 	XInternAtoms(dpy, WMProtocolnames, 2, false, WMProtocols);
 	XSetWMProtocols(dpy, wnd, WMProtocols, 2);
 	// Let the window manager know our pid so it can kill us
 	Atom PID = XInternAtom(pApp->dpy, "_NET_WM_PID", false);
 	int32_t pid = getpid();
-	if (PID != None) XChangeProperty(pApp->dpy, wnd, PID, XA_CARDINAL, 32, PropModeReplace, reinterpret_cast<const unsigned char*>(&pid), 1);
+	if (PID != None) XChangeProperty(pApp->dpy, wnd, PID, XA_CARDINAL, 32, PropModeReplace, reinterpret_cast<const unsigned char *>(&pid), 1);
 	// Title and stuff
 	XTextProperty title_property;
 	StdStrBuf tbuf; tbuf.Copy(Title ? Title : "");
-	char * tbufstr = tbuf.getMData();
+	char *tbufstr = tbuf.getMData();
 	XStringListToTextProperty(&tbufstr, 1, &title_property);
 	// State and Icon
-	XWMHints * wm_hint = XAllocWMHints();
+	XWMHints *wm_hint = XAllocWMHints();
 	wm_hint->flags = StateHint | InputHint | IconPixmapHint | IconMaskHint;
 	wm_hint->initial_state = NormalState;
 	wm_hint->input = True;
 	// Trust XpmCreatePixmapFromData to not modify the xpm...
-	XpmCreatePixmapFromData (dpy, wnd, const_cast<char **>(c4x_xpm), &wm_hint->icon_pixmap, &wm_hint->icon_mask, 0);
+	XpmCreatePixmapFromData(dpy, wnd, const_cast<char **>(c4x_xpm), &wm_hint->icon_pixmap, &wm_hint->icon_mask, 0);
 	// Window class
-	XClassHint * class_hint = XAllocClassHint();
+	XClassHint *class_hint = XAllocClassHint();
 	class_hint->res_name = STD_PRODUCT;
 	class_hint->res_class = STD_PRODUCT;
 	XSetWMProperties(dpy, wnd, &title_property, &title_property, pApp->Priv->argv, pApp->Priv->argc, 0, wm_hint, class_hint);
 	// Set "parent". Clonk does not use "real" parent windows, but multiple toplevel windows.
 	if (pParent) XSetTransientForHint(dpy, wnd, pParent->wnd);
 	// Show window
-	XMapWindow (dpy, wnd);
+	XMapWindow(dpy, wnd);
 	// Clean up
 	XFree(title_property.value);
 	Hints = wm_hint;
@@ -173,15 +182,17 @@ CStdWindow * CStdWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * p
 #endif // USE_X11
 }
 
-void CStdWindow::Clear() {
+void CStdWindow::Clear()
+{
 #ifdef USE_X11
 	// Destroy window
-	if (wnd) {
+	if (wnd)
+	{
 		CStdAppPrivate::SetWindow(wnd, 0);
 		XUnmapWindow(dpy, wnd);
 		XDestroyWindow(dpy, wnd);
-		if(Info) XFree (Info);
-		if(Hints) XFree(Hints);
+		if (Info) XFree(Info);
+		if (Hints) XFree(Hints);
 
 		// Might be necessary when the last window is closed
 		XFlush(dpy);
@@ -198,46 +209,50 @@ bool CStdWindow::FindInfo()
 	// attributes for a single buffered visual in RGBA format with at least 4 bits per color
 	static int attrListSgl[] = { GLX_RGBA,
 		GLX_RED_SIZE, 4, GLX_GREEN_SIZE, 4, GLX_BLUE_SIZE, 4,
-		None };
+		None
+	};
 	// attributes for a double buffered visual in RGBA format with at least 4 bits per color
 	static int attrListDbl[] = { GLX_RGBA, GLX_DOUBLEBUFFER,
 		GLX_RED_SIZE, 4, GLX_GREEN_SIZE, 4, GLX_BLUE_SIZE, 4,
 		GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
-		None };
+		None
+	};
 	// doublebuffered is the best
 	Info = glXChooseVisual(dpy, DefaultScreen(dpy), attrListDbl);
 	if (!Info)
-		{
+	{
 		Log("  gl: no doublebuffered visual.");
 		// a singlebuffered is probably better than the default
 		Info = glXChooseVisual(dpy, DefaultScreen(dpy), attrListSgl);
-		}
+	}
 #endif // USE_GL
 	if (!Info)
-		{
+	{
 		Log("  gl: no singlebuffered visual, either.");
 		// just try to get the default
 		XVisualInfo vitmpl; int blub;
 		vitmpl.visual = DefaultVisual(dpy, DefaultScreen(dpy));
 		vitmpl.visualid = XVisualIDFromVisual(vitmpl.visual);
 		Info = XGetVisualInfo(dpy, VisualIDMask, &vitmpl, &blub);
-		}
+	}
 	if (!Info)
-		{
+	{
 		Log("  gl: no visual at all.");
 		return false;
-		}
-	
+	}
+
 	return true;
 }
 #endif // USE_X11
 
-bool CStdWindow::RestorePosition(const char *, const char *, bool) {
+bool CStdWindow::RestorePosition(const char *, const char *, bool)
+{
 	// The Windowmanager is responsible for window placement.
-    return true;
+	return true;
 }
 
-bool CStdWindow::GetSize(RECT * pRect) {
+bool CStdWindow::GetSize(RECT *pRect)
+{
 #ifdef USE_X11
 	Window winDummy;
 	unsigned int borderDummy;
@@ -251,31 +266,35 @@ bool CStdWindow::GetSize(RECT * pRect) {
 	pRect->top = y;
 	pRect->left = x;
 #else
-  pRect->left = pRect->right = pRect->top = pRect->bottom = 0;
+	pRect->left = pRect->right = pRect->top = pRect->bottom = 0;
 #endif
 	return true;
 }
 
-void CStdWindow::SetSize(unsigned int X, unsigned int Y) {
+void CStdWindow::SetSize(unsigned int X, unsigned int Y)
+{
 #ifdef USE_X11
 	XResizeWindow(dpy, wnd, X, Y);
 #endif
 }
-void CStdWindow::SetTitle(const char * Title) {
+
+void CStdWindow::SetTitle(const char *Title)
+{
 #ifdef USE_X11
 	XTextProperty title_property;
 	StdStrBuf tbuf(Title, true);
-	char * tbufstr = tbuf.getMData();
+	char *tbufstr = tbuf.getMData();
 	XStringListToTextProperty(&tbufstr, 1, &title_property);
 	XSetWMName(dpy, wnd, &title_property);
 #endif
 }
 
-void CStdWindow::FlashWindow() {
+void CStdWindow::FlashWindow()
+{
 #ifdef USE_X11
-	if(!HasFocus)
+	if (!HasFocus)
 	{
-		XWMHints * wm_hint = static_cast<XWMHints*>(Hints);
+		XWMHints *wm_hint = static_cast<XWMHints *>(Hints);
 		wm_hint->flags |= XUrgencyHint;
 		XSetWMHints(dpy, wnd, wm_hint);
 	}
@@ -283,29 +302,29 @@ void CStdWindow::FlashWindow() {
 }
 
 #ifdef USE_X11
-void CStdWindow::HandleMessage(XEvent& event)
+void CStdWindow::HandleMessage(XEvent &event)
 {
-	if(event.type == FocusIn)
+	if (event.type == FocusIn)
 	{
 		HasFocus = true;
 
 		// Clear urgency flag
-		XWMHints * wm_hint = static_cast<XWMHints*>(Hints);
-		if(wm_hint->flags & XUrgencyHint)
+		XWMHints *wm_hint = static_cast<XWMHints *>(Hints);
+		if (wm_hint->flags & XUrgencyHint)
 		{
 			wm_hint->flags &= ~XUrgencyHint;
 			XSetWMHints(dpy, wnd, wm_hint);
 		}
 	}
-	else if(event.type == FocusOut)
+	else if (event.type == FocusOut)
 	{
-		int detail = reinterpret_cast<XFocusChangeEvent*>(&event)->detail;
+		int detail = reinterpret_cast<XFocusChangeEvent *>(&event)->detail;
 
 		// StdGtkWindow gets two FocusOut events, one of which comes
 		// directly after a FocusIn event even when the window has
 		// focus. For these FocusOut events, detail is set to
 		// NotifyInferior which is why we are ignoring it here.
-		if(detail != NotifyInferior)
+		if (detail != NotifyInferior)
 		{
 			HasFocus = false;
 		}

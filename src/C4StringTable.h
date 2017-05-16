@@ -17,7 +17,6 @@
 /* string table: holds all strings used by script engine */
 
 #ifndef C4STRINGTABLE_H
-
 #define C4STRINGTABLE_H
 
 class C4StringTable;
@@ -35,7 +34,7 @@ public:
 
 	StdCopyStrBuf Data; // string data
 	int iRefCnt; // reference count on string (by C4Value)
-	bool Hold;  // string stays hold when RefCnt reaches 0 (for in-script strings)
+	bool Hold; // string stays hold when RefCnt reaches 0 (for in-script strings)
 
 	int iEnumID;
 
@@ -45,7 +44,6 @@ public:
 
 	void Reg(C4StringTable *pTable);
 	void UnReg();
-
 };
 
 class C4StringTable
@@ -53,7 +51,7 @@ class C4StringTable
 public:
 	C4StringTable();
 	virtual ~C4StringTable();
-	
+
 	void Clear();
 
 	C4String *RegString(const char *strString);
@@ -63,8 +61,8 @@ public:
 
 	int EnumStrings();
 
-	bool Load(C4Group& ParentGroup);
-	bool Save(C4Group& ParentGroup);
+	bool Load(C4Group &ParentGroup);
+	bool Save(C4Group &ParentGroup);
 
 	C4String *First, *Last; // string list
 };

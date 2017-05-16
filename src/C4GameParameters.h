@@ -27,12 +27,13 @@
 class C4GameRes
 {
 	friend class C4GameResList;
+
 public:
 	C4GameRes();
 	C4GameRes(const C4GameRes &Res);
 	~C4GameRes();
 
-	C4GameRes &operator = (const C4GameRes &Res);
+	C4GameRes &operator=(const C4GameRes &Res);
 
 private:
 	C4Network2ResType eType;
@@ -41,11 +42,11 @@ private:
 	C4Network2Res::Ref pNetRes;
 
 public:
-	C4Network2ResType  getType() const { return eType; }
-	const char			  *getFile() const { return File.getData(); }
-	bool							 isPresent() const { return !! File; }
+	C4Network2ResType        getType()    const { return eType; }
+	const char              *getFile()    const { return File.getData(); }
+	bool                     isPresent()  const { return !!File; }
 	const C4Network2ResCore *getResCore() const { return pResCore; }
-	C4Network2Res::Ref getNetRes() const { return pNetRes; }
+	C4Network2Res::Ref       getNetRes()  const { return pNetRes; }
 
 	void SetFile(C4Network2ResType eType, const char *szFile);
 	void SetNetRes(C4Network2Res::Ref pRes);
@@ -71,7 +72,7 @@ public:
 	C4GameResList() : pResList(NULL), iResCount(0), iResCapacity(0) {}
 	~C4GameResList() { Clear(); }
 
-	C4GameResList &operator = (const C4GameResList &List);
+	C4GameResList &operator=(const C4GameResList &List);
 
 	C4GameRes *iterRes(C4GameRes *pLast, C4Network2ResType eType = NRT_Null);
 
@@ -101,7 +102,7 @@ public:
 	StdCopyStrBuf League;
 	StdCopyStrBuf LeagueAddress;
 	StdCopyStrBuf StreamAddress;
-	
+
 	// Random seed
 	int32_t RandomSeed;
 
@@ -143,11 +144,11 @@ public:
 
 	bool isLeague() const { return !!LeagueAddress.getLength(); }
 	bool doStreaming() const { return !!StreamAddress.getLength(); }
-	const char* getLeague() { return League.getData(); }
+	const char *getLeague() { return League.getData(); }
 	StdStrBuf GetGameGoalString();
 	void EnforceLeagueRules(class C4Scenario *pScenario);
 	bool CheckLeagueRulesStart(bool fFixIt);
-	
+
 	void Clear();
 	BOOL Load(C4Group &hGroup, C4Scenario *pDefault, const char *szGameText, C4LangStringTable *pLang, const char *DefinitionFilenames);
 	BOOL InitNetwork(C4Network2ResList *pResList);

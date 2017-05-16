@@ -44,46 +44,46 @@
 #define C4FullScreenClassName "C4FullScreen"
 LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-CStdWindow::CStdWindow (): Active(false), hWindow(0) {
-}
-CStdWindow::~CStdWindow () {
-}
+CStdWindow::CStdWindow() : Active(false), hWindow(0) {}
+CStdWindow::~CStdWindow() {}
 
-BOOL CStdWindow::RegisterWindowClass(HINSTANCE hInst) {
-  WNDCLASSEX WndClass;
-	WndClass.cbSize=sizeof(WNDCLASSEX);
-  WndClass.style         = CS_DBLCLKS;
-  WndClass.lpfnWndProc   = FullScreenWinProc;
-  WndClass.cbClsExtra    = 0;		 
-  WndClass.cbWndExtra    = 0;	 
-  WndClass.hInstance     = hInst;              
-  WndClass.hCursor       = NULL;
-  WndClass.hbrBackground = (HBRUSH) COLOR_BACKGROUND;
-  WndClass.lpszMenuName  = NULL;
-  WndClass.lpszClassName = C4FullScreenClassName;
-	WndClass.hIcon         = LoadIcon (hInst, MAKEINTRESOURCE (IDI_00_C4X) );
-  WndClass.hIconSm       = LoadIcon (hInst, MAKEINTRESOURCE (IDI_00_C4X) );  
+BOOL CStdWindow::RegisterWindowClass(HINSTANCE hInst)
+{
+	WNDCLASSEX WndClass;
+	WndClass.cbSize = sizeof(WNDCLASSEX);
+	WndClass.style = CS_DBLCLKS;
+	WndClass.lpfnWndProc = FullScreenWinProc;
+	WndClass.cbClsExtra = 0;
+	WndClass.cbWndExtra = 0;
+	WndClass.hInstance = hInst;
+	WndClass.hCursor = NULL;
+	WndClass.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
+	WndClass.lpszMenuName = NULL;
+	WndClass.lpszClassName = C4FullScreenClassName;
+	WndClass.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
+	WndClass.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
 	return RegisterClassEx(&WndClass);
 }
 
-CStdWindow * CStdWindow::Init(CStdApp * pApp) {
+CStdWindow *CStdWindow::Init(CStdApp *pApp)
+{
 	Active = true;
 
 	// Register window class
 	if (!RegisterWindowClass(pApp->hInstance)) return NULL;
 
-	// Create window 
-	hWindow = CreateWindowEx	(
-							0, 
-							C4FullScreenClassName, 
-							STD_PRODUCT,
-							WS_POPUP,
-							CW_USEDEFAULT,CW_USEDEFAULT,0,0,
-							NULL,NULL,pApp->hInstance,NULL);
+	// Create window
+	hWindow = CreateWindowEx(
+		0,
+		C4FullScreenClassName,
+		STD_PRODUCT,
+		WS_POPUP,
+		CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
+		NULL, NULL, pApp->hInstance, NULL);
 
 #ifndef USE_CONSOLE
 	// Show & focus
-	ShowWindow(hWindow,SW_SHOWNORMAL);
+	ShowWindow(hWindow, SW_SHOWNORMAL);
 	SetFocus(hWindow);
 	ShowCursor(FALSE);
 #endif
@@ -91,44 +91,50 @@ CStdWindow * CStdWindow::Init(CStdApp * pApp) {
 	return this;
 }
 
-void CStdWindow::Clear() {
+void CStdWindow::Clear()
+{
 	// Destroy window
 	if (hWindow) DestroyWindow(hWindow);
 	hWindow = NULL;
 }
 
-bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey, bool fHidden) {
+bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey, bool fHidden)
+{
 	if (!RestoreWindowPosition(hWindow, szWindowName, szSubKey, fHidden))
-		ShowWindow(hWindow,SW_SHOWNORMAL);
+		ShowWindow(hWindow, SW_SHOWNORMAL);
 	return TRUE;
 }
 
-void CStdWindow::SetTitle(const char *szToTitle) {
+void CStdWindow::SetTitle(const char *szToTitle)
+{
 	if (hWindow) SetWindowText(hWindow, szToTitle ? szToTitle : "");
 }
 
-bool CStdWindow::GetSize(RECT * pRect) {
-	if (!(hWindow && GetClientRect(hWindow,pRect))) return false;
+bool CStdWindow::GetSize(RECT *pRect)
+{
+	if (!(hWindow && GetClientRect(hWindow, pRect))) return false;
 	return true;
 }
 
-void CStdWindow::SetSize(unsigned int cx, unsigned int cy) {
+void CStdWindow::SetSize(unsigned int cx, unsigned int cy)
+{
 	// resize
-	if (hWindow) {
+	if (hWindow)
+	{
 		::SetWindowPos(hWindow, NULL, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
 	}
 }
 
 void CStdWindow::FlashWindow()
-	{
+{
 	// please activate me!
 	if (hWindow)
 		::FlashWindow(hWindow, FLASHW_ALL | FLASHW_TIMERNOFG);
-	}
+}
 
 /* CStdApp */
 
-CStdApp::CStdApp(): Active(false), hInstance(NULL), fQuitMsgReceived(false),
+CStdApp::CStdApp() : Active(false), hInstance(NULL), fQuitMsgReceived(false),
 	hTimerEvent(CreateEvent(NULL, TRUE, FALSE, NULL)),
 	hNetworkEvent(CreateEvent(NULL, TRUE, FALSE, NULL)),
 	idCriticalTimer(0),
@@ -137,47 +143,54 @@ CStdApp::CStdApp(): Active(false), hInstance(NULL), fQuitMsgReceived(false),
 	fTimePeriod(false),
 	iLastExecute(0),
 	iTimerOffset(0),
-	fDspModeSet(false) {
+	fDspModeSet(false)
+{
 	ZeroMemory(&pfd, sizeof(pfd)); pfd.nSize = sizeof(pfd);
-	ZeroMemory(&dspMode, sizeof(dspMode)); dspMode.dmSize =  sizeof(dspMode);
-	ZeroMemory(&OldDspMode, sizeof(OldDspMode)); OldDspMode.dmSize =  sizeof(OldDspMode);
+	ZeroMemory(&dspMode, sizeof(dspMode)); dspMode.dmSize = sizeof(dspMode);
+	ZeroMemory(&OldDspMode, sizeof(OldDspMode)); OldDspMode.dmSize = sizeof(OldDspMode);
 	hMainThread = NULL;
 }
 
-CStdApp::~CStdApp() {
-  // Close events
-  CloseHandle(hTimerEvent); CloseHandle(hNetworkEvent);
+CStdApp::~CStdApp()
+{
+	// Close events
+	CloseHandle(hTimerEvent); CloseHandle(hNetworkEvent);
 }
 
 char *LoadResStr(const char *id);
 
-bool CStdApp::Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine) {
+bool CStdApp::Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine)
+{
 	// Set instance vars
 	hInstance = hInst;
 	this->szCmdLine = szCmdLine;
 	hMainThread = ::GetCurrentThread();
 	// Custom initialization
-	return DoInit ();
+	return DoInit();
 }
 
-void CStdApp::Clear() {
+void CStdApp::Clear()
+{
 	// Close timers
 	CloseCriticalTimer();
 	hMainThread = NULL;
 }
 
-void CStdApp::Run() {
+void CStdApp::Run()
+{
 	// Main message loop
 	while (true)
 		if (HandleMessage(INFINITE, true) == HR_Failure) return;
 }
 
-void CStdApp::Quit() {
+void CStdApp::Quit()
+{
 	PostQuitMessage(0);
 }
 
-C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer) {
-	MSG msg;  
+C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer)
+{
+	MSG msg;
 	int iEvents = 0;
 	HANDLE Events[3] = { hNetworkEvent, hTimerEvent };
 
@@ -185,117 +198,135 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	if (fQuitMsgReceived) return HR_Failure;
 
 	// Calculate timing (emulate it sleepy - gosu-style [pssst]).
-	unsigned int iMSecs; 
-	if(fCheckTimer && !MMTimer) {
+	unsigned int iMSecs;
+	if (fCheckTimer && !MMTimer)
+	{
 		iMSecs = Max<int>(0, iLastExecute + GetDelay() + iTimerOffset - timeGetTime());
-		if(iTimeout != INFINITE && iTimeout < iMSecs) iMSecs = iTimeout;
-	} else {
+		if (iTimeout != INFINITE && iTimeout < iMSecs) iMSecs = iTimeout;
+	}
+	else
+	{
 		iMSecs = iTimeout;
 	}
 
 #ifdef USE_CONSOLE
 	// Console input
-	if(!ReadStdInCommand())
+	if (!ReadStdInCommand())
 		return HR_Failure;
 #endif
 
-  // Check network event
+	// Check network event
 	Events[iEvents++] = hNetworkEvent;
 	// Check timer
-	if(fCheckTimer)
+	if (fCheckTimer)
 		Events[iEvents++] = hTimerEvent;
 
 	// Wait for something to happen
-	switch(MsgWaitForMultipleObjects(iEvents, Events, false, iMSecs, QS_ALLEVENTS)) {
-		case WAIT_OBJECT_0: // network event
-			// reset event
-			ResetEvent(hNetworkEvent);
-			// call network class to handle it
-			OnNetworkEvents();
-			return HR_Message;
-		case WAIT_TIMEOUT: // timeout
-			// Timeout not changed? Real timeout
-			if(MMTimer || iMSecs == iTimeout) {
-				return HR_Timeout;
-			}
-			// Try to make some adjustments. Still only as exact as timeGetTime().
-			if(iLastExecute + GetDelay() > timeGetTime()) iTimerOffset++;
-			if(iLastExecute + GetDelay() < timeGetTime()) iTimerOffset--;
-			// fallthru
-		case WAIT_OBJECT_0 + 1: // timer event / message
-			if(fCheckTimer) {
-				// reset event
-				ResetEvent(hTimerEvent);
-				// execute
-				Execute();
-				// return it
-				return HR_Timer;
-			}
-			// fallthru
-		case WAIT_OBJECT_0 + 2: // message
-			// Peek messages
-			while (PeekMessage(&msg,NULL,0,0,PM_REMOVE)) {
-				// quit?
-				if(msg.message == WM_QUIT) {
-					fQuitMsgReceived = true;
-					return HR_Failure;
-				}
-				// Dialog message transfer
-				if (!pWindow->Win32DialogMessageHandling(&msg)) {
-					TranslateMessage(&msg); DispatchMessage(&msg);
-				}
-		    }
-			return HR_Message;
-		default: // error
-			return HR_Failure;
+	switch (MsgWaitForMultipleObjects(iEvents, Events, false, iMSecs, QS_ALLEVENTS))
+	{
+	case WAIT_OBJECT_0: // network event
+		// reset event
+		ResetEvent(hNetworkEvent);
+		// call network class to handle it
+		OnNetworkEvents();
+		return HR_Message;
+	case WAIT_TIMEOUT: // timeout
+		// Timeout not changed? Real timeout
+		if (MMTimer || iMSecs == iTimeout)
+		{
+			return HR_Timeout;
 		}
+		// Try to make some adjustments. Still only as exact as timeGetTime().
+		if (iLastExecute + GetDelay() > timeGetTime()) iTimerOffset++;
+		if (iLastExecute + GetDelay() < timeGetTime()) iTimerOffset--;
+		// fallthru
+	case WAIT_OBJECT_0 + 1: // timer event / message
+		if (fCheckTimer)
+		{
+			// reset event
+			ResetEvent(hTimerEvent);
+			// execute
+			Execute();
+			// return it
+			return HR_Timer;
+		}
+		// fallthru
+	case WAIT_OBJECT_0 + 2: // message
+		// Peek messages
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			// quit?
+			if (msg.message == WM_QUIT)
+			{
+				fQuitMsgReceived = true;
+				return HR_Failure;
+			}
+			// Dialog message transfer
+			if (!pWindow->Win32DialogMessageHandling(&msg))
+			{
+				TranslateMessage(&msg); DispatchMessage(&msg);
+			}
+		}
+		return HR_Message;
+	default: // error
+		return HR_Failure;
 	}
+}
 
-void CStdApp::Execute () {
+void CStdApp::Execute()
+{
 	// Timer emulation
-	if(!MMTimer)
+	if (!MMTimer)
 		iLastExecute = timeGetTime();
 }
 
-bool CStdApp::InitTimer() {
+bool CStdApp::InitTimer()
+{
 	// Init game timers
-	if (!SetCriticalTimer() || !SetTimer(pWindow->hWindow,SEC1_TIMER,SEC1_MSEC,NULL)) return false;
+	if (!SetCriticalTimer() || !SetTimer(pWindow->hWindow, SEC1_TIMER, SEC1_MSEC, NULL)) return false;
 	return true;
 }
 
-bool CStdApp::SetCriticalTimer() {
+bool CStdApp::SetCriticalTimer()
+{
 	// Get resolution caps
 	TIMECAPS tc;
-	if(timeGetDevCaps(&tc, sizeof(tc)) != TIMERR_NOERROR)
+	if (timeGetDevCaps(&tc, sizeof(tc)) != TIMERR_NOERROR)
 		return false;
 	// Establish minimum resolution
 	uCriticalTimerResolution = BoundBy(uCriticalTimerResolution, tc.wPeriodMin, tc.wPeriodMax);
-	if (timeBeginPeriod(uCriticalTimerResolution)!=TIMERR_NOERROR)
+	if (timeBeginPeriod(uCriticalTimerResolution) != TIMERR_NOERROR)
 		return false;
-	fTimePeriod=true;
-	if (MMTimer) {
+	fTimePeriod = true;
+	if (MMTimer)
+	{
 		// Set critical timer
-		if (!(idCriticalTimer=timeSetEvent(
-			uCriticalTimerDelay,uCriticalTimerResolution,
-			(LPTIMECALLBACK) hTimerEvent,0,TIME_PERIODIC | TIME_CALLBACK_EVENT_SET))) {
+		if (!(idCriticalTimer = timeSetEvent(
+			uCriticalTimerDelay, uCriticalTimerResolution,
+			(LPTIMECALLBACK)hTimerEvent, 0, TIME_PERIODIC | TIME_CALLBACK_EVENT_SET)))
+		{
 			return false;
-			}
+		}
 	}
 	return true;
 }
 
-void CStdApp::CloseCriticalTimer() {
-	if (idCriticalTimer) { 
-		timeKillEvent(idCriticalTimer); 
+void CStdApp::CloseCriticalTimer()
+{
+	if (idCriticalTimer)
+	{
+		timeKillEvent(idCriticalTimer);
 		idCriticalTimer = 0;
 	}
-	if (fTimePeriod) {
+	if (fTimePeriod)
+	{
 		timeEndPeriod(uCriticalTimerResolution);
 		fTimePeriod = false;
-    }
+	}
 }
 
-void CStdApp::ResetTimer(UINT uDelay) {
+void CStdApp::ResetTimer(UINT uDelay)
+{
 	uCriticalTimerDelay = uDelay;
 	CloseCriticalTimer();
 	SetCriticalTimer();
@@ -304,46 +335,46 @@ void CStdApp::ResetTimer(UINT uDelay) {
 int GLMonitorInfoEnumCount;
 
 BOOL CALLBACK GLMonitorInfoEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
-	{
+{
 	// get to indexed monitor
 	if (GLMonitorInfoEnumCount--) return TRUE;
 	// store it
-	CStdApp *pApp = (CStdApp *) dwData;
+	CStdApp *pApp = (CStdApp *)dwData;
 	pApp->hMon = hMonitor;
 	pApp->MonitorRect = *lprcMonitor;
 	return TRUE;
-	}
+}
 
 bool CStdApp::SetOutputAdapter(unsigned int iMonitor)
-	{
+{
 	Monitor = iMonitor;
 	hMon = NULL;
 	// get monitor infos
 	GLMonitorInfoEnumCount = iMonitor;
-	EnumDisplayMonitors(NULL, NULL, GLMonitorInfoEnumProc, (LPARAM) this);
+	EnumDisplayMonitors(NULL, NULL, GLMonitorInfoEnumProc, (LPARAM)this);
 	// no monitor assigned?
 	if (!hMon)
-		{
+	{
 		// Okay for primary; then just use a default
 		if (!iMonitor)
-			{
+		{
 			MonitorRect.left = MonitorRect.top = 0;
 			MonitorRect.right = ScreenWidth(); MonitorRect.bottom = ScreenHeight();
 			return true;
-			}
-		else return false;
 		}
-	return true;
+		else return false;
 	}
+	return true;
+}
 
 bool CStdApp::GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *piYRes, int32_t *piBitDepth, uint32_t iMonitor)
-	{
+{
 	// prepare search struct
 	DEVMODE dmode;
 	ZeroMemory(&dmode, sizeof(dmode)); dmode.dmSize = sizeof(dmode);
-  StdStrBuf Mon;
+	StdStrBuf Mon;
 	if (iMonitor)
-    Mon.Format("\\\\.\\Display%d", iMonitor+1);
+		Mon.Format("\\\\.\\Display%d", iMonitor + 1);
 	// check if indexed mode exists
 	if (!EnumDisplaySettings(Mon.getData(), iIndex, &dmode)) return false;
 	// mode exists; return it
@@ -351,39 +382,40 @@ bool CStdApp::GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *pi
 	if (piYRes) *piYRes = dmode.dmPelsHeight;
 	if (piBitDepth) *piBitDepth = dmode.dmBitsPerPel;
 	return true;
-	}
+}
 
 bool CStdApp::FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iColorDepth, unsigned int iMonitor)
-	{
-	bool fFound=false;
+{
+	bool fFound = false;
 	DEVMODE dmode;
 	// if a monitor is given, search on that instead
 	SetOutputAdapter(iMonitor);
-  StdStrBuf Mon;
+	StdStrBuf Mon;
 	if (iMonitor)
-    Mon.Format("\\\\.\\Display%d", iMonitor+1);
+		Mon.Format("\\\\.\\Display%d", iMonitor + 1);
 	// enumerate modes
-	int i=0;
+	int i = 0;
 	ZeroMemory(&dmode, sizeof(dmode)); dmode.dmSize = sizeof(dmode);
 	while (EnumDisplaySettings(Mon.getData(), i++, &dmode))
 		// size and bit depth is OK?
-		if (dmode.dmPelsWidth==iXRes && dmode.dmPelsHeight==iYRes && dmode.dmBitsPerPel==iColorDepth)
-			{
+		if (dmode.dmPelsWidth == iXRes && dmode.dmPelsHeight == iYRes && dmode.dmBitsPerPel == iColorDepth)
+		{
 			// compare with found one
 			if (fFound)
 				// try getting a mode that is close to 85Hz, rather than taking the one with highest refresh rate
 				// (which may set absurd modes on some devices)
-				if (Abs<int>(85-dmode.dmDisplayFrequency)>Abs<int>(85-dspMode.dmDisplayFrequency))
+				if (Abs<int>(85 - dmode.dmDisplayFrequency) > Abs<int>(85 - dspMode.dmDisplayFrequency))
 					// the previous one was better
 					continue;
 			// choose this one
-			fFound=true;
-			dspMode=dmode;
-			}
+			fFound = true;
+			dspMode = dmode;
+		}
 	return fFound;
-	}
+}
 
-bool CStdApp::SetFullScreen(bool fFullScreen, bool fMinimize) {
+bool CStdApp::SetFullScreen(bool fFullScreen, bool fMinimize)
+{
 	if (fFullScreen == fDspModeSet) return true;
 #ifdef _DEBUG
 	SetWindowPos(pWindow->hWindow, HWND_TOP, MonitorRect.left, MonitorRect.top, dspMode.dmPelsWidth, dspMode.dmPelsHeight, SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
@@ -391,32 +423,32 @@ bool CStdApp::SetFullScreen(bool fFullScreen, bool fMinimize) {
 	return true;
 #else
 	if (!fFullScreen)
-		{
+	{
 		ChangeDisplaySettings(NULL, CDS_RESET);
 		fDspModeSet = false;
 		return true;
-		}
+	}
 	// save original display mode
 	// if a monitor is given, use that instead
 	char Mon[256];
 	// change to that mode
-	fDspModeSet=true;
+	fDspModeSet = true;
 	if (Monitor)
-		{
-		sprintf(Mon, "\\\\.\\Display%d", Monitor+1);
+	{
+		sprintf(Mon, "\\\\.\\Display%d", Monitor + 1);
 		dspMode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
 		if (ChangeDisplaySettingsEx(Mon, &dspMode, NULL, CDS_FULLSCREEN, NULL) != DISP_CHANGE_SUCCESSFUL)
-			{
-			fDspModeSet = false;
-			}
-		}
-	else
 		{
-		if (ChangeDisplaySettings(&dspMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-			{
 			fDspModeSet = false;
-			}
 		}
+	}
+	else
+	{
+		if (ChangeDisplaySettings(&dspMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+		{
+			fDspModeSet = false;
+		}
+	}
 	SetWindowPos(pWindow->hWindow, 0, MonitorRect.left, MonitorRect.top, dspMode.dmPelsWidth, dspMode.dmPelsHeight, 0);
 	return fDspModeSet;
 #endif
@@ -424,15 +456,18 @@ bool CStdApp::SetFullScreen(bool fFullScreen, bool fMinimize) {
 
 bool CStdApp::ReadStdInCommand()
 {
-	while(_kbhit())
+	while (_kbhit())
 	{
 		// Surely not the most efficient way to do it, but we won't have to read much data anyway.
 		char c = getch();
-		if(c == '\r') {
-			if(!CmdBuf.isNull()) {
+		if (c == '\r')
+		{
+			if (!CmdBuf.isNull())
+			{
 				OnCommand(CmdBuf.getData()); CmdBuf.Clear();
 			}
-		} else if(isprint((unsigned char)c))
+		}
+		else if (isprint((unsigned char)c))
 			CmdBuf.AppendChar(c);
 	}
 	return true;

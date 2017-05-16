@@ -25,127 +25,126 @@
 #include <windows.h>
 
 BOOL AVIOpenOutput(const char *szFilename,
-									 PAVIFILE *ppAviFile,
-									 PAVISTREAM *ppAviStream,
-									 int iWidth, int iHeight)
-	{
-
+	PAVIFILE *ppAviFile,
+	PAVISTREAM *ppAviStream,
+	int iWidth, int iHeight)
+{
 	// Init AVI system
 	AVIFileInit();
 
 	// Create avi file
-	if ( AVIFileOpen(
-					ppAviFile,
-					szFilename,
-					OF_CREATE | OF_WRITE,
-					NULL) != 0) 
-		{
+	if (AVIFileOpen(
+		ppAviFile,
+		szFilename,
+		OF_CREATE | OF_WRITE,
+		NULL) != 0)
+	{
 		return FALSE;
-		}
+	}
 
 	// Create stream
 	AVISTREAMINFO avi_info;
-	RECT frame; frame.left=0; frame.top=0; frame.right=iWidth; frame.bottom=iHeight;
-	avi_info.fccType= streamtypeVIDEO;
-	avi_info.fccHandler= mmioFOURCC('M','S','V','C');
-	avi_info.dwFlags= 0;
-	avi_info.dwCaps= 0;
-	avi_info.wPriority= 0;
-	avi_info.wLanguage= 0;
-	avi_info.dwScale= 1;
-	avi_info.dwRate= 35;
-	avi_info.dwStart= 0;
-	avi_info.dwLength= 10; // ??
-	avi_info.dwInitialFrames= 0;
-	avi_info.dwSuggestedBufferSize= 0;
-	avi_info.dwQuality= -1;
-	avi_info.dwSampleSize= 0;
-	avi_info.rcFrame= frame;
-	avi_info.dwEditCount= 0;
-	avi_info.dwFormatChangeCount= 0;
-	SCopy("MyRecording",avi_info.szName);
+	RECT frame; frame.left = 0; frame.top = 0; frame.right = iWidth; frame.bottom = iHeight;
+	avi_info.fccType = streamtypeVIDEO;
+	avi_info.fccHandler = mmioFOURCC('M', 'S', 'V', 'C');
+	avi_info.dwFlags = 0;
+	avi_info.dwCaps = 0;
+	avi_info.wPriority = 0;
+	avi_info.wLanguage = 0;
+	avi_info.dwScale = 1;
+	avi_info.dwRate = 35;
+	avi_info.dwStart = 0;
+	avi_info.dwLength = 10; // ??
+	avi_info.dwInitialFrames = 0;
+	avi_info.dwSuggestedBufferSize = 0;
+	avi_info.dwQuality = -1;
+	avi_info.dwSampleSize = 0;
+	avi_info.rcFrame = frame;
+	avi_info.dwEditCount = 0;
+	avi_info.dwFormatChangeCount = 0;
+	SCopy("MyRecording", avi_info.szName);
 
-	if ( AVIFileCreateStream(
-					*ppAviFile,
-					ppAviStream,
-					&avi_info) != 0) 
-		{
+	if (AVIFileCreateStream(
+		*ppAviFile,
+		ppAviStream,
+		&avi_info) != 0)
+	{
 		return FALSE;
-		}
-
-	return TRUE;
 	}
 
+	return TRUE;
+}
 
 BOOL AVICloseOutput(PAVIFILE *ppAviFile,
- 									  PAVISTREAM *ppAviStream)
-	{
+	PAVISTREAM *ppAviStream)
+{
 	if (ppAviStream && *ppAviStream)
-		{ AVIStreamRelease(*ppAviStream); *ppAviStream=NULL; }	
-	if (ppAviFile && *ppAviFile)
-		{ AVIFileRelease(*ppAviFile); *ppAviFile=NULL; }
-	return TRUE;
+	{
+		AVIStreamRelease(*ppAviStream); *ppAviStream = NULL;
 	}
-
+	if (ppAviFile && *ppAviFile)
+	{
+		AVIFileRelease(*ppAviFile); *ppAviFile = NULL;
+	}
+	return TRUE;
+}
 
 BOOL AVIPutFrame(PAVISTREAM pAviStream,
-								 long lFrame,
-								 void *lpInfo, long lInfoSize,
-								 void *lpData, long lDataSize)
-	{
-	long lBytesWritten=0,lSamplesWritten=0;
+	long lFrame,
+	void *lpInfo, long lInfoSize,
+	void *lpData, long lDataSize)
+{
+	long lBytesWritten = 0, lSamplesWritten = 0;
 
 	AVIStreamSetFormat(
 		pAviStream,
 		lFrame,
 		lpInfo,
-		lInfoSize	
-		);
+		lInfoSize
+	);
 
 	if (AVIStreamWrite(
-					pAviStream,
-					lFrame,
-					1,
-					lpData, 
-					lDataSize,
-					AVIIF_KEYFRAME,
-					&lSamplesWritten,
-					&lBytesWritten) != 0) return FALSE;
+		pAviStream,
+		lFrame,
+		1,
+		lpData,
+		lDataSize,
+		AVIIF_KEYFRAME,
+		&lSamplesWritten,
+		&lBytesWritten) != 0) return FALSE;
 
 	return TRUE;
-	}
-
-// ----------------------------------------
+}
 
 CStdAVIFile::CStdAVIFile()
-: pStream(NULL), pGetFrame(NULL), hBitmap(NULL), hDD(NULL), hWnd(NULL), hDC(NULL), pbmi(NULL),
+	: pStream(NULL), pGetFrame(NULL), hBitmap(NULL), hDD(NULL), hWnd(NULL), hDC(NULL), pbmi(NULL),
 	iAudioBufferLength(0), pAudioData(NULL), pAudioStream(NULL), pAudioInfo(NULL), pAVIFile(NULL)
-	{
+{
 	AVIFileInit();
-	}
+}
 
 CStdAVIFile::~CStdAVIFile()
-	{
+{
 	Clear();
 	AVIFileExit();
-	}
+}
 
 void CStdAVIFile::Clear()
-	{
+{
 	// free any stuff
 	CloseAudioStream();
-	if (hBitmap) { DeleteObject(hBitmap); hBitmap = NULL; }
-	if (hDD) { DrawDibClose(hDD); hDD = NULL; }
-	if (hDC) { ReleaseDC(hWnd, hDC); hDC = NULL; }
-	if (pGetFrame) { AVIStreamGetFrameClose(pGetFrame); pGetFrame=NULL; }
-	if (pStream) { AVIStreamRelease(pStream); pStream = NULL; }
-	if (pbmi) { delete [] pbmi; pbmi = NULL; }
-	if (pAVIFile) { AVIFileRelease(pAVIFile); pAVIFile = NULL; }
+	if (hBitmap)   { DeleteObject(hBitmap);             hBitmap   = NULL; }
+	if (hDD)       { DrawDibClose(hDD);                 hDD       = NULL; }
+	if (hDC)       { ReleaseDC(hWnd, hDC);              hDC       = NULL; }
+	if (pGetFrame) { AVIStreamGetFrameClose(pGetFrame); pGetFrame = NULL; }
+	if (pStream)   { AVIStreamRelease(pStream);         pStream   = NULL; }
+	if (pbmi)      { delete[] pbmi;                     pbmi      = NULL; }
+	if (pAVIFile)  { AVIFileRelease(pAVIFile);          pAVIFile  = NULL; }
 	sFilename.Clear();
-	}
+}
 
 bool CStdAVIFile::OpenFile(const char *szFilename, HWND hWnd, int32_t iOutBitDepth)
-	{
+{
 	// clear previous
 	Clear();
 	sFilename.Copy(szFilename);
@@ -156,16 +155,16 @@ bool CStdAVIFile::OpenFile(const char *szFilename, HWND hWnd, int32_t iOutBitDep
 		return false;
 	// get stream information
 	AVIStreamInfo(pStream, &StreamInfo, sizeof(AVISTREAMINFO));
-	iWdt = StreamInfo.rcFrame.right-StreamInfo.rcFrame.left;
-	iHgt = StreamInfo.rcFrame.bottom-StreamInfo.rcFrame.top;
+	iWdt = StreamInfo.rcFrame.right - StreamInfo.rcFrame.left;
+	iHgt = StreamInfo.rcFrame.bottom - StreamInfo.rcFrame.top;
 	iFinalFrame = AVIStreamLength(pStream);
 	// some safety
-	if (iWdt<=0 || iHgt<=0 || iFinalFrame<=0) return false;
+	if (iWdt <= 0 || iHgt <= 0 || iFinalFrame <= 0) return false;
 	// calculate playback speed
-	iTimePerFrame = AVIStreamSampleToTime(pStream,iFinalFrame)/iFinalFrame;
+	iTimePerFrame = AVIStreamSampleToTime(pStream, iFinalFrame) / iFinalFrame;
 	// init buffer bitmap info
-	pbmi = (BITMAPINFO *) new BYTE[sizeof (BITMAPINFO) + 3*sizeof(RGBQUAD)];
-	ZeroMemory(pbmi, sizeof (BITMAPINFO) + 3*sizeof(RGBQUAD));
+	pbmi = (BITMAPINFO *)new BYTE[sizeof(BITMAPINFO) + 3 * sizeof(RGBQUAD)];
+	ZeroMemory(pbmi, sizeof(BITMAPINFO) + 3 * sizeof(RGBQUAD));
 	pbmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pbmi->bmiHeader.biPlanes = 1;
 	pbmi->bmiHeader.biBitCount = iOutBitDepth;
@@ -173,58 +172,58 @@ bool CStdAVIFile::OpenFile(const char *szFilename, HWND hWnd, int32_t iOutBitDep
 	pbmi->bmiHeader.biHeight = -iHgt;
 	pbmi->bmiHeader.biCompression = (iOutBitDepth == 16) ? BI_BITFIELDS : BI_RGB;
 	if (iOutBitDepth == 16)
-		{
-		*(DWORD*)(&(pbmi->bmiColors[2])) = 0x00f;
-		*(DWORD*)(&(pbmi->bmiColors[1])) = 0x0f0;
-		*(DWORD*)(&(pbmi->bmiColors[0])) = 0xf00;
-		}
+	{
+		*(DWORD *)(&(pbmi->bmiColors[2])) = 0x00f;
+		*(DWORD *)(&(pbmi->bmiColors[1])) = 0x0f0;
+		*(DWORD *)(&(pbmi->bmiColors[0])) = 0xf00;
+	}
 	hDC = CreateCompatibleDC(NULL);
 	if (!hDC) return false;
 	hDD = DrawDibOpen();
 	if (!hDD) return false;
-	hBitmap = CreateDIBSection(hDC, pbmi, DIB_RGB_COLORS, (void**)(&pFrameData), NULL, NULL);
+	hBitmap = CreateDIBSection(hDC, pbmi, DIB_RGB_COLORS, (void **)(&pFrameData), NULL, NULL);
 	if (!hBitmap) return false;
 	SelectObject(hDC, hBitmap);
 	// create a GetFrame-object
-	pGetFrame=AVIStreamGetFrameOpen(pStream, NULL);
+	pGetFrame = AVIStreamGetFrameOpen(pStream, NULL);
 	if (!pGetFrame) return false;
 	// done, success!
 	return true;
-	}
+}
 
 bool CStdAVIFile::GetFrameByTime(time_t iTime, int32_t *piFrame)
-	{
+{
 	// safeties
 	if (iTime < 0) return false;
 	if (!piFrame || !iTimePerFrame) return false;
 	// get frame
-	int iFrame = *piFrame = (iTime + (iTimePerFrame/2)) / iTimePerFrame;
+	int iFrame = *piFrame = (iTime + (iTimePerFrame / 2)) / iTimePerFrame;
 	return iFrame < iFinalFrame;
-	}
+}
 
 #ifdef C4ENGINE
 
 bool CStdAVIFile::GrabFrame(int32_t iFrame, CSurface *sfc) const
-	{
+{
 	// safeties
 	if (!pGetFrame || !sfc) return false;
-	if (iFrame<0 || iFrame >= iFinalFrame) return false;
+	if (iFrame < 0 || iFrame >= iFinalFrame) return false;
 	// grab desired frame
 	LPBITMAPINFOHEADER lpbi = (LPBITMAPINFOHEADER)AVIStreamGetFrame(pGetFrame, iFrame);
 	// calculate actual data position
-	BYTE *pImageData = (BYTE *)lpbi + lpbi->biSize + lpbi->biClrUsed*sizeof(RGBQUAD);
+	BYTE *pImageData = (BYTE *)lpbi + lpbi->biSize + lpbi->biClrUsed * sizeof(RGBQUAD);
 	// draw into buffer bitmap
-	if (!DrawDibDraw (hDD, hDC, 0, 0, iWdt, iHgt, lpbi, pImageData, 0, 0, iWdt, iHgt, 0)) return false;
+	if (!DrawDibDraw(hDD, hDC, 0, 0, iWdt, iHgt, lpbi, pImageData, 0, 0, iWdt, iHgt, 0)) return false;
 	// copy from buffer bitmap into surface - assumes surface is created in the correct size!
 	if (!sfc->Lock()) return false;
 	if (!sfc->CopyBytes(pFrameData)) return false;
 	return !!sfc->Unlock();
-	}
+}
 
 #endif
 
 bool CStdAVIFile::OpenAudioStream()
-	{
+{
 	// close previous
 	CloseAudioStream();
 	// open new
@@ -233,28 +232,30 @@ bool CStdAVIFile::OpenAudioStream()
 		return false;
 	// get audio stream format
 	if (AVIStreamReadFormat(pAudioStream, AVIStreamStart(pAudioStream), NULL, &iAudioInfoLength)) return false;
-	if (iAudioInfoLength<sizeof(WAVEFORMAT)) return false;
-	pAudioInfo = (WAVEFORMAT *) new BYTE[iAudioInfoLength];
+	if (iAudioInfoLength < sizeof(WAVEFORMAT)) return false;
+	pAudioInfo = (WAVEFORMAT *)new BYTE[iAudioInfoLength];
 	if (AVIStreamReadFormat(pAudioStream, AVIStreamStart(pAudioStream), pAudioInfo, &iAudioInfoLength))
-		{ delete [] pAudioInfo; pAudioInfo=NULL; return false; }
+	{
+		delete[] pAudioInfo; pAudioInfo = NULL; return false;
+	}
 	// done!
 	return true;
-	}
+}
 
 BYTE *CStdAVIFile::GetAudioStreamData(size_t *piStreamLength)
-	{
+{
 	// returning the complete audio stream at once here - not very efficient, but easy...
 	// get stream size
 	if (!pAudioInfo) return NULL;
-	if(AVIStreamRead(pAudioStream, 0, AVIStreamLength(pAudioStream), NULL, 0, &iAudioDataLength, NULL)) return NULL;
-	if (iAudioDataLength<=0) return NULL;
+	if (AVIStreamRead(pAudioStream, 0, AVIStreamLength(pAudioStream), NULL, 0, &iAudioDataLength, NULL)) return NULL;
+	if (iAudioDataLength <= 0) return NULL;
 	// make sure current audio data buffer is large enoiugh to hold the data
 	// preceding return data with the RIFF+waveformat structure here, so it can be easily loaded by fmod
 	uint32_t iHeaderLength = iAudioInfoLength + sizeof(FOURCC) * 4 + 3 * sizeof(uint32_t);
 	LONG iReturnDataLength = iAudioDataLength + iHeaderLength;
 	if (iAudioBufferLength < iReturnDataLength)
-		{
-		delete [] pAudioData;
+	{
+		delete[] pAudioData;
 		pAudioData = new BYTE[iAudioBufferLength = iReturnDataLength];
 		// build wave file header
 		BYTE *pWrite = pAudioData;
@@ -266,20 +267,20 @@ BYTE *CStdAVIFile::GetAudioStreamData(size_t *piStreamLength)
 		memcpy(pWrite, pAudioInfo, iAudioInfoLength); pWrite += iAudioInfoLength;
 		*((FOURCC *)pWrite) = mmioFOURCC('d', 'a', 't', 'a'); pWrite += sizeof(FOURCC);
 		*((uint32_t *)pWrite) = iAudioDataLength;
-		}
+	}
 	// get it
-	if(AVIStreamRead(pAudioStream, 0, AVIStreamLength(pAudioStream), pAudioData+iHeaderLength, iAudioDataLength, NULL, NULL)) return NULL;
+	if (AVIStreamRead(pAudioStream, 0, AVIStreamLength(pAudioStream), pAudioData + iHeaderLength, iAudioDataLength, NULL, NULL)) return NULL;
 	// got the data successfully!
 	*piStreamLength = iReturnDataLength;
 	return pAudioData;
-	}
+}
 
 void CStdAVIFile::CloseAudioStream()
-	{
+{
 	if (pAudioStream) { AVIStreamRelease(pAudioStream); pAudioStream = NULL; }
-	if (pAudioData) { delete [] pAudioData; pAudioData = NULL; }
-	if (pAudioInfo) { delete [] pAudioInfo; pAudioInfo = NULL; }
+	if (pAudioData) { delete[] pAudioData; pAudioData = NULL; }
+	if (pAudioInfo) { delete[] pAudioInfo; pAudioInfo = NULL; }
 	iAudioBufferLength = 0;
-	}
+}
 
 #endif // _WIN32

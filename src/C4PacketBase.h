@@ -24,9 +24,10 @@
 class C4PacketBase
 {
 	friend class C4PacketList;
+
 public:
-	C4PacketBase() { }
-	virtual ~C4PacketBase() { }
+	C4PacketBase() {}
+	virtual ~C4PacketBase() {}
 
 	// virtual functions to implement by derived classes
 	virtual void CompileFunc(StdCompiler *pComp) = 0;
@@ -34,12 +35,11 @@ public:
 	// conversion (using above functions)
 	C4NetIOPacket pack(uint8_t cStatus, const C4NetIO::addr_t &addr = C4NetIO::addr_t()) const;
 	void unpack(const C4NetIOPacket &Pkt, char *pStatus = NULL);
-
 };
 
 inline C4NetIOPacket MkC4NetIOPacket(char cStatus, const class C4PacketBase &Pkt, const C4NetIO::addr_t &addr = C4NetIO::addr_t())
 {
-  return Pkt.pack(cStatus, addr);
+	return Pkt.pack(cStatus, addr);
 }
 
 // Filename Adaptor
@@ -47,7 +47,7 @@ inline C4NetIOPacket MkC4NetIOPacket(char cStatus, const class C4PacketBase &Pkt
 struct C4NetFilenameAdapt
 {
 	StdStrBuf &FileName;
-	explicit C4NetFilenameAdapt(StdStrBuf &FileName) : FileName(FileName) { }
+	explicit C4NetFilenameAdapt(StdStrBuf &FileName) : FileName(FileName) {}
 	inline void CompileFunc(StdCompiler *pComp) const
 	{
 #ifdef _WIN32
@@ -57,61 +57,64 @@ struct C4NetFilenameAdapt
 		if (pComp->isDecompiler() && FileName)
 		{
 			FileName2.Copy(FileName);
-			SReplaceChar(FileName2.getMData(),DirectorySeparator,'\\');
+			SReplaceChar(FileName2.getMData(), DirectorySeparator, '\\');
 		}
 		pComp->Value(FileName2);
 		if (pComp->isCompiler())
 		{
 			FileName.Take(FileName2);
-			SReplaceChar(FileName.getMData(),'\\',DirectorySeparator);
+			SReplaceChar(FileName.getMData(), '\\', DirectorySeparator);
 		}
 #endif
 	}
-  ALLOW_TEMP_TO_REF(C4NetFilenameAdapt)
-	template <class T> bool operator == (const T &rVal) { return FileName == rVal; }
-	template <class T> C4NetFilenameAdapt &operator = (const T &rVal) { FileName = rVal; return *this; }
+
+	ALLOW_TEMP_TO_REF(C4NetFilenameAdapt)
+
+	template <class T> bool operator==(const T &rVal) { return FileName == rVal; }
+	template <class T> C4NetFilenameAdapt &operator=(const T &rVal) { FileName = rVal; return *this; }
 };
+
 inline C4NetFilenameAdapt mkNetFilenameAdapt(StdStrBuf &FileName) { return C4NetFilenameAdapt(FileName); }
 
 // enumaration of all used packet types
 enum C4PacketType
 {
-	PID_None					= 0xFF,
-		
+	PID_None = 0xFF,
+
 	// *** network
 
 	// * base packets
 	// ping
-	PID_Ping					= 0x00,
-	PID_Pong					= 0x01,
+	PID_Ping = 0x00,
+	PID_Pong = 0x01,
 
 	// connecting
-	PID_Conn					= 0x02, 
-	PID_ConnRe				= 0x03,
+	PID_Conn   = 0x02,
+	PID_ConnRe = 0x03,
 
 	// msg forwarding
-	PID_FwdReq				= 0x04, 
-	PID_Fwd						= 0x05,
+	PID_FwdReq = 0x04,
+	PID_Fwd    = 0x05,
 
 	// post mortem
-	PID_PostMortem		= 0x06,
+	PID_PostMortem = 0x06,
 
 	// (packets before this ID won't be recovered post-mortem)
 	PID_PacketLogStart = 0x04,
 
 	// * game
 	// game status
-	PID_Status				= 0x10, 
-	PID_StatusAck			= 0x11,
+	PID_Status    = 0x10,
+	PID_StatusAck = 0x11,
 
 	// client address propagation
-	PID_Addr					= 0x12,
+	PID_Addr = 0x12,
 
 	// activation request
-	PID_ClientActReq	= 0x13,
+	PID_ClientActReq = 0x13,
 
 	// all data a client needs to get started
-	PID_JoinData			= 0x15,
+	PID_JoinData = 0x15,
 
 	// player info
 	PID_PlayerInfoUpdReq = 0x16,
@@ -123,82 +126,82 @@ enum C4PacketType
 	PID_LobbyCountdown = 0x20,
 
 	// * ressources
-	PID_NetResDis			= 0x30, 
-	PID_NetResStat		= 0x31,
-	PID_NetResDerive	= 0x32,
-	PID_NetResReq			= 0x33, 
-	PID_NetResData		= 0x34,
-	
+	PID_NetResDis    = 0x30,
+	PID_NetResStat   = 0x31,
+	PID_NetResDerive = 0x32,
+	PID_NetResReq    = 0x33,
+	PID_NetResData   = 0x34,
+
 	// * control
-	PID_Control				= 0x40, 
-	PID_ControlReq		= 0x41,
-	PID_ControlPkt  	= 0x42,
-	PID_ExecSyncCtrl 	= 0x43,
+	PID_Control      = 0x40,
+	PID_ControlReq   = 0x41,
+	PID_ControlPkt   = 0x42,
+	PID_ExecSyncCtrl = 0x43,
 
 	// *** control
-	CID_First					= 0x80,
+	CID_First = 0x80,
 
-	CID_ClientJoin		= CID_First | 0x00,
-	CID_ClientUpdate	= CID_First | 0x01,
-	CID_ClientRemove	= CID_First | 0x02,
+	CID_ClientJoin   = CID_First | 0x00,
+	CID_ClientUpdate = CID_First | 0x01,
+	CID_ClientRemove = CID_First | 0x02,
 
-	CID_Vote					= CID_First | 0x03,
-	CID_VoteEnd				= CID_First | 0x04,
+	CID_Vote    = CID_First | 0x03,
+	CID_VoteEnd = CID_First | 0x04,
 
-	CID_SyncCheck			= CID_First | 0x05,
-	CID_Synchronize		= CID_First | 0x06,
-	CID_Set						= CID_First | 0x07,
-	CID_Script				= CID_First | 0x08,
+	CID_SyncCheck   = CID_First | 0x05,
+	CID_Synchronize = CID_First | 0x06,
+	CID_Set         = CID_First | 0x07,
+	CID_Script      = CID_First | 0x08,
 
-	CID_PlrInfo				= CID_First | 0x10,
-	CID_JoinPlr				= CID_First | 0x11,
-	CID_RemovePlr			= CID_First | 0x12,
+	CID_PlrInfo   = CID_First | 0x10,
+	CID_JoinPlr   = CID_First | 0x11,
+	CID_RemovePlr = CID_First | 0x12,
 
-	CID_PlrSelect			= CID_First | 0x20,
-	CID_PlrControl		= CID_First | 0x21,
-	CID_PlrCommand		= CID_First | 0x22,
-	CID_Message				= CID_First | 0x23,
+	CID_PlrSelect  = CID_First | 0x20,
+	CID_PlrControl = CID_First | 0x21,
+	CID_PlrCommand = CID_First | 0x22,
+	CID_Message    = CID_First | 0x23,
 
-	CID_EMMoveObj 		= CID_First | 0x30,
-	CID_EMDrawTool    = CID_First | 0x31,
+	CID_EMMoveObj  = CID_First | 0x30,
+	CID_EMDrawTool = CID_First | 0x31,
 
-  CID_DebugRec      = CID_First | 0x40,
+	CID_DebugRec = CID_First | 0x40,
 };
 
 // packet classes
 enum C4PacketClass
 {
-	PC_Network,														// network packet - internal stuff
-	PC_Control,														// control packet - game data (saved in records)
+	PC_Network, // network packet - internal stuff
+	PC_Control, // control packet - game data (saved in records)
 };
 
 // enumeration of packet handlers
 enum C4PacketHandlerID
 {
-	PH_C4Network2IO						= 1 << 0,		// network i/o class
-	PH_C4Network2							= 1 << 1,		// main network class
-	PH_C4GUIMainDlg						= 1 << 2,		// network lobby class
-	PH_C4Network2ClientList		= 1 << 3,		// client list class
-	PH_C4Network2Players      = 1 << 4,		// player list class
-	PH_C4Network2ResList			= 1 << 5,		// ressource list class
-	PH_C4GameControlNetwork		= 1 << 6,		// network control class
+	PH_C4Network2IO         = 1 << 0, // network i/o class
+	PH_C4Network2           = 1 << 1, // main network class
+	PH_C4GUIMainDlg         = 1 << 2, // network lobby class
+	PH_C4Network2ClientList = 1 << 3, // client list class
+	PH_C4Network2Players    = 1 << 4, // player list class
+	PH_C4Network2ResList    = 1 << 5, // ressource list class
+	PH_C4GameControlNetwork = 1 << 6, // network control class
 };
-
 
 // packet handling data
 struct C4PktHandlingData
 {
 	C4PacketType ID;
 	C4PacketClass Class;
-	const char	*Name;
+	const char *Name;
 
 	bool AcceptedOnly;
 	bool ProcByThread;
-	
+
 	int32_t HandlerID; // (C4PacketHandlerID)
 
 	class C4PacketBase *(*FnUnpack)(StdCompiler *pComp);
 };
+
 extern const C4PktHandlingData PktHandlingData[];
 
 // *** general packet types
@@ -207,7 +210,8 @@ extern const C4PktHandlingData PktHandlingData[];
 class C4IDPacket : public C4PacketBase
 {
 	friend class C4PacketList;
-public:	
+
+public:
 	C4IDPacket();
 	C4IDPacket(C4PacketType eID, C4PacketBase *pPkt, bool fTakePkt = true);
 	C4IDPacket(const C4IDPacket &Packet2);
@@ -216,13 +220,13 @@ public:
 protected:
 	C4PacketType eID;
 	C4PacketBase *pPkt;
-  bool fOwnPkt;
+	bool fOwnPkt;
 
 	// used by C4PacketList
 	C4IDPacket *pNext;
 
 public:
-	C4PacketType	getPktType() const { return eID; }
+	C4PacketType  getPktType() const { return eID; }
 	C4PacketBase *getPkt()     const { return pPkt; }
 	const char   *getPktName() const;
 
@@ -250,7 +254,7 @@ public:
 	void Add(C4IDPacket *pPkt);
 	void Add(C4PacketType eType, C4PacketBase *pPkt);
 
-  void Take(C4PacketList &List);
+	void Take(C4PacketList &List);
 	void Append(const C4PacketList &List);
 
 	void Clear();
@@ -259,4 +263,5 @@ public:
 
 	virtual void CompileFunc(StdCompiler *pComp);
 };
+
 #endif // INC_C4PacketBase
