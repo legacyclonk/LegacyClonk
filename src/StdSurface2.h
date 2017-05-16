@@ -180,7 +180,6 @@ public:
 	};
 #endif
 	CTexRef **ppTex; // textures
-	uint8_t byBytesPP; // bytes per pixel (2 or 4)
 	CSurface *pMainSfc; // main surface for simple ColorByOwner-surfaces
 	uint32_t ClrByOwnerClr; // current color to be used for ColorByOwner-blits
 
@@ -229,7 +228,7 @@ public:
 	bool GetSurfaceSize(int &irX, int &irY); // get surface size
 	void SetClr(uint32_t toClr) { ClrByOwnerClr = toClr ? toClr : 0xff; }
 	uint32_t GetClr() { return ClrByOwnerClr; }
-	bool CopyBytes(uint8_t *pImageData); // assumes an array of wdt*hgt*bitdepth/8 and copies data directly from it
+	bool CopyBytes(uint8_t *pImageData); // assumes an array of wdt*hgt*4 and copies data directly from it
 
 protected:
 	bool CreateTextures(); // create ppTex-array
@@ -289,12 +288,7 @@ public:
 	bool ClearRect(RECT &rtClear); // clear rect in texture to transparent
 	bool FillBlack(); // fill complete texture in black
 
-	void SetPix2(int iX, int iY, uint16_t v)
-	{
-		*((uint16_t *)(((uint8_t *)texLock.pBits) + (iY - LockSize.top) * texLock.Pitch + (iX - LockSize.left) * 2)) = v;
-	}
-
-	void SetPix4(int iX, int iY, uint32_t v)
+	void SetPix(int iX, int iY, uint32_t v)
 	{
 		*((uint32_t *)(((uint8_t *)texLock.pBits) + (iY - LockSize.top) * texLock.Pitch + (iX - LockSize.left) * 4)) = v;
 	}

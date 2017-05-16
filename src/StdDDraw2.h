@@ -187,7 +187,6 @@ public:
 	StdStrBuf sLastError;
 
 protected:
-	uint8_t byByteCnt; // bytes per pixel (2 or 4)
 	bool fFullscreen;
 	int ClipX1, ClipY1, ClipX2, ClipY2;
 	int StClipX1, StClipY1, StClipX2, StClipY2;
@@ -202,7 +201,7 @@ protected:
 
 public:
 	// General
-	bool Init(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int iBitDepth, unsigned int iMonitor);
+	bool Init(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, unsigned int iMonitor);
 	virtual void Clear();
 	virtual void Default();
 	virtual CStdGLCtx *CreateContext(CStdWindow *, CStdApp *) { return nullptr; }
@@ -318,13 +317,11 @@ public:
 	virtual bool DeleteDeviceObjects() = 0; // free device dependant objects
 	virtual bool DeviceReady() = 0; // return whether device exists
 
-	int GetByteCnt() { return byByteCnt; } // return bytes per pixel
-
 protected:
 	bool StringOut(const char *szText, CSurface *sfcDest, int iTx, int iTy, uint32_t dwFCol, uint8_t byForm, bool fDoMarkup, CMarkup &Markup, CStdFont *pFont, float fZoom);
 	virtual void DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwCol) = 0; // without ClrModMap
 	bool CreatePrimaryClipper();
-	virtual bool CreatePrimarySurfaces(bool Fullscreen, int iColorDepth, unsigned int iMonitor) = 0;
+	virtual bool CreatePrimarySurfaces(bool Fullscreen, unsigned int iMonitor) = 0;
 	virtual bool SetOutputAdapter(unsigned int iMonitor) = 0;
 	bool Error(const char *szMsg);
 	virtual bool CreateDirectDraw() = 0;
@@ -348,4 +345,4 @@ bool UnLockSurfaceGlobal(CSurface *sfcTarget);
 bool DLineSPix(int32_t x, int32_t y, int32_t col);
 bool DLineSPixDw(int32_t x, int32_t y, int32_t dwClr);
 
-CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int iBitDepth, int Engine, unsigned int iMonitor);
+CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int Engine, unsigned int iMonitor);

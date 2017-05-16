@@ -169,7 +169,7 @@ bool C4Application::DoInit()
 			Log("WARNING: DDraw Software emulation is activated!");
 #endif
 	// Initialize D3D/OpenGL
-	DDraw = DDrawInit(this, isFullScreen, false, Config.Graphics.BitDepth, Config.Graphics.Engine, Config.Graphics.Monitor);
+	DDraw = DDrawInit(this, isFullScreen, false, Config.Graphics.Engine, Config.Graphics.Monitor);
 	if (!DDraw) { LogFatal(LoadResStr("IDS_ERR_DDRAW")); Clear(); return false; }
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)

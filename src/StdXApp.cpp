@@ -557,7 +557,7 @@ void CStdApp::HandleXMessage()
 }
 
 bool CStdApp::FindDisplayMode(unsigned int iXRes, unsigned int iYRes,
-	unsigned int iColorDepth, unsigned int iMonitor)
+	unsigned int iMonitor)
 {
 	if (xf86vmode_major_version < 0) return false;
 	// Log the version of the VidMode extension

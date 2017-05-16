@@ -762,17 +762,6 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheck->SetEnabled(false);
 #endif
 	pGroupResolution->AddElement(pCheck);
-	// color depth checkboxes
-	C4GUI::BaseCallbackHandler *pGfxClrDepthCheckCB = new C4GUI::CallbackHandler<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnGfxClrDepthCheck);
-	for (int32_t iBitDepthIdx = 0; iBitDepthIdx < 2; ++iBitDepthIdx)
-	{
-		int iBitDepth = (iBitDepthIdx + 1) * 16;
-		pCheckGfxClrDepth[iBitDepthIdx] = new C4GUI::CheckBox(caGroupEngine.GetGridCell(iBitDepthIdx, 2, 2, 4, -1, iCheckHgt, true), FormatString("%d Bit", (int)iBitDepth).getData(), (Config.Graphics.BitDepth == iBitDepth));
-		pCheckGfxClrDepth[iBitDepthIdx]->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-		pCheckGfxClrDepth[iBitDepthIdx]->SetOnChecked(pGfxClrDepthCheckCB);
-		pCheckGfxClrDepth[iBitDepthIdx]->SetToolTip(LoadResStr("IDS_CTL_BITDEPTH"));
-		pGroupResolution->AddElement(pCheckGfxClrDepth[iBitDepthIdx]);
-	}
 	// fullscreen checkbox
 	pCheck = new C4GUI::CheckBox(caGroupResolution.GetGridCell(0, 1, 3, 4, -1, iCheckHgt, true), LoadResStr("IDS_MSG_FULLSCREEN"), !DDrawCfg.Windowed);
 	pCheck->SetOnChecked(new C4GUI::CallbackHandler<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnFullscreenChange));
@@ -1075,7 +1064,7 @@ void C4StartupOptionsDlg::OnGfxResComboFill(C4GUI::ComboBox_FillCB *pFiller)
 	int32_t idx = 0, iXRes, iYRes, iBitDepth;
 	while (Application.GetIndexedDisplayMode(idx++, &iXRes, &iYRes, &iBitDepth, Config.Graphics.Monitor))
 #ifdef _WIN32 // why only WIN32?
-		if (iBitDepth == Config.Graphics.BitDepth)
+		if (iBitDepth == 32)
 			if ((iXRes <= 1024 && iXRes >= 600 && iYRes >= 460) || Config.Graphics.ShowAllResolutions)
 #endif
 			{
@@ -1157,29 +1146,6 @@ StdStrBuf C4StartupOptionsDlg::GetGfxResString(int32_t iResX, int32_t iResY)
 {
 	// Display in format like "640 x 480"
 	return FormatString("%d x %d", (int)iResX, (int)iResY);
-}
-
-void C4StartupOptionsDlg::OnGfxClrDepthCheck(C4GUI::Element *pCheckBox)
-{
-	// get clr depth being checked
-	int32_t i;
-	for (i = 0; i < 2; ++i) if (pCheckBox == pCheckGfxClrDepth[i]) break;
-	if (i == 2) return;
-	// do not allow unchecking
-	if (!pCheckGfxClrDepth[i]->GetChecked())
-	{
-		pCheckGfxClrDepth[i]->SetChecked(true);
-		return;
-	}
-	// change check to this one
-	int32_t iCurrIdx = BoundBy<int32_t>(Config.Graphics.BitDepth / 16 - 1, 0, 1);
-	pCheckGfxClrDepth[iCurrIdx]->SetChecked(false);
-	pCheckGfxClrDepth[i]->SetChecked(true);
-	// change config
-	Config.Graphics.BitDepth = (i + 1) * 16;
-	// notify user that he has to restart to see any changes
-	StdStrBuf sTitle; sTitle.Copy(LoadResStrNoAmp("IDS_CTL_BITDEPTH"));
-	GetScreen()->ShowMessage(LoadResStr("IDS_MSG_RESTARTCHANGECFG"), sTitle.getData(), C4GUI::Ico_Notify, &Config.Startup.HideMsgGfxBitDepthChange);
 }
 
 void C4StartupOptionsDlg::OnFullscreenChange(C4GUI::Element *pCheckBox)

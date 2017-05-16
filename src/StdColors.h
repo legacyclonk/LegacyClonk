@@ -177,15 +177,6 @@ inline uint16_t ClrDw2W(uint32_t dwClr)
 		uint16_t((dwClr & 0xf0000000) >> 16);
 }
 
-inline uint32_t ClrW2Dw(uint16_t wClr)
-{
-	return (uint32_t)
-		((wClr & 0x000f) <<  4) |
-		((wClr & 0x00f0) <<  8) |
-		((wClr & 0x0f00) << 12) |
-		((wClr & 0xf000) << 16);
-}
-
 inline bool rgb2xyY(double r, double g, double b, double *px, double *py, double *pY) // linear rgb to CIE xyY
 {
 	double X = 0.412453 * r + 0.357580 * g + 0.180423 * b;

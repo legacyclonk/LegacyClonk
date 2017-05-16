@@ -1348,7 +1348,7 @@ uint32_t CStdDDraw::ApplyGammaTo(uint32_t dwClr)
 	return Gamma.ApplyTo(dwClr);
 }
 
-CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int iBitDepth, int Engine, unsigned int iMonitor)
+CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int Engine, unsigned int iMonitor)
 {
 	// create engine
 	switch (iGfxEngine = Engine)
@@ -1365,7 +1365,7 @@ CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int iBit
 	}
 	if (!lpDDraw) return nullptr;
 	// init it
-	if (!lpDDraw->Init(pApp, Fullscreen, fUsePageLock, iBitDepth, iMonitor))
+	if (!lpDDraw->Init(pApp, Fullscreen, fUsePageLock, iMonitor))
 	{
 		delete lpDDraw;
 		return nullptr;
@@ -1374,7 +1374,7 @@ CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int iBit
 	return lpDDraw;
 }
 
-bool CStdDDraw::Init(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int iBitDepth, unsigned int iMonitor)
+bool CStdDDraw::Init(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, unsigned int iMonitor)
 {
 	// set cfg again, as engine has been decided
 	DDrawCfg.Set(DDrawCfg.Cfg, DDrawCfg.fTexIndent, DDrawCfg.fBlitOff);
@@ -1397,7 +1397,7 @@ bool CStdDDraw::Init(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int iBit
 
 	DebugLog("  Create Device...");
 
-	if (!CreatePrimarySurfaces(Fullscreen, iBitDepth, iMonitor))
+	if (!CreatePrimarySurfaces(Fullscreen, iMonitor))
 		return Error("  CreateDevice failure.");
 
 	DebugLog("  Create Clipper");

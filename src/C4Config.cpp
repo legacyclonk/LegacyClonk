@@ -116,7 +116,6 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ShowClock,            "ShowClock",            0,     false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewNames,        "ShowCrewNames",        1,     false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewCNames,       "ShowCrewCNames",       1,     false, true));
-	pComp->Value(mkNamingAdapt(BitDepth,             "BitDepth",             32,    false, true));
 	pComp->Value(mkNamingAdapt(NewGfxCfg,            "NewGfxCfg",            0));
 	pComp->Value(mkNamingAdapt(NewGfxCfgGL,          "NewGfxCfgGL",          0));
 	pComp->Value(mkNamingAdapt(MsgBoard,             "MsgBoard",             1));
@@ -722,7 +721,6 @@ int C4ConfigGeneral::GetLanguageSequence(const char *strSource, char *strTarget)
 void C4ConfigStartup::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(HideMsgGfxEngineChange,   "HideMsgGfxEngineChange",   0));
-	pComp->Value(mkNamingAdapt(HideMsgGfxBitDepthChange, "HideMsgGfxBitDepthChange", 0));
 	pComp->Value(mkNamingAdapt(HideMsgMMTimerChange,     "HideMsgMMTimerChange",     0));
 	pComp->Value(mkNamingAdapt(HideMsgStartDedicated,    "HideMsgStartDedicated",    0));
 	pComp->Value(mkNamingAdapt(HideMsgPlrTakeOver,       "HideMsgPlrTakeOver",       0));

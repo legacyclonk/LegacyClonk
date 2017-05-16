@@ -257,17 +257,17 @@ bool CStdApp::GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *pi
 }
 
 bool CStdApp::FindDisplayMode(unsigned int iXRes, unsigned int iYRes,
-	unsigned int iColorDepth, unsigned int iMonitor)
+	unsigned int iMonitor)
 {
 	// Logic: Does this assume modes that work fullscreen also work
 	// in windowed mode?
 	// No way to tell if this mode will be for fullscreen mode or not.
 
-	if (!SDL_VideoModeOK(iXRes, iYRes, iColorDepth, SDL_OPENGL))
+	if (!SDL_VideoModeOK(iXRes, iYRes, 32, SDL_OPENGL))
 		return false;
 	this->nextWidth = iXRes;
 	this->nextHeight = iYRes;
-	this->nextBPP = iColorDepth;
+	this->nextBPP = 32;
 	return true;
 }
 
