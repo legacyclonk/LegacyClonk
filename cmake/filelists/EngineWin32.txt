@@ -1,0 +1,3 @@
+src/C4FileClasses.cpp
+src/res/engine.rc
+src/res/engine_resource.h

@@ -1,0 +1,4 @@
+src/StdTApp.cpp
+src/StdXApp.cpp
+src/StdXPrivate.h
+src/StdXWindow.cpp
