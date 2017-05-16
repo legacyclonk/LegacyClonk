@@ -122,9 +122,9 @@ void ScrollBarFacets::Set(const C4Facet &rByFct, int32_t iPinIndex)
 
 // Element
 
-Element::Element() : pParent(NULL), pDragTarget(NULL), fDragging(false), pContextHandler(NULL), fVisible(true)
+Element::Element() : pParent(nullptr), pDragTarget(nullptr), fDragging(false), pContextHandler(nullptr), fVisible(true)
 {
-	// pParent=NULL invalidates pPrev/pNext
+	// pParent=nullptr invalidates pPrev/pNext
 	// fDragging=false invalidates iDragX/Y
 	// zero fields
 	rcBounds.Set(0, 0, 0, 0);
@@ -133,7 +133,7 @@ Element::Element() : pParent(NULL), pDragTarget(NULL), fDragging(false), pContex
 Element::~Element()
 {
 	// delete context handler
-	if (pContextHandler) { pContextHandler->DeRef(); pContextHandler = NULL; }
+	if (pContextHandler) { pContextHandler->DeRef(); pContextHandler = nullptr; }
 	// remove from any container
 	if (pParent)
 		pParent->RemoveElement(this);
@@ -258,8 +258,8 @@ void Element::StopDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyPa
 	DoDragging(rMouse, iX, iY, dwKeyParam);
 }
 
-Dialog *Element::GetDlg() { if (pParent) return pParent->GetDlg(); return NULL; }
-Screen *Element::GetScreen() { if (pParent) return pParent->GetScreen(); return NULL; }
+Dialog *Element::GetDlg() { if (pParent) return pParent->GetDlg(); return nullptr; }
+Screen *Element::GetScreen() { if (pParent) return pParent->GetScreen(); return nullptr; }
 
 void Element::Draw3DFrame(C4FacetEx &cgo, bool fUp, int32_t iIndent, BYTE byAlpha, bool fDrawTop, int32_t iTopOff, bool fDrawLeft, int32_t iLeftOff)
 {
@@ -412,8 +412,8 @@ CMouse::CMouse(int32_t iX, int32_t iY) : fActive(true), fActiveInput(false)
 	// reset fields
 	LDown = MDown = RDown = false;
 	dwKeys = 0;
-	pMouseOverElement = pPrevMouseOverElement = NULL;
-	pDragElement = NULL;
+	pMouseOverElement = pPrevMouseOverElement = nullptr;
+	pDragElement = nullptr;
 	ResetToolTipTime();
 	// LDownX/Y initialized upon need
 }
@@ -484,7 +484,7 @@ void CMouse::ReleaseElements()
 		pDragElement->ScreenPos2ClientPos(iX, iY);
 		pDragElement->StopDragging(*this, iX, iY, dwKeys);
 	}
-	pPrevMouseOverElement = pMouseOverElement = pDragElement = NULL;
+	pPrevMouseOverElement = pMouseOverElement = pDragElement = nullptr;
 }
 
 void CMouse::RemoveElement(Element *pChild)
@@ -493,10 +493,10 @@ void CMouse::RemoveElement(Element *pChild)
 	if (pMouseOverElement == pChild)
 	{
 		pMouseOverElement->MouseLeave(*this); // do leave callback so any tooltip is cleared!
-		pMouseOverElement = NULL;
+		pMouseOverElement = nullptr;
 	}
-	if (pPrevMouseOverElement == pChild) pPrevMouseOverElement = NULL;
-	if (pDragElement == pChild) pDragElement = NULL;
+	if (pPrevMouseOverElement == pChild) pPrevMouseOverElement = nullptr;
+	if (pDragElement == pChild) pDragElement = nullptr;
 }
 
 void CMouse::OnElementGetsInvisible(Element *pChild)
@@ -512,15 +512,15 @@ void Screen::RemoveElement(Element *pChild)
 	// inherited
 	Window::RemoveElement(pChild);
 	// clear ptrs
-	if (pActiveDlg == pChild) { pActiveDlg = NULL; Mouse.ResetElements(); }
+	if (pActiveDlg == pChild) { pActiveDlg = nullptr; Mouse.ResetElements(); }
 	Mouse.RemoveElement(pChild);
-	if (pContext) if (pContext == pChild) pContext = NULL; else pContext->RemoveElement(pChild);
+	if (pContext) if (pContext == pChild) pContext = nullptr; else pContext->RemoveElement(pChild);
 }
 
-Screen::Screen(int32_t tx, int32_t ty, int32_t twdt, int32_t thgt) : Window(), Mouse(tx + twdt / 2, ty + thgt / 2), pContext(NULL), fExclusive(true), pGamePadOpener(NULL)
+Screen::Screen(int32_t tx, int32_t ty, int32_t twdt, int32_t thgt) : Window(), Mouse(tx + twdt / 2, ty + thgt / 2), pContext(nullptr), fExclusive(true), pGamePadOpener(nullptr)
 {
 	// no dialog active
-	pActiveDlg = NULL;
+	pActiveDlg = nullptr;
 	// set size - calcs client area as well
 	SetBounds(C4Rect(tx, ty, twdt, thgt));
 	SetPreferredDlgRect(C4Rect(0, 0, twdt, thgt));
@@ -536,7 +536,7 @@ Screen::~Screen()
 	// dtor: Close context menu
 	AbortContext(false);
 	// clear singleton
-	if (this == pScreen) pScreen = NULL;
+	if (this == pScreen) pScreen = nullptr;
 	// GamePad
 	if (pGamePadOpener) delete pGamePadOpener;
 }
@@ -614,7 +614,7 @@ void Screen::CloseDialog(Dialog *pDlg, bool fFade)
 		// set new active dlg
 		pActiveDlg = GetTopDialog();
 		// do not set yet if it's fading
-		if (pActiveDlg && pActiveDlg->IsFading()) pActiveDlg = NULL;
+		if (pActiveDlg && pActiveDlg->IsFading()) pActiveDlg = nullptr;
 	}
 	// redraw background; clip update
 	Game.GraphicsSystem.InvalidateBg(); UpdateMouseFocus();
@@ -626,7 +626,7 @@ void Screen::RecheckActiveDialog()
 	if (pActiveDlg == pNewTop) return;
 	Mouse.ReleaseElements();
 	// do not set yet if it's fading
-	if (pActiveDlg && pActiveDlg->IsFading()) pActiveDlg = NULL;
+	if (pActiveDlg && pActiveDlg->IsFading()) pActiveDlg = nullptr;
 }
 
 Dialog *Screen::GetTopDialog()
@@ -638,7 +638,7 @@ Dialog *Screen::GetTopDialog()
 			if (pDlg->IsShown())
 				return pDlg;
 	// no dlg found
-	return NULL;
+	return nullptr;
 }
 
 void Screen::CloseAllDialogs(bool fWithOK)
@@ -655,7 +655,7 @@ Dialog *Screen::GetDialog(HWND hWindow)
 		if (pDlg = pEl->GetDlg())
 			if (pDlg->pWindow && pDlg->pWindow->hWindow == hWindow)
 				return pDlg;
-	return NULL;
+	return nullptr;
 }
 #endif
 
@@ -759,7 +759,7 @@ bool Screen::MouseInput(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyPara
 		{
 			// stop dragging
 			Mouse.pDragElement->StopDragging(Mouse, iX2, iY2, dwKeyParam);
-			Mouse.pDragElement = NULL;
+			Mouse.pDragElement = nullptr;
 		}
 		else
 		{
@@ -769,7 +769,7 @@ bool Screen::MouseInput(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyPara
 	}
 	// backup previous MouseOver-element
 	Mouse.pPrevMouseOverElement = Mouse.pMouseOverElement;
-	Mouse.pMouseOverElement = NULL;
+	Mouse.pMouseOverElement = nullptr;
 	bool fProcessed = false;
 	// active context menu?
 	if (!pForVP && pContext && pContext->CtxMouseInput(Mouse, iButton, iX, iY, dwKeyParam))
@@ -799,7 +799,7 @@ bool Screen::MouseInput(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyPara
 					// forward to active dialog
 					pActiveDlg->MouseInput(Mouse, iButton, iX - rcDlgBounds.x, iY - rcDlgBounds.y, dwKeyParam);
 				else
-					Mouse.pMouseOverElement = NULL;
+					Mouse.pMouseOverElement = nullptr;
 			}
 			else
 				// outside dialog: own handling (for screen context menu)
@@ -817,7 +817,7 @@ bool Screen::MouseInput(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyPara
 						if (pForDlg && pDlg != pForDlg) continue;
 						// if specified: process specified viewport only
 						bool fIsExternalDrawDialog = pDlg->IsExternalDrawDialog();
-						C4Viewport *pVP = fIsExternalDrawDialog ? pDlg->GetViewport() : NULL;
+						C4Viewport *pVP = fIsExternalDrawDialog ? pDlg->GetViewport() : nullptr;
 						if (pForVP && pForVP != pVP) continue;
 						// calc offset
 						C4Rect &rcDlgBounds = pDlg->GetBounds();
@@ -957,7 +957,7 @@ void Screen::UpdateGamepadGUIControlEnabled()
 	// update pGamePadOpener to config value
 	if (pGamePadOpener && (!Config.Controls.GamepadGuiControl || !Application.pGamePadControl))
 	{
-		delete pGamePadOpener; pGamePadOpener = NULL;
+		delete pGamePadOpener; pGamePadOpener = nullptr;
 	}
 	else if (!pGamePadOpener && (Config.Controls.GamepadGuiControl && Application.pGamePadControl))
 	{
@@ -1119,7 +1119,7 @@ void Resource::Clear()
 	fctProgressBar.Clear();
 	fctContext.Default();
 	// facets are invalid now...doesn't matter anyway, as long as res ptr is not set to this class
-	if (pRes == this) pRes = NULL;
+	if (pRes == this) pRes = nullptr;
 }
 
 CStdFont &Resource::GetFontByHeight(int32_t iHgt, float *pfZoom)

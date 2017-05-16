@@ -49,12 +49,12 @@ void C4ObjectInfo::Default()
 	HasDied = FALSE;
 	ControlCount = 0;
 	Filename[0] = 0;
-	Next = NULL;
-	pDef = NULL;
+	Next = nullptr;
+	pDef = nullptr;
 #ifdef C4ENGINE
 	Portrait.Default();
-	pNewPortrait = NULL;
-	pCustomPortrait = NULL;
+	pNewPortrait = nullptr;
+	pCustomPortrait = nullptr;
 #endif
 }
 
@@ -110,7 +110,7 @@ BOOL C4ObjectInfo::Load(C4Group &hGroup, bool fLoadPortrait)
 			{
 				// load failure: reset portrait info
 				*PortraitFile = 0;
-				delete pCustomPortrait; pCustomPortrait = NULL;
+				delete pCustomPortrait; pCustomPortrait = nullptr;
 				// do not try to load a custom portrait again
 				fPortraitFileChecked = true;
 			}
@@ -124,7 +124,7 @@ BOOL C4ObjectInfo::Load(C4Group &hGroup, bool fLoadPortrait)
 		{
 			// get portrait by info string
 			const char *szPortraitName; C4ID idPortraitID;
-			szPortraitName = C4Portrait::EvaluatePortraitString(PortraitFile, idPortraitID, id, NULL);
+			szPortraitName = C4Portrait::EvaluatePortraitString(PortraitFile, idPortraitID, id, nullptr);
 			// get portrait def
 			C4Def *pPortraitDef = Game.Defs.ID2Def(idPortraitID);
 			// def found?
@@ -132,7 +132,7 @@ BOOL C4ObjectInfo::Load(C4Group &hGroup, bool fLoadPortrait)
 			{
 				// find portrait by name
 				C4DefGraphics *pDefPortraitGfx = pPortraitDef->Portraits->Get(szPortraitName);
-				C4PortraitGraphics *pPortraitGfx = pDefPortraitGfx ? pDefPortraitGfx->IsPortrait() : NULL;
+				C4PortraitGraphics *pPortraitGfx = pDefPortraitGfx ? pDefPortraitGfx->IsPortrait() : nullptr;
 				// link if found
 				if (pPortraitGfx)
 					Portrait.Link(pPortraitGfx);
@@ -304,9 +304,9 @@ void C4ObjectInfo::Clear()
 {
 #ifdef C4ENGINE
 	Portrait.Clear();
-	if (pNewPortrait)    { delete pNewPortrait;    pNewPortrait    = NULL; }
-	if (pCustomPortrait) { delete pCustomPortrait; pCustomPortrait = NULL; }
-	pDef = NULL;
+	if (pNewPortrait)    { delete pNewPortrait;    pNewPortrait    = nullptr; }
+	if (pCustomPortrait) { delete pCustomPortrait; pCustomPortrait = nullptr; }
+	pDef = nullptr;
 #endif
 }
 
@@ -355,7 +355,7 @@ void C4ObjectInfo::Draw(C4Facet &cgo, BOOL fShowPortrait, BOOL fCaptain, C4Objec
 			pRankSys = pDef->pRankNames;
 		}
 	}
-	pRankSys->DrawRankSymbol(NULL, Rank, pRankRes, iRankCnt, false, iX, &cgo);
+	pRankSys->DrawRankSymbol(nullptr, Rank, pRankRes, iRankCnt, false, iX, &cgo);
 	iX += Game.GraphicsResource.fctRank.Wdt;
 	// Rank & Name
 	if (Rank > 0) sprintf(OSTR, "%s|%s", sRankName.getData(), pOfObj->GetName());

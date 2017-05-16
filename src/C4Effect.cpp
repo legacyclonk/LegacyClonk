@@ -116,7 +116,7 @@ C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t
 	// higher-level effects should not be inserted during the process of removing or adding a lower-level effect
 	// because that would cause a wrong initialization order
 	// (hardly ever causing trouble, however...)
-	C4Effect *pLastRemovedEffect = NULL;
+	C4Effect *pLastRemovedEffect = nullptr;
 	if (fRemoveUpper && pNext && pFnStart)
 		TempRemoveUpperEffects(pForObj, false, &pLastRemovedEffect);
 	// bad things may happen
@@ -137,8 +137,8 @@ C4Effect::C4Effect(StdCompiler *pComp) : EffectVars(0)
 {
 	// defaults
 	iNumber = iPriority = nCommandTarget = iTime = iIntervall = 0;
-	pCommandTarget = NULL;
-	pNext = NULL;
+	pCommandTarget = nullptr;
+	pNext = nullptr;
 	// compile
 	pComp->Value(*this);
 }
@@ -150,7 +150,7 @@ C4Effect::~C4Effect()
 	while (pEffect = pNext)
 	{
 		pNext = pEffect->pNext;
-		pEffect->pNext = NULL;
+		pEffect->pNext = nullptr;
 		delete pEffect;
 	}
 }
@@ -191,7 +191,7 @@ void C4Effect::ClearPointers(C4Object *pObj)
 		if (pEff->pCommandTarget == pObj)
 		{
 			pEff->SetDead();
-			pEff->pCommandTarget = NULL;
+			pEff->pCommandTarget = nullptr;
 		}
 	while (pEff = pEff->pNext);
 }
@@ -199,7 +199,7 @@ void C4Effect::ClearPointers(C4Object *pObj)
 C4Effect *C4Effect::Get(const char *szName, int32_t iIndex, int32_t iMaxPriority)
 {
 	// safety
-	if (!szName) return NULL;
+	if (!szName) return nullptr;
 	// check all effects
 	C4Effect *pEff = this;
 	do
@@ -218,7 +218,7 @@ C4Effect *C4Effect::Get(const char *szName, int32_t iIndex, int32_t iMaxPriority
 		return pEff;
 	} while (pEff = pEff->pNext);
 	// nothing found
-	return NULL;
+	return nullptr;
 }
 
 C4Effect *C4Effect::Get(int32_t iNumber, bool fIncludeDead, int32_t iMaxPriority)
@@ -232,11 +232,11 @@ C4Effect *C4Effect::Get(int32_t iNumber, bool fIncludeDead, int32_t iMaxPriority
 				if (!iMaxPriority || pEff->iPriority <= iMaxPriority)
 					return pEff;
 			// effect found but denied
-			return NULL;
+			return nullptr;
 		}
 	while (pEff = pEff->pNext);
 	// nothing found
-	return NULL;
+	return nullptr;
 }
 
 int32_t C4Effect::GetCount(const char *szMask, int32_t iMaxPriority)
@@ -257,8 +257,8 @@ int32_t C4Effect::Check(C4Object *pForObj, const char *szCheckEffect, int32_t iP
 	// priority=1: always OK; no callbacks
 	if (iPrio == 1) return 0;
 	// check this and other effects
-	C4Effect *pAddToEffect = NULL; bool fDoTempCallsForAdd = false;
-	C4Effect *pLastRemovedEffect = NULL;
+	C4Effect *pAddToEffect = nullptr; bool fDoTempCallsForAdd = false;
+	C4Effect *pLastRemovedEffect = nullptr;
 	for (C4Effect *pCheck = this; pCheck; pCheck = pCheck->pNext)
 	{
 		if (!pCheck->IsDead() && pCheck->pFnEffect && pCheck->iPriority >= iPrio)
@@ -313,7 +313,7 @@ void C4Effect::Execute(C4Object *pObj)
 		{
 			// delete it, then
 			C4Effect *pNextEffect = pEffect->pNext;
-			pEffect->pNext = NULL;
+			pEffect->pNext = nullptr;
 			delete pEffect;
 			// next effect
 			*ppPrevEffect = pEffect = pNextEffect;
@@ -349,7 +349,7 @@ void C4Effect::Execute(C4Object *pObj)
 void C4Effect::Kill(C4Object *pObj)
 {
 	// active?
-	C4Effect *pLastRemovedEffect = NULL;
+	C4Effect *pLastRemovedEffect = nullptr;
 	if (IsActive())
 		// then temp remove all higher priority effects
 		TempRemoveUpperEffects(pObj, false, &pLastRemovedEffect);
@@ -626,7 +626,7 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	// special effects only if loaded
 	if (!Game.Particles.IsFireParticleLoaded()) return C4Fx_OK;
 
-	// get effect: May be NULL after object fire execution, in which case the fire has been extinguished
+	// get effect: May be nullptr after object fire execution, in which case the fire has been extinguished
 	if (!pObj->GetOnFire()) return C4Fx_Execute_Kill;
 	if (!(pEffect = pObj->pEffects)) return C4Fx_Execute_Kill;
 	if (!(pEffect = pEffect->Get(iNumber, true))) return C4Fx_Execute_Kill;
@@ -811,7 +811,7 @@ void BubbleOut(int32_t tx, int32_t ty)
 	// Enough bubbles out there already
 	if (Game.Objects.ObjectCount(C4Id("FXU1")) >= SmokeLevel) return;
 	// Create bubble
-	Game.CreateObject(C4Id("FXU1"), NULL, NO_OWNER, tx, ty);
+	Game.CreateObject(C4Id("FXU1"), nullptr, NO_OWNER, tx, ty);
 }
 
 void Smoke(int32_t tx, int32_t ty, int32_t level, DWORD dwClr)
@@ -828,7 +828,7 @@ void Smoke(int32_t tx, int32_t ty, int32_t level, DWORD dwClr)
 	// Create smoke
 	level = BoundBy<int32_t>(level, 3, 32);
 	C4Object *pObj;
-	if (pObj = Game.CreateObjectConstruction(C4Id("FXS1"), NULL, NO_OWNER, tx, ty, FullCon * level / 32))
+	if (pObj = Game.CreateObjectConstruction(C4Id("FXS1"), nullptr, NO_OWNER, tx, ty, FullCon * level / 32))
 		pObj->Call(PSF_Activate);
 }
 
@@ -858,7 +858,7 @@ void Explosion(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t i
 			C4ParticleDef *pPrtDef2 = Game.Particles.GetDef(szEffect);
 			if (pPrtDef2) pPrtDef = pPrtDef2;
 		}
-		else if (idEffect) pPrtDef = NULL;
+		else if (idEffect) pPrtDef = nullptr;
 		// create particle
 		if (pPrtDef)
 		{

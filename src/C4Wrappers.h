@@ -36,7 +36,7 @@ inline C4Def *C4Id2Def(C4ID id)
 
 // Sound
 
-class C4SoundInstance *StartSoundEffect(const char *szSndName, bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = NULL, int32_t iCustomFalloffDistance = 0);
+class C4SoundInstance *StartSoundEffect(const char *szSndName, bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = nullptr, int32_t iCustomFalloffDistance = 0);
 class C4SoundInstance *StartSoundEffectAt(const char *szSndName, int32_t iX, int32_t iY, bool fLoop = false, int32_t iVolume = 100);
 class C4SoundInstance *GetSoundInstance(const char *szSndName, C4Object *pObj);
 void StopSoundEffect(const char *szSndName, C4Object *pObj);

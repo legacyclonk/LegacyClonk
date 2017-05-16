@@ -40,7 +40,7 @@ C4PlayerList::~C4PlayerList()
 
 void C4PlayerList::Default()
 {
-	First = NULL;
+	First = nullptr;
 }
 
 void C4PlayerList::Clear()
@@ -50,7 +50,7 @@ void C4PlayerList::Clear()
 	{
 		First = pPlr->Next; delete pPlr;
 	}
-	First = NULL;
+	First = nullptr;
 }
 
 void C4PlayerList::Execute()
@@ -135,7 +135,7 @@ C4Player *C4PlayerList::Get(int iNumber) const
 	for (C4Player *pPlr = First; pPlr; pPlr = pPlr->Next)
 		if (pPlr->Number == iNumber)
 			return pPlr;
-	return NULL;
+	return nullptr;
 }
 
 C4Player *C4PlayerList::GetByIndex(int iIndex) const
@@ -143,7 +143,7 @@ C4Player *C4PlayerList::GetByIndex(int iIndex) const
 	for (C4Player *pPlr = First; pPlr; pPlr = pPlr->Next)
 		if (!iIndex--)
 			return pPlr;
-	return NULL;
+	return nullptr;
 }
 
 C4Player *C4PlayerList::GetByIndex(int iIndex, C4PlayerType eType) const
@@ -152,7 +152,7 @@ C4Player *C4PlayerList::GetByIndex(int iIndex, C4PlayerType eType) const
 		if (pPlr->GetType() == eType)
 			if (!iIndex--)
 				return pPlr;
-	return NULL;
+	return nullptr;
 }
 
 C4Player *C4PlayerList::GetLocalByKbdSet(int iKbdSet) const
@@ -161,14 +161,14 @@ C4Player *C4PlayerList::GetLocalByKbdSet(int iKbdSet) const
 		if (pPlr->LocalControl)
 			if (pPlr->Control == iKbdSet)
 				return pPlr;
-	return NULL;
+	return nullptr;
 }
 
 C4Player *C4PlayerList::GetByInfoID(int iInfoID) const
 {
 	for (C4Player *pPlr = First; pPlr; pPlr = pPlr->Next)
 		if (pPlr->ID == iInfoID) return pPlr;
-	return NULL;
+	return nullptr;
 }
 
 int C4PlayerList::GetCount() const
@@ -275,7 +275,7 @@ C4Player *C4PlayerList::Join(const char *szFilename, BOOL fScenarioInit, int iAt
 	assert(pInfo);
 
 	// safeties
-	if (szFilename && !*szFilename) szFilename = NULL;
+	if (szFilename && !*szFilename) szFilename = nullptr;
 
 	// Log
 	LogF(LoadResStr(fScenarioInit ? "IDS_PRC_JOINPLR" : "IDS_PRC_RECREATE"), pInfo->GetName());
@@ -285,13 +285,13 @@ C4Player *C4PlayerList::Join(const char *szFilename, BOOL fScenarioInit, int iAt
 		if (GetCount() + 1 > Game.Parameters.MaxPlayers)
 		{
 			LogF(LoadResStr("IDS_PRC_TOOMANYPLRS"), Game.Parameters.MaxPlayers);
-			return NULL;
+			return nullptr;
 		}
 
 	// Check duplicate file usage
 	if (szFilename) if (FileInUse(szFilename))
 	{
-		Log(LoadResStr("IDS_PRC_PLRFILEINUSE")); return NULL;
+		Log(LoadResStr("IDS_PRC_PLRFILEINUSE")); return nullptr;
 	}
 
 	// Create
@@ -305,7 +305,7 @@ C4Player *C4PlayerList::Join(const char *szFilename, BOOL fScenarioInit, int iAt
 	// Init
 	if (!pPlr->Init(GetFreeNumber(), iAtClient, szAtClientName, szFilename, fScenarioInit, pInfo))
 	{
-		Remove(pPlr, false, false); Log(LoadResStr("IDS_PRC_JOINFAIL")); return NULL;
+		Remove(pPlr, false, false); Log(LoadResStr("IDS_PRC_JOINFAIL")); return nullptr;
 	}
 
 	// Done
@@ -422,7 +422,7 @@ C4Player *C4PlayerList::GetByName(const char *szName, int iExcluding) const
 		if (SEqual(pPlr->GetName(), szName))
 			if (pPlr->Number != iExcluding)
 				return pPlr;
-	return NULL;
+	return nullptr;
 }
 
 BOOL C4PlayerList::FileInUse(const char *szFilename) const
@@ -455,7 +455,7 @@ C4Player *C4PlayerList::GetLocalByIndex(int iIndex) const
 			if (cindex == iIndex) return pPlr;
 			cindex++;
 		}
-	return NULL;
+	return nullptr;
 }
 
 BOOL C4PlayerList::RemoveAtClient(int iClient, bool fDisconnect)
@@ -488,7 +488,7 @@ C4Player *C4PlayerList::GetAtClient(int iClient, int iIndex) const
 			if (cindex == iIndex) return pPlr;
 			cindex++;
 		}
-	return NULL;
+	return nullptr;
 }
 
 BOOL C4PlayerList::RemoveAtRemoteClient(bool fDisconnect, bool fNoCalls)
@@ -514,7 +514,7 @@ C4Player *C4PlayerList::GetAtRemoteClient(int iIndex) const
 			if (cindex == iIndex) return pPlr;
 			cindex++;
 		}
-	return NULL;
+	return nullptr;
 }
 
 BOOL C4PlayerList::RemoveLocal(bool fDisconnect, bool fNoCalls)

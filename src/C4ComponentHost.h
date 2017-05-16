@@ -32,10 +32,10 @@ public:
 	const char *GetData() { return Data.getData(); }
 	size_t GetDataSize() { return Data.getLength(); }
 	virtual void Close();
-	BOOL Load(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage = NULL);
-	BOOL Load(const char *szName, C4GroupSet &hGroupSet, const char *szFilename, const char *szLanguage = NULL);
-	BOOL LoadEx(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage = NULL);
-	BOOL LoadAppend(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage = NULL);
+	BOOL Load(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage = nullptr);
+	BOOL Load(const char *szName, C4GroupSet &hGroupSet, const char *szFilename, const char *szLanguage = nullptr);
+	BOOL LoadEx(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage = nullptr);
+	BOOL LoadAppend(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage = nullptr);
 	BOOL Save(C4Group &hGroup);
 	bool GetLanguageString(const char *szLanguage, class StdStrBuf &rTarget);
 	void TrimSpaces();

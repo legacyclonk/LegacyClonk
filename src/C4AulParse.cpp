@@ -122,7 +122,7 @@ public:
 		Type(Type),
 		fJump(false),
 		iStack(0),
-		pLoopStack(NULL) {}
+		pLoopStack(nullptr) {}
 
 	~C4AulParseState()
 	{
@@ -161,7 +161,7 @@ public:
 	C4AulTokenType GetNextToken(char *pToken, long *pInt, HoldStringsPolicy HoldStrings, bool bOperator); // get next token of SPos
 
 	void Shift(HoldStringsPolicy HoldStrings = Hold, bool bOperator = true);
-	void Match(C4AulTokenType TokenType, const char *Message = NULL);
+	void Match(C4AulTokenType TokenType, const char *Message = nullptr);
 	void UnexpectedToken(const char *Expected);
 	const char *GetTokenName(C4AulTokenType TokenType);
 
@@ -292,7 +292,7 @@ void C4AulScriptFunc::ParseDesc()
 	while (*DPos)
 	{
 		const char *DPos0 = DPos; // beginning of segment
-		const char *DPos2 = NULL; // pos of equal sign, if found
+		const char *DPos2 = nullptr; // pos of equal sign, if found
 		// parse until end of segment
 		while (*DPos && (*DPos != '|'))
 		{
@@ -318,7 +318,7 @@ void C4AulScriptFunc::ParseDesc()
 					char *colon;
 					for (colon = Val; *colon != ':' && *colon != '\0'; ++colon);
 					if (*colon == ':') *colon = '\0';
-					else colon = NULL;
+					else colon = nullptr;
 					// get image id
 					idImage = C4Id((const char *)&Val);
 					// get image phase
@@ -450,7 +450,7 @@ C4ScriptOpDef C4ScriptOpMap[] =
 	{ 2, "^=",  AB_XOrIt,            1, 1, 0, C4V_Any,  C4V_pC4Value, C4V_Int },
 	{ 2, "=",   AB_Set,              1, 1, 0, C4V_Any,  C4V_pC4Value, C4V_Any },
 
-	{ 0, NULL,  AB_ERR,              0, 0, 0, C4V_Any,  C4V_Any,      C4V_Any }
+	{ 0, nullptr,  AB_ERR,              0, 0, 0, C4V_Any,  C4V_Any,      C4V_Any }
 };
 
 int C4AulParseState::GetOperator(const char *pScript)
@@ -743,7 +743,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 			}
 			// check: enough buffer space?
 			if (pStrPos - StrBuff >= C4AUL_MAX_String)
-				Warn("string too long", NULL);
+				Warn("string too long", nullptr);
 			else
 			{
 				if (C == '\\') // escape
@@ -892,10 +892,10 @@ BOOL C4AulScript::Preparse()
 	if (!Script) { State = ASS_PREPARSED; return TRUE; }
 
 	// clear stuff
-	/* simply setting Includes to NULL will waste some space in the associative list
+	/* simply setting Includes to nullptr will waste some space in the associative list
 	   however, this is just a few bytes per updated definition in developer mode, which
 	   seems acceptable for me. The mem will be released when destroying the list */
-	Includes = NULL; Appends = NULL;
+	Includes = nullptr; Appends = nullptr;
 	CPos = Code;
 	while (Func0)
 	{
@@ -1120,7 +1120,7 @@ void C4AulParseState::PushLoop()
 	if (Type != PARSER) return;
 	Loop *pNew = new Loop();
 	pNew->StackSize = iStack;
-	pNew->Controls = NULL;
+	pNew->Controls = nullptr;
 	pNew->Next = pLoopStack;
 	pLoopStack = pNew;
 }
@@ -1213,7 +1213,7 @@ void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
 		if (Fn->Owner == Fn->OwnerOverloaded->Owner)
 			Fn->OwnerOverloaded->OverloadedBy = Fn;
 	// reset pointer to next same-named func (will be set in AfterLink)
-	Fn->NextSNFunc = NULL;
+	Fn->NextSNFunc = nullptr;
 	// store byte code pos
 	// (relative position to code start; code pointer may change while
 	//  parsing)
@@ -1434,7 +1434,7 @@ void C4AulParseState::Parse_FuncHead()
 		{
 			// global func
 			Fn = new C4AulScriptFunc(a->Engine, Idtf);
-			C4AulFunc *FnLink = new C4AulFunc(a, NULL);
+			C4AulFunc *FnLink = new C4AulFunc(a, nullptr);
 			FnLink->LinkedTo = Fn; Fn->LinkedTo = FnLink;
 			Acc = AA_PUBLIC;
 		}
@@ -1560,7 +1560,7 @@ void C4AulParseState::Parse_FuncHead()
 	{
 		// global func
 		Fn = new C4AulScriptFunc(a->Engine, FuncIdtf);
-		C4AulFunc *FnLink = new C4AulFunc(a, NULL);
+		C4AulFunc *FnLink = new C4AulFunc(a, nullptr);
 		FnLink->LinkedTo = Fn; Fn->LinkedTo = FnLink;
 		Acc = AA_PUBLIC;
 	}
@@ -1873,7 +1873,7 @@ void C4AulParseState::Parse_Statement()
 			if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScript::STRICT2)
 			{
 				// parse return(retvals) - return(retval, unused, parameters, ...) allowed for backwards compatibility
-				if (Parse_Params(1, NULL) == 1)
+				if (Parse_Params(1, nullptr) == 1)
 				{
 					// return (1 + 1) * 3 returns 6, not 2
 					Parse_Expression2();
@@ -2135,7 +2135,7 @@ int C4AulParseState::Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFu
 	while (!fDone);
 	// too many parameters?
 	if (sWarn && size > iMaxCnt && Type == PARSER)
-		Warn(FormatString("%s: passing %d parameters, but only %d are used", sWarn, size, iMaxCnt).getData(), NULL);
+		Warn(FormatString("%s: passing %d parameters, but only %d are used", sWarn, size, iMaxCnt).getData(), nullptr);
 	// Balance stack
 	if (size != iMaxCnt)
 		AddBCC(AB_STACK, iMaxCnt - size);
@@ -2447,7 +2447,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 			// return: treat as regular function with special byte code
 			Strict2Error("return used as a parameter", 0);
 			Shift();
-			Parse_Params(1, NULL);
+			Parse_Params(1, nullptr);
 			AddBCC(AB_RETURN);
 			AddBCC(AB_STACK, +1);
 		}
@@ -2474,7 +2474,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 			if (Fn->OwnerOverloaded)
 			{
 				// add direct call to byte code
-				Parse_Params(Fn->OwnerOverloaded->GetParCount(), NULL, Fn->OwnerOverloaded);
+				Parse_Params(Fn->OwnerOverloaded->GetParCount(), nullptr, Fn->OwnerOverloaded);
 				AddBCC(AB_FUNC, (long)Fn->OwnerOverloaded);
 			}
 			else
@@ -2484,7 +2484,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 				else
 				{
 					// otherwise, parse parameters, but discard them
-					Parse_Params(0, NULL);
+					Parse_Params(0, nullptr);
 					// Push a null as return value
 					AddBCC(AB_STACK, 1);
 				}
@@ -2708,7 +2708,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 				default:
 					// Stuff like foo(42+,1) used to silently work
 					Strict2Error(FormatString("Operator %s: Second expression expected, but %s found",
-						C4ScriptOpMap[OpID].Identifier, GetTokenName(TokenType)).getData(), NULL);
+						C4ScriptOpMap[OpID].Identifier, GetTokenName(TokenType)).getData(), nullptr);
 					AddBCC(AB_INT, 0);
 					break;
 				}
@@ -2740,7 +2740,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 		// Here, a '~' is not an operator, but a token
 		Shift(Discard, false);
 		// C4ID -> namespace given
-		C4AulFunc *pFunc = NULL;
+		C4AulFunc *pFunc = nullptr;
 		C4AulBCCType eCallType = AB_CALL;
 		C4ID idNS = 0;
 		if (TokenType == ATT_C4ID)
@@ -2790,7 +2790,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 				}
 				// otherwise: nothing to call - just execute parameters and discard them
 				Shift();
-				Parse_Params(0, NULL);
+				Parse_Params(0, nullptr);
 				// remove target from stack, push a zero value as result
 				AddBCC(AB_STACK, -1); AddBCC(AB_STACK, +1);
 				// done
@@ -2909,7 +2909,7 @@ void C4AulParseState::Parse_Static()
 			// global variable definition
 			// check: symbol already in use?
 			if (a->Engine->GetFuncRecursive(Idtf)) throw new C4AulParseError(this, "variable definition: name already in use");
-			if (a->Engine->GetGlobalConstant(Idtf, NULL)) Strict2Error("constant and variable with name ", Idtf);
+			if (a->Engine->GetGlobalConstant(Idtf, nullptr)) Strict2Error("constant and variable with name ", Idtf);
 			// insert variable if not defined already
 			if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) == -1)
 				a->Engine->GlobalNamedNames.AddName(Idtf);
@@ -3035,7 +3035,7 @@ BOOL C4AulScript::Parse()
 		{
 			if (f->LinkedTo) Fn = f->LinkedTo->SFunc();
 			// do only parse global funcs, because otherwise, the #append-links get parsed (->code overflow)
-			if (Fn) if (Fn->Owner != Engine) Fn = NULL;
+			if (Fn) if (Fn->Owner != Engine) Fn = nullptr;
 		}
 		if (Fn)
 		{
@@ -3086,7 +3086,7 @@ BOOL C4AulScript::Parse()
 		if (!(Fn = f->SFunc()))
 		{
 			if (f->LinkedTo) Fn = f->LinkedTo->SFunc();
-			if (Fn) if (Fn->Owner != Engine) Fn = NULL;
+			if (Fn) if (Fn->Owner != Engine) Fn = nullptr;
 		}
 		if (Fn)
 			Fn->Code = Code + (long)Fn->Code;
@@ -3103,7 +3103,7 @@ BOOL C4AulScript::Parse()
 			if (!(Fn = f->SFunc()))
 			{
 				if (f->LinkedTo) Fn = f->LinkedTo->SFunc();
-				if (Fn) if (Fn->Owner != Engine) Fn = NULL;
+				if (Fn) if (Fn->Owner != Engine) Fn = nullptr;
 			}
 			if (Fn)
 			{
@@ -3153,7 +3153,7 @@ C4AulScript *C4AulScript::FindFirstNonStrictScript()
 		if (pNonStrScr = pScr->FindFirstNonStrictScript())
 			return pNonStrScr;
 	// nothing found
-	return NULL;
+	return nullptr;
 }
 
 #undef DEBUG_BYTECODE_DUMP

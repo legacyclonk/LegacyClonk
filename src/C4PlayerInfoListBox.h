@@ -108,7 +108,7 @@ private:
 		C4GUI::Label *pTimeLabel; // evaluation only: label showing total playing time
 		C4GUI::Label *pExtraLabel; // evaluation only: label showing extra data set by script
 		C4GUI::Icon *pRankIcon; // league rank icon
-		C4GUI::ComboBox *pTeamCombo; // team selection combo - NULL for no-team-scens
+		C4GUI::ComboBox *pTeamCombo; // team selection combo - nullptr for no-team-scens
 		C4GUI::Picture *pTeamPic; // evaluation only: Team icon spec
 
 		bool fIconSet; // whether custom icon has been set
@@ -161,7 +161,7 @@ private:
 		// subcomponents
 		C4GUI::Icon *pStatusIcon; // icon indicating client status (host, etc.)
 		C4GUI::Label *pNameLabel; // label indicating client name
-		C4GUI::Label *pPingLabel; // label indicating ping to client - may be NULL
+		C4GUI::Label *pPingLabel; // label indicating ping to client - may be nullptr
 
 	protected:
 		int32_t idClient; // associated network interface ID
@@ -198,7 +198,7 @@ private:
 		C4Client *GetClient() const; // get client associated with this list item
 		bool IsLocalClientPlayer() const; // whether this player is going to join locally
 		C4GUI::Icons GetCurrentStatusIcon(); // get status icon that shows the current client state
-		class C4Network2Client *GetNetClient() const; // return assicuated network client; NULL for local
+		class C4Network2Client *GetNetClient() const; // return assicuated network client; nullptr for local
 
 		virtual void Update() { UpdatePing(); UpdateInfo(); }
 		void UpdatePing(); // update ping label

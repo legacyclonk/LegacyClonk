@@ -113,12 +113,12 @@ void GameMsgObjectPlayer(const char *szText, C4Object *pTarget, int32_t iPlayer,
 
 void GameMsgGlobal(const char *szText, int32_t iFCol)
 {
-	Game.Messages.New(C4GM_Global, szText, NULL, ANY_OWNER, 0, 0, (uint8_t)iFCol);
+	Game.Messages.New(C4GM_Global, szText, nullptr, ANY_OWNER, 0, 0, (uint8_t)iFCol);
 }
 
 void GameMsgPlayer(const char *szText, int32_t iPlayer, int32_t iFCol)
 {
-	Game.Messages.New(C4GM_GlobalPlayer, szText, NULL, iPlayer, 0, 0, (uint8_t)iFCol);
+	Game.Messages.New(C4GM_GlobalPlayer, szText, nullptr, iPlayer, 0, 0, (uint8_t)iFCol);
 }
 
 void GameMsgObjectDw(const char *szText, C4Object *pTarget, uint32_t dwClr)

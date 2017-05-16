@@ -25,7 +25,7 @@
 
 BOOL SetProtocol(const char *szProtocol, const char *szCommand, const char *szModule)
 {
-	if (!SetRegClassesRoot(szProtocol, NULL, "URL: Protocol")) return FALSE;
+	if (!SetRegClassesRoot(szProtocol, nullptr, "URL: Protocol")) return FALSE;
 	if (!SetRegClassesRoot(szProtocol, "URL Protocol", "")) return FALSE;
 
 	char szCmd[_MAX_PATH + 1], szKey[_MAX_PATH + 1];

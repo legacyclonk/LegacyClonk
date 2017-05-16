@@ -80,18 +80,18 @@ void C4PktDebugRec::CompileFunc(StdCompiler *pComp)
 }
 
 C4RecordChunk::C4RecordChunk()
-	: pCtrl(NULL) {}
+	: pCtrl(nullptr) {}
 
 void C4RecordChunk::Delete()
 {
 	switch (Type)
 	{
-	case RCT_Ctrl:    delete pCtrl;     pCtrl = NULL; break;
-	case RCT_CtrlPkt: delete pPkt;      pPkt  = NULL; break;
-	case RCT_End:                                     break;
-	case RCT_Frame:                                   break;
-	case RCT_File:    delete pFileData;               break;
-	default:          delete pDbg;      pDbg  = NULL; break;
+	case RCT_Ctrl:    delete pCtrl;     pCtrl = nullptr; break;
+	case RCT_CtrlPkt: delete pPkt;      pPkt  = nullptr; break;
+	case RCT_End:                                        break;
+	case RCT_Frame:                                      break;
+	case RCT_File:    delete pFileData;                  break;
+	default:          delete pDbg;      pDbg  = nullptr; break;
 	}
 }
 
@@ -551,7 +551,7 @@ BOOL C4Playback::ReadBinary(const StdBuf &Buf)
 			return FALSE;
 		}
 		// Add to list
-		chunks.push_back(c); c.pPkt = NULL;
+		chunks.push_back(c); c.pPkt = nullptr;
 	} while (!fFinished);
 	// erase everything but the trailing part from sequential buffer
 	if (fLoadSequential)
@@ -830,7 +830,7 @@ BOOL C4Playback::ExecuteControl(C4Control *pCtrl, int iFrame)
 			{
 				DebugRec.Add(CID_DebugRec, currChunk->pDbg);
 				// the debugrec buffer is now responsible for deleting the packet
-				currChunk->pDbg = NULL;
+				currChunk->pDbg = nullptr;
 			}
 			break;
 #endif

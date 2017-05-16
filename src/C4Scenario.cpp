@@ -91,7 +91,7 @@ BOOL C4Scenario::Load(C4Group &hGroup, bool fLoadSection)
 {
 	char *pSource;
 	// Load
-	if (!hGroup.LoadEntry(C4CFN_ScenarioCore, &pSource, NULL, 1)) return FALSE;
+	if (!hGroup.LoadEntry(C4CFN_ScenarioCore, &pSource, nullptr, 1)) return FALSE;
 	// Compile
 	if (!Compile(pSource, fLoadSection)) { delete[] pSource; return FALSE; }
 	delete[] pSource;
@@ -244,7 +244,7 @@ void C4SGame::CompileFunc(StdCompiler *pComp, bool fSection)
 		{ "BASEFUNC_RejectEntrance",   BASEFUNC_RejectEntrance },
 		{ "BASEFUNC_Extinguish",       BASEFUNC_Extinguish },
 		{ "BASEFUNC_Default",          BASEFUNC_Default },
-		{ NULL, 0 }
+		{ nullptr, 0 }
 	};
 
 	pComp->Value(mkNamingAdapt(mkRuntimeValueAdapt(mkBitfieldAdapt<int32_t>(Realism.BaseFunctionality, BaseFunctionalities)), "BaseFunctionality", BASEFUNC_Default));
@@ -607,7 +607,7 @@ C4ScenarioSection::~C4ScenarioSection()
 	{
 		C4ScenarioSection *pDel = pNext;
 		pNext = pNext->pNext;
-		pDel->pNext = NULL;
+		pDel->pNext = nullptr;
 		delete pDel;
 	}
 	// del temp file
@@ -638,13 +638,13 @@ bool C4ScenarioSection::ScenarioLoad(char *szFilename)
 C4Group *C4ScenarioSection::GetGroupfile(C4Group &rGrp)
 {
 	// check temp filename
-	if (szTempFilename) if (rGrp.Open(szTempFilename)) return &rGrp; else return NULL;
+	if (szTempFilename) if (rGrp.Open(szTempFilename)) return &rGrp; else return nullptr;
 	// check filename within scenario
-	if (szFilename) if (rGrp.OpenAsChild(&Game.ScenarioFile, szFilename)) return &rGrp; else return NULL;
+	if (szFilename) if (rGrp.OpenAsChild(&Game.ScenarioFile, szFilename)) return &rGrp; else return nullptr;
 	// unmodified main section: return main group
 	if (SEqualNoCase(szName, C4ScenSect_Main)) return &Game.ScenarioFile;
 	// failure
-	return NULL;
+	return nullptr;
 }
 
 bool C4ScenarioSection::EnsureTempStore(bool fExtractLandscape, bool fExtractObjects)
@@ -657,7 +657,7 @@ bool C4ScenarioSection::EnsureTempStore(bool fExtractLandscape, bool fExtractObj
 	// main section: extract section files from main scenario group (create group as open dir)
 	if (!szFilename)
 	{
-		if (!CreateDirectory(szTmp, NULL)) return false;
+		if (!CreateDirectory(szTmp, nullptr)) return false;
 		C4Group hGroup;
 		if (!hGroup.Open(szTmp, TRUE)) { EraseItem(szTmp); return false; }
 		// extract all desired section files

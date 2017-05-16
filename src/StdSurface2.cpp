@@ -67,22 +67,22 @@ CSurface::~CSurface()
 void CSurface::Default()
 {
 	Wdt = Hgt = 0;
-	PrimarySurfaceLockPitch = 0; PrimarySurfaceLockBits = NULL;
+	PrimarySurfaceLockPitch = 0; PrimarySurfaceLockBits = nullptr;
 	ClipX = ClipY = ClipX2 = ClipY2 = 0;
 	Locked = 0;
 	Attached = FALSE;
 	fPrimary = false;
 #ifdef USE_DIRECTX
-	pSfc = NULL;
+	pSfc = nullptr;
 #endif
-	ppTex = NULL;
-	pMainSfc = NULL;
+	ppTex = nullptr;
+	pMainSfc = nullptr;
 	ClrByOwnerClr = 0;
 	iTexSize = iTexX = iTexY = 0;
 	fIsRenderTarget = false;
 	fIsBackground = false;
 #ifdef _DEBUG
-	dbg_idx = NULL;
+	dbg_idx = nullptr;
 #endif
 }
 
@@ -99,7 +99,7 @@ void CSurface::MoveFrom(CSurface *psfcFrom)
 	Wdt = psfcFrom->Wdt; Hgt = psfcFrom->Hgt;
 	PrimarySurfaceLockPitch = psfcFrom->PrimarySurfaceLockPitch;
 	PrimarySurfaceLockBits = psfcFrom->PrimarySurfaceLockBits;
-	psfcFrom->PrimarySurfaceLockBits = NULL;
+	psfcFrom->PrimarySurfaceLockBits = nullptr;
 	ClipX = psfcFrom->ClipX; ClipY = psfcFrom->ClipY;
 	ClipX2 = psfcFrom->ClipX2; ClipY2 = psfcFrom->ClipY2;
 	Locked = psfcFrom->Locked;
@@ -133,13 +133,13 @@ void CSurface::Clear()
 	{
 		if (pSfc) pSfc->Release();
 	}
-	pSfc = NULL;
+	pSfc = nullptr;
 #endif
 	FreeTextures();
-	ppTex = NULL;
+	ppTex = nullptr;
 #ifdef _DEBUG
 	delete dbg_idx;
-	dbg_idx = NULL;
+	dbg_idx = nullptr;
 #endif
 }
 
@@ -278,7 +278,7 @@ void CSurface::FreeTextures()
 			if (*ppTx) delete *ppTx;
 		// clear texture list
 		delete[] ppTex;
-		ppTex = NULL;
+		ppTex = nullptr;
 	}
 }
 
@@ -440,12 +440,12 @@ IDirect3DSurface9 *CSurface::GetSurface()
 	if (fIsRenderTarget && ppTex)
 	{
 		IDirect3DTexture9 *pTex = (*ppTex)->pTex;
-		IDirect3DSurface9 *pSfcResult = NULL;
+		IDirect3DSurface9 *pSfcResult = nullptr;
 		if (pTex) pTex->GetSurfaceLevel(0, &pSfcResult);
 		return pSfcResult;
 	}
 	// split surfaces: Won't work; we're no render target anyway
-	return NULL;
+	return nullptr;
 }
 #endif // USE_DIRECTX
 
@@ -524,7 +524,7 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 
 	// reset overlay if desired
 	CSurface *pMainSfcBackup;
-	if (fSaveOverlayOnly) { pMainSfcBackup = pMainSfc; pMainSfc = NULL; }
+	if (fSaveOverlayOnly) { pMainSfcBackup = pMainSfc; pMainSfc = nullptr; }
 
 #ifdef USE_GL
 	if (fPrimary && pGL)
@@ -599,7 +599,7 @@ BOOL CSurface::Lock()
 				// locking primary
 				if (!pSfc) return FALSE;
 				// lock it
-				if (pSfc->LockRect(&lock, NULL, 0) != D3D_OK)
+				if (pSfc->LockRect(&lock, nullptr, 0) != D3D_OK)
 					return FALSE;
 				// store pitch and pointer
 				PrimarySurfaceLockPitch = lock.Pitch;
@@ -997,12 +997,12 @@ CTexRef::CTexRef(int iSize, bool fSingle)
 {
 	// zero fields
 #ifdef USE_DIRECTX
-	pTex = NULL;
+	pTex = nullptr;
 #endif
 #ifdef USE_GL
 	texName = 0;
 #endif
-	texLock.pBits = NULL; fIntLock = false;
+	texLock.pBits = nullptr; fIntLock = false;
 	// store size
 	this->iSize = iSize;
 	// add to texture manager
@@ -1017,7 +1017,7 @@ CTexRef::CTexRef(int iSize, bool fSingle)
 	{
 		// Direct3D
 		bool fRenderTarget = fSingle && !DDrawCfg.NoOffscreenBlits;
-		if (pD3D->lpDevice->CreateTexture(iSize, iSize, 1, fRenderTarget ? D3DUSAGE_RENDERTARGET : 0, pD3D->dwSurfaceType, fRenderTarget ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED, &pTex, NULL) != D3D_OK)
+		if (pD3D->lpDevice->CreateTexture(iSize, iSize, 1, fRenderTarget ? D3DUSAGE_RENDERTARGET : 0, pD3D->dwSurfaceType, fRenderTarget ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED, &pTex, nullptr) != D3D_OK)
 		{
 			lpDDraw->Error("Error creating surface");
 			return;
@@ -1137,7 +1137,7 @@ bool CTexRef::Lock()
 	if (pD3D)
 	{
 		if (pTex)
-			if (pTex->LockRect(0, &texLock, NULL, 0) == D3D_OK) return true;
+			if (pTex->LockRect(0, &texLock, nullptr, 0) == D3D_OK) return true;
 	}
 	else
 #endif
@@ -1174,7 +1174,7 @@ void CTexRef::Unlock()
 	{
 		// unlock
 		if (pTex) pTex->UnlockRect(0);
-		texLock.pBits = NULL;
+		texLock.pBits = nullptr;
 	}
 	else
 #endif
@@ -1204,7 +1204,7 @@ void CTexRef::Unlock()
 					LockSize.left, LockSize.top, LockSize.right - LockSize.left, LockSize.bottom - LockSize.top,
 					GL_BGRA, lpDDraw->byByteCnt == 2 ? GL_UNSIGNED_SHORT_4_4_4_4_REV : GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
 			}
-			delete[] texLock.pBits; texLock.pBits = NULL;
+			delete[] texLock.pBits; texLock.pBits = nullptr;
 			// switch back to original context
 		}
 		else
@@ -1276,7 +1276,7 @@ void CTexMgr::UnregTex(CTexRef *pTex)
 	// remove texture from list
 	Textures.remove(pTex);
 	// if list is empty, remove self
-	if (Textures.empty()) { delete this; pTexMgr = NULL; }
+	if (Textures.empty()) { delete this; pTexMgr = nullptr; }
 }
 
 void CTexMgr::IntLock()

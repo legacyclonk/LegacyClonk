@@ -260,7 +260,7 @@ private:
 	uint32_t dwFlags; // bit mask of the above flags
 
 public:
-	C4ClientPlayerInfos(const char *szJoinFilenames = NULL, bool fAdd = false, C4PlayerInfo *pAddInfo = NULL); // sets local data (or makes an add-player-packet if filename is given) if par is true
+	C4ClientPlayerInfos(const char *szJoinFilenames = nullptr, bool fAdd = false, C4PlayerInfo *pAddInfo = nullptr); // sets local data (or makes an add-player-packet if filename is given) if par is true
 	C4ClientPlayerInfos(const C4ClientPlayerInfos &rCopy);
 	~C4ClientPlayerInfos() { Clear(); }
 
@@ -372,14 +372,14 @@ public:
 
 	C4ClientPlayerInfos *GetIndexedInfo(int32_t iIndex) const // get client player infos by indexed
 	{
-		return (ppClients && Inside<int32_t>(iIndex, 0, iClientCount - 1)) ? ppClients[iIndex] : NULL;
+		return (ppClients && Inside<int32_t>(iIndex, 0, iClientCount - 1)) ? ppClients[iIndex] : nullptr;
 	}
 
 	C4ClientPlayerInfos **GetInfoPtrByClientID(int32_t iClientID) const; // get info for a specific client ID
 
 	C4ClientPlayerInfos *GetInfoByClientID(int32_t iClientID) const
 	{
-		C4ClientPlayerInfos **ppNfo = GetInfoPtrByClientID(iClientID); return ppNfo ? *ppNfo : NULL;
+		C4ClientPlayerInfos **ppNfo = GetInfoPtrByClientID(iClientID); return ppNfo ? *ppNfo : nullptr;
 	}
 
 	C4PlayerInfo *GetPlayerInfoByIndex(int32_t index) const; // get player info by index (for running through all players regardless of clients or ids)
@@ -398,7 +398,7 @@ public:
 	C4PlayerInfo *GetPrimaryInfoByClientID(int32_t iClientID) const
 	{
 		C4ClientPlayerInfos *pInfoPkt = GetInfoByClientID(iClientID);
-		if (!pInfoPkt) return NULL;
+		if (!pInfoPkt) return nullptr;
 		return pInfoPkt->GetPlayerInfo(0);
 	}
 
@@ -412,7 +412,7 @@ public:
 	}
 
 public:
-	bool Load(C4Group &hGroup, const char *szFromFile, class C4LangStringTable *pLang = NULL); // clear self and load from group file
+	bool Load(C4Group &hGroup, const char *szFromFile, class C4LangStringTable *pLang = nullptr); // clear self and load from group file
 	bool Save(C4Group &hGroup, const char *szToFile); // save to group file
 	bool LoadFromGameText(const char *pSource); // load from Game.txt (old-style savegames)
 

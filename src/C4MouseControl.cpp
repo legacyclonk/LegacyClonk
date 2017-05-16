@@ -92,8 +92,8 @@ void C4MouseControl::Default()
 {
 	Active = FALSE;
 	Player = NO_OWNER;
-	pPlayer = NULL;
-	Viewport = NULL;
+	pPlayer = nullptr;
+	Viewport = nullptr;
 	Cursor = DownCursor = 0;
 	Caption.Clear();
 	IsHelpCaption = false;
@@ -110,13 +110,13 @@ void C4MouseControl::Default()
 	KeepCaption = 0;
 	Drag = C4MC_Drag_None; DragSelecting = C4MC_Selecting_Unknown;
 	Selection.Default();
-	TargetObject = DownTarget = NULL;
+	TargetObject = DownTarget = nullptr;
 	TimeOnTargetObject = 0;
 	ControlDown = false;
 	ShiftDown = false;
 	Scrolling = false;
 	ScrollSpeed = 10;
-	TargetRegion = NULL;
+	TargetRegion = nullptr;
 	DownRegion.Default();
 	DragImage.Default();
 	DragImagePhase = 0;
@@ -158,8 +158,8 @@ bool C4MouseControl::Init(int32_t iPlayer)
 
 void C4MouseControl::ClearPointers(C4Object *pObj)
 {
-	if (TargetObject == pObj) TargetObject = NULL;
-	if (DownTarget == pObj) DownTarget = NULL;
+	if (TargetObject == pObj) TargetObject = nullptr;
+	if (DownTarget == pObj) DownTarget = nullptr;
 	Selection.ClearPointers(pObj);
 }
 
@@ -178,10 +178,10 @@ void C4MouseControl::UpdateClip()
 	// fullscreen only
 	if (!Application.isFullScreen) return;
 	// application or mouse control not active? remove any clips
-	if (!Active || !Application.Active || (Game.pGUI && Game.pGUI->HasMouseFocus())) { ClipCursor(NULL); return; }
+	if (!Active || !Application.Active || (Game.pGUI && Game.pGUI->HasMouseFocus())) { ClipCursor(nullptr); return; }
 	// get controlled viewport
 	C4Viewport *pVP = Game.GraphicsSystem.GetViewport(Player);
-	if (!pVP) { ClipCursor(NULL); return; }
+	if (!pVP) { ClipCursor(nullptr); return; }
 	// adjust size by viewport size
 	RECT vpRct;
 	vpRct.left = pVP->OutX; vpRct.top = pVP->OutY; vpRct.right = pVP->OutX + pVP->ViewWdt; vpRct.bottom = pVP->OutY + pVP->ViewHgt;
@@ -212,7 +212,7 @@ void C4MouseControl::Move(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyFl
 	if (!(Viewport = Game.GraphicsSystem.GetViewport(Player))) return;
 	// get view position
 	C4Rect rcViewport = Viewport->GetOutputRect();
-	fctViewport.Set(NULL, rcViewport.x, rcViewport.y, rcViewport.Wdt, rcViewport.Hgt);
+	fctViewport.Set(nullptr, rcViewport.x, rcViewport.y, rcViewport.Wdt, rcViewport.Hgt);
 	ViewX = Viewport->ViewX; ViewY = Viewport->ViewY;
 	// First time viewport attachment: center mouse
 #ifdef _WIN32
@@ -435,24 +435,24 @@ void C4MouseControl::UpdateCursorTarget()
 	int32_t iLastCursor = Cursor;
 
 	// Scrolling: no other target
-	if (Scrolling) { TargetObject = NULL; return; }
+	if (Scrolling) { TargetObject = nullptr; return; }
 
 	// On target region
 	if (TargetRegion)
 	{
-		TargetObject = NULL;
+		TargetObject = nullptr;
 		if (Help) Cursor = C4MC_Cursor_Help;
 		return;
 	}
 
 	// Check player cursor
-	C4Object *pPlrCursor = pPlayer ? pPlayer->Cursor : NULL;
+	C4Object *pPlrCursor = pPlayer ? pPlayer->Cursor : nullptr;
 
 	// Target object
 	DWORD ocf = OCF_Grab | OCF_Chop | OCF_Container | OCF_Construct | OCF_Living | OCF_Carryable | OCF_Container | OCF_Exclusive;
 	if (Help) ocf |= OCF_All;
 	TargetObject = GetTargetObject(X, Y, ocf);
-	if (TargetObject && FogOfWar && !(TargetObject->Category & C4D_IgnoreFoW)) TargetObject = NULL;
+	if (TargetObject && FogOfWar && !(TargetObject->Category & C4D_IgnoreFoW)) TargetObject = nullptr;
 
 	// Movement
 	if (!FogOfWar && !IsPassive()) Cursor = C4MC_Cursor_Crosshair;
@@ -666,11 +666,11 @@ void C4MouseControl::UpdateScrolling()
 void C4MouseControl::UpdateTargetRegion()
 {
 	// Assume no region
-	TargetRegion = NULL;
+	TargetRegion = nullptr;
 	// Find region
 	if (!(TargetRegion = Viewport->Regions.Find(VpX, VpY))) return;
 	// Region found: no target object
-	TargetObject = NULL;
+	TargetObject = nullptr;
 	// Cursor
 	Cursor = C4MC_Cursor_Region;
 	// Stop drag selecting (reset down cursor, too)
@@ -964,15 +964,15 @@ void C4MouseControl::LeftDouble()
 		// Double left click (might be on a target)
 		switch (Cursor)
 		{
-		case C4MC_Cursor_Attack:                             SendCommand(C4CMD_Attack, X, Y, TargetObject);     break;
-		case C4MC_Cursor_Grab:                               SendCommand(C4CMD_Grab,   0, 0, TargetObject);     break; // grab at zero-offset!
-		case C4MC_Cursor_Ungrab:                             SendCommand(C4CMD_UnGrab, X, Y, TargetObject);     break;
-		case C4MC_Cursor_Build:                              SendCommand(C4CMD_Build,  X, Y, TargetObject);     break;
-		case C4MC_Cursor_Chop:                               SendCommand(C4CMD_Chop,   X, Y, TargetObject);     break;
-		case C4MC_Cursor_Enter:                              SendCommand(C4CMD_Enter,  X, Y, TargetObject);     break;
-		case C4MC_Cursor_Object: case C4MC_Cursor_DigObject: SendCommand(C4CMD_Get,    0, 0, TargetObject);     break;
-		case C4MC_Cursor_Dig:                                SendCommand(C4CMD_Dig,    X, Y, NULL);             break;
-		case C4MC_Cursor_DigMaterial:                        SendCommand(C4CMD_Dig,    X, Y, NULL, NULL, TRUE); break;
+		case C4MC_Cursor_Attack:                             SendCommand(C4CMD_Attack, X, Y, TargetObject);           break;
+		case C4MC_Cursor_Grab:                               SendCommand(C4CMD_Grab,   0, 0, TargetObject);           break; // grab at zero-offset!
+		case C4MC_Cursor_Ungrab:                             SendCommand(C4CMD_UnGrab, X, Y, TargetObject);           break;
+		case C4MC_Cursor_Build:                              SendCommand(C4CMD_Build,  X, Y, TargetObject);           break;
+		case C4MC_Cursor_Chop:                               SendCommand(C4CMD_Chop,   X, Y, TargetObject);           break;
+		case C4MC_Cursor_Enter:                              SendCommand(C4CMD_Enter,  X, Y, TargetObject);           break;
+		case C4MC_Cursor_Object: case C4MC_Cursor_DigObject: SendCommand(C4CMD_Get,    0, 0, TargetObject);           break;
+		case C4MC_Cursor_Dig:                                SendCommand(C4CMD_Dig,    X, Y, nullptr);                break;
+		case C4MC_Cursor_DigMaterial:                        SendCommand(C4CMD_Dig,    X, Y, nullptr, nullptr, TRUE); break;
 		}
 		break;
 	}
@@ -1100,7 +1100,7 @@ void C4MouseControl::LeftUpDragNone()
 		break;
 	// Jump
 	case C4MC_Cursor_JumpLeft: case C4MC_Cursor_JumpRight:
-		SendCommand(C4CMD_Jump, X, Y, NULL);
+		SendCommand(C4CMD_Jump, X, Y, nullptr);
 		break;
 	// Help
 	case C4MC_Cursor_Help:
@@ -1120,7 +1120,7 @@ void C4MouseControl::LeftUpDragNone()
 	// Movement
 	default:
 		// MoveTo command to control queue
-		SendCommand(C4CMD_MoveTo, X, Y, NULL);
+		SendCommand(C4CMD_MoveTo, X, Y, nullptr);
 		break;
 	}
 	// Clear selection
@@ -1151,7 +1151,7 @@ void C4MouseControl::ButtonUpDragMoving()
 	int32_t iX = X, iY = Y;
 	for (pLnk = Selection.First; pLnk && (pObj = pLnk->Obj); pLnk = pLnk->Next)
 	{
-		iCommand = C4CMD_None; pTarget1 = pTarget2 = NULL;
+		iCommand = C4CMD_None; pTarget1 = pTarget2 = nullptr;
 		switch (Cursor)
 		{
 		case C4MC_Cursor_ThrowLeft: case C4MC_Cursor_ThrowRight:
@@ -1180,7 +1180,7 @@ void C4MouseControl::ButtonUpDragConstruct()
 	DragImage.Clear(); DragImage.Default();
 	// Command
 	if (DragImagePhase == 0) // if ConstructionCheck was okay (check again?)
-		SendCommand(C4CMD_Construct, X, Y, NULL, NULL, DragID);
+		SendCommand(C4CMD_Construct, X, Y, nullptr, nullptr, DragID);
 	// Clear selection (necessary?)
 	Selection.Clear();
 }
@@ -1227,7 +1227,7 @@ void C4MouseControl::RightUpDragNone()
 	// Target object: context menu
 	if (TargetObject)
 	{
-		SendCommand(C4CMD_Context, X - Viewport->ViewX, Y - Viewport->ViewY, NULL, TargetObject, 0, C4P_Command_Add);
+		SendCommand(C4CMD_Context, X - Viewport->ViewX, Y - Viewport->ViewY, nullptr, TargetObject, 0, C4P_Command_Add);
 		return;
 	}
 
@@ -1291,7 +1291,7 @@ C4Object *C4MouseControl::GetTargetObject(int32_t iX, int32_t iY, DWORD &dwOCF, 
 {
 	// find object
 	C4Object *pObj = Game.FindVisObject(ViewX, ViewY, Player, fctViewport, iX, iY, 0, 0, dwOCF, pExclude);
-	if (!pObj) return NULL;
+	if (!pObj) return nullptr;
 	// adjust OCF
 	pObj->GetOCFForPos(iX, iY, dwOCF);
 	return pObj;

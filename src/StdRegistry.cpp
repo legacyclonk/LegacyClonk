@@ -41,7 +41,7 @@ BOOL GetRegistryDWord(HKEY hKey, const char *szSubKey, const char *szValueName, 
 	// Get the value
 	if ((qerr = RegQueryValueEx(ckey,
 		szValueName,
-		NULL,
+		nullptr,
 		&valtype,
 		(BYTE *)lpdwValue,
 		&valsize
@@ -77,7 +77,7 @@ BOOL GetRegistryString(const char *szSubKey,
 	// Get the value
 	if ((qerr = RegQueryValueEx(ckey,
 		szValueName,
-		NULL,
+		nullptr,
 		&valtype,
 		(BYTE *)sValue,
 		&dwValSize
@@ -109,7 +109,7 @@ BOOL SetRegistryString(const char *szSubKey,
 		"",
 		REG_OPTION_NON_VOLATILE,
 		KEY_ALL_ACCESS,
-		NULL,
+		nullptr,
 		&ckey,
 		&disposition
 	)) != ERROR_SUCCESS) return FALSE;
@@ -166,7 +166,7 @@ BOOL SetRegClassesRoot(const char *szSubKey,
 		"",
 		REG_OPTION_NON_VOLATILE,
 		KEY_ALL_ACCESS,
-		NULL,
+		nullptr,
 		&ckey,
 		&disposition
 	)) != ERROR_SUCCESS) return FALSE;
@@ -204,7 +204,7 @@ BOOL SetRegClassesRootString(const char *szSubKey,
 		"",
 		REG_OPTION_NON_VOLATILE,
 		KEY_ALL_ACCESS,
-		NULL,
+		nullptr,
 		&ckey,
 		&disposition
 	)) != ERROR_SUCCESS) return FALSE;
@@ -236,15 +236,15 @@ BOOL SetRegShell(const char *szClassName,
 	char szKeyName[256 + 1];
 	// Set shell caption
 	sprintf(szKeyName, "%s\\Shell\\%s", szClassName, szShellName);
-	if (!SetRegClassesRoot(szKeyName, NULL, szShellCaption)) return FALSE;
+	if (!SetRegClassesRoot(szKeyName, nullptr, szShellCaption)) return FALSE;
 	// Set shell command
 	sprintf(szKeyName, "%s\\Shell\\%s\\Command", szClassName, szShellName);
-	if (!SetRegClassesRoot(szKeyName, NULL, szCommand)) return FALSE;
+	if (!SetRegClassesRoot(szKeyName, nullptr, szCommand)) return FALSE;
 	// Set as default command
 	if (fMakeDefault)
 	{
 		sprintf(szKeyName, "%s\\Shell", szClassName);
-		if (!SetRegClassesRoot(szKeyName, NULL, szShellName)) return FALSE;
+		if (!SetRegClassesRoot(szKeyName, nullptr, szShellName)) return FALSE;
 	}
 	return TRUE;
 }
@@ -267,14 +267,14 @@ BOOL SetRegFileClass(const char *szClassRoot,
 	char keyname[100];
 	char iconpath[512];
 	// Create root class entry
-	if (!SetRegClassesRoot(szClassRoot, NULL, szClassName)) return FALSE;
+	if (!SetRegClassesRoot(szClassRoot, nullptr, szClassName)) return FALSE;
 	// Set root class icon
 	sprintf(keyname, "%s\\DefaultIcon", szClassRoot);
 	sprintf(iconpath, "%s,%d", szIconPath, iIconNum);
-	if (!SetRegClassesRoot(keyname, NULL, iconpath)) return FALSE;
+	if (!SetRegClassesRoot(keyname, nullptr, iconpath)) return FALSE;
 	// Set extension map entry
 	sprintf(keyname, ".%s", szExtension);
-	if (!SetRegClassesRoot(keyname, NULL, szClassRoot)) return FALSE;
+	if (!SetRegClassesRoot(keyname, nullptr, szClassRoot)) return FALSE;
 	// Set extension content type
 	sprintf(keyname, ".%s", szExtension);
 	if (!SetRegClassesRootString(keyname, "Content Type", szContentType)) return FALSE;
@@ -477,8 +477,8 @@ void StdCompilerConfigWrite::CreateKey(HKEY hParent)
 	if (RegCreateKeyEx(hParent ? hParent : pKey->Parent->Handle,
 		pKey->Name.getData(),
 		0, "", REG_OPTION_NON_VOLATILE,
-		KEY_WRITE, NULL,
-		&pKey->Handle, NULL) != ERROR_SUCCESS)
+		KEY_WRITE, nullptr,
+		&pKey->Handle, nullptr) != ERROR_SUCCESS)
 		excCorrupt(0, FormatString("Could not create key %s!", pKey->Name.getData()));
 }
 
@@ -533,7 +533,7 @@ bool StdCompilerConfigRead::Name(const char *szName)
 		hSubKey = 0;
 		// Try to query value (exists?)
 		if (RegQueryValueEx(pKey->Handle, szName,
-			0, &dwType, NULL, NULL) != ERROR_SUCCESS)
+			0, &dwType, nullptr, nullptr) != ERROR_SUCCESS)
 			fFound = false;
 	}
 	// Push new subkey on the stack
@@ -673,7 +673,7 @@ uint32_t StdCompilerConfigRead::ReadDWord()
 	// Read
 	uint32_t iVal; DWORD iSize = sizeof(iVal);
 	if (RegQueryValueEx(pKey->Parent->Handle, pKey->Name.getData(),
-		0, NULL,
+		0, nullptr,
 		reinterpret_cast<LPBYTE>(&iVal),
 		&iSize) != ERROR_SUCCESS)
 	{
@@ -703,8 +703,8 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 	// Get size of string
 	DWORD iSize;
 	if (RegQueryValueEx(pKey->Parent->Handle, pKey->Name.getData(),
-		0, NULL,
-		NULL,
+		0, nullptr,
+		nullptr,
 		&iSize) != ERROR_SUCCESS)
 	{
 		excNotFound("Could not read value %s!", pKey->Name.getData()); return StdStrBuf();
@@ -713,7 +713,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 	StdStrBuf Result; Result.SetLength(iSize - 1);
 	// Read
 	if (RegQueryValueEx(pKey->Parent->Handle, pKey->Name.getData(),
-		0, NULL,
+		0, nullptr,
 		reinterpret_cast<BYTE *>(Result.getMData()),
 		&iSize) != ERROR_SUCCESS)
 	{

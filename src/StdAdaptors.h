@@ -480,7 +480,7 @@ struct StdPtrAdapt
 		bool fCompiler = pComp->isCompiler(),
 			fNaming = pComp->hasNaming();
 		// Compiling? Clear object before
-		if (fCompiler) { delete rpObj; rpObj = NULL; }
+		if (fCompiler) { delete rpObj; rpObj = nullptr; }
 		// Null checks - different with naming support.
 		if (fAllowNull)
 			if (fNaming)

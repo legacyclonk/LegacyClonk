@@ -33,7 +33,7 @@ struct C4AListEntry
 struct C4AListChunk
 {
 	C4AListEntry Entries[C4AListChunkSize]; // table entries
-	void *Stop; // stop entry; should always be NULL
+	void *Stop; // stop entry; should always be nullptr
 	C4AListChunk *Next; // next chunk
 };
 
@@ -51,5 +51,5 @@ public:
 	~C4AList();
 	void Clear(); // clear the list
 
-	C4AListEntry *push(void *pVar = NULL, void *pVal = NULL); // push var/value pair to end of list
+	C4AListEntry *push(void *pVar = nullptr, void *pVal = nullptr); // push var/value pair to end of list
 };

@@ -115,13 +115,13 @@ protected:
 	void OnSec1Timer(); // timer proc; update pings
 
 	C4GUI::ContextMenu *OnRightTabContext(C4GUI::Element *pLabel, int32_t iX, int32_t iY); // open context menu
-	void OnCtxTabPlayers(C4GUI::Element *pListItem) { OnTabPlayers(NULL); }
+	void OnCtxTabPlayers(C4GUI::Element *pListItem) { OnTabPlayers(nullptr); }
 	void OnTabPlayers(C4GUI::Control *btn);
-	void OnCtxTabTeams(C4GUI::Element *pListItem) { OnTabTeams(NULL); }
+	void OnCtxTabTeams(C4GUI::Element *pListItem) { OnTabTeams(nullptr); }
 	void OnTabTeams(C4GUI::Control *btn);
-	void OnCtxTabRes(C4GUI::Element *pListItem) { OnTabRes(NULL); }
+	void OnCtxTabRes(C4GUI::Element *pListItem) { OnTabRes(nullptr); }
 	void OnTabRes(C4GUI::Control *btn);
-	void OnCtxTabOptions(C4GUI::Element *pListItem) { OnTabOptions(NULL); }
+	void OnCtxTabOptions(C4GUI::Element *pListItem) { OnTabOptions(nullptr); }
 	void OnTabOptions(C4GUI::Control *btn);
 	void OnTabScenario(C4GUI::Control *btn);
 	void UpdateRightTab(); // update label and tooltips for sheet change

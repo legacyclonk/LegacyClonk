@@ -53,7 +53,7 @@ struct _C4ListClass
 	GObjectClass parent_class;
 };
 
-static GObjectClass *parent_class = NULL;
+static GObjectClass *parent_class = nullptr;
 
 GType c4_list_get_type(void);
 
@@ -90,7 +90,7 @@ c4_list_get_iter(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreePath *path)
 	gint *indices, depth;
 
 	g_assert(C4_IS_LIST(tree_model));
-	g_assert(path != NULL);
+	g_assert(path != nullptr);
 
 	C4List *c4_list = C4_LIST(tree_model);
 
@@ -130,9 +130,9 @@ c4_list_get_iter(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreePath *path)
 static GtkTreePath *
 c4_list_get_path(GtkTreeModel *tree_model, GtkTreeIter *iter)
 {
-	g_return_val_if_fail(C4_IS_LIST(tree_model), NULL);
-	g_return_val_if_fail(iter != NULL, NULL);
-	g_return_val_if_fail(iter->user_data != NULL, NULL);
+	g_return_val_if_fail(C4_IS_LIST(tree_model), nullptr);
+	g_return_val_if_fail(iter != nullptr, nullptr);
+	g_return_val_if_fail(iter->user_data != nullptr, nullptr);
 
 	GtkTreePath *path = gtk_tree_path_new();
 
@@ -175,7 +175,7 @@ c4_list_iter_next(GtkTreeModel *tree_model, GtkTreeIter *iter)
 {
 	g_return_val_if_fail(C4_IS_LIST(tree_model), FALSE);
 
-	if (iter == NULL || iter->user_data == NULL)
+	if (iter == nullptr || iter->user_data == nullptr)
 		return FALSE;
 
 	C4ObjectLink *pLnk = (C4ObjectLink *)iter->user_data;
@@ -200,7 +200,7 @@ c4_list_iter_next(GtkTreeModel *tree_model, GtkTreeIter *iter)
 static gboolean
 c4_list_iter_children(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreeIter *parent)
 {
-	g_return_val_if_fail(parent == NULL || parent->user_data != NULL, FALSE);
+	g_return_val_if_fail(parent == nullptr || parent->user_data != nullptr, FALSE);
 	g_return_val_if_fail(C4_IS_LIST(tree_model), FALSE);
 
 	C4List *c4_list = C4_LIST(tree_model);
@@ -233,7 +233,7 @@ static gboolean
 c4_list_iter_has_child(GtkTreeModel *tree_model,
 	GtkTreeIter *parent)
 {
-	g_return_val_if_fail(parent == NULL || parent->user_data != NULL, FALSE);
+	g_return_val_if_fail(parent == nullptr || parent->user_data != nullptr, FALSE);
 	g_return_val_if_fail(C4_IS_LIST(tree_model), FALSE);
 
 	C4List *c4_list = C4_LIST(tree_model);
@@ -249,7 +249,7 @@ static gint
 c4_list_iter_n_children(GtkTreeModel *tree_model, GtkTreeIter *parent)
 {
 	g_return_val_if_fail(C4_IS_LIST(tree_model), -1);
-	g_return_val_if_fail(parent == NULL || parent->user_data != NULL, -1);
+	g_return_val_if_fail(parent == nullptr || parent->user_data != nullptr, -1);
 
 	C4List *c4_list = C4_LIST(tree_model);
 
@@ -282,7 +282,7 @@ static gboolean
 c4_list_iter_nth_child(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreeIter *parent, gint n)
 {
 	g_return_val_if_fail(C4_IS_LIST(tree_model), FALSE);
-	g_return_val_if_fail(parent == NULL || parent->user_data != NULL, FALSE);
+	g_return_val_if_fail(parent == nullptr || parent->user_data != nullptr, FALSE);
 
 	C4List *c4_list = C4_LIST(tree_model);
 
@@ -348,7 +348,7 @@ static gboolean
 c4_list_iter_parent(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreeIter *child)
 {
 	g_return_val_if_fail(C4_IS_LIST(tree_model), FALSE);
-	g_return_val_if_fail(child == NULL || child->user_data != NULL, FALSE);
+	g_return_val_if_fail(child == nullptr || child->user_data != nullptr, FALSE);
 
 	C4List *c4_list = C4_LIST(tree_model);
 
@@ -363,8 +363,8 @@ c4_list_iter_parent(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreeIter *ch
 static C4Object *
 c4_list_iter_get_C4Object(GtkTreeModel *tree_model, GtkTreeIter *iter)
 {
-	g_return_val_if_fail(C4_IS_LIST(tree_model), NULL);
-	g_return_val_if_fail(iter != NULL && iter->user_data != NULL, NULL);
+	g_return_val_if_fail(C4_IS_LIST(tree_model), nullptr);
+	g_return_val_if_fail(iter != nullptr && iter->user_data != nullptr, nullptr);
 
 	return ((C4ObjectLink *)iter->user_data)->Obj;
 }
@@ -393,11 +393,11 @@ static void
 c4_list_get_value(GtkTreeModel *tree_model, GtkTreeIter *iter, gint column, GValue *value)
 {
 	g_return_if_fail(C4_IS_LIST(tree_model));
-	g_return_if_fail(iter != NULL);
+	g_return_if_fail(iter != nullptr);
 	g_return_if_fail(column == 0);
 
 	C4Object *pObj = ((C4ObjectLink *)iter->user_data)->Obj;
-	g_return_if_fail(pObj != NULL);
+	g_return_if_fail(pObj != nullptr);
 
 	g_value_init(value, G_TYPE_POINTER);
 	g_value_set_pointer(value, pObj);
@@ -409,9 +409,9 @@ c4_list_new(void)
 {
 	C4List *list;
 
-	list = (C4List *)g_object_new(C4_TYPE_LIST, NULL);
+	list = (C4List *)g_object_new(C4_TYPE_LIST, nullptr);
 
-	g_assert(list != NULL);
+	g_assert(list != nullptr);
 
 	return list;
 }
@@ -458,15 +458,15 @@ c4_list_get_type(void)
 		static const GTypeInfo c4_list_info =
 		{
 			sizeof(C4ListClass),                /* class_size */
-			NULL,                               /* base_init */
-			NULL,                               /* base_finalize */
+			nullptr,                            /* base_init */
+			nullptr,                            /* base_finalize */
 			(GClassInitFunc)c4_list_class_init, /* class_init */
-			NULL,                               /* class finalize */
-			NULL,                               /* class_data */
+			nullptr,                            /* class finalize */
+			nullptr,                            /* class_data */
 			sizeof(C4List),                     /* instance_size */
 			0,                                  /* n_preallocs */
 			(GInstanceInitFunc)c4_list_init,    /* instance_init */
-			NULL                                /* value_table */
+			nullptr                             /* value_table */
 		};
 
 		c4_list_type = g_type_register_static(G_TYPE_OBJECT, "C4List",
@@ -476,8 +476,8 @@ c4_list_get_type(void)
 		static const GInterfaceInfo tree_model_info =
 		{
 			(GInterfaceInitFunc)c4_list_tree_model_init,
-			NULL,
-			NULL
+			nullptr,
+			nullptr
 		};
 
 		g_type_add_interface_static(c4_list_type, GTK_TYPE_TREE_MODEL, &tree_model_info);
@@ -604,7 +604,7 @@ void C4ObjectListDlg::OnSelectionChanged(GtkTreeSelection *selection, C4ObjectLi
 	if (dlg->updating_selection) return;
 	dlg->updating_selection = true;
 
-	GList *list = gtk_tree_selection_get_selected_rows(selection, NULL);
+	GList *list = gtk_tree_selection_get_selected_rows(selection, nullptr);
 
 	Console.EditCursor.GetSelection().Clear();
 	for (GList *i = list; i; i = i->next)
@@ -615,7 +615,7 @@ void C4ObjectListDlg::OnSelectionChanged(GtkTreeSelection *selection, C4ObjectLi
 		Console.EditCursor.GetSelection().Add(((C4ObjectLink *)iter.user_data)->Obj, C4ObjectList::stNone);
 	}
 
-	g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+	g_list_foreach(list, (GFunc)gtk_tree_path_free, nullptr);
 	g_list_free(list);
 
 	Console.EditCursor.OnSelectionChanged();
@@ -662,7 +662,7 @@ static void name_cell_data_func(GtkTreeViewColumn *column, GtkCellRenderer *rend
 {
 	C4Object *object = c4_list_iter_get_C4Object(model, iter);
 
-	g_object_set(G_OBJECT(renderer), "text", C4Language::IconvUtf8(object->GetName()).getData(), (gpointer)NULL);
+	g_object_set(G_OBJECT(renderer), "text", C4Language::IconvUtf8(object->GetName()).getData(), (gpointer)nullptr);
 }
 
 #define ICON_SIZE 24
@@ -679,7 +679,7 @@ static void icon_cell_data_func(GtkTreeViewColumn *column, GtkCellRenderer *rend
 	GHashTable *table = static_cast<GHashTable *>(data);
 	GdkPixbuf *pixbuf = GDK_PIXBUF(g_hash_table_lookup(table, key));
 
-	if (pixbuf == NULL)
+	if (pixbuf == nullptr)
 	{
 		/* Not yet cached, create from Graphics */
 		CSurface *surface = object->Def->Graphics.Bitmap;
@@ -721,7 +721,7 @@ static void icon_cell_data_func(GtkTreeViewColumn *column, GtkCellRenderer *rend
 		g_hash_table_insert(table, key, pixbuf);
 	}
 
-	g_object_set(G_OBJECT(renderer), "pixbuf", pixbuf, NULL);
+	g_object_set(G_OBJECT(renderer), "pixbuf", pixbuf, nullptr);
 }
 
 #undef ICON_SIZE
@@ -729,7 +729,7 @@ static void icon_cell_data_func(GtkTreeViewColumn *column, GtkCellRenderer *rend
 void C4ObjectListDlg::Open()
 {
 	// Create Window if necessary
-	if (window == NULL)
+	if (window == nullptr)
 	{
 		// The Windows
 		window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -747,7 +747,7 @@ void C4ObjectListDlg::Open()
 		// The VBox and Tree
 		GtkWidget *vbox = gtk_vbox_new(FALSE, 8);
 
-		GtkWidget *scrolled_wnd = gtk_scrolled_window_new(NULL, NULL);
+		GtkWidget *scrolled_wnd = gtk_scrolled_window_new(nullptr, nullptr);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_wnd), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled_wnd), GTK_SHADOW_IN);
 
@@ -762,11 +762,11 @@ void C4ObjectListDlg::Open()
 
 		renderer = gtk_cell_renderer_pixbuf_new();
 		gtk_tree_view_column_pack_start(col, renderer, FALSE);
-		gtk_tree_view_column_set_cell_data_func(col, renderer, icon_cell_data_func, g_hash_table_new_full(NULL, NULL, NULL, (GDestroyNotify)g_object_unref), (GDestroyNotify)g_hash_table_unref);
+		gtk_tree_view_column_set_cell_data_func(col, renderer, icon_cell_data_func, g_hash_table_new_full(nullptr, nullptr, nullptr, (GDestroyNotify)g_object_unref), (GDestroyNotify)g_hash_table_unref);
 
 		renderer = gtk_cell_renderer_text_new();
 		gtk_tree_view_column_pack_start(col, renderer, TRUE);
-		gtk_tree_view_column_set_cell_data_func(col, renderer, name_cell_data_func, NULL, NULL);
+		gtk_tree_view_column_set_cell_data_func(col, renderer, name_cell_data_func, nullptr, nullptr);
 
 		gtk_tree_view_column_set_title(col, "Name");
 		gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);

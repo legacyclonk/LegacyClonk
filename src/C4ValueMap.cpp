@@ -318,7 +318,7 @@ void C4ValueMapNames::Reset()
 		delete[] pNames[i];
 	delete[] pNames;
 	delete[] pExtra;
-	pNames = NULL; pExtra = NULL;
+	pNames = nullptr; pExtra = nullptr;
 	iSize = 0;
 }
 
@@ -401,7 +401,7 @@ void C4ValueMapNames::ChangeNameList(const char **pnNames, int32_t *pnExtra, int
 void C4ValueMapNames::SetNameArray(const char **pnNames, int32_t nSize)
 {
 	// simply pass it through...
-	ChangeNameList(pnNames, NULL, nSize);
+	ChangeNameList(pnNames, nullptr, nSize);
 }
 
 int32_t C4ValueMapNames::AddName(const char *pnName, int32_t iExtra)

@@ -203,33 +203,33 @@ public:
 	bool Merge(const char *szFolders);
 	bool Move(const char *szFiles);
 	bool Move(const char *szFile, const char *szAddAs);
-	bool Extract(const char *szFiles, const char *szExtractTo = NULL, const char *szExclude = NULL);
-	bool ExtractEntry(const char *szFilename, const char *szExtractTo = NULL);
+	bool Extract(const char *szFiles, const char *szExtractTo = nullptr, const char *szExclude = nullptr);
+	bool ExtractEntry(const char *szFilename, const char *szExtractTo = nullptr);
 	bool Delete(const char *szFiles, bool fRecursive = false);
 	bool DeleteEntry(const char *szFilename, bool fRecycle = false);
 	bool Rename(const char *szFile, const char *szNewName);
 	bool Sort(const char *szSortList);
-	bool SortByList(const char **ppSortList, const char *szFilename = NULL);
+	bool SortByList(const char **ppSortList, const char *szFilename = nullptr);
 	bool View(const char *szFiles);
 	bool GetOriginal();
 	bool AccessEntry(const char *szWildCard,
-		size_t *iSize = NULL, char *sFileName = NULL,
-		bool *fChild = NULL);
+		size_t *iSize = nullptr, char *sFileName = nullptr,
+		bool *fChild = nullptr);
 	bool AccessNextEntry(const char *szWildCard,
-		size_t *iSize = NULL, char *sFileName = NULL,
-		bool *fChild = NULL);
+		size_t *iSize = nullptr, char *sFileName = nullptr,
+		bool *fChild = nullptr);
 	bool LoadEntry(const char *szEntryName, char **lpbpBuf,
-		size_t *ipSize = NULL, int iAppendZeros = 0);
+		size_t *ipSize = nullptr, int iAppendZeros = 0);
 	bool LoadEntry(const char *szEntryName, StdBuf &Buf);
 	bool LoadEntryString(const char *szEntryName, StdStrBuf &Buf);
 	bool FindEntry(const char *szWildCard,
-		char *sFileName = NULL,
-		size_t *iSize = NULL,
-		bool *fChild = NULL);
+		char *sFileName = nullptr,
+		size_t *iSize = nullptr,
+		bool *fChild = nullptr);
 	bool FindNextEntry(const char *szWildCard,
-		char *sFileName = NULL,
-		size_t *iSize = NULL,
-		bool *fChild = NULL,
+		char *sFileName = nullptr,
+		size_t *iSize = nullptr,
+		bool *fChild = nullptr,
 		bool fStartAtFilename = false);
 	bool Read(void *pBuffer, size_t iSize);
 	bool Advance(int iOffset);
@@ -242,11 +242,11 @@ public:
 	const char *GetPassword();
 	const char *GetName();
 	StdStrBuf GetFullName() const;
-	int EntryCount(const char *szWildCard = NULL);
-	int EntrySize(const char *szWildCard = NULL);
+	int EntryCount(const char *szWildCard = nullptr);
+	int EntrySize(const char *szWildCard = nullptr);
 	int AccessedEntrySize() { return iCurrFileSize; } // retrieve size of last accessed entry
 	int EntryTime(const char *szFilename);
-	unsigned int EntryCRC32(const char *szWildCard = NULL);
+	unsigned int EntryCRC32(const char *szWildCard = nullptr);
 	int GetCreation();
 	int GetStatus();
 	inline bool IsOpen() { return Status != GRPF_Inactive; }
@@ -255,7 +255,7 @@ public:
 	inline bool HasPackedMother() { if (!Mother) return false; return Mother->IsPacked(); }
 	inline bool SetNoSort(BOOL fNoSort) { NoSort = fNoSort; return true; }
 #ifdef _DEBUG
-	void PrintInternals(const char *szIndent = NULL);
+	void PrintInternals(const char *szIndent = nullptr);
 #endif
 
 protected:
@@ -269,7 +269,7 @@ protected:
 	bool OpenRealGrpFile();
 	bool SetFilePtr(int iOffset);
 	bool RewindFilePtr();
-	bool AdvanceFilePtr(int iOffset, C4Group *pByChild = NULL);
+	bool AdvanceFilePtr(int iOffset, C4Group *pByChild = nullptr);
 	bool AddEntry(int status,
 		bool childgroup,
 		const char *fname,
@@ -277,14 +277,14 @@ protected:
 		time_t time,
 		char cCRC,
 		unsigned int iCRC,
-		const char *entryname = NULL,
-		BYTE *membuf = NULL,
+		const char *entryname = nullptr,
+		BYTE *membuf = nullptr,
 		bool fDeleteOnDisk = false,
 		bool fHoldBuffer = false,
 		bool fExecutable = false,
 		bool fBufferIsStdbuf = false);
-	bool AddEntryOnDisk(const char *szFilename, const char *szAddAs = NULL, bool fMove = FALSE);
-	bool SetFilePtr2Entry(const char *szName, C4Group *pByChild = NULL);
+	bool AddEntryOnDisk(const char *szFilename, const char *szAddAs = nullptr, bool fMove = FALSE);
+	bool SetFilePtr2Entry(const char *szName, C4Group *pByChild = nullptr);
 	bool AppendEntry2StdFile(C4GroupEntry *centry, CStdFile &stdfile);
 	C4GroupEntry *GetEntry(const char *szName);
 	C4GroupEntry *SearchNextEntry(const char *szName);

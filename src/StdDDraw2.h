@@ -190,7 +190,7 @@ class CStdDDraw
 {
 public:
 	CStdDDraw() : Saturation(255) { lpDDrawPal = &Pal; }
-	virtual ~CStdDDraw() { lpDDraw = NULL; }
+	virtual ~CStdDDraw() { lpDDraw = nullptr; }
 
 public:
 	CStdApp *pApp; // the application
@@ -221,11 +221,11 @@ public:
 	bool Init(CStdApp *pApp, BOOL Fullscreen, BOOL fUsePageLock, int iBitDepth, unsigned int iMonitor);
 	virtual void Clear();
 	virtual void Default();
-	virtual CStdGLCtx *CreateContext(CStdWindow *, CStdApp *) { return NULL; }
+	virtual CStdGLCtx *CreateContext(CStdWindow *, CStdApp *) { return nullptr; }
 #ifdef _WIN32
-	virtual CStdGLCtx *CreateContext(HWND, CStdApp *) { return NULL; }
+	virtual CStdGLCtx *CreateContext(HWND, CStdApp *) { return nullptr; }
 #endif
-	virtual bool PageFlip(RECT *pSrcRt = NULL, RECT *pDstRt = NULL, CStdWindow *pWindow = NULL) = 0;
+	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) = 0;
 	virtual int GetEngine() = 0; // get indexed engine
 	virtual void TaskOut() = 0; // user taskswitched the app away
 	virtual void TaskIn() = 0; // user tasked back
@@ -234,7 +234,7 @@ public:
 	const char *GetLastError() { return sLastError.getData(); }
 
 	// Palette
-	BOOL SetPrimaryPalette(BYTE *pBuf, BYTE *pAlphaBuf = NULL);
+	BOOL SetPrimaryPalette(BYTE *pBuf, BYTE *pAlphaBuf = nullptr);
 	BOOL AttachPrimaryPalette(SURFACE sfcSurface);
 
 	// Clipper
@@ -261,11 +261,11 @@ public:
 		SURFACE sfcTarget, int tx, int ty, int wdt, int hgt);
 	BOOL Blit(SURFACE sfcSource, float fx, float fy, float fwdt, float fhgt,
 		SURFACE sfcTarget, int tx, int ty, int twdt, int thgt,
-		BOOL fSrcColKey = FALSE, CBltTransform *pTransform = NULL);
+		BOOL fSrcColKey = FALSE, CBltTransform *pTransform = nullptr);
 	virtual void PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool fMod2, bool fExact) = 0;
 	BOOL Blit8(SURFACE sfcSource, int fx, int fy, int fwdt, int fhgt, // force 8bit-blit (inline)
 		SURFACE sfcTarget, int tx, int ty, int twdt, int thgt,
-		BOOL fSrcColKey = FALSE, CBltTransform *pTransform = NULL);
+		BOOL fSrcColKey = FALSE, CBltTransform *pTransform = nullptr);
 	BOOL BlitRotate(SURFACE sfcSource, int fx, int fy, int fwdt, int fhgt,
 		SURFACE sfcTarget, int tx, int ty, int twdt, int thgt,
 		int iAngle, bool fTransparency = true);

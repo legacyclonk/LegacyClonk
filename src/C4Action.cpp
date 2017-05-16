@@ -35,7 +35,7 @@ void C4Action::Default()
 	ComDir = COMD_None;
 	Time = 0;
 	Data = 0;
-	Target = Target2 = NULL;
+	Target = Target2 = nullptr;
 	Phase = PhaseDelay = 0;
 	Facet.Default();
 	FacetX = FacetY = 0;

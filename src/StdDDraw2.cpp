@@ -32,8 +32,8 @@
 #include <limits.h>
 
 // Global access pointer
-CStdDDraw *lpDDraw = NULL;
-CStdPalette *lpDDrawPal = NULL;
+CStdDDraw *lpDDraw = nullptr;
+CStdPalette *lpDDrawPal = nullptr;
 int iGfxEngine = -1;
 
 void CBltTransform::SetRotate(int iAngle, float fOffX, float fOffY) // set by angle and rotation offset
@@ -156,12 +156,12 @@ bool CPattern::Set(CSurface8 *sfcSource, int iZoom, bool fMonochrome)
 CPattern::CPattern()
 {
 	// disable
-	sfcPattern32 = NULL;
-	sfcPattern8 = NULL;
+	sfcPattern32 = nullptr;
+	sfcPattern8 = nullptr;
 	CachedPattern = 0;
 	Zoom = 0;
 	Monochrome = false;
-	pClrs = NULL; pAlpha = NULL;
+	pClrs = nullptr; pAlpha = nullptr;
 }
 
 void CPattern::Clear()
@@ -172,9 +172,9 @@ void CPattern::Clear()
 		// unlock it
 		sfcPattern32->Unlock();
 		// clear field
-		sfcPattern32 = NULL;
+		sfcPattern32 = nullptr;
 	}
-	sfcPattern8 = NULL;
+	sfcPattern8 = nullptr;
 	delete[] CachedPattern; CachedPattern = 0;
 }
 
@@ -508,14 +508,14 @@ bool CBltData::ClipBy(float fX, float fY, float fMax)
 void CStdDDraw::Default()
 {
 	fFullscreen = FALSE;
-	RenderTarget = NULL;
+	RenderTarget = nullptr;
 	ClipAll = false;
 	Active = false;
 	BlitModulated = false;
 	dwBlitMode = 0;
 	Gamma.Default();
 	DefRamp.Default();
-	lpPrimary = lpBack = NULL;
+	lpPrimary = lpBack = nullptr;
 	fUseClrModMap = false;
 }
 
@@ -990,7 +990,7 @@ BOOL CStdDDraw::BlitSurface(SURFACE sfcSurface, SURFACE sfcTarget, int tx, int t
 	{
 		if (!sfcSurface) return FALSE;
 		CSurface *pSfcBase = sfcSurface->pMainSfc;
-		sfcSurface->pMainSfc = NULL;
+		sfcSurface->pMainSfc = nullptr;
 		Blit(sfcSurface, 0.0f, 0.0f, (float)sfcSurface->Wdt, (float)sfcSurface->Hgt, sfcTarget, tx, ty, sfcSurface->Wdt, sfcSurface->Hgt, false);
 		sfcSurface->pMainSfc = pSfcBase;
 		return TRUE;
@@ -1230,7 +1230,7 @@ void CStdDDraw::DrawFrameDw(SURFACE sfcDest, int x1, int y1, int x2, int y2, DWO
 
 // Globally locked surface variables - for DrawLine callback crap
 
-CSurface *GLSBuffer = NULL;
+CSurface *GLSBuffer = nullptr;
 
 bool LockSurfaceGlobal(SURFACE sfcTarget)
 {
@@ -1243,7 +1243,7 @@ bool UnLockSurfaceGlobal(SURFACE sfcTarget)
 {
 	if (!GLSBuffer) return false;
 	sfcTarget->Unlock();
-	GLSBuffer = NULL;
+	GLSBuffer = nullptr;
 	return true;
 }
 
@@ -1380,12 +1380,12 @@ CStdDDraw *DDrawInit(CStdApp *pApp, BOOL Fullscreen, BOOL fUsePageLock, int iBit
 #endif
 	case GFXENGN_NOGFX: lpDDraw = new CStdNoGfx(); break;
 	}
-	if (!lpDDraw) return NULL;
+	if (!lpDDraw) return nullptr;
 	// init it
 	if (!lpDDraw->Init(pApp, Fullscreen, fUsePageLock, iBitDepth, iMonitor))
 	{
 		delete lpDDraw;
-		return NULL;
+		return nullptr;
 	}
 	// done, success
 	return lpDDraw;

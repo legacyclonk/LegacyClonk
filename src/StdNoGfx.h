@@ -28,7 +28,7 @@ public:
 	virtual BOOL CreateDirectDraw();
 
 public:
-	virtual bool PageFlip(RECT *pSrcRt = NULL, RECT *pDstRt = NULL, CStdWindow *pWindow = NULL) { return true; }
+	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) { return true; }
 	virtual bool BeginScene() { return true; }
 	virtual void EndScene() {}
 	virtual int GetEngine() { return GFXENGN_NOGFX; }

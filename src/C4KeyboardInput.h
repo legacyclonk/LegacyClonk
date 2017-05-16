@@ -185,7 +185,7 @@ public:
 	inline void Ref() { ++iRef; }
 	inline void Deref() { if (!--iRef) delete this; }
 
-	C4KeyboardCallbackInterface() : iRef(0), pOriginalKey(NULL) {}
+	C4KeyboardCallbackInterface() : iRef(0), pOriginalKey(nullptr) {}
 	virtual ~C4KeyboardCallbackInterface() {}
 
 	bool IsOriginalKey(const class C4CustomKey *pCheckKey) const { return pCheckKey == pOriginalKey; }
@@ -217,7 +217,7 @@ protected:
 	virtual bool CheckCondition() { return true; }
 
 public:
-	C4KeyCB(TargetClass &rTarget, CallbackFunc pFuncDown, CallbackFunc pFuncUp = NULL, CallbackFunc pFuncPressed = NULL)
+	C4KeyCB(TargetClass &rTarget, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
 		: rTarget(rTarget), pFuncDown(pFuncDown), pFuncUp(pFuncUp), pFuncPressed(pFuncPressed) {}
 };
 
@@ -247,7 +247,7 @@ protected:
 	virtual bool CheckCondition() { return true; }
 
 public:
-	C4KeyCBPassKey(TargetClass &rTarget, CallbackFunc pFuncDown, CallbackFunc pFuncUp = NULL, CallbackFunc pFuncPressed = NULL)
+	C4KeyCBPassKey(TargetClass &rTarget, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
 		: rTarget(rTarget), pFuncDown(pFuncDown), pFuncUp(pFuncUp), pFuncPressed(pFuncPressed) {}
 };
 
@@ -278,7 +278,7 @@ protected:
 	virtual bool CheckCondition() { return true; }
 
 public:
-	C4KeyCBEx(TargetClass &rTarget, const ParameterType &par, CallbackFunc pFuncDown, CallbackFunc pFuncUp = NULL, CallbackFunc pFuncPressed = NULL)
+	C4KeyCBEx(TargetClass &rTarget, const ParameterType &par, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
 		: rTarget(rTarget), pFuncDown(pFuncDown), pFuncUp(pFuncUp), pFuncPressed(pFuncPressed), par(par) {}
 };
 
@@ -308,7 +308,7 @@ protected:
 	virtual bool CheckCondition() { return true; }
 
 public:
-	C4KeyCBExPassKey(TargetClass &rTarget, const ParameterType &par, CallbackFunc pFuncDown, CallbackFunc pFuncUp = NULL, CallbackFunc pFuncPressed = NULL)
+	C4KeyCBExPassKey(TargetClass &rTarget, const ParameterType &par, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
 		: rTarget(rTarget), pFuncDown(pFuncDown), pFuncUp(pFuncUp), pFuncPressed(pFuncPressed), par(par) {}
 };
 

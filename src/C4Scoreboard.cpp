@@ -37,10 +37,10 @@ void C4Scoreboard::Clear()
 {
 	// del all cells
 	delete[] pEntries;
-	pEntries = NULL; iRows = iCols = 0;
+	pEntries = nullptr; iRows = iCols = 0;
 	// del dialog
 	iDlgShow = 0;
-	if (pDlg) { delete pDlg; pDlg = NULL; }
+	if (pDlg) { delete pDlg; pDlg = nullptr; }
 }
 
 void C4Scoreboard::AddRow(int32_t iInsertBefore)
@@ -81,7 +81,7 @@ void C4Scoreboard::DelRow(int32_t iDelIndex)
 {
 	// counts
 	int32_t iNewEntryCount = (iRows - 1) * iCols;
-	if (!iNewEntryCount) { --iRows; delete[] pEntries; pEntries = NULL; return; }
+	if (!iNewEntryCount) { --iRows; delete[] pEntries; pEntries = nullptr; return; }
 	// realloc and copy array
 	Entry *pNewEntries = new Entry[iNewEntryCount]; Entry *pCpy = pNewEntries;
 	for (int32_t iRow = 0, iFromRow = 0; iRow < (iRows - 1); ++iRow, ++iFromRow)
@@ -98,7 +98,7 @@ void C4Scoreboard::DelCol(int32_t iDelIndex)
 {
 	// counts
 	int32_t iNewEntryCount = iRows * (iCols - 1);
-	if (!iNewEntryCount) { --iCols; delete[] pEntries; pEntries = NULL; return; }
+	if (!iNewEntryCount) { --iCols; delete[] pEntries; pEntries = nullptr; return; }
 	// realloc and copy array
 	Entry *pNewEntries = new Entry[iNewEntryCount]; Entry *pCpy = pNewEntries;
 	for (int32_t iRow = 0; iRow < iRows; ++iRow)
@@ -184,7 +184,7 @@ const char *C4Scoreboard::GetCellString(int32_t iColKey, int32_t iRowKey)
 	// get row/col
 	int32_t iCol = GetColByKey(iColKey);
 	int32_t iRow = GetRowByKey(iRowKey);
-	if (iCol < 0 || iRow < 0) return NULL;
+	if (iCol < 0 || iRow < 0) return nullptr;
 	// now get value
 	Entry *pCell = GetCell(iCol, iRow);
 	return pCell->Text.getData();
@@ -295,7 +295,7 @@ void C4Scoreboard::CompileFunc(StdCompiler *pComp)
 // *** C4ScoreboardDlg
 
 C4ScoreboardDlg::C4ScoreboardDlg(C4Scoreboard *pForScoreboard)
-	: C4GUI::Dialog(100, 100, "nops", false), piColWidths(NULL), pBrd(pForScoreboard)
+	: C4GUI::Dialog(100, 100, "nops", false), piColWidths(nullptr), pBrd(pForScoreboard)
 {
 	Update();
 }
@@ -303,14 +303,14 @@ C4ScoreboardDlg::C4ScoreboardDlg(C4Scoreboard *pForScoreboard)
 C4ScoreboardDlg::~C4ScoreboardDlg()
 {
 	delete[] piColWidths;
-	pBrd->pDlg = NULL;
+	pBrd->pDlg = nullptr;
 }
 
 void C4ScoreboardDlg::Update()
 {
 	// counts
 	int32_t iRowCount = pBrd->iRows; int32_t iColCount = pBrd->iCols;
-	delete[] piColWidths; piColWidths = NULL;
+	delete[] piColWidths; piColWidths = nullptr;
 	// invalid board - scipters can create those, but there's no reason why the engine
 	// should display something pretty then; just keep dialog defaults
 	if (!iRowCount || !iColCount) return;

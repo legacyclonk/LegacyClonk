@@ -62,12 +62,12 @@ static bool FD_INTERSECTS(int n, fd_set *a, fd_set *b)
 // *** StdScheduler
 
 StdScheduler::StdScheduler()
-	: ppProcs(NULL), iProcCnt(0), iProcCapacity(0)
+	: ppProcs(nullptr), iProcCnt(0), iProcCapacity(0)
 {
 #ifdef STDSCHEDULER_USE_EVENTS
-	hUnblocker = CreateEvent(NULL, false, false, NULL);
-	pEventHandles = NULL;
-	ppEventProcs = NULL;
+	hUnblocker = CreateEvent(nullptr, false, false, nullptr);
+	pEventHandles = nullptr;
+	ppEventProcs = nullptr;
 #else
 	pipe(Unblocker);
 	// Experimental castration of the unblocker.
@@ -90,10 +90,10 @@ int StdScheduler::getProc(StdSchedulerProc *pProc)
 
 void StdScheduler::Clear()
 {
-	delete[] ppProcs; ppProcs = NULL;
+	delete[] ppProcs; ppProcs = nullptr;
 #ifdef STDSCHEDULER_USE_EVENTS
-	delete[] pEventHandles; pEventHandles = NULL;
-	delete[] ppEventProcs; ppEventProcs = NULL;
+	delete[] pEventHandles; pEventHandles = nullptr;
+	delete[] ppEventProcs; ppEventProcs = nullptr;
 #endif
 	iProcCnt = iProcCapacity = 0;
 }
@@ -184,7 +184,7 @@ bool StdScheduler::Execute(int iTimeout)
 	timeval to = { iTimeout / 1000, (iTimeout % 1000) * 1000 };
 
 	// Wait for something to happen
-	int cnt = select(iMaxFDs + 1, &fds[0], &fds[1], NULL, iTimeout < 0 ? NULL : &to);
+	int cnt = select(iMaxFDs + 1, &fds[0], &fds[1], nullptr, iTimeout < 0 ? nullptr : &to);
 
 	bool fSuccess = true;
 
@@ -314,7 +314,7 @@ bool StdSchedulerThread::Start()
 	iThread = _beginthread(_ThreadFunc, 0, this);
 	fThread = (iThread != -1);
 #elif HAVE_PTHREAD
-	fThread = !pthread_create(&Thread, NULL, _ThreadFunc, this);
+	fThread = !pthread_create(&Thread, nullptr, _ThreadFunc, this);
 #endif
 	// success?
 	return fThread;
@@ -337,7 +337,7 @@ void StdSchedulerThread::Stop()
 #elif HAVE_PTHREAD
 	// wait for thread to terminate itself
 	// (without security - let's trust these unwashed hackers for once)
-	pthread_join(Thread, NULL);
+	pthread_join(Thread, nullptr);
 #endif
 	fThread = false;
 	// ok
@@ -391,7 +391,7 @@ void StdThread::Stop()
 #elif HAVE_PTHREAD
 	// wait for thread to terminate itself
 	// (whithout security - let's trust these unwashed hackers for once)
-	pthread_join(Thread, NULL);
+	pthread_join(Thread, nullptr);
 #endif
 	fStarted = false;
 	// ok

@@ -145,7 +145,7 @@ class C4ControlPlayerSelect : public C4ControlPacket // sync
 {
 public:
 	C4ControlPlayerSelect()
-		: iPlr(-1), iObjCnt(0), pObjNrs(NULL) {}
+		: iPlr(-1), iObjCnt(0), pObjNrs(nullptr) {}
 	C4ControlPlayerSelect(int32_t iPlr, const C4ObjectList &Objs);
 	~C4ControlPlayerSelect() { delete[] pObjNrs; }
 
@@ -335,9 +335,9 @@ enum C4ControlEMObjectAction
 class C4ControlEMMoveObject : public C4ControlPacket // sync
 {
 public:
-	C4ControlEMMoveObject() : pObjects(NULL) {}
+	C4ControlEMMoveObject() : pObjects(nullptr) {}
 	C4ControlEMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj,
-		int32_t iObjectNum = 0, int32_t *pObjects = NULL, const char *szScript = NULL);
+		int32_t iObjectNum = 0, int32_t *pObjects = nullptr, const char *szScript = nullptr);
 	~C4ControlEMMoveObject();
 
 protected:
@@ -367,7 +367,7 @@ public:
 	C4ControlEMDrawTool() {}
 	C4ControlEMDrawTool(C4ControlEMDrawAction eAction, int32_t iMode,
 		int32_t iX = -1, int32_t iY = -1, int32_t iX2 = -1, int32_t iY2 = -1, int32_t iGrade = -1,
-		bool fIFT = true, const char *szMaterial = NULL, const char *szTexture = NULL);
+		bool fIFT = true, const char *szMaterial = nullptr, const char *szTexture = nullptr);
 
 protected:
 	C4ControlEMDrawAction eAction; // action to be performed

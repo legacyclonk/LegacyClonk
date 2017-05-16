@@ -181,7 +181,7 @@ public:
 	class Ref
 	{
 	public:
-		Ref() : pRes(NULL) {}
+		Ref() : pRes(nullptr) {}
 		Ref(C4Network2Res *pRes) : pRes(pRes)    { if (pRes) pRes->AddRef(); }
 		Ref(const Ref &rCopy) : pRes(rCopy.pRes) { if (pRes) pRes->AddRef(); }
 		~Ref() { Clear(); }
@@ -195,7 +195,7 @@ public:
 		operator C4Network2Res *()  const { return pRes; }
 		bool operator!()            const { return !pRes; }
 		C4Network2Res *operator->() const { return pRes; }
-		void Clear() { if (pRes) pRes->DelRef(); pRes = NULL; }
+		void Clear() { if (pRes) pRes->DelRef(); pRes = nullptr; }
 		void Set(C4Network2Res *pnRes) { if (pRes == pnRes) return; Clear(); pRes = pnRes; if (pRes) pRes->AddRef(); }
 	};
 
@@ -246,9 +246,9 @@ public:
 	bool                     isComplete()        const { return !fLoading; }
 	int32_t                  getPresentPercent() const { return fLoading ? Chunks.getPresentPercent() : 100; }
 
-	bool SetByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName = NULL, bool fSilent = false);
-	bool SetByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName = NULL, bool fSilent = false);
-	bool SetByCore(const C4Network2ResCore &nCore, bool fSilent = false, const char *szAsFilename = NULL, int32_t iRecursion = 0);
+	bool SetByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName = nullptr, bool fSilent = false);
+	bool SetByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName = nullptr, bool fSilent = false);
+	bool SetByCore(const C4Network2ResCore &nCore, bool fSilent = false, const char *szAsFilename = nullptr, int32_t iRecursion = 0);
 	bool SetLoad(const C4Network2ResCore &nCore);
 
 	bool SetDerived(const char *strName, const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iDResID);
@@ -263,7 +263,7 @@ public:
 	bool FinishDerive();
 	bool FinishDerive(const C4Network2ResCore &nCore);
 
-	bool SendStatus(C4Network2IOConnection *pTo = NULL);
+	bool SendStatus(C4Network2IOConnection *pTo = nullptr);
 	bool SendChunk(uint32_t iChunk, int32_t iToClient);
 
 	// references
@@ -356,14 +356,14 @@ public:
 	C4Network2Res::Ref getRefNextRes(int32_t iResID); // by both
 
 	void Add(C4Network2Res *pRes); // by both
-	C4Network2Res::Ref AddByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID = -1, const char *szResName = NULL, bool fAllowUnloadable = false); // by both
+	C4Network2Res::Ref AddByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID = -1, const char *szResName = nullptr, bool fAllowUnloadable = false); // by both
 	C4Network2Res::Ref AddByCore(const C4Network2ResCore &Core, bool fLoad = true); // by main thread
 	C4Network2Res::Ref AddLoad(const C4Network2ResCore &Core); // by main thread
 
 	void RemoveAtClient(int32_t iClientID); // by main thread
 	void Clear(); // by main thread
 
-	bool SendDiscover(C4Network2IOConnection *pTo = NULL); // by both
+	bool SendDiscover(C4Network2IOConnection *pTo = nullptr); // by both
 	void OnClientConnect(C4Network2IOConnection *pConn); // by main thread
 
 	// interface for C4Network2IO

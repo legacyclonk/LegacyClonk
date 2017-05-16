@@ -133,7 +133,7 @@ public:
 	void DrawX(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0) const;
 	void DrawXFloat(SURFACE sfcTarget, float fX, float fY, float fWdt, float fHgt) const;
 	void DrawValue(C4Facet &cgo, int32_t iValue, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center);
-	void DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center, int32_t *piUsedWidth = NULL);
+	void DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center, int32_t *piUsedWidth = nullptr);
 	void Draw(C4Facet &cgo, BOOL fAspect = TRUE, int32_t iPhaseX = 0, int32_t iPhaseY = 0, BOOL fTransparent = TRUE);
 	void DrawFullScreen(C4Facet &cgo);
 #ifdef C4ENGINE

@@ -37,7 +37,7 @@
 
 #include <StdRegistry.h> // For DDraw emulation warning
 
-C4Sec1TimerCallbackBase::C4Sec1TimerCallbackBase() : pNext(NULL), iRefs(2)
+C4Sec1TimerCallbackBase::C4Sec1TimerCallbackBase() : pNext(nullptr), iRefs(2)
 {
 	// register into engine callback stack
 	pNext = Application.pSec1TimerCallback;
@@ -46,8 +46,8 @@ C4Sec1TimerCallbackBase::C4Sec1TimerCallbackBase() : pNext(NULL), iRefs(2)
 
 C4Application::C4Application() :
 	isFullScreen(true), UseStartupDialog(true), launchEditor(false), restartAtEnd(false),
-	DDraw(NULL), AppState(C4AS_None), pSec1TimerCallback(NULL),
-	iLastGameTick(0), iGameTickDelay(28), iExtraGameTickDelay(0), pGamePadControl(NULL),
+	DDraw(nullptr), AppState(C4AS_None), pSec1TimerCallback(nullptr),
+	iLastGameTick(0), iGameTickDelay(28), iExtraGameTickDelay(0), pGamePadControl(nullptr),
 	CheckForUpdates(false), NoSplash(false) {}
 
 C4Application::~C4Application()
@@ -64,7 +64,7 @@ C4Application::~C4Application()
 		STARTUPINFO StartupInfo; ZeroMemory(&StartupInfo, sizeof StartupInfo);
 		StartupInfo.cb = sizeof StartupInfo;
 		PROCESS_INFORMATION ProcessInfo; ZeroMemory(&ProcessInfo, sizeof ProcessInfo);
-		CreateProcess(NULL, strCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, &StartupInfo, &ProcessInfo);
+		CreateProcess(nullptr, strCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, &StartupInfo, &ProcessInfo);
 #endif
 	}
 }
@@ -141,7 +141,7 @@ bool C4Application::DoInit()
 	// Windows: handle incoming updates directly, even before starting up the gui
 	//          because updates will be applied in the console anyway.
 	if (Application.IncomingUpdate)
-		if (C4UpdateDlg::ApplyUpdate(Application.IncomingUpdate.getData(), false, NULL))
+		if (C4UpdateDlg::ApplyUpdate(Application.IncomingUpdate.getData(), false, nullptr))
 			return true;
 #endif
 
@@ -188,7 +188,7 @@ bool C4Application::DoInit()
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)
 	// Register clonk file classes - notice: under Vista this will only work if we have administrator rights
-	char szModule[_MAX_PATH + 1]; GetModuleFileName(NULL, szModule, _MAX_PATH);
+	char szModule[_MAX_PATH + 1]; GetModuleFileName(nullptr, szModule, _MAX_PATH);
 	SetC4FileClasses(szModule);
 #endif
 
@@ -251,7 +251,7 @@ void C4Application::Clear()
 	SystemGroup.Close();
 	// Close timers
 	C4Sec1TimerCallbackBase *pSec1Timer, *pNextSec1Timer = pSec1TimerCallback;
-	pSec1TimerCallback = NULL;
+	pSec1TimerCallback = nullptr;
 	while (pSec1Timer = pNextSec1Timer)
 	{
 		pNextSec1Timer = pSec1Timer->pNext;
@@ -264,12 +264,12 @@ void C4Application::Clear()
 	Languages.Clear();
 	Languages.ClearLanguage();
 	// gamepad clear
-	if (pGamePadControl) { delete pGamePadControl; pGamePadControl = NULL; }
+	if (pGamePadControl) { delete pGamePadControl; pGamePadControl = nullptr; }
 	// music system clear
 	MusicSystem.Clear();
 	SoundSystem.Clear();
 	// Clear direct draw (late, because it's needed for e.g. Log)
-	if (DDraw) { delete DDraw; DDraw = NULL; }
+	if (DDraw) { delete DDraw; DDraw = nullptr; }
 	// Close window
 	FullScreen.Clear();
 	Console.Clear();

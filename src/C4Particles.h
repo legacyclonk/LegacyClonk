@@ -97,7 +97,7 @@ public:
 
 	C4ParticleInitProc      InitProc;      // procedure called once upon creation of the particle
 	C4ParticleExecProc      ExecProc;      // procedure used for execution of one particle
-	C4ParticleCollisionProc CollisionProc; // procedure called upon collision with the landscape; may be NULL
+	C4ParticleCollisionProc CollisionProc; // procedure called upon collision with the landscape; may be nullptr
 	C4ParticleDrawProc      DrawProc;      // procedure used for drawing of one particle
 
 	int32_t Count; // number of particles currently existant of this kind
@@ -155,10 +155,10 @@ class C4ParticleList
 public:
 	C4Particle *pFirst; // first particle in list - others follow in linked list
 
-	C4ParticleList() { pFirst = NULL; }
+	C4ParticleList() { pFirst = nullptr; }
 
-	void Exec(C4Object *pObj = NULL); // execute all particles
-	void Draw(C4FacetEx &cgo, C4Object *pObj = NULL); // draw all particles
+	void Exec(C4Object *pObj = nullptr); // execute all particles
+	void Draw(C4FacetEx &cgo, C4Object *pObj = nullptr); // draw all particles
 	void Clear(); // remove all particles
 	int32_t Remove(C4ParticleDef *pOfDef); // remove all particles of def
 
@@ -195,14 +195,14 @@ public:
 
 	C4Particle *Create(C4ParticleDef *pOfDef, // create one particle of given type
 		float x, float y, float xdir = 0.0f, float ydir = 0.0f,
-		float a = 0.0f, int32_t b = 0, C4ParticleList *pPxList = NULL, C4Object *pObj = NULL);
+		float a = 0.0f, int32_t b = 0, C4ParticleList *pPxList = nullptr, C4Object *pObj = nullptr);
 	bool Cast(C4ParticleDef *pOfDef, // create several particles with different speeds and params
 		int32_t iAmount,
 		float x, float y, int32_t level,
 		float a0 = 0.0f, DWORD b0 = 0, float a1 = 0.0f, DWORD b1 = 0,
-		C4ParticleList *pPxList = NULL, C4Object *pObj = NULL);
+		C4ParticleList *pPxList = nullptr, C4Object *pObj = nullptr);
 
-	C4ParticleDef *GetDef(const char *szName, C4ParticleDef *pExclude = NULL); // get particle def by name
+	C4ParticleDef *GetDef(const char *szName, C4ParticleDef *pExclude = nullptr); // get particle def by name
 	void SetDefParticles(); // seek and assign default particels (smoke, etc.)
 
 	int32_t Push(C4ParticleDef *pOfDef, float dxdir, float dydir); // add movement to all particles of type

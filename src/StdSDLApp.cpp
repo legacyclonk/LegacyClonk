@@ -190,7 +190,7 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	// And for events from the network thread
 	FD_SET(this->Pipe[0], &rfds);
 	max_fd = Max(this->Pipe[0], max_fd);
-	switch (select(max_fd + 1, &rfds, NULL, NULL, &tv))
+	switch (select(max_fd + 1, &rfds, nullptr, nullptr, &tv))
 	{
 	// error
 	case -1:
@@ -249,7 +249,7 @@ bool CStdApp::GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *pi
 	static unsigned modeCount = 0;
 	if (!modes)
 	{
-		modes = SDL_ListModes(NULL, SDL_OPENGL | SDL_FULLSCREEN);
+		modes = SDL_ListModes(nullptr, SDL_OPENGL | SDL_FULLSCREEN);
 		// -1 means "all modes allowed". Clonk is not prepared
 		// for this; should probably give some random resolutions
 		// then.

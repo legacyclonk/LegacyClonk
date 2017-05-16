@@ -121,7 +121,7 @@ public:
 	C4Object *GetObject() const { return Object; }
 	const char *GetCommand() const { return Command; }
 
-	void ClearObject() { Object = NULL; }
+	void ClearObject() { Object = nullptr; }
 };
 
 class C4Menu : public C4GUI::Dialog
@@ -175,7 +175,7 @@ public:
 	int32_t GetItemHeight() { return ItemHeight; }
 	C4MenuItem *GetSelectedItem();
 	C4MenuItem *GetItem(int32_t iIndex);
-	virtual C4Object *GetParentObject() { return NULL; }
+	virtual C4Object *GetParentObject() { return nullptr; }
 	bool MoveSelection(int32_t iBy, bool fAdjustPosition, bool fDoCalls);
 	BOOL SetSelection(int32_t iSelection, bool fAdjustPosition, bool fDoCalls);
 	BOOL SetPosition(int32_t iPosition);
@@ -185,13 +185,13 @@ public:
 	BOOL Control(BYTE byCom, int32_t iData);
 	bool KeyControl(BYTE byCom); // direct keyboard callback
 	BOOL AddRefSym(const char *szCaption, const C4FacetEx &fctSymbol, const char *szCommand,
-		int32_t iCount = C4MN_Item_NoCount, C4Object *pObject = NULL,
-		const char *szInfoCaption = NULL,
-		C4ID idID = C4ID_None, const char *szCommand2 = NULL, bool fOwnValue = false, int32_t iValue = 0, bool fIsSelectable = true);
+		int32_t iCount = C4MN_Item_NoCount, C4Object *pObject = nullptr,
+		const char *szInfoCaption = nullptr,
+		C4ID idID = C4ID_None, const char *szCommand2 = nullptr, bool fOwnValue = false, int32_t iValue = 0, bool fIsSelectable = true);
 	BOOL Add(const char *szCaption, C4FacetExSurface &fctSymbol, const char *szCommand,
-		int32_t iCount = C4MN_Item_NoCount, C4Object *pObject = NULL,
-		const char *szInfoCaption = NULL,
-		C4ID idID = C4ID_None, const char *szCommand2 = NULL, bool fOwnValue = false, int32_t iValue = 0, bool fIsSelectable = true);
+		int32_t iCount = C4MN_Item_NoCount, C4Object *pObject = nullptr,
+		const char *szInfoCaption = nullptr,
+		C4ID idID = C4ID_None, const char *szCommand2 = nullptr, bool fOwnValue = false, int32_t iValue = 0, bool fIsSelectable = true);
 	void ClearItems(bool fResetSelection = false);
 	void ResetLocation() { LocationSet = false; }
 	BOOL SetLocation(int32_t iX, int32_t iY); // set location relative to user viewport

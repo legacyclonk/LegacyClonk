@@ -51,7 +51,7 @@ public:
 
 	void Clear(); // clear objects
 #ifdef _WIN32
-	bool Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow = NULL);
+	bool Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow = nullptr);
 #else
 	bool Init(CStdWindow *pWindow, CStdApp *pApp);
 #endif
@@ -67,7 +67,7 @@ protected:
 	CStdWindow *pWindow; // window to draw in
 #ifdef _WIN32
 	HGLRC hrc; // rendering context
-	HWND hWindow; // used if pWindow==NULL
+	HWND hWindow; // used if pWindow==nullptr
 	HDC hDC; // device context handle
 #elif defined(USE_X11)
 	GLXContext ctx;
@@ -84,7 +84,7 @@ class CStdGL : public CStdDDraw
 public:
 	CStdGL();
 	~CStdGL();
-	virtual bool PageFlip(RECT *pSrcRt = NULL, RECT *pDstRt = NULL, CStdWindow *pWindow = NULL);
+	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr);
 
 protected:
 	int iPixelFormat; // used pixel format

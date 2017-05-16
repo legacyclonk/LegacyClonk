@@ -86,7 +86,7 @@ public:
 class C4StartupDlg : public C4GUI::FullscreenDialog
 {
 public:
-	C4StartupDlg(const char *szTitle) : C4GUI::FullscreenDialog(szTitle, NULL) {}
+	C4StartupDlg(const char *szTitle) : C4GUI::FullscreenDialog(szTitle, nullptr) {}
 };
 
 class C4Startup

@@ -209,7 +209,7 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	// And for events from the network thread
 	FD_SET(Priv->Pipe[0], &rfds);
 	max_fd = Max(Priv->Pipe[0], max_fd);
-	switch (select(max_fd + 1, &rfds, NULL, NULL, &tv))
+	switch (select(max_fd + 1, &rfds, nullptr, nullptr, &tv))
 	{
 	// error
 	case -1:

@@ -29,7 +29,7 @@
 
 const int32_t TextMsgDelayFactor = 2; // frames per char message display time
 
-C4GameMessage::C4GameMessage() : pFrameDeco(NULL) {}
+C4GameMessage::C4GameMessage() : pFrameDeco(nullptr) {}
 
 C4GameMessage::~C4GameMessage()
 {
@@ -39,7 +39,7 @@ C4GameMessage::~C4GameMessage()
 void C4GameMessage::Init(int32_t iType, const StdStrBuf &sText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int width)
 {
 	// safety!
-	if (pTarget && !pTarget->Status) pTarget = NULL;
+	if (pTarget && !pTarget->Status) pTarget = nullptr;
 	// Set data
 	Text.Copy(sText);
 	Target = pTarget;
@@ -59,14 +59,14 @@ void C4GameMessage::Init(int32_t iType, const StdStrBuf &sText, C4Object *pTarge
 		Text.Shrink(1);
 	}
 	// frame decoration
-	delete pFrameDeco; pFrameDeco = NULL;
+	delete pFrameDeco; pFrameDeco = nullptr;
 	if (DecoID)
 	{
 		pFrameDeco = new C4GUI::FrameDecoration();
 		if (!pFrameDeco->SetByDef(DecoID))
 		{
 			delete pFrameDeco;
-			pFrameDeco = NULL;
+			pFrameDeco = nullptr;
 		}
 	}
 }
@@ -235,7 +235,7 @@ void C4GameMessage::UpdateDef(C4ID idUpdDef)
 		if (!pFrameDeco->UpdateGfx())
 		{
 			delete pFrameDeco;
-			pFrameDeco = NULL;
+			pFrameDeco = nullptr;
 		}
 	}
 }
@@ -252,12 +252,12 @@ C4GameMessageList::~C4GameMessageList()
 
 void C4GameMessageList::Default()
 {
-	First = NULL;
+	First = nullptr;
 }
 
 void C4GameMessageList::ClearPointers(C4Object *pObj)
 {
-	C4GameMessage *cmsg, *next, *prev = NULL;
+	C4GameMessage *cmsg, *next, *prev = nullptr;
 	for (cmsg = First; cmsg; cmsg = next)
 	{
 		next = cmsg->Next;
@@ -278,12 +278,12 @@ void C4GameMessageList::Clear()
 		next = cmsg->Next;
 		delete cmsg;
 	}
-	First = NULL;
+	First = nullptr;
 }
 
 void C4GameMessageList::Execute()
 {
-	C4GameMessage *cmsg, *next, *prev = NULL;
+	C4GameMessage *cmsg, *next, *prev = nullptr;
 	for (cmsg = First; cmsg; cmsg = next)
 	{
 		next = cmsg->Next;
@@ -337,7 +337,7 @@ bool C4GameMessageList::New(int32_t iType, const StdStrBuf &sText, C4Object *pTa
 
 bool C4GameMessageList::Append(int32_t iType, const char *szText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint8_t bCol, bool fNoDuplicates)
 {
-	C4GameMessage *cmsg = NULL;
+	C4GameMessage *cmsg = nullptr;
 	if (iType == C4GM_Target)
 	{
 		for (cmsg = Game.Messages.First; cmsg; cmsg = cmsg->Next)
@@ -363,7 +363,7 @@ bool C4GameMessageList::Append(int32_t iType, const char *szText, C4Object *pTar
 
 void C4GameMessageList::ClearPlayers(int32_t iPlayer, int32_t dwPositioningFlags)
 {
-	C4GameMessage *cmsg, *next, *prev = NULL;
+	C4GameMessage *cmsg, *next, *prev = nullptr;
 	for (cmsg = First; cmsg; cmsg = next)
 	{
 		next = cmsg->Next;

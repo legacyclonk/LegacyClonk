@@ -35,7 +35,7 @@ C4AbortGameDialog::C4AbortGameDialog()
 	: fGameHalted(false),
 	C4GUI::ConfirmationDialog(LoadResStr("IDS_HOLD_ABORT"),
 		LoadResStr("IDS_DLG_ABORT"),
-		NULL,
+		nullptr,
 		MessageDialog::btnYesNo,
 		true,
 		C4GUI::Ico_Exit)

@@ -107,7 +107,7 @@ public:
 	C4NetIO *DataIO(); // by both
 
 	// connections
-	bool Connect(const C4NetIO::addr_t &addr, C4Network2IOProtocol eProt, const C4ClientCore &nCCore, const char *szPassword = NULL); // by main thread
+	bool Connect(const C4NetIO::addr_t &addr, C4Network2IOProtocol eProt, const C4ClientCore &nCCore, const char *szPassword = nullptr); // by main thread
 	void SetAcceptMode(bool fAcceptAll); // by main thread
 	void SetExclusiveConnMode(bool fExclusiveConn); // by main thread
 	int getConnectionCount(); // by main thread
@@ -333,7 +333,7 @@ class C4PacketConn : public C4PacketBase
 {
 public:
 	C4PacketConn();
-	C4PacketConn(const class C4ClientCore &nCCore, uint32_t iConnID, const char *szPassword = NULL);
+	C4PacketConn(const class C4ClientCore &nCCore, uint32_t iConnID, const char *szPassword = nullptr);
 
 protected:
 	int32_t iVer;
@@ -354,7 +354,7 @@ class C4PacketConnRe : public C4PacketBase
 {
 public:
 	C4PacketConnRe();
-	C4PacketConnRe(bool fOK, bool fWrongPassword, const char *szMsg = NULL);
+	C4PacketConnRe(bool fOK, bool fWrongPassword, const char *szMsg = nullptr);
 
 protected:
 	bool fOK, fWrongPassword;

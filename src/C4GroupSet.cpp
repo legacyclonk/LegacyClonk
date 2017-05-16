@@ -58,13 +58,13 @@ void C4GroupSet::Clear()
 {
 	// clear nodes
 	while (pFirst) delete pFirst;
-	pFirst = NULL;
+	pFirst = nullptr;
 }
 
 void C4GroupSet::Default()
 {
 	// zero fields
-	pFirst = pLast = NULL;
+	pFirst = pLast = nullptr;
 	// do not reset index here, because group set IDs are meant to be unique
 	// for each instance of the engine
 	// see also C4GraphicsResource::RegisterGlobalGraphics
@@ -171,10 +171,10 @@ C4Group *C4GroupSet::FindGroup(int32_t Contents, C4Group *pAfter, bool fSamePrio
 				// success, found an entry
 				return pNode->pGroup;
 		// find next clear flag
-		if (pNode->pGroup == pAfter) { pAfter = NULL; if (fSamePrio) iPriority = pNode->Priority; }
+		if (pNode->pGroup == pAfter) { pAfter = nullptr; if (fSamePrio) iPriority = pNode->Priority; }
 	}
 	// nothing found
-	return NULL;
+	return nullptr;
 }
 
 C4Group *C4GroupSet::FindEntry(const char *szWildcard, int32_t *pPriority, int32_t *pID)
@@ -190,7 +190,7 @@ C4Group *C4GroupSet::FindEntry(const char *szWildcard, int32_t *pPriority, int32
 			return pNode->pGroup;
 		}
 	// nothing found
-	return NULL;
+	return nullptr;
 }
 
 bool C4GroupSet::LoadEntryString(const char *szEntryName, StdStrBuf &rBuf)
@@ -223,7 +223,7 @@ C4Group *C4GroupSet::GetGroup(int32_t iIndex)
 {
 	// Invalid index
 	if (iIndex < 0)
-		return NULL;
+		return nullptr;
 	// Find indicated group
 	for (C4GroupSetNode *pNode = pFirst; pNode; pNode = pNode->pNext)
 		if (iIndex == 0)
@@ -231,14 +231,14 @@ C4Group *C4GroupSet::GetGroup(int32_t iIndex)
 		else
 			iIndex--;
 	// Indicated group not found
-	return NULL;
+	return nullptr;
 }
 
 #ifdef C4ENGINE
 C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 {
 	// the scenario filename may be a scenario or directly a group folder
-	C4Group *pParentGroup = NULL; bool fParentC4F;
+	C4Group *pParentGroup = nullptr; bool fParentC4F;
 	char szParentfolder[_MAX_PATH + 1];
 	if (SEqualNoCase(GetExtension(szScenFilename), "c4f"))
 	{

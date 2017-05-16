@@ -335,8 +335,8 @@ public:
 	void Default();
 	BOOL Load(C4Group &hGroup,
 		DWORD dwLoadWhat, const char *szLanguage,
-		class C4SoundSystem *pSoundSystem = NULL);
-	void Draw(C4Facet &cgo, BOOL fSelected = FALSE, DWORD iColor = 0, C4Object *pObj = NULL, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
+		class C4SoundSystem *pSoundSystem = nullptr);
+	void Draw(C4Facet &cgo, BOOL fSelected = FALSE, DWORD iColor = 0, C4Object *pObj = nullptr, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
 
 #ifdef C4ENGINE
 	inline C4Facet &GetMainFace(C4DefGraphics *pGraphics, DWORD dwClr = 0) { MainFace.Surface = pGraphics->GetBitmap(dwClr); return MainFace; }
@@ -354,13 +354,13 @@ protected:
 	void CrossMapActMap();
 
 private:
-	C4ValueArray *GetCustomComponents(C4Value *pvArrayHolder, C4Object *pBuilder, C4Object *pObjInstance = NULL);
+	C4ValueArray *GetCustomComponents(C4Value *pvArrayHolder, C4Object *pBuilder, C4Object *pObjInstance = nullptr);
 
 public:
 	// return def components - may be overloaded by script callback
-	int32_t GetComponentCount(C4ID idComponent, C4Object *pBuilder = NULL);
-	C4ID GetIndexedComponent(int32_t idx, C4Object *pBuilder = NULL);
-	void GetComponents(C4IDList *pOutList, C4Object *pObjInstance = NULL, C4Object *pBuilder = NULL);
+	int32_t GetComponentCount(C4ID idComponent, C4Object *pBuilder = nullptr);
+	C4ID GetIndexedComponent(int32_t idx, C4Object *pBuilder = nullptr);
+	void GetComponents(C4IDList *pOutList, C4Object *pObjInstance = nullptr, C4Object *pBuilder = nullptr);
 
 	void IncludeDefinition(C4Def *pIncludeDef); // inherit components from other definition
 	void ResetIncludeDependencies(); // resets all pointers into foreign definitions caused by include chains
@@ -388,12 +388,12 @@ public:
 	void Clear();
 	int32_t Load(C4Group &hGroup,
 		DWORD dwLoadWhat, const char *szLanguage,
-		C4SoundSystem *pSoundSystem = NULL,
+		C4SoundSystem *pSoundSystem = nullptr,
 		BOOL fOverload = FALSE,
 		BOOL fSearchMessage = FALSE, int32_t iMinProgress = 0, int32_t iMaxProgress = 0, bool fLoadSysGroups = true);
 	int32_t Load(const char *szSearch,
 		DWORD dwLoadWhat, const char *szLanguage,
-		C4SoundSystem *pSoundSystem = NULL,
+		C4SoundSystem *pSoundSystem = nullptr,
 		BOOL fOverload = FALSE, int32_t iMinProgress = 0, int32_t iMaxProgress = 0);
 	C4Def *ID2Def(C4ID id);
 	C4Def *GetDef(int32_t Index, DWORD dwCategory = C4D_All);
@@ -406,7 +406,7 @@ public:
 	void Draw(C4ID id, C4Facet &cgo, BOOL fSelected, int32_t iColor);
 	void Remove(C4Def *def);
 	BOOL Remove(C4ID id);
-	BOOL Reload(C4Def *pDef, DWORD dwLoadWhat, const char *szLanguage, C4SoundSystem *pSoundSystem = NULL);
+	BOOL Reload(C4Def *pDef, DWORD dwLoadWhat, const char *szLanguage, C4SoundSystem *pSoundSystem = nullptr);
 	BOOL Add(C4Def *ndef, BOOL fOverload);
 	void BuildTable(); // build quick access table
 	void ResetIncludeDependencies(); // resets all pointers into foreign definitions caused by include chains

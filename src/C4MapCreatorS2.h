@@ -131,7 +131,7 @@ public:
 class C4MCCallbackArrayList
 {
 public:
-	C4MCCallbackArrayList() { pFirst = NULL; }
+	C4MCCallbackArrayList() { pFirst = nullptr; }
 	~C4MCCallbackArrayList() { Clear(); }
 
 protected:
@@ -153,7 +153,7 @@ public:
 	char Name[C4MaxName]; // name, if named
 
 public:
-	C4MCNode(C4MCNode *pOwner = NULL);
+	C4MCNode(C4MCNode *pOwner = nullptr);
 	C4MCNode(C4MCNode *pOwner, C4MCNode &rTemplate, bool fClone); // constructor using template
 	virtual ~C4MCNode();
 
@@ -195,7 +195,7 @@ protected:
 
 public:
 	virtual C4MCNodeType Type() { return MCN_Node; } // get node type
-	virtual C4MCOverlay *Overlay() { return NULL; } // return overlay, if this is one
+	virtual C4MCOverlay *Overlay() { return nullptr; } // return overlay, if this is one
 	C4MCOverlay *OwnerOverlay(); // return an owner who is an overlay
 
 	friend class C4MCParser;
@@ -228,7 +228,7 @@ extern C4MCNodeAttr C4MCOvrlMap[];
 class C4MCOverlay : public C4MCNode
 {
 public:
-	C4MCOverlay(C4MCNode *pOwner = NULL);
+	C4MCOverlay(C4MCNode *pOwner = nullptr);
 	C4MCOverlay(C4MCNode *pOwner, C4MCOverlay &rTemplate, bool fClone); // construct of template
 
 	C4MCNode *clone(C4MCNode *pToNode) { return new C4MCOverlay(pToNode, *this, true); }
@@ -266,7 +266,7 @@ public:
 	C4MCOverlay *FirstOfChain(); // go backwards in op chain until first overlay of chain
 
 	bool CheckMask(int32_t iX, int32_t iY); // check whether algorithms succeeds at iX/iY
-	bool RenderPix(int32_t iX, int32_t iY, BYTE &rPix, C4MCTokenType eLastOp = MCT_NONE, bool fLastSet = false, bool fDraw = true, C4MCOverlay **ppPixelSetOverlay = NULL); // render this pixel
+	bool RenderPix(int32_t iX, int32_t iY, BYTE &rPix, C4MCTokenType eLastOp = MCT_NONE, bool fLastSet = false, bool fDraw = true, C4MCOverlay **ppPixelSetOverlay = nullptr); // render this pixel
 	bool PeekPix(int32_t iX, int32_t iY); // check mask; regard operator chain
 	bool InBounds(int32_t iX, int32_t iY) { return iX >= X && iY >= Y && iX < X + Wdt && iY < Y + Hgt; } // return whether point iX/iY is inside bounds
 
@@ -281,7 +281,7 @@ public:
 class C4MCPoint : public C4MCNode
 {
 public:
-	C4MCPoint(C4MCNode *pOwner = NULL);
+	C4MCPoint(C4MCNode *pOwner = nullptr);
 	C4MCPoint(C4MCNode *pOwner, C4MCPoint &rTemplate, bool fClone); // construct of template
 
 	C4MCNode *clone(C4MCNode *pToNode) { return new C4MCPoint(pToNode, *this, true); }
@@ -307,7 +307,7 @@ public:
 class C4MCMap : public C4MCOverlay
 {
 public:
-	C4MCMap(C4MCNode *pOwner = NULL);
+	C4MCMap(C4MCNode *pOwner = nullptr);
 	C4MCMap(C4MCNode *pOwner, C4MCMap &rTemplate, bool fClone); // construct of template
 
 	C4MCNode *clone(C4MCNode *pToNode) { return new C4MCMap(pToNode, *this, true); }

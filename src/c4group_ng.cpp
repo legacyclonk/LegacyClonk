@@ -228,7 +228,7 @@ bool ProcessGroup(const char *FilenamePar)
 					// Sort
 					case 's':
 						// First sort parameter overrides default Clonk sort list
-						C4Group_SetSortList(NULL);
+						C4Group_SetSortList(nullptr);
 						// Missing argument
 						if ((iArg + 1 >= argc) || (argv[iArg + 1][0] == '-'))
 						{
@@ -423,7 +423,7 @@ int RegisterShellExtensions()
 	char strModule[2048];
 	char strCommand[2048];
 	char strClass[128];
-	GetModuleFileName(NULL, strModule, 2048);
+	GetModuleFileName(nullptr, strModule, 2048);
 	// Groups
 	const char *strClasses =
 		"Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink";
@@ -457,7 +457,7 @@ int UnregisterShellExtensions()
 #ifdef _WIN32
 	char strModule[2048];
 	char strClass[128];
-	GetModuleFileName(NULL, strModule, 2048);
+	GetModuleFileName(nullptr, strModule, 2048);
 	// Groups
 	const char *strClasses =
 		"Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink";
@@ -486,7 +486,7 @@ int UnregisterShellExtensions()
 int main(int argc, char *argv[])
 {
 	// Always line buffer mode, even if the output is not sent to a terminal
-	setvbuf(stdout, NULL, _IOLBF, 0);
+	setvbuf(stdout, nullptr, _IOLBF, 0);
 	// Scan options
 	int iFirstGroup = 0;
 	for (int i = 1; i < argc; ++i)

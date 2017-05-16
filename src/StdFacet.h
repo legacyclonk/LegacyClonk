@@ -23,7 +23,7 @@
 class CFacet
 {
 public:
-	CFacet() : Surface(NULL), X(0), Y(0), Wdt(0), Hgt(0) {}
+	CFacet() : Surface(nullptr), X(0), Y(0), Wdt(0), Hgt(0) {}
 	~CFacet() {}
 
 public:
@@ -31,8 +31,8 @@ public:
 	int X, Y, Wdt, Hgt;
 
 public:
-	void Default() { Surface = NULL; X = Y = Wdt = Hgt = 0; }
-	void Clear() { Surface = NULL; X = Y = Wdt = Hgt = 0; }
+	void Default() { Surface = nullptr; X = Y = Wdt = Hgt = 0; }
+	void Clear() { Surface = nullptr; X = Y = Wdt = Hgt = 0; }
 
 	void Set(SURFACE nsfc, int nx, int ny, int nwdt, int nhgt)
 	{

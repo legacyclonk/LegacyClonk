@@ -37,7 +37,7 @@ BOOL AVIOpenOutput(const char *szFilename,
 		ppAviFile,
 		szFilename,
 		OF_CREATE | OF_WRITE,
-		NULL) != 0)
+		nullptr) != 0)
 	{
 		return FALSE;
 	}
@@ -80,11 +80,11 @@ BOOL AVICloseOutput(PAVIFILE *ppAviFile,
 {
 	if (ppAviStream && *ppAviStream)
 	{
-		AVIStreamRelease(*ppAviStream); *ppAviStream = NULL;
+		AVIStreamRelease(*ppAviStream); *ppAviStream = nullptr;
 	}
 	if (ppAviFile && *ppAviFile)
 	{
-		AVIFileRelease(*ppAviFile); *ppAviFile = NULL;
+		AVIFileRelease(*ppAviFile); *ppAviFile = nullptr;
 	}
 	return TRUE;
 }
@@ -117,8 +117,8 @@ BOOL AVIPutFrame(PAVISTREAM pAviStream,
 }
 
 CStdAVIFile::CStdAVIFile()
-	: pStream(NULL), pGetFrame(NULL), hBitmap(NULL), hDD(NULL), hWnd(NULL), hDC(NULL), pbmi(NULL),
-	iAudioBufferLength(0), pAudioData(NULL), pAudioStream(NULL), pAudioInfo(NULL), pAVIFile(NULL)
+	: pStream(nullptr), pGetFrame(nullptr), hBitmap(nullptr), hDD(nullptr), hWnd(nullptr), hDC(nullptr), pbmi(nullptr),
+	iAudioBufferLength(0), pAudioData(nullptr), pAudioStream(nullptr), pAudioInfo(nullptr), pAVIFile(nullptr)
 {
 	AVIFileInit();
 }
@@ -133,13 +133,13 @@ void CStdAVIFile::Clear()
 {
 	// free any stuff
 	CloseAudioStream();
-	if (hBitmap)   { DeleteObject(hBitmap);             hBitmap   = NULL; }
-	if (hDD)       { DrawDibClose(hDD);                 hDD       = NULL; }
-	if (hDC)       { ReleaseDC(hWnd, hDC);              hDC       = NULL; }
-	if (pGetFrame) { AVIStreamGetFrameClose(pGetFrame); pGetFrame = NULL; }
-	if (pStream)   { AVIStreamRelease(pStream);         pStream   = NULL; }
-	if (pbmi)      { delete[] pbmi;                     pbmi      = NULL; }
-	if (pAVIFile)  { AVIFileRelease(pAVIFile);          pAVIFile  = NULL; }
+	if (hBitmap)   { DeleteObject(hBitmap);             hBitmap   = nullptr; }
+	if (hDD)       { DrawDibClose(hDD);                 hDD       = nullptr; }
+	if (hDC)       { ReleaseDC(hWnd, hDC);              hDC       = nullptr; }
+	if (pGetFrame) { AVIStreamGetFrameClose(pGetFrame); pGetFrame = nullptr; }
+	if (pStream)   { AVIStreamRelease(pStream);         pStream   = nullptr; }
+	if (pbmi)      { delete[] pbmi;                     pbmi      = nullptr; }
+	if (pAVIFile)  { AVIFileRelease(pAVIFile);          pAVIFile  = nullptr; }
 	sFilename.Clear();
 }
 
@@ -149,7 +149,7 @@ bool CStdAVIFile::OpenFile(const char *szFilename, HWND hWnd, int32_t iOutBitDep
 	Clear();
 	sFilename.Copy(szFilename);
 	// open the AVI file
-	if (AVIFileOpen(&pAVIFile, szFilename, OF_READ, NULL))
+	if (AVIFileOpen(&pAVIFile, szFilename, OF_READ, nullptr))
 		return false;
 	if (AVIFileGetStream(pAVIFile, &pStream, streamtypeVIDEO, 0))
 		return false;
@@ -177,15 +177,15 @@ bool CStdAVIFile::OpenFile(const char *szFilename, HWND hWnd, int32_t iOutBitDep
 		*(DWORD *)(&(pbmi->bmiColors[1])) = 0x0f0;
 		*(DWORD *)(&(pbmi->bmiColors[0])) = 0xf00;
 	}
-	hDC = CreateCompatibleDC(NULL);
+	hDC = CreateCompatibleDC(nullptr);
 	if (!hDC) return false;
 	hDD = DrawDibOpen();
 	if (!hDD) return false;
-	hBitmap = CreateDIBSection(hDC, pbmi, DIB_RGB_COLORS, (void **)(&pFrameData), NULL, NULL);
+	hBitmap = CreateDIBSection(hDC, pbmi, DIB_RGB_COLORS, (void **)(&pFrameData), nullptr, 0);
 	if (!hBitmap) return false;
 	SelectObject(hDC, hBitmap);
 	// create a GetFrame-object
-	pGetFrame = AVIStreamGetFrameOpen(pStream, NULL);
+	pGetFrame = AVIStreamGetFrameOpen(pStream, nullptr);
 	if (!pGetFrame) return false;
 	// done, success!
 	return true;
@@ -231,12 +231,12 @@ bool CStdAVIFile::OpenAudioStream()
 	if (AVIFileGetStream(pAVIFile, &pAudioStream, streamtypeAUDIO, 0))
 		return false;
 	// get audio stream format
-	if (AVIStreamReadFormat(pAudioStream, AVIStreamStart(pAudioStream), NULL, &iAudioInfoLength)) return false;
+	if (AVIStreamReadFormat(pAudioStream, AVIStreamStart(pAudioStream), nullptr, &iAudioInfoLength)) return false;
 	if (iAudioInfoLength < sizeof(WAVEFORMAT)) return false;
 	pAudioInfo = (WAVEFORMAT *)new BYTE[iAudioInfoLength];
 	if (AVIStreamReadFormat(pAudioStream, AVIStreamStart(pAudioStream), pAudioInfo, &iAudioInfoLength))
 	{
-		delete[] pAudioInfo; pAudioInfo = NULL; return false;
+		delete[] pAudioInfo; pAudioInfo = nullptr; return false;
 	}
 	// done!
 	return true;
@@ -246,9 +246,9 @@ BYTE *CStdAVIFile::GetAudioStreamData(size_t *piStreamLength)
 {
 	// returning the complete audio stream at once here - not very efficient, but easy...
 	// get stream size
-	if (!pAudioInfo) return NULL;
-	if (AVIStreamRead(pAudioStream, 0, AVIStreamLength(pAudioStream), NULL, 0, &iAudioDataLength, NULL)) return NULL;
-	if (iAudioDataLength <= 0) return NULL;
+	if (!pAudioInfo) return nullptr;
+	if (AVIStreamRead(pAudioStream, 0, AVIStreamLength(pAudioStream), nullptr, 0, &iAudioDataLength, nullptr)) return nullptr;
+	if (iAudioDataLength <= 0) return nullptr;
 	// make sure current audio data buffer is large enoiugh to hold the data
 	// preceding return data with the RIFF+waveformat structure here, so it can be easily loaded by fmod
 	uint32_t iHeaderLength = iAudioInfoLength + sizeof(FOURCC) * 4 + 3 * sizeof(uint32_t);
@@ -269,7 +269,7 @@ BYTE *CStdAVIFile::GetAudioStreamData(size_t *piStreamLength)
 		*((uint32_t *)pWrite) = iAudioDataLength;
 	}
 	// get it
-	if (AVIStreamRead(pAudioStream, 0, AVIStreamLength(pAudioStream), pAudioData + iHeaderLength, iAudioDataLength, NULL, NULL)) return NULL;
+	if (AVIStreamRead(pAudioStream, 0, AVIStreamLength(pAudioStream), pAudioData + iHeaderLength, iAudioDataLength, nullptr, nullptr)) return nullptr;
 	// got the data successfully!
 	*piStreamLength = iReturnDataLength;
 	return pAudioData;
@@ -277,9 +277,9 @@ BYTE *CStdAVIFile::GetAudioStreamData(size_t *piStreamLength)
 
 void CStdAVIFile::CloseAudioStream()
 {
-	if (pAudioStream) { AVIStreamRelease(pAudioStream); pAudioStream = NULL; }
-	if (pAudioData) { delete[] pAudioData; pAudioData = NULL; }
-	if (pAudioInfo) { delete[] pAudioInfo; pAudioInfo = NULL; }
+	if (pAudioStream) { AVIStreamRelease(pAudioStream); pAudioStream = nullptr; }
+	if (pAudioData) { delete[] pAudioData; pAudioData = nullptr; }
+	if (pAudioInfo) { delete[] pAudioInfo; pAudioInfo = nullptr; }
 	iAudioBufferLength = 0;
 }
 

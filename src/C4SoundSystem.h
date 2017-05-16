@@ -64,7 +64,7 @@ public:
 	BOOL Load(const char *szFileName, C4Group &hGroup, BOOL fStatic);
 	BOOL Load(BYTE *pData, size_t iDataLen, BOOL fStatic, bool fRaw = false); // load directly from memory
 	void Execute();
-	C4SoundInstance *New(bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = NULL, int32_t iCustomFalloffDistance = 0);
+	C4SoundInstance *New(bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = nullptr, int32_t iCustomFalloffDistance = 0);
 	C4SoundInstance *GetInstance(C4Object *pObj);
 	void ClearPointers(C4Object *pObj);
 	int32_t GetStartedInstanceCount(int32_t iX, int32_t iY, int32_t iRad); // local
@@ -99,7 +99,7 @@ public:
 	C4Object *getObj() const { return pObj; }
 	bool isStarted() const { return iChannel != -1; }
 	void Clear();
-	BOOL Create(C4SoundEffect *pEffect, bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = NULL, int32_t iNearInstanceMax = 0, int32_t iFalloffDistance = 0);
+	BOOL Create(C4SoundEffect *pEffect, bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = nullptr, int32_t iNearInstanceMax = 0, int32_t iFalloffDistance = 0);
 	BOOL CheckStart();
 	BOOL Start();
 	BOOL Stop();
@@ -122,7 +122,7 @@ public:
 	void Clear();
 	void Execute();
 	int32_t LoadEffects(C4Group &hGroup, BOOL fStatic = TRUE);
-	C4SoundInstance *NewEffect(const char *szSound, bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = NULL, int32_t iCustomFalloffDistance = 0);
+	C4SoundInstance *NewEffect(const char *szSound, bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = nullptr, int32_t iCustomFalloffDistance = 0);
 	C4SoundInstance *FindInstance(const char *szSound, C4Object *pObj);
 	BOOL Init();
 	void ClearPointers(C4Object *pObj);

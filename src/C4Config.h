@@ -259,7 +259,7 @@ public:
 	const char *GetSubkeyPath(const char *strSubkey);
 	void Default();
 	BOOL Save();
-	BOOL Load(BOOL forceWorkingDirectory = TRUE, const char *szConfigFile = NULL);
+	BOOL Load(BOOL forceWorkingDirectory = TRUE, const char *szConfigFile = nullptr);
 	BOOL Init();
 	const char *AtExePath(const char *szFilename);
 	const char *AtTempPath(const char *szFilename);

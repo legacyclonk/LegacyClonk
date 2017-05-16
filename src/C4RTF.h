@@ -54,7 +54,7 @@ public:
 		char bHex; // used by hex parser
 		int iHexBinCnt; // used by hex and binary parser
 
-		PropertyState() : pNext(NULL), cp(), pp(), sp(), dp(), dest(dsNormal), eState(psNormal), bHex(0), iHexBinCnt(0) {}
+		PropertyState() : pNext(nullptr), cp(), pp(), sp(), dp(), dest(dsNormal), eState(psNormal), bHex(0), iHexBinCnt(0) {}
 	};
 
 	class ParserError

@@ -30,7 +30,7 @@ C4Surface *GroupReadSurface(CStdStream &hGroup, BYTE *bpPalette)
 	C4Surface *pSfc = new C4Surface();
 	if (!pSfc->Read(hGroup, !!bpPalette))
 	{
-		delete pSfc; return NULL;
+		delete pSfc; return nullptr;
 	}
 	return pSfc;
 }
@@ -41,7 +41,7 @@ CSurface8 *GroupReadSurface8(CStdStream &hGroup)
 	CSurface8 *pSfc = new CSurface8();
 	if (!pSfc->Read(hGroup, false))
 	{
-		delete pSfc; return NULL;
+		delete pSfc; return nullptr;
 	}
 	return pSfc;
 }
@@ -52,7 +52,7 @@ CSurface8 *GroupReadSurfaceOwnPal8(CStdStream &hGroup)
 	CSurface8 *pSfc = new CSurface8();
 	if (!pSfc->Read(hGroup, true))
 	{
-		delete pSfc; return NULL;
+		delete pSfc; return nullptr;
 	}
 	return pSfc;
 }

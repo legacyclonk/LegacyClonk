@@ -45,17 +45,17 @@ C4Video::~C4Video()
 void C4Video::Default()
 {
 	Active = false;
-	pAviFile = NULL;
-	pAviStream = NULL;
+	pAviFile = nullptr;
+	pAviStream = nullptr;
 	AviFrame = 0;
 	AspectRatio = 1.333;
 	X = 0; Y = 0;
 	Width = 768; Height = 576;
-	Buffer = NULL;
+	Buffer = nullptr;
 	BufferSize = 0;
 	InfoSize = 0;
 	Recording = false;
-	Surface = NULL;
+	Surface = nullptr;
 	ShowFlash = 0;
 }
 
@@ -118,7 +118,7 @@ bool C4Video::Stop()
 	// Recording flag
 	Recording = false;
 	// Clear buffer
-	if (Buffer) delete[] Buffer; Buffer = NULL;
+	if (Buffer) delete[] Buffer; Buffer = nullptr;
 #endif
 	// Done
 	return true;

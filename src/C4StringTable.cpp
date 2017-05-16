@@ -28,7 +28,7 @@
 // *** C4String
 
 C4String::C4String(StdStrBuf strString, C4StringTable *pnTable)
-	: iRefCnt(0), Hold(false), iEnumID(-1), pTable(NULL)
+	: iRefCnt(0), Hold(false), iEnumID(-1), pTable(nullptr)
 {
 	// take string
 	Data.Take(strString);
@@ -37,7 +37,7 @@ C4String::C4String(StdStrBuf strString, C4StringTable *pnTable)
 }
 
 C4String::C4String(const char *strString, C4StringTable *pnTable)
-	: iRefCnt(0), Hold(false), iEnumID(-1), pTable(NULL)
+	: iRefCnt(0), Hold(false), iEnumID(-1), pTable(nullptr)
 {
 	// copy string
 	Data = strString;
@@ -72,7 +72,7 @@ void C4String::Reg(C4StringTable *pnTable)
 
 	// add string to tail of table
 	Prev = pnTable->Last;
-	Next = NULL;
+	Next = nullptr;
 
 	if (Prev)
 		Prev->Next = this;
@@ -96,7 +96,7 @@ void C4String::UnReg()
 	else
 		pTable->First = Next;
 
-	pTable = NULL;
+	pTable = nullptr;
 
 	// delete hold flag if table is lost and check for delete
 	Hold = false;
@@ -107,7 +107,7 @@ void C4String::UnReg()
 // *** C4StringTable
 
 C4StringTable::C4StringTable()
-	: First(NULL), Last(NULL) {}
+	: First(nullptr), Last(nullptr) {}
 
 C4StringTable::~C4StringTable()
 {
@@ -154,7 +154,7 @@ C4String *C4StringTable::FindString(const char *strString)
 	for (C4String *pAct = First; pAct; pAct = pAct->Next)
 		if (SEqual(pAct->Data.getData(), strString))
 			return pAct;
-	return NULL;
+	return nullptr;
 }
 
 C4String *C4StringTable::FindString(C4String *pString)
@@ -162,7 +162,7 @@ C4String *C4StringTable::FindString(C4String *pString)
 	for (C4String *pAct = First; pAct; pAct = pAct->Next)
 		if (pAct == pString)
 			return pAct;
-	return NULL;
+	return nullptr;
 }
 
 C4String *C4StringTable::FindString(int iEnumID)
@@ -170,14 +170,14 @@ C4String *C4StringTable::FindString(int iEnumID)
 	for (C4String *pAct = First; pAct; pAct = pAct->Next)
 		if (pAct->iEnumID == iEnumID)
 			return pAct;
-	return NULL;
+	return nullptr;
 }
 
 bool C4StringTable::Load(C4Group &ParentGroup)
 {
 	// read data
 	char *pData;
-	if (!ParentGroup.LoadEntry(C4CFN_Strings, &pData, NULL, 1))
+	if (!ParentGroup.LoadEntry(C4CFN_Strings, &pData, nullptr, 1))
 		return false;
 	// read all strings
 	char strBuf[C4AUL_MAX_String + 1];

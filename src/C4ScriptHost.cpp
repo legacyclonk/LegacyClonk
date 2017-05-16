@@ -35,14 +35,14 @@ void C4ScriptHost::Default()
 {
 	C4AulScript::Default();
 	C4ComponentHost::Default();
-	pStringTable = NULL;
+	pStringTable = nullptr;
 }
 
 void C4ScriptHost::Clear()
 {
 	C4AulScript::Clear();
 	C4ComponentHost::Clear();
-	pStringTable = NULL;
+	pStringTable = nullptr;
 }
 
 BOOL C4ScriptHost::Load(const char *szName, C4Group &hGroup, const char *szFilename,
@@ -157,7 +157,7 @@ BOOL C4ScriptHost::ReloadScript(const char *szPath)
 		char szParentPath[_MAX_PATH + 1]; C4Group ParentGrp;
 		if (GetParentPath(szPath, szParentPath))
 			if (ParentGrp.Open(szParentPath))
-				if (Load(Name, ParentGrp, Filename, Config.General.Language, NULL, pStringTable))
+				if (Load(Name, ParentGrp, Filename, Config.General.Language, nullptr, pStringTable))
 					return TRUE;
 	}
 	// call for childs
@@ -182,7 +182,7 @@ const char *C4ScriptHost::GetControlDesc(const char *szFunctionFormat, int32_t i
 	if (pFn && pFn->Desc.getLength()) return pFn->DescText.getData();
 #endif
 	// No function
-	return NULL;
+	return nullptr;
 }
 
 // C4DefScriptHost
@@ -190,7 +190,7 @@ const char *C4ScriptHost::GetControlDesc(const char *szFunctionFormat, int32_t i
 void C4DefScriptHost::Default()
 {
 	C4ScriptHost::Default();
-	SFn_CalcValue = SFn_SellTo = SFn_ControlTransfer = SFn_CustomComponents = NULL;
+	SFn_CalcValue = SFn_SellTo = SFn_ControlTransfer = SFn_CustomComponents = nullptr;
 	ControlMethod[0] = ControlMethod[1] = ContainedControlMethod[0] = ContainedControlMethod[1] = ActivationControlMethod[0] = ActivationControlMethod[1] = 0;
 }
 

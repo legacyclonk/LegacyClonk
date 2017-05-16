@@ -82,7 +82,7 @@ ContextMenu::Entry::Entry(const char *szText, Icons icoIcon, MenuHandler *pMenuH
 
 // ContextMenu
 
-ContextMenu::ContextMenu() : Window(), pTarget(NULL), pSelectedItem(NULL), pSubmenu(NULL)
+ContextMenu::ContextMenu() : Window(), pTarget(nullptr), pSelectedItem(nullptr), pSubmenu(nullptr)
 {
 	iMenuIndex = ++iGlobalMenuIndex;
 	// set min size
@@ -149,7 +149,7 @@ ContextMenu::ContextMenu() : Window(), pTarget(NULL), pSelectedItem(NULL), pSubm
 ContextMenu::~ContextMenu()
 {
 	// del any submenu
-	if (pSubmenu) { delete pSubmenu; pSubmenu = NULL; }
+	if (pSubmenu) { delete pSubmenu; pSubmenu = nullptr; }
 	// forward RemoveElement to screen
 	Screen *pScreen = GetScreen();
 	if (pScreen) pScreen->RemoveElement(this);
@@ -205,7 +205,7 @@ void ContextMenu::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_
 	{
 		// reset selection
 		Element *pPrevSelectedItem = pSelectedItem;
-		pSelectedItem = NULL;
+		pSelectedItem = nullptr;
 		// get client component the mouse is over
 		iX -= GetMarginLeft(); iY -= GetMarginTop();
 		for (Element *pCurr = GetFirst(); pCurr; pCurr = pCurr->GetNext())
@@ -231,7 +231,7 @@ void ContextMenu::MouseLeaveEntry(CMouse &rMouse, Entry *pOldEntry)
 	// no submenu open? then deselect any selected item
 	if (pOldEntry == pSelectedItem && !pSubmenu)
 	{
-		pSelectedItem = NULL;
+		pSelectedItem = nullptr;
 		SelectionChanged(true);
 	}
 }
@@ -366,11 +366,11 @@ void ContextMenu::RemoveElement(Element *pChild)
 	// target lost?
 	if (pChild == pTarget) { Abort(false); return; }
 	// submenu?
-	if (pChild == pSubmenu) pSubmenu = NULL;
+	if (pChild == pSubmenu) pSubmenu = nullptr;
 	// clear selection var
 	if (pChild == pSelectedItem)
 	{
-		pSelectedItem = NULL;
+		pSelectedItem = nullptr;
 		SelectionChanged(false);
 	}
 	// forward to any submenu

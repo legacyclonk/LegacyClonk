@@ -396,7 +396,7 @@ const char *SSearch(const char *szString, const char *szIndex)
 {
 	const char *cscr;
 	int indexlen, match = 0;
-	if (!szString || !szIndex) return NULL;
+	if (!szString || !szIndex) return nullptr;
 	indexlen = SLen(szIndex);
 	for (cscr = szString; cscr && *cscr; cscr++)
 	{
@@ -404,14 +404,14 @@ const char *SSearch(const char *szString, const char *szIndex)
 		else match = 0;
 		if (match >= indexlen) return cscr + 1;
 	}
-	return NULL;
+	return nullptr;
 }
 
 const char *SSearchNoCase(const char *szString, const char *szIndex)
 {
 	const char *cscr;
 	int indexlen, match = 0;
-	if (!szString || !szIndex) return NULL;
+	if (!szString || !szIndex) return nullptr;
 	indexlen = SLen(szIndex);
 	for (cscr = szString; cscr && *cscr; cscr++)
 	{
@@ -419,14 +419,14 @@ const char *SSearchNoCase(const char *szString, const char *szIndex)
 		else match = 0;
 		if (match >= indexlen) return cscr + 1;
 	}
-	return NULL;
+	return nullptr;
 }
 
 void SWordWrap(char *szText, char cSpace, char cSepa, int iMaxLine)
 {
 	if (!szText) return;
 	// Scan string
-	char *cPos, *cpLastSpace = NULL;
+	char *cPos, *cpLastSpace = nullptr;
 	int iLineRun = 0;
 	for (cPos = szText; *cPos; cPos++)
 	{
@@ -447,14 +447,14 @@ void SWordWrap(char *szText, char cSpace, char cSepa, int iMaxLine)
 
 const char *SAdvanceSpace(const char *szSPos)
 {
-	if (!szSPos) return NULL;
+	if (!szSPos) return nullptr;
 	while (IsWhiteSpace(*szSPos)) szSPos++;
 	return szSPos;
 }
 
 const char *SAdvancePast(const char *szSPos, char cPast)
 {
-	if (!szSPos) return NULL;
+	if (!szSPos) return nullptr;
 	while (*szSPos)
 	{
 		if (*szSPos == cPast) { szSPos++; break; }
@@ -577,7 +577,7 @@ bool SAddModule(char *szList, const char *szModule, bool fCaseSensitive)
 	// Safety / no empties
 	if (!szList || !szModule || !szModule[0]) return false;
 	// Already a module?
-	if (SIsModule(szList, szModule, NULL, fCaseSensitive)) return false;
+	if (SIsModule(szList, szModule, nullptr, fCaseSensitive)) return false;
 	// New segment, add string
 	SNewSegment(szList);
 	SAppend(szModule, szList);
@@ -650,7 +650,7 @@ BOOL SWildcardMatchEx(const char *szString, const char *szWildcard)
 	if (!szString || !szWildcard) return FALSE;
 	// match char-wise
 	const char *pWild = szWildcard, *pPos = szString;
-	const char *pLWild = NULL, *pLPos = NULL; // backtracking
+	const char *pLWild = nullptr, *pLPos = nullptr; // backtracking
 	while (*pWild || pLWild)
 		// string wildcard?
 		if (*pWild == '*')
@@ -680,7 +680,7 @@ BOOL SWildcardMatchEx(const char *szString, const char *szWildcard)
 const char *SGetParameter(const char *strCommandLine, int iParameter, char *strTarget, int iSize, bool *pWasQuoted)
 {
 	// Safeties
-	if (iParameter < 0) return NULL;
+	if (iParameter < 0) return nullptr;
 	// Parse command line which may contain spaced or quoted parameters
 	static char strParameter[2048 + 1];
 	const char *c = strCommandLine;
@@ -717,7 +717,7 @@ const char *SGetParameter(const char *strCommandLine, int iParameter, char *strT
 		}
 	}
 	// Not found
-	return NULL;
+	return nullptr;
 }
 
 bool IsSafeFormatString(const char *szFmt)

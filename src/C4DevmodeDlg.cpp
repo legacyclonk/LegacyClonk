@@ -25,8 +25,8 @@
 #include <gtk/gtknotebook.h>
 #include <gtk/gtklabel.h>
 
-GtkWidget *C4DevmodeDlg::window = NULL;
-GtkWidget *C4DevmodeDlg::notebook = NULL;
+GtkWidget *C4DevmodeDlg::window = nullptr;
+GtkWidget *C4DevmodeDlg::notebook = nullptr;
 
 int C4DevmodeDlg::x = -1;
 int C4DevmodeDlg::y = -1;
@@ -36,21 +36,21 @@ namespace
 	gboolean OnDeleteEvent(GtkWidget *widget, gpointer user_data)
 	{
 		// Just hide the window, don't destroy it
-		C4DevmodeDlg::SwitchPage(NULL);
+		C4DevmodeDlg::SwitchPage(nullptr);
 		return TRUE;
 	}
 }
 
 void C4DevmodeDlg::OnDestroy(GtkWidget *window, gpointer user_data)
 {
-	C4DevmodeDlg::window = NULL;
-	C4DevmodeDlg::notebook = NULL;
+	C4DevmodeDlg::window = nullptr;
+	C4DevmodeDlg::notebook = nullptr;
 }
 
 void C4DevmodeDlg::AddPage(GtkWidget *widget, GtkWindow *parent, const char *title)
 {
 	// Create Window if necessary
-	if (window == NULL)
+	if (window == nullptr)
 	{
 		notebook = gtk_notebook_new();
 		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), FALSE);
@@ -67,8 +67,8 @@ void C4DevmodeDlg::AddPage(GtkWidget *widget, GtkWindow *parent, const char *tit
 		gtk_window_set_transient_for(GTK_WINDOW(window), parent);
 		gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
 
-		g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(OnDeleteEvent), NULL);
-		g_signal_connect(G_OBJECT(window), "destroy",      G_CALLBACK(OnDestroy),     NULL);
+		g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(OnDeleteEvent), nullptr);
+		g_signal_connect(G_OBJECT(window), "destroy",      G_CALLBACK(OnDestroy),     nullptr);
 	}
 
 	// Add page to notebook
@@ -92,12 +92,12 @@ void C4DevmodeDlg::SwitchPage(GtkWidget *widget)
 	bool is_visible = GTK_WIDGET_VISIBLE(GTK_WIDGET(window));
 
 	// Remember window position
-	if (window != NULL && is_visible)
+	if (window != nullptr && is_visible)
 		gtk_window_get_position(GTK_WINDOW(window), &x, &y);
 
-	if (widget != NULL)
+	if (widget != nullptr)
 	{
-		assert(window != NULL);
+		assert(window != nullptr);
 
 		// Show required page
 		int page_num = gtk_notebook_page_num(GTK_NOTEBOOK(notebook), widget);
@@ -116,7 +116,7 @@ void C4DevmodeDlg::SwitchPage(GtkWidget *widget)
 	}
 	else
 	{
-		if (window != NULL && is_visible)
+		if (window != nullptr && is_visible)
 			gtk_widget_hide(window);
 	}
 }

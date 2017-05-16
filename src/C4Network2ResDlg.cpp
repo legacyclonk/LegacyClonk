@@ -29,7 +29,7 @@
 // C4Network2ResDlg::ListItem
 
 C4Network2ResDlg::ListItem::ListItem(C4Network2ResDlg *pForResDlg, const C4Network2Res *pByRes)
-	: pSaveBtn(NULL)
+	: pSaveBtn(nullptr)
 {
 	// init by res core (2do)
 	iResID = pByRes->getResID();
@@ -43,7 +43,7 @@ C4Network2ResDlg::ListItem::ListItem(C4Network2ResDlg *pForResDlg, const C4Netwo
 	// create subcomponents
 	pFileIcon = new C4GUI::Icon(ca.GetFromLeft(iIconSize), C4GUI::Ico_Resource);
 	pLabel = new C4GUI::Label(szFilename, iIconSize + IconLabelSpacing, iVerticalIndent, ALeft);
-	pProgress = NULL;
+	pProgress = nullptr;
 	// add components
 	AddElement(pFileIcon); AddElement(pLabel);
 	// tooltip
@@ -70,7 +70,7 @@ void C4Network2ResDlg::ListItem::Update(const C4Network2Res *pByRes)
 			AddElement(pProgress);
 		}
 	}
-	else if (pProgress) { delete pProgress; pProgress = NULL; }
+	else if (pProgress) { delete pProgress; pProgress = nullptr; }
 	// update disk icon
 	if (IsSavePossible())
 	{
@@ -158,7 +158,7 @@ bool C4Network2ResDlg::ListItem::IsSavePossible()
 
 // C4Network2ResDlg
 
-C4Network2ResDlg::C4Network2ResDlg(const C4Rect &rcBounds, bool fActive) : ListBox(rcBounds), pSec1Timer(NULL)
+C4Network2ResDlg::C4Network2ResDlg(const C4Rect &rcBounds, bool fActive) : ListBox(rcBounds), pSec1Timer(nullptr)
 {
 	// 2do
 	// initially active?
@@ -179,7 +179,7 @@ void C4Network2ResDlg::Deactivate()
 	if (pSec1Timer)
 	{
 		pSec1Timer->Release();
-		pSec1Timer = NULL;
+		pSec1Timer = nullptr;
 	}
 }
 
@@ -204,7 +204,7 @@ void C4Network2ResDlg::Update()
 			pItem = static_cast<ListItem *>(pItem->GetNext());
 		}
 		else
-			// not present: insert (or add if pItem=NULL)
+			// not present: insert (or add if pItem=nullptr)
 			InsertElement(new ListItem(this, pRes), pItem);
 	}
 	// del trailing items

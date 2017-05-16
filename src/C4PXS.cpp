@@ -55,7 +55,7 @@ void C4PXS::Execute()
 	int32_t iX = fixtoi(x), iY = fixtoi(y);
 	inmat = GBackMat(iX, iY);
 	C4MaterialReaction *pReact = Game.Material.GetReactionUnsafe(Mat, inmat);
-	if (pReact && (*pReact->pFunc)(pReact, iX, iY, iX, iY, xdir, ydir, Mat, inmat, meePXSPos, NULL))
+	if (pReact && (*pReact->pFunc)(pReact, iX, iY, iX, iY, xdir, ydir, Mat, inmat, meePXSPos, nullptr))
 	{
 		Deactivate(); return;
 	}
@@ -159,7 +159,7 @@ void C4PXSSystem::Default()
 	Count = 0;
 	for (unsigned int cnt = 0; cnt < PXSMaxChunk; cnt++)
 	{
-		Chunk[cnt] = NULL;
+		Chunk[cnt] = nullptr;
 		iChunkPXS[cnt] = 0;
 	}
 }
@@ -169,7 +169,7 @@ void C4PXSSystem::Clear()
 	for (unsigned int cnt = 0; cnt < PXSMaxChunk; cnt++)
 	{
 		if (Chunk[cnt]) delete[] Chunk[cnt];
-		Chunk[cnt] = NULL;
+		Chunk[cnt] = nullptr;
 		iChunkPXS[cnt] = 0;
 	}
 }
@@ -184,7 +184,7 @@ C4PXS *C4PXSSystem::New()
 		// Create new chunk if necessary
 		if (!Chunk[cnt])
 		{
-			if (!(Chunk[cnt] = new C4PXS[PXSChunkSize])) return NULL;
+			if (!(Chunk[cnt] = new C4PXS[PXSChunkSize])) return nullptr;
 			iChunkPXS[cnt] = 0;
 		}
 		// Check this chunk for space
@@ -197,7 +197,7 @@ C4PXS *C4PXSSystem::New()
 					return pxp;
 				}
 	}
-	return NULL;
+	return nullptr;
 }
 
 BOOL C4PXSSystem::Create(int32_t mat, FIXED ix, FIXED iy, FIXED ixdir, FIXED iydir)
@@ -220,7 +220,7 @@ void C4PXSSystem::Execute()
 			// empty chunk?
 			if (!iChunkPXS[cchunk])
 			{
-				delete[] Chunk[cchunk]; Chunk[cchunk] = NULL;
+				delete[] Chunk[cchunk]; Chunk[cchunk] = nullptr;
 			}
 			else
 			{
@@ -431,7 +431,7 @@ void C4PXSSystem::SyncClearance()
 			else
 			{
 				delete[] Chunk[cnt];
-				Chunk[cnt] = NULL;
+				Chunk[cnt] = nullptr;
 			}
 		}
 	}

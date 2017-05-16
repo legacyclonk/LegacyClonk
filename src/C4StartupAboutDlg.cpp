@@ -32,7 +32,7 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg("")
 	UpdateSize();
 
 	// key bindings: No longer back on any key
-	pKeyBack = NULL;
+	pKeyBack = nullptr;
 
 	// version info in topright corner
 	C4Rect rcClient = GetContainedClientRect();

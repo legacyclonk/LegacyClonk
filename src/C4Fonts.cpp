@@ -116,7 +116,7 @@ bool C4VectorFont::Init(const char *szFacename, int32_t iSize, uint32_t dwWeight
 #if defined(_WIN32) && defined(HAVE_FREETYPE)
 	// Win32 using freetype: Load TrueType-data from WinGDI into Data-buffer to be used by FreeType
 	bool fSuccess = false;
-	HDC hDC = ::CreateCompatibleDC(NULL);
+	HDC hDC = ::CreateCompatibleDC(nullptr);
 	if (hDC)
 	{
 		HFONT hFont = ::CreateFont(iSize, 0, 0, 0, dwWeight, FALSE,
@@ -126,7 +126,7 @@ bool C4VectorFont::Init(const char *szFacename, int32_t iSize, uint32_t dwWeight
 		if (hFont)
 		{
 			SelectObject(hDC, hFont);
-			uint32_t dwTTFSize = ::GetFontData(hDC, 0, 0, NULL, 0);
+			uint32_t dwTTFSize = ::GetFontData(hDC, 0, 0, nullptr, 0);
 			if (dwTTFSize && dwTTFSize != GDI_ERROR)
 			{
 				Data.SetSize(dwTTFSize);
@@ -161,7 +161,7 @@ void C4FontLoader::Clear()
 		pNextVecFont = pVecFont->pNext;
 		delete pVecFont;
 	}
-	pVectorFonts = NULL;
+	pVectorFonts = nullptr;
 }
 
 void C4FontLoader::AddVectorFont(C4VectorFont *pNewFont)
@@ -234,7 +234,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 		return false;
 	}
 	// get font to load
-	// pFontDefs may be NULL if no fonts are loaded; but then iFontDefCount is zero as well
+	// pFontDefs may be nullptr if no fonts are loaded; but then iFontDefCount is zero as well
 	// the function must not be aborted, because a standard windows font may be loaded
 	std::vector<C4FontDef>::iterator pFontDefC = FontDefs.begin(), pFontDef = FontDefs.end();
 	while (pFontDefC != FontDefs.end())
@@ -290,7 +290,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 			sscanf(FontParam, "%i", &iIndent);
 		// load font face from gfx group
 		int32_t iGrpId;
-		C4Group *pGrp = pGfxGroups->FindEntry(FontFaceName, NULL, &iGrpId);
+		C4Group *pGrp = pGfxGroups->FindEntry(FontFaceName, nullptr, &iGrpId);
 		if (!pGrp)
 		{
 			LogFatal(LoadResStr("IDS_ERR_INITFONTS"));

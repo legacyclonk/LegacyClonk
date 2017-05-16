@@ -46,7 +46,7 @@ void Container::Draw(C4FacetEx &cgo)
 Container::Container() : Element()
 {
 	// zero fields
-	pFirst = pLast = NULL;
+	pFirst = pLast = nullptr;
 }
 
 Container::~Container()
@@ -69,10 +69,10 @@ void Container::ClearChildren()
 		{
 			// unlink from list
 			Element *pANext = pFirst->pNext;
-			pFirst->pPrev = pFirst->pNext = NULL;
-			pFirst->pParent = NULL;
+			pFirst->pPrev = pFirst->pNext = nullptr;
+			pFirst->pParent = nullptr;
 			if (pFirst = pANext)
-				pFirst->pPrev = NULL;
+				pFirst->pPrev = nullptr;
 		}
 		else
 			delete pFirst;
@@ -91,7 +91,7 @@ void Container::RemoveElement(Element *pChild)
 	if (pChild->pPrev) pChild->pPrev->pNext = pChild->pNext; else pFirst = pChild->pNext;
 	if (pChild->pNext) pChild->pNext->pPrev = pChild->pPrev; else pLast = pChild->pPrev;
 	// unset parent; invalidates pPrev/pNext
-	pChild->pParent = NULL;
+	pChild->pParent = nullptr;
 	// element has been removed
 	AfterElementRemoval();
 }
@@ -105,7 +105,7 @@ void Container::MakeLastElement(Element *pChild)
 	if (pChild->pNext) pChild->pNext->pPrev = pChild->pPrev; else pLast = pChild->pPrev;
 	// readd to front of list
 	if (pLast) pLast->pNext = pChild; else pFirst = pChild;
-	pChild->pPrev = pLast; pChild->pNext = NULL; pLast = pChild;
+	pChild->pPrev = pLast; pChild->pNext = nullptr; pLast = pChild;
 }
 
 void Container::AddElement(Element *pChild)
@@ -116,7 +116,7 @@ void Container::AddElement(Element *pChild)
 	if (pChild->pParent) pChild->pParent->RemoveElement(pChild);
 	// add to end of list
 	if (pLast) pLast->pNext = pChild; else pFirst = pChild;
-	pChild->pPrev = pLast; pChild->pNext = NULL; pLast = pChild;
+	pChild->pPrev = pLast; pChild->pNext = nullptr; pLast = pChild;
 	pChild->pParent = this;
 }
 
@@ -129,7 +129,7 @@ void Container::ReaddElement(Element *pChild)
 	if (pChild->pNext) pChild->pNext->pPrev = pChild->pPrev; else pLast = pChild->pPrev;
 	// add to end of list
 	if (pLast) pLast->pNext = pChild; else pFirst = pChild;
-	pChild->pPrev = pLast; pChild->pNext = NULL; pLast = pChild;
+	pChild->pPrev = pLast; pChild->pNext = nullptr; pLast = pChild;
 }
 
 void Container::InsertElement(Element *pChild, Element *pInsertBefore)
@@ -154,7 +154,7 @@ Element *Container::GetNextNestedElement(Element *pPrevElement, bool fBackwards)
 	if (fBackwards)
 	{
 		// this is last
-		if (pPrevElement == this) return NULL;
+		if (pPrevElement == this) return nullptr;
 		// no previous given?
 		if (!pPrevElement)
 			// then use last nested for backwards search
@@ -179,7 +179,7 @@ Element *Container::GetNextNestedElement(Element *pPrevElement, bool fBackwards)
 		}
 		// nothing found
 	}
-	return NULL;
+	return nullptr;
 }
 
 Element *Container::GetFirstNestedElement(bool fBackwards)
@@ -204,7 +204,7 @@ bool Container::OnHotkey(char cHotkey)
 Element *Container::GetElementByIndex(int32_t i)
 {
 	// get next until end of list or queried index is reached
-	// if i is negative or equal or larger than childcount, the loop will never break and NULL returned
+	// if i is negative or equal or larger than childcount, the loop will never break and nullptr returned
 	Element *pEl;
 	for (pEl = pFirst; i-- && pEl; pEl = pEl->pNext);
 	return pEl;
@@ -240,7 +240,7 @@ void Container::SetVisibility(bool fToValue)
 			{
 				if (IsParentOf(pFocus))
 				{
-					pDlg->SetFocus(NULL, false);
+					pDlg->SetFocus(nullptr, false);
 				}
 			}
 		}
@@ -307,7 +307,7 @@ void Window::UpdateOwnPos()
 
 // ScrollBar
 
-ScrollBar::ScrollBar(C4Rect &rcBounds, ScrollWindow *pWin) : fAutoHide(false), pCustomGfx(NULL), fHorizontal(false), pScrollCallback(NULL), iCBMaxRange(100)
+ScrollBar::ScrollBar(C4Rect &rcBounds, ScrollWindow *pWin) : fAutoHide(false), pCustomGfx(nullptr), fHorizontal(false), pScrollCallback(nullptr), iCBMaxRange(100)
 {
 	// set bounds
 	this->rcBounds = rcBounds;
@@ -321,7 +321,7 @@ ScrollBar::ScrollBar(C4Rect &rcBounds, ScrollWindow *pWin) : fAutoHide(false), p
 	Update();
 }
 
-ScrollBar::ScrollBar(C4Rect &rcBounds, bool fHorizontal, BaseParCallbackHandler<int32_t> *pCB, int32_t iCBMaxRange) : fAutoHide(false), pCustomGfx(NULL), fHorizontal(fHorizontal), pScrollWindow(NULL), iCBMaxRange(iCBMaxRange)
+ScrollBar::ScrollBar(C4Rect &rcBounds, bool fHorizontal, BaseParCallbackHandler<int32_t> *pCB, int32_t iCBMaxRange) : fAutoHide(false), pCustomGfx(nullptr), fHorizontal(fHorizontal), pScrollWindow(nullptr), iCBMaxRange(iCBMaxRange)
 {
 	// set bounds
 	this->rcBounds = rcBounds;
@@ -335,7 +335,7 @@ ScrollBar::ScrollBar(C4Rect &rcBounds, bool fHorizontal, BaseParCallbackHandler<
 
 ScrollBar::~ScrollBar()
 {
-	if (pScrollWindow) { pScrollWindow->pScrollBar = NULL; }
+	if (pScrollWindow) { pScrollWindow->pScrollBar = nullptr; }
 	if (pScrollCallback) pScrollCallback->DeRef();
 }
 
@@ -474,7 +474,7 @@ void ScrollBar::DrawElement(C4FacetEx &cgo)
 // ScrollWindow
 
 ScrollWindow::ScrollWindow(Window *pParentWindow)
-	: Window(), pScrollBar(NULL), iScrollY(0), iClientHeight(0), fHasBar(true), iFrozen(0)
+	: Window(), pScrollBar(nullptr), iScrollY(0), iClientHeight(0), fHasBar(true), iFrozen(0)
 {
 	// place within client rect
 	C4Rect rtBounds = pParentWindow->GetClientRect();

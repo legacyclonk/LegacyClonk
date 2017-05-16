@@ -38,7 +38,7 @@ class C4Network2IRCMessage
 public:
 	C4Network2IRCMessage(C4Network2IRCMessageType enType, const char *szSource, const char *szTarget, const char *szData)
 		: eType(enType), Source(szSource), Target(szTarget), Data(szData),
-		iTimestamp(time(NULL)), Next(0) {}
+		iTimestamp(time(nullptr)), Next(0) {}
 
 private:
 	time_t iTimestamp;
@@ -175,9 +175,9 @@ public:
 	const char *getUserName() const { return Nick.getData(); }
 
 	// Simple network communication
-	bool Connect(const char *szServer, const char *szNick, const char *szRealName, const char *szPassword = NULL, const char *szChannel = NULL);
+	bool Connect(const char *szServer, const char *szNick, const char *szRealName, const char *szPassword = nullptr, const char *szChannel = nullptr);
 	bool Close();
-	bool Send(const char *szCommand, const char *szParameters = NULL);
+	bool Send(const char *szCommand, const char *szParameters = nullptr);
 
 	// Notfiy interface
 	void SetNotify(class C4InteractiveThread *pnNotify) { pNotify = pnNotify; }

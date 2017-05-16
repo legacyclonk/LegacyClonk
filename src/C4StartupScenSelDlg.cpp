@@ -36,7 +36,7 @@
 #endif
 
 // singleton
-C4StartupScenSelDlg *C4StartupScenSelDlg::pInstance = NULL;
+C4StartupScenSelDlg *C4StartupScenSelDlg::pInstance = nullptr;
 
 // Map folder data
 
@@ -93,20 +93,20 @@ void C4MapFolderData::Clear()
 {
 	fCoordinatesAdjusted = false;
 	fctBackgroundPicture.Clear();
-	pScenarioFolder = NULL;
-	pSelectedEntry = NULL;
-	pSelectionInfoBox = NULL;
+	pScenarioFolder = nullptr;
+	pSelectedEntry = nullptr;
+	pSelectionInfoBox = nullptr;
 	rcScenInfoArea.Set(0, 0, 0, 0);
 	MinResX = MinResY = 0;
 	fUseFullscreenMap = false;
 	int i;
 	for (i = 0; i < iScenCount; ++i) delete ppScenList[i];
 	iScenCount = 0;
-	delete[] ppScenList; ppScenList = NULL;
+	delete[] ppScenList; ppScenList = nullptr;
 	for (i = 0; i < iAccessGfxCount; ++i) delete ppAccessGfxList[i];
 	iAccessGfxCount = 0;
-	delete[] ppAccessGfxList; ppAccessGfxList = NULL;
-	pMainDlg = NULL;
+	delete[] ppAccessGfxList; ppAccessGfxList = nullptr;
+	pMainDlg = nullptr;
 }
 
 bool C4MapFolderData::Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenLoaderFolder)
@@ -136,7 +136,7 @@ bool C4MapFolderData::Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenL
 		// init scenario entry stuff
 		Scenario *pScen = ppScenList[i];
 		pScen->pScenEntry = pScenLoaderFolder->FindEntryByName(pScen->sFilename.getData());
-		pScen->pBtn = NULL;
+		pScen->pBtn = nullptr;
 		pScen->sTitle.Replace("TITLE", pScen->pScenEntry ? pScen->pScenEntry->GetName().getData() : "<c ff0000>ERROR</c>" /* scenario not loaded; title cannot be referenced */);
 		// developer image dump
 		if (pScen->fImgDump)
@@ -202,7 +202,7 @@ void C4MapFolderData::CompileFunc(StdCompiler *pComp)
 			ZeroMemory(ppScenList, sizeof(Scenario *)*iScenCount);
 		}
 		else
-			ppScenList = NULL;
+			ppScenList = nullptr;
 	}
 	if (iScenCount)
 	{
@@ -222,7 +222,7 @@ void C4MapFolderData::CompileFunc(StdCompiler *pComp)
 			ZeroMemory(ppAccessGfxList, sizeof(AccessGfx *)*iAccessGfxCount);
 		}
 		else
-			ppAccessGfxList = NULL;
+			ppAccessGfxList = nullptr;
 	}
 	if (iAccessGfxCount)
 	{
@@ -334,7 +334,7 @@ void C4MapFolderData::CreateGUIElements(C4StartupScenSelDlg *pMainDlg, C4GUI::Wi
 		}
 	}
 	// create buttons for scenarios
-	C4GUI::Button *pBtnFirst = NULL;
+	C4GUI::Button *pBtnFirst = nullptr;
 	for (i = 0; i < iScenCount; ++i)
 	{
 		Scenario *pScen = ppScenList[i];
@@ -369,7 +369,7 @@ void C4MapFolderData::CreateGUIElements(C4StartupScenSelDlg *pMainDlg, C4GUI::Wi
 	// create scenario info listbox
 	pSelectionInfoBox = new C4GUI::TextWindow(rcScenInfoArea,
 		C4StartupScenSel_TitlePictureWdt + 2 * C4StartupScenSel_TitleOverlayMargin, C4StartupScenSel_TitlePictureHgt + 2 * C4StartupScenSel_TitleOverlayMargin,
-		C4StartupScenSel_TitlePicturePadding, 100, 4096, NULL, true, &C4Startup::Get()->Graphics.fctScenSelTitleOverlay, C4StartupScenSel_TitleOverlayMargin);
+		C4StartupScenSel_TitlePicturePadding, 100, 4096, nullptr, true, &C4Startup::Get()->Graphics.fctScenSelTitleOverlay, C4StartupScenSel_TitleOverlayMargin);
 	pSelectionInfoBox->SetDecoration(false, false, &C4Startup::Get()->Graphics.sfctBookScroll, true);
 	rContainer.AddElement(pSelectionInfoBox);
 }
@@ -388,14 +388,14 @@ void C4MapFolderData::OnButtonScenario(C4GUI::Control *pEl)
 
 void C4MapFolderData::ResetSelection()
 {
-	pSelectedEntry = NULL;
+	pSelectedEntry = nullptr;
 }
 
 // Scenario list loader
 
 // Entry
 
-C4ScenarioListLoader::Entry::Entry(Folder *pParent) : pNext(NULL), pParent(pParent), fBaseLoaded(false), fExLoaded(false)
+C4ScenarioListLoader::Entry::Entry(Folder *pParent) : pNext(nullptr), pParent(pParent), fBaseLoaded(false), fExLoaded(false)
 {
 	// ctor: Put into parent tree node
 	if (pParent)
@@ -565,7 +565,7 @@ C4ScenarioListLoader::Entry *C4ScenarioListLoader::Entry::CreateEntryForFile(con
 {
 	// determine entry type by file type
 	const char *szFilename = sFilename.getData();
-	if (!szFilename || !*szFilename) return NULL;
+	if (!szFilename || !*szFilename) return nullptr;
 	if (WildcardMatch(C4CFN_ScenarioFiles, sFilename.getData())) return new Scenario(pParent);
 	if (WildcardMatch(C4CFN_FolderFiles, sFilename.getData())) return new SubFolder(pParent);
 	// regular, open folder (C4Group-packed folders without extensions are not regarded, because they could contain anything!)
@@ -577,7 +577,7 @@ C4ScenarioListLoader::Entry *C4ScenarioListLoader::Entry::CreateEntryForFile(con
 			return new RegularFolder(pParent);
 	}
 	// type not recognized
-	return NULL;
+	return nullptr;
 }
 
 bool C4ScenarioListLoader::Entry::RenameTo(const char *szNewName)
@@ -851,7 +851,7 @@ void C4ScenarioListLoader::Folder::Sort()
 	qsort(ppEntries, iCount, sizeof(Entry *), &EntrySortFunc);
 	ppIThis = &pFirst;
 	for (ppI = ppEntries; iCount--; ppIThis = &((*ppIThis)->pNext)) * ppIThis = *ppI++;
-	*ppIThis = NULL;
+	*ppIThis = nullptr;
 	delete[] ppEntries;
 }
 
@@ -885,7 +885,7 @@ bool C4ScenarioListLoader::Folder::LoadContents(C4ScenarioListLoader *pLoader, C
 	// contents already loaded?
 	if (fContentsLoaded && !fReload) return true;
 	// clear previous
-	if (pMapData) { delete pMapData; pMapData = NULL; }
+	if (pMapData) { delete pMapData; pMapData = nullptr; }
 	// if filename is not given, assume it's been loaded in this entry
 	if (!psFilename) psFilename = &this->sFilename; else this->sFilename = *psFilename;
 	// nothing loaded: Load now
@@ -902,7 +902,7 @@ C4ScenarioListLoader::Entry *C4ScenarioListLoader::Folder::FindEntryByName(const
 		if (SEqualNoCase(szFilename, GetFilename(pEntry->GetEntryFilename().getData())))
 			return pEntry;
 	// nothing found
-	return NULL;
+	return nullptr;
 }
 
 StdStrBuf C4ScenarioListLoader::Folder::GetOpenText()
@@ -962,7 +962,7 @@ bool C4ScenarioListLoader::SubFolder::DoLoadContents(C4ScenarioListLoader *pLoad
 		if (szSearchMask == szC4CFN_ScenarioFiles)
 			szSearchMask = C4CFN_FolderFiles;
 		else
-			szSearchMask = NULL;
+			szSearchMask = nullptr;
 	}
 	// initial progress estimate
 	if (!pLoader->DoProcessCallback(0, iEntryCount)) return false;
@@ -992,7 +992,7 @@ bool C4ScenarioListLoader::SubFolder::DoLoadContents(C4ScenarioListLoader *pLoad
 		if (szSearchMask == szC4CFN_ScenarioFiles)
 			szSearchMask = C4CFN_FolderFiles;
 		else
-			szSearchMask = NULL;
+			szSearchMask = nullptr;
 	}
 	// load map folder data
 	if (Group.FindEntry(C4CFN_MapFolderData))
@@ -1002,7 +1002,7 @@ bool C4ScenarioListLoader::SubFolder::DoLoadContents(C4ScenarioListLoader *pLoad
 		{
 			// load error :(
 			delete pMapData;
-			pMapData = NULL;
+			pMapData = nullptr;
 		}
 	}
 	// done, success
@@ -1052,7 +1052,7 @@ bool C4ScenarioListLoader::RegularFolder::DoLoadContents(C4ScenarioListLoader *p
 		if (pNewEntry)
 		{
 			// ...and load it
-			if (!pNewEntry->Load(NULL, &sChildFilename, fLoadEx))
+			if (!pNewEntry->Load(nullptr, &sChildFilename, fLoadEx))
 			{
 				DebugLogF("Error loading entry \"%s\" in Folder \"%s\"!", sChildFilename.getData(), sFilename.getData());
 				delete pNewEntry;
@@ -1068,7 +1068,7 @@ bool C4ScenarioListLoader::RegularFolder::DoLoadContents(C4ScenarioListLoader *p
 
 // C4ScenarioListLoader
 
-C4ScenarioListLoader::C4ScenarioListLoader() : pRootFolder(NULL), pCurrFolder(NULL),
+C4ScenarioListLoader::C4ScenarioListLoader() : pRootFolder(nullptr), pCurrFolder(nullptr),
 	iLoading(0), iProgress(0), iMaxProgress(0), fAbortThis(false), fAbortPrevious(false) {}
 
 C4ScenarioListLoader::~C4ScenarioListLoader()
@@ -1125,9 +1125,9 @@ bool C4ScenarioListLoader::Load(const StdStrBuf &sRootFolder)
 {
 	// (unthreaded) loading of all entries in root folder
 	if (!BeginActivity(true)) return false;
-	if (pRootFolder) { delete pRootFolder; pRootFolder = NULL; }
-	pCurrFolder = pRootFolder = new RegularFolder(NULL);
-	bool fSuccess = pRootFolder->LoadContents(this, NULL, &sRootFolder, false, false);
+	if (pRootFolder) { delete pRootFolder; pRootFolder = nullptr; }
+	pCurrFolder = pRootFolder = new RegularFolder(nullptr);
+	bool fSuccess = pRootFolder->LoadContents(this, nullptr, &sRootFolder, false, false);
 	EndActivity();
 	return fSuccess;
 };
@@ -1139,7 +1139,7 @@ bool C4ScenarioListLoader::Load(Folder *pSpecifiedFolder, bool fReload)
 	// set new current and load it
 	if (!BeginActivity(true)) return false;
 	pCurrFolder = pSpecifiedFolder;
-	bool fSuccess = pCurrFolder->LoadContents(this, NULL, NULL, false, fReload);
+	bool fSuccess = pCurrFolder->LoadContents(this, nullptr, nullptr, false, fReload);
 	EndActivity();
 	return fSuccess;
 }
@@ -1150,7 +1150,7 @@ bool C4ScenarioListLoader::LoadExtended(Entry *pEntry)
 	if (!pRootFolder || !pEntry) return false;
 	// load info of selection
 	if (!BeginActivity(false)) return false;
-	bool fSuccess = pEntry->Load(NULL, NULL, true);
+	bool fSuccess = pEntry->Load(nullptr, nullptr, true);
 	EndActivity();
 	return fSuccess;
 }
@@ -1182,7 +1182,7 @@ const uint32_t ClrScenarioItem         = 0xff000000,
 
 // C4StartupScenSelDlg::ScenListItem
 C4StartupScenSelDlg::ScenListItem::ScenListItem(C4GUI::ListBox *pForListBox, C4ScenarioListLoader::Entry *pForEntry, C4GUI::Element *pInsertBeforeElement)
-	: pIcon(NULL), pNameLabel(NULL), pScenListEntry(pForEntry)
+	: pIcon(nullptr), pNameLabel(nullptr), pScenListEntry(pForEntry)
 {
 	assert(pScenListEntry);
 	CStdFont &rUseFont = C4Startup::Get()->Graphics.BookFont;
@@ -1266,7 +1266,7 @@ C4GUI::RenameEdit::RenameResult C4StartupScenSelDlg::ScenListItem::DoRenaming(Re
 
 // C4StartupScenSelDlg
 
-C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResStrNoAmp(fNetwork ? "IDS_DLG_NETSTART" : "IDS_DLG_STARTGAME")), pScenLoader(NULL), fIsInitialLoading(false), fStartNetworkGame(fNetwork), pMapData(NULL), pRenameEdit(NULL), pfctBackground(NULL)
+C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResStrNoAmp(fNetwork ? "IDS_DLG_NETSTART" : "IDS_DLG_STARTGAME")), pScenLoader(nullptr), fIsInitialLoading(false), fStartNetworkGame(fNetwork), pMapData(nullptr), pRenameEdit(nullptr), pfctBackground(nullptr)
 {
 	// assign singleton
 	pInstance = this;
@@ -1295,8 +1295,8 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 	pScenSelStyleTabular->SetSheetMargin(0);
 	pScenSelStyleTabular->SetDrawDecoration(false);
 	AddElement(pScenSelStyleTabular);
-	C4GUI::Tabular::Sheet *pSheetBook = pScenSelStyleTabular->AddSheet(NULL);
-	C4GUI::Tabular::Sheet *pSheetMap = pScenSelStyleTabular->AddSheet(NULL);
+	C4GUI::Tabular::Sheet *pSheetBook = pScenSelStyleTabular->AddSheet(nullptr);
+	C4GUI::Tabular::Sheet *pSheetMap = pScenSelStyleTabular->AddSheet(nullptr);
 
 	// scenario selection list
 	CStdFont &rScenSelCaptionFont = C4Startup::Get()->Graphics.BookFontTitle;
@@ -1315,7 +1315,7 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 
 	// right side of book: Displaying current selection
 	pSelectionInfo = new C4GUI::TextWindow(caBook.GetFromRight(iBookPageWidth), C4StartupScenSel_TitlePictureWdt + 2 * C4StartupScenSel_TitleOverlayMargin, C4StartupScenSel_TitlePictureHgt + 2 * C4StartupScenSel_TitleOverlayMargin,
-		C4StartupScenSel_TitlePicturePadding, 100, 4096, NULL, true, &C4Startup::Get()->Graphics.fctScenSelTitleOverlay, C4StartupScenSel_TitleOverlayMargin);
+		C4StartupScenSel_TitlePicturePadding, 100, 4096, nullptr, true, &C4Startup::Get()->Graphics.fctScenSelTitleOverlay, C4StartupScenSel_TitleOverlayMargin);
 	pSelectionInfo->SetDecoration(false, false, &C4Startup::Get()->Graphics.sfctBookScroll, true);
 	pSheetBook->AddElement(pSelectionInfo);
 
@@ -1356,7 +1356,7 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 C4StartupScenSelDlg::~C4StartupScenSelDlg()
 {
 	if (pScenLoader) delete pScenLoader;
-	if (this == pInstance) pInstance = NULL;
+	if (this == pInstance) pInstance = nullptr;
 	delete pKeyCheat;
 	delete pKeyDelete;
 	delete pKeyRename;
@@ -1395,7 +1395,7 @@ void C4StartupScenSelDlg::OnClosed(bool fOK)
 	if (pScenLoader)
 	{
 		delete pScenLoader;
-		pScenLoader = NULL;
+		pScenLoader = nullptr;
 		UpdateList(); // must clear scenario list, because it points to deleted stuff
 		UpdateSelection(); // must clear picture facet of selection!
 	}
@@ -1403,7 +1403,7 @@ void C4StartupScenSelDlg::OnClosed(bool fOK)
 	if (!fOK)
 	{
 		// clear settings: Password
-		Game.Network.SetPassword(NULL);
+		Game.Network.SetPassword(nullptr);
 		C4Startup::Get()->SwitchDialog(C4Startup::SDID_Back);
 	}
 }
@@ -1419,12 +1419,12 @@ void C4StartupScenSelDlg::UpdateList()
 {
 	AbortRenaming();
 	// default: Show book (also for loading screen)
-	pMapData = NULL;
+	pMapData = nullptr;
 	pScenSelStyleTabular->SelectSheet(ShowStyle_Book, false);
 	// and delete any stuff from map selection
 	C4GUI::Tabular::Sheet *pMapSheet = pScenSelStyleTabular->GetSheet(ShowStyle_Map);
 	while (pMapSheet->GetFirst()) delete pMapSheet->GetFirst();
-	pfctBackground = NULL;
+	pfctBackground = nullptr;
 	// for now, all the list is loaded at once anyway
 	// so just clear and add all loaded items
 	// remember old selection
@@ -1504,7 +1504,7 @@ void C4StartupScenSelDlg::UpdateSelection()
 		// no selection: Display data of current parent folder
 		pSel = pScenLoader->GetCurrFolder();
 		// but not root
-		if (pSel == pScenLoader->GetRootFolder()) pSel = NULL;
+		if (pSel == pScenLoader->GetRootFolder()) pSel = nullptr;
 	}
 	// get title image and desc of selected entry
 	C4Facet fctTitle; StdStrBuf sTitle, sDesc, sVersion, sAuthor;
@@ -1550,7 +1550,7 @@ C4ScenarioListLoader::Entry *C4StartupScenSelDlg::GetSelectedEntry()
 	if (pMapData) return pMapData->GetSelectedEntry();
 	// get selection in listbox
 	ScenListItem *pSel = static_cast<ScenListItem *>(pScenSelList->GetSelectedItem());
-	return pSel ? pSel->GetEntry() : NULL;
+	return pSel ? pSel->GetEntry() : nullptr;
 }
 
 bool C4StartupScenSelDlg::StartScenario(C4ScenarioListLoader::Scenario *pStartScen)
@@ -1768,7 +1768,7 @@ void C4StartupScenSelDlg::DeselectAll()
 {
 	// Deselect all so current folder info is displayed
 	if (GetFocus()) C4GUI::GUISound("ArrowHit");
-	SetFocus(NULL, true);
+	SetFocus(nullptr, true);
 	if (pMapData) pMapData->ResetSelection();
 	UpdateSelection();
 }

@@ -143,9 +143,9 @@ C4Startup::DialogID C4Startup::eLastDlgID = C4Startup::SDID_Main;
 bool C4Startup::fFirstRun = false;
 
 // startup singleton instance
-C4Startup *C4Startup::pInstance = NULL;
+C4Startup *C4Startup::pInstance = nullptr;
 
-C4Startup::C4Startup() : fInStartup(false), fAborted(false), pLastDlg(NULL), pCurrDlg(NULL)
+C4Startup::C4Startup() : fInStartup(false), fAborted(false), pLastDlg(nullptr), pCurrDlg(nullptr)
 {
 	// must be single!
 	assert(!pInstance);
@@ -154,7 +154,7 @@ C4Startup::C4Startup() : fInStartup(false), fAborted(false), pLastDlg(NULL), pCu
 
 C4Startup::~C4Startup()
 {
-	pInstance = NULL;
+	pInstance = nullptr;
 	if (Game.pGUI)
 	{
 		if (pLastDlg) delete pLastDlg;
@@ -187,7 +187,7 @@ C4StartupDlg *C4Startup::SwitchDialog(DialogID eToDlg, bool fFade)
 	if (eToDlg == SDID_Back && (fLastDlgWasBack || !pLastDlg)) eToDlg = SDID_Main;
 	fLastDlgWasBack = false;
 	// create new dialog
-	C4StartupDlg *pToDlg = NULL;
+	C4StartupDlg *pToDlg = nullptr;
 	switch (eToDlg)
 	{
 	case SDID_Main:
@@ -217,7 +217,7 @@ C4StartupDlg *C4Startup::SwitchDialog(DialogID eToDlg, bool fFade)
 		break;
 	};
 	assert(pToDlg);
-	if (!pToDlg) return NULL;
+	if (!pToDlg) return nullptr;
 	if (pToDlg != pLastDlg)
 	{
 		// remember current position
@@ -235,7 +235,7 @@ C4StartupDlg *C4Startup::SwitchDialog(DialogID eToDlg, bool fFade)
 		else
 		{
 			delete pLastDlg;
-			pLastDlg = NULL;
+			pLastDlg = nullptr;
 		}
 	// Okay; now using this dialog
 	pCurrDlg = pToDlg;
@@ -244,16 +244,16 @@ C4StartupDlg *C4Startup::SwitchDialog(DialogID eToDlg, bool fFade)
 	{
 		if (!pToDlg->FadeIn(Game.pGUI))
 		{
-			delete pToDlg; pCurrDlg = NULL;
-			return NULL;
+			delete pToDlg; pCurrDlg = nullptr;
+			return nullptr;
 		}
 	}
 	else
 	{
 		if (!pToDlg->Show(Game.pGUI, true))
 		{
-			delete pToDlg; pCurrDlg = NULL;
-			return NULL;
+			delete pToDlg; pCurrDlg = nullptr;
+			return nullptr;
 		}
 	}
 	return pToDlg;
@@ -287,8 +287,8 @@ bool C4Startup::DoStartup()
 		Application.MusicSystem.Play();
 
 	// clear any previous
-	if (pLastDlg) { delete pLastDlg; pLastDlg = NULL; }
-	if (pCurrDlg) { delete pCurrDlg; pCurrDlg = NULL; }
+	if (pLastDlg) { delete pLastDlg; pLastDlg = nullptr; }
+	if (pCurrDlg) { delete pCurrDlg; pCurrDlg = nullptr; }
 
 	// start with the last dlg that was shown - at first startup main dialog
 	if (!SwitchDialog(eLastDlgID)) return false;
@@ -321,7 +321,7 @@ bool C4Startup::DoStartup()
 	// check whether startup was aborted; first checking Game.pGUI
 	// (because an external call to Game.Clear() would invalidate dialogs)
 	if (!Game.pGUI) return false;
-	if (pLastDlg) { delete pLastDlg; pLastDlg = NULL; }
+	if (pLastDlg) { delete pLastDlg; pLastDlg = nullptr; }
 	if (pCurrDlg)
 	{
 		// deinit last shown dlg
@@ -335,7 +335,7 @@ bool C4Startup::DoStartup()
 			pCurrDlg->Close(true);
 		}
 		delete pCurrDlg;
-		pCurrDlg = NULL;
+		pCurrDlg = nullptr;
 	}
 
 	// now no more in startup!
@@ -363,7 +363,7 @@ C4Startup *C4Startup::EnsureLoaded()
 		// load startup specific gfx
 		if (!pStartup->Graphics.Init())
 		{
-			LogFatal(LoadResStr("IDS_ERR_NOGFXSYS")); delete pStartup; return NULL;
+			LogFatal(LoadResStr("IDS_ERR_NOGFXSYS")); delete pStartup; return nullptr;
 		}
 	}
 	return pInstance;
@@ -372,7 +372,7 @@ C4Startup *C4Startup::EnsureLoaded()
 void C4Startup::Unload()
 {
 	// make sure startup data is destroyed
-	if (pInstance) { delete pInstance; pInstance = NULL; }
+	if (pInstance) { delete pInstance; pInstance = nullptr; }
 }
 
 bool C4Startup::Execute()

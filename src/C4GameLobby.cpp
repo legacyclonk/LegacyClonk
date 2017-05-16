@@ -52,13 +52,13 @@ StdStrBuf C4PacketCountdown::GetCountdownMsg(bool fInitialMsg) const
 
 // ScenDescs
 
-ScenDesc::ScenDesc(const C4Rect &rcBounds, bool fActive) : C4GUI::Window(), fDescFinished(false), pSec1Timer(NULL)
+ScenDesc::ScenDesc(const C4Rect &rcBounds, bool fActive) : C4GUI::Window(), fDescFinished(false), pSec1Timer(nullptr)
 {
 	// build components
 	SetBounds(rcBounds);
 	C4GUI::ComponentAligner caMain(GetClientRect(), 0, 0, true);
 	AddElement(pDescBox = new C4GUI::TextWindow(caMain.GetAll(), 0, 0, 0, 100, 4096, "", true));
-	pDescBox->SetDecoration(false, false, NULL, true);
+	pDescBox->SetDecoration(false, false, nullptr, true);
 	// initial update to set current data
 	if (fActive) Activate();
 }
@@ -123,7 +123,7 @@ void ScenDesc::Deactivate()
 	if (pSec1Timer)
 	{
 		pSec1Timer->Release();
-		pSec1Timer = NULL;
+		pSec1Timer = nullptr;
 	}
 }
 
@@ -134,8 +134,8 @@ MainDlg::MainDlg(bool fHost)
 	(const char *)LoadResStr("IDS_DLG_LOBBY") :
 		FormatString("%s - %s", Game.ScenarioTitle.getData(), LoadResStr("IDS_DLG_LOBBY")).getData(),
 		Game.ScenarioTitle.getData()),
-	pPlayerList(NULL), pResList(NULL), pChatBox(NULL), pRightTabLbl(NULL), pRightTab(NULL),
-	pEdt(NULL), btnRun(NULL), btnPlayers(NULL), btnResources(NULL), btnTeams(NULL), btnChat(NULL)
+	pPlayerList(nullptr), pResList(nullptr), pChatBox(nullptr), pRightTabLbl(nullptr), pRightTab(nullptr),
+	pEdt(nullptr), btnRun(nullptr), btnPlayers(nullptr), btnResources(nullptr), btnTeams(nullptr), btnChat(nullptr)
 {
 	// key bindings
 	pKeyHistoryUp = new C4KeyBinding(C4KeyCodeEx(K_UP), "LobbyChatHistoryUp", KEYSCOPE_Gui, new C4GUI::DlgKeyCBEx<MainDlg, bool>(*this, true, &MainDlg::KeyHistoryUpDown), C4CustomKey::PRIO_CtrlOverride);
@@ -300,7 +300,7 @@ void MainDlg::SetCountdownState(CountdownState eToState, int32_t iTimer)
 	// changing away from countdown?
 	if (eCountdownState == CDS_Countdown)
 	{
-		StopSoundEffect("Elevator", NULL);
+		StopSoundEffect("Elevator", nullptr);
 		if (eToState != CDS_Start) StartSoundEffect("Pshshsh");
 	}
 	// change to game start?
@@ -477,7 +477,7 @@ C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *edt, bool fPasting, b
 			{
 				// get player name from input text
 				int iSepPos = SCharPos(' ', szPar, 0);
-				C4PlayerInfo *pNfo = NULL;
+				C4PlayerInfo *pNfo = nullptr;
 				int32_t idLocalClient = -1;
 				if (Game.Network.Clients.GetLocal()) idLocalClient = Game.Network.Clients.GetLocal()->getID();
 				if (iSepPos > 0)
@@ -495,7 +495,7 @@ C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *edt, bool fPasting, b
 				else
 					// no player name: Set local player
 					pNfo = Game.PlayerInfos.GetPrimaryInfoByClientID(idLocalClient);
-				C4ClientPlayerInfos *pCltNfo = NULL;
+				C4ClientPlayerInfos *pCltNfo = nullptr;
 				if (pNfo) pCltNfo = Game.PlayerInfos.GetClientInfoByPlayerID(pNfo->GetID());
 				if (!pCltNfo)
 				{
@@ -861,7 +861,7 @@ void LobbyError(const char *szErrorMsg)
 
 /* Countdown */
 
-Countdown::Countdown(int32_t iStartTimer) : iStartTimer(iStartTimer), pSec1Timer(NULL)
+Countdown::Countdown(int32_t iStartTimer) : iStartTimer(iStartTimer), pSec1Timer(nullptr)
 {
 	// only on network hosts
 	assert(Game.Network.isHost());

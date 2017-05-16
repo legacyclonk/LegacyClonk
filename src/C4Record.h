@@ -95,7 +95,7 @@ enum C4RecordChunkType // record file chunk type
 };
 
 #ifdef DEBUGREC
-void AddDbgRec(C4RecordChunkType eType, const void *pData = NULL, int iSize = 0); // record debug stuff
+void AddDbgRec(C4RecordChunkType eType, const void *pData = nullptr, int iSize = 0); // record debug stuff
 #endif
 
 #pragma pack(1)
@@ -269,7 +269,7 @@ public:
 	const StdBuf &GetStreamingBuf() const { return StreamingData; }
 
 	BOOL Start(bool fInitial);
-	BOOL Stop(StdStrBuf *pRecordName = NULL, BYTE *pRecordSHA1 = NULL);
+	BOOL Stop(StdStrBuf *pRecordName = nullptr, BYTE *pRecordSHA1 = nullptr);
 
 	bool Rec(const C4Control &Ctrl, int iFrame); // record control
 	bool Rec(C4PacketType eCtrlType, C4ControlPacket *pCtrl, int iFrame); // record control packet

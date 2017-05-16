@@ -30,7 +30,7 @@ namespace C4GUI
 // Button
 
 Button::Button(const char *szBtnText, const C4Rect &rtBounds)
-	: Control(rtBounds), pCustomGfx(NULL), pCustomGfxDown(NULL), fDown(false), fMouseOver(false), fEnabled(true)
+	: Control(rtBounds), pCustomGfx(nullptr), pCustomGfxDown(nullptr), fDown(false), fMouseOver(false), fEnabled(true)
 {
 	// key callbacks
 	C4CustomKey::CodeList keys;
@@ -239,7 +239,7 @@ IconButton::IconButton(Icons eUseIcon, const C4Rect &rtBounds, char caHotkey)
 
 void IconButton::SetIcon(Icons eUseIcon)
 {
-	if (eUseIcon >= 0) fctIcon = Icon::GetIconFacet(eUseIcon); else fctIcon.Surface = NULL;
+	if (eUseIcon >= 0) fctIcon = Icon::GetIconFacet(eUseIcon); else fctIcon.Surface = nullptr;
 }
 
 // ArrowButton
@@ -282,7 +282,7 @@ int32_t ArrowButton::GetDefaultHeight()
 // FacetButton
 
 FacetButton::FacetButton(const C4Facet &rBaseFct, const C4Facet &rHighlightFct, const FLOAT_RECT &rtfBounds, char cHotkey)
-	: Button("", C4Rect(rtfBounds)), fctBase(rBaseFct), fctHighlight(rHighlightFct), rcfDrawBounds(rtfBounds), dwTextClrInact(0x7f000000), dwTextClrAct(0xff000000), pFont(NULL), fFontZoom(1.0f)
+	: Button("", C4Rect(rtfBounds)), fctBase(rBaseFct), fctHighlight(rHighlightFct), rcfDrawBounds(rtfBounds), dwTextClrInact(0x7f000000), dwTextClrAct(0xff000000), pFont(nullptr), fFontZoom(1.0f)
 {
 	this->cHotkey = cHotkey;
 	iTxtOffX = iTxtOffY = 0;

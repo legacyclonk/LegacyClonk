@@ -24,7 +24,7 @@
 // C4GameOptionsList::Option
 
 C4GameOptionsList::Option::Option(C4GameOptionsList *pForDlg)
-	: BaseClass(C4Rect(0, 0, 0, 0)), pPrimarySubcomponent(NULL) {}
+	: BaseClass(C4Rect(0, 0, 0, 0)), pPrimarySubcomponent(nullptr) {}
 
 void C4GameOptionsList::Option::InitOption(C4GameOptionsList *pForDlg)
 {
@@ -231,7 +231,7 @@ void C4GameOptionsList::OptionTeamColors::Update()
 // C4GameOptionsList
 
 C4GameOptionsList::C4GameOptionsList(const C4Rect &rcBounds, bool fActive, bool fRuntime)
-	: C4GUI::ListBox(rcBounds), pSec1Timer(NULL), fRuntime(fRuntime)
+	: C4GUI::ListBox(rcBounds), pSec1Timer(nullptr), fRuntime(fRuntime)
 {
 	// initial option fill
 	InitOptions();
@@ -272,6 +272,6 @@ void C4GameOptionsList::Deactivate()
 	if (pSec1Timer)
 	{
 		pSec1Timer->Release();
-		pSec1Timer = NULL;
+		pSec1Timer = nullptr;
 	}
 }

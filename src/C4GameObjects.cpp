@@ -42,7 +42,7 @@ C4GameObjects::~C4GameObjects()
 
 void C4GameObjects::Default()
 {
-	ResortProc = NULL;
+	ResortProc = nullptr;
 	Sectors.Clear();
 	LastUsedMarker = 0;
 }
@@ -249,10 +249,10 @@ C4Object *C4GameObjects::AtObject(int ctx, int cty, DWORD &ocf, C4Object *exclud
 				// Search match
 				if (cocf & ocf) { ocf = cocf; return cObj; }
 				// EXCLUSIVE block
-				else return NULL;
+				else return nullptr;
 			}
 		}
-	return NULL;
+	return nullptr;
 }
 
 void C4GameObjects::Synchronize()
@@ -329,7 +329,7 @@ void C4GameObjects::Clear(bool fClearInactive)
 	DeleteObjects();
 	if (fClearInactive)
 		InactiveObjects.Clear();
-	ResortProc = NULL;
+	ResortProc = nullptr;
 	LastUsedMarker = 0;
 }
 
@@ -338,9 +338,9 @@ void C4GameObjects::Clear(bool fClearInactive)
 C4ObjResort::C4ObjResort()
 {
 	Category = 0;
-	OrderFunc = NULL;
-	Next = NULL;
-	pSortObj = pObjBefore = NULL;
+	OrderFunc = nullptr;
+	Next = nullptr;
+	pSortObj = pObjBefore = nullptr;
 	fSortAfter = FALSE;
 }
 
@@ -412,7 +412,7 @@ void C4ObjResort::SortObject()
 	C4AulParSet Pars;
 	Pars[1].Set(C4VObj(pSortObj));
 	// first, check forward in list
-	C4ObjectLink *pMoveLink = NULL;
+	C4ObjectLink *pMoveLink = nullptr;
 	C4ObjectLink *pLnk = Game.Objects.GetLink(pSortObj);
 	C4ObjectLink *pLnkBck = pLnk;
 	C4Object *pObj2; int iResult;
@@ -426,7 +426,7 @@ void C4ObjResort::SortObject()
 		if (!(pObj2->Category & pSortObj->Category)) break;
 		// perform the check
 		Pars[0].Set(C4VObj(pObj2));
-		iResult = OrderFunc->Exec(NULL, &Pars).getInt();
+		iResult = OrderFunc->Exec(nullptr, &Pars).getInt();
 		if (iResult > 0) break;
 		if (iResult < 0) pMoveLink = pLnk;
 	}
@@ -454,7 +454,7 @@ void C4ObjResort::SortObject()
 			if (!(pObj2->Category & pSortObj->Category)) break;
 			// perform the check
 			Pars[1].Set(C4VObj(pObj2));
-			iResult = OrderFunc->Exec(NULL, &Pars).getInt();
+			iResult = OrderFunc->Exec(nullptr, &Pars).getInt();
 			if (iResult > 0) break;
 			if (iResult < 0) pMoveLink = pLnk;
 		}
@@ -499,7 +499,7 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 			while (!pCurr2->Obj->Status) pCurr2 = pCurr2->Prev;
 			// perform the check
 			Pars[0].Set(C4VObj(pCurr->Obj)); Pars[1].Set(C4VObj(pCurr2->Obj));
-			if (OrderFunc->Exec(NULL, &Pars).getInt() < 0)
+			if (OrderFunc->Exec(nullptr, &Pars).getInt() < 0)
 			{
 				// so there's something to be reordered: swap the links
 				// FIXME: Inform C4ObjectList about this reorder
@@ -579,7 +579,7 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 	// if object numbers collideded, numbers will be adjusted afterwards
 	// so fake inactive object list empty meanwhile
 	C4ObjectLink *pInFirst;
-	if (fObjectNumberCollision) { pInFirst = InactiveObjects.First; InactiveObjects.First = NULL; }
+	if (fObjectNumberCollision) { pInFirst = InactiveObjects.First; InactiveObjects.First = nullptr; }
 	// denumerate pointers
 	Denumerate();
 	// update object enumeration index now, because calls like UpdateTransferZone might create objects
@@ -647,7 +647,7 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 				InactiveObjects.Last->Next = cLnk;
 			else
 				InactiveObjects.First = cLnk;
-			InactiveObjects.Last = cLnk; cLnk->Next = NULL;
+			InactiveObjects.Last = cLnk; cLnk->Next = nullptr;
 			Mass -= pObj->Mass;
 		}
 	}
@@ -686,7 +686,7 @@ BOOL C4GameObjects::Save(C4Group &hGroup, BOOL fSaveGame, bool fSaveInactive)
 	if (!Save(szFilename, fSaveGame, fSaveInactive)) return FALSE;
 
 	// Move temp file to group
-	hGroup.Move(szFilename, NULL); // check?
+	hGroup.Move(szFilename, nullptr); // check?
 	// Success
 	return TRUE;
 }
@@ -779,8 +779,8 @@ void C4GameObjects::FixObjectOrder()
 	C4ObjectLink *pLnk0 = First, *pLnkL = Last;
 	while (pLnk0 != pLnkL)
 	{
-		C4ObjectLink *pLnk1stUnsorted = NULL, *pLnkLastUnsorted = NULL, *pLnkPrev = NULL, *pLnk;
-		C4Object *pLastWarnObj = NULL;
+		C4ObjectLink *pLnk1stUnsorted = nullptr, *pLnkLastUnsorted = nullptr, *pLnkPrev = nullptr, *pLnk;
+		C4Object *pLastWarnObj = nullptr;
 		// forward fix
 		uint32_t dwLastCategory = C4D_SortLimit;
 		for (pLnk = pLnk0; pLnk != pLnkL->Next; pLnk = pLnk->Next)
@@ -899,7 +899,7 @@ void C4GameObjects::ExecuteResorts()
 		delete pRes;
 		pRes = pNextRes;
 	}
-	ResortProc = NULL;
+	ResortProc = nullptr;
 }
 
 bool C4GameObjects::ValidateOwners()

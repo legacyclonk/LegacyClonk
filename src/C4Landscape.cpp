@@ -235,21 +235,21 @@ void C4Landscape::ScanSideOpen()
 
 void C4Landscape::Clear(bool fClearMapCreator, bool fClearSky)
 {
-	if (pMapCreator && fClearMapCreator) { delete pMapCreator; pMapCreator = NULL; }
+	if (pMapCreator && fClearMapCreator) { delete pMapCreator; pMapCreator = nullptr; }
 	// clear sky
 	if (fClearSky) Sky.Clear();
 	// clear surfaces, if assigned
-	delete Surface32;        Surface32        = NULL;
+	delete Surface32;        Surface32        = nullptr;
 	delete AnimationSurface; AnimationSurface = 0;
-	delete Surface8;         Surface8         = NULL;
-	delete Map;              Map              = NULL;
+	delete Surface8;         Surface8         = nullptr;
+	delete Map;              Map              = nullptr;
 	// clear initial landscape
-	delete[] pInitial;       pInitial         = NULL;
+	delete[] pInitial;       pInitial         = nullptr;
 	// clear scan
 	ScanX = 0;
 	Mode = C4LSC_Undefined;
 	// clear pixel count
-	delete[] PixCnt;         PixCnt           = NULL;
+	delete[] PixCnt;         PixCnt           = nullptr;
 	PixCntPitch = 0;
 }
 
@@ -513,7 +513,7 @@ CSurface8 *C4Landscape::CreateMap()
 	// Create map surface
 	Game.C4S.Landscape.GetMapSize(iWidth, iHeight, Game.Parameters.StartupPlayerCount);
 	if (!(sfcMap = new CSurface8(iWidth, iHeight)))
-		return NULL;
+		return nullptr;
 
 	// Fill sfcMap
 	C4MapCreator MapCreator;
@@ -527,7 +527,7 @@ CSurface8 *C4Landscape::CreateMap()
 CSurface8 *C4Landscape::CreateMapS2(C4Group &ScenFile)
 {
 	// file present?
-	if (!ScenFile.AccessEntry(C4CFN_DynLandscape)) return NULL;
+	if (!ScenFile.AccessEntry(C4CFN_DynLandscape)) return nullptr;
 
 	// create map creator
 	if (!pMapCreator)
@@ -536,7 +536,7 @@ CSurface8 *C4Landscape::CreateMapS2(C4Group &ScenFile)
 	// read file
 	pMapCreator->ReadFile(C4CFN_DynLandscape, &ScenFile);
 	// render landscape
-	CSurface8 *sfc = pMapCreator->Render(NULL);
+	CSurface8 *sfc = pMapCreator->Render(nullptr);
 
 	// keep map creator until script callbacks have been done
 	return sfc;
@@ -549,7 +549,7 @@ bool C4Landscape::PostInitMap()
 	// call scripts
 	pMapCreator->ExecuteCallbacks(MapZoom);
 	// destroy map creator, if not needed later
-	if (!Game.C4S.Landscape.KeepMapCreator) { delete pMapCreator; pMapCreator = NULL; }
+	if (!Game.C4S.Landscape.KeepMapCreator) { delete pMapCreator; pMapCreator = nullptr; }
 	// done, success
 	return true;
 }
@@ -583,7 +583,7 @@ BOOL C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	// create map if necessary
 	if (!Game.C4S.Landscape.ExactLandscape)
 	{
-		CSurface8 *sfcMap = NULL;
+		CSurface8 *sfcMap = nullptr;
 		// Static map from scenario
 		if (hGroup.AccessEntry(C4CFN_Map))
 			if (sfcMap = GroupReadSurface8(hGroup))
@@ -1053,7 +1053,7 @@ void C4Landscape::BlastFree(int32_t tx, int32_t ty, int32_t rad, int32_t grade, 
 		{
 			if (Game.Material.Map[cnt].Blast2Object != C4ID_None)
 				if (Game.Material.Map[cnt].Blast2ObjectRatio != 0)
-					Game.BlastCastObjects(Game.Material.Map[cnt].Blast2Object, NULL,
+					Game.BlastCastObjects(Game.Material.Map[cnt].Blast2Object, nullptr,
 						BlastMatCount[cnt] / Game.Material.Map[cnt].Blast2ObjectRatio,
 						tx, ty, iByPlayer);
 
@@ -1185,7 +1185,7 @@ BOOL C4Landscape::InsertMaterial(int32_t mat, int32_t tx, int32_t ty, int32_t vx
 	if (pReact = Game.Material.GetReactionUnsafe(mat, tmat = GetMat(tx, ty + Sign(GravAccel))))
 	{
 		FIXED fvx = FIXED10(vx), fvy = FIXED10(vy);
-		if ((*pReact->pFunc)(pReact, tx, ty, tx, ty + Sign(GravAccel), fvx, fvy, mat, tmat, meePXSPos, NULL))
+		if ((*pReact->pFunc)(pReact, tx, ty, tx, ty + Sign(GravAccel), fvx, fvy, mat, tmat, meePXSPos, nullptr))
 		{
 			// the material to be inserted killed itself in some material reaction below
 			return TRUE;
@@ -1419,7 +1419,7 @@ BOOL C4Landscape::Incinerate(int32_t x, int32_t y)
 		if (Game.Material.Map[mat].Inflammable)
 			// Not too much FLAMs
 			if (!Game.FindObject(C4Id("FLAM"), x - 4, y - 1, 8, 20))
-				if (Game.CreateObject(C4Id("FLAM"), NULL, NO_OWNER, x, y))
+				if (Game.CreateObject(C4Id("FLAM"), nullptr, NO_OWNER, x, y))
 					return TRUE;
 	return FALSE;
 }
@@ -1621,10 +1621,10 @@ BOOL C4Landscape::ApplyDiff(C4Group &hGroup)
 void C4Landscape::Default()
 {
 	Mode = C4LSC_Undefined;
-	Surface8 = NULL;
-	Surface32 = NULL;
+	Surface8 = nullptr;
+	Surface32 = nullptr;
 	AnimationSurface = 0;
-	Map = NULL;
+	Map = nullptr;
 	Width = Height = 0;
 	MapWidth = MapHeight = MapZoom = 0;
 	ClearMatCount();
@@ -1634,7 +1634,7 @@ void C4Landscape::Default()
 	LeftOpen = RightOpen = TopOpen = BottomOpen = 0;
 	Gravity = FIXED100(20); // == 0.2
 	MapSeed = 0; NoScan = false;
-	pMapCreator = NULL;
+	pMapCreator = nullptr;
 	Modulation = 0;
 	fMapChanged = false;
 }
@@ -2555,7 +2555,7 @@ BOOL C4Landscape::DrawMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, co
 	// read file
 	MapCreator.ReadScript(szMapDef);
 	// render map
-	CSurface8 *sfcMap = MapCreator.Render(NULL);
+	CSurface8 *sfcMap = MapCreator.Render(nullptr);
 	if (!sfcMap) return FALSE;
 	// map it to the landscape
 	BOOL fSuccess = MapToLandscape(sfcMap, 0, 0, iMapWdt, iMapHgt, iX, iY);

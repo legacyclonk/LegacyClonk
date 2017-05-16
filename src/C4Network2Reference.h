@@ -200,5 +200,5 @@ public:
 	bool GetReferences(C4Network2Reference ** &rpReferences, int32_t &rRefCount);
 	const char *GetMessageOfTheDay() const { return MessageOfTheDay.getData(); }
 	const char *GetMessageOfTheDayHyperlink() const { return MessageOfTheDayHyperlink.getData(); }
-	const char *GetLeagueServerRedirect() const { return LeagueServerRedirect.getLength() ? LeagueServerRedirect.getData() : NULL; }
+	const char *GetLeagueServerRedirect() const { return LeagueServerRedirect.getLength() ? LeagueServerRedirect.getData() : nullptr; }
 };

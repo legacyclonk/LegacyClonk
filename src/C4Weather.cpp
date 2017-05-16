@@ -101,7 +101,7 @@ void C4Weather::Execute()
 			Game.C4S.Weather.Wind.Min,
 			Game.C4S.Weather.Wind.Max);
 	if (!Tick10)
-		SoundLevel("Wind", NULL, Max(Abs(Wind) - 30, 0) * 2);
+		SoundLevel("Wind", nullptr, Max(Abs(Wind) - 30, 0) * 2);
 	// Disaster launch
 	if (!Tick10)
 	{
@@ -112,7 +112,7 @@ void C4Weather::Execute()
 				C4Object *meto;
 				// In cave landscapes, meteors must be created a bit lower so they don't hit the ceiling
 				// (who activates meteors in cave landscapes anyway?)
-				meto = Game.CreateObject(C4ID_Meteor, NULL, NO_OWNER,
+				meto = Game.CreateObject(C4ID_Meteor, nullptr, NO_OWNER,
 					Random(GBackWdt), Game.Landscape.TopOpen ? -20 : 5, 0,
 					itofix(Random(100 + 1) - 50) / 10,
 					Game.Landscape.TopOpen ? Fix0 : itofix(2), itofix(1) / 5);
@@ -140,7 +140,7 @@ void C4Weather::Clear() {}
 BOOL C4Weather::LaunchLightning(int32_t x, int32_t y, int32_t xdir, int32_t xrange, int32_t ydir, int32_t yrange, BOOL fDoGamma)
 {
 	C4Object *pObj;
-	if (pObj = Game.CreateObject(C4Id("FXL1"), NULL))
+	if (pObj = Game.CreateObject(C4Id("FXL1"), nullptr))
 		pObj->Call(PSF_Activate, &C4AulParSet(C4VInt(x),
 			C4VInt(y),
 			C4VInt(xdir),
@@ -165,7 +165,7 @@ int32_t C4Weather::GetTemperature()
 BOOL C4Weather::LaunchVolcano(int32_t mat, int32_t x, int32_t y, int32_t size)
 {
 	C4Object *pObj;
-	if (pObj = Game.CreateObject(C4Id("FXV1"), NULL))
+	if (pObj = Game.CreateObject(C4Id("FXV1"), nullptr))
 		pObj->Call(PSF_Activate, &C4AulParSet(C4VInt(x), C4VInt(y), C4VInt(size), C4VInt(mat)));
 	return TRUE;
 }
@@ -183,7 +183,7 @@ void C4Weather::Default()
 BOOL C4Weather::LaunchEarthquake(int32_t iX, int32_t iY)
 {
 	C4Object *pObj;
-	if (pObj = Game.CreateObject(C4Id("FXQ1"), NULL, NO_OWNER, iX, iY))
+	if (pObj = Game.CreateObject(C4Id("FXQ1"), nullptr, NO_OWNER, iX, iY))
 		if (!!pObj->Call(PSF_Activate))
 			return TRUE;
 	return FALSE;
@@ -193,7 +193,7 @@ BOOL C4Weather::LaunchCloud(int32_t iX, int32_t iY, int32_t iWidth, int32_t iStr
 {
 	if (Game.Material.Get(szPrecipitation) == MNone) return FALSE;
 	C4Object *pObj;
-	if (pObj = Game.CreateObject(C4Id("FXP1"), NULL, NO_OWNER, iX, iY))
+	if (pObj = Game.CreateObject(C4Id("FXP1"), nullptr, NO_OWNER, iX, iY))
 		if (!!pObj->Call(PSF_Activate, &C4AulParSet(C4VInt(Game.Material.Get(szPrecipitation)),
 			C4VInt(iWidth),
 			C4VInt(iStrength))))

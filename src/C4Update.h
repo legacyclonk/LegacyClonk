@@ -54,7 +54,7 @@ public:
 	BOOL Execute(C4Group *pGroup);
 	static BOOL Optimize(C4Group *pGrpFrom, const char *strTarget);
 	int Check(C4Group *pGroup);
-	BOOL MakeUpdate(const char *strFile1, const char *strFile2, const char *strUpdateFile, const char *strName = NULL);
+	BOOL MakeUpdate(const char *strFile1, const char *strFile2, const char *strUpdateFile, const char *strName = nullptr);
 
 protected:
 	BOOL DoUpdate(C4Group *pGrpFrom, class C4GroupEx *pGrpTo, const char *strFileName);

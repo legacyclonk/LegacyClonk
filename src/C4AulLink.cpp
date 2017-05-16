@@ -169,7 +169,7 @@ void C4AulScript::UnLink()
 	if (Temporary) return;
 
 	// check if byte code needs to be freed
-	if (Code) { delete[] Code; Code = NULL; }
+	if (Code) { delete[] Code; Code = nullptr; }
 
 	// delete included/appended functions
 	C4AulFunc *pFunc = Func0;
@@ -194,12 +194,12 @@ void C4AulScript::UnLink()
 
 void C4AulScriptFunc::UnLink()
 {
-	OwnerOverloaded = NULL;
+	OwnerOverloaded = nullptr;
 
 	// clear desc information, ParseDesc will set these later on
 	idImage = C4ID_None;
 	iImagePhase = 0;
-	Condition = NULL;
+	Condition = nullptr;
 	ControlMethod = C4AUL_ControlMethod_All;
 
 	C4AulFunc::UnLink();
@@ -289,13 +289,13 @@ void C4AulScriptEngine::Link(C4DefList *rDefs)
 			// find first non-#strict script
 			C4AulScript *pNonStrictScr = FindFirstNonStrictScript();
 			if (pNonStrictScr)
-				pNonStrictScr->Warn("using non-#strict syntax!", NULL);
+				pNonStrictScr->Warn("using non-#strict syntax!", nullptr);
 			else
 			{
-				Warn("non-#strict script detected, but def is lost", NULL);
-				Warn("please contact piracy@treffpunktclonk.net for further instructions", NULL);
+				Warn("non-#strict script detected, but def is lost", nullptr);
+				Warn("please contact piracy@treffpunktclonk.net for further instructions", nullptr);
 			}
-			Warn(FormatString("%d script%s use non-#strict syntax!", nonStrictCnt, (nonStrictCnt != 1 ? "s" : "")).getData(), NULL);
+			Warn(FormatString("%d script%s use non-#strict syntax!", nonStrictCnt, (nonStrictCnt != 1 ? "s" : "")).getData(), nullptr);
 		}
 
 		// update material pointers

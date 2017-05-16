@@ -77,7 +77,7 @@ public:
 	bool fEntriesAdded;
 
 public:
-	const C4TexMapEntry *GetEntry(int32_t iIndex) const { return Inside<int32_t>(iIndex, 0, C4M_MaxTexIndex - 1) ? &Entry[iIndex] : NULL; }
+	const C4TexMapEntry *GetEntry(int32_t iIndex) const { return Inside<int32_t>(iIndex, 0, C4M_MaxTexIndex - 1) ? &Entry[iIndex] : nullptr; }
 	void RemoveEntry(int32_t iIndex) { if (Inside<int32_t>(iIndex, 1, C4M_MaxTexIndex - 1)) Entry[iIndex].Clear(); }
 	void Default();
 	void Clear();
@@ -89,8 +89,8 @@ public:
 	int32_t LoadTextures(C4Group &hGroup, C4Group *OverloadFile = 0);
 	const char *GetTexture(int32_t iIndex);
 	void MoveIndex(BYTE byOldIndex, BYTE byNewIndex); // change index of texture
-	int32_t GetIndex(const char *szMaterial, const char *szTexture, BOOL fAddIfNotExist = TRUE, const char *szErrorIfFailed = NULL);
-	int32_t GetIndexMatTex(const char *szMaterialTexture, const char *szDefaultTexture = NULL, BOOL fAddIfNotExist = TRUE, const char *szErrorIfFailed = NULL);
+	int32_t GetIndex(const char *szMaterial, const char *szTexture, BOOL fAddIfNotExist = TRUE, const char *szErrorIfFailed = nullptr);
+	int32_t GetIndexMatTex(const char *szMaterialTexture, const char *szDefaultTexture = nullptr, BOOL fAddIfNotExist = TRUE, const char *szErrorIfFailed = nullptr);
 	C4Texture *GetTexture(const char *szTexture);
 	bool CheckTexture(const char *szTexture); // return whether texture exists
 	BOOL AddEntry(BYTE byIndex, const char *szMaterial, const char *szTexture);

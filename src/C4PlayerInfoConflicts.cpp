@@ -114,7 +114,7 @@ void C4PlayerInfoList::ResolvePlayerAttributeConflicts(C4ClientPlayerInfos *pSec
 
 // implementation of conflict resolver
 C4PlayerInfoListAttributeConflictResolver::C4PlayerInfoListAttributeConflictResolver(C4PlayerInfoList &rPriCheckList, const C4PlayerInfoList &rSecCheckList, C4ClientPlayerInfos *pSecPacket)
-	: ppCheckInfos(NULL), iCheckInfoCount(0), rPriCheckList(rPriCheckList), rSecCheckList(rSecCheckList), pSecPacket(pSecPacket)
+	: ppCheckInfos(nullptr), iCheckInfoCount(0), rPriCheckList(rPriCheckList), rSecCheckList(rSecCheckList), pSecPacket(pSecPacket)
 {
 	// prepare check array
 	int32_t iMaxCheckCount = rPriCheckList.GetInfoCount() + !!pSecPacket;
@@ -129,7 +129,7 @@ C4PlayerInfoListAttributeConflictResolver::C4PlayerInfoListAttributeConflictReso
 		else
 		{
 			// if the additional packet is in the list already, it needn't be a check packed (only resolve packet)
-			this->pSecPacket = NULL;
+			this->pSecPacket = nullptr;
 		}
 	}
 	// must check sec packet first
@@ -222,7 +222,7 @@ void C4PlayerInfoListAttributeConflictResolver::MarkConflicts(C4ClientPlayerInfo
 					{
 						// original attribute is taken by either one higher/equal priority by packet, or by two low prio packets
 						// in this case, don't revert to original
-						pLowPrioOriginalConflictPacket = NULL;
+						pLowPrioOriginalConflictPacket = nullptr;
 						fOriginalConflict = true;
 					}
 				if (IsAttributeConflict(pCheckAgainstInfo, pResolveInfo, C4PlayerInfo::PLRAL_Alternate))
@@ -253,7 +253,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInInfo()
 	{
 		// check against all other player infos, and given info, too (may be redundant)
 		fCurrentConflict = false;
-		pLowPrioOriginalConflictPacket = pLowPrioAlternateConflictPacket = NULL;
+		pLowPrioOriginalConflictPacket = pLowPrioAlternateConflictPacket = nullptr;
 		MarkConflicts(rPriCheckList, !iTries);
 		// check secondary list, too. But only for colors, not for names, because secondary list is Restore list
 		// and colors are retained in restore while names are always taken from new joins
@@ -313,7 +313,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInInfo()
 				if (!fOriginalConflict)
 				{
 					// revert to original name!
-					pResolveInfo->SetForcedName(NULL);
+					pResolveInfo->SetForcedName(nullptr);
 					if (pLowPrioOriginalConflictPacket) ReaddInfoForCheck(pLowPrioOriginalConflictPacket);
 					// done with this player (breaking the trial-loop)
 					break;

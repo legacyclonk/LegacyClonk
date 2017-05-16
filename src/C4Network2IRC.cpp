@@ -36,7 +36,7 @@ StdStrBuf ircExtractPar(const char **ppPar)
 	{
 		// Reference everything after the double-colon
 		Result.Ref(*ppPar + 1);
-		*ppPar = NULL;
+		*ppPar = nullptr;
 	}
 	else
 	{
@@ -47,7 +47,7 @@ StdStrBuf ircExtractPar(const char **ppPar)
 		if (**ppPar == ' ')
 			(*ppPar)++;
 		else
-			*ppPar = NULL;
+			*ppPar = nullptr;
 	}
 	// Done
 	return Result;
@@ -61,7 +61,7 @@ C4Network2IRCUser::C4Network2IRCUser(const char *szName)
 // *** C4Network2IRCChannel
 
 C4Network2IRCChannel::C4Network2IRCChannel(const char *szName)
-	: Name(szName), pUsers(NULL), fReceivingUsers(false) {}
+	: Name(szName), pUsers(nullptr), fReceivingUsers(false) {}
 
 C4Network2IRCChannel::~C4Network2IRCChannel()
 {
@@ -73,7 +73,7 @@ C4Network2IRCUser *C4Network2IRCChannel::getUser(const char *szName) const
 	for (C4Network2IRCUser *pUser = pUsers; pUser; pUser = pUser->Next)
 		if (SEqual(pUser->getName(), szName))
 			return pUser;
-	return NULL;
+	return nullptr;
 }
 
 void C4Network2IRCChannel::OnUsers(const char *szUsers, const char *szPrefixes)
@@ -173,9 +173,9 @@ void C4Network2IRCChannel::ClearUsers()
 
 C4Network2IRCClient::C4Network2IRCClient()
 	: fConnecting(false), fConnected(false),
-	pChannels(NULL),
-	pLog(NULL), pLogEnd(NULL), iLogLength(0), iUnreadLogLength(0),
-	pNotify(NULL) {}
+	pChannels(nullptr),
+	pLog(nullptr), pLogEnd(nullptr), iLogLength(0), iUnreadLogLength(0),
+	pNotify(nullptr) {}
 
 C4Network2IRCClient::~C4Network2IRCClient()
 {
@@ -276,7 +276,7 @@ C4Network2IRCChannel *C4Network2IRCClient::getChannel(const char *szName) const
 	for (C4Network2IRCChannel *pChan = pChannels; pChan; pChan = pChan->Next)
 		if (SEqualNoCase(pChan->getName(), szName))
 			return pChan;
-	return NULL;
+	return nullptr;
 }
 
 void C4Network2IRCClient::ClearMessageLog()
@@ -650,7 +650,7 @@ void C4Network2IRCClient::OnNumericCommand(const char *szSender, int iCommand, c
 	if (fShowMessage)
 	{
 		// Check if first parameter is some sort of channel name
-		C4Network2IRCChannel *pChannel = NULL;
+		C4Network2IRCChannel *pChannel = nullptr;
 		if (szParameters && *szParameters && *szParameters != ':')
 			pChannel = getChannel(ircExtractPar(&szParameters).getData());
 		// Go over other parameters
@@ -679,7 +679,7 @@ void C4Network2IRCClient::OnConnected()
 void C4Network2IRCClient::OnMessage(bool fNotice, const char *szSender, const char *szTarget, const char *szText)
 {
 	// Find channel, if not private.
-	C4Network2IRCChannel *pChan = NULL;
+	C4Network2IRCChannel *pChan = nullptr;
 	if (!SEqualNoCase(szTarget, Nick.getData()))
 		pChan = getChannel(szTarget);
 
@@ -725,8 +725,8 @@ void C4Network2IRCClient::PopMessage()
 	// Unlink message
 	C4Network2IRCMessage *pMsg = pLog;
 	pLog = pMsg->Next;
-	if (!pLog) pLogEnd = NULL;
-	if (pLogLastRead == pMsg) pLogLastRead = NULL;
+	if (!pLog) pLogEnd = nullptr;
+	if (pLogLastRead == pMsg) pLogLastRead = nullptr;
 	// Delete it
 	delete pMsg;
 	iLogLength--;

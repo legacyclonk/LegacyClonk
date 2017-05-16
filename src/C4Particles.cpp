@@ -86,7 +86,7 @@ C4ParticleDef::C4ParticleDef() :
 	InitProc(&fxStdInit),
 	ExecProc(&fxStdExec),
 	DrawProc(&fxStdDraw),
-	CollisionProc(NULL),
+	CollisionProc(nullptr),
 	Count(0)
 {
 	// zero fields
@@ -94,13 +94,13 @@ C4ParticleDef::C4ParticleDef() :
 	// link into list
 	if (!ParticleSystem.pDef0)
 	{
-		pPrev = NULL;
+		pPrev = nullptr;
 		ParticleSystem.pDef0 = this;
 	}
 	else
 		(pPrev = ParticleSystem.pDefL)->pNext = this;
 	ParticleSystem.pDefL = this;
-	pNext = NULL;
+	pNext = nullptr;
 }
 
 C4ParticleDef::~C4ParticleDef()
@@ -123,7 +123,7 @@ bool C4ParticleDef::Load(C4Group &rGrp)
 	Filename.Copy(rGrp.GetFullName());
 	// load
 	char *pSource;
-	if (rGrp.LoadEntry(C4CFN_ParticleCore, &pSource, NULL, 1))
+	if (rGrp.LoadEntry(C4CFN_ParticleCore, &pSource, nullptr, 1))
 	{
 		if (!Compile(pSource, Filename.getData()))
 		{
@@ -217,13 +217,13 @@ void C4Particle::MoveList(C4ParticleList &rFrom, C4ParticleList &rTo)
 	if (pNext) pNext->pPrev = pPrev;
 	// add to the other list - insert before first
 	if (pNext = rTo.pFirst) pNext->pPrev = this;
-	rTo.pFirst = this; pPrev = NULL;
+	rTo.pFirst = this; pPrev = nullptr;
 }
 
 C4ParticleChunk::C4ParticleChunk()
 {
 	// zero linked list
-	pNext = NULL;
+	pNext = nullptr;
 	// zero buffer
 	Clear();
 }
@@ -246,7 +246,7 @@ void C4ParticleChunk::Clear()
 		pPrt->pNext = pPrt + 1;
 		++pPrt;
 	}
-	Data[0].pPrev = Data[C4Px_BufSize - 1].pNext = NULL;
+	Data[0].pPrev = Data[C4Px_BufSize - 1].pNext = nullptr;
 }
 
 void C4ParticleList::Exec(C4Object *pObj)
@@ -314,12 +314,12 @@ int32_t C4ParticleList::Remove(C4ParticleDef *pOfDef)
 C4ParticleSystem::C4ParticleSystem()
 {
 	// zero fields
-	pDef0 = pDefL = NULL;
-	pSmoke = NULL;
-	pBlast = NULL;
-	pFSpark = NULL;
-	pFire1 = NULL;
-	pFire2 = NULL;
+	pDef0 = pDefL = nullptr;
+	pSmoke = nullptr;
+	pBlast = nullptr;
+	pFSpark = nullptr;
+	pFire1 = nullptr;
+	pFire2 = nullptr;
 }
 
 C4ParticleSystem::~C4ParticleSystem()
@@ -347,10 +347,10 @@ void C4ParticleSystem::ClearParticles()
 	// clear particle lists
 	C4ObjectLink *pLnk;
 	for (pLnk = Game.Objects.First; pLnk; pLnk = pLnk->Next)
-		pLnk->Obj->FrontParticles.pFirst = pLnk->Obj->BackParticles.pFirst = NULL;
+		pLnk->Obj->FrontParticles.pFirst = pLnk->Obj->BackParticles.pFirst = nullptr;
 	for (pLnk = Game.Objects.InactiveObjects.First; pLnk; pLnk = pLnk->Next)
-		pLnk->Obj->FrontParticles.pFirst = pLnk->Obj->BackParticles.pFirst = NULL;
-	GlobalParticles.pFirst = NULL;
+		pLnk->Obj->FrontParticles.pFirst = pLnk->Obj->BackParticles.pFirst = nullptr;
+	GlobalParticles.pFirst = nullptr;
 	// reset chunks
 	C4ParticleChunk *pNextChnk = Chunk.pNext, *pChnk;
 	while (pChnk = pNextChnk)
@@ -358,7 +358,7 @@ void C4ParticleSystem::ClearParticles()
 		pNextChnk = pChnk->pNext;
 		delete pChnk;
 	}
-	Chunk.pNext = NULL;
+	Chunk.pNext = nullptr;
 	Chunk.Clear();
 	FreeParticles.pFirst = Chunk.Data;
 	// adjust counts
@@ -373,7 +373,7 @@ void C4ParticleSystem::Clear()
 	// clear defs
 	while (pDef0) delete pDef0;
 	// clear system particles
-	pSmoke = pBlast = pFSpark = pFire1 = pFire2 = NULL;
+	pSmoke = pBlast = pFSpark = pFire1 = pFire2 = nullptr;
 	// done
 }
 
@@ -384,26 +384,26 @@ C4Particle *C4ParticleSystem::Create(C4ParticleDef *pOfDef,
 	C4Object *pObj)
 {
 	// safety
-	if (!pOfDef) return NULL;
+	if (!pOfDef) return nullptr;
 	// default to global list
 	if (!pPxList) pPxList = &GlobalParticles;
 	// check count
 	int32_t MaxCount = pOfDef->MaxCount * (Config.Graphics.SmokeLevel + 20) / 150;
 	int32_t iRoom = MaxCount - pOfDef->Count;
-	if (iRoom <= 0) return NULL;
+	if (iRoom <= 0) return nullptr;
 	// reduce creation if limit is nearly reached
 	if (iRoom < (MaxCount >> 1))
-		if (SafeRandom(iRoom) < SafeRandom(MaxCount)) return NULL;
+		if (SafeRandom(iRoom) < SafeRandom(MaxCount)) return nullptr;
 	// get free particle
 	if (!FreeParticles.pFirst) AddChunk();
 	C4Particle *pPrt = FreeParticles.pFirst;
-	if (!pPrt) return NULL;
+	if (!pPrt) return nullptr;
 	// set values
 	pPrt->x = x; pPrt->y = y;
 	pPrt->xdir = xdir; pPrt->ydir = ydir;
 	pPrt->a = a; pPrt->b = b;
 	pPrt->pDef = pOfDef;
-	if (pPrt->pDef->Attach && pObj != NULL)
+	if (pPrt->pDef->Attach && pObj != nullptr)
 	{
 		pPrt->x -= pObj->x;
 		pPrt->y -= pObj->y;
@@ -411,7 +411,7 @@ C4Particle *C4ParticleSystem::Create(C4ParticleDef *pOfDef,
 	// call initialization
 	if (!pOfDef->InitProc(pPrt, pObj))
 		// failed :(
-		return NULL;
+		return nullptr;
 	// count particle
 	++pOfDef->Count;
 	// more to desired list
@@ -451,7 +451,7 @@ C4ParticleProc C4ParticleSystem::GetProc(const char *szName)
 		if (SEqual(C4ParticleProcMap[i].Name, szName))
 			return C4ParticleProcMap[i].Proc;
 	// nothing found...
-	return NULL;
+	return nullptr;
 }
 
 C4ParticleDrawProc C4ParticleSystem::GetDrawProc(const char *szName)
@@ -461,7 +461,7 @@ C4ParticleDrawProc C4ParticleSystem::GetDrawProc(const char *szName)
 		if (SEqual(C4ParticleDrawProcMap[i].Name, szName))
 			return C4ParticleDrawProcMap[i].Proc;
 	// nothing found...
-	return NULL;
+	return nullptr;
 }
 
 C4ParticleDef *C4ParticleSystem::GetDef(const char *szName, C4ParticleDef *pExclude)
@@ -471,7 +471,7 @@ C4ParticleDef *C4ParticleSystem::GetDef(const char *szName, C4ParticleDef *pExcl
 		if (pDef != pExclude && pDef->Name == szName)
 			return pDef;
 	// nothing found
-	return NULL;
+	return nullptr;
 }
 
 void C4ParticleSystem::SetDefParticles()
@@ -488,7 +488,7 @@ void C4ParticleSystem::SetDefParticles()
 		pFire2 = GetDef("Fire2");
 	}
 	else
-		pFire1 = pFire2 = NULL;
+		pFire1 = pFire2 = nullptr;
 	// if fire is drawn w/o background fct: unload fire face if both fire particles are assigned
 	// but this is not done here
 }
@@ -618,7 +618,7 @@ bool fxStdExec(C4Particle *pPrt, C4Object *pTarget)
 	float dx = pPrt->x, dy = pPrt->y;
 	float dxdir = pPrt->xdir, dydir = pPrt->ydir;
 	// rel. position & movement
-	if (pPrt->pDef->Attach && pTarget != NULL)
+	if (pPrt->pDef->Attach && pTarget != nullptr)
 	{
 		dx += pTarget->x;
 		dy += pTarget->y;
@@ -737,7 +737,7 @@ void fxStdDraw(C4Particle *pPrt, C4FacetEx &cgo, C4Object *pTarget)
 	float dx = pPrt->x, dy = pPrt->y;
 	float dxdir = pPrt->xdir, dydir = pPrt->ydir;
 	// relative position & movement
-	if (pPrt->pDef->Attach && pTarget != NULL)
+	if (pPrt->pDef->Attach && pTarget != nullptr)
 	{
 		dx += pTarget->x;
 		dy += pTarget->y;

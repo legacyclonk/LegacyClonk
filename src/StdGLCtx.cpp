@@ -42,7 +42,7 @@ void CStdGLCtx::Clear()
 		ReleaseDC(pWindow ? pWindow->hWindow : hWindow, hDC);
 		hDC = 0;
 	}
-	pWindow = 0; cx = cy = 0; hWindow = NULL;
+	pWindow = 0; cx = cy = 0; hWindow = nullptr;
 }
 
 bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
@@ -82,7 +82,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
 	hrc = wglCreateContext(hDC); if (!hrc) return !!pGL->Error("  gl: Error creating gl context");
 
 	// share textures
-	wglMakeCurrent(NULL, NULL); pGL->pCurrCtx = NULL;
+	wglMakeCurrent(nullptr, nullptr); pGL->pCurrCtx = nullptr;
 	if (this != &pGL->MainCtx)
 	{
 		if (!wglShareLists(pGL->MainCtx.hrc, hrc)) pGL->Error("  gl: Textures for secondary context not available");
@@ -131,8 +131,8 @@ void CStdGLCtx::Deselect()
 {
 	if (pGL && pGL->pCurrCtx == this)
 	{
-		wglMakeCurrent(NULL, NULL);
-		pGL->pCurrCtx = NULL;
+		wglMakeCurrent(nullptr, nullptr);
+		pGL->pCurrCtx = nullptr;
 	}
 }
 
@@ -276,7 +276,7 @@ void CStdGLCtx::Deselect()
 {
 	if (pGL && pGL->pCurrCtx == this)
 	{
-		glXMakeCurrent(pWindow->dpy, None, NULL);
+		glXMakeCurrent(pWindow->dpy, None, nullptr);
 		pGL->pCurrCtx = 0;
 	}
 }

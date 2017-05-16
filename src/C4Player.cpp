@@ -58,19 +58,19 @@ BOOL C4Player::ObjectInCrew(C4Object *tobj)
 void C4Player::ClearPointers(C4Object *pObj, bool fDeath)
 {
 	// Game
-	if (Captain == pObj) Captain = NULL;
+	if (Captain == pObj) Captain = nullptr;
 	// Crew
 	while (Crew.Remove(pObj));
 	// Cursor
 	if (Cursor == pObj)
 	{
 		// object is to be deleted; do NOT do script calls (like in Cursor->UnSelect(TRUE))
-		Cursor = NULL; AdjustCursorCommand(); // also selects and eventually does a script call!
+		Cursor = nullptr; AdjustCursorCommand(); // also selects and eventually does a script call!
 	}
 	// View-Cursor
-	if (ViewCursor == pObj) ViewCursor = NULL;
+	if (ViewCursor == pObj) ViewCursor = nullptr;
 	// View
-	if (ViewTarget == pObj) ViewTarget = NULL;
+	if (ViewTarget == pObj) ViewTarget = nullptr;
 	// FoW
 	// (do not clear locals!)
 	// no clear when death to do normal decay
@@ -99,7 +99,7 @@ void C4Player::UpdateValue()
 		if (cobj->Owner == Number && cobj->Status)
 		{
 			ObjectsOwned++;
-			Value += cobj->GetValue(NULL, Number);
+			Value += cobj->GetValue(nullptr, Number);
 		}
 
 	// Value gain (always positive)
@@ -118,7 +118,7 @@ bool C4Player::ScenarioAndTeamInit(int32_t idTeam)
 	{
 		// creation of a new team only if allowed by scenario
 		if (!Game.Teams.IsAutoGenerateTeams())
-			pTeam = NULL;
+			pTeam = nullptr;
 		else
 		{
 			if (pTeam = Game.Teams.GetGenerateTeamByID(idTeam)) idTeam = pTeam->GetID();
@@ -135,7 +135,7 @@ bool C4Player::ScenarioAndTeamInit(int32_t idTeam)
 	{
 		if (!Game.Teams.IsJoin2TeamAllowed(idTeam))
 		{
-			pTeam = NULL;
+			pTeam = nullptr;
 		}
 	}
 	if (!pTeam && idTeam)
@@ -298,7 +298,7 @@ BOOL C4Player::Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientNa
 		Game.Players.RecheckPlayerSort(this);
 
 		// check for a postponed scenario init, if no team is specified (post-lobby-join in network, or simply non-network)
-		C4Team *pTeam = NULL;
+		C4Team *pTeam = nullptr;
 		if (Team)
 		{
 			if (Game.Teams.IsAutoGenerateTeams())
@@ -455,7 +455,7 @@ BOOL C4Player::Save()
 	if (!hGroup.Close()) return FALSE;
 	// resource
 	C4Network2Res::Ref pRes = Game.Network.ResList.getRefRes(Filename),
-		pDRes = NULL;
+		pDRes = nullptr;
 	bool fOfficial = pRes && Game.Control.isCtrlHost();
 	if (pRes) pDRes = pRes->Derive();
 	// move back
@@ -474,7 +474,7 @@ BOOL C4Player::Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny)
 		return FALSE;
 	// Save crew
 #ifndef C4ENGINE
-	C4DefList *pDefs = NULL;
+	C4DefList *pDefs = nullptr;
 #else
 	C4DefList *pDefs = &Game.Defs;
 #endif
@@ -593,7 +593,7 @@ void C4Player::PlaceReadyBase(int32_t &tx, int32_t &ty, C4Object **pFirstBase)
 	int32_t cnt, cnt2, ctx, cty;
 	C4Def *def;
 	C4ID cid;
-	C4Object *cbase, *fpower = NULL;
+	C4Object *cbase, *fpower = nullptr;
 	// Create ready base structures
 	for (cnt = 0; (cid = Game.C4S.PlrStart[PlrStartIndex].ReadyBase.GetID(cnt)); cnt++)
 	{
@@ -603,7 +603,7 @@ void C4Player::PlaceReadyBase(int32_t &tx, int32_t &ty, C4Object **pFirstBase)
 				ctx = tx; cty = ty;
 				if (Game.C4S.PlrStart[PlrStartIndex].EnforcePosition
 					|| FindConSiteSpot(ctx, cty, def->Shape.Wdt, def->Shape.Hgt, def->Category, 20))
-					if (cbase = Game.CreateObjectConstruction(cid, NULL, Number, ctx, cty, FullCon, TRUE))
+					if (cbase = Game.CreateObjectConstruction(cid, nullptr, Number, ctx, cty, FullCon, TRUE))
 					{
 						// FirstBase
 						if (!(*pFirstBase)) if (cbase->Def->CanBeBase)
@@ -639,7 +639,7 @@ void C4Player::PlaceReadyVehic(int32_t tx1, int32_t tx2, int32_t ty, C4Object *F
 				ctx = tx1 + Random(tx2 - tx1); cty = ty;
 				if (!Game.C4S.PlrStart[PlrStartIndex].EnforcePosition)
 					FindLevelGround(ctx, cty, def->Shape.Wdt, 6);
-				if (cobj = Game.CreateObject(cid, NULL, Number, ctx, cty))
+				if (cobj = Game.CreateObject(cid, nullptr, Number, ctx, cty))
 				{
 					if (FirstBase) // First base overrides target location
 					{
@@ -672,7 +672,7 @@ void C4Player::PlaceReadyMaterial(int32_t tx1, int32_t tx2, int32_t ty, C4Object
 					ctx = tx1 + Random(tx2 - tx1); cty = ty;
 					if (!Game.C4S.PlrStart[PlrStartIndex].EnforcePosition)
 						FindSolidGround(ctx, cty, def->Shape.Wdt);
-					Game.CreateObject(cid, NULL, Number, ctx, cty);
+					Game.CreateObject(cid, nullptr, Number, ctx, cty);
 				}
 		}
 	}
@@ -758,7 +758,7 @@ BOOL C4Player::ScenarioInit()
 	}
 
 	// Place Readies
-	C4Object *FirstBase = NULL;
+	C4Object *FirstBase = nullptr;
 	PlaceReadyBase(ptx, pty, &FirstBase);
 	PlaceReadyMaterial(ptx - 10, ptx + 10, pty, FirstBase);
 	PlaceReadyVehic(ptx - 30, ptx + 30, pty, FirstBase);
@@ -1008,7 +1008,7 @@ BOOL C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, BOOL fSilent)
 C4Object *C4Player::GetHiRankActiveCrew(bool fSelectOnly)
 {
 	C4ObjectLink *clnk;
-	C4Object *cobj, *hirank = NULL;
+	C4Object *cobj, *hirank = nullptr;
 	int32_t iHighestRank = -2, iRank;
 	for (clnk = Crew.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 		if (!cobj->CrewDisabled)
@@ -1055,7 +1055,7 @@ void C4Player::Clear()
 		pMsgBoardQuery = pNext;
 	}
 	if (pGamepad) delete pGamepad;
-	pGamepad = NULL;
+	pGamepad = nullptr;
 	Status = 0;
 }
 
@@ -1072,20 +1072,20 @@ void C4Player::Default()
 	CrewInfoList.Default();
 	LocalControl = FALSE;
 	BigIcon.Default();
-	Next = NULL;
+	Next = nullptr;
 	fFogOfWar = FALSE; fFogOfWarInitialized = false;
 	bForceFogOfWar = FALSE;
 	FoWViewObjs.Default();
 	LeagueEvaluated = FALSE;
 	GameJoinTime = 0; // overwritten in Init
-	pstatControls = pstatActions = NULL;
+	pstatControls = pstatActions = nullptr;
 	ControlCount = ActionCount = 0;
 	AutoContextMenu = ControlStyle = 0;
 	LastControlType = PCID_None;
 	LastControlID = 0;
 	PressedComs = 0;
-	pMsgBoardQuery = NULL;
-	pGamepad = NULL;
+	pMsgBoardQuery = nullptr;
+	pGamepad = nullptr;
 	NoEliminationCheck = false;
 	Evaluated = false;
 }
@@ -1123,7 +1123,7 @@ BOOL C4Player::Strip(const char *szFilename, bool fAggressive)
 		Grp.Delete(C4CFN_Portraits, true);
 		// remove bigicon, if the file size is too large
 		size_t iBigIconSize = 0;
-		if (Grp.FindEntry(C4CFN_BigIcon, NULL, &iBigIconSize))
+		if (Grp.FindEntry(C4CFN_BigIcon, nullptr, &iBigIconSize))
 			if (iBigIconSize > C4NetResMaxBigicon * 1024)
 				Grp.Delete(C4CFN_BigIcon);
 		Grp.Close();
@@ -1170,7 +1170,7 @@ void C4Player::DrawHostility(C4Facet &cgo, int32_t iIndex)
 
 BOOL C4Player::MakeCrewMember(C4Object *pObj, bool fForceInfo, bool fDoCalls)
 {
-	C4ObjectInfo *cInf = NULL;
+	C4ObjectInfo *cInf = nullptr;
 	if (!pObj || !pObj->Def->CrewMember || !pObj->Status) return FALSE;
 
 	// only if info is not yet assigned
@@ -1181,7 +1181,7 @@ BOOL C4Player::MakeCrewMember(C4Object *pObj, bool fForceInfo, bool fDoCalls)
 			cInf = CrewInfoList.GetIdle(pObj->nInfo.getData());
 
 		// Set name source
-		const char *cpNames = NULL;
+		const char *cpNames = nullptr;
 		if (pObj->Def->pClonkNames) cpNames = pObj->Def->pClonkNames->GetData();
 		if (!cpNames) cpNames = Game.Names.GetData();
 
@@ -1243,7 +1243,7 @@ void C4Player::AdjustCursorCommand()
 	// Reset view
 	ResetCursorView();
 	// Set cursor to hirank Select clonk
-	C4Object *pHiRank = NULL;
+	C4Object *pHiRank = nullptr;
 	// Find hirank Select
 	pHiRank = GetHiRankActiveCrew(true);
 	// If none, check non-Selects as well
@@ -1446,8 +1446,8 @@ BOOL C4Player::ObjectCommand(int32_t iCommand, C4Object *pTarget, int32_t iX, in
 void C4Player::ObjectCommand2Obj(C4Object *cObj, int32_t iCommand, C4Object *pTarget, int32_t iX, int32_t iY, C4Object *pTarget2, int32_t iData, int32_t iMode)
 {
 	// forward to object
-	if (iMode & C4P_Command_Append) cObj->AddCommand(iCommand, pTarget, iX, iY, 0, pTarget2, TRUE, iData, TRUE, 0, NULL, C4CMD_Mode_Base); // append: by Shift-click and for dragging of multiple objects (all independant; thus C4CMD_Mode_Base)
-	else if (iMode & C4P_Command_Add) cObj->AddCommand(iCommand, pTarget, iX, iY, 0, pTarget2, TRUE, iData, FALSE, 0, NULL, C4CMD_Mode_Base); // append: by context menu and keyboard throw command (all independant; thus C4CMD_Mode_Base)
+	if (iMode & C4P_Command_Append) cObj->AddCommand(iCommand, pTarget, iX, iY, 0, pTarget2, TRUE, iData, TRUE, 0, nullptr, C4CMD_Mode_Base); // append: by Shift-click and for dragging of multiple objects (all independant; thus C4CMD_Mode_Base)
+	else if (iMode & C4P_Command_Add) cObj->AddCommand(iCommand, pTarget, iX, iY, 0, pTarget2, TRUE, iData, FALSE, 0, nullptr, C4CMD_Mode_Base); // append: by context menu and keyboard throw command (all independant; thus C4CMD_Mode_Base)
 	else if (iMode & C4P_Command_Set) cObj->SetCommand(iCommand, pTarget, iX, iY, pTarget2, TRUE, iData);
 }
 
@@ -1693,7 +1693,7 @@ void C4Player::DefaultRuntimeData()
 	RetireDelay = 0;
 	ViewMode = C4PVM_Cursor;
 	ViewX = ViewY = 0;
-	ViewTarget = NULL;
+	ViewTarget = nullptr;
 	CursorSelection = CursorToggled = 0;
 	ShowStartup = TRUE;
 	CrewCnt = 0;
@@ -1703,9 +1703,9 @@ void C4Player::DefaultRuntimeData()
 	Points = 0;
 	Value = InitialValue = ValueGain = 0;
 	ObjectsOwned = 0;
-	Captain = NULL;
+	Captain = nullptr;
 	ProductionDelay = ProductionUnit = 0;
-	Cursor = ViewCursor = NULL;
+	Cursor = ViewCursor = nullptr;
 	SelectCount = 0;
 	SelectFlash = CursorFlash = 30;
 	LastCom = 0;
@@ -1767,7 +1767,7 @@ void C4Player::DenumeratePointers()
 	Captain = Game.Objects.Denumerated(Captain);
 	// messageboard-queries
 	for (C4MessageBoardQuery *pCheck = pMsgBoardQuery; pCheck; pCheck = pCheck->pNext)
-		pCheck->pCallbackObj = pCheck->nCallbackObj ? Game.Objects.ObjectPointer(pCheck->nCallbackObj) : NULL;
+		pCheck->pCallbackObj = pCheck->nCallbackObj ? Game.Objects.ObjectPointer(pCheck->nCallbackObj) : nullptr;
 }
 
 void C4Player::RemoveCrewObjects()
@@ -1783,7 +1783,7 @@ void C4Player::NotifyOwnedObjects()
 	C4Object *cobj; C4ObjectLink *clnk;
 
 	// notify objects in all object lists
-	for (C4ObjectList *pList = &Game.Objects; pList; pList = ((pList == &Game.Objects) ? &Game.Objects.InactiveObjects : NULL))
+	for (C4ObjectList *pList = &Game.Objects; pList; pList = ((pList == &Game.Objects) ? &Game.Objects.InactiveObjects : nullptr))
 		for (clnk = pList->First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 			if (cobj->Status)
 				if (cobj->Owner == Number)
@@ -1875,7 +1875,7 @@ void C4Player::InitControl()
 	if (Game.C4S.Head.ForcedControlStyle > -1) ControlStyle = Game.C4S.Head.ForcedControlStyle; else ControlStyle = PrefControlStyle;
 	if (Game.C4S.Head.ForcedAutoContextMenu > -1) AutoContextMenu = Game.C4S.Head.ForcedAutoContextMenu; else AutoContextMenu = PrefAutoContextMenu;
 	// init gamepad
-	if (pGamepad) { delete pGamepad; pGamepad = NULL; }
+	if (pGamepad) { delete pGamepad; pGamepad = nullptr; }
 	if (Inside<int32_t>(Control, C4P_Control_GamePad1, C4P_Control_GamePadMax))
 	{
 		pGamepad = new C4GamePadOpener(Control - C4P_Control_GamePad1);
@@ -1936,7 +1936,7 @@ bool C4Player::FoWIsVisible(int32_t x, int32_t y)
 {
 	// check repellers and generators and ViewTarget
 	bool fSeen = false;
-	C4Object *cobj = NULL; C4ObjectLink *clnk;
+	C4Object *cobj = nullptr; C4ObjectLink *clnk;
 	clnk = FoWViewObjs.First;
 	int32_t iRange;
 	for (;;)
@@ -2000,7 +2000,7 @@ void C4Player::Eliminate()
 	if (Game.Control.isCtrlHost() && AtClient > C4ClientIDHost)
 	{
 		// Check: Any player left at this client?
-		C4Player *pPlr = NULL;
+		C4Player *pPlr = nullptr;
 		for (int i = 0; pPlr = Game.Players.GetAtClient(AtClient, i); i++)
 			if (!pPlr->Eliminated)
 				break;
@@ -2107,7 +2107,7 @@ BOOL C4Player::SetObjectCrewStatus(C4Object *pCrew, BOOL fNewStatus)
 		if (pCrew->Info && CrewInfoList.IsElement(pCrew->Info))
 		{
 			pCrew->Info->Retire();
-			pCrew->Info = NULL;
+			pCrew->Info = nullptr;
 		}
 	}
 	// done, success
@@ -2148,13 +2148,13 @@ void C4Player::ClearGraphs()
 	{
 		if (Game.pNetworkStatistics) Game.pNetworkStatistics->statControls.RemoveGraph(pstatControls);
 		delete pstatControls;
-		pstatControls = NULL;
+		pstatControls = nullptr;
 	}
 	if (pstatActions)
 	{
 		if (Game.pNetworkStatistics) Game.pNetworkStatistics->statActions.RemoveGraph(pstatActions);
 		delete pstatActions;
-		pstatActions = NULL;
+		pstatActions = nullptr;
 	}
 }
 

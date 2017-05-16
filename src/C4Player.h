@@ -151,7 +151,7 @@ public:
 	void Execute();
 	void ExecuteControl();
 	void UpdateValue();
-	void SetViewMode(int32_t iMode, C4Object *pTarget = NULL);
+	void SetViewMode(int32_t iMode, C4Object *pTarget = nullptr);
 	void ResetCursorView(); // reset view to cursor if any cursor exists
 	void Evaluate();
 	void Surrender();
@@ -173,7 +173,7 @@ public:
 	void DirectCom(BYTE byCom, int32_t iData);
 	void InCom(BYTE byCom, int32_t iData);
 	BOOL ObjectCom(BYTE byCom, int32_t iData);
-	BOOL ObjectCommand(int32_t iCommand, C4Object *pTarget, int32_t iTx, int32_t iTy, C4Object *pTarget2 = NULL, int32_t iData = 0, int32_t iAddMode = C4P_Command_Set);
+	BOOL ObjectCommand(int32_t iCommand, C4Object *pTarget, int32_t iTx, int32_t iTy, C4Object *pTarget2 = nullptr, int32_t iData = 0, int32_t iAddMode = C4P_Command_Set);
 	void ObjectCommand2Obj(C4Object *cObj, int32_t iCommand, C4Object *pTarget, int32_t iX, int32_t iY, C4Object *pTarget2, int32_t iData, int32_t iMode);
 	BOOL DoPoints(int32_t iChange);
 	BOOL Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientName, const char *szFilename, BOOL fScenarioInit, class C4PlayerInfo *pInfo);
@@ -186,7 +186,7 @@ public:
 	BOOL Load(const char *szFilename, bool fSavegame, bool fLoadPortraits);
 	static BOOL Strip(const char *szFilename, bool fAggressive);
 	BOOL ObjectInCrew(C4Object *tobj);
-	C4Object *Buy(C4ID id, BOOL fShowErrors, int32_t iForPlr, C4Object *pBuyObj = NULL); // buy object of player's wealth
+	C4Object *Buy(C4ID id, BOOL fShowErrors, int32_t iForPlr, C4Object *pBuyObj = nullptr); // buy object of player's wealth
 	BOOL Sell2Home(C4Object *tobj);
 	BOOL DoWealth(int32_t change);
 	BOOL SetHostility(int32_t iOpponent, int32_t iHostility, BOOL fSilent = FALSE);

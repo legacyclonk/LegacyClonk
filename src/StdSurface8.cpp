@@ -31,16 +31,16 @@ CSurface8::CSurface8()
 {
 	Wdt = Hgt = Pitch = 0;
 	ClipX = ClipY = ClipX2 = ClipY2 = 0;
-	Bits = NULL;
-	pPal = NULL;
+	Bits = nullptr;
+	pPal = nullptr;
 }
 
 CSurface8::CSurface8(int iWdt, int iHgt)
 {
 	Wdt = Hgt = Pitch = 0;
 	ClipX = ClipY = ClipX2 = ClipY2 = 0;
-	Bits = NULL;
-	pPal = NULL;
+	Bits = nullptr;
+	pPal = nullptr;
 	Create(iWdt, iHgt);
 }
 
@@ -52,10 +52,10 @@ CSurface8::~CSurface8()
 void CSurface8::Clear()
 {
 	// clear bitmap-copy
-	delete[] Bits; Bits = NULL;
+	delete[] Bits; Bits = nullptr;
 	// clear pal
 	if (HasOwnPal()) delete pPal;
-	pPal = NULL;
+	pPal = nullptr;
 }
 
 bool CSurface8::HasOwnPal()
@@ -263,8 +263,8 @@ static void fill_edge_structure(CPolyEdge *edge, int *i1, int *i2)
 	edge->bottom = i2[1] - 1;
 	edge->dx = ((i2[0] - i1[0]) << POLYGON_FIX_SHIFT) / (i2[1] - i1[1]);
 	edge->x = (i1[0] << POLYGON_FIX_SHIFT) + (1 << (POLYGON_FIX_SHIFT - 1)) - 1;
-	edge->prev = NULL;
-	edge->next = NULL;
+	edge->prev = nullptr;
+	edge->next = nullptr;
 	if (edge->dx < 0)
 		edge->x += Min<int>(edge->dx + (1 << POLYGON_FIX_SHIFT), 0);
 	edge->w = Max<int>(Abs(edge->dx) - (1 << POLYGON_FIX_SHIFT), 0);
@@ -273,7 +273,7 @@ static void fill_edge_structure(CPolyEdge *edge, int *i1, int *i2)
 static CPolyEdge *add_edge(CPolyEdge *list, CPolyEdge *edge, int sort_by_x)
 {
 	CPolyEdge *pos = list;
-	CPolyEdge *prev = NULL;
+	CPolyEdge *prev = nullptr;
 	if (sort_by_x)
 	{
 		while ((pos) && (pos->x + pos->w / 2 < edge->x + edge->w / 2))
@@ -314,8 +314,8 @@ void CSurface8::Polygon(int iNum, int *ipVtx, int iCol)
 	int bottom = INT_MIN;
 	int *i1, *i2;
 	CPolyEdge *edge, *next_edge, *edgebuf;
-	CPolyEdge *active_edges = NULL;
-	CPolyEdge *inactive_edges = NULL;
+	CPolyEdge *active_edges = nullptr;
+	CPolyEdge *inactive_edges = nullptr;
 	BOOL use_qpb = FALSE;
 
 	// Poly Buf

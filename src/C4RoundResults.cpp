@@ -139,7 +139,7 @@ void C4RoundResultsPlayers::Clear()
 {
 	while (iPlayerCount) delete ppPlayers[--iPlayerCount];
 	delete[] ppPlayers;
-	ppPlayers = NULL;
+	ppPlayers = nullptr;
 	iPlayerCapacity = 0;
 }
 
@@ -171,7 +171,7 @@ C4RoundResultsPlayer *C4RoundResultsPlayers::GetByIndex(int32_t idx) const
 	if (idx >= 0 && idx < iPlayerCount)
 		return ppPlayers[idx];
 	else
-		return NULL;
+		return nullptr;
 }
 
 C4RoundResultsPlayer *C4RoundResultsPlayers::GetByID(int32_t id) const
@@ -179,7 +179,7 @@ C4RoundResultsPlayer *C4RoundResultsPlayers::GetByID(int32_t id) const
 	for (int32_t idx = 0; idx < iPlayerCount; ++idx)
 		if (ppPlayers[idx]->GetID() == id)
 			return ppPlayers[idx];
-	return NULL;
+	return nullptr;
 }
 
 void C4RoundResultsPlayers::GrowList(size_t iByVal)

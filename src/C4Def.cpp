@@ -84,7 +84,7 @@ void C4ActionDef::Default()
 	Delay = 0;
 	FacetBase = 0;
 	Step = 1;
-	StartCall = PhaseCall = EndCall = AbortCall = NULL;
+	StartCall = PhaseCall = EndCall = AbortCall = nullptr;
 }
 
 void C4ActionDef::CompileFunc(StdCompiler *pComp)
@@ -106,7 +106,7 @@ void C4ActionDef::CompileFunc(StdCompiler *pComp)
 		{ "CNAT_MultiAttach", CNAT_MultiAttach },
 		{ "CNAT_NoCollision", CNAT_NoCollision },
 
-		{ NULL, 0 }
+		{ nullptr, 0 }
 	};
 
 	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(Attach, CNATs),
@@ -308,7 +308,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 		{ "C4D_MouseIgnore", C4D_MouseIgnore },
 		{ "C4D_IgnoreFoW",   C4D_IgnoreFoW },
 
-		{ NULL, 0 }
+		{ nullptr, 0 }
 	};
 
 	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(Category, Categories),
@@ -352,7 +352,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 		{ "C4D_LineColored",   C4D_Line_Colored },
 		{ "C4D_LineVertex",    C4D_Line_Vertex },
 
-		{ NULL, 0 }
+		{ nullptr, 0 }
 	};
 
 	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(Line, LineTypes), "Line", 0));
@@ -369,7 +369,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 		{ "C4D_ConnectRope",    C4D_Connect_Rope },
 		{ "C4D_EnergyHolder",   C4D_EnergyHolder },
 
-		{ NULL, 0 }
+		{ nullptr, 0 }
 	};
 
 	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(LineConnect, LineConnectTypes),
@@ -391,7 +391,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 		{ "C4D_GrabGet", C4D_Grab_Get },
 		{ "C4D_GrabPut", C4D_Grab_Put },
 
-		{ NULL, 0 }
+		{ nullptr, 0 }
 	};
 
 	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(GrabPutGet, GrabPutGetTypes),
@@ -447,7 +447,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 		{ "APS_Graphics", APS_Graphics },
 		{ "APS_Name",     APS_Name },
 		{ "APS_Overlay",  APS_Overlay },
-		{ NULL,           0 }
+		{ nullptr,        0 }
 	};
 
 	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(AllowPictureStack, AllowPictureStackModes),
@@ -472,30 +472,30 @@ void C4Def::Default()
 	C4DefCore::Default();
 
 #if !defined(C4ENGINE) && !defined(C4GROUP)
-	Picture = NULL;
-	Image = NULL;
+	Picture = nullptr;
+	Image = nullptr;
 #endif
 	ActNum = 0;
-	ActMap = NULL;
-	Next = NULL;
+	ActMap = nullptr;
+	Next = nullptr;
 	Temporary = FALSE;
 	Maker[0] = 0;
 	Filename[0] = 0;
 	Creation = 0;
 	Count = 0;
-	TimerCall = NULL;
+	TimerCall = nullptr;
 #ifdef C4ENGINE
-	MainFace.Set(NULL, 0, 0, 0, 0);
+	MainFace.Set(nullptr, 0, 0, 0, 0);
 	Script.Default();
 	StringTable.Default();
-	pClonkNames = NULL;
-	pRankNames = NULL;
-	pRankSymbols = NULL;
+	pClonkNames = nullptr;
+	pRankNames = nullptr;
+	pRankSymbols = nullptr;
 	fClonkNamesOwned = fRankNamesOwned = fRankSymbolsOwned = false;
 	iNumRankSymbols = 1;
 	PortraitCount = 0;
-	Portraits = NULL;
-	pFairCrewPhysical = NULL;
+	Portraits = nullptr;
+	pFairCrewPhysical = nullptr;
 #endif
 }
 
@@ -511,18 +511,18 @@ void C4Def::Clear()
 
 	Script.Clear();
 	StringTable.Clear();
-	if (pClonkNames  && fClonkNamesOwned)  delete pClonkNames;  pClonkNames  = NULL;
-	if (pRankNames   && fRankNamesOwned)   delete pRankNames;   pRankNames   = NULL;
-	if (pRankSymbols && fRankSymbolsOwned) delete pRankSymbols; pRankSymbols = NULL;
-	if (pFairCrewPhysical) { delete pFairCrewPhysical; pFairCrewPhysical = NULL; }
+	if (pClonkNames  && fClonkNamesOwned)  delete pClonkNames;  pClonkNames  = nullptr;
+	if (pRankNames   && fRankNamesOwned)   delete pRankNames;   pRankNames   = nullptr;
+	if (pRankSymbols && fRankSymbolsOwned) delete pRankSymbols; pRankSymbols = nullptr;
+	if (pFairCrewPhysical) { delete pFairCrewPhysical; pFairCrewPhysical = nullptr; }
 	fClonkNamesOwned = fRankNamesOwned = fRankSymbolsOwned = false;
 
 	PortraitCount = 0;
-	Portraits = NULL;
+	Portraits = nullptr;
 
 #endif
 
-	if (ActMap) delete[] ActMap; ActMap = NULL;
+	if (ActMap) delete[] ActMap; ActMap = nullptr;
 	Desc.Clear();
 }
 
@@ -632,10 +632,10 @@ BOOL C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_Picture)
 		// Load from PNG graphics
 		if (!hGroup.AccessEntry(C4CFN_DefGraphicsPNG)
-			|| !hGroup.ReadPNGSection(&Picture, NULL, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt))
+			|| !hGroup.ReadPNGSection(&Picture, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt))
 			// Load from BMP graphics
 			if (!hGroup.AccessEntry(C4CFN_DefGraphics)
-				|| !hGroup.ReadDDBSection(&Picture, NULL, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt))
+				|| !hGroup.ReadDDBSection(&Picture, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt))
 				// None loaded
 				return FALSE;
 
@@ -643,16 +643,16 @@ BOOL C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_Image)
 		// Load from PNG title
 		if (!hGroup.AccessEntry(C4CFN_ScenarioTitlePNG)
-			|| !hGroup.ReadPNGSection(&Image, NULL, -1, -1, -1, -1, 32, 32))
+			|| !hGroup.ReadPNGSection(&Image, nullptr, -1, -1, -1, -1, 32, 32))
 			// Load from BMP title
 			if (!hGroup.AccessEntry(C4CFN_ScenarioTitle)
-				|| !hGroup.ReadDDBSection(&Image, NULL, -1, -1, -1, -1, 32, 32, TRUE))
+				|| !hGroup.ReadDDBSection(&Image, nullptr, -1, -1, -1, -1, 32, 32, TRUE))
 				// Load from PNG graphics
 				if (!hGroup.AccessEntry(C4CFN_DefGraphicsPNG)
-					|| !hGroup.ReadPNGSection(&Image, NULL, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt, 32, 32))
+					|| !hGroup.ReadPNGSection(&Image, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt, 32, 32))
 					// Load from BMP graphics
 					if (!hGroup.AccessEntry(C4CFN_DefGraphics)
-						|| !hGroup.ReadDDBSection(&Image, NULL, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt, 32, 32, TRUE))
+						|| !hGroup.ReadDDBSection(&Image, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt, 32, 32, TRUE))
 						// None loaded
 						return FALSE;
 #endif
@@ -690,14 +690,14 @@ BOOL C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_ClonkNames)
 	{
 		// clear any previous
-		if (pClonkNames) delete pClonkNames; pClonkNames = NULL;
+		if (pClonkNames) delete pClonkNames; pClonkNames = nullptr;
 		if (hGroup.FindEntry(C4CFN_ClonkNameFiles))
 		{
 			// create new
 			pClonkNames = new C4ComponentHost();
 			if (!pClonkNames->LoadEx(LoadResStr("IDS_CNS_NAMES"), hGroup, C4CFN_ClonkNames, szLanguage))
 			{
-				delete pClonkNames; pClonkNames = NULL;
+				delete pClonkNames; pClonkNames = nullptr;
 			}
 			else
 				fClonkNamesOwned = true;
@@ -708,7 +708,7 @@ BOOL C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_RankNames)
 	{
 		// clear any previous
-		if (pRankNames) delete pRankNames; pRankNames = NULL;
+		if (pRankNames) delete pRankNames; pRankNames = nullptr;
 		if (hGroup.FindEntry(C4CFN_RankNameFiles))
 		{
 			// create new
@@ -716,7 +716,7 @@ BOOL C4Def::Load(C4Group &hGroup,
 			// load from group
 			if (!pRankNames->Load(hGroup, C4CFN_RankNames, 1000, szLanguage))
 			{
-				delete pRankNames; pRankNames = NULL;
+				delete pRankNames; pRankNames = nullptr;
 			}
 			else
 				fRankNamesOwned = true;
@@ -727,24 +727,24 @@ BOOL C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_RankFaces)
 	{
 		// clear any previous
-		if (pRankSymbols) delete pRankSymbols; pRankSymbols = NULL;
+		if (pRankSymbols) delete pRankSymbols; pRankSymbols = nullptr;
 		// load new: try png first
 		if (hGroup.AccessEntry(C4CFN_RankFacesPNG))
 		{
 			pRankSymbols = new C4FacetExSurface();
-			if (!pRankSymbols->GetFace().ReadPNG(hGroup)) { delete pRankSymbols; pRankSymbols = NULL; }
+			if (!pRankSymbols->GetFace().ReadPNG(hGroup)) { delete pRankSymbols; pRankSymbols = nullptr; }
 		}
 		else if (hGroup.AccessEntry(C4CFN_RankFaces))
 		{
 			pRankSymbols = new C4FacetExSurface();
-			if (!pRankSymbols->GetFace().Read(hGroup)) { delete pRankSymbols; pRankSymbols = NULL; }
+			if (!pRankSymbols->GetFace().Read(hGroup)) { delete pRankSymbols; pRankSymbols = nullptr; }
 		}
 		// set size
 		if (pRankSymbols)
 		{
 			pRankSymbols->Set(&pRankSymbols->GetFace(), 0, 0, pRankSymbols->GetFace().Hgt, pRankSymbols->GetFace().Hgt);
 			int32_t Q; pRankSymbols->GetPhaseNum(iNumRankSymbols, Q);
-			if (!iNumRankSymbols) { delete pRankSymbols; pRankSymbols = NULL; }
+			if (!iNumRankSymbols) { delete pRankSymbols; pRankSymbols = nullptr; }
 			else
 			{
 				if (pRankNames)
@@ -779,7 +779,7 @@ BOOL C4Def::Load(C4Group &hGroup,
 		// check SolidMask
 		if (SolidMask.x < 0 || SolidMask.y < 0 || SolidMask.x + SolidMask.Wdt > Graphics.Bitmap->Wdt || SolidMask.y + SolidMask.Hgt > Graphics.Bitmap->Hgt) SolidMask.Default();
 		// Set MainFace (unassigned bitmap: will be set by GetMainFace())
-		MainFace.Set(NULL, 0, 0, Shape.Wdt, Shape.Hgt);
+		MainFace.Set(nullptr, 0, 0, Shape.Wdt, Shape.Hgt);
 	}
 
 	// validate TopFace
@@ -904,7 +904,7 @@ int32_t C4Def::GetValue(C4Object *pInBase, int32_t iBuyPlayer)
 	int32_t iValue;
 	if (pCalcValueFn)
 		// then call it!
-		iValue = pCalcValueFn->Exec(NULL, &C4AulParSet(C4VObj(pInBase), C4VInt(iBuyPlayer))).getInt();
+		iValue = pCalcValueFn->Exec(nullptr, &C4AulParSet(C4VObj(pInBase), C4VInt(iBuyPlayer))).getInt();
 	else
 		// otherwise, use default value
 		iValue = Value;
@@ -939,7 +939,7 @@ void C4Def::ClearFairCrewPhysicals()
 {
 	// invalidate physicals so the next call to GetFairCrewPhysicals will
 	// reacreate them
-	delete pFairCrewPhysical; pFairCrewPhysical = NULL;
+	delete pFairCrewPhysical; pFairCrewPhysical = nullptr;
 }
 
 void C4Def::Synchronize()
@@ -1025,12 +1025,12 @@ int32_t C4DefList::Load(C4Group &hGroup, DWORD dwLoadWhat,
 		SysGroupString.LoadEx("StringTbl", SysGroup, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
 		// load all scripts in there
 		SysGroup.ResetSearch();
-		while (SysGroup.FindNextEntry(C4CFN_ScriptFiles, (char *)&fn, NULL, NULL, !!fn[0]))
+		while (SysGroup.FindNextEntry(C4CFN_ScriptFiles, (char *)&fn, nullptr, nullptr, !!fn[0]))
 		{
 			// host will be destroyed by script engine, so drop the references
 			C4ScriptHost *scr = new C4ScriptHost();
 			scr->Reg2List(&Game.ScriptEngine, &Game.ScriptEngine);
-			scr->Load(NULL, SysGroup, fn, Config.General.LanguageEx, NULL, &SysGroupString);
+			scr->Load(nullptr, SysGroup, fn, Config.General.LanguageEx, nullptr, &SysGroupString);
 		}
 		// if it's a physical group: watch out for changes
 		if (!SysGroup.IsPacked() && Game.pFileMonitor)
@@ -1162,7 +1162,7 @@ BOOL C4DefList::Add(C4Def *pDef, BOOL fOverload)
 BOOL C4DefList::Remove(C4ID id)
 {
 	C4Def *cdef, *prev;
-	for (cdef = FirstDef, prev = NULL; cdef; prev = cdef, cdef = cdef->Next)
+	for (cdef = FirstDef, prev = nullptr; cdef; prev = cdef, cdef = cdef->Next)
 		if (cdef->id == id)
 		{
 			if (prev) prev->Next = cdef->Next;
@@ -1176,7 +1176,7 @@ BOOL C4DefList::Remove(C4ID id)
 void C4DefList::Remove(C4Def *def)
 {
 	C4Def *cdef, *prev;
-	for (cdef = FirstDef, prev = NULL; cdef; prev = cdef, cdef = cdef->Next)
+	for (cdef = FirstDef, prev = nullptr; cdef; prev = cdef, cdef = cdef->Next)
 		if (cdef == def)
 		{
 			if (prev) prev->Next = cdef->Next;
@@ -1194,15 +1194,15 @@ void C4DefList::Clear()
 		next = cdef->Next;
 		delete cdef;
 	}
-	FirstDef = NULL;
+	FirstDef = nullptr;
 	// clear quick access table
-	for (int32_t i = 0; i < 64; i++) if (Table[i]) { delete[] Table[i]; Table[i] = NULL; }
+	for (int32_t i = 0; i < 64; i++) if (Table[i]) { delete[] Table[i]; Table[i] = nullptr; }
 	fTable = false;
 }
 
 C4Def *C4DefList::ID2Def(C4ID id)
 {
-	if (id == C4ID_None) return NULL;
+	if (id == C4ID_None) return nullptr;
 	if (!fTable)
 	{
 		// table not yet built: search list
@@ -1215,14 +1215,14 @@ C4Def *C4DefList::ID2Def(C4ID id)
 	int32_t iTblIndex = (id >> 24) - 32;
 	if (Inside<int32_t>(iTblIndex, 0, 63)) pppDef += iTblIndex;
 	// no entry matching?
-	if (!(ppDef = *pppDef)) return NULL;
+	if (!(ppDef = *pppDef)) return nullptr;
 	// search list
 	for (C4Def *pDef = *ppDef; pDef = *ppDef; ppDef++)
 	{
 		if (pDef->id == id) return pDef;
 	}
 	// none found
-	return NULL;
+	return nullptr;
 }
 
 int32_t C4DefList::GetIndex(C4ID id)
@@ -1246,14 +1246,14 @@ int32_t C4DefList::GetDefCount(DWORD dwCategory)
 C4Def *C4DefList::GetDef(int32_t iIndex, DWORD dwCategory)
 {
 	C4Def *pDef; int32_t iCurrentIndex;
-	if (iIndex < 0) return NULL;
+	if (iIndex < 0) return nullptr;
 	for (pDef = FirstDef, iCurrentIndex = -1; pDef; pDef = pDef->Next)
 		if (pDef->Category & dwCategory)
 		{
 			iCurrentIndex++;
 			if (iCurrentIndex == iIndex) return pDef;
 		}
-	return NULL;
+	return nullptr;
 }
 
 #ifdef C4ENGINE
@@ -1272,7 +1272,7 @@ C4Def *C4DefList::GetByPath(const char *szPath)
 					if (!strchr(szPath + SLen(szDefPath) + 1, '\\'))
 						return pDef;
 	// not found
-	return NULL;
+	return nullptr;
 }
 #endif
 
@@ -1280,7 +1280,7 @@ int32_t C4DefList::CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, 
 {
 	int32_t rcount = 0;
 	C4Def *cdef, *prev, *next;
-	for (cdef = FirstDef, prev = NULL; cdef; cdef = next)
+	for (cdef = FirstDef, prev = nullptr; cdef; cdef = next)
 	{
 		next = cdef->Next;
 		if (CompareVersion(cdef->rC4XVer[0], cdef->rC4XVer[1], cdef->rC4XVer[2], cdef->rC4XVer[3], ver1, ver2, ver3, ver4) > 0)
@@ -1302,7 +1302,7 @@ int32_t C4DefList::CheckRequireDef()
 	do
 	{
 		rcount2 = rcount;
-		for (cdef = FirstDef, prev = NULL; cdef; cdef = next)
+		for (cdef = FirstDef, prev = nullptr; cdef; cdef = next)
 		{
 			next = cdef->Next;
 			for (int32_t i = 0; i < cdef->RequireDef.GetNumberOfIDs(); i++)
@@ -1335,7 +1335,7 @@ void C4DefList::Draw(C4ID id, C4Facet &cgo, BOOL fSelected, int32_t iColor)
 
 void C4DefList::Default()
 {
-	FirstDef = NULL;
+	FirstDef = nullptr;
 	LoadFailure = FALSE;
 	ZeroMem(&Table, sizeof(Table));
 	fTable = false;
@@ -1379,7 +1379,7 @@ void C4DefList::BuildTable()
 {
 	// clear any current table
 	int32_t i;
-	for (i = 0; i < 64; i++) if (Table[i]) { delete[] Table[i]; Table[i] = NULL; }
+	for (i = 0; i < 64; i++) if (Table[i]) { delete[] Table[i]; Table[i] = nullptr; }
 	// build temp count list
 	int32_t Counts[64]; ZeroMem(&Counts, sizeof(Counts));
 	C4Def *pDef;
@@ -1418,7 +1418,7 @@ bool C4Def::LoadPortraits(C4Group &hGroup)
 {
 #ifdef C4ENGINE
 	// reset any previous portraits
-	Portraits = NULL; PortraitCount = 0;
+	Portraits = nullptr; PortraitCount = 0;
 	// search for portraits within def graphics
 	for (C4DefGraphics *pGfx = &Graphics; pGfx; pGfx = pGfx->GetNext())
 		if (pGfx->IsPortrait())
@@ -1443,7 +1443,7 @@ C4ValueArray *C4Def::GetCustomComponents(C4Value *pvArrayHolder, C4Object *pBuil
 		return pvArrayHolder->getArray();
 	}
 #endif
-	return NULL;
+	return nullptr;
 }
 
 int32_t C4Def::GetComponentCount(C4ID idComponent, C4Object *pBuilder)
@@ -1542,9 +1542,9 @@ void C4Def::ResetIncludeDependencies()
 {
 #ifdef C4ENGINE
 	// clear all pointers into foreign defs
-	if (!fClonkNamesOwned) pClonkNames = NULL;
-	if (!fRankNamesOwned) pRankNames = NULL;
-	if (!fRankSymbolsOwned) { pRankSymbols = NULL; iNumRankSymbols = 0; }
+	if (!fClonkNamesOwned) pClonkNames = nullptr;
+	if (!fRankNamesOwned) pRankNames = nullptr;
+	if (!fRankSymbolsOwned) { pRankSymbols = nullptr; iNumRankSymbols = 0; }
 #endif
 }
 
@@ -1583,7 +1583,7 @@ void C4DefList::SortByID()
 	assert(fTable);
 	// sort all quick access slots
 	int i = sizeof(Table) / sizeof(C4Def **);
-	FirstDef = NULL;
+	FirstDef = nullptr;
 	C4Def ***pppDef = Table, **ppDef, **ppDefCount, **ppCurrLastDef = &FirstDef;
 	while (i--)
 	{

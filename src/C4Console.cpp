@@ -91,7 +91,7 @@ namespace
 {
 	GtkWidget *CreateImageFromInlinedPixbuf(const guint8 *pixbuf_data)
 	{
-		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_inline(-1, pixbuf_data, FALSE, NULL);
+		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_inline(-1, pixbuf_data, FALSE, nullptr);
 		GtkWidget *image = gtk_image_new_from_pixbuf(pixbuf);
 		gdk_pixbuf_unref(pixbuf);
 		return image;
@@ -121,21 +121,21 @@ C4Console::C4Console()
 	fGameOpen = FALSE;
 
 #ifdef _WIN32
-	hWindow = NULL;
-	hbmCursor = NULL;
-	hbmCursor2 = NULL;
-	hbmBrush = NULL;
-	hbmBrush2 = NULL;
-	hbmPlay = NULL;
-	hbmPlay2 = NULL;
-	hbmHalt = NULL;
-	hbmHalt2 = NULL;
+	hWindow = nullptr;
+	hbmCursor = nullptr;
+	hbmCursor2 = nullptr;
+	hbmBrush = nullptr;
+	hbmBrush2 = nullptr;
+	hbmPlay = nullptr;
+	hbmPlay2 = nullptr;
+	hbmHalt = nullptr;
+	hbmHalt2 = nullptr;
 #elif WITH_DEVELOPER_MODE
-	cursorDefault = NULL;
-	cursorWait = NULL;
-	itemNet = NULL;
-	txtLog = NULL;
-	txtScript = NULL;
+	cursorDefault = nullptr;
+	cursorWait = nullptr;
+	itemNet = nullptr;
+	txtLog = nullptr;
+	txtScript = nullptr;
 #endif // WITH_DEVELOPER_MODE / _WIN32
 
 	MenuIndexFile = 0;
@@ -317,7 +317,7 @@ CStdWindow *C4Console::Init(CStdApp *pApp)
 	Editing = TRUE;
 	// Create dialog window
 #ifdef _WIN32
-	hWindow = CreateDialog(pApp->hInstance, MAKEINTRESOURCE(IDD_CONSOLE), NULL, ConsoleDlgProc);
+	hWindow = CreateDialog(pApp->hInstance, MAKEINTRESOURCE(IDD_CONSOLE), nullptr, ConsoleDlgProc);
 	if (!hWindow)
 	{
 		char *lpMsgBuf;
@@ -325,16 +325,16 @@ CStdWindow *C4Console::Init(CStdApp *pApp)
 			FORMAT_MESSAGE_ALLOCATE_BUFFER |
 			FORMAT_MESSAGE_FROM_SYSTEM |
 			FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL,
+			nullptr,
 			GetLastError(),
 			0,
 			(LPTSTR)&lpMsgBuf,
 			0,
-			NULL);
+			nullptr);
 		Log(FormatString("Error creating dialog window: %s", lpMsgBuf).getData());
 		// Free the buffer.
 		LocalFree(lpMsgBuf);
-		return NULL;
+		return nullptr;
 	}
 	// Restore window position
 	RestoreWindowPosition(hWindow, "Main", Config.GetSubkeyPath("Console"));
@@ -370,13 +370,13 @@ CStdWindow *C4Console::Init(CStdApp *pApp)
 	cursorDefault = gdk_cursor_new(GDK_ARROW);
 
 	// Calls InitGUI
-	CStdWindow *retval = C4ConsoleBase::Init(pApp, LoadResStr("IDS_CNS_CONSOLE"), NULL, false);
+	CStdWindow *retval = C4ConsoleBase::Init(pApp, LoadResStr("IDS_CNS_CONSOLE"), nullptr, false);
 	UpdateHaltCtrls(TRUE);
 	EnableControls(fGameOpen);
 	ClearViewportMenu();
 	return retval;
 #else
-	return C4ConsoleBase::Init(pApp, LoadResStr("IDS_CNS_CONSOLE"), NULL, false);
+	return C4ConsoleBase::Init(pApp, LoadResStr("IDS_CNS_CONSOLE"), nullptr, false);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 
@@ -425,7 +425,7 @@ GtkWidget *C4Console::InitGUI()
 
 	GtkWidget *statusbar = gtk_hbox_new(FALSE, 6);
 
-	GtkWidget *status_frame = gtk_frame_new(NULL);
+	GtkWidget *status_frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(status_frame), GTK_SHADOW_IN);
 	gtk_container_add(GTK_CONTAINER(status_frame), statusbar);
 
@@ -448,7 +448,7 @@ GtkWidget *C4Console::InitGUI()
 
 	// Log view and script entry
 
-	GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+	GtkWidget *scroll = gtk_scrolled_window_new(nullptr, nullptr);
 
 	txtLog = gtk_text_view_new();
 	txtScript = gtk_entry_new();
@@ -645,8 +645,8 @@ bool C4Console::Out(const char *szText)
 	gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(txtLog), gtk_text_buffer_get_insert(buffer), 0.0, FALSE, 0.0, 0.0);
 
 	// Cheap hack to get the Console window updated while loading
-	while (g_main_context_pending(NULL))
-		g_main_context_iteration(NULL, FALSE);
+	while (g_main_context_pending(nullptr))
+		g_main_context_iteration(nullptr, FALSE);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 	return true;
 }
@@ -794,7 +794,7 @@ BOOL C4Console::SaveGame(BOOL fSaveGame)
 #ifdef _WIN32
 	SetCursor(LoadCursor(0, IDC_ARROW));
 #elif WITH_DEVELOPER_MODE
-	gdk_window_set_cursor(window->window, NULL);
+	gdk_window_set_cursor(window->window, nullptr);
 #endif
 
 	// Initialize/script notification
@@ -1035,7 +1035,7 @@ BOOL C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWO
 	SetCurrentDirectory(Config.General.ExePath);
 	return fResult;
 #elif WITH_DEVELOPER_MODE
-	GtkWidget *dialog = gtk_file_chooser_dialog_new(fSave ? "Save file..." : "Load file...", GTK_WINDOW(window), fSave ? GTK_FILE_CHOOSER_ACTION_SAVE : GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, fSave ? GTK_STOCK_SAVE : GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	GtkWidget *dialog = gtk_file_chooser_dialog_new(fSave ? "Save file..." : "Load file...", GTK_WINDOW(window), fSave ? GTK_FILE_CHOOSER_ACTION_SAVE : GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, fSave ? GTK_STOCK_SAVE : GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, nullptr);
 
 	// TODO: Set dialog modal?
 
@@ -1128,7 +1128,7 @@ BOOL C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, DWO
 		g_free(folder);
 
 		GSList *files = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
-		for (GSList *item = files; item != NULL; item = item->next)
+		for (GSList *item = files; item != nullptr; item = item->next)
 		{
 			const char *file = static_cast<const char *>(item->data);
 			char *basefile = g_path_get_basename(file);
@@ -1215,9 +1215,9 @@ void C4Console::HelpAbout()
 	strCopyright.Format("Copyright (c) %s %s", C4COPYRIGHT_YEAR, C4COPYRIGHT_COMPANY);
 #ifdef _WIN32
 	StdStrBuf strMessage; strMessage.Format("%s %s\n\n%s", C4ENGINECAPTION, C4VERSION, strCopyright.getData());
-	MessageBox(NULL, strMessage.getData(), C4ENGINECAPTION, MB_ICONINFORMATION | MB_TASKMODAL);
+	MessageBox(nullptr, strMessage.getData(), C4ENGINECAPTION, MB_ICONINFORMATION | MB_TASKMODAL);
 #elif WITH_DEVELOPER_MODE
-	gtk_show_about_dialog(GTK_WINDOW(window), "name", C4ENGINECAPTION, "version", C4VERSION, "copyright", strCopyright.getData(), NULL);
+	gtk_show_about_dialog(GTK_WINDOW(window), "name", C4ENGINECAPTION, "version", C4VERSION, "copyright", strCopyright.getData(), nullptr);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 
@@ -1270,7 +1270,7 @@ void C4Console::ClearViewportMenu()
 	while (DeleteMenu(hMenu, 1, MF_BYPOSITION));
 #elif WITH_DEVELOPER_MODE
 	GList *children = gtk_container_get_children(GTK_CONTAINER(menuViewport));
-	for (GList *item = children; item != NULL; item = item->next)
+	for (GList *item = children; item != nullptr; item = item->next)
 	{
 		if (item->data != viewNew)
 			gtk_container_remove(GTK_CONTAINER(menuViewport), GTK_WIDGET(item->data));
@@ -1441,7 +1441,7 @@ void C4Console::ClearPlayerMenu()
 	while (DeleteMenu(hMenu, 1, MF_BYPOSITION));
 #elif WITH_DEVELOPER_MODE
 	GList *children = gtk_container_get_children(GTK_CONTAINER(menuPlayer));
-	for (GList *item = children; item != NULL; item = item->next)
+	for (GList *item = children; item != nullptr; item = item->next)
 	{
 		if (item->data != plrJoin)
 			gtk_container_remove(GTK_CONTAINER(menuPlayer), GTK_WIDGET(item->data));
@@ -1569,7 +1569,7 @@ void C4Console::UpdateNetMenu()
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(OnNetClient), GINT_TO_POINTER(Game.Clients.getLocalID()));
 #endif
 	// Clients
-	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(NULL); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
+	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(nullptr); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
 	{
 		sprintf(OSTR, LoadResStr(pClient->isActivated() ? "IDS_MNU_NETCLIENT" : "IDS_MNU_NETCLIENTDE"),
 			pClient->getName(), pClient->getID());
@@ -1595,7 +1595,7 @@ void C4Console::ClearNetMenu()
 	DeleteMenu(GetMenu(hWindow), MenuIndexNet, MF_BYPOSITION);
 #elif WITH_DEVELOPER_MODE
 	gtk_container_remove(GTK_CONTAINER(menuBar), itemNet);
-	itemNet = NULL;
+	itemNet = nullptr;
 #endif
 	MenuIndexNet = -1;
 	MenuIndexHelp--;

@@ -312,12 +312,12 @@ void C4SolidMask::Remove(bool fCauseInstability, bool fBackupAttachment)
 void C4SolidMask::Clear()
 {
 	// free mask+mat-buffer
-	if (pSolidMask) { delete[] pSolidMask; pSolidMask = NULL; }
-	if (pSolidMaskMatBuff) { delete[] pSolidMaskMatBuff; pSolidMaskMatBuff = NULL; }
+	if (pSolidMask) { delete[] pSolidMask; pSolidMask = nullptr; }
+	if (pSolidMaskMatBuff) { delete[] pSolidMaskMatBuff; pSolidMaskMatBuff = nullptr; }
 	// safety: mask cannot be removed now
 	MaskPut = false;
 	// clear attaching objects
-	delete[] ppAttachingObjects; ppAttachingObjects = NULL;
+	delete[] ppAttachingObjects; ppAttachingObjects = nullptr;
 	iAttachingObjectsCount = iAttachingObjectsCapacity = 0;
 }
 
@@ -391,7 +391,7 @@ C4SolidMask::C4SolidMask(C4Object *pForObject) : pForObject(pForObject)
 	MaskPut = false;
 	MaskPutRotation = 0;
 	MaskRemovalX = MaskRemovalY = 0;
-	ppAttachingObjects = NULL;
+	ppAttachingObjects = nullptr;
 	iAttachingObjectsCount = iAttachingObjectsCapacity = 0;
 	// Update linked list
 	Next = 0;

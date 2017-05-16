@@ -35,7 +35,7 @@ C4MapCreator::C4MapCreator()
 void C4MapCreator::Reset()
 {
 	MapIFT = 128;
-	MapBuf = NULL;
+	MapBuf = nullptr;
 	Exclusive = -1;
 }
 

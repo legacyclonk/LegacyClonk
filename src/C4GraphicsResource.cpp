@@ -132,7 +132,7 @@ void C4GraphicsResource::Clear()
 	fctEnergyBars.Clear();
 
 	// unhook deflist from font
-	FontRegular.SetCustomImages(NULL);
+	FontRegular.SetCustomImages(nullptr);
 
 	// closing the group set will also close the graphics.c4g
 	// this is just for games that failed to init
@@ -174,7 +174,7 @@ BOOL C4GraphicsResource::Init(bool fInitGUI)
 		return false;
 	// Game palette - could perhaps be eliminated...
 	int32_t idNewPalGrp;
-	C4Group *pPalGrp = Files.FindEntry("C4.pal", NULL, &idNewPalGrp);
+	C4Group *pPalGrp = Files.FindEntry("C4.pal", nullptr, &idNewPalGrp);
 	if (!pPalGrp) { LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), "C4.pal"); return FALSE; }
 	if (idPalGrp != idNewPalGrp)
 	{

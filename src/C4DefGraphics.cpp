@@ -41,20 +41,20 @@ C4DefGraphics::C4DefGraphics(C4Def *pOwnDef)
 	// store def
 	pDef = pOwnDef;
 	// zero fields
-	Bitmap = BitmapClr = NULL;
-	pNext = NULL;
+	Bitmap = BitmapClr = nullptr;
+	pNext = nullptr;
 	fColorBitmapAutoCreated = false;
 }
 
 void C4DefGraphics::Clear()
 {
 	// zero own fields
-	if (BitmapClr) { delete BitmapClr; BitmapClr = NULL; }
-	if (Bitmap)    { delete Bitmap;    Bitmap    = NULL; }
+	if (BitmapClr) { delete BitmapClr; BitmapClr = nullptr; }
+	if (Bitmap)    { delete Bitmap;    Bitmap    = nullptr; }
 	// delete additonal graphics
 	C4AdditionalDefGraphics *pGrp2N = pNext, *pGrp2;
-	while (pGrp2 = pGrp2N) { pGrp2N = pGrp2->pNext; pGrp2->pNext = NULL; delete pGrp2; }
-	pNext = NULL; fColorBitmapAutoCreated = false;
+	while (pGrp2 = pGrp2N) { pGrp2N = pGrp2->pNext; pGrp2->pNext = nullptr; delete pGrp2; }
+	pNext = nullptr; fColorBitmapAutoCreated = false;
 }
 
 bool C4DefGraphics::LoadBitmap(C4Group &hGroup, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG, bool fColorByOwner)
@@ -90,7 +90,7 @@ bool C4DefGraphics::LoadBitmap(C4Group &hGroup, const char *szFilename, const ch
 				DebugLogF("    Gfx loading error in %s: %s (%d x %d) doesn't match overlay %s (%d x %d) - invalid file or size mismatch",
 					hGroup.GetFullName().getData(), szFn, Bitmap ? Bitmap->Wdt : -1, Bitmap ? Bitmap->Hgt : -1,
 					szOverlayPNG, BitmapClr->Wdt, BitmapClr->Hgt);
-				delete BitmapClr; BitmapClr = NULL;
+				delete BitmapClr; BitmapClr = nullptr;
 				return false;
 			}
 		}
@@ -115,7 +115,7 @@ bool C4DefGraphics::LoadBitmaps(C4Group &hGroup, bool fColorByOwner)
 	iWildcardPos = SCharPos('*', C4CFN_DefGraphicsExPNG);
 	int32_t iOverlayWildcardPos = SCharPos('*', C4CFN_ClrByOwnerExPNG);
 	hGroup.ResetSearch();
-	while (hGroup.FindNextEntry(C4CFN_DefGraphicsExPNG, Filename, NULL, NULL, !!*Filename))
+	while (hGroup.FindNextEntry(C4CFN_DefGraphicsExPNG, Filename, nullptr, nullptr, !!*Filename))
 	{
 		// skip def graphics
 		if (SEqualNoCase(Filename, C4CFN_DefGraphicsPNG)) continue;
@@ -139,14 +139,14 @@ bool C4DefGraphics::LoadBitmaps(C4Group &hGroup, bool fColorByOwner)
 			EnforceExtension(OverlayFn, GetExtension(C4CFN_ClrByOwnerExPNG));
 		}
 		// load them
-		if (!pLastGraphics->LoadBitmap(hGroup, NULL, Filename, fColorByOwner ? OverlayFn : NULL, fColorByOwner))
+		if (!pLastGraphics->LoadBitmap(hGroup, nullptr, Filename, fColorByOwner ? OverlayFn : nullptr, fColorByOwner))
 			return false;
 	}
 	// load bitmap-graphics
 	iWildcardPos = SCharPos('*', C4CFN_DefGraphicsEx);
 	hGroup.ResetSearch();
 	*Filename = 0;
-	while (hGroup.FindNextEntry(C4CFN_DefGraphicsEx, Filename, NULL, NULL, !!*Filename))
+	while (hGroup.FindNextEntry(C4CFN_DefGraphicsEx, Filename, nullptr, nullptr, !!*Filename))
 	{
 		// skip def graphics
 		if (SEqualNoCase(Filename, C4CFN_DefGraphics)) continue;
@@ -162,14 +162,14 @@ bool C4DefGraphics::LoadBitmaps(C4Group &hGroup, bool fColorByOwner)
 		pLastGraphics->pNext = new C4AdditionalDefGraphics(pDef, GrpName);
 		pLastGraphics = pLastGraphics->pNext;
 		// load them
-		if (!pLastGraphics->LoadBitmap(hGroup, Filename, NULL, NULL, fColorByOwner))
+		if (!pLastGraphics->LoadBitmap(hGroup, Filename, nullptr, nullptr, fColorByOwner))
 			return false;
 	}
 	// load portrait graphics
 	iWildcardPos = SCharPos('*', C4CFN_Portraits);
 	hGroup.ResetSearch();
 	*Filename = 0;
-	while (hGroup.FindNextEntry(C4CFN_Portraits, Filename, NULL, NULL, !!*Filename))
+	while (hGroup.FindNextEntry(C4CFN_Portraits, Filename, nullptr, nullptr, !!*Filename))
 	{
 		// get graphics name
 		char GrpName[_MAX_PATH + 1];
@@ -199,7 +199,7 @@ bool C4DefGraphics::LoadBitmaps(C4Group &hGroup, bool fColorByOwner)
 		pLastGraphics->pNext = new C4PortraitGraphics(pDef, GrpName);
 		pLastGraphics = pLastGraphics->pNext;
 		// load them
-		if (!pLastGraphics->LoadBitmap(hGroup, fBMP ? Filename : NULL, fBMP ? NULL : Filename, *OverlayFn ? OverlayFn : NULL, fColorByOwner))
+		if (!pLastGraphics->LoadBitmap(hGroup, fBMP ? Filename : nullptr, fBMP ? nullptr : Filename, *OverlayFn ? OverlayFn : nullptr, fColorByOwner))
 			return false;
 	}
 	// done, success
@@ -228,32 +228,32 @@ C4DefGraphics *C4DefGraphics::Get(const char *szGrpName)
 	for (C4AdditionalDefGraphics *pGrp = pNext; pGrp; pGrp = pGrp->pNext)
 		if (SEqualNoCase(pGrp->GetName(), szGrpName)) return pGrp;
 	// nothing found
-	return NULL;
+	return nullptr;
 }
 
 C4PortraitGraphics *C4PortraitGraphics::Get(const char *szGrpName)
 {
 	// no group or empty string: no gfx
-	if (!szGrpName || !szGrpName[0]) return NULL;
+	if (!szGrpName || !szGrpName[0]) return nullptr;
 	// search self and additional graphics
 	for (C4AdditionalDefGraphics *pGrp = this; pGrp; pGrp = pGrp->GetNext())
 		if (SEqualNoCase(pGrp->GetName(), szGrpName)) return pGrp->IsPortrait();
 	// nothing found
-	return NULL;
+	return nullptr;
 }
 
 bool C4DefGraphics::CopyGraphicsFrom(C4DefGraphics &rSource)
 {
 	// clear previous
-	if (BitmapClr) { delete BitmapClr; BitmapClr = NULL; }
-	if (Bitmap)    { delete Bitmap;    Bitmap    = NULL; }
+	if (BitmapClr) { delete BitmapClr; BitmapClr = nullptr; }
+	if (Bitmap)    { delete Bitmap;    Bitmap    = nullptr; }
 	// copy from source
 	if (rSource.Bitmap)
 	{
 		Bitmap = new C4Surface();
 		if (!Bitmap->Copy(*rSource.Bitmap))
 		{
-			delete Bitmap; Bitmap = NULL; return false;
+			delete Bitmap; Bitmap = nullptr; return false;
 		}
 	}
 	if (rSource.BitmapClr)
@@ -261,8 +261,8 @@ bool C4DefGraphics::CopyGraphicsFrom(C4DefGraphics &rSource)
 		BitmapClr = new C4Surface();
 		if (!BitmapClr->Copy(*rSource.BitmapClr))
 		{
-			if (Bitmap) { delete Bitmap; Bitmap = NULL; }
-			delete BitmapClr; BitmapClr = NULL; return false;
+			if (Bitmap) { delete Bitmap; Bitmap = nullptr; }
+			delete BitmapClr; BitmapClr = nullptr; return false;
 		}
 		if (Bitmap) BitmapClr->SetAsClrByOwnerOf(Bitmap);
 	}
@@ -316,7 +316,7 @@ C4PortraitGraphics *C4PortraitGraphics::GetByIndex(int32_t iIndex)
 	while (iIndex--)
 	{
 		// get next indexed
-		pResult = pResult->GetNext(); if (!pResult) return NULL;
+		pResult = pResult->GetNext(); if (!pResult) return nullptr;
 		// skip non-portraits
 		if (!pResult->IsPortrait()) ++iIndex;
 	}
@@ -337,7 +337,7 @@ C4DefGraphicsPtrBackup::C4DefGraphicsPtrBackup(C4DefGraphics *pSourceGraphics)
 	if (pNextGfx)
 		pNext = new C4DefGraphicsPtrBackup(pNextGfx);
 	else
-		pNext = NULL;
+		pNext = nullptr;
 }
 
 C4DefGraphicsPtrBackup::~C4DefGraphicsPtrBackup()
@@ -365,7 +365,7 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 						if (!pObj->SetGraphics(Name, pObj->Def))
 						{
 							// shouldn't happen
-							pObj->AssignRemoval(); pObj->pGraphics = NULL;
+							pObj->AssignRemoval(); pObj->pGraphics = nullptr;
 						}
 				}
 				// remove any overlay graphics
@@ -387,7 +387,7 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 				if (pDef && pObj->Menu && (pDeco = pObj->Menu->GetFrameDecoration()))
 					if (pDeco->idSourceDef == pDef->id)
 						if (!pDeco->UpdateGfx())
-							pObj->Menu->SetFrameDeco(NULL);
+							pObj->Menu->SetFrameDeco(nullptr);
 			}
 		// check all object infos for portraits
 		for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next)
@@ -404,11 +404,11 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 				{
 					// portrait found as new portrait: simply reset (no complex handling for EM crew changes necessary)
 					delete pInfo->pNewPortrait;
-					pInfo->pNewPortrait = NULL;
+					pInfo->pNewPortrait = nullptr;
 				}
 			}
 		// done; reset field to indicate finished update
-		pGraphicsPtr = NULL;
+		pGraphicsPtr = nullptr;
 	}
 	// check next graphics
 	if (pNext) pNext->AssignUpdate(pNewGraphics);
@@ -426,7 +426,7 @@ void C4DefGraphicsPtrBackup::AssignRemoval()
 			{
 				if (pObj->pGraphics == pGraphicsPtr)
 					// same graphics found: reset them
-					if (!pObj->SetGraphics()) { pObj->AssignRemoval(); pObj->pGraphics = NULL; }
+					if (!pObj->SetGraphics()) { pObj->AssignRemoval(); pObj->pGraphics = nullptr; }
 				// remove any overlay graphics
 				for (;;)
 				{
@@ -445,10 +445,10 @@ void C4DefGraphicsPtrBackup::AssignRemoval()
 				C4GUI::FrameDecoration *pDeco;
 				if (pDef && pObj->Menu && (pDeco = pObj->Menu->GetFrameDecoration()))
 					if (pDeco->idSourceDef == pDef->id)
-						pObj->Menu->SetFrameDeco(NULL);
+						pObj->Menu->SetFrameDeco(nullptr);
 			}
 		// done; reset field to indicate finished update
-		pGraphicsPtr = NULL;
+		pGraphicsPtr = nullptr;
 	}
 	// check next graphics
 	if (pNext) pNext->AssignRemoval();
@@ -464,7 +464,7 @@ bool C4Portrait::Load(C4Group &rGrp, const char *szFilename, const char *szFilen
 	if (!pGfxPortrait->LoadBitmap(rGrp, szFilename, szFilenamePNG, szOverlayPNG, true))
 	{
 		// load failure
-		delete pGfxPortrait; pGfxPortrait = NULL;
+		delete pGfxPortrait; pGfxPortrait = nullptr;
 		return false;
 	}
 	// assign owned gfx
@@ -583,14 +583,14 @@ C4GraphicsOverlay::~C4GraphicsOverlay()
 	while (pOther = pNextOther)
 	{
 		pNextOther = pOther->pNext;
-		pOther->pNext = NULL;
+		pOther->pNext = nullptr;
 		delete pOther;
 	}
 }
 
 void C4GraphicsOverlay::UpdateFacet()
 {
-	// special: Nothing to update for object and pSourceGfx may be NULL
+	// special: Nothing to update for object and pSourceGfx may be nullptr
 	// If there will ever be something to init here, UpdateFacet() will also need to be called when objects have been loaded
 	if (eMode == MODE_Object) return;
 	// otherwise, source graphics must be specified
@@ -671,7 +671,7 @@ void C4GraphicsOverlay::CompileFunc(StdCompiler *pComp)
 	// read ID
 	pComp->Value(iID); pComp->Seperator();
 	// read def-graphics
-	pComp->Value(mkDefaultAdapt(C4DefGraphicsAdapt(pSourceGfx), (C4DefGraphics *)NULL));
+	pComp->Value(mkDefaultAdapt(C4DefGraphicsAdapt(pSourceGfx), (C4DefGraphics *)nullptr));
 	pComp->Seperator();
 	// read mode
 	pComp->Value(mkIntAdapt(eMode)); pComp->Seperator();
@@ -840,9 +840,9 @@ void C4GraphicsOverlayListAdapt::CompileFunc(StdCompiler *pComp)
 	if (pComp->isCompiler())
 	{
 		// clear list
-		delete[] pOverlay; pOverlay = NULL;
+		delete[] pOverlay; pOverlay = nullptr;
 		// read the whole list
-		C4GraphicsOverlay *pLast = NULL;
+		C4GraphicsOverlay *pLast = nullptr;
 		bool fContinue;
 		do
 		{
@@ -856,9 +856,9 @@ void C4GraphicsOverlayListAdapt::CompileFunc(StdCompiler *pComp)
 			{
 				delete e;
 				// delete unused overlay
-				delete pNext; pNext = NULL;
+				delete pNext; pNext = nullptr;
 				// clear up
-				if (!pLast) pOverlay = NULL;
+				if (!pLast) pOverlay = nullptr;
 				// done
 				return;
 			}

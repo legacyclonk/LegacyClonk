@@ -26,7 +26,7 @@ C4AList::C4AList()
 {
 	// init list with no chunks
 	// other values will be inited upon first Grow()
-	Table = NULL;
+	Table = nullptr;
 }
 
 C4AList::~C4AList()
@@ -46,7 +46,7 @@ void C4AList::Clear()
 		c = c2;
 	}
 	// reset values
-	Table = NULL;
+	Table = nullptr;
 }
 
 void C4AList::Grow()
@@ -91,9 +91,9 @@ C4AListEntry *C4AListEntry::next()
 	// check if it's just the end of a chunk
 	if (!(pOff = (C4AListEntry *)pOff->Val))
 		// it's a stop entry or the end of the list; return failure
-		return NULL;
+		return nullptr;
 	// return beginning of next chunk, if valid
 	if (pOff->Var) return pOff;
 	// otherwise, fail
-	return NULL;
+	return nullptr;
 }

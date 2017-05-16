@@ -166,8 +166,8 @@ bool Tabular::Sheet::IsActiveSheet()
 
 // Tabular
 
-Tabular::Tabular(C4Rect &rtBounds, TabPosition eTabPos) : Control(rtBounds), pActiveSheet(NULL), eTabPos(eTabPos), iMaxTabWidth(0),
-	pfctBack(NULL), pfctClip(NULL), pfctIcons(NULL), pSheetCaptionFont(NULL), iSheetMargin(4), fDrawSelf(true),
+Tabular::Tabular(C4Rect &rtBounds, TabPosition eTabPos) : Control(rtBounds), pActiveSheet(nullptr), eTabPos(eTabPos), iMaxTabWidth(0),
+	pfctBack(nullptr), pfctClip(nullptr), pfctIcons(nullptr), pSheetCaptionFont(nullptr), iSheetMargin(4), fDrawSelf(true),
 	iCaptionLengthTotal(0), iCaptionScrollPos(0), fScrollingLeft(false), fScrollingRight(false), fScrollingLeftDown(false), fScrollingRightDown(false)
 {
 	// calc client rect
@@ -204,7 +204,7 @@ Tabular::Tabular(C4Rect &rtBounds, TabPosition eTabPos) : Control(rtBounds), pAc
 	}
 	else
 	{
-		pKeySelUp = pKeySelDown = pKeySelUp2 = pKeySelDown2 = pKeyCloseTab = NULL;
+		pKeySelUp = pKeySelDown = pKeySelUp2 = pKeySelDown2 = pKeyCloseTab = nullptr;
 	}
 	SheetsChanged();
 }
@@ -250,7 +250,7 @@ bool Tabular::KeyCloseTab()
 
 void Tabular::SelectionChanged(bool fByUser)
 {
-	Control *pFocusCtrl = NULL;
+	Control *pFocusCtrl = nullptr;
 	Dialog *pDlg = GetDlg();
 	if (pDlg) pFocusCtrl = pDlg->GetFocus();
 	// any selection?
@@ -426,7 +426,7 @@ void Tabular::DrawElement(C4FacetEx &cgo)
 			ad0 = d; ad1 = d + (fLeft ? iTabHeight : iTabWidth);
 			aCptTxX = iCptTextX; aCptTxY = iCptTextY;
 			// draw active caption
-			if (!fGfx) pSheet->DrawCaption(cgo, iCptTextX, iCptTextY, iMaxTabWidth, fLeft, true, HasDrawFocus(), NULL, NULL, NULL);
+			if (!fGfx) pSheet->DrawCaption(cgo, iCptTextX, iCptTextY, iMaxTabWidth, fLeft, true, HasDrawFocus(), nullptr, nullptr, nullptr);
 		}
 		else
 		{

@@ -89,11 +89,11 @@ C4PropertyDlg::~C4PropertyDlg()
 	Clear();
 
 #ifdef WITH_DEVELOPER_MODE
-	if (vbox != NULL)
+	if (vbox != nullptr)
 	{
 		g_signal_handler_disconnect(G_OBJECT(C4DevmodeDlg::GetWindow()), handlerHide);
 		C4DevmodeDlg::RemovePage(vbox);
-		vbox = NULL;
+		vbox = nullptr;
 	}
 #endif // WITH_DEVELOPER_MODE
 }
@@ -119,11 +119,11 @@ BOOL C4PropertyDlg::Open()
 	ShowWindow(hDialog, SW_SHOWNORMAL | SW_SHOWNA);
 #else // _WIN32
 #ifdef WITH_DEVELOPER_MODE
-	if (vbox == NULL)
+	if (vbox == nullptr)
 	{
 		vbox = gtk_vbox_new(FALSE, 6);
 
-		GtkWidget *scrolled_wnd = gtk_scrolled_window_new(NULL, NULL);
+		GtkWidget *scrolled_wnd = gtk_scrolled_window_new(nullptr, nullptr);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_wnd), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled_wnd), GTK_SHADOW_IN);
 
@@ -267,9 +267,9 @@ BOOL C4PropertyDlg::Update()
 void C4PropertyDlg::Default()
 {
 #ifdef _WIN32
-	hDialog = NULL;
+	hDialog = nullptr;
 #elif defined(WITH_DEVELOPER_MODE)
-	vbox = NULL;
+	vbox = nullptr;
 #endif
 	Active = false;
 	idSelectedDef = C4ID_None;
@@ -280,7 +280,7 @@ void C4PropertyDlg::Clear()
 {
 	Selection.Clear();
 #ifdef _WIN32
-	if (hDialog) DestroyWindow(hDialog); hDialog = NULL;
+	if (hDialog) DestroyWindow(hDialog); hDialog = nullptr;
 #endif
 	Active = false;
 }
@@ -317,7 +317,7 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 	{
 		store = GTK_LIST_STORE(gtk_entry_completion_get_model(completion));
 		g_object_ref(G_OBJECT(store));
-		gtk_entry_completion_set_model(completion, NULL);
+		gtk_entry_completion_set_model(completion, nullptr);
 	}
 
 	GtkTreeIter iter;

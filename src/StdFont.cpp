@@ -143,8 +143,8 @@ void CStdFont::DestroyFont(CStdVectorFont *pFont) {}
 CStdFont::CStdFont()
 {
 	// set default values
-	psfcFontData = NULL;
-	sfcCurrent = NULL;
+	psfcFontData = nullptr;
+	sfcCurrent = nullptr;
 	iNumFontSfcs = 0;
 	iSfcSizes = 64;
 	dwDefFontHeight = iLineHgt = 10;
@@ -157,14 +157,14 @@ CStdFont::CStdFont()
 	// font not yet initialized
 	*szFontName = 0;
 	id = 0;
-	pCustomImages = NULL;
+	pCustomImages = nullptr;
 	fPrerenderedFont = false;
 #if defined(_WIN32) && !defined(HAVE_FREETYPE)
-	hDC = NULL;
-	hbmBitmap = NULL;
-	hFont = NULL;
+	hDC = nullptr;
+	hbmBitmap = nullptr;
+	hFont = nullptr;
 #elif defined(HAVE_FREETYPE)
-	pVectorFont = NULL;
+	pVectorFont = nullptr;
 #endif
 }
 
@@ -230,9 +230,9 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 	// print character on empty surface
 	ZeroMemory(pBitmapBits, iBitmapSize * iBitmapSize * 4);
 	if (fUnicode)
-		ExtTextOutW(hDC, 0, 0, ETO_OPAQUE, NULL, wstr, 1, NULL);
+		ExtTextOutW(hDC, 0, 0, ETO_OPAQUE, nullptr, wstr, 1, nullptr);
 	else
-		ExtTextOut(hDC, 0, 0, ETO_OPAQUE, NULL, str, 1, NULL);
+		ExtTextOut(hDC, 0, 0, ETO_OPAQUE, nullptr, str, 1, nullptr);
 	// must not overflow surfaces: do some size bounds
 	size.cx = Min<int>(size.cx, Min<int>(iSfcSizes, iBitmapSize));
 	size.cy = Min<int>(size.cy, Min<int>(iSfcSizes, iBitmapSize));
@@ -269,11 +269,11 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 		FT_Matrix mat;
 		mat.xx = iBoldness; mat.xy = mat.yx = 0; mat.yy = 1 << 16;
 		// .*(100 + iBoldness/3)/100
-		FT_Set_Transform(*pVectorFont, &mat, NULL);
+		FT_Set_Transform(*pVectorFont, &mat, nullptr);
 	}
 	else
 	{
-		FT_Set_Transform(*pVectorFont, NULL, NULL);
+		FT_Set_Transform(*pVectorFont, nullptr, nullptr);
 	}
 	// Render
 	if (FT_Load_Char(*pVectorFont, dwChar, FT_LOAD_RENDER | FT_LOAD_NO_HINTING))
@@ -430,10 +430,10 @@ void CStdFont::Init(CStdVectorFont &VectorFont, DWORD dwHeight, DWORD dwFontWeig
 	bmi.bmiHeader.biBitCount = 32;
 
 	// create a rendering DC and a bitmap for the font
-	hDC = CreateCompatibleDC(NULL);
+	hDC = CreateCompatibleDC(nullptr);
 	if (!hDC) { Clear(); throw std::runtime_error(std::string("Cannot create DC (") + szFontName + ")"); }
 	hbmBitmap = CreateDIBSection(hDC, &bmi, DIB_RGB_COLORS,
-		(VOID **)&pBitmapBits, NULL, 0);
+		(VOID **)&pBitmapBits, nullptr, 0);
 	if (!hbmBitmap) { Clear(); throw std::runtime_error(std::string("Cannot create DIBSection (") + szFontName + ")"); }
 	char bCharset = GetCharsetCode(szCharset);
 	// create a font. try ClearType first...
@@ -661,20 +661,20 @@ void CStdFont::Clear()
 {
 #if defined(_WIN32) && !defined(HAVE_FREETYPE)
 	// clear Win32API font stuff
-	if (hbmBitmap) { DeleteObject(hbmBitmap); hbmBitmap = NULL; }
-	if (hDC) { DeleteDC(hDC); hDC = NULL; }
-	if (hFont) { DeleteObject(hFont); hDC = NULL; }
+	if (hbmBitmap) { DeleteObject(hbmBitmap); hbmBitmap = nullptr; }
+	if (hDC) { DeleteDC(hDC); hDC = nullptr; }
+	if (hFont) { DeleteObject(hFont); hDC = nullptr; }
 #elif defined(HAVE_FREETYPE)
-	pVectorFont = NULL;
+	pVectorFont = nullptr;
 #endif
 	// clear font sfcs
 	if (psfcFontData)
 	{
 		while (iNumFontSfcs--) delete psfcFontData[iNumFontSfcs];
 		delete[] psfcFontData;
-		psfcFontData = NULL;
+		psfcFontData = nullptr;
 	}
-	sfcCurrent = NULL;
+	sfcCurrent = nullptr;
 	iNumFontSfcs = 0;
 	for (int c = ' '; c < 256; ++c) fctAsciiTexCoords[c - ' '].Clear();
 	fctUnicodeMap.clear();
@@ -1099,7 +1099,7 @@ int CStdFont::GetMessageBreak(const char *szMsg, const char **ppNewPos, int iBre
 
 void CStdFont::DrawText(SURFACE sfcDest, int iX, int iY, DWORD dwColor, const char *szText, DWORD dwFlags, CMarkup &Markup, float fZoom)
 {
-	CBltTransform bt, *pbt = NULL;
+	CBltTransform bt, *pbt = nullptr;
 	// set blit color
 	dwColor = InvertRGBAAlpha(dwColor);
 	DWORD dwOldModClr;

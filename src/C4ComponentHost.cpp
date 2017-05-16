@@ -22,7 +22,7 @@
 #include <C4Language.h>
 #include <StdRegistry.h>
 
-C4ComponentHost *pCmpHost = NULL;
+C4ComponentHost *pCmpHost = nullptr;
 
 extern C4Config *pConfig; // Some cheap temporary hack to get to config in Engine + Frontend...
 // This is so good - we can use it everywear!!!!
@@ -108,7 +108,7 @@ void C4ComponentHost::Clear()
 {
 	Data.Clear();
 #ifdef _WIN32
-	if (hDialog) DestroyWindow(hDialog); hDialog = NULL;
+	if (hDialog) DestroyWindow(hDialog); hDialog = nullptr;
 #endif
 }
 
@@ -230,7 +230,7 @@ BOOL C4ComponentHost::LoadAppend(const char *szName,
 			sprintf(str2, str1, szLang);
 			// Check existance
 			size_t iFileSize;
-			if (hGroup.FindEntry(str2, NULL, &iFileSize))
+			if (hGroup.FindEntry(str2, nullptr, &iFileSize))
 			{
 				iFileCnt++;
 				iFileSizeSum += 1 + iFileSize;
@@ -256,7 +256,7 @@ BOOL C4ComponentHost::LoadAppend(const char *szName,
 			sprintf(str2, str1, szLang);
 			// Load data
 			char *pTemp;
-			if (hGroup.LoadEntry(str2, &pTemp, NULL, 1))
+			if (hGroup.LoadEntry(str2, &pTemp, nullptr, 1))
 			{
 				*pPos++ = '\n';
 				SCopy(pTemp, pPos, Data.getPtr(Data.getLength()) - pPos);
@@ -302,7 +302,7 @@ void C4ComponentHost::Open()
 
 #endif
 
-	pCmpHost = NULL;
+	pCmpHost = nullptr;
 }
 
 bool C4ComponentHost::GetLanguageString(const char *szLanguage, StdStrBuf &rTarget)

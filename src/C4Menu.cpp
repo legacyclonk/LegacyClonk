@@ -95,7 +95,7 @@ C4MenuItem::C4MenuItem(C4Menu *pMenu, int32_t iIndex, const char *szCaption,
 	if (idID)
 	{
 		C4Def *pDef = C4Id2Def(idID);
-		if (pDef) pDef->GetComponents(&Components, NULL, pMenu ? pMenu->GetParentObject() : NULL);
+		if (pDef) pDef->GetComponents(&Components, nullptr, pMenu ? pMenu->GetParentObject() : nullptr);
 	}
 }
 
@@ -246,7 +246,7 @@ void C4MenuItem::MouseEnter(C4GUI::CMouse &rMouse)
 void C4MenuItem::DoDragging(C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam)
 {
 	// is this a drag element?
-	if (!IsDragElement()) { rMouse.pDragElement = NULL; }
+	if (!IsDragElement()) { rMouse.pDragElement = nullptr; }
 	// check if outside drag range
 	if (Max(Abs(iX - iDragX), Abs(iY - iDragY)) >= C4MC_DragSensitivity)
 	{
@@ -254,8 +254,8 @@ void C4MenuItem::DoDragging(C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, DWORD
 		Game.MouseControl.StartConstructionDrag(id);
 		// this disables the window: Release mouse
 		rMouse.ReleaseButtons();
-		rMouse.pDragElement = NULL;
-		rMouse.pMouseOverElement = NULL;
+		rMouse.pDragElement = nullptr;
+		rMouse.pMouseOverElement = nullptr;
 	}
 }
 
@@ -263,12 +263,12 @@ void C4MenuItem::StopDragging(C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, DWO
 {
 	// drag stop: Nothing to do, really
 	// Mouse up will be processed by regular procedure
-	rMouse.pDragElement = NULL;
+	rMouse.pDragElement = nullptr;
 }
 
 // C4Menu
 
-C4Menu::C4Menu() : C4GUI::Dialog(100, 100, NULL, true) // will be re-adjusted later
+C4Menu::C4Menu() : C4GUI::Dialog(100, 100, nullptr, true) // will be re-adjusted later
 {
 	Default();
 	AddElement(pClientWindow = new C4GUI::ScrollWindow(this));
@@ -831,7 +831,7 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 		if (pItem && pItem->fOwnValue)
 			iValue = pItem->iValue;
 		else
-			iValue = pDef->GetValue(NULL, NO_OWNER);
+			iValue = pDef->GetValue(nullptr, NO_OWNER);
 	}
 
 	C4Facet cgoExtra(cgo.Surface, cgo.TargetX + rcBounds.x + 1, cgo.TargetY + rcBounds.y + rcBounds.Hgt - C4MN_SymbolSize - 1, rcBounds.Wdt - 2, C4MN_SymbolSize);
@@ -1112,7 +1112,7 @@ C4Viewport *C4Menu::GetViewport()
 		if (pVP->IsViewportMenu(this))
 			return pVP;
 	// none matching
-	return NULL;
+	return nullptr;
 }
 
 void C4Menu::UpdateElementPositions()
@@ -1124,7 +1124,7 @@ void C4Menu::UpdateElementPositions()
 	pClientWindow->SetBounds(GetContainedClientRect());
 	// re-stack all list items
 	int xOff, yOff = 0;
-	C4MenuItem *pCurr = static_cast<C4MenuItem *>(pClientWindow->GetFirst()), *pPrev = NULL;
+	C4MenuItem *pCurr = static_cast<C4MenuItem *>(pClientWindow->GetFirst()), *pPrev = nullptr;
 	if (HasPortrait() && pCurr)
 	{
 		// recheck portrait
@@ -1183,7 +1183,7 @@ void C4Menu::UpdateElementPositions()
 					// following item larger height: Need to re-stack from beginning
 					iMaxDlgOptionHeight = rcNewBounds.Hgt;
 					pNext = pFirstStack;
-					pPrev = NULL;
+					pPrev = nullptr;
 					yOff = 0;
 					iIndex = 0;
 					continue;

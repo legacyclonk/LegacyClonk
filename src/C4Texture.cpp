@@ -34,9 +34,9 @@
 C4Texture::C4Texture()
 {
 	Name[0] = 0;
-	Surface8 = NULL;
-	Surface32 = NULL;
-	Next = NULL;
+	Surface8 = nullptr;
+	Surface32 = nullptr;
+	Next = nullptr;
 }
 
 C4Texture::~C4Texture()
@@ -48,13 +48,13 @@ C4Texture::~C4Texture()
 }
 
 C4TexMapEntry::C4TexMapEntry()
-	: pMaterial(NULL), iMaterialIndex(MNone) {}
+	: pMaterial(nullptr), iMaterialIndex(MNone) {}
 
 void C4TexMapEntry::Clear()
 {
 	Material.Clear(); Texture.Clear();
 	iMaterialIndex = MNone;
-	pMaterial = NULL;
+	pMaterial = nullptr;
 	MatPattern.Clear();
 }
 
@@ -172,7 +172,7 @@ void C4TextureMap::Clear()
 		next2 = ctex->Next;
 		delete ctex;
 	}
-	FirstTexture = NULL;
+	FirstTexture = nullptr;
 	fInitialized = false;
 }
 
@@ -206,13 +206,13 @@ int32_t C4TextureMap::LoadMap(C4Group &hGroup, const char *szEntryName, BOOL *pO
 	char szLine[100 + 1];
 	int32_t cnt, iIndex, iTextures = 0;
 	// Load text file into memory
-	if (!hGroup.LoadEntry(szEntryName, &bpMap, NULL, 1)) return 0;
+	if (!hGroup.LoadEntry(szEntryName, &bpMap, nullptr, 1)) return 0;
 	// Scan text buffer lines
 	for (cnt = 0; SCopySegment(bpMap, cnt, szLine, 0x0A, 100); cnt++)
 		if ((szLine[0] != '#') && (SCharCount('=', szLine) == 1))
 		{
 			SReplaceChar(szLine, 0x0D, 0x00);
-			if (Inside<int32_t>(iIndex = strtol(szLine, NULL, 10), 0, C4M_MaxTexIndex - 1))
+			if (Inside<int32_t>(iIndex = strtol(szLine, nullptr, 10), 0, C4M_MaxTexIndex - 1))
 			{
 				const char *szMapping = szLine + SCharPos('=', szLine) + 1;
 				StdStrBuf Material, Texture;
@@ -407,7 +407,7 @@ C4Texture *C4TextureMap::GetTexture(const char *szTexture)
 	for (pTexture = FirstTexture; pTexture; pTexture = pTexture->Next)
 		if (SEqualNoCase(pTexture->Name, szTexture))
 			return pTexture;
-	return NULL;
+	return nullptr;
 }
 
 bool C4TextureMap::CheckTexture(const char *szTexture)
@@ -430,12 +430,12 @@ const char *C4TextureMap::GetTexture(int32_t iIndex)
 	for (pTexture = FirstTexture, cindex = 0; pTexture; pTexture = pTexture->Next, cindex++)
 		if (cindex == iIndex)
 			return pTexture->Name;
-	return NULL;
+	return nullptr;
 }
 
 void C4TextureMap::Default()
 {
-	FirstTexture = NULL;
+	FirstTexture = nullptr;
 	fEntriesAdded = false;
 	fOverloadMaterials = false;
 	fOverloadTextures = false;

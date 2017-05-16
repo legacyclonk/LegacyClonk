@@ -30,7 +30,7 @@
 CStdFile::CStdFile()
 {
 	Status = FALSE;
-	hFile = NULL;
+	hFile = nullptr;
 	ClearBuffer();
 	ModeWrite = FALSE;
 	Name[0] = 0;
@@ -140,7 +140,7 @@ bool CStdFile::Close()
 	readCompressedFile.reset();
 	writeCompressedFile.reset();
 	if (hFile) if (fclose(hFile) != 0) rval = FALSE;
-	hFile = NULL;
+	hFile = nullptr;
 	return !!rval;
 }
 
@@ -150,7 +150,7 @@ bool CStdFile::Default()
 	Name[0] = 0;
 	readCompressedFile.reset();
 	writeCompressedFile.reset();
-	hFile = NULL;
+	hFile = nullptr;
 	BufferLoad = BufferPtr = 0;
 	return TRUE;
 }
