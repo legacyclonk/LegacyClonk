@@ -387,14 +387,14 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	// Stop waiting for the next frame when more events arrive
 	XFlush(dpy);
 	FD_SET(XConnectionNumber(dpy), &rfds);
-	max_fd = Max(XConnectionNumber(dpy), max_fd);
+	max_fd = (std::max)(XConnectionNumber(dpy), max_fd);
 #ifdef USE_CONSOLE
 	// Wait for commands from stdin
 	FD_SET(0, &rfds);
 #endif
 	// And for events from the network thread
 	FD_SET(Priv->Pipe[0], &rfds);
-	max_fd = Max(Priv->Pipe[0], max_fd);
+	max_fd = (std::max)(Priv->Pipe[0], max_fd);
 	switch (select(max_fd + 1, &rfds, nullptr, nullptr, (fCheckTimer || iTimeout != INFINITE) ? &tv : nullptr))
 	{
 	// error

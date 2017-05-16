@@ -326,7 +326,7 @@ bool C4Game::Init()
 	// Get PlayerFilenames from Config, if ParseCommandLine did not fill some in
 	// Must be done here, because InitGame calls PlayerInfos.InitLocal
 	if (!*PlayerFilenames)
-		SCopy(Config.General.Participants, PlayerFilenames, Min(sizeof(PlayerFilenames), sizeof(Config.General.Participants)) - 1);
+		SCopy(Config.General.Participants, PlayerFilenames, (std::min)(sizeof(PlayerFilenames), sizeof(Config.General.Participants)) - 1);
 
 	// Join a game?
 	if (pJoinReference || *DirectJoinAddress)
@@ -1136,8 +1136,8 @@ C4Object *C4Game::CreateObjectConstruction(C4ID id,
 			// Border basement
 			if (pDef->Basement > 1)
 			{
-				Landscape.DrawMaterialRect(MGranite, dx, dy + dhgt, Min<int32_t>(pDef->Basement, dwdt), BasementStrength);
-				Landscape.DrawMaterialRect(MGranite, dx + dwdt - Min<int32_t>(pDef->Basement, dwdt), dy + dhgt, Min<int32_t>(pDef->Basement, dwdt), BasementStrength);
+				Landscape.DrawMaterialRect(MGranite, dx, dy + dhgt, std::min<int32_t>(pDef->Basement, dwdt), BasementStrength);
+				Landscape.DrawMaterialRect(MGranite, dx + dwdt - std::min<int32_t>(pDef->Basement, dwdt), dy + dhgt, std::min<int32_t>(pDef->Basement, dwdt), BasementStrength);
 			}
 			// Normal basement
 			else
@@ -3767,7 +3767,7 @@ void C4Game::InitRules()
 	int32_t cnt, cnt2;
 	C4ID idType; int32_t iCount;
 	for (cnt = 0; (idType = Parameters.Rules.GetID(cnt, &iCount)); cnt++)
-		for (cnt2 = 0; cnt2 < Max<int32_t>(iCount, 1); cnt2++)
+		for (cnt2 = 0; cnt2 < std::max<int32_t>(iCount, 1); cnt2++)
 			CreateObject(idType, nullptr);
 	// Update rule flags
 	UpdateRules();

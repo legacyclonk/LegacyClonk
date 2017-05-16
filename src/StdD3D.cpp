@@ -317,8 +317,8 @@ bool CStdD3D::BlitSurface2Window(CSurface *sfcSource,
 		int iTexSize = sfcSource->iTexSize;
 		int iTexX = fX / iTexSize;
 		int iTexY = fY / iTexSize;
-		int iTexX2 = Min((fX + fWdt - 1) / iTexSize + 1, sfcSource->iTexX);
-		int iTexY2 = Min((fY + fHgt - 1) / iTexSize + 1, sfcSource->iTexY);
+		int iTexX2 = (std::min)((fX + fWdt - 1) / iTexSize + 1, sfcSource->iTexX);
+		int iTexY2 = (std::min)((fY + fHgt - 1) / iTexSize + 1, sfcSource->iTexY);
 		CTexRef **ppTex = sfcSource->ppTex + iTexY * sfcSource->iTexX + iTexX;
 		// blit from all these textures
 		CTexRef **ppTexRow, *pBaseTex = nullptr;
@@ -332,10 +332,10 @@ bool CStdD3D::BlitSurface2Window(CSurface *sfcSource,
 				int iBlitY = iTexSize * iY;
 				// get new texture source bounds
 				RECT fTexBlt;
-				fTexBlt.left = Max(fX - iBlitX, 0);
-				fTexBlt.top  = Max(fY - iBlitY, 0);
-				fTexBlt.right  = Min(fX + fWdt - iBlitX, iTexSize);
-				fTexBlt.bottom = Min(fY + fHgt - iBlitY, iTexSize);
+				fTexBlt.left = (std::max)(fX - iBlitX, 0);
+				fTexBlt.top  = (std::max)(fY - iBlitY, 0);
+				fTexBlt.right  = (std::min)(fX + fWdt - iBlitX, iTexSize);
+				fTexBlt.bottom = (std::min)(fY + fHgt - iBlitY, iTexSize);
 				// get new dest bounds
 				RECT tTexBlt;
 				tTexBlt.left = (long)((fTexBlt.left + iBlitX - fX) * scaleX + tX);

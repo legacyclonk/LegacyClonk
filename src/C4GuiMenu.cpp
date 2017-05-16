@@ -329,12 +329,12 @@ void ContextMenu::UpdateElementPositions()
 	Element *pCurr = GetFirst();
 	if (!pCurr) return;
 	pCurr->GetBounds().y = 0;
-	int32_t iMinWdt = Max<int32_t>(20, pCurr->GetBounds().Wdt);;
+	int32_t iMinWdt = std::max<int32_t>(20, pCurr->GetBounds().Wdt);;
 	int32_t iOverallHgt = pCurr->GetBounds().Hgt;
 	// others stacked under it
 	while (pCurr = pCurr->GetNext())
 	{
-		iMinWdt = Max(iMinWdt, pCurr->GetBounds().Wdt);
+		iMinWdt = (std::max)(iMinWdt, pCurr->GetBounds().Wdt);
 		int32_t iYSpace = pCurr->GetListItemTopSpacing();
 		int32_t iNewY = iOverallHgt + iYSpace;
 		iOverallHgt += pCurr->GetBounds().Hgt + iYSpace;
@@ -345,7 +345,7 @@ void ContextMenu::UpdateElementPositions()
 		}
 	}
 	// don't make smaller
-	iMinWdt = Max(iMinWdt, rcBounds.Wdt - GetMarginLeft() - GetMarginRight());
+	iMinWdt = (std::max)(iMinWdt, rcBounds.Wdt - GetMarginLeft() - GetMarginRight());
 	// all entries same size
 	for (pCurr = GetFirst(); pCurr; pCurr = pCurr->GetNext())
 		if (pCurr->GetBounds().Wdt != iMinWdt)
@@ -355,7 +355,7 @@ void ContextMenu::UpdateElementPositions()
 		}
 	// update own size
 	rcBounds.Wdt = iMinWdt + GetMarginLeft() + GetMarginRight();
-	rcBounds.Hgt = Max<int32_t>(iOverallHgt, 8) + GetMarginTop() + GetMarginBottom();
+	rcBounds.Hgt = std::max<int32_t>(iOverallHgt, 8) + GetMarginTop() + GetMarginBottom();
 	UpdateSize();
 }
 

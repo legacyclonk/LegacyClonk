@@ -263,8 +263,8 @@ static void fill_edge_structure(CPolyEdge *edge, int *i1, int *i2)
 	edge->prev = nullptr;
 	edge->next = nullptr;
 	if (edge->dx < 0)
-		edge->x += Min<int>(edge->dx + (1 << POLYGON_FIX_SHIFT), 0);
-	edge->w = Max<int>(Abs(edge->dx) - (1 << POLYGON_FIX_SHIFT), 0);
+		edge->x += std::min<int>(edge->dx + (1 << POLYGON_FIX_SHIFT), 0);
+	edge->w = std::max<int>(Abs(edge->dx) - (1 << POLYGON_FIX_SHIFT), 0);
 }
 
 static CPolyEdge *add_edge(CPolyEdge *list, CPolyEdge *edge, int sort_by_x)
@@ -366,7 +366,7 @@ void CSurface8::Polygon(int iNum, int *ipVtx, int iCol)
 			x2 = (edge->next->x + edge->next->w) >> POLYGON_FIX_SHIFT;
 			y = c;
 			// Fix coordinates
-			if (x1 > x2) Swap(x1, x2);
+			if (x1 > x2) std::swap(x1, x2);
 			// Set line
 			for (int xcnt = x2 - x1; xcnt >= 0; xcnt--) SetPix(x1 + xcnt, y, iCol);
 			edge = edge->next->next;

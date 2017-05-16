@@ -97,7 +97,7 @@ void C4Network2Reference::CompileFunc(StdCompiler *pComp)
 	bool RegJoinOnly = false;
 	pComp->Value(mkNamingAdapt(RegJoinOnly,                                        "RegJoinOnly",       false));
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iAddrCnt),                           "AddressCount",      0));
-	iAddrCnt = Min<uint8_t>(C4ClientMaxAddr, iAddrCnt);
+	iAddrCnt = std::min<uint8_t>(C4ClientMaxAddr, iAddrCnt);
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(Addrs, iAddrCnt, C4Network2Address()), "Address"));
 	pComp->Value(mkNamingAdapt(Game.sEngineName,                                   "Game",              "None"));
 	pComp->Value(mkNamingAdapt(mkArrayAdaptDM(Game.iVer, 0),                       "Version"));
@@ -331,7 +331,7 @@ bool C4Network2HTTPClient::Decompress(StdBuf *pData)
 	size_t iSize = pData->getSize();
 	// Create buffer
 	uint32_t iOutSize = *getBufPtr<uint32_t>(*pData, pData->getSize() - sizeof(uint32_t));
-	iOutSize = Min<uint32_t>(iOutSize, iSize * 1000);
+	iOutSize = std::min<uint32_t>(iOutSize, iSize * 1000);
 	StdBuf Out; Out.New(iOutSize);
 	// Prepare stream
 	z_stream zstrm{};
@@ -411,7 +411,7 @@ int C4Network2HTTPClient::GetTimeout()
 {
 	if (!fBusy)
 		return C4NetIOTCP::GetTimeout();
-	return MaxTimeout(C4NetIOTCP::GetTimeout(), 1000 * Max<int>(time(nullptr) - iRequestTimeout, 0));
+	return MaxTimeout(C4NetIOTCP::GetTimeout(), 1000 * std::max<int>(time(nullptr) - iRequestTimeout, 0));
 }
 
 bool C4Network2HTTPClient::Query(const StdBuf &Data, bool fBinary)

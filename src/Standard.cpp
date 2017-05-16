@@ -86,7 +86,7 @@ bool ForLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2,
 	int d, dx, dy, aincr, bincr, xincr, yincr, x, y;
 	if (Abs(x2 - x1) < Abs(y2 - y1))
 	{
-		if (y1 > y2) { Swap(x1, x2); Swap(y1, y2); }
+		if (y1 > y2) { std::swap(x1, x2); std::swap(y1, y2); }
 		xincr = (x2 > x1) ? 1 : -1;
 		dy = y2 - y1; dx = Abs(x2 - x1);
 		d = 2 * dx - dy; aincr = 2 * (dx - dy); bincr = 2 * dx; x = x1; y = y1;
@@ -108,7 +108,7 @@ bool ForLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2,
 	}
 	else
 	{
-		if (x1 > x2) { Swap(x1, x2); Swap(y1, y2); }
+		if (x1 > x2) { std::swap(x1, x2); std::swap(y1, y2); }
 		yincr = (y2 > y1) ? 1 : -1;
 		dx = x2 - x1; dy = Abs(y2 - y1);
 		d = 2 * dy - dx; aincr = 2 * (dy - dx); bincr = 2 * dy; x = x1; y = y1;
@@ -209,7 +209,7 @@ void SCopyUntil(const char *szSource, char *sTarget, char cUntil, int iMaxL, int
 
 void SCopyUntil(const char *szSource, char *sTarget, const char *sUntil, size_t iMaxL)
 {
-	size_t n = Min(strcspn(szSource, sUntil), iMaxL - 1);
+	size_t n = (std::min)(strcspn(szSource, sUntil), iMaxL - 1);
 	strncpy(sTarget, szSource, n);
 	sTarget[n] = 0;
 }
@@ -543,7 +543,7 @@ bool SCopyEnclosed(const char *szSource, char cOpen, char cClose, char *sTarget,
 	if (!szSource || !sTarget) return false;
 	if ((iPos = SCharPos(cOpen, szSource)) < 0) return false;
 	if ((iLen = SCharPos(cClose, szSource + iPos + 1)) < 0) return false;
-	SCopy(szSource + iPos + 1, sTarget, Min(iLen, iSize));
+	SCopy(szSource + iPos + 1, sTarget, (std::min)(iLen, iSize));
 	return true;
 }
 
@@ -698,7 +698,7 @@ const char *SGetParameter(const char *strCommandLine, int iParameter, char *strT
 		{
 			bool fWrongQuote = (SCharPos('"', c) > -1) && (SCharPos('"', c) < SCharPos(' ', c));
 			SCopyUntil(c, strParameter, fWrongQuote ? '"' : ' ', 2048);
-			c += Max(SLen(strParameter), 1);
+			c += (std::max)(SLen(strParameter), 1);
 		}
 		// Process (non-empty) parameter
 		if (strParameter[0])

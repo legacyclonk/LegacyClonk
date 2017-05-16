@@ -47,7 +47,7 @@ void C4GameMessage::Init(int32_t iType, const StdStrBuf &sText, C4Object *pTarge
 	Player = iPlayer;
 	ColorDw = dwClr;
 	Type = iType;
-	Delay = Max<int32_t>(C4GM_MinDelay, Text.getLength() * TextMsgDelayFactor);
+	Delay = std::max<int32_t>(C4GM_MinDelay, Text.getLength() * TextMsgDelayFactor);
 	DecoID = idDecoID;
 	this->dwFlags = dwFlags;
 	if (szPortraitDef && *szPortraitDef) PortraitDef.Copy(szPortraitDef); else PortraitDef.Clear();
@@ -112,9 +112,9 @@ void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer)
 			// Word wrap to cgo width
 			if (PortraitDef)
 			{
-				if (!wdt) wdt = BoundBy<int32_t>(cgo.Wdt / 2, 50, Min<int32_t>(500, cgo.Wdt - 10));
+				if (!wdt) wdt = BoundBy<int32_t>(cgo.Wdt / 2, 50, std::min<int32_t>(500, cgo.Wdt - 10));
 				int32_t iUnbrokenTextWidth = Game.GraphicsResource.FontRegular.GetTextWidth(Text.getData(), true);
-				wdt = Min<int32_t>(wdt, iUnbrokenTextWidth + 10);
+				wdt = std::min<int32_t>(wdt, iUnbrokenTextWidth + 10);
 			}
 			else
 			{
@@ -145,7 +145,7 @@ void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer)
 			// draw decoration
 			if (pFrameDeco)
 			{
-				C4Rect rect(iDrawX - cgo.TargetX, iDrawY - cgo.TargetY, iTextWdt + PortraitWidth + PortraitIndent + pFrameDeco->iBorderLeft + pFrameDeco->iBorderRight, Max(iTextHgt, PortraitWidth) + pFrameDeco->iBorderTop + pFrameDeco->iBorderBottom);
+				C4Rect rect(iDrawX - cgo.TargetX, iDrawY - cgo.TargetY, iTextWdt + PortraitWidth + PortraitIndent + pFrameDeco->iBorderLeft + pFrameDeco->iBorderRight, (std::max)(iTextHgt, PortraitWidth) + pFrameDeco->iBorderTop + pFrameDeco->iBorderBottom);
 				if (dwFlags & C4GM_Bottom) { rect.y -= rect.Hgt; iDrawY -= rect.Hgt; }
 				else if (dwFlags & C4GM_VCenter) { rect.y -= rect.Hgt / 2; iDrawY -= rect.Hgt / 2; }
 				if (dwFlags & C4GM_Right) { rect.x -= rect.Wdt; iDrawX -= rect.Wdt; }

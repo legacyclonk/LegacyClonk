@@ -410,7 +410,7 @@ int C4PlayerList::AverageValueGain() const
 	if (First)
 	{
 		for (C4Player *pPlr = First; pPlr; pPlr = pPlr->Next)
-			iResult += Max<int32_t>(pPlr->ValueGain, 0);
+			iResult += std::max<int32_t>(pPlr->ValueGain, 0);
 		iResult /= GetCount();
 	}
 	return iResult;

@@ -359,7 +359,7 @@ void C4TeamList::AddTeam(C4Team *pNewTeam)
 	// store new team
 	ppList[iTeamCount++] = pNewTeam;
 	// adjust ID
-	iLastTeamID = Max(pNewTeam->iID, iLastTeamID);
+	iLastTeamID = (std::max)(pNewTeam->iID, iLastTeamID);
 }
 
 void C4TeamList::ClearTeams()
@@ -433,7 +433,7 @@ int32_t C4TeamList::GetLargestTeamID() const
 {
 	int32_t iLargest = 0;
 	C4Team **ppCheck = ppList; int32_t iCnt = iTeamCount;
-	for (; iCnt--; ++ppCheck) iLargest = Max((*ppCheck)->GetID(), iLargest);
+	for (; iCnt--; ++ppCheck) iLargest = (std::max)((*ppCheck)->GetID(), iLargest);
 	return iLargest;
 }
 
@@ -598,7 +598,7 @@ void C4TeamList::CompileFunc(StdCompiler *pComp)
 	if (pComp->isCompiler())
 	{
 		// adjust last team ID, which may not be set properly for player-generated team files
-		iLastTeamID = Max(GetLargestTeamID(), iLastTeamID);
+		iLastTeamID = (std::max)(GetLargestTeamID(), iLastTeamID);
 		// force automatic generation of teams if none are defined
 		if (!iTeamCount) fAutoGenerateTeams = true;
 	}

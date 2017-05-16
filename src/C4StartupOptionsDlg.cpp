@@ -42,7 +42,7 @@ void C4StartupOptionsDlg::SmallButton::DrawElement(C4FacetEx &cgo)
 	int32_t iTextHgt = rUseFont.GetLineHeight();
 	// draw frame
 	uint32_t dwClrHigh = C4StartupBtnBorderColor1, dwClrLow = C4StartupBtnBorderColor2;
-	if (fDown) Swap<uint32_t>(dwClrHigh, dwClrLow);
+	if (fDown) std::swap(dwClrHigh, dwClrLow);
 	int32_t iIndent = BoundBy<int32_t>((rcBounds.Hgt - iTextHgt) / 3, 2, 5);
 	int iDrawQuadTop[8] = { x0, y0, x1, y0, x1 - iIndent, y0 + iIndent, x0, y0 + iIndent };
 	int iDrawQuadLeft[8] = { x0, y0, x0 + iIndent, y0, x0 + iIndent, y1 - iIndent, x0, y1 };
@@ -240,7 +240,7 @@ C4StartupOptionsDlg::ControlConfigArea::ControlConfigArea(const C4Rect &rcArea, 
 	// get number of control sets to be configured
 	iMaxControlSets = 1; // do not devide by zero
 	if (fGamepad && Application.pGamePadControl)
-		iMaxControlSets = Max(1, Application.pGamePadControl->GetGamePadCount());
+		iMaxControlSets = (std::max)(1, Application.pGamePadControl->GetGamePadCount());
 	if (!fGamepad)
 		iMaxControlSets = C4MaxKeyboardSet;
 	ppKeyControlSetBtns = new C4GUI::IconButton *[iMaxControlSets];
@@ -277,8 +277,8 @@ C4StartupOptionsDlg::ControlConfigArea::ControlConfigArea(const C4Rect &rcArea, 
 	if (iKeyAreaWdt > iKeyAreaMaxWdt || iKeyAreaHgt > iKeyAreaMaxHgt)
 	{
 		// scale down
-		float fScaleX = float(iKeyAreaMaxWdt) / float(Max<int32_t>(iKeyAreaWdt, 1)),
-			fScaleY = float(iKeyAreaMaxHgt) / float(Max<int32_t>(iKeyAreaHgt, 1)), fScale;
+		float fScaleX = float(iKeyAreaMaxWdt) / float(std::max<int32_t>(iKeyAreaWdt, 1)),
+			fScaleY = float(iKeyAreaMaxHgt) / float(std::max<int32_t>(iKeyAreaHgt, 1)), fScale;
 		if (fScaleX > fScaleY) fScale = fScaleY; else fScale = fScaleX;
 		iKeyMargin = int32_t(fScale * iKeyMargin);
 		iKeyWdt = int32_t(fScale * iKeyWdt);
@@ -321,7 +321,7 @@ C4StartupOptionsDlg::ControlConfigArea::ControlConfigArea(const C4Rect &rcArea, 
 	const char *szBtnText = LoadResStr("IDS_BTN_RESETKEYBOARD");
 	int32_t iButtonWidth = 100, iButtonHeight = 20; C4GUI::Button *btn;
 	C4GUI::GetRes()->CaptionFont.GetTextExtent(szBtnText, iButtonWidth, iButtonHeight, true);
-	C4Rect rcResetBtn = caKeyBottomBtns.GetFromRight(Min<int32_t>(iButtonWidth + iButtonHeight * 4, caKeyBottomBtns.GetInnerWidth()));
+	C4Rect rcResetBtn = caKeyBottomBtns.GetFromRight(std::min<int32_t>(iButtonWidth + iButtonHeight * 4, caKeyBottomBtns.GetInnerWidth()));
 	AddElement(btn = new C4GUI::CallbackButton<C4StartupOptionsDlg::ControlConfigArea, SmallButton>(szBtnText, rcResetBtn, &C4StartupOptionsDlg::ControlConfigArea::OnResetKeysBtn, this));
 	btn->SetToolTip(LoadResStr("IDS_MSG_RESETKEYSETS"));
 
@@ -616,7 +616,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	else
 	{
 		iIndentY1 = GetClientRect().Hgt / 200;
-		iIndentY2 = Max<int32_t>(1, iIndentY1 / 2);
+		iIndentY2 = std::max<int32_t>(1, iIndentY1 / 2);
 	}
 	C4GUI::ComponentAligner caMain(GetClientRect(), 0, 0, true);
 	C4GUI::ComponentAligner caButtonArea(caMain.GetFromBottom(caMain.GetHeight() / (fSmall ? 20 : 7)), 0, 0);
@@ -657,7 +657,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pLbl->SetToolTip(szLangTip);
 	pSheetGeneral->AddElement(pLbl);
 	pUseFont->GetTextExtent("XX: Top Secret Language", w, q, true);
-	pLangCombo = new C4GUI::ComboBox(caLanguageBox.GetFromLeft(Min(w, caLanguageBox.GetWidth())));
+	pLangCombo = new C4GUI::ComboBox(caLanguageBox.GetFromLeft((std::min)(w, caLanguageBox.GetWidth())));
 	pLangCombo->SetToolTip(szLangTip);
 	pLangCombo->SetComboCB(new C4GUI::ComboBox_FillCallback<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnLangComboFill, &C4StartupOptionsDlg::OnLangComboSelChange));
 	pLangCombo->SetColors(C4StartupFontClr, C4StartupEditBGColor, C4StartupEditBorderColor);
@@ -677,7 +677,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pLbl->SetToolTip(szFontTip);
 	pSheetGeneral->AddElement(pLbl);
 	pUseFont->GetTextExtent("Comic Sans MS", w, q, true);
-	pFontFaceCombo = new C4GUI::ComboBox(caFontBox.GetFromLeft(Min<int32_t>(caFontBox.GetInnerWidth() * 3 / 4, w * 3)));
+	pFontFaceCombo = new C4GUI::ComboBox(caFontBox.GetFromLeft(std::min<int32_t>(caFontBox.GetInnerWidth() * 3 / 4, w * 3)));
 	pFontFaceCombo->SetToolTip(szFontTip);
 	pFontFaceCombo->SetComboCB(new C4GUI::ComboBox_FillCallback<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnFontFaceComboFill, &C4StartupOptionsDlg::OnFontComboSelChange));
 	pFontFaceCombo->SetColors(C4StartupFontClr, C4StartupEditBGColor, C4StartupEditBorderColor);
@@ -685,7 +685,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pFontFaceCombo->SetDecoration(&(C4Startup::Get()->Graphics.fctContext));
 	caFontBox.ExpandLeft(-C4GUI_DefDlgSmallIndent);
 	pSheetGeneral->AddElement(pFontFaceCombo);
-	pFontSizeCombo = new C4GUI::ComboBox(caFontBox.GetFromLeft(Min<int32_t>(caFontBox.GetInnerWidth(), w)));
+	pFontSizeCombo = new C4GUI::ComboBox(caFontBox.GetFromLeft(std::min<int32_t>(caFontBox.GetInnerWidth(), w)));
 	pFontSizeCombo->SetToolTip(LoadResStr("IDS_DESC_FONTSIZE"));
 	pFontSizeCombo->SetComboCB(new C4GUI::ComboBox_FillCallback<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnFontSizeComboFill, &C4StartupOptionsDlg::OnFontComboSelChange));
 	pFontSizeCombo->SetColors(C4StartupFontClr, C4StartupEditBGColor, C4StartupEditBorderColor);
@@ -721,7 +721,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	const char *szBtnText = LoadResStr("IDS_BTN_RESETCONFIG");
 	C4GUI::CallbackButton<C4StartupOptionsDlg, SmallButton> *pSmallBtn;
 	C4GUI::GetRes()->CaptionFont.GetTextExtent(szBtnText, iButtonWidth, iButtonHeight, true);
-	C4Rect rcResetBtn = caSheetProgram.GetGridCell(1, 2, 6, 7, Min<int32_t>(iButtonWidth + iButtonHeight * 4, caSheetProgram.GetInnerWidth() * 2 / 5), SmallButton::GetDefaultButtonHeight(), true);
+	C4Rect rcResetBtn = caSheetProgram.GetGridCell(1, 2, 6, 7, std::min<int32_t>(iButtonWidth + iButtonHeight * 4, caSheetProgram.GetInnerWidth() * 2 / 5), SmallButton::GetDefaultButtonHeight(), true);
 	pSheetGeneral->AddElement(pSmallBtn = new C4GUI::CallbackButton<C4StartupOptionsDlg, SmallButton>(szBtnText, rcResetBtn, &C4StartupOptionsDlg::OnResetConfigBtn, this));
 	pSmallBtn->SetToolTip(LoadResStr("IDS_DESC_RESETCONFIG"));
 
@@ -760,7 +760,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pSheetGraphics->AddElement(pGroupResolution);
 	C4GUI::ComponentAligner caGroupResolution(pGroupResolution->GetClientRect(), iIndentX1, iIndentY2, true);
 	// resolution combobox
-	pUseFont->GetTextExtent("1600 x 1200", w, q, true); w = Min<int32_t>(caGroupResolution.GetInnerWidth(), w + 40);
+	pUseFont->GetTextExtent("1600 x 1200", w, q, true); w = std::min<int32_t>(caGroupResolution.GetInnerWidth(), w + 40);
 	C4GUI::ComboBox *pGfxResCombo = new C4GUI::ComboBox(caGroupResolution.GetGridCell(0, 1, 0, 4, w, C4GUI::ComboBox::GetDefaultHeight(), true));
 	pGfxResCombo->SetToolTip(LoadResStr("IDS_MSG_RESOLUTION_DESC"));
 	pGfxResCombo->SetComboCB(new C4GUI::ComboBox_FillCallback<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnGfxResComboFill, &C4StartupOptionsDlg::OnGfxResComboSelChange));

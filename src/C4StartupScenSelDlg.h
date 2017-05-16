@@ -224,7 +224,7 @@ public:
 	Folder *GetCurrFolder() const { return pCurrFolder; }
 	Folder *GetRootFolder() const { return pRootFolder; }
 
-	int32_t GetProgressPercent() const { return iProgress * 100 / Max<int32_t>(iMaxProgress, 1); }
+	int32_t GetProgressPercent() const { return iProgress * 100 / std::max<int32_t>(iMaxProgress, 1); }
 };
 
 // for map-style folders: Data for map display

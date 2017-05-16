@@ -543,7 +543,7 @@ void C4Player::PlaceReadyCrew(int32_t tx1, int32_t tx2, int32_t ty, C4Object *Fi
 		for (cnt = 0; id = Game.C4S.PlrStart[PlrStartIndex].ReadyCrew.GetID(cnt, &iCount); cnt++)
 		{
 			// Minimum one clonk if empty id
-			iCount = Max<int32_t>(iCount, 1);
+			iCount = std::max<int32_t>(iCount, 1);
 
 			for (int32_t cnt2 = 0; cnt2 < iCount; cnt2++)
 			{
@@ -951,9 +951,9 @@ void C4Player::Evaluate()
 	LastRound.Duration = Game.Time;
 	LastRound.Won = !Eliminated;
 	// Melee: personal value gain score ...check Game.Objects(C4D_Goal)
-	if (Game.C4S.Game.IsMelee()) LastRound.Score = Max<int32_t>(ValueGain, 0);
+	if (Game.C4S.Game.IsMelee()) LastRound.Score = std::max<int32_t>(ValueGain, 0);
 	// Cooperative: shared score
-	else LastRound.Score = Max(Game.Players.AverageValueGain(), 0);
+	else LastRound.Score = (std::max)(Game.Players.AverageValueGain(), 0);
 	LastRound.Level = 0; // unknown...
 	LastRound.Bonus = SuccessBonus * LastRound.Won;
 	LastRound.FinalScore = LastRound.Score + LastRound.Bonus;
@@ -1421,7 +1421,7 @@ bool C4Player::ObjectCommand(int32_t iCommand, C4Object *pTarget, int32_t iX, in
 						// more items than he actually has. This workaround is needed so the put command can be used
 						// to tell all selected clonks to put when in a container, simulating the old all-throw behavior.
 						if (cObj->Contents.ObjectCount(iData))
-							ObjectCommand2Obj(cObj, iCommand, pTarget, Min<int32_t>(iX, cObj->Contents.ObjectCount(iData)), iY, pTarget2, iData, iMode);
+							ObjectCommand2Obj(cObj, iCommand, pTarget, std::min<int32_t>(iX, cObj->Contents.ObjectCount(iData)), iY, pTarget2, iData, iMode);
 					}
 					// Other command
 					else

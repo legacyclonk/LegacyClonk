@@ -129,7 +129,7 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 		CTexRef *pTexRef = *(ppTex + tY * iTexX + tX);
 		if (!pTexRef->Lock()) continue;
 		// At the edges, not the whole texture is used
-		int maxY = Min(iTexSize, Hgt - tY * iTexSize), maxX = Min(iTexSize, Wdt - tX * iTexSize);
+		int maxY = (std::min)(iTexSize, Hgt - tY * iTexSize), maxX = (std::min)(iTexSize, Wdt - tX * iTexSize);
 		for (int iY = 0; iY < maxY; ++iY)
 		{
 			// The global, not texture-relative position

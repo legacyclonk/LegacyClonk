@@ -559,7 +559,7 @@ const char *C4Portrait::EvaluatePortraitString(const char *szPortrait, C4ID &rID
 
 			// szAfterQColon-szPortrait-2 results in long on 64bit,
 			// so the template needs to be specialised
-			SCopy(szPortrait, buf, Min<ptrdiff_t>(6, szAfterQColon - szPortrait - 2));
+			SCopy(szPortrait, buf, std::min<ptrdiff_t>(6, szAfterQColon - szPortrait - 2));
 			if (pdwClrOut) sscanf(buf, "%x", pdwClrOut);
 			szPortrait = szAfterQColon;
 		}
@@ -776,7 +776,7 @@ void C4GraphicsOverlay::Draw(C4FacetEx &cgo, C4Object *pForObj, int32_t iByPlaye
 		C4DrawTransform trf(Transform, float(iTx), float(iTy));
 		if (fZoomToShape)
 		{
-			float fZoom = Min<float>((float)pForObj->Shape.Wdt / Max<int>(fctBlit.Wdt, 1), (float)pForObj->Shape.Hgt / Max<int>(fctBlit.Hgt, 1));
+			float fZoom = std::min<float>((float)pForObj->Shape.Wdt / std::max<int>(fctBlit.Wdt, 1), (float)pForObj->Shape.Hgt / std::max<int>(fctBlit.Hgt, 1));
 			trf.ScaleAt(fZoom, fZoom, float(iTx), float(iTy));
 		}
 		fctBlit.DrawT(cgo.Surface, iTx - fctBlit.Wdt / 2 + fctBlit.TargetX, iTy - fctBlit.Hgt / 2 + fctBlit.TargetY, iPhase, 0, &trf);

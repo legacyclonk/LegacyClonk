@@ -95,8 +95,8 @@ CStdGamePad::AxisPos CStdGamePad::GetAxisPos(int idAxis)
 		if (fAxisCalibrated[idAxis])
 		{
 			// update it
-			dwAxisMin[idAxis] = Min<uint32_t>(dwAxisMin[idAxis], dwPos);
-			dwAxisMax[idAxis] = Max<uint32_t>(dwAxisMax[idAxis], dwPos);
+			dwAxisMin[idAxis] = std::min<uint32_t>(dwAxisMin[idAxis], dwPos);
+			dwAxisMax[idAxis] = std::max<uint32_t>(dwAxisMax[idAxis], dwPos);
 			// Calculate center
 			uint32_t dwCenter = (dwAxisMin[idAxis] + dwAxisMax[idAxis]) / 2;
 			// Trigger range is 30% off center

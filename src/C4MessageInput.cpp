@@ -399,7 +399,7 @@ bool C4MessageInput::ProcessInput(const char *szText)
 				if (eMsgType == C4CMT_Say) { ++szMsg; szEnd--; }
 			}
 			// get message
-			SCopy(szMsg, szMessage, Min<unsigned long>(C4MaxMessage, szEnd - szMsg + 1));
+			SCopy(szMsg, szMessage, std::min<unsigned long>(C4MaxMessage, szEnd - szMsg + 1));
 		}
 		// get sending player (if any)
 		C4Player *pPlr = Game.IsRunning ? Game.Players.GetLocalByIndex(0) : nullptr;

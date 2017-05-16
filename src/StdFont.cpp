@@ -226,7 +226,7 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 	// keep text shadow in mind
 	if (fDoShadow) { ++size.cx; ++size.cy; }
 	// adjust line height to max character height
-	if (!fUnicode) iLineHgt = Max<int>(iLineHgt, size.cy + 1);
+	if (!fUnicode) iLineHgt = std::max<int>(iLineHgt, size.cy + 1);
 	// print character on empty surface
 	std::fill_n(pBitmapBits, iBitmapSize * iBitmapSize, 0);
 	if (fUnicode)
@@ -234,8 +234,8 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 	else
 		ExtTextOut(hDC, 0, 0, ETO_OPAQUE, nullptr, str, 1, nullptr);
 	// must not overflow surfaces: do some size bounds
-	size.cx = Min<int>(size.cx, Min<int>(iSfcSizes, iBitmapSize));
-	size.cy = Min<int>(size.cy, Min<int>(iSfcSizes, iBitmapSize));
+	size.cx = std::min<int>(size.cx, std::min<int>(iSfcSizes, iBitmapSize));
+	size.cy = std::min<int>(size.cy, std::min<int>(iSfcSizes, iBitmapSize));
 	// need to do a line break or new surface?
 	if (!CheckRenderedCharSpace(size.cx, size.cy)) return false;
 	// transfer bitmap data into alpha channel of surface
@@ -291,11 +291,11 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 		return true;
 	}
 	// linebreak/ new surface check
-	int width = Max<int>(slot->advance.x / 64, Max(slot->bitmap_left, 0) + slot->bitmap.width) + fDoShadow;
+	int width = std::max<int>(slot->advance.x / 64, (std::max)(slot->bitmap_left, 0) + slot->bitmap.width) + fDoShadow;
 	if (!CheckRenderedCharSpace(width, iGfxLineHgt)) return false;
 	// offset from the top
 	int at_y = iCurrentSfcY + dwDefFontHeight * (*pVectorFont)->ascender / (*pVectorFont)->units_per_EM - slot->bitmap_top;
-	int at_x = iCurrentSfcX + Max(slot->bitmap_left, 0);
+	int at_x = iCurrentSfcX + (std::max)(slot->bitmap_left, 0);
 	// Copy to the surface
 	if (!sfcCurrent->Lock()) return false;
 	for (int y = 0; y < slot->bitmap.rows + fDoShadow; ++y)
@@ -720,7 +720,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 		if (fCheckMarkup && c == '{' && szText[0] == '{' && szText[1] != '{' && (iImgLgt = SCharPos('}', szText + 1)) > 0 && szText[iImgLgt + 2] == '}')
 		{
 			char imgbuf[101];
-			SCopy(szText + 1, imgbuf, Min(iImgLgt, 100));
+			SCopy(szText + 1, imgbuf, (std::min)(iImgLgt, 100));
 			CFacet fct;
 			// image renderer initialized?
 			if (pCustomImages)
@@ -799,7 +799,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, char *szOut, int iMaxOut
 			if (fCheckMarkup && c == '{' && szPos[0] == '{' && szPos[1] != '{' && (iImgLgt = SCharPos('}', szPos + 1)) > 0 && szPos[iImgLgt + 2] == '}')
 			{
 				char imgbuf[101];
-				SCopy(szPos + 1, imgbuf, Min(iImgLgt, 100));
+				SCopy(szPos + 1, imgbuf, (std::min)(iImgLgt, 100));
 				CFacet fct;
 				// image renderer initialized?
 				if (pCustomImages)
@@ -947,7 +947,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 			if (fCheckMarkup && c == '{' && szPos[0] == '{' && szPos[1] != '{' && (iImgLgt = SCharPos('}', szPos + 1)) > 0 && szPos[iImgLgt + 2] == '}')
 			{
 				char imgbuf[101];
-				SCopy(szPos + 1, imgbuf, Min(iImgLgt, 100));
+				SCopy(szPos + 1, imgbuf, (std::min)(iImgLgt, 100));
 				CFacet fct;
 				// image renderer initialized?
 				if (pCustomImages)
@@ -1157,7 +1157,7 @@ void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, con
 		{
 			fctFromBlt.Default();
 			char imgbuf[101];
-			SCopy(szText + 1, imgbuf, Min(iImgLgt, 100));
+			SCopy(szText + 1, imgbuf, (std::min)(iImgLgt, 100));
 			szText += iImgLgt + 3;
 			// image renderer initialized?
 			if (pCustomImages)

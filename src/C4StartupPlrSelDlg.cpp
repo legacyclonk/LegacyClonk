@@ -553,13 +553,13 @@ C4StartupPlrSelDlg::C4StartupPlrSelDlg() : C4StartupDlg("W"), eMode(PSDM_Player)
 	int iButtonXSpacing = (GetClientRect().Wdt > 700) ? GetClientRect().Wdt / 58 : 2;
 	int iButtonCount = 6;
 	C4GUI::ComponentAligner caMain(GetClientRect(), 0, 0, true);
-	C4GUI::ComponentAligner caButtonArea(caMain.GetFromBottom(Max(caMain.GetHeight() / 15, iButtonHeight)), 0, 0);
+	C4GUI::ComponentAligner caButtonArea(caMain.GetFromBottom((std::max)(caMain.GetHeight() / 15, iButtonHeight)), 0, 0);
 	rcBottomButtons = caButtonArea.GetCentered(caMain.GetWidth(), iButtonHeight);
 	iBottomButtonWidth = (caButtonArea.GetWidth() - iButtonXSpacing * (iButtonCount - 1)) / iButtonCount;
 	C4Rect rcMain = caMain.GetAll();
 	C4Rect rcPlrList = C4Rect(rcMain.Wdt / 10, rcMain.Hgt * 10 / 36, rcMain.Wdt * 25 / 81, rcMain.Hgt * 2 / 3);
 	C4Rect rcInfoWindow = C4Rect(rcMain.Wdt * 371 / 768, rcMain.Hgt * 197 / 451, rcMain.Wdt * 121 / 384, rcMain.Hgt * 242 / 451);
-	int iPictureWidth = Min(rcMain.Wdt * 121 / 384, 200);
+	int iPictureWidth = (std::min)(rcMain.Wdt * 121 / 384, 200);
 	int iPictureHeight = iPictureWidth * 3 / 4;
 	C4Rect rcPictureArea = C4Rect(rcMain.Wdt * 613 / 768 - iPictureWidth, rcMain.Hgt * 197 / 451 - iPictureHeight, iPictureWidth, iPictureHeight);
 
@@ -874,7 +874,7 @@ void C4StartupPlrSelDlg::OnNewBtn(C4GUI::Control *btn)
 	if (eMode != PSDM_Player) return;
 	C4GUI::Dialog *pDlg;
 	GetScreen()->ShowRemoveDlg(pDlg = new C4StartupPlrPropertiesDlg(nullptr, this));
-	pDlg->SetPos(Min<int32_t>(GetBounds().Wdt / 10, GetBounds().Wdt - pDlg->GetBounds().Wdt), Min<int32_t>(GetBounds().Hgt / 4, GetBounds().Hgt - pDlg->GetBounds().Hgt));
+	pDlg->SetPos(std::min<int32_t>(GetBounds().Wdt / 10, GetBounds().Wdt - pDlg->GetBounds().Wdt), std::min<int32_t>(GetBounds().Hgt / 4, GetBounds().Hgt - pDlg->GetBounds().Hgt));
 }
 
 bool C4StartupPlrSelDlg::CheckPlayerName(const StdStrBuf &Playername, StdStrBuf &Filename, const StdStrBuf *pPrevFilename, bool fWarnEmpty)
@@ -1024,7 +1024,7 @@ void C4StartupPlrSelDlg::OnPropertyBtn(C4GUI::Control *btn)
 		if (!pSel) return;
 		C4GUI::Dialog *pDlg;
 		GetScreen()->ShowRemoveDlg(pDlg = new C4StartupPlrPropertiesDlg(pSel, this));
-		pDlg->SetPos(Min<int32_t>(GetBounds().Wdt / 10, GetBounds().Wdt - pDlg->GetBounds().Wdt),
+		pDlg->SetPos(std::min<int32_t>(GetBounds().Wdt / 10, GetBounds().Wdt - pDlg->GetBounds().Wdt),
 			(GetBounds().Hgt - pDlg->GetBounds().Hgt) / 2);
 	}
 	break;
@@ -1087,7 +1087,7 @@ void C4StartupPlrSelDlg::ResortCrew()
 		if (i == SortData.end())
 			SortData.push_back(C4StartupPlrSelDlg_CrewSortDataEntry(pCrewItem->GetCore().Experience, pCrewItem->GetCore().id));
 		else
-			(*i).iMaxExp = Max<int32_t>((*i).iMaxExp, pCrewItem->GetCore().Experience);
+			(*i).iMaxExp = std::max<int32_t>((*i).iMaxExp, pCrewItem->GetCore().Experience);
 	}
 	pPlrListBox->SortElements(&CrewSortFunc, &SortData);
 }

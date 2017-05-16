@@ -144,7 +144,7 @@ void C4ValueList::SetSize(int32_t inSize)
 
 bool C4ValueList::operator==(const C4ValueList &IntList2) const
 {
-	for (int32_t i = 0; i < Max(iSize, IntList2.GetSize()); i++)
+	for (int32_t i = 0; i < (std::max)(iSize, IntList2.GetSize()); i++)
 		if (GetItem(i) != IntList2.GetItem(i))
 			return false;
 

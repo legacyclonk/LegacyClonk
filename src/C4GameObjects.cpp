@@ -174,9 +174,9 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 												// "realistic" hit energy
 												FIXED dXDir = obj2->xdir - obj1->xdir, dYDir = obj2->ydir - obj1->ydir;
 												int32_t iHitEnergy = fixtoi((dXDir * dXDir + dYDir * dYDir) * obj2->Mass / 5);
-												iHitEnergy = Max<int32_t>(iHitEnergy / 3, !!iHitEnergy); // hit energy reduced to 1/3rd, but do not drop to zero because of this division
+												iHitEnergy = std::max<int32_t>(iHitEnergy / 3, !!iHitEnergy); // hit energy reduced to 1/3rd, but do not drop to zero because of this division
 												obj1->DoEnergy(-iHitEnergy / 5, false, C4FxCall_EngObjHit, obj2->Controller);
-												int tmass = Max<int32_t>(obj1->Mass, 50);
+												int tmass = std::max<int32_t>(obj1->Mass, 50);
 												if (!Tick3 || (obj1->Action.Act >= 0 && obj1->Def->ActMap[obj1->Action.Act].Procedure != DFA_FLIGHT))
 													obj1->Fling(obj2->xdir * 50 / tmass, -Abs(obj2->ydir / 2) * 50 / tmass, false, obj2->Controller);
 												obj1->Call(PSF_CatchBlow, &C4AulParSet(C4VInt(-iHitEnergy / 5),
@@ -565,7 +565,7 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 				if (clnk->Obj->Number == pObj->Number) fObjectNumberCollision = true;
 		}
 		// keep track of numbers
-		iMaxObjectNumber = Max<long>(iMaxObjectNumber, pObj->Number);
+		iMaxObjectNumber = std::max<long>(iMaxObjectNumber, pObj->Number);
 		// add to list of backobjects
 		if (pObj->Category & C4D_Background)
 			Game.BackObjects.Add(pObj, C4ObjectList::stMain, this);
@@ -583,7 +583,7 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 	// denumerate pointers
 	Denumerate();
 	// update object enumeration index now, because calls like UpdateTransferZone might create objects
-	Game.ObjectEnumerationIndex = Max(Game.ObjectEnumerationIndex, iMaxObjectNumber);
+	Game.ObjectEnumerationIndex = (std::max)(Game.ObjectEnumerationIndex, iMaxObjectNumber);
 	// end faking and adjust object numbers
 	if (fObjectNumberCollision)
 	{

@@ -750,7 +750,7 @@ bool C4Def::Load(C4Group &hGroup,
 				if (pRankNames)
 				{
 					// if extended rank names are defined, subtract those from the symbol count. The last symbols are used as overlay
-					iNumRankSymbols = Max<int32_t>(1, iNumRankSymbols - pRankNames->GetExtendedRankNum());
+					iNumRankSymbols = std::max<int32_t>(1, iNumRankSymbols - pRankNames->GetExtendedRankNum());
 				}
 				fRankSymbolsOwned = true;
 			}
@@ -1008,8 +1008,8 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 		if (hChild.OpenAsChild(&hGroup, szEntryname))
 		{
 			// Hack: Assume that there are sixteen sub definitions to avoid unnecessary I/O
-			int iSubMinProgress = Min<int32_t>(iMaxProgress, iMinProgress + ((iMaxProgress - iMinProgress) * i) / 16);
-			int iSubMaxProgress = Min<int32_t>(iMaxProgress, iMinProgress + ((iMaxProgress - iMinProgress) * (i + 1)) / 16);
+			int iSubMinProgress = std::min<int32_t>(iMaxProgress, iMinProgress + ((iMaxProgress - iMinProgress) * i) / 16);
+			int iSubMaxProgress = std::min<int32_t>(iMaxProgress, iMinProgress + ((iMaxProgress - iMinProgress) * (i + 1)) / 16);
 			++i;
 			iResult += Load(hChild, dwLoadWhat, szLanguage, pSoundSystem, fOverload, fSearchMessage, iSubMinProgress, iSubMaxProgress);
 			hChild.Close();

@@ -80,7 +80,7 @@ void C4UpperBoard::Init(C4Facet &cgo)
 	Output = cgo;
 	if (!Game.GraphicsResource.fctUpperBoard.Surface) return;
 	// in newgfx, the upperboard may be larger and overlap the scene
-	Output.Hgt = Max(Output.Hgt, Game.GraphicsResource.fctUpperBoard.Hgt);
+	Output.Hgt = (std::max)(Output.Hgt, Game.GraphicsResource.fctUpperBoard.Hgt);
 	// surface should not be too small
 	Game.GraphicsResource.fctUpperBoard.EnsureSize(128, Output.Hgt);
 	// Generate textposition

@@ -788,7 +788,7 @@ C4GameControlPacket *C4GameControlNetwork::PackCompleteCtrl(int32_t iTick)
 		Game.Network.Clients.BroadcastMsgToConnClients(MkC4NetIOPacket(PID_Control, *pComplete));
 
 	// advance control request time
-	iNextControlReqeust = Max<uint32_t>(iNextControlReqeust, timeGetTime() + C4ControlRequestInterval);
+	iNextControlReqeust = std::max<uint32_t>(iNextControlReqeust, timeGetTime() + C4ControlRequestInterval);
 
 	// return
 	return pComplete;

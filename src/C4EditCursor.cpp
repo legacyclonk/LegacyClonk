@@ -400,7 +400,7 @@ void C4EditCursor::Draw(C4FacetEx &cgo)
 	}
 	// Draw drag frame
 	if (DragFrame)
-		Application.DDraw->DrawFrame(cgo.Surface, Min(X, X2) + cgo.X - cgo.TargetX, Min(Y, Y2) + cgo.Y - cgo.TargetY, Max(X, X2) + cgo.X - cgo.TargetX, Max(Y, Y2) + cgo.Y - cgo.TargetY, CWhite);
+		Application.DDraw->DrawFrame(cgo.Surface, (std::min)(X, X2) + cgo.X - cgo.TargetX, (std::min)(Y, Y2) + cgo.Y - cgo.TargetY, (std::max)(X, X2) + cgo.X - cgo.TargetX, (std::max)(Y, Y2) + cgo.Y - cgo.TargetY, CWhite);
 	// Draw drag line
 	if (DragLine)
 		Application.DDraw->DrawLine(cgo.Surface, X + cgo.X - cgo.TargetX, Y + cgo.Y - cgo.TargetY, X2 + cgo.X - cgo.TargetX, Y2 + cgo.Y - cgo.TargetY, CWhite);
@@ -446,7 +446,7 @@ void C4EditCursor::FrameSelection()
 	for (clnk = Game.Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 		if (cobj->Status) if (cobj->OCF & OCF_NotContained)
 		{
-			if (Inside(cobj->x, Min(X, X2), Max(X, X2)) && Inside(cobj->y, Min(Y, Y2), Max(Y, Y2)))
+			if (Inside(cobj->x, (std::min)(X, X2), (std::max)(X, X2)) && Inside(cobj->y, (std::min)(Y, Y2), (std::max)(Y, Y2)))
 				Selection.Add(cobj, C4ObjectList::stNone);
 		}
 	Console.PropertyDlg.Update(Selection);

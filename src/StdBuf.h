@@ -255,7 +255,7 @@ public:
 		const void *pOldData = getData();
 		size_t iOldSize = iSize;
 		New(inSize);
-		Write(pOldData, Min(iOldSize, inSize));
+		Write(pOldData, (std::min)(iOldSize, inSize));
 	}
 
 	void Copy()

@@ -44,7 +44,7 @@ const FIXED HitSpeed4 = itofix(8); // Flat
 void RedirectForce(FIXED &from, FIXED &to, int32_t tdir)
 {
 	FIXED fred;
-	fred = Min(Abs(from), FRedirect);
+	fred = (std::min)(Abs(from), FRedirect);
 	from -= fred * Sign(from);
 	to += fred * tdir;
 }
@@ -432,7 +432,7 @@ void C4Object::DoMovement()
 		if (!InLiquid) // Enter liquid
 		{
 			if (OCF & OCF_HitSpeed2) if (Mass > 3)
-				Splash(x, y + 1, Min(Shape.Wdt * Shape.Hgt / 10, 20), this);
+				Splash(x, y + 1, (std::min)(Shape.Wdt * Shape.Hgt / 10, 20), this);
 			fNoAttach = false;
 			InLiquid = 1;
 		}

@@ -302,10 +302,10 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 	bool fBaseSfc = false;
 	// get involved texture offsets
 	int iTexSize = sfcSource->iTexSize;
-	int iTexX = Max(int(fx / iTexSize), 0);
-	int iTexY = Max(int(fy / iTexSize), 0);
-	int iTexX2 = Min((int)(fx + wdt - 1) / iTexSize + 1, sfcSource->iTexX);
-	int iTexY2 = Min((int)(fy + hgt - 1) / iTexSize + 1, sfcSource->iTexY);
+	int iTexX = (std::max)(int(fx / iTexSize), 0);
+	int iTexY = (std::max)(int(fy / iTexSize), 0);
+	int iTexX2 = (std::min)((int)(fx + wdt - 1) / iTexSize + 1, sfcSource->iTexX);
+	int iTexY2 = (std::min)((int)(fy + hgt - 1) / iTexSize + 1, sfcSource->iTexY);
 	// blit from all these textures
 	SetTexture();
 	if (sfcSource2)
@@ -441,13 +441,13 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 			// get new dest bounds
 			FLOAT_RECT tTexBlt;
 			// set up blit data as rect
-			fTexBlt.left = Max<float>((float)(fx - iBlitX), 0.0f);
+			fTexBlt.left = std::max<float>((float)(fx - iBlitX), 0.0f);
 			tTexBlt.left = (float)((fTexBlt.left + iBlitX - fx) + tx);
-			fTexBlt.top  = Max<float>((float)(fy - iBlitY), 0.0f);
+			fTexBlt.top  = std::max<float>((float)(fy - iBlitY), 0.0f);
 			tTexBlt.top  = (float)((fTexBlt.top + iBlitY - fy) + ty);
-			fTexBlt.right  = Min<float>((float)(fx + wdt - iBlitX), (float)iTexSize);
+			fTexBlt.right  = std::min<float>((float)(fx + wdt - iBlitX), (float)iTexSize);
 			tTexBlt.right  = (float)((fTexBlt.right + iBlitX - fx) + tx);
-			fTexBlt.bottom = Min<float>((float)(fy + hgt - iBlitY), (float)iTexSize);
+			fTexBlt.bottom = std::min<float>((float)(fy + hgt - iBlitY), (float)iTexSize);
 			tTexBlt.bottom = (float)((fTexBlt.bottom + iBlitY - fy) + ty);
 			float ftx[4]; float fty[4]; // blit positions
 			ftx[0] = tTexBlt.left;  fty[0] = tTexBlt.top;

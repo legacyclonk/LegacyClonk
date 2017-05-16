@@ -333,7 +333,7 @@ public:
 	C4Object *CreateContents(C4ID n_id);
 	bool CreateContentsByList(C4IDList &idlist);
 	uint8_t GetArea(int32_t &aX, int32_t &aY, int32_t &aWdt, int32_t &aHgt);
-	inline int32_t addtop() { return Max<int32_t>(18 - Shape.Hgt, 0); } // Minimum top action size for build check
+	inline int32_t addtop() { return std::max<int32_t>(18 - Shape.Hgt, 0); } // Minimum top action size for build check
 	inline int32_t Left() { return x + Shape.x; } // left border of shape
 	inline int32_t Top() { return y + Shape.y - addtop(); } // top border of shape (+build-top)
 	inline int32_t Width() { return Shape.Wdt; } // width of shape

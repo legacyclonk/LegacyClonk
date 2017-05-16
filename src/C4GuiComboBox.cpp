@@ -111,7 +111,7 @@ bool ComboBox::DoDropdown()
 	if (!pFillCallback) return false;
 	ContextMenu *pNewMenu = new C4GUI::ContextMenu();
 	// init with minimum size
-	pNewMenu->GetBounds().Wdt = Max(rcBounds.Wdt, pNewMenu->GetBounds().Wdt);
+	pNewMenu->GetBounds().Wdt = (std::max)(rcBounds.Wdt, pNewMenu->GetBounds().Wdt);
 	// fill with items
 	pFillCallback->FillDropDown(this, pNewMenu);
 	// open it on screen

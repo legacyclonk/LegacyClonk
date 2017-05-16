@@ -71,7 +71,7 @@ bool ExpandHotkeyMarkup(StdStrBuf &sText, char &rcHotkey)
 uint32_t MakeColorReadableOnBlack(uint32_t &rdwClr)
 {
 	// max alpha
-	uint32_t dwAlpha = Max<uint32_t>(rdwClr >> 24 & 255, 0xff) << 24;
+	uint32_t dwAlpha = std::max<uint32_t>(rdwClr >> 24 & 255, 0xff) << 24;
 	rdwClr &= 0xffffff;
 	// determine brightness
 	// 50% red, 87% green, 27% blue (max 164 * 255)
@@ -82,7 +82,7 @@ uint32_t MakeColorReadableOnBlack(uint32_t &rdwClr)
 	{
 		int32_t iInc = (16575 - iLightness) / 164;
 		// otherwise, lighten
-		rdwClr = (Min<uint32_t>(r + iInc, 255) << 16) | (Min<uint32_t>(g + iInc, 255) << 8) | Min<uint32_t>(b + iInc, 255);
+		rdwClr = (std::min<uint32_t>(r + iInc, 255) << 16) | (std::min<uint32_t>(g + iInc, 255) << 8) | std::min<uint32_t>(b + iInc, 255);
 	}
 	// return color and alpha
 	rdwClr |= dwAlpha;
@@ -292,7 +292,7 @@ void Element::DrawBar(C4FacetEx &cgo, DynBarFacet &rFacets)
 		if (fOverflow) rFacets.fctBegin.Wdt = wLeft;
 		while (iX < rcBounds.Wdt - iRightShowLength)
 		{
-			int32_t w2 = Min(w, rcBounds.Wdt - iRightShowLength - iX); rFacets.fctMiddle.Wdt = w2;
+			int32_t w2 = (std::min)(w, rcBounds.Wdt - iRightShowLength - iX); rFacets.fctMiddle.Wdt = w2;
 			rFacets.fctMiddle.Draw(cgo.Surface, x0 + iX, y0);
 			iX += w;
 		}
@@ -320,7 +320,7 @@ void Element::DrawBar(C4FacetEx &cgo, DynBarFacet &rFacets)
 		rFacets.fctBegin.DrawX(cgo.Surface, x0, y0, int32_t(fZoom * rFacets.fctBegin.Wdt), rcBounds.Hgt);
 		while (iX < rcBounds.Wdt - (fZoom * iRightShowLength))
 		{
-			int32_t w2 = Min<int32_t>(w, rcBounds.Wdt - int32_t(fZoom * iRightShowLength) - iX); rFacets.fctMiddle.Wdt = long(float(w2) / fZoom);
+			int32_t w2 = std::min<int32_t>(w, rcBounds.Wdt - int32_t(fZoom * iRightShowLength) - iX); rFacets.fctMiddle.Wdt = long(float(w2) / fZoom);
 			rFacets.fctMiddle.DrawX(cgo.Surface, x0 + iX, y0, w2, rcBounds.Hgt);
 			iX += w;
 		}
@@ -336,7 +336,7 @@ void Element::DrawVBar(C4FacetEx &cgo, DynBarFacet &rFacets)
 	rFacets.fctBegin.Draw(cgo.Surface, x0, y0);
 	while (iY < rcBounds.Hgt - 5)
 	{
-		int32_t h2 = Min(h, rcBounds.Hgt - 5 - iY); rFacets.fctMiddle.Hgt = h2;
+		int32_t h2 = (std::min)(h, rcBounds.Hgt - 5 - iY); rFacets.fctMiddle.Hgt = h2;
 		rFacets.fctMiddle.Draw(cgo.Surface, x0, y0 + iY);
 		iY += h;
 	}
@@ -352,7 +352,7 @@ void Element::DrawHBarByVGfx(C4FacetEx &cgo, DynBarFacet &rFacets)
 	rFacets.fctBegin.DrawT(cgo.Surface, x0, y0, 0, 0, &trf);
 	while (iY < rcBounds.Wdt - 5)
 	{
-		int32_t h2 = Min(h, rcBounds.Wdt - 5 - iY); rFacets.fctMiddle.Hgt = h2;
+		int32_t h2 = (std::min)(h, rcBounds.Wdt - 5 - iY); rFacets.fctMiddle.Hgt = h2;
 		rFacets.fctMiddle.DrawT(cgo.Surface, x0, y0 + iY, 0, 0, &trf);
 		iY += h;
 	}
@@ -916,14 +916,14 @@ void Screen::DrawToolTip(const char *szTip, C4FacetEx &cgo, int32_t x, int32_t y
 {
 	CStdFont *pUseFont = &(GetRes()->TooltipFont);
 	StdStrBuf sText;
-	pUseFont->BreakMessage(szTip, Min<int32_t>(C4GUI_MaxToolTipWdt, Max<int32_t>(cgo.Wdt, 50)), &sText, true);
+	pUseFont->BreakMessage(szTip, std::min<int32_t>(C4GUI_MaxToolTipWdt, std::max<int32_t>(cgo.Wdt, 50)), &sText, true);
 	// get tooltip rect
 	int32_t tWdt, tHgt;
 	if (pUseFont->GetTextExtent(sText.getData(), tWdt, tHgt, true))
 	{
 		tWdt += 6; tHgt += 4;
 		int32_t tX, tY;
-		if (y < cgo.Y + cgo.TargetY + tHgt + 5) tY = Min<int32_t>(y + 5, cgo.TargetY + cgo.Hgt - tHgt); else tY = y - tHgt - 5;
+		if (y < cgo.Y + cgo.TargetY + tHgt + 5) tY = std::min<int32_t>(y + 5, cgo.TargetY + cgo.Hgt - tHgt); else tY = y - tHgt - 5;
 		tX = BoundBy<int32_t>(x - tWdt / 2, cgo.TargetX + cgo.X, cgo.TargetX + cgo.Wdt - tWdt);
 		// draw tooltip box
 		lpDDraw->DrawBoxDw(cgo.Surface, tX, tY, tX + tWdt - 1, tY + tHgt - 2, C4GUI_ToolTipBGColor);
@@ -1056,8 +1056,8 @@ C4Rect &ComponentAligner::GetGridCell(int32_t iSectX, int32_t iSectXMax, int32_t
 	int32_t iSectSizeXO = iSectSizeX, iSectSizeYO = iSectSizeY;
 	int32_t iSectSizeXMax = (rcClientArea.Wdt - iMarginX) / iSectXMax - iMarginX;
 	int32_t iSectSizeYMax = (rcClientArea.Hgt - iMarginY) / iSectYMax - iMarginY;
-	if (iSectSizeX < 0 || fCenterPos) iSectSizeX = iSectSizeXMax; else iSectSizeX = Min<int32_t>(iSectSizeX, iSectSizeXMax);
-	if (iSectSizeY < 0 || fCenterPos) iSectSizeY = iSectSizeYMax; else iSectSizeY = Min<int32_t>(iSectSizeY, iSectSizeYMax);
+	if (iSectSizeX < 0 || fCenterPos) iSectSizeX = iSectSizeXMax; else iSectSizeX = std::min<int32_t>(iSectSizeX, iSectSizeXMax);
+	if (iSectSizeY < 0 || fCenterPos) iSectSizeY = iSectSizeYMax; else iSectSizeY = std::min<int32_t>(iSectSizeY, iSectSizeYMax);
 	rcTemp.x = iSectX * (iSectSizeX + iMarginX) + iMarginX + rcClientArea.x;
 	rcTemp.y = iSectY * (iSectSizeY + iMarginY) + iMarginY + rcClientArea.y;
 	rcTemp.Wdt = iSectSizeX * iSectNumX + iMarginX * (iSectNumX - 1); rcTemp.Hgt = iSectSizeY * iSectNumY + iMarginY * (iSectNumY - 1);

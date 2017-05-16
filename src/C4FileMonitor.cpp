@@ -170,7 +170,7 @@ void C4FileMonitor::OnThreadEvent(C4InteractiveEventType eEvent, void *pEventDat
 void C4FileMonitor::GetFDs(fd_set *pFDs, int *pMaxFD)
 {
 	FD_SET(fd, pFDs);
-	if (pMaxFD) *pMaxFD = Max(*pMaxFD, fd);
+	if (pMaxFD) *pMaxFD = (std::max)(*pMaxFD, fd);
 }
 
 #elif defined(_WIN32)
@@ -255,7 +255,7 @@ bool C4FileMonitor::Execute(int iTimeout)
 				// Get next entry
 				if (!pNotify->NextEntryOffset) break;
 				pPos += pNotify->NextEntryOffset;
-				if (pPos >= pWatch->Buffer + Min<size_t>(sizeof(pWatch->Buffer), dwBytes))
+				if (pPos >= pWatch->Buffer + std::min<size_t>(sizeof(pWatch->Buffer), dwBytes))
 					break;
 				break;
 			}
