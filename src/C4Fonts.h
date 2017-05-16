@@ -1,8 +1,7 @@
 /* by Sven2, 2004 */
 // engine font loading
 
-#ifndef INC_C4Fonts
-#define INC_C4Fonts
+#pragma once
 
 #include <vector>
 
@@ -75,5 +74,3 @@ public:
 	bool InitFont(CStdFont &rFont, const char *szFontName, FontType eType, int32_t iSize, C4GroupSet *pGfxGroups, bool fDoShadow = true);
 #endif
 };
-
-#endif // INC_C4Fonts

@@ -1,7 +1,6 @@
 // network ressource: data needed for the game (scenario, plr files, definitions...)
 
-#ifndef INC_C4Network2Res
-#define INC_C4Network2Res
+#pragma once
 
 #include <StdSync.h>
 
@@ -419,5 +418,3 @@ public:
 
 	virtual void CompileFunc(StdCompiler *pComp);
 };
-
-#endif // INC_C4Network2Res

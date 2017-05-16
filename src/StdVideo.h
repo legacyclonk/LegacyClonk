@@ -2,11 +2,9 @@
 
 /* Some functions to help with loading and saving AVI files using Video for Windows */
 
-#ifndef INC_STDVIDEO
-#define INC_STDVIDEO
+#pragma once
 
 #ifdef _WIN32
-#pragma once
 
 #include <mmsystem.h>
 #include <vfw.h>
@@ -81,5 +79,3 @@ public:
 };
 
 #endif // _WIN32
-
-#endif // INC_STDVIDEO

@@ -2,8 +2,7 @@
 
 /* Handles viewport editing in console mode */
 
-#ifndef INC_C4EditCursor
-#define INC_C4EditCursor
+#pragma once
 
 #include "C4ObjectList.h"
 #include "C4Control.h"
@@ -88,5 +87,3 @@ protected:
 	static void OnProperties(GtkWidget *widget, gpointer data);
 #endif
 };
-
-#endif

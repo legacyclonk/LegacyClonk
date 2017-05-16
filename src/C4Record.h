@@ -1,8 +1,7 @@
 /* by Sven2, 2001 */
 // scenario record functionality
 
-#ifndef INC_C4Record
-#define INC_C4Record
+#pragma once
 
 class C4Record;
 
@@ -307,5 +306,3 @@ public:
 #endif
 	static bool StreamToRecord(const char *szStream, StdStrBuf *pRecord);
 };
-
-#endif

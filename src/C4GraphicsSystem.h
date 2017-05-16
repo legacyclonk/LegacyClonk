@@ -2,8 +2,7 @@
 
 /* Operates viewports, message board and draws the game */
 
-#ifndef INC_C4GraphicsSystem
-#define INC_C4GraphicsSystem
+#pragma once
 
 #include <C4FacetEx.h>
 #include <C4MessageBoard.h>
@@ -97,5 +96,3 @@ public:
 
 	bool FreeScroll(C4Vec2D vScrollBy); // key callback: Scroll ownerless viewport by some offset
 };
-
-#endif

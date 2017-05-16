@@ -1,8 +1,7 @@
 /* by Sven2, 2005 */
 // player team management for teamwork melees
 
-#ifndef INC_C4Teams
-#define INC_C4Teams
+#pragma once
 
 // class predec
 namespace C4GUI { class ComboBox_FillCB; };
@@ -200,5 +199,3 @@ public:
 	void SendSetTeamColors(bool fEnabled);
 	void SetTeamColors(bool fEnabled);
 };
-
-#endif // INC_C4Teams

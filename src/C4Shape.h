@@ -2,8 +2,7 @@
 
 /* Basic classes for rectangles and vertex outlines */
 
-#ifndef INC_C4Shape
-#define INC_C4Shape
+#pragma once
 
 #include "C4FacetEx.h"
 #include "C4Constants.h"
@@ -169,5 +168,3 @@ public:
 };
 
 #endif
-
-#endif // INC_C4Shape

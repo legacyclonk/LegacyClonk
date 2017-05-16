@@ -2,8 +2,7 @@
 // HTTP download dialog; downloads a file
 // (like, e.g., a .c4u update group)
 
-#ifndef INC_C4DownloadDlg
-#define INC_C4DownloadDlg
+#pragma once
 
 #include "C4Gui.h"
 #include "C4Network2Reference.h" // includes HTTP client
@@ -47,5 +46,3 @@ public:
 	// download file showing download dialog; display error if download failed
 	static bool DownloadFile(const char *szDLType, C4GUI::Screen *pScreen, const char *szURL, const char *szSaveAsFilename, const char *szNotFoundMessage = NULL);
 };
-
-#endif // INC_C4DownloadDlg

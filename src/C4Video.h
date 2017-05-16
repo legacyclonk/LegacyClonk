@@ -2,8 +2,7 @@
 
 /* Captures uncompressed AVI from game view */
 
-#ifndef INC_C4Video
-#define INC_C4Video
+#pragma once
 
 #include <C4Surface.h>
 
@@ -50,5 +49,3 @@ protected:
 	bool RecordFrame();
 	bool AdjustPosition();
 };
-
-#endif

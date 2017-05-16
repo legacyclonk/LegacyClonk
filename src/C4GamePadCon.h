@@ -2,8 +2,7 @@
 
 /* Gamepad control - forwards gamepad events of opened gamepads to Game.KeyboardInput */
 
-#ifndef INC_C4GamePadCon
-#define INC_C4GamePadCon
+#pragma once
 
 #ifdef _WIN32
 #include <StdJoystick.h>
@@ -72,5 +71,3 @@ public:
 	SDL_Joystick *Joy;
 #endif
 };
-
-#endif

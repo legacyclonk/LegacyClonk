@@ -1,5 +1,4 @@
-#ifndef C4INTERACTIVETHREAD_H
-#define C4INTERACTIVETHREAD_H
+#pragma once
 
 #include "StdScheduler.h"
 #include "StdSync.h"
@@ -89,5 +88,3 @@ public:
 private:
 	bool PopEvent(C4InteractiveEventType *pEventType, void **ppData); // by main thread
 };
-
-#endif // C4INTERACTIVETHREAD_H

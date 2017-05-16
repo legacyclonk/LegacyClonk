@@ -1,8 +1,7 @@
 /* by Sven2, 2007 */
 // user input validation functions
 
-#ifndef INC_C4InputValidation
-#define INC_C4InputValidation
+#pragma once
 
 namespace C4InVal
 {
@@ -91,5 +90,3 @@ template <int V> struct ValidatedStdCopyStrBuf : public ValidatedStdCopyStrBufBa
 	template <class D> inline bool operator==(const D &nValue) const { return static_cast<const StdCopyStrBuf &>(*this) == nValue; }
 	template <class D> inline ValidatedStdCopyStrBuf<V> &operator=(const D &nValue) { static_cast<StdCopyStrBuf &>(*this) = nValue; return *this; }
 };
-
-#endif // INC_C4InputValidation

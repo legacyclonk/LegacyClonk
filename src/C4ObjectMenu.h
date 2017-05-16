@@ -2,8 +2,7 @@
 // Menus attached to objects; script created or internal
 // These menus are shown to players if the target object is the current cursor
 
-#ifndef INC_C4ObjectMenu
-#define INC_C4ObjectMenu
+#pragma once
 
 #include "C4Menu.h"
 
@@ -73,5 +72,3 @@ protected:
 private:
 	int32_t AddContextFunctions(C4Object *pTarget, bool fCountOnly = false);
 };
-
-#endif

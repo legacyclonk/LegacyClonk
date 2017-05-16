@@ -2,8 +2,7 @@
 
 /* Special regions to extend the pathfinder */
 
-#ifndef INC_C4TransferZone
-#define INC_C4TransferZone
+#pragma once
 
 class C4TransferZones;
 
@@ -53,5 +52,3 @@ public:
 	BOOL Add(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, C4Object *pObj);
 	BOOL Set(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, C4Object *pObj);
 };
-
-#endif

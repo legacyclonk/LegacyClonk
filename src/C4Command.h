@@ -2,8 +2,7 @@
 
 /* The command stack controls an object's complex and independent behavior */
 
-#ifndef INC_C4Command
-#define INC_C4Command
+#pragma once
 
 #include "C4Value.h"
 
@@ -129,5 +128,3 @@ protected:
 	int32_t GetExpGain(); // get control counts gained by this command; 1EXP=5 ControlCounts
 	bool CheckMinimumCon(C4Object *pObj);
 };
-
-#endif

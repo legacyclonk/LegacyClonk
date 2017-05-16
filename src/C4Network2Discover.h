@@ -1,5 +1,4 @@
-#ifndef INC_C4Network2Discover
-#define INC_C4Network2Discover
+#pragma once
 
 #include "C4NetIO.h"
 
@@ -57,5 +56,3 @@ private:
 	int iDiscoverCount;
 	C4NetIO::addr_t Discovers[C4NetMaxDiscover];
 };
-
-#endif // INC_C4Network2Discover

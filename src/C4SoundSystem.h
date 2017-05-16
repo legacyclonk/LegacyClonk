@@ -2,8 +2,7 @@
 
 /* Handles the sound bank and plays effects using FMOD */
 
-#ifndef INC_C4SoundSystem
-#define INC_C4SoundSystem
+#pragma once
 
 #include <C4Group.h>
 
@@ -123,5 +122,3 @@ protected:
 	int32_t RemoveEffect(const char *szFilename);
 	int32_t EffectInBank(const char *szSound);
 };
-
-#endif

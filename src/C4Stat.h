@@ -1,8 +1,7 @@
 // statistics
 //  by peter
 
-#ifndef INC_C4Stat
-#define INC_C4Stat
+#pragma once
 
 class C4Stat;
 
@@ -143,5 +142,3 @@ protected:
 #define C4ST_RESETPART
 
 #endif
-
-#endif // INC_C4Stat

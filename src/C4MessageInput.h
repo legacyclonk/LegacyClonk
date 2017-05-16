@@ -1,8 +1,7 @@
 /* by Sven2, 2005 */
 // handles input dialogs, last-message-buffer, MessageBoard-commands
 
-#ifndef INC_C4MessageInput
-#define INC_C4MessageInput
+#pragma once
 
 #include "C4Gui.h"
 #include "C4KeyboardInput.h"
@@ -160,5 +159,3 @@ public:
 	// compilation
 	void CompileFunc(StdCompiler *pComp);
 };
-
-#endif // INC_C4MessageInput

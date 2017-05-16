@@ -2,8 +2,7 @@
 
 /* Control packets contain all player input in the message queue */
 
-#ifndef INC_C4Control
-#define INC_C4Control
+#pragma once
 
 #include "C4Id.h"
 #include "C4PacketBase.h"
@@ -471,5 +470,3 @@ public:
 
 	DECLARE_C4CONTROL_VIRTUALS
 };
-
-#endif

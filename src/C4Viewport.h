@@ -2,8 +2,7 @@
 
 /* A viewport to each player */
 
-#ifndef INC_C4Viewport
-#define INC_C4Viewport
+#pragma once
 
 #include <C4Region.h>
 
@@ -121,5 +120,3 @@ protected:
 
 #define C4ViewportClassName "C4Viewport"
 #define C4ViewportWindowStyle (WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX)
-
-#endif

@@ -2,8 +2,7 @@
 
 /* Lots of file helpers */
 
-#ifndef STDFILE_INCLUDED
-#define STDFILE_INCLUDED
+#pragma once
 
 #include <Standard.h>
 #include <stdio.h>
@@ -110,5 +109,3 @@ protected:
 
 bool ReadFileLine(FILE *fhnd, char *tobuf, int maxlen);
 void AdvanceFileLine(FILE *fhnd);
-
-#endif // STDFILE_INCLUDED

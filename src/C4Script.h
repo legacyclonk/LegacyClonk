@@ -2,8 +2,7 @@
 
 /* Functions mapped by C4Script */
 
-#ifndef INC_C4Script
-#define INC_C4Script
+#pragma once
 
 #include <C4Value.h>
 
@@ -134,5 +133,3 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 // an additional callback for Construct.
 #define PSF_ControlCommandAcquire      "~ControlCommandAcquire" // C4Object *pTarget (unused), int iRangeX, int iRangeY, C4Object *pExcludeContainer, C4ID idAcquireDef
 #define PSF_ControlCommandConstruction "~ControlCommandConstruction" // C4Object *pTarget (unused), int iRangeX, int iRangeY, C4Object *pTarget2 (unused), C4ID idConstructDef
-
-#endif

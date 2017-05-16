@@ -1,5 +1,4 @@
-#ifndef C4NETWORK2REFERENCE_H
-#define C4NETWORK2REFERENCE_H
+#pragma once
 
 #ifdef C4ENGINE
 #include "C4Network2.h"
@@ -187,5 +186,3 @@ public:
 	const char *GetMessageOfTheDayHyperlink() const { return MessageOfTheDayHyperlink.getData(); }
 	const char *GetLeagueServerRedirect() const { return LeagueServerRedirect.getLength() ? LeagueServerRedirect.getData() : NULL; }
 };
-
-#endif // C4NETWORK2REFERENCE_H

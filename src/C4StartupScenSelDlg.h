@@ -1,8 +1,7 @@
 /* by Sven2, 2005 */
 // Startup screen for non-parameterized engine start: Scenario selection dialog
 
-#ifndef INC_C4StartupScenSelDlg
-#define INC_C4StartupScenSelDlg
+#pragma once
 
 #include "C4Startup.h"
 #include "C4Scenario.h"
@@ -436,5 +435,3 @@ public:
 
 	friend class ScenListItem;
 };
-
-#endif // INC_C4StartupScenSelDlg

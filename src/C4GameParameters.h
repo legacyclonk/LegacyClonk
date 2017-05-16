@@ -1,7 +1,6 @@
 /* Game parameters - game data that is valid before the game is started */
 
-#ifndef C4GAMEPARAMETERS_H
-#define C4GAMEPARAMETERS_H
+#pragma once
 
 #include "C4IDList.h"
 #include "C4PlayerInfo.h"
@@ -140,5 +139,3 @@ public:
 
 	void CompileFunc(StdCompiler *pComp, C4Scenario *pScenario = NULL);
 };
-
-#endif // C4GAMEPARAMETERS_H

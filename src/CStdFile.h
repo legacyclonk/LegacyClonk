@@ -2,8 +2,7 @@
 
 /* A handy wrapper class to gzio files */
 
-#ifndef INC_CSTDFILE
-#define INC_CSTDFILE
+#pragma once
 
 #include <stdio.h>
 #include <StdFile.h>
@@ -66,5 +65,3 @@ protected:
 };
 
 int UncompressedFileSize(const char *szFileName);
-
-#endif // INC_CSTDFILE

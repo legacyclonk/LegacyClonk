@@ -2,8 +2,7 @@
 
 /* Handles engine execution in developer mode */
 
-#ifndef INC_C4Console
-#define INC_C4Console
+#pragma once
 
 #include "C4PropertyDlg.h"
 #include "C4ToolsDlg.h"
@@ -219,5 +218,3 @@ protected:
 };
 
 extern C4Console Console;
-
-#endif

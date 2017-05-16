@@ -2,8 +2,7 @@
 
 /* Object definition */
 
-#ifndef INC_C4Def
-#define INC_C4Def
+#pragma once
 
 #include <C4Shape.h>
 #include <C4InfoCore.h>
@@ -434,5 +433,3 @@ private:
 
 // procedure name table
 extern const char *ProcedureName[C4D_MaxDFA];
-
-#endif

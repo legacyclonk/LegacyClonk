@@ -1,8 +1,7 @@
 /* by Sven2, 2005 */
 // color calculation routines
 
-#ifndef INC_StdColors
-#define INC_StdColors
+#pragma once
 
 #include <Standard.h>
 
@@ -283,5 +282,3 @@ public:
 	CColorFadeMatrix(int iX, int iY, int iWdt, int iHgt, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4);
 	uint32_t GetColorAt(int iX, int iY);
 };
-
-#endif

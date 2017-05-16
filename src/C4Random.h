@@ -2,8 +2,7 @@
 
 /* Buffered fast and network-safe random */
 
-#ifndef INC_C4Random
-#define INC_C4Random
+#pragma once
 
 #ifdef DEBUGREC
 #include <C4Record.h>
@@ -62,5 +61,3 @@ inline int SafeRandom(int range)
 
 void Randomize3();
 int Rnd3();
-
-#endif // INC_C4Random

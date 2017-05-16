@@ -1,5 +1,4 @@
-#ifndef C4GAMEVERSION_H
-#define C4GAMEVERSION_H
+#pragma once
 
 #include "C4Version.h"
 #include "C4InputValidation.h"
@@ -55,5 +54,3 @@ inline int CompareVersion(int iVer1, int iVer2, int iVer3, int iVer4,
 	if (iVer4 > iRVer4) return 1; if (iVer4 < iRVer4) return -1;
 	return 0;
 }
-
-#endif // C4GAMEVERSION_H

@@ -1,8 +1,7 @@
 /* by Sven2, 2001 */
 // markup tags for fonts
 
-#ifndef INC_STDMARKUP
-#define INC_STDMARKUP
+#pragma once
 
 #include <Standard.h>
 
@@ -82,5 +81,3 @@ public:
 	static bool StripMarkup(char *szText); // strip any markup codes from given text buffer
 	static bool StripMarkup(class StdStrBuf *sText); // strip any markup codes from given text buffer
 };
-
-#endif // INC_STDMARKUP

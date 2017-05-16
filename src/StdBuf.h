@@ -1,7 +1,6 @@
 // Standard buffer classes
 
-#ifndef STDBUF_H
-#define STDBUF_H
+#pragma once
 
 #include <zlib.h>
 #include "Standard.h"
@@ -684,5 +683,3 @@ public:
 // Wrappers
 extern StdStrBuf FormatString(const char *szFmt, ...) GNUC_FORMAT_ATTRIBUTE;
 extern StdStrBuf FormatStringV(const char *szFmt, va_list args);
-
-#endif

@@ -2,8 +2,7 @@
 
 /* Finds the way through the Clonk landscape */
 
-#ifndef INC_C4PathFinder
-#define INC_C4PathFinder
+#pragma once
 
 #include <C4TransferZone.h>
 
@@ -81,5 +80,3 @@ protected:
 	BOOL SplitRay(C4PathFinderRay *pRay, int32_t iAtX, int32_t iAtY);
 	BOOL Execute();
 };
-
-#endif

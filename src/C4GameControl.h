@@ -1,7 +1,6 @@
 /* control management */
 
-#ifndef INC_C4GameControl
-#define INC_C4GameControl
+#pragma once
 
 #include "C4Control.h"
 #include "C4Network2Client.h"
@@ -144,5 +143,3 @@ protected:
 	C4ControlSyncCheck *GetSyncCheck(int32_t iTick);
 	void RemoveOldSyncChecks();
 };
-
-#endif // INC_C4GameControl

@@ -2,8 +2,7 @@
 
 /* A wrapper class to OS dependent event and window interfaces */
 
-#ifndef INC_STDWINDOW
-#define INC_STDWINDOW
+#pragma once
 
 #include <Standard.h>
 #include <StdBuf.h>
@@ -428,5 +427,3 @@ protected:
 	friend class CStdWindow;
 	friend class CStdGtkWindow;
 };
-
-#endif // INC_STDWINDOW

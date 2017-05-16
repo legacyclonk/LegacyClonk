@@ -2,8 +2,7 @@
 
 /* Log file handling */
 
-#ifndef INC_C4Log
-#define INC_C4Log
+#pragma once
 
 #include <StdBuf.h>
 #include <StdCompiler.h>
@@ -22,5 +21,3 @@ bool GetLogSection(size_t iStart, size_t iLength, StdStrBuf &rsOut); // re-read 
 
 // Used to print a backtrace after a crash
 int GetLogFD();
-
-#endif

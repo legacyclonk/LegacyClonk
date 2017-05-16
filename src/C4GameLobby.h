@@ -3,8 +3,7 @@
 
 // TODO: Tab: NickCompletion - and can't do this here, because tab is used to cycle controls!
 
-#ifndef INC_C4GameLobby
-#define INC_C4GameLobby
+#pragma once
 
 #include "C4Gui.h"
 #include "C4Client.h"
@@ -168,5 +167,3 @@ public:
 };
 
 };
-
-#endif

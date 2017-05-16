@@ -1,8 +1,7 @@
 /* by Sven2, 2001 */
 // user-customizable multimedia package Extra.c4g
 
-#ifndef INC_C4Extra
-#define INC_C4Extra
+#pragma once
 
 #include <C4Group.h>
 
@@ -22,5 +21,3 @@ public:
 protected:
 	bool LoadDef(C4Group &hGroup, const char *szName); // load preset for definition
 };
-
-#endif

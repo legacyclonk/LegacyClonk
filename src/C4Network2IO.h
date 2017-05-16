@@ -1,5 +1,4 @@
-#ifndef INC_C4Network2IO
-#define INC_C4Network2IO
+#pragma once
 
 #include "C4NetIO.h"
 #include "C4Client.h"
@@ -406,5 +405,3 @@ public:
 
 	virtual void CompileFunc(StdCompiler *pComp);
 };
-
-#endif

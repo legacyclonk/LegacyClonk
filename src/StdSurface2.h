@@ -1,8 +1,7 @@
 /* by Sven2, 2001 */
 // a wrapper class to DirectDraw surfaces
 
-#ifndef INC_StdSurface2
-#define INC_StdSurface2
+#pragma once
 
 #include <Standard.h>
 #include <StdColors.h>
@@ -323,5 +322,3 @@ public:
 extern CTexMgr *pTexMgr;
 
 #define SURFACE CSurface *
-
-#endif

@@ -1,8 +1,7 @@
 /* by Sven2, 2005 */
 // Startup screen for non-parameterized engine start
 
-#ifndef INC_C4StartupMainDlg
-#define INC_C4StartupMainDlg
+#pragma once
 
 #include "C4Startup.h"
 
@@ -43,5 +42,3 @@ public:
 	C4StartupMainDlg();
 	~C4StartupMainDlg();
 };
-
-#endif // INC_C4StartupMainDlg

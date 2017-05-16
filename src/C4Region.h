@@ -2,8 +2,7 @@
 
 /* Screen area marked for mouse interaction */
 
-#ifndef INC_C4Region
-#define INC_C4Region
+#pragma once
 
 #include <C4Id.h>
 
@@ -57,5 +56,3 @@ public:
 	BOOL Add(int iX, int iY, int iWdt, int iHgt, const char *szCaption = NULL, int iCom = COM_None, C4Object *pTarget = NULL, int iMoveOverCom = COM_None, int iHoldCom = COM_None, int iData = 0);
 	BOOL Add(C4Region &rRegion);
 };
-
-#endif

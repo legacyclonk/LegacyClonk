@@ -2,8 +2,7 @@
 
 /* Structures for object and player info components */
 
-#ifndef INC_C4InfoCore
-#define INC_C4InfoCore
+#pragma once
 
 #include <C4Id.h>
 #include <C4ValueMap.h>
@@ -216,5 +215,3 @@ inline FIXED ValByPhysical(int32_t iPercent, int32_t iPhysical) // get percentag
 {
 	return itofix(iPhysical * (iPercent / 5), C4MaxPhysical * 20);
 }
-
-#endif

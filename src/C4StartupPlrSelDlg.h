@@ -2,8 +2,7 @@
 // Startup screen for non-parameterized engine start: Player selection dialog
 // Also contains player creation, editing and crew management
 
-#ifndef INC_C4StartupPlrSelDlg
-#define INC_C4StartupPlrSelDlg
+#pragma once
 
 #include "C4Startup.h"
 #include "C4InfoCore.h"
@@ -280,5 +279,3 @@ public:
 
 	virtual void OnClosed(bool fOK); // close CB
 };
-
-#endif // INC_C4StartupPlrSelDlg

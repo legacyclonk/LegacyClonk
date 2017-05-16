@@ -2,8 +2,7 @@
 
 /* Handles group files */
 
-#ifndef INC_C4Group
-#define INC_C4Group
+#pragma once
 
 #ifdef HAVE_IO_H
 #include <io.h>
@@ -278,5 +277,3 @@ protected:
 	C4GroupEntry *GetNextFolderEntry();
 	bool CalcCRC32(C4GroupEntry *pEntry);
 };
-
-#endif

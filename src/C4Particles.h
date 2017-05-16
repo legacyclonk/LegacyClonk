@@ -10,8 +10,7 @@
 // note: this particle system will always assume the owning def
 //  object to be a static class named Game.Particles!
 
-#ifndef INC_C4Particles
-#define INC_C4Particles
+#pragma once
 
 #include <C4FacetEx.h>
 #include <C4Group.h>
@@ -219,5 +218,3 @@ struct C4ParticleDrawProcRec
 
 extern C4ParticleProcRec C4ParticleProcMap[]; // particle init/execution function map
 extern C4ParticleDrawProcRec C4ParticleDrawProcMap[]; // particle drawing function map
-
-#endif

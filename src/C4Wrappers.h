@@ -2,8 +2,7 @@
 
 /* Some useful wrappers to globals */
 
-#ifndef INC_C4Wrappers
-#define INC_C4Wrappers
+#pragma once
 
 #ifdef C4ENGINE
 
@@ -234,5 +233,3 @@ bool DecompileToBuf_Log(StructT &&TargetStruct, typename CompT::OutT *pOut, cons
 }
 
 #endif // C4ENGINE
-
-#endif

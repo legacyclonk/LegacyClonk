@@ -1,5 +1,4 @@
-#ifndef INC_C4Value
-#define INC_C4Value
+#pragma once
 
 #include "C4Id.h"
 
@@ -308,5 +307,3 @@ template <> struct C4ValueConv<C4Value *>
 template <> struct C4ValueConv<long> : public C4ValueConv<int32_t> {};
 
 extern const C4Value C4VNull, C4VFalse, C4VTrue;
-
-#endif

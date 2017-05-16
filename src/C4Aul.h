@@ -5,8 +5,7 @@
 // -> build string table
 // -> clear the string table in UnLink? ReLink won't happen to be called in player mode anyway
 
-#ifndef INC_C4Aul
-#define INC_C4Aul
+#pragma once
 
 #include <C4AList.h>
 #include <C4ValueList.h>
@@ -555,5 +554,3 @@ public:
 	friend class C4AulFunc;
 	friend class C4AulParseState;
 };
-
-#endif

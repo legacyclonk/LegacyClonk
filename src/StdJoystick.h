@@ -2,6 +2,8 @@
 
 /* Simple joystick handling with DirectInput 1 */
 
+#pragma once
+
 #include <Standard.h>
 #include <windows.h>
 #include <mmsystem.h>

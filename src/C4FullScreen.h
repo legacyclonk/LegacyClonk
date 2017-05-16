@@ -2,8 +2,7 @@
 
 /* Main class to execute the game fullscreen mode */
 
-#ifndef INC_C4FullScreen
-#define INC_C4FullScreen
+#pragma once
 
 #include "C4MainMenu.h"
 #include <StdWindow.h>
@@ -38,5 +37,3 @@ public:
 };
 
 extern C4FullScreen FullScreen;
-
-#endif

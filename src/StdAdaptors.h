@@ -1,5 +1,4 @@
-#ifndef STDADAPTORS_H
-#define STDADAPTORS_H
+#pragma once
 
 #include "Standard.h"
 #include "StdCompiler.h"
@@ -914,5 +913,3 @@ public:
 inline StdHexAdapt mkHexAdapt(void *pData, size_t iSize) { return StdHexAdapt(pData, iSize); }
 template <class T>
 inline StdHexAdapt mkHexAdapt(T &rData) { return StdHexAdapt(&rData, sizeof(rData)); }
-
-#endif // STDADAPTORS_H

@@ -2,8 +2,7 @@
 
 /* Language module controlling external language packs */
 
-#ifndef INC_C4Language
-#define INC_C4Language
+#pragma once
 
 #include <C4Group.h>
 #include <C4GroupSet.h>
@@ -83,5 +82,3 @@ static inline StdStrBuf LoadResStrUtf8(const char *ident)
 {
 	return Languages.IconvUtf8(LoadResStr(ident));
 }
-
-#endif

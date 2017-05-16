@@ -6,8 +6,7 @@
 //   mouse wheel processing
 //   disabled buttons
 
-#ifndef INC_C4Gui
-#define INC_C4Gui
+#pragma once
 
 #define ConsoleDlgClassName "C4GUIdlg"
 #define ConsoleDlgWindowStyle (WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX)
@@ -2831,5 +2830,3 @@ void GUISound(const char *szSound);
 }; // end of namespace
 
 typedef C4GUI::Screen C4GUIScreen;
-
-#endif

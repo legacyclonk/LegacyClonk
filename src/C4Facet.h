@@ -2,8 +2,7 @@
 
 /* A piece of a DirectDraw surface */
 
-#ifndef INC_C4Facet
-#define INC_C4Facet
+#pragma once
 
 #include <StdDDraw2.h>
 
@@ -150,5 +149,3 @@ public:
 		return iWidth * Hgt / (Wdt ? Wdt : 1);
 	}
 };
-
-#endif // INC_C4Facet

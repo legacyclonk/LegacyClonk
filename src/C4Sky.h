@@ -2,8 +2,7 @@
 
 /* Small member of the landscape class to handle the sky background */
 
-#ifndef INC_C4Sky
-#define INC_C4Sky
+#pragma once
 
 #define C4SkyPM_Fixed 0 // sky parallax mode: fixed
 #define C4SkyPM_Wind  1 // sky parallax mode: blown by the wind
@@ -45,5 +44,3 @@ public:
 	uint32_t FadeClr1, FadeClr2;
 	int32_t ParallaxMode; // sky scrolling mode
 };
-
-#endif

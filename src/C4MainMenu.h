@@ -1,8 +1,7 @@
 /* by Sven2, 2008 */
 // Engine internal C4Menus: Main menu, Options, Player join, Hostility, etc.
 
-#ifndef INC_C4MainMenu
-#define INC_C4MainMenu
+#pragma once
 
 #include "C4Menu.h"
 
@@ -54,5 +53,3 @@ protected:
 	virtual void OnUserClose();
 	virtual int32_t GetControllingPlayer() { return Player; }
 };
-
-#endif

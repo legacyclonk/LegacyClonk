@@ -1,7 +1,6 @@
 // Stellt eine einfache dynamische Integer-Liste bereit.
 
-#ifndef INC_C4ValueList
-#define INC_C4ValueList
+#pragma once
 
 #include "C4Value.h"
 
@@ -68,5 +67,3 @@ private:
 	unsigned int iRefCnt;
 	unsigned int iElementReferences;
 };
-
-#endif

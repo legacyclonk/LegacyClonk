@@ -13,8 +13,7 @@
 // host for all list entries [/added since the run mode was last left]. In running mode,
 // the PlayerJoin-control will be sent directly after the PlayerInfo-control.
 
-#ifndef INC_C4Network2Players
-#define INC_C4Network2Players
+#pragma once
 
 #include "C4PacketBase.h"
 
@@ -66,5 +65,3 @@ public:
 	C4ClientPlayerInfos *GetLocalPlayerInfoPacket() const; // get player info packet for local client (created in Init())
 	DWORD GetClientChatColor(int idForClient, bool fLobby) const;
 };
-
-#endif // INC_C4Network2Players

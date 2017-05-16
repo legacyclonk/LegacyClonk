@@ -2,8 +2,7 @@
 
 /* 32-bit value to identify object definitions */
 
-#ifndef INC_C4Id
-#define INC_C4Id
+#pragma once
 
 #include <StdAdaptors.h>
 
@@ -63,5 +62,3 @@ struct C4IDAdapt
 };
 
 inline C4IDAdapt mkC4IDAdapt(C4ID &rValue) { return C4IDAdapt(rValue); }
-
-#endif

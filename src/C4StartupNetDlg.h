@@ -1,8 +1,7 @@
 /* by Sven2, 2006 */
 // Startup screen for non-parameterized engine start: Network game selection dialog
 
-#ifndef INC_C4StartupNetDlg
-#define INC_C4StartupNetDlg
+#pragma once
 
 #include "C4Startup.h"
 #include "C4Network2Discover.h"
@@ -197,5 +196,3 @@ public:
 	void SetIgnoreUpdate(bool to_val) { fIgnoreUpdate = to_val; }
 	bool GetIgnoreUpdate() const { return fIgnoreUpdate; }
 };
-
-#endif // INC_C4StartupNetDlg

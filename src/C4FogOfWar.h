@@ -2,9 +2,6 @@
 
 /* A visibility map for each player - currently not in use; replaced by color modulated blits */
 
-#ifndef INC_C4FogOfWar
-#define INC_C4FogOfWar
+#pragma once
 
 #define C4FOW_Def_View_RangeX 500
-
-#endif

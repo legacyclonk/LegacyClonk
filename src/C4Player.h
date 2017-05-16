@@ -2,8 +2,7 @@
 
 /* Player data at runtime */
 
-#ifndef INC_C4Player
-#define INC_C4Player
+#pragma once
 
 #include "C4MainMenu.h"
 #include <C4ObjectInfoList.h>
@@ -243,5 +242,3 @@ public:
 	// when the player changes team, his color changes. Relfect this in player objects
 	void SetPlayerColor(uint32_t dwNewClr);
 };
-
-#endif

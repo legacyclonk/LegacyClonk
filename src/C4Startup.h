@@ -1,8 +1,7 @@
 /* by Sven2, 2005 */
 // Startup screen for non-parameterized engine start
 
-#ifndef INC_C4Startup
-#define INC_C4Startup
+#pragma once
 
 #include "C4Gui.h"
 
@@ -117,5 +116,3 @@ public:
 	static C4Startup *Get() { assert(pInstance); return pInstance; }
 	static bool WasFirstRun() { return fFirstRun; }
 };
-
-#endif // INC_C4Startup

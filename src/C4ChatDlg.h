@@ -1,8 +1,7 @@
 /* by Sven2, 2007 */
 // IRC client dialog
 
-#ifndef INC_C4ChatDlg
-#define INC_C4ChatDlg
+#pragma once
 
 #include "C4Gui.h"
 #include "C4InteractiveThread.h"
@@ -179,5 +178,3 @@ protected:
 
 	void OnChatTitleChange(const StdStrBuf &sNewTitle);
 };
-
-#endif // INC_C4ChatDlg

@@ -1,8 +1,7 @@
 /* by Sven2, 2005 */
 // RTF file parsing functionality
 
-#ifndef INC_C4RTF
-#define INC_C4RTF
+#pragma once
 
 class C4RTFFile
 {
@@ -82,5 +81,3 @@ public:
 
 	StdStrBuf GetPlainText(); // convert to plain text
 };
-
-#endif // INC_C4RTF

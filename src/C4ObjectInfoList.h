@@ -2,8 +2,7 @@
 
 /* Dynamic list for crew member info */
 
-#ifndef INC_C4ObjectInfoList
-#define INC_C4ObjectInfoList
+#pragma once
 
 #include <C4Id.h>
 
@@ -42,5 +41,3 @@ protected:
 	C4ObjectInfo *GetLast();
 	C4ObjectInfo *GetPrevious(C4ObjectInfo *pInfo);
 };
-
-#endif

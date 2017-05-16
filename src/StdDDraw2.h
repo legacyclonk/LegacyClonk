@@ -2,8 +2,7 @@
 
 /* A wrapper class to DirectDraw */
 
-#ifndef INC_STDDDRAW2
-#define INC_STDDDRAW2
+#pragma once
 
 #include <StdSurface2.h>
 #include <StdSurface8.h>
@@ -350,5 +349,3 @@ bool DLineSPix(int32_t x, int32_t y, int32_t col);
 bool DLineSPixDw(int32_t x, int32_t y, int32_t dwClr);
 
 CStdDDraw *DDrawInit(CStdApp *pApp, BOOL Fullscreen, BOOL fUsePageLock, int iBitDepth, int Engine, unsigned int iMonitor);
-
-#endif // INC_STDDDRAW2

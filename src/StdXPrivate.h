@@ -1,5 +1,4 @@
-#ifndef INC_STD_X_PRIVATE_H
-#define INC_STD_X_PRIVATE_H
+#pragma once
 
 class CStdAppPrivate
 {
@@ -45,5 +44,3 @@ public:
 	// Used to signal a network event
 	int Pipe[2];
 };
-
-#endif // INC_STD_X_PRIVATE_H

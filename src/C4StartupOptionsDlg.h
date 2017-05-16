@@ -1,8 +1,7 @@
 /* by Sven2, 2005 */
 // Startup screen for non-parameterized engine start: Options dialog
 
-#ifndef INC_C4StartupOptionsDlg
-#define INC_C4StartupOptionsDlg
+#pragma once
 
 #include "C4Startup.h"
 
@@ -257,5 +256,3 @@ private:
 		static bool GetControlSize(int *piWdt, int *piHgt, int *piTabPos, const char *szForText);
 	} *pLeagueServerCfg;
 };
-
-#endif // INC_C4StartupOptionsDlg

@@ -1,7 +1,6 @@
 /* synchronization helper classes */
 
-#ifndef INC_StdSync
-#define INC_StdSync
+#pragma once
 
 #ifdef _WIN32
 
@@ -282,5 +281,3 @@ public:
 		if (sec) sec->LeaveShared(); sec = NULL;
 	}
 };
-
-#endif // INC_StdSync

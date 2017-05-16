@@ -2,8 +2,7 @@
 
 /* Fullscreen startup log and chat type-in */
 
-#ifndef INC_C4MessageBoard
-#define INC_C4MessageBoard
+#pragma once
 
 const int C4MSGB_MaxMsgFading = 6;
 
@@ -57,5 +56,3 @@ public:
 
 	friend class C4MessageInput;
 };
-
-#endif

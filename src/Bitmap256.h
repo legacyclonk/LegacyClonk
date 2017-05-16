@@ -2,8 +2,7 @@
 
 /* A structure for handling 256-color bitmap files */
 
-#ifndef BITMAP256_H_INC
-#define BITMAP256_H_INC
+#pragma once
 
 #ifdef _WIN32
 
@@ -76,5 +75,3 @@ public:
 };
 
 #pragma pack(pop, def_pack)
-
-#endif // BITMAP256_H_INC

@@ -1,8 +1,7 @@
 /* by Sven2, 2005 */
 // Custom game options and configuration dialog
 
-#ifndef INC_C4GameOptions
-#define INC_C4GameOptions
+#pragma once
 
 #include "C4Gui.h"
 
@@ -152,5 +151,3 @@ public:
 	bool IsTabular() const { return fRuntime; } // wide runtime dialog allows tabular layout
 	bool IsRuntime() const { return fRuntime; }
 };
-
-#endif // INC_C4GameOptions

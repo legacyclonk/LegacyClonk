@@ -2,8 +2,7 @@
 
 /* Dynamic list to hold runtime player data */
 
-#ifndef INC_C4PlayerList
-#define INC_C4PlayerList
+#pragma once
 
 #include "C4PlayerInfo.h"
 
@@ -68,5 +67,3 @@ protected:
 
 	friend class C4Player;
 };
-
-#endif

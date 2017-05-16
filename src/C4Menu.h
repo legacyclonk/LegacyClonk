@@ -2,8 +2,7 @@
 
 /* In-game menu as used by objects, players, and fullscreen options */
 
-#ifndef INC_C4Menu
-#define INC_C4Menu
+#pragma once
 
 #include "C4Id.h"
 #include "C4FacetEx.h"
@@ -246,5 +245,3 @@ protected:
 	friend class C4Viewport; // for drawing
 	friend class C4MenuItem;
 };
-
-#endif

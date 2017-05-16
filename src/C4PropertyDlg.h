@@ -2,8 +2,7 @@
 
 /* Console mode dialog for object properties and script interface */
 
-#ifndef INC_C4PropertyDlg
-#define INC_C4PropertyDlg
+#pragma once
 
 #include "C4ObjectList.h"
 
@@ -43,5 +42,3 @@ protected:
 	C4ID idSelectedDef;
 	C4ObjectList Selection;
 };
-
-#endif

@@ -1,8 +1,7 @@
 /* by Sven2, 2008 */
 // file selection dialogs
 
-#ifndef INC_C4FileSelDlg
-#define INC_C4FileSelDlg
+#pragma once
 
 #include <C4Gui.h>
 
@@ -252,5 +251,3 @@ public:
 
 	static bool SelectPortrait(C4GUI::Screen *pOnScreen, StdStrBuf *pSelection, bool *pfSetPicture, bool *pfSetBigIcon);
 };
-
-#endif // INC_C4FileSelDlg

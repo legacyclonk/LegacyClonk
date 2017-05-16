@@ -2,8 +2,7 @@
 
 /* Main header to include all others */
 
-#ifndef INC_C4Include
-#define INC_C4Include
+#pragma once
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -218,5 +217,3 @@
 #include "C4Weather.h"
 #include "C4Wrappers.h"
 #endif
-
-#endif // INC_C4Include

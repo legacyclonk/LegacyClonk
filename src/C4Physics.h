@@ -2,8 +2,7 @@
 
 /* Some old constants and references */
 
-#ifndef INC_C4Physics
-#define INC_C4Physics
+#pragma once
 
 const int StableRange = 10;
 const int AttachRange = 5;
@@ -16,5 +15,3 @@ extern const FIXED HitSpeed1, HitSpeed2, HitSpeed3, HitSpeed4;
 extern const FIXED WalkAccel, SwimAccel;
 extern const FIXED FloatFriction;
 extern const FIXED RotateAccel;
-
-#endif

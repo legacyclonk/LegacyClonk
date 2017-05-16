@@ -2,8 +2,7 @@
 
 /* Extension to CSurface that handles bitmaps in C4Group files */
 
-#ifndef INC_C4Surface
-#define INC_C4Surface
+#pragma once
 
 #include <StdSurface2.h>
 
@@ -26,5 +25,3 @@ public:
 	BOOL ReadPNG(CStdStream &hGroup);
 	bool ReadJPEG(CStdStream &hGroup);
 };
-
-#endif

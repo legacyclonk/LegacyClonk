@@ -1,8 +1,7 @@
 /* by Sven2, 2008 */
 // game over dialog showing winners and losers
 
-#ifndef INC_C4GameOverDlg
-#define INC_C4GameOverDlg
+#pragma once
 
 #include <C4Gui.h>
 #include <C4RoundResults.h>
@@ -76,5 +75,3 @@ public:
 	static bool IsShown() { return is_shown; }
 	void OnSec1Timer() { Update(); }
 };
-
-#endif // INC_C4GameOverDlg

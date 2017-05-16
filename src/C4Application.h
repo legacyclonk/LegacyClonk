@@ -1,7 +1,6 @@
 /* Copyright (C) 1998-2000  Matthes Bender  RedWolf Design */
 
-#ifndef INC_C4Application
-#define INC_C4Application
+#pragma once
 
 #include <C4Config.h>
 #include <C4Group.h>
@@ -123,5 +122,3 @@ public:
 };
 
 extern C4Application Application;
-
-#endif

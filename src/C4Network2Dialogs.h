@@ -1,8 +1,7 @@
 /* by Sven2, 2004 */
 // dialogs for network information
 
-#ifndef INC_C4Network2Dialogs
-#define INC_C4Network2Dialogs
+#pragma once
 
 #include "C4Gui.h"
 
@@ -258,5 +257,3 @@ public:
 	~C4ChartDialog() { if (pChartDlg == this) pChartDlg = NULL; }
 	static void Toggle();
 };
-
-#endif // INC_C4Network2Dialogs

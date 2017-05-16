@@ -1,8 +1,7 @@
 /* by Sven2, 2005 */
 // Keyboard input mapping to engine functions
 
-#ifndef INC_C4KeyboardInput
-#define INC_C4KeyboardInput
+#pragma once
 
 // key context classifications
 enum C4KeyScope
@@ -404,5 +403,3 @@ public:
 
 // keyboardinput-initializer-helper
 C4KeyboardInput &C4KeyboardInput_Init();
-
-#endif // INC_C4KeyboardInput

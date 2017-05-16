@@ -2,8 +2,7 @@
 
 /* Lots of constants */
 
-#ifndef INC_C4Constants
-#define INC_C4Constants
+#pragma once
 
 // Main
 
@@ -284,5 +283,3 @@ enum C4AllowPictureStack
 	APS_Name     = 1 << 2,
 	APS_Overlay  = 1 << 3,
 };
-
-#endif // INC_C4Constants

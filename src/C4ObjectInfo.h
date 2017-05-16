@@ -2,8 +2,7 @@
 
 /* Holds crew member information */
 
-#ifndef INC_C4ObjectInfo
-#define INC_C4ObjectInfo
+#pragma once
 
 #include <C4Surface.h>
 #include <C4InfoCore.h>
@@ -50,5 +49,3 @@ public:
 	bool ClearPortrait(bool fPermanently);
 #endif
 };
-
-#endif
