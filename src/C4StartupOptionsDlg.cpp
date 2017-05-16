@@ -804,12 +804,6 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheckGfxNoBoxFades->SetToolTip(LoadResStr("IDS_MSG_NOCLRFADE_DESC"));
 	pCheckGfxNoBoxFades->SetOnChecked(pGfxGroubleCheckCB);
 	pGroupTrouble->AddElement(pCheckGfxNoBoxFades);
-	// manual clipping
-	pCheckGfxClipManually = new C4GUI::CheckBox(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_MANUALCLIP"), false);
-	pCheckGfxClipManually->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-	pCheckGfxClipManually->SetToolTip(LoadResStr("IDS_MSG_MANUALCLIP_DESC"));
-	pCheckGfxClipManually->SetOnChecked(pGfxGroubleCheckCB);
-	pGroupTrouble->AddElement(pCheckGfxClipManually);
 	// texture indent
 	pEdtGfxTexIndent = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 0, 2, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_TEXINDENT"), nullptr, &iGfxTexIndent, false);
 	pEdtGfxTexIndent->SetToolTip(LoadResStr("IDS_MSG_TEXINDENT_DESC"));
@@ -1349,7 +1343,6 @@ void C4StartupOptionsDlg::LoadGfxTroubleshoot()
 	pCheckGfxPointFilter->SetChecked(!!(dwGfxCfg & C4GFXCFG_POINT_FILTERING));
 	pCheckGfxNoAddBlit->SetChecked(!!(dwGfxCfg & C4GFXCFG_NOADDITIVEBLTS));
 	pCheckGfxNoBoxFades->SetChecked(!!(dwGfxCfg & C4GFXCFG_NOBOXFADES));
-	pCheckGfxClipManually->SetChecked(!!(dwGfxCfg & C4GFXCFG_CLIPMANUALLY));
 	pEdtGfxTexIndent->SetIntVal(iGfxTexIndent);
 	pEdtGfxBlitOff->SetIntVal(iGfxBlitOff);
 	// title of troubleshooting-box by config set
@@ -1365,7 +1358,6 @@ void C4StartupOptionsDlg::SaveGfxTroubleshoot()
 	if (pCheckGfxPointFilter->GetChecked()) dwGfxCfg |= C4GFXCFG_POINT_FILTERING;
 	if (pCheckGfxNoAddBlit->GetChecked()) dwGfxCfg |= C4GFXCFG_NOADDITIVEBLTS;
 	if (pCheckGfxNoBoxFades->GetChecked()) dwGfxCfg |= C4GFXCFG_NOBOXFADES;
-	if (pCheckGfxClipManually->GetChecked()) dwGfxCfg |= C4GFXCFG_CLIPMANUALLY;
 	if (DDrawCfg.Windowed) dwGfxCfg |= C4GFXCFG_WINDOWED;
 	pEdtGfxTexIndent->Save2Config();
 	pEdtGfxBlitOff->Save2Config();

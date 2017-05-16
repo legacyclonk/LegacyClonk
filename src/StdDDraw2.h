@@ -228,7 +228,6 @@ public:
 	bool RestorePrimaryClipper();
 	bool NoPrimaryClipper();
 	virtual bool UpdateClipper() = 0; // set current clipper to render target
-	bool ClipPoly(CBltData &rBltData); // clip polygon to clipper; return whether completely clipped out
 
 	// Surface
 	bool GetSurfaceSize(CSurface *sfcSurface, int &iWdt, int &iHgt);

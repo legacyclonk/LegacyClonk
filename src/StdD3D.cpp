@@ -120,11 +120,6 @@ bool CStdD3D::UpdateClipper()
 	int iX, iY, iWdt, iHgt;
 	// no render target or clip all? do nothing
 	if (!CalculateClipper(&iX, &iY, &iWdt, &iHgt)) return true;
-	// clipping set to manual?
-#ifdef _DEBUG
-	// it won't hurt to clip anyway, if we are not debugging manual clipping
-	if (DDrawCfg.ClipManually) return true;
-#endif
 	// bound clipper to surface size
 	D3DVIEWPORT9 Clipper;
 	Clipper.X = iX; Clipper.Y = iY; Clipper.Width = iWdt; Clipper.Height = iHgt;
@@ -177,9 +172,6 @@ void CStdD3D::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, b
 	// additive?
 	int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
 	bool fAnyModNotDark = false;
-	// clipping?
-	if (DDrawCfg.ClipManually && rBltData.pTransform)
-		if (!ClipPoly(rBltData)) return;
 	void *pVertexPtr; int iVtxSize;
 	// globally modulated blit
 	bool fAnyMod = fMod2;
@@ -670,45 +662,6 @@ void CStdD3D::DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint3
 
 void CStdD3D::DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr)
 {
-	float i;
-	// manual clipping?
-	if (DDrawCfg.ClipManuallyE)
-	{
-		// sort left/right
-		if (x1 > x2) { i = x1; x1 = x2; x2 = i; i = y1; y1 = y2; y2 = i; }
-		// clip horizontally
-		if (x1 < ClipX1)
-			if (x2 < ClipX1)
-				return; // left out
-			else
-			{
-				y1 += (y2 - y1) * ((float)ClipX1 - x1) / (x2 - x1); x1 = (float)ClipX1;
-			} // clip left
-		else if (x2 > ClipX2)
-			if (x1 > ClipX2)
-				return; // right out
-			else
-			{
-				y2 -= (y2 - y1) * (x2 - ClipX2) / (x2 - x1); x2 = (float)ClipX2;
-			} // clip right
-// sort top/bottom
-		if (y1 > y2) { i = x1; x1 = x2; x2 = i; i = y1; y1 = y2; y2 = i; }
-		// clip vertically
-		if (y1 < ClipY1)
-			if (y2 < ClipY1)
-				return; // top out
-			else
-			{
-				x1 += (x2 - x1) * (ClipY1 - y1) / (y2 - y1); y1 = (float)ClipY1;
-			} // clip top
-		else if (y2 > ClipY2)
-			if (y1 > ClipY2)
-				return; // bottom out
-			else
-			{
-				x2 -= (x2 - x1) * (y2 - ClipY2) / (y2 - y1); y2 = (float)ClipY2;
-			} // clip bottom
-	}
 	// apply color modulation
 	if (BlitModulated)
 		ModulateClr(dwClr, BlitModulateClr);

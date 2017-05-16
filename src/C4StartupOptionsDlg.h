@@ -134,7 +134,7 @@ private:
 
 	C4GUI::CheckBox *pCheckGfxEngines[3];
 	C4GUI::GroupBox *pGroupTrouble;
-	C4GUI::CheckBox *pCheckGfxNoAlphaAdd, *pCheckGfxPointFilter, *pCheckGfxNoAddBlit, *pCheckGfxNoBoxFades, *pCheckGfxClipManually;
+	C4GUI::CheckBox *pCheckGfxNoAlphaAdd, *pCheckGfxPointFilter, *pCheckGfxNoAddBlit, *pCheckGfxNoBoxFades;
 	int32_t iGfxTexIndent, iGfxBlitOff; EditConfig *pEdtGfxTexIndent, *pEdtGfxBlitOff;
 	C4GUI::ScrollBar *pEffectLevelSlider;
 

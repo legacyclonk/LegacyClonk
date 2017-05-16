@@ -649,7 +649,6 @@ IDS_MSG_LEAGUEUSERNAMETOOSHORT=Der Benutzername ist zu kurz.
 IDS_MSG_LEAGUE_REGISTRATION=Dies ist Deine erste Anmeldung bei der Liga. Du kannst hier Deinen gewünschten Liga-Benutzernamen und Dein gewünschtes Liga-Passwort eingeben.
 IDS_MSG_LOCAL=lokaler
 IDS_MSG_LOOKINGFORUPDATES=Suche nach updates...
-IDS_MSG_MANUALCLIP_DESC=Aktiviert manuelles Clipping. Kann gegen Grafikfehler wie lange, weit gestreckte Linien über den ganzen Bildschirm helfen.
 IDS_MSG_MAP_DESC=Szenario auf der Karte wählen.
 IDS_MSG_MAP_STARTSCEN=Szenario %s starten
 IDS_MSG_MMTIMER_DESC=Kann bei Problemen mit der Spielgeschwindigkeit helfen.

@@ -588,34 +588,6 @@ bool CStdDDraw::CalculateClipper(int *const iX, int *const iY, int *const iWdt, 
 	return true;
 }
 
-bool CStdDDraw::ClipPoly(CBltData &rBltData)
-{
-	// safety
-	if (!rBltData.byNumVertices) return false;
-	CBltTransform inverse;
-	// Transform the points before clipping, if possible
-	bool transformed = rBltData.pTransform && inverse.SetAsInv(*rBltData.pTransform);
-	if (transformed) for (int i = 0; i < rBltData.byNumVertices; ++i)
-		rBltData.pTransform->TransformPoint(rBltData.vtVtx[i].ftx, rBltData.vtVtx[i].fty);
-	// calculate floating point clips for performance reasons; note the +1 because it's the beginning of the next pixel that lays outside
-	float fClipX1 = float(ClipX1), fClipY1 = float(ClipY1), fClipX2 = float(ClipX2) + 1, fClipY2 = float(ClipY2) + 1;
-	fClipX1 += DDrawCfg.fBlitOff; fClipY1 += DDrawCfg.fBlitOff;
-	fClipX2 += DDrawCfg.fBlitOff; fClipY2 += DDrawCfg.fBlitOff;
-	// clip against left
-	if (!rBltData.ClipBy(-1, 0, -fClipX1)) return false;
-	// clip against top
-	if (!rBltData.ClipBy(0, -1, -fClipY1)) return false;
-	// clip against right
-	if (!rBltData.ClipBy(1, 0, fClipX2)) return false;
-	// clip against bottom
-	if (!rBltData.ClipBy(0, 1, fClipY2)) return false;
-	// transform them back, so that they can be transformed again by PerformBlt
-	if (transformed) for (int i = 0; i < rBltData.byNumVertices; ++i)
-		inverse.TransformPoint(rBltData.vtVtx[i].ftx, rBltData.vtVtx[i].fty);
-	// clipping done
-	return true;
-}
-
 void CStdDDraw::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *sfcSource3, int fx, int fy,
 	CSurface *sfcTarget, int tx, int ty, int wdt, int hgt)
 {
@@ -660,43 +632,6 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	if (ClipAll) return true;
 	// check exact
 	bool fExact = !pTransform && fwdt == twdt && fhgt == thgt;
-	// manual clipping? (primary surface only)
-	if (DDrawCfg.ClipManuallyE && !pTransform && sfcTarget->fPrimary)
-	{
-		int iOver;
-		// Left
-		iOver = tx - ClipX1;
-		if (iOver < 0)
-		{
-			twdt += iOver;
-			fwdt += ((float)iOver / scaleX);
-			fx -= ((float)iOver / scaleX);
-			tx = ClipX1;
-		}
-		// Top
-		iOver = ty - ClipY1;
-		if (iOver < 0)
-		{
-			thgt += iOver;
-			fhgt += ((float)iOver / scaleY);
-			fy -= ((float)iOver / scaleY);
-			ty = ClipY1;
-		}
-		// Right
-		iOver = ClipX2 + 1 - (tx + twdt);
-		if (iOver < 0)
-		{
-			fwdt += ((float)iOver / scaleX);
-			twdt += iOver;
-		}
-		// Bottom
-		iOver = ClipY2 + 1 - (ty + thgt);
-		if (iOver < 0)
-		{
-			fhgt += ((float)iOver / scaleY);
-			thgt += iOver;
-		}
-	}
 	// inside screen?
 	if (twdt <= 0 || thgt <= 0) return false;
 	// prepare rendering to surface
@@ -1107,14 +1042,6 @@ bool CStdDDraw::StringOut(const char *szText, CSurface *sfcDest, int iTx, int iT
 
 void CStdDDraw::DrawPix(CSurface *sfcDest, float tx, float ty, uint32_t dwClr)
 {
-	// manual clipping?
-	if (DDrawCfg.ClipManuallyE)
-	{
-		if (tx < ClipX1) { return; }
-		if (ty < ClipY1) { return; }
-		if (ClipX2 < tx) { return; }
-		if (ClipY2 < ty) { return; }
-	}
 	// apply global modulation
 	ClrByCurrentBlitMod(dwClr);
 	// apply modulation map
@@ -1474,16 +1401,5 @@ void CStdDDraw::DrawBoxFade(CSurface *sfcDest, int iX, int iY, int iWdt, int iHg
 
 void CStdDDraw::DrawBoxDw(CSurface *sfcDest, int iX1, int iY1, int iX2, int iY2, uint32_t dwClr)
 {
-	// manual clipping?
-	if (DDrawCfg.ClipManuallyE)
-	{
-		int iOver;
-		iOver = iX1 - ClipX1; if (iOver < 0) { iX1 = ClipX1; }
-		iOver = iY1 - ClipY1; if (iOver < 0) { iY1 = ClipY1; }
-		iOver = ClipX2 - iX2; if (iOver < 0) { iX2 += iOver; }
-		iOver = ClipY2 - iY2; if (iOver < 0) { iY2 += iOver; }
-		// inside screen?
-		if (iX2 < iX1 || iY2 < iY1) return;
-	}
 	DrawBoxFade(sfcDest, iX1, iY1, iX2 - iX1 + 1, iY2 - iY1 + 1, dwClr, dwClr, dwClr, dwClr, 0, 0);
 }
