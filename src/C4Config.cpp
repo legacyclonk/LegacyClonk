@@ -227,18 +227,6 @@ void C4ConfigIRC::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(AllowAllChannels,				"AllowAllChannels",			0											,	false, true));
 	}
 
-void C4ConfigSecurity::CompileFunc(StdCompiler *pComp)
-	{
-	pComp->Value(mkNamingAdapt(WasRegistered,						"WasRegistered",				0										));
-#ifdef _WIN32
-	pComp->Value(mkNamingAdapt(s(KeyPath),							"KeyPath",							"%APPDATA%\\Clonk Rage"	, false, true)); 
-#elif defined(__linux__)
-	pComp->Value(mkNamingAdapt(s(KeyPath),							"KeyPath",							"$HOME/.clonk/rage" , false, true)); 
-#elif defined(__APPLE__)
-	pComp->Value(mkNamingAdapt(s(KeyPath),							"KeyPath",							"$HOME/Library/Application Support/Clonk Rage", false, true));
-#endif
-	}
-
 void C4ConfigGamepad::CompileFunc(StdCompiler *pComp, bool fButtonsOnly)
 	{
 	/* The defaults here are for a Logitech Dual Action under Linux-SDL. Better than nothing, I guess. */
@@ -504,8 +492,7 @@ BOOL C4Config::Load(BOOL forceWorkingDirectory, const char *szConfigFile)
 		if (Config.Network.PortDiscovery>=65536) Config.Network.PortDiscovery = C4NetStdPortDiscovery;
 		}
 #endif
-	// Empty nick already defaults to GetRegistrationData("Nick") or
-	// Network.LocalName at relevant places.
+	// Empty nick already defaults to Network.LocalName at relevant places.
 	/*if (!Network.Nick.getLength()) 
 		Network.Nick.Copy(Network.LocalName); // assuming that LocalName will always contain some useful value*/
 	fConfigLoaded = true;
@@ -774,18 +761,6 @@ void C4ConfigGeneral::DefaultLanguage()
 		GetLanguageSequence(Language, LanguageEx);
 	}
 
-BOOL C4Config::Registered()
-	{
-	// Dummy function: to be overloaded in C4Config
-	return TRUE;
-	}
-
-BOOL C4Config::IsFreeFolder(const char *szFoldername, const char *szMaker)
-	{
-	// Dummy function: to be overloaded in C4Config
-	return TRUE;
-	}
-
 BOOL C4Config::Init()
 	{
 	return TRUE;
@@ -847,7 +822,6 @@ void C4Config::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(IRC,				  "IRC"	  			));
 	pComp->Value(mkNamingAdapt(Developer,		"Developer"		));
 	pComp->Value(mkNamingAdapt(Startup, 		"Startup"	  	));
-	pComp->Value(mkNamingAdapt(Security, 		"Security"	 	));
 	}
 
 bool C4Config::AddModule(const char *szPath, char *szModules)

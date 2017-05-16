@@ -17,7 +17,7 @@
 #ifndef INC_C4Application
 #define INC_C4Application
 
-#include <C4ConfigShareware.h>
+#include <C4Config.h>
 #include <C4Group.h>
 #include <C4MusicSystem.h>
 #include <C4SoundSystem.h>
@@ -80,8 +80,6 @@ class C4Application: public CStdApp
 		bool isFullScreen;
 		// set by ParseCommandLine, if neither scenario nor direct join adress has been specified
 		bool UseStartupDialog;
-		// set by ParseCommandLine, for installing registration keys
-		StdStrBuf IncomingKeyfile;
 		// set by ParseCommandLine, for manually applying downloaded update packs
 		StdStrBuf IncomingUpdate;
 		// set by ParseCommandLine, for manually invoking an update check by command line or url

@@ -19,8 +19,6 @@ src/C4ComponentHost.h
 src/C4Components.h
 src/C4Config.cpp
 src/C4Config.h
-src/C4ConfigShareware.cpp
-src/C4ConfigShareware.h
 src/C4Console.cpp
 src/C4Console.h
 src/C4Constants.h
@@ -237,8 +235,6 @@ src/C4ScriptHost.cpp
 src/C4ScriptHost.h
 src/C4Sector.cpp
 src/C4Sector.h
-src/C4SecurityCertificates.cpp
-src/C4SecurityCertificates.h
 src/C4Shape.cpp
 src/C4Shape.h
 src/C4Sky.cpp

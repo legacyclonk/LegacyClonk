@@ -718,22 +718,6 @@ void C4Network2IRCClient::OnMessage(bool fNotice, const char *szSender, const ch
 			// Process
 			if(SEqualNoCase(Tag.getData(), "ACTION"))
 				PushMessage(MSG_Action, szSender, szTarget, szData ? szData : "");
-			if(SEqualNoCase(Tag.getData(), "FINGER") && !fNotice)
-				{
-				StdStrBuf Answer;
-				if(Config.Registered())
-					{
-					Answer = Config.GetRegistrationData("Cuid");
-					}
-				else
-					{
-					Answer = LoadResStr("IDS_PRC_UNREGUSER");
-					}
-				Send("NOTICE", FormatString("%s :%cFINGER %s%c", 
-					Sender.getData(), X_DELIM, 
-					Answer.getData(),
-					X_DELIM).getData());
-				}
 			if(SEqualNoCase(Tag.getData(), "VERSION") && !fNotice)
 				Send("NOTICE", FormatString("%s :%cVERSION " C4ENGINECAPTION ":" C4VERSION ":" C4_OS "%c", 
 					Sender.getData(), X_DELIM, X_DELIM).getData());

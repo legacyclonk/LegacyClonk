@@ -43,7 +43,6 @@ protected:
 	// identification
 	int32_t iID;
   ValidatedStdCopyStrBuf<C4InVal::VAL_NameNoEmpty> Name, Nick;
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameAllowEmpty> CUID;
 
 	// version info
 	int iVersion[4];
@@ -65,9 +64,7 @@ public:
 
 	// misc
 	const char *getName()			const { return Name.getData(); }
-	const char *getCUID()			const { return CUID.getData(); }
 	const char *getNick()			const { return Nick.getData(); }
-	bool				isRegistered()const	{ return CUID.getLength()>0; }
 
 	// initialization
 	void SetLocal(int32_t iID, bool fnActivated, bool fnObserver);
@@ -99,11 +96,9 @@ public:
 	int32_t			getID()				const { return Core.getID(); }
 	bool				isHost()			const { return Core.isHost(); }
 	const char *getName()			const { return Core.getName(); }
-	const char *getCUID()			const { return Core.getCUID(); }
 	const char *getNick()			const { return Core.getNick(); }
 	bool				isActivated() const { return Core.isActivated(); }
 	bool				isObserver()	const { return Core.isObserver(); }
-	bool        isRegistered()const { return Core.isRegistered(); }
 
 	bool				isLocal()			const { return fLocal; }
 	C4Network2Client *getNetClient() const { return pNetClient; }

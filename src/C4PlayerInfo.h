@@ -228,7 +228,6 @@ class C4ClientPlayerInfos
 			CIF_AddPlayers  = 1<<0, // if set, the players are to be added to the current list (otherwise overwrite)
 			CIF_Updated     = 1<<1, // set temporarily if changed and not transmissioned to clients (valid for host only)
 			CIF_Initial     = 1<<2, // set for first-time player info packets
-			CIF_Developer   = 1<<3, // set for developer hosts (by regkey); client side check only!
 			CIF_Removed			= 1<<4, // client was removed
 			};
 		uint32_t dwFlags; // bit mask of the above flags
@@ -265,7 +264,6 @@ class C4ClientPlayerInfos
 		int32_t GetJoinedPlayerCount() const;                   // return number of players that are IsJoined()
 		bool IsAddPacket() const { return !!(dwFlags & CIF_AddPlayers); }  // return whether players are to be added to the current list (otherwise overwrite)
 		bool IsInitialPacket() const { return !!(dwFlags & CIF_Initial); } // returns whether this packet was sent as the first local-join packet
-		bool IsDeveloperPacket() const { return !!(dwFlags & CIF_Developer); } // returns whether packet was created by a developer host - client side check only!
 
 		// network: Load all resources connected with the players that are not being loaded yet
 		void LoadResources();

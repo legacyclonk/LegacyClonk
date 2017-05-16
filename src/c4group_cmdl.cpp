@@ -34,7 +34,7 @@
 //         4.95.4 July     2005 PORT/HEAD mixmax
 
 #include <C4Include.h>
-#include <C4ConfigShareware.h>
+#include <C4Config.h>
 #include <StdRegistry.h>
 #include <C4Group.h>
 #include <C4Version.h>
@@ -56,7 +56,7 @@ char strExecuteAtEnd[_MAX_PATH + 1] = "";
 
 int iResult = 0;
 
-C4ConfigShareware Config;
+C4Config Config;
 C4Config *GetCfg() { return &Config; }
 CDDrawCfg DDrawCfg; // to satisfy the linker 
 
@@ -92,13 +92,12 @@ bool ProcessGroup(const char *szFilename)
 		printf("Group: %s\n",szFilename);
 
 	// Open group file
-  if (hGroup.Open(szFilename, TRUE && Config.Registered()))
+  if (hGroup.Open(szFilename, TRUE))
     {
     // No commands: display contents
     if (iFirstCommand<0)
 		{
-			if (Config.Registered())
-				hGroup.View("*");
+			hGroup.View("*");
 		}
 
     // Process commands
@@ -108,12 +107,6 @@ bool ProcessGroup(const char *szFilename)
 			// This argument is a command
       if (argv[iArg][0]=='-') 
         {
-				// Block unregistered commands
-				if (!Config.Registered() && (SCharPos(argv[iArg][1], "yw") < 0))
-				{
-			    printf("Command -%c not allowed in unregistered version: %s\n", argv[iArg][1], Config.GetRegistrationError());
-					continue;
-				}
 				// Handle commands
         switch (argv[iArg][1])
           {
@@ -471,14 +464,12 @@ int main(int argc, char *argv[])
 	if (!fQuiet)
 		printf("RedWolf Design C4Group %s\n", C4VERSION);
 
-	// Registration check
+	// Load configuration
 	Config.Init(); 
-	bool fWasQuiet = fQuiet; fQuiet = true; // prevent premature logging of registration error
 	Config.Load(FALSE);
-	fQuiet = fWasQuiet;
  
 	// Init C4Group
-	C4Group_SetMaker(Config.General.Name); // This makes no sense if unregistered but it is assumed that no groups can be written if unregistered
+	C4Group_SetMaker(Config.General.Name);
 	C4Group_SetTempPath(Config.General.TempPath);
 	C4Group_SetSortList(C4CFN_FLS);
 

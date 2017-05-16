@@ -38,7 +38,7 @@
 #include <C4Group.h>
 #include <C4Version.h>
 #include <C4Update.h>
-#include <C4ConfigShareware.h>
+#include <C4Config.h>
 
 // from http://cboard.cprogramming.com/archive/index.php/t-27714.html
 #include <stdio.h>
@@ -69,7 +69,7 @@ char strExecuteAtEnd[_MAX_PATH + 1] = "";
 
 int iResult = 0;
 
-C4ConfigShareware Config;
+C4Config Config;
 C4Config *GetCfg() {
   return &Config;
 }
@@ -108,12 +108,11 @@ bool ProcessGroup(const char *FilenamePar) {
   LogF("Group: %s", szFilename);
 
   // Open group file
-  if (hGroup.Open(szFilename, TRUE && Config.Registered())) {
+  if (hGroup.Open(szFilename, TRUE)) {
     // No commands: display contents
     if (iFirstCommand >= argc) {
       hGroup.SetStdOutput(true);
-			if (Config.Registered())
-				hGroup.View("*");
+			hGroup.View("*");
       hGroup.SetStdOutput(!fQuiet);
     }
     // Process commands
@@ -121,12 +120,6 @@ bool ProcessGroup(const char *FilenamePar) {
       for (int iArg = iFirstCommand; iArg < argc; ++iArg) {
         // This argument is a command
         if (argv[iArg][0] == '-') {
-					// Block unregistered commands
-					if (!Config.Registered() && (SCharPos(argv[iArg][1], "y") < 0))
-					{
-						printf("Command -%c not allowed in unregistered version: %s\n", argv[iArg][1], Config.GetRegistrationError());
-						continue;
-					}
 					// Handle commands
           switch (argv[iArg][1]) {
             // Add
@@ -468,7 +461,7 @@ int main(int argc, char *argv[]) {
   // Program info
   LogF("RedWolf Design C4Group %s", C4VERSION);
 
-  // Registration check
+  // Load configuration
   Config.Init();
   Config.Load(FALSE);
   

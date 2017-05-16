@@ -136,10 +136,6 @@ bool C4Application::DoInit()
 		if (!IsResStrTableLoaded())
 			Log("WARNING: No language string table loaded!");
 
-	// Set unregistered user name
-	if (!Config.Registered()) 
-		C4Group_SetMaker(LoadResStr("IDS_PRC_UNREGUSER"));
-
 	// Parse command line
 	Game.ParseCommandLine(GetCommandLine());
 
@@ -176,20 +172,6 @@ bool C4Application::DoInit()
 	// Engine header message
 	Log(C4ENGINEINFOLONG);
 	LogF("Version: %s %s", C4VERSION, C4_OS);
-
-	// Log registration info
-	if (Config.Registered())
-		{
-		char buf[4096 + 1] = "";
-		SAppend("Registered to: ", buf, 4096); 
-		SAppend(Config.General.Name, buf, 4096); SAppend(" ", buf, 4096); 
-		if (Config.GetRegistrationData("Nick")[0])
-			{ SAppend("(", buf, 4096); SAppend(Config.GetRegistrationData("Nick"), buf, 4096); SAppend(") ", buf, 4096); }
-		SAppend("[", buf, 4096); SAppend(Config.GetRegistrationData("Cuid"), buf, 4096); SAppend("]", buf, 4096);
-		Log(buf);
-		}
-	else
-		Log(Config.GetRegistrationError());
 
 #if defined(USE_DIRECTX) && defined(_WIN32)
 	// DDraw emulation warning
@@ -301,9 +283,6 @@ bool C4Application::OpenGame()
 		}
 	else
 		{
-		// Check registration 
-		/*if ( !Config.Registered() )	FREEWARE
-			{ LogFatal(LoadResStr("IDS_CNS_REGONLY")); Clear(); return FALSE; } */
 		// Execute command line
 		if (Game.ScenarioFilename[0] || Game.DirectJoinAddress[0])
 			return Console.OpenGame(szCmdLine);

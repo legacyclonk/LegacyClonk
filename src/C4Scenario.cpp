@@ -171,6 +171,8 @@ void C4SHead::CompileFunc(StdCompiler *pComp, bool fSection)
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(Font),     "Font",                 ""));
 		pComp->Value(mkNamingAdapt(mkArrayAdaptDM(C4XVer,0),  "Version"               ));
 		pComp->Value(mkNamingAdapt(Difficulty,								"Difficulty",						0));
+		// Ignore EnableUnregisteredAccess
+		int32_t EnableUnregisteredAccess = FALSE;
 		pComp->Value(mkNamingAdapt(EnableUnregisteredAccess,  "Access",               FALSE));
 		pComp->Value(mkNamingAdapt(MaxPlayer,                 "MaxPlayer",            C4S_MaxPlayerDefault));
 		pComp->Value(mkNamingAdapt(MaxPlayerLeague,           "MaxPlayerLeague",      MaxPlayer));

@@ -708,13 +708,6 @@ bool C4ScenarioListLoader::Scenario::LoadCustom(C4Group &rGrp, bool fNameLoaded,
 	// scenario name fallback to core
 	if (!fNameLoaded)
 		sName.Copy(C4S.Head.Title);
-	// unregistered access
-	C4Group *pFolder;
-	fUnregisteredAccess = false;
-	if (C4S.Head.EnableUnregisteredAccess)
-		if (pFolder = rGrp.GetMother())
-			if (Config.IsFreeFolder(pFolder->GetName(), pFolder->GetMaker()))
-				fUnregisteredAccess = true;
 	// difficulty: Set only for regular rounds (not savegame or record) to avoid bogus sorting
 	if (!C4S.Head.SaveGame && !C4S.Head.Replay)
 		iDifficulty = C4S.Head.Difficulty;
@@ -737,12 +730,6 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 	// safety
 	C4StartupScenSelDlg *pDlg = C4StartupScenSelDlg::pInstance;
 	if (!pDlg) return false;
-	// check unregistered access
-	/*if (!Config.Registered() && !fUnregisteredAccess) FREEWARE
-		{
-		sErrOut.Copy(LoadResStr("IDS_MSG_NOUNREGISTERED"));
-		return false;
-		}*/
 	// check mission access
 	if (C4S.Head.MissionAccess[0] && !SIsModule(Config.General.MissionAccess, C4S.Head.MissionAccess))		
 		{
@@ -941,11 +928,6 @@ StdStrBuf C4ScenarioListLoader::Folder::GetOpenText()
 StdStrBuf C4ScenarioListLoader::Folder::GetOpenTooltip()
 	{
 	return StdCopyStrBuf(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
-	}
-
-bool C4ScenarioListLoader::Folder::IsGrayed()
-	{
-	return false; /*!(Config.Registered() || Config.IsFreeFolder(sFilename.getData(), sMaker.getData())); FREEWARE */
 	}
 
 bool C4ScenarioListLoader::Folder::LoadCustomPre(C4Group &rGrp)
@@ -1237,7 +1219,7 @@ C4StartupScenSelDlg::ScenListItem::ScenListItem(C4GUI::ListBox *pForListBox, C4S
 	assert(pScenListEntry);
 	CStdFont &rUseFont = C4Startup::Get()->Graphics.BookFont;
 	StdStrBuf sIgnore;
-	bool fEnabled = pScenListEntry->CanOpen(sIgnore) && !pScenListEntry->IsGrayed();
+	bool fEnabled = pScenListEntry->CanOpen(sIgnore);
 	// calc height
 	int32_t iHeight = rUseFont.GetLineHeight() + 2 * IconLabelSpacing;
 	// create subcomponents

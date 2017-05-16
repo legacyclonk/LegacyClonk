@@ -32,10 +32,6 @@ class C4StartupMainDlg : public C4StartupDlg
 		bool fFirstShown;
 
 	protected:
-		
-		void HandleIncomingKeyfile(const char *strIncomingKey);
-		void ConfirmMoveKey(const char *strKeyFilename);
-
 		virtual void DrawElement(C4FacetEx &cgo);
 		virtual void OnClosed(bool fOK);    // callback when dlg got closed: Abort startup
 		C4GUI::ContextMenu *OnPlayerSelContext(C4GUI::Element *pBtn, int32_t iX, int32_t iY); // preliminary player selection via simple context menu

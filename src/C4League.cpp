@@ -695,16 +695,16 @@ void C4LeagueSignupDialog::UserClose(bool fOK)
 	Dialog::UserClose(fOK);
 	}
 
-bool C4LeagueSignupDialog::ShowModal(const char *szPlayerName, const char *szLeagueName, const char *szLeagueServerName, StdStrBuf *psCUID, StdStrBuf *psPass, bool fWarnThirdParty, bool fRegister)
+bool C4LeagueSignupDialog::ShowModal(const char *szPlayerName, const char *szLeagueName, const char *szLeagueServerName, StdStrBuf *psAccount, StdStrBuf *psPass, bool fWarnThirdParty, bool fRegister)
 	{
 	// show league signup dlg modally; return whether user pressed OK and change user and pass buffers in that case
-	assert(psCUID); assert(psPass);
-	if (!psCUID || !psPass || !Game.pGUI) return false;
-	C4LeagueSignupDialog *pDlg = new C4LeagueSignupDialog(szPlayerName, szLeagueName, szLeagueServerName, psCUID->getData(), psPass->getData(), fWarnThirdParty, fRegister);
+	assert(psAccount); assert(psPass);
+	if (!psAccount || !psPass || !Game.pGUI) return false;
+	C4LeagueSignupDialog *pDlg = new C4LeagueSignupDialog(szPlayerName, szLeagueName, szLeagueServerName, psAccount->getData(), psPass->getData(), fWarnThirdParty, fRegister);
 	bool fResult = Game.pGUI->ShowModalDlg(pDlg, false);
 	if (fResult)
 		{
-		psCUID->Copy(pDlg->GetAccount());
+		psAccount->Copy(pDlg->GetAccount());
 		if(pDlg->HasPass())
 			psPass->Copy(pDlg->GetPass());
 		else

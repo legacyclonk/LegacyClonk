@@ -449,12 +449,10 @@ C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *edt, bool fPasting, b
 		// because those might kill the edit field
 		Game.MessageInput.StoreBackBuffer(szInputText);
 		bool fProcessed = false;
-		// check confidential data
-		if (C4InVal::IsConfidentialData(szInputText, true)) fProcessed = true;
 		// CAUTION when implementing special commands (like /quit) here:
 		// those must not be executed when text is pasted, because that could crash the GUI system
 		// when there are additional lines to paste, but the edit field is destructed by the command
-		if (!fProcessed && *szInputText == '/')
+		if (*szInputText == '/')
 			{
 			// must be 1 char longer than the longest command only. If given commands are longer, they will be truncated, and such a command won't exist anyway
 			const int32_t MaxCommandLen = 20;

@@ -121,8 +121,6 @@ void C4StartupMainDlg::DrawElement(C4FacetEx &cgo)
 	// draw version info
 	StdStrBuf sVer;
 	sVer.Format(LoadResStr("IDS_DLG_VERSION"), C4VERSION);
-	if (!Config.Registered())
-		{ sVer += " FREEWARE"; }
 	lpDDraw->TextOut(sVer.getData(), C4GUI::GetRes()->TextFont, 1.0f, cgo.Surface, rcBounds.Wdt*39/40, rcBounds.Hgt/12 + int32_t(fLogoZoom*fctLogo.Hgt) - 10, 0xffffffff, ARight, true);
 	}
 
@@ -295,21 +293,6 @@ bool C4StartupMainDlg::KeyEnterUp()
 
 void C4StartupMainDlg::OnShown()
 	{
-
-	// New valid registration key found (in working directory or key path)
-	if (Config.Registered() && !Config.Security.WasRegistered)
-		HandleIncomingKeyfile(Config.GetKeyFilename());
-	// Incoming key file from command line
-	else if (Application.IncomingKeyfile)
-		HandleIncomingKeyfile(Application.IncomingKeyfile.getData());
-	// An invalid key file was found: handle it to show warning message
-	else if (!Config.Registered() && *Config.GetInvalidKeyFilename())
-		HandleIncomingKeyfile(Config.GetInvalidKeyFilename());
-	// Clear incoming key info
-	Application.IncomingKeyfile.Clear();
-	// Update registration status
-	Config.Security.WasRegistered = Config.Registered();
-
 	// Incoming update
 	if (Application.IncomingUpdate)
 		{
@@ -379,86 +362,4 @@ bool C4StartupMainDlg::SwitchToEditor()
 #endif
 
 	return true;
-}
-
-void C4StartupMainDlg::HandleIncomingKeyfile(const char *strIncomingKey)
-{
-	static bool fWarnedInvalidKeyfile = false;
-
-	// Copy filename parameter to keep it valid
-	StdCopyStrBuf strKeyFilename; strKeyFilename = strIncomingKey;
-
-	// Key file doesn't even exist? Do nothing.
-	if (!FileExists(strKeyFilename.getData())) return;
-	
-	// Try loading registration from the incoming keyfile to verify it
-	Config.ClearRegistrationError();
-	if (!Config.LoadRegistration(strKeyFilename.getData()))
-	{
-		// Invalid keyfile: show message (but only once)
-		if (!fWarnedInvalidKeyfile)
-		{
-			StdStrBuf strMessage; strMessage.Format(LoadResStr("IDS_MSG_INVALIDKEY"), Config.GetRegistrationError());
-			GetScreen()->ShowMessageModal(strMessage.getData(), LoadResStr("IDS_DLG_REGISTRATION"),	C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
-		}
-		fWarnedInvalidKeyfile = true;
-		// Try to reload any existing registration
-		Config.LoadRegistration();
-		// Bail out
-		return;
-	}
-
-	// See where the key is coming from
-	char strIncomingPath[_MAX_PATH + 1];
-	GetParentPath(strKeyFilename.getData(), strIncomingPath);
-	AppendBackslash(strIncomingPath);
-	
-	// The key is already in the key path: that's how we like it
-	if (SEqualNoCase(strIncomingPath, Config.GetKeyPath()))
-		{
-		// Just say thank you
-		GetScreen()->ShowMessageModal(LoadResStr("IDS_CTL_REGISTERED"), LoadResStr("IDS_DLG_REGISTRATION"),	C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify);
-		return;
-		}
-
-	// The key is currently in the work dir (ExePath)
-	if (SEqualNoCase(strIncomingPath, Config.General.ExePath))
-		{
-		// Ask whether to move it to the key path (preferred)
-		StdStrBuf strMessage; strMessage.Format("%s||%s", LoadResStr("IDS_CTL_REGISTERED"), LoadResStr("IDS_MSG_MOVEKEY"));
-		if (GetScreen()->ShowMessageModal(strMessage.getData(), LoadResStr("IDS_DLG_REGISTRATION"),	C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_Confirm))
-			{
-			// Create key path if it doesn't already exist
-			if (!DirectoryExists(Config.GetKeyPath())) CreateDirectory(Config.GetKeyPath(), NULL);
-			// Move key into key path
-			StdStrBuf strTarget; strTarget.Format("%s%s", Config.GetKeyPath(), GetFilename(strKeyFilename.getData()));
-			if (!MoveItem(strKeyFilename.getData(), strTarget.getData()))
-				GetScreen()->ShowMessageModal(LoadResStr("IDS_FAIL_MOVE"), LoadResStr("IDS_DLG_REGISTRATION"),	C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
-			// Update registration
-			Config.LoadRegistration();
-			}
-		return;
-		}
-
-	// The key is coming from the outside
-	else
-		{
-		// Say thank you
-		GetScreen()->ShowMessageModal(LoadResStr("IDS_CTL_REGISTERED"), LoadResStr("IDS_DLG_REGISTRATION"),	C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify);
-		// Create key path if it doesn't already exist
-		if (!DirectoryExists(Config.GetKeyPath())) CreateDirectory(Config.GetKeyPath(), NULL);
-		// Now try to copy it into the key path (preferred)
-		StdStrBuf strTarget; strTarget.Format("%s%s", Config.GetKeyPath(), GetFilename(strKeyFilename.getData()));
-		if (!CopyItem(strKeyFilename.getData(), strTarget.getData()))
-			{
-			// Failed for some reason, try copy it into the work dir instead (emergency backup)
-			strTarget.Format("%s%s", Config.General.ExePath, GetFilename(strKeyFilename.getData()));
-			if (!CopyItem(strKeyFilename.getData(), strTarget.getData()))
-				GetScreen()->ShowMessageModal(LoadResStr("IDS_FAIL_COPY"), LoadResStr("IDS_DLG_REGISTRATION"),	C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
-			}
-		// Update registration
-		Config.LoadRegistration();
-		return;
-		}
-
 }

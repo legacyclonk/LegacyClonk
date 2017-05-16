@@ -477,9 +477,6 @@ void C4StartupNetListEntry::SetReference(C4Network2Reference *pRef)
 	// password
 	if (pRef->isPasswordNeeded())
 		AddStatusIcon(C4GUI::Ico_Ex_LockedFrontal, LoadResStr("IDS_NET_INFOPASSWORD"));
-	// reg join only
-	if (pRef->isRegJoinOnly())
-		AddStatusIcon(C4GUI::Ico_RegJoinOnly, LoadResStr("IDS_NET_REGJOINONLY"));
 	// league
 	if (pRef->Parameters.isLeague())
 		AddStatusIcon(C4GUI::Ico_Ex_League, pRef->Parameters.getLeague());
@@ -578,7 +575,7 @@ bool C4StartupNetListEntry::IsSameHost(const C4Network2Reference *pRef2)
 	C4Client *pHost2 = pRef2->Parameters.Clients.getHost();
 	if(!pHost1 || !pHost2) return false;
 	// check
-	return SEqual(pHost1->getCUID(), pHost2->getCUID()) && SEqual(pHost1->getName(), pHost2->getName());
+	return SEqual(pHost1->getName(), pHost2->getName());
 	}
 
 bool C4StartupNetListEntry::IsSameAddress(const C4Network2Reference *pRef2)
@@ -1076,16 +1073,6 @@ bool C4StartupNetDlg::DoOK()
 					C4GUI::Ico_Error);
 			return true;
 			}
-		// no unregistered join - note freeware engines can still get blocked by hosts setting RegJoinOnly
-		/*if (pRef->isRegJoinOnly())
-			if (!Config.Registered())
-				{
-				Game.pGUI->ShowMessageModal(LoadResStr("IDS_NET_REGJOINONLY"),
-																		strNoJoin.getData(), 
-																		C4GUI::MessageDialog::btnOK,
-																		C4GUI::Ico_Error);
-				return true;
-				}*/
 		// no runtime join
 		if (!pRef->isJoinAllowed())
 			{
