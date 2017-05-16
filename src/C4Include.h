@@ -160,7 +160,6 @@
 #include "C4Map.h"
 #include "C4MassMover.h"
 #include "C4Material.h"
-#include "C4MaterialList.h"
 #include "C4Menu.h"
 #include "C4MessageBoard.h"
 #include "C4MessageInput.h"

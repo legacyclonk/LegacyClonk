@@ -20,11 +20,14 @@
 
 #include "C4Facet.h"
 #include "C4Id.h"
+#include "C4Landscape.h"
 #include "C4Sector.h"
 #include "C4Value.h"
 #include "C4ValueList.h"
 #include "C4Effects.h"
 #include "C4Particles.h"
+
+#include <array>
 
 /* Object status */
 
@@ -175,7 +178,7 @@ public:
 	C4IDList Component;
 	C4Rect PictureRect;
 	C4NotifyingObjectList Contents;
-	C4MaterialList *MaterialContents; // SyncClearance-NoSave //
+	std::array<int32_t, C4MaxMaterial> MaterialContents; // SyncClearance-NoSave //
 	C4DefGraphics *pGraphics; // currently set object graphics
 	C4Effect *pEffects; // linked list of effects
 	C4ParticleList FrontParticles, BackParticles; // lists of object local particles
