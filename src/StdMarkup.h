@@ -30,8 +30,8 @@ class CMarkupTag
 	public:
 		CMarkupTag *pPrev, *pNext;
 
-		CMarkupTag(): pPrev(0), pNext(0) { };	// ctor
-		virtual ~CMarkupTag() { };		// dtor
+		CMarkupTag(): pPrev(0), pNext(0) { };
+		virtual ~CMarkupTag() { };
 
 		virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, DWORD &dwClr)=0; // assign markup
 		virtual const char *TagName()=0;	// get character string for this tag
@@ -41,7 +41,7 @@ class CMarkupTag
 class CMarkupTagItalic : public CMarkupTag
 	{
 	public:
-		CMarkupTagItalic() : CMarkupTag() { } // ctor
+		CMarkupTagItalic() : CMarkupTag() { }
 
 		virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, DWORD &dwClr); // assign markup
 		virtual const char *TagName() { return "i"; }
@@ -53,7 +53,7 @@ class CMarkupTagColor : public CMarkupTag
 	private:
 		DWORD dwClr;		// color
 	public:
-		CMarkupTagColor(DWORD dwClr) : CMarkupTag(), dwClr(dwClr) { } // ctor
+		CMarkupTagColor(DWORD dwClr) : CMarkupTag(), dwClr(dwClr) { }
 
 		virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, DWORD &dwClr); // assign markup
 		virtual const char *TagName() { return "c"; }
@@ -71,8 +71,8 @@ class CMarkup
 		CMarkupTag *Pop() 
 			{ CMarkupTag *pL=pLast; if (!pL) return 0; if ((pLast=pL->pPrev)) pLast->pNext=0; else pTags=0; return pL; }
 	public:
-		CMarkup(bool fDoClr) { pTags=pLast=0; this->fDoClr=fDoClr; };		// ctor
-		~CMarkup() // dtor
+		CMarkup(bool fDoClr) { pTags=pLast=0; this->fDoClr=fDoClr; };
+		~CMarkup()
 			{ CMarkupTag *pTag=pTags,*pNext; while (pTag) { pNext=pTag->pNext; delete pTag; pTag=pNext; } }
 
 		bool Read(const char **ppText, bool fSkip=false);		// get markup from text

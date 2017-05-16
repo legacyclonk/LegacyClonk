@@ -60,8 +60,8 @@ class C4AulError
 
 	public:
 		C4AulError();
-		C4AulError(const C4AulError& Error) { sMessage.Copy(Error.sMessage); } // copy - constructor
-		virtual ~C4AulError() { } // destructor
+		C4AulError(const C4AulError& Error) { sMessage.Copy(Error.sMessage); }
+		virtual ~C4AulError() { }
 		virtual void show(); // present error message
 	};
 
@@ -69,8 +69,8 @@ class C4AulError
 class C4AulParseError : public C4AulError
 	{
 	public:
-		C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf = NULL, BOOL Warn = FALSE); // constructor
-		C4AulParseError(class C4AulParseState * state, const char *pMsg, const char *pIdtf = NULL, BOOL Warn = FALSE); // constructor
+		C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf = NULL, BOOL Warn = FALSE);
+		C4AulParseError(class C4AulParseState * state, const char *pMsg, const char *pIdtf = NULL, BOOL Warn = FALSE);
 	};
 
 // execution error
@@ -78,7 +78,7 @@ class C4AulExecError : public C4AulError
 	{
 		C4Object *cObj;
 	public:
-		C4AulExecError(C4Object *pObj, const char *szError); // constructor
+		C4AulExecError(C4Object *pObj, const char *szError);
 		virtual void show(); // present error message
 	};
 
@@ -95,7 +95,7 @@ struct C4AulParSet
 {
 	C4Value Par[C4AUL_MAX_Par];
 
-	C4AulParSet() {} // standard-constructor
+	C4AulParSet() {}
 	C4AulParSet(const C4Value &par0,             const C4Value &par1 = C4Value(), const C4Value &par2 = C4Value(), const C4Value &par3 = C4Value(), const C4Value &par4 = C4Value(),
 		          const C4Value &par5 = C4Value(), const C4Value &par6 = C4Value(), const C4Value &par7 = C4Value(), const C4Value &par8 = C4Value(), const C4Value &par9 = C4Value())
 	{
@@ -255,8 +255,8 @@ class C4AulFunc
 		friend class C4AulParseState;
 
 	public:
-		C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd = true); // constructor
-		virtual ~C4AulFunc(); // destructor
+		C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd = true);
+		virtual ~C4AulFunc();
 
 		C4AulScript *Owner; // owner
 		char Name[C4AUL_MAX_Identifier]; // function name
@@ -322,7 +322,7 @@ class C4AulScriptFunc : public C4AulFunc
 			bReturnRef(false), tProfileTime(0)
 		{ 
 			for(int i = 0; i < C4AUL_MAX_Par; i++) ParType[i] = C4V_Any; 
-		} // constructor
+		}
 
 		virtual void UnLink();
 
@@ -348,7 +348,7 @@ class C4AulDefFunc : C4AulFunc
 	public:
 		C4ScriptFnDef* Def;
 
-		C4AulDefFunc(C4AulScript *pOwner, const char *pName, C4ScriptFnDef* pDef) : C4AulFunc(pOwner, pName) // constructor
+		C4AulDefFunc(C4AulScript *pOwner, const char *pName, C4ScriptFnDef* pDef) : C4AulFunc(pOwner, pName)
 			{	Def = pDef; }
 
 		virtual bool GetPublic() { return !!Def->Public; }
@@ -420,8 +420,8 @@ class C4AulProfiler
 class C4AulScript
 	{
 	public:
-		C4AulScript(); // constructor
-		virtual ~C4AulScript(); // destructor
+		C4AulScript();
+		virtual ~C4AulScript();
 		void Default(); // init
 		void Clear(); // remove script, byte code and children
 		void Reg2List(C4AulScriptEngine *pEngine, C4AulScript *pOwner); // reg to linked list
@@ -531,8 +531,8 @@ class C4AulScriptEngine : public C4AulScript
 		C4ValueMapNames GlobalConstNames;
 		C4ValueMapData GlobalConsts;
 	
-		C4AulScriptEngine(); // constructor
-		~C4AulScriptEngine(); // destructor
+		C4AulScriptEngine();
+		~C4AulScriptEngine();
 		void Clear(); // clear data
 		void Link(C4DefList *rDefs); // link and parse all scripts
 		void ReLink(C4DefList *rDefs); // unlink + relink and parse all scripts

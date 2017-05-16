@@ -30,8 +30,8 @@ class C4ObjResort;
 class C4GameObjects : public C4NotifyingObjectList
 	{
 	public:
-		C4GameObjects(); // constructor
-		~C4GameObjects(); // destructor
+		C4GameObjects();
+		~C4GameObjects();
 		void Default();
 		void Init(int32_t iWidth, int32_t iHeight);
 		void Clear(bool fClearInactive = true); // clear objects
@@ -93,8 +93,8 @@ class C4AulFunc;
 class C4ObjResort
 	{
 	public:
-		C4ObjResort(); // constructor
-		~C4ObjResort(); // destructor
+		C4ObjResort();
+		~C4ObjResort();
 
 		void Execute(); // do the resort!
 		void Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast); // sort list between pFirst and pLast

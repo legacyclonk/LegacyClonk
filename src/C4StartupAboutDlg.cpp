@@ -30,7 +30,7 @@
 
 C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg("")
 	{
-	// ctor
+
 	UpdateSize();
 	
 	// key bindings: No longer back on any key

@@ -72,7 +72,6 @@ class C4Fixed
 		int32_t val;	// internal value
 
 	public:
-		// constructors
 		inline C4Fixed () {}
 		inline C4Fixed (const C4Fixed &rCpy): val(rCpy.val) { }
 

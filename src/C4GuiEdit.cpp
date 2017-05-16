@@ -713,7 +713,7 @@ bool Edit::GetCurrentWord(char *szTargetBuf, int32_t iMaxTargetBufLen)
 
 RenameEdit::RenameEdit(Label *pLabel) : Edit(pLabel->GetBounds(), true), pForLabel(pLabel), fFinishing(false)
 	{
-	// ctor - construct for label
+	// construct for label
 	assert(pForLabel);
 	pForLabel->SetVisibility(false);
 	InsertText(pForLabel->GetText(), true);

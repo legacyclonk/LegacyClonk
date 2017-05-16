@@ -27,8 +27,8 @@ class C4StartupOptionsDlg : public C4StartupDlg
 	{
 	// main dlg stuff -----------------------------------------------------
 	public:
-		C4StartupOptionsDlg(); // ctor
-		~C4StartupOptionsDlg(); // dtor
+		C4StartupOptionsDlg();
+		~C4StartupOptionsDlg();
 
 	private:
 		class C4KeyBinding *pKeyBack;
@@ -63,7 +63,7 @@ class C4StartupOptionsDlg : public C4StartupDlg
 				virtual void DrawElement(C4FacetEx &cgo); // draw the button
 
 			public:
-				SmallButton(const char *szText, const C4Rect &rtBounds) // ctor
+				SmallButton(const char *szText, const C4Rect &rtBounds)
 					: C4GUI::Button(szText, rtBounds) {}
 				static int32_t GetDefaultButtonHeight();
 			};
@@ -226,7 +226,7 @@ class C4StartupOptionsDlg : public C4StartupDlg
 		class NetworkPortConfig : public C4GUI::Window
 			{
 			public:
-				NetworkPortConfig(const C4Rect &rcBounds, const char *szName, int32_t *pConfigValue, int32_t iDefault); // ctor
+				NetworkPortConfig(const C4Rect &rcBounds, const char *szName, int32_t *pConfigValue, int32_t iDefault);
 			private:
 				int32_t *pConfigValue;         // pointer into config set
 				C4GUI::CheckBox *pEnableCheck; // check box for whether port is enabled
@@ -243,7 +243,7 @@ class C4StartupOptionsDlg : public C4StartupDlg
 		class NetworkServerAddressConfig : public C4GUI::Window
 			{
 			public:
-				NetworkServerAddressConfig(const C4Rect &rcBounds, const char *szName, int32_t *piConfigEnableValue, char *szConfigAddressValue, int iTabWidth); // ctor
+				NetworkServerAddressConfig(const C4Rect &rcBounds, const char *szName, int32_t *piConfigEnableValue, char *szConfigAddressValue, int iTabWidth);
 			private:
 				int32_t *piConfigEnableValue; char *szConfigAddressValue;
 				C4GUI::CheckBox *pEnableCheck;

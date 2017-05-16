@@ -282,7 +282,7 @@ class C4MapFolderData
 			private:
 				FLOAT_RECT rcfBounds; // drawing bounds
 			public:
-				MapPic(const FLOAT_RECT &rcfBounds, const C4Facet &rfct); // ctor
+				MapPic(const FLOAT_RECT &rcfBounds, const C4Facet &rfct);
 
 			protected:
 				virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons - deselect everything if clicked
@@ -370,8 +370,8 @@ class C4StartupScenSelDlg : public C4StartupDlg
 			};
 
 	public:
-		C4StartupScenSelDlg(bool fNetwork); // ctor
-		~C4StartupScenSelDlg(); // dtor
+		C4StartupScenSelDlg(bool fNetwork);
+		~C4StartupScenSelDlg();
 
 	private:
 		enum { ShowStyle_Book=0, ShowStyle_Map=1, };

@@ -61,7 +61,7 @@ class C4ChatInputDialog : public C4GUI::InputDialog
 
 		virtual const char *GetID() { return "ChatDialog"; }
 	public:
-		C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bool fUpperCase, bool fTeam, int32_t iPlr, const StdStrBuf &rsInputQuery); // ctor - construct by screen ratios
+		C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bool fUpperCase, bool fTeam, int32_t iPlr, const StdStrBuf &rsInputQuery); // construct by screen ratios
 		~C4ChatInputDialog();
 
 		// place on top of normal dialogs

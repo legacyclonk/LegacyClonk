@@ -49,8 +49,8 @@ class C4LogBuffer
 		void AppendSingleLine(const char *szLine, int iLineLength, const char *szIndent, CStdFont *pFont, DWORD dwClr, bool fNewParagraph); // append given string as single line
 
 	public:
-		C4LogBuffer(int iSize, int iMaxLines, int iLBWidth, const char *szIndentChars="    ", bool fDynamicGrow = false, bool fMarkup = true); // ctor
-		~C4LogBuffer();           // dtor
+		C4LogBuffer(int iSize, int iMaxLines, int iLBWidth, const char *szIndentChars="    ", bool fDynamicGrow = false, bool fMarkup = true);
+		~C4LogBuffer();
 
 		void AppendLines(const char *szLine, CStdFont *pFont, DWORD dwClr, CStdFont *pFirstLineFont=NULL);           // append message line to buffer; overwriting old lines if necessary
 		const char *GetLine(int iLineIndex, CStdFont **ppFont, DWORD *pdwClr, bool *pNewParagraph) const; // get indexed line - negative indices -n return last-n'th-line

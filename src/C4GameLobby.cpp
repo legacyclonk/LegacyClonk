@@ -874,7 +874,7 @@ Countdown::Countdown(int32_t iStartTimer) : iStartTimer(iStartTimer), pSec1Timer
 	{
 	// only on network hosts
 	assert(Game.Network.isHost());
-	// ctor: Init; sends initial countdown packet
+	// Init; sends initial countdown packet
 	C4PacketCountdown pck(iStartTimer);
 	Game.Network.Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_LobbyCountdown, pck));
 	// also process on host

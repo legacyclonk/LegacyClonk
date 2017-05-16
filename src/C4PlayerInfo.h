@@ -226,9 +226,9 @@ class C4ClientPlayerInfos
 		uint32_t dwFlags; // bit mask of the above flags
 
 	public:
-		C4ClientPlayerInfos(const char *szJoinFilenames=NULL, bool fAdd=false, C4PlayerInfo *pAddInfo=NULL); // ctor; sets local data (or makes an add-player-packet if filename is given) if par is true
-		C4ClientPlayerInfos(const C4ClientPlayerInfos &rCopy); // copy ctor
-		~C4ClientPlayerInfos() { Clear(); }                   // dtor
+		C4ClientPlayerInfos(const char *szJoinFilenames=NULL, bool fAdd=false, C4PlayerInfo *pAddInfo=NULL); // sets local data (or makes an add-player-packet if filename is given) if par is true
+		C4ClientPlayerInfos(const C4ClientPlayerInfos &rCopy);
+		~C4ClientPlayerInfos() { Clear(); }
 
 		C4ClientPlayerInfos &operator = (const C4ClientPlayerInfos &rCopy);
 
@@ -271,11 +271,11 @@ class C4PacketPlayerInfoUpdRequest : public C4PacketBase
 	public:
 		C4ClientPlayerInfos Info; // info for clients to be joined
 
-		C4PacketPlayerInfoUpdRequest() : Info() { } // std ctor
-		C4PacketPlayerInfoUpdRequest(const char *szFilenames, bool fAdd) // ctor
+		C4PacketPlayerInfoUpdRequest() : Info() { }
+		C4PacketPlayerInfoUpdRequest(const char *szFilenames, bool fAdd)
 			: Info(szFilenames, fAdd) { };
 
-		C4PacketPlayerInfoUpdRequest(const C4ClientPlayerInfos &rInfo) : Info(rInfo) {} // ctor
+		C4PacketPlayerInfoUpdRequest(const C4ClientPlayerInfos &rInfo) : Info(rInfo) {}
 
 		virtual void CompileFunc(StdCompiler *pComp);
 	};
@@ -296,9 +296,9 @@ class C4PlayerInfoList
 		enum MatchingLevel { PML_PlrFileName=0, PML_PlrName, PML_PrefColor, PML_Any };
 
 	public:
-		C4PlayerInfoList();               // ctor
+		C4PlayerInfoList();
 		C4PlayerInfoList(const C4PlayerInfoList &) = delete;
-		~C4PlayerInfoList() { Clear(); }  // dtor
+		~C4PlayerInfoList() { Clear(); }
 		C4PlayerInfoList &operator = (const C4PlayerInfoList &rCpy);
 		void Clear();                     // clear list
 

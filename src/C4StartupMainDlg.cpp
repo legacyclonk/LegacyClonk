@@ -37,7 +37,7 @@
 
 C4StartupMainDlg::C4StartupMainDlg() : C4StartupDlg(NULL) // create w/o title; it is drawn in custom draw proc
 	{
-	// ctor
+
 	fFirstShown = true;
 	// screen calculations
 	int iButtonPadding = 2;
@@ -98,7 +98,7 @@ C4StartupMainDlg::C4StartupMainDlg() : C4StartupDlg(NULL) // create w/o title; i
 
 C4StartupMainDlg::~C4StartupMainDlg()
 	{
-	// dtor
+
 	delete pKeyEnter;
 	delete pKeyUp;
 	delete pKeyDown;

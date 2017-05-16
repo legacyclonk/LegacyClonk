@@ -123,8 +123,8 @@ class CPattern
 		void SetColors(uint32_t *pClrs, uint32_t *pAlpha) { this->pClrs=pClrs; this->pAlpha=pAlpha; } // set color triplet for old-style textures
 		void SetZoom(int iZoom) { Zoom = iZoom; }
 		void Clear();											// clear pattern
-		CPattern();					// ctor
-		~CPattern() { Clear(); }					// dtor
+		CPattern();
+		~CPattern() { Clear(); }
 	};
 
 // blit position on screen
@@ -157,8 +157,8 @@ class CGammaControl
 		uint16_t *red, *green, *blue; int size;
 
 	public:
-		CGammaControl(): red(0), green(0), blue(0), size(0) { Default(); } // ctor
-		~CGammaControl(); //dtor
+		CGammaControl(): red(0), green(0), blue(0), size(0) { Default(); }
+		~CGammaControl();
 		void Default() { Set(0x000000, 0x808080, 0xffffff, 256, 0); } // set default ramp
 
 		void Set(DWORD dwClr1, DWORD dwClr2, DWORD dwClr3, int size, CGammaControl * ref); // set color ramp

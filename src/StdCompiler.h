@@ -624,7 +624,7 @@ protected:
     int Indent;
     // Name number in parent map
     const char *Pos;
-    // Constructor
+
     NameNode(NameNode *pParent = NULL)
       : Parent(pParent), PrevChild(NULL), FirstChild(NULL), NextChild(NULL), LastChild(NULL),
         Indent(-1)

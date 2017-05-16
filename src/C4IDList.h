@@ -35,8 +35,8 @@ class C4IDListChunk
 		C4IDListChunk *pNext; // next chunk
 
 	public:
-		C4IDListChunk();	// ctor
-		~C4IDListChunk();	// dtor
+		C4IDListChunk();
+		~C4IDListChunk();
 
 	public:
 		void Clear();		// empty chunk and all behind
@@ -46,7 +46,7 @@ class C4IDList : protected C4IDListChunk
   {
   public:
     C4IDList();
-		C4IDList(const C4IDList &rCopy);		// copy ctor
+		C4IDList(const C4IDList &rCopy);
 		C4IDList &operator = (const C4IDList &rCopy);	// assignment
 		~C4IDList();
 		bool operator==(const C4IDList& rhs) const;

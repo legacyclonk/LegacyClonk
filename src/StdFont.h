@@ -131,7 +131,7 @@ class CStdFont
 		// get message break and pos after message break - does not regard any manual line breaks!
 		int GetMessageBreak(const char *szMsg, const char **ppNewPos, int iBreakWidth, float fZoom=1.0f);
 
-		// ctor
+
 		CStdFont();
 		~CStdFont() { Clear(); }
 	

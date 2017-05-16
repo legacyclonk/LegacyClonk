@@ -47,7 +47,7 @@ class C4GameOptionsList : public C4GUI::ListBox
 					}
 
 			public:
-				Option(class C4GameOptionsList *pForDlg); // ctor - adds to list
+				Option(class C4GameOptionsList *pForDlg); // adds to list
 				void InitOption(C4GameOptionsList *pForDlg); // add to list and do initial update
 
 				virtual void Update() {}; // update data

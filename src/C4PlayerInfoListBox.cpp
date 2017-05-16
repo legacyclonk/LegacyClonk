@@ -718,7 +718,7 @@ C4Network2Client *C4PlayerInfoListBox::PlayerListItem::GetNetClient() const
 
 // ----------- ClientListItem -----------------------------------------------------------------
 
-C4PlayerInfoListBox::ClientListItem::ClientListItem(C4PlayerInfoListBox *pForListBox, const C4ClientCore &rClientInfo, ListItem *pInsertBefore) // ctor
+C4PlayerInfoListBox::ClientListItem::ClientListItem(C4PlayerInfoListBox *pForListBox, const C4ClientCore &rClientInfo, ListItem *pInsertBefore)
 : ListItem(pForListBox), idClient(rClientInfo.getID()), dwClientClr(0xffffff), tLastSoundTime(0)
 	{
 	// set current active-flag (not really needed until player info is retrieved)

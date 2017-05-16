@@ -317,8 +317,8 @@ extern const char *C4ScenSect_Main;
 class C4ScenarioSection
 	{
 	public:
-		C4ScenarioSection(char *szName);  // ctor
-		~C4ScenarioSection(); // dtor
+		C4ScenarioSection(char *szName);
+		~C4ScenarioSection();
 
 	public:
 		char *szName;         // section name

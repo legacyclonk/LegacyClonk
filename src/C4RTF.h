@@ -66,7 +66,6 @@ class C4RTFFile
 			char bHex; // used by hex parser
 			int iHexBinCnt; // used by hex and binary parser
 
-			// default ctor
 			PropertyState() : pNext(NULL), cp(), pp(), sp(), dp(), dest(dsNormal), eState(psNormal), bHex(0), iHexBinCnt(0) { }
 			};
 

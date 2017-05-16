@@ -95,7 +95,7 @@ class C4MenuItem : public C4GUI::Element
 	protected:
 		virtual void DrawElement(C4FacetEx &cgo); // draw menu item
 
-		// ctor
+
 		C4MenuItem(C4Menu *pMenu, int32_t iIndex, const char *szCaption, const char *szCommand, 
 						 int32_t iCount, C4Object *pObject, const char *szInfoCaption,
 						 C4ID idID, const char *szCommand2, bool fOwnValue, int32_t iValue, int32_t iStyle, bool fIsSelectable);

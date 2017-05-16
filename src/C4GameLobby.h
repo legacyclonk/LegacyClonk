@@ -51,8 +51,8 @@ namespace C4GameLobby
 		public:
 			enum { Abort = -1 };
 
-			C4PacketCountdown(int32_t iaCountdown) : iCountdown(iaCountdown) { } // ctor
-			C4PacketCountdown() : iCountdown(Abort) { } // std ctor
+			C4PacketCountdown(int32_t iaCountdown) : iCountdown(iaCountdown) { }
+			C4PacketCountdown() : iCountdown(Abort) { }
 
 			bool IsAbort() const { return iCountdown == Abort; }
 			int32_t GetCountdown() const { return iCountdown; }
@@ -74,7 +74,7 @@ namespace C4GameLobby
 			void Update();
 
 		public:
-			ScenDesc(const C4Rect &rcBounds, bool fActive); // ctor
+			ScenDesc(const C4Rect &rcBounds, bool fActive);
 			~ScenDesc() { Deactivate(); }
 
 			void OnSec1Timer() { Update(); }
@@ -136,8 +136,8 @@ namespace C4GameLobby
 			void UpdatePlayerList();
 
 		public:
-			MainDlg(bool fHost); // ctor
-			~MainDlg(); // dtor
+			MainDlg(bool fHost);
+			~MainDlg();
 
 			// callback by network system
 			void OnClientJoin(C4Client *pNewClient); // called when a new client joined (connection not necessarily ready)
@@ -175,7 +175,7 @@ namespace C4GameLobby
 			void OnSec1Timer();              // timer proc; count down; send important countdown packets
 
 		public:
-			Countdown(int32_t iStartTimer); // ctor: Init; sends initial countdown packet
+			Countdown(int32_t iStartTimer); // Init; sends initial countdown packet
 			~Countdown();
 
 			void Abort();

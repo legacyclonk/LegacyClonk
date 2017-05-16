@@ -79,7 +79,7 @@ class C4ParticleDefCore
 		StdStrBuf DrawFn;	// proc to be used for drawing
 		StdStrBuf CollisionFn;	// proc to be called upon collision with the landscape; may be left out
 
-		C4ParticleDefCore();					// ctor
+		C4ParticleDefCore();
 		void CompileFunc(StdCompiler * pComp);
 
 		bool Compile(char *szSource, const char *szName);	// compile from def file
@@ -104,8 +104,8 @@ class C4ParticleDef : public C4ParticleDefCore
 
 		int32_t Count;										// number of particles currently existant of this kind
 
-		C4ParticleDef();			// ctor
-		~C4ParticleDef();			// dtor
+		C4ParticleDef();
+		~C4ParticleDef();
 
 		void Clear();							// free mem associated with this class
 
@@ -143,8 +143,8 @@ class C4ParticleChunk
 		C4Particle Data[C4Px_BufSize];		// the particles
 
 	public:
-		C4ParticleChunk();				// ctor
-		~C4ParticleChunk();				// dtor
+		C4ParticleChunk();
+		~C4ParticleChunk();
 
 		void Clear();							// clear all particles
 
@@ -157,7 +157,7 @@ class C4ParticleList
 	public:
 		C4Particle *pFirst; // first particle in list - others follow in linked list
 
-		C4ParticleList() { pFirst=NULL; } // ctor
+		C4ParticleList() { pFirst=NULL; }
 
 		void Exec(C4Object *pObj=NULL);                  // execute all particles
 		void Draw(C4FacetEx &cgo, C4Object *pObj=NULL);  // draw all particles
@@ -189,8 +189,8 @@ class C4ParticleSystem
 		C4ParticleDef *pFire1;			// default particle: fire base
 		C4ParticleDef *pFire2;			// default particle: fire additive
 		
-		C4ParticleSystem();			// ctor
-		~C4ParticleSystem();		// dtor
+		C4ParticleSystem();
+		~C4ParticleSystem();
 
 		void ClearParticles();		// remove all particles
 		void Clear();							// remove all particle definitions and particles

@@ -110,8 +110,8 @@ enum C4MCTokenType
 class C4MCCallbackArray
 	{
 	public:
-		C4MCCallbackArray(C4AulFunc *pSFunc, C4MapCreatorS2 *pMapCreator); // ctor
-		~C4MCCallbackArray();                   // dtor
+		C4MCCallbackArray(C4AulFunc *pSFunc, C4MapCreatorS2 *pMapCreator);
+		~C4MCCallbackArray();
 		
 	protected:
 		C4MapCreatorS2 *pMapCreator; // map creator class to query current map of
@@ -132,8 +132,8 @@ class C4MCCallbackArray
 class C4MCCallbackArrayList
 	{
 	public:
-		C4MCCallbackArrayList() { pFirst=NULL; } // ctor
-		~C4MCCallbackArrayList() { Clear(); }    // ctor
+		C4MCCallbackArrayList() { pFirst=NULL; }
+		~C4MCCallbackArrayList() { Clear(); }
 
 	protected:
 		C4MCCallbackArray *pFirst; // first array in list
@@ -154,9 +154,9 @@ class C4MCNode
 		char Name[C4MaxName]; // name, if named
 
 	public:
-		C4MCNode(C4MCNode *pOwner=NULL); // constructor
+		C4MCNode(C4MCNode *pOwner=NULL);
 		C4MCNode(C4MCNode *pOwner, C4MCNode &rTemplate, bool fClone); // constructor using template
-		virtual ~C4MCNode(); // destructor
+		virtual ~C4MCNode();
 
 		virtual C4MCNode *clone(C4MCNode *pToNode) { return new C4MCNode(pToNode, *this, true); }
 
@@ -221,7 +221,7 @@ extern C4MCNodeAttr C4MCOvrlMap[];
 class C4MCOverlay : public C4MCNode
 	{
 	public:
-		C4MCOverlay(C4MCNode *pOwner=NULL); // constructor
+		C4MCOverlay(C4MCNode *pOwner=NULL);
 		C4MCOverlay(C4MCNode *pOwner, C4MCOverlay &rTemplate, bool fClone); // construct of template
 
 		C4MCNode *clone(C4MCNode *pToNode) { return new C4MCOverlay(pToNode, *this, true); }
@@ -274,7 +274,7 @@ class C4MCOverlay : public C4MCNode
 class C4MCPoint : public C4MCNode
 	{
 	public:
-		C4MCPoint(C4MCNode *pOwner=NULL); // constructor
+		C4MCPoint(C4MCNode *pOwner=NULL);
 		C4MCPoint(C4MCNode *pOwner, C4MCPoint &rTemplate, bool fClone); // construct of template
 
 		C4MCNode *clone(C4MCNode *pToNode) { return new C4MCPoint(pToNode, *this, true); }
@@ -300,7 +300,7 @@ class C4MCPoint : public C4MCNode
 class C4MCMap : public C4MCOverlay
 	{
 	public:
-		C4MCMap(C4MCNode *pOwner=NULL); // constructor
+		C4MCMap(C4MCNode *pOwner=NULL);
 		C4MCMap(C4MCNode *pOwner, C4MCMap &rTemplate, bool fClone); // construct of template
 
 		C4MCNode *clone(C4MCNode *pToNode) { return new C4MCMap(pToNode, *this, true); }
@@ -323,8 +323,8 @@ class C4MCMap : public C4MCOverlay
 class C4MapCreatorS2 : public C4MCNode
 	{
 	public:
-		C4MapCreatorS2(C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount); // constructor
-		~C4MapCreatorS2(); // destructor
+		C4MapCreatorS2(C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount);
+		~C4MapCreatorS2();
 
 		void Default(); // set default data
 		void Clear(); // clear any data
@@ -393,8 +393,8 @@ class C4MCParser
 		void ParseValue(C4MCNode *pToNode, const char *szFieldName); // Set Field
 
 	public:
-		C4MCParser(C4MapCreatorS2 *pMapCreator); // constructor
-		~C4MCParser(); // destructor
+		C4MCParser(C4MapCreatorS2 *pMapCreator);
+		~C4MCParser();
 
 		void Clear(); // clear stuff
 

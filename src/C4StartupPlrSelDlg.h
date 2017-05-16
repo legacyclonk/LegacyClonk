@@ -164,8 +164,8 @@ class C4StartupPlrSelDlg : public C4StartupDlg
 			};
 
 	public:
-		C4StartupPlrSelDlg(); // ctor
-		~C4StartupPlrSelDlg(); // dtor
+		C4StartupPlrSelDlg();
+		~C4StartupPlrSelDlg();
 
 	private:
 		class C4KeyBinding *pKeyBack, *pKeyProperties, *pKeyCrew, *pKeyDelete, *pKeyRename, *pKeyNew;

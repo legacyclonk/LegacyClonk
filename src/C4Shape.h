@@ -55,7 +55,7 @@ class C4Rect
 		int32_t GetMiddleY() { return y+Hgt/2; }
 		int32_t GetBottom() { return y+Hgt; }
 
-		C4Rect(int32_t tx, int32_t ty, int32_t twdt, int32_t thgt) // ctor
+		C4Rect(int32_t tx, int32_t ty, int32_t twdt, int32_t thgt)
 			{ x=tx; y=ty; Wdt=twdt; Hgt=thgt; }
 		C4Rect() { } // default ctor; doesn't initialize
 		C4Rect(const FLOAT_RECT &rcfOuter) // set to surround floating point rectangle

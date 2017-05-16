@@ -126,8 +126,8 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 			virtual int32_t GetListItemTopSpacing();
 
 		public:
-			PlayerListItem(C4PlayerInfoListBox *pForListBox, int32_t idClient, int32_t idPlayer, bool fSavegamePlayer, C4GUI::Element *pInsertBeforeElement); // ctor
-			~PlayerListItem() {};                         // dtor
+			PlayerListItem(C4PlayerInfoListBox *pForListBox, int32_t idClient, int32_t idPlayer, bool fSavegamePlayer, C4GUI::Element *pInsertBeforeElement);
+			~PlayerListItem() {};
 
 			void UpdateIcon(C4PlayerInfo *pInfo, C4PlayerInfo *pJoinedInfo); // update player icon
 			void UpdateTeam();
@@ -173,8 +173,8 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 			time_t tLastSoundTime; // now() when the client last issued a sound (display as sound icon). 0 for no sound.
 
 		public:
-			ClientListItem(C4PlayerInfoListBox *pForListBox, const C4ClientCore &rClientInfo, ListItem *pInsertBefore); // ctor
-			~ClientListItem() {}                         // dtor
+			ClientListItem(C4PlayerInfoListBox *pForListBox, const C4ClientCore &rClientInfo, ListItem *pInsertBefore);
+			~ClientListItem() {}
 
 			void SetColor(DWORD dwToClr)              // update color of client name label
 				{ pNameLabel->SetColor((dwClientClr=dwToClr) | C4GUI_MessageFontAlpha); }
@@ -221,7 +221,7 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 			virtual void UpdateOwnPos(); // recalculate item positioning
 
 		public:
-			TeamListItem(C4PlayerInfoListBox *pForListBox, int32_t idTeam, ListItem *pInsertBefore); // ctor
+			TeamListItem(C4PlayerInfoListBox *pForListBox, int32_t idTeam, ListItem *pInsertBefore);
 
 			// spacing inserted between of those list items; usually this is top anyway...
 			virtual bool GetListItemTopSpacingBar() { return true; }
@@ -242,7 +242,7 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 			C4GUI::Label *pNameLabel;
 
 		public:
-			FreeSavegamePlayersListItem(C4PlayerInfoListBox *pForListBox, ListItem *pInsertBefore); // ctor
+			FreeSavegamePlayersListItem(C4PlayerInfoListBox *pForListBox, ListItem *pInsertBefore);
 
 			// spacing inserted between of those list items; usually this is top anyway...
 			virtual bool ListItemTopSpacingBar() { return true; }
@@ -262,7 +262,7 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 			C4GUI::IconButton *btnAddPlayer;
 
 		public:
-			ScriptPlayersListItem(C4PlayerInfoListBox *pForListBox, ListItem *pInsertBefore); // ctor
+			ScriptPlayersListItem(C4PlayerInfoListBox *pForListBox, ListItem *pInsertBefore);
 
 			// spacing inserted between of those list items; usually this is top anyway...
 			virtual bool ListItemTopSpacingBar() { return true; }
@@ -284,7 +284,7 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 			C4GUI::Label *pNameLabel;
 
 		public:
-			ReplayPlayersListItem(C4PlayerInfoListBox *pForListBox, ListItem *pInsertBefore); // ctor
+			ReplayPlayersListItem(C4PlayerInfoListBox *pForListBox, ListItem *pInsertBefore);
 
 			// spacing inserted between of those list items; usually this is top anyway...
 			virtual bool GetListItemTopSpacingBar() { return true; }

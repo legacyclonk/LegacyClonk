@@ -74,8 +74,8 @@ class C4SolidMask
 		void Remove(bool fCauseInstability, bool fBackupAttachment); // remove mask from landscape
 		void Clear();                     // clear any SolidMask-data
 
-		C4SolidMask(C4Object *pForObject);  // ctor
-		~C4SolidMask(); // dtor
+		C4SolidMask(C4Object *pForObject);
+		~C4SolidMask();
 
 #ifdef SOLIDMASK_DEBUG
 		static bool CheckConsistency();
