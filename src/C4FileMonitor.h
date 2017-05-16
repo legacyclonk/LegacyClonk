@@ -9,11 +9,10 @@
 #include <C4InteractiveThread.h>
 #include <map>
 
-class C4FileMonitor: public StdSchedulerProc, public C4InteractiveThread::Callback {
-
+class C4FileMonitor : public StdSchedulerProc, public C4InteractiveThread::Callback
+{
 public:
-
-	typedef void (*ChangeNotify)(const char *, const char *);
+	typedef void(*ChangeNotify)(const char *, const char *);
 
 	C4FileMonitor(ChangeNotify pCallback);
 	~C4FileMonitor();
@@ -35,7 +34,6 @@ public:
 	virtual void OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData);
 
 private:
-
 	bool fStarted;
 	ChangeNotify pCallback;
 
@@ -43,17 +41,16 @@ private:
 	int fd;
 	std::map<int, const char *> watch_descriptors;
 #elif defined(_WIN32)
-
 	HANDLE hEvent;
 
 	struct TreeWatch
-		{
+	{
 		HANDLE hDir;
 		StdCopyStrBuf DirName;
 		OVERLAPPED ov;
 		char Buffer[1024];
 		TreeWatch *Next;
-		};
+	};
 	TreeWatch *pWatches;
 
 	void HandleNotify(const char *szDir, const struct _FILE_NOTIFY_INFORMATION *pNotify);

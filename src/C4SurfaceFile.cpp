@@ -11,36 +11,42 @@
 #endif
 
 C4Surface *GroupReadSurface(CStdStream &hGroup, BYTE *bpPalette)
-	{
+{
 	// create surface
-	C4Surface *pSfc=new C4Surface();
+	C4Surface *pSfc = new C4Surface();
 	if (!pSfc->Read(hGroup, !!bpPalette))
-		{ delete pSfc; return NULL; }
-	return pSfc;
+	{
+		delete pSfc; return NULL;
 	}
+	return pSfc;
+}
 
 CSurface8 *GroupReadSurface8(CStdStream &hGroup)
-	{
+{
 	// create surface
-	CSurface8 *pSfc=new CSurface8();
+	CSurface8 *pSfc = new CSurface8();
 	if (!pSfc->Read(hGroup, false))
-		{ delete pSfc; return NULL; }
-	return pSfc;
+	{
+		delete pSfc; return NULL;
 	}
+	return pSfc;
+}
 
 CSurface8 *GroupReadSurfaceOwnPal8(CStdStream &hGroup)
-	{
+{
 	// create surface
-	CSurface8 *pSfc=new CSurface8();
+	CSurface8 *pSfc = new CSurface8();
 	if (!pSfc->Read(hGroup, true))
-		{ delete pSfc; return NULL; }
-	return pSfc;
+	{
+		delete pSfc; return NULL;
 	}
+	return pSfc;
+}
 
 C4Surface *GroupReadSurfacePNG(CStdStream &hGroup)
-	{
+{
 	// create surface
-	C4Surface *pSfc=new C4Surface();
+	C4Surface *pSfc = new C4Surface();
 	pSfc->ReadPNG(hGroup);
 	return pSfc;
-	}
+}

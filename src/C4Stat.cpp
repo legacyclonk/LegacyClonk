@@ -11,19 +11,17 @@
 // ** implemetation of C4MainStat
 
 C4MainStat::C4MainStat()
-: bStatFileOpen(false), pFirst(0)
-{
-}
+	: bStatFileOpen(false), pFirst(0) {}
 
 C4MainStat::~C4MainStat()
 {
 	CloseStatFile();
 }
 
-void C4MainStat::RegisterStat(C4Stat* pStat)
+void C4MainStat::RegisterStat(C4Stat *pStat)
 {
 	// add to list
-	if(!pFirst)
+	if (!pFirst)
 	{
 		pFirst = pStat;
 		pStat->pNext = 0;
@@ -38,16 +36,16 @@ void C4MainStat::RegisterStat(C4Stat* pStat)
 	}
 }
 
-void C4MainStat::UnRegStat(C4Stat* pStat)
+void C4MainStat::UnRegStat(C4Stat *pStat)
 {
 	// first item?
-	if(!pStat->pPrev)
+	if (!pStat->pPrev)
 	{
 		pFirst = pStat->pNext;
 		pStat->pNext = 0;
 	}
 	// last item?
-	else if(!pStat->pNext)
+	else if (!pStat->pNext)
 	{
 		pStat->pPrev->pNext = 0;
 		pStat->pPrev = 0;
@@ -64,57 +62,56 @@ void C4MainStat::UnRegStat(C4Stat* pStat)
 void C4MainStat::Reset()
 {
 	CloseStatFile();
-	for(C4Stat* pAkt = pFirst; pAkt; pAkt = pAkt->pNext)
+	for (C4Stat *pAkt = pFirst; pAkt; pAkt = pAkt->pNext)
 		pAkt->Reset();
 }
 
 void C4MainStat::ResetPart()
 {
-	for(C4Stat* pAkt = pFirst; pAkt; pAkt = pAkt->pNext)
+	for (C4Stat *pAkt = pFirst; pAkt; pAkt = pAkt->pNext)
 		pAkt->ResetPart();
 }
-
 
 void C4MainStat::Show()
 {
 	// output the whole statistic (to stat.txt)
 
 	// open file
-	if(!bStatFileOpen)
+	if (!bStatFileOpen)
 		OpenStatFile();
 
 	// count stats
 	unsigned int iCnt = 0;
-	C4Stat* pAkt;
-	for(pAkt = pFirst; pAkt; pAkt = pAkt->pNext)
+	C4Stat *pAkt;
+	for (pAkt = pFirst; pAkt; pAkt = pAkt->pNext)
 		iCnt++;
 
 	// create array
-	C4Stat** StatArray = new C4Stat*[iCnt];
-	bool* bHS = new bool[iCnt];
+	C4Stat **StatArray = new C4Stat*[iCnt];
+	bool *bHS = new bool[iCnt];
 
 	// sort it
-	unsigned int i,ii;
-	for(ii=0;ii<iCnt;ii++) bHS[ii] = false;
-	for(i=0;i<iCnt;i++)
+	unsigned int i, ii;
+	for (ii = 0; ii < iCnt; ii++) bHS[ii] = false;
+	for (i = 0; i < iCnt; i++)
 	{
-		C4Stat* pBestStat;
+		C4Stat *pBestStat;
 		unsigned int iBestNr = ~0;
 
-		for(ii=0, pAkt = pFirst; ii<iCnt; ii++, pAkt = pAkt->pNext)
-			if(!bHS[ii])
-				if(iBestNr == ~0u)
+		for (ii = 0, pAkt = pFirst; ii < iCnt; ii++, pAkt = pAkt->pNext)
+			if (!bHS[ii])
+				if (iBestNr == ~0u)
 				{
 					iBestNr = ii;
 					pBestStat = pAkt;
 				}
-				else if(stricmp(pBestStat->strName, pAkt->strName) > 0)
+				else if (stricmp(pBestStat->strName, pAkt->strName) > 0)
 				{
 					iBestNr = ii;
 					pBestStat = pAkt;
 				}
 
-		if(iBestNr == (unsigned int) -1)
+		if (iBestNr == (unsigned int)-1)
 			break;
 		bHS[iBestNr] = true;
 
@@ -126,21 +123,20 @@ void C4MainStat::Show()
 	fprintf(StatFile, "** Stat\n");
 
 	// output in order
-	for(i=0; i<iCnt; i++)
+	for (i = 0; i < iCnt; i++)
 	{
 		pAkt = StatArray[i];
 
 		// output it!
-		if(pAkt->iCount)
+		if (pAkt->iCount)
 			fprintf(StatFile, "%s: n = %d, t = %d, td = %.2f\n",
 				pAkt->strName, pAkt->iCount, pAkt->iTimeSum,
 				double(pAkt->iTimeSum) / Max<int>(1, pAkt->iCount - 100) * 1000);
-
-	}	
+	}
 
 	// delete...
 	delete[] StatArray;
-	
+
 	// ok. job done
 	fputs("** Stat end\n", StatFile);
 	fflush(StatFile);
@@ -148,17 +144,17 @@ void C4MainStat::Show()
 
 void C4MainStat::ShowPart()
 {
-	C4Stat* pAkt;
-	
+	C4Stat *pAkt;
+
 	// open file
-	if(!bStatFileOpen)
+	if (!bStatFileOpen)
 		OpenStatFile();
 
 	// insert tick nr
 	fprintf(StatFile, "** PartStat begin %d\n", Game.FrameCounter);
 
 	// insert all stats
-	for(pAkt = pFirst; pAkt; pAkt = pAkt->pNext)
+	for (pAkt = pFirst; pAkt; pAkt = pAkt->pNext)
 		fprintf(StatFile, "%s: n=%d, t=%d\n", pAkt->strName, pAkt->iCountPart, pAkt->iTimeSumPart);
 
 	// insert part stat end idtf
@@ -169,13 +165,13 @@ void C4MainStat::ShowPart()
 // stat file handling
 void C4MainStat::OpenStatFile()
 {
-	if(bStatFileOpen) return;
+	if (bStatFileOpen) return;
 
 	// open & reset file
 	StatFile = fopen("stat.txt", "w");
 
 	// success?
-	if(!StatFile)
+	if (!StatFile)
 		return;
 
 	bStatFileOpen = true;
@@ -183,19 +179,18 @@ void C4MainStat::OpenStatFile()
 
 void C4MainStat::CloseStatFile()
 {
-	if(!bStatFileOpen) return;
+	if (!bStatFileOpen) return;
 
 	// open & reset file
 	fclose(StatFile);
-	
+
 	bStatFileOpen = false;
 }
 
-
 // ** implemetation of C4Stat
 
-C4Stat::C4Stat(const char* strnName)
-: strName(strnName)
+C4Stat::C4Stat(const char *strnName)
+	: strName(strnName)
 {
 	Reset();
 	getMainStat()->RegisterStat(this);

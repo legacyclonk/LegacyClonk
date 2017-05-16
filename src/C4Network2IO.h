@@ -1,4 +1,3 @@
-
 #ifndef INC_C4Network2IO
 #define INC_C4Network2IO
 
@@ -14,29 +13,28 @@ enum C4Network2IOProtocol
 	P_UDP, P_TCP, P_NONE = -1
 };
 
-const int C4NetTimer								= 500,	// ms
-					C4NetPingFreq							= 1000, // ms
-					C4NetStatisticsFreq				= 1000,	// ms
-					C4NetAcceptTimeout				= 10,		// s
-					C4NetPingTimeout					= 30000;// ms
+const int C4NetTimer = 500, // ms
+          C4NetPingFreq = 1000, // ms
+          C4NetStatisticsFreq = 1000, // ms
+          C4NetAcceptTimeout = 10, // s
+          C4NetPingTimeout = 30000; // ms
 
 // client count
 const int C4NetMaxClients = 256;
 
 class C4Network2IO
-  : protected C4InteractiveThread::Callback,
-    protected C4NetIO::CBClass,
-    protected StdSchedulerProc
+	: protected C4InteractiveThread::Callback,
+	protected C4NetIO::CBClass,
+	protected StdSchedulerProc
 {
 public:
 	C4Network2IO();
 	virtual ~C4Network2IO();
 
 protected:
-
 	// main traffic net i/o classes
 	C4NetIO *pNetIO_TCP, *pNetIO_UDP;
-	
+
 	// discovery net i/o
 	class C4Network2IODiscover *pNetIODiscover;
 
@@ -63,7 +61,7 @@ protected:
 		C4ClientCore CCore;
 		AutoAccept *Next;
 	}
-		*pAutoAcceptList;
+	*pAutoAcceptList;
 	CStdCSec AutoAcceptCSec;
 
 	// make sure only one connection is established?
@@ -71,19 +69,18 @@ protected:
 
 	// timer & ping
 	unsigned long iLastExecute, iLastPing;
-    
-  // statistics
-  unsigned long iLastStatistic;
-  int iTCPIRate, iTCPORate, iTCPBCRate,
-      iUDPIRate, iUDPORate, iUDPBCRate;
+
+	// statistics
+	unsigned long iLastStatistic;
+	int iTCPIRate, iTCPORate, iTCPBCRate,
+		iUDPIRate, iUDPORate, iUDPBCRate;
 
 	// punching
 	C4NetIO::addr_t PuncherAddr;
 
 public:
-  
-  bool hasTCP() const { return !! pNetIO_TCP; }
-  bool hasUDP() const { return !! pNetIO_UDP; }
+	bool hasTCP() const { return !!pNetIO_TCP; }
+	bool hasUDP() const { return !!pNetIO_UDP; }
 
 	// initialization
 	bool Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscovery = -1, int16_t iPortRefServer = -1); // by main thread
@@ -99,7 +96,7 @@ public:
 	void SetAcceptMode(bool fAcceptAll); // by main thread
 	void SetExclusiveConnMode(bool fExclusiveConn); // by main thread
 	int getConnectionCount(); // by main thread
-	
+
 	void ClearAutoAccept(); // by main thread
 	void AddAutoAccept(const C4ClientCore &CCore); // by main thread
 	void RemoveAutoAccept(const C4ClientCore &CCore); // by main thread
@@ -111,7 +108,7 @@ public:
 	void BeginBroadcast(bool fSelectAll = false); // by both
 	void EndBroadcast(); // by both
 	bool Broadcast(const C4NetIOPacket &rPkt); // by both
-	
+
 	// sending helpers
 	bool BroadcastMsg(const C4NetIOPacket &rPkt); // by both
 
@@ -122,14 +119,14 @@ public:
 	C4NetIO *getNetIO(C4Network2IOProtocol eProt); // by both
 	const char *getNetIOName(C4NetIO *pNetIO);
 	C4Network2IOProtocol getNetIOProt(C4NetIO *pNetIO);
-	
-  // statistics
-  int getProtIRate(C4Network2IOProtocol eProt) const { return eProt == P_TCP ? iTCPIRate : iUDPIRate; }
-  int getProtORate(C4Network2IOProtocol eProt) const { return eProt == P_TCP ? iTCPORate : iUDPORate; }
-  int getProtBCRate(C4Network2IOProtocol eProt) const { return eProt == P_TCP ? iTCPBCRate : iUDPBCRate; }
 
-  // reference
-  void SetReference(class C4Network2Reference *pReference);
+	// statistics
+	int getProtIRate (C4Network2IOProtocol eProt) const { return eProt == P_TCP ? iTCPIRate  : iUDPIRate; }
+	int getProtORate (C4Network2IOProtocol eProt) const { return eProt == P_TCP ? iTCPORate  : iUDPORate; }
+	int getProtBCRate(C4Network2IOProtocol eProt) const { return eProt == P_TCP ? iTCPBCRate : iUDPBCRate; }
+
+	// reference
+	void SetReference(class C4Network2Reference *pReference);
 	bool IsReferenceNeeded();
 
 protected:
@@ -144,7 +141,7 @@ protected:
 	virtual bool Execute(int iTimeout);
 	virtual int GetTimeout();
 	// Event callback by C4InteractiveThread
-  void OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData); // by main thread
+	void OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData); // by main thread
 
 	// connections list
 	void AddConnection(C4Network2IOConnection *pConn); // by both
@@ -170,54 +167,53 @@ protected:
 	// misc
 	bool Ping();
 	void CheckTimeout();
-  void GenerateStatistics(int iInterval);
+	void GenerateStatistics(int iInterval);
 	void SendConnPackets();
 
 	// puncher
 	void OnPunch(C4NetIO::addr_t addr);
-
 };
 
 enum C4Network2IOConnStatus
 {
-	CS_Connect,						// waiting for connection
-	CS_Connected,					// waiting for Conn
-	CS_HalfAccepted,			// got Conn (peer identified, client class created if neccessary)
-	CS_Accepted,					// got ConnRe (peer did accept)
+	CS_Connect,      // waiting for connection
+	CS_Connected,    // waiting for Conn
+	CS_HalfAccepted, // got Conn (peer identified, client class created if neccessary)
+	CS_Accepted,     // got ConnRe (peer did accept)
 	CS_Closed,
-	CS_ConnectFail,				// got closed before HalfAccepted was reached
+	CS_ConnectFail,  // got closed before HalfAccepted was reached
 };
 
 class C4Network2IOConnection // shared
 {
 	friend class C4Network2IO;
+
 public:
 	C4Network2IOConnection();
 	~C4Network2IOConnection();
 
 protected:
-	
 	// connection data
 	class C4NetIO *pNetClass;
 	C4Network2IOProtocol eProt;
 	C4NetIO::addr_t PeerAddr, ConnectAddr;
-	
+
 	// status data
 	C4Network2IOConnStatus Status;
-	uint32_t iID, iRemoteID;								// connection ID for this and the remote client
-	bool fAutoAccept;												// auto accepted by thread?
-	bool fBroadcastTarget;									// broadcast target?
-	time_t iTimestamp;											// timestamp of last status change
-	int iPingTime;													// ping
-	unsigned long iLastPing;								// if > iLastPong, it's the first ping that hasn't been answered yet
-	unsigned long iLastPong;								// last pong received
-	C4ClientCore CCore;											// client core (>= CS_HalfAccepted)
+	uint32_t iID, iRemoteID; // connection ID for this and the remote client
+	bool fAutoAccept; // auto accepted by thread?
+	bool fBroadcastTarget; // broadcast target?
+	time_t iTimestamp; // timestamp of last status change
+	int iPingTime; // ping
+	unsigned long iLastPing; // if > iLastPong, it's the first ping that hasn't been answered yet
+	unsigned long iLastPong; // last pong received
+	C4ClientCore CCore; // client core (>= CS_HalfAccepted)
 	CStdCSec CCoreCSec;
-  int iIRate, iORate;                     // input/output rates (by C4NetIO, in b/s)
-  int iPacketLoss;                        // lost packets (in the last seconds)
-	StdCopyStrBuf Password;									// password to use for connect
-	bool fConnSent;													// initial connection packet send
-	bool fPostMortemSent;										// post mortem send
+	int iIRate, iORate; // input/output rates (by C4NetIO, in b/s)
+	int iPacketLoss; // lost packets (in the last seconds)
+	StdCopyStrBuf Password; // password to use for connect
+	bool fConnSent; // initial connection packet send
+	bool fPostMortemSent; // post mortem send
 
 	// packet backlog
 	uint32_t iOutPacketCounter, iInPacketCounter;
@@ -237,33 +233,33 @@ protected:
 	long iRefCnt;
 
 public:
-	C4NetIO  *getNetClass()		const { return pNetClass; }
-	C4Network2IOProtocol	 getProtocol()		const { return eProt; }
-	const C4NetIO::addr_t &getPeerAddr()		const { return PeerAddr.sin_port ? PeerAddr : ConnectAddr; }
+	C4NetIO               *getNetClass()    const { return pNetClass; }
+	C4Network2IOProtocol   getProtocol()    const { return eProt; }
+	const C4NetIO::addr_t &getPeerAddr()    const { return PeerAddr.sin_port ? PeerAddr : ConnectAddr; }
 	const C4NetIO::addr_t &getConnectAddr() const { return ConnectAddr; }
-	uint32_t	getID()					const	{ return iID; }
-	time_t		getTimestamp()	const { return iTimestamp; }
-	const C4ClientCore &getCCore()	const	{ return CCore; }
-	int				getClientID()		const { return CCore.getID(); }
-	bool			isHost()				const { return CCore.isHost(); }
-	int				getPingTime()		const { return iPingTime; }
-	int				getLag()				const;
-  int       getPacketLoss() const { return iPacketLoss; }
-	const char *getPassword() const { return Password.getData(); }
-	bool			isConnSent()		const { return fConnSent; }
+	uint32_t               getID()          const { return iID; }
+	time_t                 getTimestamp()   const { return iTimestamp; }
+	const C4ClientCore    &getCCore()       const { return CCore; }
+	int                    getClientID()    const { return CCore.getID(); }
+	bool                   isHost()         const { return CCore.isHost(); }
+	int                    getPingTime()    const { return iPingTime; }
+	int                    getLag()         const;
+	int                    getPacketLoss()  const { return iPacketLoss; }
+	const char            *getPassword()    const { return Password.getData(); }
+	bool                   isConnSent()     const { return fConnSent; }
 
-	uint32_t	getInPacketCounter()	const { return iInPacketCounter; }
-	uint32_t	getOutPacketCounter()	const { return iOutPacketCounter; }
+	uint32_t getInPacketCounter()  const { return iInPacketCounter; }
+	uint32_t getOutPacketCounter() const { return iOutPacketCounter; }
 
-	bool			isConnecting()	const { return Status == CS_Connect; }
-	bool			isOpen()				const { return Status != CS_Connect && Status != CS_Closed && Status != CS_ConnectFail; }
-	bool			isHalfAccepted()const { return Status == CS_HalfAccepted || Status == CS_Accepted; }
-	bool			isAccepted()		const { return Status == CS_Accepted; }
-	bool			isClosed()			const { return Status == CS_Closed || Status == CS_ConnectFail; }
-	bool			isAutoAccepted()const { return fAutoAccept; }
-	bool			isBroadcastTarget() const { return fBroadcastTarget; }
-	bool			isFailed()			const { return Status == CS_ConnectFail; }
-	
+	bool isConnecting()      const { return Status == CS_Connect; }
+	bool isOpen()            const { return Status != CS_Connect && Status != CS_Closed && Status != CS_ConnectFail; }
+	bool isHalfAccepted()    const { return Status == CS_HalfAccepted || Status == CS_Accepted; }
+	bool isAccepted()        const { return Status == CS_Accepted; }
+	bool isClosed()          const { return Status == CS_Closed || Status == CS_ConnectFail; }
+	bool isAutoAccepted()    const { return fAutoAccept; }
+	bool isBroadcastTarget() const { return fBroadcastTarget; }
+	bool isFailed()          const { return Status == CS_ConnectFail; }
+
 protected:
 	// called by C4Network2IO only
 	void Set(C4NetIO *pnNetClass, C4Network2IOProtocol eProt, const C4NetIO::addr_t &nPeerAddr, const C4NetIO::addr_t &nConnectAddr, C4Network2IOConnStatus nStatus, const char *szPassword, uint32_t iID);
@@ -278,11 +274,11 @@ protected:
 
 public:
 	// status changing
-	void SetHalfAccepted()	{ SetStatus(CS_HalfAccepted); }
-	void SetAccepted()			{ SetStatus(CS_Accepted); }
+	void SetHalfAccepted() { SetStatus(CS_HalfAccepted); }
+	void SetAccepted() { SetStatus(CS_Accepted); }
 	void SetCCore(const C4ClientCore &nCCore);
-	void ResetAutoAccepted(){ fAutoAccept = false; }
-	void SetConnSent()			{ fConnSent = true; }
+	void ResetAutoAccepted() { fAutoAccept = false; }
+	void SetConnSent() { fConnSent = true; }
 
 	// connection operations
 	bool Connect();
@@ -290,18 +286,17 @@ public:
 	bool Send(const C4NetIOPacket &rPkt);
 	void SetBroadcastTarget(bool fSet); // (only call after C4Network2IO::BeginBroadcast!)
 
-  // statistics
-  void DoStatistics(int iInterval, int *pIRateSum, int *pORateSum);
+	// statistics
+	void DoStatistics(int iInterval, int *pIRateSum, int *pORateSum);
 
 	// reference counting
 	void AddRef(); void DelRef();
 
 	// post mortem
 	bool CreatePostMortem(class C4PacketPostMortem *pPkt);
-
 };
 
-// * Packets *
+// Packets
 
 class C4PacketPing : public C4PacketBase
 {
@@ -332,11 +327,11 @@ protected:
 	StdCopyStrBuf Password;
 
 public:
-	int32_t getVer() const { return iVer; }
-	uint32_t getConnID() const { return iConnID; }
+	int32_t getVer()               const { return iVer; }
+	uint32_t getConnID()           const { return iConnID; }
 	const C4ClientCore &getCCore() const { return CCore; }
-	const char *getPassword() const { return Password.getData(); }
-	
+	const char *getPassword()      const { return Password.getData(); }
+
 	virtual void CompileFunc(StdCompiler *pComp);
 };
 
@@ -371,15 +366,15 @@ protected:
 
 public:
 	const C4NetIOPacket &getData() const { return Data; }
-	int32_t	getClient(int32_t i)	const { return iClients[i]; }
-	int32_t	getClientCnt()		const { return iClientCnt; }
-	
+	int32_t getClient(int32_t i)   const { return iClients[i]; }
+	int32_t getClientCnt()         const { return iClientCnt; }
+
 	bool DoFwdTo(int32_t iClient) const;
 
 	void SetData(const C4NetIOPacket &Pkt);
 	void SetListType(bool fnNegativeList);
 	void AddClient(int32_t iClient);
-	
+
 	virtual void CompileFunc(StdCompiler *pComp);
 };
 

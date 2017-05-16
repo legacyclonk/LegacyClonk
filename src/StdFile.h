@@ -19,7 +19,7 @@
 #define _MAX_PATH PATH_MAX
 #define _MAX_FNAME NAME_MAX
 
-bool CreateDirectory(const char * pathname, void* = 0);
+bool CreateDirectory(const char *pathname, void * = 0);
 bool CopyFile(const char *szSource, const char *szTarget, bool FailIfExists);
 #endif
 
@@ -34,7 +34,7 @@ bool CopyFile(const char *szSource, const char *szTarget, bool FailIfExists);
 const char *GetWorkingDirectory();
 bool SetWorkingDirectory(const char *szPath);
 char *GetFilename(char *path);
-const char* GetFilenameOnly(const char *strFilename);
+const char *GetFilenameOnly(const char *strFilename);
 const char *GetC4Filename(const char *szPath); // returns path to file starting at first .c4*-directory
 int GetTrailingNumber(const char *strString);
 char *GetExtension(char *fname);
@@ -55,7 +55,7 @@ bool TruncatePath(char *szPath);
 // szBuffer has to be of at least _MAX_PATH length.
 bool GetParentPath(const char *szFilename, char *szBuffer);
 bool GetParentPath(const char *szFilename, StdStrBuf *outBuf);
-bool GetRelativePath(const char *strPath, const char *strRelativeTo, char *strBuffer, int iBufferSize=_MAX_PATH);
+bool GetRelativePath(const char *strPath, const char *strRelativeTo, char *strBuffer, int iBufferSize = _MAX_PATH);
 const char *GetRelativePathS(const char *strPath, const char *strRelativeTo);
 bool IsGlobalPath(const char *szPath);
 
@@ -69,41 +69,44 @@ bool RenameFile(const char *szFileName, const char *szNewFileName);
 bool MakeOriginalFilename(char *szFilename);
 void MakeFilenameFromTitle(char *szTitle);
 
-bool CopyDirectory(const char *szSource, const char *szTarget, bool fResetAttributes=false);
+bool CopyDirectory(const char *szSource, const char *szTarget, bool fResetAttributes = false);
 bool EraseDirectory(const char *szDirName);
 
 bool ItemIdentical(const char *szFilename1, const char *szFilename2);
 inline bool ItemExists(const char *szItemName) { return FileExists(szItemName); }
 bool RenameItem(const char *szItemName, const char *szNewItemName);
 bool EraseItem(const char *szItemName);
-bool CopyItem(const char *szSource, const char *szTarget, bool fResetAttributes=false);
+bool CopyItem(const char *szSource, const char *szTarget, bool fResetAttributes = false);
 bool CreateItem(const char *szItemname);
 bool MoveItem(const char *szSource, const char *szTarget);
 
-int ForEachFile(const char *szDirName, bool (*fnCallback)(const char *));
+int ForEachFile(const char *szDirName, bool(*fnCallback)(const char *));
 
-class DirectoryIterator {
+class DirectoryIterator
+{
 public:
-	DirectoryIterator(const char * dirname);
+	DirectoryIterator(const char *dirname);
 	DirectoryIterator();
 	~DirectoryIterator();
 	// prevent misuses
 	DirectoryIterator(const DirectoryIterator &) = delete;
-	const char * operator * () const;
-	DirectoryIterator& operator ++ ();
-	void operator ++ (int);
-	void Reset(const char * dirname);
+	const char *operator*() const;
+	DirectoryIterator &operator++();
+	void operator++(int);
+	void Reset(const char *dirname);
 	void Reset();
+
 protected:
-	char filename[_MAX_PATH+1];
+	char filename[_MAX_PATH + 1];
 #ifdef _WIN32
 	struct _finddata_t fdt; int fdthnd;
+
 	friend class C4GroupEntry;
 #else
-	DIR * d;
-	dirent * ent;
+	DIR *d;
+	dirent *ent;
 #endif
-}; 
+};
 
 bool ReadFileLine(FILE *fhnd, char *tobuf, int maxlen);
 void AdvanceFileLine(FILE *fhnd);

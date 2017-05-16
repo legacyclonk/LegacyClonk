@@ -1,6 +1,4 @@
-
 #ifndef INC_C4ValueMap2
-
 #define INC_C4ValueMap2
 
 #include <C4Value.h>
@@ -15,15 +13,15 @@ class C4ValueMapNames;
 class C4ValueMapData
 {
 	friend class C4ValueMapNames;
+
 public:
-	
 	// construction/destruction
 	C4ValueMapData();
 	C4ValueMapData(const C4ValueMapData &) = delete;
 	virtual ~C4ValueMapData();
-	C4ValueMapData& operator = (const C4ValueMapData &DataToCopy);
-	
-	bool operator == (const C4ValueMapData &Data) const;
+	C4ValueMapData &operator=(const C4ValueMapData &DataToCopy);
+
+	bool operator==(const C4ValueMapData &Data) const;
 
 	// data array
 	C4Value *pData;
@@ -35,11 +33,9 @@ public:
 	// (delete when changing list)
 	bool bTempNameList;
 
-
 	// returns the item specified or 0 if it doesn't exist
-	C4Value *GetItem(const char* strName);
+	C4Value *GetItem(const char *strName);
 	C4Value *GetItem(int32_t iNr);
-
 
 	// sets the name list
 	void SetNameList(C4ValueMapNames *pnNames);
@@ -51,15 +47,14 @@ public:
 
 	int32_t GetAnzItems();
 
-	C4Value& operator [] (int32_t iNr) { return *GetItem(iNr); }
-	C4Value& operator [] (const char *strName) { return *GetItem(strName); }
+	C4Value &operator[](int32_t iNr) { return *GetItem(iNr); }
+	C4Value &operator[](const char *strName) { return *GetItem(strName); }
 
 	void DenumeratePointers();
 
-  void CompileFunc(StdCompiler *pComp);
+	void CompileFunc(StdCompiler *pComp);
 
 private:
-
 	// a list linking all data lists using the same name list together.
 	C4ValueMapData *pNext;
 
@@ -80,14 +75,13 @@ private:
 class C4ValueMapNames
 {
 	friend class C4ValueMapData;
-public:
 
+public:
 	// construction/destruction
 	C4ValueMapNames();
-	C4ValueMapNames(C4ValueMapNames&) = delete;
-	C4ValueMapNames& operator = (C4ValueMapNames &NamesToCopy);
+	C4ValueMapNames(C4ValueMapNames &) = delete;
+	C4ValueMapNames &operator=(C4ValueMapNames &NamesToCopy);
 	virtual ~C4ValueMapNames();
-
 
 	// name array
 	char **pNames;
@@ -97,7 +91,6 @@ public:
 
 	// item count
 	int32_t iSize;
-
 
 	// set name array
 	void SetNameArray(const char **pnNames, int32_t nSize);
@@ -113,7 +106,6 @@ public:
 	void Reset();
 
 private:
-
 	// points to first data list using this name list
 	C4ValueMapData *pFirst;
 

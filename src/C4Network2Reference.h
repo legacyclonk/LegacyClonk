@@ -1,4 +1,3 @@
-
 #ifndef C4NETWORK2REFERENCE_H
 #define C4NETWORK2REFERENCE_H
 
@@ -8,6 +7,7 @@
 #else
 #include "C4NetIO.h"
 #endif
+
 #include "C4GameParameters.h"
 #include "C4Version.h"
 #include "C4GameVersion.h"
@@ -77,12 +77,12 @@ public:
 	virtual ~C4Network2RefServer();
 
 private:
-  CStdCSec RefCSec;
-  C4Network2Reference *pReference;
+	CStdCSec RefCSec;
+	C4Network2Reference *pReference;
 
 public:
-  void Clear();
-  void SetReference(C4Network2Reference *pReference);
+	void Clear();
+	void SetReference(C4Network2Reference *pReference);
 
 protected:
 	// Overridden
@@ -93,7 +93,6 @@ private:
 	// Responses
 	void RespondNotImplemented(const C4NetIO::addr_t &addr, const char *szMessage);
 	void RespondReference(const C4NetIO::addr_t &addr);
-
 };
 
 // mini HTTP client
@@ -104,7 +103,6 @@ public:
 	virtual ~C4Network2HTTPClient();
 
 private:
-
 	// Address information
 	C4NetIO::addr_t ServerAddr, PeerAddr;
 	StdCopyStrBuf Server, RequestPath;
@@ -119,15 +117,14 @@ private:
 	size_t iDownloadedSize, iTotalSize;
 	bool fCompressed;
 
-  // Event queue to use for notify when something happens
-  class C4InteractiveThread *pNotify;
-  
+	// Event queue to use for notify when something happens
+	class C4InteractiveThread *pNotify;
+
 protected:
-  StdCopyBuf ResultBin; // set if fBinary
+	StdCopyBuf ResultBin; // set if fBinary
 	StdCopyStrBuf ResultString; // set if !fBinary
 
 protected:
-	
 	// Overridden
 	virtual void PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf);
 	virtual size_t UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr);
@@ -141,25 +138,25 @@ protected:
 	virtual int32_t GetDefaultPort() { return 80; }
 
 public:
-  bool Query(const StdBuf &Data, bool fBinary);
-  bool Query(const char *szData, bool fBinary) { return Query(StdBuf(szData, SLen(szData)), fBinary); }
+	bool Query(const StdBuf &Data, bool fBinary);
+	bool Query(const char *szData, bool fBinary) { return Query(StdBuf(szData, SLen(szData)), fBinary); }
 
-  bool isBusy() const { return fBusy; }
-  bool isSuccess() const { return fSuccess; }
+	bool isBusy() const { return fBusy; }
+	bool isSuccess() const { return fSuccess; }
 	bool isConnected() const { return fConnected; }
 	size_t getTotalSize() const { return iTotalSize; }
 	size_t getDownloadedSize() const { return iDownloadedSize; }
-  const StdBuf &getResultBin() const { assert(fBinary); return ResultBin; }
+	const StdBuf &getResultBin() const { assert(fBinary); return ResultBin; }
 	const char *getServerName() const { return Server.getData(); }
 	const char *getRequest() const { return RequestPath.getData(); }
 	const C4NetIO::addr_t &getServerAddress() const { return ServerAddr; }
 
 	void Cancel(const char *szReason);
-  void Clear();
+	void Clear();
 
-  bool SetServer(const char *szServerAddress);
+	bool SetServer(const char *szServerAddress);
 
-  void SetNotify(class C4InteractiveThread *pnNotify) { pNotify = pnNotify; }
+	void SetNotify(class C4InteractiveThread *pnNotify) { pNotify = pnNotify; }
 
 	// Overridden
 	virtual bool Execute(int iMaxTime = TO_INF);
@@ -168,7 +165,6 @@ public:
 private:
 	bool ReadHeader(StdStrBuf Data);
 	bool Decompress(StdBuf *pData);
-
 };
 
 // Loads references (mini-HTTP-client)
@@ -178,13 +174,15 @@ class C4Network2RefClient : public C4Network2HTTPClient
 	StdCopyStrBuf MessageOfTheDay, MessageOfTheDayHyperlink;
 	StdCopyStrBuf LeagueServerRedirect;
 	bool fVerSet;
+
 protected:
 	virtual int32_t GetDefaultPort() { return C4NetStdPortRefServer; }
+
 public:
 	C4Network2RefClient() : fVerSet(false), C4Network2HTTPClient() {}
 
-  bool QueryReferences();
-  bool GetReferences(C4Network2Reference **&rpReferences, int32_t &rRefCount);
+	bool QueryReferences();
+	bool GetReferences(C4Network2Reference ** &rpReferences, int32_t &rRefCount);
 	const char *GetMessageOfTheDay() const { return MessageOfTheDay.getData(); }
 	const char *GetMessageOfTheDayHyperlink() const { return MessageOfTheDayHyperlink.getData(); }
 	const char *GetLeagueServerRedirect() const { return LeagueServerRedirect.getLength() ? LeagueServerRedirect.getData() : NULL; }

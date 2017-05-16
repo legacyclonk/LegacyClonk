@@ -1,4 +1,3 @@
-
 /* A simple scheduler for ccoperative multitasking */
 
 #ifndef STDSCHEDULER_H
@@ -8,16 +7,16 @@
 
 // Events are Windows-specific
 #ifdef _WIN32
-#define STDSCHEDULER_USE_EVENTS
-#define HAVE_WINTHREAD
-#ifndef STDSCHEDULER_USE_EVENTS
-#include <winsock2.h>
-#endif
+	#define STDSCHEDULER_USE_EVENTS
+	#define HAVE_WINTHREAD
+	#ifndef STDSCHEDULER_USE_EVENTS
+		#include <winsock2.h>
+	#endif
 #else
-#include <sys/select.h>
-#ifdef HAVE_PTHREAD
-#include <pthread.h>
-#endif
+	#include <sys/select.h>
+	#ifdef HAVE_PTHREAD
+		#include <pthread.h>
+	#endif
 #endif
 
 // helper
@@ -30,7 +29,7 @@ inline int MaxTimeout(int iTimeout1, int iTimeout2)
 class StdSchedulerProc
 {
 public:
-	virtual ~StdSchedulerProc() { }
+	virtual ~StdSchedulerProc() {}
 
 	// Do whatever the process wishes to do. Should not block longer than the timeout value.
 	// Is called whenever the process is signaled or a timeout occurs.
@@ -40,7 +39,7 @@ public:
 #ifdef STDSCHEDULER_USE_EVENTS
 	virtual HANDLE GetEvent() { return 0; }
 #else
-	virtual void GetFDs(fd_set *pFDs, int *pMaxFD) { }
+	virtual void GetFDs(fd_set *pFDs, int *pMaxFD) {}
 #endif
 
 	// Call Execute() after this time has elapsed (no garantuees regarding accuracy)
@@ -71,7 +70,6 @@ private:
 #ifdef STDSCHEDULER_USE_EVENTS
 	HANDLE *pEventHandles;
 	StdSchedulerProc **ppEventProcs;
-
 #endif
 
 public:
@@ -88,11 +86,10 @@ public:
 
 protected:
 	// overridable
-	virtual void OnError(StdSchedulerProc *pProc) { }
+	virtual void OnError(StdSchedulerProc *pProc) {}
 
 private:
 	void Enlarge(int iBy);
-
 };
 
 // A simple process scheduler thread
@@ -103,10 +100,9 @@ public:
 	virtual ~StdSchedulerThread();
 
 private:
-
 	// thread control
 	bool fRunThreadRun;
-	
+
 	bool fThread;
 #ifdef HAVE_WINTHREAD
 	unsigned long iThread;
@@ -123,7 +119,6 @@ public:
 	void Stop();
 
 private:
-
 	// thread func
 #ifdef HAVE_WINTHREAD
 	static void __cdecl _ThreadFunc(void *);
@@ -131,7 +126,6 @@ private:
 	static void *_ThreadFunc(void *);
 #endif
 	unsigned int ThreadFunc();
-
 };
 
 class StdThread

@@ -1,4 +1,3 @@
-
 // network ressource: data needed for the game (scenario, plr files, definitions...)
 
 #ifndef INC_C4Network2Res
@@ -11,18 +10,18 @@
 const uint32_t C4NetResChunkSize = 10U * 1024U;
 
 const int32_t C4NetResDiscoverTimeout = 10, // (s)
-							C4NetResDiscoverInterval = 1, // (s)
-							C4NetResStatusInterval = 1, // (s)
-							C4NetResMaxLoad = 5,
-							C4NetResLoadTimeout = 60, // (s)
-							C4NetResDeleteTime = 60, // (s)
-							C4NetResMaxBigicon = 20; // maximum size, in KB, of bigicon
+              C4NetResDiscoverInterval = 1, // (s)
+              C4NetResStatusInterval = 1, // (s)
+              C4NetResMaxLoad = 5,
+              C4NetResLoadTimeout = 60, // (s)
+              C4NetResDeleteTime = 60, // (s)
+              C4NetResMaxBigicon = 20; // maximum size, in KB, of bigicon
 
 const int32_t C4NetResIDAnonymous = -2;
 
 enum C4Network2ResType
 {
-	NRT_Null=0,
+	NRT_Null = 0,
 	NRT_Scenario,
 	NRT_Dynamic,
 	NRT_Player,
@@ -33,12 +32,12 @@ enum C4Network2ResType
 
 const StdEnumEntry<C4Network2ResType> C4Network2ResType_EnumMap[] =
 {
-	{ "Scenario", NRT_Scenario },
-	{ "Dynamic", NRT_Dynamic },
-	{ "Player", NRT_Player },
+	{ "Scenario",    NRT_Scenario },
+	{ "Dynamic",     NRT_Dynamic },
+	{ "Player",      NRT_Player },
 	{ "Definitions", NRT_Definitions },
-	{ "System", NRT_System },
-	{ "Material", NRT_Material },
+	{ "System",      NRT_System },
+	{ "Material",    NRT_Material },
 };
 
 // damn circular dependencies
@@ -64,33 +63,33 @@ protected:
 	uint32_t iChunkSize;
 
 public:
-	C4Network2ResType getType()		const { return eType; }
-	bool					isNull()				const { return eType == NRT_Null; }
-	int32_t				getID()					const { return iID; }
-	int32_t				getDerID()	  	const { return iDerID; }
-	bool					isLoadable()		const { return fLoadable; }
-	uint32_t			getFileSize()		const { return iFileSize; }
-	uint32_t			getFileCRC()		const { return iFileCRC; }
-	uint32_t			getContentsCRC()const { return iContentsCRC; }
-	bool					hasFileSHA()		const { return !!fHasFileSHA; }
-	const char *	getFileName()		const { return FileName.getData(); }
-	uint32_t			getChunkSize()	const { return iChunkSize; }
-	uint32_t			getChunkCnt()		const { return iFileSize && iChunkSize ? (iFileSize - 1) / iChunkSize + 1 : 0; }
+	C4Network2ResType getType()        const { return eType; }
+	bool              isNull()         const { return eType == NRT_Null; }
+	int32_t           getID()          const { return iID; }
+	int32_t           getDerID()       const { return iDerID; }
+	bool              isLoadable()     const { return fLoadable; }
+	uint32_t          getFileSize()    const { return iFileSize; }
+	uint32_t          getFileCRC()     const { return iFileCRC; }
+	uint32_t          getContentsCRC() const { return iContentsCRC; }
+	bool              hasFileSHA()     const { return !!fHasFileSHA; }
+	const char       *getFileName()    const { return FileName.getData(); }
+	uint32_t          getChunkSize()   const { return iChunkSize; }
+	uint32_t          getChunkCnt()    const { return iFileSize && iChunkSize ? (iFileSize - 1) / iChunkSize + 1 : 0; }
 
 	void Set(C4Network2ResType eType, int32_t iResID, const char *strFileName, uint32_t iContentsCRC, const char *szAutor);
-	void SetID(int32_t inID)						{ iID = inID; }
-  void SetDerived(int32_t inDerID)    { iDerID = inDerID; }
+	void SetID(int32_t inID) { iID = inID; }
+	void SetDerived(int32_t inDerID) { iDerID = inDerID; }
 	void SetLoadable(uint32_t iSize, uint32_t iCRC);
-	void SetFileSHA(BYTE *pSHA)					{ memcpy(FileSHA, pSHA, SHA_DIGEST_LENGTH); fHasFileSHA = true; }
+	void SetFileSHA(BYTE *pSHA) { memcpy(FileSHA, pSHA, SHA_DIGEST_LENGTH); fHasFileSHA = true; }
 	void Clear();
 
 	virtual void CompileFunc(StdCompiler *pComp);
-
 };
 
 class C4Network2ResLoad
 {
 	friend class C4Network2Res;
+
 public:
 	C4Network2ResLoad(int32_t iChunk, int32_t iByClient);
 	~C4Network2ResLoad();
@@ -105,13 +104,12 @@ protected:
 	C4Network2ResLoad *pNext;
 
 public:
-	int32_t			getChunk()				const { return iChunk; }
-	int32_t			getByClient()			const { return iByClient; }
+	int32_t getChunk()    const { return iChunk; }
+	int32_t getByClient() const { return iByClient; }
 
-	C4Network2ResLoad *Next()	const { return pNext; }
+	C4Network2ResLoad *Next() const { return pNext; }
 
 	bool CheckTimeout();
-
 };
 
 class C4Network2ResChunkData : public C4PacketBase
@@ -121,7 +119,8 @@ public:
 	C4Network2ResChunkData(const C4Network2ResChunkData &Data2);
 	~C4Network2ResChunkData();
 
-	C4Network2ResChunkData &operator =(const C4Network2ResChunkData &Data2);
+	C4Network2ResChunkData &operator=(const C4Network2ResChunkData &Data2);
+
 protected:
 	int32_t iChunkCnt, iPresentChunkCnt;
 
@@ -131,14 +130,14 @@ protected:
 	int32_t iChunkRangeCnt;
 
 public:
-	int32_t getChunkCnt()					const { return iChunkCnt; }
-	int32_t getPresentChunkCnt()	const { return iPresentChunkCnt; }
-	int32_t getPresentPercent()		const { return iPresentChunkCnt * 100 / iChunkCnt; }
-	bool isComplete()					const { return iPresentChunkCnt == iChunkCnt; }
-	
+	int32_t getChunkCnt()        const { return iChunkCnt; }
+	int32_t getPresentChunkCnt() const { return iPresentChunkCnt; }
+	int32_t getPresentPercent()  const { return iPresentChunkCnt * 100 / iChunkCnt; }
+	bool    isComplete()         const { return iPresentChunkCnt == iChunkCnt; }
+
 	void SetIncomplete(int32_t iChunkCnt);
 	void SetComplete(int32_t iChunkCnt);
-	
+
 	void AddChunk(int32_t iChunk);
 	void AddChunkRange(int32_t iStart, int32_t iLength);
 	void Merge(const C4Network2ResChunkData &Data2);
@@ -161,26 +160,28 @@ class C4Network2Res
 {
 	friend class C4Network2ResList;
 	friend class C4Network2ResChunk;
-public:
 
+public:
 	// helper for reference-holding
 	class Ref
 	{
 	public:
-		Ref() : pRes(NULL) { }
-		Ref(C4Network2Res *pRes) : pRes(pRes) { if(pRes) pRes->AddRef(); }
-		Ref(const Ref &rCopy) : pRes(rCopy.pRes) { if(pRes) pRes->AddRef(); }
+		Ref() : pRes(NULL) {}
+		Ref(C4Network2Res *pRes) : pRes(pRes)    { if (pRes) pRes->AddRef(); }
+		Ref(const Ref &rCopy) : pRes(rCopy.pRes) { if (pRes) pRes->AddRef(); }
 		~Ref() { Clear(); }
-		Ref &operator = (C4Network2Res *pnRes) { Set(pnRes); return *this; }
-		Ref &operator = (const Ref &rCopy) { Set(rCopy.pRes); return *this; }
+		Ref &operator=(C4Network2Res *pnRes) { Set(pnRes);      return *this; }
+		Ref &operator=(const Ref &rCopy)     { Set(rCopy.pRes); return *this; }
+
 	private:
 		C4Network2Res *pRes;
+
 	public:
-		operator C4Network2Res *() const { return pRes; }
-		bool operator ! () const { return !pRes; }
-		C4Network2Res * operator ->() const { return pRes; }
-		void Clear() { if(pRes) pRes->DelRef(); pRes = NULL; }
-		void Set(C4Network2Res *pnRes) { if(pRes == pnRes) return; Clear(); pRes = pnRes; if(pRes) pRes->AddRef(); }
+		operator C4Network2Res *()  const { return pRes; }
+		bool operator!()            const { return !pRes; }
+		C4Network2Res *operator->() const { return pRes; }
+		void Clear() { if (pRes) pRes->DelRef(); pRes = NULL; }
+		void Set(C4Network2Res *pnRes) { if (pRes == pnRes) return; Clear(); pRes = pnRes; if (pRes) pRes->AddRef(); }
 	};
 
 	C4Network2Res(C4Network2ResList *pnParent);
@@ -193,10 +194,10 @@ protected:
 	bool fDirty;
 
 	// local file data
-  CStdCSec FileCSec;
+	CStdCSec FileCSec;
 	char szFile[_MAX_PATH + 1], szStandalone[_MAX_PATH + 1];
 	bool fTempFile, fStandaloneFailed;
-	
+
 	// references
 	long iRefCnt;
 	bool fRemoved;
@@ -207,7 +208,7 @@ protected:
 	// loading
 	bool fLoading;
 	struct ClientChunks { C4Network2ResChunkData Chunks; int32_t ClientID; ClientChunks *Next; }
-		*pCChunks;
+	*pCChunks;
 	time_t iDiscoverStartTime;
 	C4Network2ResLoad *pLoads;
 	int32_t iLoadCnt;
@@ -217,25 +218,25 @@ protected:
 	C4Network2ResList *pParent;
 
 public:
-	C4Network2ResType getType() const { return Core.getType(); }
-	const C4Network2ResCore &getCore() const { return Core; }
-	bool				isDirty()				const { return fDirty; }
-	bool				isAnonymous()		const { return getResID() == C4NetResIDAnonymous; }
-	int32_t			getResID()			const { return Core.getID(); }
-	int32_t			getResClient()	const { return Core.getID() >> 16; }
-	const char *getFile()				const { return szFile; }
-	int32_t			getLastReqTime()const { return iLastReqTime; }
-	bool				isRemoved()			const { return fRemoved; }
-	bool				isLoading()			const { return fLoading; }
-	bool				isComplete()		const { return !fLoading; }
-  int32_t			getPresentPercent() const { return fLoading ? Chunks.getPresentPercent() : 100; }
+	C4Network2ResType getType()                  const { return Core.getType(); }
+	const C4Network2ResCore &getCore()           const { return Core; }
+	bool                     isDirty()           const { return fDirty; }
+	bool                     isAnonymous()       const { return getResID() == C4NetResIDAnonymous; }
+	int32_t                  getResID()          const { return Core.getID(); }
+	int32_t                  getResClient()      const { return Core.getID() >> 16; }
+	const char              *getFile()           const { return szFile; }
+	int32_t                  getLastReqTime()    const { return iLastReqTime; }
+	bool                     isRemoved()         const { return fRemoved; }
+	bool                     isLoading()         const { return fLoading; }
+	bool                     isComplete()        const { return !fLoading; }
+	int32_t                  getPresentPercent() const { return fLoading ? Chunks.getPresentPercent() : 100; }
 
 	bool SetByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName = NULL, bool fSilent = false);
 	bool SetByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName = NULL, bool fSilent = false);
-	bool SetByCore(const C4Network2ResCore &nCore, bool fSilent = false, const char *szAsFilename = NULL, int32_t iRecursion=0);
+	bool SetByCore(const C4Network2ResCore &nCore, bool fSilent = false, const char *szAsFilename = NULL, int32_t iRecursion = 0);
 	bool SetLoad(const C4Network2ResCore &nCore);
 
-  bool SetDerived(const char *strName, const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iDResID);
+	bool SetDerived(const char *strName, const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iDResID);
 
 	void ChangeID(int32_t inID);
 
@@ -244,8 +245,8 @@ public:
 	bool CalculateSHA();
 
 	C4Network2Res::Ref Derive();
-  bool FinishDerive();
-  bool FinishDerive(const C4Network2ResCore &nCore);
+	bool FinishDerive();
+	bool FinishDerive(const C4Network2ResCore &nCore);
 
 	bool SendStatus(C4Network2IOConnection *pTo = NULL);
 	bool SendChunk(uint32_t iChunk, int32_t iToClient);
@@ -276,7 +277,6 @@ protected:
 	void RemoveCChunks(ClientChunks *pChunks);
 
 	bool OptimizeStandalone(bool fSilent);
-
 };
 
 class C4Network2ResChunk : public C4PacketBase
@@ -291,8 +291,8 @@ protected:
 	StdBuf Data;
 
 public:
-  int32_t		getResID()	 const { return iResID; }
-	uint32_t	getChunkNr() const { return iChunk; }
+	int32_t  getResID()   const { return iResID; }
+	uint32_t getChunkNr() const { return iChunk; }
 
 	bool Set(C4Network2Res *pRes, uint32_t iChunk);
 	bool AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const;
@@ -304,12 +304,12 @@ class C4Network2ResList : protected CStdCSecExCallback // run by network thread
 {
 	friend class C4Network2Res;
 	friend class C4Network2;
+
 public:
 	C4Network2ResList();
 	virtual ~C4Network2ResList();
 
 protected:
-
 	C4Network2Res *pFirst;
 	CStdCSecEx ResListCSec;
 	CStdCSec ResListAddCSec;
@@ -324,7 +324,6 @@ protected:
 	C4Network2IO *pIO;
 
 public:
-
 	// initialization
 	bool Init(int32_t iClientID, C4Network2IO *pIOClass); // by main thread
 	void SetLocalID(int32_t iClientID); // by both
@@ -345,7 +344,7 @@ public:
 	C4Network2Res::Ref AddByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID = -1, const char *szResName = NULL, bool fAllowUnloadable = false); // by both
 	C4Network2Res::Ref AddByCore(const C4Network2ResCore &Core, bool fLoad = true); // by main thread
 	C4Network2Res::Ref AddLoad(const C4Network2ResCore &Core); // by main thread
-	
+
 	void RemoveAtClient(int32_t iClientID); // by main thread
 	void Clear(); // by main thread
 
@@ -368,10 +367,9 @@ protected:
 	// misc
 	bool CreateNetworkFolder();
 	bool FindTempResFileName(const char *szFilename, char *pTarget);
-
 };
 
-// * Packets *
+// Packets
 
 class C4PacketResStatus : public C4PacketBase
 {
@@ -384,7 +382,7 @@ protected:
 	C4Network2ResChunkData Chunks;
 
 public:
-	int32_t	getResID() const { return iResID; }
+	int32_t                       getResID()  const { return iResID; }
 	const C4Network2ResChunkData &getChunks() const { return Chunks; }
 
 	virtual void CompileFunc(StdCompiler *pComp);
@@ -399,7 +397,7 @@ protected:
 	int32_t iDisIDs[16], iDisIDCnt;
 
 public:
-	int32_t getDisIDCnt()		    const { return iDisIDCnt; }
+	int32_t getDisIDCnt()         const { return iDisIDCnt; }
 	bool isIDPresent(int32_t iID) const;
 
 	bool AddDisID(int32_t iID);
@@ -416,7 +414,7 @@ protected:
 	int32_t iReqID, iReqChunk;
 
 public:
-	int32_t getReqID()		const { return iReqID; }
+	int32_t getReqID()    const { return iReqID; }
 	int32_t getReqChunk() const { return iReqChunk; }
 
 	virtual void CompileFunc(StdCompiler *pComp);

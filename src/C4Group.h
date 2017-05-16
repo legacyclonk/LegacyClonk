@@ -39,23 +39,23 @@ extern int iC4GroupRewindFilePtrNoWarn;
 #define C4GRP_ENABLE_REWINDWARN ;
 #endif
 
-const int C4GroupFileVer1=1, C4GroupFileVer2=2;  
+const int C4GroupFileVer1 = 1, C4GroupFileVer2 = 2;
 
-const int C4GroupMaxMaker    = 30,
+const int C4GroupMaxMaker = 30,
           C4GroupMaxPassword = 30,
-					C4GroupMaxError		 = 100;
+          C4GroupMaxError = 100;
 
 #define C4GroupFileID "RedWolf Design GrpFolder"
 
 void C4Group_SetMaker(const char *szMaker);
 void C4Group_SetTempPath(const char *szPath);
-const char* C4Group_GetTempPath();
+const char *C4Group_GetTempPath();
 void C4Group_SetSortList(const char **ppSortList);
-void C4Group_SetProcessCallback(BOOL (*fnCallback)(const char *, int));
+void C4Group_SetProcessCallback(BOOL(*fnCallback)(const char *, int));
 BOOL C4Group_IsGroup(const char *szFilename);
-BOOL C4Group_CopyItem(const char *szSource, const char *szTarget, bool fNoSort=false, bool fResetAttributes=false);
-BOOL C4Group_MoveItem(const char *szSource, const char *szTarget, bool fNoSort=false);
-BOOL C4Group_DeleteItem(const char *szItem, bool fRecycle=false);
+BOOL C4Group_CopyItem(const char *szSource, const char *szTarget, bool fNoSort = false, bool fResetAttributes = false);
+BOOL C4Group_MoveItem(const char *szSource, const char *szTarget, bool fNoSort = false);
+BOOL C4Group_DeleteItem(const char *szItem, bool fRecycle = false);
 bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo);
 bool C4Group_PackDirectory(const char *szFilename);
 BOOL C4Group_UnpackDirectory(const char *szFilename);
@@ -72,207 +72,211 @@ extern time_t C4Group_AssumeTimeOffset;
 
 #pragma pack (push, 1)
 
-class C4GroupHeader 
-  { 
-	public:
-		C4GroupHeader();
-  public:
-    char id[24+4];
-    int Ver1,Ver2;
-    int Entries;  
-    char Maker[C4GroupMaxMaker+2];
-    char Password[C4GroupMaxPassword+2];
-		int Creation,Original;
-    BYTE fbuf[92];
-  public:
-    void Init();
-  };
+class C4GroupHeader
+{
+public:
+	C4GroupHeader();
+
+public:
+	char id[24 + 4];
+	int Ver1, Ver2;
+	int Entries;
+	char Maker[C4GroupMaxMaker + 2];
+	char Password[C4GroupMaxPassword + 2];
+	int Creation, Original;
+	BYTE fbuf[92];
+
+public:
+	void Init();
+};
 
 const char C4GECS_None = 0,
-					 C4GECS_Old = 1,
-					 C4GECS_New = 2;
+           C4GECS_Old = 1,
+           C4GECS_New = 2;
 
-class C4GroupEntryCore  
-  { 
-	public:
-		C4GroupEntryCore();
-  public:
-    char FileName[260];
-    BOOL Packed,ChildGroup;
-    int32_t Size, __Unused, Offset;
-    uint32_t Time;
-		char HasCRC; unsigned int CRC;
-		char Executable;
-    BYTE fbuf[26];
-  };
+class C4GroupEntryCore
+{
+public:
+	C4GroupEntryCore();
+
+public:
+	char FileName[260];
+	BOOL Packed, ChildGroup;
+	int32_t Size, __Unused, Offset;
+	uint32_t Time;
+	char HasCRC; unsigned int CRC;
+	char Executable;
+	BYTE fbuf[26];
+};
 
 #pragma pack (pop)
 
-const int C4GRES_InGroup  = 0,	
-					C4GRES_OnDisk		= 1,
-					C4GRES_InMemory = 2,
-					C4GRES_Deleted	= 3;
+const int C4GRES_InGroup = 0,
+          C4GRES_OnDisk = 1,
+          C4GRES_InMemory = 2,
+          C4GRES_Deleted = 3;
 
-class C4GroupEntry: public C4GroupEntryCore
-	{ 
-	public:
-		C4GroupEntry();
-		~C4GroupEntry();
-  public:
-    char DiskPath[_MAX_PATH + 1];
-    int Status;
-		BOOL DeleteOnDisk;
-		BOOL HoldBuffer;
-		bool BufferIsStdbuf;
-		BOOL NoSort;
-		BYTE *bpMemBuf;
-		C4GroupEntry *Next;
-	public:
-		void Set(const DirectoryIterator & iter, const char * szPath);
-	};
+class C4GroupEntry : public C4GroupEntryCore
+{
+public:
+	C4GroupEntry();
+	~C4GroupEntry();
 
-const int GRPF_Inactive=0,
-          GRPF_File=1, 
-          GRPF_Folder=2;
+public:
+	char DiskPath[_MAX_PATH + 1];
+	int Status;
+	BOOL DeleteOnDisk;
+	BOOL HoldBuffer;
+	bool BufferIsStdbuf;
+	BOOL NoSort;
+	BYTE *bpMemBuf;
+	C4GroupEntry *Next;
 
-class C4Group: public CStdStream
-  {
-  public:
-    C4Group();
-    ~C4Group();
+public:
+	void Set(const DirectoryIterator &iter, const char *szPath);
+};
 
-  protected:
-    int Status;
-    char FileName[_MAX_PATH+1];	
-    // Parent status
-    C4Group *Mother;
-    BOOL ExclusiveChild;
-    // File & Folder
-    C4GroupEntry *SearchPtr;
-    CStdFile StdFile;
-		size_t iCurrFileSize; // size of last accessed file
-    // File only
-    int FilePtr;
-    int MotherOffset;
-    int EntryOffset;
-    BOOL Modified;
-    C4GroupHeader Head;
-    C4GroupEntry *FirstEntry;
-    // Folder only
+const int GRPF_Inactive = 0,
+          GRPF_File = 1,
+          GRPF_Folder = 2;
+
+class C4Group : public CStdStream
+{
+public:
+	C4Group();
+	~C4Group();
+
+protected:
+	int Status;
+	char FileName[_MAX_PATH + 1];
+	// Parent status
+	C4Group *Mother;
+	BOOL ExclusiveChild;
+	// File & Folder
+	C4GroupEntry *SearchPtr;
+	CStdFile StdFile;
+	size_t iCurrFileSize; // size of last accessed file
+	// File only
+	int FilePtr;
+	int MotherOffset;
+	int EntryOffset;
+	BOOL Modified;
+	C4GroupHeader Head;
+	C4GroupEntry *FirstEntry;
+	// Folder only
 	DirectoryIterator FolderSearch;
-    C4GroupEntry FolderSearchEntry;
-    C4GroupEntry LastFolderSearchEntry;
+	C4GroupEntry FolderSearchEntry;
+	C4GroupEntry LastFolderSearchEntry;
 
-    BOOL StdOutput;
-		BOOL (*fnProcessCallback)(const char *, int);
-    char ErrorString[C4GroupMaxError+1];
-		BOOL MadeOriginal;
+	BOOL StdOutput;
+	BOOL(*fnProcessCallback)(const char *, int);
+	char ErrorString[C4GroupMaxError + 1];
+	BOOL MadeOriginal;
 
-		BOOL NoSort; // If this flag is set, all entries will be marked NoSort in AddEntry
+	BOOL NoSort; // If this flag is set, all entries will be marked NoSort in AddEntry
 
-  public:
-
-    bool Open(const char *szGroupName, BOOL fCreate=FALSE);
-    bool Close();
-		bool Save(BOOL fReOpen);
-    bool OpenAsChild(C4Group *pMother, const char *szEntryName, BOOL fExclusive=FALSE);
-		bool OpenChild(const char* strEntry);
-		bool OpenMother();
-    bool Add(const char *szFiles);
-    bool Add(const char *szFile, const char *szAddAs);
-    bool Add(const char *szName, void *pBuffer, int iSize, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
-		bool Add(const char *szName, StdBuf &pBuffer, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
-		bool Add(const char *szName, StdStrBuf &pBuffer, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
-    bool Merge(const char *szFolders);
-    bool Move(const char *szFiles);
-    bool Move(const char *szFile, const char *szAddAs);
-    bool Extract(const char *szFiles, const char *szExtractTo=NULL, const char *szExclude=NULL);
-    bool ExtractEntry(const char *szFilename, const char *szExtractTo=NULL);   
-    bool Delete(const char *szFiles, bool fRecursive = false);
-    bool DeleteEntry(const char *szFilename, bool fRecycle=false);
-    bool Rename(const char *szFile, const char *szNewName);
-    bool Sort(const char *szSortList);
-	  bool SortByList(const char **ppSortList, const char *szFilename=NULL);
-    bool View(const char *szFiles);
-		bool GetOriginal();
-    bool AccessEntry(const char *szWildCard, 
-                     size_t *iSize=NULL, char *sFileName=NULL,
-										 bool *fChild=NULL);
-    bool AccessNextEntry(const char *szWildCard, 
-                     size_t *iSize=NULL, char *sFileName=NULL,
-										 bool *fChild=NULL);
-    bool LoadEntry(const char *szEntryName, char **lpbpBuf, 
-                   size_t *ipSize=NULL, int iAppendZeros=0);
-    bool LoadEntry(const char *szEntryName, StdBuf &Buf);
-    bool LoadEntryString(const char *szEntryName, StdStrBuf &Buf);
-    bool FindEntry(const char *szWildCard, 
-                   char *sFileName=NULL, 
-									 size_t *iSize=NULL,
-									 bool *fChild=NULL);
-    bool FindNextEntry(const char *szWildCard, 
-                       char *sFileName=NULL, 
-											 size_t *iSize=NULL,
-											 bool *fChild=NULL,
-											 bool fStartAtFilename=false);
-    bool Read(void *pBuffer, size_t iSize);
-		bool Advance(int iOffset);
-		void SetMaker(const char *szMaker);
-		void SetStdOutput(BOOL fStatus);
-		void MakeOriginal(BOOL fOriginal);
-    void ResetSearch();
-    const char *GetError();
-    const char *GetMaker();
-    const char *GetPassword();
-    const char *GetName();
-	  StdStrBuf GetFullName() const;
-    int EntryCount(const char *szWildCard=NULL);
-    int EntrySize(const char *szWildCard=NULL);
-		int AccessedEntrySize() { return iCurrFileSize; } // retrieve size of last accessed entry
-		int EntryTime(const char *szFilename);
-		unsigned int EntryCRC32(const char *szWildCard=NULL);
-	  int GetCreation();
-	  int GetStatus();
-		inline bool IsOpen() { return Status != GRPF_Inactive; }
-		C4Group *GetMother();
-		inline bool IsPacked() { return Status == GRPF_File; }
-		inline bool HasPackedMother() { if (!Mother) return false; return Mother->IsPacked(); }
-		inline bool SetNoSort(BOOL fNoSort) { NoSort = fNoSort; return true; }
+public:
+	bool Open(const char *szGroupName, BOOL fCreate = FALSE);
+	bool Close();
+	bool Save(BOOL fReOpen);
+	bool OpenAsChild(C4Group *pMother, const char *szEntryName, BOOL fExclusive = FALSE);
+	bool OpenChild(const char *strEntry);
+	bool OpenMother();
+	bool Add(const char *szFiles);
+	bool Add(const char *szFile, const char *szAddAs);
+	bool Add(const char *szName, void *pBuffer, int iSize, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
+	bool Add(const char *szName, StdBuf &pBuffer, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
+	bool Add(const char *szName, StdStrBuf &pBuffer, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
+	bool Merge(const char *szFolders);
+	bool Move(const char *szFiles);
+	bool Move(const char *szFile, const char *szAddAs);
+	bool Extract(const char *szFiles, const char *szExtractTo = NULL, const char *szExclude = NULL);
+	bool ExtractEntry(const char *szFilename, const char *szExtractTo = NULL);
+	bool Delete(const char *szFiles, bool fRecursive = false);
+	bool DeleteEntry(const char *szFilename, bool fRecycle = false);
+	bool Rename(const char *szFile, const char *szNewName);
+	bool Sort(const char *szSortList);
+	bool SortByList(const char **ppSortList, const char *szFilename = NULL);
+	bool View(const char *szFiles);
+	bool GetOriginal();
+	bool AccessEntry(const char *szWildCard,
+		size_t *iSize = NULL, char *sFileName = NULL,
+		bool *fChild = NULL);
+	bool AccessNextEntry(const char *szWildCard,
+		size_t *iSize = NULL, char *sFileName = NULL,
+		bool *fChild = NULL);
+	bool LoadEntry(const char *szEntryName, char **lpbpBuf,
+		size_t *ipSize = NULL, int iAppendZeros = 0);
+	bool LoadEntry(const char *szEntryName, StdBuf &Buf);
+	bool LoadEntryString(const char *szEntryName, StdStrBuf &Buf);
+	bool FindEntry(const char *szWildCard,
+		char *sFileName = NULL,
+		size_t *iSize = NULL,
+		bool *fChild = NULL);
+	bool FindNextEntry(const char *szWildCard,
+		char *sFileName = NULL,
+		size_t *iSize = NULL,
+		bool *fChild = NULL,
+		bool fStartAtFilename = false);
+	bool Read(void *pBuffer, size_t iSize);
+	bool Advance(int iOffset);
+	void SetMaker(const char *szMaker);
+	void SetStdOutput(BOOL fStatus);
+	void MakeOriginal(BOOL fOriginal);
+	void ResetSearch();
+	const char *GetError();
+	const char *GetMaker();
+	const char *GetPassword();
+	const char *GetName();
+	StdStrBuf GetFullName() const;
+	int EntryCount(const char *szWildCard = NULL);
+	int EntrySize(const char *szWildCard = NULL);
+	int AccessedEntrySize() { return iCurrFileSize; } // retrieve size of last accessed entry
+	int EntryTime(const char *szFilename);
+	unsigned int EntryCRC32(const char *szWildCard = NULL);
+	int GetCreation();
+	int GetStatus();
+	inline bool IsOpen() { return Status != GRPF_Inactive; }
+	C4Group *GetMother();
+	inline bool IsPacked() { return Status == GRPF_File; }
+	inline bool HasPackedMother() { if (!Mother) return false; return Mother->IsPacked(); }
+	inline bool SetNoSort(BOOL fNoSort) { NoSort = fNoSort; return true; }
 #ifdef _DEBUG
-		void PrintInternals(const char *szIndent=NULL);
+	void PrintInternals(const char *szIndent = NULL);
 #endif
 
-  protected:
-    void Init();
-    void Default();
-    void Clear();
-	  bool EnsureChildFilePtr(C4Group *pChild);
-	  bool CloseExclusiveMother();
-    bool Error(const char *szStatus);
-    bool OpenReal(const char *szGroupName);
-    bool OpenRealGrpFile();
-    bool SetFilePtr(int iOffset);
-    bool RewindFilePtr();
-    bool AdvanceFilePtr(int iOffset, C4Group *pByChild=NULL);
-    bool AddEntry(int status, 
-									bool childgroup,
-                  const char *fname, 
-									long size, 
-									time_t time,
-									char cCRC, 
-									unsigned int iCRC,
-                  const char *entryname = NULL,
-                  BYTE *membuf = NULL, 
-									bool fDeleteOnDisk = false,
-									bool fHoldBuffer = false,
-									bool fExecutable = false,
-									bool fBufferIsStdbuf = false);
-    bool AddEntryOnDisk(const char *szFilename, const char *szAddAs=NULL, bool fMove=FALSE);
-    bool SetFilePtr2Entry(const char *szName, C4Group *pByChild=NULL);
-    bool AppendEntry2StdFile(C4GroupEntry *centry, CStdFile &stdfile);
-    C4GroupEntry *GetEntry(const char *szName);
-    C4GroupEntry *SearchNextEntry(const char *szName);    
-    C4GroupEntry *GetNextFolderEntry();
-		bool CalcCRC32(C4GroupEntry *pEntry);
-   };
+protected:
+	void Init();
+	void Default();
+	void Clear();
+	bool EnsureChildFilePtr(C4Group *pChild);
+	bool CloseExclusiveMother();
+	bool Error(const char *szStatus);
+	bool OpenReal(const char *szGroupName);
+	bool OpenRealGrpFile();
+	bool SetFilePtr(int iOffset);
+	bool RewindFilePtr();
+	bool AdvanceFilePtr(int iOffset, C4Group *pByChild = NULL);
+	bool AddEntry(int status,
+		bool childgroup,
+		const char *fname,
+		long size,
+		time_t time,
+		char cCRC,
+		unsigned int iCRC,
+		const char *entryname = NULL,
+		BYTE *membuf = NULL,
+		bool fDeleteOnDisk = false,
+		bool fHoldBuffer = false,
+		bool fExecutable = false,
+		bool fBufferIsStdbuf = false);
+	bool AddEntryOnDisk(const char *szFilename, const char *szAddAs = NULL, bool fMove = FALSE);
+	bool SetFilePtr2Entry(const char *szName, C4Group *pByChild = NULL);
+	bool AppendEntry2StdFile(C4GroupEntry *centry, CStdFile &stdfile);
+	C4GroupEntry *GetEntry(const char *szName);
+	C4GroupEntry *SearchNextEntry(const char *szName);
+	C4GroupEntry *GetNextFolderEntry();
+	bool CalcCRC32(C4GroupEntry *pEntry);
+};
 
 #endif

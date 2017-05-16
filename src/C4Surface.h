@@ -9,22 +9,22 @@
 
 class C4Group;
 
+class C4Surface : public CSurface
+{
+private:
+	C4Surface(const C4Surface &rCpy); // do NOT copy
+	C4Surface &operator=(const C4Surface &rCpy); // do NOT copy
 
-class C4Surface: public CSurface
-	{
-	private:
-		C4Surface(const C4Surface &rCpy);		// do NOT copy
-		C4Surface &operator = (const C4Surface &rCpy);	// do NOT copy
-	public:
-		C4Surface() : CSurface() {};
+public:
+	C4Surface() : CSurface() {};
 
-		BOOL LoadAny(C4Group &hGroup, const char *szFilename, bool fOwnPal=false, bool fNoErrIfNotFound=false);
-		BOOL LoadAny(C4GroupSet &hGroupset, const char *szFilename, bool fOwnPal=false, bool fNoErrIfNotFound=false);
-		BOOL Load(C4Group &hGroup, const char *szFilename, bool fOwnPal=false, bool fNoErrIfNotFound=false);
-		BOOL SavePNG(C4Group &hGroup, const char *szFilename, bool fSaveAlpha=true, bool fApplyGamma=false, bool fSaveOverlayOnly=false);
-		BOOL Copy(C4Surface &fromSfc);
-		BOOL ReadPNG(CStdStream &hGroup);
-		bool ReadJPEG(CStdStream &hGroup);
-	};
+	BOOL LoadAny(C4Group &hGroup, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
+	BOOL LoadAny(C4GroupSet &hGroupset, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
+	BOOL Load(C4Group &hGroup, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
+	BOOL SavePNG(C4Group &hGroup, const char *szFilename, bool fSaveAlpha = true, bool fApplyGamma = false, bool fSaveOverlayOnly = false);
+	BOOL Copy(C4Surface &fromSfc);
+	BOOL ReadPNG(CStdStream &hGroup);
+	bool ReadJPEG(CStdStream &hGroup);
+};
 
 #endif

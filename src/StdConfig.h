@@ -5,6 +5,6 @@
 #ifndef STDCONFIG_H
 #define STDCONFIG_H
 
-const int CFG_MaxString	= 1024;
+const int CFG_MaxString = 1024;
 
 #endif // STDCONFIG_H

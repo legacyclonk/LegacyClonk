@@ -12,41 +12,39 @@
 
 /* CStdGtkWindow */
 
-CStdGtkWindow::CStdGtkWindow():
-	CStdWindow(), window(NULL)
-{
-}
+CStdGtkWindow::CStdGtkWindow() :
+	CStdWindow(), window(NULL) {}
 
 CStdGtkWindow::~CStdGtkWindow()
 {
 	Clear();
 }
 
-CStdWindow* CStdGtkWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * pParent, bool HideCursor)
+CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool HideCursor)
 {
 	Active = true;
 	dpy = pApp->dpy;
 
-	if(!FindInfo()) return 0;
+	if (!FindInfo()) return 0;
 
-   assert(!window);
+	assert(!window);
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
 	// Override gtk's default to match name/class of the XLib windows
-   gtk_window_set_wmclass(GTK_WINDOW(window), STD_PRODUCT, STD_PRODUCT);
+	gtk_window_set_wmclass(GTK_WINDOW(window), STD_PRODUCT, STD_PRODUCT);
 
 	handlerDestroy = g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(OnDestroyStatic), this);
-	g_signal_connect(G_OBJECT(window), "key-press-event", G_CALLBACK(OnUpdateKeyMask), pApp);
+	g_signal_connect(G_OBJECT(window), "key-press-event",   G_CALLBACK(OnUpdateKeyMask), pApp);
 	g_signal_connect(G_OBJECT(window), "key-release-event", G_CALLBACK(OnUpdateKeyMask), pApp);
 
-	GtkWidget* render_widget = InitGUI();
+	GtkWidget *render_widget = InitGUI();
 
-	gtk_widget_set_colormap(render_widget, gdk_colormap_new(gdkx_visual_get(((XVisualInfo*)Info)->visualid), TRUE));
+	gtk_widget_set_colormap(render_widget, gdk_colormap_new(gdkx_visual_get(((XVisualInfo *)Info)->visualid), TRUE));
 
 	gtk_widget_show_all(window);
 
-	GdkPixbuf* icon = gdk_pixbuf_new_from_xpm_data(c4x_xpm);
+	GdkPixbuf *icon = gdk_pixbuf_new_from_xpm_data(c4x_xpm);
 	gtk_window_set_icon(GTK_WINDOW(window), icon);
 	gdk_pixbuf_unref(icon);
 
@@ -57,18 +55,18 @@ CStdWindow* CStdGtkWindow::Init(CStdApp * pApp, const char * Title, CStdWindow *
 	wnd = GDK_WINDOW_XWINDOW(window->window);
 	gdk_window_add_filter(window->window, OnFilter, this);
 
-	XWMHints * wm_hint = XGetWMHints(dpy, wnd);
-	if(!wm_hint) wm_hint = XAllocWMHints();
+	XWMHints *wm_hint = XGetWMHints(dpy, wnd);
+	if (!wm_hint) wm_hint = XAllocWMHints();
 	Hints = wm_hint;
 
-	if(GTK_IS_LAYOUT(render_widget))
+	if (GTK_IS_LAYOUT(render_widget))
 		renderwnd = GDK_WINDOW_XWINDOW(GTK_LAYOUT(render_widget)->bin_window);
 	else
 		renderwnd = GDK_WINDOW_XWINDOW(render_widget->window);
 
-	if(pParent) XSetTransientForHint(dpy, wnd, pParent->wnd);
+	if (pParent) XSetTransientForHint(dpy, wnd, pParent->wnd);
 
-	if(HideCursor)
+	if (HideCursor)
 	{
 		gdk_window_set_cursor(window->window, NULL);
 	}
@@ -82,7 +80,7 @@ CStdWindow* CStdGtkWindow::Init(CStdApp * pApp, const char * Title, CStdWindow *
 
 void CStdGtkWindow::Clear()
 {
-	if(window != NULL)
+	if (window != NULL)
 	{
 		g_signal_handler_disconnect(window, handlerDestroy);
 		gtk_widget_destroy(window);
@@ -96,16 +94,16 @@ void CStdGtkWindow::Clear()
 	Active = false;
 
 	// We must free it here since we do not call CStdWindow::Clear()
-	if(Info)
+	if (Info)
 	{
 		XFree(Info);
 		Info = 0;
 	}
 }
 
-void CStdGtkWindow::OnDestroyStatic(GtkWidget* widget, gpointer data)
+void CStdGtkWindow::OnDestroyStatic(GtkWidget *widget, gpointer data)
 {
-	CStdGtkWindow* wnd = static_cast<CStdGtkWindow*>(data);
+	CStdGtkWindow *wnd = static_cast<CStdGtkWindow *>(data);
 
 	g_signal_handler_disconnect(wnd->window, wnd->handlerDestroy);
 	wnd->handlerDestroy = 0;
@@ -116,33 +114,33 @@ void CStdGtkWindow::OnDestroyStatic(GtkWidget* widget, gpointer data)
 	wnd->Close();
 }
 
-GdkFilterReturn CStdGtkWindow::OnFilter(GdkXEvent* xevent, GdkEvent* event, gpointer user_data)
+GdkFilterReturn CStdGtkWindow::OnFilter(GdkXEvent *xevent, GdkEvent *event, gpointer user_data)
 {
 	// Handle raw X message, then let GTK+ process it
-	static_cast<CStdGtkWindow*>(user_data)->HandleMessage(*reinterpret_cast<XEvent*>(xevent));
+	static_cast<CStdGtkWindow *>(user_data)->HandleMessage(*reinterpret_cast<XEvent *>(xevent));
 	return GDK_FILTER_CONTINUE;
 }
 
-gboolean CStdGtkWindow::OnUpdateKeyMask(GtkWidget* widget, GdkEventKey* event, gpointer user_data)
+gboolean CStdGtkWindow::OnUpdateKeyMask(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
 	// Update mask so that Application.IsShiftDown,
 	// Application.IsControlDown etc. work.
 	unsigned int mask = 0;
-	if(event->state & GDK_SHIFT_MASK) mask |= MK_SHIFT;
-	if(event->state & GDK_CONTROL_MASK) mask |= MK_CONTROL;
-	if(event->state & GDK_MOD1_MASK) mask |= (1 << 3);
+	if (event->state & GDK_SHIFT_MASK)   mask |= MK_SHIFT;
+	if (event->state & GDK_CONTROL_MASK) mask |= MK_CONTROL;
+	if (event->state & GDK_MOD1_MASK)    mask |= (1 << 3);
 
 	// For keypress/relases, event->state contains the state _before_
 	// the event, but we need to store the current state.
-	if(event->keyval == GDK_Shift_L || event->keyval == GDK_Shift_R) mask ^= MK_SHIFT;
-	if(event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) mask ^= MK_CONTROL;
-	if(event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_R) mask ^= (1 << 3);
+	if (event->keyval == GDK_Shift_L   || event->keyval == GDK_Shift_R)   mask ^= MK_SHIFT;
+	if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) mask ^= MK_CONTROL;
+	if (event->keyval == GDK_Alt_L     || event->keyval == GDK_Alt_R)     mask ^= (1 << 3);
 
-	static_cast<CStdApp*>(user_data)->KeyMask = mask;
+	static_cast<CStdApp *>(user_data)->KeyMask = mask;
 	return FALSE;
 }
 
-GtkWidget* CStdGtkWindow::InitGUI()
+GtkWidget *CStdGtkWindow::InitGUI()
 {
 	return window;
 }

@@ -1,11 +1,10 @@
 /* Copyright (C) 1998-2000  Matthes Bender  RedWolf Design */
 
-/* 
-	 Language module 
-	 - handles external language packs
-	 - provides info on selectable languages by scanning string tables
-	 - loads and sets a language string table (ResStrTable) based on a specified language sequence
-
+/*
+	Language module
+	- handles external language packs
+	- provides info on selectable languages by scanning string tables
+	- loads and sets a language string table (ResStrTable) based on a specified language sequence
 */
 
 #include <C4Include.h>
@@ -24,7 +23,7 @@
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
-#include <errno.h>  
+#include <errno.h>
 iconv_t C4Language::host_to_local = iconv_t(-1);
 iconv_t C4Language::local_to_utf_8 = iconv_t(-1);
 iconv_t C4Language::local_to_host = iconv_t(-1);
@@ -59,7 +58,7 @@ bool C4Language::Init()
 	if (PackDirectory.Open(C4CFN_Languages))
 		while (PackDirectory.FindNextEntry("*.c4g", strEntry))
 		{
-			sprintf(strPackFilename, "%s" DirSep "%s", C4CFN_Languages, strEntry); 
+			sprintf(strPackFilename, "%s" DirSep "%s", C4CFN_Languages, strEntry);
 			pPack = new C4Group();
 			if (pPack->Open(strPackFilename))
 			{
@@ -92,7 +91,7 @@ void C4Language::Clear()
 	// Close pack directory
 	PackDirectory.Close();
 	// Clear infos
-	C4LanguageInfo* pNext;
+	C4LanguageInfo *pNext;
 	while (Infos)
 	{
 		pNext = Infos->Next;
@@ -118,22 +117,24 @@ void C4Language::Clear()
 		iconv_close(local_to_utf_8);
 		local_to_utf_8 = iconv_t(-1);
 	}
-	
+
 #endif
 }
 
 #ifdef HAVE_ICONV
-StdStrBuf C4Language::Iconv(const char * string, iconv_t cd)
+
+StdStrBuf C4Language::Iconv(const char *string, iconv_t cd)
 {
-	if (cd == iconv_t(-1)) {
+	if (cd == iconv_t(-1))
+	{
 		return StdStrBuf(string, true);
 	}
 	StdStrBuf r;
 	size_t inlen = strlen(string);
 	size_t outlen = strlen(string);
 	r.SetLength(inlen);
-	const char * inbuf = string;
-	char * outbuf = r.getMData();
+	const char *inbuf = string;
+	char *outbuf = r.getMData();
 	while (inlen > 0)
 	{
 		// Hope that iconv does not change the inbuf...
@@ -141,23 +142,23 @@ StdStrBuf C4Language::Iconv(const char * string, iconv_t cd)
 		{
 			switch (errno)
 			{
-				// There is not sufficient room at *outbuf. 
-				case E2BIG:
-				{
-					size_t done = outbuf - r.getMData();
-					r.Grow(inlen * 2);
-					outbuf = r.getMData() + done;
-					outlen += inlen * 2;
-					break;
-				}
-				// An invalid multibyte sequence has been encountered in the input. 
-				case EILSEQ:
+			// There is not sufficient room at *outbuf.
+			case E2BIG:
+			{
+				size_t done = outbuf - r.getMData();
+				r.Grow(inlen * 2);
+				outbuf = r.getMData() + done;
+				outlen += inlen * 2;
+				break;
+			}
+			// An invalid multibyte sequence has been encountered in the input.
+			case EILSEQ:
 				++inbuf;
 				--inlen;
 				break;
-				// An incomplete multibyte sequence has been encountered in the input. 
-				case EINVAL:
-				default:
+			// An incomplete multibyte sequence has been encountered in the input.
+			case EINVAL:
+			default:
 				if (outlen) r.Shrink(outlen);
 				return r;
 			}
@@ -167,29 +168,36 @@ StdStrBuf C4Language::Iconv(const char * string, iconv_t cd)
 	// StdStrBuf has taken care of the terminating zero
 	return r;
 }
-StdStrBuf C4Language::IconvSystem(const char * string)
+
+StdStrBuf C4Language::IconvSystem(const char *string)
 {
 	return Iconv(string, local_to_host);
 }
-StdStrBuf C4Language::IconvClonk(const char * string)
+
+StdStrBuf C4Language::IconvClonk(const char *string)
 {
 	return Iconv(string, host_to_local);
 }
-StdStrBuf C4Language::IconvUtf8(const char * string)
+
+StdStrBuf C4Language::IconvUtf8(const char *string)
 {
 	return Iconv(string, local_to_utf_8);
 }
+
 #else
-StdStrBuf C4Language::IconvSystem(const char * string)
+
+StdStrBuf C4Language::IconvSystem(const char *string)
 {
 	// Just copy through
 	return StdStrBuf(string, true);
 }
-StdStrBuf C4Language::IconvClonk(const char * string)
+
+StdStrBuf C4Language::IconvClonk(const char *string)
 {
 	// Just copy through
 	return StdStrBuf(string, true);
 }
+
 #endif
 
 int C4Language::GetInfoCount()
@@ -202,7 +210,7 @@ int C4Language::GetInfoCount()
 
 // Returns a set of groups at the specified relative path within all open language packs.
 
-C4GroupSet& C4Language::GetPackGroups(const char *strRelativePath)
+C4GroupSet &C4Language::GetPackGroups(const char *strRelativePath)
 {
 	// Variables
 	char strTargetLocation[_MAX_PATH + 1];
@@ -216,23 +224,23 @@ C4GroupSet& C4Language::GetPackGroups(const char *strRelativePath)
 #ifdef C4ENGINE
 	// Adjust location by scenario origin
 	if (Game.C4S.Head.Origin.getLength() && SEqualNoCase(GetExtension(Game.C4S.Head.Origin.getData()), "c4s"))
-		{
+	{
 		const char *szScenarioRelativePath = GetRelativePathS(strRelativePath, Config.AtExeRelativePath(Game.ScenarioFilename));
 		if (szScenarioRelativePath != strRelativePath)
-			{
+		{
 			// this is a path within the scenario! Change to origin.
 			size_t iRestPathLen = SLen(szScenarioRelativePath);
 			if (Game.C4S.Head.Origin.getLength() + 1 + iRestPathLen <= _MAX_PATH)
-				{
+			{
 				SCopy(Game.C4S.Head.Origin.getData(), strTargetLocation);
 				if (iRestPathLen)
-					{
+				{
 					SAppendChar(DirectorySeparator, strTargetLocation);
 					SAppend(szScenarioRelativePath, strTargetLocation);
-					}
 				}
 			}
 		}
+	}
 #endif
 
 	// Target location has not changed: return last list of pack groups
@@ -252,9 +260,9 @@ C4GroupSet& C4Language::GetPackGroups(const char *strRelativePath)
 			continue;
 
 		// Try to backtrack until we can reach the target location as a relative child
-		while ( strPackGroupLocation[0] 
-				 && !GetRelativePath(strTargetLocation, strPackGroupLocation, strAdvance)
-				 && pPackGroup->OpenMother() )
+		while (strPackGroupLocation[0]
+			&& !GetRelativePath(strTargetLocation, strPackGroupLocation, strAdvance)
+			&& pPackGroup->OpenMother())
 		{
 			// Update pack group location
 			GetRelativePath(pPackGroup->GetFullName().getData(), strPackPath, strPackGroupLocation);
@@ -275,7 +283,6 @@ C4GroupSet& C4Language::GetPackGroups(const char *strRelativePath)
 			// Reopen pack group to relative position in language pack if possible
 			pPackGroup->OpenAsChild(pPack, strTargetLocation);
 		}
-
 	}
 
 	// Store new target location
@@ -302,7 +309,7 @@ void C4Language::InitInfos()
 		{
 			LoadInfos(hGroup);
 			hGroup.Close();
-		}	
+		}
 }
 
 void C4Language::LoadInfos(C4Group &hGroup)
@@ -312,8 +319,8 @@ void C4Language::LoadInfos(C4Group &hGroup)
 	// Look for language string tables
 	hGroup.ResetSearch();
 	while (hGroup.FindNextEntry(C4CFN_Language, strEntry))
-		// For now, we will only load info on the first string table found for a given 
-		// language code as there is currently no handling for selecting different string tables 
+		// For now, we will only load info on the first string table found for a given
+		// language code as there is currently no handling for selecting different string tables
 		// of the same code - the system always loads the first string table found for a given code
 		if (!FindInfo(GetFilenameOnly(strEntry) + SLen(GetFilenameOnly(strEntry)) - 2))
 			// Load language string table
@@ -325,23 +332,23 @@ void C4Language::LoadInfos(C4Group &hGroup)
 				SCopy(GetFilenameOnly(strEntry) + SLen(GetFilenameOnly(strEntry)) - 2, pInfo->Code, 2);
 				SCapitalize(pInfo->Code);
 				// Get language name, info, fallback from table
-				SCopy(GetResStr("IDS_LANG_NAME", (char*)strTable), pInfo->Name, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_INFO", (char*)strTable), pInfo->Info, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_FALLBACK", (char*)strTable), pInfo->Fallback, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_CHARSET", (char*)strTable), pInfo->Charset, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_NAME", (char *)strTable), pInfo->Name, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_INFO", (char *)strTable), pInfo->Info, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_FALLBACK", (char *)strTable), pInfo->Fallback, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_CHARSET", (char *)strTable), pInfo->Charset, C4MaxLanguageInfo);
 				// Safety: pipe character is not allowed in any language info string
 				SReplaceChar(pInfo->Name, '|', ' ');
 				SReplaceChar(pInfo->Info, '|', ' ');
 				SReplaceChar(pInfo->Fallback, '|', ' ');
 				// Delete table
-				delete [] strTable;
+				delete[] strTable;
 				// Add info to list
 				pInfo->Next = Infos;
 				Infos = pInfo;
 			}
 }
 
-C4LanguageInfo* C4Language::GetInfo(int iIndex)
+C4LanguageInfo *C4Language::GetInfo(int iIndex)
 {
 	for (C4LanguageInfo *pInfo = Infos; pInfo; pInfo = pInfo->Next)
 		if (iIndex <= 0)
@@ -351,7 +358,7 @@ C4LanguageInfo* C4Language::GetInfo(int iIndex)
 	return NULL;
 }
 
-C4LanguageInfo* C4Language::FindInfo(const char *strCode)
+C4LanguageInfo *C4Language::FindInfo(const char *strCode)
 {
 	for (C4LanguageInfo *pInfo = Infos; pInfo; pInfo = pInfo->Next)
 		if (SEqualNoCase(pInfo->Code, strCode, 2))
@@ -383,7 +390,9 @@ bool C4Language::InitStringTable(const char *strCode)
 	if (hGroup.Open(C4CFN_System))
 	{
 		if (LoadStringTable(hGroup, strCode))
-			{ hGroup.Close(); return true; }
+		{
+			hGroup.Close(); return true;
+		}
 		hGroup.Close();
 	}
 	// Now look through the registered packs
@@ -393,9 +402,11 @@ bool C4Language::InitStringTable(const char *strCode)
 		if (hGroup.OpenAsChild(pPack, C4CFN_System))
 		{
 			if (LoadStringTable(hGroup, strCode))
-				{ hGroup.Close(); return true; }
+			{
+				hGroup.Close(); return true;
+			}
 			hGroup.Close();
-		}	
+		}
 	// No matching string table found
 	return false;
 }
@@ -407,8 +418,10 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 	sprintf(strEntry, "Language%s.txt", strCode); // ...should use C4CFN_Language here
 	// Load string table
 	char *strTable;
-	if (!hGroup.LoadEntry(strEntry, &strTable, 0, true)) 
-		{ hGroup.Close(); return false; }
+	if (!hGroup.LoadEntry(strEntry, &strTable, 0, true))
+	{
+		hGroup.Close(); return false;
+	}
 	// Set string table
 	SetResStrTable(strTable);
 	// Close group
@@ -419,22 +432,22 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 #endif
 #ifdef HAVE_ICONV
 #ifdef HAVE_LANGINFO_H
-	const char * const to_set = nl_langinfo(CODESET);
+	const char *const to_set = nl_langinfo(CODESET);
 	if (local_to_host == iconv_t(-1))
-		local_to_host = iconv_open (to_set ? to_set : "ASCII",
+		local_to_host = iconv_open(to_set ? to_set : "ASCII",
 			GetCharsetCodeName(Config.General.LanguageCharset));
 	if (host_to_local == iconv_t(-1))
-		host_to_local = iconv_open (GetCharsetCodeName(Config.General.LanguageCharset),
+		host_to_local = iconv_open(GetCharsetCodeName(Config.General.LanguageCharset),
 			to_set ? to_set : "ASCII");
 #else
-	const char * const to_set = "";
+	const char *const to_set = "";
 #endif
 	if (local_to_utf_8 == iconv_t(-1))
 	{
 		if (SEqual(to_set, "UTF-8"))
 			local_to_utf_8 = local_to_host;
 		else
-			local_to_utf_8 = iconv_open ("UTF-8",
+			local_to_utf_8 = iconv_open("UTF-8",
 				GetCharsetCodeName(Config.General.LanguageCharset));
 	}
 #endif
