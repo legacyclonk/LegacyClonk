@@ -210,7 +210,7 @@ bool CSurface::CreateTextures()
 #ifdef USE_DIRECTX
 	if (pD3D)
 		{
-		D3DCAPS8 d3dCaps;
+		D3DCAPS9 d3dCaps;
 		pD3D->lpDevice->GetDeviceCaps(&d3dCaps);
 		if (int(d3dCaps.MaxTextureWidth)<iMaxTexSize) iMaxTexSize = d3dCaps.MaxTextureWidth;
 		}
@@ -428,7 +428,7 @@ bool CSurface::SetAsClrByOwnerOf(CSurface *pOfSurface)
 #endif
 
 #ifdef USE_DIRECTX
-BOOL CSurface::AttachSfc(IDirect3DSurface8 *sfcSurface)
+BOOL CSurface::AttachSfc(IDirect3DSurface9 *sfcSurface)
 	{
 	Clear(); Default();
 	// store surface
@@ -473,7 +473,7 @@ BOOL CSurface::AttachSfc(void *sfcSurface)
 #endif
 
 #ifdef USE_DIRECTX
-IDirect3DSurface8 *CSurface::GetSurface()
+IDirect3DSurface9 *CSurface::GetSurface()
 	{
 	// direct surface?
 	if (pSfc)
@@ -484,8 +484,8 @@ IDirect3DSurface8 *CSurface::GetSurface()
 	// surface by texture?
 	if (fIsRenderTarget && ppTex)
 		{
-		IDirect3DTexture8 *pTex = (*ppTex)->pTex;
-		IDirect3DSurface8 *pSfcResult=NULL;
+		IDirect3DTexture9 *pTex = (*ppTex)->pTex;
+		IDirect3DSurface9 *pSfcResult=NULL;
 		if (pTex) pTex->GetSurfaceLevel(0, &pSfcResult);
 		return pSfcResult;
 		}
@@ -1270,7 +1270,7 @@ CTexRef::CTexRef(int iSize, bool fSingle)
 		{
 		// Direct3D
 		bool fRenderTarget = fSingle && !DDrawCfg.NoOffscreenBlits;
-		if (pD3D->lpDevice->CreateTexture(iSize, iSize, 1, fRenderTarget ? D3DUSAGE_RENDERTARGET : 0, pD3D->dwSurfaceType, fRenderTarget ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED, &pTex) != D3D_OK)
+		if (pD3D->lpDevice->CreateTexture(iSize, iSize, 1, fRenderTarget ? D3DUSAGE_RENDERTARGET : 0, pD3D->dwSurfaceType, fRenderTarget ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED, &pTex, NULL) != D3D_OK)
 			{
 			lpDDraw->Error("Error creating surface");
 			return;

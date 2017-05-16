@@ -12,8 +12,7 @@
 #endif // _MSC_VER
 #endif // _DEBUG
 
-#include <d3d8.h>
-#include <d3dx8tex.h>
+#include <d3d9.h>
 #include <StdDDraw2.h>
 
 // debug memmgmt on
@@ -22,11 +21,6 @@
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif // _MSC_VER
 #endif // _DEBUG
-
-// check version
-#if (DIRECT3D_VERSION > 0x0800)
-#error "Using DirectX > 8.0 headers! Program won't run on computers using DX 8.0!"
-#endif
 
 // default Clonk vertex format
 struct C4VERTEX
@@ -65,19 +59,18 @@ class CStdD3D : public CStdDDraw
     CStdD3D(bool fSoftware);
     ~CStdD3D();
   protected:
-    IDirect3D8          *lpD3D;
-    IDirect3DDevice8    *lpDevice;
-    IDirect3DVertexBuffer8 *pVB;      // prepared vertex buffer for blitting
-    IDirect3DVertexBuffer8 *pVBClr;   // prepared vertex buffer for drawing in solid color
-    IDirect3DVertexBuffer8 *pVBClrTex;// prepared vertex buffer for blitting iwth color/tex-modulation
+    IDirect3D9          *lpD3D;
+    IDirect3DDevice9    *lpDevice;
+    IDirect3DVertexBuffer9 *pVB;      // prepared vertex buffer for blitting
+    IDirect3DVertexBuffer9 *pVBClr;   // prepared vertex buffer for drawing in solid color
+    IDirect3DVertexBuffer9 *pVBClrTex;// prepared vertex buffer for blitting iwth color/tex-modulation
     C4VERTEX bltVertices[8];          // prepared vertex data; need to insert x/y and u/v
     C4CLRVERTEX clrVertices[8];       // prepared vertex data; need to insert x/y and color
     C4CTVERTEX bltClrVertices[8];     // prepared vertex data; need to insert x/y, color and u/v
-    DWORD bltState[3];                // saved state block for blitting (0: copy; 1: blit; 2: blit additive)
-    DWORD bltBaseState[4];            // saved state block for blitting with a base face (0: normal; 1: additive; 2: mod2; 3: mod2+additive)
-    DWORD drawSolidState[2];          // saved state block for drawing in solid color (0: normal; 1: additive)
-    DWORD dwSavedState;               // state block to backup current state
-    D3DVIEWPORT8        WindowClipper;
+    IDirect3DStateBlock9 *bltState[3];       // saved state block for blitting (0: copy; 1: blit; 2: blit additive)
+    IDirect3DStateBlock9 *bltBaseState[4];   // saved state block for blitting with a base face (0: normal; 1: additive; 2: mod2; 3: mod2+additive)
+    IDirect3DStateBlock9 *drawSolidState[2]; // saved state block for drawing in solid color (0: normal; 1: additive)
+    IDirect3DStateBlock9 *savedState;        // state block to backup current state
     D3DDISPLAYMODE      dspMode;
     D3DPRESENT_PARAMETERS d3dpp;      // device present parameters
     D3DFORMAT           dwSurfaceType;// surface format for new textures
@@ -128,7 +121,7 @@ class CStdD3D : public CStdDDraw
     bool RestoreStateBlock();
     bool DeviceReady() { return !!lpDevice; }
 
-    DWORD CreateStateBlock(bool fTransparent, bool fSolid, bool fBaseTex, bool fAdditive, bool fMod2); // capture state blocks for blitting
+    IDirect3DStateBlock9 *CreateStateBlock(bool fTransparent, bool fSolid, bool fBaseTex, bool fAdditive, bool fMod2); // capture state blocks for blitting
 
   protected:
     BOOL FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iColorDepth, unsigned int iMonitor);
