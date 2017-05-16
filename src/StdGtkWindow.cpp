@@ -19,7 +19,7 @@
 
 #include <StdGtkWindow.h>
 
-#include "../../engine/res/cr.xpm"
+#include "res/cr.xpm"
 #include <X11/Xlib.h>
 #include <gdk/gdkx.h>
 #include <gdk/gdkkeysyms.h>

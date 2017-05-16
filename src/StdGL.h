@@ -20,7 +20,7 @@
 #if !defined(INC_StdGL) && defined(USE_GL)
 #define INC_StdGL
 
-#include "../gl/glew.h"
+#include <GL/glew.h>
 
 #ifdef USE_X11
 //  Xmd.h typedefs BOOL to CARD8, but we want int

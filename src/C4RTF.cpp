@@ -18,7 +18,7 @@
 // RTF file parsing functionality
 
 #include "C4Include.h"
-#include "C4RTF.H"
+#include "C4RTF.h"
 
 extern C4RTFFile::KeywordTableEntry RTFKeywordTable[];
 
