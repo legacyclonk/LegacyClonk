@@ -1,8 +1,8 @@
 //Microsoft Developer Studio generated resource script.
 //
-#include "resource.h"
+#include "engine_resource.h"
 
-#include "../inc/C4Version.h"
+#include "../C4Version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ IDI_13_C4U              ICON    DISCARDABLE     "c4u.ico"
 
 1 TEXTINCLUDE DISCARDABLE 
 BEGIN
-    "resource.h\0"
+    "engine_resource.h\0"
 END
 
 2 TEXTINCLUDE DISCARDABLE 

@@ -12,7 +12,7 @@
 #endif
 
 #ifdef USE_GL
-#include "../gl/glew.h"
+#include <GL/glew.h>
 #endif
 
 #include <list>

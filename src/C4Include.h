@@ -57,7 +57,7 @@
 
 #ifdef _WIN32
 // resources
-#include "../res/resource.h"
+#include "res/engine_resource.h"
 #define POINTER_64 __ptr64
 #endif // _WIN32
 
@@ -196,7 +196,7 @@
 #include "C4Record.h"
 #include "C4Region.h"
 #include "C4RoundResults.h"
-#include "C4RTF.H"
+#include "C4RTF.h"
 #include "C4Scenario.h"
 #include "C4Scoreboard.h"
 #include "C4Script.h"

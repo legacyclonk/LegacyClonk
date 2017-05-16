@@ -10,7 +10,7 @@
 #include "C4GameOptions.h"
 #include "C4GameDialogs.h"
 #include "C4Wrappers.h"
-#include "C4RTF.H"
+#include "C4RTF.h"
 #include "C4ChatDlg.h"
 #include "C4PlayerInfoListBox.h"
 #endif

@@ -8,7 +8,7 @@
 #include <C4Group.h>
 
 #ifdef C4SOUND_USE_FMOD
-#include "../fmod/fmod.h"
+#include <fmod.h>
 #endif
 #ifdef HAVE_LIBSDL_MIXER
 #define USE_RWOPS
