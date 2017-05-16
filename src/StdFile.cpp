@@ -851,7 +851,7 @@ DirectoryIterator::~DirectoryIterator()
 
 #endif
 
-const char *DirectoryIterator::operator*() const { return filename[0] ? filename : false; }
+const char *DirectoryIterator::operator*() const { return filename[0] ? filename : nullptr; }
 void DirectoryIterator::operator++(int) { operator++(); }
 
 int ForEachFile(const char *szDirName, bool(*fnCallback)(const char *))

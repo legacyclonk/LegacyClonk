@@ -528,10 +528,10 @@ C4SoundEffect *C4SoundSystem::GetEffect(const char *szSndName)
 C4SoundInstance *C4SoundSystem::NewEffect(const char *szSndName, bool fLoop, int32_t iVolume, C4Object *pObj, int32_t iCustomFalloffDistance)
 {
 	// Sound not active
-	if (!Config.Sound.RXSound) return false;
+	if (!Config.Sound.RXSound) return nullptr;
 	// Get sound
 	C4SoundEffect *csfx;
-	if (!(csfx = GetEffect(szSndName))) return false;
+	if (!(csfx = GetEffect(szSndName))) return nullptr;
 	// Play
 	return csfx->New(fLoop, iVolume, pObj, iCustomFalloffDistance);
 }

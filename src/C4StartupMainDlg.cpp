@@ -91,7 +91,7 @@ C4StartupMainDlg::C4StartupMainDlg() : C4StartupDlg(nullptr) // create w/o title
 		new C4GUI::DlgKeyCB<C4StartupMainDlg>(*this, &C4StartupMainDlg::KeyEnterDown, &C4StartupMainDlg::KeyEnterUp), C4CustomKey::PRIO_CtrlOverride);
 	keys.clear(); keys.push_back(C4KeyCodeEx(K_F6));
 	pKeyEditor = new C4KeyBinding(keys, "StartupMainEditor", KEYSCOPE_Gui,
-		new C4GUI::DlgKeyCB<C4StartupMainDlg>(*this, &C4StartupMainDlg::SwitchToEditor, false), C4CustomKey::PRIO_CtrlOverride);
+		new C4GUI::DlgKeyCB<C4StartupMainDlg>(*this, &C4StartupMainDlg::SwitchToEditor), C4CustomKey::PRIO_CtrlOverride);
 }
 
 C4StartupMainDlg::~C4StartupMainDlg()

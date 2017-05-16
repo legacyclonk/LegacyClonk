@@ -949,7 +949,7 @@ Dialog *Screen::GetFullscreenDialog(bool fIncludeFading)
 				if (pDlg->IsFullscreenDialog())
 					if (fIncludeFading || !pDlg->IsFading())
 						return pDlg;
-	return false;
+	return nullptr;
 }
 
 void Screen::UpdateGamepadGUIControlEnabled()
