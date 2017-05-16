@@ -228,7 +228,7 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 	// adjust line height to max character height
 	if (!fUnicode) iLineHgt = Max<int>(iLineHgt, size.cy + 1);
 	// print character on empty surface
-	ZeroMemory(pBitmapBits, iBitmapSize * iBitmapSize * 4);
+	std::fill_n(pBitmapBits, iBitmapSize * iBitmapSize, 0);
 	if (fUnicode)
 		ExtTextOutW(hDC, 0, 0, ETO_OPAQUE, nullptr, wstr, 1, nullptr);
 	else
@@ -421,7 +421,7 @@ void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFo
 
 	// prepare to create an offscreen bitmap to render into
 	iBitmapSize = DWordAligned(dwDefFontHeight * iFontZoom * 5);
-	BITMAPINFO bmi; ZeroMemory(&bmi.bmiHeader, sizeof(BITMAPINFOHEADER));
+	BITMAPINFO bmi; bmi.bmiHeader = {};
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	bmi.bmiHeader.biWidth = iBitmapSize;
 	bmi.bmiHeader.biHeight = -iBitmapSize;

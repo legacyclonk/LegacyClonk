@@ -820,7 +820,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 			return nullptr;
 		}
 		// connect address unknown, so zero it
-		ZeroMem(&caddr, sizeof(caddr));
+		std::memset(&caddr, 0, sizeof(caddr));
 	}
 	else
 	{
@@ -1302,7 +1302,7 @@ bool C4NetIOSimpleUDP::Init(uint16_t inPort)
 	naddr.sin_family = AF_INET;
 	naddr.sin_port = (iPort == P_NONE ? 0 : htons(iPort));
 	naddr.sin_addr.s_addr = INADDR_ANY;
-	ZeroMemory(naddr.sin_zero, sizeof(naddr.sin_zero));
+	std::memset(&naddr.sin_zero, 0, sizeof(naddr.sin_zero));
 	if (::bind(sock, reinterpret_cast<sockaddr *>(&naddr), sizeof(naddr)) == SOCKET_ERROR)
 	{
 		SetError("could not bind socket", true);
@@ -1827,7 +1827,7 @@ bool C4NetIOUDP::InitBroadcast(addr_t *pBroadcastAddr)
 		// set up adress
 		MCAddr.sin_family = AF_INET;
 		MCAddr.sin_port = htons(iPort);
-		ZeroMemory(&MCAddr.sin_zero, sizeof(MCAddr.sin_zero));
+		std::memset(&MCAddr.sin_zero, 0, sizeof(MCAddr.sin_zero));
 		// search for a free one
 		for (int iRetries = 1000; iRetries; iRetries--)
 		{
@@ -2445,8 +2445,8 @@ C4NetIOUDP::Peer::Peer(const sockaddr_in &naddr, C4NetIOUDP *pnParent)
 	iNextReCheck(0),
 	iIRate(0), iORate(0), iLoss(0)
 {
-	ZeroMem(&addr2, sizeof(addr2));
-	ZeroMem(&PeerAddr, sizeof(PeerAddr));
+	std::memset(&addr2, 0, sizeof(addr2));
+	std::memset(&PeerAddr, 0, sizeof(PeerAddr));
 }
 
 C4NetIOUDP::Peer::~Peer()
@@ -3246,7 +3246,7 @@ bool ResolveAddress(const char *szAddress, C4NetIO::addr_t *paddr, uint16_t iPor
 		szAddress = Buf.getData();
 	}
 	// set up address
-	sockaddr_in raddr; ZeroMem(&raddr, sizeof(raddr));
+	sockaddr_in raddr; std::memset(&raddr, 0, sizeof(raddr));
 	raddr.sin_family = AF_INET;
 	raddr.sin_port = htons(iPort);
 	// no plain IP address?

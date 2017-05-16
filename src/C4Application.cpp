@@ -61,9 +61,9 @@ C4Application::~C4Application()
 	{
 #ifdef _WIN32
 		char strCommandLine[_MAX_PATH + 1]; SCopy(Config.AtExePath(C4CFN_Editor), strCommandLine);
-		STARTUPINFO StartupInfo; ZeroMemory(&StartupInfo, sizeof(StartupInfo));
+		STARTUPINFO StartupInfo{};
 		StartupInfo.cb = sizeof(StartupInfo);
-		PROCESS_INFORMATION ProcessInfo; ZeroMemory(&ProcessInfo, sizeof(ProcessInfo));
+		PROCESS_INFORMATION ProcessInfo{};
 		CreateProcess(nullptr, strCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, &StartupInfo, &ProcessInfo);
 #endif
 	}

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <cstring>
+
 class C4NameList
 {
 public:
@@ -33,7 +35,7 @@ public:
 public:
 	bool operator==(const C4NameList &rhs)
 	{
-		return MemEqual((const uint8_t *)this, (const uint8_t *)&rhs, sizeof(C4NameList));
+		return std::memcmp(this, &rhs, sizeof(C4NameList)) == 0;
 	}
 
 	void CompileFunc(StdCompiler *pComp, bool fValues = true);

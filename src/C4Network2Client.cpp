@@ -38,7 +38,7 @@ void C4Network2Address::CompileFunc(StdCompiler *pComp)
 	// Clear
 	if (pComp->isCompiler())
 	{
-		ZeroMem(&addr, sizeof(addr));
+		std::memset(&addr, 0, sizeof(addr));
 		addr.sin_family = AF_INET;
 	}
 
@@ -224,7 +224,7 @@ bool C4Network2Client::AddAddr(const C4Network2Address &addr, bool fAnnounce)
 void C4Network2Client::AddLocalAddrs(int16_t iPortTCP, int16_t iPortUDP)
 {
 	// set up address struct
-	sockaddr_in addr; ZeroMem(&addr, sizeof(addr));
+	sockaddr_in addr; std::memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 
 	// get local address(es)

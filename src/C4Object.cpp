@@ -4034,7 +4034,7 @@ bool C4Object::SetAction(int32_t iAct, C4Object *pTarget, C4Object *pTarget2, in
 
 	// Set new action
 	Action.Act = iAct;
-	ZeroMem(Action.Name, C4D_MaxIDLen + 1);
+	std::fill(Action.Name, std::end(Action.Name), '\0');
 	if (Action.Act > ActIdle) SCopy(Def->ActMap[Action.Act].Name, Action.Name);
 	Action.Phase = Action.PhaseDelay = 0;
 

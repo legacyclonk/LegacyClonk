@@ -91,7 +91,6 @@ inline int stricmp(const char *s1, const char *s2)
 #define GetGValue(rgb) ((unsigned char)(((unsigned short)(rgb)) >> 8))
 #define GetBValue(rgb) ((unsigned char)((rgb) >> 16))
 #define RGB(r, g, b) ((uint32_t)((uint8_t)(r) | ((uint8_t)(g) << 8) | ((uint8_t)(b) << 16)))
-#define ZeroMemory(d, l) memset((d), 0, (l))
 #endif // _WIN32
 
 // These functions have to be provided by the application.
@@ -134,26 +133,6 @@ inline int32_t ForceLimits(int32_t &rVal, int32_t iLow, int32_t iHi)
 int32_t Distance(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2);
 int Angle(int iX1, int iY1, int iX2, int iY2);
 int Pow(int base, int exponent);
-
-inline void FillMem(void *lpMem, size_t dwSize, char bValue)
-{
-	memset(lpMem, bValue, dwSize);
-}
-
-inline void ZeroMem(void *lpMem, size_t dwSize)
-{
-	FillMem(lpMem, dwSize, 0);
-}
-
-inline bool MemEqual(const void *lpMem1, const void *lpMem2, size_t dwSize)
-{
-	return !memcmp(lpMem1, lpMem2, dwSize);
-}
-
-inline void MemCopy(const void *lpMem1, void *lpMem2, size_t dwSize)
-{
-	memmove(lpMem2, lpMem1, dwSize);
-}
 
 bool ForLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2,
 	bool(*fnCallback)(int32_t, int32_t, int32_t), int32_t iPar = 0,

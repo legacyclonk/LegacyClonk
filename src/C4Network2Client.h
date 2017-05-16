@@ -46,7 +46,7 @@ public:
 	C4Network2Address()
 		: eProtocol(P_NONE)
 	{
-		ZeroMem(&addr, sizeof(addr));
+		std::memset(&addr, 0, sizeof(addr));
 	}
 
 	C4Network2Address(C4NetIO::addr_t addr, C4Network2IOProtocol eProtocol)

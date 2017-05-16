@@ -83,8 +83,8 @@ void C4GamePadControl::CloseGamepad(int id)
 
 int C4GamePadControl::GetGamePadCount()
 {
-	JOYINFOEX joy;
-	ZeroMem(&joy, sizeof(JOYINFOEX)); joy.dwSize = sizeof(JOYINFOEX); joy.dwFlags = JOY_RETURNALL;
+	JOYINFOEX joy{};
+	joy.dwSize = sizeof(JOYINFOEX); joy.dwFlags = JOY_RETURNALL;
 	int iCnt = 0;
 	while (iCnt < CStdGamepad_MaxGamePad && ::joyGetPosEx(iCnt, &joy) == JOYERR_NOERROR) ++iCnt;
 	return iCnt;

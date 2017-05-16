@@ -219,7 +219,7 @@ void C4FileMonitor::AddDirectory(const char *szDir)
 	pWatch->hDir = hDir;
 	pWatch->DirName = szDir;
 	// Build description of async operation
-	ZeroMem(&pWatch->ov, sizeof(pWatch->ov));
+	pWatch->ov = {};
 	pWatch->ov.hEvent = hEvent;
 	// Add to list
 	pWatch->Next = pWatches;

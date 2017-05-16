@@ -1065,8 +1065,7 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 	while (true)
 	{
 		// Initialize stream
-		z_stream strm;
-		ZeroMem(&strm, sizeof(strm));
+		z_stream strm{};
 		strm.next_in = getMBufPtr<uint8_t>(CompressedData);
 		strm.avail_in = CompressedData.getSize();
 		strm.next_out = getMBufPtr<uint8_t>(StreamData);

@@ -626,7 +626,7 @@ void C4ClientPlayerInfos::CompileFunc(StdCompiler *pComp)
 	if (fCompiler && iPlayerCount > iPlayerCapacity)
 	{
 		GrowList(iPlayerCount - iPlayerCapacity);
-		ZeroMem(ppPlayers, sizeof(*ppPlayers) * iPlayerCount);
+		std::fill_n(ppPlayers, iPlayerCount, nullptr);
 	}
 	// Compile
 	pComp->Value(mkNamingAdapt(mkArrayAdaptMap(ppPlayers, iPlayerCount, mkPtrAdaptNoNull<C4PlayerInfo>), "Player"));
@@ -1755,7 +1755,7 @@ void C4PlayerInfoList::CompileFunc(StdCompiler *pComp)
 	{
 		if (iTemp > iClientCapacity) GrowList(iTemp - iClientCapacity);
 		iClientCount = iTemp;
-		ZeroMem(ppClients, sizeof(*ppClients) * iClientCount);
+		std::fill_n(ppClients, iClientCount, nullptr);
 	}
 	// client packets
 	pComp->Value(

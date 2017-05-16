@@ -63,7 +63,7 @@ void C4AList::Grow()
 		CurrC = CurrC->Next;
 	}
 	// init new chunk
-	ZeroMemory(CurrC, sizeof(C4AListChunk));
+	std::memset(CurrC, 0, sizeof(C4AListChunk));
 	// reset current chunk pos
 	Curr = &CurrC->Entries[0];
 	CCount = 0;

@@ -375,8 +375,7 @@ void C4ValueMapNames::ChangeNameList(const char **pnNames, int32_t *pnExtra, int
 		if (pnExtra) pExtra[i] = pnExtra[i];
 	}
 
-	if (!pnExtra)
-		ZeroMem(pExtra, sizeof(*pExtra) * nSize);
+	if (!pnExtra) std::fill_n(pExtra, nSize, 0);
 
 	// set new size
 	iSize = nSize;

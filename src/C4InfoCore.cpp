@@ -69,13 +69,13 @@ const char *GetAName(const char *szNameFile)
 
 C4PlayerInfoCore::C4PlayerInfoCore()
 {
-	ZeroMem(this, sizeof(C4PlayerInfoCore));
+	std::memset(this, 0, sizeof(C4PlayerInfoCore));
 	Default();
 }
 
 void C4PlayerInfoCore::Default(C4RankSystem *pRanks)
 {
-	ZeroMem(this, sizeof(C4PlayerInfoCore));
+	std::memset(this, 0, sizeof(C4PlayerInfoCore));
 	Rank = 0;
 	SCopy("Neuling", PrefName);
 	if (pRanks) SCopy(pRanks->GetRankName(Rank, false).getData(), RankName);
@@ -240,7 +240,7 @@ C4PhysicalInfo::C4PhysicalInfo()
 
 void C4PhysicalInfo::Default()
 {
-	ZeroMem(this, sizeof(C4PhysicalInfo));
+	std::memset(this, 0, sizeof(C4PhysicalInfo));
 }
 
 bool C4PhysicalInfo::GetOffsetByName(const char *szPhysicalName, Offset *pmpiOut)
@@ -592,7 +592,7 @@ C4RoundResult::C4RoundResult()
 
 void C4RoundResult::Default()
 {
-	ZeroMem(this, sizeof(C4RoundResult));
+	std::memset(this, 0, sizeof(C4RoundResult));
 }
 
 void C4RoundResult::CompileFunc(StdCompiler *pComp)

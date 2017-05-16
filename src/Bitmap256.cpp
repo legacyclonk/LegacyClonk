@@ -19,6 +19,8 @@
 #include <Standard.h>
 #include <Bitmap256.h>
 
+#include <cstring>
+
 CBitmapInfo::CBitmapInfo()
 {
 	Default();
@@ -26,7 +28,7 @@ CBitmapInfo::CBitmapInfo()
 
 void CBitmapInfo::Default()
 {
-	ZeroMem(this, sizeof(CBitmapInfo));
+	std::memset(this, 0, sizeof(CBitmapInfo));
 }
 
 int CBitmapInfo::FileBitsOffset()
@@ -71,5 +73,5 @@ void CBitmap256Info::Set(int iWdt, int iHgt, uint8_t *bypPalette)
 
 void CBitmap256Info::Default()
 {
-	ZeroMem(this, sizeof(CBitmap256Info));
+	std::memset(this, 0, sizeof(CBitmap256Info));
 }

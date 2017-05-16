@@ -152,7 +152,7 @@ bool C4Video::Start(const char *szFilename)
 	Buffer = new uint8_t[BufferSize];
 	// Set bitmap info
 	BITMAPINFO *pInfo = (BITMAPINFO *)Buffer;
-	ZeroMem((uint8_t *)pInfo, sizeof(BITMAPINFOHEADER));
+	*reinterpret_cast<BITMAPINFOHEADER *>(pInfo) = {};
 	pInfo->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pInfo->bmiHeader.biPlanes = 1;
 	pInfo->bmiHeader.biWidth = Width;

@@ -4963,7 +4963,7 @@ static bool FnDrawModLandscape(C4AulContext *cctx, long iX, long iY, long iWdt, 
 		MatInfo[i].iClr2 = pObj->Local.GetItem(i * 3 + 2).getInt();
 	}
 	// go through it horizontally and vertically in two directions, building a distance-to-lower-mat-map
-	signed char *map = new signed char[iWdt * iHgt]; ZeroMemory(map, iWdt * iHgt);
+	signed char *map = new signed char[iWdt * iHgt]{};
 	signed char *pZ;
 	for (int d = 0; d <= 1; ++d) for (int i = 0; i <= 1; ++i)
 		for (int x1 = d ? (i ? iX2 - 1 : iY2 - 1) : (i ? iX : iY); d ? (x1 >= (i ? iX : iY)) : (x1 < (i ? iX2 : iY2)); d ? (--x1) : (++x1))

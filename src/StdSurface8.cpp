@@ -100,8 +100,7 @@ bool CSurface8::Create(int iWdt, int iHgt, bool fOwnPal)
 	else
 		pPal = &lpDDraw->Pal;
 
-	Bits = new uint8_t[Wdt * Hgt];
-	ZeroMemory(Bits, Wdt * Hgt);
+	Bits = new uint8_t[Wdt * Hgt]{};
 	Pitch = Wdt;
 	// update clipping
 	NoClip();

@@ -802,7 +802,7 @@ void C4GraphicsSystem::ApplyGamma()
 	// calc offset for curve points
 	for (int32_t iCurve = 0; iCurve < 3; ++iCurve)
 	{
-		ZeroMemory(ChanOff, sizeof(int32_t) * 3);
+		std::fill(ChanOff, std::end(ChanOff), 0);
 		// ...channels...
 		for (int32_t iChan = 0; iChan < 3; ++iChan)
 			// ...ramps...

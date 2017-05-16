@@ -27,6 +27,8 @@
 #include <fcntl.h>
 #include <assert.h>
 
+#include <algorithm>
+
 CStdFile::CStdFile()
 {
 	Status = false;
@@ -310,7 +312,7 @@ bool CStdFile::Load(const char *szFilename, uint8_t **lpbpBuf,
 	if (!Open(szFilename, fCompressed)) return false;
 	*lpbpBuf = new uint8_t[iSize + iAppendZeros];
 	if (!Read(*lpbpBuf, iSize)) { delete[] *lpbpBuf; return false; }
-	if (iAppendZeros) ZeroMem((*lpbpBuf) + iSize, iAppendZeros);
+	if (iAppendZeros) std::fill_n(*lpbpBuf + iSize, iAppendZeros, 0);
 	if (ipSize) *ipSize = iSize;
 	Close();
 	return true;

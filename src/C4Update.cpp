@@ -215,11 +215,9 @@ public:
 
 // *** C4UpdatePackageCore
 
-C4UpdatePackageCore::C4UpdatePackageCore()
-{
-	// zero fields
-	ZeroMem(this, sizeof(C4UpdatePackageCore));
-}
+C4UpdatePackageCore::C4UpdatePackageCore() :
+	RequireVersion{}, Name{}, DestPath{}, GrpUpdate{}, UpGrpCnt{},
+	GrpChks1{}, GrpChks2{} {}
 
 void C4UpdatePackageCore::CompileFunc(StdCompiler *pComp)
 {

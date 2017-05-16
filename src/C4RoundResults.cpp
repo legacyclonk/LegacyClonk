@@ -158,7 +158,7 @@ void C4RoundResultsPlayers::CompileFunc(StdCompiler *pComp)
 	{
 		GrowList(iTemp - iPlayerCapacity);
 		iPlayerCount = iTemp;
-		ZeroMem(ppPlayers, sizeof(*ppPlayers) * iPlayerCount);
+		std::fill_n(ppPlayers, iPlayerCount, nullptr);
 	}
 	// Compile
 	pComp->Value(mkNamingAdapt(mkArrayAdaptMap(ppPlayers, iPlayerCount, mkPtrAdaptNoNull<C4RoundResultsPlayer>), "Player"));
