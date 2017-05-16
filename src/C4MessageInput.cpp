@@ -107,11 +107,6 @@ C4GUI::Edit::InputResult C4ChatInputDialog::OnChatInput(C4GUI::Edit *edt, bool f
 	char *szInputText = const_cast<char *>(pEdt->GetText());
 	// Store to back buffer
 	Game.MessageInput.StoreBackBuffer(szInputText);
-	// check confidential data - even for object input (script triggered), webcode should not be pasted here
-	if (C4InVal::IsConfidentialData(szInputText, true))
-		{
-		szInputText = "";
-		}
 	// script queried input?
 	if (fObjInput)
 		{

@@ -21,7 +21,7 @@ C4ClientCore::C4ClientCore()
 		fActivated(false),
     fObserver(false)
 {
-	Name.Ref(""); CUID.Ref(""); Nick.Ref("");
+	Name.Ref(""); Nick.Ref("");
 }
 
 C4ClientCore::~C4ClientCore()
@@ -37,11 +37,9 @@ void C4ClientCore::SetLocal(int32_t inID, bool fnActivated, bool fnObserver)
   fObserver = fnObserver;
 	// misc
 	Name.CopyValidated(Config.Network.LocalName);
-	CUID.CopyValidated(Config.GetRegistrationData("Cuid"));
 
 	ValidatedStdCopyStrBuf<C4InVal::VAL_NameNoEmpty> NickBuf;
 	NickBuf.Copy(Config.Network.Nick);
-	if (!NickBuf.getLength()) NickBuf.CopyValidated(Config.GetRegistrationData("Nick"));
 	if (!NickBuf.getLength()) NickBuf.CopyValidated(Name);
 	Nick.CopyValidated(NickBuf);
 }
@@ -51,14 +49,14 @@ void C4ClientCore::SetUnknown(int32_t inID)
 	// save id
 	iID = inID;
 	// fill everything else with default values
-	Name.Ref("unknown"); CUID.Ref("unknown"); Nick.Ref("unknown");
+	Name.Ref("unknown"); Nick.Ref("unknown");
 	fActivated = fObserver = false;
 }
 
 int32_t C4ClientCore::getDiffLevel(const C4ClientCore &CCore2) const
 {
-	// nick & cuid won't ever be changed
-	if(CUID != CCore2.getCUID() || Nick != CCore2.getNick())
+	// nick won't ever be changed
+	if(Nick != CCore2.getNick())
 		return C4ClientCoreDL_Different;
 	// identification changed?
 	if(iID != CCore2.getID() || Name != CCore2.getName())
@@ -78,6 +76,8 @@ void C4ClientCore::CompileFunc(StdCompiler *pComp)
   pComp->Value(mkNamingAdapt(fActivated, "Activated", false));
   pComp->Value(mkNamingAdapt(fObserver, "Observer", false));
   pComp->Value(mkNamingAdapt(Name, "Name", ""));
+  // Ignore CUID
+  ValidatedStdCopyStrBuf<C4InVal::VAL_NameAllowEmpty> CUID;
   pComp->Value(mkNamingAdapt(CUID, "CUID", ""));
   pComp->Value(mkNamingAdapt(Nick, "Nick", ""));
 }

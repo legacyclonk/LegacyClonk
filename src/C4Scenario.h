@@ -56,7 +56,6 @@ class C4SHead
     char Loader[C4MaxTitle+1];
     char Font[C4MaxTitle+1]; // scenario specific font; may be 0
 		int32_t	 Difficulty;
-		int32_t  EnableUnregisteredAccess;
     int32_t  Icon;
 		int32_t  NoInitialize;
 		int32_t  MaxPlayer, MinPlayer, MaxPlayerLeague;

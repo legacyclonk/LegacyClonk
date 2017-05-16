@@ -73,7 +73,6 @@ C4StartupOptionsDlg::ResChangeConfirmDlg::ResChangeConfirmDlg()
 	// However, some people need more time
 	// Those can be identified by their configuration settings
 	if (Config.Graphics.SaveDefaultPortraits) iResChangeSwitchTime += 2;
-	if (SEqualNoCase(Config.GetRegistrationData("Nick"), "flgr")) iResChangeSwitchTime *= 10;
 	// get positions
 	C4GUI::ComponentAligner caMain(GetClientRect(), C4GUI_DefDlgIndent, C4GUI_DefDlgIndent, true);
 	// place icon
@@ -1024,7 +1023,6 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pSheetNetwork->AddElement(pNetworkNameEdit);
 	pSheetNetwork->AddElement(pNetworkNickEdit);
 	StdCopyStrBuf NickBuf(Config.Network.Nick);
-	if(!NickBuf.getLength()) NickBuf.Copy(Config.GetRegistrationData("Nick"));
 	if(!NickBuf.getLength()) NickBuf.Copy(Config.Network.LocalName);
 	pNetworkNickEdit->GetEdit()->SetText(NickBuf.getData(), false);
 #endif // NETWORK
@@ -1265,11 +1263,9 @@ bool C4StartupOptionsDlg::SaveConfig(bool fForce, bool fKeepOpen)
 	pLeagueServerCfg->Save2Config();
 	pNetworkNameEdit->Save2Config();
 	pNetworkNickEdit->Save2Config();
-	// if nick is same as default by registry, don't save in config
-	// so regkey updates will change the nick as well
-	const char *szRegNick = Config.GetRegistrationData("Nick");
-	if (!szRegNick || !*szRegNick) szRegNick = Config.Network.LocalName.getData();
-	if (SEqual(Config.Network.Nick.getData(), szRegNick)) Config.Network.Nick.Clear();
+	// if nick is same as LocalName, don't save in config
+	// so LocalName updates will change the nick as well
+	if (SEqual(Config.Network.Nick.getData(), Config.Network.LocalName.getData())) Config.Network.Nick.Clear();
 #endif // NETWORK
 	// make sure config is saved, in case the game crashes later on or another instance is started
 	Config.Save();

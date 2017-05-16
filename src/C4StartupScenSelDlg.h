@@ -68,10 +68,8 @@ class C4ScenarioListLoader
 
 				static Entry *CreateEntryForFile(const StdStrBuf &sFilename, Folder *pParent); // create correct entry type based on file extension
 
-				virtual bool CanOpen(StdStrBuf &sError) { return true; } // whether item can be started/opened (e.g. mission access, unregistered)
-				virtual bool IsGrayed() { return false; } // additional condition for graying out - notice unreg folders are grayed but can still be opened
+				virtual bool CanOpen(StdStrBuf &sError) { return true; } // whether item can be started/opened (e.g. mission access)
 				virtual bool HasMissionAccess() const { return true; }
-				virtual bool HasUnregisteredAccess() const { return false; }
 				virtual StdStrBuf GetOpenText() = 0; // get open button text
 				virtual StdStrBuf GetOpenTooltip() = 0;
 
@@ -89,11 +87,10 @@ class C4ScenarioListLoader
 			private:
 				C4Scenario C4S;
 				bool fNoMissionAccess;
-				bool fUnregisteredAccess;
 				int32_t iMinPlrCount;
 
 			public:
-				Scenario(class Folder *pParent) : Entry(pParent), fNoMissionAccess(false), fUnregisteredAccess(false), iMinPlrCount(0) {}
+				Scenario(class Folder *pParent) : Entry(pParent), fNoMissionAccess(false), iMinPlrCount(0) {}
 				virtual ~Scenario() {}
 
 				virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded); // do fallbacks for title and icon; check whether scenario is valid
@@ -101,9 +98,7 @@ class C4ScenarioListLoader
 				virtual bool Start(); // launch scenario!
 
 				virtual bool CanOpen(StdStrBuf &sError); // check mission access, player count, etc.
-				virtual bool IsGrayed() { return false; } // additional option for graying out
 				virtual bool HasMissionAccess() const { return !fNoMissionAccess; };         // check mission access only
-				virtual bool HasUnregisteredAccess() const { return fUnregisteredAccess; };
 				virtual StdStrBuf GetOpenText(); // get open button text
 				virtual StdStrBuf GetOpenTooltip();
 				const C4Scenario &GetC4S() const { return C4S; } // get scenario core
@@ -149,7 +144,6 @@ class C4ScenarioListLoader
 				Entry *FindEntryByName(const char *szFilename) const; // find entry by filename comparison
 
 				virtual bool CanOpen(StdStrBuf &sError) { return true; } // can always open folders
-				virtual bool IsGrayed(); // unreg folders can be opened to view stuff but they are still grayed out for clarity
 				virtual StdStrBuf GetOpenText(); // get open button text
 				virtual StdStrBuf GetOpenTooltip();
 				C4MapFolderData *GetMapData() const { return pMapData; }

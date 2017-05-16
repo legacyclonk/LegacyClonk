@@ -234,14 +234,6 @@ class C4ConfigControls
 		void CompileFunc(StdCompiler *pComp, bool fKeysOnly=false);
 		void ResetKeys(); // reset all keys to default
 	};
-		
-class C4ConfigSecurity
-{
-	public:
-		char KeyPath[CFG_MaxString + 1]; // absolute path; environment variables are stored and only expanded upon evaluation
-		int32_t WasRegistered;
-		void CompileFunc(StdCompiler *pComp);
-};
 
 class C4Config: protected CStdConfig 
 	{
@@ -259,7 +251,6 @@ class C4Config: protected CStdConfig
 		C4ConfigGamepad		Gamepads[C4ConfigMaxGamepads];
 		C4ConfigControls	Controls;
 		C4ConfigStartup   Startup;
-		C4ConfigSecurity  Security;
 		bool fConfigLoaded; // true if config has been successfully loaded
 		StdStrBuf ConfigFilename; // set for configs loaded from a nondefault config file
 	public:
@@ -268,8 +259,6 @@ class C4Config: protected CStdConfig
 		BOOL Save();
 		BOOL Load(BOOL forceWorkingDirectory = TRUE, const char *szConfigFile = NULL);
 		BOOL Init();
-		BOOL Registered();
-		BOOL IsFreeFolder(const char *szFoldername, const char *szMaker);
 		const char *AtExePath(const char *szFilename);
 		const char *AtTempPath(const char *szFilename);
 		const char *AtLogPath(const char *szFilename);
@@ -277,7 +266,6 @@ class C4Config: protected CStdConfig
 		const char *AtExeRelativePath(const char *szFilename);
 		const char *AtScreenshotPath(const char *szFilename);
 		const char *AtUserPath(const char *szFilename); // this one will expand environment variables on-the-fly
-		const char *GetRegistrationData(const char* strField) { return ""; }
 		void ForceRelativePath(StdStrBuf *sFilename); // try AtExeRelativePath; force GetC4Filename if not possible
 		void CompileFunc(StdCompiler *pComp);
 		bool IsCorrupted() { return (General.ConfigResetSafety != C4ConfigGeneral::ConfigResetSafetyVal) || !Graphics.ResX; }
@@ -288,8 +276,5 @@ class C4Config: protected CStdConfig
 		void ExpandEnvironmentVariables(char *strPath, int iMaxLen);
 	};
 
-#ifndef BIG_C4INCLUDE
-#include <C4ConfigShareware.h>
-#endif	
-
+extern C4Config Config;
 #endif // INC_C4Config

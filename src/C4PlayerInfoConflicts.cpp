@@ -183,11 +183,6 @@ int32_t C4PlayerInfoListAttributeConflictResolver::GetAttributePriorityDifferenc
 	// All unjoined: Priority by score
 	int32_t iScoreDiff = pInfo1->getLeagueScore() - pInfo2->getLeagueScore();
 	if (iScoreDiff) return iScoreDiff;
-	// No scores known. Developers higher than others
-	if (pPck1->IsDeveloperPacket())
-		return pPck2->IsDeveloperPacket() ? 0 : +1;
-	if (pPck2->IsDeveloperPacket())
-		return -1;
 	// equal priority
 	return 0;
 	}

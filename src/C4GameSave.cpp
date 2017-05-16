@@ -67,9 +67,6 @@ bool C4GameSave::SaveCore()
 		}
 	// clear MissionAccess in save games and records (sulai)
 	*rC4S.Head.MissionAccess = 0;
-	// clear shareware release for non-initial saves
-	if (!fInitial)
-		rC4S.Head.EnableUnregisteredAccess = FALSE;
 	// OldGfx is no longer supported
 	// checks for IsExact() || ExactLandscape wouldn't catch scenarios using more than 23 materials, so let's make it easy
 	rC4S.Head.ForcedGfxMode = C4SGFXMODE_NEWGFX;
@@ -533,8 +530,6 @@ void C4GameSaveRecord::AdjustCore(C4Scenario &rC4S)
 	rC4S.Head.Replay=TRUE;
 	if (!rC4S.Head.Film) rC4S.Head.Film=C4SFilm_Normal; /* default to film */
 	rC4S.Head.Icon=29;
-	// unregistered replay OK
-	rC4S.Head.EnableUnregisteredAccess = TRUE;
 	// default record title
 	char buf[1024 + 1];
 	sprintf(buf, "%03i %s [%d]", iNum, Game.ScenarioTitle.getData(), (int) C4XVERBUILD);

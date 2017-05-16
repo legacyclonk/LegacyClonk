@@ -358,9 +358,6 @@ C4ClientPlayerInfos::C4ClientPlayerInfos(const char *szJoinFilenames, bool fAdd,
 	// init for local client?
 	if (szJoinFilenames || pAddInfo)
 		{
-		// set developer flag for developer hosts
-		if (SSearch(Config.GetRegistrationData("Type"), "Developer"))
-			dwFlags |= CIF_Developer;
 		// set local ID
 		iClientID = Game.Control.ClientID();
 		// maybe control is not preinitialized
@@ -623,7 +620,6 @@ void C4ClientPlayerInfos::CompileFunc(StdCompiler *pComp)
 			{ "AddPlayers", CIF_AddPlayers },
 			{ "Updated", CIF_Updated },
 			{ "Initial", CIF_Initial },
-			{ "Developer", CIF_Developer },
 
 			{ NULL, 0	}
 		};

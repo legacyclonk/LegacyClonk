@@ -161,27 +161,5 @@ namespace C4InVal
 		else return true;
 		}
 
-	bool IsConfidentialData(const char *szInput, bool fShowWarningMessage)
-		{
-		// safety
-		if (!szInput) return false;
-#ifdef C4ENGINE
-		// player is registered
-		if (Config.Registered())
-		{
-		// shouldn't send the webcode!
-		const char *szWebCode = Config.GetRegistrationData("WebCode");
-		if (szWebCode) if (SSearchNoCase(szInput, szWebCode))
-			{
-			if (fShowWarningMessage && Game.pGUI)
-				Game.pGUI->ShowErrorMessage(LoadResStr("IDS_ERR_WARNINGYOUWERETRYINGTOSEN"));
-			return true;
-			}
-		}
-#endif
-		// all OK
-		return false;
-		}
-
 	};
 

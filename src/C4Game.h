@@ -148,7 +148,6 @@ class C4Game
 		enum { NetworkActive = 0 };
 #endif
 		bool Record;
-		bool RegJoinOnly; // default false; set to true only by command line parameter or in console builds
 		bool Verbose; // default false; set to true only by command line
 		StdStrBuf RecordDumpFile;
 		StdStrBuf RecordStream;
@@ -291,7 +290,6 @@ class C4Game
     void ExecObjects();
 		void Ticks();
 	  const char *FoldersWithLocalsDefs(const char *szPath);
-	  BOOL CheckScenarioAccess();
 	  BOOL CheckObjectEnumeration();
 	  BOOL LocalFileMatch(const char *szFilename, int32_t iCreation);
 		BOOL DefinitionFilenamesFromSaveGame();
