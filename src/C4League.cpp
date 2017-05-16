@@ -536,20 +536,20 @@ void C4LeagueClient::ModifyForChecksum(const void *pData, size_t iDataSize, char
 	};
 	// Random start value
 	uint32_t iStart = rand() | rand() << 16;
+	StdSha1 sha1;
 	for (uint32_t i = 0; i < (1 << 30); i++)
 	{
 		// Write number
 		for (uint32_t j = 0; j < 5; j++)
 			pReplace[j] = Base64Tbl[((i ^ iStart) >> j * 5) & 63];
 		// Calculcate SHA
-		SHA_CTX ctx; uint8_t sha[SHA_DIGEST_LENGTH];
-		if (!SHA1_Init(&ctx) ||
-			!SHA1_Update(&ctx, pData, iDataSize))
-			return;
-		SHA1_Final(sha, &ctx);
+		uint8_t sha[StdSha1::DigestLength];
+		sha1.Update(pData, iDataSize);
+		sha1.GetHash(sha);
 		// Correct checksum?
 		if (!((*(uint32_t *)&sha ^ iChecksum) & iCheckMask))
 			return;
+		sha1.Reset();
 	}
 }
 

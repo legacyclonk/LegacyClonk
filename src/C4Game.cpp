@@ -1725,7 +1725,7 @@ void C4Game::Evaluate()
 	bool fLeague = Network.isEnabled() && Network.isHost() && Parameters.isLeague();
 
 	// Stop record
-	StdStrBuf RecordName; uint8_t RecordSHA[SHA_DIGEST_LENGTH];
+	StdStrBuf RecordName; uint8_t RecordSHA[StdSha1::DigestLength];
 	if (Control.isRecord())
 		Control.StopRecord(&RecordName, fLeague ? RecordSHA : nullptr);
 

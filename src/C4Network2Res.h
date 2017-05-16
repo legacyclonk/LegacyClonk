@@ -18,9 +18,8 @@
 
 #pragma once
 
+#include <StdSha1.h>
 #include <StdSync.h>
-
-#include <openssl/sha.h>
 
 #include <atomic>
 
@@ -76,7 +75,7 @@ protected:
 	bool fLoadable;
 	uint32_t iFileSize, iFileCRC, iContentsCRC;
 	uint8_t fHasFileSHA;
-	uint8_t FileSHA[SHA_DIGEST_LENGTH];
+	uint8_t FileSHA[StdSha1::DigestLength];
 	uint32_t iChunkSize;
 
 public:
@@ -97,7 +96,7 @@ public:
 	void SetID(int32_t inID) { iID = inID; }
 	void SetDerived(int32_t inDerID) { iDerID = inDerID; }
 	void SetLoadable(uint32_t iSize, uint32_t iCRC);
-	void SetFileSHA(uint8_t *pSHA) { memcpy(FileSHA, pSHA, SHA_DIGEST_LENGTH); fHasFileSHA = true; }
+	void SetFileSHA(uint8_t *pSHA) { memcpy(FileSHA, pSHA, StdSha1::DigestLength); fHasFileSHA = true; }
 	void Clear();
 
 	virtual void CompileFunc(StdCompiler *pComp);
