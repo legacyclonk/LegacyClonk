@@ -61,10 +61,6 @@
 #define POINTER_64 __ptr64
 #endif // _WIN32
 
-// Probably not working
-#if defined(HAVE_MIDI_H) && !defined(USE_FMOD)
-#define USE_WINDOWS_MIDI
-#endif
 #endif // C4ENGINE
 
 #include <Standard.h>

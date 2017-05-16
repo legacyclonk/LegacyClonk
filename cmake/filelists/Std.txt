@@ -4,8 +4,6 @@ src/CStdFile.cpp
 src/CStdFile.h
 src/Fixed.cpp
 src/Fixed.h
-src/Midi.cpp
-src/Midi.h
 src/OpenURL.cpp
 src/Standard.cpp
 src/Standard.h
