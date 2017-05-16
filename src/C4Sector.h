@@ -20,8 +20,8 @@ const int32_t C4LSectorWdt = 50,
 class C4LSector
 	{
 	public:
-		C4LSector() { } // constructor
-		~C4LSector() { Clear(); } // destructor
+		C4LSector() { }
+		~C4LSector() { Clear(); }
 
 	protected:
 		void Init(int ix, int iy);
@@ -73,13 +73,13 @@ class C4LArea
 		int xL, yL, dpitch; // bounds / delta-pitch
 		C4LSector *pOut; // outside?
 
-		C4LArea() { Clear(); } // default constructor
-		C4LArea(C4LSectors *pSectors, int ix, int iy, int iwdt, int ihgt) // initializing constructor
+		C4LArea() { Clear(); }
+		C4LArea(C4LSectors *pSectors, int ix, int iy, int iwdt, int ihgt)
 			{ Set(pSectors, C4Rect(ix, iy, iwdt, ihgt)); }
-		C4LArea(C4LSectors *pSectors, const C4Rect &rect) // initializing constructor
+		C4LArea(C4LSectors *pSectors, const C4Rect &rect)
 			{ Set(pSectors, rect); }
 
-		C4LArea(C4LSectors *pSectors, C4Object *pObj) // initializing constructor
+		C4LArea(C4LSectors *pSectors, C4Object *pObj)
 			{ Set(pSectors, pObj); }
 
 		inline void Clear() { pFirst=pOut=NULL; } // zero sector

@@ -25,7 +25,7 @@ class CStdGamePad
 		uint32_t dwAxisMin[CStdGamepad_MaxCalAxis], dwAxisMax[CStdGamepad_MaxCalAxis]; // axis ranges - auto calibrated
 		bool fAxisCalibrated[CStdGamepad_MaxCalAxis]; // set if an initial value for axis borders has been determined already
 
-		CStdGamePad(int id); // ctor
+		CStdGamePad(int id);
 
 		void ResetCalibration(); // resets axis min and max
 		void SetCalibration(uint32_t *pdwAxisMin, uint32_t *pdwAxisMax, bool *pfAxisCalibrated);

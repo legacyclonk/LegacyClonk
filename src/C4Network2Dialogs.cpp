@@ -97,7 +97,7 @@ void C4Network2ClientDlg::UpdateText()
 // --------------------------------------------------
 // C4Network2ClientListBox::ClientListItem
 
-C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientListBox *pForDlg, int iClientID) // ctor
+C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientListBox *pForDlg, int iClientID)
 : ListItem(pForDlg, iClientID), pStatusIcon(NULL), pName(NULL), pPing(NULL), pActivateBtn(NULL), pKickBtn(NULL)
 	{
 	// get associated client
@@ -255,7 +255,7 @@ void C4Network2ClientListBox::ClientListItem::OnButtonKick(C4GUI::Control *pButt
 // --------------------------------------------------
 // C4Network2ClientListBox::ConnectionListItem
 
-C4Network2ClientListBox::ConnectionListItem::ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, int32_t iConnectionID) // ctor
+C4Network2ClientListBox::ConnectionListItem::ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, int32_t iConnectionID)
 : ListItem(pForDlg, iClientID), iConnID(iConnectionID), pDesc(NULL), pPing(NULL), pDisconnectBtn(NULL)
 	{
 	// get size

@@ -203,9 +203,9 @@ class C4PacketLeagueRoundResults : public C4PacketBase
 		StdCopyStrBuf sResultsString; // league result string - or error message
 		bool fSuccess; // whether result was successful or not
 
-		C4PacketLeagueRoundResults() : fSuccess(false) { } // std ctor
-		C4PacketLeagueRoundResults(const char *szResultsString, bool fSuccess, const C4RoundResultsPlayers &Players) : Players(Players), sResultsString(szResultsString), fSuccess(fSuccess) {} // ctor
-		C4PacketLeagueRoundResults(const char *szResultsString, bool fSuccess) : sResultsString(szResultsString), fSuccess(fSuccess) {} // ctor
+		C4PacketLeagueRoundResults() : fSuccess(false) { }
+		C4PacketLeagueRoundResults(const char *szResultsString, bool fSuccess, const C4RoundResultsPlayers &Players) : Players(Players), sResultsString(szResultsString), fSuccess(fSuccess) {}
+		C4PacketLeagueRoundResults(const char *szResultsString, bool fSuccess) : sResultsString(szResultsString), fSuccess(fSuccess) {}
 
 		virtual void CompileFunc(StdCompiler *pComp);
 	};

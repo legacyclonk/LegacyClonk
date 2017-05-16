@@ -331,7 +331,7 @@ class C4CustomKey
 		C4CustomKey(C4KeyCodeEx DefCode, const char *szName, C4KeyScope Scope, C4KeyboardCallbackInterface *pCallback, unsigned int uiPriority = PRIO_Base); // ctor for default key
 		C4CustomKey(const CodeList &rDefCodes, const char *szName, C4KeyScope Scope, C4KeyboardCallbackInterface *pCallback, unsigned int uiPriority = PRIO_Base); // ctor for default key with multiple possible keys assigned
 		C4CustomKey(const C4CustomKey &rCpy, bool fCopyCallbacks);
-		virtual ~C4CustomKey(); // dtor
+		virtual ~C4CustomKey();
 
 		inline void Ref() { ++iRef; }
 		inline void Deref() { if (!--iRef) delete this; }

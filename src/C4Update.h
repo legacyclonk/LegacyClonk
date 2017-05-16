@@ -12,7 +12,7 @@ const int C4UP_MaxUpGrpCnt = 50;
 class C4UpdatePackageCore
 	{
 	public:
-		C4UpdatePackageCore();  // ctor
+		C4UpdatePackageCore();
 	public:
     int32_t RequireVersion[4];
 		char Name[C4MaxName+1];

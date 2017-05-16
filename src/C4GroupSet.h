@@ -48,8 +48,8 @@ class C4GroupSetNode
 		int32_t id;               // group node ID
 
 	public:
-		C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, C4Group &rGroup, bool fGrpOwned, int32_t id);	// ctor
-		~C4GroupSetNode();																					// dtor
+		C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, C4Group &rGroup, bool fGrpOwned, int32_t id);
+		~C4GroupSetNode();
 
 		int32_t Priority;					// group priority
 		int32_t Contents;					// content held by this group
@@ -68,9 +68,9 @@ class C4GroupSet
 		void Clear();
 		void Default();
 
-		C4GroupSet();		// ctor
+		C4GroupSet();
 		C4GroupSet(C4GroupSet &) = delete;
-		~C4GroupSet();	// dtor
+		~C4GroupSet();
 
 		bool RegisterGroup(C4Group &rGroup, bool fOwnGrp, int32_t Priority, int32_t Contents, bool fCheckContent=true); // add group to list
 		bool RegisterGroups(C4GroupSet &rCopy, int32_t Contents, const char *szFilename=NULL, int32_t iMaxSkipID=0);	// add all matching (child-)groups of the set

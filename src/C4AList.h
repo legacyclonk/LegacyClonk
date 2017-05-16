@@ -32,8 +32,8 @@ class C4AList
 		void Grow(); // append chunk
 
 	public:
-		C4AList(); // constructor
-		~C4AList(); // destructor
+		C4AList();
+		~C4AList();
 		void Clear(); // clear the list
 
 		C4AListEntry *push(void *pVar = NULL, void *pVal = NULL); // push var/value pair to end of list

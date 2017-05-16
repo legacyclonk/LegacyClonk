@@ -34,8 +34,8 @@ class CPNGFile
 		unsigned long iWdt, iHgt;																// image size
 		int iBPC, iClrType, iIntrlcType, iCmprType, iFltrType;	// image data info
 	public:
-		CPNGFile();			// ctor
-		~CPNGFile();		// dtor
+		CPNGFile();
+		~CPNGFile();
 
 		void ClearPngStructs();												// clear internal png structs (png_tr, info_ptr etc.);
 		void Default();																// zero fields

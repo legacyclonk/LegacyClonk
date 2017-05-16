@@ -99,7 +99,7 @@ class C4GameSave
 class C4GameSaveScenario : public C4GameSave
 	{
 	public:
-		C4GameSaveScenario(bool fForceExactLandscape, bool fSaveOrigin) : C4GameSave(false, SyncScenario), fForceExactLandscape(fForceExactLandscape), fSaveOrigin(fSaveOrigin) {} // ctor
+		C4GameSaveScenario(bool fForceExactLandscape, bool fSaveOrigin) : C4GameSave(false, SyncScenario), fForceExactLandscape(fForceExactLandscape), fSaveOrigin(fSaveOrigin) {}
 
 	protected:
 		bool fForceExactLandscape;

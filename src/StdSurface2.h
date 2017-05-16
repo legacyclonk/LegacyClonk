@@ -77,7 +77,7 @@ class CDDrawCfg
 		
 		bool Shader; // wether to use pixelshaders
 
-		CDDrawCfg(): // ctor
+		CDDrawCfg():
 			// Let's end this silly bitmask business in the config.
 			Shader (false)
 			{
@@ -304,8 +304,8 @@ class CTexMgr
 		std::list<CTexRef *> Textures;
 
 	public:
-		CTexMgr();		// ctor
-		~CTexMgr();		// dtor
+		CTexMgr();
+		~CTexMgr();
 
 		void RegTex(CTexRef *pTex);
 		void UnregTex(CTexRef *pTex);

@@ -241,8 +241,8 @@ class C4Record // demo recording
 		unsigned int iStreamingPos; // Position of current buffer in stream
 		StdBuf StreamingData; // accumulated control data since last stream sync
 	public:
-		C4Record(); // constructor; creates control file etc
-		~C4Record(); // destructor; close file; create demo scen
+		C4Record(); // creates control file etc
+		~C4Record(); // close file; create demo scen
 		int Index;
 #ifndef C4ENGINE
 		int iLastFrame; // some hack for the ctrlrec-t00l
@@ -285,8 +285,8 @@ class C4Playback // demo playback
     C4PacketList DebugRec;
 #endif
 	public:
-		C4Playback(); // constructor; init playback
-		~C4Playback(); // destructor; deinit playback
+		C4Playback();
+		~C4Playback();
 
 		BOOL Open(C4Group &rGrp);
 		BOOL ReadBinary(const StdBuf &Buf);

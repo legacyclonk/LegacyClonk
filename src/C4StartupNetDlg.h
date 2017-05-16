@@ -113,8 +113,8 @@ class C4StartupNetListEntry : public C4GUI::Window
 class C4StartupNetDlg : public C4StartupDlg, private C4InteractiveThread::Callback
 	{
 	public:
-		C4StartupNetDlg(); // ctor
-		~C4StartupNetDlg(); // dtor
+		C4StartupNetDlg();
+		~C4StartupNetDlg();
 
 	private:
 		enum DlgMode { SNDM_GameList=0, SNDM_Chat=1 };

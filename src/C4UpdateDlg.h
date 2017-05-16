@@ -22,7 +22,7 @@ class C4UpdateDlg : public C4GUI::InfoDialog
 		static bool succeeded;
 
 	public:
-		C4UpdateDlg(); // ctor
+		C4UpdateDlg();
 
 	public:
 		static bool IsValidUpdate(const C4GameVersion &rNewVer); // Returns whether we can update to the specified version

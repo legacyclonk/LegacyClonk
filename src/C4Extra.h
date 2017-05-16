@@ -9,8 +9,8 @@
 class C4Extra
 	{
 	public:
-		C4Extra() { Default(); };			// ctor
-		~C4Extra() { Clear(); };			// dtor
+		C4Extra() { Default(); };
+		~C4Extra() { Clear(); };
 		void Default(); // zero fields
 		void Clear();		// free class members
 

@@ -418,7 +418,7 @@ void C4StartupOptionsDlg::ControlConfigArea::OnGUIGamepadCheckChange(C4GUI::Elem
 C4StartupOptionsDlg::NetworkPortConfig::NetworkPortConfig(const C4Rect &rcBounds, const char *szName, int32_t *pConfigValue, int32_t iDefault)
 : C4GUI::Window(), pConfigValue(pConfigValue)
 	{
-	// ctor
+
 	CStdFont *pUseFont = &(C4Startup::Get()->Graphics.BookFont);
 	SetBounds(rcBounds);
 	C4GUI::ComponentAligner caMain(GetClientRect(), 0,2, true);
@@ -482,7 +482,7 @@ bool C4StartupOptionsDlg::NetworkPortConfig::GetControlSize(int *piWdt, int *piH
 C4StartupOptionsDlg::NetworkServerAddressConfig::NetworkServerAddressConfig(const C4Rect &rcBounds, const char *szName, int32_t *piConfigEnableValue, char *szConfigAddressValue, int iTabWidth)
 : C4GUI::Window(), piConfigEnableValue(piConfigEnableValue), szConfigAddressValue(szConfigAddressValue)
 	{
-	// ctor
+
 	CStdFont *pUseFont = &(C4Startup::Get()->Graphics.BookFont);
 	SetBounds(rcBounds);
 	C4GUI::ComponentAligner caMain(GetClientRect(), 0,2, true);
@@ -556,7 +556,7 @@ void C4StartupOptionsDlg::BoolConfig::OnCheckChange(C4GUI::Element *pCheckBox)
 C4StartupOptionsDlg::EditConfig::EditConfig(const C4Rect &rcBounds, const char *szName, ValidatedStdCopyStrBufBase *psConfigVal, int32_t *piConfigVal, bool fMultiline)
 : C4GUI::LabeledEdit(rcBounds, szName, fMultiline, psConfigVal ? psConfigVal->getData() : NULL, &(C4Startup::Get()->Graphics.BookFont), C4StartupFontClr), psConfigVal(psConfigVal), piConfigVal(piConfigVal)
 	{
-	// ctor
+
 	GetEdit()->SetColors(C4StartupEditBGColor, C4StartupFontClr, C4StartupEditBorderColor);
 	if (piConfigVal) SetIntVal(*piConfigVal);
 	GetEdit()->SetMaxText(CFG_MaxString);
@@ -583,7 +583,7 @@ bool C4StartupOptionsDlg::EditConfig::GetControlSize(int *piWdt, int *piHgt, con
 
 C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_DLG_OPTIONS")), fConfigSaved(false), fCanGoBack(true)
 	{
-	// ctor
+
 	UpdateSize();
 	bool fSmall = (GetClientRect().Wdt < 750);
 	CStdFont *pUseFont = &(C4Startup::Get()->Graphics.BookFont);

@@ -82,7 +82,7 @@ class C4Effect
 		void AssignCallbackFunctions(); // resolve callback function names
 
 	public:
-		C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, C4Value &rVal1, C4Value &rVal2, C4Value &rVal3, C4Value &rVal4, bool fDoCalls, int32_t &riStoredAsNumber); // ctor
+		C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, C4Value &rVal1, C4Value &rVal2, C4Value &rVal3, C4Value &rVal4, bool fDoCalls, int32_t &riStoredAsNumber);
 		C4Effect(StdCompiler *pComp); // ctor: compile
 		~C4Effect();                      // dtor - deletes all following effects
 

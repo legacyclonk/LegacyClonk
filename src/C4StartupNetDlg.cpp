@@ -608,7 +608,7 @@ C4Network2Reference *C4StartupNetListEntry::GrabReference()
 
 C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")), iGameDiscoverInterval(0), pMasterserverClient(NULL), fIsCollapsed(false), fUpdatingList(false), tLastRefresh(0), pChatTitleLabel(NULL), fIgnoreUpdate(false)
 	{
-	// ctor
+
 	// key bindings
 	C4CustomKey::CodeList keys;
 	keys.push_back(C4KeyCodeEx(K_BACK)); keys.push_back(C4KeyCodeEx(K_LEFT));
@@ -747,7 +747,7 @@ C4StartupNetDlg::~C4StartupNetDlg()
 	DiscoverClient.Close();
 	pSec1Timer->Release();
 	if (pMasterserverClient) delete pMasterserverClient;
-	// dtor
+
 	delete pKeyBack;
 	delete pKeyRefresh;
 	}

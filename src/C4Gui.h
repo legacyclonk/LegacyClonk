@@ -202,8 +202,8 @@ namespace C4GUI {
 	class MenuHandler
 		{
 		public:
-			MenuHandler() {} //ctor
-			virtual ~MenuHandler() { } // dtor
+			MenuHandler() {}
+			virtual ~MenuHandler() { }
 
 			virtual void OnOK(Element *pTarget) = 0; // menu item selected
 		};
@@ -214,8 +214,8 @@ namespace C4GUI {
 		private:
 			int32_t iRefs;
 		public:
-			ContextHandler() : iRefs(0) { } //ctor
-			virtual ~ContextHandler() { } // dtor
+			ContextHandler() : iRefs(0) { }
+			virtual ~ContextHandler() { }
 
 			virtual bool OnContext(Element *pOnElement, int32_t iX, int32_t iY) = 0; // context queried - ret true if handled
 			virtual ContextMenu *OnSubcontext(Element *pOnElement) = 0; // subcontext queried
@@ -396,8 +396,8 @@ namespace C4GUI {
 			bool DoContext(); // open context menu if assigned
 
 		public:
-			Element();  // ctor
-			virtual ~Element(); // dtor
+			Element();
+			virtual ~Element();
 
 			Container *GetParent() { return pParent; } // get owning container
 			virtual class Dialog *GetDlg(); // return contained dialog
@@ -468,8 +468,8 @@ namespace C4GUI {
 			virtual int32_t GetLeftIndent() { return 0; }
 
 		public:
-			Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign=ALeft, DWORD dwFClr=0xffffffff, CStdFont *pFont=NULL, bool fMakeReadableOnBlack = true, bool fMarkup=true); // ctor
-			Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign=ALeft, DWORD dwFClr=0xffffffff, CStdFont *pFont=NULL, bool fMakeReadableOnBlack = true, bool fAutosize = true, bool fMarkup=true); // ctor
+			Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign=ALeft, DWORD dwFClr=0xffffffff, CStdFont *pFont=NULL, bool fMakeReadableOnBlack = true, bool fMarkup=true);
+			Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign=ALeft, DWORD dwFClr=0xffffffff, CStdFont *pFont=NULL, bool fMakeReadableOnBlack = true, bool fAutosize = true, bool fMarkup=true);
 
 			void SetText(const char *szToText, bool fAllowHotkey=true); // update text
 			const char *GetText() { return sText.getData(); } // retrieve current text
@@ -498,9 +498,9 @@ namespace C4GUI {
 			int32_t GetRightIndent() const { return iRightIndent; }
 
 		public:
-			WoodenLabel(const char *szLblText, const C4Rect &rcBounds, DWORD dwFClr=0xffffffff, CStdFont *pFont=NULL, int32_t iAlign=ACenter, bool fMarkup=true) // ctor
+			WoodenLabel(const char *szLblText, const C4Rect &rcBounds, DWORD dwFClr=0xffffffff, CStdFont *pFont=NULL, int32_t iAlign=ACenter, bool fMarkup=true)
 				: Label(szLblText, rcBounds, iAlign, dwFClr, pFont, true, true, fMarkup), tAutoScrollDelay(0), tLastChangeTime(0), iScrollPos(0), iScrollDir(0), iRightIndent(0)
-				{ SetAutosize(false); this->rcBounds=rcBounds; }// ctor - re-sets bounds after SetText
+				{ SetAutosize(false); this->rcBounds=rcBounds; }// re-sets bounds after SetText
 
 			static int32_t GetDefaultHeight(CStdFont *pUseFont=NULL);
 
@@ -524,7 +524,7 @@ namespace C4GUI {
 			virtual void UpdateSize();                // update label height
 
 		public:
-			MultilineLabel(const C4Rect &rcBounds, int32_t iMaxLines, int32_t iMaxBuf, const char *szIndentChars, bool fAutoGrow, bool fMarkup); // ctor
+			MultilineLabel(const C4Rect &rcBounds, int32_t iMaxLines, int32_t iMaxBuf, const char *szIndentChars, bool fAutoGrow, bool fMarkup);
 
 			void AddLine(const char *szLine, CStdFont *pFont, DWORD dwClr, bool fDoUpdate, bool fMakeReadableOnBlack, CStdFont *pCaptionFont); // add line of text
 			void Clear(bool fDoUpdate);                     // clear lines
@@ -541,7 +541,7 @@ namespace C4GUI {
 			virtual void DrawElement(C4FacetEx &cgo); // draw progress bar
 
 		public:
-			ProgressBar(C4Rect &rrcBounds, int32_t iMaxProgress=100) // progress bar ctor
+			ProgressBar(C4Rect &rrcBounds, int32_t iMaxProgress=100)
 				: Element(), iProgress(0), iMax(iMaxProgress)
 				{ rcBounds=rrcBounds; UpdatePos(); }
 
@@ -575,7 +575,7 @@ namespace C4GUI {
 			virtual void DrawElement(C4FacetEx &cgo); // draw the image
 
 		public:
-			Picture(const C4Rect &rcBounds, bool fAspect); // ctor - does not load image
+			Picture(const C4Rect &rcBounds, bool fAspect); // does not load image
 
 			const C4FacetExSurface &GetFacet() const { return Facet; } // get picture facet
 			C4FacetExSurface &GetMFacet() { return Facet; } // get picture facet
@@ -595,7 +595,7 @@ namespace C4GUI {
 			virtual void DrawElement(C4FacetEx &cgo); // draw the image
 
 		public:
-			OverlayPicture(const C4Rect &rcBounds, bool fAspect, const C4Facet &rOverlayImage, int iBorderSize); // ctor - does not load image
+			OverlayPicture(const C4Rect &rcBounds, bool fAspect, const C4Facet &rOverlayImage, int iBorderSize); // does not load image
 		};
 
 	// icon indices
@@ -704,8 +704,8 @@ namespace C4GUI {
 			virtual bool OnHotkey(char cHotkey); // check all contained elements for hotkey
 
 		public:
-			Container();  // ctor
-			~Container(); // dtor
+			Container();
+			~Container();
 
 			void Clear();                        // delete all child elements
 			void ClearChildren();                // delete all child elements
@@ -746,7 +746,7 @@ namespace C4GUI {
 			virtual void Draw(C4FacetEx &cgo); // draw this window
 
 		public:
-			Window(); // ctor
+			Window();
 
 			void SetPos(int32_t iXPos, int32_t iYPos)
 				{ rcBounds.x=iXPos; rcBounds.y=iYPos; UpdatePos(); }
@@ -808,7 +808,7 @@ namespace C4GUI {
 		public:
 			ScrollBar(C4Rect &rcBounds, ScrollWindow *pWin); // ctor for scroll window
 			ScrollBar(C4Rect &rcBounds, bool fHorizontal, BaseParCallbackHandler<int32_t> *pCB, int32_t iCBMaxRange=256); // ctor for callback
-			~ScrollBar(); // dtor
+			~ScrollBar();
 
 			// change style
 			void SetDecoration(ScrollBarFacets *pToGfx, bool fAutoHide)
@@ -895,7 +895,7 @@ namespace C4GUI {
 				{
 				// init client rect
 				SetBounds(rtBounds);
-				} // ctor
+				}
 
 			void SetFont(CStdFont *pToFont) { pFont = pToFont; }
 			void SetColors(uint32_t dwFrameClr, uint32_t dwTitleClr, uint32_t dwBackClr=0xffffffff) { this->dwFrameClr = dwFrameClr; this->dwTitleClr = dwTitleClr; this->dwBackClr = dwBackClr; }
@@ -930,7 +930,7 @@ namespace C4GUI {
 			bool KeyContext() { return DoContext(); }
 
 		public:
-			Control(const C4Rect &rtBounds);  // ctor
+			Control(const C4Rect &rtBounds);
 			~Control();
 
 			bool HasFocus() { return pParent && pParent->IsFocused(this); }
@@ -986,8 +986,8 @@ namespace C4GUI {
 			virtual bool OnHotkey(char cHotkey); // press btn on correct hotkey
 
 		public:
-			Button(const char *szBtnText, const C4Rect &rtBounds); // ctor
-			~Button(); // dtor
+			Button(const char *szBtnText, const C4Rect &rtBounds);
+			~Button();
 
 			void SetText(const char *szToText); // update button text (and hotkey)
 			void SetCustomGraphics(DynBarFacet *pCustomGfx, DynBarFacet *pCustomGfxDown)
@@ -1007,7 +1007,7 @@ namespace C4GUI {
 			virtual void DrawElement(C4FacetEx &cgo); // draw icon and highlight if necessary
 
 		public:
-			IconButton(Icons eUseIcon, const C4Rect &rtBounds, char cHotkey); // ctor
+			IconButton(Icons eUseIcon, const C4Rect &rtBounds, char cHotkey);
 			void SetIcon(Icons eUseIcon);
 			void SetFacet(const C4Facet &rCpy, uint32_t dwClr=0u) { fctIcon = rCpy; }
 			void SetColor(uint32_t dwClr) { fHasClr=true; this->dwClr=dwClr; }
@@ -1025,7 +1025,7 @@ namespace C4GUI {
 			virtual void DrawElement(C4FacetEx &cgo); // draw arrow; highlight and down if necessary
 
 		public:
-			ArrowButton(ArrowFct eDir, const C4Rect &rtBounds, char cHotkey=0); // ctor
+			ArrowButton(ArrowFct eDir, const C4Rect &rtBounds, char cHotkey=0);
 
 			static int32_t GetDefaultWidth();
 			static int32_t GetDefaultHeight();
@@ -1047,7 +1047,7 @@ namespace C4GUI {
 			virtual void DrawElement(C4FacetEx &cgo); // draw base facet or highlight facet if necessary
 
 		public:
-			FacetButton(const C4Facet &rBaseFct, const C4Facet &rHighlightFct, const FLOAT_RECT &rtfBounds, char cHotkey); // ctor
+			FacetButton(const C4Facet &rBaseFct, const C4Facet &rHighlightFct, const FLOAT_RECT &rtfBounds, char cHotkey);
 			void SetTextColors(uint32_t dwClrInact, uint32_t dwClrAct)
 				{ dwTextClrInact = dwClrInact; dwTextClrAct = dwClrAct; }
 			void SetTextPos(int32_t iOffX, int32_t iOffY, uint8_t byAlign=ACenter)
@@ -1074,13 +1074,13 @@ namespace C4GUI {
 				}
 
 		public:
-			CallbackButton(ArrowButton::ArrowFct eDir, const C4Rect &rtBounds, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB=NULL) // ctor
+			CallbackButton(ArrowButton::ArrowFct eDir, const C4Rect &rtBounds, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB=NULL)
 				: Base(eDir, rtBounds, 0), pCallbackFn(pFn), pCB(pCB) { }
-			CallbackButton(const char *szBtnText, C4Rect &rtBounds, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB=NULL) // ctor
+			CallbackButton(const char *szBtnText, C4Rect &rtBounds, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB=NULL)
 				: Base(szBtnText, rtBounds), pCallbackFn(pFn), pCB(pCB) { }
-			CallbackButton(Icons eUseIcon, const C4Rect &rtBounds, char cHotkey, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB=NULL) // ctor
+			CallbackButton(Icons eUseIcon, const C4Rect &rtBounds, char cHotkey, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB=NULL)
 				: Base(eUseIcon, rtBounds, cHotkey), pCallbackFn(pFn), pCB(pCB) { }
-			CallbackButton(int32_t iID, const C4Rect &rtBounds, char cHotkey, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB=NULL) // ctor
+			CallbackButton(int32_t iID, const C4Rect &rtBounds, char cHotkey, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB=NULL)
 				: Base(iID, rtBounds, cHotkey), pCallbackFn(pFn), pCB(pCB) { }
 		};
 
@@ -1095,11 +1095,11 @@ namespace C4GUI {
 				{ (pCBTarget->*pCallbackFn)(this); }
 
 		public:
-			CallbackButtonEx(const char *szBtnText, const C4Rect &rtBounds, CallbackDlgPointer pCBTarget, typename DlgCallback<CallbackDlg>::Func pFn) // ctor
+			CallbackButtonEx(const char *szBtnText, const C4Rect &rtBounds, CallbackDlgPointer pCBTarget, typename DlgCallback<CallbackDlg>::Func pFn)
 				: Base(szBtnText, rtBounds), pCBTarget(pCBTarget), pCallbackFn(pFn) { }
-			CallbackButtonEx(Icons eUseIcon, const C4Rect &rtBounds, char cHotkey, CallbackDlgPointer pCBTarget, typename DlgCallback<CallbackDlg>::Func pFn) // ctor
+			CallbackButtonEx(Icons eUseIcon, const C4Rect &rtBounds, char cHotkey, CallbackDlgPointer pCBTarget, typename DlgCallback<CallbackDlg>::Func pFn)
 				: Base(eUseIcon, rtBounds, cHotkey), pCBTarget(pCBTarget), pCallbackFn(pFn) { }
-			CallbackButtonEx(const C4Facet &fctBase, const C4Facet &fctHighlight, const FLOAT_RECT &rtfBounds, char cHotkey, CallbackDlgPointer pCBTarget, typename DlgCallback<CallbackDlg>::Func pFn) // ctor
+			CallbackButtonEx(const C4Facet &fctBase, const C4Facet &fctHighlight, const FLOAT_RECT &rtfBounds, char cHotkey, CallbackDlgPointer pCBTarget, typename DlgCallback<CallbackDlg>::Func pFn)
 				: Base(fctBase, fctHighlight, rtfBounds, cHotkey), pCBTarget(pCBTarget), pCallbackFn(pFn) { }
 		};
 
@@ -1107,7 +1107,7 @@ namespace C4GUI {
 	class Edit : public Control
 		{
 		public:
-			Edit(const C4Rect &rtBounds, bool fFocusEdit=false); // ctor
+			Edit(const C4Rect &rtBounds, bool fFocusEdit=false);
 			~Edit();
 
 			enum InputResult // action to be taken when text is confirmed with enter
@@ -1226,7 +1226,7 @@ namespace C4GUI {
 				{ if (pCBAbortFunc && pCBCtrl) (pCBCtrl->*pCBAbortFunc)(); }
 
 		public:
-			CallbackEdit(const C4Rect &rtBounds, CallbackCtrl * pCBCtrl, CBFunc pCBFunc, CBAbortFunc pCBAbortFunc=NULL) // ctor
+			CallbackEdit(const C4Rect &rtBounds, CallbackCtrl * pCBCtrl, CBFunc pCBFunc, CBAbortFunc pCBAbortFunc=NULL)
 				: Edit(rtBounds), pCBCtrl(pCBCtrl), pCBFunc(pCBFunc), pCBAbortFunc(pCBAbortFunc) { }
 		};
 
@@ -1248,7 +1248,7 @@ namespace C4GUI {
 				};
 
 		public:
-			RenameEdit(Label *pLabel); // ctor - construct for label; add element; set focus
+			RenameEdit(Label *pLabel); // construct for label; add element; set focus
 			virtual ~RenameEdit();
 
 			void Abort();
@@ -1279,7 +1279,7 @@ namespace C4GUI {
 			virtual RenameResult OnOKRename(const char *szNewName) { return (pDlg && pCBOKFunc) ? (pDlg->*pCBOKFunc)(par, szNewName) : RR_Accepted; }
 
 		public:
-			CallbackRenameEdit(Label *pForLabel, CallbackDlg *pDlg, const ParType &par, CBOKFunc pCBOKFunc, CBCancelFunc pCBCancelFunc) // ctor
+			CallbackRenameEdit(Label *pForLabel, CallbackDlg *pDlg, const ParType &par, CBOKFunc pCBOKFunc, CBCancelFunc pCBCancelFunc)
 				: RenameEdit(pForLabel), pDlg(pDlg), par(par), pCBOKFunc(pCBOKFunc), pCBCancelFunc(pCBCancelFunc) { }
 		};
 
@@ -1311,7 +1311,7 @@ namespace C4GUI {
 			char cHotkey;
 
 		public:
-			CheckBox(const C4Rect &rtBounds, const char *szCaption, bool fChecked); // ctor
+			CheckBox(const C4Rect &rtBounds, const char *szCaption, bool fChecked);
 			~CheckBox();
 
 		private:
@@ -1390,8 +1390,8 @@ namespace C4GUI {
 			void UpdateColumnCount();
 
 		public:
-			ListBox(const C4Rect &rtBounds, int32_t iMultiColItemWidth=0); // ctor
-			virtual ~ListBox(); // dtor
+			ListBox(const C4Rect &rtBounds, int32_t iMultiColItemWidth=0);
+			virtual ~ListBox();
 
 			virtual void RemoveElement(Element *pChild); // remove child component
 			bool AddElement(Element *pChild, int32_t iIndent=0); // add element and adjust its pos
@@ -1468,7 +1468,7 @@ namespace C4GUI {
 					bool fHasCloseButton, fCloseButtonHighlighted;
 					bool fTitleMarkup;
 
-					Sheet(const char *szTitle, const C4Rect &rcBounds, int32_t icoTitle = Ico_None, bool fHasCloseButton=false, bool fTitleMarkup=true); // ctor; expands hotkey markup in title
+					Sheet(const char *szTitle, const C4Rect &rcBounds, int32_t icoTitle = Ico_None, bool fHasCloseButton=false, bool fTitleMarkup=true); // expands hotkey markup in title
 
 					void DrawCaption(C4FacetEx &cgo, int32_t x, int32_t y, int32_t iMaxWdt, bool fLarge, bool fActive, bool fFocus, C4FacetEx *pfctClip, C4FacetEx *pfctIcon, CStdFont *pUseFont);
 					void GetCaptionSize(int32_t *piWdt, int32_t *piHgt, bool fLarge, bool fActive, C4FacetEx *pfctClip, C4FacetEx *pfctIcon, CStdFont *pUseFont);
@@ -1548,8 +1548,8 @@ namespace C4GUI {
 			virtual bool IsSelectedChild(Element *pChild) { return pChild == pActiveSheet || (pActiveSheet && pActiveSheet->IsParentOf(pChild)); }
 
 		public:
-			Tabular(C4Rect &rtBounds, TabPosition eTabPos); // ctor
-			~Tabular(); // dtor
+			Tabular(C4Rect &rtBounds, TabPosition eTabPos);
+			~Tabular();
 
 			virtual void RemoveElement(Element *pChild); // clear ptr
 			Sheet *AddSheet(const char *szTitle, int32_t icoTitle = Ico_None);
@@ -1591,7 +1591,7 @@ namespace C4GUI {
 			virtual Control *IsFocusElement() { return false; }; // no focus element for now, because there's nothing to do (2do: scroll?)
 
 		public:
-			TextWindow(C4Rect &rtBounds, size_t iPicWdt=0, size_t iPicHgt=0, size_t iPicPadding=0, size_t iMaxLines=100, size_t iMaxTextLen=4096, const char *szIndentChars="    ", bool fAutoGrow=false, const C4Facet *pOverlayPic=NULL, int iOverlayBorder=0, bool fMarkup=false); // ctor
+			TextWindow(C4Rect &rtBounds, size_t iPicWdt=0, size_t iPicHgt=0, size_t iPicPadding=0, size_t iMaxLines=100, size_t iMaxTextLen=4096, const char *szIndentChars="    ", bool fAutoGrow=false, const C4Facet *pOverlayPic=NULL, int iOverlayBorder=0, bool fMarkup=false);
 
 			void AddTextLine(const char *szText, CStdFont *pFont, DWORD dwClr, bool fDoUpdate, bool fMakeReadableOnBlack, CStdFont *pCaptionFont=NULL) // add text in a new line
 				{ if (pLogBuffer) pLogBuffer->AddLine(szText, pFont, dwClr, fDoUpdate, fMakeReadableOnBlack, pCaptionFont); }
@@ -1668,7 +1668,7 @@ namespace C4GUI {
 					virtual bool IsMenu() { return true; }
 
 				public:
-					Entry(const char *szText, Icons icoIcon=Ico_None, MenuHandler *pMenuHandler=NULL, ContextHandler *pSubmenuHandler=NULL); // ctor
+					Entry(const char *szText, Icons icoIcon=Ico_None, MenuHandler *pMenuHandler=NULL, ContextHandler *pSubmenuHandler=NULL);
 					~Entry()
 						{
 						if (pMenuHandler) delete pMenuHandler;
@@ -1718,8 +1718,8 @@ namespace C4GUI {
 			void DoOK();      // do OK for selected item
 
 		public:
-			ContextMenu();  // ctor
-			~ContextMenu(); // dtor
+			ContextMenu();
+			~ContextMenu();
 
 			void Open(Element *pTarget, int32_t iScreenX, int32_t iScreenY);
 			void Abort(bool fByUser);
@@ -1906,8 +1906,8 @@ namespace C4GUI {
 			virtual void UpdateSize();                // called when own size changed - update assigned pWindow
 
 		public:
-			Dialog(int32_t iWdt, int32_t iHgt, const char *szTitle, bool fViewportDlg); // ctor
-			virtual ~Dialog(); // dtor
+			Dialog(int32_t iWdt, int32_t iHgt, const char *szTitle, bool fViewportDlg);
+			virtual ~Dialog();
 
 			virtual void RemoveElement(Element *pChild); // clear ptr
 
@@ -2031,7 +2031,7 @@ namespace C4GUI {
 			virtual const char *GetID() { return 0; } // no ID needed, because it's never created as a window
 
 		public:
-			FullscreenDialog(const char *szTitle, const char *szSubtitle); // ctor
+			FullscreenDialog(const char *szTitle, const char *szSubtitle);
 
 			void SetTitle(const char *szToTitle); // change title text; creates or removes title bar if necessary
 
@@ -2071,7 +2071,7 @@ namespace C4GUI {
 				{ Dialog *pDlg; if ((pDlg = GetDlg())) pDlg->UserClose(fCloseResult); }
 
 		public:
-			CloseButton(const char *szBtnText, const C4Rect &rtBounds, bool fResult) // ctor
+			CloseButton(const char *szBtnText, const C4Rect &rtBounds, bool fResult)
 				: Button(szBtnText, rtBounds), fCloseResult(fResult) { }
 		};
 	class CloseIconButton : public IconButton
@@ -2083,31 +2083,31 @@ namespace C4GUI {
 				{ Dialog *pDlg; if ((pDlg = GetDlg())) pDlg->UserClose(fCloseResult); }
 
 		public:
-			CloseIconButton(const C4Rect &rtBounds, Icons eIcon, bool fResult) // ctor
+			CloseIconButton(const C4Rect &rtBounds, Icons eIcon, bool fResult)
 				: IconButton(eIcon, rtBounds, 0), fCloseResult(fResult) { }
 		};
 
 	// OK button
-	class OKButton : public CloseButton { public: OKButton(const C4Rect &rtBounds) // ctor
+	class OKButton : public CloseButton { public: OKButton(const C4Rect &rtBounds)
 				: CloseButton(LoadResStr("IDS_DLG_OK"), rtBounds, true) {} };
-	class OKIconButton : public CloseIconButton { public: OKIconButton(const C4Rect &rtBounds, Icons eIcon) // ctor
+	class OKIconButton : public CloseIconButton { public: OKIconButton(const C4Rect &rtBounds, Icons eIcon)
 				: CloseIconButton(rtBounds, eIcon, true) {} };
 	// cancel button
-	class CancelButton : public CloseButton { public: CancelButton(const C4Rect &rtBounds) // ctor
+	class CancelButton : public CloseButton { public: CancelButton(const C4Rect &rtBounds)
 				: CloseButton(LoadResStr("IDS_DLG_CANCEL"), rtBounds, false) {} };
-	class CancelIconButton : public CloseIconButton { public: CancelIconButton(const C4Rect &rtBounds, Icons eIcon) // ctor
+	class CancelIconButton : public CloseIconButton { public: CancelIconButton(const C4Rect &rtBounds, Icons eIcon)
 				: CloseIconButton(rtBounds, eIcon, false) {} };
 	// regular close button
-	class DlgCloseButton : public CloseButton { public: DlgCloseButton(const C4Rect &rtBounds) // ctor
+	class DlgCloseButton : public CloseButton { public: DlgCloseButton(const C4Rect &rtBounds)
 				: CloseButton(LoadResStr("IDS_DLG_CLOSE"), rtBounds, true) {} };
 	// Yes button
-	class YesButton : public CloseButton { public: YesButton(const C4Rect &rtBounds) // ctor
+	class YesButton : public CloseButton { public: YesButton(const C4Rect &rtBounds)
 				: CloseButton(LoadResStr("IDS_DLG_YES"), rtBounds, true) {} };
 	// No button
-	class NoButton : public CloseButton { public: NoButton(const C4Rect &rtBounds) // ctor
+	class NoButton : public CloseButton { public: NoButton(const C4Rect &rtBounds)
 				: CloseButton(LoadResStr("IDS_DLG_NO"), rtBounds, false) {} };
 	// Retry button
-	class RetryButton : public CloseButton { public: RetryButton(const C4Rect &rtBounds) // ctor
+	class RetryButton : public CloseButton { public: RetryButton(const C4Rect &rtBounds)
 				: CloseButton(LoadResStr("IDS_BTN_RETRY"), rtBounds, true) {} };
 
 	// a simple message dialog
@@ -2227,8 +2227,8 @@ namespace C4GUI {
 
 			virtual void OnSec1Timer(); // idle proc: update text if necessary
 		public:
-			InfoDialog(const char *szCaption, int32_t iLineCount); // ctor
-			InfoDialog(const char *szCaption, int iLineCount, const StdStrBuf &sText); // ctor - init w/o timer
+			InfoDialog(const char *szCaption, int32_t iLineCount);
+			InfoDialog(const char *szCaption, int iLineCount, const StdStrBuf &sText); // init w/o timer
 			~InfoDialog() { if (pSec1Timer) pSec1Timer->Release(); }
 
 			friend class C4Sec1TimerCallback<InfoDialog>;
@@ -2330,8 +2330,8 @@ namespace C4GUI {
 			Element *pDragElement;                              // element at pos where left mouse button was clicked last
 
 		public:
-			CMouse(int32_t iX, int32_t iY);  // ctor
-			~CMouse(); // dtor
+			CMouse(int32_t iX, int32_t iY);
+			~CMouse();
 
 			void Draw(C4FacetEx &cgo, bool fDrawToolTip); // draw cursor
 
@@ -2389,8 +2389,8 @@ namespace C4GUI {
 
 			Dialog *GetTopDialog(); // get topmost dlg
 		public:
-			Screen(int32_t tx, int32_t ty, int32_t twdt, int32_t thgt); // ctor
-			~Screen(); // dtor
+			Screen(int32_t tx, int32_t ty, int32_t twdt, int32_t thgt);
+			~Screen();
 
 			void Render(bool fDoBG);                 // render to lpDDraw
 			void RenderMouse(C4FacetEx &cgo);        // draw mouse only
@@ -2456,7 +2456,7 @@ namespace C4GUI {
 			typename DlgCallback<CBClass>::ContextClickFunc pCallbackFn; // callback function
 
 		public:
-			// ctor
+
 			CBMenuHandler<CBClass>(CBClass *pCBTarget, typename DlgCallback<CBClass>::ContextClickFunc pCallbackFn, int32_t iaExtra=0)
 				: MenuHandler(), pCBTarget(pCBTarget), pCallbackFn(pCallbackFn) { }
 
@@ -2476,7 +2476,7 @@ namespace C4GUI {
 			typename DlgCallbackEx<CBClass, const TEx &>::ContextClickFunc pCallbackFn; // callback function
 			TEx Extra;  // extra data
 		public:
-			// ctor
+
 			CBMenuHandlerEx<CBClass, TEx>(CBClass *pCBTarget, typename DlgCallbackEx<CBClass, const TEx &>::ContextClickFunc pCallbackFn, TEx aExtra)
 				: MenuHandler(), pCBTarget(pCBTarget), pCallbackFn(pCallbackFn), Extra(aExtra) { }
 			CBMenuHandlerEx<CBClass, TEx>(CBClass *pCBTarget, typename DlgCallbackEx<CBClass, const TEx &>::ContextClickFunc pCallbackFn)
@@ -2500,7 +2500,7 @@ namespace C4GUI {
 			typename DlgCallback<CBClass>::ContextFunc pCallbackFn; // callback function
 
 		public:
-			// ctor
+
 			CBContextHandler<CBClass>(CBClass *pCBTarget, typename DlgCallback<CBClass>::ContextFunc pCallbackFn)
 				: ContextHandler(), pCBTarget(pCBTarget), pCallbackFn(pCallbackFn) { }
 
@@ -2536,7 +2536,7 @@ namespace C4GUI {
 			static C4Rect rcTemp; // temp rect
 
 		public:
-			ComponentAligner(const C4Rect &rcArea, int32_t iMarginX, int32_t iMarginY, bool fZeroAreaXY=false) // ctor
+			ComponentAligner(const C4Rect &rcArea, int32_t iMarginX, int32_t iMarginY, bool fZeroAreaXY=false)
 				: rcClientArea(rcArea), iMarginX(iMarginX), iMarginY(iMarginY)
 				{ if (fZeroAreaXY) rcClientArea.x=rcClientArea.y=0; }
 
@@ -2598,10 +2598,10 @@ namespace C4GUI {
 			CStdFont &TooltipFont; // same as BookFont
 
 		public:
-			Resource(CStdFont &rCaptionFont, CStdFont &rTitleFont, CStdFont &rTextFont, CStdFont &rMiniFont, CStdFont &rTooltipFont) // ctor
+			Resource(CStdFont &rCaptionFont, CStdFont &rTitleFont, CStdFont &rTextFont, CStdFont &rMiniFont, CStdFont &rTooltipFont)
 				: idSfcCaption(0), idSfcButton(0), idSfcButtonD(0), idSfcScroll(0), idSfcContext(0),
 				CaptionFont(rCaptionFont), TitleFont(rTitleFont), TextFont(rTextFont), MiniFont(rMiniFont), TooltipFont(rTooltipFont) {}
-			~Resource() { Clear(); } // dtor
+			~Resource() { Clear(); }
 
 			bool Load(C4GroupSet &rFromGroup); // load resources
 			void Clear(); // clear data

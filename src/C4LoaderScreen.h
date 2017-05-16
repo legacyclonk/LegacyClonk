@@ -16,8 +16,8 @@ class C4LoaderScreen
 		bool fBlackScreen; // if set, a black screen is drawn instead of a loader
 
 	public:
-		C4LoaderScreen(); // ctor
-		~C4LoaderScreen(); // dtor
+		C4LoaderScreen();
+		~C4LoaderScreen();
 
 		bool Init(const char *szLoaderSpec); // inits and loads from global C4Game-class
 		void SetBlackScreen(bool fIsBlack);  // enabled/disables drawing of loader screen

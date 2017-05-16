@@ -9,8 +9,8 @@
 class C4StartupAboutDlg : public C4StartupDlg
 	{
 	public:
-		C4StartupAboutDlg(); // ctor
-		~C4StartupAboutDlg(); // dtor
+		C4StartupAboutDlg();
+		~C4StartupAboutDlg();
 
 	private:
 		class C4KeyBinding *pKeyBack;

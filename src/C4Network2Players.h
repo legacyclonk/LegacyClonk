@@ -28,8 +28,8 @@ class C4Network2Players
 		class C4PlayerInfoList &rInfoList;  // list of player infos - points to Game.PlayerInfos
 
 	public:
-		C4Network2Players();     // ctor
-		~C4Network2Players() { } // dtor
+		C4Network2Players();
+		~C4Network2Players() { }
 
 		void Init();            // add local players; add player file ressources - should be called with net connections initialized
 		void Clear();           // clear all player infos

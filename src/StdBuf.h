@@ -22,7 +22,6 @@ class StdBuf
 public:
 
   // *** Construction
-  // Standard constructor
   StdBuf() : fRef(true), pData(NULL), iSize(0) { }
 
   // Constructor from other buffer (copy construction):

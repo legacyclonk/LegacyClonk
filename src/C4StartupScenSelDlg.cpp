@@ -52,7 +52,7 @@ void C4MapFolderData::AccessGfx::CompileFunc(StdCompiler *pComp)
 
 C4MapFolderData::MapPic::MapPic(const FLOAT_RECT &rcfBounds, const C4Facet &rfct) : C4GUI::Picture(C4Rect(rcfBounds), false), rcfBounds(rcfBounds)
 	{
-	// ctor
+
 	SetFacet(rfct);
 	SetToolTip(LoadResStr("IDS_MSG_MAP_DESC"));
 	}
@@ -1279,7 +1279,7 @@ C4GUI::RenameEdit::RenameResult C4StartupScenSelDlg::ScenListItem::DoRenaming(Re
 
 C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResStrNoAmp(fNetwork ? "IDS_DLG_NETSTART" : "IDS_DLG_STARTGAME")), pScenLoader(NULL), fIsInitialLoading(false), fStartNetworkGame(fNetwork), pMapData(NULL), pRenameEdit(NULL), pfctBackground(NULL)
 	{
-	// ctor
+
 	// assign singleton
 	pInstance = this;
 

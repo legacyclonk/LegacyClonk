@@ -630,7 +630,7 @@ void C4ClientPlayerInfos::LoadResources()
 
 C4PlayerInfoList::C4PlayerInfoList() : iClientCount(0), iClientCapacity(0), ppClients(NULL), iLastPlayerID(0)
 	{
-	// ctor: no need to alloc mem yet
+	// no need to alloc mem yet
 	}
 
 C4PlayerInfoList &C4PlayerInfoList::operator = (const C4PlayerInfoList &rCpy)

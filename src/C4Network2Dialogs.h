@@ -23,7 +23,7 @@ class C4Network2ClientDlg : public C4GUI::InfoDialog
 		virtual const char *GetID() { return "ClientDialog"; }
 
 	public:
-		C4Network2ClientDlg(int iForClientID); // ctor
+		C4Network2ClientDlg(int iForClientID);
 	};
 
 // ressource dialog: created as listbox inside another dialog
@@ -46,7 +46,7 @@ class C4Network2ResDlg : public C4GUI::ListBox
 				void LocalSaveResource(bool fDoOverwrite); // called by OnButtonSave*: queried local saving of resource
 
 			public:
-				ListItem(class C4Network2ResDlg *pForResDlg, const class C4Network2Res *pByRes); // ctor
+				ListItem(class C4Network2ResDlg *pForResDlg, const class C4Network2Res *pByRes);
 
 				void Update(const class C4Network2Res *pByRes); // update data
 
@@ -88,7 +88,7 @@ class C4Network2ClientListBox : public C4GUI::ListBox
 				C4Network2ClientListBox *pForDlg;
 
 			public:
-				ListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID) // ctor
+				ListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID)
 				: iClientID(iClientID), pForDlg(pForDlg) {}
 
 				virtual void Update() = 0;
@@ -107,7 +107,7 @@ class C4Network2ClientListBox : public C4GUI::ListBox
 				bool fShownActive;
 
 			public:
-				ClientListItem(class C4Network2ClientListBox *pForDlg, int iClientID); // ctor
+				ClientListItem(class C4Network2ClientListBox *pForDlg, int iClientID);
 
 				virtual void Update(); // update data
 				const C4Client *GetClient() const; // get client by associated ID
@@ -126,7 +126,7 @@ class C4Network2ClientListBox : public C4GUI::ListBox
 				C4GUI::IconButton *pDisconnectBtn; // buttons to restore/destroy connection
 
 			public:
-				ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, int32_t iConnectionID); // ctor
+				ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, int32_t iConnectionID);
 
 				virtual void Update(); // update data
 				C4Network2IOConnection *GetConnection() const; // get connection by connection ID

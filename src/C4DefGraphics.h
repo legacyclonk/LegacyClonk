@@ -30,8 +30,8 @@ class C4DefGraphics
 
 		inline C4Surface *GetBitmap(DWORD dwClr=0) { if (BitmapClr) { BitmapClr->SetClr(dwClr); return BitmapClr; } else return Bitmap; }
 
-		C4DefGraphics(C4Def *pOwnDef=NULL);  // ctor
-		virtual ~C4DefGraphics() { Clear(); }; // dtor
+		C4DefGraphics(C4Def *pOwnDef=NULL);
+		virtual ~C4DefGraphics() { Clear(); };
 
 		bool LoadBitmap(C4Group &hGroup, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG, bool fColorByOwner); // load specified graphics from group
 		bool LoadBitmaps(C4Group &hGroup, bool fColorByOwner); // load graphics from group
@@ -59,7 +59,7 @@ class C4AdditionalDefGraphics : public C4DefGraphics
 		char Name[C4MaxName+1];   // graphics name
 
 	public:
-		C4AdditionalDefGraphics(C4Def *pOwnDef, const char *szName);  // ctor
+		C4AdditionalDefGraphics(C4Def *pOwnDef, const char *szName);
 		virtual const char *GetName() { return Name; }
 	};
 
@@ -67,7 +67,7 @@ class C4AdditionalDefGraphics : public C4DefGraphics
 class C4PortraitGraphics : public C4AdditionalDefGraphics
 	{
 	public:
-		C4PortraitGraphics(C4Def *pOwnDef, const char *szName)  // ctor
+		C4PortraitGraphics(C4Def *pOwnDef, const char *szName)
 			: C4AdditionalDefGraphics(pOwnDef, szName) { }
 
 		virtual C4PortraitGraphics *IsPortrait() { return this; }
@@ -85,8 +85,8 @@ class C4DefGraphicsPtrBackup
 		C4DefGraphicsPtrBackup *pNext; // next member of linked list
 
 	public:
-		C4DefGraphicsPtrBackup(C4DefGraphics *pSourceGraphics); // ctor
-		~C4DefGraphicsPtrBackup();                              // dtor
+		C4DefGraphicsPtrBackup(C4DefGraphics *pSourceGraphics);
+		~C4DefGraphicsPtrBackup();
 
 		void AssignUpdate(C4DefGraphics *pNewGraphics); // update all game objects with new graphics pointers
 		void AssignRemoval();                           // remove graphics of this def from all game objects
@@ -114,8 +114,8 @@ class C4Portrait
 		bool fGraphicsOwned;         // if true, the portrait graphics are owned (and deleted upon destruction)
 
 	public:
-		C4Portrait() : pGfxPortrait(NULL), fGraphicsOwned(false) {} // ctor
-		~C4Portrait() { if (fGraphicsOwned) delete pGfxPortrait; }  // dtor
+		C4Portrait() : pGfxPortrait(NULL), fGraphicsOwned(false) {}
+		~C4Portrait() { if (fGraphicsOwned) delete pGfxPortrait; }
 		void Default() { pGfxPortrait=NULL; fGraphicsOwned=false; }
 		void Clear() { if (fGraphicsOwned) { delete pGfxPortrait; fGraphicsOwned=false; } pGfxPortrait=NULL; }
 
@@ -174,8 +174,8 @@ class C4GraphicsOverlay
 #ifdef C4ENGINE
 			pOverlayObj(NULL), nOverlayObj(0), Transform(+1),
 #endif
-			iPhase(0), fZoomToShape(false), iID(0), pNext(NULL) { *Action=0; } // std ctor
-		~C4GraphicsOverlay(); // dtor
+			iPhase(0), fZoomToShape(false), iID(0), pNext(NULL) { *Action=0; }
+		~C4GraphicsOverlay();
 
 		void CompileFunc(StdCompiler *pComp);
 

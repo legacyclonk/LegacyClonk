@@ -30,8 +30,8 @@ void glColorDw(DWORD dwClr);
 class CStdGLCtx
 	{
 	public:
-		CStdGLCtx();  // ctor
-		~CStdGLCtx() { Clear(); }; // dtor
+		CStdGLCtx();
+		~CStdGLCtx() { Clear(); };
 		
 		void Clear();								// clear objects
 #ifdef _WIN32

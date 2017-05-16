@@ -40,8 +40,8 @@ class C4StartupMainDlg : public C4StartupDlg
 		virtual void OnShown(); // callback when shown: Show log if restart after failure; show player creation dlg on first start
 
 	public:
-		C4StartupMainDlg(); // ctor
-		~C4StartupMainDlg(); // dtor
+		C4StartupMainDlg();
+		~C4StartupMainDlg();
 	};
 
 #endif // INC_C4StartupMainDlg

@@ -16,7 +16,7 @@ class C4Surface: public CSurface
 		C4Surface(const C4Surface &rCpy);		// do NOT copy
 		C4Surface &operator = (const C4Surface &rCpy);	// do NOT copy
 	public:
-		C4Surface() : CSurface() {};	// ctor
+		C4Surface() : CSurface() {};
 
 		BOOL LoadAny(C4Group &hGroup, const char *szFilename, bool fOwnPal=false, bool fNoErrIfNotFound=false);
 		BOOL LoadAny(C4GroupSet &hGroupset, const char *szFilename, bool fOwnPal=false, bool fNoErrIfNotFound=false);
