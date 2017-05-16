@@ -286,7 +286,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 		Application.InteractiveThread.RemoveProc(&VerChecker);
 		VerChecker.SetNotify(nullptr);
 	}
-	if (C4GUI::IsGUIValid() && pWaitDlg) delete pWaitDlg;
+	if (C4GUI::IsGUIValid()) delete pWaitDlg;
 	// User abort
 	if (fAborted)
 	{

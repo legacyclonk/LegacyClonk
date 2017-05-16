@@ -1040,7 +1040,7 @@ void C4Player::Clear()
 		delete pMsgBoardQuery;
 		pMsgBoardQuery = pNext;
 	}
-	if (pGamepad) delete pGamepad;
+	delete pGamepad;
 	pGamepad = nullptr;
 	Status = 0;
 }
@@ -1861,7 +1861,7 @@ void C4Player::InitControl()
 	if (Game.C4S.Head.ForcedControlStyle > -1) ControlStyle = Game.C4S.Head.ForcedControlStyle; else ControlStyle = PrefControlStyle;
 	if (Game.C4S.Head.ForcedAutoContextMenu > -1) AutoContextMenu = Game.C4S.Head.ForcedAutoContextMenu; else AutoContextMenu = PrefAutoContextMenu;
 	// init gamepad
-	if (pGamepad) { delete pGamepad; pGamepad = nullptr; }
+	delete pGamepad; pGamepad = nullptr;
 	if (Inside<int32_t>(Control, C4P_Control_GamePad1, C4P_Control_GamePadMax))
 	{
 		pGamepad = new C4GamePadOpener(Control - C4P_Control_GamePad1);
@@ -2130,18 +2130,18 @@ void C4Player::CreateGraphs()
 void C4Player::ClearGraphs()
 {
 	// del all assigned graphs
-	if (pstatControls)
+	if (pstatControls && Game.pNetworkStatistics)
 	{
-		if (Game.pNetworkStatistics) Game.pNetworkStatistics->statControls.RemoveGraph(pstatControls);
-		delete pstatControls;
-		pstatControls = nullptr;
+		Game.pNetworkStatistics->statControls.RemoveGraph(pstatControls);
 	}
-	if (pstatActions)
+	delete pstatControls;
+	pstatControls = nullptr;
+	if (pstatActions && Game.pNetworkStatistics)
 	{
-		if (Game.pNetworkStatistics) Game.pNetworkStatistics->statActions.RemoveGraph(pstatActions);
-		delete pstatActions;
-		pstatActions = nullptr;
+		Game.pNetworkStatistics->statActions.RemoveGraph(pstatActions);
 	}
+	delete pstatActions;
+	pstatActions = nullptr;
 }
 
 void C4Player::CountControl(ControlType eType, int32_t iID, int32_t iCntAdd)

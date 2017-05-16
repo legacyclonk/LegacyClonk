@@ -31,7 +31,7 @@ C4MCCallbackArray::C4MCCallbackArray(C4AulFunc *pSFunc, C4MapCreatorS2 *pMapCrea
 C4MCCallbackArray::~C4MCCallbackArray()
 {
 	// clear map, if present
-	if (pMap) delete[] pMap;
+	delete[] pMap;
 }
 
 void C4MCCallbackArray::EnablePixel(int32_t iX, int32_t iY)
@@ -830,7 +830,7 @@ C4MCParser::~C4MCParser()
 void C4MCParser::Clear()
 {
 	// clear code if present
-	if (Code) delete[] Code; Code = nullptr; CPos = nullptr;
+	delete[] Code; Code = nullptr; CPos = nullptr;
 	// reset filename
 	*Filename = 0;
 }

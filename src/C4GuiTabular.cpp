@@ -195,11 +195,11 @@ Tabular::Tabular(C4Rect &rtBounds, TabPosition eTabPos) : Control(rtBounds), pAc
 
 Tabular::~Tabular()
 {
-	if (pKeyCloseTab) delete pKeyCloseTab;
-	if (pKeySelDown2) delete pKeySelDown2;
-	if (pKeySelUp2)   delete pKeySelUp2;
-	if (pKeySelDown)  delete pKeySelDown;
-	if (pKeySelUp)    delete pKeySelUp;
+	delete pKeyCloseTab;
+	delete pKeySelDown2;
+	delete pKeySelUp2;
+	delete pKeySelDown;
+	delete pKeySelUp;
 }
 
 bool Tabular::KeySelUp()

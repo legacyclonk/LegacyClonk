@@ -401,7 +401,7 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 		pScoreLabel->SetX0(iScoreRightPos);
 		pScoreLabel->SetText(sText.getData(), false);
 	}
-	else if (pScoreLabel)
+	else
 	{
 		// score label invisible
 		delete pScoreLabel;
@@ -752,7 +752,7 @@ void C4PlayerInfoListBox::ClientListItem::SetPing(int32_t iToPing)
 	if (iToPing == -1)
 	{
 		// remove any ping label
-		if (pPingLabel) { delete pPingLabel; pPingLabel = nullptr; }
+		delete pPingLabel; pPingLabel = nullptr;
 		return;
 	}
 	// get ping as text

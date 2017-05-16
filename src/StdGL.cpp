@@ -1065,7 +1065,7 @@ bool CStdGL::DeleteDeviceObjects()
 	NoPrimaryClipper();
 	// del font objects
 	// del main surfaces
-	if (lpPrimary) delete lpPrimary;
+	delete lpPrimary;
 	lpPrimary = lpBack = nullptr;
 	RenderTarget = nullptr;
 	// clear context

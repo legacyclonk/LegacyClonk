@@ -116,7 +116,7 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 	}
 
 	// free buffer
-	if (pStrTblBuf) delete[] pStrTblBuf;
+	delete[] pStrTblBuf;
 
 	// assign this buf
 	rTarget.Clear();

@@ -24,7 +24,7 @@ void C4Scoreboard::Clear()
 	pEntries = nullptr; iRows = iCols = 0;
 	// del dialog
 	iDlgShow = 0;
-	if (pDlg) { delete pDlg; pDlg = nullptr; }
+	delete pDlg; pDlg = nullptr;
 }
 
 void C4Scoreboard::AddRow(int32_t iInsertBefore)

@@ -104,7 +104,7 @@ bool C4Video::Stop()
 	// Recording flag
 	Recording = false;
 	// Clear buffer
-	if (Buffer) delete[] Buffer; Buffer = nullptr;
+	delete[] Buffer; Buffer = nullptr;
 #endif
 	// Done
 	return true;

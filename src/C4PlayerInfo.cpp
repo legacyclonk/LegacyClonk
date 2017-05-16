@@ -460,7 +460,7 @@ void C4ClientPlayerInfos::GrabMergeFrom(C4ClientPlayerInfos &rFrom)
 	else
 	{
 		// no own players: take over buffer of pFrom
-		if (ppPlayers) delete[] ppPlayers;
+		delete[] ppPlayers;
 		ppPlayers = rFrom.ppPlayers; rFrom.ppPlayers = nullptr;
 		iPlayerCount = rFrom.iPlayerCount; rFrom.iPlayerCount = 0;
 		iPlayerCapacity = rFrom.iPlayerCapacity; rFrom.iPlayerCapacity = 0;
@@ -510,8 +510,8 @@ void C4ClientPlayerInfos::GrowList(size_t iByVal)
 	if (ppPlayers)
 	{
 		memcpy(ppNewInfo, ppPlayers, iPlayerCount * sizeof(C4PlayerInfo *));
-		delete[] ppPlayers;
 	}
+	delete[] ppPlayers;
 	// assign new
 	ppPlayers = ppNewInfo;
 }
@@ -670,8 +670,8 @@ void C4PlayerInfoList::GrowList(size_t iByVal)
 	if (ppClients)
 	{
 		memcpy(ppNewInfo, ppClients, iClientCount * sizeof(C4ClientPlayerInfos *));
-		delete[] ppClients;
 	}
+	delete[] ppClients;
 	// assign new
 	ppClients = ppNewInfo;
 }

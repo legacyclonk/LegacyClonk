@@ -522,7 +522,7 @@ Screen::~Screen()
 	// clear singleton
 	if (this == pScreen) pScreen = nullptr;
 	// GamePad
-	if (pGamePadOpener) delete pGamePadOpener;
+	delete pGamePadOpener;
 }
 
 void Screen::ElementPosChanged(Element *pOfElement)

@@ -42,8 +42,7 @@ void C4GameRes::Clear()
 {
 	eType = NRT_Null;
 	File.Clear();
-	if (pResCore && !pNetRes)
-		delete pResCore;
+	if (!pNetRes) delete pResCore;
 	pResCore = nullptr;
 	pNetRes = nullptr;
 }

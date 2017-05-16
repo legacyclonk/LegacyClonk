@@ -1774,8 +1774,8 @@ public:
 		Entry(const char *szText, Icons icoIcon = Ico_None, MenuHandler *pMenuHandler = nullptr, ContextHandler *pSubmenuHandler = nullptr);
 		~Entry()
 		{
-			if (pMenuHandler)    delete pMenuHandler;
-			if (pSubmenuHandler) delete pSubmenuHandler;
+			delete pMenuHandler;
+			delete pSubmenuHandler;
 		}
 
 		const char *GetText() { return sText.getData(); }
@@ -2375,7 +2375,7 @@ protected:
 
 public:
 	InputDialog(const char *szMessage, const char *szCaption, Icons icoIcon, BaseInputCallback *pCB, bool fChatLayout = false);
-	~InputDialog() { if (pCB) delete pCB; }
+	~InputDialog() { delete pCB; }
 
 	virtual void OnClosed(bool fOK) { if (pCB && fOK) pCB->OnOK(StdStrBuf(pEdit->GetText())); Dialog::OnClosed(fOK); } // close CB
 	void SetMaxText(int32_t iMaxLen) { pEdit->SetMaxText(iMaxLen); }
@@ -2806,7 +2806,7 @@ public:
 
 public:
 	static Resource *Get() { return pRes; } // get res ptr - only set if successfully loaded
-	static void Unload() { if (pRes) delete pRes; } // unload any GUI resources
+	static void Unload() { delete pRes; } // unload any GUI resources
 
 	CStdFont &GetFontByHeight(int32_t iHgt, float *pfZoom = nullptr); // get optimal font for given control size
 };

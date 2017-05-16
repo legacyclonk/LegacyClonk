@@ -226,9 +226,9 @@ int C4RankSystem::RankByExperience(int iExp)
 void C4RankSystem::Clear()
 {
 	// clear any loaded rank names
-	if (pszRankNames)      { delete[] pszRankNames;      pszRankNames      = nullptr; }
-	if (pszRankExtensions) { delete[] pszRankExtensions; pszRankExtensions = nullptr; }
-	if (szRankNames)       { delete[] szRankNames;       szRankNames       = nullptr; }
+	delete[] pszRankNames;      pszRankNames      = nullptr;
+	delete[] pszRankExtensions; pszRankExtensions = nullptr;
+	delete[] szRankNames;       szRankNames       = nullptr;
 	// reset number of ranks
 	iRankNum = 0;
 	iRankExtNum = 0;

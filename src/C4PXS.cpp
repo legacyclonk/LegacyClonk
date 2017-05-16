@@ -154,7 +154,7 @@ void C4PXSSystem::Clear()
 {
 	for (unsigned int cnt = 0; cnt < PXSMaxChunk; cnt++)
 	{
-		if (Chunk[cnt]) delete[] Chunk[cnt];
+		delete[] Chunk[cnt];
 		Chunk[cnt] = nullptr;
 		iChunkPXS[cnt] = 0;
 	}
@@ -407,18 +407,15 @@ void C4PXSSystem::SyncClearance()
 	int32_t iDestChunk = 0;
 	for (unsigned int cnt = 0; cnt < PXSMaxChunk; cnt++)
 	{
-		if (Chunk[cnt])
+		if (Chunk[cnt] && iChunkPXS[cnt])
 		{
-			if (iChunkPXS[cnt])
-			{
-				*pDestChunk++ = Chunk[cnt];
-				iChunkPXS[iDestChunk++] = iChunkPXS[cnt];
-			}
-			else
-			{
-				delete[] Chunk[cnt];
-				Chunk[cnt] = nullptr;
-			}
+			*pDestChunk++ = Chunk[cnt];
+			iChunkPXS[iDestChunk++] = iChunkPXS[cnt];
+		}
+		else
+		{
+			delete[] Chunk[cnt];
+			Chunk[cnt] = nullptr;
 		}
 	}
 }

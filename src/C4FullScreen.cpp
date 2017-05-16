@@ -372,7 +372,7 @@ C4FullScreen::C4FullScreen()
 
 C4FullScreen::~C4FullScreen()
 {
-	if (pMenu) delete pMenu;
+	delete pMenu;
 }
 
 void C4FullScreen::Close()
@@ -474,12 +474,9 @@ bool C4FullScreen::ActivateMenuMain()
 
 void C4FullScreen::CloseMenu()
 {
-	if (pMenu)
-	{
-		if (pMenu->IsActive()) pMenu->Close(false);
-		delete pMenu;
-		pMenu = nullptr;
-	}
+	if (pMenu && pMenu->IsActive()) pMenu->Close(false);
+	delete pMenu;
+	pMenu = nullptr;
 }
 
 bool C4FullScreen::MenuKeyControl(uint8_t byCom)

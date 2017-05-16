@@ -91,7 +91,7 @@ void C4StartupNetListEntry::ClearRef()
 		Thread.RemoveProc(pRefClient);
 		delete pRefClient; pRefClient = nullptr;
 	}
-	if (pRef) { delete pRef; pRef = nullptr; }
+	delete pRef; pRef = nullptr;
 	eQueryType = NRQT_Unknown;
 	iTimeout = iRequestTimeout = 0;
 	fError = false;
@@ -739,7 +739,7 @@ C4StartupNetDlg::~C4StartupNetDlg()
 	Application.InteractiveThread.ClearCallback(Ev_HTTP_Response, this);
 	DiscoverClient.Close();
 	pSec1Timer->Release();
-	if (pMasterserverClient) delete pMasterserverClient;
+	delete pMasterserverClient;
 
 	delete pKeyBack;
 	delete pKeyRefresh;
@@ -768,7 +768,7 @@ void C4StartupNetDlg::OnClosed(bool fOK)
 {
 	// dlg abort: return to main screen
 	pGameSelList->SelectNone(false);
-	if (pMasterserverClient) { delete pMasterserverClient; pMasterserverClient = nullptr; }
+	delete pMasterserverClient; pMasterserverClient = nullptr;
 	if (!fOK) DoBack();
 }
 

@@ -289,15 +289,15 @@ C4Network2::InitResult C4Network2::InitClient(const class C4Network2Address *pAd
 	{
 		if (Application.HandleMessage(100) == HR_Failure)
 		{
-			if (Game.pGUI && pDlg) delete pDlg; return IR_Fatal;
+			if (Game.pGUI) delete pDlg; return IR_Fatal;
 		}
 		if (pDlg && pDlg->IsAborted())
 		{
-			if (Game.pGUI && pDlg) delete pDlg; return IR_Fatal;
+			if (Game.pGUI) delete pDlg; return IR_Fatal;
 		}
 	}
 	// Close dialog
-	if (Game.pGUI && pDlg) delete pDlg;
+	if (Game.pGUI) delete pDlg;
 	// error?
 	if (!isEnabled())
 		return IR_Error;
@@ -462,7 +462,7 @@ bool C4Network2::FinalInit()
 				Clear(); return false;
 			}
 		}
-		if (Game.pGUI && pDlg) delete pDlg;
+		if (Game.pGUI) delete pDlg;
 		// log
 		Log(LoadResStr("IDS_NET_START"));
 	}
@@ -1509,7 +1509,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 			// log
 			if (fLog) LogF(LoadResStr("IDS_NET_RECEIVED"), szResName, pRes->getCore().getFileName());
 			// return
-			if (pDlg) delete pDlg;
+			delete pDlg;
 			return pRes;
 		}
 
@@ -1525,7 +1525,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 			if (timeGetTime() > iTimeout)
 			{
 				LogFatal(FormatString(LoadResStr("IDS_NET_ERR_RESTIMEOUT"), szResName).getData());
-				if (pDlg) delete pDlg;
+				delete pDlg;
 				return nullptr;
 			}
 		}
@@ -1554,7 +1554,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 			// execute (will do message handling)
 			if (!pDlg->Execute())
 			{
-				if (pDlg) delete pDlg; return nullptr;
+				delete pDlg; return nullptr;
 			}
 			// aborted?
 			if (!Game.pGUI) return nullptr;
@@ -1861,7 +1861,7 @@ bool C4Network2::InitLeague(bool *pCancel)
 		MasterServerAddress.Clear();
 		Game.Parameters.League.Clear();
 		Game.Parameters.LeagueAddress.Clear();
-		if (pLeagueClient) delete pLeagueClient; pLeagueClient = nullptr;
+		delete pLeagueClient; pLeagueClient = nullptr;
 
 		// Not needed?
 		if (!Config.Network.MasterServerSignUp && !Config.Network.LeagueServerSignUp)
@@ -1918,7 +1918,7 @@ void C4Network2::DeinitLeague()
 	MasterServerAddress.Clear();
 	Game.Parameters.League.Clear();
 	Game.Parameters.LeagueAddress.Clear();
-	if (pLeagueClient) delete pLeagueClient; pLeagueClient = nullptr;
+	delete pLeagueClient; pLeagueClient = nullptr;
 }
 
 bool C4Network2::LeagueStart(bool *pCancel)
@@ -1979,7 +1979,7 @@ bool C4Network2::LeagueStart(bool *pCancel)
 			(pDlg && pDlg->IsAborted()))
 		{
 			// Clear up
-			if (Game.pGUI && pDlg) delete pDlg;
+			if (Game.pGUI) delete pDlg;
 			return false;
 		}
 		// Check if league server has responded
@@ -2296,7 +2296,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 				(pDlg && pDlg->IsAborted()))
 			{
 				// Clear up
-				if (Game.pGUI && pDlg) delete pDlg;
+				if (Game.pGUI) delete pDlg;
 				return false;
 			}
 			// Check if league server has responded
@@ -2675,12 +2675,9 @@ void C4Network2::StartLobbyCountdown(int32_t iCountdownTime)
 void C4Network2::AbortLobbyCountdown()
 {
 	// aboert lobby countdown
-	if (pLobbyCountdown)
-	{
-		pLobbyCountdown->Abort();
-		delete pLobbyCountdown;
-		pLobbyCountdown = nullptr;
-	}
+	if (pLobbyCountdown) pLobbyCountdown->Abort();
+	delete pLobbyCountdown;
+	pLobbyCountdown = nullptr;
 }
 
 /* Streaming */

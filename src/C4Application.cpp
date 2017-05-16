@@ -39,7 +39,7 @@ C4Application::C4Application() :
 C4Application::~C4Application()
 {
 	// clear gamepad
-	if (pGamePadControl) delete pGamePadControl;
+	delete pGamePadControl;
 	// Close log
 	CloseLog();
 	// Launch editor
@@ -249,12 +249,12 @@ void C4Application::Clear()
 	Languages.Clear();
 	Languages.ClearLanguage();
 	// gamepad clear
-	if (pGamePadControl) { delete pGamePadControl; pGamePadControl = nullptr; }
+	delete pGamePadControl; pGamePadControl = nullptr;
 	// music system clear
 	MusicSystem.Clear();
 	SoundSystem.Clear();
 	// Clear direct draw (late, because it's needed for e.g. Log)
-	if (DDraw) { delete DDraw; DDraw = nullptr; }
+	delete DDraw; DDraw = nullptr;
 	// Close window
 	FullScreen.Clear();
 	Console.Clear();

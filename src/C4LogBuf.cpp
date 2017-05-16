@@ -27,7 +27,7 @@ C4LogBuffer::~C4LogBuffer()
 	delete[] pLineDataBuf;
 	delete[] szBuf;
 	// free indent
-	if (szIndent) delete[] szIndent;
+	delete[] szIndent;
 }
 
 void C4LogBuffer::GrowLineCountBuffer(size_t iGrowBy)
