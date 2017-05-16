@@ -268,6 +268,11 @@ if (NOT MSVC)
 		$<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
 endif ()
 
+# Get non-standard <cmath> constants (M_PI etc.)
+if (MSVC)
+	set(_USE_MATH_DEFINES ON)
+endif ()
+
 # Create config.h and make sure it will be used and found
 add_definitions(-DHAVE_CONFIG_H)
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)

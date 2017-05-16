@@ -30,4 +30,6 @@
 #cmakedefine HAVE_UNISTD_H 1
 #cmakedefine HAVE_VASPRINTF 1
 
+#cmakedefine _USE_MATH_DEFINES
+
 #define ICONV_CONST
