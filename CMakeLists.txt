@@ -82,6 +82,11 @@ if (ENABLE_SOUND AND NOT WIN32)
 	set(USE_SDL_MIXER ON)
 endif ()
 
+# Use Microsoft CryptoAPI instead of OpenSSL when compiling for Windows
+if (WIN32)
+	set(USE_MSCAPI ON)
+endif ()
+
 # Add engine target
 
 set(FILELISTS_DIR "cmake/filelists")
@@ -110,6 +115,12 @@ target_link_libraries(c4group standard)
 # Add libstandard target
 
 file(STRINGS ${FILELISTS_DIR}/Std.txt LIBSTANDARD_SOURCES)
+
+if (USE_MSCAPI)
+	list(APPEND LIBSTANDARD_SOURCES src/StdSha1MSCapi.cpp)
+else ()
+	list(APPEND LIBSTANDARD_SOURCES src/StdSha1OpenSSL.cpp)
+endif ()
 
 if (USE_SDL_MAINLOOP)
 	file(STRINGS ${FILELISTS_DIR}/StdSdl.txt LIBSTANDARD_SOURCES_SDL)
@@ -185,11 +196,13 @@ if (NOT USE_CONSOLE)
 endif ()
 
 # Link OpenSSL crypto library
-find_package(OpenSSL)
-if (NOT TARGET OpenSSL::Crypto)
-	message(FATAL_ERROR "Cannot find OpenSSL crypto library")
+if (NOT USE_MSCAPI)
+	find_package(OpenSSL)
+	if (NOT TARGET OpenSSL::Crypto)
+		message(FATAL_ERROR "Cannot find OpenSSL crypto library")
+	endif ()
+	target_link_libraries(standard OpenSSL::Crypto)
 endif ()
-target_link_libraries(standard OpenSSL::Crypto)
 
 # Link libpng
 if (NOT USE_CONSOLE)

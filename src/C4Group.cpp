@@ -22,9 +22,9 @@
 #endif
 
 #include <StdPNG.h>
+#include <StdSha1.h>
 #include <zlib.h>
 #include <fcntl.h>
-#include <openssl/sha.h>
 
 #include <cstring>
 
@@ -462,8 +462,7 @@ bool C4Group_GetFileSHA1(const char *szFilename, uint8_t *pSHA1)
 	if (!File.Open(szFilename))
 		return false;
 	// calculcate CRC
-	SHA_CTX ctx;
-	if (!SHA1_Init(&ctx)) return false;
+	StdSha1 sha1;
 	for (;;)
 	{
 		// read a chunk of data
@@ -472,13 +471,12 @@ bool C4Group_GetFileSHA1(const char *szFilename, uint8_t *pSHA1)
 			if (!iSize)
 				break;
 		// update CRC
-		if (!SHA1_Update(&ctx, szData, iSize))
-			return false;
+		sha1.Update(szData, iSize);
 	}
 	// close file
 	File.Close();
 	// finish calculation
-	SHA1_Final(pSHA1, &ctx);
+	sha1.GetHash(pSHA1);
 	return true;
 }
 

@@ -36,6 +36,7 @@ src/StdResStr2.cpp
 src/StdResStr2.h
 src/StdScheduler.cpp
 src/StdScheduler.h
+src/StdSha1.h
 src/StdSurface2.cpp
 src/StdSurface2.h
 src/StdSurface8.cpp
