@@ -1159,37 +1159,6 @@ void CStdDDraw::DrawFrameDw(CSurface *sfcDest, int x1, int y1, int x2, int y2, u
 
 // Globally locked surface variables - for DrawLine callback crap
 
-CSurface *GLSBuffer = nullptr;
-
-bool LockSurfaceGlobal(CSurface *sfcTarget)
-{
-	if (GLSBuffer) return false;
-	GLSBuffer = sfcTarget;
-	return !!sfcTarget->Lock();
-}
-
-bool UnLockSurfaceGlobal(CSurface *sfcTarget)
-{
-	if (!GLSBuffer) return false;
-	sfcTarget->Unlock();
-	GLSBuffer = nullptr;
-	return true;
-}
-
-bool DLineSPix(int32_t x, int32_t y, int32_t col)
-{
-	if (!GLSBuffer) return false;
-	GLSBuffer->SetPix(x, y, col);
-	return true;
-}
-
-bool DLineSPixDw(int32_t x, int32_t y, int32_t dwClr)
-{
-	if (!GLSBuffer) return false;
-	GLSBuffer->SetPixDw(x, y, (uint32_t)dwClr);
-	return true;
-}
-
 void CStdDDraw::DrawPatternedCircle(CSurface *sfcDest, int x, int y, int r, uint8_t col, CPattern &Pattern1, CPattern &Pattern2, CStdPalette &rPal)
 {
 	if (!sfcDest->Lock()) return;

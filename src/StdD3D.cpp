@@ -140,12 +140,12 @@ bool CStdD3D::PrepareRendering(CSurface *sfcToSurface)
 	// target?
 	if (!sfcToSurface) return false;
 	// target locked?
-	if (sfcToSurface->Locked) return false;
+	assert(!sfcToSurface->Locked);
 	// target is already set as render target?
 	if (sfcToSurface != RenderTarget)
 	{
 		// target is a render-target?
-		if (!sfcToSurface->IsRenderTarget()) return false;
+		assert(sfcToSurface->IsRenderTarget());
 		IDirect3DSurface9 *pDest = sfcToSurface->GetSurface();
 		if (!pDest) return false;
 		// set target
@@ -576,17 +576,8 @@ bool CStdD3D::OnResolutionChanged()
 void CStdD3D::DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwClr)
 {
 	// is render target?
-	if (!sfcDest->IsRenderTarget())
-		// on non-rendertargets, just set using locks
-	{
-		sfcDest->SetPixDw((int)tx, (int)ty, dwClr);
-		return;
-	}
-	else if (sfcDest->IsLocked())
-	{
-		DrawPixPrimary(sfcDest, int(tx), int(ty), dwClr);
-		return;
-	}
+	assert(sfcDest->IsRenderTarget());
+	assert(!sfcDest->IsLocked());
 	// on a render target, blit as a box (ugh!)
 	// set vertex buffer data
 	// vertex order:
@@ -600,16 +591,6 @@ void CStdD3D::DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwClr)
 	vtx[4] = (int)tx + 1; vtx[5] = (int)ty + 1;
 	vtx[6] = (int)tx + 1; vtx[7] = (int)ty;
 	DrawQuadDw(sfcDest, vtx, dwClr, dwClr, dwClr, dwClr);
-}
-
-void CStdD3D::DrawPixPrimary(CSurface *sfcDest, int iX, int iY, uint32_t dwClr)
-{
-	// Must be render target and locked
-	if (!sfcDest->IsRenderTarget() || !sfcDest->IsLocked()) return;
-	// set pixel
-	uint8_t *pBits = sfcDest->PrimarySurfaceLockBits;
-	int iPitch = sfcDest->PrimarySurfaceLockPitch;
-	BltAlpha(*reinterpret_cast<uint32_t *>(pBits + iY * iPitch + iX * 4), dwClr);
 }
 
 void CStdD3D::DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
@@ -666,163 +647,38 @@ void CStdD3D::DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, floa
 	if (BlitModulated)
 		ModulateClr(dwClr, BlitModulateClr);
 	// render target?
-	if (sfcTarget->IsRenderTarget())
-		if (!sfcTarget->IsLocked())
-		{
-			// draw as primitive
-			if (!PrepareRendering(sfcTarget)) return;
-			// set blitting state - use src alpha channel als opacity because some systems cannot antialias otherwise
-			int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
-			drawSolidState[iAdditive]->Apply();
-			lpDevice->SetRenderState(D3DRS_DESTBLEND, iAdditive ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
-			lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-			lpDevice->SetRenderState(D3DRS_ANTIALIASEDLINEENABLE, TRUE);
-			lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-			lpDevice->SetStreamSource(0, pVBClr, 0, sizeof(C4CLRVERTEX));
-			lpDevice->SetFVF(D3DFVF_C4CLRVERTEX);
-			dwClr = InvertRGBAAlpha(dwClr);
-			// set vertex buffer data
-			float fX1 = (float)x1; // - 0.5f;
-			float fY1 = (float)y1; // - 0.5f;
-			float fX2 = (float)x2; // + 0.5f;
-			float fY2 = (float)y2; // + 0.5f;
-			clrVertices[0].x = fX1; clrVertices[0].y = fY1; clrVertices[0].color = dwClr;
-			clrVertices[1].x = fX2; clrVertices[1].y = fY2; clrVertices[1].color = dwClr;
-			clrVertices[2].x = fX2; clrVertices[2].y = fY2; clrVertices[2].color = dwClr;
-			clrVertices[3].x = fX1; clrVertices[3].y = fY1; clrVertices[3].color = dwClr;
-			if (fUseClrModMap)
-				for (int i = 0; i < 4; ++i) ModulateClr(reinterpret_cast<uint32_t &>(clrVertices[i].color), pClrModMap->GetModAt((int)clrVertices[i].x, (int)clrVertices[i].y));
-			// copy into vertex buffer
-			VOID *pVertices;
-			if (pVBClr->Lock(0, sizeof(clrVertices[0]) * 4, &pVertices, 0) != D3D_OK) return;
-			memcpy(pVertices, clrVertices, sizeof(clrVertices[0]) * 4);
-			pVBClr->Unlock();
-			// draw - actually two lines, to ensure that the last pixels are drawn, too...
-			lpDevice->DrawPrimitive(D3DPT_LINELIST, 0, 2);
-		}
-		else
-		{
-			if (fUseClrModMap)
-				ModulateClr(dwClr, pClrModMap->GetModAt((int)((x1 + x2) / 2), (int)((y1 + y2) / 2)));
-			if (Abs(x1 - x2) > Abs(y1 - y2))
-			{
-				// flip line direction
-				if (x2 < x1)
-				{
-					float tmp = x2; x2 = x1; x1 = tmp;
-					tmp = y2; y2 = y1; y1 = tmp;
-				}
-				// round coordinates
-				int32_t iX1 = BoundBy<int32_t>(int32_t(x1 + .5f), 0, sfcTarget->Wdt - 1),
-					iX2 = BoundBy<int32_t>(int32_t(x2 + .5f), 0, sfcTarget->Wdt - 1),
-					iY1 = BoundBy<int32_t>(int32_t(y1 + .5f), 0, sfcTarget->Hgt - 1),
-					iY2 = BoundBy<int32_t>(int32_t(y2 + .5f), 0, sfcTarget->Hgt - 1),
-					iDX = iX2 - iX1;
-				// single pixel case?
-				if (!iDX) { DrawPixPrimary(sfcTarget, iX1, iY1, dwClr); return; }
-				// calculate gradient
-				uint32_t g = ((uint32_t(Abs(iY2 - iY1)) << 16) / uint32_t(iX2 - iX1)) << 16;
-				// alpha divisor
-				uint32_t alpha = dwClr >> 24;
-				if (alpha >= 254) return; // invisible line
-				uint32_t div = (uint32_t(1 << 24) / (255 - alpha)) << 8;
-				uint32_t dwClrBase = dwClr & 0x00FFFFFF;
-				// current position
-				uint32_t sp = 0;
-				if (y2 > y1)
-					for (int32_t iX = 0, iY = 0; ; iX++)
-					{
-						// draw pixels
-						uint32_t dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
-							dwClr2 = dwClrBase + ((255 - sp / div) << 24);
-						DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY, dwClr1);
-						if (sp) DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY + 1, dwClr2);
-						if (iX * 2 >= iDX) break;
-						DrawPixPrimary(sfcTarget, iX2 - iX, iY2 - iY, dwClr1);
-						if (sp) DrawPixPrimary(sfcTarget, iX2 - iX, iY2 - iY - 1, dwClr2);
-						if (iX * 2 + 1 >= iDX) break;
-						// next pixel
-						sp += g; if (sp < g) iY++;
-					}
-				else
-					for (int32_t iX = 0, iY = 0; ; iX++)
-					{
-						// draw pixels
-						uint32_t dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
-							dwClr2 = dwClrBase + ((255 - sp / div) << 24);
-						DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY, dwClr1);
-						if (sp) DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY - 1, dwClr2);
-						if (iX * 2 >= iDX) break;
-						DrawPixPrimary(sfcTarget, iX2 - iX, iY2 - iY, dwClr1);
-						if (sp) DrawPixPrimary(sfcTarget, iX2 - iX, iY2 - iY + 1, dwClr2);
-						if (iX * 2 + 1 >= iDX) break;
-						// next pixel
-						sp += g; if (sp < g) iY--;
-					}
-			}
-			else
-			{
-				// flip line direction
-				if (y2 < y1)
-				{
-					float tmp = y2; y2 = y1; y1 = tmp;
-					tmp = x2; x2 = x1; x1 = tmp;
-				}
-				// calculate gradient
-				uint32_t g = uint32_t(Abs(x2 - x1) / (y2 - y1) * 4294967296.0f);
-				// round coordinates
-				int32_t iX1 = BoundBy<int32_t>(int32_t(x1 + .5f), 0, sfcTarget->Wdt - 1),
-					iX2 = BoundBy<int32_t>(int32_t(x2 + .5f), 0, sfcTarget->Wdt - 1),
-					iY1 = BoundBy<int32_t>(int32_t(y1 + .5f), 0, sfcTarget->Hgt - 1),
-					iY2 = BoundBy<int32_t>(int32_t(y2 + .5f), 0, sfcTarget->Hgt - 1),
-					iDY = iY2 - iY1;
-				// single pixel case?
-				if (!iDY) { DrawPixPrimary(sfcTarget, iX1, iY1, dwClr); return; }
-				// alpha divisor
-				uint32_t alpha = dwClr >> 24;
-				if (alpha >= 254) return; // invisible line
-				uint32_t div = (uint32_t(1 << 24) / (255 - alpha)) << 8;
-				uint32_t dwClrBase = dwClr & 0x00FFFFFF;
-				// current position
-				uint32_t sp = 0;
-				if (x2 > x1)
-					for (int32_t iY = 0, iX = 0; ; iY++)
-					{
-						// draw pixels
-						uint32_t dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
-							dwClr2 = dwClrBase + ((255 - sp / div) << 24);
-						DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY, dwClr1);
-						if (sp) DrawPixPrimary(sfcTarget, iX1 + iX + 1, iY1 + iY, dwClr2);
-						if (iY * 2 >= iDY) break;
-						DrawPixPrimary(sfcTarget, iX2 - iX, iY2 - iY, dwClr1);
-						if (sp) DrawPixPrimary(sfcTarget, iX2 - iX - 1, iY2 - iY, dwClr2);
-						if (iY * 2 + 1 >= iDY) break;
-						// next pixel
-						sp += g; if (sp < g) iX++;
-					}
-				else
-					for (int32_t iY = 0, iX = 0; ; iY++)
-					{
-						// draw pixels
-						uint32_t dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
-							dwClr2 = dwClrBase + ((255 - sp / div) << 24);
-						DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY, dwClr1);
-						if (sp) DrawPixPrimary(sfcTarget, iX1 + iX - 1, iY1 + iY, dwClr2);
-						if (iY * 2 >= iDY) break;
-						DrawPixPrimary(sfcTarget, iX2 - iX, iY2 - iY, dwClr1);
-						if (sp) DrawPixPrimary(sfcTarget, iX2 - iX + 1, iY2 - iY, dwClr2);
-						if (iY * 2 + 1 >= iDY) break;
-						// next pixel
-						sp += g; if (sp < g) iX--;
-					}
-			}
-		}
-	else
-	{
-		if (!LockSurfaceGlobal(sfcTarget)) return;
-		ForLine((int)x1, (int)y1, (int)x2, (int)y2, &DLineSPixDw, dwClr);
-		UnLockSurfaceGlobal(sfcTarget);
-	}
+	assert(sfcTarget->IsRenderTarget());
+	assert(!sfcTarget->IsLocked());
+	// draw as primitive
+	if (!PrepareRendering(sfcTarget)) return;
+	// set blitting state - use src alpha channel als opacity because some systems cannot antialias otherwise
+	int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
+	drawSolidState[iAdditive]->Apply();
+	lpDevice->SetRenderState(D3DRS_DESTBLEND, iAdditive ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
+	lpDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	lpDevice->SetRenderState(D3DRS_ANTIALIASEDLINEENABLE, TRUE);
+	lpDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	lpDevice->SetStreamSource(0, pVBClr, 0, sizeof(C4CLRVERTEX));
+	lpDevice->SetFVF(D3DFVF_C4CLRVERTEX);
+	dwClr = InvertRGBAAlpha(dwClr);
+	// set vertex buffer data
+	float fX1 = (float)x1; // - 0.5f;
+	float fY1 = (float)y1; // - 0.5f;
+	float fX2 = (float)x2; // + 0.5f;
+	float fY2 = (float)y2; // + 0.5f;
+	clrVertices[0].x = fX1; clrVertices[0].y = fY1; clrVertices[0].color = dwClr;
+	clrVertices[1].x = fX2; clrVertices[1].y = fY2; clrVertices[1].color = dwClr;
+	clrVertices[2].x = fX2; clrVertices[2].y = fY2; clrVertices[2].color = dwClr;
+	clrVertices[3].x = fX1; clrVertices[3].y = fY1; clrVertices[3].color = dwClr;
+	if (fUseClrModMap)
+		for (int i = 0; i < 4; ++i) ModulateClr(reinterpret_cast<uint32_t &>(clrVertices[i].color), pClrModMap->GetModAt((int)clrVertices[i].x, (int)clrVertices[i].y));
+	// copy into vertex buffer
+	VOID *pVertices;
+	if (pVBClr->Lock(0, sizeof(clrVertices[0]) * 4, &pVertices, 0) != D3D_OK) return;
+	memcpy(pVertices, clrVertices, sizeof(clrVertices[0]) * 4);
+	pVBClr->Unlock();
+	// draw - actually two lines, to ensure that the last pixels are drawn, too...
+	lpDevice->DrawPrimitive(D3DPT_LINELIST, 0, 2);
 }
 
 bool CStdD3D::InitDeviceObjects()
