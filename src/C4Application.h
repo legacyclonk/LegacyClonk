@@ -83,10 +83,8 @@ class C4Application: public CStdApp
 		C4GamePadControl * pGamePadControl;
 		// Thread for interactive processes (automatically starts as needed)
 		C4InteractiveThread InteractiveThread;
-#ifdef NETWORK
 		// IRC client for global chat
 		C4Network2IRCClient IRCClient;
-#endif
 		// Tick timing
 		unsigned int iLastGameTick, iGameTickDelay, iExtraGameTickDelay;
 		class CStdDDraw *DDraw;

@@ -160,8 +160,6 @@ public:
 	ALLOW_TEMP_TO_REF(C4NetIOPacket)
 };
 
-#ifdef NETWORK
-
 // tcp network i/o
 class C4NetIOTCP : public C4NetIO, protected CStdCSecExCallback
 {
@@ -823,15 +821,6 @@ inline void CompileFunc(C4NetIO::addr_t &addr, StdCompiler *pComp)
     ZeroMem(addr.sin_zero, sizeof(addr.sin_zero));
   }
 }
-
-#else // NETWORK
-
-// just define stub network classes (won't be used anyway)
-class C4NetIOTCP : public C4NetIO { };
-class C4NetIOSimpleUDP : public C4NetIO { };
-class C4NetIOUDP : public C4NetIO { };
-
-#endif // NETWORK
 
 #ifdef HAVE_WINSOCK
 bool AcquireWinSock();

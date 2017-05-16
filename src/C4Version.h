@@ -18,25 +18,12 @@
 #define C4XVERBUILD 330
 #define C4VERSIONEXTRA ""
 /* These values are now controlled by the file source/version - DO NOT MODIFY DIRECTLY */
-	
-#if !defined(NETWORK) && !defined(NONETWORK)
-// default
-#define NETWORK 1
-#endif
 
 // Build Options
 #ifdef _DEBUG
-	#ifdef NETWORK
-		#define C4BUILDDEBUG " DEBUG"
-	#else
-		#define C4BUILDDEBUG " DEBUG NONETWORK"
-	#endif
+#define C4BUILDDEBUG " DEBUG"
 #else
-	#ifdef NETWORK
-		#define C4BUILDDEBUG 
-	#else
-		#define C4BUILDDEBUG " NONETWORK"
-	#endif
+#define C4BUILDDEBUG
 #endif
 
 #define C4BUILDOPT C4BUILDDEBUG

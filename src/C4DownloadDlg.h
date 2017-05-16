@@ -12,9 +12,7 @@
 class C4DownloadDlg : public C4GUI::Dialog
   {
 	private:
-#ifdef NETWORK
 		C4Network2HTTPClient HTTPClient;
-#endif
 
 		C4GUI::Icon *pIcon;
 		C4GUI::Label *pStatusLabel;

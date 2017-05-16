@@ -1554,7 +1554,6 @@ void C4Console::UpdateNetMenu()
 #endif
 
 	// Host
-#ifdef NETWORK
 	sprintf(OSTR,LoadResStr("IDS_MNU_NETHOST"),Game.Clients.getLocalName(),Game.Clients.getLocalID());
 #ifdef _WIN32
 	AddMenuItem(hMenu,IDM_NET_CLIENT1+Game.Clients.getLocalID(),OSTR);
@@ -1579,7 +1578,6 @@ void C4Console::UpdateNetMenu()
 #if WITH_DEVELOPER_MODE
 	gtk_widget_show_all(itemNet);
 #endif
-#endif // NETWORK
 	return;
 	}
 

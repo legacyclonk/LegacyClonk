@@ -144,9 +144,7 @@
 #include "C4Landscape.h"
 #include "C4LangStringTable.h"
 #include "C4Language.h"
-#ifndef NONETWORK
-# include "C4League.h"
-#endif
+#include "C4League.h"
 #include "C4LoaderScreen.h"
 #include "C4LogBuf.h"
 #include "C4Log.h"

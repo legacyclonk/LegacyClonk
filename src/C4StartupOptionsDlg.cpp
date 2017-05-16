@@ -643,9 +643,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	C4GUI::Tabular::Sheet *pSheetSound    = pOptionsTabular->AddSheet(LoadResStr("IDS_DLG_SOUND")   , 2);
 	C4GUI::Tabular::Sheet *pSheetKeyboard = pOptionsTabular->AddSheet(LoadResStr("IDS_DLG_KEYBOARD"), 3);
 	C4GUI::Tabular::Sheet *pSheetGamepad  = pOptionsTabular->AddSheet(LoadResStr("IDS_DLG_GAMEPAD") , 4);
-#ifdef NETWORK
 	C4GUI::Tabular::Sheet *pSheetNetwork  = pOptionsTabular->AddSheet(LoadResStr("IDS_DLG_NETWORK") , 5);
-#endif // NETWORK
 
 	C4GUI::CheckBox *pCheck; C4GUI::Label *pLbl;
 	int iCheckWdt=100, iCheckHgt=20, iEdit2Wdt=100, iEdit2Hgt=40;
@@ -986,7 +984,6 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pSheetGamepad->AddElement(new ControlConfigArea(pSheetGamepad->GetClientRect(), caMain.GetWidth()/20, caMain.GetHeight()/40, true, this));
 
 	// --- page network
-#ifdef NETWORK
 	C4GUI::ComponentAligner caSheetNetwork(pSheetNetwork->GetClientRect(), caMain.GetWidth()/20, caMain.GetHeight()/20, true);
 	int iPortCfgWdt=200, iPortCfgHgt=48; NetworkPortConfig::GetControlSize(&iPortCfgWdt, &iPortCfgHgt);
 	pPortCfgTCP = new NetworkPortConfig(caSheetNetwork.GetGridCell(0,2,0,2, iPortCfgWdt, iPortCfgHgt), LoadResStr("IDS_NET_PORT_TCP"), &(Config.Network.PortTCP), C4NetStdPortTCP);
@@ -1025,7 +1022,6 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	StdCopyStrBuf NickBuf(Config.Network.Nick);
 	if(!NickBuf.getLength()) NickBuf.Copy(Config.Network.LocalName);
 	pNetworkNickEdit->GetEdit()->SetText(NickBuf.getData(), false);
-#endif // NETWORK
 
 	// initial focus is on tab selection
 	SetFocus(pOptionsTabular, false);
@@ -1241,7 +1237,6 @@ bool C4StartupOptionsDlg::SaveConfig(bool fForce, bool fKeepOpen)
 	SaveGfxTroubleshoot();
 	// save any config fields that are not stored directly; return whether all values are OK
 	// check port validity
-#ifdef NETWORK
 	if (!fForce)
 		{
 		StdCopyStrBuf strError(LoadResStr("IDS_ERR_CONFIG"));
@@ -1266,7 +1261,6 @@ bool C4StartupOptionsDlg::SaveConfig(bool fForce, bool fKeepOpen)
 	// if nick is same as LocalName, don't save in config
 	// so LocalName updates will change the nick as well
 	if (SEqual(Config.Network.Nick.getData(), Config.Network.LocalName.getData())) Config.Network.Nick.Clear();
-#endif // NETWORK
 	// make sure config is saved, in case the game crashes later on or another instance is started
 	Config.Save();
 	if (!fKeepOpen) fConfigSaved = true;

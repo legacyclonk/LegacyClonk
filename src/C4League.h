@@ -5,9 +5,6 @@
 #ifndef C4LEAGUE_H_INCLUDED
 #define C4LEAGUE_H_INCLUDED
 
-#ifdef NETWORK
-// This file is NETWORK-only because ModifyForChecksum is secret
-
 #include <openssl/sha.h>
 
 #include <C4Network2Reference.h>
@@ -262,5 +259,4 @@ class C4LeagueSignupDialog : public C4GUI::Dialog
 		void OnChkPassword();
 	};
 
-#endif // NETWORK
 #endif // C4LEAGUE_H_INCLUDED

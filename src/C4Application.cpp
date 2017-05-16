@@ -306,9 +306,7 @@ void C4Application::QuitGame()
 			{
 			SCopy(NextMission.getData(), Game.ScenarioFilename, _MAX_PATH);			
 			SReplaceChar(Game.ScenarioFilename, '\\', DirSep[0]); // linux/mac: make sure we are using forward slashes
-#ifdef NETWORK
 			Game.fLobby = Game.NetworkActive = fWasNetworkActive;
-#endif
 			Game.fObserve = false;
 			Game.Record = !!Config.General.Record;
 			NextMission.Clear();

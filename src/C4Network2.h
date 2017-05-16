@@ -197,11 +197,7 @@ protected:
 public:
 
 	// data access
-#ifdef NETWORK
 	bool isEnabled()		const { return Status.isEnabled(); }
-#else
-	bool isEnabled()		const { return false; }
-#endif
 	bool isLobbyActive()const { return Status.isLobbyActive(); }
 	bool isPastLobby()  const { return Status.isPastLobby(); }
 	bool isRunning()		const { return Status.isRunning() && isStatusAck(); }
