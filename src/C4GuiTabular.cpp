@@ -366,7 +366,6 @@ void Tabular::DrawElement(C4FacetEx &cgo)
 	// scrolling in captions
 	int32_t iScrollSize = GetTopSize();
 	if (fScrollingLeft) d -= iCaptionScrollPos + iScrollSize;
-	//DrawBar(cgo, GetRes()->fctCaptionLeft, GetRes()->fctCaptionBar, GetRes()->fctCaptionRight);
 	// tabs
 	for (Sheet *pSheet = (Sheet *) GetFirst(); pSheet; pSheet = (Sheet *) pSheet->GetNext())
 		{

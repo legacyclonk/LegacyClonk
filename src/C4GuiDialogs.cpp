@@ -222,13 +222,8 @@ LRESULT APIENTRY DialogWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			pDlg->Close(false);
 			break;
     //----------------------------------------------------------------------------------------------------------------------------------
-		case WM_SIZE:
-			// UpdateOutputSize
-			break;
-    //----------------------------------------------------------------------------------------------------------------------------------
 		case WM_PAINT:
 			// 2do: only draw specific dlg?
-			//Game.GraphicsSystem.Execute();
 			break;
 			return 0;
     //----------------------------------------------------------------------------------------------------------------------------------
@@ -245,7 +240,6 @@ LRESULT APIENTRY DialogWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		case WM_RBUTTONDBLCLK: Game.pGUI->MouseInput(C4MC_Button_RightDouble,LOWORD(lParam),HIWORD(lParam),wParam, pDlg, NULL);	break;
 		//----------------------------------------------------------------------------------------------------------------------------------
 		case WM_MOUSEMOVE:
-			//SetCursor(NULL);
 			Game.pGUI->MouseInput(C4MC_Button_None,LOWORD(lParam),HIWORD(lParam),wParam, pDlg, NULL);	
 			break;
 		//----------------------------------------------------------------------------------------------------------------------------------
@@ -295,8 +289,6 @@ CStdWindow * DialogWindow::Init(CStdApp * pApp, const char * Title, CStdWindow *
 void DialogWindow::Close()
 	{
 	// FIXME: Close the dialog of this window
-	//Dialog *pDlg = Game.pGUI ? Game.pGUI->GetDialog(hWindow) : NULL;
-	//if (pDlg) pDlg->Close();
 	}
 
 bool Dialog::CreateConsoleWindow()
@@ -832,18 +824,6 @@ FullscreenDialog::FullscreenDialog(const char *szTitle, const char *szSubtitle)
 		pSubTitle->SetToolTip(szTitle);
 		}
 	else pSubTitle = NULL;
-	// titled dialogs always have a help button in the top right corner
-	if (szTitle && *szTitle)
-		{
-		// help button disabled; use meaningful captions instead
-		//pBtnHelp = new CallbackButton<FullscreenDialog, IconButton>(Ico_UnknownClient /* 2do: Help icon */, C4Rect(0,0,32,32), 'H' /* 2do */, &FullscreenDialog::OnHelpBtn, this);
-		//C4Facet fctHelp = Game.GraphicsResource.fctOKCancel;
-		//fctHelp.Y += fctHelp.Hgt;
-		//pBtnHelp->SetFacet(fctHelp);
-		//pBtnHelp->SetToolTip("[.!]Help button: Press this button and hover the element you want help for!");
-		//UpdateHelpButtonPos();
-		//AddElement(pBtnHelp);
-		}
 	}
 
 void FullscreenDialog::SetTitle(const char *szTitle)
@@ -951,7 +931,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, DWORD
 		if (dwButtons & btnOK)
 			{
 			Button *pBtnOK = new OKButton(rcBtn);
-			AddElement(pBtnOK); //pBtnOK->SetToolTip((dwButtons & btnAbort) ? LoadResStr("IDS_DLGTIP_OK2") : LoadResStr("IDS_DLGTIP_OK"));
+			AddElement(pBtnOK);
 			rcBtn.x += C4GUI_DefButton2Wdt+C4GUI_DefButton2HSpace;
 			if (!fDefaultNo) btnFocus = pBtnOK;
 			}
@@ -959,7 +939,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, DWORD
 		if (dwButtons & btnRetry)
 			{
 			Button *pBtnRetry = new RetryButton(rcBtn);
-			AddElement(pBtnRetry); //pBtnAbort->SetToolTip(LoadResStr("IDS_DLGTIP_CANCEL"));
+			AddElement(pBtnRetry);
 			rcBtn.x += C4GUI_DefButton2Wdt+C4GUI_DefButton2HSpace;
 			if (!btnFocus) btnFocus = pBtnRetry;
 			
@@ -968,7 +948,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, DWORD
 		if (dwButtons & btnAbort)
 			{
 			Button *pBtnAbort = new CancelButton(rcBtn);
-			AddElement(pBtnAbort); //pBtnAbort->SetToolTip(LoadResStr("IDS_DLGTIP_CANCEL"));
+			AddElement(pBtnAbort);
 			rcBtn.x += C4GUI_DefButton2Wdt+C4GUI_DefButton2HSpace;
 			if (!btnFocus) btnFocus = pBtnAbort;
 			}
@@ -976,7 +956,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, DWORD
 		if (dwButtons & btnYes)
 			{
 			Button *pBtnYes = new YesButton(rcBtn);
-			AddElement(pBtnYes); //pBtnYes->SetToolTip(LoadResStr("IDS_DLGTIP_OK2"));
+			AddElement(pBtnYes);
 			rcBtn.x += C4GUI_DefButton2Wdt+C4GUI_DefButton2HSpace;
 			if (!btnFocus && !fDefaultNo) btnFocus = pBtnYes;
 			}
@@ -984,8 +964,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, DWORD
 		if (dwButtons & btnNo)
 			{
 			Button *pBtnNo = new NoButton(rcBtn);
-			AddElement(pBtnNo); //pBtnNo->SetToolTip(LoadResStr("IDS_DLGTIP_CANCEL"));
-			//rcBtn.x += C4GUI_DefButton2Wdt+C4GUI_DefButton2HSpace;
+			AddElement(pBtnNo);
 			if (!btnFocus) btnFocus = pBtnNo;
 			}
 		}
@@ -1048,7 +1027,7 @@ ProgressDialog::ProgressDialog(const char *szMessage, const char *szCaption, int
 	AddElement(pBar);
 	// place abort button
 	Button *pBtnAbort = new CancelButton(caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_ButtonHgt));
-	AddElement(pBtnAbort); //pBtnAbort->SetToolTip(LoadResStr("IDS_DLGTIP_CANCEL"));
+	AddElement(pBtnAbort);
 	}
 
 
@@ -1157,11 +1136,11 @@ InputDialog::InputDialog(const char *szMessage, const char *szCaption, Icons ico
 		rcBtn.Wdt = C4GUI_DefButton2Wdt;
 		// OK
 		Button *pBtnOK = new OKButton(rcBtn);
-		AddElement(pBtnOK); //pBtnOK->SetToolTip(LoadResStr("IDS_DLGTIP_OK"));
+		AddElement(pBtnOK);
 		rcBtn.x += rcBtn.Wdt + C4GUI_DefButton2HSpace;
 		// Cancel
 		Button *pBtnAbort = new CancelButton(rcBtn);
-		AddElement(pBtnAbort); //pBtnAbort->SetToolTip(LoadResStr("IDS_DLGTIP_CANCEL"));
+		AddElement(pBtnAbort);
 		rcBtn.x += rcBtn.Wdt + C4GUI_DefButton2HSpace;
 		}
 	// input dlg always closed in the end
@@ -1220,7 +1199,6 @@ InfoDialog::InfoDialog(const char *szCaption, int iLineCount, const StdStrBuf &s
 		pTextWin->AddTextLine(sLine.getData(), &GetRes()->TextFont, C4GUI_MessageFontClr, false, true);
 		}
 	pTextWin->UpdateHeight();
-	//pTextWin->ScrollToBottom();
 	}
 
 void InfoDialog::CreateSubComponents()

@@ -267,7 +267,6 @@ bool C4MessageInput::CloseTypeIn()
 bool C4MessageInput::StartTypeIn(bool fObjInput, C4Object *pObj, bool fUpperCase, bool fTeam, int32_t iPlr, const StdStrBuf &rsInputQuery)
 	{
 	if (!C4GUI::IsGUIValid()) return false;
-	//if (!Application.isFullScreen) return false;
 	// close any previous
 	if (IsTypeIn()) CloseTypeIn();
 	// start new

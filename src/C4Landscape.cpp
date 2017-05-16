@@ -62,31 +62,6 @@ void C4Landscape::Execute()
     ExecuteScan();
 	// move sky
 	Sky.Execute();
-  // Side open scan
-  /*if (!Tick255)
-    if (Game.C4S.LScape.AutoScanSideOpen)
-      ScanSideOpen(); */
-#ifdef _DEBUG
-	/*if(!Tick255)
-		UpdatePixCnt(C4Rect(0, 0, Width, Height), true);
-	if(!Tick255)
-    {
-    DWORD MatCountCheck[C4MaxMaterial], EffectiveMatCountCheck[C4MaxMaterial];
-    int32_t iMat;
-    for(iMat = 0; iMat < Game.Material.Num; iMat++)
-      {
-      MatCountCheck[iMat] = MatCount[iMat];
-      EffectiveMatCountCheck[iMat] = EffectiveMatCount[iMat];
-      }
-    ClearMatCount();
-    UpdateMatCnt(C4Rect(0,0,Width,Height), true);
-    for(iMat = 0; iMat < Game.Material.Num; iMat++)
-      {
-      assert(MatCount[iMat] == MatCountCheck[iMat]);
-      assert(EffectiveMatCount[iMat] == EffectiveMatCountCheck[iMat]);
-      }
-    }*/
-#endif
 	// Relights
   if (!Tick35)
 		DoRelights();
@@ -648,7 +623,6 @@ BOOL C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	  Height = MapZoom * MapHeight; 
 		Width = Max<int32_t>(Width,100);
 		Height = Max<int32_t>(Height,100);
-//	  Width = (Width/8)*8;
 
 		// if overloading, clear current landscape (and sections, etc.)
 		// must clear, of course, before new sky is eventually read
@@ -666,7 +640,7 @@ BOOL C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 		}
 
 	// Exact landscape from scenario (no map or exact recreation)	
-	else /* if (Game.C4S.Landscape.ExactLandscape) */
+	else
 		{
 		C4DebugRecOff DBGRECOFF;
 		// if overloading, clear current
@@ -2109,7 +2083,6 @@ void C4Landscape::ClearRectDensity(int32_t iTx, int32_t iTy, int32_t iWdt, int32
 		{
 		case C4M_Vehicle: iMaxDensity = 1000; break;
 		case C4M_Solid: iMaxDensity = C4M_Vehicle-1; break;
-		//case C4M_SemiSolid: iMaxDensity = C4M_Vehicle-1; break; - SemiSolid equals Liquid...
 		case C4M_Liquid: iMaxDensity = C4M_Solid-1; break;
 		case C4M_Background: iMaxDensity = C4M_Liquid-1; break;
 		default: break; // min=max as given

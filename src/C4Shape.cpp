@@ -182,9 +182,7 @@ void C4Shape::Rotate(int32_t iAngle, bool bUpdateVertices)
 	AddDbgRec(RCT_RotVtx1, &rc, sizeof(rc));
 #endif
   int32_t cnt,nvtx,nvty,rdia;
-  
-	//int32_t *vtx=VtxX;
-	//int32_t *vty=VtxY;
+
   FIXED mtx[4];
 	FIXED fAngle = itofix(iAngle);
 
@@ -197,8 +195,6 @@ void C4Shape::Rotate(int32_t iAngle, bool bUpdateVertices)
 		// Rotate vertices
 		for (cnt=0; cnt<VtxNum; cnt++)
 	    {
-			//nvtx= (int32_t) ( mtx[0]*vtx[cnt] + mtx[1]*vty[cnt] );
-			//nvty= (int32_t) ( mtx[2]*vtx[cnt] + mtx[3]*vty[cnt] );
 			nvtx = fixtoi(mtx[0]*VtxX[cnt] + mtx[1]*VtxY[cnt]);
 			nvty = fixtoi(mtx[2]*VtxX[cnt] + mtx[3]*VtxY[cnt]);
 			VtxX[cnt]=nvtx; VtxY[cnt]=nvty;
@@ -712,7 +708,7 @@ void C4RectList::ClipByRect(const C4Rect &rClip)
 		if ((iOver=rClip.y-rcThis.y)>0)
 			{
 			if (iSplitCount) { AddRect(rcThis); pTarget = &Get(GetCount()-1); } else ++iSplitCount;
-			pTarget->Hgt = iOver; /* rcThis.Hgt -= iOver; rcThis.y = rClip.y; not needed, since rcThis is no longer used */
+			pTarget->Hgt = iOver;
 			}
 		// nothing split? This means this rectnagle is completely contained
 		if (!iSplitCount)

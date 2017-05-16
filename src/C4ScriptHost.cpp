@@ -59,14 +59,6 @@ void C4ScriptHost::MakeScript()
 	// clear prev
 	Script.Clear();
 
-	// no script?
-	/*if(!Data)
-	{
-		// preparse anyway, because linked state must be reached for possible appends
-		Preparse(Script);
-		return;
-	}*/
-
 	// create script
 	if (pStringTable)
 	{
@@ -101,7 +93,6 @@ int32_t C4ScriptHost::GetControlMethod(int32_t com, int32_t first, int32_t secon
 void C4ScriptHost::GetControlMethodMask(const char *szFunctionFormat, int32_t& first, int32_t& second)
 	{
 	first = second = 0;
-	//int32_t iResult = 0;
 
 	if (!Script) return;
 
@@ -205,7 +196,7 @@ void C4DefScriptHost::AfterLink()
 	SFn_CustomComponents = GetSFunc(PSF_GetCustomComponents, AA_PROTECTED);
 	if (Def)
 		{
-		C4AulAccess CallAccess = /*Strict ? AA_PROTECTED : */AA_PRIVATE;
+		C4AulAccess CallAccess = AA_PRIVATE;
 		for (int32_t cnt=0; cnt<Def->ActNum; cnt++)
 			{
 			C4ActionDef *pad=&Def->ActMap[cnt];

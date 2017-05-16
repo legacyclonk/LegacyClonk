@@ -400,7 +400,7 @@ BOOL C4Config::Load(BOOL forceWorkingDirectory, const char *szConfigFile)
 		{
 		// Configuration file syntax error?
 #ifdef C4ENGINE
-		LogF("Error loading configuration: %s"/*LoadResStr("IDS_ERR_CONFREAD") - restbl not yet loaded*/, pExc->Msg.getData());
+		LogF("Error loading configuration: %s"/*restbl not yet loaded*/, pExc->Msg.getData());
 #endif
 		delete pExc;
 		return FALSE;
@@ -451,9 +451,6 @@ BOOL C4Config::Load(BOOL forceWorkingDirectory, const char *szConfigFile)
 		if (Config.Network.PortDiscovery>=65536) Config.Network.PortDiscovery = C4NetStdPortDiscovery;
 		}
 #endif
-	// Empty nick already defaults to Network.LocalName at relevant places.
-	/*if (!Network.Nick.getLength()) 
-		Network.Nick.Copy(Network.LocalName); // assuming that LocalName will always contain some useful value*/
 	fConfigLoaded = true;
 	if (szConfigFile) ConfigFilename.Copy(szConfigFile); else ConfigFilename.Clear();
 	return TRUE;
@@ -461,28 +458,6 @@ BOOL C4Config::Load(BOOL forceWorkingDirectory, const char *szConfigFile)
 	
 BOOL C4Config::Save()
 	{
-	/* - deactivated: Graphics.Engine might not be same as last initialized engine, because it might be changed by C4StartupOptionsDlg
-#ifdef USE_DIRECTX
-	// set ddraw config
-	if (Graphics.Engine == GFXENGN_DIRECTX || Graphics.Engine == GFXENGN_DIRECTXS)
-		{
-		// Direct3D
-		float TexIndent, BlitOff;
-		DDrawCfg.Get(Graphics.NewGfxCfg, TexIndent, BlitOff);
-		}
-	else
-#endif
-#ifdef USE_GL
-	if (Graphics.Engine == GFXENGN_OPENGL)
-		{
-		// OpenGL
-		float TexIndent, BlitOff;
-		DDrawCfg.Get(Graphics.NewGfxCfgGL, TexIndent, BlitOff);
-		}
-	else
-#endif
-		;*/
-	// FIXME: When the engine starts changing TexIndent and BlitOff, save them
 	try
 		{
 #ifdef _WIN32

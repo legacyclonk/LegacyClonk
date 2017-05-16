@@ -155,7 +155,7 @@ void C4GameControlNetwork::DoInput(const C4Control &Input) // by main thread
 				Application.InteractiveThread.ThreadLog("Failed to send control to host!");
 		}
 	// decentral mode: always broadcast to everybody
-	else /*if(eMode == CNM_Decentral)*/
+	else
 		if(!pNetwork->Clients.BroadcastMsgToClients(CtrlPkt))
 			Application.InteractiveThread.ThreadLog("Failed to broadcast control!");
 	// add to list
@@ -446,7 +446,7 @@ void C4GameControlNetwork::HandlePacket(char cStatus, const C4PacketBase *pPacke
 
 	#define GETPKT(type, name) \
 		assert(pPacket); const type &name = \
-			/*dynamic_cast*/ static_cast<const type &>(*pPacket);
+			static_cast<const type &>(*pPacket);
 
 	switch(cStatus)
 	{

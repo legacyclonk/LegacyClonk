@@ -39,13 +39,10 @@ StdStrBuf C4PacketCountdown::GetCountdownMsg(bool fInitialMsg) const
 ScenDesc::ScenDesc(const C4Rect &rcBounds, bool fActive) : C4GUI::Window(), fDescFinished(false), pSec1Timer(NULL)
 	{
 	// build components
-	//CStdFont &rTitleFont = C4GUI::GetRes()->CaptionFont;
 	SetBounds(rcBounds);
 	C4GUI::ComponentAligner caMain(GetClientRect(), 0,0, true);
-	//AddElement(pTitle = new C4GUI::Label("", caMain.GetFromTop(rTitleFont.GetLineHeight()), ALeft, C4GUI_CaptionFontClr, &rTitleFont, true));
 	AddElement(pDescBox = new C4GUI::TextWindow(caMain.GetAll(), 0, 0, 0, 100, 4096, "", true));
   pDescBox->SetDecoration(false, false, NULL, true);
-	//pDescBox->SetToolTip(LoadResStr("IDS_MSG_SCENARIODESC")); annoying when scrolling through desc...
 	// initial update to set current data
 	if (fActive) Activate();
 	}
@@ -131,7 +128,7 @@ pEdt(NULL), btnRun(NULL), btnPlayers(NULL), btnResources(NULL), btnTeams(NULL), 
 	pSec1Timer = new C4Sec1TimerCallback<MainDlg>(this);
 	// indents / sizes
 	int32_t iDefBtnHeight = 32;
-	int32_t iIndentX1, iIndentX2, iIndentX3/*, iIndentX4*/;
+	int32_t iIndentX1, iIndentX2, iIndentX3;
 	int32_t iIndentY1, iIndentY2, iIndentY3, iIndentY4, iButtonAreaHgt;
 	int32_t iClientListWdt;
 	if (GetClientRect().Wdt > 500)
@@ -185,7 +182,6 @@ pEdt(NULL), btnRun(NULL), btnPlayers(NULL), btnResources(NULL), btnTeams(NULL), 
 	else
 		// 2do: Ready-checkbox
 		caBottom.GetFromRight(90);
-	//C4GUI::CallbackButton<MainDlg> *btnTest = new C4GUI::CallbackButton<MainDlg>("test", caBottom.GetFromRight(90), &MainDlg::OnTestBtn);
 	pGameOptionButtons = new C4GameOptionButtons(caBottom.GetCentered(caBottom.GetInnerWidth(), Min<int32_t>(C4GUI_IconExHgt, caBottom.GetHeight())), true, fHost, true);
 
 	// players / ressources sidebar
@@ -211,7 +207,6 @@ pEdt(NULL), btnRun(NULL), btnPlayers(NULL), btnResources(NULL), btnTeams(NULL), 
 	bool fHasTeams = Game.Teams.IsMultiTeams();
 	bool fHasChat = C4ChatDlg::IsChatActive();
 	int32_t iBtnNum = 4+fHasTeams+fHasChat;
-	//btnAddPlayer = new C4GUI::CallbackButton<MainDlg, C4GUI::IconButton>(C4GUI::Ico_AddPlr, pRightTabLbl->GetToprightCornerRect(16,16,4,4,2+fHasTeams), pPlayerSheet->GetHotkey(), &MainDlg::OnTabTeams);
 	if (fHasTeams)
 		btnTeams = new C4GUI::CallbackButton<MainDlg, C4GUI::IconButton>(C4GUI::Ico_Team, pRightTabLbl->GetToprightCornerRect(16,16,4,4,--iBtnNum), pPlayerSheet->GetHotkey(), &MainDlg::OnTabTeams);
 	btnPlayers = new C4GUI::CallbackButton<MainDlg, C4GUI::IconButton>(C4GUI::Ico_Player, pRightTabLbl->GetToprightCornerRect(16,16,4,4,--iBtnNum), pPlayerSheet->GetHotkey(), &MainDlg::OnTabPlayers);
@@ -234,14 +229,11 @@ pEdt(NULL), btnRun(NULL), btnPlayers(NULL), btnResources(NULL), btnTeams(NULL), 
 	pLbl->SetClickFocusControl(pEdt);
 	// log box
 	pChatBox = new C4GUI::TextWindow(caCenter.GetAll());
-	//pPaintBox = new PaintBox();
 	// add components in tab-order
-	//AddElement(pPaintBox); pPaintBox->SetToolTip("Paintbox :D");
 	AddElement(pChatBox);
 	AddElement(pLbl); AddElement(pEdt); // chat
 
 	AddElement(pRightTabLbl);
-	//(new C4GUI::ContextButton(pRightTabLbl, true))->SetToolTip("[.!] Switches between player and ressource view"); // right tab label+ctx menu
 	if (btnTeams) AddElement(btnTeams);
 	AddElement(btnPlayers);
 	AddElement(btnResources);
@@ -619,7 +611,7 @@ void MainDlg::HandlePacket(char cStatus, const C4PacketBase *pPacket, C4Network2
 	// besides, this releases the lobby from doing any host/client-specializations
 	#define GETPKT(type, name) \
 		assert(pPacket); const type &name = \
-			/*dynamic_cast*/ static_cast<const type &>(*pPacket);
+			static_cast<const type &>(*pPacket);
 	switch(cStatus)
 		{
 		case PID_LobbyCountdown: // initiate or abort countdown

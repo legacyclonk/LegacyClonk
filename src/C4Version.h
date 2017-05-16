@@ -8,8 +8,6 @@
 #define C4ENGINECAPTION       "Clonk Rage"
 #define C4EDITORCAPTION       "Clonk Editor"
 
-//#define C4VERSIONBUILDNAME ""
-
 /* These values are now controlled by the file source/version - DO NOT MODIFY DIRECTLY */
 #define C4XVER1 4
 #define C4XVER2 9

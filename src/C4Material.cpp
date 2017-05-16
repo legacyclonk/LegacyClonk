@@ -710,7 +710,6 @@ bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, int32_t &iX, int32
 			if (fDoCorrode)
 				{
 				ClearBackPix(iLSPosX,iLSPosY);
-				//Game.Landscape.CheckInstabilityRange(iLSPosX,iLSPosY); - more correct, but makes acid too effective as well
 				if (!Random(5)) Smoke(iX,iY,3+Random(3));
 				if (!Random(20)) StartSoundEffectAt("Corrode", iX, iY);
 				return true;

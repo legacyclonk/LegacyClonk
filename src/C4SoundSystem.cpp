@@ -340,7 +340,6 @@ void C4SoundInstance::Execute()
 #endif
 #ifdef HAVE_LIBSDL_MIXER
 		Mix_Volume(iChannel, (iVol * MIX_MAX_VOLUME) / (100 * 256));
-		//Mix_SetPanning(iChannel, ((100 + iPan) * 256) / 200, ((100 - iPan) * 256) / 200);
 		Mix_SetPanning(iChannel, BoundBy((100 - iPan) * 256 / 100, 0, 255), BoundBy((100 + iPan) * 256 / 100, 0, 255));
 #endif
 		}

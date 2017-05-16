@@ -179,22 +179,6 @@ BOOL C4Game::OpenScenario()
 			}
 		}
 
-	// add all .c4f-modules to the group set
-	// (for savegames, network games, etc.)
-/*	char szModule[_MAX_PATH+1]; C4Group *pGrp=NULL; int32_t iDefGrpPrio=C4GSPrio_Definition;
-	for (int32_t cseg=0; SCopySegment(DefinitionFilenames,cseg,szModule,';',_MAX_PATH); cseg++)
-		if (SEqualNoCase(GetExtension(szModule), "c4f"))
-			{
-			if (!pGrp) pGrp = new C4Group();
-			if (!pGrp->Open(szModule)) continue;
-			int32_t iContent = GroupSet.CheckGroupContents(*pGrp, C4GSCnt_Folder);
-			if (!iContent) { pGrp->Close(); continue; }
-			GroupSet.RegisterGroup(*pGrp, true, Min(iDefGrpPrio++, C4GSPrio_Definition2), iContent, false);
-			// group owned by groupset now
-			pGrp = NULL;
-			}
-	if (pGrp) delete pGrp;*/
-
 	// Scan folder local definitions
 	SAddModules(DefinitionFilenames,FoldersWithLocalsDefs(ScenarioFilename));
 
@@ -498,7 +482,6 @@ void C4Game::Clear()
 	PointersDenumerated = false;
 
 	C4ST_SHOWSTAT
-	// C4ST_RESET
 
 	// Evaluation
 	if (GameOver)
@@ -590,10 +573,6 @@ BOOL C4Game::GameOverCheck()
 	{
 	int32_t cnt;
 	BOOL fDoGameOver = FALSE;
-
-#ifdef _DEBUG
-	//return FALSE;
-#endif
 
 	// Only every 35 ticks
 	if (Tick35) return FALSE;
@@ -1803,7 +1782,6 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
     pComp->Name("Game");
 		pComp->Value(mkNamingAdapt(Time,                  "Time",                  0));
 		pComp->Value(mkNamingAdapt(FrameCounter,          "Frame",                 0));
-//		pComp->Value(mkNamingAdapt(Control.ControlRate,   "ControlRate",           0));
 		pComp->Value(mkNamingAdapt(Control.ControlTick,   "ControlTick",           0));
 		pComp->Value(mkNamingAdapt(Control.SyncRate,      "SyncRate",              C4SyncCheckRate));
 		pComp->Value(mkNamingAdapt(iTick2,                "Tick2",                 0));
@@ -3176,8 +3154,6 @@ bool C4Game::InitSystem()
 	GameGo=FALSE;
 	// set gamma
 	GraphicsSystem.SetGamma(Config.Graphics.Gamma1, Config.Graphics.Gamma2, Config.Graphics.Gamma3, C4GRI_USER);
-	// first time font-init
-	//Log(LoadResStr("IDS_PRC_INITFONTS"));
 	// open graphics group now for font-init
 	if (!GraphicsResource.RegisterGlobalGraphics()) return false;
 	// load font list
@@ -3236,7 +3212,6 @@ C4Player *C4Game::JoinPlayer(const char *szFilename, int32_t iAtClient, const ch
 
 void C4Game::FixRandom(int32_t iSeed)
 	{
-	//sprintf(OSTR,"Fixing random to %i",iSeed); Log(OSTR);
 	FixedRandom(iSeed);
 	Randomize3();
 	}
@@ -3872,7 +3847,6 @@ BOOL C4Game::LoadScenarioSection(const char *szSection, DWORD dwFlags)
 		pGlobalEffects->ClearAll(NULL, C4FxCall_RemoveClear);
 		// scenario section call might have been done from a global effect
 		// rely on dead effect removal for actually removing the effects; do not clear the array here!
-		//delete pGlobalEffects; pGlobalEffects=NULL;
 		}
 	// del particles as well
 	Particles.ClearParticles();

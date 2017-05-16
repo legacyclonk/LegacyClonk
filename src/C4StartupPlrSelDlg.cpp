@@ -29,7 +29,7 @@ StdStrBuf TimeString(int iSeconds)
 StdStrBuf DateString(int iTime)
 	{
 	if (!iTime) return StdStrBuf("", true);
-	time_t tTime = iTime; //time(&tTime);
+	time_t tTime = iTime;
 	struct tm *pLocalTime;
   pLocalTime=localtime(&tTime);
 	return FormatString(	"%02d.%02d.%d %02d:%02d",
@@ -281,7 +281,6 @@ void C4StartupPlrSelDlg::PlayerListItem::SetSelectionInfo(C4GUI::TextWindow *pSe
 	{
 	// write info text for player
 	pSelectionInfo->ClearText(false);
-	//pSelectionInfo->AddTextLine(FormatString("%s %s", Core.RankName, Core.PrefName).getData(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
 	pSelectionInfo->AddTextLine(FormatString("%s", Core.PrefName).getData(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
 	pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_DESC_PLAYER"), (int)Core.Score, (int)Core.Rounds, (int)Core.RoundsWon, (int)Core.RoundsLost, TimeString(Core.TotalPlayingTime).getData(), Core.Comment).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	if (Core.LastRound.Title[0])
@@ -1116,8 +1115,6 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	// use black fonts here
 	CStdFont *pUseFont = &C4Startup::Get()->Graphics.BookFont;
 	CStdFont *pSmallFont = &C4Startup::Get()->Graphics.BookSmallFont;
-	// Title
-	//SetTitle(FormatString("%s %s", C4P.RankName, C4P.Name));
 	// get positions
 	UpdateSize();
 	C4GUI::ComponentAligner caMain(GetClientRect(), 0, 1, true);
@@ -1155,7 +1152,7 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	szTip = LoadResStr("IDS_DLGTIP_PLAYERCOLORS");
 	AddElement(pBtn = new C4GUI::CallbackButton<C4StartupPlrPropertiesDlg, C4GUI::ArrowButton>(C4GUI::ArrowButton::Left, caColorArea.GetFromLeft(C4GUI::ArrowButton::GetDefaultWidth()), &C4StartupPlrPropertiesDlg::OnClrChangeLeft));
 	pBtn->SetToolTip(szTip);
-	C4Facet &rfctClrPreviewPic = Game.GraphicsResource.fctFlagClr; //C4Startup::Get()->Graphics.fctCrewClr; //Game.GraphicsResource.fctCrewClr;
+	C4Facet &rfctClrPreviewPic = Game.GraphicsResource.fctFlagClr;
 	pClrPreview = new C4GUI::Picture(caColorArea.GetFromLeft(rfctClrPreviewPic.GetWidthByHeight(caColorArea.GetHeight())), true);
 	pClrPreview->SetFacet(rfctClrPreviewPic);
 	AddElement(pClrPreview);
@@ -1180,7 +1177,7 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	if (!C4P.PrefColorDw) C4P.PrefColorDw=0xff;
 	caMain.ExpandTop(-BetweenElementDist);
 	// place control and picture label
-	int32_t iControlPicSize = C4GUI::ArrowButton::GetDefaultHeight(); // GetGridCell(0,3,0,1,-1,-1,false,2)
+	int32_t iControlPicSize = C4GUI::ArrowButton::GetDefaultHeight();
 	C4GUI::ComponentAligner caControlArea(caMain.GetFromTop(iControlPicSize + pSmallFont->GetLineHeight() + BetweenElementDist), 0,0, false);
 	C4GUI::ComponentAligner caPictureArea(caControlArea.GetFromRight(iControlPicSize), 0,0, false);
 	AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr("IDS_CTL_CONTROL")).getData(), caControlArea.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
@@ -1228,10 +1225,10 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	// place buttons
 	// OK	
 	C4GUI::Button *pBtnOK = new C4GUI::OKIconButton(C4Rect(147-GetMarginLeft(), 295+35-GetMarginTop(), 54, 33), C4GUI::Ico_None);
-	AddElement(pBtnOK); //pBtnOK->SetToolTip(LoadResStr("IDS_DLGTIP_OK"));
+	AddElement(pBtnOK);
 	// Cancel
 	C4GUI::Button *pBtnAbort = new C4GUI::CancelIconButton(C4Rect(317-GetMarginLeft(), 16-GetMarginTop(), 21, 21), C4GUI::Ico_None);
-	AddElement(pBtnAbort); //pBtnAbort->SetToolTip(LoadResStr("IDS_DLGTIP_CANCEL"));
+	AddElement(pBtnAbort);
 	// New player
 	if (!pForPlayer)
 		{

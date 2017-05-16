@@ -100,9 +100,6 @@ bool CStdD3D::BeginScene()
 	// do open
 	SceneOpen=(lpDevice->BeginScene() == D3D_OK);
 	if (!SceneOpen) return false;
-	// clear scene
-	//lpDevice->Clear( 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(rand()%256,rand()%256,rand()%256), 1.0f, 0L );
-	// set some def values
 	// success
 	return true;
 	}
@@ -258,21 +255,11 @@ void CStdD3D::PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool
 		}
 	else
 		{
-
-		// store in buffer
-		/*void *pVertices=NULL;
-		pVB->Lock( 0, 0, (BYTE**)&pVertices, D3DLOCK_DISCARD );
-		if (pVertices)
-			{
-			memcpy(pVertices, bltVertices, sizeof(bltVertices[0]) * rBltData.byNumVertices);
-			pVB->Unlock();
-			}*/
 		// set user ptr
 		pVertexPtr = (void *)&bltVertices;
 		iVtxSize = sizeof(bltVertices[0]);
 		// update rendering state if there's a base texture
 		bltState[iAdditive ? 2 : 1]->Apply();
-		//lpDevice->SetStreamSource(0, pVB, sizeof);
 		lpDevice->SetFVF(D3DFVF_C4VERTEX);
 		lpDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_SELECTARG1 );
 		lpDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
@@ -543,7 +530,7 @@ bool CStdD3D::CreatePrimarySurfaces(BOOL Fullscreen, int iColorDepth, unsigned i
 	sfcBmpInfo.bmiHeader.biWidth				= pApp->ScreenWidth();
 	sfcBmpInfo.bmiHeader.biHeight				= -pApp->ScreenHeight();
 	sfcBmpInfo.bmiHeader.biPlanes				= 1;
-	sfcBmpInfo.bmiHeader.biBitCount			= iColorDepth;//Format2BitDepth(dspMode.Format);
+	sfcBmpInfo.bmiHeader.biBitCount			= iColorDepth;
 	if (iColorDepth == 16)
 	{
 		// blitting an A4 (ignored) R4G4BV4 surface
@@ -797,7 +784,6 @@ void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float 
 	// apply color modulation
 	if (BlitModulated)
 		ModulateClr(dwClr, BlitModulateClr);
-	//dwClr |= 0xf0000000;
 	// render target?
 	if (sfcTarget->IsRenderTarget())
 		if(!sfcTarget->IsLocked())
@@ -950,7 +936,7 @@ void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float 
 						}
 				}
 			}
-	else /* if(!sfcTarget->IsRenderTarget()) */
+	else
 		{
 		if (!LockSurfaceGlobal(sfcTarget)) return;
 		ForLine((int)x1,(int)y1,(int)x2,(int)y2,&DLineSPixDw,dwClr);

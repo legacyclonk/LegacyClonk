@@ -46,14 +46,6 @@ CStdWindow* CStdGtkWindow::Init(CStdApp * pApp, const char * Title, CStdWindow *
 
 	gtk_widget_show_all(window);
 
-//	XVisualInfo vitmpl; int blub;
-//	vitmpl.visual = gdk_x11_visual_get_xvisual(gtk_widget_get_visual(window));
-//	vitmpl.visualid = XVisualIDFromVisual(vitmpl.visual);
-//	Info = XGetVisualInfo(dpy, VisualIDMask, &vitmpl, &blub);
-
-//	printf("%p\n", gtk_widget_get_visual(render_widget));
-//	Info = gdk_x11_visual_get_xvisual(gtk_widget_get_visual(render_widget));
-
 	GdkPixbuf* icon = gdk_pixbuf_new_from_xpm_data(c4x_xpm);
 	gtk_window_set_icon(GTK_WINDOW(window), icon);
 	gdk_pixbuf_unref(icon);
@@ -78,8 +70,6 @@ CStdWindow* CStdGtkWindow::Init(CStdApp * pApp, const char * Title, CStdWindow *
 
 	if(HideCursor)
 	{
-		// TODO!
-//		GdkCursor* cursor = gdk_cursor_new_from_pixmap(NULL, NULL, NULL, NULL, 0, 0);
 		gdk_window_set_cursor(window->window, NULL);
 	}
 
@@ -118,7 +108,6 @@ void CStdGtkWindow::OnDestroyStatic(GtkWidget* widget, gpointer data)
 	CStdGtkWindow* wnd = static_cast<CStdGtkWindow*>(data);
 
 	g_signal_handler_disconnect(wnd->window, wnd->handlerDestroy);
-	//gtk_widget_destroy(wnd->window);
 	wnd->handlerDestroy = 0;
 	wnd->window = NULL;
 	wnd->Active = false;

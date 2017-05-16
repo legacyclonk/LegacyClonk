@@ -24,7 +24,6 @@ class C4ObjectListChangeListener
 		virtual void OnObjectRemove(C4ObjectList * pList, C4ObjectLink * pLnk) = 0;
 		virtual void OnObjectAdded(C4ObjectList * pList, C4ObjectLink * pLnk) = 0;
 		virtual void OnObjectRename(C4ObjectList * pList, C4ObjectLink * pLnk) = 0;
-		//virtual void OnObjectReorder(C4ObjectLink * pLnk1, C4ObjectLink * pLnk2) = 0;
 		virtual ~C4ObjectListChangeListener() { }
 	};
 
@@ -165,7 +164,6 @@ class C4ObjectListIterator
 	private:
 		C4ObjectList & rList; // iterated list
 		C4ObjectList::iterator pCurr; // link to last returned object
-		//C4ObjectLink *pCurr;
 		C4ObjectList::iterator pCurrID; // link to head of link group with same ID
 		
 		C4ObjectListIterator(const C4ObjectListIterator &rCopy); // no copy ctor

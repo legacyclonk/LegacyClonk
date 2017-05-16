@@ -21,8 +21,6 @@
 const int32_t C4MC_Drag_None					= 0,
 					C4MC_Drag_Selecting			= 1,
 					C4MC_Drag_Moving				= 2,
-					//C4MC_Drag_Menu					= 3,
-					//C4MC_Drag_MenuScroll		= 4,
 					C4MC_Drag_Construct			= 5,
 
 					C4MC_Selecting_Unknown	= 0,
@@ -52,7 +50,6 @@ const int32_t C4MC_Cursor_Region			= 0,
 					C4MC_Cursor_Drop				= 20,
 					C4MC_Cursor_ThrowRight	= 21,
 					C4MC_Cursor_Put					= 22,
-					//C4MC_Cursor_DragMenu		= 23,
 					C4MC_Cursor_Vehicle			= 24,
 					C4MC_Cursor_VehiclePut	= 25,
 					C4MC_Cursor_ThrowLeft		= 26,
@@ -228,12 +225,6 @@ void C4MouseControl::Move(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyFl
 	{ 
 		iX = Viewport->ViewWdt/2; 
 		iY = Viewport->ViewHgt/2; 
-		if (Application.isFullScreen) 
-			{
-			//int32_t iMidX = Viewport->OutX + iX;
-			//int32_t iMidY = Viewport->OutY + iY;
-			//FIXMESetCursorPos(iMidX, iMidY);
-			}
 		InitCentered = true; 
 	}
 #endif
@@ -338,7 +329,7 @@ void C4MouseControl::Draw(C4FacetEx &cgo)
 				{
 				switch (Cursor)
 					{
-					case C4MC_Cursor_Select: case C4MC_Cursor_Region: //case C4MC_Cursor_DragMenu:
+					case C4MC_Cursor_Select: case C4MC_Cursor_Region:
 						iOffsetX=iOffsetY=0;
 						break;
 					case C4MC_Cursor_Dig: case C4MC_Cursor_DigMaterial:
@@ -367,7 +358,7 @@ void C4MouseControl::Draw(C4FacetEx &cgo)
 			// Add mark
 			bool fAddMark; fAddMark=false;
 			if (ShiftDown)
-				if ((Cursor!=C4MC_Cursor_Region) && (Cursor!=C4MC_Cursor_Select) //&& (Cursor!=C4MC_Cursor_DragMenu)
+				if ((Cursor!=C4MC_Cursor_Region) && (Cursor!=C4MC_Cursor_Select)
 				 && (Cursor!=C4MC_Cursor_JumpLeft) && (Cursor!=C4MC_Cursor_JumpRight))
 					if (!IsPassive())
 						fAddMark=true;
@@ -674,9 +665,9 @@ void C4MouseControl::UpdateTargetRegion()
 	Caption.Copy(TargetRegion->Caption);
 	IsHelpCaption = false;
 	CaptionBottomY=TargetRegion->Y; KeepCaption=0;
-	// Help region caption by region target object; not in menu, because this would be the cursor object
+	// Help region caption by region target object
 	if (Help)
-		if (TargetRegion->Target /*&& Cursor!=C4MC_Cursor_DragMenu*/)
+		if (TargetRegion->Target)
 			{
 			if (TargetRegion->Target->Def->GetDesc())
 				Caption.Format("%s: %s",TargetRegion->Target->GetName(), TargetRegion->Target->Def->GetDesc());

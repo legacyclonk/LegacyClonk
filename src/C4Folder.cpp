@@ -45,16 +45,6 @@ void C4Folder::Default()
 	Head.Default();
   }
 
-/*BOOL C4Folder::Save(C4Group &hGroup)
-	{
-	char *Buffer; int32_t BufferSize;
-	if (!Decompile(&Buffer,&BufferSize)) 
-		return FALSE;
-	if (!hGroup.Add(C4Folder, Buffer, BufferSize, FALSE, TRUE))
-		{ StdBuf Buf; Buf.Take(Buffer, BufferSize); return FALSE; }
-	return TRUE;
-	}*/
-
 void C4Folder::CompileFunc(StdCompiler *pComp)
   {
   pComp->Value(mkNamingAdapt(Head, "Head"));

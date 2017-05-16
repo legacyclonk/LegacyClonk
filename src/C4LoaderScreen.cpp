@@ -88,17 +88,6 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 
 	// load info
 	if (szInfo) { delete [] szInfo; szInfo=NULL; }
-	/*size_t iInfoSize;
-	if (Game.ScenarioFile.AccessEntry(C4CFN_Info, &iInfoSize))
-		{
-		szInfo = new char[iInfoSize+1];
-		// load info file
-		Game.ScenarioFile.Read(szInfo, iInfoSize);
-		// terminate buffer
-		szInfo[iInfoSize]=0;
-		// insert linebreaks
-		SReplaceChar(szInfo, 0x0a, '|');
-		}*/
 
 	// init fonts
 	if (!Game.GraphicsResource.InitFonts())
@@ -161,10 +150,6 @@ void C4LoaderScreen::Draw(C4Facet &cgo, int iProgress, C4LogBuffer *pLog, int Pr
 	fctBackground.DrawFullScreen(cgo);
 	// draw scenario title
 	Application.DDraw->StringOut(Game.ScenarioTitle.getData(), TitleFont, 1.0f, cgo.Surface, cgo.Wdt-iHIndent, cgo.Hgt-iVIndent-iLogBoxHgt-iVMargin-iProgressBarHgt-iVMargin-TitleFont.iLineHgt, 0xdddddddd, ARight, false);
-	// draw info
-	/*if (szInfo)
-		Application.DDraw->TextOutDw(szInfo, cgo.Surface, cgo.Wdt/2, cgo.Hgt/2+20);*/
-	//
 	// draw progress bar
 	Application.DDraw->DrawBoxDw(cgo.Surface, iHIndent, cgo.Hgt-iVIndent-iLogBoxHgt-iVMargin-iProgressBarHgt, cgo.Wdt-iHIndent, cgo.Hgt-iVIndent-iLogBoxHgt-iVMargin, 0x4f000000);
 	int iProgressBarWdt=cgo.Wdt-iHIndent*2-2;

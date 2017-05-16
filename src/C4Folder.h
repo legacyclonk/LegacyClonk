@@ -25,11 +25,7 @@ class C4Folder
 		C4FolderHead Head;
   public:
     void Default();
-	  //void Clear();
-		//BOOL Save(C4Group &hGroup);
     void CompileFunc(StdCompiler *pComp);
-	protected:
-		//BOOL Decompile(char **ppOutput, int32_t *ipSize);
   };
 
 #endif // INC_C4Folder

@@ -20,7 +20,6 @@ public:
 
 	void StartMonitoring();
 	void AddDirectory(const char *szDir);
-	//void Remove(const char * file);
 
 	// StdSchedulerProc:
 	virtual bool Execute(int iTimeout = -1);

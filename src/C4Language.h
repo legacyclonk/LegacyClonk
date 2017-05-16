@@ -25,7 +25,6 @@ class C4LanguageInfo
 		char Info[C4MaxLanguageInfo + 1];
 		char Fallback[C4MaxLanguageInfo + 1];
 		char Charset[C4MaxLanguageInfo + 1];
-		//char Location[C4MaxLanguageInfo + 1]; ...store group name here
 	protected:
 		C4LanguageInfo* Next;
 };

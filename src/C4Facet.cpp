@@ -320,12 +320,6 @@ void C4Facet::DrawXFloat(SURFACE sfcTarget, float fX, float fY, float fWdt, floa
 								TRUE);
 	zx=(iX2-iX)/(float(Wdt)-ox-oxs);
 	zy=(iY2-iY)/(float(Hgt)-oy-oys);
-/*	int32_t iX = floorf(fX+0.5)-1, iY = floorf(fY+0.5)-1, iX2 = floorf(fX+fWdt+0.5)-1, iY2 = floorf(fY+fHgt+0.5)-1;
-	lpDDraw->Blit(Surface,
-								X, Y, Wdt, Hgt,
-								sfcTarget,
-								iX,iY,iX2-iX+1,iY2-iY+1,
-								TRUE);*/
 #endif
 	}
 

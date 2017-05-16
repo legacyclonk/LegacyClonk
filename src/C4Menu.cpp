@@ -56,11 +56,6 @@ void DrawMenuSymbol(int32_t iMenu, C4Facet &cgo, int32_t iOwner, C4Object *cObj)
 			Game.GraphicsResource.fctWealth.Draw(ccgo = cgo.GetFraction(100, 50, C4FCT_Left, C4FCT_Bottom));
 			Game.GraphicsResource.fctArrow.Draw(ccgo = cgo.GetFraction(70, 70, C4FCT_Right, C4FCT_Center), FALSE, 1);
 			break;
-		/*case C4MN_Main:
-			Game.GraphicsResource.fctFlagClr.DrawClr(cgo,TRUE,dwColor);
-			ccgo.Set(cgo.Surface,cgo.X,cgo.Y+cgo.Hgt/2,cgo.Wdt,cgo.Hgt/2);
-			Game.GraphicsResource.fctCrewClr.DrawClr(ccgo,TRUE,dwColor);
-			break;*/
 		}
 	}
 
@@ -429,7 +424,6 @@ BOOL C4Menu::AddItem(C4MenuItem *pNew, const char *szCaption, const char *szComm
 BOOL C4Menu::Control(BYTE byCom, int32_t iData)
 	{
 	if (!IsActive()) return FALSE;
-	//bool fSingleColumn = IsContextMenu();
 
 	switch (byCom)
 		{
@@ -439,30 +433,18 @@ BOOL C4Menu::Control(BYTE byCom, int32_t iData)
 
 		// organize with nicer subfunction...
 		case COM_MenuLeft:
-			/*// Single column: left => begin
-			if (fSingleColumn)
-				MoveSelection(-Selection, true, true);
-			else
-			{*/
-				// Top wrap-around
-				if (Selection-1 < 0)
-					MoveSelection(ItemCount - 1 - Selection, true, true);
-				else
-					MoveSelection(-1, true, true);
-			/*}*/
-			break;
-		case COM_MenuRight: 
-			/*// Single column: right => end
-			if (fSingleColumn)
+			// Top wrap-around
+			if (Selection-1 < 0)
 				MoveSelection(ItemCount - 1 - Selection, true, true);
 			else
-			{*/
-				// Bottom wrap-around
-				if (Selection+1 >= ItemCount)
-					MoveSelection(-Selection, true, true);
-				else
-					MoveSelection(+1, true, true);
-			/*}*/
+				MoveSelection(-1, true, true);
+			break;
+		case COM_MenuRight: 
+			// Bottom wrap-around
+			if (Selection+1 >= ItemCount)
+				MoveSelection(-Selection, true, true);
+			else
+				MoveSelection(+1, true, true);
 			break; 
 		case COM_MenuUp:
 			iData = -Columns;
@@ -847,11 +829,6 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 			iValue = pDef->GetValue(NULL, NO_OWNER);
 		}
 
-	// Store and clear global clipper
-//	int32_t iX1,iY1,iX2,iY2;
-//	Application.DDraw->GetPrimaryClipper(iX1,iY1,iX2,iY2);
-//	Application.DDraw->SubPrimaryClipper(rcBounds.x, rcBounds.y, rcBounds.x+rcBounds.Wdt-1, rcBounds.y+rcBounds.Hgt-1);
-
 	C4Facet cgoExtra(cgo.Surface, cgo.TargetX+rcBounds.x+1, cgo.TargetY+rcBounds.y+rcBounds.Hgt-C4MN_SymbolSize-1, rcBounds.Wdt-2, C4MN_SymbolSize);
 	
 	// Draw bar divider
@@ -939,17 +916,11 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 				}
 			break;				
 		}
-
-	// Restore global clipper
-	//Application.DDraw->SetPrimaryClipper(iX1,iY1,iX2,iY2);
 	}
 
 void C4Menu::DrawFrame(SURFACE sfcSurface, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt)
 	{
 	lpDDraw->DrawFrame(sfcSurface,iX+1,iY+1,iX+iWdt-1,iY+iHgt-1,80);
-//	lpDDraw->DrawFrame(sfcSurface,iX,iY,iX+iWdt-2,iY+iHgt-2,87);
-//	lpDDraw->SetPixel(sfcSurface,iX+iWdt-1,iY,85);
-//	lpDDraw->SetPixel(sfcSurface,iX,iY+iHgt-1,85);
 	}
 
 void C4Menu::SetAlignment(int32_t iAlignment)
@@ -1013,7 +984,7 @@ void C4Menu::Execute()
 		if (!RefillInternal())
 			Close(false);
 	// text progress
-	if (fTextProgressing /*&& !Game.iTick2*/)
+	if (fTextProgressing)
 		SetTextProgress(+1, true);
 	}
 

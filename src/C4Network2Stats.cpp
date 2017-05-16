@@ -374,5 +374,3 @@ C4Graph *C4Network2Stats::GetGraphByName(const StdStrBuf &rszName, bool &rfIsTem
 	// no match
 	return NULL;
 	}
-
-// MassGraph.SetDumpFile(StdStrBuf("C:\\test.txt"));

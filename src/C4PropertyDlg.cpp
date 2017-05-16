@@ -274,11 +274,6 @@ void C4PropertyDlg::Clear()
 	Selection.Clear();
 #ifdef _WIN32
 	if (hDialog) DestroyWindow(hDialog); hDialog=NULL;
-#else
-#ifdef WITH_DEVELOPER_MODE
-	//if(vbox != NULL)
-	//	C4DevmodeDlg::SwitchPage(NULL);
-#endif
 #endif
 	Active = false;
 	}
@@ -400,9 +395,4 @@ void C4PropertyDlg::OnWindowHide(GtkWidget* widget, gpointer user_data)
 	static_cast<C4PropertyDlg*>(user_data)->Active = FALSE;
 }
 
-/*void C4PropertyDlg::OnDestroy(GtkWidget* widget, gpointer data)
-{
-	static_cast<C4PropertyDlg*>(data)->window = NULL;
-	static_cast<C4PropertyDlg*>(data)->Active = FALSE;
-}*/
 #endif

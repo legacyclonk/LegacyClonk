@@ -311,7 +311,6 @@ void ProgressBar::DrawElement(C4FacetEx &cgo)
 	// calc progress width
 	int32_t iProgressWdt = (rcBounds.Wdt-4) * iProgress / iMax;
 	// draw progress
-	//lpDDraw->DrawBoxDw(cgo.Surface, cgo.TargetX+rcBounds.x+2, cgo.TargetY+rcBounds.y+2, cgo.TargetX+rcBounds.x+iProgressWdt, cgo.TargetY+rcBounds.y+rcBounds.Hgt-2, C4GUI_ProgressBarColor);
 	GetRes()->fctProgressBar.DrawX(cgo.Surface, cgo.TargetX+rcBounds.x+2, cgo.TargetY+rcBounds.y+2, iProgressWdt, rcBounds.Hgt-2);
 	// print out progress text
 	char szPrg[32+1];

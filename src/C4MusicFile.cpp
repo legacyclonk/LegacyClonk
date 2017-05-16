@@ -274,7 +274,6 @@ void C4MusicFileOgg::CheckIfPlaying()
   {
 
   if(!Playing)
-	//if(FSOUND_Stream_GetPosition(stream) >= (unsigned) FSOUND_Stream_GetLength(stream))
 		Application.MusicSystem.NotifySuccess();
 	}
 

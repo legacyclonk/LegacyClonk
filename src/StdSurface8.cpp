@@ -112,9 +112,6 @@ bool CSurface8::Read(CStdStream &hGroup, bool fOwnPal)
 		if (BitmapInfo.Info.biBitCount != 24) return FALSE;
 		if (!hGroup.Advance(((CBitmapInfo) BitmapInfo).FileBitsOffset())) return FALSE;
 		}
-	// no 8bpp-surface in newgfx!
-	// needs to be kept for some special surfaces
-	//f8BitSfc=false;
 
   // Create and lock surface
 	if (!Create(BitmapInfo.Info.biWidth,BitmapInfo.Info.biHeight, fOwnPal)) return FALSE;
@@ -190,39 +187,6 @@ bool CSurface8::Save(const char *szFilename, BYTE *bpPalette)
 	// Success
   return TRUE;
 	}
-
-/*
-double ColorDistance(BYTE *bpRGB1, BYTE *bpRGB2)
-	{
-	return (double) (Abs(bpRGB1[0]-bpRGB2[0]) + Abs(bpRGB1[1]-bpRGB2[1]) + Abs(bpRGB1[2]-bpRGB2[2])) / 6.0;
-	}
-
-void CSurface8::SetPalette(BYTE *bpPalette, BOOL fAdapt)
-	{
-	if (!HasOwnPal()) return;
-	// Adapt bitmap
-	if (fAdapt)
-		{
-		BYTE AdaptMap[256]; AdaptMap[0]=0;
-		for (int iFromCol=1; iFromCol<256; iFromCol++) // Color zero transparent
-			{
-			int iToCol = 1;
-			for (int cToCol=iToCol+1; cToCol<256; cToCol++)
-				if ( ColorDistance(&pPal->Colors[iFromCol*3],&bpPalette[cToCol*3])
-					 < ColorDistance(&pPal->Colors[iFromCol*3],&bpPalette[iToCol*3]) )
-							iToCol = cToCol;
-
-			AdaptMap[iFromCol] = iToCol;
-			}
-
-		MapBytes(AdaptMap);
-
-		}
-
-	// Set palette
-	MemCopy(bpPalette,pPal->Colors,256*3);
-	}
-*/
 
 void CSurface8::GetSurfaceSize(int &irX, int &irY)
 	{

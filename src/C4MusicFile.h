@@ -48,7 +48,6 @@ class C4MusicFileMID : public C4MusicFile
 	  BOOL Play(BOOL loop = FALSE);
 		void Stop(int fadeout_ms = 0);
 		void CheckIfPlaying();
-		//C4MusicFileMID();
 		void SetVolume(int);
 
 	protected:

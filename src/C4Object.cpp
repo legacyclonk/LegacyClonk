@@ -1777,7 +1777,6 @@ BOOL C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 	C4Player *pPlayer;
 	C4IDList ListItems;
 	// Close any other menu
-	//CloseMenu(true);
 	if (Menu && Menu->IsActive()) if (!Menu->TryClose(true, false)) return FALSE;
 	// Create menu
 	if (!Menu) Menu = new C4ObjectMenu; else Menu->ClearItems(true);
@@ -1806,7 +1805,6 @@ BOOL C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 			if (!pTarget) if (!(pTarget=Contained)) break; 
 			// Create symbol
 			fctSymbol.Create(C4SymbolSize,C4SymbolSize);
-			//pTarget->Def->Draw(fctSymbol,FALSE,pTarget->Color,pTarget);
 			DrawMenuSymbol(C4MN_Buy, fctSymbol, pTarget->Owner, pTarget);
 			// Init menu
 			Menu->Init(fctSymbol,LoadResStr("IDS_PLR_NOBUY"),this,C4MN_Extra_Value,0,iMenu);
@@ -1820,7 +1818,6 @@ BOOL C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 			if (!pTarget) if (!(pTarget=Contained)) break;
 			// Create symbol & init 
 			fctSymbol.Create(C4SymbolSize,C4SymbolSize);
-			//pTarget->Def->Draw(fctSymbol,FALSE,pTarget->Color,pTarget);
 			DrawMenuSymbol(C4MN_Sell, fctSymbol, pTarget->Owner, pTarget);
 			sprintf(szCaption,LoadResStr("IDS_OBJ_EMPTY"),pTarget->GetName());
 			Menu->Init(fctSymbol,szCaption,this,C4MN_Extra_Value,0,iMenu);
@@ -2190,7 +2187,6 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
           ccx=pCom->Tx._getInt(); ccy=pCom->Ty;
 					// Message
 					iMoveTos++; szCommand[0]=0;
-					//sprintf(szCommand,"%s %d/%d",CommandName(pCom->Command),pCom->Tx,pCom->Ty,iAngle);
           break;
 				case C4CMD_Put:
 					sprintf(szCommand,"%s %s to %s",CommandName(pCom->Command),pCom->Target2 ? pCom->Target2->GetName() : pCom->Data ? C4IdText(pCom->Data) : "Content",pCom->Target ? pCom->Target->GetName() : "");
@@ -2250,7 +2246,7 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 	if (Game.GraphicsSystem.ShowSolidMask)
 		if (SolidMask.Wdt)
 			{
-			// DrawSolidMask(cgo); - no need to draw it, because the 8bit-surface will be shown
+			// no need to draw it, because the 8bit-surface will be shown
 			return;
 			}
 
@@ -2266,7 +2262,7 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 		}
   
   // Fire facet - always draw, even if particles are drawn as well
-  if (OnFire /*&& !Game.Particles.IsFireParticleLoaded()*/) if (eDrawMode!=ODM_BaseOnly)
+  if (OnFire) if (eDrawMode!=ODM_BaseOnly)
 		{
 		C4Facet fgo;   
 		// Straight: Full Shape.Rect on fire
@@ -2593,20 +2589,17 @@ void C4Object::DrawLine(C4FacetEx &cgo)
 
 void C4Object::DrawEnergy(C4Facet &cgo)
 	{
-	//cgo.DrawEnergyLevel(Energy,GetPhysical()->Energy);
 	cgo.DrawEnergyLevelEx(Energy,GetPhysical()->Energy, Game.GraphicsResource.fctEnergyBars, 0);
 	}
 
 void C4Object::DrawMagicEnergy(C4Facet &cgo)
 	{
 	// draw in units of MagicPhysicalFactor, so you can get a full magic energy bar by script even if partial magic energy training is not fulfilled
-	//cgo.DrawEnergyLevel(MagicEnergy/MagicPhysicalFactor,GetPhysical()->Magic/MagicPhysicalFactor,39);
 	cgo.DrawEnergyLevelEx(MagicEnergy/MagicPhysicalFactor,GetPhysical()->Magic/MagicPhysicalFactor, Game.GraphicsResource.fctEnergyBars, 1);
 	}
 
 void C4Object::DrawBreath(C4Facet &cgo)
 	{
-	//cgo.DrawEnergyLevel(Breath,GetPhysical()->Breath,99);
 	cgo.DrawEnergyLevelEx(Breath,GetPhysical()->Breath, Game.GraphicsResource.fctEnergyBars, 2);
 	}
 
@@ -2780,7 +2773,6 @@ void C4Object::EnumeratePointers()
 	nLayer = Game.Objects.ObjectNumber(pLayer);
 	
 	// Info by name
-	//if (Info) SCopy(Info->Name,nInfo,C4MaxName);
 	if (Info) nInfo = Info->Name; else nInfo.Clear();
 
 	// Commands
@@ -3807,7 +3799,6 @@ bool C4Object::AddCommand(int32_t iCommand, C4Object *pTarget, C4Value iTx, int3
 		Command=pCom;
 		}
 	// Success
-	//sprintf(OSTR,"%s command %s added: %i/%i %s %s (%i)",GetName(),CommandName(iCommand),iTx,iTy,pTarget ? pTarget->GetName() : "O",pTarget2 ? pTarget2->GetName() : "O",iUpdateInterval); Log(OSTR);
   return true;
 	}
 
@@ -3939,10 +3930,6 @@ void C4Object::DrawCommand(C4Facet &cgoBar, int32_t iAlign, const char *szFuncti
 	if (iAlign & C4FCT_Bottom) cgoLeft = cgoRight.TruncateSection(C4FCT_Left);
 	else cgoLeft = cgoBar.TruncateSection(iAlign); 
 	if (!cgoLeft.Wdt) return;
-
-	// Flash background
-	//if (fFlash)
-	//	Application.DDraw->DrawBox(cgoLeft.Surface,cgoLeft.X-1,cgoLeft.Y-1,cgoLeft.X+cgoLeft.Wdt*2,cgoLeft.Y+cgoLeft.Hgt,CRed);
 
 	// image drawn by caller
 	if (pfctImage) 
@@ -4497,7 +4484,7 @@ bool DoBridge(C4Object *clk)
 	if (fMoveClonk)
 		{
 		int32_t cx2=cx, cy2=cy;
-		if (/*!clk->Shape.Attach(cx2, cy2, (clk->Action.t_attach & CNAT_Flags) | CNAT_Bottom) ||*/ clk->Shape.CheckContact(cx2, cy2-1))
+		if (clk->Shape.CheckContact(cx2, cy2-1))
 			{
 			// Clonk would collide here: Change to nonmoving Clonk mode and redo bridging
 			iBridgeTime -= clk->Action.Time;
@@ -6053,7 +6040,6 @@ StdStrBuf C4Object::GetNeededMatStr(C4Object *pBuilder)
 			ncnt = NeededComponents.GetCount(cnt) - Component.GetIDCount(idComponent);
 			if(ncnt > 0)
 				{
-				//if(!NeededMats) NeededMats.Append(", "); what was this for...?
         NeededMats.AppendFormat("|%dx ", ncnt);
 				if((pComponent = C4Id2Def(idComponent)))
 					NeededMats.Append(pComponent->GetName());

@@ -267,23 +267,6 @@ void CSurface::FreeTextures()
 		}
 	}
 
-/*bool ClrByOwner(DWORD &rClr) old style...
-	{
-	// red value must be approx. same to green
-	BYTE byR=GetBValue(rClr), byG=GetGValue(rClr);
-	int diff=Abs(byR-byG);
-	if (diff>byR/8) return false;
-	// get blue value; mustn't be 0 or equal to R/G (grey)
-	BYTE byB=GetRValue(rClr); if (!byB || Inside(byB, Min(byR, byG), Max(byR, byG))) return false;
-	// medium r/g and blue is very close (additional gray shade check)
-	if ((byR > 50) && (Abs(byB - byR) < 20)) return false;
-	// if blue is not fully lit, red and green should be very low
-	if (byB<240 && byR>15) return false;
-	// so, the color seems to be truly blue-ish
-	rClr=RGB(byB, byB, byB) | (rClr&0xff000000);
-	return true;
-	}*/
-
 #define	 RANGE    255
 #define  HLSMAX   RANGE
 #define  RGBMAX   255
@@ -383,32 +366,6 @@ bool CSurface::SetAsClrByOwnerOf(CSurface *pOfSurface)
 	// success
 	return true;
 	}
-
-#ifdef USE_GL
-/*bool CSurface::CreatePrimaryGLTextures()
-	{
-	if (!pGL) return false;
-	// primary OpenGL-surface: ensure context is selected
-	if (!pGL->pCurrCtx) if (!pGL->MainCtx.Select()) return false;
-	// create texture array
-	CreateTextures();
-	// get from framebuffer
-	CTexRef **ppTexRef = ppTex;
-	for (int iY=0; iY<Hgt; iY+=iTexSize)
-		for (int iX=0; iX<Wdt; iX+=iTexSize)
-			{
-			// get tex size
-			int txWdt=Min(Wdt-iX, iTexSize), txHgt=Min(Hgt-iY, iTexSize);
-			// copy surface into texture
-			glBindTexture(GL_TEXTURE_2D, (*ppTexRef)->texName);
-			glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, iX, iY, txWdt, txHgt, 0);
-			// next texture reference
-			++ppTexRef;
-			}
-	// done, success
-	return true;
-	}*/
-#endif
 
 #ifdef USE_DIRECTX
 BOOL CSurface::AttachSfc(IDirect3DSurface9 *sfcSurface)
@@ -539,73 +496,6 @@ bool CSurface::Read(CStdStream &hGroup, bool fOwnPal)
 	return TRUE;
 	}
 
-/*BOOL CSurface::Save(const char *szFilename)
-	{
-	CBitmapInfo BitmapInfo2;
-	CBitmap256Info BitmapInfo;
-	// Set bitmap info
-	if (fPrimary)
-		{
-		if (byBytesPP==4)
-			BitmapInfo2.Set(Wdt,Hgt,32);
-		else
-			BitmapInfo2.Set(Wdt,Hgt,16);
-		}
-	else
-		BitmapInfo.Set(Wdt,Hgt,pPal->Colors);
-
-	// Lock - WARNING - maybe locking primary surface here...
-	if (!Lock()) return FALSE;
-
-	// Create file & write info
-	CStdFile hFile; 
-	
-	if(fPrimary)
-		{
-		if ( !hFile.Create(szFilename)
-		|| !hFile.Write(&BitmapInfo2,sizeof(BitmapInfo2)) )
-			{ Unlock(); return FALSE; }
-
-		// write lines
-		char bpEmpty[4]; int iEmpty = DWordAligned(Wdt*byBytesPP)-Wdt*byBytesPP;
-		for (int cnt=Hgt-1; cnt>=0; cnt--)
-			{
-			if (!hFile.Write(Bits+(Pitch*cnt),Wdt*byBytesPP))
-				{ Unlock(); return FALSE; }
-			if (iEmpty)
-				if (!hFile.Write(bpEmpty,iEmpty))
-					{ Unlock(); return FALSE; }
-			}
-
-		}
-	else
-		{
-		if ( !hFile.Create(szFilename)
-		|| !hFile.Write(&BitmapInfo,sizeof(BitmapInfo)) )
-			{ Unlock(); return FALSE; }
-
-		// Write lines
-		char bpEmpty[4]; int iEmpty = DWordAligned(Wdt)-Wdt;
-		for (int cnt=Hgt-1; cnt>=0; cnt--)
-			{
-			if (!hFile.Write(Bits+(Pitch*cnt),Wdt))
-				{ Unlock(); return FALSE; }
-			if (iEmpty)
-				if (!hFile.Write(bpEmpty,iEmpty))
-					{ Unlock(); return FALSE; }
-			}
-		}
-
-	// Close file
-  hFile.Close();
-
-	// Unlock
-	Unlock();
-
-	// Success
-  return TRUE;
-	}
-*/
 bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly)
 	{
 	// Lock - WARNING - maybe locking primary surface here...
@@ -738,9 +628,7 @@ BOOL CSurface::Unlock()
 			else
 #endif
 				{
-				// if tex refs exist, free them
-				/*FreeTextures();*/
-				// otherwise, emulated primary locks in OpenGL
+				// emulated primary locks in OpenGL
 				delete PrimarySurfaceLockBits;
 				PrimarySurfaceLockBits = 0;
 				return TRUE;
@@ -819,17 +707,6 @@ DWORD CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 				PrimarySurfaceLockPitch = Wdt*3;
 				}
 			return * (DWORD *) (PrimarySurfaceLockBits+(Hgt-iY-1)*PrimarySurfaceLockPitch+iX*3);
-			
-			// copy content into textures
-			/*if (!ppTex) if (!CreatePrimaryGLTextures()) return 0;
-			// get+lock affected texture - inverse Y as primary is locked upside down!
-			iY = Hgt-iY-1;
-			CTexRef *pTexRef;
-			if (!GetLockTexAt(&pTexRef, iX, iY)) return 0;
-			pBuf=(BYTE *) pTexRef->texLock.pBits;
-			iPitch=pTexRef->texLock.Pitch;
-			// get pixel
-			return *(DWORD *)(pBuf+iY*iPitch+iX*4);*/
 			}
 #endif
 #ifdef USE_DIRECTX
@@ -943,62 +820,6 @@ bool CSurface::IsPixTransparent(int iX, int iY)
 	// get alpha value
 	return (dwPix>>24) >= 128;
 	}
-
-/*bool CSurface::SetPixEx(int iX, int iY, BYTE byCol, DWORD dwClr)
-	{
-	// clip
-	if ((iX<ClipX) || (iX>ClipX2) || (iY<ClipY) || (iY>ClipY2)) return true;
-	// primary?
-	if (fPrimary)
-		{
-#ifdef USE_GL
-		// OpenGL: Use OpenGL API
-		if (pGL)
-			{
-			pGL->DrawPixInt(this, iX, iY, dwClr);
-			}
-		else
-#endif
-			{
-#ifdef USE_DIRECTX
-			// must be locked!
-			if (!Bits) return false;
-			// set according to pixel format
-			DWORD *pPix32; WORD *pPix16;
-			switch (dwClrFormat)
-				{
-				case D3DFMT_X1R5G5B5:
-					// 16 bit 5-5-5
-					pPix16=(WORD *) (((BYTE *) Bits)+iY*Pitch+iX*2);
-					*pPix16=WORD((dwClr & 0x000000f8) >> 3)
-								| WORD((dwClr & 0x0000f800) >> 6)
-								| WORD((dwClr & 0x00f80000) >> 9);
-					break;
-
-				case D3DFMT_R5G6B5:
-					// 16 bit 5-6-5
-					pPix16=(WORD *) (((BYTE *) Bits)+iY*Pitch+iX*2);
-					*pPix16=WORD((dwClr & 0x000000f8) >> 3)
-								| WORD((dwClr & 0x0000fc00) >> 5)
-								| WORD((dwClr & 0x00f80000) >> 8);
-					break;
-
-				case D3DFMT_X8R8G8B8:
-					// 32 bit
-					pPix32=(DWORD *) (((BYTE *) Bits)+iY*Pitch+iX*4);
-					*pPix32=dwClr;
-					break;
-				}
-#endif
-			}
-		return true;
-		}
-	else
-		{
-		SetPixDw(iX, iY, dwClr);
-		}
-	return true;
-	}*/
 
 bool CSurface::SetPixDw(int iX, int iY, DWORD dwClr)
 	{

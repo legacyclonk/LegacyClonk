@@ -18,7 +18,6 @@ void C4RoundResultsPlayer::CompileFunc(StdCompiler *pComp)
 	{
 	// remember to adjust operator = and == when adding values here!
 	pComp->Value(mkNamingAdapt(id,    "ID",   0));
-	// pComp->Value(mkNamingAdapt(fctBigIcon,    "Icon",      C4FacetEx())); - not possible
 	pComp->Value(mkNamingAdapt(iTotalPlayingTime,  "TotalPlayingTime",    0u));
 	pComp->Value(mkNamingAdapt(iScoreOld,  "SettlementScoreOld",    -1));
 	pComp->Value(mkNamingAdapt(iScoreNew,  "SettlementScoreNew",    -1));
@@ -64,9 +63,6 @@ void C4RoundResultsPlayer::EvaluatePlayer(C4Player *pPlr)
 		{
 		sLeagueProgressData.Copy(pInfo->GetLeagueProgressData());
 		}
-	// BigIcon from info: Doesn't work for some cases when player files got deleted already
-	/*assert(pInfo);
-	if (pInfo) pInfo->LoadBigIcon(fctBigIcon);*/
 	}
 
 void C4RoundResultsPlayer::EvaluateLeague(C4RoundResultsPlayer *pLeaguePlayerInfo)

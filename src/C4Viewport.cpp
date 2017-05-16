@@ -577,7 +577,6 @@ gboolean C4ViewportWindow::OnConfigureStatic(GtkWidget* widget, GdkEventConfigur
 	C4ViewportWindow* window = static_cast<C4ViewportWindow*>(user_data);
 	C4Viewport* cvp = window->cvp;
 
-	//cvp->UpdateOutputSize();
 	cvp->ScrollBarsByViewPosition();
 
 	return FALSE;
@@ -616,7 +615,6 @@ void C4ViewportWindow::HandleMessage (XEvent & e)
 			// Do not take into account the state of the various modifiers and locks
 			// we don't need that for keyboard control
 			DWORD key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
-			//case VK_SCROLL:	cvp->TogglePlayerLock();
 			Game.DoKeyboardInput(key, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), false, NULL);
 			break;
 			}
@@ -857,7 +855,7 @@ void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
 			C4ST_STARTNEW(ObjInfStat, "C4Viewport::DrawCursorInfo: Object info")
 			ccgo.Set(cgo.Surface,cgo.X+C4SymbolBorder,cgo.Y+C4SymbolBorder,3*C4SymbolSize,C4SymbolSize);
 			cursor->Info->Draw(	ccgo,
-													Config.Graphics.ShowPortraits, // && Game.Players.Get(Player)->CursorFlash,
+													Config.Graphics.ShowPortraits,
 													(cursor == Game.Players.Get(Player)->Captain), cursor );
 			C4ST_STOP(ObjInfStat)
 			}
@@ -902,7 +900,7 @@ void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
 			}
 
 	// Draw commands
-	if (Config.Graphics.ShowCommands /*|| Game.MouseControl.IsViewport(this)*/ ) // Now, ShowCommands is respected even for mouse control
+	if (Config.Graphics.ShowCommands)
 		if (realcursor)
 			if (cgo.Hgt>C4SymbolSize)
 				{
@@ -1188,9 +1186,6 @@ void C4Viewport::AdjustPosition()
 	if (fIsNoOwnerViewport) { ViewOffsX=0; ViewOffsY=0; }
   // clip at borders, update vars
 	UpdateViewPosition();
-#ifdef WITH_DEVELOPER_MODE
-	//ScrollBarsByViewPosition();
-#endif
 	}
 
 void C4Viewport::CenterPosition()
@@ -1239,7 +1234,6 @@ void C4Viewport::UpdateViewPosition()
 void C4Viewport::Default()
 	{
 	pCtx=NULL;
-	//hWnd=NULL;
 	pWindow=NULL;
 	Player=0;
 	ViewX=ViewY=ViewWdt=ViewHgt=0;
@@ -1330,7 +1324,6 @@ BOOL C4Viewport::Init(CStdWindow * pParent, CStdApp * pApp, int32_t iPlayer)
 	// Position and size
 	sprintf(OSTR, "Viewport%i", Player+1);
 	pWindow->RestorePosition(OSTR, Config.GetSubkeyPath("Console"));
-	//UpdateWindow(hWnd);
 	// Updates
 	UpdateOutputSize();
 	// Disable player lock on unowned viewports
@@ -1483,7 +1476,6 @@ void C4Viewport::SetOutputSize(int32_t iDrawX, int32_t iDrawY, int32_t iOutX, in
 			Game.MouseControl.UpdateClip();
 			// and inform GUI
 			if (Game.pGUI)
-				//Game.pGUI->SetBounds(C4Rect(iOutX, iOutY, iOutWdt, iOutHgt));
 				Game.pGUI->SetPreferredDlgRect(C4Rect(iOutX, iOutY, iOutWdt, iOutHgt));
 			}
 	}

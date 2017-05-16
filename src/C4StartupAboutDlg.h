@@ -28,10 +28,6 @@ class C4StartupAboutDlg : public C4StartupDlg
 
 	public:
 		void DoBack(); // back to main menu	
-
-	//public:
-	//	void RecreateDialog(bool fFade);
-
 	};
 
 

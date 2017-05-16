@@ -19,7 +19,7 @@ struct C4GameVersion
 	StdStrBuf GetString() const
 		{ return FormatString("%s %d.%d.%d.%d [%d]", sEngineName.getData(), (int)iVer[0], (int)iVer[1], (int)iVer[2], (int)iVer[3], (int)iBuild); }
 	bool operator == (const C4GameVersion &rCmp) const
-		{ return /*sEngineName==rCmp.sEngineName &&*/ iVer[0]==rCmp.iVer[0] && iVer[1]==rCmp.iVer[1] && iVer[2]==rCmp.iVer[2] && iVer[3]==rCmp.iVer[3] && iBuild==rCmp.iBuild; }
+		{ return iVer[0]==rCmp.iVer[0] && iVer[1]==rCmp.iVer[1] && iVer[2]==rCmp.iVer[2] && iVer[3]==rCmp.iVer[3] && iBuild==rCmp.iBuild; }
 
 	void CompileFunc(StdCompiler *pComp, bool fEngineName)
 		{

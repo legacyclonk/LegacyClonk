@@ -412,7 +412,6 @@ int FileTime(const char *szFilename)
 
 bool EraseFile(const char *szFilename)
   {
-	//chmod(szFilename,200);
 #ifdef _WIN32
 	SetFileAttributes(szFilename, FILE_ATTRIBUTE_NORMAL);
 #endif
@@ -549,7 +548,6 @@ bool CopyDirectory(const char *szSource, const char *szTarget, bool fResetAttrib
 		|| SEqual(GetFilename(szSource),".."))
 		return true;
 	// Overwrite target
-	//if (ItemExists(szTarget))
 	if (!EraseItem(szTarget)) return false;
 	// Create target directory
 	bool status=true;
@@ -615,7 +613,6 @@ bool EraseDirectory(const char *szDirName) {
 		}
 	}
 	// Remove directory
-	//chmod(szDirName,200);
 #ifdef _WIN32
 	return !!RemoveDirectory(szDirName);
 #else
@@ -624,11 +621,6 @@ bool EraseDirectory(const char *szDirName) {
 }
 
 /* Items */
-
-/*int ItemAttributes(const char *szItemName)
-	{
-	return FileAttributes(szItemName);
-	}*/
 
 bool RenameItem(const char *szItemName, const char *szNewItemName)
 	{
@@ -834,38 +826,6 @@ int ForEachFile(const char *szDirName, bool (*fnCallback)(const char *)) {
 }
 //------------------------------- Text Files --------------------------------------------------------------------------------------------------------
 
-// Sets file pointer to end of located string.
-/*
-bool LocateInFile(FILE *file, char *index, BYTE wrap, BYTE lbeg)
-  {
-  int fchr,needok,idxcnt=0,loops=0;        
-  BYTE exok=0,islbeg=1;                   
-  if (!file || !index) return 0;
-  needok=SLen(index);
-  if (!file) return 0;
-  do
-    {
-		// Get next char
-    fchr=fgetc(file);
-		// Check EOF/wrap
-    if (fchr==EOF)
-      if (wrap) { rewind(file); fchr=fgetc(file); loops++; if (loops>=2) exok=2; }
-      else return 0;
-		// Compare to search index
-    if ((fchr==index[idxcnt]) && (!lbeg || islbeg))
-      { idxcnt++; if (idxcnt==needok) exok=1; }
-    else
-      { idxcnt=0; islbeg=0; }
-	// Check EOL
-	if (fchr==0x0A) islbeg=1;
-    }
-  while (!exok);
-  if (exok==1) return 1;
-  return 0;
-  }
-
-// Reads the next line from the file. Returns zero if EOF has been encountered.
-*/
 bool ReadFileLine(FILE *fhnd, char *tobuf, int maxlen) 
   {			  			       
   int cread;
@@ -885,16 +845,6 @@ bool ReadFileLine(FILE *fhnd, char *tobuf, int maxlen)
   return 1;
   }
 
-// Reads remaining line contents following string *info to target buffer.
-/*
-bool ReadFileInfoLine(FILE *fhnd, char *info, char *tbuf, int maxlen, int wrap)
-  {
-  tbuf[0]=0;
-  if (!LocateInFile(fhnd,info,wrap,1)) return 0;
-  if (!ReadFileLine(fhnd,tbuf,maxlen)) return 0;
-  return 1;
-  }
-*/
 void AdvanceFileLine(FILE *fhnd)
   {
   int cread,loops=0;
@@ -906,27 +856,3 @@ void AdvanceFileLine(FILE *fhnd)
     }
   while ((cread!=0x0A) && (loops<2));
   }
-/*
-DWORD ReadFileUntil(FILE *fhnd, char *tbuf, char smark, int maxlen)
-  {
-  DWORD rcnt=0;
-  int cread;
-  if (!fhnd || !tbuf) return rcnt;
-  while (maxlen>0)
-    {
-    cread=fgetc(fhnd);
-    if ((cread==smark) || (cread==EOF)) break;
-    *tbuf=cread; tbuf++;
-    maxlen--;
-    rcnt++;
-    }
-  *tbuf=0;
-  return rcnt;
-  }
-
-bool WriteFileLine(FILE *hfile, const char *szLine)
-  {
-  if ( (fputs(szLine,hfile)<0) || (fputs("\n",hfile)<0) )  return false;
-	return true;
-	}
-*/

@@ -78,7 +78,6 @@ class C4ToolsDlg
 
 		gulong handlerHide;
 
-		//static void OnDestroy(GtkWidget* widget, gpointer data);
 		static void OnButtonModeDynamic(GtkWidget* widget, gpointer data);
 		static void OnButtonModeStatic(GtkWidget* widget, gpointer data);
 		static void OnButtonModeExact(GtkWidget* widget, gpointer data);

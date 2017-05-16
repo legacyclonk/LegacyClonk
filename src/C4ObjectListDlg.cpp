@@ -70,7 +70,6 @@ c4_list_get_flags (GtkTreeModel *tree_model)
 	g_return_val_if_fail (C4_IS_LIST(tree_model), (GtkTreeModelFlags)0);
 	
 	// neither is this a flat list nor do the iters persist changes in the model
-	//return GtkTreeModelFlags(GTK_TREE_MODEL_ITERS_PERSIST);
 	return GtkTreeModelFlags(0);
 }
 
@@ -393,8 +392,6 @@ c4_list_get_value (GtkTreeModel * tree_model, GtkTreeIter * iter, gint column, G
 
 	g_value_init (value, G_TYPE_POINTER);
 	g_value_set_pointer(value, pObj);
-
-//	g_value_set_string(value, C4Language::IconvUtf8(pObj->GetName()).getData());
 }
 
 // Wrapper around g_object_new.

@@ -375,17 +375,6 @@ StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool
 			}
 		}
 #ifdef _WIN32
-
-//	TODO: Works?
-//	StdStrBuf Name; Name.SetLength(1000);
-//	int res = GetKeyNameText(wCode, Name.getMData(), Name.getSize());
-//	if(!res)
-//		// not found: Compose as direct code
-//		return FormatString("\\x%x", (DWORD) wCode);
-//	// Set size
-//	Name.SetLength(res);
-//	return Name;
-
 	// query map
 	const C4KeyCodeMapEntry *pCheck = KeyCodeMap;
 	while (pCheck->szName)

@@ -215,7 +215,7 @@ void C4AulScript::Clear()
 	// remove includes
 	Includes = NULL;
 	// delete child scripts + funcs
-	while (Child0) // Child0->Unreg();
+	while (Child0)
 		if (Child0->Delete()) delete Child0; else Child0->Unreg();
 	while (Func0) delete Func0;
 	// delete script+code
@@ -329,7 +329,6 @@ C4AulScriptFunc *C4AulScript::GetSFunc(const char *pIdtf, C4AulAccess AccNeeded,
 		C4AulParseError err(this, "insufficient access level");
 		err.show();
 		// don't even break in strict execution, because the caller might be non-strict
-		//if (Strict) return NULL;
 		}
 
 	// return found function
@@ -454,8 +453,6 @@ void C4AulScriptEngine::UnLink()
 	// Do not clear global variables and constants, because they are registered by the
 	// preparser. Note that keeping those fields means that you cannot delete a global
 	// variable or constant at runtime by removing it from the script.
-	//GlobalNamedNames.Reset();
-	//GlobalConstNames.Reset();
 	}
 
 

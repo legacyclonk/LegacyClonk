@@ -87,7 +87,6 @@ bool CStdGL::UpdateClipper()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D((GLdouble) iX, (GLdouble) (iX+iWdt), (GLdouble) (iY+iHgt), (GLdouble) iY);
-	//gluOrtho2D((GLdouble) 0, (GLdouble) xRes, (GLdouble) yRes, (GLdouble) yRes-iHgt);
 	return true;
 	}
 
@@ -99,7 +98,6 @@ bool CStdGL::PrepareRendering(SURFACE sfcToSurface)
 	if (!pCurrCtx) if (!MainCtx.Select()) return false;
 	// not ready?
 	if (!Active)
-		//if (!RestoreDeviceObjects())
 			return false;
 	// target?
 	if (!sfcToSurface) return false;
@@ -509,7 +507,6 @@ void CStdGL::BlitLandscape(SURFACE sfcSource, SURFACE sfcSource2, SURFACE sfcLiq
 			for (i=0; i<4; ++i)
 				{
 				glColorDw(fdwModClr[i] | dwModMask);
-				//glMultiTexCoord2f(GL_TEXTURE0_ARB,(tcx[i] + DDrawCfg.fTexIndent) / iTexSize, (tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
 				glTexCoord2f((tcx[i] + DDrawCfg.fTexIndent) / iTexSize, (tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
 				if (sfcSource2) 
 					glMultiTexCoord2f(GL_TEXTURE1_ARB,(tcx[i] + DDrawCfg.fTexIndent) / iTexSize, (tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
@@ -555,8 +552,6 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow * pWindow, CStdApp *pApp)
 		{
 		delete pCtx; Error("  gl: Error creating secondary context!"); return NULL;
 		}
-	// reselect current context
-	//if (pCurrCtx) pCurrCtx->Select(); else pCurrCtx=pCtx;
 	// done
 	return pCtx;
 	}
@@ -572,8 +567,6 @@ CStdGLCtx *CStdGL::CreateContext(HWND hWindow, CStdApp *pApp)
 		{
 		delete pCtx; Error("  gl: Error creating secondary context!"); return NULL;
 		}
-	// reselect current context
-	//if (pCurrCtx) pCurrCtx->Select(); else pCurrCtx=pCtx;
 	// done
 	return pCtx;
 	}
@@ -941,7 +934,6 @@ bool CStdGL::RestoreDeviceObjects()
 		"TXP tmp, fragment.texcoord[0], texture, 2D;\n"
 		// perform the modulation
 		"MUL tmp.rgb, tmp, fragment.color.primary;\n"
-		//"MUL outColor.rgb, tmp, col;\n"
 		// Apparently, it is not possible to directly add and mul into the same register or something.
 		"ADD_SAT result.color.rgb, tmp, {0,0,0,0};\n"
 		"ADD_SAT result.color.a, tmp, fragment.color.primary;\n"
@@ -1002,7 +994,6 @@ bool CStdGL::RestoreDeviceObjects()
 		// animation
 		"SUB liquid.rgb, liquid, {0.5, 0.5, 0.5, 0};\n"
 		"DP3 liquid.rgb, liquid, program.local[1];\n"
-		//"MAD_SAT tmp.rgb, mask.aaa, liquid, tmp;\n"
 		"MUL liquid.rgb, mask.aaaa, liquid;\n"
 		"ADD_SAT tmp.rgb, liquid, tmp;\n"
 		// perform the modulation
@@ -1107,8 +1098,6 @@ void CStdGL::TaskIn()
 		// change resolution
 		pApp->SetFullScreen(true);
 		}
-	// restore gl
-	//if (!DeviceReady()) MainCtx.Init(pWindow, pApp);
 	// restore textures
 	if (pTexMgr && fFullscreen) pTexMgr->IntUnlock();
 	// restore device stuff
@@ -1137,7 +1126,6 @@ bool CStdGL::OnResolutionChanged()
 void CStdGL::Default()
 	{
 	CStdDDraw::Default();
-	//pCurrCtx = NULL;
 	iPixelFormat=0;
 	sfcFmt=0;
 	iClrDpt=0;

@@ -125,14 +125,6 @@ BOOL C4MassMover::Execute()
 		Cease(); return FALSE;
 		}
 
-	// do check at this pos for conversion check
-/*	if (Corrosion(0,0))
-		{
-		// material has been used up by conversion
-		Game.Landscape.ExtractMaterial(x,y);
-		return TRUE;
-		}*/
-
 	// Save back material that is about to be overwritten.
 	int omat;
 	if (Game.C4S.Game.Realism.LandscapeInsertThrust)

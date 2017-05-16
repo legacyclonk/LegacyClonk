@@ -309,8 +309,6 @@ BOOL C4PXSSystem::Save(C4Group &hGroup)
 	{
 	unsigned int cnt;
 
-	//Log("Save PXS");
-
 	// Check used chunk count
 	int32_t iChunks=0; 
 	for (cnt=0; cnt<PXSMaxChunk; cnt++) 

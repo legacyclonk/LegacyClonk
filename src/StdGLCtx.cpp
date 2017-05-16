@@ -48,7 +48,7 @@ bool CStdGLCtx::Init(CStdWindow * pWindow, CStdApp *pApp, HWND hWindow)
 		memset(&rPfd, 0, sizeof(PIXELFORMATDESCRIPTOR)) ;
 		rPfd.nSize      = sizeof(PIXELFORMATDESCRIPTOR); 
 		rPfd.nVersion   = 1 ; 
-		rPfd.dwFlags    = PFD_DOUBLEBUFFER | /*(pGL->fFullscreen ? PFD_SWAP_EXCHANGE : 0) |*/
+		rPfd.dwFlags    = PFD_DOUBLEBUFFER |
 	                        PFD_SUPPORT_OPENGL |
 	                        PFD_DRAW_TO_WINDOW ;
 		rPfd.iPixelType = PFD_TYPE_RGBA;
@@ -62,7 +62,6 @@ bool CStdGLCtx::Init(CStdWindow * pWindow, CStdApp *pApp, HWND hWindow)
 
 	// create context
 	hrc = wglCreateContext(hDC); if (!hrc) return !!pGL->Error("  gl: Error creating gl context");
-	//if (this != &pGL->MainCtx) wglCopyContext(pGL->MainCtx.hrc, hrc, GL_ALL_ATTRIB_BITS);
 
 	// share textures
 	wglMakeCurrent(NULL, NULL); pGL->pCurrCtx=NULL;
@@ -103,9 +102,6 @@ bool CStdGLCtx::Select(bool verbose)
 	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
-	//glEnable(GL_LINE_SMOOTH);
-	//glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-	//glEnable(GL_POINT_SMOOTH);
 	// update clipper - might have been done by UpdateSize
 	// however, the wrong size might have been assumed
 	if (!pGL->UpdateClipper()) return false;
@@ -169,7 +165,6 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 	if (!SetDeviceGammaRamp(MainCtx.hDC, reinterpret_cast<D3DGAMMARAMP*>(ramp.red)))
 		{
 		int i=::GetLastError();
-		//Beep(i,i);
 		}
 	return true;
 	}
@@ -248,9 +243,6 @@ bool CStdGLCtx::Select(bool verbose)
 	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
-	//glEnable(GL_LINE_SMOOTH);
-	//glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-	//glEnable(GL_POINT_SMOOTH);
 	// update clipper - might have been done by UpdateSize
 	// however, the wrong size might have been assumed
 	if (!pGL->UpdateClipper()) 
@@ -374,9 +366,6 @@ bool CStdGLCtx::Select(bool verbose)
 	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
-	//glEnable(GL_LINE_SMOOTH);
-	//glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-	//glEnable(GL_POINT_SMOOTH);
 	// update clipper - might have been done by UpdateSize
 	// however, the wrong size might have been assumed
 	if (!pGL->UpdateClipper()) 

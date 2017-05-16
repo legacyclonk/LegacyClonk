@@ -74,10 +74,6 @@ void C4GameMessage::Append(const char *szText, BOOL fNoDuplicates)
 
 BOOL C4GameMessage::Execute()
 	{
-	// Position by target
-	// currently done in C4GameMessage::Draw for parallaxity
-	/*if (Target) 
-		{ X=Target->x; Y=Target->y-Target->Def->Shape.Hgt/2-5; }*/
 	// Delay / removal
 	if (Delay>0) Delay--;
 	if (Delay==0) return FALSE;

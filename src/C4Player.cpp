@@ -1236,7 +1236,7 @@ void C4Player::AdjustCursorCommand()
 	// UnSelect previous cursor
 	if (pPrev && pPrev != Cursor) pPrev->UnSelect(TRUE);
 	// We have a cursor: do select it
-	if (Cursor) { /*Cursor->DoSelect(TRUE);*/ Cursor->DoSelect(); } // Hmm, why DoSelect() twice? I hope the second one is the correct one...
+	if (Cursor) Cursor->DoSelect();
   // Updates
   CursorFlash=30;
   }
@@ -1786,7 +1786,7 @@ void C4Player::SetCursor(C4Object *pObj, bool fSelectFlash, bool fSelectArrow)
 	// unselect previous
 	if (pPrev  && fChanged) pPrev->UnSelect(TRUE);
 	// Select object
-  if (Cursor) { Cursor->DoSelect(TRUE); /*Cursor->DoSelect();*/ } // Sven2: why the second DoSelect()? - it breaks cursor-toggle-selection
+  if (Cursor) Cursor->DoSelect(TRUE);
 	// View flash
   if (fSelectArrow) CursorFlash=30;
 	if (fSelectFlash) SelectFlash=30;

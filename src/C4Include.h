@@ -86,8 +86,6 @@
 #include <assert.h>
 #include <stdarg.h>
 
-//#define BIG_C4INCLUDE
-
 #if defined(BIG_C4INCLUDE) && defined(C4ENGINE)
 #include "C4AList.h"
 #include "C4Application.h"

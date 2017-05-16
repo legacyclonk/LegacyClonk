@@ -335,10 +335,7 @@ void C4ObjectList::DrawIDList(C4Facet &cgo, int iSelection,
 															C4RegionList *pRegions, int iRegionCom,
 															BOOL fDrawOneCounts)
 	{
-	// Calculations & variables 
-	/*int iSections = cgo.GetSectionCount();
-	int iItems = ListIDCount(dwCategory);*/
-	//int iFirstItem = BoundBy(iSelection-iSections/2,0,Max(iItems-iSections,0));
+	// Variables
   int32_t cSec = 0;
 	int32_t iCount;
 	C4Facet cgo2;
@@ -361,27 +358,6 @@ void C4ObjectList::DrawIDList(C4Facet &cgo, int iSelection,
 		// Next section
 		cSec++;
 		}
-	// Draw by list sorted ids
-  /* for (cPos=0; c_id=GetListID(dwCategory,cPos); cPos++)
-    if (Inside(cPos,iFirstItem,iFirstItem+iSections-1))
-			{
-			// First object of this type
-			pFirstObj = Find(c_id);
-			// Count
-			iCount=ObjectCount(c_id);
-			// Section
-			cgo2 = cgo.GetSection(cSec);
-			// Draw by definition
-			rDefs.Draw( c_id, cgo2, (cPos==iSelection), pFirstObj->Color, pFirstObj );
-			// Draw count
-			sprintf(szCount,"%dx",iCount);
-	   	if ((iCount!=1) || fDrawOneCounts)	
-				Application.DDraw->TextOut(szCount,cgo2.Surface,cgo2.X+cgo2.Wdt-1,cgo2.Y+cgo2.Hgt-1-Application.DDraw->TextHeight(),FWhite,ARight);
-			// Region
-			if (pRegions) pRegions->Add(cgo2.X,cgo2.Y,cgo2.Wdt,cgo2.Hgt,pFirstObj->GetName(),iRegionCom,pFirstObj,COM_None,COM_None,pFirstObj->id);
-			// Next section
-      cSec++;
-      } */
 	}
 
 int C4ObjectList::ClearPointers(C4Object *pObj)

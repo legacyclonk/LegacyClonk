@@ -136,8 +136,6 @@ class C4ObjectInfoCore
 	  BOOL Save(C4Group &hGroup, class C4DefList *pDefs);
 	  BOOL Load(C4Group &hGroup);
     void Default(C4ID n_id=C4ID_None, class C4DefList *pDefs=NULL, const char *cpNames=NULL);
-    //BOOL LoadNext(C4Group &hGroup); Old c4o support disabled...
-    //BOOL Add(C4Group &hGroup);
 		void Promote(int32_t iRank, C4RankSystem &rRanks, bool fForceRankName);
 		bool GetNextRankInfo(C4RankSystem &rDefaultRanks, int32_t *piNextRankExp, StdStrBuf *psNextRankName);
 		void CompileFunc(StdCompiler *pComp);

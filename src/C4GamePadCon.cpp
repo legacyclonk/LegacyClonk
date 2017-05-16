@@ -12,7 +12,6 @@
 #endif
 
 #ifdef _WIN32
-//#include <StdJoystick.h>
 
 C4GamePadControl *C4GamePadControl::pInstance = NULL;
 

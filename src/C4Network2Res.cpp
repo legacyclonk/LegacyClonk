@@ -947,12 +947,10 @@ void C4Network2Res::Clear()
 	if(fTempFile)
 		if(FileExists(szFile))
 			if(remove(szFile))
-				//Log(_strerror("Network: Could not delete temporary ressource file"));
 				LogSilentF("Network: Could not delete temporary resource file (%s)", strerror(errno));
 	if(szStandalone[0] && !SEqual(szFile, szStandalone))
 		if(FileExists(szStandalone))
 			if(remove(szStandalone))
-				//Log(_strerror("Network: Could not delete temporary ressource file"));
 				LogSilentF("Network: Could not delete temporary resource file (%s)", strerror(errno));
 	szFile[0] = szStandalone[0] = '\0';
 	fDirty = false;	
@@ -1475,7 +1473,7 @@ void C4Network2ResList::HandlePacket(char cStatus, const C4PacketBase *pPacket, 
 
 	#define GETPKT(type, name) \
 		assert(pPacket); const type &name = \
-			/*dynamic_cast*/ static_cast<const type &>(*pPacket);
+			static_cast<const type &>(*pPacket);
 
 	switch(cStatus)
 	{

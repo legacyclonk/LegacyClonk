@@ -15,15 +15,6 @@
 #include <StdPNG.h>
 #include <StdDDraw2.h>
 
-#ifdef _DEBUG
-C4Surface::~C4Surface()
-	{
-/*	for (C4ObjectLink *lnk = Game.Objects.First; lnk; lnk=lnk->Next)
-		if (lnk->Obj->Menu)
-			lnk->Obj->Menu->AssertSurfaceNotUsed(this);*/
-	}
-#endif
-
 BOOL C4Surface::LoadAny(C4Group &hGroup, const char *szName, bool fOwnPal, bool fNoErrIfNotFound)
 	{
 	// Entry name
@@ -134,7 +125,6 @@ BOOL C4Surface::ReadPNG(CStdStream &hGroup)
 			if (byBytesPP == 4 && png.iClrType == PNG_COLOR_TYPE_RGB_ALPHA)
 				{
 				// Optimize the easy case of a png in the same format as the display
-				//assert (png.iPixSize == 4);
 				// 32 bit
 				DWORD *pPix=(DWORD *) (((char *) pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch);
 				memcpy (pPix, png.GetRow(rY) + tX * iTexSize, maxX * 4);
@@ -171,21 +161,6 @@ BOOL C4Surface::ReadPNG(CStdStream &hGroup)
 	// return if successful
 	return fSuccess;
 	}
-
-/*BOOL C4Surface::Save(C4Group &hGroup, const char *szFilename)
-	{
-	// Using temporary file at C4Group temp path
-	char szTemp[_MAX_PATH+1];
-	SCopy(C4Group_GetTempPath(),szTemp);
-	SAppend(GetFilename(szFilename),szTemp);
-	MakeTempFilename(szTemp);
-	// Save to temporary file
-	if (!CSurface::Save(szTemp)) return FALSE;
-	// Move temp file to group
-	if (!hGroup.Move(szTemp,GetFilename(szFilename))) return FALSE;
-	// Success
-	return TRUE;
-	}*/
 
 BOOL C4Surface::SavePNG(C4Group &hGroup, const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly)
 	{

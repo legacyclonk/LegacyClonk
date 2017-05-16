@@ -196,9 +196,7 @@ void C4AulParseState::Warn(const char *pMsg, const char *pIdtf)
 	{
 	// do not show errors for System.c4g scripts that appear to be pure #appendto scripts
 	if (Fn && !Fn->Owner->Def && Fn->Owner->Appends) return;
-	// script doesn't own function -> skip
-	// (exception: global functions)
-	//if(pFunc) if(pFunc->pOrgScript != pScript && pScript != (C4AulScript *)&Game.ScriptEngine) return;
+
 	// display error
 	
 	C4AulParseError warning(this, pMsg, pIdtf, TRUE);
@@ -1834,7 +1832,7 @@ void C4AulParseState::Parse_Statement()
 				if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_VarNamed))
 					Shift();
 				// variable and "in"
-				if (TokenType == ATT_IDTF /*&& (iVarID = Fn->VarNamed.GetItemNr(Idtf)) != -1*/
+				if (TokenType == ATT_IDTF
 					&& GetNextToken(Idtf, &cInt, Discard, true) == ATT_IDTF
 					&& SEqual(Idtf, C4AUL_In))
 					{
@@ -1874,7 +1872,6 @@ void C4AulParseState::Parse_Statement()
 					}
 				else
 					{
-					// return retval;
 					Parse_Expression();
 					}
 				if(!Fn->bReturnRef)
@@ -2105,23 +2102,6 @@ int C4AulParseState::Parse_Params(int iMaxCnt, const char * sWarn, C4AulFunc * p
 				// Change the bytecode to the equivalent that does not produce a reference.
 				if (!anyfunctakesref)
 					SetNoRef();
-				/*C4V_Type from = C4V_Any;
-				switch((a->CPos-1)->bccType)
-					{
-					case AB_C4ID: from = C4V_C4ID; break;
-					case AB_INT: from = C4V_Int; break;
-					case AB_STRING: from = C4V_String; break;
-					case AB_ARRAY: from = C4V_Array; break;
-					case AB_BOOL: from = C4V_Bool; break;
-					case AB_UNOP: case AB_BINOP: from = C4ScriptOpMap[(a->CPos-1)->bccX].RetType; break;
-					case AB_FUNC: case AB_CALL: case AB_CALLFS:
-						if((a->CPos-1)->bccX) from = reinterpret_cast<C4AulFunc *>((a->CPos-1)->bccX)->GetRetType(); break;
-					case AB_ARRAYA_R: case AB_PAR_R: case AB_VAR_R: case AB_PARN_R: case AB_VARN_R: case AB_LOCALN_R: case AB_GLOBALN_R:
-						from = C4V_pC4Value; break;
-					}
-				C4V_Type to = pFunc->GetParType()[size];
-				// TODO: Check wether from could be converted to to, but take every pFunc2 into account
-				*/
 				}
 			++size;
 			// end of parameter list?
