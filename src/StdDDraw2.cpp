@@ -20,7 +20,6 @@
 #include <Standard.h>
 #include <StdFacet.h>
 #include <StdDDraw2.h>
-#include <StdD3D.h>
 #include <StdGL.h>
 #include <StdNoGfx.h>
 #include <StdMarkup.h>
@@ -1283,10 +1282,6 @@ CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int Engi
 	switch (iGfxEngine = Engine)
 	{
 	default: // Use the first engine possible if none selected
-#ifdef USE_DIRECTX
-	case GFXENGN_DIRECTX: lpDDraw = new CStdD3D(false); break;
-	case GFXENGN_DIRECTXS: lpDDraw = new CStdD3D(true); break;
-#endif
 #ifdef USE_GL
 	case GFXENGN_OPENGL: lpDDraw = new CStdGL(); break;
 #endif

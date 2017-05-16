@@ -175,14 +175,7 @@ bool C4Application::DoInit()
 	Log(C4ENGINEINFOLONG);
 	LogF("Version: %s %s", C4VERSION, C4_OS);
 
-#if defined(USE_DIRECTX) && defined(_WIN32)
-	// DDraw emulation warning
-	DWORD DDrawEmulationState;
-	if (GetRegistryDWord(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\DirectDraw", "EmulationOnly", &DDrawEmulationState))
-		if (DDrawEmulationState)
-			Log("WARNING: DDraw Software emulation is activated!");
-#endif
-	// Initialize D3D/OpenGL
+	// Initialize OpenGL
 	DDraw = DDrawInit(this, isFullScreen, false, Config.Graphics.Engine, Config.Graphics.Monitor);
 	if (!DDraw) { LogFatal(LoadResStr("IDS_ERR_DDRAW")); Clear(); return false; }
 

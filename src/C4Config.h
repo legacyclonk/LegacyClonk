@@ -179,7 +179,6 @@ class C4ConfigStartup
 {
 public:
 	// config for do-not-show-this-msg-again-messages
-	int32_t HideMsgGfxEngineChange;
 	int32_t HideMsgMMTimerChange;
 	int32_t HideMsgStartDedicated;
 	int32_t HideMsgPlrTakeOver;

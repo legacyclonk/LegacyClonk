@@ -56,9 +56,6 @@ option(USE_CONSOLE "Dedicated server mode (compile as pure console application)"
 # ENABLE_SOUND
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
-# USE_DIRECTX
-CMAKE_DEPENDENT_OPTION(USE_DIRECTX "Compile with Direct3D support" ON
-	"NOT USE_CONSOLE AND WIN32" OFF)
 # USE_FMOD
 CMAKE_DEPENDENT_OPTION(USE_FMOD "Whether FMOD shall be used" ON
 	"ENABLE_SOUND AND WIN32" OFF)
@@ -145,11 +142,6 @@ endif ()
 target_link_libraries(clonk standard)
 
 # Link libraries
-
-# Link DirectX
-if (USE_DIRECTX)
-	target_link_libraries(standard d3d9)
-endif ()
 
 # Link FMOD
 if (USE_FMOD)

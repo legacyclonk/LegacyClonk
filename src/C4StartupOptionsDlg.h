@@ -137,7 +137,6 @@ private:
 
 	void OnFullscreenChange(C4GUI::Element *pCheckBox);
 	void OnGfxAllResolutionsChange(C4GUI::Element *pCheckBox);
-	void OnGfxEngineCheck(C4GUI::Element *pCheckBox);
 	void OnGfxTroubleCheck(C4GUI::Element *pCheckBox)
 	{
 		SaveGfxTroubleshoot();
@@ -148,7 +147,6 @@ private:
 	StdStrBuf GetGfxResString(int32_t iResX, int32_t iResY); // convert resolution to string to be displayed in resolution choice combobox
 	void OnEffectsSliderChange(int32_t iNewVal);
 
-	C4GUI::CheckBox *pCheckGfxEngines[3];
 	C4GUI::GroupBox *pGroupTrouble;
 	C4GUI::CheckBox *pCheckGfxNoAlphaAdd, *pCheckGfxPointFilter, *pCheckGfxNoAddBlit, *pCheckGfxNoBoxFades;
 	int32_t iGfxTexIndent, iGfxBlitOff; EditConfig *pEdtGfxTexIndent, *pEdtGfxBlitOff;
