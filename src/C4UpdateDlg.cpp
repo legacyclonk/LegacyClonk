@@ -125,18 +125,6 @@ void C4UpdateDlg::UpdateText()
 
 // static update application function
 
-static bool IsWindowsVista()
-{
-#ifdef _WIN32
-	// Determine windows version
-	OSVERSIONINFO ver;
-	ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (GetVersionEx((LPOSVERSIONINFO)&ver))
-		return ((ver.dwMajorVersion == 6) && (ver.dwMinorVersion == 0));
-#endif
-	return false;
-}
-
 bool C4UpdateDlg::DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *pScreen)
 {
 	StdStrBuf strUpdateFile, strUpdateURL;
@@ -170,8 +158,8 @@ bool C4UpdateDlg::DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *p
 	}
 	// Determine local filename for update group
 	StdStrBuf strLocalFilename; strLocalFilename.Copy(GetFilename(strUpdateFile.getData()));
-	// Windows Vista: download update group to temp path
-	if (IsWindowsVista()) strLocalFilename.Copy(Config.AtTempPath(strLocalFilename.getData()));
+	// Download update group to temp path
+	strLocalFilename.Copy(Config.AtTempPath(strLocalFilename.getData()));
 	// Download update group
 	if (!C4DownloadDlg::DownloadFile(LoadResStr("IDS_TYPE_UPDATE"), pScreen, strUpdateURL.getData(), strLocalFilename.getData(), LoadResStr("IDS_MSG_UPDATENOTAVAILABLE")))
 		// Download failed (return success, because error message has already been shown)
@@ -186,10 +174,8 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	StdStrBuf strUpdateProg; strUpdateProg.Copy(C4CFN_UpdateProgram);
 	// Windows: manually append extension because ExtractEntry() cannot properly glob and Extract() doesn't return failure values
 	if (SEqual(C4_OS, "win32")) strUpdateProg += ".exe";
-	// Determine name of local extract of update program
-	StdStrBuf strUpdateProgEx; strUpdateProgEx.Copy(strUpdateProg);
-	// Windows Vista: rename update program to setup.exe for UAC elevation and in temp path
-	if (IsWindowsVista()) strUpdateProgEx.Copy(Config.AtTempPath("setup.exe"));
+	// Determine name of local extract of update program: Rename update program to setup.exe for UAC elevation and in temp path
+	StdStrBuf strUpdateProgEx; strUpdateProgEx.Copy(Config.AtTempPath("setup.exe"));
 	// Extract update program (the update should be applied using the new version)
 	C4Group UpdateGroup, SubGroup;
 	char strSubGroup[1024 + 1];

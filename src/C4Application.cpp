@@ -187,7 +187,7 @@ bool C4Application::DoInit()
 	if (!DDraw) { LogFatal(LoadResStr("IDS_ERR_DDRAW")); Clear(); return false; }
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)
-	// Register clonk file classes - notice: under Vista this will only work if we have administrator rights
+	// Register clonk file classes - notice: this will only work if we have administrator rights
 	char szModule[_MAX_PATH + 1]; GetModuleFileName(nullptr, szModule, _MAX_PATH);
 	SetC4FileClasses(szModule);
 #endif

@@ -29,16 +29,6 @@
 #include <ctype.h>
 #include <conio.h>
 
-// multimon.h comes with DirectX, some people don't have DirectX.
-#ifdef HAVE_MULTIMON_H
-
-// Lets try this unconditionally so that older windowses get the benefit
-// even if the engine was compiled with a newer sdk. Or something.
-#define COMPILE_MULTIMON_STUBS
-#include <multimon.h>
-
-#endif
-
 #include "res/engine_resource.h"
 
 #define C4FullScreenClassName "C4FullScreen"
