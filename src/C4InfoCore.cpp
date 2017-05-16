@@ -195,7 +195,7 @@ void C4PhysicalInfo::PromotionUpdate(int32_t iRank, bool fUpdateTrainablePhysica
 	if (iRank >= 0) { CanDig = 1; CanChop = 1; CanConstruct = 1; }
 	if (iRank >= 0) { CanScale = 1; }
 	if (iRank >= 0) { CanHangle = 1; }
-	Energy = Max<int32_t>(Energy, (50 + 5 * BoundBy<int32_t>(iRank, 0, 10)) * C4MaxPhysical / 100);
+	Energy = std::max<int32_t>(Energy, (50 + 5 * BoundBy<int32_t>(iRank, 0, 10)) * C4MaxPhysical / 100);
 	if (fUpdateTrainablePhysicals && pTrainDef)
 	{
 		// do standard training: Expect everything to be trained fully at rank 20
@@ -269,7 +269,7 @@ void C4PhysicalInfo::TrainValue(int32_t *piVal, int32_t iTrainBy, int32_t iMaxTr
 	// only do training if value was nonzero before (e.g., Magic for revaluated Clonks)
 	if (*piVal)
 		// do train value: Do not increase above maximum, but never decrease either
-		*piVal = Max(Min(*piVal + iTrainBy, iMaxTrain), *piVal);
+		*piVal = (std::max)((std::min)(*piVal + iTrainBy, iMaxTrain), *piVal);
 }
 
 void C4PhysicalInfo::Train(Offset mpiOffset, int32_t iTrainBy, int32_t iMaxTrain)

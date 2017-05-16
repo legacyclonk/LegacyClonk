@@ -434,7 +434,7 @@ void C4Application::SetGameTickDelay(int iDelay)
 	else
 	{
 		// Do some magic to get as near as possible to the requested delay
-		int iGraphDelay = Max(1, iDelay);
+		int iGraphDelay = (std::max)(1, iDelay);
 		iGraphDelay /= (iGraphDelay + Config.Graphics.MaxRefreshDelay - 1) / Config.Graphics.MaxRefreshDelay;
 		// Set critical timer
 		ResetTimer(iGraphDelay);

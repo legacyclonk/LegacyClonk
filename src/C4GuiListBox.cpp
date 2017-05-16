@@ -99,7 +99,7 @@ void ListBox::DrawElement(C4FacetEx &cgo)
 			rcSelArea.Hgt -= GetClientRect().y - rcSelArea.y;
 			rcSelArea.y = GetClientRect().y;
 		}
-		rcSelArea.Hgt = Min(rcSelArea.Hgt, GetClientRect().y + GetClientRect().Hgt - rcSelArea.y);
+		rcSelArea.Hgt = (std::min)(rcSelArea.Hgt, GetClientRect().y + GetClientRect().Hgt - rcSelArea.y);
 		// draw
 		if (rcSelArea.Hgt >= 0)
 			lpDDraw->DrawBoxDw(cgo.Surface, rcSelArea.x + cgo.TargetX, rcSelArea.y + cgo.TargetY,
@@ -158,7 +158,7 @@ void ListBox::UpdateColumnCount()
 	if (iMultiColItemWidth && pClientWindow)
 	{
 		// multicoloumn-listbox
-		iColCount = Max<int32_t>(pClientWindow->GetClientRect().Wdt / iMultiColItemWidth, 1);
+		iColCount = std::max<int32_t>(pClientWindow->GetClientRect().Wdt / iMultiColItemWidth, 1);
 	}
 	else
 	{
@@ -424,7 +424,7 @@ void ListBox::UpdateElementPositions()
 			for (; pCurr; pCurr = pCurr->GetNext())
 			{
 				const C4Rect &rcCurrBounds = pCurr->GetBounds();
-				iLineHgt = Max<int32_t>(rcCurrBounds.Hgt, iLineHgt);
+				iLineHgt = std::max<int32_t>(rcCurrBounds.Hgt, iLineHgt);
 				int32_t x = col * iMultiColItemWidth;
 				if (rcCurrBounds.x != x || rcCurrBounds.y != y || rcCurrBounds.Wdt != iMultiColItemWidth)
 					pCurr->SetBounds(C4Rect(x, y, iMultiColItemWidth, rcCurrBounds.Hgt));
@@ -492,7 +492,7 @@ bool ListBox::AddElement(Element *pChild, int32_t iIndent)
 				Element *pPrevChild = pChild->GetPrev();
 				while (cnt-- && pPrevChild)
 				{
-					iPrevLineHgt = Max<int32_t>(iPrevLineHgt, pPrevChild->GetBounds().Hgt);
+					iPrevLineHgt = std::max<int32_t>(iPrevLineHgt, pPrevChild->GetBounds().Hgt);
 					pPrevChild = pPrevChild->GetPrev();
 				}
 				rcChildBounds.y += iPrevLineHgt;

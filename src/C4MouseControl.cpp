@@ -410,7 +410,7 @@ void C4MouseControl::Draw(C4FacetEx &cgo)
 			Application.DDraw->TextOut(Caption.getData(), Game.GraphicsResource.FontRegular, 1.0,
 				cgo.Surface,
 				cgo.X + BoundBy<int32_t>(VpX, iWdt / 2 + 1, cgo.Wdt - iWdt / 2 - 1),
-				cgo.Y + Min<int32_t>(CaptionBottomY ? CaptionBottomY - iHgt - 1 : VpY + 13, cgo.Hgt - iHgt),
+				cgo.Y + std::min<int32_t>(CaptionBottomY ? CaptionBottomY - iHgt - 1 : VpY + 13, cgo.Hgt - iHgt),
 				0xfaFF0000, ACenter);
 		}
 	}
@@ -574,8 +574,8 @@ int32_t C4MouseControl::UpdateCrewSelection()
 		if (!cObj->CrewDisabled)
 		{
 			int32_t iObjX, iObjY; cObj->GetViewPos(iObjX, iObjY, ViewX, ViewY, fctViewport);
-			if (Inside(iObjX, Min(X, DownX), Max(X, DownX)))
-				if (Inside(iObjY, Min(Y, DownY), Max(Y, DownY)))
+			if (Inside(iObjX, (std::min)(X, DownX), (std::max)(X, DownX)))
+				if (Inside(iObjY, (std::min)(Y, DownY), (std::max)(Y, DownY)))
 					Selection.Add(cObj, C4ObjectList::stNone);
 		}
 	return Selection.ObjectCount();
@@ -592,8 +592,8 @@ int32_t C4MouseControl::UpdateObjectSelection()
 				if (!cObj->Contained)
 				{
 					int32_t iObjX, iObjY; cObj->GetViewPos(iObjX, iObjY, ViewX, ViewY, fctViewport);
-					if (Inside(iObjX, Min(X, DownX), Max(X, DownX)))
-						if (Inside(iObjY, Min(Y, DownY), Max(Y, DownY)))
+					if (Inside(iObjX, (std::min)(X, DownX), (std::max)(X, DownX)))
+						if (Inside(iObjY, (std::min)(Y, DownY), (std::max)(Y, DownY)))
 						{
 							Selection.Add(cObj, C4ObjectList::stNone);
 							if (Selection.ObjectCount() >= 20) break; // max. 20 objects

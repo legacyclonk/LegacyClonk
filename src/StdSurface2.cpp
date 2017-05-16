@@ -207,9 +207,9 @@ bool CSurface::CreateTextures()
 #endif
 			/* keep standard texture size */;
 	// get needed tex size - begin with smaller value of wdt/hgt, so there won't be too much space wasted
-	int iNeedSize = Min(Wdt, Hgt); int n = 0; while ((1 << ++n) < iNeedSize); iNeedSize = 1 << n;
+	int iNeedSize = (std::min)(Wdt, Hgt); int n = 0; while ((1 << ++n) < iNeedSize); iNeedSize = 1 << n;
 	// adjust to available texture size
-	iTexSize = Min(iNeedSize, iMaxTexSize);
+	iTexSize = (std::min)(iNeedSize, iMaxTexSize);
 	// get the number of textures needed for this size
 	iTexX = (Wdt - 1) / iTexSize + 1;
 	iTexY = (Hgt - 1) / iTexSize + 1;
@@ -227,7 +227,7 @@ bool CSurface::CreateTextures()
 		else
 		{
 			// last texture might be smaller
-			iNeedSize = Max(Wdt % iTexSize, Hgt % iTexSize);
+			iNeedSize = (std::max)(Wdt % iTexSize, Hgt % iTexSize);
 			int n = 0; while ((1 << ++n) < iNeedSize); iNeedSize = 1 << n;
 			*ppCTex = new CTexRef(iNeedSize, fIsRenderTarget);
 		}
@@ -278,8 +278,8 @@ bool ClrByOwner(uint32_t &dwClr) // new style, based on Microsoft Knowledge Base
 	G = GetGValue(dwClr);
 	B = GetRValue(dwClr);
 	// calculate lightness
-	cMax = Max<int>(Max<int>(R, G), B);
-	cMin = Min<int>(Min<int>(R, G), B);
+	cMax = std::max<int>(std::max<int>(R, G), B);
+	cMin = std::min<int>(std::min<int>(R, G), B);
 	L = (((cMax + cMin) * HLSMAX) + RGBMAX) / (2 * RGBMAX);
 	// achromatic case
 	if (cMax == cMin)
@@ -440,7 +440,7 @@ bool CSurface::Read(CStdStream &hGroup, bool fOwnPal)
 	if (BitmapInfo.Info.biBitCount == 8)
 	{
 		if (!hGroup.Read(((uint8_t *)&BitmapInfo) + sizeof(CBitmapInfo),
-			Min(sizeof(BitmapInfo) - sizeof(CBitmapInfo), sizeof(BitmapInfo) - sizeof(CBitmapInfo) + BitmapInfo.FileBitsOffset())))
+			(std::min)(sizeof(BitmapInfo) - sizeof(CBitmapInfo), sizeof(BitmapInfo) - sizeof(CBitmapInfo) + BitmapInfo.FileBitsOffset())))
 			return false;
 		if (!hGroup.Advance(BitmapInfo.FileBitsOffset())) return false;
 	}
@@ -841,8 +841,8 @@ void CSurface::ClearBoxDw(int iX, int iY, int iWdt, int iHgt)
 	// get textures involved
 	int iTexX1 = iX / iTexSize;
 	int iTexY1 = iY / iTexSize;
-	int iTexX2 = Min((iX + iWdt - 1) / iTexSize + 1, iTexX);
-	int iTexY2 = Min((iY + iHgt - 1) / iTexSize + 1, iTexY);
+	int iTexX2 = (std::min)((iX + iWdt - 1) / iTexSize + 1, iTexX);
+	int iTexY2 = (std::min)((iY + iHgt - 1) / iTexSize + 1, iTexY);
 	// clear basesfc?
 	bool fBaseSfc = false;
 	if (pMainSfc) if (pMainSfc->ppTex) fBaseSfc = true;
@@ -857,10 +857,10 @@ void CSurface::ClearBoxDw(int iX, int iY, int iWdt, int iHgt)
 			int iBlitY = iTexSize * y;
 			// get clearing bounds in texture
 			RECT rtClear;
-			rtClear.left = Max(iX - iBlitX, 0);
-			rtClear.top = Max(iY - iBlitY, 0);
-			rtClear.right = Min(iX + iWdt - iBlitX, iTexSize);
-			rtClear.bottom = Min(iY + iHgt - iBlitY, iTexSize);
+			rtClear.left = (std::max)(iX - iBlitX, 0);
+			rtClear.top = (std::max)(iY - iBlitY, 0);
+			rtClear.right = (std::min)(iX + iWdt - iBlitX, iTexSize);
+			rtClear.bottom = (std::min)(iY + iHgt - iBlitY, iTexSize);
 			// is there a base-surface to be cleared first?
 			if (fBaseSfc)
 			{
@@ -890,8 +890,8 @@ bool CSurface::CopyBytes(uint8_t *pImageData)
 			pTex = *ppCurrTex++;
 			if (!pTex->Lock()) return false;
 			uint8_t *pTarget = (uint8_t *)pTex->texLock.pBits;
-			int iCpyNum = Min(pTex->iSize, Wdt - iXImgPos) * 4;
-			int iYMax = Min(pTex->iSize, Hgt - iLineTotal);
+			int iCpyNum = (std::min)(pTex->iSize, Wdt - iXImgPos) * 4;
+			int iYMax = (std::min)(pTex->iSize, Hgt - iLineTotal);
 			for (int iLine = 0; iLine < iYMax; ++iLine)
 			{
 				memcpy(pTarget, pSource, iCpyNum);

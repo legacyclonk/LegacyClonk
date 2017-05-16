@@ -36,7 +36,7 @@ void C4Weather::Init(bool fScenario)
 		// Precipitation
 		if (!Game.C4S.Head.NoInitialize)
 			if (Game.C4S.Weather.Rain.Evaluate())
-				for (int32_t iClouds = Min(GBackWdt / 500, 5); iClouds > 0; iClouds--)
+				for (int32_t iClouds = (std::min)(GBackWdt / 500, 5); iClouds > 0; iClouds--)
 				{
 					volatile int iWidth = GBackWdt / 15 + Random(320);
 					volatile int iX = Random(GBackWdt);
@@ -87,7 +87,7 @@ void C4Weather::Execute()
 			Game.C4S.Weather.Wind.Min,
 			Game.C4S.Weather.Wind.Max);
 	if (!Tick10)
-		SoundLevel("Wind", nullptr, Max(Abs(Wind) - 30, 0) * 2);
+		SoundLevel("Wind", nullptr, (std::max)(Abs(Wind) - 30, 0) * 2);
 	// Disaster launch
 	if (!Tick10)
 	{

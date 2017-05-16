@@ -36,7 +36,7 @@ void DrawVertex(C4Facet &cgo, int32_t tx, int32_t ty, int32_t col, int32_t conta
 void C4Action::SetBridgeData(int32_t iBridgeTime, bool fMoveClonk, bool fWall, int32_t iBridgeMaterial)
 {
 	// validity
-	iBridgeMaterial = Min<int32_t>(iBridgeMaterial, Game.Material.Num - 1);
+	iBridgeMaterial = std::min<int32_t>(iBridgeMaterial, Game.Material.Num - 1);
 	if (iBridgeMaterial < 0) iBridgeMaterial = 0xff;
 	iBridgeTime = BoundBy<int32_t>(iBridgeTime, 0, 0xffff);
 	// mask in this->Data
@@ -171,7 +171,7 @@ bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
 			Mobile = 1;
 
 	// Mass
-	Mass = Max<int32_t>(Def->Mass * Con / FullCon, 1);
+	Mass = std::max<int32_t>(Def->Mass * Con / FullCon, 1);
 
 	// Life, energy, breath
 	if (Category & C4D_Living) Alive = 1;
@@ -440,8 +440,8 @@ void C4Object::DrawFace(C4FacetEx &cgo, int32_t cgoX, int32_t cgoY, int32_t iPha
 	{
 		tx = (float)cgoX + (Shape.Wdt - swdt) / 2.0f;
 		twdt = (float)swdt;
-		fy += (float)shgt * Max<int32_t>(FullCon - Con, 0) / FullCon;
-		fhgt = (float)Min<int32_t>(shgt * Con / FullCon, shgt);
+		fy += (float)shgt * std::max<int32_t>(FullCon - Con, 0) / FullCon;
+		fhgt = (float)std::min<int32_t>(shgt * Con / FullCon, shgt);
 	}
 
 	// Straight
@@ -474,7 +474,7 @@ void C4Object::DrawFace(C4FacetEx &cgo, int32_t cgoX, int32_t cgoY, int32_t iPha
 
 void C4Object::UpdateMass()
 {
-	Mass = Max<int32_t>((Def->Mass + OwnMass) * Con / FullCon, 1);
+	Mass = std::max<int32_t>((Def->Mass + OwnMass) * Con / FullCon, 1);
 	if (!Def->NoComponentMass) Mass += Contents.Mass;
 	if (Contained)
 	{
@@ -489,7 +489,7 @@ void C4Object::ComponentConCutoff()
 	int32_t cnt;
 	for (cnt = 0; Component.GetID(cnt); cnt++)
 		Component.SetCount(cnt,
-			Min<int32_t>(Component.GetCount(cnt), Def->Component.GetCount(cnt) * Con / FullCon));
+			std::min<int32_t>(Component.GetCount(cnt), Def->Component.GetCount(cnt) * Con / FullCon));
 }
 
 void C4Object::ComponentConGain()
@@ -498,7 +498,7 @@ void C4Object::ComponentConGain()
 	int32_t cnt;
 	for (cnt = 0; Component.GetID(cnt); cnt++)
 		Component.SetCount(cnt,
-			Max<int32_t>(Component.GetCount(cnt), Def->Component.GetCount(cnt) * Con / FullCon));
+			std::max<int32_t>(Component.GetCount(cnt), Def->Component.GetCount(cnt) * Con / FullCon));
 }
 
 void C4Object::SetOCF()
@@ -764,7 +764,7 @@ bool C4Object::ExecFire(int32_t iFireNumber, int32_t iCausedByPlr)
 	if (smoke_rate)
 	{
 		smoke_rate = 50 * smoke_level / smoke_rate;
-		if (!((Game.FrameCounter + (Number * 7)) % Max<int32_t>(smoke_rate, 3)) || (Abs(xdir) > 2))
+		if (!((Game.FrameCounter + (Number * 7)) % std::max<int32_t>(smoke_rate, 3)) || (Abs(xdir) > 2))
 			Smoke(x, y, smoke_level);
 	}
 	// Background Effects
@@ -823,7 +823,7 @@ bool C4Object::ExecLife()
 					if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_RegenerateEnergy)
 					{
 						if (Contained->Energy <= 0) Contained->BuyEnergy();
-						transfer = Min<int32_t>(Min<int32_t>(2 * C4MaxPhysical / 100, Contained->Energy), GetPhysical()->Energy - Energy);
+						transfer = std::min<int32_t>(std::min<int32_t>(2 * C4MaxPhysical / 100, Contained->Energy), GetPhysical()->Energy - Energy);
 						if (transfer)
 						{
 							Contained->DoEnergy(-transfer, true, C4FxCall_EngBaseRefresh, Contained->Owner);
@@ -837,7 +837,7 @@ bool C4Object::ExecLife()
 			if (!Hostile(Owner, Contained->Owner))
 				if (MagicEnergy < GetPhysical()->Magic)
 				{
-					transfer = Min<int32_t>(Min<int32_t>(2 * MagicPhysicalFactor, Contained->MagicEnergy), GetPhysical()->Magic - MagicEnergy) / MagicPhysicalFactor;
+					transfer = std::min<int32_t>(std::min<int32_t>(2 * MagicPhysicalFactor, Contained->MagicEnergy), GetPhysical()->Magic - MagicEnergy) / MagicPhysicalFactor;
 					if (transfer)
 					{
 						// do energy transfer via script, so it can be overloaded by No-Magic-Energy-rule
@@ -880,7 +880,7 @@ bool C4Object::ExecLife()
 			{
 				// Reduce breath, then energy, bubble
 				// Asphyxiation cause is last energy loss cause player, so kill tracing works when player is pushed into liquid
-				if (Breath > 0) Breath = Max(Breath - 2 * C4MaxPhysical / 100, 0);
+				if (Breath > 0) Breath = (std::max)(Breath - 2 * C4MaxPhysical / 100, 0);
 				else DoEnergy(-1, false, C4FxCall_EngAsphyxiation, LastEnergyLossCausePlayer);
 				BubbleOut(x + Random(5) - 2, y + Shape.y / 2);
 				ViewEnergy = C4ViewDelay;
@@ -1257,7 +1257,7 @@ void C4Object::DoDamage(int32_t iChange, int32_t iCausedBy, int32_t iCause)
 		if (!iChange) return;
 	}
 	// Change value
-	Damage = Max<int32_t>(Damage + iChange, 0);
+	Damage = std::max<int32_t>(Damage + iChange, 0);
 	// Engine script call
 	Call(PSF_Damage, &C4AulParSet(C4VInt(iChange), C4VInt(iCausedBy)));
 }
@@ -1328,7 +1328,7 @@ void C4Object::DoCon(int32_t iChange, bool fInitial, bool fNoComponentChange)
 
 	// Change con
 	if (Def->Oversize)
-		Con = Max<int32_t>(Con + iChange, 0);
+		Con = std::max<int32_t>(Con + iChange, 0);
 	else
 		Con = BoundBy<int32_t>(Con + iChange, 0, FullCon);
 	int32_t iStepDiff = Con / iStepSize - iLastStep;
@@ -2198,7 +2198,7 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 				x2 = pCom->Tx._getInt() - cotx; y2 = pCom->Ty - coty;
 				Application.DDraw->DrawLine(cgo.Surface, cgo.X + x1, cgo.Y + y1, cgo.X + x2, cgo.Y + y2, CRed);
 				Application.DDraw->DrawFrame(cgo.Surface, cgo.X + x2 - 1, cgo.Y + y2 - 1, cgo.X + x2 + 1, cgo.Y + y2 + 1, CRed);
-				if (x1 > x2) Swap(x1, x2); if (y1 > y2) Swap(y1, y2);
+				if (x1 > x2) std::swap(x1, x2); if (y1 > y2) std::swap(y1, y2);
 				ccx = pCom->Tx._getInt(); ccy = pCom->Ty;
 				// Message
 				iMoveTos++; szCommand[0] = 0;
@@ -2228,7 +2228,7 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 				x2 = pCom->Tx._getInt() - cotx; y2 = pCom->Ty - coty;
 				Application.DDraw->DrawLine(cgo.Surface, cgo.X + x1, cgo.Y + y1, cgo.X + x2, cgo.Y + y2, CGreen);
 				Application.DDraw->DrawFrame(cgo.Surface, cgo.X + x2 - 1, cgo.Y + y2 - 1, cgo.X + x2 + 1, cgo.Y + y2 + 1, CGreen);
-				if (x1 > x2) Swap(x1, x2); if (y1 > y2) Swap(y1, y2);
+				if (x1 > x2) std::swap(x1, x2); if (y1 > y2) std::swap(y1, y2);
 				ccx = pCom->Tx._getInt(); ccy = pCom->Ty;
 				// Message
 				sprintf(szCommand, "%s %s", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
@@ -2488,7 +2488,7 @@ void C4Object::DrawTopFace(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode
 					SCopy(GetName(), szText);
 				// Word wrap to cgo width
 				int32_t iCharWdt, dummy; Game.GraphicsResource.FontRegular.GetTextExtent("m", iCharWdt, dummy, false);
-				int32_t iMaxLine = Max<int32_t>(cgo.Wdt / iCharWdt, 20);
+				int32_t iMaxLine = std::max<int32_t>(cgo.Wdt / iCharWdt, 20);
 				SWordWrap(szText, ' ', '|', iMaxLine);
 				// Adjust position by output boundaries
 				int32_t iTX, iTY, iTWdt, iTHgt;
@@ -3699,7 +3699,7 @@ bool C4Object::CheckSolidMaskRect()
 	// check NewGfx only, because invalid SolidMask-rects are OK in OldGfx
 	// the bounds-check is done in CStdDDraw::GetPixel()
 	CSurface *sfcGraphics = GetGraphics()->GetBitmap();
-	SolidMask.Set(Max<int32_t>(SolidMask.x, 0), Max<int32_t>(SolidMask.y, 0), Min<int32_t>(SolidMask.Wdt, sfcGraphics->Wdt - SolidMask.x), Min<int32_t>(SolidMask.Hgt, sfcGraphics->Hgt - SolidMask.y), SolidMask.tx, SolidMask.ty);
+	SolidMask.Set(std::max<int32_t>(SolidMask.x, 0), std::max<int32_t>(SolidMask.y, 0), std::min<int32_t>(SolidMask.Wdt, sfcGraphics->Wdt - SolidMask.x), std::min<int32_t>(SolidMask.Hgt, sfcGraphics->Hgt - SolidMask.y), SolidMask.tx, SolidMask.ty);
 	if (SolidMask.Hgt <= 0) SolidMask.Wdt = 0;
 	return SolidMask.Wdt > 0;
 }
@@ -4967,7 +4967,7 @@ void C4Object::ExecAction()
 		// Set target controller
 		Action.Target->Controller = Controller;
 		// ObjectAction got hold check
-		iPushDistance = Max(Shape.Wdt / 2 - 8, 0);
+		iPushDistance = (std::max)(Shape.Wdt / 2 - 8, 0);
 		iPushRange = iPushDistance + 10;
 		int32_t sax, say, sawdt, sahgt;
 		Action.Target->GetArea(sax, say, sawdt, sahgt);
@@ -5047,7 +5047,7 @@ void C4Object::ExecAction()
 		}
 
 		// Pulling range
-		iPushDistance = Max(Shape.Wdt / 2 - 8, 0);
+		iPushDistance = (std::max)(Shape.Wdt / 2 - 8, 0);
 		iPushRange = iPushDistance + 20;
 		Action.Target->GetArea(sax, say, sawdt, sahgt);
 		// Object lost
@@ -5451,7 +5451,7 @@ void C4Object::SetAudibilityAt(C4FacetEx &cgo, int32_t iX, int32_t iY)
 {
 	// target pos (parallax)
 	int32_t cotx = cgo.TargetX, coty = cgo.TargetY; TargetPos(cotx, coty, cgo);
-	Audible = Max<int32_t>(Audible, BoundBy(100 - 100 * Distance(cotx + cgo.Wdt / 2, coty + cgo.Hgt / 2, iX, iY) / 700, 0, 100));
+	Audible = std::max<int32_t>(Audible, BoundBy(100 - 100 * Distance(cotx + cgo.Wdt / 2, coty + cgo.Hgt / 2, iX, iY) / 700, 0, 100));
 	AudiblePan = BoundBy(AudiblePan + (iX - (cotx + cgo.Wdt / 2)) / 5, -100, 100);
 }
 
@@ -5928,7 +5928,7 @@ bool C4Object::AdjustWalkRotation(int32_t iRangeX, int32_t iRangeY, int32_t iSpe
 				}
 		// calculate destination angle
 		// 100% accurate for large values of Pi ;)
-		iDestAngle = (iSolidRight - iSolidLeft) * (35 / Max<int32_t>(iRangeX, 1));
+		iDestAngle = (iSolidRight - iSolidLeft) * (35 / std::max<int32_t>(iRangeX, 1));
 	}
 	else
 	{
@@ -5959,7 +5959,7 @@ void C4Object::UpdateInLiquid()
 		if (!InLiquid) // Enter liquid
 		{
 			if (OCF & OCF_HitSpeed2) if (Mass > 3)
-				Splash(x, y + 1, Min(Shape.Wdt * Shape.Hgt / 10, 20), this);
+				Splash(x, y + 1, (std::min)(Shape.Wdt * Shape.Hgt / 10, 20), this);
 			InLiquid = 1;
 		}
 	}

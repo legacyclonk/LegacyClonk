@@ -619,7 +619,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 				&& C != '_')
 			{
 				// return ident/directive
-				Len = Min(Len, C4AUL_MAX_Identifier);
+				Len = (std::min)(Len, C4AUL_MAX_Identifier);
 				SCopy(SPos0, pToken, Len);
 				// check if it's a C4ID (and NOT a label)
 				bool fllid = LooksLikeID(pToken);
@@ -672,7 +672,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					szScanCode = "%lx";
 				}
 				// return integer
-				Len = Min(Len, C4AUL_MAX_Identifier);
+				Len = (std::min)(Len, C4AUL_MAX_Identifier);
 				SCopy(SPos0, pToken, Len);
 				// or is it a func label?
 				if ((C == '(') || (C == ':'))
@@ -692,7 +692,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 				&& !Inside(C, 'A', 'Z'))
 			{
 				// return C4ID string
-				Len = Min(Len, C4AUL_MAX_Identifier);
+				Len = (std::min)(Len, C4AUL_MAX_Identifier);
 				SCopy(SPos0, pToken, Len);
 				// another stupid label identifier?
 				if ((C == '(') || (C == ':' && *(SPos + 1) != ':'))
@@ -1673,7 +1673,7 @@ void C4AulParseState::Parse_Function()
 		if (Fn->bNewFormat)
 		{
 			// all ok, insert a return
-			C4AulBCC *CPos = a->GetCodeByPos(Max(a->GetCodePos() - 1, 0));
+			C4AulBCC *CPos = a->GetCodeByPos((std::max)(a->GetCodePos() - 1, 0));
 			if (!CPos || CPos->bccType != AB_RETURN || fJump)
 			{
 				AddBCC(AB_INT);

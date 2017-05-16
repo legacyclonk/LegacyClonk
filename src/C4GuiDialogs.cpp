@@ -106,7 +106,7 @@ void FrameDecoration::Draw(C4FacetEx &cgo, C4Rect &rcBounds)
 	{
 		for (x = iBorderLeft; x < rcBounds.Wdt - iBorderRight; x += fctTop.Wdt)
 		{
-			int w = Min<int>(fctTop.Wdt, rcBounds.Wdt - iBorderRight - x);
+			int w = std::min<int>(fctTop.Wdt, rcBounds.Wdt - iBorderRight - x);
 			fctTop.Wdt = w;
 			fctTop.Draw(cgo.Surface, ox + x, oy + fctTop.TargetY);
 		}
@@ -117,7 +117,7 @@ void FrameDecoration::Draw(C4FacetEx &cgo, C4Rect &rcBounds)
 	{
 		for (y = iBorderTop; y < rcBounds.Hgt - iBorderBottom; y += fctLeft.Hgt)
 		{
-			int h = Min<int>(fctLeft.Hgt, rcBounds.Hgt - iBorderBottom - y);
+			int h = std::min<int>(fctLeft.Hgt, rcBounds.Hgt - iBorderBottom - y);
 			fctLeft.Hgt = h;
 			fctLeft.Draw(cgo.Surface, ox + fctLeft.TargetX, oy + y);
 		}
@@ -128,7 +128,7 @@ void FrameDecoration::Draw(C4FacetEx &cgo, C4Rect &rcBounds)
 	{
 		for (y = iBorderTop; y < rcBounds.Hgt - iBorderBottom; y += fctRight.Hgt)
 		{
-			int h = Min<int>(fctRight.Hgt, rcBounds.Hgt - iBorderBottom - y);
+			int h = std::min<int>(fctRight.Hgt, rcBounds.Hgt - iBorderBottom - y);
 			fctRight.Hgt = h;
 			fctRight.Draw(cgo.Surface, ox + rcBounds.Wdt - iBorderRight + fctRight.TargetX, oy + y);
 		}
@@ -139,7 +139,7 @@ void FrameDecoration::Draw(C4FacetEx &cgo, C4Rect &rcBounds)
 	{
 		for (x = iBorderLeft; x < rcBounds.Wdt - iBorderRight; x += fctBottom.Wdt)
 		{
-			int w = Min<int>(fctBottom.Wdt, rcBounds.Wdt - iBorderRight - x);
+			int w = std::min<int>(fctBottom.Wdt, rcBounds.Wdt - iBorderRight - x);
 			fctBottom.Wdt = w;
 			fctBottom.Draw(cgo.Surface, ox + x, oy + rcBounds.Hgt - iBorderBottom + fctBottom.TargetY);
 		}
@@ -837,7 +837,7 @@ void FullscreenDialog::DrawElement(C4FacetEx &cgo)
 {
 	// draw upper board
 	if (HasUpperBoard())
-		lpDDraw->BlitSurfaceTile(Game.GraphicsResource.fctUpperBoard.Surface, cgo.Surface, 0, Min<int32_t>(iFade - Game.GraphicsResource.fctUpperBoard.Hgt, 0), cgo.Wdt, Game.GraphicsResource.fctUpperBoard.Hgt);
+		lpDDraw->BlitSurfaceTile(Game.GraphicsResource.fctUpperBoard.Surface, cgo.Surface, 0, std::min<int32_t>(iFade - Game.GraphicsResource.fctUpperBoard.Hgt, 0), cgo.Wdt, Game.GraphicsResource.fctUpperBoard.Hgt);
 }
 
 void FullscreenDialog::UpdateOwnPos()
@@ -991,7 +991,7 @@ void ConfirmationDialog::OnClosed(bool fOK)
 // ProgressDialog
 
 ProgressDialog::ProgressDialog(const char *szMessage, const char *szCaption, int32_t iMaxProgress, int32_t iInitialProgress, Icons icoIcon)
-	: Dialog(C4GUI_ProgressDlgWdt, Max(GetRes()->TextFont.BreakMessage(szMessage, C4GUI_ProgressDlgWdt - 3 * C4GUI_DefDlgIndent - C4GUI_IconWdt, OSTR, 4096, true), C4GUI_IconHgt) + C4GUI_ProgressDlgVRoom, szCaption, false)
+	: Dialog(C4GUI_ProgressDlgWdt, (std::max)(GetRes()->TextFont.BreakMessage(szMessage, C4GUI_ProgressDlgWdt - 3 * C4GUI_DefDlgIndent - C4GUI_IconWdt, OSTR, 4096, true), C4GUI_IconHgt) + C4GUI_ProgressDlgVRoom, szCaption, false)
 {
 	// get positions
 	ComponentAligner caMain(GetClientRect(), C4GUI_DefDlgIndent, C4GUI_DefDlgIndent, true);
@@ -1079,7 +1079,7 @@ bool Screen::ShowRemoveDlg(Dialog *pDlg)
 // InputDialog
 
 InputDialog::InputDialog(const char *szMessage, const char *szCaption, Icons icoIcon, BaseInputCallback *pCB, bool fChatLayout)
-	: Dialog(fChatLayout ? Config.Graphics.ResX * 4 / 5 : C4GUI_InputDlgWdt, fChatLayout ? C4GUI::Edit::GetDefaultEditHeight() + 2 : Max(GetRes()->TextFont.BreakMessage(szMessage, C4GUI_InputDlgWdt - 3 * C4GUI_DefDlgIndent - C4GUI_IconWdt, OSTR, 4096, true), C4GUI_IconHgt) + C4GUI_InputDlgVRoom, szCaption, false), pEdit(nullptr), pChatLbl(nullptr), pCB(pCB), fChatLayout(fChatLayout)
+	: Dialog(fChatLayout ? Config.Graphics.ResX * 4 / 5 : C4GUI_InputDlgWdt, fChatLayout ? C4GUI::Edit::GetDefaultEditHeight() + 2 : (std::max)(GetRes()->TextFont.BreakMessage(szMessage, C4GUI_InputDlgWdt - 3 * C4GUI_DefDlgIndent - C4GUI_IconWdt, OSTR, 4096, true), C4GUI_IconHgt) + C4GUI_InputDlgVRoom, szCaption, false), pEdit(nullptr), pChatLbl(nullptr), pCB(pCB), fChatLayout(fChatLayout)
 {
 	if (fChatLayout)
 	{

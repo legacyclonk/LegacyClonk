@@ -320,8 +320,8 @@ void CClrModAddMap::ReduceModulation(int cx, int cy, int iRadius1, int iRadius2)
 			{
 				// partly visible
 				int iVis = (iRadius2Sq - d) * 255 / (iRadius2Sq - iRadius1Sq);
-				pCurr->dwModClr = fFadeTransparent ? (0xffffff + (Min<uint32_t>(pCurr->dwModClr >> 24, 255 - iVis) << 24))
-					: Max<uint32_t>(pCurr->dwModClr, RGB(iVis, iVis, iVis));
+				pCurr->dwModClr = fFadeTransparent ? (0xffffff + (std::min<uint32_t>(pCurr->dwModClr >> 24, 255 - iVis) << 24))
+					: std::max<uint32_t>(pCurr->dwModClr, RGB(iVis, iVis, iVis));
 			}
 		}
 		// next pos
@@ -345,9 +345,9 @@ void CClrModAddMap::AddModulation(int cx, int cy, int iRadius1, int iRadius2, ui
 			else
 			{
 				// partly visible
-				int iVis = Min<int>(255 - Min<int>((iRadius2Sq - d) * 255 / (iRadius2Sq - iRadius1Sq), 255) + byTransparency, 255);
-				pCurr->dwModClr = fFadeTransparent ? (0xffffff + (Max<uint32_t>(pCurr->dwModClr >> 24, 255 - iVis) << 24))
-					: Min<uint32_t>(pCurr->dwModClr, RGB(iVis, iVis, iVis));
+				int iVis = std::min<int>(255 - std::min<int>((iRadius2Sq - d) * 255 / (iRadius2Sq - iRadius1Sq), 255) + byTransparency, 255);
+				pCurr->dwModClr = fFadeTransparent ? (0xffffff + (std::max<uint32_t>(pCurr->dwModClr >> 24, 255 - iVis) << 24))
+					: std::min<uint32_t>(pCurr->dwModClr, RGB(iVis, iVis, iVis));
 			}
 		}
 		// next pos
@@ -363,8 +363,8 @@ uint32_t CClrModAddMap::GetModAt(int x, int y) const
 	y -= iOffY;
 	int tx = BoundBy(x / iResolutionX, 0, iWdt - 1);
 	int ty = BoundBy(y / iResolutionY, 0, iHgt - 1);
-	int tx2 = Min(tx + 1, iWdt - 1);
-	int ty2 = Min(ty + 1, iHgt - 1);
+	int tx2 = (std::min)(tx + 1, iWdt - 1);
+	int ty2 = (std::min)(ty + 1, iHgt - 1);
 	CColorFadeMatrix clrs(tx * iResolutionX, ty * iResolutionY, iResolutionX, iResolutionY, pMap[ty * iWdt + tx].dwModClr, pMap[ty * iWdt + tx2].dwModClr, pMap[ty2 * iWdt + tx].dwModClr, pMap[ty2 * iWdt + tx2].dwModClr);
 	return clrs.GetColorAt(x, y);
 }
@@ -533,7 +533,7 @@ bool CStdDDraw::SetPrimaryPalette(uint8_t *pBuf, uint8_t *pAlphaBuf)
 bool CStdDDraw::SubPrimaryClipper(int iX1, int iY1, int iX2, int iY2)
 {
 	// Set sub primary clipper
-	SetPrimaryClipper(Max(iX1, ClipX1), Max(iY1, ClipY1), Min(iX2, ClipX2), Min(iY2, ClipY2));
+	SetPrimaryClipper((std::max)(iX1, ClipX1), (std::max)(iY1, ClipY1), (std::min)(iX2, ClipX2), (std::min)(iY2, ClipY2));
 	return true;
 }
 
@@ -573,8 +573,8 @@ bool CStdDDraw::CalculateClipper(int *const iX, int *const iY, int *const iWdt, 
 	// no render target? do nothing
 	if (!RenderTarget || !Active) return false;
 	// negative/zero?
-	*iWdt = Min(ClipX2, RenderTarget->Wdt - 1) - ClipX1 + 1;
-	*iHgt = Min(ClipY2, RenderTarget->Hgt - 1) - ClipY1 + 1;
+	*iWdt = (std::min)(ClipX2, RenderTarget->Wdt - 1) - ClipX1 + 1;
+	*iHgt = (std::min)(ClipY2, RenderTarget->Hgt - 1) - ClipY1 + 1;
 	*iX = ClipX1; if (*iX < 0) { *iWdt += *iX; *iX = 0; }
 	*iY = ClipY1; if (*iY < 0) { *iHgt += *iY; *iY = 0; }
 	if (*iWdt <= 0 || *iHgt <= 0)
@@ -658,10 +658,10 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	// set blitting state - done by PerformBlt
 	// get involved texture offsets
 	int iTexSize = sfcSource->iTexSize;
-	int iTexX = Max(int(fx / iTexSize), 0);
-	int iTexY = Max(int(fy / iTexSize), 0);
-	int iTexX2 = Min((int)(fx + fwdt - 1) / iTexSize + 1, sfcSource->iTexX);
-	int iTexY2 = Min((int)(fy + fhgt - 1) / iTexSize + 1, sfcSource->iTexY);
+	int iTexX = (std::max)(int(fx / iTexSize), 0);
+	int iTexY = (std::max)(int(fy / iTexSize), 0);
+	int iTexX2 = (std::min)((int)(fx + fwdt - 1) / iTexSize + 1, sfcSource->iTexX);
+	int iTexY2 = (std::min)((int)(fy + fhgt - 1) / iTexSize + 1, sfcSource->iTexY);
 	// calc stretch regarding texture size and indent
 	float scaleX2 = scaleX * (iTexSize + DDrawCfg.fTexIndent * 2);
 	float scaleY2 = scaleY * (iTexSize + DDrawCfg.fTexIndent * 2);
@@ -684,10 +684,10 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 			}
 			// get new texture source bounds
 			FLOAT_RECT fTexBlt;
-			fTexBlt.left   = Max<float>(fx - iBlitX, 0);
-			fTexBlt.top    = Max<float>(fy - iBlitY, 0);
-			fTexBlt.right  = Min<float>(fx + fwdt - (float)iBlitX, (float)iTexSize);
-			fTexBlt.bottom = Min<float>(fy + fhgt - (float)iBlitY, (float)iTexSize);
+			fTexBlt.left   = std::max<float>(fx - iBlitX, 0);
+			fTexBlt.top    = std::max<float>(fy - iBlitY, 0);
+			fTexBlt.right  = std::min<float>(fx + fwdt - (float)iBlitX, (float)iTexSize);
+			fTexBlt.bottom = std::min<float>(fy + fhgt - (float)iBlitY, (float)iTexSize);
 			// get new dest bounds
 			FLOAT_RECT tTexBlt;
 			tTexBlt.left   = (fTexBlt.left   + iBlitX - fx) * scaleX + tx;
@@ -768,10 +768,10 @@ bool CStdDDraw::Blit8(CSurface *sfcSource, int fx, int fy, int fwdt, int fhgt,
 	pTransform->TransformPoint(ttx1, tty1);
 	pTransform->TransformPoint(ttx2, tty2);
 	pTransform->TransformPoint(ttx3, tty3);
-	int ttxMin = Max<int>((int)floor(Min(Min(ttx0, ttx1), Min(ttx2, ttx3))), 0);
-	int ttxMax = Min<int>((int)ceil(Max(Max(ttx0, ttx1), Max(ttx2, ttx3))), sfcTarget->Wdt);
-	int ttyMin = Max<int>((int)floor(Min(Min(tty0, tty1), Min(tty2, tty3))), 0);
-	int ttyMax = Min<int>((int)ceil(Max(Max(tty0, tty1), Max(tty2, tty3))), sfcTarget->Hgt);
+	int ttxMin = std::max<int>((int)floor((std::min)((std::min)(ttx0, ttx1), (std::min)(ttx2, ttx3))), 0);
+	int ttxMax = std::min<int>((int)ceil((std::max)((std::max)(ttx0, ttx1), (std::max)(ttx2, ttx3))), sfcTarget->Wdt);
+	int ttyMin = std::max<int>((int)floor((std::min)((std::min)(tty0, tty1), (std::min)(tty2, tty3))), 0);
+	int ttyMax = std::min<int>((int)ceil((std::max)((std::max)(tty0, tty1), (std::max)(tty2, tty3))), sfcTarget->Hgt);
 	// blit within target rect
 	for (int y = ttyMin; y < ttyMax; ++y)
 		for (int x = ttxMin; x < ttxMax; ++x)
@@ -944,12 +944,12 @@ bool CStdDDraw::BlitSurfaceTile(CSurface *sfcSurface, CSurface *sfcTarget, int i
 	for (iY = iToY + iOffsetY; iY < iToY + iToHgt; iY += iSourceHgt)
 	{
 		// Vertical blit size
-		iBlitY = Max(iToY - iY, 0); iBlitHgt = Min(iSourceHgt, iToY + iToHgt - iY) - iBlitY;
+		iBlitY = (std::max)(iToY - iY, 0); iBlitHgt = (std::min)(iSourceHgt, iToY + iToHgt - iY) - iBlitY;
 		// Horizontal blits
 		for (iX = iToX + iOffsetX; iX < iToX + iToWdt; iX += iSourceWdt)
 		{
 			// Horizontal blit size
-			iBlitX = Max(iToX - iX, 0); iBlitWdt = Min(iSourceWdt, iToX + iToWdt - iX) - iBlitX;
+			iBlitX = (std::max)(iToX - iX, 0); iBlitWdt = (std::min)(iSourceWdt, iToX + iToWdt - iX) - iBlitX;
 			// Blit
 			if (!Blit(sfcSurface, float(iBlitX), float(iBlitY), float(iBlitWdt), float(iBlitHgt), sfcTarget, iX + iBlitX, iY + iBlitY, iBlitWdt, iBlitHgt, fSrcColKey)) return false;
 		}
@@ -1060,14 +1060,14 @@ void CStdDDraw::DrawBox(CSurface *sfcDest, int iX1, int iY1, int iX2, int iY2, u
 		// Lock surface
 		if (!sfcDest->Lock()) return;
 		// Outside of surface/clip
-		if ((iX2 < Max(0, ClipX1)) || (iX1 > Min(iSfcWdt - 1, ClipX2))
-			|| (iY2 < Max(0, ClipY1)) || (iY1 > Min(iSfcHgt - 1, ClipY2)))
+		if ((iX2 < (std::max)(0, ClipX1)) || (iX1 > (std::min)(iSfcWdt - 1, ClipX2))
+			|| (iY2 < (std::max)(0, ClipY1)) || (iY1 > (std::min)(iSfcHgt - 1, ClipY2)))
 		{
 			sfcDest->Unlock(); return;
 		}
 		// Clip to surface/clip
-		if (iX1 < Max(0, ClipX1)) iX1 = Max(0, ClipX1); if (iX2 > Min(iSfcWdt - 1, ClipX2)) iX2 = Min(iSfcWdt - 1, ClipX2);
-		if (iY1 < Max(0, ClipY1)) iY1 = Max(0, ClipY1); if (iY2 > Min(iSfcHgt - 1, ClipY2)) iY2 = Min(iSfcHgt - 1, ClipY2);
+		if (iX1 < (std::max)(0, ClipX1)) iX1 = (std::max)(0, ClipX1); if (iX2 > (std::min)(iSfcWdt - 1, ClipX2)) iX2 = (std::min)(iSfcWdt - 1, ClipX2);
+		if (iY1 < (std::max)(0, ClipY1)) iY1 = (std::max)(0, ClipY1); if (iY2 > (std::min)(iSfcHgt - 1, ClipY2)) iY2 = (std::min)(iSfcHgt - 1, ClipY2);
 		// Set lines
 		for (ycnt = iY2 - iY1; ycnt >= 0; ycnt--)
 			for (xcnt = iX2 - iX1; xcnt >= 0; xcnt--)
@@ -1091,11 +1091,11 @@ void CStdDDraw::DrawHorizontalLine(CSurface *sfcDest, int x1, int x2, int y, uin
 	// Lock surface
 	if (!sfcDest->Lock()) return;
 	// Fix coordinates
-	if (x1 > x2) Swap(x1, x2);
+	if (x1 > x2) std::swap(x1, x2);
 	// Determine clip
 	int clpx1, clpx2, clpy1, clpy2;
-	clpx1 = Max(0, ClipX1); clpy1 = Max(0, ClipY1);
-	clpx2 = Min(lWdt - 1, ClipX2); clpy2 = Min(lHgt - 1, ClipY2);
+	clpx1 = (std::max)(0, ClipX1); clpy1 = (std::max)(0, ClipY1);
+	clpx2 = (std::min)(lWdt - 1, ClipX2); clpy2 = (std::min)(lHgt - 1, ClipY2);
 	// Outside clip check
 	if ((x2 < clpx1) || (x1 > clpx2) || (y < clpy1) || (y > clpy2))
 	{
@@ -1121,11 +1121,11 @@ void CStdDDraw::DrawVerticalLine(CSurface *sfcDest, int x, int y1, int y2, uint8
 	// Lock surface
 	if (!sfcDest->Lock()) return;
 	// Fix coordinates
-	if (y1 > y2) Swap(y1, y2);
+	if (y1 > y2) std::swap(y1, y2);
 	// Determine clip
 	int clpx1, clpx2, clpy1, clpy2;
-	clpx1 = Max(0, ClipX1); clpy1 = Max(0, ClipY1);
-	clpx2 = Min(lWdt - 1, ClipX2); clpy2 = Min(lHgt - 1, ClipY2);
+	clpx1 = (std::max)(0, ClipX1); clpy1 = (std::max)(0, ClipY1);
+	clpx2 = (std::min)(lWdt - 1, ClipX2); clpy2 = (std::min)(lHgt - 1, ClipY2);
 	// Outside clip check
 	if ((x < clpx1) || (x > clpx2) || (y2 < clpy1) || (y1 > clpy2))
 	{
@@ -1341,11 +1341,11 @@ void CStdDDraw::DrawBoxFade(CSurface *sfcDest, int iX, int iY, int iWdt, int iHg
 			int w, h;
 			for (int y = iY, H = iHgt; H > 0; (y += h), (H -= h), (iMaxH = iModResY))
 			{
-				h = Min<int>(H, iMaxH);
+				h = std::min<int>(H, iMaxH);
 				int iMaxW = iModResX - iBoxOffX;
 				for (int x = iX, W = iWdt; W > 0; (x += w), (W -= w), (iMaxW = iModResX))
 				{
-					w = Min<int>(W, iMaxW);
+					w = std::min<int>(W, iMaxW);
 					DrawBoxFade(sfcDest, x, y, w, h, clrs.GetColorAt(x, y), clrs.GetColorAt(x + w, y), clrs.GetColorAt(x, y + h), clrs.GetColorAt(x + w, y + h), 0, 0);
 				}
 			}

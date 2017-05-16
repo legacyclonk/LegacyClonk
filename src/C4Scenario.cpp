@@ -311,9 +311,9 @@ void C4SLandscape::GetMapSize(int32_t &rWdt, int32_t &rHgt, int32_t iPlayerNum)
 {
 	rWdt = MapWdt.Evaluate();
 	rHgt = MapHgt.Evaluate();
-	iPlayerNum = Max<int32_t>(iPlayerNum, 1);
+	iPlayerNum = std::max<int32_t>(iPlayerNum, 1);
 	if (MapPlayerExtend)
-		rWdt = Min(rWdt * Min(iPlayerNum, C4S_MaxMapPlayerExtend), MapWdt.Max);
+		rWdt = (std::min)(rWdt * (std::min)(iPlayerNum, C4S_MaxMapPlayerExtend), MapWdt.Max);
 }
 
 void C4SLandscape::CompileFunc(StdCompiler *pComp)
@@ -527,7 +527,7 @@ void C4SGame::ConvertGoals(C4SRealism &rRealism)
 	{
 	case C4S_Goldmine:    Goals.SetIDCount(C4Id("GLDM"), 1, true); ClearOldGoals(); break;
 	case C4S_Monsterkill: Goals.SetIDCount(C4Id("MNTK"), 1, true); ClearOldGoals(); break;
-	case C4S_ValueGain:   Goals.SetIDCount(C4Id("VALG"), Max(ValueGain / 100, 1), true); ClearOldGoals(); break;
+	case C4S_ValueGain:   Goals.SetIDCount(C4Id("VALG"), (std::max)(ValueGain / 100, 1), true); ClearOldGoals(); break;
 	}
 	CooperativeGoal = 0;
 	// CreateObjects,ClearObjects,ClearMaterials are still valid but invisible

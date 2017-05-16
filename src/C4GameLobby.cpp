@@ -182,7 +182,7 @@ MainDlg::MainDlg(bool fHost)
 	else
 		// 2do: Ready-checkbox
 		caBottom.GetFromRight(90);
-	pGameOptionButtons = new C4GameOptionButtons(caBottom.GetCentered(caBottom.GetInnerWidth(), Min<int32_t>(C4GUI_IconExHgt, caBottom.GetHeight())), true, fHost, true);
+	pGameOptionButtons = new C4GameOptionButtons(caBottom.GetCentered(caBottom.GetInnerWidth(), std::min<int32_t>(C4GUI_IconExHgt, caBottom.GetHeight())), true, fHost, true);
 
 	// players / ressources sidebar
 	C4GUI::ComponentAligner caRight(caMain.GetFromRight(iClientListWdt), iIndentX3, iIndentY4);
@@ -438,7 +438,7 @@ C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *edt, bool fPasting, b
 			else
 			{
 				// command with following par
-				SCopy(szInputText, Command, Min(MaxCommandLen, iParPos));
+				SCopy(szInputText, Command, (std::min)(MaxCommandLen, iParPos));
 				szPar += iParPos + 1;
 			}
 			fProcessed = true;
@@ -877,7 +877,7 @@ Countdown::~Countdown()
 void Countdown::OnSec1Timer()
 {
 	// count down
-	iStartTimer = Max<int32_t>(iStartTimer - 1, 0);
+	iStartTimer = std::max<int32_t>(iStartTimer - 1, 0);
 	// only send "important" start timer numbers to all clients
 	if (iStartTimer <= AlmostStartCountdownTime || // last seconds
 		(iStartTimer <= 600 && !(iStartTimer % 10)) || // last minute: 10s interval

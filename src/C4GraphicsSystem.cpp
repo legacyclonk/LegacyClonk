@@ -420,10 +420,10 @@ void C4GraphicsSystem::RecalculateViewports()
 			cOffY = ViewportArea.Y;
 			cOffWdt = cOffHgt = 0;
 			int32_t ViewportScrollBorder = Application.isFullScreen ? C4ViewportScrollBorder : 0;
-			if (ciViewsX * Min<int32_t>(cViewWdt, GBackWdt + 2 * ViewportScrollBorder) < ViewportArea.Wdt)
-				cOffX = (ViewportArea.Wdt - ciViewsX * Min<int32_t>(cViewWdt, GBackWdt + 2 * ViewportScrollBorder)) / 2;
-			if (iViewsH * Min<int32_t>(cViewHgt, GBackHgt + 2 * ViewportScrollBorder) < ViewportArea.Hgt)
-				cOffY = (ViewportArea.Hgt - iViewsH * Min<int32_t>(cViewHgt, GBackHgt + 2 * ViewportScrollBorder)) / 2 + ViewportArea.Y;
+			if (ciViewsX * std::min<int32_t>(cViewWdt, GBackWdt + 2 * ViewportScrollBorder) < ViewportArea.Wdt)
+				cOffX = (ViewportArea.Wdt - ciViewsX * std::min<int32_t>(cViewWdt, GBackWdt + 2 * ViewportScrollBorder)) / 2;
+			if (iViewsH * std::min<int32_t>(cViewHgt, GBackHgt + 2 * ViewportScrollBorder) < ViewportArea.Hgt)
+				cOffY = (ViewportArea.Hgt - iViewsH * std::min<int32_t>(cViewHgt, GBackHgt + 2 * ViewportScrollBorder)) / 2 + ViewportArea.Y;
 			if (Config.Graphics.SplitscreenDividers)
 			{
 				if (cViewX < ciViewsX - 1) cOffWdt = 4;
@@ -754,7 +754,7 @@ int32_t C4GraphicsSystem::GetAudibility(int32_t iX, int32_t iY, int32_t *iPan, i
 	int32_t iAudible = 0; *iPan = 0;
 	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
 	{
-		iAudible = Max(iAudible,
+		iAudible = (std::max)(iAudible,
 			BoundBy<int32_t>(100 - 100 * Distance(cvp->ViewX + cvp->ViewWdt / 2, cvp->ViewY + cvp->ViewHgt / 2, iX, iY) / C4AudibilityRadius, 0, 100));
 		*iPan += (iX - (cvp->ViewX + cvp->ViewWdt / 2)) / 5;
 	}

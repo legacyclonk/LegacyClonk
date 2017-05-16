@@ -605,7 +605,7 @@ bool C4Console::Out(const char *szText)
 	if (!szText || !*szText) return true;
 	int len, len2, lines; char *buffer, *buffer2;
 	len = 65000;
-	len2 = len + Min<int32_t>(strlen(szText) + 2, 5000);
+	len2 = len + std::min<int32_t>(strlen(szText) + 2, 5000);
 	buffer = new char[len2];
 	buffer[0] = 0;
 	GetDlgItemText(hWindow, IDC_EDITOUTPUT, buffer, len);
@@ -1112,7 +1112,7 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 		char *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(dialog));
 		int len = SLen(folder);
 
-		if (iSize > 0) SCopy(folder, sFilename, Min(len + 1, iSize));
+		if (iSize > 0) SCopy(folder, sFilename, (std::min)(len + 1, iSize));
 		iSize -= (len + 1); sFilename += (len + 1);
 		g_free(folder);
 
@@ -1123,7 +1123,7 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 			char *basefile = g_path_get_basename(file);
 
 			int len = SLen(basefile);
-			if (iSize > 0) SCopy(basefile, sFilename, Min(len + 1, iSize));
+			if (iSize > 0) SCopy(basefile, sFilename, (std::min)(len + 1, iSize));
 			iSize -= (len + 1); sFilename += (len + 1);
 
 			g_free(basefile);

@@ -21,7 +21,7 @@
 // helper
 inline int MaxTimeout(int iTimeout1, int iTimeout2)
 {
-	return (iTimeout1 == -1 || iTimeout2 == -1) ? -1 : Max(iTimeout1, iTimeout2);
+	return (iTimeout1 == -1 || iTimeout2 == -1) ? -1 : (std::max)(iTimeout1, iTimeout2);
 }
 
 // Abstract class for a process

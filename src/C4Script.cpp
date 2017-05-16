@@ -60,7 +60,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			// Scan field type
 			for (cpType = cpFormat + 1; *cpType && (*cpType == '.' || Inside(*cpType, '0', '9')); cpType++);
 			// Copy field
-			SCopy(cpFormat, szField, Min<unsigned int>(sizeof(szField) - 1, cpType - cpFormat + 1));
+			SCopy(cpFormat, szField, std::min<unsigned int>(sizeof(szField) - 1, cpType - cpFormat + 1));
 			// Insert field by type
 			switch (*cpType)
 			{
@@ -1177,7 +1177,7 @@ static long FnGetVertex(C4AulContext *cthr, long iIndex, long iValueToGet, C4Obj
 {
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return 0;
 	if (pObj->Shape.VtxNum < 1) return false;
-	iIndex = Min<long>(iIndex, pObj->Shape.VtxNum - 1);
+	iIndex = std::min<long>(iIndex, pObj->Shape.VtxNum - 1);
 	switch (iValueToGet)
 	{
 	case VTX_X:        return pObj->Shape.VtxX[iIndex]; break;
@@ -1464,8 +1464,8 @@ static C4Value FnAddMenuItem(C4AulContext *cthr, C4Value *pPars)
 		const char *sep = strstr(s, "%s");
 		if (sep)
 		{
-			strncpy(caption, s, Min<intptr_t>(sep - s, 256));
-			caption[Min<intptr_t>(sep - s, 256)] = 0;
+			strncpy(caption, s, std::min<intptr_t>(sep - s, 256));
+			caption[std::min<intptr_t>(sep - s, 256)] = 0;
 			strncat(caption, pDef->GetName(), 256);
 			strncat(caption, sep + 2, 256);
 		}
@@ -3350,12 +3350,12 @@ static long FnArcCos(C4AulContext *cthr, long iVal, long iRadius)
 
 static long FnMin(C4AulContext *cthr, long iVal1, long iVal2)
 {
-	return Min(iVal1, iVal2);
+	return (std::min)(iVal1, iVal2);
 }
 
 static long FnMax(C4AulContext *cthr, long iVal1, long iVal2)
 {
-	return Max(iVal1, iVal2);
+	return (std::max)(iVal1, iVal2);
 }
 
 static long FnDistance(C4AulContext *cthr, long iX1, long iY1, long iX2, long iY2)
@@ -5797,7 +5797,7 @@ static long FnModulateColor(C4AulContext *cthr, long iClr1, long iClr2)
 	uint32_t r = ((dwClr1 & 0xff) * (dwClr2 & 0xff)) >> 8 | // blue
 		((dwClr1 >> 8 & 0xff) * (dwClr2 >> 8 & 0xff)) & 0xff00 | // green
 		((dwClr1 >> 16 & 0xff) * (dwClr2 >> 8 & 0xff00)) & 0xff0000 | // red
-		Min<long>(iA1 + iA2 - ((iA1 * iA2) >> 8), 255) << 24; // alpha
+		std::min<long>(iA1 + iA2 - ((iA1 * iA2) >> 8), 255) << 24; // alpha
 	return r;
 }
 

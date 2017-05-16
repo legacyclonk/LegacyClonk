@@ -133,7 +133,7 @@ bool C4ParticleDef::Load(C4Group &rGrp)
 		// case fadeout from length
 		if (FadeOutLen)
 		{
-			Length = Max<int32_t>(Length - FadeOutLen, 1);
+			Length = std::max<int32_t>(Length - FadeOutLen, 1);
 			if (!FadeOutDelay) FadeOutDelay = 1;
 		}
 		// if phase num is 1, no reverse is allowed
@@ -412,7 +412,7 @@ bool C4ParticleSystem::Cast(C4ParticleDef *pOfDef, int32_t iAmount,
 	if (!pOfDef) return false;
 	// get range for a and b
 	int32_t iA0 = (int32_t)(a0 * 100), iA1 = (int32_t)(a1 * 100);
-	if (iA1 < iA0) Swap(iA0, iA1);
+	if (iA1 < iA0) std::swap(iA0, iA1);
 	int32_t iAd = iA1 - iA0 + 1;
 	if (b1 < b0) { uint32_t dwX = b0; b0 = b1; b1 = dwX; }
 	uint32_t db = b1 - b0;
@@ -538,7 +538,7 @@ bool fxSmokeExec(C4Particle *pPrt, C4Object *pTarget)
 	}
 	// color change
 	uint32_t dwClr = pPrt->b;
-	pPrt->b = (LightenClrBy(dwClr, 1) & 0xffffff) | Min<int32_t>((dwClr >> 24) + 1, 255) << 24;
+	pPrt->b = (LightenClrBy(dwClr, 1) & 0xffffff) | std::min<int32_t>((dwClr >> 24) + 1, 255) << 24;
 	// wind to float
 	if (!(pPrt->b % 12) || fBuilding)
 	{
@@ -640,7 +640,7 @@ bool fxStdExec(C4Particle *pPrt, C4Object *pTarget)
 		float tydir = 0;
 
 		// Air friction, based on WindDrift.
-		int32_t iWindDrift = Max(pPrt->pDef->WindDrift - 20, 0);
+		int32_t iWindDrift = (std::max)(pPrt->pDef->WindDrift - 20, 0);
 		pPrt->xdir += ((txdir - dxdir) * iWindDrift) / 800;
 		pPrt->ydir += ((tydir - dydir) * iWindDrift) / 800;
 	}

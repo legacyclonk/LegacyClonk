@@ -177,7 +177,7 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	unsigned int iMSecs;
 	if (fCheckTimer && !MMTimer)
 	{
-		iMSecs = Max<int>(0, iLastExecute + GetDelay() + iTimerOffset - timeGetTime());
+		iMSecs = std::max<int>(0, iLastExecute + GetDelay() + iTimerOffset - timeGetTime());
 		if (iTimeout != INFINITE && iTimeout < iMSecs) iMSecs = iTimeout;
 	}
 	else

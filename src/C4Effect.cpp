@@ -629,7 +629,7 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	if (pObj->Contained) return C4Fx_OK;
 
 	// some constant effect parameters for this object
-	int32_t iWidth = Max<int32_t>(pObj->Def->Shape.Wdt, 1),
+	int32_t iWidth = std::max<int32_t>(pObj->Def->Shape.Wdt, 1),
 		iHeight = pObj->Def->Shape.Hgt,
 		iYOff = iHeight / 2 - pObj->Def->Shape.FireTop;
 
@@ -643,7 +643,7 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	int32_t iXDir, iYDir, iCon, iWdtCon, iA, iSize;
 
 	// get remainign size (%)
-	iCon = iWdtCon = Max<int32_t>((100 * pObj->GetCon()) / FullCon, 1);
+	iCon = iWdtCon = std::max<int32_t>((100 * pObj->GetCon()) / FullCon, 1);
 	if (!pObj->Def->GrowthType)
 		// fixed width for not-stretched-objects
 		if (iWdtCon < 100) iWdtCon = 100;
@@ -665,7 +665,7 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	}
 
 	// Adjust particle number by con
-	iCount = Max(2, iCount * iWdtCon / 100);
+	iCount = (std::max)(2, iCount * iWdtCon / 100);
 
 	// calc base for particle size parameter
 	iA = (int32_t)(sqrt(sqrt(double(iWidth * iHeight)) * (iCon + 20) / 120) * iRelParticleSize);

@@ -343,7 +343,7 @@ void C4Facet::DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &g
 	// draw energy level using graphics
 	if (!lpDDraw || !gfx.Surface) return;
 	int32_t y0 = Y, x0 = X, h = gfx.Hgt;
-	int32_t yBar = Hgt - BoundBy<int32_t>(iLevel, 0, iRange) * Hgt / Max<int32_t>(iRange, 1);
+	int32_t yBar = Hgt - BoundBy<int32_t>(iLevel, 0, iRange) * Hgt / std::max<int32_t>(iRange, 1);
 	int32_t iY = 0, vidx = 0;
 	C4Facet gfx_draw = gfx;
 	bool filled = false;
@@ -478,7 +478,7 @@ C4Facet C4Facet::GetFraction(int32_t percentWdt, int32_t percentHgt, int32_t ali
 	// Simple spec for square fractions
 	if (percentHgt == 0) percentHgt = percentWdt;
 	// Alignment
-	int iX = X, iY = Y, iWdt = Max(Wdt * percentWdt / 100, 1), iHgt = Max(Hgt * percentHgt / 100, 1);
+	int iX = X, iY = Y, iWdt = (std::max)(Wdt * percentWdt / 100, 1), iHgt = (std::max)(Hgt * percentHgt / 100, 1);
 	if (alignX & C4FCT_Right)  iX += Wdt     - iWdt;
 	if (alignX & C4FCT_Center) iX += Wdt / 2 - iWdt / 2;
 	if (alignY & C4FCT_Bottom) iY += Hgt     - iHgt;

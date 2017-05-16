@@ -1130,7 +1130,7 @@ void C4Viewport::AdjustPosition()
 	if (PlayerLock && ValidPlr(Player))
 	{
 		C4Player *pPlr = Game.Players.Get(Player);
-		int32_t iScrollRange = Min(ViewWdt / 10, ViewHgt / 10);
+		int32_t iScrollRange = (std::min)(ViewWdt / 10, ViewHgt / 10);
 		int32_t iExtraBoundsX = 0, iExtraBoundsY = 0;
 		if (pPlr->ViewMode == C4PVM_Scrolling)
 		{
@@ -1140,13 +1140,13 @@ void C4Viewport::AdjustPosition()
 		else
 		{
 			// if view is close to border, allow scrolling
-			if (pPlr->ViewX < ViewportScrollBorder) iExtraBoundsX = Min<int32_t>(ViewportScrollBorder - pPlr->ViewX, ViewportScrollBorder);
-			else if (pPlr->ViewX >= GBackWdt - ViewportScrollBorder) iExtraBoundsX = Min<int32_t>(pPlr->ViewX - GBackWdt, 0) + ViewportScrollBorder;
-			if (pPlr->ViewY < ViewportScrollBorder) iExtraBoundsY = Min<int32_t>(ViewportScrollBorder - pPlr->ViewY, ViewportScrollBorder);
-			else if (pPlr->ViewY >= GBackHgt - ViewportScrollBorder) iExtraBoundsY = Min<int32_t>(pPlr->ViewY - GBackHgt, 0) + ViewportScrollBorder;
+			if (pPlr->ViewX < ViewportScrollBorder) iExtraBoundsX = std::min<int32_t>(ViewportScrollBorder - pPlr->ViewX, ViewportScrollBorder);
+			else if (pPlr->ViewX >= GBackWdt - ViewportScrollBorder) iExtraBoundsX = std::min<int32_t>(pPlr->ViewX - GBackWdt, 0) + ViewportScrollBorder;
+			if (pPlr->ViewY < ViewportScrollBorder) iExtraBoundsY = std::min<int32_t>(ViewportScrollBorder - pPlr->ViewY, ViewportScrollBorder);
+			else if (pPlr->ViewY >= GBackHgt - ViewportScrollBorder) iExtraBoundsY = std::min<int32_t>(pPlr->ViewY - GBackHgt, 0) + ViewportScrollBorder;
 		}
-		iExtraBoundsX = Max<int32_t>(iExtraBoundsX, (ViewWdt - GBackWdt) / 2 + 1);
-		iExtraBoundsY = Max<int32_t>(iExtraBoundsY, (ViewHgt - GBackHgt) / 2 + 1);
+		iExtraBoundsX = std::max<int32_t>(iExtraBoundsX, (ViewWdt - GBackWdt) / 2 + 1);
+		iExtraBoundsY = std::max<int32_t>(iExtraBoundsY, (ViewHgt - GBackHgt) / 2 + 1);
 		// calc target view position
 		int32_t iTargetViewX = pPlr->ViewX - ViewWdt / 2;
 		int32_t iTargetViewY = pPlr->ViewY - ViewHgt / 2;
@@ -1154,7 +1154,7 @@ void C4Viewport::AdjustPosition()
 		int32_t iPrefViewX = ViewX - ViewOffsX, iPrefViewY = ViewY - ViewOffsY;
 		if (pPlr->MouseControl && Game.MouseControl.InitCentered && Config.General.MouseAScroll)
 		{
-			int32_t iAutoScrollBorder = Min(Min(ViewWdt / 10, ViewHgt / 10), C4SymbolSize);
+			int32_t iAutoScrollBorder = (std::min)((std::min)(ViewWdt / 10, ViewHgt / 10), C4SymbolSize);
 			if (iAutoScrollBorder)
 			{
 				iPrefViewX += BoundBy<int32_t>(0, Game.MouseControl.VpX - ViewWdt + iAutoScrollBorder, Game.MouseControl.VpX - iAutoScrollBorder) * iScrollRange * BoundBy<int32_t>(Config.General.MouseAScroll, 0, 100) / 100 / iAutoScrollBorder;
@@ -1210,8 +1210,8 @@ void C4Viewport::UpdateViewPosition()
 		}
 		else
 		{
-			ViewX = Min<int32_t>(ViewX, GBackWdt - ViewWdt);
-			ViewX = Max<int32_t>(ViewX, 0);
+			ViewX = std::min<int32_t>(ViewX, GBackWdt - ViewWdt);
+			ViewX = std::max<int32_t>(ViewX, 0);
 		}
 		if (Application.isFullScreen && GBackHgt < ViewHgt)
 		{
@@ -1219,15 +1219,15 @@ void C4Viewport::UpdateViewPosition()
 		}
 		else
 		{
-			ViewY = Min<int32_t>(ViewY, GBackHgt - ViewHgt);
-			ViewY = Max<int32_t>(ViewY, 0);
+			ViewY = std::min<int32_t>(ViewY, GBackHgt - ViewHgt);
+			ViewY = std::max<int32_t>(ViewY, 0);
 		}
 	}
 	// update borders
-	BorderLeft = Max<int32_t>(-ViewX, 0);
-	BorderTop = Max<int32_t>(-ViewY, 0);
-	BorderRight = Max<int32_t>(ViewWdt - GBackWdt + ViewX, 0);
-	BorderBottom = Max<int32_t>(ViewHgt - GBackHgt + ViewY, 0);
+	BorderLeft = std::max<int32_t>(-ViewX, 0);
+	BorderTop = std::max<int32_t>(-ViewY, 0);
+	BorderRight = std::max<int32_t>(ViewWdt - GBackWdt + ViewX, 0);
+	BorderBottom = std::max<int32_t>(ViewHgt - GBackHgt + ViewY, 0);
 }
 
 void C4Viewport::Default()
@@ -1369,7 +1369,7 @@ void C4Viewport::DrawPlayerControls(C4FacetEx &cgo)
 {
 	if (!ValidPlr(Player)) return;
 	if (!Game.Players.Get(Player)->ShowControl) return;
-	int32_t size = Min(cgo.Wdt / 3, 7 * cgo.Hgt / 24);
+	int32_t size = (std::min)(cgo.Wdt / 3, 7 * cgo.Hgt / 24);
 	int32_t tx;
 	int32_t ty;
 	switch (Game.Players.Get(Player)->ShowControlPos)

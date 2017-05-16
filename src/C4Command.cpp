@@ -382,7 +382,7 @@ void C4Command::MoveTo()
 	{
 		FIXED dx = itofix(Tx._getInt()) - cObj->fix_x, dy = itofix(Ty) - cObj->fix_y;
 		// normalize
-		FIXED dScale = FIXED100(cObj->GetPhysical()->Float) / Max(Abs(dx), Abs(dy));
+		FIXED dScale = FIXED100(cObj->GetPhysical()->Float) / (std::max)(Abs(dx), Abs(dy));
 		dx *= dScale; dy *= dScale;
 		// difference to momentum
 		dx -= cObj->xdir; dy -= cObj->ydir;
@@ -1311,7 +1311,7 @@ void C4Command::Activate()
 	// In container
 	if (cObj->Contained == Target2)
 	{
-		for (Tx.SetInt(Data ? Max<int32_t>(Tx._getInt(), 1) : 1); Tx._getInt(); --Tx)
+		for (Tx.SetInt(Data ? std::max<int32_t>(Tx._getInt(), 1) : 1); Tx._getInt(); --Tx)
 		{
 			// If not specified get object from target contents by type
 			// Find first object requested id that has no command exit yet
@@ -2003,7 +2003,7 @@ void C4Command::Buy()
 		cObj->AddCommand(C4CMD_Enter, Target, 0, 0, 50); return;
 	}
 	// Buy object(s)
-	for (Tx.SetInt(Max<int32_t>(Tx._getInt(), 1)); Tx._getInt(); Tx--)
+	for (Tx.SetInt(std::max<int32_t>(Tx._getInt(), 1)); Tx._getInt(); Tx--)
 		if (!Buy2Base(cObj->Owner, Target, Data))
 			// Failed (with ugly message)
 		{
@@ -2042,7 +2042,7 @@ void C4Command::Sell()
 		cObj->AddCommand(C4CMD_Enter, Target, 0, 0, 50); return;
 	}
 	// Sell object(s)
-	for (Tx.SetInt(Max<int32_t>(Tx._getInt(), 1)); Tx._getInt(); Tx--)
+	for (Tx.SetInt(std::max<int32_t>(Tx._getInt(), 1)); Tx._getInt(); Tx--)
 		if (!SellFromBase(cObj->Owner, Target, Data, Target2))
 			// Failed
 		{

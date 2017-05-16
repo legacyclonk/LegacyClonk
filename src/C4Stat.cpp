@@ -131,7 +131,7 @@ void C4MainStat::Show()
 		if (pAkt->iCount)
 			fprintf(StatFile, "%s: n = %d, t = %d, td = %.2f\n",
 				pAkt->strName, pAkt->iCount, pAkt->iTimeSum,
-				double(pAkt->iTimeSum) / Max<int>(1, pAkt->iCount - 100) * 1000);
+				double(pAkt->iTimeSum) / std::max<int>(1, pAkt->iCount - 100) * 1000);
 	}
 
 	// delete...

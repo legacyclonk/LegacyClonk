@@ -57,7 +57,7 @@ void C4PXS::Execute()
 		FIXED tydir = FIXED256(Random(1200) - 600);
 
 		// Air friction, based on WindDrift. MaxSpeed is ignored.
-		int32_t iWindDrift = Max(Game.Material.Map[Mat].WindDrift - 20, 0);
+		int32_t iWindDrift = (std::max)(Game.Material.Map[Mat].WindDrift - 20, 0);
 		xdir += ((txdir - xdir) * iWindDrift) * WindDrift_Factor;
 		ydir += ((tydir - ydir) * iWindDrift) * WindDrift_Factor;
 	}
@@ -246,7 +246,7 @@ void C4PXSSystem::Draw(C4FacetEx &cgo)
 					{
 						// lines for stuff that goes whooosh!
 						int len = fixtoi(Abs(pxp->xdir) + Abs(pxp->ydir));
-						dwMatClr = uint32_t(Max<int>(dwMatClr >> 24, 195 - (195 - (dwMatClr >> 24)) / len)) << 24 | (dwMatClr & 0xffffff);
+						dwMatClr = uint32_t(std::max<int>(dwMatClr >> 24, 195 - (195 - (dwMatClr >> 24)) / len)) << 24 | (dwMatClr & 0xffffff);
 						Application.DDraw->DrawLineDw(cgo.Surface,
 							fixtof(pxp->x - pxp->xdir) + cgox, fixtof(pxp->y - pxp->ydir) + cgoy,
 							fixtof(pxp->x) + cgox, fixtof(pxp->y) + cgoy,
@@ -276,12 +276,12 @@ void C4PXSSystem::Draw(C4FacetEx &cgo)
 					// new-style: graphics
 					int32_t pnx, pny;
 					pMat->PXSFace.GetPhaseNum(pnx, pny);
-					int32_t fcWdt = pMat->PXSFace.Wdt; int32_t fcWdtH = Max(fcWdt / 3, 1);
+					int32_t fcWdt = pMat->PXSFace.Wdt; int32_t fcWdtH = (std::max)(fcWdt / 3, 1);
 					// calculate draw width and tile to use (random-ish)
-					int32_t z = 1 + ((cnt2 / Max<int32_t>(pnx * pny, 1)) ^ 341) % pMat->PXSGfxSize;
+					int32_t z = 1 + ((cnt2 / std::max<int32_t>(pnx * pny, 1)) ^ 341) % pMat->PXSGfxSize;
 					pny = (cnt2 / pnx) % pny; pnx = cnt2 % pnx;
 					// draw
-					Application.DDraw->ActivateBlitModulation(Min((fcWdtH - z) * 16, 255) << 24 | 0xffffff);
+					Application.DDraw->ActivateBlitModulation((std::min)((fcWdtH - z) * 16, 255) << 24 | 0xffffff);
 					pMat->PXSFace.DrawX(cgo.Surface, fixtoi(pxp->x) + cgox + z * pMat->PXSGfxRt.tx / fcWdt, fixtoi(pxp->y) + cgoy + z * pMat->PXSGfxRt.ty / fcWdt, z, z * pMat->PXSFace.Hgt / fcWdt, pnx, pny);
 					Application.DDraw->DeactivateBlitModulation();
 				}

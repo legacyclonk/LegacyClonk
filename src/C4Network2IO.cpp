@@ -582,7 +582,7 @@ bool C4Network2IO::Execute(int iTimeout)
 
 int C4Network2IO::GetTimeout()
 {
-	return Max<int>(0, iLastExecute + C4NetTimer - timeGetTime());
+	return std::max<int>(0, iLastExecute + C4NetTimer - timeGetTime());
 }
 
 void C4Network2IO::OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData) // by main thread
@@ -1227,7 +1227,7 @@ int C4Network2IOConnection::getLag() const
 		int iPingLag = timeGetTime() - iLastPing;
 		// Use it for lag measurement once it's larger then the last ping time
 		// (the ping time won't be better than this anyway once the pong's here)
-		return Max(iPingLag, iPingTime);
+		return (std::max)(iPingLag, iPingTime);
 	}
 	// Last ping result
 	return iPingTime;

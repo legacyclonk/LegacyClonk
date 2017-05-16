@@ -490,7 +490,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 void C4MaterialMap::SetMatReaction(int32_t iPXSMat, int32_t iLSMat, C4MaterialReaction *pReact)
 {
 	// evaluate reaction swap
-	if (pReact && pReact->fReverse) Swap(iPXSMat, iLSMat);
+	if (pReact && pReact->fReverse) std::swap(iPXSMat, iLSMat);
 	// set it
 	ppReactionMap[(iLSMat + 1) * (Num + 1) + iPXSMat + 1] = pReact;
 }

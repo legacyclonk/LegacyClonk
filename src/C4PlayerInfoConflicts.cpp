@@ -22,7 +22,7 @@ uint32_t GenerateRandomPlayerColor(int32_t iTry) // generate a random player col
 {
 	// generate a random one biased towards max channel luminance
 	// (for greater color difference and less gray-ish colors)
-	return RGB(Min(SafeRandom(302), 256), Min(SafeRandom(302), 256), Min(SafeRandom(302), 256));
+	return RGB((std::min)(SafeRandom(302), 256), (std::min)(SafeRandom(302), 256), (std::min)(SafeRandom(302), 256));
 }
 
 bool IsColorConflict(uint32_t dwClr1, uint32_t dwClr2) // return whether dwClr1 and dwClr2 are closely together
@@ -43,7 +43,7 @@ bool IsColorConflict(uint32_t dwClr1, uint32_t dwClr2) // return whether dwClr1 
 	xy2upvp(x2, y2, &u2, &v2);
 	double Y = (Y1 + Y2) / 2.0;
 	double clrdiff = sqrt((u2 - u1) * (u2 - u1) + (v2 - v1) * (v2 - v1)) * Y * Y * 150;
-	double lumdiff = (Abs<double>(Y2 - Y1) / Max<double>(Y * Y * 5, 0.5)) / 0.10;
+	double lumdiff = (Abs<double>(Y2 - Y1) / std::max<double>(Y * Y * 5, 0.5)) / 0.10;
 	return clrdiff + lumdiff < 1.0;
 }
 

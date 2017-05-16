@@ -237,13 +237,13 @@ void C4MapFolderData::ConvertFacet2ScreenCoord(C4Rect &rcMapArea, bool fAspect)
 		{
 			// background image is limited by width
 			fBGZoomX = fBGZoomY = (float)rcMapArea.Wdt / fctBackgroundPicture.Wdt;
-			iOffY = Max<int>(0, (int)(rcMapArea.Hgt - (fBGZoomX * fctBackgroundPicture.Hgt))) / 2;
+			iOffY = std::max<int>(0, (int)(rcMapArea.Hgt - (fBGZoomX * fctBackgroundPicture.Hgt))) / 2;
 		}
 		else
 		{
 			// background image is limited by height
 			fBGZoomX = fBGZoomY = (float)rcMapArea.Hgt / fctBackgroundPicture.Hgt;
-			iOffX = Max<int>(0, (int)(rcMapArea.Wdt - (fBGZoomY * fctBackgroundPicture.Wdt))) / 2;
+			iOffX = std::max<int>(0, (int)(rcMapArea.Wdt - (fBGZoomY * fctBackgroundPicture.Wdt))) / 2;
 		}
 	}
 	else
@@ -725,7 +725,7 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 		{
 			// Some scenarios have adjusted MaxPlayerCount to 0 after starting to prevent future joins
 			// make sure it's possible to start the savegame anyway
-			iMaxPlrCount = Max<int32_t>(iMinPlrCount, iMaxPlrCount);
+			iMaxPlrCount = std::max<int32_t>(iMinPlrCount, iMaxPlrCount);
 		}
 		// normal scenarios: At least one player except in network mode, where it is possible to wait for the additional players
 		// Melees need at least two

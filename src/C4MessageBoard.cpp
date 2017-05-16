@@ -84,7 +84,7 @@ void C4MessageBoard::ChangeMode(int inMode)
 
 	case 1: // >= 2 lines
 
-		iLines = Max(iLines, 2);
+		iLines = (std::max)(iLines, 2);
 		Config.Graphics.MsgBoard = iLines;
 		// calc position; go to end
 		iBackScroll = -1;
@@ -137,7 +137,7 @@ void C4MessageBoard::Execute()
 
 		// typein? fade in
 		if (Game.MessageInput.IsTypeIn())
-			ScreenFader = Max(ScreenFader - 20, -100);
+			ScreenFader = (std::max)(ScreenFader - 20, -100);
 
 		// no curr msg?
 		if (iBackScroll < 0)
@@ -161,13 +161,13 @@ void C4MessageBoard::Execute()
 		}
 
 		// recalc fade/delay speed
-		Speed = Max(1, iBackScroll / 5);
+		Speed = (std::max)(1, iBackScroll / 5);
 		// fade msg in?
 		if (Fader > 0)
-			Fader = Max(Fader - Speed, 0);
+			Fader = (std::max)(Fader - Speed, 0);
 		// fade msg out?
 		if (Fader < 0)
-			Fader = Max(Fader - Speed, -iLineHgt);
+			Fader = (std::max)(Fader - Speed, -iLineHgt);
 		// hold curr msg? (delay)
 		if (Fader == 0)
 		{
@@ -175,26 +175,26 @@ void C4MessageBoard::Execute()
 			if (Delay == -1)
 			{
 				// set delay based on msg length
-				const char *szCurrMsg = LogBuffer.GetLine(Min(-iBackScroll, -1), nullptr, nullptr, nullptr);
+				const char *szCurrMsg = LogBuffer.GetLine((std::min)(-iBackScroll, -1), nullptr, nullptr, nullptr);
 				if (szCurrMsg) Delay = strlen(szCurrMsg); else Delay = 0;
 			}
 			// wait...
-			if (Delay > 0) Delay = Max(Delay - Speed, 0);
+			if (Delay > 0) Delay = (std::max)(Delay - Speed, 0);
 			// end of delay
 			if (Delay == 0)
 			{
-				Fader = Max(-Speed, -iLineHgt); // start fade out
+				Fader = (std::max)(-Speed, -iLineHgt); // start fade out
 				Delay = -1;
 			}
 		}
 
-		ScreenFader = Max(ScreenFader - 20, -100);
+		ScreenFader = (std::max)(ScreenFader - 20, -100);
 
 		// go to next msg? (last msg is completely faded out)
 		if (Fader == -iLineHgt)
 		{
 			// set cursor to next msg (or at end of log)
-			iBackScroll = Max(iBackScroll - 1, -1);
+			iBackScroll = (std::max)(iBackScroll - 1, -1);
 			// reset fade
 			Fader = 0;
 		}
@@ -282,7 +282,7 @@ void C4MessageBoard::Draw(C4Facet &cgo)
 			uint32_t dwFade;
 			if (iMsgY < cgo.Y)
 			{
-				dwFade = (0xff - BoundBy((cgo.Y - iMsgY + Max(ScreenFader, 0)) * 256 / Max(iMsgFader, 1) / iLineHgt, 0, 0xff)) << 24;
+				dwFade = (0xff - BoundBy((cgo.Y - iMsgY + (std::max)(ScreenFader, 0)) * 256 / (std::max)(iMsgFader, 1) / iLineHgt, 0, 0xff)) << 24;
 				Game.GraphicsSystem.OverwriteBg();
 			}
 			else

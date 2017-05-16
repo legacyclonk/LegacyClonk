@@ -231,7 +231,7 @@ bool C4Record::Rec(int iFrame, const StdBuf &sBuf, C4RecordChunkType eType)
 	while (iFrame > iLastFrame + 0xff)
 		Rec(iLastFrame + 0xff, StdBuf(), RCT_Frame);
 	// get frame difference
-	uint32_t iFrameDiff = Max<uint32_t>(0, iFrame - iLastFrame);
+	uint32_t iFrameDiff = std::max<uint32_t>(0, iFrame - iLastFrame);
 	iLastFrame += iFrameDiff;
 	// create head
 	C4RecordChunkHead Head = { iFrameDiff, eType };
