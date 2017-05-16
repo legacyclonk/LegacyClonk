@@ -69,19 +69,9 @@ void CStdGL::FillBG(uint32_t dwClr)
 
 bool CStdGL::UpdateClipper()
 {
-	// no render target? do nothing
-	if (!RenderTarget || !Active) return true;
-	// negative/zero?
-	int iWdt = Min(ClipX2, RenderTarget->Wdt - 1) - ClipX1 + 1;
-	int iHgt = Min(ClipY2, RenderTarget->Hgt - 1) - ClipY1 + 1;
-	int iX = ClipX1; if (iX < 0) { iWdt += iX; iX = 0; }
-	int iY = ClipY1; if (iY < 0) { iHgt += iY; iY = 0; }
-	if (iWdt <= 0 || iHgt <= 0)
-	{
-		ClipAll = true;
-		return true;
-	}
-	ClipAll = false;
+	int iX, iY, iWdt, iHgt;
+	// no render target or clip all? do nothing
+	if (!CalculateClipper(&iX, &iY, &iWdt, &iHgt)) return true;
 	// set it
 	glViewport(iX, RenderTarget->Hgt - iY - iHgt, iWdt, iHgt);
 	glMatrixMode(GL_PROJECTION);

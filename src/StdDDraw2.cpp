@@ -569,6 +569,25 @@ bool CStdDDraw::NoPrimaryClipper()
 	return true;
 }
 
+bool CStdDDraw::CalculateClipper(int *const iX, int *const iY, int *const iWdt, int *const iHgt)
+{
+	// no render target? do nothing
+	if (!RenderTarget || !Active) return false;
+	// negative/zero?
+	*iWdt = Min(ClipX2, RenderTarget->Wdt - 1) - ClipX1 + 1;
+	*iHgt = Min(ClipY2, RenderTarget->Hgt - 1) - ClipY1 + 1;
+	*iX = ClipX1; if (*iX < 0) { *iWdt += *iX; *iX = 0; }
+	*iY = ClipY1; if (*iY < 0) { *iHgt += *iY; *iY = 0; }
+	if (*iWdt <= 0 || *iHgt <= 0)
+	{
+		ClipAll = true;
+		return false;
+	}
+	ClipAll = false;
+
+	return true;
+}
+
 bool CStdDDraw::ClipPoly(CBltData &rBltData)
 {
 	// safety
