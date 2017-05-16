@@ -303,23 +303,21 @@ bool C4MCOverlay::SetField(C4MCParser *pParser, const char *szField, const char 
 	for (C4MCNodeAttr *pAttr = &C4MCOvrlMap[0]; *pAttr->Name; pAttr++)
 		if (SEqual(szField, pAttr->Name))
 		{
-			// field was found, get offset to store in
-			uint8_t *pTarget = (uint8_t *) this + pAttr->iOff;
 			// store according to field type
 			switch (pAttr->Type)
 			{
 			case C4MCV_Integer:
 				// simply store
-				*((int32_t *)pTarget) = IntPar;
+				this->*(pAttr->integer) = IntPar;
 				break;
 			case C4MCV_Percent:
 			{
-				((int_bool *)pTarget)->Set(IntPar, ValType == MCT_PERCENT || ValType == MCT_INT);
+				(this->*(pAttr->intBool)).Set(IntPar, ValType == MCT_PERCENT || ValType == MCT_INT);
 				break;
 			}
 			case C4MCV_Pixels:
 			{
-				((int_bool *)pTarget)->Set(IntPar, ValType == MCT_PERCENT);
+				(this->*(pAttr->intBool)).Set(IntPar, ValType == MCT_PERCENT);
 				break;
 			}
 			case C4MCV_Material:
@@ -328,14 +326,14 @@ bool C4MCOverlay::SetField(C4MCParser *pParser, const char *szField, const char 
 				// check validity
 				if (iMat == MNone) throw C4MCParserErr(pParser, C4MCErr_MatNotFound, StrPar);
 				// store
-				*((int32_t *)pTarget) = iMat;
+				this->*(pAttr->integer) = iMat;
 				break;
 			case C4MCV_Texture:
 				// check validity
 				if (!MapCreator->TexMap->CheckTexture(StrPar))
 					throw C4MCParserErr(pParser, C4MCErr_TexNotFound, StrPar);
 				// store
-				SCopy(StrPar, (char *)pTarget, C4MaxName);
+				SCopy(StrPar, this->*(pAttr->texture), C4MaxName);
 				break;
 			case C4MCV_Algorithm:
 				// get algo
@@ -343,15 +341,15 @@ bool C4MCOverlay::SetField(C4MCParser *pParser, const char *szField, const char 
 				// check validity
 				if (!pAlgo) throw C4MCParserErr(pParser, C4MCErr_AlgoNotFound, StrPar);
 				// store
-				*((C4MCAlgorithm **)pTarget) = pAlgo;
+				this->*(pAttr->algorithm) = pAlgo;
 				break;
 			case C4MCV_Boolean:
 				// store whether value is not zero
-				*((bool *)pTarget) = IntPar != 0;
+				this->*(pAttr->boolean) = IntPar != 0;
 				break;
 			case C4MCV_Zoom:
 				// store calculated zoom
-				*((int32_t *)pTarget) = BoundBy<int32_t>(C4MC_ZoomRes - IntPar, 1, C4MC_ZoomRes * 2);
+				this->*(pAttr->integer) = BoundBy<int32_t>(C4MC_ZoomRes - IntPar, 1, C4MC_ZoomRes * 2);
 				break;
 			case C4MCV_ScriptFunc:
 			{
@@ -360,7 +358,7 @@ bool C4MCOverlay::SetField(C4MCParser *pParser, const char *szField, const char 
 				C4AulFunc *pSFunc = Game.Script.GetSFunc(StrPar, AA_PROTECTED);
 				if (!pSFunc) throw C4MCParserErr(pParser, C4MCErr_SFuncNotFound, StrPar);
 				// add to main
-				*((C4MCCallbackArray **)pTarget) = new C4MCCallbackArray(pSFunc, MapCreator);
+				this->*(pAttr->scriptFunc) = new C4MCCallbackArray(pSFunc, MapCreator);
 #endif
 			}
 			}
@@ -1577,36 +1575,31 @@ C4MCAlgorithm C4MCAlgoMap[] =
 	{ "", 0 }
 };
 
-#ifndef offsetof
-#define offsetof(s,m) (size_t)&(((s *)0)->m)
-#endif
-#define offsC4MCOvrl(x) offsetof(C4MCOverlay,x)
-
 C4MCNodeAttr C4MCOvrlMap[] =
 {
-	{ "x",           C4MCV_Percent,    offsC4MCOvrl(RX) },
-	{ "y",           C4MCV_Percent,    offsC4MCOvrl(RY) },
-	{ "wdt",         C4MCV_Percent,    offsC4MCOvrl(RWdt) },
-	{ "hgt",         C4MCV_Percent,    offsC4MCOvrl(RHgt) },
-	{ "ox",          C4MCV_Percent,    offsC4MCOvrl(ROffX) },
-	{ "oy",          C4MCV_Percent,    offsC4MCOvrl(ROffY) },
-	{ "mat",         C4MCV_Material,   offsC4MCOvrl(Material) },
-	{ "tex",         C4MCV_Texture,    offsC4MCOvrl(Texture) },
-	{ "algo",        C4MCV_Algorithm,  offsC4MCOvrl(Algorithm) },
-	{ "sub",         C4MCV_Boolean,    offsC4MCOvrl(Sub) },
-	{ "zoomX",       C4MCV_Zoom,       offsC4MCOvrl(ZoomX) },
-	{ "zoomY",       C4MCV_Zoom,       offsC4MCOvrl(ZoomY) },
-	{ "a",           C4MCV_Pixels,     offsC4MCOvrl(Alpha) },
-	{ "b",           C4MCV_Pixels,     offsC4MCOvrl(Beta) },
-	{ "turbulence",  C4MCV_Integer,    offsC4MCOvrl(Turbulence) },
-	{ "lambda",      C4MCV_Integer,    offsC4MCOvrl(Lambda) },
-	{ "rotate",      C4MCV_Integer,    offsC4MCOvrl(Rotate) },
-	{ "seed",        C4MCV_Integer,    offsC4MCOvrl(FixedSeed) },
-	{ "invert",      C4MCV_Boolean,    offsC4MCOvrl(Invert) },
-	{ "loosebounds", C4MCV_Boolean,    offsC4MCOvrl(LooseBounds) },
-	{ "grp",         C4MCV_Boolean,    offsC4MCOvrl(Group) },
-	{ "mask",        C4MCV_Boolean,    offsC4MCOvrl(Mask) },
-	{ "evalFn",      C4MCV_ScriptFunc, offsC4MCOvrl(pEvaluateFunc) },
-	{ "drawFn",      C4MCV_ScriptFunc, offsC4MCOvrl(pDrawFunc) },
-	{ "", C4MCV_None, 0 }
+	{ "x",           &C4MCOverlay::RX },
+	{ "y",           &C4MCOverlay::RY },
+	{ "wdt",         &C4MCOverlay::RWdt },
+	{ "hgt",         &C4MCOverlay::RHgt },
+	{ "ox",          &C4MCOverlay::ROffX },
+	{ "oy",          &C4MCOverlay::ROffY },
+	{ "mat",         &C4MCOverlay::Material, C4MCV_Material },
+	{ "tex",         &C4MCOverlay::Texture },
+	{ "algo",        &C4MCOverlay::Algorithm },
+	{ "sub",         &C4MCOverlay::Sub },
+	{ "zoomX",       &C4MCOverlay::ZoomX, C4MCV_Zoom },
+	{ "zoomY",       &C4MCOverlay::ZoomY, C4MCV_Zoom },
+	{ "a",           &C4MCOverlay::Alpha, C4MCV_Pixels },
+	{ "b",           &C4MCOverlay::Beta, C4MCV_Pixels },
+	{ "turbulence",  &C4MCOverlay::Turbulence },
+	{ "lambda",      &C4MCOverlay::Lambda },
+	{ "rotate",      &C4MCOverlay::Rotate },
+	{ "seed",        &C4MCOverlay::FixedSeed },
+	{ "invert",      &C4MCOverlay::Invert },
+	{ "loosebounds", &C4MCOverlay::LooseBounds },
+	{ "grp",         &C4MCOverlay::Group },
+	{ "mask",        &C4MCOverlay::Mask },
+	{ "evalFn",      &C4MCOverlay::pEvaluateFunc },
+	{ "drawFn",      &C4MCOverlay::pDrawFunc },
+	{}
 };

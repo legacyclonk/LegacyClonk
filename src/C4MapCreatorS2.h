@@ -183,6 +183,7 @@ public:
 	C4MCOverlay *OwnerOverlay(); // return an owner who is an overlay
 
 	friend class C4MCParser;
+	friend struct C4MCNodeAttr;
 };
 
 // node attribute entry for SetField search
@@ -202,9 +203,25 @@ enum C4MCValueType
 
 struct C4MCNodeAttr
 {
-	char Name[C4MaxName]; // name of field
+	const char *Name; // name of field
 	C4MCValueType Type; // type of field
-	int32_t iOff; // offset of field in overlay MCOverlay-class
+	union
+	{
+		int32_t C4MCOverlay:: *integer;
+		C4MCNode::int_bool C4MCOverlay:: *intBool;
+		char (C4MCOverlay:: *texture)[C4M_MaxName + 1];
+		C4MCAlgorithm * C4MCOverlay:: *algorithm;
+		bool C4MCOverlay:: *boolean;
+		C4MCCallbackArray * C4MCOverlay:: *scriptFunc;
+	}; // offset of field in overlay MCOverlay-class
+
+	C4MCNodeAttr() : Name(""), Type(C4MCV_None), integer(nullptr) {}
+	C4MCNodeAttr(const char *Name, int32_t C4MCOverlay:: *integer, C4MCValueType Type = C4MCV_Integer) : Name(Name), Type(Type), integer(integer) {}
+	C4MCNodeAttr(const char *Name, C4MCNode::int_bool C4MCOverlay:: *intBool, C4MCValueType Type = C4MCV_Percent) : Name(Name), Type(Type), intBool(intBool) {}
+	C4MCNodeAttr(const char *Name, char (C4MCOverlay:: *texture)[C4M_MaxName + 1]) : Name(Name), Type(C4MCV_Texture), texture(texture) {}
+	C4MCNodeAttr(const char *Name, C4MCAlgorithm * C4MCOverlay:: *algorithm) : Name(Name), Type(C4MCV_Algorithm), algorithm(algorithm) {}
+	C4MCNodeAttr(const char *Name, bool C4MCOverlay:: *boolean) : Name(Name), Type(C4MCV_Boolean), boolean(boolean) {}
+	C4MCNodeAttr(const char *Name, C4MCCallbackArray * C4MCOverlay:: *scriptFunc) : Name(Name), Type(C4MCV_ScriptFunc), scriptFunc(scriptFunc) {}
 };
 extern C4MCNodeAttr C4MCOvrlMap[];
 
