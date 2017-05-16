@@ -853,13 +853,12 @@ bool C4Network2Res::SendChunk(uint32_t iChunk, int32_t iToClient)
 
 void C4Network2Res::AddRef()
 {
-	InterlockedIncrement(&iRefCnt);
+	++iRefCnt;
 }
 
 void C4Network2Res::DelRef()
 {
-	if (!InterlockedDecrement(&iRefCnt))
-		delete this;
+	if (--iRefCnt == 0) delete this;
 }
 
 void C4Network2Res::OnDiscover(C4Network2IOConnection *pBy)

@@ -22,6 +22,8 @@
 
 #include <openssl/sha.h>
 
+#include <atomic>
+
 const uint32_t C4NetResChunkSize = 10U * 1024U;
 
 const int32_t C4NetResDiscoverTimeout = 10, // (s)
@@ -214,7 +216,7 @@ protected:
 	bool fTempFile, fStandaloneFailed;
 
 	// references
-	long iRefCnt;
+	std::atomic<long> iRefCnt;
 	bool fRemoved;
 
 	// being load?

@@ -791,24 +791,6 @@ void StdBlit(uint8_t *bypSource, int iSourcePitch, int iSrcBufHgt,
 
 /* Some part of the Winapi */
 
-#if defined(HAVE_PTHREAD) && defined(C4ENGINE) && defined(NEED_FALLBACK_ATOMIC_FUNCS)
-
-static CStdCSec SomeMutex;
-
-long InterlockedIncrement(long *var)
-{
-	CStdLock Lock(&SomeMutex);
-	return ++(*var);
-}
-
-long InterlockedDecrement(long *var)
-{
-	CStdLock Lock(&SomeMutex);
-	return --(*var);
-}
-
-#endif
-
 #ifndef _WIN32
 
 #include <sys/time.h>
