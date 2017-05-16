@@ -19,7 +19,10 @@
 #include <C4SoundSystem.h>
 #endif
 
+#include <StdBitmap.h>
 #include <StdPNG.h>
+
+#include <stdexcept>
 
 C4GraphicsSystem::C4GraphicsSystem()
 {
@@ -589,8 +592,8 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		// get viewport to draw in
 		C4Viewport *pVP = GetFirstViewport(); if (!pVP) return false;
 		// create image large enough to hold the landcape
-		CPNGFile png; int32_t lWdt = GBackWdt, lHgt = GBackHgt;
-		if (!png.Create(lWdt, lHgt, false)) return false;
+		int32_t lWdt = GBackWdt, lHgt = GBackHgt;
+		StdBitmap bmp(lWdt, lHgt, false);
 		// get backbuffer size
 		int32_t bkWdt = Config.Graphics.ResX, bkHgt = Config.Graphics.ResY;
 		if (!bkWdt || !bkHgt) return false;
@@ -622,7 +625,7 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 				// transfer each pixel - slooow...
 				for (int32_t iY2 = 0; iY2 < bkHgt2; ++iY2)
 					for (int32_t iX2 = 0; iX2 < bkWdt2; ++iX2)
-						png.SetPix(iX + iX2, iY + iY2, Application.DDraw->ApplyGammaTo(Application.DDraw->lpBack->GetPixDw(iX2, iY2, false)));
+						bmp.SetPixel24(iX + iX2, iY + iY2, Application.DDraw->ApplyGammaTo(Application.DDraw->lpBack->GetPixDw(iX2, iY2, false)));
 				// done; unlock
 				Application.DDraw->lpBack->Unlock();
 			}
@@ -632,8 +635,17 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		// restore parallaxity
 		Game.Landscape.Sky.ParX = iParX;
 		Game.Landscape.Sky.ParY = iParY;
-		// save!
-		return png.Save(szFilename);
+		// Save bitmap to PNG file
+		try
+		{
+			CPNGFile(szFilename, lWdt, lHgt, false).Encode(bmp.GetBytes());
+		}
+		catch (const std::runtime_error &e)
+		{
+			LogF("Could not write screenshot to PNG file: %s", e.what());
+			return false;
+		}
+		return true;
 	}
 	// Save primary surface
 	return Application.DDraw->lpBack->SavePNG(szFilename, false, true, false);

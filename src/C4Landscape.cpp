@@ -24,7 +24,11 @@
 #include <C4Wrappers.h>
 #endif
 
+#include <StdBitmap.h>
 #include <StdPNG.h>
+
+#include <memory>
+#include <stdexcept>
 
 int32_t MVehic = MNone, MTunnel = MNone, MWater = MNone, MSnow = MNone, MEarth = MNone, MGranite = MNone;
 uint8_t MCVehic = 0;
@@ -1518,19 +1522,24 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 	size_t iSize;
 	if (hGroup.AccessEntry(C4CFN_LandscapePNG, &iSize))
 	{
-		CPNGFile png;
-		uint8_t *pPNG = new uint8_t[iSize];
-		hGroup.Read(pPNG, iSize);
-		bool fSuccess = png.Load(pPNG, iSize);
-		delete[] pPNG;
-		if (fSuccess)
-			fSuccess = !!Surface32->Lock();
-		if (fSuccess)
+		const std::unique_ptr<uint8_t []> pPNG(new uint8_t[iSize]);
+		hGroup.Read(pPNG.get(), iSize);
+		bool locked = false;
+		try
 		{
+			CPNGFile png(pPNG.get(), iSize);
+			StdBitmap bmp(png.Width(), png.Height(), png.UsesAlpha());
+			png.Decode(bmp.GetBytes());
+			if (!Surface32->Lock()) throw std::runtime_error("Could not lock surface");
+			locked = true;
 			for (int32_t y = 0; y < Height; ++y) for (int32_t x = 0; x < Width; ++x)
-				Surface32->SetPixDw(x, y, png.GetPix(x, y));
-			Surface32->Unlock();
+				Surface32->SetPixDw(x, y, bmp.GetPixel(x, y));
 		}
+		catch (const std::runtime_error &e)
+		{
+			LogF("Could not load 32 bit landscape surface from PNG file: %s", e.what());
+		}
+		if (locked) Surface32->Unlock();
 	}
 	// no PNG: convert old-style landscapes
 	else if (!Game.C4S.Landscape.NewStyleLandscape)

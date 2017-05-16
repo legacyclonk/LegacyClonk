@@ -8,6 +8,8 @@ src/OpenURL.cpp
 src/Standard.cpp
 src/Standard.h
 src/StdAdaptors.h
+src/StdBitmap.cpp
+src/StdBitmap.h
 src/StdBuf.cpp
 src/StdBuf.h
 src/StdColors.h
@@ -24,11 +26,11 @@ src/StdFont.h
 src/StdGL.cpp
 src/StdGL.h
 src/StdGLCtx.cpp
+src/StdJpeg.h
 src/StdMarkup.cpp
 src/StdMarkup.h
 src/StdNoGfx.cpp
 src/StdNoGfx.h
-src/StdPNG.cpp
 src/StdPNG.h
 src/StdRegistry.cpp
 src/StdRegistry.h

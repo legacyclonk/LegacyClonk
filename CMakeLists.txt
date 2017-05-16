@@ -73,6 +73,9 @@ CMAKE_DEPENDENT_OPTION(USE_SDL_MAINLOOP "Use SDL instead of X11 or Win32" USE_SD
 # USE_X11
 CMAKE_DEPENDENT_OPTION(USE_X11 "Use X11" ON
 	"NOT USE_CONSOLE AND NOT USE_SDL_MAINLOOP AND NOT APPLE AND NOT WIN32" OFF)
+# USE_WIC
+CMAKE_DEPENDENT_OPTION(USE_WIC "Use WIC instead of libjpeg and libpng" ON
+	"NOT USE_CONSOLE AND WIN32" OFF)
 # WITH_DEVELOPER_MODE
 CMAKE_DEPENDENT_OPTION(WITH_DEVELOPER_MODE "Use GTK for the developer mode" OFF
 	"NOT USE_CONSOLE" OFF)
@@ -132,6 +135,14 @@ if (USE_X11)
 	list(APPEND LIBSTANDARD_SOURCES ${LIBSTANDARD_SOURCES_X})
 endif ()
 
+if (USE_WIC)
+	list(APPEND LIBSTANDARD_SOURCES
+		src/StdJpegWic.cpp src/StdPNGWic.cpp src/StdWic.cpp src/StdWic.h)
+elseif (NOT USE_CONSOLE)
+	list(APPEND LIBSTANDARD_SOURCES
+		src/StdJpegLibjpeg.cpp src/StdPNGLibpng.cpp)
+endif ()
+
 if (WIN32)
 	file(STRINGS ${FILELISTS_DIR}/StdWin32.txt LIBSTANDARD_SOURCES_WIN32)
 	list(APPEND LIBSTANDARD_SOURCES ${LIBSTANDARD_SOURCES_WIN32})
@@ -179,7 +190,7 @@ if (WITH_DEVELOPER_MODE)
 endif ()
 
 # Link libjpeg
-if (NOT USE_CONSOLE)
+if (NOT USE_CONSOLE AND NOT USE_WIC)
 	find_package(JPEG REQUIRED)
 	target_include_directories(standard PRIVATE ${JPEG_INCLUDE_DIR})
 	target_link_libraries(standard ${JPEG_LIBRARIES})
@@ -205,7 +216,7 @@ if (NOT USE_MSCAPI)
 endif ()
 
 # Link libpng
-if (NOT USE_CONSOLE)
+if (NOT USE_CONSOLE AND NOT USE_WIC)
 	find_package(PNG REQUIRED)
 	target_link_libraries(standard PNG::PNG)
 endif ()
@@ -226,6 +237,11 @@ if (USE_SDL_MIXER)
 	target_include_directories(clonk PRIVATE ${SDL_MIXER_INCLUDE_DIRS})
 	target_link_libraries(clonk ${SDL_MIXER_LIBRARIES})
 	set(HAVE_LIBSDL_MIXER ON)
+endif ()
+
+# Link Windows Imagaing Component
+if (USE_WIC)
+	target_link_libraries(standard windowscodecs)
 endif ()
 
 # Link thread library
