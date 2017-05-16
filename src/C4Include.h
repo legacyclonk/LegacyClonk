@@ -79,6 +79,10 @@
 #include <mmsystem.h>
 #endif
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 #include <time.h>
 #include <map>
 #include <vector>

@@ -27,6 +27,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <errno.h>
+#include <unistd.h>
 
 #ifdef HAVE_LIBREADLINE
 #if defined(HAVE_READLINE_READLINE_H)
