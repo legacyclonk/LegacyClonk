@@ -29,7 +29,7 @@
 #endif
 #endif
 
-#if defined(C4FRONTEND) || defined (C4GROUP)
+#ifdef C4GROUP
 #include "C4CompilerWrapper.h"
 #endif
 

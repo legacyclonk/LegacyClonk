@@ -33,10 +33,6 @@
 
 #endif
 
-#ifdef C4FRONTEND
-#include "C4CompilerWrapper.h"
-#endif
-
 // -------------------------------------- C4MaterialReaction
 
 #ifdef C4ENGINE
