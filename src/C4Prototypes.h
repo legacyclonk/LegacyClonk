@@ -55,7 +55,6 @@ class C4Region;
 class C4RegionList;
 class C4PathFinder;
 class C4MaterialList;
-class C4AList;
 class C4AulFunc;
 class C4AulScriptFunc;
 class C4AulDefFunc;

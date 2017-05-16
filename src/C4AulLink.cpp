@@ -17,11 +17,11 @@ bool C4AulScript::ResolveAppends(C4DefList *rDefs)
 	for (C4AulScript *s = Child0; s; s = s->Next) s->ResolveAppends(rDefs);
 	// resolve local appends
 	if (State != ASS_PREPARSED) return false;
-	for (C4AListEntry *a = Appends; a; a = a->next())
+	for (const auto a : Appends)
 	{
-		if ((long)a->Var != -1)
+		if ((long)a != -1)
 		{
-			C4Def *Def = rDefs->ID2Def(C4ID(a->Var));
+			C4Def *Def = rDefs->ID2Def(a);
 			if (Def)
 				AppendTo(Def->Script, true);
 			else
@@ -30,7 +30,7 @@ bool C4AulScript::ResolveAppends(C4DefList *rDefs)
 				// to get the id of the object in which the error occurs...
 				// (stupid static buffers...)
 				char strID[5]; *strID = 0;
-				strcpy(strID, C4IdText(C4ID(a->Var)));
+				strcpy(strID, C4IdText(a));
 				Warn("script to #appendto not found: ", strID);
 			}
 		}
@@ -68,9 +68,9 @@ bool C4AulScript::ResolveIncludes(C4DefList *rDefs)
 	}
 	Resolving = true;
 	// append all includes to local script
-	for (C4AListEntry *i = Includes; i; i = i->next())
+	for (const auto i : Includes)
 	{
-		C4Def *Def = rDefs->ID2Def(C4ID(i->Var));
+		C4Def *Def = rDefs->ID2Def(i);
 		if (Def)
 		{
 			// resolve #includes in included script first (#include-chains :( )
@@ -86,7 +86,7 @@ bool C4AulScript::ResolveIncludes(C4DefList *rDefs)
 			// to get the id of the object in which the error occurs...
 			// (stupid static buffers...)
 			char strID[5]; *strID = 0;
-			strcpy(strID, C4IdText(C4ID(i->Var)));
+			strcpy(strID, C4IdText(i));
 			Warn("script to #include not found: ", strID);
 		}
 	}

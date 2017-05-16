@@ -199,7 +199,7 @@ void C4AulScript::Warn(const char *pMsg, const char *pIdtf)
 void C4AulParseState::Warn(const char *pMsg, const char *pIdtf)
 {
 	// do not show errors for System.c4g scripts that appear to be pure #appendto scripts
-	if (Fn && !Fn->Owner->Def && Fn->Owner->Appends) return;
+	if (Fn && !Fn->Owner->Def && !Fn->Owner->Appends.empty()) return;
 
 	// display error
 
@@ -876,10 +876,7 @@ bool C4AulScript::Preparse()
 	if (!Script) { State = ASS_PREPARSED; return true; }
 
 	// clear stuff
-	/* simply setting Includes to nullptr will waste some space in the associative list
-	   however, this is just a few bytes per updated definition in developer mode, which
-	   seems acceptable for me. The mem will be released when destroying the list */
-	Includes = nullptr; Appends = nullptr;
+	Includes.clear(); Appends.clear();
 	CPos = Code;
 	while (Func0)
 	{
@@ -1245,8 +1242,7 @@ void C4AulParseState::Parse_Script()
 				C4ID Id = (C4ID)cInt;
 				Shift();
 				// add to include list
-				C4AListEntry *e = a->Engine->itbl.push((void *)Id);
-				if (!a->Includes) a->Includes = e;
+				a->Includes.push_front(Id);
 				IncludeCount++;
 			}
 			else if (SEqual(Idtf, C4AUL_Append))
@@ -1270,8 +1266,7 @@ void C4AulParseState::Parse_Script()
 					UnexpectedToken("id constant");
 				}
 				// add to append list
-				C4AListEntry *e = a->Engine->atbl.push((void *)Id);
-				if (!a->Appends) a->Appends = e;
+				a->Appends.push_back(Id);
 			}
 			else if (SEqual(Idtf, C4AUL_Strict))
 			{
@@ -1346,32 +1341,6 @@ void C4AulParseState::Parse_Script()
 			err->show();
 		all_ok = false;
 		delete err;
-	}
-
-	// includes were added?
-	if (a->Includes)
-	{
-		// reverse include order, for compatiblity with the C4Script syntax
-		if (IncludeCount > 1)
-		{
-			C4AListEntry *i = a->Includes;
-			while (IncludeCount > 1)
-			{
-				C4AListEntry *i2 = i;
-				for (int cnt = IncludeCount - 1; cnt; cnt--) i2 = i2->next();
-				C4AListEntry xchg = *i; *i = *i2; *i2 = xchg;
-				i = i->next(); IncludeCount -= 2;
-			}
-		}
-		// push stop entry for include list
-		a->Engine->itbl.push();
-	}
-
-	// appends were added?
-	if (a->Appends)
-	{
-		// push stop entry for append list
-		a->Engine->atbl.push();
 	}
 }
 
@@ -3031,7 +3000,7 @@ bool C4AulScript::Parse()
 			catch (C4AulError *err)
 			{
 				// do not show errors for System.c4g scripts that appear to be pure #appendto scripts
-				if (Fn->Owner->Def || !Fn->Owner->Appends)
+				if (Fn->Owner->Def || Fn->Owner->Appends.empty())
 				{
 					// show
 					err->show();
