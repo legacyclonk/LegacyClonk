@@ -356,9 +356,4 @@ protected:
 	friend class CPattern;
 };
 
-bool LockSurfaceGlobal(CSurface *sfcTarget);
-bool UnLockSurfaceGlobal(CSurface *sfcTarget);
-bool DLineSPix(int32_t x, int32_t y, int32_t col);
-bool DLineSPixDw(int32_t x, int32_t y, int32_t dwClr);
-
 CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int Engine, unsigned int iMonitor);

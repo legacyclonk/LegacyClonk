@@ -107,7 +107,7 @@ bool CStdGL::PrepareRendering(CSurface *sfcToSurface)
 	// target?
 	if (!sfcToSurface) return false;
 	// target locked?
-	if (sfcToSurface->Locked) return false;
+	assert(!sfcToSurface->Locked);
 	// target is already set as render target?
 	if (sfcToSurface != RenderTarget)
 	{
@@ -629,62 +629,47 @@ void CStdGL::DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float
 	// apply color modulation
 	ClrByCurrentBlitMod(dwClr);
 	// render target?
-	if (sfcTarget->IsRenderTarget())
+	assert(sfcTarget->IsRenderTarget());
+	// prepare rendering to target
+	if (!PrepareRendering(sfcTarget)) return;
+	// set blitting state
+	int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
+	// use a different blendfunc here, because GL_LINE_SMOOTH expects this one
+	glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
+	// draw one line
+	glBegin(GL_LINES);
+	// global clr modulation map
+	uint32_t dwClr1 = dwClr;
+	if (fUseClrModMap)
 	{
-		// prepare rendering to target
-		if (!PrepareRendering(sfcTarget)) return;
-		// set blitting state
-		int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
-		// use a different blendfunc here, because GL_LINE_SMOOTH expects this one
-		glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
-		// draw one line
-		glBegin(GL_LINES);
-		// global clr modulation map
-		uint32_t dwClr1 = dwClr;
-		if (fUseClrModMap)
-		{
-			ModulateClr(dwClr1, pClrModMap->GetModAt((int)x1, (int)y1));
-		}
-		// convert from clonk-alpha to GL_LINE_SMOOTH alpha
-		glColorDw(InvertRGBAAlpha(dwClr1));
-		glVertex2f(x1 + 0.5f, y1 + 0.5f);
-		if (fUseClrModMap)
-		{
-			ModulateClr(dwClr, pClrModMap->GetModAt((int)x2, (int)y2));
-			glColorDw(InvertRGBAAlpha(dwClr));
-		}
-		glVertex2f(x2 + 0.5f, y2 + 0.5f);
-		glEnd();
+		ModulateClr(dwClr1, pClrModMap->GetModAt((int)x1, (int)y1));
 	}
-	else
+	// convert from clonk-alpha to GL_LINE_SMOOTH alpha
+	glColorDw(InvertRGBAAlpha(dwClr1));
+	glVertex2f(x1 + 0.5f, y1 + 0.5f);
+	if (fUseClrModMap)
 	{
-		// emulate
-		if (!LockSurfaceGlobal(sfcTarget)) return;
-		ForLine((int32_t)x1, (int32_t)y1, (int32_t)x2, (int32_t)y2, &DLineSPix, (int)dwClr);
-		UnLockSurfaceGlobal(sfcTarget);
+		ModulateClr(dwClr, pClrModMap->GetModAt((int)x2, (int)y2));
+		glColorDw(InvertRGBAAlpha(dwClr));
 	}
+	glVertex2f(x2 + 0.5f, y2 + 0.5f);
+	glEnd();
 }
 
 void CStdGL::DrawPixInt(CSurface *sfcTarget, float tx, float ty, uint32_t dwClr)
 {
 	// render target?
-	if (sfcTarget->IsRenderTarget())
-	{
-		if (!PrepareRendering(sfcTarget)) return;
-		int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
-		// use a different blendfunc here because of GL_POINT_SMOOTH
-		glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
-		// convert the alpha value for that blendfunc
-		glBegin(GL_POINTS);
-		glColorDw(InvertRGBAAlpha(dwClr));
-		glVertex2f(tx + 0.5f, ty + 0.5f);
-		glEnd();
-	}
-	else
-	{
-		// emulate
-		sfcTarget->SetPixDw((int)tx, (int)ty, dwClr);
-	}
+	assert(sfcTarget->IsRenderTarget());
+
+	if (!PrepareRendering(sfcTarget)) return;
+	int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
+	// use a different blendfunc here because of GL_POINT_SMOOTH
+	glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
+	// convert the alpha value for that blendfunc
+	glBegin(GL_POINTS);
+	glColorDw(InvertRGBAAlpha(dwClr));
+	glVertex2f(tx + 0.5f, ty + 0.5f);
+	glEnd();
 }
 
 bool CStdGL::InitDeviceObjects()

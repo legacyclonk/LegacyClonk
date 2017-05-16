@@ -108,7 +108,6 @@ public:
 	void DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4);
 	void DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr);
 	void DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwCol);
-	void DrawPixPrimary(CSurface *sfcDest, int tx, int ty, uint32_t dwCol);
 
 	// Gamma
 	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool fForce);
