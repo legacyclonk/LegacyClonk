@@ -7,12 +7,7 @@
 #include "C4Group.h"
 #include "C4Log.h"
 
-#ifdef C4FRONTEND
-#include "C4ExplorerCfg.h"
-C4ExplorerCfg *GetCfg();
-#else
 C4Config *GetCfg();
-#endif
 
 #ifdef _WIN32
 #include <direct.h>

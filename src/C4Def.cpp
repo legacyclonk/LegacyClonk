@@ -22,7 +22,7 @@
 #endif
 #endif
 
-#if defined(C4FRONTEND) || defined(C4GROUP)
+#ifdef C4GROUP
 #include "C4Group.h"
 #include "C4Scenario.h"
 #include "C4CompilerWrapper.h"
@@ -511,11 +511,6 @@ C4Def::~C4Def()
 
 void C4Def::Clear()
   {
-#ifdef C4FRONTEND
-  if (Picture) DeleteObject(Picture); Picture=NULL;
-  if (Image) DeleteObject(Image); Image=NULL;
-#endif
-
 #ifdef C4ENGINE // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
 	Graphics.Clear();
 
