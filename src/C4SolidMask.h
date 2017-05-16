@@ -35,8 +35,8 @@ protected:
 
 	C4TargetRect MaskPutRect; // absolute bounding screen rect at which the mask is put - tx and ty are offsets within pSolidMask (for rects outside the landscape)
 
-	BYTE *pSolidMask; // solid mask data: 0x00 if not solid at this position; 0xff if solid
-	BYTE *pSolidMaskMatBuff; // material replaced by this solidmask. MCVehic if no solid mask data at this position OR another solidmask was already present during put
+	uint8_t *pSolidMask; // solid mask data: 0x00 if not solid at this position; 0xff if solid
+	uint8_t *pSolidMaskMatBuff; // material replaced by this solidmask. MCVehic if no solid mask data at this position OR another solidmask was already present during put
 
 	C4Object *pForObject;
 

@@ -371,21 +371,21 @@ const char *C4Value::GetTypeInfo()
 
 // converter functions
 
-static bool FnCnvDirectOld(C4Value *Val, C4V_Type toType, BOOL fStrict)
+static bool FnCnvDirectOld(C4Value *Val, C4V_Type toType, bool fStrict)
 {
 	// new syntax: failure
-	if (fStrict) return FALSE;
+	if (fStrict) return false;
 	// old syntax: do nothing
-	return TRUE;
+	return true;
 }
 
-static bool FnCnvError(C4Value *Val, C4V_Type toType, BOOL fStrict)
+static bool FnCnvError(C4Value *Val, C4V_Type toType, bool fStrict)
 {
 	// deny convert
-	return FALSE;
+	return false;
 }
 
-static bool FnCnvDeref(C4Value *Val, C4V_Type toType, BOOL fStrict)
+static bool FnCnvDeref(C4Value *Val, C4V_Type toType, bool fStrict)
 {
 	// resolve reference of Value
 	Val->Deref();
@@ -393,7 +393,7 @@ static bool FnCnvDeref(C4Value *Val, C4V_Type toType, BOOL fStrict)
 	return Val->ConvertTo(toType, fStrict);
 }
 
-bool C4Value::FnCnvGuess(C4Value *Val, C4V_Type toType, BOOL fStrict)
+bool C4Value::FnCnvGuess(C4Value *Val, C4V_Type toType, bool fStrict)
 {
 	if (Val->Data)
 	{
@@ -409,13 +409,13 @@ bool C4Value::FnCnvGuess(C4Value *Val, C4V_Type toType, BOOL fStrict)
 	}
 }
 
-bool C4Value::FnCnvInt2Id(C4Value *Val, C4V_Type toType, BOOL fStrict)
+bool C4Value::FnCnvInt2Id(C4Value *Val, C4V_Type toType, bool fStrict)
 {
 	// inside range?
-	if (!Inside<long>(Val->Data.Int, 0, 9999)) return FALSE;
+	if (!Inside<long>(Val->Data.Int, 0, 9999)) return false;
 	// convert
 	Val->Type = C4V_C4ID;
-	return TRUE;
+	return true;
 }
 
 // Type conversion table

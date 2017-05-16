@@ -26,7 +26,7 @@ extern int RandomCount;
 extern unsigned int RandomHold;
 #ifdef C4ENGINE
 
-inline void FixedRandom(DWORD dwSeed)
+inline void FixedRandom(uint32_t dwSeed)
 {
 	// for SafeRandom
 	srand((unsigned)time(nullptr));

@@ -29,10 +29,10 @@
 
 CStdFile::CStdFile()
 {
-	Status = FALSE;
+	Status = false;
 	hFile = nullptr;
 	ClearBuffer();
-	ModeWrite = FALSE;
+	ModeWrite = false;
 	Name[0] = 0;
 }
 
@@ -45,7 +45,7 @@ bool CStdFile::Create(const char *szFilename, bool fCompressed, bool fExecutable
 {
 	SCopy(szFilename, Name, _MAX_PATH);
 	// Set modes
-	ModeWrite = TRUE;
+	ModeWrite = true;
 	// Open standard file
 	if (fCompressed)
 	{
@@ -82,7 +82,7 @@ bool CStdFile::Create(const char *szFilename, bool fCompressed, bool fExecutable
 	// Reset buffer
 	ClearBuffer();
 	// Set status
-	Status = TRUE;
+	Status = true;
 	return true;
 }
 
@@ -90,7 +90,7 @@ bool CStdFile::Open(const char *szFilename, bool fCompressed)
 {
 	SCopy(szFilename, Name, _MAX_PATH);
 	// Set modes
-	ModeWrite = FALSE;
+	ModeWrite = false;
 	// Open standard file
 	if (fCompressed)
 	{
@@ -110,7 +110,7 @@ bool CStdFile::Open(const char *szFilename, bool fCompressed)
 	// Reset buffer
 	ClearBuffer();
 	// Set status
-	Status = TRUE;
+	Status = true;
 	return true;
 }
 
@@ -118,49 +118,49 @@ bool CStdFile::Append(const char *szFilename)
 {
 	SCopy(szFilename, Name, _MAX_PATH);
 	// Set modes
-	ModeWrite = TRUE;
+	ModeWrite = true;
 	// Open standard file
-	if (!(hFile = fopen(Name, "ab"))) return FALSE;
+	if (!(hFile = fopen(Name, "ab"))) return false;
 	// Reset buffer
 	ClearBuffer();
 	// Set status
-	Status = TRUE;
-	return TRUE;
+	Status = true;
+	return true;
 }
 
 bool CStdFile::Close()
 
 {
-	BOOL rval = TRUE;
-	Status = FALSE;
+	bool rval = true;
+	Status = false;
 	Name[0] = 0;
 	// Save buffer if in write mode
-	if (ModeWrite && BufferLoad) if (!SaveBuffer()) rval = FALSE;
+	if (ModeWrite && BufferLoad) if (!SaveBuffer()) rval = false;
 	// Close file(s)
 	readCompressedFile.reset();
 	writeCompressedFile.reset();
-	if (hFile) if (fclose(hFile) != 0) rval = FALSE;
+	if (hFile) if (fclose(hFile) != 0) rval = false;
 	hFile = nullptr;
 	return !!rval;
 }
 
 bool CStdFile::Default()
 {
-	Status = FALSE;
+	Status = false;
 	Name[0] = 0;
 	readCompressedFile.reset();
 	writeCompressedFile.reset();
 	hFile = nullptr;
 	BufferLoad = BufferPtr = 0;
-	return TRUE;
+	return true;
 }
 
 bool CStdFile::Read(void *pBuffer, size_t iSize, size_t *ipFSize)
 {
 	int transfer;
-	if (!pBuffer) return FALSE;
-	if (ModeWrite) return FALSE;
-	BYTE *bypBuffer = (BYTE *)pBuffer;
+	if (!pBuffer) return false;
+	if (ModeWrite) return false;
+	uint8_t *bypBuffer = (uint8_t *)pBuffer;
 	if (ipFSize) *ipFSize = 0;
 	while (iSize > 0)
 	{
@@ -175,9 +175,9 @@ bool CStdFile::Read(void *pBuffer, size_t iSize, size_t *ipFSize)
 			if (ipFSize) *ipFSize += transfer;
 		}
 		// Buffer empty: Load
-		else if (LoadBuffer() <= 0) return FALSE;
+		else if (LoadBuffer() <= 0) return false;
 	}
-	return TRUE;
+	return true;
 }
 
 int CStdFile::LoadBuffer()
@@ -214,9 +214,9 @@ bool CStdFile::SaveBuffer()
 			return false;
 		}
 	}
-	if (saved != BufferLoad) return FALSE;
+	if (saved != BufferLoad) return false;
 	BufferLoad = 0;
-	return TRUE;
+	return true;
 }
 
 void CStdFile::ClearBuffer()
@@ -227,9 +227,9 @@ void CStdFile::ClearBuffer()
 bool CStdFile::Write(const void *pBuffer, int iSize)
 {
 	int transfer;
-	if (!pBuffer) return FALSE;
-	if (!ModeWrite) return FALSE;
-	BYTE *bypBuffer = (BYTE *)pBuffer;
+	if (!pBuffer) return false;
+	if (!ModeWrite) return false;
+	uint8_t *bypBuffer = (uint8_t *)pBuffer;
 	while (iSize > 0)
 	{
 		// Space in buffer: Transfer as much as possible
@@ -242,36 +242,36 @@ bool CStdFile::Write(const void *pBuffer, int iSize)
 			iSize -= transfer;
 		}
 		// Buffer full: Save
-		else if (!SaveBuffer()) return FALSE;
+		else if (!SaveBuffer()) return false;
 	}
-	return TRUE;
+	return true;
 }
 
 bool CStdFile::WriteString(const char *szStr)
 {
-	BYTE nl[2] = { 0x0D, 0x0A };
-	if (!szStr) return FALSE;
+	uint8_t nl[2] = { 0x0D, 0x0A };
+	if (!szStr) return false;
 	int size = SLen(szStr);
-	if (!Write((void *)szStr, size)) return FALSE;
-	if (!Write(nl, 2)) return FALSE;
-	return TRUE;
+	if (!Write((void *)szStr, size)) return false;
+	if (!Write(nl, 2)) return false;
+	return true;
 }
 
 bool CStdFile::Rewind()
 {
-	if (ModeWrite) return FALSE;
+	if (ModeWrite) return false;
 	ClearBuffer();
 	if (hFile) rewind(hFile);
 	if (readCompressedFile)
 	{
 		readCompressedFile->Rewind();
 	}
-	return TRUE;
+	return true;
 }
 
 bool CStdFile::Advance(int iOffset)
 {
-	if (ModeWrite) return FALSE;
+	if (ModeWrite) return false;
 	while (iOffset > 0)
 	{
 		// Valid data in the buffer: Transfer as much as possible
@@ -285,35 +285,35 @@ bool CStdFile::Advance(int iOffset)
 		else
 		{
 			if (hFile) return !fseek(hFile, iOffset, SEEK_CUR); // uncompressed: Just skip
-			if (LoadBuffer() <= 0) return FALSE; // compressed: Read...
+			if (LoadBuffer() <= 0) return false; // compressed: Read...
 		}
 	}
-	return TRUE;
+	return true;
 }
 
-bool CStdFile::Save(const char *szFilename, const BYTE *bpBuf,
+bool CStdFile::Save(const char *szFilename, const uint8_t *bpBuf,
 	int iSize, bool fCompressed)
 {
-	if (!bpBuf || (iSize < 1)) return FALSE;
-	if (!Create(szFilename, fCompressed)) return FALSE;
-	if (!Write(bpBuf, iSize)) return FALSE;
-	if (!Close()) return FALSE;
-	return TRUE;
+	if (!bpBuf || (iSize < 1)) return false;
+	if (!Create(szFilename, fCompressed)) return false;
+	if (!Write(bpBuf, iSize)) return false;
+	if (!Close()) return false;
+	return true;
 }
 
-bool CStdFile::Load(const char *szFilename, BYTE **lpbpBuf,
+bool CStdFile::Load(const char *szFilename, uint8_t **lpbpBuf,
 	int *ipSize, int iAppendZeros,
 	bool fCompressed)
 {
 	int iSize = fCompressed ? UncompressedFileSize(szFilename) : FileSize(szFilename);
-	if (!lpbpBuf || (iSize < 1)) return FALSE;
-	if (!Open(szFilename, fCompressed)) return FALSE;
-	if (!(*lpbpBuf = new BYTE[iSize + iAppendZeros])) return FALSE;
-	if (!Read(*lpbpBuf, iSize)) { delete[] *lpbpBuf; return FALSE; }
+	if (!lpbpBuf || (iSize < 1)) return false;
+	if (!Open(szFilename, fCompressed)) return false;
+	if (!(*lpbpBuf = new uint8_t[iSize + iAppendZeros])) return false;
+	if (!Read(*lpbpBuf, iSize)) { delete[] *lpbpBuf; return false; }
 	if (iAppendZeros) ZeroMem((*lpbpBuf) + iSize, iAppendZeros);
 	if (ipSize) *ipSize = iSize;
 	Close();
-	return TRUE;
+	return true;
 }
 
 int UncompressedFileSize(const char *szFilename)

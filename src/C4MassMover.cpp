@@ -66,9 +66,9 @@ void C4MassMoverSet::Execute()
 	}
 }
 
-BOOL C4MassMoverSet::Create(int32_t x, int32_t y, BOOL fExecute)
+bool C4MassMoverSet::Create(int32_t x, int32_t y, bool fExecute)
 {
-	if (Count == C4MassMoverChunk) return FALSE;
+	if (Count == C4MassMoverChunk) return false;
 #ifdef DEBUGREC
 	C4RCMassMover rc;
 	rc.x = x; rc.y = y;
@@ -81,20 +81,20 @@ BOOL C4MassMoverSet::Create(int32_t x, int32_t y, BOOL fExecute)
 		if (cptr >= C4MassMoverChunk) cptr = 0;
 		if (Set[cptr].Mat == MNone)
 		{
-			if (!Set[cptr].Init(x, y)) return FALSE;
+			if (!Set[cptr].Init(x, y)) return false;
 			CreatePtr = cptr;
 			if (fExecute) Set[cptr].Execute();
-			return TRUE;
+			return true;
 		}
 	} while (cptr != CreatePtr);
-	return FALSE;
+	return false;
 }
 
-BOOL C4MassMover::Init(int32_t tx, int32_t ty)
+bool C4MassMover::Init(int32_t tx, int32_t ty)
 {
 	// Out of bounds check
 	if (!Inside<int32_t>(tx, 0, GBackWdt - 1) || !Inside<int32_t>(ty, 0, GBackHgt - 1))
-		return FALSE;
+		return false;
 	// Check mat
 	Mat = GBackMat(tx, ty);
 	x = tx; y = ty;
@@ -113,12 +113,12 @@ void C4MassMover::Cease()
 	Mat = MNone;
 }
 
-BOOL C4MassMover::Execute()
+bool C4MassMover::Execute()
 {
 	int32_t tx, ty;
 
 	// Lost target material
-	if (GBackMat(x, y) != Mat) { Cease(); return FALSE; }
+	if (GBackMat(x, y) != Mat) { Cease(); return false; }
 
 	// Check for transfer target space
 	C4Material *pMat = Game.Material.Map + Mat;
@@ -130,11 +130,11 @@ BOOL C4MassMover::Execute()
 		{
 			// material has been used up
 			Game.Landscape.ExtractMaterial(x, y);
-			return TRUE;
+			return true;
 		}
 
 		// No space, die
-		Cease(); return FALSE;
+		Cease(); return false;
 	}
 
 	// Save back material that is about to be overwritten.
@@ -155,10 +155,10 @@ BOOL C4MassMover::Execute()
 	// Create new mover at target
 	Game.MassMover.Create(tx, ty, !Rnd3());
 
-	return TRUE;
+	return true;
 }
 
-BOOL C4MassMover::Corrosion(int32_t dx, int32_t dy)
+bool C4MassMover::Corrosion(int32_t dx, int32_t dy)
 {
 	// check reaction map of massmover-mat to target mat
 	int32_t tmat = GBackMat(x + dx, y + dy);
@@ -167,9 +167,9 @@ BOOL C4MassMover::Corrosion(int32_t dx, int32_t dy)
 	{
 		FIXED xdir = Fix0, ydir = Fix0;
 		if ((*pReact->pFunc)(pReact, x, y, x + dx, y + dy, xdir, ydir, Mat, tmat, meeMassMove, nullptr))
-			return TRUE;
+			return true;
 	}
-	return FALSE;
+	return false;
 }
 
 void C4MassMoverSet::Default()
@@ -180,7 +180,7 @@ void C4MassMoverSet::Default()
 	CreatePtr = 0;
 }
 
-BOOL C4MassMoverSet::Save(C4Group &hGroup)
+bool C4MassMoverSet::Save(C4Group &hGroup)
 {
 	int32_t cnt;
 	// Consolidate
@@ -194,28 +194,28 @@ BOOL C4MassMoverSet::Save(C4Group &hGroup)
 	if (!Count)
 	{
 		hGroup.Delete(C4CFN_MassMover);
-		return TRUE;
+		return true;
 	}
 	// Save set
 	if (!hGroup.Add(C4CFN_MassMover, Set, Count * sizeof(C4MassMover)))
-		return FALSE;
+		return false;
 	// Success
-	return TRUE;
+	return true;
 }
 
-BOOL C4MassMoverSet::Load(C4Group &hGroup)
+bool C4MassMoverSet::Load(C4Group &hGroup)
 {
 	// clear previous
 	Clear(); Default();
 
 	size_t iBinSize, iMoverSize = sizeof(C4MassMover);
-	if (!hGroup.AccessEntry(C4CFN_MassMover, &iBinSize)) return FALSE;
-	if ((iBinSize % iMoverSize) != 0) return FALSE;
+	if (!hGroup.AccessEntry(C4CFN_MassMover, &iBinSize)) return false;
+	if ((iBinSize % iMoverSize) != 0) return false;
 
 	// load new
 	Count = iBinSize / iMoverSize;
-	if (!hGroup.Read(Set, iBinSize)) return FALSE;
-	return TRUE;
+	if (!hGroup.Read(Set, iBinSize)) return false;
+	return true;
 }
 
 void C4MassMoverSet::Consolidate()

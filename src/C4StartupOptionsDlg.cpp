@@ -198,21 +198,21 @@ void C4StartupOptionsDlg::KeySelButton::DrawElement(C4FacetEx &cgo)
 {
 	// draw key
 	C4Facet cgoDraw(cgo.Surface, rcBounds.x + cgo.TargetX, rcBounds.y + cgo.TargetY, rcBounds.Wdt, rcBounds.Hgt);
-	Game.GraphicsResource.fctKey.Draw(cgoDraw, TRUE, fDown);
+	Game.GraphicsResource.fctKey.Draw(cgoDraw, true, fDown);
 	int32_t iKeyIndent = cgoDraw.Wdt / 5;
 	cgoDraw.X += iKeyIndent; cgoDraw.Wdt -= 2 * iKeyIndent;
 	cgoDraw.Y += iKeyIndent * 3 / 4; cgoDraw.Hgt -= 2 * iKeyIndent;
 	if (fDown) cgoDraw.Y += iKeyIndent / 2;
 	bool fDoHightlight = fHighlight || HasDrawFocus() || (fMouseOver && IsInActiveDlg(false));
-	bool fHadBlitMod = false; DWORD dwOldBlitModClr = 0xffffff;
+	bool fHadBlitMod = false; uint32_t dwOldBlitModClr = 0xffffff;
 	if (!fDoHightlight)
 	{
-		DWORD dwModClr = 0x7f7f7f;
+		uint32_t dwModClr = 0x7f7f7f;
 		if (fHadBlitMod = lpDDraw->GetBlitModulation(dwOldBlitModClr))
 			ModulateClr(dwModClr, dwOldBlitModClr);
 		lpDDraw->ActivateBlitModulation(dwModClr);
 	}
-	Game.GraphicsResource.fctCommand.Draw(cgoDraw, TRUE, iKeyID, 0);
+	Game.GraphicsResource.fctCommand.Draw(cgoDraw, true, iKeyID, 0);
 	if (!fDoHightlight)
 		if (fHadBlitMod)
 			lpDDraw->ActivateBlitModulation(dwOldBlitModClr);

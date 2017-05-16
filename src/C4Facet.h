@@ -134,17 +134,17 @@ public:
 	void DrawXFloat(SURFACE sfcTarget, float fX, float fY, float fWdt, float fHgt) const;
 	void DrawValue(C4Facet &cgo, int32_t iValue, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center);
 	void DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center, int32_t *piUsedWidth = nullptr);
-	void Draw(C4Facet &cgo, BOOL fAspect = TRUE, int32_t iPhaseX = 0, int32_t iPhaseY = 0, BOOL fTransparent = TRUE);
+	void Draw(C4Facet &cgo, bool fAspect = true, int32_t iPhaseX = 0, int32_t iPhaseY = 0, bool fTransparent = true);
 	void DrawFullScreen(C4Facet &cgo);
 #ifdef C4ENGINE
 	void DrawT(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform); // draw with transformation (if pTransform is assigned)
-	void DrawT(C4Facet &cgo, BOOL fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform);
+	void DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform);
 	void DrawXT(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform);
 #endif // C4ENGINE
-	void DrawClr(C4Facet &cgo, BOOL fAspect = TRUE, DWORD dwClr = 0); // set surface color and draw
-	void DrawValue2Clr(C4Facet &cgo, int32_t iValue1, int32_t iValue2, DWORD dwClr); // set surface color and draw
+	void DrawClr(C4Facet &cgo, bool fAspect = true, uint32_t dwClr = 0); // set surface color and draw
+	void DrawValue2Clr(C4Facet &cgo, int32_t iValue1, int32_t iValue2, uint32_t dwClr); // set surface color and draw
 	void DrawXR(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t r = 0); // draw rotated
-	void DrawClrMod(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0, DWORD dwModClr = 0); // draw the facet modulated by given color
+	void DrawClrMod(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0, uint32_t dwModClr = 0); // draw the facet modulated by given color
 	void Draw(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
 	bool GetPhaseNum(int32_t &rX, int32_t &rY); // return number of phases in this graphic
 	C4Facet GetSection(int32_t iSection);

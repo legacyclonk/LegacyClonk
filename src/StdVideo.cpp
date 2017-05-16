@@ -24,7 +24,7 @@
 
 #include <windows.h>
 
-BOOL AVIOpenOutput(const char *szFilename,
+bool AVIOpenOutput(const char *szFilename,
 	PAVIFILE *ppAviFile,
 	PAVISTREAM *ppAviStream,
 	int iWidth, int iHeight)
@@ -39,7 +39,7 @@ BOOL AVIOpenOutput(const char *szFilename,
 		OF_CREATE | OF_WRITE,
 		nullptr) != 0)
 	{
-		return FALSE;
+		return false;
 	}
 
 	// Create stream
@@ -69,13 +69,13 @@ BOOL AVIOpenOutput(const char *szFilename,
 		ppAviStream,
 		&avi_info) != 0)
 	{
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL AVICloseOutput(PAVIFILE *ppAviFile,
+bool AVICloseOutput(PAVIFILE *ppAviFile,
 	PAVISTREAM *ppAviStream)
 {
 	if (ppAviStream && *ppAviStream)
@@ -86,10 +86,10 @@ BOOL AVICloseOutput(PAVIFILE *ppAviFile,
 	{
 		AVIFileRelease(*ppAviFile); *ppAviFile = nullptr;
 	}
-	return TRUE;
+	return true;
 }
 
-BOOL AVIPutFrame(PAVISTREAM pAviStream,
+bool AVIPutFrame(PAVISTREAM pAviStream,
 	long lFrame,
 	void *lpInfo, long lInfoSize,
 	void *lpData, long lDataSize)
@@ -111,9 +111,9 @@ BOOL AVIPutFrame(PAVISTREAM pAviStream,
 		lDataSize,
 		AVIIF_KEYFRAME,
 		&lSamplesWritten,
-		&lBytesWritten) != 0) return FALSE;
+		&lBytesWritten) != 0) return false;
 
-	return TRUE;
+	return true;
 }
 
 CStdAVIFile::CStdAVIFile()
@@ -173,9 +173,9 @@ bool CStdAVIFile::OpenFile(const char *szFilename, HWND hWnd, int32_t iOutBitDep
 	pbmi->bmiHeader.biCompression = (iOutBitDepth == 16) ? BI_BITFIELDS : BI_RGB;
 	if (iOutBitDepth == 16)
 	{
-		*(DWORD *)(&(pbmi->bmiColors[2])) = 0x00f;
-		*(DWORD *)(&(pbmi->bmiColors[1])) = 0x0f0;
-		*(DWORD *)(&(pbmi->bmiColors[0])) = 0xf00;
+		*(uint32_t *)(&(pbmi->bmiColors[2])) = 0x00f;
+		*(uint32_t *)(&(pbmi->bmiColors[1])) = 0x0f0;
+		*(uint32_t *)(&(pbmi->bmiColors[0])) = 0xf00;
 	}
 	hDC = CreateCompatibleDC(nullptr);
 	if (!hDC) return false;
@@ -242,7 +242,7 @@ bool CStdAVIFile::OpenAudioStream()
 	return true;
 }
 
-BYTE *CStdAVIFile::GetAudioStreamData(size_t *piStreamLength)
+uint8_t *CStdAVIFile::GetAudioStreamData(size_t *piStreamLength)
 {
 	// returning the complete audio stream at once here - not very efficient, but easy...
 	// get stream size

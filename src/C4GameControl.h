@@ -116,7 +116,7 @@ public:
 
 	// records
 	bool StartRecord(bool fInitial, bool fStreaming);
-	void StopRecord(StdStrBuf *pRecordName = nullptr, BYTE *pRecordSHA1 = nullptr);
+	void StopRecord(StdStrBuf *pRecordName = nullptr, uint8_t *pRecordSHA1 = nullptr);
 	void RequestRuntimeRecord();
 	bool IsRuntimeRecordPossible() const;
 	bool RecAddFile(const char *szLocalFilename, const char *szAddAs);

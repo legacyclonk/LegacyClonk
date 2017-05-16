@@ -144,7 +144,7 @@ public:
 
 public:
 	void Eliminate();
-	void SelectCrew(C4Object *pObj, BOOL fSelect);
+	void SelectCrew(C4Object *pObj, bool fSelect);
 	void Default();
 	void Clear();
 	void ClearPointers(C4Object *tptr, bool fDeath);
@@ -170,28 +170,28 @@ public:
 	void CursorToggle();
 	void SelectAllCrew();
 	void UpdateSelectionToggleStatus();
-	void DirectCom(BYTE byCom, int32_t iData);
-	void InCom(BYTE byCom, int32_t iData);
-	BOOL ObjectCom(BYTE byCom, int32_t iData);
-	BOOL ObjectCommand(int32_t iCommand, C4Object *pTarget, int32_t iTx, int32_t iTy, C4Object *pTarget2 = nullptr, int32_t iData = 0, int32_t iAddMode = C4P_Command_Set);
+	void DirectCom(uint8_t byCom, int32_t iData);
+	void InCom(uint8_t byCom, int32_t iData);
+	bool ObjectCom(uint8_t byCom, int32_t iData);
+	bool ObjectCommand(int32_t iCommand, C4Object *pTarget, int32_t iTx, int32_t iTy, C4Object *pTarget2 = nullptr, int32_t iData = 0, int32_t iAddMode = C4P_Command_Set);
 	void ObjectCommand2Obj(C4Object *cObj, int32_t iCommand, C4Object *pTarget, int32_t iX, int32_t iY, C4Object *pTarget2, int32_t iData, int32_t iMode);
-	BOOL DoPoints(int32_t iChange);
-	BOOL Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientName, const char *szFilename, BOOL fScenarioInit, class C4PlayerInfo *pInfo);
+	bool DoPoints(int32_t iChange);
+	bool Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientName, const char *szFilename, bool fScenarioInit, class C4PlayerInfo *pInfo);
 	bool ScenarioAndTeamInit(int32_t idTeam);
-	BOOL ScenarioInit();
-	BOOL FinalInit(BOOL fInitialValue);
-	BOOL Save();
-	BOOL Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny);
-	BOOL MakeCrewMember(C4Object *pObj, bool fForceInfo = true, bool fDoCalls = true);
-	BOOL Load(const char *szFilename, bool fSavegame, bool fLoadPortraits);
-	static BOOL Strip(const char *szFilename, bool fAggressive);
-	BOOL ObjectInCrew(C4Object *tobj);
-	C4Object *Buy(C4ID id, BOOL fShowErrors, int32_t iForPlr, C4Object *pBuyObj = nullptr); // buy object of player's wealth
-	BOOL Sell2Home(C4Object *tobj);
-	BOOL DoWealth(int32_t change);
-	BOOL SetHostility(int32_t iOpponent, int32_t iHostility, BOOL fSilent = FALSE);
+	bool ScenarioInit();
+	bool FinalInit(bool fInitialValue);
+	bool Save();
+	bool Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny);
+	bool MakeCrewMember(C4Object *pObj, bool fForceInfo = true, bool fDoCalls = true);
+	bool Load(const char *szFilename, bool fSavegame, bool fLoadPortraits);
+	static bool Strip(const char *szFilename, bool fAggressive);
+	bool ObjectInCrew(C4Object *tobj);
+	C4Object *Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pBuyObj = nullptr); // buy object of player's wealth
+	bool Sell2Home(C4Object *tobj);
+	bool DoWealth(int32_t change);
+	bool SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent = false);
 	void CompileFunc(StdCompiler *pComp);
-	BOOL LoadRuntimeData(C4Group &hGroup);
+	bool LoadRuntimeData(C4Group &hGroup);
 	bool ActivateMenuMain();
 	bool ActivateMenuTeamSelection(bool fFromMain);
 	void DoTeamSelection(int32_t idTeam);
@@ -199,8 +199,8 @@ public:
 	void SetFoW(bool fEnable);
 	int32_t ActiveCrewCount();
 	int32_t GetSelectedCrewCount();
-	BOOL LocalSync(); // sync InAction et. al. back o local player file
-	BOOL SetObjectCrewStatus(C4Object *pCrew, BOOL fNewStatus); // add/remove object from crew
+	bool LocalSync(); // sync InAction et. al. back o local player file
+	bool SetObjectCrewStatus(C4Object *pCrew, bool fNewStatus); // add/remove object from crew
 	bool IsChosingTeam() const { return Status == PS_TeamSelection || Status == PS_TeamSelectionPending; }
 	bool IsInvisible() const;
 	void SyncHomebaseMaterialToTeam();

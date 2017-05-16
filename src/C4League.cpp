@@ -374,7 +374,7 @@ bool C4LeagueClient::GetUpdateReply(StdStrBuf *pMessage, C4ClientPlayerInfos *pP
 	return true;
 }
 
-bool C4LeagueClient::End(const C4Network2Reference &Ref, const char *szRecordName, const BYTE *pRecordSHA)
+bool C4LeagueClient::End(const C4Network2Reference &Ref, const char *szRecordName, const uint8_t *pRecordSHA)
 {
 	assert(CSID.getLength());
 	// Create query
@@ -542,7 +542,7 @@ void C4LeagueClient::ModifyForChecksum(const void *pData, size_t iDataSize, char
 		for (uint32_t j = 0; j < 5; j++)
 			pReplace[j] = Base64Tbl[((i ^ iStart) >> j * 5) & 63];
 		// Calculcate SHA
-		SHA_CTX ctx; BYTE sha[SHA_DIGEST_LENGTH];
+		SHA_CTX ctx; uint8_t sha[SHA_DIGEST_LENGTH];
 		if (!SHA1_Init(&ctx) ||
 			!SHA1_Update(&ctx, pData, iDataSize))
 			return;

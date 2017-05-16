@@ -18,4 +18,4 @@
 
 #pragma once
 
-BOOL SetC4FileClasses(const char *szEnginePath);
+bool SetC4FileClasses(const char *szEnginePath);

@@ -68,21 +68,21 @@ bool ExpandHotkeyMarkup(StdStrBuf &sText, char &rcHotkey)
 	return true;
 }
 
-DWORD MakeColorReadableOnBlack(DWORD &rdwClr)
+uint32_t MakeColorReadableOnBlack(uint32_t &rdwClr)
 {
 	// max alpha
-	DWORD dwAlpha = Max<DWORD>(rdwClr >> 24 & 255, 0xff) << 24;
+	uint32_t dwAlpha = Max<uint32_t>(rdwClr >> 24 & 255, 0xff) << 24;
 	rdwClr &= 0xffffff;
 	// determine brightness
 	// 50% red, 87% green, 27% blue (max 164 * 255)
-	DWORD r = (rdwClr >> 16 & 255), g = (rdwClr >> 8 & 255), b = (rdwClr & 255);
+	uint32_t r = (rdwClr >> 16 & 255), g = (rdwClr >> 8 & 255), b = (rdwClr & 255);
 	int32_t iLightness = r * 50 + g * 87 + b * 27;
 	// above 65/164 (*255) is OK
 	if (iLightness < 16575)
 	{
 		int32_t iInc = (16575 - iLightness) / 164;
 		// otherwise, lighten
-		rdwClr = (Min<DWORD>(r + iInc, 255) << 16) | (Min<DWORD>(g + iInc, 255) << 8) | Min<DWORD>(b + iInc, 255);
+		rdwClr = (Min<uint32_t>(r + iInc, 255) << 16) | (Min<uint32_t>(g + iInc, 255) << 8) | Min<uint32_t>(b + iInc, 255);
 	}
 	// return color and alpha
 	rdwClr |= dwAlpha;
@@ -215,7 +215,7 @@ void Element::ClientPos2ScreenPos(int32_t &riX, int32_t &riY)
 	riX += rcBounds.x; riY += rcBounds.y;
 }
 
-void Element::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Element::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// store self as mouse-over-component
 	rMouse.pMouseOverElement = this;
@@ -230,7 +230,7 @@ void Element::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY
 	}
 }
 
-void Element::StartDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Element::StartDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// set flag
 	fDragging = true;
@@ -240,7 +240,7 @@ void Element::StartDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyP
 	rMouse.pDragElement = this;
 }
 
-void Element::DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Element::DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// check if anything moved
 	if (pDragTarget && (iX != iDragX || iY != iDragY))
@@ -252,7 +252,7 @@ void Element::DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyPara
 	}
 }
 
-void Element::StopDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Element::StopDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// move element pos
 	DoDragging(rMouse, iX, iY, dwKeyParam);
@@ -261,9 +261,9 @@ void Element::StopDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyPa
 Dialog *Element::GetDlg() { if (pParent) return pParent->GetDlg(); return nullptr; }
 Screen *Element::GetScreen() { if (pParent) return pParent->GetScreen(); return nullptr; }
 
-void Element::Draw3DFrame(C4FacetEx &cgo, bool fUp, int32_t iIndent, BYTE byAlpha, bool fDrawTop, int32_t iTopOff, bool fDrawLeft, int32_t iLeftOff)
+void Element::Draw3DFrame(C4FacetEx &cgo, bool fUp, int32_t iIndent, uint8_t byAlpha, bool fDrawTop, int32_t iTopOff, bool fDrawLeft, int32_t iLeftOff)
 {
-	DWORD dwAlpha = byAlpha << 24;
+	uint32_t dwAlpha = byAlpha << 24;
 	int32_t x0 = cgo.TargetX + rcBounds.x + iLeftOff,
 		y0 = cgo.TargetY + rcBounds.y + iTopOff,
 		x1 = cgo.TargetX + rcBounds.x + rcBounds.Wdt - 1,
@@ -420,7 +420,7 @@ CMouse::CMouse(int32_t iX, int32_t iY) : fActive(true), fActiveInput(false)
 
 CMouse::~CMouse() {}
 
-void CMouse::Input(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void CMouse::Input(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// pos changed or click issued?
 	if (iButton || iX != x || iY != y)
@@ -479,7 +479,7 @@ void CMouse::ReleaseElements()
 	// release drag
 	if (pDragElement)
 	{
-		int32_t iX, iY; DWORD dwKeys;
+		int32_t iX, iY; uint32_t dwKeys;
 		GetLastXY(iX, iY, dwKeys);
 		pDragElement->ScreenPos2ClientPos(iX, iY);
 		pDragElement->StopDragging(*this, iX, iY, dwKeys);
@@ -707,16 +707,16 @@ bool Screen::KeyAny()
 	return false;
 }
 
-BOOL Screen::CharIn(const char *c)
+bool Screen::CharIn(const char *c)
 {
 	// Special: Tab chars are ignored, because they are always handled as focus advance
-	if (c[0] == 0x09) return FALSE;
+	if (c[0] == 0x09) return false;
 	// mark in mouse
 	Mouse.ResetActiveInput();
 	// no processing if focus is not set
-	if (!HasKeyboardFocus()) return FALSE;
+	if (!HasKeyboardFocus()) return false;
 	// always return true in exclusive mode (which means: key processed)
-	BOOL fResult = IsExclusive();
+	bool fResult = IsExclusive();
 	// context menu: forward to context
 	if (pContext) return pContext->CharIn(c) || fResult;
 	// no active dlg?
@@ -725,7 +725,7 @@ BOOL Screen::CharIn(const char *c)
 	return pActiveDlg->CharIn(c) || fResult;
 }
 
-bool Screen::MouseInput(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam, Dialog *pForDlg, class C4Viewport *pForVP)
+bool Screen::MouseInput(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, Dialog *pForDlg, class C4Viewport *pForVP)
 {
 	// help mode and button pressed: Abort help and discard button
 	if (Game.MouseControl.IsHelp())

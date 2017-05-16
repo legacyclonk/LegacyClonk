@@ -26,7 +26,7 @@ private:
 	struct LineData
 	{
 		CStdFont *pFont; // line font
-		DWORD dwClr; // line clr
+		uint32_t dwClr; // line clr
 		bool fNewParagraph; // if set, this line marks a new paragraph (and is not the wrapped line of a previous par)
 	};
 
@@ -45,14 +45,14 @@ private:
 	void GrowLineCountBuffer(size_t iGrowBy);
 	void GrowTextBuffer(size_t iGrowBy);
 	void DiscardFirstLine(); // discard oldest line in buffer
-	void AppendSingleLine(const char *szLine, int iLineLength, const char *szIndent, CStdFont *pFont, DWORD dwClr, bool fNewParagraph); // append given string as single line
+	void AppendSingleLine(const char *szLine, int iLineLength, const char *szIndent, CStdFont *pFont, uint32_t dwClr, bool fNewParagraph); // append given string as single line
 
 public:
 	C4LogBuffer(int iSize, int iMaxLines, int iLBWidth, const char *szIndentChars = "    ", bool fDynamicGrow = false, bool fMarkup = true);
 	~C4LogBuffer();
 
-	void AppendLines(const char *szLine, CStdFont *pFont, DWORD dwClr, CStdFont *pFirstLineFont = nullptr); // append message line to buffer; overwriting old lines if necessary
-	const char *GetLine(int iLineIndex, CStdFont **ppFont, DWORD *pdwClr, bool *pNewParagraph) const; // get indexed line - negative indices -n return last-n'th-line
+	void AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwClr, CStdFont *pFirstLineFont = nullptr); // append message line to buffer; overwriting old lines if necessary
+	const char *GetLine(int iLineIndex, CStdFont **ppFont, uint32_t *pdwClr, bool *pNewParagraph) const; // get indexed line - negative indices -n return last-n'th-line
 	void Clear(); // clear all lines
 
 	int GetCount() const { return iLineCount; } // retrieve number of valid lines in buffer

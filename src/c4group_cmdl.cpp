@@ -81,7 +81,7 @@ bool ProcessGroup(const char *szFilename)
 	C4Group hGroup;
 	int iArg;
 	bool fDeleteGroup = false;
-	hGroup.SetStdOutput(TRUE);
+	hGroup.SetStdOutput(true);
 
 	int argc = globalArgC;
 	char **argv = globalArgV;
@@ -91,7 +91,7 @@ bool ProcessGroup(const char *szFilename)
 		printf("Group: %s\n", szFilename);
 
 	// Open group file
-	if (hGroup.Open(szFilename, TRUE))
+	if (hGroup.Open(szFilename, true))
 	{
 		// No commands: display contents
 		if (iFirstCommand < 0)
@@ -212,7 +212,7 @@ bool ProcessGroup(const char *szFilename)
 						break;
 					// Make original
 					case 'o':
-						hGroup.MakeOriginal(TRUE);
+						hGroup.MakeOriginal(true);
 						break;
 					// Pack
 					case 'p':
@@ -270,7 +270,7 @@ bool ProcessGroup(const char *szFilename)
 						printf("Applying update...\n");
 						if (C4Group_ApplyUpdate(hGroup))
 						{
-							if (argv[iArg][2] == 'd') fDeleteGroup = TRUE;
+							if (argv[iArg][2] == 'd') fDeleteGroup = true;
 						}
 						else
 							printf("Update failed.\n");
@@ -356,7 +356,7 @@ bool ProcessGroup(const char *szFilename)
 	}
 
 	// Done
-	return TRUE;
+	return true;
 }
 
 int RegisterShellExtensions()
@@ -426,7 +426,7 @@ bool Log(const char *msg)
 
 bool LogFatal(const char *msg) { return Log(msg); }
 
-BOOL LogF(const char *strMessage, ...)
+bool LogF(const char *strMessage, ...)
 {
 	va_list args; va_start(args, strMessage);
 	// Compose formatted message
@@ -483,7 +483,7 @@ int main(int argc, char *argv[])
 
 	// Load configuration
 	Config.Init();
-	Config.Load(FALSE);
+	Config.Load(false);
 
 	// Init C4Group
 	C4Group_SetMaker(Config.General.Name);
@@ -573,7 +573,7 @@ int main(int argc, char *argv[])
 
 		PROCESS_INFORMATION procInfo;
 
-		CreateProcess(strExecuteAtEnd, nullptr, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startInfo, &procInfo);
+		CreateProcess(strExecuteAtEnd, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, &startInfo, &procInfo);
 	}
 
 	// Done

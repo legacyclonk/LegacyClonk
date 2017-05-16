@@ -63,13 +63,13 @@ int32_t Hostile(int32_t plr1, int32_t plr2);
 
 // IFT
 
-inline BYTE PixColIFT(BYTE pixc)
+inline uint8_t PixColIFT(uint8_t pixc)
 {
 	return pixc & IFT;
 }
 
 // always use OldGfx-version (used for convert)
-inline BYTE PixColIFTOld(BYTE pixc)
+inline uint8_t PixColIFTOld(uint8_t pixc)
 {
 	if (pixc >= GBM + IFTOld) return IFTOld;
 	return 0;
@@ -95,7 +95,7 @@ inline bool DensityLiquid(int32_t dens)
 // Materials
 
 extern int32_t MVehic, MTunnel, MWater, MSnow, MEarth, MGranite; // presearched materials
-extern BYTE MCVehic; // precalculated material color
+extern uint8_t MCVehic; // precalculated material color
 
 #define GBackWdt Game.Landscape.Width
 #define GBackHgt Game.Landscape.Height
@@ -106,8 +106,8 @@ extern BYTE MCVehic; // precalculated material color
 #define _SBackPix Game.Landscape._SetPix
 #define _SBackPixIfMask Game.Landscape._SetPixIfMask
 
-int32_t PixCol2MatOld(BYTE pixc);
-int32_t PixCol2MatOld2(BYTE pixc);
+int32_t PixCol2MatOld(uint8_t pixc);
+int32_t PixCol2MatOld2(uint8_t pixc);
 
 inline bool MatValid(int32_t mat)
 {
@@ -119,7 +119,7 @@ inline bool MatVehicle(int32_t iMat)
 	return iMat == MVehic;
 }
 
-inline int32_t PixCol2Tex(BYTE pixc)
+inline int32_t PixCol2Tex(uint8_t pixc)
 {
 	// Remove IFT
 	int32_t iTex = int32_t(pixc & (IFT - 1));
@@ -129,7 +129,7 @@ inline int32_t PixCol2Tex(BYTE pixc)
 	return iTex;
 }
 
-inline int32_t PixCol2Mat(BYTE pixc)
+inline int32_t PixCol2Mat(uint8_t pixc)
 {
 	// Get texture
 	int32_t iTex = PixCol2Tex(pixc);
@@ -140,12 +140,12 @@ inline int32_t PixCol2Mat(BYTE pixc)
 	return pTex ? pTex->GetMaterialIndex() : MNone;
 }
 
-inline BYTE MatTex2PixCol(int32_t tex)
+inline uint8_t MatTex2PixCol(int32_t tex)
 {
-	return BYTE(tex);
+	return uint8_t(tex);
 }
 
-inline BYTE Mat2PixColDefault(int32_t mat)
+inline uint8_t Mat2PixColDefault(int32_t mat)
 {
 	return Game.Material.Map[mat].DefaultMatTex;
 }
@@ -168,7 +168,7 @@ inline int32_t MatDigFree(int32_t mat)
 	return Game.Material.Map[mat].DigFree;
 }
 
-inline BYTE GBackIFT(int32_t x, int32_t y)
+inline uint8_t GBackIFT(int32_t x, int32_t y)
 {
 	return PixColIFT(GBackPix(x, y));
 }
@@ -216,7 +216,7 @@ bool CompileFromBuf_LogWarn(StructT &&TargetStruct, const typename CompT::InT &S
 		Compiler.setInput(SrcBuf.getRef());
 		Compiler.setWarnCallback(StdCompilerWarnCallback, reinterpret_cast<void *>(const_cast<char *>(szName)));
 		Compiler.Compile(TargetStruct);
-		return TRUE;
+		return true;
 	}
 	catch (StdCompiler::Exception *pExc)
 	{
@@ -225,7 +225,7 @@ bool CompileFromBuf_LogWarn(StructT &&TargetStruct, const typename CompT::InT &S
 		else
 			LogF("ERROR: %s (in %s, %s)", pExc->Msg.getData(), pExc->Pos.getData(), szName);
 		delete pExc;
-		return FALSE;
+		return false;
 	}
 }
 
@@ -236,13 +236,13 @@ bool DecompileToBuf_Log(StructT &&TargetStruct, typename CompT::OutT *pOut, cons
 	try
 	{
 		pOut->Take(DecompileToBuf<CompT>(TargetStruct));
-		return TRUE;
+		return true;
 	}
 	catch (StdCompiler::Exception *pExc)
 	{
 		LogF("ERROR: %s (in %s)", pExc->Msg.getData(), szName);
 		delete pExc;
-		return FALSE;
+		return false;
 	}
 }
 

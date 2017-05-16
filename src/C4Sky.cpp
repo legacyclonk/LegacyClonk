@@ -27,30 +27,30 @@
 #include <C4Wrappers.h>
 #endif
 
-static BOOL SurfaceEnsureSize(C4Surface **ppSfc, int iMinWdt, int iMinHgt)
+static bool SurfaceEnsureSize(C4Surface **ppSfc, int iMinWdt, int iMinHgt)
 {
 	// safety
-	if (!ppSfc) return FALSE; if (!*ppSfc) return FALSE;
+	if (!ppSfc) return false; if (!*ppSfc) return false;
 	// get size
 	int iWdt = (*ppSfc)->Wdt, iHgt = (*ppSfc)->Hgt;
 	int iDstWdt = iWdt, iDstHgt = iHgt;
 	// check if it must be enlarged
 	while (iDstWdt < iMinWdt) iDstWdt += iWdt;
 	while (iDstHgt < iMinHgt) iDstHgt += iHgt;
-	if (iDstWdt == iWdt && iDstHgt == iHgt) return TRUE;
+	if (iDstWdt == iWdt && iDstHgt == iHgt) return true;
 	// create new surface
 	C4Surface *pNewSfc = new C4Surface();
 	if (!pNewSfc->Create(iDstWdt, iDstHgt, false))
 	{
 		delete pNewSfc;
-		return FALSE;
+		return false;
 	}
 	// blit tiled into dest surface
-	lpDDraw->BlitSurfaceTile2(*ppSfc, pNewSfc, 0, 0, iDstWdt, iDstHgt, 0, 0, FALSE);
+	lpDDraw->BlitSurfaceTile2(*ppSfc, pNewSfc, 0, 0, iDstWdt, iDstHgt, 0, 0, false);
 	// destroy old surface, assign new
 	delete *ppSfc; *ppSfc = pNewSfc;
 	// success
-	return TRUE;
+	return true;
 }
 
 void C4Sky::SetFadePalette(int32_t *ipColors)
@@ -58,7 +58,7 @@ void C4Sky::SetFadePalette(int32_t *ipColors)
 	// If colors all zero, use game palette default blue
 	if (ipColors[0] + ipColors[1] + ipColors[2] + ipColors[3] + ipColors[4] + ipColors[5] == 0)
 	{
-		BYTE *pClr = Game.GraphicsResource.GamePalette + 3 * CSkyDef1;
+		uint8_t *pClr = Game.GraphicsResource.GamePalette + 3 * CSkyDef1;
 		FadeClr1 = C4RGB(pClr[0], pClr[1], pClr[2]);
 		FadeClr2 = C4RGB(pClr[3 * 19 + 0], pClr[3 * 19 + 1], pClr[3 * 19 + 2]);
 	}
@@ -70,7 +70,7 @@ void C4Sky::SetFadePalette(int32_t *ipColors)
 	}
 }
 
-BOOL C4Sky::Init(bool fSavegame)
+bool C4Sky::Init(bool fSavegame)
 {
 	int32_t skylistn;
 
@@ -109,7 +109,7 @@ BOOL C4Sky::Init(bool fSavegame)
 	{
 		FadeClr1 = FadeClr2 = 0xffffff;
 		// enlarge surface to avoid slow 1*1-px-skies
-		if (!SurfaceEnsureSize(&Surface, 128, 128)) return FALSE;
+		if (!SurfaceEnsureSize(&Surface, 128, 128)) return false;
 
 		// set parallax scroll mode
 		switch (Game.C4S.Landscape.SkyScrollMode)
@@ -136,7 +136,7 @@ BOOL C4Sky::Init(bool fSavegame)
 
 	// no sky - using fade in newgfx
 	if (!Surface)
-		return TRUE;
+		return true;
 
 	// Store size
 	if (Surface)
@@ -149,7 +149,7 @@ BOOL C4Sky::Init(bool fSavegame)
 	}
 
 	// Success
-	return TRUE;
+	return true;
 }
 
 void C4Sky::Default()
@@ -161,7 +161,7 @@ void C4Sky::Default()
 	ParX = ParY = 10;
 	ParallaxMode = C4SkyPM_Fixed;
 	BackClr = 0;
-	BackClrEnabled = FALSE;
+	BackClrEnabled = false;
 }
 
 C4Sky::~C4Sky()
@@ -175,20 +175,20 @@ void C4Sky::Clear()
 	Modulation = 0x00ffffff;
 }
 
-BOOL C4Sky::Save(C4Group &hGroup)
+bool C4Sky::Save(C4Group &hGroup)
 {
 	// Sky-saving disabled by scenario core
 	// (With this option enabled, script-defined changes to sky palette will not be saved!)
 	if (Game.C4S.Landscape.NoSky)
 	{
 		hGroup.Delete(C4CFN_Sky);
-		return TRUE;
+		return true;
 	}
 	// no sky?
-	if (!Surface) return TRUE;
+	if (!Surface) return true;
 	// FIXME?
 	// Success
-	return TRUE;
+	return true;
 }
 
 void C4Sky::Execute()
@@ -215,20 +215,20 @@ void C4Sky::Draw(C4FacetEx &cgo)
 		// blit parallax sky
 		int iParX = cgo.TargetX * 10 / ParX - fixtoi(x);
 		int iParY = cgo.TargetY * 10 / ParY - fixtoi(y);
-		Application.DDraw->BlitSurfaceTile2(Surface, cgo.Surface, cgo.X, cgo.Y, cgo.Wdt, cgo.Hgt, iParX, iParY, FALSE);
+		Application.DDraw->BlitSurfaceTile2(Surface, cgo.Surface, cgo.X, cgo.Y, cgo.Wdt, cgo.Hgt, iParX, iParY, false);
 	}
 	else
 	{
 		// no sky surface: blit sky fade
-		DWORD dwClr1 = GetSkyFadeClr(cgo.TargetY);
-		DWORD dwClr2 = GetSkyFadeClr(cgo.TargetY + cgo.Hgt);
+		uint32_t dwClr1 = GetSkyFadeClr(cgo.TargetY);
+		uint32_t dwClr2 = GetSkyFadeClr(cgo.TargetY + cgo.Hgt);
 		Application.DDraw->DrawBoxFade(cgo.Surface, cgo.X, cgo.Y, cgo.Wdt, cgo.Hgt, dwClr1, dwClr1, dwClr2, dwClr2, cgo.TargetX, cgo.TargetY);
 	}
 	if (Modulation != 0xffffff) Application.DDraw->DeactivateBlitModulation();
 	// done
 }
 
-DWORD C4Sky::GetSkyFadeClr(int32_t iY)
+uint32_t C4Sky::GetSkyFadeClr(int32_t iY)
 {
 	int32_t iPos2 = (iY * 256) / GBackHgt; int32_t iPos1 = 256 - iPos2;
 	return (((((FadeClr1 & 0xff00ff) * iPos1 + (FadeClr2 & 0xff00ff) * iPos2) & 0xff00ff00)
@@ -236,11 +236,11 @@ DWORD C4Sky::GetSkyFadeClr(int32_t iY)
 		| (FadeClr1 & 0xff000000);
 }
 
-bool C4Sky::SetModulation(DWORD dwWithClr, DWORD dwBackClr)
+bool C4Sky::SetModulation(uint32_t dwWithClr, uint32_t dwBackClr)
 {
 	Modulation = dwWithClr;
 	BackClr = dwBackClr;
-	BackClrEnabled = (Modulation >> 24) ? TRUE : FALSE;
+	BackClrEnabled = (Modulation >> 24) ? true : false;
 	return true;
 }
 

@@ -41,7 +41,7 @@ void Label::DrawElement(C4FacetEx &cgo)
 	}
 }
 
-Label::Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign, DWORD dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fMarkup)
+Label::Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign, uint32_t dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fMarkup)
 	: Element(), dwFgClr(dwFClr), x0(iX0), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(nullptr), fAutosize(true), fMarkup(fMarkup)
 {
 	// make color readable
@@ -54,7 +54,7 @@ Label::Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign, D
 	SetText(szLblText);
 }
 
-Label::Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign, DWORD dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fAutosize, bool fMarkup)
+Label::Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign, uint32_t dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fAutosize, bool fMarkup)
 	: Element(), dwFgClr(dwFClr), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(nullptr), fAutosize(fAutosize), fMarkup(fMarkup)
 {
 	// make color readable
@@ -68,7 +68,7 @@ Label::Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign, DWOR
 	SetText(szLblText);
 }
 
-void Label::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Label::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// left-click changes focus
 	if (iButton == C4MC_Button_LeftDown)
@@ -232,7 +232,7 @@ void MultilineLabel::DrawElement(C4FacetEx &cgo)
 	// draw all lines
 	int32_t iIndex = 0; const char *szLine;
 	int32_t iY = rcBounds.y + cgo.TargetY;
-	CStdFont *pLineFont; DWORD dwLineClr; bool fNewParagraph;
+	CStdFont *pLineFont; uint32_t dwLineClr; bool fNewParagraph;
 	while (szLine = Lines.GetLine(iIndex, &pLineFont, &dwLineClr, &fNewParagraph))
 	{
 		int32_t iFontLineHeight = pLineFont->GetLineHeight();
@@ -277,7 +277,7 @@ void MultilineLabel::UpdateHeight()
 	Element::UpdateSize();
 }
 
-void MultilineLabel::AddLine(const char *szLine, CStdFont *pFont, DWORD dwClr, bool fDoUpdate, bool fMakeReadableOnBlack, CStdFont *pCaptionFont)
+void MultilineLabel::AddLine(const char *szLine, CStdFont *pFont, uint32_t dwClr, bool fDoUpdate, bool fMakeReadableOnBlack, CStdFont *pCaptionFont)
 {
 	// make color readable
 	if (fMakeReadableOnBlack) MakeColorReadableOnBlack(dwClr);

@@ -115,14 +115,14 @@ C4Record::C4Record()
 
 C4Record::~C4Record() {}
 
-BOOL C4Record::Start(bool fInitial)
+bool C4Record::Start(bool fInitial)
 {
 	// no double record
-	if (fRecording) return FALSE;
+	if (fRecording) return false;
 
 	// create demos folder
 	if (!Config.General.CreateSaveFolder(Config.General.SaveDemoFolder.getData(), LoadResStr("IDS_GAME_RECORDSTITLE")))
-		return FALSE;
+		return false;
 
 	// various infos
 	StdStrBuf sDemoFolder; sDemoFolder.Ref(Config.General.SaveDemoFolder);
@@ -151,35 +151,35 @@ BOOL C4Record::Start(bool fInitial)
 
 	// save game - this also saves player info list
 	C4GameSaveRecord saveRec(fInitial, Index, Game.Parameters.isLeague());
-	if (!saveRec.Save(sFilename.getData())) return FALSE;
+	if (!saveRec.Save(sFilename.getData())) return false;
 	saveRec.Close();
 
 	// unpack group, if neccessary
 	if (!DirectoryExists(sFilename.getData()) &&
 		!C4Group_UnpackDirectory(sFilename.getData()))
-		return FALSE;
+		return false;
 
 	// open control record file
 	char szCtrlRecFilename[_MAX_PATH + 1 + _MAX_FNAME];
 	sprintf(szCtrlRecFilename, "%s" DirSep C4CFN_CtrlRec, sFilename.getData());
-	if (!CtrlRec.Create(szCtrlRecFilename)) return FALSE;
+	if (!CtrlRec.Create(szCtrlRecFilename)) return false;
 
 	// open record group
 	if (!RecordGrp.Open(sFilename.getData()))
-		return FALSE;
+		return false;
 
 	// record go
 	fStreaming = false;
 	fRecording = true;
 	iLastFrame = 0;
-	return TRUE;
+	return true;
 }
 
-BOOL C4Record::Stop(StdStrBuf *pRecordName, BYTE *pRecordSHA1)
+bool C4Record::Stop(StdStrBuf *pRecordName, uint8_t *pRecordSHA1)
 {
 	// safety
-	if (!fRecording) return FALSE;
-	if (!DirectoryExists(sFilename.getData())) return FALSE;
+	if (!fRecording) return false;
+	if (!DirectoryExists(sFilename.getData())) return false;
 
 	// streaming finished
 	StopStreaming();
@@ -201,7 +201,7 @@ BOOL C4Record::Stop(StdStrBuf *pRecordName, BYTE *pRecordSHA1)
 
 	// pack group
 #ifndef DEBUGREC
-	if (!C4Group_PackDirectory(sFilename.getData())) return FALSE;
+	if (!C4Group_PackDirectory(sFilename.getData())) return false;
 #endif
 
 	// return record data
@@ -326,7 +326,7 @@ bool C4Record::StartStreaming(bool fInitial)
 
 	// Save start state (without copy of scenario!)
 	C4GameSaveRecord saveRec(fInitial, Index, Game.Parameters.isLeague(), false);
-	if (!saveRec.Save(sTempFilename.getData())) return FALSE;
+	if (!saveRec.Save(sTempFilename.getData())) return false;
 	saveRec.Close();
 
 	// Add file into stream, delete file
@@ -385,7 +385,7 @@ C4Playback::~C4Playback()
 	Clear();
 }
 
-BOOL C4Playback::Open(C4Group &rGrp)
+bool C4Playback::Open(C4Group &rGrp)
 {
 	// clean up
 	Clear();
@@ -397,7 +397,7 @@ BOOL C4Playback::Open(C4Group &rGrp)
 	if (rGrp.LoadEntryString(C4CFN_CtrlRecText, TextBuf))
 	{
 		if (!ReadText(TextBuf))
-			return FALSE;
+			return false;
 	}
 	else
 	{
@@ -408,15 +408,15 @@ BOOL C4Playback::Open(C4Group &rGrp)
 		// get record file
 		if (fLoadSequential)
 		{
-			if (!rGrp.FindEntry(C4CFN_CtrlRec)) return FALSE;
-			if (!playbackFile.Open(FormatString("%s%c%s", rGrp.GetFullName().getData(), (char)DirectorySeparator, (const char *)C4CFN_CtrlRec).getData())) return FALSE;
+			if (!rGrp.FindEntry(C4CFN_CtrlRec)) return false;
+			if (!playbackFile.Open(FormatString("%s%c%s", rGrp.GetFullName().getData(), (char)DirectorySeparator, (const char *)C4CFN_CtrlRec).getData())) return false;
 			// forcing first chunk to be read; will call ReadBinary
 			currChunk = chunks.end();
 			if (!NextSequentialChunk())
 			{
 				// empty replay??!
 				LogFatal("Record: Binary read error.");
-				return FALSE;
+				return false;
 			}
 		}
 		else
@@ -426,13 +426,13 @@ BOOL C4Playback::Open(C4Group &rGrp)
 			if (rGrp.LoadEntry(C4CFN_CtrlRec, BinaryBuf))
 			{
 				if (!ReadBinary(BinaryBuf))
-					return FALSE;
+					return false;
 			}
 			else
 			{
 				// no control data?
 				LogFatal("Record: No control data found!");
-				return FALSE;
+				return false;
 			}
 		}
 	}
@@ -454,23 +454,23 @@ BOOL C4Playback::Open(C4Group &rGrp)
 	if (!DbgRecFile.Create(DEBUGREC_EXTFILE))
 	{
 		LogFatal("DbgRec: Creation of external file \"" DEBUGREC_EXTFILE "\" failed!");
-		return FALSE;
+		return false;
 	}
 	else Log("DbgRec: Writing to \"" DEBUGREC_EXTFILE "\"...");
 #else
 	if (!DbgRecFile.Open(DEBUGREC_EXTFILE))
 	{
 		LogFatal("DbgRec: Opening of external file \"" DEBUGREC_EXTFILE "\" failed!");
-		return FALSE;
+		return false;
 	}
 	else Log("DbgRec: Checking against \"" DEBUGREC_EXTFILE "\"...");
 #endif
 #endif
 	// ok
-	return TRUE;
+	return true;
 }
 
-BOOL C4Playback::ReadBinary(const StdBuf &Buf)
+bool C4Playback::ReadBinary(const StdBuf &Buf)
 {
 	// sequential reading: Take over rest from last buffer
 	const StdBuf *pUseBuf; uint32_t iFrame = 0;
@@ -541,14 +541,14 @@ BOOL C4Playback::ReadBinary(const StdBuf &Buf)
 			LogF("Record: Binary unpack error: %s", pEx->Msg.getData());
 			c.Delete();
 			delete pEx;
-			return FALSE;
+			return false;
 		}
 		catch (StdCompiler::Exception *pEx)
 		{
 			LogF("Record: Binary unpack error: %s", pEx->Msg.getData());
 			c.Delete();
 			delete pEx;
-			return FALSE;
+			return false;
 		}
 		// Add to list
 		chunks.push_back(c); c.pPkt = nullptr;
@@ -565,10 +565,10 @@ BOOL C4Playback::ReadBinary(const StdBuf &Buf)
 		}
 		iLastSequentialFrame = iFrame;
 	}
-	return TRUE;
+	return true;
 }
 
-BOOL C4Playback::ReadText(const StdStrBuf &Buf)
+bool C4Playback::ReadText(const StdStrBuf &Buf)
 {
 	return CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(mkSTLContainerAdapt(chunks), "Rec"), Buf, C4CFN_CtrlRecText);
 }
@@ -791,11 +791,11 @@ void C4Playback::Strip()
 	}
 }
 
-BOOL C4Playback::ExecuteControl(C4Control *pCtrl, int iFrame)
+bool C4Playback::ExecuteControl(C4Control *pCtrl, int iFrame)
 {
 	// still playbacking?
-	if (currChunk == chunks.end()) return FALSE;
-	if (Finished) { Finish(); return FALSE; }
+	if (currChunk == chunks.end()) return false;
+	if (Finished) { Finish(); return false; }
 #ifdef DEBUGREC
 	if (DebugRec.firstPkt())
 		DebugRecError("Debug rec overflow!");
@@ -838,7 +838,7 @@ BOOL C4Playback::ExecuteControl(C4Control *pCtrl, int iFrame)
 		// next chunk
 		NextChunk();
 	}
-	return TRUE;
+	return true;
 }
 
 void C4Playback::Finish()
@@ -874,7 +874,7 @@ void C4Playback::Clear()
 #endif
 #endif
 	// done
-	Finished = TRUE;
+	Finished = true;
 }
 
 const char *GetRecordChunkTypeName(C4RecordChunkType eType)
@@ -1067,9 +1067,9 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 		// Initialize stream
 		z_stream strm;
 		ZeroMem(&strm, sizeof strm);
-		strm.next_in = getMBufPtr<BYTE>(CompressedData);
+		strm.next_in = getMBufPtr<uint8_t>(CompressedData);
 		strm.avail_in = CompressedData.getSize();
-		strm.next_out = getMBufPtr<BYTE>(StreamData);
+		strm.next_out = getMBufPtr<uint8_t>(StreamData);
 		strm.avail_out = StreamData.getSize();
 
 		// Decompress

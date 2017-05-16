@@ -65,7 +65,7 @@ public:
 	int id; // used by the engine to keep track of where the font came from
 
 protected:
-	DWORD dwDefFontHeight; // configured font size (in points)
+	uint32_t dwDefFontHeight; // configured font size (in points)
 	char szFontName[80 + 1]; // used font name (or surface file name)
 
 	bool fPrerenderedFont; // true for fonts that came from a prerendered bitmap surface - no runtime adding of characters
@@ -81,7 +81,7 @@ protected:
 
 	int iHSpace; // horizontal space to be added betwen two characters
 	int iGfxLineHgt; // height of chaacters; may be larger than line height
-	DWORD dwWeight; // font weight (usually FW_NORMAL or FW_BOLD)
+	uint32_t dwWeight; // font weight (usually FW_NORMAL or FW_BOLD)
 	bool fDoShadow; // if the font is shadowed
 
 	CFacet fctAsciiTexCoords[256 - ' ']; // texture coordinates of ASCII letters
@@ -92,7 +92,7 @@ protected:
 #if defined(_WIN32) && !defined(HAVE_FREETYPE)
 	HDC hDC;
 	HBITMAP hbmBitmap;
-	DWORD *pBitmapBits; int iBitmapSize;
+	uint32_t *pBitmapBits; int iBitmapSize;
 	HFONT hFont;
 #elif defined(HAVE_FREETYPE)
 	CStdVectorFont *pVectorFont; // class assumed to be held externally!
@@ -122,7 +122,7 @@ protected:
 public:
 	int iLineHgt; // height of one line of font (in pixels)
 	// draw ine line of text
-	void DrawText(SURFACE sfcDest, int iX, int iY, DWORD dwColor, const char *szText, DWORD dwFlags, CMarkup &Markup, float fZoom);
+	void DrawText(SURFACE sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom);
 
 	// get text size
 	bool GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, bool fCheckMarkup = true);
@@ -141,7 +141,7 @@ public:
 
 	// function throws std::runtime_error in case of failure
 	// font initialization - writes the surface data
-	void Init(CStdVectorFont &VectorFont, DWORD dwHeight, DWORD dwFontWeight = FW_NORMAL, const char *szCharset = "", bool fDoShadow = true);
+	void Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFontWeight = FW_NORMAL, const char *szCharset = "", bool fDoShadow = true);
 
 	// font initialization - grabs the given surface data and extracts character sizes from it
 	void Init(const char *szFontName, CSurface *psfcFontSfc, int iIndent);
@@ -157,7 +157,7 @@ public:
 		return SEqual(szCFontName, szFontName) && iCID == id && iCIndent == -iHSpace;
 	}
 
-	bool IsSameAs(const char *szCFontName, DWORD iCHeight, DWORD dwCWeight)
+	bool IsSameAs(const char *szCFontName, uint32_t iCHeight, uint32_t dwCWeight)
 	{
 		return SEqual(szCFontName, szFontName) && !id && iCHeight == dwDefFontHeight && dwCWeight == dwWeight;
 	}
@@ -169,6 +169,6 @@ public:
 	}
 };
 
-BYTE GetCharsetCode(const char *strCharset);
+uint8_t GetCharsetCode(const char *strCharset);
 const char *GetCharsetCodeName(const char *strCharset);
 int32_t GetCharsetCodePage(const char *strCharset);

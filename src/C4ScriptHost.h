@@ -30,13 +30,13 @@ class C4ScriptHost : public C4AulScript, public C4ComponentHost
 public:
 	C4ScriptHost();
 	~C4ScriptHost();
-	BOOL Delete() { return TRUE; }
+	bool Delete() { return true; }
 
 public:
 	void Default();
 	void Clear();
 	void Close();
-	BOOL Load(const char *szName, C4Group &hGroup, const char *szFilename,
+	bool Load(const char *szName, C4Group &hGroup, const char *szFilename,
 		const char *szLanguage, C4Def *pDef, class C4LangStringTable *pLocalTable, bool fLoadTable = false);
 	const char *GetControlDesc(const char *szFunctionFormat, int32_t iCom, C4ID *pidImage = nullptr, int32_t *piImagePhase = nullptr);
 	void GetControlMethodMask(const char *szFunctionFormat, int32_t &first, int32_t &second);
@@ -58,7 +58,7 @@ protected:
 	class C4LangStringTable *pStringTable;
 	void MakeScript();
 	C4Value FunctionCall(C4Object *pCaller, const char *szFunction, C4Object *pObj, C4AulParSet *pPars = 0, bool fPrivateCall = false, bool fPassError = false);
-	BOOL ReloadScript(const char *szPath);
+	bool ReloadScript(const char *szPath);
 };
 
 // script host for defs
@@ -69,7 +69,7 @@ public:
 
 	void Default();
 
-	BOOL Delete() { return FALSE; } // do NOT delete this - it's just a class member!
+	bool Delete() { return false; } // do NOT delete this - it's just a class member!
 
 protected:
 	void AfterLink(); // get common funcs
@@ -88,7 +88,7 @@ class C4GameScriptHost : public C4ScriptHost
 public:
 	C4GameScriptHost();
 	~C4GameScriptHost();
-	BOOL Delete() { return FALSE; } // do NOT delete this - it's just a class member!
+	bool Delete() { return false; } // do NOT delete this - it's just a class member!
 	void Default();
 	C4Value GRBroadcast(const char *szFunction, C4AulParSet *pPars = 0, bool fPassError = false, bool fRejectTest = false); // call function in scenario script and all goals/rules/environment objects
 
@@ -96,7 +96,7 @@ public:
 	// FIXME: Move to C4AulScriptEngine
 	int32_t Counter;
 	bool Go;
-	BOOL Execute();
+	bool Execute();
 
 	// Compile scenario script data
 	void CompileFunc(StdCompiler *pComp);

@@ -693,7 +693,7 @@ bool C4Network2Res::CalculateSHA()
 	if (!GetStandalone(szStandalone, _MAX_PATH, false))
 		SCopy(szFile, szStandalone, _MAX_PATH);
 	// get the hash
-	BYTE hash[SHA_DIGEST_LENGTH];
+	uint8_t hash[SHA_DIGEST_LENGTH];
 	if (!C4Group_GetFileSHA1(szStandalone, hash))
 		return false;
 	// save it back

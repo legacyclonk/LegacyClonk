@@ -71,7 +71,7 @@ void C4GameMessage::Init(int32_t iType, const StdStrBuf &sText, C4Object *pTarge
 	}
 }
 
-void C4GameMessage::Append(const char *szText, BOOL fNoDuplicates)
+void C4GameMessage::Append(const char *szText, bool fNoDuplicates)
 {
 	// Check for duplicates
 	if (fNoDuplicates)
@@ -83,13 +83,13 @@ void C4GameMessage::Append(const char *szText, BOOL fNoDuplicates)
 	Delay += SLen(szText) * TextMsgDelayFactor;
 }
 
-BOOL C4GameMessage::Execute()
+bool C4GameMessage::Execute()
 {
 	// Delay / removal
 	if (Delay > 0) Delay--;
-	if (Delay == 0) return FALSE;
+	if (Delay == 0) return false;
 	// Done
-	return TRUE;
+	return true;
 }
 
 int32_t DrawMessageOffset = -35; // For finding the optimum place to draw startup info & player messages...
@@ -324,7 +324,7 @@ bool C4GameMessageList::New(int32_t iType, const StdStrBuf &sText, C4Object *pTa
 	if (pTarget && !pTarget->Status) return false;
 
 	// Empty message? (only deleting old message)
-	if (!sText.getLength()) return TRUE;
+	if (!sText.getLength()) return true;
 
 	// Add new message
 	C4GameMessage *msgNew = new C4GameMessage;
@@ -332,7 +332,7 @@ bool C4GameMessageList::New(int32_t iType, const StdStrBuf &sText, C4Object *pTa
 	msgNew->Next = First;
 	First = msgNew;
 
-	return TRUE;
+	return true;
 }
 
 bool C4GameMessageList::Append(int32_t iType, const char *szText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint8_t bCol, bool fNoDuplicates)
@@ -358,7 +358,7 @@ bool C4GameMessageList::Append(int32_t iType, const char *szText, C4Object *pTar
 	{
 		cmsg->Append(szText, fNoDuplicates);
 	}
-	return TRUE;
+	return true;
 }
 
 void C4GameMessageList::ClearPlayers(int32_t iPlayer, int32_t dwPositioningFlags)

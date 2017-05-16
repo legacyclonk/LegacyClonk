@@ -114,7 +114,7 @@ public:
 
 protected:
 	C4MapCreatorS2 *pMapCreator; // map creator class to query current map of
-	BYTE *pMap; // bitmap whether or not to call the function for a map pixel
+	uint8_t *pMap; // bitmap whether or not to call the function for a map pixel
 	int32_t iWdt, iHgt; // size of the bitmap, when created
 	C4AulFunc *pSF; // script func to be called
 
@@ -163,8 +163,8 @@ public:
 	void Reg2Owner(C4MCNode *pOwner); // register into list
 
 protected:
-	virtual BOOL GlobalScope() { return FALSE; } // whether node is a global scope
-	virtual BOOL SetOp(C4MCTokenType eOp) { return FALSE; } // set following operator
+	virtual bool GlobalScope() { return false; } // whether node is a global scope
+	virtual bool SetOp(C4MCTokenType eOp) { return false; } // set following operator
 	C4MCNode *GetNodeByName(const char *szName); // search node by name
 
 	virtual bool SetField(C4MCParser *pParser, const char *szField, const char *szSVal, int32_t iVal, C4MCTokenType ValType); // set field
@@ -244,7 +244,7 @@ public:
 	int32_t Material; // material index
 	bool Sub; // tunnel bg?
 	char Texture[C4M_MaxName + 1]; // texture name
-	BYTE MatClr; // resolved mat-tex color
+	uint8_t MatClr; // resolved mat-tex color
 	C4MCTokenType Op; // following operator
 	C4MCAlgorithm *Algorithm; // algorithm to calc whether filled or not
 	int32_t Turbulence, Lambda, Rotate; // turbulence factors; rotation angle
@@ -254,7 +254,7 @@ public:
 	C4MCCallbackArray *pEvaluateFunc; // function called for nodes being evaluated and fulfilled
 	C4MCCallbackArray *pDrawFunc; // function called when this node is drawn - pass drawcolor as first param, return color to be actually used
 
-	BOOL SetOp(C4MCTokenType eOp) { Op = eOp; return TRUE; } // set following operator
+	bool SetOp(C4MCTokenType eOp) { Op = eOp; return true; } // set following operator
 
 	C4MCAlgorithm *GetAlgo(const char *szName);
 
@@ -266,7 +266,7 @@ public:
 	C4MCOverlay *FirstOfChain(); // go backwards in op chain until first overlay of chain
 
 	bool CheckMask(int32_t iX, int32_t iY); // check whether algorithms succeeds at iX/iY
-	bool RenderPix(int32_t iX, int32_t iY, BYTE &rPix, C4MCTokenType eLastOp = MCT_NONE, bool fLastSet = false, bool fDraw = true, C4MCOverlay **ppPixelSetOverlay = nullptr); // render this pixel
+	bool RenderPix(int32_t iX, int32_t iY, uint8_t &rPix, C4MCTokenType eLastOp = MCT_NONE, bool fLastSet = false, bool fDraw = true, C4MCOverlay **ppPixelSetOverlay = nullptr); // render this pixel
 	bool PeekPix(int32_t iX, int32_t iY); // check mask; regard operator chain
 	bool InBounds(int32_t iX, int32_t iY) { return iX >= X && iY >= Y && iX < X + Wdt && iY < Y + Hgt; } // return whether point iX/iY is inside bounds
 
@@ -316,7 +316,7 @@ protected:
 	void Default(); // set default values for default presets
 
 public:
-	bool RenderTo(BYTE *pToBuf, int32_t iPitch); // render to buffer
+	bool RenderTo(uint8_t *pToBuf, int32_t iPitch); // render to buffer
 	void SetSize(int32_t iWdt, int32_t iHgt);
 
 public:
@@ -335,8 +335,8 @@ public:
 
 	void Default(); // set default data
 	void Clear(); // clear any data
-	BOOL ReadFile(const char *szFilename, C4Group *pGrp); // read defs of file
-	BOOL ReadScript(const char *szScript); // reads def directly from mem
+	bool ReadFile(const char *szFilename, C4Group *pGrp); // read defs of file
+	bool ReadScript(const char *szScript); // reads def directly from mem
 
 public:
 	C4MCMap *GetMap(const char *szMapName); // get map by name
@@ -357,7 +357,7 @@ protected:
 	C4MCCallbackArrayList CallbackArrays; // list of callback arrays
 	int PlayerCount; // player count for MapPlayerExtend
 
-	BOOL GlobalScope() { return TRUE; } // it's the global node
+	bool GlobalScope() { return true; } // it's the global node
 
 public:
 	void ExecuteCallbacks(int32_t iMapZoom) { CallbackArrays.Execute(iMapZoom); }
@@ -393,8 +393,8 @@ private:
 	int32_t CurrTokenVal; // current token value
 	char Filename[C4MaxName]; // filename
 
-	BOOL AdvanceSpaces(); // advance to next token char; return whether EOF is reached
-	BOOL GetNextToken(); // get token, store in fields and advance to next; return whether not EOF
+	bool AdvanceSpaces(); // advance to next token char; return whether EOF is reached
+	bool GetNextToken(); // get token, store in fields and advance to next; return whether not EOF
 	void ParseTo(C4MCNode *pToNode); // parse stuff into
 	void ParseValue(C4MCNode *pToNode, const char *szFieldName); // Set Field
 

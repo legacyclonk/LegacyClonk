@@ -150,7 +150,7 @@ public:
 	C4SRealism Realism;
 
 public:
-	BOOL IsMelee();
+	bool IsMelee();
 	void ConvertGoals(C4SRealism &rRealism);
 	void Default();
 	void CompileFunc(StdCompiler *pComp, bool fSection);
@@ -307,14 +307,14 @@ public:
 	void SetExactLandscape();
 	void Clear();
 	void Default();
-	BOOL Load(C4Group &hGroup, bool fLoadSection = false);
-	BOOL Save(C4Group &hGroup, bool fSaveSection = false);
+	bool Load(C4Group &hGroup, bool fLoadSection = false);
+	bool Save(C4Group &hGroup, bool fSaveSection = false);
 	void CompileFunc(StdCompiler *pComp, bool fSection);
 	int32_t GetMinPlayer(); // will try to determine the minimum player count for this scenario
 
 protected:
-	BOOL Compile(const char *szSource, bool fLoadSection = false);
-	BOOL Decompile(char **ppOutput, int32_t *ipSize, bool fSaveSection = false);
+	bool Compile(const char *szSource, bool fLoadSection = false);
+	bool Decompile(char **ppOutput, int32_t *ipSize, bool fSaveSection = false);
 };
 
 class C4ScenarioSection;

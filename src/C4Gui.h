@@ -210,7 +210,7 @@ class MenuHandler; class ContextHandler;
 bool ExpandHotkeyMarkup(StdStrBuf &sText, char &rcHotkey);
 
 // make color readable on black: max alpha to 0x1f, max color hues
-DWORD MakeColorReadableOnBlack(DWORD &rdwClr);
+uint32_t MakeColorReadableOnBlack(uint32_t &rdwClr);
 
 // menu handler: generic context menu callback
 class MenuHandler
@@ -385,7 +385,7 @@ protected:
 	virtual void UpdateSize(); // called when own size changed
 	virtual void UpdatePos();  // called when own position changed
 
-	void Draw3DFrame(C4FacetEx &cgo, bool fUp = false, int32_t iIndent = 1, BYTE byAlpha = C4GUI_BorderAlpha, bool fDrawTop = true, int32_t iTopOff = 0, bool fDrawLeft = true, int32_t iLeftOff = 0); // draw frame around element
+	void Draw3DFrame(C4FacetEx &cgo, bool fUp = false, int32_t iIndent = 1, uint8_t byAlpha = C4GUI_BorderAlpha, bool fDrawTop = true, int32_t iTopOff = 0, bool fDrawLeft = true, int32_t iLeftOff = 0); // draw frame around element
 	void DrawBar(C4FacetEx &cgo, DynBarFacet &rFacets); // draw gfx bar within element bounds
 	void DrawVBar(C4FacetEx &cgo, DynBarFacet &rFacets); // draw gfx bar within element bounds
 	void DrawHBarByVGfx(C4FacetEx &cgo, DynBarFacet &rFacets); // draw horizontal gfx bar within element bounds, using gfx of vertical one
@@ -400,13 +400,13 @@ protected:
 public:
 	virtual Container *GetContainer() { return pParent; } // returns parent for elements; this for containers
 
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
 	virtual void MouseEnter(CMouse &rMouse) {}; // called when mouse cursor enters element region
 	virtual void MouseLeave(CMouse &rMouse) {}; // called when mouse cursor leaves element region
 
-	virtual void StartDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam); // called by element in MouseInput: start dragging
-	virtual void DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam);    // called by mouse: dragging process
-	virtual void StopDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam);  // called by mouse: mouse released after dragging process
+	virtual void StartDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam); // called by element in MouseInput: start dragging
+	virtual void DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam);    // called by mouse: dragging process
+	virtual void StopDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam);  // called by mouse: mouse released after dragging process
 
 	virtual bool OnHotkey(char cHotkey) { return false; } // return true when hotkey has been processed
 
@@ -469,7 +469,7 @@ class Label : public Element
 protected:
 	StdStrBuf sText; // label text
 	StdStrBuf sHyperlink; // URL to be visited when clicked
-	DWORD dwFgClr; // text color
+	uint32_t dwFgClr; // text color
 	int32_t x0, iAlign; // x-textstart-pos; horizontal alignment
 	CStdFont *pFont;
 	char cHotkey; // hotkey for this label
@@ -478,7 +478,7 @@ protected:
 
 	Control *pClickFocusControl; // control that gets focus if the label is clicked or hotkey is pressed
 
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse
 
 	virtual void DrawElement(C4FacetEx &cgo); // output label
 	virtual void UpdateOwnPos();
@@ -488,13 +488,13 @@ protected:
 	virtual int32_t GetLeftIndent() { return 0; }
 
 public:
-	Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign = ALeft, DWORD dwFClr = 0xffffffff, CStdFont *pFont = nullptr, bool fMakeReadableOnBlack = true, bool fMarkup = true);
-	Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign = ALeft, DWORD dwFClr = 0xffffffff, CStdFont *pFont = nullptr, bool fMakeReadableOnBlack = true, bool fAutosize = true, bool fMarkup = true);
+	Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign = ALeft, uint32_t dwFClr = 0xffffffff, CStdFont *pFont = nullptr, bool fMakeReadableOnBlack = true, bool fMarkup = true);
+	Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign = ALeft, uint32_t dwFClr = 0xffffffff, CStdFont *pFont = nullptr, bool fMakeReadableOnBlack = true, bool fAutosize = true, bool fMarkup = true);
 
 	void SetText(const char *szToText, bool fAllowHotkey = true); // update text
 	const char *GetText() { return sText.getData(); } // retrieve current text
 	void SetClickFocusControl(Control *pToCtrl) { pClickFocusControl = pToCtrl; }
-	void SetColor(DWORD dwToClr, bool fMakeReadableOnBlack = true) { dwFgClr = fMakeReadableOnBlack ? MakeColorReadableOnBlack(dwToClr) : dwToClr; } // update label color
+	void SetColor(uint32_t dwToClr, bool fMakeReadableOnBlack = true) { dwFgClr = fMakeReadableOnBlack ? MakeColorReadableOnBlack(dwToClr) : dwToClr; } // update label color
 	void SetX0(int32_t iToX0);
 	void SetAutosize(bool fToVal) { fAutosize = fToVal; }
 	void SetHyperlink(const char *szURL); // make blue and underlined and open this URL when clicked
@@ -519,7 +519,7 @@ protected:
 	int32_t GetRightIndent() const { return iRightIndent; }
 
 public:
-	WoodenLabel(const char *szLblText, const C4Rect &rcBounds, DWORD dwFClr = 0xffffffff, CStdFont *pFont = nullptr, int32_t iAlign = ACenter, bool fMarkup = true)
+	WoodenLabel(const char *szLblText, const C4Rect &rcBounds, uint32_t dwFClr = 0xffffffff, CStdFont *pFont = nullptr, int32_t iAlign = ACenter, bool fMarkup = true)
 		: Label(szLblText, rcBounds, iAlign, dwFClr, pFont, true, true, fMarkup), tAutoScrollDelay(0), tLastChangeTime(0), iScrollPos(0), iScrollDir(0), iRightIndent(0)
 	{
 		SetAutosize(false); this->rcBounds = rcBounds;
@@ -549,7 +549,7 @@ protected:
 public:
 	MultilineLabel(const C4Rect &rcBounds, int32_t iMaxLines, int32_t iMaxBuf, const char *szIndentChars, bool fAutoGrow, bool fMarkup);
 
-	void AddLine(const char *szLine, CStdFont *pFont, DWORD dwClr, bool fDoUpdate, bool fMakeReadableOnBlack, CStdFont *pCaptionFont); // add line of text
+	void AddLine(const char *szLine, CStdFont *pFont, uint32_t dwClr, bool fDoUpdate, bool fMakeReadableOnBlack, CStdFont *pCaptionFont); // add line of text
 	void Clear(bool fDoUpdate); // clear lines
 
 	friend class TextWindow;
@@ -771,7 +771,7 @@ class Window : public Container
 protected:
 	C4Rect rcClientRect; // area for contained elements
 
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
 	virtual void Draw(C4FacetEx &cgo); // draw this window
 
 public:
@@ -825,8 +825,8 @@ protected:
 	void OnPosChanged(); // update window according to scroll bar, and/or do callbacks
 
 	// mouse handling
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons
-	virtual void DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam); // dragging: allow dragging of thumb
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
+	virtual void DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam); // dragging: allow dragging of thumb
 	virtual void MouseLeave(CMouse &rMouse); // mouse leaves with button down: reset down state of buttons
 
 	virtual void DrawElement(C4FacetEx &cgo); // draw scroll bar
@@ -891,7 +891,7 @@ protected:
 		if (pParent) pParent->ElementPosChanged(pOfElement);
 	}
 
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam);
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam);
 
 public:
 	ScrollWindow(Window *pParentWindow); // create scroll window in client area of window
@@ -973,8 +973,8 @@ private:
 	class C4KeyBinding *pKeyContext;
 
 protected:
-	virtual BOOL CharIn(const char *c) { return FALSE; } // input: character key pressed - should return FALSE for none-character-inputs
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse. left-click sets focus
+	virtual bool CharIn(const char *c) { return false; } // input: character key pressed - should return false for none-character-inputs
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse. left-click sets focus
 
 	void DisableFocus(); // called when control gets disabled: Make sure it loses focus
 	virtual bool IsFocusOnClick() { return true; } // defaultly, controls get focused on left-down
@@ -1024,7 +1024,7 @@ protected:
 	char cHotkey; // hotkey for this button
 	bool fEnabled;
 
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
 	virtual void MouseEnter(CMouse &rMouse); // mouse re-enters with button down: set button down
 	virtual void MouseLeave(CMouse &rMouse); // mouse leaves with button down: reset down state
 	virtual bool IsFocusOnClick() { return false; } // buttons don't get focus on click (for easier input, e.g. in chatbox)
@@ -1241,15 +1241,15 @@ protected:
 	int32_t iCursorPos; // cursor position: char, before which the cursor is located
 	int32_t iSelectionStart, iSelectionEnd; // selection range (start may be larger than end)
 	int32_t iMaxTextLength; // maximum number of characters to be input here
-	DWORD dwLastInputTime; // time of last input (for cursor flashing)
+	uint32_t dwLastInputTime; // time of last input (for cursor flashing)
 	int32_t iXScroll; // horizontal scrolling
 	char cPasswordMask; // character to be used for masking the contents. 0 for none.
 
 	bool fLeftBtnDown; // flag whether left mouse button is down or not
 
-	virtual BOOL CharIn(const char *c); // input: character key pressed - should return FALSE for none-character-inputs
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons
-	virtual void DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam); // dragging: allow text selection outside the component
+	virtual bool CharIn(const char *c); // input: character key pressed - should return false for none-character-inputs
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
+	virtual void DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam); // dragging: allow text selection outside the component
 	virtual bool IsFocusOnClick() { return true; } // edit fields do get focus on click
 	virtual void OnGetFocus(bool fByMouse); // edit control gets focus
 	virtual void OnLooseFocus(); // edit control looses focus
@@ -1405,7 +1405,7 @@ public:
 
 protected:
 	virtual void UpdateOwnPos();
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
 	virtual void MouseEnter(CMouse &rMouse);
 	virtual void MouseLeave(CMouse &rMouse);
 	virtual bool IsFocusOnClick() { return false; } // just check/uncheck on click; do not gain keyboard focus as well
@@ -1464,11 +1464,11 @@ protected:
 		return Control::IsFocused(pCtrl) || (HasFocus() && pSelectedItem == pCtrl);
 	}
 
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
 	virtual bool IsFocusOnClick() { return true; } // list boxes do get focus on click
 	virtual Control *IsFocusElement() { return this; }; // this control can gain focus
 	virtual void OnGetFocus(bool fByMouse); // callback when control gains focus - select a list item if none are selected
-	virtual BOOL CharIn(const char *c); // character input for direct list element selection
+	virtual bool CharIn(const char *c); // character input for direct list element selection
 
 	virtual void AfterElementRemoval()
 	{
@@ -1621,7 +1621,7 @@ protected:
 	bool KeyCloseTab(); // keyboard callback: Close current sheet if possible
 
 	virtual void DrawElement(C4FacetEx &cgo);
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam);
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam);
 	void MouseLeaveCaptionArea();
 	virtual void MouseLeave(CMouse &rMouse);
 	virtual void OnGetFocus(bool fByMouse);
@@ -1687,7 +1687,7 @@ protected:
 public:
 	TextWindow(C4Rect &rtBounds, size_t iPicWdt = 0, size_t iPicHgt = 0, size_t iPicPadding = 0, size_t iMaxLines = 100, size_t iMaxTextLen = 4096, const char *szIndentChars = "    ", bool fAutoGrow = false, const C4Facet *pOverlayPic = nullptr, int iOverlayBorder = 0, bool fMarkup = false);
 
-	void AddTextLine(const char *szText, CStdFont *pFont, DWORD dwClr, bool fDoUpdate, bool fMakeReadableOnBlack, CStdFont *pCaptionFont = nullptr) // add text in a new line
+	void AddTextLine(const char *szText, CStdFont *pFont, uint32_t dwClr, bool fDoUpdate, bool fMakeReadableOnBlack, CStdFont *pCaptionFont = nullptr) // add text in a new line
 	{
 		if (pLogBuffer) pLogBuffer->AddLine(szText, pFont, dwClr, fDoUpdate, fMakeReadableOnBlack, pCaptionFont);
 	}
@@ -1808,11 +1808,11 @@ protected:
 	// mouse movement or buttons forwarded from screen:
 	// Check bounds and forward as MouseInput to context menu or submenus
 	// return whether inside context menu bounds
-	bool CtxMouseInput(CMouse &rMouse, int32_t iButton, int32_t iScreenX, int32_t iScreenY, DWORD dwKeyParam);
+	bool CtxMouseInput(CMouse &rMouse, int32_t iButton, int32_t iScreenX, int32_t iScreenY, uint32_t dwKeyParam);
 	virtual void RemoveElement(Element *pChild); // clear ptr - abort menu if target is destroyed
 
-	virtual BOOL CharIn(const char *c); // input: character key pressed - should return FALSE for none-character-inputs
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons
+	virtual bool CharIn(const char *c); // input: character key pressed - should return false for none-character-inputs
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
 	void MouseLeaveEntry(CMouse &rMouse, Entry *pOldEntry); // callback: mouse leaves - deselect menu item if no submenu is open (callback done by menu item)
 
 	virtual void DrawElement(C4FacetEx &cgo); // draw BG
@@ -1945,7 +1945,7 @@ private:
 protected:
 	virtual void DrawElement(C4FacetEx &cgo); // draw combo box
 
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse. left-click opens menu
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse. left-click opens menu
 	virtual void MouseEnter(CMouse &rMouse); // called when mouse cursor enters element region
 	virtual void MouseLeave(CMouse &rMouse); // called when mouse cursor leaves element region
 
@@ -2064,8 +2064,8 @@ public:
 	Control *GetFocus() { return pActiveCtrl; }
 	virtual Dialog *GetDlg() { return this; } // this is the dialog
 
-	virtual BOOL CharIn(const char *c); // input: character key pressed - should return FALSE for none-character-inputs  (forward to focused control)
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse. forwards to child controls
+	virtual bool CharIn(const char *c); // input: character key pressed - should return false for none-character-inputs  (forward to focused control)
+	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse. forwards to child controls
 
 private:
 	bool KeyHotkey(C4KeyCodeEx key);
@@ -2312,7 +2312,7 @@ public:
 
 	enum DlgSize { dsRegular = C4GUI_MessageDlgWdt, dsMedium = C4GUI_MessageDlgWdtMedium, dsSmall = C4GUI_MessageDlgWdtSmall };
 
-	MessageDialog(const char *szMessage, const char *szCaption, DWORD dwButtons, Icons icoIcon, DlgSize eSize = dsRegular, int32_t *piConfigDontShowAgainSetting = nullptr, bool fDefaultNo = false);
+	MessageDialog(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, DlgSize eSize = dsRegular, int32_t *piConfigDontShowAgainSetting = nullptr, bool fDefaultNo = false);
 
 protected:
 	virtual bool OnEnter() { if (!fHasOK) return false; Close(true); return true; }
@@ -2333,7 +2333,7 @@ private:
 	BaseCallbackHandler *pCB;
 
 public:
-	ConfirmationDialog(const char *szMessage, const char *szCaption, BaseCallbackHandler *pCB, DWORD dwButtons = MessageDialog::btnOKAbort, bool fSmall = false, Icons icoIcon = Ico_Confirm);
+	ConfirmationDialog(const char *szMessage, const char *szCaption, BaseCallbackHandler *pCB, uint32_t dwButtons = MessageDialog::btnOKAbort, bool fSmall = false, Icons icoIcon = Ico_Confirm);
 	~ConfirmationDialog() { if (pCB) pCB->DeRef(); }
 
 protected:
@@ -2519,7 +2519,7 @@ class CMouse
 public:
 	int32_t x, y; // cursor position
 	bool LDown, MDown, RDown; // mouse button states
-	DWORD dwKeys; // shift, ctrl, etc.
+	uint32_t dwKeys; // shift, ctrl, etc.
 	bool fActive;
 	time_t tLastMovementTime; // timeGetTime() when the mouse pos changed last
 
@@ -2538,10 +2538,10 @@ public:
 
 	void Draw(C4FacetEx &cgo, bool fDrawToolTip); // draw cursor
 
-	void Input(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // process mouse input
+	void Input(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // process mouse input
 	bool IsLDown() { return LDown; }
 
-	void GetLastXY(int32_t &rX, int32_t &rY, DWORD &rdwKeys) { rX = x; rY = y; rdwKeys = dwKeys; }
+	void GetLastXY(int32_t &rX, int32_t &rY, uint32_t &rdwKeys) { rX = x; rY = y; rdwKeys = dwKeys; }
 
 	void ResetElements() // reset MouseOver/etc.-controls
 	{
@@ -2608,12 +2608,12 @@ public:
 	bool IsActive() { return !!GetTopDialog(); } // return whether GUI is active
 
 	bool KeyAny(); // to be called on keystrokes; resets some tooltip-times
-	virtual BOOL CharIn(const char *c); // input: character key pressed - should return FALSE for none-character-inputs
-	bool MouseInput(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam, Dialog *pDlg, class C4Viewport *pVP); // input: mouse movement or buttons; sends MouseEnter/Leave; return whether inside dialog
+	virtual bool CharIn(const char *c); // input: character key pressed - should return false for none-character-inputs
+	bool MouseInput(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, Dialog *pDlg, class C4Viewport *pVP); // input: mouse movement or buttons; sends MouseEnter/Leave; return whether inside dialog
 
 	bool ShowMessage(const char *szMessage, const char *szCaption, Icons icoIcon, int32_t *piConfigDontShowAgainSetting = nullptr); // show message
 	bool ShowErrorMessage(const char *szMessage); // show message: Error caption and icon
-	bool ShowMessageModal(const char *szMessage, const char *szCaption, DWORD dwButtons, Icons icoIcon, int32_t *piConfigDontShowAgainSetting = nullptr); // show modal message dlg
+	bool ShowMessageModal(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, int32_t *piConfigDontShowAgainSetting = nullptr); // show modal message dlg
 	bool ShowModalDlg(Dialog *pDlg, bool fDestruct = true); // show any dialog modal and destruct it afterwards
 	bool ShowRemoveDlg(Dialog *pDlg); // show dialog, and flag it to delete itself when closed; return immediately
 

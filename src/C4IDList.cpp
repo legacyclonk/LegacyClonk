@@ -382,7 +382,7 @@ void C4IDList::Load(C4DefList &rDefs, int32_t dwCategory)
 }
 
 void C4IDList::Draw(C4Facet &cgo, int32_t iSelection,
-	C4DefList &rDefs, DWORD dwCategory,
+	C4DefList &rDefs, uint32_t dwCategory,
 	bool fCounts, int32_t iAlign) const
 {
 #ifdef C4ENGINE
@@ -411,8 +411,8 @@ void C4IDList::Default()
 bool C4IDList::SwapItems(size_t iIndex1, size_t iIndex2)
 {
 	// Invalid index
-	if (!Inside<int32_t>(iIndex1, 0, Count - 1)) return FALSE;
-	if (!Inside<int32_t>(iIndex2, 0, Count - 1)) return FALSE;
+	if (!Inside<int32_t>(iIndex1, 0, Count - 1)) return false;
+	if (!Inside<int32_t>(iIndex2, 0, Count - 1)) return false;
 	// get first+second chunk and index
 	C4IDListChunk *pChunk1 = this;
 	while (iIndex1 >= C4IDListChunkSize) { pChunk1 = pChunk1->pNext; iIndex1 -= C4IDListChunkSize; }
@@ -434,7 +434,7 @@ bool C4IDList::SwapItems(size_t iIndex1, size_t iIndex2)
 bool C4IDList::DeleteItem(size_t iIndex)
 {
 	// invalid index
-	if (!Inside<size_t>(iIndex, 0, Count - 1)) return FALSE;
+	if (!Inside<size_t>(iIndex, 0, Count - 1)) return false;
 	// get chunk to delete of
 	size_t index = iIndex;
 	C4IDListChunk *pQueryChunk = this;

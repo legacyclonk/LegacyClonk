@@ -90,7 +90,7 @@ C4MouseControl::~C4MouseControl()
 
 void C4MouseControl::Default()
 {
-	Active = FALSE;
+	Active = false;
 	Player = NO_OWNER;
 	pPlayer = nullptr;
 	Viewport = nullptr;
@@ -120,13 +120,13 @@ void C4MouseControl::Default()
 	DownRegion.Default();
 	DragImage.Default();
 	DragImagePhase = 0;
-	fMouseOwned = TRUE; // default mouse owned
+	fMouseOwned = true; // default mouse owned
 	fctViewport.Default();
 }
 
 void C4MouseControl::Clear()
 {
-	Active = FALSE;
+	Active = false;
 	Selection.Clear();
 	UpdateClip(); // reset mouse clipping!
 }
@@ -138,7 +138,7 @@ void C4MouseControl::Execute()
 	// Scrolling/continuous update
 	if (Scrolling || !Tick5)
 	{
-		WORD wKeyState = 0;
+		uint16_t wKeyState = 0;
 		if (Application.IsControlDown()) wKeyState |= MK_CONTROL;
 		if (Application.IsShiftDown()) wKeyState |= MK_SHIFT;
 		Move(C4MC_Button_None, VpX, VpY, wKeyState);
@@ -149,7 +149,7 @@ bool C4MouseControl::Init(int32_t iPlayer)
 {
 	Clear();
 	Default();
-	Active = TRUE;
+	Active = true;
 	Player = iPlayer;
 	InitCentered = false;
 	UpdateClip();
@@ -200,14 +200,14 @@ void C4MouseControl::UpdateClip()
 	// StdWindow manages this.
 }
 
-void C4MouseControl::Move(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyFlags, BOOL fCenter)
+void C4MouseControl::Move(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyFlags, bool fCenter)
 {
 	// Active
 	if (!Active || !fMouseOwned) return;
 	// Execute caption
 	if (KeepCaption) KeepCaption--; else { Caption.Clear(); IsHelpCaption = false; CaptionBottomY = 0; }
 	// Check player
-	if ((Player > NO_OWNER) && !(pPlayer = Game.Players.Get(Player))) { Active = FALSE; return; }
+	if ((Player > NO_OWNER) && !(pPlayer = Game.Players.Get(Player))) { Active = false; return; }
 	// Check viewport
 	if (!(Viewport = Game.GraphicsSystem.GetViewport(Player))) return;
 	// get view position
@@ -449,7 +449,7 @@ void C4MouseControl::UpdateCursorTarget()
 	C4Object *pPlrCursor = pPlayer ? pPlayer->Cursor : nullptr;
 
 	// Target object
-	DWORD ocf = OCF_Grab | OCF_Chop | OCF_Container | OCF_Construct | OCF_Living | OCF_Carryable | OCF_Container | OCF_Exclusive;
+	uint32_t ocf = OCF_Grab | OCF_Chop | OCF_Container | OCF_Construct | OCF_Living | OCF_Carryable | OCF_Container | OCF_Exclusive;
 	if (Help) ocf |= OCF_All;
 	TargetObject = GetTargetObject(X, Y, ocf);
 	if (TargetObject && FogOfWar && !(TargetObject->Category & C4D_IgnoreFoW)) TargetObject = nullptr;
@@ -711,10 +711,10 @@ void C4MouseControl::UpdateTargetRegion()
 	}
 }
 
-BOOL C4MouseControl::UpdatePutTarget(BOOL fVehicle)
+bool C4MouseControl::UpdatePutTarget(bool fVehicle)
 {
 	// Target object
-	DWORD ocf = OCF_Container;
+	uint32_t ocf = OCF_Container;
 	StdStrBuf sName;
 	if (TargetObject = GetTargetObject(X, Y, ocf))
 	{
@@ -735,10 +735,10 @@ BOOL C4MouseControl::UpdatePutTarget(BOOL fVehicle)
 			IsHelpCaption = false;
 		}
 		// Put target found
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 void C4MouseControl::LeftDown()
@@ -816,7 +816,7 @@ void C4MouseControl::DragMoving()
 		Cursor = C4MC_Cursor_Object;
 		// Check for put target
 		if (ControlDown)
-			if (UpdatePutTarget(FALSE))
+			if (UpdatePutTarget(false))
 				return;
 		// In liquid: drop
 		if (GBackLiquid(X, Y))
@@ -858,7 +858,7 @@ void C4MouseControl::DragMoving()
 		Cursor = C4MC_Cursor_Vehicle;
 		// Check for put target
 		if (ControlDown)
-			UpdatePutTarget(TRUE);
+			UpdatePutTarget(true);
 	}
 }
 
@@ -972,7 +972,7 @@ void C4MouseControl::LeftDouble()
 		case C4MC_Cursor_Enter:                              SendCommand(C4CMD_Enter,  X, Y, TargetObject);           break;
 		case C4MC_Cursor_Object: case C4MC_Cursor_DigObject: SendCommand(C4CMD_Get,    0, 0, TargetObject);           break;
 		case C4MC_Cursor_Dig:                                SendCommand(C4CMD_Dig,    X, Y, nullptr);                break;
-		case C4MC_Cursor_DigMaterial:                        SendCommand(C4CMD_Dig,    X, Y, nullptr, nullptr, TRUE); break;
+		case C4MC_Cursor_DigMaterial:                        SendCommand(C4CMD_Dig,    X, Y, nullptr, nullptr, true); break;
 		}
 		break;
 	}
@@ -1009,7 +1009,7 @@ void C4MouseControl::RightUp()
 	}
 }
 
-void C4MouseControl::Wheel(DWORD dwFlags)
+void C4MouseControl::Wheel(uint32_t dwFlags)
 {
 	short iDelta = (short)(dwFlags >> 16);
 
@@ -1017,13 +1017,13 @@ void C4MouseControl::Wheel(DWORD dwFlags)
 	if (iDelta < 0) Game.LocalPlayerControl(Player, COM_WheelDown);
 }
 
-BOOL C4MouseControl::SendControl(int32_t iCom, int32_t iData)
+bool C4MouseControl::SendControl(int32_t iCom, int32_t iData)
 {
 	// Help
 	if (iCom == COM_Help)
 	{
 		Help = true;
-		return TRUE;
+		return true;
 	}
 	// Activate player menu / fullscreen main menu (local control)
 	if (iCom == COM_PlayerMenu)
@@ -1032,21 +1032,21 @@ BOOL C4MouseControl::SendControl(int32_t iCom, int32_t iData)
 			FullScreen.ActivateMenuMain();
 		else
 			pPlayer->ActivateMenuMain();
-		return TRUE;
+		return true;
 	}
 	// Open chat
 	if (iCom == COM_Chat)
 	{
 		C4ChatDlg::ShowChat();
-		return TRUE;
+		return true;
 	}
 	// other controls not valid in passive mode
-	if (IsPassive()) return FALSE;
+	if (IsPassive()) return false;
 	// Player control queue
 	Game.Input.Add(CID_PlrControl,
 		new C4ControlPlayerControl(Player, iCom, iData));
 	// Done
-	return TRUE;
+	return true;
 }
 
 void C4MouseControl::CreateDragImage(C4ID id)
@@ -1219,7 +1219,7 @@ void C4MouseControl::RightUpDragNone()
 			new C4ControlPlayerSelect(Player, Selection));
 
 	// Check for any secondary context target objects
-	DWORD ocf = OCF_All;
+	uint32_t ocf = OCF_All;
 	if (!TargetObject) TargetObject = GetTargetObject(X, Y, ocf);
 	// Avoid stinkin' Windrad - cheaper goes it not
 	if (TargetObject && (TargetObject->id == C4Id("WWNG"))) TargetObject = GetTargetObject(X, Y, ocf, TargetObject);
@@ -1287,7 +1287,7 @@ const char *C4MouseControl::GetCaption()
 	return Caption.getData();
 }
 
-C4Object *C4MouseControl::GetTargetObject(int32_t iX, int32_t iY, DWORD &dwOCF, C4Object *pExclude)
+C4Object *C4MouseControl::GetTargetObject(int32_t iX, int32_t iY, uint32_t &dwOCF, C4Object *pExclude)
 {
 	// find object
 	C4Object *pObj = Game.FindVisObject(ViewX, ViewY, Player, fctViewport, iX, iY, 0, 0, dwOCF, pExclude);
@@ -1297,7 +1297,7 @@ C4Object *C4MouseControl::GetTargetObject(int32_t iX, int32_t iY, DWORD &dwOCF, 
 	return pObj;
 }
 
-BOOL C4MouseControl::IsPassive()
+bool C4MouseControl::IsPassive()
 {
 	return Game.Control.isReplay() || Player <= NO_OWNER;
 }

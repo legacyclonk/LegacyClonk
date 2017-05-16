@@ -60,13 +60,13 @@ void ApplyFriction(FIXED &tval, int32_t percent)
 // Compares all Shape.VtxContactCNAT[] CNAT flags to search flag.
 // Returns true if CNAT match has been found.
 
-BOOL ContactVtxCNAT(C4Object *cobj, BYTE cnat_dir)
+bool ContactVtxCNAT(C4Object *cobj, uint8_t cnat_dir)
 {
 	int32_t cnt;
-	BOOL fcontact = FALSE;
+	bool fcontact = false;
 	for (cnt = 0; cnt < cobj->Shape.VtxNum; cnt++)
 		if (cobj->Shape.VtxContactCNAT[cnt] & cnat_dir)
-			fcontact = TRUE;
+			fcontact = true;
 	return fcontact;
 }
 
@@ -111,14 +111,14 @@ const char *CNATName(int32_t cnat)
 	return "Undefined";
 }
 
-BOOL C4Object::Contact(int32_t iCNAT)
+bool C4Object::Contact(int32_t iCNAT)
 {
 	if (Def->ContactFunctionCalls)
 	{
 		sprintf(OSTR, PSF_Contact, CNATName(iCNAT));
 		return !!Call(OSTR);
 	}
-	return FALSE;
+	return false;
 }
 
 void C4Object::DoMotion(int32_t mx, int32_t my)
@@ -199,8 +199,8 @@ void C4Object::VerticalBounds(int32_t &ctcoy)
 void C4Object::DoMovement()
 {
 	int32_t ctcox, ctcoy, ctcor, ctx, cty, iContact = 0;
-	BOOL fAnyContact = FALSE, iContacts = 0;
-	BYTE fTurned = 0, fRedirectYR = 0, fNoAttach = 0;
+	bool fAnyContact = false; uint32_t iContacts = 0;
+	bool fTurned = false, fRedirectYR = false, fNoAttach = false;
 
 	// Reset motion for this frame
 	motion_x = motion_y = 0;
@@ -254,7 +254,7 @@ void C4Object::DoMovement()
 
 			if (iContact = ContactCheck(ctx, y))
 			{
-				fAnyContact = TRUE; iContacts |= t_contact;
+				fAnyContact = true; iContacts |= t_contact;
 				// Abort horizontal movement
 				ctcox = x; fix_x = itofix(x);
 				// Vertical redirection (always)
@@ -280,7 +280,7 @@ void C4Object::DoMovement()
 			cty = y + Sign(ctcoy - y);
 			if (iContact = ContactCheck(x, cty))
 			{
-				fAnyContact = TRUE; iContacts |= t_contact;
+				fAnyContact = true; iContacts |= t_contact;
 				ctcoy = y; fix_y = itofix(y);
 				// Vertical contact horizontal friction
 				ApplyFriction(xdir, ContactVtxFriction(this));
@@ -295,7 +295,7 @@ void C4Object::DoMovement()
 					if (OCF & OCF_Rotate) if (iContact == 1) if (!Alive)
 					{
 						RedirectForce(ydir, rdir, -ContactVtxWeight(this));
-						fRedirectYR = 1;
+						fRedirectYR = true;
 					}
 					ydir = 0;
 				}
@@ -307,7 +307,7 @@ void C4Object::DoMovement()
 
 	if (Action.t_attach) // Attached movement
 	{
-		BYTE at_xovr, at_yovr;
+		uint8_t at_xovr, at_yovr;
 
 		// Set target position by momentum
 		fix_x += xdir; fix_y += ydir;
@@ -328,7 +328,7 @@ void C4Object::DoMovement()
 
 			// Attachment check
 			if (!Shape.Attach(ctx, cty, Action.t_attach))
-				fNoAttach = 1;
+				fNoAttach = true;
 			else
 			{
 				// Attachment change to ctx/cty overrides ctco target
@@ -339,7 +339,7 @@ void C4Object::DoMovement()
 			// Contact check & evaluation
 			if (iContact = ContactCheck(ctx, cty))
 			{
-				fAnyContact = TRUE; iContacts |= t_contact;
+				fAnyContact = true; iContacts |= t_contact;
 				// Abort movement
 				ctcox = x; fix_x = itofix(x);
 				ctcoy = y; fix_y = itofix(y);
@@ -394,7 +394,7 @@ void C4Object::DoMovement()
 			// check for contact
 			if (iContact = ContactCheck(ctx, cty)) // Contact
 			{
-				fAnyContact = TRUE; iContacts |= t_contact;
+				fAnyContact = true; iContacts |= t_contact;
 				// Undo step and abort movement
 				Shape = lshape;
 				r = lcobjr;
@@ -410,7 +410,7 @@ void C4Object::DoMovement()
 			}
 			else
 			{
-				fTurned = 1;
+				fTurned = true;
 				x = ctx; y = cty;
 			}
 		}
@@ -426,14 +426,14 @@ void C4Object::DoMovement()
 	// Misc checks
 
 	// InLiquid check
-	// this equals C4Object::UpdateLiquid, but the "fNoAttach=FALSE;"-line
+	// this equals C4Object::UpdateLiquid, but the "fNoAttach=false;"-line
 	if (IsInLiquidCheck()) // In Liquid
 	{
 		if (!InLiquid) // Enter liquid
 		{
 			if (OCF & OCF_HitSpeed2) if (Mass > 3)
 				Splash(x, y + 1, Min(Shape.Wdt * Shape.Hgt / 10, 20), this);
-			fNoAttach = FALSE;
+			fNoAttach = false;
 			InLiquid = 1;
 		}
 	}
@@ -534,18 +534,18 @@ void C4Object::MovePosition(int32_t dx, int32_t dy)
 	UpdateSolidMask(true);
 }
 
-BOOL C4Object::ExecMovement() // Every Tick1 by Execute
+bool C4Object::ExecMovement() // Every Tick1 by Execute
 {
 	// Containment check
 	if (Contained)
 	{
 		CopyMotion(Contained);
 
-		return TRUE;
+		return true;
 	}
 
 	// General mobility check
-	if (Category & C4D_StaticBack) return FALSE;
+	if (Category & C4D_StaticBack) return false;
 
 	// Movement execution
 	if (Mobile) // Object is moving
@@ -596,7 +596,7 @@ BOOL C4Object::ExecMovement() // Every Tick1 by Execute
 			}
 		}
 
-	return TRUE;
+	return true;
 }
 
 bool SimFlight(FIXED &x, FIXED &y, FIXED &xdir, FIXED &ydir, int32_t iDensityMin, int32_t iDensityMax, int32_t iIter)
@@ -633,15 +633,15 @@ bool SimFlight(FIXED &x, FIXED &y, FIXED &xdir, FIXED &ydir, int32_t iDensityMin
 	return true;
 }
 
-BOOL SimFlightHitsLiquid(FIXED fcx, FIXED fcy, FIXED xdir, FIXED ydir)
+bool SimFlightHitsLiquid(FIXED fcx, FIXED fcy, FIXED xdir, FIXED ydir)
 {
 	// Start in water?
 	if (DensityLiquid(GBackDensity(fixtoi(fcx), fixtoi(fcy))))
 		if (!SimFlight(fcx, fcy, xdir, ydir, 0, C4M_Liquid - 1, 10))
-			return FALSE;
+			return false;
 	// Hits liquid?
 	if (!SimFlight(fcx, fcy, xdir, ydir, C4M_Liquid, 100, -1))
-		return FALSE;
+		return false;
 	// liquid & deep enough?
 	return GBackLiquid(fixtoi(fcx), fixtoi(fcy)) && GBackLiquid(fixtoi(fcx), fixtoi(fcy) + 9);
 }

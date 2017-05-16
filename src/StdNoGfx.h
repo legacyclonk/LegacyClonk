@@ -25,7 +25,7 @@ class CStdNoGfx : public CStdDDraw
 public:
 	CStdNoGfx();
 	virtual ~CStdNoGfx();
-	virtual BOOL CreateDirectDraw();
+	virtual bool CreateDirectDraw();
 
 public:
 	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) { return true; }
@@ -37,11 +37,11 @@ public:
 	virtual bool UpdateClipper() { return true; }
 	virtual bool OnResolutionChanged() { return true; }
 	virtual bool PrepareRendering(SURFACE) { return true; }
-	virtual void FillBG(DWORD dwClr = 0) {}
-	virtual void PerformBlt(CBltData &, CTexRef *, DWORD, bool, bool) {}
-	virtual void DrawLineDw(SURFACE, float, float, float, float, DWORD) {}
-	virtual void DrawQuadDw(SURFACE, int *, DWORD, DWORD, DWORD, DWORD) {}
-	virtual void DrawPixInt(SURFACE, float, float, DWORD) {}
+	virtual void FillBG(uint32_t dwClr = 0) {}
+	virtual void PerformBlt(CBltData &, CTexRef *, uint32_t, bool, bool) {}
+	virtual void DrawLineDw(SURFACE, float, float, float, float, uint32_t) {}
+	virtual void DrawQuadDw(SURFACE, int *, uint32_t, uint32_t, uint32_t, uint32_t) {}
+	virtual void DrawPixInt(SURFACE, float, float, uint32_t) {}
 	virtual bool ApplyGammaRamp(CGammaControl &, bool) { return true; }
 	virtual bool SaveDefaultGammaRamp(CStdWindow *) { return true; }
 	virtual bool StoreStateBlock() { return true; }
@@ -53,6 +53,6 @@ public:
 	virtual bool InvalidateDeviceObjects() { return true; }
 	virtual bool DeleteDeviceObjects() { return true; }
 	virtual bool DeviceReady() { return true; }
-	virtual bool CreatePrimarySurfaces(BOOL, int, unsigned int);
+	virtual bool CreatePrimarySurfaces(bool, int, unsigned int);
 	virtual bool SetOutputAdapter(unsigned int) { return true; }
 };

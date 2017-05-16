@@ -70,7 +70,7 @@ C4MapFolderData::MapPic::MapPic(const FLOAT_RECT &rcfBounds, const C4Facet &rfct
 	SetToolTip(LoadResStr("IDS_MSG_MAP_DESC"));
 }
 
-void C4MapFolderData::MapPic::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void C4MapFolderData::MapPic::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	typedef C4GUI::Picture Parent;
 	Parent::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);
@@ -661,7 +661,7 @@ bool C4ScenarioListLoader::Entry::SetTitleInGroup(C4Group &rGrp, const char *szN
 	}
 	// okay, make a title
 	StdStrBuf sTitle; sTitle.Format("%s:%s", Config.General.Language, szNewTitle);
-	if (!rGrp.Add(C4CFN_WriteTitle, sTitle, FALSE, TRUE))
+	if (!rGrp.Add(C4CFN_WriteTitle, sTitle, false, true))
 	{
 		StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_ERRORADDINGNEWTITLEFORFIL"), sFilename.getData(), rGrp.GetError());
 		Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr("IDS_FAIL_RENAME"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
@@ -1219,7 +1219,7 @@ void C4StartupScenSelDlg::ScenListItem::UpdateOwnPos()
 	// nothing to reposition for now...
 }
 
-void C4StartupScenSelDlg::ScenListItem::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void C4StartupScenSelDlg::ScenListItem::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// inherited processing
 	typedef C4GUI::Window BaseClass;
@@ -1574,7 +1574,7 @@ bool C4StartupScenSelDlg::StartScenario(C4ScenarioListLoader::Scenario *pStartSc
 	// set other default startup parameters
 	SCopy(pStartScen->GetEntryFilename().getData(), Game.ScenarioFilename);
 	Game.fLobby = !!Game.NetworkActive; // always lobby in network
-	Game.fObserve = FALSE;
+	Game.fObserve = false;
 	// start with this set!
 	C4Startup::Get()->Start();
 	return true;

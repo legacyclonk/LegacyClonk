@@ -24,10 +24,10 @@
 #include <GL/glew.h>
 
 #ifdef USE_X11
-// Xmd.h typedefs BOOL to CARD8, but we want int
-#define BOOL _BOOL
+// Xmd.h typedefs bool to CARD8, but we want int
+#define bool _BOOL
 #include <X11/Xmd.h>
-#undef BOOL
+#undef bool
 #include <GL/glx.h>
 #endif
 
@@ -40,7 +40,7 @@
 
 class CStdWindow;
 
-void glColorDw(DWORD dwClr);
+void glColorDw(uint32_t dwClr);
 
 // one OpenGL context
 class CStdGLCtx
@@ -121,15 +121,15 @@ public:
 #endif
 
 	// Blit
-	void PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool fMod2, bool fExact);
+	void PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact);
 	virtual void BlitLandscape(SURFACE sfcSource, SURFACE sfcSource2, SURFACE sfcLiquidAnimation, int fx, int fy,
 		SURFACE sfcTarget, int tx, int ty, int wdt, int hgt);
-	void FillBG(DWORD dwClr = 0);
+	void FillBG(uint32_t dwClr = 0);
 
 	// Drawing
-	void DrawQuadDw(SURFACE sfcTarget, int *ipVtx, DWORD dwClr1, DWORD dwClr2, DWORD dwClr3, DWORD dwClr4);
-	void DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, DWORD dwClr);
-	void DrawPixInt(SURFACE sfcDest, float tx, float ty, DWORD dwCol);
+	void DrawQuadDw(SURFACE sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4);
+	void DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr);
+	void DrawPixInt(SURFACE sfcDest, float tx, float ty, uint32_t dwCol);
 
 	// Gamma
 	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool fForce);
@@ -153,8 +153,8 @@ public:
 #endif
 
 protected:
-	bool CreatePrimarySurfaces(BOOL Fullscreen, int iColorDepth, unsigned int iMonitor);
-	BOOL CreateDirectDraw();
+	bool CreatePrimarySurfaces(bool Fullscreen, int iColorDepth, unsigned int iMonitor);
+	bool CreateDirectDraw();
 	virtual bool SetOutputAdapter(unsigned int iMonitor);
 
 #ifdef USE_X11

@@ -160,7 +160,7 @@ bool C4GameControl::StartRecord(bool fInitial, bool fStreaming)
 	return true;
 }
 
-void C4GameControl::StopRecord(StdStrBuf *pRecordName, BYTE *pRecordSHA1)
+void C4GameControl::StopRecord(StdStrBuf *pRecordName, uint8_t *pRecordSHA1)
 {
 	if (pRecord)
 	{

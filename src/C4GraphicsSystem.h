@@ -36,17 +36,17 @@ public:
 	C4MessageBoard MessageBoard;
 	C4UpperBoard UpperBoard;
 	int32_t iRedrawBackground;
-	BOOL ShowHelp;
-	BOOL ShowVertices;
-	BOOL ShowAction;
-	BOOL ShowCommand;
-	BOOL ShowEntrance;
-	BOOL ShowPathfinder;
-	BOOL ShowNetstatus;
-	BOOL ShowSolidMask;
-	BOOL fSetPalette;
+	bool ShowHelp;
+	bool ShowVertices;
+	bool ShowAction;
+	bool ShowCommand;
+	bool ShowEntrance;
+	bool ShowPathfinder;
+	bool ShowNetstatus;
+	bool ShowSolidMask;
+	bool fSetPalette;
 	uint32_t dwGamma[C4MaxGammaRamps * 3]; // gamma ramps
-	BOOL fSetGamma; // must gamma ramp be reassigned?
+	bool fSetGamma; // must gamma ramp be reassigned?
 	C4Video Video;
 	C4LoaderScreen *pLoaderScreen;
 	void Default();
@@ -57,36 +57,36 @@ public:
 	void FlashMessage(const char *szMessage);
 	void FlashMessageOnOff(const char *strWhat, bool fOn);
 	void DeactivateDebugOutput();
-	void MouseMove(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam, class C4Viewport *pVP); // pVP specified for console mode viewports only
+	void MouseMove(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, class C4Viewport *pVP); // pVP specified for console mode viewports only
 	void SetMouseInGUI(bool fInGUI, bool fByMouse);
 	void SortViewportsByPlayerControl();
 	void ClearPointers(C4Object *pObj);
 	void RecalculateViewports();
-	BOOL Init();
-	BOOL InitLoaderScreen(const char *szLoaderSpec, bool fDrawBlackScreenFirst);
+	bool Init();
+	bool InitLoaderScreen(const char *szLoaderSpec, bool fDrawBlackScreenFirst);
 	void EnableLoaderDrawing(); // reset black screen loader flag
 	bool SaveScreenshot(bool fSaveAll);
-	BOOL DoSaveScreenshot(bool fSaveAll, const char *szFilename);
-	BOOL SetPalette();
-	BOOL CreateViewport(int32_t iPlayer, bool fSilent);
-	BOOL CloseViewport(int32_t iPlayer, bool fSilent);
+	bool DoSaveScreenshot(bool fSaveAll, const char *szFilename);
+	bool SetPalette();
+	bool CreateViewport(int32_t iPlayer, bool fSilent);
+	bool CloseViewport(int32_t iPlayer, bool fSilent);
 	int32_t GetAudibility(int32_t iX, int32_t iY, int32_t *iPan, int32_t iAudibilityRadius = 0);
 	int32_t GetViewportCount();
 	C4Viewport *GetViewport(int32_t iPlayer);
 	C4Viewport *GetFirstViewport() { return FirstViewport; }
 	inline void InvalidateBg() { iRedrawBackground = 2; }
 	inline void OverwriteBg() { InvalidateBg(); }
-	void SetGamma(DWORD dwClr1, DWORD dwClr2, DWORD dwClr3, int32_t iRampIndex); // set gamma ramp
+	void SetGamma(uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, int32_t iRampIndex); // set gamma ramp
 	void ApplyGamma(); // apply gamma ramp to ddraw
-	BOOL CloseViewport(C4Viewport *cvp);
+	bool CloseViewport(C4Viewport *cvp);
 #ifdef _WIN32
 	C4Viewport *GetViewport(HWND hwnd);
-	BOOL RegisterViewportClass(HINSTANCE hInst);
+	bool RegisterViewportClass(HINSTANCE hInst);
 #endif
 
 protected:
 	C4Viewport *FirstViewport;
-	BOOL fViewportClassRegistered;
+	bool fViewportClassRegistered;
 	C4Facet ViewportArea;
 #ifdef C4ENGINE
 	C4RectList BackgroundAreas; // rectangles covering background without viewports in fullscreen
@@ -98,7 +98,7 @@ protected:
 	void DrawHoldMessages();
 	void DrawFullscreenBackground();
 	void ClearFullscreenBackground();
-	void MouseMoveToViewport(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam);
+	void MouseMoveToViewport(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam);
 
 public:
 	bool ToggleShowSolidMask();

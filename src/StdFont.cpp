@@ -243,14 +243,14 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 	for (int y = 0; y < size.cy; ++y) for (int x = 0; x < size.cx; ++x)
 	{
 		// get value; determine shadow value by pos moved 1px to upper left
-		BYTE bAlpha = 255 - (BYTE)(pBitmapBits[iBitmapSize * y + x] & 0xff);
-		BYTE bAlphaShadow;
+		uint8_t bAlpha = 255 - (uint8_t)(pBitmapBits[iBitmapSize * y + x] & 0xff);
+		uint8_t bAlphaShadow;
 		if (x && y && fDoShadow)
-			bAlphaShadow = 255 - (BYTE)((pBitmapBits[iBitmapSize * (y - 1) + x - 1] & 0xff) * 1 / 1);
+			bAlphaShadow = 255 - (uint8_t)((pBitmapBits[iBitmapSize * (y - 1) + x - 1] & 0xff) * 1 / 1);
 		else
 			bAlphaShadow = 255;
 		// calc pixel value: white char on black shadow (if shadow is desired)
-		DWORD dwPixVal = bAlphaShadow << 24;
+		uint32_t dwPixVal = bAlphaShadow << 24;
 		BltAlpha(dwPixVal, bAlpha << 24 | 0xffffff);
 		sfcCurrent->SetPixDw(iCurrentSfcX + x, iCurrentSfcY + y, dwPixVal);
 	}
@@ -308,7 +308,7 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 			else
 				bAlpha = 255;
 			// Make a shadow from the upper-left pixel, and blur with the eight neighbors
-			DWORD dwPixVal = 0u;
+			uint32_t dwPixVal = 0u;
 			bAlphaShadow = 255;
 			if ((x || y) && fDoShadow)
 			{
@@ -389,7 +389,7 @@ CFacet &CStdFont::GetUnicodeCharacterFacet(uint32_t c)
 	return rFacet;
 }
 
-void CStdFont::Init(CStdVectorFont &VectorFont, DWORD dwHeight, DWORD dwFontWeight, const char *szCharset, bool fDoShadow)
+void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFontWeight, const char *szCharset, bool fDoShadow)
 {
 	// clear previous
 	Clear();
@@ -566,13 +566,13 @@ void CStdFont::Init(CStdVectorFont &VectorFont, DWORD dwHeight, DWORD dwFontWeig
 	}
 }
 
-const DWORD FontDelimeterColor        = 0xff0000,
-            FontDelimiterColorLB      = 0x00ff00,
-            FontDelimeterColorIndent1 = 0xffff00,
-            FontDelimeterColorIndent2 = 0xff00ff;
+const uint32_t FontDelimeterColor        = 0xff0000,
+               FontDelimiterColorLB      = 0x00ff00,
+               FontDelimeterColorIndent1 = 0xffff00,
+               FontDelimeterColorIndent2 = 0xff00ff;
 
 // perform color matching in 16 bit
-inline bool ColorMatch(DWORD dwClr1, DWORD dwClr2)
+inline bool ColorMatch(uint32_t dwClr1, uint32_t dwClr2)
 {
 	return ClrDw2W(dwClr1) == ClrDw2W(dwClr2);
 }
@@ -595,7 +595,7 @@ void CStdFont::Init(const char *szFontName, CSurface *psfcFontSfc, int iIndent)
 	iGfxLineHgt = 1;
 	while (iGfxLineHgt < sfcCurrent->Hgt)
 	{
-		DWORD dwPix = sfcCurrent->GetPixDw(0, iGfxLineHgt, false);
+		uint32_t dwPix = sfcCurrent->GetPixDw(0, iGfxLineHgt, false);
 		if (ColorMatch(dwPix, FontDelimeterColor) || ColorMatch(dwPix, FontDelimiterColorLB) ||
 			ColorMatch(dwPix, FontDelimeterColorIndent1) || ColorMatch(dwPix, FontDelimeterColorIndent2))
 			break;
@@ -615,7 +615,7 @@ void CStdFont::Init(const char *szFontName, CSurface *psfcFontSfc, int iIndent)
 		// get horizontal extent
 		while (iX < sfcCurrent->Wdt)
 		{
-			DWORD dwPix = sfcCurrent->GetPixDw(iX, iY, false);
+			uint32_t dwPix = sfcCurrent->GetPixDw(iX, iY, false);
 			if (ColorMatch(dwPix, FontDelimeterColor) || ColorMatch(dwPix, FontDelimeterColorIndent1) || ColorMatch(dwPix, FontDelimeterColorIndent2))
 				break;
 			if (ColorMatch(dwPix, FontDelimiterColorLB)) { IsLB = true; break; }
@@ -1097,16 +1097,16 @@ int CStdFont::GetMessageBreak(const char *szMsg, const char **ppNewPos, int iBre
 
 /* Text drawing */
 
-void CStdFont::DrawText(SURFACE sfcDest, int iX, int iY, DWORD dwColor, const char *szText, DWORD dwFlags, CMarkup &Markup, float fZoom)
+void CStdFont::DrawText(SURFACE sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom)
 {
 	CBltTransform bt, *pbt = nullptr;
 	// set blit color
 	dwColor = InvertRGBAAlpha(dwColor);
-	DWORD dwOldModClr;
+	uint32_t dwOldModClr;
 	bool fWasModulated = lpDDraw->GetBlitModulation(dwOldModClr);
 	if (fWasModulated) ModulateClr(dwColor, dwOldModClr);
 	// get alpha fade percentage
-	DWORD dwAlphaMod = BoundBy<int>((((int)(dwColor >> 0x18) - 0x50) * 0xff) / 0xaf, 0, 255) << 0x18 | 0xffffff;
+	uint32_t dwAlphaMod = BoundBy<int>((((int)(dwColor >> 0x18) - 0x50) * 0xff) / 0xaf, 0, 255) << 0x18 | 0xffffff;
 	// adjust text starting position (horizontal only)
 	if (dwFlags & STDFONT_CENTERED)
 	{
@@ -1193,7 +1193,7 @@ void CStdFont::DrawText(SURFACE sfcDest, int iX, int iY, DWORD dwColor, const ch
 		if (pbt)
 		{
 			// reset data to be transformed by markup
-			DWORD dwBlitClr = dwColor;
+			uint32_t dwBlitClr = dwColor;
 			bt.Set(1, 0, 0, 0, 1, 0, 0, 0, 1);
 			// apply markup
 			Markup.Apply(bt, dwBlitClr);
@@ -1208,7 +1208,7 @@ void CStdFont::DrawText(SURFACE sfcDest, int iX, int iY, DWORD dwColor, const ch
 		// blit character or image
 		lpDDraw->Blit(fctFromBlt.Surface, float(fctFromBlt.X), float(fctFromBlt.Y), float(fctFromBlt.Wdt), float(fctFromBlt.Hgt),
 			sfcDest, iX, iY, w2, h2,
-			TRUE, pbt);
+			true, pbt);
 		// advance pos and skip character indent
 		iX += w2 + iHSpace;
 	}
@@ -1244,7 +1244,7 @@ const char *GetCharsetCodeName(const char *strCharset)
 	return "CP1252";
 }
 
-BYTE GetCharsetCode(const char *strCharset)
+uint8_t GetCharsetCode(const char *strCharset)
 {
 	// Match charset name to WinGDI codes
 	if (SEqualNoCase(strCharset, "SHIFTJIS"))    return 128; // SHIFTJIS_CHARSET

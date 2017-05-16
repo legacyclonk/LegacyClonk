@@ -182,7 +182,7 @@ void ComboBox::DrawElement(C4FacetEx &cgo)
 	}
 }
 
-void ComboBox::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void ComboBox::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// left-click activates menu
 	if (!fReadOnly) if (iButton == C4MC_Button_LeftDown)

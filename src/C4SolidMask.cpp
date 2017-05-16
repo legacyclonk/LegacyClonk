@@ -57,7 +57,7 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 	int iPitch = pForObject->SolidMask.Wdt;
 	int xcnt, ycnt, iTx, iTy;
 	// Put mask pixels
-	BYTE byPixel;
+	uint8_t byPixel;
 	// not rotated?
 	if (!MaskPutRotation)
 	{
@@ -79,7 +79,7 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 		// fill rect with mask
 		for (ycnt = 0; ycnt < pClipRect->Hgt; ++ycnt)
 		{
-			BYTE *pPix = pSolidMask + (ycnt + pClipRect->ty) * pForObject->SolidMask.Wdt + pClipRect->tx;
+			uint8_t *pPix = pSolidMask + (ycnt + pClipRect->ty) * pForObject->SolidMask.Wdt + pClipRect->tx;
 			for (xcnt = 0; xcnt < pClipRect->Wdt; ++xcnt, ++pPix)
 			{
 				if (*pPix)
@@ -175,7 +175,7 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 		}
 	}
 	// Store mask put status
-	MaskPut = TRUE;
+	MaskPut = true;
 	// restore attached object positions if moved
 	if (fRestoreAttachment && iAttachingObjectsCount)
 	{
@@ -208,7 +208,7 @@ int32_t C4SolidMask::DensityProvider::GetDensity(int32_t x, int32_t y) const
 		|| !Inside<int32_t>(y, 0, rSolidMaskData.MaskPutRect.Hgt - 1))
 		return 0;
 	// check put mask. Easy for unrotated
-	BYTE *pPix;
+	uint8_t *pPix;
 	if (!rSolidMaskData.MaskPutRotation)
 	{
 		pPix = rSolidMaskData.pSolidMask + (y + rSolidMaskData.MaskPutRect.ty) * rSolidMaskData.pForObject->SolidMask.Wdt + rSolidMaskData.MaskPutRect.tx + x;
@@ -241,7 +241,7 @@ void C4SolidMask::Remove(bool fCauseInstability, bool fBackupAttachment)
 	// reput background pixels
 	for (int ycnt = 0; ycnt < MaskPutRect.Hgt; ++ycnt)
 	{
-		BYTE *pPix = pSolidMaskMatBuff + (ycnt + MaskPutRect.ty) * MatBuffPitch + MaskPutRect.tx;
+		uint8_t *pPix = pSolidMaskMatBuff + (ycnt + MaskPutRect.ty) * MatBuffPitch + MaskPutRect.tx;
 		for (int xcnt = 0; xcnt < MaskPutRect.Wdt; ++xcnt, ++pPix)
 			// only if mask was used here
 			if (*pPix != MCVehic)
@@ -330,7 +330,7 @@ void C4SolidMask::RemoveTemporary(C4Rect where)
 	{
 		for (int x = where.x; x < where.x + where.Wdt; ++x)
 		{
-			BYTE *pPix = pSolidMaskMatBuff + (y - MaskPutRect.y + MaskPutRect.ty) * MatBuffPitch + x - MaskPutRect.x + MaskPutRect.tx;
+			uint8_t *pPix = pSolidMaskMatBuff + (y - MaskPutRect.y + MaskPutRect.ty) * MatBuffPitch + x - MaskPutRect.x + MaskPutRect.tx;
 			// only if mask was used here
 			if (*pPix != MCVehic)
 			{
@@ -351,7 +351,7 @@ void C4SolidMask::PutTemporary(C4Rect where)
 	{
 		for (int x = where.x; x < where.x + where.Wdt; ++x)
 		{
-			BYTE *pPix = pSolidMaskMatBuff + (y - MaskPutRect.y + MaskPutRect.ty) * MatBuffPitch + x - MaskPutRect.x + MaskPutRect.tx;
+			uint8_t *pPix = pSolidMaskMatBuff + (y - MaskPutRect.y + MaskPutRect.ty) * MatBuffPitch + x - MaskPutRect.x + MaskPutRect.tx;
 			// only if mask was used here
 			if (*pPix != MCVehic)
 			{
@@ -372,7 +372,7 @@ void C4SolidMask::Repair(C4Rect where)
 	{
 		for (int x = where.x; x < where.x + where.Wdt; ++x)
 		{
-			BYTE *pPix = pSolidMaskMatBuff + (y - MaskPutRect.y + MaskPutRect.ty) * MatBuffPitch + x - MaskPutRect.x + MaskPutRect.tx;
+			uint8_t *pPix = pSolidMaskMatBuff + (y - MaskPutRect.y + MaskPutRect.ty) * MatBuffPitch + x - MaskPutRect.x + MaskPutRect.tx;
 			// only if mask was used here
 			if (*pPix != MCVehic)
 			{
@@ -401,7 +401,7 @@ C4SolidMask::C4SolidMask(C4Object *pForObject) : pForObject(pForObject)
 	else First = this;
 	// copy solid mask from bitmap
 	int iNeededBufSize = pForObject->SolidMask.Wdt * pForObject->SolidMask.Hgt;
-	if (!(pSolidMask = new BYTE[iNeededBufSize])) return;
+	if (!(pSolidMask = new uint8_t[iNeededBufSize])) return;
 	SURFACE sfcBitmap = pForObject->GetGraphics()->GetBitmap();
 	if (!sfcBitmap->Lock()) return;
 	int xcnt, ycnt;
@@ -414,7 +414,7 @@ C4SolidMask::C4SolidMask(C4Object *pForObject) : pForObject(pForObject)
 	// create mat buff to store the material replaced by the solid mask
 	// the upper left corner is here the [objpos]+rot([shapexy]+[targetxy]+[realWH]/2)-maxWH/2
 	MatBuffPitch = (int)sqrt(double(pForObject->SolidMask.Wdt * pForObject->SolidMask.Wdt + pForObject->SolidMask.Hgt * pForObject->SolidMask.Hgt)) + 1;
-	if (!(pSolidMaskMatBuff = new BYTE[MatBuffPitch * MatBuffPitch])) return;
+	if (!(pSolidMaskMatBuff = new uint8_t[MatBuffPitch * MatBuffPitch])) return;
 	ZeroMemory(pSolidMaskMatBuff, MatBuffPitch * MatBuffPitch);
 	sfcBitmap->Unlock();
 }

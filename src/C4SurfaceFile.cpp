@@ -24,7 +24,7 @@
 #include <C4Group.h>
 #endif
 
-C4Surface *GroupReadSurface(CStdStream &hGroup, BYTE *bpPalette)
+C4Surface *GroupReadSurface(CStdStream &hGroup, uint8_t *bpPalette)
 {
 	// create surface
 	C4Surface *pSfc = new C4Surface();

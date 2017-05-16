@@ -137,7 +137,7 @@ const uint32_t OCF_None             = 0,
 
 // Contact / Attachment
 
-const BYTE // Directional
+const uint8_t // Directional
 	CNAT_None        = 0,
 	CNAT_Left        = 1,
 	CNAT_Right       = 2,
@@ -148,7 +148,7 @@ const BYTE // Directional
 	CNAT_MultiAttach = 32, // new attachment behaviour; see C4Shape::Attach
 	CNAT_NoCollision = 64; // turn off collision for this vertex
 
-const BYTE CNAT_Flags = CNAT_MultiAttach | CNAT_NoCollision; // all attchment flags that can be combined with regular attachment
+const uint8_t CNAT_Flags = CNAT_MultiAttach | CNAT_NoCollision; // all attchment flags that can be combined with regular attachment
 
 // Keyboard Input Controls
 
@@ -169,80 +169,80 @@ const int CON_CursorLeft = 0,
 
 // Control Commands
 
-const BYTE COM_Single = 64,
-           COM_Double = 128;
+const uint8_t COM_Single = 64,
+              COM_Double = 128;
 
-const BYTE COM_None = 0;
+const uint8_t COM_None = 0;
 
-const BYTE COM_Left  = 1,
-           COM_Right = 2,
-           COM_Up    = 3,
-           COM_Down  = 4,
-           COM_Throw = 5,
-           COM_Dig   = 6,
+const uint8_t COM_Left  = 1,
+              COM_Right = 2,
+              COM_Up    = 3,
+              COM_Down  = 4,
+              COM_Throw = 5,
+              COM_Dig   = 6,
 
-           COM_Special  = 7,
-           COM_Special2 = 8,
+              COM_Special  = 7,
+              COM_Special2 = 8,
 
-           COM_Contents = 9,
+              COM_Contents = 9,
 
-           COM_WheelUp   = 10,
-           COM_WheelDown = 11,
+              COM_WheelUp   = 10,
+              COM_WheelDown = 11,
 
-           COM_Left_R       = COM_Left     + 16,
-           COM_Right_R      = COM_Right    + 16,
-           COM_Up_R         = COM_Up       + 16,
-           COM_Down_R       = COM_Down     + 16,
-           COM_Throw_R      = COM_Throw    + 16,
-           COM_Dig_R        = COM_Dig      + 16,
-           COM_Special_R    = COM_Special  + 16,
-           COM_Special2_R   = COM_Special2 + 16,
-           COM_ReleaseFirst = COM_Left_R,
-           COM_ReleaseLast  = COM_Special2_R,
+              COM_Left_R       = COM_Left     + 16,
+              COM_Right_R      = COM_Right    + 16,
+              COM_Up_R         = COM_Up       + 16,
+              COM_Down_R       = COM_Down     + 16,
+              COM_Throw_R      = COM_Throw    + 16,
+              COM_Dig_R        = COM_Dig      + 16,
+              COM_Special_R    = COM_Special  + 16,
+              COM_Special2_R   = COM_Special2 + 16,
+              COM_ReleaseFirst = COM_Left_R,
+              COM_ReleaseLast  = COM_Special2_R,
 
-           COM_Left_S     = COM_Left     | COM_Single,
-           COM_Right_S    = COM_Right    | COM_Single,
-           COM_Up_S       = COM_Up       | COM_Single,
-           COM_Down_S     = COM_Down     | COM_Single,
-           COM_Throw_S    = COM_Throw    | COM_Single,
-           COM_Dig_S      = COM_Dig      | COM_Single,
-           COM_Special_S  = COM_Special  | COM_Single,
-           COM_Special2_S = COM_Special2 | COM_Single,
+              COM_Left_S     = COM_Left     | COM_Single,
+              COM_Right_S    = COM_Right    | COM_Single,
+              COM_Up_S       = COM_Up       | COM_Single,
+              COM_Down_S     = COM_Down     | COM_Single,
+              COM_Throw_S    = COM_Throw    | COM_Single,
+              COM_Dig_S      = COM_Dig      | COM_Single,
+              COM_Special_S  = COM_Special  | COM_Single,
+              COM_Special2_S = COM_Special2 | COM_Single,
 
-           COM_Left_D     = COM_Left     | COM_Double,
-           COM_Right_D    = COM_Right    | COM_Double,
-           COM_Up_D       = COM_Up       | COM_Double,
-           COM_Down_D     = COM_Down     | COM_Double,
-           COM_Throw_D    = COM_Throw    | COM_Double,
-           COM_Dig_D      = COM_Dig      | COM_Double,
-           COM_Special_D  = COM_Special  | COM_Double,
-           COM_Special2_D = COM_Special2 | COM_Double;
+              COM_Left_D     = COM_Left     | COM_Double,
+              COM_Right_D    = COM_Right    | COM_Double,
+              COM_Up_D       = COM_Up       | COM_Double,
+              COM_Down_D     = COM_Down     | COM_Double,
+              COM_Throw_D    = COM_Throw    | COM_Double,
+              COM_Dig_D      = COM_Dig      | COM_Double,
+              COM_Special_D  = COM_Special  | COM_Double,
+              COM_Special2_D = COM_Special2 | COM_Double;
 
-const BYTE COM_CursorLeft   = 30,
-           COM_CursorRight  = 31,
-           COM_CursorToggle = 32;
+const uint8_t COM_CursorLeft   = 30,
+              COM_CursorRight  = 31,
+              COM_CursorToggle = 32;
 
-const BYTE COM_CursorToggle_D = COM_CursorToggle | COM_Double;
+const uint8_t COM_CursorToggle_D = COM_CursorToggle | COM_Double;
 
-const BYTE COM_Help       = 35,
-           COM_PlayerMenu = 36,
-           COM_Chat       = 37;
+const uint8_t COM_Help       = 35,
+              COM_PlayerMenu = 36,
+              COM_Chat       = 37;
 
-const BYTE COM_MenuEnter    = 38,
-           COM_MenuEnterAll = 39,
-           COM_MenuClose    = 40,
-           COM_MenuShowText = 42,
-           COM_MenuLeft     = 52,
-           COM_MenuRight    = 53,
-           COM_MenuUp       = 54,
-           COM_MenuDown     = 55,
-           COM_MenuSelect   = 60,
+const uint8_t COM_MenuEnter    = 38,
+              COM_MenuEnterAll = 39,
+              COM_MenuClose    = 40,
+              COM_MenuShowText = 42,
+              COM_MenuLeft     = 52,
+              COM_MenuRight    = 53,
+              COM_MenuUp       = 54,
+              COM_MenuDown     = 55,
+              COM_MenuSelect   = 60,
 
-           COM_MenuFirst = COM_MenuEnter,
-           COM_MenuLast  = COM_MenuSelect,
+              COM_MenuFirst = COM_MenuEnter,
+              COM_MenuLast  = COM_MenuSelect,
 
-           COM_MenuNavigation1 = COM_MenuShowText,
-           COM_MenuNavigation2 = COM_MenuSelect;
+              COM_MenuNavigation1 = COM_MenuShowText,
+              COM_MenuNavigation2 = COM_MenuSelect;
 
 // SendCommand
 

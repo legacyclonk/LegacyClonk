@@ -159,16 +159,16 @@ public:
 	C4ValueMapData ExtraData;
 
 public:
-	BOOL Save(C4Group &hGroup, class C4DefList *pDefs);
-	BOOL Load(C4Group &hGroup);
+	bool Save(C4Group &hGroup, class C4DefList *pDefs);
+	bool Load(C4Group &hGroup);
 	void Default(C4ID n_id = C4ID_None, class C4DefList *pDefs = nullptr, const char *cpNames = nullptr);
 	void Promote(int32_t iRank, C4RankSystem &rRanks, bool fForceRankName);
 	bool GetNextRankInfo(C4RankSystem &rDefaultRanks, int32_t *piNextRankExp, StdStrBuf *psNextRankName);
 	void CompileFunc(StdCompiler *pComp);
 
 protected:
-	BOOL Compile(const char *szSource);
-	BOOL Decompile(char **ppOutput, size_t *ipSize);
+	bool Compile(const char *szSource);
+	bool Decompile(char **ppOutput, size_t *ipSize);
 
 	void UpdateCustomRanks(C4DefList *pDefs); // sets NextRankName and NextRankExp
 };
@@ -219,9 +219,9 @@ public:
 
 public:
 	void Default(C4RankSystem *pRanks = nullptr);
-	BOOL Load(C4Group &hGroup);
-	BOOL Save(C4Group &hGroup);
-	static DWORD GetPrefColorValue(int32_t iPrefColor);
+	bool Load(C4Group &hGroup);
+	bool Save(C4Group &hGroup);
+	static uint32_t GetPrefColorValue(int32_t iPrefColor);
 	void CompileFunc(StdCompiler *pComp);
 };
 

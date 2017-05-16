@@ -422,7 +422,7 @@ C4Particle *C4ParticleSystem::Create(C4ParticleDef *pOfDef,
 
 bool C4ParticleSystem::Cast(C4ParticleDef *pOfDef, int32_t iAmount,
 	float x, float y, int32_t level,
-	float a0, DWORD b0, float a1, DWORD b1, C4ParticleList *pPxList, C4Object *pObj)
+	float a0, uint32_t b0, float a1, uint32_t b1, C4ParticleList *pPxList, C4Object *pObj)
 {
 	// safety
 	if (!pOfDef) return false;
@@ -430,9 +430,9 @@ bool C4ParticleSystem::Cast(C4ParticleDef *pOfDef, int32_t iAmount,
 	int32_t iA0 = (int32_t)(a0 * 100), iA1 = (int32_t)(a1 * 100);
 	if (iA1 < iA0) Swap(iA0, iA1);
 	int32_t iAd = iA1 - iA0 + 1;
-	if (b1 < b0) { DWORD dwX = b0; b0 = b1; b1 = dwX; }
-	DWORD db = b1 - b0;
-	BYTE db1 = BYTE(db >> 24), db2 = BYTE(db >> 16), db3 = BYTE(db >> 8), db4 = BYTE(db);
+	if (b1 < b0) { uint32_t dwX = b0; b0 = b1; b1 = dwX; }
+	uint32_t db = b1 - b0;
+	uint8_t db1 = uint8_t(db >> 24), db2 = uint8_t(db >> 16), db3 = uint8_t(db >> 8), db4 = uint8_t(db);
 	// create them
 	for (int32_t i = iAmount; i > 0; --i)
 		Create(pOfDef, x, y,
@@ -553,7 +553,7 @@ bool fxSmokeExec(C4Particle *pPrt, C4Object *pTarget)
 			pPrt->b = (pPrt->b & 0xffffff) | ((255 - pPrt->life) << 24);
 	}
 	// color change
-	DWORD dwClr = pPrt->b;
+	uint32_t dwClr = pPrt->b;
 	pPrt->b = (LightenClrBy(dwClr, 1) & 0xffffff) | Min<int32_t>((dwClr >> 24) + 1, 255) << 24;
 	// wind to float
 	if (!(pPrt->b % 12) || fBuilding)
@@ -665,7 +665,7 @@ bool fxStdExec(C4Particle *pPrt, C4Object *pTarget)
 	if (iFade < 0) if (Game.FrameCounter % -iFade == 0) iFade = 1; else iFade = 0;
 	if (iFade)
 	{
-		DWORD dwClr = pPrt->b;
+		uint32_t dwClr = pPrt->b;
 		int32_t iAlpha = dwClr >> 24;
 		iAlpha += pPrt->pDef->AlphaFade;
 		if (iAlpha >= 0xff) return false;

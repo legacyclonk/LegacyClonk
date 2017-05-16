@@ -129,8 +129,8 @@ public:
 
 public:
 	void Clear();
-	BOOL Load(C4Group &hGroup, const char *szEntryName);
-	DWORD GetDWordColor(int32_t iIndex); // get indexed material color as DWord
+	bool Load(C4Group &hGroup, const char *szEntryName);
+	uint32_t GetDWordColor(int32_t iIndex); // get indexed material color as DWord
 	void CompileFunc(StdCompiler *pComp);
 };
 
@@ -184,8 +184,8 @@ public:
 	void Clear();
 	int32_t Load(C4Group &hGroup, C4Group *OverloadFile = 0);
 	int32_t Get(const char *szMaterial);
-	BOOL SaveEnumeration(C4Group &hGroup);
-	BOOL LoadEnumeration(C4Group &hGroup);
+	bool SaveEnumeration(C4Group &hGroup);
+	bool LoadEnumeration(C4Group &hGroup);
 
 	C4MaterialReaction *GetReactionUnsafe(int32_t iPXSMat, int32_t iLandscapeMat)
 	{
@@ -200,7 +200,7 @@ public:
 
 protected:
 	void SetMatReaction(int32_t iPXSMat, int32_t iLSMat, C4MaterialReaction *pReact);
-	BOOL SortEnumeration(int32_t iMat, const char *szMatName);
+	bool SortEnumeration(int32_t iMat, const char *szMatName);
 };
 
 const int32_t C4M_Flat = 0,

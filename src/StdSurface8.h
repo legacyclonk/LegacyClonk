@@ -32,16 +32,16 @@ public:
 public:
 	int Wdt, Hgt, Pitch; // size of surface
 	int ClipX, ClipY, ClipX2, ClipY2;
-	BYTE *Bits;
+	uint8_t *Bits;
 	CStdPalette *pPal; // pal for this surface (usually points to the main pal)
 	bool HasOwnPal(); // return whether the surface palette is owned
 	void HLine(int iX, int iX2, int iY, int iCol);
 	void Polygon(int iNum, int *ipVtx, int iCol);
 	void Box(int iX, int iY, int iX2, int iY2, int iCol);
-	void Circle(int x, int y, int r, BYTE col);
+	void Circle(int x, int y, int r, uint8_t col);
 	void ClearBox8Only(int iX, int iY, int iWdt, int iHgt); // clear box in 8bpp-surface only
 
-	void SetPix(int iX, int iY, BYTE byCol)
+	void SetPix(int iX, int iY, uint8_t byCol)
 	{
 		// clip
 		if ((iX < ClipX) || (iX > ClipX2) || (iY < ClipY) || (iY > ClipY2)) return;
@@ -49,13 +49,13 @@ public:
 		if (Bits) Bits[iY * Pitch + iX] = byCol;
 	}
 
-	BYTE GetPix(int iX, int iY) // get pixel
+	uint8_t GetPix(int iX, int iY) // get pixel
 	{
 		if (iX < 0 || iY < 0 || iX >= Wdt || iY >= Hgt) return 0;
 		return Bits ? Bits[iY * Pitch + iX] : 0;
 	}
 
-	inline BYTE _GetPix(int x, int y) // get pixel (bounds not checked)
+	inline uint8_t _GetPix(int x, int y) // get pixel (bounds not checked)
 	{
 		return Bits[y * Pitch + x];
 	}
@@ -65,8 +65,8 @@ public:
 	void Clip(int iX, int iY, int iX2, int iY2);
 	void NoClip();
 	bool Read(class CStdStream &hGroup, bool fOwnPal);
-	bool Save(const char *szFilename, BYTE *bpPalette = nullptr);
+	bool Save(const char *szFilename, uint8_t *bpPalette = nullptr);
 	void GetSurfaceSize(int &irX, int &irY); // get surface size
 	void EnforceC0Transparency() { pPal->EnforceC0Transparency(); }
-	void AllowColor(BYTE iRngLo, BYTE iRngHi, BOOL fAllowZero = FALSE);
+	void AllowColor(uint8_t iRngLo, uint8_t iRngHi, bool fAllowZero = false);
 };

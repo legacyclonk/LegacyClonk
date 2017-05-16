@@ -28,16 +28,16 @@ public:
 	~C4Sky();
 	void Default(); // zero fields
 
-	BOOL Init(bool fSavegame);
-	BOOL Save(C4Group &hGroup);
+	bool Init(bool fSavegame);
+	bool Save(C4Group &hGroup);
 	void Clear();
 	void SetFadePalette(int32_t *ipColors);
 	void Draw(C4FacetEx &cgo); // draw sky
-	DWORD GetSkyFadeClr(int32_t iY); // get sky color at iY
+	uint32_t GetSkyFadeClr(int32_t iY); // get sky color at iY
 	void Execute(); // move sky
-	bool SetModulation(DWORD dwWithClr, DWORD dwBackClr); // adjust the way the sky is blitted
+	bool SetModulation(uint32_t dwWithClr, uint32_t dwBackClr); // adjust the way the sky is blitted
 
-	DWORD GetModulation(bool fBackClr)
+	uint32_t GetModulation(bool fBackClr)
 	{
 		return fBackClr ? BackClr : Modulation;
 	}

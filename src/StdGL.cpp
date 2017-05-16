@@ -28,7 +28,7 @@
 #include <math.h>
 #include <limits.h>
 
-void glColorDw(DWORD dwClr)
+void glColorDw(uint32_t dwClr)
 {
 	glColor4ub(GLubyte(dwClr >> 16), GLubyte(dwClr >> 8), GLubyte(dwClr), GLubyte(dwClr >> 24));
 }
@@ -68,14 +68,14 @@ bool CStdGL::PageFlip(RECT *pSrcRt, RECT *pDstRt, CStdWindow *pWindow)
 	// call from gfx thread only!
 	if (!pApp || !pApp->AssertMainThread()) return false;
 	// safety
-	if (!pCurrCtx) return FALSE;
+	if (!pCurrCtx) return false;
 	// end the scene and present it
-	if (!pCurrCtx->PageFlip()) return FALSE;
+	if (!pCurrCtx->PageFlip()) return false;
 	// success!
-	return TRUE;
+	return true;
 }
 
-void CStdGL::FillBG(DWORD dwClr)
+void CStdGL::FillBG(uint32_t dwClr)
 {
 	if (!pCurrCtx) if (!MainCtx.Select()) return;
 	glClearColor((float)GetBValue(dwClr) / 255.0f, (float)GetGValue(dwClr) / 255.0f, (float)GetRValue(dwClr) / 255.0f, 1.0f);
@@ -132,13 +132,13 @@ bool CStdGL::PrepareRendering(SURFACE sfcToSurface)
 	return true;
 }
 
-void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool fMod2, bool fExact)
+void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact)
 {
 	// clipping
 	if (DDrawCfg.ClipManually && rBltData.pTransform) ClipPoly(rBltData);
 	// global modulation map
 	int i;
-	DWORD dwModMask = 0;
+	uint32_t dwModMask = 0;
 	bool fAnyModNotBlack;
 	bool fModClr = false;
 	if (fUseClrModMap && dwModClr)
@@ -154,7 +154,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool 
 			}
 			rBltData.vtVtx[i].dwModClr = pClrModMap->GetModAt(x, y);
 			if (rBltData.vtVtx[i].dwModClr >> 24) dwModMask = 0xff000000;
-			ModulateClr((DWORD &)rBltData.vtVtx[i].dwModClr, dwModClr);
+			ModulateClr((uint32_t &)rBltData.vtVtx[i].dwModClr, dwModClr);
 			if (rBltData.vtVtx[i].dwModClr) fAnyModNotBlack = true;
 			if (rBltData.vtVtx[i].dwModClr != 0xffffff) fModClr = true;
 		}
@@ -362,7 +362,7 @@ void CStdGL::BlitLandscape(SURFACE sfcSource, SURFACE sfcSource2, SURFACE sfcLiq
 		glBindTexture(GL_TEXTURE_2D, (*sfcLiquidAnimation->ppTex)->texName);
 		glActiveTexture(GL_TEXTURE0);
 	}
-	DWORD dwModMask = 0;
+	uint32_t dwModMask = 0;
 	if (shader)
 	{
 		glEnable(GL_FRAGMENT_SHADER_ATI);
@@ -458,7 +458,7 @@ void CStdGL::BlitLandscape(SURFACE sfcSource, SURFACE sfcSource2, SURFACE sfcLiq
 		for (int iX = iTexX; iX < iTexX2; ++iX)
 		{
 			// blit
-			DWORD dwModClr = BlitModulated ? BlitModulateClr : 0xffffff;
+			uint32_t dwModClr = BlitModulated ? BlitModulateClr : 0xffffff;
 
 			if (sfcSource2)
 				glActiveTexture(GL_TEXTURE0);
@@ -513,7 +513,7 @@ void CStdGL::BlitLandscape(SURFACE sfcSource, SURFACE sfcSource2, SURFACE sfcLiq
 				for (i = 0; i < 4; ++i)
 				{
 					fdwModClr[i] = pClrModMap->GetModAt(int(ftx[i]), int(fty[i]));
-					ModulateClr((DWORD &)fdwModClr[i], dwModClr);
+					ModulateClr((uint32_t &)fdwModClr[i], dwModClr);
 				}
 			}
 			else
@@ -554,10 +554,10 @@ void CStdGL::BlitLandscape(SURFACE sfcSource, SURFACE sfcSource2, SURFACE sfcLiq
 	ResetTexture();
 }
 
-BOOL CStdGL::CreateDirectDraw()
+bool CStdGL::CreateDirectDraw()
 {
 	Log("  Using OpenGL...");
-	return TRUE;
+	return true;
 }
 
 CStdGLCtx *CStdGL::CreateContext(CStdWindow *pWindow, CStdApp *pApp)
@@ -590,7 +590,7 @@ CStdGLCtx *CStdGL::CreateContext(HWND hWindow, CStdApp *pApp)
 }
 #endif
 
-bool CStdGL::CreatePrimarySurfaces(BOOL Playermode, int iColorDepth, unsigned int iMonitor)
+bool CStdGL::CreatePrimarySurfaces(bool Playermode, int iColorDepth, unsigned int iMonitor)
 {
 	// remember fullscreen setting
 	fFullscreen = Playermode && !DDrawCfg.Windowed;
@@ -635,7 +635,7 @@ bool CStdGL::CreatePrimarySurfaces(BOOL Playermode, int iColorDepth, unsigned in
 	return InitDeviceObjects();
 }
 
-void CStdGL::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, DWORD dwClr1, DWORD dwClr2, DWORD dwClr3, DWORD dwClr4)
+void CStdGL::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
 {
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
@@ -673,7 +673,7 @@ void CStdGL::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, DWORD dwClr1, DWORD dwClr
 	glShadeModel(GL_FLAT);
 }
 
-void CStdGL::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, DWORD dwClr)
+void CStdGL::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr)
 {
 	float i;
 	// manual clipping?
@@ -728,7 +728,7 @@ void CStdGL::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y
 		// draw one line
 		glBegin(GL_LINES);
 		// global clr modulation map
-		DWORD dwClr1 = dwClr;
+		uint32_t dwClr1 = dwClr;
 		if (fUseClrModMap)
 		{
 			ModulateClr(dwClr1, pClrModMap->GetModAt((int)x1, (int)y1));
@@ -753,7 +753,7 @@ void CStdGL::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y
 	}
 }
 
-void CStdGL::DrawPixInt(SURFACE sfcTarget, float tx, float ty, DWORD dwClr)
+void CStdGL::DrawPixInt(SURFACE sfcTarget, float tx, float ty, uint32_t dwClr)
 {
 	// render target?
 	if (sfcTarget->IsRenderTarget())

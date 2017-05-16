@@ -36,7 +36,7 @@ StdStrBuf sLogFileName;
 
 StdStrBuf sFatalError;
 
-BOOL OpenLog()
+bool OpenLog()
 {
 	// open
 	sLogFileName = C4CFN_Log; int iLog = 2;
@@ -54,7 +54,7 @@ BOOL OpenLog()
 	return true;
 }
 
-BOOL CloseLog()
+bool CloseLog()
 {
 	// close
 	if (C4LogFile) fclose(C4LogFile); C4LogFile = nullptr;
@@ -189,7 +189,7 @@ const char *GetFatalError()
 	return sFatalError.getData();
 }
 
-BOOL LogF(const char *strMessage, ...)
+bool LogF(const char *strMessage, ...)
 {
 	va_list args; va_start(args, strMessage);
 	// Compose formatted message
@@ -199,7 +199,7 @@ BOOL LogF(const char *strMessage, ...)
 	return Log(Buf.getData());
 }
 
-BOOL LogSilentF(const char *strMessage, ...)
+bool LogSilentF(const char *strMessage, ...)
 {
 	va_list args; va_start(args, strMessage);
 	// Compose formatted message
@@ -209,7 +209,7 @@ BOOL LogSilentF(const char *strMessage, ...)
 	return LogSilent(Buf.getData());
 }
 
-BOOL DebugLog(const char *strMessage)
+bool DebugLog(const char *strMessage)
 {
 	if (Game.DebugMode)
 		return Log(strMessage);
@@ -217,7 +217,7 @@ BOOL DebugLog(const char *strMessage)
 		return LogSilent(strMessage);
 }
 
-BOOL DebugLogF(const char *strMessage ...)
+bool DebugLogF(const char *strMessage ...)
 {
 	va_list args; va_start(args, strMessage);
 	StdStrBuf Buf;
@@ -237,7 +237,7 @@ bool GetLogSection(size_t iStart, size_t iLength, StdStrBuf &rsOut)
 	// read section from log file
 	CStdFile LogFileRead;
 	char *szBuf, *szBufOrig; size_t iSize; // size exclusing terminator
-	if (!LogFileRead.Load(sLogFileName.getData(), (BYTE **)&szBuf, (int *)&iSize, 1)) return false;
+	if (!LogFileRead.Load(sLogFileName.getData(), (uint8_t **)&szBuf, (int *)&iSize, 1)) return false;
 	szBufOrig = szBuf;
 	// reduce to desired buffer section
 	if (iStart > iSize) iStart = iSize;

@@ -44,11 +44,11 @@ int CBitmap256Info::FileBitsOffset()
 	return Head.bfOffBits - sizeof(CBitmap256Info);
 }
 
-void CBitmap256Info::Set(int iWdt, int iHgt, BYTE *bypPalette)
+void CBitmap256Info::Set(int iWdt, int iHgt, uint8_t *bypPalette)
 {
 	Default();
 	// Set header
-	Head.bfType = *((WORD *)"BM");
+	Head.bfType = *((uint16_t *)"BM");
 	Head.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD) + DWordAligned(iWdt) * iHgt;
 	Head.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD);
 	// Set bitmap info

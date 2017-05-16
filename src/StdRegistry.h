@@ -23,42 +23,42 @@
 #include <windows.h>
 #include "StdCompiler.h"
 
-BOOL GetRegistryDWord(HKEY hKey, const char *szSubKey,
+bool GetRegistryDWord(HKEY hKey, const char *szSubKey,
 	const char *szValueName, DWORD *lpdwValue);
 
-BOOL GetRegistryString(const char *szSubKey, const char *szValueName, char *sValue, DWORD dwValSize);
-BOOL SetRegistryString(const char *szSubKey, const char *szValueName, const char *szValue);
+bool GetRegistryString(const char *szSubKey, const char *szValueName, char *sValue, DWORD dwValSize);
+bool SetRegistryString(const char *szSubKey, const char *szValueName, const char *szValue);
 
-BOOL DeleteRegistryKey(HKEY hKey, const char *szSubKey);
+bool DeleteRegistryKey(HKEY hKey, const char *szSubKey);
 
-BOOL SetRegClassesRoot(const char *szSubKey,
+bool SetRegClassesRoot(const char *szSubKey,
 	const char *szValueName,
 	const char *szStringValue);
 
-BOOL SetRegShell(const char *szClassName,
+bool SetRegShell(const char *szClassName,
 	const char *szShellName,
 	const char *szShellCaption,
 	const char *szCommand,
-	BOOL fMakeDefault = FALSE);
+	bool fMakeDefault = false);
 
-BOOL RemoveRegShell(const char *szClassName,
+bool RemoveRegShell(const char *szClassName,
 	const char *szShellName);
 
-BOOL SetRegFileClass(const char *szClassRoot,
+bool SetRegFileClass(const char *szClassRoot,
 	const char *szExtension,
 	const char *szClassName,
 	const char *szIconPath, int iIconNum,
 	const char *szContentType);
 
-BOOL StoreWindowPosition(HWND hwnd,
+bool StoreWindowPosition(HWND hwnd,
 	const char *szWindowName,
 	const char *szSubKey,
-	BOOL fStoreSize = TRUE);
+	bool fStoreSize = true);
 
-BOOL RestoreWindowPosition(HWND hwnd,
+bool RestoreWindowPosition(HWND hwnd,
 	const char *szWindowName,
 	const char *szSubKey,
-	BOOL fHidden = FALSE);
+	bool fHidden = false);
 
 // config writer
 class StdCompilerConfigWrite : public StdCompiler

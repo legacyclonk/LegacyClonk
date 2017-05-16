@@ -79,5 +79,5 @@ public:
 
 	// some query fns
 	C4ClientPlayerInfos *GetLocalPlayerInfoPacket() const; // get player info packet for local client (created in Init())
-	DWORD GetClientChatColor(int idForClient, bool fLobby) const;
+	uint32_t GetClientChatColor(int idForClient, bool fLobby) const;
 };

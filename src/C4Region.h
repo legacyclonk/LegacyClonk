@@ -67,6 +67,6 @@ public:
 	void Clear();
 	void Default();
 	C4Region *Find(int iX, int iY);
-	BOOL Add(int iX, int iY, int iWdt, int iHgt, const char *szCaption = nullptr, int iCom = COM_None, C4Object *pTarget = nullptr, int iMoveOverCom = COM_None, int iHoldCom = COM_None, int iData = 0);
-	BOOL Add(C4Region &rRegion);
+	bool Add(int iX, int iY, int iWdt, int iHgt, const char *szCaption = nullptr, int iCom = COM_None, C4Object *pTarget = nullptr, int iMoveOverCom = COM_None, int iHoldCom = COM_None, int iData = 0);
+	bool Add(C4Region &rRegion);
 };

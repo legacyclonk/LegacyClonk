@@ -743,7 +743,7 @@ void C4PlayerInfoList::UpdatePlayerAttributes(C4ClientPlayerInfos *pForInfo, boo
 		if (!pInfo->HasJoined())
 		{
 			// assign savegame colors
-			int32_t idSavegameID; bool fHasForcedColor = false; DWORD dwForceClr;
+			int32_t idSavegameID; bool fHasForcedColor = false; uint32_t dwForceClr;
 			if (idSavegameID = pInfo->GetAssociatedSavegamePlayerID())
 				if (pInfo2 = Game.RestorePlayerInfos.GetPlayerInfoByID(idSavegameID))
 				{
@@ -1197,7 +1197,7 @@ bool C4PlayerInfoList::Save(C4Group &hGroup, const char *szToFile)
 		StdStrBuf Buf = DecompileToBuf<StdCompilerINIWrite>(
 			mkNamingAdapt(*this, "PlayerInfoList"));
 		// save buffer to group
-		hGroup.Add(szToFile, Buf, FALSE, TRUE);
+		hGroup.Add(szToFile, Buf, false, true);
 	}
 	catch (StdCompiler::Exception *)
 	{
@@ -1215,7 +1215,7 @@ bool C4PlayerInfoList::LoadFromGameText(const char *pSource)
 	const char *szPos;
 	char szLinebuf[30 + _MAX_PATH + 1];
 	if (szPos = SSearch(pSource, "[PlayerFiles]"))
-		while (TRUE)
+		while (true)
 		{
 			szPos = SAdvanceSpace(szPos);
 			SCopyUntil(szPos, szLinebuf, 0x0D, 30 + _MAX_PATH);
@@ -1602,7 +1602,7 @@ bool C4PlayerInfoList::RecreatePlayers()
 					Game.Control.RecAddFile(szFilename, sFilenameInRecord.getData());
 				}
 				// recreate join directly
-				Game.Players.Join(szFilename, FALSE, idAtClient, szAtClientName, pInfo);
+				Game.Players.Join(szFilename, false, idAtClient, szAtClientName, pInfo);
 				// delete temporary files immediately
 				if (pInfo->IsTempFile()) pInfo->DeleteTempFile();
 			}

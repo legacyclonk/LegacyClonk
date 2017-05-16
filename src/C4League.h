@@ -86,7 +86,7 @@ public:
 class C4LeagueRequestHeadEnd : public C4LeagueRequestHead
 {
 public:
-	C4LeagueRequestHeadEnd(C4LeagueAction eAction, const char *szCSID, const char *szRecordName = nullptr, const BYTE *pRecordSHA = nullptr)
+	C4LeagueRequestHeadEnd(C4LeagueAction eAction, const char *szCSID, const char *szRecordName = nullptr, const uint8_t *pRecordSHA = nullptr)
 		: C4LeagueRequestHead(eAction, szCSID), RecordName(szRecordName)
 	{
 		if (pRecordSHA)
@@ -223,7 +223,7 @@ public:
 	bool GetUpdateReply(StdStrBuf *pMessage, C4ClientPlayerInfos *pPlayerLeagueInfos);
 
 	// Action "End"
-	bool End(const C4Network2Reference &Ref, const char *szRecordName, const BYTE *pRecordSHA);
+	bool End(const C4Network2Reference &Ref, const char *szRecordName, const uint8_t *pRecordSHA);
 	bool GetEndReply(StdStrBuf *pMessage, class C4RoundResultsPlayers *pRoundResults);
 
 	// Action "Auth"

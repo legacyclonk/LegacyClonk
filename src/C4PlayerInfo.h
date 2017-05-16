@@ -77,7 +77,7 @@ public:
 	enum AttributeLevel { PLRAL_Current, PLRAL_Original, PLRAL_Alternate };
 
 private:
-	uint32_t dwFlags; // DWORD-mask of C4PlayerInfoFlags-constants
+	uint32_t dwFlags; // bitmask of C4PlayerInfoFlags-constants
 	C4PlayerType eType; // user or script player
 
 	ValidatedStdCopyStrBuf<C4InVal::VAL_NameNoEmpty> sName; // player name
@@ -119,8 +119,8 @@ public:
 	void SetJoinIssued() { dwFlags |= PIF_JoinIssued; } // mark as joined
 	void SetRemoved(); // mark as removed in current game frame - always marks as previously joined, too
 	void SetID(int32_t iToID) { iID = iToID; } // set player info ID
-	void SetColor(DWORD dwUseClr) { dwColor = dwUseClr; } // set color to be used
-	void SetOriginalColor(DWORD dwUseClr) { dwOriginalColor = dwUseClr; } // set color the player wishes to have
+	void SetColor(uint32_t dwUseClr) { dwColor = dwUseClr; } // set color to be used
+	void SetOriginalColor(uint32_t dwUseClr) { dwOriginalColor = dwUseClr; } // set color the player wishes to have
 	void SetFilename(const char *szToFilename); // set new player filename
 	void SetTempFile() { assert(!!szFilename); dwFlags |= PIF_TempFile; } // mark filename as temp, so it is deleted in dtor or after join
 	void SetTeam(int32_t idToTeam) { idTeam = idToTeam; }
@@ -229,7 +229,7 @@ public:
 	int32_t GetTeam() const { return idTeam; }
 	bool IsTempFile() const { return !!(dwFlags & PIF_TempFile); } // return whether filename points to temp folder
 
-	DWORD GetFlags() { return dwFlags; } // for dbg print only
+	uint32_t GetFlags() { return dwFlags; } // for dbg print only
 
 	void SetDisconnected() { dwFlags |= PIF_Disconnected; }
 	void SetWinner() { dwFlags |= PIF_Won; }

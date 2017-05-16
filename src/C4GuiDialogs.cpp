@@ -181,7 +181,7 @@ CStdWindow *DialogWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPa
 	rtSize.top = 0;
 	rtSize.right = rcBounds.Wdt;
 	rtSize.bottom = rcBounds.Hgt;
-	if (!::AdjustWindowRectEx(&rtSize, ConsoleDlgWindowStyle, FALSE, 0)) return false;
+	if (!::AdjustWindowRectEx(&rtSize, ConsoleDlgWindowStyle, false, 0)) return false;
 	// create it!
 	if (!Title || !*Title) Title = "???";
 	hWindow = ::CreateWindowEx(
@@ -194,7 +194,7 @@ CStdWindow *DialogWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPa
 	{
 		// update pos
 		if (szID && *szID)
-			RestoreWindowPosition(hWindow, FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"), FALSE);
+			RestoreWindowPosition(hWindow, FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"), false);
 		// and show
 		::ShowWindow(hWindow, SW_SHOW);
 	}
@@ -229,7 +229,7 @@ LRESULT APIENTRY DialogWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	{
 		const char *szID = pDlg->GetID();
 		if (szID && *szID)
-			StoreWindowPosition(hwnd, FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"), FALSE);
+			StoreWindowPosition(hwnd, FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"), false);
 	}
 	break;
 
@@ -288,7 +288,7 @@ CStdWindow *DialogWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPa
 	{
 		// update pos
 		if (szID && *szID)
-			RestorePosition(FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"), FALSE);
+			RestorePosition(FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"), false);
 		else
 			SetSize(rcBounds.Wdt, rcBounds.Hgt);
 		return this;
@@ -470,7 +470,7 @@ void Dialog::UpdateSize()
 		rtSize.right = rcBounds.Wdt;
 		rtSize.bottom = rcBounds.Hgt;
 #ifdef _WIN32
-		if (::AdjustWindowRectEx(&rtSize, ConsoleDlgWindowStyle, FALSE, 0))
+		if (::AdjustWindowRectEx(&rtSize, ConsoleDlgWindowStyle, false, 0))
 #endif // _WIN32
 			pWindow->SetSize(rtSize.right - rtSize.left, rtSize.bottom - rtSize.top);
 	}
@@ -559,10 +559,10 @@ void Dialog::DrawElement(C4FacetEx &cgo)
 	}
 }
 
-BOOL Dialog::CharIn(const char *c)
+bool Dialog::CharIn(const char *c)
 {
 	// reroute to active control
-	if (pActiveCtrl && pActiveCtrl->CharIn(c)) return TRUE;
+	if (pActiveCtrl && pActiveCtrl->CharIn(c)) return true;
 	// unprocessed: Focus default control
 	// Except for space, which may have been processed as a key already
 	// (changing focus here would render buttons unusable, because they switch on KeyUp)
@@ -571,17 +571,17 @@ BOOL Dialog::CharIn(const char *c)
 	{
 		SetFocus(pDefCtrl, false);
 		if (pActiveCtrl && pActiveCtrl->CharIn(c))
-			return TRUE;
+			return true;
 	}
-	return FALSE;
+	return false;
 }
 
 bool Dialog::KeyHotkey(C4KeyCodeEx key)
 {
-	WORD wKey = WORD(key.Key);
+	uint16_t wKey = uint16_t(key.Key);
 	// do hotkey procs for standard alphanumerics only
-	if (Inside<WORD>(TOUPPERIFX11(wKey), 'A', 'Z')) if (OnHotkey(char(TOUPPERIFX11(wKey)))) return true;
-	if (Inside<WORD>(TOUPPERIFX11(wKey), '0', '9')) if (OnHotkey(char(TOUPPERIFX11(wKey)))) return true;
+	if (Inside<uint16_t>(TOUPPERIFX11(wKey), 'A', 'Z')) if (OnHotkey(char(TOUPPERIFX11(wKey)))) return true;
+	if (Inside<uint16_t>(TOUPPERIFX11(wKey), '0', '9')) if (OnHotkey(char(TOUPPERIFX11(wKey)))) return true;
 	return false;
 }
 
@@ -595,7 +595,7 @@ bool Dialog::KeyFocusDefault()
 	return false;
 }
 
-void Dialog::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Dialog::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// inherited will do...
 	Window::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);
@@ -887,7 +887,7 @@ void FullscreenDialog::DrawBackground(C4FacetEx &cgo, C4Facet &rFromFct)
 
 // MessageDialog
 
-MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, DWORD dwButtons, Icons icoIcon, DlgSize eSize, int32_t *piConfigDontShowAgainSetting, bool fDefaultNo)
+MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, DlgSize eSize, int32_t *piConfigDontShowAgainSetting, bool fDefaultNo)
 	: Dialog(eSize, 100 /* will be resized */, szCaption, false), piConfigDontShowAgainSetting(piConfigDontShowAgainSetting)
 {
 	CStdFont &rUseFont = GetRes()->TextFont;
@@ -983,7 +983,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, DWORD
 
 // ConfirmationDialog
 
-ConfirmationDialog::ConfirmationDialog(const char *szMessage, const char *szCaption, BaseCallbackHandler *pCB, DWORD dwButtons, bool fSmall, Icons icoIcon)
+ConfirmationDialog::ConfirmationDialog(const char *szMessage, const char *szCaption, BaseCallbackHandler *pCB, uint32_t dwButtons, bool fSmall, Icons icoIcon)
 	: MessageDialog(szMessage, szCaption, dwButtons, icoIcon, fSmall ? MessageDialog::dsSmall : MessageDialog::dsRegular)
 {
 	if (this->pCB = pCB) pCB->Ref();
@@ -1053,7 +1053,7 @@ bool Screen::ShowErrorMessage(const char *szMessage)
 	return ShowMessage(szMessage, LoadResStr("IDS_DLG_ERROR"), Ico_Error);
 }
 
-bool Screen::ShowMessageModal(const char *szMessage, const char *szCaption, DWORD dwButtons, Icons icoIcon, int32_t *piConfigDontShowAgainSetting)
+bool Screen::ShowMessageModal(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, int32_t *piConfigDontShowAgainSetting)
 {
 	// always log messages
 	LogSilentF("[Modal] %s: %s", szCaption, szMessage);

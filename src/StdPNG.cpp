@@ -176,7 +176,7 @@ bool CPNGFile::Load(unsigned char *pFile, int iSize)
 	return true;
 }
 
-DWORD CPNGFile::GetPix(int iX, int iY)
+uint32_t CPNGFile::GetPix(int iX, int iY)
 {
 	// image loaded?
 	if (!pImageData) return 0;
@@ -217,7 +217,7 @@ bool CPNGFile::Create(int iWdt, int iHgt, bool fAlpha)
 	return true;
 }
 
-bool CPNGFile::SetPix(int iX, int iY, DWORD dwValue)
+bool CPNGFile::SetPix(int iX, int iY, uint32_t dwValue)
 {
 	// image created?
 	if (!pImageData) return false;

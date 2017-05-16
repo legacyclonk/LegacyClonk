@@ -36,7 +36,7 @@ protected:
 	bool fSelectionChanged;
 	int32_t Mode;
 	int32_t X, Y, X2, Y2;
-	BOOL Hold, DragFrame, DragLine;
+	bool Hold, DragFrame, DragLine;
 	C4Object *Target, *DropTarget;
 #ifdef _WIN32
 	HMENU hMenu;
@@ -59,31 +59,31 @@ public:
 	void Draw(C4FacetEx &cgo);
 	int32_t GetMode();
 	C4Object *GetTarget();
-	BOOL SetMode(int32_t iMode);
-	BOOL In(const char *szText);
-	BOOL Duplicate();
-	BOOL OpenPropTools();
+	bool SetMode(int32_t iMode);
+	bool In(const char *szText);
+	bool Duplicate();
+	bool OpenPropTools();
 	bool Delete();
-	BOOL LeftButtonUp();
-	BOOL LeftButtonDown(BOOL fControl);
-	BOOL RightButtonUp();
-	BOOL RightButtonDown(BOOL fControl);
-	bool Move(int32_t iX, int32_t iY, WORD wKeyFlags);
-	BOOL Init();
-	BOOL EditingOK();
+	bool LeftButtonUp();
+	bool LeftButtonDown(bool fControl);
+	bool RightButtonUp();
+	bool RightButtonDown(bool fControl);
+	bool Move(int32_t iX, int32_t iY, uint16_t wKeyFlags);
+	bool Init();
+	bool EditingOK();
 	C4ObjectList &GetSelection() { return Selection; }
-	void SetHold(BOOL fToState) { Hold = fToState; }
+	void SetHold(bool fToState) { Hold = fToState; }
 	void OnSelectionChanged();
 	bool AltDown();
 	bool AltUp();
 
 protected:
-	BOOL UpdateStatusBar();
+	bool UpdateStatusBar();
 	void ApplyToolPicker();
 	void PutContents();
-	void UpdateDropTarget(WORD wKeyFlags);
+	void UpdateDropTarget(uint16_t wKeyFlags);
 	void GrabContents();
-	BOOL DoContextMenu();
+	bool DoContextMenu();
 	void ApplyToolFill();
 	void ApplyToolRect();
 	void ApplyToolLine();

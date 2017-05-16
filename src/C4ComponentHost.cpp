@@ -40,7 +40,7 @@ BOOL CALLBACK ComponentDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam
 		break;
 
 	case WM_DESTROY:
-		StoreWindowPosition(hDlg, "Component", Config.GetSubkeyPath("Console"), FALSE);
+		StoreWindowPosition(hDlg, "Component", Config.GetSubkeyPath("Console"), false);
 		break;
 
 	case WM_INITDIALOG:
@@ -60,7 +60,7 @@ BOOL CALLBACK ComponentDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam
 			// IDC_EDITDATA to Data
 			char buffer[65000];
 			GetDlgItemText(hDlg, IDC_EDITDATA, buffer, 65000);
-			pCmpHost->Modified = TRUE;
+			pCmpHost->Modified = true;
 			pCmpHost->Data.Copy(buffer);
 			pCmpHost->Close();
 			return TRUE;
@@ -95,7 +95,7 @@ C4ComponentHost::~C4ComponentHost()
 void C4ComponentHost::Default()
 {
 	Data.Clear();
-	Modified = FALSE;
+	Modified = false;
 	Name[0] = 0;
 	Filename[0] = 0;
 	FilePath[0] = 0;
@@ -112,7 +112,7 @@ void C4ComponentHost::Clear()
 #endif
 }
 
-BOOL C4ComponentHost::Load(const char *szName,
+bool C4ComponentHost::Load(const char *szName,
 	C4Group &hGroup,
 	const char *szFilename,
 	const char *szLanguage)
@@ -139,7 +139,7 @@ BOOL C4ComponentHost::Load(const char *szName,
 				hGroup.FindEntry(strEntryWithLanguage, Filename);
 				CopyFilePathFromGroup(hGroup);
 				// Got it
-				return TRUE;
+				return true;
 			}
 			// Couldn't insert language code anyway - no point in trying other languages
 			if (!SSearch(strEntry, "%s")) break;
@@ -149,10 +149,10 @@ BOOL C4ComponentHost::Load(const char *szName,
 	SReplaceChar(Filename, '|', 0);
 	CopyFilePathFromGroup(hGroup);
 	// Not loaded
-	return FALSE;
+	return false;
 }
 
-BOOL C4ComponentHost::Load(const char *szName,
+bool C4ComponentHost::Load(const char *szName,
 	C4GroupSet &hGroupSet,
 	const char *szFilename,
 	const char *szLanguage)
@@ -180,7 +180,7 @@ BOOL C4ComponentHost::Load(const char *szName,
 				pGroup->FindEntry(strEntryWithLanguage, Filename);
 				CopyFilePathFromGroup(*pGroup);
 				// Got it
-				return TRUE;
+				return true;
 			}
 			// Couldn't insert language code anyway - no point in trying other languages
 			if (!SSearch(strEntry, "%s")) break;
@@ -191,10 +191,10 @@ BOOL C4ComponentHost::Load(const char *szName,
 	// skip full path (unknown)
 	FilePath[0] = 0;
 	// Not loaded
-	return FALSE;
+	return false;
 }
 
-BOOL C4ComponentHost::LoadEx(const char *szName,
+bool C4ComponentHost::LoadEx(const char *szName,
 	C4Group &hGroup,
 	const char *szFilename,
 	const char *szLanguage)
@@ -208,7 +208,7 @@ BOOL C4ComponentHost::LoadEx(const char *szName,
 	return Load(szName, hGroups, szFilename, szLanguage);
 }
 
-BOOL C4ComponentHost::LoadAppend(const char *szName,
+bool C4ComponentHost::LoadAppend(const char *szName,
 	C4Group &hGroup, const char *szFilename,
 	const char *szLanguage)
 {
@@ -241,7 +241,7 @@ BOOL C4ComponentHost::LoadAppend(const char *szName,
 	}
 
 	// No matching files found?
-	if (!iFileCnt) return FALSE;
+	if (!iFileCnt) return false;
 
 	// Allocate memory
 	Data.SetLength(iFileSizeSum);
@@ -282,9 +282,9 @@ void C4ComponentHost::CopyFilePathFromGroup(const C4Group &hGroup)
 	SAppend(Filename, FilePath, _MAX_PATH);
 }
 
-BOOL C4ComponentHost::Save(C4Group &hGroup)
+bool C4ComponentHost::Save(C4Group &hGroup)
 {
-	if (!Modified) return TRUE;
+	if (!Modified) return true;
 	if (!Data) return hGroup.Delete(Filename);
 	return hGroup.Add(Filename, Data);
 }
@@ -334,12 +334,12 @@ void C4ComponentHost::Close()
 #ifdef _WIN32
 	if (!hDialog) return;
 	EndDialog(hDialog, 1);
-	hDialog = FALSE;
+	hDialog = false;
 #endif
 }
 
 void C4ComponentHost::TrimSpaces()
 {
 	Data.TrimSpaces();
-	Modified = TRUE;
+	Modified = true;
 }

@@ -126,7 +126,7 @@ bool Button::KeyButtonUp()
 	return true;
 }
 
-void Button::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Button::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// inherited
 	Control::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);

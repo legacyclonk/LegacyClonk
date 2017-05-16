@@ -68,8 +68,8 @@ public:
 class C4AulParseError : public C4AulError
 {
 public:
-	C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf = nullptr, BOOL Warn = FALSE);
-	C4AulParseError(class C4AulParseState *state, const char *pMsg, const char *pIdtf = nullptr, BOOL Warn = FALSE);
+	C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf = nullptr, bool Warn = false);
+	C4AulParseError(class C4AulParseState *state, const char *pMsg, const char *pIdtf = nullptr, bool Warn = false);
 };
 
 // execution error
@@ -204,9 +204,9 @@ struct C4ScriptOpDef
 	unsigned short Priority;
 	const char *Identifier;
 	C4AulBCCType Code;
-	BOOL Postfix;
-	BOOL RightAssociative; // right oder left-associative?
-	BOOL NoSecondStatement; // no second statement expected (++/-- postfix)
+	bool Postfix;
+	bool RightAssociative; // right oder left-associative?
+	bool NoSecondStatement; // no second statement expected (++/-- postfix)
 	C4V_Type RetType; // type returned. ignored by C4V
 	C4V_Type Type1;
 	C4V_Type Type2;
@@ -429,7 +429,7 @@ public:
 	void Clear(); // remove script, byte code and children
 	void Reg2List(C4AulScriptEngine *pEngine, C4AulScript *pOwner); // reg to linked list
 	void Unreg(); // remove from list
-	virtual BOOL Delete() { return TRUE; } // allow deletion on pure class
+	virtual bool Delete() { return true; } // allow deletion on pure class
 
 protected:
 	C4AulFunc *Func0, *FuncL; // owned functions
@@ -452,19 +452,19 @@ protected:
 	C4AulFunc *GetFunc(const char *pIdtf); // get local function by name
 
 	void AddBCC(C4AulBCCType eType, intptr_t = 0, const char *SPos = 0); // add byte code chunk and advance
-	BOOL Preparse(); // preparse script; return if successfull
+	bool Preparse(); // preparse script; return if successfull
 	void ParseFn(C4AulScriptFunc *Fn, bool fExprOnly = false); // parse single script function
 
-	BOOL Parse(); // parse preparsed script; return if successfull
+	bool Parse(); // parse preparsed script; return if successfull
 	void ParseDescs(); // parse function descs
 
-	BOOL ResolveIncludes(C4DefList *rDefs); // resolve includes
-	BOOL ResolveAppends(C4DefList *rDefs); // resolve appends
+	bool ResolveIncludes(C4DefList *rDefs); // resolve includes
+	bool ResolveAppends(C4DefList *rDefs); // resolve appends
 	bool IncludesResolved;
 	void AppendTo(C4AulScript &Scr, bool bHighPrio); // append to given script
 	void UnLink(); // reset to unlinked state
 	virtual void AfterLink(); // called after linking is completed; presearch common funcs here & search same-named funcs
-	virtual BOOL ReloadScript(const char *szPath); // reload given script
+	virtual bool ReloadScript(const char *szPath); // reload given script
 
 	C4AulScript *FindFirstNonStrictScript(); // find first script that is not #strict
 
@@ -483,7 +483,7 @@ public:
 	const char *GetScript() const { return Script.getData(); }
 
 	C4AulFunc *GetFuncRecursive(const char *pIdtf); // search function by identifier, including global funcs
-	C4AulScriptFunc *GetSFunc(const char *pIdtf, C4AulAccess AccNeeded, BOOL fFailSafe = false); // get local sfunc, check access, check '~'-safety
+	C4AulScriptFunc *GetSFunc(const char *pIdtf, C4AulAccess AccNeeded, bool fFailSafe = false); // get local sfunc, check access, check '~'-safety
 	C4AulScriptFunc *GetSFunc(const char *pIdtf); // get local script function by name
 	C4AulScriptFunc *GetSFunc(int iIndex, const char *szPattern = nullptr); // get local script function by index
 	C4AulScriptFunc *GetSFuncWarn(const char *pIdtf, C4AulAccess AccNeeded, const char *WarnStr); // get function; return nullptr and warn if not existant
@@ -538,7 +538,7 @@ public:
 	void Clear(); // clear data
 	void Link(C4DefList *rDefs); // link and parse all scripts
 	void ReLink(C4DefList *rDefs); // unlink + relink and parse all scripts
-	BOOL ReloadScript(const char *szScript, C4DefList *pDefs); // search script and reload + relink, if found
+	bool ReloadScript(const char *szScript, C4DefList *pDefs); // search script and reload + relink, if found
 
 	C4AulFunc *GetFirstFunc(const char *Name)
 	{
@@ -562,7 +562,7 @@ public:
 	void RegisterGlobalConstant(const char *szName, const C4Value &rValue); // creates a new constants or overwrites an old one
 	bool GetGlobalConstant(const char *szName, C4Value *pTargetValue); // check if a constant exists; assign value to pTargetValue if not nullptr
 
-	BOOL DenumerateVariablePointers();
+	bool DenumerateVariablePointers();
 	void UnLink(); // called when a script is being reloaded (clears string table)
 	// Compile scenario script data (without strings and constants)
 	void CompileFunc(StdCompiler *pComp);

@@ -537,7 +537,7 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	if (!(pEffect = pEffect->Get(iNumber, true))) return -1;
 	// structures must eject contents now, because DoCon is not guaranteed to be executed!
 	// In extinguishing material
-	BOOL fFireCaused = TRUE;
+	bool fFireCaused = true;
 	int32_t iMat;
 	if (MatValid(iMat = GBackMat(pObj->x, pObj->y)))
 		if (Game.Material.Map[iMat].Extinguisher)
@@ -545,7 +545,7 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 			// blasts should changedef in water, too!
 			if (fBlasted) if (pObj->Def->BurnTurnTo != C4ID_None) pObj->ChangeDef(pObj->Def->BurnTurnTo);
 			// no fire caused
-			fFireCaused = FALSE;
+			fFireCaused = false;
 		}
 	// BurnTurnTo
 	if (fFireCaused) if (pObj->Def->BurnTurnTo != C4ID_None) pObj->ChangeDef(pObj->Def->BurnTurnTo);
@@ -577,7 +577,7 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	if (!(iFireMode = pObj->Call(PSF_FireMode).getInt()))
 	{
 		// set default fire modes
-		DWORD dwCat = pObj->Category;
+		uint32_t dwCat = pObj->Category;
 		if (dwCat & (C4D_Living | C4D_StaticBack)) // Tiere, Bäume
 			iFireMode = C4Fx_FireMode_LivingVeg;
 		else if (dwCat & (C4D_Structure | C4D_Vehicle)) // Gebäude und Fahrzeuge sind unten meist kantig
@@ -696,7 +696,7 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 		C4ParticleList *pParticleList = SafeRandom(4) ? &(pObj->BackParticles) : &(pObj->FrontParticles);
 
 		// get particle def and color
-		C4ParticleDef *pPartDef; DWORD dwClr;
+		C4ParticleDef *pPartDef; uint32_t dwClr;
 		if (i < iCount / 2)
 		{
 			dwClr = 0x32004000 + ((SafeRandom(59) + 196) << 16);
@@ -741,20 +741,20 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 int32_t FnFxFireStop(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_t iReason, bool fTemp)
 {
 	// safety
-	if (!pObj) return FALSE;
+	if (!pObj) return false;
 	// only if real removal is done
 	if (fTemp)
 	{
 		// but fake being not on fire, so higher-priority effects get the status right
 		pObj->SetOnFire(false);
-		return TRUE;
+		return true;
 	}
 	// alter OnFire-flag
 	pObj->SetOnFire(false);
 	// stop sound
 	if (pObj->Def->Mass >= 100) StopSoundEffect("Fire", pObj);
 	// done, success
-	return TRUE;
+	return true;
 }
 
 C4String *FnFxFireInfo(C4AulContext *ctx, C4Object *pObj, int32_t iNumber)
@@ -814,7 +814,7 @@ void BubbleOut(int32_t tx, int32_t ty)
 	Game.CreateObject(C4Id("FXU1"), nullptr, NO_OWNER, tx, ty);
 }
 
-void Smoke(int32_t tx, int32_t ty, int32_t level, DWORD dwClr)
+void Smoke(int32_t tx, int32_t ty, int32_t level, uint32_t dwClr)
 {
 	if (Game.Particles.pSmoke)
 	{

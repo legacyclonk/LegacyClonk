@@ -362,7 +362,7 @@ bool C4Network2::DoLobby()
 
 		// init lobby dialog
 		pLobby = new C4GameLobby::MainDlg(isHost());
-		if (!pLobby->FadeIn(Game.pGUI)) { delete pLobby; pLobby = nullptr; Clear(); return FALSE; }
+		if (!pLobby->FadeIn(Game.pGUI)) { delete pLobby; pLobby = nullptr; Clear(); return false; }
 
 		// init lobby countdown if specified
 		if (Game.iLobbyTimeout) StartLobbyCountdown(Game.iLobbyTimeout);
@@ -484,7 +484,7 @@ bool C4Network2::FinalInit()
 	}
 	// synchronize
 	Game.SyncClearance();
-	Game.Synchronize(FALSE);
+	Game.Synchronize(false);
 	// finished
 	return isEnabled();
 }
@@ -1324,7 +1324,7 @@ void C4Network2::HandleActivateReq(int32_t iTick, C4Network2Client *pByClient)
 	}
 	// activate him
 	Game.Control.DoInput(CID_ClientUpdate,
-		new C4ControlClientUpdate(pByClient->getID(), CUT_Activate, TRUE),
+		new C4ControlClientUpdate(pByClient->getID(), CUT_Activate, true),
 		CDT_Sync);
 }
 
@@ -1774,7 +1774,7 @@ void C4Network2::RequestActivate()
 	{
 		// activate him
 		Game.Control.DoInput(CID_ClientUpdate,
-			new C4ControlClientUpdate(C4ClientIDHost, CUT_Activate, TRUE),
+			new C4ControlClientUpdate(C4ClientIDHost, CUT_Activate, true),
 			CDT_Sync);
 		return;
 	}
@@ -1831,7 +1831,7 @@ void C4Network2::UpdateChaseTarget()
 	iLastChaseTargetUpdate = time(nullptr);
 }
 
-void C4Network2::LeagueGameEvaluate(const char *szRecordName, const BYTE *pRecordSHA)
+void C4Network2::LeagueGameEvaluate(const char *szRecordName, const uint8_t *pRecordSHA)
 {
 	// already off?
 	if (!pLeagueClient) return;
@@ -2161,7 +2161,7 @@ bool C4Network2::LeagueUpdateProcessReply()
 	return true;
 }
 
-bool C4Network2::LeagueEnd(const char *szRecordName, const BYTE *pRecordSHA)
+bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 {
 	C4RoundResultsPlayers RoundResults;
 	StdStrBuf sResultMessage;
@@ -2715,7 +2715,7 @@ bool C4Network2::StartStreaming(C4Record *pRecord)
 
 	// Create stream buffer
 	StreamingBuf.New(C4NetStreamingMaxBlockSize);
-	StreamCompressor.next_out = reinterpret_cast<BYTE *>(StreamingBuf.getMData());
+	StreamCompressor.next_out = reinterpret_cast<uint8_t *>(StreamingBuf.getMData());
 	StreamCompressor.avail_out = C4NetStreamingMaxBlockSize;
 
 	// Initialize HTTP client
@@ -2773,7 +2773,7 @@ bool C4Network2::StreamIn(bool fFinish)
 	do
 	{
 		// Compress
-		StreamCompressor.next_in = const_cast<BYTE *>(getBufPtr<BYTE>(Data));
+		StreamCompressor.next_in = const_cast<uint8_t *>(getBufPtr<uint8_t>(Data));
 		StreamCompressor.avail_in = Data.getSize();
 		int ret = deflate(&StreamCompressor, fFinish ? Z_FINISH : Z_NO_FLUSH);
 
@@ -2795,7 +2795,7 @@ bool C4Network2::StreamIn(bool fFinish)
 		size_t iGrow = StreamingBuf.getSize();
 		StreamingBuf.Grow(iGrow);
 		StreamCompressor.avail_out += iGrow;
-		StreamCompressor.next_out = getMBufPtr<BYTE>(StreamingBuf, iPending);
+		StreamCompressor.next_out = getMBufPtr<uint8_t>(StreamingBuf, iPending);
 	} while (true);
 
 	return true;

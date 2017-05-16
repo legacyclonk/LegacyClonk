@@ -33,7 +33,7 @@ private:
 protected:
 	virtual int32_t GetMarginTop() { return iDlgMarginY + C4GUI_FullscreenDlg_TitleHeight / 2; } // less top margin
 
-	virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: back on any button
+	virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: back on any button
 	virtual bool OnEnter() { DoBack(); return true; }
 	virtual bool OnEscape() { DoBack(); return true; }
 	virtual void DrawElement(C4FacetEx &cgo);

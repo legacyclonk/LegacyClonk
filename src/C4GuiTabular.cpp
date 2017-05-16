@@ -407,7 +407,7 @@ void Tabular::DrawElement(C4FacetEx &cgo)
 				vtx[4] = d + iTabWidth - 4; vtx[5] = y0 - GetTopSize();
 				vtx[6] = d + iTabWidth; vtx[7] = y0;
 			}
-			DWORD dwClr = (pSheet == pActiveSheet) ? C4GUI_ActiveTabBGColor : C4GUI_StandardBGColor;
+			uint32_t dwClr = (pSheet == pActiveSheet) ? C4GUI_ActiveTabBGColor : C4GUI_StandardBGColor;
 			lpDDraw->DrawQuadDw(cgo.Surface, vtx, dwClr, dwClr, dwClr, dwClr);
 			// draw caption frame
 			lpDDraw->DrawLineDw(cgo.Surface, (float)vtx[0] - 1, (float)vtx[1], (float)vtx[2] - 1, (float)vtx[3], C4GUI_BorderColorA1);
@@ -457,7 +457,7 @@ void Tabular::DrawElement(C4FacetEx &cgo)
 	if (fScrollingRight) GetRes()->fctBigArrows.DrawX(cgo.Surface, x1 - iScrollSize, y0 - iScrollSize, iScrollSize, iScrollSize, 1 + fScrollingRightDown * 2);
 }
 
-void Tabular::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
+void Tabular::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// tabular contains controls?
 	if (eTabPos)

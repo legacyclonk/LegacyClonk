@@ -74,17 +74,6 @@
 		#include <windows.h>
 	#endif
 #else
-// Boolean datatype
-typedef int BOOL;
-#define TRUE  true
-#define FALSE false
-
-// Windows integer types
-typedef uint32_t DWORD;
-typedef uint8_t  BYTE;
-typedef uint16_t WORD;
-typedef uint32_t UINT;
-
 typedef struct
 {
 	long left; long top; long right; long bottom;
@@ -102,21 +91,21 @@ inline int stricmp(const char *s1, const char *s2)
 #define GetRValue(rgb) ((unsigned char)(rgb))
 #define GetGValue(rgb) ((unsigned char)(((unsigned short)(rgb)) >> 8))
 #define GetBValue(rgb) ((unsigned char)((rgb) >> 16))
-#define RGB(r, g, b) ((DWORD)((BYTE)(r) | ((BYTE)(g) << 8) | ((BYTE)(b) << 16)))
+#define RGB(r, g, b) ((uint32_t)((uint8_t)(r) | ((uint8_t)(g) << 8) | ((uint8_t)(b) << 16)))
 #define ZeroMemory(d, l) memset((d), 0, (l))
 #endif // _WIN32
 
 // These functions have to be provided by the application.
 bool Log(const char *szMessage);
 bool LogSilent(const char *szMessage);
-BOOL LogF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;
-BOOL LogSilentF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;
+bool LogF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;
+bool LogSilentF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;
 
 #include <memory.h>
 #include <math.h>
 
 // Color triplets
-#define C4RGB(r, g, b) ((((DWORD)(r) & 0xff) << 16) | (((DWORD)(g) & 0xff) << 8) | ((b) & 0xff))
+#define C4RGB(r, g, b) ((((uint32_t)(r) & 0xff) << 16) | (((uint32_t)(g) & 0xff) << 8) | ((b) & 0xff))
 
 // Small helpers
 template <class T> inline T Max(T val1, T val2) { return val1 > val2 ? val1 : val2; }
@@ -229,7 +218,7 @@ int SLineGetCharacters(const char *szText, const char *cpPosition);
 
 // case sensitive wildcard match with some extra functionality
 // can match strings like  "*Cl?nk*vour" to "Clonk Endeavour"
-BOOL SWildcardMatchEx(const char *szString, const char *szWildcard);
+bool SWildcardMatchEx(const char *szString, const char *szWildcard);
 
 #define LineFeed "\x00D\x00A"
 #define EndOfFile "\x020"

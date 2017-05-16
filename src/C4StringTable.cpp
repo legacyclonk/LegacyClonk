@@ -230,5 +230,5 @@ bool C4StringTable::Save(C4Group &ParentGroup)
 		}
 
 	// write in group
-	return !!ParentGroup.Add(C4CFN_Strings, pData, iTableSize, FALSE, TRUE);
+	return !!ParentGroup.Add(C4CFN_Strings, pData, iTableSize, false, true);
 }

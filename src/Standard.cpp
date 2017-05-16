@@ -644,10 +644,10 @@ int SModuleCount(const char *szList)
 	return iCount;
 }
 
-BOOL SWildcardMatchEx(const char *szString, const char *szWildcard)
+bool SWildcardMatchEx(const char *szString, const char *szWildcard)
 {
 	// safety
-	if (!szString || !szWildcard) return FALSE;
+	if (!szString || !szWildcard) return false;
 	// match char-wise
 	const char *pWild = szWildcard, *pPos = szString;
 	const char *pLWild = nullptr, *pLPos = nullptr; // backtracking
@@ -672,7 +672,7 @@ BOOL SWildcardMatchEx(const char *szString, const char *szWildcard)
 		}
 		// match failed
 		else
-			return FALSE;
+			return false;
 	// match complete if both strings are fully matched
 	return !*pWild && !*pPos;
 }

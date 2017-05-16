@@ -91,12 +91,12 @@ bool C4VideoShowDialog::LoadVideo(C4VideoFile *pVideoFile)
 	if (Config.Sound.RXSound && AVIFile.OpenAudioStream())
 	{
 		size_t iAudioDataSize = 0;
-		BYTE *pAudioData = AVIFile.GetAudioStreamData(&iAudioDataSize);
+		uint8_t *pAudioData = AVIFile.GetAudioStreamData(&iAudioDataSize);
 		if (pAudioData)
 		{
 			if (pAudioTrack) delete pAudioTrack;
 			pAudioTrack = new C4SoundEffect();
-			if (pAudioTrack->Load(pAudioData, iAudioDataSize, FALSE, false))
+			if (pAudioTrack->Load(pAudioData, iAudioDataSize, false, false))
 			{
 				C4SoundInstance *pSoundInst = pAudioTrack->New();
 				if (pSoundInst) pSoundInst->Start();
@@ -194,15 +194,15 @@ void C4VideoShowDialog::DrawElement(C4FacetEx &cgo)
 		AVIFile.GrabFrame(iGetFrame, &(fctBuffer.GetFace()));
 	}
 	// draw the found frame
-	fctBuffer.Draw(cgo, FALSE);
+	fctBuffer.Draw(cgo, false);
 #elif defined(HAVE_LIBSMPEG)
 	// FIXME
 	return;
 	CSurface *sfc = &fctBuffer.GetFace();
 	sfc->Lock();
-	sfc->CopyBytes((BYTE *)surface->pixels);
+	sfc->CopyBytes((uint8_t *)surface->pixels);
 	sfc->Unlock();
-	fctBuffer.Draw(cgo, FALSE);
+	fctBuffer.Draw(cgo, false);
 	if (SMPEG_status(mpeg) != SMPEG_PLAYING)
 		VideoDone();
 #endif // _WIN32/HAVE_LIBSMPEG

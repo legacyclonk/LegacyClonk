@@ -30,44 +30,44 @@
 
 /* helpers */
 
-BOOL C4MusicFile::ExtractFile()
+bool C4MusicFile::ExtractFile()
 {
 	// safety
-	if (SongExtracted) return TRUE;
+	if (SongExtracted) return true;
 	// extract entry
-	if (!C4Group_CopyItem(FileName, Config.AtTempPath(C4CFN_TempMusic2))) return FALSE;
+	if (!C4Group_CopyItem(FileName, Config.AtTempPath(C4CFN_TempMusic2))) return false;
 	// ok
-	SongExtracted = TRUE;
-	return TRUE;
+	SongExtracted = true;
+	return true;
 }
 
-BOOL C4MusicFile::RemTempFile()
+bool C4MusicFile::RemTempFile()
 {
-	if (!SongExtracted) return TRUE;
+	if (!SongExtracted) return true;
 	// delete it
 	remove(Config.AtTempPath(C4CFN_TempMusic2));
-	SongExtracted = FALSE;
-	return TRUE;
+	SongExtracted = false;
+	return true;
 }
 
-BOOL C4MusicFile::Init(const char *szFile)
+bool C4MusicFile::Init(const char *szFile)
 {
 	SCopy(szFile, FileName);
-	return TRUE;
+	return true;
 }
 
 /* midi */
 
 #ifdef USE_FMOD
 
-BOOL C4MusicFileMID::Play(BOOL loop)
+bool C4MusicFileMID::Play(bool loop)
 {
 	// check existance
 	if (!FileExists(FileName))
 		// try extracting it
 		if (!ExtractFile())
 			// doesn't exist - or file is corrupt
-			return FALSE;
+			return false;
 
 	// init fmusic
 	mod = FMUSIC_LoadSong(SongExtracted ? Config.AtTempPath(C4CFN_TempMusic2) : FileName);
@@ -76,13 +76,13 @@ BOOL C4MusicFileMID::Play(BOOL loop)
 	{
 		sprintf(OSTR, "FMod: %s", FMOD_ErrorString(FSOUND_GetError()));
 		Log(OSTR);
-		return FALSE;
+		return false;
 	}
 
 	// Play Song
 	FMUSIC_PlaySong(mod);
 
-	return TRUE;
+	return true;
 }
 
 void C4MusicFileMID::Stop(int fadeout_ms)
@@ -117,12 +117,12 @@ C4MusicFileMOD::~C4MusicFileMOD()
 	Stop();
 }
 
-BOOL C4MusicFileMOD::Play(BOOL loop)
+bool C4MusicFileMOD::Play(bool loop)
 {
 	// Load Song
 	size_t iFileSize;
 	if (!C4Group_ReadFile(FileName, &Data, &iFileSize))
-		return FALSE;
+		return false;
 
 	// init fmusic
 	mod = FMUSIC_LoadSongEx(Data, 0, iFileSize, FSOUND_LOADMEMORY, 0, 0);
@@ -131,13 +131,13 @@ BOOL C4MusicFileMOD::Play(BOOL loop)
 	{
 		sprintf(OSTR, "FMod: %s", FMOD_ErrorString(FSOUND_GetError()));
 		Log(OSTR);
-		return FALSE;
+		return false;
 	}
 
 	// Play Song
 	FMUSIC_PlaySong(mod);
 
-	return TRUE;
+	return true;
 }
 
 void C4MusicFileMOD::Stop(int fadeout_ms)
@@ -172,32 +172,32 @@ C4MusicFileMP3::~C4MusicFileMP3()
 	Stop();
 }
 
-BOOL C4MusicFileMP3::Play(BOOL loop)
+bool C4MusicFileMP3::Play(bool loop)
 {
 #ifndef USE_MP3
-	return FALSE;
+	return false;
 #endif
 
 	// Load Song
 	size_t iFileSize;
 	if (!C4Group_ReadFile(FileName, &Data, &iFileSize))
-		return FALSE;
+		return false;
 
 	// init fsound
 	int loop_flag = loop ? FSOUND_LOOP_NORMAL : 0;
 	stream = FSOUND_Stream_Open(Data, FSOUND_LOADMEMORY | FSOUND_NORMAL | FSOUND_2D | loop_flag, 0, iFileSize);
 
-	if (!stream) return FALSE;
+	if (!stream) return false;
 
 	// Play Song
 	Channel = FSOUND_Stream_Play(FSOUND_FREE, stream);
-	if (Channel == -1) return FALSE;
+	if (Channel == -1) return false;
 
 	// Set highest priority
 	if (!FSOUND_SetPriority(Channel, 255))
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 void C4MusicFileMP3::Stop(int fadeout_ms)
@@ -224,46 +224,46 @@ void C4MusicFileMP3::SetVolume(int iLevel)
 /* Ogg Vobis */
 
 C4MusicFileOgg::C4MusicFileOgg()
-	: Data(nullptr), stream(nullptr), Channel(-1), Playing(FALSE) {}
+	: Data(nullptr), stream(nullptr), Channel(-1), Playing(false) {}
 
 C4MusicFileOgg::~C4MusicFileOgg()
 {
 	Stop();
 }
 
-BOOL C4MusicFileOgg::Play(BOOL loop)
+bool C4MusicFileOgg::Play(bool loop)
 {
 	// Load Song
 	size_t iFileSize;
 	if (!C4Group_ReadFile(FileName, &Data, &iFileSize))
-		return FALSE;
+		return false;
 
 	// init fsound
 	int loop_flag = loop ? FSOUND_LOOP_NORMAL : 0;
 	stream = FSOUND_Stream_Open(Data, FSOUND_LOADMEMORY | FSOUND_NORMAL | FSOUND_2D | loop_flag, 0, iFileSize);
 
-	if (!stream) return FALSE;
+	if (!stream) return false;
 
 	// Play Song
 	Channel = FSOUND_Stream_Play(FSOUND_FREE, stream);
-	if (Channel == -1) return FALSE;
+	if (Channel == -1) return false;
 
 	// Set highest priority
 	if (!FSOUND_SetPriority(Channel, 255))
-		return FALSE;
+		return false;
 
-	Playing = TRUE;
+	Playing = true;
 
 	FSOUND_Stream_SetEndCallback(stream, &C4MusicFileOgg::OnEnd, this);
 
-	return TRUE;
+	return true;
 }
 
 // End Callback
 signed char __stdcall C4MusicFileOgg::OnEnd(FSOUND_STREAM *stream, void *buff, int length, void *param)
 {
 	C4MusicFileOgg *pFile = static_cast<C4MusicFileOgg *>(param);
-	pFile->Playing = FALSE;
+	pFile->Playing = false;
 	return 0;
 }
 
@@ -275,7 +275,7 @@ void C4MusicFileOgg::Stop(int fadeout_ms)
 		stream = nullptr;
 	}
 	if (Data) { delete[] Data; Data = nullptr; }
-	Playing = FALSE;
+	Playing = false;
 }
 
 void C4MusicFileOgg::CheckIfPlaying()
@@ -302,7 +302,7 @@ C4MusicFileSDL::~C4MusicFileSDL()
 	Stop();
 }
 
-BOOL C4MusicFileSDL::Play(BOOL loop)
+bool C4MusicFileSDL::Play(bool loop)
 {
 	const SDL_version *link_version = Mix_Linked_Version();
 	if (link_version->major < 1
@@ -314,7 +314,7 @@ BOOL C4MusicFileSDL::Play(BOOL loop)
 		{
 			// Doesn't exist - or file is corrupt
 			LogF("Error reading %s", FileName);
-			return FALSE;
+			return false;
 		}
 		// Load
 		Music = Mix_LoadMUS(SongExtracted ? Config.AtTempPath(C4CFN_TempMusic2) : FileName);
@@ -322,13 +322,13 @@ BOOL C4MusicFileSDL::Play(BOOL loop)
 		if (!Music)
 		{
 			LogF("SDL_mixer: %s", SDL_GetError());
-			return FALSE;
+			return false;
 		}
 		// Play Song
 		if (Mix_PlayMusic(Music, loop ? -1 : 1) == -1)
 		{
 			LogF("SDL_mixer: %s", SDL_GetError());
-			return FALSE;
+			return false;
 		}
 	}
 	else
@@ -339,22 +339,22 @@ BOOL C4MusicFileSDL::Play(BOOL loop)
 		if (!C4Group_ReadFile(FileName, &Data, &filesize))
 		{
 			LogF("Error reading %s", FileName);
-			return FALSE;
+			return false;
 		}
 		// Mix_FreeMusic frees the RWop
 		Music = Mix_LoadMUS_RW(SDL_RWFromConstMem(Data, filesize));
 		if (!Music)
 		{
 			LogF("SDL_mixer: %s", SDL_GetError());
-			return FALSE;
+			return false;
 		}
 		if (Mix_PlayMusic(Music, loop ? -1 : 1) == -1)
 		{
 			LogF("SDL_mixer: %s", SDL_GetError());
-			return FALSE;
+			return false;
 		}
 	}
-	return TRUE;
+	return true;
 }
 
 void C4MusicFileSDL::Stop(int fadeout_ms)

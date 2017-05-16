@@ -48,9 +48,9 @@ protected:
 	FILE *hFile;
 	std::shared_ptr<StdGzCompressedFile::Read> readCompressedFile;
 	std::shared_ptr<StdGzCompressedFile::Write> writeCompressedFile;
-	BYTE Buffer[CStdFileBufSize];
+	uint8_t Buffer[CStdFileBufSize];
 	int BufferLoad, BufferPtr;
-	BOOL ModeWrite;
+	bool ModeWrite;
 
 public:
 	bool Create(const char *szFileName, bool fCompressed = false, bool fExecutable = false);
@@ -65,14 +65,14 @@ public:
 	bool Rewind();
 	bool Advance(int iOffset);
 	// Single line commands
-	bool Load(const char *szFileName, BYTE **lpbpBuf,
+	bool Load(const char *szFileName, uint8_t **lpbpBuf,
 		int *ipSize = nullptr, int iAppendZeros = 0,
 		bool fCompressed = false);
-	bool Save(const char *szFileName, const BYTE *bpBuf,
+	bool Save(const char *szFileName, const uint8_t *bpBuf,
 		int iSize,
 		bool fCompressed = false);
 	// flush contents to disk
-	inline bool Flush() { if (ModeWrite && BufferLoad) return SaveBuffer(); else return TRUE; }
+	inline bool Flush() { if (ModeWrite && BufferLoad) return SaveBuffer(); else return true; }
 	int AccessedEntrySize();
 
 protected:

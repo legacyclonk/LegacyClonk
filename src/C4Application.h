@@ -121,7 +121,7 @@ protected:
 	bool OpenGame();
 	bool PreInit();
 	virtual void OnNetworkEvents();
-	static BOOL ProcessCallback(const char *szMessage, int iProcess);
+	static bool ProcessCallback(const char *szMessage, int iProcess);
 	C4Sec1TimerCallbackBase *pSec1TimerCallback;
 
 	friend class C4Sec1TimerCallbackBase;

@@ -40,7 +40,7 @@ void C4TransferZone::Default()
 	Object = nullptr;
 	X = Y = Wdt = Hgt = 0;
 	Next = nullptr;
-	Used = FALSE;
+	Used = false;
 }
 
 void C4TransferZone::Clear() {}
@@ -77,11 +77,11 @@ void C4TransferZones::ClearPointers(C4Object *pObj)
 	RemoveNullZones();
 }
 
-BOOL C4TransferZones::Set(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, C4Object *pObj)
+bool C4TransferZones::Set(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, C4Object *pObj)
 {
 	C4TransferZone *pZone;
 	// Empty zone: clear existing object zones
-	if (!iWdt || !iHgt) { ClearPointers(pObj); return TRUE; }
+	if (!iWdt || !iHgt) { ClearPointers(pObj); return true; }
 	// Update existing zone
 	if (pZone = Find(pObj))
 	{
@@ -92,10 +92,10 @@ BOOL C4TransferZones::Set(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, C4
 	else
 		Add(iX, iY, iWdt, iHgt, pObj);
 	// Success
-	return TRUE;
+	return true;
 }
 
-BOOL C4TransferZones::Add(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, C4Object *pObj)
+bool C4TransferZones::Add(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, C4Object *pObj)
 {
 	C4TransferZone *pZone;
 	// Allocate and add new zone
@@ -106,7 +106,7 @@ BOOL C4TransferZones::Add(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, C4
 	pZone->Next = First;
 	First = pZone;
 	// Success
-	return TRUE;
+	return true;
 }
 
 void C4TransferZones::Synchronize()
@@ -130,16 +130,16 @@ void C4TransferZones::Draw(C4FacetEx &cgo)
 		pZone->Draw(cgo);
 }
 
-void C4TransferZone::Draw(C4FacetEx &cgo, BOOL fHighlight)
+void C4TransferZone::Draw(C4FacetEx &cgo, bool fHighlight)
 {
-	if (Used) fHighlight = TRUE;
+	if (Used) fHighlight = true;
 	lpDDraw->DrawFrame(cgo.Surface,
 		cgo.X + X - cgo.TargetX, cgo.Y + Y - cgo.TargetY,
 		cgo.X + X - cgo.TargetX + Wdt - 1, cgo.Y + Y - cgo.TargetY + Hgt - 1,
 		fHighlight ? CGreen : CRed);
 }
 
-BOOL C4TransferZone::At(int32_t iX, int32_t iY)
+bool C4TransferZone::At(int32_t iX, int32_t iY)
 {
 	return (Inside<int32_t>(iX - X, 0, Wdt - 1) && Inside<int32_t>(iY - Y, 0, Hgt - 1));
 }
@@ -164,9 +164,9 @@ int32_t C4TransferZones::RemoveNullZones()
 	return iResult;
 }
 
-void AdjustMoveToTarget(int32_t &rX, int32_t &rY, BOOL fFreeMove, int32_t iShapeHgt);
+void AdjustMoveToTarget(int32_t &rX, int32_t &rY, bool fFreeMove, int32_t iShapeHgt);
 
-BOOL C4TransferZone::GetEntryPoint(int32_t &rX, int32_t &rY, int32_t iToX, int32_t iToY)
+bool C4TransferZone::GetEntryPoint(int32_t &rX, int32_t &rY, int32_t iToX, int32_t iToY)
 {
 	// Target inside zone: move outside horizontally
 	if (Inside<int32_t>(iToX - X, 0, Wdt - 1) && Inside<int32_t>(iToY - Y, 0, Hgt - 1))
@@ -197,18 +197,18 @@ BOOL C4TransferZone::GetEntryPoint(int32_t &rX, int32_t &rY, int32_t iToX, int32
 		if (iX2 < X - 1)   { iX2 = X - 1;   iXIncr2 =  0; iYIncr2 = +1; }
 	}
 	// No free found
-	if (cnt >= 2 * Wdt + 2 * Hgt) return FALSE;
+	if (cnt >= 2 * Wdt + 2 * Hgt) return false;
 	// Vertical walk-to adjust (only if at the side of zone)
 	if (!Inside<int32_t>(rX - X, 0, Wdt - 1))
-		AdjustMoveToTarget(rX, rY, FALSE, 20);
+		AdjustMoveToTarget(rX, rY, false, 20);
 	// Success
-	return TRUE;
+	return true;
 }
 
 void C4TransferZones::ClearUsed()
 {
 	for (C4TransferZone *pZone = First; pZone; pZone = pZone->Next)
-		pZone->Used = FALSE;
+		pZone->Used = false;
 }
 
 C4TransferZone *C4TransferZones::Find(C4Object *pObj)

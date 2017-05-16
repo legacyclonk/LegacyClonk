@@ -101,7 +101,7 @@ bool CSurface8::Create(int iWdt, int iHgt, bool fOwnPal)
 	else
 		pPal = &lpDDraw->Pal;
 
-	Bits = new BYTE[Wdt * Hgt];
+	Bits = new uint8_t[Wdt * Hgt];
 	if (!Bits) return false;
 	ZeroMemory(Bits, Wdt * Hgt);
 	Pitch = Wdt;
@@ -115,22 +115,22 @@ bool CSurface8::Read(CStdStream &hGroup, bool fOwnPal)
 	int cnt, lcnt, iLineRest;
 	CBitmap256Info BitmapInfo;
 	// read bmpinfo-header
-	if (!hGroup.Read(&BitmapInfo, sizeof(CBitmapInfo))) return FALSE;
+	if (!hGroup.Read(&BitmapInfo, sizeof(CBitmapInfo))) return false;
 	// is it 8bpp?
 	if (BitmapInfo.Info.biBitCount == 8)
 	{
-		if (!hGroup.Read(((BYTE *)&BitmapInfo) + sizeof(CBitmapInfo), sizeof(BitmapInfo) - sizeof(CBitmapInfo))) return FALSE;
-		if (!hGroup.Advance(BitmapInfo.FileBitsOffset())) return FALSE;
+		if (!hGroup.Read(((uint8_t *)&BitmapInfo) + sizeof(CBitmapInfo), sizeof(BitmapInfo) - sizeof(CBitmapInfo))) return false;
+		if (!hGroup.Advance(BitmapInfo.FileBitsOffset())) return false;
 	}
 	else
 	{
 		// read 24bpp
-		if (BitmapInfo.Info.biBitCount != 24) return FALSE;
-		if (!hGroup.Advance(((CBitmapInfo)BitmapInfo).FileBitsOffset())) return FALSE;
+		if (BitmapInfo.Info.biBitCount != 24) return false;
+		if (!hGroup.Advance(((CBitmapInfo)BitmapInfo).FileBitsOffset())) return false;
 	}
 
 	// Create and lock surface
-	if (!Create(BitmapInfo.Info.biWidth, BitmapInfo.Info.biHeight, fOwnPal)) return FALSE;
+	if (!Create(BitmapInfo.Info.biWidth, BitmapInfo.Info.biHeight, fOwnPal)) return false;
 
 	if (BitmapInfo.Info.biBitCount == 8)
 	{
@@ -149,16 +149,16 @@ bool CSurface8::Read(CStdStream &hGroup, bool fOwnPal)
 
 	// create line buffer
 	int iBufSize = DWordAligned(BitmapInfo.Info.biWidth * BitmapInfo.Info.biBitCount / 8);
-	BYTE *pBuf = new BYTE[iBufSize];
+	uint8_t *pBuf = new uint8_t[iBufSize];
 	// Read lines
 	iLineRest = DWordAligned(BitmapInfo.Info.biWidth) - BitmapInfo.Info.biWidth;
 	for (lcnt = Hgt - 1; lcnt >= 0; lcnt--)
 	{
 		if (!hGroup.Read(pBuf, iBufSize))
 		{
-			Clear(); delete[] pBuf; return FALSE;
+			Clear(); delete[] pBuf; return false;
 		}
-		BYTE *pPix = pBuf;
+		uint8_t *pPix = pBuf;
 		for (int x = 0; x < BitmapInfo.Info.biWidth; ++x)
 			switch (BitmapInfo.Info.biBitCount)
 			{
@@ -173,10 +173,10 @@ bool CSurface8::Read(CStdStream &hGroup, bool fOwnPal)
 	// free buffer again
 	delete[] pBuf;
 
-	return TRUE;
+	return true;
 }
 
-bool CSurface8::Save(const char *szFilename, BYTE *bpPalette)
+bool CSurface8::Save(const char *szFilename, uint8_t *bpPalette)
 {
 	CBitmap256Info BitmapInfo;
 	BitmapInfo.Set(Wdt, Hgt, bpPalette ? bpPalette : pPal->Colors);
@@ -187,7 +187,7 @@ bool CSurface8::Save(const char *szFilename, BYTE *bpPalette)
 	if (!hFile.Create(szFilename)
 		|| !hFile.Write(&BitmapInfo, sizeof(BitmapInfo)))
 	{
-		return FALSE;
+		return false;
 	}
 
 	// Write lines
@@ -196,12 +196,12 @@ bool CSurface8::Save(const char *szFilename, BYTE *bpPalette)
 	{
 		if (!hFile.Write(Bits + (Pitch * cnt), Wdt))
 		{
-			return FALSE;
+			return false;
 		}
 		if (iEmpty)
 			if (!hFile.Write(bpEmpty, iEmpty))
 			{
-				return FALSE;
+				return false;
 			}
 	}
 
@@ -209,7 +209,7 @@ bool CSurface8::Save(const char *szFilename, BYTE *bpPalette)
 	hFile.Close();
 
 	// Success
-	return TRUE;
+	return true;
 }
 
 void CSurface8::GetSurfaceSize(int &irX, int &irY)
@@ -228,7 +228,7 @@ void CSurface8::ClearBox8Only(int iX, int iY, int iWdt, int iHgt)
 	// done
 }
 
-void CSurface8::Circle(int x, int y, int r, BYTE col)
+void CSurface8::Circle(int x, int y, int r, uint8_t col)
 {
 	for (int ycnt = -r; ycnt < r; ycnt++)
 	{
@@ -316,12 +316,12 @@ void CSurface8::Polygon(int iNum, int *ipVtx, int iCol)
 	CPolyEdge *edge, *next_edge, *edgebuf;
 	CPolyEdge *active_edges = nullptr;
 	CPolyEdge *inactive_edges = nullptr;
-	BOOL use_qpb = FALSE;
+	bool use_qpb = false;
 
 	// Poly Buf
 	if (iNum <= QuickPolyBufSize)
 	{
-		edgebuf = QuickPolyBuf; use_qpb = TRUE;
+		edgebuf = QuickPolyBuf; use_qpb = true;
 	}
 	else if (!(edgebuf = new CPolyEdge[iNum])) { return; }
 
@@ -338,7 +338,7 @@ void CSurface8::Polygon(int iNum, int *ipVtx, int iCol)
 			{
 				if (edge->y < top) top = edge->y;
 				if (edge->bottom > bottom) bottom = edge->bottom;
-				inactive_edges = add_edge(inactive_edges, edge, FALSE);
+				inactive_edges = add_edge(inactive_edges, edge, false);
 				edge++;
 			}
 		}
@@ -354,7 +354,7 @@ void CSurface8::Polygon(int iNum, int *ipVtx, int iCol)
 		{
 			next_edge = edge->next;
 			inactive_edges = remove_edge(inactive_edges, edge);
-			active_edges = add_edge(active_edges, edge, TRUE);
+			active_edges = add_edge(active_edges, edge, true);
 			edge = next_edge;
 		}
 
@@ -403,7 +403,7 @@ void CSurface8::Polygon(int iNum, int *ipVtx, int iCol)
 	if (!use_qpb) delete[] edgebuf;
 }
 
-void CSurface8::AllowColor(BYTE iRngLo, BYTE iRngHi, BOOL fAllowZero)
+void CSurface8::AllowColor(uint8_t iRngLo, uint8_t iRngHi, bool fAllowZero)
 {
 	// change colors
 	int xcnt, ycnt;
@@ -412,7 +412,7 @@ void CSurface8::AllowColor(BYTE iRngLo, BYTE iRngHi, BOOL fAllowZero)
 	{
 		for (xcnt = 0; xcnt < Wdt; xcnt++)
 		{
-			BYTE px = GetPix(xcnt, ycnt);
+			uint8_t px = GetPix(xcnt, ycnt);
 			if (px || !fAllowZero)
 				if ((px < iRngLo) || (px > iRngHi))
 					SetPix(xcnt, ycnt, iRngLo + px % (iRngHi - iRngLo + 1));

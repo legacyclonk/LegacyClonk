@@ -79,10 +79,10 @@ void CStdD3D::Clear()
 
 /* Direct3D initialization */
 
-BOOL CStdD3D::CreateDirectDraw()
+bool CStdD3D::CreateDirectDraw()
 {
-	if ((lpD3D = Direct3DCreate9(D3D_SDK_VERSION)) == nullptr) return FALSE;
-	return TRUE;
+	if ((lpD3D = Direct3DCreate9(D3D_SDK_VERSION)) == nullptr) return false;
+	return true;
 }
 
 bool CStdD3D::PageFlip(RECT *pSrcRt, RECT *pDstRt, CStdWindow *pWindow)
@@ -90,16 +90,16 @@ bool CStdD3D::PageFlip(RECT *pSrcRt, RECT *pDstRt, CStdWindow *pWindow)
 	// call from gfx thread only!
 	if (!pApp || !pApp->AssertMainThread()) return false;
 	// safety
-	if (!lpDevice) return FALSE;
+	if (!lpDevice) return false;
 	// end the scene and present it
 	EndScene();
 	if (lpDevice->Present(pSrcRt, pDstRt, pWindow ? pWindow->hWindow : 0, nullptr) == D3DERR_DEVICELOST)
 	{
-		if (lpDevice->TestCooperativeLevel() == D3DERR_DEVICELOST) return FALSE;
-		if (!RestoreDeviceObjects()) return FALSE;
+		if (lpDevice->TestCooperativeLevel() == D3DERR_DEVICELOST) return false;
+		if (!RestoreDeviceObjects()) return false;
 		lpDevice->Present(nullptr, nullptr, nullptr, nullptr);
 	}
-	return TRUE;
+	return true;
 }
 
 bool CStdD3D::BeginScene()
@@ -117,7 +117,7 @@ bool CStdD3D::BeginScene()
 	return true;
 }
 
-void CStdD3D::FillBG(DWORD dwClr)
+void CStdD3D::FillBG(uint32_t dwClr)
 {
 	if (lpDevice) lpDevice->Clear(0, nullptr, D3DCLEAR_TARGET, dwClr, 1.0f, 0L);
 }
@@ -196,7 +196,7 @@ bool CStdD3D::PrepareRendering(SURFACE sfcToSurface)
 	return true;
 }
 
-void CStdD3D::PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool fMod2, bool fExact)
+void CStdD3D::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact)
 {
 	if (!lpDevice || !pVB) return;
 	// additive?
@@ -223,7 +223,7 @@ void CStdD3D::PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool
 			rBltData.TexPos.TransformPoint(bltClrVertices[i].tu, bltClrVertices[i].tv);
 			bltClrVertices[i].color = dwModClr;
 			// apply global color mod map
-			if (fUseClrModMap) ModulateClr(bltClrVertices[i].color, pClrModMap->GetModAt(bltClrVertices[i].x, bltClrVertices[i].y));
+			if (fUseClrModMap) ModulateClr(reinterpret_cast<uint32_t &>(bltClrVertices[i].color), pClrModMap->GetModAt(bltClrVertices[i].x, bltClrVertices[i].y));
 			if (bltClrVertices[i].color != 0xffffff) fAnyMod = true;
 			if (bltClrVertices[i].color) fAnyModNotDark = true;
 			if (DDrawCfg.NoAlphaAdd) bltClrVertices[i].color |= 0xff000000;
@@ -309,13 +309,13 @@ unsigned int Format2BitDepth(D3DFORMAT format)
 	}
 }
 
-BOOL CStdD3D::BlitTex2Window(CTexRef *pTexRef, HDC hdcTarget, RECT &rtFrom, RECT &rtTo)
+bool CStdD3D::BlitTex2Window(CTexRef *pTexRef, HDC hdcTarget, RECT &rtFrom, RECT &rtTo)
 {
 	// lock
-	if (!pTexRef->Lock()) return FALSE;
+	if (!pTexRef->Lock()) return false;
 	// get bits
 	BYTE *pBits = (BYTE *)pTexRef->texLock.pBits;
-	if (!pBits) return FALSE;
+	if (!pBits) return false;
 	// get size
 	int fWdt = rtFrom.right  - rtFrom.left;
 	int fHgt = rtFrom.bottom - rtFrom.top;
@@ -329,17 +329,17 @@ BOOL CStdD3D::BlitTex2Window(CTexRef *pTexRef, HDC hdcTarget, RECT &rtFrom, RECT
 	// Stretch
 	SetMapMode(hdcTarget, MM_TEXT);
 	int i = StretchDIBits(hdcTarget, rtTo.left, rtTo.top, tWdt, tHgt, rtFrom.left, rtFrom.top, fWdt, fHgt, pBits, (BITMAPINFO *)&sfcBmpInfo, DIB_RGB_COLORS, SRCCOPY);
-	if (i == GDI_ERROR) return FALSE;
-	return TRUE;
+	if (i == GDI_ERROR) return false;
+	return true;
 }
 
-BOOL CStdD3D::BlitSurface2Window(SURFACE sfcSource,
+bool CStdD3D::BlitSurface2Window(SURFACE sfcSource,
 	int fX, int fY, int fWdt, int fHgt,
 	HWND hWnd,
 	int tX, int tY, int tWdt, int tHgt)
 {
-	BOOL fOkay = FALSE;
-	if (!sfcSource->Lock()) return FALSE;
+	bool fOkay = false;
+	if (!sfcSource->Lock()) return false;
 	HDC hdcTarget = GetDC(hWnd);
 	if (hdcTarget)
 	{
@@ -403,7 +403,7 @@ BOOL CStdD3D::BlitSurface2Window(SURFACE sfcSource,
 	return fOkay;
 }
 
-BOOL CStdD3D::FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iColorDepth, unsigned int iMonitor)
+bool CStdD3D::FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iColorDepth, unsigned int iMonitor)
 {
 	bool fFound = false;
 	D3DDISPLAYMODE dmode;
@@ -445,7 +445,7 @@ bool CStdD3D::SetOutputAdapter(unsigned int iMonitor)
 	return true;
 }
 
-bool CStdD3D::CreatePrimarySurfaces(BOOL Fullscreen, int iColorDepth, unsigned int iMonitor)
+bool CStdD3D::CreatePrimarySurfaces(bool Fullscreen, int iColorDepth, unsigned int iMonitor)
 {
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
 	// set needed surface type
@@ -533,7 +533,7 @@ bool CStdD3D::CreatePrimarySurfaces(BOOL Fullscreen, int iColorDepth, unsigned i
 	default: return Error("    CreateDevice: unknown error");
 	}
 	// device successfully created?
-	if (!lpDevice) return FALSE;
+	if (!lpDevice) return false;
 	// store color depth
 	byByteCnt = iColorDepth / 8;
 	PrimarySrfcFormat = d3dpp.BackBufferFormat;
@@ -563,12 +563,12 @@ bool CStdD3D::CreatePrimarySurfaces(BOOL Fullscreen, int iColorDepth, unsigned i
 		// cleanup
 		DeleteDeviceObjects();
 		// failure
-		return FALSE;
+		return false;
 	}
 	// update monitor rect by new screen size
-	if (!SetOutputAdapter(iMonitor)) return FALSE;
+	if (!SetOutputAdapter(iMonitor)) return false;
 	// success!
-	return TRUE;
+	return true;
 }
 
 bool CStdD3D::OnResolutionChanged()
@@ -645,12 +645,12 @@ bool CStdD3D::OnResolutionChanged()
 	InitDeviceObjects();
 	RestoreDeviceObjects();
 	// update monitor rect by new screen size
-	if (!SetOutputAdapter(pApp->Monitor)) return FALSE;
+	if (!SetOutputAdapter(pApp->Monitor)) return false;
 	// success!
-	return TRUE;
+	return true;
 }
 
-void CStdD3D::DrawPixInt(SURFACE sfcDest, float tx, float ty, DWORD dwClr)
+void CStdD3D::DrawPixInt(SURFACE sfcDest, float tx, float ty, uint32_t dwClr)
 {
 	// is render target?
 	if (!sfcDest->IsRenderTarget())
@@ -679,43 +679,43 @@ void CStdD3D::DrawPixInt(SURFACE sfcDest, float tx, float ty, DWORD dwClr)
 	DrawQuadDw(sfcDest, vtx, dwClr, dwClr, dwClr, dwClr);
 }
 
-void CStdD3D::DrawPixPrimary(SURFACE sfcDest, int iX, int iY, DWORD dwClr)
+void CStdD3D::DrawPixPrimary(SURFACE sfcDest, int iX, int iY, uint32_t dwClr)
 {
 	// Must be render target and locked
 	if (!sfcDest->IsRenderTarget() || !sfcDest->IsLocked()) return;
 	// set according to pixel format
-	BYTE *pBits = sfcDest->PrimarySurfaceLockBits;
+	uint8_t *pBits = sfcDest->PrimarySurfaceLockBits;
 	int iPitch = sfcDest->PrimarySurfaceLockPitch;
-	DWORD *pPix32; WORD *pPix16;
+	uint32_t *pPix32; uint16_t *pPix16;
 	switch (sfcDest->dwClrFormat)
 	{
 	case D3DFMT_X1R5G5B5:
 		// 16 bit 5-5-5
-		pPix16 = (WORD *)(pBits + iY * iPitch + iX * 2);
+		pPix16 = (uint16_t *)(pBits + iY * iPitch + iX * 2);
 		*pPix16 =
-			WORD((dwClr & 0x000000f8) >> 3) |
-			WORD((dwClr & 0x0000f800) >> 6) |
-			WORD((dwClr & 0x00f80000) >> 9);
+			uint16_t((dwClr & 0x000000f8) >> 3) |
+			uint16_t((dwClr & 0x0000f800) >> 6) |
+			uint16_t((dwClr & 0x00f80000) >> 9);
 		break;
 
 	case D3DFMT_R5G6B5:
 		// 16 bit 5-6-5
-		pPix16 = (WORD *)(pBits + iY * iPitch + iX * 2);
+		pPix16 = (uint16_t *)(pBits + iY * iPitch + iX * 2);
 		*pPix16 =
-			WORD((dwClr & 0x000000f8) >> 3) |
-			WORD((dwClr & 0x0000fc00) >> 5) |
-			WORD((dwClr & 0x00f80000) >> 8);
+			uint16_t((dwClr & 0x000000f8) >> 3) |
+			uint16_t((dwClr & 0x0000fc00) >> 5) |
+			uint16_t((dwClr & 0x00f80000) >> 8);
 		break;
 
 	case D3DFMT_X8R8G8B8:
 		// 32 bit
-		pPix32 = (DWORD *)(pBits + iY * iPitch + iX * 4);
+		pPix32 = (uint32_t *)(pBits + iY * iPitch + iX * 4);
 		BltAlpha(*pPix32, dwClr);
 		break;
 	}
 }
 
-void CStdD3D::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, DWORD dwClr1, DWORD dwClr2, DWORD dwClr3, DWORD dwClr4)
+void CStdD3D::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
 {
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
@@ -753,7 +753,7 @@ void CStdD3D::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, DWORD dwClr1, DWORD dwCl
 	clrVertices[4].x = fX4; clrVertices[4].y = fY4; clrVertices[4].color = dwClr4;
 	clrVertices[5].x = fX1; clrVertices[5].y = fY1; clrVertices[5].color = dwClr1;
 	if (fUseClrModMap)
-		for (int i = 0; i < 6; ++i) ModulateClr(clrVertices[i].color, pClrModMap->GetModAt((int)clrVertices[i].x, (int)clrVertices[i].y));
+		for (int i = 0; i < 6; ++i) ModulateClr(reinterpret_cast<uint32_t &>(clrVertices[i].color), pClrModMap->GetModAt((int)clrVertices[i].x, (int)clrVertices[i].y));
 	// copy into vertex buffer
 	VOID *pVertices;
 	if (pVBClr->Lock(0, sizeof(clrVertices), &pVertices, 0) != D3D_OK) return;
@@ -763,7 +763,7 @@ void CStdD3D::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, DWORD dwClr1, DWORD dwCl
 	lpDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
 }
 
-void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, DWORD dwClr)
+void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr)
 {
 	float i;
 	// manual clipping?
@@ -833,7 +833,7 @@ void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float 
 			clrVertices[2].x = fX2; clrVertices[2].y = fY2; clrVertices[2].color = dwClr;
 			clrVertices[3].x = fX1; clrVertices[3].y = fY1; clrVertices[3].color = dwClr;
 			if (fUseClrModMap)
-				for (int i = 0; i < 4; ++i) ModulateClr(clrVertices[i].color, pClrModMap->GetModAt((int)clrVertices[i].x, (int)clrVertices[i].y));
+				for (int i = 0; i < 4; ++i) ModulateClr(reinterpret_cast<uint32_t &>(clrVertices[i].color), pClrModMap->GetModAt((int)clrVertices[i].x, (int)clrVertices[i].y));
 			// copy into vertex buffer
 			VOID *pVertices;
 			if (pVBClr->Lock(0, sizeof(clrVertices[0]) * 4, &pVertices, 0) != D3D_OK) return;
@@ -868,14 +868,14 @@ void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float 
 				uint32_t alpha = dwClr >> 24;
 				if (alpha >= 254) return; // invisible line
 				uint32_t div = (uint32_t(1 << 24) / (255 - alpha)) << 8;
-				DWORD dwClrBase = dwClr & 0x00FFFFFF;
+				uint32_t dwClrBase = dwClr & 0x00FFFFFF;
 				// current position
 				uint32_t sp = 0;
 				if (y2 > y1)
 					for (int32_t iX = 0, iY = 0; ; iX++)
 					{
 						// draw pixels
-						DWORD dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
+						uint32_t dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
 							dwClr2 = dwClrBase + ((255 - sp / div) << 24);
 						DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY, dwClr1);
 						if (sp) DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY + 1, dwClr2);
@@ -890,7 +890,7 @@ void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float 
 					for (int32_t iX = 0, iY = 0; ; iX++)
 					{
 						// draw pixels
-						DWORD dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
+						uint32_t dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
 							dwClr2 = dwClrBase + ((255 - sp / div) << 24);
 						DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY, dwClr1);
 						if (sp) DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY - 1, dwClr2);
@@ -924,14 +924,14 @@ void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float 
 				uint32_t alpha = dwClr >> 24;
 				if (alpha >= 254) return; // invisible line
 				uint32_t div = (uint32_t(1 << 24) / (255 - alpha)) << 8;
-				DWORD dwClrBase = dwClr & 0x00FFFFFF;
+				uint32_t dwClrBase = dwClr & 0x00FFFFFF;
 				// current position
 				uint32_t sp = 0;
 				if (x2 > x1)
 					for (int32_t iY = 0, iX = 0; ; iY++)
 					{
 						// draw pixels
-						DWORD dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
+						uint32_t dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
 							dwClr2 = dwClrBase + ((255 - sp / div) << 24);
 						DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY, dwClr1);
 						if (sp) DrawPixPrimary(sfcTarget, iX1 + iX + 1, iY1 + iY, dwClr2);
@@ -946,7 +946,7 @@ void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float 
 					for (int32_t iY = 0, iX = 0; ; iY++)
 					{
 						// draw pixels
-						DWORD dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
+						uint32_t dwClr1 = dwClrBase + ((alpha + sp / div) << 24),
 							dwClr2 = dwClrBase + ((255 - sp / div) << 24);
 						DrawPixPrimary(sfcTarget, iX1 + iX, iY1 + iY, dwClr1);
 						if (sp) DrawPixPrimary(sfcTarget, iX1 + iX - 1, iY1 + iY, dwClr2);

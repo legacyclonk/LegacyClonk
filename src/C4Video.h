@@ -37,7 +37,7 @@ protected:
 	int AviFrame;
 	double AspectRatio;
 	int X, Y, Width, Height;
-	BYTE *Buffer;
+	uint8_t *Buffer;
 	int BufferSize;
 	int InfoSize;
 	bool Recording;

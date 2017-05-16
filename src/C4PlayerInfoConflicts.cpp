@@ -34,14 +34,14 @@ const int32_t C4MaxPlayerNameChangeTries = 100;
 
 // *** Helpers
 
-DWORD GenerateRandomPlayerColor(int32_t iTry) // generate a random player color for the iTry'th try
+uint32_t GenerateRandomPlayerColor(int32_t iTry) // generate a random player color for the iTry'th try
 {
 	// generate a random one biased towards max channel luminance
 	// (for greater color difference and less gray-ish colors)
 	return RGB(Min(SafeRandom(302), 256), Min(SafeRandom(302), 256), Min(SafeRandom(302), 256));
 }
 
-bool IsColorConflict(DWORD dwClr1, DWORD dwClr2) // return whether dwClr1 and dwClr2 are closely together
+bool IsColorConflict(uint32_t dwClr1, uint32_t dwClr2) // return whether dwClr1 and dwClr2 are closely together
 {
 	// NEW COLOR CONFLICT METHOD: u'v'-distance
 	int R1 = 0xff & (dwClr1 >> 16);
@@ -338,7 +338,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInPacket()
 	{
 		// not already joined? Joined player must not change their attributes!
 		if (pResolveInfo->HasJoined()) continue;
-		DWORD dwPrevColor = pResolveInfo->GetColor();
+		uint32_t dwPrevColor = pResolveInfo->GetColor();
 		StdStrBuf sPrevForcedName; sPrevForcedName.Copy(pResolveInfo->GetForcedName());
 		// check attributes: Name and color
 		for (eAttr = C4PlayerInfo::PLRATT_Color; eAttr != C4PlayerInfo::PLRATT_Last; eAttr = (C4PlayerInfo::Attribute)(eAttr + 1))

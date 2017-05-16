@@ -111,10 +111,10 @@ protected:
 	void DoTextProgress(int32_t &riByVal); // progress number of shown characters by given amount
 
 	// GUI calls
-	virtual void MouseInput(class C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse movement or buttons
+	virtual void MouseInput(class C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
 	virtual void MouseEnter(class C4GUI::CMouse &rMouse); // called when mouse cursor enters element region: Select this item (deselects any other)
-	virtual void DoDragging(class C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam);   // called by mouse: dragging process
-	virtual void StopDragging(class C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyParam); // called by mouse: mouse released after dragging process
+	virtual void DoDragging(class C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam);   // called by mouse: dragging process
+	virtual void StopDragging(class C4GUI::CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam); // called by mouse: mouse released after dragging process
 
 public:
 	C4ID GetC4ID() const { return id; }
@@ -136,9 +136,9 @@ public:
 	virtual void Default();
 
 protected:
-	BOOL LocationSet;
-	BOOL Permanent;
-	BOOL NeedRefill;
+	bool LocationSet;
+	bool Permanent;
+	bool NeedRefill;
 	int32_t Style;
 	int32_t Selection, TimeOnSelection;
 	int32_t ItemCount;
@@ -161,11 +161,11 @@ protected:
 	bool fActive; // set if menu is shown - independant of GUI to keep synchronized when there's no GUI
 
 public:
-	BOOL ConvertCom(int32_t &rCom, int32_t &rData, bool fAsyncConversion);
+	bool ConvertCom(int32_t &rCom, int32_t &rData, bool fAsyncConversion);
 	void ClearPointers(C4Object *pObj);
-	BOOL Refill();
+	bool Refill();
 	void Execute();
-	void SetPermanent(BOOL fPermanent);
+	void SetPermanent(bool fPermanent);
 	void SetAlignment(int32_t iAlignment);
 	int32_t GetIdentification();
 	int32_t GetItemCount();
@@ -177,24 +177,24 @@ public:
 	C4MenuItem *GetItem(int32_t iIndex);
 	virtual C4Object *GetParentObject() { return nullptr; }
 	bool MoveSelection(int32_t iBy, bool fAdjustPosition, bool fDoCalls);
-	BOOL SetSelection(int32_t iSelection, bool fAdjustPosition, bool fDoCalls);
-	BOOL SetPosition(int32_t iPosition);
+	bool SetSelection(int32_t iSelection, bool fAdjustPosition, bool fDoCalls);
+	bool SetPosition(int32_t iPosition);
 	void SetSize(int32_t iToWdt, int32_t iToHgt);
-	BOOL Enter(BOOL fRight = FALSE);
-	BOOL IsActive();
-	BOOL Control(BYTE byCom, int32_t iData);
-	bool KeyControl(BYTE byCom); // direct keyboard callback
-	BOOL AddRefSym(const char *szCaption, const C4FacetEx &fctSymbol, const char *szCommand,
+	bool Enter(bool fRight = false);
+	bool IsActive();
+	bool Control(uint8_t byCom, int32_t iData);
+	bool KeyControl(uint8_t byCom); // direct keyboard callback
+	bool AddRefSym(const char *szCaption, const C4FacetEx &fctSymbol, const char *szCommand,
 		int32_t iCount = C4MN_Item_NoCount, C4Object *pObject = nullptr,
 		const char *szInfoCaption = nullptr,
 		C4ID idID = C4ID_None, const char *szCommand2 = nullptr, bool fOwnValue = false, int32_t iValue = 0, bool fIsSelectable = true);
-	BOOL Add(const char *szCaption, C4FacetExSurface &fctSymbol, const char *szCommand,
+	bool Add(const char *szCaption, C4FacetExSurface &fctSymbol, const char *szCommand,
 		int32_t iCount = C4MN_Item_NoCount, C4Object *pObject = nullptr,
 		const char *szInfoCaption = nullptr,
 		C4ID idID = C4ID_None, const char *szCommand2 = nullptr, bool fOwnValue = false, int32_t iValue = 0, bool fIsSelectable = true);
 	void ClearItems(bool fResetSelection = false);
 	void ResetLocation() { LocationSet = false; }
-	BOOL SetLocation(int32_t iX, int32_t iY); // set location relative to user viewport
+	bool SetLocation(int32_t iX, int32_t iY); // set location relative to user viewport
 	bool SetTextProgress(int32_t iToProgress, bool fAdd); // enable/disable progressive text display and set starting pos
 	void SetEqualItemHeight(bool fToVal) { fEqualIconItemHeight = fToVal; } // enable/disable equal item heights
 	bool TryClose(bool fOK, bool fControl);
@@ -205,7 +205,7 @@ public:
 #endif
 
 private:
-	BOOL AddItem(C4MenuItem *pNew, const char *szCaption, const char *szCommand,
+	bool AddItem(C4MenuItem *pNew, const char *szCaption, const char *szCommand,
 		int32_t iCount, C4Object *pObject, const char *szInfoCaption,
 		C4ID idID, const char *szCommand2, bool fOwnValue, int32_t iValue, bool fIsSelectable);
 	bool InitMenu(const char *szEmpty, int32_t iExtra, int32_t iExtraData, int32_t iId, int32_t iStyle);
@@ -215,7 +215,7 @@ protected:
 	bool DoInit(C4FacetExSurface &fctSymbol, const char *szEmpty, int32_t iExtra = C4MN_Extra_None, int32_t iExtraData = 0, int32_t iId = 0, int32_t iStyle = C4MN_Style_Normal);
 	void AdjustSelection();
 	void AdjustPosition();
-	BOOL RefillInternal();
+	bool RefillInternal();
 	void DrawFrame(SURFACE sfcSurface, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt);
 	void InitLocation(C4Facet &cgo);
 	void InitSize();

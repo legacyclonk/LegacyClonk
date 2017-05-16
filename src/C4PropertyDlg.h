@@ -34,9 +34,9 @@ public:
 	void Execute();
 	void ClearPointers(C4Object *pObj);
 	void UpdateInputCtrl(C4Object *pObj);
-	BOOL Open();
-	BOOL Update();
-	BOOL Update(C4ObjectList &rSelection);
+	bool Open();
+	bool Update();
+	bool Update(C4ObjectList &rSelection);
 	bool Active;
 #ifdef _WIN32
 	HWND hDialog;
