@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -15,62 +15,35 @@
  * for the above references.
  */
 
-// png file reading functionality
-
 #pragma once
 
-#include <Standard.h>
-#include <png.h>
-#include <zlib.h>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
 
-void PNGAPI CPNGReadFn(png_structp png_ptr, png_bytep data, size_t length); // reading proc (callback)
-
+// Reads and writes PNG files
 class CPNGFile
 {
-private:
-	uint8_t *pFile; // loaded file in mem
-	bool fpFileOwned; // whether file ptr was allocated by this class
-	int iFileSize; // size of file in mem
-	int iPixSize; // size of one pixel in image data mem
-	FILE *fp; // opened file for writing
-
-	uint8_t *pFilePtr; // current pos in file
-
-	bool fWriteMode; // if set, the following png-structs are write structs
-	png_structp png_ptr; // png main struct
-	png_infop info_ptr, end_info; // png file info
-
-	uint8_t *pImageData; // uncompressed image in memory
-	int iRowSize; // size of one row of data (equals pitch)
-
-	void Read(uint8_t *pData, int iLength); // read from file
-	bool DoLoad(); // perform png-file loading after file data ptr has been set
-
 public:
-	unsigned long iWdt, iHgt; // image size
-	int iBPC, iClrType, iIntrlcType, iCmprType, iFltrType; // image data info
+	// Creates an object that can be used to write to the specified file.
+	CPNGFile(const std::string &filename, std::uint32_t width, std::uint32_t height, bool useAlpha);
+	// Writes the specified image to the PNG file. Don't use this object after calling.
+	void Encode(const void *pixels);
 
-public:
-	CPNGFile();
+	// Creates an object that can be used to read the specified file contents.
+	CPNGFile(const void *fileContents, std::size_t fileSize);
+	// Reads the PNG file into the specified buffer. Don't use this object after calling.
+	void Decode(void *pixels);
+
 	~CPNGFile();
 
-	void ClearPngStructs(); // clear internal png structs (png_tr, info_ptr etc.);
-	void Default(); // zero fields
-	void Clear(); // clear loaded file
-	bool Load(uint8_t *pFile, int iSize); // load from file that is completely in mem
-	uint32_t GetPix(int iX, int iY); // get pixel value (rgba) - note that NO BOUNDS CHECKS ARE DONE due to performance reasons!
+	std::uint32_t Width() const;
+	std::uint32_t Height() const;
+	bool UsesAlpha() const;
 
-	// Use ONLY for PNG_COLOR_TYPE_RGB_ALPHA!
-	const uint32_t *GetRow(int iY)
-	{
-		return reinterpret_cast<uint32_t *>(pImageData + iY * iRowSize);
-	}
-
-	bool Create(int iWdt, int iHgt, bool fAlpha); // create empty image
-	bool SetPix(int iX, int iY, uint32_t dwValue); // set pixel value
-	bool Save(const char *szFilename); // save current image to file; saving to mem is not supported because C4Group doesn't support streamed writing anyway...
-
-	uint8_t *GetImageData() { return pImageData; } // return raw image data
-
-	friend void PNGAPI CPNGReadFn(png_structp png_ptr, png_bytep data, size_t length);
+	// Use Pimpl so we don't have to include png.h in the header
+private:
+	struct Impl;
+	const std::unique_ptr<Impl> impl;
 };

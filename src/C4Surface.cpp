@@ -26,8 +26,14 @@
 #endif
 
 #include <Bitmap256.h>
+#include <StdBitmap.h>
+#include <StdJpeg.h>
 #include <StdPNG.h>
 #include <StdDDraw2.h>
+
+#include <cstdint>
+#include <memory>
+#include <stdexcept>
 
 bool C4Surface::LoadAny(C4Group &hGroup, const char *szName, bool fOwnPal, bool fNoErrIfNotFound)
 {
@@ -102,18 +108,30 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 {
 	// create mem block
 	int iSize = hGroup.AccessedEntrySize();
-	uint8_t *pData = new uint8_t[iSize];
+	std::unique_ptr<uint8_t[]> pData(new uint8_t[iSize]);
 	// load file into mem
-	hGroup.Read((void *)pData, iSize);
+	hGroup.Read(pData.get(), iSize);
 	// load as png file
-	CPNGFile png;
-	bool fSuccess = png.Load(pData, iSize);
-	// free data
-	delete[] pData;
+	std::unique_ptr<StdBitmap> bmp;
+	std::uint32_t width, height; bool useAlpha;
+	try
+	{
+		CPNGFile png(pData.get(), iSize);
+		width = png.Width(); height = png.Height(), useAlpha = png.UsesAlpha();
+		bmp.reset(new StdBitmap(width, height, useAlpha));
+		png.Decode(bmp->GetBytes());
+	}
+	catch (const std::runtime_error &e)
+	{
+		LogF("Could not create surface from PNG file: %s", e.what());
+		bmp.reset();
+	}
+	// free file data
+	pData.reset();
 	// abort if loading wasn't successful
-	if (!fSuccess) return false;
+	if (!bmp) return false;
 	// create surface(s) - do not create an 8bit-buffer!
-	if (!Create(png.iWdt, png.iHgt)) return false;
+	if (!Create(width, height)) return false;
 	// lock for writing data
 	if (!Lock()) return false;
 	if (!ppTex)
@@ -135,12 +153,13 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 			// The global, not texture-relative position
 			int rY = iY + tY * iTexSize;
 #ifndef __BIG_ENDIAN__
-			if (png.iClrType == PNG_COLOR_TYPE_RGB_ALPHA)
+			if (useAlpha)
 			{
 				// Optimize the easy case of a png in the same format as the display
 				// 32 bit
 				uint32_t *pPix = (uint32_t *)(((char *)pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch);
-				memcpy(pPix, png.GetRow(rY) + tX * iTexSize, maxX * 4);
+				memcpy(pPix, static_cast<const std::uint32_t *>(bmp->GetPixelAddr32(0, rY)) +
+					tX * iTexSize, maxX * 4);
 				int iX = maxX;
 				while (iX--) { if (((uint8_t *)pPix)[3] == 0xff) *pPix = 0xff000000; ++pPix; }
 			}
@@ -150,7 +169,7 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 				// Loop through every pixel and convert
 				for (int iX = 0; iX < maxX; ++iX)
 				{
-					uint32_t dwCol = png.GetPix(iX + tX * iTexSize, rY);
+					uint32_t dwCol = bmp->GetPixel(iX + tX * iTexSize, rY);
 					// if color is fully transparent, ensure it's black
 					if (dwCol >> 24 == 0xff) dwCol = 0xff000000;
 					// set pix in surface
@@ -163,8 +182,8 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 	}
 	// unlock
 	Unlock();
-	// return if successful
-	return fSuccess;
+	// Success
+	return true;
 }
 
 bool C4Surface::SavePNG(C4Group &hGroup, const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly)
@@ -199,65 +218,6 @@ bool C4Surface::Copy(C4Surface &fromSfc)
 	return true;
 }
 
-/* JPEG loading */
-
-// Some distributions ship jpeglib.h with extern "C", others don't - gah.
-extern "C"
-{
-#include <jpeglib.h>
-}
-#include <setjmp.h>
-
-// Straight from the libjpeg example
-struct my_error_mgr
-{
-	struct jpeg_error_mgr pub; /* "public" fields */
-	jmp_buf setjmp_buffer; /* for return to caller */
-};
-
-typedef struct my_error_mgr *my_error_ptr;
-
-static void my_error_exit(j_common_ptr cinfo)
-{
-	/* cinfo->err really points to a my_error_mgr struct, so coerce pointer */
-	my_error_ptr myerr = (my_error_ptr)cinfo->err;
-	/* Always display the message. */
-	/* We could postpone this until after returning, if we chose. */
-	(*cinfo->err->output_message)(cinfo);
-	/* Return control to the setjmp point */
-	longjmp(myerr->setjmp_buffer, 1);
-}
-
-static void my_output_message(j_common_ptr cinfo)
-{
-	char buffer[JMSG_LENGTH_MAX];
-	(*cinfo->err->format_message)(cinfo, buffer);
-	LogF("libjpeg: %s", buffer);
-}
-
-static void jpeg_noop(j_decompress_ptr cinfo) {}
-
-static const unsigned char end_of_input = JPEG_EOI;
-
-static boolean fill_input_buffer(j_decompress_ptr cinfo)
-{
-	// The doc says to give fake end-of-inputs if there is no more data
-	cinfo->src->next_input_byte = &end_of_input;
-	cinfo->src->bytes_in_buffer = 1;
-	return true;
-}
-
-static void skip_input_data(j_decompress_ptr cinfo, long num_bytes)
-{
-	cinfo->src->next_input_byte += num_bytes;
-	cinfo->src->bytes_in_buffer -= num_bytes;
-	if (cinfo->src->bytes_in_buffer <= 0)
-	{
-		cinfo->src->next_input_byte = &end_of_input;
-		cinfo->src->bytes_in_buffer = 1;
-	}
-}
-
 bool C4Surface::ReadJPEG(CStdStream &hGroup)
 {
 	// create mem block
@@ -265,69 +225,39 @@ bool C4Surface::ReadJPEG(CStdStream &hGroup)
 	unsigned char *pData = new unsigned char[size];
 	// load file into mem
 	hGroup.Read(pData, size);
-	// stuff for libjpeg
-	struct jpeg_decompress_struct cinfo;
-	struct my_error_mgr jerr;
-	JSAMPARRAY buffer; /* Output row buffer */
-	int row_stride; /* physical row width in output buffer */
-	/* We set up the normal JPEG error routines, then override error_exit. */
-	cinfo.err = jpeg_std_error(&jerr.pub);
-	jerr.pub.error_exit = my_error_exit;
-	jerr.pub.output_message = my_output_message;
-	// apparantly, this is needed so libjpeg does not exit() the engine away
-	if (setjmp(jerr.setjmp_buffer))
+
+	bool locked = false;
+	try
 	{
-		// some fatal error
-		jpeg_destroy_decompress(&cinfo);
-		delete[] pData;
-		return false;
-	}
-	jpeg_create_decompress(&cinfo);
+		StdJpeg jpeg(pData, size);
+		const std::uint32_t width = jpeg.Width(), height = jpeg.Height();
 
-	// no fancy function calling
-	jpeg_source_mgr blub;
-	cinfo.src = &blub;
-	blub.next_input_byte = pData;
-	blub.bytes_in_buffer = size;
-	blub.init_source = jpeg_noop;
-	blub.fill_input_buffer = fill_input_buffer;
-	blub.skip_input_data = skip_input_data;
-	blub.resync_to_restart = jpeg_resync_to_restart;
-	blub.term_source = jpeg_noop;
+		// create surface(s) - do not create an 8bit-buffer!
+		if (!Create(width, height)) return false;
 
-	// a missing image is an error
-	jpeg_read_header(&cinfo, true);
+		// lock for writing data
+		if (!Lock()) return false;
+		locked = true;
 
-	// Let libjpeg convert for us
-	cinfo.out_color_space = JCS_RGB;
-	jpeg_start_decompress(&cinfo);
-
-	// create surface(s) - do not create an 8bit-buffer!
-	if (!Create(cinfo.output_width, cinfo.output_height)) return false;
-	// JSAMPLEs per row in output buffer
-	row_stride = cinfo.output_width * cinfo.output_components;
-	// Make a one-row-high sample array that will go away at jpeg_destroy_decompress
-	buffer = (*cinfo.mem->alloc_sarray)
-		((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
-	// lock for writing data
-	if (!Lock()) return false;
-	while (cinfo.output_scanline < cinfo.output_height)
-	{
-		// read an 1-row-array of scanlines
-		jpeg_read_scanlines(&cinfo, buffer, 1);
 		// put the data in the image
-		for (unsigned int i = 0; i < cinfo.output_width; ++i)
+		for (std::uint32_t y = 0; y < height; ++y)
 		{
-			const unsigned char *const start = buffer[0] + i * cinfo.output_components;
-			const uint32_t c = C4RGB(*start, *(start + 1), *(start + 2));
-			SetPixDw(i, cinfo.output_scanline - 1, c);
+			const auto row = jpeg.DecodeRow();
+			for (std::uint32_t x = 0; x < width; ++x)
+			{
+				const auto pixel = static_cast<const uint8_t *>(row) + x * 3;
+				SetPixDw(x, y, C4RGB(pixel[0], pixel[1], pixel[2]));
+			}
 		}
+		jpeg.Finish();
 	}
+	catch (const std::runtime_error &e)
+	{
+		LogF("Could not create surface from JPEG file: %s", e.what());
+	}
+
 	// unlock
-	Unlock();
-	// clean up
-	jpeg_finish_decompress(&cinfo);
-	jpeg_destroy_decompress(&cinfo);
+	if (locked) Unlock();
 	// free data
 	delete[] pData;
 	// return if successful

@@ -28,6 +28,7 @@
 #include <StdFacet.h>
 #include <StdDDraw2.h>
 #include <Bitmap256.h>
+#include <StdBitmap.h>
 #include <StdPNG.h>
 
 #ifdef HAVE_IO_H
@@ -40,6 +41,7 @@
 #include <time.h>
 #include <limits.h>
 #include <list>
+#include <stdexcept>
 
 CDDrawCfg DDrawCfg; // ddraw config
 
@@ -415,9 +417,8 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 	// Lock - WARNING - maybe locking primary surface here...
 	if (!Lock()) return false;
 
-	// create png file
-	CPNGFile png;
-	if (!png.Create(Wdt, Hgt, fSaveAlpha)) { Unlock(); return false; }
+	// Create bitmap
+	StdBitmap bmp(Wdt, Hgt, fSaveAlpha);
 
 	// reset overlay if desired
 	CSurface *pMainSfcBackup;
@@ -428,7 +429,7 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 	{
 		// Take shortcut. FIXME: Check Endian
 		for (int y = 0; y < Hgt; ++y)
-			glReadPixels(0, Hgt - y, Wdt, 1, fSaveAlpha ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, png.GetImageData() + y * Wdt * (3 + fSaveAlpha));
+			glReadPixels(0, Hgt - y, Wdt, 1, fSaveAlpha ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, bmp.GetPixelAddr(0, y));
 	}
 	else
 #endif
@@ -439,18 +440,25 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 			{
 				uint32_t dwClr = GetPixDw(x, y, false);
 				if (fApplyGamma) dwClr = lpDDraw->Gamma.ApplyTo(dwClr);
-				png.SetPix(x, y, dwClr);
+				bmp.SetPixel(x, y, dwClr);
 			}
 	}
 
 	// reset overlay
 	if (fSaveOverlayOnly) pMainSfc = pMainSfcBackup;
 
-	// save png
-	if (!png.Save(szFilename)) { Unlock(); return false; }
-
 	// Unlock
 	Unlock();
+
+	// Save bitmap to PNG file
+	try
+	{
+		CPNGFile(szFilename, Wdt, Hgt, fSaveAlpha).Encode(bmp.GetBytes());
+	}
+	catch (const std::runtime_error &)
+	{
+		return false;
+	}
 
 	// Success
 	return true;
