@@ -1426,13 +1426,12 @@ void C4Network2IOConnection::DoStatistics(int iInterval, int *pIRateSum, int *pO
 
 void C4Network2IOConnection::AddRef()
 {
-	InterlockedIncrement(&iRefCnt);
+	++iRefCnt;
 }
 
 void C4Network2IOConnection::DelRef()
 {
-	if (!InterlockedDecrement(&iRefCnt))
-		delete this;
+	if (--iRefCnt == 0) delete this;
 }
 
 // *** C4PacketPostMortem

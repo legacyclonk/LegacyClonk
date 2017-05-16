@@ -4,6 +4,8 @@
 #include "C4Client.h"
 #include "C4InteractiveThread.h"
 
+#include <atomic>
+
 class C4Network2IOConnection;
 
 // enums & constants
@@ -229,7 +231,7 @@ protected:
 	C4Network2IOConnection *pNext;
 
 	// reference counter
-	long iRefCnt;
+	std::atomic<long> iRefCnt;
 
 public:
 	C4NetIO               *getNetClass()    const { return pNetClass; }
