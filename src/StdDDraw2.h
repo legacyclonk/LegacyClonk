@@ -341,6 +341,7 @@ protected:
 	virtual bool SetOutputAdapter(unsigned int iMonitor) = 0;
 	bool Error(const char *szMsg);
 	virtual bool CreateDirectDraw() = 0;
+	bool CalculateClipper(int *iX, int *iY, int *iWdt, int *iHgt);
 
 	void DebugLog(const char *szMsg)
 	{
