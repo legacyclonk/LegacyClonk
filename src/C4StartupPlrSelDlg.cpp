@@ -1448,7 +1448,7 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 					{
 						// no main player selection dialog: This means that this dlg was shown as a creation dialog from the main startup dlg
 						// Just set the newly created player as current selection
-						SCopy(Config.AtExeRelativePath(Filename.getData()), Config.General.Participants, sizeof Config.General.Participants);
+						SCopy(Config.AtExeRelativePath(Filename.getData()), Config.General.Participants, sizeof(Config.General.Participants));
 					}
 				}
 			}

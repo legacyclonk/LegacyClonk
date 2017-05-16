@@ -75,7 +75,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			// Scan field type
 			for (cpType = cpFormat + 1; *cpType && (*cpType == '.' || Inside(*cpType, '0', '9')); cpType++);
 			// Copy field
-			SCopy(cpFormat, szField, Min<unsigned int>(sizeof szField - 1, cpType - cpFormat + 1));
+			SCopy(cpFormat, szField, Min<unsigned int>(sizeof(szField) - 1, cpType - cpFormat + 1));
 			// Insert field by type
 			switch (*cpType)
 			{

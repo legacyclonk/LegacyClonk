@@ -224,7 +224,7 @@ bool C4Network2Client::AddAddr(const C4Network2Address &addr, bool fAnnounce)
 void C4Network2Client::AddLocalAddrs(int16_t iPortTCP, int16_t iPortUDP)
 {
 	// set up address struct
-	sockaddr_in addr; ZeroMem(&addr, sizeof addr);
+	sockaddr_in addr; ZeroMem(&addr, sizeof(addr));
 	addr.sin_family = AF_INET;
 
 	// get local address(es)
