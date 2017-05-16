@@ -1081,7 +1081,7 @@ int CStdFont::GetMessageBreak(const char *szMsg, const char **ppNewPos, int iBre
 
 /* Text drawing */
 
-void CStdFont::DrawText(SURFACE sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom)
+void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom)
 {
 	CBltTransform bt, *pbt = nullptr;
 	// set blit color

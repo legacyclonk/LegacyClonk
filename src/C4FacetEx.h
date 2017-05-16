@@ -26,7 +26,7 @@ public:
 
 	void Set(const C4Facet &cpy) { TargetX = TargetY = 0; C4Facet::Set(cpy); }
 	void Set(const C4FacetEx &cpy) { *this = cpy; }
-	void Set(SURFACE nsfc, int nx, int ny, int nwdt, int nhgt, int ntx = 0, int nty = 0);
+	void Set(CSurface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx = 0, int nty = 0);
 
 	void DrawBolt(int iX1, int iY1, int iX2, int iY2, uint8_t bCol, uint8_t bCol2);
 	void DrawLine(int iX1, int iY1, int iX2, int iY2, uint8_t bCol1, uint8_t bCol2);
@@ -61,7 +61,7 @@ public:
 	void Set(const C4Facet &cpy) { Clear(); C4Facet::Set(cpy); }
 	void Set(const C4FacetEx &cpy) { Clear(); C4FacetEx::Set(cpy); }
 
-	void Set(SURFACE nsfc, int nx, int ny, int nwdt, int nhgt, int ntx = 0, int nty = 0)
+	void Set(CSurface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx = 0, int nty = 0)
 	{
 		C4FacetEx::Set(nsfc, nx, ny, nwdt, nhgt, ntx, nty);
 	}

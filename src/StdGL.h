@@ -98,7 +98,7 @@ public:
 	bool UpdateClipper(); // set current clipper to render target
 
 	// Surface
-	bool PrepareRendering(SURFACE sfcToSurface); // check if/make rendering possible to given surface
+	bool PrepareRendering(CSurface *sfcToSurface); // check if/make rendering possible to given surface
 	CStdGLCtx &GetMainCtx() { return MainCtx; }
 	virtual CStdGLCtx *CreateContext(CStdWindow *pWindow, CStdApp *pApp);
 #ifdef _WIN32
@@ -107,14 +107,14 @@ public:
 
 	// Blit
 	void PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact);
-	virtual void BlitLandscape(SURFACE sfcSource, SURFACE sfcSource2, SURFACE sfcLiquidAnimation, int fx, int fy,
-		SURFACE sfcTarget, int tx, int ty, int wdt, int hgt);
+	virtual void BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *sfcLiquidAnimation, int fx, int fy,
+		CSurface *sfcTarget, int tx, int ty, int wdt, int hgt);
 	void FillBG(uint32_t dwClr = 0);
 
 	// Drawing
-	void DrawQuadDw(SURFACE sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4);
-	void DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr);
-	void DrawPixInt(SURFACE sfcDest, float tx, float ty, uint32_t dwCol);
+	void DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4);
+	void DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr);
+	void DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwCol);
 
 	// Gamma
 	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool fForce);

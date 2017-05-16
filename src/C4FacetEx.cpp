@@ -13,7 +13,7 @@
 
 #ifdef C4ENGINE
 
-void C4FacetEx::Set(SURFACE nsfc, int nx, int ny, int nwdt, int nhgt, int ntx, int nty)
+void C4FacetEx::Set(CSurface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx, int nty)
 {
 	C4Facet::Set(nsfc, nx, ny, nwdt, nhgt);
 	TargetX = ntx; TargetY = nty;

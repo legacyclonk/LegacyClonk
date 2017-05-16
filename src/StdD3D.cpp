@@ -144,7 +144,7 @@ bool CStdD3D::UpdateClipper()
 	return true;
 }
 
-bool CStdD3D::PrepareRendering(SURFACE sfcToSurface)
+bool CStdD3D::PrepareRendering(CSurface *sfcToSurface)
 {
 	// call from gfx thread only!
 	if (!pApp || !pApp->AssertMainThread()) return false;
@@ -318,7 +318,7 @@ bool CStdD3D::BlitTex2Window(CTexRef *pTexRef, HDC hdcTarget, RECT &rtFrom, RECT
 	return true;
 }
 
-bool CStdD3D::BlitSurface2Window(SURFACE sfcSource,
+bool CStdD3D::BlitSurface2Window(CSurface *sfcSource,
 	int fX, int fY, int fWdt, int fHgt,
 	HWND hWnd,
 	int tX, int tY, int tWdt, int tHgt)
@@ -635,7 +635,7 @@ bool CStdD3D::OnResolutionChanged()
 	return true;
 }
 
-void CStdD3D::DrawPixInt(SURFACE sfcDest, float tx, float ty, uint32_t dwClr)
+void CStdD3D::DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwClr)
 {
 	// is render target?
 	if (!sfcDest->IsRenderTarget())
@@ -664,7 +664,7 @@ void CStdD3D::DrawPixInt(SURFACE sfcDest, float tx, float ty, uint32_t dwClr)
 	DrawQuadDw(sfcDest, vtx, dwClr, dwClr, dwClr, dwClr);
 }
 
-void CStdD3D::DrawPixPrimary(SURFACE sfcDest, int iX, int iY, uint32_t dwClr)
+void CStdD3D::DrawPixPrimary(CSurface *sfcDest, int iX, int iY, uint32_t dwClr)
 {
 	// Must be render target and locked
 	if (!sfcDest->IsRenderTarget() || !sfcDest->IsLocked()) return;
@@ -700,7 +700,7 @@ void CStdD3D::DrawPixPrimary(SURFACE sfcDest, int iX, int iY, uint32_t dwClr)
 	}
 }
 
-void CStdD3D::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
+void CStdD3D::DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
 {
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
@@ -748,7 +748,7 @@ void CStdD3D::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_
 	lpDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
 }
 
-void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr)
+void CStdD3D::DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr)
 {
 	float i;
 	// manual clipping?

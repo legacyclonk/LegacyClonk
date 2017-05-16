@@ -909,7 +909,7 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 	}
 }
 
-void C4Menu::DrawFrame(SURFACE sfcSurface, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt)
+void C4Menu::DrawFrame(CSurface *sfcSurface, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt)
 {
 	lpDDraw->DrawFrame(sfcSurface, iX + 1, iY + 1, iX + iWdt - 1, iY + iHgt - 1, 80);
 }
