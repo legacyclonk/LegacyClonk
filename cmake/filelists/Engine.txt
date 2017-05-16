@@ -136,8 +136,6 @@ src/C4MassMover.cpp
 src/C4MassMover.h
 src/C4Material.cpp
 src/C4Material.h
-src/C4MaterialList.cpp
-src/C4MaterialList.h
 src/C4Menu.cpp
 src/C4Menu.h
 src/C4MessageBoard.cpp

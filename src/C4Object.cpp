@@ -12,7 +12,6 @@
 #include <C4ObjectCom.h>
 #include <C4Command.h>
 #include <C4Viewport.h>
-#include <C4MaterialList.h>
 #ifdef DEBUGREC
 #include <C4Record.h>
 #endif
@@ -117,7 +116,7 @@ void C4Object::Default()
 	Menu = nullptr;
 	PhysicalTemporary = false;
 	TemporaryPhysical.Default();
-	MaterialContents = nullptr;
+	MaterialContents.fill(0);
 	Visibility = VIS_All;
 	LocalNamed.Reset();
 	Marker = 0;
@@ -3123,7 +3122,7 @@ void C4Object::Clear()
 	if (BackParticles)   BackParticles.Clear();
 	delete pSolidMaskData;   pSolidMaskData   = nullptr;
 	delete Menu;             Menu             = nullptr;
-	delete MaterialContents; MaterialContents = nullptr;
+	MaterialContents.fill(0);
 	// clear commands!
 	C4Command *pCom, *pNext;
 	for (pCom = Command; pCom; pCom = pNext)
@@ -3719,7 +3718,7 @@ void C4Object::SyncClearance()
 	// Menu
 	CloseMenu(true);
 	// Material contents
-	delete MaterialContents; MaterialContents = nullptr;
+	MaterialContents.fill(0);
 	// reset speed of staticback-objects
 	if (Category & C4D_StaticBack)
 	{
@@ -3886,25 +3885,23 @@ bool C4Object::ExecuteCommand()
 
 void C4Object::AddMaterialContents(int32_t iMaterial, int32_t iAmount)
 {
-	// Create contents list if necessary
-	if (!MaterialContents) MaterialContents = new C4MaterialList;
 	// Add amount
-	MaterialContents->Add(iMaterial, iAmount);
+	if (!Inside<int32_t>(iMaterial, 0, C4MaxMaterial)) return;
+	MaterialContents[iMaterial] += iAmount;
 }
 
 void C4Object::DigOutMaterialCast(bool fRequest)
 {
 	// Check material contents for sufficient object cast amounts
-	if (!MaterialContents) return;
 	for (int32_t iMaterial = 0; iMaterial < Game.Material.Num; iMaterial++)
-		if (MaterialContents->Amount[iMaterial])
+		if (MaterialContents[iMaterial])
 			if (Game.Material.Map[iMaterial].Dig2Object != C4ID_None)
 				if (Game.Material.Map[iMaterial].Dig2ObjectRatio != 0)
 					if (fRequest || !Game.Material.Map[iMaterial].Dig2ObjectOnRequestOnly)
-						if (MaterialContents->Amount[iMaterial] >= Game.Material.Map[iMaterial].Dig2ObjectRatio)
+						if (MaterialContents[iMaterial] >= Game.Material.Map[iMaterial].Dig2ObjectRatio)
 						{
 							Game.CreateObject(Game.Material.Map[iMaterial].Dig2Object, this, NO_OWNER, x, y + Shape.y + Shape.Hgt, Random(360));
-							MaterialContents->Amount[iMaterial] = 0;
+							MaterialContents[iMaterial] = 0;
 						}
 }
 
