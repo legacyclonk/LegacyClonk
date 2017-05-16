@@ -1,0 +1,27 @@
+[Clonk Rage Source Code]
+
+Copyright (c) 2008 RedWolf Design GmbH
+See licenses/clonk-source.txt for the Clonk Source Code License.
+
+[Engine Coders]
+
+Matthes Bender (matthes)
+Sven Eberhardt (Sven2)
+Peter Wortmann (PeterW)
+Günther Brammer (Günther)
+Armin Burgmeier (Clonk-Karl)
+Julian Raschke (survivor)
+Alexander Post (qualle)
+
+[Libraries]
+
+zlib: Jean-loup Gailly, Mark Adler
+libpng: Glenn Randers-Pehrson
+jpeglib: Independent JPEG Group
+OpenSSL: The OpenSSL Project, see OpenSSL.txt
+FMOD: Firelight Multimedia
+Freetype: The FreeType Project
+Allegro: Shawn Hargreaves
+GTK+: see LGPL.txt
+SDL: see LGPL.txt
+SDL_mixer: see LGPL.txt

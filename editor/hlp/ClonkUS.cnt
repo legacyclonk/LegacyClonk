@@ -1,0 +1,13 @@
+:Base Clonk.hlp>Def
+:Title Clonk Endeavour
+1 Welcome to Clonk!=HID_WELCOME
+1 General
+2 What is Clonk?=HID_INFOCLONK
+1 Control
+2 Mouse=HID_CONTROLMOUSE
+2 Keyboard and Gamepad=HID_CONTROL
+2 Special Keys=HID_KEYBOARDKEYS
+2 Line Construction and Pumps=HID_LINES
+1 Program
+2 Saving Games=HID_SAVEGAME
+2 Networking=HID_NETWORK
