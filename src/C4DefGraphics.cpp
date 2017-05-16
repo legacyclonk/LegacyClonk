@@ -49,8 +49,8 @@ C4DefGraphics::C4DefGraphics(C4Def *pOwnDef)
 void C4DefGraphics::Clear()
 {
 	// zero own fields
-	if (BitmapClr) { delete BitmapClr; BitmapClr = nullptr; }
-	if (Bitmap)    { delete Bitmap;    Bitmap    = nullptr; }
+	delete BitmapClr; BitmapClr = nullptr;
+	delete Bitmap;    Bitmap    = nullptr;
 	// delete additonal graphics
 	C4AdditionalDefGraphics *pGrp2N = pNext, *pGrp2;
 	while (pGrp2 = pGrp2N) { pGrp2N = pGrp2->pNext; pGrp2->pNext = nullptr; delete pGrp2; }
@@ -245,8 +245,8 @@ C4PortraitGraphics *C4PortraitGraphics::Get(const char *szGrpName)
 bool C4DefGraphics::CopyGraphicsFrom(C4DefGraphics &rSource)
 {
 	// clear previous
-	if (BitmapClr) { delete BitmapClr; BitmapClr = nullptr; }
-	if (Bitmap)    { delete Bitmap;    Bitmap    = nullptr; }
+	delete BitmapClr; BitmapClr = nullptr;
+	delete Bitmap;    Bitmap    = nullptr;
 	// copy from source
 	if (rSource.Bitmap)
 	{
@@ -261,7 +261,7 @@ bool C4DefGraphics::CopyGraphicsFrom(C4DefGraphics &rSource)
 		BitmapClr = new C4Surface();
 		if (!BitmapClr->Copy(*rSource.BitmapClr))
 		{
-			if (Bitmap) { delete Bitmap; Bitmap = nullptr; }
+			delete Bitmap;    Bitmap    = nullptr;
 			delete BitmapClr; BitmapClr = nullptr; return false;
 		}
 		if (Bitmap) BitmapClr->SetAsClrByOwnerOf(Bitmap);
@@ -345,7 +345,7 @@ C4DefGraphicsPtrBackup::~C4DefGraphicsPtrBackup()
 	// graphics ptr still assigned? then remove dead graphics pointers from objects
 	if (pGraphicsPtr) AssignRemoval();
 	// delete following graphics recursively
-	if (pNext) delete pNext;
+	delete pNext;
 }
 
 void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)

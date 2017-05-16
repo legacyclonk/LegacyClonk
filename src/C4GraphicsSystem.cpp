@@ -96,7 +96,7 @@ void C4GraphicsSystem::Clear()
 	// Clear upper board
 	UpperBoard.Clear();
 	// clear loader
-	if (pLoaderScreen) { delete pLoaderScreen; pLoaderScreen = nullptr; }
+	delete pLoaderScreen; pLoaderScreen = nullptr;
 	// Close viewports
 	C4Viewport *next;
 	while (FirstViewport)
@@ -348,7 +348,7 @@ bool C4GraphicsSystem::InitLoaderScreen(const char *szLoaderSpec)
 	// create new loader; overwrite current only if successful
 	C4LoaderScreen *pNewLoader = new C4LoaderScreen();
 	if (!pNewLoader->Init(szLoaderSpec)) { delete pNewLoader; return false; }
-	if (pLoaderScreen) delete pLoaderScreen;
+	delete pLoaderScreen;
 	pLoaderScreen = pNewLoader;
 	// apply user gamma for loader
 	ApplyGamma();

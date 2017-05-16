@@ -37,7 +37,7 @@ C4LoaderScreen::C4LoaderScreen() : TitleFont(Game.GraphicsResource.FontTitle), L
 C4LoaderScreen::~C4LoaderScreen()
 {
 	// clear fields
-	if (szInfo) delete[] szInfo;
+	delete[] szInfo;
 }
 
 bool C4LoaderScreen::Init(const char *szLoaderSpec)
@@ -102,7 +102,7 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 	if (!fctBackground.Load(*pChosenGrp, ChosenFilename, C4FCT_Full, C4FCT_Full, true)) return false;
 
 	// load info
-	if (szInfo) { delete[] szInfo; szInfo = nullptr; }
+	delete[] szInfo; szInfo = nullptr;
 
 	// init fonts
 	if (!Game.GraphicsResource.InitFonts())

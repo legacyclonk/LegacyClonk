@@ -331,7 +331,7 @@ C4StartupOptionsDlg::ControlConfigArea::ControlConfigArea(const C4Rect &rcArea, 
 C4StartupOptionsDlg::ControlConfigArea::~ControlConfigArea()
 {
 	delete[] ppKeyControlSetBtns;
-	if (pGamepadOpener) delete pGamepadOpener;
+	delete pGamepadOpener;
 }
 
 void C4StartupOptionsDlg::ControlConfigArea::OnCtrlSetBtn(C4GUI::Control *btn)

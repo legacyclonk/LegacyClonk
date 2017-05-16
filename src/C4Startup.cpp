@@ -156,8 +156,8 @@ C4Startup::~C4Startup()
 	pInstance = nullptr;
 	if (Game.pGUI)
 	{
-		if (pLastDlg) delete pLastDlg;
-		if (pCurrDlg) delete pCurrDlg;
+		delete pLastDlg;
+		delete pCurrDlg;
 	}
 }
 
@@ -222,7 +222,7 @@ C4StartupDlg *C4Startup::SwitchDialog(DialogID eToDlg, bool fFade)
 		// remember current position
 		eLastDlgID = eToDlg;
 		// kill any old dialog
-		if (pLastDlg) delete pLastDlg;
+		delete pLastDlg;
 	}
 	// retain current dialog as last, so it can fade out and may be used later
 	if (pLastDlg = pCurrDlg)
@@ -271,8 +271,8 @@ bool C4Startup::DoStartup()
 		Application.MusicSystem.Play();
 
 	// clear any previous
-	if (pLastDlg) { delete pLastDlg; pLastDlg = nullptr; }
-	if (pCurrDlg) { delete pCurrDlg; pCurrDlg = nullptr; }
+	delete pLastDlg; pLastDlg = nullptr;
+	delete pCurrDlg; pCurrDlg = nullptr;
 
 	// start with the last dlg that was shown - at first startup main dialog
 	if (!SwitchDialog(eLastDlgID)) return false;
@@ -305,7 +305,7 @@ bool C4Startup::DoStartup()
 	// check whether startup was aborted; first checking Game.pGUI
 	// (because an external call to Game.Clear() would invalidate dialogs)
 	if (!Game.pGUI) return false;
-	if (pLastDlg) { delete pLastDlg; pLastDlg = nullptr; }
+	delete pLastDlg; pLastDlg = nullptr;
 	if (pCurrDlg)
 	{
 		// deinit last shown dlg
@@ -356,7 +356,7 @@ C4Startup *C4Startup::EnsureLoaded()
 void C4Startup::Unload()
 {
 	// make sure startup data is destroyed
-	if (pInstance) { delete pInstance; pInstance = nullptr; }
+	delete pInstance; pInstance = nullptr;
 }
 
 bool C4Startup::Execute()

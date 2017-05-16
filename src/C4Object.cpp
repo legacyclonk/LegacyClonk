@@ -263,13 +263,10 @@ void C4Object::AssignRemoval(bool fExitContents)
 		pEffects->ClearAll(this, C4FxCall_RemoveClear);
 		// Effect-callback might actually have deleted the object already
 		if (!Status) return;
-		// ...or just deleted the effects
-		if (pEffects)
-		{
-			delete pEffects;
-			pEffects = nullptr;
-		}
 	}
+	// ...or just deleted the effects
+	delete pEffects;
+	pEffects = nullptr;
 	// remove particles
 	if (FrontParticles) FrontParticles.Clear();
 	if (BackParticles) BackParticles.Clear();
@@ -315,12 +312,9 @@ void C4Object::AssignRemoval(bool fExitContents)
 	while (FirstRef) FirstRef->Set(0);
 	Game.ClearPointers(this);
 	ClearCommands();
-	if (pSolidMaskData)
-	{
-		pSolidMaskData->Remove(true, false);
-		delete pSolidMaskData;
-		pSolidMaskData = nullptr;
-	}
+	if (pSolidMaskData) pSolidMaskData->Remove(true, false);
+	delete pSolidMaskData;
+	pSolidMaskData = nullptr;
 	SolidMask.Wdt = 0;
 	RemovalDelay = 2;
 }
@@ -1182,7 +1176,8 @@ bool C4Object::ChangeDef(C4ID idNew)
 	SetAction(ActIdle);
 	Action.Act = ActIdle; // Enforce ActIdle because SetAction may have failed due to NoOtherAction
 	SetDir(0); // will drop any outdated flipdir
-	if (pSolidMaskData) { pSolidMaskData->Remove(true, false); delete pSolidMaskData; pSolidMaskData = nullptr; }
+	if (pSolidMaskData) pSolidMaskData->Remove(true, false);
+	delete pSolidMaskData; pSolidMaskData = nullptr;
 	Def->Count--;
 	// change the name to the name of the new def, if the name of the old def was in use before
 	if (Name.getData() == Def->Name.getData()) Name = pDef->Name;
@@ -3137,20 +3132,20 @@ void C4Object::ClearInfo(C4ObjectInfo *pInfo)
 
 void C4Object::Clear()
 {
-	if (pEffects)       { delete pEffects;         pEffects         = nullptr; }
+	delete pEffects;         pEffects         = nullptr;
 	if (FrontParticles) FrontParticles.Clear();
 	if (BackParticles)   BackParticles.Clear();
-	if (pSolidMaskData) { delete pSolidMaskData;   pSolidMaskData   = nullptr; }
-	if (Menu)             delete Menu;             Menu             = nullptr;
-	if (MaterialContents) delete MaterialContents; MaterialContents = nullptr;
+	delete pSolidMaskData;   pSolidMaskData   = nullptr;
+	delete Menu;             Menu             = nullptr;
+	delete MaterialContents; MaterialContents = nullptr;
 	// clear commands!
 	C4Command *pCom, *pNext;
 	for (pCom = Command; pCom; pCom = pNext)
 	{
 		pNext = pCom->Next; delete pCom; pCom = pNext;
 	}
-	if (pDrawTransform) { delete pDrawTransform;   pDrawTransform   = nullptr; }
-	if (pGfxOverlay)    { delete pGfxOverlay;      pGfxOverlay      = nullptr; }
+	delete pDrawTransform;   pDrawTransform   = nullptr;
+	delete pGfxOverlay;      pGfxOverlay      = nullptr;
 	while (FirstRef) FirstRef->Set(0);
 }
 
@@ -3705,7 +3700,8 @@ C4Object *C4Object::ComposeContents(C4ID id)
 void C4Object::SetSolidMask(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iTX, int32_t iTY)
 {
 	// remove osld
-	if (pSolidMaskData) { pSolidMaskData->Remove(true, false); delete pSolidMaskData; pSolidMaskData = nullptr; }
+	if (pSolidMaskData) pSolidMaskData->Remove(true, false);
+	delete pSolidMaskData; pSolidMaskData = nullptr;
 	// set new data
 	SolidMask.Set(iX, iY, iWdt, iHgt, iTX, iTY);
 	// re-put if valid
@@ -3737,7 +3733,7 @@ void C4Object::SyncClearance()
 	// Menu
 	CloseMenu(true);
 	// Material contents
-	if (MaterialContents) delete MaterialContents; MaterialContents = nullptr;
+	delete MaterialContents; MaterialContents = nullptr;
 	// reset speed of staticback-objects
 	if (Category & C4D_StaticBack)
 	{
@@ -5562,11 +5558,8 @@ void C4Object::UpdateSolidMask(bool fRestoreAttachedObjects)
 					return;
 				}
 	// Otherwise, remove and destroy mask
-	if (pSolidMaskData)
-	{
-		pSolidMaskData->Remove(true, false);
-		delete pSolidMaskData; pSolidMaskData = nullptr;
-	}
+	if (pSolidMaskData) pSolidMaskData->Remove(true, false);
+	delete pSolidMaskData; pSolidMaskData = nullptr;
 }
 
 bool C4Object::Collect(C4Object *pObj)

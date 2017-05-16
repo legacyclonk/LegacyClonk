@@ -511,10 +511,10 @@ void C4Def::Clear()
 
 	Script.Clear();
 	StringTable.Clear();
-	if (pClonkNames  && fClonkNamesOwned)  delete pClonkNames;  pClonkNames  = nullptr;
-	if (pRankNames   && fRankNamesOwned)   delete pRankNames;   pRankNames   = nullptr;
-	if (pRankSymbols && fRankSymbolsOwned) delete pRankSymbols; pRankSymbols = nullptr;
-	if (pFairCrewPhysical) { delete pFairCrewPhysical; pFairCrewPhysical = nullptr; }
+	if (fClonkNamesOwned)  delete pClonkNames;  pClonkNames  = nullptr;
+	if (fRankNamesOwned)   delete pRankNames;   pRankNames   = nullptr;
+	if (fRankSymbolsOwned) delete pRankSymbols; pRankSymbols = nullptr;
+	delete pFairCrewPhysical; pFairCrewPhysical = nullptr;
 	fClonkNamesOwned = fRankNamesOwned = fRankSymbolsOwned = false;
 
 	PortraitCount = 0;
@@ -522,7 +522,7 @@ void C4Def::Clear()
 
 #endif
 
-	if (ActMap) delete[] ActMap; ActMap = nullptr;
+	delete[] ActMap; ActMap = nullptr;
 	Desc.Clear();
 }
 
@@ -690,7 +690,7 @@ bool C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_ClonkNames)
 	{
 		// clear any previous
-		if (pClonkNames) delete pClonkNames; pClonkNames = nullptr;
+		delete pClonkNames; pClonkNames = nullptr;
 		if (hGroup.FindEntry(C4CFN_ClonkNameFiles))
 		{
 			// create new
@@ -708,7 +708,7 @@ bool C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_RankNames)
 	{
 		// clear any previous
-		if (pRankNames) delete pRankNames; pRankNames = nullptr;
+		delete pRankNames; pRankNames = nullptr;
 		if (hGroup.FindEntry(C4CFN_RankNameFiles))
 		{
 			// create new
@@ -727,7 +727,7 @@ bool C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_RankFaces)
 	{
 		// clear any previous
-		if (pRankSymbols) delete pRankSymbols; pRankSymbols = nullptr;
+		delete pRankSymbols; pRankSymbols = nullptr;
 		// load new: try png first
 		if (hGroup.AccessEntry(C4CFN_RankFacesPNG))
 		{
@@ -1196,7 +1196,7 @@ void C4DefList::Clear()
 	}
 	FirstDef = nullptr;
 	// clear quick access table
-	for (int32_t i = 0; i < 64; i++) if (Table[i]) { delete[] Table[i]; Table[i] = nullptr; }
+	for (int32_t i = 0; i < 64; i++) { delete[] Table[i]; Table[i] = nullptr; }
 	fTable = false;
 }
 
@@ -1379,7 +1379,7 @@ void C4DefList::BuildTable()
 {
 	// clear any current table
 	int32_t i;
-	for (i = 0; i < 64; i++) if (Table[i]) { delete[] Table[i]; Table[i] = nullptr; }
+	for (i = 0; i < 64; i++) { delete[] Table[i]; Table[i] = nullptr; }
 	// build temp count list
 	int32_t Counts[64]; ZeroMem(&Counts, sizeof(Counts));
 	C4Def *pDef;

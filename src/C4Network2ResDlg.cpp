@@ -70,7 +70,7 @@ void C4Network2ResDlg::ListItem::Update(const C4Network2Res *pByRes)
 			AddElement(pProgress);
 		}
 	}
-	else if (pProgress) { delete pProgress; pProgress = nullptr; }
+	else { delete pProgress; pProgress = nullptr; }
 	// update disk icon
 	if (IsSavePossible())
 	{
@@ -80,7 +80,7 @@ void C4Network2ResDlg::ListItem::Update(const C4Network2Res *pByRes)
 			AddElement(pSaveBtn);
 		}
 	}
-	else if (pSaveBtn)
+	else
 		delete pSaveBtn;
 }
 

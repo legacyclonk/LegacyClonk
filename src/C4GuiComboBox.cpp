@@ -88,12 +88,12 @@ ComboBox::~ComboBox()
 {
 	delete pKeyCloseCombo;
 	delete pKeyOpenCombo;
-	if (pFillCallback) delete pFillCallback;
+	delete pFillCallback;
 }
 
 void ComboBox::SetComboCB(ComboBox_FillCB *pNewFillCallback)
 {
-	if (pFillCallback) delete pFillCallback;
+	delete pFillCallback;
 	pFillCallback = pNewFillCallback;
 }
 

@@ -235,7 +235,7 @@ void C4Landscape::ScanSideOpen()
 
 void C4Landscape::Clear(bool fClearMapCreator, bool fClearSky)
 {
-	if (pMapCreator && fClearMapCreator) { delete pMapCreator; pMapCreator = nullptr; }
+	if (fClearMapCreator) { delete pMapCreator; pMapCreator = nullptr; }
 	// clear sky
 	if (fClearSky) Sky.Clear();
 	// clear surfaces, if assigned
@@ -2584,9 +2584,9 @@ bool C4Landscape::DrawDefMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt,
 	{
 		// map to landscape
 		fSuccess = MapToLandscape(sfcMap, 0, 0, iMapWdt, iMapHgt, iX, iY);
-		// cleanup
-		delete sfcMap;
 	}
+	// cleanup
+	delete sfcMap;
 	// done
 	return fSuccess;
 }

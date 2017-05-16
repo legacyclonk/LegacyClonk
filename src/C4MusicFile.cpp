@@ -146,9 +146,9 @@ void C4MusicFileMOD::Stop(int fadeout_ms)
 	{
 		FMUSIC_StopSong(mod);
 		FMUSIC_FreeSong(mod);
-		mod = nullptr;
 	}
-	if (Data) { delete[] Data; Data = nullptr; }
+	mod = nullptr;
+	delete[] Data; Data = nullptr;
 }
 
 void C4MusicFileMOD::CheckIfPlaying()
@@ -202,12 +202,9 @@ bool C4MusicFileMP3::Play(bool loop)
 
 void C4MusicFileMP3::Stop(int fadeout_ms)
 {
-	if (stream)
-	{
-		FSOUND_Stream_Close(stream);
-		stream = nullptr;
-	}
-	if (Data) { delete[] Data; Data = nullptr; }
+	if (stream) FSOUND_Stream_Close(stream);
+	stream = nullptr;
+	delete[] Data; Data = nullptr;
 }
 
 void C4MusicFileMP3::CheckIfPlaying()
@@ -269,12 +266,9 @@ signed char __stdcall C4MusicFileOgg::OnEnd(FSOUND_STREAM *stream, void *buff, i
 
 void C4MusicFileOgg::Stop(int fadeout_ms)
 {
-	if (stream)
-	{
-		FSOUND_Stream_Close(stream);
-		stream = nullptr;
-	}
-	if (Data) { delete[] Data; Data = nullptr; }
+	if (stream) FSOUND_Stream_Close(stream);
+	stream = nullptr;
+	delete[] Data; Data = nullptr;
 	Playing = false;
 }
 
@@ -371,11 +365,8 @@ void C4MusicFileSDL::Stop(int fadeout_ms)
 		Music = nullptr;
 	}
 	RemTempFile();
-	if (Data)
-	{
-		delete[] Data;
-		Data = nullptr;
-	}
+	delete[] Data;
+	Data = nullptr;
 }
 
 void C4MusicFileSDL::CheckIfPlaying()

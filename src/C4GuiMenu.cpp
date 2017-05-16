@@ -149,7 +149,7 @@ ContextMenu::ContextMenu() : Window(), pTarget(nullptr), pSelectedItem(nullptr),
 ContextMenu::~ContextMenu()
 {
 	// del any submenu
-	if (pSubmenu) { delete pSubmenu; pSubmenu = nullptr; }
+	delete pSubmenu; pSubmenu = nullptr;
 	// forward RemoveElement to screen
 	Screen *pScreen = GetScreen();
 	if (pScreen) pScreen->RemoveElement(this);

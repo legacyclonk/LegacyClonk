@@ -787,7 +787,7 @@ StdStrBuf C4ScenarioListLoader::Scenario::GetOpenTooltip()
 
 C4ScenarioListLoader::Folder::~Folder()
 {
-	if (pMapData) delete pMapData;
+	delete pMapData;
 	ClearChildren();
 }
 
@@ -885,7 +885,7 @@ bool C4ScenarioListLoader::Folder::LoadContents(C4ScenarioListLoader *pLoader, C
 	// contents already loaded?
 	if (fContentsLoaded && !fReload) return true;
 	// clear previous
-	if (pMapData) { delete pMapData; pMapData = nullptr; }
+	delete pMapData; pMapData = nullptr;
 	// if filename is not given, assume it's been loaded in this entry
 	if (!psFilename) psFilename = &this->sFilename; else this->sFilename = *psFilename;
 	// nothing loaded: Load now
@@ -1073,7 +1073,7 @@ C4ScenarioListLoader::C4ScenarioListLoader() : pRootFolder(nullptr), pCurrFolder
 
 C4ScenarioListLoader::~C4ScenarioListLoader()
 {
-	if (pRootFolder) delete pRootFolder;
+	delete pRootFolder;
 }
 
 bool C4ScenarioListLoader::BeginActivity(bool fAbortPrevious)
@@ -1125,7 +1125,7 @@ bool C4ScenarioListLoader::Load(const StdStrBuf &sRootFolder)
 {
 	// (unthreaded) loading of all entries in root folder
 	if (!BeginActivity(true)) return false;
-	if (pRootFolder) { delete pRootFolder; pRootFolder = nullptr; }
+	delete pRootFolder; pRootFolder = nullptr;
 	pCurrFolder = pRootFolder = new RegularFolder(nullptr);
 	bool fSuccess = pRootFolder->LoadContents(this, nullptr, &sRootFolder, false, false);
 	EndActivity();
@@ -1355,7 +1355,7 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 
 C4StartupScenSelDlg::~C4StartupScenSelDlg()
 {
-	if (pScenLoader) delete pScenLoader;
+	delete pScenLoader;
 	if (this == pInstance) pInstance = nullptr;
 	delete pKeyCheat;
 	delete pKeyDelete;

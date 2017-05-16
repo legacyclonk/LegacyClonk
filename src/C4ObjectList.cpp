@@ -49,7 +49,7 @@ void C4ObjectList::Clear()
 		nextLnk = cLnk->Next; delete cLnk;
 	}
 	First = Last = nullptr;
-	if (pEnumerated) delete pEnumerated; pEnumerated = nullptr;
+	delete pEnumerated; pEnumerated = nullptr;
 }
 
 const int MaxTempListID = 500;

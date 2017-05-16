@@ -169,7 +169,7 @@ void C4AulScript::UnLink()
 	if (Temporary) return;
 
 	// check if byte code needs to be freed
-	if (Code) { delete[] Code; Code = nullptr; }
+	delete[] Code; Code = nullptr;
 
 	// delete included/appended functions
 	C4AulFunc *pFunc = Func0;

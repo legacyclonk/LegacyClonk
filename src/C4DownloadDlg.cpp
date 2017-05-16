@@ -74,7 +74,7 @@ void C4DownloadDlg::SetStatus(const char *szNewText, int32_t iProgressPercent)
 	else
 	{
 		// no progress desired
-		if (pProgressBar) { delete pProgressBar; pProgressBar = nullptr; }
+		delete pProgressBar; pProgressBar = nullptr;
 	}
 	// place button
 	caMain.ExpandLeft(C4GUI_DefDlgIndent * 2 + C4GUI_IconWdt);

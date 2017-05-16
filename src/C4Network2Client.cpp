@@ -302,12 +302,12 @@ void C4Network2Client::CreateGraphs()
 void C4Network2Client::ClearGraphs()
 {
 	// del all assigned graphs
-	if (pstatPing)
+	if (pstatPing && Game.pNetworkStatistics)
 	{
-		if (Game.pNetworkStatistics) Game.pNetworkStatistics->statPings.RemoveGraph(pstatPing);
-		delete pstatPing;
-		pstatPing = nullptr;
+		Game.pNetworkStatistics->statPings.RemoveGraph(pstatPing);
 	}
+	delete pstatPing;
+	pstatPing = nullptr;
 }
 
 // *** C4Network2ClientList

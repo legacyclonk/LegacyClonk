@@ -312,8 +312,8 @@ void C4SolidMask::Remove(bool fCauseInstability, bool fBackupAttachment)
 void C4SolidMask::Clear()
 {
 	// free mask+mat-buffer
-	if (pSolidMask) { delete[] pSolidMask; pSolidMask = nullptr; }
-	if (pSolidMaskMatBuff) { delete[] pSolidMaskMatBuff; pSolidMaskMatBuff = nullptr; }
+	delete[] pSolidMask; pSolidMask = nullptr;
+	delete[] pSolidMaskMatBuff; pSolidMaskMatBuff = nullptr;
 	// safety: mask cannot be removed now
 	MaskPut = false;
 	// clear attaching objects

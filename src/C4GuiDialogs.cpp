@@ -322,13 +322,9 @@ bool Dialog::CreateConsoleWindow()
 
 void Dialog::DestroyConsoleWindow()
 {
-	if (pWindow)
-	{
-		pWindow->Clear();
-		delete pWindow;
-		pWindow = nullptr;
-	}
-	if (pCtx) { delete pCtx; pCtx = nullptr; }
+	if (pWindow) pWindow->Clear();
+	delete pWindow; pWindow = nullptr;
+	delete pCtx;    pCtx    = nullptr;
 }
 
 Dialog::Dialog(int32_t iWdt, int32_t iHgt, const char *szTitle, bool fViewportDlg) :
@@ -428,8 +424,8 @@ void Dialog::SetTitle(const char *szTitle, bool fShowCloseButton)
 	}
 	else
 	{
-		if (pTitle)    { delete pTitle;    pTitle    = nullptr; }
-		if (pCloseBtn) { delete pCloseBtn; pCloseBtn = nullptr; }
+		delete pTitle;    pTitle    = nullptr;
+		delete pCloseBtn; pCloseBtn = nullptr;
 	}
 }
 
@@ -838,7 +834,7 @@ FullscreenDialog::FullscreenDialog(const char *szTitle, const char *szSubtitle)
 
 void FullscreenDialog::SetTitle(const char *szTitle)
 {
-	if (pFullscreenTitle) { delete pFullscreenTitle; pFullscreenTitle = nullptr; }
+	delete pFullscreenTitle; pFullscreenTitle = nullptr;
 	// change title text; creates or removes title bar if necessary
 	if (szTitle && *szTitle)
 	{
@@ -1160,7 +1156,7 @@ void InputDialog::SetInputText(const char *szToText)
 void InputDialog::SetCustomEdit(Edit *pCustomEdit)
 {
 	// del old
-	if (pEdit) delete pEdit;
+	delete pEdit;
 	// add new
 	pEdit = pCustomEdit;
 	pEdit->SetBounds(rcEditBounds);

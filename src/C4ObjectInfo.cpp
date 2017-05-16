@@ -99,7 +99,7 @@ bool C4ObjectInfo::Load(C4Group &hGroup, bool fLoadPortrait)
 		if (SEqual(PortraitFile, C4Portrait_Custom))
 		{
 			// try to load it
-			if (pCustomPortrait) delete pCustomPortrait;
+			delete pCustomPortrait;
 			pCustomPortrait = new C4Portrait();
 			if (pCustomPortrait->Load(hGroup, C4CFN_Portrait_Old, C4CFN_Portrait, C4CFN_PortraitOverlay))
 			{
@@ -304,8 +304,8 @@ void C4ObjectInfo::Clear()
 {
 #ifdef C4ENGINE
 	Portrait.Clear();
-	if (pNewPortrait)    { delete pNewPortrait;    pNewPortrait    = nullptr; }
-	if (pCustomPortrait) { delete pCustomPortrait; pCustomPortrait = nullptr; }
+	delete pNewPortrait;    pNewPortrait    = nullptr;
+	delete pCustomPortrait; pCustomPortrait = nullptr;
 	pDef = nullptr;
 #endif
 }

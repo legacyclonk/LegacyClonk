@@ -79,7 +79,7 @@ C4FileSelDlg::DefaultListItem::DefaultListItem(const char *szFilename, bool fTru
 
 C4FileSelDlg::DefaultListItem::~DefaultListItem()
 {
-	if (pKeyCheck) delete pKeyCheck;
+	delete pKeyCheck;
 }
 
 void C4FileSelDlg::DefaultListItem::UpdateOwnPos()
@@ -179,7 +179,7 @@ void C4FileSelDlg::InitElements()
 C4FileSelDlg::~C4FileSelDlg()
 {
 	delete[] pLocations;
-	if (pSelCallback) delete pSelCallback;
+	delete pSelCallback;
 	delete pKeyEnterOverride;
 	delete pKeyRefresh;
 }

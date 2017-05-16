@@ -531,11 +531,11 @@ void C4Game::Clear()
 	}
 
 	// stop statistics
-	if (pNetworkStatistics) { delete pNetworkStatistics; pNetworkStatistics = nullptr; }
+	delete pNetworkStatistics; pNetworkStatistics = nullptr;
 	C4AulProfiler::Abort();
 
 	// exit gui
-	if (pGUI) { delete pGUI; pGUI = nullptr; }
+	delete pGUI; pGUI = nullptr;
 
 	// next mission (shoud have been transferred to C4Application now if next mission was desired)
 	NextMission.Clear(); NextMissionText.Clear(); NextMissionDesc.Clear();
@@ -556,7 +556,7 @@ void C4Game::Clear()
 	Defs.Clear();
 	Landscape.Clear();
 	PXS.Clear();
-	if (pGlobalEffects) { delete pGlobalEffects; pGlobalEffects = nullptr; }
+	delete pGlobalEffects; pGlobalEffects = nullptr;
 	Particles.Clear();
 	Material.Clear();
 	TextureMap.Clear(); // texture map *MUST* be cleared after the materials, because of the patterns!
@@ -3563,7 +3563,7 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 		if (Application.HandleMessage(100) == HR_Failure ||
 			(pDlg && pDlg->IsAborted()))
 		{
-			if (Game.pGUI && pDlg) delete pDlg;
+			if (Game.pGUI) delete pDlg;
 			return false;
 		}
 		// Check if reference is received
@@ -3571,7 +3571,7 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 			break;
 	}
 	// Close dialog
-	if (Game.pGUI && pDlg) delete pDlg;
+	if (Game.pGUI) delete pDlg;
 	// Error?
 	if (!RefClient.isSuccess())
 	{

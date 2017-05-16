@@ -166,9 +166,9 @@ void C4GameControl::StopRecord(StdStrBuf *pRecordName, uint8_t *pRecordSHA1)
 	{
 		Game.Network.FinishStreaming();
 		pRecord->Stop(pRecordName, pRecordSHA1);
-		// just delete
-		delete pRecord; pRecord = nullptr;
 	}
+	// just delete
+	delete pRecord; pRecord = nullptr;
 }
 
 void C4GameControl::RequestRuntimeRecord()

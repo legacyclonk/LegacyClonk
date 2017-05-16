@@ -231,7 +231,7 @@ void C4AulScript::Clear()
 	while (Func0) delete Func0;
 	// delete script+code
 	Script.Clear();
-	if (Code) { delete[] Code; Code = nullptr; }
+	delete[] Code; Code = nullptr;
 	CodeSize = CodeBufSize = 0;
 	// reset flags
 	State = ASS_NONE;

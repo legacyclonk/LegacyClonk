@@ -275,7 +275,7 @@ void CSurface::FreeTextures()
 		// clear all textures
 		CTexRef **ppTx = ppTex;
 		for (int i = 0; i < iTexX * iTexY; ++i, ++ppTx)
-			if (*ppTx) delete *ppTx;
+			delete *ppTx;
 		// clear texture list
 		delete[] ppTex;
 		ppTex = nullptr;

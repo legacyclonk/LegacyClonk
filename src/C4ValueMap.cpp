@@ -272,7 +272,7 @@ void C4ValueMapData::CompileFunc(StdCompiler *pComp)
 		// make sure no mem is leaked on compiler error in name list
 		if (fCompiler)
 		{
-			for (int32_t i = 0; i < iValueCnt; i++) if (ppNames[i]) free(ppNames[i]);
+			for (int32_t i = 0; i < iValueCnt; i++) free(ppNames[i]);
 			delete[] ppNames;
 			delete[] pValues;
 		}

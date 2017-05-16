@@ -190,8 +190,8 @@ void C4RoundResultsPlayers::GrowList(size_t iByVal)
 	if (ppPlayers)
 	{
 		memcpy(ppNew, ppPlayers, iPlayerCount * sizeof(C4RoundResultsPlayer *));
-		delete[] ppPlayers;
 	}
+	delete[] ppPlayers;
 	// assign new
 	ppPlayers = ppNew;
 }

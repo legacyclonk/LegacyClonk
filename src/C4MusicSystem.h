@@ -76,7 +76,7 @@ class C4MusicFileInfoNode // We need this for the MoreMusic.txt stuff
 {
 public:
 	C4MusicFileInfoNode() { next = nullptr; str = nullptr; };
-	~C4MusicFileInfoNode() { if (str) delete[] str; }
+	~C4MusicFileInfoNode() { delete[] str; }
 	char *str;
 	MusicType type;
 	C4MusicFileInfoNode *next;

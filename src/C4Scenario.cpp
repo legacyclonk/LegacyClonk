@@ -611,13 +611,10 @@ C4ScenarioSection::~C4ScenarioSection()
 		delete pDel;
 	}
 	// del temp file
-	if (szTempFilename)
-	{
-		EraseItem(szTempFilename);
-		delete szTempFilename;
-	}
+	if (szTempFilename) EraseItem(szTempFilename);
+	delete szTempFilename;
 	// del filename if assigned
-	if (szFilename) delete szFilename;
+	delete szFilename;
 	// del name if owned
 	if (szName != C4ScenSect_Main) delete szName;
 }

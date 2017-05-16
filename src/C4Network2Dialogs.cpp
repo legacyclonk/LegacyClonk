@@ -877,7 +877,7 @@ C4Chart::C4Chart(C4Rect &rcBounds) : Element(), pDisplayGraph(nullptr), fOwnGrap
 
 C4Chart::~C4Chart()
 {
-	if (fOwnGraph && pDisplayGraph) delete pDisplayGraph;
+	if (fOwnGraph) delete pDisplayGraph;
 }
 
 // singleton
@@ -924,5 +924,5 @@ void C4ChartDialog::Toggle()
 	if (pChartDlg) { pChartDlg->Close(false); return; }
 	// otherwise, open
 	C4ChartDialog *pDlg = new C4ChartDialog();
-	if (!Game.pGUI->ShowRemoveDlg(pDlg)) if (pChartDlg) delete pChartDlg;
+	if (!Game.pGUI->ShowRemoveDlg(pDlg)) delete pChartDlg;
 }
