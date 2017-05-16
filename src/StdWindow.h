@@ -244,7 +244,7 @@ public:
 	virtual void CharIn(const char *c) {}
 	virtual CStdWindow *Init(CStdApp *pApp);
 #ifndef _WIN32
-	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent = 0, bool HideCursor = true);
+	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent = nullptr, bool HideCursor = true);
 #endif
 	bool RestorePosition(const char *szWindowName, const char *szSubKey, bool fHidden = false);
 	bool GetSize(RECT *pRect);

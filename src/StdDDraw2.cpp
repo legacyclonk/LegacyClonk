@@ -101,7 +101,7 @@ CPattern &CPattern::operator=(const CPattern &nPattern)
 	}
 	else
 	{
-		CachedPattern = 0;
+		CachedPattern = nullptr;
 	}
 	Wdt        = nPattern.Wdt;
 	Hgt        = nPattern.Hgt;
@@ -149,7 +149,7 @@ bool CPattern::Set(CSurface8 *sfcSource, int iZoom, bool fMonochrome)
 	Zoom = iZoom;
 	// set flags
 	Monochrome = fMonochrome;
-	CachedPattern = 0;
+	CachedPattern = nullptr;
 	return true;
 }
 
@@ -158,7 +158,7 @@ CPattern::CPattern()
 	// disable
 	sfcPattern32 = nullptr;
 	sfcPattern8 = nullptr;
-	CachedPattern = 0;
+	CachedPattern = nullptr;
 	Zoom = 0;
 	Monochrome = false;
 	pClrs = nullptr; pAlpha = nullptr;
@@ -175,7 +175,7 @@ void CPattern::Clear()
 		sfcPattern32 = nullptr;
 	}
 	sfcPattern8 = nullptr;
-	delete[] CachedPattern; CachedPattern = 0;
+	delete[] CachedPattern; CachedPattern = nullptr;
 }
 
 bool CPattern::PatternClr(int iX, int iY, uint8_t &byClr, uint32_t &dwClr, CStdPalette &rPal) const

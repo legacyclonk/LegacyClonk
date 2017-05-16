@@ -42,12 +42,12 @@ bool OpenURL(const char *szURL)
 #ifdef WITH_GLIB
 	const char *argv[][3] =
 	{
-		{ "xdg-open",         szURL, 0 },
-		{ "sensible-browser", szURL, 0 },
-		{ "firefox",          szURL, 0 },
-		{ "mozilla",          szURL, 0 },
-		{ "konqueror",        szURL, 0 },
-		{ "epiphany",         szURL, 0 },
+		{ "xdg-open",         szURL, nullptr },
+		{ "sensible-browser", szURL, nullptr },
+		{ "firefox",          szURL, nullptr },
+		{ "mozilla",          szURL, nullptr },
+		{ "konqueror",        szURL, nullptr },
+		{ "epiphany",         szURL, nullptr },
 		{ 0, 0, 0 }
 	};
 	for (int i = 0; argv[i][0]; ++i)

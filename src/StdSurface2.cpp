@@ -647,7 +647,7 @@ bool CSurface::Unlock()
 			{
 				// emulated primary locks in OpenGL
 				delete PrimarySurfaceLockBits;
-				PrimarySurfaceLockBits = 0;
+				PrimarySurfaceLockBits = nullptr;
 				return true;
 			}
 		}
@@ -1070,7 +1070,7 @@ CTexRef::~CTexRef()
 		if (texName && pGL->pCurrCtx) glDeleteTextures(1, &texName);
 	}
 #endif
-	if (lpDDraw) delete[] texLock.pBits; texLock.pBits = 0;
+	if (lpDDraw) delete[] texLock.pBits; texLock.pBits = nullptr;
 	// remove from texture manager
 	pTexMgr->UnregTex(this);
 }

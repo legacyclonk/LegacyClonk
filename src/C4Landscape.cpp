@@ -240,7 +240,7 @@ void C4Landscape::Clear(bool fClearMapCreator, bool fClearSky)
 	if (fClearSky) Sky.Clear();
 	// clear surfaces, if assigned
 	delete Surface32;        Surface32        = nullptr;
-	delete AnimationSurface; AnimationSurface = 0;
+	delete AnimationSurface; AnimationSurface = nullptr;
 	delete Surface8;         Surface8         = nullptr;
 	delete Map;              Map              = nullptr;
 	// clear initial landscape
@@ -690,8 +690,8 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 			|| (AnimationSurface && !AnimationSurface->Create(Width, Height))
 			|| !Mat2Pal())
 		{
-			delete Surface8; delete Surface32; delete AnimationSurface;
-			Surface8 = 0;    Surface32 = 0;    AnimationSurface = 0;
+			delete Surface8;    delete Surface32;    delete AnimationSurface;
+			Surface8 = nullptr; Surface32 = nullptr; AnimationSurface = nullptr;
 			return false;
 		}
 
@@ -1623,7 +1623,7 @@ void C4Landscape::Default()
 	Mode = C4LSC_Undefined;
 	Surface8 = nullptr;
 	Surface32 = nullptr;
-	AnimationSurface = 0;
+	AnimationSurface = nullptr;
 	Map = nullptr;
 	Width = Height = 0;
 	MapWidth = MapHeight = MapZoom = 0;

@@ -32,9 +32,9 @@ public:
 #ifdef USE_X11
 		PrimarySelection(), ClipboardSelection(),
 		LastEventTime(CurrentTime), modefound(false), pending_desktop(false),
-		xim(0), xic(0),
+		xim(nullptr), xic(nullptr),
 #endif
-		argc(0), argv(0) {}
+		argc(0), argv(nullptr) {}
 	static CStdWindow *GetWindow(unsigned long wnd);
 	static void SetWindow(unsigned long wnd, CStdWindow *pWindow);
 #ifdef USE_X11

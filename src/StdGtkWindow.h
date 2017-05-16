@@ -31,7 +31,7 @@ public:
 
 	virtual void Clear();
 
-	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent = 0, bool HideCursor = true);
+	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent = nullptr, bool HideCursor = true);
 
 	GtkWidget *window;
 
