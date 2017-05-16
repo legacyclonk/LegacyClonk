@@ -21,7 +21,7 @@ private:
 	C4VideoFile *pNext;
 
 public:
-	C4VideoFile() : fIsTemp(false), pNext(NULL) {}
+	C4VideoFile() : fIsTemp(false), pNext(nullptr) {}
 	~C4VideoFile() { Clear(); }
 
 	void Clear();
@@ -58,9 +58,9 @@ protected:
 	void VideoDone(); // mark video done
 
 public:
-	C4VideoShowDialog() : C4GUI::FullscreenDialog(NULL, NULL)
+	C4VideoShowDialog() : C4GUI::FullscreenDialog(nullptr, nullptr)
 #ifdef _WIN32
-		, pAudioTrack(NULL)
+		, pAudioTrack(nullptr)
 #endif
 #ifdef HAVE_LIBSDL_MIXER
 		, mpeg(0)
@@ -85,7 +85,7 @@ private:
 	bool PlayVideo(C4VideoFile *pVideoFile);
 
 public:
-	C4VideoPlayer() : pFirstVideo(NULL) {}
+	C4VideoPlayer() : pFirstVideo(nullptr) {}
 	~C4VideoPlayer() { Clear(); }
 
 	// delete all loaded videos

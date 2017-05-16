@@ -14,7 +14,7 @@ CStdNoGfx::CStdNoGfx()
 
 CStdNoGfx::~CStdNoGfx()
 {
-	delete lpPrimary; lpPrimary = NULL;
+	delete lpPrimary; lpPrimary = nullptr;
 	Clear();
 }
 

@@ -10,7 +10,7 @@
 
 void C4Facet::Default()
 {
-	Set(NULL, 0, 0, 0, 0);
+	Set(nullptr, 0, 0, 0, 0);
 }
 
 void C4Facet::Set(SURFACE nsfc, int32_t nx, int32_t ny, int32_t nwdt, int32_t nhgt)

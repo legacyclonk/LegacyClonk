@@ -55,10 +55,10 @@ class C4FindObject
 	class C4SortObject *pSort;
 
 public:
-	C4FindObject() : pSort(NULL) {}
+	C4FindObject() : pSort(nullptr) {}
 	virtual ~C4FindObject();
 
-	static C4FindObject *CreateByValue(const C4Value &Data, C4SortObject **ppSortObj = NULL); // createFindObject or SortObject - if ppSortObj==NULL, SortObject is not allowed
+	static C4FindObject *CreateByValue(const C4Value &Data, C4SortObject **ppSortObj = nullptr); // createFindObject or SortObject - if ppSortObj==nullptr, SortObject is not allowed
 
 	int32_t Count(const C4ObjectList &Objs); // Counts objects for which the condition is true
 	C4Object *Find(const C4ObjectList &Objs);   // Returns first object for which the condition is true
@@ -73,7 +73,7 @@ public:
 protected:
 	// Overridables
 	virtual bool Check(C4Object *pObj) = 0;
-	virtual C4Rect *GetBounds() { return NULL; }
+	virtual C4Rect *GetBounds() { return nullptr; }
 	virtual bool UseShapes() { return false; }
 	virtual bool IsImpossible() { return false; }
 	virtual bool IsEnsured() { return false; }
@@ -112,7 +112,7 @@ private:
 
 protected:
 	virtual bool Check(C4Object *pObj);
-	virtual C4Rect *GetBounds() { return fHasBounds ? &Bounds : NULL; }
+	virtual C4Rect *GetBounds() { return fHasBounds ? &Bounds : nullptr; }
 	virtual bool UseShapes() { return fUseShapes; }
 	virtual bool IsEnsured() { return !iCnt; }
 	virtual bool IsImpossible();
@@ -131,7 +131,7 @@ private:
 
 protected:
 	virtual bool Check(C4Object *pObj);
-	virtual C4Rect *GetBounds() { return fHasBounds ? &Bounds : NULL; }
+	virtual C4Rect *GetBounds() { return fHasBounds ? &Bounds : nullptr; }
 	virtual bool IsEnsured();
 	virtual bool IsImpossible() { return !iCnt; }
 };

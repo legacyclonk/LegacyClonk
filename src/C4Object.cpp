@@ -108,28 +108,28 @@ void C4Object::Default()
 	Component.Default();
 	SolidMask.Default();
 	PictureRect.Default();
-	Def = NULL;
-	Info = NULL;
-	Command = NULL;
-	Contained = NULL;
+	Def = nullptr;
+	Info = nullptr;
+	Command = nullptr;
+	Contained = nullptr;
 	TopFace.Default();
 	nContained = nActionTarget1 = nActionTarget2 = 0;
-	Menu = NULL;
+	Menu = nullptr;
 	PhysicalTemporary = false;
 	TemporaryPhysical.Default();
-	MaterialContents = NULL;
+	MaterialContents = nullptr;
 	Visibility = VIS_All;
 	LocalNamed.Reset();
 	Marker = 0;
 	ColorMod = BlitMode = 0;
 	CrewDisabled = FALSE;
-	pLayer = NULL;
-	pSolidMaskData = NULL;
-	pGraphics = NULL;
-	pDrawTransform = NULL;
-	pEffects = NULL;
-	FirstRef = NULL;
-	pGfxOverlay = NULL;
+	pLayer = nullptr;
+	pSolidMaskData = nullptr;
+	pGraphics = nullptr;
+	pDrawTransform = nullptr;
+	pEffects = nullptr;
+	FirstRef = nullptr;
+	pGfxOverlay = nullptr;
 	iLastAttachMovementFrame = -1;
 }
 
@@ -253,7 +253,7 @@ void C4Object::AssignRemoval(BOOL fExitContents)
 		if (pEffects)
 		{
 			delete pEffects;
-			pEffects = NULL;
+			pEffects = nullptr;
 		}
 	}
 	// remove particles
@@ -292,11 +292,11 @@ void C4Object::AssignRemoval(BOOL fExitContents)
 		pCont->Contents.Remove(this);
 		pCont->UpdateMass();
 		pCont->SetOCF();
-		Contained = NULL;
+		Contained = nullptr;
 	}
 	// Object info
 	if (Info) Info->Retire();
-	Info = NULL;
+	Info = nullptr;
 	// Object system operation
 	while (FirstRef) FirstRef->Set(0);
 	Game.ClearPointers(this);
@@ -305,7 +305,7 @@ void C4Object::AssignRemoval(BOOL fExitContents)
 	{
 		pSolidMaskData->Remove(true, false);
 		delete pSolidMaskData;
-		pSolidMaskData = NULL;
+		pSolidMaskData = nullptr;
 	}
 	SolidMask.Wdt = 0;
 	RemovalDelay = 2;
@@ -381,7 +381,7 @@ void C4Object::UpdateGraphics(bool fGraphicsChanged, bool fTemp)
 			// remove if put
 			pSolidMaskData->Remove(true, false);
 			// delete
-			delete pSolidMaskData; pSolidMaskData = NULL;
+			delete pSolidMaskData; pSolidMaskData = nullptr;
 			// ensure SolidMask-rect lies within new graphics-rect
 			CheckSolidMaskRect();
 		}
@@ -421,7 +421,7 @@ void C4Object::UpdateFlipDir()
 		if (pDrawTransform->IsIdentity())
 		{
 			delete pDrawTransform;
-			pDrawTransform = NULL;
+			pDrawTransform = nullptr;
 		}
 	}
 }
@@ -456,7 +456,7 @@ void C4Object::DrawFace(C4FacetEx &cgo, int32_t cgoX, int32_t cgoY, int32_t iPha
 		lpDDraw->Blit(GetGraphics()->GetBitmap(Color),
 			fx, fy, fwdt, fhgt,
 			cgo.Surface, (int)tx, (int)ty, (int)twdt, (int)thgt,
-			TRUE, NULL);
+			TRUE, nullptr);
 	}
 	// Rotated or transformed
 	else
@@ -852,10 +852,10 @@ BOOL C4Object::ExecLife()
 						if (pMagicEnergyFn) // should always be true
 						{
 							C4AulParSet pars(C4VInt(-transfer), C4VObj(Contained));
-							if (!!pMagicEnergyFn->Exec(NULL, &pars))
+							if (!!pMagicEnergyFn->Exec(nullptr, &pars))
 							{
 								C4AulParSet pars(C4VInt(+transfer), C4VObj(this));
-								pMagicEnergyFn->Exec(NULL, &pars);
+								pMagicEnergyFn->Exec(nullptr, &pars);
 							}
 						}
 					}
@@ -1168,7 +1168,7 @@ BOOL C4Object::ChangeDef(C4ID idNew)
 	SetAction(ActIdle);
 	Action.Act = ActIdle; // Enforce ActIdle because SetAction may have failed due to NoOtherAction
 	SetDir(0); // will drop any outdated flipdir
-	if (pSolidMaskData) { pSolidMaskData->Remove(true, false); delete pSolidMaskData; pSolidMaskData = NULL; }
+	if (pSolidMaskData) { pSolidMaskData->Remove(true, false); delete pSolidMaskData; pSolidMaskData = nullptr; }
 	Def->Count--;
 	// change the name to the name of the new def, if the name of the old def was in use before
 	if (Name.getData() == Def->Name.getData()) Name = pDef->Name;
@@ -1215,7 +1215,7 @@ BOOL C4Object::Incinerate(int32_t iCausedBy, BOOL fBlasted, C4Object *pIncinerat
 	// add effect
 	int32_t iEffNumber;
 	C4Value Par1 = C4VInt(iCausedBy), Par2 = C4VBool(!!fBlasted), Par3 = C4VObj(pIncineratingObject), Par4;
-	new C4Effect(this, C4Fx_Fire, C4Fx_FirePriority, C4Fx_FireTimer, NULL, 0, Par1, Par2, Par3, Par4, true, iEffNumber);
+	new C4Effect(this, C4Fx_Fire, C4Fx_FirePriority, C4Fx_FireTimer, nullptr, 0, Par1, Par2, Par3, Par4, true, iEffNumber);
 	return !!iEffNumber;
 }
 
@@ -1430,7 +1430,7 @@ void C4Object::DoExperience(int32_t change)
 BOOL C4Object::Exit(int32_t iX, int32_t iY, int32_t iR, FIXED iXDir, FIXED iYDir, FIXED iRDir, BOOL fCalls)
 {
 	// 1. Exit the current container.
-	// 2. Update Contents of container object and set Contained to NULL.
+	// 2. Update Contents of container object and set Contained to nullptr.
 	// 3. Set offset position/motion if desired.
 	// 4. Call Ejection for container and Departure for object.
 
@@ -1442,7 +1442,7 @@ BOOL C4Object::Exit(int32_t iX, int32_t iY, int32_t iR, FIXED iXDir, FIXED iYDir
 	pContainer->UpdateMass();
 	pContainer->SetOCF();
 	// No container
-	Contained = NULL;
+	Contained = nullptr;
 	// Position/motion
 	BoundsCheck(iX, iY);
 	x = iX; y = iY; r = iR;
@@ -1498,7 +1498,7 @@ BOOL C4Object::Enter(C4Object *pTarget, BOOL fCalls, bool fCopyMotion, bool *pfR
 	// Enter
 	if (!Contained->Contents.Add(this, C4ObjectList::stContents))
 	{
-		Contained = NULL;
+		Contained = nullptr;
 		return FALSE;
 	}
 	// Assume that the new container controls this object, if it cannot control itself (i.e.: Alive)
@@ -1594,7 +1594,7 @@ BOOL C4Object::Build(int32_t iLevel, C4Object *pBuilder)
 	{
 		// Determine needed components (may be overloaded)
 		C4IDList NeededComponents;
-		Def->GetComponents(&NeededComponents, NULL, pBuilder);
+		Def->GetComponents(&NeededComponents, nullptr, pBuilder);
 
 		// Grab any needed components from builder
 		C4ID idMat;
@@ -1639,7 +1639,7 @@ BOOL C4Object::Build(int32_t iLevel, C4Object *pBuilder)
 			// Builder is a crew member...
 			if (pBuilder->OCF & OCF_CrewMember)
 				// ...tell builder to acquire the material
-				pBuilder->AddCommand(C4CMD_Acquire, NULL, 0, 0, 50, NULL, TRUE, NeededMaterial, FALSE, 1);
+				pBuilder->AddCommand(C4CMD_Acquire, nullptr, 0, 0, 50, nullptr, TRUE, NeededMaterial, FALSE, 1);
 			// ...game message if not overloaded
 			Game.Messages.New(C4GM_Target, GetNeededMatStr(pBuilder), pBuilder, pBuilder->Controller);
 		}
@@ -1768,8 +1768,8 @@ BOOL C4Object::Lift(FIXED tydir, FIXED dforce)
 C4Object *C4Object::CreateContents(C4ID n_id)
 {
 	C4Object *nobj;
-	if (!(nobj = Game.CreateObject(n_id, this, Owner))) return NULL;
-	if (!nobj->Enter(this)) { nobj->AssignRemoval(); return NULL; }
+	if (!(nobj = Game.CreateObject(n_id, this, Owner))) return nullptr;
+	if (!nobj->Enter(this)) { nobj->AssignRemoval(); return nullptr; }
 	return nobj;
 }
 
@@ -1885,7 +1885,7 @@ BOOL C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		if (!(pPlayer = Game.Players.Get(Owner))) break;
 		// Create symbol
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
-		DrawMenuSymbol(C4MN_Construction, fctSymbol, -1, NULL);
+		DrawMenuSymbol(C4MN_Construction, fctSymbol, -1, nullptr);
 		// Init menu
 		sprintf(OSTR, LoadResStr("IDS_PLR_NOBKNOW"), pPlayer->GetName());
 		Menu->Init(fctSymbol, OSTR, this, C4MN_Extra_Components, 0, iMenu);
@@ -1899,7 +1899,7 @@ BOOL C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 			// Command
 			sprintf(szCommand, "SetCommand(this,\"Construct\",0,0,0,0,%s)", C4IdText(pDef->id));
 			// Add menu item
-			Menu->AddRefSym(szCaption, fctSymbol, szCommand, C4MN_Item_NoCount, NULL, pDef->GetDesc(), pDef->id);
+			Menu->AddRefSym(szCaption, fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pDef->GetDesc(), pDef->id);
 		}
 		// Preselect
 		Menu->SetSelection(iMenuSelect, false, true);
@@ -1920,7 +1920,7 @@ BOOL C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		if (pViewport) Menu->SetLocation(pTarget->x + pTarget->Shape.x + pTarget->Shape.Wdt + 10 - pViewport->ViewX, pTarget->y + pTarget->Shape.y - pViewport->ViewY);
 		// Add info item
 		fctSymbol.Create(C4PictureSize, C4PictureSize); pTarget->Def->Draw(fctSymbol, FALSE, pTarget->Color, pTarget);
-		Menu->Add(pTarget->GetName(), fctSymbol, "", C4MN_Item_NoCount, NULL, pTarget->GetInfoString().getData());
+		Menu->Add(pTarget->GetName(), fctSymbol, "", C4MN_Item_NoCount, nullptr, pTarget->GetInfoString().getData());
 		fctSymbol.Default();
 		// Success
 		return TRUE;
@@ -1935,7 +1935,7 @@ BOOL C4Object::CloseMenu(bool fForce)
 	if (Menu)
 	{
 		if (Menu->IsActive()) if (!Menu->TryClose(fForce, false)) return FALSE;
-		if (!Menu->IsCloseQuerying()) { delete Menu; Menu = NULL; } // protect menu deletion from recursive menu operation calls
+		if (!Menu->IsCloseQuerying()) { delete Menu; Menu = nullptr; } // protect menu deletion from recursive menu operation calls
 	}
 	return TRUE;
 }
@@ -2024,7 +2024,7 @@ int32_t C4Object::GetValue(C4Object *pInBase, int32_t iForPlayer)
 		// get value of def
 		// Caution: Do not pass pInBase here, because the def base value is to be queried
 		//  - and not the value if you had to buy the object in this particular base
-		iValue = Def->GetValue(NULL, iForPlayer);
+		iValue = Def->GetValue(nullptr, iForPlayer);
 	}
 	// Con percentage
 	iValue = iValue * Con / FullCon;
@@ -2094,8 +2094,8 @@ void C4Object::ClearPointers(C4Object *pObj)
 	if (pEffects) pEffects->ClearPointers(pObj);
 	// contents/contained: not necessary, because it's done in AssignRemoval and StatusDeactivate
 	// Action targets
-	if (Action.Target == pObj) Action.Target = NULL;
-	if (Action.Target2 == pObj) Action.Target2 = NULL;
+	if (Action.Target == pObj) Action.Target = nullptr;
+	if (Action.Target2 == pObj) Action.Target2 = nullptr;
 	// Commands
 	C4Command *cCom;
 	for (cCom = Command; cCom; cCom = cCom->Next)
@@ -2103,7 +2103,7 @@ void C4Object::ClearPointers(C4Object *pObj)
 	// Menu
 	if (Menu) Menu->ClearPointers(pObj);
 	// Layer
-	if (pLayer == pObj) pLayer = NULL;
+	if (pLayer == pObj) pLayer = nullptr;
 	// gfx overlays
 	if (pGfxOverlay)
 	{
@@ -2374,14 +2374,14 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 							cgo.X + cox + Action.FacetX,
 							cgo.Y + coy + Action.FacetY,
 							iPhase, Action.DrawDir,
-							pDrawTransform ? &C4DrawTransform(*pDrawTransform, (float)Shape.Wdt / 2 + cgo.X + cox, (float)Shape.Hgt / 2 + cgo.Y + coy) : NULL);
+							pDrawTransform ? &C4DrawTransform(*pDrawTransform, (float)Shape.Wdt / 2 + cgo.X + cox, (float)Shape.Hgt / 2 + cgo.Y + coy) : nullptr);
 					// Growth strechted
 					else
 						Action.Facet.DrawXT(cgo.Surface,
 							cgo.X + cox, cgo.Y + coy,
 							Shape.Wdt, Shape.Hgt,
 							iPhase, Action.DrawDir,
-							pDrawTransform ? &C4DrawTransform(*pDrawTransform, (float)Shape.Wdt / 2 + cgo.X + cox, (float)Shape.Hgt / 2 + cgo.Y + coy) : NULL);
+							pDrawTransform ? &C4DrawTransform(*pDrawTransform, (float)Shape.Wdt / 2 + cgo.X + cox, (float)Shape.Hgt / 2 + cgo.Y + coy) : nullptr);
 				}
 			}
 		}
@@ -2549,14 +2549,14 @@ void C4Object::DrawTopFace(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode
 			TopFace.Wdt * Con / FullCon,
 			TopFace.Hgt * Con / FullCon,
 			0, 0,
-			pDrawTransform ? &C4DrawTransform(*pDrawTransform, cgo.X + cox + float(Shape.Wdt) / 2, cgo.Y + coy + float(Shape.Hgt) / 2) : NULL);
+			pDrawTransform ? &C4DrawTransform(*pDrawTransform, cgo.X + cox + float(Shape.Wdt) / 2, cgo.Y + coy + float(Shape.Hgt) / 2) : nullptr);
 	else
 		// normal
 		TopFace.DrawT(cgo.Surface,
 			cgo.X + cox + Def->TopFace.tx,
 			cgo.Y + coy + Def->TopFace.ty,
 			0, 0,
-			pDrawTransform ? &C4DrawTransform(*pDrawTransform, cgo.X + cox + float(Shape.Wdt) / 2, cgo.Y + coy + float(Shape.Hgt) / 2) : NULL);
+			pDrawTransform ? &C4DrawTransform(*pDrawTransform, cgo.X + cox + float(Shape.Wdt) / 2, cgo.Y + coy + float(Shape.Hgt) / 2) : nullptr);
 	// end of color modulation
 	if (!eDrawMode) FinishedDrawing();
 }
@@ -2707,7 +2707,7 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(C4DefGraphicsAdapt(pGraphics),           "Graphics",           &Def->Graphics));
 	pComp->Value(mkNamingPtrAdapt(pDrawTransform,                       "DrawTransform"));
 	pComp->Value(mkNamingPtrAdapt(pEffects,                             "Effects"));
-	pComp->Value(mkNamingAdapt(C4GraphicsOverlayListAdapt(pGfxOverlay), "GfxOverlay",         (C4GraphicsOverlay *)NULL));
+	pComp->Value(mkNamingAdapt(C4GraphicsOverlayListAdapt(pGfxOverlay), "GfxOverlay",         (C4GraphicsOverlay *)nullptr));
 
 	if (PhysicalTemporary)
 	{
@@ -2719,7 +2719,7 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 	if (pComp->FollowName("Commands"))
 		if (fCompiler)
 		{
-			C4Command *pCmd = NULL;
+			C4Command *pCmd = nullptr;
 			for (int i = 1; ; i++)
 			{
 				// Every command has its own naming environment
@@ -2765,7 +2765,7 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 		// if on fire but no effect is present (old-style savegames), re-incinerate
 		int32_t iFireNumber;
 		C4Value Par1, Par2, Par3, Par4;
-		if (OnFire && !pEffects) new C4Effect(this, C4Fx_Fire, C4Fx_FirePriority, C4Fx_FireTimer, NULL, 0, Par1, Par2, Par3, Par4, false, iFireNumber);
+		if (OnFire && !pEffects) new C4Effect(this, C4Fx_Fire, C4Fx_FirePriority, C4Fx_FireTimer, nullptr, 0, Par1, Par2, Par3, Par4, false, iFireNumber);
 
 		// blit mode not assigned? use definition default then
 		if (!BlitMode) BlitMode = Def->BlitMode;
@@ -2867,7 +2867,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 		int32_t com = COM_Down_D;
 		if (Game.Players.Get(Controller)->ControlStyle) com = COM_Down;
 
-		tObj->DrawCommand(cgoBottom, C4FCT_Right, NULL, com, pRegions, Owner, OSTR, &ccgo);
+		tObj->DrawCommand(cgoBottom, C4FCT_Right, nullptr, com, pRegions, Owner, OSTR, &ccgo);
 		tObj->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), FALSE, tObj->Color, tObj);
 		Game.GraphicsResource.fctBuild.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), TRUE);
 	}
@@ -2884,7 +2884,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 			{
 				// Let Go
 				sprintf(OSTR, LoadResStr("IDS_CON_UNGRAB"), Action.Target->GetName());
-				Action.Target->DrawCommand(cgoBottom, C4FCT_Right, NULL, COM_Down_D, pRegions, Owner, OSTR, &ccgo);
+				Action.Target->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Down_D, pRegions, Owner, OSTR, &ccgo);
 				Action.Target->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), FALSE, Action.Target->Color, Action.Target);
 				Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), TRUE, 6);
 			}
@@ -2894,7 +2894,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 				if ((tObj = Contents.GetObject()) && (Action.Target->Def->GrabPutGet & C4D_Grab_Put))
 				{
 					sprintf(OSTR, LoadResStr("IDS_CON_PUT"), tObj->GetName(), Action.Target->GetName());
-					Action.Target->DrawCommand(cgoBottom, C4FCT_Right, NULL, COM_Throw, pRegions, Owner, OSTR, &ccgo);
+					Action.Target->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, OSTR, &ccgo);
 					tObj->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), FALSE, tObj->Color, tObj);
 					Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), TRUE, 0);
 				}
@@ -2902,7 +2902,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 				else if (Action.Target->Contents.ListIDCount(C4D_Get) && (Action.Target->Def->GrabPutGet & C4D_Grab_Get))
 				{
 					sprintf(OSTR, LoadResStr("IDS_CON_GET"), Action.Target->GetName());
-					Action.Target->DrawCommand(cgoBottom, C4FCT_Right, NULL, COM_Throw, pRegions, Owner, OSTR, &ccgo);
+					Action.Target->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, OSTR, &ccgo);
 					Action.Target->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), FALSE, Action.Target->Color, Action.Target);
 					Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), TRUE, 1);
 				}
@@ -2926,7 +2926,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 		if (!fContainedDownOverride)
 		{
 			SCopy(LoadResStr("IDS_CON_EXIT"), OSTR);
-			DrawCommand(cgoBottom, C4FCT_Right, NULL, COM_Down, pRegions, Owner,
+			DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Down, pRegions, Owner,
 				OSTR, &ccgo);
 			Game.GraphicsResource.fctExit.Draw(ccgo);
 		}
@@ -2937,14 +2937,14 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell)
 			{
 				SCopy(LoadResStr("IDS_CON_SELL"), OSTR);
-				Contained->DrawCommand(cgoBottom, C4FCT_Right, NULL, COM_Dig, pRegions, Owner, OSTR, &ccgo);
+				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Dig, pRegions, Owner, OSTR, &ccgo);
 				DrawMenuSymbol(C4MN_Sell, ccgo, Contained->Base, Contained);
 			}
 			// Buy
 			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy)
 			{
 				SCopy(LoadResStr("IDS_CON_BUY"), OSTR);
-				Contained->DrawCommand(cgoBottom, C4FCT_Right, NULL, COM_Up, pRegions, Owner, OSTR, &ccgo);
+				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Up, pRegions, Owner, OSTR, &ccgo);
 				DrawMenuSymbol(C4MN_Buy, ccgo, Contained->Base, Contained);
 			}
 		}
@@ -2957,7 +2957,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 			if (!fContainedRightOverride)
 			{
 				sprintf(OSTR, LoadResStr("IDS_CON_GET"), Contained->GetName());
-				Contained->DrawCommand(cgoBottom, C4FCT_Right, NULL, COM_Right, pRegions, Owner, OSTR, &ccgo);
+				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Right, pRegions, Owner, OSTR, &ccgo);
 				Contained->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), FALSE, Contained->Color, Contained);
 				Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), TRUE, 1);
 			}
@@ -2965,7 +2965,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 			if (!fContainedLeftOverride)
 			{
 				sprintf(OSTR, LoadResStr("IDS_CON_ACTIVATEFROM"), Contained->GetName());
-				Contained->DrawCommand(cgoBottom, C4FCT_Right, NULL, COM_Left, pRegions, Owner, OSTR, &ccgo);
+				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Left, pRegions, Owner, OSTR, &ccgo);
 				Contained->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), FALSE, Contained->Color, Contained);
 				Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), TRUE, 0);
 			}
@@ -2974,7 +2974,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 		{
 			// Put
 			sprintf(OSTR, LoadResStr("IDS_CON_PUT"), tObj->GetName(), Contained->GetName());
-			Contained->DrawCommand(cgoBottom, C4FCT_Right, NULL, COM_Throw, pRegions, Owner, OSTR, &ccgo);
+			Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, OSTR, &ccgo);
 			tObj->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), FALSE, tObj->Color, tObj);
 			Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), TRUE, 0);
 		}
@@ -2982,7 +2982,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 		{
 			// Get
 			sprintf(OSTR, LoadResStr("IDS_CON_ACTIVATEFROM"), Contained->GetName());
-			Contained->DrawCommand(cgoBottom, C4FCT_Right, NULL, COM_Throw, pRegions, Owner, OSTR, &ccgo);
+			Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, OSTR, &ccgo);
 			Contained->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), FALSE, Contained->Color, Contained);
 			Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), TRUE, 0);
 		}
@@ -3117,26 +3117,26 @@ void C4Object::ClearInfo(C4ObjectInfo *pInfo)
 	if (Info == pInfo)
 	{
 		if (Info) if (Name.getData() == Info->Name) Name = Def->Name;
-		Info = NULL;
+		Info = nullptr;
 	}
 }
 
 void C4Object::Clear()
 {
-	if (pEffects)       { delete pEffects;         pEffects         = NULL; }
+	if (pEffects)       { delete pEffects;         pEffects         = nullptr; }
 	if (FrontParticles) FrontParticles.Clear();
 	if (BackParticles)   BackParticles.Clear();
-	if (pSolidMaskData) { delete pSolidMaskData;   pSolidMaskData   = NULL; }
-	if (Menu)             delete Menu;             Menu             = NULL;
-	if (MaterialContents) delete MaterialContents; MaterialContents = NULL;
+	if (pSolidMaskData) { delete pSolidMaskData;   pSolidMaskData   = nullptr; }
+	if (Menu)             delete Menu;             Menu             = nullptr;
+	if (MaterialContents) delete MaterialContents; MaterialContents = nullptr;
 	// clear commands!
 	C4Command *pCom, *pNext;
 	for (pCom = Command; pCom; pCom = pNext)
 	{
 		pNext = pCom->Next; delete pCom; pCom = pNext;
 	}
-	if (pDrawTransform) { delete pDrawTransform;   pDrawTransform   = NULL; }
-	if (pGfxOverlay)    { delete pGfxOverlay;      pGfxOverlay      = NULL; }
+	if (pDrawTransform) { delete pDrawTransform;   pDrawTransform   = nullptr; }
+	if (pGfxOverlay)    { delete pGfxOverlay;      pGfxOverlay      = nullptr; }
 	while (FirstRef) FirstRef->Set(0);
 }
 
@@ -3652,10 +3652,10 @@ C4Object *C4Object::ComposeContents(C4ID id)
 	C4ID idNeeded = C4ID_None;
 	int32_t iNeeded = 0;
 	// Get def
-	C4Def *pDef = C4Id2Def(id); if (!pDef) return NULL;
+	C4Def *pDef = C4Id2Def(id); if (!pDef) return nullptr;
 	// get needed contents
 	C4IDList NeededComponents;
-	pDef->GetComponents(&NeededComponents, NULL, this);
+	pDef->GetComponents(&NeededComponents, nullptr, this);
 	// Check for sufficient components
 	StdStrBuf Needs; Needs.Format(LoadResStr("IDS_CON_BUILDMATNEED"), pDef->GetName());
 	for (cnt = 0; c_id = NeededComponents.GetID(cnt); cnt++)
@@ -3673,13 +3673,13 @@ C4Object *C4Object::ComposeContents(C4ID id)
 			// ...game message if not overloaded
 			GameMsgObject(Needs.getData(), this);
 		// Return
-		return NULL;
+		return nullptr;
 	}
 	// Remove components
 	for (cnt = 0; c_id = NeededComponents.GetID(cnt); cnt++)
 		for (cnt2 = 0; cnt2 < NeededComponents.GetCount(cnt); cnt2++)
 			if (!(pObj = Contents.Find(c_id)))
-				return NULL;
+				return nullptr;
 			else
 				pObj->AssignRemoval();
 	// Create composed object
@@ -3691,7 +3691,7 @@ C4Object *C4Object::ComposeContents(C4ID id)
 void C4Object::SetSolidMask(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iTX, int32_t iTY)
 {
 	// remove osld
-	if (pSolidMaskData) { pSolidMaskData->Remove(true, false); delete pSolidMaskData; pSolidMaskData = NULL; }
+	if (pSolidMaskData) { pSolidMaskData->Remove(true, false); delete pSolidMaskData; pSolidMaskData = nullptr; }
 	// set new data
 	SolidMask.Set(iX, iY, iWdt, iHgt, iTX, iTY);
 	// re-put if valid
@@ -3723,7 +3723,7 @@ void C4Object::SyncClearance()
 	// Menu
 	CloseMenu(true);
 	// Material contents
-	if (MaterialContents) delete MaterialContents; MaterialContents = NULL;
+	if (MaterialContents) delete MaterialContents; MaterialContents = nullptr;
 	// reset speed of staticback-objects
 	if (Category & C4D_StaticBack)
 	{
@@ -3771,7 +3771,7 @@ void C4Object::ClearCommand(C4Command *pUntil)
 	for (pCom = Command; pCom; pCom = pNext)
 	{
 		// Last one to clear
-		if (pCom == pUntil) pNext = NULL;
+		if (pCom == pUntil) pNext = nullptr;
 		// Next one to clear after this
 		else pNext = pCom->Next;
 		Command = pCom->Next;
@@ -3872,7 +3872,7 @@ C4Command *C4Object::FindCommand(int32_t iCommandType)
 	for (C4Command *pCom = Command; pCom; pCom = pCom->Next)
 		if (pCom->Command == iCommandType) return pCom;
 	// nothing found
-	return NULL;
+	return nullptr;
 }
 
 BOOL C4Object::ExecuteCommand()
@@ -3918,7 +3918,7 @@ void C4Object::DrawCommand(C4Facet &cgoBar, int32_t iAlign, const char *szFuncti
 {
 	const char *cpDesc = szDesc;
 	C4ID idDescImage = id;
-	C4Def *pDescImageDef = NULL;
+	C4Def *pDescImageDef = nullptr;
 	int32_t iDescImagePhase = 0;
 	C4Facet cgoLeft, cgoRight;
 	BOOL fFlash = FALSE;
@@ -3949,7 +3949,7 @@ void C4Object::DrawCommand(C4Facet &cgoBar, int32_t iAlign, const char *szFuncti
 		*pfctImage = cgoRight;
 	// Specified def
 	else if (pDescImageDef)
-		pDescImageDef->Draw(cgoRight, FALSE, Color, NULL, iDescImagePhase); // ...use specified color, but not object.
+		pDescImageDef->Draw(cgoRight, FALSE, Color, nullptr, iDescImagePhase); // ...use specified color, but not object.
 	// Contents image
 	else if (idDescImage == C4ID_Contents)
 	{
@@ -3967,7 +3967,7 @@ void C4Object::DrawCommand(C4Facet &cgoBar, int32_t iAlign, const char *szFuncti
 	// Command
 	if (!fFlash || Tick35 > 15)
 		DrawCommandKey(cgoLeft, iCom, FALSE,
-			Config.Graphics.ShowCommandKeys ? PlrControlKeyName(iPlayer, Com2Control(iCom), true).getData() : NULL);
+			Config.Graphics.ShowCommandKeys ? PlrControlKeyName(iPlayer, Com2Control(iCom), true).getData() : nullptr);
 
 	// Region (both symbols)
 	if (pRegions)
@@ -4574,7 +4574,7 @@ void DoGravity(C4Object *cobj, BOOL fFloatFriction)
 void StopActionDelayCommand(C4Object *cobj)
 {
 	ObjectComStop(cobj);
-	cobj->AddCommand(C4CMD_Wait, NULL, 0, 0, 50);
+	cobj->AddCommand(C4CMD_Wait, nullptr, 0, 0, 50);
 }
 
 BOOL ReduceLineSegments(C4Shape &rShape, bool fAlternate)
@@ -5063,7 +5063,7 @@ void C4Object::ExecAction()
 			// Grab lost action
 			GrabLost(this);
 			// Lose target
-			Action.Target = NULL;
+			Action.Target = nullptr;
 			// Done
 			return;
 		}
@@ -5367,7 +5367,7 @@ void C4Object::ExecAction()
 					Action.Phase = pAction->Length - 1;
 				else
 					// Set new action
-					SetAction(pAction->NextAction, NULL, NULL, SAC_StartCall | SAC_EndCall);
+					SetAction(pAction->NextAction, nullptr, nullptr, SAC_StartCall | SAC_EndCall);
 			}
 		}
 	}
@@ -5544,14 +5544,14 @@ void C4Object::UpdateSolidMask(bool fRestoreAttachedObjects)
 					}
 					else
 						pSolidMaskData->Remove(true, false);
-					pSolidMaskData->Put(true, NULL, fRestoreAttachedObjects);
+					pSolidMaskData->Put(true, nullptr, fRestoreAttachedObjects);
 					return;
 				}
 	// Otherwise, remove and destroy mask
 	if (pSolidMaskData)
 	{
 		pSolidMaskData->Remove(true, false);
-		delete pSolidMaskData; pSolidMaskData = NULL;
+		delete pSolidMaskData; pSolidMaskData = nullptr;
 	}
 }
 
@@ -5723,7 +5723,7 @@ bool C4Object::PutAwayUnusedObject(C4Object *pToMakeRoomForObject)
 	C4Object *pUnusedObject;
 	C4AulFunc *pFnObj2Drop;
 	if (pFnObj2Drop = Def->Script.GetSFunc(PSF_GetObject2Drop))
-		pUnusedObject = pFnObj2Drop->Exec(this, pToMakeRoomForObject ? &C4AulParSet(C4VObj(pToMakeRoomForObject)) : NULL).getObj();
+		pUnusedObject = pFnObj2Drop->Exec(this, pToMakeRoomForObject ? &C4AulParSet(C4VObj(pToMakeRoomForObject)) : nullptr).getObj();
 	else
 	{
 		// is there any unused object to put away?
@@ -5790,12 +5790,12 @@ bool C4Object::SetGraphics(C4DefGraphics *pNewGfx, bool fTemp)
 C4GraphicsOverlay *C4Object::GetGraphicsOverlay(int32_t iForID, bool fCreate)
 {
 	// search in list until ID is found or passed
-	C4GraphicsOverlay *pOverlay = pGfxOverlay, *pPrevOverlay = NULL;
+	C4GraphicsOverlay *pOverlay = pGfxOverlay, *pPrevOverlay = nullptr;
 	while (pOverlay && pOverlay->GetID() < iForID) { pPrevOverlay = pOverlay; pOverlay = pOverlay->GetNext(); }
 	// exact match found?
 	if (pOverlay && pOverlay->GetID() == iForID) return pOverlay;
 	// ID has been passed: Create new if desired
-	if (!fCreate) return NULL;
+	if (!fCreate) return nullptr;
 	C4GraphicsOverlay *pNewOverlay = new C4GraphicsOverlay();
 	pNewOverlay->SetID(iForID);
 	pNewOverlay->SetNext(pOverlay);
@@ -5807,14 +5807,14 @@ C4GraphicsOverlay *C4Object::GetGraphicsOverlay(int32_t iForID, bool fCreate)
 bool C4Object::RemoveGraphicsOverlay(int32_t iOverlayID)
 {
 	// search in list until ID is found or passed
-	C4GraphicsOverlay *pOverlay = pGfxOverlay, *pPrevOverlay = NULL;
+	C4GraphicsOverlay *pOverlay = pGfxOverlay, *pPrevOverlay = nullptr;
 	while (pOverlay && pOverlay->GetID() < iOverlayID) { pPrevOverlay = pOverlay; pOverlay = pOverlay->GetNext(); }
 	// exact match found?
 	if (pOverlay && pOverlay->GetID() == iOverlayID)
 	{
 		// remove it
 		if (pPrevOverlay) pPrevOverlay->SetNext(pOverlay->GetNext()); else pGfxOverlay = pOverlay->GetNext();
-		pOverlay->SetNext(NULL); // prevents deletion of following overlays
+		pOverlay->SetNext(nullptr); // prevents deletion of following overlays
 		delete pOverlay;
 		// removed
 		return true;
@@ -6107,7 +6107,7 @@ StdStrBuf C4Object::GetNeededMatStr(C4Object *pBuilder)
 	StdStrBuf NeededMats;
 
 	C4IDList NeededComponents;
-	Def->GetComponents(&NeededComponents, NULL, pBuilder);
+	Def->GetComponents(&NeededComponents, nullptr, pBuilder);
 
 	C4ID idComponent;
 

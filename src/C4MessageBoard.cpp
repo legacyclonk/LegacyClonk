@@ -175,7 +175,7 @@ void C4MessageBoard::Execute()
 			if (Delay == -1)
 			{
 				// set delay based on msg length
-				const char *szCurrMsg = LogBuffer.GetLine(Min(-iBackScroll, -1), NULL, NULL, NULL);
+				const char *szCurrMsg = LogBuffer.GetLine(Min(-iBackScroll, -1), nullptr, nullptr, nullptr);
 				if (szCurrMsg) Delay = strlen(szCurrMsg); else Delay = 0;
 			}
 			// wait...
@@ -265,7 +265,7 @@ void C4MessageBoard::Draw(C4Facet &cgo)
 		{
 			// get message at pos
 			if (iMsg - iBackScroll >= 0) break;
-			const char *Message = LogBuffer.GetLine(iMsg - iBackScroll, NULL, NULL, NULL);
+			const char *Message = LogBuffer.GetLine(iMsg - iBackScroll, nullptr, nullptr, nullptr);
 			if (!Message || !*Message) continue;
 			// calc target position (y)
 			int iMsgY = cgo.Y + (iMsg + (iLines - 1)) * iLineHgt + Fader;
@@ -321,7 +321,7 @@ void C4MessageBoard::AddLog(const char *szMessage)
 	// make sure new message will be drawn
 	++iBackScroll;
 	// register message in standard messageboard font
-	LogBuffer.AppendLines(szMessage, &Game.GraphicsResource.FontRegular, 0, NULL);
+	LogBuffer.AppendLines(szMessage, &Game.GraphicsResource.FontRegular, 0, nullptr);
 }
 
 void C4MessageBoard::ClearLog()
@@ -356,7 +356,7 @@ C4Player *C4MessageBoard::GetMessagePlayer(const char *szMessage)
 		SCopyUntil(szMessage, OSTR, ':');
 		return Game.Players.GetByName(OSTR);
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool C4MessageBoard::ControlScrollUp()

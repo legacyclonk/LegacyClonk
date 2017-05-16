@@ -113,7 +113,7 @@ int32_t C4Network2Reference::getSortOrder() const // Don't go over 100, because 
 // *** C4Network2RefServer
 
 C4Network2RefServer::C4Network2RefServer()
-	: pReference(NULL) {}
+	: pReference(nullptr) {}
 
 C4Network2RefServer::~C4Network2RefServer()
 {
@@ -123,7 +123,7 @@ C4Network2RefServer::~C4Network2RefServer()
 void C4Network2RefServer::Clear()
 {
 	C4NetIOTCP::Close();
-	delete pReference; pReference = NULL;
+	delete pReference; pReference = nullptr;
 }
 
 void C4Network2RefServer::SetReference(C4Network2Reference *pNewReference)
@@ -192,7 +192,7 @@ void C4Network2RefServer::RespondReference(const C4NetIO::addr_t &addr)
 
 C4Network2HTTPClient::C4Network2HTTPClient()
 	: fBusy(false), fSuccess(false), fConnected(false), iDownloadedSize(0), iTotalSize(0), fBinary(false), iDataOffset(0),
-	pNotify(NULL)
+	pNotify(nullptr)
 {
 	C4NetIOTCP::SetCallback(this);
 }
@@ -384,7 +384,7 @@ void C4Network2HTTPClient::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO 
 bool C4Network2HTTPClient::Execute(int iMaxTime)
 {
 	// Check timeout
-	if (fBusy && time(NULL) > iRequestTimeout)
+	if (fBusy && time(nullptr) > iRequestTimeout)
 	{
 		Cancel("Request timeout");
 		return true;
@@ -397,7 +397,7 @@ int C4Network2HTTPClient::GetTimeout()
 {
 	if (!fBusy)
 		return C4NetIOTCP::GetTimeout();
-	return MaxTimeout(C4NetIOTCP::GetTimeout(), 1000 * Max<int>(time(NULL) - iRequestTimeout, 0));
+	return MaxTimeout(C4NetIOTCP::GetTimeout(), 1000 * Max<int>(time(nullptr) - iRequestTimeout, 0));
 }
 
 bool C4Network2HTTPClient::Query(const StdBuf &Data, bool fBinary)
@@ -462,7 +462,7 @@ bool C4Network2HTTPClient::Query(const StdBuf &Data, bool fBinary)
 void C4Network2HTTPClient::ResetRequestTimeout()
 {
 	// timeout C4Network2HTTPQueryTimeout seconds from this point
-	iRequestTimeout = time(NULL) + C4Network2HTTPQueryTimeout;
+	iRequestTimeout = time(nullptr) + C4Network2HTTPQueryTimeout;
 }
 
 void C4Network2HTTPClient::Cancel(const char *szReason)
@@ -520,7 +520,7 @@ bool C4Network2RefClient::QueryReferences()
 	// invalidate version
 	fVerSet = false;
 	// Perform an Query query
-	return Query(NULL, false);
+	return Query(nullptr, false);
 }
 
 bool C4Network2RefClient::GetReferences(C4Network2Reference ** &rpReferences, int32_t &rRefCount)
@@ -549,7 +549,7 @@ bool C4Network2RefClient::GetReferences(C4Network2Reference ** &rpReferences, in
 		// Create reference array and initialize
 		rpReferences = new C4Network2Reference *[rRefCount];
 		for (int i = 0; i < rRefCount; i++)
-			rpReferences[i] = NULL;
+			rpReferences[i] = nullptr;
 		// Get references
 		Comp.Value(mkNamingAdapt(mkArrayAdaptMap(rpReferences, rRefCount, mkPtrAdaptNoNull<C4Network2Reference>), "Reference"));
 		mkPtrAdaptNoNull<C4Network2Reference>(*rpReferences);

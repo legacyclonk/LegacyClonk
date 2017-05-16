@@ -22,13 +22,13 @@ class StdBuf
 public:
 	// *** Construction
 
-	StdBuf() : fRef(true), pData(NULL), iSize(0) {}
+	StdBuf() : fRef(true), pData(nullptr), iSize(0) {}
 
 	// Constructor from other buffer (copy construction):
 	// Will take over buffer ownership. Copies data if specified.
 	// Note: Construct with Buf2.getRef() to construct a reference (This will work for a constant Buf2, too)
 	StdBuf(StdBuf &Buf2, bool fCopy = false)
-		: fRef(true), pData(NULL), iSize(0)
+		: fRef(true), pData(nullptr), iSize(0)
 	{
 		if (fCopy)
 			Copy(Buf2);
@@ -136,7 +136,7 @@ public:
 	// Transfer puffer ownership to the caller
 	void *GrabPointer()
 	{
-		if (isNull()) return NULL;
+		if (isNull()) return nullptr;
 		// Do not give out a buffer which someone else will free
 		if (fRef) Copy();
 		void *pMData = getMData();
@@ -200,7 +200,7 @@ public:
 	void Clear()
 	{
 		if (!fRef) free(pMData);
-		pMData = NULL; fRef = true; iSize = 0;
+		pMData = nullptr; fRef = true; iSize = 0;
 	}
 
 	// Free buffer that had been grabbed

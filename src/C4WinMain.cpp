@@ -63,7 +63,7 @@ int main()
 			pCommandLine++;
 	while (*pCommandLine == ' ') pCommandLine++;
 	// Call
-	return WinMain(GetModuleHandle(NULL), 0, pCommandLine, 0);
+	return WinMain(GetModuleHandle(nullptr), 0, pCommandLine, 0);
 }
 
 #else

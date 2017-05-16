@@ -113,7 +113,7 @@ bool C4VideoShowDialog::LoadVideo(C4VideoFile *pVideoFile)
 		LogF("smpeg: %s", SDL_GetError());
 		return false;
 	}
-	SMPEG_setdisplay(mpeg, surface, NULL, NULL);
+	SMPEG_setdisplay(mpeg, surface, nullptr, nullptr);
 
 	/* Play the movie, using SDL_mixer for audio */
 	SDL_AudioSpec audiofmt;
@@ -146,7 +146,7 @@ C4VideoShowDialog::~C4VideoShowDialog()
 	/* Stop the movie and unhook SMPEG from the mixer */
 	SMPEG_stop(mpeg);
 	SMPEG_delete(mpeg);
-	Mix_HookMusic(NULL, NULL);
+	Mix_HookMusic(nullptr, nullptr);
 	SDL_FreeSurface(surface);
 	delete mpeg_info;
 #endif // _WIN32/HAVE_LIBSMPEG

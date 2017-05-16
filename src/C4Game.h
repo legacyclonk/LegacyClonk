@@ -122,7 +122,7 @@ public:
 #endif
 	C4Scoreboard Scoreboard;
 	C4VideoPlayer VideoPlayer;
-	class C4Network2Stats *pNetworkStatistics; // may be NULL if no statistics are recorded
+	class C4Network2Stats *pNetworkStatistics; // may be nullptr if no statistics are recorded
 	class C4KeyboardInput &KeyboardInput;
 	class C4FileMonitor *pFileMonitor;
 	char CurrentScenarioSection[C4MaxName + 1];
@@ -180,7 +180,7 @@ public:
 	void Evaluate();
 	void ShowGameOverDlg();
 	void Sec1Timer();
-	bool DoKeyboardInput(C4KeyCode vk_code, C4KeyEventType eEventType, bool fAlt, bool fCtrl, bool fShift, bool fRepeated, class C4GUI::Dialog *pForDialog = NULL, bool fPlrCtrlOnly = false);
+	bool DoKeyboardInput(C4KeyCode vk_code, C4KeyEventType eEventType, bool fAlt, bool fCtrl, bool fShift, bool fRepeated, class C4GUI::Dialog *pForDialog = nullptr, bool fPlrCtrlOnly = false);
 	void DrawCursors(C4FacetEx &cgo, int32_t iPlayer);
 	bool LocalControlKey(C4KeyCodeEx key, C4KeySetCtrl Ctrl);
 	bool LocalControlKeyUp(C4KeyCodeEx key, C4KeySetCtrl Ctrl);
@@ -232,28 +232,28 @@ public:
 	C4Object *FindObject(C4ID id,
 		int32_t iX = 0, int32_t iY = 0, int32_t iWdt = 0, int32_t iHgt = 0,
 		DWORD ocf = OCF_All,
-		const char *szAction = NULL, C4Object *pActionTarget = NULL,
-		C4Object *pExclude = NULL,
-		C4Object *pContainer = NULL,
+		const char *szAction = nullptr, C4Object *pActionTarget = nullptr,
+		C4Object *pExclude = nullptr,
+		C4Object *pContainer = nullptr,
 		int32_t iOwner = ANY_OWNER,
-		C4Object *pFindNext = NULL);
+		C4Object *pFindNext = nullptr);
 	C4Object *FindVisObject( // find object in view at pos, regarding parallaxity and visibility (but not distance)
 		int32_t tx, int32_t ty, int32_t iPlr, const C4Facet &fctViewport,
 		int32_t iX = 0, int32_t iY = 0, int32_t iWdt = 0, int32_t iHgt = 0,
 		DWORD ocf = OCF_All,
-		C4Object *pExclude = NULL,
+		C4Object *pExclude = nullptr,
 		int32_t iOwner = ANY_OWNER,
-		C4Object *pFindNext = NULL);
+		C4Object *pFindNext = nullptr);
 	int32_t ObjectCount(C4ID id,
 		int32_t x = 0, int32_t y = 0, int32_t wdt = 0, int32_t hgt = 0,
 		DWORD ocf = OCF_All,
-		const char *szAction = NULL, C4Object *pActionTarget = NULL,
-		C4Object *pExclude = NULL,
-		C4Object *pContainer = NULL,
+		const char *szAction = nullptr, C4Object *pActionTarget = nullptr,
+		C4Object *pExclude = nullptr,
+		C4Object *pContainer = nullptr,
 		int32_t iOwner = ANY_OWNER);
 	C4Object *FindBase(int32_t iPlayer, int32_t iIndex);
 	C4Object *FindFriendlyBase(int32_t iPlayer, int32_t iIndex);
-	C4Object *FindObjectByCommand(int32_t iCommand, C4Object *pTarget = NULL, C4Value iTx = C4VNull, int32_t iTy = 0, C4Object *pTarget2 = NULL, C4Object *pFindNext = NULL);
+	C4Object *FindObjectByCommand(int32_t iCommand, C4Object *pTarget = nullptr, C4Value iTx = C4VNull, int32_t iTy = 0, C4Object *pTarget2 = nullptr, C4Object *pFindNext = nullptr);
 	void CastObjects(C4ID id, C4Object *pCreator, int32_t num, int32_t level, int32_t tx, int32_t ty, int32_t iOwner = NO_OWNER, int32_t iController = NO_OWNER);
 	void BlastCastObjects(C4ID id, C4Object *pCreator, int32_t num, int32_t tx, int32_t ty, int32_t iController = NO_OWNER);
 	C4Object *PlaceVegetation(C4ID id, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iGrowth);

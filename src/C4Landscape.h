@@ -75,8 +75,8 @@ public:
 	void ScanSideOpen();
 	void CheckInstabilityRange(int32_t tx, int32_t ty);
 	void ShakeFree(int32_t tx, int32_t ty, int32_t rad);
-	void DigFree(int32_t tx, int32_t ty, int32_t rad, BOOL fRequest = FALSE, C4Object *pByObj = NULL);
-	void DigFreeRect(int32_t tx, int32_t ty, int32_t wdt, int32_t hgt, BOOL fRequest = FALSE, C4Object *pByObj = NULL);
+	void DigFree(int32_t tx, int32_t ty, int32_t rad, BOOL fRequest = FALSE, C4Object *pByObj = nullptr);
+	void DigFreeRect(int32_t tx, int32_t ty, int32_t wdt, int32_t hgt, BOOL fRequest = FALSE, C4Object *pByObj = nullptr);
 	void DigFreeMat(int32_t tx, int32_t ty, int32_t wdt, int32_t hgt, int32_t mat);
 	void BlastFree(int32_t tx, int32_t ty, int32_t rad, int32_t grade, int32_t iByPlayer);
 	void DrawMaterialRect(int32_t mat, int32_t tx, int32_t ty, int32_t wdt, int32_t hgt);
@@ -109,7 +109,7 @@ public:
 	BOOL DrawBox(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2, int32_t iGrade, const char *szMaterial, const char *szTexture, BOOL fIFT);
 	BOOL DrawChunks(int32_t tx, int32_t ty, int32_t wdt, int32_t hgt, int32_t icntx, int32_t icnty, const char *szMaterial, const char *szTexture, bool bIFT);
 	BOOL DrawQuad(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2, int32_t iX3, int32_t iY3, int32_t iX4, int32_t iY4, const char *szMaterial, bool bIFT);
-	CStdPalette *GetPal() const { return Surface8 ? Surface8->pPal : NULL; }
+	CStdPalette *GetPal() const { return Surface8 ? Surface8->pPal : nullptr; }
 
 	inline BYTE _GetPix(int32_t x, int32_t y) // get landscape pixel (bounds not checked)
 	{
@@ -239,7 +239,7 @@ BOOL FindSurfaceLiquid(int32_t &rx, int32_t &ry, int32_t width, int32_t height);
 BOOL FindLevelGround(int32_t &rx, int32_t &ry, int32_t width, int32_t hrange);
 BOOL FindConSiteSpot(int32_t &rx, int32_t &ry, int32_t wdt, int32_t hgt, DWORD category, int32_t hrange = -1);
 BOOL FindThrowingPosition(int32_t iTx, int32_t iTy, FIXED fXDir, FIXED fYDir, int32_t iHeight, int32_t &rX, int32_t &rY);
-BOOL PathFree(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t *ix = NULL, int32_t *iy = NULL);
-BOOL PathFreeIgnoreVehicle(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t *ix = NULL, int32_t *iy = NULL);
+BOOL PathFree(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t *ix = nullptr, int32_t *iy = nullptr);
+BOOL PathFreeIgnoreVehicle(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t *ix = nullptr, int32_t *iy = nullptr);
 BOOL FindClosestFree(int32_t &rX, int32_t &rY, int32_t iAngle1, int32_t iAngle2, int32_t iExcludeAngle1, int32_t iExcludeAngle2);
-BOOL ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj = NULL);
+BOOL ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj = nullptr);

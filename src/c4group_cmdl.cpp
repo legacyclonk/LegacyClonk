@@ -166,7 +166,7 @@ bool ProcessGroup(const char *szFilename)
 					// Sort
 					case 's':
 						// First sort parameter overrides default Clonk sort list
-						C4Group_SetSortList(NULL);
+						C4Group_SetSortList(nullptr);
 						// Missing argument
 						if ((iArg + 1 >= argc) || (argv[iArg + 1][0] == '-'))
 							printf("Missing argument for sort command\n");
@@ -297,7 +297,7 @@ bool ProcessGroup(const char *szFilename)
 							else
 							{
 								printf("Waiting for %s to end", argv[iArg + 1]);
-								for (int i = 0; FindWindow(NULL, argv[iArg + 1]) && (i < 5); i++)
+								for (int i = 0; FindWindow(nullptr, argv[iArg + 1]) && (i < 5); i++)
 								{
 									Sleep(1000);
 									printf(".");
@@ -351,7 +351,7 @@ int RegisterShellExtensions()
 	char strModule[2048];
 	char strCommand[2048];
 	char strClass[128];
-	GetModuleFileName(NULL, strModule, 2048);
+	GetModuleFileName(nullptr, strModule, 2048);
 	// Groups
 	const char *strClasses = "Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink;Clonk4.Object";
 	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
@@ -381,7 +381,7 @@ int UnregisterShellExtensions()
 #ifdef _WIN32
 	char strModule[2048];
 	char strClass[128];
-	GetModuleFileName(NULL, strModule, 2048);
+	GetModuleFileName(nullptr, strModule, 2048);
 	// Groups
 	const char *strClasses = "Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink";
 	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
@@ -559,7 +559,7 @@ int main(int argc, char *argv[])
 
 		PROCESS_INFORMATION procInfo;
 
-		CreateProcess(strExecuteAtEnd, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &startInfo, &procInfo);
+		CreateProcess(strExecuteAtEnd, nullptr, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startInfo, &procInfo);
 	}
 
 	// Done

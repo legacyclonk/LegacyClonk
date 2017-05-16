@@ -237,7 +237,7 @@ void C4ControlScript::Execute() const
 	if (!fInternal && (Game.Parameters.isLeague() || (iByClient != C4ClientIDHost) && !Console.Active))
 		return;
 	// execute
-	C4Object *pObj = NULL;
+	C4Object *pObj = nullptr;
 	C4AulScript *pScript;
 	if (iTargetObj == SCOPE_Console)
 		pScript = &Game.Script;
@@ -260,7 +260,7 @@ void C4ControlScript::Execute() const
 		// print result
 		if (!LocalControl())
 		{
-			C4Network2Client *pClient = NULL;
+			C4Network2Client *pClient = nullptr;
 			if (Game.Network.isEnabled())
 				pClient = Game.Network.Clients.GetClientByID(iByClient);
 			if (pClient)
@@ -688,7 +688,7 @@ void C4ControlJoinPlayer::Execute() const
 		else if (pInfo->GetType() == C4PT_Script)
 		{
 			// script players may join without data
-			Game.JoinPlayer(NULL, iAtClient, pClient->getName(), pInfo);
+			Game.JoinPlayer(nullptr, iAtClient, pClient->getName(), pInfo);
 		}
 		else
 		{
@@ -736,7 +736,7 @@ void C4ControlJoinPlayer::Strip()
 		Grp.Delete(C4CFN_Portraits, true);
 		// remove bigicon, if the file size is too large
 		size_t iBigIconSize = 0;
-		if (Grp.FindEntry(C4CFN_BigIcon, NULL, &iBigIconSize))
+		if (Grp.FindEntry(C4CFN_BigIcon, nullptr, &iBigIconSize))
 			if (iBigIconSize > C4NetResMaxBigicon * 1024)
 				Grp.Delete(C4CFN_BigIcon);
 		Grp.Close();
@@ -815,7 +815,7 @@ C4ControlEMMoveObject::C4ControlEMMoveObject(C4ControlEMObjectAction eAction, in
 
 C4ControlEMMoveObject::~C4ControlEMMoveObject()
 {
-	delete[] pObjects; pObjects = NULL;
+	delete[] pObjects; pObjects = nullptr;
 }
 
 void C4ControlEMMoveObject::Execute() const
@@ -1000,7 +1000,7 @@ void C4ControlMessage::Execute() const
 {
 	const char *szMessage = Message.getData();
 	// get player
-	C4Player *pPlr = (iPlayer < 0 ? NULL : Game.Players.Get(iPlayer));
+	C4Player *pPlr = (iPlayer < 0 ? nullptr : Game.Players.Get(iPlayer));
 	// security
 	if (pPlr && pPlr->AtClient != iByClient) return;
 	// get lobby to forward to
@@ -1090,7 +1090,7 @@ void C4ControlMessage::Execute() const
 
 	case C4CMT_Sound:
 		// tehehe, sound!
-		if (StartSoundEffect(szMessage, false, 100, NULL))
+		if (StartSoundEffect(szMessage, false, 100, nullptr))
 		{
 			if (pLobby) pLobby->OnClientSound(Game.Clients.getClientByID(iByClient));
 		}

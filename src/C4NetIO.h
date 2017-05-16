@@ -648,7 +648,7 @@ protected:
 	protected:
 		// * helpers
 		bool DoConn(bool fMC);
-		bool DoCheck(int iAskCnt = 0, int iMCAskCnt = 0, unsigned int *pAskList = NULL);
+		bool DoCheck(int iAskCnt = 0, int iMCAskCnt = 0, unsigned int *pAskList = nullptr);
 
 		// sending
 		bool SendDirect(const Packet &rPacket, unsigned int iNr = ~0);

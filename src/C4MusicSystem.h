@@ -22,9 +22,9 @@ public:
 	int SetVolume(int);
 	void Execute();
 	void NotifySuccess();
-	bool Init(const char *PlayList = NULL);
+	bool Init(const char *PlayList = nullptr);
 	bool InitForScenario(C4Group &hGroup);
-	bool Play(const char *szSongname = NULL, bool fLoop = FALSE);
+	bool Play(const char *szSongname = nullptr, bool fLoop = FALSE);
 	bool Stop();
 	void FadeOut(int fadeout_ms);
 
@@ -61,7 +61,7 @@ enum MusicType { MUSICTYPE_MID, MUSICTYPE_MOD, MUSICTYPE_MP3, MUSICTYPE_OGG, MUS
 class C4MusicFileInfoNode // We need this for the MoreMusic.txt stuff
 {
 public:
-	C4MusicFileInfoNode() { next = NULL; str = NULL; };
+	C4MusicFileInfoNode() { next = nullptr; str = nullptr; };
 	~C4MusicFileInfoNode() { if (str) delete[] str; }
 	char *str;
 	MusicType type;

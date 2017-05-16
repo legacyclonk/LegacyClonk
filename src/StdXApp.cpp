@@ -142,11 +142,11 @@ bool CStdApp::Init(int argc, char *argv[])
 	szCmdLine = s.c_str();
 
 #ifdef WITH_GLIB
-	Priv->loop = g_main_loop_new(NULL, FALSE);
+	Priv->loop = g_main_loop_new(nullptr, FALSE);
 
-	Priv->pipe_channel = NULL;
-	Priv->x_channel = NULL;
-	Priv->stdin_channel = NULL;
+	Priv->pipe_channel = nullptr;
+	Priv->x_channel = nullptr;
+	Priv->stdin_channel = nullptr;
 #endif
 
 	if (!(dpy = XOpenDisplay(0)))
@@ -345,7 +345,7 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 			timeout,
 			&HandleMessageTimeout,
 			&timeout_elapsed,
-			NULL
+			nullptr
 		);
 	}
 
@@ -382,7 +382,7 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	// And for events from the network thread
 	FD_SET(Priv->Pipe[0], &rfds);
 	max_fd = Max(Priv->Pipe[0], max_fd);
-	switch (select(max_fd + 1, &rfds, NULL, NULL, (fCheckTimer || iTimeout != INFINITE) ? &tv : NULL))
+	switch (select(max_fd + 1, &rfds, nullptr, nullptr, (fCheckTimer || iTimeout != INFINITE) ? &tv : nullptr))
 	{
 	// error
 	case -1:

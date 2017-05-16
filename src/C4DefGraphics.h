@@ -29,7 +29,7 @@ public:
 
 	inline C4Surface *GetBitmap(DWORD dwClr = 0) { if (BitmapClr) { BitmapClr->SetClr(dwClr); return BitmapClr; } else return Bitmap; }
 
-	C4DefGraphics(C4Def *pOwnDef = NULL);
+	C4DefGraphics(C4Def *pOwnDef = nullptr);
 	virtual ~C4DefGraphics() { Clear(); };
 
 	bool LoadBitmap(C4Group &hGroup, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG, bool fColorByOwner); // load specified graphics from group
@@ -45,10 +45,10 @@ public:
 
 	bool CopyGraphicsFrom(C4DefGraphics &rSource); // copy bitmaps from source graphics
 
-	virtual const char *GetName() { return NULL; } // return name to be stored in safe game files
+	virtual const char *GetName() { return nullptr; } // return name to be stored in safe game files
 
 	C4AdditionalDefGraphics *GetNext() { return pNext; }
-	virtual C4PortraitGraphics *IsPortrait() { return NULL; }
+	virtual C4PortraitGraphics *IsPortrait() { return nullptr; }
 
 	void DrawClr(C4Facet &cgo, BOOL fAspect = TRUE, DWORD dwClr = 0); // set surface color and draw
 
@@ -118,10 +118,10 @@ protected:
 	bool fGraphicsOwned; // if true, the portrait graphics are owned (and deleted upon destruction)
 
 public:
-	C4Portrait() : pGfxPortrait(NULL), fGraphicsOwned(false) {}
+	C4Portrait() : pGfxPortrait(nullptr), fGraphicsOwned(false) {}
 	~C4Portrait() { if (fGraphicsOwned) delete pGfxPortrait; }
-	void Default() { pGfxPortrait = NULL; fGraphicsOwned = false; }
-	void Clear() { if (fGraphicsOwned) { delete pGfxPortrait; fGraphicsOwned = false; } pGfxPortrait = NULL; }
+	void Default() { pGfxPortrait = nullptr; fGraphicsOwned = false; }
+	void Clear() { if (fGraphicsOwned) { delete pGfxPortrait; fGraphicsOwned = false; } pGfxPortrait = nullptr; }
 
 	bool CopyFrom(C4DefGraphics &rCopyGfx); // copy portrait from graphics
 	bool CopyFrom(C4Portrait &rCopy); // copy portrait
@@ -175,11 +175,11 @@ protected:
 	void Set(Mode aMode, C4DefGraphics *pGfx, const char *szAction, DWORD dwBMode, C4Object *pOvrlObj);
 
 public:
-	C4GraphicsOverlay() : eMode(MODE_None), pSourceGfx(NULL), fctBlit(), dwBlitMode(0), dwClrModulation(0xffffff),
+	C4GraphicsOverlay() : eMode(MODE_None), pSourceGfx(nullptr), fctBlit(), dwBlitMode(0), dwClrModulation(0xffffff),
 #ifdef C4ENGINE
-		pOverlayObj(NULL), nOverlayObj(0), Transform(+1),
+		pOverlayObj(nullptr), nOverlayObj(0), Transform(+1),
 #endif
-		iPhase(0), fZoomToShape(false), iID(0), pNext(NULL)
+		iPhase(0), fZoomToShape(false), iID(0), pNext(nullptr)
 	{
 		*Action = 0;
 	}
@@ -194,32 +194,32 @@ public:
 
 	void SetAsBase(C4DefGraphics *pBaseGfx, DWORD dwBMode) // set in MODE_Base
 	{
-		Set(MODE_Base, pBaseGfx, NULL, dwBMode, NULL);
+		Set(MODE_Base, pBaseGfx, nullptr, dwBMode, nullptr);
 	}
 
 	void SetAsAction(C4DefGraphics *pBaseGfx, const char *szAction, DWORD dwBMode)
 	{
-		Set(MODE_Action, pBaseGfx, szAction, dwBMode, NULL);
+		Set(MODE_Action, pBaseGfx, szAction, dwBMode, nullptr);
 	}
 
 	void SetAsPicture(C4DefGraphics *pBaseGfx, DWORD dwBMode)
 	{
-		Set(MODE_Picture, pBaseGfx, NULL, dwBMode, NULL);
+		Set(MODE_Picture, pBaseGfx, nullptr, dwBMode, nullptr);
 	}
 
 	void SetAsIngamePicture(C4DefGraphics *pBaseGfx, DWORD dwBMode)
 	{
-		Set(MODE_IngamePicture, pBaseGfx, NULL, dwBMode, NULL);
+		Set(MODE_IngamePicture, pBaseGfx, nullptr, dwBMode, nullptr);
 	}
 
 	void SetAsObject(C4Object *pOverlayObj, DWORD dwBMode)
 	{
-		Set(MODE_Object, NULL, NULL, dwBMode, pOverlayObj);
+		Set(MODE_Object, nullptr, nullptr, dwBMode, pOverlayObj);
 	}
 
 	void SetAsExtraGraphics(C4DefGraphics *pGfx, DWORD dwBMode)
 	{
-		Set(MODE_ExtraGraphics, pGfx, NULL, dwBMode, NULL);
+		Set(MODE_ExtraGraphics, pGfx, nullptr, dwBMode, nullptr);
 	}
 
 	bool IsValid(const C4Object *pForObj) const;

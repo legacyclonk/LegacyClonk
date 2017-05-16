@@ -41,9 +41,9 @@ BOOL CStdWindow::RegisterWindowClass(HINSTANCE hInst)
 	WndClass.cbClsExtra = 0;
 	WndClass.cbWndExtra = 0;
 	WndClass.hInstance = hInst;
-	WndClass.hCursor = NULL;
+	WndClass.hCursor = nullptr;
 	WndClass.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
-	WndClass.lpszMenuName = NULL;
+	WndClass.lpszMenuName = nullptr;
 	WndClass.lpszClassName = C4FullScreenClassName;
 	WndClass.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
 	WndClass.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
@@ -55,7 +55,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 	Active = true;
 
 	// Register window class
-	if (!RegisterWindowClass(pApp->hInstance)) return NULL;
+	if (!RegisterWindowClass(pApp->hInstance)) return nullptr;
 
 	// Create window
 	hWindow = CreateWindowEx(
@@ -64,7 +64,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 		STD_PRODUCT,
 		WS_POPUP,
 		CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
-		NULL, NULL, pApp->hInstance, NULL);
+		nullptr, nullptr, pApp->hInstance, nullptr);
 
 #ifndef USE_CONSOLE
 	// Show & focus
@@ -80,7 +80,7 @@ void CStdWindow::Clear()
 {
 	// Destroy window
 	if (hWindow) DestroyWindow(hWindow);
-	hWindow = NULL;
+	hWindow = nullptr;
 }
 
 bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey, bool fHidden)
@@ -106,7 +106,7 @@ void CStdWindow::SetSize(unsigned int cx, unsigned int cy)
 	// resize
 	if (hWindow)
 	{
-		::SetWindowPos(hWindow, NULL, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
+		::SetWindowPos(hWindow, nullptr, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
 	}
 }
 
@@ -119,9 +119,9 @@ void CStdWindow::FlashWindow()
 
 /* CStdApp */
 
-CStdApp::CStdApp() : Active(false), hInstance(NULL), fQuitMsgReceived(false),
-	hTimerEvent(CreateEvent(NULL, TRUE, FALSE, NULL)),
-	hNetworkEvent(CreateEvent(NULL, TRUE, FALSE, NULL)),
+CStdApp::CStdApp() : Active(false), hInstance(nullptr), fQuitMsgReceived(false),
+	hTimerEvent(CreateEvent(nullptr, TRUE, FALSE, nullptr)),
+	hNetworkEvent(CreateEvent(nullptr, TRUE, FALSE, nullptr)),
 	idCriticalTimer(0),
 	uCriticalTimerDelay(28),
 	uCriticalTimerResolution(5),
@@ -133,7 +133,7 @@ CStdApp::CStdApp() : Active(false), hInstance(NULL), fQuitMsgReceived(false),
 	ZeroMemory(&pfd, sizeof(pfd)); pfd.nSize = sizeof(pfd);
 	ZeroMemory(&dspMode, sizeof(dspMode)); dspMode.dmSize = sizeof(dspMode);
 	ZeroMemory(&OldDspMode, sizeof(OldDspMode)); OldDspMode.dmSize = sizeof(OldDspMode);
-	hMainThread = NULL;
+	hMainThread = nullptr;
 }
 
 CStdApp::~CStdApp()
@@ -158,7 +158,7 @@ void CStdApp::Clear()
 {
 	// Close timers
 	CloseCriticalTimer();
-	hMainThread = NULL;
+	hMainThread = nullptr;
 }
 
 void CStdApp::Run()
@@ -238,7 +238,7 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 		// fallthru
 	case WAIT_OBJECT_0 + 2: // message
 		// Peek messages
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			// quit?
 			if (msg.message == WM_QUIT)
@@ -268,7 +268,7 @@ void CStdApp::Execute()
 bool CStdApp::InitTimer()
 {
 	// Init game timers
-	if (!SetCriticalTimer() || !SetTimer(pWindow->hWindow, SEC1_TIMER, SEC1_MSEC, NULL)) return false;
+	if (!SetCriticalTimer() || !SetTimer(pWindow->hWindow, SEC1_TIMER, SEC1_MSEC, nullptr)) return false;
 	return true;
 }
 
@@ -333,10 +333,10 @@ BOOL CALLBACK GLMonitorInfoEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lp
 bool CStdApp::SetOutputAdapter(unsigned int iMonitor)
 {
 	Monitor = iMonitor;
-	hMon = NULL;
+	hMon = nullptr;
 	// get monitor infos
 	GLMonitorInfoEnumCount = iMonitor;
-	EnumDisplayMonitors(NULL, NULL, GLMonitorInfoEnumProc, (LPARAM)this);
+	EnumDisplayMonitors(nullptr, nullptr, GLMonitorInfoEnumProc, (LPARAM)this);
 	// no monitor assigned?
 	if (!hMon)
 	{
@@ -409,7 +409,7 @@ bool CStdApp::SetFullScreen(bool fFullScreen, bool fMinimize)
 #else
 	if (!fFullScreen)
 	{
-		ChangeDisplaySettings(NULL, CDS_RESET);
+		ChangeDisplaySettings(nullptr, CDS_RESET);
 		fDspModeSet = false;
 		return true;
 	}
@@ -422,7 +422,7 @@ bool CStdApp::SetFullScreen(bool fFullScreen, bool fMinimize)
 	{
 		sprintf(Mon, "\\\\.\\Display%d", Monitor + 1);
 		dspMode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
-		if (ChangeDisplaySettingsEx(Mon, &dspMode, NULL, CDS_FULLSCREEN, NULL) != DISP_CHANGE_SUCCESSFUL)
+		if (ChangeDisplaySettingsEx(Mon, &dspMode, nullptr, CDS_FULLSCREEN, nullptr) != DISP_CHANGE_SUCCESSFUL)
 		{
 			fDspModeSet = false;
 		}

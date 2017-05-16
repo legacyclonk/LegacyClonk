@@ -31,7 +31,7 @@
 
 char *GetFilename(char *szPath)
 {
-	if (!szPath) return NULL;
+	if (!szPath) return nullptr;
 	char *pPos, *pFilename = szPath;
 	for (pPos = szPath; *pPos; pPos++) if (*pPos == DirectorySeparator || *pPos == '/') pFilename = pPos + 1;
 	return pFilename;
@@ -39,7 +39,7 @@ char *GetFilename(char *szPath)
 
 const char *GetFilename(const char *szPath)
 {
-	if (!szPath) return NULL;
+	if (!szPath) return nullptr;
 	const char *pPos, *pFilename = szPath;
 	for (pPos = szPath; *pPos; pPos++) if (*pPos == DirectorySeparator || *pPos == '/') pFilename = pPos + 1;
 	return pFilename;
@@ -59,7 +59,7 @@ const char *GetFilenameOnly(const char *strFilename)
 const char *GetC4Filename(const char *szPath)
 {
 	// returns path to file starting at first .c4*-directory.
-	if (!szPath) return NULL;
+	if (!szPath) return nullptr;
 	const char *pPos, *pFilename = szPath;
 	for (pPos = szPath; *pPos; pPos++)
 	{
@@ -113,7 +113,7 @@ void RealPath(const char *szFilename, char *pFullFilename)
 #ifdef _WIN32
 	_fullpath(pFullFilename, szFilename, _MAX_PATH);
 #else
-	char *pSuffix = NULL;
+	char *pSuffix = nullptr;
 	char szCopy[_MAX_PATH + 1];
 	for (;;)
 	{
@@ -337,7 +337,7 @@ bool WildcardMatch(const char *szWildcard, const char *szString)
 	if (!szString || !szWildcard) return false;
 	// match char-wise
 	const char *pWild = szWildcard, *pPos = szString;
-	const char *pLWild = NULL, *pLPos = NULL; // backtracking
+	const char *pLWild = nullptr, *pLPos = nullptr; // backtracking
 	while (*pWild || pLWild)
 		// string wildcard?
 		if (*pWild == '*')

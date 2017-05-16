@@ -193,16 +193,16 @@ public:
 	void Resort();
 	void DigOutMaterialCast(BOOL fRequest);
 	void AddMaterialContents(int32_t iMaterial, int32_t iAmount);
-	void SetCommand(int32_t iCommand, C4Object *pTarget, C4Value iTx, int32_t iTy = 0, C4Object *pTarget2 = NULL, BOOL fControl = FALSE, int32_t iData = 0, int32_t iRetries = 0, const char *szText = NULL);
+	void SetCommand(int32_t iCommand, C4Object *pTarget, C4Value iTx, int32_t iTy = 0, C4Object *pTarget2 = nullptr, BOOL fControl = FALSE, int32_t iData = 0, int32_t iRetries = 0, const char *szText = nullptr);
 
-	void SetCommand(int32_t iCommand, C4Object *pTarget = NULL, int32_t iTx = 0, int32_t iTy = 0, C4Object *pTarget2 = NULL, BOOL fControl = FALSE, int32_t iData = 0, int32_t iRetries = 0, const char *szText = NULL)
+	void SetCommand(int32_t iCommand, C4Object *pTarget = nullptr, int32_t iTx = 0, int32_t iTy = 0, C4Object *pTarget2 = nullptr, BOOL fControl = FALSE, int32_t iData = 0, int32_t iRetries = 0, const char *szText = nullptr)
 	{
 		SetCommand(iCommand, pTarget, C4VInt(iTx), iTy, pTarget2, fControl, iData, iRetries, szText);
 	}
 
-	bool AddCommand(int32_t iCommand, C4Object *pTarget, C4Value iTx, int32_t iTy = 0, int32_t iUpdateInterval = 0, C4Object *pTarget2 = NULL, bool fInitEvaluation = true, int32_t iData = 0, bool fAppend = false, int32_t iRetries = 0, const char *szText = NULL, int32_t iBaseMode = 0);
+	bool AddCommand(int32_t iCommand, C4Object *pTarget, C4Value iTx, int32_t iTy = 0, int32_t iUpdateInterval = 0, C4Object *pTarget2 = nullptr, bool fInitEvaluation = true, int32_t iData = 0, bool fAppend = false, int32_t iRetries = 0, const char *szText = nullptr, int32_t iBaseMode = 0);
 
-	bool AddCommand(int32_t iCommand, C4Object *pTarget = NULL, int32_t iTx = 0, int32_t iTy = 0, int32_t iUpdateInterval = 0, C4Object *pTarget2 = NULL, bool fInitEvaluation = true, int32_t iData = 0, bool fAppend = false, int32_t iRetries = 0, const char *szText = NULL, int32_t iBaseMode = 0)
+	bool AddCommand(int32_t iCommand, C4Object *pTarget = nullptr, int32_t iTx = 0, int32_t iTy = 0, int32_t iUpdateInterval = 0, C4Object *pTarget2 = nullptr, bool fInitEvaluation = true, int32_t iData = 0, bool fAppend = false, int32_t iRetries = 0, const char *szText = nullptr, int32_t iBaseMode = 0)
 	{
 		return AddCommand(iCommand, pTarget, C4VInt(iTx), iTy, iUpdateInterval, pTarget2, fInitEvaluation, iData, fAppend, iRetries, szText, iBaseMode);
 	}
@@ -228,7 +228,7 @@ public:
 	BOOL AssignInfo();
 	BOOL ValidateOwner();
 	BOOL AssignPlrViewRange();
-	void DrawPicture(C4Facet &cgo, BOOL fSelected = FALSE, C4RegionList *pRegions = NULL);
+	void DrawPicture(C4Facet &cgo, BOOL fSelected = FALSE, C4RegionList *pRegions = nullptr);
 	void Picture2Facet(C4FacetExSurface &cgo); // set picture to facet, or create facet in current size and draw if specific states are being needed
 	void DenumeratePointers();
 	void EnumeratePointers();
@@ -244,8 +244,8 @@ public:
 	void DrawLine(C4FacetEx &cgo);
 	void DrawCommands(C4Facet &cgo, C4Facet &cgo2, C4RegionList *pRegions);
 	void DrawCommand(C4Facet &cgoBar, int32_t iAlign, const char *szFunctionFormat,
-		int32_t iCom, C4RegionList *pRegions, int32_t iPlayer, const char *szDesc = NULL,
-		C4Facet *pfctImage = NULL);
+		int32_t iCom, C4RegionList *pRegions, int32_t iPlayer, const char *szDesc = nullptr,
+		C4Facet *pfctImage = nullptr);
 	BOOL SetPhase(int32_t iPhase);
 	void AssignRemoval(BOOL fExitContents = FALSE);
 	enum DrawMode { ODM_Normal = 0, ODM_Overlay = 1, ODM_BaseOnly = 2, };
@@ -281,25 +281,25 @@ public:
 	BOOL At(int32_t ctx, int32_t cty, DWORD &ocf);
 	void GetOCFForPos(int32_t ctx, int32_t cty, DWORD &ocf);
 	BOOL CloseMenu(bool fForce);
-	BOOL ActivateMenu(int32_t iMenu, int32_t iMenuSelect = 0, int32_t iMenuData = 0, int32_t iMenuPosition = 0, C4Object *pTarget = NULL);
+	BOOL ActivateMenu(int32_t iMenu, int32_t iMenuSelect = 0, int32_t iMenuData = 0, int32_t iMenuPosition = 0, C4Object *pTarget = nullptr);
 	void AutoContextMenu(int32_t iMenuSelect);
 	int32_t ContactCheck(int32_t atx, int32_t aty);
 	BOOL Contact(int32_t cnat);
 	void TargetBounds(int32_t &ctco, int32_t limit_low, int32_t limit_hi, int32_t cnat_low, int32_t cnat_hi);
 	enum { SAC_StartCall = 1, SAC_EndCall = 2, SAC_AbortCall = 4, };
-	BOOL SetAction(int32_t iAct, C4Object *pTarget = NULL, C4Object *pTarget2 = NULL, int32_t iCalls = SAC_StartCall | SAC_AbortCall, bool fForce = false);
-	BOOL SetActionByName(const char *szActName, C4Object *pTarget = NULL, C4Object *pTarget2 = NULL, int32_t iCalls = SAC_StartCall | SAC_AbortCall, bool fForce = false);
+	BOOL SetAction(int32_t iAct, C4Object *pTarget = nullptr, C4Object *pTarget2 = nullptr, int32_t iCalls = SAC_StartCall | SAC_AbortCall, bool fForce = false);
+	BOOL SetActionByName(const char *szActName, C4Object *pTarget = nullptr, C4Object *pTarget2 = nullptr, int32_t iCalls = SAC_StartCall | SAC_AbortCall, bool fForce = false);
 	void SetDir(int32_t tdir);
 	void SetCategory(int32_t Category) { this->Category = Category; Resort(); SetOCF(); }
 	int32_t GetProcedure();
-	BOOL Enter(C4Object *pTarget, BOOL fCalls = TRUE, bool fCopyMotion = true, bool *pfRejectCollect = NULL);
+	BOOL Enter(C4Object *pTarget, BOOL fCalls = TRUE, bool fCopyMotion = true, bool *pfRejectCollect = nullptr);
 	BOOL Exit(int32_t iX = 0, int32_t iY = 0, int32_t iR = 0, FIXED iXDir = Fix0, FIXED iYDir = Fix0, FIXED iRDir = Fix0, BOOL fCalls = TRUE);
 	void CopyMotion(C4Object *from);
 	void ForcePosition(int32_t tx, int32_t ty);
 	void MovePosition(int32_t dx, int32_t dy);
 	void DoMotion(int32_t mx, int32_t my);
 	BOOL ActivateEntrance(int32_t by_plr, C4Object *by_obj);
-	BOOL Incinerate(int32_t iCausedBy, BOOL fBlasted = FALSE, C4Object *pIncineratingObject = NULL);
+	BOOL Incinerate(int32_t iCausedBy, BOOL fBlasted = FALSE, C4Object *pIncineratingObject = nullptr);
 	BOOL Extinguish(int32_t iFireNumber);
 	void DoDamage(int32_t iLevel, int32_t iCausedByPlr, int32_t iCause);
 	void DoEnergy(int32_t iChange, bool fExact, int32_t iCause, int32_t iCausedByPlr);
@@ -309,7 +309,7 @@ public:
 	int32_t GetCon() { return Con; }
 	void DoExperience(int32_t change);
 	BOOL Promote(int32_t torank, bool fForceRankName);
-	void Explode(int32_t iLevel, C4ID idEffect = 0, const char *szEffect = NULL);
+	void Explode(int32_t iLevel, C4ID idEffect = 0, const char *szEffect = nullptr);
 	void Blast(int32_t iLevel, int32_t iCausedBy);
 	BOOL Build(int32_t iLevel, C4Object *pBuilder);
 	BOOL Chop(C4Object *pByObject);
@@ -386,7 +386,7 @@ public:
 	bool PutAwayUnusedObject(C4Object *pToMakeRoomForObject); // either directly put the least-needed object away, or add a command to do it - return whether successful
 
 	C4DefGraphics *GetGraphics() { return pGraphics; } // return current object graphics
-	bool SetGraphics(const char *szGraphicsName = NULL, C4Def *pSourceDef = NULL); // set used graphics for object; if szGraphicsName or *szGraphicsName are NULL, the default graphics of the given def are used; pSourceDef defaults to own def
+	bool SetGraphics(const char *szGraphicsName = nullptr, C4Def *pSourceDef = nullptr); // set used graphics for object; if szGraphicsName or *szGraphicsName are nullptr, the default graphics of the given def are used; pSourceDef defaults to own def
 	bool SetGraphics(C4DefGraphics *pNewGfx, bool fUpdateData); // set used graphics for object
 
 	class C4GraphicsOverlay *GetGraphicsOverlay(int32_t iForID, bool fCreate); // get specified gfx overlay; create if not existant and specified

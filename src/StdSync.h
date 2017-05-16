@@ -21,7 +21,7 @@ public:
 class CStdEvent
 {
 public:
-	CStdEvent(bool fManualReset) { hEvent = CreateEvent(NULL, fManualReset, false, NULL); }
+	CStdEvent(bool fManualReset) { hEvent = CreateEvent(nullptr, fManualReset, false, nullptr); }
 	~CStdEvent() { CloseHandle(hEvent); }
 
 protected:
@@ -68,8 +68,8 @@ class CStdEvent
 public:
 	CStdEvent(bool fManualReset) : fManualReset(fManualReset), fSet(false)
 	{
-		pthread_cond_init(&cond, NULL);
-		pthread_mutex_init(&mutex, NULL);
+		pthread_cond_init(&cond, nullptr);
+		pthread_mutex_init(&mutex, nullptr);
 	}
 
 	~CStdEvent()
@@ -174,7 +174,7 @@ protected:
 public:
 	void Clear()
 	{
-		if (sec) sec->Leave(); sec = NULL;
+		if (sec) sec->Leave(); sec = nullptr;
 	}
 };
 
@@ -190,7 +190,7 @@ class CStdCSecEx : public CStdCSec
 {
 public:
 	CStdCSecEx()
-		: lShareCnt(0), ShareFreeEvent(false), pCallbClass(NULL) {}
+		: lShareCnt(0), ShareFreeEvent(false), pCallbClass(nullptr) {}
 	CStdCSecEx(CStdCSecExCallback *pCallb)
 		: lShareCnt(0), ShareFreeEvent(false), pCallbClass(pCallb) {}
 	~CStdCSecEx() {}
@@ -278,6 +278,6 @@ protected:
 public:
 	void Clear()
 	{
-		if (sec) sec->LeaveShared(); sec = NULL;
+		if (sec) sec->LeaveShared(); sec = nullptr;
 	}
 };

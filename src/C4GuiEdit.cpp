@@ -268,7 +268,7 @@ bool Edit::Copy()
 	// allocate a global memory object for the text.
 	int32_t iTextLen = iSelEnd - iSelBegin;
 	HANDLE hglbCopy = GlobalAlloc(GMEM_MOVEABLE, iTextLen + 1);
-	if (hglbCopy == NULL) { CloseClipboard(); return false; }
+	if (hglbCopy == nullptr) { CloseClipboard(); return false; }
 	// lock the handle and copy the text to the buffer.
 	char *szCopyChar = (char *)GlobalLock(hglbCopy);
 	if (!cPasswordMask)
@@ -312,13 +312,13 @@ bool Edit::Paste()
 	// check clipboard contents
 	if (!IsClipboardFormatAvailable(CF_TEXT)) return false;
 	// open clipboard
-	if (!OpenClipboard(NULL)) return false;
+	if (!OpenClipboard(nullptr)) return false;
 	// get text from clipboard
 	HANDLE hglb = GetClipboardData(CF_TEXT);
-	if (hglb != NULL)
+	if (hglb != nullptr)
 	{
 		char *szText = (char *)GlobalLock(hglb);
-		if (szText != NULL)
+		if (szText != nullptr)
 		{
 			fSuccess = !!*szText;
 			// replace any '|'
@@ -652,7 +652,7 @@ void Edit::SelectAll()
 ContextMenu *Edit::OnContext(C4GUI::Element *pListItem, int32_t iX, int32_t iY)
 {
 	// safety: no text?
-	if (!Text) return NULL;
+	if (!Text) return nullptr;
 	// create context menu
 	ContextMenu *pCtx = new ContextMenu();
 	// fill with any valid items
@@ -708,7 +708,7 @@ RenameEdit::RenameEdit(Label *pLabel) : Edit(pLabel->GetBounds(), true), pForLab
 		pPrevFocusCtrl = pDlg->GetFocus();
 		pDlg->SetFocus(this, false);
 	}
-	else pPrevFocusCtrl = NULL;
+	else pPrevFocusCtrl = nullptr;
 	// key binding for rename abort
 	C4CustomKey::CodeList keys;
 	keys.push_back(C4KeyCodeEx(K_ESCAPE));

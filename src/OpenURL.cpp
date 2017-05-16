@@ -20,7 +20,7 @@
 bool OpenURL(const char *szURL)
 {
 #ifdef _WIN32
-	if ((int)ShellExecute(NULL, "open", szURL, NULL, NULL, SW_SHOW) > 32)
+	if ((int)ShellExecute(nullptr, "open", szURL, nullptr, nullptr, SW_SHOW) > 32)
 		return true;
 #endif
 #ifdef WITH_GLIB

@@ -21,12 +21,12 @@ void convUTF8toWindows(StdStrBuf &sText)
 
 /* C4ChatControl::ChatSheet::NickItem */
 
-C4ChatControl::ChatSheet::NickItem::NickItem(class C4Network2IRCUser *pByUser) : pStatusIcon(NULL), pNameLabel(NULL), fFlaggedExisting(false), iStatus(0)
+C4ChatControl::ChatSheet::NickItem::NickItem(class C4Network2IRCUser *pByUser) : pStatusIcon(nullptr), pNameLabel(nullptr), fFlaggedExisting(false), iStatus(0)
 {
 	// create elements - will be positioned when resized
 	C4Rect rcDefault(0, 0, 10, 10);
 	AddElement(pStatusIcon = new C4GUI::Icon(rcDefault, C4GUI::Ico_None));
-	AddElement(pNameLabel = new C4GUI::Label("", rcDefault, ALeft, C4GUI_CaptionFontClr, NULL, false, false, false));
+	AddElement(pNameLabel = new C4GUI::Label("", rcDefault, ALeft, C4GUI_CaptionFontClr, nullptr, false, false, false));
 	// set height (pos and width set when added to the list)
 	CStdFont *pUseFont = &C4GUI::GetRes()->TextFont;
 	rcBounds.Set(0, 0, 100, pUseFont->GetLineHeight());
@@ -81,18 +81,18 @@ int32_t C4ChatControl::ChatSheet::NickItem::SortFunc(const C4GUI::Element *pEl1,
 /* C4ChatControl::ChatSheet */
 
 C4ChatControl::ChatSheet::ChatSheet(C4ChatControl *pChatControl, const char *szTitle, const char *szIdent, SheetType eType)
-	: C4GUI::Tabular::Sheet(szTitle, C4Rect(0, 0, 10, 10), C4GUI::Ico_None, true, false), iBackBufferIndex(-1), eType(eType), pNickList(NULL), pInputLbl(NULL), pChatControl(pChatControl), fHasUnread(false)
+	: C4GUI::Tabular::Sheet(szTitle, C4Rect(0, 0, 10, 10), C4GUI::Ico_None, true, false), iBackBufferIndex(-1), eType(eType), pNickList(nullptr), pInputLbl(nullptr), pChatControl(pChatControl), fHasUnread(false)
 {
 	if (szIdent) sIdent.Copy(szIdent);
 	// create elements - positioned later
 	C4Rect rcDefault(0, 0, 10, 10);
 	pChatBox = new C4GUI::TextWindow(rcDefault);
-	pChatBox->SetDecoration(false, false, NULL, false);
+	pChatBox->SetDecoration(false, false, nullptr, false);
 	AddElement(pChatBox);
 	if (eType == CS_Channel)
 	{
 		pNickList = new C4GUI::ListBox(rcDefault);
-		pNickList->SetDecoration(false, NULL, true, false);
+		pNickList->SetDecoration(false, nullptr, true, false);
 		pNickList->SetSelectionDblClickFn(new C4GUI::CallbackHandler<C4ChatControl::ChatSheet>(this, &C4ChatControl::ChatSheet::OnNickDblClick));
 		AddElement(pNickList);
 	}
@@ -151,7 +151,7 @@ C4GUI::Edit::InputResult C4ChatControl::ChatSheet::OnChatInput(C4GUI::Edit *edt,
 	if (!szInputText || !*szInputText)
 	{
 		// do some error sound then
-		DoError(NULL);
+		DoError(nullptr);
 	}
 	else
 	{
@@ -188,7 +188,7 @@ void C4ChatControl::ChatSheet::OnNickDblClick(class C4GUI::Element *pEl)
 {
 	if (!pEl) return;
 	NickItem *pNickItem = static_cast<NickItem *>(pEl);
-	pChatControl->OpenQuery(pNickItem->GetNick(), true, NULL);
+	pChatControl->OpenQuery(pNickItem->GetNick(), true, nullptr);
 }
 
 void C4ChatControl::ChatSheet::AddTextLine(const char *szText, uint32_t dwClr)
@@ -290,7 +290,7 @@ void C4ChatControl::ChatSheet::UpdateUsers(C4Network2IRCUser *pUsers)
 		}
 	}
 	// sort the rest
-	pNickList->SortElements(&NickItem::SortFunc, NULL);
+	pNickList->SortElements(&NickItem::SortFunc, nullptr);
 }
 
 void C4ChatControl::ChatSheet::UserClose()
@@ -322,12 +322,12 @@ C4ChatControl::ChatSheet::NickItem *C4ChatControl::ChatSheet::GetNickItem(const 
 		if (SEqualNoCase(pNickItem->GetNick(), szByNick))
 			return pNickItem;
 	// not found
-	return NULL;
+	return nullptr;
 }
 
 /* C4ChatControl */
 
-C4ChatControl::C4ChatControl(C4Network2IRCClient *pnIRCClient) : C4GUI::Window(), pTitleChangeBC(NULL), pIRCClient(pnIRCClient), fInitialMessagesReceived(false)
+C4ChatControl::C4ChatControl(C4Network2IRCClient *pnIRCClient) : C4GUI::Window(), pTitleChangeBC(nullptr), pIRCClient(pnIRCClient), fInitialMessagesReceived(false)
 {
 	// create elements - positioned later
 	C4Rect rcDefault(0, 0, 10, 10);
@@ -336,8 +336,8 @@ C4ChatControl::C4ChatControl(C4Network2IRCClient *pnIRCClient) : C4GUI::Window()
 	pTabMain->SetDrawDecoration(false);
 	pTabMain->SetSheetMargin(0);
 	AddElement(pTabMain);
-	C4GUI::Tabular::Sheet *pSheetLogin = pTabMain->AddSheet(NULL);
-	C4GUI::Tabular::Sheet *pSheetChats = pTabMain->AddSheet(NULL);
+	C4GUI::Tabular::Sheet *pSheetLogin = pTabMain->AddSheet(nullptr);
+	C4GUI::Tabular::Sheet *pSheetChats = pTabMain->AddSheet(nullptr);
 	// login sheet
 	CStdFont *pUseFont = &C4GUI::GetRes()->TextFont;
 	pSheetLogin->AddElement(pLblLoginNick = new C4GUI::Label(LoadResStr("IDS_CTL_NICK"), rcDefault, ALeft, C4GUI_CaptionFontClr, pUseFont, false, true));
@@ -419,11 +419,11 @@ void C4ChatControl::OnShown()
 C4GUI::Control *C4ChatControl::GetDefaultControl()
 {
 	// only return a default control if no control is selected to prevent deselection of other controls
-	if (GetDlg()->GetFocus()) return NULL;
+	if (GetDlg()->GetFocus()) return nullptr;
 	ChatSheet *pActiveSheet = GetActiveChatSheet();
 	if (pActiveSheet) return pActiveSheet->GetInputEdit();
 	if (pBtnLogin->IsVisible()) return pBtnLogin;
-	return NULL;
+	return nullptr;
 }
 
 C4ChatControl::ChatSheet *C4ChatControl::GetActiveChatSheet()
@@ -433,7 +433,7 @@ C4ChatControl::ChatSheet *C4ChatControl::GetActiveChatSheet()
 		C4GUI::Tabular::Sheet *pSheet = pTabChats->GetActiveSheet();
 		if (pSheet) return static_cast<ChatSheet *>(pSheet);
 	}
-	return NULL;
+	return nullptr;
 }
 
 C4ChatControl::ChatSheet *C4ChatControl::GetSheetByIdent(const char *szIdent, C4ChatControl::ChatSheet::SheetType eType)
@@ -447,7 +447,7 @@ C4ChatControl::ChatSheet *C4ChatControl::GetSheetByIdent(const char *szIdent, C4
 				if (eType == pChatSheet->GetSheetType())
 					return pChatSheet;
 	}
-	return NULL;
+	return nullptr;
 }
 
 C4ChatControl::ChatSheet *C4ChatControl::GetSheetByTitle(const char *szTitle, C4ChatControl::ChatSheet::SheetType eType)
@@ -461,7 +461,7 @@ C4ChatControl::ChatSheet *C4ChatControl::GetSheetByTitle(const char *szTitle, C4
 				if (eType == pChatSheet->GetSheetType())
 					return pChatSheet;
 			}
-	return NULL;
+	return nullptr;
 }
 
 C4ChatControl::ChatSheet *C4ChatControl::GetServerSheet()
@@ -558,7 +558,7 @@ bool C4ChatControl::IsServiceName(const char *szName)
 {
 	// return true for some hardcoded list of service names
 	if (!szName) return false;
-	const char *szServiceNames[] = { "NickServ", "ChanServ", "MemoServ", "HelpServ", "Global", NULL }, *szServiceName;
+	const char *szServiceNames[] = { "NickServ", "ChanServ", "MemoServ", "HelpServ", "Global", nullptr }, *szServiceName;
 	int32_t i = 0;
 	while (szServiceName = szServiceNames[i++])
 		if (SEqualNoCase(szName, szServiceName))
@@ -653,7 +653,7 @@ void C4ChatControl::Update()
 				}
 				else
 				{
-					pChatSheet = OpenQuery(pMsg->getTarget(), true, NULL);
+					pChatSheet = OpenQuery(pMsg->getTarget(), true, nullptr);
 					if (pChatSheet) pChatSheet->SetChatTitle(pMsg->getTarget());
 				}
 			}
@@ -784,7 +784,7 @@ void C4ChatControl::ClearChatSheets()
 {
 	pTabChats->ClearSheets();
 	// add server sheet
-	pTabChats->AddCustomSheet(new ChatSheet(this, LoadResStr("IDS_CHAT_SERVER"), NULL, ChatSheet::CS_Server));
+	pTabChats->AddCustomSheet(new ChatSheet(this, LoadResStr("IDS_CHAT_SERVER"), nullptr, ChatSheet::CS_Server));
 }
 
 bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
@@ -868,7 +868,7 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 			if (!sParam.getLength())
 				pChatSheet->DoError(FormatString(LoadResStr("IDS_ERR_INSUFFICIENTPARAMETERS"), sCommand.getData()).getData());
 			else
-				OpenQuery(sParam.getData(), true, NULL);
+				OpenQuery(sParam.getData(), true, nullptr);
 		}
 		else if (SEqualNoCase(sCommand.getData(), "nick"))
 		{
@@ -914,7 +914,7 @@ void C4ChatControl::UserQueryQuit()
 	// still connected? Then confirm first
 	if (pIRCClient->IsActive())
 	{
-		if (!GetScreen()->ShowMessageModal(LoadResStr("IDS_MSG_DISCONNECTFROMSERVER"), LoadResStr("IDS_DLG_CHAT"), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Confirm, NULL))
+		if (!GetScreen()->ShowMessageModal(LoadResStr("IDS_MSG_DISCONNECTFROMSERVER"), LoadResStr("IDS_DLG_CHAT"), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Confirm, nullptr))
 			return;
 	}
 	// disconnect from server
@@ -925,7 +925,7 @@ void C4ChatControl::UserQueryQuit()
 
 /* C4ChatDlg */
 
-C4ChatDlg *C4ChatDlg::pInstance = NULL;
+C4ChatDlg *C4ChatDlg::pInstance = nullptr;
 
 C4ChatDlg::C4ChatDlg() : C4GUI::Dialog(100, 100, "IRC", false)
 {
@@ -946,7 +946,7 @@ C4ChatDlg::~C4ChatDlg() {}
 
 C4ChatDlg *C4ChatDlg::ShowChat()
 {
-	if (!Game.pGUI) return NULL;
+	if (!Game.pGUI) return nullptr;
 	if (!pInstance)
 	{
 		pInstance = new C4ChatDlg();
@@ -1006,7 +1006,7 @@ bool C4ChatDlg::DoPlacement(C4GUI::Screen *pOnScreen, const C4Rect &rPreferredDl
 void C4ChatDlg::OnClosed(bool fOK)
 {
 	// callback when dlg got closed
-	pInstance = NULL;
+	pInstance = nullptr;
 	typedef C4GUI::Dialog ParentClass;
 	ParentClass::OnClosed(fOK);
 }

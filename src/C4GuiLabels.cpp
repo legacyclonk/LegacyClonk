@@ -26,7 +26,7 @@ void Label::DrawElement(C4FacetEx &cgo)
 }
 
 Label::Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign, DWORD dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fMarkup)
-	: Element(), dwFgClr(dwFClr), x0(iX0), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(NULL), fAutosize(true), fMarkup(fMarkup)
+	: Element(), dwFgClr(dwFClr), x0(iX0), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(nullptr), fAutosize(true), fMarkup(fMarkup)
 {
 	// make color readable
 	if (fMakeReadableOnBlack) MakeColorReadableOnBlack(dwFgClr);
@@ -39,7 +39,7 @@ Label::Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign, D
 }
 
 Label::Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign, DWORD dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fAutosize, bool fMarkup)
-	: Element(), dwFgClr(dwFClr), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(NULL), fAutosize(fAutosize), fMarkup(fMarkup)
+	: Element(), dwFgClr(dwFClr), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(nullptr), fAutosize(fAutosize), fMarkup(fMarkup)
 {
 	// make color readable
 	if (fMakeReadableOnBlack) MakeColorReadableOnBlack(dwFgClr);
@@ -247,7 +247,7 @@ void MultilineLabel::UpdateHeight()
 	// size by line count
 	int32_t iIndex = 0; const char *szLine; int32_t iHgt = 0;
 	CStdFont *pLineFont; bool fNewPar;
-	while (szLine = Lines.GetLine(iIndex, &pLineFont, NULL, &fNewPar))
+	while (szLine = Lines.GetLine(iIndex, &pLineFont, nullptr, &fNewPar))
 	{
 		int32_t iFontLineHeight = pLineFont->GetLineHeight();
 		// indents between seperate messages
@@ -425,7 +425,7 @@ C4FacetEx Icon::GetIconFacet(Icons icoIconIndex)
 // TextWindow
 
 TextWindow::TextWindow(C4Rect &rtBounds, size_t iPicWdt, size_t iPicHgt, size_t iPicPadding, size_t iMaxLines, size_t iMaxTextLen, const char *szIndentChars, bool fAutoGrow, const C4Facet *pOverlayPic, int iOverlayBorder, bool fMarkup)
-	: Control(rtBounds), fDrawBackground(true), fDrawFrame(true), iPicPadding(iPicPadding), pLogBuffer(NULL)
+	: Control(rtBounds), fDrawBackground(true), fDrawFrame(true), iPicPadding(iPicPadding), pLogBuffer(nullptr)
 {
 	// calc client rect
 	UpdateOwnPos();
@@ -454,7 +454,7 @@ TextWindow::TextWindow(C4Rect &rtBounds, size_t iPicWdt, size_t iPicHgt, size_t 
 			pTitlePicture = new Picture(rcImage, false);
 		pClientWindow->AddElement(pTitlePicture);
 	}
-	else pTitlePicture = NULL;
+	else pTitlePicture = nullptr;
 
 	// update size
 	UpdateSize();

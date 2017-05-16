@@ -13,8 +13,8 @@ C4Graph::C4Graph()
 	: szTitle(LoadResStr("IDS_NET_GRAPH")), dwColor(0x7fff0000) {}
 
 C4TableGraph::C4TableGraph(int iBackLogLength, int iStartTime)
-	: iBackLogLength(iBackLogLength), pValues(NULL), iBackLogPos(0), fWrapped(false)
-	, iTime(iStartTime), iInitialStartTime(iStartTime), pAveragedValues(NULL), iAveragedTime(iStartTime), iAvgRange(1)
+	: iBackLogLength(iBackLogLength), pValues(nullptr), iBackLogPos(0), fWrapped(false)
+	, iTime(iStartTime), iInitialStartTime(iStartTime), pAveragedValues(nullptr), iAveragedTime(iStartTime), iAvgRange(1)
 	, fMultiplier(1)
 {
 	// create value buffer
@@ -255,7 +255,7 @@ const C4Graph *C4GraphCollection::GetSeries(int iIndex) const
 		if (iIndex < iCnt) return (*i)->GetSeries(iIndex);
 		iIndex -= iCnt;
 	}
-	return NULL;
+	return nullptr;
 }
 
 void C4GraphCollection::Update() const
@@ -276,7 +276,7 @@ void C4GraphCollection::SetMultiplier(ValueType fToVal)
 		for (iterator i = begin(); i != end(); ++i)(*i)->SetMultiplier(fToVal);
 }
 
-C4Network2Stats::C4Network2Stats() : pSec1Timer(NULL)
+C4Network2Stats::C4Network2Stats() : pSec1Timer(nullptr)
 {
 	// set self (needed in CreateGraph-fns)
 	Game.pNetworkStatistics = this;
@@ -297,14 +297,14 @@ C4Network2Stats::C4Network2Stats() : pSec1Timer(NULL)
 	statActions.SetTitle(LoadResStr("IDS_NET_APM"));
 	statActions.SetAverageTime(100);
 	for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next) pPlr->CreateGraphs();
-	C4Network2Client *pClient = NULL;
+	C4Network2Client *pClient = nullptr;
 	while (pClient = Game.Network.Clients.GetNextClient(pClient)) pClient->CreateGraphs();
 }
 
 C4Network2Stats::~C4Network2Stats()
 {
 	for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next) pPlr->ClearGraphs();
-	C4Network2Client *pClient = NULL;
+	C4Network2Client *pClient = nullptr;
 	while (pClient = Game.Network.Clients.GetNextClient(pClient)) pClient->ClearGraphs();
 	pSec1Timer->Release();
 }
@@ -320,7 +320,7 @@ void C4Network2Stats::ExecuteSecond()
 	statNetI.RecordValue(C4Graph::ValueType(Game.Network.NetIO.getProtIRate(P_TCP) + Game.Network.NetIO.getProtIRate(P_UDP)));
 	statNetO.RecordValue(C4Graph::ValueType(Game.Network.NetIO.getProtORate(P_TCP) + Game.Network.NetIO.getProtORate(P_UDP)));
 	// pings for all clients
-	C4Network2Client *pClient = NULL;
+	C4Network2Client *pClient = nullptr;
 	while (pClient = Game.Network.Clients.GetNextClient(pClient)) if (pClient->getStatPing())
 	{
 		int iPing = 0;
@@ -364,5 +364,5 @@ C4Graph *C4Network2Stats::GetGraphByName(const StdStrBuf &rszName, bool &rfIsTem
 	if (SEqualNoCase(rszName.getData(), "control")) return &statControls;
 	if (SEqualNoCase(rszName.getData(), "apm")) return &statActions;
 	// no match
-	return NULL;
+	return nullptr;
 }

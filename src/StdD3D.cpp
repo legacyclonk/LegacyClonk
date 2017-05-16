@@ -26,22 +26,22 @@ CStdD3D::CStdD3D(bool fSoftware)
 CStdD3D::~CStdD3D()
 {
 	Clear();
-	pD3D = NULL;
+	pD3D = nullptr;
 }
 
 void CStdD3D::Default()
 {
 	CStdDDraw::Default();
 	SceneOpen = false;
-	lpD3D = NULL;
-	lpDevice = NULL;
-	pVB = pVBClr = pVBClrTex = NULL;
+	lpD3D = nullptr;
+	lpDevice = nullptr;
+	pVB = pVBClr = pVBClrTex = nullptr;
 	ZeroMemory(&sfcBmpInfo, sizeof(sfcBmpInfo));
-	bltState[0] = bltState[1] = bltState[2] = NULL;
-	bltBaseState[0] = bltBaseState[1] = NULL;
-	bltBaseState[2] = bltBaseState[3] = NULL;
-	drawSolidState[0] = drawSolidState[1] = NULL;
-	savedState = NULL;
+	bltState[0] = bltState[1] = bltState[2] = nullptr;
+	bltBaseState[0] = bltBaseState[1] = nullptr;
+	bltBaseState[2] = bltBaseState[3] = nullptr;
+	drawSolidState[0] = drawSolidState[1] = nullptr;
+	savedState = nullptr;
 }
 
 void CStdD3D::Clear()
@@ -55,8 +55,8 @@ void CStdD3D::Clear()
 	}
 	if (lpD3D)
 	{
-		if (lpDevice) { lpDevice->Release(); lpDevice = NULL; }
-		lpD3D->Release(); lpD3D = NULL;
+		if (lpDevice) { lpDevice->Release(); lpDevice = nullptr; }
+		lpD3D->Release(); lpD3D = nullptr;
 	}
 	SceneOpen = false;
 	CStdDDraw::Clear();
@@ -66,7 +66,7 @@ void CStdD3D::Clear()
 
 BOOL CStdD3D::CreateDirectDraw()
 {
-	if ((lpD3D = Direct3DCreate9(D3D_SDK_VERSION)) == NULL) return FALSE;
+	if ((lpD3D = Direct3DCreate9(D3D_SDK_VERSION)) == nullptr) return FALSE;
 	return TRUE;
 }
 
@@ -78,11 +78,11 @@ bool CStdD3D::PageFlip(RECT *pSrcRt, RECT *pDstRt, CStdWindow *pWindow)
 	if (!lpDevice) return FALSE;
 	// end the scene and present it
 	EndScene();
-	if (lpDevice->Present(pSrcRt, pDstRt, pWindow ? pWindow->hWindow : 0, NULL) == D3DERR_DEVICELOST)
+	if (lpDevice->Present(pSrcRt, pDstRt, pWindow ? pWindow->hWindow : 0, nullptr) == D3DERR_DEVICELOST)
 	{
 		if (lpDevice->TestCooperativeLevel() == D3DERR_DEVICELOST) return FALSE;
 		if (!RestoreDeviceObjects()) return FALSE;
-		lpDevice->Present(NULL, NULL, NULL, NULL);
+		lpDevice->Present(nullptr, nullptr, nullptr, nullptr);
 	}
 	return TRUE;
 }
@@ -104,7 +104,7 @@ bool CStdD3D::BeginScene()
 
 void CStdD3D::FillBG(DWORD dwClr)
 {
-	if (lpDevice) lpDevice->Clear(0, NULL, D3DCLEAR_TARGET, dwClr, 1.0f, 0L);
+	if (lpDevice) lpDevice->Clear(0, nullptr, D3DCLEAR_TARGET, dwClr, 1.0f, 0L);
 }
 
 void CStdD3D::EndScene()
@@ -343,7 +343,7 @@ BOOL CStdD3D::BlitSurface2Window(SURFACE sfcSource,
 		int iTexY2 = Min((fY + fHgt - 1) / iTexSize + 1, sfcSource->iTexY);
 		CTexRef **ppTex = sfcSource->ppTex + iTexY * sfcSource->iTexX + iTexX;
 		// blit from all these textures
-		CTexRef **ppTexRow, *pBaseTex = NULL;
+		CTexRef **ppTexRow, *pBaseTex = nullptr;
 		for (int iY = iTexY; iY < iTexY2; ++iY)
 		{
 			ppTexRow = ppTex;
@@ -983,7 +983,7 @@ bool CStdD3D::RestoreDeviceObjects()
 	lpPrimary->dwClrFormat = PrimarySrfcFormat;
 	lpPrimary->byBytesPP = Format2BitDepth(PrimarySrfcFormat) / 8;
 	// create vertex buffer
-	if (lpDevice->CreateVertexBuffer(sizeof(bltVertices), 0, D3DFVF_C4VERTEX, D3DPOOL_DEFAULT, &pVB, NULL) != D3D_OK) return false;
+	if (lpDevice->CreateVertexBuffer(sizeof(bltVertices), 0, D3DFVF_C4VERTEX, D3DPOOL_DEFAULT, &pVB, nullptr) != D3D_OK) return false;
 	// fill initial data for vertex buffer
 	int i;
 	for (i = 0; i < 6; ++i)
@@ -992,7 +992,7 @@ bool CStdD3D::RestoreDeviceObjects()
 		bltVertices[i].rhw = 1.0f;
 	}
 	// create solid color vertex buffer
-	if (lpDevice->CreateVertexBuffer(sizeof(clrVertices), 0, D3DFVF_C4CLRVERTEX, D3DPOOL_DEFAULT, &pVBClr, NULL) != D3D_OK) return false;
+	if (lpDevice->CreateVertexBuffer(sizeof(clrVertices), 0, D3DFVF_C4CLRVERTEX, D3DPOOL_DEFAULT, &pVBClr, nullptr) != D3D_OK) return false;
 	// fill initial data for vertex buffer
 	for (i = 0; i < 6; ++i)
 	{
@@ -1000,7 +1000,7 @@ bool CStdD3D::RestoreDeviceObjects()
 		clrVertices[i].rhw = 1.0f;
 	}
 	// create color-texblit vertices
-	if (lpDevice->CreateVertexBuffer(sizeof(bltClrVertices), 0, D3DFVF_C4CTVERTEX, D3DPOOL_DEFAULT, &pVBClrTex, NULL) != D3D_OK) return false;
+	if (lpDevice->CreateVertexBuffer(sizeof(bltClrVertices), 0, D3DFVF_C4CTVERTEX, D3DPOOL_DEFAULT, &pVBClrTex, nullptr) != D3D_OK) return false;
 	// fill initial data for vertex buffer
 	for (i = 0; i < 6; ++i)
 	{
@@ -1028,7 +1028,7 @@ bool CStdD3D::RestoreDeviceObjects()
 	return Active;
 }
 
-#define RELEASE_OBJECT(x) if (x) { x->Release(); x = NULL; }
+#define RELEASE_OBJECT(x) if (x) { x->Release(); x = nullptr; }
 
 bool CStdD3D::InvalidateDeviceObjects()
 {
@@ -1064,8 +1064,8 @@ bool CStdD3D::DeleteDeviceObjects()
 	NoPrimaryClipper();
 	// del main surfaces
 	if (lpPrimary) delete lpPrimary;
-	lpPrimary = lpBack = NULL;
-	RenderTarget = NULL;
+	lpPrimary = lpBack = nullptr;
+	RenderTarget = nullptr;
 	return fSuccess;
 }
 
@@ -1135,7 +1135,7 @@ void CStdD3D::SetTexture() {}
 
 void CStdD3D::ResetTexture()
 {
-	if (Active) lpDevice->SetTexture(0, NULL);
+	if (Active) lpDevice->SetTexture(0, nullptr);
 }
 
 bool CStdD3D::RestoreStateBlock()
@@ -1169,6 +1169,6 @@ void CStdD3D::TaskIn()
 	RestoreDeviceObjects();
 }
 
-CStdD3D *pD3D = NULL;
+CStdD3D *pD3D = nullptr;
 
 #endif // USE_DIRECTX

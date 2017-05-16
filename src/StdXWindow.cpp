@@ -109,7 +109,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 			XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
 			XNResourceName, STD_PRODUCT,
 			XNResourceClass, STD_PRODUCT,
-			NULL);
+			nullptr);
 		if (!pApp->Priv->xic)
 		{
 			Log("Failed to create input context.");
@@ -119,7 +119,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 		else
 		{
 			long ic_event_mask;
-			if (XGetICValues(pApp->Priv->xic, XNFilterEvents, &ic_event_mask, NULL) == NULL)
+			if (XGetICValues(pApp->Priv->xic, XNFilterEvents, &ic_event_mask, nullptr) == nullptr)
 				attr.event_mask |= ic_event_mask;
 			XSelectInput(dpy, wnd, attr.event_mask);
 			XSetICFocus(pApp->Priv->xic);

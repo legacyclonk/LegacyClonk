@@ -105,13 +105,13 @@ protected:
 	void UpdateScrolling();
 	void CreateDragImage(C4ID id);
 	void UpdateCursorTarget();
-	void SendCommand(int32_t iCommand, int32_t iX = 0, int32_t iY = 0, C4Object *pTarget = NULL, C4Object *pTarget2 = NULL, int32_t iData = 0, int32_t iAddMode = C4P_Command_Set);
+	void SendCommand(int32_t iCommand, int32_t iX = 0, int32_t iY = 0, C4Object *pTarget = nullptr, C4Object *pTarget2 = nullptr, int32_t iData = 0, int32_t iAddMode = C4P_Command_Set);
 	int32_t UpdateObjectSelection();
 	int32_t UpdateCrewSelection();
 	int32_t UpdateSingleSelection();
 	BOOL SendControl(int32_t iCom, int32_t iData = 0);
 	BOOL UpdatePutTarget(BOOL fVehicle);
-	C4Object *GetTargetObject(int32_t iX, int32_t iY, DWORD &dwOCF, C4Object *pExclude = NULL);
+	C4Object *GetTargetObject(int32_t iX, int32_t iY, DWORD &dwOCF, C4Object *pExclude = nullptr);
 	BOOL IsPassive(); // return whether mouse is only used to look around
 	void ScrollView(int32_t iX, int32_t iY, int32_t ViewWdt, int32_t ViewHgt);
 

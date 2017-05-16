@@ -338,7 +338,7 @@ public:
 	bool IsShiftDown() { return GetKeyState(VK_SHIFT) < 0; }
 	bool IsControlDown() { return GetKeyState(VK_CONTROL) < 0; }
 	bool IsAltDown() { return GetKeyState(VK_MENU) < 0; }
-	HWND GetWindowHandle() { return pWindow ? pWindow->hWindow : NULL; }
+	HWND GetWindowHandle() { return pWindow ? pWindow->hWindow : nullptr; }
 
 	bool AssertMainThread()
 	{

@@ -20,7 +20,7 @@
 // C4ChatInputDialog
 
 // singleton
-C4ChatInputDialog *C4ChatInputDialog::pInstance = NULL;
+C4ChatInputDialog *C4ChatInputDialog::pInstance = nullptr;
 
 // helper func: Determine whether input text is good for a chat-style-layout dialog
 bool IsSmallInputQuery(const char *szInputQuery)
@@ -34,7 +34,7 @@ bool IsSmallInputQuery(const char *szInputQuery)
 }
 
 C4ChatInputDialog::C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bool fUppercase, bool fTeam, int32_t iPlr, const StdStrBuf &rsInputQuery)
-	: C4GUI::InputDialog(fObjInput ? rsInputQuery.getData() : LoadResStrNoAmp("IDS_CTL_CHAT"), NULL, C4GUI::Ico_None, NULL, !fObjInput || IsSmallInputQuery(rsInputQuery.getData())),
+	: C4GUI::InputDialog(fObjInput ? rsInputQuery.getData() : LoadResStrNoAmp("IDS_CTL_CHAT"), nullptr, C4GUI::Ico_None, nullptr, !fObjInput || IsSmallInputQuery(rsInputQuery.getData())),
 	fObjInput(fObjInput), fUppercase(fUppercase), pTarget(pScriptTarget), BackIndex(-1), iPlr(iPlr), fProcessed(false)
 {
 	// singleton-var
@@ -64,7 +64,7 @@ C4ChatInputDialog::~C4ChatInputDialog()
 	delete pKeyPlrControl;
 	delete pKeyGamepadControl;
 	delete pKeyBackClose;
-	if (this == pInstance) pInstance = NULL;
+	if (this == pInstance) pInstance = nullptr;
 }
 
 void C4ChatInputDialog::OnChatCancel()
@@ -158,7 +158,7 @@ bool C4ChatInputDialog::KeyHistoryUpDown(bool fUp)
 bool C4ChatInputDialog::KeyPlrControl(C4KeyCodeEx key)
 {
 	// Control pressed while doing this key: Reroute this key as a player-control
-	Game.DoKeyboardInput(WORD(key.Key), KEYEV_Down, !!(key.dwShift & KEYS_Alt), false, !!(key.dwShift & KEYS_Shift), key.IsRepeated(), NULL, true);
+	Game.DoKeyboardInput(WORD(key.Key), KEYEV_Down, !!(key.dwShift & KEYS_Alt), false, !!(key.dwShift & KEYS_Shift), key.IsRepeated(), nullptr, true);
 	// mark as processed, so it won't get any double processing
 	return true;
 }
@@ -168,7 +168,7 @@ bool C4ChatInputDialog::KeyGamepadControlDown(C4KeyCodeEx key)
 	// filter gamepad control
 	if (!Key_IsGamepad(key.Key)) return false;
 	// forward it
-	Game.DoKeyboardInput(key.Key, KEYEV_Down, false, false, false, key.IsRepeated(), NULL, true);
+	Game.DoKeyboardInput(key.Key, KEYEV_Down, false, false, false, key.IsRepeated(), nullptr, true);
 	return true;
 }
 
@@ -177,7 +177,7 @@ bool C4ChatInputDialog::KeyGamepadControlUp(C4KeyCodeEx key)
 	// filter gamepad control
 	if (!Key_IsGamepad(key.Key)) return false;
 	// forward it
-	Game.DoKeyboardInput(key.Key, KEYEV_Up, false, false, false, key.IsRepeated(), NULL, true);
+	Game.DoKeyboardInput(key.Key, KEYEV_Up, false, false, false, key.IsRepeated(), nullptr, true);
 	return true;
 }
 
@@ -186,7 +186,7 @@ bool C4ChatInputDialog::KeyGamepadControlPressed(C4KeyCodeEx key)
 	// filter gamepad control
 	if (!Key_IsGamepad(key.Key)) return false;
 	// forward it
-	Game.DoKeyboardInput(key.Key, KEYEV_Pressed, false, false, false, key.IsRepeated(), NULL, true);
+	Game.DoKeyboardInput(key.Key, KEYEV_Pressed, false, false, false, key.IsRepeated(), nullptr, true);
 	return true;
 }
 
@@ -275,7 +275,7 @@ bool C4MessageInput::KeyStartTypeIn(bool fTeam)
 	// fullscreen only
 	if (!Application.isFullScreen) return false;
 	// OK, start typing
-	return StartTypeIn(false, NULL, false, fTeam);
+	return StartTypeIn(false, nullptr, false, fTeam);
 }
 
 bool C4MessageInput::IsTypeIn()
@@ -288,7 +288,7 @@ bool C4MessageInput::ProcessInput(const char *szText)
 {
 	// helper variables
 	C4ControlMessageType eMsgType;
-	const char *szMsg = NULL;
+	const char *szMsg = nullptr;
 	int32_t iToPlayer = -1;
 
 	// Starts with '^', "team:" or "/team ": Team message
@@ -386,7 +386,7 @@ bool C4MessageInput::ProcessInput(const char *szText)
 			SCopy(szMsg, szMessage, Min<unsigned long>(C4MaxMessage, szEnd - szMsg + 1));
 		}
 		// get sending player (if any)
-		C4Player *pPlr = Game.IsRunning ? Game.Players.GetLocalByIndex(0) : NULL;
+		C4Player *pPlr = Game.IsRunning ? Game.Players.GetLocalByIndex(0) : nullptr;
 		// send
 		Game.Control.DoInput(CID_Message,
 			new C4ControlMessage(eMsgType, szMessage, pPlr ? pPlr->Number : -1, iToPlayer),
@@ -469,14 +469,14 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 		if (SEqual2(pCmdPar, "password ") || SEqual(pCmdPar, "password"))
 		{
 			if (!Game.Network.isEnabled() || !Game.Network.isHost()) return FALSE;
-			Game.Network.SetPassword(pCmdPar[8] ? (pCmdPar + 9) : NULL);
+			Game.Network.SetPassword(pCmdPar[8] ? (pCmdPar + 9) : nullptr);
 			if (pLobby) pLobby->UpdatePassword();
 			return TRUE;
 		}
 		if (SEqual2(pCmdPar, "faircrew "))
 		{
 			if (!Game.Control.isCtrlHost() || Game.Parameters.isLeague()) return FALSE;
-			C4ControlSet *pSet = NULL;
+			C4ControlSet *pSet = nullptr;
 			if (SEqual(pCmdPar + 9, "on"))
 				pSet = new C4ControlSet(C4CVT_FairCrew, Config.General.FairCrewStrength);
 			else if (SEqual(pCmdPar + 9, "off"))
@@ -615,7 +615,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 			return FALSE;
 		}
 		// what to do?
-		C4ControlClientUpdate *pCtrl = NULL;
+		C4ControlClientUpdate *pCtrl = nullptr;
 		if (szCmdName[0] == 'a') // activate
 			pCtrl = new C4ControlClientUpdate(pClient->getID(), CUT_Activate, true);
 		else if (szCmdName[0] == 'd' && !Game.Parameters.isLeague()) // deactivate
@@ -739,7 +739,7 @@ C4MessageBoardCommand *C4MessageInput::GetCommand(const char *strName)
 	for (C4MessageBoardCommand *pCmd = pCommands; pCmd; pCmd = pCmd->Next)
 		if (SEqual(pCmd->Name, strName))
 			return pCmd;
-	return NULL;
+	return nullptr;
 }
 
 void C4MessageInput::ClearPointers(C4Object *pObj)
@@ -772,13 +772,13 @@ void C4MessageInput::StoreBackBuffer(const char *szMessage)
 
 const char *C4MessageInput::GetBackBuffer(int32_t iIndex)
 {
-	if (!Inside<int32_t>(iIndex, 0, C4MSGB_BackBufferMax - 1)) return NULL;
+	if (!Inside<int32_t>(iIndex, 0, C4MSGB_BackBufferMax - 1)) return nullptr;
 	return BackBuffer[iIndex];
 }
 
 C4MessageBoardCommand::C4MessageBoardCommand()
 {
-	Name[0] = '\0'; Script[0] = '\0'; Next = NULL;
+	Name[0] = '\0'; Script[0] = '\0'; Next = nullptr;
 }
 
 void C4MessageBoardQuery::CompileFunc(StdCompiler *pComp)

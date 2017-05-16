@@ -75,7 +75,7 @@ public:
 	void DrawAll(C4FacetEx &cgo, int iPlayer = -1); // draw all objects, including bg
 	void DrawIfCategory(C4FacetEx &cgo, int iPlayer, uint32_t dwCat, bool fInvert); // draw all objects that match dwCat (or don't match if fInvert)
 	void Draw(C4FacetEx &cgo, int iPlayer = -1); // draw all objects
-	void DrawIDList(C4Facet &cgo, int iSelection, C4DefList &rDefs, int32_t dwCategory, C4RegionList *pRegions = NULL, int iRegionCom = COM_None, BOOL fDrawOneCounts = TRUE);
+	void DrawIDList(C4Facet &cgo, int iSelection, C4DefList &rDefs, int32_t dwCategory, C4RegionList *pRegions = nullptr, int iRegionCom = COM_None, BOOL fDrawOneCounts = TRUE);
 	void DrawSelectMark(C4FacetEx &cgo);
 	void CloseMenus();
 	void UpdateGraphics(bool fGraphicsChanged);
@@ -88,7 +88,7 @@ public:
 	void ClearDefPointers(C4Def *pDef); // clear all pointers into definition
 	void UpdateDefPointers(C4Def *pDef); // restore any cleared pointers after def reload
 
-	BOOL Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted = NULL);
+	BOOL Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted = nullptr);
 	BOOL Remove(C4Object *pObj);
 
 	BOOL AssignInfo();
@@ -173,5 +173,5 @@ private:
 
 public:
 	C4ObjectListIterator(C4ObjectList &rList) : rList(rList), pCurr(rList.end()), pCurrID(rList.begin()) {}
-	C4Object *GetNext(int32_t *piCount, uint32_t dwCategory = 0); // get next object; return NULL if end is reached
+	C4Object *GetNext(int32_t *piCount, uint32_t dwCategory = 0); // get next object; return nullptr if end is reached
 };

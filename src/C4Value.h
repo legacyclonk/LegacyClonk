@@ -60,39 +60,39 @@ template <typename T> struct C4ValueConv;
 class C4Value
 {
 public:
-	C4Value() : Type(C4V_Any), HasBaseArray(false), NextRef(NULL), FirstRef(NULL) { Data.Ref = 0; }
+	C4Value() : Type(C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr) { Data.Ref = 0; }
 
-	C4Value(const C4Value &nValue) : Data(nValue.Data), Type(nValue.Type), HasBaseArray(false), NextRef(NULL), FirstRef(NULL)
+	C4Value(const C4Value &nValue) : Data(nValue.Data), Type(nValue.Type), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
 	{
 		AddDataRef();
 	}
 
-	C4Value(C4V_Data nData, C4V_Type nType) : Data(nData), Type(nData ? nType : C4V_Any), HasBaseArray(false), NextRef(NULL), FirstRef(NULL)
+	C4Value(C4V_Data nData, C4V_Type nType) : Data(nData), Type(nData ? nType : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
 	{
 		AddDataRef();
 	}
 
-	C4Value(int32_t nData, C4V_Type nType) : Type(nData ? nType : C4V_Any), HasBaseArray(false), NextRef(NULL), FirstRef(NULL)
+	C4Value(int32_t nData, C4V_Type nType) : Type(nData ? nType : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Int = nData; AddDataRef();
 	}
 
-	explicit C4Value(C4Object *pObj) : Type(pObj ? C4V_C4Object : C4V_Any), HasBaseArray(false), NextRef(NULL), FirstRef(NULL)
+	explicit C4Value(C4Object *pObj) : Type(pObj ? C4V_C4Object : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Obj = pObj; AddDataRef();
 	}
 
-	explicit C4Value(C4String *pStr) : Type(pStr ? C4V_String : C4V_Any), HasBaseArray(false), NextRef(NULL), FirstRef(NULL)
+	explicit C4Value(C4String *pStr) : Type(pStr ? C4V_String : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Str = pStr; AddDataRef();
 	}
 
-	explicit C4Value(C4ValueArray *pArray) : Type(pArray ? C4V_Array : C4V_Any), HasBaseArray(false), NextRef(NULL), FirstRef(NULL)
+	explicit C4Value(C4ValueArray *pArray) : Type(pArray ? C4V_Array : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Array = pArray; AddDataRef();
 	}
 
-	explicit C4Value(C4Value *pVal) : Type(pVal ? C4V_pC4Value : C4V_Any), HasBaseArray(false), NextRef(NULL), FirstRef(NULL)
+	explicit C4Value(C4Value *pVal) : Type(pVal ? C4V_pC4Value : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Ref = pVal; AddDataRef();
 	}
@@ -106,10 +106,10 @@ public:
 	int32_t getIntOrID() { Deref(); if (Type == C4V_Int || Type == C4V_Bool || Type == C4V_C4ID) return Data.Int; else return 0; }
 	bool getBool()           { return ConvertTo(C4V_Bool)     ? !!Data     : 0; }
 	unsigned long getC4ID()  { return ConvertTo(C4V_C4ID)     ? Data.Int   : 0; }
-	C4Object *getObj()       { return ConvertTo(C4V_C4Object) ? Data.Obj   : NULL; }
-	C4String *getStr()       { return ConvertTo(C4V_String)   ? Data.Str   : NULL; }
-	C4ValueArray *getArray() { return ConvertTo(C4V_Array)    ? Data.Array : NULL; }
-	C4Value *getRef()        { return ConvertTo(C4V_pC4Value) ? Data.Ref   : NULL; }
+	C4Object *getObj()       { return ConvertTo(C4V_C4Object) ? Data.Obj   : nullptr; }
+	C4String *getStr()       { return ConvertTo(C4V_String)   ? Data.Str   : nullptr; }
+	C4ValueArray *getArray() { return ConvertTo(C4V_Array)    ? Data.Array : nullptr; }
+	C4Value *getRef()        { return ConvertTo(C4V_pC4Value) ? Data.Ref   : nullptr; }
 
 	// Unchecked getters
 	int32_t _getInt()         const { return Data.Int; }

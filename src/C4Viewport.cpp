@@ -69,18 +69,18 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			break;
 
 		default:
-			if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), NULL)) return 0;
+			if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), nullptr)) return 0;
 			break;
 		}
 		break;
 
 	case WM_KEYUP:
-		if (Game.DoKeyboardInput(wParam, KEYEV_Up, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), false, NULL)) return 0;
+		if (Game.DoKeyboardInput(wParam, KEYEV_Up, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), false, nullptr)) return 0;
 		break;
 
 	case WM_SYSKEYDOWN:
 		if (wParam == 18) break;
-		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), NULL)) return 0;
+		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), nullptr)) return 0;
 		break;
 
 	case WM_DESTROY:
@@ -150,7 +150,7 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		case WM_MOUSEMOVE:
 			if (Inside<int32_t>(LOWORD(lParam) - cvp->DrawX, 0, cvp->ViewWdt - 1)
 				&& Inside<int32_t>(HIWORD(lParam) - cvp->DrawY, 0, cvp->ViewHgt - 1))
-				SetCursor(NULL);
+				SetCursor(nullptr);
 			Game.GraphicsSystem.MouseMove(C4MC_Button_None, LOWORD(lParam), HIWORD(lParam), wParam, cvp);
 			break;
 
@@ -190,7 +190,7 @@ CStdWindow *C4ViewportWindow::Init(CStdApp *pApp, const char *Title, CStdWindow 
 		WS_EX_ACCEPTFILES,
 		C4ViewportClassName, Title, C4ViewportWindowStyle,
 		CW_USEDEFAULT, CW_USEDEFAULT, 400, 250,
-		pParent->hWindow, NULL, pApp->hInstance, NULL);
+		pParent->hWindow, nullptr, pApp->hInstance, nullptr);
 	return hWindow ? this : 0;
 }
 
@@ -198,7 +198,7 @@ BOOL C4Viewport::DropFiles(HANDLE hDrop)
 {
 	if (!Console.Editing) { Console.Message(LoadResStr("IDS_CNS_NONETEDIT")); return FALSE; }
 
-	int32_t iFileNum = DragQueryFile((HDROP)hDrop, 0xFFFFFFFF, NULL, 0);
+	int32_t iFileNum = DragQueryFile((HDROP)hDrop, 0xFFFFFFFF, nullptr, 0);
 	POINT pntPoint;
 	char szFilename[500 + 1];
 	for (int32_t cnt = 0; cnt < iFileNum; cnt++)
@@ -277,8 +277,8 @@ GtkWidget *C4ViewportWindow::InitGUI()
 	GtkWidget *table;
 
 	drawing_area = gtk_drawing_area_new();
-	h_scrollbar = gtk_hscrollbar_new(NULL);
-	v_scrollbar = gtk_vscrollbar_new(NULL);
+	h_scrollbar = gtk_hscrollbar_new(nullptr);
+	v_scrollbar = gtk_vscrollbar_new(nullptr);
 	table = gtk_table_new(2, 2, FALSE);
 
 	GtkAdjustment *adjustment = gtk_range_get_adjustment(GTK_RANGE(h_scrollbar));
@@ -392,9 +392,9 @@ void C4ViewportWindow::OnDragDataReceivedStatic(GtkWidget *widget, GdkDragContex
 	gchar **uris = gtk_selection_data_get_uris(data);
 	if (!uris) return;
 
-	for (gchar **uri = uris; *uri != NULL; ++uri)
+	for (gchar **uri = uris; *uri != nullptr; ++uri)
 	{
-		gchar *file = g_filename_from_uri(*uri, NULL, NULL);
+		gchar *file = g_filename_from_uri(*uri, nullptr, nullptr);
 		if (!file) continue;
 
 		Game.DropFile(file, window->cvp->ViewX + x, window->cvp->ViewY + y);
@@ -437,14 +437,14 @@ gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *even
 	}
 #endif
 	DWORD key = XKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0);
-	Game.DoKeyboardInput(key, KEYEV_Down, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, NULL);
+	Game.DoKeyboardInput(key, KEYEV_Down, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, nullptr);
 	return TRUE;
 }
 
 gboolean C4ViewportWindow::OnKeyReleaseStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
 	DWORD key = XKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0);
-	Game.DoKeyboardInput(key, KEYEV_Up, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, NULL);
+	Game.DoKeyboardInput(key, KEYEV_Up, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, nullptr);
 	return TRUE;
 }
 
@@ -606,13 +606,13 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 		// Do not take into account the state of the various modifiers and locks
 		// we don't need that for keyboard control
 		DWORD key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
-		Game.DoKeyboardInput(key, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), false, NULL);
+		Game.DoKeyboardInput(key, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), false, nullptr);
 		break;
 	}
 	case KeyRelease:
 	{
 		DWORD key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
-		Game.DoKeyboardInput(key, KEYEV_Up, e.xkey.state & Mod1Mask, e.xkey.state & ControlMask, e.xkey.state & ShiftMask, false, NULL);
+		Game.DoKeyboardInput(key, KEYEV_Up, e.xkey.state & Mod1Mask, e.xkey.state & ControlMask, e.xkey.state & ShiftMask, false, nullptr);
 		break;
 	}
 	case ButtonPress:
@@ -777,9 +777,9 @@ C4Viewport::~C4Viewport()
 void C4Viewport::Clear()
 {
 #ifdef USE_GL
-	if (pCtx) { delete pCtx; pCtx = NULL; }
+	if (pCtx) { delete pCtx; pCtx = nullptr; }
 #endif
-	if (pWindow) { pWindow->Clear(); delete pWindow; pWindow = NULL; }
+	if (pWindow) { pWindow->Clear(); delete pWindow; pWindow = nullptr; }
 	Player = NO_OWNER;
 	ViewX = ViewY = ViewWdt = ViewHgt = 0;
 	OutX = OutY = ViewWdt = ViewHgt = 0;
@@ -1033,7 +1033,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 
 	// draw global particles
 	C4ST_STARTNEW(PartStat, "C4Viewport::Draw: Particles")
-	Game.Particles.GlobalParticles.Draw(cgo, NULL);
+	Game.Particles.GlobalParticles.Draw(cgo, nullptr);
 	C4ST_STOP(PartStat)
 
 	// draw foreground objects
@@ -1091,7 +1091,7 @@ void C4Viewport::Execute()
 {
 	// Update regions
 	static int32_t RegionUpdate = 0;
-	SetRegions = NULL;
+	SetRegions = nullptr;
 	RegionUpdate++;
 	if (RegionUpdate >= 5)
 	{
@@ -1232,17 +1232,17 @@ void C4Viewport::UpdateViewPosition()
 
 void C4Viewport::Default()
 {
-	pCtx = NULL;
-	pWindow = NULL;
+	pCtx = nullptr;
+	pWindow = nullptr;
 	Player = 0;
 	ViewX = ViewY = ViewWdt = ViewHgt = 0;
 	BorderLeft = BorderTop = BorderRight = BorderBottom = 0;
 	OutX = OutY = ViewWdt = ViewHgt = 0;
 	DrawX = DrawY = 0;
-	Next = NULL;
+	Next = nullptr;
 	PlayerLock = TRUE;
 	ResetMenuPositions = FALSE;
-	SetRegions = NULL;
+	SetRegions = nullptr;
 	Regions.Default();
 	dViewX = dViewY = -31337;
 	ViewOffsX = ViewOffsY = 0;
@@ -1357,7 +1357,7 @@ StdStrBuf PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort)
 		{
 		case CON_Throw: szKeyID = "FullscreenMenuOK"; break;
 		case CON_Dig:   szKeyID = "FullscreenMenuCancel"; break;
-		default: szKeyID = NULL; break;
+		default: szKeyID = nullptr; break;
 		}
 		if (szKeyID) return Game.KeyboardInput.GetKeyCodeNameByKeyName(szKeyID, fShort);
 	}
@@ -1411,7 +1411,7 @@ void C4Viewport::DrawPlayerControls(C4FacetEx &cgo)
 			C4Facet ccgo;
 			ccgo.Set(cgo.Surface, tx + scwdt * (iCtrl % 3), ty + schgt * (iCtrl / 3), scwdt, schgt);
 			DrawControlKey(ccgo, iCtrl, (iLastCtrl == iCtrl) ? 1 : 0,
-				showtext ? PlrControlKeyName(Player, iCtrl, true).getData() : NULL);
+				showtext ? PlrControlKeyName(Player, iCtrl, true).getData() : nullptr);
 		}
 }
 

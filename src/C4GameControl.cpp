@@ -55,7 +55,7 @@ bool C4GameControl::InitReplay(C4Group &rGroup)
 	if (!pPlayback->Open(rGroup))
 	{
 		LogFatal(LoadResStr("IDS_ERR_REPLAYREAD"));
-		delete pPlayback; pPlayback = NULL;
+		delete pPlayback; pPlayback = nullptr;
 		return false;
 	}
 	// set mode
@@ -90,7 +90,7 @@ void C4GameControl::ChangeToLocal()
 	// replay: close playback
 	else if (eMode == CM_Replay)
 	{
-		delete pPlayback; pPlayback = NULL;
+		delete pPlayback; pPlayback = nullptr;
 	}
 
 	// we're now managing our own player info list; make sure counter works
@@ -124,7 +124,7 @@ bool C4GameControl::StartRecord(bool fInitial, bool fStreaming)
 	pRecord = new C4Record();
 	if (!pRecord->Start(fInitial))
 	{
-		delete pRecord; pRecord = NULL;
+		delete pRecord; pRecord = nullptr;
 		return false;
 	}
 	// streaming
@@ -133,7 +133,7 @@ bool C4GameControl::StartRecord(bool fInitial, bool fStreaming)
 		if (!pRecord->StartStreaming(fInitial) ||
 			!Game.Network.StartStreaming(pRecord))
 		{
-			delete pRecord; pRecord = NULL;
+			delete pRecord; pRecord = nullptr;
 			return false;
 		}
 	}
@@ -151,7 +151,7 @@ void C4GameControl::StopRecord(StdStrBuf *pRecordName, BYTE *pRecordSHA1)
 		Game.Network.FinishStreaming();
 		pRecord->Stop(pRecordName, pRecordSHA1);
 		// just delete
-		delete pRecord; pRecord = NULL;
+		delete pRecord; pRecord = nullptr;
 	}
 }
 
@@ -198,15 +198,15 @@ void C4GameControl::Default()
 	eMode = CM_None;
 	fHost = fPreInit = fInitComplete = false;
 	iClientID = C4ClientIDUnknown;
-	pRecord = NULL;
-	pPlayback = NULL;
+	pRecord = nullptr;
+	pPlayback = nullptr;
 	SyncChecks.Clear();
 	ControlRate = BoundBy<int>(Config.Network.ControlRate, 1, C4MaxControlRate);
 	ControlTick = 0;
 	SyncRate = C4SyncCheckRate;
 	DoSync = false;
 	fRecordNeeded = false;
-	pExecutingControl = NULL;
+	pExecutingControl = nullptr;
 }
 
 bool C4GameControl::Prepare()
@@ -290,7 +290,7 @@ void C4GameControl::Execute()
 	pExecutingControl = &Control;
 	Control.Execute();
 	Control.Clear();
-	pExecutingControl = NULL;
+	pExecutingControl = nullptr;
 
 	// statistics record
 	if (Game.pNetworkStatistics) Game.pNetworkStatistics->ExecuteControlFrame();
@@ -476,7 +476,7 @@ C4ControlSyncCheck *C4GameControl::GetSyncCheck(int32_t iTick)
 		if (pCheck->getFrame() == iTick)
 			return pCheck;
 	}
-	return NULL;
+	return nullptr;
 }
 
 void C4GameControl::RemoveOldSyncChecks()

@@ -62,7 +62,7 @@ private:
 	C4LeagueDisconnectReason eReason;
 
 public:
-	C4LeagueReportDisconnectHead(const char *szCSID, C4LeagueDisconnectReason eReason) : eReason(eReason), C4LeagueRequestHead(C4LA_ReportDisconnect, szCSID, NULL) {}
+	C4LeagueReportDisconnectHead(const char *szCSID, C4LeagueDisconnectReason eReason) : eReason(eReason), C4LeagueRequestHead(C4LA_ReportDisconnect, szCSID, nullptr) {}
 
 public:
 	void CompileFunc(StdCompiler *pComp);
@@ -71,7 +71,7 @@ public:
 class C4LeagueRequestHeadEnd : public C4LeagueRequestHead
 {
 public:
-	C4LeagueRequestHeadEnd(C4LeagueAction eAction, const char *szCSID, const char *szRecordName = NULL, const BYTE *pRecordSHA = NULL)
+	C4LeagueRequestHeadEnd(C4LeagueAction eAction, const char *szCSID, const char *szRecordName = nullptr, const BYTE *pRecordSHA = nullptr)
 		: C4LeagueRequestHead(eAction, szCSID), RecordName(szRecordName)
 	{
 		if (pRecordSHA)
@@ -177,7 +177,7 @@ private:
 	} *pFirst;
 
 public:
-	C4LeagueFBIDList() : pFirst(NULL) {}
+	C4LeagueFBIDList() : pFirst(nullptr) {}
 	~C4LeagueFBIDList() { Clear(); }
 	void Clear();
 	void RemoveFBIDByAccount(const char *szAccount);
@@ -212,7 +212,7 @@ public:
 	bool GetEndReply(StdStrBuf *pMessage, class C4RoundResultsPlayers *pRoundResults);
 
 	// Action "Auth"
-	bool Auth(const C4PlayerInfo &PlrInfo, const char *szAccount, const char *szPassword, const char *szNewAccount = NULL, const char *szNewPassword = NULL);
+	bool Auth(const C4PlayerInfo &PlrInfo, const char *szAccount, const char *szPassword, const char *szNewAccount = nullptr, const char *szNewPassword = nullptr);
 	bool GetAuthReply(StdStrBuf *pMessage, StdStrBuf *pAUID, StdStrBuf *pAccount, bool *pRegister);
 
 	// Action "Join"

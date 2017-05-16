@@ -236,14 +236,14 @@ void C4NetIOPacket::Clear()
 // construction / destruction
 
 C4NetIOTCP::C4NetIOTCP()
-	: pPeerList(NULL), fInit(false),
-	pConnectWaits(NULL),
+	: pPeerList(nullptr), fInit(false),
+	pConnectWaits(nullptr),
 #ifdef STDSCHEDULER_USE_EVENTS
-	Event(NULL),
+	Event(nullptr),
 #endif
 	PeerListCSec(this),
 	iListenPort(~0), lsock(INVALID_SOCKET),
-	pCB(NULL) {}
+	pCB(nullptr) {}
 
 C4NetIOTCP::~C4NetIOTCP()
 {
@@ -323,10 +323,10 @@ bool C4NetIOTCP::Close()
 
 #ifdef STDSCHEDULER_USE_EVENTS
 	// close event
-	if (Event != NULL)
+	if (Event != nullptr)
 	{
 		WSACloseEvent(Event);
-		Event = NULL;
+		Event = nullptr;
 	}
 #else
 	// close pipe
@@ -375,7 +375,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 	timeval to = { iMaxTime / 1000, (iMaxTime % 1000) * 1000 };
 
 	// wait for something to happen
-	int ret = select(iMax + 1, &fds[0], &fds[1], NULL, (iMaxTime == C4NetIO::TO_INF ? NULL : &to));
+	int ret = select(iMax + 1, &fds[0], &fds[1], nullptr, (iMaxTime == C4NetIO::TO_INF ? nullptr : &to));
 
 	// error
 	if (ret < 0)
@@ -403,7 +403,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 	{
 #ifdef STDSCHEDULER_USE_EVENTS
 		// get event list
-		if (::WSAEnumNetworkEvents(lsock, NULL, &wsaEvents) == SOCKET_ERROR)
+		if (::WSAEnumNetworkEvents(lsock, nullptr, &wsaEvents) == SOCKET_ERROR)
 			return false;
 
 		// a connection waiting for accept?
@@ -435,7 +435,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 		{
 #ifdef STDSCHEDULER_USE_EVENTS
 			// get event list
-			if (::WSAEnumNetworkEvents(pWait->sock, NULL, &wsaEvents) == SOCKET_ERROR)
+			if (::WSAEnumNetworkEvents(pWait->sock, nullptr, &wsaEvents) == SOCKET_ERROR)
 				return false;
 
 			if (wsaEvents.lNetworkEvents & FD_CONNECT)
@@ -486,7 +486,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 
 #ifdef STDSCHEDULER_USE_EVENTS
 			// get event list
-			if (::WSAEnumNetworkEvents(sock, NULL, &wsaEvents) == SOCKET_ERROR)
+			if (::WSAEnumNetworkEvents(sock, nullptr, &wsaEvents) == SOCKET_ERROR)
 				return false;
 
 			// something to read from socket?
@@ -801,7 +801,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 		{
 			// set error
 			SetError("socket accept failed", true);
-			return NULL;
+			return nullptr;
 		}
 		// connect address unknown, so zero it
 		ZeroMem(&caddr, sizeof caddr);
@@ -818,7 +818,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 #endif
 				// set error
 				SetError("could not get peer address for connected socket", true);
-				return NULL;
+				return nullptr;
 #ifndef HAVE_WINSOCK
 			}
 #endif
@@ -831,7 +831,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 		// set error
 		SetError("socket accept failed: invalid address returned");
 		closesocket(nsock);
-		return NULL;
+		return nullptr;
 	}
 
 	// disable nagle (yep, we know what we are doing here - I think)
@@ -845,7 +845,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 		// set error
 		SetError("connection accept failed: could not set event", true);
 		closesocket(nsock);
-		return NULL;
+		return nullptr;
 	}
 #elif defined(HAVE_WINSOCK)
 	// disable blocking
@@ -864,7 +864,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 		// set error
 		SetError("connection accept failed: could not disable blocking", true);
 		close(nsock);
-		return NULL;
+		return nullptr;
 	}
 #endif
 
@@ -883,7 +883,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 	PeerListAddLock.Clear();
 
 	// ask callback if connection should be permitted
-	if (pCB && !pCB->OnConn(addr, caddr, NULL, this))
+	if (pCB && !pCB->OnConn(addr, caddr, nullptr, this))
 		// close socket immediately (will be deleted later)
 		pnPeer->Close();
 
@@ -953,7 +953,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::GetPeer(const addr_t &addr) // (mt-safe)
 		if (pPeer->Open())
 			if (AddrEqual(pPeer->GetAddr(), addr))
 				return pPeer;
-	return NULL;
+	return nullptr;
 }
 
 void C4NetIOTCP::OnShareFree(CStdCSecEx *pCSec)
@@ -961,7 +961,7 @@ void C4NetIOTCP::OnShareFree(CStdCSecEx *pCSec)
 	if (pCSec == &PeerListCSec)
 	{
 		// clear up
-		Peer *pPeer = pPeerList, *pLast = NULL;
+		Peer *pPeer = pPeerList, *pLast = nullptr;
 		while (pPeer)
 		{
 			// delete?
@@ -981,7 +981,7 @@ void C4NetIOTCP::OnShareFree(CStdCSecEx *pCSec)
 				pPeer = pPeer->Next;
 			}
 		}
-		ConnectWait *pWait = pConnectWaits, *pWLast = NULL;
+		ConnectWait *pWait = pConnectWaits, *pWLast = nullptr;
 		while (pWait)
 		{
 			// delete?
@@ -1026,7 +1026,7 @@ C4NetIOTCP::ConnectWait *C4NetIOTCP::GetConnectWait(const addr_t &addr) // (mt-s
 	for (ConnectWait *pWait = pConnectWaits; pWait; pWait = pWait->Next)
 		if (AddrEqual(pWait->addr, addr))
 			return pWait;
-	return NULL;
+	return nullptr;
 }
 
 void C4NetIOTCP::ClearConnectWaits() // (mt-safe)
@@ -1090,7 +1090,7 @@ const unsigned int C4NetIOTCP::Peer::iMinIBufSize = 8192; // (bytes)
 C4NetIOTCP::Peer::Peer(const C4NetIO::addr_t &naddr, SOCKET nsock, C4NetIOTCP *pnParent)
 	: pParent(pnParent),
 	addr(naddr), sock(nsock),
-	Next(NULL), iIBufUsage(0), iIRate(0), iORate(0),
+	Next(nullptr), iIBufUsage(0), iIRate(0), iORate(0),
 	fOpen(true), fDoBroadcast(false) {}
 
 C4NetIOTCP::Peer::~Peer()
@@ -1240,7 +1240,7 @@ void C4NetIOTCP::Peer::ClearStatistics() // (mt-safe)
 C4NetIOSimpleUDP::C4NetIOSimpleUDP()
 	: fInit(false), fMultiCast(false), iPort(~0), sock(INVALID_SOCKET), fAllowReUse(false)
 #ifdef STDSCHEDULER_USE_EVENTS
-	, hEvent(NULL)
+	, hEvent(nullptr)
 #endif
 {}
 
@@ -1412,10 +1412,10 @@ bool C4NetIOSimpleUDP::Close()
 
 #ifdef STDSCHEDULER_USE_EVENTS
 	// close event
-	if (hEvent != NULL)
+	if (hEvent != nullptr)
 	{
 		WSACloseEvent(hEvent);
-		hEvent = NULL;
+		hEvent = nullptr;
 	}
 #else
 	// close pipes
@@ -1622,7 +1622,7 @@ enum C4NetIOSimpleUDP::WaitResult C4NetIOSimpleUDP::WaitForSocket(int iTimeout)
 	// construct timeout
 	timeval to = { iTimeout / 1000, (iTimeout % 1000) * 1000 };
 	// wait for anything to happen
-	int ret = ::select(iMaxFD + 1, &fds[0], &fds[1], NULL, (iTimeout == C4NetIO::TO_INF ? NULL : &to));
+	int ret = ::select(iMaxFD + 1, &fds[0], &fds[1], nullptr, (iTimeout == C4NetIO::TO_INF ? nullptr : &to));
 	// catch simple cases
 	if (ret < 0)
 	{
@@ -1740,7 +1740,7 @@ struct C4NetIOUDP::TestPacket : public PacketHdr
 
 C4NetIOUDP::C4NetIOUDP()
 	: fInit(false), fMultiCast(false), iPort(~0),
-	pPeerList(NULL),
+	pPeerList(nullptr),
 	iNextCheck(0),
 	iOPacketCounter(0),
 	fDelayedLoopbackTest(false),
@@ -2186,16 +2186,16 @@ void C4NetIOUDP::OnAddAddress(const addr_t &FromAddr, const AddAddrPacket &Packe
 C4NetIOUDP::Packet::Packet()
 	: iNr(~0),
 	Data(),
-	pFragmentGot(NULL) {}
+	pFragmentGot(nullptr) {}
 
 C4NetIOUDP::Packet::Packet(C4NetIOPacket &&rnData, nr_t inNr)
 	: iNr(inNr),
 	Data(rnData),
-	pFragmentGot(NULL) {}
+	pFragmentGot(nullptr) {}
 
 C4NetIOUDP::Packet::~Packet()
 {
-	delete[] pFragmentGot; pFragmentGot = NULL;
+	delete[] pFragmentGot; pFragmentGot = nullptr;
 }
 
 // implementation
@@ -2271,7 +2271,7 @@ bool C4NetIOUDP::Packet::AddFragment(const C4NetIOPacket &Packet, const C4NetIO:
 	// check packet size
 	nr_t iFNr = pHdr->Nr - iNr;
 	if (iPacketDataSize != FragmentSize(iFNr)) return false;
-	// already got this fragment? (needs check for first packet as FragmentPresent always assumes true if pFragmentGot is NULL)
+	// already got this fragment? (needs check for first packet as FragmentPresent always assumes true if pFragmentGot is nullptr)
 	StdBuf PacketData = Packet.getPart(sizeof(DataPacketHdr), iPacketDataSize);
 	if (!fFirstFragment && FragmentPresent(iFNr))
 	{
@@ -2305,10 +2305,10 @@ size_t C4NetIOUDP::Packet::FragmentSize(nr_t iFNr) const
 // construction / destruction
 
 C4NetIOUDP::PacketList::PacketList(unsigned int inMaxPacketCnt)
-	: pFront(NULL),
+	: pFront(nullptr),
 	iMaxPacketCnt(inMaxPacketCnt),
 	iPacketCnt(0),
-	pBack(NULL) {}
+	pBack(nullptr) {}
 
 C4NetIOUDP::PacketList::~PacketList()
 {
@@ -2322,8 +2322,8 @@ C4NetIOUDP::Packet *C4NetIOUDP::PacketList::GetPacket(unsigned int iNr)
 		if (pPkt->GetNr() == iNr)
 			return pPkt;
 		else if (pPkt->GetNr() < iNr)
-			return NULL;
-	return NULL;
+			return nullptr;
+	return nullptr;
 }
 
 C4NetIOUDP::Packet *C4NetIOUDP::PacketList::GetPacketFrgm(unsigned int iNr)
@@ -2333,14 +2333,14 @@ C4NetIOUDP::Packet *C4NetIOUDP::PacketList::GetPacketFrgm(unsigned int iNr)
 		if (pPkt->GetNr() <= iNr && pPkt->GetNr() + pPkt->FragmentCnt() > iNr)
 			return pPkt;
 		else if (pPkt->GetNr() < iNr)
-			return NULL;
-	return NULL;
+			return nullptr;
+	return nullptr;
 }
 
 C4NetIOUDP::Packet *C4NetIOUDP::PacketList::GetFirstPacketComplete()
 {
 	CStdShareLock ListLock(&ListCSec);
-	return pFront && pFront->Complete() ? pFront : NULL;
+	return pFront && pFront->Complete() ? pFront : nullptr;
 }
 
 bool C4NetIOUDP::PacketList::FragmentPresent(unsigned int iNr)
@@ -2354,7 +2354,7 @@ bool C4NetIOUDP::PacketList::AddPacket(Packet *pPacket)
 {
 	CStdLock ListLock(&ListCSec);
 	// find insert location
-	Packet *pInsertAfter = pBack, *pInsertBefore = NULL;
+	Packet *pInsertAfter = pBack, *pInsertBefore = nullptr;
 	for (; pInsertAfter; pInsertBefore = pInsertAfter, pInsertAfter = pInsertAfter->Prev)
 		if (pInsertAfter->GetNr() + pInsertAfter->FragmentCnt() <= pPacket->GetNr())
 			break;
@@ -3008,7 +3008,7 @@ void C4NetIOUDP::OnShareFree(CStdCSecEx *pCSec)
 {
 	if (pCSec == &PeerListCSec)
 	{
-		Peer *pPeer = pPeerList, *pLast = NULL;
+		Peer *pPeer = pPeerList, *pLast = nullptr;
 		while (pPeer)
 		{
 			// delete?
@@ -3037,7 +3037,7 @@ C4NetIOUDP::Peer *C4NetIOUDP::GetPeer(const addr_t &addr)
 		if (!pPeer->Closed())
 			if (AddrEqual(pPeer->GetAddr(), addr) || AddrEqual(pPeer->GetAltAddr(), addr))
 				return pPeer;
-	return NULL;
+	return nullptr;
 }
 
 C4NetIOUDP::Peer *C4NetIOUDP::ConnectPeer(const addr_t &PeerAddr, bool fFailCallback) // (mt-safe)
@@ -3050,12 +3050,12 @@ C4NetIOUDP::Peer *C4NetIOUDP::ConnectPeer(const addr_t &PeerAddr, bool fFailCall
 	if (pnPeer) return pnPeer;
 	// create new Peer class
 	pnPeer = new Peer(PeerAddr, this);
-	if (!pnPeer) return NULL;
+	if (!pnPeer) return nullptr;
 	// add peer to list
 	AddPeer(pnPeer);
 	PeerListAddLock.Clear();
 	// send connection request
-	if (!pnPeer->Connect(fFailCallback)) { pnPeer->Close("connect failed"); return NULL; }
+	if (!pnPeer->Connect(fFailCallback)) { pnPeer->Close("connect failed"); return nullptr; }
 	// ok (do not wait for peer)
 	return pnPeer;
 }

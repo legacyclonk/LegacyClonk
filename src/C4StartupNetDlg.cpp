@@ -20,7 +20,7 @@
 // C4StartupNetListEntry
 
 C4StartupNetListEntry::C4StartupNetListEntry(C4GUI::ListBox *pForListBox, C4GUI::Element *pInsertBefore, C4StartupNetDlg *pNetDlg)
-	: pList(pForListBox), pRefClient(NULL), pRef(NULL), iTimeout(0), eQueryType(NRQT_Unknown), fError(false), fIsCollapsed(false), pNetDlg(pNetDlg), fIsSmall(false), fIsEnabled(true), iInfoIconCount(0), fIsImportant(false), iSortOrder(0), iNumFails(0), iInfoLink(-1)
+	: pList(pForListBox), pRefClient(nullptr), pRef(nullptr), iTimeout(0), eQueryType(NRQT_Unknown), fError(false), fIsCollapsed(false), pNetDlg(pNetDlg), fIsSmall(false), fIsEnabled(true), iInfoIconCount(0), fIsImportant(false), iSortOrder(0), iNumFails(0), iInfoLink(-1)
 {
 	// calc height
 	int32_t iLineHgt = C4GUI::GetRes()->TextFont.GetLineHeight(), iHeight = iLineHgt * 2 + 4;
@@ -89,9 +89,9 @@ void C4StartupNetListEntry::ClearRef()
 	{
 		C4InteractiveThread &Thread = Application.InteractiveThread;
 		Thread.RemoveProc(pRefClient);
-		delete pRefClient; pRefClient = NULL;
+		delete pRefClient; pRefClient = nullptr;
 	}
-	if (pRef) { delete pRef; pRef = NULL; }
+	if (pRef) { delete pRef; pRef = nullptr; }
 	eQueryType = NRQT_Unknown;
 	iTimeout = iRequestTimeout = 0;
 	fError = false;
@@ -159,7 +159,7 @@ bool C4StartupNetListEntry::QueryReferences()
 		return false;
 	}
 	// set up timeout
-	iRequestTimeout = time(NULL) + C4NetRefRequestTimeout;
+	iRequestTimeout = time(nullptr) + C4NetRefRequestTimeout;
 	return true;
 }
 
@@ -168,7 +168,7 @@ bool C4StartupNetListEntry::Execute()
 	// update entries
 	// if the return value is false, this entry will be deleted
 	// timer running?
-	if (iTimeout) if (time(NULL) >= iTimeout)
+	if (iTimeout) if (time(nullptr) >= iTimeout)
 	{
 		// timeout!
 		// for internet servers, this means refresh needed - search anew!
@@ -195,7 +195,7 @@ bool C4StartupNetListEntry::Execute()
 	// check if it has arrived
 	if (pRefClient->isBusy())
 		// still requesting - but do not wait forever
-		if (time(NULL) >= iRequestTimeout)
+		if (time(nullptr) >= iRequestTimeout)
 		{
 			SetError(LoadResStr("IDS_NET_ERR_REFREQTIMEOUT"), TT_RefReqWait);
 			pRefClient->Cancel("Timeout");
@@ -232,7 +232,7 @@ bool C4StartupNetListEntry::OnReference()
 	// Ref getting done!
 	pIcon->SetAnimated(false, 1);
 	// Get reference information from client
-	C4Network2Reference **ppNewRefs = NULL; int32_t iNewRefCount;
+	C4Network2Reference **ppNewRefs = nullptr; int32_t iNewRefCount;
 	if (!pRefClient->GetReferences(ppNewRefs, iNewRefCount))
 	{
 		// References could be retrieved but not read
@@ -329,7 +329,7 @@ C4GUI::Element *C4StartupNetListEntry::GetNextLower(int32_t sortOrder)
 			return pElem;
 	}
 	// none found: insert at start
-	return NULL;
+	return nullptr;
 }
 
 void C4StartupNetListEntry::UpdateCollapsed(bool fToCollapseValue)
@@ -378,7 +378,7 @@ void C4StartupNetListEntry::UpdateText()
 	for (i = iInfoIconCount; i < MaxInfoIconCount; ++i)
 	{
 		pInfoIcons[i]->SetIcon(C4GUI::Ico_None);
-		pInfoIcons[i]->SetToolTip(NULL);
+		pInfoIcons[i]->SetToolTip(nullptr);
 	}
 	// text to labels
 	for (i = 0; i < InfoLabelCount; ++i)
@@ -515,7 +515,7 @@ void C4StartupNetListEntry::SetTimeout(TimeoutType eTimeout)
 	case TT_Refresh: iTime = 1; break; // refresh ASAP
 	};
 	if (!iTime) return;
-	iTimeout = time(NULL) + iTime;
+	iTimeout = time(nullptr) + iTime;
 }
 
 C4StartupNetListEntry *C4StartupNetListEntry::AddReference(C4Network2Reference *pAddRef, C4GUI::Element *pInsertBefore)
@@ -585,9 +585,9 @@ bool C4StartupNetListEntry::IsSameRefQueryAddress(const char *szJoinaddress)
 const char *C4StartupNetListEntry::GetJoinAddress()
 {
 	// only unresolved references
-	if (!pRefClient) return NULL;
+	if (!pRefClient) return nullptr;
 	// not masterservers (cannot join directly on clonk.de)
-	if (eQueryType == NRQT_Masterserver) return NULL;
+	if (eQueryType == NRQT_Masterserver) return nullptr;
 	// return join address
 	return pRefClient->getServerName();
 }
@@ -595,13 +595,13 @@ const char *C4StartupNetListEntry::GetJoinAddress()
 C4Network2Reference *C4StartupNetListEntry::GrabReference()
 {
 	C4Network2Reference *pOldRef = pRef;
-	pRef = NULL;
+	pRef = nullptr;
 	return pOldRef;
 }
 
 // C4StartupNetDlg
 
-C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")), iGameDiscoverInterval(0), pMasterserverClient(NULL), fIsCollapsed(false), fUpdatingList(false), tLastRefresh(0), pChatTitleLabel(NULL), fIgnoreUpdate(false)
+C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")), iGameDiscoverInterval(0), pMasterserverClient(nullptr), fIsCollapsed(false), fUpdatingList(false), tLastRefresh(0), pChatTitleLabel(nullptr), fIgnoreUpdate(false)
 {
 	// key bindings
 	C4CustomKey::CodeList keys;
@@ -639,7 +639,7 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 		btnChat->SetText(LoadResStr("IDS_BTN_CHAT"));
 		AddElement(btnChat);
 	}
-	else btnChat = NULL;
+	else btnChat = nullptr;
 
 	// main area: Tabular to switch between game list and chat
 	pMainTabular = new C4GUI::Tabular(caMain.GetAll(), C4GUI::Tabular::tbNone);
@@ -648,13 +648,13 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 	AddElement(pMainTabular);
 
 	// main area: game selection sheet
-	C4GUI::Tabular::Sheet *pSheetGameList = pMainTabular->AddSheet(NULL);
+	C4GUI::Tabular::Sheet *pSheetGameList = pMainTabular->AddSheet(nullptr);
 	C4GUI::ComponentAligner caGameList(pSheetGameList->GetContainedClientRect(), 0, 0, false);
 	C4GUI::WoodenLabel *pGameListLbl; int32_t iCaptHgt = C4GUI::WoodenLabel::GetDefaultHeight(&C4GUI::GetRes()->TextFont);
 	pGameListLbl = new C4GUI::WoodenLabel(LoadResStr("IDS_NET_GAMELIST"), caGameList.GetFromTop(iCaptHgt), C4GUI_Caption2FontClr, &C4GUI::GetRes()->TextFont, ALeft);
 	pSheetGameList->AddElement(pGameListLbl);
 	pGameSelList = new C4GUI::ListBox(caGameList.GetFromTop(caGameList.GetHeight() - iCaptHgt));
-	pGameSelList->SetDecoration(true, NULL, true, true);
+	pGameSelList->SetDecoration(true, nullptr, true, true);
 	pGameSelList->UpdateElementPositions();
 	pGameSelList->SetSelectionDblClickFn(new C4GUI::CallbackHandler<C4StartupNetDlg>(this, &C4StartupNetDlg::OnSelDblClick));
 	pGameSelList->SetSelectionChangeCallbackFn(new C4GUI::CallbackHandler<C4StartupNetDlg>(this, &C4StartupNetDlg::OnSelChange));
@@ -675,7 +675,7 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 	// main area: chat sheet
 	if (C4ChatDlg::IsChatEnabled())
 	{
-		C4GUI::Tabular::Sheet *pSheetChat = pMainTabular->AddSheet(NULL);
+		C4GUI::Tabular::Sheet *pSheetChat = pMainTabular->AddSheet(nullptr);
 		C4GUI::ComponentAligner caChat(pSheetChat->GetContainedClientRect(), 0, 0, false);
 		pSheetChat->AddElement(pChatTitleLabel = new C4GUI::WoodenLabel("", caChat.GetFromTop(iCaptHgt), C4GUI_Caption2FontClr, &C4GUI::GetRes()->TextFont, ALeft, false));
 		C4GUI::GroupBox *pChatGroup = new C4GUI::GroupBox(caChat.GetAll());
@@ -768,7 +768,7 @@ void C4StartupNetDlg::OnClosed(bool fOK)
 {
 	// dlg abort: return to main screen
 	pGameSelList->SelectNone(false);
-	if (pMasterserverClient) { delete pMasterserverClient; pMasterserverClient = NULL; }
+	if (pMasterserverClient) { delete pMasterserverClient; pMasterserverClient = nullptr; }
 	if (!fOK) DoBack();
 }
 
@@ -780,7 +780,7 @@ C4GUI::Control *C4StartupNetDlg::GetDefaultControl()
 		return pChatCtrl->GetDefaultControl();
 	else
 		// game list mode: No default control, because it would move focus away from IP input edit
-		return NULL;
+		return nullptr;
 }
 
 C4GUI::Control *C4StartupNetDlg::GetDlgModeFocusControl()
@@ -850,11 +850,11 @@ void C4StartupNetDlg::UpdateMasterserver()
 	if (!Config.Network.MasterServerSignUp)
 	{
 		delete pMasterserverClient;
-		pMasterserverClient = NULL;
+		pMasterserverClient = nullptr;
 	}
 	else
 	{
-		pMasterserverClient = new C4StartupNetListEntry(pGameSelList, NULL, this);
+		pMasterserverClient = new C4StartupNetListEntry(pGameSelList, nullptr, this);
 		pMasterserverClient->SetRefQuery(Config.Network.GetLeagueServerAddress(), C4StartupNetListEntry::NRQT_Masterserver);
 	}
 }
@@ -1084,7 +1084,7 @@ void C4StartupNetDlg::DoRefresh()
 	// empty list of all old entries
 	fUpdatingList = true;
 	while (pGameSelList->GetFirst()) delete pGameSelList->GetFirst();
-	pMasterserverClient = NULL;
+	pMasterserverClient = nullptr;
 	// (Re-)Start discovery
 	if (!DiscoverClient.StartDiscovery())
 	{
@@ -1140,7 +1140,7 @@ void C4StartupNetDlg::AddReferenceQuery(const char *szAddress, C4StartupNetListE
 		}
 	}
 	// No reference from same host found - create a new entry
-	C4StartupNetListEntry *pEntry = new C4StartupNetListEntry(pGameSelList, NULL, this);
+	C4StartupNetListEntry *pEntry = new C4StartupNetListEntry(pGameSelList, nullptr, this);
 	pEntry->SetRefQuery(szAddress, eQueryType);
 	if (eQueryType == C4StartupNetListEntry::NRQT_DirectJoin)
 		pGameSelList->SelectEntry(pEntry, true);

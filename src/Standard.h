@@ -155,7 +155,7 @@ inline void MemCopy(const void *lpMem1, void *lpMem2, size_t dwSize)
 
 bool ForLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2,
 	bool(*fnCallback)(int32_t, int32_t, int32_t), int32_t iPar = 0,
-	int32_t *lastx = NULL, int32_t *lasty = NULL);
+	int32_t *lastx = nullptr, int32_t *lasty = nullptr);
 
 char CharCapital(char cChar);
 bool IsIdentifier(char cChar);
@@ -184,7 +184,7 @@ void SDelete(char *szString, int iLen, int iPosition = 0);
 
 int SCharPos(char cTarget, const char *szInStr, int iIndex = 0);
 int SCharLastPos(char cTarget, const char *szInStr);
-int SCharCount(char cTarget, const char *szInStr, const char *cpUntil = NULL);
+int SCharCount(char cTarget, const char *szInStr, const char *cpUntil = nullptr);
 int SCharCountEx(const char *szString, const char *szCharList);
 
 void SReplaceChar(char *str, char fc, char tc);
@@ -196,14 +196,14 @@ const char *SAdvanceSpace(const char *szSPos);
 const char *SAdvancePast(const char *szSPos, char cPast);
 
 bool SGetModule(const char *szList, int iIndex, char *sTarget, int iSize = -1);
-bool SIsModule(const char *szList, const char *szString, int *ipIndex = NULL, bool fCaseSensitive = false);
+bool SIsModule(const char *szList, const char *szString, int *ipIndex = nullptr, bool fCaseSensitive = false);
 bool SAddModule(char *szList, const char *szModule, bool fCaseSensitive = false);
 bool SAddModules(char *szList, const char *szModules, bool fCaseSensitive = false);
 bool SRemoveModule(char *szList, const char *szModule, bool fCaseSensitive = false);
 bool SRemoveModules(char *szList, const char *szModules, bool fCaseSensitive = false);
 int SModuleCount(const char *szList);
 
-const char *SGetParameter(const char *strCommandLine, int iParameter, char *strTarget = NULL, int iSize = -1, bool *pWasQuoted = NULL);
+const char *SGetParameter(const char *strCommandLine, int iParameter, char *strTarget = nullptr, int iSize = -1, bool *pWasQuoted = nullptr);
 
 void SNewSegment(char *szStr, const char *szSepa = ";");
 void SCapitalize(char *szString);

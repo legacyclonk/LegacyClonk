@@ -24,7 +24,7 @@ BOOL C4Surface::LoadAny(C4Group &hGroup, const char *szName, bool fOwnPal, bool 
 	if (!*szExt)
 	{
 		// no extension: Default to extension that is found as file in group
-		const char *const extensions[] = { "png", "bmp", "jpeg", "jpg", NULL };
+		const char *const extensions[] = { "png", "bmp", "jpeg", "jpg", nullptr };
 		int i = 0; const char *szExt;
 		while (szExt = extensions[i++])
 		{
@@ -46,7 +46,7 @@ BOOL C4Surface::LoadAny(C4GroupSet &hGroupset, const char *szName, bool fOwnPal,
 	if (!*szExt)
 	{
 		// no extension: Default to extension that is found as file in group
-		const char *const extensions[] = { "png", "bmp", "jpeg", "jpg", NULL };
+		const char *const extensions[] = { "png", "bmp", "jpeg", "jpg", nullptr };
 		int i = 0; const char *szExt;
 		while (szExt = extensions[i++])
 		{

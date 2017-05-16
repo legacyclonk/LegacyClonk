@@ -18,8 +18,8 @@
 CStdFile::CStdFile()
 {
 	Status = FALSE;
-	hFile = NULL;
-	hgzFile = NULL;
+	hFile = nullptr;
+	hgzFile = nullptr;
 	ClearBuffer();
 	ModeWrite = FALSE;
 	Name[0] = 0;
@@ -113,7 +113,7 @@ bool CStdFile::Close()
 	// Close file(s)
 	if (hgzFile) if (c4_gzclose(hgzFile) != Z_OK) rval = FALSE;
 	if (hFile) if (fclose(hFile) != 0) rval = FALSE;
-	hgzFile = NULL; hFile = NULL;
+	hgzFile = nullptr; hFile = nullptr;
 	return !!rval;
 }
 
@@ -121,8 +121,8 @@ bool CStdFile::Default()
 {
 	Status = FALSE;
 	Name[0] = 0;
-	hgzFile = NULL;
-	hFile = NULL;
+	hgzFile = nullptr;
+	hFile = nullptr;
 	BufferLoad = BufferPtr = 0;
 	return TRUE;
 }
@@ -215,7 +215,7 @@ bool CStdFile::Rewind()
 	if (hFile) rewind(hFile);
 	if (hgzFile)
 	{
-		if (c4_gzclose(hgzFile) != Z_OK) { hgzFile = NULL; return FALSE; }
+		if (c4_gzclose(hgzFile) != Z_OK) { hgzFile = nullptr; return FALSE; }
 		if (!(hgzFile = c4_gzopen(Name, "rb"))) return FALSE;
 	}
 	return TRUE;

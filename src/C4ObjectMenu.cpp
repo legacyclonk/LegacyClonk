@@ -23,7 +23,7 @@ void C4ObjectMenu::Default()
 {
 	C4Menu::Default();
 	eCallbackType = CB_None;
-	Object = ParentObject = RefillObject = NULL;
+	Object = ParentObject = RefillObject = nullptr;
 	RefillObjectContentsCount = 0;
 	UserMenu = false;
 	CloseQuerying = false;
@@ -80,9 +80,9 @@ void C4ObjectMenu::OnSelectionChanged(int32_t iNewSelection)
 
 void C4ObjectMenu::ClearPointers(C4Object *pObj)
 {
-	if (Object == pObj) { Object = NULL; }
-	if (ParentObject == pObj) ParentObject = NULL; // Reason for menu close anyway.
-	if (RefillObject == pObj) RefillObject = NULL;
+	if (Object == pObj) { Object = nullptr; }
+	if (ParentObject == pObj) ParentObject = nullptr; // Reason for menu close anyway.
+	if (RefillObject == pObj) RefillObject = nullptr;
 	C4Menu::ClearPointers(pObj);
 }
 
@@ -92,7 +92,7 @@ C4Object *C4ObjectMenu::GetParentObject()
 	for (cLnk = Game.Objects.First; cLnk && (cObj = cLnk->Obj); cLnk = cLnk->Next)
 		if (cObj->Menu == this)
 			return cObj;
-	return NULL;
+	return nullptr;
 }
 
 void C4ObjectMenu::SetRefillObject(C4Object *pObj)
@@ -164,7 +164,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 		if (!(pTarget = RefillObject)) return false;
 		// Add base owner's homebase material
 		if (!(pPlayer = Game.Players.Get(pTarget->Base))) return FALSE;
-		C4Player *pBuyPlayer = Object ? Game.Players.Get(Object->Owner) : NULL;
+		C4Player *pBuyPlayer = Object ? Game.Players.Get(Object->Owner) : nullptr;
 		C4ID idDef;
 		for (cnt = 0; idDef = pPlayer->HomeBaseMaterial.GetID(Game.Defs, C4D_All, cnt, &iCount); cnt++)
 		{
@@ -180,7 +180,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			// Buying value
 			int32_t iBuyValue = pDef->GetValue(pTarget, pPlayer->Number);
 			// Add menu item
-			Add(szCaption, fctSymbol, szCommand, iCount, NULL, pDef->GetDesc(), pDef->id, szCommand2, true, iBuyValue);
+			Add(szCaption, fctSymbol, szCommand, iCount, nullptr, pDef->GetDesc(), pDef->id, szCommand2, true, iBuyValue);
 		}
 		break;
 	}
@@ -218,7 +218,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				// Selling value
 				int32_t iSellValue = pObj->GetValue(pTarget, Object ? Object->Owner : NO_OWNER);
 				// Add menu item
-				Add(szCaption, fctSymbol, szCommand, iCount, NULL, pDef->GetDesc(), pDef->id, szCommand2, true, iSellValue);
+				Add(szCaption, fctSymbol, szCommand, iCount, nullptr, pDef->GetDesc(), pDef->id, szCommand2, true, iSellValue);
 				fctSymbol.Default();
 			}
 		}
@@ -302,7 +302,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					fctTarget = fctSymbol.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom);
 					Game.GraphicsResource.fctHand.Draw(fctTarget, TRUE, 0);
 					// Add menu item
-					Add(LoadResStr("IDS_CON_PUT2"), fctSymbol, szCommand, C4MN_Item_NoCount, NULL, NULL, C4ID_None, szCommand2);
+					Add(LoadResStr("IDS_CON_PUT2"), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, nullptr, C4ID_None, szCommand2);
 					// Preserve symbol
 					fctSymbol.Default();
 				}
@@ -468,7 +468,7 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 
 	case CB_Scenario:
 		// Object menu with scenario script callback
-		Game.Script.DirectExec(NULL, szCommand, "MenuCommand");
+		Game.Script.DirectExec(nullptr, szCommand, "MenuCommand");
 		break;
 	}
 
@@ -498,8 +498,8 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						if (!fCountOnly)
 						{
 							sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this,Object(%d))", cObj->Number, pFunction->Name, pTarget->Number);
-							fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, FALSE, 0, NULL, pFunction->iImagePhase);
-							Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, NULL, pFunction->DescLong.getData());
+							fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, FALSE, 0, nullptr, pFunction->iImagePhase);
+							Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 							iResult++;
 						}
 						else
@@ -518,8 +518,8 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 							if (!fCountOnly)
 							{
 								sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",Object(%d),%d,Object(%d),%s)", pEff->pCommandTarget->Number, pFunction->Name, pTarget->Number, (int)pEff->iNumber, Object->Number, C4IdText(pFunction->idImage));
-								fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, FALSE, 0, NULL, pFunction->iImagePhase);
-								Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, NULL, pFunction->DescLong.getData());
+								fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, FALSE, 0, nullptr, pFunction->iImagePhase);
+								Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 								fctSymbol.Default();
 								iResult++;
 							}
@@ -538,8 +538,8 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 								if (!fCountOnly)
 								{
 									sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this,Object(%d))", cObj->Number, pFunction->Name, pTarget->Number);
-									fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, FALSE, 0, NULL, pFunction->iImagePhase);
-									Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, NULL, pFunction->DescLong.getData());
+									fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, FALSE, 0, nullptr, pFunction->iImagePhase);
+									Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 									fctSymbol.Default();
 									iResult++;
 								}
@@ -577,10 +577,10 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this)", pTarget->Number, pFunction->Name);
 						// Symbol
 						fctSymbol.Create(16, 16);
-						if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, FALSE, 0, NULL, pFunction->iImagePhase);
+						if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, FALSE, 0, nullptr, pFunction->iImagePhase);
 						else pTarget->DrawPicture(fctSymbol);
 						// Add menu item
-						Add(strDescText, fctSymbol, szCommand, C4MN_Item_NoCount, NULL, pFunction->DescLong.getData());
+						Add(strDescText, fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 						// Preserve symbol
 						fctSymbol.Default();
 					}
@@ -594,8 +594,8 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						if (!fCountOnly)
 						{
 							sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this)", pTarget->Number, pFunction->Name);
-							fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, FALSE, 0, NULL, pFunction->iImagePhase);
-							Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, NULL, pFunction->DescLong.getData());
+							fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, FALSE, 0, nullptr, pFunction->iImagePhase);
+							Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 							fctSymbol.Default();
 							iResult++;
 						}
@@ -623,7 +623,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 				{
 					sprintf(szCommand, "SetCommand(this,\"Context\",0,0,0,this)&&ExecuteCommand()");
 					fctSymbol.Create(16, 16); Object->Def->Draw(fctSymbol, FALSE, Object->Color);
-					Add(Object->Def->GetName(), fctSymbol, szCommand, C4MN_Item_NoCount, NULL, LoadResStr("IDS_MENU_CONTEXTSUBCLONKDESC"));
+					Add(Object->Def->GetName(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CONTEXTSUBCLONKDESC"));
 					fctSymbol.Default();
 					iResult++;
 				}

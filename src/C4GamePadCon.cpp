@@ -13,13 +13,13 @@
 
 #ifdef _WIN32
 
-C4GamePadControl *C4GamePadControl::pInstance = NULL;
+C4GamePadControl *C4GamePadControl::pInstance = nullptr;
 
 C4GamePadControl::C4GamePadControl()
 {
 	for (int i = 0; i < CStdGamepad_MaxGamePad; ++i)
 	{
-		Gamepads[i].pGamepad = NULL;
+		Gamepads[i].pGamepad = nullptr;
 		Gamepads[i].iRefCount = 0;
 	}
 	iNumGamepads = 0;
@@ -29,7 +29,7 @@ C4GamePadControl::C4GamePadControl()
 
 C4GamePadControl::~C4GamePadControl()
 {
-	if (pInstance == this) pInstance = NULL;
+	if (pInstance == this) pInstance = nullptr;
 	Clear();
 }
 
@@ -62,7 +62,7 @@ void C4GamePadControl::CloseGamepad(int id)
 	if (!--Gamepads[id].iRefCount)
 	{
 		Gamepads[id].pGamepad->GetCalibration(&(Config.Gamepads[id].AxisMin[0]), &(Config.Gamepads[id].AxisMax[0]), &(Config.Gamepads[id].AxisCalibrated[0]));
-		delete Gamepads[id].pGamepad; Gamepads[id].pGamepad = NULL;
+		delete Gamepads[id].pGamepad; Gamepads[id].pGamepad = nullptr;
 		--iNumGamepads;
 	}
 }

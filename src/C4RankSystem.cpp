@@ -203,7 +203,7 @@ StdStrBuf C4RankSystem::GetRankName(int iRank, bool fReturnLastIfOver)
 		sprintf(keyname, "Rank%03d", iRank + 1);
 		if (GetRegistryString(Register, keyname, RankName, C4MaxName + 1))
 			return StdStrBuf(RankName);
-		if (!fReturnLastIfOver) return StdStrBuf(NULL);
+		if (!fReturnLastIfOver) return StdStrBuf(nullptr);
 		--iRank;
 	}
 #endif
@@ -226,9 +226,9 @@ int C4RankSystem::RankByExperience(int iExp)
 void C4RankSystem::Clear()
 {
 	// clear any loaded rank names
-	if (pszRankNames)      { delete[] pszRankNames;      pszRankNames      = NULL; }
-	if (pszRankExtensions) { delete[] pszRankExtensions; pszRankExtensions = NULL; }
-	if (szRankNames)       { delete[] szRankNames;       szRankNames       = NULL; }
+	if (pszRankNames)      { delete[] pszRankNames;      pszRankNames      = nullptr; }
+	if (pszRankExtensions) { delete[] pszRankExtensions; pszRankExtensions = nullptr; }
+	if (szRankNames)       { delete[] szRankNames;       szRankNames       = nullptr; }
 	// reset number of ranks
 	iRankNum = 0;
 	iRankExtNum = 0;
@@ -239,9 +239,9 @@ void C4RankSystem::Default()
 	Register[0] = 0;
 	RankName[0] = 0;
 	RankBase = 1000;
-	pszRankNames = NULL;
-	szRankNames = NULL;
-	pszRankExtensions = NULL;
+	pszRankNames = nullptr;
+	szRankNames = nullptr;
+	pszRankExtensions = nullptr;
 	iRankExtNum = 0;
 }
 

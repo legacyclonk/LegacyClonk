@@ -23,10 +23,10 @@ void C4AulError::show()
 }
 
 C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :
-	MapNext(NULL),
-	LinkedTo(NULL),
-	OverloadedBy(NULL),
-	NextSNFunc(NULL)
+	MapNext(nullptr),
+	LinkedTo(nullptr),
+	OverloadedBy(nullptr),
+	NextSNFunc(nullptr)
 {
 	// reg2list (at end or at the beginning)
 	Owner = pOwner;
@@ -42,7 +42,7 @@ C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :
 			Owner->Func0 = this;
 			Owner->FuncL = this;
 		}
-		Next = NULL;
+		Next = nullptr;
 	}
 	else
 	{
@@ -56,7 +56,7 @@ C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :
 			Owner->Func0 = this;
 			Owner->FuncL = this;
 		}
-		Prev = NULL;
+		Prev = nullptr;
 	}
 
 	// store name
@@ -78,10 +78,10 @@ C4AulFunc::~C4AulFunc()
 		C4AulFunc *pAkt = this;
 		while (pAkt->LinkedTo != this) pAkt = pAkt->LinkedTo;
 		if (pAkt == LinkedTo)
-			pAkt->LinkedTo = NULL;
+			pAkt->LinkedTo = nullptr;
 		else
 			pAkt->LinkedTo = LinkedTo;
-		LinkedTo = NULL;
+		LinkedTo = nullptr;
 	}
 	// remove from list
 	if (Prev) Prev->Next = Next;
@@ -117,7 +117,7 @@ C4AulFunc *C4AulFunc::FindSameNameFunc(C4Def *pScope)
 {
 	// Note: NextSNFunc forms a ring, not a list
 	// find function
-	C4AulFunc *pFunc = this, *pResult = NULL;
+	C4AulFunc *pFunc = this, *pResult = nullptr;
 	do
 	{
 		// definition matches? This is the one
@@ -168,8 +168,8 @@ void C4AulScript::Default()
 {
 	// not compiled
 	State = ASS_NONE;
-	Script = NULL;
-	Code = CPos = NULL;
+	Script = nullptr;
+	Code = CPos = nullptr;
 	CodeSize = CodeBufSize = 0;
 	IncludesResolved = false;
 
@@ -181,12 +181,12 @@ void C4AulScript::Default()
 	LocalNamed.Reset();
 
 	// prepare lists
-	Child0 = ChildL = Prev = Next = NULL;
-	Owner = Engine = NULL;
-	Func0 = FuncL = NULL;
+	Child0 = ChildL = Prev = Next = nullptr;
+	Owner = Engine = nullptr;
+	Func0 = FuncL = nullptr;
 	// prepare include list
-	Includes = NULL;
-	Appends = NULL;
+	Includes = nullptr;
+	Appends = nullptr;
 }
 
 C4AulScript::~C4AulScript()
@@ -202,20 +202,20 @@ void C4AulScript::Unreg()
 	// remove from list
 	if (Prev) Prev->Next = Next; else if (Owner) Owner->Child0 = Next;
 	if (Next) Next->Prev = Prev; else if (Owner) Owner->ChildL = Prev;
-	Prev = Next = Owner = NULL;
+	Prev = Next = Owner = nullptr;
 }
 
 void C4AulScript::Clear()
 {
 	// remove includes
-	Includes = NULL;
+	Includes = nullptr;
 	// delete child scripts + funcs
 	while (Child0)
 		if (Child0->Delete()) delete Child0; else Child0->Unreg();
 	while (Func0) delete Func0;
 	// delete script+code
 	Script.Clear();
-	if (Code) { delete[] Code; Code = NULL; }
+	if (Code) { delete[] Code; Code = nullptr; }
 	CodeSize = CodeBufSize = 0;
 	// reset flags
 	State = ASS_NONE;
@@ -236,8 +236,8 @@ void C4AulScript::Reg2List(C4AulScriptEngine *pEngine, C4AulScript *pOwner)
 		Owner->ChildL = this;
 	}
 	else
-		Prev = NULL;
-	Next = NULL;
+		Prev = nullptr;
+	Next = nullptr;
 }
 
 C4AulFunc *C4AulScript::GetOverloadedFunc(C4AulFunc *ByFunc)
@@ -252,7 +252,7 @@ C4AulFunc *C4AulScript::GetOverloadedFunc(C4AulFunc *ByFunc)
 		f = f->Prev;
 	}
 #ifdef _DEBUG
-	C4AulFunc *f2 = Engine ? Engine->GetFunc(ByFunc->Name, this, ByFunc) : NULL;
+	C4AulFunc *f2 = Engine ? Engine->GetFunc(ByFunc->Name, this, ByFunc) : nullptr;
 	assert(f == f2);
 #endif
 	// nothing found? then search owner, if existant
@@ -274,22 +274,22 @@ C4AulFunc *C4AulScript::GetFuncRecursive(const char *pIdtf)
 	if (f) return f;
 	// nothing found? then search owner, if existant
 	else if (Owner) return Owner->GetFuncRecursive(pIdtf);
-	return NULL;
+	return nullptr;
 }
 
 C4AulFunc *C4AulScript::GetFunc(const char *pIdtf)
 {
-	return Engine ? Engine->GetFunc(pIdtf, this, NULL) : NULL;
+	return Engine ? Engine->GetFunc(pIdtf, this, nullptr) : nullptr;
 }
 
 C4AulScriptFunc *C4AulScript::GetSFuncWarn(const char *pIdtf, C4AulAccess AccNeeded, const char *WarnStr)
 {
 	// no identifier
-	if (!pIdtf || !pIdtf[0]) return NULL;
+	if (!pIdtf || !pIdtf[0]) return nullptr;
 	// get func?
 	C4AulScriptFunc *pFn = GetSFunc(pIdtf, AccNeeded, TRUE);
 	if (!pFn)
-		Warn(FormatString("Error getting %s function '%s'", WarnStr, pIdtf).getData(), NULL);
+		Warn(FormatString("Error getting %s function '%s'", WarnStr, pIdtf).getData(), nullptr);
 	return pFn;
 }
 
@@ -311,7 +311,7 @@ C4AulScriptFunc *C4AulScript::GetSFunc(const char *pIdtf, C4AulAccess AccNeeded,
 			C4AulParseError err(this, "Undefined function: ", pIdtf);
 			err.show();
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	// check access
@@ -330,11 +330,11 @@ C4AulScriptFunc *C4AulScript::GetSFunc(const char *pIdtf, C4AulAccess AccNeeded,
 C4AulScriptFunc *C4AulScript::GetSFunc(const char *pIdtf)
 {
 	// get func by name; return script func
-	if (!pIdtf) return NULL;
-	if (!pIdtf[0]) return NULL;
+	if (!pIdtf) return nullptr;
+	if (!pIdtf[0]) return nullptr;
 	if (pIdtf[0] == '~') pIdtf++;
 	C4AulFunc *f = GetFunc(pIdtf);
-	if (!f) return NULL;
+	if (!f) return nullptr;
 	return f->SFunc();
 }
 
@@ -356,7 +356,7 @@ C4AulScriptFunc *C4AulScript::GetSFunc(int iIndex, const char *szPattern)
 	}
 
 	// indexed script func not found
-	return NULL;
+	return nullptr;
 }
 
 void C4AulScriptFunc::CopyBody(C4AulScriptFunc &FromFunc)
@@ -379,7 +379,7 @@ void C4AulScriptFunc::CopyBody(C4AulScriptFunc &FromFunc)
 	for (int i = 0; i < C4AUL_MAX_Par; i++)
 		ParType[i] = FromFunc.ParType[i];
 	// must reset field here
-	NextSNFunc = NULL;
+	NextSNFunc = nullptr;
 }
 
 void C4AulScript::AddFunc(const char *pIdtf, C4ScriptFnDef *Def)
@@ -504,7 +504,7 @@ unsigned int C4AulFuncMap::Hash(const char *name)
 
 C4AulFunc *C4AulFuncMap::GetFirstFunc(const char *Name)
 {
-	if (!Name) return NULL;
+	if (!Name) return nullptr;
 	C4AulFunc *Func = Funcs[Hash(Name) % Capacity];
 	while (Func && !SEqual(Name, Func->Name))
 		Func = Func->MapNext;
@@ -521,7 +521,7 @@ C4AulFunc *C4AulFuncMap::GetNextSNFunc(const C4AulFunc *After)
 
 C4AulFunc *C4AulFuncMap::GetFunc(const char *Name, const C4AulScript *Owner, const C4AulFunc *After)
 {
-	if (!Name) return NULL;
+	if (!Name) return nullptr;
 	C4AulFunc *Func = Funcs[Hash(Name) % Capacity];
 	if (After)
 	{

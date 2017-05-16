@@ -8,11 +8,11 @@
 
 void DrawCommandKey(C4Facet &cgo, int32_t iCom,
 	BOOL fPressed = FALSE,
-	const char *szText = NULL);
+	const char *szText = nullptr);
 
 void DrawControlKey(C4Facet &cgo, int32_t iControl,
 	BOOL fPressed = FALSE,
-	const char *szText = NULL);
+	const char *szText = nullptr);
 
 int32_t Control2Com(int32_t iControl, bool fUp);
 int32_t Com2Control(int32_t iCom);
@@ -24,7 +24,7 @@ StdStrBuf PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort);
 
 const int32_t ComOrderNum = 24;
 
-BOOL PlayerObjectCommand(int32_t plr, int32_t cmdf, C4Object *pTarget = NULL, int32_t tx = 0, int32_t ty = 0);
+BOOL PlayerObjectCommand(int32_t plr, int32_t cmdf, C4Object *pTarget = nullptr, int32_t tx = 0, int32_t ty = 0);
 
 BOOL ObjectActionWalk(C4Object *cObj);
 BOOL ObjectActionStand(C4Object *cObj);
@@ -36,7 +36,7 @@ BOOL ObjectActionKneel(C4Object *cObj);
 BOOL ObjectActionFlat(C4Object *cObj, int32_t dir);
 BOOL ObjectActionScale(C4Object *cObj, int32_t dir);
 BOOL ObjectActionHangle(C4Object *cObj, int32_t dir);
-BOOL ObjectActionThrow(C4Object *cObj, C4Object *pThing = NULL);
+BOOL ObjectActionThrow(C4Object *cObj, C4Object *pThing = nullptr);
 BOOL ObjectActionDig(C4Object *cObj);
 BOOL ObjectActionBuild(C4Object *cObj, C4Object *pTarget);
 BOOL ObjectActionPush(C4Object *cObj, C4Object *pTarget);
@@ -47,9 +47,9 @@ BOOL ObjectActionFight(C4Object *cObj, C4Object *pTarget);
 BOOL ObjectComMovement(C4Object *cObj, int32_t iComDir);
 BOOL ObjectComStop(C4Object *cObj);
 BOOL ObjectComGrab(C4Object *cObj, C4Object *pTarget);
-BOOL ObjectComPut(C4Object *cObj, C4Object *pTarget, C4Object *pThing = NULL);
-BOOL ObjectComThrow(C4Object *cObj, C4Object *pThing = NULL);
-BOOL ObjectComDrop(C4Object *cObj, C4Object *pThing = NULL);
+BOOL ObjectComPut(C4Object *cObj, C4Object *pTarget, C4Object *pThing = nullptr);
+BOOL ObjectComThrow(C4Object *cObj, C4Object *pThing = nullptr);
+BOOL ObjectComDrop(C4Object *cObj, C4Object *pThing = nullptr);
 BOOL ObjectComUnGrab(C4Object *cObj);
 BOOL ObjectComJump(C4Object *cObj);
 BOOL ObjectComLetGo(C4Object *cObj, int32_t xdirf);
@@ -59,7 +59,7 @@ BOOL ObjectComChop(C4Object *cObj, C4Object *pTarget);
 BOOL ObjectComBuild(C4Object *cObj, C4Object *pTarget);
 BOOL ObjectComEnter(C4Object *cObj);
 BOOL ObjectComDownDouble(C4Object *cObj);
-BOOL ObjectComPutTake(C4Object *cObj, C4Object *pTarget, C4Object *pThing = NULL);
+BOOL ObjectComPutTake(C4Object *cObj, C4Object *pTarget, C4Object *pThing = nullptr);
 BOOL ObjectComTake(C4Object *cObj); // carlo
 BOOL ObjectComTake2(C4Object *cObj); // carlo
 BOOL ObjectComPunch(C4Object *cObj, C4Object *pTarget, int32_t iPunch = 0);

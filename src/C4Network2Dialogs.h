@@ -164,7 +164,7 @@ private:
 
 public:
 	C4Network2ClientListDlg();
-	~C4Network2ClientListDlg() { if (this == pInstance) pInstance = NULL; pSec1Timer->Release(); }
+	~C4Network2ClientListDlg() { if (this == pInstance) pInstance = nullptr; pSec1Timer->Release(); }
 
 	void OnSec1Timer() { Update(); }
 	void Update();
@@ -254,6 +254,6 @@ public:
 	C4ChartDialog();
 
 	// singleton-stuff
-	~C4ChartDialog() { if (pChartDlg == this) pChartDlg = NULL; }
+	~C4ChartDialog() { if (pChartDlg == this) pChartDlg = nullptr; }
 	static void Toggle();
 };

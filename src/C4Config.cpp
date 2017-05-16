@@ -316,7 +316,7 @@ C4Config::C4Config()
 C4Config::~C4Config()
 {
 	fConfigLoaded = false;
-	pConfig = NULL;
+	pConfig = nullptr;
 }
 
 void C4Config::Default()
@@ -504,7 +504,7 @@ void C4ConfigGeneral::DeterminePaths(BOOL forceWorkingDirectory)
 {
 #ifdef _WIN32
 	// Exe path
-	if (GetModuleFileName(NULL, ExePath, CFG_MaxString))
+	if (GetModuleFileName(nullptr, ExePath, CFG_MaxString))
 	{
 		TruncatePath(ExePath); AppendBackslash(ExePath);
 	}
@@ -551,7 +551,7 @@ void C4ConfigGeneral::DeterminePaths(BOOL forceWorkingDirectory)
 #ifdef C4ENGINE
 	// Create user path if it doesn't already exist
 	if (!DirectoryExists(Config.AtUserPath("")))
-		CreateDirectory(Config.AtUserPath(""), NULL); // currently no error handling here; also: no recursive directory creation
+		CreateDirectory(Config.AtUserPath(""), nullptr); // currently no error handling here; also: no recursive directory creation
 #endif
 }
 
@@ -594,7 +594,7 @@ const char *C4Config::AtScreenshotPath(const char *szFilename)
 	if (len = SLen(AtPathFilename))
 		if (AtPathFilename[len - 1] == DirectorySeparator)
 			AtPathFilename[len - 1] = '\0';
-	if (!DirectoryExists(AtPathFilename) && !CreateDirectory(AtPathFilename, NULL))
+	if (!DirectoryExists(AtPathFilename) && !CreateDirectory(AtPathFilename, nullptr))
 	{
 		SCopy(General.ExePath, General.ScreenshotPath, CFG_MaxString - 1);
 		SCopy(General.ScreenshotPath, AtPathFilename, _MAX_PATH);
@@ -611,7 +611,7 @@ BOOL C4ConfigGeneral::CreateSaveFolder(const char *strDirectory, const char *str
 {
 	// Create directory if needed
 	if (!DirectoryExists(strDirectory))
-		if (!CreateDirectory(strDirectory, NULL))
+		if (!CreateDirectory(strDirectory, nullptr))
 			return FALSE;
 	// Create title component if needed
 	char lang[3]; SCopy(Config.General.Language, lang, 2);

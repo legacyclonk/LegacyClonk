@@ -52,8 +52,8 @@ public:
 class C4AulParseError : public C4AulError
 {
 public:
-	C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf = NULL, BOOL Warn = FALSE);
-	C4AulParseError(class C4AulParseState *state, const char *pMsg, const char *pIdtf = NULL, BOOL Warn = FALSE);
+	C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf = nullptr, BOOL Warn = FALSE);
+	C4AulParseError(class C4AulParseState *state, const char *pMsg, const char *pIdtf = nullptr, BOOL Warn = FALSE);
 };
 
 // execution error
@@ -253,7 +253,7 @@ public:
 	C4AulFunc *OverloadedBy; // function by which this one is overloaded
 	C4AulFunc *NextSNFunc; // next script func using the same name (list build in AfterLink)
 
-	virtual C4AulScriptFunc *SFunc() { return NULL; } // type check func...
+	virtual C4AulScriptFunc *SFunc() { return nullptr; } // type check func...
 
 	// Wether this function should be visible to players
 	virtual bool GetPublic() { return false; }
@@ -261,8 +261,8 @@ public:
 	virtual C4V_Type *GetParType() { return 0; }
 	virtual C4V_Type GetRetType() { return C4V_Any; }
 	virtual C4Value Exec(C4AulContext *pCallerCtx, C4Value pPars[], bool fPassErrors = false) { return C4Value(); } // execute func (script call)
-	virtual C4Value Exec(C4Object *pObj = NULL, C4AulParSet *pPars = NULL, bool fPassErrors = false); // execute func (engine call)
-	virtual void UnLink() { OverloadedBy = NextSNFunc = NULL; }
+	virtual C4Value Exec(C4Object *pObj = nullptr, C4AulParSet *pPars = nullptr, bool fPassErrors = false); // execute func (engine call)
+	virtual void UnLink() { OverloadedBy = NextSNFunc = nullptr; }
 
 	C4AulFunc *GetLocalSFunc(const char *szIdtf); // find script function in own scope
 
@@ -301,7 +301,7 @@ public:
 	C4AulScript *pOrgScript; // the orginal script (!= Owner if included or appended)
 
 	C4AulScriptFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd = true) : C4AulFunc(pOwner, pName, bAtEnd),
-		idImage(C4ID_None), iImagePhase(0), Condition(NULL), ControlMethod(C4AUL_ControlMethod_All), OwnerOverloaded(NULL),
+		idImage(C4ID_None), iImagePhase(0), Condition(nullptr), ControlMethod(C4AUL_ControlMethod_All), OwnerOverloaded(nullptr),
 		bReturnRef(false), tProfileTime(0)
 	{
 		for (int i = 0; i < C4AUL_MAX_Par; i++) ParType[i] = C4V_Any;
@@ -313,7 +313,7 @@ public:
 	virtual C4V_Type *GetParType() { return ParType; }
 	virtual C4V_Type GetRetType() { return bReturnRef ? C4V_pC4Value : C4V_Any; }
 	virtual C4Value Exec(C4AulContext *pCallerCtx, C4Value pPars[], bool fPassErrors = false); // execute func (script call, should not happen)
-	virtual C4Value Exec(C4Object *pObj = NULL, C4AulParSet *pPars = NULL, bool fPassErrors = false); // execute func (engine call)
+	virtual C4Value Exec(C4Object *pObj = nullptr, C4AulParSet *pPars = nullptr, bool fPassErrors = false); // execute func (engine call)
 
 	void CopyBody(C4AulScriptFunc &FromFunc); // copy script/code, etc from given func
 
@@ -469,8 +469,8 @@ public:
 	C4AulFunc *GetFuncRecursive(const char *pIdtf); // search function by identifier, including global funcs
 	C4AulScriptFunc *GetSFunc(const char *pIdtf, C4AulAccess AccNeeded, BOOL fFailSafe = false); // get local sfunc, check access, check '~'-safety
 	C4AulScriptFunc *GetSFunc(const char *pIdtf); // get local script function by name
-	C4AulScriptFunc *GetSFunc(int iIndex, const char *szPattern = NULL); // get local script function by index
-	C4AulScriptFunc *GetSFuncWarn(const char *pIdtf, C4AulAccess AccNeeded, const char *WarnStr); // get function; return NULL and warn if not existant
+	C4AulScriptFunc *GetSFunc(int iIndex, const char *szPattern = nullptr); // get local script function by index
+	C4AulScriptFunc *GetSFuncWarn(const char *pIdtf, C4AulAccess AccNeeded, const char *WarnStr); // get function; return nullptr and warn if not existant
 
 	void AddFunc(const char *pIdtf, C4ScriptFnDef *Def); // add def def func to table
 
@@ -544,7 +544,7 @@ public:
 	C4AulFunc *GetNextFunc(C4AulFunc *pFunc) { return pFunc->Next; }
 
 	void RegisterGlobalConstant(const char *szName, const C4Value &rValue); // creates a new constants or overwrites an old one
-	bool GetGlobalConstant(const char *szName, C4Value *pTargetValue); // check if a constant exists; assign value to pTargetValue if not NULL
+	bool GetGlobalConstant(const char *szName, C4Value *pTargetValue); // check if a constant exists; assign value to pTargetValue if not nullptr
 
 	BOOL DenumerateVariablePointers();
 	void UnLink(); // called when a script is being reloaded (clears string table)

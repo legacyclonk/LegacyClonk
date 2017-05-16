@@ -186,7 +186,7 @@ struct C4PhysInfoNameMap_t { const char *szName; C4PhysicalInfo::Offset off; } C
 	{ "CanFly",          &C4PhysicalInfo::CanFly },
 	{ "CorrosionResist", &C4PhysicalInfo::CorrosionResist },
 	{ "BreatheWater",    &C4PhysicalInfo::BreatheWater },
-	{ NULL, NULL }
+	{ nullptr, nullptr }
 };
 
 void C4PhysicalInfo::PromotionUpdate(int32_t iRank, bool fUpdateTrainablePhysicals, C4Def *pTrainDef)
@@ -247,13 +247,13 @@ const char *C4PhysicalInfo::GetNameByOffset(Offset mpiOff)
 	for (C4PhysInfoNameMap_t *entry = C4PhysInfoNameMap; entry->szName; ++entry)
 		if (entry->off == mpiOff)
 			return entry->szName;
-	return NULL;
+	return nullptr;
 }
 
 const char *C4PhysicalInfo::GetNameByIndex(int32_t iIdx, Offset *pmpiOut)
 {
 	// query map
-	if (!Inside<int32_t>(iIdx, 0, sizeof(C4PhysInfoNameMap) / sizeof(C4PhysInfoNameMap_t))) return NULL;
+	if (!Inside<int32_t>(iIdx, 0, sizeof(C4PhysInfoNameMap) / sizeof(C4PhysInfoNameMap_t))) return nullptr;
 	if (pmpiOut) *pmpiOut = C4PhysInfoNameMap[iIdx].off;
 	return C4PhysInfoNameMap[iIdx].szName;
 }
@@ -369,7 +369,7 @@ void C4ObjectInfoCore::Default(C4ID n_id,
 	const char *cpNames)
 {
 	// Def
-	C4Def *pDef = NULL;
+	C4Def *pDef = nullptr;
 	if (pDefs) pDef = pDefs->ID2Def(n_id);
 
 	// Defaults
@@ -560,7 +560,7 @@ BOOL C4ObjectInfoCore::Decompile(char **ppOutput, size_t *ipSize)
 		&Buf,
 		"ObjectInfo"))
 	{
-		if (ppOutput) *ppOutput = NULL;
+		if (ppOutput) *ppOutput = nullptr;
 		if (ipSize) *ipSize = 0;
 		return FALSE;
 	}

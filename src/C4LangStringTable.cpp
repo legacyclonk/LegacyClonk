@@ -24,7 +24,7 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 	std::vector<C4StringTableEntry> Entries;
 
 	// read string table
-	char *pStrTblBuf = NULL;
+	char *pStrTblBuf = nullptr;
 	if (GetData())
 	{
 		// copy data
@@ -51,7 +51,7 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 
 	// Find Replace Positions
 	int iScriptLen = SLen(Data);
-	struct RP { const char *Pos, *String; unsigned int Len; RP *Next; } *pRPList = NULL, *pRPListEnd = NULL;
+	struct RP { const char *Pos, *String; unsigned int Len; RP *Next; } *pRPList = nullptr, *pRPListEnd = nullptr;
 	for (const char *pPos = SSearch(Data, "$"); pPos; pPos = SSearch(pPos, "$"))
 	{
 		// Get name
@@ -66,7 +66,7 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 		if (*pPos2) continue;
 		// check termination
 		// search in string table
-		const char *pStrTblEntry = NULL;
+		const char *pStrTblEntry = nullptr;
 		for (unsigned int i = 0; i < Entries.size(); i++)
 			if (SEqual(szStringName, Entries[i].pName))
 			{
@@ -82,7 +82,7 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 		pnRP->Pos = pPos - SLen(szStringName) - 2;
 		pnRP->String = pStrTblEntry;
 		pnRP->Len = SLen(szStringName) + 2;
-		pnRP->Next = NULL;
+		pnRP->Next = nullptr;
 		pRPListEnd = (pRPListEnd ? pRPListEnd->Next : pRPList) = pnRP;
 		// calculate new script length
 		iScriptLen += SLen(pStrTblEntry) - pnRP->Len;

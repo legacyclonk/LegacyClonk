@@ -211,7 +211,7 @@ void C4Network2Players::HandlePlayerInfo(const class C4ClientPlayerInfos &rInfoP
 	Game.Teams.RecheckTeams(); // recheck random teams - if a player left, teams may need to be rebalanced
 	// make sure resources are loaded for those players
 	rInfoList.LoadResources();
-	// get associated client - note that pClientInfo might be NULL for empty packets that got discarded
+	// get associated client - note that pClientInfo might be nullptr for empty packets that got discarded
 	if (pClientInfo)
 	{
 		const C4Client *pClient = Game.Clients.getClientByID(pClientInfo->GetClientID());
@@ -330,7 +330,7 @@ void C4Network2Players::JoinUnjoinedPlayersInControlQueue(C4ClientPlayerInfos *p
 			{
 				// join without resource (script player)
 				Game.Input.Add(CID_JoinPlr,
-					new C4ControlJoinPlayer(NULL, pNewPacket->GetClientID(), pInfo->GetID()));
+					new C4ControlJoinPlayer(nullptr, pNewPacket->GetClientID(), pInfo->GetID()));
 			}
 		}
 }
@@ -439,7 +439,7 @@ C4ClientPlayerInfos *C4Network2Players::GetLocalPlayerInfoPacket() const
 			// found
 			return pkInfo;
 	// not found
-	return NULL;
+	return nullptr;
 }
 
 DWORD C4Network2Players::GetClientChatColor(int idForClient, bool fLobby) const

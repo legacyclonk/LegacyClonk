@@ -194,11 +194,11 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	succeeded = true;
 #ifdef _WIN32
 	// Close editor if open
-	HWND hwnd = FindWindow(NULL, C4EDITORCAPTION);
+	HWND hwnd = FindWindow(nullptr, C4EDITORCAPTION);
 	if (hwnd) PostMessage(hwnd, WM_CLOSE, 0, 0);
 	// Notice: even if the update program and update group are in the temp path, they must be executed in our working directory
 	StdStrBuf strUpdateArgs; strUpdateArgs.Format("\"%s\" /p -w \"" C4ENGINECAPTION "\" -w \"" C4EDITORCAPTION "\" -w 2000 %s", strUpdateFile, fDeleteUpdate ? "-yd" : "-y");
-	int iError = (int)ShellExecute(NULL, "open", strUpdateProgEx.getData(), strUpdateArgs.getData(), Config.General.ExePath, SW_SHOW);
+	int iError = (int)ShellExecute(nullptr, "open", strUpdateProgEx.getData(), strUpdateArgs.getData(), Config.General.ExePath, SW_SHOW);
 	if (iError <= 32) return false;
 	// must quit ourselves for update program to work
 	if (succeeded) Application.Quit();
@@ -261,13 +261,13 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 {
 	// Automatic update only once a day
 	if (fAutomatic)
-		if (time(NULL) - Config.Network.LastUpdateTime < 60 * 60 * 24)
+		if (time(nullptr) - Config.Network.LastUpdateTime < 60 * 60 * 24)
 			return false;
 	// Store the time of this update check (whether it's automatic or not or successful or not)
-	Config.Network.LastUpdateTime = time(NULL);
+	Config.Network.LastUpdateTime = time(nullptr);
 	// Get current update version from server
 	C4GameVersion UpdateVersion;
-	C4GUI::Dialog *pWaitDlg = NULL;
+	C4GUI::Dialog *pWaitDlg = nullptr;
 	if (C4GUI::IsGUIValid())
 	{
 		pWaitDlg = new C4GUI::MessageDialog(LoadResStr("IDS_MSG_LOOKINGFORUPDATES"), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnAbort, C4GUI::Ico_Ex_Update, C4GUI::MessageDialog::dsRegular);
@@ -298,7 +298,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 			VerChecker.GetRedirect(strUpdateRedirect);
 		}
 		Application.InteractiveThread.RemoveProc(&VerChecker);
-		VerChecker.SetNotify(NULL);
+		VerChecker.SetNotify(nullptr);
 	}
 	if (C4GUI::IsGUIValid() && pWaitDlg) delete pWaitDlg;
 	// User abort
@@ -365,7 +365,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 bool C4Network2VersionInfoClient::QueryVersion()
 {
 	// Perform an Query query
-	return Query(NULL, false);
+	return Query(nullptr, false);
 }
 
 bool C4Network2VersionInfoClient::GetVersion(C4GameVersion *piVerOut)

@@ -24,7 +24,7 @@ public:
 	void Close();
 	BOOL Load(const char *szName, C4Group &hGroup, const char *szFilename,
 		const char *szLanguage, C4Def *pDef, class C4LangStringTable *pLocalTable, bool fLoadTable = false);
-	const char *GetControlDesc(const char *szFunctionFormat, int32_t iCom, C4ID *pidImage = NULL, int32_t *piImagePhase = NULL);
+	const char *GetControlDesc(const char *szFunctionFormat, int32_t iCom, C4ID *pidImage = nullptr, int32_t *piImagePhase = nullptr);
 	void GetControlMethodMask(const char *szFunctionFormat, int32_t &first, int32_t &second);
 	int32_t GetControlMethod(int32_t com, int32_t first, int32_t second);
 
@@ -37,7 +37,7 @@ public:
 	C4Value Call(const char *szFunction, C4AulParSet *pPars = 0, bool fPassError = false)
 	{
 		if (!szFunction) return C4VNull;
-		return FunctionCall(NULL, szFunction, NULL, pPars, false, fPassError);
+		return FunctionCall(nullptr, szFunction, nullptr, pPars, false, fPassError);
 	}
 
 protected:

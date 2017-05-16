@@ -141,7 +141,7 @@ BOOL C4Sky::Init(bool fSavegame)
 void C4Sky::Default()
 {
 	Width = Height = 0;
-	Surface = NULL;
+	Surface = nullptr;
 	x = y = xdir = ydir = 0;
 	Modulation = 0x00ffffff;
 	ParX = ParY = 10;
@@ -157,7 +157,7 @@ C4Sky::~C4Sky()
 
 void C4Sky::Clear()
 {
-	delete Surface; Surface = NULL;
+	delete Surface; Surface = nullptr;
 	Modulation = 0x00ffffff;
 }
 

@@ -32,7 +32,7 @@ const ReactionFuncMapEntry ReactionFuncMap[] =
 	{ "Poof",    &C4MaterialMap::mrfPoof },
 	{ "Corrode", &C4MaterialMap::mrfCorrode },
 	{ "Insert",  &C4MaterialMap::mrfInsert },
-	{ NULL, &C4MaterialReaction::NoReaction }
+	{ nullptr, &C4MaterialReaction::NoReaction }
 };
 
 #endif
@@ -40,7 +40,7 @@ const ReactionFuncMapEntry ReactionFuncMap[] =
 void C4MaterialReaction::CompileFunc(StdCompiler *pComp)
 {
 #ifdef C4ENGINE
-	if (pComp->isCompiler()) pScriptFunc = NULL;
+	if (pComp->isCompiler()) pScriptFunc = nullptr;
 	// compile reaction func ptr
 	StdStrBuf sReactionFuncName;
 	int32_t i = 0; while (ReactionFuncMap[i].szRFName && (ReactionFuncMap[i].pFunc != pFunc)) ++i;
@@ -68,7 +68,7 @@ void C4MaterialReaction::ResolveScriptFuncs(const char *szMatName)
 	if (pFunc == &C4MaterialMap::mrfScript)
 		pScriptFunc = Game.ScriptEngine.GetSFuncWarn(this->ScriptFunc.getData(), AA_PROTECTED, FormatString("Material reaction of \"%s\"", szMatName).getData());
 	else
-		pScriptFunc = NULL;
+		pScriptFunc = nullptr;
 }
 #endif
 
@@ -264,8 +264,8 @@ C4MaterialMap::~C4MaterialMap()
 
 void C4MaterialMap::Clear()
 {
-	if (Map) delete[] Map; Map = NULL;
-	delete[] ppReactionMap; ppReactionMap = NULL;
+	if (Map) delete[] Map; Map = nullptr;
+	delete[] ppReactionMap; ppReactionMap = nullptr;
 }
 
 int32_t C4MaterialMap::Load(C4Group &hGroup, C4Group *OverloadFile)
@@ -326,11 +326,11 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 	ppReactionMap = new C4MaterialReactionPtr[(Num + 1) * (Num + 1)];
 	for (int32_t iMatPXS = -1; iMatPXS < Num; iMatPXS++)
 	{
-		C4Material *pMatPXS = (iMatPXS + 1) ? Map + iMatPXS : NULL;
+		C4Material *pMatPXS = (iMatPXS + 1) ? Map + iMatPXS : nullptr;
 		for (int32_t iMatLS = -1; iMatLS < Num; iMatLS++)
 		{
-			C4MaterialReaction *pReaction = NULL;
-			C4Material *pMatLS = (iMatLS + 1) ? Map + iMatLS : NULL;
+			C4MaterialReaction *pReaction = nullptr;
+			C4Material *pMatLS = (iMatLS + 1) ? Map + iMatLS : nullptr;
 			// natural stuff: material conversion here?
 			if (pMatPXS && pMatPXS->sInMatConvert.getLength() && SEqualNoCase(pMatPXS->sInMatConvert.getData(), pMatLS ? pMatLS->Name : C4TLS_MatSky))
 				pReaction = &DefReactConvert;
@@ -350,7 +350,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 				else
 					pReaction = &DefReactInsert;
 			}
-			// assign the function; or NULL for no reaction
+			// assign the function; or nullptr for no reaction
 			SetMatReaction(iMatPXS, iMatLS, pReaction);
 		}
 	}
@@ -359,7 +359,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 	for (cnt = 0; cnt < Num; cnt++)
 	{
 		C4Material *pMat = Map + cnt;
-		const char *szTextureOverlay = NULL;
+		const char *szTextureOverlay = nullptr;
 		// newgfx: init pattern
 		if (Map[cnt].sTextureOverlay.getLength())
 			if (Game.TextureMap.GetTexture(Map[cnt].sTextureOverlay.getLength()))
@@ -475,13 +475,13 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 	for (cnt = 0; cnt < Num; cnt++)
 	{
 		if (Map[cnt].sBlastShiftTo.getLength())
-			Map[cnt].BlastShiftTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sBlastShiftTo.getData(), NULL, TRUE, FormatString("BlastShiftTo of mat %s", Map[cnt].Name).getData());
+			Map[cnt].BlastShiftTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sBlastShiftTo.getData(), nullptr, TRUE, FormatString("BlastShiftTo of mat %s", Map[cnt].Name).getData());
 		if (Map[cnt].sInMatConvertTo.getLength())
 			Map[cnt].InMatConvertTo = Get(Map[cnt].sInMatConvertTo.getData());
 		if (Map[cnt].sBelowTempConvertTo.getLength())
-			Map[cnt].BelowTempConvertTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sBelowTempConvertTo.getData(), NULL, TRUE, FormatString("BelowTempConvertTo of mat %s", Map[cnt].Name).getData());
+			Map[cnt].BelowTempConvertTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sBelowTempConvertTo.getData(), nullptr, TRUE, FormatString("BelowTempConvertTo of mat %s", Map[cnt].Name).getData());
 		if (Map[cnt].sAboveTempConvertTo.getLength())
-			Map[cnt].AboveTempConvertTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sAboveTempConvertTo.getData(), NULL, TRUE, FormatString("AboveTempConvertTo of mat %s", Map[cnt].Name).getData());
+			Map[cnt].AboveTempConvertTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sAboveTempConvertTo.getData(), nullptr, TRUE, FormatString("AboveTempConvertTo of mat %s", Map[cnt].Name).getData());
 	}
 }
 
@@ -565,8 +565,8 @@ BOOL C4MaterialMap::SortEnumeration(int32_t iMat, const char *szMatName)
 void C4MaterialMap::Default()
 {
 	Num = 0;
-	Map = NULL;
-	ppReactionMap = NULL;
+	Map = nullptr;
+	ppReactionMap = nullptr;
 }
 
 #ifdef C4ENGINE
@@ -814,7 +814,7 @@ bool C4MaterialMap::mrfScript(C4MaterialReaction *pReaction, int32_t &iX, int32_
 	//               0           1           2                3                4                                    5                                    6                7               8
 	int32_t iXDir1, iYDir1, iXDir2, iYDir2;
 	C4AulParSet pars(C4VInt(iX), C4VInt(iY), C4VInt(iLSPosX), C4VInt(iLSPosY), C4VInt(iXDir1 = fixtoi(fXDir, 100)), C4VInt(iYDir1 = fixtoi(fYDir, 100)), C4VInt(iPxsMat), C4VInt(iLsMat), C4VInt(evEvent));
-	if (!!pReaction->pScriptFunc->Exec(NULL, &pars, false))
+	if (!!pReaction->pScriptFunc->Exec(nullptr, &pars, false))
 	{
 		// PXS shall be killed!
 		return true;

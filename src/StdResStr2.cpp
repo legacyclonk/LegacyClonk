@@ -64,7 +64,7 @@ public:
 
 	const char *GetEntry(const char *Key)
 	{
-		if (!Key) return NULL;
+		if (!Key) return nullptr;
 		unsigned int h = Hash(Key);
 		Entry *e = &(Entries[h % Capacity]);
 		int i = 0;

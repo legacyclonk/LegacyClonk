@@ -17,11 +17,11 @@ C4SoundEffect::C4SoundEffect() :
 	UsageTime(0),
 	Instances(0),
 #if defined(C4SOUND_USE_FMOD) || defined(HAVE_LIBSDL_MIXER)
-	pSample(NULL),
+	pSample(nullptr),
 #endif
 	Static(FALSE),
-	Next(NULL),
-	FirstInst(NULL)
+	Next(nullptr),
+	FirstInst(nullptr)
 {
 	Name[0] = 0;
 }
@@ -41,7 +41,7 @@ void C4SoundEffect::Clear()
 	if (pSample) Mix_FreeChunk(pSample);
 #endif
 #if defined(C4SOUND_USE_FMOD) || defined(HAVE_LIBSDL_MIXER)
-	pSample = NULL;
+	pSample = nullptr;
 #endif
 }
 
@@ -118,10 +118,10 @@ void C4SoundEffect::Execute()
 C4SoundInstance *C4SoundEffect::New(bool fLoop, int32_t iVolume, C4Object *pObj, int32_t iCustomFalloffDistance)
 {
 	// check: too many instances?
-	if (!fLoop && Instances >= C4MaxSoundInstances) return NULL;
+	if (!fLoop && Instances >= C4MaxSoundInstances) return nullptr;
 	// create & init sound instance
 	C4SoundInstance *pInst = new C4SoundInstance();
-	if (!pInst->Create(this, fLoop, iVolume, pObj, 0, iCustomFalloffDistance)) { delete pInst; return NULL; }
+	if (!pInst->Create(this, fLoop, iVolume, pObj, 0, iCustomFalloffDistance)) { delete pInst; return nullptr; }
 	// add to list
 	AddInst(pInst);
 	// return
@@ -133,7 +133,7 @@ C4SoundInstance *C4SoundEffect::GetInstance(C4Object *pObj)
 	for (C4SoundInstance *pInst = FirstInst; pInst; pInst = pInst->pNext)
 		if (pInst->getObj() == pObj)
 			return pInst;
-	return NULL;
+	return nullptr;
 }
 
 void C4SoundEffect::ClearPointers(C4Object *pObj)
@@ -183,8 +183,8 @@ void C4SoundEffect::RemoveInst(C4SoundInstance *pInst)
 }
 
 C4SoundInstance::C4SoundInstance() :
-	pEffect(NULL),
-	pNext(NULL),
+	pEffect(nullptr),
+	pNext(nullptr),
 	iChannel(-1),
 	iPan(0), iVolume(0) {}
 
@@ -367,7 +367,7 @@ void C4SoundInstance::ClearPointers(C4Object *pDelete)
 		// otherwise: set volume by last position
 		else
 			SetVolumeByPos(pObj->x, pObj->y);
-		pObj = NULL;
+		pObj = nullptr;
 	}
 }
 
@@ -378,7 +378,7 @@ bool C4SoundInstance::Inside(int32_t iX, int32_t iY, int32_t iRad)
 }
 
 C4SoundSystem::C4SoundSystem() :
-	FirstSound(NULL) {}
+	FirstSound(nullptr) {}
 
 C4SoundSystem::~C4SoundSystem() {}
 
@@ -415,13 +415,13 @@ void C4SoundSystem::ClearEffects()
 		next = csfx->Next;
 		delete csfx;
 	}
-	FirstSound = NULL;
+	FirstSound = nullptr;
 }
 
 void C4SoundSystem::Execute()
 {
 	// Sound effect statistics & unload check
-	C4SoundEffect *csfx, *next = NULL, *prev = NULL;
+	C4SoundEffect *csfx, *next = nullptr, *prev = nullptr;
 	for (csfx = FirstSound; csfx; csfx = next)
 	{
 		next = csfx->Next;
@@ -458,13 +458,13 @@ C4SoundEffect *C4SoundSystem::AddEffect(const char *szSoundName)
 {
 	C4SoundEffect *nsfx;
 	// Allocate new bank entry
-	if (!(nsfx = new C4SoundEffect)) return NULL;
+	if (!(nsfx = new C4SoundEffect)) return nullptr;
 	// Load sound to entry
 	C4GRP_DISABLE_REWINDWARN // dynamic load; must rewind here :(
 		if (!nsfx->Load(szSoundName, SoundFile, FALSE))
 			if (!nsfx->Load(szSoundName, Game.ScenarioFile, FALSE))
 			{
-				C4GRP_ENABLE_REWINDWARN delete nsfx; return NULL;
+				C4GRP_ENABLE_REWINDWARN delete nsfx; return nullptr;
 			}
 	C4GRP_ENABLE_REWINDWARN
 		// Add sound to bank
@@ -495,7 +495,7 @@ C4SoundEffect *C4SoundSystem::GetEffect(const char *szSndName)
 				// Search bank loaded sounds
 				if (!(iNumber = EffectInBank(szName)))
 					// None found: failure
-					return NULL;
+					return nullptr;
 		// Insert index to name
 		iNumber = BoundBy(1 + SafeRandom(iNumber), 1, 9);
 		SReplaceChar(szName, '?', '0' + iNumber);
@@ -507,7 +507,7 @@ C4SoundEffect *C4SoundSystem::GetEffect(const char *szSndName)
 	// Sound not in bank, try add
 	if (!pSfx)
 		if (!(pSfx = AddEffect(szName)))
-			return NULL;
+			return nullptr;
 	return pSfx;
 }
 
@@ -536,7 +536,7 @@ C4SoundInstance *C4SoundSystem::FindInstance(const char *szSndName, C4Object *pO
 			C4SoundInstance *pInst = csfx->GetInstance(pObj);
 			if (pInst) return pInst;
 		}
-	return NULL;
+	return nullptr;
 }
 
 // LoadEffects will load all sound effects of all known sound types (i.e. *.wav and *.ogg)
@@ -576,7 +576,7 @@ int32_t C4SoundSystem::LoadEffects(C4Group &hGroup, BOOL fStatic)
 int32_t C4SoundSystem::RemoveEffect(const char *szFilename)
 {
 	int32_t iResult = 0;
-	C4SoundEffect *pNext, *pPrev = NULL;
+	C4SoundEffect *pNext, *pPrev = nullptr;
 	for (C4SoundEffect *pSfx = FirstSound; pSfx; pSfx = pNext)
 	{
 		pNext = pSfx->Next;

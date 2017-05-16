@@ -75,7 +75,7 @@ void C4MusicFileMID::Stop(int fadeout_ms)
 	{
 		FMUSIC_StopSong(mod);
 		FMUSIC_FreeSong(mod);
-		mod = NULL;
+		mod = nullptr;
 	}
 	RemTempFile();
 }
@@ -94,7 +94,7 @@ void C4MusicFileMID::SetVolume(int iLevel)
 /* MOD */
 
 C4MusicFileMOD::C4MusicFileMOD()
-	: Data(NULL), mod(NULL) {}
+	: Data(nullptr), mod(nullptr) {}
 
 C4MusicFileMOD::~C4MusicFileMOD()
 {
@@ -130,9 +130,9 @@ void C4MusicFileMOD::Stop(int fadeout_ms)
 	{
 		FMUSIC_StopSong(mod);
 		FMUSIC_FreeSong(mod);
-		mod = NULL;
+		mod = nullptr;
 	}
-	if (Data) { delete[] Data; Data = NULL; }
+	if (Data) { delete[] Data; Data = nullptr; }
 }
 
 void C4MusicFileMOD::CheckIfPlaying()
@@ -149,7 +149,7 @@ void C4MusicFileMOD::SetVolume(int iLevel)
 /* MP3 */
 
 C4MusicFileMP3::C4MusicFileMP3()
-	: Data(NULL), stream(NULL), Channel(-1) {}
+	: Data(nullptr), stream(nullptr), Channel(-1) {}
 
 C4MusicFileMP3::~C4MusicFileMP3()
 {
@@ -189,9 +189,9 @@ void C4MusicFileMP3::Stop(int fadeout_ms)
 	if (stream)
 	{
 		FSOUND_Stream_Close(stream);
-		stream = NULL;
+		stream = nullptr;
 	}
-	if (Data) { delete[] Data; Data = NULL; }
+	if (Data) { delete[] Data; Data = nullptr; }
 }
 
 void C4MusicFileMP3::CheckIfPlaying()
@@ -208,7 +208,7 @@ void C4MusicFileMP3::SetVolume(int iLevel)
 /* Ogg Vobis */
 
 C4MusicFileOgg::C4MusicFileOgg()
-	: Data(NULL), stream(NULL), Channel(-1), Playing(FALSE) {}
+	: Data(nullptr), stream(nullptr), Channel(-1), Playing(FALSE) {}
 
 C4MusicFileOgg::~C4MusicFileOgg()
 {
@@ -256,9 +256,9 @@ void C4MusicFileOgg::Stop(int fadeout_ms)
 	if (stream)
 	{
 		FSOUND_Stream_Close(stream);
-		stream = NULL;
+		stream = nullptr;
 	}
-	if (Data) { delete[] Data; Data = NULL; }
+	if (Data) { delete[] Data; Data = nullptr; }
 	Playing = FALSE;
 }
 
@@ -278,8 +278,8 @@ void C4MusicFileOgg::SetVolume(int iLevel)
 #ifdef HAVE_LIBSDL_MIXER
 
 C4MusicFileSDL::C4MusicFileSDL() :
-	Data(NULL),
-	Music(NULL) {}
+	Data(nullptr),
+	Music(nullptr) {}
 
 C4MusicFileSDL::~C4MusicFileSDL()
 {
@@ -352,13 +352,13 @@ void C4MusicFileSDL::Stop(int fadeout_ms)
 	if (Music)
 	{
 		Mix_FreeMusic(Music);
-		Music = NULL;
+		Music = nullptr;
 	}
 	RemTempFile();
 	if (Data)
 	{
 		delete[] Data;
-		Data = NULL;
+		Data = nullptr;
 	}
 }
 

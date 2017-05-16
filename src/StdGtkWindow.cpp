@@ -13,7 +13,7 @@
 /* CStdGtkWindow */
 
 CStdGtkWindow::CStdGtkWindow() :
-	CStdWindow(), window(NULL) {}
+	CStdWindow(), window(nullptr) {}
 
 CStdGtkWindow::~CStdGtkWindow()
 {
@@ -68,7 +68,7 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 
 	if (HideCursor)
 	{
-		gdk_window_set_cursor(window->window, NULL);
+		gdk_window_set_cursor(window->window, nullptr);
 	}
 
 	// Make sure the window is shown and ready to be rendered into,
@@ -80,7 +80,7 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 
 void CStdGtkWindow::Clear()
 {
-	if (window != NULL)
+	if (window != nullptr)
 	{
 		g_signal_handler_disconnect(window, handlerDestroy);
 		gtk_widget_destroy(window);
@@ -90,7 +90,7 @@ void CStdGtkWindow::Clear()
 	// Avoid that the base class tries to free these
 	wnd = renderwnd = 0;
 
-	window = NULL;
+	window = nullptr;
 	Active = false;
 
 	// We must free it here since we do not call CStdWindow::Clear()
@@ -107,7 +107,7 @@ void CStdGtkWindow::OnDestroyStatic(GtkWidget *widget, gpointer data)
 
 	g_signal_handler_disconnect(wnd->window, wnd->handlerDestroy);
 	wnd->handlerDestroy = 0;
-	wnd->window = NULL;
+	wnd->window = nullptr;
 	wnd->Active = false;
 	wnd->wnd = wnd->renderwnd = 0;
 

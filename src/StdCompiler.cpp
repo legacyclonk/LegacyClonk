@@ -319,7 +319,7 @@ void StdCompilerINIWrite::Raw(void *pData, size_t iSize, RawCompileType eType)
 
 void StdCompilerINIWrite::Begin()
 {
-	pNaming = NULL;
+	pNaming = nullptr;
 	fPutName = false;
 	iDepth = 0;
 	fInSection = false;
@@ -409,7 +409,7 @@ void StdCompilerINIWrite::PutName(bool fSection)
 // *** StdCompilerINIRead
 
 StdCompilerINIRead::StdCompilerINIRead()
-	: pNameRoot(NULL), iDepth(0), iRealDepth(0) {}
+	: pNameRoot(nullptr), iDepth(0), iRealDepth(0) {}
 
 StdCompilerINIRead::~StdCompilerINIRead()
 {
@@ -449,7 +449,7 @@ bool StdCompilerINIRead::Name(const char *szName)
 	// Save tree position, indicate success
 	pName = pNode;
 	pPos = pName->Pos;
-	pReenter = NULL;
+	pReenter = nullptr;
 	iRealDepth++;
 	return true;
 }
@@ -481,7 +481,7 @@ void StdCompilerINIRead::NameEnd(bool fBreak)
 	// Decrease depth
 	iDepth--;
 	// This is the middle of nowhere
-	pPos = NULL; pReenter = NULL;
+	pPos = nullptr; pReenter = nullptr;
 }
 
 bool StdCompilerINIRead::FollowName(const char *szName)
@@ -519,13 +519,13 @@ bool StdCompilerINIRead::Seperator(Sep eSep)
 		return Name(CurrName.getData());
 	}
 	// Position saved back from seperator mismatch?
-	if (pReenter) { pPos = pReenter; pReenter = NULL; }
+	if (pReenter) { pPos = pReenter; pReenter = nullptr; }
 	// Nothing to read?
 	if (!pPos) return false;
 	// Read (while skipping over whitespace)
 	SkipWhitespace();
 	// Seperator mismatch? Let all read attempts fail until the correct seperator is found or the naming ends.
-	if (*pPos != SeperatorToChar(eSep)) { pReenter = pPos; pPos = NULL; return false; }
+	if (*pPos != SeperatorToChar(eSep)) { pReenter = pPos; pPos = nullptr; return false; }
 	// Go over seperator, success
 	pPos++;
 	return true;
@@ -534,7 +534,7 @@ bool StdCompilerINIRead::Seperator(Sep eSep)
 void StdCompilerINIRead::NoSeperator()
 {
 	// Position saved back from seperator mismatch?
-	if (pReenter) { pPos = pReenter; pReenter = NULL; }
+	if (pReenter) { pPos = pReenter; pReenter = nullptr; }
 }
 
 int StdCompilerINIRead::NameCount(const char *szName)
@@ -683,7 +683,7 @@ void StdCompilerINIRead::Begin()
 	CreateNameTree();
 	// Start must be inside a section
 	iDepth = iRealDepth = 0;
-	pPos = NULL; pReenter = NULL;
+	pPos = nullptr; pReenter = nullptr;
 }
 
 void StdCompilerINIRead::End()
@@ -760,7 +760,7 @@ void StdCompilerINIRead::FreeNameTree()
 {
 	// free all nodes
 	FreeNameNode(pNameRoot);
-	pName = pNameRoot = NULL;
+	pName = pNameRoot = nullptr;
 }
 
 void StdCompilerINIRead::FreeNameNode(NameNode *pDelNode)
@@ -779,7 +779,7 @@ void StdCompilerINIRead::FreeNameNode(NameNode *pDelNode)
 			else
 			{
 				pNode = pNode->Parent;
-				if (pNode) pNode->FirstChild = NULL;
+				if (pNode) pNode->FirstChild = nullptr;
 			}
 			delete pDelete;
 		}

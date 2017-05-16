@@ -25,7 +25,7 @@
 class StdCompiler
 {
 public:
-	StdCompiler() : pWarnCB(NULL)
+	StdCompiler() : pWarnCB(nullptr)
 #ifdef STDCOMPILER_EXCEPTION_WORKAROUND
 		, fFailSafe(false), fFail(false)
 #endif
@@ -74,7 +74,7 @@ public:
 	virtual bool Default(const char *szName) { return true; }
 
 	// Return count of sub-namings. May be unimplemented.
-	virtual int NameCount(const char *szName = NULL) { assert(false); return 0; }
+	virtual int NameCount(const char *szName = nullptr) { assert(false); return 0; }
 
 	// * Seperation
 	// Some data types need seperation (note that naming makes this unnecessary).
@@ -349,7 +349,7 @@ public:
 
 	// Naming
 	virtual bool Name(const char *szName) { return false; }
-	virtual int NameCount(const char *szName = NULL) { return 0; }
+	virtual int NameCount(const char *szName = nullptr) { return 0; }
 
 	// Data readers
 	virtual void DWord(int32_t &rInt) {}
@@ -562,7 +562,7 @@ public:
 	virtual void NoSeperator();
 
 	// Counters
-	virtual int NameCount(const char *szName = NULL);
+	virtual int NameCount(const char *szName = nullptr);
 
 	// Data writers
 	virtual void DWord(int32_t &rInt);
@@ -602,8 +602,8 @@ protected:
 		// Name number in parent map
 		const char *Pos;
 
-		NameNode(NameNode *pParent = NULL)
-			: Parent(pParent), PrevChild(NULL), FirstChild(NULL), NextChild(NULL), LastChild(NULL),
+		NameNode(NameNode *pParent = nullptr)
+			: Parent(pParent), PrevChild(nullptr), FirstChild(nullptr), NextChild(nullptr), LastChild(nullptr),
 			Indent(-1) {}
 	};
 	NameNode *pNameRoot, *pName;

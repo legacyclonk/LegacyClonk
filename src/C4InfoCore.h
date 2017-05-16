@@ -45,13 +45,13 @@ public:
 
 public:
 	void Default();
-	void PromotionUpdate(int32_t iRank, bool fUpdateTrainablePhysicals = false, class C4Def *pTrainDef = NULL);
+	void PromotionUpdate(int32_t iRank, bool fUpdateTrainablePhysicals = false, class C4Def *pTrainDef = nullptr);
 	void CompileFunc(StdCompiler *pComp);
 
 	// conversion of physical names to member pointers and vice versa
 	static bool GetOffsetByName(const char *szPhysicalName, Offset *pmpiOut);
 	static const char *GetNameByOffset(Offset mpiOff);
-	const char *GetNameByIndex(int32_t iIdx, Offset *pmpiOut = NULL);
+	const char *GetNameByIndex(int32_t iIdx, Offset *pmpiOut = nullptr);
 
 	// comparison
 	bool operator==(const C4PhysicalInfo &cmp) const;
@@ -70,7 +70,7 @@ public:
 	int32_t PrevVal;
 	C4PhysicalInfo::Offset mpiOffset;
 
-	C4PhysicalChange() : PrevVal(0), mpiOffset(NULL) {}
+	C4PhysicalChange() : PrevVal(0), mpiOffset(nullptr) {}
 	C4PhysicalChange(int32_t iPrevVal, C4PhysicalInfo::Offset mpiOffset)
 		: PrevVal(iPrevVal), mpiOffset(mpiOffset) {}
 	C4PhysicalChange(const C4PhysicalChange &rCpy) : PrevVal(rCpy.PrevVal), mpiOffset(rCpy.mpiOffset) {}
@@ -147,7 +147,7 @@ public:
 public:
 	BOOL Save(C4Group &hGroup, class C4DefList *pDefs);
 	BOOL Load(C4Group &hGroup);
-	void Default(C4ID n_id = C4ID_None, class C4DefList *pDefs = NULL, const char *cpNames = NULL);
+	void Default(C4ID n_id = C4ID_None, class C4DefList *pDefs = nullptr, const char *cpNames = nullptr);
 	void Promote(int32_t iRank, C4RankSystem &rRanks, bool fForceRankName);
 	bool GetNextRankInfo(C4RankSystem &rDefaultRanks, int32_t *piNextRankExp, StdStrBuf *psNextRankName);
 	void CompileFunc(StdCompiler *pComp);
@@ -204,7 +204,7 @@ public:
 	int32_t PrefAutoContextMenu; // enable automatically opened context menus in structures
 
 public:
-	void Default(C4RankSystem *pRanks = NULL);
+	void Default(C4RankSystem *pRanks = nullptr);
 	BOOL Load(C4Group &hGroup);
 	BOOL Save(C4Group &hGroup);
 	static DWORD GetPrefColorValue(int32_t iPrefColor);

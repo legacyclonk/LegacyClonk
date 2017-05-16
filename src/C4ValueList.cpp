@@ -8,16 +8,16 @@
 #endif
 
 C4ValueList::C4ValueList()
-	: iSize(0), pData(NULL) {}
+	: iSize(0), pData(nullptr) {}
 
 C4ValueList::C4ValueList(int32_t inSize)
-	: iSize(0), pData(NULL)
+	: iSize(0), pData(nullptr)
 {
 	SetSize(inSize);
 }
 
 C4ValueList::C4ValueList(const C4ValueList &ValueList2)
-	: iSize(0), pData(NULL)
+	: iSize(0), pData(nullptr)
 {
 	SetSize(ValueList2.GetSize());
 	for (int32_t i = 0; i < iSize; i++)
@@ -26,7 +26,7 @@ C4ValueList::C4ValueList(const C4ValueList &ValueList2)
 
 C4ValueList::~C4ValueList()
 {
-	delete[] pData; pData = NULL;
+	delete[] pData; pData = nullptr;
 	iSize = 0;
 }
 
@@ -89,7 +89,7 @@ C4Value &C4ValueList::GetItem(int32_t iElem)
 	// out-of-memory? This might not be catched, but it's better than a segfault
 	if (iElem >= iSize)
 #ifdef C4ENGINE
-		throw new C4AulExecError(NULL, "out of memory");
+		throw new C4AulExecError(nullptr, "out of memory");
 #else
 		return pData[0]; // must return something here...
 #endif
@@ -137,7 +137,7 @@ bool C4ValueList::operator==(const C4ValueList &IntList2) const
 
 void C4ValueList::Reset()
 {
-	delete[] pData; pData = NULL;
+	delete[] pData; pData = nullptr;
 	iSize = 0;
 }
 

@@ -39,7 +39,7 @@ protected:
 public:
 	C4VectorFont *pNext; // next font
 
-	C4VectorFont() : pFont(NULL), fIsTempFile(false), pNext(NULL) { *FileName = 0; }
+	C4VectorFont() : pFont(nullptr), fIsTempFile(false), pNext(nullptr) { *FileName = 0; }
 	~C4VectorFont(); // dtor - releases font and deletes temp file
 
 	bool Init(C4Group &hGrp, const char *szFilename, C4Config &rCfg); // load font from group
@@ -60,7 +60,7 @@ public:
 	enum FontType { C4FT_Log, C4FT_MainSmall, C4FT_Main, C4FT_Caption, C4FT_Title };
 
 public:
-	C4FontLoader() : pVectorFonts(NULL) {}
+	C4FontLoader() : pVectorFonts(nullptr) {}
 	~C4FontLoader() { Clear(); }
 
 	void Clear(); // clear loaded fonts

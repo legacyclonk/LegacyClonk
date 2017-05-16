@@ -67,7 +67,7 @@ public:
 	void RemoveProc(StdSchedulerProc *pProc);
 
 	// event queue
-	bool PushEvent(C4InteractiveEventType eEventType, void *pData = NULL);
+	bool PushEvent(C4InteractiveEventType eEventType, void *pData = nullptr);
 	void ProcessEvents(); // by main thread
 
 	// special events
@@ -82,7 +82,7 @@ public:
 
 	void ClearCallback(C4InteractiveEventType eEvent, Callback *pnNetworkCallback)
 	{
-		if (pCallbacks[eEvent] == pnNetworkCallback) pCallbacks[eEvent] = NULL;
+		if (pCallbacks[eEvent] == pnNetworkCallback) pCallbacks[eEvent] = nullptr;
 	}
 
 private:

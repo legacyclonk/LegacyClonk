@@ -44,7 +44,7 @@ void C4EditCursor::Execute()
 	case C4CNS_ModeEdit:
 		// Hold selection
 		if (Hold)
-			EMMoveObject(EMMO_Move, 0, 0, NULL, &Selection);
+			EMMoveObject(EMMO_Move, 0, 0, nullptr, &Selection);
 		break;
 
 	case C4CNS_ModeDraw:
@@ -101,7 +101,7 @@ BOOL C4EditCursor::Init()
 
 void C4EditCursor::ClearPointers(C4Object *pObj)
 {
-	if (Target == pObj) Target = NULL;
+	if (Target == pObj) Target = nullptr;
 	if (Selection.ClearPointers(pObj))
 		OnSelectionChanged();
 }
@@ -124,10 +124,10 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, WORD wKeyFlags)
 		// Shift always indicates a target outside the current selection
 		else
 		{
-			Target = ((wKeyFlags & MK_SHIFT) && Selection.Last) ? Selection.Last->Obj : NULL;
+			Target = ((wKeyFlags & MK_SHIFT) && Selection.Last) ? Selection.Last->Obj : nullptr;
 			do
 			{
-				Target = Game.FindObject(0, X, Y, 0, 0, OCF_NotContained, NULL, NULL, NULL, NULL, ANY_OWNER, Target);
+				Target = Game.FindObject(0, X, Y, 0, 0, OCF_NotContained, nullptr, nullptr, nullptr, nullptr, ANY_OWNER, Target);
 			} while ((wKeyFlags & MK_SHIFT) && Target && Selection.GetLink(Target));
 		}
 		break;
@@ -221,7 +221,7 @@ BOOL C4EditCursor::LeftButtonDown(BOOL fControl)
 		break;
 	}
 
-	DropTarget = NULL;
+	DropTarget = nullptr;
 
 	OnSelectionChanged();
 	return TRUE;
@@ -287,7 +287,7 @@ BOOL C4EditCursor::LeftButtonUp()
 	Hold = FALSE;
 	DragFrame = FALSE;
 	DragLine = FALSE;
-	DropTarget = NULL;
+	DropTarget = nullptr;
 	// Update
 	UpdateStatusBar();
 	return TRUE;
@@ -317,7 +317,7 @@ BOOL SetMenuItemText(HMENU hMenu, WORD id, const char *szText)
 
 BOOL C4EditCursor::RightButtonUp()
 {
-	Target = NULL;
+	Target = nullptr;
 
 	DoContextMenu();
 
@@ -329,7 +329,7 @@ BOOL C4EditCursor::RightButtonUp()
 bool C4EditCursor::Delete()
 {
 	if (!EditingOK()) return FALSE;
-	EMMoveObject(EMMO_Remove, 0, 0, NULL, &Selection);
+	EMMoveObject(EMMO_Remove, 0, 0, nullptr, &Selection);
 	if (Game.Control.isCtrlHost())
 	{
 		OnSelectionChanged();
@@ -354,7 +354,7 @@ BOOL C4EditCursor::OpenPropTools()
 
 BOOL C4EditCursor::Duplicate()
 {
-	EMMoveObject(EMMO_Duplicate, 0, 0, NULL, &Selection);
+	EMMoveObject(EMMO_Duplicate, 0, 0, nullptr, &Selection);
 	return TRUE;
 }
 
@@ -423,7 +423,7 @@ void C4EditCursor::DrawSelectMark(C4Facet &cgo)
 
 void C4EditCursor::MoveSelection(int32_t iXOff, int32_t iYOff)
 {
-	EMMoveObject(EMMO_Move, iXOff, iYOff, NULL, &Selection);
+	EMMoveObject(EMMO_Move, iXOff, iYOff, nullptr, &Selection);
 }
 
 void C4EditCursor::FrameSelection()
@@ -441,7 +441,7 @@ void C4EditCursor::FrameSelection()
 
 BOOL C4EditCursor::In(const char *szText)
 {
-	EMMoveObject(EMMO_Script, 0, 0, NULL, &Selection, szText);
+	EMMoveObject(EMMO_Script, 0, 0, nullptr, &Selection, szText);
 	return TRUE;
 }
 
@@ -450,9 +450,9 @@ void C4EditCursor::Default()
 	fAltWasDown = false;
 	Mode = C4CNS_ModePlay;
 	X = Y = X2 = Y2 = 0;
-	Target = DropTarget = NULL;
+	Target = DropTarget = nullptr;
 #ifdef _WIN32
-	hMenu = NULL;
+	hMenu = nullptr;
 #endif
 	Hold = DragFrame = DragLine = FALSE;
 	Selection.Default();
@@ -462,7 +462,7 @@ void C4EditCursor::Default()
 void C4EditCursor::Clear()
 {
 #ifdef _WIN32
-	if (hMenu) DestroyMenu(hMenu); hMenu = NULL;
+	if (hMenu) DestroyMenu(hMenu); hMenu = nullptr;
 #endif
 	Selection.Clear();
 }
@@ -577,7 +577,7 @@ BOOL C4EditCursor::DoContextMenu()
 		TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON | TPM_NONOTIFY,
 		point.x, point.y, 0,
 		Console.hWindow,
-		NULL);
+		nullptr);
 	switch (iItem)
 	{
 	case IDM_VIEWPORT_DELETE:     Delete();        break;
@@ -594,7 +594,7 @@ BOOL C4EditCursor::DoContextMenu()
 	GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(itemProperties)));
 	gtk_label_set_text(label, LoadResStrUtf8((Mode == C4CNS_ModeEdit) ? "IDS_CNS_PROPERTIES" : "IDS_CNS_TOOLS").getData());
 
-	gtk_menu_popup(GTK_MENU(menuContext), NULL, NULL, NULL, NULL, 3, 0);
+	gtk_menu_popup(GTK_MENU(menuContext), nullptr, nullptr, nullptr, nullptr, 3, 0);
 #endif
 	return TRUE;
 }
@@ -609,14 +609,14 @@ void C4EditCursor::GrabContents()
 	Hold = TRUE;
 
 	// Exit all objects
-	EMMoveObject(EMMO_Exit, 0, 0, NULL, &Selection);
+	EMMoveObject(EMMO_Exit, 0, 0, nullptr, &Selection);
 }
 
 void C4EditCursor::UpdateDropTarget(WORD wKeyFlags)
 {
 	C4Object *cobj; C4ObjectLink *clnk;
 
-	DropTarget = NULL;
+	DropTarget = nullptr;
 
 	if (wKeyFlags & MK_CONTROL)
 		if (Selection.GetObject())
@@ -696,7 +696,7 @@ void C4EditCursor::ApplyToolPicker()
 void C4EditCursor::EMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList *pObjs, const char *szScript)
 {
 	// construct object list
-	int32_t iObjCnt = 0; int32_t *pObjIDs = NULL;
+	int32_t iObjCnt = 0; int32_t *pObjIDs = nullptr;
 	if (pObjs && (iObjCnt = pObjs->ObjectCount()))
 	{
 		pObjIDs = new int32_t[iObjCnt];

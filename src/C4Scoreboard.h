@@ -59,7 +59,7 @@ protected:
 	friend class C4ScoreboardDlg;
 
 public:
-	C4Scoreboard() : iRows(0), iCols(0), pEntries(NULL), pDlg(NULL), iDlgShow(0) {}
+	C4Scoreboard() : iRows(0), iCols(0), pEntries(nullptr), pDlg(nullptr), iDlgShow(0) {}
 	~C4Scoreboard() { Clear(); }
 
 	void Clear();
@@ -92,7 +92,7 @@ public:
 	~C4ScoreboardDlg();
 
 protected:
-	void InvalidateRows() { delete[] piColWidths; piColWidths = NULL; }
+	void InvalidateRows() { delete[] piColWidths; piColWidths = nullptr; }
 	void Update(); // update row widths and own size and caption
 
 	virtual bool DoPlacement(C4GUI::Screen *pOnScreen, const C4Rect &rPreferredDlgRect);

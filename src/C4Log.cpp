@@ -16,7 +16,7 @@
 #include <share.h>
 #endif
 
-FILE *C4LogFile = NULL;
+FILE *C4LogFile = nullptr;
 time_t C4LogStartTime;
 StdStrBuf sLogFileName;
 
@@ -43,7 +43,7 @@ BOOL OpenLog()
 BOOL CloseLog()
 {
 	// close
-	if (C4LogFile) fclose(C4LogFile); C4LogFile = NULL;
+	if (C4LogFile) fclose(C4LogFile); C4LogFile = nullptr;
 	// ok
 	return true;
 }

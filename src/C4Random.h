@@ -15,7 +15,7 @@ extern unsigned int RandomHold;
 inline void FixedRandom(DWORD dwSeed)
 {
 	// for SafeRandom
-	srand((unsigned)time(NULL));
+	srand((unsigned)time(nullptr));
 	RandomHold = dwSeed;
 	RandomCount = 0;
 }

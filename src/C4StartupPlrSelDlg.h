@@ -34,7 +34,7 @@ private:
 		StdStrBuf Filename; // file info was loaded from
 
 	public:
-		ListItem(C4StartupPlrSelDlg *pForDlg, C4GUI::ListBox *pForListBox, C4GUI::Element *pInsertBeforeElement = NULL, bool fActivated = false);
+		ListItem(C4StartupPlrSelDlg *pForDlg, C4GUI::ListBox *pForListBox, C4GUI::Element *pInsertBeforeElement = nullptr, bool fActivated = false);
 		virtual ~ListItem();
 
 	protected:
@@ -89,7 +89,7 @@ public:
 		bool fHasCustomIcon; // set for players with a BigIcon.png
 
 	public:
-		PlayerListItem(C4StartupPlrSelDlg *pForDlg, C4GUI::ListBox *pForListBox, C4GUI::Element *pInsertBeforeElement = NULL, bool fActivated = false);
+		PlayerListItem(C4StartupPlrSelDlg *pForDlg, C4GUI::ListBox *pForListBox, C4GUI::Element *pInsertBeforeElement = nullptr, bool fActivated = false);
 		~PlayerListItem() {}
 
 		void Load(const StdStrBuf &rsFilename); // may throw LoadError
@@ -178,7 +178,7 @@ private:
 	void UpdatePlayerList(); // refill pPlrListBox with players in player folder, or with crew in selected player
 	void UpdateSelection();
 	void OnSelChange(class C4GUI::Element *pEl) { UpdateSelection(); }
-	void OnSelDblClick(class C4GUI::Element *pEl) { C4GUI::GUISound("Click"); OnPropertyBtn(NULL); }
+	void OnSelDblClick(class C4GUI::Element *pEl) { C4GUI::GUISound("Click"); OnPropertyBtn(nullptr); }
 	void UpdateActivatedPlayers(); // update Config.General.Participants by currently activated players
 	void SelectItem(const StdStrBuf &Filename, bool fActivate); // find item by filename and select (and activate it, if desired)
 
@@ -208,18 +208,18 @@ protected:
 	virtual bool OnEnter() { return false; } // Enter ignored
 	virtual bool OnEscape() { DoBack(); return true; }
 	bool KeyBack()          { DoBack(); return true; }
-	bool KeyProperties() { OnPropertyBtn(NULL); return true; }
-	bool KeyCrew()       { OnCrewBtn    (NULL); return true; }
-	bool KeyDelete()     { OnDelBtn     (NULL); return true; }
-	bool KeyNew()        { OnNewBtn     (NULL); return true; }
+	bool KeyProperties() { OnPropertyBtn(nullptr); return true; }
+	bool KeyCrew()       { OnCrewBtn    (nullptr); return true; }
+	bool KeyDelete()     { OnDelBtn     (nullptr); return true; }
+	bool KeyNew()        { OnNewBtn     (nullptr); return true; }
 
 	void OnNewBtn(C4GUI::Control *btn);
 	void OnActivateBtn(C4GUI::Control *btn);
 	void OnPropertyBtn(C4GUI::Control *btn);
-	void OnPropertyCtx(C4GUI::Element *el) { OnPropertyBtn(NULL); }
+	void OnPropertyCtx(C4GUI::Element *el) { OnPropertyBtn(nullptr); }
 	void OnCrewBtn(C4GUI::Control *btn);
 	void OnDelBtn(C4GUI::Control *btn);
-	void OnDelCtx(C4GUI::Element *el) { OnDelBtn(NULL); }
+	void OnDelCtx(C4GUI::Element *el) { OnDelBtn(nullptr); }
 	void OnDelBtnConfirm(ListItem *pSel);
 	void OnBackBtn(C4GUI::Control *btn) { DoBack(); }
 
@@ -231,7 +231,7 @@ public:
 class C4StartupPlrPropertiesDlg : public C4GUI::Dialog
 {
 protected:
-	C4StartupPlrSelDlg *pMainDlg; // may be NULL if shown as creation dialog in main menu!
+	C4StartupPlrSelDlg *pMainDlg; // may be nullptr if shown as creation dialog in main menu!
 	C4StartupPlrSelDlg::PlayerListItem *pForPlayer;
 	C4GUI::Edit *pNameEdit; // player name edit box
 	C4GUI::Picture *pClrPreview;
@@ -271,7 +271,7 @@ private:
 	void UpdateBigIcon();
 
 	bool SetNewPicture(C4Surface &srcSfc, C4FacetExSurface *trgFct, int32_t iMaxSize, bool fColorize);
-	void SetNewPicture(const char *szFromFilename, bool fSetPicture, bool fSetBigIcon); // set new picture/bigicon by loading and scaling if necessary. If szFromFilename==NULL, clear picture/bigicon
+	void SetNewPicture(const char *szFromFilename, bool fSetPicture, bool fSetBigIcon); // set new picture/bigicon by loading and scaling if necessary. If szFromFilename==nullptr, clear picture/bigicon
 
 public:
 	C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerListItem *pForPlayer, C4StartupPlrSelDlg *pMainDlg);

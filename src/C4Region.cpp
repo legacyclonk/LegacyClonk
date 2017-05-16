@@ -26,7 +26,7 @@ void C4Region::Default()
 	Com = RightCom = MoveOverCom = HoldCom = COM_None;
 	Data = 0;
 	id = C4ID_None;
-	Target = NULL;
+	Target = nullptr;
 }
 
 void C4Region::Clear() {}
@@ -43,7 +43,7 @@ C4RegionList::~C4RegionList()
 
 void C4RegionList::Default()
 {
-	First = NULL;
+	First = nullptr;
 	AdjustX = AdjustY = 0;
 }
 
@@ -51,7 +51,7 @@ void C4RegionList::Clear()
 {
 	C4Region *pRgn, *pNext;
 	for (pRgn = First; pRgn; pRgn = pNext) { pNext = pRgn->Next; delete pRgn; }
-	First = NULL;
+	First = nullptr;
 }
 
 BOOL C4RegionList::Add(int iX, int iY, int iWdt, int iHgt, const char *szCaption,
@@ -97,12 +97,12 @@ C4Region *C4RegionList::Find(int iX, int iY)
 		if (Inside(iX - pRgn->X, 0, pRgn->Wdt - 1))
 			if (Inside(iY - pRgn->Y, 0, pRgn->Hgt - 1))
 				return pRgn;
-	return NULL;
+	return nullptr;
 }
 
 void C4Region::ClearPointers(C4Object *pObj)
 {
-	if (Target == pObj) Target = NULL;
+	if (Target == pObj) Target = nullptr;
 }
 
 void C4RegionList::ClearPointers(C4Object *pObj)

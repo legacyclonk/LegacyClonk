@@ -104,7 +104,7 @@ void C4Value::Set(C4V_Data nData, C4V_Type nType)
 	AddDataRef();
 
 	// clean up
-	DelDataRef(oData, oType, oHasBaseArray ? NULL : oNextRef, oHasBaseArray ? oBaseArray : NULL);
+	DelDataRef(oData, oType, oHasBaseArray ? nullptr : oNextRef, oHasBaseArray ? oBaseArray : nullptr);
 }
 
 void C4Value::Set0()
@@ -117,7 +117,7 @@ void C4Value::Set0()
 	Type = C4V_Any;
 
 	// clean up (save even if Data was 0 before)
-	DelDataRef(oData, oType, HasBaseArray ? NULL : NextRef, HasBaseArray ? BaseArray : NULL);
+	DelDataRef(oData, oType, HasBaseArray ? nullptr : NextRef, HasBaseArray ? BaseArray : nullptr);
 }
 
 void C4Value::Move(C4Value *nValue)
@@ -133,7 +133,7 @@ void C4Value::Move(C4Value *nValue)
 	nValue->FirstRef = FirstRef;
 
 	// delete usself
-	FirstRef = NULL;
+	FirstRef = nullptr;
 	Set(0);
 }
 

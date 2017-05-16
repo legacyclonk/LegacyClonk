@@ -30,8 +30,8 @@ const char *SGetRelativePath(const char *strPath)
 }
 
 C4MusicSystem::C4MusicSystem() :
-	PlayMusicFile(NULL),
-	Songs(NULL),
+	PlayMusicFile(nullptr),
+	Songs(nullptr),
 	SongCount(0),
 	Volume(100) {}
 
@@ -155,7 +155,7 @@ bool C4MusicSystem::InitForScenario(C4Group &hGroup)
 		LogF(LoadResStr("IDS_PRC_LOCALMUSIC"), SGetRelativePath(MusicDir.getData()));
 	}
 	// check for music folders in group set
-	C4Group *pMusicFolder = NULL;
+	C4Group *pMusicFolder = nullptr;
 	while (pMusicFolder = Game.GroupSet.FindGroup(C4GSCnt_Music, pMusicFolder))
 	{
 		if (!fLocalMusic)
@@ -184,7 +184,7 @@ void C4MusicSystem::Load(const char *szFile)
 {
 	// safety
 	if (!szFile || !*szFile) return;
-	C4MusicFile *NewSong = NULL;
+	C4MusicFile *NewSong = nullptr;
 	// get extension
 #ifdef USE_FMOD
 	const char *szExt = GetExtension(szFile);
@@ -219,7 +219,7 @@ void C4MusicSystem::Load(const char *szFile)
 	C4MusicFile *pCurr = Songs;
 	while (pCurr && pCurr->pNext) pCurr = pCurr->pNext;
 	if (pCurr) pCurr->pNext = NewSong; else Songs = NewSong;
-	NewSong->pNext = NULL;
+	NewSong->pNext = nullptr;
 	// count songs
 	SongCount++;
 }
@@ -227,7 +227,7 @@ void C4MusicSystem::Load(const char *szFile)
 void C4MusicSystem::LoadDir(const char *szPath)
 {
 	char Path[_MAX_FNAME + 1], File[_MAX_FNAME + 1];
-	C4Group *pDirGroup = NULL;
+	C4Group *pDirGroup = nullptr;
 	// split path
 	SCopy(szPath, Path, _MAX_FNAME);
 	char *pFileName = GetFilename(Path);
@@ -290,7 +290,7 @@ void C4MusicSystem::LoadMoreMusic()
 	BYTE *szMoreMusic;
 	CStdFile MoreMusicFile;
 	// load MoreMusic.txt
-	if (!MoreMusicFile.Load(Config.AtExePath(C4CFN_MoreMusic), &szMoreMusic, NULL, 1)) return;
+	if (!MoreMusicFile.Load(Config.AtExePath(C4CFN_MoreMusic), &szMoreMusic, nullptr, 1)) return;
 	// read contents
 	char *pPos = reinterpret_cast<char *>(szMoreMusic);
 	while (pPos && *pPos)
@@ -355,7 +355,7 @@ void C4MusicSystem::Execute()
 
 bool C4MusicSystem::Play(const char *szSongname, bool fLoop)
 {
-	C4MusicFile *NewFile = NULL;
+	C4MusicFile *NewFile = nullptr;
 
 	// Specified song name
 	if (szSongname && szSongname[0])
@@ -438,7 +438,7 @@ bool C4MusicSystem::Stop()
 	if (PlayMusicFile)
 	{
 		PlayMusicFile->Stop();
-		PlayMusicFile = NULL;
+		PlayMusicFile = nullptr;
 	}
 	return true;
 }

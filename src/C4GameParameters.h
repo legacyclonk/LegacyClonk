@@ -52,7 +52,7 @@ private:
 	int32_t iResCount, iResCapacity;
 
 public:
-	C4GameResList() : pResList(NULL), iResCount(0), iResCapacity(0) {}
+	C4GameResList() : pResList(nullptr), iResCount(0), iResCapacity(0) {}
 	~C4GameResList() { Clear(); }
 
 	C4GameResList &operator=(const C4GameResList &List);
@@ -137,5 +137,5 @@ public:
 	BOOL InitNetwork(C4Network2ResList *pResList);
 	BOOL Save(C4Group &hGroup, C4Scenario *pDefault);
 
-	void CompileFunc(StdCompiler *pComp, C4Scenario *pScenario = NULL);
+	void CompileFunc(StdCompiler *pComp, C4Scenario *pScenario = nullptr);
 };

@@ -79,7 +79,7 @@ namespace
 
 	GtkWidget *CreateImageFromInlinedPixbuf(const guint8 *pixbuf_data)
 	{
-		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_inline(-1, pixbuf_data, FALSE, NULL);
+		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_inline(-1, pixbuf_data, FALSE, nullptr);
 		GtkWidget *image = gtk_image_new_from_pixbuf(pixbuf);
 		gdk_pixbuf_unref(pixbuf);
 		return image;
@@ -211,8 +211,8 @@ C4ToolsDlg::C4ToolsDlg()
 {
 	Default();
 #ifdef _WIN32
-	hbmBrush = hbmLine = hbmRect = hbmFill = NULL;
-	hbmIFT = hbmNoIFT = NULL;
+	hbmBrush = hbmLine = hbmRect = hbmFill = nullptr;
+	hbmIFT = hbmNoIFT = nullptr;
 #endif
 }
 
@@ -220,11 +220,11 @@ C4ToolsDlg::~C4ToolsDlg()
 {
 	Clear();
 #ifdef WITH_DEVELOPER_MODE
-	if (hbox != NULL)
+	if (hbox != nullptr)
 	{
 		g_signal_handler_disconnect(G_OBJECT(C4DevmodeDlg::GetWindow()), handlerHide);
 		C4DevmodeDlg::RemovePage(hbox);
-		hbox = NULL;
+		hbox = nullptr;
 	}
 #endif // WITH_DEVELOPER_MODE
 
@@ -264,7 +264,7 @@ BOOL C4ToolsDlg::Open()
 	SetWindowPos(hDialog, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 	ShowWindow(hDialog, SW_SHOWNORMAL | SW_SHOWNA);
 #elif defined(WITH_DEVELOPER_MODE)
-	if (hbox == NULL)
+	if (hbox == nullptr)
 	{
 		hbox = gtk_hbox_new(FALSE, 12);
 		GtkWidget *vbox = gtk_vbox_new(FALSE, 6);
@@ -324,7 +324,7 @@ BOOL C4ToolsDlg::Open()
 		preview = gtk_image_new();
 		gtk_box_pack_start(GTK_BOX(local_hbox), preview, FALSE, FALSE, 0);
 
-		scale = gtk_vscale_new(NULL);
+		scale = gtk_vscale_new(nullptr);
 		gtk_box_pack_start(GTK_BOX(local_hbox), scale, FALSE, FALSE, 0);
 
 		vbox = gtk_vbox_new(FALSE, 6);
@@ -345,8 +345,8 @@ BOOL C4ToolsDlg::Open()
 		materials = gtk_combo_box_new_text();
 		textures =  gtk_combo_box_new_text();
 
-		gtk_combo_box_set_row_separator_func(GTK_COMBO_BOX(materials), RowSeparatorFunc, NULL, NULL);
-		gtk_combo_box_set_row_separator_func(GTK_COMBO_BOX(textures),  RowSeparatorFunc, NULL, NULL);
+		gtk_combo_box_set_row_separator_func(GTK_COMBO_BOX(materials), RowSeparatorFunc, nullptr, nullptr);
+		gtk_combo_box_set_row_separator_func(GTK_COMBO_BOX(textures),  RowSeparatorFunc, nullptr, nullptr);
 
 		gtk_box_pack_start(GTK_BOX(vbox), materials, TRUE, FALSE, 0);
 		gtk_box_pack_start(GTK_BOX(vbox), textures,  TRUE, FALSE, 0);
@@ -390,12 +390,12 @@ BOOL C4ToolsDlg::Open()
 void C4ToolsDlg::Default()
 {
 #ifdef _WIN32
-	hDialog = NULL;
+	hDialog = nullptr;
 #ifdef USE_GL
-	pGLCtx = NULL;
+	pGLCtx = nullptr;
 #endif
 #elif defined(WITH_DEVELOPER_MODE)
-	hbox = NULL;
+	hbox = nullptr;
 #endif
 	Active = false;
 	Tool = SelectedTool = C4TLS_Brush;
@@ -409,9 +409,9 @@ void C4ToolsDlg::Clear()
 {
 #ifdef _WIN32
 #ifdef USE_GL
-	delete pGLCtx; pGLCtx = NULL;
+	delete pGLCtx; pGLCtx = nullptr;
 #endif
-	if (hDialog) DestroyWindow(hDialog); hDialog = NULL;
+	if (hDialog) DestroyWindow(hDialog); hDialog = nullptr;
 #endif
 	Active = false;
 }
@@ -669,7 +669,7 @@ void C4ToolsDlg::UpdatePreview()
 		if (pGLCtx->Select())
 		{
 			pGL->Blit(sfcPreview, 0, 0, (float)iPrvWdt, (float)iPrvHgt, pGL->lpPrimary, rect.left, rect.top, iPrvWdt, iPrvHgt);
-			pGL->PageFlip(NULL, NULL, NULL);
+			pGL->PageFlip(nullptr, nullptr, nullptr);
 			pGL->GetMainCtx().Select();
 		}
 	}
@@ -791,7 +791,7 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONMODEDYNAMIC));
 	// Static: enable only if map available
 	SendDlgItemMessage(hDialog, IDC_BUTTONMODESTATIC, BM_SETSTATE, (iMode == C4LSC_Static), 0);
-	EnableWindow(GetDlgItem(hDialog, IDC_BUTTONMODESTATIC), (Game.Landscape.Map != NULL));
+	EnableWindow(GetDlgItem(hDialog, IDC_BUTTONMODESTATIC), (Game.Landscape.Map != nullptr));
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONMODESTATIC));
 	// Exact: enable always
 	SendDlgItemMessage(hDialog, IDC_BUTTONMODEEXACT, BM_SETSTATE, (iMode == C4LSC_Exact), 0);
@@ -807,7 +807,7 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 	gtk_widget_set_sensitive(landscape_dynamic, iMode == C4LSC_Dynamic);
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(landscape_static), iMode == C4LSC_Static);
-	gtk_widget_set_sensitive(landscape_static, Game.Landscape.Map != NULL);
+	gtk_widget_set_sensitive(landscape_static, Game.Landscape.Map != nullptr);
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(landscape_exact), iMode == C4LSC_Exact);
 

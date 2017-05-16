@@ -46,9 +46,9 @@ BOOL C4GraphicsSystem::RegisterViewportClass(HINSTANCE hInst)
 	WndClass.cbClsExtra = 0;
 	WndClass.cbWndExtra = 0;
 	WndClass.hInstance = hInst;
-	WndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	WndClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	WndClass.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
-	WndClass.lpszMenuName = NULL;
+	WndClass.lpszMenuName = nullptr;
 	WndClass.lpszClassName = C4ViewportClassName;
 	WndClass.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_01_C4S));
 	WndClass.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_01_C4S));
@@ -82,7 +82,7 @@ void C4GraphicsSystem::Clear()
 	// Clear upper board
 	UpperBoard.Clear();
 	// clear loader
-	if (pLoaderScreen) { delete pLoaderScreen; pLoaderScreen = NULL; }
+	if (pLoaderScreen) { delete pLoaderScreen; pLoaderScreen = nullptr; }
 	// Close viewports
 	C4Viewport *next;
 	while (FirstViewport)
@@ -91,7 +91,7 @@ void C4GraphicsSystem::Clear()
 		delete FirstViewport;
 		FirstViewport = next;
 	}
-	FirstViewport = NULL;
+	FirstViewport = nullptr;
 	// Clear video system
 	Video.Clear();
 	// No debug stuff
@@ -252,7 +252,7 @@ C4Viewport *C4GraphicsSystem::GetViewport(HWND hwnd)
 	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
 		if (cvp->pWindow->hWindow == hwnd)
 			return cvp;
-	return NULL;
+	return nullptr;
 }
 #endif
 
@@ -290,7 +290,7 @@ void C4GraphicsSystem::Default()
 {
 	UpperBoard.Default();
 	MessageBoard.Default();
-	FirstViewport = NULL;
+	FirstViewport = nullptr;
 	InvalidateBg();
 	ViewportArea.Default();
 	ShowVertices = FALSE;
@@ -310,7 +310,7 @@ void C4GraphicsSystem::Default()
 		dwGamma[iRamp + 0] = 0; dwGamma[iRamp + 1] = 0x808080; dwGamma[iRamp + 2] = 0xffffff;
 	}
 	fSetGamma = FALSE;
-	pLoaderScreen = NULL;
+	pLoaderScreen = nullptr;
 }
 
 void C4GraphicsSystem::DrawFullscreenBackground()
@@ -353,7 +353,7 @@ BOOL C4GraphicsSystem::CloseViewport(int32_t iPlayer, bool fSilent)
 {
 	// Close all matching viewports
 	int32_t iLastCount = GetViewportCount();
-	C4Viewport *next, *prev = NULL;
+	C4Viewport *next, *prev = nullptr;
 	for (C4Viewport *cvp = FirstViewport; cvp; cvp = next)
 	{
 		next = cvp->Next;
@@ -393,7 +393,7 @@ void C4GraphicsSystem::RecalculateViewports()
 	InvalidateBg();
 #ifdef _WIN32
 	// reset mouse clipping
-	ClipCursor(NULL);
+	ClipCursor(nullptr);
 #else
 	// StdWindow handles this.
 #endif
@@ -459,7 +459,7 @@ C4Viewport *C4GraphicsSystem::GetViewport(int32_t iPlayer)
 	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
 		if (cvp->Player == iPlayer || (iPlayer == NO_OWNER && cvp->fIsNoOwnerViewport))
 			return cvp;
-	return NULL;
+	return nullptr;
 }
 
 int32_t LayoutOrder(int32_t iControl)
@@ -484,7 +484,7 @@ void C4GraphicsSystem::SortViewportsByPlayerControl()
 	do
 	{
 		fSorted = TRUE;
-		for (pPrev = NULL, pView = FirstViewport; pView && (pNext = pView->Next); pView = pNext)
+		for (pPrev = nullptr, pView = FirstViewport; pView && (pNext = pView->Next); pView = pNext)
 		{
 			// Get players
 			pPlr1 = Game.Players.Get(pView->Player);
@@ -514,7 +514,7 @@ void C4GraphicsSystem::MouseMove(int32_t iButton, int32_t iX, int32_t iY, DWORD 
 	// Special: Don't pass if dragging and button is not upped
 	if (Game.pGUI && Game.pGUI->IsActive() && !Game.MouseControl.IsDragging())
 	{
-		bool fResult = Game.pGUI->MouseInput(iButton, iX, iY, dwKeyParam, NULL, pVP);
+		bool fResult = Game.pGUI->MouseInput(iButton, iX, iY, dwKeyParam, nullptr, pVP);
 		if (Game.pGUI && Game.pGUI->HasMouseFocus()) { SetMouseInGUI(true, true); return; }
 		// non-exclusive GUI: inform mouse-control about GUI-result
 		SetMouseInGUI(fResult, true);
@@ -568,7 +568,7 @@ bool C4GraphicsSystem::SaveScreenshot(bool fSaveAll)
 	// Filename
 	char szFilename[_MAX_PATH + 1];
 	int32_t iScreenshotIndex = 1;
-	const char *strFilePath = NULL;
+	const char *strFilePath = nullptr;
 	do
 		sprintf(szFilename, "Screenshot%03i.png", iScreenshotIndex++);
 	while (FileExists(strFilePath = Config.AtScreenshotPath(szFilename)));

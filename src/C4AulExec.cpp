@@ -27,7 +27,7 @@ void C4AulExecError::show()
 		if (cObj)
 			Game.Messages.New(C4GM_Target, sMessage, cObj, NO_OWNER);
 		else
-			Game.Messages.New(C4GM_Global, sMessage, NULL, ANY_OWNER);
+			Game.Messages.New(C4GM_Global, sMessage, nullptr, ANY_OWNER);
 #endif
 }
 
@@ -68,7 +68,7 @@ void C4AulScriptContext::dump(StdStrBuf Dump)
 	// Context
 	if (Obj)
 		Dump.AppendFormat(" (obj %s)", C4VObj(Obj).GetDataString().getData());
-	else if (Func->Owner->Def != NULL)
+	else if (Func->Owner->Def != nullptr)
 		Dump.AppendFormat(" (def %s)", Func->Owner->Def->Name.getData());
 	// Script
 	if (!fDirectExec && Func->Owner)
@@ -251,7 +251,7 @@ private:
 					C4ScriptOpMap[iOpID].Identifier, pCurVal->GetTypeInfo(), GetC4VName(C4ScriptOpMap[iOpID].Type1)).getData());
 	}
 
-	C4AulBCC *Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4Object *pObj = NULL, C4Def *pDef = NULL);
+	C4AulBCC *Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4Object *pObj = nullptr, C4Def *pDef = nullptr);
 };
 
 C4AulExec AulExec;
@@ -279,13 +279,13 @@ C4Value C4AulExec::Exec(C4AulScriptFunc *pSFunc, C4Object *pObj, C4Value *pnPars
 	C4AulScriptContext ctx;
 	ctx.Obj = pObj;
 	ctx.Def = pDef;
-	ctx.Return = NULL;
+	ctx.Return = nullptr;
 	ctx.Pars = pPars;
 	ctx.Vars = pVars;
 	ctx.Func = pSFunc;
 	ctx.TemporaryScript = fTemporaryScript;
-	ctx.CPos = NULL;
-	ctx.Caller = NULL;
+	ctx.CPos = nullptr;
+	ctx.Caller = nullptr;
 	PushContext(ctx);
 
 	// Execute
@@ -800,7 +800,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				// Save current position
 				pCurCtx->CPos = pCPos;
 				// Do the call
-				C4AulBCC *pJump = Call(pFunc, pPars, pPars, NULL);
+				C4AulBCC *pJump = Call(pFunc, pPars, pPars, nullptr);
 				if (pJump)
 				{
 					pCPos = pJump;
@@ -891,7 +891,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				else if (pTargetVal->ConvertTo(C4V_C4ID))
 				{
 					// definition call
-					pDestObj = NULL;
+					pDestObj = nullptr;
 					pDestDef = C4Id2Def(pTargetVal->_getC4ID());
 					// definition must be known
 					if (!pDestDef)
@@ -969,7 +969,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 		for (C4AulScriptContext *pCtx = pCurCtx; pCtx >= Contexts; pCtx--)
 			pCtx->dump(StdStrBuf(" by: "));
 		// Unwind stack
-		C4Value *pUntil = NULL;
+		C4Value *pUntil = nullptr;
 		while (pCurCtx >= pOldCtx)
 		{
 			pUntil = pCurCtx->Pars - 1;
@@ -1023,7 +1023,7 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 		ctx.Vars = pVars;
 		ctx.Func = pSFunc;
 		ctx.TemporaryScript = false;
-		ctx.CPos = NULL;
+		ctx.CPos = nullptr;
 		PushContext(ctx);
 
 		// Jump to code
@@ -1085,7 +1085,7 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 		PopValuesUntil(pReturn);
 
 		// Continue
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -1122,7 +1122,7 @@ void C4AulExec::StopProfiling()
 	fProfiling = false;
 	// collect profiler times
 	C4AulProfiler Profiler;
-	Profiler.CollectEntry(NULL, tDirectExecTotal);
+	Profiler.CollectEntry(nullptr, tDirectExecTotal);
 	pProfiledScript->CollectProfilerTimes(Profiler);
 	Profiler.Show();
 }
@@ -1175,8 +1175,8 @@ C4Value C4AulFunc::Exec(C4Object *pObj, C4AulParSet *pPars, bool fPassErrors)
 	// construct a dummy caller context
 	C4AulContext ctx;
 	ctx.Obj = pObj;
-	ctx.Def = pObj ? pObj->Def : NULL;
-	ctx.Caller = NULL;
+	ctx.Def = pObj ? pObj->Def : nullptr;
+	ctx.Caller = nullptr;
 	// execute
 	return Exec(&ctx, pPars ? pPars->Par : C4AulParSet().Par, fPassErrors);
 }
@@ -1253,7 +1253,7 @@ C4Value C4AulScript::DirectExec(C4Object *pObj, const char *szScript, const char
 	}
 	else
 	{
-		pScript->Def = NULL;
+		pScript->Def = nullptr;
 	}
 	pScript->Reg2List(Engine, this);
 	// Add a new function
@@ -1276,7 +1276,7 @@ C4Value C4AulScript::DirectExec(C4Object *pObj, const char *szScript, const char
 	pFunc->Code = pScript->Code;
 	pScript->State = ASS_PARSED;
 	// Execute. The TemporaryScript-parameter makes sure the script will be deleted later on.
-	C4Value vRetVal(AulExec.Exec(pFunc, pObj, NULL, fPassErrors, true));
+	C4Value vRetVal(AulExec.Exec(pFunc, pObj, nullptr, fPassErrors, true));
 	// profiler
 	AulExec.StopDirectExec();
 	return vRetVal;

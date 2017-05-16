@@ -353,8 +353,8 @@ BOOL ObjectComDig(C4Object *cObj) // by DFA_WALK
 C4Object *CreateLine(C4ID idType, int32_t iOwner, C4Object *pFrom, C4Object *pTo)
 {
 	C4Object *pLine;
-	if (!pFrom || !pTo) return NULL;
-	if (!(pLine = Game.CreateObject(idType, pFrom, iOwner, 0, 0))) return NULL;
+	if (!pFrom || !pTo) return nullptr;
+	if (!(pLine = Game.CreateObject(idType, pFrom, iOwner, 0, 0))) return nullptr;
 	pLine->Shape.VtxNum = 2;
 	pLine->Shape.VtxX[0] = pFrom->x;
 	pLine->Shape.VtxY[0] = pFrom->y + pFrom->Shape.Hgt / 4;
@@ -968,7 +968,7 @@ BOOL SellFromBase(int32_t iPlr, C4Object *pBaseObj, C4ID id, C4Object *pSellObj)
 	// check validity of sell object, if specified
 	if (pThing = pSellObj)
 		if (!pThing->Status || pThing->Contained != pBaseObj)
-			pThing = NULL;
+			pThing = nullptr;
 	// Get object from home pBaseObj via selected id, if no or an anvalid thing has been specified
 	if (!pThing)
 		if (!(pThing = pBaseObj->Contents.Find(id))) return FALSE;
@@ -1024,8 +1024,8 @@ BOOL PlayerObjectCommand(int32_t plr, int32_t cmdf, C4Object *pTarget, int32_t t
 		}
 		// Jump'n'Run: Drop on combined Down/Left/Right+Throw
 		if (pPlr->ControlStyle && (pPlr->PressedComs & (1 << COM_Down))) fConvertToDrop = true;
-		if (fConvertToDrop) return pPlr->ObjectCommand(C4CMD_Drop, pTarget, tx, ty, NULL, 0, iAddMode);
+		if (fConvertToDrop) return pPlr->ObjectCommand(C4CMD_Drop, pTarget, tx, ty, nullptr, 0, iAddMode);
 	}
 	// Route to player
-	return pPlr->ObjectCommand(cmdf, pTarget, tx, ty, NULL, 0, iAddMode);
+	return pPlr->ObjectCommand(cmdf, pTarget, tx, ty, nullptr, 0, iAddMode);
 }

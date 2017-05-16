@@ -12,7 +12,7 @@
 // C4GameRes
 
 C4GameRes::C4GameRes()
-	: eType(NRT_Null), pResCore(NULL), pNetRes(NULL) {}
+	: eType(NRT_Null), pResCore(nullptr), pNetRes(nullptr) {}
 
 C4GameRes::C4GameRes(const C4GameRes &Res)
 	: eType(Res.getType()), File(Res.getFile()), pResCore(Res.getResCore()), pNetRes(Res.getNetRes())
@@ -44,8 +44,8 @@ void C4GameRes::Clear()
 	File.Clear();
 	if (pResCore && !pNetRes)
 		delete pResCore;
-	pResCore = NULL;
-	pNetRes = NULL;
+	pResCore = nullptr;
+	pNetRes = nullptr;
 }
 
 void C4GameRes::SetFile(C4Network2ResType enType, const char *sznFile)
@@ -87,7 +87,7 @@ bool C4GameRes::Publish(C4Network2ResList *pNetResList)
 	bool fAllowUnloadable = false;
 	if (eType == NRT_Definitions) fAllowUnloadable = true;
 	// Add to network resource list
-	C4Network2Res::Ref pNetRes = pNetResList->AddByFile(File.getData(), false, eType, -1, NULL, fAllowUnloadable);
+	C4Network2Res::Ref pNetRes = pNetResList->AddByFile(File.getData(), false, eType, -1, nullptr, fAllowUnloadable);
 	if (!pNetRes) return false;
 	// Set resource
 	SetNetRes(pNetRes);
@@ -173,8 +173,8 @@ C4GameRes *C4GameResList::iterRes(C4GameRes *pLast, C4Network2ResType eType)
 				return pResList[i];
 		}
 		else if (pLast == pResList[i])
-			pLast = NULL;
-	return NULL;
+			pLast = nullptr;
+	return nullptr;
 }
 
 void C4GameResList::Clear()
@@ -183,7 +183,7 @@ void C4GameResList::Clear()
 	for (int32_t i = 0; i < iResCount; i++)
 		delete pResList[i];
 	delete[] pResList;
-	pResList = NULL;
+	pResList = nullptr;
 	iResCount = iResCapacity = 0;
 }
 
@@ -214,7 +214,7 @@ bool C4GameResList::Load(const char *szDefinitionFilenames)
 	// add System.c4g
 	CreateByFile(NRT_System, C4CFN_System);
 	// add all instances of Material.c4g, except those inside the scenario file
-	C4Group *pMatParentGrp = NULL;
+	C4Group *pMatParentGrp = nullptr;
 	while (pMatParentGrp = Game.GroupSet.FindGroup(C4GSCnt_Material, pMatParentGrp))
 		if (pMatParentGrp != &Game.ScenarioFile)
 		{
@@ -384,7 +384,7 @@ BOOL C4GameParameters::Load(C4Group &hGroup, C4Scenario *pScenario, const char *
 		DefaultCompiler.Compile(mkParAdapt(*this, pScenario));
 
 		// Set random seed
-		RandomSeed = time(NULL);
+		RandomSeed = time(nullptr);
 
 		// Set control rate default
 		if (ControlRate < 0)

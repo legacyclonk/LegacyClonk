@@ -22,7 +22,7 @@ public:
 
 public:
 	void Default() { TargetX = TargetY = 0; C4Facet::Default(); }
-	void Clear() { Surface = NULL; }
+	void Clear() { Surface = nullptr; }
 
 	void Set(const C4Facet &cpy) { TargetX = TargetY = 0; C4Facet::Set(cpy); }
 	void Set(const C4FacetEx &cpy) { *this = cpy; }

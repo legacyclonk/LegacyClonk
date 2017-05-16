@@ -64,16 +64,16 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 			Application.MusicSystem.NotifySuccess();
 		return TRUE;
 	case WM_KEYUP:
-		if (Game.DoKeyboardInput(wParam, KEYEV_Up, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), false, NULL))
+		if (Game.DoKeyboardInput(wParam, KEYEV_Up, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), false, nullptr))
 			return 0;
 		break;
 	case WM_KEYDOWN:
-		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), NULL))
+		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), nullptr))
 			return 0;
 		break;
 	case WM_SYSKEYDOWN:
 		if (wParam == 18) break;
-		if (Game.DoKeyboardInput(wParam, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), NULL))
+		if (Game.DoKeyboardInput(wParam, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), nullptr))
 			return 0;
 		break;
 	case WM_CHAR:
@@ -94,15 +94,15 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 			Log((const char *)lParam);
 		return FALSE;
 	case WM_LBUTTONDOWN:
-		Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDown, LOWORD(lParam), HIWORD(lParam), wParam, NULL);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDown, LOWORD(lParam), HIWORD(lParam), wParam, nullptr);
 		break;
-	case WM_LBUTTONUP:     Game.GraphicsSystem.MouseMove(C4MC_Button_LeftUp,      LOWORD(lParam), HIWORD(lParam), wParam, NULL); break;
-	case WM_RBUTTONDOWN:   Game.GraphicsSystem.MouseMove(C4MC_Button_RightDown,   LOWORD(lParam), HIWORD(lParam), wParam, NULL); break;
-	case WM_RBUTTONUP:     Game.GraphicsSystem.MouseMove(C4MC_Button_RightUp,     LOWORD(lParam), HIWORD(lParam), wParam, NULL); break;
-	case WM_LBUTTONDBLCLK: Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDouble,  LOWORD(lParam), HIWORD(lParam), wParam, NULL); break;
-	case WM_RBUTTONDBLCLK: Game.GraphicsSystem.MouseMove(C4MC_Button_RightDouble, LOWORD(lParam), HIWORD(lParam), wParam, NULL); break;
-	case WM_MOUSEMOVE:     Game.GraphicsSystem.MouseMove(C4MC_Button_None,        LOWORD(lParam), HIWORD(lParam), wParam, NULL); break;
-	case WM_MOUSEWHEEL:    Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel,       LOWORD(lParam), HIWORD(lParam), wParam, NULL); break;
+	case WM_LBUTTONUP:     Game.GraphicsSystem.MouseMove(C4MC_Button_LeftUp,      LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
+	case WM_RBUTTONDOWN:   Game.GraphicsSystem.MouseMove(C4MC_Button_RightDown,   LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
+	case WM_RBUTTONUP:     Game.GraphicsSystem.MouseMove(C4MC_Button_RightUp,     LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
+	case WM_LBUTTONDBLCLK: Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDouble,  LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
+	case WM_RBUTTONDBLCLK: Game.GraphicsSystem.MouseMove(C4MC_Button_RightDouble, LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
+	case WM_MOUSEMOVE:     Game.GraphicsSystem.MouseMove(C4MC_Button_None,        LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
+	case WM_MOUSEWHEEL:    Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel,       LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
 	}
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
@@ -124,13 +124,13 @@ void C4FullScreen::HandleMessage(XEvent &e)
 		// Do not take into account the state of the various modifiers and locks
 		// we don't need that for keyboard control
 		DWORD key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
-		Game.DoKeyboardInput(key, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), false, NULL);
+		Game.DoKeyboardInput(key, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), false, nullptr);
 		break;
 	}
 	case KeyRelease:
 	{
 		DWORD key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
-		Game.DoKeyboardInput(key, KEYEV_Up, e.xkey.state & Mod1Mask, e.xkey.state & ControlMask, e.xkey.state & ShiftMask, false, NULL);
+		Game.DoKeyboardInput(key, KEYEV_Up, e.xkey.state & Mod1Mask, e.xkey.state & ControlMask, e.xkey.state & ShiftMask, false, nullptr);
 		break;
 	}
 	case ButtonPress:
@@ -142,41 +142,41 @@ void C4FullScreen::HandleMessage(XEvent &e)
 			if (timeGetTime() - last_left_click < 400)
 			{
 				Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDouble,
-					e.xbutton.x, e.xbutton.y, e.xbutton.state, NULL);
+					e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
 				last_left_click = 0;
 			}
 			else
 			{
 				Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDown,
-					e.xbutton.x, e.xbutton.y, e.xbutton.state, NULL);
+					e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
 				last_left_click = timeGetTime();
 			}
 			break;
 		case Button2:
 			Game.GraphicsSystem.MouseMove(C4MC_Button_MiddleDown,
-				e.xbutton.x, e.xbutton.y, e.xbutton.state, NULL);
+				e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
 			break;
 		case Button3:
 			if (timeGetTime() - last_right_click < 400)
 			{
 				Game.GraphicsSystem.MouseMove(C4MC_Button_RightDouble,
-					e.xbutton.x, e.xbutton.y, e.xbutton.state, NULL);
+					e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
 				last_right_click = 0;
 			}
 			else
 			{
 				Game.GraphicsSystem.MouseMove(C4MC_Button_RightDown,
-					e.xbutton.x, e.xbutton.y, e.xbutton.state, NULL);
+					e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
 				last_right_click = timeGetTime();
 			}
 			break;
 		case Button4:
 			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel,
-				e.xbutton.x, e.xbutton.y, e.xbutton.state + (short(32) << 16), NULL);
+				e.xbutton.x, e.xbutton.y, e.xbutton.state + (short(32) << 16), nullptr);
 			break;
 		case Button5:
 			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel,
-				e.xbutton.x, e.xbutton.y, e.xbutton.state + (short(-32) << 16), NULL);
+				e.xbutton.x, e.xbutton.y, e.xbutton.state + (short(-32) << 16), nullptr);
 			break;
 		default:
 			break;
@@ -187,20 +187,20 @@ void C4FullScreen::HandleMessage(XEvent &e)
 		switch (e.xbutton.button)
 		{
 		case Button1:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_LeftUp, e.xbutton.x, e.xbutton.y, e.xbutton.state, NULL);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_LeftUp, e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
 			break;
 		case Button2:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_MiddleUp, e.xbutton.x, e.xbutton.y, e.xbutton.state, NULL);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_MiddleUp, e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
 			break;
 		case Button3:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_RightUp, e.xbutton.x, e.xbutton.y, e.xbutton.state, NULL);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_RightUp, e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
 			break;
 		default:
 			break;
 		}
 		break;
 	case MotionNotify:
-		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.xbutton.x, e.xbutton.y, e.xbutton.state, NULL);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.xbutton.x, e.xbutton.y, e.xbutton.state, nullptr);
 		break;
 	case FocusIn:
 		Application.Active = true;
@@ -323,24 +323,24 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 			e.key.keysym.mod & (KMOD_LALT | KMOD_RALT),
 			e.key.keysym.mod & (KMOD_LCTRL | KMOD_RCTRL),
 			e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT),
-			false, NULL);
+			false, nullptr);
 		break;
 	}
 	case SDL_KEYUP:
 		Game.DoKeyboardInput(e.key.keysym.sym, KEYEV_Up,
 			e.key.keysym.mod & (KMOD_LALT | KMOD_RALT),
 			e.key.keysym.mod & (KMOD_LCTRL | KMOD_RCTRL),
-			e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT), false, NULL);
+			e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT), false, nullptr);
 		break;
 	case SDL_MOUSEMOTION:
-		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.motion.x, e.motion.y, 0, NULL);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.motion.x, e.motion.y, 0, nullptr);
 		break;
 	case SDL_MOUSEBUTTONUP:
 	case SDL_MOUSEBUTTONDOWN:
 		int32_t button;
 		DWORD flags;
 		sdlToC4MCBtn(e.button, button, flags);
-		Game.GraphicsSystem.MouseMove(button, e.button.x, e.button.y, flags, NULL);
+		Game.GraphicsSystem.MouseMove(button, e.button.x, e.button.y, flags, nullptr);
 		break;
 	case SDL_JOYAXISMOTION:
 	case SDL_JOYHATMOTION:
@@ -367,7 +367,7 @@ void C4FullScreen::CharIn(const char *c)
 
 C4FullScreen::C4FullScreen()
 {
-	pMenu = NULL;
+	pMenu = nullptr;
 }
 
 C4FullScreen::~C4FullScreen()
@@ -478,7 +478,7 @@ void C4FullScreen::CloseMenu()
 	{
 		if (pMenu->IsActive()) pMenu->Close(false);
 		delete pMenu;
-		pMenu = NULL;
+		pMenu = nullptr;
 	}
 }
 

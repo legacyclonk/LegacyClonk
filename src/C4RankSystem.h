@@ -32,6 +32,6 @@ public:
 	StdStrBuf GetRankName(int iRank, bool fReturnLastIfOver);
 	int32_t GetExtendedRankNum() const { return iRankExtNum; }
 #ifdef C4ENGINE
-	static bool DrawRankSymbol(C4FacetExSurface *fctSymbol, int32_t iRank, C4FacetEx *pfctRankSymbols, int32_t iRankSymbolCount, bool fOwnSurface, int32_t iXOff = 0, C4Facet *cgoDrawDirect = NULL); // create facet from rank symbol for definition - use custom rank facets if present
+	static bool DrawRankSymbol(C4FacetExSurface *fctSymbol, int32_t iRank, C4FacetEx *pfctRankSymbols, int32_t iRankSymbolCount, bool fOwnSurface, int32_t iXOff = 0, C4Facet *cgoDrawDirect = nullptr); // create facet from rank symbol for definition - use custom rank facets if present
 #endif
 };

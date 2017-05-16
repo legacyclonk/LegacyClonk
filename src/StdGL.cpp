@@ -30,7 +30,7 @@ CStdGL::CStdGL()
 CStdGL::~CStdGL()
 {
 	Clear();
-	pGL = NULL;
+	pGL = nullptr;
 }
 
 void CStdGL::Clear()
@@ -42,7 +42,7 @@ void CStdGL::Clear()
 	if (pTexMgr) pTexMgr->IntUnlock();
 	DeleteDeviceObjects();
 	MainCtx.Clear();
-	pCurrCtx = NULL;
+	pCurrCtx = nullptr;
 #ifndef USE_SDL_MAINLOOP
 	CStdDDraw::Clear();
 #endif
@@ -548,12 +548,12 @@ BOOL CStdGL::CreateDirectDraw()
 CStdGLCtx *CStdGL::CreateContext(CStdWindow *pWindow, CStdApp *pApp)
 {
 	// safety
-	if (!pWindow) return NULL;
+	if (!pWindow) return nullptr;
 	// create it
 	CStdGLCtx *pCtx = new CStdGLCtx();
 	if (!pCtx->Init(pWindow, pApp))
 	{
-		delete pCtx; Error("  gl: Error creating secondary context!"); return NULL;
+		delete pCtx; Error("  gl: Error creating secondary context!"); return nullptr;
 	}
 	// done
 	return pCtx;
@@ -563,12 +563,12 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *pWindow, CStdApp *pApp)
 CStdGLCtx *CStdGL::CreateContext(HWND hWindow, CStdApp *pApp)
 {
 	// safety
-	if (!hWindow) return NULL;
+	if (!hWindow) return nullptr;
 	// create it
 	CStdGLCtx *pCtx = new CStdGLCtx();
-	if (!pCtx->Init(NULL, pApp, hWindow))
+	if (!pCtx->Init(nullptr, pApp, hWindow))
 	{
-		delete pCtx; Error("  gl: Error creating secondary context!"); return NULL;
+		delete pCtx; Error("  gl: Error creating secondary context!"); return nullptr;
 	}
 	// done
 	return pCtx;
@@ -610,7 +610,7 @@ bool CStdGL::CreatePrimarySurfaces(BOOL Playermode, int iColorDepth, unsigned in
 	// create lpPrimary and lpBack (used in first context selection)
 	lpPrimary = lpBack = new CSurface();
 	lpPrimary->fPrimary = true;
-	lpPrimary->AttachSfc(NULL);
+	lpPrimary->AttachSfc(nullptr);
 	lpPrimary->byBytesPP = byByteCnt;
 
 	// create+select gl context
@@ -788,7 +788,7 @@ bool CStdGL::RestoreDeviceObjects()
 	bool fSuccess = true;
 	// restore primary/back
 	RenderTarget = lpPrimary;
-	lpPrimary->AttachSfc(NULL);
+	lpPrimary->AttachSfc(nullptr);
 	lpPrimary->byBytesPP = byByteCnt;
 
 	// set states
@@ -1057,7 +1057,7 @@ bool CStdGL::RestoreStateBlock()
 	return true;
 }
 
-CStdGL *pGL = NULL;
+CStdGL *pGL = nullptr;
 
 bool CStdGL::DeleteDeviceObjects()
 {
@@ -1066,8 +1066,8 @@ bool CStdGL::DeleteDeviceObjects()
 	// del font objects
 	// del main surfaces
 	if (lpPrimary) delete lpPrimary;
-	lpPrimary = lpBack = NULL;
-	RenderTarget = NULL;
+	lpPrimary = lpBack = nullptr;
+	RenderTarget = nullptr;
 	// clear context
 	if (pCurrCtx) pCurrCtx->Deselect();
 	MainCtx.Clear();

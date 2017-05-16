@@ -49,7 +49,7 @@ public:
 	bool Advance(int iOffset);
 	// Single line commands
 	bool Load(const char *szFileName, BYTE **lpbpBuf,
-		int *ipSize = NULL, int iAppendZeros = 0,
+		int *ipSize = nullptr, int iAppendZeros = 0,
 		bool fCompressed = false);
 	bool Save(const char *szFileName, const BYTE *bpBuf,
 		int iSize,
