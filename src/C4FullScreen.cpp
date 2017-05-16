@@ -112,6 +112,7 @@ void C4FullScreen::CharIn(const char *c) { Game.pGUI->CharIn(c); }
 #elif defined(USE_X11)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/XKBlib.h>
 void C4FullScreen::HandleMessage(XEvent &e)
 {
 	// Parent handling
@@ -123,13 +124,13 @@ void C4FullScreen::HandleMessage(XEvent &e)
 	{
 		// Do not take into account the state of the various modifiers and locks
 		// we don't need that for keyboard control
-		uint32_t key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
+		uint32_t key = XkbKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0, 0);
 		Game.DoKeyboardInput(key, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), false, nullptr);
 		break;
 	}
 	case KeyRelease:
 	{
-		uint32_t key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
+		uint32_t key = XkbKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0, 0);
 		Game.DoKeyboardInput(key, KEYEV_Up, e.xkey.state & Mod1Mask, e.xkey.state & ControlMask, e.xkey.state & ShiftMask, false, nullptr);
 		break;
 	}

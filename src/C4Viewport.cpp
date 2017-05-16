@@ -29,6 +29,7 @@
 
 #ifdef USE_X11
 #include <X11/Xlib.h>
+#include <X11/XKBlib.h>
 #ifdef WITH_DEVELOPER_MODE
 #include <gdk/gdkx.h>
 #include <gdk/gdkkeysyms.h>
@@ -436,14 +437,14 @@ gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *even
 	case GDK_4: DDrawCfg.fTexIndent += 0.05; printf("%f\n", DDrawCfg.fTexIndent); break;
 	}
 #endif
-	uint32_t key = XKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0);
+	uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
 	Game.DoKeyboardInput(key, KEYEV_Down, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, nullptr);
 	return TRUE;
 }
 
 gboolean C4ViewportWindow::OnKeyReleaseStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-	uint32_t key = XKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0);
+	uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
 	Game.DoKeyboardInput(key, KEYEV_Up, !!(event->state & GDK_MOD1_MASK), !!(event->state & GDK_CONTROL_MASK), !!(event->state & GDK_SHIFT_MASK), false, nullptr);
 	return TRUE;
 }
@@ -605,13 +606,13 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 	{
 		// Do not take into account the state of the various modifiers and locks
 		// we don't need that for keyboard control
-		uint32_t key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
+		uint32_t key = XkbKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0, 0);
 		Game.DoKeyboardInput(key, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), false, nullptr);
 		break;
 	}
 	case KeyRelease:
 	{
-		uint32_t key = XKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0);
+		uint32_t key = XkbKeycodeToKeysym(e.xany.display, e.xkey.keycode, 0, 0);
 		Game.DoKeyboardInput(key, KEYEV_Up, e.xkey.state & Mod1Mask, e.xkey.state & ControlMask, e.xkey.state & ShiftMask, false, nullptr);
 		break;
 	}

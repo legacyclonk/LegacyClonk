@@ -81,7 +81,7 @@ namespace
 	unsigned int KeyMaskFromKeyEvent(Display *dpy, XKeyEvent *xkey)
 	{
 		unsigned int mask = xkey->state;
-		KeySym sym = XKeycodeToKeysym(dpy, xkey->keycode, 1);
+		KeySym sym = XkbKeycodeToKeysym(dpy, xkey->keycode, 0, 1);
 		// We need to correct the keymask since the event.xkey.state
 		// is the state _before_ the event, but we want to store the
 		// current state.
