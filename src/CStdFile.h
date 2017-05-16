@@ -7,10 +7,9 @@
 
 #include <stdio.h>
 #include <StdFile.h>
+#include <zlib.h> // for gzFile
 
 const int CStdFileBufSize = 4096;
-
-typedef void* gzFile;
 
 class CStdStream
 	{

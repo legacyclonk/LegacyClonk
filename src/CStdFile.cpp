@@ -7,6 +7,7 @@
 #include <CStdFile.h>
 
 #include <zlib.h>
+#include "zlib/gzio.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -37,7 +38,7 @@ bool CStdFile::Create(const char *szFilename, bool fCompressed, bool fExecutable
 	// Open standard file
 	if (fCompressed)
 		{
-		if (!(hgzFile=gzopen(Name,"wb1"))) return false;
+		if (!(hgzFile=c4_gzopen(Name,"wb1"))) return false;
 		}
 	else
 		{
@@ -74,7 +75,7 @@ bool CStdFile::Open(const char *szFilename, bool fCompressed)
   ModeWrite=FALSE;
 	// Open standard file
 	if (fCompressed)
-		{ if (!(hgzFile=gzopen(Name,"rb"))) return false; }
+		{ if (!(hgzFile=c4_gzopen(Name,"rb"))) return false; }
 	else
 		{ if (!(hFile=fopen(Name,"rb"))) return false; }
 	// Reset buffer
@@ -106,7 +107,7 @@ bool CStdFile::Close()
   // Save buffer if in write mode
   if (ModeWrite && BufferLoad) if (!SaveBuffer()) rval=FALSE;
   // Close file(s)
-  if (hgzFile) if (gzclose(hgzFile)!=Z_OK) rval=FALSE;
+  if (hgzFile) if (c4_gzclose(hgzFile)!=Z_OK) rval=FALSE;
 	if (hFile) if (fclose(hFile)!=0) rval=FALSE;
 	hgzFile=NULL; hFile=NULL;
 	return !!rval;  
@@ -150,7 +151,7 @@ bool CStdFile::Read(void *pBuffer, size_t iSize, size_t *ipFSize)
 int CStdFile::LoadBuffer()
   {
 	if (hFile) BufferLoad = fread(Buffer,1,CStdFileBufSize,hFile);
-  if (hgzFile) BufferLoad = gzread(hgzFile, Buffer,CStdFileBufSize);
+  if (hgzFile) BufferLoad = c4_gzread(hgzFile, Buffer,CStdFileBufSize);
   BufferPtr=0;
   return BufferLoad;
   }
@@ -159,7 +160,7 @@ bool CStdFile::SaveBuffer()
   {
   int saved = 0;
 	if (hFile) saved=fwrite(Buffer,1,BufferLoad,hFile);
-	if (hgzFile) saved=gzwrite(hgzFile,Buffer,BufferLoad);
+	if (hgzFile) saved=c4_gzwrite(hgzFile,Buffer,BufferLoad);
 	if (saved!=BufferLoad) return FALSE;
 	BufferLoad=0;
 	return TRUE;
@@ -210,8 +211,8 @@ bool CStdFile::Rewind()
 	if (hFile) rewind(hFile);
 	if (hgzFile)
 		{
-		if (gzclose(hgzFile)!=Z_OK) { hgzFile=NULL; return FALSE; }
-		if (!(hgzFile=gzopen(Name,"rb"))) return FALSE;
+		if (c4_gzclose(hgzFile)!=Z_OK) { hgzFile=NULL; return FALSE; }
+		if (!(hgzFile=c4_gzopen(Name,"rb"))) return FALSE;
 		}
 	return TRUE;
   }
@@ -268,9 +269,9 @@ int UncompressedFileSize(const char *szFilename)
 	int rval=0;
 	BYTE buf;
 	gzFile hFile;
-	if (!(hFile = gzopen(szFilename,"rb"))) return 0;
-	while (gzread(hFile,&buf,1)>0) rval++;
-	gzclose(hFile);
+	if (!(hFile = c4_gzopen(szFilename,"rb"))) return 0;
+	while (c4_gzread(hFile,&buf,1)>0) rval++;
+	c4_gzclose(hFile);
 	return rval;
 	}
 
