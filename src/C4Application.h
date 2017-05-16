@@ -70,8 +70,6 @@ public:
 	StdStrBuf IncomingUpdate;
 	// set by ParseCommandLine, for manually invoking an update check by command line or url
 	bool CheckForUpdates;
-	// set by ParseCommandLine, only pertains to this program start - independent of Config.Startup.NoSplash
-	bool NoSplash;
 	// Flag for launching editor on quit
 	bool launchEditor;
 	// Flag for restarting the engine at the end

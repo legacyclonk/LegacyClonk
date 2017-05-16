@@ -329,11 +329,10 @@ void C4GraphicsSystem::ClearFullscreenBackground()
 	--iRedrawBackground;
 }
 
-bool C4GraphicsSystem::InitLoaderScreen(const char *szLoaderSpec, bool fDrawBlackScreenFirst)
+bool C4GraphicsSystem::InitLoaderScreen(const char *szLoaderSpec)
 {
 	// create new loader; overwrite current only if successful
 	C4LoaderScreen *pNewLoader = new C4LoaderScreen();
-	pNewLoader->SetBlackScreen(fDrawBlackScreenFirst);
 	if (!pNewLoader->Init(szLoaderSpec)) { delete pNewLoader; return false; }
 	if (pLoaderScreen) delete pLoaderScreen;
 	pLoaderScreen = pNewLoader;
@@ -341,12 +340,6 @@ bool C4GraphicsSystem::InitLoaderScreen(const char *szLoaderSpec, bool fDrawBlac
 	ApplyGamma();
 	// done, success
 	return true;
-}
-
-void C4GraphicsSystem::EnableLoaderDrawing()
-{
-	// reset black screen loader flag
-	if (pLoaderScreen) pLoaderScreen->SetBlackScreen(false);
 }
 
 bool C4GraphicsSystem::CloseViewport(int32_t iPlayer, bool fSilent)

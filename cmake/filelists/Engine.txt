@@ -287,8 +287,6 @@ src/C4ValueMap.h
 src/C4Version.h
 src/C4Video.cpp
 src/C4Video.h
-src/C4VideoPlayback.cpp
-src/C4VideoPlayback.h
 src/C4Viewport.cpp
 src/C4Viewport.h
 src/C4Weather.cpp

@@ -16,7 +16,6 @@ C4LoaderScreen::C4LoaderScreen() : TitleFont(Game.GraphicsResource.FontTitle), L
 {
 	// zero fields
 	szInfo = nullptr;
-	fBlackScreen = false;
 }
 
 C4LoaderScreen::~C4LoaderScreen()
@@ -102,13 +101,6 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 	return true;
 }
 
-void C4LoaderScreen::SetBlackScreen(bool fIsBlack)
-{
-	// enabled/disables drawing of loader screen
-	fBlackScreen = fIsBlack;
-	// will be updated when drawn next time
-}
-
 int C4LoaderScreen::SeekLoaderScreens(C4Group &rFromGrp, const char *szWildcard, int iLoaderCount, char *szDstName, C4Group **ppDestGrp)
 {
 	bool fFound;
@@ -130,12 +122,6 @@ int C4LoaderScreen::SeekLoaderScreens(C4Group &rFromGrp, const char *szWildcard,
 
 void C4LoaderScreen::Draw(C4Facet &cgo, int iProgress, C4LogBuffer *pLog, int Process)
 {
-	// simple black screen loader?
-	if (fBlackScreen)
-	{
-		lpDDraw->FillBG();
-		return;
-	}
 	// cgo.X/Y is assumed 0 here...
 	// fixed positions for now
 	int iHIndent = 20;

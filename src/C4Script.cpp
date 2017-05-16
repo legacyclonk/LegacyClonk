@@ -6157,14 +6157,6 @@ static bool FnFatalError(C4AulContext *ctx, C4String *pErrorMsg)
 	throw new C4AulExecError(ctx->Obj, FormatString("User error: %s", pErrorMsg ? pErrorMsg->Data.getData() : "(no error)").getData());
 }
 
-static bool FnPlayVideo(C4AulContext *ctx, C4String *pFilename)
-{
-	// filename must be valid
-	if (!pFilename || !pFilename->Data.getLength()) return false;
-	// play it!
-	return Game.VideoPlayer.PlayVideo(pFilename->Data.getData());
-}
-
 static bool FnStartCallTrace(C4AulContext *ctx)
 {
 	extern void C4AulStartTrace();
@@ -6770,7 +6762,6 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "FatalError",                      FnFatalError,                      false);
 	AddFunc(pEngine, "ExtractMaterialAmount",           FnExtractMaterialAmount);
 	AddFunc(pEngine, "GetEffectCount",                  FnGetEffectCount);
-	AddFunc(pEngine, "PlayVideo",                       FnPlayVideo);
 	AddFunc(pEngine, "StartCallTrace",                  FnStartCallTrace);
 	AddFunc(pEngine, "StartScriptProfiler",             FnStartScriptProfiler);
 	AddFunc(pEngine, "StopScriptProfiler",              FnStopScriptProfiler);

@@ -88,7 +88,6 @@ private:
 	bool fInStartup, fAborted, fLastDlgWasBack;
 	static C4Startup *pInstance; // singleton instance
 	static DialogID eLastDlgID;
-	static bool fFirstRun;
 
 	C4StartupDlg *pLastDlg, *pCurrDlg; // startup dlg that is currently shown, and dialog that was last shown
 
@@ -114,5 +113,4 @@ public:
 	static bool SetStartScreen(const char *szScreen); // set screen that is shown first by case insensitive identifier
 
 	static C4Startup *Get() { assert(pInstance); return pInstance; }
-	static bool WasFirstRun() { return fFirstRun; }
 };

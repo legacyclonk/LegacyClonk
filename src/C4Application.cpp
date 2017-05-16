@@ -34,7 +34,7 @@ C4Application::C4Application() :
 	isFullScreen(true), UseStartupDialog(true), launchEditor(false), restartAtEnd(false),
 	DDraw(nullptr), AppState(C4AS_None), pSec1TimerCallback(nullptr),
 	iLastGameTick(0), iGameTickDelay(28), iExtraGameTickDelay(0), pGamePadControl(nullptr),
-	CheckForUpdates(false), NoSplash(false) {}
+	CheckForUpdates(false) {}
 
 C4Application::~C4Application()
 {
@@ -194,11 +194,10 @@ bool C4Application::PreInit()
 	// startup dialog: Only use if no next mission has been provided
 	bool fDoUseStartupDialog = UseStartupDialog && !*Game.ScenarioFilename;
 
-	// init loader: Black screen for first start if a video is to be shown; otherwise default spec
+	// init loader: default spec
 	if (fDoUseStartupDialog)
 	{
-		bool fUseBlackScreenLoader = UseStartupDialog && !C4Startup::WasFirstRun() && !Config.Startup.NoSplash && !NoSplash && FileExists(C4CFN_Splash);
-		if (!Game.GraphicsSystem.InitLoaderScreen(C4CFN_StartupBackgroundMain, fUseBlackScreenLoader))
+		if (!Game.GraphicsSystem.InitLoaderScreen(C4CFN_StartupBackgroundMain))
 		{
 			LogFatal(LoadResStr("IDS_PRC_ERRLOADER")); return false;
 		}

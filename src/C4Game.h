@@ -40,7 +40,6 @@
 #include <C4Scenario.h>
 #include <C4Client.h>
 #include <C4Network2Reference.h>
-#include <C4VideoPlayback.h>
 #include <C4RoundResults.h>
 
 class C4Game
@@ -121,7 +120,6 @@ public:
 	C4FontLoader FontLoader;
 #endif
 	C4Scoreboard Scoreboard;
-	C4VideoPlayer VideoPlayer;
 	class C4Network2Stats *pNetworkStatistics; // may be nullptr if no statistics are recorded
 	class C4KeyboardInput &KeyboardInput;
 	class C4FileMonitor *pFileMonitor;

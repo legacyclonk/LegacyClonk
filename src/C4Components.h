@@ -105,8 +105,6 @@
 #define C4CFN_Names  "Names.txt"
 #define C4CFN_Titles "Title*.txt|Title.txt"
 
-#define C4CFN_Splash "Splash.c4v"
-
 #define C4CFN_TempMusic2       "~Music2.tmp"
 #define C4CFN_TempMap          "~Map.tmp"
 #define C4CFN_TempLandscape    "~Landscape.tmp"

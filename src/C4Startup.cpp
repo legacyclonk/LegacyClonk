@@ -124,7 +124,6 @@ CStdFont &C4StartupGraphics::GetBlackFontByHeight(int32_t iHgt, float *pfZoom)
 
 // statics
 C4Startup::DialogID C4Startup::eLastDlgID = C4Startup::SDID_Main;
-bool C4Startup::fFirstRun = false;
 
 // startup singleton instance
 C4Startup *C4Startup::pInstance = nullptr;
@@ -250,21 +249,6 @@ bool C4Startup::DoStartup()
 	// now in startup!
 	fInStartup = true;
 	fLastDlgWasBack = false;
-
-	// first run: Splash video
-#ifndef USE_CONSOLE
-	if (!fFirstRun)
-	{
-		fFirstRun = true;
-		if (!Config.Startup.NoSplash && !Application.NoSplash)
-		{
-			Game.VideoPlayer.PlayVideo(C4CFN_Splash);
-		}
-	}
-#endif
-
-	// make sure loader is drawn after splash
-	Game.GraphicsSystem.EnableLoaderDrawing();
 
 	// Play some music!
 	if (Config.Sound.FEMusic)

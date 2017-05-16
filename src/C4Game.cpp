@@ -327,7 +327,7 @@ bool C4Game::Init()
 			}
 
 			// init loader
-			if (Application.isFullScreen && !GraphicsSystem.InitLoaderScreen(C4S.Head.Loader, false))
+			if (Application.isFullScreen && !GraphicsSystem.InitLoaderScreen(C4S.Head.Loader))
 			{
 				LogFatal(LoadResStr("IDS_PRC_ERRLOADER")); return false;
 			}
@@ -407,7 +407,7 @@ bool C4Game::Init()
 		}
 
 		// init loader
-		if (Application.isFullScreen && !GraphicsSystem.InitLoaderScreen(C4S.Head.Loader, false))
+		if (Application.isFullScreen && !GraphicsSystem.InitLoaderScreen(C4S.Head.Loader))
 		{
 			LogFatal(LoadResStr("IDS_PRC_ERRLOADER")); return false;
 		}
@@ -530,7 +530,6 @@ void C4Game::Clear()
 	Control.Clear();
 
 	// Clear
-	VideoPlayer.Clear();
 	Scoreboard.Clear();
 	MouseControl.Clear();
 	Players.Clear();
@@ -2289,10 +2288,6 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSection, bool fLoadSky)
 
 		// Colorize defs by material
 		Defs.ColorizeByMaterial(Material, GBM);
-		SetInitProgress(59);
-
-		// Videos
-		if (!VideoPlayer.PreloadVideos(hGroup)) return false;
 		SetInitProgress(60);
 	}
 
@@ -2891,9 +2886,6 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 		{
 			Record = true;
 		}
-		// No splash (only on this program start, independent of Config.Startup.NoSplash)
-		if (SEqualNoCase(szParameter, "/nosplash"))
-			Application.NoSplash = true;
 		// Fair Crew
 		if (SEqualNoCase(szParameter, "/ncrw") || SEqualNoCase(szParameter, "/faircrew"))
 			Config.General.FairCrew = true;
