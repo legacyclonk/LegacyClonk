@@ -9,7 +9,6 @@
 #include <stdio.h>
 #ifdef _WIN32
 #include <io.h>
-#define vsnprintf _vsnprintf
 #else
 #define O_BINARY 0
 #define O_SEQUENTIAL 0

@@ -13,10 +13,6 @@
 #include <C4Network2Stats.h>
 #endif
 
-#ifdef _MSC_VER
-#pragma warning (disable: 4355)
-#endif
-
 // *** C4GameControl
 
 C4GameControl::C4GameControl()

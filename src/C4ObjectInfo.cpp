@@ -17,10 +17,6 @@
 #include <C4Player.h>
 #endif
 
-#ifdef _MSC_VER
-#define snprintf _snprintf
-#endif
-
 C4ObjectInfo::C4ObjectInfo()
 	{
 	Default();

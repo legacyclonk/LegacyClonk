@@ -414,10 +414,6 @@ class C4AulProfiler
 // script class
 class C4AulScript
 	{
-// MSVC maybe needs this.
-#ifdef _MSC_VER
-	friend class C4AulScript;
-#endif
 	public:
 		C4AulScript(); // constructor
 		virtual ~C4AulScript(); // destructor

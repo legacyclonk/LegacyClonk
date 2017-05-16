@@ -12,7 +12,7 @@
 #include <stdarg.h>
 
 // debug memory management
-#if defined(_DEBUG) && defined(_MSC_VER)
+#if defined(_MSC_VER)
 #include <crtdbg.h>
 #endif
 

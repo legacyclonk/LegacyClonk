@@ -17,62 +17,13 @@
 #define HAVE_FREETYPE
 #endif //_WIN32, HAVE_CONFIG_H
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4786) // long symbol names
-#endif
-
-// work around conflicts of Microsoft Platform SDK with old DirectX SDK
-#if defined(_WIN32) && !defined(POINTER_64)
-#define POINTER_64 __ptr64
-#endif
-
-
 // debug memory management
-#ifndef NODEBUGMEM
-#if defined(_DEBUG) && defined(_MSC_VER)
-#if _MSC_VER <= 1200
-#include <new>
-#include <memory>
+#if !defined(NODEBUGMEM) && defined(_MSC_VER)
 #include <crtdbg.h>
-#include <malloc.h>
-inline void *operator new(unsigned int s, const char *szFile, long iLine)
-	{ return ::operator new(s, _NORMAL_BLOCK, szFile, iLine); }
-inline void operator delete(void *p, const char *, long)
-	{ ::operator delete(p); }
-#define new new(__FILE__, __LINE__)
-#define malloc(size) ::_malloc_dbg(size, _NORMAL_BLOCK, __FILE__, __LINE__)
-#else
-#include <crtdbg.h>
-#endif
-#endif
 #endif
 
 // Integer dataypes
-#ifdef HAVE_STDINT_H
 #include <stdint.h>
-#elif defined(_MSC_VER)
-#include <stddef.h>
-typedef signed __int8 int8_t;
-typedef signed __int16 int16_t;
-typedef signed __int32 int32_t;
-typedef signed __int64 int64_t;
-typedef unsigned __int8 uint8_t;
-typedef unsigned __int16 uint16_t;
-typedef unsigned __int32 uint32_t;
-typedef unsigned __int64 uint64_t;
-typedef signed int ssize_t;
-// Copied from newer stddef.h
-#ifndef _INTPTR_T_DEFINED
-#ifdef  _WIN64
-typedef __int64 intptr_t;
-#else
-typedef __int32 intptr_t;
-#endif
-#define _INTPTR_T_DEFINED
-#endif
-#else
-#error Could not find integer datatypes!
-#endif
 
 #ifdef __GNUC__
 // Temporary-To-Reference-Fix
@@ -341,10 +292,6 @@ void StdBlit(uint8_t *bypSource, int iSourcePitch, int iSrcBufHgt,
 
 #include <stdio.h>
 #include <stdarg.h>
-
-#ifdef _MSC_VER
-#define vsnprintf _vsnprintf
-#endif
 
 // old, insecure sprintf
 inline int osprintf(char *str, const char *fmt, ...) GNUC_FORMAT_ATTRIBUTE_O;

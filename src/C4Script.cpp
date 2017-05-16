@@ -1445,10 +1445,6 @@ const int C4MN_Add_ImgRank     =   1,
           C4MN_Add_ForceCount  = 256,
 					C4MN_Add_ForceNoDesc = 512;
 
-#ifndef _MSC_VER
-#define _snprintf snprintf
-#endif
-
 static C4Value FnAddMenuItem(C4AulContext *cthr, C4Value *pPars)
 {
 	PAR(string, szCaption);

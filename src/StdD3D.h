@@ -5,22 +5,8 @@
 #if defined(USE_DIRECTX) && !defined(INC_STDD3D)
 #define INC_STDD3D
 
-// debug memmgmt off
-#ifdef _DEBUG
-#ifdef _MSC_VER
-#undef new
-#endif // _MSC_VER
-#endif // _DEBUG
-
 #include <d3d9.h>
 #include <StdDDraw2.h>
-
-// debug memmgmt on
-#ifdef _DEBUG
-#ifdef _MSC_VER
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#endif // _MSC_VER
-#endif // _DEBUG
 
 // default Clonk vertex format
 struct C4VERTEX

@@ -5,12 +5,6 @@
 #ifndef INC_C4Include
 #define INC_C4Include 
 
-#ifdef _MSC_VER
-#pragma warning(disable: 4786)
-#pragma warning(disable: 4706)
-#pragma warning(disable: 4239)
-#endif
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif //HAVE_CONFIG_H
@@ -58,7 +52,6 @@
 #ifdef _WIN32
 // resources
 #include "res/engine_resource.h"
-#define POINTER_64 __ptr64
 #endif // _WIN32
 
 #endif // C4ENGINE

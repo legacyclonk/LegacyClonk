@@ -71,16 +71,9 @@ public:
 				{ pTarget->T::OnPacket(rPacket, pNetIO); }
 		};
 
-#ifdef _MSC_VER
-#define NETIO_CREATE_CALLBACK_PROXY(ForClass, ProxyName) \
-		typedef class C4NetIO::CBProxy<ForClass> CBProxyT; \
-		friend CBProxyT; \
-		CBProxyT ProxyName;
-#else
 #define NETIO_CREATE_CALLBACK_PROXY(ForClass, ProxyName) \
 		friend class C4NetIO::CBProxy<ForClass>; \
 		C4NetIO::CBProxy<ForClass> ProxyName;
-#endif
 
 	// *** interface
 	

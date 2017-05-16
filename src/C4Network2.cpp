@@ -27,11 +27,6 @@
 #include <arpa/inet.h>
 #endif
 
-// compile options
-#ifdef _MSC_VER
-#pragma warning (disable: 4355)
-#endif
-
 // *** C4Network2Status
 
 C4Network2Status::C4Network2Status()
