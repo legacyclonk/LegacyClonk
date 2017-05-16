@@ -29,8 +29,6 @@
 #include <X11/Xlib.h>
 #endif
 
-#include <functional>
-
 #ifdef USE_SDL_MAINLOOP
 
 #include <SDL/SDL.h>
@@ -546,19 +544,16 @@ void C4CustomKey::Update(const C4CustomKey *pByKey)
 	}
 }
 
-bool C4KeyboardCallbackInterfaceHasOriginalKey(C4KeyboardCallbackInterface *pIntfc, const C4CustomKey *pCheckKey)
-{
-	return pIntfc->IsOriginalKey(pCheckKey);
-}
-
 void C4CustomKey::KillCallbacks(const C4CustomKey *pOfKey)
 {
 	// remove all instances from list
-	CBVec::iterator i;
-	while ((i = std::find_if(vecCallbacks.begin(), vecCallbacks.end(), std::bind2nd(std::ptr_fun(&C4KeyboardCallbackInterfaceHasOriginalKey), pOfKey))) != vecCallbacks.end())
+	for (;;)
 	{
-		C4KeyboardCallbackInterface *pItfc = *i;
-		vecCallbacks.erase(i);
+		const auto it = std::find_if(vecCallbacks.cbegin(), vecCallbacks.cend(),
+			[&](const auto &pIntfc) { return pIntfc->IsOriginalKey(pOfKey); });
+		if (it == vecCallbacks.cend()) break;
+		const auto pItfc = *it;
+		vecCallbacks.erase(it);
 		pItfc->Deref();
 	}
 }
