@@ -70,7 +70,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
 			PFD_SUPPORT_OPENGL |
 			PFD_DRAW_TO_WINDOW;
 		rPfd.iPixelType = PFD_TYPE_RGBA;
-		rPfd.cColorBits = pGL->iClrDpt;
+		rPfd.cColorBits = 32;
 		rPfd.cDepthBits = 0;
 		rPfd.iLayerType = PFD_MAIN_PLANE;
 		pGL->iPixelFormat = ChoosePixelFormat(hDC, &rPfd);

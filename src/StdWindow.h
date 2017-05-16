@@ -430,7 +430,7 @@ protected:
 	bool fDspModeSet; // true if display mode was changed
 	bool SetOutputAdapter(unsigned int iMonitor);
 	// Selects a suitable mode and saves the default for restoration
-	bool FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iColorDepth, unsigned int iMonitor);
+	bool FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iMonitor);
 	virtual bool DoInit() = 0;
 	virtual void OnNetworkEvents() = 0;
 

@@ -72,8 +72,6 @@ protected:
 	IDirect3DStateBlock9 *savedState; // state block to backup current state
 	D3DDISPLAYMODE dspMode;
 	D3DPRESENT_PARAMETERS d3dpp; // device present parameters
-	D3DFORMAT dwSurfaceType; // surface format for new textures
-	D3DFORMAT PrimarySrfcFormat; // surace format of primary surface
 	bool fSoftware; // software rendering
 	struct
 	{
@@ -130,8 +128,8 @@ public:
 	IDirect3DStateBlock9 *CreateStateBlock(bool fTransparent, bool fSolid, bool fBaseTex, bool fAdditive, bool fMod2); // capture state blocks for blitting
 
 protected:
-	bool FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iColorDepth, unsigned int iMonitor);
-	virtual bool CreatePrimarySurfaces(bool Fullscreen, int iColorDepth, unsigned int iMonitor);
+	bool FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iMonitor);
+	virtual bool CreatePrimarySurfaces(bool Fullscreen, unsigned int iMonitor);
 	bool SetOutputAdapter(unsigned int iMonitor);
 	bool CreateDirectDraw();
 

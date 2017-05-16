@@ -93,7 +93,6 @@ protected:
 	CStdGLCtx MainCtx; // main GL context
 	CStdGLCtx *pCurrCtx; // current context (owned if fullscreen)
 	bool fFullscreen; // fullscreen mode?
-	int iClrDpt; // color depth
 	// continously numbered shaders for ATI cards
 	unsigned int shader;
 	// shaders for the ARB extension
@@ -153,7 +152,7 @@ public:
 #endif
 
 protected:
-	bool CreatePrimarySurfaces(bool Fullscreen, int iColorDepth, unsigned int iMonitor);
+	bool CreatePrimarySurfaces(bool Fullscreen, unsigned int iMonitor);
 	bool CreateDirectDraw();
 	virtual bool SetOutputAdapter(unsigned int iMonitor);
 

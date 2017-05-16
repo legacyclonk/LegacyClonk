@@ -134,7 +134,6 @@ IDS_CON_VEHICLES=Fahrzeuge
 IDS_CTL_ACTIVE=Aktivieren
 IDS_CTL_AUTHOR=Autor: %s
 IDS_CTL_AUTOMATICUPDATES=automatische Updates aktivieren
-IDS_CTL_BITDEPTH=Farbtiefe
 IDS_CTL_CHANNEL=Chat-Raum (Kanal):
 IDS_CTL_CHAT=Cha&t:
 IDS_CTL_COLOR=Farbe

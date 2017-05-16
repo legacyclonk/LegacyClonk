@@ -148,9 +148,7 @@ bool C4Video::Start(const char *szFilename)
 	// Create video buffer
 	AviFrame = 0;
 	InfoSize = sizeof(BITMAPINFOHEADER);
-	if (Config.Graphics.BitDepth == 8)
-		InfoSize += sizeof(RGBQUAD) * 256;
-	BufferSize = InfoSize + DWordAligned(Width) * Height * Config.Graphics.BitDepth / 8;
+	BufferSize = InfoSize + DWordAligned(Width) * Height * 4;
 	Buffer = new uint8_t[BufferSize];
 	// Set bitmap info
 	BITMAPINFO *pInfo = (BITMAPINFO *)Buffer;
@@ -159,16 +157,9 @@ bool C4Video::Start(const char *szFilename)
 	pInfo->bmiHeader.biPlanes = 1;
 	pInfo->bmiHeader.biWidth = Width;
 	pInfo->bmiHeader.biHeight = Height;
-	pInfo->bmiHeader.biBitCount = Config.Graphics.BitDepth;
+	pInfo->bmiHeader.biBitCount = 32;
 	pInfo->bmiHeader.biCompression = 0;
-	pInfo->bmiHeader.biSizeImage = DWordAligned(Width) * Height * Config.Graphics.BitDepth / 8;
-	if (Config.Graphics.BitDepth == 8)
-		for (int cnt = 0; cnt < 256; cnt++)
-		{
-			pInfo->bmiColors[cnt].rgbRed =   Game.GraphicsResource.GamePalette[cnt * 3 + 0];
-			pInfo->bmiColors[cnt].rgbGreen = Game.GraphicsResource.GamePalette[cnt * 3 + 1];
-			pInfo->bmiColors[cnt].rgbBlue =  Game.GraphicsResource.GamePalette[cnt * 3 + 2];
-		}
+	pInfo->bmiHeader.biSizeImage = DWordAligned(Width) * Height * 4;
 	// Recording flag
 	Recording = true;
 #endif // _WIN32
@@ -239,9 +230,9 @@ bool C4Video::RecordFrame()
 	StdBlit((uint8_t *)bypBits, iPitch, -iHeight,
 		X, Y, Width, Height,
 		(uint8_t *)Buffer + InfoSize,
-		DWordAligned(Width) * (Config.Graphics.BitDepth / 8), Height,
+		DWordAligned(Width) * 4, Height,
 		0, 0, Width, Height,
-		Config.Graphics.BitDepth / 8);
+		4);
 	// Unlock source
 	Surface->Unlock();
 	// Write frame to file

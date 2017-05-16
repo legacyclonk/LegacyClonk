@@ -590,7 +590,7 @@ CStdGLCtx *CStdGL::CreateContext(HWND hWindow, CStdApp *pApp)
 }
 #endif
 
-bool CStdGL::CreatePrimarySurfaces(bool Playermode, int iColorDepth, unsigned int iMonitor)
+bool CStdGL::CreatePrimarySurfaces(bool Playermode, unsigned int iMonitor)
 {
 	// remember fullscreen setting
 	fFullscreen = Playermode && !DDrawCfg.Windowed;
@@ -599,7 +599,7 @@ bool CStdGL::CreatePrimarySurfaces(bool Playermode, int iColorDepth, unsigned in
 	if (Playermode)
 	{
 		// Always search for display mode, in case the user decides to activate fullscreen later
-		if (!pApp->FindDisplayMode(pApp->ScreenWidth(), pApp->ScreenHeight(), iColorDepth, iMonitor))
+		if (!pApp->FindDisplayMode(pApp->ScreenWidth(), pApp->ScreenHeight(), iMonitor))
 		{
 			Error("  gl: No Display mode found; leaving current!");
 			fFullscreen = false;
@@ -619,14 +619,10 @@ bool CStdGL::CreatePrimarySurfaces(bool Playermode, int iColorDepth, unsigned in
 		}
 	}
 
-	// store options
-	byByteCnt = 4; iClrDpt = iColorDepth;
-
 	// create lpPrimary and lpBack (used in first context selection)
 	lpPrimary = lpBack = new CSurface();
 	lpPrimary->fPrimary = true;
 	lpPrimary->AttachSfc(nullptr);
-	lpPrimary->byBytesPP = byByteCnt;
 
 	// create+select gl context
 	if (!MainCtx.Init(pApp->pWindow, pApp)) return Error("  gl: Error initializing context");
@@ -804,7 +800,6 @@ bool CStdGL::RestoreDeviceObjects()
 	// restore primary/back
 	RenderTarget = lpPrimary;
 	lpPrimary->AttachSfc(nullptr);
-	lpPrimary->byBytesPP = byByteCnt;
 
 	// set states
 	fSuccess = pCurrCtx ? (pCurrCtx->Select()) : MainCtx.Select();
@@ -1134,7 +1129,7 @@ bool CStdGL::OnResolutionChanged()
 	if (fFullscreen && !DDrawCfg.GLKeepRes)
 	{
 		pApp->SetFullScreen(false, false);
-		pApp->FindDisplayMode(pApp->ScreenWidth(), pApp->ScreenHeight(), iClrDpt, 0);
+		pApp->FindDisplayMode(pApp->ScreenWidth(), pApp->ScreenHeight(), 0);
 		pApp->SetFullScreen(true, false);
 	}
 	else
@@ -1152,7 +1147,6 @@ void CStdGL::Default()
 	CStdDDraw::Default();
 	iPixelFormat = 0;
 	sfcFmt = 0;
-	iClrDpt = 0;
 	MainCtx.Clear();
 }
 

@@ -290,25 +290,6 @@ void CStdD3D::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, b
 	// done
 }
 
-// get bit depth from surface format
-unsigned int Format2BitDepth(D3DFORMAT format)
-{
-	switch (format)
-	{
-	case D3DFMT_X1R5G5B5:
-	case D3DFMT_R5G6B5:
-		return 16;
-
-	case D3DFMT_X8R8G8B8:
-	case D3DFMT_A8R8G8B8:
-		return 32;
-
-	default:
-		// unknown
-		return 0;
-	}
-}
-
 bool CStdD3D::BlitTex2Window(CTexRef *pTexRef, HDC hdcTarget, RECT &rtFrom, RECT &rtTo)
 {
 	// lock
@@ -403,18 +384,17 @@ bool CStdD3D::BlitSurface2Window(CSurface *sfcSource,
 	return fOkay;
 }
 
-bool CStdD3D::FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iColorDepth, unsigned int iMonitor)
+bool CStdD3D::FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iMonitor)
 {
 	bool fFound = false;
 	D3DDISPLAYMODE dmode;
-	const D3DFORMAT format = (iColorDepth == 32 ? D3DFMT_X8R8G8B8 : D3DFMT_R5G6B5);
 	// enumerate modes
-	int iNumModes = lpD3D->GetAdapterModeCount(iMonitor, format);
+	int iNumModes = lpD3D->GetAdapterModeCount(iMonitor, D3DFMT_X8R8G8B8);
 	for (int i = 0; i < iNumModes; i++)
-		if (lpD3D->EnumAdapterModes(iMonitor, format, i, &dmode) == D3D_OK)
+		if (lpD3D->EnumAdapterModes(iMonitor, D3DFMT_X8R8G8B8, i, &dmode) == D3D_OK)
 		{
 			// size and bit depth is OK?
-			if (dmode.Width == iXRes && dmode.Height == iYRes && Format2BitDepth(dmode.Format) == iColorDepth)
+			if (dmode.Width == iXRes && dmode.Height == iYRes)
 			{
 				// compare with found one
 				if (fFound)
@@ -445,15 +425,9 @@ bool CStdD3D::SetOutputAdapter(unsigned int iMonitor)
 	return true;
 }
 
-bool CStdD3D::CreatePrimarySurfaces(bool Fullscreen, int iColorDepth, unsigned int iMonitor)
+bool CStdD3D::CreatePrimarySurfaces(bool Fullscreen, unsigned int iMonitor)
 {
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
-	// set needed surface type
-	switch (iColorDepth)
-	{
-	case 16: dwSurfaceType = D3DFMT_A4R4G4B4; break;
-	case 32: dwSurfaceType = D3DFMT_A8R8G8B8; break;
-	}
 
 	HRESULT hr;
 	HWND hWindow = pApp->pWindow->hWindow;
@@ -475,7 +449,7 @@ bool CStdD3D::CreatePrimarySurfaces(bool Fullscreen, int iColorDepth, unsigned i
 		else
 		{
 			// true fullscreen
-			if (!FindDisplayMode(pApp->ScreenWidth(), pApp->ScreenHeight(), iColorDepth, iMonitor))
+			if (!FindDisplayMode(pApp->ScreenWidth(), pApp->ScreenHeight(), iMonitor))
 				return Error("Display mode not supported");
 		}
 		// fill present structure
@@ -534,28 +508,14 @@ bool CStdD3D::CreatePrimarySurfaces(bool Fullscreen, int iColorDepth, unsigned i
 	}
 	// device successfully created?
 	if (!lpDevice) return false;
-	// store color depth
-	byByteCnt = iColorDepth / 8;
-	PrimarySrfcFormat = d3dpp.BackBufferFormat;
 	// create bmi-header
 	ZeroMemory(&sfcBmpInfo, sizeof(sfcBmpInfo));
 	sfcBmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	sfcBmpInfo.bmiHeader.biWidth = pApp->ScreenWidth();
 	sfcBmpInfo.bmiHeader.biHeight = -pApp->ScreenHeight();
 	sfcBmpInfo.bmiHeader.biPlanes = 1;
-	sfcBmpInfo.bmiHeader.biBitCount = iColorDepth;
-	if (iColorDepth == 16)
-	{
-		// blitting an A4 (ignored) R4G4BV4 surface
-		sfcBmpInfo.bmiHeader.biCompression = BI_BITFIELDS;
-		*(uint32_t *)(&(sfcBmpInfo.bmiColors[0])) = 0x0F00;
-		*(uint32_t *)(&(sfcBmpInfo.bmiColors[1])) = 0x00F0;
-		*(uint32_t *)(&(sfcBmpInfo.bmiColors[2])) = 0x000F;
-	}
-	else
-	{
-		sfcBmpInfo.bmiHeader.biCompression = BI_RGB;
-	}
+	sfcBmpInfo.bmiHeader.biBitCount = 32;
+	sfcBmpInfo.bmiHeader.biCompression = BI_RGB;
 
 	// initialize device-dependent objects
 	if (!InitDeviceObjects())
@@ -577,7 +537,6 @@ bool CStdD3D::OnResolutionChanged()
 	// do not mess with real presetn parameters until resolution change worked
 	D3DPRESENT_PARAMETERS d3dpp;
 	// reinit window for new resolution
-	int iColorDepth = byByteCnt * 8;
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
 	HRESULT hr;
 	HWND hWindow = pApp->pWindow->hWindow;
@@ -596,7 +555,7 @@ bool CStdD3D::OnResolutionChanged()
 	else
 	{
 		// true fullscreen
-		if (!FindDisplayMode(pApp->ScreenWidth(), pApp->ScreenHeight(), iColorDepth, pApp->Monitor))
+		if (!FindDisplayMode(pApp->ScreenWidth(), pApp->ScreenHeight(), pApp->Monitor))
 			return Error("Display mode not supported");
 	}
 	// fill present structure
@@ -634,13 +593,10 @@ bool CStdD3D::OnResolutionChanged()
 	}
 	// device successfully reset! Reflect changes
 	this->d3dpp = d3dpp;
-	// store color depth
-	byByteCnt = iColorDepth / 8;
-	PrimarySrfcFormat = d3dpp.BackBufferFormat;
 	// update bmi-header
 	sfcBmpInfo.bmiHeader.biWidth = pApp->ScreenWidth();
 	sfcBmpInfo.bmiHeader.biHeight = -pApp->ScreenHeight();
-	sfcBmpInfo.bmiHeader.biBitCount = Format2BitDepth(dspMode.Format);
+	sfcBmpInfo.bmiHeader.biBitCount = 4;
 	// reinit device-dependant objects
 	InitDeviceObjects();
 	RestoreDeviceObjects();
@@ -683,36 +639,10 @@ void CStdD3D::DrawPixPrimary(CSurface *sfcDest, int iX, int iY, uint32_t dwClr)
 {
 	// Must be render target and locked
 	if (!sfcDest->IsRenderTarget() || !sfcDest->IsLocked()) return;
-	// set according to pixel format
+	// set pixel
 	uint8_t *pBits = sfcDest->PrimarySurfaceLockBits;
 	int iPitch = sfcDest->PrimarySurfaceLockPitch;
-	uint32_t *pPix32; uint16_t *pPix16;
-	switch (sfcDest->dwClrFormat)
-	{
-	case D3DFMT_X1R5G5B5:
-		// 16 bit 5-5-5
-		pPix16 = (uint16_t *)(pBits + iY * iPitch + iX * 2);
-		*pPix16 =
-			uint16_t((dwClr & 0x000000f8) >> 3) |
-			uint16_t((dwClr & 0x0000f800) >> 6) |
-			uint16_t((dwClr & 0x00f80000) >> 9);
-		break;
-
-	case D3DFMT_R5G6B5:
-		// 16 bit 5-6-5
-		pPix16 = (uint16_t *)(pBits + iY * iPitch + iX * 2);
-		*pPix16 =
-			uint16_t((dwClr & 0x000000f8) >> 3) |
-			uint16_t((dwClr & 0x0000fc00) >> 5) |
-			uint16_t((dwClr & 0x00f80000) >> 8);
-		break;
-
-	case D3DFMT_X8R8G8B8:
-		// 32 bit
-		pPix32 = (uint32_t *)(pBits + iY * iPitch + iX * 4);
-		BltAlpha(*pPix32, dwClr);
-		break;
-	}
+	BltAlpha(*reinterpret_cast<uint32_t *>(pBits + iY * iPitch + iX * 4), dwClr);
 }
 
 void CStdD3D::DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
@@ -995,8 +925,7 @@ bool CStdD3D::RestoreDeviceObjects()
 	}
 	RenderTarget = lpPrimary;
 	lpPrimary->AttachSfc(pPrimarySfc);
-	lpPrimary->dwClrFormat = PrimarySrfcFormat;
-	lpPrimary->byBytesPP = Format2BitDepth(PrimarySrfcFormat) / 8;
+	lpPrimary->dwClrFormat = D3DFMT_X8R8G8B8;
 	// create vertex buffer
 	if (lpDevice->CreateVertexBuffer(sizeof(bltVertices), 0, D3DFVF_C4VERTEX, D3DPOOL_DEFAULT, &pVB, nullptr) != D3D_OK) return false;
 	// fill initial data for vertex buffer

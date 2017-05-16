@@ -255,7 +255,7 @@ bool CStdApp::SignalNetworkEvent()
 }
 
 bool CStdApp::FindDisplayMode(unsigned int iXRes, unsigned int iYRes,
-	unsigned int iColorDepth, unsigned int iMonitor)
+	unsigned int iMonitor)
 {
 	return true;
 }

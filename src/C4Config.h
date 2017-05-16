@@ -109,7 +109,6 @@ public:
 	int32_t ShowAllResolutions;
 	int32_t ShowCrewNames; // show player name above clonks?
 	int32_t ShowCrewCNames; // show clonk names above clonks?
-	int32_t BitDepth; // used bit depth for newgfx
 	int32_t NewGfxCfg;   // some configuration settings for newgfx
 	int32_t NewGfxCfgGL; // some configuration settings for newgfx (OpenGL)
 	int32_t MsgBoard;
@@ -181,7 +180,6 @@ class C4ConfigStartup
 public:
 	// config for do-not-show-this-msg-again-messages
 	int32_t HideMsgGfxEngineChange;
-	int32_t HideMsgGfxBitDepthChange;
 	int32_t HideMsgMMTimerChange;
 	int32_t HideMsgStartDedicated;
 	int32_t HideMsgPlrTakeOver;

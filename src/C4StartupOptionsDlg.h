@@ -145,11 +145,10 @@ private:
 	void OnGfxResComboFill(C4GUI::ComboBox_FillCB *pFiller);
 	bool OnGfxResComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection);
 	bool TryNewResolution(int32_t iResX, int32_t iResY);
-	void OnGfxClrDepthCheck(C4GUI::Element *pCheckBox);
 	StdStrBuf GetGfxResString(int32_t iResX, int32_t iResY); // convert resolution to string to be displayed in resolution choice combobox
 	void OnEffectsSliderChange(int32_t iNewVal);
 
-	C4GUI::CheckBox *pCheckGfxEngines[3], *pCheckGfxClrDepth[2];
+	C4GUI::CheckBox *pCheckGfxEngines[3];
 	C4GUI::GroupBox *pGroupTrouble;
 	C4GUI::CheckBox *pCheckGfxNoAlphaAdd, *pCheckGfxPointFilter, *pCheckGfxNoAddBlit, *pCheckGfxNoBoxFades, *pCheckGfxClipManually;
 	int32_t iGfxTexIndent, iGfxBlitOff; EditConfig *pEdtGfxTexIndent, *pEdtGfxBlitOff;
