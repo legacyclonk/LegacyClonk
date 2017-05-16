@@ -38,9 +38,7 @@
 #define C4GFXCFG_NOADDITIVEBLTS  8
 #define C4GFXCFG_NOBOXFADES      16
 #define C4GFXCFG_GLSMARTTASK     32
-#define C4GFXCFG_CLIPMANUALLY    64
 #define C4GFXCFG_GLCLAMP         128
-#define C4GFXCFG_NOOFFBLITS      256
 #define C4GFXCFG_NOACCELERATION  512
 #define C4GFXCFG_WINDOWED        1024
 
@@ -79,13 +77,10 @@ public:
 	bool AdditiveBlts; // enable additive blitting
 	bool NoBoxFades; // map all DrawBoxFade-calls to DrawBoxDw
 	bool GLKeepRes; // do not switch back to windows resolution during taskswitch in OpenGL
-	bool ClipManually; // do manual clipping
-	bool ClipManuallyE; // do manual clipping in the easy cases
 	bool GLClamp; // special texture clamping in OpenGL
 	float fTexIndent; // texture indent
 	float fBlitOff; // blit offsets
 	uint32_t AllowedBlitModes; // bit mask for allowed blitting modes
-	bool NoOffscreenBlits; // if set, all blits to non-primary-surfaces are emulated
 	bool NoAcceleration; // wether direct rendering is used (X11)
 	bool Windowed; // wether the resolution will not be set
 	int Cfg;
@@ -111,13 +106,10 @@ public:
 #else
 		GLKeepRes = false;
 #endif
-		ClipManually = !!(dwCfg & C4GFXCFG_CLIPMANUALLY);
 		GLClamp = !!(dwCfg & C4GFXCFG_GLCLAMP);
 		this->fTexIndent = fTexIndent;
 		this->fBlitOff = fBlitOff;
 		AllowedBlitModes = AdditiveBlts ? C4GFXBLIT_ALL : C4GFXBLIT_NOADD;
-		ClipManuallyE = true;
-		NoOffscreenBlits = true;
 		NoAcceleration = !!(dwCfg & C4GFXCFG_NOACCELERATION);
 		Windowed = !!(dwCfg & C4GFXCFG_WINDOWED);
 	}
@@ -132,7 +124,6 @@ public:
 #ifdef _WIN32
 			(GLKeepRes ? 0 : C4GFXCFG_GLSMARTTASK) |
 #endif
-			(ClipManually ? C4GFXCFG_CLIPMANUALLY : 0) |
 			(GLClamp ? C4GFXCFG_GLCLAMP : 0) |
 			(NoAcceleration ? C4GFXCFG_NOACCELERATION : 0) |
 			(Windowed ? C4GFXCFG_WINDOWED : 0);

@@ -124,8 +124,6 @@ bool CStdGL::PrepareRendering(CSurface *sfcToSurface)
 
 void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact)
 {
-	// clipping
-	if (DDrawCfg.ClipManually && rBltData.pTransform) ClipPoly(rBltData);
 	// global modulation map
 	int i;
 	uint32_t dwModMask = 0;
@@ -291,39 +289,6 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 	if (ClipAll) return;
 	// check exact
 	bool fExact = true;
-	// manual clipping? (primary surface only)
-	if (DDrawCfg.ClipManuallyE)
-	{
-		int iOver;
-		// Left
-		iOver = tx - ClipX1;
-		if (iOver < 0)
-		{
-			wdt += iOver;
-			fx -= iOver;
-			tx = ClipX1;
-		}
-		// Top
-		iOver = ty - ClipY1;
-		if (iOver < 0)
-		{
-			hgt += iOver;
-			fy -= iOver;
-			ty = ClipY1;
-		}
-		// Right
-		iOver = ClipX2 + 1 - (tx + wdt);
-		if (iOver < 0)
-		{
-			wdt += iOver;
-		}
-		// Bottom
-		iOver = ClipY2 + 1 - (ty + hgt);
-		if (iOver < 0)
-		{
-			hgt += iOver;
-		}
-	}
 	// inside screen?
 	if (wdt <= 0 || hgt <= 0) return;
 	// prepare rendering to surface
@@ -661,45 +626,6 @@ void CStdGL::DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32
 
 void CStdGL::DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr)
 {
-	float i;
-	// manual clipping?
-	if (DDrawCfg.ClipManuallyE)
-	{
-		// sort left/right
-		if (x1 > x2) { i = x1; x1 = x2; x2 = i; i = y1; y1 = y2; y2 = i; }
-		// clip horizontally
-		if (x1 < ClipX1)
-			if (x2 < ClipX1)
-				return; // left out
-			else
-			{
-				y1 += (y2 - y1) * ((float)ClipX1 - x1) / (x2 - x1); x1 = (float)ClipX1;
-			} // clip left
-		else if (x2 > ClipX2)
-			if (x1 > ClipX2)
-				return; // right out
-			else
-			{
-				y2 -= (y2 - y1) * (x2 - (float)ClipX2) / (x2 - x1); x2 = (float)ClipX2;
-			} // clip right
-		// sort top/bottom
-		if (y1 > y2) { i = x1; x1 = x2; x2 = i; i = y1; y1 = y2; y2 = i; }
-		// clip vertically
-		if (y1 < ClipY1)
-			if (y2 < ClipY1)
-				return; // top out
-			else
-			{
-				x1 += (x2 - x1) * ((float)ClipY1 - y1) / (y2 - y1); y1 = (float)ClipY1;
-			} // clip top
-		else if (y2 > ClipY2)
-			if (y1 > ClipY2)
-				return; // bottom out
-			else
-			{
-				x2 -= (x2 - x1) * (y2 - (float)ClipY2) / (y2 - y1); y2 = (float)ClipY2;
-			} // clip bottom
-	}
 	// apply color modulation
 	ClrByCurrentBlitMod(dwClr);
 	// render target?

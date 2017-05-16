@@ -649,7 +649,6 @@ IDS_MSG_LEAGUEUSERNAMETOOSHORT=The user name is too short.
 IDS_MSG_LEAGUE_REGISTRATION=This is your first login at the league. Your can specify your desired league user name and league password below.
 IDS_MSG_LOCAL=local
 IDS_MSG_LOOKINGFORUPDATES=Checking for updates...
-IDS_MSG_MANUALCLIP_DESC=Enable manual clipping. Try this if you encounter graphics errors like long, stretched lines across your screen.
 IDS_MSG_MAP_DESC=Select scenario from the map.
 IDS_MSG_MAP_STARTSCEN=Start scenario %s
 IDS_MSG_MMTIMER_DESC=Try this option if you experience timing problems during the game, e.g. very slow game even in small scenarios on decent hardware.

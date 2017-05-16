@@ -150,7 +150,7 @@ bool CSurface::IsRenderTarget()
 		//  or the surface is split (large sfcs) or locked (landscape)
 		//  (only D3D for now)
 #ifdef USE_DIRECTX
-		|| (!Locked && !DDrawCfg.NoOffscreenBlits && pD3D && fIsRenderTarget)
+		|| (!Locked && pD3D && fIsRenderTarget)
 #endif
 		;
 }
@@ -946,8 +946,7 @@ CTexRef::CTexRef(int iSize, bool fSingle)
 	if (pD3D)
 	{
 		// Direct3D
-		bool fRenderTarget = fSingle && !DDrawCfg.NoOffscreenBlits;
-		if (pD3D->lpDevice->CreateTexture(iSize, iSize, 1, fRenderTarget ? D3DUSAGE_RENDERTARGET : 0, D3DFMT_A8R8G8B8, fRenderTarget ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED, &pTex, nullptr) != D3D_OK)
+		if (pD3D->lpDevice->CreateTexture(iSize, iSize, 1, fSingle ? D3DUSAGE_RENDERTARGET : 0, D3DFMT_A8R8G8B8, fSingle ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED, &pTex, nullptr) != D3D_OK)
 		{
 			lpDDraw->Error("Error creating surface");
 			return;
