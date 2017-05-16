@@ -27,7 +27,6 @@
 #ifdef USE_FMOD
 #include <fmod_errors.h>
 #endif
-#include <Midi.h>
 
 /* helpers */
 
@@ -58,42 +57,6 @@ BOOL C4MusicFile::Init(const char *szFile)
 	}
 
 /* midi */
-
-#ifdef USE_WINDOWS_MIDI
-BOOL C4MusicFileMID::Play(BOOL loop)
-	{
-
-	// check existance
-	if(!FileExists(FileName))
-		// try extracting it
-		if(!ExtractFile())
-			// doesn't exist - or file is corrupt
-			return FALSE;
-
-	// Play Song
-	PlayMidi(SongExtracted ? Config.AtTempPath(C4CFN_TempMusic2) : FileName, Application.hWindow);
-
-	return TRUE;
-	}
-
-void C4MusicFileMID::Stop(int fadeout_ms)
-	{
-	// stop song
-	StopMidi();
-	// delete temp file
-	RemTempFile();
-	}
-
-void C4MusicFileMID::CheckIfPlaying()
-	{
-	// windows will send the message
-	}
-
-void C4MusicFileMID::SetVolume(int iLevel)
-	{
-	// FIXME
-	}	
-#endif
 
 #ifdef USE_FMOD
 BOOL C4MusicFileMID::Play(BOOL loop)

@@ -28,7 +28,6 @@
 #include <C4Wrappers.h>
 #endif
 
-#include <Midi.h>
 #ifdef USE_FMOD
 #include <fmod_errors.h>
 #endif

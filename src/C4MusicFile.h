@@ -57,7 +57,7 @@ protected:
 	BOOL SongExtracted;
 
 };
-#if defined(USE_FMOD) || defined(USE_WINDOWS_MIDI)
+#if defined(USE_FMOD)
 class C4MusicFileMID : public C4MusicFile
 	{
 	public:
@@ -67,14 +67,11 @@ class C4MusicFileMID : public C4MusicFile
 		void CheckIfPlaying();
 		//C4MusicFileMID();
 		void SetVolume(int);
-#ifdef USE_FMOD
+
 	protected:
 		FMUSIC_MODULE *mod;
-#endif
 	};
-#endif
 
-#ifdef USE_FMOD
 /* MOD class */
 
 class C4MusicFileMOD : public C4MusicFile
