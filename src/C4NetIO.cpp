@@ -51,11 +51,6 @@ int pipe(int *phandles) { return _pipe(phandles, 10, O_BINARY); }
 
 #endif
 
-
-#ifdef _MSC_VER
-#pragma warning (disable : 4355)
-#endif
-
 // constants definition
 const int C4NetIO::TO_INF = -1;
 const uint16_t C4NetIO::P_NONE = ~0;

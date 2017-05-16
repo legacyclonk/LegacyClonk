@@ -34,11 +34,6 @@
 #endif
 #include <errno.h>
 
-#ifdef _MSC_VER
-#define snprintf _snprintf
-#pragma warning (disable : 4355)
-#endif
-
 // compile debug options
 // #define C4NET2RES_LOAD_ALL
 #define C4NET2RES_DEBUG_LOG

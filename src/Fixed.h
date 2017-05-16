@@ -198,28 +198,12 @@ class C4Fixed
 		inline C4Fixed operator * (int32_t iVal2) const { return C4Fixed(*this) *= iVal2; }
 		inline C4Fixed operator / (int32_t iVal2) const { return C4Fixed(*this) /= iVal2; }
 
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-		inline C4Fixed operator + (int iVal2) const { return operator + (int32_t(iVal2)); }
-		inline C4Fixed operator - (int iVal2) const { return operator - (int32_t(iVal2)); }
-		inline C4Fixed operator * (int iVal2) const { return operator * (int32_t(iVal2)); }
-		inline C4Fixed operator / (int iVal2) const { return operator / (int32_t(iVal2)); }
-#endif
-
 		inline bool operator == (int32_t iVal2) const { return operator == (C4Fixed(iVal2)); }
 		inline bool operator < (int32_t iVal2) const { return operator < (C4Fixed(iVal2)); }
 		inline bool operator > (int32_t iVal2) const { return operator > (C4Fixed(iVal2)); }
 		inline bool operator <= (int32_t iVal2) const { return operator <= (C4Fixed(iVal2)); }
 		inline bool operator >= (int32_t iVal2) const { return operator >= (C4Fixed(iVal2)); }
 		inline bool operator != (int32_t iVal2) const { return operator != (C4Fixed(iVal2)); }
-
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-		inline bool operator == (int iVal2) const { return operator == (C4Fixed(int32_t(iVal2))); }
-		inline bool operator < (int iVal2) const { return operator < (C4Fixed(int32_t(iVal2))); }
-		inline bool operator > (int iVal2) const { return operator > (C4Fixed(int32_t(iVal2))); }
-		inline bool operator <= (int iVal2) const { return operator <= (C4Fixed(int32_t(iVal2))); }
-		inline bool operator >= (int iVal2) const { return operator >= (C4Fixed(int32_t(iVal2))); }
-		inline bool operator != (int iVal2) const { return operator != (C4Fixed(int32_t(iVal2))); }
-#endif
 
 #ifdef USE_FIXED
 		C4Fixed sin_deg() const

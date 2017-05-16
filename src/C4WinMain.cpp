@@ -40,7 +40,7 @@ int WINAPI WinMain (HINSTANCE hInst,
                     LPSTR lpszCmdParam, 
 										int nCmdShow)
 	{
-#if defined(_DEBUG) && defined(_MSC_VER)
+#if defined(_MSC_VER)
 	// enable debugheap!
   _CrtSetDbgFlag( _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG ) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif

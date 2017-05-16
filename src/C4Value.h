@@ -297,9 +297,6 @@ template <> struct C4ValueConv<C4Value *>
 
 // aliases
 template <> struct C4ValueConv<long> : public C4ValueConv<int32_t> { };
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-template <> struct C4ValueConv<int> : public C4ValueConv<int32_t> { };
-#endif
 
 extern const C4Value C4VNull, C4VFalse, C4VTrue;
 
