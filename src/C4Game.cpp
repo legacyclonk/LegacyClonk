@@ -160,7 +160,7 @@ bool C4Game::OpenScenario()
 	StdStrBuf sDefinitionFilenames;
 	if (!C4S.Definitions.AllowUserChange && C4S.Definitions.GetModules(&sDefinitionFilenames))
 	{
-		SCopy(sDefinitionFilenames.getData(), DefinitionFilenames, (sizeof DefinitionFilenames) - 1);
+		SCopy(sDefinitionFilenames.getData(), DefinitionFilenames, sizeof(DefinitionFilenames) - 1);
 		if (DefinitionFilenames[0]) Log(LoadResStr("IDS_PRC_SCEOWNDEFS"));
 		else Log(LoadResStr("IDS_PRC_LOCALONLY"));
 	}

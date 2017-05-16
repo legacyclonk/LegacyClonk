@@ -612,7 +612,7 @@ bool C4NetIOTCP::Connect(const C4NetIO::addr_t &addr) // (mt-safe)
 #endif
 
 	// connect (async)
-	if (::connect(nsock, reinterpret_cast<const sockaddr *>(&addr), sizeof addr) == SOCKET_ERROR)
+	if (::connect(nsock, reinterpret_cast<const sockaddr *>(&addr), sizeof(addr)) == SOCKET_ERROR)
 	{
 		if (!HaveWouldBlockError()) // expected
 		{
@@ -793,7 +793,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 	addr_t caddr = ConnectAddr;
 
 	// accept incoming connection?
-	C4NetIO::addr_t addr; socklen_t iAddrSize = sizeof addr;
+	C4NetIO::addr_t addr; socklen_t iAddrSize = sizeof(addr);
 	if (nsock == INVALID_SOCKET)
 	{
 		// accept from listener
@@ -804,7 +804,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 			return nullptr;
 		}
 		// connect address unknown, so zero it
-		ZeroMem(&caddr, sizeof caddr);
+		ZeroMem(&caddr, sizeof(caddr));
 	}
 	else
 	{
@@ -826,7 +826,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 	}
 
 	// check address
-	if (iAddrSize != sizeof addr || addr.sin_family != AF_INET)
+	if (iAddrSize != sizeof(addr) || addr.sin_family != AF_INET)
 	{
 		// set error
 		SetError("socket accept failed: invalid address returned");
@@ -915,8 +915,8 @@ bool C4NetIOTCP::Listen(uint16_t inListenPort)
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(inListenPort);
 	addr.sin_addr.s_addr = INADDR_ANY;
-	memset(addr.sin_zero, 0, sizeof addr.sin_zero);
-	if (::bind(lsock, reinterpret_cast<sockaddr *>(&addr), sizeof addr) == SOCKET_ERROR)
+	memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
+	if (::bind(lsock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) == SOCKET_ERROR)
 	{
 		SetError("socket bind failed", true);
 		closesocket(lsock); lsock = INVALID_SOCKET;
@@ -1274,7 +1274,7 @@ bool C4NetIOSimpleUDP::Init(uint16_t inPort)
 	}
 
 	// set reuse socket option
-	if (::setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&fAllowReUse), sizeof fAllowReUse) == SOCKET_ERROR)
+	if (::setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&fAllowReUse), sizeof(fAllowReUse)) == SOCKET_ERROR)
 	{
 		SetError("could not set reuse options", true);
 		return false;
@@ -1286,8 +1286,8 @@ bool C4NetIOSimpleUDP::Init(uint16_t inPort)
 	naddr.sin_family = AF_INET;
 	naddr.sin_port = (iPort == P_NONE ? 0 : htons(iPort));
 	naddr.sin_addr.s_addr = INADDR_ANY;
-	ZeroMemory(naddr.sin_zero, sizeof naddr.sin_zero);
-	if (::bind(sock, reinterpret_cast<sockaddr *>(&naddr), sizeof naddr) == SOCKET_ERROR)
+	ZeroMemory(naddr.sin_zero, sizeof(naddr.sin_zero));
+	if (::bind(sock, reinterpret_cast<sockaddr *>(&naddr), sizeof(naddr)) == SOCKET_ERROR)
 	{
 		SetError("could not bind socket", true);
 		return false;
@@ -1649,7 +1649,7 @@ int C4NetIOSimpleUDP::GetTimeout()
 bool C4NetIOSimpleUDP::SetMCLoopback(int fLoopback)
 {
 	// enable/disable MC loopback
-	setsockopt(sock, IPPROTO_IP, IP_MULTICAST_LOOP, reinterpret_cast<char *>(&fLoopback), sizeof fLoopback);
+	setsockopt(sock, IPPROTO_IP, IP_MULTICAST_LOOP, reinterpret_cast<char *>(&fLoopback), sizeof(fLoopback));
 	// read result
 	socklen_t iSize = sizeof(fLoopback);
 	if (getsockopt(sock, IPPROTO_IP, IP_MULTICAST_LOOP, reinterpret_cast<char *>(&fLoopback), &iSize) == SOCKET_ERROR)
@@ -1811,7 +1811,7 @@ bool C4NetIOUDP::InitBroadcast(addr_t *pBroadcastAddr)
 		// set up adress
 		MCAddr.sin_family = AF_INET;
 		MCAddr.sin_port = htons(iPort);
-		ZeroMemory(&MCAddr.sin_zero, sizeof MCAddr.sin_zero);
+		ZeroMemory(&MCAddr.sin_zero, sizeof(MCAddr.sin_zero));
 		// search for a free one
 		for (int iRetries = 1000; iRetries; iRetries--)
 		{
@@ -2743,7 +2743,7 @@ bool C4NetIOUDP::Peer::DoConn(bool fMC) // (mt-safe)
 	if (pParent->fMultiCast)
 		Pkt.MCAddr = pParent->C4NetIOSimpleUDP::getMCAddr();
 	else
-		memset(&Pkt.MCAddr, 0, sizeof Pkt.MCAddr);
+		memset(&Pkt.MCAddr, 0, sizeof(Pkt.MCAddr));
 	return SendDirect(C4NetIOPacket(&Pkt, sizeof(Pkt), false, addr));
 }
 
@@ -3230,7 +3230,7 @@ bool ResolveAddress(const char *szAddress, C4NetIO::addr_t *paddr, uint16_t iPor
 		szAddress = Buf.getData();
 	}
 	// set up address
-	sockaddr_in raddr; ZeroMem(&raddr, sizeof raddr);
+	sockaddr_in raddr; ZeroMem(&raddr, sizeof(raddr));
 	raddr.sin_family = AF_INET;
 	raddr.sin_port = htons(iPort);
 	// no plain IP address?

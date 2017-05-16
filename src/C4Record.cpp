@@ -937,16 +937,16 @@ void C4Playback::Check(C4RecordChunkType eType, const uint8_t *pData, int iSize)
 #ifdef DEBUGREC_EXTFILE
 #ifdef DEBUGREC_EXTFILE_WRITE
 	// writing of external debugrec file
-	DbgRecFile.Write(&eType, sizeof eType);
+	DbgRecFile.Write(&eType, sizeof(eType));
 	int32_t iSize32 = iSize;
-	DbgRecFile.Write(&iSize32, sizeof iSize32);
+	DbgRecFile.Write(&iSize32, sizeof(iSize32));
 	DbgRecFile.Write(pData, iSize);
 	return;
 #else
 	int32_t iSize32 = 0;
 	C4RecordChunkType eTypeRec = RCT_Undefined;
-	DbgRecFile.Read(&eTypeRec, sizeof eTypeRec);
-	DbgRecFile.Read(&iSize32, sizeof iSize32);
+	DbgRecFile.Read(&eTypeRec, sizeof(eTypeRec));
+	DbgRecFile.Read(&iSize32, sizeof(iSize32));
 	if (iSize32)
 	{
 		StdBuf buf;
@@ -1050,7 +1050,7 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 	{
 		// Initialize stream
 		z_stream strm;
-		ZeroMem(&strm, sizeof strm);
+		ZeroMem(&strm, sizeof(strm));
 		strm.next_in = getMBufPtr<uint8_t>(CompressedData);
 		strm.avail_in = CompressedData.getSize();
 		strm.next_out = getMBufPtr<uint8_t>(StreamData);

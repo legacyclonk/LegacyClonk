@@ -47,9 +47,9 @@ C4Application::~C4Application()
 	{
 #ifdef _WIN32
 		char strCommandLine[_MAX_PATH + 1]; SCopy(Config.AtExePath(C4CFN_Editor), strCommandLine);
-		STARTUPINFO StartupInfo; ZeroMemory(&StartupInfo, sizeof StartupInfo);
-		StartupInfo.cb = sizeof StartupInfo;
-		PROCESS_INFORMATION ProcessInfo; ZeroMemory(&ProcessInfo, sizeof ProcessInfo);
+		STARTUPINFO StartupInfo; ZeroMemory(&StartupInfo, sizeof(StartupInfo));
+		StartupInfo.cb = sizeof(StartupInfo);
+		PROCESS_INFORMATION ProcessInfo; ZeroMemory(&ProcessInfo, sizeof(ProcessInfo));
 		CreateProcess(nullptr, strCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, &StartupInfo, &ProcessInfo);
 #endif
 	}
@@ -471,7 +471,7 @@ bool C4Application::SetGameFont(const char *szFontFace, int32_t iFontSize)
 {
 #ifndef USE_CONSOLE
 	// safety
-	if (!szFontFace || !*szFontFace || iFontSize < 1 || SLen(szFontFace) >= static_cast<int>(sizeof Config.General.RXFontName)) return false;
+	if (!szFontFace || !*szFontFace || iFontSize < 1 || SLen(szFontFace) >= static_cast<int>(sizeof(Config.General.RXFontName))) return false;
 	// first, check if the selected font can be created at all
 	// check regular font only - there's no reason why the other fonts couldn't be created
 	CStdFont TestFont;

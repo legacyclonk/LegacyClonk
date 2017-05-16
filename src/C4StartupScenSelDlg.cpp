@@ -1550,7 +1550,7 @@ bool C4StartupScenSelDlg::StartScenario(C4ScenarioListLoader::Scenario *pStartSc
 		if (!C4DefinitionSelDlg::SelectDefinitions(GetScreen(), &sDefinitions))
 			// user aborted during definition selection
 			return false;
-		SCopy(sDefinitions.getData(), Game.DefinitionFilenames, (sizeof Game.DefinitionFilenames) - 1);
+		SCopy(sDefinitions.getData(), Game.DefinitionFilenames, sizeof(Game.DefinitionFilenames) - 1);
 	}
 	else
 		// for no user change, just set default objects. Custom settings will override later anyway
