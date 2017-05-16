@@ -125,8 +125,6 @@ public:
 	// Default checking / setting
 	bool operator==(C4DefGraphics *pDef2) { return pDefGraphics == pDef2; }
 	void operator=(C4DefGraphics *pDef2) { pDefGraphics = pDef2; }
-
-	ALLOW_TEMP_TO_REF(C4DefGraphicsAdapt)
 };
 
 // portrait link class
@@ -279,8 +277,6 @@ public:
 	// Default checking / setting
 	bool operator==(C4GraphicsOverlay *pDefault) { return pOverlay == pDefault; }
 	void operator=(C4GraphicsOverlay *pDefault) { delete pOverlay; pOverlay = pDefault; }
-
-	ALLOW_TEMP_TO_REF(C4GraphicsOverlayListAdapt)
 };
 
 #endif // INC_C4DefGraphics

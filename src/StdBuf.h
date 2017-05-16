@@ -26,6 +26,8 @@
 #include <assert.h>
 #include <stdarg.h>
 
+#include <utility>
+
 // debug memory management
 #if defined(_MSC_VER)
 #include <crtdbg.h>
@@ -48,7 +50,7 @@ public:
 		if (fCopy)
 			Copy(Buf2);
 		else if (!Buf2.isRef())
-			Take(Buf2);
+			Take(std::move(Buf2));
 		else
 			Ref(Buf2);
 	}
@@ -60,12 +62,40 @@ public:
 		if (fCopy) Copy();
 	}
 
+	StdBuf(const StdBuf &Buf2, bool fCopy = true)
+	: fRef(true), pData(nullptr), iSize(0)
+	{
+		if (fCopy)
+		{
+			Copy(Buf2);
+		}
+		else
+		{
+			Ref(Buf2);
+		}
+	}
+
+	StdBuf(StdBuf &&Buf2, bool fCopy = false)
+	: fRef(true), pData(nullptr), iSize(0)
+	{
+		if (fCopy)
+		{
+			Copy(Buf2);
+		}
+		else if (!Buf2.isRef())
+		{
+			Take(std::move(Buf2));
+		}
+		else
+		{
+			Ref(Buf2);
+		}
+	}
+
 	~StdBuf()
 	{
 		Clear();
 	}
-
-	ALLOW_TEMP_TO_REF(StdBuf)
 
 protected:
 	// Reference? Otherwise, this object holds the data.
@@ -283,6 +313,11 @@ public:
 		Take(Buf2.GrabPointer(), Buf2.getSize());
 	}
 
+	void Take(StdBuf &&Buf2)
+	{
+		Take(Buf2.GrabPointer(), Buf2.getSize());
+	}
+
 	// * File support
 	bool LoadFromFile(const char *szFile);
 	bool SaveToFile(const char *szFile) const;
@@ -315,11 +350,20 @@ public:
 	bool operator!=(const StdBuf &Buf2) const { return !operator==(Buf2); }
 
 	// Set (as constructor: take if possible)
-	StdBuf &operator=(StdBuf &Buf2)
+	StdBuf &operator=(StdBuf &&Buf2)
 	{
-		if (Buf2.isRef()) Ref(Buf2); else Take(Buf2);
+		if (Buf2.isRef())
+		{
+			Ref(Buf2);
+		}
+		else
+		{
+			Take(std::move(Buf2));
+		}
 		return *this;
 	}
+
+	StdBuf &operator=(const StdBuf &Buf2) = default;
 
 	// build a simple hash
 	int GetHash() const
@@ -363,6 +407,9 @@ public:
 	StdCopyBuf(const StdCopyBuf &Buf2, bool fCopy = true)
 		: StdBuf(Buf2.getRef(), fCopy) {}
 
+	StdCopyBuf(StdBuf &&Buf2, bool fCopy = false)     : StdBuf(std::move(Buf2), fCopy) {}
+	StdCopyBuf(StdCopyBuf &&Buf2, bool fCopy = false) : StdBuf(std::move(Buf2), fCopy) {}
+
 	// Set by constant data. Copies data by default.
 	StdCopyBuf(const void *pData, size_t iSize, bool fCopy = true)
 		: StdBuf(pData, iSize, fCopy) {}
@@ -384,6 +431,9 @@ public:
 	StdStrBuf(StdStrBuf &Buf2, bool fCopy = false)
 		: StdBuf(Buf2, fCopy) {}
 
+	StdStrBuf(const StdStrBuf &Buf2, bool fCopy = true) : StdBuf(Buf2, fCopy) {}
+	StdStrBuf(StdStrBuf &&Buf2, bool fCopy = false)     : StdBuf(std::move(Buf2), fCopy) {}
+
 	// Set by constant data. References data by default, copies if specified.
 	explicit StdStrBuf(const char *pData, bool fCopy = false)
 		: StdBuf(pData, pData ? strlen(pData) + 1 : 0, fCopy) {}
@@ -391,8 +441,6 @@ public:
 	// As previous constructor, but set length manually.
 	StdStrBuf(const char *pData, size_t iLength, bool fCopy = false)
 		: StdBuf(pData, pData ? iLength + 1 : 0, fCopy) {}
-
-	ALLOW_TEMP_TO_REF(StdStrBuf)
 
 public:
 	// *** Getters
@@ -413,6 +461,7 @@ public:
 	// Analogous to StdBuf
 	void Ref(const char *pnData) { StdBuf::Ref(pnData, pnData ? strlen(pnData) + 1 : 0); }
 	void Ref(const char *pnData, size_t iLength) { assert((!pnData && !iLength) || strlen(pnData) == iLength); StdBuf::Ref(pnData, iLength + 1); }
+	void Take(StdStrBuf &&Buf2) { StdBuf::Take(std::move(Buf2)); }
 	void Take(char *pnData) { StdBuf::Take(pnData, pnData ? strlen(pnData) + 1 : 0); }
 	void Take(char *pnData, size_t iLength) { assert((!pnData && !iLength) || strlen(pnData) == iLength); StdBuf::Take(pnData, iLength + 1); }
 	char *GrabPointer() { return reinterpret_cast<char *>(StdBuf::GrabPointer()); }
@@ -631,10 +680,13 @@ public:
 	StdCopyStrBuf() {}
 
 	explicit StdCopyStrBuf(const StdStrBuf &Buf2, bool fCopy = true)
-		: StdStrBuf(static_cast<StdStrBuf &>(Buf2.getRef()), fCopy) {}
+		: StdStrBuf(Buf2.getRef(), fCopy) {}
 
 	StdCopyStrBuf(const StdCopyStrBuf &Buf2, bool fCopy = true)
-		: StdStrBuf(static_cast<StdStrBuf &>(Buf2.getRef()), fCopy) {}
+		: StdStrBuf(Buf2.getRef(), fCopy) {}
+
+	StdCopyStrBuf(StdStrBuf &&Buf2, bool fCopy = false) : StdStrBuf(std::move(Buf2), fCopy) {}
+	StdCopyStrBuf(StdCopyStrBuf &&Buf2, bool fCopy = false) : StdStrBuf(std::move(Buf2), fCopy) {}
 
 	// Set by constant data. Copies data if desired.
 	explicit StdCopyStrBuf(const char *pData, bool fCopy = true)

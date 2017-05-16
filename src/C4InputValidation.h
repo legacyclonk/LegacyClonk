@@ -61,11 +61,9 @@ template <class T> struct C4StrValAdapt
 
 	template <class D> inline bool operator==(const D &nValue) const { return rValue == nValue; }
 	template <class D> inline C4StrValAdapt<T> &operator=(const D &nValue) { rValue = nValue; return *this; }
-
-	ALLOW_TEMP_TO_REF(C4StrValAdapt)
 };
 
-template <class T> inline C4StrValAdapt<T> mkStrValAdapt(T &rValue, C4InVal::ValidationOption eValType) { return C4StrValAdapt<T>(rValue, eValType); }
+template <class T> inline C4StrValAdapt<T> mkStrValAdapt(T &&rValue, C4InVal::ValidationOption eValType) { return C4StrValAdapt<T>(rValue, eValType); }
 
 // StdStrBuf that validates on compilation
 struct ValidatedStdCopyStrBufBase : public StdCopyStrBuf

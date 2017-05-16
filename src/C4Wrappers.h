@@ -209,7 +209,7 @@ inline int32_t GBackWind(int32_t x, int32_t y)
 void StdCompilerWarnCallback(void *pData, const char *szPosition, const char *szError);
 
 template <class CompT, class StructT>
-bool CompileFromBuf_LogWarn(StructT &TargetStruct, const typename CompT::InT &SrcBuf, const char *szName)
+bool CompileFromBuf_LogWarn(StructT &&TargetStruct, const typename CompT::InT &SrcBuf, const char *szName)
 {
 	try
 	{
@@ -231,7 +231,7 @@ bool CompileFromBuf_LogWarn(StructT &TargetStruct, const typename CompT::InT &Sr
 }
 
 template <class CompT, class StructT>
-bool DecompileToBuf_Log(StructT &TargetStruct, typename CompT::OutT *pOut, const char *szName)
+bool DecompileToBuf_Log(StructT &&TargetStruct, typename CompT::OutT *pOut, const char *szName)
 {
 	if (!pOut) return false;
 	try
