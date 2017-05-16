@@ -1282,7 +1282,7 @@ CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int Engi
 	switch (iGfxEngine = Engine)
 	{
 	default: // Use the first engine possible if none selected
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	case GFXENGN_OPENGL: lpDDraw = new CStdGL(); break;
 #endif
 	case GFXENGN_NOGFX: lpDDraw = new CStdNoGfx(); break;

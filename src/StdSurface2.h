@@ -22,7 +22,7 @@
 #include <Standard.h>
 #include <StdColors.h>
 
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 #include <GL/glew.h>
 #endif
 
@@ -53,7 +53,7 @@
 
 const int ALeft = 0, ACenter = 1, ARight = 2;
 
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 class CStdGL;
 extern CStdGL *pGL;
 #endif
@@ -155,7 +155,7 @@ public:
 #ifdef _DEBUG
 	int *dbg_idx;
 #endif
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	GLenum Format; // used color format in textures
 #endif
 	CTexRef **ppTex; // textures
@@ -220,7 +220,7 @@ class CTexRef
 {
 public:
 	D3DLOCKED_RECT texLock; // current lock-data
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	GLuint texName;
 #endif
 	int iSize;

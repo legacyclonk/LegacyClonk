@@ -22,7 +22,7 @@
 #include <StdSurface2.h>
 #include <StdWindow.h>
 
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 
 #include <stdio.h>
 #include <math.h>
@@ -1051,4 +1051,4 @@ void CStdGL::Default()
 	MainCtx.Clear();
 }
 
-#endif // USE_GL
+#endif

@@ -24,7 +24,7 @@
 #include <StdSurface2.h>
 #include <StdWindow.h>
 
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 
 #ifdef _WIN32
 
@@ -445,4 +445,4 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 
 #endif // USE_X11/USE_SDL_MAINLOOP
 
-#endif // USE_GL
+#endif

@@ -482,7 +482,7 @@ void Dialog::RemoveElement(Element *pChild)
 
 void Dialog::Draw(C4FacetEx &cgo)
 {
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	// select rendering context
 	if (pCtx) if (!pCtx->Select()) return;
 #endif
@@ -534,7 +534,7 @@ void Dialog::Draw(C4FacetEx &cgo)
 		rtDst.left = 0;          rtDst.top = 0;          rtDst.right = rcBounds.Wdt;              rtDst.bottom = rcBounds.Hgt;
 		Application.DDraw->PageFlip(&rtSrc, &rtDst, pWindow);
 	}
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	// switch back to original context
 	if (pCtx) pGL->GetMainCtx().Select();
 #endif

@@ -48,7 +48,7 @@ public:
 	bool Active;
 #ifdef _WIN32
 	HWND hDialog;
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	class CStdGLCtx *pGLCtx; // rendering context for OpenGL
 #endif
 #elif defined(WITH_DEVELOPER_MODE)
