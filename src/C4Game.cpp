@@ -3199,7 +3199,7 @@ bool C4Game::InitKeyboard()
 
 	// Map player gamepad controls
 	int32_t iGamepad;
-	for (iGamepad = C4P_Control_GamePad1; iGamepad <= C4P_Control_GamePad1 + C4ConfigMaxGamepads; iGamepad++)
+	for (iGamepad = C4P_Control_GamePad1; iGamepad < C4P_Control_GamePad1 + C4ConfigMaxGamepads; iGamepad++)
 	{
 		C4ConfigGamepad &cfg = Config.Gamepads[iGamepad - C4P_Control_GamePad1];
 		for (iCtrl = 0; iCtrl < C4MaxKey; iCtrl++)
