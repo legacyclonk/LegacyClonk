@@ -63,7 +63,6 @@ class C4GamePadControl {
 		void Clear();
 		int GetGamePadCount();
 		void Execute();
-		static bool AnyButtonDown();
 };
 
 class C4GamePadOpener {

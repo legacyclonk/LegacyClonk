@@ -391,11 +391,3 @@ bool C4MessageBoard::ControlScrollDown()
 	if (iBackScroll > -1) iBackScroll--;
 	return true;
 	}
-
-bool C4MessageBoard::ControlChangeMode()
-	{
-	if (!Active) return false;
-	// toggle messageboard size
-	ChangeMode((iMode+1)%3);
-	return true;
-	}

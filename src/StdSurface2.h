@@ -58,9 +58,6 @@
 #define C4GFXBLIT_CUSTOM        128 // custom blitting mode - ignored by gfx system
 #define C4GFXBLIT_PARENT        256 // blitting mode inherited by parent - ignored by gfx system
 
-// bit depth for emulated surfaces
-#define C4GFX_NOGFX_CLRDEPTH			24
-
 const int ALeft=0,ACenter=1,ARight=2;
 
 #ifdef USE_DIRECTX
@@ -151,7 +148,6 @@ class CTexRef;
 class CTexMgr;
 class CPattern;
 class CStdDDraw;
-class CBlitRememberer;
 
 extern CStdDDraw *lpDDraw;
 
@@ -216,11 +212,8 @@ class CSurface
 	public:
 		void SetBackground() { fIsBackground = true; }
 		int IsLocked() const { return Locked; }
-		BOOL HLine(int iX, int iX2, int iY, int iCol);
-		BOOL Box(int iX, int iY, int iX2, int iY2, int iCol);
 		// Note: This uses partial locks, anything but SetPixDw and Unlock is undefined afterwards until unlock.
 		void ClearBoxDw(int iX, int iY, int iWdt, int iHgt);
-		void ClearBox8Only(int iX, int iY, int iWdt, int iHgt); // clear box in 8bpp-surface only
 		BOOL Unlock();
 		BOOL Lock();
 		bool GetTexAt(CTexRef **ppTexRef, int &rX, int &rY);	// get texture and adjust x/y
@@ -229,15 +222,10 @@ class CSurface
 		DWORD GetPixDw(int iX, int iY, bool fApplyModulation);	// get 32bit-px
 		bool IsPixTransparent(int iX, int iY);	// is pixel's alpha value 0xff?
 		bool SetPixDw(int iX, int iY, DWORD dwCol);				// set pix in surface only
-		bool SetPixAlpha(int iX, int iY, BYTE byAlpha);		// adjust alpha value of pixel
 		bool BltPix(int iX, int iY, CSurface *sfcSource, int iSrcX, int iSrcY, bool fTransparency);	// blit pixel from source to this surface (assumes clipped coordinates!)
 		BOOL Create(int iWdt, int iHgt, bool fOwnPal=false, bool fIsRenderTarget=false);
 		bool CreateColorByOwner(CSurface *pBySurface);	// create ColorByOwner-surface
 		bool SetAsClrByOwnerOf(CSurface *pOfSurface);		// assume that ColorByOwner-surface has been created, and just assign it; fails if the size doesn't match
-#ifdef USE_GL
-		bool CreatePrimaryGLTextures();									// create primary textures from back buffer
-#endif
-		BOOL Attach(CSurface *sfcSurface);
 #ifdef USE_DIRECTX
 		BOOL AttachSfc(IDirect3DSurface9 *sfcSurface); // wdt and hgt not assigned in DirectX
 #else
@@ -248,9 +236,7 @@ class CSurface
 		void Clip(int iX, int iY, int iX2, int iY2);
 		void NoClip();
 		bool Read(class CStdStream &hGroup, bool fOwnPal=false);
-		BOOL Save(const char *szFilename);
 		bool SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly);
-		BOOL AttachPalette();
 		BOOL Wipe(); // empty to transparent
 #ifdef USE_DIRECTX
 		IDirect3DSurface9 *GetSurface(); // get internal surface
@@ -260,8 +246,6 @@ class CSurface
 		DWORD GetClr() { return ClrByOwnerClr; }
 		bool CopyBytes(BYTE *pImageData); // assumes an array of wdt*hgt*bitdepth/8 and copies data directly from it
 	protected:
-		void MapBytes(BYTE *bpMap);
-		BOOL ReadBytes(BYTE **lpbpData, void *bpTarget, int iSize);
 		bool CreateTextures();		// create ppTex-array
 		void FreeTextures();			// free ppTex-array if existant
 

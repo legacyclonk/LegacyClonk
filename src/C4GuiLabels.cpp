@@ -458,40 +458,6 @@ C4FacetEx Icon::GetIconFacet(Icons icoIconIndex)
 	return rFacet.GetPhase(icoIconIndex % iXMax, icoIconIndex / iXMax);
 	}
 
-
-// --------------------------------------------------
-// PaintBox
-
-void PaintBox::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
-	{
-	// only if a valid surface is present
-	// CSurface::Surface was always != 0
-	//if (!fctPaint.GetFace().Surface) return;
-	}
-
-void PaintBox::DrawElement(C4FacetEx &cgo)
-	{
-	// only if a valid surface is present
-	//if (!fctPaint.GetFace().Surface) return;
-	// draw it
-	fctPaint.Draw(cgo.Surface, rcBounds.x+cgo.TargetX, rcBounds.y+cgo.TargetY);
-	}
-
-PaintBox::PaintBox(C4Rect &rtBounds, int32_t iSfcWdt, int32_t iSfcHgt)
-	{
-	// default surface bounds
-	if (iSfcWdt<0) iSfcWdt = rtBounds.Wdt;
-	if (iSfcHgt<0) iSfcHgt = rtBounds.Hgt;
-	// create surface
-	if (iSfcWdt<=0 || iSfcHgt<=0) return;
-	fctPaint.Create(iSfcWdt, iSfcHgt);
-	}
-
-PaintBox::~PaintBox()
-	{
-	}
-
-
 // --------------------------------------------------
 // TextWindow
 

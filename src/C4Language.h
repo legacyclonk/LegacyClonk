@@ -56,13 +56,11 @@ class C4Language
 		C4LanguageInfo* Infos;
 		char PackGroupLocation[_MAX_FNAME + 1];
   public:
-	  bool CloseGroup(const char *strPath);
 	  void ClearLanguage();
 		// Initialization
 	  bool Init();
 	  void Clear();
 		// Handling of external language packs
-		int GetPackCount();
 		C4GroupSet& GetPackGroups(const char *strRelativePath);
 		// Handling of language info loaded from string tables
 		int GetInfoCount();

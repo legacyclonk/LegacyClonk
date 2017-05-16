@@ -115,22 +115,6 @@ C4Value &C4ValueList::GetItem(int32_t iElem)
 	return pData[iElem];
 }
 
-void C4ValueList::SetItem(int32_t iElemNr, C4Value iValue)
-{
-	// enlarge
-	if(iElemNr < 0) iElemNr = 0;
-	if(iElemNr >= iSize && iElemNr < MaxSize) this->SetSize(iElemNr + 1);
-	// out-of-memory? This might not be catched, but it's better than a segfault
-	if(iElemNr >= iSize)
-#ifdef C4ENGINE
-		throw new C4AulExecError(NULL,"out of memory");
-#else
-		return;
-#endif
-	// set
-	pData[iElemNr]=iValue;
-}
-
 void C4ValueList::SetSize(int32_t inSize)
 {
 	// array made smaller? Well, just ignore the additional allocated mem then

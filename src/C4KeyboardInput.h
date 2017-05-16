@@ -57,7 +57,6 @@ const C4KeyCode KEY_Default = 0,  // no key
 								KEY_JOY_Button1       = 10,   // key index of joypad buttons + button index for more buttons
 								KEY_JOY_ButtonMax     = KEY_JOY_Button1+31, // maximum number of supported buttons on a gamepad
 								KEY_JOY_Axis1Min       = 0x30,
-								KEY_JOY_Axis1Max       = 0x31,
 								KEY_JOY_AxisMax        = KEY_JOY_Axis1Min + 0x20,
 								KEY_JOY_AnyButton     = 0xff, // any joypad button (not axis)
 								KEY_JOY_AnyOddButton  = 0xfe, // joypad buttons 1, 3, 5, etc.
@@ -181,8 +180,6 @@ class C4KeyboardCallbackInterface
 
 	public:
 		virtual bool OnKeyEvent(C4KeyCodeEx key, C4KeyEventType eEv) = 0; // return true if processed
-
-		friend class C4KeyboardMapping;
 
 		// reference counter
 		inline void Ref() { ++iRef; }
@@ -349,7 +346,6 @@ class C4CustomKey
 	public:
 		C4CustomKey(C4KeyCodeEx DefCode, const char *szName, C4KeyScope Scope, C4KeyboardCallbackInterface *pCallback, unsigned int uiPriority = PRIO_Base); // ctor for default key
 		C4CustomKey(const CodeList &rDefCodes, const char *szName, C4KeyScope Scope, C4KeyboardCallbackInterface *pCallback, unsigned int uiPriority = PRIO_Base); // ctor for default key with multiple possible keys assigned
-		C4CustomKey(C4KeyCodeEx Code, const StdStrBuf &rName); // ctor for single custom key override
 		C4CustomKey(const C4CustomKey &rCpy, bool fCopyCallbacks);
 		virtual ~C4CustomKey(); // dtor
 

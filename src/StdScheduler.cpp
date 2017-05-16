@@ -46,52 +46,6 @@ static int pipe(int *phandles)
 
 // *** StdSchedulerProc
 
-// Keep calling Execute until timeout has elapsed
-bool StdSchedulerProc::ExecuteUntil(int iTimeout)
-{
-	// Infinite?
-	if(iTimeout < 0)
-		for(;;)
-			if(!Execute())
-				return false;
-	// Calculate endpoint
-	unsigned int iStopTime = timeGetTime() + iTimeout;
-	for(;;)
-	{
-		// Call execute with given timeout
-		if(!Execute(Max(iTimeout, 0)))
-			return false;
-		// Calculate timeout
-		unsigned int iTime = timeGetTime();
-		if(iTime >= iStopTime)
-			break;
-		iTimeout = int(iStopTime - iTime);
-	}
-	// All ok.
-	return true;
-}
-
-// Is this process currently signaled?
-bool StdSchedulerProc::IsSignaled()
-{
-#ifdef STDSCHEDULER_USE_EVENTS
-	return GetEvent() && WaitForSingleObject(GetEvent(), 0) == WAIT_OBJECT_0;
-#else
-	// Initialize file descriptor sets
-  fd_set fds[2]; int iMaxFDs = 0;
-	FD_ZERO(&fds[0]); FD_ZERO(&fds[1]);
-
-	// Get file descriptors
-	GetFDs(fds, &iMaxFDs);
-
-	// Timeout immediatly
-	timeval to = { 0, 0 };
-
-	// Test
-	return select(iMaxFDs + 1, &fds[0], &fds[1], NULL, &to) > 0;
-#endif
-}
-
 #ifndef STDSCHEDULER_USE_EVENTS
 static bool FD_INTERSECTS(int n, fd_set * a, fd_set * b)
 {
@@ -140,18 +94,6 @@ void StdScheduler::Clear()
 	delete[] ppEventProcs; ppEventProcs = NULL;
 #endif
 	iProcCnt = iProcCapacity = 0;
-}
-
-void StdScheduler::Set(StdSchedulerProc **ppnProcs, int inProcCnt)
-{
-	// Remove previous data
-	Clear();
-	// Set size
-	Enlarge(inProcCnt - iProcCapacity);
-	// Copy new
-	iProcCnt = inProcCnt;
-	for(int i = 0; i < iProcCnt; i++)
-		ppProcs[i] = ppnProcs[i];
 }
 
 void StdScheduler::Add(StdSchedulerProc *pProc)
@@ -341,17 +283,6 @@ void StdSchedulerThread::Clear()
 	StdScheduler::Clear();
 }
 
-void StdSchedulerThread::Set(StdSchedulerProc **ppProcs, int iProcCnt)
-{
-	// Thread is running? Stop it first
-	bool fGotThread = fThread;
-	if(fGotThread) Stop();
-	// Set
-	StdScheduler::Set(ppProcs, iProcCnt);
-	// Restart
-	if(fGotThread) Start();
-}
-
 void StdSchedulerThread::Add(StdSchedulerProc *pProc)
 {
 	// Thread is running? Stop it first
@@ -443,22 +374,6 @@ StdThread::StdThread() : fStarted(false), fStopSignaled(false)
 
 }
 
-bool StdThread::Start()
-{
-	// already running? stop
-	if(fStarted) Stop();
-	// begin thread
-	fStopSignaled = false;
-#ifdef HAVE_WINTHREAD
-	iThread = _beginthread(_ThreadFunc, 0, this);
-	fStarted = (iThread != -1);
-#elif HAVE_PTHREAD
-	fStarted = !pthread_create(&Thread, NULL, _ThreadFunc, this);
-#endif
-	// success?
-	return fStarted;
-}
-
 void StdThread::SignalStop()
 {
 	// Not running?
@@ -489,13 +404,7 @@ void StdThread::Stop()
 	return;
 }
 
-#ifdef HAVE_WINTHREAD
-void __cdecl StdThread::_ThreadFunc(void *pPar)
-{
-	StdThread *pThread = reinterpret_cast<StdThread *>(pPar);
-	_endthreadex(pThread->ThreadFunc());
-}
-#elif HAVE_PTHREAD
+#if !defined(HAVE_WINTHREAD) && defined(HAVE_PTHREAD)
 void *StdThread::_ThreadFunc(void *pPar)
 {
 	StdThread *pThread = reinterpret_cast<StdThread *>(pPar);

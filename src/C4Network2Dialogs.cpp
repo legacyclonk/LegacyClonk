@@ -272,7 +272,7 @@ void C4Network2ClientListBox::ClientListItem::OnButtonKick(C4GUI::Control *pButt
 // C4Network2ClientListBox::ConnectionListItem
 
 C4Network2ClientListBox::ConnectionListItem::ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, int32_t iConnectionID) // ctor
-: ListItem(pForDlg, iClientID), iConnID(iConnectionID), pDesc(NULL), pPing(NULL), pReconnectBtn(NULL), pDisconnectBtn(NULL)
+: ListItem(pForDlg, iClientID), iConnID(iConnectionID), pDesc(NULL), pPing(NULL), pDisconnectBtn(NULL)
 	{
 	// get size
 	CStdFont &rUseFont = C4GUI::GetRes()->TextFont;
@@ -362,12 +362,6 @@ void C4Network2ClientListBox::ConnectionListItem::OnButtonDisconnect(C4GUI::Cont
 		pConn->Close();
 		}
 	}
-
-void C4Network2ClientListBox::ConnectionListItem::OnButtonReconnect(C4GUI::Control *pButton)
-	{
-	// 2do
-	}
-
 
 // --------------------------------------------------
 // C4Network2ClientListBox

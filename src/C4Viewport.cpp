@@ -240,8 +240,6 @@ BOOL C4Viewport::DropFiles(HANDLE hDrop)
 
 void UpdateWindowLayout(HWND hwnd)
 	{
-	BOOL fMinimized = IsIconic(hwnd);
-	BOOL fMaximized = IsZoomed(hwnd);
 	RECT rect;
 	GetWindowRect(hwnd,&rect);
 	MoveWindow(hwnd,rect.left,rect.top,rect.right-rect.left-1,rect.bottom-rect.top,TRUE);
@@ -265,22 +263,6 @@ BOOL C4Viewport::TogglePlayerLock()
 		SetWindowLong(pWindow->hWindow,GWL_STYLE,C4ViewportWindowStyle);
 		UpdateWindowLayout(pWindow->hWindow);
 		}
-	return TRUE;
-	}
-
-BOOL C4Viewport::ViewPositionByScrollBars()
-	{
-	if (PlayerLock) return FALSE;
-	SCROLLINFO scroll;
-	scroll.cbSize=sizeof(SCROLLINFO);
-	// Vertical
-	scroll.fMask=SIF_POS;
-	GetScrollInfo(pWindow->hWindow,SB_VERT,&scroll);
-	ViewY=scroll.nPos;
-	// Horizontal
-	scroll.fMask=SIF_POS;
-	GetScrollInfo(pWindow->hWindow,SB_HORZ,&scroll);
-	ViewX=scroll.nPos;	
 	return TRUE;
 	}
 
@@ -827,10 +809,6 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 	{
 	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay)
 		{
-		C4ST_STARTNEW(FoWStat, "C4Viewport::DrawOverlay: FoW")
-		// Player fog of war
-		DrawPlayerFogOfWar(cgo);
-		C4ST_STOP(FoWStat)
 		// Player info
 		C4ST_STARTNEW(CInfoStat, "C4Viewport::DrawOverlay: Cursor Info")
 		DrawCursorInfo(cgo);
@@ -1551,14 +1529,6 @@ void C4Viewport::DrawMouseButtons(C4FacetEx &cgo)
 		C4GUI::Icon::GetIconFacet(C4GUI::Ico_Ex_Chat).Draw(ccgo,TRUE);
 		if (SetRegions) {	rgn.Default(); rgn.Set(ccgo,LoadResStr("IDS_DLG_CHAT")); rgn.Com=COM_Chat; SetRegions->Add(rgn); }
 		}
-	}
-
-void C4Viewport::DrawPlayerFogOfWar(C4FacetEx &cgo)
-	{
-	/*
-	C4Player *pPlr=Game.Players.Get(Player);
-	if (!pPlr || !pPlr->FogOfWar) return;
-	pPlr->FogOfWar->Draw(cgo);*/ // now done by modulation
 	}
 
 void C4Viewport::NextPlayer()

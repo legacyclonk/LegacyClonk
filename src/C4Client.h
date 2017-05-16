@@ -68,7 +68,6 @@ public:
 
 	// initialization
 	void SetLocal(int32_t iID, bool fnActivated, bool fnObserver);
-	void SetUnknown(int32_t iID);
 
 	int32_t getDiffLevel(const C4ClientCore &CCore2) const;
 
@@ -144,7 +143,6 @@ public:
 	C4Client *getLocal() const { return pLocal; }
 	C4Client *getClientByID(int32_t iID) const;
 	C4Client *getHost() const { return getClientByID(C4ClientIDHost); }
-	C4Client *getNextClientByID(int32_t iAfterID) const;
 	C4Client *getClientByName(const char *szName) const;
 
 	int32_t getClientCnt() const;

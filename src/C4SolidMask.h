@@ -73,9 +73,7 @@ class C4SolidMask
 		void Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRestoreAttachment);    // put mask to landscape
 		void Remove(bool fCauseInstability, bool fBackupAttachment); // remove mask from landscape
 		void Clear();                     // clear any SolidMask-data
-		void Draw(C4FacetEx &cgo);           // draw the solidmask (dbg display)
 
-		bool IsPut() { return MaskPut; }
 		C4SolidMask(C4Object *pForObject);  // ctor
 		~C4SolidMask(); // dtor
 

@@ -117,25 +117,6 @@ BOOL C4PlayerList::ColorTaken(int iColor) const
   return FALSE;
   }
 
-int C4PlayerList::CheckColorDw(DWORD dwColor, C4Player *pExclude)
-	{
-	// maximum difference
-	int iDiff=255+255+255;
-	// check all player's color difference
-  for (C4Player *pPlr=First; pPlr; pPlr=pPlr->Next) if (pPlr != pExclude)
-		{
-		// get color
-		DWORD dwClr2=pPlr->ColorDw;
-		// assign difference, if less than smallest difference found
-    iDiff=Min(iDiff,
-			  Abs(GetRValue(dwColor) - GetRValue(dwClr2))
-			+ Abs(GetGValue(dwColor) - GetGValue(dwClr2))
-			+ Abs(GetBValue(dwColor) - GetBValue(dwClr2)));
-		}
-	// return the difference
-	return iDiff;
-	}
-
 BOOL C4PlayerList::ControlTaken(int iControl) const
   {
   for (C4Player *pPlr=First; pPlr; pPlr=pPlr->Next)
@@ -151,15 +132,6 @@ C4Player* C4PlayerList::Get(int iNumber) const
 		if (pPlr->Number==iNumber)
 			return pPlr;
 	return NULL;
-	}
-
-int C4PlayerList::GetIndex(C4Player *tPlr) const
-	{
-	int cindex=0;
-  for (C4Player *pPlr=First; pPlr; pPlr=pPlr->Next, cindex++)
-		if (pPlr==tPlr)
-			return cindex;
-	return -1;
 	}
 
 C4Player* C4PlayerList::GetByIndex(int iIndex) const
@@ -518,20 +490,6 @@ BOOL C4PlayerList::RemoveAtClient(int iClient, bool fDisconnect)
 	return TRUE;
 	}
 
-BOOL C4PlayerList::RemoveAtClient(const char *szName, bool fDisconnect)
-	{
-	C4Player *pPlr;
-	// Get players
-	while (pPlr = GetAtClient(szName))
-		{
-		// Log
-		Log(FormatString(LoadResStr("IDS_PRC_REMOVEPLR"),pPlr->GetName()).getData());
-		// Remove
-		Remove(pPlr, fDisconnect, false);
-		}
-	return TRUE;
-	}
-
 BOOL C4PlayerList::CtrlRemove(int iPlayer, bool fDisconnect)
 	{
 	// Add packet to input
@@ -539,43 +497,11 @@ BOOL C4PlayerList::CtrlRemove(int iPlayer, bool fDisconnect)
 	return true;
 	}
 
-BOOL C4PlayerList::CtrlRemoveAtClient(int iClient, bool fDisconnect)
-	{
-	// Get players
-	for(C4Player *pPlr = First; pPlr; pPlr = pPlr->Next)
-		if(pPlr->AtClient == iClient)
-			if(!CtrlRemove(pPlr->Number, fDisconnect))
-				return FALSE;
-	return TRUE;
-	}
-
-BOOL C4PlayerList::CtrlRemoveAtClient(const char *szName, bool fDisconnect)
-	{
-	// Get players
-	for(C4Player *pPlr = First; pPlr; pPlr = pPlr->Next)
-		if(SEqual(pPlr->AtClientName, szName))
-			if(!CtrlRemove(pPlr->Number, fDisconnect))
-				return FALSE;
-	return TRUE;
-	}
-
 C4Player* C4PlayerList::GetAtClient(int iClient, int iIndex) const
 	{
 	int cindex=0;
   for (C4Player *pPlr=First; pPlr; pPlr=pPlr->Next)
 		if (pPlr->AtClient == iClient)
-			{
-			if (cindex==iIndex)	return pPlr;
-			cindex++;
-			}
-	return NULL;
-	}
-
-C4Player* C4PlayerList::GetAtClient(const char *szName, int iIndex) const
-	{
-	int cindex=0;
-  for (C4Player *pPlr=First; pPlr; pPlr=pPlr->Next)
-		if (SEqualNoCase(pPlr->AtClientName,szName))
 			{
 			if (cindex==iIndex)	return pPlr;
 			cindex++;
@@ -638,15 +564,6 @@ void C4PlayerList::DenumeratePointers()
 	{
   for (C4Player *pPlr=First; pPlr; pPlr=pPlr->Next)
 		pPlr->DenumeratePointers();
-	}
-
-int C4PlayerList::ControlTakenBy(int iControl) const
-	{
-  for (C4Player *pPlr=First; pPlr; pPlr=pPlr->Next)
-    if (pPlr->Control==iControl)
-			if (pPlr->LocalControl)
-				return pPlr->Number; 
-  return NO_OWNER;
 	}
 
 BOOL C4PlayerList::MouseControlTaken() const

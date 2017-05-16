@@ -79,8 +79,6 @@ class C4Scoreboard
 		void SetCell(int32_t iColKey, int32_t iRowKey, const char *szValue, int32_t iValue); // change cell value
 		const char *GetCellString(int32_t iColKey, int32_t iRowKey);
 		int32_t GetCellData(int32_t iColKey, int32_t iRowKey);
-		void RemoveCol(int32_t iColKey);
-		void RemoveRow(int32_t iRowKey);
 		bool SortBy(int32_t iColKey, bool fReverse);
 
 		void DoDlgShow(int32_t iChange, bool fUserToggle);

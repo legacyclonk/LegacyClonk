@@ -163,11 +163,6 @@ bool C4Network2Client::SendMsg(C4NetIOPacket rPkt) const
   return getMsgConn() && getMsgConn()->Send(rPkt);
 }
 
-bool C4Network2Client::SendData(C4NetIOPacket rPkt) const
-{
-  return getDataConn() && getDataConn()->Send(rPkt);
-}
-
 bool C4Network2Client::DoConnectAttempt(C4Network2IO *pIO)
 {
 	// local?
@@ -204,11 +199,6 @@ bool C4Network2Client::hasAddr(const C4Network2Address &addr) const
 		if(Addr[i] == addr)
 			return true;
 	return false;
-}
-
-void C4Network2Client::ClearAddr()
-{
-	iAddrCnt = 0;
 }
 
 bool C4Network2Client::AddAddr(const C4Network2Address &addr, bool fAnnounce)
@@ -339,17 +329,6 @@ C4Network2Client *C4Network2ClientList::GetClientByID(int32_t iID) const
 			return pClient;
 	return NULL;
 }
-
-C4Network2Client *C4Network2ClientList::GetNextClientAfterID(int32_t iSmallerClientID) const
-	{
-	// return client with smallest ID > iSmallerClientID
-	C4Network2Client *pBest = NULL;
-	for(C4Network2Client *pClient = pFirst; pClient; pClient = pClient->pNext)
-		if(pClient->getID() > iSmallerClientID)
-			if (!pBest || pBest->getID() > pClient->getID())
-				pBest = pClient;
-	return pBest;
-	}
 
 C4Network2Client *C4Network2ClientList::GetClient(const char *szName) const
 {

@@ -46,8 +46,6 @@ iconv_t C4Language::local_to_host = iconv_t(-1);
 
 C4Language Languages;
 
-char strLog[2048 + 1]; 
-
 C4Language::C4Language()
 {
 	Infos = NULL;
@@ -233,11 +231,6 @@ StdStrBuf C4Language::IconvClonk(const char * string)
 	return StdStrBuf(string, true);
 }
 #endif
-
-int C4Language::GetPackCount()
-{
-	return Packs.GetGroupCount();
-}
 
 int C4Language::GetInfoCount()
 {
@@ -513,20 +506,4 @@ void C4Language::ClearLanguage()
 {
 	// Clear resource string table
 	ClearResStrTable();
-}
-
-// Closes any open language pack that has the specified path.
-
-bool C4Language::CloseGroup(const char *strPath)
-{
-	// Check all open language packs
-	C4Group *pPack;
-	for (int iPack = 0; pPack = Packs.GetGroup(iPack); iPack++)
-		if (ItemIdentical(strPath, pPack->GetFullName().getData()))
-		{
-			Packs.UnregisterGroup(iPack);
-			return true;
-		}
-	// No pack of that path
-	return false;
 }

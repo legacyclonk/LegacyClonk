@@ -28,15 +28,7 @@
 #include <sys/stat.h>
 
 // platform specifics
-#ifdef _WIN32
-
-#include <process.h>
-#include <share.h>
-
-typedef int socklen_t;
-int pipe(int *phandles) { return _pipe(phandles, 10, O_BINARY); }
-
-#else
+#ifndef _WIN32
 
 #include <sys/ioctl.h>
 #include <netinet/in.h>
@@ -242,15 +234,6 @@ C4NetIOPacket::C4NetIOPacket(const void *pnData, size_t inSize, bool fCopy, cons
 C4NetIOPacket::C4NetIOPacket(StdBuf &Buf, const C4NetIO::addr_t &naddr)
 	: StdCopyBuf(Buf), addr(naddr)
 {
-}
-
-C4NetIOPacket::C4NetIOPacket(uint8_t cStatusByte, const char *pnData, size_t inSize, const C4NetIO::addr_t &naddr)
-{
-	// Create buffer
-	New(sizeof(cStatusByte) + inSize);
-	// Write data
-	*getMBufPtr<uint8_t>(*this) = cStatusByte;
-	Write(pnData, inSize, sizeof(cStatusByte));
 }
 
 C4NetIOPacket::~C4NetIOPacket()
@@ -3251,75 +3234,6 @@ void C4NetIOUDP::DebugLogPkt(bool fOut, const C4NetIOPacket &Pkt)
 	write(hDebugLog, O.getData(), O.getLength());
 }
 #endif
-
-// *** C4NetIOMan
-
-C4NetIOMan::C4NetIOMan()
-	: StdSchedulerThread(),
-		iNetIOCnt(0), iNetIOCapacity(0),
-		ppNetIO(NULL)
-
-{
-}
-
-C4NetIOMan::~C4NetIOMan()
-{
-	Clear();
-}
-
-void C4NetIOMan::Clear()
-{
-	delete[] ppNetIO; ppNetIO = NULL;
-	iNetIOCnt = iNetIOCapacity = 0;
-	StdSchedulerThread::Clear();
-}
-
-void C4NetIOMan::AddIO(C4NetIO *pNetIO, bool fSetCallback)
-{
-	// Set callback
-	if(fSetCallback)
-		pNetIO->SetCallback(this);
-	// Add to i/o list
-	if(iNetIOCnt + 1 > iNetIOCapacity)
-		EnlargeIO(1);
-	ppNetIO[iNetIOCnt++] = pNetIO;
-	// Register with scheduler
-	Add(pNetIO);
-}
-
-void C4NetIOMan::RemoveIO(C4NetIO *pNetIO)
-{
-	// Search
-	int i;
-	for(i = 0; i < iNetIOCnt; i++)
-		if(ppNetIO[i] == pNetIO)
-			break;
-	// Not found?
-	if(i >= iNetIOCnt) return;
-	// Remove
-	for(i++; i < iNetIOCnt; i++)
-		ppNetIO[i-1] = ppNetIO[i];
-	iNetIOCnt--;
-}
-
-void C4NetIOMan::OnError(StdSchedulerProc *pProc)
-{
-	for(int i = 0; i < iNetIOCnt; i++)
-		if(pProc == ppNetIO[i])
-			OnError(ppNetIO[i]->GetError(), ppNetIO[i]);
-}
-
-void C4NetIOMan::EnlargeIO(int iBy)
-{
-	iNetIOCapacity += iBy;
-	// Realloc
-	C4NetIO **ppnNetIO = new C4NetIO *[iNetIOCapacity];
-	// Set data
-	for(int i = 0; i < iNetIOCnt; i++)
-		ppnNetIO[i] = ppNetIO[i];
-	delete[] ppNetIO;
-	ppNetIO = ppnNetIO;
-}
 
 // *** helpers
 

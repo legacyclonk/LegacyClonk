@@ -44,21 +44,17 @@ bool CopyFile(const char *szSource, const char *szTarget, bool FailIfExists);
 #define DirectorySeparator '/'
 #define AltDirectorySeparator '\\'
 #endif
-#define Wildcard '*'
 
 const char *GetWorkingDirectory();
 bool SetWorkingDirectory(const char *szPath);
 char *GetFilename(char *path);
-char *GetFilenameWeb(char *path);
 const char* GetFilenameOnly(const char *strFilename);
 const char *GetC4Filename(const char *szPath); // returns path to file starting at first .c4*-directory
 int GetTrailingNumber(const char *strString);
 char *GetExtension(char *fname);
 const char *GetFilename(const char *path);
-const char *GetFilenameWeb(const char *path);
 const char *GetExtension(const char *fname);
 void DefaultExtension(char *szFileName, const char *szExtension);
-void DefaultExtension(class StdStrBuf *sFilename, const char *szExtension);
 void EnforceExtension(char *szFileName, const char *szExtension);
 void EnforceExtension(class StdStrBuf *sFilename, const char *szExtension);
 void RemoveExtension(char *szFileName);
@@ -84,7 +80,6 @@ size_t FileSize(const char *fname);
 size_t FileSize(int fdes);
 int FileTime(const char *fname);
 bool EraseFile(const char *szFileName);
-bool EraseFiles(const char *szFilePath);
 bool RenameFile(const char *szFileName, const char *szNewFileName);
 bool MakeOriginalFilename(char *szFilename);
 void MakeFilenameFromTitle(char *szTitle);
@@ -92,12 +87,10 @@ void MakeFilenameFromTitle(char *szTitle);
 bool CopyDirectory(const char *szSource, const char *szTarget, bool fResetAttributes=false);
 bool EraseDirectory(const char *szDirName);
 
-int ItemAttributes(const char *szItemName);
 bool ItemIdentical(const char *szFilename1, const char *szFilename2);
 inline bool ItemExists(const char *szItemName) { return FileExists(szItemName); }
 bool RenameItem(const char *szItemName, const char *szNewItemName);
 bool EraseItem(const char *szItemName);
-bool EraseItems(const char *szItemPath);
 bool CopyItem(const char *szSource, const char *szTarget, bool fResetAttributes=false);
 bool CreateItem(const char *szItemname);
 bool MoveItem(const char *szSource, const char *szTarget);
@@ -110,8 +103,8 @@ public:
 	DirectoryIterator(const char * dirname);
 	DirectoryIterator();
 	~DirectoryIterator();
-	// Does not actually copy anything, but does prevent misuses from crashing (I hope)
-	DirectoryIterator(const DirectoryIterator &);
+	// prevent misuses
+	DirectoryIterator(const DirectoryIterator &) = delete;
 	const char * operator * () const;
 	DirectoryIterator& operator ++ ();
 	void operator ++ (int);
@@ -128,12 +121,7 @@ protected:
 #endif
 }; 
 
-
-bool LocateInFile(FILE *file, char *index, BYTE wrap=1, BYTE lbeg=0);
 bool ReadFileLine(FILE *fhnd, char *tobuf, int maxlen);
-bool ReadFileInfoLine(FILE *fhnd, char *info, char *tbuf, int maxlen=256, int wrap=1);
-bool WriteFileLine(FILE *hfile, const char *szLine);
-DWORD ReadFileUntil(FILE *fhnd, char *tbuf, char smark, int maxlen);
 void AdvanceFileLine(FILE *fhnd);
 
 #endif // STDFILE_INCLUDED

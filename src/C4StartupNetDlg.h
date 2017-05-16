@@ -211,8 +211,6 @@ class C4StartupNetDlg : public C4StartupDlg, private C4InteractiveThread::Callba
 
 		void OnSec1Timer(); // idle proc: update list
 
-		void CheckVersionUpdate(const C4GameVersion &rNewVer); // make an update button visible if the passed verionis an update to this version
-
 		void SetIgnoreUpdate(bool to_val) { fIgnoreUpdate = to_val; }
 		bool GetIgnoreUpdate() const { return fIgnoreUpdate; }
 	};

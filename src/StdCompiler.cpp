@@ -762,12 +762,6 @@ void StdCompilerINIRead::SkipWhitespace()
     pPos++;
 }
 
-void StdCompilerINIRead::SkipNum()
-{
-  while(*pPos == '+' || *pPos == '-' || isdigit((unsigned char)*pPos))
-    pPos++;
-}
-
 long StdCompilerINIRead::ReadNum()
 {
   if(!pPos)

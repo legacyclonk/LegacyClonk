@@ -137,8 +137,6 @@ public:
 	C4NetIOPacket(const void *pnData, size_t inSize, bool fCopy = false, const C4NetIO::addr_t &naddr = C4NetIO::addr_t());
 	// construct from buffer (takes data, if possible)
 	explicit C4NetIOPacket(StdBuf &Buf, const C4NetIO::addr_t &naddr = C4NetIO::addr_t());
-	// construct from status byte + buffer (copies data)
-	C4NetIOPacket(uint8_t cStatusByte, const char *pnData, size_t inSize, const C4NetIO::addr_t &naddr = C4NetIO::addr_t()); 
 	
 	~C4NetIOPacket();
 
@@ -152,8 +150,6 @@ public:
 	const C4NetIO::addr_t &getAddr() const { return addr; }
 
 	uint8_t			getStatus()const { return getSize() ? *getBufPtr<char>(*this) : 0; }
-	const char *getPData() const { return getSize() ? getBufPtr<char>(*this, 1) : NULL; }
-	size_t			getPSize() const { return getSize() ? getSize() - 1 : 0; }
   StdBuf      getPBuf()  const { return getSize() ? getPart(1, getSize() - 1) : getRef(); }
 
 	// Some overloads
@@ -509,7 +505,6 @@ protected:
 		const C4NetIOPacket	&GetData()		const { return Data; }
 		nr_t				         GetNr()			const { return iNr; }
 		bool								 Empty()			const { return Data.isNull(); }
-		bool								 Multicast()	const { return !!(Data.getStatus() & 0x80); }
 
 		// fragmention
 		nr_t				         FragmentCnt() const;
@@ -657,7 +652,6 @@ protected:
     // statistics
     int GetIRate() const { return iIRate; }
     int GetORate() const { return iORate; }
-    int GetLoss() const { return iLoss; }
     void ClearStatistics();
 
 	protected:
@@ -764,33 +758,6 @@ private:
 	virtual void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO);
 
 	void OnAddAddress(const addr_t &FromAddr, const AddAddrPacket &Packet);
-};
-
-// net i/o management (e.g. thread support)
-class C4NetIOMan : public C4NetIO::CBClass, public StdSchedulerThread
-{
-public:
-	C4NetIOMan();
-	virtual ~C4NetIOMan();
-
-	void Clear();
-
-	void AddIO(C4NetIO *pNetIO, bool fSetCallback = true);
-	void RemoveIO(C4NetIO *pNetIO);
-
-protected:
-	
-	// net i/o list
-	int iNetIOCnt, iNetIOCapacity;
-	C4NetIO **ppNetIO;
-
-	// overridables
-	virtual void OnError(const char *strError, C4NetIO *pNetIO) { };
-
-private:
-	virtual void OnError(StdSchedulerProc *pProc);
-
-	void EnlargeIO(int iBy);
 };
 
 // helpers

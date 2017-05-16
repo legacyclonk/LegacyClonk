@@ -459,7 +459,6 @@ bool C4Game::Init()
 	// Color palette
 	if (Application.isFullScreen)	Application.DDraw->WipeSurface(Application.DDraw->lpPrimary);
 	GraphicsSystem.SetPalette();
-	GraphicsSystem.SetDarkColorTable();
 	GraphicsSystem.ApplyGamma();
 
 	// Message board and upper board
@@ -1649,7 +1648,6 @@ void C4Game::Default()
 	pJoinReference=NULL;
 	ScenarioTitle.Ref("Loading...");
 	HaltCount=0;
-	fReferenceDefinitionOverride=FALSE;
 	Evaluated=FALSE;
 	Verbose=false;
 	TimeGo=false;
@@ -3400,14 +3398,6 @@ void C4Game::ShowGameOverDlg()
 #endif
 	}
 
-BOOL C4Game::LocalFileMatch(const char *szFilename, int32_t iCreation)
-	{
-	// Check file (szFilename relative to ExePath)
-	if ( C4Group_GetCreation(Config.AtExePath(szFilename)) == iCreation) return TRUE;
-	// No match
-	return FALSE;
-	}
-
 void C4Game::SyncClearance()
 	{
 	PXS.SyncClearance();
@@ -3931,17 +3921,6 @@ bool C4Game::ToggleDebugMode()
 	Toggle(DebugMode);
 	if (!DebugMode) GraphicsSystem.DeactivateDebugOutput();
 	GraphicsSystem.FlashMessageOnOff(LoadResStr("IDS_CTL_DEBUGMODE"), DebugMode);
-	return true;
-	}
-
-bool C4Game::ActivateMenu(const char *szCommand)
-	{
-	// no new menu during round evaluation
-	if (C4GameOverDlg::IsShown()) return false;
-	// forward to primary player
-	C4Player *pPlr=Game.Players.GetLocalByIndex(0);
-	if (!pPlr) return false;
-  pPlr->Menu.ActivateCommand(pPlr->Number, szCommand);
 	return true;
 	}
 

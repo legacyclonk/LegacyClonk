@@ -673,11 +673,6 @@ void C4Player::PlaceReadyMaterial(int32_t tx1, int32_t tx2, int32_t ty, C4Object
     }
   }
 
-DWORD RandomPlayerColor() // generate a random player color
-	{
-	return RGB(Min(SafeRandom(302), 256), Min(SafeRandom(302), 256), Min(SafeRandom(302), 256));
-	}
-
 BOOL C4Player::ScenarioInit()
   {
   int32_t ptx,pty;
@@ -1001,25 +996,6 @@ BOOL C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, BOOL fSilent)
   return TRUE;
   }
 
-C4Object* C4Player::GetHiExpActiveCrew(bool fSelectOnly)
-	{
-	C4ObjectLink *clnk;
-	C4Object *cobj,*hiexp=NULL;
-	int32_t iHighestExp=-2, iExp;
-	for (clnk=Crew.First; clnk && (cobj=clnk->Obj); clnk=clnk->Next)
-		if (!cobj->CrewDisabled)
-			if (!fSelectOnly || cobj->Select)
-				{
-				if (cobj->Info) iExp = cobj->Info->Experience; else iExp=-1;
-				if (!hiexp || (iExp>iHighestExp))
-					{
-					hiexp=cobj;
-					iHighestExp=iExp;
-					}
-				}
-	return hiexp;
-	}
-
 C4Object* C4Player::GetHiRankActiveCrew(bool fSelectOnly)
 	{
 	C4ObjectLink *clnk;
@@ -1039,16 +1015,6 @@ C4Object* C4Player::GetHiRankActiveCrew(bool fSelectOnly)
 	return hirank;
 	}
 
-void C4Player::CheckCrewExPromotion()
-	{
-	C4Object *hirank;
-	if (hirank=GetHiRankActiveCrew(false))
-		if (hirank->Info)
-			if (hirank->Info->Rank<1) // No Fähnrich -> except. promo.
-				if (hirank=GetHiExpActiveCrew(false))
-					hirank->Promote(1,TRUE,false);
-	}
-
 void C4Player::SetTeamHostility()
 	{
 	// team only
@@ -1061,14 +1027,6 @@ void C4Player::SetTeamHostility()
 			SetHostility(pPlr->Number, fHostile, true);
 			pPlr->SetHostility(Number, fHostile, true);
 			}
-	}
-
-BOOL C4Player::Message(const char *szMsg)
-	{
-	if (!szMsg) return FALSE;
-	SCopy(szMsg,MessageBuf,256);
-	MessageStatus=SLen(szMsg)*2;
-	return TRUE;
 	}
 
 void C4Player::Clear()
@@ -1353,17 +1311,6 @@ void C4Player::SelectSingleByCursor()
   // Updates
   SelectFlash=30;
   AdjustCursorCommand();
-  }
-
-void C4Player::SelectSingle(C4Object *tobj)
-  {
-	// clear previous cursor
-	if (Cursor) Cursor->UnSelect(TRUE);
-  // Set cursor        
-  Cursor=tobj;
-	if (Cursor) Cursor->DoSelect(TRUE);
-  // Now use PlayerSelectSingleByCursor
-  SelectSingleByCursor();
   }
 
 void C4Player::CursorToggle()

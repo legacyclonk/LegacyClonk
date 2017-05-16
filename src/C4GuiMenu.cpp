@@ -391,16 +391,6 @@ bool ContextMenu::AddElement(Element *pChild)
 	return true;
 	}
 
-bool ContextMenu::InsertElement(Element *pChild, Element *pInsertBefore)
-	{
-	// insert it
-	Window::InsertElement(pChild, pInsertBefore);
-  // update own size and positions
-  UpdateElementPositions();
-	// success
-	return true;
-	}
-
 void ContextMenu::ElementSizeChanged(Element *pOfElement)
 	{
 	// inherited
@@ -539,120 +529,6 @@ void ContextMenu::DoOK()
 	// free CB class
 	delete pCallback;
 	}
-
-void ContextMenu::SelectItem(int32_t iIndex)
-	{
-	// get item to be selected (may be NULL on purpose!)
-	Element *pNewSelElement = GetElementByIndex(iIndex);
-	if (pNewSelElement != pSelectedItem) return;
-	// set new
-	pSelectedItem = pNewSelElement;
-	SelectionChanged(false);
-	}
-
-
-// ----------------------------------------------------
-// ContextButton
-
-ContextButton::ContextButton(C4Rect &rtBounds) : Control(rtBounds), iOpenMenu(0), fMouseOver(false)
-	{
-	RegisterContextKey();
-	}
-
-ContextButton::ContextButton(Element *pForEl, bool fAdd, int32_t iHIndent, int32_t iVIndent)
-: Control(C4Rect(0,0,0,0)), iOpenMenu(0), fMouseOver(false)
-	{
-	SetBounds(pForEl->GetToprightCornerRect(16, 16, iHIndent, iVIndent));
-	// copy context handler
-	SetContextHandler(pForEl->GetContextHandler());
-	// add if desired
-	Container *pCont;
-	if (fAdd) if (pCont = pForEl->GetContainer())
-		pCont->AddElement(this);
-	RegisterContextKey();
-	}
-
-ContextButton::~ContextButton()
-	{
-	delete pKeyContext;
-	}
-
-void ContextButton::RegisterContextKey()
-	{
-	// reg keys for pressing the context button
-	C4CustomKey::CodeList ContextKeys;
-	ContextKeys.push_back(C4KeyCodeEx(K_RIGHT));
-	ContextKeys.push_back(C4KeyCodeEx(K_DOWN));
-	ContextKeys.push_back(C4KeyCodeEx(K_SPACE));
-	ContextKeys.push_back(C4KeyCodeEx(K_RIGHT, KEYS_Alt));
-	ContextKeys.push_back(C4KeyCodeEx(K_DOWN, KEYS_Alt));
-	ContextKeys.push_back(C4KeyCodeEx(K_SPACE, KEYS_Alt));
-	pKeyContext = new C4KeyBinding(ContextKeys, "GUIContextButtonPress", KEYSCOPE_Gui,
-		new ControlKeyCB<ContextButton>(*this, &ContextButton::KeyContext), C4CustomKey::PRIO_Ctrl);
-	}
-
-bool ContextButton::DoContext(int32_t iX, int32_t iY)
-	{
-	// get context pos
-	if (iX<0)
-		{
-		iX = rcBounds.Wdt/2;
-		iY = rcBounds.Hgt/2;
-		}
-	// do context
-	ContextHandler *pCtx = GetContextHandler();
-	if (!pCtx) return false;
-	if (!pCtx->OnContext(this, iX, iY)) return false;
-	// store menu
-	Screen *pScr = GetScreen();
-	if (!pScr) return false;
-	iOpenMenu = pScr->GetContextMenuIndex();
-	// return whether all was successful
-	return !!iOpenMenu;
-	}
-
-void ContextButton::DrawElement(C4FacetEx &cgo)
-	{
-	// recheck open menu
-	Screen *pScr = GetScreen();
-	if (!pScr || (iOpenMenu != pScr->GetContextMenuIndex())) iOpenMenu = 0;
-	// calc drawing bounds
-	int32_t x0 = cgo.TargetX + rcBounds.x, y0 = cgo.TargetY + rcBounds.y;
-	// draw button; down (phase 1) if a menu is open
-	GetRes()->fctContext.Draw(cgo.Surface, x0, y0, iOpenMenu ? 1 : 0);
-	// draw selection highlight
-	if (HasDrawFocus() || (fMouseOver && IsInActiveDlg(false)) || iOpenMenu)
-		{
-		lpDDraw->SetBlitMode(C4GFXBLIT_ADDITIVE);
-		GetRes()->fctButtonHighlight.DrawX(cgo.Surface, x0, y0, rcBounds.Wdt, rcBounds.Hgt);
-		lpDDraw->ResetBlitMode();
-		}
-	}
-
-void ContextButton::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
-	{
-	// left-click activates menu
-	if ((iButton == C4MC_Button_LeftDown) || (iButton == C4MC_Button_RightDown))
-		if (DoContext()) return;
-	// inherited
-	Control::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);
-	}
-
-void ContextButton::MouseEnter(CMouse &rMouse)
-	{
-	Control::MouseEnter(rMouse);
-	// remember mouse state for button highlight
-	fMouseOver = true;
-	}
-
-void ContextButton::MouseLeave(CMouse &rMouse)
-	{
-	Control::MouseLeave(rMouse);
-	// mouse left
-	fMouseOver = false;
-	}
-
-
 
 }; // end of namespace
 

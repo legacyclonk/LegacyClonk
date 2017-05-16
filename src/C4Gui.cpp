@@ -443,7 +443,7 @@ void CMouse::Input(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
 	// update buttons
 	switch (iButton)
 		{
-		case C4MC_Button_LeftDown:   LDown=true;  LDownX=x; LDownY=y; break;
+		case C4MC_Button_LeftDown:   LDown=true;  break;
 		case C4MC_Button_LeftUp:     LDown=false; break;
 		case C4MC_Button_RightDown:  RDown=true;  break;
 		case C4MC_Button_RightUp:    RDown=false; break;
@@ -711,20 +711,6 @@ void Screen::Draw(C4FacetEx &cgo, bool fDoBG)
 	if (Application.isFullScreen) RenderMouse(cgo);
 	}
 
-bool Screen::Execute()
-	{
-	if (!IsGUIValid()) return false;
-	// process messages
-	int32_t iResult;
-	while ((iResult = Application.HandleMessage()) == HR_Message)
-		// check status
-		if (!IsGUIValid()) return false;
-	if (iResult == HR_Failure) return false;
-	// check status
-	if (!IsGUIValid()) return false;
-	return true;
-	}
-
 bool Screen::KeyAny()
 	{
 	// mark keystroke in mouse
@@ -892,11 +878,6 @@ bool Screen::MouseInput(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyPara
 		}
 	// return whether anything processed it
 	return fProcessed || Mouse.pDragElement || (Mouse.pMouseOverElement && Mouse.pMouseOverElement!=this) || pContext;
-	}
-
-bool Screen::RecheckMouseInput()
-	{
-	return MouseInput(C4MC_Button_None, Mouse.x, Mouse.y, Mouse.dwKeys, NULL, NULL);
 	}
 
 void Screen::UpdateMouseFocus()
@@ -1082,11 +1063,6 @@ bool ComponentAligner::GetCentered(int32_t iWdt, int32_t iHgt, C4Rect &rcOut)
 	rcOut.Hgt = iHgt;
 	// range check
 	return rcOut.Wdt+iMarginX*2 <= rcClientArea.Wdt && rcOut.Hgt+iMarginY*2 <= rcClientArea.Hgt;
-	}
-
-void ComponentAligner::LogIt(const char *szName)
-	{
-	LogF("ComponentAligner %s: (%d,%d)+(%d,%d), Margin (%d,%d)", szName, rcClientArea.x, rcClientArea.y, rcClientArea.Wdt, rcClientArea.Hgt, iMarginX, iMarginY);
 	}
 
 C4Rect &ComponentAligner::GetGridCell(int32_t iSectX, int32_t iSectXMax, int32_t iSectY, int32_t iSectYMax, int32_t iSectSizeX, int32_t iSectSizeY, bool fCenterPos, int32_t iSectNumX, int32_t iSectNumY)

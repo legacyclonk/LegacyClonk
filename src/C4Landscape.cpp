@@ -1424,13 +1424,6 @@ BOOL C4Landscape::FindMatPathPush(int32_t &fx, int32_t &fy, int32_t mdens, int32
 	return TRUE;
 	}
 
-BOOL C4Landscape::FindMatPathPull(int32_t &fx, int32_t &fy, int32_t mdens, int32_t mslide, bool liquid)
-	{
-	// TODO
-	return TRUE;
-	}
-
-
 BOOL C4Landscape::Incinerate(int32_t x, int32_t y)
 	{
 	int32_t mat=GetMat(x,y);
@@ -2422,30 +2415,6 @@ BYTE C4Landscape::GetMapIndex(int32_t iX, int32_t iY)
 #define C4LSLGT_2 8
 #define C4LSLGT_3 4
 
-inline DWORD DarkenClr1_16(DWORD &dwDst) // make it 1/16 as bright
-	{
-	// darken a color
-	return dwDst=(dwDst&0xff000000)|(((dwDst>>1)&0x7f7f7f) + ((dwDst>>2)&0x3f3f3f) + ((dwDst>>3)&0x1f1f1f) + ((dwDst>>4)&0x0f0f0f));
-	}
-
-inline DWORD DarkenClr1_8(DWORD &dwDst) // make it 7/8 as bright
-	{
-	// darken a color
-	return dwDst=(dwDst&0xff000000)|(((dwDst>>1)&0x7f7f7f) + ((dwDst>>2)&0x3f3f3f) + ((dwDst>>3)&0x1f1f1f));
-	}
-
-inline DWORD DarkenClr3_8(DWORD &dwDst) // make it 7/8 as bright, slightly violet-biased
-	{
-	// darken a color
-	return dwDst=(dwDst&0xff000000)|(((dwDst>>1)&0x7f7f7f) + ((dwDst>>3)&0x1f001f));
-	}
-
-inline DWORD DarkenClr1_4(DWORD &dwDst) // make it 3/4 as bright, slightly violet-biased
-	{
-	// darken a color
-	return dwDst=(dwDst&0xff000000)|(((dwDst>>1)&0x7f7f7f) + ((dwDst>>2)&0x3f3f3f) - ((dwDst>>3)&0x001f00));
-	}
-
 bool C4Landscape::DoRelights()
 	{
 	for(int32_t i = 0; i < C4LS_MaxRelights; i++)
@@ -2487,7 +2456,7 @@ bool C4Landscape::ApplyLighting(C4Rect To)
 	To.Intersect(C4Rect(0,0,GBackWdt,GBackHgt));
 	// everything clipped?
 	if (To.Wdt<=0 || To.Hgt<=0) return true;
-#ifndef USE_SVEN2_STYLE_LIGHTNING
+
 	if (!Surface32->Lock()) return false;
 	Surface32->ClearBoxDw(To.x, To.y, To.Wdt, To.Hgt);
 	if (AnimationSurface)
@@ -2549,78 +2518,6 @@ bool C4Landscape::ApplyLighting(C4Rect To)
 	if (AnimationSurface) AnimationSurface->Unlock();
 	// done
 	return true;
-#else // USE_SVEN2_STYLE_LIGHTNING
-	// do lightning vertically
-	for (int32_t iX=To.x; iX<To.x+To.Wdt; ++iX)
-		{
-		// assume there was the material that is on top of the map for some pixels above it, too
-		int32_t iCurrMat=GetMat(iX,To.y);
-		int32_t iCurrMatCnt=255;
-		int32_t iPlacementChange=1,iMarginDepth=1;
-		for (int32_t iY=To.y+1; iY<To.y+To.Hgt; ++iY)
-			{
-			// get material at new pos
-			int32_t iNowMat=GetMat(iX,iY);
-			// it changed?
-			if (iCurrMat != iNowMat)
-				{
-				// get placement change
-				iPlacementChange=MatPlacement(iNowMat)-MatPlacement(iCurrMat);
-				iMarginDepth=Abs(iPlacementChange)/5+1;
-				// darken upwards, if the density got less
-				if (iPlacementChange<0)
-					for (int32_t i=-1; i>-4*iMarginDepth; --i)
-						{
-						if (iY+i < To.y) break;
-						// get current back color
-						DWORD dwBackClr=Surface->GetPixDw(iX, iY+i, false);
-						// apply lightning
-						switch (i/iMarginDepth)
-							{
-							case -1: // second is lit
-								DarkenClrBy(dwBackClr, C4LSLGT_1+SafeRandom(C4LSLGT_2)); break;
-							case -0: // just changed - not too bright
-							case -2: // third is lit a bit
-								DarkenClrBy(dwBackClr, C4LSLGT_2+SafeRandom(C4LSLGT_3)); break;
-							case -3: // third is lit a bit less
-								DarkenClrBy(dwBackClr, SafeRandom(C4LSLGT_2)); break;
-						}
-						// set new pixel
-						Surface->SetPixDw(iX, iY+i, dwBackClr);
-						// stop if material changed
-						if (GetMat(iX, iY+1) != iCurrMat) break;
-						}
-				// lighten downwards, if the density increased
-				if (iPlacementChange>0) iCurrMatCnt=0;
-				// set new material
-				iCurrMat=iNowMat;
-				}
-			// enlight if the material just changed
-			if (iCurrMatCnt<4*iMarginDepth && MatValid(iCurrMat)) if (Game.Material.Map[iCurrMat].Placement>=10)
-				{
-				// get current back color
-				DWORD dwBackClr=Surface->GetPixDw(iX, iY, false);
-				// apply lightning
-				switch (iCurrMatCnt/iMarginDepth)
-					{
-					case 1: // second is lit
-						LightenClrBy(dwBackClr, C4LSLGT_1+SafeRandom(C4LSLGT_2)); break;
-					case 0: // just changed - not too bright
-					case 2: // third is lit a bit
-						LightenClrBy(dwBackClr, C4LSLGT_2+SafeRandom(C4LSLGT_3)); break;
-					case 3: // third is lit a bit less
-						LightenClrBy(dwBackClr, SafeRandom(C4LSLGT_2)); break;
-					}
-				// set new pixel
-				Surface->SetPixDw(iX, iY, dwBackClr);
-				}
-			// count this material
-			++iCurrMatCnt;
-			}
-		}
-	// success
-	return true;
-#endif // USE_SVEN2_STYLE_LIGHTNING
 	}
 
 DWORD C4Landscape::GetClrByTex(int32_t iX, int32_t iY)
@@ -2823,12 +2720,6 @@ void C4Landscape::UpdatePixMaps()
 	Pix2Place[0] = 0;
 	}
 
-void C4Landscape::DiscardMap()
-	{
-	// delete map if present
-	if (Map) { delete Map; Map=NULL; }
-	}
-
 bool C4Landscape::Mat2Pal()
 	{
 	if(!Surface8) return false;
@@ -3009,14 +2900,3 @@ void C4Landscape::RemoveUnusedTexMapEntries()
   // flag rewrite
   Game.TextureMap.fEntriesAdded = true;
   }
-
-bool C4Landscape::DebugSave(const char *szFilename)
-	{
-	// debug: Save 8 bit data landscape only, without doing any SolidMask-removal-stuff
-	bool fSuccess = false;
-	if (Surface8)
-		{
-		fSuccess = Surface8->Save(szFilename);
-		}
-	return fSuccess;
-	}

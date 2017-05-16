@@ -83,15 +83,6 @@ inline void ModulateClrMOD2(DWORD &dwDst, DWORD dwMod) // clr1+clr2-0.5
 					Min<uint32_t>((dwDst>>24)+(dwMod>>24), 0xff)<<24;
 	}
 
-inline void ModulateClrMono(DWORD &dwDst, BYTE byMod)
-	{
-	// darken a color value by constant modulation
-	dwDst = ((dwDst     & 0xff) * byMod)    >>  8   | // blue
-	        ((dwDst>> 8 & 0xff) * byMod) &   0xff00 | // green
-				  ((dwDst>> 8 & 0xff00) * byMod) & 0xff0000 | // red
-				  (dwDst & 0xff000000);                     // alpha
-	}
-
 inline void ModulateClrMonoA(DWORD &dwDst, BYTE byMod, BYTE byA)
 	{
 	// darken a color value by constant modulation and add an alpha value
@@ -122,12 +113,6 @@ inline DWORD LightenClrBy(DWORD &dwDst, int iBy) // enlight a color
 				  Min<int>((dwDst>>16 & 0xff) + iBy, 255) << 16 | // red
 				  (dwDst & 0xff000000);                     // alpha
 	return dwDst;
-	}
-
-inline DWORD DarkenClr(DWORD &dwDst) // make it half as bright
-	{
-	// darken a color
-	return dwDst=(dwDst&0xff000000)|((dwDst>>1)&0x7f7f7f);
 	}
 
 inline DWORD DarkenClrBy(DWORD &dwDst, int iBy) // darken a color
@@ -243,16 +228,6 @@ inline bool xy2upvp(double x, double y, double *pu, double *pv) // CIE xy to u'v
 	if (!n) return false;
 	*pu = 4.0*x / n;
 	*pv = 9.0*y / n;
-	return true;
-	}
-
-inline bool upvp2xy(double u, double v, double *px, double *py) // u'v' to CIE xy
-	{
-	if (!v) return false;
-	double n = 1.5*u/v + 3.0/v - 4.0;
-	if (!n) return false;
-	*py = 1.0 / n;
-	*px =(6.0 - 4.5/v) * *py + 1.5;
 	return true;
 	}
 

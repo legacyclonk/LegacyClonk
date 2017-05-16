@@ -226,7 +226,6 @@ class C4StartupPlrSelDlg : public C4StartupDlg
 		bool KeyNew() { OnNewBtn(NULL); return true; }
 
 		void OnNewBtn(C4GUI::Control *btn);
-		void OnNew(const StdStrBuf &Playername);
 		void OnActivateBtn(C4GUI::Control *btn);
 		void OnPropertyBtn(C4GUI::Control *btn);
 		void OnPropertyCtx(C4GUI::Element *el) { OnPropertyBtn(NULL); }
@@ -247,7 +246,6 @@ class C4StartupPlrPropertiesDlg: public C4GUI::Dialog
 		C4StartupPlrSelDlg *pMainDlg; // may be NULL if shown as creation dialog in main menu!
 		C4StartupPlrSelDlg::PlayerListItem * pForPlayer;
 		C4GUI::Edit *pNameEdit; // player name edit box
-		C4GUI::CheckBox *pAutoStopControl; // wether the player uses AutoStopControl
 		C4GUI::Picture *pClrPreview;
 		C4GUI::ScrollBar *pClrSliderR, *pClrSliderG, *pClrSliderB;
 		C4GUI::Picture *pCtrlImg;

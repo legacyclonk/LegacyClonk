@@ -338,10 +338,6 @@ class C4MapCreatorS2 : public C4MCNode
 #ifdef C4ENGINE
 		CSurface8 * Render(const char *szMapName); // create map surface
 #endif
-		BYTE *RenderBuf(const char *szMapName, int32_t &sfcWdt, int32_t &sfcHgt); // create buffer and render it
-
-		void SetC4SLandscape(C4SLandscape *pLandscape) // update source for map size
-			{ Landscape=pLandscape; }
 
 	protected:
 		C4SLandscape  *Landscape; // landsape presets

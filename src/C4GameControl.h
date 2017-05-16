@@ -104,10 +104,6 @@ public:
 	bool SyncMode() const { return eMode != CM_Local || pRecord; }
 
 	bool NoInput() const { return isReplay(); }
-	
-  // client list
-  C4GameControlClient *getClient(int32_t iID);
-  C4GameControlClient *getClient(const char *szName);
 
   // initialization
 	bool InitLocal(C4Client *pLocal);

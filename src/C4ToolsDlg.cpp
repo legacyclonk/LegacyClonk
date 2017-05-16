@@ -615,10 +615,6 @@ BOOL C4ToolsDlg::SetIFT(BOOL fIFT)
 	return TRUE;
 	}
 
-void C4ToolsDlg::SetColorPattern(const char *szMaterial, const char *szTexture)
-	{
-	}
-
 void C4ToolsDlg::UpdatePreview()
 	{
 #ifdef _WIN32

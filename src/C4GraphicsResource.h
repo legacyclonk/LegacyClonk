@@ -91,7 +91,6 @@ class C4GraphicsResource
 		CStdFont FontTitle;    // huge font for titles
 		CStdFont FontTooltip;  // normal, non-shadowed font (same as BookFont)
 	public:
-		int32_t GetColorIndex(int32_t iColor, bool fLast=false);
 		void Default();
 		void Clear();
 		bool InitFonts(); // init fonts only (early init done by loader screen)
@@ -108,7 +107,6 @@ class C4GraphicsResource
 	protected:
 		bool LoadFile(C4FacetExID& fct, const char *szName, C4GroupSet &rGfxSet, int32_t iWdt = C4FCT_Full, int32_t iHgt = C4FCT_Full, bool fNoWarnIfNotFound=false);
 		bool LoadFile(C4Surface& sfc, const char *szName, C4GroupSet &rGfxSet, int32_t &ridCurrSfc);
-		bool FindLoadRes(C4Group *pSecondFile, const char *szName);
 		bool LoadCursorGfx();
 
 		friend class C4GUI::Resource;

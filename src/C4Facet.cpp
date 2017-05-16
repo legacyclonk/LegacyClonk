@@ -158,14 +158,6 @@ void C4Facet::DrawClr(C4Facet &cgo, BOOL fAspect, DWORD dwClr)
 	Draw(cgo, fAspect);
 	}
 
-void C4Facet::DrawXClr(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, DWORD dwClr)
-	{
-	// set ColorByOwner-color
-	Surface->SetClr(dwClr);
-	// draw
-	DrawX(sfcTarget, iX, iY, iWdt, iHgt);
-	}
-
 void C4Facet::DrawValue2Clr(C4Facet &cgo, int32_t iValue1, int32_t iValue2, DWORD dwClr)
 	{
 	// set ColorByOwner-color
@@ -182,20 +174,6 @@ void C4Facet::DrawXR(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, in
 	rot.SetRotate(r, (float) (iX+iX+iWdt)/2, (float) (iY+iY+iHgt)/2);
 	lpDDraw->Blit(Surface,
 								float(X+Wdt*iSectionX),float(Y+Hgt*iSectionY),float(Wdt),float(Hgt),
-								sfcTarget,
-								iX,iY,iWdt,iHgt,
-								TRUE,&rot);
-#endif
-	}
-
-void C4Facet::DrawXR2(SURFACE sfcTarget, int32_t iSrcXOff, int32_t iSrcYOff, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iSectionX, int32_t iSectionY, int32_t r)
-	{
-#ifdef C4ENGINE
-	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
-	CBltTransform rot;
-	rot.SetRotate(r, (float) (iX+iX+iWdt)/2, (float) (iY+iY+iHgt)/2);
-	lpDDraw->Blit(Surface,
-								float(X+Wdt*iSectionX+iSrcXOff),float(Y+Hgt*iSectionY+iSrcYOff),float(Wdt),float(Hgt),
 								sfcTarget,
 								iX,iY,iWdt,iHgt,
 								TRUE,&rot);
@@ -271,23 +249,6 @@ C4Facet C4Facet::Truncate(int32_t iAlign, int32_t iSize)
 		}
 	// Done
 	return fctResult;
-	}
-
-void C4Facet::DrawSectionSelect(C4Facet &cgo, int32_t iSelection, int32_t iMaxSelect)
-	{
-#ifdef C4ENGINE
-	int32_t sections = cgo.GetSectionCount();
-	int32_t idnum = iMaxSelect;
-	int32_t firstid = BoundBy<int32_t>(iSelection-sections/2,0,Max<int32_t>(idnum-sections,0));  
-	C4Facet cgo2;
-	for (int32_t cnt=0; (cnt<sections) && (firstid+cnt<idnum); cnt++)
-		{
-		cgo2 = cgo.GetSection(cnt);
-		if (iSelection==firstid+cnt)
-			lpDDraw->DrawBox(cgo2.Surface,cgo2.X,cgo2.Y,cgo2.X+cgo2.Wdt-1,cgo2.Y+cgo2.Hgt-1,CRed);
-		Draw(cgo2,TRUE,firstid+cnt,0);
-    }    	
-#endif
 	}
 
 void C4Facet::DrawValue(C4Facet &cgo, int32_t iValue, int32_t iSectionX, int32_t iSectionY, int32_t iAlign)
@@ -394,22 +355,6 @@ void C4Facet::DrawXT(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, in
 	}
 #endif // C4ENGINE
 
-void C4Facet::DrawEnergyLevel(int32_t iLevel, int32_t iRange, int32_t iColor)
-	{
-#ifdef C4ENGINE
-	if (!lpDDraw) return;
-	iLevel = BoundBy<int32_t>(iLevel,0,iRange);
-	lpDDraw->DrawBox(Surface,
-				X,Y,
-				X+Wdt-1,Y+Hgt-1,
-				40);
-	lpDDraw->DrawBox(Surface,
-				X+1,Y+1+(Hgt-2)-(Hgt-2)*iLevel/Max<int32_t>(iRange,1),
-				X+Wdt-2,Y+Hgt-2,
-				iColor);
-#endif
-	}
-
 void C4Facet::DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &gfx, int32_t bar_idx)
 	{
 #ifdef C4ENGINE
@@ -466,78 +411,6 @@ void C4Facet::DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &g
 		gfx_draw.Draw(Surface, X, Y+iY, bar_idx+bar_idx+!filled);
 		iY += dh;
 		}
-#endif
-	}
-
-void C4Facet::Set(CSurface &rSfc)
-	{
-	Set(&rSfc,0,0,rSfc.Wdt,rSfc.Hgt);
-	}
-
-#ifdef _WIN32
-void C4Facet::Draw(HWND hWnd, int32_t iTx, int32_t iTy, int32_t iTWdt, int32_t iTHgt, BOOL fAspect, int32_t iPhaseX, int32_t iPhaseY)
-	{
-#if defined(C4ENGINE) && defined(USE_DIRECTX)
-	if (!pD3D || !Surface || !hWnd || !Wdt || !Hgt) return;
-
-	if (fAspect)
-		{
-		int32_t iTx2=iTx,iTy2=iTy,iTWdt2=iTWdt,iTHgt2=iTHgt;
-		// Adjust height aspect by width aspect
-		if (100*iTWdt/Wdt<100*iTHgt/Hgt) 
-			{ 
-			iTHgt2=Hgt*iTWdt/Wdt;
-			iTy2+=(iTHgt-iTHgt2)/2; 
-			}
-		// Adjust width aspect by height aspect
-		else if (100*iTHgt/Hgt<100*iTWdt/Wdt)
-			{ 
-			iTWdt2=Wdt*iTHgt/Hgt;
-			iTx2+=(iTWdt-iTWdt2)/2;
-			}
-		// Blit
-		pD3D->BlitSurface2Window(Surface,
-																X+Wdt*iPhaseX,Y+Hgt*iPhaseY,Wdt,Hgt,
-																hWnd,
-																iTx2,iTy2,iTWdt2,iTHgt2
-																/*TRUE*/);
-		}
-	
-	else
-		{
-		// Blit
-		pD3D->BlitSurface2Window(Surface,
-																X+Wdt*iPhaseX,Y+Hgt*iPhaseY,Wdt,Hgt,
-																hWnd,
-																iTx,iTy,iTWdt,iTHgt
-																/*TRUE*/);
-		}
-#endif
-	}
-#endif
-
-void C4Facet::DrawTile(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt)
-	{
-#ifdef C4ENGINE
-	if (!lpDDraw || !Surface || !Wdt || !Hgt) return;
-	// Blits whole source surface, not surface facet area
-	lpDDraw->BlitSurfaceTile(Surface,sfcTarget,iX,iY,iWdt,iHgt,0,0,TRUE);
-#endif
-	}
-
-void C4Facet::Expand(int32_t iLeft, int32_t iRight, int32_t iTop, int32_t iBottom)
-	{
-	X-=iLeft; Wdt+=iLeft;
-	Wdt+=iRight;
-	Y-=iTop; Hgt+=iTop;
-	Hgt+=iBottom;
-	}
-
-void C4Facet::Wipe()
-	{
-#ifdef C4ENGINE
-	if (!lpDDraw || !Surface || !Wdt || !Hgt) return;
-	lpDDraw->WipeSurface(Surface);
 #endif
 	}
 

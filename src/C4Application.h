@@ -32,7 +32,6 @@ class C4Sec1Callback
 {
 public:
   virtual void OnSec1Timer() = 0;
-  void StartSec1Timer();
   virtual ~C4Sec1Callback() {}
 };
 
@@ -108,7 +107,6 @@ class C4Application: public CStdApp
 		void Execute();
 		// System.c4g helper funcs
 		bool OpenSystemGroup() { return SystemGroup.IsOpen() || SystemGroup.Open(C4CFN_System); }
-		void CloseSystemGroup() { SystemGroup.Close(); }
 		void DoSec1Timers();
 		void SetGameTickDelay(int iDelay);
 		bool SetResolution(int32_t iNewResX, int32_t iNewResY);

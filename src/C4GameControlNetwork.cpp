@@ -865,12 +865,6 @@ C4GameControlPacket::C4GameControlPacket(const C4GameControlPacket &Pkt2)
 	Ctrl.Copy(Pkt2.getControl());
 }
 
-C4GameControlPacket &C4GameControlPacket::operator = (const C4GameControlPacket &Pkt2)
-{
-	Set(Pkt2.getClientID(), Pkt2.getCtrlTick(), Pkt2.getControl());
-	return *this;
-}
-
 void C4GameControlPacket::Set(int32_t inClientID, int32_t inCtrlTick)
 {
 	iClientID = inClientID;

@@ -34,35 +34,9 @@ int CBitmapInfo::FileBitsOffset()
 	return Head.bfOffBits-sizeof(CBitmapInfo);
 	}
 
-void CBitmapInfo::Set(int iWdt, int iHgt, int iBitDepth)
-	{
-	Default();
-  // Set header
-  Head.bfType=*((WORD*)"BM");
-  Head.bfSize=sizeof(BITMAPFILEHEADER)+sizeof(BITMAPINFOHEADER)+DWordAligned(iWdt)*iHgt;
-  Head.bfOffBits=sizeof(BITMAPFILEHEADER)+sizeof(BITMAPINFOHEADER);
-  // Set bitmap info
-  Info.biSize=sizeof(BITMAPINFOHEADER);
-  Info.biWidth=iWdt;
-  Info.biHeight=iHgt;
-  Info.biPlanes=1;
-  Info.biBitCount=iBitDepth;
-  Info.biCompression=0;
-  Info.biSizeImage=iWdt*iHgt;
-  Info.biClrUsed=Info.biClrImportant=0;
-	}
-
-
 CBitmap256Info::CBitmap256Info()
 	{
 	Default();
-	}
-
-BOOL CBitmap256Info::Valid()
-	{
-  if (Head.bfType != *((WORD*)"BM") ) return FALSE;
-  if ((Info.biBitCount!=8) || (Info.biCompression!=0)) return FALSE;
-	return TRUE;
 	}
 
 int CBitmap256Info::FileBitsOffset()

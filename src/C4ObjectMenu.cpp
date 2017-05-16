@@ -83,13 +83,6 @@ bool C4ObjectMenu::Init(C4FacetExSurface &fctSymbol, const char *szEmpty, C4Obje
 	return true;
 	}
 
-bool C4ObjectMenu::InitRefSym(const C4FacetEx &fctSymbol, const char *szEmpty, C4Object *pObject, int32_t iExtra, int32_t iExtraData, int32_t iId, int32_t iStyle, bool fUserMenu)
-	{
-	if (!DoInitRefSym(fctSymbol, szEmpty, iExtra, iExtraData, iId, iStyle)) return false;
-	LocalInit(pObject, fUserMenu);
-	return true;
-	}
-
 void C4ObjectMenu::OnSelectionChanged(int32_t iNewSelection)
 	{
 	// do selection callback

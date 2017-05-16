@@ -23,11 +23,8 @@
 
 // group set priorities
 #define C4GSPrio_Base				  0 // lowest priority for global system files
-#define C4GSPrio_Pack				  1 // overloads by object packs
 #define C4GSPrio_ExtraRoot	  2 // overloads by Extra.c4g root folder
 #define C4GSPrio_Extra			  3 // overloads by Extra.c4g
-#define C4GSPrio_Definition   4 // overloads by definition file - latter defined definition files have higher priority
-#define C4GSPrio_Definition2 99 // highest priority a given definition may have
 #define C4GSPrio_Folder		  100 // overloads by local scenario folder - each child folder has higher priority
 #define C4GSPrio_Folder2	  199 // highest priority a folder may have
 #define C4GSPrio_Scenario	  200 // overloads by scenario: highest priority
@@ -43,10 +40,8 @@
 #define C4GSCnt_Component   128 // other components
 
 #define C4GSCnt_Folder		(C4GSCnt_Graphics | C4GSCnt_Loaders | C4GSCnt_Material | C4GSCnt_Music | C4GSCnt_FontDefs)
-#define C4GSCnt_OriginFolder		(C4GSCnt_Graphics | C4GSCnt_Loaders | C4GSCnt_Material | C4GSCnt_Music | C4GSCnt_FontDefs)
 #define C4GSCnt_Directory (C4GSCnt_Loaders | C4GSCnt_Music)
 #define C4GSCnt_Scenario	C4GSCnt_Folder
-#define C4GSCnt_Root			(C4GSCnt_Graphics | C4GSCnt_Material)
 #define C4GSCnt_Extra			(C4GSCnt_Graphics | C4GSCnt_Loaders | C4GSCnt_Material | C4GSCnt_Music | C4GSCnt_FontDefs)
 #define C4GSCnt_ExtraRoot	(C4GSCnt_Graphics | C4GSCnt_Loaders | C4GSCnt_Material | C4GSCnt_Music | C4GSCnt_FontDefs)
 
@@ -86,21 +81,18 @@ class C4GroupSet
 		int32_t iIndex; // index to keep track of group node IDs
 
 	public:
-		bool UnregisterGroup(int32_t iIndex);
 		void Clear();
 		void Default();
 
 		C4GroupSet();		// ctor
-		C4GroupSet(C4GroupSet &rCopy); // copy-constructor that registers all groups with all contents
+		C4GroupSet(C4GroupSet &) = delete;
 		~C4GroupSet();	// dtor
 
 		bool RegisterGroup(C4Group &rGroup, bool fOwnGrp, int32_t Priority, int32_t Contents, bool fCheckContent=true); // add group to list
 		bool RegisterGroups(C4GroupSet &rCopy, int32_t Contents, const char *szFilename=NULL, int32_t iMaxSkipID=0);	// add all matching (child-)groups of the set
 		C4Group *FindGroup(int32_t Contents, C4Group *pAfter=NULL, bool fSamePrio=false);				// search for suitable group in list
 		C4Group *FindEntry(const char *szWildcard, int32_t *pPriority=NULL, int32_t *pID=NULL);										// find entry in groups; store priority of group if ptr is given
-		int32_t GetGroupCount();
 		C4Group *GetGroup(int32_t iIndex);
-		bool LoadEntry(const char *szEntryName, char **lpbpBuf, size_t *ipSize=NULL, int32_t iAppendZeros=0);
 		bool LoadEntryString(const char *szEntryName, StdStrBuf & rBuf);
 		C4Group *RegisterParentFolders(const char *szScenFilename); // register all parent .c4f groups to the given scenario filename and return an open group file of the innermost parent c4f
 

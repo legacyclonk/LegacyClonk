@@ -53,7 +53,6 @@ class C4Network2Players
 
 	public:
 		void SendUpdatedPlayers(); // send all player infos with updated flags to all clients (host only!)
-		void ResetUpdatedPlayers(); // resets all update-flags (host only!)
 
 	private:
 		void UpdateSavegameAssignments(class C4ClientPlayerInfos *pNewInfo); // resolve any savegame assignment conflicts of unjoined players; sets update-flags (host only!)
@@ -80,7 +79,6 @@ class C4Network2Players
 
 		// some query fns
 		C4ClientPlayerInfos *GetLocalPlayerInfoPacket() const; // get player info packet for local client (created in Init())
-		C4ClientPlayerInfos *GetIndexedPlayerInfoPacket(int iIndex);  // get player info packet by index
 		DWORD GetClientChatColor(int idForClient, bool fLobby) const;
 	};
 

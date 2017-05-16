@@ -23,7 +23,6 @@
 #include <StdGL.h>
 #include <StdWindow.h>
 #include <StdRegistry.h>
-#include <StdResStr.h>
 #include <StdConfig.h>
 #include <StdSurface2.h>
 #include <StdFacet.h>
@@ -158,14 +157,6 @@ bool CSurface::IsRenderTarget()
 	;
 	}
 
-BOOL CSurface::Box(int iX, int iY, int iX2, int iY2, int iCol)
-	{
-	if (!Lock()) return FALSE;
-	for (int cy=iY; cy<=iY2; cy++) HLine(iX,iX2,cy,iCol);
-	Unlock();
-	return TRUE;
-	}
-
 void CSurface::NoClip()
 	{
 	ClipX=0; ClipY=0; ClipX2=Wdt-1; ClipY2=Hgt-1;
@@ -175,14 +166,6 @@ void CSurface::Clip(int iX, int iY, int iX2, int iY2)
 	{
 	ClipX=BoundBy(iX,0,Wdt-1); ClipY=BoundBy(iY,0,Hgt-1); 
 	ClipX2=BoundBy(iX2,0,Wdt-1); ClipY2=BoundBy(iY2,0,Hgt-1);
-	}
-
-BOOL CSurface::HLine(int iX, int iX2, int iY, int iCol)
-	{
-	if (!Lock()) return FALSE;
-	for (int cx=iX; cx<=iX2; cx++) SetPix(cx,iY,iCol);
-	Unlock();
-	return TRUE;
 	}
 
 BOOL CSurface::Create(int iWdt, int iHgt, bool fOwnPal, bool fIsRenderTarget)
@@ -685,17 +668,6 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
   return true;
 	}
 
-
-BOOL CSurface::AttachPalette()
-	{
-	return TRUE;
-	}
-
-double ColorDistance(BYTE *bpRGB1, BYTE *bpRGB2)
-	{
-	return (double) (Abs(bpRGB1[0]-bpRGB2[0]) + Abs(bpRGB1[1]-bpRGB2[1]) + Abs(bpRGB1[2]-bpRGB2[2])) / 6.0;
-	}
-
 BOOL CSurface::Wipe()
 	{
 	if (!ppTex) return FALSE;
@@ -738,7 +710,6 @@ BOOL CSurface::Lock()
 				// lock it
 				if (pSfc->LockRect(&lock, NULL, 0) != D3D_OK)
 					return FALSE;
-				lpDDraw->LockingPrimary();
 				// store pitch and pointer
 				PrimarySurfaceLockPitch=lock.Pitch;
 				PrimarySurfaceLockBits=(BYTE*) lock.pBits;
@@ -779,7 +750,6 @@ BOOL CSurface::Unlock()
 				// unlocking primary?
 				if (pSfc->UnlockRect() != D3D_OK)
 					return FALSE;
-				lpDDraw->PrimaryUnlocked();
 				}
 			else
 #endif
@@ -1055,45 +1025,7 @@ bool CSurface::SetPixDw(int iX, int iY, DWORD dwClr)
 	// if color is fully transparent, ensure it's black
 	if (dwClr>>24 == 0xff) dwClr=0xff000000;
 	CTexRef *pTexRef;
-#ifdef USE_GL
-	// openGL: use glTexSubImage2D
-	// This optimization was moved to LockForUpdate, as it only slows down mass updates here
-	// Keep this code in case there is a need for fast single pixel updates again
-	if (0 && pGL && pGL->pCurrCtx)
-		{
-		if (!GetTexAt(&pTexRef, iX, iY))
-			return false;
-		// If the texture is not copied into system memory, modify it directly in the video memory
-		if (!pTexRef->texLock.pBits)
-			{
-			glBindTexture(GL_TEXTURE_2D, pTexRef->texName);
-			if (byBytesPP == 4)
-				{
-				// 32 Bit
-				glTexSubImage2D(GL_TEXTURE_2D, 0, iX, iY, 1, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &dwClr);
-				}
-			else
-				{
-				// 16 bit
-				uint16_t wClr=ClrDw2W(dwClr);
-				glTexSubImage2D(GL_TEXTURE_2D, 0, iX, iY, 1, 1, GL_BGRA, GL_UNSIGNED_SHORT_4_4_4_4_REV, &wClr);
-				}
-			return true;
-			}
-		// Otherwise, make sure that the texlock covers the new pixel
-		RECT & r = pTexRef->LockSize;
-		if (r.left > iX || r.top > iY || r.right < iX || r.bottom < iY)
-			{
-			// Unlock, then relock the whole thing
-			pTexRef->Unlock();
-			if (!pTexRef->Lock()) return false;
-			}
-		}
-	else
-#endif
-		{
-		if (!GetLockTexAt(&pTexRef, iX, iY)) return false;
-		}
+	if (!GetLockTexAt(&pTexRef, iX, iY)) return false;
 	// ...and set in actual surface
 	if (byBytesPP == 4)
 		{
@@ -1104,28 +1036,6 @@ bool CSurface::SetPixDw(int iX, int iY, DWORD dwClr)
 		{
 		// 16 bit
 		pTexRef->SetPix2(iX, iY, ClrDw2W(dwClr));
-		}
-	// success
-	return true;
-	}
-
-bool CSurface::SetPixAlpha(int iX, int iY, BYTE byAlpha)
-	{
-	// clip
-	if ((iX<ClipX) || (iX>ClipX2) || (iY<ClipY) || (iY>ClipY2)) return true;
-	// get+lock affected texture
-	if (!ppTex) return false;
-	CTexRef *pTexRef;
-	if (!GetLockTexAt(&pTexRef, iX, iY)) return false;
-	// set alpha value of pix in surface
-	if (byBytesPP == 4)
-		// 32 bit
-		*(((BYTE *) pTexRef->texLock.pBits)+iY*pTexRef->texLock.Pitch+iX*4+3)=byAlpha;
-	else
-		{
-		// 16 bit
-		BYTE *pPix=((BYTE *) pTexRef->texLock.pBits)+iY*pTexRef->texLock.Pitch+iX*2+1;
-		*pPix = (*pPix & 0x0f) | (byAlpha & 0xf0);
 		}
 	// success
 	return true;
@@ -1245,7 +1155,6 @@ bool CSurface::CopyBytes(BYTE *pImageData)
 			pTex = *ppCurrTex++;
 			if (!pTex->Lock()) return false;
 			BYTE *pTarget = (BYTE*)pTex->texLock.pBits;
-			int iDstPitch = pTex->texLock.Pitch;
 			int iCpyNum = Min(pTex->iSize, Wdt-iXImgPos)*byBytesPP;
 			int iYMax = Min(pTex->iSize, Hgt-iLineTotal);
 			for (int iLine = 0; iLine < iYMax; ++iLine)

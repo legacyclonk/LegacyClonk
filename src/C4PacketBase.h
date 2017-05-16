@@ -32,7 +32,6 @@ public:
 	virtual void CompileFunc(StdCompiler *pComp) = 0;
 
 	// conversion (using above functions)
-	C4NetIOPacket pack(const C4NetIO::addr_t &addr = C4NetIO::addr_t()) const;
 	C4NetIOPacket pack(uint8_t cStatus, const C4NetIO::addr_t &addr = C4NetIO::addr_t()) const;
 	void unpack(const C4NetIOPacket &Pkt, char *pStatus = NULL);
 
@@ -202,9 +201,6 @@ struct C4PktHandlingData
 };
 extern const C4PktHandlingData PktHandlingData[];
 
-const char *PacketNameByID(C4PacketType eID);
-
-
 // *** general packet types
 
 // "identified" packet: packet with packet type id
@@ -232,7 +228,6 @@ public:
 
 	void Clear();
 	void Default();
-	void Set(C4PacketType eType, C4PacketBase *pPkt);
 
 	virtual void CompileFunc(StdCompiler *pComp);
 };
@@ -252,12 +247,8 @@ public:
 	C4IDPacket *firstPkt() const { return pFirst; }
 	C4IDPacket *nextPkt(C4IDPacket *pPkt) const { return pPkt->pNext; }
 
-	int32_t getPktCnt() const;
-
 	void Add(C4IDPacket *pPkt);
-	void AddHead(C4IDPacket *pPkt);
 	void Add(C4PacketType eType, C4PacketBase *pPkt);
-	void AddHead(C4PacketType eType, C4PacketBase *pPkt);
 
   void Take(C4PacketList &List);
 	void Append(const C4PacketList &List);

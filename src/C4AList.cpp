@@ -83,42 +83,6 @@ C4AListEntry *C4AList::push(void *pVar, void *pVal)
 	return Entry;
 	}
 
-void *C4AList::get(void *pVar, C4AListEntry *pOff)
-	{
-	// list empty?
-	if (!Table) return NULL;
-	// start at beginning of table, if no offset assigned
-	if (!pOff) pOff = &Table->Entries[0];
-	// get from offset
-	return pOff->get(pVar);
-	}
-
-void *C4AListEntry::get(void *pVar)
-	{
-	// search entries; beginning at this
-	C4AListEntry *pOff = this;
-	while (1)
-		{
-		// entry is invalid/stop-entry?
-		if (!pOff->Var)
-			{
-			// check if it's just the end of a chunk
-			if (!(pOff = (C4AListEntry *) pOff->Val))
-				// so it's a stop entry or the end of the list; break here
-				break;
-			// if it was, check next chunk
-			if (!pOff->Var) break;
-			}
-		// so we've got a valid entry; check if it's the correct one
-		if (pOff->Var == pVar) return pOff->Val;
-		// it wasn't; check next
-		pOff++;
-		}
-	// nothing found
-	return NULL;
-
-	}
-
 C4AListEntry *C4AListEntry::next()
 	{
 	// search entries; beginning at this
@@ -132,33 +96,5 @@ C4AListEntry *C4AListEntry::next()
 	// return beginning of next chunk, if valid
 	if (pOff->Var) return pOff;
 	// otherwise, fail
-	return NULL;
-	}
-
-C4AListEntry *C4AListEntry::nextVal()
-	{
-	// get entries beginning at next one
-	C4AListEntry *e = this;
-	while ((e = e->next()))
-		{
-		// return if Val != NULL
-		if (e->Val) return e;
-		}
-	// nothing found
-	return NULL;
-	}
-
-C4AListEntry *C4AListEntry::firstVal()
-	{
-	// get entries beginning at next one
-	C4AListEntry *e = this;
-	while (e)
-		{
-		// return if Val != NULL
-		if (e->Val) return e;
-		//next
-		e = e->next();
-		}
-	// nothing found
 	return NULL;
 	}

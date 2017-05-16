@@ -4395,21 +4395,6 @@ static C4Value FnGetScenarioVal(C4AulContext* cthr, C4Value* strEntry_C4V, C4Val
 	return GetValByStdCompiler(strEntry, strSection, iEntryNr, mkParAdapt(Game.C4S, false));
 }
 
-static C4Value FnSetScenarioVal(C4AulContext* cthr, C4Value* strEntry_C4V, C4Value* strSection_C4V, C4Value *iEntryNr_C4V, C4Value *setVal_C4V)
-{
-	const char *strEntry = FnStringPar(strEntry_C4V->getStr());
-	const char *strSection = FnStringPar(strSection_C4V->getStr());
-	long iEntryNr = iEntryNr_C4V->getInt();
-
-  if(strSection && !*strSection) strSection = NULL;
-
-	// only set dereferenced values
-	C4Value setVal(*setVal_C4V);
-	setVal.Deref();
-
-	return C4VBool(SetValByStdCompiler(strEntry, strSection, iEntryNr, mkParAdapt(Game.C4S, false), setVal));
-}
-
 static C4Value FnGetPlayerVal(C4AulContext* cthr, C4Value* strEntry_C4V, C4Value* strSection_C4V, C4Value* iPlayer_C4V, C4Value *iEntryNr_C4V)
 {
 	const char *strEntry = FnStringPar(strEntry_C4V->getStr());
@@ -4660,8 +4645,6 @@ static bool FnSetMenuSize(C4AulContext* cthr, long iCols, long iRows, C4Object *
 	pMnu->SetSize(BoundBy<long>(iCols, 0, 50), BoundBy<long>(iRows, 0, 50));
 	return TRUE;
 	}
-
-char NeededMat[C4MaxMessage];
 
 static C4String *FnGetNeededMatStr(C4AulContext* cthr, C4Object *pObj)
 	{

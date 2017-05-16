@@ -22,8 +22,6 @@
 
 #include <Standard.h>
 
-struct FONT2DVERTEX;
-
 class CBltTransform;
 
 // one markup tag

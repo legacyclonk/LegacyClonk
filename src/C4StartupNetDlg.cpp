@@ -1192,19 +1192,6 @@ void C4StartupNetDlg::OnReferenceEntryAdd(C4StartupNetListEntry *pEntry)
 		pEntry->UpdateCollapsed(true);
 	}
 
-void C4StartupNetDlg::CheckVersionUpdate(const C4GameVersion &rNewVer)
-	{
-	// Is a valid update
-	if (C4UpdateDlg::IsValidUpdate(rNewVer))
-		{
-		UpdateVersion = rNewVer;
-		btnUpdate->SetVisibility(true);
-		}
-	// Otherwise: no update available
-	else
-		btnUpdate->SetVisibility(false);
-	}
-
 void C4StartupNetDlg::OnChatTitleChange(const StdStrBuf &sNewTitle)
 	{
 	// update label

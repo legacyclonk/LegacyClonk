@@ -26,8 +26,6 @@ const int C4FCT_Full   = -1,
 					C4FCT_Height = -2,
 					C4FCT_Width	 = -3;
 
-class C4TargetRect;
-
 class C4FacetEx: public C4Facet
 	{
 	public:
@@ -53,7 +51,6 @@ class C4FacetEx: public C4Facet
 			Set(rhs.Surface,rhs.X,rhs.Y,rhs.Wdt,rhs.Hgt);
 			return *this;
 			}
-		void SetRect(C4TargetRect &rSrc);
 	};
 
 // facet that can hold its own surface
@@ -82,10 +79,7 @@ class C4FacetExSurface : public C4FacetEx
 		C4Surface &GetFace() { return Face; } // get internal face
 		BOOL CreateClrByOwner(CSurface *pBySurface);
 		BOOL EnsureSize(int iMinWdt, int iMinHgt);
-		bool EnsureOwnSurface();
 		BOOL Load(C4Group &hGroup, const char *szName, int iWdt=C4FCT_Full, int iHgt=C4FCT_Full, bool fOwnPal=false, bool fNoErrIfNotFound=false);
-		BOOL Load(BYTE *bpBitmap, int iWdt=C4FCT_Full, int iHgt=C4FCT_Full);
-		BOOL Save(C4Group &hGroup, const char *szName);
 		void GrabFrom(C4FacetExSurface &rSource)
 			{	
 			Clear(); Default();

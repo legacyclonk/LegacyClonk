@@ -247,7 +247,6 @@ public:
 #ifndef _WIN32 
 	virtual CStdWindow * Init(CStdApp * pApp, const char * Title, CStdWindow * pParent = 0, bool HideCursor = true);
 #endif
-	bool StorePosition(const char *szWindowName, const char *szSubKey, bool fStoreSize = true);
 	bool RestorePosition(const char *szWindowName, const char *szSubKey, bool fHidden = false);
 	bool GetSize(RECT * pRect);
 	void SetSize(unsigned int cx, unsigned int cy); // resize
@@ -318,8 +317,6 @@ public:
 	StdStrBuf Paste(bool fClipboard = true);
 	// Is there something in the clipboard?
 	bool IsClipboardFull(bool fClipboard = true);
-	// Give up Selection ownership
-	void ClearClipboard(bool fClipboard = true);
 	// a command from stdin
 	virtual void OnCommand(const char *szCmd) = 0; // callback
 	// notify user to get back to the program

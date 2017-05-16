@@ -59,7 +59,6 @@ protected:
 
 public:
 	int getDiscoverCount() const { return iDiscoverCount; }
-	const C4NetIO::addr_t &getDiscover(int i) { return Discovers[i]; }
 
 	void Clear() { iDiscoverCount = 0; }
 	bool Init(uint16_t iPort = P_NONE);

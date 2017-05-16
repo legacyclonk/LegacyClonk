@@ -391,7 +391,7 @@ void C4FullScreen::Close()
 		Application.Quit();
 	}
 
-void C4FullScreen::Execute(bool fRecursiveCall)
+void C4FullScreen::Execute()
 	{
 	// Execute menu
 	if (pMenu) pMenu->Execute();

@@ -25,10 +25,6 @@
 #include <C4Aul.h>
 #endif
 
-const int32_t C4SCR_MaxIDLen = 100,
-							C4SCR_MaxDesc	 = 256;
-
-
 // generic script host for objects
 class C4ScriptHost : public C4AulScript, public C4ComponentHost
 	{
@@ -57,7 +53,6 @@ class C4ScriptHost : public C4AulScript, public C4ComponentHost
 			}
 	protected:
 		class C4LangStringTable *pStringTable;
-		void SetError(const char *szMessage);
 		void MakeScript();
 		C4Value FunctionCall(C4Object *pCaller, const char *szFunction, C4Object *pObj, C4AulParSet *pPars=0, bool fPrivateCall=false, bool fPassError=false);
     BOOL ReloadScript(const char *szPath);

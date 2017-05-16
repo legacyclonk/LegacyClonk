@@ -21,7 +21,6 @@
 
 //========================= Component File Names ============================================
 
-#define C4CFN_Engine					"Clonk.exe"
 #define C4CFN_Editor    			"Editor.exe"
 
 #define C4CFN_Material				"Material.c4g"
@@ -34,8 +33,6 @@
 
 #define C4CFN_ScenarioSections "Sect*.c4g"
 
-#define C4CFN_Objects					"Objects.c4d"
-
 #define C4CFN_Mouse						"Mouse.c4f"
 #define C4CFN_Keyboard				"Keyboard.c4f"
 #define C4CFN_Easy						"Easy.c4f"
@@ -46,7 +43,6 @@
 #define C4CFN_DefCore					"DefCore.txt"
 #define C4CFN_ObjectInfoCore	"ObjectInfo.txt"
 #define C4CFN_ParticleCore		"Particle.txt"
-#define C4CFN_LinkCore				"Link.txt"
 #define C4CFN_UpdateCore			"AutoUpdate.txt"
 #define C4CFN_UpdateEntries		"GRPUP_Entries.txt"
 
@@ -95,8 +91,6 @@
 #define C4CFN_PortraitOverlay	"PortraitOverlay.png"
 #define C4CFN_Portrait_Old		"Portrait.bmp"
 #define C4CFN_Portraits       "Portrait*.*"
-#define C4CFN_UpperBoard			"UpperBoard"
-#define C4CFN_Logo						"Logo"
 #define C4CFN_MoreMusic				"MoreMusic.txt"
 #define C4CFN_DynLandscape		"Landscape.txt"
 #define C4CFN_ClonkNames			"ClonkNames%s.txt|ClonkNames.txt"
@@ -123,38 +117,28 @@
 
 #define C4CFN_Log							"Clonk.log"
 #define C4CFN_LogEx						"Clonk%d.log" // created if regular logfile is in use
-#define C4CFN_Intro						"Clonk4.avi"
 #define C4CFN_Names						"Names.txt"
 #define C4CFN_Titles					"Title*.txt|Title.txt"
-#define C4CFN_DefNameFiles    "Names*.txt|Names.txt"
 
 #define C4CFN_Splash					"Splash.c4v"
 
-#define C4CFN_TempMusic				"~Music.tmp"
 #define C4CFN_TempMusic2			"~Music2.tmp"
-#define C4CFN_TempSky					"~Sky.tmp"
 #define C4CFN_TempMap         "~Map.tmp"
 #define C4CFN_TempLandscape		"~Landscape.tmp"
 #define C4CFN_TempLandscapePNG "~Landscape2.tmp"
 #define C4CFN_TempPXS					"~PXS.tmp"
 #define C4CFN_TempTitle				"~Title.tmp"
-#define C4CFN_TempCtrlRec			"~CtrlRec.tmp"
-#define C4CFN_TempReSync			"~ReSync.tmp"
 #define C4CFN_TempPlayer			"~plr.tmp"
-#define C4CFN_TempRoundResults "~C4Results.tmp"
-#define C4CFN_TempLeagueInfo  "~league.tmp"
 
 #define C4CFN_DefFiles				"*.c4d"
 #define C4CFN_PlayerFiles			"*.c4p"
 #define C4CFN_MaterialFiles		"*.c4m"
 #define C4CFN_ObjectInfoFiles	"*.c4i"
-#define C4CFN_MusicFiles			"*.mid"
 #define C4CFN_SoundFiles			"*.wav|*.ogg"
 #define C4CFN_PNGFiles				"*.png"
 #define C4CFN_BitmapFiles			"*.bmp"
 #define C4CFN_ScenarioFiles   "*.c4s"
 #define C4CFN_FolderFiles			"*.c4f"
-#define C4CFN_QueueFiles			"*.c4q"
 #define C4CFN_AnimationFiles	"*.c4v"
 #define C4CFN_ScriptFiles			"*.c"
 #define C4CFN_ImageFiles			"*.png|*.bmp|*.jpeg|*.jpg"
@@ -175,7 +159,6 @@
             "|*.pal|Control.png|Fire.png|Background.png|Flag.png|Crew.png|Score.png|Wealth.png|Player.png|Rank.png|Entry.png|Captain.png|Cursor.png|CursorSmall.png|CursorMedium.png|CursorLarge.png|SelectMark.png|MenuSymbol.png|Menu.png|Logo.png|Construction.png|Energy.png|Magic.png|Options.png|UpperBoard.png|Arrow.png|Exit.png|Hand.png|Gamepad.png|Build.png|EnergyBars.png|Liquid.png"\
 						"|GUICaption.png|GUIButton.png|GUIButtonDown.png|GUIButtonHighlight.png|GUIIcons.png|GUIIcons2.png|GUIScroll.png|GUIContext.png|GUISubmenu.png|GUICheckBox.png|GUIBigArrows.png|GUIProgress.png"\
             "|StartupScenSelBG.*|StartupPlrSelBG.*|StartupPlrPropBG.*|StartupNetworkBG.*|StartupAboutBG.*|StartupBigButton.png|StartupBigButtonDown.png|StartupBookScroll.png|StartupContext.png|StartupScenSelIcons.png|StartupScenSelTitleOv.png|StartupPlrCtrlType.png|StartupDlgPaper.png|StartupOptionIcons.png|StartupTabClip.png|StartupNetGetRef.png"
-#define C4FLS_Objects		"Names*.txt|Desc*.txt|*.c4d"
 #define C4FLS_Mouse			"*.txt|*.rtf|Title.bmp|Title.png|Icon.bmp|Tutorial01.c4s|Tutorial02.c4s|Tutorial03.c4s|Objects.c4d"
 #define C4FLS_Keyboard	"*.txt|*.rtf|Title.bmp|Title.png|Icon.bmp|Tutorial01.c4s|Tutorial02.c4s|Tutorial03.c4s|Tutorial04.c4s|Tutorial05.c4s|Tutorial06.c4s|Tutorial07.c4s|Tutorial08.c4s|Tutorial09.c4s|Tutorial10.c4s"
 #define C4FLS_Easy			"*.txt|*.rtf|Title.bmp|Title.png|Icon.bmp|Goldmine.c4s|Monsterkill.c4s|Economy.c4s|Melee.c4s|Lake.c4s|Castle.c4s"

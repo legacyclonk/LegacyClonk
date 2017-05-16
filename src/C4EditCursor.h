@@ -80,7 +80,6 @@ class C4EditCursor
 	protected:
 		BOOL UpdateStatusBar();
 		void ApplyToolPicker();
-		void ToolFailure();
 		void PutContents();
 		void UpdateDropTarget(WORD wKeyFlags);
 		void GrabContents();

@@ -1055,11 +1055,6 @@ void C4ChatDlg::UpdateSize()
 	//pBtnClose->SetBounds(caBottom.GetFromLeft(100));
 	}
 
-void C4ChatDlg::OnExitBtn(C4GUI::Control *btn)
-	{
-	UserClose(false);
-	}
-
 void C4ChatDlg::OnChatTitleChange(const StdStrBuf &sNewTitle)
 	{
 	SetTitle(FormatString("%s - %s", LoadResStr("IDS_DLG_CHAT"), sNewTitle.getData()).getData());

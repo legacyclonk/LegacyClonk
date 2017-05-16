@@ -298,22 +298,6 @@ bool C4MessageInput::KeyStartTypeIn(bool fTeam)
 	return StartTypeIn(false, NULL, false, fTeam);
 	}
 
-bool C4MessageInput::ToggleTypeIn()
-	{
-	// safety
-	if (!C4GUI::IsGUIValid()) return false;
-	// toggle off?
-	if (IsTypeIn())
-		{
-		// no accidental close of script queried dlgs by chat request
-		if (GetTypeIn()->IsScriptQueried()) return false;
-		return CloseTypeIn();
-		}
-	else
-		// toggle on!
-		return StartTypeIn();
-	}
-
 bool C4MessageInput::IsTypeIn()
 	{
 	// check GUI and dialog

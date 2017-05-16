@@ -177,11 +177,6 @@ BOOL C4ScriptHost::ReloadScript(const char *szPath)
   return C4AulScript::ReloadScript(szPath);
   }
 
-void C4ScriptHost::SetError(const char *szMessage)
-	{
-
-	}
-
 const char *C4ScriptHost::GetControlDesc(const char *szFunctionFormat, int32_t iCom, C4ID *pidImage, int32_t* piImagePhase)
 	{
 #ifdef C4ENGINE

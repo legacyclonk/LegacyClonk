@@ -133,20 +133,9 @@ template <class T> inline void Toggle(T &v) { v = !v; }
 
 const double pi = 3.14159265358979323846;
 
-inline void DWordAlign(int &val)
-  {
-  if (val%4) { val>>=2; val<<=2; val+=4; }
-  }
-
 inline int DWordAligned(int val)
   {
   if (val%4) { val>>=2; val<<=2; val+=4; }
-	return val;
-  }
-
-inline int QWordAligned(int val)
-  {
-  if (val%8) { val>>=3; val<<=3; val+=8; }
 	return val;
   }
 
@@ -186,33 +175,23 @@ bool ForLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2,
              bool (*fnCallback)(int32_t, int32_t, int32_t), int32_t iPar=0,
 						 int32_t *lastx=NULL, int32_t *lasty=NULL);
 
-bool PathMove(int &rX, int &rY, int iTargetX, int iTargetY, int iSteps, int &rDelta);
-
 char CharCapital(char cChar);
 bool IsIdentifier(char cChar);
-bool IsUpperCase(char cChar);
-bool IsLowerCase(char cChar);
 bool IsWhiteSpace(char cChar);
 
 int  SLen(const char *sptr);
-int  SLenUntil(const char *szStr, char cUntil);
 
 bool SEqual(const char *szStr1, const char *szStr2);
 bool SEqual2(const char *szStr1, const char *szStr2);
-bool SEqualUntil(const char *szStr1, const char *szStr2, char cWild);
 bool SEqualNoCase(const char *szStr1, const char *szStr2, int iLen=-1);
 bool SEqual2NoCase(const char *szStr1, const char *szStr2, int iLen = -1);
-
-int  SCompare(const char *szStr1, const char *szStr2);
 
 void SCopy(const char *szSource, char *sTarget, int iMaxL=-1);
 void SCopyUntil(const char *szSource, char *sTarget, char cUntil, int iMaxL=-1, int iIndex=0);
 void SCopyUntil(const char *szSource, char *sTarget, const char * sUntil, size_t iMaxL);
 void SCopyIdentifier(const char *szSource, char *sTarget, int iMaxL=0);
-bool SCopyPrecedingIdentifier(const char *pBegin, const char *pIdentifier, char *sTarget, int iSize);
 bool SCopySegment(const char *fstr, int segn, char *tstr, char sepa=';', int iMaxL=-1, bool fSkipWhitespace=false);
 bool SCopySegmentEx(const char *fstr, int segn, char *tstr, char sepa1, char sepa2, int iMaxL=-1, bool fSkipWhitespace=false);
-bool SCopyNamedSegment(const char *szString, const char *szName, char *sTarget, char cSeparator=';', char cNameSeparator='=', int iMaxL=-1);
 bool SCopyEnclosed(const char *szSource, char cOpen, char cClose, char *sTarget, int iSize);
 
 void SAppend(const char *szSource, char *szTarget, int iMaxL=-1);
@@ -230,8 +209,6 @@ void SReplaceChar(char *str, char fc, char tc);
 
 const char *SSearch(const char *szString, const char *szIndex);
 const char *SSearchNoCase(const char *szString, const char *szIndex);
-const char *SSearchIdentifier(const char *szString, const char *szIndex);
-const char *SSearchFunction(const char *szString, const char *szIndex);
 
 const char *SAdvanceSpace(const char *szSPos);
 const char *SAdvancePast(const char *szSPos, char cPast);
@@ -246,7 +223,6 @@ int SModuleCount(const char *szList);
 
 const char* SGetParameter(const char *strCommandLine, int iParameter, char *strTarget = NULL, int iSize = -1, bool *pWasQuoted = NULL);
 
-void SRemoveComments(char *szScript);
 void SNewSegment(char *szStr, const char *szSepa=";");
 void SCapitalize(char *szString);
 void SWordWrap(char *szText, char cSpace, char cSepa, int iMaxLine);
@@ -267,34 +243,6 @@ BOOL SWildcardMatchEx(const char *szString, const char *szWildcard);
 #else
 #define DirSep "/"
 #endif
-
-void BufferBlit(uint8_t *bypSource, int iSourcePitch, 
-                int iSrcBufHgt, // Positive: Bottom up
-                int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,
-                uint8_t *bypTarget, int iTargetPitch, 
-                int iTrgBufHgt, // Positive: Bottom up
-                int iTrgX, int iTrgY, int iTrgWdt, int iTrgHgt);
-
-void BufferBlitDw(uint32_t *bypSource, int iSourcePitch, 
-                int iSrcBufHgt, // Positive: Bottom up
-                int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,
-                uint32_t *bypTarget, int iTargetPitch, 
-                int iTrgBufHgt, // Positive: Bottom up
-                int iTrgX, int iTrgY, int iTrgWdt, int iTrgHgt);
-
-void BufferBlitAspect(uint8_t *bypSource, int iSourcePitch, 
-                int iSrcBufHgt, // Positive: Bottom up
-                int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,
-                uint8_t *bypTarget, int iTargetPitch, 
-                int iTrgBufHgt, // Positive: Bottom up
-                int iTrgX, int iTrgY, int iTrgWdt, int iTrgHgt);
-
-void BufferBlitAspectDw(uint32_t *bypSource, int iSourcePitch, 
-                int iSrcBufHgt, // Positive: Bottom up
-                int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,
-                uint32_t *bypTarget, int iTargetPitch, 
-                int iTrgBufHgt, // Positive: Bottom up
-                int iTrgX, int iTrgY, int iTrgWdt, int iTrgHgt);
 
 void StdBlit(uint8_t *bypSource, int iSourcePitch, int iSrcBufHgt,
 							int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,

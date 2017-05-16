@@ -149,14 +149,12 @@ class C4TeamList
 	private:
 		void AddTeam(C4Team *pNewTeam); // add a team; grow list if necessary
 		void ClearTeams(); // delete all teams
-		int32_t GetFreeTeamID();
 		bool GenerateDefaultTeams(int32_t iUpToID); // generate Team 1, Team 2, etc.
 
 	public:
 		C4Team *GetTeamByID(int32_t iID) const; // get team by ID
 		C4Team *GetGenerateTeamByID(int32_t iID); // get team by ID; generate if not existant. Always generate for TEAMID_New.
 		C4Team *GetTeamByIndex(int32_t iIndex) const; // get team by list index, to enumerate all teams
-		C4Team *GetTeamByName(const char *szName) const; // match team name; case sensitive and not trimmed
 		C4Team *GetTeamByPlayerID(int32_t iID) const; // get team by player ID (not number!)
 		int32_t GetLargestTeamID() const;
 		C4Team *GetRandomSmallestTeam() const; // get team with least amount of players in it

@@ -50,8 +50,6 @@ CStdWindow * CStdWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * p
 
 void CStdWindow::Clear() {}
 
-bool CStdWindow::StorePosition(const char *, const char *, bool) { return true; }
-
 bool CStdWindow::RestorePosition(const char *, const char *, bool) { return true; }
 
 // Window size is automatically managed by CStdApp's display mode management.

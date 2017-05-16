@@ -76,44 +76,6 @@ int Pow(int base, int exponent)
 	return result;
 	}
 
-bool PathMove(int &rX, int &rY, int iTargetX, int iTargetY, int iSteps, int &rDelta)
-	{
-  int iDeltaX,iDeltaY,aincr,bincr,iDirX,iDirY,x,y;
-	// No steps
-	if (iSteps<=0) return false;
-	// Y based
-  if (Abs(iTargetX-rX)<Abs(iTargetY-rY))
-    {
-    iDirX=(iTargetX>rX) ? +1 : -1; iDirY=(iTargetY>rY) ? +1 : -1;
-    iDeltaY=Abs(iTargetY-rY); iDeltaX=Abs(iTargetX-rX);   
-		if (!rDelta) rDelta=2*iDeltaX-iDeltaY; 
-		aincr=2*(iDeltaX-iDeltaY); bincr=2*iDeltaX; x=rX; y=rY;
-		while (y!=iTargetY)
-      {			
-      if (rDelta>=0) { x+=iDirX; rDelta+=aincr; } else rDelta+=bincr;
-			y+=iDirY;
-			iSteps--; if (iSteps==0) { rX=x; rY=y; return true; }
-      }
-    }
-	// X based
-  else
-    {
-    iDirY=(iTargetY>rY) ? +1 : -1; iDirX=(iTargetX>rX) ? +1 : -1;
-		iDeltaX=Abs(iTargetX-rX); iDeltaY=Abs(iTargetY-rY);
-		if (!rDelta) rDelta=2*iDeltaY-iDeltaX; 
-		aincr=2*(iDeltaY-iDeltaX); bincr=2*iDeltaY; x=rX; y=rY;
-		while (x!=iTargetX)
-      {
-      if (rDelta>=0)	{ y+=iDirY; rDelta+=aincr; } else rDelta+=bincr;
-			x+=iDirX;
-			iSteps--; if (iSteps==0) { rX=x; rY=y; return true; }
-      }
-    }
-	// Target reached (step overshoot)
-	rX=x; rY=y;
-  return false;
-	}
-
 bool ForLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2, 
              bool (*fnCallback)(int32_t, int32_t, int32_t), int32_t iPar,
 						 int32_t *lastx, int32_t *lasty)
@@ -190,24 +152,6 @@ bool IsWhiteSpace(char cChar)
 	return false;
 	}
 
-bool IsUpperCase(char cChar)
-	{
-  if (Inside(cChar,'A','Z')) return true;
-  if (cChar=='Ä') return true;
-  if (cChar=='Ö') return true;
-  if (cChar=='Ü') return true;
-	return false;
-	}
-
-bool IsLowerCase(char cChar)
-	{
-  if (Inside(cChar,'a','z')) return true;
-  if (cChar=='ä') return true;
-  if (cChar=='ö') return true;
-  if (cChar=='ü') return true;
-	return false;
-	}
-
 //------------------------------- Strings ------------------------------------------------
 
 int SLen(const char *sptr)
@@ -255,28 +199,10 @@ void SCopyUntil(const char *szSource, char *sTarget, const char * sUntil, size_t
 	sTarget[n] = 0;
 	}
 
-int SCompare(const char *szStr1, const char *szStr2)
-  {
-  if (!szStr1 || !szStr2) return false;
-	return strcmp(szStr1,szStr2);
-  }
-
 bool SEqual(const char *szStr1, const char *szStr2)
   {
   if (!szStr1 || !szStr2) return false;
 	return !strcmp(szStr1,szStr2);
-  }
-
-bool SEqualUntil(const char *szStr1, const char *szStr2, char cWild)
-  {
-  if (!szStr1 || !szStr2) return false;
-  while (*szStr1 || *szStr2)
-    {
-    if ((*szStr1==cWild) || (*szStr2==cWild)) return true;
-    if (*szStr1!=*szStr2) return false;
-    szStr1++; szStr2++;
-    }
-  return true;
   }
 
 // Beginning of string 1 needs to match string 2.
@@ -401,21 +327,6 @@ bool SCopySegmentEx(const char *szString, int iSegment, char *sTarget,
   return true;
   }
 
-
-bool SCopyNamedSegment(const char *szString, const char *szName, char *sTarget, 
-		                   char cSeparator, char cNameSeparator, int iMaxL)
-  {
-	// Advance to named segment
-  while (!( SEqual2(szString,szName) && (szString[SLen(szName)]==cNameSeparator) ))
-    {
-    if (SCharPos(cSeparator,szString)==-1) { sTarget[0]=0; return false; } // No more segments
-    szString += SCharPos(cSeparator,szString)+1;
-    }
-	// Copy segment contents
-  SCopyUntil(szString+SLen(szName)+1,sTarget,cSeparator,iMaxL);
-  return true;
-  }
-
 int SCharCount(char cTarget, const char *szInStr, const char *cpUntil)
   {
   int iResult=0;
@@ -458,33 +369,6 @@ void SCapitalize(char *str)
     str++;
     }
   }
-
-const char *SSearchIdentifier(const char *szString, const char *szIndex)
-	{
-	// Does not check whether szIndex itself is an identifier.
-	// Just checks for space in front and back.
-  const char *cscr;
-  int indexlen,match=0;
-	bool frontok=true;
-  if (!szString || !szIndex) return NULL;
-  indexlen=SLen(szIndex);
-  for (cscr=szString; cscr && *cscr; cscr++)
-    {
-		// Match length    
-		if (*cscr==szIndex[match]) match++;
-    else match=0;
-    // String is matched, front and back ok?
-		if (match>=indexlen)
-			if (frontok)
-				if (!IsIdentifier(*(cscr+1)))
-					return cscr+1;
-    // Currently no match, check for frontok
-		if (match==0) 
-			if (IsIdentifier(*cscr)) frontok=false;
-			else frontok=true;    
-		}
-  return NULL;
-	}
 
 const char *SSearch(const char *szString, const char *szIndex)
   {
@@ -544,17 +428,6 @@ const char *SAdvanceSpace(const char *szSPos)
   return szSPos;
   }
 
-const char *SRewindSpace(const char *szSPos, const char *pBegin)
-  {
-  if (!szSPos || !pBegin) return NULL;
-  while (IsWhiteSpace(*szSPos))
-		{
-		szSPos--;
-		if (szSPos<pBegin) return NULL;
-		}
-  return szSPos;
-  }
-
 const char *SAdvancePast(const char *szSPos, char cPast)
   {
   if (!szSPos) return NULL;
@@ -591,13 +464,6 @@ int SClearFrontBack(char *szString, char cClear)
   return cleared;
 	}
 
-int SLenUntil(const char *szStr, char cUntil)
-  {
-  int slen;
-  for (slen=0; *szStr && (*szStr!=cUntil); slen++,szStr++);
-  return slen;
-  }
-
 void SNewSegment(char *szStr, const char *szSepa)
 	{
 	if (szStr[0]) SAppend(szSepa,szStr);
@@ -626,71 +492,6 @@ int SLineGetCharacters(const char *szText, const char *cpPosition)
 		szText++;
 		}
 	return iChars;
-	}
-
-void SRemoveComments(char *szScript)
-	{
-	const char *pScriptCont;
-	if (!szScript) return;
-	while (*szScript)
-		{
-		// Advance to next slash
-		while (*szScript && (*szScript!='/')) szScript++;
-		if (!(*szScript)) return; // No more comments
-		// Line comment
-		if (szScript[1]=='/')
-			{
-			if ((pScriptCont = SSearch(szScript+2,LineFeed)))
-				SCopy(pScriptCont-SLen(LineFeed),szScript);
-			else
-				szScript[0]=0;
-			}
-		// Block comment
-		else if (szScript[1]=='*')
-			{
-			if ((pScriptCont = SSearch(szScript+2,"*/")))
-				SCopy(pScriptCont,szScript);
-			else
-				szScript[0]=0;
-			}
-		// No comment
-		else
-			{
-			szScript++;
-			}
-		}
-	}
-
-bool SCopyPrecedingIdentifier(const char *pBegin, const char *pIdentifier, char *sTarget, int iSize)
-	{
-	// Safety
-	if (!pIdentifier || !sTarget || !pBegin) return false;
-	// Empty default
-	sTarget[0]=0;
-	// Identifier is at begin
-	if (!(pIdentifier>pBegin)) return false;
-	// Rewind space
-	const char *cPos;
-	if (!(cPos = SRewindSpace(pIdentifier-1,pBegin))) return false;
-	// Rewind to beginning of identifier
-  while ((cPos>pBegin) && IsIdentifier(cPos[-1])) cPos--;
-	// Copy identifier
-	SCopyIdentifier(cPos,sTarget,iSize);
-	// Success
-	return true;
-	}
-
-const char *SSearchFunction(const char *szString, const char *szIndex)
-	{
-	// Safety
-	if (!szString || !szIndex) return NULL;
-	// Ignore failsafe
-	if (szIndex[0]=='~') szIndex++;
-	// Buffer to append colon
-	char szDeclaration[256+2];
-	SCopy(szIndex,szDeclaration,256); SAppendChar(':',szDeclaration);
-	// Search identifier
-	return SSearchIdentifier(szString,szDeclaration);
 	}
 
 void SInsert(char *szString, const char *szInsert, int iPosition, int iMaxLen)
@@ -918,107 +719,6 @@ bool IsSafeFormatString(const char *szFmt)
 }
 
 //--------------------------------- Blitting ---------------------------------------------
-
-void BufferBlit(uint8_t *bypSource, int iSourcePitch, 
-                int iSrcBufHgt, // Positive: Bottom up
-                int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,
-                uint8_t *bypTarget, int iTargetPitch, 
-                int iTrgBufHgt, // Positive: Bottom up
-                int iTrgX, int iTrgY, int iTrgWdt, int iTrgHgt)
-  {
-  if (!bypSource || !bypTarget) return;
-  if (!iTrgWdt || !iTrgHgt) return;
-  int xcnt,ycnt,sline,tline,fy;
-  for (ycnt=0; ycnt<iTrgHgt; ycnt++)
-    {    
-    fy = iSrcHgt * ycnt / iTrgHgt;
-    if (iSrcBufHgt>0) sline = ( iSrcBufHgt - 1 - iSrcY - fy ) * iSourcePitch;
-    else sline = ( iSrcY + fy ) * iSourcePitch;
-    if (iTrgBufHgt>0) tline = ( iTrgBufHgt - 1 - iTrgY - ycnt ) * iTargetPitch;
-    else tline = ( iTrgY + ycnt ) * iTargetPitch;
-    for (xcnt=0; xcnt<iTrgWdt; xcnt++)
-       bypTarget [ tline + iTrgX + xcnt ]
-         = bypSource [ sline + iSrcX + iSrcWdt * xcnt / iTrgWdt ];
-    }
-  }
-
-void BufferBlitDw(uint32_t *bypSource, int iSourcePitch, 
-                int iSrcBufHgt, // Positive: Bottom up
-                int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,
-                uint32_t *bypTarget, int iTargetPitch, 
-                int iTrgBufHgt, // Positive: Bottom up
-                int iTrgX, int iTrgY, int iTrgWdt, int iTrgHgt)
-  {
-  if (!bypSource || !bypTarget) return;
-  if (!iTrgWdt || !iTrgHgt) return;
-  int xcnt,ycnt,sline,tline,fy;
-  for (ycnt=0; ycnt<iTrgHgt; ycnt++)
-    {    
-    fy = iSrcHgt * ycnt / iTrgHgt;
-    if (iSrcBufHgt>0) sline = ( iSrcBufHgt - 1 - iSrcY - fy ) * iSourcePitch;
-    else sline = ( iSrcY + fy ) * iSourcePitch;
-    if (iTrgBufHgt>0) tline = ( iTrgBufHgt - 1 - iTrgY - ycnt ) * iTargetPitch;
-    else tline = ( iTrgY + ycnt ) * iTargetPitch;
-    for (xcnt=0; xcnt<iTrgWdt; xcnt++)
-       bypTarget [ tline + iTrgX + xcnt ]
-         = bypSource [ sline + iSrcX + iSrcWdt * xcnt / iTrgWdt ];
-		}
-  }
-
-void BufferBlitAspect(uint8_t *bypSource, int iSourcePitch, 
-                int iSrcBufHgt, // Positive: Bottom up
-                int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,
-                uint8_t *bypTarget, int iTargetPitch, 
-                int iTrgBufHgt, // Positive: Bottom up
-                int iTrgX, int iTrgY, int iTrgWdt, int iTrgHgt)
-  {
-  int nhgt,nwdt;
-  if (!iSrcWdt || !iSrcHgt) return;
-  // Adjust height aspect by width aspect
-  if (100*iTrgWdt/iSrcWdt<100*iTrgHgt/iSrcHgt) 
-    { 
-    nhgt=iSrcHgt*iTrgWdt/iSrcWdt;
-    iTrgY+=(iTrgHgt-nhgt)/2; iTrgHgt=nhgt;
-    }
-  else // Adjust width aspect by height aspect
-    if (100*iTrgHgt/iSrcHgt<100*iTrgWdt/iSrcWdt)
-      { 
-      nwdt=iSrcWdt*iTrgHgt/iSrcHgt;
-      iTrgX+=(iTrgWdt-nwdt)/2; iTrgWdt=nwdt;
-      }
-  BufferBlit(bypSource,iSourcePitch,iSrcBufHgt,
-             iSrcX,iSrcY,iSrcWdt,iSrcHgt,
-             bypTarget,iTargetPitch,iTrgBufHgt,
-             iTrgX,iTrgY,iTrgWdt,iTrgHgt);
-  }
-
-void BufferBlitAspectDw(uint32_t *bypSource, int iSourcePitch, 
-                int iSrcBufHgt, // Positive: Bottom up
-                int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,
-                uint32_t *bypTarget, int iTargetPitch, 
-                int iTrgBufHgt, // Positive: Bottom up
-                int iTrgX, int iTrgY, int iTrgWdt, int iTrgHgt)
-	{
-  int nhgt,nwdt;
-  if (!iSrcWdt || !iSrcHgt) return;
-  // Adjust height aspect by width aspect
-  if (100*iTrgWdt/iSrcWdt<100*iTrgHgt/iSrcHgt) 
-    { 
-    nhgt=iSrcHgt*iTrgWdt/iSrcWdt;
-    iTrgY+=(iTrgHgt-nhgt)/2; iTrgHgt=nhgt;
-    }
-  else // Adjust width aspect by height aspect
-    if (100*iTrgHgt/iSrcHgt<100*iTrgWdt/iSrcWdt)
-      { 
-      nwdt=iSrcWdt*iTrgHgt/iSrcHgt;
-      iTrgX+=(iTrgWdt-nwdt)/2; iTrgWdt=nwdt;
-      }
-  BufferBlitDw(bypSource,iSourcePitch,iSrcBufHgt,
-             iSrcX,iSrcY,iSrcWdt,iSrcHgt,
-             bypTarget,iTargetPitch,iTrgBufHgt,
-             iTrgX,iTrgY,iTrgWdt,iTrgHgt);
-
-	}
 
 void StdBlit(uint8_t *bypSource, int iSourcePitch, int iSrcBufHgt,
           int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,

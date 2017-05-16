@@ -149,7 +149,6 @@ class CStdGL : public CStdDDraw
 		BOOL CreateDirectDraw();
 		virtual bool SetOutputAdapter(unsigned int iMonitor);
 
-		bool CheckGLError(const char *szAtOp);
 #ifdef USE_X11
 		// Size of gamma ramps
 		int gammasize;

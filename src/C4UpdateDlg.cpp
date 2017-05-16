@@ -51,26 +51,6 @@ C4UpdateDlg::C4UpdateDlg() : C4GUI::InfoDialog(LoadResStr("IDS_TYPE_UPDATE"), 10
 	UpdateRunning = true;
 	}
 
-void C4UpdateDlg::UserClose(bool fOK)
-	{
-	// Update not done yet: can't close
-	if (UpdateRunning)
-		{
-		GetScreen()->ShowMessage(LoadResStr("IDS_MSG_UPDATEINPROGRESS"), LoadResStr("IDS_TYPE_UPDATE"), C4GUI::Ico_Ex_Update);
-		return;
-		}
-	// Okay to close
-	Dialog::UserClose(fOK);
-#ifndef _WIN32
-	if (succeeded)
-		{
-		// ready for restart
-		Application.restartAtEnd = true;
-		Application.Quit();
-		}
-#endif
-	}
-
 void C4UpdateDlg::UpdateText()
 	{
 	if (!UpdateRunning)
@@ -153,7 +133,6 @@ static bool IsWindowsVista()
 	// Determine windows version
 	OSVERSIONINFO ver;
 	ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	BOOL fWindowsXP = FALSE;
 	if (GetVersionEx((LPOSVERSIONINFO) &ver))
 		return ((ver.dwMajorVersion == 6) && (ver.dwMinorVersion == 0));
 #endif

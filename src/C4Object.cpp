@@ -1428,7 +1428,7 @@ void C4Object::DoExperience(int32_t change)
   // Promotion check
 	if (Info->Experience<MaxExperience)
 		if (Info->Experience>=Game.Rank.Experience(Info->Rank+1))
-			Promote(Info->Rank+1, FALSE, false);
+			Promote(Info->Rank+1, false);
   }
 
 BOOL C4Object::Exit(int32_t iX, int32_t iY, int32_t iR, FIXED iXDir, FIXED iYDir, FIXED iRDir, BOOL fCalls)
@@ -1992,14 +1992,6 @@ BYTE C4Object::GetEntranceArea(int32_t &aX, int32_t &aY, int32_t &aWdt, int32_t 
   return 1;
   }
 
-BYTE C4Object::GetMomentum(FIXED &rxdir, FIXED &rydir)
-  {
-  rxdir=rydir=0;
-  if (!Status || !Def) return 0;
-  rxdir=xdir; rydir=ydir;
-  return 1;
-  }
-
 FIXED C4Object::GetSpeed()
   {
   FIXED cobjspd=Fix0;
@@ -2078,7 +2070,7 @@ bool C4Object::TrainPhysical(C4PhysicalInfo::Offset mpiOffset, int32_t iTrainBy,
 	return !!i;
 	}
 
-BOOL C4Object::Promote(int32_t torank, BOOL exception, bool fForceRankName)
+BOOL C4Object::Promote(int32_t torank, bool fForceRankName)
 	{
 	if (!Info) return FALSE;
 	// get rank system
@@ -5487,14 +5479,6 @@ void C4Object::FinishedDrawing()
 	Application.DDraw->DeactivateBlitModulation();
 	// extra blitting flags
 	Application.DDraw->ResetBlitMode();
-	}
-
-void C4Object::DrawSolidMask(C4FacetEx &cgo)
-	{
-	// mask must exist
-	if (!pSolidMaskData) return;
-	// draw it
-	pSolidMaskData->Draw(cgo);
 	}
 
 void C4Object::UpdateSolidMask(bool fRestoreAttachedObjects)

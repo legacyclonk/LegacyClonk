@@ -347,11 +347,6 @@ void C4GraphicsSystem::ClearFullscreenBackground()
 	--iRedrawBackground;
 	}
 
-void OnSurfaceRestore()
-	{
-	Game.GraphicsSystem.InvalidateBg();
-	}
-
 BOOL C4GraphicsSystem::InitLoaderScreen(const char *szLoaderSpec, bool fDrawBlackScreenFirst)
 	{
 	// create new loader; overwrite current only if successful
@@ -694,25 +689,6 @@ void C4GraphicsSystem::DrawHoldMessages()
 			Game.GraphicsSystem.OverwriteBg();
 			}
 		}
-	}
-
-BYTE FindPaletteColor(BYTE *bypPalette, int32_t iRed, int32_t iGreen, int32_t iBlue)
-	{
-	int32_t iClosest=0;
-	for (int32_t iColor=1; iColor<256; iColor++)
-		if (Abs(bypPalette[iColor*3+0]-iRed)+Abs(bypPalette[iColor*3+1]-iGreen)+Abs(bypPalette[iColor*3+2]-iBlue)
-			< Abs(bypPalette[iClosest*3+0]-iRed)+Abs(bypPalette[iClosest*3+1]-iGreen)+Abs(bypPalette[iClosest*3+2]-iBlue) )
-				iClosest = iColor;
-	return iClosest;
-	}
-
-void C4GraphicsSystem::SetDarkColorTable()
-	{
-	const int32_t iDarkening=80;
-	// Using GamePalette
-	BYTE *bypPalette = Game.GraphicsResource.GamePalette;
-	for (int32_t iColor=0; iColor<256; iColor++)
-		DarkColorTable[iColor]=FindPaletteColor(bypPalette,Max<int32_t>(bypPalette[iColor*3+0]-iDarkening,0),Max<int32_t>(bypPalette[iColor*3+1]-iDarkening,0),Max<int32_t>(bypPalette[iColor*3+2]-iDarkening,0));
 	}
 
 void C4GraphicsSystem::FlashMessage(const char *szMessage)

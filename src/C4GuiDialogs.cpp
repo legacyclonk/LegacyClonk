@@ -400,12 +400,6 @@ Dialog::Dialog(int32_t iWdt, int32_t iHgt, const char *szTitle, bool fViewportDl
 		new DlgKeyCB<Dialog>(*this, &Dialog::KeyFocusDefault), C4CustomKey::PRIO_Dlg);
 	}
 
-int32_t Dialog::GetDefaultTitleHeight()
-	{
-	// default title font
-	return Min<int32_t>(GetRes()->TextFont.GetLineHeight(), C4GUI_MinWoodBarHgt);
-	}
-
 void Dialog::SetTitle(const char *szTitle, bool fShowCloseButton)
 	{
 	// always keep local copy of title
@@ -749,15 +743,6 @@ bool Dialog::Execute()
 	return true;
 	}
 
-bool Dialog::Execute2()
-	{
-	// execute
-	if (Execute()) return true;
-	// delete self if closed
-	if (IsGUIValid()) delete this;
-	return false;
-	}
-
 bool Dialog::IsActive(bool fForKeyboard)
 	{
 	// must be fully visible
@@ -925,12 +910,6 @@ void FullscreenDialog::DrawBackground(C4FacetEx &cgo, C4Facet &rFromFct)
 	cgoScreen.Wdt = rcScreenBounds.Wdt+2; cgoScreen.Hgt = rcScreenBounds.Hgt+2;
 	rFromFct.DrawFullScreen(cgoScreen);
 	}
-
-void FullscreenDialog::OnHelpBtn(C4GUI::Control *pBtn)
-	{
-	Game.MouseControl.SetHelp();
-	}
-
 
 // --------------------------------------------------
 // MessageDialog
@@ -1117,18 +1096,6 @@ bool Screen::ShowMessageModal(const char *szMessage, const char *szCaption, DWOR
 	if (piConfigDontShowAgainSetting && *piConfigDontShowAgainSetting) return true;
 	// create message dlg and show modal
 	return ShowModalDlg(new MessageDialog(szMessage, szCaption, dwButtons, icoIcon, MessageDialog::dsRegular, piConfigDontShowAgainSetting));
-	}
-
-ProgressDialog *Screen::ShowProgressDlg(const char *szMessage, const char *szCaption, int32_t iMaxProgress, int32_t iInitialProgress, Icons icoIcon)
-	{
-	// create progress dlg
-	ProgressDialog *pDlg = new ProgressDialog(szMessage, szCaption, iMaxProgress, iInitialProgress, icoIcon);
-	// show it
-	if (!pDlg->Show(this, true)) { delete pDlg; return false; }
-	// do not return invalid pointer if GUI got deleted (whil eshowing the progress bar Dlg; maybe some stupid stuff in OnShow)
-	if (!IsGUIValid()) return NULL;
-	// return dlg pointer
-	return pDlg;
 	}
 
 bool Screen::ShowModalDlg(Dialog *pDlg, bool fDestruct)

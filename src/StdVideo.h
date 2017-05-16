@@ -27,15 +27,6 @@
 #include <io.h>
 #include "StdBuf.h"
 
-BOOL AVIOpenGrab(const char *szFilename,
-								 PAVISTREAM *ppAviStream,
-								 PGETFRAME *ppGetFrame,
-								 int &rAviLength, int &rFrameWdt, int &rFrameHgt,
-								 int &rFrameBitsPerPixel, int &rFramePitch);
-
-void AVICloseGrab(PAVISTREAM *ppAviStream,
-									PGETFRAME *ppGetFrame);
-
 BOOL AVIOpenOutput(const char *szFilename,
 									 PAVIFILE *ppAviFile,
 									 PAVISTREAM *ppAviStream,
@@ -65,7 +56,6 @@ class CStdAVIFile
 
 		// video processing helpers
 		BITMAPINFO *pbmi;
-		HDRAWDIB hOutDib;
 		HBITMAP hBitmap;
 		HDRAWDIB hDD;
 		HDC hDC;

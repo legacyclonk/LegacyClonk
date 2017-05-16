@@ -87,22 +87,6 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 }
 #endif
 
-void C4Network2Reference::SortNullIPsBack()
-{
-  // Sort all addresses with zero IP to back of list
-  int iSortAddrCnt = iAddrCnt;
-  for(int i = 0; i < iSortAddrCnt; i++)
-    if(Addrs[i].isIPNull())
-    {
-      C4Network2Address Addr = Addrs[i];
-      for(int j = i + 1; j < iAddrCnt; j++)
-        Addrs[j - 1] = Addrs[j];
-      Addrs[iAddrCnt - 1] = Addr;
-      // Correct position
-      i--; iSortAddrCnt--;
-    }
-}
-
 void C4Network2Reference::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(Icon,							"Icon",							0));
@@ -614,12 +598,3 @@ bool C4Network2RefClient::GetReferences(C4Network2Reference **&rpReferences, int
   ResetError();
 	return true;
 }
-
-bool C4Network2RefClient::GetMasterVersion(C4GameVersion *piVerOut)
-	{
-	// call only after GetReferences
-	if (!fVerSet) return false;
-	*piVerOut = MasterVersion;
-	return true;
-	}
-

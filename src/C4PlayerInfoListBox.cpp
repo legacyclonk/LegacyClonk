@@ -821,12 +821,6 @@ C4Network2Client *C4PlayerInfoListBox::ClientListItem::GetNetClient() const
 	return Game.Network.Clients.GetClientByID(idClient);
 	}
 
-bool C4PlayerInfoListBox::ClientListItem::IsLocal() const
-	{
-	// it's local if client ID matches local ID
-	return idClient == Game.Clients.getLocalID();
-	}
-
 C4GUI::Icons C4PlayerInfoListBox::ClientListItem::GetCurrentStatusIcon()
 	{
 	// sound icon?
@@ -1576,11 +1570,4 @@ void C4PlayerInfoListBox::SetMode(Mode eNewMode)
 		eMode = eNewMode;
 		Update();
 		}
-	}
-
-void C4PlayerInfoListBox::SetCustomFont(CStdFont *pNewFont, uint32_t dwTextColor)
-	{
-	pCustomFont = pNewFont;
-	this->dwTextColor = dwTextColor;
-	// update done later by caller anyway
 	}

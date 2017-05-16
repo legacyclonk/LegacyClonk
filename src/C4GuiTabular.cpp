@@ -306,9 +306,6 @@ void Tabular::SheetsChanged()
 			iSheetSpacing -= (iTotalHgt-rcBounds.Hgt+GetMarginBottom()-iSheetOff) / iSheetNum;
 			iSheetOff = 0;
 			}
-		else if (eTabPos == tbTop)
-			{
-			}
 		}
 	// update all sheet sizes
 	UpdateSize();

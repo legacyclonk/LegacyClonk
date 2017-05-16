@@ -69,9 +69,6 @@ class C4MainMenu : public C4Menu
 		virtual void OnUserEnter(int32_t Player, int32_t iIndex, bool fRight);
 		virtual void OnUserClose();
 		virtual int32_t GetControllingPlayer() { return Player; }
-
-	public:
-		bool ActivateCommand(int32_t iPlayer, const char *szCommand);
 	};
 
 #endif

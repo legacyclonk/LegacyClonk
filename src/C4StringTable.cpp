@@ -27,13 +27,6 @@
 
 // *** C4String
 
-C4String::C4String(C4StringTable *pnTable)
-	: Data(NULL), iRefCnt(0), Hold(false), iEnumID(-1), pTable(NULL)
-{
-	// reg
-	Reg(pnTable);
-}
-
 C4String::C4String(StdStrBuf strString, C4StringTable *pnTable)
 	: iRefCnt(0), Hold(false), iEnumID(-1), pTable(NULL)
 	{

@@ -254,9 +254,6 @@ StdStrBuf CStdApp::Paste(bool fClipboard) {
 bool CStdApp::IsClipboardFull(bool fClipboard) {
 	return false;
 }
-// Give up Selection ownership
-void CStdApp::ClearClipboard(bool fClipboard) {
-}
 /*
 CStdWindow * CStdAppPrivate::GetWindow(unsigned long wnd) {
 	WindowListT::iterator i = WindowList.find(wnd);

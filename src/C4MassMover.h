@@ -50,7 +50,6 @@ class C4MassMoverSet
 	  void Synchronize();
 	  void Default();
     void Clear();
-    void Draw();
     void Execute();
     BOOL Create(int32_t x, int32_t y, BOOL fExecute=FALSE);
 	  BOOL Load(C4Group &hGroup);

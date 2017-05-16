@@ -32,7 +32,6 @@ class C4Sky
 		BOOL Init(bool fSavegame);
 		BOOL Save(C4Group &hGroup);
 		void Clear();
-		void SetColor(int32_t iIndex, int32_t iRed, int32_t iGreen, int32_t iBlue);
 		void SetFadePalette(int32_t *ipColors);
 		void Draw(C4FacetEx &cgo); // draw sky
 		DWORD GetSkyFadeClr(int32_t iY); // get sky color at iY

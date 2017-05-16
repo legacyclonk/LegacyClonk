@@ -65,11 +65,6 @@ class C4PXSSystem;
 class C4Graph;
 class C4Group;
 class C4GroupSet;
-class C4Packet;
-class C4Stream;
-class C4Network;
-class C4NetworkClient;
-class C4NetworkClientList;
 class C4MouseControl;
 class C4Region;
 class C4RegionList;
@@ -81,7 +76,6 @@ class C4AulScriptFunc;
 class C4AulDefFunc;
 class C4AulScript;
 class C4AulScriptEngine;
-class C4LChunk;
 class C4LSector;
 class C4LSectors;
 class C4Rect;
@@ -89,7 +83,6 @@ class C4Facet;
 class C4FacetEx;
 class C4FacetExSurface;
 class C4Surface;
-class C4League;
 class C4RoundResults;
 
 namespace C4GUI { class Screen; }

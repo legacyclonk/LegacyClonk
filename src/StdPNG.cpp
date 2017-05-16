@@ -294,13 +294,3 @@ bool CPNGFile::Save(const char *szFilename)
 	// success!
 	return true;
 	}
-
-int CPNGFile::GetBitsPerPixel()
-	{
-	switch (iClrType)
-		{
-		case PNG_COLOR_TYPE_RGB: return 24;
-		case PNG_COLOR_TYPE_RGB_ALPHA: return 32;
-		}
-	return 0;
-	}

@@ -40,9 +40,7 @@ class C4PlayerList
 		void ClearPointers(C4Object *pObj);
 		int GetCount() const;
 		int GetCount(C4PlayerType eType) const;
-		int GetIndex(C4Player *pPlr) const;
 		int GetCountNotEliminated() const;
-		int ControlTakenBy(int iControl) const;
 		int AverageValueGain() const;
 		C4Player *Get(int iPlayer) const;
 		C4Player *GetByIndex(int iIndex) const;
@@ -51,12 +49,10 @@ class C4PlayerList
 		C4Player *GetLocalByKbdSet(int iKbdSet) const;
 		C4Player *GetLocalByIndex(int iIndex) const;
 		C4Player *GetAtClient(int iClient, int iIndex=0) const;
-		C4Player *GetAtClient(const char *szName, int iIndex=0) const;
 		C4Player *GetAtRemoteClient(int iIndex=0) const;
 		C4Player *GetByInfoID(int iInfoID) const;
 		C4Player *Join(const char *szFilename, BOOL fScenarioInit, int iAtClient, const char *szAtClientName, class C4PlayerInfo *pInfo);
 		BOOL CtrlJoinLocalNoNetwork(const char *szFilename, int iAtClient, const char *szAtClientName);
-		BOOL CtrlJoin(const class C4Network2ResCore &ResCore, int iClientID, int idPlayerInfo);
 		BOOL FileInUse(const char *szFilename) const;
 		BOOL Retire(C4Player *pPlr);
 		BOOL Evaluate();
@@ -69,16 +65,12 @@ class C4PlayerList
 		BOOL RemoveLocal(bool fDisonnected, bool fNoCalls);
 		BOOL MouseControlTaken() const;
 		BOOL RemoveAtClient(int iClient, bool fDisconnect);
-		BOOL RemoveAtClient(const char *szName, bool fDisconnect);
 		BOOL CtrlRemove(int iPlayer, bool fDisonnected);
-		BOOL CtrlRemoveAtClient(int iClient, bool fDisonnected);
-		BOOL CtrlRemoveAtClient(const char *szName, bool fDisonnected);
 		BOOL Valid(int iPlayer) const;
 		BOOL Hostile(int iPlayer1, int iPlayer2) const;
 		bool HostilityDeclared(int iPlayer1, int iPlayer2) const; // check whether iPlayer1 treats iPlayer2 as hostile, but not vice versa!
 		BOOL PositionTaken(int iPosition) const;
 		BOOL ColorTaken(int iColor) const;
-		int CheckColorDw(DWORD dwColor, C4Player *pExclude); // return minimum difference to the other player's colors
 		BOOL ControlTaken(int iControl) const;
 		BOOL SynchronizeLocalFiles(); // syncrhonize all local player files; resetting InGame times
 		protected:

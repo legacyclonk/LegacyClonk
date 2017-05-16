@@ -36,7 +36,6 @@ bool LogFatal(const char *szMessage); // log message and store it as a fatal err
 void ResetFatalError();               // clear any fatal error message
 const char *GetFatalError();          // return message that was set as fatal error, if any
 
-BOOL CompileError(bool fWarning, StdCompiler::Exception *Exc);
 size_t GetLogPos(); // get current log position;
 bool GetLogSection(size_t iStart, size_t iLength, StdStrBuf &rsOut); // re-read log data from file
 

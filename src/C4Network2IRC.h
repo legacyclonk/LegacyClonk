@@ -193,7 +193,6 @@ class C4Network2IRCClient : public C4NetIOTCP, private C4NetIO::CBClass
 		bool Notice(const char *szTarget, const char *szText);
     bool Action(const char *szTarget, const char *szText);
     bool ChangeNick(const char *szNewNick);
-    bool RegisterNick(const char *szPassword, const char *szMail);
 
 		// Status
 		bool IsActive() const { return fConnecting || fConnected; }

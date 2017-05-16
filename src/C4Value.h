@@ -121,7 +121,6 @@ public:
 
 	// Template versions
 	template <typename T> inline T Get() { return C4ValueConv<T>::FromC4V(*this); }
-	template <typename T> inline T _Get() { return C4ValueConv<T>::_FromC4V(*this); }
 
 	bool operator ! () const { return !GetData(); }
 

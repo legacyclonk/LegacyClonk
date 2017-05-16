@@ -46,8 +46,6 @@ void AddDbgRec(C4RecordChunkType eType, const void *pData, int iSize)
 	{
 	Game.Control.DbgRec(eType, (const uint8_t *) pData, iSize);
 	}
-#else
-bool DoDebugRec=false;
 #endif
 
 C4DebugRecOff::C4DebugRecOff() : fDoOff(true)
@@ -1165,7 +1163,6 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 
 	// Get initial chunk, go over file name
 	StdBuf InitialData = *chunkIter->pFileData;
-	const char *szInitialFilename = chunkIter->Filename.getData();
 
 	// Put to temporary file and unpack
 	char szInitial[_MAX_PATH+1] = "~initial.tmp";

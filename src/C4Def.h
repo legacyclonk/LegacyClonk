@@ -109,7 +109,6 @@ const int32_t C4D_VehicleControl_None			= 0,
 
 const int32_t C4D_Sell     = C4D_StaticBack | C4D_Structure | C4D_Vehicle | C4D_Object | C4D_TradeLiving,
 							C4D_Get      = C4D_Sell,
-							C4D_Take		 = C4D_Get,
 							C4D_Activate = C4D_Get;
 
 const DWORD C4D_Load_None      =  0,
@@ -123,7 +122,6 @@ const DWORD C4D_Load_None      =  0,
 						C4D_Load_ClonkNames= 128,
 						C4D_Load_RankNames = 256,
 						C4D_Load_RankFaces = 512,
-						C4D_Load_FE        = C4D_Load_Image | C4D_Load_Desc,
 						C4D_Load_RX        = C4D_Load_Bitmap | C4D_Load_Script | C4D_Load_ClonkNames | C4D_Load_Desc | C4D_Load_ActMap | C4D_Load_Sounds | C4D_Load_RankNames | C4D_Load_RankFaces,
 						C4D_Load_Temporary = 1024;
 
@@ -272,12 +270,10 @@ class C4DefCore
 	public:
 		void Default();        
     BOOL Load(C4Group &hGroup);
-		BOOL Save(C4Group &hGroup);
 		void CompileFunc(StdCompiler *pComp);
 		const char * GetName() const { return Name.getData(); }
 	protected:
 		BOOL Compile(const char *szSource, const char *szName);
-		BOOL Decompile(StdStrBuf *pOut, const char *szName);
   };
 
 
@@ -388,21 +384,11 @@ class C4DefList
              DWORD dwLoadWhat, const char *szLanguage,
 						 C4SoundSystem *pSoundSystem = NULL,
 						 BOOL fOverload = FALSE, int32_t iMinProgress=0, int32_t iMaxProgress=0);
-    int32_t LoadFolderLocal(const char *szPath,
-             DWORD dwLoadWhat, const char *szLanguage,
-						 C4SoundSystem *pSoundSystem = NULL,
-						 BOOL fOverload = FALSE, char *szStoreName=NULL, int32_t iMinProgress=0, int32_t iMaxProgress=0);
-	  int32_t LoadForScenario(const char *szScenario, 
-						 const char *szSpecified,
-						 DWORD dwLoadWhat, const char *szLanguage, 
-						 C4SoundSystem *pSoundSystem = NULL, 
-						 BOOL fOverload = FALSE, int32_t iMinProgress=0, int32_t iMaxProgress=0);
     C4Def *ID2Def(C4ID id);
     C4Def *GetDef(int32_t Index, DWORD dwCategory = C4D_All);
     C4Def *GetByPath(const char *szPath);
 		int32_t GetDefCount(DWORD dwCategory = C4D_All);
     int32_t GetIndex(C4ID id);
-    int32_t RemoveTemporary();
 		int32_t ColorizeByMaterial(C4MaterialMap &rMats, BYTE bGBM);
 		int32_t CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, int32_t ver4);
 		int32_t CheckRequireDef();

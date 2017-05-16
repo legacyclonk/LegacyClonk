@@ -103,7 +103,6 @@ void C4GamePadControl::Execute()
 		if (!rPad.iRefCount) continue;
 		--iNum;
 		if (!rPad.pGamepad->Update()) continue;
-		bool fAnyAxis = false;
 		for (int iAxis = 0; iAxis < CStdGamepad_MaxAxis; ++iAxis)
 			{
 			CStdGamePad::AxisPos eAxisPos = rPad.pGamepad->GetAxisPos(iAxis), ePrevAxisPos = rPad.AxisPosis[iAxis];
@@ -133,11 +132,6 @@ void C4GamePadControl::Execute()
 		}
 	}
 
-bool C4GamePadControl::AnyButtonDown()
-	{
-	return false;
-	}
-
 C4GamePadOpener::C4GamePadOpener(int iGamepad) {
 	assert(C4GamePadControl::pInstance);
 	this->iGamePad = iGamepad;
@@ -160,11 +154,6 @@ void C4GamePadOpener::SetGamePad(int iNewGamePad)
 #elif defined(HAVE_SDL)
 
 #include <SDL.h>
-
-bool C4GamePadControl::AnyButtonDown()
-	{
-	return false;
-	}
 
 C4GamePadControl::C4GamePadControl() {
 	// Initialize SDL, if necessary.
@@ -325,7 +314,6 @@ C4GamePadControl::C4GamePadControl() { Log("WARNING: Engine without Gamepad supp
 C4GamePadControl::~C4GamePadControl() { }
 void C4GamePadControl::Execute() { }
 int C4GamePadControl::GetGamePadCount() { return 0; }
-bool C4GamePadControl::AnyButtonDown() { return false; }
 
 C4GamePadOpener::C4GamePadOpener(int iGamepad) { }
 C4GamePadOpener::~C4GamePadOpener() {}

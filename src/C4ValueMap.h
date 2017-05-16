@@ -34,7 +34,7 @@ public:
 	
 	// construction/destruction
 	C4ValueMapData();
-	C4ValueMapData(const C4ValueMapData &DataToCopy);
+	C4ValueMapData(const C4ValueMapData &) = delete;
 	virtual ~C4ValueMapData();
 	C4ValueMapData& operator = (const C4ValueMapData &DataToCopy);
 	
@@ -63,7 +63,6 @@ public:
 	C4ValueMapNames *CreateTempNameList();
 
 	void Reset(); // resets content & unreg name list
-	void ResetContent(); // resets content
 
 	int32_t GetAnzItems();
 
@@ -100,7 +99,7 @@ public:
 
 	// construction/destruction
 	C4ValueMapNames();
-	C4ValueMapNames(C4ValueMapNames& NamesToCopy);
+	C4ValueMapNames(C4ValueMapNames&) = delete;
 	C4ValueMapNames& operator = (C4ValueMapNames &NamesToCopy);
 	virtual ~C4ValueMapNames();
 

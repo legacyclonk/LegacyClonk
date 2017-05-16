@@ -35,12 +35,9 @@ class C4Surface: public CSurface
 		~C4Surface();
 #endif
 
-		C4Surface *Duplicate();	// create identical copy
-
 		BOOL LoadAny(C4Group &hGroup, const char *szFilename, bool fOwnPal=false, bool fNoErrIfNotFound=false);
 		BOOL LoadAny(C4GroupSet &hGroupset, const char *szFilename, bool fOwnPal=false, bool fNoErrIfNotFound=false);
 		BOOL Load(C4Group &hGroup, const char *szFilename, bool fOwnPal=false, bool fNoErrIfNotFound=false);
-		BOOL Save(C4Group &hGroup, const char *szFilename);
 		BOOL SavePNG(C4Group &hGroup, const char *szFilename, bool fSaveAlpha=true, bool fApplyGamma=false, bool fSaveOverlayOnly=false);
 		BOOL Copy(C4Surface &fromSfc);
 		BOOL ReadPNG(CStdStream &hGroup);

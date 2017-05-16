@@ -301,13 +301,6 @@ void MainDlg::OnExitBtn(C4GUI::Control *btn)
 	Close(false);
 	}
 
-void MainDlg::OnTestBtn(C4GUI::Control *btn)
-	{
-	pPlayerList->SetMode(C4PlayerInfoListBox::PILBM_Evaluation);
-	pPlayerList->SetTeamFilter(1);
-	//pPlayerList->SetCustomFont(&Game.GraphicsResource.FontTooltip, 0xff000000);
-	}
-
 void MainDlg::SetCountdownState(CountdownState eToState, int32_t iTimer)
 	{
 	// no change?

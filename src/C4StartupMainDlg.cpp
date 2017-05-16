@@ -237,21 +237,6 @@ void C4StartupMainDlg::OnNetJoinBtn(C4GUI::Control *btn)
 	C4Startup::Get()->SwitchDialog(C4Startup::SDID_NetJoin);
 	}
 
-void C4StartupMainDlg::OnNetJoin(const StdStrBuf &rsHostAddress)
-	{
-	// no IP given: No join
-	if (!rsHostAddress || !*rsHostAddress.getData()) return;
-	// set default startup parameters
-	*Game.ScenarioFilename=0;
-	SCopy("Objects.c4d", Game.DefinitionFilenames);
-	Game.NetworkActive = TRUE;
-	Game.fLobby = TRUE;
-	Game.fObserve = FALSE;
-	SCopy(rsHostAddress.getData(), Game.DirectJoinAddress, sizeof(Game.DirectJoinAddress)-1);
-	// start with this set!
-	C4Startup::Get()->Start();
-	}
-
 void C4StartupMainDlg::OnOptionsBtn(C4GUI::Control *btn)
 	{
 	// advance to options screen
@@ -268,11 +253,6 @@ void C4StartupMainDlg::OnExitBtn(C4GUI::Control *btn)
 	{
 	// callback: exit button pressed
 	C4Startup::Get()->Exit();
-	}
-
-void C4StartupMainDlg::OnTODO(C4GUI::Control *btn)
-	{
-	GetScreen()->ShowMessage("not yet implemented", "2do", C4GUI::Ico_Error);
 	}
 
 bool C4StartupMainDlg::KeyEnterDown()

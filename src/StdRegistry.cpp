@@ -23,42 +23,6 @@
 
 #include <stdio.h>
 
-BOOL DeleteRegistryValue(const char *szSubKey, const char *szValueName)
-	{
-	return DeleteRegistryValue(HKEY_CURRENT_USER,szSubKey,szValueName);
-	}
-
-BOOL DeleteRegistryValue(HKEY hKey, const char *szSubKey, const char *szValueName)
-	{
-  long qerr;
-  HKEY ckey;  
-  // Open the key
-  if ((qerr=RegOpenKeyEx(hKey,
-                         szSubKey,
-                         0,
-                         KEY_ALL_ACCESS,
-                         &ckey
-                        ))!=ERROR_SUCCESS) return FALSE;
-	// Delete the key
-  if ((qerr=RegDeleteValue(ckey,
-													 szValueName
-													 ))!=ERROR_SUCCESS) return FALSE;
-  // Close the key
-  RegCloseKey(ckey);
-	// Success
-	return TRUE;
-	}
-
-BOOL SetRegistryDWord(const char *szSubKey, const char *szValueName, DWORD dwValue)
-	{
-	return SetRegistryDWord(HKEY_CURRENT_USER,szSubKey,szValueName,dwValue);
-	}
-
-BOOL GetRegistryDWord(const char *szSubKey, const char *szValueName, DWORD *lpdwValue)
-	{
-	return GetRegistryDWord(HKEY_CURRENT_USER,szSubKey,szValueName,lpdwValue);
-	}
-
 BOOL GetRegistryDWord(HKEY hKey, const char *szSubKey, const char *szValueName, DWORD *lpdwValue)
   {
   long qerr;
@@ -89,37 +53,6 @@ BOOL GetRegistryDWord(HKEY hKey, const char *szSubKey, const char *szValueName, 
   if (valtype!=REG_DWORD) return FALSE;
 
   return TRUE;
-  }
-
-BOOL SetRegistryDWord(HKEY hKey, const char *szSubKey, const char *szValueName, DWORD dwValue)
-  {
-  long qerr;
-  HKEY ckey;
-  DWORD disposition;
-  // Open the key
-  if ((qerr=RegCreateKeyEx(hKey,
-                           szSubKey,
-                           0,
-                           "",
-                           REG_OPTION_NON_VOLATILE,
-                           KEY_ALL_ACCESS,
-                           NULL,                 
-                           &ckey,
-                           &disposition
-                          ))!=ERROR_SUCCESS) return FALSE;
-  // Set the value
-  if ((qerr=RegSetValueEx(ckey,
-                          szValueName,
-                          0,
-                          REG_DWORD,
-                          (BYTE*) &dwValue,
-                          sizeof(dwValue)
-                         ))!=ERROR_SUCCESS) { RegCloseKey(ckey); return FALSE; }
-
-  // Close the key
-  RegCloseKey(ckey);
-	// Success
-	return TRUE;
   }
 
 BOOL GetRegistryString(const char *szSubKey, 
@@ -208,11 +141,6 @@ BOOL DeleteRegistryKey(HKEY hKey, const char *szSubKey)
   if (RegDeleteKey(hKey, szSubKey) != ERROR_SUCCESS) return FALSE;
 	// Success
 	return TRUE;
-	}
-
-BOOL DeleteRegistryKey(const char *szSubKey)
-	{
-	return DeleteRegistryKey(HKEY_CURRENT_USER, szSubKey);
 	}
 
 BOOL SetRegClassesRoot(const char *szSubKey,

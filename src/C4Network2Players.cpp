@@ -312,13 +312,6 @@ void C4Network2Players::UpdateSavegameAssignments(C4ClientPlayerInfos *pNewInfo)
 			}
 	}
 
-void C4Network2Players::ResetUpdatedPlayers()
-	{
-	// mark all client packets as up-to-date
-	C4ClientPlayerInfos *pUpdInfo; int i=0;
-	while (pUpdInfo = rInfoList.GetIndexedInfo(i++)) pUpdInfo->ResetUpdated();
-	}
-
 void C4Network2Players::JoinUnjoinedPlayersInControlQueue(C4ClientPlayerInfos *pNewPacket)
 	{
 	// only host may join any players to the queue
@@ -463,12 +456,6 @@ C4ClientPlayerInfos *C4Network2Players::GetLocalPlayerInfoPacket() const
 			return pkInfo;
 	// not found
 	return NULL;
-	}
-
-C4ClientPlayerInfos *C4Network2Players::GetIndexedPlayerInfoPacket(int iIndex)
-	{
-	// just get from info list
-	return	rInfoList.GetIndexedInfo(iIndex);
 	}
 
 DWORD C4Network2Players::GetClientChatColor(int idForClient, bool fLobby) const

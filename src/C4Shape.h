@@ -78,8 +78,6 @@ class C4TargetRect: public C4Rect
 	  void Default();
 		bool ClipBy(C4TargetRect &rClip); // clip this rectangle by the given one (adding target positions) - return false if they don't overlap
 
-		void Set(const C4FacetEx &rSrc); // copy contents from facet
-
 		void CompileFunc(StdCompiler *pComp);
   };
 
@@ -117,7 +115,6 @@ class C4Shape: public C4Rect
 		int32_t iAttachX, iAttachY, iAttachVtx;
   public:	
 	  void Default();
-    void Clear();
 		void Rotate(int32_t iAngle, bool bUpdateVertices);
 		void Stretch(int32_t iPercent, bool bUpdateVertices);
 		void Jolt(int32_t iPercent, bool bUpdateVertices);

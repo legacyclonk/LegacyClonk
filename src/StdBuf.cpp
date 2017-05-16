@@ -323,13 +323,6 @@ bool StdStrBuf::GetSection(size_t idx, StdStrBuf *psOutSection, char cSeparator)
 	return true;
 	}
 
-void StdStrBuf::ToLowerCase()
-	{
-	if (!isNull())
-		for (char *szPos = getMPtr(0); *szPos; ++szPos)
-			*szPos = tolower(*szPos);
-	}
-
 void StdStrBuf::EnsureUnicode()
 	{
 	bool valid = true;

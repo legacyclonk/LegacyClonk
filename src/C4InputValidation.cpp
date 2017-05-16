@@ -169,13 +169,5 @@ namespace C4InVal
 			}
 		return !fValid;
 		}
-
-	bool ValidateInt(int32_t &riVal, int32_t iMinVal, int32_t iMaxVal)
-		{
-		if (riVal < iMinVal) { riVal = iMinVal; return false; }
-		else if (riVal > iMaxVal) { riVal = iMaxVal; return false; }
-		else return true;
-		}
-
 	};
 

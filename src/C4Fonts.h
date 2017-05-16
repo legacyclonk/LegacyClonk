@@ -61,7 +61,6 @@ class C4VectorFont
 
 		bool Init(C4Group &hGrp, const char *szFilename, C4Config &rCfg); // load font from group
 		bool Init(const char *szFacename, int32_t iSize, uint32_t dwWeight, const char *szCharSet); // load system font specified by face name
-		void Init(const char *szName, CStdVectorFont *pFont); // init from a font that has been laoded already
 		friend class C4FontLoader;
 	};
 
@@ -82,9 +81,6 @@ class C4FontLoader
 
 		void Clear();                   // clear loaded fonts
 		int32_t LoadDefs(C4Group &hGroup, C4Config &rCfg); // load font definitions from group file; return number of loaded font defs
-		bool IsFontLoaded(const char *szFontName); // return whether given font name is found in the list
-		const char *GetFontNameByIndex(int32_t iIndex); // get indexed font name; not doubling fonts of same name
-		int32_t GetClosestAvailableSize(const char *szFontName, int32_t iWantedSize); // return possible font size that mathces the desired value closest
 		void AddVectorFont(C4VectorFont *pAddFont); // adds a new font to the list
 
 #ifdef C4ENGINE

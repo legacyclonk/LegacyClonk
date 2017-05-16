@@ -30,7 +30,6 @@ const C4ID C4ID_None         = 0x0,
 					 C4ID_Flag         = 0x47414C46, // FLAG
 					 C4ID_Conkit       = 0x544B4E43, // CNKT
 					 C4ID_Gold         = 0x444C4F47, // GOLD
-					 C4ID_Lorry        = 0x59524F4C, // LORY
 					 C4ID_Meteor       = 0x4F54454D, // METO
 					 C4ID_Linekit		   = 0x544B4E4C, // LNKT
 					 C4ID_PowerLine    = 0x4C525750, // PWRL

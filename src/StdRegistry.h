@@ -22,25 +22,14 @@
 #ifdef _WIN32
 #include <windows.h>
 #include "StdCompiler.h"
-BOOL DeleteRegistryValue(HKEY hKey, const char *szSubKey, 
-												 const char *szValueName);
-BOOL DeleteRegistryValue(const char *szSubKey, const char *szValueName);
 
 BOOL GetRegistryDWord(HKEY hKey, const char *szSubKey, 
                       const char *szValueName, DWORD *lpdwValue);
-BOOL GetRegistryDWord(const char *szSubKey, const char *szValueName, DWORD *lpdwValue);
-
-
-BOOL SetRegistryDWord(HKEY hKey, const char *szSubKey, 
-                      const char *szValueName, DWORD dwValue);
-BOOL SetRegistryDWord(const char *szSubKey, const char *szValueName, DWORD dwValue);
-
 
 BOOL GetRegistryString(const char *szSubKey, const char *szValueName, char *sValue, DWORD dwValSize);
 BOOL SetRegistryString(const char *szSubKey, const char *szValueName, const char *szValue);
 
 BOOL DeleteRegistryKey(HKEY hKey, const char *szSubKey);
-BOOL DeleteRegistryKey(const char *szSubKey);
 
 BOOL SetRegClassesRoot(const char *szSubKey,
                        const char *szValueName,
@@ -82,7 +71,6 @@ public:
 
   // Properties
   virtual bool hasNaming() { return true; }
-	virtual bool forceWrite() { return true; }
 
   // Naming
   virtual bool Name(const char *szName);

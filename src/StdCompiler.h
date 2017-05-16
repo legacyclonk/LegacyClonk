@@ -343,20 +343,6 @@ template <class CompT, class StructT>
     Compiler.Compile(TargetStruct);
   }
 template <class CompT, class StructT>
-  StructT * CompileFromBufToNew(const typename CompT::InT &SrcBuf)
-  {
-		StructT *pStruct = NULL;
-		CompileFromBuf<CompT>(mkPtrAdaptNoNull(pStruct), SrcBuf);
-		return pStruct;
-  }
-template <class CompT, class StructT>
-  StructT * CompileFromBufToNewNamed(const typename CompT::InT &SrcBuf, const char *szName)
-  {
-		StructT *pStruct = NULL;
-		CompileFromBuf<CompT>(mkNamingAdapt(mkPtrAdaptNoNull(pStruct), szName), SrcBuf);
-    return pStruct;
-  }
-template <class CompT, class StructT>
   typename CompT::OutT DecompileToBuf(const StructT &SrcStruct)
   {
     CompT Compiler;
@@ -473,7 +459,6 @@ public:
 
 	// Data
   int getPosition() { return iPos; }
-	int getRemainingBytes() { return Buf.getSize() - iPos; }
 
 protected:
 	// Process data
@@ -671,7 +656,6 @@ protected:
 
   // Navigation
   void SkipWhitespace();
-  void SkipNum();
   long ReadNum();
   size_t GetStringLength(RawCompileType eTyped);
   StdBuf ReadString(size_t iLength, RawCompileType eTyped, bool fAppendNull = true);

@@ -40,7 +40,6 @@ class C4DefGraphics
 	protected:
 		C4AdditionalDefGraphics *pNext; // next graphics
 
-		C4DefGraphics *GetLast(); // get last graphics in list
 	public:
 		C4Surface *Bitmap, *BitmapClr;
 		bool fColorBitmapAutoCreated;  // if set, the color-by-owner-bitmap has been created automatically by all blue shades of the bitmap
@@ -65,8 +64,6 @@ class C4DefGraphics
 		virtual C4PortraitGraphics *IsPortrait() { return NULL; }
 
 		void DrawClr(C4Facet &cgo, BOOL fAspect=TRUE, DWORD dwClr=0); // set surface color and draw
-
-		void CompileFunc(StdCompiler *pComp);
 
 		friend class C4DefGraphicsPtrBackup;
 	};
@@ -196,8 +193,6 @@ class C4GraphicsOverlay
 			iPhase(0), fZoomToShape(false), iID(0), pNext(NULL) { *Action=0; } // std ctor
 		~C4GraphicsOverlay(); // dtor
 
-		void Read(const char **ppInput);
-		void Write(char *ppOutput);
 		void CompileFunc(StdCompiler *pComp);
 
 		// object pointer management
@@ -225,7 +220,6 @@ class C4GraphicsOverlay
 #endif
 		int32_t GetID() const { return iID; }
 		void SetID(int32_t aID) { iID = aID; }
-		void SetPhase(int32_t iToPhase);
 		C4GraphicsOverlay *GetNext() const { return pNext; }
 		void SetNext(C4GraphicsOverlay *paNext) { pNext = paNext; }
 		bool IsPicture() { return eMode == MODE_Picture; }

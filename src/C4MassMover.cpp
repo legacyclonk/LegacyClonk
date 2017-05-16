@@ -92,13 +92,6 @@ BOOL C4MassMoverSet::Create(int32_t x, int32_t y, BOOL fExecute)
   return FALSE;
   }
 
-void C4MassMoverSet::Draw()
-  {
-  /*int32_t cnt;
-  for (cnt=0; cnt<C4MassMoverChunk; cnt++)
-    if (Set[cnt].Mat!=MNone)*/
-  }
-
 BOOL C4MassMover::Init(int32_t tx, int32_t ty)
   {
   // Out of bounds check

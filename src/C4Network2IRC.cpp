@@ -419,11 +419,6 @@ bool C4Network2IRCClient::ChangeNick(const char *szNewNick)
   return Send("NICK", szNewNick);
   }
 
-bool C4Network2IRCClient::RegisterNick(const char *szPassword, const char *szMail)
-  {
-	return Send("PRIVMSG", FormatString("NickServ :REGISTER %s %s", szPassword, szMail).getData());
-  }
-
 void C4Network2IRCClient::OnCommand(const char *szSender, const char *szCommand, const char *szParameters)
 	{
 	CStdLock Lock(&CSec);

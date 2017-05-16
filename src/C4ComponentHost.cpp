@@ -286,15 +286,6 @@ void C4ComponentHost::CopyFilePathFromGroup(const C4Group &hGroup)
 	SAppend(Filename, FilePath, _MAX_PATH);
 	}
 
-BOOL C4ComponentHost::Set(const char *szData)
-	{
-	// clear existing data
-	Clear();
-	// copy new data
-	Data.Copy(szData);
-	return TRUE;
-	}
-
 BOOL C4ComponentHost::Save(C4Group &hGroup)
 	{
 	if (!Modified) return TRUE;

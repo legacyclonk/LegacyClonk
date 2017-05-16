@@ -42,7 +42,6 @@ class CStdAppPrivate {
 	void SetEWMHFullscreen (CStdApp * pApp, bool fFullScreen, Window wnd);
 	struct ClipboardData {
 		StdStrBuf Text;
-		unsigned long AcquirationTime;
 	} PrimarySelection, ClipboardSelection;
 	unsigned long LastEventTime;
 	typedef std::map<unsigned long, CStdWindow *> WindowListT;

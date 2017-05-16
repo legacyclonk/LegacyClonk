@@ -91,7 +91,6 @@ class C4InteractiveThread
 
 	  // special events
 	  bool ThreadLog(const char *szMessage, ...) GNUC_FORMAT_ATTRIBUTE_O;
-	  bool ThreadLogFatal(const char *szMessage, ...) GNUC_FORMAT_ATTRIBUTE_O;
 	  bool ThreadLogS(const char *szMessage, ...) GNUC_FORMAT_ATTRIBUTE_O;
 
     // event handlers

@@ -77,15 +77,6 @@ C4GroupSet::C4GroupSet()
 	iIndex=0;
 	}
 
-C4GroupSet::C4GroupSet(C4GroupSet &rCopy)
-	{
-	// zero fields
-	Default();
-	iIndex=0;
-	// copy from other group set
-	RegisterGroups(rCopy, C4GSCnt_All);
-	}
-
 C4GroupSet::~C4GroupSet()
 	{
 	// clear nodes
@@ -200,16 +191,6 @@ C4Group *C4GroupSet::FindEntry(const char *szWildcard, int32_t *pPriority, int32
 	return NULL;
 	}
 
-bool C4GroupSet::LoadEntry(const char *szEntryName, char **lpbpBuf, size_t *ipSize, int32_t iAppendZeros)
-{
-	// Load the entry from the first group that has it
-	C4Group *pGroup;
-	if (pGroup = FindEntry(szEntryName))
-		return pGroup->LoadEntry(szEntryName, lpbpBuf, ipSize, iAppendZeros);
-	// Didn't find it
-	return false;
-}
-
 bool C4GroupSet::LoadEntryString(const char *szEntryName, StdStrBuf & rBuf)
 {
 	// Load the entry from the first group that has it
@@ -236,14 +217,6 @@ bool C4GroupSet::CloseFolders()
 	return true;
 	}
 
-int32_t C4GroupSet::GetGroupCount()
-{
-	int32_t iCount = 0;
-	for (C4GroupSetNode *pNode = pFirst; pNode; pNode = pNode->pNext)
-		iCount++;
-	return iCount;
-}
-
 C4Group* C4GroupSet::GetGroup(int32_t iIndex)
 {
 	// Invalid index
@@ -257,26 +230,6 @@ C4Group* C4GroupSet::GetGroup(int32_t iIndex)
 			iIndex--;
 	// Indicated group not found
 	return NULL;
-}
-
-bool C4GroupSet::UnregisterGroup(int32_t iIndex)
-{
-	// Invalid index
-	if (iIndex < 0) 
-		return false;
-	// Find indicated group
-	for (C4GroupSetNode *pNode = pFirst; pNode; pNode = pNode->pNext)
-		if (iIndex == 0)
-		{
-			// Delete found node
-			delete pNode;	
-			return true;
-		}
-		else
-			iIndex--;
-	// Indicated group not found
-	return false;
-
 }
 
 #ifdef C4ENGINE

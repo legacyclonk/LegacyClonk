@@ -59,15 +59,6 @@ void C4ClientCore::SetLocal(int32_t inID, bool fnActivated, bool fnObserver)
 	Nick.CopyValidated(NickBuf);
 }
 
-void C4ClientCore::SetUnknown(int32_t inID)
-{
-	// save id
-	iID = inID;
-	// fill everything else with default values
-	Name.Ref("unknown"); Nick.Ref("unknown");
-	fActivated = fObserver = false;
-}
-
 int32_t C4ClientCore::getDiffLevel(const C4ClientCore &CCore2) const
 {
 	// nick won't ever be changed
@@ -191,14 +182,6 @@ C4Client *C4ClientList::getClientByID(int32_t iID) const
 {
 	for(C4Client *pClient = pFirst; pClient; pClient = pClient->pNext)
 		if(pClient->getID() == iID)
-			return pClient;
-	return NULL;
-}
-
-C4Client *C4ClientList::getNextClientByID(int32_t iAfterID) const
-{
-	for(C4Client *pClient = pFirst; pClient; pClient = pClient->pNext)
-		if(pClient->getID() > iAfterID)
 			return pClient;
 	return NULL;
 }

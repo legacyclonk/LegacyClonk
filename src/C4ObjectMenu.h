@@ -67,7 +67,6 @@ class C4ObjectMenu : public C4Menu
 		void SetRefillObject(C4Object *pObj);
 		void ClearPointers(C4Object *pObj);
 		bool Init(C4FacetExSurface &fctSymbol, const char *szEmpty, C4Object *pObject, int32_t iExtra=C4MN_Extra_None, int32_t iExtraData=0, int32_t iId=0, int32_t iStyle=C4MN_Style_Normal, bool fUserMenu=false);
-		bool InitRefSym(const C4FacetEx &fctSymbol, const char *szEmpty, C4Object *pObject, int32_t iExtra=C4MN_Extra_None, int32_t iExtraData=0, int32_t iId=0, int32_t iStyle=C4MN_Style_Normal, bool fUserMenu=false);
 		void Execute();
 
 		virtual C4Object* GetParentObject();

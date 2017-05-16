@@ -239,17 +239,6 @@ void CSurface8::SetPalette(BYTE *bpPalette, BOOL fAdapt)
 	MemCopy(bpPalette,pPal->Colors,256*3);
 	}
 */
-void CSurface8::MapBytes(BYTE *bpMap)
-	{
-	if (!bpMap) return;
-	for (int cnt=0; cnt<Wdt*Hgt; cnt++) SetPix(cnt%Wdt, cnt/Wdt, bpMap[GetPix(cnt%Wdt, cnt/Wdt)]);
-	}
-
-void CSurface8::Wipe()
-	{
-	for (int i=0; i<Wdt*Hgt; ++i)
-		SetPix(i%Wdt, i/Wdt, 0);
-	}
 
 void CSurface8::GetSurfaceSize(int &irX, int &irY)
 	{
@@ -452,21 +441,3 @@ void CSurface8::AllowColor(BYTE iRngLo, BYTE iRngHi, BOOL fAllowZero)
 			}
 		}
 	}
-
-void CSurface8::SetBuffer(BYTE *pbyToBuf, int Wdt, int Hgt, int Pitch)
-  {
-  // release old
-  Clear();
-  // set new
-  this->Wdt=Wdt;
-  this->Hgt=Hgt;
-  this->Pitch=Pitch;
-  this->Bits = pbyToBuf;
-  NoClip();
-  }
-
-void CSurface8::ReleaseBuffer()
-  {
-  this->Bits = NULL;
-  Clear();
-  }

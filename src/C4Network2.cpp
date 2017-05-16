@@ -701,12 +701,6 @@ void C4Network2::AllowJoin(bool fAllow)
 		}
 }
 
-void C4Network2::SetAllowObserve(bool fAllow)
-{
-	if(!isHost()) return;
-  fAllowObserve = fAllow;
-}
-
 void C4Network2::SetCtrlMode(int32_t iCtrlMode)
 {
 	if(!isHost()) return;
@@ -1013,7 +1007,7 @@ bool C4Network2::InitNetIO(bool fNoClientID, bool fHost)
 	int16_t iPortDiscovery = fHost ? Config.Network.PortDiscovery : -1;
 	int16_t iPortRefServer = fHost ? Config.Network.PortRefServer : -1;
 	// init subclass
-	if(!NetIO.Init(Config.Network.PortTCP, Config.Network.PortUDP, iPortDiscovery, iPortRefServer, fHost))
+	if(!NetIO.Init(Config.Network.PortTCP, Config.Network.PortUDP, iPortDiscovery, iPortRefServer))
 		return false;
 	// set core (unset ID if sepecified, has to be set later)
 	C4ClientCore Core = Game.Clients.getLocalCore();

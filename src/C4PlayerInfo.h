@@ -98,7 +98,6 @@ class C4PlayerInfo
 		int32_t iLeagueScore;				// score on league server at join time
 		int32_t iLeagueRank;				// rank on league server at join time
 		int32_t iLeagueRankSymbol;  // symbolization of the player's rank
-		int32_t iLeagueScoreProjected;// score on league server in case of win
 		int32_t iLeagueProjectedGain; // projected league score increase if game is won - -1 for unknown; valid values always positive
 		ValidatedStdCopyStrBuf<C4InVal::VAL_NameAllowEmpty> sClanTag; // clan ("team") tag
 		int32_t iLeaguePerformance; // script-set league performance value, only set temporarily for masterserver end reference
@@ -123,7 +122,6 @@ class C4PlayerInfo
 		void SetColor(DWORD dwUseClr) { dwColor = dwUseClr; } // set color to be used
 		void SetOriginalColor(DWORD dwUseClr) { dwOriginalColor = dwUseClr; } // set color the player wishes to have
 		void SetFilename(const char *szToFilename);           // set new player filename
-		void SetToScenarioFilename(const char *szScenFilename); // set to file within scenario; discard ressource
 		void SetTempFile() { assert(!!szFilename); dwFlags |= PIF_TempFile; } // mark filename as temp, so it is deleted in dtor or after join
 		void SetTeam(int32_t idToTeam) { idTeam = idToTeam; }
 		void DeleteTempFile();                                // delete filename if temp
@@ -133,8 +131,6 @@ class C4PlayerInfo
 			{ idSavegamePlayer=aidSavegamePlayer; }
 		int32_t GetAssociatedSavegamePlayerID() const
 			{ return idSavegamePlayer; }
-		void SetJoinForSavegameOnly()                          // flag to be deleted if savegame association fails
-			{ dwFlags |= PIF_JoinedForSavegameOnly; }
 		bool IsJoinForSavegameOnly()                           // flag to be deleted if savegame association fails
 			{ return !!(dwFlags & PIF_JoinedForSavegameOnly); }
 		bool SetSavegameResume(C4PlayerInfo *pSavegameInfo);   // take over savegame player data to do resume
@@ -189,9 +185,7 @@ class C4PlayerInfo
 		const char *getAuthID() const { return szAuthID.getData(); } // returns authentication ID for this player [league]
 		const char *getLeagueAccount() const { return sLeagueAccount.getData(); } // returns account name on league server
 		int32_t getLeagueScore() const { return iLeagueScore; } // returns score number on league server (0 for not assigned)
-		int32_t getLeagueRank() const { return iLeagueRank; } // returns rank on league server (0 for not assigned)
 		int32_t getLeagueRankSymbol() const { return iLeagueRankSymbol; } // returns rank symbol on league server (0 for not assigned)
-		int32_t getLeagueScoreProjected() const { return iLeagueScoreProjected; } // returns score on league server in case of win (0 for not assigned)
 		int32_t GetInGameNumber() const { return iInGameNumber; } // returns player number the player had in the game
     bool IsLeagueProjectedGainValid() const { return iLeagueProjectedGain>=0; }
 		int32_t GetLeagueProjectedGain() const { return iLeagueProjectedGain; } // get score gain in primary league if this player's team wins
@@ -228,7 +222,6 @@ class C4ClientPlayerInfos
 			CIF_AddPlayers  = 1<<0, // if set, the players are to be added to the current list (otherwise overwrite)
 			CIF_Updated     = 1<<1, // set temporarily if changed and not transmissioned to clients (valid for host only)
 			CIF_Initial     = 1<<2, // set for first-time player info packets
-			CIF_Removed			= 1<<4, // client was removed
 			};
 		uint32_t dwFlags; // bit mask of the above flags
 
@@ -249,12 +242,10 @@ class C4ClientPlayerInfos
 		void SetUpdated() { dwFlags |= CIF_Updated; }
 		bool IsUpdated() { return !!(dwFlags & CIF_Updated); }
 		void ResetUpdated() { dwFlags &= ~CIF_Updated; }
-		void SetAdd() { dwFlags |= CIF_AddPlayers; }
 		void ResetAdd() { dwFlags &= ~CIF_AddPlayers; }
 
 		// query functions
 		int32_t GetPlayerCount() const { return iPlayerCount; } // get number of player infos available
-		int32_t GetFlaggedPlayerCount(DWORD dwFlag) const;      // get number of player infos with any of the given flags set
 		C4PlayerInfo *GetPlayerInfo(int32_t iIndex) const;      // get indexed player info
 		C4PlayerInfo *GetPlayerInfo(int32_t iIndex, C4PlayerType eType) const;      // get indexed player info of given type
 		C4PlayerInfo *GetPlayerInfoByID(int32_t id) const;      // get player info by unique player ID
@@ -289,21 +280,6 @@ class C4PacketPlayerInfoUpdRequest : public C4PacketBase
 		virtual void CompileFunc(StdCompiler *pComp);
 	};
 
-// * PID_PlayerInfoUpd
-// packet containing information about one or more (updated) players at a client
-class C4PacketPlayerInfo : public C4PacketBase
-	{
-	public:
-		C4ClientPlayerInfos Info; // info for clients to be updated
-		bool fIsRecreationInfo;   // if set, this info packet describes savegame recreation players
-
-		C4PacketPlayerInfo() : Info(), fIsRecreationInfo(false) { } // std ctor
-		C4PacketPlayerInfo(const C4ClientPlayerInfos &rCopyInfos, bool fRecreationPlayers) // ctor
-			: Info(rCopyInfos), fIsRecreationInfo(fRecreationPlayers) { };
-
-		virtual void CompileFunc(StdCompiler *pComp);
-	};
-
 // player info list
 // contains player info packets for all known clients and self
 class C4PlayerInfoList
@@ -321,7 +297,7 @@ class C4PlayerInfoList
 
 	public:
 		C4PlayerInfoList();               // ctor
-		C4PlayerInfoList(const C4PlayerInfoList &rCpy);
+		C4PlayerInfoList(const C4PlayerInfoList &) = delete;
 		~C4PlayerInfoList() { Clear(); }  // dtor
 		C4PlayerInfoList &operator = (const C4PlayerInfoList &rCpy);
 		void Clear();                     // clear list
@@ -389,16 +365,6 @@ class C4PlayerInfoList
 		void RemoveInfo(C4ClientPlayerInfos **ppRemoveInfo) // remove client info given by direct ptr into list
 			{ *ppRemoveInfo = ppClients[--iClientCount]; /* maybe redundant self-assignment; no vector shrink */ }
 
-	private:
-#pragma pack(1)
-		enum { C4PlrInfoFileVer = 2 };
-		struct FileHeader
-			{
-			uint32_t iVersion; // ==C4PlrInfoFileVer
-			int32_t iCount;            // number of player info packets
-			int32_t iIDCounter;        // counter for unique IDs
-			};
-#pragma pack()
 	public:
 		bool Load(C4Group &hGroup, const char *szFromFile, class C4LangStringTable *pLang=NULL); // clear self and load from group file
 		bool Save(C4Group &hGroup, const char *szToFile); // save to group file

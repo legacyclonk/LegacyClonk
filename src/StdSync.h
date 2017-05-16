@@ -46,7 +46,6 @@ protected:
 	
 public:
 	void Set() { SetEvent(hEvent); }
-	void Pulse() { PulseEvent(hEvent); }
 	void Reset() { ResetEvent(hEvent); }
 	bool WaitFor(int iMillis) { return WaitForSingleObject(hEvent, iMillis) == WAIT_OBJECT_0; }
 };
@@ -106,10 +105,6 @@ public:
     pthread_cond_broadcast(&cond); 
     pthread_mutex_unlock(&mutex); 
   }
-  void Pulse() 
-  { 
-    pthread_cond_broadcast(&cond); 
-  }
   void Reset() 
   { 
     pthread_mutex_lock(&mutex); 
@@ -164,7 +159,6 @@ public:
 	CStdEvent(bool) { }
 	~CStdEvent() { }
 	void Set() { }
-	void Pulse() { }
 	void Reset() { }
 	bool WaitFor(int) { return false; }
 };

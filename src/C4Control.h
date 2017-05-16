@@ -75,7 +75,6 @@ public:
 	C4IDPacket *firstPkt() const { return Pkts.firstPkt(); }
 	C4IDPacket *nextPkt(C4IDPacket *pPkt) const { return Pkts.nextPkt(pPkt); }
 
-	void AddHead(C4PacketType eType, C4ControlPacket *pCtrl) { Pkts.AddHead(eType, pCtrl); }
 	void Add(C4PacketType eType, C4ControlPacket *pCtrl)  { Pkts.Add(eType, pCtrl); }
 	
   void Take(C4Control &Ctrl) { Pkts.Take(Ctrl.Pkts); }
