@@ -16,8 +16,7 @@
 
 /* Handles Music Files */
 
-#ifndef INC_C4MusicFile
-#define INC_C4MusicFile
+#pragma once
 
 #ifdef USE_FMOD
 #include <fmod.h>
@@ -143,5 +142,3 @@ protected:
 	Mix_Music *Music;
 };
 #endif // HAVE_LIBSDL_MIXER
-
-#endif

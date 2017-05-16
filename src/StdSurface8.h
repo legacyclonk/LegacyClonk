@@ -17,8 +17,7 @@
 
 // a wrapper class to DirectDraw surfaces
 
-#ifndef INC_StdSurface8
-#define INC_StdSurface8
+#pragma once
 
 #include <Standard.h>
 #include <StdColors.h>
@@ -71,5 +70,3 @@ public:
 	void EnforceC0Transparency() { pPal->EnforceC0Transparency(); }
 	void AllowColor(BYTE iRngLo, BYTE iRngHi, BOOL fAllowZero = FALSE);
 };
-
-#endif

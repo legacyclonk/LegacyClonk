@@ -14,8 +14,7 @@
  * for the above references.
  */
 
-#ifndef INC_C4ValueMap2
-#define INC_C4ValueMap2
+#pragma once
 
 #include <C4Value.h>
 
@@ -131,5 +130,3 @@ private:
 	// changes the name list
 	void ChangeNameList(const char **pnNames, int32_t *pnExtra, int32_t nSize);
 };
-
-#endif

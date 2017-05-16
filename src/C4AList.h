@@ -18,8 +18,7 @@
 // an associated list
 // used by C4AulScriptEngine, as virtual function table and include/dependency list
 
-#ifndef INC_C4AList
-#define INC_C4AList
+#pragma once
 
 #define C4AListChunkSize 128 // number of table entries for each chunk
 
@@ -54,5 +53,3 @@ public:
 
 	C4AListEntry *push(void *pVar = NULL, void *pVal = NULL); // push var/value pair to end of list
 };
-
-#endif

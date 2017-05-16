@@ -16,8 +16,7 @@
 
 /* Pixel Sprite system for tiny bits of moving material */
 
-#ifndef INC_C4PXS
-#define INC_C4PXS
+#pragma once
 
 #include <C4Material.h>
 
@@ -67,5 +66,3 @@ public:
 protected:
 	C4PXS *New();
 };
-
-#endif

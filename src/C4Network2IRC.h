@@ -15,8 +15,7 @@
  */
 
 
-#ifndef C4NETWORK2IRC_H
-#define C4NETWORK2IRC_H
+#pragma once
 
 #include "C4NetIO.h"
 
@@ -208,5 +207,3 @@ private:
 	C4Network2IRCChannel *AddChannel(const char *szName);
 	void DeleteChannel(C4Network2IRCChannel *pChannel);
 };
-
-#endif // C4NETWORK2IRC_H

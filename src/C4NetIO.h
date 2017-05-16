@@ -16,8 +16,7 @@
 
 /* network i/o, featuring tcp, udp and multicast */
 
-#ifndef C4NETIO_H
-#define C4NETIO_H
+#pragma once
 
 #include "Standard.h"
 #include "StdSync.h"
@@ -813,5 +812,3 @@ bool AcquireWinSock();
 void ReleaseWinSock();
 #endif
 bool ResolveAddress(const char *szAddress, C4NetIO::addr_t *paddr, uint16_t iPort);
-
-#endif

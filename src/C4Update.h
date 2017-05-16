@@ -16,8 +16,7 @@
 
 /* Update package support */
 
-#ifndef INC_C4GroupEx
-#define INC_C4GroupEx
+#pragma once
 
 #include "C4Group.h"
 
@@ -69,5 +68,3 @@ protected:
 };
 
 bool C4Group_ApplyUpdate(C4Group &hGroup);
-
-#endif

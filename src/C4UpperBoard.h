@@ -14,8 +14,7 @@
  * for the above references.
  */
 
-#ifndef INC_C4UpperBoard
-#define INC_C4UpperBoard
+#pragma once
 
 #include <C4Facet.h>
 
@@ -39,5 +38,3 @@ protected:
 	int TextWidth;
 	int TextYPosition;
 };
-
-#endif

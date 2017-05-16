@@ -17,8 +17,7 @@
 
 // main game dialogs (abort game dlg, observer dlg)
 
-#ifndef INC_C4GameDialogs
-#define INC_C4GameDialogs
+#pragma once
 
 #include <C4Gui.h>
 
@@ -48,5 +47,3 @@ protected:
 public:
 	static bool IsShown() { return is_shown; }
 };
-
-#endif // INC_C4GameDialogs

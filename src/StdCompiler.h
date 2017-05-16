@@ -14,8 +14,7 @@
  * for the above references.
  */
 
-#ifndef STDCOMPILER_H
-#define STDCOMPILER_H
+#pragma once
 
 #include "StdBuf.h"
 
@@ -658,5 +657,3 @@ protected:
 
 	void notFound(const char *szWhat);
 };
-
-#endif // STDCOMPILER_H

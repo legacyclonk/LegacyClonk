@@ -25,8 +25,7 @@
 // -network synchronizations (C4GameSaveNetwork) [SyncStateSynced] - in lobby and runtime mode
 // -network references (C4GameSaveNetReference) [SyncStateScenario]
 
-#ifndef INC_C4GameSave
-#define INC_C4GameSave
+#pragma once
 
 #include <C4Scenario.h>
 #include <C4Group.h>
@@ -187,5 +186,3 @@ protected:
 	// savegame specializations
 	virtual void AdjustCore(C4Scenario &rC4S); // set specific C4S values
 };
-
-#endif // INC_C4GameSave

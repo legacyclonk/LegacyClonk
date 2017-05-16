@@ -17,8 +17,7 @@
 
 /* GTK+ version of StdWindow */
 
-#ifndef INC_STDGTKWINDOW
-#define INC_STDGTKWINDOW
+#pragma once
 
 #include <StdWindow.h>
 
@@ -49,5 +48,3 @@ private:
 
 	gulong handlerDestroy;
 };
-
-#endif // INC_STDGTKWINDOW

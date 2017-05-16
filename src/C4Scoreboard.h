@@ -17,8 +17,7 @@
 
 // script-controlled InGame dialog to show player infos
 
-#ifndef INC_C4Scoreboard
-#define INC_C4Scoreboard
+#pragma once
 
 #include "C4Gui.h"
 #include "C4StringTable.h"
@@ -122,5 +121,3 @@ protected:
 
 	friend class C4Scoreboard;
 };
-
-#endif // INC_C4Scoreboard

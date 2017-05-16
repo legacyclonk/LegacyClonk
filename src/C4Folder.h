@@ -16,8 +16,7 @@
 
 /* Core component of a folder */
 
-#ifndef INC_C4Folder
-#define INC_C4Folder
+#pragma once
 
 const int C4MaxFolderSort = 4096;
 
@@ -44,5 +43,3 @@ public:
 	void Default();
 	void CompileFunc(StdCompiler *pComp);
 };
-
-#endif // INC_C4Folder

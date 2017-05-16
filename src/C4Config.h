@@ -16,8 +16,7 @@
 
 /* Game configuration as stored in registry */
 
-#ifndef INC_C4Config
-#define INC_C4Config
+#pragma once
 
 #include "C4Constants.h"
 #include "C4InputValidation.h"
@@ -277,5 +276,3 @@ protected:
 };
 
 extern C4Config Config;
-
-#endif // INC_C4Config

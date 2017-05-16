@@ -28,8 +28,7 @@
    floating point code, leading to desyncs between linux and windows
    engines. */
 
-#ifndef FIXED_H_INC
-#define FIXED_H_INC
+#pragma once
 
 #include <math.h>
 
@@ -358,5 +357,3 @@ inline void CompileFunc(FIXED &rValue, StdCompiler *pComp)
 		FIXED_TO_FLOAT(&rValue);
 #endif
 }
-
-#endif // FIXED_H_INC

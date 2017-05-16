@@ -16,8 +16,7 @@
 
 /* A facet that can hold its own surface and also target coordinates */
 
-#ifndef INC_C4FacetEx
-#define INC_C4FacetEx
+#pragma once
 
 #include <C4Facet.h>
 #include <C4Surface.h>
@@ -110,5 +109,3 @@ public:
 	void Default() { C4FacetExSurface::Default(); idSourceGroup = 0; } // default to std values
 	void Clear() { C4FacetExSurface::Clear(); idSourceGroup = 0; } // clear all data in class
 };
-
-#endif

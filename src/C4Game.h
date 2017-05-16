@@ -16,8 +16,7 @@
 
 /* Main class to run the game */
 
-#ifndef INC_C4Game
-#define INC_C4Game
+#pragma once
 
 #ifdef C4ENGINE
 
@@ -363,5 +362,3 @@ inline StdStrBuf GetKeyboardInputName(const char *szKeyName, bool fShort = false
 }
 
 #endif // C4ENGINE
-
-#endif

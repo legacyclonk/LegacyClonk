@@ -16,8 +16,7 @@
 
 /* Lots of handler functions for object action */
 
-#ifndef INC_C4ObjectCom
-#define INC_C4ObjectCom
+#pragma once
 
 #include <C4Id.h>
 
@@ -84,5 +83,3 @@ void ObjectComStopDig(C4Object *cObj);
 
 BOOL Buy2Base(int32_t iPlr, C4Object *pBase, C4ID id, BOOL fShowErrors = TRUE);
 BOOL SellFromBase(int32_t iPlr, C4Object *pBase, C4ID id, C4Object *pSellObj);
-
-#endif

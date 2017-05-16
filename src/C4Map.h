@@ -16,8 +16,7 @@
  
 /* Create map from dynamic landscape data in scenario */
 
-#ifndef INC_C4Map
-#define INC_C4Map
+#pragma once
 
 #include <C4Scenario.h>
 
@@ -43,5 +42,3 @@ protected:
 	void DrawLayer(int32_t x, int32_t y, int32_t size, BYTE col);
 	BYTE GetPix(int32_t x, int32_t y);
 };
-
-#endif

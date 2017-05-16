@@ -16,8 +16,7 @@
 
 /* Core component of a scenario file */
 
-#ifndef INC_C4Scenario
-#define INC_C4Scenario
+#pragma once
 
 #include <C4NameList.h>
 #include <C4IDList.h>
@@ -346,5 +345,3 @@ public:
 };
 
 #endif // C4ENGINE
-
-#endif // INC_C4Scenario

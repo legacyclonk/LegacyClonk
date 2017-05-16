@@ -16,8 +16,7 @@
 
 /* Loads all standard graphics from Graphics.c4g */
 
-#ifndef INC_C4GraphicsResource
-#define INC_C4GraphicsResource
+#pragma once
 
 #include <C4Group.h>
 #include <C4GroupSet.h>
@@ -116,5 +115,3 @@ protected:
 	friend class C4GUI::Resource;
 	friend class C4StartupGraphics;
 };
-
-#endif

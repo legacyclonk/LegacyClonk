@@ -20,8 +20,7 @@
 // and overlapped effects
 /* Also contains some helper functions for various landscape effects */
 
-#ifndef INC_C4Effects
-#define INC_C4Effects
+#pragma once
 
 #include <C4Constants.h>
 
@@ -166,5 +165,3 @@ void Splash(int32_t tx, int32_t ty, int32_t amt, C4Object *pByObj);
 void Explosion(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t iCausedBy, C4Object *pByObj, C4ID idEffect, const char *szEffect);
 void Smoke(int32_t tx, int32_t ty, int32_t level, DWORD dwClr = 0);
 void BubbleOut(int32_t tx, int32_t ty);
-
-#endif

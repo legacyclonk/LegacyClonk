@@ -17,8 +17,9 @@
 
 /* OpenGL implementation of NewGfx */
 
-#if !defined(INC_StdGL) && defined(USE_GL)
-#define INC_StdGL
+#pragma once
+
+#ifdef USE_GL
 
 #include <GL/glew.h>
 
@@ -172,4 +173,4 @@ protected:
 // Global access pointer
 extern CStdGL *pGL;
 
-#endif // INC_StdGL
+#endif // ifdef USE_GL

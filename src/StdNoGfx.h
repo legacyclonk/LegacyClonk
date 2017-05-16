@@ -16,8 +16,7 @@
 
 /* Implemention of NewGfx - without gfx */
 
-#ifndef INC_StdNoGfx
-#define INC_StdNoGfx
+#pragma once
 
 #include <StdDDraw2.h>
 
@@ -57,5 +56,3 @@ public:
 	virtual bool CreatePrimarySurfaces(BOOL, int, unsigned int);
 	virtual bool SetOutputAdapter(unsigned int) { return true; }
 };
-
-#endif

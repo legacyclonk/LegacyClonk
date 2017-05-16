@@ -17,8 +17,7 @@
 
 /* Common window for drawing and property tool dialogs in console mode */
 
-#ifndef INC_C4DevmodeDlg
-#define INC_C4DevmodeDlg
+#pragma once
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtkwidget.h>
@@ -47,5 +46,3 @@ public:
 	static void SetTitle(GtkWidget *widget, const char *title);
 #endif // WITH_DEVELOPER_MODE
 };
-
-#endif // INC_C4DevmodeDlg

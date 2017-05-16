@@ -16,8 +16,7 @@
 
 /* Controls temperature, wind, and natural disasters */
 
-#ifndef INC_C4Weather
-#define INC_C4Weather
+#pragma once
 
 class C4Weather
 {
@@ -52,5 +51,3 @@ public:
 	void SetSeasonGamma(); // set gamma adjustment for season
 	void CompileFunc(StdCompiler *pComp);
 };
-
-#endif

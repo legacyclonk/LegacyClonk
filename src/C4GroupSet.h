@@ -18,8 +18,7 @@
 // a set of group files
 // manages system file overwriting by scearios or folders
 
-#ifndef INC_C4GroupSet
-#define INC_C4GroupSet
+#pragma once
 
 // group set priorities
 #define C4GSPrio_Base        0 // lowest priority for global system files
@@ -103,5 +102,3 @@ public:
 
 	friend class C4GroupSetNode;
 };
-
-#endif

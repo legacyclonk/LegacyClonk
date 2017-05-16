@@ -17,8 +17,7 @@
 
 // game object lists
 
-#ifndef INC_C4GameObjects
-#define INC_C4GameObjects
+#pragma once
 
 #include <C4ObjectList.h>
 #include <C4FindObject.h>
@@ -106,5 +105,3 @@ public:
 	C4Object *pSortObj, *pObjBefore; // objects that are swapped if no OrderFunc is given
 	BOOL fSortAfter; // if set, the sort object is sorted
 };
-
-#endif

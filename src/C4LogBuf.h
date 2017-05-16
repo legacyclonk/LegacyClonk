@@ -17,8 +17,7 @@
 
 // a buffer holding a log history
 
-#ifndef INC_C4LogBuf
-#define INC_C4LogBuf
+#pragma once
 
 // circular log buffer to holding line-wise log data
 class C4LogBuffer
@@ -59,5 +58,3 @@ public:
 	int GetCount() const { return iLineCount; } // retrieve number of valid lines in buffer
 	void SetLBWidth(int iToWidth);
 };
-
-#endif // C4LogBuf

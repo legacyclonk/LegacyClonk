@@ -16,8 +16,7 @@
 
 /* A dynamic list of C4IDs */
 
-#ifndef INC_C4IDList
-#define INC_C4IDList
+#pragma once
 
 #include <C4Id.h>
 
@@ -93,5 +92,3 @@ public:
 	// Compiling
 	void CompileFunc(StdCompiler *pComp, bool fValues = true);
 };
-
-#endif

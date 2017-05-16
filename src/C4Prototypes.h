@@ -16,8 +16,7 @@
 
 /* Forward declarations */
 
-#ifndef INC_C4Prototypes
-#define INC_C4Prototypes
+#pragma once
 
 class C4Game;
 class C4Record;
@@ -87,5 +86,3 @@ class C4RoundResults;
 
 namespace C4GUI { class Screen; }
 typedef C4GUI::Screen C4GUIScreen;
-
-#endif // INC_C4Prototypes

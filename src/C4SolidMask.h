@@ -17,8 +17,7 @@
 
 /* Solid areas of objects, put into the landscape */
 
-#ifndef INC_C4SolidMask
-#define INC_C4SolidMask
+#pragma once
 
 #include <C4ObjectList.h>
 #include <C4Shape.h>
@@ -84,5 +83,3 @@ public:
 	static bool CheckConsistency() { return true; }
 #endif
 };
-
-#endif

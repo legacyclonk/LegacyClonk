@@ -16,8 +16,7 @@
 
 /* Holds a single text file component from a group */
 
-#ifndef INC_C4ComponentHost
-#define INC_C4ComponentHost
+#pragma once
 
 #include "C4GroupSet.h"
 
@@ -54,5 +53,3 @@ protected:
 	friend BOOL CALLBACK ComponentDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 #endif
 };
-
-#endif

@@ -17,8 +17,7 @@
 
 // network statistics and information dialogs
 
-#ifndef INC_C4Network2Stats
-#define INC_C4Network2Stats
+#pragma once
 
 #include "C4Application.h"
 
@@ -206,5 +205,3 @@ public:
 
 	C4Graph *GetGraphByName(const StdStrBuf &rszName, bool &rfIsTemp);
 };
-
-#endif // INC_C4Network2Stats

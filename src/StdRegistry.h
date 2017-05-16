@@ -16,8 +16,7 @@
 
 /* Some wrappers for easier access to the Windows registry */
 
-#ifndef INC_STDREGISTRY
-#define INC_STDREGISTRY
+#pragma once
 
 #ifdef _WIN32
 
@@ -169,5 +168,3 @@ private:
 };
 
 #endif
-
-#endif // INC_STDREGISTRY

@@ -16,8 +16,7 @@
 
 /* Handles Music.c4g and randomly plays songs */
 
-#ifndef INC_C4MusicSystem
-#define INC_C4MusicSystem
+#pragma once
 
 #include <C4Group.h>
 
@@ -84,5 +83,3 @@ public:
 };
 
 MusicType GetMusicFileTypeByExtension(const char *ext);
-
-#endif

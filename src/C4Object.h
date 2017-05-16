@@ -16,8 +16,7 @@
 
 /* That which fills the world with life */
 
-#ifndef INC_C4Object
-#define INC_C4Object
+#pragma once
 
 #include "C4Facet.h"
 #include "C4Id.h"
@@ -445,5 +444,3 @@ public:
 	// -Objects that are not to be saved in "SaveScenario"-mode
 	bool IsUserPlayerObject(); // true for any object that belongs to any player (NO_OWNER) or a specified player
 };
-
-#endif

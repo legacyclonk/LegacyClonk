@@ -16,8 +16,7 @@
 
 /* Drawing tools dialog for landscape editing in console mode */
 
-#ifndef INC_C4ToolsDlg
-#define INC_C4ToolsDlg
+#pragma once
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtkwidget.h>
@@ -162,5 +161,3 @@ protected:
 public:
 	void UpdateLandscapeModeCtrls();
 };
-
-#endif // INC_C4ToolsDlg

@@ -16,8 +16,7 @@
 
 /* All kinds of valuable helpers */
 
-#ifndef INC_STANDARD
-#define INC_STANDARD
+#pragma once
 
 // A standard product name for this project which is used in window registration etc.
 #define STD_PRODUCT "Clonk Rage"
@@ -291,5 +290,3 @@ inline int ssprintf(T &str, const char *fmt, ...)
 
 // open a weblink in an external browser
 bool OpenURL(const char *szURL);
-
-#endif // INC_STANDARD

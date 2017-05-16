@@ -16,8 +16,7 @@
 
 /* Textures used by the landscape */
 
-#ifndef INC_C4Texture
-#define INC_C4Texture
+#pragma once
 
 #include <C4Surface.h>
 
@@ -100,5 +99,3 @@ protected:
 	BOOL AddTexture(const char *szTexture, CSurface *sfcSurface);
 	BOOL AddTexture(const char *szTexture, CSurface8 *sfcSurface);
 };
-
-#endif

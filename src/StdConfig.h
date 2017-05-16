@@ -16,9 +16,6 @@
 
 /* Auto-registering data structures */
 
-#ifndef STDCONFIG_H
-#define STDCONFIG_H
+#pragma once
 
 const int CFG_MaxString = 1024;
-
-#endif // STDCONFIG_H

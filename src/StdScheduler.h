@@ -16,8 +16,7 @@
 
 /* A simple scheduler for ccoperative multitasking */
 
-#ifndef STDSCHEDULER_H
-#define STDSCHEDULER_H
+#pragma once
 
 #include "Standard.h"
 
@@ -179,5 +178,3 @@ private:
 #endif
 	unsigned int ThreadFunc();
 };
-
-#endif

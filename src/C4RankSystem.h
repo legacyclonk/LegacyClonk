@@ -16,8 +16,7 @@
 
 /* Rank list for players or crew members */
 
-#ifndef INC_C4RankSystem
-#define INC_C4RankSystem
+#pragma once
 
 class C4RankSystem
 {
@@ -50,5 +49,3 @@ public:
 	static bool DrawRankSymbol(C4FacetExSurface *fctSymbol, int32_t iRank, C4FacetEx *pfctRankSymbols, int32_t iRankSymbolCount, bool fOwnSurface, int32_t iXOff = 0, C4Facet *cgoDrawDirect = NULL); // create facet from rank symbol for definition - use custom rank facets if present
 #endif
 };
-
-#endif

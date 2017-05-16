@@ -16,8 +16,7 @@
 
 /* string table: holds all strings used by script engine */
 
-#ifndef C4STRINGTABLE_H
-#define C4STRINGTABLE_H
+#pragma once
 
 class C4StringTable;
 
@@ -66,5 +65,3 @@ public:
 
 	C4String *First, *Last; // string list
 };
-
-#endif

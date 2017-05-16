@@ -16,8 +16,7 @@
 
 /* A primitive list to store one amount value per mapped material */
 
-#ifndef INC_C4MaterialList
-#define INC_C4MaterialList
+#pragma once
 
 #include <C4Landscape.h>
 
@@ -36,5 +35,3 @@ public:
 	void Reset();
 	void Add(int32_t iMaterial, int32_t iAmount);
 };
-
-#endif // INC_C4MaterialList

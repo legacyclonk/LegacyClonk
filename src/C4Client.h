@@ -14,8 +14,7 @@
  * for the above references.
  */
 
-#ifndef C4CLIENT_H
-#define C4CLIENT_H
+#pragma once
 
 #include "C4NetIO.h"
 #include "C4PacketBase.h"
@@ -165,5 +164,3 @@ public:
 
 	void CompileFunc(StdCompiler *pComp);
 };
-
-#endif // C4CLIENT_H

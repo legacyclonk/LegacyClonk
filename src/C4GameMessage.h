@@ -16,8 +16,7 @@
 
 /* Text messages drawn inside the viewport */
 
-#ifndef INC_C4GameMessage
-#define INC_C4GameMessage
+#pragma once
 
 #include <C4Surface.h>
 #include <C4Gui.h>
@@ -106,5 +105,3 @@ void GameMsgGlobal(const char *szText, int32_t iFCol = FWhite);
 void GameMsgPlayer(const char *szText, int32_t iPlayer, int32_t iFCol = FWhite);
 
 void GameMsgObjectDw(const char *szText, C4Object *pTarget, uint32_t dwClr);
-
-#endif

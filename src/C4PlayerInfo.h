@@ -31,8 +31,7 @@
 // Please note that any fields added to C4PlayerInfo will be transferred to the masterserver and back.
 // C4RoundResults is responsible for collecting information after player elimination.
 
-#ifndef INC_C4PlayerInfo
-#define INC_C4PlayerInfo
+#pragma once
 
 #include "C4PacketBase.h"
 #include "C4Network2Res.h"
@@ -441,5 +440,3 @@ public:
 	// compiler
 	void CompileFunc(StdCompiler *pComp);
 };
-
-#endif // INC_C4PlayerInfo

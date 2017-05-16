@@ -17,8 +17,7 @@
 
 // player listbox used in lobby and game over dlg
 
-#ifndef INC_C4PlayerInfoListBox
-#define INC_C4PlayerInfoListBox
+#pragma once
 
 #include "C4Gui.h"
 
@@ -348,5 +347,3 @@ public:
 	friend class PlayerListItem;
 	friend class TeamListItem;
 };
-
-#endif // INC_C4PlayerInfoListBox

@@ -17,8 +17,7 @@
 
 /* A window listing all objects in the game */
 
-#ifndef INC_C4ObjectListDlg
-#define INC_C4ObjectListDlg
+#pragma once
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtkwidget.h>
@@ -52,5 +51,3 @@ private:
 	static void OnSelectionChanged(GtkTreeSelection *selection, C4ObjectListDlg *dlg);
 #endif // WITH_DEVELOPER_MODE
 };
-
-#endif // INC_C4ObjectListDlg

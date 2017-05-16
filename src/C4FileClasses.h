@@ -16,9 +16,6 @@
 
 /* Some class entries in the Windows registry */
 
-#ifndef INC_C4FileClasses
-#define INC_C4FileClasses
+#pragma once
 
 BOOL SetC4FileClasses(const char *szEnginePath);
-
-#endif

@@ -16,8 +16,7 @@
 
 // Loads StringTbl* and replaces $..$-strings by localized versions
 
-#ifndef INC_C4LangStringTable
-#define INC_C4LangStringTable
+#pragma once
 
 #include "C4ComponentHost.h"
 
@@ -29,5 +28,3 @@ public:
 	void ReplaceStrings(StdStrBuf &rBuf);
 	void ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget, const char *szParentFilePath = NULL);
 };
-
-#endif // INC_C4LangStringTable

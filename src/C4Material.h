@@ -16,8 +16,7 @@
 
 /* Material definitions used by the landscape */
 
-#ifndef INC_C4Material
-#define INC_C4Material
+#pragma once
 
 #include <C4Id.h>
 #include <C4Shape.h>
@@ -218,5 +217,3 @@ const int32_t C4M_Flat = 0,
               C4M_Background = 0;
 
 const int32_t MNone = -1;
-
-#endif

@@ -16,8 +16,7 @@
 
 /* Load strings from a primitive memory string table */
 
-#ifndef INC_STD_RES_STR_2_H
-#define INC_STD_RES_STR_2_H
+#pragma once
 
 const char *LoadResStr(const char *id);
 char *LoadResStrNoAmp(const char *id);
@@ -26,5 +25,3 @@ char *GetResStr(const char *id, const char *strTable);
 void SetResStrTable(char *pTable);
 void ClearResStrTable();
 bool IsResStrTableLoaded();
-
-#endif // INC_STD_RES_STR_2_H

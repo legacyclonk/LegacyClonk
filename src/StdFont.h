@@ -17,8 +17,7 @@
 
 // text drawing facility for CStdDDraw
 
-#ifndef INC_STDFONT
-#define INC_STDFONT
+#pragma once
 
 #include <Standard.h>
 #include <StdMarkup.h>
@@ -173,5 +172,3 @@ public:
 BYTE GetCharsetCode(const char *strCharset);
 const char *GetCharsetCodeName(const char *strCharset);
 int32_t GetCharsetCodePage(const char *strCharset);
-
-#endif // INC_STDFONT

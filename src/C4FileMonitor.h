@@ -17,8 +17,7 @@
 
 // An inotify wrapper
 
-#ifndef STD_FILE_MONITOR_H_INC
-#define STD_FILE_MONITOR_H_INC
+#pragma once
 
 #include <StdScheduler.h>
 #include <C4InteractiveThread.h>
@@ -71,5 +70,3 @@ private:
 	void HandleNotify(const char *szDir, const struct _FILE_NOTIFY_INFORMATION *pNotify);
 #endif
 };
-
-#endif // STD_FILE_MONITOR_H_INC

@@ -17,8 +17,7 @@
 
 // complex dynamic landscape creator
 
-#ifndef INC_C4MapCreatorS2
-#define INC_C4MapCreatorS2
+#pragma once
 
 #include <C4Group.h>
 #include <C4Scenario.h>
@@ -410,5 +409,3 @@ public:
 
 	friend class C4MCParserErr;
 };
-
-#endif

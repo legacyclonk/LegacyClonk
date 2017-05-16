@@ -17,8 +17,9 @@
 
 /* Direct3D implementation of NewGfx */
 
-#if defined(USE_DIRECTX) && !defined(INC_STDD3D)
-#define INC_STDD3D
+#pragma once
+
+#ifdef USE_DIRECTX
 
 #include <d3d9.h>
 #include <StdDDraw2.h>
@@ -142,4 +143,4 @@ protected:
 // Global D3D access pointer
 extern CStdD3D *pD3D;
 
-#endif // defined(USE_DIRECTX) && !defined(INC_STDD3D)
+#endif // ifdef USE_DIRECTX

@@ -14,8 +14,7 @@
  * for the above references.
  */
 
-#ifndef INC_C4PacketBase
-#define INC_C4PacketBase
+#pragma once
 
 #include "C4NetIO.h"
 
@@ -261,5 +260,3 @@ public:
 
 	virtual void CompileFunc(StdCompiler *pComp);
 };
-
-#endif // INC_C4PacketBase

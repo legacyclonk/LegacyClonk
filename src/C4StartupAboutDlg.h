@@ -16,8 +16,7 @@
 
 // About/credits screen
 
-#ifndef INC_C4StartupAboutDlg
-#define INC_C4StartupAboutDlg
+#pragma once
 
 #include "C4Startup.h"
 
@@ -45,5 +44,3 @@ protected:
 public:
 	void DoBack(); // back to main menu
 };
-
-#endif // INC_C4StartupAboutDlg

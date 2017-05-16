@@ -17,8 +17,7 @@
 
 // dialogs for update
 
-#ifndef INC_C4UpdateDialogs
-#define INC_C4UpdateDialogs
+#pragma once
 
 #include "C4Gui.h"
 #include "C4GameVersion.h"
@@ -60,5 +59,3 @@ public:
 	bool GetVersion(C4GameVersion *pSaveToVer);
 	bool GetRedirect(StdStrBuf &rRedirect);
 };
-
-#endif // INC_C4UpdateDialogs

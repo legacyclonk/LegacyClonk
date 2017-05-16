@@ -17,8 +17,7 @@
 
 /* engine handler of league system */
 
-#ifndef C4LEAGUE_H_INCLUDED
-#define C4LEAGUE_H_INCLUDED
+#pragma once
 
 #include <openssl/sha.h>
 
@@ -271,5 +270,3 @@ public:
 private:
 	void OnChkPassword();
 };
-
-#endif // C4LEAGUE_H_INCLUDED

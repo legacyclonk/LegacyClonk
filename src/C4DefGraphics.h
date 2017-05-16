@@ -17,8 +17,7 @@
 
 // graphics used by object definitions (object and portraits)
 
-#ifndef INC_C4DefGraphics
-#define INC_C4DefGraphics
+#pragma once
 
 #include <C4FacetEx.h>
 #include <C4Surface.h>
@@ -278,5 +277,3 @@ public:
 	bool operator==(C4GraphicsOverlay *pDefault) { return pOverlay == pDefault; }
 	void operator=(C4GraphicsOverlay *pDefault) { delete pOverlay; pOverlay = pDefault; }
 };
-
-#endif // INC_C4DefGraphics

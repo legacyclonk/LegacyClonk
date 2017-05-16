@@ -16,8 +16,7 @@
 
 /* Mouse input */
 
-#ifndef INC_C4MouseControl
-#define INC_C4MouseControl
+#pragma once
 
 #include "C4ObjectList.h"
 #include "C4Region.h"
@@ -137,5 +136,3 @@ public:
 	void StartConstructionDrag(C4ID id);
 	int32_t GetPlayer() { return Player; }
 };
-
-#endif

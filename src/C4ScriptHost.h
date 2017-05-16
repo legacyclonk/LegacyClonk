@@ -16,8 +16,7 @@
 
 /* Component host for CAulScript */
 
-#ifndef INC_C4ScriptHost
-#define INC_C4ScriptHost
+#pragma once
 
 #include <C4ComponentHost.h>
 
@@ -102,5 +101,3 @@ public:
 	// Compile scenario script data
 	void CompileFunc(StdCompiler *pComp);
 };
-
-#endif

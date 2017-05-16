@@ -16,8 +16,7 @@
 
 /* Move liquids in the landscape using individual transport spots */
 
-#ifndef INC_C4MassMover
-#define INC_C4MassMover
+#pragma once
 
 const int32_t C4MassMoverChunk = 10000;
 
@@ -63,5 +62,3 @@ public:
 protected:
 	void Consolidate();
 };
-
-#endif

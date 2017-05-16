@@ -16,8 +16,7 @@
 
 /* Dynamic object list */
 
-#ifndef INC_C4ObjectList
-#define INC_C4ObjectList
+#pragma once
 
 #include <C4Id.h>
 #include <C4Def.h>
@@ -190,5 +189,3 @@ public:
 	C4ObjectListIterator(C4ObjectList &rList) : rList(rList), pCurr(rList.end()), pCurrID(rList.begin()) {}
 	C4Object *GetNext(int32_t *piCount, uint32_t dwCategory = 0); // get next object; return NULL if end is reached
 };
-
-#endif

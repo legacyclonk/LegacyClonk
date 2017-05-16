@@ -17,8 +17,7 @@
 
 // png file reading functionality
 
-#ifndef INC_STDPNG
-#define INC_STDPNG
+#pragma once
 
 #include <Standard.h>
 #include <png.h>
@@ -75,5 +74,3 @@ public:
 
 	friend void PNGAPI CPNGReadFn(png_structp png_ptr, png_bytep data, size_t length);
 };
-
-#endif // INC_STDPNG

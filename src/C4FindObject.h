@@ -14,8 +14,7 @@
  * for the above references.
  */
 
-#ifndef C4FINDOBJECT_H
-#define C4FINDOBJECT_H
+#pragma once
 
 #include "C4Id.h"
 #include "C4Shape.h"
@@ -531,5 +530,3 @@ private:
 protected:
 	int32_t CompareGetValue(C4Object *pFor);
 };
-
-#endif

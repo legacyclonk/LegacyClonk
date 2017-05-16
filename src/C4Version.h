@@ -14,8 +14,7 @@
  * for the above references.
  */
 
-#ifndef C4VERSION_H
-#define C4VERSION_H
+#pragma once
 
 #define C4ENGINENAME "Clonk Rage"
 
@@ -67,5 +66,3 @@
 			VALUE "SpecialBuild", C4BUILDOPT "\0"
 			VALUE "ProductVersion", C4VERSION "\0"
 */
-
-#endif

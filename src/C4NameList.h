@@ -16,8 +16,7 @@
 
 /* A static list of strings and integer values, i.e. for material amounts */
 
-#ifndef INC_C4NameList
-#define INC_C4NameList
+#pragma once
 
 class C4NameList
 {
@@ -39,5 +38,3 @@ public:
 
 	void CompileFunc(StdCompiler *pComp, bool fValues = true);
 };
-
-#endif

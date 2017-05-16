@@ -16,8 +16,7 @@
 
 /* Another C4Group bitmap-to-surface loader and saver */
 
-#ifndef INC_C4SurfaceFile
-#define INC_C4SurfaceFile
+#pragma once
 
 class CStdStream;
 class C4Surface;
@@ -26,5 +25,3 @@ C4Surface *GroupReadSurface(CStdStream &hGroup, BYTE *bpPalette = NULL);
 CSurface8 *GroupReadSurface8(CStdStream &hGroup);
 C4Surface *GroupReadSurfacePNG(CStdStream &hGroup);
 CSurface8 *GroupReadSurfaceOwnPal8(CStdStream &hGroup);
-
-#endif

@@ -17,8 +17,7 @@
 
 // object list sectors
 
-#ifndef INC_C4Sector
-#define INC_C4Sector
+#pragma once
 
 #include <C4ObjectList.h>
 
@@ -136,5 +135,3 @@ public:
 	void DebugRec(class C4Object *pObj, char cMarker);
 #endif
 };
-
-#endif

@@ -17,8 +17,7 @@
 
 // InGame sequence video playback support
 
-#ifndef INC_C4VideoPlayback
-#define INC_C4VideoPlayback
+#pragma once
 
 #ifndef BIG_C4INCLUDE
 #include "C4Gui.h"
@@ -115,5 +114,3 @@ public:
 	// video speicifed by filename - uses preload database if possible; otherwise gets video from root video collection
 	bool PlayVideo(const char *szVideoFilename);
 };
-
-#endif

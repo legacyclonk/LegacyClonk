@@ -16,8 +16,7 @@
 
 /* A very primitive piece of surface */
 
-#ifndef STD_FACET
-#define STD_FACET
+#pragma once
 
 #include <StdSurface2.h>
 
@@ -40,5 +39,3 @@ public:
 		Surface = nsfc; X = nx; Y = ny; Wdt = nwdt; Hgt = nhgt;
 	}
 };
-
-#endif // STD_FACET

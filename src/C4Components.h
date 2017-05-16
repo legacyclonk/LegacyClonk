@@ -16,8 +16,7 @@
 
 /* Known component file names */
 
-#ifndef INC_C4Components
-#define INC_C4Components
+#pragma once
 
 // Component File Names
 
@@ -166,5 +165,3 @@
 #define C4FLS_Music            "Frontend.*|Credits.*"
 // western foldermap hardcoded...
 #define C4FLS_Western          C4FLS_Folder "|ScenGCBase.png|ScenGC.png|ScenDMVBase.png|ScenDMV.png|ScenFSBase.png|ScenFS.png|ScenCTFBase.png|ScenCTF.png|ScenLHBase.png|ScenLH.png|ScenMCBase.png|ScenMC.png|ScenMWBase.png|ScenMW.png|ScenBRBase.png|ScenBR.png|ScenTHBase.png|ScenTH.png|ScenGRBase.png|ScenGR.png|ScenSTSBase.png|ScenSTS.png|ScenNWBase.png|ScenNW.png|AccLH.png|AccFS.png|AccGC.png|AccGR.png|AccMW.png|AccNW.png"
-
-#endif

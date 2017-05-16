@@ -22,8 +22,7 @@
 // -League evaluation (EvaluateLeague)
 // -Script calls to AddCustomEvaluationString
 
-#ifndef INC_C4RoundResults
-#define INC_C4RoundResults
+#pragma once
 
 #ifndef BIG_C4INCLUDE
 #include "C4Constants.h"
@@ -224,5 +223,3 @@ public:
 
 	virtual void CompileFunc(StdCompiler *pComp);
 };
-
-#endif // INC_C4RoundResults
