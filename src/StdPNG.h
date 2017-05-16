@@ -22,6 +22,7 @@
 
 #include <Standard.h>
 #include <png.h>
+#include <zlib.h>
 
 void PNGAPI CPNGReadFn(png_structp png_ptr, png_bytep data, size_t length); // reading proc (callback)
 
