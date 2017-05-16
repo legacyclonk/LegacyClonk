@@ -270,8 +270,8 @@ void C4DefGraphicsAdapt::CompileFunc(StdCompiler *pComp)
 	// definition
 	C4ID id; if (!fCompiler) id = pDefGraphics->pDef->id;
 	pComp->Value(mkC4IDAdapt(id));
-	// go over two seperators ("::"). Expect them if an id was found.
-	if (!pComp->Seperator(StdCompiler::SEP_PART2) || !pComp->Seperator(StdCompiler::SEP_PART2))
+	// go over two separators ("::"). Expect them if an id was found.
+	if (!pComp->Separator(StdCompiler::SEP_PART2) || !pComp->Separator(StdCompiler::SEP_PART2))
 		pComp->excCorrupt("DefGraphics: expected \"::\"");
 	// compile name
 	StdStrBuf Name; if (!fCompiler) Name = pDefGraphics->GetName();
@@ -653,30 +653,30 @@ bool C4GraphicsOverlay::IsValid(const C4Object *pForObj) const
 void C4GraphicsOverlay::CompileFunc(StdCompiler *pComp)
 {
 	// read ID
-	pComp->Value(iID); pComp->Seperator();
+	pComp->Value(iID); pComp->Separator();
 	// read def-graphics
 	pComp->Value(mkDefaultAdapt(C4DefGraphicsAdapt(pSourceGfx), (C4DefGraphics *)nullptr));
-	pComp->Seperator();
+	pComp->Separator();
 	// read mode
-	pComp->Value(mkIntAdapt(eMode)); pComp->Seperator();
+	pComp->Value(mkIntAdapt(eMode)); pComp->Separator();
 	// read action (identifier)
-	pComp->Value(mkStringAdaptMIE(Action)); pComp->Seperator();
+	pComp->Value(mkStringAdaptMIE(Action)); pComp->Separator();
 	// read blit mode
-	pComp->Value(dwBlitMode); pComp->Seperator();
+	pComp->Value(dwBlitMode); pComp->Separator();
 	// read phase
-	pComp->Value(iPhase); pComp->Seperator();
+	pComp->Value(iPhase); pComp->Separator();
 	// read transform
-	pComp->Seperator(StdCompiler::SEP_START);
+	pComp->Separator(StdCompiler::SEP_START);
 	pComp->Value(Transform);
-	pComp->Seperator(StdCompiler::SEP_END);
+	pComp->Separator(StdCompiler::SEP_END);
 	// read color-modulation
-	if (pComp->Seperator())
+	if (pComp->Separator())
 		pComp->Value(mkIntAdapt(dwClrModulation));
 	else
 		// default
 		if (pComp->isCompiler()) dwClrModulation = 0xffffff;
 	// read overlay target object
-	if (pComp->Seperator())
+	if (pComp->Separator())
 		pComp->Value(nOverlayObj);
 	else
 		// default
@@ -855,7 +855,7 @@ void C4GraphicsOverlayListAdapt::CompileFunc(StdCompiler *pComp)
 			pLast = pNext;
 			// continue?
 			if (fNaming)
-				fContinue = pComp->Seperator(StdCompiler::SEP_SEP2) || pComp->Seperator(StdCompiler::SEP_SEP);
+				fContinue = pComp->Separator(StdCompiler::SEP_SEP2) || pComp->Separator(StdCompiler::SEP_SEP);
 			else
 				pComp->Value(fContinue);
 		} while (fContinue);
@@ -866,10 +866,10 @@ void C4GraphicsOverlayListAdapt::CompileFunc(StdCompiler *pComp)
 		bool fContinue = true;
 		for (C4GraphicsOverlay *pPos = pOverlay; pPos; pPos = pPos->GetNext())
 		{
-			// seperate
+			// separate
 			if (pPos != pOverlay)
 				if (fNaming)
-					pComp->Seperator(StdCompiler::SEP_SEP2);
+					pComp->Separator(StdCompiler::SEP_SEP2);
 				else
 					pComp->Value(fContinue);
 			// write

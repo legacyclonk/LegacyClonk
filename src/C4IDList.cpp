@@ -505,8 +505,8 @@ void C4IDList::CompileFunc(StdCompiler *pComp, bool fValues)
 				iCNr = 0;
 			}
 		}
-		// Seperator (';')
-		if (iNr > 0) if (!pComp->Seperator(StdCompiler::SEP_SEP2)) break;
+		// Separator (';')
+		if (iNr > 0) if (!pComp->Separator(StdCompiler::SEP_SEP2)) break;
 		// ID
 		pComp->Value(mkDefaultAdapt(mkC4IDAdapt(pChunk->id[iCNr]), C4ID_None));
 		// ID not valid? Note that C4ID_None is invalid.
@@ -514,8 +514,8 @@ void C4IDList::CompileFunc(StdCompiler *pComp, bool fValues)
 		// Value: Skip this part if requested
 		if (fValues)
 		{
-			// Seperator ('=')
-			if (pComp->Seperator(StdCompiler::SEP_SET))
+			// Separator ('=')
+			if (pComp->Separator(StdCompiler::SEP_SET))
 				// Count
 				pComp->Value(mkDefaultAdapt(pChunk->Count[iCNr], 0));
 		}

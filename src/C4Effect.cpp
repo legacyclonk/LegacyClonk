@@ -465,25 +465,25 @@ void C4Effect::CompileFunc(StdCompiler *pComp)
 {
 	// read name
 	pComp->Value(mkStringAdaptMI(Name));
-	pComp->Seperator(StdCompiler::SEP_START); // '('
+	pComp->Separator(StdCompiler::SEP_START); // '('
 	// read number
-	pComp->Value(iNumber); pComp->Seperator();
+	pComp->Value(iNumber); pComp->Separator();
 	// read priority
-	pComp->Value(iPriority); pComp->Seperator();
+	pComp->Value(iPriority); pComp->Separator();
 	// read time and intervall
-	pComp->Value(iTime); pComp->Seperator();
-	pComp->Value(iIntervall); pComp->Seperator();
+	pComp->Value(iTime); pComp->Separator();
+	pComp->Value(iIntervall); pComp->Separator();
 	// read object number
-	pComp->Value(nCommandTarget); pComp->Seperator();
+	pComp->Value(nCommandTarget); pComp->Separator();
 	// read ID
 	pComp->Value(mkC4IDAdapt(idCommandTarget));
-	pComp->Seperator(StdCompiler::SEP_END); // ')'
+	pComp->Separator(StdCompiler::SEP_END); // ')'
 	// read variables
 	if (pComp->isCompiler() || EffectVars.GetSize() > 0)
-		if (pComp->Seperator(StdCompiler::SEP_START2)) // '['
+		if (pComp->Separator(StdCompiler::SEP_START2)) // '['
 		{
 			pComp->Value(EffectVars);
-			pComp->Seperator(StdCompiler::SEP_END2); // ']'
+			pComp->Separator(StdCompiler::SEP_END2); // ']'
 		}
 		else
 			EffectVars.Reset();
@@ -492,7 +492,7 @@ void C4Effect::CompileFunc(StdCompiler *pComp)
 	if (pComp->hasNaming())
 	{
 		if (fNext || pComp->isCompiler())
-			fNext = pComp->Seperator();
+			fNext = pComp->Separator();
 	}
 	else
 		pComp->Value(fNext);

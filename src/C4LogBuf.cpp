@@ -155,7 +155,7 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 	int32_t iLineBreakCharCount = 2 + fMarkup;
 	// safety
 	if (!szLine) return;
-	// split '|'/CR/LF-seperations first, if there are any
+	// split '|'/CR/LF-separations first, if there are any
 	bool fAnyLineBreakChar = false;
 	for (int i = 0; i < iLineBreakCharCount; ++i)
 		if (strchr(szLine, LineBreakChars[i]))

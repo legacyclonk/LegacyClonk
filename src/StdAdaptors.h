@@ -268,7 +268,7 @@ struct _IdFuncClass
 };
 
 // * Array Adaptor
-// Stores a seperated list
+// Stores a separated list
 template <class T, class M = _IdFuncClass<T>>
 struct StdArrayAdapt
 {
@@ -281,7 +281,7 @@ struct StdArrayAdapt
 	{
 		for (int i = 0; i < iSize; i++)
 		{
-			if (i) pComp->Seperator(StdCompiler::SEP_SEP);
+			if (i) pComp->Separator(StdCompiler::SEP_SEP);
 			pComp->Value(map(pArray[i]));
 		}
 	}
@@ -327,7 +327,7 @@ template <class T, class M>
 inline StdArrayAdapt<T, M> mkArrayAdaptMap(T *pArray, int iSize, M map) { return StdArrayAdapt<T, M>(pArray, iSize, map); }
 
 // * Array Adaptor (defaulting)
-// Stores a seperated list, sets defaults if a value or seperator is missing.
+// Stores a separated list, sets defaults if a value or separator is missing.
 template <class T, class D, class M = _IdFuncClass<T>>
 struct StdArrayDefaultAdapt
 {
@@ -347,8 +347,8 @@ struct StdArrayDefaultAdapt
 		// Read/write values
 		for (i = 0; i < iWrite; i++)
 		{
-			// Seperator?
-			if (i) if (!pComp->Seperator(StdCompiler::SEP_SEP)) break;
+			// Separator?
+			if (i) if (!pComp->Separator(StdCompiler::SEP_SEP)) break;
 			// Expect a value. Default if not found.
 			pComp->Value(mkDefaultAdapt(map(pArray[i]), rDefault));
 		}
@@ -513,7 +513,7 @@ template <class T>
 inline StdPtrAdapt<T> mkPtrAdaptNoNull(T *&rpObj) { return mkPtrAdapt<T>(rpObj, false); }
 
 // * Adaptor for STL containers
-// Writes a comma-seperated list for compilers that support it. Otherwise, the size is calculated and safed.
+// Writes a comma-separated list for compilers that support it. Otherwise, the size is calculated and safed.
 // The defaulting uses the standard STL operators (full match)
 template <class C>
 struct StdSTLContainerAdapt
@@ -541,7 +541,7 @@ struct StdSTLContainerAdapt
 			// Write all entries
 			for (typename C::const_iterator i = rStruct.begin(); i != rStruct.end(); ++i)
 			{
-				if (i != rStruct.begin()) pComp->Seperator(eSep);
+				if (i != rStruct.begin()) pComp->Separator(eSep);
 				pComp->Value(const_cast<T &>(*i));
 			}
 		}
@@ -571,7 +571,7 @@ struct StdSTLContainerAdapt
 					delete pEx;
 					break;
 				}
-			} while (pComp->Seperator(eSep));
+			} while (pComp->Separator(eSep));
 		}
 	}
 
@@ -785,7 +785,7 @@ struct StdBitfieldAdapt
 				if ((pName->Val & val) == pName->Val)
 				{
 					// Put "|"
-					if (!fFirst) pComp->Seperator(StdCompiler::SEP_VLINE);
+					if (!fFirst) pComp->Separator(StdCompiler::SEP_VLINE);
 					// Put name
 					pComp->String(const_cast<char **>(&pName->Name), StdCompiler::RCT_Idtf);
 					fFirst = false;
@@ -796,7 +796,7 @@ struct StdBitfieldAdapt
 			if (val)
 			{
 				// Put "|"
-				if (!fFirst) pComp->Seperator(StdCompiler::SEP_VLINE);
+				if (!fFirst) pComp->Separator(StdCompiler::SEP_VLINE);
 				// Put value
 				pComp->Value(val);
 			}
@@ -842,8 +842,8 @@ struct StdBitfieldAdapt
 					if (!pName->Name)
 						pComp->Warn("Unknown bit name: %s", Name.getData());
 				}
-				// Expect seperation
-			} while (pComp->Seperator(StdCompiler::SEP_VLINE));
+				// Expect separation
+			} while (pComp->Separator(StdCompiler::SEP_VLINE));
 			// Write value back
 			rVal = val;
 		}

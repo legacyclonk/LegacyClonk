@@ -38,9 +38,9 @@ void C4Rect::Default()
 
 void C4Rect::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkDefaultAdapt(x,   0)); pComp->Seperator();
-	pComp->Value(mkDefaultAdapt(y,   0)); pComp->Seperator();
-	pComp->Value(mkDefaultAdapt(Wdt, 0)); pComp->Seperator();
+	pComp->Value(mkDefaultAdapt(x,   0)); pComp->Separator();
+	pComp->Value(mkDefaultAdapt(y,   0)); pComp->Separator();
+	pComp->Value(mkDefaultAdapt(Wdt, 0)); pComp->Separator();
 	pComp->Value(mkDefaultAdapt(Hgt, 0));
 }
 
@@ -80,8 +80,8 @@ bool C4TargetRect::ClipBy(C4TargetRect &rClip)
 
 void C4TargetRect::CompileFunc(StdCompiler *pComp)
 {
-	C4Rect::CompileFunc(pComp); pComp->Seperator();
-	pComp->Value(mkDefaultAdapt(tx, 0)); pComp->Seperator();
+	C4Rect::CompileFunc(pComp); pComp->Separator();
+	pComp->Value(mkDefaultAdapt(tx, 0)); pComp->Separator();
 	pComp->Value(mkDefaultAdapt(ty, 0));
 }
 
