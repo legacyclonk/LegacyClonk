@@ -125,7 +125,7 @@ public:
 	// construct from memory (copies / references data)
 	C4NetIOPacket(const void *pnData, size_t inSize, bool fCopy = false, const C4NetIO::addr_t &naddr = C4NetIO::addr_t());
 	// construct from buffer (takes data, if possible)
-	explicit C4NetIOPacket(StdBuf &Buf, const C4NetIO::addr_t &naddr = C4NetIO::addr_t());
+	explicit C4NetIOPacket(const StdBuf &Buf, const C4NetIO::addr_t &naddr = C4NetIO::addr_t());
 
 	~C4NetIOPacket();
 
@@ -147,9 +147,6 @@ public:
 
 	// delete contents
 	void Clear();
-
-	// Talk gcc into accepting references to temporaries
-	ALLOW_TEMP_TO_REF(C4NetIOPacket)
 };
 
 // tcp network i/o
@@ -484,7 +481,7 @@ protected:
 
 		// construction / destruction
 		Packet();
-		Packet(C4NetIOPacket &rnData, nr_t inNr);
+		Packet(C4NetIOPacket &&rnData, nr_t inNr);
 		~Packet();
 
 	protected:
@@ -656,7 +653,7 @@ protected:
 
 		// sending
 		bool SendDirect(const Packet &rPacket, unsigned int iNr = ~0);
-		bool SendDirect(C4NetIOPacket &rPacket);
+		bool SendDirect(C4NetIOPacket &&rPacket);
 
 		// events
 		void OnConn();
@@ -715,7 +712,7 @@ protected:
 
 	// sending
 	bool BroadcastDirect(const Packet &rPacket, unsigned int iNr = ~0u); // (mt-safe)
-	bool SendDirect(C4NetIOPacket &rPacket); // (mt-safe)
+	bool SendDirect(C4NetIOPacket &&rPacket); // (mt-safe)
 
 	// multicast related
 	bool DoLoopbackTest();

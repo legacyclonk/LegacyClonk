@@ -940,8 +940,6 @@ struct C4ObjectListDumpHelper
 	void CompileFunc(StdCompiler *pComp) { pComp->Value(mkNamingAdapt(*pLst, "Objects")); }
 
 	C4ObjectListDumpHelper(C4ObjectList *pLst) : pLst(pLst) {}
-
-	ALLOW_TEMP_TO_REF(C4ObjectListDumpHelper)
 };
 
 BOOL C4ObjectList::CheckSort(C4ObjectList *pList)

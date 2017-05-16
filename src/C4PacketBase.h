@@ -52,8 +52,6 @@ struct C4NetFilenameAdapt
 #endif
 	}
 
-	ALLOW_TEMP_TO_REF(C4NetFilenameAdapt)
-
 	template <class T> bool operator==(const T &rVal) { return FileName == rVal; }
 	template <class T> C4NetFilenameAdapt &operator=(const T &rVal) { FileName = rVal; return *this; }
 };

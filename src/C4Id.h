@@ -60,9 +60,6 @@ struct C4IDAdapt
 	// Operators for default checking/setting
 	inline bool operator==(const C4ID &nValue) const { return rValue == nValue; }
 	inline C4IDAdapt &operator=(const C4ID &nValue) { rValue = nValue; return *this; }
-
-	// trick g++
-	ALLOW_TEMP_TO_REF(C4IDAdapt)
 };
 
 inline C4IDAdapt mkC4IDAdapt(C4ID &rValue) { return C4IDAdapt(rValue); }

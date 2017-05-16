@@ -155,7 +155,7 @@ public:
 	void Value(bool &rBool) { Boolean(rBool); }
 
 	// Compiling/Decompiling (may throw a data format exception!)
-	template <class T> inline void Compile(T &rStruct)
+	template <class T> inline void Compile(T &&rStruct)
 	{
 		assert(isCompiler());
 		DoCompilation(rStruct);
@@ -322,7 +322,7 @@ void CompileNewFunc(T *&pStruct, StdCompiler *pComp)
 
 // Helpers for buffer-based compiling (may throw a data format exception!)
 template <class CompT, class StructT>
-void CompileFromBuf(StructT &TargetStruct, const typename CompT::InT &SrcBuf)
+void CompileFromBuf(StructT &&TargetStruct, const typename CompT::InT &SrcBuf)
 {
 	CompT Compiler;
 	Compiler.setInput(SrcBuf.getRef());
@@ -415,7 +415,7 @@ class StdCompilerBinRead : public StdCompiler
 public:
 	// Input
 	typedef StdBuf InT;
-	void setInput(InT &In) { Buf = In; }
+	void setInput(const InT &In) { Buf = In; }
 
 	// Properties
 	virtual bool isCompiler() { return true; }
@@ -547,7 +547,7 @@ public:
 
 	// Input
 	typedef StdStrBuf InT;
-	void setInput(InT &In) { Buf = In; }
+	void setInput(const InT &In) { Buf = In; }
 
 	// Properties
 	virtual bool isCompiler() { return true; }

@@ -86,7 +86,7 @@ namespace
 	class ImplicitStrBuf : public StdStrBuf
 	{
 	public:
-		ImplicitStrBuf(StdStrBuf &Buf2) : StdStrBuf(Buf2, false) {}
+		ImplicitStrBuf(StdStrBuf &&Buf2) : StdStrBuf(Buf2, false) {}
 		operator const char *() const { return getData(); }
 	};
 
