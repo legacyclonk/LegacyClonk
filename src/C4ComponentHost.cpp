@@ -86,7 +86,7 @@ void C4ComponentHost::Default()
 	Filename[0] = 0;
 	FilePath[0] = 0;
 #ifdef _WIN32
-	hDialog = 0;
+	hDialog = nullptr;
 #endif
 }
 

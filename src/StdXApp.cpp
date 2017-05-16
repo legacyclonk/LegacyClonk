@@ -36,7 +36,7 @@
 	#include <readline.h>
 #endif
 static void readline_callback(char *);
-static CStdApp *readline_callback_use_this_app = 0;
+static CStdApp *readline_callback_use_this_app = nullptr;
 #endif /* HAVE_LIBREADLINE */
 
 #ifdef HAVE_READLINE_HISTORY
@@ -94,7 +94,7 @@ namespace
 
 CStdAppPrivate::WindowListT CStdAppPrivate::WindowList;
 
-CStdApp::CStdApp() : Active(false), fQuitMsgReceived(false), dpy(0), Priv(new CStdAppPrivate()),
+CStdApp::CStdApp() : Active(false), fQuitMsgReceived(false), dpy(nullptr), Priv(new CStdAppPrivate()),
 	Location(""), DoNotDelay(false),
 	// main thread
 #ifdef HAVE_PTHREAD
@@ -147,7 +147,7 @@ bool CStdApp::Init(int argc, char *argv[])
 	Priv->stdin_channel = nullptr;
 #endif
 
-	if (!(dpy = XOpenDisplay(0)))
+	if (!(dpy = XOpenDisplay(nullptr)))
 	{
 		Log("Error opening display.");
 		return false;
@@ -166,7 +166,7 @@ bool CStdApp::Init(int argc, char *argv[])
 	XkbSetDetectableAutoRepeat(dpy, True, &Priv->detectable_autorepeat_supported);
 
 	XSetLocaleModifiers("");
-	Priv->xim = XOpenIM(dpy, 0, 0, 0);
+	Priv->xim = XOpenIM(dpy, nullptr, nullptr, nullptr);
 	if (!Priv->xim) Log("Failed to open input method.");
 
 	// Get the Atoms for the Clipboard
@@ -202,12 +202,12 @@ bool CStdApp::Init(int argc, char *argv[])
 	return DoInit();
 }
 
-bool CStdApp::InitTimer() { gettimeofday(&LastExecute, 0); return true; }
+bool CStdApp::InitTimer() { gettimeofday(&LastExecute, nullptr); return true; }
 
 void CStdApp::Clear()
 {
 	XCloseDisplay(dpy);
-	dpy = 0;
+	dpy = nullptr;
 #if USE_CONSOLE && HAVE_LIBREADLINE
 	rl_callback_handler_remove();
 #endif
@@ -232,7 +232,7 @@ void CStdApp::Execute()
 {
 	time_t seconds = LastExecute.tv_sec;
 	timeval tv;
-	gettimeofday(&tv, 0);
+	gettimeofday(&tv, nullptr);
 	// Too slow?
 	if (DoNotDelay)
 	{
@@ -300,7 +300,7 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	}
 	else if (fCheckTimer)
 	{
-		gettimeofday(&tv, 0);
+		gettimeofday(&tv, nullptr);
 		tv.tv_usec = LastExecute.tv_usec - tv.tv_usec + Delay
 			- 1000000 * (tv.tv_sec - LastExecute.tv_sec);
 		// Check if the given timeout comes first
@@ -454,14 +454,14 @@ void CStdApp::HandleXMessage()
 			if (Priv->xic)
 			{
 				Status lsret;
-				XmbLookupString(Priv->xic, &event.xkey, c, 10, 0, &lsret);
+				XmbLookupString(Priv->xic, &event.xkey, c, 10, nullptr, &lsret);
 				if (lsret == XLookupKeySym) fprintf(stderr, "FIXME: XmbLookupString returned XLookupKeySym\n");
 				if (lsret == XBufferOverflow) fprintf(stderr, "FIXME: XmbLookupString returned XBufferOverflow\n");
 			}
 			else
 			{
 				static XComposeStatus state;
-				XLookupString(&event.xkey, c, 10, 0, &state);
+				XLookupString(&event.xkey, c, 10, nullptr, &state);
 			}
 			if (c[0])
 			{
@@ -547,7 +547,7 @@ void CStdApp::HandleXMessage()
 			pWindow->wnd = 0;
 			pWindow->Clear();
 		}
-		Priv->SetWindow(event.xany.window, 0);
+		Priv->SetWindow(event.xany.window, nullptr);
 		break;
 	}
 	}
@@ -779,7 +779,7 @@ CStdWindow *CStdAppPrivate::GetWindow(unsigned long wnd)
 {
 	WindowListT::iterator i = WindowList.find(wnd);
 	if (i != WindowList.end()) return i->second;
-	return 0;
+	return nullptr;
 }
 
 void CStdAppPrivate::SetWindow(unsigned long wnd, CStdWindow *pWindow)

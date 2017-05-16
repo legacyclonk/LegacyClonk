@@ -57,11 +57,11 @@ private:
 
 	CMarkupTag *Pop()
 	{
-		CMarkupTag *pL = pLast; if (!pL) return 0; if ((pLast = pL->pPrev)) pLast->pNext = 0; else pTags = 0; return pL;
+		CMarkupTag *pL = pLast; if (!pL) return 0; if ((pLast = pL->pPrev)) pLast->pNext = nullptr; else pTags = nullptr; return pL;
 	}
 
 public:
-	CMarkup(bool fDoClr) { pTags = pLast = 0; this->fDoClr = fDoClr; };
+	CMarkup(bool fDoClr) { pTags = pLast = nullptr; this->fDoClr = fDoClr; };
 
 	~CMarkup()
 	{

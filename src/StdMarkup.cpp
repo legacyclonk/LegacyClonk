@@ -18,7 +18,7 @@ void CMarkupTagColor::Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr
 
 bool CMarkup::Read(const char **ppText, bool fSkip)
 {
-	char Tag[50]; CMarkupTag *pNewTag = 0; int iTagLen, iParLen;
+	char Tag[50]; CMarkupTag *pNewTag = nullptr; int iTagLen, iParLen;
 	// get tag
 	if (!SCopyEnclosed(*ppText, '<', '>', Tag, 49)) return false;
 	iTagLen = SLen(Tag);

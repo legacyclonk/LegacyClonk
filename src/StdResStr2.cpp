@@ -19,7 +19,7 @@ public:
 		{
 			// search '='
 			const char *pos = table;
-			const char *equalpos = 0;
+			const char *equalpos = nullptr;
 			while (*pos && *pos != '\n' && *pos != '\r')
 			{
 				if (*pos == '=') equalpos = pos;
@@ -94,7 +94,7 @@ private:
 	}
 };
 
-static ResTable *Table = 0;
+static ResTable *Table = nullptr;
 
 void SetResStrTable(char *pTable)
 {
@@ -108,10 +108,10 @@ void SetResStrTable(char *pTable)
 void ClearResStrTable()
 {
 	delete Table;
-	Table = 0;
+	Table = nullptr;
 }
 
-bool IsResStrTableLoaded() { return Table != 0; }
+bool IsResStrTableLoaded() { return Table != nullptr; }
 
 const char *GetResStr(const char *id, ResTable *Table)
 {

@@ -365,7 +365,7 @@ C4Group *FindSuitableFile(const char *szName, C4GroupSet &rGfxSet, char *szFileN
 {
 	const char *const extensions[] = { "bmp", "jpeg", "jpg", "png" };
 
-	C4Group *pGrp = 0;
+	C4Group *pGrp = nullptr;
 	C4Group *pGrp2;
 	int iPrio = -1;
 	int iPrio2;

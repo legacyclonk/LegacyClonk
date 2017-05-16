@@ -33,10 +33,10 @@ void C4ValueMapData::Reset()
 {
 	// unreg from name list (if using one)
 	if (pNames) UnRegister();
-	pNames = 0;
+	pNames = nullptr;
 	// free data
 	delete[] pData;
-	pData = 0;
+	pData = nullptr;
 }
 
 void C4ValueMapData::SetNameList(C4ValueMapNames *pnNames)
@@ -103,7 +103,7 @@ void C4ValueMapData::UnRegister()
 
 	// delete data array
 	delete[] pData;
-	pData = 0;
+	pData = nullptr;
 }
 
 C4ValueMapNames *C4ValueMapData::CreateTempNameList()
@@ -334,9 +334,9 @@ void C4ValueMapNames::UnRegister(C4ValueMapData *pData)
 		pLastData->pNext = pData->pNext;
 	else
 		pFirst = pData->pNext;
-	pData->pNext = 0;
+	pData->pNext = nullptr;
 
-	pData->pNames = 0;
+	pData->pNames = nullptr;
 }
 
 void C4ValueMapNames::ChangeNameList(const char **pnNames, int32_t *pnExtra, int32_t nSize)

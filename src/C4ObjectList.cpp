@@ -11,12 +11,12 @@
 #include <C4Application.h>
 #endif
 
-C4ObjectList::C4ObjectList() : FirstIter(0)
+C4ObjectList::C4ObjectList() : FirstIter(nullptr)
 {
 	Default();
 }
 
-C4ObjectList::C4ObjectList(const C4ObjectList &List) : FirstIter(0)
+C4ObjectList::C4ObjectList(const C4ObjectList &List) : FirstIter(nullptr)
 {
 	Default();
 	Copy(List);

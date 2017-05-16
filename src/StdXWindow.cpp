@@ -36,7 +36,7 @@
 CStdWindow::CStdWindow() :
 	Active(false)
 #ifdef USE_X11
-	, wnd(0), renderwnd(0), dpy(0), Info(0), Hints(0), HasFocus(false)
+	, wnd(0), renderwnd(0), dpy(nullptr), Info(nullptr), Hints(nullptr), HasFocus(false)
 #endif
 {}
 
@@ -58,7 +58,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	Active = true;
 	dpy = pApp->dpy;
 
-	if (!FindInfo()) return 0;
+	if (!FindInfo()) return nullptr;
 
 	// Various properties
 	XSetWindowAttributes attr;
@@ -98,7 +98,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	if (!wnd)
 	{
 		Log("Error creating window.");
-		return 0;
+		return nullptr;
 	}
 	// Update the XWindow->CStdWindow-Map
 	CStdAppPrivate::SetWindow(wnd, this);
@@ -115,7 +115,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 		{
 			Log("Failed to create input context.");
 			XCloseIM(pApp->Priv->xim);
-			pApp->Priv->xim = 0;
+			pApp->Priv->xim = nullptr;
 		}
 		else
 		{
@@ -174,7 +174,7 @@ void CStdWindow::Clear()
 	// Destroy window
 	if (wnd)
 	{
-		CStdAppPrivate::SetWindow(wnd, 0);
+		CStdAppPrivate::SetWindow(wnd, nullptr);
 		XUnmapWindow(dpy, wnd);
 		XDestroyWindow(dpy, wnd);
 		if (Info) XFree(Info);

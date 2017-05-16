@@ -126,7 +126,7 @@ public:
 	void Parse_Function();
 	void Parse_Statement();
 	void Parse_Block();
-	int Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFunc = 0);
+	int Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFunc = nullptr);
 	void Parse_Array();
 	void Parse_While();
 	void Parse_If();
@@ -149,8 +149,8 @@ public:
 	void UnexpectedToken(const char *Expected);
 	const char *GetTokenName(C4AulTokenType TokenType);
 
-	void Warn(const char *pMsg, const char *pIdtf = 0);
-	void Strict2Error(const char *pMsg, const char *pIdtf = 0);
+	void Warn(const char *pMsg, const char *pIdtf = nullptr);
+	void Strict2Error(const char *pMsg, const char *pIdtf = nullptr);
 
 private:
 	bool fJump;

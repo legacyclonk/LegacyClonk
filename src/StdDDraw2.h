@@ -153,7 +153,7 @@ protected:
 	uint16_t *red, *green, *blue; int size;
 
 public:
-	CGammaControl() : red(0), green(0), blue(0), size(0) { Default(); }
+	CGammaControl() : red(nullptr), green(nullptr), blue(nullptr), size(0) { Default(); }
 	~CGammaControl();
 	void Default() { Set(0x000000, 0x808080, 0xffffff, 256, 0); } // set default ramp
 

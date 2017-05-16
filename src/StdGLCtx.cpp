@@ -261,7 +261,7 @@ void CStdGLCtx::Deselect()
 	if (pGL && pGL->pCurrCtx == this)
 	{
 		glXMakeCurrent(pWindow->dpy, None, nullptr);
-		pGL->pCurrCtx = 0;
+		pGL->pCurrCtx = nullptr;
 	}
 }
 
@@ -384,7 +384,7 @@ void CStdGLCtx::Deselect()
 {
 	if (pGL && pGL->pCurrCtx == this)
 	{
-		pGL->pCurrCtx = 0;
+		pGL->pCurrCtx = nullptr;
 	}
 }
 
