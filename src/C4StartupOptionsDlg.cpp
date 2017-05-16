@@ -711,31 +711,6 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 
 	// page graphics
 	C4GUI::ComponentAligner caSheetGraphics(pSheetGraphics->GetClientRect(), iIndentX1, iIndentY1, true);
-	// subgroup engine
-	C4GUI::GroupBox *pGroupEngine = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(0, 2, 0, 3));
-	pGroupEngine->SetTitle(LoadResStrNoAmp("IDS_CTL_GFXENGINE"));
-	pGroupEngine->SetFont(pUseFont);
-	pGroupEngine->SetColors(C4StartupEditBorderColor, C4StartupFontClr);
-	pGroupEngine->SetToolTip(LoadResStr("IDS_MSG_GFXENGINE_DESC"));
-	pSheetGraphics->AddElement(pGroupEngine);
-	C4GUI::ComponentAligner caGroupEngine(pGroupEngine->GetClientRect(), iIndentX1, iIndentY2, true);
-	const char *szGfxEngineNames[3] = { "DirectX", "OpenGL", "DirectX Software" };
-	C4GUI::BaseCallbackHandler *pGfxEngineCheckCB = new C4GUI::CallbackHandler<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnGfxEngineCheck);
-	for (int32_t iGfxEngine = 0; iGfxEngine < 3; ++iGfxEngine)
-	{
-		pCheckGfxEngines[iGfxEngine] = new C4GUI::CheckBox(caGroupEngine.GetGridCell(0, 1, iGfxEngine, 3, -1, iCheckHgt, true), szGfxEngineNames[iGfxEngine], (Config.Graphics.Engine == iGfxEngine));
-		pCheckGfxEngines[iGfxEngine]->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-		pCheckGfxEngines[iGfxEngine]->SetOnChecked(pGfxEngineCheckCB);
-		pGroupEngine->AddElement(pCheckGfxEngines[iGfxEngine]);
-	}
-#ifndef USE_DIRECTX
-	pCheckGfxEngines[GFXENGN_DIRECTX]->SetEnabled(false);
-	pCheckGfxEngines[GFXENGN_DIRECTXS]->SetEnabled(false);
-#endif
-#ifndef USE_GL
-	pCheckGfxEngines[GFXENGN_OPENGL]->SetEnabled(false);
-#endif
-	pCheckGfxEngines[GFXENGN_DIRECTXS]->SetEnabled(false); // better not using this
 	// --subgroup resolution
 	C4GUI::GroupBox *pGroupResolution = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(1, 2, 0, 3));
 	pGroupResolution->SetTitle(LoadResStrNoAmp("IDS_CTL_RESOLUTION"));
@@ -1028,28 +1003,6 @@ void C4StartupOptionsDlg::OnResetConfigBtn(C4GUI::Control *btn)
 	Application.Quit();
 }
 
-void C4StartupOptionsDlg::OnGfxEngineCheck(C4GUI::Element *pCheckBox)
-{
-	C4GUI::CheckBox *pCheck = static_cast<C4GUI::CheckBox *>(pCheckBox);
-	// radiogroup: do not allow unchecking!
-	if (!pCheck->GetChecked())
-	{
-		pCheck->SetChecked(true);
-		return;
-	}
-	// get new engine
-	int i;
-	for (i = 0; i < 3; ++i) if (pCheck == pCheckGfxEngines[i]) break;
-	if (i == 3 || i == Config.Graphics.Engine) return;
-	// okay, engine change
-	pCheckGfxEngines[Config.Graphics.Engine]->SetChecked(false);
-	StdStrBuf sTitle; sTitle.Copy(LoadResStrNoAmp("IDS_CTL_GFXENGINE"));
-	GetScreen()->ShowMessage(LoadResStr("IDS_MSG_RESTARTCHANGECFG"), sTitle.getData(), C4GUI::Ico_Notify, &Config.Startup.HideMsgGfxEngineChange);
-	SaveGfxTroubleshoot();
-	Config.Graphics.Engine = i;
-	LoadGfxTroubleshoot();
-}
-
 void C4StartupOptionsDlg::OnGfxResComboFill(C4GUI::ComboBox_FillCB *pFiller)
 {
 	// clear all old entries first to allow a clean refill
@@ -1332,12 +1285,10 @@ void C4StartupOptionsDlg::RecreateDialog(bool fFade)
 void C4StartupOptionsDlg::LoadGfxTroubleshoot()
 {
 	// config to controls
-	// get config set to be used
-	bool fUseGL = (Config.Graphics.Engine == GFXENGN_OPENGL);
 	// get config values for this config
-	uint32_t dwGfxCfg = fUseGL ? Config.Graphics.NewGfxCfgGL : Config.Graphics.NewGfxCfg;
-	iGfxTexIndent = fUseGL ? Config.Graphics.TexIndentGL : Config.Graphics.TexIndent;
-	iGfxBlitOff = fUseGL ? Config.Graphics.BlitOffGL : Config.Graphics.BlitOff;
+	uint32_t dwGfxCfg = Config.Graphics.NewGfxCfgGL;
+	iGfxTexIndent = Config.Graphics.TexIndentGL;
+	iGfxBlitOff = Config.Graphics.BlitOffGL;
 	// set it in controls
 	pCheckGfxNoAlphaAdd->SetChecked(!!(dwGfxCfg & C4GFXCFG_NO_ALPHA_ADD));
 	pCheckGfxPointFilter->SetChecked(!!(dwGfxCfg & C4GFXCFG_POINT_FILTERING));
@@ -1346,7 +1297,7 @@ void C4StartupOptionsDlg::LoadGfxTroubleshoot()
 	pEdtGfxTexIndent->SetIntVal(iGfxTexIndent);
 	pEdtGfxBlitOff->SetIntVal(iGfxBlitOff);
 	// title of troubleshooting-box by config set
-	pGroupTrouble->SetTitle(FormatString("%s: %s", LoadResStrNoAmp("IDS_CTL_TROUBLE"), fUseGL ? "OpenGL" : "DirectX").getData());
+	pGroupTrouble->SetTitle(LoadResStrNoAmp("IDS_CTL_TROUBLE"));
 }
 
 void C4StartupOptionsDlg::SaveGfxTroubleshoot()
@@ -1361,19 +1312,14 @@ void C4StartupOptionsDlg::SaveGfxTroubleshoot()
 	if (DDrawCfg.Windowed) dwGfxCfg |= C4GFXCFG_WINDOWED;
 	pEdtGfxTexIndent->Save2Config();
 	pEdtGfxBlitOff->Save2Config();
-	// get config set to be used
-	bool fUseGL = (Config.Graphics.Engine == GFXENGN_OPENGL);
 	// set config values into this set
-	(fUseGL ? Config.Graphics.NewGfxCfgGL : Config.Graphics.NewGfxCfg) = dwGfxCfg;
-	(fUseGL ? Config.Graphics.TexIndentGL : Config.Graphics.TexIndent) = iGfxTexIndent;
-	(fUseGL ? Config.Graphics.BlitOffGL : Config.Graphics.BlitOff) = iGfxBlitOff;
-	// and apply them directly, if the engine is current
-	if (fUseGL == lpDDraw->IsOpenGL())
-	{
-		DDrawCfg.Set(dwGfxCfg, (float)iGfxTexIndent / 1000.0f, (float)iGfxBlitOff / 100.0f);
-		lpDDraw->InvalidateDeviceObjects();
-		lpDDraw->RestoreDeviceObjects();
-	}
+	Config.Graphics.NewGfxCfgGL = dwGfxCfg;
+	Config.Graphics.TexIndentGL = iGfxTexIndent;
+	Config.Graphics.BlitOffGL = iGfxBlitOff;
+	// and apply them directly
+	DDrawCfg.Set(dwGfxCfg, (float)iGfxTexIndent / 1000.0f, (float)iGfxBlitOff / 100.0f);
+	lpDDraw->InvalidateDeviceObjects();
+	lpDDraw->RestoreDeviceObjects();
 }
 
 void C4StartupOptionsDlg::OnEffectsSliderChange(int32_t iNewVal)

@@ -90,7 +90,6 @@ public:
 	virtual int GetEngine() { return 1; } // get indexed engine
 	void TaskOut(); // user taskswitched the app away
 	void TaskIn(); // user tasked back
-	virtual bool IsOpenGL() { return true; }
 	virtual bool OnResolutionChanged(); // reinit OpenGL and window for new resolution
 
 	// Clipper

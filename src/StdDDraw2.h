@@ -19,9 +19,7 @@ class CStdApp;
 class CStdWindow;
 
 // engines
-#define GFXENGN_DIRECTX  0
 #define GFXENGN_OPENGL   1
-#define GFXENGN_DIRECTXS 2
 #define GFXENGN_NOGFX    3
 
 // Global DDraw access pointer
@@ -162,7 +160,6 @@ public:
 	uint32_t ApplyTo(uint32_t dwClr); // apply gamma to color value
 
 	friend class CStdDDraw;
-	friend class CStdD3D;
 	friend class CStdGL;
 };
 
@@ -212,7 +209,6 @@ public:
 	virtual int GetEngine() = 0; // get indexed engine
 	virtual void TaskOut() = 0; // user taskswitched the app away
 	virtual void TaskIn() = 0; // user tasked back
-	virtual bool IsOpenGL() { return false; }
 	virtual bool OnResolutionChanged() = 0; // reinit window for new resolution
 	const char *GetLastError() { return sLastError.getData(); }
 

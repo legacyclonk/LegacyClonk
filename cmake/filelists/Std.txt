@@ -14,8 +14,6 @@ src/StdColors.h
 src/StdCompiler.cpp
 src/StdCompiler.h
 src/StdConfig.h
-src/StdD3D.cpp
-src/StdD3D.h
 src/StdDDraw2.cpp
 src/StdDDraw2.h
 src/StdFacet.h

@@ -7,7 +7,6 @@
 #include <C4Console.h>
 #include <C4Application.h>
 #include <StdRegistry.h>
-#include <StdD3D.h>
 #ifdef USE_GL
 #include <StdGL.h>
 #endif
@@ -656,13 +655,6 @@ void C4ToolsDlg::UpdatePreview()
 	Application.DDraw->AttachPrimaryPalette(sfcPreview);
 
 #ifdef _WIN32
-#ifdef USE_DIRECTX
-	if (pD3D)
-		pD3D->BlitSurface2Window(sfcPreview,
-			0, 0, iPrvWdt, iPrvHgt,
-			GetDlgItem(hDialog, IDC_PREVIEW),
-			rect.left, rect.top, rect.right, rect.bottom);
-#endif
 #ifdef USE_GL
 	if (pGL && pGLCtx)
 	{

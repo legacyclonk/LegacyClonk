@@ -6,8 +6,6 @@
 #include <C4Facet.h>
 #include <C4Game.h>
 
-#include <StdD3D.h>
-
 void C4Facet::Default()
 {
 	Set(nullptr, 0, 0, 0, 0);

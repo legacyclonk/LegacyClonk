@@ -6,10 +6,6 @@
 #include <Standard.h>
 #include <StdColors.h>
 
-#ifdef USE_DIRECTX
-#include <d3d9.h>
-#endif
-
 #ifdef USE_GL
 #include <GL/glew.h>
 #endif
@@ -40,11 +36,6 @@
 #define C4GFXBLIT_PARENT        256 // blitting mode inherited by parent - ignored by gfx system
 
 const int ALeft = 0, ACenter = 1, ARight = 2;
-
-#ifdef USE_DIRECTX
-class CStdD3D;
-extern CStdD3D *pD3D;
-#endif
 
 #ifdef USE_GL
 class CStdGL;
@@ -148,27 +139,8 @@ public:
 #ifdef _DEBUG
 	int *dbg_idx;
 #endif
-#if defined(USE_DIRECTX) && defined(USE_GL)
-	union
-	{
-		struct // D3D values
-		{
-#endif
-#ifdef USE_DIRECTX
-			IDirect3DSurface9 *pSfc; // surface (primary sfc)
-			D3DFORMAT dwClrFormat; // used color format in textures
-#endif
-#if defined(USE_DIRECTX) && defined(USE_GL)
-		};
-		struct // OpenGL values
-		{
-#endif
 #ifdef USE_GL
-			GLenum Format; // used color format in textures
-#endif
-#if defined(USE_DIRECTX) && defined(USE_GL)
-		};
-	};
+	GLenum Format; // used color format in textures
 #endif
 	CTexRef **ppTex; // textures
 	CSurface *pMainSfc; // main surface for simple ColorByOwner-surfaces
@@ -179,14 +151,12 @@ public:
 
 protected:
 	int Locked;
-	bool Attached;
 	bool fPrimary;
 
 	bool IsSingleSurface() { return iTexX * iTexY == 1; } // return whether surface is not split
 
 public:
 	void SetBackground() { fIsBackground = true; }
-	int IsLocked() const { return Locked; }
 	// Note: This uses partial locks, anything but SetPixDw and Unlock is undefined afterwards until unlock.
 	void ClearBoxDw(int iX, int iY, int iWdt, int iHgt);
 	bool Unlock();
@@ -201,11 +171,7 @@ public:
 	bool Create(int iWdt, int iHgt, bool fOwnPal = false, bool fIsRenderTarget = false);
 	bool CreateColorByOwner(CSurface *pBySurface); // create ColorByOwner-surface
 	bool SetAsClrByOwnerOf(CSurface *pOfSurface); // assume that ColorByOwner-surface has been created, and just assign it; fails if the size doesn't match
-#ifdef USE_DIRECTX
-	bool AttachSfc(IDirect3DSurface9 *sfcSurface); // wdt and hgt not assigned in DirectX
-#else
 	bool AttachSfc(void *sfcSurface);
-#endif
 	void Clear();
 	void Default();
 	void Clip(int iX, int iY, int iX2, int iY2);
@@ -213,9 +179,6 @@ public:
 	bool Read(class CStdStream &hGroup, bool fOwnPal = false);
 	bool SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly);
 	bool Wipe(); // empty to transparent
-#ifdef USE_DIRECTX
-	IDirect3DSurface9 *GetSurface(); // get internal surface
-#endif
 	bool GetSurfaceSize(int &irX, int &irY); // get surface size
 	void SetClr(uint32_t toClr) { ClrByOwnerClr = toClr ? toClr : 0xff; }
 	uint32_t GetClr() { return ClrByOwnerClr; }
@@ -227,43 +190,22 @@ protected:
 
 	friend class CStdDDraw;
 	friend class CPattern;
-	friend class CStdD3D;
 	friend class CStdGL;
 };
 
-#ifndef USE_DIRECTX
 typedef struct _D3DLOCKED_RECT
 {
 	int Pitch;
 	unsigned char *pBits;
 } D3DLOCKED_RECT;
-#endif
 
 // one texture encapsulation
 class CTexRef
 {
 public:
 	D3DLOCKED_RECT texLock; // current lock-data
-#if defined(USE_DIRECTX) && defined(USE_GL)
-	union
-	{
-		struct // D3D
-		{
-#endif
-#ifdef USE_DIRECTX
-			IDirect3DTexture9 *pTex; // texture
-#endif
-#if defined(USE_DIRECTX) && defined(USE_GL)
-		};
-		struct // OpenGL
-		{
-#endif
 #ifdef USE_GL
-			GLuint texName;
-#endif
-#if defined(USE_DIRECTX) && defined(USE_GL)
-		};
-	};
+	GLuint texName;
 #endif
 	int iSize;
 	bool fIntLock; // if set, texref is locked internally only

@@ -421,19 +421,11 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 #endif
 #endif
 	General.DefaultLanguage();
-#if defined(USE_GL) && !defined(USE_DIRECTX)
-	if (Graphics.Engine == GFXENGN_DIRECTX || Graphics.Engine == GFXENGN_DIRECTXS)
-		Graphics.Engine = GFXENGN_OPENGL;
+#if defined(USE_GL)
+	if (Graphics.Engine != GFXENGN_NOGFX) Graphics.Engine = GFXENGN_OPENGL;
 #endif
-#ifdef USE_DIRECTX
-	// set ddraw config
-	if (Graphics.Engine == GFXENGN_DIRECTX || Graphics.Engine == GFXENGN_DIRECTXS)
-		// Direct3D
-		DDrawCfg.Set(Graphics.NewGfxCfg, (float)Graphics.TexIndent / 1000.0f, (float)Graphics.BlitOff / 100.0f);
-	else
-#endif
-		// OpenGL
-		DDrawCfg.Set(Graphics.NewGfxCfgGL, (float)Graphics.TexIndentGL / 1000.0f, (float)Graphics.BlitOffGL / 100.0f);
+	// OpenGL
+	DDrawCfg.Set(Graphics.NewGfxCfgGL, (float)Graphics.TexIndentGL / 1000.0f, (float)Graphics.BlitOffGL / 100.0f);
 	// Warning against invalid ports
 #ifdef C4ENGINE
 	if (Config.Network.PortTCP > 0 && Config.Network.PortTCP == Config.Network.PortRefServer)
@@ -720,7 +712,6 @@ int C4ConfigGeneral::GetLanguageSequence(const char *strSource, char *strTarget)
 
 void C4ConfigStartup::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(HideMsgGfxEngineChange,   "HideMsgGfxEngineChange",   0));
 	pComp->Value(mkNamingAdapt(HideMsgMMTimerChange,     "HideMsgMMTimerChange",     0));
 	pComp->Value(mkNamingAdapt(HideMsgStartDedicated,    "HideMsgStartDedicated",    0));
 	pComp->Value(mkNamingAdapt(HideMsgPlrTakeOver,       "HideMsgPlrTakeOver",       0));

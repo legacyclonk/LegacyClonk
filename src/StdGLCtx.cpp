@@ -150,7 +150,7 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 	HDC hDC = GetDC(pWindow->hWindow);
 	if (hDC)
 	{
-		if (!GetDeviceGammaRamp(hDC, reinterpret_cast<D3DGAMMARAMP *>(DefRamp.red)))
+		if (!GetDeviceGammaRamp(hDC, DefRamp.red))
 		{
 			DefRamp.Default();
 			Log("  Error getting default gamma ramp; using standard");
@@ -164,7 +164,7 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 {
 	if (!MainCtx.hDC || (!Active && !fForce)) return false;
-	if (!SetDeviceGammaRamp(MainCtx.hDC, reinterpret_cast<D3DGAMMARAMP *>(ramp.red)))
+	if (!SetDeviceGammaRamp(MainCtx.hDC, ramp.red))
 	{
 		int i = ::GetLastError();
 	}
