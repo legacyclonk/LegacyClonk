@@ -368,7 +368,6 @@ BOOL C4ToolsDlg::Open()
 		
 		C4DevmodeDlg::AddPage(hbox, GTK_WINDOW(Console.window), LoadResStrUtf8("IDS_DLG_TOOLS").getData());
 
-		//g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(OnDestroy), this);
 		handlerDynamic = g_signal_connect(G_OBJECT(landscape_dynamic), "toggled", G_CALLBACK(OnButtonModeDynamic), this);
 		handlerStatic = g_signal_connect(G_OBJECT(landscape_static), "toggled", G_CALLBACK(OnButtonModeStatic), this);
 		handlerExact = g_signal_connect(G_OBJECT(landscape_exact), "toggled", G_CALLBACK(OnButtonModeExact), this);
@@ -428,11 +427,6 @@ void C4ToolsDlg::Clear()
 	delete pGLCtx; pGLCtx = NULL;
 #endif
 	if (hDialog) DestroyWindow(hDialog); hDialog=NULL;
-#else
-#ifdef WITH_DEVELOPER_MODE
-	//if(hbox != NULL)
-	//	C4DevmodeDlg::switch_page(NULL);
-#endif
 #endif
 	Active = false;
 	}
@@ -1035,11 +1029,6 @@ void C4ToolsDlg::ResetAlternateTool()
 
 #ifdef WITH_DEVELOPER_MODE
 // GTK+ callbacks
-/*void C4ToolsDlg::OnDestroy(GtkWidget* widget, gpointer data)
-{
-	static_cast<C4ToolsDlg*>(data)->window = NULL;
-	static_cast<C4ToolsDlg*>(data)->Active = FALSE;
-}*/
 
 void C4ToolsDlg::OnButtonModeDynamic(GtkWidget* widget, gpointer data)
 {

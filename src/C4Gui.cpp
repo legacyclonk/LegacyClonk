@@ -62,7 +62,6 @@ bool ExpandHotkeyMarkup(StdStrBuf &sText, char &rcHotkey)
 	memmove(szText+iHotkeyMarkupLength*sizeof(char), szText+2*sizeof(char), (iTextLen-1)*sizeof(char));
 	memcpy(szText, HotkeyMarkup, iHotkeyMarkupLength);
 	szText[iHotkeyMarkupHotkeyPos] = cOrigHotkey; // set original here, so no conversion to UpperCase
-	//szText[iTextLen+iHotkeyMarkupLength-2] = 0;
 	// write back string
 	sText.Take(szTextBegin);
 	// done, success
@@ -250,8 +249,6 @@ void Element::DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, DWORD dwKeyPara
 		// move position, then
 		pDragTarget->rcBounds.x += iX-iDragX;
 		pDragTarget->rcBounds.y += iY-iDragY;
-		// drag X/Y is up-to-date if this is a child element of the drag target
-		//iDragX = iX; iDragY = iY;
 		pDragTarget->UpdatePos();
 		}
 	}
@@ -454,8 +451,6 @@ void CMouse::Draw(C4FacetEx &cgo, bool fDrawToolTip)
 	{
 	// only if owned
 	if (!fActive) return;
-	// dbg: some cursor...
-	//lpDDraw->DrawFrame(lpDDraw->lpBack, x-5,y-5,x+5,y+5,2);
 
 	int32_t iOffsetX, iOffsetY;
 	if (GfxR->fOldStyleCursor)
@@ -480,8 +475,6 @@ void CMouse::Draw(C4FacetEx &cgo, bool fDrawToolTip)
 			Screen::DrawToolTip(szTip, cgoTip, x, y);
 			}
 		}
-	// drag line
-	//if (LDown) lpDDraw->DrawLine(cgo.Surface, LDownX, LDownY, x,y, 4);
 	}
 
 void CMouse::ReleaseElements()

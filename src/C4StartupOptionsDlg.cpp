@@ -53,7 +53,6 @@ void C4StartupOptionsDlg::SmallButton::DrawElement(C4FacetEx &cgo)
 	lpDDraw->DrawQuadDw(cgo.Surface, iDrawQuadLeft, dwClrHigh,dwClrHigh,dwClrHigh,dwClrHigh);
 	lpDDraw->DrawQuadDw(cgo.Surface, iDrawQuadRight, dwClrLow,dwClrLow,dwClrLow,dwClrLow);
 	lpDDraw->DrawQuadDw(cgo.Surface, iDrawQuadBottom, dwClrLow,dwClrLow,dwClrLow,dwClrLow);
-	//lpDDraw->DrawFrameDw(cgo.Surface, x0+1, y0+1, x1-1, y1-1, aC4StartupBtnBorderColor2);
 	// draw selection highlight
 	int32_t iTxtOff = fDown ? iIndent : 0;
 	if (fEnabled) if (HasDrawFocus() || (fMouseOver && IsInActiveDlg(false)))
@@ -112,11 +111,11 @@ C4StartupOptionsDlg::ResChangeConfirmDlg::ResChangeConfirmDlg()
 	rcBtn.Wdt = C4GUI_DefButton2Wdt;
 	// Yes
 	C4GUI::Button *pBtnYes = new C4GUI::YesButton(rcBtn);
-	AddElement(pBtnYes); //pBtnYes->SetToolTip(LoadResStr("IDS_DLGTIP_OK2"));
+	AddElement(pBtnYes);
 	rcBtn.x += C4GUI_DefButton2Wdt+C4GUI_DefButton2HSpace;
 	// No
 	C4GUI::Button *pBtnNo = new C4GUI::NoButton(rcBtn);
-	AddElement(pBtnNo); //pBtnNo->SetToolTip(LoadResStr("IDS_DLGTIP_CANCEL"));
+	AddElement(pBtnNo);
 	// initial focus on abort button, to prevent accidental acceptance of setting by "blind" users
 	SetFocus(pBtnNo, false);
 	// resize to actually needed size
@@ -456,7 +455,6 @@ C4StartupOptionsDlg::NetworkPortConfig::NetworkPortConfig(const C4Rect &rcBounds
 	pPortEdit->InsertText(FormatString("%d", fEnabled ? ((int) *pConfigValue) : (int) iDefault).getData(), false);
 	pPortEdit->SetMaxText(10); // 65535 is five characters long - but allow some more for easier editing
 	pPortEdit->SetVisibility(fEnabled);
-	//pPortEdit->SetEnabled(fEnabled);
 	AddElement(pPortEdit);
 	}
 
@@ -1378,8 +1376,6 @@ void C4StartupOptionsDlg::OnFontSizeComboFill(C4GUI::ComboBox_FillCB *pFiller)
 	pFiller->AddEntry("20", 20);
 	pFiller->AddEntry("24", 24);
 	pFiller->AddEntry("28", 28);
-	//pFiller->AddEntry("32", 32);
-	//pFiller->AddEntry("48", 48);
 	}
 
 bool C4StartupOptionsDlg::OnFontComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection)

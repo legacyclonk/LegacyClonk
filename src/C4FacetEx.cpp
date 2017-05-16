@@ -84,16 +84,8 @@ void C4FacetEx::DrawBolt(int iX1, int iY1, int iX2, int iY2, BYTE bCol, BYTE bCo
 	// Draw in surface
 	DWORD dwClr1=lpDDraw->Pal.GetClr(bCol),dwClr2;
 	DWORD dwClr3=lpDDraw->Pal.GetClr(bCol2),dwClr4;
-	/*if (DDrawCfg.NoBoxFades)
-		{*/
-		dwClr2=dwClr1;
-		dwClr4=dwClr3;
-		/*}
-	else
-		{
-		DWORD dwClr2=dwClr1|0xff000000; ...this leads to black and white lightning bolts. Who wants that?
-		DWORD dwClr4=dwClr3|0xff000000;    
-		}*/
+	dwClr2=dwClr1;
+	dwClr4=dwClr3;
 	lpDDraw->DrawQuadDw(Surface,pvtx,dwClr1,dwClr3,dwClr4,dwClr2);
 	}
 
@@ -150,27 +142,6 @@ BOOL C4FacetExSurface::EnsureSize(int iMinWdt, int iMinHgt)
 	// done
 	return fSuccess;
 	}
-
-/*BOOL C4FacetExSurface::Save(C4Group &hGroup, const char *szName)
-	{
-	// Empty
-	if (!Wdt || !Hgt) return FALSE;
-	// Full surface
-	if ((Wdt==Face.Wdt) && (Hgt==Face.Hgt))
-		{
-		if (!Face.Save(hGroup,szName)) return FALSE;
-		}
-	// Surface section
-	else
-		{
-		C4Surface sfcFacet;
-		if (!sfcFacet.Create(Wdt,Hgt)) return FALSE;
-		Draw(&sfcFacet,0,0);
-		if (!sfcFacet.Save(hGroup,szName)) return FALSE;
-		}
-	// Success
-	return TRUE;
-	}*/
 
 BOOL C4FacetExSurface::Load(C4Group &hGroup, const char *szName, int iWdt, int iHgt, bool fOwnPal, bool fNoErrIfNotFound)
 	{

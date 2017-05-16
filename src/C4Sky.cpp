@@ -107,14 +107,7 @@ BOOL C4Sky::Init(bool fSavegame)
 
 	if (loaded)
 		{
-		// surface loaded, store first color index
-		/*if (Surface->HasOwnPal())
-			{
-			FadeClr1=Surface->pPal->GetClr(0);
-			FadeClr2=Surface->pPal->GetClr(19);
-			}
-		else*/
-			FadeClr1=FadeClr2=0xffffff;
+		FadeClr1=FadeClr2=0xffffff;
 		// enlarge surface to avoid slow 1*1-px-skies
 		if (!SurfaceEnsureSize(&Surface, 128, 128)) return FALSE;
 

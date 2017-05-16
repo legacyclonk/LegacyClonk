@@ -1036,8 +1036,6 @@ void C4ControlMessage::Execute() const
 	C4Player *pPlr = (iPlayer < 0 ? NULL : Game.Players.Get(iPlayer));
 	// security
 	if(pPlr && pPlr->AtClient != iByClient) return;
-	// do not record message as control, because it is not synced!
-	//if (pPlr) pPlr->CountControl(C4Player::PCID_Message, Message.GetHash());
 	// get lobby to forward to
 	C4GameLobby::MainDlg *pLobby = Game.Network.GetLobby();
 	switch(eType)

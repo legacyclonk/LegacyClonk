@@ -525,11 +525,6 @@ void C4Object::ForcePosition(int32_t tx, int32_t ty)
   x=tx; y=ty;
 	UpdatePos();
 	UpdateSolidMask(false);
-	// Crew member: update fog of war
-	/*C4Player *pPlr;
-	if (pPlr=Game.Players.Get(Owner))
-		if (pPlr->ObjectInCrew(this))
-			pPlr->RedrawFogOfWar=TRUE;*/
   }
 
 void C4Object::MovePosition(int32_t dx, int32_t dy)

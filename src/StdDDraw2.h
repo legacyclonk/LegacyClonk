@@ -47,27 +47,6 @@ extern CStdPalette *lpDDrawPal;
 
 extern int iGfxEngine;
 
-/*const DWORD CColors [] =
-	{
-	0x000000, // CBlack
-	0x2A2A2A, // CGray1
-	0x545454, // CGray2
-	0x7F7F7F, // CGray3
-	0xA9A9A9, // CGray4
-	0xD3D3D3, // CGray5
-	0xFFFFFF, // CWrite
-	0x7F0000,	// CDRed
-	0x007F00,	// CDGreen
-	0x00007F,	// CDBlue
-	0xFF0000, // CRed
-	0x00FF00, // CGreen
-	0x7F7FFF, // CLBlue
-	0xFFFF00, // CYellow
-	0x0000FF, // CBlue
-	};*/
-
-// font def color indices
-
 // rotation info class
 class CBltTransform
 	{

@@ -35,10 +35,6 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg("")
 	
 	// key bindings: No longer back on any key
 	pKeyBack = NULL;
-	//C4CustomKey::CodeList keys;
-	//keys.push_back(C4KeyCodeEx(KEY_Any)); keys.push_back(C4KeyCodeEx(KEY_JOY_AnyButton));
-	//pKeyBack = new C4KeyBinding(keys, "StartupAboutBack", KEYSCOPE_Gui,
-	//	new C4GUI::DlgKeyCB<C4StartupAboutDlg>(*this, &C4StartupAboutDlg::KeyBack), C4CustomKey::PRIO_Dlg);
 
 	// version info in topright corner
 	C4Rect rcClient = GetContainedClientRect();
@@ -79,12 +75,8 @@ void C4StartupAboutDlg::DrawElement(C4FacetEx &cgo)
 
 void C4StartupAboutDlg::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam)
 	{
-	// back on any mouse button? Better not, because mouse input is required
-	/*if (iButton == C4MC_Button_LeftDown || iButton == C4MC_Button_RightDown || iButton == C4MC_Button_MiddleDown)
-		DoBack();
-	else*/
-		// otherwise, inherited for tooltips
-		C4StartupDlg::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);
+	// otherwise, inherited for tooltips
+	C4StartupDlg::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);
 	}
 
 void C4StartupAboutDlg::OnUpdateBtn(C4GUI::Control *btn)

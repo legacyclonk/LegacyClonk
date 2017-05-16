@@ -163,8 +163,6 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 		DoNotDelay = false;
 	} else if (fCheckTimer) {
 		gettimeofday(&tv, 0);
-		//printf("tv %d %d\n", tv.tv_sec, tv.tv_usec);
-		//printf("le %d %d\n", LastExecute.tv_sec, LastExecute.tv_usec);
 		tv.tv_usec = LastExecute.tv_usec - tv.tv_usec + Delay
 			- 1000000 * (tv.tv_sec - LastExecute.tv_sec);
 		if (iTimeout != INFINITE && iTimeout * 1000 < tv.tv_usec) tv.tv_usec = iTimeout * 1000;
@@ -187,7 +185,6 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	// And for events from the network thread
 	FD_SET(Priv->Pipe[0], &rfds);
 	max_fd = Max(Priv->Pipe[0], max_fd);
-	//printf("%d %d\n", tv.tv_sec, tv.tv_usec);
 	switch (select(max_fd + 1, &rfds, NULL, NULL, &tv)) {
 		// error
 		case -1:
@@ -254,19 +251,6 @@ StdStrBuf CStdApp::Paste(bool fClipboard) {
 bool CStdApp::IsClipboardFull(bool fClipboard) {
 	return false;
 }
-/*
-CStdWindow * CStdAppPrivate::GetWindow(unsigned long wnd) {
-	WindowListT::iterator i = WindowList.find(wnd);
-	if (i != WindowList.end()) return i->second;
-	return 0;
-}
-void CStdAppPrivate::SetWindow(unsigned long wnd, CStdWindow * pWindow) {
-	if (!pWindow) {
-		WindowList.erase(wnd);
-	} else {
-		WindowList[wnd] = pWindow;
-	}
-}*/
 
 bool CStdApp::ReadStdInCommand() {
 #if HAVE_LIBREADLINE

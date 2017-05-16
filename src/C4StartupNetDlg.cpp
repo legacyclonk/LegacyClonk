@@ -319,10 +319,6 @@ bool C4StartupNetListEntry::OnReference()
 					}
 				}
 			}
-		// masterserver is official: So check version - league server no longer used for engine update - done via UpdateServer instead
-		/*C4GameVersion MasterVersion;
-		if (pRefClient->GetMasterVersion(&MasterVersion))
-			pNetDlg->CheckVersionUpdate(MasterVersion);*/
 		// masterserver: schedule next query
 		SetTimeout(TT_Masterserver);
 		return true;
@@ -341,8 +337,6 @@ bool C4StartupNetListEntry::OnReference()
 
 C4GUI::Element* C4StartupNetListEntry::GetNextLower(int32_t sortOrder)
 {
-	// already have a next element? use this.
-	//if (GetNext()) return GetNext();
 	// search list for the next element of a lower sort order
 	for (C4GUI::Element *pElem = pList->GetFirst(); pElem; pElem = pElem->GetNext())
 		{
@@ -638,8 +632,6 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 		new C4GUI::DlgKeyCB<C4StartupNetDlg>(*this, &C4StartupNetDlg::KeyBack), C4CustomKey::PRIO_Dlg);
 	pKeyRefresh = new C4KeyBinding(C4KeyCodeEx(K_F5), "StartupNetReload", KEYSCOPE_Gui,
 		new C4GUI::DlgKeyCB<C4StartupNetDlg>(*this, &C4StartupNetDlg::KeyRefresh), C4CustomKey::PRIO_CtrlOverride);
-	//pKeyForward = new C4KeyBinding(C4KeyCodeEx(K_RIGHT), "StartupNetNext", KEYSCOPE_Gui, - blocks editbox
-	//<	new C4GUI::DlgKeyCB<C4StartupNetDlg>(*this, &C4StartupNetDlg::KeyForward), C4CustomKey::PRIO_CtrlOverride);
 
 	// screen calculations
 	UpdateSize();
@@ -682,11 +674,8 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 	C4GUI::ComponentAligner caGameList(pSheetGameList->GetContainedClientRect(), 0,0, false);
 	C4GUI::WoodenLabel *pGameListLbl; int32_t iCaptHgt = C4GUI::WoodenLabel::GetDefaultHeight(&C4GUI::GetRes()->TextFont);
 	pGameListLbl = new C4GUI::WoodenLabel(LoadResStr("IDS_NET_GAMELIST"), caGameList.GetFromTop(iCaptHgt), C4GUI_Caption2FontClr, &C4GUI::GetRes()->TextFont, ALeft);
-	//const char *szGameSelListTip = LoadResStr("IDS_NET_GAMELIST_INFO"); disabled this tooltip, it's mainly disturbing when browsing the list
-	//pGameListLbl->SetToolTip(szGameSelListTip);
 	pSheetGameList->AddElement(pGameListLbl);
 	pGameSelList = new C4GUI::ListBox(caGameList.GetFromTop(caGameList.GetHeight() - iCaptHgt));
-	//pGameSelList->SetToolTip(szGameSelListTip);
 	pGameSelList->SetDecoration(true, NULL, true, true);
 	pGameSelList->UpdateElementPositions();
 	pGameSelList->SetSelectionDblClickFn(new C4GUI::CallbackHandler<C4StartupNetDlg>(this, &C4StartupNetDlg::OnSelDblClick));
@@ -775,7 +764,6 @@ C4StartupNetDlg::~C4StartupNetDlg()
 	pSec1Timer->Release();
 	if (pMasterserverClient) delete pMasterserverClient;
 	// dtor
-	//delete pKeyForward;
 	delete pKeyBack;
 	delete pKeyRefresh;
 	}
@@ -976,9 +964,7 @@ void C4StartupNetDlg::UpdateSelection(bool fUpdateCollapsed)
 	if (fUpdatingList) return;
 	// in collapsed view, updating the selection may uncollapse something
 	if (fIsCollapsed && fUpdateCollapsed) UpdateCollapsed();
-	// 2do
-	// no selection: join button disabled
-	//pJoinBtn->SetEnabled(false);
+	// 2do: no selection: join button disabled
 	}
 
 void C4StartupNetDlg::UpdateDlgMode()

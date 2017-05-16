@@ -209,7 +209,6 @@ bool C4Application::PreInit()
 	// init loader: Black screen for first start if a video is to be shown; otherwise default spec
 	if (fDoUseStartupDialog)
 		{
-		//Log(LoadResStr("IDS_PRC_INITLOADER"));
 		bool fUseBlackScreenLoader = UseStartupDialog && !C4Startup::WasFirstRun() && !Config.Startup.NoSplash && !NoSplash && FileExists(C4CFN_Splash);
 		if (!Game.GraphicsSystem.InitLoaderScreen(C4CFN_StartupBackgroundMain, fUseBlackScreenLoader))
 			{ LogFatal(LoadResStr("IDS_PRC_ERRLOADER")); return false; }
@@ -295,8 +294,6 @@ void C4Application::Quit()
 	{
 	// Clear definitions passed by frontend for this round
 	Config.General.Definitions[0] = 0;
-	// Participants should not be cleared for usual startup dialog
-	//Config.General.Participants[0] = 0;
 	// Save config if there was no loading error
 	if (Config.fConfigLoaded) Config.Save();
 	// quit app

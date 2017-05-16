@@ -344,40 +344,6 @@ void C4ComponentHost::Close()
 #endif
 	}
 
-/*BOOL C4ComponentHost::SetLanguageString(const char *szLanguage, const char *szString)
-	{
-	// Safety
-	if (!szLanguage || !szString) return FALSE;
-	// Allocate temp buffer
-	char *cpBuffer = new char [Size+SLen(szLanguage)+1+SLen(szString)+2+1];
-	cpBuffer[0]=0;
-	// Copy all lines except language line
-	const char *cpPos=Data;
-	while (cpPos && *cpPos)
-		{
-		if (!SEqual2(cpPos,szLanguage))
-			{
-			SCopyUntil( cpPos, cpBuffer+SLen(cpBuffer), 0x0A );
-			if (cpBuffer[0]) if (cpBuffer[SLen(cpBuffer)-1]!=0x0D) SAppendChar(0x0D,cpBuffer);
-			SAppendChar(0x0A,cpBuffer);
-			}
-		cpPos = SAdvancePast(cpPos,0x0A);
-		}
-	// Append new language line
-	SAppend(szLanguage,cpBuffer);
-	SAppendChar(':',cpBuffer);
-	SAppend(szString,cpBuffer);
-	// Set new data, delete temp buffer
-	delete [] Data; Data=NULL;
-	Data = new char [SLen(cpBuffer)+1];
-	SCopy(cpBuffer,Data);
-	Size=SLen(Data);
-	delete [] cpBuffer;
-	// Success
-	Modified=TRUE;
-	return TRUE;
-	}*/
-
 void C4ComponentHost::TrimSpaces()
 	{
 	Data.TrimSpaces();

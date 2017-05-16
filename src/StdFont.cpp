@@ -414,7 +414,6 @@ void CStdFont::Init(CStdVectorFont & VectorFont, DWORD dwHeight, DWORD dwFontWei
 	hbmBitmap = CreateDIBSection( hDC, &bmi, DIB_RGB_COLORS,
 	                                        (VOID**)&pBitmapBits, NULL, 0 );
 	if (!hbmBitmap) { Clear(); throw std::runtime_error(std::string("Cannot create DIBSection (") + szFontName + ")"); }
-	//SetMapMode(hDC, MM_TEXT);
 	char bCharset = GetCharsetCode(szCharset);
 	// create a font. try ClearType first...
 	const char *szFontName = VectorFont.GetFontName();
@@ -532,8 +531,7 @@ void CStdFont::Init(CStdVectorFont & VectorFont, DWORD dwHeight, DWORD dwFontWei
 		}
 	// adjust line height
 	iLineHgt /= iFontZoom;
-	// font successfully created; set name
-	//SCopy(szFontName2, this->szFontName, 80);
+
 	fPrerenderedFont = false;
 	if (0) for (int i = 0; i < iNumFontSfcs; ++i)
 		{
@@ -1088,8 +1086,6 @@ void CStdFont::DrawText(SURFACE sfcDest, int iX, int iY, DWORD dwColor, const ch
 	if (fWasModulated) ModulateClr(dwColor, dwOldModClr);
 	// get alpha fade percentage
 	DWORD dwAlphaMod = BoundBy<int>((((int)(dwColor>>0x18)-0x50)*0xff)/0xaf, 0, 255)<<0x18 | 0xffffff;
-/*	char TEXT[8192];
-	sprintf(TEXT, "%s(%x-%x-%x)", szText, dwAlphaMod>>0x18, dwColor>>0x15, (((int)(dwColor>>0x15)-0x50)*0xff)/0xaf); szText=TEXT;*/
 	// adjust text starting position (horizontal only)
 	if (dwFlags & STDFONT_CENTERED)
 		{
@@ -1206,7 +1202,6 @@ void CStdFont::DrawText(SURFACE sfcDest, int iX, int iY, DWORD dwColor, const ch
 // But to save the used one to the configuration, a string is used
 // So we need to convert this string to the windows number for windows
 // and RTF, and to the iconv name for iconv
-//#define GB2312_CHARSET "CP936"
 const char * GetCharsetCodeName(const char *strCharset)
 	{
 	// Match charset name to WinGDI codes

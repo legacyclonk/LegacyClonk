@@ -44,7 +44,6 @@ class C4PropertyDlg
 	friend BOOL CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 #else
 #ifdef WITH_DEVELOPER_MODE
-//		GtkWidget* window;
 		GtkWidget* vbox;
 		GtkWidget* textview;
 		GtkWidget* entry;
@@ -53,7 +52,6 @@ class C4PropertyDlg
 
 		static void OnScriptActivate(GtkWidget* widget, gpointer data);
 		static void OnWindowHide(GtkWidget* widget, gpointer data);
-//		static void OnDestroy(GtkWidget* widget, gpointer data);
 #endif
 #endif
 	protected:

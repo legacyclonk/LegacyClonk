@@ -525,7 +525,6 @@ void CStdDDraw::Default()
 	Gamma.Default();
 	DefRamp.Default();
 	lpPrimary=lpBack=NULL;
-	// pClrModMap = NULL; - invalid it !fUseClrModMap anyway
 	fUseClrModMap = false;
 	}
 
@@ -595,225 +594,6 @@ BOOL CStdDDraw::NoPrimaryClipper()
 	// Done
 	return TRUE;
 	}
-
-
-/*
-bool CStdDDraw::ClipPoly(CBltData &rBltData)
-	{
-	const int  CPO_Left   = 1,
-	           CPO_Top    = 2,
-	           CPO_Right  = 4,
-	           CPO_Bottom = 8,
-	           CPO_MovedSingle = 16,
-	           CPO_Remove      = 32,
-	           CPO_BLeft       = 64,
-	           CPO_BTop        = 128,
-	           CPO_BRight      = 256,
-	           CPO_BBottom     = 512,
-	           CPO_Line1Out    = 1024,
-	           CPO_Line2Out    = 2048;
-
-
-	const int CPO_Outside = 15;
-	const int CPO_Border  = 960;
-
-	// calculate floating point clips for performance reasons; note the +1 because it's the beginning of the next pixel that lays outside
-	float fClipX1=ClipX1, fClipY1=ClipY1, fClipX2=ClipX2+1, fClipY2=ClipY2+1;
-
-	// first, decide which points lay outside the screen, and where they do so
-	int OutEdges[8]; ZeroMemory(&OutEdges, sizeof(OutEdges)); int i,iCheckDir,iVtx2;
-	int byAnyClip=0;
-
-	for (i=0; i<rBltData.byNumVertices; ++i)
-		{
-		// check sides
-		if (rBltData.vtVtx[i].ftx < fClipX1) OutEdges[i] = CPO_Left;
-		if (rBltData.vtVtx[i].fty < fClipY1) OutEdges[i] |= CPO_Top;
-		if (rBltData.vtVtx[i].ftx >= fClipX2) OutEdges[i] |= CPO_Right;
-		if (rBltData.vtVtx[i].fty >= fClipY2) OutEdges[i] |= CPO_Bottom;
-		byAnyClip |= OutEdges[i];
-		}
-	// no clips?
-	if (!byAnyClip) return true;
-
-	// now iterate through the edges again, and decide what to do
-	for (i=0; i<rBltData.byNumVertices; ++i)
-		if (OutEdges[i] & CPO_Outside)
-			{
-
-			// so this edge is outside the screen - process adjacent lines
-			float fOldX = rBltData.vtVtx[i].ftx, fOldY = rBltData.vtVtx[i].fty, fNewX, fNewY;
-			bool fVertexMoved=false;
-			for (iCheckDir=-1; iCheckDir<2; iCheckDir+=2)
-				{
-				// set base for new point to be calculated
-				fNewX=fOldX; fNewY=fOldY;
-
-				// get adjacent vertex
-				iVtx2 = (i+iCheckDir)%rBltData.byNumVertices;
-				if (iVtx2<0) iVtx2+=rBltData.byNumVertices;
-
-				// had the adjecent vertex moved in a way that it's no longer on the line?
-				if (OutEdges[iVtx2] & (CPO_MovedSingle | CPO_Remove))
-					{
-					if (iCheckDir==1)
-						{
-						OutEdges[i] |= CPO_Line2Out;
-						// if the next vertex has set this flag (i.e., the first, and this is the last),
-						// the vertex removal check has to be done
-						// which is simply: if it didn't move (out of the void...) it has to be removed
-						if (!fVertexMoved) OutEdges[i] |= (CPO_Remove | CPO_MovedSingle);
-						// the loops will end now
-						}
-					else
-						OutEdges[i] |= CPO_Line1Out;
-					// never process the line!
-					continue;
-					}
-
-				// get line deltas
-				float fdx = rBltData.vtVtx[iVtx2].ftx-fNewX;
-				float fdy = rBltData.vtVtx[iVtx2].fty-fNewY;
-
-				// get the crossing with the clip
-				// first, the xdir...if any of the clauses succeeds, fdx cannot have been zero, so fdy/fdx is safe
-				if (fNewX<fClipX1 && (fNewX+fdx)>=fClipX1)      { fNewY-=(fdy/fdx)*(fNewX-fClipX1); fNewX=fClipX1; }
-				else if (fNewX>=fClipX2 && (fNewX+fdx)<fClipX2) { fNewY-=(fdy/fdx)*(fNewX-fClipX2); fNewX=fClipX2; }
-				// now, ydir must regard that vertices, that the crossing might have happend at xdir first
-				// so check if they're still out, and don't just copmpare the iOut-bits!
-				if (fNewY < fClipY1 && (fNewY+fdy)>=fClipY1)    { fNewX-=(fdx/fdy)*(fNewY-fClipY1); fNewY=fClipY1; }
-				else if (fNewY>=fClipY2 && (fNewY+fdy)<fClipY2) { fNewX-=(fdx/fdy)*(fNewY-fClipY2); fNewY=fClipY2; }
-
-				// check if any valid crossing has been found
-				// (it might have been bogus crossings outside the screen range)
-				if (fNewX>=fClipX1 && fNewX<=fClipX2 && fNewY>=fClipY1 && fNewY<=fClipY2)
-					{
-					// crossing found: move vertex!
-
-					// set border flags
-					int iBorderFlag=0;
-					if (fNewX == fClipX1) iBorderFlag |= CPO_BLeft;
-					if (fNewY == fClipY1) iBorderFlag |= CPO_BTop;
-					if (fNewX == fClipX2) iBorderFlag |= CPO_BRight;
-					if (fNewY == fClipY2) iBorderFlag |= CPO_BBottom;
-
-					// move the vertex only if not already done so...
-					if (!fVertexMoved)
-						{
-						rBltData.vtVtx[i].ftx = fNewX;
-						rBltData.vtVtx[i].fty = fNewY;
-						fVertexMoved=true;
-						OutEdges[i] |= iBorderFlag;
-						}
-					else
-						{
-						// ...otherwise, insert a new vertex
-						// vertex position is always the one checked, because this routine is not called in the first (iCheckDir==-1) call
-						// move old vertices down
-						for (int j=rBltData.byNumVertices; j>iVtx2; --j)
-							{
-							// move vertices
-							rBltData.vtVtx[j] = rBltData.vtVtx[j-1];
-							// move out-edge-data
-							OutEdges[j] = OutEdges[j-1];
-							}
-						// now insert new vertex
-						rBltData.vtVtx[iVtx2].ftx = fNewX; rBltData.vtVtx[iVtx2].fty = fNewY;
-						++rBltData.byNumVertices;
-						OutEdges[iVtx2]=(OutEdges[i] & ~CPO_Outside) | iBorderFlag;
-						// Since this has been the last direction, a jump of i can be done safely here
-						// the jump skips the otherwise unnecessarily checked vertex iVtx2 (i.e., i+1)
-						++i;
-						}
-
-					}
-				else
-					{
-					// a crossing to the adjacent vertex could not be found - so the line becomes unnecessary
-					if (iCheckDir==1)
-						{
-						if (fVertexMoved)
-							{
-							// the vertex has already moved (or was removed), processing the other line
-							// simply mark it as not to be processed by the next vertex-movement
-							OutEdges[i] |= CPO_MovedSingle;
-							}
-						else
-							{
-							// no adjacent line intersected: the vertex can really be removed
-							// however, it must stay in place for now, so the next vertex can be checked correctly
-							OutEdges[i] |= (CPO_Remove | CPO_MovedSingle);
-							}
-						// in any case, the second line lay outside
-						OutEdges[i] |= CPO_Line2Out;
-						}
-					else
-						{
-						OutEdges[i] |= CPO_Line1Out;
-						// normally, this can only happen to the first vertex, because this line is also processed
-						// by the previous vertex, and either CPO_MovedSingle or CPO_Remove must have been set
-						// - both causing these checks to be skipped completely - however, floating point inaccuracy
-						// could lead here as well
-						// mark the vertex to be removed - if a crossing is found by the next line, it has to insert
-						// a new vertex, so set fVertexMoved to true
-						OutEdges[i] |= CPO_Remove;
-						fVertexMoved=true;
-						}
-					}
-
-				// next direction
-				}
-
-			// next vertex
-			}
-
-
-	// now all vertices are either inside the screen, or CPO_Remove
-	// but we might have lost screen edges
-
-	// searching for lost edges, first get the last valid edge-vertex to begin with
-	// searching backwards, so the following loop can iterate up to this vertex
-	for (i=rBltData.byNumVertices-1; i>=0; --i)
-		if (~OutEdges[i] & CPO_Remove)
-			if (OutEdges[i] & CPO_Border)
-				break;
-	int iLastValidBrdVtx=i;
-	// no vtx found?
-	if (iLastValidBrdVtx<0)
-		{
-		// this can only mean two things: either the whole screen is covered, or nothing
-		// well, better assume nothing for now...
-		return false;
-		// whole screen
-		rBltData.byNumVertices = 4;
-		rBltData.vtVtx[0].ftx = fClipX1; rBltData.vtVtx[0].fty = fClipY1;
-		rBltData.vtVtx[1].ftx = fClipX2; rBltData.vtVtx[1].fty = fClipY1;
-		rBltData.vtVtx[2].ftx = fClipX2; rBltData.vtVtx[2].fty = fClipY2;
-		rBltData.vtVtx[3].ftx = fClipX1; rBltData.vtVtx[3].fty = fClipY2;
-		return true;
-		}
-
-
-	// finally, remove dead edges
-	int iLastValidVtx=0;
-	for (i=0; i<rBltData.byNumVertices; ++i)
-		if (~OutEdges[i] & CPO_Remove)
-			{
-			if (iLastValidVtx != i)
-				rBltData.vtVtx[iLastValidVtx] = rBltData.vtVtx[i];
-			iLastValidVtx++;
-			}
-	rBltData.byNumVertices = iLastValidVtx;
-
-
-	// d'oh - now overlapped edges are lost; x and y-clips should be applied seperately
-	// gwe5...
-
-
-	// done, finished!
-	return (rBltData.byNumVertices > 2);
-	}
-*/
 
 bool CStdDDraw::ClipPoly(CBltData &rBltData)
 	{
@@ -887,41 +667,40 @@ BOOL CStdDDraw::Blit(SURFACE sfcSource, float fx, float fy, float fwdt, float fh
 	bool fExact = !pTransform && fwdt==twdt && fhgt==thgt;
 	// manual clipping? (primary surface only)
 	if (DDrawCfg.ClipManuallyE && !pTransform && sfcTarget->fPrimary)
-		if (true) // always clip! /*(scaleX < 10.0) && (scaleY < 10.0)*/)
-			{
-			int iOver;
-			// Left
-			iOver=tx-ClipX1; 
-			if (iOver<0) 
-				{ 
-				twdt+=iOver; 
-				fwdt+=((float)iOver/scaleX);
-				fx-=((float)iOver/scaleX);
-				tx=ClipX1; 
-				}
-			// Top
-			iOver=ty-ClipY1; 
-			if (iOver<0) 
-				{ 
-				thgt+=iOver; 
-				fhgt+=((float)iOver/scaleY);
-				fy-=((float)iOver/scaleY);
-				ty=ClipY1; 
-				}
-			// Right
-			iOver=ClipX2+1-(tx+twdt); 
-			if (iOver<0) 
-				{ 
-				fwdt+=((float)iOver/scaleX);
-				twdt+=iOver; 
-				}
-			// Bottom
-			iOver=ClipY2+1-(ty+thgt); 
-			if (iOver<0) 
-				{ 
-				fhgt+=((float)iOver/scaleY); 
-				thgt+=iOver; 
-				}
+		{
+		int iOver;
+		// Left
+		iOver=tx-ClipX1; 
+		if (iOver<0) 
+			{ 
+			twdt+=iOver; 
+			fwdt+=((float)iOver/scaleX);
+			fx-=((float)iOver/scaleX);
+			tx=ClipX1; 
+			}
+		// Top
+		iOver=ty-ClipY1; 
+		if (iOver<0) 
+			{ 
+			thgt+=iOver; 
+			fhgt+=((float)iOver/scaleY);
+			fy-=((float)iOver/scaleY);
+			ty=ClipY1; 
+			}
+		// Right
+		iOver=ClipX2+1-(tx+twdt); 
+		if (iOver<0) 
+			{ 
+			fwdt+=((float)iOver/scaleX);
+			twdt+=iOver; 
+			}
+		// Bottom
+		iOver=ClipY2+1-(ty+thgt); 
+		if (iOver<0) 
+			{ 
+			fhgt+=((float)iOver/scaleY); 
+			thgt+=iOver; 
+			}
 		}
 	// inside screen?
 	if (twdt<=0 || thgt<=0) return FALSE;
@@ -987,15 +766,9 @@ BOOL CStdDDraw::Blit(SURFACE sfcSource, float fx, float fy, float fwdt, float fh
 			tTexBlt.right = (fTexBlt.right + iBlitX - fx) * scaleX + tx;
 			tTexBlt.bottom= (fTexBlt.bottom+ iBlitY - fy) * scaleY + ty;
 			// prepare blit data texture matrix
-			// translate back to texture 0/0 regarding indent and blit offset
-			/*BltData.TexPos.SetMoveScale(-tTexBlt.left - DDrawCfg.fBlitOff, -tTexBlt.top  - DDrawCfg.fBlitOff, 1, 1);
-			// apply back scaling and texture-indent - simply scale matrix down
-			int i;
-			for (i=0; i<3; ++i) BltData.TexPos.mat[i] /= scaleX2;
-			for (i=3; i<6; ++i) BltData.TexPos.mat[i] /= scaleY2;
-			// now, finally, move in texture - this must be done last, so no stupid zoom is applied...
-			BltData.TexPos.MoveScale(((float) fTexBlt.left + DDrawCfg.fTexIndent) / iTexSize,
-				((float) fTexBlt.top  + DDrawCfg.fTexIndent) / iTexSize, 1, 1);*/
+			// - translate back to texture 0/0 regarding indent and blit offset
+			// - apply back scaling and texture-indent - simply scale matrix down
+			// - finally, move in texture - this must be done last, so no stupid zoom is applied...
 			// Set resulting matrix directly
 			BltData.TexPos.SetMoveScale(
 				(fTexBlt.left + DDrawCfg.fTexIndent) / iTexSize - (tTexBlt.left + DDrawCfg.fBlitOff) / scaleX2,
@@ -1205,8 +978,7 @@ BOOL CStdDDraw::CreatePrimaryClipper()
 	}
 
 BOOL CStdDDraw::AttachPrimaryPalette(SURFACE sfcSurface)
-	{/*
-	if (sfcSurface->SetPaletteEntries(0, lpPalette)!=DD_OK) return FALSE;*/
+	{
 	return TRUE;
 	}
 
@@ -1255,10 +1027,6 @@ BOOL CStdDDraw::BlitSurfaceTile(SURFACE sfcSurface, SURFACE sfcTarget, int iToX,
 
 BOOL CStdDDraw::BlitSurfaceTile2(SURFACE sfcSurface, SURFACE sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX, int iOffsetY, BOOL fSrcColKey)
 	{
-	// if it's a render target, simply blit with repeating texture
-	// repeating textures, however, aren't currently supported
-	/*if (sfcTarget->IsRenderTarget())
-		return Blit(sfcSurface, iOffsetX, iOffsetY, iToWdt, iToHgt, sfcTarget, iToX, iToY, iToWdt, iToHgt, FALSE);*/
   int tx,ty,iBlitX,iBlitY,iBlitWdt,iBlitHgt;
 	// get tile size
 	int iTileWdt=sfcSurface->Wdt;

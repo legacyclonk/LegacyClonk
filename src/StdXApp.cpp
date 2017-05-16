@@ -232,9 +232,6 @@ void CStdApp::Clear() {
 
 void CStdApp::Quit() {
 	fQuitMsgReceived = true;
-#ifdef WITH_GLIB
-	//g_main_loop_quit(Priv->loop);
-#endif
 }
 
 void CStdApp::Execute () {
@@ -309,7 +306,6 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	}
 	
 	// Handle pending X messages
-	//while (XEventsQueued(dpy, QueuedAlready)) {
 	while (XPending(dpy)) {
 		HandleXMessage();
 	}
@@ -540,15 +536,6 @@ bool CStdApp::FindDisplayMode(unsigned int iXRes, unsigned int iYRes,
 			if (!Priv->modefound || Priv->targetmode.hdisplay != iXRes || Priv->targetmode.vdisplay != iYRes) Priv->targetmode = *modes[i];
 			Priv->modefound = true;
 		}
-		/*log.str("");
-		XF86VidModeModeInfo & mode = *modes[i];
-		log << "  " << mode.hdisplay << "x" << mode.vdisplay
-			<< " ht: " << mode.htotal << " vt: " << mode.vtotal
-			<< " hss: " << mode.hsyncstart << " hse: " << mode.hsyncend
-			<< " vss: " << mode.vsyncstart << " vse: " << mode.vsyncend
-			<< " f: " << mode.flags << " dc: " << mode.dotclock
-			<< " hsk: " << mode.hskew;
-		Log(log.str().c_str());*/
 	}
 	XFree(modes);
 	return Priv->modefound;
@@ -595,7 +582,7 @@ bool CStdAppPrivate::SwitchToFullscreen(CStdApp * pApp, Window wnd) {
 	XF86VidModeModeInfo & mode = targetmode;
 	XResizeWindow(pApp->dpy, wnd, mode.hdisplay, mode.vdisplay);
 	XSizeHints * hints = XAllocSizeHints();
-	hints->flags = PMinSize;// | PMaxSize;
+	hints->flags = PMinSize;
 	hints->min_width = mode.hdisplay;
 	hints->min_height = mode.vdisplay;
 	hints->max_width = mode.hdisplay;
@@ -706,7 +693,6 @@ StdStrBuf CStdApp::Paste(bool fClipboard) {
 		&format,	  // return format
 		&len, &bytes_left, //that 
 		&data);				
-	//printf ("type:%i len:%li format:%d byte_left:%ld\n", (int)type, len, format, bytes_left);
 	// nothing to read?
 	if (bytes_left == 0) return StdStrBuf(0);
 	int result = XGetWindowProperty (dpy, pWindow->wnd, 

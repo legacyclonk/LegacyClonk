@@ -43,11 +43,6 @@
 #include <sys/socket.h>
 #endif
 
-#ifndef HAVE_CONFIG_H
-// #define C4NETIO_DEBUG
-#endif
-
-
 // net i/o base class
 class C4NetIO : public StdSchedulerProc
 {

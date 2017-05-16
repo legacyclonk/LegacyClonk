@@ -2149,7 +2149,7 @@ void C4NetIOUDP::OnPacket(const C4NetIOPacket &Packet, C4NetIO *pNetIO)
 		}
 		// ignore all other packets
 	}
-	else /*if(pPeer)*/
+	else
 	{
 		// address add?
 		if(Packet.getStatus() == IPID_AddAddr)
@@ -3127,7 +3127,7 @@ void C4NetIOUDP::DoCheck() // (mt-safe)
 #endif
 void C4NetIOUDP::OpenDebugLog()
 {
-#if defined C4ENGINE //&& 0
+#if defined C4ENGINE
 	const char *szFileBase = Config.AtExePath("NetIOUDP%d.log");
 #else
 	const char *szFileBase = "NetIOUDP%d.log";

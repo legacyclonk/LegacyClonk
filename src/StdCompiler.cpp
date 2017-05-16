@@ -200,9 +200,6 @@ bool StdCompilerINIWrite::Name(const char *szName)
 
 void StdCompilerINIWrite::NameEnd(bool fBreak)
 {
-  // Nothing written? Do not put name.
-  //if(fPutName) PutName(false);
-	
   // Append newline
 	if(!fPutName && !fInSection)
 		Buf.Append("\r\n");

@@ -319,7 +319,6 @@ void C4ObjectInfo::Draw(C4Facet &cgo, BOOL fShowPortrait, BOOL fCaptain, C4Objec
 		C4DefGraphics *pPortraitGfx;
 		if (pPortraitGfx = Portrait.GetGfx()) if (pPortraitGfx->Bitmap->Wdt)
 			{
-			//C4Facet fctPortrait; fctPortrait.Set(Portrait);
 			C4Facet ccgo; ccgo.Set(cgo.Surface,cgo.X+iX,cgo.Y,4*cgo.Hgt/3+10,cgo.Hgt+10);
 			DWORD dwColor = 0xFFFFFFFF;
 			if (pOfObj && Game.Players.Get(pOfObj->Owner))

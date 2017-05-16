@@ -317,7 +317,7 @@ void C4GameResList::CompileFunc(StdCompiler *pComp)
 	// Compile list
 	pComp->Value(
 		mkNamingAdapt(
-			mkArrayAdaptMap(pResList, iResCount, /*(C4GameRes *)NULL, */ mkPtrAdaptNoNull<C4GameRes>),
+			mkArrayAdaptMap(pResList, iResCount, mkPtrAdaptNoNull<C4GameRes>),
 		"Resource"));
 	mkPtrAdaptNoNull<C4GameRes>(*pResList);
 	}

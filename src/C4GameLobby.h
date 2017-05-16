@@ -17,8 +17,7 @@
 
 // the ingame-lobby
 
-// Tab: NickCompletion (2do TODO) - and can't do this here, because tab is used to cycle controls!
-//if (dwKey == VK_TAB) { /*CompleteNick();*/ return TRUE; }
+// TODO: Tab: NickCompletion - and can't do this here, because tab is used to cycle controls!
 
 #ifndef INC_C4GameLobby
 #define INC_C4GameLobby

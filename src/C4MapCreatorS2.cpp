@@ -267,7 +267,6 @@ C4MCOverlay::C4MCOverlay(C4MCNode *pOwner) : C4MCNode(pOwner)
 	Sub=false;
 	ZoomX=ZoomY=0;
 	FixedSeed=Seed=0;
-//	Alpha=Beta=0;
 	Turbulence=Lambda=Rotate=0;
 	Invert=LooseBounds=Group=Mask=false;
 	pEvaluateFunc=pDrawFunc=NULL;
@@ -426,7 +425,6 @@ void C4MCOverlay::Evaluate()
 		C4MCOverlay *pOwnrOvrl;
 		if (pOwnrOvrl=OwnerOverlay())
 			{
-			//int32_t iOwnerX=pOwnrOvrl->X; int32_t iOwnerY=pOwnrOvrl->Y;
 			int32_t iOwnerWdt=pOwnrOvrl->Wdt; int32_t iOwnerHgt=pOwnrOvrl->Hgt;
 			X = RX.Evaluate(iOwnerWdt) + pOwnrOvrl->X;
 			Y = RY.Evaluate(iOwnerHgt) + pOwnrOvrl->Y;
@@ -488,11 +486,6 @@ bool C4MCOverlay::CheckMask(int32_t iX, int32_t iY)
 	// apply rotation
 	if (Rotate)
 		{
-		/*double dRot=Rotate*pi/180;
-		double l=sqrt((dX*dX)+(dY*dY));
-		double o=atan(dY/dX);
-		dX=cos(o+dRot)*l;
-		dY=sin(o+dRot)*l;*/
 		FIXED dXo(dX), dYo(dY);
 		dX = dXo*Cos(itofix(Rotate)) - dYo*Sin(itofix(Rotate));
 		dY = dYo*Cos(itofix(Rotate)) + dXo*Sin(itofix(Rotate));
@@ -1227,27 +1220,6 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 				break;
 			case PS_SETFIELD:
 				ParseValue (pToNode, FieldName);
-				/*// set field: accept integer constants and identifiers
-				switch (CurrToken)
-					{
-					case MCT_IDTF:
-						// reset value field
-						CurrTokenVal=0;
-					case MCT_INT:
-						break;
-					default:
-						throw C4MCParserErr(this, C4MCErr_FieldConstExp, CurrTokenIdtf);
-						break;
-					}
-				// set field
-				if (!pToNode->SetField(this, FieldName, CurrTokenIdtf, CurrTokenVal, CurrToken))
-					// field not found
-					throw C4MCParserErr(this, C4MCErr_Field404, FieldName);
-				// now, the one and only thing to get is a semicolon
-				if (!GetNextToken())
-					throw C4MCParserErr(this, C4MCErr_EOF);
-				if (CurrToken != MCT_SCOLON)
-					throw C4MCParserErr(this, C4MCErr_SColonExp);*/
 				// reset state
 				State=PS_NONE;
 				break;
@@ -1319,54 +1291,6 @@ void C4MCParser::ParseValue(C4MCNode *pToNode, const char *szFieldName)
 	// now, the one and only thing to get is a semicolon
 	if (CurrToken != MCT_SCOLON)
 		throw C4MCParserErr(this, C4MCErr_SColonExp);
-	
-	
-	/*
-	// set field: accept integer constants and identifiers
-	switch (CurrToken)
-		{
-		case MCT_IDTF:
-			// reset value field
-			CurrTokenVal=0;
-			// set field
-			if (!pToNode->SetField(this, szFieldName, CurrTokenIdtf, CurrTokenVal, CurrToken))
-				// field not found
-				throw C4MCParserErr(this, C4MCErr_Field404, szFieldName);
-			break;
-		case MCT_INT:
-			Value1 = CurrTokenVal;
-			while (GetNextToken ())
-				{
-				switch (CurrToken)
-					{
-					case MCT_SCOLON:
-						// set field
-						if (!pToNode->SetField(this, szFieldName, CurrTokenIdtf, Value1, MCT_INT))
-							// field not found
-							throw C4MCParserErr(this, C4MCErr_Field404, szFieldName);
-						return;
-						break;
-					case MCT_RANGE:
-						break;
-					case MCT_INT:
-						Value2 = CurrTokenVal;
-						Value1 += Random (Value2 - Value1);
-						break;
-					default:
-						throw C4MCParserErr(this, C4MCErr_SColonExp);
-						break;
-					}
-				}
-			break;
-		default:
-			throw C4MCParserErr(this, C4MCErr_FieldConstExp, CurrTokenIdtf);
-			break;
-		}
-	// now, the one and only thing to get is a semicolon
-	if (!GetNextToken())
-		throw C4MCParserErr(this, C4MCErr_EOF);
-	if (CurrToken != MCT_SCOLON)
-		throw C4MCParserErr(this, C4MCErr_SColonExp);*/
 	}
 
 void C4MCParser::ParseFile(const char *szFilename, C4Group *pGrp)
@@ -1622,7 +1546,6 @@ bool AlgoPolygon(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 			else
 				{
 				//If point C lays on ray
-//				if (cY == iY && cX >= iX)
 				if (cY == iY)
 					{
 					//are I and C the same points? 

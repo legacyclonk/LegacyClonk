@@ -175,10 +175,6 @@ void C4Scoreboard::SetCell(int32_t iColKey, int32_t iRowKey, const char *szValue
 			if (i == iRows) DelCol(iCol);
 			}
 		}
-/*	// prune empty board? but this would prevent boards that just sort
-	if (iRows == 1 && iCols == 1)
-		Clear(); // must not do this, because it will del pDlg
-	else*/
 		// recalc row widths in display (else done by clear)
 		InvalidateRows();
 	}

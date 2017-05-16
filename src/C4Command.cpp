@@ -200,7 +200,6 @@ static bool ObjectAddWaypoint(int32_t iX, int32_t iY, intptr_t iTransferTarget, 
 	// Waypoints before transfer zones are not updated (enforce move to that waypoint)
 	if (cObj->Command && (cObj->Command->Command==C4CMD_Transfer)) iUpdate=0; 
 	// Add waypoint
-	//AddCommand(iCommand,pTarget,iTx,iTy,iUpdateInterval,pTarget2,fInitEvaluation,iData,fAppend,iRetries,szText,iBaseMode)
 	assert(cObj->Command);
 	if (!cObj->AddCommand(C4CMD_MoveTo,NULL,iX,iY,25,NULL,FALSE,cObj->Command->Data)) return FALSE;
 
@@ -334,7 +333,7 @@ void C4Command::MoveTo()
           { ObjectComLetGo(cObj,+1); return; }
 				// Contact (not if just started)
 				if (cObj->Action.Time>2)
-					if (cObj->t_contact/* & CNAT_Left*/)
+					if (cObj->t_contact)
 						{ ObjectComLetGo(cObj,+1); return; }
 				}
       if (cObj->Action.Dir==DIR_Right)
@@ -344,7 +343,7 @@ void C4Command::MoveTo()
           { ObjectComLetGo(cObj,-1); return; }
 				// Contact (not if just started)
 				if (cObj->Action.Time>2)
-					if (cObj->t_contact/* & CNAT_Right*/)
+					if (cObj->t_contact)
 		        { ObjectComLetGo(cObj,-1); return; }
 				}
       break;
@@ -1207,7 +1206,6 @@ bool C4Command::CheckMinimumCon (C4Object *pObj)
 		if (pObj->Category & C4D_SelectKnowledge)
 			if (pObj->GetCon() < FullCon) 
 				{
-				//SoundEffect("Error",0,100,cObj);
 				Finish(false, FormatString(LoadResStr("IDS_OBJ_NOCONACTIV"),pObj->GetName()).getData());
 				return true;
 				}
@@ -1708,9 +1706,6 @@ BOOL C4Command::FlightControl() // Called by DFA_WALK, DFA_FLIGHT
 				for (iTopFree=0; (iTopFree<50) && !GBackSolid(cx,cy+cObj->Shape.y-iTopFree); ++iTopFree);
 				if (iTopFree>=15)
 					{
-					//sprintf(OSTR,"Flight take off at %d (%d)",iAngle,Distance(cx,cy,Tx,Ty)); Log(OSTR); GameMsgObject(OSTR,cObj);
-					//cObj->AddCommand(C4CMD_Jump,NULL,Tx,Ty); return TRUE; 
-
 					// Take off
 					cObj->SetActionByName("Fly"); // This is a little primitive... we should have a ObjectActionFly or maybe a command for this...
 					}
@@ -1740,7 +1735,6 @@ BOOL C4Command::JumpControl() // Called by DFA_WALK
 				for (iTopFree=0; (iTopFree<50) && !GBackSolid(cx,cy+cObj->Shape.y-iTopFree); ++iTopFree);
 				if (iTopFree>=15)
 					{
-					//sprintf(OSTR,"Diagonal %d (%d)",iAngle,Distance(cx,cy,Tx,Ty)); GameMsgObject(OSTR,cObj);
 					cObj->AddCommand(C4CMD_Jump,NULL,Tx,Ty); return TRUE; 
 					}
 				}
@@ -1759,32 +1753,23 @@ BOOL C4Command::JumpControl() // Called by DFA_WALK
 				// Path free from side move target to jump target
 				if (PathFree(iSideX,iSideY,Tx._getInt(),Ty))
 					{
-					//sprintf(OSTR,"High side move %d (%d,%d)",iAngle,iSideX-cx,iSideY-cy); GameMsgObject(OSTR,cObj);
 					cObj->AddCommand(C4CMD_Jump,NULL,Tx,Ty); 
 					cObj->AddCommand(C4CMD_MoveTo,NULL,iSideX,iSideY,50);
 					return TRUE;
 					}
-				/*else
-					{ sprintf(OSTR,"Side move %d/%d path not free",iSideX,iSideY); GameMsgObject(OSTR,cObj); }*/
 				}
-			/*else
-				{ sprintf(OSTR,"Side move %d out of range",iSideX-cx); GameMsgObject(OSTR,cObj); }*/
 			}
-		/*else
-			{ sprintf(OSTR,"No high range %d",cy-Ty); GameMsgObject(OSTR,cObj); }*/
 
 	// Low side contact jump
 	int32_t iLowSideRange=5;
 	if (cObj->t_contact & CNAT_Right)
 		if (Inside(iAngle-JumpLowAngle,-iLowSideRange*JumpAngleRange,+iLowSideRange*JumpAngleRange))
 			{ 
-			//sprintf(OSTR,"Low contact right %d",iAngle); GameMsgObject(OSTR,cObj);
 			cObj->AddCommand(C4CMD_Jump,NULL,Tx,Ty); return TRUE; 
 			}				
 	if (cObj->t_contact & CNAT_Left)
 		if (Inside(iAngle+JumpLowAngle,-iLowSideRange*JumpAngleRange,+iLowSideRange*JumpAngleRange))
 			{ 
-			//sprintf(OSTR,"Low contact left %d",iAngle); GameMsgObject(OSTR,cObj);
 			cObj->AddCommand(C4CMD_Jump,NULL,Tx,Ty); return TRUE; 
 			}		
 		

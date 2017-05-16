@@ -284,8 +284,7 @@ C4Network2ClientListBox::ConnectionListItem::ConnectionListItem(class C4Network2
 	// left indent
 	ca.ExpandLeft(-iIconSize*2);
 	// create subcomponents
-	// reconnect/disconnect buttons
-	//pReconnectBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ConnectionListItem, C4GUI::IconButton>(C4GUI::Ico_Notify, ca.GetFromRight(iIconSize, iIconSize), 0, this, &ConnectionListItem::OnButtonReconnect);
+	// disconnect button
 	if (!Game.Parameters.isLeague())
 		{
 		pDisconnectBtn = new  C4GUI::CallbackButtonEx<C4Network2ClientListBox::ConnectionListItem, C4GUI::IconButton>(C4GUI::Ico_Disconnect, ca.GetFromRight(iIconSize, iIconSize), 0, this, &ConnectionListItem::OnButtonDisconnect);
@@ -303,7 +302,6 @@ C4Network2ClientListBox::ConnectionListItem::ConnectionListItem(class C4Network2
 	// add components
 	AddElement(pDesc);
 	AddElement(pPing);
-	//AddElement(pReconnectBtn);
 	if (pDisconnectBtn) AddElement(pDisconnectBtn);
 	// add to listbox (will eventually get moved)
 	pForDlg->AddElement(this);
@@ -509,7 +507,7 @@ C4Network2StartWaitDlg::C4Network2StartWaitDlg()
 	AddElement(pClientListBox = new C4Network2ClientListBox(caAll.GetAll(), true));	
 	// place abort button
 	C4GUI::Button *pBtnAbort = new C4GUI::CancelButton(caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_ButtonHgt));
-	AddElement(pBtnAbort); //pBtnAbort->SetToolTip(LoadResStr("IDS_DLGTIP_CANCEL"));
+	AddElement(pBtnAbort);
 	}
 
 
@@ -689,7 +687,6 @@ void C4GameOptionButtons::UpdatePasswordBtn()
 	// update icon to reflect if a password is set
 	const char *szPass = Game.Network.GetPassword();
 	bool fHasPassword = szPass && *szPass;
-//btnPassword->SetHighlight(fHasPassword);
 	btnPassword->SetIcon(fHasPassword ? C4GUI::Ico_Ex_Locked : C4GUI::Ico_Ex_Unlocked);
 	}
 
@@ -747,9 +744,6 @@ void C4GameOptionButtons::UpdateFairCrewBtn()
 		                : (!fFairCrew ? C4GUI::Ico_Ex_NormalCrewGray : C4GUI::Ico_Ex_FairCrewGray)); // fair crew setting by scenario preset or host
 	btnFairCrew->SetToolTip(LoadResStr(fFairCrew ? "IDS_CTL_FAIRCREW_DESC" : "IDS_CTL_NORMALCREW_DESC"));
 	btnFairCrew->SetEnabled(fChoiceFree);
-	// Directly update current tooltip - otherwise old tooltip might be shown again
-	/*C4GUI::Screen *pScreen = GetScreen();     if we do this, the tooltip might show in placed where it shouldn't... how to do it properly?
-	if (pScreen) pScreen->DoStatus(btnFairCrew->GetToolTip());*/
 	}
 
 

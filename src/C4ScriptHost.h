@@ -37,7 +37,7 @@ class C4ScriptHost : public C4AulScript, public C4ComponentHost
 		void Clear();
 		void Close();
 		BOOL Load(const char *szName, C4Group &hGroup, const char *szFilename, 
-							const char *szLanguage/*=NULL*/, C4Def *pDef/*=NULL*/, class C4LangStringTable *pLocalTable, bool fLoadTable = false);
+							const char *szLanguage, C4Def *pDef, class C4LangStringTable *pLocalTable, bool fLoadTable = false);
 		const char *GetControlDesc(const char *szFunctionFormat, int32_t iCom, C4ID *pidImage=NULL, int32_t* piImagePhase = NULL);
 		void GetControlMethodMask(const char *szFunctionFormat, int32_t& first, int32_t& second);
 		int32_t GetControlMethod(int32_t com, int32_t first, int32_t second);

@@ -118,7 +118,7 @@ class CDDrawCfg
 			this->fBlitOff = fBlitOff;
 			AllowedBlitModes = AdditiveBlts ? C4GFXBLIT_ALL : C4GFXBLIT_NOADD;
 			ClipManuallyE = true;
-			NoOffscreenBlits = true; // not yet working properly... !!(dwCfg&C4GFXCFG_NOOFFBLITS);
+			NoOffscreenBlits = true;
 			NoAcceleration = !!(dwCfg&C4GFXCFG_NOACCELERATION);
 			Windowed = !!(dwCfg&C4GFXCFG_WINDOWED);
 			}
@@ -134,7 +134,6 @@ class CDDrawCfg
 #endif
 				(ClipManually ? C4GFXCFG_CLIPMANUALLY : 0) |
 				(GLClamp ? C4GFXCFG_GLCLAMP : 0) |
-				// (NoOffscreenBlits  ?  true & // not yet working properly... dwCfg&C4GFXCFG_NOOFFBLITS) |
 				(NoAcceleration ? C4GFXCFG_NOACCELERATION : 0) |
 				(Windowed ? C4GFXCFG_WINDOWED : 0);
 			fTexIndent = this->fTexIndent;

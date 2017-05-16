@@ -31,7 +31,7 @@ inline void FixedRandom(DWORD dwSeed)
 	{
 	// for SafeRandom
 	srand((unsigned)time(NULL));
-	RandomHold=dwSeed; // srand(dwSeed);
+	RandomHold=dwSeed;
 	RandomCount=0;
   }
 

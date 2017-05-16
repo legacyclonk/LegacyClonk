@@ -685,54 +685,6 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					PopValue();
 					break;
 					}
-/*				case AB_UNOP:
-					{
-					int iOpID = pCPos->bccX;
-
-					// Typecheck parameter
-					if(!pCurVal->ConvertTo(C4ScriptOpMap[iOpID].Type1))
-						throw new C4AulExecError(pCurCtx->Obj, 
-					FormatString("operator \"%s\": got \"%s\", but expected \"%s\"!",
-						C4ScriptOpMap[iOpID].Identifier, pCurVal->GetTypeInfo(), GetC4VName(C4ScriptOpMap[iOpID].Type1)).getData());
-
-					// Execute operator
-					if(C4ScriptOpMap[iOpID].Function)
-						pCurVal->Set((*C4ScriptOpMap[iOpID].Function)(pCurCtx, pCurVal->_getRaw(), 0), C4ScriptOpMap[iOpID].RetType);
-					else if(C4ScriptOpMap[iOpID].FunctionC4V)
-						pCurVal->Set((*C4ScriptOpMap[iOpID].FunctionC4V)(pCurCtx, pCurVal, NULL));
-
-					break;
-					}
-
-				case AB_BINOP:
-					{
-					int iOpID = pCPos->bccX;
-
-					// Get parameters
-					C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
-
-					// Typecheck parameters
-					if(!pPar1->ConvertTo(C4ScriptOpMap[iOpID].Type1))
-						throw new C4AulExecError(pCurCtx->Obj, 
-							FormatString("operator \"%s\" left side: got \"%s\", but expected \"%s\"!",
-								C4ScriptOpMap[iOpID].Identifier, pPar1->GetTypeInfo(), GetC4VName(C4ScriptOpMap[iOpID].Type1)).getData());
-					if(!pPar2->ConvertTo(C4ScriptOpMap[iOpID].Type2))
-						throw new C4AulExecError(pCurCtx->Obj, 
-							FormatString("operator \"%s\" right side: got \"%s\", but expected \"%s\"!",
-								C4ScriptOpMap[iOpID].Identifier, pPar2->GetTypeInfo(), GetC4VName(C4ScriptOpMap[iOpID].Type2)).getData());
-
-					// Execute operator
-					if(C4ScriptOpMap[iOpID].Function)
-						pPar1->Set((*C4ScriptOpMap[iOpID].Function)(pCurCtx, pPar1->_getRaw(), pPar2->_getRaw()),C4ScriptOpMap[iOpID].RetType);
-					else if(C4ScriptOpMap[iOpID].FunctionC4V)
-						pPar1->Set((*C4ScriptOpMap[iOpID].FunctionC4V)(pCurCtx, pPar1, pPar2));
-
-					// Pop second parameter
-					PopValue();
-  
-					break;
-					}
-*/
 				case AB_ARRAY:
 					{
 					// Create array

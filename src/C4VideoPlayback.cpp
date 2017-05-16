@@ -130,10 +130,9 @@ bool C4VideoShowDialog::LoadVideo(C4VideoFile *pVideoFile)
 		LogF("smpeg: %s", SDL_GetError());
 		return false;
 	}
-	SMPEG_setdisplay(mpeg, surface, NULL, /*glmpeg_update*/NULL);
+	SMPEG_setdisplay(mpeg, surface, NULL, NULL);
 	
         /* Play the movie, using SDL_mixer for audio */
-        //SMPEG_enableaudio(mpeg, 0);
 	SDL_AudioSpec audiofmt;
 	Uint16 format;
 	int freq, channels;
@@ -148,8 +147,7 @@ bool C4VideoShowDialog::LoadVideo(C4VideoFile *pVideoFile)
         SMPEG_play(mpeg);
 	/* Hook in the MPEG music mixer */
 	Mix_HookMusic(SMPEG_playAudioSDL, mpeg);
-	//SMPEG_enableaudio(mpeg, 1);
-	
+
 	return true;
 #endif // HAVE_LIBSMPEG
 #endif // _WIN32

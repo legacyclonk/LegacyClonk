@@ -24,11 +24,6 @@
 
 BOOL OpenLog();
 BOOL CloseLog();
-/* Declared in Standard.h
-BOOL LogSilent(const char *szMessage);
-BOOL Log(const char *szMessage);
-BOOL LogSilentF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;
-BOOL LogF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;*/
 BOOL DebugLog(const char *strMessage);
 BOOL DebugLogF(const char *strMessage ...) GNUC_FORMAT_ATTRIBUTE;
 

@@ -232,11 +232,6 @@ BOOL C4DefCore::Load(C4Group &hGroup)
 			return FALSE;
 		Source.Clear();
 
-		// Let's be bold: Rewrite, with current version
-		/*rC4XVer[0] = C4XVER1; rC4XVer[1] = C4XVER2; rC4XVer[2] = C4XVER3; rC4XVer[3] = C4XVER4; 
-		hGroup.Rename(C4CFN_DefCore, C4CFN_DefCore ".old");
-		Save(hGroup);*/
-
 		// Adjust category: C4D_CrewMember by CrewMember flag
 		if (CrewMember) Category|=C4D_CrewMember;
 
@@ -1219,16 +1214,12 @@ C4Def* C4DefList::ID2Def(C4ID id)
 	C4Def **ppDef, ***pppDef=Table;
 	// get table entry to query
 	int32_t iTblIndex=(id>>24)-32;
-	//if(iTblIndex==43) printf("TblIndex: %d\n", iTblIndex);
 	if (Inside<int32_t>(iTblIndex, 0, 63)) pppDef+=iTblIndex;
-	//if(iTblIndex==43) printf("TblIndex: %d pppDef: %p\n", iTblIndex, pppDef);
 	// no entry matching?
 	if (!(ppDef=*pppDef)) return NULL;
-	//if(iTblIndex==43) printf("Entry-Name: %s\n", (*ppDef)->Name);
 	// search list
 	for (C4Def *pDef = *ppDef; pDef=*ppDef; ppDef++)
 	{
-		//printf("pDef: %p; Name: %s\n", pDef, pDef->Name);
 		if (pDef->id == id) return pDef;
 	}
 	// none found

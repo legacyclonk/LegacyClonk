@@ -184,9 +184,7 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 											if (Inside<int32_t>(obj2->x-(obj1->x+obj1->Def->Collection.x),0,obj1->Def->Collection.Wdt-1))
 												if (Inside<int32_t>(obj2->y-(obj1->y+obj1->Def->Collection.y),0,obj1->Def->Collection.Hgt-1))
 													{
-													//if(!pLst->First) BREAKPOINT_HERE;
 													obj1->Collect(obj2);
-													//if(!pLst->First)  BREAKPOINT_HERE;
 													// obj1 might have been tampered with
 													if (!obj1->Status || obj1->Contained || !(obj1->OCF & focf))
 														goto out1;
@@ -284,9 +282,6 @@ long C4GameObjects::ObjectNumber(C4Object *pObj)
 
 C4ObjectList &C4GameObjects::ObjectsInt()
 	{
-	// some time ago, only objects in the topleft corner used to be recognized
-	// this is an unnecessary restriction though...
-	//return Game.Landscape.Sectors.First()->Objects;
 	return *this;
 	}
 
@@ -662,8 +657,6 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 
 	// make sure list is sorted by category - after sorting out inactives, because inactives aren't sorted into the main list
 	FixObjectOrder();
-
-	//Sectors.Dump();
 
 	// misc updates
   for (cLnk=First; cLnk; cLnk=cLnk->Next)

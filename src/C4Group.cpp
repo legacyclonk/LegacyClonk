@@ -546,11 +546,10 @@ void C4GroupEntry::Set(const DirectoryIterator &iter, const char *szPath)
   SCopy(iter.fdt.name,FileName,_MAX_FNAME);
   Size=iter.fdt.size;
   Time=iter.fdt.time_create;
-  //SCopy(szPath,DiskPath,_MAX_PATH-1); AppendBackslash(DiskPath); SAppend(FileName,DiskPath,_MAX_PATH);
   SCopy(*iter, DiskPath, _MAX_PATH-1);
   Status=C4GRES_OnDisk;
 	Packed=FALSE; 
-	ChildGroup=FALSE; //FileGroupCheck(DiskPath);
+	ChildGroup=FALSE;
 	// Notice folder entries are not checked for ChildGroup status.
 	// This would cause extreme performance loss and be good for
 	// use in entry list display only.
@@ -569,10 +568,9 @@ void C4GroupEntry::Set(const DirectoryIterator &iter, const char * path)
 		}
 	else
 		Size = 0;
-	//SCopy(path,DiskPath,_MAX_PATH-1); AppendBackslash(DiskPath); SAppend(FileName,DiskPath,_MAX_PATH);
 	Status=C4GRES_OnDisk;
 	Packed=FALSE; 
-	ChildGroup=FALSE; //FileGroupCheck(DiskPath);
+	ChildGroup=FALSE;
 	// Notice folder entries are not checked for ChildGroup status.
 	// This would cause extreme performance loss and be good for
 	// use in entry list display only.
@@ -603,7 +601,6 @@ void C4Group::Init()
   FirstEntry=NULL;
   SearchPtr=NULL;
   // Folder only
-  //hFdt=-1;
   FolderSearch.Reset();
   // Error status
   SCopy("No Error",ErrorString,C4GroupMaxError);
@@ -885,7 +882,6 @@ bool C4Group::Close()
     if (centry->Status!=C4GRES_InGroup)
       fRewrite=TRUE;
   if (Modified) fRewrite=TRUE;
-  //if (Head.Entries==0) fRewrite=TRUE;
 
   // No rewrite: just close
   if (!fRewrite)
@@ -1012,7 +1008,6 @@ void C4Group::Default()
 	StdFile.Default();
 	Mother = NULL;
 	ExclusiveChild = 0;
-	//hFdt = -1;
 	Init();
 	}
 
@@ -1034,8 +1029,6 @@ void C4Group::Clear()
     delete Mother;
     Mother=NULL;
     }
-  // done in init
-	//FolderSearch.Reset();
   // Reset
   Init();
   }
@@ -1069,15 +1062,6 @@ bool C4Group::AppendEntry2StdFile(C4GroupEntry *centry, CStdFile &hTarget)
       // Disk item is a directory
       if (DirectoryExists(centry->DiskPath))
         return Error("AE2S: Cannot add directory to group file");
-        /*{
-        if (StdOutput) printf("Adding directory %s to group file...\n",centry->FileName);
-        // Temporary file name
-        MakeTempFilename(szFileSource);
-        // Create temporary copy of directory
-        if (!CopyItem(centry->DiskPath,szFileSource)) return Error("Cannot create temporary directory");
-        // Convert directory to temporary group file
-        if (!Folder2Group(szFileSource)) return Error("Cannot convert directory to group file");
-        }*/
 
 			// Resort group if neccessary
 			// (The group might be renamed by adding, forcing a resort)
@@ -1120,11 +1104,10 @@ bool C4Group::AppendEntry2StdFile(C4GroupEntry *centry, CStdFile &hTarget)
 			if (centry->DeleteOnDisk)
 				EraseItem(centry->DiskPath);
 
-      break;   
+      break;
 		}
-		
+
     case C4GRES_InMemory: // Copy from mem to std file
-      //if (StdOutput) printf("Saving InMem entry %d...\n",centry->Size);
       if (!centry->bpMemBuf) return Error("AE2S: no buffer");
       if (!hTarget.Write(centry->bpMemBuf,centry->Size)) return Error("AE2S: writing error");
       break;
@@ -2553,7 +2536,6 @@ void C4Group::PrintInternals(const char *szIndent)
 	printf("%sHead.Ver2: %d\n", szIndent, Head.Ver2);
 	printf("%sHead.Entries: %d\n", szIndent, Head.Entries);
 	printf("%sHead.Maker: '%s'\n", szIndent, Head.Maker);
-	//printf("Head.Password: '%s'\n", szIndent, Head.Password);
 	printf("%sHead.Creation: %d\n", szIndent, Head.Creation);
 	printf("%sHead.Original: %d\n", szIndent, Head.Original);
 	for (C4GroupEntry * p = FirstEntry; p; p = p->Next)

@@ -391,7 +391,6 @@ bool C4Network2VersionInfoClient::GetVersion(C4GameVersion *piVerOut)
 	{
 	// Sanity check
 	if(isBusy() || !isSuccess()) return false;
-	//StdStrBuf sBlub; sBlub.Copy("[Clonk Rage]\nVersion=4,9,6,0,265\n\n"); sBlub.Append(ResultString); ResultString.Take(sBlub);
 	// Parse response
 	piVerOut->Set("", 0,0,0,0, 0);;
 	try

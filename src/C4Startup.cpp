@@ -62,14 +62,6 @@ bool C4StartupGraphics::Init()
 	sfctBookScrollR.Set(fctBookScroll, 1);
 	sfctBookScrollG.Set(fctBookScroll, 2);
 	sfctBookScrollB.Set(fctBookScroll, 3);
-/*	if (!LoadFile(fctCrew, "StartupCrew")) return false; - currently unused
-	if (fctCrew.idSourceGroup != fctCrewClr.idSourceGroup)
-		{
-		if (!fctCrewClr.CreateClrByOwner(fctCrew.Surface)) { LogFatal("ClrByOwner error! (11)"); return FALSE; }
-		fctCrewClr.Wdt=fctCrew.Wdt;
-		fctCrewClr.Hgt=fctCrew.Hgt;
-		fctCrewClr.idSourceGroup = fctCrew.idSourceGroup;
-		}*/
 	Game.SetInitProgress(66);
 	if (!LoadFile(fctContext, "StartupContext")) return false;
 	fctContext.Set(fctContext.Surface,0,0,fctContext.Hgt,fctContext.Hgt);

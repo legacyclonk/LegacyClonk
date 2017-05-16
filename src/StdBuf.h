@@ -322,14 +322,12 @@ public:
 template <class elem_t>
   const elem_t *getBufPtr(const StdBuf &Buf, size_t iPos = 0)
   {
-    // assert(iPos + sizeof(elem_t) <= Buf.getSize());
     const void *pPos = reinterpret_cast<const char *>(Buf.getData()) + iPos;
     return reinterpret_cast<const elem_t *>(pPos);
   }
 template <class elem_t>
   elem_t *getMBufPtr(StdBuf &Buf, size_t iPos = 0)
   {
-    // assert(iPos + sizeof(elem_t) <= Buf.getSize());
     void *pPos = reinterpret_cast<char *>(Buf.getMData()) + iPos;
     return reinterpret_cast<elem_t *>(pPos);
   }
@@ -457,7 +455,6 @@ public:
   // Append string
   void Append(const char *pnData, size_t iChars)
   {
-    //assert(iChars <= strlen(pnData));
     Grow(iChars);
     Write(pnData, iChars, iSize - iChars - 1);
 		}

@@ -526,8 +526,6 @@ bool ListBox::AddElement(Element *pChild, int32_t iIndent)
 	pChild->UpdateOwnPos();
 	// update scrolling
 	pClientWindow->SetClientHeight(rcChildBounds.y+rcChildBounds.Hgt);
-	// first element: select it?
-	//if (pChild == pClientWindow->GetFirstContained()) pSelectedItem = pChild;
 	// success
 	return true;
 	}

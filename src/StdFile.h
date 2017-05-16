@@ -74,7 +74,6 @@ const char *GetRelativePathS(const char *strPath, const char *strRelativeTo);
 bool IsGlobalPath(const char *szPath);
 
 bool DirectoryExists(const char *szFileName);
-//bool FileExists(const char *szFileName, int *lpAttr=NULL);
 bool FileExists(const char *szFileName);
 size_t FileSize(const char *fname);
 size_t FileSize(int fdes);
@@ -95,7 +94,6 @@ bool CopyItem(const char *szSource, const char *szTarget, bool fResetAttributes=
 bool CreateItem(const char *szItemname);
 bool MoveItem(const char *szSource, const char *szTarget);
 
-//int ForEachFile(const char *szPath, int lAttrib, bool (*fnCallback)(const char *));
 int ForEachFile(const char *szDirName, bool (*fnCallback)(const char *));
 
 class DirectoryIterator {

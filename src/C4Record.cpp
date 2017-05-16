@@ -439,41 +439,9 @@ BOOL C4Playback::Open(C4Group &rGrp)
 				}
 			else
 				{
-				// file too large? Try sequential loading and parsing
-/*				size_t iSize;
-				if (rGrp.AccessEntry(C4CFN_CtrlRec, &iSize))
-					{
-					CStdFile fOut; fOut.Create(Game.RecordDumpFile.getData());
-					fLoadSequential = true;
-					const size_t iChunkSize = 1024*1024*16; // 16M
-					while (iSize)
-						{
-						size_t iLoadSize = Min<size_t>(iChunkSize, iSize);
-						BinaryBuf.SetSize(iLoadSize);
-						if (!rGrp.Read(BinaryBuf.getMData(), iLoadSize))
-							{
-							LogFatal("Record: Binary load error!");
-							return FALSE;
-							}
-						iSize -= iLoadSize;
-						if (!ReadBinary(BinaryBuf)) return FALSE;
-						LogF("%d binary remaining", iSize);
-						currChunk = chunks.begin();
-						if (fStrip) Strip();
-						StdStrBuf s(ReWriteText());
-						fOut.WriteString(s.getData());
-						LogF("Wrote %d text bytes (%d binary remaining)", s.getLength(), iSize);
-						chunks.clear();
-						}
-					fOut.Close();
-					fLoadSequential = false;
-					}
-				else*/
-					{
-					// no control data?
-					LogFatal("Record: No control data found!");
-					return FALSE;
-					}
+				// no control data?
+				LogFatal("Record: No control data found!");
+				return FALSE;
 				}
 			}
 		}
@@ -653,8 +621,6 @@ bool C4Playback::NextSequentialChunk()
 
 StdStrBuf C4Playback::ReWriteText()
 	{
-	// Would work, too, but is currently too slow due to bad buffering inside StdCompilerINIWrite:
-	// return DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(mkSTLContainerAdapt(chunks), "Rec"));
 	StdStrBuf Output;
 	for(chunks_t::const_iterator i = chunks.begin(); i != chunks.end(); i++)
 		{
@@ -727,7 +693,6 @@ void C4Playback::Strip()
 	const bool fStripDebugRec = true;
 	const bool fCheckCheat = false;
 	const bool fStripMessages = true;
-	//const bool fCheckEMControl = true;
 	const int32_t iEndFrame = -1;
 	// Iterate over chunk list
 	for(chunks_t::iterator i = chunks.begin(); i != chunks.end(); )
@@ -885,12 +850,6 @@ BOOL C4Playback::ExecuteControl(C4Control *pCtrl, int iFrame)
 		// next chunk
 		NextChunk();
 		}
-  // Debug log
-#ifdef DEBUGREC
-	//sprintf(OSTR, "-- Frame %d:", Game.FrameCounter); Log(OSTR);
-	//char Indent[256+1]; strcpy(Indent, "");
-	//pCtrl->deb_print(Indent);
-#endif
   return TRUE;
 	}
 

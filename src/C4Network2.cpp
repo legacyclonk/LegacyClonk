@@ -772,7 +772,7 @@ void C4Network2::HandlePacket(char cStatus, const C4PacketBase *pPacket, C4Netwo
 
 	#define GETPKT(type, name) \
 		assert(pPacket); const type &name = \
-			/*dynamic_cast*/ static_cast<const type &>(*pPacket);
+			static_cast<const type &>(*pPacket);
 
 	switch(cStatus)
 	{

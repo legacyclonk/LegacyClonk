@@ -88,10 +88,8 @@ bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, void *pData)
 #ifdef _WIN32
 	// post message to main thread
 	bool fSuccess = !! SetEvent(Application.hNetworkEvent);
-	if(fSuccess)
-    /* Sleep(0) */; // propably a not-so-good idea, as it may slow down the network thread?
-  else
-		// ThreadLog most likely won't work here, so Log will be used directly in hope
+	if(!fSuccess)
+    // ThreadLog most likely won't work here, so Log will be used directly in hope
 		// it doesn't screw too much
 		LogFatal("Network: could not post message to main thread!");
 	return fSuccess;

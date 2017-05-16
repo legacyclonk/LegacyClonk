@@ -240,8 +240,6 @@ BOOL C4PlayerList::Remove(C4Player *pPlr, bool fDisconnect, bool fNoCalls)
 		if (!pPlr->Evaluated) Game.RoundResults.EvaluatePlayer(pPlr);
 		}
 
-	//for (C4Player *pPrev=First; pPrev; pPrev=pPrev->Next)
-	//	if (pPrev->Next==pPlr) break;
 	C4Player *pPrev=First; 
 	while (pPrev && pPrev->Next!=pPlr) pPrev=pPrev->Next;
 	if (pPrev) pPrev->Next=pPlr->Next;
@@ -310,33 +308,10 @@ C4Player* C4PlayerList::Join(const char *szFilename, BOOL fScenarioInit, int iAt
 BOOL C4PlayerList::CtrlJoinLocalNoNetwork(const char *szFilename, int iAtClient, const char *szAtClientName)
 	{
 	assert(!Game.Network.isEnabled());
-	// Create temp copy of player file without portraits
-	// Why? This is local join!
-	/*
-	char szTempFilename[_MAX_PATH + 1] = "";
-	const char *szOriginalFilename = szFilename;
-	if (!Config.Network.SendPortraits)
-		{
-		SCopy(Config.AtTempPath(GetFilename(szFilename)), szTempFilename, _MAX_PATH);
-		if (!CopyItem(szFilename, szTempFilename)) return FALSE;
-		C4Group hGroup;
-		if (hGroup.Open(szTempFilename))
-			{
-			hGroup.Delete(C4CFN_Portraits, true);
-			hGroup.Close();
-			}
-		szFilename = szTempFilename;
-		} */
-	// pack - not needed for new res system
-	/*if(DirectoryExists(szFilename))
-		if(!C4Group_PackDirectory(szFilename))
-			return FALSE;*/
 	// security
 	if(!ItemExists(szFilename)) return FALSE;
 	// join via player info
 	BOOL fSuccess = Game.PlayerInfos.DoLocalNonNetworkPlayerJoin(szFilename);
-	// Delete temp player file
-	/*if(*szTempFilename) EraseItem(szTempFilename);*/
 
 	// Done
 	return fSuccess;

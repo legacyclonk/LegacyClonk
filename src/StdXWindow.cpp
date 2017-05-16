@@ -76,8 +76,6 @@ CStdWindow * CStdWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * p
 	attr.background_pixel = 0;
 	// Which events we want to receive
 	attr.event_mask =
-		//EnterWindowMask |
-		//LeaveWindowMask |
 		StructureNotifyMask |
 		FocusChangeMask |
 		KeyPressMask |
@@ -146,7 +144,6 @@ CStdWindow * CStdWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * p
 	XTextProperty title_property;
 	StdStrBuf tbuf; tbuf.Copy(Title ? Title : "");
 	char * tbufstr = tbuf.getMData();
-	//char * title = "Clonk Endeavour";
 	XStringListToTextProperty(&tbufstr, 1, &title_property);
 	// State and Icon
 	XWMHints * wm_hint = XAllocWMHints();
@@ -165,9 +162,6 @@ CStdWindow * CStdWindow::Init(CStdApp * pApp, const char * Title, CStdWindow * p
 	// Show window
 	XMapWindow (dpy, wnd);
 	// Clean up
-	// The pixmap has to stay as long as the window exists, so it does not hurt to never free it.
-	//XFreePixmap(dpy,xwmh->icon_pixmap);
-	//XFreePixmap(dpy,xwmh->icon_mask);
 	XFree(title_property.value);
 	Hints = wm_hint;
 	XFree(class_hint);
@@ -303,7 +297,7 @@ void CStdWindow::HandleMessage(XEvent& event)
 			XSetWMHints(dpy, wnd, wm_hint);
 		}
 	}
-	else if(event.type == FocusOut /*|| event.type == UnmapNotify*/)
+	else if(event.type == FocusOut)
 	{
 		int detail = reinterpret_cast<XFocusChangeEvent*>(&event)->detail;
 

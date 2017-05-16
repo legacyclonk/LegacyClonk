@@ -80,8 +80,6 @@ namespace {
 # include <res/Cursor.h>
 # include <res/Brush.h>
 
-//# include <res/c4x.xpm>
-
 namespace {
 	GtkWidget* CreateImageFromInlinedPixbuf(const guint8* pixbuf_data)
 	{
@@ -615,7 +613,7 @@ bool C4Console::Out(const char *szText)
 	if (!Active) return false;
 	if (!szText || !*szText) return true;
 	int len,len2,lines; char *buffer, *buffer2;
-	len = 65000;//SendDlgItemMessage(hWindow,IDC_EDITOUTPUT,EM_LINELENGTH,(WPARAM)0,(LPARAM)0); 	
+	len = 65000;
 	len2 = len+Min<int32_t>(strlen(szText)+2, 5000);
 	buffer = new char [len2];
 	buffer[0]=0;
@@ -731,9 +729,7 @@ bool C4Console::UpdateHaltCtrls(bool fHalt)
 	g_signal_handler_block(btnPlay, handlerPlay);
 	g_signal_handler_block(btnHalt, handlerHalt);
 
-	//gtk_widget_set_sensitive(btnPlay, fHalt);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btnPlay), !fHalt);
-	//gtk_widget_set_sensitive(btnHalt, !fHalt);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btnHalt), fHalt);
 
 	g_signal_handler_unblock(btnPlay, handlerPlay);
@@ -1065,12 +1061,6 @@ BOOL C4Console::FileSelect(char *sFilename, int iSize, const char * szFilter, DW
 		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	}
 
-	// TODO: Not in GTK+ 2.4, we could check GTK+ version at runtime and rely on lazy bindung
-//	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), (dwFlags & OFN_OVERWRITEPROMPT) != 0);
-
-	// TODO: Not in GTK+ 2.4, we could check GTK+ version at runtime and rely on lazy binding
-//	gtk_file_chooser_set_show_hidden(GTK_FILE_CHOOSER(dialog), (dwFlags & OFN_HIDEREADONLY) == 0);
-
 	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), (dwFlags & OFN_ALLOWMULTISELECT) != 0);
 	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), true);
 
@@ -1182,12 +1172,6 @@ void C4Console::Clear()
 	{
 	C4ConsoleBase::Clear();
 
-#if WITH_DEVELOPER_MODE
-//	txtLog = NULL;
-//	txtScript = NULL;
-//	btnPlay = NULL;
-//	btnHalt = NULL;
-#endif
 	EditCursor.Clear();
 	PropertyDlg.Clear();
 	ToolsDlg.Clear();

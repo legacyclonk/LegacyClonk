@@ -50,7 +50,6 @@ C4VectorFont::~C4VectorFont()
 		{
 		// release font
 #if defined(_WIN32) && !defined(HAVE_FREETYPE)
-		//RemoveFontResourceEx(FileName, FR_PRIVATE, NULL); requires win2k
 		RemoveFontResource(FileName);
 #endif
 		if (fIsTempFile) EraseFile(FileName);
@@ -97,7 +96,6 @@ bool C4VectorFont::Init(C4Group &hGrp, const char *szFilename, C4Config &rCfg)
 		fIsTempFile = true;
 		}
 	// add the font resource
-	//if (!AddFontResourceEx(FileName, FR_PRIVATE, NULL)) requires win2k
 	if (!AddFontResource(FileName))
 		{
 		if (fIsTempFile) EraseFile(FileName);
@@ -347,8 +345,8 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 			case C4FT_Log:     iDefFontSize = iSize*12/14; break;
 			case C4FT_MainSmall:iDefFontSize = iSize*13/14; break;
 			case C4FT_Main:    iDefFontSize = iSize; break;
-			case C4FT_Caption: iDefFontSize = iSize*16/14; /*dwDefWeight = FW_MEDIUM;*/ break;
-			case C4FT_Title:   iDefFontSize = iSize*22/14; /*dwDefWeight = FW_MEDIUM;*/ break;
+			case C4FT_Caption: iDefFontSize = iSize*16/14; break;
+			case C4FT_Title:   iDefFontSize = iSize*22/14; break;
 			default: LogFatal(LoadResStr("IDS_ERR_INITFONTS")); return false; // invalid call
 			}
 #endif

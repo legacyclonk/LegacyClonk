@@ -173,8 +173,6 @@ class C4Group: public CStdStream
     C4GroupHeader Head;
     C4GroupEntry *FirstEntry;
     // Folder only
-    //struct _finddata_t Fdt;
-    //long hFdt;
 	DirectoryIterator FolderSearch;
     C4GroupEntry FolderSearchEntry;
     C4GroupEntry LastFolderSearchEntry;

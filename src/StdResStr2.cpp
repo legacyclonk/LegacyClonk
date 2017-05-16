@@ -171,15 +171,6 @@ char *GetResStr(const char *id, const char *strTable)
 	pos = strResult;
 	while ((pos = SSearch(pos, "\\n")))
 		{ ((char*)pos)[-2] = 0x0D; ((char*)pos)[-1] = 0x0A; }
-#ifdef _DEBUG
-#ifdef _MSC_VER
-	if (SEqual2(strResult, "[Undefined:"))
-		if (!SEqual(id, "IDS_LANG_CHARSET"))
-			{
-			/* __asm int 3 */
-			}
-#endif
-#endif
 	// Return string
 	return strResult;
 }

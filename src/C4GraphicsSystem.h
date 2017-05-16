@@ -62,7 +62,6 @@ class C4GraphicsSystem
 		void SetMouseInGUI(bool fInGUI, bool fByMouse);
 		void SortViewportsByPlayerControl();
 		void ClearPointers(C4Object *pObj);
-		//void UpdateMouse(HWND hwnd, int32_t iX, int32_t iY, int32_t iB);
 		void RecalculateViewports();
 		BOOL Init();
 		BOOL InitLoaderScreen(const char *szLoaderSpec, bool fDrawBlackScreenFirst);

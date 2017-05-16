@@ -210,7 +210,6 @@ BOOL ObjectActionCornerScale(C4Object *cObj)
   if (!cObj->SetActionByName("KneelUp"))
 		cObj->SetActionByName("Walk");
   cObj->xdir=cObj->ydir=0;
-  //if (cObj->Action.Dir==DIR_Left) cObj->Action.ComDir=COMD_Left; else cObj->Action.ComDir=COMD_Right;
   if (cObj->Action.Dir==DIR_Left) cObj->fix_x-=itofix(iRangeX); 
 	else cObj->fix_x+=itofix(iRangeX);
   cObj->fix_y-=itofix(iRangeY);

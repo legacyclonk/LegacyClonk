@@ -211,7 +211,7 @@ void C4GraphicsSystem::Execute()
 		}
 
 	// Palette update
-	if (fSetPalette) { SetPalette(); /*SetDarkColorTable();*/ fSetPalette=FALSE; }
+	if (fSetPalette) { SetPalette(); fSetPalette=FALSE; }
 
 	// gamma update
 	if (fSetGamma)
@@ -231,20 +231,6 @@ void C4GraphicsSystem::Execute()
 BOOL C4GraphicsSystem::CloseViewport(C4Viewport * cvp)
 	{
 	if (!cvp) return false;
-	/*C4Viewport *next,*prev=NULL;
-	for (C4Viewport *cvp2=FirstViewport; cvp2; cvp2=next)
-		{
-		next=cvp2->Next;
-		if (cvp2 == cvp)
-			{			
-			delete cvp;
-			StartSoundEffect("CloseViewport");
-			if (prev) prev->Next=next;
-			else FirstViewport=next;
-			}
-		else
-			prev=cvp2;
-		}*/
 	// Chop the start of the chain off
 	if (FirstViewport == cvp)
 		{

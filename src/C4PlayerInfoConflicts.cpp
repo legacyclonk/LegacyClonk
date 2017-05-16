@@ -381,17 +381,3 @@ void C4PlayerInfoListAttributeConflictResolver::Resolve()
 		ResolveInPacket();
 		}
 	}
-
-
-/*C4Group g; g.Open("test.c4g");
-C4PlayerInfoList l1, l2, l3;
-l1.Load(g, "in1.txt");
-l2.Load(g, "in2.txt");
-l3.Load(g, "in3.txt");
-C4PlayerInfoListAttributeConflictResolver r(l1, l2, l3.GetIndexedInfo(0));
-r.Resolve();
-l1.Save(g, "out1.txt");
-l2.Save(g, "out2.txt");
-l3.Save(g, "out3.txt");
-g.Close();
-return true;*/

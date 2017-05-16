@@ -340,9 +340,6 @@ BOOL C4UpdatePackage::Execute(C4Group *pGroup)
 	// check if the update is allowed
 	if(GrpUpdate)
 	{
-		// maker must match
-		/*if(!SEqual(TargetGrp.GetMaker(), pGroup->GetMaker())) - now allowing updates from different makers
-			return FALSE;*/
 		// check checksum
 		uint32_t iCRC32;
 		if(!C4Group_GetFileCRC(TargetGrp.GetFullName().getData(), &iCRC32))
