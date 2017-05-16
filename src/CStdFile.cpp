@@ -260,7 +260,7 @@ bool CStdFile::Load(const char *szFilename, uint8_t **lpbpBuf,
 	int iSize = fCompressed ? UncompressedFileSize(szFilename) : FileSize(szFilename);
 	if (!lpbpBuf || (iSize < 1)) return false;
 	if (!Open(szFilename, fCompressed)) return false;
-	if (!(*lpbpBuf = new uint8_t[iSize + iAppendZeros])) return false;
+	*lpbpBuf = new uint8_t[iSize + iAppendZeros];
 	if (!Read(*lpbpBuf, iSize)) { delete[] *lpbpBuf; return false; }
 	if (iAppendZeros) ZeroMem((*lpbpBuf) + iSize, iAppendZeros);
 	if (ipSize) *ipSize = iSize;
