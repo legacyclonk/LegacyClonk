@@ -50,8 +50,7 @@ static CStdApp * readline_callback_use_this_app = 0;
 /* CStdApp */
 
 #ifdef WITH_GLIB
-# include <glib/gmain.h>
-# include <glib/giochannel.h>
+#include <glib.h>
 #endif
 
 #include "StdXPrivate.h"
