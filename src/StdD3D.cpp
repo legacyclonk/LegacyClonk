@@ -385,7 +385,7 @@ bool CStdD3D::SetOutputAdapter(unsigned int iMonitor)
 	// get associated monitor rect
 	HMONITOR hMon = lpD3D->GetAdapterMonitor(iMonitor);
 	if (!hMon) return false;
-	MONITORINFO nfo; ZeroMemory(&nfo, sizeof(nfo));
+	MONITORINFO nfo{};
 	nfo.cbSize = sizeof(MONITORINFO);
 	if (!GetMonitorInfo(hMon, &nfo)) return false;
 	pApp->MonitorRect = nfo.rcMonitor;
@@ -394,7 +394,7 @@ bool CStdD3D::SetOutputAdapter(unsigned int iMonitor)
 
 bool CStdD3D::CreatePrimarySurfaces(bool Fullscreen, unsigned int iMonitor)
 {
-	ZeroMemory(&d3dpp, sizeof(d3dpp));
+	d3dpp = {};
 
 	HRESULT hr;
 	HWND hWindow = pApp->pWindow->hWindow;
@@ -502,9 +502,8 @@ bool CStdD3D::OnResolutionChanged()
 {
 	// note that this should happen in fullscreen mode only!
 	// do not mess with real presetn parameters until resolution change worked
-	D3DPRESENT_PARAMETERS d3dpp;
+	D3DPRESENT_PARAMETERS d3dpp{};
 	// reinit window for new resolution
-	ZeroMemory(&d3dpp, sizeof(d3dpp));
 	HRESULT hr;
 	HWND hWindow = pApp->pWindow->hWindow;
 	// pick a display mode

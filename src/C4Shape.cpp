@@ -21,7 +21,7 @@ bool C4Shape::AddVertex(int32_t iX, int32_t iY)
 
 void C4Shape::Default()
 {
-	ZeroMem(this, sizeof(C4Shape));
+	std::memset(this, 0, sizeof(C4Shape));
 	AttachMat = MNone;
 	ContactDensity = C4M_Solid;
 }

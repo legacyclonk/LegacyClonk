@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <cstring>
+
 // *** StdCompiler
 
 void StdCompiler::Warn(const char *szWarning, ...)
@@ -660,7 +662,7 @@ void StdCompilerINIRead::Raw(void *pData, size_t iSize, RawCompileType eType)
 	if (Buf.getSize() != iSize)
 		Warn("got %u bytes raw data, but %u bytes expected!", Buf.getSize(), iSize);
 	// Copy
-	MemCopy(Buf.getData(), pData, iSize);
+	std::memmove(pData, Buf.getData(), iSize);
 }
 
 StdStrBuf StdCompilerINIRead::getPosition() const

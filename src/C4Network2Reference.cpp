@@ -319,8 +319,7 @@ bool C4Network2HTTPClient::Decompress(StdBuf *pData)
 	iOutSize = Min<uint32_t>(iOutSize, iSize * 1000);
 	StdBuf Out; Out.New(iOutSize);
 	// Prepare stream
-	z_stream zstrm;
-	ZeroMem(&zstrm, sizeof(zstrm));
+	z_stream zstrm{};
 	zstrm.next_in = const_cast<Byte *>(getBufPtr<Byte>(*pData));
 	zstrm.avail_in = pData->getSize();
 	zstrm.next_out = getMBufPtr<Byte>(Out);

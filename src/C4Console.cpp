@@ -1004,8 +1004,7 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 #endif
 {
 #ifdef _WIN32
-	OPENFILENAME ofn;
-	ZeroMem(&ofn, sizeof(ofn));
+	OPENFILENAME ofn{};
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hWindow;
 	ofn.lpstrFilter = szFilter;
@@ -1273,8 +1272,7 @@ void C4Console::ClearViewportMenu()
 bool C4Console::AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool fEnabled)
 {
 	if (!Active) return false;
-	MENUITEMINFO minfo;
-	ZeroMem(&minfo, sizeof(minfo));
+	MENUITEMINFO minfo{};
 	minfo.cbSize = sizeof(minfo);
 	minfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA | MIIM_STATE;
 	minfo.fType = MFT_STRING;

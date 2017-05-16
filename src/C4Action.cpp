@@ -15,7 +15,7 @@ C4Action::~C4Action() {}
 void C4Action::Default()
 {
 	Act = ActIdle;
-	ZeroMem(Name, C4D_MaxIDLen + 1);
+	std::fill(Name, std::end(Name), '\0');
 	Dir = DIR_None;
 	DrawDir = Dir;
 	ComDir = COMD_None;

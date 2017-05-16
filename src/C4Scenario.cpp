@@ -128,7 +128,7 @@ int32_t C4Scenario::GetMinPlayer()
 void C4SDefinitions::Default()
 {
 	LocalOnly = AllowUserChange = false;
-	ZeroMem(Definition, sizeof(Definition));
+	std::memset(Definition, 0, sizeof(Definition));
 	SkipDefs.Default();
 }
 
@@ -137,7 +137,7 @@ const int32_t C4S_MaxPlayerDefault = 12;
 void C4SHead::Default()
 {
 	Origin.Clear();
-	ZeroMem(this, sizeof(C4SHead));
+	std::memset(this, 0, sizeof(C4SHead));
 	Icon = 18;
 	MaxPlayer = MaxPlayerLeague = C4S_MaxPlayerDefault;
 	MinPlayer = 0; // auto-determine by mode

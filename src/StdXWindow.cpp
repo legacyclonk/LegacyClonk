@@ -79,9 +79,8 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	if (HideCursor)
 	{
 		// Hide the mouse cursor
-		XColor cursor_color;
 		// We do not care what color the invisible cursor has
-		memset(&cursor_color, 0, sizeof(cursor_color));
+		XColor cursor_color{};
 		bitmap = XCreateBitmapFromData(dpy, DefaultRootWindow(dpy), "\000", 1, 1);
 		attr.cursor = XCreatePixmapCursor(dpy, bitmap, bitmap, &cursor_color, &cursor_color, 0, 0);
 		attrmask |= CWCursor;

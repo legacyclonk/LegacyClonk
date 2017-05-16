@@ -17,6 +17,7 @@
 #include <math.h>
 #include <sys/timeb.h>
 #include <cctype>
+#include <cstring>
 
 // Basics
 
@@ -513,7 +514,7 @@ void SInsert(char *szString, const char *szInsert, int iPosition, int iMaxLen)
 	// Move up string remainder
 	memmove(szString + iPosition + insertlen, szString + iPosition, SLen(szString + iPosition) + 1);
 	// Copy insertion
-	MemCopy(szInsert, szString + iPosition, SLen(szInsert));
+	std::memmove(szString + iPosition, szInsert, SLen(szInsert));
 }
 
 void SDelete(char *szString, int iLen, int iPosition)
@@ -521,7 +522,7 @@ void SDelete(char *szString, int iLen, int iPosition)
 	// Safety
 	if (!szString) return;
 	// Move down string remainder
-	MemCopy(szString + iPosition + iLen, szString + iPosition, SLen(szString + iPosition + iLen) + 1);
+	std::memmove(szString + iPosition, szString + iPosition + iLen, SLen(szString + iPosition + iLen) + 1);
 }
 
 bool SCopyEnclosed(const char *szSource, char cOpen, char cClose, char *sTarget, int iSize)

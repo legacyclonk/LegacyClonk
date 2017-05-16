@@ -24,7 +24,7 @@ public:
 
 inline bool operator==(C4SVal Val1, C4SVal Val2)
 {
-	return MemEqual((void *)&Val1, (void *)&Val2, sizeof(C4SVal));
+	return std::memcmp(&Val1, &Val2, sizeof(C4SVal)) == 0;
 }
 
 #define C4SGFXMODE_NEWGFX 1

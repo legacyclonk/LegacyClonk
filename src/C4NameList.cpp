@@ -12,7 +12,7 @@ C4NameList::C4NameList()
 
 void C4NameList::Clear()
 {
-	ZeroMem(this, sizeof(C4NameList));
+	std::memset(this, 0, sizeof(C4NameList));
 }
 
 void C4NameList::CompileFunc(StdCompiler *pComp, bool fValues)

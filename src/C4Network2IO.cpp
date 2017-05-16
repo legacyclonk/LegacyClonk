@@ -40,7 +40,7 @@ C4Network2IO::C4Network2IO()
 	iTCPIRate(0), iTCPORate(0), iTCPBCRate(0),
 	iUDPIRate(0), iUDPORate(0), iUDPBCRate(0)
 {
-	ZeroMem(&PuncherAddr, sizeof(PuncherAddr));
+	std::memset(&PuncherAddr, 0, sizeof(PuncherAddr));
 }
 
 C4Network2IO::~C4Network2IO()
@@ -226,7 +226,7 @@ bool C4Network2IO::Connect(const C4NetIO::addr_t &addr, C4Network2IOProtocol ePr
 	if (GetConnectionByConnAddr(addr, pNetIO)) return true;
 	// assign new connection ID, peer address isn't known yet
 	uint32_t iConnID = iNextConnID++;
-	C4NetIO::addr_t paddr; ZeroMem(&paddr, sizeof(paddr));
+	C4NetIO::addr_t paddr; std::memset(&paddr, 0, sizeof(paddr));
 	// create connection object and add to list
 	C4Network2IOConnection *pConn = new C4Network2IOConnection();
 	pConn->Set(pNetIO, eProt, paddr, addr, CS_Connect, szPassword, iConnID);
@@ -488,7 +488,7 @@ void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const
 	if (pNetIO == pNetIO_UDP)
 		if (PuncherAddr.sin_addr.s_addr && AddrEqual(PuncherAddr, addr))
 		{
-			ZeroMem(&PuncherAddr, sizeof(PuncherAddr));
+			std::memset(&PuncherAddr, 0, sizeof(PuncherAddr));
 			return;
 		}
 #if(C4NET2IO_DUMP_LEVEL > 1)
@@ -1185,7 +1185,7 @@ void C4Network2IO::OnPunch(C4NetIO::addr_t addr)
 	if (addr.sin_family != AF_INET && addr.sin_family != htons(AF_INET))
 		return;
 	addr.sin_family = AF_INET;
-	ZeroMem(addr.sin_zero, sizeof(addr.sin_zero));
+	std::memset(&addr.sin_zero, 0, sizeof(addr.sin_zero));
 	// Add for local client
 	C4Network2Client *pLocal = Game.Network.Clients.GetLocal();
 	if (pLocal)

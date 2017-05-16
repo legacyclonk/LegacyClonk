@@ -29,7 +29,7 @@ bool C4Network2IODiscover::Init(uint16_t iPort)
 	DiscoveryAddr.sin_addr.s_addr = C4NetDiscoveryAddress;
 	DiscoveryAddr.sin_port = htons(iPort);
 	DiscoveryAddr.sin_family = AF_INET;
-	ZeroMem(DiscoveryAddr.sin_zero, sizeof(DiscoveryAddr.sin_zero));
+	std::memset(&DiscoveryAddr.sin_zero, 0, sizeof(DiscoveryAddr.sin_zero));
 	// Initialize broadcast
 	if (!C4NetIOSimpleUDP::InitBroadcast(&DiscoveryAddr))
 		return false;
@@ -75,7 +75,7 @@ bool C4Network2IODiscoverClient::Init(uint16_t iPort)
 	DiscoveryAddr.sin_addr.s_addr = C4NetDiscoveryAddress;
 	DiscoveryAddr.sin_port = htons(iPort);
 	DiscoveryAddr.sin_family = AF_INET;
-	ZeroMem(DiscoveryAddr.sin_zero, sizeof(DiscoveryAddr.sin_zero));
+	std::memset(&DiscoveryAddr.sin_zero, 0, sizeof(DiscoveryAddr.sin_zero));
 	// Initialize broadcast
 	if (!C4NetIOSimpleUDP::InitBroadcast(&DiscoveryAddr))
 		return false;

@@ -431,14 +431,13 @@ void C4TextureMap::Default()
 void C4TextureMap::StoreMapPalette(uint8_t *bypPalette, C4MaterialMap &rMaterial)
 {
 	// Zero palette
-	ZeroMem(bypPalette, 256 * 3);
+	std::fill_n(bypPalette, 256 * 3, 0);
 	// Sky color
 	bypPalette[0] = 192;
 	bypPalette[1] = 196;
 	bypPalette[2] = 252;
 	// Material colors by texture map entries
-	bool fSet[256];
-	ZeroMem(&fSet, sizeof(fSet));
+	bool fSet[256]{};
 	int32_t i;
 	for (i = 0; i < C4M_MaxTexIndex; i++)
 	{

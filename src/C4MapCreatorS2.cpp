@@ -47,8 +47,7 @@ void C4MCCallbackArray::EnablePixel(int32_t iX, int32_t iY)
 		iWdt = pCurrMap->Wdt; iHgt = pCurrMap->Hgt;
 		// create bitmap
 		int32_t iSize = (iWdt * iHgt + 7) / 8;
-		pMap = new uint8_t[iSize];
-		ZeroMemory(pMap, iSize);
+		pMap = new uint8_t[iSize]{};
 		// done
 	}
 	// safety: do not set outside map!

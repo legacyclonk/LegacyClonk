@@ -56,8 +56,8 @@ void C4GraphicsResource::Default()
 	fctBuild.Default();
 	fctEnergyBars.Default();
 
-	ZeroMem(GamePalette, 3 * 256);
-	ZeroMem(AlphaPalette, 256);
+	std::fill(GamePalette, std::end(GamePalette), 0);
+	std::fill(AlphaPalette, std::end(AlphaPalette), 0);
 	fctCrewClr.Default();
 	fctFlagClr.Default();
 	fctPlayerClr.Default();
@@ -167,7 +167,7 @@ bool C4GraphicsResource::Init(bool fInitGUI)
 		if (!pPalGrp->AccessEntry("C4.pal")) { LogFatal("Pal error!"); return false; }
 		if (!pPalGrp->Read(GamePalette, 256 * 3)) { LogFatal("Pal error!"); return false; }
 		for (int32_t cnt = 0; cnt < 256 * 3; cnt++) GamePalette[cnt] <<= 2;
-		ZeroMemory(&AlphaPalette, 256);
+		std::fill_n(AlphaPalette, 256, 0);
 		// Set default force field color
 		GamePalette[191 * 3 + 0] = 0;
 		GamePalette[191 * 3 + 1] = 0;

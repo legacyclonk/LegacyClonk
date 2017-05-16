@@ -302,8 +302,7 @@ bool SetMenuItemEnable(HMENU hMenu, WORD id, bool fEnable)
 
 bool SetMenuItemText(HMENU hMenu, WORD id, const char *szText)
 {
-	MENUITEMINFO minfo;
-	ZeroMem(&minfo, sizeof(minfo));
+	MENUITEMINFO minfo{};
 	minfo.cbSize = sizeof(minfo);
 	minfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
 	minfo.fType = MFT_STRING;

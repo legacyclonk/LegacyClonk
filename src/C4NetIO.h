@@ -27,6 +27,8 @@
 #include <sys/socket.h>
 #endif
 
+#include <cstring>
+
 // net i/o base class
 class C4NetIO : public StdSchedulerProc
 {
@@ -787,7 +789,7 @@ inline void CompileFunc(C4NetIO::addr_t &addr, StdCompiler *pComp)
 	if (pComp->isCompiler())
 	{
 		addr.sin_family = AF_INET;
-		ZeroMem(addr.sin_zero, sizeof(addr.sin_zero));
+		std::memset(&addr.sin_zero, 0, sizeof(addr.sin_zero));
 	}
 }
 

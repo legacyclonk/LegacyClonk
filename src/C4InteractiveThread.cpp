@@ -16,7 +16,7 @@ C4InteractiveThread::C4InteractiveThread()
 	pFirstEvent->Type = Ev_None;
 	pFirstEvent->Next = nullptr;
 	// reset event handlers
-	ZeroMem(&pCallbacks, sizeof(pCallbacks));
+	std::fill(pCallbacks, std::end(pCallbacks), nullptr);
 }
 
 C4InteractiveThread::~C4InteractiveThread()

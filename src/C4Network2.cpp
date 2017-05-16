@@ -2690,7 +2690,7 @@ bool C4Network2::StartStreaming(C4Record *pRecord)
 	iLastStreamAttempt = time(nullptr);
 
 	// Initialize compressor
-	ZeroMem(&StreamCompressor, sizeof(StreamCompressor));
+	StreamCompressor = {};
 	if (deflateInit(&StreamCompressor, 9) != Z_OK)
 		return false;
 

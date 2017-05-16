@@ -553,8 +553,7 @@ int main(int argc, char *argv[])
 	{
 		printf("Executing: %s\n", strExecuteAtEnd);
 
-		STARTUPINFO startInfo;
-		ZeroMem(&startInfo, sizeof(startInfo));
+		STARTUPINFO startInfo{};
 		startInfo.cb = sizeof(startInfo);
 
 		PROCESS_INFORMATION procInfo;

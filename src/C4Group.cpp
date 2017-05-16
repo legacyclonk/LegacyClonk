@@ -26,6 +26,8 @@
 #include <fcntl.h>
 #include <openssl/sha.h>
 
+#include <cstring>
+
 // File Sort Lists
 
 const char *C4CFN_FLS[] =
@@ -499,7 +501,7 @@ void MemScramble(uint8_t *bypBuffer, int iSize)
 
 C4GroupHeader::C4GroupHeader()
 {
-	ZeroMem(this, sizeof(C4GroupHeader));
+	std::memset(this, 0, sizeof(C4GroupHeader));
 }
 
 void C4GroupHeader::Init()
@@ -513,12 +515,12 @@ void C4GroupHeader::Init()
 
 C4GroupEntryCore::C4GroupEntryCore()
 {
-	ZeroMem(this, sizeof(C4GroupEntryCore));
+	std::memset(this, 0, sizeof(C4GroupEntryCore));
 }
 
 C4GroupEntry::C4GroupEntry()
 {
-	ZeroMem(this, sizeof(C4GroupEntry));
+	std::memset(this, 0, sizeof(C4GroupEntry));
 }
 
 C4GroupEntry::~C4GroupEntry()
@@ -537,7 +539,7 @@ C4GroupEntry::~C4GroupEntry()
 
 void C4GroupEntry::Set(const DirectoryIterator &iter, const char *szPath)
 {
-	ZeroMem(this, sizeof(C4GroupEntry));
+	std::memset(this, 0, sizeof(C4GroupEntry));
 	SCopy(iter.fdt.name, FileName, _MAX_FNAME);
 	Size = iter.fdt.size;
 	Time = iter.fdt.time_create;
@@ -554,7 +556,7 @@ void C4GroupEntry::Set(const DirectoryIterator &iter, const char *szPath)
 
 void C4GroupEntry::Set(const DirectoryIterator &iter, const char *path)
 {
-	ZeroMem(this, sizeof(C4GroupEntry));
+	std::memset(this, 0, sizeof(C4GroupEntry));
 	SCopy(GetFilename(*iter), FileName, _MAX_FNAME);
 	SCopy(*iter, DiskPath, _MAX_PATH - 1);
 	struct stat buf;
@@ -2190,8 +2192,7 @@ bool C4Group::LoadEntry(const char *szEntryName, char **lpbpBuf, size_t *ipSize,
 
 	if (ipSize) *ipSize = size;
 
-	if (iAppendZeros)
-		ZeroMem((*lpbpBuf) + size, iAppendZeros);
+	if (iAppendZeros) std::fill_n(*lpbpBuf + size, iAppendZeros, 0);
 
 	return true;
 }

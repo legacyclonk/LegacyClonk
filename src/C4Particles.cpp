@@ -221,7 +221,7 @@ void C4ParticleChunk::Clear()
 {
 	// note that this method is called in ctor with uninitialized data!
 	// simply clear mem - this won't adjust any counts!
-	ZeroMemory(Data, sizeof(Data));
+	std::memset(Data, 0, sizeof(Data));
 	// init list
 	C4Particle *pPrt = Data;
 	for (int32_t i = 0; i < C4Px_BufSize; ++i)

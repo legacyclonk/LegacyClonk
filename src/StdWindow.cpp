@@ -118,11 +118,12 @@ CStdApp::CStdApp() : Active(false), hInstance(nullptr), fQuitMsgReceived(false),
 	fTimePeriod(false),
 	iLastExecute(0),
 	iTimerOffset(0),
-	fDspModeSet(false)
+	fDspModeSet(false),
+	pfd{}, dspMode{}, OldDspMode{}
 {
-	ZeroMemory(&pfd, sizeof(pfd)); pfd.nSize = sizeof(pfd);
-	ZeroMemory(&dspMode, sizeof(dspMode)); dspMode.dmSize = sizeof(dspMode);
-	ZeroMemory(&OldDspMode, sizeof(OldDspMode)); OldDspMode.dmSize = sizeof(OldDspMode);
+	pfd.nSize = sizeof(pfd);
+	dspMode.dmSize = sizeof(dspMode);
+	OldDspMode.dmSize = sizeof(OldDspMode);
 	hMainThread = nullptr;
 }
 
@@ -345,8 +346,7 @@ bool CStdApp::SetOutputAdapter(unsigned int iMonitor)
 bool CStdApp::GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *piYRes, int32_t *piBitDepth, uint32_t iMonitor)
 {
 	// prepare search struct
-	DEVMODE dmode;
-	ZeroMemory(&dmode, sizeof(dmode)); dmode.dmSize = sizeof(dmode);
+	DEVMODE dmode{}; dmode.dmSize = sizeof(dmode);
 	StdStrBuf Mon;
 	if (iMonitor)
 		Mon.Format("\\\\.\\Display%d", iMonitor + 1);
@@ -370,7 +370,7 @@ bool CStdApp::FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned i
 		Mon.Format("\\\\.\\Display%d", iMonitor + 1);
 	// enumerate modes
 	int i = 0;
-	ZeroMemory(&dmode, sizeof(dmode)); dmode.dmSize = sizeof(dmode);
+	dmode = {}; dmode.dmSize = sizeof(dmode);
 	while (EnumDisplaySettings(Mon.getData(), i++, &dmode))
 		// size and bit depth is OK?
 		if (dmode.dmPelsWidth == iXRes && dmode.dmPelsHeight == iYRes && dmode.dmBitsPerPel == 32)

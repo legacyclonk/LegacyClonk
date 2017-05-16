@@ -289,8 +289,7 @@ void C4GameResList::CompileFunc(StdCompiler *pComp)
 	// Create list
 	if (fCompiler)
 	{
-		pResList = new C4GameRes *[iResCapacity = iResCount];
-		ZeroMem(pResList, sizeof(*pResList) * iResCount);
+		pResList = new C4GameRes *[iResCapacity = iResCount]{};
 	}
 	// Compile list
 	pComp->Value(

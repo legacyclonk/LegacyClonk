@@ -61,7 +61,7 @@ C4ActionDef::C4ActionDef()
 
 void C4ActionDef::Default()
 {
-	ZeroMem(this, sizeof(C4ActionDef));
+	std::memset(this, 0, sizeof(C4ActionDef));
 	Procedure = DFA_NONE;
 	NextAction = ActIdle;
 	Directions = 1;
@@ -1323,7 +1323,7 @@ void C4DefList::Default()
 {
 	FirstDef = nullptr;
 	LoadFailure = false;
-	ZeroMem(&Table, sizeof(Table));
+	std::fill(Table, std::end(Table), nullptr);
 	fTable = false;
 }
 
@@ -1367,7 +1367,7 @@ void C4DefList::BuildTable()
 	int32_t i;
 	for (i = 0; i < 64; i++) { delete[] Table[i]; Table[i] = nullptr; }
 	// build temp count list
-	int32_t Counts[64]; ZeroMem(&Counts, sizeof(Counts));
+	int32_t Counts[64]{};
 	C4Def *pDef;
 	for (pDef = FirstDef; pDef; pDef = pDef->Next)
 		if (LooksLikeID(pDef->id))
@@ -1378,9 +1378,8 @@ void C4DefList::BuildTable()
 	// get mem for table; !!! leave space for stop entry !!!
 	for (i = 0; i < 64; i++) if (Counts[i])
 	{
-		C4Def **ppDef = (C4Def **)new long[Counts[i] + 1];
+		C4Def **ppDef = (C4Def **)new long[Counts[i] + 1]{};
 		Table[i] = ppDef;
-		ZeroMem(ppDef, (Counts[i] + 1) * sizeof(long));
 	}
 	// build table
 	for (pDef = FirstDef; pDef; pDef = pDef->Next)
