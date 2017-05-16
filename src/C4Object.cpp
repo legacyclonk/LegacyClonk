@@ -3805,7 +3805,7 @@ bool C4Object::AddCommand(int32_t iCommand, C4Object *pTarget, C4Value iTx, int3
 	// Valid command safety
 	if (!Inside(iCommand, C4CMD_First, C4CMD_Last)) return false;
 	// Allocate and set new command
-	if (!(pCom = new C4Command)) return false;
+	pCom = new C4Command;
 	pCom->Set(iCommand, this, pTarget, iTx, iTy, pTarget2, iData,
 		iUpdateInterval, !fInitEvaluation, iRetries, szText, iBaseMode);
 	// Append to bottom of stack

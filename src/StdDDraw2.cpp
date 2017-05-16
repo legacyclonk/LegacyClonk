@@ -126,7 +126,6 @@ bool CPattern::Set(SURFACE sfcSource, int iZoom, bool fMonochrome)
 	// set flags
 	Monochrome = fMonochrome;
 	CachedPattern = new uint32_t[Wdt * Hgt];
-	if (!CachedPattern) return false;
 	for (int y = 0; y < Hgt; ++y)
 		for (int x = 0; x < Wdt; ++x)
 		{

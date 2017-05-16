@@ -95,14 +95,12 @@ bool CSurface8::Create(int iWdt, int iHgt, bool fOwnPal)
 	if (fOwnPal)
 	{
 		pPal = new CStdPalette;
-		if (!pPal) return false;
 		memcpy(pPal, &lpDDraw->Pal, sizeof(CStdPalette));
 	}
 	else
 		pPal = &lpDDraw->Pal;
 
 	Bits = new uint8_t[Wdt * Hgt];
-	if (!Bits) return false;
 	ZeroMemory(Bits, Wdt * Hgt);
 	Pitch = Wdt;
 	// update clipping
@@ -323,7 +321,10 @@ void CSurface8::Polygon(int iNum, int *ipVtx, int iCol)
 	{
 		edgebuf = QuickPolyBuf; use_qpb = true;
 	}
-	else if (!(edgebuf = new CPolyEdge[iNum])) { return; }
+	else
+	{
+		edgebuf = new CPolyEdge[iNum];
+	}
 
 	// Fill the edge table
 	edge = edgebuf;
