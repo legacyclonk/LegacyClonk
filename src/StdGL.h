@@ -4,7 +4,7 @@
 
 #pragma once
 
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 
 #include <GL/glew.h>
 
@@ -156,4 +156,4 @@ protected:
 // Global access pointer
 extern CStdGL *pGL;
 
-#endif // ifdef USE_GL
+#endif

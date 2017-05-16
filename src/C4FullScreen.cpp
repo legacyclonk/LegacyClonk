@@ -293,7 +293,7 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 	{
 	case SDL_KEYDOWN:
 	{
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 		if (e.key.keysym.sym == SDLK_f && (e.key.keysym.mod & (KMOD_LMETA | KMOD_RMETA)))
 		{
 			DDrawCfg.Windowed = !DDrawCfg.Windowed;

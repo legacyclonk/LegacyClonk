@@ -1098,11 +1098,11 @@ StdStrBuf C4StartupOptionsDlg::GetGfxResString(int32_t iResX, int32_t iResY)
 void C4StartupOptionsDlg::OnFullscreenChange(C4GUI::Element *pCheckBox)
 {
 	DDrawCfg.Windowed = !static_cast<C4GUI::CheckBox *>(pCheckBox)->GetChecked();
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (pGL) pGL->fFullscreen = !DDrawCfg.Windowed;
 #endif
 	Application.SetFullScreen(!DDrawCfg.Windowed, false);
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	lpDDraw->InvalidateDeviceObjects();
 	lpDDraw->RestoreDeviceObjects();
 #endif

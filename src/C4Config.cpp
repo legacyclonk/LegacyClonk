@@ -421,7 +421,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 #endif
 #endif
 	General.DefaultLanguage();
-#if defined(USE_GL)
+#ifndef USE_CONSOLE
 	if (Graphics.Engine != GFXENGN_NOGFX) Graphics.Engine = GFXENGN_OPENGL;
 #endif
 	// OpenGL

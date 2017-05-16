@@ -59,9 +59,6 @@ CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 # USE_FMOD
 CMAKE_DEPENDENT_OPTION(USE_FMOD "Whether FMOD shall be used" ON
 	"ENABLE_SOUND AND WIN32" OFF)
-# USE_GL
-CMAKE_DEPENDENT_OPTION(USE_GL "Compile with OpenGL support" ON
-	"NOT USE_CONSOLE" OFF)
 # USE_MP3
 CMAKE_DEPENDENT_OPTION(USE_MP3 "Enable MP3 support" OFF
 	"ENABLE_SOUND" OFF)
@@ -178,7 +175,7 @@ if (NOT USE_CONSOLE)
 endif ()
 
 # Link OpenGL and GLEW
-if (NOT USE_CONSOLE AND USE_GL)
+if (NOT USE_CONSOLE)
 	find_package(OpenGL REQUIRED)
 	if (NOT TARGET OpenGL::GLU)
 		message(FATAL_ERROR "Cannot find GLU library")

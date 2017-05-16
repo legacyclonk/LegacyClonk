@@ -7,7 +7,7 @@
 #include <C4Console.h>
 #include <C4Application.h>
 #include <StdRegistry.h>
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 #include <StdGL.h>
 #endif
 
@@ -255,7 +255,7 @@ bool C4ToolsDlg::Open()
 	// Load bitmaps if necessary
 	LoadBitmaps();
 	// create target ctx for OpenGL rendering
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (lpDDraw && !pGLCtx) pGLCtx = lpDDraw->CreateContext(GetDlgItem(hDialog, IDC_PREVIEW), &Application);
 #endif
 	// Show window
@@ -390,7 +390,7 @@ void C4ToolsDlg::Default()
 {
 #ifdef _WIN32
 	hDialog = nullptr;
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	pGLCtx = nullptr;
 #endif
 #elif defined(WITH_DEVELOPER_MODE)
@@ -407,7 +407,7 @@ void C4ToolsDlg::Default()
 void C4ToolsDlg::Clear()
 {
 #ifdef _WIN32
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	delete pGLCtx; pGLCtx = nullptr;
 #endif
 	if (hDialog) DestroyWindow(hDialog); hDialog = nullptr;
@@ -655,7 +655,7 @@ void C4ToolsDlg::UpdatePreview()
 	Application.DDraw->AttachPrimaryPalette(sfcPreview);
 
 #ifdef _WIN32
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (pGL && pGLCtx)
 	{
 		if (pGLCtx->Select())

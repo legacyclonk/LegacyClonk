@@ -189,7 +189,7 @@ void CStdWindow::Clear()
 #ifdef USE_X11
 bool CStdWindow::FindInfo()
 {
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	// get an appropriate visual
 	// attributes for a single buffered visual in RGBA format with at least 4 bits per color
 	static int attrListSgl[] = { GLX_RGBA,
@@ -210,7 +210,7 @@ bool CStdWindow::FindInfo()
 		// a singlebuffered is probably better than the default
 		Info = glXChooseVisual(dpy, DefaultScreen(dpy), attrListSgl);
 	}
-#endif // USE_GL
+#endif
 	if (!Info)
 	{
 		Log("  gl: no singlebuffered visual, either.");

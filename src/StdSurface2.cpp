@@ -85,7 +85,7 @@ void CSurface::MoveFrom(CSurface *psfcFrom)
 	ClrByOwnerClr = psfcFrom->ClrByOwnerClr;
 	iTexSize = psfcFrom->iTexSize;
 	iTexX = psfcFrom->iTexX; iTexY = psfcFrom->iTexY;
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	Format = psfcFrom->Format;
 #endif
 	fIsBackground = psfcFrom->fIsBackground;
@@ -134,7 +134,7 @@ bool CSurface::Create(int iWdt, int iHgt, bool fOwnPal, bool fIsRenderTarget)
 	if (!lpDDraw->DeviceReady()) return false;
 
 	// store color format that will be used
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (pGL)
 		Format = pGL->sfcFmt;
 	else
@@ -155,7 +155,7 @@ bool CSurface::CreateTextures()
 	FreeTextures();
 	// get max texture size
 	int iMaxTexSize = 64;
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (pGL)
 	{
 		GLint iMaxTexSize2 = 0;
@@ -407,7 +407,7 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 	CSurface *pMainSfcBackup;
 	if (fSaveOverlayOnly) { pMainSfcBackup = pMainSfc; pMainSfc = nullptr; }
 
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (fPrimary && pGL)
 	{
 		// Take shortcut. FIXME: Check Endian
@@ -569,7 +569,7 @@ uint32_t CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 	// primary?
 	if (fPrimary)
 	{
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 		// OpenGL?
 		if (pGL)
 		{
@@ -771,7 +771,7 @@ bool CSurface::CopyBytes(uint8_t *pImageData)
 CTexRef::CTexRef(int iSize, bool fSingle)
 {
 	// zero fields
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	texName = 0;
 #endif
 	texLock.pBits = nullptr; fIntLock = false;
@@ -784,7 +784,7 @@ CTexRef::CTexRef(int iSize, bool fSingle)
 	if (!lpDDraw) return;
 	if (!lpDDraw->DeviceReady()) return;
 	// create it!
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (pGL)
 	{
 		// OpenGL
@@ -812,7 +812,7 @@ CTexRef::~CTexRef()
 {
 	fIntLock = false;
 	// free texture
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (pGL)
 	{
 		if (texName && pGL->pCurrCtx) glDeleteTextures(1, &texName);
@@ -840,7 +840,7 @@ bool CTexRef::LockForUpdate(RECT &rtUpdate)
 		}
 	}
 	// lock
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (pGL)
 	{
 		if (texName)
@@ -869,7 +869,7 @@ bool CTexRef::Lock()
 	LockSize.right = LockSize.bottom = iSize;
 	LockSize.top = LockSize.left = 0;
 	// lock
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (pGL)
 	{
 		if (texName)
@@ -897,7 +897,7 @@ void CTexRef::Unlock()
 {
 	// locked?
 	if (!texLock.pBits || fIntLock) return;
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (pGL)
 	{
 		// select context, if not already done

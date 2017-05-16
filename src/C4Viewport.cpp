@@ -756,7 +756,7 @@ bool C4Viewport::UpdateOutputSize()
 	ScrollBarsByViewPosition();
 	// Reset menus
 	ResetMenuPositions = true;
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	// update internal GL size
 	if (pCtx) pCtx->UpdateSize();
 #endif
@@ -776,7 +776,7 @@ C4Viewport::~C4Viewport()
 
 void C4Viewport::Clear()
 {
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	if (pCtx) { delete pCtx; pCtx = nullptr; }
 #endif
 	if (pWindow) { pWindow->Clear(); delete pWindow; pWindow = nullptr; }
@@ -1102,7 +1102,7 @@ void C4Viewport::Execute()
 	}
 	// Adjust position
 	AdjustPosition();
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	// select rendering context
 	if (pCtx) if (!pCtx->Select()) return;
 #endif
@@ -1117,7 +1117,7 @@ void C4Viewport::Execute()
 			Game.GraphicsSystem.Video.Execute();
 	// Blit output
 	BlitOutput();
-#ifdef USE_GL
+#ifndef USE_CONSOLE
 	// switch back to original context
 	if (pCtx) pGL->GetMainCtx().Select();
 #endif
