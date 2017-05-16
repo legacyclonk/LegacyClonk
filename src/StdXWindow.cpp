@@ -40,8 +40,7 @@
 #include <errno.h>
 
 #ifdef WITH_GLIB
-# include <glib/gmain.h>
-# include <glib/giochannel.h>
+#include <glib.h>
 #endif
 
 #include "StdXPrivate.h"
