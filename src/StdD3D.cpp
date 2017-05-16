@@ -52,11 +52,11 @@ void CStdD3D::Default()
 	lpDevice=NULL;
 	pVB=pVBClr=pVBClrTex=NULL;
 	ZeroMemory(&sfcBmpInfo, sizeof(sfcBmpInfo));
-	bltState[0]=bltState[1]=bltState[2]=0;
-	bltBaseState[0]=bltBaseState[1]=0;
-	bltBaseState[2]=bltBaseState[3]=0;
-	drawSolidState[0]=drawSolidState[1]=0;
-	dwSavedState=0;
+	bltState[0]=bltState[1]=bltState[2]=NULL;
+	bltBaseState[0]=bltBaseState[1]=NULL;
+	bltBaseState[2]=bltBaseState[3]=NULL;
+	drawSolidState[0]=drawSolidState[1]=NULL;
+	savedState=NULL;
 	}
 
 void CStdD3D::Clear()
@@ -82,7 +82,7 @@ void CStdD3D::Clear()
 
 BOOL CStdD3D::CreateDirectDraw()
 	{
-	if ((lpD3D=Direct3DCreate8(D3D_SDK_VERSION))==NULL) return FALSE;
+	if ((lpD3D=Direct3DCreate9(D3D_SDK_VERSION))==NULL) return FALSE;
   return TRUE;
 	}
 
@@ -156,7 +156,7 @@ bool CStdD3D::UpdateClipper()
 	if (DDrawCfg.ClipManually) return true;
 #endif
 	// bound clipper to surface size
-	D3DVIEWPORT8 Clipper;
+	D3DVIEWPORT9 Clipper;
 	Clipper.X=iX; Clipper.Y=iY; Clipper.Width=iWdt; Clipper.Height=iHgt;
 	Clipper.MinZ=0.0f; Clipper.MaxZ=1.0f;
 	// set it
@@ -181,11 +181,11 @@ bool CStdD3D::PrepareRendering(SURFACE sfcToSurface)
 		{
 		// target is a render-target?
 		if (!sfcToSurface->IsRenderTarget()) return false;
-		IDirect3DSurface8 *pDest=sfcToSurface->GetSurface();
+		IDirect3DSurface9 *pDest=sfcToSurface->GetSurface();
 		if (!pDest) return false;
 		// set target
 		EndScene();
-		if (lpDevice->SetRenderTarget(pDest, NULL) != D3D_OK)
+		if (lpDevice->SetRenderTarget(0, pDest) != D3D_OK)
 			{
 			pDest->Release();
 			return false;
@@ -268,8 +268,8 @@ void CStdD3D::PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool
 		pVertexPtr = (void *)&bltClrVertices;
 		iVtxSize = sizeof(bltClrVertices[0]);
 		// update rendering state
-		lpDevice->ApplyStateBlock(bltBaseState[iAdditive + (fMod2 ? C4GFXBLIT_MOD2 : 0)]);
-		lpDevice->SetVertexShader(D3DFVF_C4CTVERTEX);
+		bltBaseState[iAdditive + (fMod2 ? C4GFXBLIT_MOD2 : 0)]->Apply();
+		lpDevice->SetFVF(D3DFVF_C4CTVERTEX);
 		}
 	else
 		{
@@ -286,9 +286,9 @@ void CStdD3D::PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool
 		pVertexPtr = (void *)&bltVertices;
 		iVtxSize = sizeof(bltVertices[0]);
 		// update rendering state if there's a base texture
-		lpDevice->ApplyStateBlock(bltState[iAdditive ? 2 : 1]);
+		bltState[iAdditive ? 2 : 1]->Apply();
 		//lpDevice->SetStreamSource(0, pVB, sizeof);
-		lpDevice->SetVertexShader(D3DFVF_C4VERTEX);
+		lpDevice->SetFVF(D3DFVF_C4VERTEX);
 		lpDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_SELECTARG1 );
 		lpDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
 		}
@@ -297,8 +297,8 @@ void CStdD3D::PerformBlt(CBltData &rBltData, CTexRef *pTex, DWORD dwModClr, bool
 	// override linear filter mode for exact blits
 	if (fExact)
 		{
-		lpDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTEXF_POINT);
-		lpDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTEXF_POINT);
+		lpDevice->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+		lpDevice->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
 		}
 	// draw!
 	lpDevice->DrawPrimitiveUP( D3DPT_TRIANGLEFAN, rBltData.byNumVertices-2, pVertexPtr, iVtxSize );
@@ -422,10 +422,11 @@ BOOL CStdD3D::FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned i
 	{
 	bool fFound=false;
 	D3DDISPLAYMODE dmode;
+	const D3DFORMAT format = (iColorDepth == 32 ? D3DFMT_X8R8G8B8 : D3DFMT_R5G6B5);
 	// enumerate modes
-	int iNumModes=lpD3D->GetAdapterModeCount(iMonitor);
+	int iNumModes=lpD3D->GetAdapterModeCount(iMonitor, format);
 	for (int i=0; i<iNumModes; i++)
-		if (lpD3D->EnumAdapterModes(iMonitor, i, &dmode) == D3D_OK)
+		if (lpD3D->EnumAdapterModes(iMonitor, format, i, &dmode) == D3D_OK)
 			{
 			// size and bit depth is OK?
 			if (dmode.Width==iXRes && dmode.Height==iYRes && Format2BitDepth(dmode.Format)==iColorDepth)
@@ -735,10 +736,10 @@ void CStdD3D::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, DWORD dwClr1, DWORD dwCl
 	if (DDrawCfg.NoBoxFades) NormalizeColors(dwClr1, dwClr2, dwClr3, dwClr4);
 	// set blitting state
 	int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
-	lpDevice->ApplyStateBlock(drawSolidState[iAdditive]);
+	drawSolidState[iAdditive]->Apply();
 	lpDevice->SetRenderState( D3DRS_DESTBLEND,  iAdditive ? D3DBLEND_ONE : D3DBLEND_SRCALPHA );
-	lpDevice->SetStreamSource(0, pVBClr, sizeof(C4CLRVERTEX));
-	lpDevice->SetVertexShader(D3DFVF_C4CLRVERTEX);
+	lpDevice->SetStreamSource(0, pVBClr, 0, sizeof(C4CLRVERTEX));
+	lpDevice->SetFVF(D3DFVF_C4CLRVERTEX);
 	// 2do: manual clipping?
 	// set vertex buffer data
 	float fX1 = (float) ipVtx[0] - 0.5f;
@@ -768,7 +769,7 @@ void CStdD3D::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, DWORD dwClr1, DWORD dwCl
 		for (int i = 0; i < 6; ++i) ModulateClr(clrVertices[i].color, pClrModMap->GetModAt((int)clrVertices[i].x, (int)clrVertices[i].y));
 	// copy into vertex buffer
 	VOID* pVertices;
-	if( pVBClr->Lock(0, sizeof(clrVertices), (BYTE**)&pVertices, 0) != D3D_OK ) return;
+	if( pVBClr->Lock(0, sizeof(clrVertices), &pVertices, 0) != D3D_OK ) return;
 	memcpy(pVertices, clrVertices, sizeof(clrVertices));
 	pVBClr->Unlock();
 	// draw
@@ -820,13 +821,13 @@ void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float 
 			if (!PrepareRendering(sfcTarget)) return;
 			// set blitting state - use src alpha channel als opacity because some systems cannot antialias otherwise
 			int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
-			lpDevice->ApplyStateBlock(drawSolidState[iAdditive]);
+			drawSolidState[iAdditive]->Apply();
 			lpDevice->SetRenderState( D3DRS_DESTBLEND,  iAdditive ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA );
 			lpDevice->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-			lpDevice->SetRenderState( D3DRS_EDGEANTIALIAS,    TRUE );
+			lpDevice->SetRenderState( D3DRS_ANTIALIASEDLINEENABLE, TRUE );
 			lpDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-			lpDevice->SetStreamSource(0, pVBClr, sizeof(C4CLRVERTEX));
-			lpDevice->SetVertexShader(D3DFVF_C4CLRVERTEX);
+			lpDevice->SetStreamSource(0, pVBClr, 0, sizeof(C4CLRVERTEX));
+			lpDevice->SetFVF(D3DFVF_C4CLRVERTEX);
 			dwClr = InvertRGBAAlpha(dwClr);
 			// set vertex buffer data
 			float fX1 = (float) x1;// - 0.5f;
@@ -841,7 +842,7 @@ void CStdD3D::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float 
 				for (int i = 0; i < 4; ++i) ModulateClr(clrVertices[i].color, pClrModMap->GetModAt((int)clrVertices[i].x, (int)clrVertices[i].y));
 			// copy into vertex buffer
 			VOID* pVertices;
-			if( pVBClr->Lock(0, sizeof(clrVertices[0])*4, (BYTE**)&pVertices, 0) != D3D_OK ) return;
+			if( pVBClr->Lock(0, sizeof(clrVertices[0])*4, &pVertices, 0) != D3D_OK ) return;
 			memcpy(pVertices, clrVertices, sizeof(clrVertices[0])*4);
 			pVBClr->Unlock();
 			// draw - actually two lines, to ensure that the last pixels are drawn, too...
@@ -993,15 +994,15 @@ bool CStdD3D::RestoreDeviceObjects()
 	if (lpDevice->TestCooperativeLevel() != D3D_OK) return false;
 	bool fSuccess=true;
 	// restore primary/back
-	IDirect3DSurface8 *pPrimarySfc;
-	if (lpDevice->GetRenderTarget(&pPrimarySfc) != D3D_OK)
+	IDirect3DSurface9 *pPrimarySfc;
+	if (lpDevice->GetRenderTarget(0, &pPrimarySfc) != D3D_OK)
 		{ Error("Could not get primary surface"); fSuccess=false; }
 	RenderTarget=lpPrimary;
 	lpPrimary->AttachSfc(pPrimarySfc);
 	lpPrimary->dwClrFormat=PrimarySrfcFormat;
 	lpPrimary->byBytesPP=Format2BitDepth(PrimarySrfcFormat)/8;
 	// create vertex buffer
-	if( lpDevice->CreateVertexBuffer(sizeof(bltVertices), 0, D3DFVF_C4VERTEX, D3DPOOL_DEFAULT, &pVB) != D3D_OK ) return false;
+	if( lpDevice->CreateVertexBuffer(sizeof(bltVertices), 0, D3DFVF_C4VERTEX, D3DPOOL_DEFAULT, &pVB, NULL) != D3D_OK ) return false;
 	// fill initial data for vertex buffer
 	int i;
 	for (i=0; i<6; ++i)
@@ -1010,7 +1011,7 @@ bool CStdD3D::RestoreDeviceObjects()
 		bltVertices[i].rhw=1.0f;
 		}
 	// create solid color vertex buffer
-	if( lpDevice->CreateVertexBuffer(sizeof(clrVertices), 0, D3DFVF_C4CLRVERTEX, D3DPOOL_DEFAULT, &pVBClr) != D3D_OK ) return false;
+	if( lpDevice->CreateVertexBuffer(sizeof(clrVertices), 0, D3DFVF_C4CLRVERTEX, D3DPOOL_DEFAULT, &pVBClr, NULL) != D3D_OK ) return false;
 	// fill initial data for vertex buffer
 	for (i=0; i<6; ++i)
 		{
@@ -1018,7 +1019,7 @@ bool CStdD3D::RestoreDeviceObjects()
 		clrVertices[i].rhw=1.0f;
 		}
 	// create color-texblit vertices
-	if( lpDevice->CreateVertexBuffer(sizeof(bltClrVertices), 0, D3DFVF_C4CTVERTEX, D3DPOOL_DEFAULT, &pVBClrTex) != D3D_OK ) return false;
+	if( lpDevice->CreateVertexBuffer(sizeof(bltClrVertices), 0, D3DFVF_C4CTVERTEX, D3DPOOL_DEFAULT, &pVBClrTex, NULL) != D3D_OK ) return false;
 	// fill initial data for vertex buffer
 	for (i=0; i<6; ++i)
 		{
@@ -1035,7 +1036,7 @@ bool CStdD3D::RestoreDeviceObjects()
 	bltBaseState[1]=CreateStateBlock(true, false, true, true, false);
 	bltBaseState[2]=CreateStateBlock(true, false, true, false, true);
 	bltBaseState[3]=CreateStateBlock(true, false, true, true, true);
-	lpDevice->BeginStateBlock(); lpDevice->EndStateBlock(&dwSavedState);
+	lpDevice->BeginStateBlock(); lpDevice->EndStateBlock(&savedState);
 	// activate if successful
 	Active=fSuccess;
 	// restore gamma if active
@@ -1046,7 +1047,6 @@ bool CStdD3D::RestoreDeviceObjects()
 	return Active;
 	}
 
-#define RELEASE_STATEBLOCK(x) if (x) { lpDevice->DeleteStateBlock(x); x=0; }
 #define RELEASE_OBJECT(x) if (x) { x->Release(); x=NULL; }
 
 bool CStdD3D::InvalidateDeviceObjects()
@@ -1057,16 +1057,16 @@ bool CStdD3D::InvalidateDeviceObjects()
 	// deactivate
 	Active=false;
 	// release state blocks
-	RELEASE_STATEBLOCK(bltState[0]);
-	RELEASE_STATEBLOCK(bltState[1]);
-	RELEASE_STATEBLOCK(bltState[2]);
-	RELEASE_STATEBLOCK(drawSolidState[0]);
-	RELEASE_STATEBLOCK(bltBaseState[0]);
-	RELEASE_STATEBLOCK(bltBaseState[1]);
-	RELEASE_STATEBLOCK(drawSolidState[1]);
-	RELEASE_STATEBLOCK(bltBaseState[2]);
-	RELEASE_STATEBLOCK(bltBaseState[3]);
-	RELEASE_STATEBLOCK(dwSavedState);
+	RELEASE_OBJECT(bltState[0]);
+	RELEASE_OBJECT(bltState[1]);
+	RELEASE_OBJECT(bltState[2]);
+	RELEASE_OBJECT(drawSolidState[0]);
+	RELEASE_OBJECT(bltBaseState[0]);
+	RELEASE_OBJECT(bltBaseState[1]);
+	RELEASE_OBJECT(drawSolidState[1]);
+	RELEASE_OBJECT(bltBaseState[2]);
+	RELEASE_OBJECT(bltBaseState[3]);
+	RELEASE_OBJECT(savedState);
 	// release vertex buffer
 	RELEASE_OBJECT(pVBClr);
 	RELEASE_OBJECT(pVB);
@@ -1088,7 +1088,7 @@ bool CStdD3D::DeleteDeviceObjects()
 	return fSuccess;
 }
 
-DWORD CStdD3D::CreateStateBlock(bool fTransparent, bool fSolid, bool fBaseTex, bool fAdditive, bool fMod2)
+IDirect3DStateBlock9 *CStdD3D::CreateStateBlock(bool fTransparent, bool fSolid, bool fBaseTex, bool fAdditive, bool fMod2)
 	{
 	// settings
 	if (!DDrawCfg.AdditiveBlts) fAdditive=false;
@@ -1108,7 +1108,7 @@ DWORD CStdD3D::CreateStateBlock(bool fTransparent, bool fSolid, bool fBaseTex, b
 	lpDevice->SetRenderState( D3DRS_ZENABLE,          FALSE );
 	lpDevice->SetRenderState( D3DRS_STENCILENABLE,    FALSE );
 	lpDevice->SetRenderState( D3DRS_CLIPPING,         TRUE );
-	lpDevice->SetRenderState( D3DRS_EDGEANTIALIAS,    FALSE );
+	lpDevice->SetRenderState( D3DRS_ANTIALIASEDLINEENABLE, FALSE );
 	lpDevice->SetRenderState( D3DRS_CLIPPLANEENABLE,  FALSE );
 	lpDevice->SetRenderState( D3DRS_VERTEXBLEND,      FALSE );
 	lpDevice->SetRenderState( D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE );
@@ -1131,22 +1131,22 @@ DWORD CStdD3D::CreateStateBlock(bool fTransparent, bool fSolid, bool fBaseTex, b
 		}
 	lpDevice->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_DISABLE );
 	lpDevice->SetTextureStageState( 1, D3DTSS_ALPHAOP,   D3DTOP_DISABLE );
-	lpDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, DDrawCfg.PointFiltering ? D3DTEXF_POINT : D3DTEXF_LINEAR );
-	lpDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, DDrawCfg.PointFiltering ? D3DTEXF_POINT : D3DTEXF_LINEAR );
-	lpDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTEXF_NONE );
+	lpDevice->SetSamplerState( 0, D3DSAMP_MINFILTER, DDrawCfg.PointFiltering ? D3DTEXF_POINT : D3DTEXF_LINEAR );
+	lpDevice->SetSamplerState( 0, D3DSAMP_MAGFILTER, DDrawCfg.PointFiltering ? D3DTEXF_POINT : D3DTEXF_LINEAR );
+	lpDevice->SetSamplerState( 0, D3DSAMP_MIPFILTER, D3DTEXF_NONE );
 	lpDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0 );
 	lpDevice->SetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE );
-	lpDevice->SetTextureStageState( 0, D3DTSS_ADDRESSU , D3DTADDRESS_CLAMP );
-	lpDevice->SetTextureStageState( 0, D3DTSS_ADDRESSV , D3DTADDRESS_CLAMP );
+	lpDevice->SetSamplerState( 0, D3DSAMP_ADDRESSU , D3DTADDRESS_CLAMP );
+	lpDevice->SetSamplerState( 0, D3DSAMP_ADDRESSV , D3DTADDRESS_CLAMP );
 	// capture
-	DWORD dwBlock; lpDevice->EndStateBlock(&dwBlock);
+	IDirect3DStateBlock9 *block; lpDevice->EndStateBlock(&block);
 	// return captured block
-	return dwBlock;
+	return block;
 	}
 
 bool CStdD3D::StoreStateBlock()
 	{
-	if (lpDevice) lpDevice->CaptureStateBlock(dwSavedState);
+	if (savedState) savedState->Capture();
 	return true;
 	}
 
@@ -1161,14 +1161,14 @@ void CStdD3D::ResetTexture()
 
 bool CStdD3D::RestoreStateBlock()
 	{
-	if (lpDevice) lpDevice->ApplyStateBlock(dwSavedState);
+	if (savedState) savedState->Apply();
 	return true;
 	}
 
 bool CStdD3D::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 	{
 	if (!lpDevice || (!Active && !fForce)) return false;
-	lpDevice->SetGammaRamp(D3DSGR_CALIBRATE, reinterpret_cast<D3DGAMMARAMP*>(ramp.red));
+	lpDevice->SetGammaRamp(0, D3DSGR_CALIBRATE, reinterpret_cast<D3DGAMMARAMP*>(ramp.red));
 	return true;
 	}
 
@@ -1176,7 +1176,7 @@ bool CStdD3D::SaveDefaultGammaRamp(CStdWindow * pWindow)
 	{
 	if (!lpDevice) return false;
 	assert(DefRamp.size == 256);
-	lpDevice->GetGammaRamp(reinterpret_cast<D3DGAMMARAMP*>(DefRamp.red));
+	lpDevice->GetGammaRamp(0, reinterpret_cast<D3DGAMMARAMP*>(DefRamp.red));
 	return true;
 	}
 

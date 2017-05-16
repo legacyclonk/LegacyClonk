@@ -24,7 +24,7 @@
 #include <StdColors.h>
 
 #ifdef USE_DIRECTX
-#include <d3d8.h>
+#include <d3d9.h>
 #endif
 
 #ifdef USE_GL
@@ -183,7 +183,7 @@ class CSurface
 				{
 #endif
 #ifdef USE_DIRECTX
-				IDirect3DSurface8 *pSfc;			// surface (primary sfc)
+				IDirect3DSurface9 *pSfc;			// surface (primary sfc)
 				D3DFORMAT dwClrFormat;				// used color format in textures
 #endif
 #if defined(USE_DIRECTX) && defined(USE_GL)
@@ -239,7 +239,7 @@ class CSurface
 #endif
 		BOOL Attach(CSurface *sfcSurface);
 #ifdef USE_DIRECTX
-		BOOL AttachSfc(IDirect3DSurface8 *sfcSurface); // wdt and hgt not assigned in DirectX
+		BOOL AttachSfc(IDirect3DSurface9 *sfcSurface); // wdt and hgt not assigned in DirectX
 #else
 		BOOL AttachSfc(void *sfcSurface);
 #endif
@@ -253,7 +253,7 @@ class CSurface
 		BOOL AttachPalette();
 		BOOL Wipe(); // empty to transparent
 #ifdef USE_DIRECTX
-		IDirect3DSurface8 *GetSurface(); // get internal surface
+		IDirect3DSurface9 *GetSurface(); // get internal surface
 #endif
 		BOOL GetSurfaceSize(int &irX, int &irY); // get surface size
 		void SetClr(DWORD toClr) { ClrByOwnerClr=toClr?toClr:0xff; }
@@ -293,7 +293,7 @@ class CTexRef
 				{
 #endif
 #ifdef USE_DIRECTX
-				IDirect3DTexture8 *pTex;	// texture
+				IDirect3DTexture9 *pTex;	// texture
 #endif
 #if defined(USE_DIRECTX) && defined(USE_GL)
 				};
