@@ -28,7 +28,6 @@
 #include <StdWindow.h>
 
 #include <stdio.h>
-#include <math.h>
 #include <limits.h>
 
 // Global access pointer
@@ -816,7 +815,6 @@ bool CStdDDraw::BlitRotate(CSurface *sfcSource, int fx, int fy, int fwdt, int fh
 		rot.SetRotate(iAngle, (float)(tx + tx + twdt) / 2, (float)(ty + ty + thgt) / 2);
 		return Blit(sfcSource, float(fx), float(fy), float(fwdt), float(fhgt), sfcTarget, tx, ty, twdt, thgt, true, &rot);
 	}
-	const double pi = 3.1415926535;
 	// Object is first stretched to dest rect, then rotated at place.
 	int xcnt, ycnt, fcx, fcy, tcx, tcy, cpcx, cpcy;
 	int npcx, npcy;
@@ -871,7 +869,7 @@ bool CStdDDraw::BlitRotate(CSurface *sfcSource, int fx, int fy, int fwdt, int fh
 
 	default:
 		// Calculate rotation matrix
-		dang = pi * iAngle / 18000.0;
+		dang = M_PI * iAngle / 18000.0;
 		mtx[0] = cos(dang); mtx[1] = -sin(dang);
 		mtx[2] = sin(dang); mtx[3] = cos(dang);
 		// Blit source rect
