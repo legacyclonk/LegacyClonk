@@ -53,9 +53,8 @@
 
 #ifdef _WIN32
 	#ifndef _INC_WINDOWS
-		#define _WIN32_WINDOWS 0x0500
-		#define _WIN32_WINNT 0x0501
-		#define WINVER 0x0500
+		#define WINVER _WIN32_WINNT_WIN7
+		#define _WIN32_WINNT _WIN32_WINNT_WIN7
 		#define WIN32_LEAN_AND_MEAN
 		#include <windows.h>
 	#endif
