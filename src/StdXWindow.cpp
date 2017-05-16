@@ -38,6 +38,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <errno.h>
+#include <unistd.h>
 
 #ifdef WITH_GLIB
 #include <glib.h>
