@@ -944,7 +944,7 @@ static C4Value FnPlayerObjectCommand(C4AulContext *cthr, C4Value *pPars)
 
 static C4String *FnGetAction(C4AulContext *cthr, C4Object *pObj)
 {
-	if (!pObj) pObj = cthr->Obj; if (!pObj) return false;
+	if (!pObj) pObj = cthr->Obj; if (!pObj) return nullptr;
 	if (pObj->Action.Act <= ActIdle) return String("Idle");
 	return String(pObj->Def->ActMap[pObj->Action.Act].Name);
 }
@@ -2824,13 +2824,13 @@ static long FnGetScore(C4AulContext *cthr, long iPlr)
 
 static C4Object *FnGetHiRank(C4AulContext *cthr, long iPlr)
 {
-	if (!ValidPlr(iPlr)) return false;
+	if (!ValidPlr(iPlr)) return nullptr;
 	return Game.Players.Get(iPlr)->GetHiRankActiveCrew(false);
 }
 
 static C4Object *FnGetCrew(C4AulContext *cthr, long iPlr, long index)
 {
-	if (!ValidPlr(iPlr)) return false;
+	if (!ValidPlr(iPlr)) return nullptr;
 	return Game.Players.Get(iPlr)->Crew.GetObject(index);
 }
 
@@ -2977,7 +2977,7 @@ static C4Object *FnGetViewCursor(C4AulContext *cthr, long iPlr)
 
 static C4Object *FnGetCaptain(C4AulContext *cthr, long iPlr)
 {
-	if (!ValidPlr(iPlr)) return false;
+	if (!ValidPlr(iPlr)) return nullptr;
 	return Game.Players.Get(iPlr)->Captain;
 }
 

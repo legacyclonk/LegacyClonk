@@ -137,7 +137,7 @@ C4ObjectInfo *C4ObjectInfoList::New(C4ID n_id, C4DefList *pDefs, const char *cpN
 	if (pDefs)
 		if (!(pDef = pDefs->ID2Def(n_id)))
 		{
-			delete pInfo; return false;
+			delete pInfo; return nullptr;
 		}
 	// Override name source by definition
 	if (pDef->pClonkNames)
