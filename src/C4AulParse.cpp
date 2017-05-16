@@ -1726,7 +1726,7 @@ void C4AulParseState::Parse_Statement()
 		Match(ATT_SCOLON);
 		return;
 	}
-	// additional function seperator
+	// additional function separator
 	case ATT_SCOLON:
 	{
 		Shift();
@@ -3040,7 +3040,7 @@ bool C4AulScript::Parse()
 				AddBCC(AB_ERR);
 			}
 
-			// add seperator
+			// add separator
 			AddBCC(AB_EOFN);
 		}
 	}

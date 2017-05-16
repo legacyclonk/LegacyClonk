@@ -175,12 +175,12 @@ void C4ValueList::CompileFunc(class StdCompiler *pComp)
 	{
 		Reset(); delete pExc; return;
 	}
-	// Seperator
-	if (!pComp->Seperator(StdCompiler::SEP_SEP2))
+	// Separator
+	if (!pComp->Separator(StdCompiler::SEP_SEP2))
 	{
 		assert(pComp->isCompiler());
-		// No ';'-seperator? So it's a really old value list format, or empty
-		pComp->Seperator(StdCompiler::SEP_SEP);
+		// No ';'-separator? So it's a really old value list format, or empty
+		pComp->Separator(StdCompiler::SEP_SEP);
 		this->SetSize(C4MaxVariable);
 		// First variable was misinterpreted as size
 		pData[0].SetInt(inSize);

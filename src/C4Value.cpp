@@ -718,10 +718,10 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 		break;
 
 	case C4V_Array:
-		pComp->Seperator(StdCompiler::SEP_START2);
+		pComp->Separator(StdCompiler::SEP_START2);
 		pComp->Value(mkPtrAdapt(Data.Array, false));
 		if (fCompiler) Data.Array = Data.Array->IncRef();
-		pComp->Seperator(StdCompiler::SEP_END2);
+		pComp->Separator(StdCompiler::SEP_END2);
 		break;
 
 	// shouldn't happen

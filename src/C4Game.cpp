@@ -1345,7 +1345,7 @@ C4Object *C4Game::FindVisObject(int32_t tx, int32_t ty, int32_t iPlr, const C4Fa
 	// FIXME: Use C4FindObject here for optimization
 	C4Object *cObj; C4ObjectLink *cLnk; C4ObjectList *pLst = &ForeObjects;
 
-	// scan all object lists seperately
+	// scan all object lists separately
 	while (pLst)
 	{
 		// Scan all objects in list

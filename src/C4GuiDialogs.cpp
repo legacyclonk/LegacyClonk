@@ -519,7 +519,7 @@ void Dialog::Draw(C4FacetEx &cgo)
 		if (iFade <= 0) return;
 		lpDDraw->ActivateBlitModulation(((100 - iFade) * 255 / 100) << 24 | 0xffffff);
 	}
-	// seperate window: Clear background
+	// separate window: Clear background
 	if (pWindow)
 		lpDDraw->DrawBoxDw(cgo.Surface, rcBounds.x, rcBounds.y, rcBounds.Wdt - 1, rcBounds.Hgt - 1, C4GUI_StandardBGColor & 0xffffff);
 	// draw window + contents (evaluates IsVisible)

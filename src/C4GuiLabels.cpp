@@ -266,7 +266,7 @@ void MultilineLabel::UpdateHeight()
 	while (szLine = Lines.GetLine(iIndex, &pLineFont, nullptr, &fNewPar))
 	{
 		int32_t iFontLineHeight = pLineFont->GetLineHeight();
-		// indents between seperate messages
+		// indents between separate messages
 		if (fNewPar && iIndex) iHgt += iFontLineHeight / 3;
 		// text line height
 		iHgt += iFontLineHeight;

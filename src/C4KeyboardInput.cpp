@@ -203,7 +203,7 @@ const C4KeyCodeMapEntry KeyCodeMap[] =
 	{ VK_NUMPAD9,   "Num9",      "N9" },
 	{ VK_MULTIPLY,  "Multiply",  "N*" },
 	{ VK_ADD,       "Add",       "N+" },
-	{ VK_SEPARATOR, "Seperator", "NSep" },
+	{ VK_SEPARATOR, "Separator", "NSep" },
 	{ VK_SUBTRACT,  "Subtract",  "N-" },
 	{ VK_DECIMAL,   "Decimal",   "N," },
 	{ VK_DIVIDE,    "Divide",    "N/" },
@@ -445,7 +445,7 @@ void C4KeyCodeEx::CompileFunc(StdCompiler *pComp)
 		for (;;)
 		{
 			pComp->Value(mkParAdapt(sCode, StdCompiler::RCT_Idtf));
-			if (!pComp->Seperator(StdCompiler::SEP_PLUS)) break; // no more seperator: Parse this as keyboard code
+			if (!pComp->Separator(StdCompiler::SEP_PLUS)) break; // no more separator: Parse this as keyboard code
 			// try to convert to shift state
 			C4KeyShiftState eAddState = String2KeyShift(sCode);
 			if (eAddState == KEYS_Undefined)
@@ -470,7 +470,7 @@ void C4KeyCodeEx::CompileFunc(StdCompiler *pComp)
 			if (dwShiftCheck & dwShift)
 			{
 				pComp->Value(mkDecompileAdapt(KeyShift2String((C4KeyShiftState)dwShiftCheck)));
-				pComp->Seperator(StdCompiler::SEP_PLUS);
+				pComp->Separator(StdCompiler::SEP_PLUS);
 			}
 		// write key
 		pComp->Value(mkDecompileAdapt(KeyCode2String(Key, false, false)));

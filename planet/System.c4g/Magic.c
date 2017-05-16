@@ -116,7 +116,7 @@ global func GetNeededAlcStr(id idMagic) { // Par(1)-Par(x): Zaubernde, [Zaubertu
 	  }
           // Alle Objekte durchsucht aber nicht genug da? String anhängen
 	  if(iDesire > 0) {
-	    // erstes Mal keinen Seperator
+	    // erstes Mal keinen Separator
 	    if(szString ne "") szSplit = ",|";
 	    else szSplit = "";
 	    szString = Format("%s%s%dx{{%i}}%s",szString,szSplit,iDesire,idAlchem,GetName(0,idAlchem));

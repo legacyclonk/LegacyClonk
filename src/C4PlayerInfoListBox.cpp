@@ -744,7 +744,7 @@ C4PlayerInfoListBox::ClientListItem::ClientListItem(C4PlayerInfoListBox *pForLis
 	// add components
 	AddElement(pStatusIcon); AddElement(pNameLabel);
 	if (btnAddPlayer) AddElement(btnAddPlayer);
-	// tooltip (same for all components for now. seperate tooltip for status icon later?)
+	// tooltip (same for all components for now. separate tooltip for status icon later?)
 	sprintf(OSTR, "Client %s (%s)", rClientInfo.getName(), rClientInfo.getNick());
 	SetToolTip(OSTR);
 	// insert into listbox at correct order
