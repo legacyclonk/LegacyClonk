@@ -105,7 +105,6 @@
 #include <stdarg.h>
 
 #if defined(BIG_C4INCLUDE) && defined(C4ENGINE)
-#include "C4AList.h"
 #include "C4Application.h"
 #include "C4Aul.h"
 #include "C4ChatDlg.h"

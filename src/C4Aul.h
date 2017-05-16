@@ -23,7 +23,6 @@
 
 #pragma once
 
-#include <C4AList.h>
 #include <C4ValueList.h>
 #include <C4ValueMap.h>
 #include <C4Id.h>
@@ -444,8 +443,8 @@ protected:
 	bool Preparsing; // set while preparse
 	bool Resolving; // set while include-resolving, to catch circular includes
 
-	C4AListEntry *Includes; // include list
-	C4AListEntry *Appends; // append list
+	std::list<C4ID> Includes; // include list
+	std::list<C4ID> Appends; // append list
 
 	// internal function used to find overloaded functions
 	C4AulFunc *GetOverloadedFunc(C4AulFunc *ByFunc);
@@ -511,8 +510,6 @@ public:
 class C4AulScriptEngine : public C4AulScript
 {
 protected:
-	C4AList itbl; // include table
-	C4AList atbl; // append table
 	C4AulFuncMap FuncLookUp;
 
 public:
