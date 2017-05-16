@@ -36,12 +36,12 @@ public:
 	virtual void TaskIn() {}
 	virtual bool UpdateClipper() { return true; }
 	virtual bool OnResolutionChanged() { return true; }
-	virtual bool PrepareRendering(SURFACE) { return true; }
+	virtual bool PrepareRendering(CSurface *) { return true; }
 	virtual void FillBG(uint32_t dwClr = 0) {}
 	virtual void PerformBlt(CBltData &, CTexRef *, uint32_t, bool, bool) {}
-	virtual void DrawLineDw(SURFACE, float, float, float, float, uint32_t) {}
-	virtual void DrawQuadDw(SURFACE, int *, uint32_t, uint32_t, uint32_t, uint32_t) {}
-	virtual void DrawPixInt(SURFACE, float, float, uint32_t) {}
+	virtual void DrawLineDw(CSurface *, float, float, float, float, uint32_t) {}
+	virtual void DrawQuadDw(CSurface *, int *, uint32_t, uint32_t, uint32_t, uint32_t) {}
+	virtual void DrawPixInt(CSurface *, float, float, uint32_t) {}
 	virtual bool ApplyGammaRamp(CGammaControl &, bool) { return true; }
 	virtual bool SaveDefaultGammaRamp(CStdWindow *) { return true; }
 	virtual bool StoreStateBlock() { return true; }

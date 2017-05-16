@@ -1958,7 +1958,7 @@ bool C4Game::SaveGameTitle(C4Group &hGroup)
 	// Fullscreen screenshot
 	else if (Application.isFullScreen && Application.Active)
 	{
-		SURFACE sfcPic; int32_t iSfcWdt = 200, iSfcHgt = 150;
+		CSurface *sfcPic; int32_t iSfcWdt = 200, iSfcHgt = 150;
 		if (!(sfcPic = new CSurface(iSfcWdt, iSfcHgt))) return false;
 
 		// Fullscreen

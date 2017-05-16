@@ -257,8 +257,6 @@ protected:
 	friend class CStdGL;
 };
 
-typedef CSurface *SURFACE;
-
 #ifndef USE_DIRECTX
 typedef struct _D3DLOCKED_RECT
 {
@@ -336,5 +334,3 @@ public:
 };
 
 extern CTexMgr *pTexMgr;
-
-#define SURFACE CSurface *

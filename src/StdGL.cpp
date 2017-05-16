@@ -105,7 +105,7 @@ bool CStdGL::UpdateClipper()
 	return true;
 }
 
-bool CStdGL::PrepareRendering(SURFACE sfcToSurface)
+bool CStdGL::PrepareRendering(CSurface *sfcToSurface)
 {
 	// call from gfx thread only!
 	if (!pApp || !pApp->AssertMainThread()) return false;
@@ -290,8 +290,8 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bo
 	}
 }
 
-void CStdGL::BlitLandscape(SURFACE sfcSource, SURFACE sfcSource2, SURFACE sfcLiquidAnimation, int fx, int fy,
-	SURFACE sfcTarget, int tx, int ty, int wdt, int hgt)
+void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *sfcLiquidAnimation, int fx, int fy,
+	CSurface *sfcTarget, int tx, int ty, int wdt, int hgt)
 {
 	// safety
 	if (!sfcSource || !sfcTarget || !wdt || !hgt) return;
@@ -635,7 +635,7 @@ bool CStdGL::CreatePrimarySurfaces(bool Playermode, int iColorDepth, unsigned in
 	return InitDeviceObjects();
 }
 
-void CStdGL::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
+void CStdGL::DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
 {
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
@@ -673,7 +673,7 @@ void CStdGL::DrawQuadDw(SURFACE sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t
 	glShadeModel(GL_FLAT);
 }
 
-void CStdGL::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr)
+void CStdGL::DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr)
 {
 	float i;
 	// manual clipping?
@@ -753,7 +753,7 @@ void CStdGL::DrawLineDw(SURFACE sfcTarget, float x1, float y1, float x2, float y
 	}
 }
 
-void CStdGL::DrawPixInt(SURFACE sfcTarget, float tx, float ty, uint32_t dwClr)
+void CStdGL::DrawPixInt(CSurface *sfcTarget, float tx, float ty, uint32_t dwClr)
 {
 	// render target?
 	if (sfcTarget->IsRenderTarget())

@@ -117,35 +117,35 @@ public:
 class C4Facet
 {
 public:
-	SURFACE Surface;
+	CSurface *Surface;
 	int32_t X, Y, Wdt, Hgt;
 
 public:
 	C4Facet();
-	C4Facet(SURFACE pSfc, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt)
+	C4Facet(CSurface *pSfc, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt)
 		: Surface(pSfc), X(iX), Y(iY), Wdt(iWdt), Hgt(iHgt) {}
 
 public:
 	void Default();
-	void Set(SURFACE nsfc, int32_t nx, int32_t ny, int32_t nwdt, int32_t nhgt);
+	void Set(CSurface *nsfc, int32_t nx, int32_t ny, int32_t nwdt, int32_t nhgt);
 	void Set(const C4Facet &cpy) { *this = cpy; }
 	void DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &gfx, int32_t bar_idx); // draw energy level using graphics
-	void DrawX(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0) const;
-	void DrawXFloat(SURFACE sfcTarget, float fX, float fY, float fWdt, float fHgt) const;
+	void DrawX(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0) const;
+	void DrawXFloat(CSurface *sfcTarget, float fX, float fY, float fWdt, float fHgt) const;
 	void DrawValue(C4Facet &cgo, int32_t iValue, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center);
 	void DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center, int32_t *piUsedWidth = nullptr);
 	void Draw(C4Facet &cgo, bool fAspect = true, int32_t iPhaseX = 0, int32_t iPhaseY = 0, bool fTransparent = true);
 	void DrawFullScreen(C4Facet &cgo);
 #ifdef C4ENGINE
-	void DrawT(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform); // draw with transformation (if pTransform is assigned)
+	void DrawT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform); // draw with transformation (if pTransform is assigned)
 	void DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform);
-	void DrawXT(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform);
+	void DrawXT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform);
 #endif // C4ENGINE
 	void DrawClr(C4Facet &cgo, bool fAspect = true, uint32_t dwClr = 0); // set surface color and draw
 	void DrawValue2Clr(C4Facet &cgo, int32_t iValue1, int32_t iValue2, uint32_t dwClr); // set surface color and draw
-	void DrawXR(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t r = 0); // draw rotated
-	void DrawClrMod(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0, uint32_t dwModClr = 0); // draw the facet modulated by given color
-	void Draw(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
+	void DrawXR(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t r = 0); // draw rotated
+	void DrawClrMod(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0, uint32_t dwModClr = 0); // draw the facet modulated by given color
+	void Draw(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
 	bool GetPhaseNum(int32_t &rX, int32_t &rY); // return number of phases in this graphic
 	C4Facet GetSection(int32_t iSection);
 	C4Facet GetFraction(int32_t percentWdt, int32_t percentHgt = 0, int32_t alignX = C4FCT_Left, int32_t alignY = C4FCT_Top);

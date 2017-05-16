@@ -27,7 +27,7 @@ void C4Facet::Default()
 	Set(nullptr, 0, 0, 0, 0);
 }
 
-void C4Facet::Set(SURFACE nsfc, int32_t nx, int32_t ny, int32_t nwdt, int32_t nhgt)
+void C4Facet::Set(CSurface *nsfc, int32_t nx, int32_t ny, int32_t nwdt, int32_t nhgt)
 {
 	Surface = nsfc; X = nx; Y = ny; Wdt = nwdt; Hgt = nhgt;
 }
@@ -50,7 +50,7 @@ C4Facet C4Facet::GetSection(int32_t iSection)
 	return rval;
 }
 
-void C4Facet::Draw(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY)
+void C4Facet::Draw(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY)
 {
 #ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
@@ -64,7 +64,7 @@ void C4Facet::Draw(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, i
 
 #ifdef C4ENGINE
 
-void C4Facet::DrawT(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform)
+void C4Facet::DrawT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform)
 {
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 
@@ -168,7 +168,7 @@ void C4Facet::DrawValue2Clr(C4Facet &cgo, int32_t iValue1, int32_t iValue2, uint
 	DrawValue2(cgo, iValue1, iValue2);
 }
 
-void C4Facet::DrawXR(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iSectionX, int32_t iSectionY, int32_t r)
+void C4Facet::DrawXR(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iSectionX, int32_t iSectionY, int32_t r)
 {
 #ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
@@ -182,7 +182,7 @@ void C4Facet::DrawXR(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, in
 #endif
 }
 
-void C4Facet::DrawClrMod(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, uint32_t dwModClr)
+void C4Facet::DrawClrMod(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, uint32_t dwModClr)
 {
 #ifdef C4ENGINE
 	// set color
@@ -307,7 +307,7 @@ void C4Facet::DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t
 #endif
 }
 
-void C4Facet::DrawX(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iSectionX, int32_t iSectionY) const
+void C4Facet::DrawX(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iSectionX, int32_t iSectionY) const
 {
 #ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
@@ -319,7 +319,7 @@ void C4Facet::DrawX(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int
 #endif
 }
 
-void C4Facet::DrawXFloat(SURFACE sfcTarget, float fX, float fY, float fWdt, float fHgt) const
+void C4Facet::DrawXFloat(CSurface *sfcTarget, float fX, float fY, float fWdt, float fHgt) const
 {
 #ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt || fWdt <= 0 || fHgt <= 0) return;
@@ -340,7 +340,7 @@ void C4Facet::DrawXFloat(SURFACE sfcTarget, float fX, float fY, float fWdt, floa
 }
 
 #ifdef C4ENGINE
-void C4Facet::DrawXT(SURFACE sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform)
+void C4Facet::DrawXT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform)
 {
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 	lpDDraw->Blit(Surface,

@@ -600,7 +600,7 @@ void C4ToolsDlg::UpdatePreview()
 	if (!hbox) return;
 #endif
 
-	SURFACE sfcPreview;
+	CSurface *sfcPreview;
 
 	int32_t iPrvWdt, iPrvHgt;
 

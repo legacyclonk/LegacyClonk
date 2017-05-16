@@ -27,14 +27,14 @@ public:
 	~CFacet() {}
 
 public:
-	SURFACE Surface;
+	CSurface *Surface;
 	int X, Y, Wdt, Hgt;
 
 public:
 	void Default() { Surface = nullptr; X = Y = Wdt = Hgt = 0; }
 	void Clear() { Surface = nullptr; X = Y = Wdt = Hgt = 0; }
 
-	void Set(SURFACE nsfc, int nx, int ny, int nwdt, int nhgt)
+	void Set(CSurface *nsfc, int nx, int ny, int nwdt, int nhgt)
 	{
 		Surface = nsfc; X = nx; Y = ny; Wdt = nwdt; Hgt = nhgt;
 	}
