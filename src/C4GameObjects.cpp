@@ -148,27 +148,16 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 										if ((obj2->OCF & OCF_HitSpeed2) && (obj1->OCF & OCF_Alive) && (obj2->Category & C4D_Object))
 											if(!obj1->Call(PSF_QueryCatchBlow, &C4AulParSet(C4VObj(obj2))))
 												{ 
-												if(true /* "realistic" hit energy */)
-													{
-													FIXED dXDir = obj2->xdir - obj1->xdir, dYDir = obj2->ydir - obj1->ydir;
-													int32_t iHitEnergy = fixtoi((dXDir * dXDir + dYDir * dYDir) * obj2->Mass / 5 );
-													iHitEnergy = Max<int32_t>(iHitEnergy/3, !!iHitEnergy); // hit energy reduced to 1/3rd, but do not drop to zero because of this division
-													obj1->DoEnergy(-iHitEnergy/5, false, C4FxCall_EngObjHit, obj2->Controller);
-													int tmass=Max<int32_t>(obj1->Mass,50);
-													if (!Tick3 || (obj1->Action.Act>=0 && obj1->Def->ActMap[obj1->Action.Act].Procedure != DFA_FLIGHT))
-														obj1->Fling(obj2->xdir*50/tmass,-Abs(obj2->ydir/2)*50/tmass, false, obj2->Controller); 
-													obj1->Call(PSF_CatchBlow,&C4AulParSet(C4VInt(-iHitEnergy/5),
-																																C4VObj(obj2)));
-													}
-												else
-													{
-													obj1->DoEnergy(-obj2->Mass/5, false, C4FxCall_EngObjHit, obj2->Controller);
-													int tmass=Max<int32_t>(obj1->Mass,50);
-													obj1->Fling(obj2->xdir*50/tmass,
-														-Abs(obj2->ydir/2)*50/tmass, false, obj2->Controller); 
-													obj1->Call(PSF_CatchBlow,&C4AulParSet(C4VInt(-obj2->Mass/5),
-																																C4VObj(obj2)));
-													}
+												// "realistic" hit energy
+												FIXED dXDir = obj2->xdir - obj1->xdir, dYDir = obj2->ydir - obj1->ydir;
+												int32_t iHitEnergy = fixtoi((dXDir * dXDir + dYDir * dYDir) * obj2->Mass / 5 );
+												iHitEnergy = Max<int32_t>(iHitEnergy/3, !!iHitEnergy); // hit energy reduced to 1/3rd, but do not drop to zero because of this division
+												obj1->DoEnergy(-iHitEnergy/5, false, C4FxCall_EngObjHit, obj2->Controller);
+												int tmass=Max<int32_t>(obj1->Mass,50);
+												if (!Tick3 || (obj1->Action.Act>=0 && obj1->Def->ActMap[obj1->Action.Act].Procedure != DFA_FLIGHT))
+													obj1->Fling(obj2->xdir*50/tmass,-Abs(obj2->ydir/2)*50/tmass, false, obj2->Controller); 
+												obj1->Call(PSF_CatchBlow,&C4AulParSet(C4VInt(-iHitEnergy/5),
+																															C4VObj(obj2)));
 												// obj1 might have been tampered with
 												if (!obj1->Status || obj1->Contained || !(obj1->OCF & focf))
 													goto out1;
@@ -525,9 +514,6 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 	assert(Game.Objects.Sectors.CheckSort());
 #endif
 	}
-
-
-#define C4CV_Section_Object "[Object]"
 
 int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 	{

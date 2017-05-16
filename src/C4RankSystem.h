@@ -30,7 +30,6 @@ class C4RankSystem
     int Experience(int iRank);
 		int RankByExperience(int iExp);  // get rank by experience
     StdStrBuf GetRankName(int iRank, bool fReturnLastIfOver);
-		BOOL Check(int iRank, const char  *szDefRankName);
 		int32_t GetExtendedRankNum() const { return iRankExtNum; }
 		//void Reset(const char *szDefRanks);
 #ifdef C4ENGINE

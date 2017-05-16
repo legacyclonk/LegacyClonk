@@ -259,16 +259,6 @@ void C4PlayerInfo::SetFilename(const char *szToFilename)
   szFilename = szToFilename;
 	}
 
-void C4PlayerInfo::SetToScenarioFilename(const char *szScenFilename)
-	{
-	// kill res
-	DiscardResource();
-	// set new filename
-	SetFilename(szScenFilename);
-	// flag scenario filename
-	dwFlags |= PIF_InScenarioFile;
-	}
-
 void C4PlayerInfo::LoadResource()
 	{
 	// only if any resource present and not yet assigned
@@ -529,17 +519,6 @@ void C4ClientPlayerInfos::GrowList(size_t iByVal)
 	ppPlayers = ppNewInfo;
 	}
 
-int32_t C4ClientPlayerInfos::GetFlaggedPlayerCount(DWORD dwFlag) const
-	{
-	// check all players
-	int32_t iCount = 0;
-	int32_t i = iPlayerCount; C4PlayerInfo **ppCurrPlrInfo = ppPlayers;
-	while (i--) if ((*ppCurrPlrInfo++)->GetFlags() | dwFlag)
-		++iCount;
-	// return number of matching infos
-	return iCount;
-	}
-
 C4PlayerInfo *C4ClientPlayerInfos::GetPlayerInfo(int32_t iIndex) const
 	{
 	// check range
@@ -652,19 +631,6 @@ void C4ClientPlayerInfos::LoadResources()
 C4PlayerInfoList::C4PlayerInfoList() : iClientCount(0), iClientCapacity(0), ppClients(NULL), iLastPlayerID(0)
 	{
 	// ctor: no need to alloc mem yet
-	}
-
-C4PlayerInfoList::C4PlayerInfoList(const C4PlayerInfoList &rCpy) : iClientCount(rCpy.iClientCount), iClientCapacity(rCpy.iClientCapacity),
-	ppClients(NULL), iLastPlayerID(rCpy.iLastPlayerID)
-	{
-	// copy client info vector
-	if (rCpy.ppClients)
-		{
-		ppClients = new C4ClientPlayerInfos*[iClientCapacity];
-		C4ClientPlayerInfos **ppInfo = ppClients, **ppCpy = rCpy.ppClients;
-		int32_t i = iClientCount;
-		while (i--) *ppInfo++ = new C4ClientPlayerInfos(**ppCpy++);
-		}
 	}
 
 C4PlayerInfoList &C4PlayerInfoList::operator = (const C4PlayerInfoList &rCpy)
@@ -1820,10 +1786,4 @@ void C4PlayerInfoList::FixIDCounter()
 void C4PacketPlayerInfoUpdRequest::CompileFunc(StdCompiler *pComp)
   {
   pComp->Value(Info);
-  }
-
-void C4PacketPlayerInfo::CompileFunc(StdCompiler *pComp)
-  {
-  pComp->Value(mkNamingAdapt(fIsRecreationInfo, "Recreation", false));
-  pComp->Value(mkNamingAdapt(Info, "Info"));
   }

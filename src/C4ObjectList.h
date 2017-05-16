@@ -49,7 +49,6 @@ class C4ObjectList
 			public:
 				~iterator();
 				iterator& operator++ (); // prefix ++
-				iterator operator++ (int); // postfix ++
 				iterator(const iterator & iter);
 				C4Object * operator* ();
 				bool operator== (const iterator & iter) const;
@@ -70,14 +69,12 @@ class C4ObjectList
 		void SortByCategory();
 		void Default();
 		void Clear();
-		void Sort();
 		void Enumerate();
 		void Denumerate();
 		void Copy(const C4ObjectList &rList);
 		void DrawAll(C4FacetEx &cgo, int iPlayer = -1); // draw all objects, including bg
 		void DrawIfCategory(C4FacetEx &cgo, int iPlayer, uint32_t dwCat, bool fInvert); // draw all objects that match dwCat (or don't match if fInvert)
 		void Draw(C4FacetEx &cgo, int iPlayer = -1); // draw all objects
-		void DrawList(C4Facet &cgo, int iSelection=-1, DWORD dwCategory=C4D_All);
 		void DrawIDList(C4Facet &cgo, int iSelection, C4DefList &rDefs, int32_t dwCategory, C4RegionList *pRegions=NULL, int iRegionCom=COM_None, BOOL fDrawOneCounts=TRUE);
 		void DrawSelectMark(C4FacetEx &cgo);
 		void CloseMenus();
@@ -87,15 +84,11 @@ class C4ObjectList
 		void ResetAudibility();
 		void UpdateTransferZones();
 		void SetOCF();
-		void GetIDList(C4IDList &rList, int32_t dwCategory=C4D_All);
 		void ClearInfo(C4ObjectInfo *pInfo);
 		void ClearDefPointers(C4Def *pDef); // clear all pointers into definition
 		void UpdateDefPointers(C4Def *pDef); // restore any cleared pointers after def reload
-		
-		typedef int SortProc(C4Object *, C4Object *);
-		
+
 		BOOL Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted = NULL);
-		bool AddSortCustom(C4Object *nObj, SortProc &pSortProc);
 		BOOL Remove(C4Object *pObj);
 		
 		BOOL AssignInfo();
@@ -103,9 +96,7 @@ class C4ObjectList
 		BOOL AssignPlrViewRange();
 		StdStrBuf GetNameList(C4DefList &rDefs, DWORD dwCategory=C4D_All);
 		BOOL IsClear() const;
-		BOOL ReadEnumerated(const char *szSource);
 		BOOL DenumerateRead();
-		BOOL Write(char *szTarget);
 		void CompileFunc(StdCompiler *pComp, bool fSaveRefs = true, bool fSkipPlayerObjects = false);
 	  
 		long ObjectNumber(C4Object *pObj);

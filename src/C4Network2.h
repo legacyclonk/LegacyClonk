@@ -202,7 +202,6 @@ public:
 	bool isPastLobby()  const { return Status.isPastLobby(); }
 	bool isRunning()		const { return Status.isRunning() && isStatusAck(); }
 	bool isPaused()			const { return Status.isPaused() && isStatusAck(); }
-	bool isPausing()		const { return Status.isPaused() && !fStatusAck; }
 	bool isHost()				const { return fHost; }
 	bool isStatusAck()	const { return fStatusAck; }
 	bool isFrozen()			const;
@@ -224,7 +223,6 @@ public:
 	bool InitHost(bool fLobby);
 	InitResult InitClient(const class C4Network2Reference &Ref, bool fObserver);
 	InitResult InitClient(const class C4Network2Address *pAddrs, int iAddrCount, const class C4ClientCore &HostCore, const char *szPassword = NULL);
-  bool InitHostRessources();
 	bool DoLobby();
 	bool Start();
 	bool Pause();
@@ -245,7 +243,6 @@ public:
 	bool ToggleAllowJoin();
 	bool ToggleClientListDlg();
 	void AllowJoin(bool fAllow);
-	void SetAllowObserve(bool fAllow);
   void SetCtrlMode(int32_t iCtrlMode);
 	void SetPassword(const char *szToPassword);
 	StdStrBuf QueryClientPassword(); // ask client for a password; empty if user canceled
@@ -328,7 +325,6 @@ protected:
 	void RemoveDynamic();
 
 	// status changes
-	bool PauseGame(bool fAutoContinue);
 	bool ChangeGameStatus(C4NetGameState enState, int32_t iTargetCtrlTick, int32_t iCtrlMode = -1);
 	void CheckStatusReached(bool fFromFinalInit = false);
 	void CheckStatusAck();

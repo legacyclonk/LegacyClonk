@@ -10,14 +10,6 @@ C4ValueMapData::C4ValueMapData()
 
 }
 
-C4ValueMapData::C4ValueMapData(const C4ValueMapData &DataToCopy)
-: pData(0), pNames(0), bTempNameList(false), pNext(0)
-{
-	SetNameList(DataToCopy.pNames);
-	if (pNames) for(int32_t i = 0; i < pNames->iSize; i++)
-		pData[i].Set(DataToCopy.pData[i]);
-}
-
 C4ValueMapData &C4ValueMapData::operator = (const C4ValueMapData &DataToCopy)
 {
 	SetNameList(DataToCopy.pNames);
@@ -49,18 +41,6 @@ void C4ValueMapData::Reset()
 	// free data
 	delete[] pData;
 	pData = 0;
-}
-
-void C4ValueMapData::ResetContent()
-{
-	if(pNames)
-		// Realloc list (will destroy all data)
-		ReAllocList();
-	else
-	{
-		delete[] pData;
-		pData = 0;
-	}
 }
 
 void C4ValueMapData::SetNameList(C4ValueMapNames *pnNames)
@@ -308,12 +288,6 @@ C4ValueMapNames::C4ValueMapNames()
 : pNames(0), pExtra(0), iSize(0), pFirst(0)
 {
 
-}
-
-C4ValueMapNames::C4ValueMapNames(C4ValueMapNames& NamesToCopy)
-: pNames(0), pExtra(0), iSize(0), pFirst(0)
-{
-	ChangeNameList(const_cast<const char **>(NamesToCopy.pNames), NamesToCopy.pExtra, NamesToCopy.iSize);
 }
 
 C4ValueMapNames& C4ValueMapNames::operator = (C4ValueMapNames &NamesToCopy)

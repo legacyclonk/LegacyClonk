@@ -19,18 +19,7 @@
 
 #define C4_TYPE_LIST                  (c4_list_get_type ())
 #define C4_LIST(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), C4_TYPE_LIST, C4List))
-#define C4_LIST_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass),  C4_TYPE_LIST, C4ListClass))
 #define C4_IS_LIST(obj)               (G_TYPE_CHECK_INSTANCE_TYPE ((obj), C4_TYPE_LIST))
-#define C4_IS_LIST_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass),  C4_TYPE_LIST))
-#define C4_LIST_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj),  C4_TYPE_LIST, C4ListClass))
-
-/* The data columns that we export via the tree model interface */
-
-enum
-{
-	C4_LIST_COL_OBJECT,
-	C4_LIST_N_COLUMNS,
-};
 
 typedef struct _C4List       C4List;
 typedef struct _C4ListClass  C4ListClass;

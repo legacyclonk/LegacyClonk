@@ -323,11 +323,6 @@ int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group* OverloadFile)
 	return texnum;
 	}
 
-bool C4TextureMap::HasTextures(C4Group &hGroup)
-	{
-	return hGroup.EntryCount(C4CFN_PNGFiles) || hGroup.EntryCount(C4CFN_BitmapFiles);
-	}
-
 void C4TextureMap::MoveIndex(BYTE byOldIndex, BYTE byNewIndex)
 	{
 	Entry[byNewIndex] = Entry[byOldIndex];

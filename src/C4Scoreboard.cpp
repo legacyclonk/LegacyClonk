@@ -189,20 +189,6 @@ int32_t C4Scoreboard::GetCellData(int32_t iColKey, int32_t iRowKey)
 	return pCell->iVal;
 	}
 
-void C4Scoreboard::RemoveCol(int32_t iColKey)
-	{
-	int32_t iCol = GetColByKey(iColKey);
-	if (iCol>=0) DelCol(iCol);
-	InvalidateRows(); // recalc row widths in display
-	}
-
-void C4Scoreboard::RemoveRow(int32_t iRowKey)
-	{
-	int32_t iRow = GetRowByKey(iRowKey);
-	if (iRow>=0) DelRow(iRow);
-	InvalidateRows(); // recalc row widths in display
-	}
-
 bool C4Scoreboard::SortBy(int32_t iColKey, bool fReverse)
 	{
 	// get sort col

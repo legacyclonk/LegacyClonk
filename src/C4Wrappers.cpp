@@ -79,15 +79,6 @@ void SoundLevel(const char *szSndName, C4Object *pObj, int32_t iLevel)
   pInst->SetVolume(iLevel);
   pInst->Execute();
   }
-void SoundPan(const char *szSndName, C4Object *pObj, int32_t iPan)
-  {
-  // Find instance
-  C4SoundInstance *pInst = Application.SoundSystem.FindInstance(szSndName, pObj);
-  if(!pInst) return;
-  // Set pan
-  pInst->SetPan(iPan);
-  pInst->Execute();
-  }
 
 //=========================== Graphics Resource =========================================
 

@@ -128,11 +128,6 @@ void C4MaterialCore::Clear()
   SplashRate=10;
 	}
 
-void C4MaterialCore::Default()
-	{
-	Clear();
-	}
-
 BOOL C4MaterialCore::Load(C4Group &hGroup, 
 													const char *szEntryName)
 	{
@@ -311,11 +306,6 @@ int32_t C4MaterialMap::Load(C4Group &hGroup, C4Group* OverloadFile)
   return cnt;
   }
 
-bool C4MaterialMap::HasMaterials(C4Group &hGroup) const
-	{
-	return !!hGroup.EntryCount(C4CFN_MaterialFiles);
-	}
-
 int32_t C4MaterialMap::Get(const char *szMaterial)
   {
   int32_t cnt;
@@ -492,14 +482,6 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
     if (Map[cnt].sAboveTempConvertTo.getLength())
       Map[cnt].AboveTempConvertTo=Game.TextureMap.GetIndexMatTex(Map[cnt].sAboveTempConvertTo.getData(), NULL, TRUE, FormatString("AboveTempConvertTo of mat %s", Map[cnt].Name).getData());
 		}
-#if 0
-	int32_t i=0;
-	while (ReactionFuncMap[i].szRFName) {printf("%s: %p\n", ReactionFuncMap[i].szRFName, ReactionFuncMap[i].pFunc);++i;}
-	for (int32_t cnt=-1; cnt<Num; cnt++)
-		for (int32_t cnt2=-1; cnt2<Num; cnt2++)
-			if (ppReactionMap[(cnt2+1)*(Num+1) + cnt+1])
-				printf("%s -> %s: %p\n", Map[cnt].Name, Map[cnt2].Name, ppReactionMap[(cnt2+1)*(Num+1) + cnt+1]->pFunc);
-#endif
 	}
 
 #endif
@@ -585,16 +567,6 @@ void C4MaterialMap::Default()
   Num=0;
   Map=NULL;
 	ppReactionMap=NULL;
-	}
-
-C4MaterialReaction *C4MaterialMap::GetReaction(int32_t iPXSMat, int32_t iLandscapeMat)
-	{
-	// safety
-	if (!ppReactionMap) return NULL;
-	if (!Inside<int32_t>(iPXSMat, -1, Num-1)) return NULL;
-	if (!Inside<int32_t>(iLandscapeMat, -1, Num-1)) return NULL;
-	// values OK; get func!
-	return GetReactionUnsafe(iPXSMat, iLandscapeMat);
 	}
 
 #ifdef C4ENGINE

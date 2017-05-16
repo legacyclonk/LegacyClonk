@@ -265,8 +265,6 @@ StdStrBuf CStdApp::Paste(bool fClipboard) {
 bool CStdApp::IsClipboardFull(bool fClipboard) {
 	return false;
 }
-void CStdApp::ClearClipboard(bool fClipboard) {
-}
 
 // Event-pipe-whatever stuff I do not understand.
 

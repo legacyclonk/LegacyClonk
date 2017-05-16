@@ -33,11 +33,6 @@ bool ComboBox_FillCB::FindEntry(const char *szText)
 	return false;
 	}
 
-void ComboBox_FillCB::SelectEntry(int32_t iEntry)
-	{
-	pDrop->SelectItem(iEntry);
-	}
-
 void ComboBox_FillCB::ClearEntries()
 {
 	pDrop->Clear();

@@ -82,10 +82,6 @@ void CStdWindow::Clear() {
 	hWindow = NULL;
 }
 
-bool CStdWindow::StorePosition(const char *szWindowName, const char *szSubKey, bool fStoreSize) {
-	return StoreWindowPosition(hWindow, szWindowName, szSubKey, fStoreSize) != 0;
-}
-
 bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey, bool fHidden) {
 	if (!RestoreWindowPosition(hWindow, szWindowName, szSubKey, fHidden))
 		ShowWindow(hWindow,SW_SHOWNORMAL);
@@ -230,7 +226,6 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 					return HR_Failure;
 				}
 				// Dialog message transfer
-				BOOL MsgDone=FALSE;
 				if (!pWindow->Win32DialogMessageHandling(&msg)) {
 					TranslateMessage(&msg); DispatchMessage(&msg);
 				}

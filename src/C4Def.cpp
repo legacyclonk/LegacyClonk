@@ -253,22 +253,9 @@ BOOL C4DefCore::Load(C4Group &hGroup)
 	return FALSE;
 	}
 
-BOOL C4DefCore::Save(C4Group &hGroup)
-	{
-	StdStrBuf Out;
-	if (! Decompile(&Out, FormatString("%s::DefCore.txt", C4IdText(id)).getData()) )
-		return FALSE;
-	return hGroup.Add(C4CFN_DefCore,Out,FALSE,TRUE);
-	}
-
 BOOL C4DefCore::Compile(const char *szSource, const char *szName)
 	{
 	return CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(*this, "DefCore"), StdStrBuf(szSource), szName);
-	}
-
-BOOL C4DefCore::Decompile(StdStrBuf *pOut, const char *szName)
-	{
-	return DecompileToBuf_Log<StdCompilerINIWrite>(mkNamingAdapt(*this, "DefCore"), pOut, szName);
 	}
 
 void C4DefCore::CompileFunc(StdCompiler *pComp)
@@ -1053,41 +1040,6 @@ int32_t C4DefList::Load(C4Group &hGroup, DWORD dwLoadWhat,
   return iResult;
   }
 
-int32_t C4DefList::LoadFolderLocal( const char *szPath,
-																DWORD dwLoadWhat, const char *szLanguage,
-																C4SoundSystem *pSoundSystem,
-																BOOL fOverload, char *sStoreName, int32_t iMinProgress, int32_t iMaxProgress)
-	{
-	int32_t iResult = 0;
-
-	// Scan path for folder names
-	int32_t cnt,iBackslash,iDefs;
-	char szFoldername[_MAX_PATH+1];
-	for (cnt=0; (iBackslash=SCharPos('\\',szPath,cnt)) > -1; cnt++)
-		{
-		SCopy(szPath,szFoldername,iBackslash);
-		// Load from parent folder
-		if (SEqualNoCase(GetExtension(szFoldername),"c4f"))
-			if (iDefs=Load(szFoldername,dwLoadWhat,szLanguage,pSoundSystem,fOverload))
-				{
-				iResult+=iDefs;
-				// Add any folder containing defs to store list
-				if (sStoreName)	{ SNewSegment(sStoreName); SAppend(szFoldername,sStoreName); }
-				}
-		}
-
-#ifdef C4ENGINE // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	// progress (could go down one level of recursion...)
-	if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress));
-#endif // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-	return iResult;
-	}
-
-#ifdef C4ENGINE // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-extern BOOL C4EngineLoadProcess(const char *szMessage, int32_t iProcess);
-#endif // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 int32_t C4DefList::Load(const char *szSearch,
                     DWORD dwLoadWhat, const char *szLanguage,
 										C4SoundSystem *pSoundSystem,
@@ -1320,28 +1272,6 @@ C4Def *C4DefList::GetByPath(const char *szPath)
   }
 #endif
 
-int32_t C4DefList::RemoveTemporary()
-  {
-  C4Def *cdef,*prev,*next;
-  int32_t removed=0;
-  for (cdef=FirstDef,prev=NULL; cdef; cdef=next)
-    {
-    next=cdef->Next;
-    if (cdef->Temporary)
-      {
-      if (prev) prev->Next=next;
-      else FirstDef=next;
-      delete cdef;
-      removed++;
-      }
-    else
-      prev=cdef;
-    }
-	// rebuild quick access table
-	BuildTable();
-  return removed;
-  }
-
 int32_t C4DefList::CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, int32_t ver4)
 	{
 	int32_t rcount=0;
@@ -1406,58 +1336,6 @@ void C4DefList::Default()
 	LoadFailure=FALSE;
 	ZeroMem(&Table, sizeof(Table));
 	fTable=false;
-	}
-
-// Load scenario specified or all selected plus scenario & folder local
-
-int32_t C4DefList::LoadForScenario(const char *szScenario, 
-															 const char *szSelection,
-															 DWORD dwLoadWhat, const char *szLanguage, 
-															 C4SoundSystem *pSoundSystem, BOOL fOverload,
-															 int32_t iMinProgress, int32_t iMaxProgress)
-	{
-	int32_t iDefs=0;
-	StdStrBuf sSpecified;
-
-	// User selected modules
-	sSpecified.Copy(szSelection);
-
-	// Open scenario file & load core
-	C4Group hScenario;
-	C4Scenario C4S;
-	if ( !hScenario.Open(szScenario)
-		|| !C4S.Load(hScenario) )
-			return 0;
-
-	// Scenario definition specifications (override user selection)
-	if (!C4S.Definitions.AllowUserChange)
-		C4S.Definitions.GetModules(&sSpecified);
-
-	// Load specified
-	iDefs += Load(sSpecified.getData(),dwLoadWhat,szLanguage,pSoundSystem,fOverload);
-#ifdef C4ENGINE
-	if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress+iMinProgress)/2);
-#endif
-
-	// Load folder local
-	iDefs += LoadFolderLocal(szScenario,dwLoadWhat,szLanguage,pSoundSystem,fOverload);
-#ifdef C4ENGINE
-	if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress*3+iMinProgress)/4);
-#endif
-
-	// Load local
-	iDefs += Load(hScenario,dwLoadWhat,szLanguage,pSoundSystem,fOverload);
-
-	// build quick access table
-	BuildTable();
-
-#ifdef C4ENGINE
-	// progress
-	if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress));
-#endif
-
-	// Done
-	return iDefs;
 	}
 
 BOOL C4DefList::Reload(C4Def *pDef, DWORD dwLoadWhat, const char *szLanguage, C4SoundSystem *pSoundSystem)

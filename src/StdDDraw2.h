@@ -124,7 +124,6 @@ class CPattern
 	public:
 		CPattern& operator=(const CPattern&);
 		bool PatternClr(int iX, int iY, BYTE &byClr, DWORD &dwClr, CStdPalette &rPal) const;	// apply pattern to color
-		bool IsNewStyle() { if (sfcPattern32) return true; }
 		bool Set(class CSurface *sfcSource, int iZoom=0, bool fMonochrome=false);	// set and enable pattern
 		bool Set(class CSurface8 *sfcSource, int iZoom=0, bool fMonochrome=false);	// set and enable pattern
 		void SetColors(uint32_t *pClrs, uint32_t *pAlpha) { this->pClrs=pClrs; this->pAlpha=pAlpha; } // set color triplet for old-style textures
@@ -201,7 +200,6 @@ class CStdDDraw
 		int ClipX1,ClipY1,ClipX2,ClipY2;
 		int StClipX1,StClipY1,StClipX2,StClipY2;
 		bool ClipAll;	// set if clipper clips everything away
-		bool PrimaryLocked;							// set if primary surface is locked (-> can't blit)
 		CSurface *RenderTarget;					// current render target
 		bool BlitModulated;							// set if blits should be modulated with BlitModulateClr
 		DWORD BlitModulateClr;					// modulation color for blitting
@@ -227,7 +225,6 @@ class CStdDDraw
 		const char *GetLastError() { return sLastError.getData(); }
 		// Palette		
 		BOOL SetPrimaryPalette(BYTE *pBuf, BYTE *pAlphaBuf=NULL);
-		BOOL SetPrimaryPaletteQuad(BYTE *pBuf);
 		BOOL AttachPrimaryPalette(SURFACE sfcSurface);
 		// Clipper
 		BOOL GetPrimaryClipper(int &rX1, int &rY1, int &rX2, int &rY2);
@@ -236,8 +233,6 @@ class CStdDDraw
 		BOOL StorePrimaryClipper();
 		BOOL RestorePrimaryClipper();
 		BOOL NoPrimaryClipper();
-		BOOL ApplyPrimaryClipper(SURFACE sfcSurface);
-		BOOL DetachPrimaryClipper(SURFACE sfcSurface);
 		virtual bool UpdateClipper() = 0; // set current clipper to render target
 		bool ClipPoly(CBltData &rBltData); // clip polygon to clipper; return whether completely clipped out
 		// Surface
@@ -245,8 +240,6 @@ class CStdDDraw
 		BOOL WipeSurface(SURFACE sfcSurface);
 		void SurfaceAllowColor(SURFACE sfcSfc, DWORD *pdwColors, int iNumColors, BOOL fAllowZero=FALSE);
 		void Grayscale(SURFACE sfcSfc, int32_t iOffset = 0);
-		void LockingPrimary() { PrimaryLocked=true; }
-		void PrimaryUnlocked() { PrimaryLocked=false; }
 		virtual bool PrepareRendering(SURFACE sfcToSurface) = 0; // check if/make rendering possible to given surface
 		// Blit
 		virtual void BlitLandscape(SURFACE sfcSource, SURFACE sfcSource2, SURFACE sfcLiquidAnimation, int fx, int fy, 
@@ -297,7 +290,6 @@ class CStdDDraw
 		void DeactivateBlitModulation() { BlitModulated=false; }	// stop color modulation of blits
 		bool GetBlitModulation(DWORD &rdwColor) { rdwColor=BlitModulateClr; return BlitModulated; }
 		void SetBlitMode(DWORD dwBlitMode) { this->dwBlitMode=dwBlitMode & DDrawCfg.AllowedBlitModes; } // set blit mode extra flags (additive blits, mod2-modulation, etc.)
-		DWORD SetBlitModeGetPrev(DWORD dwNewBlitMode) { DWORD dwTemp=dwBlitMode; SetBlitMode(dwNewBlitMode); return dwTemp; } // set blit mode extra flags, returning old flags
 		void ResetBlitMode() { dwBlitMode=0; }
 		void ClrByCurrentBlitMod(DWORD &rdwClr)
 			{
@@ -307,7 +299,6 @@ class CStdDDraw
 		void SetClrModMap(CClrModAddMap *pClrModMap) { this->pClrModMap = pClrModMap; }
 		void SetClrModMapEnabled(bool fToVal) { fUseClrModMap = fToVal; }
 		bool GetClrModMapEnabled() const { return fUseClrModMap; }
-		unsigned char SetSaturation(unsigned char s) { unsigned char o = Saturation; Saturation = s; return o; }
 		virtual bool StoreStateBlock() = 0;
 		virtual void SetTexture() = 0;
 		virtual void ResetTexture() = 0;

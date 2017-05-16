@@ -7,14 +7,6 @@
 
 #include <C4Value.h>
 
-const int C4SCR_Access_Public			= 0,
-					C4SCR_Access_Protected	= 1,
-					C4SCR_Access_Private		= 2;
-		
-#define C4SCR_Public    "public"
-#define C4SCR_Protected "protected"
-#define C4SCR_Private   "private"
-
 // ** a definition of a script constant
 struct C4ScriptConstDef
 	{
@@ -58,7 +50,6 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 #define PSF_PreInitializePlayer	"~PreInitializePlayer" // iPlayer
 #define PSF_RemovePlayer				"~RemovePlayer" // iPlayer
 #define PSF_OnGameOver					"~OnGameOver"
-#define PSF_Time1								"~Time1"
 #define PSF_Hit									"~Hit"
 #define PSF_Hit2								"~Hit2"
 #define PSF_Hit3								"~Hit3"
@@ -111,7 +102,6 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 #define PSF_AttachTargetLost    "~AttachTargetLost"
 #define PSF_CrewSelection       "~CrewSelection" // BOOL fDeselect, BOOL fCursorOnly
 #define PSF_GetObject2Drop      "~GetObject2Drop" // C4Object *pForCollectionOfObj
-#define PSF_LeagueGetResult     "~LeagueGetResult" // int iForPlr
 #define PSF_MenuSelection       "~OnMenuSelection" // int iItemIndex, C4Object *pMenuObject
 #define PSF_OnActionJump        "~OnActionJump" // int iXDir100, iYDir100
 #define PSF_CalcBuyValue        "~CalcBuyValue" // C4ID idItem, int iDefValue

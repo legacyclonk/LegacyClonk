@@ -49,8 +49,6 @@ class C4UpdatePackage : public C4UpdatePackageCore
 	
 		BOOL MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGr, BOOL *fModified);
 
-		BOOL OpenUnpackParents(C4GroupEx &rGroup, const char *strGroup, const char *strEnsureMaker);
-
 		CStdFile Log;
 		void WriteLog(const char *strMsg, ...) GNUC_FORMAT_ATTRIBUTE_O;
 	};

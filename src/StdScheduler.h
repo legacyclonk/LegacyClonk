@@ -36,9 +36,6 @@ public:
 	// Is called whenever the process is signaled or a timeout occurs.
 	virtual bool Execute(int iTimeout = -1) = 0;
 
-	// As Execute, but won't return until the given timeout value has elapsed or a failure occurs
-	bool ExecuteUntil(int iTimeout = -1);
-
 	// Signal for calling Execute()
 #ifdef STDSCHEDULER_USE_EVENTS
 	virtual HANDLE GetEvent() { return 0; }
@@ -49,10 +46,6 @@ public:
 	// Call Execute() after this time has elapsed (no garantuees regarding accuracy)
 	// -1 means no timeout (infinity).
 	virtual int GetTimeout() { return -1; }
-
-	// Is the process signal currently set?
-	bool IsSignaled();
-
 };
 
 // A simple process scheduler
@@ -87,7 +80,6 @@ public:
 	bool hasProc(StdSchedulerProc *pProc) { return getProc(pProc) >= 0; }
 
 	void Clear();
-	void Set(StdSchedulerProc **ppProcs, int iProcCnt);
 	void Add(StdSchedulerProc *pProc);
 	void Remove(StdSchedulerProc *pProc);
 
@@ -113,7 +105,7 @@ public:
 private:
 
 	// thread control
-	bool fRunThreadRun, fWait;
+	bool fRunThreadRun;
 	
 	bool fThread;
 #ifdef HAVE_WINTHREAD
@@ -124,7 +116,6 @@ private:
 
 public:
 	void Clear();
-	void Set(StdSchedulerProc **ppProcs, int iProcCnt);
 	void Add(StdSchedulerProc *pProc);
 	void Remove(StdSchedulerProc *pProc);
 
@@ -159,7 +150,6 @@ public:
 	StdThread();
 	virtual ~StdThread() { Stop(); }
 
-	bool Start();
 	void SignalStop(); // mark thread to stop but don't wait
 	void Stop();
 

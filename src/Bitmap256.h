@@ -48,7 +48,6 @@ class CBitmapInfo
 	public:
 		BITMAPFILEHEADER Head;
 		BITMAPINFOHEADER Info;
-		void Set(int iWdt, int iHgt, int iBitDepth);
 
 		int FileBitsOffset();
 	};
@@ -61,7 +60,6 @@ class CBitmap256Info : public CBitmapInfo
 	public:
 		void Default();
 		void Set(int iWdt, int iHgt, BYTE *bypPalette);
-		BOOL Valid();
 
 		int FileBitsOffset();
 	};

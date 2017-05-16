@@ -141,7 +141,6 @@ class C4Game
 		bool fLobby;
 		int32_t iLobbyTimeout;
     bool fObserve;
-		bool fReferenceDefinitionOverride;
 		bool NetworkActive;
 		bool Record;
 		bool Verbose; // default false; set to true only by command line
@@ -207,13 +206,10 @@ class C4Game
 		// Network
 	  void Synchronize(BOOL fSavePlayerFiles);
 	  void SyncClearance();
-		BOOL ReSync();
-		void SyncCheckFiles(); // check if files are in sync
     // Editing
 		BOOL DropFile(const char *szFilename, int32_t iX, int32_t iY);
 		BOOL CreateViewport(int32_t iPlayer, bool fSilent=false);
 	  BOOL DropDef(C4ID id, int32_t iX, int32_t iY);
-	  BOOL LoadDef(const char *szFilename);
 	  BOOL ReloadFile(const char *szPath);
 	  BOOL ReloadDef(C4ID id);
 		BOOL ReloadParticle(const char *szName);
@@ -264,7 +260,6 @@ class C4Game
 		C4Object *PlaceAnimal(C4ID idAnimal);
 
 		BOOL LoadScenarioSection(const char *szSection, DWORD dwFlags);
-	  BOOL SaveDesc(C4Group &hGroup, BOOL fSaveGame=FALSE, BOOL fReference=FALSE, BOOL fLobby=FALSE, BOOL fUnregistered=FALSE, BOOL fRecord=FALSE);
 
 		bool DrawTextSpecImage(C4FacetExSurface &fctTarget, const char *szSpec, uint32_t dwClr=0xff);
 		bool SpeedUp();
@@ -287,7 +282,6 @@ class C4Game
 		void Ticks();
 	  const char *FoldersWithLocalsDefs(const char *szPath);
 	  BOOL CheckObjectEnumeration();
-	  BOOL LocalFileMatch(const char *szFilename, int32_t iCreation);
 		BOOL DefinitionFilenamesFromSaveGame();
 	  bool LoadScenarioComponents();
 		bool LoadScenarioScripts();
@@ -299,13 +293,10 @@ class C4Game
 		BOOL InitNetworkFromAddress(const char *szAddress);
 		BOOL InitNetworkFromReference(const C4Network2Reference &Reference);
 		BOOL InitNetworkHost();
-		BOOL DoLobby();
-		BOOL PreInitControl();
 		BOOL InitControl();
 		BOOL InitScriptEngine();
 		BOOL LinkScriptEngine();
 		BOOL InitPlayers();
-		BOOL InitRecord();
     BOOL OpenScenario();
     BOOL InitDefs();
     BOOL InitMaterialTexture();
@@ -319,8 +310,6 @@ class C4Game
 	  BOOL SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fSaveExact);
 	protected:
 	  BOOL CompileRuntimeData(C4ComponentHost &rGameData);
-	  BOOL StoreParticipantPlayers();
-	  BOOL RecreatePlayerFiles();
 
     // Object function internals
     C4Object *NewObject( C4Def *ndef, C4Object *pCreator,
@@ -332,7 +321,6 @@ class C4Game
     void ObjectRemovalCheck();
 
 		bool ToggleDebugMode(); // dbg modeon/off if allowed
-		bool ActivateMenu(const char *szCommand); // exec given menu command for first local player
 
 	public:
 		bool ToggleChart(); // chart dlg on/off

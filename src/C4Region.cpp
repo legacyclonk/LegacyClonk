@@ -67,11 +67,6 @@ BOOL C4RegionList::Add(int iX, int iY, int iWdt, int iHgt, const char *szCaption
 	return TRUE;
 	}
 
-BOOL C4RegionList::Add(C4Facet &fctArea, const char *szCaption, int iCom, C4Object *pTarget, int iMoveOverCom, int iHoldCom, int iData)
-	{
-	return Add(fctArea.X,fctArea.Y,fctArea.Wdt,fctArea.Hgt,szCaption,iCom,pTarget,iMoveOverCom,iHoldCom,iData);
-	}
-
 BOOL C4RegionList::Add(C4Region &rRegion)
 	{
 	C4Region *pRgn = new C4Region;
@@ -127,21 +122,4 @@ void C4Region::Set(C4Facet &fctArea, const char *szCaption, C4Object *pTarget)
 	Hgt=fctArea.Hgt;
 	if (szCaption) SCopy(szCaption,Caption,C4RGN_MaxCaption);
 	if (pTarget) Target=pTarget;
-	}
-
-BOOL C4RegionList::Add(C4RegionList &rRegionList, BOOL fAdjust)
-	{
-	C4Region *pNewFirst=NULL,*pPrev=NULL;
-	for (C4Region *cRgn=rRegionList.First; cRgn; cRgn=cRgn->Next)
-		{
-		C4Region *pRgn = new C4Region;
-		*pRgn = *cRgn; 
-		if (fAdjust) { pRgn->X+=AdjustX; pRgn->Y+=AdjustY; }
-		pRgn->Next=First;
-		if (!pNewFirst) pNewFirst=pRgn;
-		if (pPrev) pPrev->Next=pRgn;
-		pPrev=pRgn;
-		}
-	if (pNewFirst) First=pNewFirst;
-	return TRUE;
 	}

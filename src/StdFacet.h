@@ -16,7 +16,6 @@ class CFacet
     SURFACE Surface; 
     int X,Y,Wdt,Hgt; 
   public:
-	  void Draw(SURFACE sfcSurface, int iX, int iY, int iPhaseX=0, int iPhaseY=0);
 		void Default() { Surface=NULL; X=Y=Wdt=Hgt=0; }
 		void Clear() { Surface=NULL; X=Y=Wdt=Hgt=0; }
     void Set(SURFACE nsfc, int nx, int ny, int nwdt, int nhgt)

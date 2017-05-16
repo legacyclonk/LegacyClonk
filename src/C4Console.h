@@ -91,7 +91,6 @@ class C4Console: public C4ConsoleBase
 		BOOL FileSave(BOOL fSaveGame);
 		BOOL FileOpen();
 		BOOL FileOpenWPlrs();
-		BOOL FileCommand();
 		BOOL FileClose();
 		BOOL FileQuit();
 		BOOL FileRecord();
@@ -108,7 +107,6 @@ class C4Console: public C4ConsoleBase
 #ifdef _WIN32
 		void UpdateMenuText(HMENU hMenu);
 		BOOL AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, BOOL fEnabled=TRUE);
-		BOOL RegisterConsoleWindowClass(HINSTANCE hInst);
 		virtual bool Win32DialogMessageHandling(MSG * msg)
 			{
 			return (hWindow && IsDialogMessage(hWindow,msg)) || (PropertyDlg.hDialog && IsDialogMessage(PropertyDlg.hDialog,msg));
@@ -209,8 +207,6 @@ class C4Console: public C4ConsoleBase
 		virtual void HandleMessage (XEvent &);
 #endif
 	};
-
-#define C4ConsoleWindowClassname "C4Console"
 
 extern C4Console			Console;
 

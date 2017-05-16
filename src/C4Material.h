@@ -114,7 +114,6 @@ class C4MaterialCore
     int32_t  SplashRate;
 	public:
 		void Clear();
-		void Default();
 		BOOL Load(C4Group &hGroup, const char *szEntryName);
 		DWORD GetDWordColor(int32_t iIndex); // get indexed material color as DWord
 		void CompileFunc(StdCompiler *pComp);
@@ -165,14 +164,12 @@ class C4MaterialMap
 	  void Default();
     void Clear();
     int32_t Load(C4Group &hGroup, C4Group* OverloadFile = 0);
-		bool HasMaterials(C4Group &hGroup) const;
     int32_t Get(const char *szMaterial);
     BOOL SaveEnumeration(C4Group &hGroup);
 	  BOOL LoadEnumeration(C4Group &hGroup);
 		C4MaterialReaction *GetReactionUnsafe(int32_t iPXSMat, int32_t iLandscapeMat)
 			{ assert(ppReactionMap); assert(Inside<int32_t>(iPXSMat,-1,Num-1)); assert(Inside<int32_t>(iLandscapeMat,-1,Num-1));
 				return ppReactionMap[(iLandscapeMat+1)*(Num+1) + iPXSMat+1]; }
-		C4MaterialReaction *GetReaction(int32_t iPXSMat, int32_t iLandscapeMat);
 #ifdef C4ENGINE
 		void UpdateScriptPointers(); // set all material script pointers
     void CrossMapMaterials();

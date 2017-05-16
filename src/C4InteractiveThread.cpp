@@ -157,15 +157,6 @@ bool C4InteractiveThread::ThreadLog(const char *szMessage, ...)
   return PushEvent(Ev_Log, Msg.GrabPointer());
   }
 
-bool C4InteractiveThread::ThreadLogFatal(const char *szMessage, ...)
-  {
-	// format message
-  va_list lst; va_start(lst, szMessage);
-  StdStrBuf Msg = FormatStringV(szMessage, lst);
-	// send to main thread
-  return PushEvent(Ev_LogFatal, Msg.GrabPointer());
-  }
-
 bool C4InteractiveThread::ThreadLogS(const char *szMessage, ...)
   {
 	// format message

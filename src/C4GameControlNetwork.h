@@ -125,7 +125,6 @@ protected:
 
 	// clients	 
   void AddClient(int32_t iClientID, const char *szName); // by main thread	 
-  void RemoveClient(int32_t iClientID); // by main thread	 
   void ClearClients(); // by main thread
 
 	// packet handling
@@ -159,7 +158,7 @@ public:
 
 	// needed as C4Control doesn't seem to implement correct copying behavior
 	C4GameControlPacket(const C4GameControlPacket &Pkt2);
-	C4GameControlPacket &operator = (const C4GameControlPacket &Pkt2);
+	C4GameControlPacket &operator = (const C4GameControlPacket &) = delete;
 
 protected:
 	// header

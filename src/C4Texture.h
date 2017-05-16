@@ -66,7 +66,6 @@ class C4TextureMap
 		int32_t Init();
 		bool SaveMap(C4Group &hGroup, const char *szEntryName);
     int32_t LoadTextures(C4Group &hGroup, C4Group* OverloadFile=0);
-		bool HasTextures(C4Group &hGroup);
 	  const char *GetTexture(int32_t iIndex);
 		void MoveIndex(BYTE byOldIndex, BYTE byNewIndex); // change index of texture
     int32_t GetIndex(const char *szMaterial, const char *szTexture, BOOL fAddIfNotExist=TRUE, const char *szErrorIfFailed=NULL);

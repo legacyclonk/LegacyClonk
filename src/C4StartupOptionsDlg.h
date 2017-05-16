@@ -63,7 +63,6 @@ class C4StartupOptionsDlg : public C4StartupDlg
 		void OnFontSizeComboFill(C4GUI::ComboBox_FillCB *pFiller);
 		bool OnFontComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection);
 		void UpdateFontControls();
-		bool SetGameFont(const char *szFontFace, int32_t iFontSize);
 		int32_t FairCrewSlider2Strength(int32_t iSliderVal);
 		int32_t FairCrewStrength2Slider(int32_t iStrengthVal);
 		void OnFairCrewStrengthSliderChange(int32_t iNewVal);
@@ -204,8 +203,6 @@ class C4StartupOptionsDlg : public C4StartupDlg
 				void OnResetKeysBtn(C4GUI::Control *btn);
 				void OnGUIGamepadCheckChange(C4GUI::Element *pCheckBox);
 			};
-
-		class C4GamePadControl *GamePadCon;
 
 	// network tab --------------------------------------------------------
 	private:

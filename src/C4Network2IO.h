@@ -86,7 +86,7 @@ public:
   bool hasUDP() const { return !! pNetIO_UDP; }
 
 	// initialization
-	bool Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscovery = -1, int16_t iPortRefServer = -1, bool fBroadcast = false); // by main thread
+	bool Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscovery = -1, int16_t iPortRefServer = -1); // by main thread
 	void Clear(); // by main thread
 	void SetLocalCCore(const C4ClientCore &CCore); // by main thread
 
@@ -113,7 +113,6 @@ public:
 	bool Broadcast(const C4NetIOPacket &rPkt); // by both
 	
 	// sending helpers
-	bool SendMsgToClient(C4NetIOPacket &rPkt, int iClient); // by both
 	bool BroadcastMsg(const C4NetIOPacket &rPkt); // by both
 
 	// punch
@@ -243,16 +242,12 @@ public:
 	const C4NetIO::addr_t &getPeerAddr()		const { return PeerAddr.sin_port ? PeerAddr : ConnectAddr; }
 	const C4NetIO::addr_t &getConnectAddr() const { return ConnectAddr; }
 	uint32_t	getID()					const	{ return iID; }
-	uint32_t	getRemoteID()		const	{ return iRemoteID; }
 	time_t		getTimestamp()	const { return iTimestamp; }
 	const C4ClientCore &getCCore()	const	{ return CCore; }
-	CStdCSec &getCCoreCSec()				{ return CCoreCSec; }
 	int				getClientID()		const { return CCore.getID(); }
 	bool			isHost()				const { return CCore.isHost(); }
 	int				getPingTime()		const { return iPingTime; }
 	int				getLag()				const;
-  int       getIRate()      const { return iIRate; }
-  int       getORate()      const { return iORate; }
   int       getPacketLoss() const { return iPacketLoss; }
 	const char *getPassword() const { return Password.getData(); }
 	bool			isConnSent()		const { return fConnSent; }
@@ -311,7 +306,7 @@ public:
 class C4PacketPing : public C4PacketBase
 {
 public:
-	C4PacketPing(uint32_t iPacketCounter = 0, uint32_t iRemotePacketCounter = 0);
+	C4PacketPing(uint32_t iPacketCounter = 0);
 
 protected:
 	uint32_t iTime;
@@ -367,7 +362,6 @@ class C4PacketFwd : public C4PacketBase
 {
 public:
 	C4PacketFwd();
-	C4PacketFwd(const C4NetIOPacket &Pkt);
 
 protected:
 	bool fNegativeList;
@@ -377,7 +371,6 @@ protected:
 
 public:
 	const C4NetIOPacket &getData() const { return Data; }
-	bool isNegativeList() const { return fNegativeList; }
 	int32_t	getClient(int32_t i)	const { return iClients[i]; }
 	int32_t	getClientCnt()		const { return iClientCnt; }
 	

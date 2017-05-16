@@ -41,21 +41,14 @@ class CSurface8
 			return Bits[y*Pitch+x];
 			}
 		bool Create(int iWdt, int iHgt, bool fOwnPal=false);
-		void MoveFrom(CSurface *psfcFrom); // grab data from other surface - invalidates other surface
 		void Clear();
 		void Clip(int iX, int iY, int iX2, int iY2);
 		void NoClip();
 		bool Read(class CStdStream &hGroup, bool fOwnPal);
 		bool Save(const char *szFilename, BYTE *bpPalette = NULL);
-		void Wipe(); // empty to transparent
 		void GetSurfaceSize(int &irX, int &irY); // get surface size
 		void EnforceC0Transparency() { pPal->EnforceC0Transparency(); }
 		void AllowColor(BYTE iRngLo, BYTE iRngHi, BOOL fAllowZero=FALSE);
-    void SetBuffer(BYTE *pbyToBuf, int Wdt, int Hgt, int Pitch);
-    void ReleaseBuffer();
-	protected:
-		void MapBytes(BYTE *bpMap);
-		BOOL ReadBytes(BYTE **lpbpData, void *bpTarget, int iSize);
 	};
 
 #endif

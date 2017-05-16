@@ -77,7 +77,6 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ScreenshotFolder,		"ScreenshotFolder",		"Screenshots",	false, true));
 	pComp->Value(mkNamingAdapt(FairCrew,						"NoCrew",							0							 ));
 	pComp->Value(mkNamingAdapt(FairCrewStrength,		"DefCrewStrength",		1000					 ));
-	pComp->Value(mkNamingAdapt(MaxFairCrewStrength,	"MaxFairCrewStrength",1000					 ));
 	pComp->Value(mkNamingAdapt(ScrollSmooth,				"ScrollSmooth",				4							 ));
 	pComp->Value(mkNamingAdapt(AlwaysDebug,					"DebugMode",					0							 ));
 #ifdef _WIN32
@@ -93,11 +92,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 
 void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)
 	{
-#ifdef _WIN32
-	pComp->Value(mkNamingAdapt(AutoEditScan,				"AutoEditScan",				1							 ));
-#endif
 	pComp->Value(mkNamingAdapt(AutoFileReload,			"AutoFileReload",			1							 ));
-	pComp->Value(mkNamingAdapt(AllErrorsFatal,			"AllErrorsFatal",			0							 ));
 	}
 
 void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
@@ -117,7 +112,6 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(SmokeLevel,						"SmokeLevel",						200						,false, true));
 	pComp->Value(mkNamingAdapt(VerboseObjectLoading,	"VerboseObjectLoading",	0							));
 	pComp->Value(mkNamingAdapt(VideoModule,						"VideoModule",					0							,false, true));
-	pComp->Value(mkNamingAdapt(MenuTransparency,			"MenuTransparency",			1							,false, true));
 	pComp->Value(mkNamingAdapt(UpperBoard,						"UpperBoard",						1							,false, true));
 	pComp->Value(mkNamingAdapt(ShowClock,							"ShowClock", 						0							,false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewNames,					"ShowCrewNames",				1							,false, true));
@@ -126,7 +120,6 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(NewGfxCfg,							"NewGfxCfg",						0							));
 	pComp->Value(mkNamingAdapt(NewGfxCfgGL,						"NewGfxCfgGL",					0							));
 	pComp->Value(mkNamingAdapt(MsgBoard,							"MsgBoard"	,						1							));
-	pComp->Value(mkNamingAdapt(MsgBrdFadeDelay,				"MsgBrdFadeDelay"	,			10						));
 	pComp->Value(mkNamingAdapt(PXSGfx,								"PXSGfx"	,							1							));
 	pComp->Value(mkNamingAdapt(Engine,								"Engine"	,							0							,false, true));
 	pComp->Value(mkNamingAdapt(TexIndent,							"TexIndent"	,						0							));
@@ -161,11 +154,9 @@ void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	{
 	pComp->Value(mkNamingAdapt(ControlRate,							"ControlRate",					2							,false, true));
-	pComp->Value(mkNamingAdapt(ControlPreSend,					"ControlPreSend",				-1						));
 	pComp->Value(mkNamingAdapt(s(WorkPath),							"WorkPath",							"Network"			,false, true));
 	pComp->Value(mkNamingAdapt(Lobby,										"Lobby",								0							));
 	pComp->Value(mkNamingAdapt(NoRuntimeJoin,						"NoRuntimeJoin",				0							,false, true));
-	pComp->Value(mkNamingAdapt(NoReferenceRequest,			"NoReferenceRequest",		0							));
 	pComp->Value(mkNamingAdapt(MaxResSearchRecursion,   "MaxResSearchRecursion",1             ,false, true));
 	pComp->Value(mkNamingAdapt(Comment,		  						"Comment",							""						,false, true));
 #ifdef C4ENGINE
@@ -175,14 +166,11 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(PortRefServer,						"PortRefServer",				C4NetStdPortRefServer	,false, true));
 #endif
 	pComp->Value(mkNamingAdapt(ControlMode,	        		"ControlMode",	      	0           	));
-	pComp->Value(mkNamingAdapt(SendPortraits,						"SendPortraits",				0							,false, true));
 	pComp->Value(mkNamingAdapt(LocalName,               "LocalName",						"Unknown"			,false, true));
 	pComp->Value(mkNamingAdapt(Nick,                    "Nick",									""	       		,false, true));
 	pComp->Value(mkNamingAdapt(MaxLoadFileSize,					"MaxLoadFileSize",			5*1024*1024		,false, true));
 
 	pComp->Value(mkNamingAdapt(MasterServerSignUp,			"MasterServerSignUp",		1							));
-	pComp->Value(mkNamingAdapt(MasterServerActive,			"MasterServerActive",		0							));
-	pComp->Value(mkNamingAdapt(MasterKeepPeriod,				"MasterKeepPeriod",			60						));
 	pComp->Value(mkNamingAdapt(MasterReferencePeriod,		"MasterReferencePeriod",120						));
 	pComp->Value(mkNamingAdapt(LeagueServerSignUp,			"LeagueServerSignUp",		0							));
 	pComp->Value(mkNamingAdapt(s(ServerAddress),				"ServerAddress",        C4CFG_LeagueServer));
@@ -237,12 +225,6 @@ void C4ConfigGamepad::CompileFunc(StdCompiler *pComp, bool fButtonsOnly)
 	pComp->Value(mkNamingAdapt(Button[9],               "Button10",							-1					));
 	pComp->Value(mkNamingAdapt(Button[10],              "Button11",							-1					));
 	pComp->Value(mkNamingAdapt(Button[11],              "Button12",							-1					));
-	}
-
-void C4ConfigGamepad::ResetButtons()
-	{
-	// loads an empty config for the buttons
-	StdCompilerNull Comp; Comp.Compile(mkParAdapt(*this, true));
 	}
 
 void C4ConfigGamepad::Reset()
@@ -325,15 +307,6 @@ void C4ConfigControls::CompileFunc(StdCompiler *pComp, bool fKeysOnly)
 #undef s
 #endif //USE_CONSOLE
 	}
-
-const char *CfgAtTempPath(const char *szFilename)
-	{
-	// safety
-	if (!pConfig) return NULL;
-	// get at temp path
-	return pConfig->AtTempPath(szFilename);
-	}
-
 
 C4Config::C4Config()
 	{
@@ -631,13 +604,6 @@ const char* C4Config::AtTempPath(const char *szFilename)
 	return AtPathFilename;
 	}
 
-const char* C4Config::AtLogPath(const char *szFilename)
-  {
-	SCopy(General.LogPath,AtPathFilename,_MAX_PATH);
-	SAppend(szFilename,AtPathFilename,_MAX_PATH);
-	return AtPathFilename;
-	}
-
 const char* C4Config::AtNetworkPath(const char *szFilename)
   {
 	SCopy(Network.WorkPath,AtPathFilename,_MAX_PATH);
@@ -808,21 +774,6 @@ void C4Config::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(IRC,				  "IRC"	  			));
 	pComp->Value(mkNamingAdapt(Developer,		"Developer"		));
 	pComp->Value(mkNamingAdapt(Startup, 		"Startup"	  	));
-	}
-
-bool C4Config::AddModule(const char *szPath, char *szModules)
-	{
-	return SAddModule(szModules,szPath);
-	}
-
-bool C4Config::IsModule(const char *szPath, char *szModules)
-	{
-	return SIsModule(szModules,szPath);
-	}
-
-bool C4Config::RemoveModule(const char *szPath, char *szModules)
-	{
-	return SRemoveModule(szModules,szPath);
 	}
 
 void C4Config::ExpandEnvironmentVariables(char *strPath, int iMaxLen)

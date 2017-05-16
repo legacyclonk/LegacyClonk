@@ -86,12 +86,11 @@ public:
   void SetVolume(int32_t inVolume) { iVolume = inVolume; }
   void SetPan(int32_t inPan) { iPan = inPan; }
   void SetVolumeByPos(int32_t x, int32_t y);
-  void SetObj(C4Object *pnObj) { pObj = pnObj; }
   void ClearPointers(C4Object *pObj);
   bool Inside(int32_t iX, int32_t iY, int32_t iRad);
 };
 
-const int32_t SoundUnloadTime=60, SoundMaxUnloadSize=100000;
+const int32_t SoundUnloadTime=60;
 
 class C4SoundSystem  
 	{

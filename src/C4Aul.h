@@ -15,11 +15,6 @@
 #include <C4Script.h>
 #include <C4StringTable.h>
 
-// debug mode?
-#ifdef _DEBUG
-#define C4AUL_DEBUG
-#endif
-
 // class predefs
 class C4AulError;
 class C4AulFunc;
@@ -32,12 +27,9 @@ struct C4AulContext;
 struct C4AulBCC;
 
 // consts
-#define C4AUL_MAX_ErrMsg			1024// max error message length
 #define C4AUL_MAX_String			1024// max string length
 #define C4AUL_MAX_Identifier	100	// max length of function identifiers
 #define C4AUL_MAX_Par					10	// max number of parameters
-#define C4AUL_MAX_Var					10	// max number of func local vars
-#define C4AUL_MAX_BlockRec    10  // max recursion of blocks
 
 #define C4AUL_ControlMethod_None 0
 #define C4AUL_ControlMethod_Classic 1
@@ -100,7 +92,6 @@ struct C4AulParSet
 
 #define Copy2ParSet8(Pars, Vars) Pars[0].Set(Vars##0); Pars[1].Set(Vars##1); Pars[2].Set(Vars##2); Pars[3].Set(Vars##3); Pars[4].Set(Vars##4); Pars[5].Set(Vars##5); Pars[6].Set(Vars##6); Pars[7].Set(Vars##7);
 #define Copy2ParSet9(Pars, Vars) Pars[0].Set(Vars##0); Pars[1].Set(Vars##1); Pars[2].Set(Vars##2); Pars[3].Set(Vars##3); Pars[4].Set(Vars##4); Pars[5].Set(Vars##5); Pars[6].Set(Vars##6); Pars[7].Set(Vars##7); Pars[8].Set(Vars##8);
-#define Copy2ParSet10(Pars, Vars) Pars[0].Set(Vars##0); Pars[1].Set(Vars##1); Pars[2].Set(Vars##2); Pars[3].Set(Vars##3); Pars[4].Set(Vars##4); Pars[5].Set(Vars##5); Pars[6].Set(Vars##6); Pars[7].Set(Vars##7); Pars[8].Set(Vars##8); Pars[9].Set(Vars##9);
 
 // byte code chunk type
 // some special script functions defined hard-coded to reduce the exec context
@@ -324,8 +315,6 @@ class C4AulScriptFunc : public C4AulFunc
 		virtual C4V_Type GetRetType() { return bReturnRef ? C4V_pC4Value : C4V_Any; }
 		virtual C4Value Exec(C4AulContext *pCallerCtx, C4Value pPars[], bool fPassErrors=false); // execute func (script call, should not happen)
 		virtual C4Value Exec(C4Object *pObj=NULL, C4AulParSet *pPars = NULL, bool fPassErrors=false); // execute func (engine call)
-
-		void SetError(C4AulContext *ctx, const char *szMessage); // set error message
 
 		void CopyBody(C4AulScriptFunc &FromFunc); // copy script/code, etc from given func
 

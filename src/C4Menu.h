@@ -147,7 +147,6 @@ class C4Menu : public C4GUI::Dialog
 		void SetAlignment(int32_t iAlignment);
 		int32_t GetIdentification();
 		int32_t GetItemCount();
-		int32_t GetPosition();
 		int32_t GetSelection();
 		bool IsContextMenu() { return Style == C4MN_Style_Context; }
 		int GetSymbolSize() { return (Style == C4MN_Style_Dialog) ? 64 : C4SymbolSize; }
@@ -191,14 +190,9 @@ class C4Menu : public C4GUI::Dialog
 	protected:
 		bool DoInitRefSym(const C4FacetEx &fctSymbol, const char *szEmpty, int32_t iExtra=C4MN_Extra_None, int32_t iExtraData=0, int32_t iId=0, int32_t iStyle=C4MN_Style_Normal);
 		bool DoInit(C4FacetExSurface &fctSymbol, const char *szEmpty, int32_t iExtra=C4MN_Extra_None, int32_t iExtraData=0, int32_t iId=0, int32_t iStyle=C4MN_Style_Normal);
-		void DrawBuffer(C4Facet &cgo, C4RegionList *pRegions);
 		void AdjustSelection();
 		void AdjustPosition();
-		BOOL CheckBuffer();
 		BOOL RefillInternal();
-		void DrawButton(C4Facet &cgo);
-		void DrawScrollbar(C4Facet &cgo, int32_t iTotal, int32_t iVisible, int32_t iPosition);
-		void DrawFrame(C4Facet &cgo, int32_t iAlign);
 		void DrawFrame(SURFACE sfcSurface, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt);
 		void InitLocation(C4Facet &cgo);
 		void InitSize();

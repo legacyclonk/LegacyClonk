@@ -31,7 +31,6 @@ class C4GraphicsSystem
 		BOOL ShowPathfinder;
 		BOOL ShowNetstatus;
 		BOOL ShowSolidMask;
-		BYTE DarkColorTable[256];
 		BOOL fSetPalette;
 		uint32_t dwGamma[C4MaxGammaRamps*3];		// gamma ramps
 		BOOL fSetGamma;			// must gamma ramp be reassigned?
@@ -44,7 +43,6 @@ class C4GraphicsSystem
 		void Execute();
 		void FlashMessage(const char *szMessage);
 		void FlashMessageOnOff(const char *strWhat, bool fOn);
-		void SetDarkColorTable();
 		void DeactivateDebugOutput();
 		void MouseMove(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam, class C4Viewport *pVP); // pVP specified for console mode viewports only
 		void SetMouseInGUI(bool fInGUI, bool fByMouse);
@@ -87,7 +85,6 @@ class C4GraphicsSystem
 		void DrawHoldMessages();
 		void DrawFullscreenBackground();
 		void ClearFullscreenBackground();
-		int32_t SeekLoaderScreens(C4Group &rFromGrp, const char *szWildcard, int32_t iLoaderCount, char *szDstName, C4Group **ppDestGrp);
 		void MouseMoveToViewport(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam);
 
 	public:

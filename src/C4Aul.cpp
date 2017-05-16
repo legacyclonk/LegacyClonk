@@ -286,18 +286,7 @@ C4AulFunc *C4AulScript::GetFuncRecursive(const char *pIdtf)
 
 C4AulFunc *C4AulScript::GetFunc(const char *pIdtf)
 	{
-	C4AulFunc * f = Engine ? Engine->GetFunc(pIdtf, this, NULL) : NULL;
-#if 0
-	// search func list
-	C4AulFunc *f2 = FuncL;
-	while (f2)
-		{
-		if (SEqual(pIdtf, f2->Name)) break;
-		f2 = f2->Prev;
-		}
-	assert (f == f2);
-#endif
-	return f;
+	return Engine ? Engine->GetFunc(pIdtf, this, NULL) : NULL;
 	}
 
 

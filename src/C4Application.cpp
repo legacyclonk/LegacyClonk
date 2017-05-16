@@ -375,7 +375,7 @@ void C4Application::Execute()
 				uint32_t iPreGfxTime = timeGetTime();
 				// Fullscreen mode
 				if (isFullScreen)
-					FullScreen.Execute(iRecursionCount > 1);
+					FullScreen.Execute();
 				// Console mode
 				else
 					Console.Execute();

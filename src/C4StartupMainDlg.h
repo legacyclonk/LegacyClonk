@@ -24,16 +24,13 @@ class C4StartupMainDlg : public C4StartupDlg
 		void OnPlayerSelContextAddPlr(C4GUI::Element *pTarget, const StdCopyStrBuf &rsFilename);
 		void OnPlayerSelContextRemovePlr(C4GUI::Element *pTarget, const int &iIndex);
 		void UpdateParticipants();
-		void ShowParticipantCreationDlg();
 
 		void OnStartBtn(C4GUI::Control *btn); // callback: run default start button pressed
 		void OnPlayerSelectionBtn(C4GUI::Control *btn); // callback: player selection (preliminary version via context menus...)
 		void OnNetJoinBtn(C4GUI::Control *btn); // callback: join net work game (direct join only for now)
-		void OnNetJoin(const StdStrBuf &rsHostAddress);
 		void OnOptionsBtn(C4GUI::Control *btn); // callback: Show options screen
 		void OnAboutBtn(C4GUI::Control *btn); // callback: Show about screen
 		void OnExitBtn(C4GUI::Control *btn); // callback: exit button pressed
-		void OnTODO(C4GUI::Control *btn); // button not yet implemented
 
 		bool SwitchToEditor();
 

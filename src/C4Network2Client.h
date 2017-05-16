@@ -52,16 +52,13 @@ protected:
 
 public:
 	const C4NetIO::addr_t &getAddr() const { return addr; }
-	in_addr								getIPAddr() const { return addr.sin_addr; }
 	bool									isIPNull() const { return !addr.sin_addr.s_addr; }
-	uint16_t							getPort() const { return htons(addr.sin_port); }
 	C4Network2IOProtocol	getProtocol() const { return eProtocol; }
 
 	StdStrBuf toString() const;
 
 	void SetAddr(C4NetIO::addr_t naddr) { addr = naddr; }
 	void SetIP(in_addr ip) { addr.sin_addr = ip; }
-	void SetPort(uint16_t iPort) { addr.sin_port = htons(iPort); }
 	void SetProtocol(C4Network2IOProtocol enProtocol) { eProtocol = enProtocol; }
 
 	void CompileFunc(StdCompiler *pComp);
@@ -140,13 +137,11 @@ public:
   void CloseConns(const char *szMsg);
 
   bool SendMsg(C4NetIOPacket rPkt) const;
-  bool SendData(C4NetIOPacket rPkt) const;
 
 	bool DoConnectAttempt(class C4Network2IO *pIO);
 
 	// addresses
 	bool hasAddr(const C4Network2Address &addr) const;
-	void ClearAddr();
 	bool AddAddr(const C4Network2Address &addr, bool fAnnounce);
 	void AddLocalAddrs(int16_t iPortTCP, int16_t iPortUDP);
 
@@ -172,7 +167,6 @@ protected:
 
 public:
 	C4Network2Client *GetClientByID(int32_t iID) const;
-	C4Network2Client *GetNextClientAfterID(int32_t iSmallerClientID) const;
 	C4Network2Client *GetClient(const char *szName) const;
 	C4Network2Client *GetClient(const C4ClientCore &CCore, int32_t iMaxDiffLevel = C4ClientCoreDL_IDMatch);
 	C4Network2Client *GetClient(C4Network2IOConnection *pConn) const;

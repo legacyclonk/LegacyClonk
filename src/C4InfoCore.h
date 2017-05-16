@@ -39,7 +39,6 @@ class C4PhysicalInfo
     int32_t CanDig;
 		int32_t CanConstruct;
 		int32_t CanChop;
-    int32_t CanSwimDig;
 		int32_t CanFly;
 		int32_t CorrosionResist;
 		int32_t BreatheWater;
@@ -133,7 +132,6 @@ class C4ObjectInfoCore
 		char PortraitFile[C4MaxName+2+4+1]; // used portrait
     C4PhysicalInfo Physical;
 		C4ValueMapData ExtraData;
-		BOOL NoSave; // set for _XYZ-CrewMembers
   public:
 	  BOOL Save(C4Group &hGroup, class C4DefList *pDefs);
 	  BOOL Load(C4Group &hGroup);
@@ -183,7 +181,6 @@ class C4PlayerInfoCore
 		int32_t  PrefMouse;
     C4RoundResult LastRound;  
 		C4ValueMapData ExtraData;
-		char LeagueName[C4MaxName+1];
     // Preferences
     int32_t PrefColor;
 		uint32_t PrefColorDw, PrefColor2Dw;
@@ -193,10 +190,8 @@ class C4PlayerInfoCore
   	int32_t PrefAutoContextMenu; // enable automatically opened context menus in structures
 public:
     void Default(C4RankSystem *pRanks=NULL);
-		void Promote(int32_t iRank, C4RankSystem &rRanks);
     BOOL Load(C4Group &hGroup);
 		BOOL Save(C4Group &hGroup);
-		BOOL CheckPromotion(C4RankSystem &rRanks);
 		static DWORD GetPrefColorValue(int32_t iPrefColor);
 		void CompileFunc(StdCompiler *pComp);
   };

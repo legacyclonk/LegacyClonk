@@ -106,10 +106,6 @@ protected:
 
 	// name of statistic
 	const char* strName;
-
-	// registred?
-	bool bRegistred;
-
 };
 
 // *** some directives

@@ -774,17 +774,6 @@ bool C4Network2Res::FinishDerive(const C4Network2ResCore &nCore)
   return true;
 }
 
-C4Group *C4Network2Res::OpenAsGrp() const
-{
-	C4Group *pnGrp = new C4Group();
-	if(!pnGrp->Open(szFile))
-	{
-		delete pnGrp;
-		return NULL;
-	}
-	return pnGrp;
-}
-
 void C4Network2Res::Remove()
 {
 	// schedule for removal
@@ -1402,31 +1391,6 @@ C4Network2Res::Ref C4Network2ResList::AddByFile(const char *strFilePath, bool fT
 				delete pRes;
 				return NULL;
 				}
-	// add to list
-	Add(pRes);
-	return pRes;
-}
-
-C4Network2Res::Ref C4Network2ResList::AddByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName, bool fAllowUnloadable)
-{
-	// get ressource ID
-	if(iResID < 0) iResID = nextResID();
-	if(iResID < 0) { Log("AddByGroup: no more ressource IDs available!"); return NULL; }
-	// create new
-	C4Network2Res::Ref pRes = new C4Network2Res(this);
-	// initialize
-	if(!pRes->SetByGroup(pGrp, fTemp, eType, iResID, szResName))
-		{
-		delete pRes;
-		return NULL;
-		}
-	// create standalone
-	if(!pRes->GetStandalone(NULL, 0, true, fAllowUnloadable))
-		if(!fAllowUnloadable)
-			{
-			delete pRes;
-			return NULL;
-			}
 	// add to list
 	Add(pRes);
 	return pRes;

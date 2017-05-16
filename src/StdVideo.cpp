@@ -101,59 +101,10 @@ BOOL AVIPutFrame(PAVISTREAM pAviStream,
 	return TRUE;
 	}
 
-
-BOOL AVIOpenGrab(const char *szFilename,
-								 PAVISTREAM *ppAviStream,
-								 PGETFRAME *ppGetFrame,
-								 int &rAviLength, int &rFrameWdt, int &rFrameHgt,
-								 int &rFrameBitsPerPixel, int &rFramePitch)
-	{
-
-	// Open avi stream
-  if ( AVIStreamOpenFromFile( 
-					ppAviStream,
-					szFilename,
-					streamtypeVIDEO,
-					0,
-					OF_READ,
-					NULL) != 0) return FALSE;
-
-	// Get stream info
-	AVISTREAMINFO avi_info;
-	AVIStreamInfo(*ppAviStream,&avi_info,sizeof(avi_info));
-	rAviLength=avi_info.dwLength;
-
-	// Open get frame
-	if (!(*ppGetFrame = AVIStreamGetFrameOpen(*ppAviStream,NULL))) return FALSE;
-
-	// Get sample frame
-	void *pframe;
-	if (!(pframe = AVIStreamGetFrame(*ppGetFrame,0))) return FALSE;
-
-	// Assign sample bmp info
-	BITMAPINFOHEADER *sample = (BITMAPINFOHEADER*) pframe;
-	rFrameWdt = sample->biWidth;
-	rFrameHgt = sample->biHeight;
-	rFrameBitsPerPixel = sample->biBitCount;
-	rFramePitch = DWordAligned(rFrameWdt*rFrameBitsPerPixel/8);
-
-	return TRUE;
-	}
-
-void AVICloseGrab(PAVISTREAM *ppAviStream,
-									PGETFRAME *ppGetFrame)
-	{
-	if (ppGetFrame && *ppGetFrame) 
-		{ AVIStreamGetFrameClose(*ppGetFrame); *ppGetFrame=NULL; }
-	if (ppAviStream && *ppAviStream)
-		{ AVIStreamRelease(*ppAviStream); *ppAviStream=NULL; }
-	}
-
-
 // ----------------------------------------
 
 CStdAVIFile::CStdAVIFile()
-: pStream(NULL), pGetFrame(NULL), hOutDib(NULL), hBitmap(NULL), hDD(NULL), hWnd(NULL), hDC(NULL), pbmi(NULL),
+: pStream(NULL), pGetFrame(NULL), hBitmap(NULL), hDD(NULL), hWnd(NULL), hDC(NULL), pbmi(NULL),
 	iAudioBufferLength(0), pAudioData(NULL), pAudioStream(NULL), pAudioInfo(NULL), pAVIFile(NULL)
 	{
 	AVIFileInit();

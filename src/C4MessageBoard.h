@@ -42,7 +42,6 @@ class C4MessageBoard
 		void Clear();
 		void Init(C4Facet &cgo, BOOL fStartup);
 		void Execute();
-		void DrawLoader(C4Facet &cgo);
 		void Draw(C4Facet &cgo);
 		void AddLog(const char *szMessage);
 		void ClearLog();
@@ -50,7 +49,6 @@ class C4MessageBoard
 		void EnsureLastMessage();
 		bool ControlScrollUp();
 		bool ControlScrollDown();
-		bool ControlChangeMode();
 		C4Player* GetMessagePlayer(const char *szMessage);
 		void ChangeMode(int inMode);
 

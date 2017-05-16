@@ -142,7 +142,6 @@ class C4ToolsDlg
 		void SetTexture(const char *szTexture);
 		void SetMaterial(const char *szMaterial);
 		void UpdateTextures();
-		void SetColorPattern(const char *szMaterial, const char *szTexture);
 	public:
 		void UpdateLandscapeModeCtrls();
 	};

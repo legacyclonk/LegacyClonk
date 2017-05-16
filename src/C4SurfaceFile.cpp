@@ -28,15 +28,6 @@ CSurface8 *GroupReadSurface8(CStdStream &hGroup)
 	return pSfc;
 	}
 
-C4Surface *GroupReadSurfaceOwnPal(CStdStream &hGroup)
-	{
-	// create surface
-	C4Surface *pSfc=new C4Surface();
-	if (!pSfc->Read(hGroup, true))
-		{ delete pSfc; return NULL; }
-	return pSfc;
-	}
-
 CSurface8 *GroupReadSurfaceOwnPal8(CStdStream &hGroup)
 	{
 	// create surface

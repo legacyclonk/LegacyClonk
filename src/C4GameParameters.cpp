@@ -61,13 +61,6 @@ void C4GameRes::SetFile(C4Network2ResType enType, const char *sznFile)
 	File = sznFile;
 	}
 
-void C4GameRes::SetResCore(C4Network2ResCore *pnResCore)
-	{
-	assert(!pNetRes);
-	pResCore = pnResCore;
-	eType = pResCore->getType();
-	}
-
 void C4GameRes::SetNetRes(C4Network2Res::Ref pnNetRes)
 {
 	Clear();
@@ -231,7 +224,6 @@ bool C4GameResList::Load(const char *szDefinitionFilenames)
 	while(pMatParentGrp = Game.GroupSet.FindGroup(C4GSCnt_Material, pMatParentGrp))
 		if(pMatParentGrp != &Game.ScenarioFile)
 		{
-			StdStrBuf MaterialPath = pMatParentGrp->GetFullName() + DirSep C4CFN_Material;
 			CreateByFile(NRT_Material, (pMatParentGrp->GetFullName() + DirSep C4CFN_Material).getData());
 		}
 	// add global Material.c4g
@@ -245,16 +237,6 @@ C4GameRes *C4GameResList::CreateByFile(C4Network2ResType eType, const char *szFi
 	// Create & set
 	C4GameRes *pRes = new C4GameRes();
 	pRes->SetFile(eType, szFile);
-	// Add to list
-	Add(pRes);
-	return pRes;
-	}
-
-C4GameRes *C4GameResList::CreateByNetRes(C4Network2Res::Ref pNetRes)
-	{
-	// Create & set
-	C4GameRes *pRes = new C4GameRes();
-	pRes->SetNetRes(pNetRes);
 	// Add to list
 	Add(pRes);
 	return pRes;

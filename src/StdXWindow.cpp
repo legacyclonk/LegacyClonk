@@ -223,8 +223,6 @@ bool CStdWindow::FindInfo()
 }
 #endif // USE_X11
 
-bool CStdWindow::StorePosition(const char *, const char *, bool) { return true; }
-
 bool CStdWindow::RestorePosition(const char *, const char *, bool) {
 	// The Windowmanager is responsible for window placement.
     return true;
@@ -266,26 +264,6 @@ void CStdWindow::SetTitle(const char * Title) {
 
 void CStdWindow::FlashWindow() {
 #ifdef USE_X11
-
-	// This tries to implement flashing via
-	// _NET_WM_STATE_DEMANDS_ATTENTION, but it simply does not work for me.
-	// -ck.
-#if 0
-	XEvent e;
-	e.xclient.type = ClientMessage;
-	e.xclient.message_type = XInternAtom(dpy, "_NET_WM_STATE", True);
-	e.xclient.window = wnd;
-	e.xclient.display = dpy;
-	e.xclient.format = 32;
-	e.xclient.data.l[0] = 1;
-	e.xclient.data.l[1] = XInternAtom(dpy, "_NET_WM_STATE_DEMANDS_ATTENTION", True);
-	e.xclient.data.l[2] = 0l;
-	e.xclient.data.l[3] = 0l;
-	e.xclient.data.l[4] = 0l;
-
-	XSendEvent(dpy, DefaultRootWindow(dpy), false, SubstructureNotifyMask | SubstructureRedirectMask, &e);
-#endif
-
 	if(!HasFocus)
 	{
 		XWMHints * wm_hint = static_cast<XWMHints*>(Hints);

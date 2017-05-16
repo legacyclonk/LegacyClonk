@@ -303,20 +303,6 @@ void C4SolidMask::Clear()
 	iAttachingObjectsCount = iAttachingObjectsCapacity = 0;
 	}
 
-void C4SolidMask::Draw(C4FacetEx &cgo)
-	{
-	// only if put
-	if (!MaskPut) return;
-	// set topface facet
-	C4Facet fct; fct.Set(pForObject->GetGraphics()->GetBitmap(), pForObject->SolidMask.x, pForObject->SolidMask.y, pForObject->SolidMask.Wdt, pForObject->SolidMask.Hgt);
-	// draw it
-	if (MaskPutRotation)
-		fct.DrawXR(cgo.Surface, pForObject->x+pForObject->Shape.x+cgo.X-cgo.TargetX+pForObject->SolidMask.tx, pForObject->y+pForObject->Shape.y+cgo.Y-cgo.TargetY+pForObject->SolidMask.ty, fct.Wdt, fct.Hgt, 0, 0, MaskPutRotation);
-	else
-		fct.DrawX(cgo.Surface, pForObject->x+pForObject->Shape.x+cgo.X-cgo.TargetX+pForObject->SolidMask.tx, pForObject->y+pForObject->Shape.y+cgo.Y-cgo.TargetY+pForObject->SolidMask.ty, fct.Wdt, fct.Hgt, 0, 0);
-	}
-
-
 void C4SolidMask::RemoveTemporary(C4Rect where)
 	{
 	if (!MaskPut || !pSolidMask || !pSolidMaskMatBuff) return;

@@ -31,7 +31,6 @@ class C4GroupSet;
 #define C4GUI_Caption2FontClr    0xffffff00
 #define C4GUI_InactCaptionFontClr 0xffafafaf
 #define C4GUI_ButtonFontClr      0xffffff00
-#define C4GUI_ButtonFontShadowClr 0xff000000
 #define C4GUI_StatusFontClr      0xffffffff
 #define C4GUI_MessageFontClr     0xffffffff
 #define C4GUI_MessageFontAlpha   0xff000000
@@ -39,7 +38,6 @@ class C4GroupSet;
 #define C4GUI_NotifyFontClr      0xffff0000
 #define C4GUI_ComboFontClr       0xffffffff
 #define C4GUI_CheckboxFontClr    0xffffffff
-#define C4GUI_SmallCheckboxFontClr 0xffffffff
 #define C4GUI_CheckboxDisabledFontClr 0xffafafaf
 #define C4GUI_LogFontClr         0xffafafaf
 #define C4GUI_LogFontClr2        0xffff1f1f
@@ -52,7 +50,6 @@ class C4GroupSet;
 
 // other colors
 #define C4GUI_ImportantBGColor   0xcf00007f
-#define C4GUI_ProgressBarColor   0xafffffff
 #define C4GUI_ListBoxSelColor    0xafaf0000
 #define C4GUI_ListBoxInactSelColor  0xaf7f7f7f
 #define C4GUI_ContextSelColor    0xafaf0000
@@ -81,15 +78,12 @@ class C4GroupSet;
 #define C4GUI_BorderColor3       0xaa4400
 #define C4GUI_BorderColorA1      (C4GUI_BorderAlpha<<24 | C4GUI_BorderColor1)
 #define C4GUI_BorderColorA2      (C4GUI_BorderAlpha<<24 | C4GUI_BorderColor2)
-#define C4GUI_BorderColorA3      (C4GUI_BorderAlpha<<24 | C4GUI_BorderColor3)
 
 // GUI icon sizes
 #define C4GUI_IconWdt   40
 #define C4GUI_IconHgt   40
 #define C4GUI_IconExWdt 64
 #define C4GUI_IconExHgt 64
-
-#define C4GUI_IconLabelSpacing   2 // space between an icon and its text
 
 // scroll bar size
 #define C4GUI_ScrollBarWdt   16
@@ -107,8 +101,6 @@ class C4GroupSet;
 #define C4GUI_DefButton2Wdt    120 // width of default buttons if there are two of them
 #define C4GUI_DefButton2HSpace  10 // horzontal space between two def dlg buttons
 
-// default checkbox height
-#define C4GUI_CheckBoxHgt         32
 #define C4GUI_CheckBoxLabelSpacing 4 // pixels between checkbox box and label
 
 // list box item spacing
@@ -123,7 +115,6 @@ class C4GroupSet;
 #define C4GUI_InputDlgWdt      300
 #define C4GUI_DefDlgIndent      10 // indent for default dlg items
 #define C4GUI_DefDlgSmallIndent  4 // indent for dlg items that are grouped
-#define C4GUI_MessageDlgVRoom  100 // height added to text height in message dialog
 #define C4GUI_ProgressDlgVRoom 150 // height added to text height in progress dialog
 #define C4GUI_InputDlgVRoom    150
 #define C4GUI_ProgressDlgPBHgt  30 // height of progress bar in progress dlg
@@ -145,8 +136,6 @@ class C4GroupSet;
 #define C4GUI_Z_CHAT            +2 // chat input dialog more important than other input dialogs
 #define C4GUI_Z_INPUT           +1 // input dialogs on top of others
 #define C4GUI_Z_DEFAULT          0 // normal placement on top of viewports
-#define C4GUI_Z_PLAYERMENU      -1 // inside viewport: player menu
-#define C4GUI_Z_OBJECTMENU      -2 // inside viewport: cursor menu
 
 #define C4GUI_MinWoodBarHgt     23
 
@@ -164,7 +153,7 @@ namespace C4GUI {
 	// C4GuiLabels.cpp
 	class Label; class WoodenLabel; class MultilineLabel;
 	class HorizontalLine; class ProgressBar;
-	class Picture; class Icon; class PaintBox;
+	class Picture; class Icon;
 	class TextWindow;
 
  	// C4GuiContainers.cpp
@@ -191,7 +180,6 @@ namespace C4GUI {
 
 	// C4GuiMenu.cpp
 	class ContextMenu;
-	class ContextButton;
 
 	// C4GUIComboBox.cpp
 	class ComboBox;
@@ -422,7 +410,6 @@ namespace C4GUI {
 
 			void SetToolTip(const char *szNewTooltip); // update used tooltip
 			const char *GetToolTip();                  // return tooltip const char* (own or fallback to parent)
-			const char *GetOwnToolTip() { return ToolTip.getData(); } // return tooltip const char*, without fallback to parent
 
 			int32_t GetWidth() { return rcBounds.Wdt; }
 			int32_t GetHeight() { return rcBounds.Hgt; }
@@ -925,19 +912,6 @@ namespace C4GUI {
 			virtual int32_t GetMarginBottom() { return iMargin; }
 		};
 
-	// a drawing area
-	class PaintBox : public Window
-		{
-		protected:
-			C4FacetExSurface fctPaint;
-
-			virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse
-			virtual void DrawElement(C4FacetEx &cgo); // draw what has been painted
-		public:
-			PaintBox(C4Rect &rtBounds, int32_t iSfcWdt=-1, int32_t iSfcHgt=-1); // ctor
-			~PaintBox();                // dtor
-		};
-
 	// a control that may have focus
 	class Control : public Window
 		{
@@ -970,8 +944,6 @@ namespace C4GUI {
 		{
 		public:
 			typedef void (CallbackDlg::*Func)(Control *pFromControl);
-			typedef bool (CallbackDlg::*BoolFunc)(Control *pFromControl);
-			typedef bool (CallbackDlg::*Bool2Func)(Control *pFromControl, bool fBool, bool fBool2);
 			typedef ContextMenu *(CallbackDlg::*ContextFunc)(Element *pFromElement, int32_t iX, int32_t iY);
 			typedef void (CallbackDlg::*ContextClickFunc)(Element *pTargetElement);
 		};
@@ -1667,7 +1639,6 @@ namespace C4GUI {
 
 			// element adding made private: May only add entries
 			bool AddElement(Element *pChild);
-			bool InsertElement(Element *pChild, Element *pInsertBefore);
 
 			public:
 			// one text entry (icon+text+eventually right-arrow)
@@ -1761,42 +1732,11 @@ namespace C4GUI {
 
 			Entry *GetIndexedEntry(int32_t iIndex) { return static_cast<Entry *>(GetElementByIndex(iIndex)); }
 
-			void SelectItem(int32_t iIndex);
-
 			int32_t GetMenuIndex() { return iMenuIndex; }
 			static int32_t GetLastMenuIndex() { return iGlobalMenuIndex; }
 
 			friend class Screen; friend class Entry;
 		};
-
-	// a button to open a context menu
-	class ContextButton : public Control
-		{
-		private:
-			C4KeyBinding *pKeyContext;
-			int32_t iOpenMenu; // associated menu (used to flag button down)
-			bool fMouseOver;
-			
-		public:
-			ContextButton(C4Rect &rtBounds); // ctor
-			ContextButton(Element *pForEl, bool fAdd, int32_t iHIndent=4, int32_t iVIndent=4);  // ctor creating at topright pos of element
-			~ContextButton();
-
-		private:
-			bool DoContext(int32_t iX=-1, int32_t iY=-1); // open context menu
-			bool KeyContext() { return DoContext(); }
-			void RegisterContextKey();
-
-		protected:
-			virtual void DrawElement(C4FacetEx &cgo);    // draw btn
-
-			virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam); // input: mouse. left-click opens menu
-			virtual void MouseEnter(CMouse &rMouse);
-			virtual void MouseLeave(CMouse &rMouse);
-
-			virtual bool IsFocusOnClick() { return false; } // don't select control on click
-		};
-
 
 	// combo box filler 
 	// should be ComboBox::FillCB; but nested class will cause internal compiler faults
@@ -1816,7 +1756,6 @@ namespace C4GUI {
 			void AddEntry(const char *szText, int32_t id);
 			bool FindEntry(const char *szText);
 			void ClearEntries();
-			void SelectEntry(int32_t iEntry); // select entry by index
 		};
 
 	template <class CB> class ComboBox_FillCallback : public ComboBox_FillCB
@@ -2012,10 +1951,7 @@ namespace C4GUI {
 			virtual int32_t GetMarginRight() { return pFrameDeco ? pFrameDeco->iBorderRight: Window::GetMarginRight(); }
 			virtual int32_t GetMarginBottom() { return pFrameDeco ? pFrameDeco->iBorderBottom: Window::GetMarginBottom(); }
 
-			static int32_t GetDefaultTitleHeight();
-
 			bool IsShown() { return fShow; } // returns whether dlg is on screen (may be invisible)
-			bool IsOK() { return fOK; }      // returns whether user pressed OK
 			bool IsAborted() { return !fShow && !fOK; } // returns whether dialog has been aborted
 			bool IsActive(bool fForKeyboard); // return whether dlg has mouse control focus
 			bool IsFading() { return eFade != eFadeNone; }
@@ -2056,7 +1992,6 @@ namespace C4GUI {
 			void FadeOut(bool fCloseWithOK); // fade out dlg
 			bool DoModal();               // execute message loop until dlg is closed (or GUI destructed) - returns whether dlg was OK
 			bool Execute();               // execute dialog - does message handling, gfx output and idle proc; return false if dlg got closed or GUI deleted
-			bool Execute2();              // execute dialog - does message handling, gfx output and idle proc; return false and deletes self if dlg got closed or GUI deleted
 			void SetDelOnClose(bool fToVal=true) { fDelOnClose=fToVal; } // dialog will delete itself when closed
 
 			void SetTitle(const char *szToTitle, bool fShowCloseButton = true); // change title text; creates or removes title bar if necessary
@@ -2124,8 +2059,6 @@ namespace C4GUI {
 
 			// helper func: draw facet to screen background
 			void DrawBackground(C4FacetEx &cgo, C4Facet &rFromFct);
-
-			void OnHelpBtn(C4GUI::Control *pBtn);
 		};
 
 	// a button closing the Dlg
@@ -2383,7 +2316,6 @@ namespace C4GUI {
 		public:
 			int32_t x,y; // cursor position
 			bool LDown, MDown, RDown; // mouse button states
-			int32_t LDownX, LDownY;       // position where left button was pressed last
 			DWORD dwKeys;             // shift, ctrl, etc.
 			bool fActive;
 			time_t tLastMovementTime; // timeGetTime() when the mouse pos changed last
@@ -2462,7 +2394,6 @@ namespace C4GUI {
 
 			void Render(bool fDoBG);                 // render to lpDDraw
 			void RenderMouse(C4FacetEx &cgo);        // draw mouse only
-			bool Execute();                // handle messages; execute all dialogs
 
 			virtual Screen *GetScreen() { return this; }; // return contained screen
 			static Screen *GetScreenS() { return pScreen; } // get global screen
@@ -2472,12 +2403,10 @@ namespace C4GUI {
 			bool KeyAny(); // to be called on keystrokes; resets some tooltip-times
 			virtual BOOL CharIn(const char * c);        // input: character key pressed - should return FALSE for none-character-inputs
 			bool MouseInput(int32_t iButton, int32_t iX, int32_t iY, DWORD dwKeyParam, Dialog *pDlg, class C4Viewport *pVP); // input: mouse movement or buttons; sends MouseEnter/Leave; return whether inside dialog
-			bool RecheckMouseInput();                                       // do mouse movement iusing last input flags
 
 			bool ShowMessage(const char *szMessage, const char *szCaption, Icons icoIcon, int32_t *piConfigDontShowAgainSetting=NULL); // show message
 			bool ShowErrorMessage(const char *szMessage); // show message: Error caption and icon
 			bool ShowMessageModal(const char *szMessage, const char *szCaption, DWORD dwButtons, Icons icoIcon, int32_t *piConfigDontShowAgainSetting=NULL); // show modal message dlg
-			ProgressDialog *ShowProgressDlg(const char *szMessage, const char *szCaption, int32_t iMaxProgress=100, int32_t iInitialProgress=0, Icons icoIcon=Ico_Wait); // create and show a progress dialog
 			bool ShowModalDlg(Dialog *pDlg, bool fDestruct=true); // show any dialog modal and destruct it afterwards
 			bool ShowRemoveDlg(Dialog *pDlg); // show dialog, and flag it to delete itself when closed; return immediately
 
@@ -2494,9 +2423,6 @@ namespace C4GUI {
 
 			bool HasFullscreenDialog(bool fIncludeFading); // true if on fullscreen dialog is visible
 			Dialog *GetFullscreenDialog(bool fIncludeFading); // return dlg pointer to first found fullscreen dialog
-
-			// callback from C4Game from message-handling of WM_TIMER; forwards to dialog-timer
-			void OnSec1Timer();
 
 			// exclusive
 			void SetExclusive(bool fToState) { fExclusive = fToState; Mouse.SetOwnedMouse(fExclusive); UpdateMouseFocus(); }
@@ -2556,7 +2482,6 @@ namespace C4GUI {
 			CBMenuHandlerEx<CBClass, TEx>(CBClass *pCBTarget, typename DlgCallbackEx<CBClass, const TEx &>::ContextClickFunc pCallbackFn)
 				: MenuHandler(), pCBTarget(pCBTarget), pCallbackFn(pCallbackFn), Extra() { }
 
-			const TEx &GetExtra() const { return Extra; }
 			void SetExtra(const TEx &e) { Extra = e; }
 
 			virtual void OnOK(Element *pTargetElement)
@@ -2643,8 +2568,6 @@ namespace C4GUI {
 			void ExpandLeft(int32_t iByWdt) { rcClientArea.x-=iByWdt; rcClientArea.Wdt+=iByWdt; } // enlarge client rect
 			void ExpandRight(int32_t iByWdt) { rcClientArea.Wdt+=iByWdt; } // enlarge client rect
 			void ExpandBottom(int32_t iByHgt) { rcClientArea.Hgt+=iByHgt; } // enlarge client rect
-
-			void LogIt(const char *szName);
 		};
 
 	// graphical resources

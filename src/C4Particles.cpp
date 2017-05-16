@@ -229,8 +229,6 @@ void C4ParticleChunk::Clear()
 		++pPrt;
 		}
 	Data[0].pPrev=Data[C4Px_BufSize-1].pNext=NULL;
-	// all free
-	iNumFree = C4Px_BufSize;
 	}
 
 void C4ParticleList::Exec(C4Object *pObj)
@@ -324,35 +322,6 @@ C4ParticleChunk *C4ParticleSystem::AddChunk()
 	FreeParticles.pFirst = &pNewChnk->Data[0];
 	// return it
 	return pNewChnk;
-	}
-
-void C4ParticleSystem::PruneChunks()
-	{
-	// check all chunks, but not the first
-	// that cannot be removed anyway
-	C4ParticleChunk *pChnk = Chunk.pNext, *pChnkNext, **ppChnkPrev;
-	ppChnkPrev = &Chunk.pNext;
-	do
-		{
-		pChnkNext = pChnk->pNext;
-		// chunk empty?
-		if (pChnk->iNumFree == C4Px_BufSize)
-			{
-			// move out all particles
-			C4ParticleList tmp;
-			for (int32_t i=0; i<C4Px_BufSize; ++i)
-				pChnk->Data[i].MoveList(FreeParticles, tmp);
-			// and remove the chunk
-			*ppChnkPrev = pChnkNext;
-			delete pChnk;
-			}
-		else
-			{
-			// keep this chunk
-			ppChnkPrev = &pChnk->pNext;
-			}
-		}
-	while (pChnk = pChnkNext);
 	}
 
 void C4ParticleSystem::ClearParticles()

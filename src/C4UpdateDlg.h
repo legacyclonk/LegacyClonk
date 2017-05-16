@@ -12,9 +12,7 @@
 class C4UpdateDlg : public C4GUI::InfoDialog
 	{
 	protected:
-		virtual const char *GetID() { return "UpdateDialog"; }
 		virtual void UpdateText();
-		virtual void UserClose(bool fOK);
 
 		bool UpdateRunning;
 
@@ -27,10 +25,6 @@ class C4UpdateDlg : public C4GUI::InfoDialog
 		C4UpdateDlg(); // ctor
 
 	public:
-		void Open(C4GUI::Screen *pScreen);
-		void Write(const char *szText);
-
-	public:
 		static bool IsValidUpdate(const C4GameVersion &rNewVer); // Returns whether we can update to the specified version
 		static bool CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic = false); // Checks for available updates and prompts the user whether to apply
 		static bool DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *pScreen); // Static funtion for downloading and applying updates
@@ -41,7 +35,6 @@ class C4UpdateDlg : public C4GUI::InfoDialog
 // Loads current version string (mini-HTTP-client)
 class C4Network2VersionInfoClient : public C4Network2HTTPClient
 {
-	C4GameVersion Version;
 protected:
 	virtual int32_t GetDefaultPort() { return C4NetStdPortHTTP; }
 public:

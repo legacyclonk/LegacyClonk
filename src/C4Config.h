@@ -20,8 +20,6 @@
 #define C4CFG_UpdateObjects "cr_%d%d%d%d_%d_%s.c4u"
 #define C4CFG_UpdateMajor		"cr_%d%d%d%d_%s.c4u"
 
-const char *CfgAtTempPath(const char *szFilename);
-
 class C4ConfigGeneral
 	{
 	public:
@@ -48,7 +46,7 @@ class C4ConfigGeneral
 		int32_t DefRec;
 		int32_t MMTimer;	// use multimedia-timers
 		int32_t FairCrew;   // don't use permanent crew physicals
-		int32_t FairCrewStrength, MaxFairCrewStrength; // strength of clonks in fair crew mode
+		int32_t FairCrewStrength; // strength of clonks in fair crew mode
 		int32_t MouseAScroll; // auto scroll strength
 		int32_t ScrollSmooth; // view movement smoothing
 		int32_t ConfigResetSafety; // safety value: If this value is screwed, the config got currupted and must be reset
@@ -57,7 +55,6 @@ class C4ConfigGeneral
 		char TempPath[CFG_MaxString+1];
 		char LogPath[CFG_MaxString+1];
 		char ScreenshotPath[CFG_MaxString+1];
-		char BetaCode[CFG_MaxString+1];
 		bool GamepadEnabled;
 		bool FirstStart;
 		bool fUTF8;
@@ -74,10 +71,6 @@ class C4ConfigDeveloper
 	{
 	public:
 		int32_t AutoFileReload;
-#ifdef _WIN32
-		int32_t AutoEditScan;
-#endif
-		int32_t AllErrorsFatal;
 		void CompileFunc(StdCompiler *pComp);
 	};
 
@@ -96,7 +89,6 @@ class C4ConfigGraphics
 		int32_t ColorAnimation;
 		int32_t SmokeLevel;
 		int32_t VideoModule;
-		int32_t MenuTransparency;
 		int32_t UpperBoard;
 		int32_t ShowClock;
 		int32_t ResX,ResY;
@@ -107,7 +99,6 @@ class C4ConfigGraphics
 		int32_t NewGfxCfg;	// some configuration settings for newgfx
 		int32_t NewGfxCfgGL;	// some configuration settings for newgfx (OpenGL)
 		int32_t MsgBoard;
-		int32_t MsgBrdFadeDelay;
 		int32_t PXSGfx;			// show PXS-graphics (instead of sole pixels)
 		int32_t Engine;			// 0: D3D; 1: OpenGL;
 		int32_t BlitOff;		// blit offset (percent)
@@ -143,20 +134,15 @@ class C4ConfigNetwork
 	{
 	public:
 		int32_t ControlRate;
-		int32_t ControlPreSend;
 		int32_t Lobby;
 		int32_t NoRuntimeJoin;
-		int32_t NoReferenceRequest;
 		int32_t MaxResSearchRecursion;
     char WorkPath[CFG_MaxString+1];
 		ValidatedStdCopyStrBuf<C4InVal::VAL_Comment> Comment;
 		int32_t MasterServerSignUp;
-		int32_t MasterServerActive;
-		int32_t MasterKeepPeriod;
 		int32_t MasterReferencePeriod;
 		int32_t LeagueServerSignUp;
 		int32_t UseAlternateServer;
-		int32_t SendPortraits;
 		int32_t PortTCP,PortUDP,PortDiscovery,PortRefServer;
 		int32_t ControlMode;
 		ValidatedStdCopyStrBuf<C4InVal::VAL_NameNoEmpty> LocalName;
@@ -221,7 +207,6 @@ class C4ConfigGamepad
 		uint32_t AxisMin[6], AxisMax[6];
 		bool AxisCalibrated[6];
 		void CompileFunc(StdCompiler *pComp, bool fButtonsOnly=false);
-		void ResetButtons(); // reset all buttons to default
 		void Reset(); // reset all buttons and axis calibration to default
 	};
 
@@ -235,7 +220,7 @@ class C4ConfigControls
 		void ResetKeys(); // reset all keys to default
 	};
 
-class C4Config: protected CStdConfig 
+class C4Config
 	{
 	public:
 		C4Config();
@@ -261,7 +246,6 @@ class C4Config: protected CStdConfig
 		BOOL Init();
 		const char *AtExePath(const char *szFilename);
 		const char *AtTempPath(const char *szFilename);
-		const char *AtLogPath(const char *szFilename);
 		const char *AtNetworkPath(const char *szFilename);
 		const char *AtExeRelativePath(const char *szFilename);
 		const char *AtScreenshotPath(const char *szFilename);
@@ -269,9 +253,6 @@ class C4Config: protected CStdConfig
 		void ForceRelativePath(StdStrBuf *sFilename); // try AtExeRelativePath; force GetC4Filename if not possible
 		void CompileFunc(StdCompiler *pComp);
 		bool IsCorrupted() { return (General.ConfigResetSafety != C4ConfigGeneral::ConfigResetSafetyVal) || !Graphics.ResX; }
-		bool RemoveModule(const char *szPath, char *szModules);
-		bool IsModule(const char *szPath, char *szModules);
-		bool AddModule(const char *szPath, char *szModules);
 	protected:
 		void ExpandEnvironmentVariables(char *strPath, int iMaxLen);
 	};

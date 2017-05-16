@@ -190,9 +190,6 @@ struct StdRawAdapt
 	inline bool operator == (const void *pDefault) const { return !memcmp(pDefault, pData, iSize); }
 	inline StdRawAdapt &operator = (const void *pDefault) { memcpy(pData, pDefault, iSize); return *this; }
 };
-inline StdRawAdapt mkRawAdapt(void *pData, size_t iSize, StdCompiler::RawCompileType eRawType = StdCompiler::RCT_Escaped)
-  { return StdRawAdapt(pData, iSize, eRawType); }
-#define mkRawAdaptM(X) mkRawAdapt(&X, sizeof(X))
 
 // * Integer Adaptor
 // Stores Integer-like datatypes (Enumerations)
@@ -299,7 +296,6 @@ template <class T>
 #define mkArrayAdaptM(A) mkArrayAdapt(A, sizeof(A) / sizeof(*(A)))
 template <class T, class M>
   inline StdArrayAdapt<T, M> mkArrayAdaptMap(T *pArray, int iSize, M map) { return StdArrayAdapt<T, M>(pArray, iSize, map); }
-#define mkArrayAdaptMapM(A, M) mkArrayAdaptMap(A, sizeof(A) / sizeof(*(A)), M)
 
 // * Array Adaptor (defaulting)
 // Stores a seperated list, sets defaults if a value or seperator is missing.
@@ -352,7 +348,6 @@ template <class T, class D>
 #define mkArrayAdaptDM(A, D) mkArrayAdapt(A, sizeof(A) / sizeof(*(A)), D)
 template <class T, class D, class M> 
   inline StdArrayDefaultAdapt<T, D, M> mkArrayAdaptMap(T *pArray, size_t iSize, const D &rDefault, M map) { return StdArrayDefaultAdapt<T, D, M>(pArray, iSize, rDefault, map); }
-#define mkArrayAdaptMapDM(A, D, M) mkArrayAdaptMap(A, sizeof(A) / sizeof(*(A)), D, M)
 
 // * Insertion Adaptor
 // Compile a value before / after another
@@ -708,8 +703,6 @@ struct StdEnumAdapt
 
   ALLOW_TEMP_TO_REF(StdEnumAdapt)
 };
-template <class T, class int_t>
-	StdEnumAdapt<T, int_t> mkEnumAdapt(T &rVal, const StdEnumEntry<T> *pNames) { return StdEnumAdapt<T, int_t>(rVal, pNames); }
 template <class int_t, class T>
 	StdEnumAdapt<T, int_t> mkEnumAdaptT(T &rVal, const StdEnumEntry<T> *pNames) { return StdEnumAdapt<T, int_t>(rVal, pNames); }
 

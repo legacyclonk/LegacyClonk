@@ -73,9 +73,7 @@ public:
 	uint32_t			getFileCRC()		const { return iFileCRC; }
 	uint32_t			getContentsCRC()const { return iContentsCRC; }
 	bool					hasFileSHA()		const { return !!fHasFileSHA; }
-	const uint8_t*getFileSHA()    const { return FileSHA; }
 	const char *	getFileName()		const { return FileName.getData(); }
-	const char *	getAuthor()			const { return Author.getData(); }
 	uint32_t			getChunkSize()	const { return iChunkSize; }
 	uint32_t			getChunkCnt()		const { return iFileSize && iChunkSize ? (iFileSize - 1) / iChunkSize + 1 : 0; }
 
@@ -226,7 +224,6 @@ public:
 	int32_t			getResID()			const { return Core.getID(); }
 	int32_t			getResClient()	const { return Core.getID() >> 16; }
 	const char *getFile()				const { return szFile; }
-  CStdCSec   *getFileCSec()         { return &FileCSec; }
 	int32_t			getLastReqTime()const { return iLastReqTime; }
 	bool				isRemoved()			const { return fRemoved; }
 	bool				isLoading()			const { return fLoading; }
@@ -246,7 +243,6 @@ public:
 	bool GetStandalone(char *pTo, int32_t iMaxL, bool fSetOfficial, bool fAllowUnloadable = false, bool fSilent = false);
 	bool CalculateSHA();
 
-  bool SaveBackFile();
 	C4Network2Res::Ref Derive();
   bool FinishDerive();
   bool FinishDerive(const C4Network2ResCore &nCore);
@@ -264,8 +260,6 @@ public:
 	bool DoLoad();
 
 	bool NeedsDiscover();
-
-	C4Group *OpenAsGrp() const;
 
 	void Remove();
 	void Clear();
@@ -349,7 +343,6 @@ public:
 
 	void Add(C4Network2Res *pRes); // by both
 	C4Network2Res::Ref AddByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID = -1, const char *szResName = NULL, bool fAllowUnloadable = false); // by both
-	C4Network2Res::Ref AddByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eType, int32_t iResID = -1, const char *szResName = NULL, bool fAllowUnloadable = false); // by both
 	C4Network2Res::Ref AddByCore(const C4Network2ResCore &Core, bool fLoad = true); // by main thread
 	C4Network2Res::Ref AddLoad(const C4Network2ResCore &Core); // by main thread
 	
@@ -407,7 +400,6 @@ protected:
 
 public:
 	int32_t getDisIDCnt()		    const { return iDisIDCnt; }
-	int32_t getDisID(int32_t i)	const { return iDisIDs[i]; }
 	bool isIDPresent(int32_t iID) const;
 
 	bool AddDisID(int32_t iID);

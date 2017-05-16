@@ -11,10 +11,7 @@
 struct C4AListEntry
 	{
 	void *Var, *Val;
-	void *get(void *pVar); // get value of var; start parsing here
 	C4AListEntry *next(); // get entry after the given one
-	C4AListEntry *nextVal(); // get next entry with var holding a value
-	C4AListEntry *firstVal(); // get first entry with var holding a value
 	};
 
 // bunch of table entries
@@ -40,7 +37,6 @@ class C4AList
 		void Clear(); // clear the list
 
 		C4AListEntry *push(void *pVar = NULL, void *pVal = NULL); // push var/value pair to end of list
-		void *get(void *pVar, C4AListEntry *pOff = NULL); // get value of var
 	};
 
 #endif

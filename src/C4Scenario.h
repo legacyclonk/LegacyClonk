@@ -27,8 +27,6 @@ inline bool operator == (C4SVal Val1, C4SVal Val2)
 #define C4SGFXMODE_NEWGFX 1
 #define C4SGFXMODE_OLDGFX 2
 
-#define C4S_SECTIONLOAD 1 /* parts of the C4S that are modifyable for different landcape sections */
-
 // flags for section reloading
 #define C4S_SAVE_LANDSCAPE 1
 #define C4S_SAVE_OBJECTS   2
@@ -63,7 +61,6 @@ class C4SHead
 		int32_t  Replay;
 		int32_t  Film;
 		int32_t  DisableMouse;
-		int32_t  IgnoreSyncChecks;
 		int32_t  RandomSeed;
 		char Engine[C4MaxTitle+1]; // Relative filename of engine to be used for this scenario
 		char MissionAccess[C4MaxTitle+1];
@@ -93,7 +90,6 @@ class C4SDefinitions
   public:
 	  void SetModules(const char *szList, const char *szRelativeToPath=NULL, const char *szRelativeToPath2=NULL);
 		bool GetModules(StdStrBuf *psOutModules) const;
-		BOOL AssertModules(const char *szPath=NULL, char *sMissing=NULL);
     void Default();
     void CompileFunc(StdCompiler *pComp);
 	};
@@ -141,7 +137,6 @@ class C4SGame
 	  BOOL IsMelee();
 	  void ConvertGoals(C4SRealism &rRealism);
     void Default();  
-		void ClearCooperativeGoals();
     void CompileFunc(StdCompiler *pComp, bool fSection);
   protected:
 	  void ClearOldGoals();
@@ -190,8 +185,6 @@ class C4SPlrStart
 		C4IDList Magic;
   public:
     void Default();
-		bool EquipmentEqual(C4SPlrStart &rhs);
-		bool operator==(const C4SPlrStart& rhs);
     void CompileFunc(StdCompiler *pComp);
   };
 

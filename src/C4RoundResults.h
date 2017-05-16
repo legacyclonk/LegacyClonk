@@ -56,7 +56,6 @@ class C4RoundResultsPlayer
 		int32_t GetID() const { return id; }
 		C4FacetEx &GetBigIcon() { return fctBigIcon; }
 		uint32_t GetTotalPlayingTime() const { return iTotalPlayingTime; }
-		bool IsScoreOldValid() const { return iScoreOld>=0; }
 		int32_t GetScoreOld() const { return iScoreOld; }
 		bool IsScoreNewValid() const { return iScoreNew>=0; }
 		int32_t GetScoreNew() const { return iScoreNew; }
@@ -64,7 +63,6 @@ class C4RoundResultsPlayer
 		int32_t GetLeagueScoreNew() const { return iLeagueScoreNew; } // returns score number on league server after round evaluation (0 for not assigned)
 		bool IsLeagueScoreNewValid() const { return iLeagueScoreNew>=0; }
 		int32_t GetLeagueScoreGain() const { return iLeagueScoreGain; }
-		int32_t GetLeagueRankNew() const { return iLeagueRankNew; } // returns rank on league server  after round evaluation (0 for not assigned)
 		int32_t GetLeagueRankSymbolNew() const { return iLeagueRankSymbolNew; }
 		int32_t GetLeaguePerformance() const { return iLeaguePerformance; }
 

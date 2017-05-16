@@ -46,7 +46,6 @@ BOOL ObjectActionCornerScale(C4Object *cObj);
 BOOL ObjectActionFight(C4Object *cObj, C4Object *pTarget);
 
 BOOL ObjectComMovement(C4Object *cObj, int32_t iComDir);
-BOOL ObjectComTurn(C4Object *cObj);
 BOOL ObjectComStop(C4Object *cObj);
 BOOL ObjectComGrab(C4Object *cObj, C4Object *pTarget);
 BOOL ObjectComPut(C4Object *cObj, C4Object *pTarget, C4Object *pThing=NULL);
@@ -62,7 +61,6 @@ BOOL ObjectComBuild(C4Object *cObj, C4Object *pTarget);
 BOOL ObjectComEnter(C4Object *cObj);
 BOOL ObjectComDownDouble(C4Object *cObj);
 BOOL ObjectComPutTake(C4Object *cObj, C4Object *pTarget, C4Object *pThing=NULL);
-BOOL ObjectComTake(C4Object *cObj, C4ID id);
 BOOL ObjectComTake(C4Object *cObj); // carlo
 BOOL ObjectComTake2(C4Object *cObj); // carlo
 BOOL ObjectComPunch(C4Object *cObj, C4Object *pTarget, int32_t iPunch=0);
@@ -70,8 +68,6 @@ BOOL ObjectComCancelAttach(C4Object *cObj);
 void ObjectComDigDouble(C4Object *cObj);
 void ObjectComStopDig(C4Object *cObj);
 
-C4Object *Buy(int32_t iPlr, C4ID id, C4Object *pBase, BOOL fShowErrors=TRUE);
-BOOL Sell(int32_t iPlr, C4Object *pObj, BOOL fShowErrors=TRUE);
 BOOL Buy2Base(int32_t iPlr, C4Object *pBase, C4ID id, BOOL fShowErrors=TRUE);
 BOOL SellFromBase(int32_t iPlr, C4Object *pBase, C4ID id, C4Object *pSellObj);
 

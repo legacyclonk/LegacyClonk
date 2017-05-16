@@ -129,22 +129,6 @@ BOOL C4PlayerInfoCore::Save(C4Group &hGroup)
 	return TRUE;
 	}
 
-void C4PlayerInfoCore::Promote(int32_t iRank, C4RankSystem &rRanks)
-	{
-	Rank=iRank;
-	SCopy(rRanks.GetRankName(Rank,true).getData(),RankName,C4MaxName);
-	}
-
-BOOL C4PlayerInfoCore::CheckPromotion(C4RankSystem &rRanks)
-	{
-	if (Score>=rRanks.Experience(Rank+1))
-		{
-		Promote(Rank+1,rRanks);
-		return TRUE;
-		}
-	return FALSE;
-	}
-
 void C4PlayerInfoCore::CompileFunc(StdCompiler *pComp)
 	{
 
@@ -159,7 +143,6 @@ void C4PlayerInfoCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(RoundsLost,				"RoundsLost",						0));
 	pComp->Value(mkNamingAdapt(TotalPlayingTime,	"TotalPlayingTime",			0));
 	pComp->Value(mkNamingAdapt(ExtraData,					"ExtraData",						C4ValueMapData()));
-	pComp->Value(mkNamingAdapt(toC4CStr(LeagueName),"LeagueName",					""));
 	pComp->NameEnd();
 
 	pComp->Name("Preferences");
@@ -198,7 +181,6 @@ struct C4PhysInfoNameMap_t { const char *szName; C4PhysicalInfo::Offset off; } C
 	{ "CanDig",          &C4PhysicalInfo::CanDig          },
 	{ "CanConstruct",    &C4PhysicalInfo::CanConstruct    },
 	{ "CanChop",         &C4PhysicalInfo::CanChop         },
-	{ "CanSwimDig",      &C4PhysicalInfo::CanSwimDig      },
 	{ "CanFly",          &C4PhysicalInfo::CanFly          },
 	{ "CorrosionResist", &C4PhysicalInfo::CorrosionResist },
 	{ "BreatheWater",    &C4PhysicalInfo::BreatheWater    },

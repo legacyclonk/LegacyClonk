@@ -416,11 +416,6 @@ public:
     assert(iAt <= getLength());
     return StdBuf::Compare(Buf2.getData(), Buf2.getLength(), iAt);
   }
-  int Compare_(const char *pCData, size_t iAt = 0) const
-  { 
-    StdStrBuf str(pCData); // GCC needs this, for some obscure reason
-    return Compare(str, iAt); 
-  }
 
   // Grows the string to contain the specified number more/less characters.
   // Note: Will set the terminator, but won't initialize - use Append* instead.
@@ -580,9 +575,6 @@ public:
 
 	// Checks wether the contents are valid UTF-8, and if not, convert them from windows-1252 to UTF-8.
 	void EnsureUnicode();
-	
-	// convert to lower case
-	void ToLowerCase();
 
 	// check if a string consists only of the given chars
 	bool ValidateChars(const char *szInitialChars, const char *szMidChars);

@@ -167,7 +167,6 @@ void C4SHead::CompileFunc(StdCompiler *pComp, bool fSection)
 		pComp->Value(mkNamingAdapt(Replay,                    "Replay",               FALSE));
 		pComp->Value(mkNamingAdapt(Film,                      "Film",                 FALSE));
 		pComp->Value(mkNamingAdapt(DisableMouse,              "DisableMouse",         FALSE));
-		pComp->Value(mkNamingAdapt(IgnoreSyncChecks,          "IgnoreSyncChecks",     FALSE));
 		}
   pComp->Value(mkNamingAdapt(NoInitialize,              "NoInitialize",         FALSE));
 	pComp->Value(mkNamingAdapt(RandomSeed,                "RandomSeed",         0));
@@ -239,14 +238,6 @@ void C4SGame::CompileFunc(StdCompiler *pComp, bool fSection)
   pComp->Value(mkNamingAdapt(FoWColor,                 "FoWColor",            0u));
   }
 
-void C4SGame::ClearCooperativeGoals()
-	{
-	ValueGain=0;
-	CreateObjects.Clear();
-	ClearObjects.Clear();
-	ClearMaterial.Clear();
-	}
-
 void C4SPlrStart::Default()
   {
 	NativeCrew=C4ID_None;
@@ -263,26 +254,6 @@ void C4SPlrStart::Default()
   HomeBaseProduction.Default();
 	Magic.Default();
   }
-
-bool C4SPlrStart::EquipmentEqual(C4SPlrStart &rhs)
-	{
-	return *this == rhs;
-	}
-
-bool C4SPlrStart::operator==(const C4SPlrStart& rhs)
-	{
-	return (NativeCrew==rhs.NativeCrew)
-		&& (Crew == rhs.Crew)
-		&& (Wealth == rhs.Wealth)
-		&& (ReadyCrew == rhs.ReadyCrew)
-		&& (ReadyBase == rhs.ReadyBase)
-		&& (ReadyVehic == rhs.ReadyVehic)
-		&& (ReadyMaterial == rhs.ReadyMaterial)
-		&& (BuildKnowledge == rhs.BuildKnowledge)
-		&& (HomeBaseMaterial == rhs.HomeBaseMaterial)
-		&& (HomeBaseProduction == rhs.HomeBaseProduction)
-		&& (Magic == rhs.Magic);
-	}
 
 void C4SPlrStart::CompileFunc(StdCompiler *pComp)
   {
@@ -546,35 +517,6 @@ void C4SDefinitions::SetModules(const char *szList, const char *szRelativeToPath
 				SCopy(Definition[cnt]+SLen(szRelativeToPath2),Definition[cnt]);
 		}
 
-	}
-
-BOOL C4SDefinitions::AssertModules(const char *szPath, char *sMissing)
-	{
-	// Local only
-	if (LocalOnly) return TRUE;
-
-	// Check all listed modules for availability
-	BOOL fAllAvailable=TRUE;
-	char szModule[_MAX_PATH+1];
-	if (sMissing) sMissing[0]=0;
-	// Check all definition files
-	for (int32_t cnt=0; cnt<C4S_MaxDefinitions; cnt++)
-		if (Definition[cnt][0])
-			{
-			// Compose filename using path specified by caller
-			szModule[0]=0;
-			if (szPath) SCopy(szPath,szModule); if (szModule[0]) AppendBackslash(szModule);
-			SAppend(Definition[cnt],szModule);
-			// Missing
-			if (!C4Group_IsGroup(szModule))
-				{
-				// Add to list
-				if (sMissing) { SNewSegment(sMissing,", "); SAppend(Definition[cnt],sMissing); }
-				fAllAvailable=FALSE;
-				}
-			}
-
-	return fAllAvailable;
 	}
 
 void C4SDefinitions::CompileFunc(StdCompiler *pComp)

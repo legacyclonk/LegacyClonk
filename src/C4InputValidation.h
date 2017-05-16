@@ -25,7 +25,6 @@ namespace C4InVal
 	// issues warnings in log and returns true if such an action is performed
 	bool ValidateString(char *szString, ValidationOption eOption, size_t iMaxSize);
 	bool ValidateString(StdStrBuf &rsString, ValidationOption eOption);
-	bool ValidateInt(int32_t &riVal, int32_t iMinVal, int32_t iMaxVal);
 
 	inline bool ValidateFilename(char *szFilename, size_t iMaxSize=_MAX_PATH) { return ValidateString(szFilename, VAL_Filename, iMaxSize); }
 	};

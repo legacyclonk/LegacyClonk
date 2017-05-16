@@ -45,18 +45,6 @@ void C4Folder::Default()
 	Head.Default();
   }
 
-BOOL C4Folder::Load(C4Group &hGroup)
-  {
-	char *pSource;
-	// Load
-	if (!hGroup.LoadEntry(C4CFN_FolderCore, &pSource, NULL, 1)) return FALSE;
-	// Compile
-	if (!Compile(pSource)) { delete [] pSource; return FALSE; }
-	delete [] pSource;
-	// Success
-	return TRUE;
-  }
-
 /*BOOL C4Folder::Save(C4Group &hGroup)
 	{
 	char *Buffer; int32_t BufferSize;
@@ -71,10 +59,3 @@ void C4Folder::CompileFunc(StdCompiler *pComp)
   {
   pComp->Value(mkNamingAdapt(Head, "Head"));
   }
-
-BOOL C4Folder::Compile(const char *szSource)
-	{
-	Default();
-  return CompileFromBuf_LogWarn<StdCompilerINIRead>(*this, StdStrBuf(szSource), C4CFN_FolderCore);
-	}
-

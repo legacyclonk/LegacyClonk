@@ -142,12 +142,6 @@ struct C4RCCreateObj
 	int x,y,ownr;
 	};
 
-struct C4RCSin
-	{
-	// value+return value
-	double v,r;
-	};
-
 struct C4RCRotVtx
 	{
 	// shape size
@@ -248,14 +242,12 @@ class C4Record // demo recording
 		StdBuf StreamingData; // accumulated control data since last stream sync
 	public:
 		C4Record(); // constructor; creates control file etc
-		C4Record(const char *szPlaybackFile, const char *szRecordFile, const char *szTempRecFile); // start recording from replay into record
 		~C4Record(); // destructor; close file; create demo scen
 		int Index;
 #ifndef C4ENGINE
 		int iLastFrame; // some hack for the ctrlrec-t00l
 #endif
 
-		bool IsRecording() const { return fRecording; } // return whether Start() has been called
 		unsigned int GetStreamingPos() const { return iStreamingPos; }
 		const StdBuf &GetStreamingBuf() const { return StreamingData; }
 
@@ -305,7 +297,6 @@ class C4Playback // demo playback
 		StdBuf ReWriteBinary();
 		void Strip();
 		BOOL ExecuteControl(C4Control *pCtrl, int iFrame); // assign control
-		BOOL IsFinished() { return Finished; }
 		void Clear();
 #ifdef DEBUGREC
 		void Check(C4RecordChunkType eType, const uint8_t *pData, int iSize); // compare with debugrec

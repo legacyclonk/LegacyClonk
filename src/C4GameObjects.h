@@ -46,7 +46,6 @@ class C4GameObjects : public C4NotifyingObjectList
 
 	  void PutSolidMasks();
 		void RemoveSolidMasks();
-		void RecheckSolidMasks();
 
 		int Load(C4Group &hGroup, bool fKeepInactive);
 		BOOL Save(const char *szFilename, BOOL fSaveGame, bool fSaveInactive);

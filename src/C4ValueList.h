@@ -34,7 +34,6 @@ public:
 	C4Value &operator[](int32_t iElem)	 { return GetItem(iElem); }
 
 	void Reset();
-	void SetItem(int32_t iElemNr, C4Value iValue);
 	void SetSize(int32_t inSize); // (enlarge only!)
 
 	void DenumeratePointers();

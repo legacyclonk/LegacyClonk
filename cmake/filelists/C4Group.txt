@@ -9,7 +9,6 @@ src/CStdFile.cpp
 src/Standard.cpp
 src/StdBuf.cpp
 src/StdCompiler.cpp
-src/StdConfig.cpp
 src/StdFile.cpp
 src/StdMarkup.cpp
 src/StdRegistry.cpp

@@ -26,11 +26,9 @@ class C4Folder
   public:
     void Default();
 	  //void Clear();
-    BOOL Load(C4Group &hGroup);
 		//BOOL Save(C4Group &hGroup);
     void CompileFunc(StdCompiler *pComp);
 	protected:
-		BOOL Compile(const char *szSource);
 		//BOOL Decompile(char **ppOutput, int32_t *ipSize);
   };
 

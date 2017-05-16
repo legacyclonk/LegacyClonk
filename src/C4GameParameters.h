@@ -33,7 +33,6 @@ public:
 	C4Network2Res::Ref getNetRes() const { return pNetRes; }
 
 	void SetFile(C4Network2ResType eType, const char *szFile);
-	void SetResCore(C4Network2ResCore *pResCore);
 	void SetNetRes(C4Network2Res::Ref pRes);
 
 	bool Publish(C4Network2ResList *pResList);
@@ -59,15 +58,12 @@ public:
 
 	C4GameResList &operator = (const C4GameResList &List);
 
-	int32_t getResCount() const { return iResCount; }
-
 	C4GameRes *iterRes(C4GameRes *pLast, C4Network2ResType eType = NRT_Null);
 
 	void Clear();
 	bool Load(const char *szDefinitionFilenames); // host: create res cores by definition filenames
 
 	C4GameRes *CreateByFile(C4Network2ResType eType, const char *szFile);
-	C4GameRes *CreateByNetRes(C4Network2Res::Ref pNetRes);
 	bool InitNetwork(C4Network2ResList *pNetResList);
 
 	void CalcHashes();

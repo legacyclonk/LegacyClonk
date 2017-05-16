@@ -85,24 +85,6 @@ int GetTrailingNumber(const char *strString)
 	return iNumber;
 }
 
-// Like GetFilename, but searches for a slash instead of a backslash
-// (unix-style paths)
-
-char *GetFilenameWeb(char *szPath)
-	{
-	if(!szPath) return NULL;
-	char *pPos, *pFilename=szPath;
-	for (pPos=szPath; *pPos; pPos++) if (*pPos == '/') pFilename = pPos+1;
-	return pFilename;
-	}
-const char *GetFilenameWeb(const char *szPath)
-	{
-	if(!szPath) return NULL;
-	const char *pPos, *pFilename=szPath;
-	for (pPos=szPath; *pPos; pPos++) if (*pPos == '/') pFilename = pPos+1;
-	return pFilename;
-	}
-
 // Return pointer to last file extension.
 
 char *GetExtension(char *szFilename)
@@ -266,13 +248,6 @@ void DefaultExtension(char *szFilename, const char *szExtension)
   {
   if (!(*GetExtension(szFilename)))
     { SAppend(".",szFilename); SAppend(szExtension,szFilename); }
-  }
-
-void DefaultExtension(StdStrBuf *sFilename, const char *szExtension)
-  {
-	assert(sFilename);
-  if (!(*GetExtension(sFilename->getData())))
-    { sFilename->AppendChar('.'); sFilename->Append(szExtension); }
   }
 
 // Append or overwrite extension.
@@ -453,11 +428,6 @@ bool EraseFile(const char *szFilename)
 		return false;
 		}
 	return true;
-	}
-
-bool EraseFiles(const char *szFilePath)
-	{
-	return ForEachFile(szFilePath,&EraseFile) > 0;
 	}
 
 #ifndef _WIN32
@@ -683,12 +653,7 @@ bool CreateItem(const char *szItemname)
 	// Success
 	return true;
   }
-#ifdef _WIN32
-bool EraseItems(const char *szItemPath)
-	{
-  return ForEachFile(szItemPath,&EraseItem) > 0;
-	}
-#endif
+
 bool CopyItem(const char *szSource, const char *szTarget, bool fResetAttributes)
 	{
 	// Check for identical source and target
@@ -730,7 +695,6 @@ bool ItemIdentical(const char *szFilename1, const char *szFilename2)
 #ifdef _WIN32
 
 DirectoryIterator::DirectoryIterator (): fdthnd(0) { *filename=0; }
-DirectoryIterator::DirectoryIterator (const DirectoryIterator &): fdthnd(0) { *filename=0; }
 
 void DirectoryIterator::Reset ()  {
 	if (fdthnd) {
@@ -789,7 +753,6 @@ DirectoryIterator::~DirectoryIterator () {
 }
 #else
 DirectoryIterator::DirectoryIterator (): d(0) { filename[0] = 0; }
-DirectoryIterator::DirectoryIterator (const DirectoryIterator &): d(0) { filename[0] = 0; }
 
 void DirectoryIterator::Reset () {
 	if (d) {

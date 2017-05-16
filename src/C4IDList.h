@@ -59,24 +59,14 @@ class C4IDList : protected C4IDListChunk
 		int32_t GetIndex(C4ID c_id) const;
     // Access by category-sorted index
     C4ID GetID(C4DefList &rDefs, int32_t dwCategory, int32_t index, int32_t *ipCount=NULL) const;
-    int32_t  GetCount(C4DefList &rDefs, int32_t dwCategory, int32_t index) const;
-    bool SetCount(C4DefList &rDefs, int32_t dwCategory, int32_t index, int32_t iCount);
     int32_t  GetNumberOfIDs(C4DefList &rDefs, int32_t dwCategory) const;
-		// IDList merge
-		bool Add(C4IDList &rList);
     // Aux
-    bool Consolidate();
     bool ConsolidateValids(C4DefList &rDefs, int32_t dwCategory = 0);
-		bool ConsolidateCounts();
-		void SortByCategory(C4DefList &rDefs);
 		void SortByValue(C4DefList &rDefs);
     void Load(C4DefList &rDefs, int32_t dwCategory);
 		// Item operation
 		bool DeleteItem(size_t iIndex);
 		bool SwapItems(size_t iIndex1, size_t iIndex2);
-		// Compilation
-		bool Read(const char *szSource, int32_t iDefValue=0);
-		bool Write(char *szTarget, bool fValues=true) const;
 		// Graphics
 		void Draw(C4Facet &cgo, int32_t iSelection, 
 							C4DefList &rDefs, DWORD dwCategory,

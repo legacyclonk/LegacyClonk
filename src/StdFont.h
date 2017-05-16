@@ -16,18 +16,12 @@
 
 // Font rendering flags
 #define STDFONT_CENTERED    0x0001
-#define STDFONT_TWOSIDED    0x0002
-#define STDFONT_FILTERED    0x0004
 #define STDFONT_RIGHTALGN		0x0008
-#define STDFONT_SHADOW			0x0010
 #define STDFONT_NOMARKUP		0x0020
 
 #ifndef FW_NORMAL
 #define FW_NORMAL 400
-#define FW_MEDIUM 500
-#define FW_SEMIBOLD 600
 #define FW_BOLD 700
-#define DEFAULT_CHARSET         1
 #endif
 
 class CMarkup;

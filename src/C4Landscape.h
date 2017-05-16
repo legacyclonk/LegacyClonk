@@ -15,7 +15,7 @@ const uint8_t GBM = 128,
            IFT = 0x80,
 					 IFTOld = GBM_ColNum;
 
-const uint8_t CSkyDef1=104,CSkyDef2=123;
+const uint8_t CSkyDef1=104;
 
 const int32_t C4MaxMaterial = 125;
 
@@ -101,7 +101,6 @@ class C4Landscape
 		BOOL FindMatPath(int32_t &fx, int32_t &fy, int32_t ydir, int32_t mdens, int32_t mslide);
 		BOOL FindMatSlide(int32_t &fx, int32_t &fy, int32_t ydir, int32_t mdens, int32_t mslide);
 		BOOL FindMatPathPush(int32_t &fx, int32_t &fy, int32_t mdens, int32_t mslide, bool liquid);
-		BOOL FindMatPathPull(int32_t &fx, int32_t &fy, int32_t mdens, int32_t mslide, bool liquid);
 		BOOL Incinerate(int32_t x, int32_t y);
 		BOOL DrawBrush(int32_t iX, int32_t iY, int32_t iGrade, const char *szMaterial, const char *szTexture, BOOL fIFT);
 		BOOL DrawLine(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2, int32_t iGrade, const char *szMaterial, const char *szTexture, BOOL fIFT);
@@ -143,10 +142,6 @@ class C4Landscape
 			{
 			return Pix2Dens[_GetPix(x, y)];
 			}
-		inline int32_t _GetPlacement(int32_t x, int32_t y) // get landscape material placement (bounds not checked)
-			{
-			return Pix2Place[_GetPix(x, y)];
-			}
 		inline int32_t GetMat(int32_t x, int32_t y) // get landscape material (bounds checked)
 			{
 			return Pix2Mat[GetPix(x, y)];
@@ -160,7 +155,6 @@ class C4Landscape
 			return Pix2Place[GetPix(x, y)];
 			}
 		inline int32_t GetPixMat(BYTE byPix) { return Pix2Mat[byPix]; }
-		inline int32_t GetPixDensity(BYTE byPix) { return Pix2Dens[byPix]; }
 		bool _PathFree(int32_t x, int32_t y, int32_t x2, int32_t y2); // quickly checks wether there *might* be pixel in the path.
     int32_t GetMatHeight(int32_t x, int32_t y, int32_t iYDir, int32_t iMat, int32_t iMax);
 		int32_t DigFreePix(int32_t tx, int32_t ty);
@@ -174,7 +168,6 @@ class C4Landscape
 		bool SetModulation(DWORD dwWithClr) // adjust the way the landscape is blitted
 			{ Modulation=dwWithClr; return true; }
 		DWORD GetModulation() { return Modulation; }
-		void DiscardMap(); // discard map if present
 		bool PostInitMap();   // do script callbacks of MapCreatorS2 in finished landscape
 		bool ReplaceMapColor(BYTE iOldIndex, BYTE iNewIndex); // find every occurance of iOldIndex in map; replace it by new index
 		BOOL SetTextureIndex(const char *szMatTex, BYTE iNewIndex, bool fInsert); // change color index of map texture, or insert a new one
@@ -214,7 +207,6 @@ class C4Landscape
     static bool DrawLineLandscape(int32_t iX, int32_t iY, int32_t iGrade);
   public:
     void CompileFunc(StdCompiler *pComp); // without landscape bitmaps and sky
-		bool DebugSave(const char *szFilename);
   };
 
 /* Some global landscape functions */

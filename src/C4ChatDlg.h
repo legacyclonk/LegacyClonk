@@ -178,7 +178,6 @@ class C4ChatDlg : public C4GUI::Dialog
 
 		virtual void UpdateSize();
 
-		void OnExitBtn(C4GUI::Control *btn); // callback: exit button pressed
 		void OnChatTitleChange(const StdStrBuf &sNewTitle);
 	};
 

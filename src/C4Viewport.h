@@ -97,7 +97,6 @@ class C4Viewport
 		CStdGLCtx *pCtx; // rendering context for OpenGL
 		C4ViewportWindow * pWindow;
 		CClrModAddMap ClrModMap; // color modulation map for viewport drawing
-		void DrawPlayerFogOfWar(C4FacetEx &cgo);
 		void DrawMouseButtons(C4FacetEx &cgo);
 		void DrawPlayerStartup(C4FacetEx &cgo);
 		void Draw(C4FacetEx &cgo, bool fDrawOverlay);

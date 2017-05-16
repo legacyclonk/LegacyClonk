@@ -224,21 +224,6 @@ int C4RankSystem::RankByExperience(int iExp)
 	return iRank;
 	}
 
-BOOL C4RankSystem::Check(int iRank, const char  *szDefRankName)
-	{
-#ifdef _WIN32
-	char rankname[C4MaxName+1],keyname[30];
-	sprintf(keyname,"Rank%03d",iRank);
-	if (GetRegistryString(Register,keyname,rankname,C4MaxName+1))
-		return FALSE;
-	if (!szDefRankName || (SLen(szDefRankName)>C4MaxName))
-		return FALSE;
-	return SetRegistryString(Register,keyname,szDefRankName);
-#else
-	return TRUE;
-#endif
-	}
-
 void C4RankSystem::Clear()
 	{
 	// clear any loaded rank names

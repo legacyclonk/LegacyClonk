@@ -23,7 +23,6 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 			IconLabelSpacing     = 2, // space between an icon and its text
 			ClientListBoxSpacing = 8, // space between two clients in the list
 			PlayerListBoxIndent  = 3, // indent of player list box items
-			NoneLabelSpacing     = 20, // indent of "- none -"-label in list box
 
 			SoundIconShowTime    = 1, // seconds. min time a sound icon is shown
 			};
@@ -131,7 +130,6 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 
 			virtual void Update(); // update icon and team
 				
-			int32_t GetInfoID() const { return idPlayer; }
 			C4Network2Client *GetNetClient() const; // return associated network client
 			C4PlayerInfo *GetPlayerInfo() const;
 
@@ -167,7 +165,6 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 			void SetStatus(C4GUI::Icons icoNewStatus) // set new status
 				{ pStatusIcon->SetIcon(icoNewStatus); }
 			void SetPing(int32_t iToPing);                // update ping label; iToPing=-1 removes the label
-			void UpdateCore(const C4ClientCore &rCore); // core update: re-set name and indicate whether active or not
 			void SetSoundIcon();                        // sets the sound icon as current icon and schedules reset after some time
 
 			// spacing inserted between two client list items
@@ -175,8 +172,6 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 			virtual bool GetListItemTopSpacingBar() { return true; }
 
 		public:
-			void Init(const C4ClientCore &rClientInfo); // init members
-
 			void UpdateInfo();                                  // update for changed player info
 
 			//const char *GetName() const { return GetCore().getName(); }
@@ -186,7 +181,6 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 			bool IsLocalClientPlayer() const; // whether this player is going to join locally
 			C4GUI::Icons GetCurrentStatusIcon();              // get status icon that shows the current client state
 			class C4Network2Client *GetNetClient() const; // return assicuated network client; NULL for local
-			bool IsLocal() const;
 
 			virtual void Update() { UpdatePing(); UpdateInfo(); }
 			void UpdatePing();                     // update ping label
@@ -330,8 +324,6 @@ class C4PlayerInfoListBox : public C4GUI::ListBox
 		void Update(); // update player list
 		void SetClientSoundIcon(int32_t iForClientID);
 		void SetMode(Mode eNewMode);
-		void SetTeamFilter(int32_t idNewTeamFilter) { iTeamFilter = idNewTeamFilter; }
-		void SetCustomFont(CStdFont *pNewFont, uint32_t dwTextColor);
 		
 		Mode GetMode() const { return eMode; }
 

@@ -11,7 +11,6 @@ class C4Surface;
 C4Surface *GroupReadSurface(CStdStream &hGroup, BYTE *bpPalette=NULL);
 CSurface8 *GroupReadSurface8(CStdStream &hGroup);
 C4Surface *GroupReadSurfacePNG(CStdStream &hGroup);
-C4Surface *GroupReadSurfaceOwnPal(CStdStream &hGroup);
 CSurface8 *GroupReadSurfaceOwnPal8(CStdStream &hGroup);
 
 /*BOOL SaveSurface(const char *szFilename, SURFACE sfcSurface, BYTE *bpPalette);*/

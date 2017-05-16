@@ -28,7 +28,6 @@ class C4SoundInstance *StartSoundEffectAt(const char *szSndName, int32_t iX, int
 class C4SoundInstance *GetSoundInstance(const char *szSndName, C4Object *pObj);
 void StopSoundEffect(const char *szSndName, C4Object *pObj);
 void SoundLevel(const char *szSndName, C4Object *pObj, int32_t iLevel);
-void SoundPan(const char *szSndName, C4Object *pObj, int32_t iPan);
 
 //=========================== Graphics Resource =========================================
 
@@ -43,7 +42,6 @@ void SoundPan(const char *szSndName, C4Object *pObj, int32_t iPan);
 #define Tick10 Game.iTick10
 #define Tick35 Game.iTick35
 #define Tick255 Game.iTick255
-#define Tick500 Game.iTick500
 #define Tick1000 Game.iTick1000
 
 //================================== Players ============================================
@@ -197,21 +195,6 @@ inline int32_t GBackWind(int32_t x, int32_t y)
 
 void StdCompilerWarnCallback(void *pData, const char *szPosition, const char *szError);
 
-template <class CompT, class StructT>
-	bool CompileFromBuf_Log(StructT &TargetStruct, const typename CompT::InT &SrcBuf, const char *szName)
-	{
-		try
-		{
-			CompileFromBuf<CompT>(TargetStruct, SrcBuf);
-			return TRUE;
-		}
-		catch(StdCompiler::Exception *pExc)
-		{
-			LogF("ERROR: %s (in %s)", pExc->Msg.getData(), szName);
-			delete pExc;
-			return FALSE;
-		}
-	}
 template <class CompT, class StructT>
 	bool CompileFromBuf_LogWarn(StructT &TargetStruct, const typename CompT::InT &SrcBuf, const char *szName)
 	{

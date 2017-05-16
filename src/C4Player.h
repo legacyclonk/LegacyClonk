@@ -26,8 +26,6 @@ class C4Player: public C4PlayerInfoCore
 		enum ControlType
 			{
 			PCID_None,      // no control
-			PCID_Message,   // chat
-			PCID_Special,   // goalruleinfo, etc.
 			PCID_Command,   // mouse control
 			PCID_DirectCom, // menu or keyboard control
 			};
@@ -153,7 +151,6 @@ class C4Player: public C4PlayerInfoCore
 		void CursorLeft();
 		void UnselectCrew();
 		void SelectSingleByCursor();
-		void SelectSingle(C4Object *tobj);
 		void CursorToggle();
 		void SelectAllCrew();
 		void UpdateSelectionToggleStatus();
@@ -172,7 +169,6 @@ class C4Player: public C4PlayerInfoCore
 	  BOOL MakeCrewMember(C4Object *pObj, bool fForceInfo=true, bool fDoCalls=true);
 	  BOOL Load(const char *szFilename, bool fSavegame, bool fLoadPortraits);
 	  static BOOL Strip(const char *szFilename, bool fAggressive);
-	  BOOL Message(const char *szMsg);
     BOOL ObjectInCrew(C4Object *tobj);
 		C4Object *Buy(C4ID id, BOOL fShowErrors, int32_t iForPlr, C4Object *pBuyObj=NULL); // buy object of player's wealth
     BOOL Sell2Home(C4Object *tobj);
@@ -183,7 +179,6 @@ class C4Player: public C4PlayerInfoCore
 		bool ActivateMenuMain();
 		bool ActivateMenuTeamSelection(bool fFromMain);
 		void DoTeamSelection(int32_t idTeam);
-		C4Object *GetHiExpActiveCrew(bool fSelectedOnly);
 		C4Object *GetHiRankActiveCrew(bool fSelectedOnly);
 		void SetFoW(bool fEnable);
 		int32_t ActiveCrewCount();
@@ -207,7 +202,6 @@ class C4Player: public C4PlayerInfoCore
     void PlaceReadyVehic(int32_t tx1, int32_t tx2, int32_t ty, C4Object *FirstBase);
     void PlaceReadyMaterial(int32_t tx1, int32_t tx2, int32_t ty, C4Object *FirstBase);
     void PlaceReadyCrew(int32_t tx1, int32_t tx2, int32_t ty, C4Object *FirstBase);
-		void CheckCrewExPromotion();
 
 	public:
 		void SetTeamHostility(); // if Team!=0: Set hostile to all players in other teams and allied to all others (both ways)
@@ -231,7 +225,6 @@ class C4Player: public C4PlayerInfoCore
 
 	private:
 		// messageboard-calls for this player
-		class C4MessageBoardQuery *GetMessageboardQuery(C4Object *pForObj);
 		void ExecMsgBoardQueries();
 	public:
 		void ToggleMouseControl();

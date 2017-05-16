@@ -147,7 +147,6 @@ class C4AulParseState
 	const char * GetTokenName(C4AulTokenType TokenType);
 	
 	void Warn(const char *pMsg, const char *pIdtf=0);
-	void StrictError(const char *pMsg, const char *pIdtf=0);
 	void Strict2Error(const char *pMsg, const char *pIdtf=0);
 	
 	private:
@@ -211,13 +210,6 @@ void C4AulParseState::Warn(const char *pMsg, const char *pIdtf)
 	++Game.ScriptEngine.warnCnt;
 	}
 
-void C4AulParseState::StrictError(const char *pMsg, const char *pIdtf)
-	{
-	if (Fn ? (Fn->pOrgScript->Strict < C4AulScript::STRICT1) : (a->Strict < C4AulScript::STRICT1))
-		Warn(pMsg, pIdtf);
-	else
-		throw new C4AulParseError(this, pMsg, pIdtf);
-	}
 void C4AulParseState::Strict2Error(const char *pMsg, const char *pIdtf)
 	{
 	if (Fn ? (Fn->pOrgScript->Strict < C4AulScript::STRICT2) : (a->Strict < C4AulScript::STRICT2))

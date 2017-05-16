@@ -47,7 +47,6 @@ class C4MouseControl
 		int32_t Drag,DragSelecting;
 		int32_t DragImagePhase;
 		bool LeftButtonDown,RightButtonDown,LeftDoubleIgnoreUp;
-		bool ButtonDownOnSelection;
 		bool ControlDown;
 		bool ShiftDown;
 		bool Scrolling;
@@ -108,7 +107,6 @@ class C4MouseControl
 		int32_t UpdateCrewSelection();
 		int32_t UpdateSingleSelection();
 		BOOL SendControl(int32_t iCom, int32_t iData=0);
-		BOOL IsValidMenu(C4Menu *pMenu);
 		BOOL UpdatePutTarget(BOOL fVehicle);
 		C4Object *GetTargetObject(int32_t iX, int32_t iY, DWORD &dwOCF, C4Object *pExclude=NULL);
 		BOOL IsPassive(); // return whether mouse is only used to look around
@@ -116,7 +114,6 @@ class C4MouseControl
 
 	public:
 		bool IsHelp() { return Help; }
-		void SetHelp() { Help = true; }
 		void AbortHelp() { Help = false; }
 		bool IsDragging();
 		void StartConstructionDrag(C4ID id);

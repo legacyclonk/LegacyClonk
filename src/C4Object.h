@@ -189,7 +189,6 @@ class C4Object
 		bool Alive;
 	public:                
 		void Resort();
-		int32_t GetAudible();
 		void DigOutMaterialCast(BOOL fRequest);
 		void AddMaterialContents(int32_t iMaterial, int32_t iAmount);
 		void SetCommand(int32_t iCommand, C4Object *pTarget, C4Value iTx, int32_t iTy=0, C4Object *pTarget2=NULL, BOOL fControl=FALSE, int32_t iData=0, int32_t iRetries=0, const char *szText=NULL);
@@ -300,7 +299,7 @@ class C4Object
 		void DoCon(int32_t iChange, BOOL fInitial=FALSE, bool fNoComponentChange=false);
 		int32_t GetCon() { return Con; }
 		void DoExperience(int32_t change);
-		BOOL Promote(int32_t torank, BOOL exception, bool fForceRankName);
+		BOOL Promote(int32_t torank, bool fForceRankName);
 		void Explode(int32_t iLevel, C4ID idEffect=0, const char *szEffect=NULL);
 		void Blast(int32_t iLevel, int32_t iCausedBy);
 		BOOL Build(int32_t iLevel, C4Object *pBuilder);
@@ -317,7 +316,6 @@ class C4Object
 		inline int32_t Width() { return Shape.Wdt; } // width of shape
 		inline int32_t Height() { return Shape.Hgt+addtop(); } // height of shape (+build-top)
 		BYTE GetEntranceArea(int32_t &aX, int32_t &aY, int32_t &aWdt, int32_t &aHgt);
-		BYTE GetMomentum(FIXED &rxdir, FIXED &rydir);
 		FIXED GetSpeed();
 		C4PhysicalInfo *GetPhysical(bool fPermanent=false);
 		bool TrainPhysical(C4PhysicalInfo::Offset mpiOffset, int32_t iTrainBy, int32_t iMaxTrain);
@@ -341,7 +339,6 @@ class C4Object
 		void SetRotation(int32_t nr);
 		void PrepareDrawing();	// set blit modulation and/or additive blitting
 		void FinishedDrawing();	// reset any modulation
-		void DrawSolidMask(C4FacetEx &cgo);			// draw topface image only
 		BOOL Collect(C4Object *pObj);						// add object to contents if it can be carried - no OCF and range checks are done!
 		BOOL GrabInfo(C4Object *pFrom);					// grab info object from other object
 		BOOL ShiftContents(BOOL fShiftBack, BOOL fDoCalls);	// rotate through contents

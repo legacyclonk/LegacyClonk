@@ -405,14 +405,6 @@ C4Team *C4TeamList::GetTeamByIndex(int32_t iIndex) const
 	return ppList[iIndex];
 	}
 
-C4Team *C4TeamList::GetTeamByName(const char *szName) const
-	{
-	assert(szName);
-	C4Team **ppCheck=ppList; int32_t iCnt=iTeamCount;
-	for(;iCnt--;++ppCheck) if (SEqual((*ppCheck)->GetName(), szName)) return *ppCheck;
-	return NULL;
-	}
-
 C4Team *C4TeamList::GetTeamByPlayerID(int32_t iID) const
 	{
 	C4Team **ppCheck=ppList; int32_t iCnt=iTeamCount;

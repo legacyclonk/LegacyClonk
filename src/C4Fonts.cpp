@@ -136,13 +136,6 @@ bool C4VectorFont::Init(const char *szFacename, int32_t iSize, uint32_t dwWeight
 	return true;
 	}
 
-void C4VectorFont::Init(const char *szFaceName, CStdVectorFont *pFont)
-	{
-	// just set data
-	Name.Copy(szFaceName);
-	this->pFont = pFont;
-	}
-
 void C4FontLoader::Clear()
 	{
 	// clear loaded defs
@@ -196,69 +189,6 @@ int32_t C4FontLoader::LoadDefs(C4Group &hGroup, C4Config &rCfg)
 	FontDefs.insert(FontDefs.end(), NewFontDefs.begin(), NewFontDefs.end());
 	// done
 	return NewFontDefs.size();
-	}
-
-bool C4FontLoader::IsFontLoaded(const char *szFontName)
-	{
-	// safety
-	if (!szFontName || !*szFontName) return false;
-	// check all fonts
-	for (std::vector<C4FontDef>::iterator i = FontDefs.begin(); i != FontDefs.end(); ++i)
-		if (i->Name == szFontName)
-			return true;
-	// not found
-	return false;
-	}
-
-const char *C4FontLoader::GetFontNameByIndex(int32_t iIndex)
-	{
-	// check all fonts
-	for (std::vector<C4FontDef>::iterator i = FontDefs.begin(); i != FontDefs.end(); ++i)
-		{
-		// search for this font name in the previous section of the list
-		// so doubled font names are not counted twice
-		std::vector<C4FontDef>::iterator j = FontDefs.begin();
-		for (; j != i; ++j)
-			{
-			if (i->Name == j->Name)
-				break;
-			}
-		if (i != j) continue;
-		// count index
-		if (!iIndex--)
-			// desired font found; return name
-			return i->Name.getData();
-		}
-	// end of list reached (or no fonts loaded)
-	return NULL;
-	}
-
-int32_t C4FontLoader::GetClosestAvailableSize(const char *szFontName, int32_t iWantedSize)
-	{
-	// safety
-	if (!szFontName || !*szFontName) return 0;
-	// default return value is 0 (if font name is not found)
-	int32_t iRVal=0, iBestDiff=0, iDiff;
-	// check all fonts that match the name
-	for (std::vector<C4FontDef>::iterator i = FontDefs.begin(); i != FontDefs.end(); ++i)
-		if (i->Name == szFontName)
-			{
-			// get size different of this one
-			iDiff = Abs(i->iSize - iWantedSize) * 2;
-			// size is OK?
-			if (!iDiff) return iWantedSize;
-			// prefer larger fonts to smaller fonts if size difference is same
-			if (i->iSize < iWantedSize) ++iDiff;
-			// compare with best diff
-			if (!iBestDiff || iDiff < iBestDiff)
-				{
-				// better match found
-				iRVal = i->iSize;
-				iBestDiff = iDiff;
-				}
-			}
-	// return best match
-	return iRVal;
 	}
 
 #ifdef C4ENGINE // - - -  - - - -  - - - -  - - -  - - - -  - - - -  - - -  - 

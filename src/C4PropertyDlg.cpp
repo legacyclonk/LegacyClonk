@@ -152,14 +152,6 @@ BOOL C4PropertyDlg::Update(C4ObjectList &rSelection)
 	// Update contents
 	return Update();
 	}
-	
-BOOL IsObjectPointer(int iValue)
-	{
-  for (C4ObjectLink *cLnk=Game.Objects.First; cLnk; cLnk=cLnk->Next)
-		if (cLnk->Obj == (C4Object*) iValue)
-			return TRUE;
-	return FALSE;
-	}
 
 BOOL C4PropertyDlg::Update()
 	{

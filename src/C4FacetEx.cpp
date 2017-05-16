@@ -33,11 +33,6 @@ C4FacetEx C4FacetEx::GetPhase(int iPhaseX, int iPhaseY)
 	return fctResult;
 	}
 
-void C4FacetEx::SetRect(C4TargetRect &rSrc)
-	{
-	X=rSrc.x; Y=rSrc.y; Wdt=rSrc.Wdt; Hgt=rSrc.Hgt; TargetX=rSrc.tx; TargetY=rSrc.ty;
-	}
-
 void C4FacetEx::DrawLine(int iX1, int iY1, int iX2, int iY2, BYTE bCol1, BYTE bCol2)
 	{
 	if (!lpDDraw || !Surface || !Wdt || !Hgt) return;
@@ -239,19 +234,6 @@ void C4FacetExSurface::Grayscale(int32_t iOffset)
 	{
 	if (!lpDDraw || !Surface || !Wdt || !Hgt) return;
 	lpDDraw->Grayscale(Surface, iOffset);
-	}
-
-bool C4FacetExSurface::EnsureOwnSurface()
-	{
-	// is it a link?
-	if (Surface != &Face)
-		{
-		// then recreate in same size
-		C4Facet fctOld = *this;
-		if (!Create(fctOld.Wdt, fctOld.Hgt)) return false;
-		fctOld.Draw(*this);
-		}
-	return true;
 	}
 
 #endif // C4ENGINE

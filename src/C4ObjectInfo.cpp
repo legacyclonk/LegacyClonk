@@ -185,8 +185,7 @@ BOOL C4ObjectInfo::Save(C4Group &hGroup, bool fStoreTiny, C4DefList *pDefs)
 	SCopy(Filename,szTempGroup);
 	MakeTempFilename(szTempGroup);
 	// If object info group exists, copy to temp group file
-	BOOL fextract = hGroup.Extract(Filename,szTempGroup);
-	const char *ferr = hGroup.GetError();
+	hGroup.Extract(Filename,szTempGroup);
 	// Open temp group
 	C4Group hTemp;
 	if (!hTemp.Open(szTempGroup,TRUE))
@@ -378,12 +377,6 @@ void C4ObjectInfo::Retire()
 	TotalPlayingTime+=(Game.Time-InActionTime);
 #endif // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	}
-
-void C4ObjectInfo::SetBirthday()
-	{
-	Birthday=time(NULL);
-	}
-
 
 #ifdef C4ENGINE // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

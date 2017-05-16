@@ -253,7 +253,6 @@ void C4FileSelDlg::UpdateFileList()
 	C4GUI::Element *pEl;
 	while (pEl = pFileListBox->GetFirst()) delete pEl;
 	// file items
-	StdStrBuf sSearch;
 	const char *szFileMask = GetFileMask();
 	for (DirectoryIterator iter(sPath.getData()); *iter; ++iter)
 		if (!szFileMask || WildcardListMatch(szFileMask, *iter))

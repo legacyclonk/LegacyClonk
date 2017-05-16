@@ -17,7 +17,6 @@
 #endif
 
 BOOL SimFlightHitsLiquid(FIXED fcx, FIXED fcy, FIXED xdir, FIXED ydir);
-BOOL CreateConstructionSite(int32_t ctx, int32_t bty, C4ID strid, int32_t owner, C4Object *pByObj);
 
 BOOL ObjectActionWalk(C4Object *cObj)
   {
@@ -223,17 +222,6 @@ BOOL ObjectComMovement(C4Object *cObj, int32_t comdir)
 			}
   return TRUE;
   }
-
-BOOL ObjectComTurn(C4Object *cObj)
-	{
-	// turn around, if standing still
-	if (!cObj->xdir && cObj->GetProcedure() == DFA_WALK)
-		{
-		cObj->SetDir(1-cObj->Action.Dir);
-		return TRUE;
-		}
-	return FALSE;
-	}
 
 BOOL ObjectComStop(C4Object *cObj)
   {

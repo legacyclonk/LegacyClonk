@@ -108,20 +108,7 @@ const C4PktHandlingData PktHandlingData[] =
 	{ PID_None,					PC_Network, NULL,													false,	true,		0,												NULL														}
 };
 
-const char *PacketNameByID(C4PacketType eID)
-{
-	for(const C4PktHandlingData *pPData = PktHandlingData; pPData->ID != PID_None; pPData++)
-		if(pPData->ID == eID)
-			return pPData->Name;
-	return "?!?";
-}
-
 // *** C4PacketBase
-
-C4NetIOPacket C4PacketBase::pack(const C4NetIO::addr_t &addr) const
-{
-	return C4NetIOPacket(DecompileToBuf<StdCompilerBinWrite>(*this), addr);
-}
 
 C4NetIOPacket C4PacketBase::pack(uint8_t cStatus, const C4NetIO::addr_t &addr) const
 {
@@ -230,14 +217,6 @@ C4PacketList::~C4PacketList()
 	Clear();
 }
 
-int32_t C4PacketList::getPktCnt() const
-{
-	int32_t iCnt = 0;
-	for(C4IDPacket *pPkt = pFirst; pPkt; pPkt = pPkt->pNext)
-		iCnt++;
-	return iCnt;
-}
-
 void C4PacketList::Add(C4IDPacket *pPkt)
 {
 	assert(!pPkt->pNext);
@@ -245,20 +224,7 @@ void C4PacketList::Add(C4IDPacket *pPkt)
 	pLast = pPkt;
 }
 
-void C4PacketList::AddHead(C4IDPacket *pPkt)
-{
-	assert(!pPkt->pNext);
-	pPkt->pNext = pFirst;
-	pFirst = pPkt;
-	if(!pLast) pLast = pPkt;
-}
-
 void C4PacketList::Add(C4PacketType eType, C4PacketBase *pPkt)
-{
-	Add(new C4IDPacket(eType, pPkt));
-}
-
-void C4PacketList::AddHead(C4PacketType eType, C4PacketBase *pPkt)
 {
 	Add(new C4IDPacket(eType, pPkt));
 }

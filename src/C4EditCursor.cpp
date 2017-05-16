@@ -673,14 +673,6 @@ int32_t C4EditCursor::GetMode()
 	return Mode;
 	}
 
-void C4EditCursor::ToolFailure()
-	{
-	C4ToolsDlg *pTools=&Console.ToolsDlg;
-	Hold=FALSE;
-	sprintf(OSTR,LoadResStr("IDS_CNS_NOMATDEF"),pTools->Material,pTools->Texture); 
-	Console.Message(OSTR); 
-	}
-
 void C4EditCursor::ApplyToolPicker()
 	{
 	int32_t iMaterial;

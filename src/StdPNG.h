@@ -52,7 +52,6 @@ class CPNGFile
 		bool Save(const char *szFilename);						// save current image to file; saving to mem is not supported because C4Group doesn't support streamed writing anyway...
 
 		BYTE *GetImageData() { return pImageData; }		// return raw image data
-		int GetBitsPerPixel();												// return number of bits per pixel in raw image data
 
 		friend void PNGAPI CPNGReadFn(png_structp png_ptr, png_bytep data, size_t length);
 	};

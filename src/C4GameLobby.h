@@ -71,7 +71,6 @@ namespace C4GameLobby
 	class MainDlg : public C4GUI::FullscreenDialog
 		{
 		private:
-			time_t tLastPingUpdate; // time when pings were updated last time
 			C4Sec1TimerCallback<MainDlg> *pSec1Timer; // engine timer hook
 			enum CountdownState { CDS_None=0, CDS_LongCountdown=1, CDS_Countdown=2, CDS_Start=3 } eCountdownState; // nonzero when a packet was received that the game is about to start (starts elevator sound, etc.)
 			int32_t iBackBufferIndex;   // chat message history index
@@ -92,7 +91,6 @@ namespace C4GameLobby
 
 		protected:
 			void OnRunBtn(C4GUI::Control *btn); // callback: run button pressed
-			void OnTestBtn(C4GUI::Control *btn); // callback: test button pressed
 			void OnExitBtn(C4GUI::Control *btn); // callback: exit button pressed
 			bool KeyHistoryUpDown(bool fUp); // key callback
 			C4GUI::Edit::InputResult OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore); // callback: chat input performed
@@ -109,7 +107,6 @@ namespace C4GameLobby
 			void OnTabRes(C4GUI::Control *btn);
 			void OnCtxTabOptions(C4GUI::Element *pListItem) { OnTabOptions(NULL); }
 			void OnTabOptions(C4GUI::Control *btn);
-			void OnCtxTabScenario(C4GUI::Element *pListItem) { OnTabScenario(NULL); }
 			void OnTabScenario(C4GUI::Control *btn);
 			void UpdateRightTab(); // update label and tooltips for sheet change
 			void OnBtnChat(C4GUI::Control *btn);

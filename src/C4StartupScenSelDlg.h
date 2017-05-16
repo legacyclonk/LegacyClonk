@@ -208,8 +208,6 @@ class C4ScenarioListLoader
 		Folder *GetCurrFolder() const { return pCurrFolder; }
 		Folder *GetRootFolder() const { return pRootFolder; }
 
-		int32_t GetProgress() const { return iProgress; }
-		int32_t GetMaxProgress() const { return iMaxProgress; }
       int32_t GetProgressPercent() const { return iProgress * 100 / Max<int32_t>(iMaxProgress, 1); }
 	};
 

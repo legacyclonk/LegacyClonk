@@ -889,13 +889,6 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 	return false;
 	}
 
-bool C4MainMenu::ActivateCommand(int32_t iPlayer, const char *szCommand)
-	{
-	// init menu for player and activate with command
-	Player = iPlayer;
-	return MenuCommand(szCommand, false);
-	}
-
 bool C4MainMenu::ActivateObserver()
 	{
 	// Safety: Viewport lost?

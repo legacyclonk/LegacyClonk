@@ -91,7 +91,6 @@ void C4MouseControl::Default()
 	ShowPointX=ShowPointY=-1;
 	LeftButtonDown=RightButtonDown=false;
 	LeftDoubleIgnoreUp=false;
-	ButtonDownOnSelection=false;
 	Visible=true;
 	InitCentered=false;
 	Help=false;
@@ -1017,22 +1016,6 @@ void C4MouseControl::Wheel(DWORD dwFlags)
 	if(iDelta < 0) Game.LocalPlayerControl(Player, COM_WheelDown);
 }
 
-BOOL C4MouseControl::IsValidMenu(C4Menu *pMenu)
-	{
-	// Local control fullscreen menu
-	if (pMenu == FullScreen.pMenu) 
-		if (pMenu->IsActive())
-			return TRUE;
-	// Local control player menu
-	C4Player *pPlr;
-	for (int32_t cnt=0; pPlr=Game.Players.Get(cnt); cnt++)
-		if (pMenu == &(pPlr->Menu))
-			if (pMenu->IsActive())
-				return TRUE;
-	// No match found
-	return FALSE;
-	}
-
 BOOL C4MouseControl::SendControl(int32_t iCom, int32_t iData)
 	{
 	// Help
@@ -1153,11 +1136,6 @@ void C4MouseControl::ButtonUpDragSelecting()
 		Game.Input.Add(CID_PlrSelect,
       new C4ControlPlayerSelect(Player,Selection));
 		Selection.Clear();
-		}
-	// Object selection: just keep selection
-	if (DragSelecting==C4MC_Selecting_Objects)
-		{
-
 		}
 	}
 

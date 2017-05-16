@@ -804,27 +804,6 @@ CSurface8 * C4MapCreatorS2::Render(const char *szMapName)
 	}
 #endif // ----- --  - - - - - -- -  - - - -
 
-BYTE *C4MapCreatorS2::RenderBuf(const char *szMapName, int32_t &sfcWdt, int32_t &sfcHgt)
-	{
-	// get map
-	C4MCMap *pMap=GetMap(szMapName);
-	if (!pMap) return NULL;
-
-	// get size
-	sfcWdt=pMap->Wdt; sfcHgt=pMap->Hgt;
-	if (!sfcWdt || !sfcHgt) return NULL;
-	int dwSfcWdt = sfcWdt;
-	DWordAlign(dwSfcWdt);
-	sfcWdt = dwSfcWdt;
-
-	// create buffer
-	BYTE *buf=new BYTE[sfcWdt*sfcHgt];
-
-	// render and return it
-	pMap->RenderTo(buf, sfcWdt);
-	return buf;
-	}
-
 C4MCParserErr::C4MCParserErr(C4MCParser *pParser, const char *szMsg)
 	{
 	// create error message

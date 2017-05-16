@@ -84,12 +84,6 @@ void C4Group_SetMaker(const char *szMaker)
 	else SCopy(szMaker,C4Group_Maker,C4GroupMaxMaker);
 	}
 
-void C4Group_SetPasswords(const char *szPassword)
-	{
-	if (!szPassword) C4Group_Passwords[0]=0;
-	else SCopy(szPassword,C4Group_Passwords,CFG_MaxString);
-	}
-
 void C4Group_SetTempPath(const char *szPath)
 	{
 	if (!szPath || !szPath[0]) C4Group_TempPath[0]=0;
@@ -110,23 +104,6 @@ BOOL C4Group_IsGroup(const char *szFilename)
 	{
 	C4Group hGroup; if (hGroup.Open(szFilename))	{ hGroup.Close(); return TRUE; }
 	return FALSE;
-	}
-
-int C4Group_GetCreation(const char *szFilename)
-	{
-	int iResult = -1;
-	C4Group hGroup; 
-	if (hGroup.Open(szFilename)) { iResult=hGroup.GetCreation(); hGroup.Close(); }
-	return iResult;
-	}
-
-BOOL C4Group_SetOriginal(const char *szFilename, BOOL fOriginal)
-	{
-	C4Group hGroup; 
-	if (!hGroup.Open(szFilename)) return FALSE;
-	hGroup.MakeOriginal(fOriginal);
-	if (!hGroup.Close()) return FALSE;
-	return TRUE;
 	}
 
 BOOL C4Group_CopyItem(const char *szSource, const char *szTarget1, bool fNoSort, bool fResetAttributes)
@@ -2251,12 +2228,6 @@ void C4Group::SetMaker(const char *szMaker)
   SCopy(szMaker,Head.Maker,C4GroupMaxMaker);
 	}
 
-void C4Group::SetPassword(const char *szPassword)
-	{
-	if (!SEqual(szPassword,Head.Password)) Modified=TRUE;
-  SCopy(szPassword,Head.Password,C4GroupMaxPassword);
-	}
-
 const char* C4Group::GetMaker()
 	{
 	return Head.Maker;
@@ -2265,16 +2236,6 @@ const char* C4Group::GetMaker()
 const char* C4Group::GetPassword()
 	{
 	return Head.Password;
-	}
-
-int C4Group::GetVersion()
-	{
-	return Head.Ver1*10+Head.Ver2;
-	}
-
-void C4Group::SetProcessCallback(BOOL (*fnCallback)(const char *, int))
-	{
-	fnProcessCallback = fnCallback;
 	}
 
 int SortRank(const char *szElement, const char *szSortList)
@@ -2376,12 +2337,6 @@ bool C4Group::SortByList(const char **ppSortList, const char *szFilename)
 	return TRUE;
 	}
 
-void C4Group::ProcessOut(const char *szMessage, int iProcess)
-	{
-  if (fnProcessCallback) fnProcessCallback(szMessage,iProcess);
-  if (C4Group_ProcessCallback) C4Group_ProcessCallback(szMessage,iProcess);
-	}
-
 bool C4Group::EnsureChildFilePtr(C4Group *pChild)
 	{
 
@@ -2438,20 +2393,6 @@ void C4Group::MakeOriginal(BOOL fOriginal)
 bool C4Group::GetOriginal()
 	{
 	return (Head.Original==1234567);
-	}
-
-bool C4Group::Add(const char *szEntryname, C4Group &hSource)
-	{
-	char *bpBuf; size_t iSize;
-	// Load entry from source group to buffer
-	if (!hSource.LoadEntry(szEntryname, &bpBuf, &iSize)) return FALSE;
-	// Determine executable
-	bool fExecutable = GetEntry(szEntryname) ? !!GetEntry(szEntryname)->Executable : false;
-	// Add entry (hold buffer)
-	if (!Add(szEntryname, bpBuf, iSize, false, true, 0, fExecutable))
-		{ delete [] bpBuf; return FALSE; }
-	// Success
-	return TRUE;
 	}
 
 bool C4Group::CalcCRC32(C4GroupEntry *pEntry)

@@ -48,7 +48,6 @@ const int C4GroupMaxMaker    = 30,
 #define C4GroupFileID "RedWolf Design GrpFolder"
 
 void C4Group_SetMaker(const char *szMaker);
-void C4Group_SetPasswords(const char *szPassword);
 void C4Group_SetTempPath(const char *szPath);
 const char* C4Group_GetTempPath();
 void C4Group_SetSortList(const char **ppSortList);
@@ -61,8 +60,6 @@ bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo);
 bool C4Group_PackDirectory(const char *szFilename);
 BOOL C4Group_UnpackDirectory(const char *szFilename);
 bool C4Group_ExplodeDirectory(const char *szFilename);
-int C4Group_GetCreation(const char *szFilename);
-BOOL C4Group_SetOriginal(const char *szFilename, BOOL fOriginal);
 bool C4Group_ReadFile(const char *szFilename, char **pData, size_t *iSize);
 bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32);
 bool C4Group_GetFileSHA1(const char *szFilename, BYTE *pSHA1);
@@ -188,7 +185,6 @@ class C4Group: public CStdStream
     bool Add(const char *szName, void *pBuffer, int iSize, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
 		bool Add(const char *szName, StdBuf &pBuffer, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
 		bool Add(const char *szName, StdStrBuf &pBuffer, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
-	  bool Add(const char *szEntryname, C4Group &hSource);
     bool Merge(const char *szFolders);
     bool Move(const char *szFiles);
     bool Move(const char *szFile, const char *szAddAs);
@@ -223,9 +219,7 @@ class C4Group: public CStdStream
     bool Read(void *pBuffer, size_t iSize);
 		bool Advance(int iOffset);
 		void SetMaker(const char *szMaker);
-		void SetPassword(const char *szPassword);
 		void SetStdOutput(BOOL fStatus);
-		void SetProcessCallback(BOOL (*fnCallback)(const char *, int));
 		void MakeOriginal(BOOL fOriginal);
     void ResetSearch();
     const char *GetError();
@@ -238,7 +232,6 @@ class C4Group: public CStdStream
 		int AccessedEntrySize() { return iCurrFileSize; } // retrieve size of last accessed entry
 		int EntryTime(const char *szFilename);
 		unsigned int EntryCRC32(const char *szWildCard=NULL);
-		int GetVersion();
 	  int GetCreation();
 	  int GetStatus();
 		inline bool IsOpen() { return Status != GRPF_Inactive; }
@@ -254,7 +247,6 @@ class C4Group: public CStdStream
     void Init();
     void Default();
     void Clear();
-	  void ProcessOut(const char *szMessage, int iProcess=0);
 	  bool EnsureChildFilePtr(C4Group *pChild);
 	  bool CloseExclusiveMother();
     bool Error(const char *szStatus);

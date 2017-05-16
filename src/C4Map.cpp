@@ -35,17 +35,6 @@ void C4MapCreator::SetPix(int32_t x, int32_t y, BYTE col)
   MapBuf->SetPix(x,y,col);
   }
 
-void C4MapCreator::SetSpot(int32_t x, int32_t y, int32_t rad, BYTE col)
-  {
-  int32_t ycnt,xcnt,lwdt,dpy;
-  for (ycnt=-rad; ycnt<=rad; ycnt++)
-    {
-    lwdt= (int32_t) sqrt(double(rad*rad-ycnt*ycnt)); dpy=y+ycnt;
-    for (xcnt=-lwdt; xcnt<lwdt+(lwdt==0); xcnt++)
-      SetPix(x+xcnt,dpy,col);
-    }
-  }
-
 void C4MapCreator::DrawLayer(int32_t x, int32_t y, int32_t size, BYTE col)
   {
   int32_t cnt,cnt2;
@@ -213,12 +202,3 @@ void C4MapCreator::Create(CSurface8 *sfcMap,
 
 	return TRUE;
 	}*/
-
-void C4MapCreator::ValidateTextureIndices(C4TextureMap &rTextureMap)
-	{
-	int32_t iX,iY;
-	for (iY=0; iY<MapHgt; iY++)
-		for (iX=0; iX<MapWdt; iX++)
-			if (!rTextureMap.GetEntry(GetPix(iX,iY)))
-				SetPix(iX,iY,0);
-	}

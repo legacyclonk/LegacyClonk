@@ -19,7 +19,6 @@ class C4Network2ClientDlg : public C4GUI::InfoDialog
 
 	protected:
 		virtual void UpdateText(); // compose message text
-		virtual int GetUpdateInterval() { return 500; } // update every 0.5 seconds
 
 		virtual const char *GetID() { return "ClientDialog"; }
 
@@ -54,7 +53,6 @@ class C4Network2ResDlg : public C4GUI::ListBox
 				int GetResID() const { return iResID; }
 				bool IsSavePossible();
 
-				C4GUI::ContextMenu *OnContext(C4GUI::Element *pListItem, int iX, int iY); // open context menu
 				void OnButtonSave(C4GUI::Control *pButton);      // queried resource save
 				void OnButtonSaveConfirm(C4GUI::Element *pNull); // confirmed file overwrite
 
@@ -125,7 +123,7 @@ class C4Network2ClientListBox : public C4GUI::ListBox
 				// subcomponents
 				C4GUI::Label *pDesc;       // connection description
 				C4GUI::Label *pPing;       // connection ping
-				C4GUI::IconButton *pReconnectBtn, *pDisconnectBtn; // buttons to restore/destroy connection
+				C4GUI::IconButton *pDisconnectBtn; // buttons to restore/destroy connection
 
 			public:
 				ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, int32_t iConnectionID); // ctor
@@ -134,7 +132,6 @@ class C4Network2ClientListBox : public C4GUI::ListBox
 				C4Network2IOConnection *GetConnection() const; // get connection by connection ID
 				virtual int32_t GetConnectionID() const { return iConnID; }
 
-				void OnButtonReconnect(C4GUI::Control *pButton);
 				void OnButtonDisconnect(C4GUI::Control *pButton);
 			};
 

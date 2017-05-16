@@ -66,8 +66,6 @@ public:
 
 	void InitLocal(C4Game *pGame);
 
-  void SortNullIPsBack();
-
 	void CompileFunc(StdCompiler *pComp);
 };
 
@@ -152,7 +150,6 @@ public:
 	size_t getTotalSize() const { return iTotalSize; }
 	size_t getDownloadedSize() const { return iDownloadedSize; }
   const StdBuf &getResultBin() const { assert(fBinary); return ResultBin; }
-	const char *getResultString() const { assert(!fBinary); return ResultString.getData(); }
 	const char *getServerName() const { return Server.getData(); }
 	const char *getRequest() const { return RequestPath.getData(); }
 	const C4NetIO::addr_t &getServerAddress() const { return ServerAddr; }
@@ -188,7 +185,6 @@ public:
 
   bool QueryReferences();
   bool GetReferences(C4Network2Reference **&rpReferences, int32_t &rRefCount);
-	bool GetMasterVersion(C4GameVersion *pSaveToVer); // call only after GetReferences
 	const char *GetMessageOfTheDay() const { return MessageOfTheDay.getData(); }
 	const char *GetMessageOfTheDayHyperlink() const { return MessageOfTheDayHyperlink.getData(); }
 	const char *GetLeagueServerRedirect() const { return LeagueServerRedirect.getLength() ? LeagueServerRedirect.getData() : NULL; }

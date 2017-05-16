@@ -10,7 +10,6 @@ class C4StringTable;
 class C4String
 {
 public:
-	C4String(C4StringTable *pTable);
 	C4String(StdStrBuf strString, C4StringTable *pTable);
 	C4String(const char *strString, C4StringTable *pTable);
 	virtual ~C4String();

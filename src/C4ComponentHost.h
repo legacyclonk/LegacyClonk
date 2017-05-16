@@ -23,10 +23,8 @@ class C4ComponentHost
 		BOOL Load(const char *szName, C4GroupSet &hGroupSet, const char *szFilename, const char *szLanguage=NULL);
 		BOOL LoadEx(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage=NULL);
 		BOOL LoadAppend(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage=NULL);
-		BOOL Set(const char *szData);
 		BOOL Save(C4Group &hGroup);
 		bool GetLanguageString(const char *szLanguage, class StdStrBuf &rTarget);
-		BOOL SetLanguageString(const char *szLanguage, const char *szString);
 		void TrimSpaces();
 	protected:
 		StdCopyStrBuf Data;

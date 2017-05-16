@@ -56,9 +56,6 @@ typedef unsigned long C4ID;
 #define C4Fx_FireMode_Object       3 // other (C4D_Object and no bit set (magic))
 #define C4Fx_FireMode_Last         3 // largest valid fire mode
 
-#define C4Fx_FireParticle1   "Fire"
-#define C4Fx_FireParticle2   "Fire2"
-
 // generic object effect
 class C4Effect
 	{

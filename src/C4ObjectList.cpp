@@ -466,12 +466,6 @@ BOOL C4ObjectList::IsClear() const
 	return (ObjectCount()==0);
 	}
 
-BOOL C4ObjectList::ReadEnumerated(const char *szSource)
-	{
-	assert(false);
-	return FALSE;
-	}
-
 BOOL C4ObjectList::DenumerateRead()
 	{
 	if(!pEnumerated) return FALSE;
@@ -480,20 +474,6 @@ BOOL C4ObjectList::DenumerateRead()
 		Add(Game.Objects.ObjectPointer(*pNum), stNone); // Add to tail, unsorted
 	// Delete old list
 	delete pEnumerated; pEnumerated = NULL;
-	return TRUE;
-	}
-
-BOOL C4ObjectList::Write(char *szTarget)
-	{
-	char ostr[25];
-	szTarget[0]=0;
-  C4ObjectLink *cLnk;
-  for (cLnk=First; cLnk && cLnk->Obj; cLnk=cLnk->Next)
-		if (cLnk->Obj->Status)
-			{
-			sprintf(ostr,"%d;",cLnk->Obj->Number);
-			SAppend(ostr,szTarget);
-			}
 	return TRUE;
 	}
 
@@ -684,46 +664,6 @@ C4Object* C4ObjectList::Denumerated(C4Object *pObj)
 	return NULL;
 	}
 
-void C4ObjectList::DrawList(C4Facet &cgo, int iSelection, DWORD dwCategory)
-	{
-	int iSections = cgo.GetSectionCount();
-	int iObjects = ObjectCount(C4ID_None,dwCategory);
-	int iFirstVisible = BoundBy(iSelection-iSections/2,0,Max(iObjects-iSections,0));
-	C4Facet cgo2;
-	int iObj=0,iSec=0;
-  C4ObjectLink *cLnk; C4Object *cObj;
-  for (cLnk=First; cLnk && (cObj=cLnk->Obj); cLnk=cLnk->Next)
-		if (cObj->Status && (cObj->Category && dwCategory))
-			{
-			if (Inside(iObj,iFirstVisible,iFirstVisible+iSections-1))
-				{
-				cgo2 = cgo.GetSection(iSec++);
-				cObj->DrawPicture(cgo2,(iObj==iSelection));
-				}
-			iObj++;
-			}
-	}
-
-void C4ObjectList::Sort()
-	{
-  C4ObjectLink *cLnk;
-	BOOL fSorted;
-	// Sort by id
-	do
-		{
-		fSorted = TRUE;
-		for (cLnk=First; cLnk && cLnk->Next; cLnk=cLnk->Next)
-			if (cLnk->Obj->id > cLnk->Next->Obj->id)
-				{			
-				RemoveLink(cLnk);
-				InsertLink(cLnk,cLnk->Next);
-				fSorted = FALSE;
-				break;
-				}
-		}
-	while (!fSorted);
-	}
-
 void C4ObjectList::RemoveLink(C4ObjectLink *pLnk)
 	{
 	if (pLnk->Prev) pLnk->Prev->Next=pLnk->Next; else First=pLnk->Next;
@@ -814,17 +754,6 @@ void C4ObjectList::DrawSelectMark(C4FacetEx &cgo)
   C4ObjectLink *cLnk; 
   for (cLnk=Last; cLnk; cLnk=cLnk->Prev)
 		cLnk->Obj->DrawSelectMark(cgo);
-	}
-
-void C4ObjectList::GetIDList(C4IDList &rList, int32_t dwCategory)
-	{
-	C4ObjectLink *clnk;
-	C4Def *pDef;
-	rList.Clear();
-  for (clnk=First; clnk && clnk->Obj; clnk=clnk->Next)
-		if (clnk->Obj->Status)
-			if ((dwCategory==C4D_All) || ( (pDef=C4Id2Def(clnk->Obj->Def->id)) && (pDef->Category & dwCategory) ))
-				rList.IncreaseIDCount(clnk->Obj->Def->id);
 	}
 
 void C4ObjectList::CloseMenus()
@@ -1104,12 +1033,6 @@ C4ObjectList::iterator& C4ObjectList::iterator::operator++ ()
 	{
 	pLink = pLink ? pLink->Next : pLink;
 	return *this;
-	}
-C4ObjectList::iterator C4ObjectList::iterator::operator++ (int)
-	{
-	iterator old = *this;
-	pLink = pLink ? pLink->Next : pLink;
-	return old;
 	}
 C4Object * C4ObjectList::iterator::operator* ()
 	{

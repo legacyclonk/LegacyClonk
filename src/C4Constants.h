@@ -15,8 +15,6 @@ const int C4MaxNameList   =  10,
           C4MaxTitle      = 512,
 					C4MaxMessage		= 256,
 
-					C4MaxServerName = 255,
-
 					C4MaxVariable		=	 10,
 
 					C4ViewDelay			= 100,
@@ -55,8 +53,7 @@ const int C4D_MaxName     = C4MaxName,
           C4D_MaxVertex   = 30,
           C4D_MaxIDLen    = C4D_MaxName;
 
-const int C4Px_MaxName		= C4MaxName,// maximum length of a particle def name
-					C4Px_MaxParticle= 256,			// maximum number of particles of one type
+const int C4Px_MaxParticle= 256,			// maximum number of particles of one type
 					C4Px_BufSize		= 128,			// number of particles in one buffer
 					C4Px_MaxIDLen		= 30;				// maximum length of internal identifiers
 
@@ -246,9 +243,7 @@ extern char OSTR[500];
 //=================================== Owners ==============================================
 
 const int NO_OWNER				 = -1,
-          ANY_OWNER				 = -2,
-					BY_OWNER				 = 10000,
-					BY_HOSTILE_OWNER = 20000;
+          ANY_OWNER				 = -2;
 
 //=================================== Base functionalities =================================
 

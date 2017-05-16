@@ -20,16 +20,6 @@ CStdDDraw *lpDDraw=NULL;
 CStdPalette *lpDDrawPal=NULL;
 int iGfxEngine=-1;
 
-inline void SetRect(RECT &rect, int left, int top, int right, int bottom)
-  {
-  rect.left=left; rect.top=top; rect.bottom=bottom; rect.right=right;
-  }
-
-inline DWORD GetTextShadowClr(DWORD dwTxtClr)
-	{
-	return RGBA(((dwTxtClr >>  0) % 256) / 3, ((dwTxtClr >>  8) % 256) / 3, ((dwTxtClr >> 16) % 256) / 3,	(dwTxtClr >> 24) % 256);
-	}
-
 void CBltTransform::SetRotate(int iAngle, float fOffX, float fOffY) // set by angle and rotation offset
 	{
 	// iAngle is in 1/100-degrees (cycling from 0 to 36000)
@@ -373,12 +363,6 @@ void CClrModAddMap::AddModulation(int cx, int cy, int iRadius1, int iRadius2, ui
 
 uint32_t CClrModAddMap::GetModAt(int x, int y) const
 	{
-#if 0
-	// fast but inaccurate method
-	x = BoundBy((x - iOffX + iResolutionX/2) / iResolutionX, 0, iWdt-1);
-	y = BoundBy((y - iOffY + iResolutionY/2) / iResolutionY, 0, iHgt-1);
-	return pMap[y * iWdt + x]->dwModClr;
-#else
 	// slower, more accurate method: Interpolate between 4 neighboured modulations
 	x -= iOffX;
 	y -= iOffY;
@@ -388,7 +372,6 @@ uint32_t CClrModAddMap::GetModAt(int x, int y) const
 	int ty2 = Min(ty + 1, iHgt-1);
 	CColorFadeMatrix clrs(tx*iResolutionX, ty*iResolutionY, iResolutionX, iResolutionY, pMap[ty*iWdt+tx].dwModClr, pMap[ty*iWdt+tx2].dwModClr, pMap[ty2*iWdt+tx].dwModClr, pMap[ty2*iWdt+tx2].dwModClr);
 	return clrs.GetColorAt(x, y);
-#endif
 	}
 
 // -------------------------------------------------------------------
@@ -586,18 +569,6 @@ BOOL CStdDDraw::SetPrimaryClipper(int iX1, int iY1, int iX2, int iY2)
 	ClipX1=iX1; ClipY1=iY1; ClipX2=iX2; ClipY2=iY2;
 	UpdateClipper();
 	// Done	
-	return TRUE;
-	}
-
-BOOL CStdDDraw::ApplyPrimaryClipper(SURFACE sfcSurface)
-	{
-	//sfcSurface->SetClipper(lpClipper);
-	return TRUE;
-	}
-
-BOOL CStdDDraw::DetachPrimaryClipper(SURFACE sfcSurface)
-	{
-	//sfcSurface->SetClipper(NULL);
 	return TRUE;
 	}
 

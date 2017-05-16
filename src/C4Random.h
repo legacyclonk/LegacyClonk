@@ -5,10 +5,6 @@
 #ifndef INC_C4Random
 #define INC_C4Random
 
-#ifndef C4ENGINE
-#include <StdRandom.h>
-#endif
-
 #ifdef DEBUGREC
 	#include <C4Record.h>
 #endif
@@ -24,13 +20,6 @@ inline void FixedRandom(DWORD dwSeed)
 	RandomHold=dwSeed; // srand(dwSeed);
 	RandomCount=0;
   }
-
-inline void Randomize()
-	{
-	FixedRandom((unsigned)time(NULL));
-	// for SafeRandom
-	srand((unsigned)time(NULL));
-	}
 
 inline int Random(int iRange)
   {

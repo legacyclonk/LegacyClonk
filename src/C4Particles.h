@@ -126,14 +126,9 @@ class C4ParticleChunk
 		C4ParticleChunk *pNext;						// single linked list
 		C4Particle Data[C4Px_BufSize];		// the particles
 
-		int32_t iNumFree;     // number of free particles
-
 	public:
 		C4ParticleChunk();				// ctor
 		~C4ParticleChunk();				// dtor
-
-		C4Particle *Create(C4ParticleDef *pOfDef); // get a particle from this chunk
-		void Destroy(C4Particle *pPrt);		// remove particle from this chunk
 
 		void Clear();							// clear all particles
 
@@ -164,7 +159,6 @@ class C4ParticleSystem
 		C4ParticleDef *pDef0, *pDefL;	// linked list for particle defs
 
 		C4ParticleChunk *AddChunk();	// add a new chunk to the list
-		void PruneChunks();						// check if all chunks are needed; remove unused
 
 		C4ParticleProc GetProc(const char *szName);					// get init/exec proc for a particle type
 		C4ParticleDrawProc GetDrawProc(const char *szName);	// get draw proc for a particle type

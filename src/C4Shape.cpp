@@ -76,12 +76,6 @@ bool C4TargetRect::ClipBy(C4TargetRect &rClip)
 	return true;
 	}
 
-void C4TargetRect::Set(const C4FacetEx &rSrc)
-	{
-	// copy members
-	x=rSrc.X; y=rSrc.Y; Wdt=rSrc.Wdt; Hgt=rSrc.Hgt; tx=rSrc.TargetX; ty=rSrc.TargetY;
-	}
-
 void C4TargetRect::CompileFunc(StdCompiler *pComp)
 	{
 	C4Rect::CompileFunc(pComp); pComp->Seperator();
@@ -175,11 +169,6 @@ void C4Rect::Add(const C4Rect &r2)
 	else 
 		if (r2.y + r2.Hgt > y + Hgt)
 			Hgt = r2.y + r2.Hgt - y;
-	}
-
-void C4Shape::Clear()
-	{
-	ZeroMem(this, sizeof (C4Shape));
 	}
 
 void C4Shape::Rotate(int32_t iAngle, bool bUpdateVertices)
