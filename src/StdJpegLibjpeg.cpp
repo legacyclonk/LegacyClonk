@@ -89,7 +89,7 @@ struct StdJpeg::Impl
 		source_mgr.term_source = [](j_decompress_ptr) {};
 
 		// a missing image is an error
-		jpeg_read_header(&cinfo, true);
+		jpeg_read_header(&cinfo, TRUE);
 
 		// Let libjpeg convert for us
 		cinfo.out_color_space = JCS_RGB;
