@@ -25,7 +25,7 @@
 #include <C4Wrappers.h>
 #endif
 
-#ifndef _WIN32
+#ifdef USE_X11
 #include <X11/Xlib.h>
 #endif
 
