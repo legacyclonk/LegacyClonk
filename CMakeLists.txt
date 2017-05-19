@@ -189,6 +189,11 @@ if (WITH_DEVELOPER_MODE)
 	target_link_libraries(standard ${GTK2_LIBRARIES})
 endif ()
 
+# Link iconv
+if (HAVE_ICONV)
+	target_link_libraries(clonk iconv)
+endif ()
+
 # Link libjpeg
 if (NOT USE_CONSOLE AND NOT USE_WIC)
 	find_package(JPEG REQUIRED)
