@@ -234,7 +234,7 @@ bool C4Record::Rec(int iFrame, const StdBuf &sBuf, C4RecordChunkType eType)
 	uint32_t iFrameDiff = std::max<uint32_t>(0, iFrame - iLastFrame);
 	iLastFrame += iFrameDiff;
 	// create head
-	C4RecordChunkHead Head = { iFrameDiff, eType };
+	C4RecordChunkHead Head = { static_cast<uint8_t>(iFrameDiff), static_cast<uint8_t>(eType) };
 	// pack
 	CtrlRec.Write(&Head, sizeof(Head));
 	CtrlRec.Write(sBuf.getData(), sBuf.getSize());
