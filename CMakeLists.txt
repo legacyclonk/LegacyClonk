@@ -232,7 +232,7 @@ if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
 	if (USE_SDL_MAINLOOP)
 		set(HAVE_SDL ON)
 	endif ()
-	target_include_directories(standard PRIVATE ${SDL_INCLUDE_DIR})
+	target_include_directories(standard PUBLIC ${SDL_INCLUDE_DIR})
 	target_link_libraries(standard ${SDL_LIBRARY})
 endif ()
 
