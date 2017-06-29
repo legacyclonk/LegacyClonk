@@ -1,3 +1,0 @@
-src/StdXApp.cpp
-src/StdXWindow.cpp
-src/StdXPrivate.h
