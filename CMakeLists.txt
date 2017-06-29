@@ -209,7 +209,7 @@ if (WITH_DEVELOPER_MODE)
 endif ()
 
 # Link iconv
-if (HAVE_ICONV)
+if (HAVE_ICONV AND APPLE)
 	target_link_libraries(clonk iconv)
 endif ()
 
