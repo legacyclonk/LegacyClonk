@@ -15,6 +15,9 @@
  */
 
 #import <AppKit/AppKit.h>
+#import <Standard.h>
+
+#ifndef USE_CONSOLE
 
 void requestUserAttention()
 {
@@ -31,6 +34,8 @@ bool sendFileToTrash(const char *szFilename)
 		files: [NSArray arrayWithObject: [filename lastPathComponent]]
 		tag: 0];
 }
+
+#endif
 
 bool isGerman()
 {

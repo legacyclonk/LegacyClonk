@@ -27,6 +27,10 @@
 #include <gtk/gtkmain.h>
 #endif
 
+#ifdef WIN32
+#include <objbase.h>
+#endif
+
 C4Application Application;
 C4Console Console;
 C4FullScreen FullScreen;
@@ -44,6 +48,17 @@ int WINAPI WinMain(HINSTANCE hInst,
 	// enable debugheap!
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+
+	// Initialize COM library for use by main thread
+	const auto resultCoInit = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	// Make sure CoUninitialize gets called on exit
+	struct ComUninit { ~ComUninit() { CoUninitialize(); } } const comUninit;
+	// Quit if CoInitializeEx failed
+	if (resultCoInit != S_OK)
+	{
+		fprintf(stderr, "Error: CoInitializeEx returned %08X\n", resultCoInit);
+		return C4XRV_Failure;
+	}
 
 	// Init application
 	if (!Application.Init(hInst, nCmdShow, lpszCmdParam))
