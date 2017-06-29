@@ -104,7 +104,11 @@ elseif (APPLE)
 	list(APPEND CLONK_SOURCES ${CLONK_SOURCES_APPLE})
 endif ()
 
-add_executable(clonk WIN32 MACOSX_BUNDLE ${CLONK_SOURCES})
+if (USE_CONSOLE)
+	add_executable(clonk                     ${CLONK_SOURCES})
+else ()
+	add_executable(clonk WIN32 MACOSX_BUNDLE ${CLONK_SOURCES})
+endif ()
 target_compile_definitions(clonk PRIVATE C4ENGINE)
 
 # Add c4group target
