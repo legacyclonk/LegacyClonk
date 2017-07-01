@@ -90,18 +90,21 @@ if (WIN32)
 	set(USE_MSCAPI ON)
 endif ()
 
+# Adds the lines of file LIST_FILE to variable TARGET_LIST
+function(append_filelist TARGET_LIST LIST_FILE)
+	file(STRINGS "cmake/filelists/${LIST_FILE}" FILE_CONTENTS)
+	list(APPEND ${TARGET_LIST} ${FILE_CONTENTS})
+	set(${TARGET_LIST} "${${TARGET_LIST}}" PARENT_SCOPE)
+endfunction()
+
 # Add engine target
 
-set(FILELISTS_DIR "cmake/filelists")
-
-file(STRINGS ${FILELISTS_DIR}/Engine.txt CLONK_SOURCES)
+append_filelist(CLONK_SOURCES Engine.txt)
 
 if (WIN32)
-	file(STRINGS ${FILELISTS_DIR}/EngineWin32.txt CLONK_SOURCES_WIN32)
-	list(APPEND CLONK_SOURCES ${CLONK_SOURCES_WIN32})
+	append_filelist(CLONK_SOURCES EngineWin32.txt)
 elseif (APPLE)
-	file(STRINGS ${FILELISTS_DIR}/EngineApple.txt CLONK_SOURCES_APPLE)
-	list(APPEND CLONK_SOURCES ${CLONK_SOURCES_APPLE})
+	append_filelist(CLONK_SOURCES EngineApple.txt)
 endif ()
 
 if (USE_CONSOLE)
@@ -113,7 +116,7 @@ target_compile_definitions(clonk PRIVATE C4ENGINE)
 
 # Add c4group target
 
-file(STRINGS ${FILELISTS_DIR}/C4Group.txt C4GROUP_SOURCES)
+append_filelist(C4GROUP_SOURCES C4Group.txt)
 if (WIN32)
 	list(APPEND C4GROUP_SOURCES src/c4group_cmdl.cpp)
 else ()
@@ -124,11 +127,10 @@ target_link_libraries(c4group standard)
 
 # Add libstandard target
 
-file(STRINGS ${FILELISTS_DIR}/Std.txt LIBSTANDARD_SOURCES)
+append_filelist(LIBSTANDARD_SOURCES Std.txt)
 
 if (USE_CONSOLE AND NOT WIN32)
-	file(STRINGS ${FILELISTS_DIR}/StdConsoleNonWin32.txt LIBSTANDARD_SOURCES_CONSOLE_NON_WIN32)
-	list(APPEND LIBSTANDARD_SOURCES ${LIBSTANDARD_SOURCES_CONSOLE_NON_WIN32})
+	append_filelist(LIBSTANDARD_SOURCES StdConsoleNonWin32.txt)
 endif ()
 
 if (USE_MSCAPI)
@@ -138,13 +140,11 @@ else ()
 endif ()
 
 if (USE_SDL_MAINLOOP)
-	file(STRINGS ${FILELISTS_DIR}/StdSdl.txt LIBSTANDARD_SOURCES_SDL)
-	list(APPEND LIBSTANDARD_SOURCES ${LIBSTANDARD_SOURCES_SDL})
+	append_filelist(LIBSTANDARD_SOURCES StdSdl.txt)
 endif ()
 
 if (USE_X11)
-	file(STRINGS ${FILELISTS_DIR}/StdX.txt LIBSTANDARD_SOURCES_X)
-	list(APPEND LIBSTANDARD_SOURCES ${LIBSTANDARD_SOURCES_X})
+	append_filelist(LIBSTANDARD_SOURCES StdX.txt)
 endif ()
 
 if (USE_WIC)
@@ -156,13 +156,11 @@ else ()
 endif ()
 
 if (WIN32)
-	file(STRINGS ${FILELISTS_DIR}/StdWin32.txt LIBSTANDARD_SOURCES_WIN32)
-	list(APPEND LIBSTANDARD_SOURCES ${LIBSTANDARD_SOURCES_WIN32})
+	append_filelist(LIBSTANDARD_SOURCES StdWin32.txt)
 endif ()
 
 if (WITH_DEVELOPER_MODE)
-	file(STRINGS ${FILELISTS_DIR}/StdGtk.txt LIBSTANDARD_SOURCES_GTK)
-	list(APPEND LIBSTANDARD_SOURCES ${LIBSTANDARD_SOURCES_GTK})
+	append_filelist(LIBSTANDARD_SOURCES StdGtk.txt)
 endif ()
 
 add_library(standard STATIC ${LIBSTANDARD_SOURCES})
