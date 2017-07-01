@@ -728,7 +728,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	// page graphics
 	C4GUI::ComponentAligner caSheetGraphics(pSheetGraphics->GetClientRect(), iIndentX1, iIndentY1, true);
 	// --subgroup resolution
-	C4GUI::GroupBox *pGroupResolution = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(1, 2, 0, 3));
+	C4GUI::GroupBox *pGroupResolution = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(0, 1, 0, 3));
 	pGroupResolution->SetTitle(LoadResStrNoAmp("IDS_CTL_RESOLUTION"));
 	pGroupResolution->SetFont(pUseFont);
 	pGroupResolution->SetColors(C4StartupEditBorderColor, C4StartupFontClr);
@@ -736,7 +736,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	C4GUI::ComponentAligner caGroupResolution(pGroupResolution->GetClientRect(), iIndentX1, iIndentY2, true);
 	// resolution combobox
 	pUseFont->GetTextExtent("1600 x 1200", w, q, true); w = std::min<int32_t>(caGroupResolution.GetInnerWidth(), w + 40);
-	C4GUI::ComboBox *pGfxResCombo = new C4GUI::ComboBox(caGroupResolution.GetGridCell(0, 1, 0, 4, w, C4GUI::ComboBox::GetDefaultHeight(), true));
+	C4GUI::ComboBox *pGfxResCombo = new C4GUI::ComboBox(caGroupResolution.GetGridCell(0, 1, 0, 4, w, C4GUI::ComboBox::GetDefaultHeight(), false));
 	pGfxResCombo->SetToolTip(LoadResStr("IDS_MSG_RESOLUTION_DESC"));
 	pGfxResCombo->SetComboCB(new C4GUI::ComboBox_FillCallback<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnGfxResComboFill, &C4StartupOptionsDlg::OnGfxResComboSelChange));
 	pGfxResCombo->SetColors(C4StartupFontClr, C4StartupEditBGColor, C4StartupEditBorderColor);
