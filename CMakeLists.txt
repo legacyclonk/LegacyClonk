@@ -11,7 +11,7 @@
 # To redistribute this file separately, substitute the full license texts
 # for the above references.
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.8)
 project("LegacyClonk")
 
 set(CMAKE_CXX_STANDARD 14)
