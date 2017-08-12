@@ -708,7 +708,7 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	if (!SaveInitial())
 		return false;
 
-	// Load diff, if existant
+	// Load diff, if existent
 	ApplyDiff(hGroup);
 
 	// enforce first color to be transparent

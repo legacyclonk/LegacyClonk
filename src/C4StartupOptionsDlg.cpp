@@ -63,7 +63,7 @@ C4StartupOptionsDlg::ResChangeConfirmDlg::ResChangeConfirmDlg()
 	// update-timer
 	// Note that the actual time may be up to 1 second shorter, depending on the current position within the sec1-timer-cycle
 	pSec1Timer = new C4Sec1TimerCallback<ResChangeConfirmDlg>(this);
-	// An independant group of fourteen highly trained apes and one blind lawnmower have determined
+	// An independent group of fourteen highly trained apes and one blind lawnmower have determined
 	//  that twelve seconds is just right for normal people
 	iResChangeSwitchTime = 12;
 	// However, some people need more time

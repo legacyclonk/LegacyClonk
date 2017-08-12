@@ -2017,7 +2017,7 @@ protected:
 	Fade eFade; // fading mode
 	bool fDelOnClose; // auto-delete when closing
 	StdStrBuf TitleString;
-	bool fViewportDlg; // set in ctor: if true, dlg is not independant, but drawn ad controlled within viewports
+	bool fViewportDlg; // set in ctor: if true, dlg is not independent, but drawn ad controlled within viewports
 	DialogWindow *pWindow; // window in console mode
 	CStdGLCtx *pCtx; // rendering context for OpenGL
 	FrameDecoration *pFrameDeco;

@@ -29,7 +29,7 @@ set(EXTRA_DEPS_DIR "deps" CACHE PATH "Additional directory to search for librari
 include_directories(${EXTRA_DEPS_DIR}/include)
 list(APPEND CMAKE_PREFIX_PATH ${EXTRA_DEPS_DIR})
 
-# Check which headers files and functions are present
+# Check which header files and functions are present
 
 CHECK_INCLUDE_FILE_CXX(direct.h           HAVE_DIRECT_H)
 CHECK_INCLUDE_FILE_CXX(execinfo.h         HAVE_EXECINFO_H)
@@ -254,7 +254,7 @@ if (USE_SDL_MIXER)
 	set(HAVE_LIBSDL_MIXER ON)
 endif ()
 
-# Link Windows Imagaing Component
+# Link Windows Imaging Component
 if (USE_WIC)
 	target_link_libraries(standard windowscodecs)
 endif ()

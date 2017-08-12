@@ -2,7 +2,7 @@
 // permanent player information management
 //
 // A separate list of all local and remote player infos is held here,
-// independantely of the global C4PlayerList.
+// independently of the global C4PlayerList.
 // This list is used for:
 // -player information to be known before actual join
 //  (player count for landscape width, team, color, etc.)

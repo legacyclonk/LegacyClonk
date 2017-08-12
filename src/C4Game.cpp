@@ -3795,14 +3795,14 @@ void C4Game::SetInitProgress(float fToProgress)
 
 void C4Game::OnResolutionChanged()
 {
-	// update anything that's dependant on screen resolution
+	// update anything that's dependent on screen resolution
 	if (pGUI)
 		pGUI->SetBounds(C4Rect(0, 0, Config.Graphics.ResX, Config.Graphics.ResY));
 	if (FullScreen.Active)
 		InitFullscreenComponents(!!IsRunning);
 	// note that this may fail if the gfx groups are closed already (runtime resolution change)
 	// doesn't matter; old gfx are kept in this case
-	GraphicsResource.ReloadResolutionDependantFiles();
+	GraphicsResource.ReloadResolutionDependentFiles();
 }
 
 bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)

@@ -248,7 +248,7 @@ void C4MapFolderData::ConvertFacet2ScreenCoord(C4Rect &rcMapArea, bool fAspect)
 	}
 	else
 	{
-		// do not keep aspect: Independant X and Y zoom
+		// do not keep aspect: Independent X and Y zoom
 		fBGZoomX = (float)rcMapArea.Wdt / fctBackgroundPicture.Wdt;;
 		fBGZoomY = (float)rcMapArea.Hgt / fctBackgroundPicture.Hgt;;
 	}

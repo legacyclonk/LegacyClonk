@@ -84,7 +84,7 @@ public:
 	C4ParticleCollisionProc CollisionProc; // procedure called upon collision with the landscape; may be nullptr
 	C4ParticleDrawProc      DrawProc;      // procedure used for drawing of one particle
 
-	int32_t Count; // number of particles currently existant of this kind
+	int32_t Count; // number of particles currently existent of this kind
 
 	C4ParticleDef();
 	~C4ParticleDef();

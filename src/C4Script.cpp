@@ -2296,7 +2296,7 @@ static bool FnSound(C4AulContext *cthr, C4String *szSound, bool fGlobal, C4Objec
 	{
 		// get player to play at
 		C4Player *pPlr = Game.Players.Get(iAtPlayer - 1);
-		// not existant? fail
+		// not existent? fail
 		if (!pPlr) return false;
 		// network client: don't play here
 		// return true for network sync

@@ -186,7 +186,7 @@ public:
 
 protected:
 	bool CreateTextures(); // create ppTex-array
-	void FreeTextures(); // free ppTex-array if existant
+	void FreeTextures(); // free ppTex-array if existent
 
 	friend class CStdDDraw;
 	friend class CPattern;

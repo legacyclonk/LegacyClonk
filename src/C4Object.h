@@ -392,7 +392,7 @@ public:
 	bool SetGraphics(const char *szGraphicsName = nullptr, C4Def *pSourceDef = nullptr); // set used graphics for object; if szGraphicsName or *szGraphicsName are nullptr, the default graphics of the given def are used; pSourceDef defaults to own def
 	bool SetGraphics(C4DefGraphics *pNewGfx, bool fUpdateData); // set used graphics for object
 
-	class C4GraphicsOverlay *GetGraphicsOverlay(int32_t iForID, bool fCreate); // get specified gfx overlay; create if not existant and specified
+	class C4GraphicsOverlay *GetGraphicsOverlay(int32_t iForID, bool fCreate); // get specified gfx overlay; create if not existent and specified
 	bool RemoveGraphicsOverlay(int32_t iOverlayID); // remove specified overlay from the overlay list; return if found
 	bool HasGraphicsOverlayRecursion(const C4Object *pCheckObj) const; // returns whether, at any overlay recursion depth, the given object appears as an MODE_Object-overlay
 	void UpdateScriptPointers(); // update ptrs to C4AulScript *

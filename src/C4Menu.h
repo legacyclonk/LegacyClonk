@@ -144,7 +144,7 @@ protected:
 	bool fHasPortrait; // if set, first menu item is used at a portrait at topleft of menu
 	bool fTextProgressing; // if true, text is being shown progressively (dialog menus)
 	bool fEqualIconItemHeight; // for dialog menus only: If set, all options with an icon are forced to have the same height
-	bool fActive; // set if menu is shown - independant of GUI to keep synchronized when there's no GUI
+	bool fActive; // set if menu is shown - independent of GUI to keep synchronized when there's no GUI
 
 public:
 	bool ConvertCom(int32_t &rCom, int32_t &rData, bool fAsyncConversion);

@@ -256,7 +256,7 @@ C4AulFunc *C4AulScript::GetOverloadedFunc(C4AulFunc *ByFunc)
 	C4AulFunc *f2 = Engine ? Engine->GetFunc(ByFunc->Name, this, ByFunc) : nullptr;
 	assert(f == f2);
 #endif
-	// nothing found? then search owner, if existant
+	// nothing found? then search owner, if existent
 	if (!f && Owner)
 	{
 		if (f = Owner->GetFuncRecursive(ByFunc->Name))
@@ -273,7 +273,7 @@ C4AulFunc *C4AulScript::GetFuncRecursive(const char *pIdtf)
 	// search local list
 	C4AulFunc *f = GetFunc(pIdtf);
 	if (f) return f;
-	// nothing found? then search owner, if existant
+	// nothing found? then search owner, if existent
 	else if (Owner) return Owner->GetFuncRecursive(pIdtf);
 	return nullptr;
 }

@@ -609,7 +609,7 @@ protected:
 	NameNode *pNameRoot, *pName;
 	// Current depth
 	int iDepth;
-	// Real depth (depth of recursive Name()-calls - if iDepth != iRealDepth, we are in a nonexistant namespace)
+	// Real depth (depth of recursive Name()-calls - if iDepth != iRealDepth, we are in a nonexistent namespace)
 	int iRealDepth;
 
 	// Data
@@ -617,7 +617,7 @@ protected:
 	// Position
 	const char *pPos;
 
-	// Reenter position (if an nonexistant separator was specified)
+	// Reenter position (if an nonexistent separator was specified)
 	const char *pReenter;
 
 	// Uppermost name that wasn't found

@@ -91,7 +91,7 @@ public:
 	bool RegisterMainGroups();     // register new groups of Game.GroupSet into own group set
 	void CloseFiles();             // free group set
 
-	bool ReloadResolutionDependantFiles(); // reload any files that depend on the current resolution
+	bool ReloadResolutionDependentFiles(); // reload any files that depend on the current resolution
 
 protected:
 	bool LoadFile(C4FacetExID &fct, const char *szName, C4GroupSet &rGfxSet, int32_t iWdt = C4FCT_Full, int32_t iHgt = C4FCT_Full, bool fNoWarnIfNotFound = false);

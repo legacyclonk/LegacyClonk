@@ -423,7 +423,7 @@ bool C4Player::Save()
 	else
 	{
 		// For non-local players, we can actually use the loaded definition
-		// list to strip out all non-existant definitions. This is only valid
+		// list to strip out all non-existent definitions. This is only valid
 		// because we know the file to be temporary.
 #ifdef C4ENGINE
 		CrewInfoList.Strip(Game.Defs);
@@ -1432,8 +1432,8 @@ bool C4Player::ObjectCommand(int32_t iCommand, C4Object *pTarget, int32_t iX, in
 void C4Player::ObjectCommand2Obj(C4Object *cObj, int32_t iCommand, C4Object *pTarget, int32_t iX, int32_t iY, C4Object *pTarget2, int32_t iData, int32_t iMode)
 {
 	// forward to object
-	if (iMode & C4P_Command_Append) cObj->AddCommand(iCommand, pTarget, iX, iY, 0, pTarget2, true, iData, true, 0, nullptr, C4CMD_Mode_Base); // append: by Shift-click and for dragging of multiple objects (all independant; thus C4CMD_Mode_Base)
-	else if (iMode & C4P_Command_Add) cObj->AddCommand(iCommand, pTarget, iX, iY, 0, pTarget2, true, iData, false, 0, nullptr, C4CMD_Mode_Base); // append: by context menu and keyboard throw command (all independant; thus C4CMD_Mode_Base)
+	if (iMode & C4P_Command_Append) cObj->AddCommand(iCommand, pTarget, iX, iY, 0, pTarget2, true, iData, true, 0, nullptr, C4CMD_Mode_Base); // append: by Shift-click and for dragging of multiple objects (all independent; thus C4CMD_Mode_Base)
+	else if (iMode & C4P_Command_Add) cObj->AddCommand(iCommand, pTarget, iX, iY, 0, pTarget2, true, iData, false, 0, nullptr, C4CMD_Mode_Base); // append: by context menu and keyboard throw command (all independent; thus C4CMD_Mode_Base)
 	else if (iMode & C4P_Command_Set) cObj->SetCommand(iCommand, pTarget, iX, iY, pTarget2, true, iData);
 }
 

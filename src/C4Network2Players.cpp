@@ -254,7 +254,7 @@ void C4Network2Players::UpdateSavegameAssignments(C4ClientPlayerInfos *pNewInfo)
 	while (i--) if (pInfo = pNewInfo->GetPlayerInfo(i))
 		if (id = pInfo->GetAssociatedSavegamePlayerID())
 		{
-			// check for non-existant savegame players
+			// check for non-existent savegame players
 			if (!(pSaveInfo = Game.RestorePlayerInfos.GetPlayerInfoByID(id)))
 			{
 				pInfo->SetAssociatedSavegamePlayer(id = 0);
