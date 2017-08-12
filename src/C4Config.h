@@ -10,8 +10,8 @@
 #define C4CFG_Company "RedWolf Design"
 #define C4CFG_Product "LegacyClonk"
 
-#define C4CFG_LeagueServer   "www.clonk.de:84/league/server"
-#define C4CFG_FallbackServer "www.clonk.de:80/league/server"
+#define C4CFG_LeagueServer   "league.clonkspot.org:80"
+#define C4CFG_FallbackServer "league.clonkspot.org:80"
 
 #define C4CFG_UpdateServer "www.clonkx.de/rage/update" // for download files, replace 'update' with the below
 
