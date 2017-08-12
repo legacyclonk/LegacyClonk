@@ -712,7 +712,9 @@ bool CStdGL::RestoreDeviceObjects()
 	// reset blit states
 	dwBlitMode = 0;
 
-	if (!DDrawCfg.Shader) {}
+	if (!DDrawCfg.Shader)
+	{
+	}
 	else if (!shader && GLEW_ATI_fragment_shader)
 	{
 		shader = glGenFragmentShadersATI(6);
