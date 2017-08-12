@@ -306,6 +306,11 @@ if (MSVC)
 	set(_USE_MATH_DEFINES ON)
 endif ()
 
+# Disable some Visual C++ warnings
+if (MSVC)
+	add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS)
+endif ()
+
 # Create config.h and make sure it will be used and found
 add_definitions(-DHAVE_CONFIG_H)
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
