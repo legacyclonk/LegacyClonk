@@ -29,6 +29,7 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 		wParam = (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE);
 		// fall through to next case
 	case WM_ACTIVATEAPP:
+		ShowWindow(hwnd, (wParam ? SW_RESTORE : SW_MINIMIZE));
 		Application.Active = wParam != 0;
 		if (lpDDraw)
 		{
