@@ -300,16 +300,12 @@ public:
 	void SetClrModMap(CClrModAddMap *pClrModMap) { this->pClrModMap = pClrModMap; }
 	void SetClrModMapEnabled(bool fToVal) { fUseClrModMap = fToVal; }
 	bool GetClrModMapEnabled() const { return fUseClrModMap; }
-	virtual bool StoreStateBlock() = 0;
 	virtual void SetTexture() = 0;
 	virtual void ResetTexture() = 0;
-	virtual bool RestoreStateBlock() = 0;
 
 	// device objects
-	virtual bool InitDeviceObjects() = 0; // init device dependent objects
-	virtual bool RestoreDeviceObjects() = 0; // restore device dependent objects
+	virtual bool RestoreDeviceObjects() = 0; // init/restore device dependent objects
 	virtual bool InvalidateDeviceObjects() = 0; // free device dependent objects
-	virtual bool DeleteDeviceObjects() = 0; // free device dependent objects
 	virtual bool DeviceReady() = 0; // return whether device exists
 
 protected:

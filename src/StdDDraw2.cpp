@@ -649,8 +649,6 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	CBltData BltData;
 	// pass down pTransform
 	BltData.pTransform = pTransform;
-	// store current state
-	StoreStateBlock();
 	// blit with basesfc?
 	bool fBaseSfc = false;
 	if (sfcSource->pMainSfc) if (sfcSource->pMainSfc->ppTex) fBaseSfc = true;
@@ -734,8 +732,6 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	}
 	// reset texture
 	ResetTexture();
-	// restore state
-	RestoreStateBlock();
 	// success
 	return true;
 }

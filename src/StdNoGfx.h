@@ -28,14 +28,10 @@ public:
 	virtual void DrawPixInt(CSurface *, float, float, uint32_t) {}
 	virtual bool ApplyGammaRamp(CGammaControl &, bool) { return true; }
 	virtual bool SaveDefaultGammaRamp(CStdWindow *) { return true; }
-	virtual bool StoreStateBlock() { return true; }
 	virtual void SetTexture() {}
 	virtual void ResetTexture() {}
-	virtual bool RestoreStateBlock() { return true; }
-	virtual bool InitDeviceObjects() { return true; }
 	virtual bool RestoreDeviceObjects() { return true; }
 	virtual bool InvalidateDeviceObjects() { return true; }
-	virtual bool DeleteDeviceObjects() { return true; }
 	virtual bool DeviceReady() { return true; }
 	virtual bool CreatePrimarySurfaces(bool, unsigned int);
 	virtual bool SetOutputAdapter(unsigned int) { return true; }
