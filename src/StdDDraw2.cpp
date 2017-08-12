@@ -690,7 +690,7 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 			// get current blitting offset in texture (beforing any last-tex-size-changes)
 			int iBlitX = iTexSize * iX;
 			int iBlitY = iTexSize * iY;
-			// size changed? recalc dependant, relevant (!) values
+			// size changed? recalc dependent, relevant (!) values
 			if (iTexSize != pTex->iSize)
 			{
 				iTexSize = pTex->iSize;

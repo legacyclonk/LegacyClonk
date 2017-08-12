@@ -1380,7 +1380,7 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 			SCopy(PlrName.getData(), C4P.PrefName, C4MaxName);
 			C4Group PlrGroup;
 			bool fSucc = false;
-			// existant player: update file
+			// existent player: update file
 			if (pForPlayer)
 			{
 				if (!pForPlayer->MoveFilename(Filename.getData()))

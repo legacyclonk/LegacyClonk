@@ -2070,7 +2070,7 @@ bool C4Object::TrainPhysical(C4PhysicalInfo::Offset mpiOffset, int32_t iTrainBy,
 	int i = 0;
 	// Train temp
 	if (PhysicalTemporary) { TemporaryPhysical.Train(mpiOffset, iTrainBy, iMaxTrain); ++i; }
-	// train permanent, if existant
+	// train permanent, if existent
 	// this also trains if fair crew is used!
 	if (Info) { Info->Physical.Train(mpiOffset, iTrainBy, iMaxTrain); ++i; }
 	// return whether anything was trained
@@ -5533,7 +5533,7 @@ void C4Object::FinishedDrawing()
 
 void C4Object::UpdateSolidMask(bool fRestoreAttachedObjects)
 {
-	// solidmask doesn't make sense with non-existant objects
+	// solidmask doesn't make sense with non-existent objects
 	// (the solidmask has already been destroyed in AssignRemoval -
 	//  do not reset it!)
 	if (!Status) return;

@@ -27,7 +27,7 @@ class ResTable
 public:
 	ResTable(const char *table) : Capacity(int(1.10 * SCharCount('\n', table))), Count(0), Entries(new Entry[Capacity])
 	{
-		// reduce the capacity so that there is always an empty entry to mark the end of the search for an nonexistant key
+		// reduce the capacity so that there is always an empty entry to mark the end of the search for an nonexistent key
 		--Capacity;
 		while (Count < Capacity)
 		{

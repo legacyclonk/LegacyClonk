@@ -152,7 +152,7 @@ private:
 
 public:
 	C4Team *GetTeamByID(int32_t iID) const; // get team by ID
-	C4Team *GetGenerateTeamByID(int32_t iID); // get team by ID; generate if not existant. Always generate for TEAMID_New.
+	C4Team *GetGenerateTeamByID(int32_t iID); // get team by ID; generate if not existent. Always generate for TEAMID_New.
 	C4Team *GetTeamByIndex(int32_t iIndex) const; // get team by list index, to enumerate all teams
 	C4Team *GetTeamByPlayerID(int32_t iID) const; // get team by player ID (not number!)
 	int32_t GetLargestTeamID() const;

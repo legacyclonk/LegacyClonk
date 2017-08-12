@@ -431,7 +431,7 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 			// get current blitting offset in texture (beforing any last-tex-size-changes)
 			int iBlitX = iTexSize * iX;
 			int iBlitY = iTexSize * iY;
-			// size changed? recalc dependant, relevant (!) values
+			// size changed? recalc dependent, relevant (!) values
 			if (iTexSize != pTex->iSize)
 			{
 				iTexSize = pTex->iSize;

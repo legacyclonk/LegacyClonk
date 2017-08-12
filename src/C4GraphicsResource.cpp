@@ -309,7 +309,7 @@ bool C4GraphicsResource::LoadCursorGfx()
 		if (!LoadFile(fctMouseCursor, szCursorFilename, Files, C4FCT_Height))
 			return false;
 	}
-	// adjust dependant faces
+	// adjust dependent faces
 	int32_t iCursorSize = fctMouseCursor.Hgt;
 	if (iCursorSize == 13)
 	{
@@ -452,7 +452,7 @@ bool C4GraphicsResource::LoadFile(C4Surface &sfc, const char *szName, C4GroupSet
 	return true;
 }
 
-bool C4GraphicsResource::ReloadResolutionDependantFiles()
+bool C4GraphicsResource::ReloadResolutionDependentFiles()
 {
 	// reload any files that depend on the current resolution
 	// reloads the cursor
