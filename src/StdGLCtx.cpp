@@ -28,19 +28,19 @@
 
 #ifdef _WIN32
 
-CStdGLCtx::CStdGLCtx() : hrc(0), pWindow(0), hDC(0), cx(0), cy(0) {}
+CStdGLCtx::CStdGLCtx() : hrc(nullptr), pWindow(nullptr), hDC(nullptr), cx(0), cy(0) {}
 
 void CStdGLCtx::Clear()
 {
 	if (hrc)
 	{
 		Deselect();
-		wglDeleteContext(hrc); hrc = 0;
+		wglDeleteContext(hrc); hrc = nullptr;
 	}
 	if (hDC)
 	{
 		ReleaseDC(pWindow ? pWindow->hWindow : hWindow, hDC);
-		hDC = 0;
+		hDC = nullptr;
 	}
 	pWindow = 0; cx = cy = 0; hWindow = nullptr;
 }
@@ -191,7 +191,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 
 #include <X11/extensions/xf86vmode.h>
 
-CStdGLCtx::CStdGLCtx() : pWindow(0), ctx(0), cx(0), cy(0) {}
+CStdGLCtx::CStdGLCtx() : pWindow(nullptr), ctx(nullptr), cx(0), cy(0) {}
 
 void CStdGLCtx::Clear()
 {
@@ -199,9 +199,9 @@ void CStdGLCtx::Clear()
 	if (ctx)
 	{
 		glXDestroyContext(pWindow->dpy, ctx);
-		ctx = 0;
+		ctx = nullptr;
 	}
-	pWindow = 0;
+	pWindow = nullptr;
 	cx = cy = 0;
 }
 
@@ -329,7 +329,7 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 	XF86VidModeGetGammaRampSize(dpy, DefaultScreen(dpy), &gammasize);
 	if (gammasize != 256)
 	{
-		DefRamp.Set(0x000000, 0x808080, 0xffffff, gammasize, 0);
+		DefRamp.Set(0x000000, 0x808080, 0xffffff, gammasize, nullptr);
 		LogF("  Size of GammaRamp is %d, not 256", gammasize);
 	}
 	// store default gamma
@@ -345,11 +345,11 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 
 #elif defined(USE_SDL_MAINLOOP)
 
-CStdGLCtx::CStdGLCtx() : pWindow(0), cx(0), cy(0) {}
+CStdGLCtx::CStdGLCtx() : pWindow(nullptr), cx(0), cy(0) {}
 
 void CStdGLCtx::Clear()
 {
-	pWindow = 0;
+	pWindow = nullptr;
 	cx = cy = 0;
 }
 

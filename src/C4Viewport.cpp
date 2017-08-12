@@ -206,7 +206,7 @@ CStdWindow *C4ViewportWindow::Init(CStdApp *pApp, const char *Title, CStdWindow 
 		C4ViewportClassName, Title, C4ViewportWindowStyle,
 		CW_USEDEFAULT, CW_USEDEFAULT, 400, 250,
 		pParent->hWindow, nullptr, pApp->hInstance, nullptr);
-	return hWindow ? this : 0;
+	return hWindow ? this : nullptr;
 }
 
 bool C4Viewport::DropFiles(HANDLE hDrop)
