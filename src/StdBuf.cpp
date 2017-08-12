@@ -136,7 +136,7 @@ void StdStrBuf::AppendFormatV(const char *szFmt, va_list args)
 	if (!IsSafeFormatString(szFmt))
 	{
 		BREAKPOINT_HERE
-			szFmt = "<UNSAFE FORMAT STRING>";
+		szFmt = "<UNSAFE FORMAT STRING>";
 	}
 #ifdef HAVE_VASPRINTF
 	// Format

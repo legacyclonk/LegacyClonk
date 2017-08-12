@@ -280,12 +280,10 @@ void C4ComponentHost::Open()
 	pCmpHost = this;
 
 #if defined(C4ENGINE) && defined(_WIN32)
-
 	DialogBox(Application.hInstance,
 		MAKEINTRESOURCE(IDD_COMPONENT),
 		Application.pWindow->hWindow,
 		(DLGPROC)ComponentDlgProc);
-
 #endif
 
 	pCmpHost = nullptr;
