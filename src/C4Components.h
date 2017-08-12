@@ -122,7 +122,6 @@
 #define C4CFN_BitmapFiles     "*.bmp"
 #define C4CFN_ScenarioFiles   "*.c4s"
 #define C4CFN_FolderFiles     "*.c4f"
-#define C4CFN_AnimationFiles  "*.c4v"
 #define C4CFN_ScriptFiles     "*.c"
 #define C4CFN_ImageFiles      "*.png|*.bmp|*.jpeg|*.jpg"
 #define C4CFN_FontFiles       "*.fon|*.fnt|*.ttf|*.ttc|*.fot|*.otf"
