@@ -40,8 +40,6 @@
 
 class CStdWindow;
 
-void glColorDw(uint32_t dwClr);
-
 // one OpenGL context
 class CStdGLCtx
 {
@@ -134,14 +132,10 @@ public:
 	virtual bool SaveDefaultGammaRamp(CStdWindow *pWindow);
 
 	// device objects
-	bool InitDeviceObjects(); // init device dependent objects
-	bool RestoreDeviceObjects(); // restore device dependent objects
+	bool RestoreDeviceObjects(); // init/restore device dependent objects
 	bool InvalidateDeviceObjects(); // free device dependent objects
-	bool DeleteDeviceObjects(); // free device dependent objects
-	bool StoreStateBlock();
 	void SetTexture();
 	void ResetTexture();
-	bool RestoreStateBlock();
 #ifdef _WIN32
 	bool DeviceReady() { return !!MainCtx.hrc; }
 #elif defined(USE_X11)

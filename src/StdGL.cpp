@@ -28,9 +28,13 @@
 #include <math.h>
 #include <limits.h>
 
-void glColorDw(uint32_t dwClr)
+static void glColorDw(const uint32_t dwClr)
 {
-	glColor4ub(GLubyte(dwClr >> 16), GLubyte(dwClr >> 8), GLubyte(dwClr), GLubyte(dwClr >> 24));
+	glColor4ub(
+		static_cast<GLubyte>(dwClr >> 16),
+		static_cast<GLubyte>(dwClr >> 8),
+		static_cast<GLubyte>(dwClr),
+		static_cast<GLubyte>(dwClr >> 24));
 }
 
 CStdGL::CStdGL()
@@ -55,7 +59,21 @@ void CStdGL::Clear()
 #endif
 	NoPrimaryClipper();
 	if (pTexMgr) pTexMgr->IntUnlock();
-	DeleteDeviceObjects();
+	InvalidateDeviceObjects();
+	NoPrimaryClipper();
+	// del font objects
+	// del main surfaces
+	delete lpPrimary;
+	lpPrimary = lpBack = nullptr;
+	RenderTarget = nullptr;
+	// clear context
+	if (pCurrCtx) pCurrCtx->Deselect();
+	MainCtx.Clear();
+	// restore display mode
+	// when using the SDL, better let it do this when calling SDL_Cleanup!
+#ifndef USE_SDL_MAINLOOP
+	pApp->SetFullScreen(false, false);
+#endif
 	MainCtx.Clear();
 	pCurrCtx = nullptr;
 #ifndef USE_SDL_MAINLOOP
@@ -63,7 +81,7 @@ void CStdGL::Clear()
 #endif
 }
 
-bool CStdGL::PageFlip(RECT *pSrcRt, RECT *pDstRt, CStdWindow *pWindow)
+bool CStdGL::PageFlip(RECT *, RECT *, CStdWindow *)
 {
 	// call from gfx thread only!
 	if (!pApp || !pApp->AssertMainThread()) return false;
@@ -75,10 +93,14 @@ bool CStdGL::PageFlip(RECT *pSrcRt, RECT *pDstRt, CStdWindow *pWindow)
 	return true;
 }
 
-void CStdGL::FillBG(uint32_t dwClr)
+void CStdGL::FillBG(const uint32_t dwClr)
 {
-	if (!pCurrCtx) if (!MainCtx.Select()) return;
-	glClearColor((float)GetBValue(dwClr) / 255.0f, (float)GetGValue(dwClr) / 255.0f, (float)GetRValue(dwClr) / 255.0f, 1.0f);
+	if (!pCurrCtx && !MainCtx.Select()) return;
+	glClearColor(
+		GetBValue(dwClr) / 255.0f,
+		GetGValue(dwClr) / 255.0f,
+		GetRValue(dwClr) / 255.0f,
+		1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -91,19 +113,20 @@ bool CStdGL::UpdateClipper()
 	glViewport(iX, RenderTarget->Hgt - iY - iHgt, iWdt, iHgt);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D((GLdouble)iX, (GLdouble)(iX + iWdt), (GLdouble)(iY + iHgt), (GLdouble)iY);
+	gluOrtho2D(
+		static_cast<GLdouble>(iX),        static_cast<GLdouble>(iX + iWdt),
+		static_cast<GLdouble>(iY + iHgt), static_cast<GLdouble>(iY));
 	return true;
 }
 
-bool CStdGL::PrepareRendering(CSurface *sfcToSurface)
+bool CStdGL::PrepareRendering(CSurface *const sfcToSurface)
 {
 	// call from gfx thread only!
 	if (!pApp || !pApp->AssertMainThread()) return false;
 	// device?
-	if (!pCurrCtx) if (!MainCtx.Select()) return false;
+	if (!pCurrCtx && !MainCtx.Select()) return false;
 	// not ready?
-	if (!Active)
-		return false;
+	if (!Active) return false;
 	// target?
 	if (!sfcToSurface) return false;
 	// target locked?
@@ -122,17 +145,17 @@ bool CStdGL::PrepareRendering(CSurface *sfcToSurface)
 	return true;
 }
 
-void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact)
+void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
+	const uint32_t dwModClr, bool fMod2, const bool fExact)
 {
 	// global modulation map
-	int i;
 	uint32_t dwModMask = 0;
 	bool fAnyModNotBlack;
 	bool fModClr = false;
 	if (fUseClrModMap && dwModClr)
 	{
 		fAnyModNotBlack = false;
-		for (i = 0; i < rBltData.byNumVertices; ++i)
+		for (int i = 0; i < rBltData.byNumVertices; ++i)
 		{
 			float x = rBltData.vtVtx[i].ftx;
 			float y = rBltData.vtVtx[i].fty;
@@ -142,7 +165,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bo
 			}
 			rBltData.vtVtx[i].dwModClr = pClrModMap->GetModAt(x, y);
 			if (rBltData.vtVtx[i].dwModClr >> 24) dwModMask = 0xff000000;
-			ModulateClr((uint32_t &)rBltData.vtVtx[i].dwModClr, dwModClr);
+			ModulateClr(rBltData.vtVtx[i].dwModClr, dwModClr);
 			if (rBltData.vtVtx[i].dwModClr) fAnyModNotBlack = true;
 			if (rBltData.vtVtx[i].dwModClr != 0xffffff) fModClr = true;
 		}
@@ -150,7 +173,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bo
 	else
 	{
 		fAnyModNotBlack = !!dwModClr;
-		for (i = 0; i < rBltData.byNumVertices; ++i)
+		for (int i = 0; i < rBltData.byNumVertices; ++i)
 			rBltData.vtVtx[i].dwModClr = dwModClr;
 		if (dwModClr != 0xffffff) fModClr = true;
 	}
@@ -159,14 +182,14 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bo
 	if (shader)
 	{
 		glEnable(GL_FRAGMENT_SHADER_ATI);
-		if (!fModClr)
-			glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
+		if (!fModClr) glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
 		dwModMask = 0;
 		if (Saturation < 255)
 		{
 			glBindFragmentShaderATI(fMod2 ? shader + 3 : shader + 2);
-			GLfloat bla[4] = { Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
-			glSetFragmentShaderConstantATI(GL_CON_1_ATI, bla);
+			const GLfloat value[4] =
+				{ Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
+			glSetFragmentShaderConstantATI(GL_CON_1_ATI, value);
 		}
 		else
 		{
@@ -176,14 +199,14 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bo
 	else if (shaders[0])
 	{
 		glEnable(GL_FRAGMENT_PROGRAM_ARB);
-		if (!fModClr)
-			glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
+		if (!fModClr) glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
 		dwModMask = 0;
 		if (Saturation < 255)
 		{
 			glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, shaders[fMod2 ? 3 : 2]);
-			GLfloat bla[4] = { Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
-			glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 0, bla);
+			const GLfloat value[4] =
+				{ Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
+			glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 0, value);
 		}
 		else
 		{
@@ -241,7 +264,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bo
 	glMatrixMode(GL_MODELVIEW);
 	if (rBltData.pTransform)
 	{
-		float *mat = rBltData.pTransform->mat;
+		const float *const mat = rBltData.pTransform->mat;
 		matrix[ 0] = mat[0]; matrix[ 1] = mat[3]; matrix[ 2] = 0; matrix[ 3] = mat[6];
 		matrix[ 4] = mat[1]; matrix[ 5] = mat[4]; matrix[ 6] = 0; matrix[ 7] = mat[7];
 		matrix[ 8] = 0;      matrix[ 9] = 0;      matrix[10] = 1; matrix[11] = 0;
@@ -255,11 +278,12 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bo
 
 	// draw polygon
 	glBegin(GL_POLYGON);
-	for (i = 0; i < rBltData.byNumVertices; ++i)
+	for (int i = 0; i < rBltData.byNumVertices; ++i)
 	{
-		if (fModClr) glColorDw(rBltData.vtVtx[i].dwModClr | dwModMask);
-		glTexCoord2f(rBltData.vtVtx[i].ftx, rBltData.vtVtx[i].fty);
-		glVertex2f(rBltData.vtVtx[i].ftx, rBltData.vtVtx[i].fty);
+		const auto &vtx = rBltData.vtVtx[i];
+		if (fModClr) glColorDw(vtx.dwModClr | dwModMask);
+		glTexCoord2f(vtx.ftx, vtx.fty);
+		glVertex2f(vtx.ftx, vtx.fty);
 	}
 	glEnd();
 	glLoadIdentity();
@@ -278,8 +302,9 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bo
 	}
 }
 
-void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *sfcLiquidAnimation, int fx, int fy,
-	CSurface *sfcTarget, int tx, int ty, int wdt, int hgt)
+void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2,
+	CSurface *const sfcLiquidAnimation, const int fx, const int fy,
+	CSurface *const sfcTarget, const int tx, const int ty, const int wdt, const int hgt)
 {
 	// safety
 	if (!sfcSource || !sfcTarget || !wdt || !hgt) return;
@@ -294,18 +319,15 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 	// prepare rendering to surface
 	if (!PrepareRendering(sfcTarget)) return;
 	// texture present?
-	if (!sfcSource->ppTex)
-	{
-		return;
-	}
+	if (!sfcSource->ppTex) return;
 	// blit with basesfc?
 	bool fBaseSfc = false;
 	// get involved texture offsets
 	int iTexSize = sfcSource->iTexSize;
-	int iTexX = (std::max)(int(fx / iTexSize), 0);
-	int iTexY = (std::max)(int(fy / iTexSize), 0);
-	int iTexX2 = (std::min)((int)(fx + wdt - 1) / iTexSize + 1, sfcSource->iTexX);
-	int iTexY2 = (std::min)((int)(fy + hgt - 1) / iTexSize + 1, sfcSource->iTexY);
+	const int iTexX = (std::max)(fx / iTexSize, 0);
+	const int iTexY = (std::max)(fy / iTexSize, 0);
+	const int iTexX2 = (std::min)((fx + wdt - 1) / iTexSize + 1, sfcSource->iTexX);
+	const int iTexY2 = (std::min)((fy + hgt - 1) / iTexSize + 1, sfcSource->iTexY);
 	// blit from all these textures
 	SetTexture();
 	if (sfcSource2)
@@ -324,13 +346,13 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 		if (sfcSource2)
 		{
 			glBindFragmentShaderATI(shader + 4);
-			static GLfloat bla[4] = { -0.6f / 3, 0.0f, 0.6f / 3, 0.0f };
-			bla[0] += 0.05f; bla[1] += 0.05f; bla[2] += 0.05f;
+			static GLfloat value[4] = { -0.6f / 3, 0.0f, 0.6f / 3, 0.0f };
+			value[0] += 0.05f; value[1] += 0.05f; value[2] += 0.05f;
 			GLfloat mod[4];
 			for (int i = 0; i < 3; ++i)
 			{
-				if (bla[i] > 0.9f) bla[i] = -0.3f;
-				mod[i] = (bla[i] > 0.3f ? 0.6f - bla[i] : bla[i]) / 3.0f;
+				if (value[i] > 0.9f) value[i] = -0.3f;
+				mod[i] = (value[i] > 0.3f ? 0.6f - value[i] : value[i]) / 3.0f;
 			}
 			mod[3] = 0;
 			glSetFragmentShaderConstantATI(GL_CON_2_ATI, mod);
@@ -338,8 +360,9 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 		else if (Saturation < 255)
 		{
 			glBindFragmentShaderATI(shader + 2);
-			GLfloat bla[4] = { Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
-			glSetFragmentShaderConstantATI(GL_CON_1_ATI, bla);
+			const GLfloat value[4] =
+				{ Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
+			glSetFragmentShaderConstantATI(GL_CON_1_ATI, value);
 		}
 		else
 		{
@@ -353,13 +376,13 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 		if (sfcSource2)
 		{
 			glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, shaders[4]);
-			static GLfloat bla[4] = { -0.6f / 3, 0.0f, 0.6f / 3, 0.0f };
-			bla[0] += 0.05f; bla[1] += 0.05f; bla[2] += 0.05f;
+			static GLfloat value[4] = { -0.6f / 3, 0.0f, 0.6f / 3, 0.0f };
+			value[0] += 0.05f; value[1] += 0.05f; value[2] += 0.05f;
 			GLfloat mod[4];
 			for (int i = 0; i < 3; ++i)
 			{
-				if (bla[i] > 0.9f) bla[i] = -0.3f;
-				mod[i] = (bla[i] > 0.3f ? 0.6f - bla[i] : bla[i]) / 3.0f;
+				if (value[i] > 0.9f) value[i] = -0.3f;
+				mod[i] = (value[i] > 0.3f ? 0.6f - value[i] : value[i]) / 3.0f;
 			}
 			mod[3] = 0;
 			glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 1, mod);
@@ -367,8 +390,9 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 		else if (Saturation < 255)
 		{
 			glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, shaders[2]);
-			GLfloat bla[4] = { Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
-			glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 0, bla);
+			const GLfloat value[4] =
+				{ Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
+			glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 0, value);
 		}
 		else
 		{
@@ -413,15 +437,14 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 		for (int iX = iTexX; iX < iTexX2; ++iX)
 		{
 			// blit
-			uint32_t dwModClr = BlitModulated ? BlitModulateClr : 0xffffff;
+			const uint32_t dwModClr = BlitModulated ? BlitModulateClr : 0xffffff;
 
-			if (sfcSource2)
-				glActiveTexture(GL_TEXTURE0);
-			CTexRef *pTex = *(sfcSource->ppTex + iY * sfcSource->iTexX + iX);
+			if (sfcSource2) glActiveTexture(GL_TEXTURE0);
+			const auto *const pTex = *(sfcSource->ppTex + iY * sfcSource->iTexX + iX);
 			glBindTexture(GL_TEXTURE_2D, pTex->texName);
 			if (sfcSource2)
 			{
-				CTexRef *pTex = *(sfcSource2->ppTex + iY * sfcSource2->iTexX + iX);
+				const auto *const pTex = *(sfcSource2->ppTex + iY * sfcSource2->iTexX + iX);
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, pTex->texName);
 			}
@@ -429,26 +452,23 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 			// draw polygon
 			glBegin(GL_POLYGON);
 			// get current blitting offset in texture (beforing any last-tex-size-changes)
-			int iBlitX = iTexSize * iX;
-			int iBlitY = iTexSize * iY;
+			const int iBlitX = iTexSize * iX;
+			const int iBlitY = iTexSize * iY;
 			// size changed? recalc dependent, relevant (!) values
-			if (iTexSize != pTex->iSize)
-			{
-				iTexSize = pTex->iSize;
-			}
+			if (iTexSize != pTex->iSize) iTexSize = pTex->iSize;
 			// get new texture source bounds
 			FLOAT_RECT fTexBlt;
 			// get new dest bounds
 			FLOAT_RECT tTexBlt;
 			// set up blit data as rect
-			fTexBlt.left = std::max<float>((float)(fx - iBlitX), 0.0f);
-			tTexBlt.left = (float)((fTexBlt.left + iBlitX - fx) + tx);
-			fTexBlt.top  = std::max<float>((float)(fy - iBlitY), 0.0f);
-			tTexBlt.top  = (float)((fTexBlt.top + iBlitY - fy) + ty);
-			fTexBlt.right  = std::min<float>((float)(fx + wdt - iBlitX), (float)iTexSize);
-			tTexBlt.right  = (float)((fTexBlt.right + iBlitX - fx) + tx);
-			fTexBlt.bottom = std::min<float>((float)(fy + hgt - iBlitY), (float)iTexSize);
-			tTexBlt.bottom = (float)((fTexBlt.bottom + iBlitY - fy) + ty);
+			fTexBlt.left = std::max<float>(fx - iBlitX, 0.0f);
+			tTexBlt.left = ((fTexBlt.left + iBlitX - fx) + tx);
+			fTexBlt.top  = std::max<float>(fy - iBlitY, 0.0f);
+			tTexBlt.top  = fTexBlt.top + iBlitY - fy + ty;
+			fTexBlt.right  = std::min<float>(fx + wdt - iBlitX, iTexSize);
+			tTexBlt.right  = fTexBlt.right + iBlitX - fx + tx;
+			fTexBlt.bottom = std::min<float>(fy + hgt - iBlitY, iTexSize);
+			tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
 			float ftx[4]; float fty[4]; // blit positions
 			ftx[0] = tTexBlt.left;  fty[0] = tTexBlt.top;
 			ftx[1] = tTexBlt.right; fty[1] = tTexBlt.top;
@@ -462,27 +482,31 @@ void CStdGL::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *
 
 			uint32_t fdwModClr[4]; // color modulation
 			// global modulation map
-			int i;
 			if (fUseClrModMap && dwModClr)
 			{
-				for (i = 0; i < 4; ++i)
+				for (int i = 0; i < 4; ++i)
 				{
-					fdwModClr[i] = pClrModMap->GetModAt(int(ftx[i]), int(fty[i]));
-					ModulateClr((uint32_t &)fdwModClr[i], dwModClr);
+					fdwModClr[i] = pClrModMap->GetModAt(
+						static_cast<int>(ftx[i]), static_cast<int>(fty[i]));
+					ModulateClr(fdwModClr[i], dwModClr);
 				}
 			}
 			else
 			{
-				for (i = 0; i < 4; ++i)
-					fdwModClr[i] = dwModClr;
+				std::fill(fdwModClr, std::end(fdwModClr), dwModClr);
 			}
 
-			for (i = 0; i < 4; ++i)
+			for (int i = 0; i < 4; ++i)
 			{
 				glColorDw(fdwModClr[i] | dwModMask);
-				glTexCoord2f((tcx[i] + DDrawCfg.fTexIndent) / iTexSize, (tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
+				glTexCoord2f((tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
+					(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
 				if (sfcSource2)
-					glMultiTexCoord2f(GL_TEXTURE1_ARB, (tcx[i] + DDrawCfg.fTexIndent) / iTexSize, (tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
+				{
+					glMultiTexCoord2f(GL_TEXTURE1_ARB,
+						(tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
+						(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
+				}
 				glVertex2f(ftx[i] + DDrawCfg.fBlitOff, fty[i] + DDrawCfg.fBlitOff);
 			}
 
@@ -515,12 +539,12 @@ bool CStdGL::CreateDirectDraw()
 	return true;
 }
 
-CStdGLCtx *CStdGL::CreateContext(CStdWindow *pWindow, CStdApp *pApp)
+CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 {
 	// safety
 	if (!pWindow) return nullptr;
 	// create it
-	CStdGLCtx *pCtx = new CStdGLCtx();
+	const auto pCtx = new CStdGLCtx();
 	if (!pCtx->Init(pWindow, pApp))
 	{
 		delete pCtx; Error("  gl: Error creating secondary context!"); return nullptr;
@@ -530,12 +554,12 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *pWindow, CStdApp *pApp)
 }
 
 #ifdef _WIN32
-CStdGLCtx *CStdGL::CreateContext(HWND hWindow, CStdApp *pApp)
+CStdGLCtx *CStdGL::CreateContext(const HWND hWindow, CStdApp *const pApp)
 {
 	// safety
 	if (!hWindow) return nullptr;
 	// create it
-	CStdGLCtx *pCtx = new CStdGLCtx();
+	const auto pCtx = new CStdGLCtx();
 	if (!pCtx->Init(nullptr, pApp, hWindow))
 	{
 		delete pCtx; Error("  gl: Error creating secondary context!"); return nullptr;
@@ -545,7 +569,7 @@ CStdGLCtx *CStdGL::CreateContext(HWND hWindow, CStdApp *pApp)
 }
 #endif
 
-bool CStdGL::CreatePrimarySurfaces(bool Playermode, unsigned int iMonitor)
+bool CStdGL::CreatePrimarySurfaces(const bool Playermode, const unsigned int iMonitor)
 {
 	// remember fullscreen setting
 	fFullscreen = Playermode && !DDrawCfg.Windowed;
@@ -583,10 +607,11 @@ bool CStdGL::CreatePrimarySurfaces(bool Playermode, unsigned int iMonitor)
 	if (!MainCtx.Init(pApp->pWindow, pApp)) return Error("  gl: Error initializing context");
 
 	// done, init device stuff
-	return InitDeviceObjects();
+	return RestoreDeviceObjects();
 }
 
-void CStdGL::DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
+void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
+	uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
 {
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
@@ -612,7 +637,7 @@ void CStdGL::DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32
 	else
 		glShadeModel((dwClr1 == dwClr2 && dwClr1 == dwClr3 && dwClr1 == dwClr4) ? GL_FLAT : GL_SMOOTH);
 	// set blitting state
-	int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
+	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, iAdditive ? GL_ONE : GL_SRC_ALPHA);
 	// draw two triangles
 	glBegin(GL_POLYGON);
@@ -624,7 +649,8 @@ void CStdGL::DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32
 	glShadeModel(GL_FLAT);
 }
 
-void CStdGL::DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr)
+void CStdGL::DrawLineDw(CSurface *const sfcTarget,
+	const float x1, const float y1, const float x2, const float y2, uint32_t dwClr)
 {
 	// apply color modulation
 	ClrByCurrentBlitMod(dwClr);
@@ -633,7 +659,7 @@ void CStdGL::DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
 	// set blitting state
-	int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
+	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
 	// use a different blendfunc here, because GL_LINE_SMOOTH expects this one
 	glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
 	// draw one line
@@ -642,27 +668,30 @@ void CStdGL::DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float
 	uint32_t dwClr1 = dwClr;
 	if (fUseClrModMap)
 	{
-		ModulateClr(dwClr1, pClrModMap->GetModAt((int)x1, (int)y1));
+		ModulateClr(dwClr1, pClrModMap->GetModAt(
+			static_cast<int>(x1), static_cast<int>(y1)));
 	}
 	// convert from clonk-alpha to GL_LINE_SMOOTH alpha
 	glColorDw(InvertRGBAAlpha(dwClr1));
 	glVertex2f(x1 + 0.5f, y1 + 0.5f);
 	if (fUseClrModMap)
 	{
-		ModulateClr(dwClr, pClrModMap->GetModAt((int)x2, (int)y2));
+		ModulateClr(dwClr, pClrModMap->GetModAt(
+			static_cast<int>(x2), static_cast<int>(y2)));
 		glColorDw(InvertRGBAAlpha(dwClr));
 	}
 	glVertex2f(x2 + 0.5f, y2 + 0.5f);
 	glEnd();
 }
 
-void CStdGL::DrawPixInt(CSurface *sfcTarget, float tx, float ty, uint32_t dwClr)
+void CStdGL::DrawPixInt(CSurface *const sfcTarget,
+	const float tx, const float ty, const uint32_t dwClr)
 {
 	// render target?
 	assert(sfcTarget->IsRenderTarget());
 
 	if (!PrepareRendering(sfcTarget)) return;
-	int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
+	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
 	// use a different blendfunc here because of GL_POINT_SMOOTH
 	glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
 	// convert the alpha value for that blendfunc
@@ -672,21 +701,15 @@ void CStdGL::DrawPixInt(CSurface *sfcTarget, float tx, float ty, uint32_t dwClr)
 	glEnd();
 }
 
-bool CStdGL::InitDeviceObjects()
-{
-	bool fSuccess = true;
-	// restore everything
-	return fSuccess && RestoreDeviceObjects();
-}
-
-static void DefineShaderARB(const char *p, GLuint &s)
+static void DefineShaderARB(const char *const p, GLuint &s)
 {
 	glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, s);
 	glProgramStringARB(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, strlen(p), p);
 	if (GL_INVALID_OPERATION == glGetError())
 	{
 		GLint errPos; glGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &errPos);
-		fprintf(stderr, "ARB program%d:%d: Error: %s\n", s, errPos, glGetString(GL_PROGRAM_ERROR_STRING_ARB));
+		fprintf(stderr, "ARB program%d:%d: Error: %s\n",
+			s, errPos, glGetString(GL_PROGRAM_ERROR_STRING_ARB));
 		s = 0;
 	}
 }
@@ -697,18 +720,16 @@ bool CStdGL::RestoreDeviceObjects()
 	if (!lpPrimary) return false;
 	// delete any previous objects
 	InvalidateDeviceObjects();
-	bool fSuccess = true;
 	// restore primary/back
 	RenderTarget = lpPrimary;
 	lpPrimary->AttachSfc(nullptr);
 
 	// set states
-	fSuccess = pCurrCtx ? (pCurrCtx->Select()) : MainCtx.Select();
+	const bool fSuccess = pCurrCtx ? pCurrCtx->Select() : MainCtx.Select();
 	// activate if successful
 	Active = fSuccess;
 	// restore gamma if active
-	if (Active)
-		EnableGamma();
+	if (Active) EnableGamma();
 	// reset blit states
 	dwBlitMode = 0;
 
@@ -760,7 +781,7 @@ bool CStdGL::RestoreDeviceObjects()
 		// Load the contents of the texture into a register
 		glSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0, GL_SWIZZLE_STR_ATI);
 		// Define the factors for each color
-		GLfloat grey[4] = { 0.299f, 0.587f, 0.114f, 1.0f };
+		const GLfloat grey[4] = { 0.299f, 0.587f, 0.114f, 1.0f };
 		glSetFragmentShaderConstantATI(GL_CON_0_ATI, grey);
 		// X(d) = X(a1) * X(a2)
 		glColorFragmentOp2ATI(GL_MUL_ATI,
@@ -930,7 +951,6 @@ bool CStdGL::RestoreDeviceObjects()
 
 bool CStdGL::InvalidateDeviceObjects()
 {
-	bool fSuccess = true;
 	// clear gamma
 #ifndef USE_SDL_MAINLOOP
 	DisableGamma();
@@ -945,17 +965,13 @@ bool CStdGL::InvalidateDeviceObjects()
 		glDeleteFragmentShaderATI(shader);
 		shader = 0;
 	}
-	return fSuccess;
-}
-
-bool CStdGL::StoreStateBlock()
-{
 	return true;
 }
 
 void CStdGL::SetTexture()
 {
-	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, (dwBlitMode & C4GFXBLIT_ADDITIVE) ? GL_ONE : GL_SRC_ALPHA);
+	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA,
+		(dwBlitMode & C4GFXBLIT_ADDITIVE) ? GL_ONE : GL_SRC_ALPHA);
 	glEnable(GL_TEXTURE_2D);
 }
 
@@ -965,34 +981,9 @@ void CStdGL::ResetTexture()
 	glDisable(GL_TEXTURE_2D);
 }
 
-bool CStdGL::RestoreStateBlock()
-{
-	return true;
-}
-
 CStdGL *pGL = nullptr;
 
-bool CStdGL::DeleteDeviceObjects()
-{
-	InvalidateDeviceObjects();
-	NoPrimaryClipper();
-	// del font objects
-	// del main surfaces
-	delete lpPrimary;
-	lpPrimary = lpBack = nullptr;
-	RenderTarget = nullptr;
-	// clear context
-	if (pCurrCtx) pCurrCtx->Deselect();
-	MainCtx.Clear();
-	// restore display mode
-	// when using the SDL, better let it do this when calling SDL_Cleanup!
-#ifndef USE_SDL_MAINLOOP
-	pApp->SetFullScreen(false, false);
-#endif
-	return true;
-}
-
-bool CStdGL::SetOutputAdapter(unsigned int iMonitor)
+bool CStdGL::SetOutputAdapter(const unsigned int iMonitor)
 {
 	return pApp->SetOutputAdapter(iMonitor);
 }
@@ -1006,24 +997,17 @@ void CStdGL::TaskOut()
 	InvalidateDeviceObjects();
 	if (pCurrCtx) pCurrCtx->Deselect();
 	// restore original resolution
-	if (fFullscreen && !DDrawCfg.GLKeepRes)
-	{
-		pApp->SetFullScreen(false);
-	}
+	if (fFullscreen && !DDrawCfg.GLKeepRes) pApp->SetFullScreen(false);
 }
 
 void CStdGL::TaskIn()
 {
 	// restore resolution
-	if (fFullscreen && !DDrawCfg.GLKeepRes)
-	{
-		// change resolution
-		pApp->SetFullScreen(true);
-	}
+	if (fFullscreen && !DDrawCfg.GLKeepRes) pApp->SetFullScreen(true);
 	// restore textures
 	if (pTexMgr && fFullscreen) pTexMgr->IntUnlock();
 	// restore device stuff
-	InitDeviceObjects();
+	RestoreDeviceObjects();
 }
 
 bool CStdGL::OnResolutionChanged()
