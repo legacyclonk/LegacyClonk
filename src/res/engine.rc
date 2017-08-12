@@ -101,9 +101,9 @@ BEGIN
             VALUE "InternalName", "Clonk 4 Engine\0"
             VALUE "LegalCopyright", "Copyright © 2008-2013 RedWolf Design GmbH"
             VALUE "LegalTrademarks", "Clonk is a registered trademark of Matthes Bender.\0"
-            VALUE "OriginalFilename", "Clonk.exe\0"
+            VALUE "OriginalFilename", "legacyclonk.exe\0"
             VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Clonk Rage\0"
+            VALUE "ProductName", "LegacyClonk\0"
             VALUE "Comments", "\0"
             VALUE "CompanyName", "RedWolf Design GmbH\0"
         END

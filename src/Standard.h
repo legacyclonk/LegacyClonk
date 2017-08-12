@@ -5,7 +5,7 @@
 #pragma once
 
 // A standard product name for this project which is used in window registration etc.
-#define STD_PRODUCT "Clonk Rage"
+#define STD_PRODUCT "LegacyClonk"
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>

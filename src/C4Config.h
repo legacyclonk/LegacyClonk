@@ -8,7 +8,7 @@
 #include "C4InputValidation.h"
 
 #define C4CFG_Company "RedWolf Design"
-#define C4CFG_Product "Clonk Rage"
+#define C4CFG_Product "LegacyClonk"
 
 #define C4CFG_LeagueServer   "www.clonk.de:84/league/server"
 #define C4CFG_FallbackServer "www.clonk.de:80/league/server"

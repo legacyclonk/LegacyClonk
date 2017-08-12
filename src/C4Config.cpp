@@ -60,11 +60,11 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(s(PlayerPath),      "PlayerPath",     "",  false, true));
 	pComp->Value(mkNamingAdapt(s(DefinitionPath),  "DefinitionPath", "",  false, true));
 #ifdef _WIN32
-	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "%APPDATA%\\Clonk Rage",                        false, true));
+	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "%APPDATA%\\LegacyClonk",                        false, true));
 #elif defined(__linux__)
-	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/.clonk/rage",                            false, true));
+	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/.legacyclonk",                      false, true));
 #elif defined(__APPLE__)
-	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/Library/Application Support/Clonk Rage", false, true));
+	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/Library/Application Support/LegacyClonk", false, true));
 #endif
 	pComp->Value(mkNamingAdapt(SaveGameFolder, "SaveGameFolder", "Savegames.c4f", false, true));
 	pComp->Value(mkNamingAdapt(SaveDemoFolder, "SaveDemoFolder", "Records.c4f",   false, true));
@@ -355,9 +355,9 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 				if (home) { home += "/"; }
 				filename.Copy(home);
 #ifdef __APPLE__
-				filename += "Library/Preferences/de.clonk.rage.config";
+				filename += "Library/Preferences/legacyclonk.config";
 #else
-				filename += ".clonk/rage/config";
+				filename += ".legacyclonk/config";
 #endif
 			}
 
@@ -373,14 +373,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 				{
 					StdStrBuf filename(getenv("HOME"));
 					if (filename) { filename += "/"; }
-					filename += ".clonk";
-					// Upgrade from older installations which had a single ~/.clonk config file
-					if (!DirectoryExists(filename.getData()))
-					{
-						EraseItem(filename.getData());
-						CreateDirectory(filename.getData());
-					}
-					filename += "/rage";
+					filename += ".legacyclonk";
 					CreateDirectory(filename.getData());
 				}
 #endif
@@ -470,9 +463,9 @@ bool C4Config::Save()
 				filename.Copy(getenv("HOME"));
 				if (filename) { filename += "/"; }
 #ifdef __APPLE__
-				filename += "Library/Preferences/de.clonk.rage.config";
+				filename += "Library/Preferences/legacyclonk.config";
 #else
-				filename += ".clonk/rage/config";
+				filename += ".legacyclonk/config";
 #endif
 			}
 			StdCompilerINIWrite IniWrite;
