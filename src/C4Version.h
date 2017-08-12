@@ -16,9 +16,9 @@
 
 #pragma once
 
-#define C4ENGINENAME "Clonk Rage"
+#define C4ENGINENAME "LegacyClonk"
 
-#define C4ENGINECAPTION "Clonk Rage"
+#define C4ENGINECAPTION "LegacyClonk"
 #define C4EDITORCAPTION "Clonk Editor"
 
 /* These values are now controlled by the file source/version - DO NOT MODIFY DIRECTLY */

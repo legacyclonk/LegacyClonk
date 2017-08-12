@@ -101,9 +101,9 @@ BEGIN
             VALUE "InternalName", "LegacyClonk\0"
             VALUE "LegalCopyright", "Copyright © 2017-2019 LegacyClonk Team"
             VALUE "LegalTrademarks", "Clonk is a registered trademark of Matthes Bender.\0"
-            VALUE "OriginalFilename", "Clonk.exe\0"
+            VALUE "OriginalFilename", "legacyclonk.exe\0"
             VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Clonk Rage\0"
+            VALUE "ProductName", "LegacyClonk\0"
             VALUE "Comments", "\0"
             VALUE "CompanyName", "LegacyClonk Team\0"
         END
