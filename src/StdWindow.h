@@ -128,7 +128,9 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #define MK_CONTROL (1 << 2)
 #define MK_SHIFT (1 << 0)
 #elif defined(USE_SDL_MAINLOOP)
+#include <StdSdlSubSystem.h>
 #include <SDL.h>
+#include <optional>
 #define K_F1 SDLK_F1
 #define K_F2 SDLK_F2
 #define K_F3 SDLK_F3
@@ -433,6 +435,8 @@ protected:
 #if defined(USE_SDL_MAINLOOP)
 	int argc; char **argv;
 	int Pipe[2];
+	int nextWidth, nextHeight, nextBPP;
+	std::optional<StdSdlSubSystem> sdlVideoSubSys;
 #endif
 	class CStdAppPrivate *Priv;
 	void HandleXMessage();

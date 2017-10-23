@@ -178,6 +178,7 @@ public:
 	bool PointersDenumerated; // (NoSave) set after object pointers have been denumerated
 	size_t StartupLogPos, QuitLogPos; // current log positions when game was last started and cleared
 	bool fQuitWithError; // if set, game shut down irregularly
+	bool IsMusicEnabled;
 	int32_t iMusicLevel; // scenario-defined music level
 	// current play list
 	StdStrBuf PlayList;

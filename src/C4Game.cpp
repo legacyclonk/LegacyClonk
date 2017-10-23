@@ -96,14 +96,14 @@ bool C4Game::InitDefs()
 		int iMinProgress = 10 + (25 * i) / iDefResCount;
 		int iMaxProgress = 10 + (25 * (i + 1)) / iDefResCount;
 		++i;
-		iDefs += Defs.Load(pDef->getFile(), C4D_Load_RX, Config.General.LanguageEx, &Application.SoundSystem, true, iMinProgress, iMaxProgress);
+		iDefs += Defs.Load(pDef->getFile(), C4D_Load_RX, Config.General.LanguageEx, &*Application.SoundSystem, true, iMinProgress, iMaxProgress);
 
 		// Def load failure
 		if (Defs.LoadFailure) return false;
 	}
 
 	// Load for scenario file - ignore sys group here, because it has been loaded already
-	iDefs += Defs.Load(ScenarioFile, C4D_Load_RX, Config.General.LanguageEx, &Application.SoundSystem, true, true, 35, 40, false);
+	iDefs += Defs.Load(ScenarioFile, C4D_Load_RX, Config.General.LanguageEx, &*Application.SoundSystem, true, true, 35, 40, false);
 
 	// Absolutely no defs: we don't like that
 	if (!iDefs) { LogFatal(LoadResStr("IDS_PRC_NODEFS")); return false; }
@@ -543,7 +543,7 @@ void C4Game::Clear()
 
 	delete pFileMonitor; pFileMonitor = nullptr;
 	// fade out music
-	Application.MusicSystem.FadeOut(2000);
+	Application.MusicSystem->Stop(2000);
 	// game no longer running
 	IsRunning = false;
 	PointersDenumerated = false;
@@ -793,16 +793,16 @@ bool C4Game::Execute() // Returns true if the game is over
 	EXEC_S(ExecObjects();, ExecObjectsStat)
 	if (pGlobalEffects)
 		EXEC_S_DR(pGlobalEffects->Execute(nullptr);, GEStats, "GEEx\0");
-	EXEC_S_DR(PXS.Execute();,                     PXSStat,         "PXSEx")
-	EXEC_S_DR(Particles.GlobalParticles.Exec();,  PartStat,        "ParEx")
-	EXEC_S_DR(MassMover.Execute();,               MassMoverStat,   "MMvEx")
-	EXEC_S_DR(Weather.Execute();,                 WeatherStat,     "WtrEx")
-	EXEC_S_DR(Landscape.Execute();,               LandscapeStat,   "LdsEx")
-	EXEC_S_DR(Players.Execute();,                 PlayersStat,     "PlrEx")
+	EXEC_S_DR(PXS.Execute();,                      PXSStat,         "PXSEx")
+	EXEC_S_DR(Particles.GlobalParticles.Exec();,   PartStat,        "ParEx")
+	EXEC_S_DR(MassMover.Execute();,                MassMoverStat,   "MMvEx")
+	EXEC_S_DR(Weather.Execute();,                  WeatherStat,     "WtrEx")
+	EXEC_S_DR(Landscape.Execute();,                LandscapeStat,   "LdsEx")
+	EXEC_S_DR(Players.Execute();,                  PlayersStat,     "PlrEx")
 	// FIXME: C4Application::Execute should do this, but what about the stats?
-	EXEC_S_DR(Application.MusicSystem.Execute();, MusicSystemStat, "Music")
-	EXEC_S_DR(Messages.Execute();,                MessagesStat,    "MsgEx")
-	EXEC_S_DR(Script.Execute();,                  ScriptStat,      "Scrpt")
+	EXEC_S_DR(Application.MusicSystem->Execute();, MusicSystemStat, "Music")
+	EXEC_S_DR(Messages.Execute();,                 MessagesStat,    "MsgEx")
+	EXEC_S_DR(Script.Execute();,                   ScriptStat,      "Scrpt")
 
 	EXEC_DR(MouseControl.Execute();, "Input")
 
@@ -968,7 +968,7 @@ void C4Game::ClearObjectPtrs(C4Object *pObj)
 	// check in inactive objects as well
 	for (clnk = Objects.InactiveObjects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
 		cObj->ClearPointers(pObj);
-	Application.SoundSystem.ClearPointers(pObj);
+	Application.SoundSystem->ClearPointers(pObj);
 }
 
 void C4Game::ClearPointers(C4Object *pObj)
@@ -1594,7 +1594,7 @@ bool C4Game::DropFile(const char *szFilename, int32_t iX, int32_t iY)
 		if (c_id = DefFileGetID(szFilename))
 			// Get loaded def or try to load def from file
 			if ((cdef = C4Id2Def(c_id))
-				|| (Defs.Load(szFilename, C4D_Load_RX, Config.General.LanguageEx, &Application.SoundSystem) && (cdef = C4Id2Def(c_id))))
+				|| (Defs.Load(szFilename, C4D_Load_RX, Config.General.LanguageEx, &*Application.SoundSystem) && (cdef = C4Id2Def(c_id))))
 			{
 				return DropDef(c_id, iX, iY);
 			}
@@ -1748,6 +1748,7 @@ void C4Game::Default()
 	pGlobalEffects = nullptr;
 	fResortAnyObject = false;
 	pNetworkStatistics = nullptr;
+	IsMusicEnabled = true;
 	iMusicLevel = 100;
 	PlayList.Clear();
 }
@@ -1881,6 +1882,7 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 		pComp->Value(mkNamingAdapt(PlayList,                                "PlayList",               ""));
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(CurrentScenarioSection), "CurrentScenarioSection", ""));
 		pComp->Value(mkNamingAdapt(fResortAnyObject,                        "ResortAnyObj",           false));
+		pComp->Value(mkNamingAdapt(IsMusicEnabled,                          "MusicEnabled",           true));
 		pComp->Value(mkNamingAdapt(iMusicLevel,                             "MusicLevel",             100));
 		pComp->Value(mkNamingAdapt(NextMission,                             "NextMission",            StdStrBuf()));
 		pComp->Value(mkNamingAdapt(NextMissionText,                         "NextMissionText",        StdStrBuf()));
@@ -1959,7 +1961,7 @@ bool C4Game::CompileRuntimeData(C4ComponentHost &rGameData)
 	// Compile
 	if (!Compile(rGameData.GetData())) return false;
 	// Music System: Set play list
-	Application.MusicSystem.SetPlayList(PlayList.getData());
+	Application.MusicSystem->SetPlayList(PlayList.getData());
 	// Success
 	return true;
 }
@@ -2235,7 +2237,7 @@ bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
 	// Message
 	LogF("Reloading %s from %s", C4IdText(pDef->id), GetFilename(pDef->Filename));
 	// Reload def
-	if (Defs.Reload(pDef, reloadWhat, Config.General.LanguageEx, &Application.SoundSystem))
+	if (Defs.Reload(pDef, reloadWhat, Config.General.LanguageEx, &*Application.SoundSystem))
 	{
 		// Success, update all concerned object faces
 		// may have been done by graphics-update already - but not for objects using graphics of another def
@@ -2365,7 +2367,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	if (!FrameCounter) Parameters.StartupPlayerCount = PlayerInfos.GetStartupCount();
 
 	// The Landscape is the last long chunk of loading time, so it's a good place to start the music fadeout
-	if (!section) Application.MusicSystem.FadeOut(2000);
+	if (!section) Application.MusicSystem->Stop(2000);
 
 	if (!InitGameSecondPart(hGroup, section, fLoadSky, false))
 	{
@@ -2436,14 +2438,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	if (!section)
 	{
 		// Music
-		Application.MusicSystem.InitForScenario(ScenarioFile);
-		if (Config.Sound.RXMusic)
-		{
-			// Play something that is not Frontend.mid
-			Application.MusicSystem.Play();
-		}
-		else
-			Application.MusicSystem.Stop();
+		Application.MusicSystem->PlayScenarioMusic(ScenarioFile);
 		SetMusicLevel(iMusicLevel);
 		SetInitProgress(97);
 	}
@@ -3266,10 +3261,10 @@ bool C4Game::InitKeyboard()
 	KeyboardInput.Clear();
 
 	// globals
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F3),               "MusicToggle",  C4KeyScope(KEYSCOPE_Generic | KEYSCOPE_Gui),    new C4KeyCB  <C4MusicSystem>         (Application.MusicSystem, &C4MusicSystem::ToggleOnOff)));
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F9),               "Screenshot",   C4KeyScope(KEYSCOPE_Fullscreen | KEYSCOPE_Gui), new C4KeyCBEx<C4GraphicsSystem, bool>(GraphicsSystem, false,   &C4GraphicsSystem::SaveScreenshot)));
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F9, KEYS_Control), "ScreenshotEx",            KEYSCOPE_Fullscreen,                 new C4KeyCBEx<C4GraphicsSystem, bool>(GraphicsSystem, true,    &C4GraphicsSystem::SaveScreenshot)));
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(KEY_C, KEYS_Alt),    "ToggleChat",   C4KeyScope(KEYSCOPE_Generic | KEYSCOPE_Gui),    new C4KeyCB  <C4Game>                (*this,                   &C4Game::ToggleChat)));
+	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F3),               "MusicToggle",  C4KeyScope(KEYSCOPE_Generic | KEYSCOPE_Gui),    new C4KeyCB  <C4MusicSystem>         (*Application.MusicSystem, &C4MusicSystem::ToggleOnOff)));
+	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F9),               "Screenshot",   C4KeyScope(KEYSCOPE_Fullscreen | KEYSCOPE_Gui), new C4KeyCBEx<C4GraphicsSystem, bool>(GraphicsSystem, false,    &C4GraphicsSystem::SaveScreenshot)));
+	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F9, KEYS_Control), "ScreenshotEx",            KEYSCOPE_Fullscreen,                 new C4KeyCBEx<C4GraphicsSystem, bool>(GraphicsSystem, true,     &C4GraphicsSystem::SaveScreenshot)));
+	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(KEY_C, KEYS_Alt),    "ToggleChat",   C4KeyScope(KEYSCOPE_Generic | KEYSCOPE_Gui),    new C4KeyCB  <C4Game>                (*this,                    &C4Game::ToggleChat)));
 
 	// main ingame
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F1), "ToggleShowHelp",         KEYSCOPE_Generic, new C4KeyCB<C4GraphicsSystem>(GraphicsSystem, &C4GraphicsSystem::ToggleShowHelp)));
@@ -4284,7 +4279,7 @@ void C4Game::SetMusicLevel(int32_t iToLvl)
 {
 	// change game music volume; multiplied by config volume for real volume
 	iMusicLevel = BoundBy<int32_t>(iToLvl, 0, 100);
-	Application.MusicSystem.SetVolume(Config.Sound.MusicVolume * iMusicLevel / 100);
+	Application.MusicSystem->UpdateVolume();
 }
 
 bool C4Game::ToggleChat()

@@ -265,8 +265,7 @@ bool C4Startup::DoStartup()
 	fLastDlgWasBack = false;
 
 	// Play some music!
-	if (Config.Sound.FEMusic)
-		Application.MusicSystem.Play();
+	Application.MusicSystem->PlayFrontendMusic();
 
 	// clear any previous
 	delete pLastDlg; pLastDlg = nullptr;

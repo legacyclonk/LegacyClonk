@@ -44,55 +44,6 @@ int32_t PixCol2MatOld2(uint8_t pixc)
 	return iMat;
 }
 
-// Sound
-
-C4SoundInstance *StartSoundEffect(const char *szSndName, bool fLoop, int32_t iVolume, C4Object *pObj, int32_t iCustomFalloffDistance)
-{
-	// Sound check
-	if (!Config.Sound.RXSound) return nullptr;
-	// Start new
-	return Application.SoundSystem.NewEffect(szSndName, fLoop, iVolume, pObj, iCustomFalloffDistance);
-}
-
-C4SoundInstance *StartSoundEffectAt(const char *szSndName, int32_t iX, int32_t iY, bool fLoop, int32_t iVolume)
-{
-	// Sound check
-	if (!Config.Sound.RXSound) return nullptr;
-	// Create
-	C4SoundInstance *pInst = StartSoundEffect(szSndName, fLoop, iVolume);
-	// Set volume by position
-	if (pInst) pInst->SetVolumeByPos(iX, iY);
-	// Return
-	return pInst;
-}
-
-C4SoundInstance *GetSoundInstance(const char *szSndName, C4Object *pObj)
-{
-	return Application.SoundSystem.FindInstance(szSndName, pObj);
-}
-
-void StopSoundEffect(const char *szSndName, C4Object *pObj)
-{
-	// Find instance
-	C4SoundInstance *pInst = Application.SoundSystem.FindInstance(szSndName, pObj);
-	if (!pInst) return;
-	// Stop
-	pInst->Stop();
-}
-
-void SoundLevel(const char *szSndName, C4Object *pObj, int32_t iLevel)
-{
-	// Sound level zero? Stop
-	if (!iLevel) { StopSoundEffect(szSndName, pObj); return; }
-	// Find or create instance
-	C4SoundInstance *pInst = Application.SoundSystem.FindInstance(szSndName, pObj);
-	if (!pInst) pInst = StartSoundEffect(szSndName, true, iLevel, pObj);
-	if (!pInst) return;
-	// Set volume
-	pInst->SetVolume(iLevel);
-	pInst->Execute();
-}
-
 // Graphics Resource
 
 #define GfxR (&(Game.GraphicsResource))

@@ -47,10 +47,6 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 	case WM_CLOSE:
 		FullScreen.Close();
 		return 0;
-	case MM_MCINOTIFY:
-		if (wParam == MCI_NOTIFY_SUCCESSFUL)
-			Application.MusicSystem.NotifySuccess();
-		return true;
 	case WM_KEYUP:
 		if (Game.DoKeyboardInput(wParam, KEYEV_Up, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), false, nullptr))
 			return 0;

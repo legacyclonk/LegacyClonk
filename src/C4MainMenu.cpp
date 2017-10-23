@@ -799,24 +799,12 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 		// Music
 		if (SEqual(szCommand + 8, "Music"))
 		{
-			Application.MusicSystem.ToggleOnOff();
+			Application.MusicSystem->ToggleOnOff();
 		}
 		// Sound
 		if (SEqual(szCommand + 8, "Sound"))
 		{
-			if (Config.Sound.RXSound)
-			{
-				Application.SoundSystem.Clear();
-				Config.Sound.RXSound = false;
-			}
-			else
-			{
-				Config.Sound.RXSound = true;
-				if (!Application.SoundSystem.Init())
-				{
-					Log(LoadResStr("IDS_PRC_NOSND"));
-				}
-			}
+			Application.SoundSystem->ToggleOnOff();
 		}
 		// Mouse control
 		if (SEqual(szCommand + 8, "Mouse"))

@@ -1,2 +1,2 @@
-src/StdSDLApp.cpp
-src/StdSDLWindow.cpp
+src/StdSdlSubSystem.cpp
+src/StdSdlSubSystem.h

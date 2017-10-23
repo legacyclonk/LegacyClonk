@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <C4AudioSystem.h>
 #include <C4Config.h>
 #include <C4Group.h>
 #include <C4MusicSystem.h>
@@ -24,6 +25,8 @@
 #include <C4InteractiveThread.h>
 #include <C4Network2IRC.h>
 #include <StdWindow.h>
+
+#include <optional>
 
 class CStdDDraw;
 
@@ -90,8 +93,9 @@ public:
 	bool restartAtEnd;
 	// main System.c4g in working folder
 	C4Group SystemGroup;
-	C4MusicSystem MusicSystem;
-	C4SoundSystem SoundSystem;
+	std::optional<C4AudioSystem> AudioSystem;
+	std::optional<C4MusicSystem> MusicSystem;
+	std::optional<C4SoundSystem> SoundSystem;
 	C4GamePadControl *pGamePadControl;
 	// Thread for interactive processes (automatically starts as needed)
 	C4InteractiveThread InteractiveThread;

@@ -22,8 +22,10 @@
 #include <StdJoystick.h>
 #endif
 
-#ifdef HAVE_SDL
+#ifdef USE_SDL_FOR_GAMEPAD
 #include <C4KeyboardInput.h>
+#include <StdSdlSubSystem.h>
+#include <optional>
 #include <set>
 #endif
 
@@ -53,12 +55,13 @@ public:
 	void CloseGamepad(int id); // del gamepad ref
 	static C4GamePadControl *pInstance; // singleton
 
-#elif defined(HAVE_SDL)
+#elif defined(USE_SDL_FOR_GAMEPAD)
 
 public:
 	void FeedEvent(SDL_Event &e);
 
 private:
+	std::optional<StdSdlSubSystem> sdlJoystickSubSys;
 	std::set<C4KeyCode> PressedAxis;
 
 #endif
@@ -81,7 +84,7 @@ public:
 	C4GamePadOpener(int iGamePad);
 	~C4GamePadOpener();
 	void SetGamePad(int iNewGamePad);
-#ifdef HAVE_SDL
+#ifdef USE_SDL_FOR_GAMEPAD
 	SDL_Joystick *Joy;
 #endif
 };

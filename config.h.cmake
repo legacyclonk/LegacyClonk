@@ -1,8 +1,11 @@
 #cmakedefine DEBUGREC 1
+#cmakedefine ENABLE_SOUND 1
 #cmakedefine USE_CONSOLE 1
 #cmakedefine USE_FMOD 1
 #cmakedefine USE_MP3 1
 #cmakedefine USE_SDL_MAINLOOP 1
+#cmakedefine USE_SDL_MIXER 1
+#cmakedefine USE_SDL_FOR_GAMEPAD 1
 #cmakedefine USE_X11 1
 #cmakedefine WITH_DEVELOPER_MODE 1
 #cmakedefine WITH_GLIB 1
@@ -15,9 +18,7 @@
 #cmakedefine HAVE_ICONV 1
 #cmakedefine HAVE_IO_H 1
 #cmakedefine HAVE_LANGINFO_H 1
-#cmakedefine HAVE_LIBSDL_MIXER 1
 #cmakedefine HAVE_LOCALE_H 1
-#cmakedefine HAVE_SDL 1
 #cmakedefine HAVE_SHARE_H 1
 #cmakedefine HAVE_SIGNAL_H 1
 #cmakedefine HAVE_STDINT_H 1

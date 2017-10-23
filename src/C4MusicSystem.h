@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -14,72 +14,69 @@
  * for the above references.
  */
 
-/* Handles Music.c4g and randomly plays songs */
+// Handles song list and music playback.
 
 #pragma once
 
+#include <C4AudioSystem.h>
 #include <C4Group.h>
 
-class C4MusicFileInfoNode;
-class C4MusicFile;
+#include <cstdint>
+#include <initializer_list>
+#include <list>
+#include <memory>
+#include <optional>
+#include <string>
 
 class C4MusicSystem
 {
-	friend class C4SoundEffect;
-	friend class C4SoundInstance;
-	friend class C4SoundSystem;
-
 public:
 	C4MusicSystem();
-	~C4MusicSystem();
-	void Clear();
-	int SetVolume(int);
+	C4MusicSystem(const C4MusicSystem &) = delete;
+	C4MusicSystem(C4MusicSystem &&) = delete;
+	C4MusicSystem &operator=(const C4MusicSystem &) = delete;
+	~C4MusicSystem() { Stop(); }
+
 	void Execute();
-	void NotifySuccess();
-	bool Init(const char *PlayList = nullptr);
-	bool InitForScenario(C4Group &hGroup);
-	bool Play(const char *szSongname = nullptr, bool fLoop = false);
-	bool Stop();
-	void FadeOut(int fadeout_ms);
+	/* Does nothing if user did not enable music for current mode (frontend/game).
+	   Otherwise start playing. If already playing, stop and restart. */
+	void Play(const char *songname = nullptr, bool loop = false);
+	void PlayFrontendMusic();
+	void PlayScenarioMusic(C4Group &);
+	long SetPlayList(const char *playlist);
+	void Stop(int fadeoutMS = 0);
+	bool ToggleOnOff();
+	void UpdateVolume();
 
-	int SetPlayList(const char *szPlayList);
+private:
+	struct Song
+	{
+		const std::string name;
+		bool enabled = false;
 
-	bool ToggleOnOff(); // keyboard callback
+		Song() = delete;
+		Song(const std::string &name) : name{name} {}
+		Song(const Song &) = delete;
+		Song(Song &&) = delete;
+		Song &operator=(const Song &) = delete;
+		~Song() = default;
+	};
 
-protected:
-	// song list
-	C4MusicFile *Songs;
-	int SongCount, ASongCount, SCounter;
+	static constexpr std::initializer_list<const char *> MusicFileExtensions{ "it", "mid", "mod", "mp3", "ogg", "s3m", "xm" };
 
-	// play
-	C4MusicFile *PlayMusicFile;
-	int Volume; bool Loop;
+	std::list<Song> songs;
+	const Song *mostRecentlyPlayed{};
 
-	void LoadDir(const char *szPath); // load some music files (by wildcard / directory)
-	void Load(const char *szFile); // load a music file
-	void LoadMoreMusic(); // load music file names from MoreMusic.txt
+	// Valid when a song is currently playing
+	std::unique_ptr<const char[]> playingFileContents;
+	std::optional<C4AudioSystem::MusicFile> playingFile;
+
+	// Returns a reference to the "music enabled" config entry of the current game mode
+	static bool &GetCfgMusicEnabled();
+
+	void ClearPlayingSong();
 	void ClearSongs();
-
-	bool GrpContainsMusic(C4Group &rGrp); // return whether this group contains music files
-
-	// FMod / SDL_mixer
-	bool MODInitialized;
-	bool InitializeMOD();
-	void DeinitializeMOD();
+	const Song *FindSong(const std::string &name) const;
+	void LoadDir(const char *path);
+	void LoadMoreMusic();
 };
-
-// helper stuff
-
-enum MusicType { MUSICTYPE_MID, MUSICTYPE_MOD, MUSICTYPE_MP3, MUSICTYPE_OGG, MUSICTYPE_UNKNOWN };
-
-class C4MusicFileInfoNode // We need this for the MoreMusic.txt stuff
-{
-public:
-	C4MusicFileInfoNode() { next = nullptr; str = nullptr; };
-	~C4MusicFileInfoNode() { delete[] str; }
-	char *str;
-	MusicType type;
-	C4MusicFileInfoNode *next;
-};
-
-MusicType GetMusicFileTypeByExtension(const char *ext);

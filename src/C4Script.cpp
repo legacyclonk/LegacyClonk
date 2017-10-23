@@ -37,6 +37,7 @@
 #include <C4ObjectMenu.h>
 #include <C4ValueHash.h>
 #include <C4NetworkRestartInfos.h>
+#include <C4SoundSystem.h>
 
 #ifndef _WIN32
 #include <sys/time.h>
@@ -2349,7 +2350,7 @@ static bool FnSound(C4AulContext *cthr, C4String *szSound, bool fGlobal, C4Objec
 	// target object
 	if (fGlobal) pObj = nullptr; else if (!pObj) pObj = cthr->Obj;
 	// already playing?
-	if (iLoop >= 0 && !fMultiple && GetSoundInstance(FnStringPar(szSound), pObj))
+	if (iLoop >= 0 && !fMultiple && IsSoundPlaying(FnStringPar(szSound), pObj))
 		return true;
 	// try to play effect
 	if (iLoop >= 0)
@@ -2362,21 +2363,15 @@ static bool FnSound(C4AulContext *cthr, C4String *szSound, bool fGlobal, C4Objec
 
 static bool FnMusic(C4AulContext *cthr, C4String *szSongname, bool fLoop)
 {
-	// FIXME: Script should not influence the user's configuration
 	if (!szSongname)
 	{
-		Config.Sound.RXMusic = false;
-		Application.MusicSystem.Stop();
+		Game.IsMusicEnabled = false;
+		Application.MusicSystem->Stop();
 	}
 	else
 	{
-		Config.Sound.RXMusic = true;
-		Application.MusicSystem.Stop();
-		if (!Application.MusicSystem.Play(FnStringPar(szSongname), !!fLoop))
-		{
-			Config.Sound.RXMusic = false;
-			return true;
-		}
+		Game.IsMusicEnabled = true;
+		Application.MusicSystem->Play(FnStringPar(szSongname), fLoop);
 	}
 	return true;
 }
@@ -2384,14 +2379,14 @@ static bool FnMusic(C4AulContext *cthr, C4String *szSongname, bool fLoop)
 static long FnMusicLevel(C4AulContext *cthr, long iLevel)
 {
 	Game.SetMusicLevel(iLevel);
-	return iLevel;
+	return Game.iMusicLevel;
 }
 
 static long FnSetPlayList(C4AulContext *cth, C4String *szPlayList, bool fRestartMusic)
 {
-	long iFilesInPlayList = Application.MusicSystem.SetPlayList(FnStringPar(szPlayList));
+	long iFilesInPlayList = Application.MusicSystem->SetPlayList(FnStringPar(szPlayList));
 	Game.PlayList.Copy(FnStringPar(szPlayList));
-	if (fRestartMusic && Config.Sound.RXMusic) Application.MusicSystem.Play();
+	if (fRestartMusic) Application.MusicSystem->Play();
 	// network/record/replay: return 0
 	if (Game.Control.SyncMode()) return 0;
 	return iFilesInPlayList;

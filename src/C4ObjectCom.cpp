@@ -27,6 +27,7 @@
 #include <C4Wrappers.h>
 #include <C4ObjectMenu.h>
 #include <C4Player.h>
+#include <C4SoundSystem.h>
 
 bool SimFlightHitsLiquid(FIXED fcx, FIXED fcy, FIXED xdir, FIXED ydir);
 

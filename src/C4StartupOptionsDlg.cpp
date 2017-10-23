@@ -1013,7 +1013,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheck->SetOnChecked(new C4GUI::CallbackHandler<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnFEMusicCheck));
 	pGroupFESound->AddElement(pCheck);
 	// menu system sound effects
-	pCheck = pFESoundCheck = new BoolConfig(caGroupFESound.GetGridCell(0, 1, 1, 2, -1, iCheckHgt, true), LoadResStr("IDS_CTL_SOUNDFX"), &Config.Sound.FESamples);
+	pCheck = new BoolConfig(caGroupFESound.GetGridCell(0, 1, 1, 2, -1, iCheckHgt, true), LoadResStr("IDS_CTL_SOUNDFX"), &Config.Sound.FESamples);
 	pCheck->SetToolTip(LoadResStr("IDS_DESC_MENUSOUND"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pGroupFESound->AddElement(pCheck);
@@ -1030,10 +1030,9 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pGroupRXSound->AddElement(pCheck);
 	// game sound effects
-	pCheck = new C4GUI::CheckBox(caGroupRXSound.GetGridCell(0, 1, 1, 2, -1, iCheckHgt, true), LoadResStr("IDS_CTL_SOUNDFX"), !!Config.Sound.RXSound);
+	pCheck = new BoolConfig(caGroupRXSound.GetGridCell(0, 1, 1, 2, -1, iCheckHgt, true), LoadResStr("IDS_CTL_SOUNDFX"), &Config.Sound.RXSound);
 	pCheck->SetToolTip(LoadResStr("IDS_DESC_GAMESOUND"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-	pCheck->SetOnChecked(new C4GUI::CallbackHandler<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnRXSoundCheck));
 	pGroupRXSound->AddElement(pCheck);
 	// -- subgroup volume
 	C4GUI::GroupBox *pGroupVolume = new C4GUI::GroupBox(caSheetSound.GetGridCell(0, 2, 2, 5, iGridWdt, iGridHgt, false, 2, 3));
@@ -1446,15 +1445,20 @@ void C4StartupOptionsDlg::OnFEMusicCheck(C4GUI::Element *pCheckBox)
 	// option change is reflected immediately
 	bool fIsOn = static_cast<C4GUI::CheckBox *>(pCheckBox)->GetChecked();
 	if (Config.Sound.FEMusic = fIsOn)
-		Application.MusicSystem.Play();
+	{
+		Application.MusicSystem->PlayFrontendMusic();
+	}
 	else
-		Application.MusicSystem.Stop();
+	{
+		Application.MusicSystem->Stop();
+	}
 }
 
 void C4StartupOptionsDlg::OnMusicVolumeSliderChange(int32_t iNewVal)
 {
 	// option change is reflected immediately;
-	Application.MusicSystem.SetVolume(Config.Sound.MusicVolume = iNewVal);
+	Config.Sound.MusicVolume = iNewVal;
+	Application.MusicSystem->UpdateVolume();
 }
 
 void C4StartupOptionsDlg::OnSoundVolumeSliderChange(int32_t iNewVal)
@@ -1465,39 +1469,10 @@ void C4StartupOptionsDlg::OnSoundVolumeSliderChange(int32_t iNewVal)
 	StartSoundEffect("ArrowHit", false, 100, nullptr);
 }
 
-void C4StartupOptionsDlg::OnRXSoundCheck(C4GUI::Element *pCheckBox)
-{
-	// toggling sounds on off must init/deinit sound system
-	bool fIsOn = static_cast<C4GUI::CheckBox *>(pCheckBox)->GetChecked();
-	if (fIsOn == !!Config.Sound.RXSound) return;
-	if (fIsOn)
-	{
-		Config.Sound.RXSound = true;
-		if (!Application.SoundSystem.Init())
-		{
-			GetScreen()->ShowMessage(StdStrBuf(LoadResStr("IDS_PRC_NOSND")).getData(), StdStrBuf(LoadResStr("IDS_DLG_LOG")).getData(), C4GUI::Ico_Error);
-			Application.SoundSystem.Clear();
-			Config.Sound.RXSound = false;
-			static_cast<C4GUI::CheckBox *>(pCheckBox)->SetChecked(false);
-			fIsOn = false;
-		}
-	}
-	else
-	{
-		Application.SoundSystem.Clear();
-		Config.Sound.RXSound = false;
-	}
-	// FE sound only enabled if global sound is enabled
-	pFESoundCheck->SetEnabled(fIsOn);
-	pFESoundCheck->SetChecked(fIsOn ? !!Config.Sound.FESamples : false);
-}
-
 bool C4StartupOptionsDlg::KeyMusicToggle()
 {
-	// do toggle
-	Application.MusicSystem.ToggleOnOff();
-	// reflect in checkbox
-	pFEMusicCheck->SetChecked(!!Config.Sound.FEMusic);
+	// do toggle and reflect in checkbox
+	pFEMusicCheck->SetChecked(Application.MusicSystem->ToggleOnOff());
 	// key processed
 	return true;
 }

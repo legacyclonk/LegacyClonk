@@ -177,11 +177,11 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(RXSound,     "Sound",       true, false, true));
-	pComp->Value(mkNamingAdapt(RXMusic,     "Music",       true, false, true));
-	pComp->Value(mkNamingAdapt(FEMusic,     "MenuMusic",   true, false, true));
-	pComp->Value(mkNamingAdapt(FESamples,   "MenuSound",   true, false, true));
-	pComp->Value(mkNamingAdapt(FMMode,      "FMMode",      1));
+	pComp->Value(mkNamingAdapt(RXSound,     "Sound",       true,  false, true));
+	pComp->Value(mkNamingAdapt(RXMusic,     "Music",       true,  false, true));
+	pComp->Value(mkNamingAdapt(FEMusic,     "MenuMusic",   true,  false, true));
+	pComp->Value(mkNamingAdapt(FESamples,   "MenuSound",   true,  false, true));
+	pComp->Value(mkNamingAdapt(Verbose,     "Verbose",     false, false, true));
 	pComp->Value(mkNamingAdapt(MusicVolume, "MusicVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(SoundVolume, "SoundVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(SoundCommandCooldown, "SoundCommandCooldown", std::chrono::seconds{5}));

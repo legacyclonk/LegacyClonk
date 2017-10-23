@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -14,125 +14,113 @@
  * for the above references.
  */
 
-/* Handles the sound bank and plays effects using FMOD */
+// Handles the sound bank and plays effects.
 
 #pragma once
 
-#include <C4Group.h>
+#include <C4AudioSystem.h>
 
-#ifdef C4SOUND_USE_FMOD
-#include <fmod.h>
-#endif
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <list>
+#include <optional>
+#include <string>
 
-#ifdef HAVE_LIBSDL_MIXER
-#define USE_RWOPS
-#include <SDL_mixer.h>
-#undef USE_RWOPS
-#endif
+class C4Object;
 
-const int32_t C4MaxSoundName      = 100,
-              C4MaxSoundInstances = 50,
-              C4NearSoundRadius   = 50,
-              C4AudibilityRadius  = 700;
-
-class C4SoundInstance;
-
-class C4SoundEffect
-{
-	friend class C4SoundInstance;
-
-public:
-	C4SoundEffect();
-	~C4SoundEffect();
-
-public:
-	char Name[C4MaxSoundName + 1];
-	int32_t UsageTime, Instances;
-	int32_t SampleRate, Length;
-	bool Static;
-#ifdef C4SOUND_USE_FMOD
-	FSOUND_SAMPLE *pSample;
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-	Mix_Chunk *pSample;
-#endif
-	C4SoundInstance *FirstInst;
-	C4SoundEffect *Next;
-
-public:
-	void Clear();
-	bool Load(const char *szFileName, C4Group &hGroup, bool fStatic);
-	bool Load(uint8_t *pData, size_t iDataLen, bool fStatic, bool fRaw = false); // load directly from memory
-	void Execute();
-	C4SoundInstance *New(bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = nullptr, int32_t iCustomFalloffDistance = 0);
-	C4SoundInstance *GetInstance(C4Object *pObj);
-	void ClearPointers(C4Object *pObj);
-	int32_t GetStartedInstanceCount(int32_t iX, int32_t iY, int32_t iRad); // local
-	int32_t GetStartedInstanceCount(); // global
-
-protected:
-	void AddInst(C4SoundInstance *pInst);
-	void RemoveInst(C4SoundInstance *pInst);
-};
-
-class C4SoundInstance
-{
-	friend class C4SoundEffect;
-
-protected:
-	C4SoundInstance();
-
-public:
-	~C4SoundInstance();
-
-protected:
-	C4SoundEffect *pEffect;
-	int32_t iVolume, iPan, iChannel;
-	unsigned long iStarted;
-	int32_t iNearInstanceMax;
-	bool fLooping;
-	C4Object *pObj;
-	int32_t iFalloffDistance;
-	C4SoundInstance *pNext;
-
-public:
-	C4Object *getObj() const { return pObj; }
-	bool isStarted() const { return iChannel != -1; }
-	void Clear();
-	bool Create(C4SoundEffect *pEffect, bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = nullptr, int32_t iNearInstanceMax = 0, int32_t iFalloffDistance = 0);
-	bool CheckStart();
-	bool Start();
-	bool Stop();
-	bool Playing();
-	void Execute();
-	void SetVolume(int32_t inVolume) { iVolume = inVolume; }
-	void SetPan(int32_t inPan) { iPan = inPan; }
-	void SetVolumeByPos(int32_t x, int32_t y);
-	void ClearPointers(C4Object *pObj);
-	bool Inside(int32_t iX, int32_t iY, int32_t iRad);
-};
-
-const int32_t SoundUnloadTime = 60;
+bool IsSoundPlaying(const char *name, const C4Object *obj);
+void SoundLevel(const char *name, C4Object *obj, std::int32_t iLevel);
+bool StartSoundEffect(const char *name, bool loop = false, std::int32_t volume = 100,
+	C4Object *obj = nullptr, std::int32_t falloffDistance = 0);
+void StartSoundEffectAt(const char *name, std::int32_t x, std::int32_t y);
+void StopSoundEffect(const char *name, const C4Object *obj);
 
 class C4SoundSystem
 {
 public:
-	C4SoundSystem();
-	~C4SoundSystem();
-	void Clear();
-	void Execute();
-	int32_t LoadEffects(C4Group &hGroup, bool fStatic = true);
-	C4SoundInstance *NewEffect(const char *szSound, bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = nullptr, int32_t iCustomFalloffDistance = 0);
-	C4SoundInstance *FindInstance(const char *szSound, C4Object *pObj);
-	bool Init();
-	void ClearPointers(C4Object *pObj);
+	static constexpr std::int32_t AudibilityRadius = 700;
 
-protected:
-	C4Group SoundFile;
-	C4SoundEffect *FirstSound;
-	void ClearEffects();
-	C4SoundEffect *GetEffect(const char *szSound);
-	C4SoundEffect *AddEffect(const char *szSound);
-	int32_t RemoveEffect(const char *szFilename);
-	int32_t EffectInBank(const char *szSound);
+	C4SoundSystem();
+	C4SoundSystem(const C4SoundSystem &) = delete;
+	C4SoundSystem(C4SoundSystem &&) = delete;
+	~C4SoundSystem() = default;
+	C4SoundSystem &operator=(const C4SoundSystem &) = delete;
+
+	// Detaches the specified object from all sound instances.
+	void ClearPointers(const C4Object *obj);
+	void Execute();
+	// Load sounds from the specified folder
+	void LoadEffects(C4Group &group);
+	// Call whenever the user wants to toggle sound playback
+	bool ToggleOnOff();
+
+private:
+	struct Instance;
+
+	struct Sample
+	{
+		const std::string name;
+		const C4AudioSystem::SoundFile sample;
+		const std::uint32_t duration;
+		std::list<Instance> instances;
+
+		Sample(const char *const name, const void *const buf, const std::size_t size)
+			: name{name}, sample{buf, size}, duration{sample.GetDuration()} {}
+		Sample(const Sample &) = delete;
+		Sample(Sample &&) = delete;
+		~Sample() = default;
+		Sample &operator=(const Sample &) = delete;
+
+		void Execute();
+	};
+
+	struct Instance
+	{
+		Instance(Sample &sample, bool loop, std::int32_t volume,
+			C4Object *obj, std::int32_t falloffDistance)
+			: sample{sample}, loop{loop}, volume{volume},
+			obj{obj}, falloffDistance{falloffDistance},
+			startTime{std::chrono::steady_clock::now()} {}
+		Instance(const Instance &) = delete;
+		Instance(Instance &&) = delete;
+		~Instance() = default;
+		Instance &operator=(const Instance &) = delete;
+
+		Sample &sample;
+		std::optional<C4AudioSystem::SoundChannel> channel;
+		const bool loop;
+		std::int32_t volume, pan{0};
+		C4Object *obj;
+		const std::int32_t falloffDistance;
+		const std::chrono::time_point<std::chrono::steady_clock> startTime;
+
+		// Returns false if this instance should be removed.
+		bool DetachObj();
+		// Returns false if this instance should be removed.
+		bool Execute(bool justStarted = false);
+		// Estimates playback position (milliseconds)
+		std::uint32_t GetPlaybackPosition() const;
+	};
+
+	static constexpr std::int32_t MaxSoundInstances = 20;
+	std::list<Sample> samples;
+
+	// Returns a sound instance that matches the specified name and object.
+	std::optional<decltype(Sample::instances)::iterator> FindInst(
+		const char *wildcard, const C4Object *obj);
+	// Returns a reference to the "sound enabled" config entry of the current game mode
+	static bool &GetCfgSoundEnabled();
+	static void GetVolumeByPos(std::int32_t x, std::int32_t y,
+		std::int32_t &volume, std::int32_t &pan);
+	Instance *NewInstance(const char *filename, bool loop,
+		std::int32_t volume, std::int32_t pan, C4Object *obj, std::int32_t falloffDistance);
+	// Adds default file extension if missing and replaces "*" with "?"
+	static std::string PrepareFilename(const char *filename);
+
+	friend bool IsSoundPlaying(const char *, const C4Object *);
+	friend void SoundLevel(const char *, C4Object *, std::int32_t);
+	friend bool StartSoundEffect(const char *, bool, std::int32_t, C4Object *, std::int32_t);
+	friend void StartSoundEffectAt(const char *, std::int32_t, std::int32_t);
+	friend void StopSoundEffect(const char *, const C4Object *);
 };

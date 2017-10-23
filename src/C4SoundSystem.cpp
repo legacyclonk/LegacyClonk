@@ -14,8 +14,6 @@
  * for the above references.
  */
 
-/* Handles the sound bank and plays effects using DSoundX */
-
 #include <C4Include.h>
 #include <C4SoundSystem.h>
 
@@ -25,588 +23,290 @@
 #include <C4Config.h>
 #include <C4Application.h>
 
-C4SoundEffect::C4SoundEffect() :
-	UsageTime(0),
-	Instances(0),
-#if defined(C4SOUND_USE_FMOD) || defined(HAVE_LIBSDL_MIXER)
-	pSample(nullptr),
-#endif
-	Static(false),
-	Next(nullptr),
-	FirstInst(nullptr)
+#include <algorithm>
+#include <iterator>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+bool IsSoundPlaying(const char *const name, const C4Object *const obj)
 {
-	Name[0] = 0;
+	return Application.SoundSystem->FindInst(name, obj).has_value();
 }
 
-C4SoundEffect::~C4SoundEffect()
+void SoundLevel(const char *const name, C4Object *const obj, const std::int32_t level)
 {
-	Clear();
-}
-
-void C4SoundEffect::Clear()
-{
-	while (FirstInst) RemoveInst(FirstInst);
-#ifdef C4SOUND_USE_FMOD
-	if (pSample) FSOUND_Sample_Free(pSample);
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-	if (pSample) Mix_FreeChunk(pSample);
-#endif
-#if defined(C4SOUND_USE_FMOD) || defined(HAVE_LIBSDL_MIXER)
-	pSample = nullptr;
-#endif
-}
-
-bool C4SoundEffect::Load(const char *szFileName, C4Group &hGroup, bool fStatic)
-{
-	// Sound check
-	if (!Config.Sound.RXSound) return false;
-	// Locate sound in file
-	StdBuf WaveBuffer;
-	if (!hGroup.LoadEntry(szFileName, WaveBuffer)) return false;
-	// load it from mem
-	if (!Load((uint8_t *)WaveBuffer.getData(), WaveBuffer.getSize(), fStatic)) return false;
-	// Set name
-	SCopy(szFileName, Name, C4MaxSoundName);
-	return true;
-}
-
-bool C4SoundEffect::Load(uint8_t *pData, size_t iDataLen, bool fStatic, bool fRaw)
-{
-	// Sound check
-	if (!Config.Sound.RXSound) return false;
-	// load directly from memory
-#ifdef C4SOUND_USE_FMOD
-	int32_t iOptions = FSOUND_NORMAL | FSOUND_2D | FSOUND_LOADMEMORY;
-	if (fRaw) iOptions |= FSOUND_LOADRAW;
-	if (!(pSample = FSOUND_Sample_Load(FSOUND_UNMANAGED, (const char *)pData,
-		iOptions, 0, iDataLen)))
+	// Sound level zero? Stop
+	if (level <= 0) { StopSoundEffect(name, obj); return; }
+	// Set volume of existing instance or create new instance
+	const auto it = Application.SoundSystem->FindInst(name, obj);
+	if (it)
 	{
-		Clear(); return false;
-	}
-	// get length
-	int32_t iSamples = FSOUND_Sample_GetLength(pSample);
-	int iSampleRate = SampleRate;
-	if (!iSamples || !FSOUND_Sample_GetDefaults(pSample, &iSampleRate, 0, 0, 0))
-		return false;
-	SampleRate = iSampleRate;
-	Length = iSamples * 10 / (SampleRate / 100);
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-	// Be paranoid about SDL_Mixer initialisation
-	if (!Application.MusicSystem.MODInitialized)
-	{
-		Clear(); return false;
-	}
-	if (!(pSample = Mix_LoadWAV_RW(SDL_RWFromConstMem(pData, iDataLen), 1)))
-	{
-		Clear(); return false;
-	}
-	// FIXME: Is this actually correct?
-	Length = 1000 * pSample->alen / (44100 * 2);
-	SampleRate = 0;
-#endif
-	*Name = '\0';
-	// Set usage time
-	UsageTime = Game.Time;
-	Static = fStatic;
-	return true;
-}
-
-void C4SoundEffect::Execute()
-{
-	// check for instances that have stopped and volume changes
-	for (C4SoundInstance *pInst = FirstInst; pInst;)
-	{
-		C4SoundInstance *pNext = pInst->pNext;
-		if (!pInst->Playing())
-			RemoveInst(pInst);
-		else
-			pInst->Execute();
-		pInst = pNext;
-	}
-}
-
-C4SoundInstance *C4SoundEffect::New(bool fLoop, int32_t iVolume, C4Object *pObj, int32_t iCustomFalloffDistance)
-{
-	// check: too many instances?
-	if (!fLoop && Instances >= C4MaxSoundInstances) return nullptr;
-	// create & init sound instance
-	C4SoundInstance *pInst = new C4SoundInstance();
-	if (!pInst->Create(this, fLoop, iVolume, pObj, 0, iCustomFalloffDistance)) { delete pInst; return nullptr; }
-	// add to list
-	AddInst(pInst);
-	// return
-	return pInst;
-}
-
-C4SoundInstance *C4SoundEffect::GetInstance(C4Object *pObj)
-{
-	for (C4SoundInstance *pInst = FirstInst; pInst; pInst = pInst->pNext)
-		if (pInst->getObj() == pObj)
-			return pInst;
-	return nullptr;
-}
-
-void C4SoundEffect::ClearPointers(C4Object *pObj)
-{
-	for (C4SoundInstance *pInst = FirstInst; pInst; pInst = pInst->pNext)
-		pInst->ClearPointers(pObj);
-}
-
-int32_t C4SoundEffect::GetStartedInstanceCount(int32_t iX, int32_t iY, int32_t iRad)
-{
-	int32_t cnt = 0;
-	for (C4SoundInstance *pInst = FirstInst; pInst; pInst = pInst->pNext)
-		if (pInst->isStarted() && pInst->getObj() && pInst->Inside(iX, iY, iRad))
-			cnt++;
-	return cnt;
-}
-
-int32_t C4SoundEffect::GetStartedInstanceCount()
-{
-	int32_t cnt = 0;
-	for (C4SoundInstance *pInst = FirstInst; pInst; pInst = pInst->pNext)
-		if (pInst->isStarted() && pInst->Playing() && !pInst->getObj())
-			cnt++;
-	return cnt;
-}
-
-void C4SoundEffect::AddInst(C4SoundInstance *pInst)
-{
-	pInst->pNext = FirstInst;
-	FirstInst = pInst;
-	Instances++;
-}
-
-void C4SoundEffect::RemoveInst(C4SoundInstance *pInst)
-{
-	if (pInst == FirstInst)
-		FirstInst = pInst->pNext;
-	else
-	{
-		C4SoundInstance *pPos = FirstInst;
-		while (pPos && pPos->pNext != pInst) pPos = pPos->pNext;
-		if (pPos)
-			pPos->pNext = pInst->pNext;
-	}
-	delete pInst;
-	Instances--;
-}
-
-C4SoundInstance::C4SoundInstance() :
-	pEffect(nullptr),
-	pNext(nullptr),
-	iChannel(-1),
-	iPan(0), iVolume(0) {}
-
-C4SoundInstance::~C4SoundInstance()
-{
-	Clear();
-}
-
-void C4SoundInstance::Clear()
-{
-	Stop();
-	iChannel = -1;
-}
-
-bool C4SoundInstance::Create(C4SoundEffect *pnEffect, bool fLoop, int32_t inVolume, C4Object *pnObj, int32_t inNearInstanceMax, int32_t iFalloffDistance)
-{
-	// Sound check
-	if (!Config.Sound.RXSound || !pnEffect) return false;
-	// Already playing? Stop
-	if (Playing()) { Stop(); return false; }
-	// Set effect
-	pEffect = pnEffect;
-	// Set
-	iStarted = timeGetTime();
-	iVolume = inVolume; iPan = 0; iChannel = -1;
-	iNearInstanceMax = inNearInstanceMax;
-	this->iFalloffDistance = iFalloffDistance;
-	pObj = pnObj;
-	fLooping = fLoop;
-	// Start
-	Execute();
-	// Safe usage
-	pEffect->UsageTime = Game.Time;
-	return true;
-}
-
-bool C4SoundInstance::CheckStart()
-{
-	// already started?
-	if (isStarted()) return true;
-	// don't bother if half the time is up and the sound is not looping
-	if (timeGetTime() > iStarted + pEffect->Length / 2 && !fLooping)
-		return false;
-	// do near-instances check
-	int32_t iNearInstances = pObj ? pEffect->GetStartedInstanceCount(pObj->x, pObj->y, C4NearSoundRadius)
-		: pEffect->GetStartedInstanceCount();
-	// over maximum?
-	if (iNearInstances > iNearInstanceMax) return false;
-	// Start
-	return Start();
-}
-
-bool C4SoundInstance::Start()
-{
-#ifdef C4SOUND_USE_FMOD
-	// Start
-	if ((iChannel = FSOUND_PlaySound(FSOUND_FREE, pEffect->pSample)) == -1)
-		return false;
-	if (!FSOUND_SetLoopMode(iChannel, fLooping ? FSOUND_LOOP_NORMAL : FSOUND_LOOP_OFF))
-	{
-		Stop(); return false;
-	}
-	// set position
-	if (timeGetTime() > iStarted + 20)
-	{
-		int32_t iTime = (timeGetTime() - iStarted) % pEffect->Length;
-		FSOUND_SetCurrentPosition(iChannel, iTime / 10 * pEffect->SampleRate / 100);
-	}
-#elif defined(HAVE_LIBSDL_MIXER)
-	// Be paranoid about SDL_Mixer initialisation
-	if (!Application.MusicSystem.MODInitialized) return false;
-	if ((iChannel = Mix_PlayChannel(-1, pEffect->pSample, fLooping ? -1 : 0)) == -1)
-		return false;
-#else
-	return false;
-#endif
-	// Update volume
-	Execute();
-	return true;
-}
-
-bool C4SoundInstance::Stop()
-{
-	if (!pEffect) return false;
-	// Stop sound
-	bool fRet = true;
-#ifdef C4SOUND_USE_FMOD
-	if (Playing())
-		fRet = !!FSOUND_StopSound(iChannel);
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-	// iChannel == -1 will halt all channels. Is that right?
-	if (Playing())
-		Mix_HaltChannel(iChannel);
-#endif
-	iChannel = -1;
-	iStarted = 0;
-	fLooping = false;
-	return fRet;
-}
-
-bool C4SoundInstance::Playing()
-{
-	if (!pEffect) return false;
-#ifdef C4SOUND_USE_FMOD
-	if (fLooping) return true;
-	return isStarted() ? FSOUND_GetCurrentSample(iChannel) == pEffect->pSample
-		: timeGetTime() < iStarted + pEffect->Length;
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-	return Application.MusicSystem.MODInitialized && (iChannel != -1) && Mix_Playing(iChannel);
-#endif
-	return false;
-}
-
-void C4SoundInstance::Execute()
-{
-	// Object deleted?
-	if (pObj && !pObj->Status) ClearPointers(pObj);
-	// initial values
-	int32_t iVol = iVolume * 256 * Config.Sound.SoundVolume / 100, iPan = C4SoundInstance::iPan;
-	// bound to an object?
-	if (pObj)
-	{
-		int iAudibility = pObj->GetAudibility();
-		// apply custom falloff distance
-		if (iFalloffDistance)
-		{
-			iAudibility = BoundBy<int32_t>(100 + (iAudibility - 100) * C4AudibilityRadius / iFalloffDistance, 0, 100);
-		}
-		iVol = iVol * iAudibility / 100;
-		iPan += pObj->GetAudiblePan();
-	}
-	// sound off?
-	if (!iVol)
-	{
-		// stop, if started
-		if (isStarted())
-		{
-#ifdef C4SOUND_USE_FMOD
-			FSOUND_StopSound(iChannel);
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-			Mix_HaltChannel(iChannel);
-#endif
-			iChannel = -1;
-		}
+		(**it).volume = level;
 	}
 	else
 	{
-		// start
-		if (!isStarted())
-			if (!CheckStart())
-				return;
-		// set volume & panning
-#ifdef C4SOUND_USE_FMOD
-		FSOUND_SetVolume(iChannel, BoundBy(iVol / 100, 0, 255));
-		FSOUND_SetPan(iChannel, BoundBy(256 * (iPan + 100) / 200, 0, 255));
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-		Mix_Volume(iChannel, (iVol * MIX_MAX_VOLUME) / (100 * 256));
-		Mix_SetPanning(iChannel, BoundBy((100 - iPan) * 256 / 100, 0, 255), BoundBy((100 + iPan) * 256 / 100, 0, 255));
-#endif
+		StartSoundEffect(name, true, level, obj);
 	}
 }
 
-void C4SoundInstance::SetVolumeByPos(int32_t x, int32_t y)
+bool StartSoundEffect(const char *const name, const bool loop, const std::int32_t volume,
+	C4Object *const obj, const std::int32_t falloffDistance)
 {
-	iVolume = Game.GraphicsSystem.GetAudibility(x, y, &iPan);
+	return Application.SoundSystem->NewInstance(name, loop, volume, 0, obj, falloffDistance) != nullptr;
 }
 
-void C4SoundInstance::ClearPointers(C4Object *pDelete)
+void StartSoundEffectAt(const char *const name, const std::int32_t x, const std::int32_t y)
 {
-	if (!Playing()) { Stop(); return; }
-	if (pObj == pDelete)
+	std::int32_t volume, pan;
+	Application.SoundSystem->GetVolumeByPos(x, y, volume, pan);
+	Application.SoundSystem->NewInstance(name, false, volume, pan, nullptr, 0);
+}
+
+void StopSoundEffect(const char *const name, const C4Object *const obj)
+{
+	if (const auto it = Application.SoundSystem->FindInst(name, obj))
 	{
-		// stop if looping (would most likely loop forever)
-		if (fLooping)
-			Stop();
-		// otherwise: set volume by last position
-		else
-			SetVolumeByPos(pObj->x, pObj->y);
-		pObj = nullptr;
+		(**it).sample.instances.erase(*it);
 	}
 }
 
-bool C4SoundInstance::Inside(int32_t iX, int32_t iY, int32_t iRad)
+C4SoundSystem::C4SoundSystem()
 {
-	return pObj &&
-		(pObj->x - iX) * (pObj->x - iX) + (pObj->y - iY) * (pObj->y - iY) <= iRad * iRad;
-}
-
-C4SoundSystem::C4SoundSystem() :
-	FirstSound(nullptr) {}
-
-C4SoundSystem::~C4SoundSystem() {}
-
-bool C4SoundSystem::Init()
-{
-	if (!Application.MusicSystem.MODInitialized &&
-		!Application.MusicSystem.InitializeMOD())
-		return false;
-
-	// Might be reinitialisation
-	ClearEffects();
-	// Open sound file
-	if (!SoundFile.IsOpen())
-		if (!SoundFile.Open(Config.AtExePath(C4CFN_Sound))) return false;
-#ifdef HAVE_LIBSDL_MIXER
-	Mix_AllocateChannels(C4MaxSoundInstances);
-#endif
-	return true;
-}
-
-void C4SoundSystem::Clear()
-{
-	ClearEffects();
-	// Close sound file
-	SoundFile.Close();
-}
-
-void C4SoundSystem::ClearEffects()
-{
-	// Clear sound bank
-	C4SoundEffect *csfx, *next;
-	for (csfx = FirstSound; csfx; csfx = next)
+	// Load Sound.c4g
+	C4Group soundFolder;
+	if (soundFolder.Open(Config.AtExePath(C4CFN_Sound)))
 	{
-		next = csfx->Next;
-		delete csfx;
+		LoadEffects(soundFolder);
 	}
-	FirstSound = nullptr;
+	else
+	{
+		Log(LoadResStr("IDS_PRC_NOSND"));
+	}
+}
+
+void C4SoundSystem::ClearPointers(const C4Object *const obj)
+{
+	for (auto &sample : samples)
+	{
+		sample.instances.remove_if(
+			[&](auto &inst) { return obj == inst.obj && !inst.DetachObj(); });
+	}
 }
 
 void C4SoundSystem::Execute()
 {
-	// Sound effect statistics & unload check
-	C4SoundEffect *csfx, *next = nullptr, *prev = nullptr;
-	for (csfx = FirstSound; csfx; csfx = next)
+	for (auto &sample : samples)
 	{
-		next = csfx->Next;
-		// Instance removal check
-		csfx->Execute();
-		// Unload check
-		if (!csfx->Static && Game.Time - csfx->UsageTime > SoundUnloadTime && !csfx->FirstInst)
-		{
-			if (prev) prev->Next = next;
-			else FirstSound = next;
-			delete csfx;
-		}
-		else
-			prev = csfx;
+		sample.Execute();
 	}
 }
 
-int32_t C4SoundSystem::EffectInBank(const char *szSound)
+void C4SoundSystem::LoadEffects(C4Group &group)
 {
-	int32_t iResult = 0;
-	C4SoundEffect *pSfx;
-	char szName[C4MaxSoundName + 4 + 1];
-	// Compose name (with extension)
-	SCopy(szSound, szName, C4MaxSoundName);
-	DefaultExtension(szName, "wav");
-	// Count all matching sounds in bank
-	for (pSfx = FirstSound; pSfx; pSfx = pSfx->Next)
-		if (WildcardMatch(szName, pSfx->Name))
-			iResult++;
-	return iResult;
-}
+	if (!Application.AudioSystem) return;
 
-C4SoundEffect *C4SoundSystem::AddEffect(const char *szSoundName)
-{
-	C4SoundEffect *nsfx;
-	// Allocate new bank entry
-	if (!(nsfx = new C4SoundEffect)) return nullptr;
-	// Load sound to entry
-	C4GRP_DISABLE_REWINDWARN // dynamic load; must rewind here :(
-		if (!nsfx->Load(szSoundName, SoundFile, false))
-			if (!nsfx->Load(szSoundName, Game.ScenarioFile, false))
-			{
-				C4GRP_ENABLE_REWINDWARN delete nsfx; return nullptr;
-			}
-	C4GRP_ENABLE_REWINDWARN
-		// Add sound to bank
-		nsfx->Next = FirstSound;
-	FirstSound = nsfx;
-	return nsfx;
-}
-
-C4SoundEffect *C4SoundSystem::GetEffect(const char *szSndName)
-{
-	C4SoundEffect *pSfx;
-	char szName[C4MaxSoundName + 4 + 1];
-	int32_t iNumber;
-	// Evaluate sound name
-	SCopy(szSndName, szName, C4MaxSoundName);
-	// Default extension
-	DefaultExtension(szName, "wav");
-	// Convert old style '*' wildcard to correct '?' wildcard
-	// For sound effects, '*' is supposed to match single digits only
-	SReplaceChar(szName, '*', '?');
-	// Sound with a wildcard: determine number of available matches
-	if (SCharCount('?', szName))
-	{
-		// Search global sound file
-		if (!(iNumber = SoundFile.EntryCount(szName)))
-			// Search scenario local files
-			if (!(iNumber = Game.ScenarioFile.EntryCount(szName)))
-				// Search bank loaded sounds
-				if (!(iNumber = EffectInBank(szName)))
-					// None found: failure
-					return nullptr;
-		// Insert index to name
-		iNumber = BoundBy(1 + SafeRandom(iNumber), 1, 9);
-		SReplaceChar(szName, '?', '0' + iNumber);
-	}
-	// Find requested sound effect in bank
-	for (pSfx = FirstSound; pSfx; pSfx = pSfx->Next)
-		if (SEqualNoCase(szName, pSfx->Name))
-			break;
-	// Sound not in bank, try add
-	if (!pSfx)
-		if (!(pSfx = AddEffect(szName)))
-			return nullptr;
-	return pSfx;
-}
-
-C4SoundInstance *C4SoundSystem::NewEffect(const char *szSndName, bool fLoop, int32_t iVolume, C4Object *pObj, int32_t iCustomFalloffDistance)
-{
-	// Sound not active
-	if (!Config.Sound.RXSound) return nullptr;
-	// Get sound
-	C4SoundEffect *csfx;
-	if (!(csfx = GetEffect(szSndName))) return nullptr;
-	// Play
-	return csfx->New(fLoop, iVolume, pObj, iCustomFalloffDistance);
-}
-
-C4SoundInstance *C4SoundSystem::FindInstance(const char *szSndName, C4Object *pObj)
-{
-	char szName[C4MaxSoundName + 4 + 1];
-	// Evaluate sound name (see GetEffect)
-	SCopy(szSndName, szName, C4MaxSoundName);
-	DefaultExtension(szName, "wav");
-	SReplaceChar(szName, '*', '?');
-	// Find an effect with a matching instance
-	for (C4SoundEffect *csfx = FirstSound; csfx; csfx = csfx->Next)
-		if (WildcardMatch(szName, csfx->Name))
-		{
-			C4SoundInstance *pInst = csfx->GetInstance(pObj);
-			if (pInst) return pInst;
-		}
-	return nullptr;
-}
-
-// LoadEffects will load all sound effects of all known sound types (i.e. *.wav and *.ogg)
-// To play an ogg effect, however, you will have to specify the extension in the sound
-// command (e.g. Sound("Hello.ogg")), because all playback functions will default to wav only.
-// LoadEffects is currently used for static loading from object definitions only.
-
-int32_t C4SoundSystem::LoadEffects(C4Group &hGroup, bool fStatic)
-{
-	int32_t iNum = 0;
-	char szFilename[_MAX_FNAME + 1];
-	char szFileType[_MAX_FNAME + 1];
-	C4SoundEffect *nsfx;
 	// Process segmented list of file types
-	for (int32_t i = 0; SCopySegment(C4CFN_SoundFiles, i, szFileType, '|', _MAX_FNAME); i++)
+	for (const auto fileType : { "*.wav", "*.ogg" })
 	{
+		char filename[_MAX_FNAME + 1];
 		// Search all sound files in group
-		hGroup.ResetSearch();
-		while (hGroup.FindNextEntry(szFileType, szFilename))
-			// Create and load effect
-			if (nsfx = new C4SoundEffect)
-				if (nsfx->Load(szFilename, hGroup, fStatic))
-				{
-					// Overload same name effects
-					RemoveEffect(szFilename);
-					// Add effect
-					nsfx->Next = FirstSound;
-					FirstSound = nsfx;
-					iNum++;
-				}
-				else
-					delete nsfx;
-	}
-	return iNum;
-}
-
-int32_t C4SoundSystem::RemoveEffect(const char *szFilename)
-{
-	int32_t iResult = 0;
-	C4SoundEffect *pNext, *pPrev = nullptr;
-	for (C4SoundEffect *pSfx = FirstSound; pSfx; pSfx = pNext)
-	{
-		pNext = pSfx->Next;
-		if (WildcardMatch(szFilename, pSfx->Name))
+		group.ResetSearch();
+		while (group.FindNextEntry(fileType, filename))
 		{
-			delete pSfx;
-			if (pPrev) pPrev->Next = pNext;
-			else FirstSound = pNext;
-			iResult++;
+			// Try to find existing sample of the same name
+			const auto existingSample = std::find_if(samples.cbegin(), samples.cend(),
+				[&](const auto &sample) { return SEqualNoCase(filename, sample.name.c_str()); });
+			// Load sample
+			StdBuf buf;
+			if (!group.LoadEntry(filename, buf)) continue;
+			const auto &newSample = samples.emplace_back(filename, buf.getData(), buf.getSize());
+			// Overload (i.e. remove) existing sample of the same name
+			if (existingSample != samples.cend()) samples.erase(existingSample);
 		}
-		else
-			pPrev = pSfx;
 	}
-	return iResult;
 }
 
-void C4SoundSystem::ClearPointers(C4Object *pObj)
+bool C4SoundSystem::ToggleOnOff()
 {
-	for (C4SoundEffect *pEff = FirstSound; pEff; pEff = pEff->Next)
-		pEff->ClearPointers(pObj);
+	auto &enabled = GetCfgSoundEnabled();
+	return enabled = !enabled;
+}
+
+void C4SoundSystem::Sample::Execute()
+{
+	// Execute each instance and remove it if necessary
+	instances.remove_if([](auto &inst) { return !inst.Execute(); });
+}
+
+bool C4SoundSystem::Instance::DetachObj()
+{
+	// Stop if looping (would most likely loop forever)
+	if (loop) return false;
+	// Otherwise: set volume by last position
+	GetVolumeByPos(obj->x, obj->y, volume, pan);
+	obj = nullptr;
+
+	// Do not stop instance
+	return true;
+}
+
+bool C4SoundSystem::Instance::Execute(const bool justStarted)
+{
+	// Object deleted? Detach object and check if this would delete this instance
+	if (obj && !obj->Status && !DetachObj()) return false;
+
+	// Remove instances that have stopped
+	if (channel && !channel->IsPlaying()) return false;
+
+	// Remove non-looping, inaudible sounds if half the time is up
+	std::uint32_t pos = ~0;
+	if (!loop && !channel && !justStarted)
+	{
+		pos = GetPlaybackPosition();
+		if (pos > sample.duration / 2) return false;
+	}
+
+	// Muted: No need to calculate new volume
+	if (!GetCfgSoundEnabled())
+	{
+		channel.reset();
+		return true;
+	}
+
+	// Calculate volume and pan
+	float vol = volume * Config.Sound.SoundVolume / 10000.0f, pan = this->pan / 100.0f;
+	if (obj)
+	{
+		std::int32_t audibility = obj->GetAudibility();
+		// apply custom falloff distance
+		if (falloffDistance != 0)
+		{
+			audibility = std::clamp<int32_t>(100 + (audibility - 100) * AudibilityRadius / falloffDistance, 0, 100);
+		}
+		vol *= audibility / 100.0f;
+		pan += obj->GetAudiblePan() / 100.0f;
+	}
+
+	// Sound off? Release channel to make it available for other instances.
+	if (vol <= 0.0f)
+	{
+		channel.reset();
+		return true;
+	}
+
+	// Create/restore channel if necessary
+	const auto createChannel = !channel;
+	if (createChannel)
+	{
+		channel.emplace(sample.sample, loop);
+		if (!justStarted)
+		{
+			if (pos == ~0) pos = GetPlaybackPosition();
+			channel->SetPosition(pos);
+		}
+	}
+
+	// Update volume
+	channel->SetVolumeAndPan(vol, pan);
+	if (createChannel) channel->Unpause();
+
+	return true;
+}
+
+std::uint32_t C4SoundSystem::Instance::GetPlaybackPosition() const
+{
+	return std::chrono::duration_cast<std::chrono::milliseconds>(
+		std::chrono::steady_clock::now() - startTime).count() % sample.duration;
+}
+
+auto C4SoundSystem::FindInst(const char *wildcard, const C4Object *const obj) ->
+	std::optional<decltype(Sample::instances)::iterator>
+{
+	const auto wildcardStr = PrepareFilename(wildcard);
+	wildcard = wildcardStr.c_str();
+
+	for (auto &sample : samples)
+	{
+		// Skip samples whose names do not match the wildcard
+		if (!WildcardMatch(wildcard, sample.name.c_str())) continue;
+		// Try to find an instance that is bound to obj
+		auto it = std::find_if(sample.instances.begin(), sample.instances.end(),
+			[&](const auto &inst) { return inst.obj == obj; });
+		if (it != sample.instances.end()) return it;
+	}
+
+	// Not found
+	return {};
+}
+
+bool &C4SoundSystem::GetCfgSoundEnabled()
+{
+	return Game.IsRunning ? Config.Sound.RXSound : Config.Sound.FESamples;
+}
+
+void C4SoundSystem::GetVolumeByPos(std::int32_t x, std::int32_t y,
+	std::int32_t &volume, std::int32_t &pan)
+{
+	volume = Game.GraphicsSystem.GetAudibility(x, y, &pan);
+}
+
+auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
+	const std::int32_t volume, const std::int32_t pan, C4Object *const obj,
+	const std::int32_t falloffDistance) -> Instance *
+{
+	if (!Application.AudioSystem) return nullptr;
+
+	const auto filenameStr = PrepareFilename(filename);
+	filename = filenameStr.c_str();
+
+	Sample *sample;
+	// Search for matching file if name contains no wildcard
+	if (filenameStr.find('?') == std::string::npos)
+	{
+		const auto end = samples.end();
+		const auto it = std::find_if(samples.begin(), end,
+			[&](const auto &sample) { return SEqualNoCase(filename, sample.name.c_str()); });
+		// File not found
+		if (it == end) return nullptr;
+		// Success: Found the file
+		sample = &*it;
+	}
+	// Randomly select any matching file if name contains wildcard
+	else
+	{
+		std::vector<Sample *> matches;
+		for (auto &sample : samples)
+		{
+			if (WildcardMatch(filename, sample.name.c_str()))
+			{
+				matches.push_back(&sample);
+			}
+		}
+		// File not found
+		if (matches.empty()) return nullptr;
+		// Success: Randomly select any of the matching files
+		sample = matches[SafeRandom(matches.size())];
+	}
+
+	// Too many instances?
+	if (!loop && sample->instances.size() >= MaxSoundInstances) return nullptr;
+
+	// Create instance
+	auto &inst = sample->instances.emplace_back(*sample, loop, volume, obj, falloffDistance);
+	if (!inst.Execute(true))
+	{
+		sample->instances.pop_back();
+		return nullptr;
+	}
+
+	return &inst;
+}
+
+std::string C4SoundSystem::PrepareFilename(const char *const filename)
+{
+	auto result = *GetExtension(filename) ?
+		filename : std::string{filename} + ".wav";
+	std::replace(result.begin(), result.end(), '*', '?');
+	return result;
 }

@@ -186,11 +186,6 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		Console.Close();
 		return TRUE;
 
-	case MM_MCINOTIFY:
-		if (wParam == MCI_NOTIFY_SUCCESSFUL)
-			Application.MusicSystem.NotifySuccess();
-		return TRUE;
-
 	case WM_INITDIALOG:
 		SendMessage(hDlg, DM_SETDEFID, (WPARAM)IDOK, (LPARAM)0);
 		Console.UpdateMenuText(GetMenu(hDlg));

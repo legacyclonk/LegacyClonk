@@ -35,6 +35,8 @@
 
 #include <StdRegistry.h> // For DDraw emulation warning
 
+#include <stdexcept>
+
 constexpr unsigned int defaultGameTickDelay = 16;
 
 C4Sec1TimerCallbackBase::C4Sec1TimerCallbackBase() : pNext(nullptr), iRefs(2)
@@ -224,15 +226,25 @@ bool C4Application::PreInit()
 
 	Game.SetInitProgress(fDoUseStartupDialog ? 10.0f : 1.0f);
 
+#ifdef ENABLE_SOUND
+	try
+	{
+		if (!AudioSystem) AudioSystem.emplace();
+	}
+	catch (const std::runtime_error &e)
+	{
+		Log(e.what());
+		Log(LoadResStr("IDS_PRC_NOAUDIO"));
+	}
+#endif
+
 	// Music
-	if (!MusicSystem.Init("Frontend.*"))
-		Log(LoadResStr("IDS_PRC_NOMUSIC"));
+	MusicSystem.emplace();
 
 	Game.SetInitProgress(fDoUseStartupDialog ? 20.0f : 2.0f);
 
 	// Sound
-	if (!SoundSystem.Init())
-		Log(LoadResStr("IDS_PRC_NOSND"));
+	SoundSystem.emplace();
 
 	Game.SetInitProgress(fDoUseStartupDialog ? 30.0f : 3.0f);
 
@@ -270,8 +282,9 @@ void C4Application::Clear()
 	// gamepad clear
 	delete pGamePadControl; pGamePadControl = nullptr;
 	// music system clear
-	MusicSystem.Clear();
-	SoundSystem.Clear();
+	SoundSystem.reset();
+	MusicSystem.reset();
+	AudioSystem.reset();
 	// Clear direct draw (late, because it's needed for e.g. Log)
 	delete DDraw; DDraw = nullptr;
 	// Close window
@@ -424,7 +437,7 @@ void C4Application::Execute()
 		else
 			Game.DoSkipFrame = false;
 		// Sound
-		SoundSystem.Execute();
+		SoundSystem->Execute();
 		// Gamepad
 		if (pGamePadControl) pGamePadControl->Execute();
 		break;

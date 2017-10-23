@@ -771,7 +771,7 @@ void C4GraphicsSystem::DrawHelp()
 int32_t C4GraphicsSystem::GetAudibility(int32_t iX, int32_t iY, int32_t *iPan, int32_t iAudibilityRadius)
 {
 	// default audibility radius
-	if (!iAudibilityRadius) iAudibilityRadius = C4AudibilityRadius;
+	if (!iAudibilityRadius) iAudibilityRadius = C4SoundSystem::AudibilityRadius;
 	// Accumulate audibility by viewports
 	int32_t iAudible = 0; *iPan = 0;
 	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
@@ -799,7 +799,7 @@ int32_t C4GraphicsSystem::GetAudibility(int32_t iX, int32_t iY, int32_t *iPan, i
 		}
 
 		iAudible = (std::max)(iAudible,
-			BoundBy<int32_t>(100 - 100 * Distance(listenerX, listenerY, iX, iY) / C4AudibilityRadius, 0, 100));
+			BoundBy<int32_t>(100 - 100 * Distance(listenerX, listenerY, iX, iY) / C4SoundSystem::AudibilityRadius, 0, 100));
 		*iPan += (iX - (cvp->ViewX + cvp->ViewWdt / 2)) / 5;
 	}
 	*iPan = BoundBy<int32_t>(*iPan, -100, 100);

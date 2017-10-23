@@ -1,6 +1,7 @@
 src/C4Action.cpp
 src/C4Application.cpp
 src/C4Application.h
+src/C4AudioSystem.h
 src/C4Aul.cpp
 src/C4Aul.h
 src/C4AulExec.cpp
@@ -146,8 +147,6 @@ src/C4MessageInput.h
 src/C4MouseControl.cpp
 src/C4MouseControl.h
 src/C4Movement.cpp
-src/C4MusicFile.cpp
-src/C4MusicFile.h
 src/C4MusicSystem.cpp
 src/C4MusicSystem.h
 src/C4NameList.cpp

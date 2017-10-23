@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -14,12 +14,9 @@
  * for the above references.
  */
 
-/* Handles Music.c4g and randomly plays songs */
-
 #include <C4Include.h>
 #include <C4MusicSystem.h>
 
-#include <C4MusicFile.h>
 #include <C4Application.h>
 #include <C4Random.h>
 #include <C4Log.h>
@@ -33,527 +30,383 @@
 #include <SDL.h>
 #endif
 
+#include <algorithm>
+#include <cstring>
+#include <utility>
+
 // helper
-const char *SGetRelativePath(const char *strPath)
+const char *SGetRelativePath(const char *strPath);
+
+C4MusicSystem::C4MusicSystem()
 {
-	const char *strEXEPath = Config.AtExePath("");
-	while (*strEXEPath == *strPath) { strEXEPath++; strPath++; }
-	return strPath;
-}
+	if (!Application.AudioSystem) return;
 
-C4MusicSystem::C4MusicSystem() :
-	PlayMusicFile(nullptr),
-	Songs(nullptr),
-	SongCount(0),
-	Volume(100) {}
-
-C4MusicSystem::~C4MusicSystem()
-{
-	Clear();
-}
-
-bool C4MusicSystem::InitializeMOD()
-{
-#ifdef USE_FMOD
-#ifdef _WIN32
-	// Debug code
-	switch (Config.Sound.FMMode)
-	{
-	case 0:
-		FSOUND_SetOutput(FSOUND_OUTPUT_WINMM);
-		break;
-	case 1:
-		FSOUND_SetOutput(FSOUND_OUTPUT_DSOUND);
-		FSOUND_SetHWND(Application.pWindow->hWindow);
-		break;
-	case 2:
-		FSOUND_SetOutput(FSOUND_OUTPUT_DSOUND);
-		FSOUND_SetDriver(0);
-		break;
-	}
-	FSOUND_SetMixer(FSOUND_MIXER_QUALITY_AUTODETECT);
-#endif
-	if (FSOUND_GetVersion() < FMOD_VERSION)
-	{
-		LogF("FMod: You are using the wrong DLL version!  You should be using %.02f", FMOD_VERSION);
-		return false;
-	}
-	if (!FSOUND_Init(44100, 32, 0))
-	{
-		LogF("FMod: %s", FMOD_ErrorString(FSOUND_GetError()));
-		return false;
-	}
-	// ok
-	MODInitialized = true;
-	return true;
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-	SDL_version compile_version;
-	const SDL_version *link_version;
-	MIX_VERSION(&compile_version);
-	link_version = Mix_Linked_Version();
-	LogF("SDL_mixer runtime version is %d.%d.%d (compiled with %d.%d.%d)",
-		link_version->major, link_version->minor, link_version->patch,
-		compile_version.major, compile_version.minor, compile_version.patch);
-	if (!SDL_WasInit(SDL_INIT_AUDIO) && SDL_InitSubSystem(SDL_INIT_AUDIO))
-	{
-		LogF("SDL: %s", SDL_GetError());
-		return false;
-	}
-	// frequency, format, stereo, chunksize
-	if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 1024))
-	{
-		LogF("SDL_mixer: %s", SDL_GetError());
-		return false;
-	}
-	MODInitialized = true;
-	return true;
-#endif
-	return false;
-}
-
-void C4MusicSystem::DeinitializeMOD()
-{
-#ifdef USE_FMOD
-	FSOUND_StopSound(FSOUND_ALL); /* to prevent some hangs in FMOD */
-#ifdef DEBUG
-	Sleep(0);
-#endif
-	FSOUND_Close();
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-	Mix_CloseAudio();
-	SDL_Quit();
-#endif
-	MODInitialized = false;
-}
-
-bool C4MusicSystem::Init(const char *PlayList)
-{
-	// init mod
-	if (!MODInitialized && !InitializeMOD()) return false;
-
-	// Might be reinitialisation
-	ClearSongs();
-	// Global music file
+	// Load songs from global music file
 	LoadDir(Config.AtExePath(C4CFN_Music));
-	// read MoreMusic.txt
+	// Read MoreMusic.txt
 	LoadMoreMusic();
-	// set play list
-	if (PlayList) SetPlayList(PlayList); else SetPlayList(0);
-	// set initial volume
-	SetVolume(Config.Sound.MusicVolume);
-
-	// ok
-	return true;
 }
 
-bool C4MusicSystem::InitForScenario(C4Group &hGroup)
+void C4MusicSystem::Execute()
 {
-	// check if the scenario contains music
-	bool fLocalMusic = false;
-	StdStrBuf MusicDir;
-	if (GrpContainsMusic(hGroup))
+	if (!Application.AudioSystem) return;
+
+	if (!Application.AudioSystem->IsMusicPlaying())
 	{
-		// clear global songs
-		ClearSongs();
-		fLocalMusic = true;
-		// add songs
-		MusicDir.Take(Game.ScenarioFile.GetFullName());
-		LoadDir(MusicDir.getData());
-		// log
-		LogF(LoadResStr("IDS_PRC_LOCALMUSIC"), SGetRelativePath(MusicDir.getData()));
+		ClearPlayingSong();
+		Play();
 	}
-	// check for music folders in group set
-	C4Group *pMusicFolder = nullptr;
-	while (pMusicFolder = Game.GroupSet.FindGroup(C4GSCnt_Music, pMusicFolder))
+}
+
+void C4MusicSystem::Play(const char *const songname, const bool loop)
+{
+	if (!Application.AudioSystem) return;
+
+	// Music disabled by user or scenario?
+	if (!GetCfgMusicEnabled() || (Game.IsRunning && !Game.IsMusicEnabled)) return;
+
+	const Song *newSong = nullptr;
+
+	// Play specified song
+	if (songname && songname[0])
 	{
-		if (!fLocalMusic)
+		newSong = FindSong(songname);
+	}
+	// Play random song
+	else
+	{
+		// Create list of enabled songs excluding the most recently played song
+		std::vector<Song *> enabledSongs;
+		for (auto &song : songs)
 		{
-			// clear global songs
-			ClearSongs();
-			fLocalMusic = true;
+			if (song.enabled && &song != mostRecentlyPlayed) enabledSongs.emplace_back(&song);
 		}
-		// add songs
-		MusicDir.Take(pMusicFolder->GetFullName());
-		MusicDir.AppendChar(DirectorySeparator);
-		MusicDir.Append(C4CFN_Music);
-		LoadDir(MusicDir.getData());
-		// log
-		LogF(LoadResStr("IDS_PRC_LOCALMUSIC"), SGetRelativePath(MusicDir.getData()));
-	}
-	// no music?
-	if (!SongCount) return false;
-	// set play list
-	SetPlayList(0);
-	// ok
-	return true;
-}
-
-void C4MusicSystem::Load(const char *szFile)
-{
-	// safety
-	if (!szFile || !*szFile) return;
-	C4MusicFile *NewSong = nullptr;
-	// get extension
-#ifdef USE_FMOD
-	const char *szExt = GetExtension(szFile);
-	// get type
-	switch (GetMusicFileTypeByExtension(GetExtension(szFile)))
-	{
-	case MUSICTYPE_MOD:
-		if (MODInitialized) NewSong = new C4MusicFileMOD;
-		break;
-	case MUSICTYPE_MP3:
-		if (MODInitialized) NewSong = new C4MusicFileMP3;
-		break;
-	case MUSICTYPE_OGG:
-		if (MODInitialized) NewSong = new C4MusicFileOgg;
-		break;
-
-	case MUSICTYPE_MID:
-		if (MODInitialized)
-			NewSong = new C4MusicFileMID;
-		break;
-	}
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-	if (GetMusicFileTypeByExtension(GetExtension(szFile)) == MUSICTYPE_UNKNOWN) return;
-	NewSong = new C4MusicFileSDL;
-#endif
-	// unrecognized type/mod not initialized?
-	if (!NewSong) return;
-	// init music file
-	NewSong->Init(szFile);
-	// add song to list (push back)
-	C4MusicFile *pCurr = Songs;
-	while (pCurr && pCurr->pNext) pCurr = pCurr->pNext;
-	if (pCurr) pCurr->pNext = NewSong; else Songs = NewSong;
-	NewSong->pNext = nullptr;
-	// count songs
-	SongCount++;
-}
-
-void C4MusicSystem::LoadDir(const char *szPath)
-{
-	char Path[_MAX_FNAME + 1], File[_MAX_FNAME + 1];
-	C4Group *pDirGroup = nullptr;
-	// split path
-	SCopy(szPath, Path, _MAX_FNAME);
-	char *pFileName = GetFilename(Path);
-	SCopy(pFileName, File);
-	*(pFileName - 1) = 0;
-	// no file name?
-	if (!File[0])
-		// -> add the whole directory
-		SCopy("*", File);
-	// no wildcard match?
-	else if (!SSearch(File, "*?"))
-	{
-		// then it's either a file or a directory - do the test with C4Group
-		pDirGroup = new C4Group();
-		if (!pDirGroup->Open(szPath))
+		// No songs? Then play most recently played song again if it is enabled
+		if (enabledSongs.empty())
 		{
-			// so it must be a file
-			if (!pDirGroup->Open(Path))
-			{
-				// -> file/dir doesn't exist
-				LogF("Music File not found: %s", szPath);
-				delete pDirGroup;
-				return;
-			}
-			// mother group is open... proceed with normal handling
+			if (mostRecentlyPlayed && mostRecentlyPlayed->enabled) newSong = mostRecentlyPlayed;
 		}
+		// If there are enabled songs, randomly select one of them
 		else
 		{
-			// ok, set wildcard (load the whole directory)
-			SCopy(szPath, Path);
-			SCopy("*", File);
+			newSong = enabledSongs[SafeRandom(enabledSongs.size())];
 		}
 	}
-	// open directory group, if not already done so
-	if (!pDirGroup)
+
+	// File not found?
+	if (!newSong) return;
+
+	// Stop old music
+	Stop();
+
+	LogF(LoadResStr("IDS_PRC_PLAYMUSIC"), GetFilename(newSong->name.c_str()));
+
+	// Load and play music file
+	try
 	{
-		pDirGroup = new C4Group();
-		if (!pDirGroup->Open(Path))
+		char *data; std::size_t size;
+		if (!C4Group_ReadFile(newSong->name.c_str(), &data, &size))
 		{
-			LogF("Music File not found: %s", szPath);
-			delete pDirGroup;
-			return;
+			throw std::runtime_error("Cannot read file");
 		}
+		playingFileContents.reset(data);
+		playingFile.emplace(data, size);
+		Application.AudioSystem->PlayMusic(*playingFile, loop);
+		UpdateVolume();
+		Application.AudioSystem->UnpauseMusic();
 	}
-	// search file(s)
-	char szFile[_MAX_FNAME + 1];
-	pDirGroup->ResetSearch();
-	while (pDirGroup->FindNextEntry(File, szFile))
+
+	catch (const std::runtime_error &e)
 	{
-		char strFullPath[_MAX_FNAME + 1];
-		sprintf(strFullPath, "%s%c%s", Path, DirectorySeparator, szFile);
-		Load(strFullPath);
+		LogF("Cannot play music file %s:", newSong->name.c_str());
+		Log(e.what());
+		ClearPlayingSong();
+		return;
 	}
-	// free it
-	delete pDirGroup;
+	catch (...)
+	{
+		ClearPlayingSong();
+		throw;
+	}
+
+	mostRecentlyPlayed = newSong;
 }
 
-void C4MusicSystem::LoadMoreMusic()
+void C4MusicSystem::PlayFrontendMusic()
 {
-	uint8_t *szMoreMusic;
-	CStdFile MoreMusicFile;
-	// load MoreMusic.txt
-	if (!MoreMusicFile.Load(Config.AtExePath(C4CFN_MoreMusic), &szMoreMusic, nullptr, 1)) return;
-	// read contents
-	char *pPos = reinterpret_cast<char *>(szMoreMusic);
-	while (pPos && *pPos)
+	if (!Application.AudioSystem) return;
+
+	SetPlayList("Frontend.*");
+	Play();
+}
+
+void C4MusicSystem::PlayScenarioMusic(C4Group &group)
+{
+	if (!Application.AudioSystem) return;
+
+	std::list<std::string> musicDirs;
+
+	// Check if the scenario contains music
+	if (std::any_of(std::cbegin(MusicFileExtensions), std::cend(MusicFileExtensions),
+		[&](const auto ext) { return group.FindEntry((std::string("*.") + ext).c_str()); }))
 	{
-		// get line
-		char szLine[1024 + 1];
-		SCopyUntil(pPos, szLine, '\n', 1024);
-		pPos = strchr(pPos, '\n'); if (pPos) pPos++;
-		// remove leading whitespace
-		char *pLine = szLine;
-		while (*pLine == ' ' || *pLine == '\t' || *pLine == '\r') pLine++;
-		// and whitespace at end
-		char *p = pLine + strlen(pLine) - 1;
-		while (*p == ' ' || *p == '\t' || *p == '\r') { *p = 0; --p; }
-		// comment?
-		if (*pLine == '#')
-		{
-			// might be a "directive"
-			if (SEqual(pLine, "#clear"))
-				ClearSongs();
-			continue;
-		}
-		// try to load file(s)
-		LoadDir(pLine);
+		musicDirs.emplace_back(Game.ScenarioFile.GetFullName().getData());
 	}
-	delete[] szMoreMusic;
+
+	// Check for music folders in group set
+	for (C4Group *group = nullptr; group = Game.GroupSet.FindGroup(C4GSCnt_Music, group); )
+	{
+		musicDirs.emplace_back(std::string() +
+			group->GetFullName().getData() + DirectorySeparator + C4CFN_Music);
+	}
+
+	// Clear old songs
+	if (!musicDirs.empty()) ClearSongs();
+
+	// Load music from each directory
+	for (const auto &musicDir : musicDirs)
+	{
+		LoadDir(musicDir.c_str());
+		LogF(LoadResStr("IDS_PRC_LOCALMUSIC"), Config.AtExeRelativePath(musicDir.c_str()));
+	}
+
+	SetPlayList(nullptr);
+	Play();
+}
+
+long C4MusicSystem::SetPlayList(const char *const playlist)
+{
+	if (!Application.AudioSystem) return 0;
+
+	if (playlist)
+	{
+		// Disable all songs
+		for (auto &song : songs)
+		{
+			song.enabled = false;
+		}
+
+		auto startIt = playlist;
+		const auto endIt = std::strchr(playlist, 0);
+		while (true)
+		{
+			// Read next filename from playlist string
+			const auto delimIt = std::find(startIt, endIt, ';');
+			const std::string filename(startIt, delimIt);
+
+			// Enable matching songs
+			for (auto &song : songs)
+			{
+				if (song.enabled) continue;
+				song.enabled = WildcardMatch(
+					filename.c_str(), GetFilename(song.name.c_str()));
+			}
+
+			if (delimIt == endIt) break;
+			startIt = delimIt + 1;
+		}
+	}
+	else
+	{
+		/* Default: all files except the ones beginning with an at ('@')
+		   and frontend and credits music. */
+		for (auto &song : songs)
+		{
+			const auto filename = GetFilename(song.name.c_str());
+			const auto ignorePrefix = { "@", "Credits.", "Frontend." };
+			song.enabled = !std::any_of(ignorePrefix.begin(), ignorePrefix.end(),
+				[&](const auto &prefix) { return SEqual2(filename, prefix); });
+		}
+	}
+
+	// Return number of playlist entries
+	return std::count_if(songs.cbegin(), songs.cend(),
+		[](const auto &song) { return song.enabled; });
+}
+
+void C4MusicSystem::Stop(const int fadeoutMS)
+{
+	if (!Application.AudioSystem) return;
+
+	if (fadeoutMS == 0)
+	{
+		ClearPlayingSong();
+	}
+	else
+	{
+		if (Application.AudioSystem->IsMusicPlaying())
+		{
+			Application.AudioSystem->FadeOutMusic(fadeoutMS);
+		}
+	}
+}
+
+bool C4MusicSystem::ToggleOnOff()
+{
+	auto &enabled = GetCfgMusicEnabled();
+	enabled = !enabled;
+	if (enabled)
+	{
+		Play();
+	}
+	else
+	{
+		Stop();
+	}
+	return enabled;
+}
+
+void C4MusicSystem::UpdateVolume()
+{
+	if (!Application.AudioSystem) return;
+
+	if (Application.AudioSystem->IsMusicPlaying())
+	{
+		float volume = Config.Sound.MusicVolume / 100.0f;
+		if (Game.IsRunning) volume *= Game.iMusicLevel / 100.0f;
+		Application.AudioSystem->SetMusicVolume(volume);
+	}
+}
+
+bool &C4MusicSystem::GetCfgMusicEnabled()
+{
+	return Game.IsRunning ? Config.Sound.RXMusic : Config.Sound.FEMusic;
+}
+
+void C4MusicSystem::ClearPlayingSong()
+{
+	Application.AudioSystem->StopMusic();
+	playingFile.reset();
+	playingFileContents.reset();
 }
 
 void C4MusicSystem::ClearSongs()
 {
 	Stop();
-	while (Songs)
+	mostRecentlyPlayed = nullptr;
+	songs.clear();
+}
+
+auto C4MusicSystem::FindSong(const std::string &name) const -> const Song *
+{
+	// Try exact path
+	auto pathIt = std::find_if(songs.cbegin(), songs.cend(),
+		[&](const auto &song) { return name == song.name; });
+	if (pathIt != songs.cend()) return &*pathIt;
+
+	// Try exact filename
+	auto filenameIt = std::find_if(songs.cbegin(), songs.cend(),
+		[&](const auto &song) { return name == GetFilename(song.name.c_str()); });
+	if (filenameIt != songs.cend()) return &*filenameIt;
+
+	// Try all known extensions
+	for (const auto &song : songs)
 	{
-		C4MusicFile *pFile = Songs;
-		Songs = pFile->pNext;
-		delete pFile;
-	}
-	SongCount = 0;
-}
-
-void C4MusicSystem::Clear()
-{
-#ifdef HAVE_LIBSDL_MIXER
-	// Stop a fadeout
-	Mix_HaltMusic();
-#endif
-	ClearSongs();
-	if (MODInitialized) { DeinitializeMOD(); }
-}
-
-void C4MusicSystem::Execute()
-{
-#ifndef HAVE_LIBSDL_MIXER
-	if (!Tick35)
-#endif
-		if (Game.IsRunning ? Config.Sound.RXMusic : Config.Sound.FEMusic)
-			if (!PlayMusicFile)
-				Play();
-			else
-				PlayMusicFile->CheckIfPlaying();
-}
-
-bool C4MusicSystem::Play(const char *szSongname, bool fLoop)
-{
-	C4MusicFile *NewFile = nullptr;
-
-	// Specified song name
-	if (szSongname && szSongname[0])
-	{
-		// Search in list
-		for (NewFile = Songs; NewFile; NewFile = NewFile->pNext)
+		const auto songFilename = GetFilename(song.name.c_str());
+		if (std::any_of(std::cbegin(MusicFileExtensions), std::cend(MusicFileExtensions),
+			[&](const auto &ext) { return name + "." + ext == songFilename; }))
 		{
-			char songname[_MAX_FNAME + 1];
-			SCopy(szSongname, songname, _MAX_FNAME - 4); DefaultExtension(songname, "mid");
-			if (SEqual(GetFilename(NewFile->FileName), songname))
-				break;
-			SCopy(szSongname, songname, _MAX_FNAME - 4); DefaultExtension(songname, "ogg");
-			if (SEqual(GetFilename(NewFile->FileName), songname))
-				break;
+			return &song;
 		}
 	}
 
-	// Random song
-	else
+	// Not found
+	return nullptr;
+}
+
+void C4MusicSystem::LoadDir(const char *const path)
+{
+	// Split path
+	const auto filenameStart = GetFilename(path);
+	std::string file{filenameStart};
+	std::string dir = (filenameStart == path ?
+		std::string{} : std::string{path, filenameStart - 1});
+
+	// Open group
+	C4Group dirGroup;
+	bool success = false;
+	// No filename?
+	if (file.empty())
 	{
-		// try to find random song
-		for (int i = 0; i <= 1000; i++)
+		// Add the whole directory
+		file = "*";
+	}
+	// No wildcard in filename?
+	else if (file.find_first_of("*?") == std::string::npos)
+	{
+		// Then it's either a file or a directory - do the test with C4Group
+		success = dirGroup.Open(path);
+		if (success)
 		{
-			int nmb = SafeRandom((std::max)(ASongCount / 2 + ASongCount % 2, ASongCount - SCounter));
-			int j;
-			for (j = 0, NewFile = Songs; NewFile; NewFile = NewFile->pNext)
-				if (!NewFile->NoPlay)
-					if (NewFile->LastPlayed == -1 || NewFile->LastPlayed < SCounter - ASongCount / 2)
-					{
-						j++;
-						if (j > nmb) break;
-					}
-			if (NewFile) break;
+			dir = path;
+			file = "*";
+		}
+		// If not successful, it must be a file
+	}
+	// Open directory group, if not already done so
+	if (!success) success = dirGroup.Open(dir.c_str());
+	if (!success)
+	{
+		LogF(LoadResStr("IDS_PRC_MUSICFILENOTFOUND"), path);
+		return;
+	}
+
+	// Search music files and add them to song list
+	char entry[_MAX_FNAME + 1];
+	dirGroup.ResetSearch();
+	while (dirGroup.FindNextEntry(file.c_str(), entry))
+	{
+		const auto fullPath = dir + DirectorySeparator + entry;
+		const auto fileExt = GetExtension(entry);
+		if (std::any_of(std::cbegin(MusicFileExtensions), std::cend(MusicFileExtensions),
+			[&](const auto &musicExt) { return SEqualNoCase(fileExt, musicExt); }))
+		{
+			songs.emplace_back(fullPath);
 		}
 	}
-
-	// File found?
-	if (!NewFile)
-		return false;
-
-	// Stop old music
-	Stop();
-
-	LogF(LoadResStr("IDS_PRC_PLAYMUSIC"), GetFilename(NewFile->FileName));
-
-	// Play new song
-	if (!NewFile->Play(fLoop)) return false;
-	PlayMusicFile = NewFile;
-	NewFile->LastPlayed = SCounter++;
-	Loop = fLoop;
-
-	// Set volume
-	PlayMusicFile->SetVolume(Volume);
-
-	return true;
 }
 
-void C4MusicSystem::NotifySuccess()
+void C4MusicSystem::LoadMoreMusic()
 {
-	// nothing played?
-	if (!PlayMusicFile) return;
-	// loop?
-	if (Loop)
-		if (PlayMusicFile->Play())
-			return;
-	// stop
-	Stop();
-}
+	// Read MoreMusic.txt file or cancel if not present
+	CStdFile MoreMusicFile;
+	std::uint8_t *fileContentsTmp; int size;
+	if (!MoreMusicFile.Load(Config.AtExePath(C4CFN_MoreMusic), &fileContentsTmp, &size)) return;
+	std::unique_ptr<std::uint8_t[]> fileContents(fileContentsTmp);
 
-void C4MusicSystem::FadeOut(int fadeout_ms)
-{
-	if (PlayMusicFile)
+	// read contents
+	const char *rest = reinterpret_cast<const char *>(fileContents.get());
+	const auto end = rest + size;
+
+	while (rest != end)
 	{
-		PlayMusicFile->Stop(fadeout_ms);
-	}
-}
+		// Get next line
+		const auto lineEnd = std::find(rest, end, '\n');
+		std::string line(rest, lineEnd);
+		rest = (lineEnd == end ? end : lineEnd + 1);
 
-bool C4MusicSystem::Stop()
-{
-	if (PlayMusicFile)
-	{
-		PlayMusicFile->Stop();
-		PlayMusicFile = nullptr;
-	}
-	return true;
-}
+		// Trim
+		constexpr char whitespace[] = " \t\r";
+		const auto trimLeft = line.find_first_not_of(whitespace);
+		// Skip if line would be empty after trimming whitespace
+		if (trimLeft == std::string::npos) continue;
+		const auto trimRight = line.find_last_not_of(whitespace) + 1;
+		line = line.substr(trimLeft, trimRight - trimLeft);
 
-int C4MusicSystem::SetVolume(int iLevel)
-{
-	if (iLevel > 100) iLevel = 100;
-	if (iLevel < 0) iLevel = 0;
-	// Save volume for next file
-	Volume = iLevel;
-	// Tell it to the act file
-	if (PlayMusicFile)
-		PlayMusicFile->SetVolume(iLevel);
-	return iLevel;
-}
-
-MusicType GetMusicFileTypeByExtension(const char *ext)
-{
-	if (SEqualNoCase(ext, "mid"))
-		return MUSICTYPE_MID;
-#if defined(USE_FMOD) || defined(HAVE_LIBSDL_MIXER)
-	else if (SEqualNoCase(ext, "xm") || SEqualNoCase(ext, "it") || SEqualNoCase(ext, "s3m") || SEqualNoCase(ext, "mod"))
-		return MUSICTYPE_MOD;
-#ifdef USE_MP3
-	else if (SEqualNoCase(ext, "mp3"))
-		return MUSICTYPE_MP3;
-#endif
-#endif
-	else if (SEqualNoCase(ext, "ogg"))
-		return MUSICTYPE_OGG;
-	return MUSICTYPE_UNKNOWN;
-}
-
-bool C4MusicSystem::GrpContainsMusic(C4Group &rGrp)
-{
-	// search for known file extensions
-	return rGrp.FindEntry("*.mid")
-#ifdef USE_MP3
-		|| rGrp.FindEntry("*.mp3")
-#endif
-		|| rGrp.FindEntry("*.xm")
-		|| rGrp.FindEntry("*.it")
-		|| rGrp.FindEntry("*.s3m")
-		|| rGrp.FindEntry("*.mod")
-		|| rGrp.FindEntry("*.ogg");
-}
-
-int C4MusicSystem::SetPlayList(const char *szPlayList)
-{
-	// copy
-	if (!szPlayList) szPlayList = "";
-	// reset
-	C4MusicFile *pFile;
-	for (pFile = Songs; pFile; pFile = pFile->pNext)
-	{
-		pFile->NoPlay = true;
-		pFile->LastPlayed = -1;
+		// Reset playlist
+		if (line == "#clear")
+		{
+			ClearSongs();
+		}
+		// Comment
+		else if (line[0] == '#')
+		{
+			continue;
+		}
+		// Add
+		else
+		{
+			LoadDir(line.c_str());
+		}
 	}
-	ASongCount = 0;
-	SCounter = 0;
-	if (*szPlayList)
-	{
-		// match
-		char szFileName[_MAX_FNAME + 1];
-		for (int cnt = 0; SGetModule(szPlayList, cnt, szFileName, _MAX_FNAME); cnt++)
-			for (pFile = Songs; pFile; pFile = pFile->pNext)
-				if (pFile->NoPlay && WildcardMatch(szFileName, GetFilename(pFile->FileName)))
-				{
-					ASongCount++;
-					pFile->NoPlay = false;
-				}
-	}
-	else
-	{
-		// default: all files except the ones beginning with an at ('@')
-		// Ignore frontend and credits music
-		for (pFile = Songs; pFile; pFile = pFile->pNext)
-			if (*GetFilename(pFile->FileName) != '@' &&
-				!SEqual2(GetFilename(pFile->FileName), "Credits.") &&
-				!SEqual2(GetFilename(pFile->FileName), "Frontend."))
-			{
-				ASongCount++;
-				pFile->NoPlay = false;
-			}
-	}
-	return ASongCount;
-}
-
-bool C4MusicSystem::ToggleOnOff()
-{
-	// command key for music toggle pressed
-	// use different settings for game/menu (lobby also counts as "menu", so go by Game.IsRunning-flag rather than startup)
-	if (Game.IsRunning)
-	{
-		// game music
-		Config.Sound.RXMusic = !Config.Sound.RXMusic;
-		if (!Config.Sound.RXMusic) Stop(); else Play();
-		Game.GraphicsSystem.FlashMessageOnOff(LoadResStr("IDS_CTL_MUSIC"), !!Config.Sound.RXMusic);
-	}
-	else
-	{
-		// game menu
-		Config.Sound.FEMusic = !Config.Sound.FEMusic;
-		if (!Config.Sound.FEMusic) Stop(); else Play();
-	}
-	// key processed
-	return true;
 }

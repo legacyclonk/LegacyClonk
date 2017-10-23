@@ -175,11 +175,9 @@ private:
 	// sound tab
 private:
 	C4KeyBinding *pKeyToggleMusic; // extra key binding for music: Must also update checkbox in real-time
-	BoolConfig *pFESoundCheck;
 	C4GUI::CheckBox *pFEMusicCheck;
 
 	void OnFEMusicCheck(C4GUI::Element *pCheckBox); // toggling frontend music is reflected immediately
-	void OnRXSoundCheck(C4GUI::Element *pCheckBox); // toggling sounds on off must init/deinit sound system
 	void OnMusicVolumeSliderChange(int32_t iNewVal);
 	void OnSoundVolumeSliderChange(int32_t iNewVal);
 

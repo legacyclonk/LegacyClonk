@@ -24,6 +24,7 @@
 #include <StdFile.h>
 #include <StdBuf.h>
 
+#include <stdexcept>
 #include <string>
 #include <sstream>
 #include <sys/select.h>
@@ -64,7 +65,11 @@ bool CStdApp::Init(int argc, char *argv[])
 	s.append("\"");
 	szCmdLine = s.c_str();
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	try
+	{
+		sdlVideoSubSys.emplace(SDL_INIT_VIDEO));
+	}
+	catch (const std::runtime_error &)
 	{
 		Log("Error initializing SDL.");
 		return false;
@@ -88,6 +93,7 @@ bool CStdApp::InitTimer() { gettimeofday(&LastExecute, 0); return true; }
 
 void CStdApp::Clear()
 {
+	sdlVideoSubSys.reset();
 	SDL_Quit();
 }
 
