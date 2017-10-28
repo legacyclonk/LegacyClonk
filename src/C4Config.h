@@ -159,6 +159,7 @@ public:
 	bool Verbose; // show music files names
 	int32_t MusicVolume;
 	int32_t SoundVolume;
+	int32_t MaxChannels;
 	std::chrono::seconds SoundCommandCooldown;
 	bool MuteSoundCommand; // whether to mute /sound by default
 	void CompileFunc(StdCompiler *pComp);

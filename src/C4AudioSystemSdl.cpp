@@ -16,6 +16,8 @@
 #include <C4Include.h>
 #include <C4AudioSystem.h>
 
+#include <C4Config.h>
+
 #include <Standard.h>
 
 #include <algorithm>
@@ -37,7 +39,7 @@ C4AudioSystem::C4AudioSystem()
 	StdSdlSubSystem system{SDL_INIT_AUDIO};
 	ThrowIfFailed("Mix_OpenAudio",
 		Mix_OpenAudio(Frequency, Format, NumChannels, 1024) != 0);
-	Mix_AllocateChannels(128);
+	Mix_AllocateChannels(Config.Sound.MaxChannels);
 	this->system.emplace(std::move(system));
 }
 

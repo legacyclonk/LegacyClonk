@@ -17,6 +17,7 @@
 #include <C4AudioSystem.h>
 
 #include <C4Application.h>
+#include <C4Config.h>
 
 #include <algorithm>
 #include <stdexcept>
@@ -40,7 +41,7 @@ C4AudioSystem::C4AudioSystem()
 			std::to_string(FMOD_VERSION & 0xff));
 	}
 	// Initialize system object and sound device
-	ThrowIfFailed("init", system->init(32, FMOD_INIT_NORMAL, nullptr));
+	ThrowIfFailed("init", system->init(Config.Sound.MaxChannels, FMOD_INIT_NORMAL, nullptr));
 	// ok
 	this->system.reset(system.release());
 }
