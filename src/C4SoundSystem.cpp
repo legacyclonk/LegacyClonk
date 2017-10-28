@@ -228,6 +228,24 @@ std::uint32_t C4SoundSystem::Instance::GetPlaybackPosition() const
 		std::chrono::steady_clock::now() - startTime).count() % sample.duration;
 }
 
+bool C4SoundSystem::Instance::IsNear(const C4Object &obj2) const
+{
+	// Attached to object?
+	if (const auto objAsObject = std::get_if<C4Object *>(&obj); objAsObject && *objAsObject)
+	{
+		const auto x = (**objAsObject).x;
+		const auto y = (**objAsObject).y;
+		return (x - obj2.x) * (x - obj2.x) + (y - obj2.y) * (y - obj2.y) <=
+		NearSoundRadius * NearSoundRadius;
+	}
+
+	// Global or was attached to deleted object
+	// Deleted objects' sounds could be considered near,
+	//  but "original" Clonk Rage behavior is to not honor them.
+	// This must not change, otherwise it would break some scenarios / packs (e.g. CMC)
+	return false;
+}
+
 auto C4SoundSystem::FindInst(const char *wildcard, const C4Object *const obj) ->
 	std::optional<decltype(Sample::instances)::iterator>
 {
@@ -299,6 +317,14 @@ auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
 
 	// Too many instances?
 	if (!loop && sample->instances.size() >= MaxSoundInstances) return nullptr;
+
+	// Already playing near?
+	const auto nearIt = obj ?
+		std::find_if(sample->instances.cbegin(), sample->instances.cend(),
+			[&](const auto &inst) { return inst.IsNear(*obj); }) :
+		std::find_if(sample->instances.cbegin(), sample->instances.cend(),
+			[](const auto &inst) { return !inst.GetObj(); });
+	if (nearIt != sample->instances.cend()) return nullptr;
 
 	// Create instance
 	auto &inst = sample->instances.emplace_back(*sample, loop, volume, obj, falloffDistance);

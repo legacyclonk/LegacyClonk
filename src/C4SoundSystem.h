@@ -40,6 +40,7 @@ class C4SoundSystem
 {
 public:
 	static constexpr std::int32_t AudibilityRadius = 700;
+	static constexpr std::int32_t NearSoundRadius = 50;
 
 	C4SoundSystem();
 	C4SoundSystem(const C4SoundSystem &) = delete;
@@ -115,6 +116,7 @@ private:
 		C4Object *GetObj() const;
 		// Estimates playback position (milliseconds)
 		std::uint32_t GetPlaybackPosition() const;
+		bool IsNear(const C4Object &obj) const;
 	};
 
 	static constexpr std::int32_t MaxSoundInstances = 20;
