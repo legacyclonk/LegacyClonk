@@ -36,7 +36,7 @@
 class C4AudioSystem
 {
 public:
-	C4AudioSystem();
+	C4AudioSystem(int maxChannels);
 	C4AudioSystem(const C4AudioSystem &) = delete;
 	C4AudioSystem(C4AudioSystem &&) = delete;
 	~C4AudioSystem() = default;

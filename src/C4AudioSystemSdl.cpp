@@ -16,8 +16,6 @@
 #include <C4Include.h>
 #include <C4AudioSystem.h>
 
-#include <C4Config.h>
-
 #include <Standard.h>
 
 #include <algorithm>
@@ -25,7 +23,7 @@
 #include <stdexcept>
 #include <string>
 
-C4AudioSystem::C4AudioSystem()
+C4AudioSystem::C4AudioSystem(const int maxChannels)
 {
 	// Check SDL_mixer version
 	SDL_version compile_version;
@@ -39,7 +37,7 @@ C4AudioSystem::C4AudioSystem()
 	StdSdlSubSystem system{SDL_INIT_AUDIO};
 	ThrowIfFailed("Mix_OpenAudio",
 		Mix_OpenAudio(Frequency, Format, NumChannels, 1024) != 0);
-	Mix_AllocateChannels(Config.Sound.MaxChannels);
+	Mix_AllocateChannels(maxChannels);
 	this->system.emplace(std::move(system));
 }
 

@@ -229,7 +229,7 @@ bool C4Application::PreInit()
 #ifdef ENABLE_SOUND
 	try
 	{
-		if (!AudioSystem) AudioSystem.emplace();
+		if (!AudioSystem) AudioSystem.emplace(Config.Sound.MaxChannels);
 	}
 	catch (const std::runtime_error &e)
 	{
