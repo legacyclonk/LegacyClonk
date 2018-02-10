@@ -824,7 +824,21 @@ C4GUI::Icons C4PlayerInfoListBox::ClientListItem::GetCurrentStatusIcon()
 	// host?
 	if (GetClient()->isHost()) return C4GUI::Ico_Host;
 	// active client?
-	if (GetClient()->isActivated()) return C4GUI::Ico_Client;
+	if (GetClient()->isActivated())
+	{
+		if (GetClient()->isLobbyReady())
+		{
+			return C4GUI::Ico_Ready;
+		}
+		else if (GetClient()->supportsLobbyReady())
+		{
+			return C4GUI::Ico_Client;
+		}
+		else
+		{
+			return C4GUI::Ico_UnknownPlayer;
+		}
+	}
 	// observer
 	return C4GUI::Ico_ObserverClient;
 }
