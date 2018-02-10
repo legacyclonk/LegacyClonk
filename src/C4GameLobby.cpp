@@ -19,6 +19,7 @@
 
 #include <C4Include.h>
 #include <C4GameLobby.h>
+#include "C4GameControl.h"
 
 #ifndef BIG_C4INCLUDE
 #include "C4FullScreen.h"
@@ -194,10 +195,16 @@ MainDlg::MainDlg(bool fHost)
 	C4GUI::CallbackButton<MainDlg> *btnExit;
 	btnExit = new C4GUI::CallbackButton<MainDlg>(LoadResStr("IDS_DLG_EXIT"), caBottom.GetFromLeft(100), &MainDlg::OnExitBtn);
 	if (fHost)
+	{
 		btnRun = new C4GUI::CallbackButton<MainDlg>(LoadResStr("IDS_DLG_GAMEGO"), caBottom.GetFromRight(100), &MainDlg::OnRunBtn);
+		checkReady = nullptr;
+	}
 	else
-		// 2do: Ready-checkbox
+	{
+		checkReady = new C4GUI::CheckBox(caBottom.GetFromRight(90), LoadResStr("IDS_DLG_READY"), false);
+		checkReady->SetOnChecked(new C4GUI::CallbackHandler<MainDlg>(this, &MainDlg::OnReadyCheck));
 		caBottom.GetFromRight(90);
+	}
 	pGameOptionButtons = new C4GameOptionButtons(caBottom.GetCentered(caBottom.GetInnerWidth(), std::min<int32_t>(C4GUI_IconExHgt, caBottom.GetHeight())), true, fHost, true);
 
 	// players / ressources sidebar
@@ -267,7 +274,8 @@ MainDlg::MainDlg(bool fHost)
 	}
 	else
 	{
-		// 2do: Ready-checkbox
+		AddElement(checkReady);
+		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READY"));
 	}
 	// set initial focus
 	SetFocus(pEdt, false);
@@ -291,6 +299,12 @@ void MainDlg::OnExitBtn(C4GUI::Control *btn)
 {
 	// abort dlg
 	Close(false);
+}
+
+void MainDlg::OnReadyCheck(C4GUI::Element *pCheckBox)
+{
+	bool rIsOn = static_cast<C4GUI::CheckBox *>(pCheckBox)->GetChecked();
+	::Game.Control.DoInput(CID_ClientUpdate, new C4ControlClientUpdate(::Game.Clients.getLocalID(), CUT_SetReady, rIsOn), CDT_Direct);
 }
 
 void MainDlg::SetCountdownState(CountdownState eToState, int32_t iTimer)

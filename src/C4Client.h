@@ -46,7 +46,7 @@ protected:
 	int iVersion[4];
 
 	// status
-	bool fActivated, fObserver;
+	bool fActivated, fObserver, fLobbyReady, fSupportsLobbyReady;
 
 public:
 	// status data
@@ -54,10 +54,13 @@ public:
 	bool isHost()      const { return iID == C4ClientIDHost; }
 	bool isActivated() const { return fActivated; }
 	bool isObserver()  const { return fObserver; }
+	bool isLobbyReady() const { return fLobbyReady; }
+	bool supportsLobbyReady() const { return fSupportsLobbyReady; }
 	void SetID(int32_t inID) { iID = inID; }
 	void SetName(const char *sznName) { Name.CopyValidated(sznName); }
 	void SetActivated(bool fnActivated) { fActivated = fnActivated; fObserver = false; }
 	void SetObserver(bool fnObserver) { fActivated &= !(fObserver = fnObserver); }
+	void SetLobbyReady(bool fnLobbyReady) { fLobbyReady = fnLobbyReady; }
 
 	// misc
 	const char *getName() const { return Name.getData(); }
@@ -85,6 +88,7 @@ private:
 
 	bool fLocal; // Local, NoSync
 	class C4Network2Client *pNetClient; // Local, NoSync
+	time_t last_lobby_ready_change; // Local, NoSync: Time when the lobby ready state was changed last through the SetLobbyReady call. 0 for never changed.
 
 	C4Client *pNext;
 
@@ -96,6 +100,8 @@ public:
 	const char         *getNick()     const { return Core.getNick(); }
 	bool                isActivated() const { return Core.isActivated(); }
 	bool                isObserver()  const { return Core.isObserver(); }
+	bool                isLobbyReady() const { return Core.isLobbyReady(); }
+	bool                supportsLobbyReady() const { return Core.supportsLobbyReady(); }
 
 	bool              isLocal()      const { return fLocal; }
 	C4Network2Client *getNetClient() const { return pNetClient; }
@@ -105,6 +111,7 @@ public:
 
 	void SetActivated(bool fnActivated);
 	void SetObserver() { Core.SetObserver(true); }
+	void SetLobbyReady(bool fnLobbyReady, time_t *time_since_last_change = nullptr);
 	void SetLocal();
 
 	void UnlinkNetClient() { pNetClient = nullptr; }

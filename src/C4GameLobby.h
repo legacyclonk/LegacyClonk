@@ -104,8 +104,10 @@ private:
 	C4GUI::Edit *pEdt; // chat input
 	C4GUI::CallbackButton<MainDlg> *btnRun; // host only
 	C4GUI::CallbackButton<MainDlg, C4GUI::IconButton> *btnPlayers, *btnResources, *btnTeams, *btnOptions, *btnScenario, *btnChat; // right list sheet selection
+	C4GUI::CheckBox *checkReady;
 
 protected:
+	void OnReadyCheck(C4GUI::Element *pCheckBox); // callback: checkbox ticked
 	void OnRunBtn(C4GUI::Control *btn); // callback: run button pressed
 	void OnExitBtn(C4GUI::Control *btn); // callback: exit button pressed
 	bool KeyHistoryUpDown(bool fUp); // key callback
@@ -149,6 +151,7 @@ public:
 	void OnLog(const char *szLogMsg, uint32_t dwClr = C4GUI_LogFontClr); // log callback
 	void OnError(const char *szErrMsg); // error sound + log in red
 	void OnPlayersChange() { UpdatePlayerList(); }
+	void OnClientReadyStateChange() { UpdatePlayerList(); }
 	void OnClientAddPlayer(const char *szFilename, int32_t idClient);
 	// packet callbacks from C4Network2
 	void HandlePacket(char cStatus, const C4PacketBase *pBasePkt, C4Network2Client *pClient);
