@@ -37,6 +37,10 @@
 #include <C4ObjectMenu.h>
 #endif
 
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
+
 // Some Support Functions
 
 const long MaxFnStringParLen = 500;
@@ -4746,17 +4750,32 @@ static long FnGetTime(C4AulContext *)
 
 static long FnGetSystemTime(C4AulContext *cthr, long iWhat)
 {
-#ifdef _WIN32
 	// check network, record, etc
 	if (Game.Control.SyncMode()) return 0;
 	// check bounds
 	if (!Inside<long>(iWhat, 0, 7)) return 0;
+#ifdef _WIN32
 	SYSTEMTIME time;
 	GetLocalTime(&time);
 	// return queried value
 	return *(((WORD *)&time) + iWhat);
 #else
-	Log("FIXME: FnGetSystemTime");
+	struct timeval tv;
+	if (gettimeofday(&tv, nullptr)) return 0;
+	if (iWhat == 7) return tv.tv_usec / 1000;
+	struct tm *time;
+	time = localtime(&tv.tv_sec);
+	switch (iWhat)
+	{
+		case 0: return time->tm_year + 1900;
+		case 1: return time->tm_mon + 1;
+		case 2: return time->tm_wday;
+		case 3: return time->tm_mday;
+		case 4: return time->tm_hour;
+		case 5: return time->tm_min;
+		case 6: return time->tm_sec;
+	}
+
 	return 0;
 #endif
 }
