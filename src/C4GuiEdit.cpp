@@ -322,9 +322,9 @@ bool Edit::Cut()
 
 bool Edit::Paste()
 {
-	bool fSuccess = false;
 	// 2do: move clipboard functionality to Standard
 #ifdef _WIN32
+	bool fSuccess = false;
 	// check clipboard contents
 	if (!IsClipboardFormatAvailable(CF_TEXT)) return false;
 	// open clipboard
@@ -372,10 +372,32 @@ bool Edit::Paste()
 	// close clipboard
 	CloseClipboard();
 	// return whether insertion was successful
-#else
-	InsertText(Application.Paste().getData(), true);
-#endif
 	return fSuccess;
+#else
+	StdStrBuf textBuf = Application.Paste();
+	if (textBuf.isNull())
+	{
+		return true;
+	}
+	char *text = textBuf.getMData();
+	char *end = text + strlen(text);
+	int newlinePos;
+	while ((newlinePos = SCharPos('\n', text)) >= 0 && text < end && *text != 0)
+	{
+		text[newlinePos] = '\0';
+		InsertText(text, true);
+		if (!DoFinishInput(true, !!*text))
+		{
+				return true;
+		}
+		text = text + newlinePos + 1;
+	}
+	if (text < end && *text != 0)
+	{
+		InsertText(text, true);
+	}
+	return true;
+#endif
 }
 
 bool IsWholeWordSpacer(unsigned char c)
