@@ -89,12 +89,19 @@ bool C4Scenario::Load(C4Group &hGroup, bool fLoadSection)
 
 bool C4Scenario::Save(C4Group &hGroup, bool fSaveSection)
 {
-	char *Buffer; int32_t BufferSize;
-	if (!Decompile(&Buffer, &BufferSize, fSaveSection))
-		return false;
-	if (!hGroup.Add(C4CFN_ScenarioCore, Buffer, BufferSize, false, true))
+	StdStrBuf Buf;
+	try
 	{
-		StdBuf Buf; Buf.Take(Buffer, BufferSize); return false;
+		Buf.Take(DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, fSaveSection)));
+	}
+	catch (StdCompiler::Exception*)
+	{
+		return false;
+	}
+
+	if (!hGroup.Add(C4CFN_ScenarioCore, Buf, false, true))
+	{
+		return false;
 	}
 	return true;
 }

@@ -172,7 +172,7 @@ bool C4TextureMap::LoadFlags(C4Group &hGroup, const char *szEntryName, bool *pOv
 	if (pOverloadMaterials) *pOverloadMaterials = false;
 	if (pOverloadTextures) *pOverloadTextures = false;
 	// Check if there are flags in there
-	for (const char *pPos = TexMap.getData(); pPos && *pPos; pPos = SSearch(pPos + 1, "\n"))
+	for (const char *pPos = TexMap.getData(); pPos && *pPos; pPos = SSearch(pPos, "\n"))
 	{
 		// Go over newlines
 		while (*pPos == '\r' || *pPos == '\n') pPos++;
