@@ -519,12 +519,19 @@ bool C4ObjectInfoCore::Save(C4Group &hGroup, C4DefList *pDefs)
 	// rank overload by def: Update any NextRank-stuff
 	if (pDefs) UpdateCustomRanks(pDefs);
 #endif
-	char *Buffer; size_t BufferSize;
-	if (!Decompile(&Buffer, &BufferSize))
-		return false;
-	if (!hGroup.Add(C4CFN_ObjectInfoCore, Buffer, BufferSize, false, true))
+	StdStrBuf Buf;
+	try
 	{
-		delete[] Buffer; return false;
+		Buf.Take(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "ObjectInfo")));
+	}
+	catch(StdCompiler::Exception*)
+	{
+		return false;
+	}
+
+	if (!hGroup.Add(C4CFN_ObjectInfoCore, Buf, false, true))
+	{
+		return false;
 	}
 	return true;
 }
