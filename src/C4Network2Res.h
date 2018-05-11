@@ -281,6 +281,8 @@ public:
 	void Remove();
 	void Clear();
 
+	bool GetClientProgress(int32_t clientID, int32_t& presentChunkCnt, int32_t& chunkCnt);
+
 protected:
 	int32_t OpenFileRead(); int32_t OpenFileWrite();
 
@@ -376,6 +378,8 @@ public:
 
 	// for C4Network2Res
 	C4Network2IO *getIOClass() { return pIO; }
+
+	int32_t GetClientProgress(int32_t clientID);
 
 protected:
 	void OnResComplete(C4Network2Res *pRes);

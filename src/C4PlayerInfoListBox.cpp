@@ -787,6 +787,23 @@ void C4PlayerInfoListBox::ClientListItem::SetPing(int32_t iToPing)
 
 void C4PlayerInfoListBox::ClientListItem::UpdateInfo()
 {
+	// Append resource load progress to caption
+	C4Client *pClient = GetClient();
+	auto *pNetClient = GetNetClient();
+	if (pClient && !pClient->isLocal())	// Do not show progress for local client
+	{
+		StdStrBuf sCaption;
+		if (pNetClient->isConnected())
+		{
+			sCaption.Format("(%d%%) %s", Game.Network.ResList.GetClientProgress(pClient->getID()), pClient->getName());
+		}
+		else
+		{
+			sCaption = pClient->getName();
+		}
+		this->pNameLabel->SetText(sCaption.getData(), false);
+	}
+
 	// update color (always, because it can change silently)
 	SetColor(Game.Network.Players.GetClientChatColor(idClient, true));
 	// update activation status

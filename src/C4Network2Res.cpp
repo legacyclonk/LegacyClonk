@@ -872,7 +872,6 @@ void C4Network2Res::OnDiscover(C4Network2IOConnection *pBy)
 
 void C4Network2Res::OnStatus(const C4Network2ResChunkData &rChunkData, C4Network2IOConnection *pBy)
 {
-	if (!fLoading) return;
 	// discovered a source: reset timeout
 	iDiscoverStartTime = 0;
 	// check if the chunk data is valid
@@ -892,9 +891,8 @@ void C4Network2Res::OnStatus(const C4Network2ResChunkData &rChunkData, C4Network
 	}
 	pChunks->ClientID = pBy->getClientID();
 	pChunks->Chunks = rChunkData;
-	// check load
-	if (!StartLoad(pChunks->ClientID, pChunks->Chunks))
-		RemoveCChunks(pCChunks);
+	// load?
+	if (fLoading) StartLoad(pChunks->ClientID, pChunks->Chunks);
 }
 
 void C4Network2Res::OnChunk(const C4Network2ResChunk &rChunk)
@@ -962,16 +960,11 @@ bool C4Network2Res::DoLoad()
 
 bool C4Network2Res::NeedsDiscover()
 {
-	// loading, but no active load sources?
-	if (fLoading && !iLoadCnt)
-	{
-		// set timeout, if this is the first discover
-		if (!iDiscoverStartTime)
-			iDiscoverStartTime = time(nullptr);
-		// do discover
-		return true;
-	}
-	return false;
+	// set timeout, if this is the first discover
+	if (!iDiscoverStartTime)
+		iDiscoverStartTime = time(NULL);
+	// do discover
+	return true;
 }
 
 void C4Network2Res::Clear()
@@ -1044,7 +1037,7 @@ void C4Network2Res::StartNewLoads()
 				// try to start load
 				if (!StartLoad(pC[i]->ClientID, pC[i]->Chunks))
 				{
-					RemoveCChunks(pC[i]); pC[i] = nullptr; continue;
+					pC[i] = nullptr; continue;
 				}
 				// success?
 				if (iLoadCnt > ioLoadCnt) break;
@@ -1190,6 +1183,22 @@ bool C4Network2Res::OptimizeStandalone(bool fSilent)
 				Grp.Delete(C4CFN_BigIcon);
 		Grp.Close();
 	}
+	return true;
+}
+
+bool C4Network2Res::GetClientProgress(int32_t clientID, int32_t& presentChunkCnt, int32_t& chunkCnt)
+{
+	// Try to find chunks for client ID
+	ClientChunks *chunks;
+	for (chunks = pCChunks; chunks; chunks = chunks->Next)
+	{
+		if (chunks->ClientID == clientID) break;
+	}
+
+	if (!chunks) return false; // Not found?
+
+	presentChunkCnt = chunks->Chunks.getPresentChunkCnt();
+	chunkCnt = Chunks.getChunkCnt();
 	return true;
 }
 
@@ -1595,7 +1604,7 @@ void C4Network2ResList::OnTimer()
 		// needed?
 		bool fSendDiscover = false;
 		for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
-			if (pRes->isLoading() && !pRes->isRemoved())
+			if (!pRes->isRemoved())
 				fSendDiscover |= pRes->NeedsDiscover();
 		// send
 		if (fSendDiscover)
@@ -1644,8 +1653,7 @@ bool C4Network2ResList::SendDiscover(C4Network2IOConnection *pTo) // by both
 	CStdShareLock ResListLock(&ResListCSec);
 	for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
 		if (!pRes->isRemoved())
-			if (pRes->isLoading())
-				Pkt.AddDisID(pRes->getResID());
+			Pkt.AddDisID(pRes->getResID());
 	ResListLock.Clear();
 	// empty?
 	if (!Pkt.getDisIDCnt()) return false;
@@ -1739,4 +1747,18 @@ bool C4Network2ResList::FindTempResFileName(const char *szFilename, char *pTarge
 	}
 	// not found
 	return false;
+}
+
+int32_t C4Network2ResList::GetClientProgress(int32_t clientID)
+{
+	int32_t sumPresentChunkCnt = 0, sumChunkCnt = 0;
+	CStdLock ResListLock(&ResListCSec);
+	for (C4Network2Res *res = pFirst; res; res = res->pNext)
+	{
+		int32_t presentChunkCnt, chunkCnt;
+		if (res->isRemoved() || !res->GetClientProgress(clientID, presentChunkCnt, chunkCnt)) continue;
+		sumPresentChunkCnt += presentChunkCnt;
+		sumChunkCnt += chunkCnt;
+	}
+	return sumChunkCnt == 0 ? 100 : sumPresentChunkCnt * 100 / sumChunkCnt;
 }
