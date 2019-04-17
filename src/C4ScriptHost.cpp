@@ -171,7 +171,7 @@ const char *C4ScriptHost::GetControlDesc(const char *szFunctionFormat, int32_t i
 	char szFunction[256 + 1];
 	sprintf(szFunction, szFunctionFormat, ComName(iCom));
 	// Remove failsafe indicator
-	if (szFunction[0] == '~') memmove(szFunction, szFunction + 1, sizeof(szFunction));
+	if (szFunction[0] == '~') memmove(szFunction, szFunction + 1, sizeof(szFunction) - 1);
 	// Find function reference
 	C4AulScriptFunc *pFn = GetSFunc(szFunction);
 	// Get image id
