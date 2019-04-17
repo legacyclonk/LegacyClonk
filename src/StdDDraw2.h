@@ -19,7 +19,7 @@ class CStdApp;
 class CStdWindow;
 
 // engines
-#define GFXENGN_OPENGL   1
+#define GFXENGN_OPENGL   0
 #define GFXENGN_NOGFX    3
 
 // Global DDraw access pointer

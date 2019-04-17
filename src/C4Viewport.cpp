@@ -850,7 +850,7 @@ void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
 			return;
 
 	// Draw info
-	if (Config.Graphics.ShowPlayerInfoAlways)
+	if (Config.Graphics.ShowPlayerHUDAlways)
 		if (cursor->Info)
 		{
 			C4ST_STARTNEW(ObjInfStat, "C4Viewport::DrawCursorInfo: Object info")
@@ -880,7 +880,7 @@ void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
 	C4ST_STOP(ContStat)
 
 	// Draw energy levels
-	if (cursor->ViewEnergy || Config.Graphics.ShowPlayerInfoAlways)
+	if (cursor->ViewEnergy || Config.Graphics.ShowPlayerHUDAlways)
 		if (cgo.Hgt > 2 * C4SymbolSize + 2 * C4SymbolBorder)
 		{
 			int32_t cx = C4SymbolBorder;
@@ -1256,7 +1256,7 @@ void C4Viewport::DrawPlayerInfo(C4FacetEx &cgo)
 	if (!ValidPlr(Player)) return;
 
 	// Wealth
-	if (Game.Players.Get(Player)->ViewWealth || Config.Graphics.ShowPlayerInfoAlways)
+	if (Game.Players.Get(Player)->ViewWealth || Config.Graphics.ShowPlayerHUDAlways)
 	{
 		int32_t wdt = C4SymbolSize;
 		int32_t hgt = C4SymbolSize / 2;
@@ -1269,7 +1269,7 @@ void C4Viewport::DrawPlayerInfo(C4FacetEx &cgo)
 
 	// Value gain
 	if ((Game.C4S.Game.ValueGain && Game.Players.Get(Player)->ViewValue)
-		|| Config.Graphics.ShowPlayerInfoAlways)
+		|| Config.Graphics.ShowPlayerHUDAlways)
 	{
 		int32_t wdt = C4SymbolSize;
 		int32_t hgt = C4SymbolSize / 2;
@@ -1281,7 +1281,7 @@ void C4Viewport::DrawPlayerInfo(C4FacetEx &cgo)
 	}
 
 	// Crew
-	if (Config.Graphics.ShowPlayerInfoAlways)
+	if (Config.Graphics.ShowPlayerHUDAlways)
 	{
 		int32_t wdt = C4SymbolSize;
 		int32_t hgt = C4SymbolSize / 2;

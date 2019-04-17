@@ -77,13 +77,13 @@ private:
 	class BoolConfig : public C4GUI::CheckBox
 	{
 	private:
-		bool *pbVal, fInvert; int32_t *piVal, *piRestartChangeCfgVal;
+		bool *pbVal, fInvert; bool *piRestartChangeCfgVal;
 
 	protected:
 		void OnCheckChange(C4GUI::Element *pCheckBox);
 
 	public:
-		BoolConfig(const C4Rect &rcBounds, const char *szName, bool *pbVal, int32_t *piVal, bool fInvert = false, int32_t *piRestartChangeCfgVal = nullptr);
+		BoolConfig(const C4Rect &rcBounds, const char *szName, bool *pbVal, bool fInvert = false, bool *piRestartChangeCfgVal = nullptr);
 	};
 	// editbox below descriptive label sharing one window for common tooltip
 	class EditConfig : public C4GUI::LabeledEdit
@@ -239,10 +239,10 @@ private:
 	class NetworkServerAddressConfig : public C4GUI::Window
 	{
 	public:
-		NetworkServerAddressConfig(const C4Rect &rcBounds, const char *szName, int32_t *piConfigEnableValue, char *szConfigAddressValue, int iTabWidth);
+		NetworkServerAddressConfig(const C4Rect &rcBounds, const char *szName, bool *pbConfigEnableValue, char *szConfigAddressValue, int iTabWidth);
 
 	private:
-		int32_t *piConfigEnableValue; char *szConfigAddressValue;
+		bool *pbConfigEnableValue; char *szConfigAddressValue;
 		C4GUI::CheckBox *pEnableCheck;
 		C4GUI::Edit *pAddressEdit;
 

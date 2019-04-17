@@ -87,7 +87,7 @@ bool C4Application::DoInit()
 			Config.Load();
 		}
 	}
-	MMTimer = Config.General.MMTimer != 0;
+	MMTimer = Config.General.MMTimer;
 	// Init C4Group
 	C4Group_SetMaker(Config.General.Name);
 	C4Group_SetProcessCallback(&ProcessCallback);

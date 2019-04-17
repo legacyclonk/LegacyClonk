@@ -867,7 +867,7 @@ void FullscreenDialog::DrawBackground(C4FacetEx &cgo, C4Facet &rFromFct)
 
 // MessageDialog
 
-MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, DlgSize eSize, int32_t *piConfigDontShowAgainSetting, bool fDefaultNo)
+MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, DlgSize eSize, bool *piConfigDontShowAgainSetting, bool fDefaultNo)
 	: Dialog(eSize, 100 /* will be resized */, szCaption, false), piConfigDontShowAgainSetting(piConfigDontShowAgainSetting)
 {
 	CStdFont &rUseFont = GetRes()->TextFont;
@@ -1016,7 +1016,7 @@ ProgressDialog::ProgressDialog(const char *szMessage, const char *szCaption, int
 
 // Some dialog wrappers in Screen class
 
-bool Screen::ShowMessage(const char *szMessage, const char *szCaption, Icons icoIcon, int32_t *piConfigDontShowAgainSetting)
+bool Screen::ShowMessage(const char *szMessage, const char *szCaption, Icons icoIcon, bool *piConfigDontShowAgainSetting)
 {
 	// always log messages
 	LogSilentF("[Msg] %s: %s", szCaption, szMessage);
@@ -1033,14 +1033,14 @@ bool Screen::ShowErrorMessage(const char *szMessage)
 	return ShowMessage(szMessage, LoadResStr("IDS_DLG_ERROR"), Ico_Error);
 }
 
-bool Screen::ShowMessageModal(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, int32_t *piConfigDontShowAgainSetting)
+bool Screen::ShowMessageModal(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, bool *pbConfigDontShowAgainSetting)
 {
 	// always log messages
 	LogSilentF("[Modal] %s: %s", szCaption, szMessage);
 	// skip if user doesn't want to see it
-	if (piConfigDontShowAgainSetting && *piConfigDontShowAgainSetting) return true;
+	if (pbConfigDontShowAgainSetting && *pbConfigDontShowAgainSetting) return true;
 	// create message dlg and show modal
-	return ShowModalDlg(new MessageDialog(szMessage, szCaption, dwButtons, icoIcon, MessageDialog::dsRegular, piConfigDontShowAgainSetting));
+	return ShowModalDlg(new MessageDialog(szMessage, szCaption, dwButtons, icoIcon, MessageDialog::dsRegular, pbConfigDontShowAgainSetting));
 }
 
 bool Screen::ShowModalDlg(Dialog *pDlg, bool fDestruct)
