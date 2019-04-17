@@ -85,13 +85,13 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 #ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(s(MissionAccess), "MissionAccess", "", false, true));
 #endif
-	pComp->Value(mkNamingAdapt(FPS,              "FPS",              0,             false, true));
-	pComp->Value(mkNamingAdapt(Record,           "Record",           0,             false, true));
+	pComp->Value(mkNamingAdapt(FPS,              "FPS",              false,         false, true));
+	pComp->Value(mkNamingAdapt(Record,           "Record",           false,         false, true));
 	pComp->Value(mkNamingAdapt(ScreenshotFolder, "ScreenshotFolder", "Screenshots", false, true));
-	pComp->Value(mkNamingAdapt(FairCrew,         "NoCrew",           0,             false, true));
+	pComp->Value(mkNamingAdapt(FairCrew,         "NoCrew",           false,         false, true));
 	pComp->Value(mkNamingAdapt(FairCrewStrength, "DefCrewStrength",  1000,          false, true));
 	pComp->Value(mkNamingAdapt(ScrollSmooth,     "ScrollSmooth",     4));
-	pComp->Value(mkNamingAdapt(AlwaysDebug,      "DebugMode",        0,             false, true));
+	pComp->Value(mkNamingAdapt(AlwaysDebug,      "DebugMode",        false,         false, true));
 #ifdef _WIN32
 	pComp->Value(mkNamingAdapt(MMTimer, "MMTimer", 1));
 #endif
@@ -105,45 +105,41 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 
 void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(AutoFileReload, "AutoFileReload", 1, false, true));
+	pComp->Value(mkNamingAdapt(AutoFileReload, "AutoFileReload", true, false, true));
 }
 
 void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(ResX,                 "ResolutionX",          800,   false, true));
 	pComp->Value(mkNamingAdapt(ResY,                 "ResolutionY",          600,   false, true));
-	pComp->Value(mkNamingAdapt(ShowAllResolutions,   "ShowAllResolutions",   0,     false, true));
+	pComp->Value(mkNamingAdapt(ShowAllResolutions,   "ShowAllResolutions",   false, false, true));
 	pComp->Value(mkNamingAdapt(SplitscreenDividers,  "SplitscreenDividers",  1));
-	pComp->Value(mkNamingAdapt(ShowPlayerInfoAlways, "ShowPlayerInfoAlways", 1,     false, true));
-	pComp->Value(mkNamingAdapt(ShowPortraits,        "ShowPortraits",        1,     false, true));
-	pComp->Value(mkNamingAdapt(AddNewCrewPortraits,  "AddNewCrewPortraits",  1,     false, true));
-	pComp->Value(mkNamingAdapt(SaveDefaultPortraits, "SaveDefaultPortraits", 1,     false, true));
-	pComp->Value(mkNamingAdapt(ShowCommands,         "ShowCommands",         1,     false, true));
-	pComp->Value(mkNamingAdapt(ShowCommandKeys,      "ShowCommandKeys",      1,     false, true));
-	pComp->Value(mkNamingAdapt(ShowStartupMessages,  "ShowStartupMessages",  1,     false, true));
-	pComp->Value(mkNamingAdapt(ColorAnimation,       "ColorAnimation",       0,     false, true));
+	pComp->Value(mkNamingAdapt(ShowPlayerHUDAlways,  "ShowPlayerHUDAlways",  true));
+	pComp->Value(mkNamingAdapt(ShowPortraits,        "ShowPortraits",        true,  false, true));
+	pComp->Value(mkNamingAdapt(AddNewCrewPortraits,  "AddNewCrewPortraits",  true,  false, true));
+	pComp->Value(mkNamingAdapt(SaveDefaultPortraits, "SaveDefaultPortraits", true,  false, true));
+	pComp->Value(mkNamingAdapt(ShowCommands,         "ShowCommands",         true,  false, true));
+	pComp->Value(mkNamingAdapt(ShowCommandKeys,      "ShowCommandKeys",      true,  false, true));
+	pComp->Value(mkNamingAdapt(ColorAnimation,       "ColorAnimation",       false, false, true));
 	pComp->Value(mkNamingAdapt(SmokeLevel,           "SmokeLevel",           200,   false, true));
-	pComp->Value(mkNamingAdapt(VerboseObjectLoading, "VerboseObjectLoading", 0,     false, true));
-	pComp->Value(mkNamingAdapt(VideoModule,          "VideoModule",          0,     false, true));
-	pComp->Value(mkNamingAdapt(UpperBoard,           "UpperBoard",           1,     false, true));
-	pComp->Value(mkNamingAdapt(ShowClock,            "ShowClock",            0,     false, true));
-	pComp->Value(mkNamingAdapt(ShowCrewNames,        "ShowCrewNames",        1,     false, true));
-	pComp->Value(mkNamingAdapt(ShowCrewCNames,       "ShowCrewCNames",       1,     false, true));
+	pComp->Value(mkNamingAdapt(VerboseObjectLoading, "VerboseObjectLoading", false, false, true));
+	pComp->Value(mkNamingAdapt(VideoModule,          "VideoModule",          false, false, true));
+	pComp->Value(mkNamingAdapt(UpperBoard,           "UpperBoard",           true,  false, true));
+	pComp->Value(mkNamingAdapt(ShowClock,            "ShowClock",            false, false, true));
+	pComp->Value(mkNamingAdapt(ShowCrewNames,        "ShowCrewNames",        true,  false, true));
+	pComp->Value(mkNamingAdapt(ShowCrewCNames,       "ShowCrewCNames",       true,  false, true));
 	pComp->Value(mkNamingAdapt(NewGfxCfg,            "NewGfxCfg",            0,     false, true));
-	pComp->Value(mkNamingAdapt(NewGfxCfgGL,          "NewGfxCfgGL",          0,     false, true));
-	pComp->Value(mkNamingAdapt(MsgBoard,             "MsgBoard",             1,     false, true));
-	pComp->Value(mkNamingAdapt(PXSGfx,               "PXSGfx",               1));
-	pComp->Value(mkNamingAdapt(Engine,               "Engine",               0,     false, true));
+	pComp->Value(mkNamingAdapt(MsgBoard,             "MsgBoard",             true,  false, true));
+	pComp->Value(mkNamingAdapt(PXSGfx,               "PXSGfx",               true));
+	pComp->Value(mkNamingAdapt(Engine,               "Engine",               GFXENGN_OPENGL, false, true));
 	pComp->Value(mkNamingAdapt(TexIndent,            "TexIndent",            0));
-	pComp->Value(mkNamingAdapt(TexIndentGL,          "TexIndentGL",          0));
-	pComp->Value(mkNamingAdapt(BlitOff,              "BlitOff",              -50));
-	pComp->Value(mkNamingAdapt(BlitOffGL,            "BlitOffGL",            0));
+	pComp->Value(mkNamingAdapt(BlitOffset,           "BlitOffset",           0));
 	pComp->Value(mkNamingAdapt(Gamma1,               "Gamma1",               0));
 	pComp->Value(mkNamingAdapt(Gamma2,               "Gamma2",               0x808080));
 	pComp->Value(mkNamingAdapt(Gamma3,               "Gamma3",               0xffffff));
-	pComp->Value(mkNamingAdapt(Currency,             "Currency",             0));
-	pComp->Value(mkNamingAdapt(RenderInactiveEM,     "RenderInactiveEM",     1,     false, true));
-	pComp->Value(mkNamingAdapt(DisableGamma,         "DisableGamma",         0,     false, true));
+	pComp->Value(mkNamingAdapt(Currency,             "Currency",             false));
+	pComp->Value(mkNamingAdapt(RenderInactiveEM,     "RenderInactiveEM",     true,  false, true));
+	pComp->Value(mkNamingAdapt(DisableGamma,         "DisableGamma",         false, false, true));
 	pComp->Value(mkNamingAdapt(Monitor,              "Monitor",              0)); // 0 = D3DADAPTER_DEFAULT
 	pComp->Value(mkNamingAdapt(FireParticles,        "FireParticles",        true,  false, true));
 	pComp->Value(mkNamingAdapt(MaxRefreshDelay,      "MaxRefreshDelay",      30));
@@ -153,10 +149,10 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(RXSound,     "Sound",       1,   false, true));
-	pComp->Value(mkNamingAdapt(RXMusic,     "Music",       1,   false, true));
-	pComp->Value(mkNamingAdapt(FEMusic,     "MenuMusic",   1,   false, true));
-	pComp->Value(mkNamingAdapt(FESamples,   "MenuSound",   1,   false, true));
+	pComp->Value(mkNamingAdapt(RXSound,     "Sound",       true, false, true));
+	pComp->Value(mkNamingAdapt(RXMusic,     "Music",       true, false, true));
+	pComp->Value(mkNamingAdapt(FEMusic,     "MenuMusic",   true, false, true));
+	pComp->Value(mkNamingAdapt(FESamples,   "MenuSound",   true, false, true));
 	pComp->Value(mkNamingAdapt(FMMode,      "FMMode",      1));
 	pComp->Value(mkNamingAdapt(MusicVolume, "MusicVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(SoundVolume, "SoundVolume", 100, false, true));
@@ -166,7 +162,7 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(ControlRate,           "ControlRate",           2,         false, true));
 	pComp->Value(mkNamingAdapt(s(WorkPath),           "WorkPath",              "Network", false, true));
-	pComp->Value(mkNamingAdapt(NoRuntimeJoin,         "NoRuntimeJoin",         0,         false, true));
+	pComp->Value(mkNamingAdapt(NoRuntimeJoin,         "NoRuntimeJoin",         true,      false, true));
 	pComp->Value(mkNamingAdapt(MaxResSearchRecursion, "MaxResSearchRecursion", 1,         false, true));
 	pComp->Value(mkNamingAdapt(Comment,               "Comment",               "",        false, true));
 #ifdef C4ENGINE
@@ -180,25 +176,25 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Nick,            "Nick",            "",              false, true));
 	pComp->Value(mkNamingAdapt(MaxLoadFileSize, "MaxLoadFileSize", 5 * 1024 * 1024, false, true));
 
-	pComp->Value(mkNamingAdapt(MasterServerSignUp,        "MasterServerSignUp",     1,   false, true));
-	pComp->Value(mkNamingAdapt(MasterReferencePeriod,     "MasterReferencePeriod",  120, false, true));
-	pComp->Value(mkNamingAdapt(LeagueServerSignUp,        "LeagueServerSignUp",     0,   false, true));
+	pComp->Value(mkNamingAdapt(MasterServerSignUp,        "MasterServerSignUp",     true,   false, true));
+	pComp->Value(mkNamingAdapt(MasterReferencePeriod,     "MasterReferencePeriod",  120,    false, true));
+	pComp->Value(mkNamingAdapt(LeagueServerSignUp,        "LeagueServerSignUp",     false,  false, true));
 	pComp->Value(mkNamingAdapt(s(ServerAddress),          "ServerAddress",          C4CFG_LeagueServer, false, true));
-	pComp->Value(mkNamingAdapt(UseAlternateServer,        "UseAlternateServer",     0,   false, true));
+	pComp->Value(mkNamingAdapt(UseAlternateServer,        "UseAlternateServer",     false,  false, true));
 	pComp->Value(mkNamingAdapt(s(AlternateServerAddress), "AlternateServerAddress", C4CFG_LeagueServer, false, true));
 	pComp->Value(mkNamingAdapt(s(UpdateServerAddress),    "UpdateServerAddress",    C4CFG_UpdateServer, false, true));
 	pComp->Value(mkNamingAdapt(s(LastPassword),           "LastPassword",           "Wipf", false, true));
-	pComp->Value(mkNamingAdapt(AutomaticUpdate,           "AutomaticUpdate",        0, false, true));
-	pComp->Value(mkNamingAdapt(LastUpdateTime,            "LastUpdateTime",         0, false, true));
-	pComp->Value(mkNamingAdapt(AsyncMaxWait,              "AsyncMaxWait",           2, false, true));
+	pComp->Value(mkNamingAdapt(AutomaticUpdate,           "AutomaticUpdate",        false, false, true));
+	pComp->Value(mkNamingAdapt(LastUpdateTime,            "LastUpdateTime",         0,    false, true));
+	pComp->Value(mkNamingAdapt(AsyncMaxWait,              "AsyncMaxWait",           2,    false, true));
 
 	pComp->Value(mkNamingAdapt(s(PuncherAddress), "PuncherAddress", "clonk.de:11115", false, true));
 }
 
 void C4ConfigLobby::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(AllowPlayerSave, "AllowPlayerSave", 0, false, true));
-	pComp->Value(mkNamingAdapt(CountdownTime,   "CountdownTime",   5, false, true));
+	pComp->Value(mkNamingAdapt(AllowPlayerSave, "AllowPlayerSave", false, false, true));
+	pComp->Value(mkNamingAdapt(CountdownTime,   "CountdownTime",   5,     false, true));
 }
 
 void C4ConfigIRC::CompileFunc(StdCompiler *pComp)
@@ -207,7 +203,7 @@ void C4ConfigIRC::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(s(Nick),          "Nick",             "",              false, true));
 	pComp->Value(mkNamingAdapt(s(RealName),      "RealName",         "",              false, true));
 	pComp->Value(mkNamingAdapt(s(Channel),       "Channel",          "#clonken",      false, true));
-	pComp->Value(mkNamingAdapt(AllowAllChannels, "AllowAllChannels", 0,               false, true));
+	pComp->Value(mkNamingAdapt(AllowAllChannels, "AllowAllChannels", false,           false, true));
 }
 
 void C4ConfigGamepad::CompileFunc(StdCompiler *pComp, bool fButtonsOnly)
@@ -429,7 +425,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 	if (Graphics.Engine != GFXENGN_NOGFX) Graphics.Engine = GFXENGN_OPENGL;
 #endif
 	// OpenGL
-	DDrawCfg.Set(Graphics.NewGfxCfgGL, (float)Graphics.TexIndentGL / 1000.0f, (float)Graphics.BlitOffGL / 100.0f);
+	DDrawCfg.Set(Graphics.NewGfxCfg, (float)Graphics.TexIndent / 1000.0f, (float)Graphics.BlitOffset / 100.0f);
 	// Warning against invalid ports
 #ifdef C4ENGINE
 	if (Config.Network.PortTCP > 0 && Config.Network.PortTCP == Config.Network.PortRefServer)
@@ -716,14 +712,14 @@ int C4ConfigGeneral::GetLanguageSequence(const char *strSource, char *strTarget)
 
 void C4ConfigStartup::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(HideMsgMMTimerChange,     "HideMsgMMTimerChange",     0));
-	pComp->Value(mkNamingAdapt(HideMsgStartDedicated,    "HideMsgStartDedicated",    0));
-	pComp->Value(mkNamingAdapt(HideMsgPlrTakeOver,       "HideMsgPlrTakeOver",       0));
-	pComp->Value(mkNamingAdapt(HideMsgPlrNoTakeOver,     "HideMsgPlrNoTakeOver",     0));
-	pComp->Value(mkNamingAdapt(HideMsgNoOfficialLeague,  "HideMsgNoOfficialLeague",  0));
-	pComp->Value(mkNamingAdapt(HideMsgIRCDangerous,      "HideMsgIRCDangerous",      0));
-	pComp->Value(mkNamingAdapt(AlphabeticalSorting,      "AlphabeticalSorting",      0));
-	pComp->Value(mkNamingAdapt(LastPortraitFolderIdx,    "LastPortraitFolderIdx",    0));
+	pComp->Value(mkNamingAdapt(HideMsgMMTimerChange,     "HideMsgMMTimerChange",     false));
+	pComp->Value(mkNamingAdapt(HideMsgStartDedicated,    "HideMsgStartDedicated",    false));
+	pComp->Value(mkNamingAdapt(HideMsgPlrTakeOver,       "HideMsgPlrTakeOver",       false));
+	pComp->Value(mkNamingAdapt(HideMsgPlrNoTakeOver,     "HideMsgPlrNoTakeOver",     false));
+	pComp->Value(mkNamingAdapt(HideMsgNoOfficialLeague,  "HideMsgNoOfficialLeague",  false));
+	pComp->Value(mkNamingAdapt(HideMsgIRCDangerous,      "HideMsgIRCDangerous",      false));
+	pComp->Value(mkNamingAdapt(AlphabeticalSorting,      "AlphabeticalSorting",      false));
+	pComp->Value(mkNamingAdapt(LastPortraitFolderIdx,    "LastPortraitFolderIdx",    false));
 }
 
 void C4Config::CompileFunc(StdCompiler *pComp)

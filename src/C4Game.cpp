@@ -281,11 +281,10 @@ bool C4Game::PreInit()
 
 	// Startup message board
 	if (Application.isFullScreen)
-		if (Config.Graphics.ShowStartupMessages || NetworkActive)
-		{
-			C4Facet cgo; cgo.Set(Application.DDraw->lpBack, 0, 0, Config.Graphics.ResX, Config.Graphics.ResY);
-			GraphicsSystem.MessageBoard.Init(cgo, true);
-		}
+	{
+		C4Facet cgo; cgo.Set(Application.DDraw->lpBack, 0, 0, Config.Graphics.ResX, Config.Graphics.ResY);
+		GraphicsSystem.MessageBoard.Init(cgo, true);
+	}
 
 	// gfx resource file preinit (global files only)
 	Log(LoadResStr("IDS_PRC_GFXRES"));

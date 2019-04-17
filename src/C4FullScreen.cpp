@@ -319,9 +319,9 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 			lpDDraw->RestoreDeviceObjects();
 
 			if (DDrawCfg.Windowed)
-				Config.Graphics.NewGfxCfgGL |= C4GFXCFG_WINDOWED;
+				Config.Graphics.NewGfxCfg |= C4GFXCFG_WINDOWED;
 			else
-				Config.Graphics.NewGfxCfgGL &= ~C4GFXCFG_WINDOWED;
+				Config.Graphics.NewGfxCfg &= ~C4GFXCFG_WINDOWED;
 
 			break;
 		}

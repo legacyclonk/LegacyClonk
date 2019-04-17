@@ -2301,7 +2301,7 @@ class MessageDialog : public Dialog
 {
 private:
 	bool fHasOK;
-	int32_t *piConfigDontShowAgainSetting;
+	bool *piConfigDontShowAgainSetting;
 
 public:
 	enum Buttons
@@ -2312,7 +2312,7 @@ public:
 
 	enum DlgSize { dsRegular = C4GUI_MessageDlgWdt, dsMedium = C4GUI_MessageDlgWdtMedium, dsSmall = C4GUI_MessageDlgWdtSmall };
 
-	MessageDialog(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, DlgSize eSize = dsRegular, int32_t *piConfigDontShowAgainSetting = nullptr, bool fDefaultNo = false);
+	MessageDialog(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, DlgSize eSize = dsRegular, bool *piConfigDontShowAgainSetting = nullptr, bool fDefaultNo = false);
 
 protected:
 	virtual bool OnEnter() { if (!fHasOK) return false; Close(true); return true; }
@@ -2611,9 +2611,9 @@ public:
 	virtual bool CharIn(const char *c); // input: character key pressed - should return false for none-character-inputs
 	bool MouseInput(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, Dialog *pDlg, class C4Viewport *pVP); // input: mouse movement or buttons; sends MouseEnter/Leave; return whether inside dialog
 
-	bool ShowMessage(const char *szMessage, const char *szCaption, Icons icoIcon, int32_t *piConfigDontShowAgainSetting = nullptr); // show message
+	bool ShowMessage(const char *szMessage, const char *szCaption, Icons icoIcon, bool *pbConfigDontShowAgainSetting = nullptr); // show message
 	bool ShowErrorMessage(const char *szMessage); // show message: Error caption and icon
-	bool ShowMessageModal(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, int32_t *piConfigDontShowAgainSetting = nullptr); // show modal message dlg
+	bool ShowMessageModal(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, bool *pbConfigDontShowAgainSetting = nullptr); // show modal message dlg
 	bool ShowModalDlg(Dialog *pDlg, bool fDestruct = true); // show any dialog modal and destruct it afterwards
 	bool ShowRemoveDlg(Dialog *pDlg); // show dialog, and flag it to delete itself when closed; return immediately
 
