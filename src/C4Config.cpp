@@ -62,7 +62,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 #ifdef _WIN32
 	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "%APPDATA%\\LegacyClonk",                        false, true));
 #elif defined(__linux__)
-	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/.legacyclonk",                      false, true));
+	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/.legacyclonk",                            false, true));
 #elif defined(__APPLE__)
 	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/Library/Application Support/LegacyClonk", false, true));
 #endif
@@ -71,14 +71,13 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 #ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(s(MissionAccess), "MissionAccess", "", false, true));
 #endif
-	pComp->Value(mkNamingAdapt(FPS,              "FPS",              0));
-	pComp->Value(mkNamingAdapt(Record,           "Record",           0));
-	pComp->Value(mkNamingAdapt(DefRec,           "DefRec",           0));
+	pComp->Value(mkNamingAdapt(FPS,              "FPS",              0,             false, true));
+	pComp->Value(mkNamingAdapt(Record,           "Record",           0,             false, true));
 	pComp->Value(mkNamingAdapt(ScreenshotFolder, "ScreenshotFolder", "Screenshots", false, true));
-	pComp->Value(mkNamingAdapt(FairCrew,         "NoCrew",           0));
-	pComp->Value(mkNamingAdapt(FairCrewStrength, "DefCrewStrength",  1000));
+	pComp->Value(mkNamingAdapt(FairCrew,         "NoCrew",           0,             false, true));
+	pComp->Value(mkNamingAdapt(FairCrewStrength, "DefCrewStrength",  1000,          false, true));
 	pComp->Value(mkNamingAdapt(ScrollSmooth,     "ScrollSmooth",     4));
-	pComp->Value(mkNamingAdapt(AlwaysDebug,      "DebugMode",        0));
+	pComp->Value(mkNamingAdapt(AlwaysDebug,      "DebugMode",        0,             false, true));
 #ifdef _WIN32
 	pComp->Value(mkNamingAdapt(MMTimer, "MMTimer", 1));
 #endif
@@ -92,7 +91,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 
 void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(AutoFileReload, "AutoFileReload", 1));
+	pComp->Value(mkNamingAdapt(AutoFileReload, "AutoFileReload", 1, false, true));
 }
 
 void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
@@ -110,15 +109,15 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ShowStartupMessages,  "ShowStartupMessages",  1,     false, true));
 	pComp->Value(mkNamingAdapt(ColorAnimation,       "ColorAnimation",       0,     false, true));
 	pComp->Value(mkNamingAdapt(SmokeLevel,           "SmokeLevel",           200,   false, true));
-	pComp->Value(mkNamingAdapt(VerboseObjectLoading, "VerboseObjectLoading", 0));
+	pComp->Value(mkNamingAdapt(VerboseObjectLoading, "VerboseObjectLoading", 0,     false, true));
 	pComp->Value(mkNamingAdapt(VideoModule,          "VideoModule",          0,     false, true));
 	pComp->Value(mkNamingAdapt(UpperBoard,           "UpperBoard",           1,     false, true));
 	pComp->Value(mkNamingAdapt(ShowClock,            "ShowClock",            0,     false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewNames,        "ShowCrewNames",        1,     false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewCNames,       "ShowCrewCNames",       1,     false, true));
-	pComp->Value(mkNamingAdapt(NewGfxCfg,            "NewGfxCfg",            0));
-	pComp->Value(mkNamingAdapt(NewGfxCfgGL,          "NewGfxCfgGL",          0));
-	pComp->Value(mkNamingAdapt(MsgBoard,             "MsgBoard",             1));
+	pComp->Value(mkNamingAdapt(NewGfxCfg,            "NewGfxCfg",            0,     false, true));
+	pComp->Value(mkNamingAdapt(NewGfxCfgGL,          "NewGfxCfgGL",          0,     false, true));
+	pComp->Value(mkNamingAdapt(MsgBoard,             "MsgBoard",             1,     false, true));
 	pComp->Value(mkNamingAdapt(PXSGfx,               "PXSGfx",               1));
 	pComp->Value(mkNamingAdapt(Engine,               "Engine",               0,     false, true));
 	pComp->Value(mkNamingAdapt(TexIndent,            "TexIndent",            0));
@@ -129,13 +128,13 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Gamma2,               "Gamma2",               0x808080));
 	pComp->Value(mkNamingAdapt(Gamma3,               "Gamma3",               0xffffff));
 	pComp->Value(mkNamingAdapt(Currency,             "Currency",             0));
-	pComp->Value(mkNamingAdapt(RenderInactiveEM,     "RenderInactiveEM",     1));
+	pComp->Value(mkNamingAdapt(RenderInactiveEM,     "RenderInactiveEM",     1,     false, true));
 	pComp->Value(mkNamingAdapt(DisableGamma,         "DisableGamma",         0,     false, true));
 	pComp->Value(mkNamingAdapt(Monitor,              "Monitor",              0)); // 0 = D3DADAPTER_DEFAULT
-	pComp->Value(mkNamingAdapt(FireParticles,        "FireParticles",        true));
+	pComp->Value(mkNamingAdapt(FireParticles,        "FireParticles",        true,  false, true));
 	pComp->Value(mkNamingAdapt(MaxRefreshDelay,      "MaxRefreshDelay",      30));
 	pComp->Value(mkNamingAdapt(DDrawCfg.Shader,      "Shader",               false, false, true));
-	pComp->Value(mkNamingAdapt(AutoFrameSkip,        "AutoFrameSkip",        false));
+	pComp->Value(mkNamingAdapt(AutoFrameSkip,        "AutoFrameSkip",        true,  false, true));
 }
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)
@@ -145,7 +144,6 @@ void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(FEMusic,     "MenuMusic",   1,   false, true));
 	pComp->Value(mkNamingAdapt(FESamples,   "MenuSound",   1,   false, true));
 	pComp->Value(mkNamingAdapt(FMMode,      "FMMode",      1));
-	pComp->Value(mkNamingAdapt(Verbose,     "Verbose",     0));
 	pComp->Value(mkNamingAdapt(MusicVolume, "MusicVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(SoundVolume, "SoundVolume", 100, false, true));
 }
@@ -154,7 +152,6 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(ControlRate,           "ControlRate",           2,         false, true));
 	pComp->Value(mkNamingAdapt(s(WorkPath),           "WorkPath",              "Network", false, true));
-	pComp->Value(mkNamingAdapt(Lobby,                 "Lobby",                 0));
 	pComp->Value(mkNamingAdapt(NoRuntimeJoin,         "NoRuntimeJoin",         0,         false, true));
 	pComp->Value(mkNamingAdapt(MaxResSearchRecursion, "MaxResSearchRecursion", 1,         false, true));
 	pComp->Value(mkNamingAdapt(Comment,               "Comment",               "",        false, true));
@@ -164,30 +161,30 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(PortDiscovery, "PortDiscovery", C4NetStdPortDiscovery, false, true));
 	pComp->Value(mkNamingAdapt(PortRefServer, "PortRefServer", C4NetStdPortRefServer, false, true));
 #endif
-	pComp->Value(mkNamingAdapt(ControlMode,     "ControlMode",     0));
+	pComp->Value(mkNamingAdapt(ControlMode,     "ControlMode",     0,               false, true));
 	pComp->Value(mkNamingAdapt(LocalName,       "LocalName",       "Unknown",       false, true));
 	pComp->Value(mkNamingAdapt(Nick,            "Nick",            "",              false, true));
 	pComp->Value(mkNamingAdapt(MaxLoadFileSize, "MaxLoadFileSize", 5 * 1024 * 1024, false, true));
 
-	pComp->Value(mkNamingAdapt(MasterServerSignUp,        "MasterServerSignUp",     1));
-	pComp->Value(mkNamingAdapt(MasterReferencePeriod,     "MasterReferencePeriod",  120));
-	pComp->Value(mkNamingAdapt(LeagueServerSignUp,        "LeagueServerSignUp",     0));
-	pComp->Value(mkNamingAdapt(s(ServerAddress),          "ServerAddress",          C4CFG_LeagueServer));
-	pComp->Value(mkNamingAdapt(UseAlternateServer,        "UseAlternateServer",     0));
-	pComp->Value(mkNamingAdapt(s(AlternateServerAddress), "AlternateServerAddress", C4CFG_LeagueServer));
-	pComp->Value(mkNamingAdapt(s(UpdateServerAddress),    "UpdateServerAddress",    C4CFG_UpdateServer));
-	pComp->Value(mkNamingAdapt(s(LastPassword),           "LastPassword",           "Wipf"));
+	pComp->Value(mkNamingAdapt(MasterServerSignUp,        "MasterServerSignUp",     1,   false, true));
+	pComp->Value(mkNamingAdapt(MasterReferencePeriod,     "MasterReferencePeriod",  120, false, true));
+	pComp->Value(mkNamingAdapt(LeagueServerSignUp,        "LeagueServerSignUp",     0,   false, true));
+	pComp->Value(mkNamingAdapt(s(ServerAddress),          "ServerAddress",          C4CFG_LeagueServer, false, true));
+	pComp->Value(mkNamingAdapt(UseAlternateServer,        "UseAlternateServer",     0,   false, true));
+	pComp->Value(mkNamingAdapt(s(AlternateServerAddress), "AlternateServerAddress", C4CFG_LeagueServer, false, true));
+	pComp->Value(mkNamingAdapt(s(UpdateServerAddress),    "UpdateServerAddress",    C4CFG_UpdateServer, false, true));
+	pComp->Value(mkNamingAdapt(s(LastPassword),           "LastPassword",           "Wipf", false, true));
 	pComp->Value(mkNamingAdapt(AutomaticUpdate,           "AutomaticUpdate",        0, false, true));
-	pComp->Value(mkNamingAdapt(LastUpdateTime,            "LastUpdateTime",         0));
-	pComp->Value(mkNamingAdapt(AsyncMaxWait,              "AsyncMaxWait",           2));
+	pComp->Value(mkNamingAdapt(LastUpdateTime,            "LastUpdateTime",         0, false, true));
+	pComp->Value(mkNamingAdapt(AsyncMaxWait,              "AsyncMaxWait",           2, false, true));
 
-	pComp->Value(mkNamingAdapt(s(PuncherAddress), "PuncherAddress", "clonk.de:11115")); // maybe store default for this one?
+	pComp->Value(mkNamingAdapt(s(PuncherAddress), "PuncherAddress", "clonk.de:11115", false, true));
 }
 
 void C4ConfigLobby::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(AllowPlayerSave, "AllowPlayerSave", 0, false, false));
-	pComp->Value(mkNamingAdapt(CountdownTime,   "CountdownTime",   5, false, false));
+	pComp->Value(mkNamingAdapt(AllowPlayerSave, "AllowPlayerSave", 0, false, true));
+	pComp->Value(mkNamingAdapt(CountdownTime,   "CountdownTime",   5, false, true));
 }
 
 void C4ConfigIRC::CompileFunc(StdCompiler *pComp)

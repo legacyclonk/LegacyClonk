@@ -42,7 +42,6 @@ public:
 	char MissionAccess[CFG_MaxString + 1];
 	int32_t FPS;
 	int32_t Record;
-	int32_t DefRec;
 	int32_t MMTimer;    // use multimedia-timers
 	int32_t FairCrew;   // don't use permanent crew physicals
 	int32_t FairCrewStrength; // strength of clonks in fair crew mode
@@ -133,7 +132,6 @@ class C4ConfigNetwork
 {
 public:
 	int32_t ControlRate;
-	int32_t Lobby;
 	int32_t NoRuntimeJoin;
 	int32_t MaxResSearchRecursion;
 	char WorkPath[CFG_MaxString + 1];

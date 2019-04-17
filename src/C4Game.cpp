@@ -3013,7 +3013,7 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 		Verbose = true;
 
 	// default record?
-	Record = Record || Config.General.DefRec || (Config.Network.LeagueServerSignUp && NetworkActive);
+	Record = Record || Config.General.Record || (Config.Network.LeagueServerSignUp && NetworkActive);
 
 	// startup dialog required?
 	Application.UseStartupDialog = Application.isFullScreen && !*DirectJoinAddress && !*ScenarioFilename && !RecordStream.getSize();
