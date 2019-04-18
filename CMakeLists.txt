@@ -200,7 +200,7 @@ if (WITH_DEVELOPER_MODE)
 endif ()
 
 # Link iconv
-if (HAVE_ICONV AND APPLE)
+if (HAVE_ICONV AND NOT CMAKE_SYSTEM_NAME MATCHES Linux)
 	target_link_libraries(clonk iconv)
 endif ()
 

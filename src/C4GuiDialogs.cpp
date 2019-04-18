@@ -165,7 +165,7 @@ CStdWindow *DialogWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPa
 	rtSize.top = 0;
 	rtSize.right = rcBounds.Wdt;
 	rtSize.bottom = rcBounds.Hgt;
-	if (!::AdjustWindowRectEx(&rtSize, ConsoleDlgWindowStyle, false, 0)) return false;
+	if (!::AdjustWindowRectEx(&rtSize, ConsoleDlgWindowStyle, false, 0)) return nullptr;
 	// create it!
 	if (!Title || !*Title) Title = "???";
 	hWindow = ::CreateWindowEx(
@@ -182,7 +182,7 @@ CStdWindow *DialogWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPa
 		// and show
 		::ShowWindow(hWindow, SW_SHOW);
 	}
-	return hWindow ? this : 0;
+	return hWindow ? this : nullptr;
 }
 
 // Dialog

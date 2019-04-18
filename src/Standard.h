@@ -53,6 +53,9 @@
 
 #ifdef _WIN32
 	#ifndef _INC_WINDOWS
+		#ifdef _WIN32_WINNT
+			#undef _WIN32_WINNT
+		#endif
 		#define WINVER _WIN32_WINNT_WIN7
 		#define _WIN32_WINNT _WIN32_WINNT_WIN7
 		#define WIN32_LEAN_AND_MEAN
