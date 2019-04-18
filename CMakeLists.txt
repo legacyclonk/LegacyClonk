@@ -33,7 +33,9 @@ list(APPEND CMAKE_PREFIX_PATH ${EXTRA_DEPS_DIR})
 
 CHECK_INCLUDE_FILE_CXX(direct.h           HAVE_DIRECT_H)
 CHECK_INCLUDE_FILE_CXX(execinfo.h         HAVE_EXECINFO_H)
-CHECK_INCLUDE_FILE_CXX(iconv.h            HAVE_ICONV)
+if(NOT WIN32)
+	CHECK_INCLUDE_FILE_CXX(iconv.h            HAVE_ICONV)
+endif()
 CHECK_INCLUDE_FILE_CXX(io.h               HAVE_IO_H)
 CHECK_INCLUDE_FILE_CXX(langinfo.h         HAVE_LANGINFO_H)
 CHECK_INCLUDE_FILE_CXX(locale.h           HAVE_LOCALE_H)
@@ -200,7 +202,7 @@ if (WITH_DEVELOPER_MODE)
 endif ()
 
 # Link iconv
-if (HAVE_ICONV AND NOT CMAKE_SYSTEM_NAME MATCHES Linux)
+if (HAVE_ICONV AND APPLE)
 	target_link_libraries(clonk iconv)
 endif ()
 
