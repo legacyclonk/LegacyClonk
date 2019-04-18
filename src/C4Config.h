@@ -21,7 +21,7 @@
 #include "C4Constants.h"
 #include "C4InputValidation.h"
 
-#define C4CFG_Company "RedWolf Design"
+#define C4CFG_Company "LegacyClonk Team"
 #define C4CFG_Product "LegacyClonk"
 
 #define C4CFG_LeagueServer   "league.clonkspot.org:80"
