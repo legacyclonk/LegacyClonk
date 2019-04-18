@@ -332,7 +332,7 @@ void C4ComponentHost::Close()
 #ifdef _WIN32
 	if (!hDialog) return;
 	EndDialog(hDialog, 1);
-	hDialog = false;
+	hDialog = nullptr;
 #endif
 }
 
