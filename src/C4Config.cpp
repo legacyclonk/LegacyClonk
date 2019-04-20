@@ -161,7 +161,7 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ControlMode,        "ControlMode",        0,              false, true));
 	pComp->Value(mkNamingAdapt(LocalName,          "LocalName",          "Unknown",      false, true));
 	pComp->Value(mkNamingAdapt(Nick,               "Nick",               "",             false, true));
-	pComp->Value(mkNamingAdapt(MaxLoadFileSize,    "MaxLoadFileSize",   5 * 1024 * 1024, false, true));
+	pComp->Value(mkNamingAdapt(MaxLoadFileSize,    "MaxLoadFileSize", 100 * 1024 * 1024, false, true));
 
 	pComp->Value(mkNamingAdapt(MasterServerSignUp,        "MasterServerSignUp",     true,   false, true));
 	pComp->Value(mkNamingAdapt(MasterReferencePeriod,     "MasterReferencePeriod",  120,    false, true));
