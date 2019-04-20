@@ -99,10 +99,10 @@ void C4GoalDisplay::SetGoals(const C4IDList &rAllGoals, const C4IDList &rFulfill
 
 bool C4GameOverDlg::is_shown = false;
 
-C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (C4GUI::GetScreenWdt() - 10) : std::min<int32_t>(C4GUI::GetScreenWdt() - 150, 800),
-	(C4GUI::GetScreenHgt() < 600) ? (C4GUI::GetScreenHgt() - 10) : std::min<int32_t>(C4GUI::GetScreenHgt() - 150, 600),
+C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 1280) ? (C4GUI::GetScreenWdt() - 10) : std::min<int32_t>(C4GUI::GetScreenWdt() - 150, 1280),
+	(C4GUI::GetScreenHgt() < 720) ? (C4GUI::GetScreenHgt() - 10) : std::min<int32_t>(C4GUI::GetScreenHgt() - 150, 720),
 	LoadResStr("IDS_TEXT_EVALUATION"),
-	false), pNetResultLabel(nullptr), fIsNetDone(false), fHasNextMissionButton(false)
+	false), pNetResultLabel(nullptr), fIsNetDone(false)
 {
 	is_shown = true; // assume dlg will be shown, soon
 	UpdateOwnPos();
@@ -117,7 +117,7 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 	// lower button-area
 	C4GUI::ComponentAligner caBottom(caMain.GetFromBottom(iDefBtnHeight + iIndentY1 * 2), iIndentX1, 0);
 	int32_t iBottomButtonSize = caBottom.GetInnerWidth();
-	iBottomButtonSize = std::min<int32_t>(iBottomButtonSize / 2 - 2 * iIndentX1, C4GUI::GetRes()->CaptionFont.GetTextWidth("Quit it, baby! And some.") * 2);
+	iBottomButtonSize = std::min<int32_t>(iBottomButtonSize / 2 - 2 * iIndentX1, C4GUI::GetRes()->CaptionFont.GetTextWidth("Quit it, baby! And some.") * 13 / 10);
 	// goal display
 	const C4IDList &rGoals = Game.RoundResults.GetGoals();
 	const C4IDList &rFulfilledGoals = Game.RoundResults.GetFulfilledGoals();
@@ -191,25 +191,52 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 		ppPlayerLists[i]->SetDecoration(false, nullptr, true, false);
 		AddElement(ppPlayerLists[i]);
 	}
-	// add buttons
-	C4GUI::CallbackButton<C4GameOverDlg> *btnExit;
-	pBtnExit = btnExit = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr("IDS_BTN_ENDROUND"), caBottom.GetGridCell(0, 2, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnExitBtn);
-	btnExit->SetToolTip(LoadResStr("IDS_DESC_ENDTHEROUND"));
-	AddElement(btnExit);
-	C4GUI::CallbackButton<C4GameOverDlg> *btnContinue;
-	pBtnContinue = btnContinue = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr("IDS_BTN_CONTINUEGAME"), caBottom.GetGridCell(1, 2, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnContinueBtn);
-	btnContinue->SetToolTip(LoadResStr("IDS_DESC_CONTINUETHEROUNDWITHNOFUR"));
-	AddElement(btnContinue);
-	// convert continue button to "next mission" button if available
-	if (Game.NextMission)
+
+	pBtnRestart = nullptr;
+	pBtnNextMission = nullptr;
+
+	bool hideRestart = false;
+	size_t buttonCount = 2;
+	if (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2))
 	{
-		// not available for regular replay and network clients, obviously
-		// it is available for films though, so you can create cinematics for adventures
-		if (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2))
+		++buttonCount;
+		if (Game.NextMission)
 		{
-			fHasNextMissionButton = true;
-			btnContinue->SetText(Game.NextMissionText.getData());
-			btnContinue->SetToolTip(Game.NextMissionDesc.getData());
+			if(C4GUI::GetScreenWdt() < 1280)
+			{
+				hideRestart = true;
+			}
+			else
+			{
+				++buttonCount;
+			}
+		}
+	}
+	// add buttons
+	pBtnExit = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr("IDS_BTN_ENDROUND"), caBottom.GetGridCell(0, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnExitBtn);
+	pBtnExit->SetToolTip(LoadResStr("IDS_DESC_ENDTHEROUND"));
+	AddElement(pBtnExit);
+	pBtnContinue = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr("IDS_BTN_CONTINUEGAME"), caBottom.GetGridCell(1, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnContinueBtn);
+	pBtnContinue->SetToolTip(LoadResStr("IDS_DESC_CONTINUETHEROUNDWITHNOFUR"));
+	AddElement(pBtnContinue);
+
+	// not available for regular replay and network clients, obviously
+	// it is available for films though, so you can create cinematics for adventures
+	if (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2))
+	{
+		if(!hideRestart)
+		{
+			pBtnRestart = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr("IDS_BTN_RESTART"), caBottom.GetGridCell(2, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnRestartBtn);
+			pBtnRestart->SetToolTip(LoadResStr("IDS_DESC_RESTART"));
+			AddElement(pBtnRestart);
+		}
+
+		// convert continue button to "next mission" button if available
+		if (Game.NextMission)
+		{
+			pBtnNextMission = new C4GUI::CallbackButton<C4GameOverDlg>(Game.NextMissionText.getData(), caBottom.GetGridCell(3 - hideRestart, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnNextMissionBtn);
+			pBtnNextMission->SetToolTip(Game.NextMissionDesc.getData());
+			AddElement(pBtnNextMission);
 		}
 	}
 	// updates
@@ -217,7 +244,7 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 	Update();
 	// initial focus on quit button if visible, so space/enter/low gamepad buttons quit
 	fIsQuitBtnVisible = fIsNetDone || !Game.Network.isHost();
-	if (fIsQuitBtnVisible) SetFocus(btnExit, false);
+	if (fIsQuitBtnVisible) SetFocus(pBtnExit, false);
 }
 
 C4GameOverDlg::~C4GameOverDlg()
@@ -284,6 +311,20 @@ void C4GameOverDlg::OnContinueBtn(C4GUI::Control *btn)
 	Close(true);
 }
 
+void C4GameOverDlg::OnRestartBtn(C4GUI::Control *btn)
+{
+	// callback: restart button pressed
+	nextMissionMode = Restart;
+	Close(true);
+}
+
+void C4GameOverDlg::OnNextMissionBtn(C4GUI::Control *btn)
+{
+	// callback: next mission button pressed
+	nextMissionMode = NextMission;
+	Close(true);
+}
+
 void C4GameOverDlg::OnShown()
 {
 	// close some other dialogs
@@ -298,15 +339,15 @@ void C4GameOverDlg::OnShown()
 void C4GameOverDlg::OnClosed(bool fOK)
 {
 	typedef C4GUI::Dialog BaseClass;
-	bool fNextMissBtn = fHasNextMissionButton;
+	auto _nextMissionMode = nextMissionMode;
 	BaseClass::OnClosed(fOK); // deletes this!
 	// continue round
 	if (fOK)
 	{
-		if (fNextMissBtn)
+		if (_nextMissionMode != None)
 		{
 			// switch to next mission if next mission button is pressed
-			Application.SetNextMission(Game.NextMission.getData());
+			Application.SetNextMission(_nextMissionMode == NextMission ? Game.NextMission.getData() : Game.ScenarioFilename);
 			Application.QuitGame();
 		}
 		else

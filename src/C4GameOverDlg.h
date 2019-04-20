@@ -42,14 +42,21 @@ private:
 	class C4PlayerInfoListBox **ppPlayerLists;
 	C4GoalDisplay *pGoalDisplay;
 	C4GUI::Label *pNetResultLabel; // label showing league result, disconnect, etc.
-	C4GUI::Button *pBtnExit, *pBtnContinue;
+	C4GUI::Button *pBtnExit, *pBtnContinue, *pBtnRestart, *pBtnNextMission;
 	bool fIsNetDone; // set if league is evaluated and round results arrived
 	bool fIsQuitBtnVisible; // quit button available? set if not host or when fIsNetDone
-	bool fHasNextMissionButton; // continue button replaced by "next mission"-button?
+	enum NextMissionMode {
+		None,
+		Restart,
+		NextMission
+	};
+	NextMissionMode nextMissionMode = None;
 
 private:
 	void OnExitBtn(C4GUI::Control *btn); // callback: exit button pressed
 	void OnContinueBtn(C4GUI::Control *btn); // callback: continue button pressed
+	void OnRestartBtn(C4GUI::Control *btn); // callback: restart button pressed
+	void OnNextMissionBtn(C4GUI::Control *btn); // callback: next mission button pressed
 
 	void Update();
 	void SetNetResult(const char *szResultString, C4RoundResults::NetResult eResultType, size_t iPendingStreamingData, bool fIsStreaming);
