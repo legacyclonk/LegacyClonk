@@ -131,6 +131,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(MaxRefreshDelay,      "MaxRefreshDelay",      30));
 	pComp->Value(mkNamingAdapt(DDrawCfg.Shader,      "Shader",               false, false, true));
 	pComp->Value(mkNamingAdapt(AutoFrameSkip,        "AutoFrameSkip",        true,  false, true));
+	pComp->Value(mkNamingAdapt(UseWhiteIngameChat,   "UseWhiteIngameChat",   false, false, true));
 }
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)
@@ -157,10 +158,10 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(PortDiscovery, "PortDiscovery", C4NetStdPortDiscovery, false, true));
 	pComp->Value(mkNamingAdapt(PortRefServer, "PortRefServer", C4NetStdPortRefServer, false, true));
 #endif
-	pComp->Value(mkNamingAdapt(ControlMode,     "ControlMode",     0,               false, true));
-	pComp->Value(mkNamingAdapt(LocalName,       "LocalName",       "Unknown",       false, true));
-	pComp->Value(mkNamingAdapt(Nick,            "Nick",            "",              false, true));
-	pComp->Value(mkNamingAdapt(MaxLoadFileSize, "MaxLoadFileSize", 5 * 1024 * 1024, false, true));
+	pComp->Value(mkNamingAdapt(ControlMode,        "ControlMode",        0,              false, true));
+	pComp->Value(mkNamingAdapt(LocalName,          "LocalName",          "Unknown",      false, true));
+	pComp->Value(mkNamingAdapt(Nick,               "Nick",               "",             false, true));
+	pComp->Value(mkNamingAdapt(MaxLoadFileSize,    "MaxLoadFileSize",   5 * 1024 * 1024, false, true));
 
 	pComp->Value(mkNamingAdapt(MasterServerSignUp,        "MasterServerSignUp",     true,   false, true));
 	pComp->Value(mkNamingAdapt(MasterReferencePeriod,     "MasterReferencePeriod",  120,    false, true));
