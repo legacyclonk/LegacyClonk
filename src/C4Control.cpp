@@ -1045,7 +1045,7 @@ void C4ControlMessage::Execute() const
 		if (pPlr)
 		{
 			if (pPlr->AtClient != iByClient) break;
-			sprintf(OSTR, (eType == C4CMT_Normal ? "<c %x><<i></i>%s> %s</c>" : "<c %x> * %s %s</c>"),
+			sprintf(OSTR, (eType == C4CMT_Normal ? (Config.Graphics.UseWhiteIngameChat ? "<c %x><<i></i>%s></c> %s" : "<c %x><<i></i>%s> %s</c>") : (Config.Graphics.UseWhiteIngameChat ? "<c %x> * %s</c> %s" : "<c %x> * %s %s</c>")),
 				pPlr->ColorDw, pPlr->GetName(), szMessage);
 		}
 		else
@@ -1091,7 +1091,7 @@ void C4ControlMessage::Execute() const
 			for (int cnt = 0; pLocalPlr = Game.Players.GetLocalByIndex(cnt); cnt++)
 				if (!Hostile(pLocalPlr->Number, iPlayer))
 					break;
-			if (pLocalPlr) Log(FormatString("<c %x>{%s} %s</c>", pPlr->ColorDw, pPlr->GetName(), szMessage).getData());
+			if (pLocalPlr) Log(FormatString(Config.Graphics.UseWhiteIngameChat ? "<c %x>{%s}</c> %s" : "<c %x>{%s} %s</c>", pPlr->ColorDw, pPlr->GetName(), szMessage).getData());
 		}
 		else if (pLobby)
 		{
@@ -1115,7 +1115,7 @@ void C4ControlMessage::Execute() const
 				break;
 		if (pLocalPlr)
 		{
-			Log(FormatString("<c %x>[%s] %s</c>", pPlr->ColorDw, pPlr->GetName(), szMessage).getData());
+			Log(FormatString(Config.Graphics.UseWhiteIngameChat ? "<c %x>[%s]</c> %s" : "<c %x>[%s] %s</c>", pPlr->ColorDw, pPlr->GetName(), szMessage).getData());
 		}
 	}
 	break;

@@ -123,6 +123,7 @@ public:
 	bool FireParticles; // draw extended fire particles if enabled (defualt on)
 	int32_t MaxRefreshDelay; // minimum time after which graphics should be refreshed (ms)
 	bool AutoFrameSkip; // if true, gfx frames are skipped when they would slow down the game
+	bool UseWhiteIngameChat;
 	void CompileFunc(StdCompiler *pComp);
 };
 
