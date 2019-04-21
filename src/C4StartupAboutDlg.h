@@ -1,8 +1,9 @@
 /*
  * LegacyClonk
  *
- * Copyright (c) RedWolf Design
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2001-2009, RedWolf Design GmbH, http://www.clonk.de/
+ * Copyright (c) 2013-2016, The OpenClonk Team and contributors
+ * Copyright (c) 2018-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -14,33 +15,38 @@
  * for the above references.
  */
 
-// About/credits screen
+// Credits screen
 
 #pragma once
 
 #include "C4Startup.h"
+#include <vector>
 
-// startup dialog: About
+// startup dialog: credits
 class C4StartupAboutDlg : public C4StartupDlg
 {
 public:
 	C4StartupAboutDlg();
-	~C4StartupAboutDlg();
-
-private:
-	class C4KeyBinding *pKeyBack;
+	~C4StartupAboutDlg() override;
 
 protected:
-	virtual int32_t GetMarginTop() { return iDlgMarginY + C4GUI_FullscreenDlg_TitleHeight / 2; } // less top margin
-
-	virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: back on any button
-	virtual bool OnEnter() { DoBack(); return true; }
-	virtual bool OnEscape() { DoBack(); return true; }
-	virtual void DrawElement(C4FacetEx &cgo);
+	bool OnEnter() override { DoBack(); return true; }
+	bool OnEscape() override { DoBack(); return true; }
+	void DrawElement(C4FacetEx &cgo) override;
 	bool KeyBack() { DoBack(); return true; }
-	void OnBackBtn(C4GUI::Control *btn) { DoBack(); }
+	void OnBackBtn(C4GUI::Control *btn) { currentPage ? SwitchPage(currentPage - 1) : DoBack();}
+	void OnAdvanceButton(C4GUI::Control *btn) { SwitchPage(1); }
 	void OnUpdateBtn(C4GUI::Control *btn);
 
+private:
+	uint32_t currentPage = 0;
+	C4GUI::CallbackButton<C4StartupAboutDlg> *btnAdvance;
+	std::vector<std::vector<std::pair<C4GUI::TextWindow *, C4GUI::Label *>>> aboutPages;
+
+	std::pair<C4GUI::TextWindow *, C4GUI::Label *> DrawPersonList(struct PersonList&, const char *title, C4Rect& rect, uint8_t flags = 0);
+	C4GUI::Label *DrawCaption(C4Rect&, const char *);
+	void SwitchPage(uint32_t number);
 public:
+
 	void DoBack(); // back to main menu
 };
