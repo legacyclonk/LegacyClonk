@@ -1,45 +1,322 @@
-// About/credits screen
+/*
+ * LegacyClonk
+ *
+ * Copyright (c) 2001-2009, RedWolf Design GmbH, http://www.clonk.de/
+ * Copyright (c) 2010-2016, The OpenClonk Team and contributors
+ * Copyright (c) 2018-2019, The LegacyClonk Team and contributors
+ *
+ * Distributed under the terms of the ISC license; see accompanying file
+ * "COPYING" for details.
+ *
+ * "Clonk" is a registered trademark of Matthes Bender, used with permission.
+ * See accompanying file "TRADEMARK" for details.
+ *
+ * To redistribute this file separately, substitute the full license texts
+ * for the above references.
+ */
+// Credits screen
 
-#include <C4Include.h>
-#include <C4StartupAboutDlg.h>
-#include <C4UpdateDlg.h>
+#include "C4Include.h"
+#include "C4StartupAboutDlg.h"
 
-#ifndef BIG_C4INCLUDE
-#include <C4StartupMainDlg.h>
-#include <C4Wrappers.h>
-#endif
+#include "C4Version.h"
+#include "C4GraphicsResource.h"
+#include "C4UpdateDlg.h"
 
-// C4StartupAboutDlg
+#include <fstream>
+#include <sstream>
 
-C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg("")
+enum {
+	PERSONLIST_NOCAPTION = 1 << 0,
+	PERSONLIST_NONEWLINE = 1 << 1
+};
+
+struct PersonList
 {
-	UpdateSize();
+	struct Entry
+	{
+		const char *name, *nick;
+	};
+	const char *title;
+	virtual void WriteTo(C4GUI::TextWindow *textbox, CStdFont &font, bool newline = true) = 0;
+	virtual std::string ToString(bool newline = true, bool with_color = false) = 0;
+	virtual ~PersonList() { }
+};
 
-	// key bindings: No longer back on any key
-	pKeyBack = nullptr;
+namespace {
+	constexpr auto SEE_LGPL = "See LGPL.txt";
+};
 
-	// version info in topright corner
-	C4Rect rcClient = GetContainedClientRect();
-	StdStrBuf sVersion; sVersion.Format(LoadResStr("IDS_DLG_VERSION"), C4VERSION);
-	CStdFont &rUseFont = C4GUI::GetRes()->TextFont;
-	int32_t iInfoWdt = std::min<int32_t>(rcClient.Wdt / 2, rUseFont.GetTextWidth("General info text width") * 2);
-	C4GUI::ComponentAligner caInfo(C4Rect(rcClient.x + rcClient.Wdt - iInfoWdt, rcClient.y, iInfoWdt, rcClient.Hgt / 8), 0, 0, false);
-	AddElement(new C4GUI::Label(sVersion.getData(), caInfo.GetGridCell(0, 1, 0, 4), ARight));
+static struct DeveloperList : public PersonList
+{
+	std::vector<Entry> developers;
 
-	// bottom line buttons
-	C4GUI::ComponentAligner caMain(rcClient, 0, 0, true);
-	C4GUI::ComponentAligner caButtons(caMain.GetFromBottom(caMain.GetHeight() * 1 / 8), 0, 0, false);
-	C4GUI::CallbackButton<C4StartupAboutDlg> *btn;
-	int32_t iButtonWidth = caButtons.GetInnerWidth() / 4;
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_BACK"), caButtons.GetGridCell(0, 3, 0, 1, iButtonWidth, C4GUI_ButtonHgt, true), &C4StartupAboutDlg::OnBackBtn));
-	btn->SetToolTip(LoadResStr("IDS_DLGTIP_BACKMAIN"));
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_CHECKFORUPDATES"), caButtons.GetGridCell(2, 3, 0, 1, iButtonWidth, C4GUI_ButtonHgt, true), &C4StartupAboutDlg::OnUpdateBtn));
-	btn->SetToolTip(LoadResStr("IDS_DESC_CHECKONLINEFORNEWVERSIONS"));
+	DeveloperList(std::initializer_list<Entry> l) : developers(l) { }
+
+	void WriteTo(C4GUI::TextWindow *textbox, CStdFont &font, bool newline = true)
+	{
+		if (!newline)
+		{
+			textbox->AddTextLine(ToString(false, true).c_str(), &font, C4GUI_MessageFontClr, false, true);
+			return;
+		}
+
+		for (auto& p : developers)
+		{
+			textbox->AddTextLine(p.nick ? FormatString("%s <c f7f76f>(%s)</c>", p.name, p.nick).getData() : p.name, &font, C4GUI_MessageFontClr, false, true);
+		}
+	}
+
+	std::string ToString(bool newline = true, bool with_color = false)
+	{
+		const char *opening_tag = with_color ? "<c f7f76f>" : "";
+		const char *closing_tag = with_color ? "</c>" : "";
+		std::stringstream out;
+		for (auto& p : developers)
+		{
+			out << p.name;
+			if (p.nick)
+			{
+				out << opening_tag << " (" << p.nick << ")" << closing_tag;
+			}
+			out << (newline ? "\n" : ", ");
+		}
+		return out.str();
+	}
 }
 
-C4StartupAboutDlg::~C4StartupAboutDlg()
+gameDesign =
 {
-	delete pKeyBack;
+	{"Matthes Bender", "matthes"},
+},
+code =
+{
+	{"Sven Eberhardt", "Sven2"},
+	{"Peter Wortmann", "PeterW"},
+	{"G\xfcnther Brammer", "G\xfcnther"},
+	{"Armin Burgmeier", "Clonk-Karl"},
+	{"Julian Raschke", "survivor"},
+	{"Alexander Post", "qualle"},
+	{"Jan Heberer", "Jan"},
+	{"Markus Mittendrein", "Der Tod"},
+	{"Dominik Bayerl", "Kanibal"},
+	{"George Tokmaji", "Fulgen"}
+},
+scripting =
+{
+	{"Felix Wagner", "Clonkonaut"},
+	{"Richard Gerum", "Randrian"},
+	{"Markus Hoppe", "Shamino"},
+	{"David Dormagen", "Zapper"},
+	{"Florian Gro\xdf", "flgr"},
+	{"Tobias Zwick", "Newton"},
+	{"Bernhard Bonigl", "boni"},
+	{"Viktor Yuschuk", "Viktor"}
+},
+additionalArt =
+{
+	{"Erik Nitzschke", "DukeAufDune"},
+	{"Merten Ehmig", "pluto"},
+	{"Matthias Rottl\xe4nder", "Matthi"},
+	{"Christopher Reimann", "Benzol"}
+},
+music =
+{
+	{"Hans-Christan K\xfchl", "HCK"},
+	{"Sebastian Burkhart", "hypo"},
+	{"Florian Boos", "Flobby"},
+	{"Martin Strohmeier", "K-Pone"}
+},
+voice =
+{
+	{"Klemens K\xf6hring", nullptr}
+},
+web =
+{
+	{"Markus Wichitill", "mawic"},
+	{"Martin Schuster", "knight_k"},
+	{"Arne Bochem", "ArneB"},
+	{"Lukas Werling", "Luchs"},
+	{"Florian Graier", "Nachtfalter"}
+},
+libs =
+{
+	{"zlib", "Jean-Loup Gailly, Mark Adler"},
+	{"libpng", "Glenn Randers-Pehrson"},
+	{"jpeglib", "Independent JPEG Group"},
+	{"fmod", "Firelight Multimedia"},
+	{"freetype", "The FreeType Project"},
+	{"Allegro", "Shawn Hargreaves"},
+	{"OpenSSL", "See OpenSSL.txt"},
+	{"GTK+", SEE_LGPL},
+	{"SDL", SEE_LGPL},
+	{"SDL_mixer", SEE_LGPL}
+},
+contributors = {
+	{"Benedict Etzel", "B_E"}
+};
+
+/*static struct ContributorList : public PersonList
+{
+	static const std::vector<Entry>contributors, packageMaintainers;
+
+	std::string ConcatNames(const std::vector<Entry>& names, bool with_color)
+	{
+		const char *opening_tag = with_color ? "<c f7f76f>" : "";
+		const char *closing_tag = with_color ? "</c>" : "";
+		std::stringstream result;
+		bool first = true;
+		for (auto& p : names)
+		{
+			if (!first) result << ", ";
+			first = false;
+			if (p.nick)
+				result << p.name << " " << opening_tag << "(" << p.nick << ")" << closing_tag;
+			else
+				result << p.name;
+		}
+		return result.str();
+	}
+
+	template<typename Func>
+	std::string WriteLines(Func f, bool with_color)
+	{
+		const char *opening_tag = with_color ? "<c ff0000>" : "";
+		const char *closing_tag = with_color ? "</c>" : "";
+
+		std::stringstream text;
+		text << opening_tag << "Contributors: " << closing_tag;
+		text << ConcatNames(contributors, with_color);
+		f(text);
+
+		text << opening_tag << "Package maintainers: " << closing_tag;
+		text << ConcatNames(packageMaintainers, with_color);
+		f(text);
+
+		return text.str();
+	}
+
+	void WriteTo(C4GUI::TextWindow *textbox, CStdFont &font)
+	{
+		WriteLines([&](std::stringstream& text)
+		{
+			textbox->AddTextLine(text.str().c_str(), &font, C4GUI_MessageFontClr, false, true);
+			text.str("");
+		}, true);
+	}
+
+	std::string ToString()
+	{
+		return WriteLines([&](std::stringstream& text)
+		{
+			text << "\n";
+		}, false);
+	}
+};*
+
+// First real names sorted by last name (sort -k2), then nicks (sort)
+const std::vector<ContributorList::Entry> ContributorList::contributors = {
+};
+
+const std::vector<ContributorList::Entry> ContributorList::packageMaintainers = {
+};*/
+
+template<int32_t left, int32_t top, int32_t right, int32_t bottom>
+class CustomMarginTextWindow : public C4GUI::TextWindow {
+public:
+	CustomMarginTextWindow(C4Rect &rtBounds, size_t iPicWdt = 0, size_t iPicHgt = 0, size_t iPicPadding = 0, size_t iMaxLines = 100, size_t iMaxTextLen = 4096, const char *szIndentChars = "    ", bool fAutoGrow = false, const C4Facet *pOverlayPic = nullptr, int iOverlayBorder = 0, bool fMarkup = false) : C4GUI::TextWindow{rtBounds, iPicWdt, iPicHgt, iPicPadding, iMaxLines, iMaxTextLen, szIndentChars, fAutoGrow, pOverlayPic, iOverlayBorder, fMarkup}
+	{
+		UpdateSize();
+	}
+
+	virtual int32_t GetMarginTop() override    { return top; }
+	virtual int32_t GetMarginLeft() override   { return left; }
+	virtual int32_t GetMarginRight() override  { return right; }
+	virtual int32_t GetMarginBottom() override { return bottom; }
+};
+
+// ------------------------------------------------
+// --- C4StartupAboutDlg
+
+C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"))
+{
+	// ctor
+	UpdateSize();
+
+	CStdFont &rTrademarkFont = C4GUI::GetRes()->MiniFont;
+	C4Rect rcClient = GetContainedClientRect();
+	// bottom line buttons and copyright messages
+	C4GUI::ComponentAligner caMain(rcClient, 0,0, true);
+	C4GUI::ComponentAligner caButtons(caMain.GetFromBottom(caMain.GetHeight()*1/8), 0,0, false);
+	C4GUI::CallbackButton<C4StartupAboutDlg> *btn;
+
+	AddElement(new C4GUI::Label("LegacyClonk is a fan project based on Clonk Rage.   'Clonk' is a registered trademark of Matthes Bender.",
+		caButtons.GetFromBottom(rTrademarkFont.GetLineHeight()), ARight, 0xffffffff, &rTrademarkFont));
+
+	int32_t iButtonWidth = caButtons.GetInnerWidth() / 4;
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_BACK"), caButtons.GetGridCell(0,3,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnBackBtn));
+	btn->SetToolTip(LoadResStr("IDS_DLGTIP_BACKMAIN"));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_CHECKFORUPDATES"), caButtons.GetGridCell(2,4,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnUpdateBtn));
+	btn->SetToolTip(LoadResStr("IDS_DESC_CHECKONLINEFORNEWVERSIONS"));
+	AddElement(btnAdvance = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_CONTRIBUTORS"),
+		caButtons.GetGridCell(3,4,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnAdvanceButton));
+
+	using ElementVector = std::vector<std::pair<C4GUI::TextWindow *, C4GUI::Label *>>;
+	ElementVector page1;
+
+	C4GUI::ComponentAligner caDevelopers(caMain.GetAll(), 0,0, false);
+
+	C4GUI::ComponentAligner caDevelopersCol1(caDevelopers.GetFromLeft(caMain.GetWidth()*1/3), 0, 0, false);
+	page1.emplace_back(DrawPersonList(gameDesign, "Game Design", caDevelopersCol1.GetFromTop(caDevelopersCol1.GetHeight()*1/5)));
+	page1.emplace_back(DrawPersonList(code, "Engine and Tools", caDevelopersCol1.GetAll()));
+
+	C4GUI::ComponentAligner caDevelopersCol2(caDevelopers.GetFromLeft(caMain.GetWidth()*1/3), 0,0, false);
+	page1.emplace_back(DrawPersonList(scripting, "Scripting", caDevelopersCol2.GetFromTop(caDevelopersCol2.GetHeight()*2/3)));
+	page1.emplace_back(DrawPersonList(additionalArt, "Additional Art", caDevelopersCol2.GetAll()));
+
+	C4GUI::ComponentAligner caDevelopersCol3(caDevelopers.GetFromLeft(caMain.GetWidth()*1/3), 0,0, false);
+	page1.emplace_back(DrawPersonList(music, "Music", caDevelopersCol3.GetFromTop(caDevelopersCol3.GetHeight()*1/3)));
+	page1.emplace_back(DrawPersonList(voice, "Voice", caDevelopersCol3.GetFromTop(caDevelopersCol3.GetHeight()*3/10)));
+	page1.emplace_back(DrawPersonList(web, "Web", caDevelopersCol3.GetAll()));
+
+	ElementVector page2;
+	C4GUI::ComponentAligner caContributors(caMain.GetAll(), 0,0, true);
+	page2.emplace_back(DrawPersonList(libs, "Libraries", caContributors.GetFromLeft(caContributors.GetWidth() / 2)));
+	page2.emplace_back(DrawPersonList(contributors, "Contributors", caContributors.GetAll()));
+	aboutPages.emplace_back(page1);
+	aboutPages.emplace_back(page2);
+	SwitchPage(0);
+}
+
+C4StartupAboutDlg::~C4StartupAboutDlg() = default;
+
+
+std::pair<C4GUI::TextWindow*, C4GUI::Label*> C4StartupAboutDlg::DrawPersonList(PersonList& persons, const char* title, C4Rect& rect, uint8_t flags)
+{
+	CStdFont &rUseFont = C4GUI::GetRes()->TextFont;
+	CStdFont &captionFont = C4GUI::GetRes()->TitleFont;
+	C4GUI::Label *label = nullptr;
+	if (!(flags & PERSONLIST_NOCAPTION))
+	{
+		int height = captionFont.GetLineHeight();
+		label = DrawCaption(rect, title);
+		rect.y += height; rect.Hgt -= height;
+	}
+	auto textbox = new CustomMarginTextWindow<0, 8, 0, 8>(rect, 0, 0, 0, 100, 8000, "", true, nullptr, 0, true);
+	AddElement(textbox);
+	textbox->SetDecoration(false, false, nullptr, true);
+	persons.WriteTo(textbox, rUseFont, !(flags & PERSONLIST_NONEWLINE));
+	textbox->UpdateHeight();
+	std::pair<C4GUI::TextWindow *, C4GUI::Label *> elements = std::make_pair(textbox, label);
+	return elements;
+}
+
+C4GUI::Label *C4StartupAboutDlg::DrawCaption(C4Rect& rect, const char *text)
+{
+	CStdFont &captionFont = C4GUI::GetRes()->CaptionFont;
+	auto caption = new C4GUI::Label(text, rect, ALeft, C4GUI_Caption2FontClr, &captionFont);
+	AddElement(caption);
+	return caption;
 }
 
 void C4StartupAboutDlg::DoBack()
@@ -55,10 +332,23 @@ void C4StartupAboutDlg::DrawElement(C4FacetEx &cgo)
 	C4Startup::Get()->Graphics.fctAboutBG.Draw(cgo, false);
 }
 
-void C4StartupAboutDlg::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
+
+void C4StartupAboutDlg::SwitchPage(uint32_t number)
 {
-	// otherwise, inherited for tooltips
-	C4StartupDlg::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);
+	currentPage = number;
+	for (size_t i = 0; i < aboutPages.size(); ++i) // index is needed
+	{
+		for (auto &p : aboutPages[i])
+		{
+			if (p.first)
+				p.first->SetVisibility(currentPage == i);
+
+			if (p.second)
+				p.second->SetVisibility(currentPage == i);
+		}
+	}
+
+	btnAdvance->SetVisibility(currentPage != aboutPages.size() - 1);
 }
 
 void C4StartupAboutDlg::OnUpdateBtn(C4GUI::Control *btn)

@@ -33,7 +33,7 @@ bool C4StartupGraphics::Init()
 	Game.SetInitProgress(55);
 	if (!LoadFile(fctNetBG, "StartupNetworkBG")) return false;
 	Game.SetInitProgress(57);
-	if (!LoadFile(fctAboutBG, "StartupAboutBG")) return false;
+	if (!LoadFile(fctAboutBG, "LoaderWatercave1")) return false;
 	Game.SetInitProgress(60);
 	if (!LoadFile(fctMainButtons, "StartupBigButton")) return false;
 	Game.SetInitProgress(62);

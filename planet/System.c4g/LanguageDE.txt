@@ -11,6 +11,7 @@ IDS_BTN_CHAT=&Chat
 IDS_BTN_CHECKFORUPDATES=&Updates suchen
 IDS_BTN_CONNECT=Verbinden
 IDS_BTN_CONTINUEGAME=&Weiterspielen
+IDS_BTN_CONTRIBUTORS=&Beitragende
 IDS_BTN_RESTART=Neusta&rt
 IDS_BTN_NEXTSCENARIO=&Nächstes Szenario
 IDS_DESC_NEXTSCENARIO=Nächstes Szenario starten.
