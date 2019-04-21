@@ -5,8 +5,13 @@
 
 #include <C4Gui.h>
 
-class C4AbortGameDialog : public C4GUI::ConfirmationDialog
+class C4AbortGameDialog : public C4GUI::Dialog
 {
+	bool fRestart = false;
+	void OnYesBtn(C4GUI::Control *btn);
+	void OnNoBtn(C4GUI::Control *btn);
+	void OnRestartBtn(C4GUI::Control *btn);
+
 public:
 	C4AbortGameDialog();
 	~C4AbortGameDialog();
