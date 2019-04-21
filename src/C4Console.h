@@ -143,7 +143,7 @@ protected:
 	HBITMAP hbmPlay2;
 	HBITMAP hbmHalt;
 	HBITMAP hbmHalt2;
-	friend BOOL CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
+	friend INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 
 #elif defined(WITH_DEVELOPER_MODE)
 
