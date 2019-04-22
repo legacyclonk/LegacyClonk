@@ -368,7 +368,7 @@ protected:
 	DEVMODE dspMode, OldDspMode; // display mode for fullscreen
 #else
 #if defined(USE_X11)
-	Display *dpy;
+	Display *dpy = nullptr;
 	int xf86vmode_major_version, xf86vmode_minor_version;
 #endif
 #if defined(USE_SDL_MAINLOOP)

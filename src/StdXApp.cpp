@@ -206,8 +206,11 @@ bool CStdApp::InitTimer() { gettimeofday(&LastExecute, nullptr); return true; }
 
 void CStdApp::Clear()
 {
-	XCloseDisplay(dpy);
-	dpy = nullptr;
+	if (dpy != nullptr)
+	{
+		XCloseDisplay(dpy);
+		dpy = nullptr;
+	}
 #if USE_CONSOLE && HAVE_LIBREADLINE
 	rl_callback_handler_remove();
 #endif
