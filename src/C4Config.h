@@ -13,11 +13,11 @@
 #define C4CFG_LeagueServer   "league.clonkspot.org:80"
 #define C4CFG_FallbackServer "league.clonkspot.org:80"
 
-#define C4CFG_UpdateServer "www.clonkx.de/rage/update" // for download files, replace 'update' with the below
+#define C4CFG_UpdateServer "update.clonkspot.org/lc/update" // for download files, replace 'update' with the below
 
-#define C4CFG_UpdateEngine  "cr_%d_%s.c4u"
-#define C4CFG_UpdateObjects "cr_%d%d%d%d_%d_%s.c4u"
-#define C4CFG_UpdateMajor   "cr_%d%d%d%d_%s.c4u"
+#define C4CFG_UpdateEngine  "lc_%d_%s.c4u"
+#define C4CFG_UpdateObjects "lc_%d%d%d%d_%d_%s.c4u"
+#define C4CFG_UpdateMajor   "lc_%d%d%d%d_%s.c4u"
 
 #include "C4Include.h"
 
