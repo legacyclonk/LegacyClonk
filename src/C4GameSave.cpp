@@ -562,7 +562,6 @@ void C4GameSaveRecord::AdjustCore(C4Scenario &rC4S)
 {
 	// specific recording flags
 	rC4S.Head.Replay = true;
-	if (!rC4S.Head.Film) rC4S.Head.Film = C4SFilm_Normal; /* default to film */
 	rC4S.Head.Icon = 29;
 	// default record title
 	char buf[1024 + 1];
