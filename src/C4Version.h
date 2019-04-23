@@ -11,7 +11,7 @@
 #define C4XVER3 10
 #define C4XVER4 7
 #define C4XVERBUILD 330
-#define C4VERSIONEXTRA ""
+#define C4VERSIONEXTRA " LegacyClonk"
 /* These values are now controlled by the file source/version - DO NOT MODIFY DIRECTLY */
 
 // Build Options
