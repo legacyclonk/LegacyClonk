@@ -520,7 +520,7 @@ int main(int argc, char *argv[])
 		++iFirstCommand;
 
 	// Program info
-	LogF("RedWolf Design C4Group %s", C4VERSION);
+	LogF("LegacyClonk C4Group %s", C4VERSION);
 
 	// Load configuration
 	Config.Init();
