@@ -1216,7 +1216,10 @@ void C4StartupOptionsDlg::OnLangComboFill(C4GUI::ComboBox_FillCB *pFiller)
 	C4LanguageInfo *pNfo;
 	for (int i = 0; i < Languages.GetInfoCount(); ++i)
 		if (pNfo = Languages.GetInfo(i))
-			pFiller->AddEntry(FormatString("%s - %s", pNfo->Code, pNfo->Name).getData(), (unsigned char)(pNfo->Code[0]) + ((unsigned char)(pNfo->Code[1]) << 8));
+			if(strcmp(pNfo->Code, "DE") != 0 && strcmp(pNfo->Code, "US") != 0)
+			{
+				pFiller->AddEntry(FormatString("%s - %s", pNfo->Code, pNfo->Name).getData(), (unsigned char)(pNfo->Code[0]) + ((unsigned char)(pNfo->Code[1]) << 8));
+			}
 }
 
 bool C4StartupOptionsDlg::OnLangComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection)
