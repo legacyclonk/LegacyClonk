@@ -479,7 +479,7 @@ int main(int argc, char *argv[])
 
 	// Program info
 	if (!fQuiet)
-		printf("RedWolf Design C4Group %s\n", C4VERSION);
+		printf("LegacyClonk C4Group %s\n", C4VERSION);
 
 	// Load configuration
 	Config.Init();
