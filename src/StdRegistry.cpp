@@ -606,14 +606,11 @@ void StdCompilerConfigRead::Boolean(bool &rBool)
 {
 	try
 	{
-		StdStrBuf szVal = ReadString();
-		rBool = (szVal == "true");
+		rBool = !!ReadDWord();
 	}
 	catch (NotFoundException *pExc)
 	{
 		delete pExc;
-		uint32_t iVal = ReadDWord();
-		rBool = !!iVal;
 	}
 }
 
