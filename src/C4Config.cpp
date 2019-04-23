@@ -50,8 +50,24 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	// where fStoreDefault writes out the value to the config even if it's the same as the default.
 #define s mkStringAdaptM
 	pComp->Value(mkNamingAdapt(s(Name),            "Name",            ""));
-	pComp->Value(mkNamingAdapt(s(Language),        "Language",        "", false, true));
-	pComp->Value(mkNamingAdapt(s(LanguageEx),      "LanguageEx",      "", false, true));
+	pComp->Value(mkNamingAdapt(s(Language),        "Language",        isGermanSystem() ? "LD" : "LU", false, true));
+	pComp->Value(mkNamingAdapt(s(LanguageEx),      "LanguageEx",      isGermanSystem() ? "LD,DE,LU,US" : "LU,US,LD,DE", false, true));
+
+	// only for 330 compatibility release
+	if(pComp->isCompiler())
+	{
+		if(strncmp(Language, "DE", 2) == 0)
+		{
+			strcpy(Language, "LD");
+			strcpy(LanguageEx, "LD,DE,LU,US");
+		}
+		else if(strncmp(Language, "US", 2) == 0)
+		{
+			strcpy(Language, "LU");
+			strcpy(LanguageEx, "LU,US,LD,DE");
+		}
+	}
+
 	pComp->Value(mkNamingAdapt(s(LanguageCharset), "LanguageCharset", "", false, true));
 	fUTF8 = SEqual(LanguageCharset, "UTF-8");
 	pComp->Value(mkNamingAdapt(s(Definitions),     "Definitions",    ""));
