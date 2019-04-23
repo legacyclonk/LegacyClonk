@@ -349,6 +349,10 @@ void C4Config::Default()
 	fConfigLoaded = false;
 }
 
+#ifdef _WIN32
+#include <winreg.h>
+#endif
+
 bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 {
 	try
@@ -357,8 +361,18 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 		// Windows: Default load from registry, if no explicit config file is specified
 		if (!szConfigFile)
 		{
-			StdCompilerConfigRead CfgRead(HKEY_CURRENT_USER, "Software\\" C4CFG_Company "\\" C4CFG_Product);
-			CfgRead.Compile(*this);
+			HKEY key;
+			if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\" C4CFG_Company "\\" C4CFG_Product, 0, KEY_READ, &key) == ERROR_SUCCESS)
+			{
+				RegCloseKey(key);
+				StdCompilerConfigRead CfgRead(HKEY_CURRENT_USER, "Software\\" C4CFG_Company "\\" C4CFG_Product);
+				CfgRead.Compile(*this);
+			}
+			else // no LC config yet? try CR instead
+			{
+				StdCompilerConfigRead CfgReadMigrate(HKEY_CURRENT_USER, "Software\\RedWolf Design\\Clonk Rage");
+				CfgReadMigrate.Compile(*this);
+			}
 		}
 		else
 #endif
