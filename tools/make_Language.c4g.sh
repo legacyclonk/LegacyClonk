@@ -6,7 +6,7 @@ if [ -z "$C4GROUP" ]; then
 	exit 1
 fi
 
-SCRIPT_DIR=$(dirname "$(readlink -f \"$0\")")
+SCRIPT_DIR="$(realpath $(dirname $0))"
 
 if [ -z "$SRCDIR" ]; then
 	SRCDIR="$SCRIPT_DIR/../planet/System.c4g"
