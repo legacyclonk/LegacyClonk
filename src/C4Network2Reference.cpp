@@ -547,6 +547,13 @@ bool C4Network2RefClient::GetReferences(C4Network2Reference ** &rpReferences, in
 	// local update test
 	try
 	{
+		constexpr auto oldEngineName = "\n[Clonk Rage]";
+		if(strncmp(ResultString.getData(), oldEngineName, strlen(oldEngineName)) == 0)
+		{
+			StdStrBuf newResultString("[LegacyClonk]");
+			newResultString.Append(ResultString.getData() + strlen(oldEngineName));
+			ResultString = newResultString;
+		}
 		// Create compiler
 		StdCompilerINIRead Comp;
 		Comp.setInput(ResultString);
