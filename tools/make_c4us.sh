@@ -41,11 +41,11 @@ if [ -z "$GET_win32" ]; then
 fi
 
 if [ -z "$GET_linux" ]; then
-	GET_linux="curl -L https://github.com/Fulgen301/LegacyClonk/releases/download/$TAG/LegacyClonk-x86.tar.gz | tar x"
+	GET_linux="curl -L https://github.com/Fulgen301/LegacyClonk/releases/download/$TAG/LegacyClonk-x86.tar.gz | tar xz"
 fi
 
 if [ -z "$GET_linux64" ]; then
-	GET_linux64="curl -L https://github.com/Fulgen301/LegacyClonk/releases/download/$TAG/LegacyClonk-x64.tar.gz | tar x"
+	GET_linux64="curl -L https://github.com/Fulgen301/LegacyClonk/releases/download/$TAG/LegacyClonk-x64.tar.gz | tar xz"
 fi
 
 if [ -z "$GET_mac" ]; then
