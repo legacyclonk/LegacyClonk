@@ -98,14 +98,14 @@ BEGIN
             VALUE "FileVersion", C4VERSION "\0"
             VALUE "SpecialBuild", C4BUILDOPT "\0"
             VALUE "ProductVersion", C4VERSION "\0"
-            VALUE "InternalName", "Clonk 4 Engine\0"
-            VALUE "LegalCopyright", "Copyright © 2008-2013 RedWolf Design GmbH"
+            VALUE "InternalName", "LegacyClonk\0"
+            VALUE "LegalCopyright", "Copyright © 2017-2019 LegacyClonk Team"
             VALUE "LegalTrademarks", "Clonk is a registered trademark of Matthes Bender.\0"
             VALUE "OriginalFilename", "Clonk.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Clonk Rage\0"
             VALUE "Comments", "\0"
-            VALUE "CompanyName", "RedWolf Design GmbH\0"
+            VALUE "CompanyName", "LegacyClonk Team\0"
         END
     END
     BLOCK "VarFileInfo"

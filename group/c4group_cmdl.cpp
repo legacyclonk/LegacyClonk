@@ -1,4 +1,18 @@
-/* Copyright (C) 2001  Matthes Bender  RedWolf Design GmbH */
+/*
+ * LegacyClonk
+ *
+ * Copyright (c) 2001, Matthes Bender(RedWolf Design GmbH)
+ * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ *
+ * Distributed under the terms of the ISC license; see accompanying file
+ * "COPYING" for details.
+ *
+ * "Clonk" is a registered trademark of Matthes Bender, used with permission.
+ * See accompanying file "TRADEMARK" for details.
+ *
+ * To redistribute this file separately, substitute the full license texts
+ * for the above references.
+ */
 
 /* C4Group command line executable */
 

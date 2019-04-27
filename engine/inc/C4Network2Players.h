@@ -1,4 +1,20 @@
-/* by Sven2, 2004 */
+/*
+ * LegacyClonk
+ *
+ * Copyright (c) RedWolf Design
+ * Copyright (c) 2004, Sven2
+ * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ *
+ * Distributed under the terms of the ISC license; see accompanying file
+ * "COPYING" for details.
+ *
+ * "Clonk" is a registered trademark of Matthes Bender, used with permission.
+ * See accompanying file "TRADEMARK" for details.
+ *
+ * To redistribute this file separately, substitute the full license texts
+ * for the above references.
+ */
+
 // network player management
 // manages synchronization of the player info list in network mode (lobby and runtime)
 // also handles player joins from the list
