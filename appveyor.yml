@@ -1,0 +1,81 @@
+version: '{build}'
+skip_tags: true
+image:
+- Visual Studio 2017
+- Ubuntu
+
+platform:
+  - Win32
+  - x86
+  - x64
+configuration: RelWithDebInfo
+
+matrix:
+  exclude:
+    - image: Ubuntu
+      platform: Win32
+    - image: Visual Studio 2017
+      platform: x86
+    - image: Visual Studio 2017
+      platform: x64
+init:
+- cmd: git config --global core.autocrlf true
+
+install:
+  - cmd: powershell -Command Start-FileDownload http://people.ds.cam.ac.uk/pw410/out/openclonk-deps-vs140-i386-easy.7z
+  - cmd: 7z x openclonk-deps-vs140-i386-easy.7z
+  - cmd: powershell -Command Start-FileDownload http://fulgen.bplaced.net/files/fmodapi375win.zip
+  - cmd: 7z x fmodapi375win.zip
+  - cmd: copy fmodapi375win\api\inc\* deps\include
+  - cmd: copy fmodapi375win\api\lib\* deps\lib
+  #- cmd: copy fmodapi375win\api\*.dll .
+  
+  - sh: sudo update-alternatives --set gcc /usr/bin/gcc-8
+  - sh: sudo apt-get install zlib1g-dev build-essential libgl1-mesa-dev libjpeg-dev libpng-dev libssl-dev libglu1-mesa-dev libglew-dev libsdl1.2-dev libsdl-mixer1.2-dev libxpm-dev -y
+
+before_build:
+  - cmd: cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=RelWithDebInfo .
+  - cmd: ls
+  
+  - sh: mkdir build
+  - sh: cd build
+  - sh: cmake -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+  
+build:
+  parallel: true
+  project: LegacyClonk.sln
+
+for:
+-
+  matrix:
+      only:
+        - image: Ubuntu
+            
+  build_script:
+    - sh: make -j$(nproc)
+
+after_build:
+  - cmd: ls
+  - cmd: ls RelWithDebInfo
+  - cmd: mkdir appdir
+  - cmd: copy glew32.dll appdir
+  - cmd: copy RelWithDebInfo\*.exe appdir
+  - cmd: copy RelWithDebInfo\*.pdb appdir
+  - cmd: cd appdir
+  - cmd: 7z a LegacyClonk.zip *
+  - cmd: appveyor PushArtifact .\LegacyClonk.zip -DeploymentName LegacyClonk
+  
+  - sh: ls
+  - sh: tar -cvzf LegacyClonk-${PLATFORM}.tar.gz clonk c4group
+  - sh: appveyor PushArtifact LegacyClonk-${PLATFORM}.tar.gz -DeploymentName LegacyClonk
+
+test: off
+deploy:
+- provider: GitHub
+  tag: continuous-$(APPVEYOR_REPO_BRANCH)
+  release: Continuous build
+  auth_token:
+    secure: YE0vsP2wBEPL52Fo6eOeql9XqUlWimQ6Hbw2HPAOIorw4peKSiniwoU4Dhh/vXJ+
+  artifact: LegacyClonk
+  prerelease: true
+  force_update: true
