@@ -49,7 +49,7 @@ if [ -z "$GET_linux64" ]; then
 fi
 
 if [ -z "$GET_mac" ]; then
-	GET_mac="cp -r /home/maxmitti/lc_/tools/Clonk.app ."
+	GET_mac="curl -L https://github.com/Fulgen301/LegacyClonk/releases/download/$TAG/LegacyClonk-mac.tar.gz | tar xz"
 fi
 
 function win32() {
@@ -67,9 +67,10 @@ function linux64() {
 }
 
 function mac() {
-	mv Clonk.app "$1"
+	mv clonk.app "$1/Clonk.app"
+	mv c4group "$1"
+	mv "$1/Clonk.app/Contents/MacOS/clonk" "$1/Clonk.app/Contents/MacOS/Clonk"
 	mv "$1/Language.c4g" "$1/Clonk.app/Contents/MacOS"
-	mv "$1/Clonk.app/Contents/MacOS/c4group" "$1"
 }
 
 AUTOUPDATEFILE=$(cat <<EOF
