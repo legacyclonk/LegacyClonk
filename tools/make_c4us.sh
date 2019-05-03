@@ -70,7 +70,9 @@ function mac() {
 	mv clonk.app "$1/Clonk.app"
 	mv c4group "$1"
 	mv "$1/Clonk.app/Contents/MacOS/clonk" "$1/Clonk.app/Contents/MacOS/Clonk"
-	mv "$1/Language.c4g" "$1/Clonk.app/Contents/MacOS"
+	cp "$SCRIPT_DIR/Info.plist" "$1/Clonk.app/Contents/"
+	mkdir -p "$1/Clonk.app/Contents/Resources/"
+	cp "$SCRIPT_DIR/../src/res/lc.icns" "$1/Clonk.app/Contents/Resources/LegacyClonk.icns"
 }
 
 AUTOUPDATEFILE=$(cat <<EOF
@@ -79,9 +81,6 @@ Name=$OBJVERSION
 RequireVersion=$OLDOBJVERSION
 EOF
 )
-
-
-# MAC here
 
 for PLATFORM in "win32" "linux" "linux64" "mac"; do
 	if [ -d "$TARGET_DIR/$PLATFORM" ]; then
