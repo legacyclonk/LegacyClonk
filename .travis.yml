@@ -41,3 +41,5 @@ deploy:
   all_branches: true
   skip_cleanup: true
   overwrite: true
+  draft: false
+  prerelease: true
