@@ -38,7 +38,6 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <zlib.h>
 
 /* Path & Filename */
 

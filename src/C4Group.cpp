@@ -36,7 +36,6 @@
 #endif
 
 #include <StdPNG.h>
-#include <zlib.h>
 #include <fcntl.h>
 #include <openssl/sha.h>
 

@@ -22,7 +22,6 @@
 #include "C4Network2Reference.h"
 
 #include <fcntl.h>
-#include <zlib.h>
 
 // *** C4Network2Reference
 

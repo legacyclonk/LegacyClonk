@@ -20,7 +20,6 @@
 #include <StdFile.h>
 #include <CStdFile.h>
 
-#include <zlib.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -32,7 +31,6 @@ CStdFile::CStdFile()
   {
   Status=FALSE;
   hFile=NULL;
-  hgzFile=NULL;
   ClearBuffer();
   ModeWrite=FALSE;
 	Name[0]=0;
@@ -50,9 +48,16 @@ bool CStdFile::Create(const char *szFilename, bool fCompressed, bool fExecutable
 	ModeWrite=TRUE;	
 	// Open standard file
 	if (fCompressed)
+	{
+		try
 		{
-		if (!(hgzFile=gzopen(Name,"wb1"))) return false;
+			writeCompressedFile.reset(new StdGzCompressedFile::Write{szFilename});
 		}
+		catch (const StdGzCompressedFile::Exception &)
+		{
+			return false;
+		}
+	}
 	else
 		{
 		if (fExecutable)
@@ -88,7 +93,16 @@ bool CStdFile::Open(const char *szFilename, bool fCompressed)
   ModeWrite=FALSE;
 	// Open standard file
 	if (fCompressed)
-		{ if (!(hgzFile=gzopen(Name,"rb"))) return false; }
+	{
+		try
+		{
+			readCompressedFile.reset(new StdGzCompressedFile::Read{szFilename});
+		}
+		catch (const StdGzCompressedFile::Exception &)
+		{
+			return false;
+		}
+	}
 	else
 		{ if (!(hFile=fopen(Name,"rb"))) return false; }
 	// Reset buffer
@@ -120,9 +134,10 @@ bool CStdFile::Close()
   // Save buffer if in write mode
   if (ModeWrite && BufferLoad) if (!SaveBuffer()) rval=FALSE;
   // Close file(s)
-  if (hgzFile) if (gzclose(hgzFile)!=Z_OK) rval=FALSE;
+	readCompressedFile.reset();
+	writeCompressedFile.reset();
 	if (hFile) if (fclose(hFile)!=0) rval=FALSE;
-	hgzFile=NULL; hFile=NULL;
+	hFile=NULL;
 	return !!rval;  
   }
 
@@ -130,7 +145,8 @@ bool CStdFile::Default()
 	{
   Status=FALSE;
 	Name[0]=0;
-	hgzFile=NULL;
+	readCompressedFile.reset();
+	writeCompressedFile.reset();
 	hFile=NULL;
 	BufferLoad=BufferPtr=0;
 	return TRUE;
@@ -164,7 +180,17 @@ bool CStdFile::Read(void *pBuffer, size_t iSize, size_t *ipFSize)
 int CStdFile::LoadBuffer()
   {
 	if (hFile) BufferLoad = fread(Buffer,1,CStdFileBufSize,hFile);
-  if (hgzFile) BufferLoad = gzread(hgzFile, Buffer,CStdFileBufSize);
+  if (readCompressedFile)
+    {
+    try
+      {
+      BufferLoad = readCompressedFile->ReadData(Buffer, CStdFileBufSize);
+      }
+    catch (const StdGzCompressedFile::Exception &)
+      {
+      BufferLoad = 0;
+      }
+    }
   BufferPtr=0;
   return BufferLoad;
   }
@@ -173,7 +199,18 @@ bool CStdFile::SaveBuffer()
   {
   int saved = 0;
 	if (hFile) saved=fwrite(Buffer,1,BufferLoad,hFile);
-	if (hgzFile) saved=gzwrite(hgzFile,Buffer,BufferLoad);
+	if (writeCompressedFile)
+		{
+		try
+			{
+			writeCompressedFile->WriteData(Buffer, BufferLoad);
+			saved = BufferLoad;
+			}
+		catch (const StdGzCompressedFile::Exception &)
+			{
+			return false;
+			}
+		}
 	if (saved!=BufferLoad) return FALSE;
 	BufferLoad=0;
 	return TRUE;
@@ -222,10 +259,9 @@ bool CStdFile::Rewind()
   if (ModeWrite) return FALSE;
   ClearBuffer();
 	if (hFile) rewind(hFile);
-	if (hgzFile)
+	if (readCompressedFile)
 		{
-		if (gzclose(hgzFile)!=Z_OK) { hgzFile=NULL; return FALSE; }
-		if (!(hgzFile=gzopen(Name,"rb"))) return FALSE;
+		readCompressedFile->Rewind();
 		}
 	return TRUE;
   }
@@ -279,13 +315,15 @@ bool CStdFile::Load(const char *szFilename, BYTE **lpbpBuf,
 
 int UncompressedFileSize(const char *szFilename)
 	{
-	int rval=0;
-	BYTE buf;
-	gzFile hFile;
-	if (!(hFile = gzopen(szFilename,"rb"))) return 0;
-	while (gzread(hFile,&buf,1)>0) rval++;
-	gzclose(hFile);
-	return rval;
+	try
+		{
+		StdGzCompressedFile::Read file{szFilename};
+		return file.UncompressedSize();
+		}
+	catch (const StdGzCompressedFile::Exception &)
+		{
+		return 0;
+		}
 	}
 
 int CStdFile::AccessedEntrySize()
@@ -298,6 +336,6 @@ int CStdFile::AccessedEntrySize()
 		fseek(hFile, pos, SEEK_SET);
 		return r;
 		}
-	assert(!hgzFile);
+	assert(!readCompressedFile);
 	return 0;
 	}

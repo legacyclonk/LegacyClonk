@@ -19,12 +19,13 @@
 #ifndef INC_CSTDFILE
 #define INC_CSTDFILE
 
-#include <stdio.h>
 #include <StdFile.h>
+#include <StdGzCompressedFile.h>
+
+#include <memory>
+#include <cstdio>
 
 const int CStdFileBufSize = 4096;
-
-typedef void* gzFile;
 
 class CStdStream
 	{
@@ -45,7 +46,8 @@ class CStdFile: public CStdStream
 		char Name[_MAX_PATH+1];
 	protected:    
 		FILE *hFile; 
-		gzFile hgzFile;
+		std::shared_ptr<StdGzCompressedFile::Read> readCompressedFile;
+		std::shared_ptr<StdGzCompressedFile::Write> writeCompressedFile;
 		BYTE Buffer[CStdFileBufSize];
 		int BufferLoad,BufferPtr;
 		BOOL ModeWrite;
