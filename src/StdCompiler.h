@@ -212,7 +212,7 @@ public:
 
 	private:
 		// do not copy
-		Exception(const Exception &Exc) {}
+		Exception(const Exception &Exc) = delete;
 	};
 
 	class NotFoundException : public Exception
