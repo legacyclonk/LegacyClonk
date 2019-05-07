@@ -1343,8 +1343,6 @@ bool C4Viewport::Init(CStdWindow *pParent, CStdApp *pApp, int32_t iPlayer)
 	if (!ValidPlr(Player)) TogglePlayerLock();
 	// create rendering context
 	if (lpDDraw) pCtx = lpDDraw->CreateContext(pWindow, pApp);
-	// Draw
-	Execute();
 	// Success
 	return true;
 }
