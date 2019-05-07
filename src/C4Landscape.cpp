@@ -464,7 +464,7 @@ bool C4Landscape::MapToSurface(CSurface8 *sfcMap, int32_t iMapX, int32_t iMapY, 
 	iMapX -= 2; iMapY -= 2; iMapWdt += 4; iMapHgt += 4;
 
 	// Determine texture usage in map segment
-	uint32_t dwTexUsage[C4M_MaxTexIndex];
+	uint32_t dwTexUsage[C4M_MaxTexIndex + 1];
 	if (!GetTexUsage(sfcMap, iMapX, iMapY, iMapWdt, iMapHgt, dwTexUsage)) return false;
 	// Texture zoom map to landscape
 	if (!TexOZoom(sfcMap, iMapX, iMapY, iMapWdt, iMapHgt, dwTexUsage, iOffX, iOffY)) return false;
