@@ -766,19 +766,13 @@ C4GameControlPacket *C4GameControlNetwork::PackCompleteCtrl(int32_t iTick)
 	pComplete->Set(C4ClientIDAll, iTick);
 
 	// pack everything in ID order (client list is ordered this way)
-	C4GameControlPacket *pCtrl;
 	for (pClient = pClients; pClient; pClient = pClient->pNext)
-		while (pClient->getNextControl() <= iTick)
+	{
+		if (const auto pCtrl = getCtrl(pClient->getClientID(), iTick))
 		{
-			// get control
-			int32_t iNextControl = pClient->getNextControl();
-			pCtrl = getCtrl(pClient->getClientID(), iNextControl);
-			if (!pCtrl) break;
-			pClient->SetNextControl(iNextControl + 1);
-			assert(pCtrl);
-			// add
 			pComplete->Add(*pCtrl);
 		}
+	}
 
 	// add to list
 	AddCtrl(pComplete);
