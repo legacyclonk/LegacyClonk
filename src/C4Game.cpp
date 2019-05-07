@@ -757,7 +757,7 @@ bool C4Game::Execute() // Returns true if the game is over
 
 #ifdef DEBUGREC
 	// debugrec
-	AddDbgRec(RCT_Frame, &FrameCounter, sizeof(int32_t));
+	AddDbgRec(RCT_DbgFrame, &FrameCounter, sizeof(int32_t));
 #endif
 
 	// Game

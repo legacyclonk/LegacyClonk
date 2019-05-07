@@ -888,6 +888,7 @@ const char *GetRecordChunkTypeName(C4RecordChunkType eType)
 	case RCT_Log:     return "Log"; // log message
 	case RCT_File:    return "File"; // file data
 	// DEBUGREC
+	case RCT_DbgFrame:   return "DbgFrame";
 	case RCT_Block:      return "Block";      // point in Game::Execute
 	case RCT_SetPix:     return "SetPix";     // set landscape pixel
 	case RCT_ExecObj:    return "ExecObj";    // exec object
