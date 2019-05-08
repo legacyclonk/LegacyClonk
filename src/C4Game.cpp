@@ -1962,7 +1962,7 @@ bool C4Game::SaveGameTitle(C4Group &hGroup)
 
 		// Fullscreen
 		Application.DDraw->Blit(Application.DDraw->lpBack,
-			0.0f, 0.0f, float(Config.Graphics.ResX), float(Config.Graphics.ResY - Game.GraphicsResource.FontRegular.iLineHgt),
+			0.0f, 0.0f, float(Application.DDraw->lpBack->Wdt), float(Application.DDraw->lpBack->Hgt),
 			sfcPic, 0, 0, iSfcWdt, iSfcHgt);
 
 		bool fOkay = true;
