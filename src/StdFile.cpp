@@ -143,10 +143,10 @@ void RealPath(const char *szFilename, char *pFullFilename)
 		}
 		else
 			*pSuffix = '/';
-		while (pSuffix >= szCopy)
+		while (pSuffix > szCopy)
 			if (*--pSuffix == '/')
 				break;
-		if (pSuffix < szCopy)
+		if (pSuffix <= szCopy)
 		{
 			// Give up: Just copy whatever we got
 			SCopy(szFilename, pFullFilename, _MAX_PATH);
