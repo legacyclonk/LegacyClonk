@@ -526,7 +526,7 @@ bool CSurface::Unlock()
 		{
 			{
 				// emulated primary locks in OpenGL
-				delete PrimarySurfaceLockBits;
+				delete[] static_cast<unsigned char*>(PrimarySurfaceLockBits);
 				PrimarySurfaceLockBits = nullptr;
 				return true;
 			}
