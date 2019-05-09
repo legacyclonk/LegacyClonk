@@ -599,7 +599,8 @@ uint32_t CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 		{
 			if (!PrimarySurfaceLockBits)
 			{
-				PrimarySurfaceLockBits = new unsigned char[Wdt * Hgt * 3 + 1];
+				int wdt = ((Wdt + 3) / 4) * 4; // round up to the next multiple of 4
+				PrimarySurfaceLockBits = new unsigned char[wdt * Hgt * 3];
 				glReadPixels(0, 0, Wdt, Hgt, GL_BGR, GL_UNSIGNED_BYTE, PrimarySurfaceLockBits);
 				PrimarySurfaceLockPitch = Wdt * 3;
 			}
