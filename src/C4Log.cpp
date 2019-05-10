@@ -77,10 +77,11 @@ bool LogSilent(const char *szMessage, bool fConsole)
 	if (!szMessage) return false;
 
 	// add timestamp
-	time_t timenow; time(&timenow);
 	StdStrBuf TimeMessage;
 	TimeMessage.SetLength(11 + SLen(szMessage) + 1);
-	strftime(TimeMessage.getMData(), 11 + 1, "[%H:%M:%S] ", localtime(&timenow));
+	strncpy(TimeMessage.getMData(), GetCurrentTimeStamp(false), 10);
+	strncpy(TimeMessage.getMData() + 10, " ", 2);
+	
 
 	// output until all data is written
 	const char *pSrc = szMessage;

@@ -717,8 +717,14 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pSheetGeneral->AddElement(pCheck);
 	
+	// timestamps
+	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 4, 8, -1, iCheckHgt, true), LoadResStr("IDS_CTL_TIMESTAMPS"), &Config.General.ShowLogTimestamps);
+	pCheck->SetToolTip(LoadResStr("IDS_DESC_TIMESTAMPS"));
+	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
+	pSheetGeneral->AddElement(pCheck);
+	
 	// MM timer
-	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 4, 8, -1, iCheckHgt, true), LoadResStr("IDS_CTL_MMTIMER"), &Config.General.MMTimer, true, &Config.Startup.HideMsgMMTimerChange);
+	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 5, 8, -1, iCheckHgt, true), LoadResStr("IDS_CTL_MMTIMER"), &Config.General.MMTimer, true, &Config.Startup.HideMsgMMTimerChange);
 	pCheck->SetToolTip(LoadResStr("IDS_MSG_MMTIMER_DESC"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pSheetGeneral->AddElement(pCheck);

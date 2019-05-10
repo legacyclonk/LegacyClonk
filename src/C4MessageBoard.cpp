@@ -334,8 +334,18 @@ void C4MessageBoard::AddLog(const char *szMessage)
 	if (!szMessage || !*szMessage) return;
 	// make sure new message will be drawn
 	++iBackScroll;
+	
+	StdStrBuf text;
+	
+	if (Config.General.ShowLogTimestamps)
+	{
+		text.Append(GetCurrentTimeStamp());
+		text.AppendChar(' ');
+	}
+	text.Append(szMessage);
+	
 	// register message in standard messageboard font
-	LogBuffer.AppendLines(szMessage, &Game.GraphicsResource.FontRegular, 0, nullptr);
+	LogBuffer.AppendLines(text.getData(), &Game.GraphicsResource.FontRegular, 0, nullptr);
 }
 
 void C4MessageBoard::ClearLog()

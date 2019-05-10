@@ -75,6 +75,7 @@ public:
 	bool UserPortraitsWritten; // set when default portraits have been copied to the UserPath (this is only done once)
 	bool UseWhiteIngameChat;
 	bool UseWhiteLobbyChat;
+	bool ShowLogTimestamps;
 
 public:
 	static int GetLanguageSequence(const char *strSource, char *strTarget);

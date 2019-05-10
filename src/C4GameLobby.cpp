@@ -650,15 +650,22 @@ void MainDlg::HandlePacket(char cStatus, const C4PacketBase *pPacket, C4Network2
 bool MainDlg::OnMessage(C4Client *pOfClient, const char *szMessage)
 {
 	// output message should be prefixed with client already
-	const char *szMsgBuf = szMessage;
-	// 2do: log with player colors?
 	if (pChatBox && C4GUI::GetRes())
 	{
-		pChatBox->AddTextLine(szMsgBuf, &C4GUI::GetRes()->TextFont, Game.Network.Players.GetClientChatColor(pOfClient ? pOfClient->getID() : Game.Clients.getLocalID(), true) | C4GUI_MessageFontAlpha, true, true);
+		StdStrBuf text;
+		
+		if (Config.General.ShowLogTimestamps)
+		{
+			text.Append(GetCurrentTimeStamp());
+			text.AppendChar(' ');
+		}
+		text.Append(szMessage);
+		
+		pChatBox->AddTextLine(text.getData(), &C4GUI::GetRes()->TextFont, Game.Network.Players.GetClientChatColor(pOfClient ? pOfClient->getID() : Game.Clients.getLocalID(), true) | C4GUI_MessageFontAlpha, true, true);
 		pChatBox->ScrollToBottom();
 	}
 	// log it
-	LogSilent(szMsgBuf);
+	LogSilent(szMessage);
 	// done, success
 	return true;
 }
@@ -676,7 +683,16 @@ void MainDlg::OnLog(const char *szLogMsg, uint32_t dwClr)
 {
 	if (pChatBox && C4GUI::GetRes())
 	{
-		pChatBox->AddTextLine(szLogMsg, &C4GUI::GetRes()->TextFont, dwClr, true, true);
+		StdStrBuf text;
+		
+		if (Config.General.ShowLogTimestamps)
+		{
+			text.Append(GetCurrentTimeStamp());
+			text.AppendChar(' ');
+		}
+		text.Append(szLogMsg);
+		
+		pChatBox->AddTextLine(text.getData(), &C4GUI::GetRes()->TextFont, dwClr, true, true);
 		pChatBox->ScrollToBottom();
 	}
 }

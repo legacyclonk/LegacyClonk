@@ -258,3 +258,5 @@ inline int ssprintf(T &str, const char *fmt, ...)
 
 // open a weblink in an external browser
 bool OpenURL(const char *szURL);
+
+const char *GetCurrentTimeStamp(bool enableMarkupColor = true);
