@@ -102,6 +102,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(UserPortraitsWritten, "UserPortraitsWritten", false));
 	pComp->Value(mkNamingAdapt(ConfigResetSafety,    "ConfigResetSafety",    static_cast<int32_t>(ConfigResetSafetyVal)));
 	pComp->Value(mkNamingAdapt(UseWhiteIngameChat,   "UseWhiteIngameChat",   false, false, true));
+	pComp->Value(mkNamingAdapt(UseWhiteLobbyChat,   "UseWhiteLobbyChat",    false, false, true));
 }
 
 void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)

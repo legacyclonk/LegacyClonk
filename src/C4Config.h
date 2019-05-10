@@ -74,6 +74,7 @@ public:
 	bool fUTF8;
 	bool UserPortraitsWritten; // set when default portraits have been copied to the UserPath (this is only done once)
 	bool UseWhiteIngameChat;
+	bool UseWhiteLobbyChat;
 
 public:
 	static int GetLanguageSequence(const char *strSource, char *strTarget);

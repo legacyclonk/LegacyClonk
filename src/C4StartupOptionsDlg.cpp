@@ -709,6 +709,13 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheck->SetToolTip(LoadResStr("IDS_DESC_WHITECHAT_INGAME"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pSheetGeneral->AddElement(pCheck);
+	// - lobby
+	const auto szLobby = LoadResStr("IDS_CTL_WHITECHAT_LOBBY");
+	pUseFont->GetTextExtent(szLobby, w, q, true);
+	pCheck = new BoolConfig(caWhiteChat.GetFromLeft(w + C4GUI_DefDlgSmallIndent + 2 * C4GUI::ComboBox::GetDefaultHeight()), szLobby, &Config.General.UseWhiteLobbyChat);
+	pCheck->SetToolTip(LoadResStr("IDS_DESC_WHITECHAT_LOBBY"));
+	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
+	pSheetGeneral->AddElement(pCheck);
 	
 	// MM timer
 	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 4, 8, -1, iCheckHgt, true), LoadResStr("IDS_CTL_MMTIMER"), &Config.General.MMTimer, true, &Config.Startup.HideMsgMMTimerChange);

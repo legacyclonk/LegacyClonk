@@ -1050,8 +1050,9 @@ void C4ControlMessage::Execute() const
 		}
 		else
 		{
+			const auto white = pLobby && Config.General.UseWhiteLobbyChat;
 			C4Client *pClient = Game.Clients.getClientByID(iByClient);
-			sprintf(OSTR, (eType == C4CMT_Normal ? "<%s> %s" : " * %s %s"),
+			sprintf(OSTR, (eType == C4CMT_Normal ? (white ? "<%s> <c ffffff>%s</c>" : "<%s> %s") : (white ? " * %s <c ffffff>%s</c>" : " * %s %s")),
 				pClient ? pClient->getNick() : "???", szMessage);
 		}
 		// 2 lobby
@@ -1100,7 +1101,7 @@ void C4ControlMessage::Execute() const
 			// OK - permit message
 			C4Client *pClient = Game.Clients.getClientByID(iByClient);
 			pLobby->OnMessage(Game.Clients.getClientByID(iByClient),
-				FormatString("{%s} %s", pClient ? pClient->getNick() : "???", szMessage).getData());
+				FormatString(Config.General.UseWhiteLobbyChat ? "{%s} <c ffffff>%s</c>" : "{%s} %s", pClient ? pClient->getNick() : "???", szMessage).getData());
 		}
 	}
 	break;
