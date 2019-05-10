@@ -251,7 +251,7 @@ MainDlg::MainDlg(bool fHost)
 	pEdt->SetToolTip(LoadResStr("IDS_DLGTIP_CHAT")); pLbl->SetToolTip(LoadResStr("IDS_DLGTIP_CHAT"));
 	pLbl->SetClickFocusControl(pEdt);
 	// log box
-	pChatBox = new C4GUI::TextWindow(caCenter.GetAll());
+	pChatBox = new C4GUI::TextWindow(caCenter.GetAll(), 0, 0, 0, 100, 4096, "", false, nullptr, 0, true);
 	// add components in tab-order
 	AddElement(pChatBox);
 	AddElement(pLbl); AddElement(pEdt); // chat
