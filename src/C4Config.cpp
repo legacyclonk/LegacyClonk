@@ -101,6 +101,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(FirstStart,           "FirstStart",           true));
 	pComp->Value(mkNamingAdapt(UserPortraitsWritten, "UserPortraitsWritten", false));
 	pComp->Value(mkNamingAdapt(ConfigResetSafety,    "ConfigResetSafety",    static_cast<int32_t>(ConfigResetSafetyVal)));
+	pComp->Value(mkNamingAdapt(UseWhiteIngameChat,   "UseWhiteIngameChat",   false, false, true));
 }
 
 void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)
@@ -145,7 +146,6 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(MaxRefreshDelay,      "MaxRefreshDelay",      30));
 	pComp->Value(mkNamingAdapt(DDrawCfg.Shader,      "Shader",               false, false, true));
 	pComp->Value(mkNamingAdapt(AutoFrameSkip,        "AutoFrameSkip",        true,  false, true));
-	pComp->Value(mkNamingAdapt(UseWhiteIngameChat,   "UseWhiteIngameChat",   false, false, true));
 }
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)

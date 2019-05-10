@@ -585,7 +585,7 @@ bool C4MainMenu::ActivateDisplay(int32_t iPlayer, int32_t selection)
 		AddRefSym(LoadResStr("IDS_MNU_CLOCK"), GfxR->fctOptions.GetPhase(15 + Config.Graphics.ShowClock), "Display:Clock", C4MN_Item_NoCount);
 	// White chat
 	if (Application.isFullScreen)
-		AddRefSym(LoadResStr("IDS_MNU_WHITECHAT"), GfxR->fctOptions.GetPhase(3 + Config.Graphics.UseWhiteIngameChat), "Display:WhiteChat", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_DESC_WHITECHAT"));
+		AddRefSym(LoadResStr("IDS_MNU_WHITECHAT"), GfxR->fctOptions.GetPhase(3 + Config.General.UseWhiteIngameChat), "Display:WhiteChat", C4MN_Item_NoCount, nullptr, LoadResStr("IDS_DESC_WHITECHAT"));
 	// Restore selection
 	SetSelection(selection, false, true);
 	// Go back to options menu on close
@@ -838,7 +838,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 		// Clock
 		if (SEqual(szCommand + 8, "Clock")) Config.Graphics.ShowClock = !Config.Graphics.ShowClock;
 		// White chat
-		if (SEqual(szCommand + 8, "WhiteChat")) Config.Graphics.UseWhiteIngameChat = !Config.Graphics.UseWhiteIngameChat;
+		if (SEqual(szCommand + 8, "WhiteChat")) Config.General.UseWhiteIngameChat = !Config.General.UseWhiteIngameChat;
 		// Reopen with updated options
 		ActivateDisplay(Player, GetSelection());
 		return true;
