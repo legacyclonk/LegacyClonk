@@ -224,10 +224,12 @@ void C4ControlSet::Execute() const
 				Game.GraphicsSystem.FlashMessage(LoadResStr("IDS_MSG_FAIRCREW_DEACTIVATED"));
 		}
 		// lobby updates
+#ifndef USE_CONSOLE
 		if (Game.Network.isLobbyActive())
 		{
 			Game.Network.GetLobby()->UpdateFairCrew();
 		}
+#endif
 		// this setting is part of the reference
 		if (Game.Network.isEnabled() && Game.Network.isHost())
 			Game.Network.InvalidateReference();
