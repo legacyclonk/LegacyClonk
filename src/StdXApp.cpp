@@ -462,6 +462,7 @@ void CStdApp::HandleXMessage()
 		// Needed for input methods
 		if (!filtered)
 		{
+			KeyMask = KeyMaskFromKeyEvent(dpy, &event.xkey);
 			char c[10] = "";
 			if (Priv->xic)
 			{
@@ -478,7 +479,7 @@ void CStdApp::HandleXMessage()
 			if (c[0])
 			{
 				CStdWindow *pWindow = Priv->GetWindow(event.xany.window);
-				if (pWindow)
+				if (pWindow && !IsAltDown())
 				{
 					pWindow->CharIn(c);
 				}
