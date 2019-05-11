@@ -137,10 +137,24 @@ int C4StringTable::EnumStrings()
 {
 	int iCurrID = 0;
 	for (C4String *pAct = First; pAct; pAct = pAct->Next)
+	{
 		if (!pAct->Hold || pAct->iRefCnt)
-			pAct->iEnumID = iCurrID++;
+		{
+			C4String *same;
+			if ((same = FindSaveString(pAct)) == pAct)
+			{
+				pAct->iEnumID = iCurrID++;
+			}
+			else
+			{
+				pAct->iEnumID = same->iEnumID;
+			}
+		}
 		else
+		{
 			pAct->iEnumID = -1;
+		}
+	}
 	return iCurrID;
 }
 
@@ -170,6 +184,19 @@ C4String *C4StringTable::FindString(int iEnumID)
 	for (C4String *pAct = First; pAct; pAct = pAct->Next)
 		if (pAct->iEnumID == iEnumID)
 			return pAct;
+	return nullptr;
+}
+
+C4String *C4StringTable::FindSaveString(C4String *pString)
+{
+	for (C4String *pAct = First; pAct; pAct = pAct->Next)
+	{
+		if (SEqual(pAct->Data.getData(), pString->Data.getData()) && (!pAct->Hold || pAct->iRefCnt))
+		{
+			return pAct;
+		}
+	}
+
 	return nullptr;
 }
 
@@ -204,8 +231,12 @@ bool C4StringTable::Save(C4Group &ParentGroup)
 	int iTableSize = 1;
 	C4String *pAct;
 	for (pAct = First; pAct; pAct = pAct->Next)
-		if (pAct->iEnumID > -1)
+	{
+		if (pAct->iEnumID > -1 && FindSaveString(pAct) == pAct)
+		{
 			iTableSize += SLen(pAct->Data.getData()) + 2;
+		}
+	}
 
 	// no entries?
 	if (iTableSize <= 1) return true;
@@ -213,7 +244,8 @@ bool C4StringTable::Save(C4Group &ParentGroup)
 	char *pData = new char[iTableSize], *pPos = pData;
 	*pData = 0;
 	for (pAct = First; pAct; pAct = pAct->Next)
-		if (pAct->iEnumID > -1)
+	{
+		if (pAct->iEnumID > -1 && FindSaveString(pAct) == pAct)
 		{
 			SCopy(pAct->Data.getData(), pPos);
 			if (strchr(pPos, 10) || strchr(pPos, 13))
@@ -228,7 +260,8 @@ bool C4StringTable::Save(C4Group &ParentGroup)
 			SAppendChar(0xA, pPos);
 			pPos += SLen(pPos);
 		}
+	}
 
 	// write in group
-	return !!ParentGroup.Add(C4CFN_Strings, pData, iTableSize, false, true);
+	return !!ParentGroup.Add(C4CFN_Strings, pData, iTableSize - 1, false, true);
 }

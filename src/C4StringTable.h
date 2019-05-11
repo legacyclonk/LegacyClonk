@@ -57,6 +57,7 @@ public:
 	C4String *FindString(const char *strString);
 	C4String *FindString(C4String *pString);
 	C4String *FindString(int iEnumID);
+	C4String *FindSaveString(C4String *pString);
 
 	int EnumStrings();
 
