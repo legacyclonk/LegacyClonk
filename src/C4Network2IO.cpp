@@ -160,7 +160,7 @@ bool C4Network2IO::Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscove
 		// init
 		if (!pRefServer->Init(iPortRefServer))
 		{
-			LogF("Network: could not init reference server (%s)", pNetIO_UDP->GetError() ? pNetIO_UDP->GetError() : "");
+			LogF("Network: could not init reference server (%s)", pRefServer->GetError() ? pNetIO_UDP->GetError() : "");
 			delete pRefServer; pRefServer = nullptr;
 		}
 		else
