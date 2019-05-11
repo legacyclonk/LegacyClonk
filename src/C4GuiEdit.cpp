@@ -306,7 +306,7 @@ bool Edit::Copy()
 	int iSelEnd = (std::max)(iSelectionStart, iSelectionEnd);
 	buf.Append(Text + iSelBegin, iSelEnd - iSelBegin);
 	Application.Copy(buf);
-	return false;
+	return true;
 #endif
 }
 
