@@ -44,6 +44,7 @@ bool CStdApp::Init(int argc, char *argv[])
 {
 	// Set locale
 	setlocale(LC_ALL, "");
+	setlocale(LC_NUMERIC, "C");
 
 	// SDLmain.m copied the executable path into argv[0];
 	// just copy it (not sure if original buffer is guaranteed

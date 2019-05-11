@@ -74,6 +74,7 @@ bool CStdApp::Init(int argc, char *argv[])
 {
 	// Set locale
 	setlocale(LC_ALL, "");
+	setlocale(LC_NUMERIC, "C");
 	// Try to figure out the location of the executable
 	Priv->argc = argc; Priv->argv = argv;
 	static char dir[PATH_MAX];
