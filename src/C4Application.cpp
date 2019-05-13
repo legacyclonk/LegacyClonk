@@ -304,6 +304,8 @@ void C4Application::QuitGame()
 	{
 		// backup last start params
 		bool fWasNetworkActive = Game.NetworkActive;
+		StdStrBuf password;
+		if (fWasNetworkActive) password.Copy(Game.Network.GetPassword());
 		// stop game
 		Game.Clear();
 		Game.Default();
@@ -314,6 +316,7 @@ void C4Application::QuitGame()
 			SCopy(NextMission.getData(), Game.ScenarioFilename, _MAX_PATH);
 			SReplaceChar(Game.ScenarioFilename, '\\', DirSep[0]); // linux/mac: make sure we are using forward slashes
 			Game.fLobby = Game.NetworkActive = fWasNetworkActive;
+			if (fWasNetworkActive) Game.Network.SetPassword(password.getData());
 			Game.fObserve = false;
 			Game.Record = !!Config.General.Record;
 			NextMission.Clear();
