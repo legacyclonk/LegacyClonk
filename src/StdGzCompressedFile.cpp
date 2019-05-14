@@ -110,14 +110,20 @@ void Read::PrepareInflate()
 	gzStream.next_out = &fakeBuf;
 	gzStream.avail_out = 1;
 
-	if (const auto ret = inflateInit2(&gzStream, 15 + 16); ret != Z_OK) // window size 15 + automatic gzip
 	{
-		throw Exception(std::string{"inflateInit2 failed: "} + zError(ret));
+		const auto ret = inflateInit2(&gzStream, 15 + 16);
+		if (ret != Z_OK) // window size 15 + automatic gzip
+		{
+			throw Exception(std::string{"inflateInit2 failed: "} + zError(ret));
+		}
 	}
 
-	if (const auto ret = inflate(&gzStream, Z_NO_FLUSH); ret != Z_OK)
 	{
-		throw Exception(std::string{"inflate on the fake magic failed: "} + zError(ret));
+		const auto ret = inflate(&gzStream, Z_NO_FLUSH);
+		if (ret != Z_OK)
+		{
+			throw Exception(std::string{"inflate on the fake magic failed: "} + zError(ret));
+		}
 	}
 
 	if (gzStream.avail_in > 0)
@@ -179,16 +185,19 @@ size_t Read::ReadData(uint8_t *const toBuffer, const size_t size)
 		const auto oldAvailIn = gzStream.avail_in;
 		const auto oldAvailOut = gzStream.avail_out;
 
-		if (const auto ret = inflate(&gzStream, Z_SYNC_FLUSH); ret != Z_OK)
 		{
-			if (ret == Z_STREAM_END)
+			const auto ret = inflate(&gzStream, Z_SYNC_FLUSH);
+			if (ret != Z_OK)
 			{
-				inflateEnd(&gzStream);
-				gzStreamValid = false;
-			}
-			else if (ret != Z_BUF_ERROR && gzStream.avail_out != 0)
-			{
-				throw Exception(std::string{"inflate failed: "} + zError(ret));
+				if (ret == Z_STREAM_END)
+				{
+					inflateEnd(&gzStream);
+					gzStreamValid = false;
+				}
+				else if (ret != Z_BUF_ERROR && gzStream.avail_out != 0)
+				{
+					throw Exception(std::string{"inflate failed: "} + zError(ret));
+				}
 			}
 		}
 		const auto outProgress = oldAvailOut - gzStream.avail_out;
@@ -239,10 +248,13 @@ Write::Write(const std::string &filename)
 	gzStream.next_out = buffer.get();
 	gzStream.avail_out = ChunkSize;
 
-	if (const auto ret = deflateInit2(&gzStream, 9, Z_DEFLATED, 15 + 16, 9, Z_DEFAULT_STRATEGY); ret != Z_OK)
 	{
-		fclose(file);
-		throw Exception(std::string{"deflateInit2 failed: "} + zError(ret));
+		const auto ret = deflateInit2(&gzStream, 9, Z_DEFLATED, 15 + 16, 9, Z_DEFAULT_STRATEGY);
+		if (ret != Z_OK)
+		{
+			fclose(file);
+			throw Exception(std::string{"deflateInit2 failed: "} + zError(ret));
+		}
 	}
 }
 
@@ -276,16 +288,19 @@ void Write::DeflateToBuffer(const uint8_t *const fromBuffer, const size_t size, 
 	
 	if (!magicBytesDone)
 	{
-		static_assert(ChunkSize >= sizeof(C4GroupMagic));
+// 		static_assert(ChunkSize >= sizeof(C4GroupMagic));
 		std::copy(C4GroupMagic, std::end(C4GroupMagic), buffer.get());
 		
 		uint8_t magicDummy[2];
 		gzStream.next_out = magicDummy;
 		gzStream.avail_out = 2;
-		
-		if (const auto ret = deflate(&gzStream, Z_NO_FLUSH); ret != Z_OK)
+
 		{
-			throw Exception(std::string{"Deflating into the magic dummy buffer: "} + zError(ret));
+			const auto ret = deflate(&gzStream, Z_NO_FLUSH);
+			if (ret != Z_OK)
+			{
+				throw Exception(std::string{"Deflating into the magic dummy buffer: "} + zError(ret));
+			}
 		}
 		
 		magicBytesDone = true;
