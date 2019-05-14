@@ -19,6 +19,9 @@
 #include <StdPNG.h>
 #include <StdWic.h>
 
+#include <cstring>
+#include <memory>
+
 struct CPNGFile::Impl
 {
 	StdWic wic;
@@ -40,7 +43,29 @@ struct CPNGFile::Impl
 	// Writes the specified image to the PNG file. Don't use this object after calling.
 	void Encode(const void *const pixels)
 	{
-		wic.Encode(height, rowSize, height * rowSize, pixels);
+		std::unique_ptr<void, void(*)(void *)> copy{nullptr, operator delete};
+		const void *encodePixels = pixels;
+		// Invert alpha channel
+		if (useAlpha)
+		{
+			size_t dataSize = height * rowSize;
+			auto modifiedPixels = operator new(dataSize);
+			copy.reset(modifiedPixels);
+			std::memcpy(copy.get(), pixels, dataSize);
+
+			for (std::uint32_t y = 0; y < height; ++y)
+			{
+				for (std::uint32_t x = 0; x < width; ++x)
+				{
+					auto &alpha = static_cast<std::uint8_t *>(modifiedPixels)[(y * width + x) * 4 + 3];
+					alpha = 255 - alpha;
+				}
+			}
+
+			encodePixels = modifiedPixels;
+		}
+
+		wic.Encode(height, rowSize, height * rowSize, encodePixels);
 	}
 
 	// Creates an object that can be used to read the specified file contents.
