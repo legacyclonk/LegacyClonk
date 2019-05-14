@@ -738,6 +738,7 @@ bool IsSafeFormatString(const char *szFmt)
 			if (*pPos == 'h') pPos++;
 			if (*pPos == 'l') pPos++;
 			if (*pPos == 'L') pPos++;
+			if (*pPos == 'z') pPos++;
 			switch (tolower(*pPos))
 			{
 			case 'c': case 'd': case 'i': case 'o': case 'u': case 'x': case 'e': case 'f': case 'g': case 's': case '%': case 'p':
