@@ -34,7 +34,7 @@ CStdNoGfx::~CStdNoGfx()
 	Clear();
 }
 
-bool CStdNoGfx::CreatePrimarySurfaces(bool Fullscreen, unsigned int iMonitor)
+bool CStdNoGfx::CreatePrimarySurfaces()
 {
 	// Create dummy surface
 	lpPrimary = lpBack = new CSurface();

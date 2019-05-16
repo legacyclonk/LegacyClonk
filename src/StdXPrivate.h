@@ -31,16 +31,13 @@ public:
 	CStdAppPrivate() :
 #ifdef USE_X11
 		PrimarySelection(), ClipboardSelection(),
-		LastEventTime(CurrentTime), modefound(false), pending_desktop(false),
+		LastEventTime(CurrentTime),
 		xim(nullptr), xic(nullptr),
 #endif
 		argc(0), argv(nullptr) {}
 	static CStdWindow *GetWindow(unsigned long wnd);
 	static void SetWindow(unsigned long wnd, CStdWindow *pWindow);
 #ifdef USE_X11
-	bool SwitchToFullscreen(CStdApp *pApp, Window wnd);
-	void SwitchToDesktop(CStdApp *pApp, bool fMinimize, Window wnd);
-	void SetEWMHFullscreen(CStdApp *pApp, bool fFullScreen, Window wnd);
 	struct ClipboardData
 	{
 		StdStrBuf Text;
@@ -49,9 +46,6 @@ public:
 	typedef std::map<unsigned long, CStdWindow *> WindowListT;
 	static WindowListT WindowList;
 	XF86VidModeModeInfo oldmode, targetmode;
-	bool modefound;
-	int pending_desktop;
-	static const int PENDING_DESKTOP_DELAY = 3;
 	XIM xim;
 	XIC xic;
 	Bool detectable_autorepeat_supported;

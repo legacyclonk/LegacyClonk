@@ -200,7 +200,6 @@ public:
 	StdStrBuf sLastError;
 
 protected:
-	bool fFullscreen;
 	int ClipX1, ClipY1, ClipX2, ClipY2;
 	int StClipX1, StClipY1, StClipX2, StClipY2;
 	bool ClipAll; // set if clipper clips everything away
@@ -214,7 +213,7 @@ protected:
 
 public:
 	// General
-	bool Init(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, unsigned int iMonitor);
+	bool Init(CStdApp *pApp);
 	virtual void Clear();
 	virtual void Default();
 	virtual CStdGLCtx *CreateContext(CStdWindow *, CStdApp *) { return nullptr; }
@@ -223,8 +222,6 @@ public:
 #endif
 	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) = 0;
 	virtual int GetEngine() = 0; // get indexed engine
-	virtual void TaskOut() = 0; // user taskswitched the app away
-	virtual void TaskIn() = 0; // user tasked back
 	virtual bool OnResolutionChanged() = 0; // reinit window for new resolution
 	const char *GetLastError() { return sLastError.getData(); }
 
@@ -328,8 +325,7 @@ protected:
 	bool StringOut(const char *szText, CSurface *sfcDest, int iTx, int iTy, uint32_t dwFCol, uint8_t byForm, bool fDoMarkup, CMarkup &Markup, CStdFont *pFont, float fZoom);
 	virtual void DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwCol) = 0; // without ClrModMap
 	bool CreatePrimaryClipper();
-	virtual bool CreatePrimarySurfaces(bool Fullscreen, unsigned int iMonitor) = 0;
-	virtual bool SetOutputAdapter(unsigned int iMonitor) = 0;
+	virtual bool CreatePrimarySurfaces() = 0;
 	bool Error(const char *szMsg);
 	virtual bool CreateDirectDraw() = 0;
 	bool CalculateClipper(int *iX, int *iY, int *iWdt, int *iHgt);
@@ -348,4 +344,4 @@ protected:
 	friend class CPattern;
 };
 
-CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int Engine, unsigned int iMonitor);
+CStdDDraw *DDrawInit(CStdApp *pApp, int Engine);

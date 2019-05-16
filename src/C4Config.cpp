@@ -115,6 +115,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(ResX,                 "ResolutionX",          800,   false, true));
 	pComp->Value(mkNamingAdapt(ResY,                 "ResolutionY",          600,   false, true));
+	pComp->Value(mkNamingAdapt(Scale,                "Scale",                100,   false, true));
 	pComp->Value(mkNamingAdapt(ShowAllResolutions,   "ShowAllResolutions",   false, false, true));
 	pComp->Value(mkNamingAdapt(SplitscreenDividers,  "SplitscreenDividers",  1));
 	pComp->Value(mkNamingAdapt(ShowPlayerHUDAlways,  "ShowPlayerHUDAlways",  true));
@@ -148,6 +149,19 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(MaxRefreshDelay,      "MaxRefreshDelay",      30));
 	pComp->Value(mkNamingAdapt(DDrawCfg.Shader,      "Shader",               false, false, true));
 	pComp->Value(mkNamingAdapt(AutoFrameSkip,        "AutoFrameSkip",        true,  false, true));
+
+	StdEnumEntry<DisplayMode> DisplayModes[] =
+	{
+		{"Fullscreen", DisplayMode::Fullscreen},
+		{"Window", DisplayMode::Window}
+	};
+	pComp->Value(mkNamingAdapt(mkEnumAdaptT<int>(UseDisplayMode, DisplayModes), "DisplayMode", DisplayMode::Fullscreen, false, true));
+
+#ifdef _WIN32
+	pComp->Value(mkNamingAdapt(Maximized,   "Maximized",   false, false, true));
+	pComp->Value(mkNamingAdapt(PositionX,   "PositionX",   0,     false, true));
+	pComp->Value(mkNamingAdapt(PositionY,   "PositionY",   0,     false, true));
+#endif
 }
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)

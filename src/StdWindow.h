@@ -24,6 +24,10 @@
 
 #ifdef _WIN32
 const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
+
+#include <shobjidl.h>
+#include <wrl/client.h>
+
 #endif
 
 #ifdef HAVE_PTHREAD
@@ -230,6 +234,11 @@ typedef union _XEvent XEvent;
 typedef struct _XDisplay Display;
 #endif
 
+enum class DisplayMode {
+	Fullscreen,
+	Window
+};
+
 class CStdWindow
 {
 public:
@@ -251,6 +260,7 @@ public:
 	void SetSize(unsigned int cx, unsigned int cy); // resize
 	void SetTitle(const char *Title);
 	void FlashWindow();
+	void SetDisplayMode(DisplayMode mode);
 
 protected:
 	virtual void Sec1Timer() {};
@@ -259,10 +269,17 @@ protected:
 
 public:
 	HWND hWindow;
+	void Maximize();
+	void SetPosition(int x, int y);
 
 protected:
 	bool RegisterWindowClass(HINSTANCE hInst);
 	virtual bool Win32DialogMessageHandling(MSG *msg) { return false; };
+
+private:
+	DWORD style = WS_OVERLAPPEDWINDOW;
+	DWORD styleEx = WS_EX_OVERLAPPEDWINDOW;
+	Microsoft::WRL::ComPtr<ITaskbarList2> taskBarList = nullptr;
 
 #elif defined(USE_X11)
 
@@ -285,8 +302,6 @@ private:
 	int width, height;
 
 protected:
-	bool SetFullScreen(bool fFullscreen, int BPP);
-	int BPP; bool fFullscreen;
 	virtual void HandleMessage(SDL_Event &) {}
 
 #endif
@@ -313,9 +328,9 @@ public:
 	virtual void Quit();
 	virtual int32_t &ScreenWidth() = 0;
 	virtual int32_t &ScreenHeight() = 0;
-	bool GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *piYRes, int32_t *piBitDepth, uint32_t iMonitor);
-	bool SetFullScreen(bool fFullScreen, bool fMinimize = true);
+	virtual float GetScale() = 0;
 	C4AppHandleResult HandleMessage(unsigned int iTimeout = INFINITE, bool fCheckTimer = true);
+	void SetDisplayMode(DisplayMode mode) { pWindow->SetDisplayMode(mode); }
 	void ResetTimer(unsigned int uDelay);
 	CStdWindow *pWindow;
 	bool fQuitMsgReceived; // if true, a quit message has been received and the application should terminate
@@ -367,11 +382,6 @@ public:
 		return true;
 	}
 
-	PIXELFORMATDESCRIPTOR &GetPFD() { return pfd; }
-	HMONITOR hMon; // monitor handle of used monitor
-	unsigned int Monitor; // used display device
-	RECT MonitorRect; // output window rect
-
 protected:
 	bool SetCriticalTimer();
 	void CloseCriticalTimer();
@@ -379,8 +389,6 @@ protected:
 	UINT uCriticalTimerDelay, uCriticalTimerResolution;
 	UINT idCriticalTimer;
 	UINT GetDelay() { return uCriticalTimerDelay; }
-	PIXELFORMATDESCRIPTOR pfd; // desired pixel format
-	DEVMODE dspMode, OldDspMode; // display mode for fullscreen
 #else
 #if defined(USE_X11)
 	Display *dpy = nullptr;
@@ -427,10 +435,6 @@ protected:
 #endif
 	const char *szCmdLine;
 	bool InitTimer();
-	bool fDspModeSet; // true if display mode was changed
-	bool SetOutputAdapter(unsigned int iMonitor);
-	// Selects a suitable mode and saves the default for restoration
-	bool FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iMonitor);
 	virtual bool DoInit() = 0;
 	virtual void OnNetworkEvents() = 0;
 

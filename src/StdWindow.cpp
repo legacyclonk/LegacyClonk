@@ -28,6 +28,7 @@
 #include <io.h>
 #include <ctype.h>
 #include <conio.h>
+#include <stdexcept>
 
 #include "res/engine_resource.h"
 
@@ -67,7 +68,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 		0,
 		C4FullScreenClassName,
 		STD_PRODUCT,
-		WS_POPUP,
+		style,
 		CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
 		nullptr, nullptr, pApp->hInstance, nullptr);
 
@@ -75,7 +76,6 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 	// Show & focus
 	ShowWindow(hWindow, SW_SHOWNORMAL);
 	SetFocus(hWindow);
-	ShowCursor(FALSE);
 #endif
 
 	return this;
@@ -108,10 +108,18 @@ bool CStdWindow::GetSize(RECT *pRect)
 
 void CStdWindow::SetSize(unsigned int cx, unsigned int cy)
 {
-	// resize
-	if (hWindow)
+	if (!hWindow) return;
+
+	RECT rect;
+	if (!GetWindowRect(hWindow, &rect)) throw std::runtime_error("GetWindowRect failed");
+	rect.right = rect.left + cx;
+	rect.bottom = rect.top + cy;
+	if (!AdjustWindowRect(&rect, style, FALSE)) throw std::runtime_error("AdjustWindowRect failed");
+	if (!SetWindowPos(hWindow, nullptr,
+		0, 0, rect.right - rect.left, rect.bottom - rect.top,
+		SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS  | SWP_NOZORDER))
 	{
-		::SetWindowPos(hWindow, nullptr, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
+		throw std::runtime_error("SetWindowPos failed");
 	}
 }
 
@@ -120,6 +128,60 @@ void CStdWindow::FlashWindow()
 	// please activate me!
 	if (hWindow)
 		::FlashWindow(hWindow, FLASHW_ALL | FLASHW_TIMERNOFG);
+}
+
+void CStdWindow::SetDisplayMode(DisplayMode mode)
+{
+	const auto fullscreen = mode == DisplayMode::Fullscreen;
+
+	auto newStyle = style;
+	auto newStyleEx = styleEx;
+	if (fullscreen)
+	{
+		newStyle &= ~(WS_CAPTION | WS_THICKFRAME);
+		newStyleEx &= ~(WS_EX_DLGMODALFRAME |
+		WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+	}
+
+	SetWindowLong(hWindow, GWL_STYLE, newStyle);
+	SetWindowLong(hWindow, GWL_EXSTYLE, newStyleEx);
+
+	if (fullscreen)
+	{
+		MONITORINFO monitorInfo;
+		monitorInfo.cbSize = sizeof(monitorInfo);
+
+		GetMonitorInfo(MonitorFromWindow(hWindow, MONITOR_DEFAULTTONEAREST), &monitorInfo);
+		SetWindowPos(hWindow, nullptr, monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top, monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_DRAWFRAME);
+	}
+	else
+	{
+		SetWindowPos(hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_DRAWFRAME);
+	}
+
+	ShowWindow(hWindow, SW_SHOW);
+
+	if (!taskBarList)
+	{
+		HRESULT hr = ::CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskBarList));
+
+		if (SUCCEEDED(hr) && FAILED(taskBarList->HrInit())) taskBarList = nullptr;
+	}
+
+	if (taskBarList)
+	{
+		taskBarList->MarkFullscreenWindow(hWindow, fullscreen);
+	}
+}
+
+void CStdWindow::Maximize()
+{
+	ShowWindow(hWindow, SW_SHOWMAXIMIZED);
+}
+
+void CStdWindow::SetPosition(int x, int y)
+{
+	SetWindowPos(hWindow, nullptr, x, y, 0, 0, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
 }
 
 /* CStdApp */
@@ -132,13 +194,8 @@ CStdApp::CStdApp() : Active(false), hInstance(nullptr), fQuitMsgReceived(false),
 	uCriticalTimerResolution(5),
 	fTimePeriod(false),
 	iLastExecute(0),
-	iTimerOffset(0),
-	fDspModeSet(false),
-	pfd{}, dspMode{}, OldDspMode{}
+	iTimerOffset(0)
 {
-	pfd.nSize = sizeof(pfd);
-	dspMode.dmSize = sizeof(dspMode);
-	OldDspMode.dmSize = sizeof(OldDspMode);
 	hMainThread = nullptr;
 }
 
@@ -321,127 +378,6 @@ void CStdApp::ResetTimer(unsigned int uDelay)
 	uCriticalTimerDelay = uDelay;
 	CloseCriticalTimer();
 	SetCriticalTimer();
-}
-
-int GLMonitorInfoEnumCount;
-
-BOOL CALLBACK GLMonitorInfoEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
-{
-	// get to indexed monitor
-	if (GLMonitorInfoEnumCount--) return TRUE;
-	// store it
-	CStdApp *pApp = (CStdApp *)dwData;
-	pApp->hMon = hMonitor;
-	pApp->MonitorRect = *lprcMonitor;
-	return TRUE;
-}
-
-bool CStdApp::SetOutputAdapter(unsigned int iMonitor)
-{
-	Monitor = iMonitor;
-	hMon = nullptr;
-	// get monitor infos
-	GLMonitorInfoEnumCount = iMonitor;
-	EnumDisplayMonitors(nullptr, nullptr, GLMonitorInfoEnumProc, (LPARAM)this);
-	// no monitor assigned?
-	if (!hMon)
-	{
-		// Okay for primary; then just use a default
-		if (!iMonitor)
-		{
-			MonitorRect.left = MonitorRect.top = 0;
-			MonitorRect.right = ScreenWidth(); MonitorRect.bottom = ScreenHeight();
-			return true;
-		}
-		else return false;
-	}
-	return true;
-}
-
-bool CStdApp::GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *piYRes, int32_t *piBitDepth, uint32_t iMonitor)
-{
-	// prepare search struct
-	DEVMODE dmode{}; dmode.dmSize = sizeof(dmode);
-	StdStrBuf Mon;
-	if (iMonitor)
-		Mon.Format("\\\\.\\Display%d", iMonitor + 1);
-	// check if indexed mode exists
-	if (!EnumDisplaySettings(Mon.getData(), iIndex, &dmode)) return false;
-	// mode exists; return it
-	if (piXRes) *piXRes = dmode.dmPelsWidth;
-	if (piYRes) *piYRes = dmode.dmPelsHeight;
-	if (piBitDepth) *piBitDepth = dmode.dmBitsPerPel;
-	return true;
-}
-
-bool CStdApp::FindDisplayMode(unsigned int iXRes, unsigned int iYRes, unsigned int iMonitor)
-{
-	bool fFound = false;
-	DEVMODE dmode;
-	// if a monitor is given, search on that instead
-	SetOutputAdapter(iMonitor);
-	StdStrBuf Mon;
-	if (iMonitor)
-		Mon.Format("\\\\.\\Display%d", iMonitor + 1);
-	// enumerate modes
-	int i = 0;
-	dmode = {}; dmode.dmSize = sizeof(dmode);
-	while (EnumDisplaySettings(Mon.getData(), i++, &dmode))
-		// size and bit depth is OK?
-		if (dmode.dmPelsWidth == iXRes && dmode.dmPelsHeight == iYRes && dmode.dmBitsPerPel == 32)
-		{
-			// compare with found one
-			if (fFound)
-				// try getting a mode that is close to 85Hz, rather than taking the one with highest refresh rate
-				// (which may set absurd modes on some devices)
-				if (Abs<int>(85 - dmode.dmDisplayFrequency) > Abs<int>(85 - dspMode.dmDisplayFrequency))
-					// the previous one was better
-					continue;
-			// choose this one
-			fFound = true;
-			dspMode = dmode;
-		}
-	return fFound;
-}
-
-bool CStdApp::SetFullScreen(bool fFullScreen, bool fMinimize)
-{
-	if (fFullScreen == fDspModeSet) return true;
-#ifdef _DEBUG
-	SetWindowPos(pWindow->hWindow, HWND_TOP, MonitorRect.left, MonitorRect.top, dspMode.dmPelsWidth, dspMode.dmPelsHeight, SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
-	SetWindowLong(pWindow->hWindow, GWL_STYLE, (WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX));
-	return true;
-#else
-	if (!fFullScreen)
-	{
-		ChangeDisplaySettings(nullptr, CDS_RESET);
-		fDspModeSet = false;
-		return true;
-	}
-	// save original display mode
-	// if a monitor is given, use that instead
-	char Mon[256];
-	// change to that mode
-	fDspModeSet = true;
-	if (Monitor)
-	{
-		sprintf(Mon, "\\\\.\\Display%d", Monitor + 1);
-		dspMode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
-		if (ChangeDisplaySettingsEx(Mon, &dspMode, nullptr, CDS_FULLSCREEN, nullptr) != DISP_CHANGE_SUCCESSFUL)
-		{
-			fDspModeSet = false;
-		}
-	}
-	else
-	{
-		if (ChangeDisplaySettings(&dspMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-		{
-			fDspModeSet = false;
-		}
-	}
-	SetWindowPos(pWindow->hWindow, 0, MonitorRect.left, MonitorRect.top, dspMode.dmPelsWidth, dspMode.dmPelsHeight, 0);
-	return fDspModeSet;
-#endif
 }
 
 bool CStdApp::ReadStdInCommand()

@@ -33,38 +33,13 @@
 #endif
 
 #ifdef _WIN32
+#include <windowsx.h>
 
 LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// Process message
 	switch (uMsg)
 	{
-	case WM_ACTIVATE:
-		wParam = (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE);
-		// fall through to next case
-	case WM_ACTIVATEAPP:
-		ShowWindow(hwnd, (wParam ? SW_RESTORE : SW_MINIMIZE));
-		Application.Active = wParam != 0;
-		if (lpDDraw)
-		{
-			if (Application.Active)
-				lpDDraw->TaskIn();
-			else
-				lpDDraw->TaskOut();
-		}
-		// redraw background
-		Game.GraphicsSystem.InvalidateBg();
-		// Redraw after task switch
-		if (Application.Active)
-			Game.GraphicsSystem.Execute();
-		// update cursor clip
-		Game.MouseControl.UpdateClip();
-		return false;
-	case WM_PAINT:
-		// Redraw after task switch
-		if (Application.Active)
-			Game.GraphicsSystem.Execute();
-		break;
 	case WM_TIMER:
 		if (wParam == SEC1_TIMER) { FullScreen.Sec1Timer(); }
 		return true;
@@ -87,9 +62,10 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 			return 0;
 		break;
 	case WM_SYSKEYDOWN:
-		if (wParam == 18) break;
+		if (wParam == VK_MENU) return 0; // ALT
 		if (Game.DoKeyboardInput(wParam, KEYEV_Down, Application.IsAltDown(), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), nullptr))
 			return 0;
+		if (wParam == VK_F10) return 0;
 		break;
 	case WM_CHAR:
 	{
@@ -109,15 +85,47 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 			Log((const char *)lParam);
 		return false;
 	case WM_LBUTTONDOWN:
-		Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDown, LOWORD(lParam), HIWORD(lParam), wParam, nullptr);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDown, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), wParam, nullptr);
 		break;
-	case WM_LBUTTONUP:     Game.GraphicsSystem.MouseMove(C4MC_Button_LeftUp,      LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
-	case WM_RBUTTONDOWN:   Game.GraphicsSystem.MouseMove(C4MC_Button_RightDown,   LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
-	case WM_RBUTTONUP:     Game.GraphicsSystem.MouseMove(C4MC_Button_RightUp,     LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
-	case WM_LBUTTONDBLCLK: Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDouble,  LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
-	case WM_RBUTTONDBLCLK: Game.GraphicsSystem.MouseMove(C4MC_Button_RightDouble, LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
-	case WM_MOUSEMOVE:     Game.GraphicsSystem.MouseMove(C4MC_Button_None,        LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
-	case WM_MOUSEWHEEL:    Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel,       LOWORD(lParam), HIWORD(lParam), wParam, nullptr); break;
+	case WM_LBUTTONUP:     Game.GraphicsSystem.MouseMove(C4MC_Button_LeftUp,      GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), wParam, nullptr); break;
+	case WM_RBUTTONDOWN:   Game.GraphicsSystem.MouseMove(C4MC_Button_RightDown,   GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), wParam, nullptr); break;
+	case WM_RBUTTONUP:     Game.GraphicsSystem.MouseMove(C4MC_Button_RightUp,     GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), wParam, nullptr); break;
+	case WM_LBUTTONDBLCLK: Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDouble,  GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), wParam, nullptr); break;
+	case WM_RBUTTONDBLCLK: Game.GraphicsSystem.MouseMove(C4MC_Button_RightDouble, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), wParam, nullptr); break;
+	case WM_MOUSEMOVE:     Game.GraphicsSystem.MouseMove(C4MC_Button_None,        GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), wParam, nullptr); break;
+	case WM_MOUSEWHEEL:
+	{
+		POINT point = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+		ScreenToClient(hwnd, &point);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, point.x, point.y, wParam, nullptr);
+		break;
+	}
+	// Hide cursor in client area
+	case WM_SETCURSOR:
+		if (LOWORD(lParam) == HTCLIENT)
+		{
+			SetCursor(nullptr);
+		}
+		else
+		{
+			static HCURSOR arrowCursor = nullptr;
+			if (!arrowCursor) arrowCursor = LoadCursor(NULL, IDC_ARROW);
+			SetCursor(arrowCursor);
+		}
+		break;
+	case WM_SIZE:
+	{
+		const auto width = LOWORD(lParam);
+		const auto height = HIWORD(lParam);
+		if (width != 0 && height != 0) Application.SetResolution(width, height);
+	}
+		break;
+	case WM_ACTIVATEAPP:
+		if (Config.Graphics.UseDisplayMode == DisplayMode::Fullscreen && !wParam)
+		{
+			ShowWindow(hwnd, SW_SHOWMINIMIZED);
+		}
+		return 0;
 	}
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
@@ -220,11 +228,12 @@ void C4FullScreen::HandleMessage(XEvent &e)
 		break;
 	case FocusIn:
 		Application.Active = true;
-		if (lpDDraw) lpDDraw->TaskIn();
 		break;
 	case FocusOut: case UnmapNotify:
 		Application.Active = false;
-		if (lpDDraw) lpDDraw->TaskOut();
+		break;
+	case ConfigureNotify:
+		Application.SetResolution(e.xconfigure.width, e.xconfigure.height);
 		break;
 	}
 }
@@ -309,24 +318,6 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 	{
 	case SDL_KEYDOWN:
 	{
-#ifndef USE_CONSOLE
-		if (e.key.keysym.sym == SDLK_f && (e.key.keysym.mod & (KMOD_LMETA | KMOD_RMETA)))
-		{
-			DDrawCfg.Windowed = !DDrawCfg.Windowed;
-			if (pGL) pGL->fFullscreen = !DDrawCfg.Windowed;
-			Application.SetFullScreen(!DDrawCfg.Windowed, false);
-			lpDDraw->InvalidateDeviceObjects();
-			lpDDraw->RestoreDeviceObjects();
-
-			if (DDrawCfg.Windowed)
-				Config.Graphics.NewGfxCfg |= C4GFXCFG_WINDOWED;
-			else
-				Config.Graphics.NewGfxCfg &= ~C4GFXCFG_WINDOWED;
-
-			break;
-		}
-#endif
-
 		// Only forward real characters to UI. (Nothing outside of "private use" range.)
 		// This works without iconv for some reason. Yay!
 		// FIXME: convert to UTF-8
@@ -364,6 +355,9 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
 		Application.pGamePadControl->FeedEvent(e);
+		break;
+	case SDL_VIDEORESIZE:
+		Application.SetResolution(e.resize.w, e.resize.h);
 		break;
 	}
 }

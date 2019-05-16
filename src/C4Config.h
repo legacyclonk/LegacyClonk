@@ -34,6 +34,7 @@
 #define C4CFG_UpdateMajor   "lc_%d%d%d%d_%s.c4u"
 
 #include "C4Include.h"
+#include "StdWindow.h"
 
 class C4ConfigGeneral
 {
@@ -109,6 +110,7 @@ public:
 	bool UpperBoard;
 	bool ShowClock;
 	int32_t ResX, ResY;
+	int32_t Scale;
 	bool ShowAllResolutions;
 	bool ShowCrewNames; // show player name above clonks?
 	bool ShowCrewCNames; // show clonk names above clonks?
@@ -126,6 +128,12 @@ public:
 	bool FireParticles; // draw extended fire particles if enabled (defualt on)
 	int32_t MaxRefreshDelay; // minimum time after which graphics should be refreshed (ms)
 	bool AutoFrameSkip; // if true, gfx frames are skipped when they would slow down the game
+	DisplayMode UseDisplayMode;
+#ifdef _WIN32
+	bool Maximized;
+	int PositionX;
+	int PositionY;
+#endif
 	void CompileFunc(StdCompiler *pComp);
 };
 

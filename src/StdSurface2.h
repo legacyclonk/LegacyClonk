@@ -33,10 +33,8 @@
 #define C4GFXCFG_POINT_FILTERING 2
 #define C4GFXCFG_NOADDITIVEBLTS  8
 #define C4GFXCFG_NOBOXFADES      16
-#define C4GFXCFG_GLSMARTTASK     32
 #define C4GFXCFG_GLCLAMP         128
 #define C4GFXCFG_NOACCELERATION  512
-#define C4GFXCFG_WINDOWED        1024
 
 // blitting modes
 #define C4GFXBLIT_NORMAL          0 // regular blit
@@ -67,13 +65,11 @@ public:
 	bool PointFilteringStd; // backup value of PointFiltering
 	bool AdditiveBlts; // enable additive blitting
 	bool NoBoxFades; // map all DrawBoxFade-calls to DrawBoxDw
-	bool GLKeepRes; // do not switch back to windows resolution during taskswitch in OpenGL
 	bool GLClamp; // special texture clamping in OpenGL
 	float fTexIndent; // texture indent
 	float fBlitOff; // blit offsets
 	uint32_t AllowedBlitModes; // bit mask for allowed blitting modes
 	bool NoAcceleration; // wether direct rendering is used (X11)
-	bool Windowed; // wether the resolution will not be set
 	int Cfg;
 
 	bool Shader; // wether to use pixelshaders
@@ -92,17 +88,11 @@ public:
 		PointFiltering = PointFilteringStd = !!(dwCfg & C4GFXCFG_POINT_FILTERING);
 		AdditiveBlts = !(dwCfg & C4GFXCFG_NOADDITIVEBLTS);
 		NoBoxFades = !!(dwCfg & C4GFXCFG_NOBOXFADES);
-#ifdef _WIN32
-		GLKeepRes = !(dwCfg & C4GFXCFG_GLSMARTTASK);
-#else
-		GLKeepRes = false;
-#endif
 		GLClamp = !!(dwCfg & C4GFXCFG_GLCLAMP);
 		this->fTexIndent = fTexIndent;
 		this->fBlitOff = fBlitOff;
 		AllowedBlitModes = AdditiveBlts ? C4GFXBLIT_ALL : C4GFXBLIT_NOADD;
 		NoAcceleration = !!(dwCfg & C4GFXCFG_NOACCELERATION);
-		Windowed = !!(dwCfg & C4GFXCFG_WINDOWED);
 	}
 
 	void Get(int32_t &dwCfg, float &fTexIndent, float &fBlitOff)
@@ -112,12 +102,8 @@ public:
 			(PointFiltering ? C4GFXCFG_POINT_FILTERING : 0) |
 			(AdditiveBlts ? 0 : C4GFXCFG_NOADDITIVEBLTS) |
 			(NoBoxFades ? C4GFXCFG_NOBOXFADES : 0) |
-#ifdef _WIN32
-			(GLKeepRes ? 0 : C4GFXCFG_GLSMARTTASK) |
-#endif
 			(GLClamp ? C4GFXCFG_GLCLAMP : 0) |
-			(NoAcceleration ? C4GFXCFG_NOACCELERATION : 0) |
-			(Windowed ? C4GFXCFG_WINDOWED : 0);
+			(NoAcceleration ? C4GFXCFG_NOACCELERATION : 0);
 		fTexIndent = this->fTexIndent;
 		fBlitOff = this->fBlitOff;
 	}

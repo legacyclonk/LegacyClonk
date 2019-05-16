@@ -62,7 +62,6 @@ CStdApp::CStdApp() : Active(false), fQuitMsgReceived(false), Priv(new CStdAppPri
 #ifdef HAVE_PTHREAD
 	MainThread(pthread_self()),
 #endif
-	fDspModeSet(false),
 	// 36 FPS
 	Delay(27777) {}
 
@@ -253,24 +252,6 @@ bool CStdApp::SignalNetworkEvent()
 	write(Priv->Pipe[1], &c, 1);
 	return true;
 }
-
-bool CStdApp::FindDisplayMode(unsigned int iXRes, unsigned int iYRes,
-	unsigned int iMonitor)
-{
-	return true;
-}
-
-bool CStdApp::GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *piYRes, int32_t *piBitDepth, uint32_t iMonitor)
-{
-	return false;
-}
-
-bool CStdApp::SetFullScreen(bool fFullScreen, bool fMinimize)
-{
-	return true;
-}
-
-bool CStdApp::SetOutputAdapter(unsigned int iMonitor) { return true; }
 
 // Copy the text to the clipboard or the primary selection
 void CStdApp::Copy(const StdStrBuf &text, bool fClipboard) {}

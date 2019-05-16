@@ -504,7 +504,6 @@ bool CBltData::ClipBy(float fX, float fY, float fMax)
 
 void CStdDDraw::Default()
 {
-	fFullscreen = false;
 	RenderTarget = nullptr;
 	ClipAll = false;
 	Active = false;
@@ -1272,7 +1271,7 @@ uint32_t CStdDDraw::ApplyGammaTo(uint32_t dwClr)
 	return Gamma.ApplyTo(dwClr);
 }
 
-CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int Engine, unsigned int iMonitor)
+CStdDDraw *DDrawInit(CStdApp *pApp, int Engine)
 {
 	// create engine
 	switch (iGfxEngine = Engine)
@@ -1285,7 +1284,7 @@ CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int Engi
 	}
 	if (!lpDDraw) return nullptr;
 	// init it
-	if (!lpDDraw->Init(pApp, Fullscreen, fUsePageLock, iMonitor))
+	if (!lpDDraw->Init(pApp))
 	{
 		delete lpDDraw;
 		return nullptr;
@@ -1294,7 +1293,7 @@ CStdDDraw *DDrawInit(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, int Engi
 	return lpDDraw;
 }
 
-bool CStdDDraw::Init(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, unsigned int iMonitor)
+bool CStdDDraw::Init(CStdApp *pApp)
 {
 	// set cfg again, as engine has been decided
 	DDrawCfg.Set(DDrawCfg.Cfg, DDrawCfg.fTexIndent, DDrawCfg.fBlitOff);
@@ -1310,22 +1309,15 @@ bool CStdDDraw::Init(CStdApp *pApp, bool Fullscreen, bool fUsePageLock, unsigned
 	if (!CreateDirectDraw())
 		return Error("  CreateDirectDraw failure.");
 
-	// set monitor info (Monitor-var and target rect)
-	DebugLog("  SetOutput adapter...");
-	if (!SetOutputAdapter(iMonitor))
-		return Error("  Output adapter failure.");
-
 	DebugLog("  Create Device...");
 
-	if (!CreatePrimarySurfaces(Fullscreen, iMonitor))
+	if (!CreatePrimarySurfaces())
 		return Error("  CreateDevice failure.");
 
 	DebugLog("  Create Clipper");
 
 	if (!CreatePrimaryClipper())
 		return Error("  Clipper failure.");
-
-	fFullscreen = Fullscreen;
 
 	return true;
 }

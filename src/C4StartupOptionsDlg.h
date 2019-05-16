@@ -74,6 +74,7 @@ private:
 	class C4GUI::ComboBox *pLangCombo;
 	class C4GUI::Label *pLangInfoLabel;
 	class C4GUI::ComboBox *pFontFaceCombo, *pFontSizeCombo;
+	class C4GUI::ComboBox *pDisplayModeCombo;
 
 	void OnLangComboFill(C4GUI::ComboBox_FillCB *pFiller);
 	bool OnLangComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection);
@@ -86,6 +87,8 @@ private:
 	int32_t FairCrewStrength2Slider(int32_t iStrengthVal);
 	void OnFairCrewStrengthSliderChange(int32_t iNewVal);
 	void OnResetConfigBtn(C4GUI::Control *btn);
+	void OnDisplayModeComboFill(C4GUI::ComboBox_FillCB *pFiller);
+	bool OnDisplayModeComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection);
 
 	// graphics tab
 private:
@@ -135,16 +138,10 @@ private:
 		virtual const char *GetID() { return "ResChangeConfirmDialog"; }
 	};
 
-	void OnFullscreenChange(C4GUI::Element *pCheckBox);
-	void OnGfxAllResolutionsChange(C4GUI::Element *pCheckBox);
 	void OnGfxTroubleCheck(C4GUI::Element *pCheckBox)
 	{
 		SaveGfxTroubleshoot();
 	} // immediate save and test
-	void OnGfxResComboFill(C4GUI::ComboBox_FillCB *pFiller);
-	bool OnGfxResComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection);
-	bool TryNewResolution(int32_t iResX, int32_t iResY);
-	StdStrBuf GetGfxResString(int32_t iResX, int32_t iResY); // convert resolution to string to be displayed in resolution choice combobox
 	void OnEffectsSliderChange(int32_t iNewVal);
 
 	C4GUI::GroupBox *pGroupTrouble;
@@ -153,6 +150,25 @@ private:
 	C4GUI::ScrollBar *pEffectLevelSlider;
 
 	void LoadGfxTroubleshoot(); void SaveGfxTroubleshoot();
+
+	class ScaleEdit : public C4GUI::Edit
+	{
+		C4StartupOptionsDlg *pDlg;
+
+	public:
+		ScaleEdit(C4StartupOptionsDlg *pDlg, const C4Rect &rtBounds, bool fFocusEdit = false);
+
+	protected:
+		virtual bool CharIn(const char *c);
+		virtual InputResult OnFinishInput(bool fPasting, bool fPastingMore);
+	};
+
+	C4GUI::ScrollBar *pScaleSlider;
+	ScaleEdit *pScaleEdit;
+	int32_t iNewScale;
+
+	void OnScaleSliderChanged(int32_t val);
+	void OnTestScaleBtn(C4GUI::Control *);
 
 	// sound tab
 private:

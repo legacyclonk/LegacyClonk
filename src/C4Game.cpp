@@ -808,6 +808,8 @@ bool C4Game::Execute() // Returns true if the game is over
 
 void C4Game::InitFullscreenComponents(bool fRunning)
 {
+	if (!Application.DDraw) return;
+
 	if (fRunning)
 	{
 		// running game: Message board upper board and viewports

@@ -69,12 +69,6 @@ void CStdGL::Clear()
 	// clear context
 	if (pCurrCtx) pCurrCtx->Deselect();
 	MainCtx.Clear();
-	// restore display mode
-	// when using the SDL, better let it do this when calling SDL_Cleanup!
-#ifndef USE_SDL_MAINLOOP
-	pApp->SetFullScreen(false, false);
-#endif
-	MainCtx.Clear();
 	pCurrCtx = nullptr;
 #ifndef USE_SDL_MAINLOOP
 	CStdDDraw::Clear();
@@ -109,8 +103,9 @@ bool CStdGL::UpdateClipper()
 	int iX, iY, iWdt, iHgt;
 	// no render target or clip all? do nothing
 	if (!CalculateClipper(&iX, &iY, &iWdt, &iHgt)) return true;
+	const auto scale = pApp->GetScale();
 	// set it
-	glViewport(iX, RenderTarget->Hgt - iY - iHgt, iWdt, iHgt);
+	glViewport(floorf(static_cast<float>(iX) * scale), floorf(static_cast<float>(RenderTarget->Hgt - iY - iHgt) * scale), ceilf(static_cast<float>(iWdt) * scale), ceilf(static_cast<float>(iHgt) * scale));
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(
@@ -569,35 +564,8 @@ CStdGLCtx *CStdGL::CreateContext(const HWND hWindow, CStdApp *const pApp)
 }
 #endif
 
-bool CStdGL::CreatePrimarySurfaces(const bool Playermode, const unsigned int iMonitor)
+bool CStdGL::CreatePrimarySurfaces()
 {
-	// remember fullscreen setting
-	fFullscreen = Playermode && !DDrawCfg.Windowed;
-
-	// Set window size only in playermode
-	if (Playermode)
-	{
-		// Always search for display mode, in case the user decides to activate fullscreen later
-		if (!pApp->FindDisplayMode(pApp->ScreenWidth(), pApp->ScreenHeight(), iMonitor))
-		{
-			Error("  gl: No Display mode found; leaving current!");
-			fFullscreen = false;
-		}
-		if (fFullscreen)
-		{
-			// change resolution
-			if (!pApp->SetFullScreen(true))
-			{
-				Error("  gl: No Display cannot be set; leaving current!");
-				fFullscreen = false;
-			}
-		}
-		if (!fFullscreen)
-		{
-			pApp->pWindow->SetSize(pApp->ScreenWidth(), pApp->ScreenHeight());
-		}
-	}
-
 	// create lpPrimary and lpBack (used in first context selection)
 	lpPrimary = lpBack = new CSurface();
 	lpPrimary->fPrimary = true;
@@ -983,46 +951,9 @@ void CStdGL::ResetTexture()
 
 CStdGL *pGL = nullptr;
 
-bool CStdGL::SetOutputAdapter(const unsigned int iMonitor)
-{
-	return pApp->SetOutputAdapter(iMonitor);
-}
-
-void CStdGL::TaskOut()
-{
-	// deactivate
-	// backup textures
-	if (pTexMgr && fFullscreen) pTexMgr->IntLock();
-	// shotdown gl
-	InvalidateDeviceObjects();
-	if (pCurrCtx) pCurrCtx->Deselect();
-	// restore original resolution
-	if (fFullscreen && !DDrawCfg.GLKeepRes) pApp->SetFullScreen(false);
-}
-
-void CStdGL::TaskIn()
-{
-	// restore resolution
-	if (fFullscreen && !DDrawCfg.GLKeepRes) pApp->SetFullScreen(true);
-	// restore textures
-	if (pTexMgr && fFullscreen) pTexMgr->IntUnlock();
-	// restore device stuff
-	RestoreDeviceObjects();
-}
-
 bool CStdGL::OnResolutionChanged()
 {
 	InvalidateDeviceObjects();
-	if (fFullscreen && !DDrawCfg.GLKeepRes)
-	{
-		pApp->SetFullScreen(false, false);
-		pApp->FindDisplayMode(pApp->ScreenWidth(), pApp->ScreenHeight(), 0);
-		pApp->SetFullScreen(true, false);
-	}
-	else
-	{
-		pApp->pWindow->SetSize(pApp->ScreenWidth(), pApp->ScreenHeight());
-	}
 	RestoreDeviceObjects();
 	// Re-create primary clipper to adapt to new size.
 	CreatePrimaryClipper();
@@ -1032,7 +963,6 @@ bool CStdGL::OnResolutionChanged()
 void CStdGL::Default()
 {
 	CStdDDraw::Default();
-	iPixelFormat = 0;
 	sfcFmt = 0;
 	MainCtx.Clear();
 }

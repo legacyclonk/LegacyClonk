@@ -155,6 +155,16 @@ bool C4Application::DoInit()
 		{
 			Clear(); return false;
 		}
+		pWindow->SetSize(static_cast<float>(Config.Graphics.ResX) * GetScale(), static_cast<float>(Config.Graphics.ResY) * GetScale());
+		SetDisplayMode(Config.Graphics.UseDisplayMode);
+
+#ifdef _WIN32
+		if (Config.Graphics.UseDisplayMode == DisplayMode::Window)
+		{
+			if (Config.Graphics.Maximized) pWindow->Maximize();
+			else pWindow->SetPosition(Config.Graphics.PositionX, Config.Graphics.PositionY);
+		}
+#endif
 	}
 	else
 	{
@@ -176,7 +186,7 @@ bool C4Application::DoInit()
 	LogF("Version: %s %s", C4VERSION, C4_OS);
 
 	// Initialize OpenGL
-	DDraw = DDrawInit(this, isFullScreen, false, Config.Graphics.Engine, Config.Graphics.Monitor);
+	DDraw = DDrawInit(this, Config.Graphics.Engine);
 	if (!DDraw) { LogFatal(LoadResStr("IDS_ERR_DDRAW")); Clear(); return false; }
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)
@@ -290,6 +300,14 @@ void C4Application::Quit()
 {
 	// Clear definitions passed by frontend for this round
 	Config.General.Definitions[0] = 0;
+#ifdef _WIN32
+	// store if window is maximized and where it is positioned
+	WINDOWPLACEMENT placement;
+	GetWindowPlacement(pWindow->hWindow, &placement);
+	Config.Graphics.Maximized = placement.showCmd == SW_SHOWMAXIMIZED;
+	Config.Graphics.PositionX = placement.rcNormalPosition.left;
+	Config.Graphics.PositionY = placement.rcNormalPosition.top;
+#endif
 	// Save config if there was no loading error
 	if (Config.fConfigLoaded) Config.Save();
 	// quit app
@@ -455,23 +473,11 @@ void C4Application::SetGameTickDelay(int iDelay)
 
 bool C4Application::SetResolution(int32_t iNewResX, int32_t iNewResY)
 {
-	// set in config
-	int32_t iOldResX = Config.Graphics.ResX,
-		iOldResY = Config.Graphics.ResY;
-	Config.Graphics.ResX = iNewResX;
-	Config.Graphics.ResY = iNewResY;
+	const auto scale = GetScale();
+	Config.Graphics.ResX = ceilf(iNewResX / scale);
+	Config.Graphics.ResY = ceilf(iNewResY / scale);
 	// ask graphics system to change it
-	if (lpDDraw)
-	{
-		if (!lpDDraw->OnResolutionChanged())
-		{
-			// gfx system could not reinit: Failure
-			Config.Graphics.ResX = iOldResX;
-			Config.Graphics.ResY = iOldResY;
-			return false;
-		}
-	}
-	// resolution change success!
+	if (lpDDraw) lpDDraw->OnResolutionChanged();
 	// notify game
 	Game.OnResolutionChanged();
 	return true;

@@ -32,8 +32,6 @@ public:
 	virtual bool BeginScene() { return true; }
 	virtual void EndScene() {}
 	virtual int GetEngine() { return GFXENGN_NOGFX; }
-	virtual void TaskOut() {}
-	virtual void TaskIn() {}
 	virtual bool UpdateClipper() { return true; }
 	virtual bool OnResolutionChanged() { return true; }
 	virtual bool PrepareRendering(CSurface *) { return true; }
@@ -49,6 +47,5 @@ public:
 	virtual bool RestoreDeviceObjects() { return true; }
 	virtual bool InvalidateDeviceObjects() { return true; }
 	virtual bool DeviceReady() { return true; }
-	virtual bool CreatePrimarySurfaces(bool, unsigned int);
-	virtual bool SetOutputAdapter(unsigned int) { return true; }
+	virtual bool CreatePrimarySurfaces();
 };

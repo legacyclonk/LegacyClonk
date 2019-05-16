@@ -139,6 +139,63 @@ void C4StartupOptionsDlg::ResChangeConfirmDlg::OnSec1Timer()
 	pOperationCancelLabel->SetText(sTimerText.getData());
 }
 
+// C4StartupOptionsDlg::ScaleEdit
+
+namespace {
+	unsigned long toUl(const char *str, unsigned long onFail)
+	{
+		char *endPtr = nullptr;
+		auto val = strtoul(str, &endPtr, 10);
+		if(endPtr == nullptr || *endPtr != '\0')
+		{
+			return onFail;
+		}
+
+		return val;
+	}
+
+	constexpr int minScale = 100;
+	constexpr int maxScale = 300;
+}
+
+C4StartupOptionsDlg::ScaleEdit::ScaleEdit(C4StartupOptionsDlg *pDlg, const C4Rect &rtBounds, bool fFocusEdit) : C4GUI::Edit{rtBounds, fFocusEdit}, pDlg{pDlg}
+{
+	SetMaxText(5);
+	SetColors(C4StartupEditBGColor, C4StartupFontClr, C4StartupEditBorderColor);
+}
+
+bool C4StartupOptionsDlg::ScaleEdit::CharIn(const char *c)
+{
+	if (strlen(c) != 1 || !Inside(c[0], '0', '9')) return false;
+	if (C4GUI::Edit::CharIn(c))
+	{
+		int val = toUl(GetText(), 0);
+		if (Inside(val, minScale, maxScale))
+		{
+			auto sliderVal = val - minScale;
+			pDlg->pScaleSlider->SetScrollPos(sliderVal);
+			pDlg->iNewScale = val;
+		}
+		return true;
+	}
+	return false;
+}
+
+C4GUI::Edit::InputResult C4StartupOptionsDlg::ScaleEdit::OnFinishInput(bool fPasting, bool fPastingMore)
+{
+	char *endPtr = nullptr;
+	int val = toUl(GetText(), 0);
+	if (!Inside(val, minScale, maxScale)) SetText(FormatString("%d", pDlg->iNewScale).getData(), true);
+	else
+	{
+		auto sliderVal = val - minScale;
+		pDlg->pScaleSlider->SetScrollPos(sliderVal);
+		pDlg->OnScaleSliderChanged(sliderVal);
+		pDlg->OnTestScaleBtn(nullptr);
+	}
+	return C4GUI::Edit::IR_Abort;
+}
+
 // C4StartupOptionsDlg::KeySelDialog
 
 const char *KeyID2Desc(int32_t iKeyID)
@@ -575,6 +632,15 @@ bool C4StartupOptionsDlg::EditConfig::GetControlSize(int *piWdt, int *piHgt, con
 	return BaseEdit::GetControlSize(piWdt, piHgt, szForText, pUseFont, fMultiline);
 }
 
+
+struct {
+	const char* caption;
+	DisplayMode mode;
+} static const DisplayModes[] = {
+	{"IDS_MSG_FULLSCREEN", DisplayMode::Fullscreen},
+	{"IDS_MSG_WINDOW", DisplayMode::Window}
+};
+
 // C4StartupOptionsDlg
 
 C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_DLG_OPTIONS")), fConfigSaved(false), fCanGoBack(true)
@@ -757,41 +823,73 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 
 	// page graphics
 	C4GUI::ComponentAligner caSheetGraphics(pSheetGraphics->GetClientRect(), iIndentX1, iIndentY1, true);
-	// --subgroup resolution
-	C4GUI::GroupBox *pGroupResolution = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(0, 1, 0, 3));
-	pGroupResolution->SetTitle(LoadResStrNoAmp("IDS_CTL_RESOLUTION"));
-	pGroupResolution->SetFont(pUseFont);
-	pGroupResolution->SetColors(C4StartupEditBorderColor, C4StartupFontClr);
-	pSheetGraphics->AddElement(pGroupResolution);
-	C4GUI::ComponentAligner caGroupResolution(pGroupResolution->GetClientRect(), iIndentX1, iIndentY2, true);
-	// resolution combobox
-	pUseFont->GetTextExtent("1600 x 1200", w, q, true); w = std::min<int32_t>(caGroupResolution.GetInnerWidth(), w + 40);
-	C4GUI::ComboBox *pGfxResCombo = new C4GUI::ComboBox(caGroupResolution.GetGridCell(0, 1, 0, 4, w, C4GUI::ComboBox::GetDefaultHeight(), false));
-	pGfxResCombo->SetToolTip(LoadResStr("IDS_MSG_RESOLUTION_DESC"));
-	pGfxResCombo->SetComboCB(new C4GUI::ComboBox_FillCallback<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnGfxResComboFill, &C4StartupOptionsDlg::OnGfxResComboSelChange));
-	pGfxResCombo->SetColors(C4StartupFontClr, C4StartupEditBGColor, C4StartupEditBorderColor);
-	pGfxResCombo->SetFont(pUseFont);
-	pGfxResCombo->SetDecoration(&(C4Startup::Get()->Graphics.fctContext));
-	pGfxResCombo->SetText(GetGfxResString(Config.Graphics.ResX, Config.Graphics.ResY).getData());
-	pGroupResolution->AddElement(pGfxResCombo);
-	// all resolutions checkbox
-	pCheck = new C4GUI::CheckBox(caGroupResolution.GetGridCell(0, 1, 1, 4, -1, iCheckHgt, true), LoadResStr("IDS_CTL_SHOWALLRESOLUTIONS"), !!Config.Graphics.ShowAllResolutions);
-	pCheck->SetOnChecked(new C4GUI::CallbackHandler<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnGfxAllResolutionsChange));
-	pCheck->SetToolTip(LoadResStr("IDS_DESC_SHOWALLRESOLUTIONS"));
-	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-#ifndef _WIN32
-	pCheck->SetEnabled(false);
-#endif
-	pGroupResolution->AddElement(pCheck);
-	// fullscreen checkbox
-	pCheck = new C4GUI::CheckBox(caGroupResolution.GetGridCell(0, 1, 3, 4, -1, iCheckHgt, true), LoadResStr("IDS_MSG_FULLSCREEN"), !DDrawCfg.Windowed);
-	pCheck->SetOnChecked(new C4GUI::CallbackHandler<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnFullscreenChange));
-	pCheck->SetToolTip(LoadResStr("IDS_MSG_FULLSCREEN_DESC"));
-	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-#ifdef _WIN32
-	pCheck->SetEnabled(false);
-#endif
-	pGroupResolution->AddElement(pCheck);
+
+	C4GUI::GroupBox *pGroupDisplaySettings = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(0, 1, 0, 3));
+	pGroupDisplaySettings->SetTitle(LoadResStrNoAmp("IDS_CTL_DISPLAY"));
+	pGroupDisplaySettings->SetFont(pUseFont);
+	pGroupDisplaySettings->SetColors(C4StartupEditBorderColor, C4StartupFontClr);
+	pSheetGraphics->AddElement(pGroupDisplaySettings);
+
+	C4GUI::ComponentAligner caDisplaySettings(pGroupDisplaySettings->GetClientRect(), iIndentX1, iIndentY2, true);
+
+	C4GUI::ComponentAligner caDisplayModeRow(caDisplaySettings.GetGridCell(0, 1, 0, 2, -1, C4GUI::ComboBox::GetDefaultHeight(), true), 0, 0, false);
+
+	StdStrBuf sDisplayModeStr; sDisplayModeStr.Copy(LoadResStr("IDS_CTL_DISPLAYMODE")); sDisplayModeStr.AppendChar(':');
+	pUseFont->GetTextExtent(sDisplayModeStr.getData(), w, q, true);
+	pLbl = new C4GUI::Label(sDisplayModeStr.getData(), caDisplayModeRow.GetFromLeft(w + C4GUI_DefDlgSmallIndent), ALeft, C4StartupFontClr, pUseFont, false);
+	pGroupDisplaySettings->AddElement(pLbl);
+	pDisplayModeCombo = new C4GUI::ComboBox(caDisplayModeRow.GetAll());
+	pDisplayModeCombo->SetComboCB(new C4GUI::ComboBox_FillCallback<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnDisplayModeComboFill, &C4StartupOptionsDlg::OnDisplayModeComboSelChange));
+	pDisplayModeCombo->SetColors(C4StartupFontClr, C4StartupEditBGColor, C4StartupEditBorderColor);
+	pDisplayModeCombo->SetFont(pUseFont);
+	pDisplayModeCombo->SetDecoration(&(C4Startup::Get()->Graphics.fctContext));
+	pGroupDisplaySettings->AddElement(pDisplayModeCombo);
+
+	for (const auto& mode : DisplayModes)
+	{
+		if (mode.mode == Config.Graphics.UseDisplayMode)
+		{
+			pDisplayModeCombo->SetText(LoadResStr(mode.caption));
+		}
+	}
+
+
+	C4GUI::ComponentAligner caScaleRow(caDisplaySettings.GetGridCell(0, 1, 1, 2, -1, iEdit2Hgt, true), 0, 0, false);
+
+	StdStrBuf sScaleStr; sScaleStr.Copy(LoadResStr("IDS_CTL_GRAPHICSSCALE")); sScaleStr.AppendChar(':');
+	pUseFont->GetTextExtent(sScaleStr.getData(), w, q, true);
+	pLbl = new C4GUI::Label(sScaleStr.getData(), caScaleRow.GetFromLeft(w + C4GUI_DefDlgSmallIndent), ALeft, C4StartupFontClr, pUseFont, false);
+	pGroupDisplaySettings->AddElement(pLbl);
+
+	szBtnText = LoadResStr("IDS_BTN_TESTGRAPHICSSCALE");
+	C4GUI::CallbackButton<C4StartupOptionsDlg, SmallButton> *pTestScaleBtn;
+	C4GUI::GetRes()->CaptionFont.GetTextExtent(szBtnText, w, q, true);
+	pGroupDisplaySettings->AddElement(pTestScaleBtn = new C4GUI::CallbackButton<C4StartupOptionsDlg, SmallButton>(szBtnText, caScaleRow.GetFromRight(w), &C4StartupOptionsDlg::OnTestScaleBtn, this));
+	caScaleRow.GetFromRight(4 * C4GUI_DefDlgSmallIndent);
+
+	pUseFont->GetTextExtent(" %", w, q, true);
+	pLbl = new C4GUI::Label(" %", caScaleRow.GetFromRight(w), ARight, C4StartupFontClr, pUseFont, false);
+	pGroupDisplaySettings->AddElement(pLbl);
+
+	pUseFont->GetTextExtent("30000", w, q, true);
+	pScaleEdit = new ScaleEdit(this, caScaleRow.GetFromRight(w + C4GUI_DefDlgSmallIndent));
+	pScaleEdit->SetFont(pUseFont);
+	pScaleEdit->SetToolTip(LoadResStr("IDS_DESC_GRAPHICSSCALE"));
+	pGroupDisplaySettings->AddElement(pScaleEdit);
+
+	caScaleRow.GetFromTop((caScaleRow.GetHeight() - C4GUI_ScrollBarHgt) / 2);
+	caScaleRow.GetFromBottom(caScaleRow.GetHeight() - C4GUI_ScrollBarHgt);
+	auto *pScaleCB = new C4GUI::ParCallbackHandler<C4StartupOptionsDlg, int32_t>(this, &C4StartupOptionsDlg::OnScaleSliderChanged);
+	pScaleSlider = new C4GUI::ScrollBar(caScaleRow.GetAll(), true, pScaleCB, maxScale - minScale + 1);
+
+	pScaleSlider->SetDecoration(&C4Startup::Get()->Graphics.sfctBookScroll, false);
+	pScaleSlider->SetToolTip(LoadResStr("IDS_DESC_GRAPHICSSCALE"));
+	pScaleSlider->SetScrollPos(Config.Graphics.Scale - minScale);
+	pGroupDisplaySettings->AddElement(pScaleSlider);
+
+	OnScaleSliderChanged(Config.Graphics.Scale - minScale);
+
+
 	// --subgroup troubleshooting
 	pGroupTrouble = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(0, 1, 1, 3));
 	pGroupTrouble->SetTitle(LoadResStrNoAmp("IDS_CTL_TROUBLE"));
@@ -1049,114 +1147,55 @@ void C4StartupOptionsDlg::OnResetConfigBtn(C4GUI::Control *btn)
 	Application.Quit();
 }
 
-void C4StartupOptionsDlg::OnGfxResComboFill(C4GUI::ComboBox_FillCB *pFiller)
+void C4StartupOptionsDlg::OnScaleSliderChanged(int32_t val)
 {
-	// clear all old entries first to allow a clean refill
-	pFiller->ClearEntries();
-	// fill with all possible resolutions
-	int32_t idx = 0, iXRes, iYRes, iBitDepth;
-	while (Application.GetIndexedDisplayMode(idx++, &iXRes, &iYRes, &iBitDepth, Config.Graphics.Monitor))
-#ifdef _WIN32 // why only WIN32?
-		if (iBitDepth == 32)
-			if ((iXRes <= 1024 && iXRes >= 600 && iYRes >= 460) || Config.Graphics.ShowAllResolutions)
-#endif
-			{
-				StdStrBuf sGfxString = GetGfxResString(iXRes, iYRes);
-				if (!pFiller->FindEntry(sGfxString.getData()))
-					pFiller->AddEntry(sGfxString.getData(), iXRes + (uint32_t(iYRes) << 16));
-			}
+	iNewScale = val + minScale;
+	pScaleEdit->SetText(FormatString("%d", iNewScale).getData(), true);
 }
 
-bool C4StartupOptionsDlg::OnGfxResComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection)
+void C4StartupOptionsDlg::OnTestScaleBtn(C4GUI::Control *)
 {
-	// get new resolution from string
-	int iResX = (idNewSelection & 0xffff), iResY = (uint32_t(idNewSelection) & 0xffff0000) >> 16;
-	// different than current?
-	if (iResX == Config.Graphics.ResX && iResY == Config.Graphics.ResY) return true;
-	// try setting it
-	if (!TryNewResolution(iResX, iResY))
-	{
-		// didn't work or declined by user
-		return true; // do not change label, because dialog might hae been recreated!
-	}
-	// dialog has been recreated; so do not change the combo label
-	return true;
-}
+	const auto oldScaleInt = Config.Graphics.Scale;
+	const auto oldScale = Application.GetScale();
+	if (iNewScale == oldScaleInt) return;
 
-bool C4StartupOptionsDlg::TryNewResolution(int32_t iResX, int32_t iResY)
-{
-	int32_t iOldResX = Config.Graphics.ResX, iOldResY = Config.Graphics.ResY;
-	int32_t iOldFontSize = Config.General.RXFontSize;
-	C4GUI::Screen *pScreen = GetScreen();
-	// resolution change may imply font size change
-	int32_t iNewFontSize;
-	if (iResX < 700)
-		iNewFontSize = 12;
-	else if (iResX < 950)
-		iNewFontSize = 14; // default (at 800x600)
-	else
-		iNewFontSize = 16;
-	// call application to set it
-	if (!Application.SetResolution(iResX, iResY))
+	const auto oldResX = Config.Graphics.ResX;
+	const auto oldResY = Config.Graphics.ResY;
+
+	Config.Graphics.Scale = iNewScale;
+	const auto realResX = floorf(static_cast<float>(oldResX) * oldScale);
+	const auto realResY = floorf(static_cast<float>(oldResY) * oldScale);
+
+	Application.SetResolution(realResX, realResY);
+
+	// do it manually and temporarily here, beacuse RecreateDialog would delete this the second time which leads to a crash after this function returns
+	FadeOut(true);
+
+	int32_t iPage = pOptionsTabular->GetActiveSheetIndex();
+	std::unique_ptr<C4StartupOptionsDlg> pNewDlg{new C4StartupOptionsDlg};
+	pNewDlg->FadeIn(Game.pGUI);
+	pNewDlg->pOptionsTabular->SelectSheet(iPage, false);
+	pNewDlg->fCanGoBack = false;
+
+	ResChangeConfirmDlg *pConfirmDlg = new ResChangeConfirmDlg;
+
+	if (!GetScreen()->ShowModalDlg(pConfirmDlg, true))
 	{
-		StdCopyStrBuf strChRes(LoadResStr("IDS_MNU_SWITCHRESOLUTION"));
-		pScreen->ShowMessage(FormatString(LoadResStr("IDS_ERR_SWITCHRES"), lpDDraw->GetLastError()).getData(), strChRes.getData(), C4GUI::Ico_Clonk, nullptr);
-		return false;
-	}
-	// implied font change
-	if (iNewFontSize != iOldFontSize)
-		if (!Application.SetGameFont(Config.General.RXFontName, iNewFontSize))
-		{
-			// not changing font size is not fatal - just keep old size
-			iNewFontSize = iOldFontSize;
-		}
-	// since the resolution was changed, everything needs to be moved around a bit
-	RecreateDialog(false);
-	ResChangeConfirmDlg *pConfirmDlg = new ResChangeConfirmDlg();
-	if (!pScreen->ShowModalDlg(pConfirmDlg, true))
-	{
-		// abort: Restore screen, if this was not some program abort
+		Config.Graphics.Scale = oldScaleInt;
+
 		if (C4GUI::IsGUIValid())
 		{
-			if (Application.SetResolution(iOldResX, iOldResY))
-			{
-				if (iNewFontSize != iOldFontSize) Application.SetGameFont(Config.General.RXFontName, iOldFontSize);
-				RecreateDialog(false);
-			}
+			Application.SetResolution(realResX, realResY);
 		}
 		else
 		{
 			// make sure config is restored even if the program is closed during the confirmation dialog
-			Config.Graphics.ResX = iOldResX, Config.Graphics.ResY = iOldResY;
+			Config.Graphics.ResX = oldResX;
+			Config.Graphics.ResY = oldResY;
 		}
-		return false;
 	}
-	// resolution may be kept!
-	return true;
-}
 
-StdStrBuf C4StartupOptionsDlg::GetGfxResString(int32_t iResX, int32_t iResY)
-{
-	// Display in format like "640 x 480"
-	return FormatString("%d x %d", (int)iResX, (int)iResY);
-}
-
-void C4StartupOptionsDlg::OnFullscreenChange(C4GUI::Element *pCheckBox)
-{
-	DDrawCfg.Windowed = !static_cast<C4GUI::CheckBox *>(pCheckBox)->GetChecked();
-#ifndef USE_CONSOLE
-	if (pGL) pGL->fFullscreen = !DDrawCfg.Windowed;
-#endif
-	Application.SetFullScreen(!DDrawCfg.Windowed, false);
-#ifndef USE_CONSOLE
-	lpDDraw->InvalidateDeviceObjects();
-	lpDDraw->RestoreDeviceObjects();
-#endif
-}
-
-void C4StartupOptionsDlg::OnGfxAllResolutionsChange(C4GUI::Element *pCheckBox)
-{
-	Config.Graphics.ShowAllResolutions = static_cast<C4GUI::CheckBox *>(pCheckBox)->GetChecked();
+	RecreateDialog(false);
 }
 
 bool C4StartupOptionsDlg::SaveConfig(bool fForce, bool fKeepOpen)
@@ -1317,6 +1356,22 @@ bool C4StartupOptionsDlg::OnFontComboSelChange(C4GUI::ComboBox *pForCombo, int32
 	return true;
 }
 
+void C4StartupOptionsDlg::OnDisplayModeComboFill(C4GUI::ComboBox_FillCB *pFiller)
+{
+	for (const auto& mode : DisplayModes)
+	{
+		pFiller->AddEntry(LoadResStr(mode.caption), static_cast<int>(mode.mode));
+	}
+}
+
+bool C4StartupOptionsDlg::OnDisplayModeComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection)
+{
+	Config.Graphics.UseDisplayMode = static_cast<DisplayMode>(idNewSelection);
+	Application.SetDisplayMode(Config.Graphics.UseDisplayMode);
+	RecreateDialog(true);
+	return true;
+}
+
 void C4StartupOptionsDlg::RecreateDialog(bool fFade)
 {
 	// MUST fade for now, or calling function will fail because dialog is deleted immediately
@@ -1355,7 +1410,6 @@ void C4StartupOptionsDlg::SaveGfxTroubleshoot()
 	if (pCheckGfxPointFilter->GetChecked()) dwGfxCfg |= C4GFXCFG_POINT_FILTERING;
 	if (pCheckGfxNoAddBlit->GetChecked()) dwGfxCfg |= C4GFXCFG_NOADDITIVEBLTS;
 	if (pCheckGfxNoBoxFades->GetChecked()) dwGfxCfg |= C4GFXCFG_NOBOXFADES;
-	if (DDrawCfg.Windowed) dwGfxCfg |= C4GFXCFG_WINDOWED;
 	pEdtGfxTexIndent->Save2Config();
 	pEdtGfxBlitOff->Save2Config();
 	// set config values into this set

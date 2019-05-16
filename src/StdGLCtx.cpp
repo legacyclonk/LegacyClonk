@@ -59,24 +59,18 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
 	hDC = GetDC(hWindow);
 	if (!hDC) return !!pGL->Error("  gl: Error getting DC");
 
-	PIXELFORMATDESCRIPTOR &rPfd = pApp->GetPFD();
-	if (!pGL->iPixelFormat)
-	{
-		// pixel format
-		memset(&rPfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
-		rPfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-		rPfd.nVersion = 1;
-		rPfd.dwFlags = PFD_DOUBLEBUFFER |
-			PFD_SUPPORT_OPENGL |
-			PFD_DRAW_TO_WINDOW;
-		rPfd.iPixelType = PFD_TYPE_RGBA;
-		rPfd.cColorBits = 32;
-		rPfd.cDepthBits = 0;
-		rPfd.iLayerType = PFD_MAIN_PLANE;
-		pGL->iPixelFormat = ChoosePixelFormat(hDC, &rPfd);
-		if (!pGL->iPixelFormat) return !!pGL->Error("  gl: Error getting pixel format");
-	}
-	if (!SetPixelFormat(hDC, pGL->iPixelFormat, &rPfd)) pGL->Error("  gl: Error setting pixel format");
+	// pixel format
+	PIXELFORMATDESCRIPTOR pfd{};
+	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	pfd.nVersion = 1;
+	pfd.dwFlags = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cColorBits = 32;
+	pfd.cDepthBits = 0;
+	pfd.iLayerType = PFD_MAIN_PLANE;
+	const auto pixelFormat = ChoosePixelFormat(hDC, &pfd);
+	if (pixelFormat == 0) return !!pGL->Error("  gl: Error getting pixel format");
+	if (!SetPixelFormat(hDC, pixelFormat, &pfd)) pGL->Error("  gl: Error setting pixel format");
 
 	// create context
 	hrc = wglCreateContext(hDC); if (!hrc) return !!pGL->Error("  gl: Error creating gl context");
@@ -142,7 +136,8 @@ bool CStdGLCtx::UpdateSize()
 	if (!pWindow && !hWindow) return false;
 	// get size
 	RECT rt; if (!GetClientRect(pWindow ? pWindow->hWindow : hWindow, &rt)) return false;
-	int cx2 = rt.right - rt.left, cy2 = rt.bottom - rt.top;
+	const auto scale = pGL->pApp->GetScale();
+	int cx2 = ceilf(static_cast<float>(rt.right - rt.left) / scale), cy2 = ceilf(static_cast<float>(rt.bottom - rt.top) / scale);
 	// assign if different
 	if (cx != cx2 || cy != cy2)
 	{
@@ -294,9 +289,12 @@ bool CStdGLCtx::UpdateSize()
 	XGetGeometry(pWindow->dpy, pWindow->renderwnd, &winDummy, &x, &y,
 		&width, &height, &borderDummy, &depth);
 	// assign if different
-	if (cx != width || cy != height)
+	const auto scale = pGL->pApp->GetScale();
+	auto newWidth = ceilf(static_cast<float>(width) / scale);
+	auto newHeight = ceilf(static_cast<float>(height) / scale);
+	if (cx != newWidth || cy != newHeight)
 	{
-		cx = width; cy = height;
+		cx = newWidth; cy = newHeight;
 		if (pGL) pGL->UpdateClipper();
 	}
 	// success
@@ -411,7 +409,8 @@ bool CStdGLCtx::UpdateSize()
 	// get size
 	RECT rc;
 	pWindow->GetSize(&rc);
-	int width = rc.right - rc.left, height = rc.bottom - rc.top;
+	const auto scale = pGL->pApp->GetScale();
+	int width = ceilf(static_cast<float>(rc.right - rc.left) / scale), height = ceilf(static_cast<float>(rc.bottom - rc.top) / scale);
 	// assign if different
 	if (cx != width || cy != height)
 	{

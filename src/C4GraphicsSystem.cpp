@@ -520,6 +520,9 @@ void C4GraphicsSystem::SortViewportsByPlayerControl()
 
 void C4GraphicsSystem::MouseMove(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, class C4Viewport *pVP)
 {
+	const auto scale = Application.GetScale();
+	iX /= scale;
+	iY /= scale;
 	// pass on to GUI
 	// Special: Don't pass if dragging and button is not upped
 	if (Game.pGUI && Game.pGUI->IsActive() && !Game.MouseControl.IsDragging())

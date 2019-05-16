@@ -115,7 +115,6 @@ CStdApp::CStdApp() : Active(false), fQuitMsgReceived(false), dpy(nullptr), Priv(
 #ifdef HAVE_PTHREAD
 	MainThread(pthread_self()),
 #endif
-	fDspModeSet(false),
 	// 36 FPS
 	Delay(27777) {}
 
@@ -275,12 +274,6 @@ void CStdApp::Execute()
 	if (seconds != LastExecute.tv_sec)
 	{
 		pWindow->Sec1Timer();
-	}
-	// Hopefully, by now the focus has settled
-	if (Priv->pending_desktop) if (!--Priv->pending_desktop)
-	{
-		Priv->SwitchToDesktop(this, true, pWindow->wnd);
-		fDspModeSet = false;
 	}
 }
 
@@ -573,172 +566,6 @@ void CStdApp::HandleXMessage()
 	if (pWindow)
 		pWindow->HandleMessage(event);
 }
-
-bool CStdApp::FindDisplayMode(unsigned int iXRes, unsigned int iYRes,
-	unsigned int iMonitor)
-{
-	if (xf86vmode_major_version < 0) return false;
-	// Log the version of the VidMode extension
-	std::ostringstream log;
-	log << "  XF86VidModeExtension version is " << xf86vmode_major_version << "." << xf86vmode_minor_version;
-	Log(log.str().c_str());
-	// Change resolution
-	int mode_num;
-	XF86VidModeModeInfo **modes;
-	XF86VidModeGetAllModeLines(dpy, DefaultScreen(dpy), &mode_num, &modes);
-	// save desktop-resolution before switching modes
-	Priv->oldmode = *modes[0];
-	// look for mode with requested resolution
-	for (int i = 0; i < mode_num; i++)
-	{
-		if ((modes[i]->hdisplay == iXRes) && (modes[i]->vdisplay == iYRes))
-		{
-			if (!Priv->modefound || Priv->targetmode.hdisplay != iXRes || Priv->targetmode.vdisplay != iYRes) Priv->targetmode = *modes[i];
-			Priv->modefound = true;
-		}
-	}
-	XFree(modes);
-	return Priv->modefound;
-}
-
-bool CStdApp::GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *piYRes, int32_t *piBitDepth, uint32_t iMonitor)
-{
-	if (xf86vmode_major_version < 0) return false;
-	bool r = false;
-	int mode_num;
-	XF86VidModeModeInfo **modes;
-	XF86VidModeGetAllModeLines(dpy, DefaultScreen(dpy), &mode_num, &modes);
-	if (iIndex < mode_num)
-	{
-		*piXRes = modes[iIndex]->hdisplay;
-		*piYRes = modes[iIndex]->vdisplay;
-		*piBitDepth = 32;
-		r = true;
-	}
-	XFree(modes);
-	return r;
-}
-
-void CStdAppPrivate::SetEWMHFullscreen(CStdApp *pApp, bool fFullScreen, Window wnd)
-{
-	static Atom atoms[2];
-	static char *names[] = { "_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN" };
-	if (!atoms[0]) XInternAtoms(pApp->dpy, names, 2, false, atoms);
-	XEvent e;
-	e.xclient.type = ClientMessage;
-	e.xclient.window = wnd;
-	e.xclient.message_type = atoms[0];
-	e.xclient.format = 32;
-	if (fFullScreen)
-	{
-		e.xclient.data.l[0] = 1; // _NET_WM_STATE_ADD
-	}
-	else
-	{
-		e.xclient.data.l[0] = 0; // _NET_WM_STATE_REMOVE
-	}
-	e.xclient.data.l[1] = atoms[1];
-	e.xclient.data.l[2] = 0; // second property to alter
-	e.xclient.data.l[3] = 1; // source indication
-	e.xclient.data.l[4] = 0;
-	XSendEvent(pApp->dpy, DefaultRootWindow(pApp->dpy), false, SubstructureNotifyMask | SubstructureRedirectMask, &e);
-}
-
-bool CStdAppPrivate::SwitchToFullscreen(CStdApp *pApp, Window wnd)
-{
-	XF86VidModeModeInfo &mode = targetmode;
-	XResizeWindow(pApp->dpy, wnd, mode.hdisplay, mode.vdisplay);
-	XSizeHints *hints = XAllocSizeHints();
-	hints->flags = PMinSize;
-	hints->min_width = mode.hdisplay;
-	hints->min_height = mode.vdisplay;
-	hints->max_width = mode.hdisplay;
-	hints->max_height = mode.vdisplay;
-	XSetWMNormalHints(pApp->dpy, wnd, hints);
-	XFree(hints);
-	// Changing not necessary
-	if (!memcmp(&targetmode, &oldmode, sizeof(XF86VidModeModeInfo)))
-	{
-		// Set the window to fullscreen mode to get rid of window manager decorations
-		SetEWMHFullscreen(pApp, true, wnd);
-	}
-	else if (modefound)
-	{
-		XF86VidModeSwitchToMode(pApp->dpy, DefaultScreen(pApp->dpy), &mode);
-#ifdef _DEBUG
-		std::ostringstream log;
-		log << "  Switching to " << mode.hdisplay << "x" << mode.vdisplay
-			<< " ht: " << mode.htotal << " vt: " << mode.vtotal
-			<< " hss: " << mode.hsyncstart << " hse: " << mode.hsyncend
-			<< " vss: " << mode.vsyncstart << " vse: " << mode.vsyncend
-			<< " f: " << mode.flags << " dc: " << mode.dotclock
-			<< " hsk: " << mode.hskew;
-		Log(log.str().c_str());
-#endif
-		// Move the viewport on the virtual screen
-		Window bla; int wnd_x = 0; int wnd_y = 0;
-		XTranslateCoordinates(pApp->dpy, wnd, DefaultRootWindow(pApp->dpy), 0, 0, &wnd_x, &wnd_y, &bla);
-		XF86VidModeSetViewPort(pApp->dpy, DefaultScreen(pApp->dpy), wnd_x, wnd_y);
-	}
-	else
-	{
-		// The user specified a impossible resolution or the x server does not support the default
-		return false;
-	}
-	XGrabPointer(pApp->dpy, wnd, true, 0, GrabModeAsync, GrabModeAsync, wnd, None, CurrentTime);
-	return true;
-}
-
-void CStdAppPrivate::SwitchToDesktop(CStdApp *pApp, bool fMinimize, Window wnd)
-{
-	XUngrabPointer(pApp->dpy, CurrentTime);
-	// Minimize
-	if (wnd && fMinimize)
-	{
-		XEvent e;
-		e.xclient.type = ClientMessage;
-		e.xclient.window = wnd;
-		e.xclient.message_type = XInternAtom(pApp->dpy, "WM_CHANGE_STATE", true);
-		e.xclient.format = 32;
-		e.xclient.data.l[0] = IconicState;
-		XSendEvent(pApp->dpy, DefaultRootWindow(pApp->dpy), false, SubstructureRedirectMask | SubstructureNotifyMask, &e);
-	}
-	// Restore resolution
-	if (pApp->xf86vmode_major_version >= 0)
-	{
-		XF86VidModeModeInfo &mode = oldmode;
-		XF86VidModeSwitchToMode(pApp->dpy, DefaultScreen(pApp->dpy), &mode);
-#ifdef _DEBUG
-		std::ostringstream log;
-		log << "  Switching back to " << mode.hdisplay << "x" << mode.vdisplay
-			<< " ht: " << mode.htotal << " vt: " << mode.vtotal
-			<< " hss: " << mode.hsyncstart << " hse: " << mode.hsyncend
-			<< " vss: " << mode.vsyncstart << " vse: " << mode.vsyncend
-			<< " f: " << mode.flags << " dc: " << mode.dotclock
-			<< " hsk: " << mode.hskew;
-		Log(log.str().c_str());
-#endif
-		XF86VidModeSetViewPort(pApp->dpy, DefaultScreen(pApp->dpy), 0, 0);
-	}
-	SetEWMHFullscreen(pApp, false, wnd);
-}
-
-bool CStdApp::SetFullScreen(bool fFullscreen, bool fMinimize)
-{
-	Priv->pending_desktop = 0;
-	if (fFullscreen == fDspModeSet)
-		return true;
-	if (!fFullscreen && fMinimize) Priv->pending_desktop = Priv->PENDING_DESKTOP_DELAY;
-	else if (!fFullscreen)
-	{
-		Priv->SwitchToDesktop(this, fMinimize, pWindow->wnd);
-		fDspModeSet = false;
-	}
-	else return fDspModeSet = Priv->SwitchToFullscreen(this, pWindow->wnd);
-	return true;
-}
-
-bool CStdApp::SetOutputAdapter(unsigned int iMonitor) { return true; }
 
 // Copy the text to the clipboard or the primary selection
 void CStdApp::Copy(const StdStrBuf &text, bool fClipboard)

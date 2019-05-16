@@ -37,6 +37,9 @@ CStdWindow::~CStdWindow()
 // Only set title.
 // FIXME: Read from application bundle on the Mac.
 
+static size_t resolutionX;
+static size_t resolutionY;
+
 CStdWindow *CStdWindow::Init(CStdApp *pApp)
 {
 	return Init(pApp, STD_PRODUCT);
@@ -46,6 +49,10 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 {
 	Active = true;
 	SetTitle(Title);
+
+	const auto info = SDL_GetVideoInfo();
+	resolutionX = info->current_w;
+	resolutionY = info->current_h;
 	return this;
 }
 
@@ -63,15 +70,10 @@ bool CStdWindow::GetSize(RECT *pRect)
 	return true;
 }
 
-bool CStdWindow::SetFullScreen(bool fFullscreen, int BPP)
-{
-	this->BPP = BPP; this->fFullscreen = fFullscreen;
-}
-
 void CStdWindow::SetSize(unsigned int X, unsigned int Y)
 {
 	width = X, height = Y;
-	SDL_SetVideoMode(X, Y, BPP, SDL_OPENGL | (fFullscreen ? SDL_FULLSCREEN : 0));
+	SDL_SetVideoMode(X, Y, 0, SDL_OPENGL | SDL_RESIZABLE);
 	SDL_ShowCursor(SDL_DISABLE);
 }
 
@@ -86,4 +88,9 @@ void CStdWindow::FlashWindow()
 	void requestUserAttention();
 	requestUserAttention();
 #endif
+}
+
+void CStdWindow::SetDisplayMode(DisplayMode mode)
+{
+	SDL_SetVideoMode(resolutionX, resolutionY, 0, SDL_OPENGL | (mode == DisplayMode::Fullscreen ? SDL_FULLSCREEN : SDL_RESIZABLE));
 }

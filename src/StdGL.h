@@ -85,12 +85,9 @@ public:
 	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr);
 
 protected:
-	int iPixelFormat; // used pixel format
-
 	GLenum sfcFmt; // texture surface format
 	CStdGLCtx MainCtx; // main GL context
-	CStdGLCtx *pCurrCtx; // current context (owned if fullscreen)
-	bool fFullscreen; // fullscreen mode?
+	CStdGLCtx *pCurrCtx; // current context
 	// continously numbered shaders for ATI cards
 	unsigned int shader;
 	// shaders for the ARB extension
@@ -101,8 +98,6 @@ public:
 	void Clear();
 	void Default();
 	virtual int GetEngine() { return 1; } // get indexed engine
-	void TaskOut(); // user taskswitched the app away
-	void TaskIn(); // user tasked back
 	virtual bool OnResolutionChanged(); // reinit OpenGL and window for new resolution
 
 	// Clipper
@@ -145,9 +140,8 @@ public:
 #endif
 
 protected:
-	bool CreatePrimarySurfaces(bool Fullscreen, unsigned int iMonitor);
+	bool CreatePrimarySurfaces();
 	bool CreateDirectDraw();
-	virtual bool SetOutputAdapter(unsigned int iMonitor);
 
 #ifdef USE_X11
 	// Size of gamma ramps

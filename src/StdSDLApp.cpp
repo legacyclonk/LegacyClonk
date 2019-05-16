@@ -34,7 +34,7 @@
 /* CStdApp */
 
 CStdApp::CStdApp() : Active(false), fQuitMsgReceived(false),
-	Location(""), DoNotDelay(false), MainThread(pthread_self()), fDspModeSet(false),
+	Location(""), DoNotDelay(false), MainThread(pthread_self()),
 	// 36 FPS
 	Delay(27777) {}
 
@@ -232,73 +232,6 @@ void CStdApp::HandleSDLEvent(SDL_Event &event)
 	if (pWindow)
 		pWindow->HandleMessage(event);
 }
-
-// The three following functions, together, perform a mode switch.
-// GetIndexedDisplayMode is used to enumerate them, FindDisplayMode
-// remembers a mode (if possible) and SetFullScreen switches to the
-// last found mode.
-// At least that's how I understand it. It certainly doesn't make sense.
-
-bool CStdApp::GetIndexedDisplayMode(int32_t iIndex, int32_t *piXRes, int32_t *piYRes, int32_t *piBitDepth, uint32_t iMonitor)
-{
-	// No support for multiple monitors.
-	if (iMonitor != 0)
-		return false;
-
-	static SDL_Rect **modes = 0;
-	static unsigned modeCount = 0;
-	if (!modes)
-	{
-		modes = SDL_ListModes(nullptr, SDL_OPENGL | SDL_FULLSCREEN);
-		// -1 means "all modes allowed". Clonk is not prepared
-		// for this; should probably give some random resolutions
-		// then.
-		assert(reinterpret_cast<intptr_t>(modes) != -1);
-		if (!modes)
-			modeCount = 0;
-		else
-			// Count available modes.
-			for (SDL_Rect **iter = modes; *iter; ++iter)
-				++modeCount;
-	}
-
-	if (iIndex >= modeCount)
-		return false;
-
-	*piXRes = modes[iIndex]->w;
-	*piYRes = modes[iIndex]->h;
-	*piBitDepth = SDL_GetVideoInfo()->vfmt->BitsPerPixel;
-	return true;
-}
-
-bool CStdApp::FindDisplayMode(unsigned int iXRes, unsigned int iYRes,
-	unsigned int iMonitor)
-{
-	// Logic: Does this assume modes that work fullscreen also work
-	// in windowed mode?
-	// No way to tell if this mode will be for fullscreen mode or not.
-
-	if (!SDL_VideoModeOK(iXRes, iYRes, 32, SDL_OPENGL))
-		return false;
-	this->nextWidth = iXRes;
-	this->nextHeight = iYRes;
-	this->nextBPP = 32;
-	return true;
-}
-
-bool CStdApp::SetFullScreen(bool fFullscreen, bool fMinimize)
-{
-	// Switch to previously found display mode.
-	fDspModeSet = fFullscreen;
-	pWindow->SetFullScreen(fFullscreen, this->nextBPP);
-	pWindow->SetSize(this->nextWidth, this->nextHeight);
-	return true;
-}
-
-// Multi-monitor support not implemented.
-// As far as I can tell, SDL doesn't support it to begin with.
-
-bool CStdApp::SetOutputAdapter(unsigned int iMonitor) { return true; }
 
 // Clipboard not implemented.
 

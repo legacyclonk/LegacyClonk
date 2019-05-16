@@ -331,3 +331,25 @@ void CStdWindow::HandleMessage(XEvent &event)
 	}
 }
 #endif
+
+void CStdWindow::SetDisplayMode(DisplayMode mode)
+{
+#ifdef USE_X11
+	const auto fullscreen = mode == DisplayMode::Fullscreen;
+
+	static Atom atoms[4];
+	static char* names[] = {"_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN", "_NET_WM_MAXIMIZED_VERT", "_NET_WM_MAXIMIZED_HORZ"};
+	if (!atoms[0]) XInternAtoms(dpy, names, 4, false, atoms);
+	XEvent e;
+	e.xclient.type = ClientMessage;
+	e.xclient.window = wnd;
+	e.xclient.message_type = atoms[0];
+	e.xclient.format = 32;
+	e.xclient.data.l[0] = fullscreen ? 1 : 0; // _NET_WM_STATE_ADD : _NET_WM_STATE_DELETE
+	e.xclient.data.l[1] = atoms[1];
+	e.xclient.data.l[2] = 0; // second property to alter
+	e.xclient.data.l[3] = 1; // source indication
+	e.xclient.data.l[4] = 0;
+	XSendEvent(dpy, DefaultRootWindow(dpy), false, SubstructureNotifyMask | SubstructureRedirectMask, &e);
+#endif
+}
