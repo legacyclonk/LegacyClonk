@@ -96,13 +96,13 @@ private:
 	class BoolConfig : public C4GUI::CheckBox
 	{
 	private:
-		bool *pbVal, fInvert; bool *piRestartChangeCfgVal;
+		bool *pbVal, fInvert; bool *pbRestartChangeCfgVal;
 
 	protected:
 		void OnCheckChange(C4GUI::Element *pCheckBox);
 
 	public:
-		BoolConfig(const C4Rect &rcBounds, const char *szName, bool *pbVal, bool fInvert = false, bool *piRestartChangeCfgVal = nullptr);
+		BoolConfig(const C4Rect &rcBounds, const char *szName, bool *pbVal, bool fInvert = false, bool *pbRestartChangeCfgVal = nullptr);
 	};
 	// editbox below descriptive label sharing one window for common tooltip
 	class EditConfig : public C4GUI::LabeledEdit
@@ -146,6 +146,7 @@ private:
 
 	C4GUI::GroupBox *pGroupTrouble;
 	C4GUI::CheckBox *pCheckGfxNoAlphaAdd, *pCheckGfxPointFilter, *pCheckGfxNoAddBlit, *pCheckGfxNoBoxFades;
+	BoolConfig *pCheckGfxDisableGamma;
 	int32_t iGfxTexIndent, iGfxBlitOff; EditConfig *pEdtGfxTexIndent, *pEdtGfxBlitOff;
 	C4GUI::ScrollBar *pEffectLevelSlider;
 

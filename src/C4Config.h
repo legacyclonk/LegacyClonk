@@ -191,6 +191,7 @@ public:
 	bool HideMsgPlrNoTakeOver;
 	bool HideMsgNoOfficialLeague;
 	bool HideMsgIRCDangerous;
+	bool HideMsgGammaChange;
 	bool AlphabeticalSorting; // if set, Folder.txt-sorting is ignored in scenario selection
 	int32_t LastPortraitFolderIdx;
 	void CompileFunc(StdCompiler *pComp);

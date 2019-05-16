@@ -593,8 +593,8 @@ bool C4StartupOptionsDlg::NetworkServerAddressConfig::GetControlSize(int *piWdt,
 
 // C4StartupOptionsDlg::BoolConfig
 
-C4StartupOptionsDlg::BoolConfig::BoolConfig(const C4Rect &rcBounds, const char *szName, bool *pbVal, bool fInvert, bool *piRestartChangeCfgVal)
-	: C4GUI::CheckBox(rcBounds, szName, fInvert != *pbVal), pbVal(pbVal), fInvert(fInvert), piRestartChangeCfgVal(piRestartChangeCfgVal)
+C4StartupOptionsDlg::BoolConfig::BoolConfig(const C4Rect &rcBounds, const char *szName, bool *pbVal, bool fInvert, bool *pbRestartChangeCfgVal)
+	: C4GUI::CheckBox(rcBounds, szName, fInvert != *pbVal), pbVal(pbVal), fInvert(fInvert), pbRestartChangeCfgVal(pbRestartChangeCfgVal)
 {
 	SetOnChecked(new C4GUI::CallbackHandler<BoolConfig>(this, &BoolConfig::OnCheckChange));
 }
@@ -602,8 +602,8 @@ C4StartupOptionsDlg::BoolConfig::BoolConfig(const C4Rect &rcBounds, const char *
 void C4StartupOptionsDlg::BoolConfig::OnCheckChange(C4GUI::Element *pCheckBox)
 {
 	if (pbVal) *pbVal = (GetChecked() != fInvert);
-	if (piRestartChangeCfgVal) GetScreen()->ShowMessage(LoadResStr("IDS_MSG_RESTARTCHANGECFG"), GetText(),
-		C4GUI::Ico_Notify, piRestartChangeCfgVal);
+	if (pbRestartChangeCfgVal) GetScreen()->ShowMessage(LoadResStr("IDS_MSG_RESTARTCHANGECFG"), GetText(),
+		C4GUI::Ico_Notify, pbRestartChangeCfgVal);
 }
 
 // C4StartupOptionsDlg::EditConfig
@@ -898,7 +898,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pSheetGraphics->AddElement(pGroupTrouble);
 	C4GUI::ComponentAligner caGroupTrouble(pGroupTrouble->GetClientRect(), iIndentX1, iIndentY2, true);
 	C4GUI::BaseCallbackHandler *pGfxGroubleCheckCB = new C4GUI::CallbackHandler<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnGfxTroubleCheck);
-	int32_t iNumGfxOptions = 5, iOpt = 0;
+	int32_t iNumGfxOptions = 6, iOpt = 0;
 	// no alpha adding
 	pCheckGfxNoAlphaAdd = new C4GUI::CheckBox(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_NOALPHAADD"), false);
 	pCheckGfxNoAlphaAdd->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
@@ -923,14 +923,20 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheckGfxNoBoxFades->SetToolTip(LoadResStr("IDS_MSG_NOCLRFADE_DESC"));
 	pCheckGfxNoBoxFades->SetOnChecked(pGfxGroubleCheckCB);
 	pGroupTrouble->AddElement(pCheckGfxNoBoxFades);
+	// enable gamma
+	pCheckGfxDisableGamma = new BoolConfig(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_DISABLEGAMMA"), &Config.Graphics.DisableGamma, false, &Config.Startup.HideMsgGammaChange);
+	pCheckGfxDisableGamma->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
+	pCheckGfxDisableGamma->SetToolTip(LoadResStr("IDS_MSG_DISABLEGAMMA_DESC"));
+	pGroupTrouble->AddElement(pCheckGfxDisableGamma);
 	// texture indent
-	pEdtGfxTexIndent = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 0, 2, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_TEXINDENT"), nullptr, &iGfxTexIndent, false);
+	pEdtGfxTexIndent = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 0, 3, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_TEXINDENT"), nullptr, &iGfxTexIndent, false);
 	pEdtGfxTexIndent->SetToolTip(LoadResStr("IDS_MSG_TEXINDENT_DESC"));
 	pGroupTrouble->AddElement(pEdtGfxTexIndent);
 	// blit offset
-	pEdtGfxBlitOff = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 1, 2, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_BLITOFFSET"), nullptr, &iGfxBlitOff, false);
+	pEdtGfxBlitOff = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 1, 3, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_BLITOFFSET"), nullptr, &iGfxBlitOff, false);
 	pEdtGfxBlitOff->SetToolTip(LoadResStr("IDS_MSG_BLITOFFSET_DESC"));
 	pGroupTrouble->AddElement(pEdtGfxBlitOff);
+
 	// load values of currently selected engine for troubleshooting
 	LoadGfxTroubleshoot();
 	// --subgroup options
