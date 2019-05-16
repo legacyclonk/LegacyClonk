@@ -603,16 +603,18 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 	// back surface must be present
 	if (!Application.DDraw->lpBack) return false;
 
+	const auto scale = Application.GetScale();
+
 	// save landscape
 	if (fSaveAll)
 	{
 		// get viewport to draw in
 		C4Viewport *pVP = GetFirstViewport(); if (!pVP) return false;
 		// create image large enough to hold the landcape
-		int32_t lWdt = GBackWdt, lHgt = GBackHgt;
+		int32_t lWdt = ceilf(static_cast<float>(GBackWdt) * scale), lHgt = ceilf(static_cast<float>(GBackHgt) * scale);
 		StdBitmap bmp(lWdt, lHgt, false);
 		// get backbuffer size
-		int32_t bkWdt = Config.Graphics.ResX, bkHgt = Config.Graphics.ResY;
+		int32_t bkWdt = ceilf(static_cast<float>(Config.Graphics.ResX) * scale), bkHgt = ceilf(static_cast<float>(Config.Graphics.ResY) * scale);
 		if (!bkWdt || !bkHgt) return false;
 		// facet for blitting
 		C4FacetEx bkFct;
@@ -624,14 +626,14 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		// temporarily change viewport player
 		int32_t iVpPlr = pVP->Player; pVP->Player = NO_OWNER;
 		// blit all tiles needed
-		for (int32_t iY = 0; iY < lHgt; iY += bkHgt) for (int32_t iX = 0; iX < lWdt; iX += bkWdt)
+		for (int32_t iY = 0, iRealY = 0; iY < lHgt; iY += Config.Graphics.ResY, iRealY += bkHgt) for (int32_t iX = 0, iRealX = 0; iX < lWdt; iX += Config.Graphics.ResX, iRealX += bkWdt)
 		{
 			// get max width/height
 			int32_t bkWdt2 = bkWdt, bkHgt2 = bkHgt;
-			if (iX + bkWdt2 > lWdt) bkWdt2 -= iX + bkWdt2 - lWdt;
-			if (iY + bkHgt2 > lHgt) bkHgt2 -= iY + bkHgt2 - lHgt;
+			if (iRealX + bkWdt2 > lWdt) bkWdt2 -= iRealX + bkWdt2 - lWdt;
+			if (iRealY + bkHgt2 > lHgt) bkHgt2 -= iRealY + bkHgt2 - lHgt;
 			// update facet
-			bkFct.Set(Application.DDraw->lpBack, 0, 0, bkWdt2, bkHgt2, iX, iY);
+			bkFct.Set(Application.DDraw->lpBack, 0, 0, ceilf(static_cast<float>(bkWdt2)) / scale, ceilf(static_cast<float>(bkHgt2) / scale), iX, iY);
 			// draw there
 			pVP->Draw(bkFct, false);
 			// render
@@ -642,7 +644,7 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 				// transfer each pixel - slooow...
 				for (int32_t iY2 = 0; iY2 < bkHgt2; ++iY2)
 					for (int32_t iX2 = 0; iX2 < bkWdt2; ++iX2)
-						bmp.SetPixel24(iX + iX2, iY + iY2, Application.DDraw->ApplyGammaTo(Application.DDraw->lpBack->GetPixDw(iX2, iY2, false)));
+						bmp.SetPixel24(iRealX + iX2, iRealY + iY2, Application.DDraw->ApplyGammaTo(Application.DDraw->lpBack->GetPixDw(iX2, iY2, false, scale)));
 				// done; unlock
 				Application.DDraw->lpBack->Unlock();
 			}
@@ -665,7 +667,7 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		return true;
 	}
 	// Save primary surface
-	return Application.DDraw->lpBack->SavePNG(szFilename, false, true, false);
+	return Application.DDraw->lpBack->SavePNG(szFilename, false, true, false, scale);
 }
 
 void C4GraphicsSystem::DeactivateDebugOutput()

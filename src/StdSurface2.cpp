@@ -412,13 +412,16 @@ bool CSurface::Read(CStdStream &hGroup, bool fOwnPal)
 	return true;
 }
 
-bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly)
+bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly, float scale)
 {
 	// Lock - WARNING - maybe locking primary surface here...
 	if (!Lock()) return false;
 
+	int realWdt = ceilf(static_cast<float>(Wdt) * scale);
+	int realHgt = ceilf(static_cast<float>(Hgt) * scale);
+	
 	// Create bitmap
-	StdBitmap bmp(Wdt, Hgt, fSaveAlpha);
+	StdBitmap bmp(realWdt, realHgt, fSaveAlpha);
 
 	// reset overlay if desired
 	CSurface *pMainSfcBackup;
@@ -428,17 +431,17 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 	if (fPrimary && pGL)
 	{
 		// Take shortcut. FIXME: Check Endian
-		for (int y = 0; y < Hgt; ++y)
-			glReadPixels(0, Hgt - y, Wdt, 1, fSaveAlpha ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, bmp.GetPixelAddr(0, y));
+		for (int y = 0; y < realHgt; ++y)
+			glReadPixels(0, realHgt - y, realWdt, 1, fSaveAlpha ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, bmp.GetPixelAddr(0, y));
 	}
 	else
 #endif
 	{
 		// write pixel values
-		for (int y = 0; y < Hgt; ++y)
-			for (int x = 0; x < Wdt; ++x)
+		for (int y = 0; y < realHgt; ++y)
+			for (int x = 0; x < realWdt; ++x)
 			{
-				uint32_t dwClr = GetPixDw(x, y, false);
+				uint32_t dwClr = GetPixDw(x, y, false, scale);
 				if (fApplyGamma) dwClr = lpDDraw->Gamma.ApplyTo(dwClr);
 				bmp.SetPixel(x, y, dwClr);
 			}
@@ -453,7 +456,7 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 	// Save bitmap to PNG file
 	try
 	{
-		CPNGFile(szFilename, Wdt, Hgt, fSaveAlpha).Encode(bmp.GetBytes());
+		CPNGFile(szFilename, realWdt, realHgt, fSaveAlpha).Encode(bmp.GetBytes());
 	}
 	catch (const std::runtime_error &)
 	{
@@ -585,7 +588,7 @@ bool CSurface::SetPix(int iX, int iY, uint8_t byCol)
 	return SetPixDw(iX, iY, lpDDrawPal->GetClr(byCol));
 }
 
-uint32_t CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
+uint32_t CSurface::GetPixDw(int iX, int iY, bool fApplyModulation, float scale)
 {
 	uint8_t *pBuf; int iPitch;
 	// backup pos
@@ -597,14 +600,16 @@ uint32_t CSurface::GetPixDw(int iX, int iY, bool fApplyModulation)
 		// OpenGL?
 		if (pGL)
 		{
+			int hgt = ceilf(static_cast<float>(Hgt) * scale);
 			if (!PrimarySurfaceLockBits)
 			{
-				int wdt = ((Wdt + 3) / 4) * 4; // round up to the next multiple of 4
-				PrimarySurfaceLockBits = new unsigned char[wdt * Hgt * 3];
-				glReadPixels(0, 0, Wdt, Hgt, GL_BGR, GL_UNSIGNED_BYTE, PrimarySurfaceLockBits);
-				PrimarySurfaceLockPitch = Wdt * 3;
+				int wdt = ceilf(static_cast<float>(Wdt) * scale);
+				wdt = ((wdt + 3) / 4) * 4; // round up to the next multiple of 4
+				PrimarySurfaceLockBits = new unsigned char[wdt * hgt * 3];
+				glReadPixels(0, 0, wdt, hgt, GL_BGR, GL_UNSIGNED_BYTE, PrimarySurfaceLockBits);
+				PrimarySurfaceLockPitch = wdt * 3;
 			}
-			return *(uint32_t *)(PrimarySurfaceLockBits + (Hgt - iY - 1) * PrimarySurfaceLockPitch + iX * 3);
+			return *(uint32_t *)(PrimarySurfaceLockBits + (hgt - iY - 1) * PrimarySurfaceLockPitch + iX * 3);
 		}
 #endif
 	}

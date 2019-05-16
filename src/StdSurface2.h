@@ -166,7 +166,7 @@ public:
 	bool GetTexAt(CTexRef **ppTexRef, int &rX, int &rY); // get texture and adjust x/y
 	bool GetLockTexAt(CTexRef **ppTexRef, int &rX, int &rY); // get texture; ensure it's locked and adjust x/y
 	bool SetPix(int iX, int iY, uint8_t byCol); // set 8bit-px
-	uint32_t GetPixDw(int iX, int iY, bool fApplyModulation); // get 32bit-px
+	uint32_t GetPixDw(int iX, int iY, bool fApplyModulation, float scale = 1.0); // get 32bit-px
 	bool IsPixTransparent(int iX, int iY); // is pixel's alpha value 0xff?
 	bool SetPixDw(int iX, int iY, uint32_t dwCol); // set pix in surface only
 	bool BltPix(int iX, int iY, CSurface *sfcSource, int iSrcX, int iSrcY, bool fTransparency); // blit pixel from source to this surface (assumes clipped coordinates!)
@@ -179,7 +179,7 @@ public:
 	void Clip(int iX, int iY, int iX2, int iY2);
 	void NoClip();
 	bool Read(class CStdStream &hGroup, bool fOwnPal = false);
-	bool SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly);
+	bool SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly, float scale = 1.0f);
 	bool Wipe(); // empty to transparent
 	bool GetSurfaceSize(int &irX, int &irY); // get surface size
 	void SetClr(uint32_t toClr) { ClrByOwnerClr = toClr ? toClr : 0xff; }
