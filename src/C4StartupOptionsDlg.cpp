@@ -924,7 +924,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheckGfxNoBoxFades->SetOnChecked(pGfxGroubleCheckCB);
 	pGroupTrouble->AddElement(pCheckGfxNoBoxFades);
 	// enable gamma
-	pCheckGfxDisableGamma = new BoolConfig(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_DISABLEGAMMA"), &Config.Graphics.DisableGamma, false, &Config.Startup.HideMsgGammaChange);
+	pCheckGfxDisableGamma = new BoolConfig(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_DISABLEGAMMA"), &Config.Graphics.DisableGamma);
 	pCheckGfxDisableGamma->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pCheckGfxDisableGamma->SetToolTip(LoadResStr("IDS_MSG_DISABLEGAMMA_DESC"));
 	pGroupTrouble->AddElement(pCheckGfxDisableGamma);
