@@ -115,13 +115,37 @@ void C4GoalDisplay::SetGoals(const C4IDList &rAllGoals, const C4IDList &rFulfill
 
 bool C4GameOverDlg::is_shown = false;
 
-C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 1280) ? (C4GUI::GetScreenWdt() - 10) : std::min<int32_t>(C4GUI::GetScreenWdt() - 150, 1280),
-	(C4GUI::GetScreenHgt() < 720) ? (C4GUI::GetScreenHgt() - 10) : std::min<int32_t>(C4GUI::GetScreenHgt() - 150, 720),
+C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (C4GUI::GetScreenWdt() - 10) : std::min<int32_t>(C4GUI::GetScreenWdt() - 150, 800),
+	(C4GUI::GetScreenHgt() < 600) ? (C4GUI::GetScreenHgt() - 10) : std::min<int32_t>(C4GUI::GetScreenHgt() - 150, 600),
 	LoadResStr("IDS_TEXT_EVALUATION"),
 	false), pNetResultLabel(nullptr), fIsNetDone(false)
 {
 	is_shown = true; // assume dlg will be shown, soon
+
+	pBtnRestart = nullptr;
+	pBtnNextMission = nullptr;
+
+	bool hideRestart = false;
+	size_t buttonCount = 2;
+	if (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2))
+	{
+		++buttonCount;
+		if (Game.NextMission)
+		{
+			if (C4GUI::GetScreenWdt() < 1280)
+			{
+				hideRestart = true;
+			}
+			else
+			{
+				++buttonCount;
+			}
+		}
+		SetBounds(C4Rect(0, 0, (C4GUI::GetScreenWdt() < 1280) ? (C4GUI::GetScreenWdt() - 10) : std::min<int32_t>(C4GUI::GetScreenWdt() - 150, 1280), (C4GUI::GetScreenHgt() < 720) ? (C4GUI::GetScreenHgt() - 10) : std::min<int32_t>(C4GUI::GetScreenHgt() - 150, 720)));
+	}
+
 	UpdateOwnPos();
+
 	// indents / sizes
 	int32_t iDefBtnHeight = 32;
 	int32_t iIndentX1 = 10;
@@ -208,26 +232,6 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 1280) ? 
 		AddElement(ppPlayerLists[i]);
 	}
 
-	pBtnRestart = nullptr;
-	pBtnNextMission = nullptr;
-
-	bool hideRestart = false;
-	size_t buttonCount = 2;
-	if (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2))
-	{
-		++buttonCount;
-		if (Game.NextMission)
-		{
-			if (C4GUI::GetScreenWdt() < 1280)
-			{
-				hideRestart = true;
-			}
-			else
-			{
-				++buttonCount;
-			}
-		}
-	}
 	// add buttons
 	pBtnExit = new C4GUI::CallbackButton<C4GameOverDlg>(LoadResStr("IDS_BTN_ENDROUND"), caBottom.GetGridCell(0, buttonCount, 0, 1, iBottomButtonSize, -1, true), &C4GameOverDlg::OnExitBtn);
 	pBtnExit->SetToolTip(LoadResStr("IDS_DESC_ENDTHEROUND"));
