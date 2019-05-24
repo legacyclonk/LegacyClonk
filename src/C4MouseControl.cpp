@@ -183,8 +183,9 @@ void C4MouseControl::UpdateClip()
 	C4Viewport *pVP = Game.GraphicsSystem.GetViewport(Player);
 	if (!pVP) { ClipCursor(nullptr); return; }
 	// adjust size by viewport size
+	const auto scale = Application.GetScale();
 	RECT vpRct;
-	vpRct.left = pVP->OutX; vpRct.top = pVP->OutY; vpRct.right = pVP->OutX + pVP->ViewWdt; vpRct.bottom = pVP->OutY + pVP->ViewHgt;
+	vpRct.left = floorf(pVP->OutX * scale); vpRct.top = floorf(pVP->OutY * scale); vpRct.right = ceilf((pVP->OutX + pVP->ViewWdt) * scale); vpRct.bottom = ceilf((pVP->OutY + pVP->ViewHgt) * scale);
 	// adjust by window pos
 	RECT rtWindow;
 	if (GetWindowRect(FullScreen.hWindow, &rtWindow))
