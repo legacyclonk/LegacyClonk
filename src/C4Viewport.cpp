@@ -72,6 +72,8 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	if (!(cvp = Game.GraphicsSystem.GetViewport(hwnd)))
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 
+	const auto scale = Application.GetScale();
+
 	// Process message
 	switch (uMsg)
 	{
@@ -112,7 +114,7 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		break;
 
 	case WM_USER_DROPDEF:
-		Game.DropDef(lParam, cvp->ViewX + LOWORD(wParam), cvp->ViewY + HIWORD(wParam));
+		Game.DropDef(lParam, cvp->ViewX + LOWORD(wParam) / scale, cvp->ViewY + HIWORD(wParam) / scale);
 		break;
 
 	case WM_SIZE:
@@ -181,7 +183,7 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 		case WM_LBUTTONDOWN:
 			// movement update needed before, so target is always up-to-date
-			Console.EditCursor.Move(cvp->ViewX + LOWORD(lParam), cvp->ViewY + HIWORD(lParam), wParam);
+			Console.EditCursor.Move(cvp->ViewX + LOWORD(lParam) / scale, cvp->ViewY + HIWORD(lParam) / scale, wParam);
 			Console.EditCursor.LeftButtonDown(wParam & MK_CONTROL); break;
 
 		case WM_LBUTTONUP: Console.EditCursor.LeftButtonUp(); break;
@@ -190,7 +192,7 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		case WM_RBUTTONUP: Console.EditCursor.RightButtonUp(); break;
 
-		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp->ViewX + LOWORD(lParam), cvp->ViewY + HIWORD(lParam), wParam); break;
+		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp->ViewX + LOWORD(lParam) / scale, cvp->ViewY + HIWORD(lParam) / scale, wParam); break;
 		}
 	}
 
@@ -199,12 +201,14 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 CStdWindow *C4ViewportWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool)
 {
+	const auto scale = Application.GetScale();
+
 	Active = true;
 	// Create window
 	hWindow = CreateWindowEx(
 		WS_EX_ACCEPTFILES,
 		C4ViewportClassName, Title, C4ViewportWindowStyle,
-		CW_USEDEFAULT, CW_USEDEFAULT, 400, 250,
+		CW_USEDEFAULT, CW_USEDEFAULT, ceilf(400 * scale), ceilf(250 * scale),
 		pParent->hWindow, nullptr, pApp->hInstance, nullptr);
 	return hWindow ? this : nullptr;
 }
@@ -285,7 +289,8 @@ static GtkTargetEntry drag_drop_entries[] =
 // GTK+ Viewport window implementation
 GtkWidget *C4ViewportWindow::InitGUI()
 {
-	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
+	const auto scale = Application.GetScale();
+	gtk_window_set_default_size(GTK_WINDOW(window), ceilf(640 * scale), ceilf(480 * scale));
 
 	// Cannot just use ScrolledWindow because this would just move
 	// the GdkWindow of the DrawingArea.
@@ -402,6 +407,8 @@ bool C4Viewport::ViewPositionByScrollBars()
 
 void C4ViewportWindow::OnDragDataReceivedStatic(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *data, guint info, guint time, gpointer user_data)
 {
+	const auto scale = Application.GetScale();
+
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
 	gchar **uris = gtk_selection_data_get_uris(data);
@@ -412,7 +419,7 @@ void C4ViewportWindow::OnDragDataReceivedStatic(GtkWidget *widget, GdkDragContex
 		gchar *file = g_filename_from_uri(*uri, nullptr, nullptr);
 		if (!file) continue;
 
-		Game.DropFile(file, window->cvp->ViewX + x, window->cvp->ViewY + y);
+		Game.DropFile(file, window->cvp->ViewX + x / scale, window->cvp->ViewY + y / scale);
 		g_free(file);
 	}
 
@@ -569,7 +576,9 @@ gboolean C4ViewportWindow::OnMotionNotifyStatic(GtkWidget *widget, GdkEventMotio
 	}
 	else
 	{
-		Console.EditCursor.Move(window->cvp->ViewX + (int32_t)event->x, window->cvp->ViewY + (int32_t)event->y, event->state);
+		const auto scale = Application.GetScale();
+
+		Console.EditCursor.Move(window->cvp->ViewX + (int32_t)event->x / scale, window->cvp->ViewY + (int32_t)event->y / scale, event->state);
 	}
 
 	return TRUE;
@@ -733,7 +742,9 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 		}
 		else
 		{
-			Console.EditCursor.Move(cvp->ViewX + e.xbutton.x, cvp->ViewY + e.xbutton.y, e.xbutton.state);
+			const auto scale = Application.GetScale();
+
+			Console.EditCursor.Move(cvp->ViewX + e.xbutton.x / scale, cvp->ViewY + e.xbutton.y / scale, e.xbutton.state);
 		}
 		break;
 	case ConfigureNotify:
@@ -766,7 +777,8 @@ bool C4Viewport::UpdateOutputSize()
 	if (!pWindow->GetSize(&rect)) return false;
 #endif
 	OutX = rect.left; OutY = rect.top;
-	ViewWdt = rect.right - rect.left; ViewHgt = rect.bottom - rect.top;
+	const auto scale = Application.GetScale();
+	ViewWdt = ceilf((rect.right - rect.left) / scale); ViewHgt = ceilf((rect.bottom - rect.top) / scale);
 	// Scroll bars
 	ScrollBarsByViewPosition();
 	// Reset menus
