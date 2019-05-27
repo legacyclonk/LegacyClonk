@@ -163,6 +163,7 @@ public:
 	void ClearLog();
 
 	friend class C4Sec1TimerCallback<MainDlg>;
+	friend class ::C4Network2ResDlg;
 };
 
 // helper

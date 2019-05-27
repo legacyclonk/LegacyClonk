@@ -276,6 +276,8 @@ MainDlg::MainDlg(bool fHost)
 	{
 		AddElement(checkReady);
 		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READY"));
+		checkReady->SetEnabled(false);
+		pResList->Activate();
 	}
 	// set initial focus
 	SetFocus(pEdt, false);
@@ -823,7 +825,10 @@ void MainDlg::UpdateRightTab()
 	pRightTabLbl->SetToolTip(pRightTab->GetActiveSheet()->GetToolTip());
 	// update
 	if (pRightTab->GetActiveSheetIndex() == SheetIdx_PlayerList) UpdatePlayerList();
-	if (pRightTab->GetActiveSheetIndex() == SheetIdx_Res) pResList->Activate(); else pResList->Deactivate();
+	if (Game.Network.isHost())
+	{
+		if (pRightTab->GetActiveSheetIndex() == SheetIdx_Res) pResList->Activate(); else pResList->Deactivate();
+	}
 	if (pRightTab->GetActiveSheetIndex() == SheetIdx_Options) pOptionsList->Activate(); else pOptionsList->Deactivate();
 	if (pRightTab->GetActiveSheetIndex() == SheetIdx_Scenario) pScenarioInfo->Activate(); else pScenarioInfo->Deactivate();
 	// update selection buttons
