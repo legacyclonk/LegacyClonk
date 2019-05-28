@@ -310,7 +310,7 @@ void Write::DeflateToBuffer(const uint8_t *const fromBuffer, const size_t size, 
 	}
 	
 	int ret = Z_BUF_ERROR;
-	while (ret == Z_BUF_ERROR || gzStream.avail_in > 0)
+	while (ret == Z_BUF_ERROR || gzStream.avail_in > 0 || (ret == Z_OK && flushMode == Z_FINISH))
 	{
 		if (gzStream.avail_out == 0)
 		{
