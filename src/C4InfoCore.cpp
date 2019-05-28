@@ -366,7 +366,7 @@ void C4PhysicalChange::CompileFunc(StdCompiler *pComp)
 	const char *szPhyn = C4PhysicalInfo::GetNameByOffset(mpiOffset);
 	if (szPhyn) SCopy(szPhyn, phyn, C4MaxName); else *phyn = '\0';
 	pComp->Value(mkStringAdapt(phyn, C4MaxName, StdCompiler::RCT_Idtf));
-	if (!C4PhysicalInfo::GetOffsetByName(phyn, &mpiOffset)) pComp->excNotFound("Physical change name \"%s\" not found.");
+	if (!C4PhysicalInfo::GetOffsetByName(phyn, &mpiOffset)) pComp->excNotFound("Physical change name \"%s\" not found.", phyn);
 	pComp->Separator(StdCompiler::SEP_SET);
 	pComp->Value(PrevVal);
 }
