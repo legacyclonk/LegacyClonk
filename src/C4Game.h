@@ -302,7 +302,7 @@ public:
 	bool SaveGameTitle(C4Group &hGroup);
 
 protected:
-	bool InitGame(C4Group &hGroup, bool fLoadSection, bool fLoadSky);
+	bool InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky);
 	bool InitGameFinal();
 	bool InitNetworkFromAddress(const char *szAddress);
 	bool InitNetworkFromReference(const C4Network2Reference &Reference);

@@ -301,6 +301,7 @@ public:
 	int32_t Count; // number of instanciations
 	C4AulScriptFunc *TimerCall;
 	C4ComponentHost Desc;
+	C4Def *Next;
 
 #ifdef C4ENGINE
 	// Currently cannot have script host in frontend because that
@@ -327,7 +328,6 @@ protected:
 #endif
 
 protected:
-	C4Def *Next;
 	bool Temporary;
 
 public:
@@ -379,8 +379,6 @@ public:
 	bool LoadFailure;
 	C4Def **Table[64]; // From space to _; some minor waste of mem
 	bool fTable;
-
-protected:
 	C4Def *FirstDef;
 
 public:

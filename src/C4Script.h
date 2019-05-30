@@ -53,6 +53,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 
 #define PSF_Script                 "~Script%i"
 #define PSF_Initialize             "~Initialize"
+#define PSF_InitializeDef          "~InitializeDef"
 #define PSF_Construction           "~Construction"
 #define PSF_Destruction            "~Destruction"
 #define PSF_ContentsDestruction    "~ContentsDestruction" // C4Object *pContents

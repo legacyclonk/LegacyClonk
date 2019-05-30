@@ -441,7 +441,7 @@ bool C4Game::Init()
 		DebugMode = false;
 
 	// Init game
-	if (!InitGame(ScenarioFile, false, true)) return false;
+	if (!InitGame(ScenarioFile, nullptr, true)) return false;
 
 	// Network final init
 	if (Network.isEnabled())
@@ -2228,9 +2228,9 @@ bool C4Game::ReloadParticle(const char *szName)
 	return true;
 }
 
-bool C4Game::InitGame(C4Group &hGroup, bool fLoadSection, bool fLoadSky)
+bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky)
 {
-	if (!fLoadSection)
+	if (!section)
 	{
 		// file monitor
 		if (Config.Developer.AutoFileReload && !Application.isFullScreen && !pFileMonitor)
@@ -2310,25 +2310,25 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSection, bool fLoadSky)
 	if (!FrameCounter) Parameters.StartupPlayerCount = PlayerInfos.GetStartupCount();
 
 	// The Landscape is the last long chunk of loading time, so it's a good place to start the music fadeout
-	if (!fLoadSection) Application.MusicSystem.FadeOut(2000);
+	if (!section) Application.MusicSystem.FadeOut(2000);
 	// Landscape
 	Log(LoadResStr("IDS_PRC_LANDSCAPE"));
 	bool fLandscapeLoaded = false;
-	if (!Landscape.Init(hGroup, fLoadSection, fLoadSky, fLandscapeLoaded, !!C4S.Head.SaveGame))
+	if (!Landscape.Init(hGroup, section, fLoadSky, fLandscapeLoaded, !!C4S.Head.SaveGame))
 	{
 		LogFatal(LoadResStr("IDS_ERR_GBACK")); return false;
 	}
 	SetInitProgress(88);
 	// the savegame flag is set if runtime data is present, in which case this is to be used
 	// except for scenario sections
-	if (fLandscapeLoaded && (!C4S.Head.SaveGame || fLoadSection))
+	if (fLandscapeLoaded && (!C4S.Head.SaveGame || section))
 		Landscape.ScenarioInit();
 	SetInitProgress(89);
 	// Init main object list
 	Objects.Init(Landscape.Width, Landscape.Height);
 
 	// Pathfinder
-	if (!fLoadSection) PathFinder.Init(&LandscapeFree, &TransferZones);
+	if (!section) PathFinder.Init(&LandscapeFree, &TransferZones);
 	SetInitProgress(90);
 
 	// PXS
@@ -2364,15 +2364,20 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSection, bool fLoadSky)
 	SetInitProgress(92);
 
 	// definition value overloads
-	if (!fLoadSection) InitValueOverloads();
+	if (!section) InitValueOverloads();
+
+	for (C4Def *def = Defs.FirstDef; def; def = def->Next)
+	{
+		def->Script.Call(PSF_InitializeDef, &C4AulParSet(section ? C4VString(section->szName) : C4VNull));
+	}
 
 	// Load objects
-	int32_t iObjects = Objects.Load(hGroup, fLoadSection);
+	int32_t iObjects = Objects.Load(hGroup, section);
 	if (iObjects) { LogF(LoadResStr("IDS_PRC_OBJECTSLOADED"), iObjects); }
 	SetInitProgress(93);
 
 	// Load round results
-	if (!fLoadSection)
+	if (!section)
 		if (hGroup.FindEntry(C4CFN_RoundResults))
 		{
 			if (!RoundResults.Load(hGroup, C4CFN_RoundResults))
@@ -2407,8 +2412,8 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSection, bool fLoadSky)
 	FoWColor = C4S.Game.FoWColor;
 
 	// Denumerate game data pointers
-	if (!fLoadSection) ScriptEngine.DenumerateVariablePointers();
-	if (!fLoadSection && pGlobalEffects) pGlobalEffects->DenumeratePointers();
+	if (!section) ScriptEngine.DenumerateVariablePointers();
+	if (!section && pGlobalEffects) pGlobalEffects->DenumeratePointers();
 
 	// Check object enumeration
 	if (!CheckObjectEnumeration()) return false;
@@ -2426,7 +2431,7 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSection, bool fLoadSky)
 	// close any gfx groups, because they are no longer needed (after sky is initialized)
 	GraphicsResource.CloseFiles();
 
-	if (!fLoadSection)
+	if (!section)
 	{
 		// Music
 		Application.MusicSystem.InitForScenario(ScenarioFile);
@@ -3961,7 +3966,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	// determine whether a new sky has to be loaded
 	bool fLoadNewSky = !SEqualNoCase(szOldSky, C4S.Landscape.SkyDef) || pGrp->FindEntry(C4CFN_Sky ".*");
 	// re-init game in new section
-	if (!InitGame(*pGrp, true, fLoadNewSky))
+	if (!InitGame(*pGrp, pLoadSect, fLoadNewSky))
 	{
 		DebugLog("LoadScenarioSection: Error reiniting game");
 		return false;
