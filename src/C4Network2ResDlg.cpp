@@ -212,7 +212,7 @@ void C4Network2ResDlg::Update()
 			isComplete = isComplete && pRes->isComplete();
 		}
 	}
-	if (Game.Network.GetLobby() != nullptr)
+	if (Game.Network.GetLobby() != nullptr && Game.Network.GetLobby()->checkReady != nullptr)
 	{
 		Game.Network.GetLobby()->checkReady->SetEnabled(isComplete);
 	}
