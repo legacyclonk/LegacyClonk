@@ -278,7 +278,7 @@ protected:
 
 private:
 	DWORD style = WS_OVERLAPPEDWINDOW;
-	DWORD styleEx = WS_EX_OVERLAPPEDWINDOW;
+	DWORD styleEx = 0;
 	Microsoft::WRL::ComPtr<ITaskbarList2> taskBarList = nullptr;
 
 #elif defined(USE_X11)
