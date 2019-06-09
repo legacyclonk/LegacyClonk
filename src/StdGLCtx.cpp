@@ -39,7 +39,7 @@ void CStdGLCtx::Clear()
 	}
 	if (hDC)
 	{
-		ReleaseDC(pWindow ? pWindow->hWindow : hWindow, hDC);
+		ReleaseDC(pWindow ? pWindow->GetRenderWindow() : hWindow, hDC);
 		hDC = nullptr;
 	}
 	pWindow = 0; cx = cy = 0; hWindow = nullptr;
@@ -53,7 +53,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
 	// store window
 	this->pWindow = pWindow;
 	// default HWND
-	if (pWindow) hWindow = pWindow->hWindow; else this->hWindow = hWindow;
+	if (pWindow) hWindow = pWindow->GetRenderWindow(); else this->hWindow = hWindow;
 
 	// get DC
 	hDC = GetDC(hWindow);
@@ -135,7 +135,7 @@ bool CStdGLCtx::UpdateSize()
 	// safety
 	if (!pWindow && !hWindow) return false;
 	// get size
-	RECT rt; if (!GetClientRect(pWindow ? pWindow->hWindow : hWindow, &rt)) return false;
+	RECT rt; if (!GetClientRect(pWindow ? pWindow->GetRenderWindow() : hWindow, &rt)) return false;
 	const auto scale = pGL->pApp->GetScale();
 	int cx2 = ceilf(static_cast<float>(rt.right - rt.left) / scale), cy2 = ceilf(static_cast<float>(rt.bottom - rt.top) / scale);
 	// assign if different
@@ -158,7 +158,7 @@ bool CStdGLCtx::PageFlip()
 
 bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 {
-	HDC hDC = GetDC(pWindow->hWindow);
+	HDC hDC = GetDC(pWindow->GetRenderWindow());
 	if (hDC)
 	{
 		if (!GetDeviceGammaRamp(hDC, DefRamp.red))
@@ -166,7 +166,7 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 			DefRamp.Default();
 			Log("  Error getting default gamma ramp; using standard");
 		}
-		ReleaseDC(pWindow->hWindow, hDC);
+		ReleaseDC(pWindow->GetRenderWindow(), hDC);
 		return true;
 	}
 	return false;

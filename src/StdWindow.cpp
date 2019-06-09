@@ -35,7 +35,7 @@
 #define C4FullScreenClassName "C4FullScreen"
 LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-CStdWindow::CStdWindow() : Active(false), hWindow(0) {}
+CStdWindow::CStdWindow() : Active(false), hWindow(nullptr), hRenderWindow(nullptr) {}
 CStdWindow::~CStdWindow() {}
 
 bool CStdWindow::RegisterWindowClass(HINSTANCE hInst)
@@ -72,6 +72,19 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 		CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
 		nullptr, nullptr, pApp->hInstance, nullptr);
 
+	RECT rect;
+	GetClientRect(hWindow, &rect);
+
+	hRenderWindow = CreateWindowEx(
+		0,
+		"STATIC",
+		nullptr,
+		WS_CHILD,
+		0, 0, rect.right - rect.left, rect.bottom - rect.top,
+		hWindow, nullptr, pApp->hInstance, nullptr);
+
+	ShowWindow(hRenderWindow, SW_SHOW);
+
 #ifndef USE_CONSOLE
 	// Show & focus
 	ShowWindow(hWindow, SW_SHOWNORMAL);
@@ -84,8 +97,10 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 void CStdWindow::Clear()
 {
 	// Destroy window
+	if (hRenderWindow) DestroyWindow(hRenderWindow);
 	if (hWindow) DestroyWindow(hWindow);
 	hWindow = nullptr;
+	hRenderWindow = nullptr;
 }
 
 bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey, bool fHidden)
@@ -110,16 +125,16 @@ void CStdWindow::SetSize(unsigned int cx, unsigned int cy)
 {
 	if (!hWindow) return;
 
-	RECT rect;
-	if (!GetWindowRect(hWindow, &rect)) throw std::runtime_error("GetWindowRect failed");
-	rect.right = rect.left + cx;
-	rect.bottom = rect.top + cy;
-	if (!AdjustWindowRect(&rect, style, FALSE)) throw std::runtime_error("AdjustWindowRect failed");
-	if (!SetWindowPos(hWindow, nullptr,
-		0, 0, rect.right - rect.left, rect.bottom - rect.top,
-		SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS  | SWP_NOZORDER))
+	RECT rect = { 0, 0, static_cast<LONG>(cx), static_cast<LONG>(cy) };
+	AdjustWindowRectEx(&rect, GetWindowLong(hWindow, GWL_STYLE), FALSE, GetWindowLong(hWindow, GWL_EXSTYLE));
+	cx = rect.right - rect.left;
+	cy = rect.bottom - rect.top;
+	SetWindowPos(hWindow, nullptr, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
+
+	if (hRenderWindow)
 	{
-		throw std::runtime_error("SetWindowPos failed");
+		// Also resize child window
+		SetWindowPos(hRenderWindow, nullptr, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
 	}
 }
 

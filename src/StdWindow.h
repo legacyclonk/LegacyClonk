@@ -269,8 +269,10 @@ protected:
 
 public:
 	HWND hWindow;
+	HWND hRenderWindow;
 	void Maximize();
 	void SetPosition(int x, int y);
+	HWND GetRenderWindow() { return hRenderWindow ? hRenderWindow : hWindow; }
 
 protected:
 	bool RegisterWindowClass(HINSTANCE hInst);
