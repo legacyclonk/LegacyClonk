@@ -324,6 +324,8 @@ void C4Application::QuitGame()
 		bool fWasNetworkActive = Game.NetworkActive;
 		StdStrBuf password;
 		if (fWasNetworkActive) password.Copy(Game.Network.GetPassword());
+		// the rest isn't changed by Clear()
+		char firstDefinitionFilename = Game.DefinitionFilenames[0];
 		// stop game
 		Game.Clear();
 		Game.Default();
@@ -335,6 +337,7 @@ void C4Application::QuitGame()
 			SReplaceChar(Game.ScenarioFilename, '\\', DirSep[0]); // linux/mac: make sure we are using forward slashes
 			Game.fLobby = Game.NetworkActive = fWasNetworkActive;
 			if (fWasNetworkActive) Game.Network.SetPassword(password.getData());
+			Game.DefinitionFilenames[0] = firstDefinitionFilename;
 			Game.fObserve = false;
 			Game.Record = !!Config.General.Record;
 			NextMission.Clear();
