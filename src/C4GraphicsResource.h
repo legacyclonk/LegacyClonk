@@ -58,6 +58,7 @@ public:
 	C4Surface sfcLiquidAnimation; int32_t idSfcLiquidAnimation;
 	C4FacetExID fctCaptain;
 	C4FacetExID fctMouseCursor;
+	C4FacetExID fctCursors[3];
 	bool fOldStyleCursor; // if set, offsets need to be applied to some cursor facets
 	C4FacetExID fctSelectMark;
 	C4FacetExID fctOptions;
@@ -111,6 +112,7 @@ protected:
 	bool LoadFile(C4FacetExID &fct, const char *szName, C4GroupSet &rGfxSet, int32_t iWdt = C4FCT_Full, int32_t iHgt = C4FCT_Full, bool fNoWarnIfNotFound = false);
 	bool LoadFile(C4Surface &sfc, const char *szName, C4GroupSet &rGfxSet, int32_t &ridCurrSfc);
 	bool LoadCursorGfx();
+	void ApplyCursorGfx();
 
 	friend class C4GUI::Resource;
 	friend class C4StartupGraphics;

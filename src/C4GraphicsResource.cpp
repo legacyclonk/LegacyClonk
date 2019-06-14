@@ -297,18 +297,29 @@ bool C4GraphicsResource::LoadCursorGfx()
 	// old-style cursor file overloads new-stye, because old scenarios might want to have their own cursors
 	if (!LoadFile(fctMouseCursor, "Cursor", Files, C4FCT_Height, C4FCT_Full, true))
 	{
-		// no old-style overload present: Determine appropriate GFX file by screen resolution
-		const char *szCursorFilename;
-		if (Config.Graphics.ResX >= 1280)
-			szCursorFilename = "CursorLarge";
-		else if (Config.Graphics.ResX >= 800)
-			szCursorFilename = "CursorMedium";
-		else
-			szCursorFilename = "CursorSmall";
-		// always fallback to regular cursor file
-		if (!LoadFile(fctMouseCursor, szCursorFilename, Files, C4FCT_Height))
-			return false;
+		static const char *cursors[3] = {"CursorLarge", "CursorMedium", "CursorSmall"};
+
+		size_t index = Config.Graphics.ResX >= 1280 ? 0 : Config.Graphics.ResX >= 800 ? 1 : 2;
+
+		for (size_t i = 0; i < sizeof(fctCursors) / sizeof(fctCursors[0]); ++i)
+		{
+			bool ret = LoadFile(fctCursors[i], cursors[i], Files, C4FCT_Height, C4FCT_Full);
+			if (i == index)
+			{
+				if (!ret)
+				{
+					return false;
+				}
+				fctMouseCursor.Set(fctCursors[i]);
+			}
+		}
 	}
+	ApplyCursorGfx();
+	return true;
+}
+
+void C4GraphicsResource::ApplyCursorGfx()
+{
 	// adjust dependent faces
 	int32_t iCursorSize = fctMouseCursor.Hgt;
 	if (iCursorSize == 13)
@@ -331,8 +342,6 @@ bool C4GraphicsResource::LoadCursorGfx()
 		fctInsideSymbol.Set(fctMouseCursor.Surface, 36 * iCursorSize, 0, iCursorSize, iCursorSize);
 		fctDropTarget  .Set(fctMouseCursor.Surface, 38 * iCursorSize, 0, iCursorSize, iCursorSize);
 	}
-	// done
-	return true;
 }
 
 bool C4GraphicsResource::RegisterGlobalGraphics()
@@ -456,6 +465,12 @@ bool C4GraphicsResource::ReloadResolutionDependentFiles()
 {
 	// reload any files that depend on the current resolution
 	// reloads the cursor
-	fctMouseCursor.idSourceGroup = 0;
+	int index = Config.Graphics.ResX >= 1280 ? 0 : Config.Graphics.ResX >= 800 ? 1 : 2;
+	if (fctCursors[index].Wdt)
+	{
+		fctMouseCursor.idSourceGroup = 0;
+		fctMouseCursor.Set(fctCursors[index]);
+		return true;
+	}
 	return LoadCursorGfx();
 }

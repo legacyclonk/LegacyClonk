@@ -3823,7 +3823,10 @@ void C4Game::OnResolutionChanged()
 		InitFullscreenComponents(!!IsRunning);
 	// note that this may fail if the gfx groups are closed already (runtime resolution change)
 	// doesn't matter; old gfx are kept in this case
-	GraphicsResource.ReloadResolutionDependentFiles();
+	if (GraphicsResource.IsInitialized())
+	{
+		GraphicsResource.ReloadResolutionDependentFiles();
+	}
 }
 
 bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
