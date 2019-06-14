@@ -35,8 +35,7 @@ C4ClientCore::C4ClientCore()
 	: iID(-1),
 	fActivated(false),
 	fObserver(false),
-	fLobbyReady(false),
-	fSupportsLobbyReady(true)
+	fLobbyReady(false)
 {
 	Name.Ref(""); Nick.Ref("");
 }
@@ -77,28 +76,12 @@ int32_t C4ClientCore::getDiffLevel(const C4ClientCore &CCore2) const
 
 void C4ClientCore::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(iID,        "ID",        C4ClientIDUnknown));
-	pComp->Value(mkNamingAdapt(fActivated, "Activated", false));
-	pComp->Value(mkNamingAdapt(fObserver,  "Observer",  false));
-	pComp->Value(mkNamingAdapt(Name,       "Name", ""));
-
-#define CUIDReadyPrefix "000000000"
-	StdStrBuf CUID("");
-	if (pComp->isDecompiler() && fSupportsLobbyReady)
-	{
-		CUID.Ref(CUIDReadyPrefix);
-		CUID.AppendChar(fLobbyReady ? '1' : '0');
-	}
-
-	pComp->Value(mkNamingAdapt(CUID, "CUID", ""));
-	pComp->Value(mkNamingAdapt(Nick, "Nick", ""));
-
-	if (pComp->isCompiler())
-	{
-		fLobbyReady = (fSupportsLobbyReady = strncmp(CUID.getData(), CUIDReadyPrefix, strlen(CUIDReadyPrefix)) == 0)
-				&& CUID == StdStrBuf(CUIDReadyPrefix "1");
-	}
-#undef CUIDReadyPrefix
+	pComp->Value(mkNamingAdapt(iID,         "ID",        C4ClientIDUnknown));
+	pComp->Value(mkNamingAdapt(fActivated,  "Activated", false));
+	pComp->Value(mkNamingAdapt(fObserver,   "Observer",  false));
+	pComp->Value(mkNamingAdapt(Name,        "Name", ""));
+	pComp->Value(mkNamingAdapt(Nick,        "Nick", ""));
+	pComp->Value(mkNamingAdapt(fLobbyReady, "LobbyReady", false));
 }
 
 // *** C4Client

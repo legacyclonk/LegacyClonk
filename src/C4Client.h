@@ -46,7 +46,7 @@ protected:
 	int iVersion[4];
 
 	// status
-	bool fActivated, fObserver, fLobbyReady, fSupportsLobbyReady;
+	bool fActivated, fObserver, fLobbyReady;
 
 public:
 	// status data
@@ -55,7 +55,6 @@ public:
 	bool isActivated() const { return fActivated; }
 	bool isObserver()  const { return fObserver; }
 	bool isLobbyReady() const { return fLobbyReady; }
-	bool supportsLobbyReady() const { return fSupportsLobbyReady; }
 	void SetID(int32_t inID) { iID = inID; }
 	void SetName(const char *sznName) { Name.CopyValidated(sznName); }
 	void SetActivated(bool fnActivated) { fActivated = fnActivated; fObserver = false; }
@@ -101,7 +100,6 @@ public:
 	bool                isActivated() const { return Core.isActivated(); }
 	bool                isObserver()  const { return Core.isObserver(); }
 	bool                isLobbyReady() const { return Core.isLobbyReady(); }
-	bool                supportsLobbyReady() const { return Core.supportsLobbyReady(); }
 
 	bool              isLocal()      const { return fLocal; }
 	C4Network2Client *getNetClient() const { return pNetClient; }
