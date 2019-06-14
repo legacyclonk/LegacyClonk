@@ -892,54 +892,6 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 	return iHgt;
 }
 
-// get message break and pos after message break
-// 2do: Function not ready for UTF-8, markup or inline images. Remove its usage using standardized BreakMessage
-int CStdFont::GetMessageBreak(const char *szMsg, const char **ppNewPos, int iBreakWidth, float fZoom)
-{
-	// safety
-	if (!szMsg || !*szMsg) { *ppNewPos = szMsg; return 0; }
-	const char *szPos = szMsg; unsigned char c;
-	int iWdt = 0; int iPos = 0;
-	// check all message until it's too wide
-	while (c = *szPos++)
-	{
-		++iPos;
-		// get char width
-		int iCharWdt = int(fZoom * fctAsciiTexCoords[c - ' '].Wdt / iFontZoom) + iHSpace;
-		// add to overall line width
-		iWdt += iCharWdt;
-		// next char only if the line didn't overflow
-		if (iWdt > iBreakWidth) break;
-	}
-	// did it all fit?
-	if (!c)
-	{
-		// all OK then; use all the buffer
-		*ppNewPos = szPos - 1;
-		return iPos;
-	}
-	// line must be broken - trace back until first break char
-	// szPos2 will be first char of next line
-	const char *szPos2 = szPos - 1; int i = 0;
-	while ((!i++ || *szPos2 != '-') && *szPos2 != ' ')
-		if (szPos2 == szMsg)
-		{
-			// do not go past beginning of line
-			// then better print out an unfitting break
-			szPos2 = szPos - 1;
-			break;
-		}
-		else
-			--szPos2;
-	// but do print at least one char
-	if (szPos2 <= szMsg) szPos2 = szMsg + 1;
-	// assign next line start pos - skip spaces
-	*ppNewPos = szPos2;
-	if (*szPos2 == ' ')++*ppNewPos;
-	// return output string length
-	return szPos2 - szMsg;
-}
-
 /* Text drawing */
 
 void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom)
