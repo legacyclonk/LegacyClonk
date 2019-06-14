@@ -1047,14 +1047,14 @@ void C4ControlMessage::Execute() const
 		if (pPlr)
 		{
 			if (pPlr->AtClient != iByClient) break;
-			sprintf(OSTR, (eType == C4CMT_Normal ? (Config.General.UseWhiteIngameChat ? "<c %x><<i></i>%s></c> %s" : "<c %x><<i></i>%s> %s</c>") : (Config.General.UseWhiteIngameChat ? "<c %x> * %s</c> %s" : "<c %x> * %s %s</c>")),
+			sprintf(OSTR, (eType == C4CMT_Normal ? (Config.General.UseWhiteIngameChat ? "<c %x><<i></i>%s></c> %s" : "<c %x><<i></i>%s> %s") : (Config.General.UseWhiteIngameChat ? "<c %x> * %s</c> %s" : "<c %x> * %s %s")),
 				pPlr->ColorDw, pPlr->GetName(), szMessage);
 		}
 		else
 		{
 			const auto white = pLobby && Config.General.UseWhiteLobbyChat;
 			C4Client *pClient = Game.Clients.getClientByID(iByClient);
-			sprintf(OSTR, (eType == C4CMT_Normal ? (white ? "<%s> <c ffffff>%s</c>" : "<%s> %s") : (white ? " * %s <c ffffff>%s</c>" : " * %s %s")),
+			sprintf(OSTR, (eType == C4CMT_Normal ? (white ? "<%s> <c ffffff>%s" : "<%s> %s") : (white ? " * %s <c ffffff>%s" : " * %s %s")),
 				pClient ? pClient->getNick() : "???", szMessage);
 		}
 		// 2 lobby
@@ -1094,7 +1094,7 @@ void C4ControlMessage::Execute() const
 			for (int cnt = 0; pLocalPlr = Game.Players.GetLocalByIndex(cnt); cnt++)
 				if (!Hostile(pLocalPlr->Number, iPlayer))
 					break;
-			if (pLocalPlr) Log(FormatString(Config.General.UseWhiteIngameChat ? "<c %x>{%s}</c> %s" : "<c %x>{%s} %s</c>", pPlr->ColorDw, pPlr->GetName(), szMessage).getData());
+			if (pLocalPlr) Log(FormatString(Config.General.UseWhiteIngameChat ? "<c %x>{%s}</c> %s" : "<c %x>{%s} %s", pPlr->ColorDw, pPlr->GetName(), szMessage).getData());
 		}
 		else if (pLobby)
 		{
@@ -1103,7 +1103,7 @@ void C4ControlMessage::Execute() const
 			// OK - permit message
 			C4Client *pClient = Game.Clients.getClientByID(iByClient);
 			pLobby->OnMessage(Game.Clients.getClientByID(iByClient),
-				FormatString(Config.General.UseWhiteLobbyChat ? "{%s} <c ffffff>%s</c>" : "{%s} %s", pClient ? pClient->getNick() : "???", szMessage).getData());
+				FormatString(Config.General.UseWhiteLobbyChat ? "{%s} <c ffffff>%s" : "{%s} %s", pClient ? pClient->getNick() : "???", szMessage).getData());
 		}
 	}
 	break;
@@ -1118,7 +1118,7 @@ void C4ControlMessage::Execute() const
 				break;
 		if (pLocalPlr)
 		{
-			Log(FormatString(Config.General.UseWhiteIngameChat ? "<c %x>[%s]</c> %s" : "<c %x>[%s] %s</c>", pPlr->ColorDw, pPlr->GetName(), szMessage).getData());
+			Log(FormatString(Config.General.UseWhiteIngameChat ? "<c %x>[%s]</c> %s" : "<c %x>[%s] %s", pPlr->ColorDw, pPlr->GetName(), szMessage).getData());
 		}
 	}
 	break;
