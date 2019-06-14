@@ -215,25 +215,34 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 	}
 	else
 	{
-		// output broken lines until there are any
 		int iLineIndex = 0;
-		while (*szLine)
+		// get line width of this line
+		int iBreakWdt = iLineBreakWidth;
+		int32_t iIndentWdt = 0;
+		if (szIndent)
 		{
-			// get line width of this line
-			int iBreakWdt = iLineBreakWidth;
-			if (iLineIndex && szIndent)
-			{
-				int32_t iIndentWdt, Q;
-				pFont->GetTextExtent(szIndent, iIndentWdt, Q, true);
-				iBreakWdt -= iIndentWdt;
-			}
-			// get number of characters printable into this line
-			const char *szNextLine;
-			int iNumChars = pFont->GetMessageBreak(szLine, &szNextLine, iBreakWdt);
-			// add them
-			AppendSingleLine(szLine, iNumChars, iLineIndex ? szIndent : nullptr, pFont, dwClr, !iLineIndex);
-			// next line
-			szLine = szNextLine;
+			int32_t Q;
+			pFont->GetTextExtent(szIndent, iIndentWdt, Q, true);
+		}
+		StdStrBuf broken;
+
+		// first without indentation
+		pFont->BreakMessage(szLine, iBreakWdt, &broken, true);
+		const char *szBroken = broken.getData(), *breakPos;
+		if (!(breakPos = strchr(szBroken, '\n'))) breakPos = szBroken + SLen(szBroken);
+		else ++breakPos;
+		AppendSingleLine(szBroken, breakPos - szBroken, nullptr, pFont, dwClr, true);
+		++iLineIndex;
+
+		// then with indentation
+		pFont->BreakMessage(szLine + (breakPos - szBroken), iBreakWdt - iIndentWdt, &broken, true);
+		szBroken = broken.getData();
+		while(*szBroken)
+		{
+			if(!(breakPos = strchr(szBroken, '\n'))) breakPos = szBroken + SLen(szBroken);
+			else ++breakPos;
+			AppendSingleLine(szBroken, breakPos - szBroken, szIndent, pFont, dwClr, false);
+			szBroken = breakPos;
 			++iLineIndex;
 		}
 	}
