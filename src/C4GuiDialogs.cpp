@@ -1007,8 +1007,11 @@ void ConfirmationDialog::OnClosed(bool fOK)
 // ProgressDialog
 
 ProgressDialog::ProgressDialog(const char *szMessage, const char *szCaption, int32_t iMaxProgress, int32_t iInitialProgress, Icons icoIcon)
-	: Dialog(C4GUI_ProgressDlgWdt, (std::max)(GetRes()->TextFont.BreakMessage(szMessage, C4GUI_ProgressDlgWdt - 3 * C4GUI_DefDlgIndent - C4GUI_IconWdt, OSTR, 4096, true), C4GUI_IconHgt) + C4GUI_ProgressDlgVRoom, szCaption, false)
+	: Dialog(C4GUI_ProgressDlgWdt, 100, szCaption, false)
 {
+	StdStrBuf broken;
+	rcBounds.Hgt = (std::max)(GetRes()->TextFont.BreakMessage(szMessage, C4GUI_ProgressDlgWdt - 3 * C4GUI_DefDlgIndent - C4GUI_IconWdt, &broken, true), C4GUI_IconHgt) + C4GUI_ProgressDlgVRoom;
+	SetBounds(rcBounds);
 	// get positions
 	ComponentAligner caMain(GetClientRect(), C4GUI_DefDlgIndent, C4GUI_DefDlgIndent, true);
 	ComponentAligner caButtonArea(caMain.GetFromBottom(C4GUI_ButtonAreaHgt), 0, 0);
@@ -1018,7 +1021,7 @@ ProgressDialog::ProgressDialog(const char *szMessage, const char *szCaption, int
 	Icon *pIcon = new Icon(rcIcon, icoIcon); AddElement(pIcon);
 	// place message label
 	// use text with line breaks
-	Label *pLblMessage = new Label(OSTR, caMain.GetAll().GetMiddleX(), caMain.GetAll().y, ACenter, C4GUI_MessageFontClr, &GetRes()->TextFont);
+	Label *pLblMessage = new Label(broken.getData(), caMain.GetAll().GetMiddleX(), caMain.GetAll().y, ACenter, C4GUI_MessageFontClr, &GetRes()->TextFont);
 	AddElement(pLblMessage);
 	// place progress bar
 	pBar = new ProgressBar(rtProgressBar, iMaxProgress);
@@ -1095,7 +1098,7 @@ bool Screen::ShowRemoveDlg(Dialog *pDlg)
 // InputDialog
 
 InputDialog::InputDialog(const char *szMessage, const char *szCaption, Icons icoIcon, BaseInputCallback *pCB, bool fChatLayout)
-	: Dialog(fChatLayout ? Config.Graphics.ResX * 4 / 5 : C4GUI_InputDlgWdt, fChatLayout ? C4GUI::Edit::GetDefaultEditHeight() + 2 : (std::max)(GetRes()->TextFont.BreakMessage(szMessage, C4GUI_InputDlgWdt - 3 * C4GUI_DefDlgIndent - C4GUI_IconWdt, OSTR, 4096, true), C4GUI_IconHgt) + C4GUI_InputDlgVRoom, szCaption, false), pEdit(nullptr), pChatLbl(nullptr), pCB(pCB), fChatLayout(fChatLayout)
+	: Dialog(fChatLayout ? Config.Graphics.ResX * 4 / 5 : C4GUI_InputDlgWdt, fChatLayout ? C4GUI::Edit::GetDefaultEditHeight() + 2 : 100, szCaption, false), pEdit(nullptr), pChatLbl(nullptr), pCB(pCB), fChatLayout(fChatLayout)
 {
 	if (fChatLayout)
 	{
@@ -1113,6 +1116,9 @@ InputDialog::InputDialog(const char *szMessage, const char *szCaption, Icons ico
 	}
 	else
 	{
+		StdStrBuf broken;
+		rcBounds.Hgt = (std::max)(GetRes()->TextFont.BreakMessage(szMessage, C4GUI_InputDlgWdt - 3 * C4GUI_DefDlgIndent - C4GUI_IconWdt, &broken, true), C4GUI_IconHgt) + C4GUI_InputDlgVRoom;
+		SetBounds(rcBounds);
 		// regular input dialog layout
 		// get positions
 		ComponentAligner caMain(GetClientRect(), C4GUI_DefDlgIndent, C4GUI_DefDlgIndent, true);
@@ -1123,7 +1129,7 @@ InputDialog::InputDialog(const char *szMessage, const char *szCaption, Icons ico
 		Icon *pIcon = new Icon(rcIcon, icoIcon); AddElement(pIcon);
 		// place message label
 		// use text with line breaks
-		Label *pLblMessage = new Label(OSTR, caMain.GetAll().GetMiddleX(), caMain.GetAll().y, ACenter, C4GUI_MessageFontClr, &GetRes()->TextFont);
+		Label *pLblMessage = new Label(broken.getData(), caMain.GetAll().GetMiddleX(), caMain.GetAll().y, ACenter, C4GUI_MessageFontClr, &GetRes()->TextFont);
 		AddElement(pLblMessage);
 		// place input edit
 		SetCustomEdit(new Edit(rcEditBounds));

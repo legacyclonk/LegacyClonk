@@ -131,7 +131,6 @@ public:
 	// Sometimes, only the width of a text is needed
 	int32_t GetTextWidth(const char *szText, bool fCheckMarkup = true) { int32_t x, y; GetTextExtent(szText, x, y, fCheckMarkup); return x; }
 	// insert line breaks into a message and return overall height - uses and regards '|' as line breaks
-	int BreakMessage(const char *szMsg, int iWdt, char *szOut, int iMaxOutLen, bool fCheckMarkup, float fZoom = 1.0f);
 	int BreakMessage(const char *szMsg, int iWdt, class StdStrBuf *pOut, bool fCheckMarkup, float fZoom = 1.0f);
 	// get message break and pos after message break - does not regard any manual line breaks!
 	int GetMessageBreak(const char *szMsg, const char **ppNewPos, int iBreakWidth, float fZoom = 1.0f);
