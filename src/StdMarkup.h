@@ -20,6 +20,7 @@
 #pragma once
 
 #include <Standard.h>
+#include <StdBuf.h>
 
 class CBltTransform;
 
@@ -34,6 +35,7 @@ public:
 
 	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr) = 0; // assign markup
 	virtual const char *TagName() = 0; // get character string for this tag
+	virtual StdStrBuf ToMarkup() { return FormatString("<%s>", TagName()); };
 };
 
 // markup tag for italic text
@@ -57,6 +59,7 @@ public:
 
 	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr); // assign markup
 	virtual const char *TagName() { return "c"; }
+	virtual StdStrBuf ToMarkup() { return FormatString("<%s %x>", TagName(), dwClr); };
 };
 
 // markup rendering functionality for text
@@ -91,6 +94,8 @@ public:
 	{
 		for (CMarkupTag *pTag = pTags; pTag; pTag = pTag->pNext) pTag->Apply(rBltTrf, fDoClr, dwClr);
 	}
+
+	StdStrBuf ToMarkup();
 
 	bool Clean() { return !pTags; } // empty?
 

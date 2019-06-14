@@ -110,6 +110,13 @@ bool CMarkup::SkipTags(const char **ppText)
 	return !**ppText;
 }
 
+StdStrBuf CMarkup::ToMarkup()
+{
+	StdStrBuf result;
+	for (CMarkupTag *pTag = pTags; pTag; pTag = pTag->pNext) result += pTag->ToMarkup();
+	return result;
+}
+
 bool CMarkup::StripMarkup(char *szText)
 {
 	// skip any tags and inline-images

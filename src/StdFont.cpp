@@ -861,14 +861,40 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 				iLastBreakOutLen = iLastEmergencyBreakOutLen;
 				iXBreak = iXEmergencyBreak;
 			}
+			StdStrBuf tempPart;
 			// insert linebreak at linebreak pos
 			// was it a space? Then just overwrite space with a linebreak
 			if (uint8_t(*szLastBreakPos) < 128 && isspace((unsigned char)*szLastBreakPos))
+			{
 				*pOut->getMPtr(iLastBreakOutLen - 1) = '\n';
+				if (fCheckMarkup)
+				{
+					tempPart.Copy(pOut->getMPtr(iLastBreakOutLen));
+					pOut->SetLength(iLastBreakOutLen);
+				}
+			}
 			else
 			{
 				// otherwise, insert line break
 				pOut->InsertChar('\n', iLastBreakOutLen);
+				if (fCheckMarkup)
+				{
+					tempPart.Copy(pOut->getMPtr(iLastBreakOutLen) + 1);
+					pOut->SetLength(iLastBreakOutLen + 1);
+				}
+			}
+			if (fCheckMarkup)
+			{
+				CMarkup markup(false);
+				const char *data = pOut->getData();
+				const char *lastLine = (std::max)(data + pOut->getSize() - 3, data);
+				while (lastLine > data && *lastLine != '\n') --lastLine;
+				while (*lastLine)
+				{
+					while (*lastLine == '<' && markup.Read(&lastLine));
+					if (*lastLine) ++lastLine;
+				}
+				(*pOut) += markup.ToMarkup() + tempPart;
 			}
 			// calc next line usage
 			iX -= iXBreak;
