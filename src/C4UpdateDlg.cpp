@@ -270,7 +270,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	// Get current update version from server
 	C4GameVersion UpdateVersion;
 	C4GUI::Dialog *pWaitDlg = nullptr;
-	if (C4GUI::IsGUIValid())
+	if (pScreen && C4GUI::IsGUIValid())
 	{
 		pWaitDlg = new C4GUI::MessageDialog(LoadResStr("IDS_MSG_LOOKINGFORUPDATES"), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnAbort, C4GUI::Ico_Ex_Update, C4GUI::MessageDialog::dsRegular);
 		pWaitDlg->SetDelOnClose(false);
@@ -292,7 +292,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 			// check for program abort
 			if (hr == HR_Failure) { fAborted = true; break; }
 			// check for dialog close
-			if (pWaitDlg) if (!C4GUI::IsGUIValid() || !pWaitDlg->IsShown()) { fAborted = true; break; }
+			if (pScreen && pWaitDlg) if (!C4GUI::IsGUIValid() || !pWaitDlg->IsShown()) { fAborted = true; break; }
 		}
 		if (!fAborted)
 		{
@@ -302,7 +302,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 		Application.InteractiveThread.RemoveProc(&VerChecker);
 		VerChecker.SetNotify(nullptr);
 	}
-	if (C4GUI::IsGUIValid()) delete pWaitDlg;
+	if (pScreen && C4GUI::IsGUIValid()) delete pWaitDlg;
 	// User abort
 	if (fAborted)
 	{
@@ -311,14 +311,17 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	// Error during update check
 	if (!fSuccess)
 	{
-		StdStrBuf sError; sError.Copy(LoadResStr("IDS_MSG_UPDATEFAILED"));
-		const char *szErrMsg = VerChecker.GetError();
-		if (szErrMsg)
+		if (pScreen)
 		{
-			sError.Append(": ");
-			sError.Append(szErrMsg);
+			StdStrBuf sError; sError.Copy(LoadResStr("IDS_MSG_UPDATEFAILED"));
+			const char *szErrMsg = VerChecker.GetError();
+			if (szErrMsg)
+			{
+				sError.Append(": ");
+				sError.Append(szErrMsg);
+			}
+			pScreen->ShowMessage(sError.getData(), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
 		}
-		pScreen->ShowMessage(sError.getData(), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
 		return false;
 	}
 
@@ -327,17 +330,31 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	{
 		// this is a new redirect. Inform the user and auto-change servers if desired
 		const char *newServer = strUpdateRedirect.getData();
-		StdStrBuf sMessage;
-		sMessage.Format(LoadResStr("IDS_NET_SERVERREDIRECTMSG"), newServer);
-		if (pScreen->ShowMessageModal(sMessage.getData(), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
+		if (pScreen)
 		{
-			// apply new server setting
+			StdStrBuf sMessage;
+			sMessage.Format(LoadResStr("IDS_NET_SERVERREDIRECTMSG"), newServer);
+			if (!pScreen->ShowMessageModal(sMessage.getData(), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
+			{
+				// apply new server setting
+				SCopy(newServer, Config.Network.UpdateServerAddress, CFG_MaxString);
+				Config.Save();
+				pScreen->ShowMessageModal(LoadResStr("IDS_NET_SERVERREDIRECTDONE"), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_OfficialServer);
+				// abort the update check - user should try again
+				return false;
+			}
+		}
+		else
+		{
 			SCopy(newServer, Config.Network.UpdateServerAddress, CFG_MaxString);
 			Config.Save();
-			pScreen->ShowMessageModal(LoadResStr("IDS_NET_SERVERREDIRECTDONE"), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_OfficialServer);
-			// abort the update check - user should try again
 			return false;
 		}
+	}
+
+	if (!pScreen)
+	{
+		return C4UpdateDlg::IsValidUpdate(UpdateVersion);
 	}
 
 	// Applicable update available

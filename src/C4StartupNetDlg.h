@@ -22,6 +22,7 @@
 #include "C4Startup.h"
 #include "C4Network2Discover.h"
 #include "C4Network2Reference.h"
+#include "C4UpdateDlg.h"
 
 const int C4NetMasterServerQueryInterval = 30; // seconds after last and beforenew game query to master server
 const int C4NetRefRequestTimeout = 12; // seconds after which the reference request is interrupted
@@ -141,7 +142,6 @@ private:
 	C4StartupNetListEntry *pMasterserverClient; // set if masterserver query is enabled: Checks clonk.de for new games
 	bool fIsCollapsed; // set if the number of games in the list requires them to be displayed in a condensed format
 	bool fUpdatingList; // set during list update - prevent selection update calls
-	C4GameVersion UpdateVersion; // set if update button is visible: Version to be updated to
 
 	C4Sec1TimerCallback<C4StartupNetDlg> *pSec1Timer; // engine timer hook for list updates
 
@@ -176,7 +176,7 @@ protected:
 	void OnBtnChat(C4GUI::Control *btn);
 	void OnBtnInternet(C4GUI::Control *btn);
 	void OnBtnRecord(C4GUI::Control *btn);
-	void OnBtnUpdate(C4GUI::Control *btn);
+	void OnBtnUpdate(C4GUI::Control *btn) { C4UpdateDlg::CheckForUpdates(GetScreen()); }
 
 	C4GUI::Edit::InputResult OnJoinAddressEnter(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
 	{

@@ -19,7 +19,6 @@
 
 #include <C4Include.h>
 #include <C4StartupNetDlg.h>
-#include <C4UpdateDlg.h>
 
 #ifndef BIG_C4INCLUDE
 #include <C4StartupScenSelDlg.h>
@@ -715,7 +714,7 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 	btnRecord->SetText(LoadResStr("IDS_CTL_RECORD"));
 	AddElement(btnRecord);
 	btnUpdate = new C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton>(C4GUI::Ico_Ex_Update, caConfigArea.GetFromTop(iIconSize, iIconSize), '\0', &C4StartupNetDlg::OnBtnUpdate);
-	btnUpdate->SetVisibility(false); // update only available if masterserver notifies it
+	btnUpdate->SetVisibility(false);
 	btnUpdate->SetToolTip(LoadResStr("IDS_DLGTIP_UPDATE"));
 	btnUpdate->SetText(LoadResStr("IDS_CTL_UPDATE"));
 	AddElement(btnUpdate);
@@ -774,6 +773,7 @@ void C4StartupNetDlg::OnShown()
 	C4StartupDlg::OnShown();
 	UpdateList();
 	UpdateMasterserver();
+	btnUpdate->SetVisibility(C4UpdateDlg::CheckForUpdates());
 	OnSec1Timer();
 	tLastRefresh = time(0);
 	// also update chat
@@ -846,15 +846,6 @@ void C4StartupNetDlg::OnBtnRecord(C4GUI::Control *btn)
 	// toggle league signup flag
 	bool fCheck = Game.Record = !Game.Record;
 	btnRecord->SetIcon(fCheck ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff);
-}
-
-void C4StartupNetDlg::OnBtnUpdate(C4GUI::Control *btn)
-{
-	// do update
-	if (!C4UpdateDlg::DoUpdate(UpdateVersion, GetScreen()))
-	{
-		GetScreen()->ShowMessage(LoadResStr("IDS_MSG_UPDATEFAILED"), LoadResStr("IDS_TYPE_UPDATE"), C4GUI::Ico_Ex_Update);
-	}
 }
 
 void C4StartupNetDlg::UpdateMasterserver()
