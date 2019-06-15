@@ -1191,7 +1191,9 @@ C4StartupScenSelDlg::ScenListItem::ScenListItem(C4GUI::ListBox *pForListBox, C4S
 	// create subcomponents
 	pIcon = new C4GUI::Picture(C4Rect(0, 0, iHeight, iHeight), true);
 	pIcon->SetFacet(pScenListEntry->GetIconFacet());
-	pNameLabel = new C4GUI::Label(pScenListEntry->GetName().getData(), iHeight + IconLabelSpacing, IconLabelSpacing, ALeft, fEnabled ? ClrScenarioItem : ClrScenarioItemDisabled, &rUseFont, false, false);
+	StdStrBuf name = pScenListEntry->GetName();
+	CMarkup::StripMarkup(&name);
+	pNameLabel = new C4GUI::Label(name.getData(), iHeight + IconLabelSpacing, IconLabelSpacing, ALeft, fEnabled ? ClrScenarioItem : ClrScenarioItemDisabled, &rUseFont, false, false);
 	// calc own bounds - use icon bounds only, because only the height is used when the item is added
 	SetBounds(pIcon->GetBounds());
 	// add components
@@ -1468,7 +1470,9 @@ void C4StartupScenSelDlg::UpdateList()
 		// add what has been loaded
 		for (C4ScenarioListLoader::Entry *pEnt = pScenLoader->GetFirstEntry(); pEnt; pEnt = pEnt->GetNext())
 		{
-			if (!SLen(searchBar->GetText()) || SSearchNoCase(pEnt->GetName().getData(), searchBar->GetText()))
+			StdStrBuf name = pEnt->GetName();
+			CMarkup::StripMarkup(&name);
+			if (!SLen(searchBar->GetText()) || SSearchNoCase(name.getData(), searchBar->GetText()))
 			{
 				ScenListItem *pEntItem = new ScenListItem(pScenSelList, pEnt);
 				if (pEnt == pOldSelection) pScenSelList->SelectEntry(pEntItem, false);
