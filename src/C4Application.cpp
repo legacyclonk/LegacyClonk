@@ -477,12 +477,19 @@ void C4Application::SetGameTickDelay(int iDelay)
 bool C4Application::SetResolution(int32_t iNewResX, int32_t iNewResY)
 {
 	const auto scale = GetScale();
-	Config.Graphics.ResX = ceilf(iNewResX / scale);
-	Config.Graphics.ResY = ceilf(iNewResY / scale);
-	// ask graphics system to change it
-	if (lpDDraw) lpDDraw->OnResolutionChanged();
-	// notify game
-	Game.OnResolutionChanged();
+	iNewResX = static_cast<int32_t>(ceilf(iNewResX / scale));
+	iNewResY = static_cast<int32_t>(ceilf(iNewResY / scale));
+
+	if (iNewResX != Config.Graphics.ResX || iNewResY != Config.Graphics.ResY)
+	{
+		Config.Graphics.ResX = iNewResX;
+		Config.Graphics.ResY = iNewResY;
+
+		// ask graphics system to change it
+		if (lpDDraw) lpDDraw->OnResolutionChanged();
+		// notify game
+		Game.OnResolutionChanged();
+	}
 	return true;
 }
 
