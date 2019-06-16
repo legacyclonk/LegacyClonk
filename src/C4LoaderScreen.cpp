@@ -151,7 +151,7 @@ void C4LoaderScreen::Draw(C4Facet &cgo, int iProgress, C4LogBuffer *pLog, int Pr
 	// Background (loader)
 	fctBackground.DrawFullScreen(cgo);
 	// draw scenario title
-	Application.DDraw->StringOut(Game.ScenarioTitle.getData(), TitleFont, 1.0f, cgo.Surface, cgo.Wdt - iHIndent, cgo.Hgt - iVIndent - iLogBoxHgt - iVMargin - iProgressBarHgt - iVMargin - TitleFont.iLineHgt, 0xdddddddd, ARight, false);
+	Application.DDraw->StringOut(Game.ScenarioTitle.getData(), TitleFont, 1.0f, cgo.Surface, cgo.Wdt - iHIndent, cgo.Hgt - iVIndent - iLogBoxHgt - iVMargin - iProgressBarHgt - iVMargin - TitleFont.iLineHgt, 0xdddddddd, ARight, true);
 	// draw progress bar
 	Application.DDraw->DrawBoxDw(cgo.Surface, iHIndent, cgo.Hgt - iVIndent - iLogBoxHgt - iVMargin - iProgressBarHgt, cgo.Wdt - iHIndent, cgo.Hgt - iVIndent - iLogBoxHgt - iVMargin, 0x4f000000);
 	int iProgressBarWdt = cgo.Wdt - iHIndent * 2 - 2;
