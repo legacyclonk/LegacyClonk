@@ -75,6 +75,7 @@ bool C4Group_UnpackDirectory(const char *szFilename);
 bool C4Group_ExplodeDirectory(const char *szFilename);
 bool C4Group_ReadFile(const char *szFilename, char **pData, size_t *iSize);
 bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32);
+bool C4Group_GetFileContentsCRC(const char *szFilename, uint32_t *pCRC32);
 bool C4Group_GetFileSHA1(const char *szFilename, uint8_t *pSHA1);
 
 bool EraseItemSafe(const char *szFilename);

@@ -34,6 +34,7 @@ public:
 	int32_t GrpUpdate;
 	int32_t UpGrpCnt; // number of file versions that can be updated by this package
 	uint32_t GrpChks1[C4UP_MaxUpGrpCnt], GrpChks2;
+	uint32_t GrpContentsCRC1[C4UP_MaxUpGrpCnt], GrpContentsCRC2;
 
 public:
 	void CompileFunc(StdCompiler *pComp);

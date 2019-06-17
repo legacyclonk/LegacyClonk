@@ -455,6 +455,19 @@ bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32)
 	return true;
 }
 
+bool C4Group_GetFileContentsCRC(const char *szFilename, uint32_t *pCRC32)
+{
+	C4Group hGroup;
+	if (hGroup.Open(szFilename))
+	{
+		*pCRC32 = hGroup.EntryCRC32();
+		hGroup.Close();
+		return true;
+	}
+
+	return false;
+}
+
 bool C4Group_GetFileSHA1(const char *szFilename, uint8_t *pSHA1)
 {
 	if (!pSHA1) return false;

@@ -228,6 +228,8 @@ void C4UpdatePackageCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(UpGrpCnt,                 "TargetCount", 0));
 	pComp->Value(mkNamingAdapt(toC4CArrU(GrpChks1),      "GrpChks1"));
 	pComp->Value(mkNamingAdapt(GrpChks2,                 "GrpChks2",    0u));
+	pComp->Value(mkNamingAdapt(toC4CArrU(GrpContentsCRC1),      "GrpContentsCRC1"));
+	pComp->Value(mkNamingAdapt(GrpContentsCRC2,                 "GrpContentsCRC2",    0u));
 }
 
 bool C4UpdatePackageCore::Load(C4Group &hGroup)
@@ -335,15 +337,25 @@ bool C4UpdatePackage::Execute(C4Group *pGroup)
 	if (GrpUpdate)
 	{
 		// check checksum
-		uint32_t iCRC32;
-		if (!C4Group_GetFileCRC(TargetGrp.GetFullName().getData(), &iCRC32))
+		uint32_t iContentsCRC32;
+		if (!C4Group_GetFileContentsCRC(TargetGrp.GetFullName().getData(), &iContentsCRC32))
 			return false;
 		int i = 0;
 		for (; i < UpGrpCnt; i++)
-			if (iCRC32 == GrpChks1[i])
+			if (GrpContentsCRC1[i] && iContentsCRC32 == GrpContentsCRC1[i])
 				break;
 		if (i >= UpGrpCnt)
-			return false;
+		{
+			uint32_t iCRC32;
+			if (!C4Group_GetFileCRC(TargetGrp.GetFullName().getData(), &iCRC32))
+				return false;
+			int i = 0;
+			for (; i < UpGrpCnt; i++)
+				if (iCRC32 == GrpChks1[i])
+					break;
+			if (i >= UpGrpCnt)
+				return false;
+		}
 	}
 	else
 	{
@@ -369,10 +381,12 @@ bool C4UpdatePackage::Execute(C4Group *pGroup)
 	if (GrpUpdate)
 	{
 		// check the result
-		uint32_t iResChks;
+		uint32_t iResChks, iResContentsChks;
 		if (!C4Group_GetFileCRC(strTarget, &iResChks))
 			return false;
-		if (iResChks != GrpChks2)
+		if (!C4Group_GetFileContentsCRC(strTarget, &iResContentsChks))
+			return false;
+		if ((!GrpContentsCRC2 || GrpContentsCRC2 != iResContentsChks) && iResChks != GrpChks2)
 		{
 #ifdef UPDATE_DEBUG
 			char *pData; int iSize;
@@ -442,20 +456,35 @@ int C4UpdatePackage::Check(C4Group *pGroup)
 	TargetGrp.Close();
 
 	// check source crc
-	uint32_t iCRC32;
-	if (!C4Group_GetFileCRC(DestPath, &iCRC32))
+	uint32_t iCRC32, iContentsCRC32;
+	if (!C4Group_GetFileContentsCRC(DestPath, &iContentsCRC32))
 		return C4UPD_CHK_BAD_SOURCE;
-	// equal to destination group?
-	if (iCRC32 == GrpChks2)
+
+	if (GrpContentsCRC2 && GrpContentsCRC2 == iContentsCRC32)
 		// so there's nothing to do
 		return C4UPD_CHK_ALREADY_UPDATED;
-	// check if it's one of our registered sources
+
 	int i = 0;
 	for (; i < UpGrpCnt; i++)
-		if (iCRC32 == GrpChks1[i])
+		if (GrpContentsCRC1[i] && iContentsCRC32 == GrpContentsCRC1[i])
 			break;
+
 	if (i >= UpGrpCnt)
-		return C4UPD_CHK_BAD_SOURCE;
+	{
+		if (!C4Group_GetFileCRC(DestPath, &iCRC32))
+			return C4UPD_CHK_BAD_SOURCE;
+		// equal to destination group?
+		if (iCRC32 == GrpChks2)
+			// so there's nothing to do
+			return C4UPD_CHK_ALREADY_UPDATED;
+		// check if it's one of our registered sources
+		int i = 0;
+		for (; i < UpGrpCnt; i++)
+			if (iCRC32 == GrpChks1[i])
+				break;
+		if (i >= UpGrpCnt)
+			return C4UPD_CHK_BAD_SOURCE;
+	}
 
 	// ok
 	return C4UPD_CHK_OK;
@@ -652,6 +681,7 @@ bool C4UpdatePackage::MakeUpdate(const char *strFile1, const char *strFile2, con
 
 	// save crc2 for later check
 	unsigned int iOldChks2 = GrpChks2;
+	unsigned int iOldContentsChks2 = GrpContentsCRC2;
 
 	// create core info
 	if (strName)
@@ -668,10 +698,18 @@ bool C4UpdatePackage::MakeUpdate(const char *strFile1, const char *strFile2, con
 	{
 		WriteLog("Error: could not calc checksum for %s!\n", strFile2); return false;
 	}
+	if (!C4Group_GetFileContentsCRC(strFile1, &GrpContentsCRC1[UpGrpCnt]))
+	{
+		WriteLog("Error: could not calc contents checksum for %s!\n", strFile1); return false;
+	}
+	if (!C4Group_GetFileContentsCRC(strFile2, &GrpContentsCRC2))
+	{
+		WriteLog("Error: could not calc contents checksum for %s!\n", strFile2); return false;
+	}
 	if (fContinued)
 	{
 		// continuation check: GrpChks2 matches?
-		if (GrpChks2 != iOldChks2)
+		if (iOldContentsChks2 ? GrpContentsCRC2 != iOldContentsChks2 : GrpChks2 != iOldChks2)
 			// that would mess up the update result...
 		{
 			WriteLog("Error: could not add to update package - target groups don't match (checksum error)\n"); return false;
@@ -679,7 +717,7 @@ bool C4UpdatePackage::MakeUpdate(const char *strFile1, const char *strFile2, con
 		// already supported by this update?
 		int i = 0;
 		for (; i < UpGrpCnt; i++)
-			if (GrpChks1[UpGrpCnt] == GrpChks1[i])
+			if (GrpChks1[UpGrpCnt] == GrpChks1[i] || (GrpContentsCRC1[i] != 0 && GrpContentsCRC1[UpGrpCnt] != 0 && GrpContentsCRC1[i] == GrpContentsCRC1[UpGrpCnt]))
 				break;
 		if (i < UpGrpCnt)
 		{
