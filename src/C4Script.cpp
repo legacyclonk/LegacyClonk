@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (C) 1998-2000, Matthes Bender (RedWolf Design)
+ * Copyright (c) 2017, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -4070,6 +4071,7 @@ protected:
 	virtual void ProcessChar(char &rChar) = 0;
 	virtual void ProcessString(char *szString, size_t iMaxLength, bool fIsID) = 0;
 	virtual void ProcessString(char **pszString, bool fIsID) = 0;
+	virtual void ProcessString(std::string &str, bool isID) = 0;
 
 public:
 	// value functions
@@ -4090,6 +4092,10 @@ public:
 	virtual void String(char **pszString, RawCompileType eType)
 	{
 		if (haveCompleteMatch()) if (!iEntryNr--) ProcessString(pszString, eType == StdCompiler::RCT_ID);
+	}
+	virtual void String(std::string &str, RawCompileType type) override
+	{
+		if (haveCompleteMatch()) if (!iEntryNr--) ProcessString(str, type == StdCompiler::RCT_ID);
 	}
 	virtual void Raw(void *pData, size_t iSize, RawCompileType eType = RCT_Escaped)
 	{
@@ -4143,6 +4149,10 @@ protected:
 	{
 		Res = (fIsID ? C4VID(C4Id(*pszString)) : C4VString(*pszString));
 	}
+	virtual void ProcessString(std::string &str, bool fIsID)
+	{
+		Res = (fIsID ? C4VID(C4Id(str.c_str())) : C4VString(str.c_str()));
+	}
 };
 
 class C4ValueSetCompiler : public C4ValueCompiler
@@ -4188,6 +4198,24 @@ protected:
 	{
 		if (iRuntimeWriteAllowed <= 0 || !Val.ConvertTo(fIsID ? C4V_C4ID : C4V_String)) return;
 		// This cannot be allowed, because it is run during decompilation and wouldn't update assiciated length fields in StdStrBuf!
+	}
+
+	virtual void ProcessString(std::string &str, bool isID) override
+	{
+		if (iRuntimeWriteAllowed <= 0 || !Val.ConvertTo(isID ? C4V_C4ID : C4V_String)) return;
+		if (isID)
+		{
+			assert(str.size() >= 4); // fields that should carry an ID are guaranteed to have a buffer that's large enough
+			char buf[5];
+			GetC4IdText(Val.getC4ID(), buf);
+			str = buf;
+		}
+		else
+		{
+			C4String *s = Val.getStr(); if (!s) return;
+			str = s->Data.getData();
+		}
+		fSuccess = true;
 	}
 };
 

@@ -91,6 +91,7 @@ public:
 	virtual void Character(char &rChar);
 	virtual void String(char *szString, size_t iMaxLength, RawCompileType eType = RCT_Escaped);
 	virtual void String(char **pszString, RawCompileType eType = RCT_Escaped);
+	virtual void String(std::string &str, RawCompileType type = RCT_Escaped) override;
 	virtual void Raw(void *pData, size_t iSize, RawCompileType eType = RCT_Escaped);
 
 	// Passes
@@ -144,6 +145,7 @@ public:
 	virtual void Character(char &rChar);
 	virtual void String(char *szString, size_t iMaxLength, RawCompileType eType = RCT_Escaped);
 	virtual void String(char **pszString, RawCompileType eType = RCT_Escaped);
+	virtual void String(std::string &str, RawCompileType type = RCT_Escaped) override;
 	virtual void Raw(void *pData, size_t iSize, RawCompileType eType = RCT_Escaped);
 
 	// Passes

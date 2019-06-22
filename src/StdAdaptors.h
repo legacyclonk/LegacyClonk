@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2018, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -207,6 +208,25 @@ inline StdStringAdapt mkStringAdapt(char *szString, int iMaxLength, StdCompiler:
 #define mkStringAdaptMA(szString) mkStringAdapt(szString, (sizeof(szString) / sizeof(*szString)) - 1, StdCompiler::RCT_All)
 #define mkStringAdaptMI(szString) mkStringAdapt(szString, (sizeof(szString) / sizeof(*szString)) - 1, StdCompiler::RCT_Idtf)
 #define mkStringAdaptMIE(szString) mkStringAdapt(szString, (sizeof(szString) / sizeof(*szString)) - 1, StdCompiler::RCT_IdtfAllowEmpty)
+
+// * std::string adaptor
+struct StdStdStringAdapt
+{
+	std::string& string; StdCompiler::RawCompileType eRawType;
+	StdStdStringAdapt(std::string& string, StdCompiler::RawCompileType eRawType = StdCompiler::RCT_Escaped)
+		: string(string), eRawType(eRawType) { }
+	inline void CompileFunc(StdCompiler *pComp) const
+	{
+		pComp->String(string, eRawType);
+	}
+	inline bool operator == (const char *szDefault) const { return string == szDefault; }
+	inline StdStdStringAdapt &operator = (const char *szDefault) { string = szDefault; return *this; }
+};
+inline StdStdStringAdapt mkStringAdapt(std::string& string, StdCompiler::RawCompileType eRawType = StdCompiler::RCT_Escaped)
+{ return StdStdStringAdapt(string, eRawType); }
+inline StdStdStringAdapt mkStringAdaptA(std::string& string)
+{ return StdStdStringAdapt(string, StdCompiler::RCT_All); }
+
 
 // * Raw adaptor
 struct StdRawAdapt

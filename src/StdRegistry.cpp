@@ -453,6 +453,11 @@ void StdCompilerConfigWrite::String(char **pszString, RawCompileType eType)
 	WriteString(pszString ? *pszString : "");
 }
 
+void StdCompilerConfigWrite::String(std::string &str, RawCompileType type)
+{
+	WriteString(str.c_str());
+}
+
 void StdCompilerConfigWrite::Raw(void *pData, size_t iSize, RawCompileType eType)
 {
 	excCorrupt("Raw values aren't supported for registry compilers!");
@@ -638,6 +643,11 @@ void StdCompilerConfigRead::String(char *szString, size_t iMaxLength, RawCompile
 void StdCompilerConfigRead::String(char **pszString, RawCompileType eType)
 {
 	*pszString = ReadString().GrabPointer();
+}
+
+void StdCompilerConfigRead::String(std::string &str, RawCompileType type)
+{
+	str = ReadString().getData();
 }
 
 void StdCompilerConfigRead::Raw(void *pData, size_t iSize, RawCompileType eType)
