@@ -350,11 +350,7 @@ public:
 	// notify user to get back to the program
 	void NotifyUserIfInactive()
 	{
-#ifdef _WIN32
-		if (!Active && pWindow) pWindow->FlashWindow();
-#elif defined(__APPLE__)
-		if (pWindow) pWindow->FlashWindow();
-#elif defined(USE_X11)
+#ifndef USE_CONSOLE
 		if (pWindow) pWindow->FlashWindow();
 #endif
 	}
