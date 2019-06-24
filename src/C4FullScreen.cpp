@@ -118,6 +118,7 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 		const auto width = LOWORD(lParam);
 		const auto height = HIWORD(lParam);
 
+		const auto oldActive = Application.Active;
 		Application.Active = (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED);
 
 		if (width != 0 && height != 0)
@@ -127,6 +128,8 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			Application.SetResolution(width, height);
 		}
+
+		if (!oldActive && Application.Active && Application.DDraw) Application.DDraw->RestoreDeviceObjects();
 	}
 		break;
 	case WM_ACTIVATEAPP:
