@@ -283,6 +283,12 @@ private:
 	DWORD styleEx = 0;
 	Microsoft::WRL::ComPtr<ITaskbarList2> taskBarList = nullptr;
 
+	struct ComUnInit
+	{
+		ComUnInit() { CoInitializeEx(nullptr, COINIT_MULTITHREADED); }
+		~ComUnInit() { CoUninitialize(); }
+	} const comUninit;
+
 #elif defined(USE_X11)
 
 protected:

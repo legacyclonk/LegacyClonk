@@ -54,7 +54,7 @@ int WINAPI WinMain(HINSTANCE hInst,
 	// Make sure CoUninitialize gets called on exit
 	struct ComUninit { ~ComUninit() { CoUninitialize(); } } const comUninit;
 	// Quit if CoInitializeEx failed
-	if (resultCoInit != S_OK)
+	if (resultCoInit != S_OK && resultCoInit != S_FALSE)
 	{
 		fprintf(stderr, "Error: CoInitializeEx returned %08X\n", resultCoInit);
 		return C4XRV_Failure;
