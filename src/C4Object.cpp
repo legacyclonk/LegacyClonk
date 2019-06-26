@@ -4195,6 +4195,7 @@ void C4Object::NoAttachAction()
 			if (ObjectActionCornerScale(this)) return;
 		// Scaling and stopped: fall off to side (avoid zuppel)
 		if ((iProcedure == DFA_SCALE) && (Action.ComDir == COMD_Stop))
+		{
 			if (Action.Dir == DIR_Left)
 			{
 				if (ObjectActionJump(this, itofix(1), Fix0, false)) return;
@@ -4203,6 +4204,7 @@ void C4Object::NoAttachAction()
 			{
 				if (ObjectActionJump(this, itofix(-1), Fix0, false)) return;
 			}
+		}
 		// Pushing: grab loss
 		if (iProcedure == DFA_PUSH) GrabLost(this);
 		// Fighting: Set last energy loss player for kill tracing (pushing people off a cliff)
