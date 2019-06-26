@@ -469,6 +469,7 @@ IDS_DLGTIP_PLAYERPROPERTIES=Change player color and preferred controls.
 IDS_DLGTIP_PLAYERSELECTION=Select the players who are to take part in the next round.
 IDS_DLGTIP_PROGRESS=Progress bar
 IDS_DLGTIP_READY=Set yourself as ready to play.
+IDS_DLGTIP_READYNOTAVAILABLE=In order to set yourself as ready to play, all network resources have to be loaded completely.
 IDS_DLGTIP_RECORD=Record game: the round is recorded for later playback.
 IDS_DLGTIP_SCENSELNEXT=Open the selected folder or start the selected scenario.
 IDS_DLGTIP_SEARCHINTERNETGAME=Internet games: besides local network games also search for internet games.

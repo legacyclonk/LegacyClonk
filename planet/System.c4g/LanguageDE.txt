@@ -468,6 +468,7 @@ IDS_DLGTIP_PLAYERPROPERTIES=Ändert die Spielereigenschaften.
 IDS_DLGTIP_PLAYERSELECTION=Legt die Spieler fest, die an der nächsten Runde teilnehmen sollen.
 IDS_DLGTIP_PROGRESS=Fortschrittsanzeige
 IDS_DLGTIP_READY=Signalisiert, dass das Spiel losgehen kann.
+IDS_DLGTIP_READYNOTAVAILABLE=Um signalisieren zu können, dass das Spiel losgehen kann, müssen erst alle Netzwerkressourcen fertig geladen werden.
 IDS_DLGTIP_RECORD=Runde aufnehmen: die Runde wird aufgezeichnet und kann später wiedergegeben werden.
 IDS_DLGTIP_SCENSELNEXT=Öffnet den ausgewählten Ordner oder startet das ausgewählte Szenario.
 IDS_DLGTIP_SEARCHINTERNETGAME=Internetspiele: neben lokalen Netzwerkspielen wird auch nach Internetspielen gesucht.
