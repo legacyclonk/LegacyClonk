@@ -306,10 +306,15 @@ void C4PXSSystem::Cast(int32_t mat, int32_t num, int32_t tx, int32_t ty, int32_t
 {
 	int32_t cnt;
 	for (cnt = 0; cnt < num; cnt++)
+	{
+		// force argument evaluation order
+		const auto r2 = Random(level + 1);
+		const auto r1 = Random(level + 1);
 		Create(mat,
 			itofix(tx), itofix(ty),
-			itofix(Random(level + 1) - level / 2) / 10,
-			itofix(Random(level + 1) - level) / 10);
+			itofix(r1 - level / 2) / 10,
+			itofix(r2 - level) / 10);
+	}
 }
 
 bool C4PXSSystem::Save(C4Group &hGroup)

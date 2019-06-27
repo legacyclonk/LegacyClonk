@@ -415,16 +415,25 @@ static C4Value FnSplit2Components(C4AulContext *cthr, C4Value *pPars)
 	pObj->Def->GetComponents(&ObjComponents, pObj, cthr->Obj);
 	if (pObj->Contained) pObj->Exit(pObj->x, pObj->y);
 	for (cnt = 0; ObjComponents.GetID(cnt); cnt++)
+	{
 		for (cnt2 = 0; cnt2 < ObjComponents.GetCount(cnt); cnt2++)
+		{
+			// force argument evaluation order
+			const auto r4 = itofix(Rnd3());
+			const auto r3 = itofix(Rnd3());
+			const auto r2 = itofix(Rnd3());
+			const auto r1 = Random(360);
 			if (pNew = Game.CreateObject(ObjComponents.GetID(cnt),
 				pObj,
 				pObj->Owner,
-				pObj->x, pObj->y, Random(360),
-				itofix(Rnd3()), itofix(Rnd3()), itofix(Rnd3())))
+				pObj->x, pObj->y,
+				r1, r2, r3, r4))
 			{
 				if (pObj->GetOnFire()) pNew->Incinerate(pObj->Owner);
 				if (pContainer) pNew->Enter(pContainer);
 			}
+		}
+	}
 	pObj->AssignRemoval();
 	return C4VTrue;
 }

@@ -112,26 +112,41 @@ void C4Weather::Execute()
 				C4Object *meto;
 				// In cave landscapes, meteors must be created a bit lower so they don't hit the ceiling
 				// (who activates meteors in cave landscapes anyway?)
+				// force argument evaluation order
+				const auto r2 = Random(100 + 1);
+				const auto r1 = Random(GBackWdt);
 				meto = Game.CreateObject(C4ID_Meteor, nullptr, NO_OWNER,
-					Random(GBackWdt), Game.Landscape.TopOpen ? -20 : 5, 0,
-					itofix(Random(100 + 1) - 50) / 10,
+					r1, Game.Landscape.TopOpen ? -20 : 5, 0,
+					itofix(r2 - 50) / 10,
 					Game.Landscape.TopOpen ? Fix0 : itofix(2), itofix(1) / 5);
 			}
 		// Lightning
 		if (!Random(35))
 			if (Random(100) < LightningLevel)
+			{
 				LaunchLightning(Random(GBackWdt), 0,
 					-20, 41, +5, 15, true);
+			}
 		// Earthquake
 		if (!Random(50))
 			if (Random(100) < EarthquakeLevel)
-				LaunchEarthquake(Random(GBackWdt), Random(GBackHgt));
+			{
+				// force argument evaluation order
+				const auto r2 = Random(GBackHgt);
+				const auto r1 = Random(GBackWdt);
+				LaunchEarthquake(r1, r2);
+			}
 		// Volcano
 		if (!Random(60))
 			if (Random(100) < VolcanoLevel)
+			{
+				// force argument evaluation order
+				const auto r2 = Random(10);
+				const auto r1 = Random(GBackWdt);
 				LaunchVolcano(Game.Material.Get("Lava"),
-					Random(GBackWdt), GBackHgt - 1,
-					BoundBy(15 * GBackHgt / 500 + Random(10), 10, 60));
+					r1, GBackHgt - 1,
+					BoundBy(15 * GBackHgt / 500 + r2, 10, 60));
+			}
 	}
 }
 

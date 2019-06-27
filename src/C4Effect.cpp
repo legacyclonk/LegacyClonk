@@ -779,12 +779,20 @@ void Splash(int32_t tx, int32_t ty, int32_t amt, C4Object *pByObj)
 			// Splash bubbles and liquid
 			for (int32_t cnt = 0; cnt < amt; cnt++)
 			{
-				BubbleOut(tx + Random(16) - 8, ty + Random(16) - 6);
+				// force argument evaluation order
+				const auto r2 = Random(16);
+				const auto r1 = Random(16);
+				BubbleOut(tx + r1 - 8, ty + r2 - 6);
 				if (GBackLiquid(tx, ty) && !GBackSemiSolid(tx, sy))
+				{
+					// force argument evaluation order
+					const auto r2 = FIXED100(-Random(200));
+					const auto r1 = FIXED100(Random(151) - 75);
 					Game.PXS.Create(Game.Landscape.ExtractMaterial(tx, ty),
 						itofix(tx), itofix(sy),
-						FIXED100(Random(151) - 75),
-						FIXED100(-Random(200)));
+						r1,
+						r2);
+				}
 			}
 		}
 	// Splash sound
