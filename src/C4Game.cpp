@@ -1204,8 +1204,10 @@ void C4Game::BlastObjects(int32_t tx, int32_t ty, int32_t level, C4Object *inobj
 									cObj->DoDamage(level / 2, iCausedBy, C4FxCall_DmgBlast);
 								}
 
-								cObj->Fling(itofix(Sign(cObj->x - tx + Rnd3()) * (level - Abs(tx - cObj->x))) / BoundBy<int32_t>(cObj->Mass / 10, 4, (cObj->Category & C4D_Living) ? 8 : 20),
-									itofix(-level + Abs(ty - cObj->y)) / BoundBy<int32_t>(cObj->Mass / 10, 4, (cObj->Category & C4D_Living) ? 8 : 20), true, iCausedBy);
+								// force argument evaluation order
+								const auto p2 = itofix(-level + Abs(ty - cObj->y)) / BoundBy<int32_t>(cObj->Mass / 10, 4, (cObj->Category & C4D_Living) ? 8 : 20);
+								const auto p1 = itofix(Sign(cObj->x - tx + Rnd3()) * (level - Abs(tx - cObj->x))) / BoundBy<int32_t>(cObj->Mass / 10, 4, (cObj->Category & C4D_Living) ? 8 : 20);
+								cObj->Fling(p1, p2, true, iCausedBy);
 							}
 			}
 	}
@@ -1223,7 +1225,9 @@ void C4Game::ShakeObjects(int32_t tx, int32_t ty, int32_t range, int32_t iCaused
 						if (!Random(3))
 							if (cObj->Action.t_attach)
 								if (!MatVehicle(cObj->Shape.AttachMat))
+								{
 									cObj->Fling(itofix(Rnd3()), Fix0, false, iCausedBy);
+								}
 }
 
 C4Object *C4Game::OverlapObject(int32_t tx, int32_t ty, int32_t wdt, int32_t hgt, int32_t category)
@@ -1624,11 +1628,12 @@ void C4Game::CastObjects(C4ID id, C4Object *pCreator, int32_t num, int32_t level
 	int32_t cnt;
 	for (cnt = 0; cnt < num; cnt++)
 	{
-		CreateObject(id, pCreator, iOwner,
-			tx, ty, Random(360),
-			FIXED10(Random(2 * level + 1) - level),
-			FIXED10(Random(2 * level + 1) - level),
-			itofix(Random(3) + 1), iController);
+		// force argument evaluation order
+		const auto r4 = itofix(Random(3) + 1);
+		const auto r3 = FIXED10(Random(2 * level + 1) - level);
+		const auto r2 = FIXED10(Random(2 * level + 1) - level);
+		const auto r1 = Random(360);
+		CreateObject(id, pCreator, iOwner, tx, ty, r1, r2, r3, r4, iController);
 	}
 }
 
@@ -1637,10 +1642,12 @@ void C4Game::BlastCastObjects(C4ID id, C4Object *pCreator, int32_t num, int32_t 
 	int32_t cnt;
 	for (cnt = 0; cnt < num; cnt++)
 	{
-		CreateObject(id, pCreator, NO_OWNER,
-			tx, ty, Random(360),
-			FIXED10(Random(61) - 30), FIXED10(Random(61) - 40),
-			itofix(Random(3) + 1), iController);
+		// force argument evaluation order
+		const auto r4 = itofix(Random(3) + 1);
+		const auto r3 = FIXED10(Random(61) - 40);
+		const auto r2 = FIXED10(Random(61) - 30);
+		const auto r1 = Random(360);
+		CreateObject(id, pCreator, NO_OWNER, tx, ty, r1, r2, r3, r4, iController);
 	}
 }
 
