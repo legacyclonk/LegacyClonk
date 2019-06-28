@@ -5949,6 +5949,7 @@ static bool FnSetViewOffset(C4AulContext *ctx, long iPlayer, long iX, long iY)
 static bool FnSetPreSend(C4AulContext *cthr, long iToVal, C4String *pNewName)
 {
 	if (!Game.Control.isNetwork()) return true;
+	if (iToVal == 0) iToVal = C4GameControlNetwork::DefaultTargetFPS;
 	// dbg: manual presend
 	const char *szClient = FnStringPar(pNewName);
 	if (!szClient || !*szClient || WildcardMatch(szClient, Game.Clients.getLocalName()))

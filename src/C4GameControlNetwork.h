@@ -46,6 +46,8 @@ class C4PacketControlReq; class C4ClientList;
 class C4GameControlNetwork // run by network thread
 {
 public:
+	static constexpr int32_t DefaultTargetFPS = 38;
+
 	C4GameControlNetwork(class C4GameControl *pParent);
 	~C4GameControlNetwork();
 

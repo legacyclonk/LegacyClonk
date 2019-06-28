@@ -31,7 +31,7 @@
 C4GameControlNetwork::C4GameControlNetwork(C4GameControl *pnParent)
 	: fEnabled(false), fRunning(false), iClientID(C4ClientIDUnknown),
 	fActivated(false), iTargetTick(-1),
-	iControlPreSend(1), iWaitStart(-1), iAvgControlSendTime(0), iTargetFPS(38),
+	iControlPreSend(1), iWaitStart(-1), iAvgControlSendTime(0), iTargetFPS(DefaultTargetFPS),
 	iControlSent(0), iControlReady(0),
 	pCtrlStack(nullptr),
 	iNextControlReqeust(0),
@@ -60,7 +60,7 @@ bool C4GameControlNetwork::Init(int32_t inClientID, bool fnHost, int32_t iStartT
 	pNetwork->Clients.BroadcastMsgToConnClients(MkC4NetIOPacket(PID_ControlReq, C4PacketControlReq(iControlReady + 1)));
 	// ok
 	fEnabled = true; fRunning = false;
-	iTargetFPS = 38; iNextControlReqeust = timeGetTime() + C4ControlRequestInterval;
+	iTargetFPS = DefaultTargetFPS; iNextControlReqeust = timeGetTime() + C4ControlRequestInterval;
 	return true;
 }
 
