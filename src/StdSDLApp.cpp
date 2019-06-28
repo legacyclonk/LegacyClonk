@@ -71,6 +71,7 @@ bool CStdApp::Init(int argc, char *argv[])
 	}
 
 	SDL_EnableUNICODE(1);
+	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
 	// create pipe
 	if (pipe(this->Pipe) != 0)
