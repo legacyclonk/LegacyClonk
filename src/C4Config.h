@@ -103,7 +103,7 @@ public:
 	bool ShowPortraits;
 	bool AddNewCrewPortraits;
 	bool SaveDefaultPortraits;
-	bool VerboseObjectLoading;
+	int32_t VerboseObjectLoading;
 	bool ColorAnimation;
 	int32_t SmokeLevel;
 	bool VideoModule;
