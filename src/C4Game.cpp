@@ -3025,8 +3025,7 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 	}
 
 	// Check for fullscreen switch in command line
-	if (SSearchNoCase(szCmdLine, "/console")
-		|| (!SSearchNoCase(szCmdLine, "/fullscreen") && *ScenarioFilename))
+	if (SSearchNoCase(szCmdLine, "/console"))
 		Application.isFullScreen = false;
 
 	// verbose
