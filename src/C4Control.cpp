@@ -140,20 +140,17 @@ void C4ControlSet::Execute() const
 		Game.GraphicsSystem.FlashMessage(OSTR);
 		break;
 
-	case C4CVT_AllowDebug: // allow debug mode?
+	case C4CVT_DisableDebug: // force debug mode disabled
 	{
-		// host only
-		if (!HostControl() || Game.Parameters.isLeague()) break;
-		bool fSet = !!iData;
-		// disable debug
-		if (!fSet && Game.DebugMode)
+		if (Game.DebugMode)
 		{
 			Game.DebugMode = false;
 			Game.GraphicsSystem.DeactivateDebugOutput();
 		}
 		// save flag, log
-		Game.Parameters.AllowDebug = fSet;
-		Log(fSet ? "Debug ON" : "Debug OFF");
+		Game.Parameters.AllowDebug = false;
+		const auto *const client = ::Game.Clients.getClientByID(iByClient);
+		LogF("Debug mode forced disabled by %s", client ? client->getName() : "<unknown client>");
 		break;
 	}
 	break;
