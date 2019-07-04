@@ -174,20 +174,18 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	StdStrBuf strUpdateProg; strUpdateProg.Copy(C4CFN_UpdateProgram);
 	// Windows: manually append extension because ExtractEntry() cannot properly glob and Extract() doesn't return failure values
 	if (SEqual(C4_OS, "win32")) strUpdateProg += ".exe";
-	// Determine name of local extract of update program: Rename update program to setup.exe for UAC elevation and in temp path
-	StdStrBuf strUpdateProgEx; strUpdateProgEx.Copy(Config.AtTempPath("setup.exe"));
 	// Extract update program (the update should be applied using the new version)
 	C4Group UpdateGroup, SubGroup;
 	char strSubGroup[1024 + 1];
 	if (!UpdateGroup.Open(strUpdateFile)) return false;
 	// Look for update program at top level
-	if (!UpdateGroup.ExtractEntry(strUpdateProg.getData(), strUpdateProgEx.getData()))
+	if (!UpdateGroup.ExtractEntry(strUpdateProg.getData(), strUpdateProg.getData()))
 		// Not found: look for an engine update pack one level down
 		if (UpdateGroup.FindEntry(FormatString("cr_*_%s.c4u", C4_OS).getData(), strSubGroup))
 			// Extract update program from sub group
 			if (SubGroup.OpenAsChild(&UpdateGroup, strSubGroup))
 			{
-				SubGroup.ExtractEntry(strUpdateProg.getData(), strUpdateProgEx.getData());
+				SubGroup.ExtractEntry(strUpdateProg.getData(), strUpdateProg.getData());
 				SubGroup.Close();
 			}
 	UpdateGroup.Close();
@@ -198,9 +196,8 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	// Close editor if open
 	HWND hwnd = FindWindow(nullptr, C4EDITORCAPTION);
 	if (hwnd) PostMessage(hwnd, WM_CLOSE, 0, 0);
-	// Notice: even if the update program and update group are in the temp path, they must be executed in our working directory
 	StdStrBuf strUpdateArgs; strUpdateArgs.Format("\"%s\" /p -w \"" C4ENGINECAPTION "\" -w \"" C4EDITORCAPTION "\" -w 2000 %s", strUpdateFile, fDeleteUpdate ? "-yd" : "-y");
-	int iError = (int)ShellExecute(nullptr, "runas", strUpdateProgEx.getData(), strUpdateArgs.getData(), Config.General.ExePath, SW_SHOW);
+	int iError = (int)ShellExecute(nullptr, "runas", strUpdateProg.getData(), strUpdateArgs.getData(), Config.General.ExePath, SW_SHOW);
 	if (iError <= 32) return false;
 	// must quit ourselves for update program to work
 	if (succeeded) Application.Quit();
