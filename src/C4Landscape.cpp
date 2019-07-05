@@ -2118,13 +2118,13 @@ bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj)
 void C4Landscape::ClearRect(int32_t iTx, int32_t iTy, int32_t iWdt, int32_t iHgt)
 {
 	C4Rect rt(iTx, iTy, iWdt, iHgt);
-	PrepareChange(rt);
+	PrepareChange(rt, false);
 	for (int32_t y = iTy; y < iTy + iHgt; y++)
 	{
 		for (int32_t x = iTx; x < iTx + iWdt; x++) ClearPix(x, y);
 		if (Rnd3()) Rnd3();
 	}
-	FinishChange(rt);
+	FinishChange(rt, false);
 }
 
 void C4Landscape::ClearRectDensity(int32_t iTx, int32_t iTy, int32_t iWdt, int32_t iHgt, int32_t iOfDensity)
@@ -2753,7 +2753,7 @@ bool C4Landscape::Mat2Pal()
 	return true;
 }
 
-void C4Landscape::PrepareChange(C4Rect BoundingBox)
+void C4Landscape::PrepareChange(C4Rect BoundingBox, const bool updateMatCnt)
 {
 	// move solidmasks out of the way
 	C4Rect SolidMaskRect = BoundingBox;
@@ -2763,14 +2763,14 @@ void C4Landscape::PrepareChange(C4Rect BoundingBox)
 	{
 		pSolid->RemoveTemporary(SolidMaskRect);
 	}
-	UpdateMatCnt(BoundingBox, false);
+	if (updateMatCnt) UpdateMatCnt(BoundingBox, false);
 }
 
-void C4Landscape::FinishChange(C4Rect BoundingBox)
+void C4Landscape::FinishChange(C4Rect BoundingBox, const bool updateMatAndPixCnt)
 {
 	// relight
 	Relight(BoundingBox);
-	UpdateMatCnt(BoundingBox, true);
+	if (updateMatAndPixCnt) UpdateMatCnt(BoundingBox, true);
 	// Restore Solidmasks
 	C4Rect SolidMaskRect = BoundingBox;
 	SolidMaskRect.x -= 2 * C4LS_MaxLightDistX; SolidMaskRect.y -= 2 * C4LS_MaxLightDistY;
@@ -2779,7 +2779,7 @@ void C4Landscape::FinishChange(C4Rect BoundingBox)
 	{
 		pSolid->Repair(SolidMaskRect);
 	}
-	UpdatePixCnt(BoundingBox);
+	if (updateMatAndPixCnt) UpdatePixCnt(BoundingBox);
 	C4SolidMask::CheckConsistency();
 }
 

@@ -234,8 +234,8 @@ protected:
 
 	void UpdatePixCnt(const class C4Rect &Rect, bool fCheck = false);
 	void UpdateMatCnt(C4Rect Rect, bool fPlus);
-	void PrepareChange(C4Rect BoundingBox);
-	void FinishChange(C4Rect BoundingBox);
+	void PrepareChange(C4Rect BoundingBox, bool updateMatCnt = true);
+	void FinishChange(C4Rect BoundingBox, bool updateMatAndPixCnt = true);
 	static bool DrawLineLandscape(int32_t iX, int32_t iY, int32_t iGrade);
 
 public:
