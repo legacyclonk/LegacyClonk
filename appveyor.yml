@@ -2,7 +2,7 @@ version: '{build}'
 skip_tags: true
 image:
 - Visual Studio 2017
-- Ubuntu
+- Ubuntu1804
 
 platform:
   - Win32
@@ -12,7 +12,7 @@ configuration: RelWithDebInfo
 
 matrix:
   exclude:
-    - image: Ubuntu
+    - image: Ubuntu1804
       platform: Win32
     - image: Visual Studio 2017
       platform: x86
@@ -22,24 +22,27 @@ init:
 - cmd: git config --global core.autocrlf true
 
 install:
-  - cmd: powershell -Command Start-FileDownload http://people.ds.cam.ac.uk/pw410/out/openclonk-deps-vs140-i386-easy.7z
+  - cmd: powershell -Command Start-FileDownload http://assets.maxmitti.tk/openclonk-deps-vs140-i386-easy.7z
   - cmd: 7z x openclonk-deps-vs140-i386-easy.7z
   - cmd: powershell -Command Start-FileDownload http://fulgen.bplaced.net/files/fmodapi375win.zip
   - cmd: 7z x fmodapi375win.zip
   - cmd: copy fmodapi375win\api\inc\* deps\include
   - cmd: copy fmodapi375win\api\lib\* deps\lib
   #- cmd: copy fmodapi375win\api\*.dll .
+  - sh: sudo apt-get update
+  - sh: test "$PLATFORM" = "x86" && sudo DEBIAN_FRONTEND=noninteractive apt-get install debootstrap -y || true
+  - sh: test "$PLATFORM" = "x86" && mkdir chroot || true
+  - sh: test "$PLATFORM" = "x86" && sudo debootstrap --arch=i386 --components=main,universe,multiverse bionic chroot http://de.archive.ubuntu.com/ubuntu || true
+  - sh: test "$PLATFORM" = "x86" && sudo mount -o bind /dev chroot/dev || true
+  - sh: test "$PLATFORM" = "x86" && sudo mount -o bind /dev/pts chroot/dev/pts || true
+  - sh: test "$PLATFORM" = "x86" && sudo mount -t sysfs /sys chroot/sys || true
+  - sh: test "$PLATFORM" = "x86" && sudo mount -t proc /proc chroot/proc || true
+  - sh: test "$PLATFORM" = "x86" && sudo cp /proc/mounts chroot/etc/mtab || true
+  - sh: test "$PLATFORM" = "x86" && sudo cp /etc/resolv.conf chroot/etc/resolv.conf || true
   
-  - sh: sudo update-alternatives --set gcc /usr/bin/gcc-8
-  - sh: sudo apt-get install zlib1g-dev build-essential libgl1-mesa-dev libjpeg-dev libpng-dev libssl-dev libglu1-mesa-dev libglew-dev libsdl1.2-dev libsdl-mixer1.2-dev libxpm-dev -y
-
 before_build:
   - cmd: cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=RelWithDebInfo .
   - cmd: ls
-  
-  - sh: mkdir build
-  - sh: cd build
-  - sh: cmake -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
   
 build:
   parallel: true
@@ -49,10 +52,15 @@ for:
 -
   matrix:
       only:
-        - image: Ubuntu
+        - image: Ubuntu1804
             
   build_script:
-    - sh: make -j$(nproc)
+  - sh: curl http://fulgen.bplaced.net/files/build.sh -o build.sh
+  - sh: chmod +x ./build.sh
+  - sh: test "$PLATFORM" = "x86" && sudo rsync -rv --exclude=chroot . chroot/legacyclonk || true
+  - sh: test "$PLATFORM" = "x86" && sudo chmod +x chroot/legacyclonk/build.sh || true
+  - sh: test "$PLATFORM" = "x86" && sudo chroot chroot /legacyclonk/build.sh || true
+  - sh: test "$PLATFORM" = "x64" && source ./build.sh || true
 
 after_build:
   - cmd: ls
@@ -64,9 +72,8 @@ after_build:
   - cmd: cd appdir
   - cmd: 7z a LegacyClonk.zip *
   - cmd: appveyor PushArtifact .\LegacyClonk.zip -DeploymentName LegacyClonk
-  
-  - sh: ls
-  - sh: tar -cvzf LegacyClonk-${PLATFORM}.tar.gz clonk c4group
+  - 
+  - sh: test "$PLATFORM" = "x86" && cp chroot/legacyclonk/build/LegacyClonk-.tar.gz LegacyClonk-x86.tar.gz || true
   - sh: appveyor PushArtifact LegacyClonk-${PLATFORM}.tar.gz -DeploymentName LegacyClonk
 
 test: off
