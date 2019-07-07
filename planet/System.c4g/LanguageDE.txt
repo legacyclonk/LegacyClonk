@@ -865,7 +865,6 @@ IDS_MSG_NOSPLITSCREENINLEAGUE=Spieler %s und %s spielen auf demselben Client geg
 IDS_MSG_NOTALLSAVEGAMEPLAYERSHAVE=Nicht alle Spielstand-Spieler wurden lokalen Spielern zugewiesen.|Mit der rechten Maustaste können Spielstand-Spieler aus der Liste lokalen Spielern zugewiesen werden.|Nicht zugewiesene Spielstand-Spieler werden aus dem Spiel entfernt. Nicht zugewiesene lokale Spieler treten als neue Spieler bei.|Jetzt starten?
 IDS_MSG_NOTAVALIDFILE=%s ist keine ausführbare Datei.
 IDS_MSG_NOTENOUGHPLAYERSFORTHISRO=Nicht genügend Teilnehmer für diese Runde.
-IDS_MSG_NOUNREGEDIT=Objektverwaltung ist nur in der registrierten Version möglich.
 IDS_MSG_NOUPDATEAVAILABLEFORTHISV=Zur Zeit kein Update für diese Version verfügbar.
 IDS_MSG_OBJCOUNT=Anzahl Objekte
 IDS_MSG_PARTICIPATE_DESC=%s für den Einsatz in der nächsten Runde auswählen.
