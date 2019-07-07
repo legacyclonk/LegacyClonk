@@ -36,7 +36,7 @@ deploy:
     secure: fuEmViv/kQAZ8D5LpGOQ6T29pyzpkUhUNLjH6jbrfJ+qe3gTiyb9QH6+awmWeJOescQFttfE4Ejx/GUhK9THPjv3negViyoZ06mEMaj0nC7cfAhQLiXAHV8vk2+T6LSNC7YOrymrY1nvycpUEvd/XWuobeQnbRuoKB/Sh2Vo6NX8SZYoUygBZGWAubfwAjuMq09B+chtByLDeleCEiL3oGiqeNna2r6QwRzX6s4+JEutW7qNPxgpaBOWMveENyiaE0/U8ToizozAM9KiC51JOsG1RgWfA/wESSM5vSETxwowOgENkCUIfA4DYGPdF5j+B8i0R6XhX2Mt8hSpCZ/v+j61xrRxIPLklrMcyyB4+OcDu21LApI4sti9afQT7WJ3RSoTNCE6Si0iMeBKi+Fn8V1vg72RFd6XWuaqjFgLxhvqihxYNtAJAJVTAx/fvwzzX0SDyXkvPyxhZG3hBYWTRVQFLWOBJw/aVqONInUVGwotmxP1gkQ+g/DonUzO8qtif3Eu/N8ZNItbfdGsaNET6OA8T2pu30PciSZ7icsBNLH/Gs/TDkioEWikOhydxYtTbjsIgLpVGbUUQqXtQZb6NUYge1JmEJ4FYO9E1TDR5Ig0zHMnKtpRw1foDrguweTQFy/X/AfmTlEibFYybtARv7KudCZ8HE02/QBfz1OHCeU=
   file: LegacyClonk-mac.tar.gz
   on:
-    repo: Fulgen301/LegacyClonk
+    repo: legacyclonk/LegacyClonk
     tags: true
   all_branches: true
   skip_cleanup: true
