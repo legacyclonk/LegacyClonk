@@ -406,30 +406,31 @@ C4ScriptOpDef C4ScriptOpMap[] =
 	// |  identifier                 |  right-associative
 	// |  |     Bytecode             |  |  no second id ParType1      ParType2
 	// prefix
-	{ 15, "++", AB_Inc1,             0, 1, 0, C4V_Int,  C4V_pC4Value, C4V_Any },
-	{ 15, "--", AB_Dec1,             0, 1, 0, C4V_Int,  C4V_pC4Value, C4V_Any },
-	{ 15, "~",  AB_BitNot,           0, 1, 0, C4V_Int,  C4V_Int,      C4V_Any },
-	{ 15, "!",  AB_Not,              0, 1, 0, C4V_Bool, C4V_Bool,     C4V_Any },
-	{ 15, "+",  AB_ERR,              0, 1, 0, C4V_Int,  C4V_Int,      C4V_Any },
-	{ 15, "-",  AB_Neg,              0, 1, 0, C4V_Int,  C4V_Int,      C4V_Any },
+	{ 16, "++", AB_Inc1,             0, 1, 0, C4V_Int,  C4V_pC4Value, C4V_Any },
+	{ 16, "--", AB_Dec1,             0, 1, 0, C4V_Int,  C4V_pC4Value, C4V_Any },
+	{ 16, "~",  AB_BitNot,           0, 1, 0, C4V_Int,  C4V_Int,      C4V_Any },
+	{ 16, "!",  AB_Not,              0, 1, 0, C4V_Bool, C4V_Bool,     C4V_Any },
+	{ 16, "+",  AB_ERR,              0, 1, 0, C4V_Int,  C4V_Int,      C4V_Any },
+	{ 16, "-",  AB_Neg,              0, 1, 0, C4V_Int,  C4V_Int,      C4V_Any },
 
 	// postfix (whithout second statement)
-	{ 16, "++", AB_Inc1_Postfix,     1, 1, 1, C4V_Int,  C4V_pC4Value, C4V_Any },
-	{ 16, "--", AB_Dec1_Postfix,     1, 1, 1, C4V_Int,  C4V_pC4Value, C4V_Any },
+	{ 17, "++", AB_Inc1_Postfix,     1, 1, 1, C4V_Int,  C4V_pC4Value, C4V_Any },
+	{ 17, "--", AB_Dec1_Postfix,     1, 1, 1, C4V_Int,  C4V_pC4Value, C4V_Any },
 
 	// postfix
-	{ 14, "**", AB_Pow,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
-	{ 13, "/",  AB_Div,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
-	{ 13, "*",  AB_Mul,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
-	{ 13, "%",  AB_Mod,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
-	{ 12, "-",  AB_Sub,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
-	{ 12, "+",  AB_Sum,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
-	{ 11, "<<", AB_LeftShift,        1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
-	{ 11, ">>", AB_RightShift,       1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
-	{ 10, "<",  AB_LessThan,         1, 0, 0, C4V_Bool, C4V_Int,      C4V_Int },
-	{ 10, "<=", AB_LessThanEqual,    1, 0, 0, C4V_Bool, C4V_Int,      C4V_Int },
-	{ 10, ">",  AB_GreaterThan,      1, 0, 0, C4V_Bool, C4V_Int,      C4V_Int },
-	{ 10, ">=", AB_GreaterThanEqual, 1, 0, 0, C4V_Bool, C4V_Int,      C4V_Int },
+	{ 15, "**", AB_Pow,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
+	{ 14, "/",  AB_Div,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
+	{ 14, "*",  AB_Mul,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
+	{ 14, "%",  AB_Mod,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
+	{ 13, "-",  AB_Sub,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
+	{ 13, "+",  AB_Sum,              1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
+	{ 12, "<<", AB_LeftShift,        1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
+	{ 12, ">>", AB_RightShift,       1, 0, 0, C4V_Int,  C4V_Int,      C4V_Int },
+	{ 11, "<",  AB_LessThan,         1, 0, 0, C4V_Bool, C4V_Int,      C4V_Int },
+	{ 11, "<=", AB_LessThanEqual,    1, 0, 0, C4V_Bool, C4V_Int,      C4V_Int },
+	{ 11, ">",  AB_GreaterThan,      1, 0, 0, C4V_Bool, C4V_Int,      C4V_Int },
+	{ 11, ">=", AB_GreaterThanEqual, 1, 0, 0, C4V_Bool, C4V_Int,      C4V_Int },
+	{ 10, "..", AB_Concat,           1, 0, 0, C4V_String, C4V_String, C4V_String },
 	{ 9, "==",  AB_Equal,            1, 0, 0, C4V_Bool, C4V_Any,      C4V_Any },
 	{ 9, "!=",  AB_NotEqual,         1, 0, 0, C4V_Bool, C4V_Any,      C4V_Any },
 	{ 9, "S=",  AB_SEqual,           1, 0, 0, C4V_Bool, C4V_String,   C4V_String },
@@ -817,6 +818,7 @@ static const char *GetTTName(C4AulBCCType e)
 	case AB_LessThanEqual:    return "AB_LessThanEqual";    // <=
 	case AB_GreaterThan:      return "AB_GreaterThan";      // >
 	case AB_GreaterThanEqual: return "AB_GreaterThanEqual"; // >=
+	case AB_Concat:           return "AB_Concat";           // ..
 	case AB_EqualIdent:       return "AB_EqualIdent";       // old ==
 	case AB_Equal:            return "AB_Equal";            // new ==
 	case AB_NotEqualIdent:    return "AB_NotEqualIdent";    // old !=
@@ -958,6 +960,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 	case AB_LessThanEqual:
 	case AB_GreaterThan:
 	case AB_GreaterThanEqual:
+	case AB_Concat:
 	case AB_Equal:
 	case AB_EqualIdent:
 	case AB_NotEqual:

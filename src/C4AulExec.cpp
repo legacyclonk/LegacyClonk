@@ -518,6 +518,17 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				PopValue();
 				break;
 			}
+			case AB_Concat: // ..
+			{
+				CheckOpPars(pCPos->bccX);
+				C4Value *pPar1 = pCurVal - 1;
+				C4Value *pPar2 = pCurVal;
+				StdStrBuf result(pPar1->_getStr()->Data, true);
+				result.Append(pPar2->_getStr()->Data);
+				pPar1->SetString(new C4String(result, &pCurCtx->Func->Owner->GetEngine()->Strings));
+				PopValue();
+				break;
+			}
 			case AB_EqualIdent: // old ==
 			{
 				CheckOpPars(pCPos->bccX);

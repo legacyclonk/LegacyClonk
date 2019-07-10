@@ -153,6 +153,7 @@ enum C4AulBCCType
 	AB_LessThanEqual,    // <=
 	AB_GreaterThan,      // >
 	AB_GreaterThanEqual, // >=
+	AB_Concat,           // ..
 	AB_EqualIdent,       // old ==
 	AB_Equal,            // new ==
 	AB_NotEqualIdent,    // old !=
@@ -479,6 +480,7 @@ public:
 	enum Strict Strict; // new or even newer syntax?
 	bool Temporary; // set for DirectExec-scripts; do not parse those
 
+	C4AulScriptEngine *GetEngine() { return Engine; }
 	const char *GetScript() const { return Script.getData(); }
 
 	C4AulFunc *GetFuncRecursive(const char *pIdtf); // search function by identifier, including global funcs
