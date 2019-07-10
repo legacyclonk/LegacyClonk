@@ -14,7 +14,7 @@
  * for the above references.
  */
 
-/* Linux conversion by Günther Brammer, 2005 */
+/* Linux conversion by GÃ¼nther Brammer, 2005 */
 
 /* Lots of file helpers */
 
@@ -378,7 +378,8 @@ bool WildcardMatch(const char *szWildcard, const char *szString)
 	return !*pWild && !*pPos;
 }
 
-#define SStripChars "!\"§%&/=?+*#:;<>\\."
+// !"Â§%&/=?+*#:;<>\.
+#define SStripChars "!\"\xa7%&/=?+*#:;<>\\."
 // create a valid file name from some title
 void MakeFilenameFromTitle(char *szTitle)
 {

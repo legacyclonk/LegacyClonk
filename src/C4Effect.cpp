@@ -578,9 +578,9 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	{
 		// set default fire modes
 		uint32_t dwCat = pObj->Category;
-		if (dwCat & (C4D_Living | C4D_StaticBack)) // Tiere, B‰ume
+		if (dwCat & (C4D_Living | C4D_StaticBack)) // Tiere, B√§ume
 			iFireMode = C4Fx_FireMode_LivingVeg;
-		else if (dwCat & (C4D_Structure | C4D_Vehicle)) // Geb‰ude und Fahrzeuge sind unten meist kantig
+		else if (dwCat & (C4D_Structure | C4D_Vehicle)) // Geb√§ude und Fahrzeuge sind unten meist kantig
 			iFireMode = C4Fx_FireMode_StructVeh;
 		else
 			iFireMode = C4Fx_FireMode_Object;

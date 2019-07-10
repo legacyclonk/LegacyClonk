@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 				cin >> iCnt;
 			while (iCnt < 0);
 
-			cout << "Größe?";
+			cout << "Groesse?";
 			do
 				cin >> iSize;
 			while (iSize < 1 || iSize > 1024);

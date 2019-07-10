@@ -461,7 +461,7 @@ StdStrBuf C4StartupPlrSelDlg::CrewListItem::GetPhysicalTextLine(int32_t iPhysVal
 	const int32_t iMaxBars = 10;
 	StdStrBuf sResult;
 	sResult.Format("%s ", LoadResStr(idsName));
-	sResult.AppendChars('·', iMaxBars * iPhysValue / C4MaxPhysical);
+	sResult.AppendChars('\xb7' /*Â·*/, iMaxBars * iPhysValue / C4MaxPhysical);
 	return sResult;
 }
 

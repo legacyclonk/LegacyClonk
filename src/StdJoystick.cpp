@@ -24,7 +24,7 @@
 
 uint32_t POV2Position(DWORD dwPOV, bool fVertical)
 {
-	// POV value is a 360° angle multiplied by 100
+	// POV value is a 360Â° angle multiplied by 100
 	double dAxis;
 	// Centered
 	if (dwPOV == JOY_POVCENTERED)

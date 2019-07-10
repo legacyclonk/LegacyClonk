@@ -208,7 +208,7 @@ StdStrBuf StdCompilerBinRead::getPosition() const
 template <class T>
 inline void StdCompilerBinRead::ReadValue(T &rValue)
 {
-	// Pufferüberhang prüfen
+	// PufferÃ¼berhang prÃ¼fen
 	if (iPos + sizeof(T) > Buf.getSize())
 	{
 		excEOF(); return;
@@ -861,7 +861,7 @@ long StdCompilerINIRead::ReadNum()
 	}
 	// Skip whitespace
 	SkipWhitespace();
-	// Read number. If this breaks, Günther is to blame!
+	// Read number. If this breaks, GÃ¼nther is to blame!
 	const char *pnPos = pPos;
 	long iNum = strtol(pPos, const_cast<char **>(&pnPos), 10);
 	// Could not read?
@@ -882,7 +882,7 @@ unsigned long StdCompilerINIRead::ReadUNum()
 	}
 	// Skip whitespace
 	SkipWhitespace();
-	// Read number. If this breaks, Günther is to blame!
+	// Read number. If this breaks, GÃ¼nther is to blame!
 	const char *pnPos = pPos;
 	unsigned long iNum = strtoul(pPos, const_cast<char **>(&pnPos), 10);
 	// Could not read?

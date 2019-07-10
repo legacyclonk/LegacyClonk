@@ -668,8 +668,8 @@ void Edit::DrawElement(C4FacetEx &cgo)
 		char cAtCursor = pDrawText[iCursorPos]; pDrawText[iCursorPos] = 0; int32_t w, h, wc;
 		pFont->GetTextExtent(pDrawText, w, h, false);
 		pDrawText[iCursorPos] = cAtCursor;
-		pFont->GetTextExtent("¦", wc, h, false); wc /= 2;
-		lpDDraw->TextOut("¦", *pFont, 1.5f, cgo.Surface, rcClientRect.x + cgo.TargetX + w - wc - iXScroll, iY0 + cgo.TargetY - h / 3, dwFontClr, ALeft, false);
+		pFont->GetTextExtent("\xa6" /*Â¦*/, wc, h, false); wc /= 2;
+		lpDDraw->TextOut("\xa6" /*Â¦*/, *pFont, 1.5f, cgo.Surface, rcClientRect.x + cgo.TargetX + w - wc - iXScroll, iY0 + cgo.TargetY - h / 3, dwFontClr, ALeft, false);
 	}
 	// unclip
 	if (fOwnClip) if (fClip)

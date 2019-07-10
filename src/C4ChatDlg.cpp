@@ -25,14 +25,14 @@
 
 void convUTF8toWindows(StdStrBuf &sText)
 {
-	// workaround until we have UTF-8 support: convert German umlauts and ß
-	sText.Replace("\xc3\x84", "Ä");
-	sText.Replace("\xc3\x96", "Ö");
-	sText.Replace("\xc3\x9c", "Ü");
-	sText.Replace("\xc3\xa4", "ä");
-	sText.Replace("\xc3\xb6", "ö");
-	sText.Replace("\xc3\xbc", "ü");
-	sText.Replace("\xc3\x9f", "ß");
+	// workaround until we have UTF-8 support: convert German umlauts and ÃŸ
+	sText.Replace("Ã„", "\xc4");
+	sText.Replace("Ã–", "\xd6");
+	sText.Replace("Ãœ", "\xdc");
+	sText.Replace("Ã¤", "\xe4");
+	sText.Replace("Ã¶", "\xf6");
+	sText.Replace("Ã¼", "\xfc");
+	sText.Replace("ÃŸ", "\xdf");
 }
 
 /* C4ChatControl::ChatSheet::NickItem */

@@ -575,7 +575,7 @@ bool C4Def::Load(C4Group &hGroup,
 	if (fSuccess) if (!LooksLikeID(id))
 	{
 #ifdef C4ENGINE
-		// wie geth ID?????ßßßß
+		// wie geth ID?????ÃŸÃŸÃŸÃŸ
 		if (!Name[0]) Name = GetFilename(hGroup.GetName());
 		sprintf(OSTR, LoadResStr("IDS_ERR_INVALIDID"), Name.getData());
 		Log(OSTR);

@@ -138,9 +138,9 @@ bool ForLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2,
 char CharCapital(char cChar)
 {
 	if (Inside(cChar, 'a', 'z')) return (cChar - 32);
-	if (cChar == 'ä') return 'Ä';
-	if (cChar == 'ö') return 'Ö';
-	if (cChar == 'ü') return 'Ü';
+	if (cChar == '\xe4' /*Ã¤*/) return '\xc4' /*Ã„*/;
+	if (cChar == '\xf6' /*Ã¶*/) return '\xd6' /*Ã–*/;
+	if (cChar == '\xfc' /*Ã¼*/) return '\xdc' /*Ãœ*/;
 	return cChar;
 }
 
