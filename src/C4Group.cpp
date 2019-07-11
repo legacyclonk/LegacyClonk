@@ -150,7 +150,7 @@ bool C4Group_CopyItem(const char *szSource, const char *szTarget1, bool fNoSort,
 	SCopy(C4Group_TempPath, szTempFilename, _MAX_PATH);
 	SAppend(GetFilename(szSource), szTempFilename);
 	MakeTempFilename(szTempFilename);
-	
+
 	// Extract source to temp file
 	if (!hSourceParent.Open(szSourceParentPath)
 		|| !hSourceParent.Extract(GetFilename(szSource), szTempFilename)
@@ -198,7 +198,7 @@ bool C4Group_MoveItem(const char *szSource, const char *szTarget1, bool fNoSort)
 	SCopy(C4Group_TempPath, szTempFilename, _MAX_PATH);
 	SAppend(GetFilename(szSource), szTempFilename);
 	MakeTempFilename(szTempFilename);
-	
+
 	// Extract source to temp file
 	if (!hSourceParent.Open(szSourceParentPath)
 		|| !hSourceParent.Extract(GetFilename(szSource), szTempFilename)
@@ -806,7 +806,6 @@ bool C4Group::AddEntry(int status,
 		// Close open StdFile
 		StdFile.Close();
 
-
 		// Get path to target folder file
 		char tfname[_MAX_FNAME];
 		SCopy(FileName, tfname, _MAX_FNAME);
@@ -827,7 +826,6 @@ bool C4Group::AddEntry(int status,
 			hFile.Close();
 
 			if (fHoldBuffer) if (fBufferIsStdbuf) StdBuf::DeletePointer(membuf); else delete[] membuf;
-
 
 			return fOkay;
 
@@ -944,8 +942,8 @@ bool C4Group::Close()
 	bool fSuccess = Save(false);
 
 	// Close exclusive mother
-	CloseExclusiveMother(); 
-	
+	CloseExclusiveMother();
+
 	// Close file
 	Clear();
 
@@ -1420,7 +1418,7 @@ bool C4Group::Merge(const char *szFolders)
 	char szFileName[_MAX_FNAME + 1];
 	int iFileCount = 0;
 	DirectoryIterator i;
-  
+
 	// Process segmented path & search wildcards
 	char cSeparator = (SCharCount(';', szFolders) ? ';' : '|');
 	for (int cseg = 0; SCopySegment(szFolders, cseg, szFileName, cSeparator, _MAX_FNAME); cseg++)
@@ -1547,7 +1545,7 @@ bool C4Group::Delete(const char *szFiles, bool fRecursive)
 	if (fRecursive)
 	{
 		C4Group hChild;
-		ResetSearch(); 
+		ResetSearch();
 		while ((tentry = SearchNextEntry("*")))
 			if (tentry->ChildGroup)
 				if (hChild.OpenAsChild(this, tentry->FileName))
@@ -1692,7 +1690,7 @@ bool C4Group::Extract(const char *szFiles, const char *szExtractTo, const char *
 	for (int cseg = 0; SCopySegment(szFiles, cseg, szFileName, cSeparator, _MAX_PATH); cseg++)
 	{
 		// Search all entries
-		ResetSearch(); 
+		ResetSearch();
 		while (tentry = SearchNextEntry(szFileName))
 		{
 			// skip?
@@ -1706,7 +1704,7 @@ bool C4Group::Extract(const char *szFiles, const char *szExtractTo, const char *
 			// Extract
 			if (!ExtractEntry(tentry->FileName, szExtractTo))
 				return Error("Extract: Could not extract entry");
-    
+
 			fcount++;
 		}
 	}

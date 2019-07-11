@@ -291,7 +291,6 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"
 
 C4StartupAboutDlg::~C4StartupAboutDlg() = default;
 
-
 std::pair<C4GUI::TextWindow*, C4GUI::Label*> C4StartupAboutDlg::DrawPersonList(PersonList& persons, const char* title, C4Rect& rect, uint8_t flags)
 {
 	CStdFont &rUseFont = C4GUI::GetRes()->TextFont;
@@ -332,7 +331,6 @@ void C4StartupAboutDlg::DrawElement(C4FacetEx &cgo)
 	if (!IsFading()) lpDDraw->FillBG();
 	C4Startup::Get()->Graphics.fctAboutBG.Draw(cgo, false);
 }
-
 
 void C4StartupAboutDlg::SwitchPage(uint32_t number)
 {

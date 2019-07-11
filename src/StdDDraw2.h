@@ -15,7 +15,6 @@
  * for the above references.
  */
 
-
 /* A wrapper class to DirectDraw */
 
 #pragma once

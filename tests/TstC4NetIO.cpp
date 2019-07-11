@@ -203,7 +203,6 @@ int main(int argc, char *argv[])
 
 	cout << " ok" << endl;
 
-
 	if (fHost)
 	{
 

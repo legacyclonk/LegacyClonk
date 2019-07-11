@@ -810,11 +810,11 @@ unsigned long timeGetTime(void)
 const char *GetCurrentTimeStamp(bool enableMarkupColor)
 {
 	static char buf[25];
-	
+
 	time_t timenow;
 	time(&timenow);
-	
+
 	strftime(buf, sizeof(buf), enableMarkupColor ? "<c 909090>[%H:%M:%S]</c>" : "[%H:%M:%S]", localtime(&timenow));
-	
+
 	return buf;
 }

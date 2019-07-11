@@ -38,11 +38,11 @@ install:
   - sh: test "$PLATFORM" = "x86" && sudo mount -t proc /proc chroot/proc || true
   - sh: test "$PLATFORM" = "x86" && sudo cp /proc/mounts chroot/etc/mtab || true
   - sh: test "$PLATFORM" = "x86" && sudo cp /etc/resolv.conf chroot/etc/resolv.conf || true
-  
+
 before_build:
   - cmd: cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=RelWithDebInfo .
   - cmd: ls
-  
+
 build:
   parallel: true
   project: LegacyClonk.sln
@@ -52,7 +52,7 @@ for:
   matrix:
       only:
         - image: Ubuntu1804
-            
+
   build_script:
   - sh: curl http://fulgen.bplaced.net/files/build.sh -o build.sh
   - sh: chmod +x ./build.sh
@@ -71,7 +71,7 @@ after_build:
   - cmd: cd appdir
   - cmd: 7z a LegacyClonk.zip *
   - cmd: appveyor PushArtifact .\LegacyClonk.zip -DeploymentName LegacyClonk
-  - 
+  -
   - sh: test "$PLATFORM" = "x86" && cp chroot/legacyclonk/build/LegacyClonk-.tar.gz LegacyClonk-x86.tar.gz || true
   - sh: appveyor PushArtifact LegacyClonk-${PLATFORM}.tar.gz -DeploymentName LegacyClonk
 

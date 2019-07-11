@@ -13,7 +13,7 @@
  * To redistribute this file separately, substitute the full license texts
  * for the above references.
  */
- 
+
 /* Create map from dynamic landscape data in scenario */
 
 #pragma once

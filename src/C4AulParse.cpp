@@ -1812,7 +1812,7 @@ void C4AulParseState::Parse_Statement()
 		else if (SEqual(Idtf, C4AUL_For)) // for
 		{
 			Shift();
-			// Look if it's the for([var] foo in array)-form
+			// Look if it's the "for ([var] foo in array)"-form
 			const char *SPos0 = SPos;
 			// must be followed by a bracket
 			Match(ATT_BOPEN);

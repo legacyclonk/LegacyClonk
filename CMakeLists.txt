@@ -13,9 +13,9 @@
 
 cmake_minimum_required(VERSION 3.8)
 
-if(WIN32)
+if (WIN32)
 	set(CMAKE_SYSTEM_VERSION 6.1 CACHE TYPE INTERNAL FORCE) # Windows 7
-endif()
+endif ()
 
 project("LegacyClonk")
 
@@ -38,9 +38,9 @@ list(APPEND CMAKE_PREFIX_PATH ${EXTRA_DEPS_DIR})
 
 CHECK_INCLUDE_FILE_CXX(direct.h           HAVE_DIRECT_H)
 CHECK_INCLUDE_FILE_CXX(execinfo.h         HAVE_EXECINFO_H)
-if(NOT WIN32)
+if (NOT WIN32)
 	CHECK_INCLUDE_FILE_CXX(iconv.h            HAVE_ICONV)
-endif()
+endif ()
 CHECK_INCLUDE_FILE_CXX(io.h               HAVE_IO_H)
 CHECK_INCLUDE_FILE_CXX(langinfo.h         HAVE_LANGINFO_H)
 CHECK_INCLUDE_FILE_CXX(locale.h           HAVE_LOCALE_H)
@@ -181,7 +181,7 @@ target_link_libraries(clonk standard)
 
 # Link FMOD
 if (USE_FMOD)
- 	find_library(FMOD_LIBRARY fmodvc)
+	find_library(FMOD_LIBRARY fmodvc)
 	if (NOT FMOD_LIBRARY)
 		message(FATAL_ERROR "Cannot find FMOD library")
 	endif ()

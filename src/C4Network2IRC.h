@@ -14,7 +14,6 @@
  * for the above references.
  */
 
-
 #pragma once
 
 #include "C4NetIO.h"

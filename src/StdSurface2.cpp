@@ -419,7 +419,7 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 
 	int realWdt = ceilf(static_cast<float>(Wdt) * scale);
 	int realHgt = ceilf(static_cast<float>(Hgt) * scale);
-	
+
 	// Create bitmap
 	StdBitmap bmp(realWdt, realHgt, fSaveAlpha);
 

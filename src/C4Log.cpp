@@ -81,7 +81,6 @@ bool LogSilent(const char *szMessage, bool fConsole)
 	TimeMessage.SetLength(11 + SLen(szMessage) + 1);
 	strncpy(TimeMessage.getMData(), GetCurrentTimeStamp(false), 10);
 	strncpy(TimeMessage.getMData() + 10, " ", 2);
-	
 
 	// output until all data is written
 	const char *pSrc = szMessage;

@@ -32,7 +32,7 @@ Read::Read(const std::string &filename)
 
 	gzStream.next_out = nullptr;
 	gzStream.avail_out = 0;
-	
+
 	try
 	{
 		PrepareInflate();
@@ -285,11 +285,11 @@ void Write::DeflateToBuffer(const uint8_t *const fromBuffer, const size_t size, 
 {
 	gzStream.next_in = fromBuffer;
 	gzStream.avail_in = size;
-	
+
 	if (!magicBytesDone)
 	{
 		std::copy(C4GroupMagic, std::end(C4GroupMagic), buffer.get());
-		
+
 		uint8_t magicDummy[2];
 		gzStream.next_out = magicDummy;
 		gzStream.avail_out = 2;
@@ -301,34 +301,34 @@ void Write::DeflateToBuffer(const uint8_t *const fromBuffer, const size_t size, 
 				throw Exception(std::string{"Deflating into the magic dummy buffer: "} + zError(ret));
 			}
 		}
-		
+
 		magicBytesDone = true;
 		gzStream.next_out = buffer.get() + 2;
 		gzStream.avail_out = ChunkSize - 2;
 		bufferedSize += 2;
 	}
-	
+
 	int ret = Z_BUF_ERROR;
 	while (ret == Z_BUF_ERROR || gzStream.avail_in > 0 || (ret == Z_OK && flushMode == Z_FINISH))
 	{
 		if (gzStream.avail_out == 0)
 		{
 			FlushBuffer();
-			
+
 			gzStream.next_out = buffer.get();
 			gzStream.avail_out = ChunkSize;
 		}
-		
+
 		const auto oldAvailOut = gzStream.avail_out;
 		ret = deflate(&gzStream, flushMode);
 		bufferedSize += oldAvailOut - gzStream.avail_out;
-		
+
 		if (ret == Z_STREAM_ERROR)
 		{
 			break;
 		}
 	}
-	
+
 	if (ret == Z_STREAM_ERROR || ret != expectedRet)
 	{
 		throw Exception(std::string{"Deflating the data to write: "} + zError(ret));

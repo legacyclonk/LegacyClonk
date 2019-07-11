@@ -454,7 +454,7 @@ bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t
 			// this is only a test connection - close it instantly
 			return false;
 		}
-#if(C4NET2IO_DUMP_LEVEL > 1)
+#if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
 	ThreadLogS("OnConn: %d:%02d:%02d:%03d: %s",
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
@@ -490,7 +490,7 @@ bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t
 	}
 	// send welcome packet, if appropriate
 	SendConnPackets();
-#if(C4NET2IO_DUMP_LEVEL > 0)
+#if (C4NET2IO_DUMP_LEVEL > 0)
 	// log
 	Application.InteractiveThread.ThreadLogS("Network: got %s connection from %s:%d", getNetIOName(pNetIO), inet_ntoa(PeerAddr.sin_addr), htons(PeerAddr.sin_port));
 #endif
@@ -507,7 +507,7 @@ void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const
 			std::memset(&PuncherAddr, 0, sizeof(PuncherAddr));
 			return;
 		}
-#if(C4NET2IO_DUMP_LEVEL > 1)
+#if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
 	ThreadLogS("OnDisconn: %d:%02d:%02d:%03d: %s",
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
@@ -517,7 +517,7 @@ void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const
 	C4Network2IOConnection *pConn = GetConnection(addr, pNetIO);
 	if (!pConn) pConn = GetConnectionByConnAddr(addr, pNetIO);
 	if (!pConn) return;
-#if(C4NET2IO_DUMP_LEVEL > 0)
+#if (C4NET2IO_DUMP_LEVEL > 0)
 	// log
 	Application.InteractiveThread.ThreadLogS("Network: %s connection to %s:%d %s (%s)",
 		getNetIOName(pNetIO), inet_ntoa(addr.sin_addr), htons(addr.sin_port), pConn->isConnecting() ? "failed" : "closed", szReason);
@@ -537,7 +537,7 @@ void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const
 
 void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 {
-#if(C4NET2IO_DUMP_LEVEL > 1)
+#if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
 	ThreadLogS("OnPacket: %d:%02d:%02d:%03d: status %02x %s",
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
@@ -547,7 +547,7 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 	// find connection
 	C4Network2IOConnection *pConn = GetConnection(rPacket.getAddr(), pNetIO);
 	if (!pConn) { Application.InteractiveThread.ThreadLog("Network: could not find connection for packet from %s:%d!", inet_ntoa(rPacket.getAddr().sin_addr), htons(rPacket.getAddr().sin_port)); return; }
-#if(C4NET2IO_DUMP_LEVEL > 2)
+#if (C4NET2IO_DUMP_LEVEL > 2)
 	if (timeGetTime() - iTime > 100)
 		ThreadLogS("OnPacket: ... blocked %d ms for finding the connection!", timeGetTime() - iTime);
 #endif
@@ -556,7 +556,7 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 	// handle packet
 	HandlePacket(rPacket, pConn, true);
 	// log time
-#if(C4NET2IO_DUMP_LEVEL > 1)
+#if (C4NET2IO_DUMP_LEVEL > 1)
 	if (timeGetTime() - iTime > 100)
 		ThreadLogS("OnPacket: ... blocked %d ms for handling!", timeGetTime() - iTime);
 #endif
@@ -788,7 +788,7 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 	}
 
 	// dump packet (network thread only)
-#if(C4NET2IO_DUMP_LEVEL > 0)
+#if (C4NET2IO_DUMP_LEVEL > 0)
 	if (fThread && Pkt.getPktType() != PID_Ping && Pkt.getPktType() != PID_Pong && Pkt.getPktType() != PID_NetResData)
 	{
 		unsigned int iTime = timeGetTime();
@@ -813,14 +813,14 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 				if (pHData->AcceptedOnly || pConn->isAccepted() || pConn->isClosed())
 				{
 					fHandled = true;
-#if(C4NET2IO_DUMP_LEVEL > 2)
+#if (C4NET2IO_DUMP_LEVEL > 2)
 					unsigned int iStart = timeGetTime();
 #endif
 
 					// call handler(s)
 					CallHandlers(pHData->HandlerID, &Pkt, pConn, fThread);
 
-#if(C4NET2IO_DUMP_LEVEL > 2)
+#if (C4NET2IO_DUMP_LEVEL > 2)
 					if (fThread && timeGetTime() - iStart > 100)
 						ThreadLogS("HandlePacket: ... blocked for %d ms!", timeGetTime() - iStart);
 #endif

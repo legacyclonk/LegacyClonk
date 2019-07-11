@@ -227,7 +227,6 @@ inline StdStdStringAdapt mkStringAdapt(std::string& string, StdCompiler::RawComp
 inline StdStdStringAdapt mkStringAdaptA(std::string& string)
 { return StdStdStringAdapt(string, StdCompiler::RCT_All); }
 
-
 // * Raw adaptor
 struct StdRawAdapt
 {

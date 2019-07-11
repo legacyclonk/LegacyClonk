@@ -655,14 +655,14 @@ bool MainDlg::OnMessage(C4Client *pOfClient, const char *szMessage)
 	if (pChatBox && C4GUI::GetRes())
 	{
 		StdStrBuf text;
-		
+
 		if (Config.General.ShowLogTimestamps)
 		{
 			text.Append(GetCurrentTimeStamp());
 			text.AppendChar(' ');
 		}
 		text.Append(szMessage);
-		
+
 		pChatBox->AddTextLine(text.getData(), &C4GUI::GetRes()->TextFont, Game.Network.Players.GetClientChatColor(pOfClient ? pOfClient->getID() : Game.Clients.getLocalID(), true) | C4GUI_MessageFontAlpha, true, true);
 		pChatBox->ScrollToBottom();
 	}
@@ -686,14 +686,14 @@ void MainDlg::OnLog(const char *szLogMsg, uint32_t dwClr)
 	if (pChatBox && C4GUI::GetRes())
 	{
 		StdStrBuf text;
-		
+
 		if (Config.General.ShowLogTimestamps)
 		{
 			text.Append(GetCurrentTimeStamp());
 			text.AppendChar(' ');
 		}
 		text.Append(szLogMsg);
-		
+
 		pChatBox->AddTextLine(text.getData(), &C4GUI::GetRes()->TextFont, dwClr, true, true);
 		pChatBox->ScrollToBottom();
 	}

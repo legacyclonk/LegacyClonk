@@ -146,7 +146,7 @@ namespace {
 	{
 		char *endPtr = nullptr;
 		auto val = strtoul(str, &endPtr, 10);
-		if(endPtr == nullptr || *endPtr != '\0')
+		if (endPtr == nullptr || *endPtr != '\0')
 		{
 			return onFail;
 		}
@@ -632,7 +632,6 @@ bool C4StartupOptionsDlg::EditConfig::GetControlSize(int *piWdt, int *piHgt, con
 	return BaseEdit::GetControlSize(piWdt, piHgt, szForText, pUseFont, fMultiline);
 }
 
-
 struct {
 	const char* caption;
 	DisplayMode mode;
@@ -758,10 +757,10 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pFontSizeCombo->SetDecoration(&(C4Startup::Get()->Graphics.fctContext));
 	pSheetGeneral->AddElement(pFontSizeCombo);
 	UpdateFontControls();
-	
+
 	// white chat
 	C4GUI::ComponentAligner caWhiteChat(caSheetProgram.GetGridCell(0, 1, 3, 8, -1, C4GUI::ComboBox::GetDefaultHeight(), true), 0, 0, false);
-	
+
 	StdStrBuf sWhiteChat(LoadResStr("IDS_MNU_WHITECHAT"));
 	sWhiteChat.AppendChar(':');
 	pUseFont->GetTextExtent(sWhiteChat.getData(), w, q, true);
@@ -782,13 +781,13 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheck->SetToolTip(LoadResStr("IDS_DESC_WHITECHAT_LOBBY"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pSheetGeneral->AddElement(pCheck);
-	
+
 	// timestamps
 	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 4, 8, -1, iCheckHgt, true), LoadResStr("IDS_CTL_TIMESTAMPS"), &Config.General.ShowLogTimestamps);
 	pCheck->SetToolTip(LoadResStr("IDS_DESC_TIMESTAMPS"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pSheetGeneral->AddElement(pCheck);
-	
+
 	// MM timer
 	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 5, 8, -1, iCheckHgt, true), LoadResStr("IDS_CTL_MMTIMER"), &Config.General.MMTimer, true, &Config.Startup.HideMsgMMTimerChange);
 	pCheck->SetToolTip(LoadResStr("IDS_MSG_MMTIMER_DESC"));
@@ -853,7 +852,6 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 		}
 	}
 
-
 	C4GUI::ComponentAligner caScaleRow(caDisplaySettings.GetGridCell(0, 1, 1, 2, -1, iEdit2Hgt, true), 0, 0, false);
 
 	StdStrBuf sScaleStr; sScaleStr.Copy(LoadResStr("IDS_CTL_GRAPHICSSCALE")); sScaleStr.AppendChar(':');
@@ -888,7 +886,6 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pGroupDisplaySettings->AddElement(pScaleSlider);
 
 	OnScaleSliderChanged(Config.Graphics.Scale - minScale);
-
 
 	// --subgroup troubleshooting
 	pGroupTrouble = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(0, 1, 1, 3));

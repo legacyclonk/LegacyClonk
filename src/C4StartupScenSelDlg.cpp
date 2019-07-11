@@ -1807,6 +1807,4 @@ void C4StartupScenSelDlg::AbortRenaming()
 	if (pRenameEdit) pRenameEdit->Abort();
 }
 
-
-
 // NICHT: 9, 7.2.2, 113-114
