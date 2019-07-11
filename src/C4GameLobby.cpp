@@ -21,7 +21,6 @@
 #include <C4GameLobby.h>
 #include "C4GameControl.h"
 
-#ifndef BIG_C4INCLUDE
 #include "C4FullScreen.h"
 #include "C4Network2Dialogs.h"
 #include "C4GameOptions.h"
@@ -30,7 +29,6 @@
 #include "C4RTF.h"
 #include "C4ChatDlg.h"
 #include "C4PlayerInfoListBox.h"
-#endif
 
 namespace C4GameLobby
 {

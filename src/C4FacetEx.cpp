@@ -19,11 +19,9 @@
 #include <C4Include.h>
 #include <C4FacetEx.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Random.h>
 #include <C4Shape.h>
 #include <C4Group.h>
-#endif
 
 #ifdef C4ENGINE
 

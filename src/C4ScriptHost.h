@@ -20,9 +20,7 @@
 
 #include <C4ComponentHost.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Aul.h>
-#endif
 
 // generic script host for objects
 class C4ScriptHost : public C4AulScript, public C4ComponentHost

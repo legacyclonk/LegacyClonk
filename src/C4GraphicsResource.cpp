@@ -19,11 +19,9 @@
 #include <C4Include.h>
 #include <C4GraphicsResource.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Gui.h>
 #include <C4Log.h>
 #include <C4Game.h>
-#endif
 
 #include <StdGL.h>
 

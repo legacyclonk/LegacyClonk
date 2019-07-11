@@ -19,14 +19,12 @@
 #include <C4Include.h>
 #include <C4Menu.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Object.h>
 #include <C4FullScreen.h>
 #include <C4ObjectCom.h>
 #include <C4Viewport.h>
 #include <C4Wrappers.h>
 #include <C4Player.h>
-#endif
 
 const int32_t C4MN_DefInfoWdt          = 270, // default width of info windows
               C4MN_DlgWdt              = 270, // default width of dialog windows

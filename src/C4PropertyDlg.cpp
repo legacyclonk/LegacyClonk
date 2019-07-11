@@ -19,13 +19,11 @@
 #include <C4Include.h>
 #include <C4PropertyDlg.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Console.h>
 #include <C4Application.h>
 #include <C4Object.h>
 #include <C4Wrappers.h>
 #include <C4Player.h>
-#endif
 
 #include <StdRegistry.h>
 

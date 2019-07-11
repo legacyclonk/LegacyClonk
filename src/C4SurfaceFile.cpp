@@ -19,10 +19,8 @@
 #include <C4Include.h>
 #include <C4SurfaceFile.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Surface.h>
 #include <C4Group.h>
-#endif
 
 C4Surface *GroupReadSurface(CStdStream &hGroup, uint8_t *bpPalette)
 {

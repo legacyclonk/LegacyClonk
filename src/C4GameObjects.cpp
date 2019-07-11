@@ -20,7 +20,6 @@
 #include <C4Include.h>
 #include <C4GameObjects.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Object.h>
 #include <C4ObjectCom.h>
 #include <C4Random.h>
@@ -28,7 +27,6 @@
 #include <C4Network2Stats.h>
 #include <C4Game.h>
 #include <C4Wrappers.h>
-#endif
 
 C4GameObjects::C4GameObjects()
 {

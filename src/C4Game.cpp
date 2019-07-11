@@ -23,7 +23,6 @@
 #include <C4Network2Reference.h>
 #include <C4FileMonitor.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4GameSave.h>
 #include <C4Record.h>
 #include <C4Application.h>
@@ -49,7 +48,6 @@
 #include <C4ObjectMenu.h>
 #include <C4GameLobby.h>
 #include <C4ChatDlg.h>
-#endif
 
 #include <StdFile.h>
 

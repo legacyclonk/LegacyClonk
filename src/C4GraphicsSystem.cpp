@@ -19,7 +19,6 @@
 #include <C4Include.h>
 #include <C4GraphicsSystem.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Viewport.h>
 #include <C4Application.h>
 #include <C4Console.h>
@@ -31,7 +30,6 @@
 #include <C4Wrappers.h>
 #include <C4Player.h>
 #include <C4SoundSystem.h>
-#endif
 
 #include <StdBitmap.h>
 #include <StdPNG.h>

@@ -21,13 +21,11 @@
 #include <C4GameSave.h>
 #include <C4Version.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Components.h>
 #include <C4Game.h>
 #include <C4Console.h>
 #include <C4Log.h>
 #include <C4Player.h>
-#endif
 
 // *** C4GameSave main class
 

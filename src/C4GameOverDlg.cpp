@@ -20,13 +20,11 @@
 #include <C4Include.h>
 #include <C4GameOverDlg.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Game.h>
 #include <C4FullScreen.h>
 #include <C4Player.h>
 #include <C4PlayerInfo.h>
 #include <C4PlayerInfoListBox.h>
-#endif
 
 // C4GoalDisplay
 

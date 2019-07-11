@@ -24,13 +24,11 @@
 #include <C4Include.h>
 #include <C4Language.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Components.h>
 #include <C4Log.h>
 #include <C4Config.h>
 #ifdef C4ENGINE
 #include <C4Game.h>
-#endif
 #endif
 
 #ifdef HAVE_ICONV

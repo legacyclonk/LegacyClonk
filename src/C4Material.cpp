@@ -20,8 +20,6 @@
 #include <C4Material.h>
 #include <C4Components.h>
 
-#ifndef BIG_C4INCLUDE
-
 #include <C4Group.h>
 #include <C4Game.h>
 #include <C4Random.h>
@@ -29,8 +27,6 @@
 #ifdef C4ENGINE
 #include <C4Wrappers.h>
 #include <C4Physics.h> // For GravAccel
-#endif
-
 #endif
 
 // C4MaterialReaction

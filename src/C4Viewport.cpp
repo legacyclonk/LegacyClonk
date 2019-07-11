@@ -19,7 +19,6 @@
 #include <C4Include.h>
 #include <C4Viewport.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Console.h>
 #include <C4UserMessages.h>
 #include <C4Object.h>
@@ -36,7 +35,6 @@
 #include <C4Player.h>
 #include <C4ChatDlg.h>
 #include <C4ObjectMenu.h>
-#endif
 
 #include <StdGL.h>
 #include <StdRegistry.h>

@@ -19,13 +19,11 @@
 #include <C4Include.h>
 #include <C4EditCursor.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Console.h>
 #include <C4Object.h>
 #include <C4Application.h>
 #include <C4Random.h>
 #include <C4Wrappers.h>
-#endif
 
 #ifdef WITH_DEVELOPER_MODE
 #include <C4Language.h>

@@ -17,14 +17,12 @@
 #include <C4Include.h>
 #include <C4Network2Client.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Log.h>
 #include <C4Console.h>
 #include <C4Network2.h>
 #include <C4Network2IO.h>
 #include <C4Network2Stats.h>
 #include <C4GameLobby.h> // fullscreen network lobby
-#endif
 
 #ifndef _WIN32
 #include <arpa/inet.h>

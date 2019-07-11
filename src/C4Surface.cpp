@@ -20,10 +20,8 @@
 #include <C4Surface.h>
 #include <C4GroupSet.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Group.h>
 #include <C4Log.h>
-#endif
 
 #include <Bitmap256.h>
 #include <StdBitmap.h>

@@ -19,7 +19,6 @@
 #include <C4Include.h>
 #include <C4Command.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Object.h>
 #include <C4ObjectCom.h>
 #include <C4ObjectInfo.h>
@@ -28,7 +27,6 @@
 #include <C4ObjectMenu.h>
 #include <C4Player.h>
 #include <C4Wrappers.h>
-#endif
 
 const int32_t MoveToRange = 5, LetGoRange1 = 7, LetGoRange2 = 30, DigRange = 1;
 const int32_t FollowRange = 6, PushToRange = 10, DigOutPositionRange = 15;

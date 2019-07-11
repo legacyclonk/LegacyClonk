@@ -22,7 +22,6 @@
 #include <C4GameVersion.h>
 #include <C4FileMonitor.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4SurfaceFile.h>
 #include <C4Log.h>
 #include <C4Components.h>
@@ -33,7 +32,6 @@
 #include <C4Wrappers.h>
 #include <C4Object.h>
 #include "C4Network2Res.h"
-#endif
 #endif
 
 #ifdef C4GROUP

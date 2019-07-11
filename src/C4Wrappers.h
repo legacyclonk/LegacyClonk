@@ -20,12 +20,10 @@
 
 #ifdef C4ENGINE
 
-#ifndef BIG_C4INCLUDE
 #include <C4Id.h>
 #include <C4Game.h>
 #include <C4Landscape.h>
 #include <C4Log.h>
-#endif
 
 // ID2Def
 

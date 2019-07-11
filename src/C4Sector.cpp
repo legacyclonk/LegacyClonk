@@ -20,12 +20,10 @@
 #include <C4Include.h>
 #include <C4Sector.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Game.h>
 #include <C4Object.h>
 #include <C4Log.h>
 #include <C4Record.h>
-#endif
 
 /* sector */
 

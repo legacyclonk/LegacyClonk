@@ -20,13 +20,11 @@
 #include <C4Include.h>
 #include <C4Teams.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Game.h>
 #include <C4Random.h>
 #include <C4Components.h>
 #include <C4Wrappers.h>
 #include <C4Player.h>
-#endif
 
 // C4Team
 

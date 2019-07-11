@@ -25,9 +25,7 @@
 #include <StdGL.h>
 #endif
 
-#ifndef BIG_C4INCLUDE
 #include "C4Wrappers.h"
-#endif
 
 #ifdef WITH_DEVELOPER_MODE
 

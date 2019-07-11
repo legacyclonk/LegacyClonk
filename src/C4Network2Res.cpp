@@ -17,14 +17,12 @@
 #include <C4Include.h>
 #include <C4Network2Res.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Random.h>
 #include <C4Config.h>
 #include <C4Log.h>
 #include <C4Group.h>
 #include <C4Components.h>
 #include <C4Game.h>
-#endif
 
 #include <fcntl.h>
 #include <sys/types.h>

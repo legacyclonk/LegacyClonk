@@ -21,11 +21,9 @@
 
 #include "C4Gui.h"
 
-#ifndef BIG_C4INCLUDE
 #include "C4Scenario.h"
 #include "C4Network2Res.h"
 #include "C4GameLobby.h"
-#endif
 
 class C4Team;
 

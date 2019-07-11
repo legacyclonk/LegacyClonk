@@ -20,13 +20,11 @@
 #include <C4Include.h>
 #include <C4StartupNetDlg.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4StartupScenSelDlg.h>
 #include <C4StartupMainDlg.h>
 #include <C4Game.h>
 #include <C4Log.h>
 #include "C4ChatDlg.h"
-#endif
 
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>

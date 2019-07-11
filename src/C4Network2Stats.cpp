@@ -20,10 +20,8 @@
 #include <C4Include.h>
 #include <C4Network2Stats.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Game.h>
 #include <C4Player.h>
-#endif
 
 C4Graph::C4Graph()
 	: szTitle(LoadResStr("IDS_NET_GRAPH")), dwColor(0x7fff0000) {}

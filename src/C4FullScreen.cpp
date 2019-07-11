@@ -19,7 +19,6 @@
 #include <C4Include.h>
 #include <C4FullScreen.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Application.h>
 #include <C4UserMessages.h>
 #include <C4Viewport.h>
@@ -30,7 +29,6 @@
 #include <C4GamePadCon.h>
 #include <C4Player.h>
 #include <C4GameOverDlg.h>
-#endif
 
 #ifdef _WIN32
 #include <windowsx.h>

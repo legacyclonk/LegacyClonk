@@ -20,9 +20,7 @@
 #include <C4Include.h>
 #include <C4FileSelDlg.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Game.h> // only for single use of Game.GraphicsResource.fctOKCancel below...
-#endif
 
 #ifdef _WIN32
 #define _WIN32_IE 0x0400

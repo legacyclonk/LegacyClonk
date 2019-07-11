@@ -21,14 +21,12 @@
 #include <C4Include.h>
 #include <C4StartupPlrSelDlg.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4StartupMainDlg.h>
 #include <C4Random.h>
 #include <C4Game.h>
 #include <C4Language.h>
 #include <C4FileSelDlg.h>
 #include <C4Log.h>
-#endif
 
 // font clrs
 const uint32_t ClrPlayerItem = 0xff000000;

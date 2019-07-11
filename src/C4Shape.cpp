@@ -19,11 +19,9 @@
 #include <C4Include.h>
 #include <C4Shape.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Physics.h>
 #include <C4Material.h>
 #include <C4Wrappers.h>
-#endif
 
 bool C4Shape::AddVertex(int32_t iX, int32_t iY)
 {

@@ -19,7 +19,6 @@
 #include <C4Include.h>
 #include <C4MessageBoard.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Object.h>
 #include <C4Application.h>
 #include <C4LoaderScreen.h>
@@ -27,7 +26,6 @@
 #include <C4Console.h>
 #include <C4Network2Dialogs.h>
 #include <C4Player.h>
-#endif
 
 const int C4LogSize = 30000, C4LogMaxLines = 1000;
 

@@ -18,7 +18,6 @@
 #include <C4Network2.h>
 #include <C4Version.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Log.h>
 #include <C4Application.h>
 #include <C4Console.h>
@@ -31,7 +30,6 @@
 
 #include <C4Network2Dialogs.h>
 #include <C4League.h>
-#endif
 
 #ifdef _WIN32
 #include <direct.h>

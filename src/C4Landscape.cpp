@@ -20,7 +20,6 @@
 #include <C4Landscape.h>
 #include <C4SolidMask.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Map.h>
 #include <C4MapCreatorS2.h>
 #include <C4SolidMask.h>
@@ -36,7 +35,6 @@
 #include <C4Game.h>
 #include <C4Application.h>
 #include <C4Wrappers.h>
-#endif
 
 #include <StdBitmap.h>
 #include <StdPNG.h>

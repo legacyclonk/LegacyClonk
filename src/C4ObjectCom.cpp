@@ -19,7 +19,6 @@
 #include <C4Include.h>
 #include <C4ObjectCom.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Object.h>
 #include <C4Physics.h>
 #include <C4Command.h>
@@ -28,7 +27,6 @@
 #include <C4Wrappers.h>
 #include <C4ObjectMenu.h>
 #include <C4Player.h>
-#endif
 
 bool SimFlightHitsLiquid(FIXED fcx, FIXED fcy, FIXED xdir, FIXED ydir);
 

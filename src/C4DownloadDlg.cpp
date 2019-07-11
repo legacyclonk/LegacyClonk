@@ -20,9 +20,7 @@
 #include "C4Include.h"
 #include "C4DownloadDlg.h"
 
-#ifndef BIG_C4INCLUDE
 #include "C4Log.h"
-#endif
 
 C4GUI::Label *pStatusLabel;
 C4GUI::ProgressBar *pProgressBar;

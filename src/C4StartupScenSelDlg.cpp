@@ -20,7 +20,6 @@
 #include <C4Include.h>
 #include <C4StartupScenSelDlg.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Network2Dialogs.h>
 #include <C4StartupMainDlg.h>
 #include <C4StartupNetDlg.h>
@@ -33,7 +32,6 @@
 #include <C4GameDialogs.h>
 #include <C4Language.h>
 #include <C4FileSelDlg.h>
-#endif
 
 // singleton
 C4StartupScenSelDlg *C4StartupScenSelDlg::pInstance = nullptr;

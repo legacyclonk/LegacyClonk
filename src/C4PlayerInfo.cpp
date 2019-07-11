@@ -21,14 +21,12 @@
 #include <C4Include.h>
 #include <C4PlayerInfo.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Game.h>
 #include <C4Config.h>
 #include <C4Log.h>
 #include <C4Wrappers.h>
 #include <C4Player.h>
 #include <C4FullScreen.h>
-#endif
 
 // *** C4PlayerInfo
 

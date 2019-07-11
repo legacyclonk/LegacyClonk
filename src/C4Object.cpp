@@ -20,7 +20,6 @@
 #include <C4Object.h>
 #include <C4Version.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4ObjectInfo.h>
 #include <C4Physics.h>
 #include <C4ObjectCom.h>
@@ -34,7 +33,6 @@
 #include <C4Wrappers.h>
 #include <C4Player.h>
 #include <C4ObjectMenu.h>
-#endif
 
 void DrawVertex(C4Facet &cgo, int32_t tx, int32_t ty, int32_t col, int32_t contact)
 {

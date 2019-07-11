@@ -19,12 +19,10 @@
 #include <C4StringTable.h>
 #include <C4ValueList.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Game.h>
 #ifdef C4ENGINE
 #include <C4Object.h>
 #include <C4Log.h>
-#endif
 #endif
 
 const C4Value C4VNull = C4Value();

@@ -19,14 +19,12 @@
 #include <C4Include.h>
 #include <C4InfoCore.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Random.h>
 #include <C4RankSystem.h>
 #include <C4Group.h>
 #include <C4Components.h>
 #ifdef C4ENGINE
 #include <C4Wrappers.h>
-#endif
 #endif
 
 #include <C4Random.h>

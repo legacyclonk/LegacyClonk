@@ -20,12 +20,10 @@
 #include <C4Include.h>
 #include <C4Aul.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Object.h>
 #include <C4Config.h>
 #include <C4Game.h>
 #include <C4Wrappers.h>
-#endif
 
 C4AulExecError::C4AulExecError(C4Object *pObj, const char *szError) : cObj(pObj)
 {

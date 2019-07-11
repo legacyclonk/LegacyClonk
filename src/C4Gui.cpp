@@ -21,7 +21,6 @@
 #include <C4Include.h>
 #include <C4Gui.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4FullScreen.h>
 #include <C4LoaderScreen.h>
 #include <C4Application.h>
@@ -29,7 +28,6 @@
 #include <C4Wrappers.h>
 #include <C4Log.h>
 #include <C4GamePadCon.h>
-#endif
 
 namespace C4GUI
 {

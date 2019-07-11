@@ -19,13 +19,11 @@
 #include <C4Include.h>
 #include <C4Config.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Log.h>
 #ifdef C4ENGINE
 #include <C4Application.h>
 #include <C4Network2.h>
 #include <C4Language.h>
-#endif
 #endif
 
 #include <StdFile.h>

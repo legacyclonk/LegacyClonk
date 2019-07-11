@@ -23,7 +23,6 @@
 #include <C4Script.h>
 #include <C4Version.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Application.h>
 #include <C4Object.h>
 #include <C4ObjectInfo.h>
@@ -36,7 +35,6 @@
 #include <C4ObjectInfoList.h>
 #include <C4Player.h>
 #include <C4ObjectMenu.h>
-#endif
 
 #ifndef _WIN32
 #include <sys/time.h>

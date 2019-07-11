@@ -20,13 +20,11 @@
 #include "C4Include.h"
 #include "C4Network2Dialogs.h"
 
-#ifndef BIG_C4INCLUDE
 #include "C4Network2.h"
 #include "C4Network2Stats.h"
 #include "C4Game.h"
 #include "C4Viewport.h"
 #include "C4GameOptions.h"
-#endif
 
 #ifndef HAVE_WINSOCK
 #include <sys/socket.h>

@@ -19,11 +19,9 @@
 #include <C4Include.h>
 #include <C4PXS.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Physics.h>
 #include <C4Random.h>
 #include <C4Wrappers.h>
-#endif
 
 static const FIXED WindDrift_Factor = itofix(1, 800);
 

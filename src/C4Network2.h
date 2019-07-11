@@ -25,12 +25,10 @@
 #include "C4Network2Players.h"
 #include "C4GameParameters.h"
 
-#ifndef BIG_C4INCLUDE
 #include "C4PlayerInfo.h"
 #include "C4Teams.h"
 #include "C4Control.h"
 #include "C4Gui.h"
-#endif
 
 // lobby predef - no need to include lobby in header just for the class ptr
 namespace C4GameLobby { class MainDlg; class Countdown; }

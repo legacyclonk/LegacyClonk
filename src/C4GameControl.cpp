@@ -18,7 +18,6 @@
 
 #include "C4Include.h"
 
-#ifndef BIG_C4INCLUDE
 #include <C4Application.h>
 #include <C4Game.h>
 #include <C4GameControl.h>
@@ -26,7 +25,6 @@
 #include <C4Record.h>
 #include <C4Log.h>
 #include <C4Network2Stats.h>
-#endif
 
 // *** C4GameControl
 

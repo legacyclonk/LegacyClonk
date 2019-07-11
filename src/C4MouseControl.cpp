@@ -19,7 +19,6 @@
 #include <C4Include.h>
 #include <C4MouseControl.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Viewport.h>
 #include <C4Object.h>
 #include <C4Command.h>
@@ -30,7 +29,6 @@
 #include <C4Wrappers.h>
 #include <C4Player.h>
 #include "C4ChatDlg.h"
-#endif
 
 const int32_t C4MC_Drag_None      = 0,
               C4MC_Drag_Selecting = 1,

@@ -17,12 +17,10 @@
 #include <C4Include.h>
 #include <C4Client.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Config.h>
 #include <C4Network2Client.h>
 #include <C4Game.h>
 #include <C4Log.h>
-#endif
 
 #ifndef HAVE_WINSOCK
 #include <netdb.h>

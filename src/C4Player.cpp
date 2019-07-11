@@ -19,7 +19,6 @@
 #include <C4Include.h>
 #include <C4Player.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Application.h>
 #include <C4Object.h>
 #include <C4ObjectInfo.h>
@@ -34,7 +33,6 @@
 #include <C4FullScreen.h>
 #include <C4GameOverDlg.h>
 #include <C4ObjectMenu.h>
-#endif
 
 C4Player::C4Player() : C4PlayerInfoCore()
 {

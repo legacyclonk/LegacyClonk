@@ -20,9 +20,7 @@
 #include <C4Include.h>
 #include <C4Stat.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Game.h>
-#endif
 
 // ** implemetation of C4MainStat
 

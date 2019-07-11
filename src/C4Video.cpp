@@ -19,13 +19,11 @@
 #include <C4Include.h>
 #include <C4Video.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Viewport.h>
 #include <C4Config.h>
 #include <C4Application.h>
 #include <C4Game.h>
 #include <C4Player.h>
-#endif
 
 #ifdef _WIN32
 #include <vfw.h>

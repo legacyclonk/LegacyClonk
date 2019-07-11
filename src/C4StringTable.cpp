@@ -19,11 +19,9 @@
 #include <C4Include.h>
 #include <C4StringTable.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Group.h>
 #include <C4Components.h>
 #include <C4Aul.h>
-#endif
 
 // *** C4String
 

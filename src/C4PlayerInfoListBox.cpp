@@ -20,14 +20,12 @@
 #include <C4Include.h>
 #include <C4PlayerInfoListBox.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4PlayerInfo.h>
 #include <C4Network2Dialogs.h>
 #include <C4GameDialogs.h>
 #include <C4Teams.h>
 #include <C4Game.h>
 #include <C4FileSelDlg.h>
-#endif
 
 uint32_t GenerateRandomPlayerColor(int32_t iTry); // in C4PlayerInfoConflicts.cpp
 

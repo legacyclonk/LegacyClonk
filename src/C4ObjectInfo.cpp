@@ -19,7 +19,6 @@
 #include <C4Include.h>
 #include <C4ObjectInfo.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Wrappers.h>
 #include <C4Random.h>
 #include <C4Components.h>
@@ -29,7 +28,6 @@
 #include <C4RankSystem.h>
 #include <C4Log.h>
 #include <C4Player.h>
-#endif
 
 C4ObjectInfo::C4ObjectInfo()
 {

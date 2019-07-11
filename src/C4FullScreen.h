@@ -21,9 +21,7 @@
 #include "C4MainMenu.h"
 #include <StdWindow.h>
 
-#ifndef BIG_C4INCLUDE
 #include "C4Game.h"
-#endif
 
 class C4FullScreen : public CStdWindow
 {

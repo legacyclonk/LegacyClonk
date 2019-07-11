@@ -20,10 +20,8 @@
 #include <C4Include.h>
 #include <C4KeyboardInput.h>
 
-#ifndef BIG_C4INCLUDE
 #include <C4Game.h>
 #include <C4Wrappers.h>
-#endif
 
 #ifdef USE_X11
 #include <X11/Xlib.h>
