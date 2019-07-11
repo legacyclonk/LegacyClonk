@@ -28,7 +28,6 @@ install:
   - cmd: 7z x fmodapi375win.zip
   - cmd: copy fmodapi375win\api\inc\* deps\include
   - cmd: copy fmodapi375win\api\lib\* deps\lib
-  #- cmd: copy fmodapi375win\api\*.dll .
   - sh: sudo apt-get update
   - sh: test "$PLATFORM" = "x86" && sudo DEBIAN_FRONTEND=noninteractive apt-get install debootstrap -y || true
   - sh: test "$PLATFORM" = "x86" && mkdir chroot || true

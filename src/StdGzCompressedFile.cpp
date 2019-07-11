@@ -288,7 +288,6 @@ void Write::DeflateToBuffer(const uint8_t *const fromBuffer, const size_t size, 
 	
 	if (!magicBytesDone)
 	{
-// 		static_assert(ChunkSize >= sizeof(C4GroupMagic));
 		std::copy(C4GroupMagic, std::end(C4GroupMagic), buffer.get());
 		
 		uint8_t magicDummy[2];
