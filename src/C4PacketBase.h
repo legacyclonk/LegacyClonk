@@ -161,8 +161,21 @@ enum C4PacketType
 
 	CID_EMMoveObj  = CID_First | 0x30,
 	CID_EMDrawTool = CID_First | 0x31,
+	CID_EMDropDef  = CID_First | 0x32,
 
 	CID_DebugRec = CID_First | 0x40,
+
+	// the following replace the old "internal" scripts
+	// to ensure that the behavior stays exactly the same, they still need to execute the same script
+	CID_MessageBoardAnswer   = CID_First | 0x50,
+	CID_CustomCommand        = CID_First | 0x51,
+	CID_InitScenarioPlayer   = CID_First | 0x52,
+	CID_ActivateGameGoalMenu = CID_First | 0x53,
+	CID_ToggleHostility      = CID_First | 0x54,
+	CID_SurrenderPlayer      = CID_First | 0x55,
+	CID_ActivateGameGoalRule = CID_First | 0x56,
+	CID_SetPlayerTeam        = CID_First | 0x57,
+	CID_EliminatePlayer      = CID_First | 0x58
 };
 
 // packet classes

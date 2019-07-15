@@ -114,6 +114,17 @@ const C4PktHandlingData PktHandlingData[] =
 	{ CID_Message,            PC_Control, "Message",                     false, true,  0,                       PKT_UNPACK(C4ControlMessage) },
 	{ CID_EMMoveObj,          PC_Control, "EM Move Obj",                 false, true,  0,                       PKT_UNPACK(C4ControlEMMoveObject) },
 	{ CID_EMDrawTool,         PC_Control, "EM Draw Tool",                false, true,  0,                       PKT_UNPACK(C4ControlEMDrawTool) },
+	{ CID_EMDropDef,          PC_Control, "EM Drop Def",                 false, true,  0,                       PKT_UNPACK(C4ControlEMDropDef) },
+
+	{ CID_MessageBoardAnswer,   PC_Control, "Message Board Answer",      false, true,  0,                       PKT_UNPACK(C4ControlMessageBoardAnswer) },
+	{ CID_CustomCommand,        PC_Control, "Custom Command",            false, true,  0,                       PKT_UNPACK(C4ControlCustomCommand) },
+	{ CID_InitScenarioPlayer,   PC_Control, "Init Scenario Player",      false, true,  0,                       PKT_UNPACK(C4ControlInitScenarioPlayer) },
+	{ CID_ActivateGameGoalMenu, PC_Control, "Activate Game Goal Menu",   false, true,  0,                       PKT_UNPACK(C4ControlActivateGameGoalMenu) },
+	{ CID_ToggleHostility,      PC_Control, "Toggle Hostility",          false, true,  0,                       PKT_UNPACK(C4ControlToggleHostility) },
+	{ CID_SurrenderPlayer,      PC_Control, "Surrender Player",          false, true,  0,                       PKT_UNPACK(C4ControlSurrenderPlayer) },
+	{ CID_ActivateGameGoalRule, PC_Control, "Activate Game Goal/Rule",   false, true,  0,                       PKT_UNPACK(C4ControlActivateGameGoalRule) },
+	{ CID_SetPlayerTeam,        PC_Control, "Set Player Team",           false, true,  0,                       PKT_UNPACK(C4ControlSetPlayerTeam) },
+	{ CID_EliminatePlayer,      PC_Control, "Eliminate Player",          false, true,  0,                       PKT_UNPACK(C4ControlEliminatePlayer) },
 
 	{ CID_DebugRec,           PC_Control, "Debug Rec",                   false, true,  0,                       PKT_UNPACK(C4ControlDebugRec) },
 

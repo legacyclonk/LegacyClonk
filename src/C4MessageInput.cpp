@@ -94,7 +94,7 @@ void C4ChatInputDialog::OnChatCancel()
 		{
 			// there was an associated query - it must be removed on all clients synchronized via queue
 			// do this by calling OnMessageBoardAnswer without an answer
-			Game.Control.DoInput(CID_Script, new C4ControlScript(FormatString("OnMessageBoardAnswer(Object(%d), %d, 0)", pTarget ? pTarget->Number : 0, iPlr).getData()), CDT_Decide);
+			Game.Control.DoInput(CID_MessageBoardAnswer, new C4ControlMessageBoardAnswer(pTarget ? pTarget->Number : 0, iPlr, ""), CDT_Decide);
 		}
 	}
 }
@@ -134,10 +134,7 @@ C4GUI::Edit::InputResult C4ChatInputDialog::OnChatInput(C4GUI::Edit *edt, bool f
 		}
 		// then do a script callback, incorporating the input into the answer
 		if (fUppercase) SCapitalize(szInputText);
-		StdStrBuf sInput;
-		sInput.Copy(szInputText);
-		sInput.EscapeString();
-		Game.Control.DoInput(CID_Script, new C4ControlScript(FormatString("OnMessageBoardAnswer(Object(%d), %d, \"%s\")", pTarget ? pTarget->Number : 0, iPlr, sInput.getData()).getData()), CDT_Decide);
+		Game.Control.DoInput(CID_MessageBoardAnswer, new C4ControlMessageBoardAnswer(pTarget ? pTarget->Number : 0, iPlr, szInputText), CDT_Decide);
 		return C4GUI::Edit::IR_CloseDlg;
 	}
 	else
@@ -449,7 +446,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 		if (!Game.DebugMode) return false;
 		if (Game.Network.isEnabled() && !Game.Network.isHost()) return false;
 
-		Game.Control.DoInput(CID_Script, new C4ControlScript(pCmdPar, C4ControlScript::SCOPE_Console, false), CDT_Decide);
+		Game.Control.DoInput(CID_Script, new C4ControlScript(pCmdPar, C4ControlScript::SCOPE_Console), CDT_Decide);
 		return true;
 	}
 	// set runtimte properties
@@ -663,68 +660,12 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 		return Game.ToggleChart();
 
 	// custom command
-	C4MessageBoardCommand *pCmd;
-	if (Game.IsRunning) if (pCmd = GetCommand(szCmdName))
+	if (Game.IsRunning && GetCommand(szCmdName))
 	{
-		StdStrBuf Script, CmdScript;
-		// replace %player% by calling player number
-		if (SSearch(pCmd->Script, "%player%"))
-		{
-			int32_t iLocalPlr = NO_OWNER;
-			C4Player *pLocalPlr = Game.Players.GetLocalByIndex(0);
-			if (pLocalPlr) iLocalPlr = pLocalPlr->Number;
-			StdStrBuf sLocalPlr; sLocalPlr.Format("%d", iLocalPlr);
-			CmdScript.Copy(pCmd->Script);
-			CmdScript.Replace("%player%", sLocalPlr.getData());
-		}
-		else
-		{
-			CmdScript.Ref(pCmd->Script);
-		}
-		// insert parameters
-		if (SSearch(CmdScript.getData(), "%d"))
-		{
-			// make sure it's a number by converting
-			Script.Format(CmdScript.getData(), (int)atoi(pCmdPar));
-		}
-		else if (SSearch(CmdScript.getData(), "%s"))
-		{
-			// Unrestricted parameters?
-			// That's kind of a security risk as it will allow anyone to execute code
-			switch (pCmd->eRestriction)
-			{
-			case C4MessageBoardCommand::C4MSGCMDR_Escaped:
-			{
-				// escape strings
-				StdStrBuf Par;
-				Par.Copy(pCmdPar);
-				Par.EscapeString();
-				// compose script
-				Script.Format(CmdScript.getData(), Par.getData());
-			}
-			break;
-
-			case C4MessageBoardCommand::C4MSGCMDR_Plain:
-				// unescaped
-				Script.Format(CmdScript.getData(), pCmdPar);
-				break;
-
-			case C4MessageBoardCommand::C4MSGCMDR_Identifier:
-			{
-				// only allow identifier-characters
-				StdStrBuf Par;
-				while (IsIdentifier(*pCmdPar) || isspace((unsigned char)*pCmdPar))
-					Par.AppendChar(*pCmdPar++);
-				// compose script
-				Script.Format(CmdScript.getData(), Par.getData());
-			}
-			break;
-			}
-		}
-		else
-			Script = CmdScript.getData();
-		// add script
-		Game.Control.DoInput(CID_Script, new C4ControlScript(Script.getData()), CDT_Decide);
+		const auto *const pLocalPlr = Game.Players.GetLocalByIndex(0);
+		const std::int32_t localPlr = pLocalPlr ? pLocalPlr->Number : NO_OWNER;
+		// add custom command call
+		Game.Control.DoInput(CID_CustomCommand, new C4ControlCustomCommand(localPlr, szCmdName, pCmdPar), CDT_Decide);
 		// ok
 		return true;
 	}

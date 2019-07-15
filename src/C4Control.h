@@ -127,13 +127,12 @@ public:
 	enum { SCOPE_Console = -2, SCOPE_Global = -1, }; // special scopes to be passed as target objects
 
 	C4ControlScript()
-		: iTargetObj(-1), fInternal(true) {}
-	C4ControlScript(const char *szScript, int32_t iTargetObj = SCOPE_Global, bool fInternal = true)
-		: iTargetObj(iTargetObj), fInternal(fInternal), Script(szScript, true) {}
+		: iTargetObj(-1) {}
+	C4ControlScript(const char *szScript, int32_t iTargetObj = SCOPE_Global)
+		: iTargetObj(iTargetObj), Script(szScript, true) {}
 
 protected:
 	int32_t iTargetObj;
-	bool fInternal; // silent execute
 	StdStrBuf Script;
 
 public:
@@ -486,4 +485,134 @@ public:
 	virtual bool Sync() const { return true; }
 
 	DECLARE_C4CONTROL_VIRTUALS
+};
+
+class C4ControlInternalScriptBase : public C4ControlPacket
+{
+public:
+	virtual int32_t Scope() const { return C4ControlScript::SCOPE_Global; }
+	virtual bool Allowed() const { return true; }
+	virtual StdStrBuf FormatScript() const = 0;
+	virtual void Execute() const;
+};
+
+class C4ControlEMDropDef : public C4ControlInternalScriptBase
+{
+	C4ID id = C4ID_None;
+	int32_t x = 0;
+	int32_t y = 0;
+
+public:
+	C4ControlEMDropDef() {}
+	C4ControlEMDropDef(C4ID id, int32_t x, int32_t y) : id(id), x(x), y(y) {}
+	virtual void CompileFunc(StdCompiler *pComp);
+	virtual bool Allowed() const;
+	virtual StdStrBuf FormatScript() const;
+};
+
+class C4ControlInternalPlayerScriptBase : public C4ControlInternalScriptBase
+{
+protected:
+	int32_t plr = NO_OWNER;
+
+public:
+	C4ControlInternalPlayerScriptBase() {}
+	C4ControlInternalPlayerScriptBase(int32_t plr) : plr(plr) {}
+	virtual void CompileFunc(StdCompiler *pComp);
+	virtual bool Allowed() const;
+};
+
+class C4ControlMessageBoardAnswer : public C4ControlInternalPlayerScriptBase
+{
+	int32_t obj = 0;
+	std::string answer;
+
+public:
+	C4ControlMessageBoardAnswer() {}
+	C4ControlMessageBoardAnswer(int32_t obj, int32_t plr, const std::string &answer) : obj(obj), answer(answer), C4ControlInternalPlayerScriptBase(plr) {}
+	virtual void CompileFunc(StdCompiler *pComp);
+	virtual StdStrBuf FormatScript() const;
+};
+
+class C4ControlCustomCommand : public C4ControlInternalPlayerScriptBase
+{
+	std::string command;
+	std::string argument;
+
+public:
+	C4ControlCustomCommand() {}
+	C4ControlCustomCommand(int32_t plr, const std::string &command, const std::string &argument) : command(command), argument(argument), C4ControlInternalPlayerScriptBase(plr) {}
+	virtual bool Allowed() const;
+	virtual void CompileFunc(StdCompiler *pComp);
+	virtual StdStrBuf FormatScript() const;
+};
+
+class C4ControlInitScenarioPlayer : public C4ControlInternalPlayerScriptBase
+{
+	int32_t team = 0;
+
+public:
+	C4ControlInitScenarioPlayer() {}
+	C4ControlInitScenarioPlayer(int32_t plr, int32_t team) : team(team), C4ControlInternalPlayerScriptBase(plr) {}
+	virtual void CompileFunc(StdCompiler *pComp);
+	virtual StdStrBuf FormatScript() const { return FormatString("InitScenarioPlayer(%d,%d)", static_cast<int>(plr), static_cast<int>(team)); }
+};
+
+class C4ControlActivateGameGoalMenu : public C4ControlInternalPlayerScriptBase
+{
+public:
+	C4ControlActivateGameGoalMenu() {}
+	C4ControlActivateGameGoalMenu(int32_t plr) : C4ControlInternalPlayerScriptBase(plr) {}
+	virtual StdStrBuf FormatScript() const { return FormatString("ActivateGameGoalMenu(%d)", plr); }
+};
+
+class C4ControlToggleHostility : public C4ControlInternalPlayerScriptBase
+{
+	int32_t opponent = 0;
+
+public:
+	C4ControlToggleHostility() {}
+	C4ControlToggleHostility(int32_t plr, int32_t opponent) : opponent(opponent), C4ControlInternalPlayerScriptBase(plr) {}
+	virtual void CompileFunc(StdCompiler *pComp);
+	virtual StdStrBuf FormatScript() const { return FormatString("SetHostility(%d,%d,!Hostile(%d,%d,true))", plr, opponent, plr, opponent); }
+};
+
+class C4ControlSurrenderPlayer : public C4ControlInternalPlayerScriptBase
+{
+public:
+	C4ControlSurrenderPlayer() {}
+	C4ControlSurrenderPlayer(int32_t plr) : C4ControlInternalPlayerScriptBase(plr) {}
+	virtual StdStrBuf FormatScript() const { return FormatString("SurrenderPlayer(%d)", plr); }
+};
+
+class C4ControlActivateGameGoalRule : public C4ControlInternalPlayerScriptBase
+{
+	int32_t obj = 0;
+
+public:
+	C4ControlActivateGameGoalRule() {}
+	C4ControlActivateGameGoalRule(int32_t plr, int32_t obj) : obj(obj), C4ControlInternalPlayerScriptBase(plr) {}
+	virtual void CompileFunc(StdCompiler *pComp);
+	virtual StdStrBuf FormatScript() const { return FormatString("Activate(%d)", plr); }
+	virtual int32_t Scope() const { return obj; }
+};
+
+class C4ControlSetPlayerTeam : public C4ControlInternalPlayerScriptBase
+{
+	int32_t team = 0;
+
+public:
+	C4ControlSetPlayerTeam() {}
+	C4ControlSetPlayerTeam(int32_t plr, int32_t team) : team(team), C4ControlInternalPlayerScriptBase(plr) {}
+	virtual void CompileFunc(StdCompiler *pComp);
+	virtual StdStrBuf FormatScript() const { return FormatString("SetPlayerTeam(%d,%d)", static_cast<int>(plr), static_cast<int>(team)); }
+};
+
+class C4ControlEliminatePlayer : public C4ControlInternalPlayerScriptBase
+{
+public:
+	C4ControlEliminatePlayer() {}
+	C4ControlEliminatePlayer(int32_t plr) : C4ControlInternalPlayerScriptBase(plr) {}
+	virtual bool Allowed() const { return HostControl(); }
+	virtual StdStrBuf FormatScript() const { return FormatString("EliminatePlayer(%d)", plr); }
 };

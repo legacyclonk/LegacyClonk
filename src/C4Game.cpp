@@ -1577,15 +1577,10 @@ bool C4Game::DropFile(const char *szFilename, int32_t iX, int32_t iY)
 
 bool C4Game::DropDef(C4ID id, int32_t iX, int32_t iY)
 {
-	// Get def
-	C4Def *pDef;
-	if (pDef = C4Id2Def(id))
+	// def exists?
+	if (C4Id2Def(id))
 	{
-		if (pDef->Category & C4D_Structure)
-			sprintf(OSTR, "CreateConstruction(%s,%d,%d,-1,%d,true)", C4IdText(id), iX, iY, FullCon);
-		else
-			sprintf(OSTR, "CreateObject(%s,%d,%d,-1)", C4IdText(id), iX, iY);
-		Game.Control.DoInput(CID_Script, new C4ControlScript(OSTR), CDT_Decide);
+		Game.Control.DoInput(CID_EMDropDef, new C4ControlEMDropDef(id, iX, iY), CDT_Decide);
 		return true;
 	}
 	else

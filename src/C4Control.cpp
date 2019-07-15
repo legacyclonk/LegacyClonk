@@ -245,7 +245,7 @@ void C4ControlScript::Execute() const
 {
 	const char *szScript = Script.getData();
 	// user script: forbidden in league mode, from anyone in debug mode, otherwise from host only
-	if (!fInternal && (Game.Parameters.isLeague() || (iByClient != C4ClientIDHost) && !Console.Active))
+	if (Game.Parameters.isLeague() || (iByClient != C4ClientIDHost) && !Console.Active)
 		return;
 	// execute
 	C4Object *pObj = nullptr;
@@ -261,33 +261,29 @@ void C4ControlScript::Execute() const
 		pScript = &Game.ScriptEngine;
 	C4Value rVal(pScript->DirectExec(pObj, szScript, "console script"));
 	// show messages
-	if (!fInternal)
+	// print script
+	if (pObj)
+		LogF("-> %s::%s", pObj->Def->GetName(), szScript);
+	else
+		LogF("-> %s", szScript);
+	// print result
+	if (!LocalControl())
 	{
-		// print script
-		if (pObj)
-			LogF("-> %s::%s", pObj->Def->GetName(), szScript);
+		C4Network2Client *pClient = nullptr;
+		if (Game.Network.isEnabled())
+			pClient = Game.Network.Clients.GetClientByID(iByClient);
+		if (pClient)
+			LogF(" = %s (by %s)", rVal.GetDataString().getData(), pClient->getName());
 		else
-			LogF("-> %s", szScript);
-		// print result
-		if (!LocalControl())
-		{
-			C4Network2Client *pClient = nullptr;
-			if (Game.Network.isEnabled())
-				pClient = Game.Network.Clients.GetClientByID(iByClient);
-			if (pClient)
-				LogF(" = %s (by %s)", rVal.GetDataString().getData(), pClient->getName());
-			else
-				LogF(" = %s (by client %d)", rVal.GetDataString().getData(), iByClient);
-		}
-		else
-			LogF(" = %s", rVal.GetDataString().getData());
+			LogF(" = %s (by client %d)", rVal.GetDataString().getData(), iByClient);
 	}
+	else
+		LogF(" = %s", rVal.GetDataString().getData());
 }
 
 void C4ControlScript::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(iTargetObj, "TargetObj", -1));
-	pComp->Value(mkNamingAdapt(fInternal,  "Internal",  false));
 	pComp->Value(mkNamingAdapt(Script,     "Script",    ""));
 	C4ControlPacket::CompileFunc(pComp);
 }
@@ -906,7 +902,7 @@ void C4ControlEMMoveObject::Execute() const
 	{
 		if (!pObjects) return;
 		// execute script ...
-		C4ControlScript ScriptCtrl(Script.getData(), C4ControlScript::SCOPE_Global, false);
+		C4ControlScript ScriptCtrl(Script.getData(), C4ControlScript::SCOPE_Global);
 		ScriptCtrl.SetByClient(iByClient);
 		// ... for each object in selection
 		for (int i = 0; i < iObjectNum; ++i)
@@ -1407,4 +1403,182 @@ void C4ControlVoteEnd::Execute() const
 void C4ControlVoteEnd::CompileFunc(StdCompiler *pComp)
 {
 	C4ControlVote::CompileFunc(pComp);
+}
+
+// *** internal script replacements
+
+void C4ControlEMDropDef::CompileFunc(StdCompiler *pComp)
+{
+	pComp->Value(mkNamingAdapt(mkC4IDAdapt(id), "ID", 0));
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(x), "X", 0));
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(y), "Y", 0));
+	C4ControlInternalScriptBase::CompileFunc(pComp);
+}
+
+bool C4ControlEMDropDef::Allowed() const
+{
+	return !Game.Parameters.isLeague() && C4Id2Def(id);
+}
+
+StdStrBuf C4ControlEMDropDef::FormatScript() const
+{
+	const auto def = C4Id2Def(id);
+	if (def->Category & C4D_Structure)
+		return FormatString("CreateConstruction(%s,%d,%d,-1,%d,true)", C4IdText(id), x, y, FullCon);
+	else
+		return FormatString("CreateObject(%s,%d,%d,-1)", C4IdText(id), x, y);
+}
+
+void C4ControlInternalScriptBase::Execute() const
+{
+	if (!Allowed()) return;
+
+	const auto scope = Scope();
+	// execute
+	C4Object *pObj = nullptr;
+	C4AulScript *pScript;
+	if (scope == C4ControlScript::SCOPE_Console)
+		pScript = &Game.Script;
+	else if (scope == C4ControlScript::SCOPE_Global)
+		pScript = &Game.ScriptEngine;
+	else if (pObj = Game.Objects.SafeObjectPointer(scope))
+		pScript = &pObj->Def->Script;
+	else
+		// default: Fallback to global context
+		pScript = &Game.ScriptEngine;
+	pScript->DirectExec(pObj, FormatScript().getData(), "internal script");
+}
+
+void C4ControlInternalPlayerScriptBase::CompileFunc(StdCompiler *pComp)
+{
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(plr), "Plr", NO_OWNER));
+	C4ControlInternalScriptBase::CompileFunc(pComp);
+}
+
+bool C4ControlInternalPlayerScriptBase::Allowed() const
+{
+	if (plr == NO_OWNER) return true;
+
+	const auto player = Game.Players.Get(plr);
+	return player && player->AtClient == iByClient;
+}
+
+void C4ControlMessageBoardAnswer::CompileFunc(StdCompiler *pComp)
+{
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(obj), "Object", 0));
+	pComp->Value(mkNamingAdapt(answer, "Answer", ""));
+	C4ControlInternalPlayerScriptBase::CompileFunc(pComp);
+}
+
+StdStrBuf C4ControlMessageBoardAnswer::FormatScript() const
+{
+	if (answer.empty()) return FormatString("OnMessageBoardAnswer(Object(%d),%d,0)", obj, plr);
+
+	StdStrBuf escapedAnswer(answer.c_str());
+	escapedAnswer.EscapeString();
+	return FormatString("OnMessageBoardAnswer(Object(%d),%d,\"%s\")", obj, plr, escapedAnswer.getData());
+}
+
+void C4ControlCustomCommand::CompileFunc(StdCompiler *pComp)
+{
+	pComp->Value(mkNamingAdapt(command, "Command", ""));
+	pComp->Value(mkNamingAdapt(argument, "Argument", ""));
+	C4ControlInternalPlayerScriptBase::CompileFunc(pComp);
+}
+
+bool C4ControlCustomCommand::Allowed() const
+{
+	if (!C4ControlInternalPlayerScriptBase::Allowed()) return false;
+
+	return Game.IsRunning && Game.MessageInput.GetCommand(command.c_str());
+}
+
+StdStrBuf C4ControlCustomCommand::FormatScript() const
+{
+	// the existence of cmd is checked already in Allowed()
+	const auto cmd = Game.MessageInput.GetCommand(command.c_str());
+	StdStrBuf Script, CmdScript;
+	// replace %player% by calling player number
+	if (SSearch(cmd->Script, "%player%"))
+	{
+		CmdScript.Copy(cmd->Script);
+		CmdScript.Replace("%player%", FormatString("%d", plr).getData());
+	}
+	else
+	{
+		CmdScript.Ref(cmd->Script);
+	}
+	// insert parameters
+	if (SSearch(CmdScript.getData(), "%d"))
+	{
+		// make sure it's a number by converting
+		Script.Format(CmdScript.getData(), static_cast<int>(atoi(argument.c_str())));
+	}
+	else if (SSearch(CmdScript.getData(), "%s"))
+	{
+		// Unrestricted parameters?
+		// That's kind of a security risk as it will allow anyone to execute code
+		switch (cmd->eRestriction)
+		{
+			case C4MessageBoardCommand::C4MSGCMDR_Escaped:
+			{
+				// escape strings
+				StdStrBuf Par;
+				Par.Copy(argument.c_str());
+				Par.EscapeString();
+				// compose script
+				Script.Format(CmdScript.getData(), Par.getData());
+			}
+			break;
+
+			case C4MessageBoardCommand::C4MSGCMDR_Plain:
+				// unescaped
+				Script.Format(CmdScript.getData(), argument.c_str());
+				break;
+
+			case C4MessageBoardCommand::C4MSGCMDR_Identifier:
+			{
+				// only allow identifier-characters
+				std::string par;
+				for (const auto c : argument)
+				{
+					if (!(IsIdentifier(c) || isspace(static_cast<unsigned char>(c)))) break;
+					par.push_back(c);
+				}
+				// compose script
+				Script.Format(CmdScript.getData(), par.c_str());
+			}
+			break;
+		}
+	}
+	else
+	{
+		return CmdScript;
+	}
+
+	return Script;
+}
+
+void C4ControlInitScenarioPlayer::CompileFunc(StdCompiler *pComp)
+{
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(team), "Team", 0));
+	C4ControlInternalPlayerScriptBase::CompileFunc(pComp);
+}
+
+void C4ControlToggleHostility::CompileFunc(StdCompiler *pComp)
+{
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(opponent), "Opponent", NO_OWNER));
+	C4ControlInternalPlayerScriptBase::CompileFunc(pComp);
+}
+
+void C4ControlActivateGameGoalRule::CompileFunc(StdCompiler *pComp)
+{
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(obj), "Object", 0));
+	C4ControlInternalPlayerScriptBase::CompileFunc(pComp);
+}
+
+void C4ControlSetPlayerTeam::CompileFunc(StdCompiler *pComp)
+{
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(team), "Team", 0));
+	C4ControlInternalPlayerScriptBase::CompileFunc(pComp);
 }

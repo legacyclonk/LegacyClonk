@@ -253,8 +253,7 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		// Remove player
 		if (Inside((int)LOWORD(wParam), IDM_PLAYER_QUIT1, IDM_PLAYER_QUIT2))
 		{
-			sprintf(OSTR, "EliminatePlayer(%d)", LOWORD(wParam) - IDM_PLAYER_QUIT1);
-			Game.Control.Input.Add(CID_Script, new C4ControlScript(OSTR));
+			Game.Control.Input.Add(CID_EliminatePlayer, new C4ControlEliminatePlayer(LOWORD(wParam) - IDM_PLAYER_QUIT1));
 			return TRUE;
 		}
 		// Remove client
@@ -608,7 +607,7 @@ bool C4Console::In(const char *szText)
 	// editing enabled?
 	if (!EditCursor.EditingOK()) return false;
 	// pass through network queue
-	Game.Control.DoInput(CID_Script, new C4ControlScript(szText, C4ControlScript::SCOPE_Console, false), CDT_Decide);
+	Game.Control.DoInput(CID_Script, new C4ControlScript(szText, C4ControlScript::SCOPE_Console), CDT_Decide);
 	return true;
 }
 
@@ -1799,8 +1798,7 @@ void C4Console::OnPlrJoin(GtkWidget *item, gpointer data)
 
 void C4Console::OnPlrQuit(GtkWidget *item, gpointer data)
 {
-	sprintf(OSTR, "EliminatePlayer(%d)", GPOINTER_TO_INT(data));
-	Game.Control.Input.Add(CID_Script, new C4ControlScript(OSTR));
+	Game.Control.Input.Add(CID_EliminatePlayer, new C4ControlEliminatePlayer(GPOINTER_TO_INT(data)));
 }
 
 void C4Console::OnViewNew(GtkWidget *item, gpointer data)
