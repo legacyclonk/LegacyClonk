@@ -404,16 +404,16 @@ C4ScriptOpDef C4ScriptOpMap[] =
 	// |  identifier                  |  right-associative
 	// |  |      Bytecode             |  |  no second id ParType1      ParType2
 	// prefix
-	{ 16, "++",  AB_Inc1,             0, 1, 0, C4V_Int,  C4V_pC4Value, C4V_Any },
-	{ 16, "--",  AB_Dec1,             0, 1, 0, C4V_Int,  C4V_pC4Value, C4V_Any },
-	{ 16, "~",   AB_BitNot,           0, 1, 0, C4V_Int,  C4V_Int,      C4V_Any },
-	{ 16, "!",   AB_Not,              0, 1, 0, C4V_Bool, C4V_Bool,     C4V_Any },
-	{ 16, "+",   AB_ERR,              0, 1, 0, C4V_Int,  C4V_Int,      C4V_Any },
-	{ 16, "-",   AB_Neg,              0, 1, 0, C4V_Int,  C4V_Int,      C4V_Any },
+	{ 16, "++",  AB_Inc1,             0, 1, 0, C4V_Int,    C4V_pC4Value, C4V_Any },
+	{ 16, "--",  AB_Dec1,             0, 1, 0, C4V_Int,    C4V_pC4Value, C4V_Any },
+	{ 16, "~",   AB_BitNot,           0, 1, 0, C4V_Int,    C4V_Int,      C4V_Any },
+	{ 16, "!",   AB_Not,              0, 1, 0, C4V_Bool,   C4V_Bool,     C4V_Any },
+	{ 16, "+",   AB_ERR,              0, 1, 0, C4V_Int,    C4V_Int,      C4V_Any },
+	{ 16, "-",   AB_Neg,              0, 1, 0, C4V_Int,    C4V_Int,      C4V_Any },
 
 	// postfix (whithout second statement)
-	{ 17, "++",  AB_Inc1_Postfix,     1, 1, 1, C4V_Int,  C4V_pC4Value, C4V_Any },
-	{ 17, "--",  AB_Dec1_Postfix,     1, 1, 1, C4V_Int,  C4V_pC4Value, C4V_Any },
+	{ 17, "++",  AB_Inc1_Postfix,     1, 1, 1, C4V_Int,    C4V_pC4Value, C4V_Any },
+	{ 17, "--",  AB_Dec1_Postfix,     1, 1, 1, C4V_Int,    C4V_pC4Value, C4V_Any },
 
 	// postfix
 	{ 15, "**",  AB_Pow,              1, 0, 0, C4V_Int,    C4V_Int,      C4V_Int },
@@ -428,7 +428,7 @@ C4ScriptOpDef C4ScriptOpMap[] =
 	{ 11, "<=",  AB_LessThanEqual,    1, 0, 0, C4V_Bool,   C4V_Int,      C4V_Int },
 	{ 11, ">",   AB_GreaterThan,      1, 0, 0, C4V_Bool,   C4V_Int,      C4V_Int },
 	{ 11, ">=",  AB_GreaterThanEqual, 1, 0, 0, C4V_Bool,   C4V_Int,      C4V_Int },
-	{ 10, "..",  AB_Concat,           1, 0, 0, C4V_String, C4V_String,   C4V_String },
+	{ 10, "..",  AB_Concat,           1, 0, 0, C4V_String, C4V_Any,      C4V_Any},
 	{ 9, "==",   AB_Equal,            1, 0, 0, C4V_Bool,   C4V_Any,      C4V_Any },
 	{ 9, "!=",   AB_NotEqual,         1, 0, 0, C4V_Bool,   C4V_Any,      C4V_Any },
 	{ 9, "S=",   AB_SEqual,           1, 0, 0, C4V_Bool,   C4V_String,   C4V_String },
@@ -447,13 +447,13 @@ C4ScriptOpDef C4ScriptOpMap[] =
 	{ 2, "-=",   AB_Dec,              1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "<<=",  AB_LeftShiftIt,      1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, ">>=",  AB_RightShiftIt,     1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
-	{ 2, "..=",  AB_ConcatIt,         1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_String },
+	{ 2, "..=",  AB_ConcatIt,         1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Any },
 	{ 2, "&=",   AB_AndIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "|=",   AB_OrIt,             1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "^=",   AB_XOrIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "=",    AB_Set,              1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Any },
 
-	{ 0, nullptr,  AB_ERR,              0, 0, 0, C4V_Any,  C4V_Any,      C4V_Any }
+	{ 0, nullptr,  AB_ERR,            0, 0, 0, C4V_Any,    C4V_Any,      C4V_Any }
 };
 
 int C4AulParseState::GetOperator(const char *pScript)

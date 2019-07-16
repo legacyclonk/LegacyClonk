@@ -117,6 +117,9 @@ public:
 
 	~C4Value();
 
+	// explicit conversion from int, bool and id
+	StdStrBuf toString() const;
+
 	// Checked getters
 	int32_t getInt()         { return ConvertTo(C4V_Int)      ? Data.Int   : 0; }
 	int32_t getIntOrID() { Deref(); if (Type == C4V_Int || Type == C4V_Bool || Type == C4V_C4ID) return Data.Int; else return 0; }

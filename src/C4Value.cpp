@@ -39,6 +39,27 @@ C4Value::~C4Value()
 	DelDataRef(Data, Type, GetNextRef(), GetBaseArray());
 }
 
+StdStrBuf C4Value::toString() const
+{
+	const C4Value& val = GetRefVal();
+	switch(val.Type)
+	{
+		case C4V_String:
+			return val._getStr()->Data;
+
+		case C4V_Any:
+		case C4V_Bool:
+		case C4V_Int:
+			return FormatString("%d", val._getInt());
+
+		case C4V_C4ID:
+			return StdStrBuf(C4IdText(val._getC4ID()), true);
+
+		default:
+			throw val.Type;
+	}
+}
+
 C4Value &C4Value::operator=(const C4Value &nValue)
 {
 	// set referenced value

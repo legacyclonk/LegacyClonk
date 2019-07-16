@@ -521,10 +521,24 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1;
 				C4Value *pPar2 = pCurVal;
-				StdStrBuf result(pPar1->_getStr()->Data, true);
-				result.Append(pPar2->_getStr()->Data);
-				pPar1->SetString(new C4String(result, &pCurCtx->Func->Owner->GetEngine()->Strings));
-				PopValue();
+				try
+				{
+					StdStrBuf result = pPar1->toString();
+					try
+					{
+						result.Append(pPar2->toString());
+						pPar1->SetString(new C4String(result, &pCurCtx->Func->Owner->GetEngine()->Strings));
+						PopValue();
+					}
+					catch (C4V_Type type)
+					{
+						throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"..\" right side: can not convert \"%s\" to \"string\"!", GetC4VName(type)).getData());
+					}
+				}
+				catch (C4V_Type type)
+				{
+					throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"..\" left side: can not convert \"%s\" to \"string\"!", GetC4VName(type)).getData());
+				}
 				break;
 			}
 			case AB_EqualIdent: // old ==
@@ -685,10 +699,24 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			{
 				CheckOpPars(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
-				StdStrBuf result(pPar1->GetData().Str->Data, true);
-				result.Append(pPar2->_getStr()->Data);
-				pPar1->GetRefVal().SetString(new C4String(result, &pCurCtx->Func->Owner->GetEngine()->Strings));
-				PopValue();
+				try
+				{
+					StdStrBuf result = pPar1->toString();
+					try
+					{
+						result.Append(pPar2->toString());
+						pPar1->GetRefVal().SetString(new C4String(result, &pCurCtx->Func->Owner->GetEngine()->Strings));
+						PopValue();
+					}
+					catch (C4V_Type type)
+					{
+						throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"..\" right side: can not convert \"%s\" to  \"string\"!", GetC4VName(type)).getData());
+					}
+				}
+				catch (C4V_Type type)
+				{
+					throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"..\" left side: can not convert \"%s\" to \"string\"!", GetC4VName(type)).getData());
+				}
 				break;
 			}
 			case AB_AndIt: // &=
