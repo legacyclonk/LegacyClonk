@@ -533,8 +533,6 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 
 int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 {
-	Clear(!fKeepInactive);
-
 	// Load data component
 	StdStrBuf Source;
 	if (!hGroup.LoadEntryString(C4CFN_ScenarioObjects, Source))

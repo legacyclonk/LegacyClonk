@@ -2365,6 +2365,8 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	// definition value overloads
 	if (!section) InitValueOverloads();
 
+	Objects.Clear(!section);
+
 	for (C4Def *def = Defs.FirstDef; def; def = def->Next)
 	{
 		def->Script.Call(PSF_InitializeDef, &C4AulParSet(section ? C4VString(section->szName) : C4VNull));
