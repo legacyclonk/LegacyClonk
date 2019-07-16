@@ -165,11 +165,15 @@ enum C4AulBCCType
 	AB_BitOr,            // |
 	AB_And,              // &&
 	AB_Or,               // ||
+	AB_PowIt,            // **=
 	AB_MulIt,            // *=
 	AB_DivIt,            // /=
 	AB_ModIt,            // %=
 	AB_Inc,              // +=
 	AB_Dec,              // -=
+	AB_LeftShiftIt,      // <<=
+	AB_RightShiftIt,     // >>=
+	AB_ConcatIt,         // ..=
 	AB_AndIt,            // &=
 	AB_OrIt,             // |=
 	AB_XOrIt,            // ^=

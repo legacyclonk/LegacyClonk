@@ -617,6 +617,14 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				PopValue();
 				break;
 			}
+			case AB_PowIt: // **=
+			{
+				CheckOpPars(pCPos->bccX);
+				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
+				pPar1->GetData().Int = Pow(pPar1->GetData().Int, pPar2->_getInt());
+				PopValue();
+				break;
+			}
 			case AB_MulIt: // *=
 			{
 				CheckOpPars(pCPos->bccX);
@@ -654,6 +662,32 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int -= pPar2->_getInt();
+				PopValue();
+				break;
+			}
+			case AB_LeftShiftIt: // <<=
+			{
+				CheckOpPars(pCPos->bccX);
+				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
+				pPar1->GetData().Int <<= pPar2->_getInt();
+				PopValue();
+				break;
+			}
+			case AB_RightShiftIt: // >>=
+			{
+				CheckOpPars(pCPos->bccX);
+				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
+				pPar1->GetData().Int >>= pPar2->_getInt();
+				PopValue();
+				break;
+			}
+			case AB_ConcatIt: // ..=
+			{
+				CheckOpPars(pCPos->bccX);
+				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
+				StdStrBuf result(pPar1->GetData().Str->Data, true);
+				result.Append(pPar2->_getStr()->Data);
+				pPar1->GetRefVal().SetString(new C4String(result, &pCurCtx->Func->Owner->GetEngine()->Strings));
 				PopValue();
 				break;
 			}
