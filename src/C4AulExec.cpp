@@ -818,6 +818,18 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 			}
 
+			case AB_ARRAY_APPEND:
+			{
+				C4Value &Array = pCurVal[0].GetRefVal();
+				// Typcheck
+				if (!Array.ConvertTo(C4V_Array) || Array.GetType() != C4V_Array)
+					throw new C4AulExecError(pCurCtx->Obj, FormatString("array append accesss: can't access %s as an array!", Array.GetType() == C4V_Any ? "0" : Array.GetTypeName()).getData());
+
+				Array.GetArrayElement(Array._getArray()->GetSize(), pCurVal[0], pCurCtx);
+
+				break;
+			}
+
 			case AB_STACK:
 				if (pCPos->bccX < 0)
 					PopValues(-pCPos->bccX);

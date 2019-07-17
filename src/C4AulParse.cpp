@@ -778,6 +778,7 @@ static const char *GetTTName(C4AulBCCType e)
 	{
 	case AB_ARRAYA_R:  return "AB_ARRAYA_R";  // array access
 	case AB_ARRAYA_V:  return "AB_ARRAYA_V";  // not creating a reference
+	case AB_ARRAY_APPEND:  return "AB_ARRAYA_APPEND";  // not creating a reference
 	case AB_VARN_R:    return "AB_VARN_R";    // a named var
 	case AB_VARN_V:    return "AB_VARN_V";
 	case AB_PARN_R:    return "AB_PARN_R";    // a named parameter
@@ -1008,6 +1009,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 		iStack -= C4AUL_MAX_Par;
 		break;
 
+	case AB_ARRAY_APPEND:
 	case AB_Inc1:
 	case AB_Dec1:
 	case AB_BitNot:
@@ -2709,6 +2711,12 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 			throw new C4AulParseError(this, "unexpected '['");
 		// Access the array
 		Shift();
+		if (TokenType == ATT_BCLOSE2)
+		{
+			Shift();
+			AddBCC(AB_ARRAY_APPEND);
+			break;
+		}
 		Parse_Expression();
 		Match(ATT_BCLOSE2);
 		AddBCC(AB_ARRAYA_R);

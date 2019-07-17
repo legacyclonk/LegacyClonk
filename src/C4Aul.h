@@ -113,21 +113,22 @@ struct C4AulParSet
 // some special script functions defined hard-coded to reduce the exec context
 enum C4AulBCCType
 {
-	AB_ARRAYA_R,  // array access
-	AB_ARRAYA_V,  // not creating a reference
-	AB_VARN_R,    // a named var
+	AB_ARRAYA_R,     // array access
+	AB_ARRAYA_V,     // not creating a reference
+	AB_ARRAY_APPEND, // always as a reference
+	AB_VARN_R,       // a named var
 	AB_VARN_V,
-	AB_PARN_R,    // a named parameter
+	AB_PARN_R,       // a named parameter
 	AB_PARN_V,
-	AB_LOCALN_R,  // a named local
+	AB_LOCALN_R,     // a named local
 	AB_LOCALN_V,
-	AB_GLOBALN_R, // a named global
+	AB_GLOBALN_R,    // a named global
 	AB_GLOBALN_V,
-	AB_VAR_R,     // Var statement
+	AB_VAR_R,        // Var statement
 	AB_VAR_V,
-	AB_PAR_R,     // Par statement
+	AB_PAR_R,        // Par statement
 	AB_PAR_V,
-	AB_FUNC,      // function
+	AB_FUNC,         // function
 
 	// prefix
 	AB_Inc1,   // ++
