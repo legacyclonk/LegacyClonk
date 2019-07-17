@@ -186,7 +186,7 @@ void StdCompilerBinRead::String(std::string &str, RawCompileType type)
 			excEOF(); return;
 		}
 	// Copy data
-	str.assign(getBufPtr<char>(Buf, iStart), getBufPtr<char>(Buf, iPos));
+	str.assign(getBufPtr<char>(Buf, iStart), getBufPtr<char>(Buf, iPos - 1));
 }
 
 void StdCompilerBinRead::Raw(void *pData, size_t iSize, RawCompileType eType)
