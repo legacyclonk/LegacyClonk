@@ -775,18 +775,44 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			case AB_ARRAYA_R: case AB_ARRAYA_V:
 			{
 				C4Value &Index = pCurVal[0];
+				if (!Index.ConvertTo(C4V_Int))
+					throw new C4AulExecError(pCurCtx->Obj, FormatString("array access: index of type %s, int expected!", Index.GetTypeName()).getData());
+				auto index = Index._getInt();
+
 				C4Value &Array = pCurVal[-1].GetRefVal();
+				if (Array.GetType() == C4V_String)
+				{
+					if (pCPos->bccType != AB_ARRAYA_V)
+						throw new C4AulExecError(pCurCtx->Obj, "array access: can't access string as an array in a reference context!");
+
+					StdCopyStrBuf &str = Array._getStr()->Data;
+					if (index < 0)
+					{
+						index += str.getLength();
+					}
+
+					if (index >= str.getLength() || index < 0)
+					{
+						pCurVal[-1].Set0();
+					}
+					else
+					{
+						StdStrBuf result;
+						result.AppendChar(str.getData()[index]);
+						pCurVal[-1].SetString(new C4String(result, &pCurCtx->Func->Owner->GetEngine()->Strings));
+					}
+					PopValue();
+					break;
+				}
 				// Typcheck
 				if (!Array.ConvertTo(C4V_Array))
 					throw new C4AulExecError(pCurCtx->Obj, FormatString("array access: can't access %s as an array!", Array.GetTypeName()).getData());
-				if (!Index.ConvertTo(C4V_Int))
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("array access: index of type %s, int expected!", Index.GetTypeName()).getData());
 				// Set reference to array element
 				if (pCPos->bccType == AB_ARRAYA_R)
-					Array.GetArrayElement(Index._getInt(), pCurVal[-1], pCurCtx);
+					Array.GetArrayElement(index, pCurVal[-1], pCurCtx);
 				else
 					// do not mark array as having element references
-					Array.GetArrayElement(Index._getInt(), pCurVal[-1], pCurCtx, true);
+					Array.GetArrayElement(index, pCurVal[-1], pCurCtx, true);
 				// Remove index
 				PopValue();
 				break;
