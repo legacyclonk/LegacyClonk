@@ -166,13 +166,14 @@ public:
 	void Warn(const char *pMsg, const char *pIdtf = nullptr);
 	void Strict2Error(const char *pMsg, const char *pIdtf = nullptr);
 
+	void SetNoRef(); // Switches the bytecode to generate a value instead of a reference
+
 private:
 	bool fJump;
 	int iStack;
 
 	void AddBCC(C4AulBCCType eType, intptr_t X = 0);
 
-	void SetNoRef(); // Switches the bytecode to generate a value instead of a reference
 
 	int JumpHere(); // Get position for a later jump to next instruction added
 	void SetJumpHere(int iJumpOp); // Use the next inserted instruction as jump target for the given jump operation
@@ -1232,6 +1233,7 @@ void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
 	else
 	{
 		state.Parse_Expression();
+		state.SetNoRef();
 		AddBCC(AB_RETURN, 0, state.SPos);
 	}
 	// done
