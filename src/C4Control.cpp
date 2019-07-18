@@ -1499,14 +1499,14 @@ StdStrBuf C4ControlCustomCommand::FormatScript() const
 	const auto cmd = Game.MessageInput.GetCommand(command.c_str());
 	StdStrBuf Script, CmdScript;
 	// replace %player% by calling player number
-	if (SSearch(cmd->Script, "%player%"))
+	if (SSearch(cmd->script.c_str(), "%player%"))
 	{
-		CmdScript.Copy(cmd->Script);
+		CmdScript.Copy(cmd->script.c_str());
 		CmdScript.Replace("%player%", FormatString("%d", plr).getData());
 	}
 	else
 	{
-		CmdScript.Ref(cmd->Script);
+		CmdScript.Copy(cmd->script.c_str());
 	}
 	// insert parameters
 	if (SSearch(CmdScript.getData(), "%d"))
@@ -1518,7 +1518,7 @@ StdStrBuf C4ControlCustomCommand::FormatScript() const
 	{
 		// Unrestricted parameters?
 		// That's kind of a security risk as it will allow anyone to execute code
-		switch (cmd->eRestriction)
+		switch (cmd->restriction)
 		{
 			case C4MessageBoardCommand::C4MSGCMDR_Escaped:
 			{

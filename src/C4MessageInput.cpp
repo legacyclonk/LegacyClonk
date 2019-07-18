@@ -237,7 +237,7 @@ bool C4ChatInputDialog::KeyCompleteNick()
 bool C4MessageInput::Init()
 {
 	// add default commands
-	if (!pCommands)
+	if (Commands.empty())
 	{
 		AddCommand("speed", "SetGameSpeed(%d)");
 	}
@@ -254,13 +254,7 @@ void C4MessageInput::Clear()
 {
 	// close any dialog
 	CloseTypeIn();
-	// free messageboard-commands
-	C4MessageBoardCommand *pCmd;
-	while (pCmd = pCommands)
-	{
-		pCommands = pCmd->Next;
-		delete pCmd;
-	}
+	Commands.clear();
 }
 
 bool C4MessageInput::CloseTypeIn()
@@ -676,23 +670,17 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 	return false;
 }
 
-void C4MessageInput::AddCommand(const char *strCommand, const char *strScript, C4MessageBoardCommand::Restriction eRestriction)
+void C4MessageInput::AddCommand(const std::string &strCommand, const std::string &strScript, C4MessageBoardCommand::Restriction eRestriction)
 {
 	if (GetCommand(strCommand)) return;
 	// create entry
-	C4MessageBoardCommand *pCmd = new C4MessageBoardCommand();
-	SCopy(strCommand, pCmd->Name, C4MaxName);
-	SCopy(strScript, pCmd->Script, _MAX_FNAME + 30);
-	pCmd->eRestriction = eRestriction;
-	// add to list
-	pCmd->Next = pCommands; pCommands = pCmd;
+	Commands[strCommand] = {strScript, eRestriction};
 }
 
-C4MessageBoardCommand *C4MessageInput::GetCommand(const char *strName)
+C4MessageBoardCommand *C4MessageInput::GetCommand(const std::string &strName)
 {
-	for (C4MessageBoardCommand *pCmd = pCommands; pCmd; pCmd = pCmd->Next)
-		if (SEqual(pCmd->Name, strName))
-			return pCmd;
+	auto command = Commands.find(strName);
+	if (command != Commands.end()) return &command->second;
 	return nullptr;
 }
 
@@ -728,11 +716,6 @@ const char *C4MessageInput::GetBackBuffer(int32_t iIndex)
 {
 	if (!Inside<int32_t>(iIndex, 0, C4MSGB_BackBufferMax - 1)) return nullptr;
 	return BackBuffer[iIndex];
-}
-
-C4MessageBoardCommand::C4MessageBoardCommand()
-{
-	Name[0] = '\0'; Script[0] = '\0'; Next = nullptr;
 }
 
 void C4MessageBoardQuery::CompileFunc(StdCompiler *pComp)

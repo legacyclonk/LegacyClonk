@@ -22,6 +22,8 @@
 #include "C4Gui.h"
 #include "C4KeyboardInput.h"
 
+#include <unordered_map>
+
 const int32_t C4MSGB_BackBufferMax = 20;
 
 // chat input dialog
@@ -94,21 +96,18 @@ public:
 class C4MessageBoardCommand
 {
 public:
-	C4MessageBoardCommand();
-
-public:
-	char Name[C4MaxName + 1];
-	char Script[_MAX_FNAME + 30 + 1];
+	std::string script;
 	enum Restriction { C4MSGCMDR_Escaped = 0, C4MSGCMDR_Plain, C4MSGCMDR_Identifier };
-	Restriction eRestriction;
+	Restriction restriction;
 
-	C4MessageBoardCommand *Next;
+	C4MessageBoardCommand() {};
+	C4MessageBoardCommand(const std::string &script, Restriction restriction) : script(script), restriction(restriction) {}
 };
 
 class C4MessageInput
 {
 public:
-	C4MessageInput() : pCommands(nullptr) { Default(); }
+	C4MessageInput() { Default(); }
 	~C4MessageInput() { Clear(); }
 	void Default();
 	void Clear();
@@ -120,11 +119,11 @@ private:
 
 	// MessageBoard-commands
 private:
-	class C4MessageBoardCommand *pCommands;
+	std::unordered_map<std::string, C4MessageBoardCommand> Commands;
 
 public:
-	void AddCommand(const char *strCommand, const char *strScript, C4MessageBoardCommand::Restriction eRestriction = C4MessageBoardCommand::C4MSGCMDR_Escaped);
-	class C4MessageBoardCommand *GetCommand(const char *strName);
+	void AddCommand(const std::string &strCommand, const std::string &strScript, C4MessageBoardCommand::Restriction eRestriction = C4MessageBoardCommand::C4MSGCMDR_Escaped);
+	C4MessageBoardCommand *GetCommand(const std::string &strName);
 
 	// Input
 public:
