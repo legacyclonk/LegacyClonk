@@ -618,6 +618,50 @@ struct StdSTLContainerAdapt
 template <class C>
 inline StdSTLContainerAdapt<C> mkSTLContainerAdapt(C &rTarget, StdCompiler::Sep eSep = StdCompiler::SEP_SEP) { return StdSTLContainerAdapt<C>(rTarget, eSep); }
 
+// * Adaptor for maps following the std::map and std::unordered_map interfaces with a key type that is compatible with mkStringAdapt
+// Writes the size of the map followed by a semicolon separated list of key=value pairs
+template <class Map>
+struct StdSTLMapAdapt
+{
+	Map &map;
+
+	StdSTLMapAdapt(Map &map) : map(map) {}
+
+	void CompileFunc(StdCompiler *pComp) const
+	{
+		int32_t count = map.size();
+		pComp->Value(count);
+		if (pComp->isCompiler())
+		{
+			map.clear();
+			for (size_t i = 0; i < count; ++i)
+			{
+				pComp->Separator(StdCompiler::SEP_SEP2);
+				typename Map::key_type key;
+				pComp->Value(mkStringAdapt(key));
+				pComp->Separator(StdCompiler::SEP_SET);
+				typename Map::mapped_type value;
+				pComp->Value(value);
+				map[key] = value;
+			}
+		}
+		else
+		{
+			for (auto &it : map)
+			{
+				auto key = it.first;
+				pComp->Separator(StdCompiler::SEP_SEP2);
+				pComp->Value(mkStringAdapt(key));
+				pComp->Separator(StdCompiler::SEP_SET);
+				pComp->Value(it.second);
+			}
+		}
+	}
+};
+
+template <class Map>
+inline StdSTLMapAdapt<Map> mkSTLMapAdapt(Map &map) { return StdSTLMapAdapt<Map>(map); }
+
 // Write an integer that is supposed to be small most of the time. The adaptor writes it in
 // 7-bit-pieces, bit 8 being a continuation marker: If it's set, more data is following, if not,
 // all following bits are 0.
