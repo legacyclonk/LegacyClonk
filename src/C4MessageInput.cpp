@@ -718,6 +718,20 @@ const char *C4MessageInput::GetBackBuffer(int32_t iIndex)
 	return BackBuffer[iIndex];
 }
 
+void C4MessageBoardCommand::CompileFunc(StdCompiler *pComp)
+{
+	pComp->Value(script);
+	pComp->Separator(StdCompiler::SEP_SEP);
+
+	constexpr StdEnumEntry<Restriction> restrictions[] =
+	{
+		{"Escaped", C4MSGCMDR_Escaped},
+		{"Plain", C4MSGCMDR_Plain},
+		{"Identifier", C4MSGCMDR_Identifier}
+	};
+	pComp->Value(mkEnumAdaptT<int>(restriction, restrictions));
+}
+
 void C4MessageBoardQuery::CompileFunc(StdCompiler *pComp)
 {
 	// note that this CompileFunc does not save the fAnswered-flag, so pending message board queries will be re-asked when resuming SaveGames

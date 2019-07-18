@@ -102,6 +102,7 @@ public:
 
 	C4MessageBoardCommand() {};
 	C4MessageBoardCommand(const std::string &script, Restriction restriction) : script(script), restriction(restriction) {}
+	void CompileFunc(StdCompiler *pComp);
 };
 
 class C4MessageInput
@@ -142,6 +143,7 @@ public:
 	void AbortMsgBoardQuery(C4Object *pObj, int32_t iPlr);
 
 	friend class C4ChatInputDialog;
+	friend class C4Game;
 };
 
 // script query to ask a player for a string
