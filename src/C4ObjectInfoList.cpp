@@ -157,7 +157,7 @@ C4ObjectInfo *C4ObjectInfoList::New(C4ID n_id, C4DefList *pDefs, const char *cpN
 	// Default by type
 	((C4ObjectInfoCore *)pInfo)->Default(n_id, pDefs, cpNames);
 	// Set birthday
-	pInfo->Birthday = time(nullptr);
+	pInfo->Birthday = static_cast<int32_t>(time(nullptr));
 	// Make valid names
 	MakeValidName(pInfo->Name);
 	// Add new portrait (permanently w/o copying file)

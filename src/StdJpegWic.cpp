@@ -49,7 +49,7 @@ struct StdJpeg::Impl
 	const void *DecodeRow()
 	{
 		assert(currentRow < height);
-		const WICRect rect = { 0, currentRow++, width, 1 };
+		const WICRect rect = { 0, static_cast<INT>(currentRow++), static_cast<INT>(width), 1 };
 		wic.CopyPixels(&rect, rowSize, rowSize, rowBuffer.get());
 		return rowBuffer.get();
 	}

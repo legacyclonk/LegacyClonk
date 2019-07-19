@@ -396,7 +396,7 @@ bool C4GameParameters::Load(C4Group &hGroup, C4Scenario *pScenario, const char *
 		DefaultCompiler.Compile(mkParAdapt(*this, pScenario));
 
 		// Set random seed
-		RandomSeed = time(nullptr);
+		RandomSeed = static_cast<int32_t>(time(nullptr));
 
 		// Set control rate default
 		if (ControlRate < 0)

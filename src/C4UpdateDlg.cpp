@@ -261,7 +261,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 		if (time(nullptr) - Config.Network.LastUpdateTime < 60 * 60 * 24)
 			return false;
 	// Store the time of this update check (whether it's automatic or not or successful or not)
-	Config.Network.LastUpdateTime = time(nullptr);
+	Config.Network.LastUpdateTime = static_cast<int32_t>(time(nullptr));
 	// Get current update version from server
 	C4GameVersion UpdateVersion;
 	C4GUI::Dialog *pWaitDlg = nullptr;

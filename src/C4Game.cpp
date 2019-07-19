@@ -319,7 +319,7 @@ bool C4Game::Init()
 	C4GameLobby::UserAbort = false;
 
 	// Store a start time that identifies this game on this host
-	StartTime = time(nullptr);
+	StartTime = static_cast<int32_t>(time(nullptr));
 
 	// Get PlayerFilenames from Config, if ParseCommandLine did not fill some in
 	// Must be done here, because InitGame calls PlayerInfos.InitLocal

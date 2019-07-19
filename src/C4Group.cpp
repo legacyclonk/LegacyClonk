@@ -566,7 +566,7 @@ void C4GroupEntry::Set(const DirectoryIterator &iter, const char *szPath)
 	std::memset(this, 0, sizeof(C4GroupEntry));
 	SCopy(iter.fdt.name, FileName, _MAX_FNAME);
 	Size = iter.fdt.size;
-	Time = iter.fdt.time_create;
+	Time = static_cast<uint32_t>(iter.fdt.time_create);
 	SCopy(*iter, DiskPath, _MAX_PATH - 1);
 	Status = C4GRES_OnDisk;
 	Packed = (int32_t)false;
@@ -853,7 +853,7 @@ bool C4Group::AddEntry(int status,
 	if (entryname) SCopy(entryname, nentry->FileName, _MAX_FNAME);
 	else SCopy(GetFilename(fname), nentry->FileName, _MAX_FNAME);
 	nentry->Size = size;
-	nentry->Time = time + C4Group_AssumeTimeOffset;
+	nentry->Time = static_cast<uint32_t>(time + C4Group_AssumeTimeOffset);
 	nentry->ChildGroup = (int32_t)childgroup;
 	nentry->Offset = 0;
 	nentry->HasCRC = cCRC;
@@ -924,7 +924,7 @@ bool C4Group::Close()
 	Head.Ver2 = C4GroupFileVer2;
 
 	// Creation stamp
-	Head.Creation = time(nullptr);
+	Head.Creation = static_cast<int32_t>(time(nullptr));
 
 	// Lose original on any save unless made in this session
 	if (!MadeOriginal) Head.Original = 0;
@@ -1393,7 +1393,7 @@ bool C4Group::View(const char *szFiles)
 		tm *pcoretm = localtime(&cur_time);
 		tm coretm;
 		if (pcoretm) coretm = *pcoretm; else printf("(invalid timestamp) ");
-		centry->Time = cur_time;
+		centry->Time = static_cast<int32_t>(cur_time);
 
 		printf(oformat, centry->FileName,
 			centry->Size,
