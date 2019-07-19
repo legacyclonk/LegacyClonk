@@ -1543,7 +1543,7 @@ void C4Player::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(fFogOfWar,                "FogOfWar",          false));
 	pComp->Value(mkNamingAdapt(bForceFogOfWar,           "ForceFogOfWar",     false));
 	pComp->Value(mkNamingAdapt(ShowStartup,              "ShowStartup",       false));
-	pComp->Value(mkNamingAdapt(ShowControl,              "ShowControl",       false));
+	pComp->Value(mkNamingAdapt(ShowControl,              "ShowControl",       0));
 	pComp->Value(mkNamingAdapt(ShowControlPos,           "ShowControlPos",    false));
 	pComp->Value(mkNamingAdapt(Wealth,                   "Wealth",            0));
 	pComp->Value(mkNamingAdapt(Points,                   "Points",            0));

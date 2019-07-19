@@ -91,7 +91,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ScrollSmooth,     "ScrollSmooth",     4));
 	pComp->Value(mkNamingAdapt(AlwaysDebug,      "DebugMode",        false,         false, true));
 #ifdef _WIN32
-	pComp->Value(mkNamingAdapt(MMTimer, "MMTimer", 1));
+	pComp->Value(mkNamingAdapt(MMTimer, "MMTimer", true));
 #endif
 	pComp->Value(mkNamingAdapt(s(RXFontName),        "FontName",             "Endeavour", false, true));
 	pComp->Value(mkNamingAdapt(RXFontSize,           "FontSize",             14,          false, true));
@@ -734,7 +734,7 @@ void C4ConfigStartup::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(HideMsgNoOfficialLeague,  "HideMsgNoOfficialLeague",  false));
 	pComp->Value(mkNamingAdapt(HideMsgIRCDangerous,      "HideMsgIRCDangerous",      false));
 	pComp->Value(mkNamingAdapt(AlphabeticalSorting,      "AlphabeticalSorting",      false));
-	pComp->Value(mkNamingAdapt(LastPortraitFolderIdx,    "LastPortraitFolderIdx",    false));
+	pComp->Value(mkNamingAdapt(LastPortraitFolderIdx,    "LastPortraitFolderIdx",    0));
 }
 
 void C4Config::CompileFunc(StdCompiler *pComp)

@@ -178,7 +178,7 @@ void C4SHead::CompileFunc(StdCompiler *pComp, bool fSection)
 		pComp->Value(mkNamingAdapt(Difficulty,                "Difficulty",      0));
 		// Ignore EnableUnregisteredAccess
 		int32_t EnableUnregisteredAccess = false;
-		pComp->Value(mkNamingAdapt(EnableUnregisteredAccess,  "Access",          false));
+		pComp->Value(mkNamingAdapt(EnableUnregisteredAccess,  "Access",          0));
 		pComp->Value(mkNamingAdapt(MaxPlayer,                 "MaxPlayer",       C4S_MaxPlayerDefault));
 		pComp->Value(mkNamingAdapt(MaxPlayerLeague,           "MaxPlayerLeague", MaxPlayer));
 		pComp->Value(mkNamingAdapt(MinPlayer,                 "MinPlayer",       0));
@@ -237,8 +237,8 @@ void C4SGame::CompileFunc(StdCompiler *pComp, bool fSection)
 	{
 		pComp->Value(mkNamingAdapt(Realism.ValueOverloads, "ValueOverloads", C4IDList()));
 	}
-	pComp->Value(mkNamingAdapt(mkRuntimeValueAdapt(Realism.LandscapePushPull),     "LandscapePushPull",     false));
-	pComp->Value(mkNamingAdapt(mkRuntimeValueAdapt(Realism.LandscapeInsertThrust), "LandscapeInsertThrust", true));
+	pComp->Value(mkNamingAdapt(mkRuntimeValueAdapt(Realism.LandscapePushPull),     "LandscapePushPull",     0));
+	pComp->Value(mkNamingAdapt(mkRuntimeValueAdapt(Realism.LandscapeInsertThrust), "LandscapeInsertThrust", 1));
 
 	const StdBitfieldEntry<int32_t> BaseFunctionalities[] =
 	{
