@@ -101,7 +101,8 @@ code =
 	{"Jan Heberer", "Jan"},
 	{"Markus Mittendrein", "Der Tod"},
 	{"Dominik Bayerl", "Kanibal"},
-	{"George Tokmaji", "Fulgen"}
+	{"George Tokmaji", "Fulgen"},
+	{"Martin Plicht", "Mortimer"}
 },
 scripting =
 {
