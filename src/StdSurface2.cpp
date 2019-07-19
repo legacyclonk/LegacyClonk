@@ -417,8 +417,8 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 	// Lock - WARNING - maybe locking primary surface here...
 	if (!Lock()) return false;
 
-	int realWdt = ceilf(static_cast<float>(Wdt) * scale);
-	int realHgt = ceilf(static_cast<float>(Hgt) * scale);
+	int realWdt = static_cast<int32_t>(ceilf(Wdt * scale));
+	int realHgt = static_cast<int32_t>(ceilf(Hgt * scale));
 
 	// Create bitmap
 	StdBitmap bmp(realWdt, realHgt, fSaveAlpha);
@@ -600,10 +600,10 @@ uint32_t CSurface::GetPixDw(int iX, int iY, bool fApplyModulation, float scale)
 		// OpenGL?
 		if (pGL)
 		{
-			int hgt = ceilf(static_cast<float>(Hgt) * scale);
+			int hgt = static_cast<int32_t>(ceilf(Hgt * scale));
 			if (!PrimarySurfaceLockBits)
 			{
-				int wdt = ceilf(static_cast<float>(Wdt) * scale);
+				int wdt = static_cast<int32_t>(ceilf(Wdt * scale));
 				wdt = ((wdt + 3) / 4) * 4; // round up to the next multiple of 4
 				PrimarySurfaceLockBits = new unsigned char[wdt * hgt * 3];
 				glReadPixels(0, 0, wdt, hgt, GL_BGR, GL_UNSIGNED_BYTE, PrimarySurfaceLockBits);

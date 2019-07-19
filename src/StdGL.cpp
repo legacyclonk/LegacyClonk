@@ -105,7 +105,7 @@ bool CStdGL::UpdateClipper()
 	if (!CalculateClipper(&iX, &iY, &iWdt, &iHgt)) return true;
 	const auto scale = pApp->GetScale();
 	// set it
-	glViewport(floorf(static_cast<float>(iX) * scale), floorf(static_cast<float>(RenderTarget->Hgt - iY - iHgt) * scale), ceilf(static_cast<float>(iWdt) * scale), ceilf(static_cast<float>(iHgt) * scale));
+	glViewport(static_cast<int32_t>(floorf(iX * scale)), static_cast<int32_t>(floorf((RenderTarget->Hgt - iY - iHgt) * scale)), static_cast<int32_t>(ceilf(iWdt * scale)), static_cast<int32_t>(ceilf(iHgt * scale)));
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(

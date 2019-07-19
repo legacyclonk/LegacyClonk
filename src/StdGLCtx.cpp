@@ -137,7 +137,7 @@ bool CStdGLCtx::UpdateSize()
 	// get size
 	RECT rt; if (!GetClientRect(pWindow ? pWindow->GetRenderWindow() : hWindow, &rt)) return false;
 	const auto scale = pGL->pApp->GetScale();
-	int cx2 = ceilf(static_cast<float>(rt.right - rt.left) / scale), cy2 = ceilf(static_cast<float>(rt.bottom - rt.top) / scale);
+	int cx2 = static_cast<int32_t>(ceilf((rt.right - rt.left) / scale)), cy2 = static_cast<int32_t>(ceilf((rt.bottom - rt.top) / scale));
 	// assign if different
 	if (cx != cx2 || cy != cy2)
 	{
@@ -290,8 +290,8 @@ bool CStdGLCtx::UpdateSize()
 		&width, &height, &borderDummy, &depth);
 	// assign if different
 	const auto scale = pGL->pApp->GetScale();
-	auto newWidth = ceilf(static_cast<float>(width) / scale);
-	auto newHeight = ceilf(static_cast<float>(height) / scale);
+	auto newWidth = static_cast<int32_t>(ceilf(width / scale));
+	auto newHeight = static_cast<int32_t>(ceilf(height / scale));
 	if (cx != newWidth || cy != newHeight)
 	{
 		cx = newWidth; cy = newHeight;
@@ -410,7 +410,7 @@ bool CStdGLCtx::UpdateSize()
 	RECT rc;
 	pWindow->GetSize(&rc);
 	const auto scale = pGL->pApp->GetScale();
-	int width = ceilf(static_cast<float>(rc.right - rc.left) / scale), height = ceilf(static_cast<float>(rc.bottom - rc.top) / scale);
+	int width = static_cast<int32_t>(ceilf((rc.right - rc.left) / scale)), height = static_cast<int32_t>(ceilf((rc.bottom - rc.top) / scale);
 	// assign if different
 	if (cx != width || cy != height)
 	{

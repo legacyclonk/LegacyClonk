@@ -153,7 +153,7 @@ bool C4Application::DoInit()
 		{
 			Clear(); return false;
 		}
-		pWindow->SetSize(static_cast<float>(Config.Graphics.ResX) * GetScale(), static_cast<float>(Config.Graphics.ResY) * GetScale());
+		pWindow->SetSize(static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale()));
 		SetDisplayMode(Config.Graphics.UseDisplayMode);
 
 #ifdef _WIN32

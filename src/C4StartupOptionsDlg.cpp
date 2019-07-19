@@ -1164,8 +1164,8 @@ void C4StartupOptionsDlg::OnTestScaleBtn(C4GUI::Control *)
 	const auto oldResY = Config.Graphics.ResY;
 
 	Config.Graphics.Scale = iNewScale;
-	const auto realResX = floorf(static_cast<float>(oldResX) * oldScale);
-	const auto realResY = floorf(static_cast<float>(oldResY) * oldScale);
+	const auto realResX = static_cast<int32_t>(floorf(oldResX * oldScale));
+	const auto realResY = static_cast<int32_t>(floorf(oldResY * oldScale));
 
 	Application.SetResolution(realResX, realResY);
 

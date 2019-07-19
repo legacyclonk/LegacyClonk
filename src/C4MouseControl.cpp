@@ -183,7 +183,7 @@ void C4MouseControl::UpdateClip()
 	// adjust size by viewport size
 	const auto scale = Application.GetScale();
 	RECT vpRct;
-	vpRct.left = floorf(pVP->OutX * scale); vpRct.top = floorf(pVP->OutY * scale); vpRct.right = ceilf((pVP->OutX + pVP->ViewWdt) * scale); vpRct.bottom = ceilf((pVP->OutY + pVP->ViewHgt) * scale);
+	vpRct.left = static_cast<int32_t>(floorf(pVP->OutX * scale)); vpRct.top = static_cast<int32_t>(floorf(pVP->OutY * scale)); vpRct.right = static_cast<int32_t>(ceilf((pVP->OutX + pVP->ViewWdt) * scale)); vpRct.bottom = static_cast<int32_t>(ceilf((pVP->OutY + pVP->ViewHgt) * scale));
 	// adjust by window pos
 	RECT rtWindow;
 	if (GetWindowRect(FullScreen.hWindow, &rtWindow))

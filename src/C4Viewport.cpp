@@ -112,7 +112,7 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		break;
 
 	case WM_USER_DROPDEF:
-		Game.DropDef(lParam, cvp->ViewX + LOWORD(wParam) / scale, cvp->ViewY + HIWORD(wParam) / scale);
+		Game.DropDef(lParam, cvp->ViewX + static_cast<int32_t>(LOWORD(wParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(wParam) / scale));
 		break;
 
 	case WM_SIZE:
@@ -181,7 +181,7 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 		case WM_LBUTTONDOWN:
 			// movement update needed before, so target is always up-to-date
-			Console.EditCursor.Move(cvp->ViewX + LOWORD(lParam) / scale, cvp->ViewY + HIWORD(lParam) / scale, wParam);
+			Console.EditCursor.Move(cvp->ViewX + static_cast<int32_t>(LOWORD(lParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(lParam) / scale), wParam);
 			Console.EditCursor.LeftButtonDown(wParam & MK_CONTROL); break;
 
 		case WM_LBUTTONUP: Console.EditCursor.LeftButtonUp(); break;
@@ -190,7 +190,7 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		case WM_RBUTTONUP: Console.EditCursor.RightButtonUp(); break;
 
-		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp->ViewX + LOWORD(lParam) / scale, cvp->ViewY + HIWORD(lParam) / scale, wParam); break;
+		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp->ViewX + static_cast<int32_t>(LOWORD(lParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(lParam) / scale), wParam); break;
 		}
 	}
 
@@ -206,7 +206,7 @@ CStdWindow *C4ViewportWindow::Init(CStdApp *pApp, const char *Title, CStdWindow 
 	hWindow = CreateWindowEx(
 		WS_EX_ACCEPTFILES,
 		C4ViewportClassName, Title, C4ViewportWindowStyle,
-		CW_USEDEFAULT, CW_USEDEFAULT, ceilf(400 * scale), ceilf(250 * scale),
+		CW_USEDEFAULT, CW_USEDEFAULT, static_cast<int32_t>(ceilf(400 * scale)), static_cast<int32_t>(ceilf(250 * scale)),
 		pParent->hWindow, nullptr, pApp->hInstance, nullptr);
 	return hWindow ? this : nullptr;
 }
@@ -288,7 +288,7 @@ static GtkTargetEntry drag_drop_entries[] =
 GtkWidget *C4ViewportWindow::InitGUI()
 {
 	const auto scale = Application.GetScale();
-	gtk_window_set_default_size(GTK_WINDOW(window), ceilf(640 * scale), ceilf(480 * scale));
+	gtk_window_set_default_size(GTK_WINDOW(window), static_cast<int32_t>(ceilf(640 * scale)), static_cast<int32_t>(ceilf(480 * scale)));
 
 	// Cannot just use ScrolledWindow because this would just move
 	// the GdkWindow of the DrawingArea.
@@ -417,7 +417,7 @@ void C4ViewportWindow::OnDragDataReceivedStatic(GtkWidget *widget, GdkDragContex
 		gchar *file = g_filename_from_uri(*uri, nullptr, nullptr);
 		if (!file) continue;
 
-		Game.DropFile(file, window->cvp->ViewX + x / scale, window->cvp->ViewY + y / scale);
+		Game.DropFile(file, window->cvp->ViewX + static_cast<int32_t>(x / scale), window->cvp->ViewY + static_cast<int32_t>(y / scale));
 		g_free(file);
 	}
 
@@ -576,7 +576,7 @@ gboolean C4ViewportWindow::OnMotionNotifyStatic(GtkWidget *widget, GdkEventMotio
 	{
 		const auto scale = Application.GetScale();
 
-		Console.EditCursor.Move(window->cvp->ViewX + (int32_t)event->x / scale, window->cvp->ViewY + (int32_t)event->y / scale, event->state);
+		Console.EditCursor.Move(window->cvp->ViewX + static_cast<int32_t>(event->x / scale), window->cvp->ViewY + static_cast<int32_t>(event->y / scale), event->state);
 	}
 
 	return TRUE;
@@ -742,7 +742,7 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 		{
 			const auto scale = Application.GetScale();
 
-			Console.EditCursor.Move(cvp->ViewX + e.xbutton.x / scale, cvp->ViewY + e.xbutton.y / scale, e.xbutton.state);
+			Console.EditCursor.Move(cvp->ViewX + static_cast<int32_t>(e.xbutton.x / scale), cvp->ViewY + static_cast<int32_t>(e.xbutton.y / scale), e.xbutton.state);
 		}
 		break;
 	case ConfigureNotify:
@@ -776,7 +776,7 @@ bool C4Viewport::UpdateOutputSize()
 #endif
 	OutX = rect.left; OutY = rect.top;
 	const auto scale = Application.GetScale();
-	ViewWdt = ceilf((rect.right - rect.left) / scale); ViewHgt = ceilf((rect.bottom - rect.top) / scale);
+	ViewWdt = static_cast<int32_t>(ceilf((rect.right - rect.left) / scale)); ViewHgt = static_cast<int32_t>(ceilf((rect.bottom - rect.top) / scale));
 	// Scroll bars
 	ScrollBarsByViewPosition();
 	// Reset menus

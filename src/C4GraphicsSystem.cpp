@@ -519,8 +519,8 @@ void C4GraphicsSystem::SortViewportsByPlayerControl()
 void C4GraphicsSystem::MouseMove(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, class C4Viewport *pVP)
 {
 	const auto scale = Application.GetScale();
-	iX /= scale;
-	iY /= scale;
+	iX = static_cast<int32_t>(ceilf(iX / scale));
+	iY = static_cast<int32_t>(ceilf(iY / scale));
 	// pass on to GUI
 	// Special: Don't pass if dragging and button is not upped
 	if (Game.pGUI && Game.pGUI->IsActive() && !Game.MouseControl.IsDragging())
@@ -609,10 +609,10 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		// get viewport to draw in
 		C4Viewport *pVP = GetFirstViewport(); if (!pVP) return false;
 		// create image large enough to hold the landcape
-		int32_t lWdt = ceilf(static_cast<float>(GBackWdt) * scale), lHgt = ceilf(static_cast<float>(GBackHgt) * scale);
+		int32_t lWdt = static_cast<int32_t>(ceilf(GBackWdt * scale)), lHgt = static_cast<int32_t>(ceilf(GBackHgt * scale));
 		StdBitmap bmp(lWdt, lHgt, false);
 		// get backbuffer size
-		int32_t bkWdt = ceilf(static_cast<float>(Config.Graphics.ResX) * scale), bkHgt = ceilf(static_cast<float>(Config.Graphics.ResY) * scale);
+		int32_t bkWdt = static_cast<int32_t>(ceilf(Config.Graphics.ResX * scale)), bkHgt = static_cast<int32_t>(ceilf(Config.Graphics.ResY * scale));
 		if (!bkWdt || !bkHgt) return false;
 		// facet for blitting
 		C4FacetEx bkFct;
@@ -631,7 +631,7 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 			if (iRealX + bkWdt2 > lWdt) bkWdt2 -= iRealX + bkWdt2 - lWdt;
 			if (iRealY + bkHgt2 > lHgt) bkHgt2 -= iRealY + bkHgt2 - lHgt;
 			// update facet
-			bkFct.Set(Application.DDraw->lpBack, 0, 0, ceilf(static_cast<float>(bkWdt2)) / scale, ceilf(static_cast<float>(bkHgt2) / scale), iX, iY);
+			bkFct.Set(Application.DDraw->lpBack, 0, 0, static_cast<int32_t>(ceilf(bkWdt2 / scale)), static_cast<int32_t>(ceilf(bkHgt2 / scale)), iX, iY);
 			// draw there
 			pVP->Draw(bkFct, false);
 			// render
