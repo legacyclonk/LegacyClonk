@@ -102,7 +102,7 @@ public:
 	class CStdDDraw *DDraw;
 	virtual int32_t &ScreenWidth() { return Config.Graphics.ResX; }
 	virtual int32_t &ScreenHeight() { return Config.Graphics.ResY; }
-	virtual float GetScale() { return Config.Graphics.Scale / 100.0; }
+	virtual float GetScale() { return Config.Graphics.Scale / 100.0f; }
 	void Clear();
 	void Execute();
 	// System.c4g helper funcs
