@@ -1703,7 +1703,7 @@ const unsigned int C4NetIOUDP::iUDPHeaderSize = 8 + 24; // (bytes)
 // packet structures
 struct C4NetIOUDP::PacketHdr
 {
-	int8_t   StatusByte;
+	uint8_t  StatusByte;
 	uint32_t Nr; // packet nr
 };
 
@@ -1843,7 +1843,7 @@ bool C4NetIOUDP::InitBroadcast(addr_t *pBroadcastAddr)
 				return false;
 			}
 			// send a ping packet
-			const PacketHdr PingPacket = { IPID_Ping | char(0x80), 0 };
+			const PacketHdr PingPacket = { IPID_Ping | 0x80, 0 };
 			if (!C4NetIOSimpleUDP::Broadcast(C4NetIOPacket(&PingPacket, sizeof(PingPacket))))
 			{
 				C4NetIOSimpleUDP::CloseBroadcast();
@@ -2131,7 +2131,7 @@ void C4NetIOUDP::OnPacket(const C4NetIOPacket &Packet, C4NetIO *pNetIO)
 		// ping? answer without creating a connection
 		if ((Packet.getStatus() & 0x7F) == IPID_Ping)
 		{
-			PacketHdr PingPacket = { static_cast<int8_t>(IPID_Ping | (Packet.getStatus() & 0x80)), 0 };
+			PacketHdr PingPacket = { static_cast<uint8_t>(IPID_Ping | (Packet.getStatus() & 0x80)), 0 };
 			SendDirect(C4NetIOPacket(&PingPacket, sizeof(PingPacket), false, Packet.getAddr()));
 			return;
 		}
@@ -2750,7 +2750,7 @@ bool C4NetIOUDP::Peer::DoConn(bool fMC) // (mt-safe)
 	SetTimeout(iStdTimeout, iConnectRetries);
 	// send packet (include current outgoing packet counter and mc addr)
 	ConnPacket Pkt;
-	Pkt.StatusByte = uint8_t(IPID_Conn) | (fMC ? 0x80 : 0x00);
+	Pkt.StatusByte = IPID_Conn | (fMC ? 0x80 : 0x00);
 	Pkt.ProtocolVer = pParent->iVersion;
 	Pkt.Nr = fMC ? pParent->iOPacketCounter : iOPacketCounter;
 	Pkt.Addr = addr;
@@ -2959,7 +2959,7 @@ bool C4NetIOUDP::DoLoopbackTest()
 	if (!C4NetIOSimpleUDP::getMCLoopback()) return false;
 
 	// send test packet
-	const PacketHdr TestPacket = { IPID_Test | char(0x80), static_cast<uint32_t>(rand()) };
+	const PacketHdr TestPacket = { IPID_Test | 0x80, static_cast<uint32_t>(rand()) };
 	if (!C4NetIOSimpleUDP::Broadcast(C4NetIOPacket(&TestPacket, sizeof(TestPacket))))
 		return false;
 
@@ -3089,7 +3089,7 @@ void C4NetIOUDP::DoCheck() // (mt-safe)
 		{
 			// set up packet
 			CheckPacketHdr Pkt;
-			Pkt.StatusByte = IPID_Check | char(0x80);
+			Pkt.StatusByte = IPID_Check | 0x80;
 			Pkt.Nr = iOPacketCounter;
 			Pkt.AskCount = Pkt.MCAskCount = 0;
 			// send it

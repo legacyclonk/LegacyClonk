@@ -456,7 +456,7 @@ protected:
 	// *** data
 
 	// internal packet type ids
-	enum IPTypeID
+	enum IPTypeID : uint8_t
 	{
 		IPID_Ping = 0,
 		IPID_Test = 1,
