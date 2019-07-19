@@ -168,14 +168,14 @@ protected:
 	int32_t iNextClientID;
 
 	// chase
-	uint32_t iLastChaseTargetUpdate;
+	time_t iLastChaseTargetUpdate;
 
 	// activation
-	uint32_t iLastActivateRequest;
+	time_t iLastActivateRequest;
 
 	// reference
-	uint32_t iLastReferenceUpdate;
-	uint32_t iLastLeagueUpdate, iLeagueUpdateDelay;
+	time_t iLastReferenceUpdate;
+	time_t iLastLeagueUpdate, iLeagueUpdateDelay;
 	bool fLeagueEndSent;
 
 	// league

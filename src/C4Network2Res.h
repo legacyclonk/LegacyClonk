@@ -219,7 +219,7 @@ protected:
 	bool fRemoved;
 
 	// being load?
-	int32_t iLastReqTime;
+	time_t iLastReqTime;
 
 	// loading
 	bool fLoading;
@@ -241,7 +241,7 @@ public:
 	int32_t                  getResID()          const { return Core.getID(); }
 	int32_t                  getResClient()      const { return Core.getID() >> 16; }
 	const char              *getFile()           const { return szFile; }
-	int32_t                  getLastReqTime()    const { return iLastReqTime; }
+	time_t                   getLastReqTime()    const { return iLastReqTime; }
 	bool                     isRemoved()         const { return fRemoved; }
 	bool                     isLoading()         const { return fLoading; }
 	bool                     isComplete()        const { return !fLoading; }
@@ -336,7 +336,7 @@ protected:
 	CStdCSec ResIDCSec;
 
 	// timings
-	int32_t iLastDiscover, iLastStatus;
+	time_t iLastDiscover, iLastStatus;
 
 	// object used for network i/o
 	C4Network2IO *pIO;

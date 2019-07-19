@@ -411,7 +411,7 @@ int C4Network2HTTPClient::GetTimeout()
 {
 	if (!fBusy)
 		return C4NetIOTCP::GetTimeout();
-	return MaxTimeout(C4NetIOTCP::GetTimeout(), 1000 * std::max<int>(time(nullptr) - iRequestTimeout, 0));
+	return MaxTimeout(C4NetIOTCP::GetTimeout(), static_cast<int>(1000 * std::max<time_t>(time(nullptr) - iRequestTimeout, 0)));
 }
 
 bool C4Network2HTTPClient::Query(const StdBuf &Data, bool fBinary)
