@@ -93,11 +93,11 @@ public:
 
 public:
 	char id[24 + 4];
-	int Ver1, Ver2;
-	int Entries;
+	int32_t Ver1, Ver2;
+	int32_t Entries;
 	char Maker[C4GroupMaxMaker + 2];
 	char Password[C4GroupMaxPassword + 2];
-	int Creation, Original;
+	int32_t Creation, Original;
 	uint8_t fbuf[92];
 
 public:
