@@ -206,9 +206,10 @@ void StdStrBuf::CompileFunc(StdCompiler *pComp, int iRawType)
 	}
 	else
 	{
-		char *pData = const_cast<char *>(getData());
+		const char *pData = getData();
 		if (!pData) pData = "";
-		pComp->String(&pData, StdCompiler::RawCompileType(iRawType));
+		// pData is only read anyway, since it is a decompiler
+		pComp->String(const_cast<char **>(&pData), StdCompiler::RawCompileType(iRawType));
 	}
 }
 
