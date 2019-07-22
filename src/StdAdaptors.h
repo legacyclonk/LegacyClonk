@@ -657,6 +657,17 @@ struct StdSTLMapAdapt
 			}
 		}
 	}
+
+	StdSTLMapAdapt<Map> &operator=(const Map &otherMap)
+	{
+		map = otherMap;
+		return *this;
+	}
+
+	bool operator==(const Map &otherMap) const
+	{
+		return map == otherMap;
+	}
 };
 
 template <class Map>
