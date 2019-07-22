@@ -1851,7 +1851,7 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 		pComp->Value(mkNamingAdapt(NextMission,                             "NextMission",            StdCopyStrBuf()));
 		pComp->Value(mkNamingAdapt(NextMissionText,                         "NextMissionText",        StdCopyStrBuf()));
 		pComp->Value(mkNamingAdapt(NextMissionDesc,                         "NextMissionDesc",        StdCopyStrBuf()));
-		pComp->Value(mkNamingAdapt(mkSTLMapAdapt(MessageInput.Commands),    "MessageBoardCommands"));
+		pComp->Value(mkNamingAdapt(mkSTLMapAdapt(MessageInput.Commands),    "MessageBoardCommands",   std::unordered_map<std::string, C4MessageBoardCommand>{}));
 		pComp->NameEnd();
 	}
 

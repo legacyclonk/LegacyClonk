@@ -732,6 +732,11 @@ void C4MessageBoardCommand::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkEnumAdaptT<int>(restriction, restrictions));
 }
 
+bool C4MessageBoardCommand::operator==(const C4MessageBoardCommand &other) const
+{
+	return script == other.script && restriction == other.restriction;
+}
+
 void C4MessageBoardQuery::CompileFunc(StdCompiler *pComp)
 {
 	// note that this CompileFunc does not save the fAnswered-flag, so pending message board queries will be re-asked when resuming SaveGames

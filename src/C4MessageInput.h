@@ -103,6 +103,7 @@ public:
 	C4MessageBoardCommand() {};
 	C4MessageBoardCommand(const std::string &script, Restriction restriction) : script(script), restriction(restriction) {}
 	void CompileFunc(StdCompiler *pComp);
+	bool operator==(const C4MessageBoardCommand &other) const;
 };
 
 class C4MessageInput
