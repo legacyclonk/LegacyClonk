@@ -410,7 +410,7 @@ bool CStdGLCtx::UpdateSize()
 	RECT rc;
 	pWindow->GetSize(&rc);
 	const auto scale = pGL->pApp->GetScale();
-	int width = static_cast<int32_t>(ceilf((rc.right - rc.left) / scale)), height = static_cast<int32_t>(ceilf((rc.bottom - rc.top) / scale);
+	int width = static_cast<int32_t>(ceilf((rc.right - rc.left) / scale)), height = static_cast<int32_t>(ceilf((rc.bottom - rc.top) / scale));
 	// assign if different
 	if (cx != width || cy != height)
 	{
