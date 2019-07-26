@@ -228,7 +228,7 @@ protected:
 	CStdCSec CCoreCSec;
 	int iIRate, iORate; // input/output rates (by C4NetIO, in b/s)
 	int iPacketLoss; // lost packets (in the last seconds)
-	StdCopyStrBuf Password; // password to use for connect
+	StdStrBuf Password; // password to use for connect
 	bool fConnSent; // initial connection packet send
 	bool fPostMortemSent; // post mortem send
 
@@ -341,7 +341,7 @@ protected:
 	int32_t iVer;
 	uint32_t iConnID;
 	C4ClientCore CCore;
-	StdCopyStrBuf Password;
+	StdStrBuf Password;
 
 public:
 	int32_t getVer()               const { return iVer; }

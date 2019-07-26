@@ -195,7 +195,7 @@ public:
 
 	int32_t nActionTarget1, nActionTarget2;
 	int32_t nContained;
-	StdCopyStrBuf nInfo;
+	StdStrBuf nInfo;
 
 	C4Value *FirstRef; // No-Save
 

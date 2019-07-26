@@ -88,7 +88,7 @@ public:
 	int32_t FairCrewStrength;
 	int32_t ForcedAutoContextMenu; // -1: Not forced; 0: Force off; 1: Force on
 	int32_t ForcedControlStyle; // -1: Not forced; 0: Force off; 1: Force on
-	StdCopyStrBuf Origin; // original oath and filename to scenario (for records and savegames)
+	StdStrBuf Origin; // original oath and filename to scenario (for records and savegames)
 
 public:
 	void Default();

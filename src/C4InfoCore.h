@@ -179,7 +179,7 @@ public:
 	C4RoundResult();
 
 public:
-	StdCopyStrBuf Title;
+	StdStrBuf Title;
 	uint32_t Date;
 	int32_t Duration;
 	int32_t Won;

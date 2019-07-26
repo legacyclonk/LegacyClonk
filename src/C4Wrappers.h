@@ -211,7 +211,7 @@ bool CompileFromBuf_LogWarn(StructT &&TargetStruct, const typename CompT::InT &S
 	try
 	{
 		CompT Compiler;
-		Compiler.setInput(SrcBuf.getRef());
+		Compiler.setInput(SrcBuf);
 		Compiler.setWarnCallback(StdCompilerWarnCallback, reinterpret_cast<void *>(const_cast<char *>(szName)));
 		Compiler.Compile(TargetStruct);
 		return true;

@@ -139,7 +139,7 @@ public:
 	class C4FileMonitor *pFileMonitor;
 	char CurrentScenarioSection[C4MaxName + 1];
 	char ScenarioFilename[_MAX_PATH + 1];
-	StdCopyStrBuf ScenarioTitle;
+	StdStrBuf ScenarioTitle;
 	char PlayerFilenames[20 * _MAX_PATH + 1];
 	char DefinitionFilenames[20 * _MAX_PATH + 1];
 	char DirectJoinAddress[_MAX_PATH + 1];
@@ -179,10 +179,10 @@ public:
 	bool fQuitWithError; // if set, game shut down irregularly
 	int32_t iMusicLevel; // scenario-defined music level
 	// current play list
-	StdCopyStrBuf PlayList;
+	StdStrBuf PlayList;
 	bool DebugMode;
 	// next mission to be played after this one
-	StdCopyStrBuf NextMission, NextMissionText, NextMissionDesc;
+	StdStrBuf NextMission, NextMissionText, NextMissionDesc;
 
 public:
 	// Init and execution

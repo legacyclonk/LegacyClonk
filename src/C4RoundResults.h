@@ -45,7 +45,7 @@ private:
 	// game data
 	uint32_t iTotalPlayingTime; // total playing time in seconds
 	int32_t iScoreOld, iScoreNew;
-	StdCopyStrBuf sCustomEvaluationStrings; // scenario specific
+	StdStrBuf sCustomEvaluationStrings; // scenario specific
 
 	// league data
 	int32_t iLeagueScoreNew;      // score on league server after this round - -1 for unknown
@@ -53,7 +53,7 @@ private:
 	int32_t iLeagueRankNew;       // rank on league server after this round
 	int32_t iLeagueRankSymbolNew; // rank symbol on league server after this round
 	int32_t iLeaguePerformance;   // script-set performance value, effect league-dependent
-	StdCopyStrBuf sLeagueProgressData; // scenario-specific data to store more proigress info (which levels were done, etc.)
+	StdStrBuf sLeagueProgressData; // scenario-specific data to store more proigress info (which levels were done, etc.)
 
 	enum LeagueStatus
 	{
@@ -145,11 +145,11 @@ private:
 	bool fHideSettlementScore; // to hide the score in the evaluation dialogue (for melees)
 
 	// league/network result
-	StdCopyStrBuf sNetResult;
+	StdStrBuf sNetResult;
 	NetResult eNetResult;
 
 	// scenario-specific
-	StdCopyStrBuf sCustomEvaluationStrings;
+	StdStrBuf sCustomEvaluationStrings;
 
 public:
 	C4RoundResults() : iPlayingTime(0) {}
@@ -212,7 +212,7 @@ class C4PacketLeagueRoundResults : public C4PacketBase
 {
 public:
 	C4RoundResultsPlayers Players; // league info for players
-	StdCopyStrBuf sResultsString; // league result string - or error message
+	StdStrBuf sResultsString; // league result string - or error message
 	bool fSuccess; // whether result was successful or not
 
 	C4PacketLeagueRoundResults() : fSuccess(false) {}

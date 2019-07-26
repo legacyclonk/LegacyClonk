@@ -2182,7 +2182,7 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 		if (!pLeagueClient->End(Ref, szRecordName, pRecordSHA))
 		{
 			// Log message
-			sResultMessage = FormatString(LoadResStr("IDS_NET_ERR_LEAGUE_FINISHGAME"), pLeagueClient->GetError());
+			sResultMessage.Take(FormatString(LoadResStr("IDS_NET_ERR_LEAGUE_FINISHGAME"), pLeagueClient->GetError()));
 			Log(sResultMessage.getData());
 			// Show message, allow retry
 			if (!Game.pGUI || Console.Active) break;
@@ -2852,7 +2852,7 @@ bool C4Network2::StreamOut()
 	size_t iStreamAmount = getPendingStreamData();
 	iCurrentStreamAmount = iStreamAmount;
 	iLastStreamAttempt = time(nullptr);
-	return pStreamer->Query(StdBuf(StreamingBuf.getData(), iStreamAmount), false);
+	return pStreamer->Query(StdBuf::MakeRef(StreamingBuf.getData(), iStreamAmount), false);
 }
 
 bool C4Network2::isStreaming() const

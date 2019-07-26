@@ -157,15 +157,15 @@ public:
 	bool NoRuntimeJoin;
 	int32_t MaxResSearchRecursion;
 	char WorkPath[CFG_MaxString + 1];
-	ValidatedStdCopyStrBuf<C4InVal::VAL_Comment> Comment;
+	ValidatedStdStrBuf<C4InVal::VAL_Comment> Comment;
 	bool MasterServerSignUp;
 	int32_t MasterReferencePeriod;
 	bool LeagueServerSignUp;
 	bool UseAlternateServer;
 	int32_t PortTCP, PortUDP, PortDiscovery, PortRefServer;
 	int32_t ControlMode;
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameNoEmpty> LocalName;
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameAllowEmpty> Nick;
+	ValidatedStdStrBuf<C4InVal::VAL_NameNoEmpty> LocalName;
+	ValidatedStdStrBuf<C4InVal::VAL_NameAllowEmpty> Nick;
 	int32_t MaxLoadFileSize;
 	char LastPassword[CFG_MaxString + 1];
 	char ServerAddress[CFG_MaxString + 1];

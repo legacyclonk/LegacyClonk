@@ -108,13 +108,13 @@ private:
 	C4GUI::TextWindow *pSelectionInfoBox;
 	C4GUI::Button *btnOK;
 
-	StdCopyStrBuf sTitle; // dlg title
+	StdStrBuf sTitle; // dlg title
 
-	StdCopyStrBuf sPath; // current path
+	StdStrBuf sPath; // current path
 	struct Location
 	{
-		StdCopyStrBuf sName;
-		StdCopyStrBuf sPath;
+		StdStrBuf sName;
+		StdStrBuf sPath;
 	};
 	Location *pLocations;
 	int32_t iLocationCount;
@@ -210,7 +210,7 @@ private:
 		bool fLoaded; // image loaded but not yet scaled
 		C4FacetExSurface fctImage; // portrait, if loaded
 		C4FacetExSurface fctLoadedImage; // image as loaded by background thread. Must be scaled by main thread
-		StdCopyStrBuf sFilenameLabelText;
+		StdStrBuf sFilenameLabelText;
 
 	protected:
 		void DrawElement(C4FacetEx &cgo);

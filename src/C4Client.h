@@ -40,7 +40,7 @@ public:
 protected:
 	// identification
 	int32_t iID;
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameNoEmpty> Name, Nick;
+	ValidatedStdStrBuf<C4InVal::VAL_NameNoEmpty> Name, Nick;
 
 	// version info
 	int iVersion[4];

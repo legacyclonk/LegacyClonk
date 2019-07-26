@@ -30,13 +30,13 @@ class CStdFont;
 class C4FontDef
 {
 public:
-	StdCopyStrBuf Name;        // font name
-	int32_t iSize;             // average font height of base font
-	StdCopyStrBuf LogFont;     // very small font used for log messages
-	StdCopyStrBuf SmallFont;   // pretty small font used in tiny dialogs
-	StdCopyStrBuf Font;        // base font used for anything
-	StdCopyStrBuf CaptionFont; // caption font used in GUI
-	StdCopyStrBuf TitleFont;   // font used to draw the loader caption
+	StdStrBuf Name;        // font name
+	int32_t iSize;         // average font height of base font
+	StdStrBuf LogFont;     // very small font used for log messages
+	StdStrBuf SmallFont;   // pretty small font used in tiny dialogs
+	StdStrBuf Font;        // base font used for anything
+	StdStrBuf CaptionFont; // caption font used in GUI
+	StdStrBuf TitleFont;   // font used to draw the loader caption
 
 	C4FontDef() : iSize(0) {}
 	void CompileFunc(StdCompiler *pComp);

@@ -89,7 +89,7 @@ StdStrBuf C4KeyCodeEx::KeyShift2String(C4KeyShiftState eShift)
 	const C4KeyShiftMapEntry *pCheck = KeyShiftMap;
 	while (pCheck->szName)
 		if (eShift == pCheck->eShift) break; else ++pCheck;
-	return StdStrBuf(pCheck->szName);
+	return StdStrBuf::MakeRef(pCheck->szName);
 }
 
 struct C4KeyCodeMapEntry
@@ -396,13 +396,13 @@ StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool
 	// query map
 	const C4KeyCodeMapEntry *pCheck = KeyCodeMap;
 	while (pCheck->szName)
-		if (wCode == pCheck->wCode) return StdStrBuf((pCheck->szShortName && fShort) ? pCheck->szShortName : pCheck->szName); else ++pCheck;
+		if (wCode == pCheck->wCode) return StdStrBuf::MakeRef((pCheck->szShortName && fShort) ? pCheck->szShortName : pCheck->szName); else ++pCheck;
 	// not found: Compose as direct code
 	return FormatString("\\x%x", (uint32_t)wCode);
 #elif defined(USE_X11)
-	return StdStrBuf(XKeysymToString(wCode));
+	return StdStrBuf::MakeRef(XKeysymToString(wCode));
 #elif defined(USE_SDL_MAINLOOP)
-	return StdStrBuf(getKeyName(wCode).c_str());
+	return StdStrBuf::MakeRef(getKeyName(wCode).c_str());
 #else
 	return StdStrBuf("unknown");
 #endif
@@ -410,8 +410,7 @@ StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool
 
 StdStrBuf C4KeyCodeEx::ToString(bool fHumanReadable, bool fShort)
 {
-	static StdStrBuf sResult;
-	sResult.Clear();
+	StdStrBuf sResult;
 	// Add shift
 	for (uint32_t dwShiftCheck = KEYS_First; dwShiftCheck <= KEYS_Max; dwShiftCheck <<= 1)
 		if (dwShiftCheck & dwShift)

@@ -342,7 +342,7 @@ bool RestoreWindowPosition(HWND hwnd,
 StdCompilerConfigWrite::StdCompilerConfigWrite(HKEY hRoot, const char *szPath)
 	: pKey(new Key()), iDepth(0)
 {
-	pKey->Name = szPath;
+	pKey->Name.Ref(szPath);
 	pKey->Handle = 0;
 	CreateKey(hRoot);
 }
@@ -361,7 +361,7 @@ bool StdCompilerConfigWrite::Name(const char *szName)
 	// Push new subkey onto the stack
 	Key *pnKey = new Key();
 	pnKey->Handle = 0;
-	pnKey->Name = szName;
+	pnKey->Name.Ref(szName);
 	pnKey->Parent = pKey;
 	pKey = pnKey;
 	iDepth++;
@@ -510,7 +510,7 @@ void StdCompilerConfigWrite::WriteString(const char *szString)
 StdCompilerConfigRead::StdCompilerConfigRead(HKEY hRoot, const char *szPath)
 	: pKey(new Key()), iDepth(0)
 {
-	pKey->Name = szPath;
+	pKey->Name.Ref(szPath);
 	pKey->Virtual = false;
 	// Open root
 	if (RegOpenKeyEx(hRoot, szPath,
@@ -543,7 +543,7 @@ bool StdCompilerConfigRead::Name(const char *szName)
 	}
 	// Push new subkey on the stack
 	Key *pnKey = new Key();
-	pnKey->Name = szName;
+	pnKey->Name.Ref(szName);
 	pnKey->Handle = hSubKey;
 	pnKey->Parent = pKey;
 	pnKey->Virtual = !fFound;

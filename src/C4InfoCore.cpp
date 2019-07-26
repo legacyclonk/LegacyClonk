@@ -562,7 +562,7 @@ bool C4ObjectInfoCore::Compile(const char *szSource)
 {
 	bool ret = CompileFromBuf_LogWarn<StdCompilerINIRead>(
 		mkNamingAdapt(*this, "ObjectInfo"),
-		StdStrBuf(szSource),
+		StdStrBuf::MakeRef(szSource),
 		"ObjectInfo");
 	// Do a promotion update to set physicals right
 	Physical.PromotionUpdate(Rank);

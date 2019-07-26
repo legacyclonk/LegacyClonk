@@ -94,7 +94,7 @@ public:
 	// flush dump; reset time, etc
 	void Reset(TimeType iToTime);
 
-	void SetDumpFile(StdStrBuf &szFile) { szDumpFile = szFile; }
+	void SetDumpFile(StdStrBuf &szFile) { szDumpFile.Ref(szFile); }
 
 	// retrieve timeframe covered by backlog
 	virtual TimeType GetStartTime() const; // inclusively

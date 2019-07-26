@@ -60,7 +60,7 @@ private:
 	struct TreeWatch
 	{
 		HANDLE hDir;
-		StdCopyStrBuf DirName;
+		StdStrBuf DirName;
 		OVERLAPPED ov;
 		char Buffer[1024];
 		TreeWatch *Next;

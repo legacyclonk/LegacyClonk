@@ -373,7 +373,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 			else
 			{
 				// Config filename from home
-				StdStrBuf home(getenv("HOME"));
+				StdStrBuf home(getenv("HOME"), false);
 				if (home) { home += "/"; }
 				filename.Copy(home);
 #ifdef __APPLE__
@@ -393,7 +393,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 #ifdef __linux__
 				if (!szConfigFile)
 				{
-					StdStrBuf filename(getenv("HOME"));
+					StdStrBuf filename(getenv("HOME"), false);
 					if (filename) { filename += "/"; }
 					filename += ".legacyclonk";
 					CreateDirectory(filename.getData());
@@ -759,7 +759,7 @@ void C4Config::ExpandEnvironmentVariables(char *strPath, int iMaxLen)
 	ExpandEnvironmentStrings(strPath, buf, _MAX_PATH);
 	SCopy(buf, strPath, iMaxLen);
 #else // __linux__ or __APPLE___
-	StdStrBuf home(getenv("HOME"));
+	StdStrBuf home(getenv("HOME"), false);
 	char *rest;
 	if (home && (rest = (char *)SSearch(strPath, "$HOME")) && (SLen(strPath) - 5 + home.getLength() <= iMaxLen))
 	{

@@ -1485,7 +1485,7 @@ bool C4PlayerInfoList::RecreatePlayerFiles()
 						continue;
 					}
 					// join from temp file
-					StdCopyStrBuf szJoinPath;
+					StdStrBuf szJoinPath;
 					szJoinPath = Config.AtTempPath(GetFilename(szCurrPlrFile));
 					// extract player there
 					if (!Game.ScenarioFile.FindEntry(GetFilename(szCurrPlrFile)) || !Game.ScenarioFile.Extract(GetFilename(szCurrPlrFile), szJoinPath.getData()))

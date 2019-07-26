@@ -159,7 +159,7 @@ bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
 	LastEnergyLossCausePlayer = NO_OWNER;
 	Info = pInfo;
 	Def = pDef;
-	if (Info) Name = pInfo->Name; else Name = pDef->Name;
+	if (Info) Name = pInfo->Name; else Name.Ref(pDef->Name);
 	Category = Def->Category;
 	Def->Count++;
 	if (pCreator) pLayer = pCreator->pLayer;
@@ -1177,7 +1177,7 @@ bool C4Object::ChangeDef(C4ID idNew)
 	delete pSolidMaskData; pSolidMaskData = nullptr;
 	Def->Count--;
 	// change the name to the name of the new def, if the name of the old def was in use before
-	if (Name.getData() == Def->Name.getData()) Name = pDef->Name;
+	if (Name.getData() == Def->Name.getData()) Name.Ref(pDef->Name);
 	// Def change
 	Def = pDef;
 	id = pDef->id;
@@ -2013,7 +2013,7 @@ const char *C4Object::GetName()
 void C4Object::SetName(const char *NewName)
 {
 	if (!NewName)
-		if (Info) Name = Info->Name; else Name = Def->Name;
+		if (Info) Name = Info->Name; else Name.Ref(Def->Name);
 	else
 		Name.Copy(NewName);
 }
@@ -3122,7 +3122,7 @@ void C4Object::ClearInfo(C4ObjectInfo *pInfo)
 {
 	if (Info == pInfo)
 	{
-		if (Info) if (Name.getData() == Info->Name) Name = Def->Name;
+		if (Info) if (Name.getData() == Info->Name) Name.Ref(Def->Name);
 		Info = nullptr;
 	}
 }

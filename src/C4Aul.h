@@ -247,7 +247,7 @@ struct C4AulScriptContext : public C4AulContext
 	time_t tTime; // initialized only by profiler if active
 
 	int ParCnt() const { return Vars - Pars; }
-	void dump(StdStrBuf Dump = StdStrBuf(""));
+	void dump(StdStrBuf Dump = "");
 };
 
 // base function class
@@ -305,9 +305,9 @@ protected:
 
 public:
 	C4AulAccess Access;
-	StdCopyStrBuf Desc; // full function description block, including image and condition
-	StdCopyStrBuf DescText; // short function description text (name of menu entry)
-	StdCopyStrBuf DescLong; // secondary function description
+	StdStrBuf Desc; // full function description block, including image and condition
+	StdStrBuf DescText; // short function description text (name of menu entry)
+	StdStrBuf DescLong; // secondary function description
 	C4ID idImage; // associated image
 	int32_t iImagePhase; // Image phase
 	C4AulFunc *Condition; // func condition
@@ -477,7 +477,7 @@ protected:
 	C4AulBCC *GetCodeByPos(int iPos) { return Code + iPos; }
 
 public:
-	StdCopyStrBuf ScriptName; // script name
+	StdStrBuf ScriptName; // script name
 	C4Def *Def; // owning def file
 	C4ValueMapNames LocalNamed;
 	C4ID idDef; // script id (to resolve includes)

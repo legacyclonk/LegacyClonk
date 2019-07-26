@@ -39,7 +39,7 @@ void C4RoundResultsPlayer::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(iLeagueScoreGain,     "GameScore",          -1)); // name used in league reply!
 	pComp->Value(mkNamingAdapt(iLeagueRankNew,       "Rank",                0)); // name used in league reply!
 	pComp->Value(mkNamingAdapt(iLeagueRankSymbolNew, "RankSymbol",          0)); // name used in league reply!
-	pComp->Value(mkNamingAdapt(sLeagueProgressData,  "LeagueProgressData", StdCopyStrBuf()));
+	pComp->Value(mkNamingAdapt(sLeagueProgressData,  "LeagueProgressData", StdStrBuf()));
 	StdEnumEntry<LeagueStatus> LeagueStatusEntries[] =
 	{
 		{ "",     RRPLS_Unknown },
@@ -263,10 +263,10 @@ void C4RoundResults::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Goals,                    "Goals",                   C4IDList()));
 	pComp->Value(mkNamingAdapt(iPlayingTime,             "PlayingTime",             0u));
 	pComp->Value(mkNamingAdapt(fHideSettlementScore,     "HideSettlementScore",     !!Game.C4S.Game.IsMelee()));
-	pComp->Value(mkNamingAdapt(sCustomEvaluationStrings, "CustomEvaluationStrings", StdCopyStrBuf()));
+	pComp->Value(mkNamingAdapt(sCustomEvaluationStrings, "CustomEvaluationStrings", StdStrBuf()));
 	pComp->Value(mkNamingAdapt(iLeaguePerformance,       "LeaguePerformance",       0));
 	pComp->Value(mkNamingAdapt(Players,                  "PlayerInfos",             C4RoundResultsPlayers()));
-	pComp->Value(mkNamingAdapt(sNetResult,               "NetResult",               StdCopyStrBuf()));
+	pComp->Value(mkNamingAdapt(sNetResult,               "NetResult",               StdStrBuf()));
 	StdEnumEntry<NetResult> NetResultEntries[] =
 	{
 		{ "",            NR_None },
@@ -432,6 +432,6 @@ bool C4RoundResults::Save(C4Group &hGroup, const char *szFilename)
 void C4PacketLeagueRoundResults::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(fSuccess,       "Success",      false));
-	pComp->Value(mkNamingAdapt(sResultsString, "ResultString", StdCopyStrBuf()));
+	pComp->Value(mkNamingAdapt(sResultsString, "ResultString", StdStrBuf()));
 	pComp->Value(Players);
 }

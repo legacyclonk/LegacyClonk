@@ -41,7 +41,7 @@ public:
 	void TrimSpaces();
 
 protected:
-	StdCopyStrBuf Data;
+	StdStrBuf Data;
 	bool Modified;
 	char Name[_MAX_FNAME + 1];
 	char Filename[_MAX_FNAME + 1];

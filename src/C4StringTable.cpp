@@ -25,7 +25,7 @@
 
 // *** C4String
 
-C4String::C4String(StdStrBuf strString, C4StringTable *pnTable)
+C4String::C4String(StdStrBuf &&strString, C4StringTable *pnTable)
 	: iRefCnt(0), Hold(false), iEnumID(-1), pTable(nullptr)
 {
 	// take string

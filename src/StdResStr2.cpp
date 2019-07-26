@@ -89,7 +89,7 @@ public:
 private:
 	struct Entry
 	{
-		StdCopyStrBuf Data;
+		StdStrBuf Data;
 		unsigned int Hash;
 		Entry() : Data(), Hash(0) {}
 		Entry(const StdStrBuf &Data, int32_t Hash) : Data(Data), Hash(Hash) {}

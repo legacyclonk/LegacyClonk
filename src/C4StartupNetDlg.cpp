@@ -990,7 +990,7 @@ bool C4StartupNetDlg::DoOK()
 	}
 	// get currently selected item
 	C4GUI::Element *pSelection = pGameSelList->GetSelectedItem();
-	StdCopyStrBuf strNoJoin(LoadResStr("IDS_NET_NOJOIN"));
+	StdStrBuf strNoJoin(LoadResStr("IDS_NET_NOJOIN"));
 	if (!pSelection)
 	{
 		// no ref selected: Oh noes!
@@ -1093,7 +1093,7 @@ void C4StartupNetDlg::DoRefresh()
 	// (Re-)Start discovery
 	if (!DiscoverClient.StartDiscovery())
 	{
-		StdCopyStrBuf strNoDiscovery(LoadResStr("IDS_NET_NODISCOVERY"));
+		StdStrBuf strNoDiscovery(LoadResStr("IDS_NET_NODISCOVERY"));
 		Game.pGUI->ShowMessageModal(
 			FormatString(LoadResStr("IDS_NET_NODISCOVERY_DESC"), DiscoverClient.GetError()).getData(),
 			strNoDiscovery.getData(),

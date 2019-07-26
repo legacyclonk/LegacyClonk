@@ -1819,7 +1819,7 @@ bool C4Game::Compile(const char *szSource)
 	CompileSettings Settings(false, false, true);
 	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
 		mkParAdapt(*this, Settings),
-		StdStrBuf(szSource),
+		StdStrBuf(szSource, false),
 		C4CFN_Game))
 		return false;
 	return true;
@@ -1848,9 +1848,9 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(CurrentScenarioSection), "CurrentScenarioSection", ""));
 		pComp->Value(mkNamingAdapt(fResortAnyObject,                        "ResortAnyObj",           false));
 		pComp->Value(mkNamingAdapt(iMusicLevel,                             "MusicLevel",             100));
-		pComp->Value(mkNamingAdapt(NextMission,                             "NextMission",            StdCopyStrBuf()));
-		pComp->Value(mkNamingAdapt(NextMissionText,                         "NextMissionText",        StdCopyStrBuf()));
-		pComp->Value(mkNamingAdapt(NextMissionDesc,                         "NextMissionDesc",        StdCopyStrBuf()));
+		pComp->Value(mkNamingAdapt(NextMission,                             "NextMission",            StdStrBuf()));
+		pComp->Value(mkNamingAdapt(NextMissionText,                         "NextMissionText",        StdStrBuf()));
+		pComp->Value(mkNamingAdapt(NextMissionDesc,                         "NextMissionDesc",        StdStrBuf()));
 		pComp->Value(mkNamingAdapt(mkSTLMapAdapt(MessageInput.Commands),    "MessageBoardCommands",   std::unordered_map<std::string, C4MessageBoardCommand>{}));
 		pComp->NameEnd();
 	}
@@ -3545,7 +3545,7 @@ C4Object *C4Game::FindObjectByCommand(int32_t iCommand, C4Object *pTarget, C4Val
 
 bool C4Game::InitNetworkFromAddress(const char *szAddress)
 {
-	StdCopyStrBuf strRefQueryFailed(LoadResStr("IDS_NET_REFQUERY_FAILED"));
+	StdStrBuf strRefQueryFailed(LoadResStr("IDS_NET_REFQUERY_FAILED"));
 	// Query reference
 	C4Network2RefClient RefClient;
 	if (!RefClient.Init() ||

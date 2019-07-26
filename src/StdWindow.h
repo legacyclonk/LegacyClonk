@@ -443,7 +443,7 @@ protected:
 	virtual void OnNetworkEvents() = 0;
 
 	// commands from stdin (console only)
-	StdCopyStrBuf CmdBuf;
+	StdStrBuf CmdBuf;
 	bool ReadStdInCommand();
 
 	friend class CStdGL;

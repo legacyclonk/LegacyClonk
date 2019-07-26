@@ -122,7 +122,7 @@ public:
 
 	// *** errors
 protected:
-	StdCopyStrBuf Error;
+	StdStrBuf Error;
 	void SetError(const char *strnError, bool fSockErr = false);
 
 public:
@@ -134,7 +134,7 @@ public:
 };
 
 // packet class
-class C4NetIOPacket : public StdCopyBuf
+class C4NetIOPacket : public StdBuf
 {
 public:
 	C4NetIOPacket();

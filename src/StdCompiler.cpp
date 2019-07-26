@@ -566,7 +566,8 @@ bool StdCompilerINIRead::Separator(Sep eSep)
 	if (pName->Section)
 	{
 		// Store current name, search another section with the same name
-		StdStrBuf CurrName = pName->Name;
+		StdStrBuf CurrName;
+		CurrName.Take(pName->Name);
 		NameEnd();
 		return Name(CurrName.getData());
 	}

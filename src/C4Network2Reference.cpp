@@ -270,7 +270,7 @@ size_t C4Network2HTTPClient::UnpackPacket(const StdBuf &rInBuf, const C4NetIO::a
 	return rInBuf.getSize();
 }
 
-bool C4Network2HTTPClient::ReadHeader(StdStrBuf Data)
+bool C4Network2HTTPClient::ReadHeader(const StdStrBuf &Data)
 {
 	const char *pData = Data.getData();
 	const char *pContent = SSearch(pData, "\r\n\r\n");

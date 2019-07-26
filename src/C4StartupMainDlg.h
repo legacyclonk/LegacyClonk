@@ -36,7 +36,7 @@ protected:
 	C4GUI::ContextMenu *OnPlayerSelContext(C4GUI::Element *pBtn, int32_t iX, int32_t iY); // preliminary player selection via simple context menu
 	C4GUI::ContextMenu *OnPlayerSelContextAdd(C4GUI::Element *pBtn, int32_t iX, int32_t iY);
 	C4GUI::ContextMenu *OnPlayerSelContextRemove(C4GUI::Element *pBtn, int32_t iX, int32_t iY);
-	void OnPlayerSelContextAddPlr(C4GUI::Element *pTarget, const StdCopyStrBuf &rsFilename);
+	void OnPlayerSelContextAddPlr(C4GUI::Element *pTarget, const StdStrBuf &rsFilename);
 	void OnPlayerSelContextRemovePlr(C4GUI::Element *pTarget, const int &iIndex);
 	void UpdateParticipants();
 

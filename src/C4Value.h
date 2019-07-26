@@ -262,7 +262,7 @@ inline C4Value C4VString(C4String *pStr) { return C4Value(pStr); }
 inline C4Value C4VArray(C4ValueArray *pArray) { return C4Value(pArray); }
 inline C4Value C4VRef(C4Value *pVal) { return pVal->GetRef(); }
 
-C4Value C4VString(StdStrBuf strString);
+C4Value C4VString(StdStrBuf &&strString);
 C4Value C4VString(const char *strString);
 
 // converter templates

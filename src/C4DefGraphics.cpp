@@ -288,7 +288,7 @@ void C4DefGraphicsAdapt::CompileFunc(StdCompiler *pComp)
 	if (!pComp->Separator(StdCompiler::SEP_PART2) || !pComp->Separator(StdCompiler::SEP_PART2))
 		pComp->excCorrupt("DefGraphics: expected \"::\"");
 	// compile name
-	StdStrBuf Name; if (!fCompiler) Name = pDefGraphics->GetName();
+	StdStrBuf Name; if (!fCompiler) Name.Ref(pDefGraphics->GetName());
 	pComp->Value(mkDefaultAdapt(mkParAdapt(Name, StdCompiler::RCT_Idtf), ""));
 	// reading: search def-graphics
 	if (fCompiler)

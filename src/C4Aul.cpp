@@ -182,7 +182,7 @@ void C4AulScript::Default()
 {
 	// not compiled
 	State = ASS_NONE;
-	Script = nullptr;
+	Script.Clear();
 	Code = CPos = nullptr;
 	CodeSize = CodeBufSize = 0;
 	IncludesResolved = false;

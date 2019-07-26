@@ -57,9 +57,9 @@ void C4Network2ClientDlg::UpdateText()
 		// get client (may be nullptr for local info)
 		C4Network2Client *pNetClient = pClient->getNetClient();
 		// show some info
-		StdCopyStrBuf strActivated(LoadResStr(pClient->isActivated() ? "IDS_MSG_ACTIVE" : "IDS_MSG_INACTIVE"));
-		StdCopyStrBuf strLocal(LoadResStr(pClient->isLocal() ? "IDS_MSG_LOCAL" : "IDS_MSG_REMOTE"));
-		StdCopyStrBuf strHost(LoadResStr(pClient->isHost() ? "IDS_MSG_HOST" : "IDS_MSG_CLIENT"));
+		StdStrBuf strActivated(LoadResStr(pClient->isActivated() ? "IDS_MSG_ACTIVE" : "IDS_MSG_INACTIVE"));
+		StdStrBuf strLocal(LoadResStr(pClient->isLocal() ? "IDS_MSG_LOCAL" : "IDS_MSG_REMOTE"));
+		StdStrBuf strHost(LoadResStr(pClient->isHost() ? "IDS_MSG_HOST" : "IDS_MSG_CLIENT"));
 		AddLineFmt(LoadResStr("IDS_NET_CLIENT_INFO_FORMAT"),
 			strActivated.getData(), strLocal.getData(), strHost.getData(),
 			pClient->getName(), iClientID,

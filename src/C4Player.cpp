@@ -1588,7 +1588,7 @@ bool C4Player::LoadRuntimeData(C4Group &hGroup)
 	assert(ID);
 	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
 		mkNamingAdapt(*this, FormatString("Player%i", ID).getData()),
-		StdStrBuf(pSource),
+		StdStrBuf::MakeRef(pSource),
 		Game.GameText.GetFilePath()))
 		return false;
 	// Denumerate pointers

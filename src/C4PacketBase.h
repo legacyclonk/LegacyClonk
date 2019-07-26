@@ -52,7 +52,7 @@ struct C4NetFilenameAdapt
 #ifdef _WIN32
 		pComp->Value(FileName);
 #else
-		StdCopyStrBuf FileName2;
+		StdStrBuf FileName2;
 		if (pComp->isDecompiler() && FileName)
 		{
 			FileName2.Copy(FileName);
@@ -68,7 +68,7 @@ struct C4NetFilenameAdapt
 	}
 
 	template <class T> bool operator==(const T &rVal) { return FileName == rVal; }
-	template <class T> C4NetFilenameAdapt &operator=(const T &rVal) { FileName = rVal; return *this; }
+	template <class T> C4NetFilenameAdapt &operator=(const T &rVal) { FileName.Ref(rVal); return *this; }
 };
 
 inline C4NetFilenameAdapt mkNetFilenameAdapt(StdStrBuf &FileName) { return C4NetFilenameAdapt(FileName); }

@@ -606,7 +606,7 @@ void C4StartupOptionsDlg::BoolConfig::OnCheckChange(C4GUI::Element *pCheckBox)
 
 // C4StartupOptionsDlg::EditConfig
 
-C4StartupOptionsDlg::EditConfig::EditConfig(const C4Rect &rcBounds, const char *szName, ValidatedStdCopyStrBufBase *psConfigVal, int32_t *piConfigVal, bool fMultiline)
+C4StartupOptionsDlg::EditConfig::EditConfig(const C4Rect &rcBounds, const char *szName, ValidatedStdStrBufBase *psConfigVal, int32_t *piConfigVal, bool fMultiline)
 	: C4GUI::LabeledEdit(rcBounds, szName, fMultiline, psConfigVal ? psConfigVal->getData() : nullptr, &(C4Startup::Get()->Graphics.BookFont), C4StartupFontClr), psConfigVal(psConfigVal), piConfigVal(piConfigVal)
 {
 	GetEdit()->SetColors(C4StartupEditBGColor, C4StartupFontClr, C4StartupEditBorderColor);
@@ -759,7 +759,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	// white chat
 	C4GUI::ComponentAligner caWhiteChat(caSheetProgram.GetGridCell(0, 1, 3, 8, -1, C4GUI::ComboBox::GetDefaultHeight(), true), 0, 0, false);
 
-	StdStrBuf sWhiteChat(LoadResStr("IDS_MNU_WHITECHAT"));
+	StdStrBuf sWhiteChat(LoadResStr("IDS_MNU_WHITECHAT"), false);
 	sWhiteChat.AppendChar(':');
 	pUseFont->GetTextExtent(sWhiteChat.getData(), w, q, true);
 	pLbl = new C4GUI::Label(sWhiteChat.getData(), caWhiteChat.GetFromLeft(w + C4GUI_DefDlgSmallIndent + C4GUI::ComboBox::GetDefaultHeight()), ALeft, C4StartupFontClr, pUseFont, false);
@@ -1093,7 +1093,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pNetworkNickEdit->SetToolTip(LoadResStr("IDS_NET_USERNAME_DESC"));
 	pSheetNetwork->AddElement(pNetworkNameEdit);
 	pSheetNetwork->AddElement(pNetworkNickEdit);
-	StdCopyStrBuf NickBuf(Config.Network.Nick);
+	StdStrBuf NickBuf(Config.Network.Nick);
 	if (!NickBuf.getLength()) NickBuf.Copy(Config.Network.LocalName);
 	pNetworkNickEdit->GetEdit()->SetText(NickBuf.getData(), false);
 
@@ -1209,7 +1209,7 @@ bool C4StartupOptionsDlg::SaveConfig(bool fForce, bool fKeepOpen)
 	// check port validity
 	if (!fForce)
 	{
-		StdCopyStrBuf strError(LoadResStr("IDS_ERR_CONFIG"));
+		StdStrBuf strError(LoadResStr("IDS_ERR_CONFIG"));
 		if (pPortCfgTCP->GetPort() > 0 && pPortCfgTCP->GetPort() == pPortCfgRef->GetPort())
 		{
 			GetScreen()->ShowMessage(LoadResStr("IDS_NET_ERR_PORT_TCPREF"), strError.getData(), C4GUI::Ico_Error);
@@ -1462,7 +1462,7 @@ void C4StartupOptionsDlg::OnRXSoundCheck(C4GUI::Element *pCheckBox)
 		Config.Sound.RXSound = true;
 		if (!Application.SoundSystem.Init())
 		{
-			GetScreen()->ShowMessage(StdCopyStrBuf(LoadResStr("IDS_PRC_NOSND")).getData(), StdCopyStrBuf(LoadResStr("IDS_DLG_LOG")).getData(), C4GUI::Ico_Error);
+			GetScreen()->ShowMessage(StdStrBuf(LoadResStr("IDS_PRC_NOSND")).getData(), StdStrBuf(LoadResStr("IDS_DLG_LOG")).getData(), C4GUI::Ico_Error);
 			Application.SoundSystem.Clear();
 			Config.Sound.RXSound = false;
 			static_cast<C4GUI::CheckBox *>(pCheckBox)->SetChecked(false);

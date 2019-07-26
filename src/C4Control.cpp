@@ -544,7 +544,7 @@ void C4ControlClientUpdate::Execute() const
 	// find client
 	C4Client *pClient = Game.Clients.getClientByID(iID);
 	if (!pClient) return;
-	StdCopyStrBuf strClient(LoadResStr(pClient->isLocal() ? "IDS_NET_LOCAL_CLIENT" : "IDS_NET_CLIENT"));
+	StdStrBuf strClient(LoadResStr(pClient->isLocal() ? "IDS_NET_LOCAL_CLIENT" : "IDS_NET_CLIENT"));
 	// do whatever specified
 	switch (eType)
 	{
@@ -618,7 +618,7 @@ void C4ControlClientRemove::Execute() const
 		if (Game.Control.isReplay()) Game.Players.RemoveAtClient(iID, true);
 		return;
 	}
-	StdCopyStrBuf strClient(LoadResStr(pClient->isLocal() ? "IDS_NET_LOCAL_CLIENT" : "IDS_NET_CLIENT"));
+	StdStrBuf strClient(LoadResStr(pClient->isLocal() ? "IDS_NET_LOCAL_CLIENT" : "IDS_NET_CLIENT"));
 	// local?
 	if (pClient->isLocal())
 	{
@@ -702,7 +702,7 @@ void C4ControlJoinPlayer::Execute() const
 		{
 			// create temp file
 			StdStrBuf PlayerFilename; PlayerFilename.Format("%s-%s", pClient->getName(), GetFilename(szFilename));
-			PlayerFilename = Config.AtTempPath(PlayerFilename.getData());
+			PlayerFilename.Ref(Config.AtTempPath(PlayerFilename.getData()));
 			// copy to it
 			if (PlrData.SaveToFile(PlayerFilename.getData()))
 			{
@@ -746,8 +746,8 @@ void C4ControlJoinPlayer::Strip()
 	// By resource? Can't touch player file, then.
 	if (fByRes) return;
 	// create temp file
-	StdStrBuf PlayerFilename; PlayerFilename = GetFilename(Filename.getData());
-	PlayerFilename = Config.AtTempPath(PlayerFilename.getData());
+	StdStrBuf PlayerFilename; PlayerFilename.Ref(GetFilename(Filename.getData()));
+	PlayerFilename.Ref(Config.AtTempPath(PlayerFilename.getData()));
 	// Copy to it
 	if (PlrData.SaveToFile(PlayerFilename.getData()))
 	{
@@ -771,7 +771,7 @@ void C4ControlJoinPlayer::Strip()
 		{
 			EraseFile(PlayerFilename.getData()); return;
 		}
-		PlrData = NewPlrData;
+		PlrData.Take(NewPlrData);
 		// Done
 		EraseFile(PlayerFilename.getData());
 	}
@@ -1214,10 +1214,10 @@ StdStrBuf C4ControlVote::getDesc() const
 	switch (eType)
 	{
 	case VT_Cancel:
-		Action = LoadResStr("IDS_VOTE_CANCELTHEROUND"); break;
+		Action.Ref(LoadResStr("IDS_VOTE_CANCELTHEROUND")); break;
 	case VT_Kick:
 		if (iData == iByClient)
-			Action = LoadResStr("IDS_VOTE_LEAVETHEGAME");
+			Action.Ref(LoadResStr("IDS_VOTE_LEAVETHEGAME"));
 		else
 		{
 			C4Client *pTargetClient = Game.Clients.getClientByID(iData);
@@ -1226,9 +1226,9 @@ StdStrBuf C4ControlVote::getDesc() const
 		break;
 	case VT_Pause:
 		if (iData)
-			Action = LoadResStr("IDS_TEXT_PAUSETHEGAME");
+			Action.Ref(LoadResStr("IDS_TEXT_PAUSETHEGAME"));
 		else
-			Action = LoadResStr("IDS_TEXT_UNPAUSETHEGAME");
+			Action.Ref(LoadResStr("IDS_TEXT_UNPAUSETHEGAME"));
 		break;
 	default:
 		Action = "perform some mysterious action"; break;
@@ -1242,9 +1242,9 @@ StdStrBuf C4ControlVote::getDescWarning() const
 	switch (eType)
 	{
 	case VT_Cancel:
-		Warning = LoadResStr("IDS_TEXT_WARNINGIFTHEGAMEISCANCELL"); break;
+		Warning.Ref(LoadResStr("IDS_TEXT_WARNINGIFTHEGAMEISCANCELL")); break;
 	case VT_Kick:
-		Warning = LoadResStr("IDS_TEXT_WARNINGNOLEAGUEPOINTSWILL"); break;
+		Warning.Ref(LoadResStr("IDS_TEXT_WARNINGNOLEAGUEPOINTSWILL")); break;
 	default:
 		Warning = ""; break;
 	}
@@ -1474,7 +1474,7 @@ StdStrBuf C4ControlMessageBoardAnswer::FormatScript() const
 {
 	if (answer.empty()) return FormatString("OnMessageBoardAnswer(Object(%d),%d,0)", obj, plr);
 
-	StdStrBuf escapedAnswer(answer.c_str());
+	StdStrBuf escapedAnswer(answer.c_str(), false);
 	escapedAnswer.EscapeString();
 	return FormatString("OnMessageBoardAnswer(Object(%d),%d,\"%s\")", obj, plr, escapedAnswer.getData());
 }

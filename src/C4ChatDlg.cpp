@@ -497,11 +497,11 @@ C4GUI::Edit::InputResult C4ChatControl::OnLoginDataEnter(C4GUI::Edit *edt, bool 
 void C4ChatControl::OnConnectBtn(C4GUI::Control *btn)
 {
 	// check parameters
-	StdCopyStrBuf sNick(pEdtLoginNick->GetText());
-	StdCopyStrBuf sPass(pEdtLoginPass->GetText());
-	StdCopyStrBuf sRealName(pEdtLoginRealName->GetText());
-	StdCopyStrBuf sChannel(pEdtLoginChannel->GetText());
-	StdCopyStrBuf sServer(Config.IRC.Server);
+	StdStrBuf sNick(pEdtLoginNick->GetText());
+	StdStrBuf sPass(pEdtLoginPass->GetText());
+	StdStrBuf sRealName(pEdtLoginRealName->GetText());
+	StdStrBuf sChannel(pEdtLoginChannel->GetText());
+	StdStrBuf sServer(Config.IRC.Server);
 	if (C4InVal::ValidateString(sNick, C4InVal::VAL_IRCName))
 	{
 		GetScreen()->ShowErrorMessage(LoadResStr("IDS_ERR_INVALIDNICKNAME"));
@@ -764,7 +764,7 @@ C4ChatControl::ChatSheet *C4ChatControl::OpenQuery(const char *szForNick, bool f
 
 void C4ChatControl::UpdateTitle()
 {
-	StdCopyStrBuf sNewTitle;
+	StdStrBuf sNewTitle;
 	if (pTabMain->GetActiveSheetIndex() == 0)
 	{
 		// login title
@@ -820,7 +820,7 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 	// command?
 	if (*szInput == '/' && !SEqual2NoCase(szInput + 1, "me "))
 	{
-		StdStrBuf sCommand, sParam("");; sCommand.Copy(szInput + 1);
+		StdStrBuf sCommand, sParam(""); sCommand.Copy(szInput + 1);
 		sCommand.SplitAtChar(' ', &sParam);
 		if (SEqualNoCase(sCommand.getData(), "quit"))
 		{

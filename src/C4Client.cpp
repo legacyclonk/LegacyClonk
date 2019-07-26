@@ -49,7 +49,7 @@ void C4ClientCore::SetLocal(int32_t inID, bool fnActivated, bool fnObserver)
 	// misc
 	Name.CopyValidated(Config.Network.LocalName);
 
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameNoEmpty> NickBuf;
+	ValidatedStdStrBuf<C4InVal::VAL_NameNoEmpty> NickBuf;
 	NickBuf.Copy(Config.Network.Nick);
 	if (!NickBuf.getLength()) NickBuf.CopyValidated(Name);
 	Nick.CopyValidated(NickBuf);

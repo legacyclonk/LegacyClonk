@@ -3671,7 +3671,7 @@ static bool FnCallMessageBoard(C4AulContext *cthr, C4Object *pObj, bool fUpperCa
 	C4Player *pPlr = Game.Players.Get(iForPlr);
 	if (!pPlr) return false;
 	// remove any previous
-	pPlr->CallMessageBoard(pObj, StdStrBuf(FnStringPar(szQueryString)), !!fUpperCase);
+	pPlr->CallMessageBoard(pObj, StdStrBuf::MakeRef(FnStringPar(szQueryString)), !!fUpperCase);
 	return true;
 }
 

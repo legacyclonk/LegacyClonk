@@ -586,5 +586,5 @@ StdStrBuf C4GameParameters::GetGameGoalString()
 	if (sResult.getLength())
 		return FormatString("%s: %s", LoadResStr("IDS_MENU_CPGOALS"), sResult.getData());
 	else
-		return StdCopyStrBuf(LoadResStr("IDS_CTL_NOGOAL"), true);
+		return StdStrBuf(LoadResStr("IDS_CTL_NOGOAL"));
 }

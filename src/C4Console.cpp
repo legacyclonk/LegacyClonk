@@ -100,7 +100,7 @@ namespace
 	class ImplicitStrBuf : public StdStrBuf
 	{
 	public:
-		ImplicitStrBuf(StdStrBuf &&Buf2) : StdStrBuf(Buf2, false) {}
+		ImplicitStrBuf(StdStrBuf &&Buf2) : StdStrBuf(std::forward<StdStrBuf>(Buf2)) {}
 		operator const char *() const { return getData(); }
 	};
 

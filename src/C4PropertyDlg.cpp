@@ -175,7 +175,7 @@ bool C4PropertyDlg::Update()
 	{
 	// No selection
 	case 0:
-		Output = LoadResStr("IDS_CNS_NOOBJECT");
+		Output.Ref(LoadResStr("IDS_CNS_NOOBJECT"));
 		break;
 	// One selected object
 	case 1:

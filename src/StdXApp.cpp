@@ -583,7 +583,7 @@ void CStdApp::Copy(const StdStrBuf &text, bool fClipboard)
 StdStrBuf CStdApp::Paste(bool fClipboard)
 {
 	Window owner = XGetSelectionOwner(dpy, fClipboard ? ClipboardAtoms[0] : XA_PRIMARY);
-	if (owner == None) return StdStrBuf(0);
+	if (owner == None) return StdStrBuf();
 	// Retrieve the selection into the XA_STRING property of our main window
 	XConvertSelection(dpy, fClipboard ? ClipboardAtoms[0] : XA_PRIMARY, XA_STRING, XA_STRING,
 		pWindow->wnd, Priv->LastEventTime);
@@ -604,13 +604,13 @@ StdStrBuf CStdApp::Paste(bool fClipboard)
 		&len, &bytes_left, // that
 		&data);
 	// nothing to read?
-	if (bytes_left == 0) return StdStrBuf(0);
+	if (bytes_left == 0) return StdStrBuf();
 	int result = XGetWindowProperty(dpy, pWindow->wnd,
 		XA_STRING, 0, bytes_left,
 		1, // delete it now
 		AnyPropertyType,
 		&type, &format, &len, &bytes_left, &data);
-	if (result != Success) return StdStrBuf(0);
+	if (result != Success) return StdStrBuf();
 	StdStrBuf res(reinterpret_cast<char *>(data), true);
 	XFree(data);
 	return res;

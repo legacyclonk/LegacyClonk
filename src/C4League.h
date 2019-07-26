@@ -52,15 +52,15 @@ public:
 
 private:
 	C4LeagueAction eAction;
-	StdCopyStrBuf CSID;
-	StdCopyStrBuf AUID;
-	StdCopyStrBuf Checksum;
+	StdStrBuf CSID;
+	StdStrBuf AUID;
+	StdStrBuf Checksum;
 
 	// Auth
-	StdCopyStrBuf Account;
-	StdCopyStrBuf Password;
-	StdCopyStrBuf NewAccount;
-	StdCopyStrBuf NewPassword;
+	StdStrBuf Account;
+	StdStrBuf Password;
+	StdStrBuf NewAccount;
+	StdStrBuf NewPassword;
 
 public:
 	void SetChecksum(const char *szChecksum) { Checksum = szChecksum; }
@@ -94,7 +94,7 @@ public:
 	}
 
 private:
-	StdCopyStrBuf RecordName;
+	StdStrBuf RecordName;
 	uint8_t RecordSHA[StdSha1::DigestLength];
 
 public:
@@ -107,14 +107,14 @@ public:
 	C4LeagueResponseHead() {}
 
 private:
-	StdCopyStrBuf Status;
-	StdCopyStrBuf CSID;
-	StdCopyStrBuf Message;
+	StdStrBuf Status;
+	StdStrBuf CSID;
+	StdStrBuf Message;
 
 	// Auth
-	StdCopyStrBuf Account;
-	StdCopyStrBuf AUID;
-	StdCopyStrBuf FBID;
+	StdStrBuf Account;
+	StdStrBuf AUID;
+	StdStrBuf FBID;
 
 public:
 	const char *getCSID() const { return CSID.getData(); }
@@ -131,8 +131,8 @@ public:
 class C4LeagueResponseHeadStart : public C4LeagueResponseHead
 {
 private:
-	StdCopyStrBuf League;
-	StdCopyStrBuf StreamingAddr;
+	StdStrBuf League;
+	StdStrBuf StreamingAddr;
 	int32_t fHaveSeed;
 	int32_t iSeed;
 	int32_t iMaxPlayers;
@@ -150,7 +150,7 @@ public:
 class C4LeagueResponseHeadUpdate : public C4LeagueResponseHead
 {
 private:
-	StdCopyStrBuf League;
+	StdStrBuf League;
 	C4ClientPlayerInfos PlrInfos;
 
 public:
@@ -163,12 +163,12 @@ public:
 class C4LeagueResponseHeadAuthCheck : public C4LeagueResponseHead
 {
 private:
-	StdCopyStrBuf Leagues[C4NetMaxLeagues];
+	StdStrBuf Leagues[C4NetMaxLeagues];
 	int32_t Scores[C4NetMaxLeagues];
 	int32_t Ranks[C4NetMaxLeagues];
 	int32_t RankSymbols[C4NetMaxLeagues];
-	StdCopyStrBuf ProgressData[C4NetMaxLeagues];
-	StdCopyStrBuf ClanTag;
+	StdStrBuf ProgressData[C4NetMaxLeagues];
+	StdStrBuf ClanTag;
 
 public:
 	int32_t getScore(const char *szLeague) const;
@@ -186,8 +186,8 @@ class C4LeagueFBIDList
 private:
 	struct FBIDItem
 	{
-		StdCopyStrBuf Account;
-		StdCopyStrBuf FBID;
+		StdStrBuf Account;
+		StdStrBuf FBID;
 		FBIDItem *pNext;
 	} *pFirst;
 
@@ -204,7 +204,7 @@ public:
 class C4LeagueClient : public C4Network2RefClient
 {
 private:
-	StdCopyStrBuf CSID;
+	StdStrBuf CSID;
 	C4LeagueAction eCurrAction;
 	C4LeagueFBIDList FBIDList;
 

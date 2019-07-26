@@ -109,7 +109,7 @@ void C4MenuItem::DoTextProgress(int32_t &riByVal)
 	// if this is an option or empty text, show it immediately
 	if (IsSelectable || !*Caption) { TextDisplayProgress = -1; return; }
 	// normal text: move forward in unbroken message, ignoring markup
-	StdStrBuf sText(Caption);
+	StdStrBuf sText(Caption, false);
 	CMarkup MarkupChecker(false);
 	const char *szPos = sText.getPtr(std::min<int>(TextDisplayProgress, sText.getLength()));
 	while (riByVal && *szPos)

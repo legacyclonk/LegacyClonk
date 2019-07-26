@@ -23,7 +23,7 @@ class C4StringTable;
 class C4String
 {
 public:
-	C4String(StdStrBuf strString, C4StringTable *pTable);
+	C4String(StdStrBuf &&strString, C4StringTable *pTable);
 	C4String(const char *strString, C4StringTable *pTable);
 	virtual ~C4String();
 
@@ -31,7 +31,7 @@ public:
 	void IncRef();
 	void DecRef();
 
-	StdCopyStrBuf Data; // string data
+	StdStrBuf Data; // string data
 	int iRefCnt; // reference count on string (by C4Value)
 	bool Hold; // string stays hold when RefCnt reaches 0 (for in-script strings)
 

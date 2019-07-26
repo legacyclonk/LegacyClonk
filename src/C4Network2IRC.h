@@ -42,7 +42,7 @@ public:
 private:
 	time_t iTimestamp;
 	C4Network2IRCMessageType eType;
-	StdCopyStrBuf Source, Target, Data;
+	StdStrBuf Source, Target, Data;
 
 	// used by C4Network2IRCClient
 	C4Network2IRCMessage *Next;
@@ -66,8 +66,8 @@ public:
 	C4Network2IRCUser(const char *szName);
 
 private:
-	StdCopyStrBuf Prefix;
-	StdCopyStrBuf Name;
+	StdStrBuf Prefix;
+	StdStrBuf Name;
 
 	// used by C4Network2IRCChannel
 	C4Network2IRCUser *Next;
@@ -91,8 +91,8 @@ public:
 	~C4Network2IRCChannel();
 
 private:
-	StdCopyStrBuf Name;
-	StdCopyStrBuf Topic;
+	StdStrBuf Name;
+	StdStrBuf Topic;
 	C4Network2IRCUser *pUsers;
 
 	bool fReceivingUsers;
@@ -133,12 +133,12 @@ private:
 	bool fConnecting, fConnected;
 
 	// Status information
-	StdCopyStrBuf Nick, RealName, Password;
-	StdCopyStrBuf AutoJoin;
+	StdStrBuf Nick, RealName, Password;
+	StdStrBuf AutoJoin;
 	C4Network2IRCChannel *pChannels;
 
 	// User mode/prefix map
-	StdCopyStrBuf Prefixes;
+	StdStrBuf Prefixes;
 
 	// Message log
 	C4Network2IRCMessage *pLog, *pLogLastRead, *pLogEnd;

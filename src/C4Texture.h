@@ -43,7 +43,7 @@ public:
 	C4TexMapEntry();
 
 private:
-	StdCopyStrBuf Material, Texture;
+	StdStrBuf Material, Texture;
 	int32_t iMaterialIndex;
 	C4Material *pMaterial;
 	CPattern MatPattern;

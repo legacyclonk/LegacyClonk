@@ -452,7 +452,7 @@ bool C4MainMenu::ActivateSavegame(int32_t iPlayer)
 	// * language titles are stored in folders as title component
 	StdStrBuf strFilename, strTitle;
 	strFilename.Format("%s.c4f%c%s%%d.c4s", ScenName, DirectorySeparator, ScenName);
-	strTitle = Game.ScenarioTitle;
+	strTitle.Ref(Game.ScenarioTitle);
 
 	// Create menu items
 	StdStrBuf strFilenameIndexed, strCommand, strCaption, strSavePath;
@@ -466,7 +466,7 @@ bool C4MainMenu::ActivateSavegame(int32_t iPlayer)
 		strSavePath.Format("%s%c%s", Config.General.SaveGameFolder.getData(), DirectorySeparator, strFilenameIndexed.getData());
 		bool fFree = !C4Group_IsGroup(strSavePath.getData());
 		// Item caption
-		strCaption = LoadResStr("IDS_MENU_CPSAVEGAME");
+		strCaption.Ref(LoadResStr("IDS_MENU_CPSAVEGAME"));
 		// add menu item
 		AddRefSym(strCaption.getData(), GfxR->fctMenu.GetPhase(i - 1, fFree ? 2 : 1), strCommand.getData(), C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CPSAVEGAMEINFO"));
 	}

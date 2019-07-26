@@ -36,7 +36,7 @@ public:
 
 private:
 	C4Network2ResType eType;
-	StdCopyStrBuf File;
+	StdStrBuf File;
 	const C4Network2ResCore *pResCore;
 	C4Network2Res::Ref pNetRes;
 
@@ -98,9 +98,9 @@ public:
 	~C4GameParameters();
 
 	// League (empty if it's not a league game)
-	StdCopyStrBuf League;
-	StdCopyStrBuf LeagueAddress;
-	StdCopyStrBuf StreamAddress;
+	StdStrBuf League;
+	StdStrBuf LeagueAddress;
+	StdStrBuf StreamAddress;
 
 	// Random seed
 	int32_t RandomSeed;

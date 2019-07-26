@@ -60,7 +60,7 @@ protected:
 	int32_t Player;
 	int32_t Type;
 	C4Object *Target;
-	StdCopyStrBuf Text;
+	StdStrBuf Text;
 	C4GameMessage *Next;
 	C4ID DecoID; StdStrBuf PortraitDef;
 	C4GUI::FrameDecoration *pFrameDeco;

@@ -100,7 +100,7 @@ void C4Network2ResDlg::ListItem::LocalSaveResource(bool fDoOverwrite)
 	C4Network2Res::Ref pRes = GetRefRes();
 	if (!pRes) return;
 	const char *szResFile = pRes->getFile();
-	StdCopyStrBuf strErrCopyFile(LoadResStr("IDS_NET_ERR_COPYFILE"));
+	StdStrBuf strErrCopyFile(LoadResStr("IDS_NET_ERR_COPYFILE"));
 	if (!SEqual2(szResFile, Config.Network.WorkPath))
 	{
 		GetScreen()->ShowMessage(LoadResStr("IDS_NET_ERR_COPYFILE_LOCAL"), strErrCopyFile.getData(), C4GUI::Ico_Error);

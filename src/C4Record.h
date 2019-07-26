@@ -118,7 +118,7 @@ struct C4RecordChunk
 		class C4PktDebugRec *pDbg;
 		class StdBuf *pFileData;
 	};
-	StdCopyStrBuf Filename; // RCT_File only
+	StdStrBuf Filename; // RCT_File only
 
 public:
 	C4RecordChunk();
@@ -231,7 +231,7 @@ class C4PktDebugRec : public C4PacketBase
 {
 protected:
 	C4RecordChunkType eType;
-	StdCopyBuf Data;
+	StdBuf Data;
 
 public:
 	C4PktDebugRec() : eType(RCT_Undefined) {}

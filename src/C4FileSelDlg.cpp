@@ -142,7 +142,7 @@ void C4FileSelDlg::InitElements()
 	if (iLocationCount)
 	{
 		C4GUI::ComponentAligner caLocations(caUpperArea.GetFromTop(C4GUI::ComboBox::GetDefaultHeight() + 2 * C4GUI_DefDlgSmallIndent), C4GUI_DefDlgIndent, C4GUI_DefDlgSmallIndent, false);
-		StdStrBuf sText(LoadResStr("IDS_TEXT_LOCATION"));
+		StdStrBuf sText(LoadResStr("IDS_TEXT_LOCATION"), false);
 		AddElement(new C4GUI::Label(sText.getData(), caLocations.GetFromLeft(pUseFont->GetTextWidth(sText.getData())), ALeft));
 		pLocationComboBox = new C4GUI::ComboBox(caLocations.GetAll());
 		pLocationComboBox->SetComboCB(new C4GUI::ComboBox_FillCallback<C4FileSelDlg>(this, &C4FileSelDlg::OnLocationComboFill, &C4FileSelDlg::OnLocationComboSelChange));

@@ -76,7 +76,7 @@ C4ParticleDefCore::C4ParticleDefCore() :
 bool C4ParticleDefCore::Compile(char *szSource, const char *szName)
 {
 	return CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(*this, "Particle"),
-		StdStrBuf(szSource), szName);
+		StdStrBuf::MakeRef(szSource), szName);
 }
 
 C4ParticleDef::C4ParticleDef() :

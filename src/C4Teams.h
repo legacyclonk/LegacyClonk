@@ -49,7 +49,7 @@ protected:
 	char Name[C4MaxName + 1];
 	int32_t iPlrStartIndex; // 0 for unassigned; 1 to 4 if all players of that team shall be assigned a specific [Player*]-section in the Scenario.txt
 	uint32_t dwClr; // team color
-	StdCopyStrBuf sIconSpec; // icon drawing specification for offline or runtime team selection dialog
+	StdStrBuf sIconSpec; // icon drawing specification for offline or runtime team selection dialog
 	int32_t iMaxPlayer; // maximum number of players allowed in this team - 0 for infinite
 
 	friend class C4TeamList;

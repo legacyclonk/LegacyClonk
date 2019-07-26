@@ -71,7 +71,7 @@ class C4Application : public CStdApp
 {
 private:
 	// if set, this mission will be launched next
-	StdCopyStrBuf NextMission;
+	StdStrBuf NextMission;
 
 public:
 	C4Application();

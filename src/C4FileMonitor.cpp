@@ -292,7 +292,7 @@ void C4FileMonitor::HandleNotify(const char *szDir, const _FILE_NOTIFY_INFORMATI
 	int iFileNameBytes = WideCharToMultiByte(iCodePage, 0,
 		pNotify->FileName, pNotify->FileNameLength / 2, nullptr, 0, nullptr, nullptr);
 	// Set up filename buffer
-	StdCopyStrBuf Path(szDir);
+	StdStrBuf Path(szDir);
 	Path.AppendChar(DirectorySeparator);
 	Path.Grow(iFileNameBytes);
 	char *pFilename = Path.getMPtr(SLen(Path.getData()));

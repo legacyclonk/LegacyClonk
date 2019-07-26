@@ -21,7 +21,7 @@
 
 struct C4GameVersion
 {
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameAllowEmpty> sEngineName; // status only - not used for comparison
+	ValidatedStdStrBuf<C4InVal::VAL_NameAllowEmpty> sEngineName; // status only - not used for comparison
 	int32_t iVer[4];
 	int32_t iBuild;
 

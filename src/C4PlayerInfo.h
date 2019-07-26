@@ -80,28 +80,28 @@ private:
 	uint32_t dwFlags; // bitmask of C4PlayerInfoFlags-constants
 	C4PlayerType eType; // user or script player
 
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameNoEmpty> sName; // player name
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameAllowEmpty> sForcedName; // player name if a new name is forced e.g. because the current name appeared twice
+	ValidatedStdStrBuf<C4InVal::VAL_NameNoEmpty> sName; // player name
+	ValidatedStdStrBuf<C4InVal::VAL_NameAllowEmpty> sForcedName; // player name if a new name is forced e.g. because the current name appeared twice
 	int32_t iID; // unique ID set by host
 	C4Network2Res::Ref pRes; // player resource to load from
 	C4Network2ResCore ResCore; // core of resource to load from
-	StdCopyStrBuf szFilename; // source filename for local players
+	StdStrBuf szFilename; // source filename for local players
 	uint32_t dwColor; // player color
 	uint32_t dwOriginalColor, dwAlternateColor; // original player color wish
 	int32_t idSavegamePlayer; // ID of associated savegame player
 	int32_t idTeam; // team ID
-	StdCopyStrBuf szAuthID; // authentication ID (for league server, will be cleared on successful join)
+	StdStrBuf szAuthID; // authentication ID (for league server, will be cleared on successful join)
 	int32_t iInGameNumber, iInGameJoinFrame, iInGamePartFrame; // information about player in game
 	C4ID idExtraData; // extra data for script players
 
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameAllowEmpty> sLeagueAccount; // account name on league server
+	ValidatedStdStrBuf<C4InVal::VAL_NameAllowEmpty> sLeagueAccount; // account name on league server
 	int32_t iLeagueScore; // score on league server at join time
 	int32_t iLeagueRank; // rank on league server at join time
 	int32_t iLeagueRankSymbol; // symbolization of the player's rank
 	int32_t iLeagueProjectedGain; // projected league score increase if game is won - -1 for unknown; valid values always positive
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameAllowEmpty> sClanTag; // clan ("team") tag
+	ValidatedStdStrBuf<C4InVal::VAL_NameAllowEmpty> sClanTag; // clan ("team") tag
 	int32_t iLeaguePerformance; // script-set league performance value, only set temporarily for masterserver end reference
-	StdCopyStrBuf sLeagueProgressData; // level progress data as reported by league
+	StdStrBuf sLeagueProgressData; // level progress data as reported by league
 
 public:
 	C4PlayerInfo() // construct empty

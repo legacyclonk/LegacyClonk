@@ -276,7 +276,7 @@ public:
 
 public:
 	int32_t iID;
-	StdCopyStrBuf strReason;
+	StdStrBuf strReason;
 
 public:
 	virtual bool Sync() const { return false; }
@@ -435,7 +435,7 @@ class C4ControlDebugRec : public C4ControlPacket // sync
 public:
 	C4ControlDebugRec() {}
 	C4ControlDebugRec(StdBuf &Data)
-		: Data(Data) {}
+		: Data(StdBuf::TakeOrRef(Data)) {}
 
 protected:
 	StdBuf Data;

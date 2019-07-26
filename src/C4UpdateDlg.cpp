@@ -415,7 +415,7 @@ bool C4Network2VersionInfoClient::GetRedirect(StdStrBuf &rRedirect)
 {
 	// Sanity check
 	if (isBusy() || !isSuccess()) return false;
-	StdCopyStrBuf strUpdateRedirect;
+	StdStrBuf strUpdateRedirect;
 	try
 	{
 		CompileFromBuf<StdCompilerINIRead>(mkNamingAdapt(

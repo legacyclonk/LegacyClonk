@@ -120,7 +120,7 @@ public:
 
 		virtual C4SForceFairCrew GetFairCrewAllowed() const { return static_cast<C4SForceFairCrew>(C4S.Head.ForcedFairCrew); }
 
-		virtual StdStrBuf GetTypeName() { return StdCopyStrBuf(LoadResStr("IDS_TYPE_SCENARIO"), true); }
+		virtual StdStrBuf GetTypeName() { return StdStrBuf(LoadResStr("IDS_TYPE_SCENARIO")); }
 
 		virtual const char *GetDefaultExtension() { return "c4s"; }
 
@@ -174,7 +174,7 @@ public:
 
 		virtual const char *GetDefaultExtension() { return "c4f"; }
 
-		virtual StdStrBuf GetTypeName() { return StdCopyStrBuf(LoadResStr("IDS_TYPE_FOLDER"), true); }
+		virtual StdStrBuf GetTypeName() { return StdStrBuf(LoadResStr("IDS_TYPE_FOLDER")); }
 
 	protected:
 		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded); // load custom data for entry type - icon fallback to folder icon
@@ -188,7 +188,7 @@ public:
 		RegularFolder(Folder *pParent) : Folder(pParent) {}
 		virtual ~RegularFolder() {}
 
-		virtual StdStrBuf GetTypeName() { return StdCopyStrBuf(LoadResStr("IDS_TYPE_DIRECTORY"), true); }
+		virtual StdStrBuf GetTypeName() { return StdStrBuf(LoadResStr("IDS_TYPE_DIRECTORY")); }
 
 	protected:
 		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded); // load custom data for entry type - icon fallback to folder icon

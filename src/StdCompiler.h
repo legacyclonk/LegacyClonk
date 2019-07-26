@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <string>
+#include <utility>
 
 // Try to avoid casting NotFoundExceptions for trivial cases (MSVC log flood workaround)
 #if defined(_MSC_VER)
@@ -211,7 +212,7 @@ public:
 		StdStrBuf Msg;
 
 	protected:
-		Exception(StdStrBuf Pos, StdStrBuf Msg) : Pos(Pos), Msg(Msg) {}
+		Exception(StdStrBuf &&Pos, StdStrBuf &&Msg) : Pos(std::forward<StdStrBuf>(Pos)), Msg(std::forward<StdStrBuf>(Msg)) {}
 
 	private:
 		// do not copy
@@ -222,21 +223,21 @@ public:
 	{
 		friend class StdCompiler;
 
-		NotFoundException(StdStrBuf Pos, StdStrBuf Msg) : Exception(Pos, Msg) {}
+		NotFoundException(StdStrBuf &&Pos, StdStrBuf &&Msg) : Exception(std::forward<StdStrBuf>(Pos), std::forward<StdStrBuf>(Msg)) {}
 	};
 
 	class EOFException : public Exception
 	{
 		friend class StdCompiler;
 
-		EOFException(StdStrBuf Pos, StdStrBuf Msg) : Exception(Pos, Msg) {}
+		EOFException(StdStrBuf &&Pos, StdStrBuf &&Msg) : Exception(std::forward<StdStrBuf>(Pos), std::forward<StdStrBuf>(Msg)) {}
 	};
 
 	class CorruptException : public Exception
 	{
 		friend class StdCompiler;
 
-		CorruptException(StdStrBuf Pos, StdStrBuf Msg) : Exception(Pos, Msg) {}
+		CorruptException(StdStrBuf &&Pos, StdStrBuf &&Msg) : Exception(std::forward<StdStrBuf>(Pos), std::forward<StdStrBuf>(Msg)) {}
 	};
 
 	// Throw helpers (might redirect)
@@ -348,7 +349,7 @@ template <class CompT, class StructT>
 void CompileFromBuf(StructT &&TargetStruct, const typename CompT::InT &SrcBuf)
 {
 	CompT Compiler;
-	Compiler.setInput(SrcBuf.getRef());
+	Compiler.setInput(SrcBuf);
 	Compiler.Compile(TargetStruct);
 }
 
@@ -400,7 +401,7 @@ class StdCompilerBinWrite : public StdCompiler
 public:
 	// Result
 	typedef StdBuf OutT;
-	inline OutT getOutput() { return Buf; }
+	inline const OutT &getOutput() { return Buf; }
 
 	// Properties
 	virtual bool isDoublePass() { return true; }
@@ -440,7 +441,7 @@ class StdCompilerBinRead : public StdCompiler
 public:
 	// Input
 	typedef StdBuf InT;
-	void setInput(const InT &In) { Buf = In; }
+	void setInput(const InT &In) { Buf.Ref(In); }
 
 	// Properties
 	virtual bool isCompiler() { return true; }
@@ -510,7 +511,7 @@ class StdCompilerINIWrite : public StdCompiler
 public:
 	// Input
 	typedef StdStrBuf OutT;
-	inline OutT getOutput() { return Buf; }
+	inline const OutT &getOutput() { return Buf; }
 
 	// Properties
 	virtual bool hasNaming() { return true; }
@@ -575,7 +576,7 @@ public:
 
 	// Input
 	typedef StdStrBuf InT;
-	void setInput(const InT &In) { Buf = In; }
+	void setInput(const InT &In) { Buf.Ref(In); }
 
 	// Properties
 	virtual bool isCompiler() { return true; }
@@ -651,7 +652,7 @@ protected:
 	const char *pReenter;
 
 	// Uppermost name that wasn't found
-	StdCopyStrBuf NotFoundName;
+	StdStrBuf NotFoundName;
 
 	// * Implementation
 

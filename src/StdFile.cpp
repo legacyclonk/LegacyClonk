@@ -335,7 +335,7 @@ bool WildcardListMatch(const char *szWildcardList, const char *szString)
 	// safety
 	if (!szString || !szWildcardList) return false;
 	// match any item in list
-	StdStrBuf sWildcard, sWildcardList(szWildcardList);
+	StdStrBuf sWildcard, sWildcardList(szWildcardList, false);
 	int32_t i = 0;
 	while (sWildcardList.GetSection(i++, &sWildcard, '|'))
 	{

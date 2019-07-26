@@ -293,7 +293,7 @@ void C4GameOverDlg::Update()
 void C4GameOverDlg::SetNetResult(const char *szResultString, C4RoundResults::NetResult eResultType, size_t iPendingStreamingData, bool fIsStreaming)
 {
 	// add info about pending streaming data
-	StdStrBuf sResult(szResultString);
+	StdStrBuf sResult(szResultString, false);
 	if (fIsStreaming)
 	{
 		sResult.AppendChar('|');

@@ -24,7 +24,7 @@
 #include <C4Player.h>
 
 C4Graph::C4Graph()
-	: szTitle(LoadResStr("IDS_NET_GRAPH")), dwColor(0x7fff0000) {}
+	: szTitle(LoadResStr("IDS_NET_GRAPH"), false), dwColor(0x7fff0000) {}
 
 C4TableGraph::C4TableGraph(int iBackLogLength, int iStartTime)
 	: iBackLogLength(iBackLogLength), pValues(nullptr), iBackLogPos(0), fWrapped(false)

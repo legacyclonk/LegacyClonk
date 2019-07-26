@@ -137,7 +137,7 @@ C4GUI::ContextMenu *C4StartupMainDlg::OnPlayerSelContextAdd(C4GUI::Element *pBtn
 		if (!WildcardMatch(C4CFN_PlayerFiles, GetFilename(szFn))) continue;
 		if (!SIsModule(Config.General.Participants, szFn, nullptr, false))
 			pCtx->AddItem(C4Language::IconvClonk(GetFilenameOnly(szFn)).getData(), "Let this player join in next game", C4GUI::Ico_Player,
-				new C4GUI::CBMenuHandlerEx<C4StartupMainDlg, StdCopyStrBuf>(this, &C4StartupMainDlg::OnPlayerSelContextAddPlr, StdCopyStrBuf(szFn)), nullptr);
+				new C4GUI::CBMenuHandlerEx<C4StartupMainDlg, StdStrBuf>(this, &C4StartupMainDlg::OnPlayerSelContextAddPlr, StdStrBuf(szFn)), nullptr);
 	}
 	return pCtx;
 }
@@ -152,7 +152,7 @@ C4GUI::ContextMenu *C4StartupMainDlg::OnPlayerSelContextRemove(C4GUI::Element *p
 	return pCtx;
 }
 
-void C4StartupMainDlg::OnPlayerSelContextAddPlr(C4GUI::Element *pTarget, const StdCopyStrBuf &rsFilename)
+void C4StartupMainDlg::OnPlayerSelContextAddPlr(C4GUI::Element *pTarget, const StdStrBuf &rsFilename)
 {
 	SAddModule(Config.General.Participants, rsFilename.getData());
 	UpdateParticipants();

@@ -1913,7 +1913,7 @@ class ComboBox : public Control
 public:
 	struct ComboMenuCBStruct // struct used as menu callback parameter for dropdown menu
 	{
-		StdCopyStrBuf sText;
+		StdStrBuf sText;
 		int32_t id;
 
 		ComboMenuCBStruct() : sText(), id(0) {}
@@ -2391,7 +2391,7 @@ public:
 	InputDialog(const char *szMessage, const char *szCaption, Icons icoIcon, BaseInputCallback *pCB, bool fChatLayout = false);
 	~InputDialog() { delete pCB; }
 
-	virtual void OnClosed(bool fOK) { if (pCB && fOK) pCB->OnOK(StdStrBuf(pEdit->GetText())); Dialog::OnClosed(fOK); } // close CB
+	virtual void OnClosed(bool fOK) { if (pCB && fOK) pCB->OnOK(StdStrBuf::MakeRef(pEdit->GetText())); Dialog::OnClosed(fOK); } // close CB
 	void SetMaxText(int32_t iMaxLen) { pEdit->SetMaxText(iMaxLen); }
 	void SetInputText(const char *szToText);
 	const char *GetInputText() { return pEdit->GetText(); }

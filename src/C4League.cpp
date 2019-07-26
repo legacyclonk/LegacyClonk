@@ -275,7 +275,7 @@ public:
 					try
 					{
 						pComp->Value(mkNamingAdapt(mkDecompileAdapt(pInfo->GetID()), "ID"));
-						StdCopyStrBuf sFBID;
+						StdStrBuf sFBID;
 						if (rFBIDList.FindFBIDByAccount(pInfo->getLeagueAccount(), &sFBID)) pComp->Value(mkNamingAdapt(mkParAdapt(sFBID, StdCompiler::RCT_IdtfAllowEmpty), "FBID"));
 					}
 					catch (StdCompiler::Exception *)
@@ -554,7 +554,7 @@ void C4LeagueClient::ModifyForChecksum(const void *pData, size_t iDataSize, char
 // *** C4LeagueSignupDialog
 
 C4LeagueSignupDialog::C4LeagueSignupDialog(const char *szPlayerName, const char *szLeagueName, const char *szLeagueServerName, const char *szAccountPref, const char *szPassPref, bool fWarnThirdParty, bool fRegister)
-	: C4GUI::Dialog(C4GUI_MessageDlgWdt, 100 /* will be resized as needed */, FormatString(LoadResStr("IDS_DLG_LEAGUESIGNUPON"), szLeagueServerName).getData(), false), strPlayerName(szPlayerName)
+	: C4GUI::Dialog(C4GUI_MessageDlgWdt, 100 /* will be resized as needed */, FormatString(LoadResStr("IDS_DLG_LEAGUESIGNUPON"), szLeagueServerName).getData(), false), strPlayerName(szPlayerName, false)
 {
 	// get positions
 	C4GUI::ComponentAligner caMain(GetClientRect(), C4GUI_DefDlgIndent, C4GUI_DefDlgIndent, true);

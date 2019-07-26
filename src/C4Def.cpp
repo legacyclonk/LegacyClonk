@@ -263,7 +263,7 @@ bool C4DefCore::Load(C4Group &hGroup)
 
 bool C4DefCore::Compile(const char *szSource, const char *szName)
 {
-	return CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(*this, "DefCore"), StdStrBuf(szSource), szName);
+	return CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(*this, "DefCore"), StdStrBuf::MakeRef(szSource), szName);
 }
 
 void C4DefCore::CompileFunc(StdCompiler *pComp)

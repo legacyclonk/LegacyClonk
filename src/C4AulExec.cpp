@@ -133,7 +133,7 @@ private:
 		{
 			StdStrBuf Buf("T");
 			Buf.AppendChars('>', ContextStackSize() - iTraceStart);
-			pCurCtx->dump(Buf);
+			pCurCtx->dump(std::move(Buf));
 		}
 		// Profiler: Safe time to measure difference afterwards
 		if (fProfiling) pCurCtx->tTime = timeGetTime();
@@ -527,7 +527,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					try
 					{
 						result.Append(pPar2->toString());
-						pPar1->SetString(new C4String(result, &pCurCtx->Func->Owner->GetEngine()->Strings));
+						pPar1->SetString(new C4String(std::move(result), &pCurCtx->Func->Owner->GetEngine()->Strings));
 						PopValue();
 					}
 					catch (C4V_Type type)
@@ -705,7 +705,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					try
 					{
 						result.Append(pPar2->toString());
-						pPar1->GetRefVal().SetString(new C4String(result, &pCurCtx->Func->Owner->GetEngine()->Strings));
+						pPar1->GetRefVal().SetString(new C4String(std::move(result), &pCurCtx->Func->Owner->GetEngine()->Strings));
 						PopValue();
 					}
 					catch (C4V_Type type)
@@ -785,7 +785,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					if (pCPos->bccType != AB_ARRAYA_V)
 						throw new C4AulExecError(pCurCtx->Obj, "array access: can't access string as an array in a reference context!");
 
-					StdCopyStrBuf &str = Array._getStr()->Data;
+					StdStrBuf &str = Array._getStr()->Data;
 					if (index < 0)
 					{
 						index += str.getLength();
@@ -799,7 +799,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					{
 						StdStrBuf result;
 						result.AppendChar(str.getData()[index]);
-						pCurVal[-1].SetString(new C4String(result, &pCurCtx->Func->Owner->GetEngine()->Strings));
+						pCurVal[-1].SetString(new C4String(std::move(result), &pCurCtx->Func->Owner->GetEngine()->Strings));
 					}
 					PopValue();
 					break;

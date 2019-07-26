@@ -185,7 +185,7 @@ public:
 public:
 	C4ID id;
 	int32_t rC4XVer[4];
-	StdCopyStrBuf Name;
+	StdStrBuf Name;
 	C4IDList RequireDef;
 	C4PhysicalInfo Physical;
 	C4Shape Shape;

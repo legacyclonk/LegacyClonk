@@ -40,22 +40,9 @@ public:
 
 	StdBuf() : fRef(true), pData(nullptr), iSize(0) {}
 
-	// Constructor from other buffer (copy construction):
-	// Will take over buffer ownership. Copies data if specified.
-	// Note: Construct with Buf2.getRef() to construct a reference (This will work for a constant Buf2, too)
-	StdBuf(StdBuf &Buf2, bool fCopy = false)
-		: fRef(true), pData(nullptr), iSize(0)
-	{
-		if (fCopy)
-			Copy(Buf2);
-		else if (!Buf2.isRef())
-			Take(std::move(Buf2));
-		else
-			Ref(Buf2);
-	}
-
-	// Set by constant data. Copies data if desired.
-	StdBuf(const void *pData, size_t iSize, bool fCopy = false)
+	// Constructor from other buffer (copy construction)
+	// Set by constant data. Copies data if not specified otherwise.
+	StdBuf(const void *pData, size_t iSize, bool fCopy = true)
 		: fRef(true), pData(pData), iSize(iSize)
 	{
 		if (fCopy) Copy();
@@ -83,7 +70,7 @@ public:
 		}
 		else if (!Buf2.isRef())
 		{
-			Take(std::move(Buf2));
+			Take(std::forward<StdBuf>(Buf2));
 		}
 		else
 		{
@@ -94,6 +81,19 @@ public:
 	~StdBuf()
 	{
 		Clear();
+	}
+
+	static StdBuf MakeRef(const void *pData, size_t iSize)
+	{
+		return StdBuf(pData, iSize, false);
+	}
+
+	static StdBuf TakeOrRef(StdBuf &other)
+	{
+		StdBuf ret;
+		if (other.isRef()) ret.Ref(other);
+		else ret.Take(other);
+		return ret;
 	}
 
 protected:
@@ -125,7 +125,7 @@ public:
 	StdBuf getPart(size_t iStart, size_t inSize) const
 	{
 		assert(iStart + inSize <= iSize);
-		return StdBuf(getPtr(iStart), inSize);
+		return StdBuf(getPtr(iStart), inSize, false);
 	}
 
 	// *** Setters
@@ -303,7 +303,7 @@ public:
 	// Create a reference to this buffer's contents
 	StdBuf getRef() const
 	{
-		return StdBuf(getData(), getSize());
+		return StdBuf(getData(), getSize(), false);
 	}
 
 	// take over another buffer's contents
@@ -327,7 +327,7 @@ public:
 	bool operator!() const { return isNull(); }
 
 	// Appending
-	StdBuf operator+=(const StdBuf &Buf2)
+	StdBuf &operator+=(const StdBuf &Buf2)
 	{
 		Append(Buf2);
 		return *this;
@@ -348,7 +348,7 @@ public:
 
 	bool operator!=(const StdBuf &Buf2) const { return !operator==(Buf2); }
 
-	// Set (as constructor: take if possible)
+	// Set (take if possible)
 	StdBuf &operator=(StdBuf &&Buf2)
 	{
 		if (Buf2.isRef())
@@ -357,12 +357,12 @@ public:
 		}
 		else
 		{
-			Take(std::move(Buf2));
+			Take(std::forward<StdBuf>(Buf2));
 		}
 		return *this;
 	}
 
-	StdBuf &operator=(const StdBuf &Buf2) = default;
+	StdBuf &operator=(const StdBuf &Buf2) { Copy(Buf2); return *this; }
 
 	// build a simple hash
 	int GetHash() const
@@ -392,31 +392,6 @@ elem_t *getMBufPtr(StdBuf &Buf, size_t iPos = 0)
 	return reinterpret_cast<elem_t *>(pPos);
 }
 
-// Copy-Buffer - Just copies data in the copy constructor.
-class StdCopyBuf : public StdBuf
-{
-public:
-	StdCopyBuf() {}
-
-	// Set by buffer. Copies data by default.
-	StdCopyBuf(const StdBuf &Buf2, bool fCopy = true)
-		: StdBuf(Buf2.getRef(), fCopy) {}
-
-	// Set by buffer. Copies data by default.
-	StdCopyBuf(const StdCopyBuf &Buf2, bool fCopy = true)
-		: StdBuf(Buf2.getRef(), fCopy) {}
-
-	StdCopyBuf(StdBuf &&Buf2, bool fCopy = false)     : StdBuf(std::move(Buf2), fCopy) {}
-	StdCopyBuf(StdCopyBuf &&Buf2, bool fCopy = false) : StdBuf(std::move(Buf2), fCopy) {}
-
-	// Set by constant data. Copies data by default.
-	StdCopyBuf(const void *pData, size_t iSize, bool fCopy = true)
-		: StdBuf(pData, iSize, fCopy) {}
-
-	StdCopyBuf &operator=(const StdBuf &Buf2)     { Copy(Buf2); return *this; }
-	StdCopyBuf &operator=(const StdCopyBuf &Buf2) { Copy(Buf2); return *this; }
-};
-
 // Stringbuffer (operates on null-terminated character buffers)
 class StdStrBuf : protected StdBuf
 {
@@ -426,20 +401,25 @@ public:
 	StdStrBuf()
 		: StdBuf() {}
 
-	// See StdBuf::StdBuf. Will take data if possible.
-	StdStrBuf(StdStrBuf &Buf2, bool fCopy = false)
-		: StdBuf(Buf2, fCopy) {}
+	// references the string literal
+	template<size_t N>
+	StdStrBuf(const char(&str)[N])
+		: StdBuf(str, N, false) { }
 
+	// See StdBuf::StdBuf. Copies by default or references if desired.
 	StdStrBuf(const StdStrBuf &Buf2, bool fCopy = true) : StdBuf(Buf2, fCopy) {}
-	StdStrBuf(StdStrBuf &&Buf2, bool fCopy = false)     : StdBuf(std::move(Buf2), fCopy) {}
+	StdStrBuf(StdStrBuf &&Buf2, bool fCopy = false)     : StdBuf(std::forward<StdStrBuf>(Buf2), fCopy) {}
 
-	// Set by constant data. References data by default, copies if specified.
-	explicit StdStrBuf(const char *pData, bool fCopy = false)
+	// Set by constant data. Copies by default or references if desired.
+	explicit StdStrBuf(const char *pData, bool fCopy = true)
 		: StdBuf(pData, pData ? strlen(pData) + 1 : 0, fCopy) {}
 
 	// As previous constructor, but set length manually.
-	StdStrBuf(const char *pData, size_t iLength, bool fCopy = false)
+	StdStrBuf(const char *pData, size_t iLength, bool fCopy = true)
 		: StdBuf(pData, pData ? iLength + 1 : 0, fCopy) {}
+
+	static StdStrBuf MakeRef(const StdStrBuf &Buf2) { return Buf2.getRef(); }
+	static StdStrBuf MakeRef(const char *str) { return StdStrBuf(str, false); }
 
 public:
 	// *** Getters
@@ -460,13 +440,13 @@ public:
 	// Analogous to StdBuf
 	void Ref(const char *pnData) { StdBuf::Ref(pnData, pnData ? strlen(pnData) + 1 : 0); }
 	void Ref(const char *pnData, size_t iLength) { assert((!pnData && !iLength) || strlen(pnData) == iLength); StdBuf::Ref(pnData, iLength + 1); }
-	void Take(StdStrBuf &&Buf2) { StdBuf::Take(std::move(Buf2)); }
+	void Take(StdStrBuf &&Buf2) { StdBuf::Take(std::forward<StdStrBuf>(Buf2)); }
 	void Take(char *pnData) { StdBuf::Take(pnData, pnData ? strlen(pnData) + 1 : 0); }
 	void Take(char *pnData, size_t iLength) { assert((!pnData && !iLength) || strlen(pnData) == iLength); StdBuf::Take(pnData, iLength + 1); }
 	char *GrabPointer() { return reinterpret_cast<char *>(StdBuf::GrabPointer()); }
 
 	void Ref(const StdStrBuf &Buf2) { StdBuf::Ref(Buf2.getData(), Buf2.getSize()); }
-	StdStrBuf getRef() const { return StdStrBuf(getData(), getLength()); }
+	StdStrBuf getRef() const { return StdStrBuf(getData(), getLength(), false); }
 	void Take(StdStrBuf &Buf2) { StdBuf::Take(Buf2); }
 
 	void Clear() { StdBuf::Clear(); }
@@ -551,12 +531,15 @@ public:
 
 	bool operator!=(const StdStrBuf &Buf2) const { return !operator==(Buf2); }
 
-	bool operator==(const char *szString) const { return StdStrBuf(szString) == *this; }
+	bool operator==(const char *szString) const { return StdStrBuf(szString, false) == *this; }
 	bool operator!=(const char *szString) const { return !operator==(szString); }
 
 	// Note this references the data.
-	StdStrBuf &operator=(const StdStrBuf &Buf2) { Ref(Buf2);     return *this; }
-	StdStrBuf &operator=(const char *szString)  { Ref(szString); return *this; }
+	StdStrBuf &operator=(const StdStrBuf &Buf2) { Copy(Buf2);     return *this; }
+	StdStrBuf &operator=(const char *szString)  { Copy(szString); return *this; }
+
+	template<size_t N>
+	StdStrBuf &operator=(const char (&szString)[N]) { Ref(szString, N - 1); return *this; }
 
 	// conversion to "bool"
 	operator const void *() const { return getData(); }
@@ -670,30 +653,6 @@ public:
 	// * Compiling
 
 	void CompileFunc(class StdCompiler *pComp, int iRawType = 0);
-};
-
-// Copy-Stringbuffer - Just copies data in the copy constructor.
-class StdCopyStrBuf : public StdStrBuf
-{
-public:
-	StdCopyStrBuf() {}
-
-	explicit StdCopyStrBuf(const StdStrBuf &Buf2, bool fCopy = true)
-		: StdStrBuf(Buf2.getRef(), fCopy) {}
-
-	StdCopyStrBuf(const StdCopyStrBuf &Buf2, bool fCopy = true)
-		: StdStrBuf(Buf2.getRef(), fCopy) {}
-
-	StdCopyStrBuf(StdStrBuf &&Buf2, bool fCopy = false) : StdStrBuf(std::move(Buf2), fCopy) {}
-	StdCopyStrBuf(StdCopyStrBuf &&Buf2, bool fCopy = false) : StdStrBuf(std::move(Buf2), fCopy) {}
-
-	// Set by constant data. Copies data if desired.
-	explicit StdCopyStrBuf(const char *pData, bool fCopy = true)
-		: StdStrBuf(pData, fCopy) {}
-
-	StdCopyStrBuf &operator=(const StdStrBuf &Buf2)     { Copy(Buf2);     return *this; }
-	StdCopyStrBuf &operator=(const StdCopyStrBuf &Buf2) { Copy(Buf2);     return *this; }
-	StdCopyStrBuf &operator=(const char *szString)      { Copy(szString); return *this; }
 };
 
 // Wrappers

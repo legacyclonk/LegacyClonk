@@ -71,7 +71,7 @@ public:
 protected:
 	C4Network2ResType eType;
 	int32_t iID, iDerID;
-	StdCopyStrBuf FileName, Author;
+	StdStrBuf FileName, Author;
 	bool fLoadable;
 	uint32_t iFileSize, iFileCRC, iContentsCRC;
 	uint8_t fHasFileSHA;

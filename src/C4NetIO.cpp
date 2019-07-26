@@ -229,10 +229,10 @@ void C4NetIO::SetError(const char *strnError, bool fSockErr)
 C4NetIOPacket::C4NetIOPacket() {}
 
 C4NetIOPacket::C4NetIOPacket(const void *pnData, size_t inSize, bool fCopy, const C4NetIO::addr_t &naddr)
-	: StdCopyBuf(pnData, inSize, fCopy), addr(naddr) {}
+	: StdBuf(pnData, inSize, fCopy), addr(naddr) {}
 
 C4NetIOPacket::C4NetIOPacket(const StdBuf &Buf, const C4NetIO::addr_t &naddr)
-	: StdCopyBuf(Buf), addr(naddr) {}
+	: StdBuf(Buf), addr(naddr) {}
 
 C4NetIOPacket::~C4NetIOPacket()
 {

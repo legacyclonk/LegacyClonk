@@ -145,7 +145,7 @@ void C4Team::CompileFunc(StdCompiler *pComp)
 	if (pComp->isCompiler()) { delete[] piPlayers; piPlayers = new int32_t[iPlayerCapacity = iPlayerCount]{}; }
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(piPlayers, iPlayerCount, -1), "Players"));
 	pComp->Value(mkNamingAdapt(dwClr,                 "Color",         0u));
-	pComp->Value(mkNamingAdapt(sIconSpec,             "IconSpec",      StdCopyStrBuf()));
+	pComp->Value(mkNamingAdapt(sIconSpec,             "IconSpec",      StdStrBuf()));
 	pComp->Value(mkNamingAdapt(iMaxPlayer,            "MaxPlayer",     0));
 }
 
@@ -298,7 +298,7 @@ C4TeamList &C4TeamList::operator=(const C4TeamList &rCopy)
 	eTeamDist = rCopy.eTeamDist;
 	fTeamColors = rCopy.fTeamColors;
 	fAutoGenerateTeams = rCopy.fAutoGenerateTeams;
-	sScriptPlayerNames = rCopy.sScriptPlayerNames;
+	sScriptPlayerNames.Copy(rCopy.sScriptPlayerNames);
 	return *this;
 }
 
@@ -893,7 +893,7 @@ int32_t C4TeamList::GetForcedTeamSelection(int32_t idForPlayer) const
 StdStrBuf C4TeamList::GetScriptPlayerName() const
 {
 	// get a name to assign to a new script player. Try to avoid name conflicts
-	if (!sScriptPlayerNames.getLength()) return StdStrBuf(LoadResStr("IDS_TEXT_COMPUTER")); // default name
+	if (!sScriptPlayerNames.getLength()) return StdStrBuf::MakeRef(LoadResStr("IDS_TEXT_COMPUTER")); // default name
 	// test available script names
 	int32_t iNameIdx = 0; StdStrBuf sOut;
 	while (sScriptPlayerNames.GetSection(iNameIdx++, &sOut, '|'))

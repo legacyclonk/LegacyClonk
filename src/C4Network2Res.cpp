@@ -401,7 +401,7 @@ bool C4Network2Res::SetByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eTyp
 	// default ressource name: relative path
 	StdStrBuf sResName;
 	if (szResName)
-		sResName = szResName;
+		sResName.Ref(szResName);
 	else
 	{
 		StdStrBuf sFullName = pGrp->GetFullName();

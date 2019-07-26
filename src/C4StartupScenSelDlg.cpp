@@ -504,7 +504,7 @@ bool C4ScenarioListLoader::Entry::Load(C4Group *pFromGrp, const StdStrBuf *psFil
 		if (DefDesc.LoadEx("Desc", Group, C4CFN_ScenarioDesc, Config.General.LanguageEx))
 		{
 			C4RTFFile rtf;
-			rtf.Load(StdBuf(DefDesc.GetData(), SLen(DefDesc.GetData())));
+			rtf.Load(StdBuf::MakeRef(DefDesc.GetData(), SLen(DefDesc.GetData())));
 			sDesc.Take(rtf.GetPlainText());
 		}
 		DefDesc.Close();
@@ -593,7 +593,7 @@ bool C4ScenarioListLoader::Entry::RenameTo(const char *szNewName)
 	SCopy(sFilename.getData(), fullfn, _MAX_PATH);
 	char *fullfn_fn = GetFilename(fullfn);
 	SCopy(fn, fullfn_fn, _MAX_PATH - (fullfn_fn - fullfn));
-	StdCopyStrBuf strErr(LoadResStr("IDS_FAIL_RENAME"));
+	StdStrBuf strErr(LoadResStr("IDS_FAIL_RENAME"));
 	// check if a rename is due
 	if (!ItemIdentical(sFilename.getData(), fullfn))
 	{
@@ -771,12 +771,12 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 
 StdStrBuf C4ScenarioListLoader::Scenario::GetOpenText()
 {
-	return StdCopyStrBuf(LoadResStr("IDS_BTN_STARTGAME"));
+	return StdStrBuf(LoadResStr("IDS_BTN_STARTGAME"));
 }
 
 StdStrBuf C4ScenarioListLoader::Scenario::GetOpenTooltip()
 {
-	return StdCopyStrBuf(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
+	return StdStrBuf(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
 }
 
 // Folder
@@ -883,7 +883,7 @@ bool C4ScenarioListLoader::Folder::LoadContents(C4ScenarioListLoader *pLoader, C
 	// clear previous
 	delete pMapData; pMapData = nullptr;
 	// if filename is not given, assume it's been loaded in this entry
-	if (!psFilename) psFilename = &this->sFilename; else this->sFilename = *psFilename;
+	if (!psFilename) psFilename = &this->sFilename; else this->sFilename.Ref(*psFilename);
 	// nothing loaded: Load now
 	if (!DoLoadContents(pLoader, pFromGrp, *psFilename, fLoadEx)) return false;
 	// sort loaded stuff by name
@@ -903,12 +903,12 @@ C4ScenarioListLoader::Entry *C4ScenarioListLoader::Folder::FindEntryByName(const
 
 StdStrBuf C4ScenarioListLoader::Folder::GetOpenText()
 {
-	return StdCopyStrBuf(LoadResStr("IDS_BTN_OPEN"));
+	return StdStrBuf(LoadResStr("IDS_BTN_OPEN"));
 }
 
 StdStrBuf C4ScenarioListLoader::Folder::GetOpenTooltip()
 {
-	return StdCopyStrBuf(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
+	return StdStrBuf(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
 }
 
 bool C4ScenarioListLoader::Folder::LoadCustomPre(C4Group &rGrp)

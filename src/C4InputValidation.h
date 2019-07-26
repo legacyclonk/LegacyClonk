@@ -65,14 +65,14 @@ template <class T> struct C4StrValAdapt
 template <class T> inline C4StrValAdapt<T> mkStrValAdapt(T &&rValue, C4InVal::ValidationOption eValType) { return C4StrValAdapt<T>(rValue, eValType); }
 
 // StdStrBuf that validates on compilation
-struct ValidatedStdCopyStrBufBase : public StdCopyStrBuf
+struct ValidatedStdStrBufBase : public StdStrBuf
 {
-	ValidatedStdCopyStrBufBase(const char *szCopy) : StdCopyStrBuf(szCopy) {}
-	ValidatedStdCopyStrBufBase() : StdCopyStrBuf() {}
+	ValidatedStdStrBufBase(const char *szCopy) : StdStrBuf(szCopy) {}
+	ValidatedStdStrBufBase() : StdStrBuf() {}
 
 	inline void CompileFunc(StdCompiler *pComp, int iRawType = 0)
 	{
-		pComp->Value(mkParAdapt(static_cast<StdCopyStrBuf &>(*this), iRawType));
+		pComp->Value(mkParAdapt(static_cast<StdStrBuf &>(*this), iRawType));
 		if (pComp->isCompiler()) Validate();
 	}
 
@@ -90,19 +90,19 @@ struct ValidatedStdCopyStrBufBase : public StdCopyStrBuf
 		Validate();
 	}
 
-	virtual ~ValidatedStdCopyStrBufBase() {}
+	virtual ~ValidatedStdStrBufBase() {}
 };
 
-template <int V> struct ValidatedStdCopyStrBuf : public ValidatedStdCopyStrBufBase
+template <int V> struct ValidatedStdStrBuf : public ValidatedStdStrBufBase
 {
-	ValidatedStdCopyStrBuf(const char *szCopy) : ValidatedStdCopyStrBufBase(szCopy) {}
-	ValidatedStdCopyStrBuf() : ValidatedStdCopyStrBufBase() {}
+	ValidatedStdStrBuf(const char *szCopy) : ValidatedStdStrBufBase(szCopy) {}
+	ValidatedStdStrBuf() : ValidatedStdStrBufBase() {}
 
 	virtual bool Validate()
 	{
 		return C4InVal::ValidateString(*this, (C4InVal::ValidationOption) V);
 	}
 
-	template <class D> inline bool operator==(const D &nValue) const { return static_cast<const StdCopyStrBuf &>(*this) == nValue; }
-	template <class D> inline ValidatedStdCopyStrBuf<V> &operator=(const D &nValue) { static_cast<StdCopyStrBuf &>(*this) = nValue; return *this; }
+	template <class D> inline bool operator==(const D &nValue) const { return static_cast<const StdStrBuf &>(*this) == nValue; }
+	template <class D> inline ValidatedStdStrBuf<V> &operator=(const D &nValue) { static_cast<StdStrBuf &>(*this) = nValue; return *this; }
 };

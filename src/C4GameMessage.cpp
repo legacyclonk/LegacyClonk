@@ -299,12 +299,12 @@ bool C4GameMessageList::New(int32_t iType, const char *szText,
 	int32_t iX, int32_t iY,
 	uint8_t bCol)
 {
-	return New(iType, StdStrBuf(szText), pTarget, iPlayer, iX, iY, 0xff000000 | Application.DDraw->Pal.GetClr(FColors[bCol]));
+	return New(iType, StdStrBuf::MakeRef(szText), pTarget, iPlayer, iX, iY, 0xff000000 | Application.DDraw->Pal.GetClr(FColors[bCol]));
 }
 
 bool C4GameMessageList::New(int32_t iType, const char *szText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int32_t width)
 {
-	return New(iType, StdStrBuf(szText), pTarget, iPlayer, iX, iY, dwClr, idDecoID, szPortraitDef, dwFlags, width);
+	return New(iType, StdStrBuf::MakeRef(szText), pTarget, iPlayer, iX, iY, dwClr, idDecoID, szPortraitDef, dwFlags, width);
 }
 
 bool C4GameMessageList::New(int32_t iType, const StdStrBuf &sText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int32_t width)

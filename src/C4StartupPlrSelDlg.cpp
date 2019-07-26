@@ -317,7 +317,7 @@ bool C4StartupPlrSelDlg::PlayerListItem::MoveFilename(const char *szToFilename)
 	// do it
 	if (!MoveItem(GetFilename().getData(), szToFilename)) return false;
 	// reflect change in class
-	SetFilename(StdStrBuf(szToFilename));
+	SetFilename(StdStrBuf::MakeRef(szToFilename));
 	return true;
 }
 
@@ -445,7 +445,7 @@ bool C4StartupPlrSelDlg::CrewListItem::SetName(const char *szNewName)
 			return false;
 		}
 		const char *szConstFn = fn;
-		SetFilename(StdStrBuf(szConstFn));
+		SetFilename(StdStrBuf::MakeRef(szConstFn));
 	}
 	// update clonk name and core
 	ListItem::SetName(szNewName);
@@ -705,7 +705,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 			pPlrItem = new PlayerListItem(this, pPlrListBox, nullptr, fIsParticipating);
 			try
 			{
-				pPlrItem->Load(StdStrBuf(szFn));
+				pPlrItem->Load(StdStrBuf::MakeRef(szFn));
 			}
 			catch (ListItem::LoadError &e)
 			{
@@ -940,7 +940,7 @@ void C4StartupPlrSelDlg::SetCrewMode(PlayerListItem *pSel)
 	if (!CurrPlayer.Grp.Open(pSel->GetFilename().getData())) return;
 	if (!CurrPlayer.Grp.FindEntry(C4CFN_ObjectInfoFiles))
 	{
-		StdCopyStrBuf strCrew(FormatString("%s %s", LoadResStrNoAmp("IDS_CTL_CREW"), CurrPlayer.Core.PrefName));
+		StdStrBuf strCrew(FormatString("%s %s", LoadResStrNoAmp("IDS_CTL_CREW"), CurrPlayer.Core.PrefName));
 		// player has no crew!
 		GetScreen()->ShowMessage(FormatString(LoadResStr("IDS_ERR_PLRNOCREW"),
 			CurrPlayer.Core.PrefName).getData(),
@@ -1361,7 +1361,7 @@ void C4StartupPlrPropertiesDlg::UserClose(bool fOK)
 	// check name validity
 	if (fOK)
 	{
-		StdStrBuf PlrName(pNameEdit->GetText()), Filename;
+		StdStrBuf PlrName(pNameEdit->GetText(), false), Filename;
 		if (!C4StartupPlrSelDlg::CheckPlayerName(PlrName, Filename, pForPlayer ? &pForPlayer->GetFilename() : nullptr, true)) return;
 	}
 	Close(fOK);
@@ -1372,7 +1372,7 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 	if (fOK)
 	{
 		// store selected data if desired
-		StdStrBuf PlrName(pNameEdit->GetText()), Filename;
+		StdStrBuf PlrName(pNameEdit->GetText(), false), Filename;
 		if (C4StartupPlrSelDlg::CheckPlayerName(PlrName, Filename, pForPlayer ? &pForPlayer->GetFilename() : nullptr, true))
 		{
 			SCopy(PlrName.getData(), C4P.PrefName, C4MaxName);

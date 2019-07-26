@@ -108,10 +108,10 @@ private:
 	class EditConfig : public C4GUI::LabeledEdit
 	{
 	public:
-		EditConfig(const C4Rect &rcBounds, const char *szName, ValidatedStdCopyStrBufBase *psConfigVal, int32_t *piConfigVal, bool fMultiline);
+		EditConfig(const C4Rect &rcBounds, const char *szName, ValidatedStdStrBufBase *psConfigVal, int32_t *piConfigVal, bool fMultiline);
 
 	private:
-		ValidatedStdCopyStrBufBase *psConfigVal;
+		ValidatedStdStrBufBase *psConfigVal;
 		int32_t *piConfigVal;
 
 	public:

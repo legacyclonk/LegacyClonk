@@ -277,7 +277,7 @@ bool C4Record::AddFile(const char *szLocalFilename, const char *szAddAs, bool fD
 	if (fStreaming)
 	{
 		// Special stripping for streaming
-		StdCopyStrBuf szFile(szLocalFilename);
+		StdStrBuf szFile(szLocalFilename);
 		if (SEqualNoCase(GetExtension(szAddAs), "c4p"))
 		{
 			// Create a copy
@@ -319,7 +319,7 @@ bool C4Record::StartStreaming(bool fInitial)
 	if (fStreaming) return false;
 
 	// Get temporary file name
-	StdCopyStrBuf sTempFilename(sFilename);
+	StdStrBuf sTempFilename(sFilename);
 	MakeTempFilename(&sTempFilename);
 
 	// Save start state (without copy of scenario!)
@@ -367,7 +367,7 @@ bool C4Record::StreamFile(const char *szLocalFilename, const char *szAddAs)
 
 	// Prepend name
 	StdBuf Packed = DecompileToBuf<StdCompilerBinWrite>(
-		mkInsertAdapt(StdStrBuf(szAddAs), FileData, false));
+		mkInsertAdapt(StdStrBuf::MakeRef(szAddAs), FileData, false));
 
 	// Add to stream
 	C4RecordChunkHead Head = { 0, RCT_File };
@@ -499,7 +499,7 @@ bool C4Playback::ReadBinary(const StdBuf &Buf)
 		{
 			// Initialize compiler
 			StdCompilerBinRead Compiler;
-			Compiler.setInput(Chunk.getRef());
+			Compiler.setInput(Chunk);
 			Compiler.Begin();
 			// Read chunk
 			switch (pHead->Type)
@@ -1107,7 +1107,7 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 		return false;
 
 	// Get initial chunk, go over file name
-	StdBuf InitialData = *chunkIter->pFileData;
+	StdBuf InitialData = StdBuf::TakeOrRef(*chunkIter->pFileData);
 
 	// Put to temporary file and unpack
 	char szInitial[_MAX_PATH + 1] = "~initial.tmp";

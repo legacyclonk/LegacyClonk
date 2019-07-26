@@ -43,13 +43,13 @@ public:
 private:
 	// General information
 	int32_t Icon;
-	ValidatedStdCopyStrBuf<C4InVal::VAL_NameExNoEmpty> Title;
+	ValidatedStdStrBuf<C4InVal::VAL_NameExNoEmpty> Title;
 	C4Network2Status GameStatus;
 	int32_t Time;
 	int32_t Frame;
 	int32_t StartTime;
 	int32_t LeaguePerformance; // custom settlement league performance if scenario doesn't use elapsed frames
-	ValidatedStdCopyStrBuf<C4InVal::VAL_Comment> Comment;
+	ValidatedStdStrBuf<C4InVal::VAL_Comment> Comment;
 	bool JoinAllowed;
 	bool ObservingAllowed;
 	bool PasswordNeeded;
@@ -120,12 +120,12 @@ public:
 private:
 	// Address information
 	C4NetIO::addr_t ServerAddr, PeerAddr;
-	StdCopyStrBuf Server, RequestPath;
+	StdStrBuf Server, RequestPath;
 
 	bool fBinary;
 	bool fBusy, fSuccess, fConnected;
 	size_t iDataOffset;
-	StdCopyBuf Request;
+	StdBuf Request;
 	time_t iRequestTimeout;
 
 	// Response header data
@@ -136,8 +136,8 @@ private:
 	class C4InteractiveThread *pNotify;
 
 protected:
-	StdCopyBuf ResultBin; // set if fBinary
-	StdCopyStrBuf ResultString; // set if !fBinary
+	StdBuf ResultBin; // set if fBinary
+	StdStrBuf ResultString; // set if !fBinary
 
 protected:
 	// Overridden
@@ -154,7 +154,7 @@ protected:
 
 public:
 	bool Query(const StdBuf &Data, bool fBinary);
-	bool Query(const char *szData, bool fBinary) { return Query(StdBuf(szData, SLen(szData)), fBinary); }
+	bool Query(const char *szData, bool fBinary) { return Query(StdBuf::MakeRef(szData, SLen(szData)), fBinary); }
 
 	bool isBusy() const { return fBusy; }
 	bool isSuccess() const { return fSuccess; }
@@ -178,7 +178,7 @@ public:
 	virtual int GetTimeout();
 
 private:
-	bool ReadHeader(StdStrBuf Data);
+	bool ReadHeader(const StdStrBuf &Data);
 	bool Decompress(StdBuf *pData);
 };
 
@@ -186,8 +186,8 @@ private:
 class C4Network2RefClient : public C4Network2HTTPClient
 {
 	C4GameVersion MasterVersion;
-	StdCopyStrBuf MessageOfTheDay, MessageOfTheDayHyperlink;
-	StdCopyStrBuf LeagueServerRedirect;
+	StdStrBuf MessageOfTheDay, MessageOfTheDayHyperlink;
+	StdStrBuf LeagueServerRedirect;
 	bool fVerSet;
 
 protected:

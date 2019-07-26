@@ -159,7 +159,7 @@ protected:
 	C4GameLobby::Countdown *pLobbyCountdown;
 
 	// master server used
-	StdCopyStrBuf MasterServerAddress;
+	StdStrBuf MasterServerAddress;
 
 	// timer
 	C4Sec1TimerCallback<C4Network2> *pSec1Timer;

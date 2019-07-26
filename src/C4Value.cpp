@@ -53,7 +53,7 @@ StdStrBuf C4Value::toString() const
 			return FormatString("%d", val._getInt());
 
 		case C4V_C4ID:
-			return StdStrBuf(C4IdText(val._getC4ID()), true);
+			return StdStrBuf(C4IdText(val._getC4ID()));
 
 		default:
 			throw val.Type;
@@ -557,9 +557,9 @@ StdStrBuf C4Value::GetDataString()
 	case C4V_Any:
 		return FormatString("%ld", Data.Int);
 	case C4V_Bool:
-		return StdStrBuf(Data ? "true" : "false");
+		return StdStrBuf::MakeRef(Data ? "true" : "false");
 	case C4V_C4ID:
-		return StdCopyStrBuf(C4IdText(Data.Int));
+		return StdStrBuf(C4IdText(Data.Int));
 #ifdef C4ENGINE
 	case C4V_C4Object:
 	{
@@ -605,12 +605,12 @@ C4Value C4VString(const char *strString)
 #endif
 }
 
-C4Value C4VString(StdStrBuf Str)
+C4Value C4VString(StdStrBuf &&Str)
 {
 #ifdef C4ENGINE
 	// safety
 	if (Str.isNull()) return C4Value();
-	return C4Value(new C4String(Str, &Game.ScriptEngine.Strings));
+	return C4Value(new C4String(std::forward<StdStrBuf>(Str), &Game.ScriptEngine.Strings));
 #else
 	return C4Value();
 #endif

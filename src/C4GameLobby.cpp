@@ -85,7 +85,7 @@ void ScenDesc::Update()
 			if (DefDesc.LoadEx("Desc", ScenarioFile, C4CFN_ScenarioDesc, Config.General.LanguageEx))
 			{
 				C4RTFFile rtf;
-				rtf.Load(StdBuf(DefDesc.GetData(), SLen(DefDesc.GetData())));
+				rtf.Load(StdBuf::MakeRef(DefDesc.GetData(), SLen(DefDesc.GetData())));
 				sDesc.Take(rtf.GetPlainText());
 			}
 			DefDesc.Close();
@@ -730,7 +730,7 @@ C4GUI::ContextMenu *MainDlg::OnRightTabContext(C4GUI::Element *pLabel, int32_t i
 		new C4GUI::CBMenuHandler<MainDlg>(this, &MainDlg::OnCtxTabPlayers));
 	if (Game.Teams.IsMultiTeams())
 	{
-		StdCopyStrBuf strShowTeamsDesc(LoadResStr("IDS_MSG_SHOWTEAMS_DESC"));
+		StdStrBuf strShowTeamsDesc(LoadResStr("IDS_MSG_SHOWTEAMS_DESC"));
 		pMenu->AddItem(LoadResStr("IDS_MSG_SHOWTEAMS"), strShowTeamsDesc.getData(), C4GUI::Ico_Team,
 			new C4GUI::CBMenuHandler<MainDlg>(this, &MainDlg::OnCtxTabTeams));
 	}
