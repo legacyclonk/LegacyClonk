@@ -113,6 +113,8 @@ struct C4AulParSet
 // some special script functions defined hard-coded to reduce the exec context
 enum C4AulBCCType
 {
+	AB_MAPA_R,       // map access via .
+	AB_MAPA_V,       // not creating a reference
 	AB_ARRAYA_R,     // array access
 	AB_ARRAYA_V,     // not creating a reference
 	AB_ARRAY_APPEND, // always as a reference
@@ -180,25 +182,27 @@ enum C4AulBCCType
 	AB_XOrIt,            // ^=
 	AB_Set,              // =
 
-	AB_CALL,         // direct object call
-	AB_CALLFS,       // failsafe direct call
-	AB_CALLNS,       // direct object call: namespace operator
-	AB_STACK,        // push nulls / pop
-	AB_INT,          // constant: int
-	AB_BOOL,         // constant: bool
-	AB_STRING,       // constant: string
-	AB_C4ID,         // constant: C4ID
-	AB_ARRAY,        // semi-constant: array
-	AB_IVARN,        // initialization of named var
-	AB_JUMP,         // jump
-	AB_JUMPAND,      // jump if zero, else pop the stack
-	AB_JUMPOR,       // jump if not zero, else pop the stack
-	AB_CONDN,        // conditional jump (negated, pops stack)
-	AB_FOREACH_NEXT, // foreach: next element
-	AB_RETURN,       // return statement
-	AB_ERR,          // parse error at this position
-	AB_EOFN,         // end of function
-	AB_EOF,          // end of file
+	AB_CALL,             // direct object call
+	AB_CALLFS,           // failsafe direct call
+	AB_CALLNS,           // direct object call: namespace operator
+	AB_STACK,            // push nulls / pop
+	AB_INT,              // constant: int
+	AB_BOOL,             // constant: bool
+	AB_STRING,           // constant: string
+	AB_C4ID,             // constant: C4ID
+	AB_ARRAY,            // semi-constant: array
+	AB_MAP,              // semi-constant: map
+	AB_IVARN,            // initialization of named var
+	AB_JUMP,             // jump
+	AB_JUMPAND,          // jump if zero, else pop the stack
+	AB_JUMPOR,           // jump if not zero, else pop the stack
+	AB_CONDN,            // conditional jump (negated, pops stack)
+	AB_FOREACH_NEXT,     // foreach: next element in array
+	AB_FOREACH_MAP_NEXT, // foreach: next key-value pair in map
+	AB_RETURN,           // return statement
+	AB_ERR,              // parse error at this position
+	AB_EOFN,             // end of function
+	AB_EOF,              // end of file
 };
 
 // ** a definition of an operator

@@ -279,9 +279,13 @@ src/C4UpperBoard.cpp
 src/C4UpperBoard.h
 src/C4UserMessages.h
 src/C4Value.cpp
+src/C4ValueContainer.h
 src/C4Value.h
+src/C4ValueHash.cpp
+src/C4ValueHash.h
 src/C4ValueList.cpp
 src/C4ValueList.h
+src/C4ValueStandardRefCountedContainer.h
 src/C4ValueMap.cpp
 src/C4ValueMap.h
 src/C4Version.h

@@ -23,6 +23,7 @@
 #include <C4Object.h>
 #include <C4Config.h>
 #include <C4Game.h>
+#include <C4ValueHash.h>
 #include <C4Wrappers.h>
 
 C4AulExecError::C4AulExecError(C4Object *pObj, const char *szError) : cObj(pObj)
@@ -179,6 +180,12 @@ private:
 	{
 		CheckOverflow(1);
 		(++pCurVal)->SetArray(Array);
+	}
+
+	void PushMap(C4ValueHash *Map)
+	{
+		CheckOverflow(1);
+		(++pCurVal)->SetMap(Map);
 	}
 
 	void PushValue(const C4Value &rVal)
@@ -804,17 +811,50 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 			}
 
+			case AB_MAP:
+			{
+				C4ValueHash *map = new C4ValueHash;
+				for (int i = 0; i < pCPos->bccX; ++i)
+				{
+					(*map)[pCurVal[2 * (i - pCPos->bccX) + 1]] = pCurVal[2 * (i - pCPos->bccX) + 2];
+				}
+
+				if (pCPos->bccX > 0)
+				{
+					PopValues(2 * pCPos->bccX - 1);
+					pCurVal->SetMap(map);
+				}
+				else
+					PushMap(map);
+
+				break;
+			}
+
 			case AB_ARRAYA_R: case AB_ARRAYA_V:
 			{
+				C4Value &Container = pCurVal[-1].GetRefVal();
 				C4Value &Index = pCurVal[0];
-				if (!Index.ConvertTo(C4V_Int))
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("array access: index of type %s, int expected!", Index.GetTypeName()).getData());
-				auto index = Index._getInt();
-
-				C4Value &Array = pCurVal[-1].GetRefVal();
-				if (Array.GetType() == C4V_String)
+				if (Container.GetType() == C4V_Any)
 				{
-					StdStrBuf &str = Array._getStr()->Data;
+					throw new C4AulExecError(pCurCtx->Obj, "indexed access [index]: array, map or string expected, but got 0");
+				}
+
+				if (Container.ConvertTo(C4V_Map) || Container.ConvertTo(C4V_Array))
+				{
+					Container.GetContainerElement(&Index, pCurVal[-1], pCurCtx, pCPos->bccType == AB_ARRAYA_V);
+					// Remove index
+					PopValue();
+					break;
+				}
+
+
+				if (Container.ConvertTo(C4V_String))
+				{
+					if (!Index.ConvertTo(C4V_Int))
+						throw new C4AulExecError(pCurCtx->Obj, FormatString("indexed string access: index of type %s, int expected!", Index.GetTypeName()).getData());
+
+					auto index = Index._getInt();
+					StdStrBuf &str = Container._getStr()->Data;
 					if (index < 0)
 					{
 						index += str.getLength();
@@ -833,17 +873,21 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					PopValue();
 					break;
 				}
-				// Typcheck
-				if (!Array.ConvertTo(C4V_Array))
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("array access: can't access %s as an array!", Array.GetTypeName()).getData());
-				// Set reference to array element
-				if (pCPos->bccType == AB_ARRAYA_R)
-					Array.GetArrayElement(index, pCurVal[-1], pCurCtx);
 				else
-					// do not mark array as having element references
-					Array.GetArrayElement(index, pCurVal[-1], pCurCtx, true);
-				// Remove index
-				PopValue();
+					throw new C4AulExecError(pCurCtx->Obj, FormatString("indexed access: can't access %s by index!", Container.GetTypeName()).getData());
+			}
+
+			case AB_MAPA_R: case AB_MAPA_V:
+			{
+				C4Value &Map = pCurVal->GetRefVal();
+				if (!Map.ConvertTo(C4V_Map))
+				{
+					throw new C4AulExecError(pCurCtx->Obj, FormatString("map access with .: map expected, but got \"%s\"!", GetC4VName(Map.GetType())).getData());
+				}
+
+				C4Value key(reinterpret_cast<C4String *>(pCPos->bccX));
+				Map.GetContainerElement(&key, *pCurVal, pCurCtx, pCPos->bccType == AB_MAPA_V);
+
 				break;
 			}
 
@@ -854,7 +898,8 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				if (!Array.ConvertTo(C4V_Array) || Array.GetType() != C4V_Array)
 					throw new C4AulExecError(pCurCtx->Obj, FormatString("array append accesss: can't access %s as an array!", Array.GetType() == C4V_Any ? "0" : Array.GetTypeName()).getData());
 
-				Array.GetArrayElement(Array._getArray()->GetSize(), pCurVal[0], pCurCtx);
+				C4Value index = C4VInt(Array._getArray()->GetSize());
+				Array.GetContainerElement(&index, pCurVal[0], pCurCtx);
 
 				break;
 			}
@@ -1009,6 +1054,44 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				pCurCtx->Vars[pCPos->bccX] = pArray->GetItem(iItem);
 				// Save position
 				pCurVal->SetInt(iItem + 1);
+				// Jump over next instruction
+				pCPos += 2;
+				fJump = true;
+				break;
+			}
+
+			case AB_FOREACH_MAP_NEXT:
+			{
+				// This should always hold
+				assert(pCurVal[-1].ConvertTo(C4V_Int));
+				using Iterator = C4ValueHash::Iterator;
+				auto iterator = reinterpret_cast<Iterator *>(pCurVal[0]._getRef());
+				// Check map the first time only
+				if (!iterator)
+				{
+					if (!pCurVal[-2].ConvertTo(C4V_Map))
+						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: map expected, but got %s!", pCurVal[-1].GetTypeName()).getData());
+					if (!pCurVal[-2]._getMap())
+						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: map expected, but got 0!").getData());
+				}
+				C4ValueHash *map = pCurVal[-2]._getMap();
+				if (!iterator)
+				{
+					iterator = new Iterator (map->begin());
+					pCurVal[0].SetInt(1);
+					pCurVal[0].GetData().Ref = reinterpret_cast<C4Value *>(iterator);
+				}
+				// No more entries?
+				if (*iterator == map->end())
+				{
+					delete iterator;
+					break;
+				}
+				// Get next
+				pCurCtx->Vars[pCPos->bccX] = (**iterator).first;
+				pCurCtx->Vars[pCurVal[-1]._getInt()] = (**iterator).second;
+
+				++(*iterator);
 				// Jump over next instruction
 				pCPos += 2;
 				fJump = true;

@@ -35,6 +35,7 @@
 #include <C4ObjectInfoList.h>
 #include <C4Player.h>
 #include <C4ObjectMenu.h>
+#include <C4ValueHash.h>
 
 #ifndef _WIN32
 #include <sys/time.h>
@@ -3898,13 +3899,15 @@ static C4Value FnGetLength(C4AulContext *cthr, C4Value *pPars)
 {
 	// support GetLength() etc.
 	if (!pPars[0]) return C4VNull;
+	if (auto map = pPars->getMap())
+		return C4VInt(map->size());
 	C4ValueArray *pArray = pPars->getArray();
 	if (pArray)
 		return C4VInt(pArray->GetSize());
 	C4String *pStr = pPars->getStr();
 	if (pStr)
 		return C4VInt(pStr->Data.getLength());
-	throw new C4AulExecError(cthr->Obj, "func \"GetLength\" par 0 cannot be converted to string or array");
+	throw new C4AulExecError(cthr->Obj, "func \"GetLength\" par 0 cannot be converted to string or array or map");
 }
 
 static C4Value FnGetIndexOf(C4AulContext *cthr, C4Value *pPars)
@@ -6343,6 +6346,38 @@ static bool FnSetNextMission(C4AulContext *ctx, C4String *szNextMission, C4Strin
 	return true;
 }
 
+static C4ValueArray *FnGetKeys(C4AulContext *ctx, C4ValueHash *map)
+{
+	if (!map) throw new C4AulExecError(ctx->Obj, "GetKeys(): map expected, got 0");
+
+	C4ValueArray *keys = new C4ValueArray(map->size());
+
+	size_t i = 0;
+	for (const auto &[key, value] : *map)
+	{
+		(*keys)[i] = key;
+		++i;
+	}
+
+	return keys;
+}
+
+static C4ValueArray *FnGetValues(C4AulContext *ctx, C4ValueHash *map)
+{
+	if (!map) throw new C4AulExecError(ctx->Obj, "GetValues(): map expected, got 0");
+
+	C4ValueArray *keys = new C4ValueArray(map->size());
+
+	size_t i = 0;
+	for (const auto &[key, value] : *map)
+	{
+		(*keys)[i] = value;
+		++i;
+	}
+
+	return keys;
+}
+
 // C4Script Function Map
 
 // defined function class
@@ -6842,6 +6877,8 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "LocateFunc",                      FnLocateFunc);
 	AddFunc(pEngine, "PathFree",                        FnPathFree);
 	AddFunc(pEngine, "SetNextMission",                  FnSetNextMission);
+	AddFunc(pEngine, "GetKeys",                         FnGetKeys);
+	AddFunc(pEngine, "GetValues",                       FnGetValues);
 	new C4AulDefCastFunc(pEngine, "ScoreboardCol", C4V_C4ID, C4V_Int);
 	new C4AulDefCastFunc(pEngine, "CastInt",       C4V_Any,  C4V_Int);
 	new C4AulDefCastFunc(pEngine, "CastBool",      C4V_Any,  C4V_Bool);
@@ -6897,6 +6934,7 @@ C4ScriptConstDef C4ScriptConstMap[] =
 	{ "C4V_C4Object", C4V_Int, C4V_C4Object },
 	{ "C4V_String",   C4V_Int, C4V_String },
 	{ "C4V_Array",    C4V_Int, C4V_Array },
+	{ "C4V_Map",      C4V_Int, C4V_Map },
 
 	{ "COMD_None",      C4V_Int, COMD_None },
 	{ "COMD_Stop",      C4V_Int, COMD_Stop },
@@ -7252,8 +7290,8 @@ C4ScriptFnDef C4ScriptFnMap[] =
 	{ "Dec",                   1, C4V_Any,      { C4V_pC4Value, C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      MkFnC4V FnDec,                       0 },
 	{ "IsRef",                 1, C4V_Bool,     { C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      MkFnC4V FnIsRef,                     0 },
 	{ "GetType",               1, C4V_Int,      { C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      MkFnC4V FnGetType,                   0 },
-
 	{ "CreateArray",           1, C4V_Array,    { C4V_Int,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      0,                                   FnCreateArray },
+
 	{ "GetLength",             1, C4V_Int,      { C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      0,                                   FnGetLength },
 	{ "GetIndexOf",            1, C4V_Int,      { C4V_Any,      C4V_Array,    C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      0,                                   FnGetIndexOf },
 	{ "SetLength",             1, C4V_Bool,     { C4V_pC4Value, C4V_Int,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      0,                                   FnSetLength },
