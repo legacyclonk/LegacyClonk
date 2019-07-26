@@ -17,6 +17,7 @@
 #include <C4Include.h>
 #include <C4ValueList.h>
 #include <algorithm>
+#include <stdexcept>
 
 #include <C4Aul.h>
 #include <C4FindObject.h>
@@ -195,81 +196,43 @@ void C4ValueList::CompileFunc(class StdCompiler *pComp)
 }
 
 C4ValueArray::C4ValueArray()
-	: C4ValueList(), iRefCnt(0), iElementReferences(0) {}
+	: C4ValueList() {}
 
 C4ValueArray::C4ValueArray(int32_t inSize)
-	: C4ValueList(inSize), iRefCnt(0), iElementReferences(0) {}
+	: C4ValueList(inSize) {}
 
 C4ValueArray::C4ValueArray(const C4ValueArray &Array2)
-	: C4ValueList(Array2), iRefCnt(1), iElementReferences(0) {}
+	: C4ValueList(Array2) {}
 
 C4ValueArray::~C4ValueArray() {}
 
-enum { C4VALUEARRAY_DEBUG = 0 };
-
-C4ValueArray *C4ValueArray::IncElementRef()
-{
-	if (iRefCnt > 1)
-	{
-		C4ValueArray *pNew = new C4ValueArray(*this);
-		pNew->iElementReferences = 1;
-		if (C4VALUEARRAY_DEBUG) printf("%p IncElementRef at %d, %d - Copying %p\n", this, iRefCnt, iElementReferences, pNew);
-		--iRefCnt;
-		return pNew;
-	}
-	else
-	{
-		if (C4VALUEARRAY_DEBUG) printf("%p IncElementRef at %d, %d\n", this, iRefCnt, iElementReferences);
-		++iElementReferences;
-		return this;
-	}
-}
-
-void C4ValueArray::DecElementRef()
-{
-	if (C4VALUEARRAY_DEBUG) printf("%p DecElementRef at %d, %d\n", this, iRefCnt, iElementReferences);
-	assert(iElementReferences > 0);
-	--iElementReferences;
-}
-
-C4ValueArray *C4ValueArray::IncRef()
-{
-	if (iRefCnt >= 1 && iElementReferences)
-	{
-		C4ValueArray *pNew = new C4ValueArray(*this);
-		if (C4VALUEARRAY_DEBUG) printf("%p IncRef from %d, %d - Copying %p\n", this, iRefCnt, iElementReferences, pNew);
-		return pNew;
-	}
-	if (C4VALUEARRAY_DEBUG) printf("%p IncRef from %d, %d\n", this, iRefCnt, iElementReferences);
-	iRefCnt++;
-	return this;
-}
-
 C4ValueArray *C4ValueArray::SetLength(int32_t size)
 {
-	if (iRefCnt > 1)
+	if (GetRefCount() > 1)
 	{
-		C4ValueArray *pNew = (new C4ValueArray(size))->IncRef();
+		C4ValueArray *pNew = static_cast<C4ValueArray *>((new C4ValueArray(size))->IncRef());
 		for (int32_t i = 0; i < (std::min)(size, iSize); i++)
 			pNew->pData[i].Set(pData[i]);
-		if (C4VALUEARRAY_DEBUG) printf("%p SetLength at %d, %d - Copying %p\n", this, iRefCnt, iElementReferences, pNew);
-		--iRefCnt;
+		DecRef();
 		return pNew;
 	}
 	else
 	{
-		if (C4VALUEARRAY_DEBUG) printf("%p SetLength at %d, %d\n", this, iRefCnt, iElementReferences);
 		SetSize(size);
 		return this;
 	}
 }
 
-void C4ValueArray::DecRef()
+bool C4ValueArray::hasIndex(const C4Value &index) const
 {
-	if (C4VALUEARRAY_DEBUG) printf("%p DecRef from %d, %d%s\n", this, iRefCnt, iElementReferences, iRefCnt == 1 ? " - Deleting" : "");
-	assert(iRefCnt);
-	if (!--iRefCnt)
-	{
-		delete this;
-	}
+	C4Value copyIndex = index;
+	if (!copyIndex.ConvertTo(C4V_Int)) throw new std::runtime_error(std::string{"array access: can not convert \""} + GetC4VName(index.GetType()) + "\" to int");
+	return copyIndex._getInt() < iSize;
+}
+
+C4Value &C4ValueArray::operator[](const C4Value &index)
+{
+	C4Value copyIndex = index;
+	if (!copyIndex.ConvertTo(C4V_Int)) throw new std::runtime_error(std::string{"array access: can not convert \""} + GetC4VName(index.GetType()) + "\" to int");
+	return (*this)[copyIndex._getInt()];
 }

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "C4Value.h"
+#include "C4ValueStandardRefCountedContainer.h"
 
 class C4ValueList
 {
@@ -60,7 +61,7 @@ public:
 };
 
 // value list with reference count, used for arrays
-class C4ValueArray : public C4ValueList
+class C4ValueArray : public C4ValueList, public C4ValueStandardRefCountedContainer<C4ValueArray>
 {
 public:
 	C4ValueArray();
@@ -68,18 +69,24 @@ public:
 
 	~C4ValueArray();
 
-	// Add Reference, return self or new copy if necessary
-	C4ValueArray *IncRef();
-	C4ValueArray *IncElementRef();
 	// Change length, return self or new copy if necessary
 	C4ValueArray *SetLength(int32_t size);
-	void DecRef();
-	void DecElementRef();
+	virtual bool hasIndex(const C4Value &index) const override;
+	virtual C4Value &operator[](const C4Value &index) override;
+	using C4ValueList::operator[];
+
+	virtual void CompileFunc(StdCompiler *pComp) override
+	{
+		C4ValueList::CompileFunc(pComp);
+	}
+
+	virtual void DenumeratePointers() override
+	{
+		C4ValueList::DenumeratePointers();
+	}
 
 private:
 	// Only for IncRef/AddElementRef
+	friend C4ValueStandardRefCountedContainer<C4ValueArray>;
 	C4ValueArray(const C4ValueArray &Array2);
-	// Reference counter
-	unsigned int iRefCnt;
-	unsigned int iElementReferences;
 };

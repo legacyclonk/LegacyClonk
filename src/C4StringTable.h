@@ -19,6 +19,7 @@
 #pragma once
 
 class C4StringTable;
+class C4Group;
 
 class C4String
 {
