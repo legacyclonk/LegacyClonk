@@ -2169,7 +2169,7 @@ bool C4Game::ReloadDef(C4ID id)
 	C4Def *pDef = Defs.ID2Def(id);
 	if (!pDef) return false;
 	// Message
-	sprintf(OSTR, "Reloading %s from %s", C4IdText(pDef->id), GetFilename(pDef->Filename)); Log(OSTR);
+	LogF("Reloading %s from %s", C4IdText(pDef->id), GetFilename(pDef->Filename));
 	// Reload def
 	if (Defs.Reload(pDef, C4D_Load_RX, Config.General.LanguageEx, &Application.SoundSystem))
 	{
@@ -2213,7 +2213,7 @@ bool C4Game::ReloadParticle(const char *szName)
 	C4ParticleDef *pDef = Particles.GetDef(szName);
 	if (!pDef) return false;
 	// verbose
-	sprintf(OSTR, "Reloading particle %s from %s", pDef->Name.getData(), GetFilename(pDef->Filename.getData())); Log(OSTR);
+	LogF("Reloading particle %s from %s", pDef->Name.getData(), GetFilename(pDef->Filename.getData()));
 	// reload it
 	if (!pDef->Reload())
 	{
@@ -2222,7 +2222,7 @@ bool C4Game::ReloadParticle(const char *szName)
 		// clear def
 		delete pDef;
 		// log
-		sprintf(OSTR, "Reloading failure. All particles removed."); Log(OSTR);
+		Log("Reloading failure. All particles removed.");
 		// failure
 		return false;
 	}
@@ -3685,8 +3685,8 @@ bool C4Game::CheckObjectEnumeration()
 		cObj = clnk->Obj;
 		if (cObj->Number < 1)
 		{
-			sprintf(OSTR, "Invalid object enumeration number (%d) of object %s (x=%d)", cObj->Number, C4IdText(cObj->id), cObj->x);
-			Log(OSTR); return false;
+			LogF("Invalid object enumeration number (%d) of object %s (x=%d)", cObj->Number, C4IdText(cObj->id), cObj->x);
+			return false;
 		}
 		// Max
 		if (cObj->Number > iMax) iMax = cObj->Number;
@@ -3695,13 +3695,15 @@ bool C4Game::CheckObjectEnumeration()
 			if (cObj2 != cObj)
 				if (cObj->Number == cObj2->Number)
 				{
-					sprintf(OSTR, "Duplicate object enumeration number %d (%s and %s)", cObj2->Number, cObj->GetName(), cObj2->GetName()); Log(OSTR); return false;
+					LogF("Duplicate object enumeration number %d (%s and %s)", cObj2->Number, cObj->GetName(), cObj2->GetName());
+					return false;
 				}
 		for (clnk2 = Objects.InactiveObjects.First; clnk2 && (cObj2 = clnk2->Obj); clnk2 = clnk2->Next)
 			if (cObj2 != cObj)
 				if (cObj->Number == cObj2->Number)
 				{
-					sprintf(OSTR, "Duplicate object enumeration number %d (%s and %s(i))", cObj2->Number, cObj->GetName(), cObj2->GetName()); Log(OSTR); return false;
+					LogF("Duplicate object enumeration number %d (%s and %s(i))", cObj2->Number, cObj->GetName(), cObj2->GetName());
+					return false;
 				}
 		// next
 		if (!clnk->Next)

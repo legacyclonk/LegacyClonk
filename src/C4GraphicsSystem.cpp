@@ -584,12 +584,10 @@ bool C4GraphicsSystem::SaveScreenshot(bool fSaveAll)
 		sprintf(szFilename, "Screenshot%03i.png", iScreenshotIndex++);
 	while (FileExists(strFilePath = Config.AtScreenshotPath(szFilename)));
 	bool fSuccess = DoSaveScreenshot(fSaveAll, strFilePath);
+
 	// log if successful/where it has been stored
-	if (!fSuccess)
-		sprintf(OSTR, LoadResStr("IDS_PRC_SCREENSHOTERROR"), Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
-	else
-		sprintf(OSTR, LoadResStr("IDS_PRC_SCREENSHOT"), Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
-	Log(OSTR);
+	LogF(LoadResStr(fSuccess ? "IDS_PRC_SCREENSHOT" : "IDS_PRC_SCREENSHOTERR"), Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
+
 	// return success
 	return !!fSuccess;
 }
