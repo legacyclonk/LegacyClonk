@@ -330,7 +330,7 @@ CStdWindow *C4Console::Init(CStdApp *pApp)
 			(LPTSTR)&lpMsgBuf,
 			0,
 			nullptr);
-		Log(FormatString("Error creating dialog window: %s", lpMsgBuf).getData());
+		LogF("Error creating dialog window: %s", lpMsgBuf);
 		// Free the buffer.
 		LocalFree(lpMsgBuf);
 		return nullptr;

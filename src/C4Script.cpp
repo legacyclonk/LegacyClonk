@@ -1213,7 +1213,7 @@ static long FnGetVertex(C4AulContext *cthr, long iIndex, long iValueToGet, C4Obj
 	case VTX_Friction: return pObj->Shape.VtxFriction[iIndex]; break;
 	default:
 		// old-style behaviour for any value != 0 (normally not used)
-		DebugLog(FormatString("FnGetVertex: Unknown vertex attribute: %ld; getting VtxY", iValueToGet).getData());
+		DebugLogF("FnGetVertex: Unknown vertex attribute: %ld; getting VtxY", iValueToGet);
 		return pObj->Shape.VtxY[iIndex];
 		break;
 	}

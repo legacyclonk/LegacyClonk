@@ -789,7 +789,7 @@ bool C4PlayerInfoList::AssignPlayerIDs(C4ClientPlayerInfos *pNewClientInfo)
 			if (GetFreePlayerSlotCount() - iJoinsGranted < 1)
 			{
 				// nope - then deny this join!
-				Log(FormatString(LoadResStr("IDS_MSG_TOOMANYPLAYERS"), (int)Game.Parameters.MaxPlayers).getData());
+				LogF(LoadResStr("IDS_MSG_TOOMANYPLAYERS"), (int)Game.Parameters.MaxPlayers);
 				pNewClientInfo->RemoveIndexedInfo(--i);
 				continue;
 			}

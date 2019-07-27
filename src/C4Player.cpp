@@ -984,7 +984,7 @@ void C4Player::Surrender()
 	Eliminated = true;
 	RetireDelay = C4RetireDelay;
 	StartSoundEffect("Eliminated");
-	Log(FormatString(LoadResStr("IDS_PRC_PLRSURRENDERED"), GetName()).getData());
+	LogF(LoadResStr("IDS_PRC_PLRSURRENDERED"), GetName());
 }
 
 bool C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent)
@@ -997,8 +997,8 @@ bool C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent)
 	if (!Game.FrameCounter || fSilent) return true;
 	// Announce
 	StartSoundEffect("Trumpet");
-	Log(FormatString(LoadResStr(iHostility ? "IDS_PLR_HOSTILITY" : "IDS_PLR_NOHOSTILITY"),
-		GetName(), Game.Players.Get(iOpponent)->GetName()).getData());
+	LogF(LoadResStr(iHostility ? "IDS_PLR_HOSTILITY" : "IDS_PLR_NOHOSTILITY"),
+		GetName(), Game.Players.Get(iOpponent)->GetName());
 	// Success
 	return true;
 }
@@ -1992,7 +1992,7 @@ void C4Player::Eliminate()
 	Eliminated = true;
 	RetireDelay = C4RetireDelay;
 	StartSoundEffect("Eliminated");
-	Log(FormatString(LoadResStr("IDS_PRC_PLRELIMINATED"), GetName()).getData());
+	LogF(LoadResStr("IDS_PRC_PLRELIMINATED"), GetName());
 
 	// Early client deactivation check
 	if (Game.Control.isCtrlHost() && AtClient > C4ClientIDHost)

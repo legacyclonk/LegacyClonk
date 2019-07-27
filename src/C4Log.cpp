@@ -174,7 +174,7 @@ bool LogFatal(const char *szMessage)
 		sFatalError.Append(szMessage);
 	}
 	// write to log - note that Log might overwrite a static buffer also used in szMessage
-	return !!Log(FormatString(LoadResStr("IDS_ERR_FATAL"), szMessage).getData());
+	return !!LogF(LoadResStr("IDS_ERR_FATAL"), szMessage);
 }
 
 void ResetFatalError()

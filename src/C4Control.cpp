@@ -1090,7 +1090,7 @@ void C4ControlMessage::Execute() const
 			for (int cnt = 0; pLocalPlr = Game.Players.GetLocalByIndex(cnt); cnt++)
 				if (!Hostile(pLocalPlr->Number, iPlayer))
 					break;
-			if (pLocalPlr) Log(FormatString(Config.General.UseWhiteIngameChat ? "<c %x>{%s}</c> %s" : "<c %x>{%s} %s", pPlr->ColorDw, pPlr->GetName(), szMessage).getData());
+			if (pLocalPlr) LogF(Config.General.UseWhiteIngameChat ? "<c %x>{%s}</c> %s" : "<c %x>{%s} %s", pPlr->ColorDw, pPlr->GetName(), szMessage);
 		}
 		else if (pLobby)
 		{
@@ -1114,7 +1114,7 @@ void C4ControlMessage::Execute() const
 				break;
 		if (pLocalPlr)
 		{
-			Log(FormatString(Config.General.UseWhiteIngameChat ? "<c %x>[%s]</c> %s" : "<c %x>[%s] %s", pPlr->ColorDw, pPlr->GetName(), szMessage).getData());
+			LogF(Config.General.UseWhiteIngameChat ? "<c %x>[%s]</c> %s" : "<c %x>[%s] %s", pPlr->ColorDw, pPlr->GetName(), szMessage);
 		}
 	}
 	break;

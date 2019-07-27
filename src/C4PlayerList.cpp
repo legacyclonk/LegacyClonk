@@ -463,7 +463,7 @@ bool C4PlayerList::RemoveAtClient(int iClient, bool fDisconnect)
 	while (pPlr = GetAtClient(iClient))
 	{
 		// Log
-		Log(FormatString(LoadResStr("IDS_PRC_REMOVEPLR"), pPlr->GetName()).getData());
+		LogF(LoadResStr("IDS_PRC_REMOVEPLR"), pPlr->GetName());
 		// Remove
 		Remove(pPlr, fDisconnect, false);
 	}
@@ -496,7 +496,7 @@ bool C4PlayerList::RemoveAtRemoteClient(bool fDisconnect, bool fNoCalls)
 	while (pPlr = GetAtRemoteClient())
 	{
 		// Log
-		Log(FormatString(LoadResStr("IDS_PRC_REMOVEPLR"), pPlr->GetName()).getData());
+		LogF(LoadResStr("IDS_PRC_REMOVEPLR"), pPlr->GetName());
 		// Remove
 		Remove(pPlr, fDisconnect, fNoCalls);
 	}
@@ -524,7 +524,7 @@ bool C4PlayerList::RemoveLocal(bool fDisconnect, bool fNoCalls)
 			if (pPlr->LocalControl)
 			{
 				// Log
-				Log(FormatString(LoadResStr("IDS_PRC_REMOVEPLR"), pPlr->GetName()).getData());
+				LogF(LoadResStr("IDS_PRC_REMOVEPLR"), pPlr->GetName());
 				// Remove
 				Remove(pPlr, fDisconnect, fNoCalls);
 				break;
