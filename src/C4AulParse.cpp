@@ -2219,6 +2219,7 @@ void C4AulParseState::Parse_If()
 	}
 	else
 		Parse_Params(1, C4AUL_If);
+	SetNoRef();
 	// create bytecode, remember position
 	int iCond = a->GetCodePos();
 	AddBCC(AB_CONDN);
