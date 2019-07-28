@@ -782,9 +782,6 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				C4Value &Array = pCurVal[-1].GetRefVal();
 				if (Array.GetType() == C4V_String)
 				{
-					if (pCPos->bccType != AB_ARRAYA_V)
-						throw new C4AulExecError(pCurCtx->Obj, "array access: can't access string as an array in a reference context!");
-
 					StdStrBuf &str = Array._getStr()->Data;
 					if (index < 0)
 					{
