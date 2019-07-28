@@ -1100,20 +1100,124 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 	fJump = false;
 }
 
+namespace
+{
+	void SkipExpressions(int n, C4AulBCC *&CPos, C4AulBCC *const Code)
+	{
+		while (n > 0 && CPos > Code)
+		{
+			switch (CPos->bccType)
+			{
+				case AB_STACK:
+					if (CPos->bccX > 0) n -= CPos--->bccX;
+					break;
+
+				case AB_INT: case AB_BOOL: case AB_STRING: case AB_C4ID:
+				case AB_PARN_R: case AB_PARN_V: case AB_VARN_R: case AB_VARN_V:
+				case AB_LOCALN_R: case AB_LOCALN_V:
+				case AB_GLOBALN_R: case AB_GLOBALN_V:
+					--n;
+					--CPos;
+					break;
+
+				case AB_MAPA_R: case AB_MAPA_V: case AB_ARRAY_APPEND:
+					--CPos;
+					SkipExpressions(1, CPos, Code);
+					--n;
+					break;
+
+				case AB_ARRAYA_R: case AB_ARRAYA_V:
+					--CPos;
+					SkipExpressions(2, CPos, Code);
+					--n;
+					break;
+
+				case AB_ARRAY:
+				{
+					const auto size = CPos->bccX;
+					--CPos;
+					SkipExpressions(size, CPos, Code);
+					--n;
+					break;
+				}
+
+				case AB_MAP:
+				{
+					const auto size = 2 * CPos->bccX;
+					--CPos;
+					SkipExpressions(size, CPos, Code);
+					--n;
+					break;
+
+				}
+
+				case AB_PAR_R: case AB_PAR_V: case AB_VAR_R: case AB_VAR_V:
+					--CPos;
+					SkipExpressions(1, CPos, Code);
+					--n;
+					break;
+
+				case AB_FUNC:
+				{
+					const auto pars = reinterpret_cast<C4AulFunc *>(CPos->bccX)->GetParCount();
+					--CPos;
+					SkipExpressions(pars, CPos, Code);
+					--n;
+					break;
+				}
+
+				case AB_CALLNS:
+					--CPos;
+					break;
+
+				case AB_CALL: case AB_CALLFS:
+					--CPos;
+					SkipExpressions(C4AUL_MAX_Par + 1, CPos, Code);
+					--n;
+					break;
+
+				default:
+					// operator?
+					if (Inside(CPos->bccType, AB_Inc1, AB_Set) && CPos > Code)
+					{
+						const auto &op = C4ScriptOpMap[CPos->bccX];
+						--CPos;
+						SkipExpressions(op.NoSecondStatement || !op.Postfix ? 1 : 2, CPos, Code);
+						--n;
+					}
+					else
+						return;
+			}
+		}
+	}
+}
+
 void C4AulParseState::SetNoRef()
 {
 	if (Type != PARSER) return;
-	C4AulBCC *CPos = a->CPos - 1;
-	switch (CPos->bccType)
+	for(C4AulBCC *CPos = a->CPos - 1; CPos >= a->Code; )
 	{
-	case AB_MAPA_R: CPos->bccType = AB_MAPA_V; break;
-	case AB_ARRAYA_R: CPos->bccType = AB_ARRAYA_V; break;
-	case AB_PAR_R: CPos->bccType = AB_PAR_V; break;
-	case AB_VAR_R: CPos->bccType = AB_VAR_V; break;
-	case AB_PARN_R: CPos->bccType = AB_PARN_V; break;
-	case AB_VARN_R: CPos->bccType = AB_VARN_V; break;
-	case AB_LOCALN_R: CPos->bccType = AB_LOCALN_V; break;
-	case AB_GLOBALN_R: CPos->bccType = AB_GLOBALN_V; break;
+		switch (CPos->bccType)
+		{
+		case AB_MAPA_R:
+			CPos->bccType = AB_MAPA_V;
+			--CPos;
+			// propagate back to the accessed map
+			break;
+		case AB_ARRAYA_R:
+			CPos->bccType = AB_ARRAYA_V;
+			--CPos;
+			// propagate back to the accessed array
+			SkipExpressions(1, CPos, a->Code);
+			break;
+		case AB_PAR_R: CPos->bccType = AB_PAR_V; return;
+		case AB_VAR_R: CPos->bccType = AB_VAR_V; return;
+		case AB_PARN_R: CPos->bccType = AB_PARN_V; return;
+		case AB_VARN_R: CPos->bccType = AB_VARN_V; return;
+		case AB_LOCALN_R: CPos->bccType = AB_LOCALN_V; return;
+		case AB_GLOBALN_R: CPos->bccType = AB_GLOBALN_V; return;
+		default: return;
+		}
 	}
 }
 
@@ -2199,6 +2303,7 @@ void C4AulParseState::Parse_Array()
 		default:
 		{
 			Parse_Expression();
+			SetNoRef();
 			++size;
 			if (TokenType == ATT_COMMA)
 				Shift();
@@ -2268,6 +2373,7 @@ void C4AulParseState::Parse_Map()
 			Shift();
 
 			Parse_Expression();
+			SetNoRef();
 			++size;
 			if (TokenType == ATT_COMMA)
 				Shift();
@@ -2878,6 +2984,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 		Shift();
 
 		Parse_Expression();
+		SetNoRef();
 		Match(ATT_BCLOSE2);
 		AddBCC(AB_ARRAYA_R);
 		break;
@@ -3005,6 +3112,7 @@ void C4AulParseState::Parse_Var()
 				// insert initialization in byte code
 				Shift();
 				Parse_Expression();
+				SetNoRef();
 				AddBCC(AB_IVARN, iVarID);
 			}
 			else
