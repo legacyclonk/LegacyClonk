@@ -756,7 +756,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 	return true;
 }
 
-int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fCheckMarkup, float fZoom)
+int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fCheckMarkup, float fZoom, size_t maxLines)
 {
 	// safety
 	if (!szMsg || !pOut) return 0;
@@ -911,6 +911,13 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 		// manual line break or line width overflow: add char to next line
 		iHgt += iLineHgt;
 		fIsFirstLineChar = true;
+
+		if (maxLines == 1)
+		{
+			pOut->Append(szPos);
+			return iHgt;
+		}
+		else if (maxLines != 0) --maxLines;
 	}
 	// transfer final data to buffer (any missing markup)
 	pOut->Append(szLastPos, szPos - szLastPos);

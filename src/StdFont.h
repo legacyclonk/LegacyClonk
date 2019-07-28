@@ -130,8 +130,8 @@ public:
 	inline int GetLineHeight() { return iLineHgt; }
 	// Sometimes, only the width of a text is needed
 	int32_t GetTextWidth(const char *szText, bool fCheckMarkup = true) { int32_t x, y; GetTextExtent(szText, x, y, fCheckMarkup); return x; }
-	// insert line breaks into a message and return overall height - uses and regards '|' as line breaks
-	int BreakMessage(const char *szMsg, int iWdt, class StdStrBuf *pOut, bool fCheckMarkup, float fZoom = 1.0f);
+	// insert line breaks into a message and return overall height - uses and regards '|' as line breaks; maxLines = 0 means unlimited
+	int BreakMessage(const char *szMsg, int iWdt, class StdStrBuf *pOut, bool fCheckMarkup, float fZoom = 1.0f, size_t maxLines = 0);
 
 	CStdFont();
 	~CStdFont() { Clear(); }
