@@ -250,7 +250,7 @@ C4ValueArray *C4ValueArray::SetLength(int32_t size)
 	if (iRefCnt > 1)
 	{
 		C4ValueArray *pNew = (new C4ValueArray(size))->IncRef();
-		for (int32_t i = 0; i < iSize; i++)
+		for (int32_t i = 0; i < (std::min)(size, iSize); i++)
 			pNew->pData[i].Set(pData[i]);
 		if (C4VALUEARRAY_DEBUG) printf("%p SetLength at %d, %d - Copying %p\n", this, iRefCnt, iElementReferences, pNew);
 		--iRefCnt;
