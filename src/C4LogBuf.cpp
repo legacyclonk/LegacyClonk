@@ -227,15 +227,16 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 		StdStrBuf broken;
 
 		// first without indentation
-		pFont->BreakMessage(szLine, iBreakWdt, &broken, true);
+		pFont->BreakMessage(szLine, iBreakWdt, &broken, true, 1.0f, 1);
 		const char *szBroken = broken.getData(), *breakPos;
 		if (!(breakPos = strchr(szBroken, '\n'))) breakPos = szBroken + SLen(szBroken);
 		else ++breakPos;
+
 		AppendSingleLine(szBroken, breakPos - szBroken, nullptr, pFont, dwClr, true);
 		++iLineIndex;
 
 		// then with indentation
-		pFont->BreakMessage(szLine + (breakPos - szBroken), iBreakWdt - iIndentWdt, &broken, true);
+		pFont->BreakMessage(breakPos, iBreakWdt - iIndentWdt, &broken, true);
 		szBroken = broken.getData();
 		while (*szBroken)
 		{
