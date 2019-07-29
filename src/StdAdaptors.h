@@ -618,7 +618,7 @@ struct StdSTLContainerAdapt
 template <class C>
 inline StdSTLContainerAdapt<C> mkSTLContainerAdapt(C &rTarget, StdCompiler::Sep eSep = StdCompiler::SEP_SEP) { return StdSTLContainerAdapt<C>(rTarget, eSep); }
 
-// * Adaptor for maps following the std::map and std::unordered_map interfaces with a key type that is compatible with mkStringAdapt
+// * Adaptor for maps following the std::map and std::unordered_map interfaces
 // Writes the size of the map followed by a semicolon separated list of key=value pairs
 template <class Map>
 struct StdSTLMapAdapt
@@ -638,7 +638,7 @@ struct StdSTLMapAdapt
 			{
 				pComp->Separator(StdCompiler::SEP_SEP2);
 				typename Map::key_type key;
-				pComp->Value(mkStringAdapt(key));
+				pComp->Value(key);
 				pComp->Separator(StdCompiler::SEP_SET);
 				typename Map::mapped_type value;
 				pComp->Value(value);
@@ -651,7 +651,7 @@ struct StdSTLMapAdapt
 			{
 				auto key = it.first;
 				pComp->Separator(StdCompiler::SEP_SEP2);
-				pComp->Value(mkStringAdapt(key));
+				pComp->Value(key);
 				pComp->Separator(StdCompiler::SEP_SET);
 				pComp->Value(it.second);
 			}
