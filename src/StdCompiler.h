@@ -172,6 +172,7 @@ public:
 	void Value(int8_t &rInt) { Byte(rInt); }
 	void Value(uint8_t &rInt) { Byte(rInt); }
 	void Value(bool &rBool) { Boolean(rBool); }
+	void Value(std::string &rString, StdCompiler::RawCompileType eRawType = StdCompiler::RCT_Escaped) { String(rString, eRawType); }
 
 	// Compiling/Decompiling (may throw a data format exception!)
 	template <class T> inline void Compile(T &&rStruct)
