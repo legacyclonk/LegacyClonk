@@ -240,29 +240,50 @@ private:
 			: pCurVal - Values + 1;
 	}
 
-	void CheckOpPars(int iOpID)
+	template<bool asReference = false>
+	void CheckOpPar(C4Value *value, C4V_Type expectedType, const char *operatorName, const char *operandPosition = "")
 	{
-		// Get parameters
-		C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
-
-		// Typecheck parameters
-		if (!pPar1->ConvertTo(C4ScriptOpMap[iOpID].Type1))
-			throw new C4AulExecError(pCurCtx->Obj,
-				FormatString("operator \"%s\" left side: got \"%s\", but expected \"%s\"!",
-					C4ScriptOpMap[iOpID].Identifier, pPar1->GetTypeInfo(), GetC4VName(C4ScriptOpMap[iOpID].Type1)).getData());
-		if (!pPar2->ConvertTo(C4ScriptOpMap[iOpID].Type2))
-			throw new C4AulExecError(pCurCtx->Obj,
-				FormatString("operator \"%s\" right side: got \"%s\", but expected \"%s\"!",
-					C4ScriptOpMap[iOpID].Identifier, pPar2->GetTypeInfo(), GetC4VName(C4ScriptOpMap[iOpID].Type2)).getData());
+		if constexpr (asReference)
+		{
+			if (!value->ConvertTo(C4V_pC4Value))
+				throw new C4AulExecError(pCurCtx->Obj,
+					FormatString("operator \"%s\"%s: got \"%s\", but expected \"%s&\"!",
+						operatorName, operandPosition, value->GetTypeInfo(), GetC4VName(expectedType)).getData());
+				else if (!value->GetRefVal().ConvertTo(expectedType))
+					throw new C4AulExecError(pCurCtx->Obj,
+						FormatString("operator \"%s\"%s: got \"%s&\", but expected \"%s&\"!",
+							operatorName, operandPosition, value->GetRefVal().GetTypeInfo(), GetC4VName(expectedType)).getData());
+		}
+		else
+		{
+			if (!value->ConvertTo(expectedType))
+				throw new C4AulExecError(pCurCtx->Obj,
+					FormatString("operator \"%s\"%s: got \"%s\", but expected \"%s\"!",
+						operatorName, operandPosition, value->GetTypeInfo(), GetC4VName(expectedType)).getData());
+		}
 	}
 
+	template<C4V_Type leftAsReference = C4V_Any, C4V_Type rightAsReference = C4V_Any>
+	void CheckOpPars(int iOpID)
+	{
+		if constexpr (leftAsReference != C4V_Any)
+			CheckOpPar<true>(&pCurVal[-1], leftAsReference, C4ScriptOpMap[iOpID].Identifier, " left side");
+		else
+			CheckOpPar<false>(&pCurVal[-1], C4ScriptOpMap[iOpID].Type1, C4ScriptOpMap[iOpID].Identifier, " left side");
+
+		if constexpr (rightAsReference != C4V_Any)
+			CheckOpPar<true>(pCurVal, rightAsReference, C4ScriptOpMap[iOpID].Identifier, " right side");
+		else
+			CheckOpPar<false>(pCurVal, C4ScriptOpMap[iOpID].Type2, C4ScriptOpMap[iOpID].Identifier, " right side");
+	}
+
+	template<C4V_Type asReference = C4V_Any>
 	void CheckOpPar(int iOpID)
 	{
-		// Typecheck parameter
-		if (!pCurVal->ConvertTo(C4ScriptOpMap[iOpID].Type1))
-			throw new C4AulExecError(pCurCtx->Obj,
-				FormatString("operator \"%s\": got \"%s\", but expected \"%s\"!",
-					C4ScriptOpMap[iOpID].Identifier, pCurVal->GetTypeInfo(), GetC4VName(C4ScriptOpMap[iOpID].Type1)).getData());
+		if constexpr (asReference != C4V_Any)
+			CheckOpPar<true>(pCurVal, asReference, C4ScriptOpMap[iOpID].Identifier);
+		else
+			CheckOpPar<false>(pCurVal, C4ScriptOpMap[iOpID].Type1, C4ScriptOpMap[iOpID].Identifier);
 	}
 
 	C4AulBCC *Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4Object *pObj = nullptr, C4Def *pDef = nullptr);
@@ -373,18 +394,12 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 			// prefix
 			case AB_Inc1: // ++
-				CheckOpPar(pCPos->bccX);
-				if (pCurVal->GetRefVal().ConvertTo(C4V_Int))
-					++(*pCurVal);
-				else
-					pCurVal->Set0();
+				CheckOpPar<C4V_Int>(pCPos->bccX);
+				++pCurVal->GetData().Int;
 				break;
 			case AB_Dec1: // --
-				CheckOpPar(pCPos->bccX);
-				if (pCurVal->GetRefVal().ConvertTo(C4V_Int))
-					--(*pCurVal);
-				else
-					pCurVal->Set0();
+				CheckOpPar<C4V_Int>(pCPos->bccX);
+				--pCurVal->GetData().Int;
 				break;
 			case AB_BitNot: // ~
 				CheckOpPar(pCPos->bccX);
@@ -400,18 +415,12 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 			// postfix (whithout second statement)
 			case AB_Inc1_Postfix: // ++
-				CheckOpPar(pCPos->bccX);
-				if (pCurVal->GetRefVal().ConvertTo(C4V_Int))
-					pCurVal->Set((*pCurVal)++);
-				else
-					pCurVal->Set0();
+				CheckOpPar<C4V_Int>(pCPos->bccX);
+				pCurVal->SetInt(pCurVal->GetData().Int++);
 				break;
 			case AB_Dec1_Postfix: // --
-				CheckOpPar(pCPos->bccX);
-				if (pCurVal->GetRefVal().ConvertTo(C4V_Int))
-					pCurVal->Set((*pCurVal)--);
-				else
-					pCurVal->Set0();
+				CheckOpPar<C4V_Int>(pCPos->bccX);
+				pCurVal->SetInt(pCurVal->GetData().Int--);
 				break;
 			// postfix
 			case AB_Pow: // **
@@ -633,7 +642,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_PowIt: // **=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int = Pow(pPar1->GetData().Int, pPar2->_getInt());
 				PopValue();
@@ -641,7 +650,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_MulIt: // *=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int *= pPar2->_getInt();
 				PopValue();
@@ -649,7 +658,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_DivIt: // /=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int = pPar2->_getInt() ? pPar1->GetData().Int / pPar2->_getInt() : 0;
 				PopValue();
@@ -657,7 +666,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_ModIt: // %=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int = pPar2->_getInt() ? pPar1->GetData().Int % pPar2->_getInt() : 0;
 				PopValue();
@@ -665,7 +674,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_Inc: // +=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int += pPar2->_getInt();
 				PopValue();
@@ -673,7 +682,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_Dec: // -=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int -= pPar2->_getInt();
 				PopValue();
@@ -681,7 +690,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_LeftShiftIt: // <<=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int <<= pPar2->_getInt();
 				PopValue();
@@ -689,7 +698,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_RightShiftIt: // >>=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int >>= pPar2->_getInt();
 				PopValue();
@@ -721,7 +730,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_AndIt: // &=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int &= pPar2->_getInt();
 				PopValue();
@@ -729,7 +738,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_OrIt: // |=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int |= pPar2->_getInt();
 				PopValue();
@@ -737,7 +746,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_XOrIt: // ^=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int ^= pPar2->_getInt();
 				PopValue();
