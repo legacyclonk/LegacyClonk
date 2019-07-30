@@ -396,10 +396,12 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			case AB_Inc1: // ++
 				CheckOpPar<C4V_Int>(pCPos->bccX);
 				++pCurVal->GetData().Int;
+				pCurVal->HintType(C4V_Int);
 				break;
 			case AB_Dec1: // --
 				CheckOpPar<C4V_Int>(pCPos->bccX);
 				--pCurVal->GetData().Int;
+				pCurVal->HintType(C4V_Int);
 				break;
 			case AB_BitNot: // ~
 				CheckOpPar(pCPos->bccX);
@@ -415,13 +417,23 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 			// postfix (whithout second statement)
 			case AB_Inc1_Postfix: // ++
+			{
 				CheckOpPar<C4V_Int>(pCPos->bccX);
-				pCurVal->SetInt(pCurVal->GetData().Int++);
+				auto &orig = pCurVal->GetRefVal();
+				pCurVal->SetInt(orig._getInt());
+				++orig.GetData().Int;
+				orig.HintType(C4V_Int);
 				break;
+			}
 			case AB_Dec1_Postfix: // --
+			{
 				CheckOpPar<C4V_Int>(pCPos->bccX);
-				pCurVal->SetInt(pCurVal->GetData().Int--);
+				auto &orig = pCurVal->GetRefVal();
+				pCurVal->SetInt(orig._getInt());
+				--orig.GetData().Int;
+				orig.HintType(C4V_Int);
 				break;
+			}
 			// postfix
 			case AB_Pow: // **
 			{
@@ -645,6 +657,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int = Pow(pPar1->GetData().Int, pPar2->_getInt());
+				pPar1->HintType(C4V_Int);
 				PopValue();
 				break;
 			}
@@ -653,6 +666,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int *= pPar2->_getInt();
+				pCurVal->HintType(C4V_Int);
 				PopValue();
 				break;
 			}
@@ -661,6 +675,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int = pPar2->_getInt() ? pPar1->GetData().Int / pPar2->_getInt() : 0;
+				pPar1->HintType(C4V_Int);
 				PopValue();
 				break;
 			}
@@ -669,6 +684,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int = pPar2->_getInt() ? pPar1->GetData().Int % pPar2->_getInt() : 0;
+				pPar1->HintType(C4V_Int);
 				PopValue();
 				break;
 			}
@@ -677,6 +693,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int += pPar2->_getInt();
+				pPar1->HintType(C4V_Int);
 				PopValue();
 				break;
 			}
@@ -685,6 +702,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int -= pPar2->_getInt();
+				pPar1->HintType(C4V_Int);
 				PopValue();
 				break;
 			}
@@ -693,6 +711,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int <<= pPar2->_getInt();
+				pPar1->HintType(C4V_Int);
 				PopValue();
 				break;
 			}
@@ -701,6 +720,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int >>= pPar2->_getInt();
+				pPar1->HintType(C4V_Int);
 				PopValue();
 				break;
 			}
@@ -733,6 +753,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int &= pPar2->_getInt();
+				pPar1->HintType(C4V_Int);
 				PopValue();
 				break;
 			}
@@ -741,6 +762,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int |= pPar2->_getInt();
+				pPar1->HintType(C4V_Int);
 				PopValue();
 				break;
 			}
@@ -749,6 +771,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				CheckOpPars<C4V_Int>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int ^= pPar2->_getInt();
+				pPar1->HintType(C4V_Int);
 				PopValue();
 				break;
 			}

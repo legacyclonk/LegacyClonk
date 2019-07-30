@@ -306,6 +306,13 @@ C4V_Type C4Value::GuessType()
 	return Type = C4V_Int;
 }
 
+void C4Value::HintType(C4V_Type type)
+{
+	auto &ref = GetRefVal();
+	if (ref.Type == C4V_Any && ref.Data.Int != 0)
+		ref.Type = type;
+}
+
 const char *GetC4VName(const C4V_Type Type)
 {
 	switch (Type)

@@ -211,6 +211,8 @@ public:
 		return true;
 	}
 
+	void HintType(C4V_Type type);
+
 	// Compilation
 	void CompileFunc(StdCompiler *pComp);
 
