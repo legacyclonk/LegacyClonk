@@ -545,27 +545,68 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 			}
 			case AB_Concat: // ..
+			case AB_ConcatIt: // ..=
 			{
+				const auto operatorName = C4ScriptOpMap[pCPos->bccX].Identifier;
 				CheckOpPars(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1;
 				C4Value *pPar2 = pCurVal;
-				try
+				const auto assignmentOperator = pCPos->bccType == AB_ConcatIt;
+				if (assignmentOperator) pPar1 = &pPar1->GetRefVal();
+				switch (pPar1->GetType())
 				{
-					StdStrBuf result = pPar1->toString();
-					try
+					case C4V_Map:
 					{
-						result.Append(pPar2->toString());
-						pPar1->SetString(new C4String(std::move(result), &pCurCtx->Func->Owner->GetEngine()->Strings));
+						CheckOpPar(pPar2, C4V_Map, operatorName, " right side");
+						const auto lhsMap = pPar1->_getMap();
+						// copy if necessary
+						const auto lhs = !assignmentOperator ? static_cast<C4ValueHash *>(lhsMap->IncRef()->IncElementRef()) : lhsMap;
+						for (const auto &[key, value] : *pPar2->_getMap())
+							(*lhs)[key] = value;
+
+						if (!assignmentOperator)
+						{
+							pPar1->SetMap(lhs);
+							lhs->DecElementRef();
+							lhs->DecRef();
+						}
 						PopValue();
+						break;
 					}
-					catch (C4V_Type type)
+					case C4V_Array:
 					{
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"..\" right side: can not convert \"%s\" to \"string\"!", GetC4VName(type)).getData());
+						const auto lhsSize = pPar1->_getArray()->GetSize();
+						const auto rhsSize = pPar2->_getArray()->GetSize();
+						CheckOpPar(pPar2, C4V_Array, operatorName, " right side");
+						pPar1->SetArrayLength(lhsSize + rhsSize, pCurCtx);
+						auto &lhs = *pPar1->_getArray();
+						auto &rhs = *pPar2->_getArray();
+
+						for (auto i = 0; i < rhsSize; ++i)
+							lhs[lhsSize + i] = rhs[i];
+
+						PopValue();
+						break;
 					}
-				}
-				catch (C4V_Type type)
-				{
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"..\" left side: can not convert \"%s\" to \"string\"!", GetC4VName(type)).getData());
+					default:
+						try
+						{
+							StdStrBuf result = pPar1->toString();
+							try
+							{
+								result.Append(pPar2->toString());
+								pPar1->SetString(new C4String(std::move(result), &pCurCtx->Func->Owner->GetEngine()->Strings));
+								PopValue();
+							}
+							catch (C4V_Type type)
+							{
+								throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"%s\" right side: can not convert \"%s\" to \"string\"!", operatorName, GetC4VName(type)).getData());
+							}
+						}
+						catch (C4V_Type type)
+						{
+							throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"%s\" left side: can not convert \"%s\" to \"string\", \"array\" or \"map\"!", operatorName, GetC4VName(type)).getData());
+						}
 				}
 				break;
 			}
@@ -729,30 +770,6 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				pPar1->GetData().Int >>= pPar2->_getInt();
 				pPar1->HintType(C4V_Int);
 				PopValue();
-				break;
-			}
-			case AB_ConcatIt: // ..=
-			{
-				CheckOpPars(pCPos->bccX);
-				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
-				try
-				{
-					StdStrBuf result = pPar1->toString();
-					try
-					{
-						result.Append(pPar2->toString());
-						pPar1->GetRefVal().SetString(new C4String(std::move(result), &pCurCtx->Func->Owner->GetEngine()->Strings));
-						PopValue();
-					}
-					catch (C4V_Type type)
-					{
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"..\" right side: can not convert \"%s\" to  \"string\"!", GetC4VName(type)).getData());
-					}
-				}
-				catch (C4V_Type type)
-				{
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"..\" left side: can not convert \"%s\" to \"string\"!", GetC4VName(type)).getData());
-				}
 				break;
 			}
 			case AB_AndIt: // &=
