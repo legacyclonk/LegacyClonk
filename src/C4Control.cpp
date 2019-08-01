@@ -1472,7 +1472,7 @@ void C4ControlMessageBoardAnswer::CompileFunc(StdCompiler *pComp)
 
 StdStrBuf C4ControlMessageBoardAnswer::FormatScript() const
 {
-	if (answer.empty()) return FormatString("OnMessageBoardAnswer(Object(%d),%d,0)", obj, plr);
+	if (answer.empty()) return FormatString("OnMessageBoardAnswer(Object(%d),%d,)", obj, plr);
 
 	StdStrBuf escapedAnswer(answer.c_str(), false);
 	escapedAnswer.EscapeString();

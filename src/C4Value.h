@@ -17,6 +17,7 @@
 #pragma once
 
 #include "C4Id.h"
+#include "C4AulScriptStrict.h"
 
 #include <string>
 
@@ -91,12 +92,12 @@ public:
 		AddDataRef();
 	}
 
-	C4Value(C4V_Data nData, C4V_Type nType) : Data(nData), Type(nData ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	C4Value(C4V_Data nData, C4V_Type nType) : Data(nData), Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		AddDataRef();
 	}
 
-	C4Value(int32_t nData, C4V_Type nType) : Type(nData ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	C4Value(int32_t nData, C4V_Type nType) : Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Int = nData; AddDataRef();
 	}
@@ -186,6 +187,8 @@ public:
 	void SetRef(C4Value *nValue) { C4V_Data d; d.Ref = nValue; Set(d, C4V_pC4Value); }
 
 	void Set0();
+
+	bool Equals(const C4Value &other, C4AulScriptStrict strict) const;
 
 	bool operator==(const C4Value &Value2) const;
 	bool operator!=(const C4Value &Value2) const;
