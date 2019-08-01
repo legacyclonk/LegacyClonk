@@ -132,7 +132,11 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 			Application.SetResolution(width, height);
 		}
 
-		if (!oldActive && Application.Active && Application.DDraw) Application.DDraw->RestoreDeviceObjects();
+		if (Application.DDraw)
+		{
+			if (!oldActive && Application.Active) Application.DDraw->RestoreDeviceObjects();
+			else if(oldActive && !Application.Active) Application.DDraw->InvalidateDeviceObjects();
+		}
 	}
 		break;
 	case WM_ACTIVATEAPP:
