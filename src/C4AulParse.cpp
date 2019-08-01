@@ -1436,6 +1436,8 @@ void C4AulParseState::Parse_Script()
 				{
 					if (cInt == 2)
 						a->Strict = C4AulScript::STRICT2;
+					else if (cInt == 3)
+						a->Strict = C4AulScript::STRICT3;
 					else
 						throw new C4AulParseError(this, "unknown strict level");
 					Shift();

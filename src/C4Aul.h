@@ -485,7 +485,7 @@ public:
 	C4Def *Def; // owning def file
 	C4ValueMapNames LocalNamed;
 	C4ID idDef; // script id (to resolve includes)
-	enum Strict { NONSTRICT = 0, STRICT1 = 1, STRICT2 = 2, MAXSTRICT = STRICT2 };
+	enum Strict { NONSTRICT = 0, STRICT1 = 1, STRICT2 = 2, STRICT3 = 3, MAXSTRICT = STRICT3 };
 	enum Strict Strict; // new or even newer syntax?
 	bool Temporary; // set for DirectExec-scripts; do not parse those
 
