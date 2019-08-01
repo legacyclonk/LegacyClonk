@@ -16,6 +16,7 @@
 
 #include <C4Include.h>
 #include <C4Value.h>
+#include <C4Aul.h>
 #include <C4StringTable.h>
 #include <C4ValueList.h>
 #include <C4ValueHash.h>
@@ -51,7 +52,6 @@ StdStrBuf C4Value::toString() const
 		case C4V_String:
 			return val._getStr()->Data;
 
-		case C4V_Any:
 		case C4V_Bool:
 		case C4V_Int:
 			return FormatString("%d", val._getInt());
@@ -135,7 +135,7 @@ void C4Value::Set(C4V_Data nData, C4V_Type nType)
 
 	// change
 	Data = nData;
-	Type = nData ? nType : C4V_Any;
+	Type = (nData || nType == C4V_Int || nType == C4V_Bool) ? nType : C4V_Any;
 
 	CheckRemoveFromMap();
 
@@ -163,7 +163,7 @@ void C4Value::Set0()
 
 void C4Value::CheckRemoveFromMap()
 {
-	if (Type == C4V_Any && Data.Int == 0 && OwningMap)
+	if (Type == C4V_Any && OwningMap)
 	{
 		OwningMap->removeValue(this);
 	}
@@ -345,7 +345,7 @@ C4V_Type C4Value::GuessType()
 void C4Value::HintType(C4V_Type type)
 {
 	auto &ref = GetRefVal();
-	if (ref.Type == C4V_Any && ref.Data.Int != 0)
+	if (ref.Type == C4V_Any && (ref.Data.Int != 0 || type == C4V_Bool || type == C4V_Int))
 		ref.Type = type;
 }
 
@@ -472,7 +472,7 @@ bool C4Value::FnCnvGuess(C4Value *Val, C4V_Type toType, bool fStrict)
 	}
 	else
 	{
-		// 0 is every possible type except a reference at the same time
+		// nil is every possible type except a reference at the same time
 		return true;
 	}
 }
@@ -622,8 +622,9 @@ StdStrBuf C4Value::GetDataString() const
 	// ouput by type info
 	switch (GetType())
 	{
-	case C4V_Int:
 	case C4V_Any:
+		return StdStrBuf("nil");
+	case C4V_Int:
 		return FormatString("%ld", Data.Int);
 	case C4V_Bool:
 		return StdStrBuf::MakeRef(Data ? "true" : "false");
@@ -732,7 +733,7 @@ void C4Value::DenumeratePointer()
 		}
 		// object: invalid value - set to zero
 		else
-			Set(0);
+			Set0();
 	}
 #endif
 }
@@ -755,7 +756,7 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 	else
 	{
 		// Clear
-		Set(0);
+		Set0();
 		// Read type
 		char cC4VID;
 		try
@@ -844,6 +845,37 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 		assert(false);
 		break;
 	}
+}
+
+bool C4Value::Equals(const C4Value &other, C4AulScriptStrict strict) const
+{
+	switch (strict)
+	{
+		case C4AulScriptStrict::NONSTRICT: case C4AulScriptStrict::STRICT1:
+			return _getRaw() == other._getRaw();
+		case C4AulScriptStrict::STRICT2:
+			return *this == other;
+		case C4AulScriptStrict::STRICT3:
+			if (Type != other.Type) return false;
+			switch (Type)
+			{
+				case C4V_Any:
+					return true;
+				case C4V_Int: C4V_C4ID: case C4V_C4Object:
+					return Data.Int == other.Data.Int;
+				case C4V_Bool:
+					return _getBool() == other._getBool();
+				case C4V_String:
+					return Data.Str->Data == other.Data.Str->Data;
+				case C4V_Array:
+					return *Data.Array == *other.Data.Array;
+				case C4V_Map:
+					return *Data.Map == *other.Data.Map;
+				default:
+					return false;
+			}
+	}
+	return false;
 }
 
 bool C4Value::operator==(const C4Value &Value2) const

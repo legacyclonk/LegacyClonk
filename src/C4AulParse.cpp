@@ -76,6 +76,8 @@
 #define C4AUL_TypeArray    "array"
 #define C4AUL_TypeMap    "map"
 
+#define C4AUL_Nil  "nil"
+
 #define C4AUL_True  "true"
 #define C4AUL_False "false"
 
@@ -89,6 +91,7 @@ enum C4AulTokenType
 	ATT_IDTF,     // identifier
 	ATT_INT,      // integer constant
 	ATT_BOOL,     // boolean constant
+	ATT_NIL,      // nil
 	ATT_STRING,   // string constant
 	ATT_C4ID,     // C4ID constant
 	ATT_COMMA,    // ","
@@ -237,7 +240,7 @@ void C4AulParseState::Warn(const char *pMsg, const char *pIdtf)
 
 void C4AulParseState::Strict2Error(const char *pMsg, const char *pIdtf)
 {
-	if (Fn ? (Fn->pOrgScript->Strict < C4AulScript::STRICT2) : (a->Strict < C4AulScript::STRICT2))
+	if (Fn ? (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2) : (a->Strict < C4AulScriptStrict::STRICT2))
 		Warn(pMsg, pIdtf);
 	else
 		throw new C4AulParseError(this, pMsg, pIdtf);
@@ -479,7 +482,7 @@ int C4AulParseState::GetOperator(const char *pScript)
 	if ((*pScript >= 'a' && *pScript <= 'z') ||
 		(*pScript >= 'A' && *pScript <= 'Z'))
 	{
-		if (Fn ? (Fn->pOrgScript->Strict >= C4AulScript::STRICT2) : (a->Strict >= C4AulScript::STRICT2))
+		if (Fn ? (Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2) : (a->Strict >= C4AulScriptStrict::STRICT2))
 			return -1;
 		if ((*(pScript + 1) >= 'a' && *(pScript + 1) <= 'z') ||
 			(*(pScript + 1) >= 'A' && *(pScript + 1) <= 'Z'))
@@ -594,7 +597,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 				if (C >= '@')
 				{
 					// Old Scripts could have wacky identifier
-					if (a->Strict < C4AulScript::STRICT2)
+					if (a->Strict < C4AulScriptStrict::STRICT2)
 					{
 						State = TGS_Ident;
 						break;
@@ -666,6 +669,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					// check reserved names
 					if (SEqual(pToken, C4AUL_False)) { *pInt = false; return ATT_BOOL; }
 					if (SEqual(pToken, C4AUL_True)) { *pInt = true; return ATT_BOOL; }
+					if (SEqual(pToken, C4AUL_Nil) && a->Strict >= C4AulScriptStrict::STRICT3) { return ATT_NIL; }
 					// everything else is an identifier
 					return ATT_IDTF;
 				}
@@ -932,7 +936,7 @@ bool C4AulScript::Preparse()
 	state.Parse_Script();
 
 	// no #strict? we don't like that :(
-	if (!Strict)
+	if (Strict == C4AulScriptStrict::NONSTRICT)
 	{
 		Engine->nonStrictCnt++;
 	}
@@ -1027,6 +1031,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 		iStack -= C4AUL_MAX_Par;
 		break;
 
+	case AB_NIL:
 	case AB_MAPA_R:
 	case AB_MAPA_V:
 	case AB_ARRAY_APPEND:
@@ -1067,7 +1072,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 	}
 
 	// Use stack operation instead of 0-Int (enable optimization)
-	if ((eType == AB_INT || eType == AB_BOOL) && !X)
+	if ((eType == AB_INT || eType == AB_BOOL) && !X && (Fn ? (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3) : (a->Strict < C4AulScriptStrict::STRICT3)))
 	{
 		eType = AB_STACK;
 		X = 1;
@@ -1300,6 +1305,7 @@ const char *C4AulParseState::GetTokenName(C4AulTokenType TokenType)
 	case ATT_IDTF:     return "identifier";
 	case ATT_INT:      return "integer constant";
 	case ATT_BOOL:     return "boolean constant";
+	case ATT_NIL:      return "nil";
 	case ATT_STRING:   return "string constant";
 	case ATT_C4ID:     return "id constant";
 	case ATT_COMMA:    return "','";
@@ -1430,14 +1436,14 @@ void C4AulParseState::Parse_Script()
 			else if (SEqual(Idtf, C4AUL_Strict))
 			{
 				// declare it as strict
-				a->Strict = C4AulScript::STRICT1;
+				a->Strict = C4AulScriptStrict::STRICT1;
 				Shift();
 				if (TokenType == ATT_INT)
 				{
 					if (cInt == 2)
-						a->Strict = C4AulScript::STRICT2;
+						a->Strict = C4AulScriptStrict::STRICT2;
 					else if (cInt == 3)
-						a->Strict = C4AulScript::STRICT3;
+						a->Strict = C4AulScriptStrict::STRICT3;
 					else
 						throw new C4AulParseError(this, "unknown strict level");
 					Shift();
@@ -1648,7 +1654,7 @@ void C4AulParseState::Parse_FuncHead()
 		return;
 	}
 	// Must be old-style function declaration now
-	if (a->Strict >= C4AulScript::STRICT2)
+	if (a->Strict >= C4AulScriptStrict::STRICT2)
 		throw new C4AulParseError(this, "Declaration expected, but found identifier ", Idtf);
 	// check: symbol already in use?
 	switch (Acc)
@@ -1807,7 +1813,7 @@ void C4AulParseState::Parse_Function()
 			C4AulBCC *CPos = a->GetCodeByPos((std::max)(a->GetCodePos() - 1, 0));
 			if (!CPos || CPos->bccType != AB_RETURN || fJump)
 			{
-				AddBCC(AB_INT);
+				AddBCC(Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT3 ? AB_NIL : AB_INT);
 				AddBCC(AB_RETURN);
 			}
 			// and break
@@ -1868,6 +1874,7 @@ void C4AulParseState::Parse_Statement()
 	case ATT_BOPEN:
 	case ATT_BOPEN2:
 	case ATT_OPERATOR:
+	case ATT_NIL:
 	case ATT_INT:   // constant in cInt
 	case ATT_BOOL:  // constant in cInt
 	case ATT_STRING: // reference in cInt
@@ -2000,7 +2007,7 @@ void C4AulParseState::Parse_Statement()
 		{
 			bool multi_params_hack = false;
 			Shift();
-			if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScript::STRICT2)
+			if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 			{
 				// parse return(retvals) - return(retval, unused, parameters, ...) allowed for backwards compatibility
 				if (Parse_Params(1, nullptr) == 1)
@@ -2127,12 +2134,12 @@ void C4AulParseState::Parse_Statement()
 			// none of these? then it's a function
 			// if it's a label, it will be missinterpreted here, which will be corrected later
 			// it may be the first goto() found? (old syntax only!)
-			if (SEqual(Idtf, C4AUL_Goto) && !Fn->pOrgScript->Strict)
+			if (SEqual(Idtf, C4AUL_Goto) && Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
 				// add AB_RETURN later on
 				gotohack = true;
 			C4AulFunc *FoundFn;
 			// old syntax: do not allow recursive calls in overloaded functions
-			if (!Fn->pOrgScript->Strict && Fn->OwnerOverloaded && SEqual(Idtf, Fn->Name))
+			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT && Fn->OwnerOverloaded && SEqual(Idtf, Fn->Name))
 				FoundFn = Fn->OwnerOverloaded;
 			else
 				// get regular function
@@ -2203,7 +2210,7 @@ int C4AulParseState::Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFu
 			// () -> size 0, (*,) -> size 2, (*,*,) -> size 3
 			if (size > 0)
 			{
-				AddBCC(AB_INT, 0);
+				AddBCC(AB_NIL);
 				++size;
 			}
 			fDone = true;
@@ -2212,7 +2219,7 @@ int C4AulParseState::Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFu
 		case ATT_COMMA:
 		{
 			// got no parameter before a ","? then push a 0-constant
-			AddBCC(AB_INT, 0);
+			AddBCC(AB_NIL);
 			Shift();
 			++size;
 			break;
@@ -2399,7 +2406,7 @@ void C4AulParseState::Parse_While()
 	// Save position for later jump back
 	int iStart = JumpHere();
 	// Execute condition
-	if (Fn->pOrgScript->Strict >= C4AulScript::STRICT2)
+	if (Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
 	{
 		Match(ATT_BOPEN);
 		Parse_Expression();
@@ -2431,7 +2438,7 @@ void C4AulParseState::Parse_While()
 
 void C4AulParseState::Parse_If()
 {
-	if (Fn->pOrgScript->Strict >= C4AulScript::STRICT2)
+	if (Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
 	{
 		Match(ATT_BOPEN);
 		Parse_Expression();
@@ -2697,7 +2704,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 		{
 			Shift();
 			// inherited keyword: check strict syntax
-			if (!Fn->pOrgScript->Strict) throw new C4AulParseError(this, "inherited disabled; use #strict syntax!");
+			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT) throw new C4AulParseError(this, "inherited disabled; use #strict syntax!");
 			// get function
 			if (Fn->OwnerOverloaded)
 			{
@@ -2717,7 +2724,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 					AddBCC(AB_STACK, 1);
 				}
 		}
-		else if (!Fn->pOrgScript->Strict && Fn->OwnerOverloaded && SEqual(Idtf, Fn->Name))
+		else if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT && Fn->OwnerOverloaded && SEqual(Idtf, Fn->Name))
 		{
 			// old syntax: do not allow recursive calls in overloaded functions
 			Shift();
@@ -2780,7 +2787,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 					}
 					Shift();
 					// now let's check whether it used old- or new-style
-					if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScript::STRICT2)
+					if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 					{
 						// old-style usage: ignore function call
 						// must not use parameters here (although generating the byte code for that would be possible)
@@ -2795,6 +2802,12 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 				}
 			}
 		}
+		break;
+	}
+	case ATT_NIL:
+	{
+		AddBCC(AB_NIL);
+		Shift();
 		break;
 	}
 	case ATT_INT: // constant in cInt
@@ -2858,7 +2871,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 	case ATT_BOPEN2:
 	{
 		// Arrays are not tested in non-strict mode at all
-		if (!Fn->pOrgScript->Strict)
+		if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
 			throw new C4AulParseError(this, "unexpected '['");
 		Parse_Array();
 		break;
@@ -2866,7 +2879,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 	case ATT_BLOPEN:
 	{
 		// Maps are not tested below strict 3 mode at all
-		if (Fn->pOrgScript->Strict < C4AulScript::STRICT3)
+		if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
 			throw new C4AulParseError(this, "unexpected '{'");
 		Parse_Map();
 		break;
@@ -2915,7 +2928,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 			SetNoRef();
 		Shift();
 
-		if ((C4ScriptOpMap[OpID].Code == AB_And || C4ScriptOpMap[OpID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScript::STRICT2)
+		if ((C4ScriptOpMap[OpID].Code == AB_And || C4ScriptOpMap[OpID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
 		{
 			// create bytecode, remember position
 			int iCond = a->GetCodePos();
@@ -2934,7 +2947,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 			{
 				switch (TokenType)
 				{
-				case ATT_IDTF: case ATT_INT: case ATT_BOOL: case ATT_STRING: case ATT_C4ID:
+				case ATT_IDTF: case ATT_NIL: case ATT_INT: case ATT_BOOL: case ATT_STRING: case ATT_C4ID:
 				case ATT_OPERATOR: case ATT_BOPEN: case ATT_BOPEN2: case ATT_BLOPEN:
 					Parse_Expression(C4ScriptOpMap[OpID].Priority);
 					// If the operator does not modify the second argument, no reference is necessary
@@ -2950,9 +2963,9 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 				}
 			}
 			// write byte code, with a few backward compat changes
-			if (C4ScriptOpMap[OpID].Code == AB_Equal && Fn->pOrgScript->Strict < C4AulScript::STRICT2)
+			if (C4ScriptOpMap[OpID].Code == AB_Equal && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 				AddBCC(AB_EqualIdent, OpID);
-			else if (C4ScriptOpMap[OpID].Code == AB_NotEqual && Fn->pOrgScript->Strict < C4AulScript::STRICT2)
+			else if (C4ScriptOpMap[OpID].Code == AB_NotEqual && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 				AddBCC(AB_NotEqualIdent, OpID);
 			else
 				AddBCC(C4ScriptOpMap[OpID].Code, OpID);
@@ -2962,7 +2975,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 	case ATT_BOPEN2:
 	{
 		// Arrays are not tested in non-strict mode at all
-		if (!Fn->pOrgScript->Strict)
+		if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
 			throw new C4AulParseError(this, "unexpected '['");
 		// Access the array
 		const char *SPos0 = SPos;
@@ -2993,7 +3006,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 	}
 	case ATT_DOT:
 	{
-		if (Fn->pOrgScript->Strict < C4AulScript::STRICT3)
+		if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
 			throw new C4AulParseError(this, "unexpected '.'");
 		Shift();
 		if (TokenType == ATT_IDTF)
@@ -3244,6 +3257,7 @@ void C4AulParseState::Parse_Const()
 			C4Value vGlobalValue;
 			switch (TokenType)
 			{
+			case ATT_NIL: vGlobalValue.Set0(); break;
 			case ATT_INT: vGlobalValue.SetInt(cInt); break;
 			case ATT_BOOL: vGlobalValue.SetBool(!!cInt); break;
 			case ATT_STRING: vGlobalValue.SetString(reinterpret_cast<C4String *>(cInt)); break; // increases ref count of C4String in cInt to 1
@@ -3488,7 +3502,7 @@ void C4AulScript::ParseDescs()
 C4AulScript *C4AulScript::FindFirstNonStrictScript()
 {
 	// self is not #strict?
-	if (Script && !Strict) return this;
+	if (Script && Strict == C4AulScriptStrict::NONSTRICT) return this;
 	// search children
 	C4AulScript *pNonStrScr;
 	for (C4AulScript *pScr = Child0; pScr; pScr = pScr->Next)

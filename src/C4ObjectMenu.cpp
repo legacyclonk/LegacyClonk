@@ -159,7 +159,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				pObj->Picture2Facet(fctSymbol);
 				// Commands
 				sprintf(szCommand, "SetCommand(this,\"Activate\",Object(%d))&&ExecuteCommand()", pObj->Number);
-				sprintf(szCommand2, "SetCommand(this,\"Activate\",0,%d,0,Object(%d),%s)&&ExecuteCommand()", pTarget->Contents.ObjectCount(pDef->id), pTarget->Number, C4IdText(pDef->id));
+				sprintf(szCommand2, "SetCommand(this,\"Activate\", ,%d,0,Object(%d),%s)&&ExecuteCommand()", pTarget->Contents.ObjectCount(pDef->id), pTarget->Number, C4IdText(pDef->id));
 				// Add menu item
 				Add(szCaption, fctSymbol, szCommand, iCount, pObj, pDef->GetDesc(), pDef->id, szCommand2, true, pObj->GetValue(pTarget, NO_OWNER));
 				// facet taken over (arrg!)
@@ -189,8 +189,8 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			// Picture
 			fctSymbol.Set(pDef->Graphics.GetBitmap(pBuyPlayer ? pBuyPlayer->ColorDw : 0), pDef->PictureRect.x, pDef->PictureRect.y, pDef->PictureRect.Wdt, pDef->PictureRect.Hgt);
 			// Command
-			sprintf(szCommand, "AppendCommand(this,\"Buy\",Object(%d),%d,0,0,0,%s)&&ExecuteCommand()", pTarget->Number, 1, C4IdText(pDef->id));
-			sprintf(szCommand2, "AppendCommand(this,\"Buy\",Object(%d),%d,0,0,0,%s)&&ExecuteCommand()", pTarget->Number, iCount, C4IdText(pDef->id));
+			sprintf(szCommand, "AppendCommand(this,\"Buy\",Object(%d),%d,0,,0,%s)&&ExecuteCommand()", pTarget->Number, 1, C4IdText(pDef->id));
+			sprintf(szCommand2, "AppendCommand(this,\"Buy\",Object(%d),%d,0,,0,%s)&&ExecuteCommand()", pTarget->Number, iCount, C4IdText(pDef->id));
 			// Buying value
 			int32_t iBuyValue = pDef->GetValue(pTarget, pPlayer->Number);
 			// Add menu item
@@ -228,7 +228,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				pObj->Picture2Facet(fctSymbol);
 				// Commands
 				sprintf(szCommand, "AppendCommand(this,\"Sell\",Object(%d),%d,0,Object(%d),0,%s)&&ExecuteCommand()", pTarget->Number, 1, pObj->Number, C4IdText(pDef->id));
-				sprintf(szCommand2, "AppendCommand(this,\"Sell\",Object(%d),%d,0,0,0,%s)&&ExecuteCommand()", pTarget->Number, pTarget->Contents.ObjectCount(pDef->id), C4IdText(pDef->id));
+				sprintf(szCommand2, "AppendCommand(this,\"Sell\",Object(%d),%d,0,,0,%s)&&ExecuteCommand()", pTarget->Number, pTarget->Contents.ObjectCount(pDef->id), C4IdText(pDef->id));
 				// Selling value
 				int32_t iSellValue = pObj->GetValue(pTarget, Object ? Object->Owner : NO_OWNER);
 				// Add menu item
@@ -330,7 +330,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				// ...or if the container is owned by us or a friendly player - this is for remote mouse-button-clicks
 				|| (ValidPlr(pTarget->Owner) && !Hostile(pTarget->Owner, Object->Owner)))
 			{
-				sprintf(szCommand, "SetCommand(this,\"Get\",Object(%d),0,0,0,2)&&ExecuteCommand()", pTarget->Number);
+				sprintf(szCommand, "SetCommand(this,\"Get\",Object(%d),0,0,,2)&&ExecuteCommand()", pTarget->Number);
 				fctSymbol.Create(C4SymbolSize, C4SymbolSize); pTarget->DrawPicture(fctSymbol);
 				Add(LoadResStr("IDS_CON_CONTENTS"), fctSymbol, szCommand);
 				fctSymbol.Default();
@@ -482,7 +482,7 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 
 	case CB_Scenario:
 		// Object menu with scenario script callback
-		Game.Script.DirectExec(nullptr, szCommand, "MenuCommand");
+		Game.Script.DirectExec(nullptr, szCommand, "MenuCommand", false, Game.Script.Strict);
 		break;
 	}
 
@@ -635,7 +635,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 				// Above threshold: create sub-menu entry for the clonk
 				else if (!fCountOnly)
 				{
-					sprintf(szCommand, "SetCommand(this,\"Context\",0,0,0,this)&&ExecuteCommand()");
+					sprintf(szCommand, "SetCommand(this,\"Context\",,0,0,this)&&ExecuteCommand()");
 					fctSymbol.Create(16, 16); Object->Def->Draw(fctSymbol, false, Object->Color);
 					Add(Object->Def->GetName(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CONTEXTSUBCLONKDESC"));
 					fctSymbol.Default();

@@ -247,7 +247,7 @@ private:
 			: pCurVal - Values + 1;
 	}
 
-	template<bool asReference = false>
+	template<bool asReference = false, bool allowAny = true>
 	void CheckOpPar(C4Value *value, C4V_Type expectedType, const char *operatorName, const char *operandPosition = "")
 	{
 		if constexpr (asReference)
@@ -268,23 +268,23 @@ private:
 					FormatString("operator \"%s\"%s: got \"%s\", but expected \"%s\"!",
 						operatorName, operandPosition, value->GetTypeInfo(), GetC4VName(expectedType)).getData());
 		}
+		if constexpr (!allowAny)
+		{
+			if (value->GetType() == C4V_Any && pCurCtx->Func->pOrgScript->Strict >= C4AulScriptStrict::STRICT3)
+				throw new C4AulExecError(pCurCtx->Obj,
+					FormatString("operator \"%s\"%s: got nil, but expected \"%s\"!",
+						operatorName, operandPosition, GetC4VName(expectedType)).getData());
+		}
 	}
 
-	template<C4V_Type leftAsReference = C4V_Any, C4V_Type rightAsReference = C4V_Any>
+	template<C4V_Type leftAsReference = C4V_Any, C4V_Type rightAsReference = C4V_Any, bool leftAllowAny = true, bool rightAllowAny = true>
 	void CheckOpPars(int iOpID)
 	{
-		if constexpr (leftAsReference != C4V_Any)
-			CheckOpPar<true>(&pCurVal[-1], leftAsReference, C4ScriptOpMap[iOpID].Identifier, " left side");
-		else
-			CheckOpPar<false>(&pCurVal[-1], C4ScriptOpMap[iOpID].Type1, C4ScriptOpMap[iOpID].Identifier, " left side");
-
-		if constexpr (rightAsReference != C4V_Any)
-			CheckOpPar<true>(pCurVal, rightAsReference, C4ScriptOpMap[iOpID].Identifier, " right side");
-		else
-			CheckOpPar<false>(pCurVal, C4ScriptOpMap[iOpID].Type2, C4ScriptOpMap[iOpID].Identifier, " right side");
+		CheckOpPar<leftAsReference != C4V_Any, leftAllowAny>(&pCurVal[-1], leftAsReference != C4V_Any ? leftAsReference : C4ScriptOpMap[iOpID].Type1, C4ScriptOpMap[iOpID].Identifier, " left side");
+		CheckOpPar<rightAsReference != C4V_Any, rightAllowAny>(pCurVal, rightAsReference != C4V_Any ? rightAsReference : C4ScriptOpMap[iOpID].Type2, C4ScriptOpMap[iOpID].Identifier, " right side");
 	}
 
-	template<C4V_Type asReference = C4V_Any>
+	template<C4V_Type asReference = C4V_Any, bool allowAny = true>
 	void CheckOpPar(int iOpID)
 	{
 		if constexpr (asReference != C4V_Any)
@@ -346,6 +346,10 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			bool fJump = false;
 			switch (pCPos->bccType)
 			{
+			case AB_NIL:
+				PushValue(C4VNull);
+				break;
+
 			case AB_INT:
 				PushValue(C4VInt(pCPos->bccX));
 				break;
@@ -401,17 +405,17 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 			// prefix
 			case AB_Inc1: // ++
-				CheckOpPar<C4V_Int>(pCPos->bccX);
+				CheckOpPar<C4V_Int, false>(pCPos->bccX);
 				++pCurVal->GetData().Int;
 				pCurVal->HintType(C4V_Int);
 				break;
 			case AB_Dec1: // --
-				CheckOpPar<C4V_Int>(pCPos->bccX);
+				CheckOpPar<C4V_Int, false>(pCPos->bccX);
 				--pCurVal->GetData().Int;
 				pCurVal->HintType(C4V_Int);
 				break;
 			case AB_BitNot: // ~
-				CheckOpPar(pCPos->bccX);
+				CheckOpPar<C4V_Any, false>(pCPos->bccX);
 				pCurVal->SetInt(~pCurVal->_getInt());
 				break;
 			case AB_Not: // !
@@ -419,13 +423,13 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				pCurVal->SetBool(!pCurVal->_getRaw());
 				break;
 			case AB_Neg: // -
-				CheckOpPar(pCPos->bccX);
+				CheckOpPar<C4V_Any, false>(pCPos->bccX);
 				pCurVal->SetInt(-pCurVal->_getInt());
 				break;
 			// postfix (whithout second statement)
 			case AB_Inc1_Postfix: // ++
 			{
-				CheckOpPar<C4V_Int>(pCPos->bccX);
+				CheckOpPar<C4V_Int, false>(pCPos->bccX);
 				auto &orig = pCurVal->GetRefVal();
 				pCurVal->SetInt(orig._getInt());
 				++orig.GetData().Int;
@@ -434,7 +438,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_Dec1_Postfix: // --
 			{
-				CheckOpPar<C4V_Int>(pCPos->bccX);
+				CheckOpPar<C4V_Int, false>(pCPos->bccX);
 				auto &orig = pCurVal->GetRefVal();
 				pCurVal->SetInt(orig._getInt());
 				--orig.GetData().Int;
@@ -444,7 +448,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			// postfix
 			case AB_Pow: // **
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetInt(Pow(pPar1->_getInt(), pPar2->_getInt()));
 				PopValue();
@@ -452,7 +456,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_Div: // /
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				if (pPar2->_getInt())
 					pPar1->SetInt(pPar1->_getInt() / pPar2->_getInt());
@@ -463,7 +467,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_Mul: // *
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetInt(pPar1->_getInt() * pPar2->_getInt());
 				PopValue();
@@ -471,7 +475,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_Mod: // %
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				if (pPar2->_getInt())
 					pPar1->SetInt(pPar1->_getInt() % pPar2->_getInt());
@@ -482,7 +486,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_Sub: // -
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetInt(pPar1->_getInt() - pPar2->_getInt());
 				PopValue();
@@ -490,7 +494,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_Sum: // +
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetInt(pPar1->_getInt() + pPar2->_getInt());
 				PopValue();
@@ -498,7 +502,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_LeftShift: // <<
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetInt(pPar1->_getInt() << pPar2->_getInt());
 				PopValue();
@@ -506,7 +510,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_RightShift: // >>
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetInt(pPar1->_getInt() >> pPar2->_getInt());
 				PopValue();
@@ -514,7 +518,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_LessThan: // <
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetBool(pPar1->_getInt() < pPar2->_getInt());
 				PopValue();
@@ -522,7 +526,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_LessThanEqual: // <=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetBool(pPar1->_getInt() <= pPar2->_getInt());
 				PopValue();
@@ -530,7 +534,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_GreaterThan: // >
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetBool(pPar1->_getInt() > pPar2->_getInt());
 				PopValue();
@@ -538,7 +542,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_GreaterThanEqual: // >=
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetBool(pPar1->_getInt() >= pPar2->_getInt());
 				PopValue();
@@ -548,7 +552,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			case AB_ConcatIt: // ..=
 			{
 				const auto operatorName = C4ScriptOpMap[pCPos->bccX].Identifier;
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1;
 				C4Value *pPar2 = pCurVal;
 				const auto assignmentOperator = pCPos->bccType == AB_ConcatIt;
@@ -614,7 +618,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			{
 				CheckOpPars(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
-				pPar1->SetBool(pPar1->_getRaw() == pPar2->_getRaw());
+				pPar1->SetBool(pPar1->Equals(*pPar2, C4AulScriptStrict::NONSTRICT));
 				PopValue();
 				break;
 			}
@@ -622,7 +626,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			{
 				CheckOpPars(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
-				pPar1->SetBool(*pPar1 == *pPar2);
+				pPar1->SetBool(pPar1->Equals(*pPar2, pCurCtx->Func->pOrgScript->Strict));
 				PopValue();
 				break;
 			}
@@ -630,7 +634,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			{
 				CheckOpPars(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
-				pPar1->SetBool(pPar1->_getRaw() != pPar2->_getRaw());
+				pPar1->SetBool(!pPar1->Equals(*pPar2, C4AulScriptStrict::NONSTRICT));
 				PopValue();
 				break;
 			}
@@ -638,7 +642,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			{
 				CheckOpPars(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
-				pPar1->SetBool(*pPar1 != *pPar2);
+				pPar1->SetBool(!pPar1->Equals(*pPar2, pCurCtx->Func->pOrgScript->Strict));
 				PopValue();
 				break;
 			}
@@ -662,7 +666,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_BitAnd: // &
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetInt(pPar1->_getInt() & pPar2->_getInt());
 				PopValue();
@@ -670,7 +674,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_BitXOr: // ^
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetInt(pPar1->_getInt() ^ pPar2->_getInt());
 				PopValue();
@@ -678,7 +682,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_BitOr: // |
 			{
-				CheckOpPars(pCPos->bccX);
+				CheckOpPars<C4V_Any, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->SetInt(pPar1->_getInt() | pPar2->_getInt());
 				PopValue();
@@ -702,7 +706,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_PowIt: // **=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int = Pow(pPar1->GetData().Int, pPar2->_getInt());
 				pPar1->HintType(C4V_Int);
@@ -711,7 +715,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_MulIt: // *=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int *= pPar2->_getInt();
 				pCurVal->HintType(C4V_Int);
@@ -720,7 +724,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_DivIt: // /=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int = pPar2->_getInt() ? pPar1->GetData().Int / pPar2->_getInt() : 0;
 				pPar1->HintType(C4V_Int);
@@ -729,7 +733,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_ModIt: // %=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int = pPar2->_getInt() ? pPar1->GetData().Int % pPar2->_getInt() : 0;
 				pPar1->HintType(C4V_Int);
@@ -738,7 +742,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_Inc: // +=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int += pPar2->_getInt();
 				pPar1->HintType(C4V_Int);
@@ -747,7 +751,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_Dec: // -=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int -= pPar2->_getInt();
 				pPar1->HintType(C4V_Int);
@@ -756,7 +760,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_LeftShiftIt: // <<=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int <<= pPar2->_getInt();
 				pPar1->HintType(C4V_Int);
@@ -765,7 +769,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_RightShiftIt: // >>=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int >>= pPar2->_getInt();
 				pPar1->HintType(C4V_Int);
@@ -774,7 +778,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_AndIt: // &=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int &= pPar2->_getInt();
 				pPar1->HintType(C4V_Int);
@@ -783,7 +787,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_OrIt: // |=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int |= pPar2->_getInt();
 				pPar1->HintType(C4V_Int);
@@ -792,7 +796,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 			case AB_XOrIt: // ^=
 			{
-				CheckOpPars<C4V_Int>(pCPos->bccX);
+				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
 				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
 				pPar1->GetData().Int ^= pPar2->_getInt();
 				pPar1->HintType(C4V_Int);
@@ -853,7 +857,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				C4Value &Index = pCurVal[0];
 				if (Container.GetType() == C4V_Any)
 				{
-					throw new C4AulExecError(pCurCtx->Obj, "indexed access [index]: array, map or string expected, but got 0");
+					throw new C4AulExecError(pCurCtx->Obj, "indexed access [index]: array, map or string expected, but got nil");
 				}
 
 				if (Container.ConvertTo(C4V_Map) || Container.ConvertTo(C4V_Array) || Container.ConvertTo(C4V_C4Object))
@@ -899,7 +903,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				C4Value &Map = pCurVal->GetRefVal();
 				if (Map.GetType() == C4V_Any)
 				{
-					throw new C4AulExecError(pCurCtx->Obj, "map access with .: map expected, but got 0!");
+					throw new C4AulExecError(pCurCtx->Obj, "map access with .: map expected, but got nil!");
 				}
 
 				if (!Map.ConvertTo(C4V_Map) && !Map.ConvertTo(C4V_C4Object))
@@ -918,7 +922,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				C4Value &Array = pCurVal[0].GetRefVal();
 				// Typcheck
 				if (!Array.ConvertTo(C4V_Array) || Array.GetType() != C4V_Array)
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("array append accesss: can't access %s as an array!", Array.GetType() == C4V_Any ? "0" : Array.GetTypeName()).getData());
+					throw new C4AulExecError(pCurCtx->Obj, FormatString("array append accesss: can't access %s as an array!", Array.GetType() == C4V_Any ? "nil" : Array.GetTypeName()).getData());
 
 				C4Value index = C4VInt(Array._getArray()->GetSize());
 				Array.GetContainerElement(&index, pCurVal[0], pCurCtx);
@@ -1066,7 +1070,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					if (!pCurVal[-1].ConvertTo(C4V_Array))
 						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: array expected, but got %s!", pCurVal[-1].GetTypeName()).getData());
 					if (!pCurVal[-1]._getArray())
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: array expected, but got 0!").getData());
+						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: array expected, but got nil!").getData());
 				}
 				C4ValueArray *pArray = pCurVal[-1]._getArray();
 				// No more entries?
@@ -1094,7 +1098,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					if (!pCurVal[-2].ConvertTo(C4V_Map))
 						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: map expected, but got %s!", pCurVal[-1].GetTypeName()).getData());
 					if (!pCurVal[-2]._getMap())
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: map expected, but got 0!").getData());
+						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: map expected, but got nil!").getData());
 				}
 				C4ValueHash *map = pCurVal[-2]._getMap();
 				if (!iterator)
@@ -1489,7 +1493,7 @@ C4Value C4AulDefFunc::Exec(C4AulContext *pCallerCtx, C4Value pPars[], bool fPass
 	return C4VNull;
 }
 
-C4Value C4AulScript::DirectExec(C4Object *pObj, const char *szScript, const char *szContext, bool fPassErrors, enum Strict Strict)
+C4Value C4AulScript::DirectExec(C4Object *pObj, const char *szScript, const char *szContext, bool fPassErrors, C4AulScriptStrict Strict)
 {
 #ifdef DEBUGREC_SCRIPT
 	AddDbgRec(RCT_DirectExec, szScript, strlen(szScript) + 1);

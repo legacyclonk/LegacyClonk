@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <C4AulScriptStrict.h>
 #include <C4ValueList.h>
 #include <C4ValueMap.h>
 #include <C4Id.h>
@@ -186,6 +187,7 @@ enum C4AulBCCType
 	AB_CALLFS,           // failsafe direct call
 	AB_CALLNS,           // direct object call: namespace operator
 	AB_STACK,            // push nulls / pop
+	AB_NIL,              // constant: nil
 	AB_INT,              // constant: int
 	AB_BOOL,             // constant: bool
 	AB_STRING,           // constant: string
@@ -485,8 +487,7 @@ public:
 	C4Def *Def; // owning def file
 	C4ValueMapNames LocalNamed;
 	C4ID idDef; // script id (to resolve includes)
-	enum Strict { NONSTRICT = 0, STRICT1 = 1, STRICT2 = 2, STRICT3 = 3, MAXSTRICT = STRICT3 };
-	enum Strict Strict; // new or even newer syntax?
+	C4AulScriptStrict Strict; // new or even newer syntax?
 	bool Temporary; // set for DirectExec-scripts; do not parse those
 
 	C4AulScriptEngine *GetEngine() { return Engine; }
@@ -501,7 +502,7 @@ public:
 	void AddFunc(const char *pIdtf, C4ScriptFnDef *Def); // add def def func to table
 
 public:
-	C4Value DirectExec(C4Object *pObj, const char *szScript, const char *szContext, bool fPassErrors = false, enum Strict Strict = MAXSTRICT); // directly parse uncompiled script (WARG! CYCLES!)
+	C4Value DirectExec(C4Object *pObj, const char *szScript, const char *szContext, bool fPassErrors = false, C4AulScriptStrict Strict = C4AulScriptStrict::MAXSTRICT); // directly parse uncompiled script (WARG! CYCLES!)
 	void ResetProfilerTimes(); // zero all profiler times of owned functions
 	void CollectProfilerTimes(class C4AulProfiler &rProfiler);
 

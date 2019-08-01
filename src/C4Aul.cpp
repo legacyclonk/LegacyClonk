@@ -189,7 +189,7 @@ void C4AulScript::Default()
 
 	// defaults
 	idDef = C4ID_None;
-	Strict = NONSTRICT;
+	Strict = C4AulScriptStrict::NONSTRICT;
 	Preparsing = Resolving = false;
 	Temporary = false;
 	LocalNamed.Reset();
@@ -411,7 +411,7 @@ C4AulScriptEngine::C4AulScriptEngine() :
 	// /me r b engine
 	Engine = this;
 	ScriptName.Ref(C4CFN_System);
-	Strict = MAXSTRICT;
+	Strict = C4AulScriptStrict::MAXSTRICT;
 
 	Global.Reset();
 

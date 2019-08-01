@@ -104,7 +104,14 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			case 'v':
 			{
 				if (!Par[cPar]) throw new C4AulExecError(cthr->Obj, "format placeholder without parameter");
-				StringBuf.Append(static_cast<const StdStrBuf &>(Par[cPar++]->GetDataString()));
+				if (!Par[cPar]->_getRaw() && cthr->Caller && cthr->Caller->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
+				{
+					StringBuf.Append("0");
+				}
+				else
+				{
+					StringBuf.Append(static_cast<const StdStrBuf &>(Par[cPar++]->GetDataString()));
+				}
 				cpFormat += SLen(szField);
 				break;
 			}
@@ -1887,7 +1894,7 @@ static C4Object *FnCreateObject(C4AulContext *cthr,
 	{
 		iXOffset += cthr->Obj->x;
 		iYOffset += cthr->Obj->y;
-		if (!cthr->Caller || !cthr->Caller->Func->Owner->Strict)
+		if (!cthr->Caller || cthr->Caller->Func->Owner->Strict == C4AulScriptStrict::NONSTRICT)
 			iOwner = cthr->Obj->Owner;
 	}
 
@@ -1908,7 +1915,7 @@ static C4Object *FnCreateConstruction(C4AulContext *cthr,
 	{
 		iXOffset += cthr->Obj->x;
 		iYOffset += cthr->Obj->y;
-		if (!cthr->Caller || !cthr->Caller->Func->Owner->Strict)
+		if (!cthr->Caller || cthr->Caller->Func->Owner->Strict == C4AulScriptStrict::NONSTRICT)
 			iOwner = cthr->Obj->Owner;
 	}
 
@@ -3886,6 +3893,7 @@ static C4Value FnIsRef(C4AulContext *cthr, C4Value *Value)
 
 static C4Value FnGetType(C4AulContext *cthr, C4Value *Value)
 {
+	if (!Value->_getBool() && cthr->Caller && cthr->Caller->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3) return C4VInt(C4V_Any);
 	return C4VInt(Value->GetType());
 }
 
@@ -3922,11 +3930,24 @@ static C4Value FnGetIndexOf(C4AulContext *cthr, C4Value *pPars)
 	// find the element by comparing data only - this may result in bogus results if an object ptr array is searched for an int
 	// however, that's rather unlikely and strange scripting style
 	int32_t iSize = pArray->GetSize();
-	long cmp = pPars[0].GetData().Int;
-	for (int32_t i = 0; i < iSize; ++i)
-		if (cmp == pArray->GetItem(i).GetData().Int)
-			// element found
-			return C4VInt(i);
+
+	if (!cthr->Caller || cthr->Caller->Func->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
+	{
+		auto strict = cthr->Caller->Func->pOrgScript->Strict;
+		const auto &val = pPars[0].GetRefVal();
+		for (int32_t i = 0; i < iSize; ++i)
+			if (val.Equals(pArray->GetItem(i), strict))
+				// element found
+				return C4VInt(i);
+	}
+	else
+	{
+		long cmp = pPars[0].GetData().Int;
+		for (int32_t i = 0; i < iSize; ++i)
+			if (cmp == pArray->GetItem(i).GetData().Int)
+				// element found
+				return C4VInt(i);
+	}
 	// element not found
 	return C4VInt(-1);
 }
@@ -4630,7 +4651,7 @@ static C4String *FnGetNeededMatStr(C4AulContext *cthr, C4Object *pObj)
 static C4Value FnEval(C4AulContext *cthr, C4Value *strScript_C4V)
 {
 	// execute script in the same object
-	enum C4AulScript::Strict Strict = C4AulScript::MAXSTRICT;
+	C4AulScriptStrict Strict = C4AulScriptStrict::MAXSTRICT;
 	if (cthr->Caller)
 		Strict = cthr->Caller->Func->pOrgScript->Strict;
 	if (cthr->Obj)
