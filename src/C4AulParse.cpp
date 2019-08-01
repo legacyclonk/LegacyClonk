@@ -2865,8 +2865,8 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 	}
 	case ATT_BLOPEN:
 	{
-		// Maps are not tested in non-strict mode at all
-		if (Fn->pOrgScript->Strict < C4AulScript::STRICT2)
+		// Maps are not tested below strict 3 mode at all
+		if (Fn->pOrgScript->Strict < C4AulScript::STRICT3)
 			throw new C4AulParseError(this, "unexpected '{'");
 		Parse_Map();
 		break;
@@ -2993,7 +2993,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 	}
 	case ATT_DOT:
 	{
-		if (Fn->pOrgScript->Strict < C4AulScript::STRICT2)
+		if (Fn->pOrgScript->Strict < C4AulScript::STRICT3)
 			throw new C4AulParseError(this, "unexpected '.'");
 		Shift();
 		if (TokenType == ATT_IDTF)
