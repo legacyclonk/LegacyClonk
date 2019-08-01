@@ -856,7 +856,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					throw new C4AulExecError(pCurCtx->Obj, "indexed access [index]: array, map or string expected, but got 0");
 				}
 
-				if (Container.ConvertTo(C4V_Map) || Container.ConvertTo(C4V_Array))
+				if (Container.ConvertTo(C4V_Map) || Container.ConvertTo(C4V_Array) || Container.ConvertTo(C4V_C4Object))
 				{
 					Container.GetContainerElement(&Index, pCurVal[-1], pCurCtx, pCPos->bccType == AB_ARRAYA_V);
 					// Remove index
@@ -897,7 +897,12 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			case AB_MAPA_R: case AB_MAPA_V:
 			{
 				C4Value &Map = pCurVal->GetRefVal();
-				if (!Map.ConvertTo(C4V_Map))
+				if (Map.GetType() == C4V_Any)
+				{
+					throw new C4AulExecError(pCurCtx->Obj, "map access with .: map expected, but got 0!");
+				}
+
+				if (!Map.ConvertTo(C4V_Map) && !Map.ConvertTo(C4V_C4Object))
 				{
 					throw new C4AulExecError(pCurCtx->Obj, FormatString("map access with .: map expected, but got \"%s\"!", GetC4VName(Map.GetType())).getData());
 				}

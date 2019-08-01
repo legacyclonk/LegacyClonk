@@ -193,6 +193,18 @@ void C4Value::GetContainerElement(C4Value *index, C4Value &target, C4AulContext 
 	try
 	{
 		C4Value &Ref = GetRefVal();
+		if (Ref.Type == C4V_C4Object)
+		{
+			if (index->ConvertTo(C4V_String) && index->_getStr())
+			{
+				auto var = Ref.Data.Obj->LocalNamed.GetItem(index->_getStr()->Data.getData());
+				if (var) target.SetRef(var);
+				else target.Set0();
+			}
+			else
+				throw new C4AulExecError(pctx->Obj, "indexed access on object: only string keys are allowed");
+			return;
+		}
 		// No array (and no nullpointer because Data==0 => Type==any)
 		if (Ref.Type != C4V_Array && Ref.Type != C4V_Map)
 			throw new C4AulExecError(pctx->Obj, "indexed access: array or map expected");
