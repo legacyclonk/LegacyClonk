@@ -236,8 +236,9 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 		++iLineIndex;
 
 		// then with indentation
-		pFont->BreakMessage(breakPos, iBreakWdt - iIndentWdt, &broken, true);
-		szBroken = broken.getData();
+		StdStrBuf rest;
+		pFont->BreakMessage(breakPos, iBreakWdt - iIndentWdt, &rest, true);
+		szBroken = rest.getData();
 		while (*szBroken)
 		{
 			if (!(breakPos = strchr(szBroken, '\n'))) breakPos = szBroken + SLen(szBroken);
