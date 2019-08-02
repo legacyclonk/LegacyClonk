@@ -2491,7 +2491,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 				Shift();
 				// The preparser just assumes that the syntax is correct: if no '(' follows, it must be a constant
 				if (TokenType == ATT_BOPEN)
-					Parse_Params(FoundFn ? FoundFn->GetParCount() : 10, Idtf, FoundFn);
+					Parse_Params(FoundFn ? FoundFn->GetParCount() : C4AUL_MAX_Par, Idtf, FoundFn);
 			}
 			else if (FoundFn)
 			{
