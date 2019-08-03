@@ -253,7 +253,7 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"
 	C4GUI::ComponentAligner caButtons(caMain.GetFromBottom(caMain.GetHeight()*1/8), 0,0, false);
 	C4GUI::CallbackButton<C4StartupAboutDlg> *btn;
 
-	AddElement(new C4GUI::Label("LegacyClonk is a fan project based on Clonk Rage.   'Clonk' is a registered trademark of Matthes Bender.",
+	AddElement(new C4GUI::Label(FANPROJECTTEXT "   " TRADEMARKTEXT,
 		caButtons.GetFromBottom(rTrademarkFont.GetLineHeight()), ARight, 0xffffffff, &rTrademarkFont));
 
 	int32_t iButtonWidth = caButtons.GetInnerWidth() / 4;

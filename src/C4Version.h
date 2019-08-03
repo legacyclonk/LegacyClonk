@@ -18,6 +18,9 @@
 
 #define C4ENGINENAME "LegacyClonk"
 
+#define FANPROJECTTEXT "LegacyClonk is a fan project based on Clonk Rage."
+#define TRADEMARKTEXT "'Clonk' is a registered trademark of Matthes Bender."
+
 #define C4ENGINECAPTION "LegacyClonk"
 #define C4EDITORCAPTION "Clonk Editor"
 

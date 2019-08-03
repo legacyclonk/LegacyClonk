@@ -285,6 +285,9 @@ bool C4Game::PreInit()
 		GraphicsSystem.MessageBoard.Init(cgo, true);
 	}
 
+	Log(FANPROJECTTEXT);
+	Log(TRADEMARKTEXT);
+
 	// gfx resource file preinit (global files only)
 	Log(LoadResStr("IDS_PRC_GFXRES"));
 	if (!GraphicsResource.Init(true))
