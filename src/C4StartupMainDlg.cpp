@@ -112,12 +112,12 @@ void C4StartupMainDlg::DrawElement(C4FacetEx &cgo)
 	Base::DrawElement(cgo);
 	// draw logo
 	C4FacetEx &fctLogo = Game.GraphicsResource.fctLogo;
-	float fLogoZoom = 1.0f;
-	fctLogo.DrawX(cgo.Surface, rcBounds.Wdt * 20 / 21 - int32_t(fLogoZoom * fctLogo.Wdt), rcBounds.Hgt / 14 - 5, int32_t(fLogoZoom * fctLogo.Wdt), int32_t(fLogoZoom * fctLogo.Hgt));
+	float fLogoZoom = 0.4f;
+	fctLogo.DrawX(cgo.Surface, rcBounds.Wdt * 30 / 31 - int32_t(fLogoZoom * fctLogo.Wdt), rcBounds.Hgt / 21 - 5, int32_t(fLogoZoom * fctLogo.Wdt), int32_t(fLogoZoom * fctLogo.Hgt));
 	// draw version info
 	StdStrBuf sVer;
 	sVer.Format(LoadResStr("IDS_DLG_VERSION"), C4VERSION);
-	lpDDraw->TextOut(sVer.getData(), C4GUI::GetRes()->TextFont, 1.0f, cgo.Surface, rcBounds.Wdt * 39 / 40, rcBounds.Hgt / 12 + int32_t(fLogoZoom * fctLogo.Hgt) - 10, 0xffffffff, ARight, true);
+	lpDDraw->TextOut(sVer.getData(), C4GUI::GetRes()->TextFont, 1.0f, cgo.Surface, rcBounds.Wdt * 39 / 40, rcBounds.Hgt / 18 + int32_t(fLogoZoom * fctLogo.Hgt), 0xffffffff, ARight, true);
 }
 
 C4GUI::ContextMenu *C4StartupMainDlg::OnPlayerSelContext(C4GUI::Element *pBtn, int32_t iX, int32_t iY)
