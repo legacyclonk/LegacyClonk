@@ -65,6 +65,11 @@ C4StartupMainDlg::C4StartupMainDlg() : C4StartupDlg(nullptr) // create w/o title
 	// list of selected players
 	AddElement(pParticipantsLbl = new C4GUI::Label("test", GetClientRect().Wdt * 39 / 40, GetClientRect().Hgt * 9 / 10, ARight, 0xffffffff, &C4GUI::GetRes()->TitleFont, false));
 	pParticipantsLbl->SetToolTip(LoadResStr("IDS_DLGTIP_SELECTEDPLAYERS"));
+
+	CStdFont &trademarkFont = C4GUI::GetRes()->MiniFont;
+	AddElement(new C4GUI::Label(FANPROJECTTEXT "   " TRADEMARKTEXT,
+		GetClientRect().Wdt, GetClientRect().Hgt - trademarkFont.GetLineHeight() / 2, ARight, 0xffffffff, &trademarkFont));
+
 	// player selection shortcut - to be made optional
 	UpdateParticipants();
 	pParticipantsLbl->SetContextHandler(new C4GUI::CBContextHandler<C4StartupMainDlg>(this, &C4StartupMainDlg::OnPlayerSelContext));
