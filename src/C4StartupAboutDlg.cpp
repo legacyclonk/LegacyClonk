@@ -120,7 +120,8 @@ additionalArt =
 	{"Erik Nitzschke", "DukeAufDune"},
 	{"Merten Ehmig", "pluto"},
 	{"Matthias Rottl\xe4nder", "Matthi"},
-	{"Christopher Reimann", "Benzol"}
+	{"Christopher Reimann", "Benzol"},
+	{"Jonathan Veit", "AniProGuy"},
 },
 music =
 {
