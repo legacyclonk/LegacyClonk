@@ -158,7 +158,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 			{
 				rBltData.pTransform->TransformPoint(x, y);
 			}
-			rBltData.vtVtx[i].dwModClr = pClrModMap->GetModAt(x, y);
+			rBltData.vtVtx[i].dwModClr = pClrModMap->GetModAt(static_cast<int>(x), static_cast<int>(y));
 			if (rBltData.vtVtx[i].dwModClr >> 24) dwModMask = 0xff000000;
 			ModulateClr(rBltData.vtVtx[i].dwModClr, dwModClr);
 			if (rBltData.vtVtx[i].dwModClr) fAnyModNotBlack = true;
@@ -456,13 +456,13 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 			// get new dest bounds
 			FLOAT_RECT tTexBlt;
 			// set up blit data as rect
-			fTexBlt.left = std::max<float>(fx - iBlitX, 0.0f);
+			fTexBlt.left = std::max<float>(static_cast<float>(fx - iBlitX), 0.0f);
 			tTexBlt.left = ((fTexBlt.left + iBlitX - fx) + tx);
-			fTexBlt.top  = std::max<float>(fy - iBlitY, 0.0f);
+			fTexBlt.top  = std::max<float>(static_cast<float>(fy - iBlitY), 0.0f);
 			tTexBlt.top  = fTexBlt.top + iBlitY - fy + ty;
-			fTexBlt.right  = std::min<float>(fx + wdt - iBlitX, iTexSize);
+			fTexBlt.right  = static_cast<float>(std::min(fx + wdt - iBlitX, iTexSize));
 			tTexBlt.right  = fTexBlt.right + iBlitX - fx + tx;
-			fTexBlt.bottom = std::min<float>(fy + hgt - iBlitY, iTexSize);
+			fTexBlt.bottom = static_cast<float>(std::min(fy + hgt - iBlitY, iTexSize));
 			tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
 			float ftx[4]; float fty[4]; // blit positions
 			ftx[0] = tTexBlt.left;  fty[0] = tTexBlt.top;

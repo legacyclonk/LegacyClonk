@@ -2993,7 +2993,7 @@ C4NetIOPacket C4NetIOUDP::Packet::GetFragment(nr_t iFNr, bool fBroadcastFlag) co
 {
 	assert(iFNr < FragmentCnt());
 	// create buffer
-	uint16_t iFragmentSize = FragmentSize(iFNr);
+	const auto iFragmentSize = FragmentSize(iFNr);
 	StdBuf Packet; Packet.New(sizeof(DataPacketHdr) + iFragmentSize);
 	// set up header
 	DataPacketHdr *pnHdr = getMBufPtr<DataPacketHdr>(Packet);

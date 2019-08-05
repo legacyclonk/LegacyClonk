@@ -37,7 +37,13 @@ void Label::DrawElement(C4FacetEx &cgo)
 	{
 		int32_t iLinkWdt = 10, iLinkHgt = 10;
 		pFont->GetTextExtent(sText.getData(), iLinkWdt, iLinkHgt, fMarkup);
-		lpDDraw->DrawLineDw(cgo.Surface, rcBounds.x + cgo.TargetX, rcBounds.y + iLinkHgt - 2 + cgo.TargetY, rcBounds.x + iLinkWdt + cgo.TargetX, rcBounds.y + iLinkHgt - 2 + cgo.TargetY, C4GUI_HyperlinkFontClr & 0xffffff);
+		lpDDraw->DrawLineDw(cgo.Surface,
+			static_cast<float>(rcBounds.x + cgo.TargetX),
+			static_cast<float>(rcBounds.y + iLinkHgt - 2 + cgo.TargetY),
+			static_cast<float>(rcBounds.x + iLinkWdt + cgo.TargetX),
+			static_cast<float>(rcBounds.y + iLinkHgt - 2 + cgo.TargetY),
+			C4GUI_HyperlinkFontClr & 0xffffff
+		);
 	}
 }
 

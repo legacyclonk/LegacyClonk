@@ -430,7 +430,7 @@ int FileTime(const char *szFilename)
 {
 	struct stat stStats;
 	if (stat(szFilename, &stStats) != 0) return 0;
-	return stStats.st_mtime;
+	return static_cast<int>(stStats.st_mtime);
 }
 
 bool EraseFile(const char *szFilename)
