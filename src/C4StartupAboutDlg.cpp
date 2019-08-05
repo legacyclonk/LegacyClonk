@@ -27,6 +27,17 @@
 #include <fstream>
 #include <sstream>
 
+namespace
+{
+	constexpr auto COPYING =
+		#include "generated/COPYING.h"
+	;
+
+	constexpr auto TRADEMARK =
+		#include "generated/TRADEMARK.h"
+	;
+}
+
 enum {
 	PERSONLIST_NOCAPTION = 1 << 0,
 	PERSONLIST_NONEWLINE = 1 << 1
@@ -140,7 +151,8 @@ web =
 	{"Martin Schuster", "knight_k"},
 	{"Arne Bochem", "ArneB"},
 	{"Lukas Werling", "Luchs"},
-	{"Florian Graier", "Nachtfalter"}
+	{"Florian Graier", "Nachtfalter"},
+	{"Benedict Etzel", "B_E"}
 },
 libs =
 {
@@ -154,9 +166,6 @@ libs =
 	{"GTK+", SEE_LGPL},
 	{"SDL", SEE_LGPL},
 	{"SDL_mixer", SEE_LGPL}
-},
-contributors = {
-	{"Benedict Etzel", "B_E"}
 };
 
 /*static struct ContributorList : public PersonList
@@ -261,7 +270,7 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"
 	btn->SetToolTip(LoadResStr("IDS_DLGTIP_BACKMAIN"));
 	AddElement(btn = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_CHECKFORUPDATES"), caButtons.GetGridCell(2,4,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnUpdateBtn));
 	btn->SetToolTip(LoadResStr("IDS_DESC_CHECKONLINEFORNEWVERSIONS"));
-	AddElement(btnAdvance = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_CONTRIBUTORS"),
+	AddElement(btnAdvance = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_LICENSES"),
 		caButtons.GetGridCell(3,4,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnAdvanceButton));
 
 	using ElementVector = std::vector<std::pair<C4GUI::TextWindow *, C4GUI::Label *>>;
@@ -283,9 +292,26 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"
 	page1.emplace_back(DrawPersonList(web, "Web", caDevelopersCol3.GetAll()));
 
 	ElementVector page2;
-	C4GUI::ComponentAligner caContributors(caMain.GetAll(), 0,0, true);
-	page2.emplace_back(DrawPersonList(libs, "Libraries", caContributors.GetFromLeft(caContributors.GetWidth() / 2)));
-	page2.emplace_back(DrawPersonList(contributors, "Contributors", caContributors.GetAll()));
+
+	C4GUI::ComponentAligner caLicenses(caMain.GetAll(), 0,0, false);
+	page2.emplace_back(DrawPersonList(libs, "Libraries", caLicenses.GetFromLeft(caLicenses.GetWidth() / 4)));
+
+	C4Rect rect1, rect2;
+	if (Config.Graphics.ResX >= 1280)
+	{
+		rect1 = caLicenses.GetFromLeft(caLicenses.GetWidth() / 2);
+		rect2 = caLicenses.GetAll();
+	}
+	else
+	{
+		C4GUI::ComponentAligner licenseTexts(caLicenses.GetAll(), 0, 0, false);
+		rect1 = licenseTexts.GetFromTop(licenseTexts.GetHeight() / 2);
+		rect2 = licenseTexts.GetAll();
+	}
+
+	page2.emplace_back(CreateTextWindowWithText(rect1, COPYING, "COPYING"));
+	page2.emplace_back(CreateTextWindowWithText(rect2, TRADEMARK, "TRADEMARK"));
+
 	aboutPages.emplace_back(page1);
 	aboutPages.emplace_back(page2);
 	SwitchPage(0);
@@ -293,27 +319,38 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"
 
 C4StartupAboutDlg::~C4StartupAboutDlg() = default;
 
-std::pair<C4GUI::TextWindow*, C4GUI::Label*> C4StartupAboutDlg::DrawPersonList(PersonList& persons, const char* title, C4Rect& rect, uint8_t flags)
+std::pair<C4GUI::TextWindow *, C4GUI::Label *> C4StartupAboutDlg::CreateTextWindowWithText(C4Rect &rect, const std::string &text, const std::string &title)
 {
 	CStdFont &rUseFont = C4GUI::GetRes()->TextFont;
 	CStdFont &captionFont = C4GUI::GetRes()->TitleFont;
 	C4GUI::Label *label = nullptr;
-	if (!(flags & PERSONLIST_NOCAPTION))
+	if (!title.empty())
 	{
 		int height = captionFont.GetLineHeight();
-		label = DrawCaption(rect, title);
+		label = DrawCaption(rect, title.c_str());
 		rect.y += height; rect.Hgt -= height;
 	}
+
 	auto textbox = new CustomMarginTextWindow<0, 8, 0, 8>(rect, 0, 0, 0, 100, 8000, "", true, nullptr, 0, true);
 	AddElement(textbox);
 	textbox->SetDecoration(false, false, nullptr, true);
-	persons.WriteTo(textbox, rUseFont, !(flags & PERSONLIST_NONEWLINE));
+
+	std::stringstream str{text};
+	for (std::string line; std::getline(str, line, '\n'); )
+	{
+		textbox->AddTextLine(line.c_str(), &rUseFont, C4GUI_MessageFontClr, false, true);
+	}
 	textbox->UpdateHeight();
-	std::pair<C4GUI::TextWindow *, C4GUI::Label *> elements = std::make_pair(textbox, label);
-	return elements;
+
+	return {textbox, label};
 }
 
-C4GUI::Label *C4StartupAboutDlg::DrawCaption(C4Rect& rect, const char *text)
+std::pair<C4GUI::TextWindow *, C4GUI::Label *> C4StartupAboutDlg::DrawPersonList(PersonList &persons, const char *title, C4Rect &rect, uint8_t flags)
+{
+	return CreateTextWindowWithText(rect, persons.ToString(!(flags & PERSONLIST_NONEWLINE), true), flags & PERSONLIST_NOCAPTION ? "" : title);
+}
+
+C4GUI::Label *C4StartupAboutDlg::DrawCaption(C4Rect &rect, const char *text)
 {
 	CStdFont &captionFont = C4GUI::GetRes()->CaptionFont;
 	auto caption = new C4GUI::Label(text, rect, ALeft, C4GUI_Caption2FontClr, &captionFont);

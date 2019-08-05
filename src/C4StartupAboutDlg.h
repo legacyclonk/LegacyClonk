@@ -43,8 +43,9 @@ private:
 	C4GUI::CallbackButton<C4StartupAboutDlg> *btnAdvance;
 	std::vector<std::vector<std::pair<C4GUI::TextWindow *, C4GUI::Label *>>> aboutPages;
 
-	std::pair<C4GUI::TextWindow *, C4GUI::Label *> DrawPersonList(struct PersonList&, const char *title, C4Rect& rect, uint8_t flags = 0);
-	C4GUI::Label *DrawCaption(C4Rect&, const char *);
+	std::pair<C4GUI::TextWindow *, C4GUI::Label *> CreateTextWindowWithText(C4Rect &rect, const std::string &text, const std::string &title = "");
+	std::pair<C4GUI::TextWindow *, C4GUI::Label *> DrawPersonList(struct PersonList &, const char *title, C4Rect &rect, uint8_t flags = 0);
+	C4GUI::Label *DrawCaption(C4Rect &, const char *);
 	void SwitchPage(uint32_t number);
 public:
 

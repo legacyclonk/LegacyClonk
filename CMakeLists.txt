@@ -104,9 +104,24 @@ function(append_filelist TARGET_LIST LIST_FILE)
 	set(${TARGET_LIST} "${${TARGET_LIST}}" PARENT_SCOPE)
 endfunction()
 
+# Makes a text file includable
+# https://stackoverflow.com/a/47801116
+
+function(make_includable input_file output_file)
+	file(READ ${input_file} content)
+	set(delim "for_c++_include")
+	set(content "R\"${delim}(\n${content})${delim}\"")
+	file(WRITE ${output_file} "${content}")
+endfunction()
+
 # Add engine target
 
 append_filelist(CLONK_SOURCES Engine.txt)
+
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/generated")
+make_includable(COPYING "${CMAKE_CURRENT_BINARY_DIR}/generated/COPYING.h")
+make_includable(TRADEMARK "${CMAKE_CURRENT_BINARY_DIR}/generated/TRADEMARK.h")
+
 
 if (WIN32)
 	append_filelist(CLONK_SOURCES EngineWin32.txt)
