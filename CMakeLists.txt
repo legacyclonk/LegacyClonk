@@ -14,7 +14,7 @@
 cmake_minimum_required(VERSION 3.8)
 
 if (WIN32)
-	set(CMAKE_SYSTEM_VERSION 6.1 CACHE TYPE INTERNAL FORCE) # Windows 7
+	set(CMAKE_SYSTEM_VERSION 6.1) # Windows 7
 endif ()
 
 project("LegacyClonk")
