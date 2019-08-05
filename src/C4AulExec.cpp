@@ -820,7 +820,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 						index += str.getLength();
 					}
 
-					if (index >= str.getLength() || index < 0)
+					if (index < 0 || static_cast<std::size_t>(index) >= str.getLength())
 					{
 						pCurVal[-1].Set0();
 					}

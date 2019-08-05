@@ -932,7 +932,7 @@ StdStrBuf GetDbgRecPktData(C4RecordChunkType eType, const StdBuf &RawData)
 	case RCT_AulFunc: r.Ref(reinterpret_cast<const char *>(RawData.getData()), RawData.getSize() - 1);
 		break;
 	default:
-		for (int i = 0; i < RawData.getSize(); ++i)
+		for (std::size_t i = 0; i < RawData.getSize(); ++i)
 			r.AppendFormat("%02x ", (uint32_t)((uint8_t *)RawData.getData())[i]);
 		break;
 	}

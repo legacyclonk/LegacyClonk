@@ -634,7 +634,7 @@ struct StdSTLMapAdapt
 		if (pComp->isCompiler())
 		{
 			map.clear();
-			for (size_t i = 0; i < count; ++i)
+			for (std::int32_t i = 0; i < count; ++i)
 			{
 				pComp->Separator(StdCompiler::SEP_SEP2);
 				typename Map::key_type key;
