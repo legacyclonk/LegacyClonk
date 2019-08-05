@@ -97,6 +97,13 @@ if (WIN32)
 	set(USE_MSCAPI ON)
 endif ()
 
+# Disable some Visual C++ warnings
+if (MSVC)
+	add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS)
+	# "multiple copy constructors specified"
+	add_compile_options(/wd4521)
+endif ()
+
 # Adds the lines of file LIST_FILE to variable TARGET_LIST
 function(append_filelist TARGET_LIST LIST_FILE)
 	file(STRINGS "cmake/filelists/${LIST_FILE}" FILE_CONTENTS)
@@ -326,11 +333,6 @@ endif ()
 # Get non-standard <cmath> constants (M_PI etc.)
 if (MSVC)
 	set(_USE_MATH_DEFINES ON)
-endif ()
-
-# Disable some Visual C++ warnings
-if (MSVC)
-	add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS)
 endif ()
 
 # Create config.h and make sure it will be used and found
