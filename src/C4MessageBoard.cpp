@@ -367,16 +367,16 @@ void C4MessageBoard::LogNotify()
 
 C4Player *C4MessageBoard::GetMessagePlayer(const char *szMessage)
 {
+	std::string message{szMessage};
 	// Scan message text for heading player name
 	if (SEqual2(szMessage, "* "))
 	{
-		SCopyUntil(szMessage + 2, OSTR, ' ');
-		return Game.Players.GetByName(OSTR);
+		message = message.substr(2);
+		return Game.Players.GetByName(message.substr(0, message.find(' ') - 1).c_str());
 	}
 	if (SCharCount(':', szMessage))
 	{
-		SCopyUntil(szMessage, OSTR, ':');
-		return Game.Players.GetByName(OSTR);
+		return Game.Players.GetByName(message.substr(0, message.find(':') - 1).c_str());
 	}
 	return nullptr;
 }

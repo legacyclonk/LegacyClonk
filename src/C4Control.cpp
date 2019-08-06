@@ -134,8 +134,7 @@ void C4ControlSet::Execute() const
 		if (Game.Control.isCtrlHost() && !Game.Control.isReplay() && Game.Control.isNetwork())
 			Config.Network.ControlRate = Game.Control.ControlRate;
 		// always show msg
-		sprintf(OSTR, LoadResStr("IDS_NET_CONTROLRATE"), Game.Control.ControlRate, Game.FrameCounter);
-		Game.GraphicsSystem.FlashMessage(OSTR);
+		Game.GraphicsSystem.FlashMessage(FormatString(LoadResStr("IDS_NET_CONTROLRATE"), Game.Control.ControlRate, Game.FrameCounter).getData());
 		break;
 
 	case C4CVT_DisableDebug: // force debug mode disabled
@@ -1039,28 +1038,30 @@ void C4ControlMessage::Execute() const
 	{
 	case C4CMT_Normal:
 	case C4CMT_Me:
+	{
+		StdStrBuf log;
 		// log it
 		if (pPlr)
 		{
 			if (pPlr->AtClient != iByClient) break;
-			sprintf(OSTR, (eType == C4CMT_Normal ? (Config.General.UseWhiteIngameChat ? "<c %x><<i></i>%s></c> %s" : "<c %x><<i></i>%s> %s") : (Config.General.UseWhiteIngameChat ? "<c %x> * %s</c> %s" : "<c %x> * %s %s")),
+			log = FormatString((eType == C4CMT_Normal ? (Config.General.UseWhiteIngameChat ? "<c %x><<i></i>%s></c> %s" : "<c %x><<i></i>%s> %s") : (Config.General.UseWhiteIngameChat ? "<c %x> * %s</c> %s" : "<c %x> * %s %s")),
 				pPlr->ColorDw, pPlr->GetName(), szMessage);
 		}
 		else
 		{
 			const auto white = pLobby && Config.General.UseWhiteLobbyChat;
 			C4Client *pClient = Game.Clients.getClientByID(iByClient);
-			sprintf(OSTR, (eType == C4CMT_Normal ? (white ? "<%s> <c ffffff>%s" : "<%s> %s") : (white ? " * %s <c ffffff>%s" : " * %s %s")),
+			log = FormatString((eType == C4CMT_Normal ? (white ? "<%s> <c ffffff>%s" : "<%s> %s") : (white ? " * %s <c ffffff>%s" : " * %s %s")),
 				pClient ? pClient->getNick() : "???", szMessage);
 		}
 		// 2 lobby
 		if (pLobby)
-			pLobby->OnMessage(Game.Clients.getClientByID(iByClient), OSTR);
+			pLobby->OnMessage(Game.Clients.getClientByID(iByClient), log.getData());
 		// or 2 log
 		else
-			Log(OSTR);
+			Log(log.getData());
 		break;
-
+	}
 	case C4CMT_Say:
 	{
 		// show as game message above player view object

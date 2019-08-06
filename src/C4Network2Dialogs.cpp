@@ -171,8 +171,7 @@ void C4Network2ClientListBox::ClientListItem::Update()
 	if (pPing)
 	{
 		int iWait = Game.Control.Network.ClientPerfStat(iClientID);
-		sprintf(OSTR, "%d ms", iWait);
-		pPing->SetText(OSTR);
+		pPing->SetText((std::to_string(iWait) + " ms").c_str());
 		pPing->SetColor(RGB(
 			BoundBy(255 - Abs(iWait) * 5, 0, 255),
 			BoundBy(255 - iWait * 5, 0, 255),
@@ -323,7 +322,7 @@ void C4Network2ClientListBox::ConnectionListItem::Update()
 	}
 	// update connection ping
 	int iPing = pConn->getLag();
-	pPing->SetText(FormatString("%d ms", iPing).getData());
+	pPing->SetText((std::to_string(iPing) + " ms").c_str());
 	// update description
 	// get connection usage
 	const char *szConnType;

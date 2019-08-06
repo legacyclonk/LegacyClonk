@@ -295,6 +295,7 @@ bool C4MessageInput::ProcessInput(const char *szText)
 	C4ControlMessageType eMsgType;
 	const char *szMsg = nullptr;
 	int32_t iToPlayer = -1;
+	std::string tmpString;
 
 	// Starts with '^', "team:" or "/team ": Team message
 	if (szText[0] == '^' || SEqual2NoCase(szText, "team:") || SEqual2NoCase(szText, "/team "))
@@ -351,10 +352,9 @@ bool C4MessageInput::ProcessInput(const char *szText)
 	{
 		eMsgType = C4CMT_Say;
 		// Append '"', if neccessary
-		SCopy(szText, OSTR, 400);
-		char *pEnd = OSTR + SLen(OSTR) - 1;
-		if (*pEnd != '"') { *++pEnd = '"'; *++pEnd = 0; }
-		szMsg = OSTR;
+		tmpString = szText;
+		if (tmpString.back() != '"') tmpString.push_back('"');
+		szMsg = tmpString.c_str();
 	}
 	// Starts with '/': Command
 	else if (szText[0] == '/')

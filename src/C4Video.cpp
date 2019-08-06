@@ -189,9 +189,7 @@ void C4Video::Draw(C4FacetEx &cgo)
 		X + cgo.X + Width - 1, Y + cgo.Y + Height - 1,
 		Recording ? CRed : CWhite);
 	// Draw status
-	if (Recording) sprintf(OSTR, "%dx%d Frame %d", Width, Height, AviFrame);
-	else sprintf(OSTR, "%dx%d", Width, Height);
-	Application.DDraw->TextOut(OSTR, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + X + 4, cgo.Y + Y + 3, Recording ? 0xfaFF0000 : 0xfaFFFFFF);
+	Application.DDraw->TextOut((Recording ? FormatString("%dx%d Frame %d", Width, Height, AviFrame) : FormatString("%dx%d", Width, Height)).getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + X + 4, cgo.Y + Y + 3, Recording ? 0xfaFF0000 : 0xfaFFFFFF);
 }
 
 bool C4Video::AdjustPosition()

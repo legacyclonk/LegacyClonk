@@ -684,24 +684,24 @@ bool C4Console::UpdateStatusBars()
 	if (Game.FrameCounter != FrameCounter)
 	{
 		FrameCounter = Game.FrameCounter;
-		sprintf(OSTR, "Frame: %i", FrameCounter);
+		const auto &text = FormatString("Frame: %i", FrameCounter);
 #ifdef _WIN32
-		SetDlgItemText(hWindow, IDC_STATICFRAME, OSTR);
+		SetDlgItemText(hWindow, IDC_STATICFRAME, text.getData());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICFRAME));
 #elif WITH_DEVELOPER_MODE
-		gtk_label_set_label(GTK_LABEL(lblFrame), OSTR);
+		gtk_label_set_label(GTK_LABEL(lblFrame), text.getData());
 #endif // WITH_DEVELOPER_MODE / _WIN32
 	}
 	// Script counter
 	if (Game.Script.Counter != ScriptCounter)
 	{
 		ScriptCounter = Game.Script.Counter;
-		sprintf(OSTR, "Script: %i", ScriptCounter);
+		const auto &text = FormatString("Script: %i", ScriptCounter);
 #ifdef _WIN32
-		SetDlgItemText(hWindow, IDC_STATICSCRIPT, OSTR);
+		SetDlgItemText(hWindow, IDC_STATICSCRIPT, text.getData());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICSCRIPT));
 #elif WITH_DEVELOPER_MODE
-		gtk_label_set_label(GTK_LABEL(lblScript), OSTR);
+		gtk_label_set_label(GTK_LABEL(lblScript), text.getData());
 #endif // WITH_DEVELOPER_MODE / _WIN32
 	}
 	// Time & FPS
@@ -709,12 +709,12 @@ bool C4Console::UpdateStatusBars()
 	{
 		Time = Game.Time;
 		FPS = Game.FPS;
-		sprintf(OSTR, "%02d:%02d:%02d (%i FPS)", Time / 3600, (Time % 3600) / 60, Time % 60, FPS);
+		const auto &text = FormatString("%02d:%02d:%02d (%i FPS)", Time / 3600, (Time % 3600) / 60, Time % 60, FPS);
 #ifdef _WIN32
-		SetDlgItemText(hWindow, IDC_STATICTIME, OSTR);
+		SetDlgItemText(hWindow, IDC_STATICTIME, text.getData());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICTIME));
 #elif WITH_DEVELOPER_MODE
-		gtk_label_set_label(GTK_LABEL(lblTime), OSTR);
+		gtk_label_set_label(GTK_LABEL(lblTime), text.getData());
 #endif // WITH_DEVELOPER_MODE
 	}
 	return true;
@@ -754,9 +754,7 @@ bool C4Console::SaveGame(bool fSaveGame)
 	// Can't save to child groups
 	if (Game.ScenarioFile.GetMother())
 	{
-		sprintf(OSTR, LoadResStr("IDS_CNS_NOCHILDSAVE"),
-			GetFilename(Game.ScenarioFile.GetName()));
-		Message(OSTR);
+		Message(FormatString(LoadResStr("IDS_CNS_NOCHILDSAVE"), GetFilename(Game.ScenarioFile.GetName())).getData());
 		return false;
 	}
 
@@ -800,9 +798,7 @@ bool C4Console::SaveGame(bool fSaveGame)
 	if (Game.fScriptCreatedObjects)
 		if (!fSaveGame)
 		{
-			SCopy(LoadResStr("IDS_CNS_SCRIPTCREATEDOBJECTS"), OSTR, sizeof(OSTR));
-			SAppend(LoadResStr("IDS_CNS_WARNDOUBLE"), OSTR, sizeof(OSTR));
-			Message(OSTR);
+			Message((std::string{LoadResStr("IDS_CNS_SCRIPTCREATEDOBJECTS")} + LoadResStr("IDS_CNS_WARNDOUBLE")).c_str());
 			Game.fScriptCreatedObjects = false;
 		}
 
@@ -849,8 +845,8 @@ bool C4Console::FileSaveAs(bool fSaveGame)
 	// Failure message
 	if (!fOkay)
 	{
-		sprintf(OSTR, LoadResStr("IDS_CNS_SAVEASERROR"), Game.ScenarioFilename);
-		Message(OSTR); return false;
+		Message(FormatString(LoadResStr("IDS_CNS_SAVEASERROR"), Game.ScenarioFilename).getData());
+		return false;
 	}
 	// Save game
 	return SaveGame(fSaveGame);
@@ -1093,8 +1089,7 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 
 			if ((dwFlags & OFN_FILEMUSTEXIST) && !g_file_test(filename, G_FILE_TEST_IS_REGULAR))
 			{
-				sprintf(OSTR, "File \"%s\" does not exist", filename);
-				Message(OSTR, false);
+				Message(FormatString("File \"%s\" does not exist", filename).getData(), false);
 				error = true;
 			}
 
@@ -1379,9 +1374,7 @@ void C4Console::UpdateInputCtrl()
 		if (pFn->GetPublic())
 		{
 #ifdef _WIN32
-			SCopy(pFn->Name, OSTR);
-			SAppend("()", OSTR);
-			SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)OSTR);
+			SendMessage(hCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>((std::string{pFn->Name} + "()").c_str()));
 #elif WITH_DEVELOPER_MODE
 			gtk_list_store_append(store, &iter);
 			gtk_list_store_set(store, &iter, 0, pFn->Name, -1);
@@ -1395,9 +1388,7 @@ void C4Console::UpdateInputCtrl()
 	for (cnt = 0; pRef = Game.Script.GetSFunc(cnt); cnt++)
 	{
 #ifdef _WIN32
-		SCopy(pRef->Name, OSTR);
-		SAppend("()", OSTR);
-		SendMessage(hCombo, CB_INSERTSTRING, 0, (LPARAM)OSTR);
+		SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>((std::string{pRef->Name} + "()").c_str()));
 #elif WITH_DEVELOPER_MODE
 		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter, 0, pRef->Name, -1);
@@ -1561,23 +1552,23 @@ void C4Console::UpdateNetMenu()
 #endif
 
 	// Host
-	sprintf(OSTR, LoadResStr("IDS_MNU_NETHOST"), Game.Clients.getLocalName(), Game.Clients.getLocalID());
+	const auto &text = FormatString(LoadResStr("IDS_MNU_NETHOST"), Game.Clients.getLocalName(), Game.Clients.getLocalID());
 #ifdef _WIN32
-	AddMenuItem(hMenu, IDM_NET_CLIENT1 + Game.Clients.getLocalID(), OSTR);
+	AddMenuItem(hMenu, IDM_NET_CLIENT1 + Game.Clients.getLocalID(), text.getData());
 #elif WITH_DEVELOPER_MODE
-	GtkWidget *item = gtk_menu_item_new_with_label(OSTR);
+	GtkWidget *item = gtk_menu_item_new_with_label(text.getData());
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuNet), item);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(OnNetClient), GINT_TO_POINTER(Game.Clients.getLocalID()));
 #endif
 	// Clients
 	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(nullptr); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
 	{
-		sprintf(OSTR, LoadResStr(pClient->isActivated() ? "IDS_MNU_NETCLIENT" : "IDS_MNU_NETCLIENTDE"),
+		const auto &text = FormatString(LoadResStr(pClient->isActivated() ? "IDS_MNU_NETCLIENT" : "IDS_MNU_NETCLIENTDE"),
 			pClient->getName(), pClient->getID());
 #ifdef _WIN32
-		AddMenuItem(hMenu, IDM_NET_CLIENT1 + pClient->getID(), OSTR);
+		AddMenuItem(hMenu, IDM_NET_CLIENT1 + pClient->getID(), text.getData());
 #elif WITH_DEVELOPER_MODE
-		item = gtk_menu_item_new_with_label(OSTR);
+		item = gtk_menu_item_new_with_label(text.getData());
 		gtk_menu_shell_append(GTK_MENU_SHELL(menuNet), item);
 		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(OnNetClient), GINT_TO_POINTER(pClient->getID()));
 #endif

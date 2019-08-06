@@ -55,8 +55,6 @@
 #include <iterator>
 #include <sstream>
 
-char OSTR[500];
-
 C4Game::C4Game()
 	: Input(Control.Input), KeyboardInput(C4KeyboardInput_Init()), StartupLogPos(0), QuitLogPos(0), fQuitWithError(false), fPreinited(false),
 	Teams(Parameters.Teams),
@@ -1578,8 +1576,7 @@ bool C4Game::DropFile(const char *szFilename, int32_t iX, int32_t iY)
 				return DropDef(c_id, iX, iY);
 			}
 		// Failure
-		sprintf(OSTR, LoadResStr("IDS_CNS_DROPNODEF"), GetFilename(szFilename));
-		Console.Out(OSTR);
+		Console.Out(FormatString(LoadResStr("IDS_CNS_DROPNODEF"), GetFilename(szFilename)).getData());
 		return false;
 	}
 	return false;
@@ -1596,8 +1593,7 @@ bool C4Game::DropDef(C4ID id, int32_t iX, int32_t iY)
 	else
 	{
 		// Failure
-		sprintf(OSTR, LoadResStr("IDS_CNS_DROPNODEF"), C4IdText(id));
-		Console.Out(OSTR);
+		Console.Out(FormatString(LoadResStr("IDS_CNS_DROPNODEF"), C4IdText(id)).getData());
 	}
 	return false;
 }
@@ -1778,15 +1774,15 @@ void C4Game::DrawCursors(C4FacetEx &cgo, int32_t iPlayer)
 						fctCursor.Draw(cgo.Surface, cgo.X + cox, cgo.Y + coy, cphase);
 						if (cursor->Info)
 						{
+							std::string text{cursor->GetName()};
 							int32_t texthgt = Game.GraphicsResource.FontRegular.iLineHgt;
 							if (cursor->Info->Rank > 0)
 							{
-								sprintf(OSTR, "%s|%s", cursor->Info->sRankName.getData(), cursor->GetName());
+								text = FormatString("%s|%s", cursor->Info->sRankName.getData(), cursor->GetName()).getData();
 								texthgt += texthgt;
 							}
-							else SCopy(cursor->GetName(), OSTR);
 
-							Application.DDraw->TextOut(OSTR, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
+							Application.DDraw->TextOut(text.c_str(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
 								cgo.X + cox + fctCursor.Wdt / 2,
 								cgo.Y + coy - 2 - texthgt,
 								0xffff0000, ACenter);
@@ -2612,8 +2608,8 @@ bool C4Game::InitPlayers()
 		if (iPlrCnt == 0)
 			if (Application.isFullScreen && !Control.NoInput())
 			{
-				sprintf(OSTR, LoadResStr("IDS_CNS_NOFULLSCREENPLRS"));
-				LogFatal(OSTR); return false;
+				LogFatal(LoadResStr("IDS_CNS_NOFULLSCREENPLRS"));
+				return false;
 			}
 #endif
 		// Too many players
@@ -4126,8 +4122,7 @@ bool C4Game::SpeedUp()
 	// Use /fast to set to even higher speeds.
 	FrameSkip = BoundBy<int32_t>(FrameSkip + 1, 1, 50);
 	FullSpeed = true;
-	sprintf(OSTR, LoadResStr("IDS_MSG_SPEED"), FrameSkip);
-	GraphicsSystem.FlashMessage(OSTR);
+	GraphicsSystem.FlashMessage(FormatString(LoadResStr("IDS_MSG_SPEED"), FrameSkip).getData());
 	return true;
 }
 
@@ -4136,8 +4131,7 @@ bool C4Game::SlowDown()
 	FrameSkip = BoundBy<int32_t>(FrameSkip - 1, 1, 50);
 	if (FrameSkip == 1)
 		FullSpeed = false;
-	sprintf(OSTR, LoadResStr("IDS_MSG_SPEED"), FrameSkip);
-	GraphicsSystem.FlashMessage(OSTR);
+	GraphicsSystem.FlashMessage(FormatString(LoadResStr("IDS_MSG_SPEED"), FrameSkip).getData());
 	return true;
 }
 

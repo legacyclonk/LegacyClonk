@@ -326,9 +326,7 @@ void ProgressBar::DrawElement(C4FacetEx &cgo)
 	// draw progress
 	GetRes()->fctProgressBar.DrawX(cgo.Surface, cgo.TargetX + rcBounds.x + 2, cgo.TargetY + rcBounds.y + 2, iProgressWdt, rcBounds.Hgt - 2);
 	// print out progress text
-	char szPrg[32 + 1];
-	sprintf(szPrg, "%i%%", 100 * iProgress / iMax);
-	lpDDraw->TextOut(szPrg, rFont, 1.0f, cgo.Surface, cgo.TargetX + rcBounds.GetMiddleX(), rcBounds.y + cgo.TargetY + (rcBounds.Hgt - rFont.GetLineHeight()) / 2 - 1, C4GUI_ProgressBarFontClr, ACenter);
+	lpDDraw->TextOut((std::to_string(100 * iProgress / iMax) + "%").c_str(), rFont, 1.0f, cgo.Surface, cgo.TargetX + rcBounds.GetMiddleX(), rcBounds.y + cgo.TargetY + (rcBounds.Hgt - rFont.GetLineHeight()) / 2 - 1, C4GUI_ProgressBarFontClr, ACenter);
 }
 
 // Picture

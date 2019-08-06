@@ -161,8 +161,7 @@ void C4LoaderScreen::Draw(C4Facet &cgo, int iProgress, C4LogBuffer *pLog, int Pr
 	{
 		Application.DDraw->DrawBoxDw(cgo.Surface, iHIndent + 1, cgo.Hgt - iVIndent - iLogBoxHgt - iVMargin - iProgressBarHgt + 1, iHIndent + 1 + iProgressBarWdt * iProgress / 100, cgo.Hgt - iVIndent - iLogBoxHgt - iVMargin - 1, 0x4fff0000);
 	}
-	sprintf(OSTR, "%i%%", iProgress);
-	Application.DDraw->StringOut(OSTR, rProgressBarFont, 1.0f, cgo.Surface, cgo.Wdt / 2, cgo.Hgt - iVIndent - iLogBoxHgt - iVMargin - rProgressBarFont.iLineHgt / 2 - iProgressBarHgt / 2, 0xffffffff, ACenter, true);
+	Application.DDraw->StringOut((std::to_string(iProgress) + '%').c_str(), rProgressBarFont, 1.0f, cgo.Surface, cgo.Wdt / 2, cgo.Hgt - iVIndent - iLogBoxHgt - iVMargin - rProgressBarFont.iLineHgt / 2 - iProgressBarHgt / 2, 0xffffffff, ACenter, true);
 	// draw log box
 	if (pLog)
 	{
@@ -184,7 +183,7 @@ void C4LoaderScreen::Draw(C4Facet &cgo, int iProgress, C4LogBuffer *pLog, int Pr
 		if (Process)
 		{
 			iY -= h; iX += w;
-			lpDDraw->TextOut(FormatString("%i%%", (int)Process).getData(), rLogBoxFont, fLogBoxFontZoom, cgo.Surface, iX, iY);
+			lpDDraw->TextOut((std::to_string(Process) + "%").c_str(), rLogBoxFont, fLogBoxFontZoom, cgo.Surface, iX, iY);
 		}
 	}
 }

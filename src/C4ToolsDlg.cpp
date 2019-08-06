@@ -194,8 +194,10 @@ BOOL CALLBACK ToolsDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 			{
 			case CBN_SELCHANGE:
 				int32_t cursel = SendDlgItemMessage(hDlg, IDC_COMBOMATERIAL, CB_GETCURSEL, 0, 0);
-				SendDlgItemMessage(hDlg, IDC_COMBOMATERIAL, CB_GETLBTEXT, cursel, (LPARAM)OSTR);
-				Console.ToolsDlg.SetMaterial(OSTR);
+				std::string material;
+				material.resize(SendDlgItemMessage(hDlg, IDC_COMBOMATERIAL, CB_GETLBTEXTLEN, cursel, 0));
+				SendDlgItemMessage(hDlg, IDC_COMBOMATERIAL, CB_GETLBTEXT, cursel, reinterpret_cast<LPARAM>(material.data()));
+				Console.ToolsDlg.SetMaterial(material.c_str());
 				break;
 			}
 			return TRUE;
@@ -205,8 +207,10 @@ BOOL CALLBACK ToolsDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 			{
 			case CBN_SELCHANGE:
 				int32_t cursel = SendDlgItemMessage(hDlg, IDC_COMBOTEXTURE, CB_GETCURSEL, 0, 0);
-				SendDlgItemMessage(hDlg, IDC_COMBOTEXTURE, CB_GETLBTEXT, cursel, (LPARAM)OSTR);
-				Console.ToolsDlg.SetTexture(OSTR);
+				std::string texture;
+				texture.resize(SendDlgItemMessage(hDlg, IDC_COMBOTEXTURE, CB_GETLBTEXTLEN, cursel, 0));
+				SendDlgItemMessage(hDlg, IDC_COMBOTEXTURE, CB_GETLBTEXT, cursel, reinterpret_cast<LPARAM>(texture.data()));
+				Console.ToolsDlg.SetTexture(texture.c_str());
 				break;
 			}
 			return TRUE;

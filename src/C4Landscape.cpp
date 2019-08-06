@@ -2073,16 +2073,14 @@ bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj)
 	if (!(ndef = C4Id2Def(id)))
 	{
 		GetC4IdText(id, idostr);
-		sprintf(OSTR, LoadResStr("IDS_OBJ_UNDEF"), idostr);
-		if (pByObj) GameMsgObject(OSTR, pByObj, FRed);
+		if (pByObj) GameMsgObject(FormatString(LoadResStr("IDS_OBJ_UNDEF"), idostr).getData(), pByObj, FRed);
 		return false;
 	}
 
 	// Constructable?
 	if (!ndef->Constructable)
 	{
-		sprintf(OSTR, LoadResStr("IDS_OBJ_NOCON"), ndef->GetName());
-		if (pByObj) GameMsgObject(OSTR, pByObj, FRed);
+		if (pByObj) GameMsgObject(FormatString(LoadResStr("IDS_OBJ_NOCON"), ndef->GetName()).getData(), pByObj, FRed);
 		return false;
 	}
 
@@ -2105,8 +2103,7 @@ bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj)
 	C4Object *other;
 	if (other = Game.OverlapObject(rtx, rty, wdt, hgt, ndef->Category))
 	{
-		sprintf(OSTR, LoadResStr("IDS_OBJ_NOOTHER"), other->GetName());
-		if (pByObj) GameMsgObject(OSTR, pByObj, FRed);
+		if (pByObj) GameMsgObject(FormatString(LoadResStr("IDS_OBJ_NOOTHER"), other->GetName()).getData(), pByObj, FRed);
 		return false;
 	}
 

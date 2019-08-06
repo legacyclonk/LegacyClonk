@@ -1229,12 +1229,13 @@ void C4Network2::HandleConn(const C4PacketConn &Pkt, C4Network2IOConnection *pCo
 	if (!pClient && Pkt.getCCore().getID() != C4ClientIDUnknown)
 		pClient = Clients.GetClient(Pkt.getCCore());
 
+	StdStrBuf tmp;
 	// check engine version
 	bool fWrongPassword = false;
 	if (Pkt.getVer() != C4XVERBUILD)
 	{
-		sprintf(OSTR, "wrong engine (%d, I have %d)", Pkt.getVer(), C4XVERBUILD);
-		szReply = OSTR;
+		tmp = FormatString("wrong engine (%d, I have %d)", Pkt.getVer(), C4XVERBUILD);
+		szReply = tmp.getData();
 		fOK = false;
 	}
 	else

@@ -163,22 +163,25 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 
 bool C4EditCursor::UpdateStatusBar()
 {
-	*OSTR = '\0';
+	StdStrBuf text;
 	switch (Mode)
 	{
 	case C4CNS_ModePlay:
-		if (Game.MouseControl.GetCaption()) SCopyUntil(Game.MouseControl.GetCaption(), OSTR, '|');
+	{
+		const std::string caption{Game.MouseControl.GetCaption()};
+		if (Game.MouseControl.GetCaption()) text = caption.substr(0, caption.find('|') - 1).c_str();
 		break;
+	}
 
 	case C4CNS_ModeEdit:
-		sprintf(OSTR, "%i/%i (%s)", X, Y, Target ? (Target->GetName()) : LoadResStr("IDS_CNS_NOTHING"));
+		text = FormatString("%i/%i (%s)", X, Y, (Target ? (Target->GetName()) : LoadResStr("IDS_CNS_NOTHING")));
 		break;
 
 	case C4CNS_ModeDraw:
-		sprintf(OSTR, "%i/%i (%s)", X, Y, MatValid(GBackMat(X, Y)) ? Game.Material.Map[GBackMat(X, Y)].Name : LoadResStr("IDS_CNS_NOTHING"));
+		text = FormatString("%i/%i (%s)", X, Y, (MatValid(GBackMat(X, Y)) ? Game.Material.Map[GBackMat(X, Y)].Name : LoadResStr("IDS_CNS_NOTHING")));
 		break;
 	}
-	return Console.UpdateCursorBar(OSTR);
+	return Console.UpdateCursorBar(text.getData());
 }
 
 void C4EditCursor::OnSelectionChanged()
