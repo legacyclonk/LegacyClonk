@@ -376,6 +376,7 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 		Application.pGamePadControl->FeedEvent(e);
 		break;
 	case SDL_VIDEORESIZE:
+		Application.pWindow->UpdateSize(e.resize.w, e.resize.h);
 		Application.SetResolution(e.resize.w, e.resize.h);
 		break;
 	}

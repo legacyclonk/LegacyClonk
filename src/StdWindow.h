@@ -308,9 +308,15 @@ protected:
 
 private:
 	int width, height;
+	int resolutionX, resolutionY;
+	CStdApp *app;
+	DisplayMode displayMode;
 
 protected:
 	virtual void HandleMessage(SDL_Event &) {}
+
+public:
+	void UpdateSize(int width, int height);
 
 #endif
 
@@ -428,7 +434,6 @@ protected:
 #if defined(USE_SDL_MAINLOOP)
 	int argc; char **argv;
 	int Pipe[2];
-	int nextWidth, nextHeight, nextBPP;
 #endif
 	class CStdAppPrivate *Priv;
 	void HandleXMessage();
