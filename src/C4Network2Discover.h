@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2011-2017, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -20,12 +21,12 @@
 
 const int C4NetMaxDiscover = 64;
 
-const unsigned long C4NetDiscoveryAddress = 0xef; // 239.0.0.0
+const StdStrBuf C4NetDiscoveryAddress{"ff02::1"};
 
 class C4Network2IODiscover : public C4NetIOSimpleUDP, private C4NetIO::CBClass
 {
 public:
-	C4Network2IODiscover(int16_t iRefServerPort) : iRefServerPort(iRefServerPort), fEnabled(false)
+	C4Network2IODiscover(std::uint16_t iRefServerPort) : iRefServerPort(iRefServerPort), fEnabled(false)
 	{
 		C4NetIOSimpleUDP::SetCallback(this);
 	}
@@ -35,14 +36,14 @@ protected:
 	virtual void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO);
 
 public:
-	bool Init(uint16_t iPort = P_NONE);
+	bool Init(uint16_t iPort = C4NetIO::addr_t::IPPORT_NONE);
 	void SetDiscoverable(bool fnEnabled) { fEnabled = fnEnabled; }
 	bool Announce();
 
 private:
-	sockaddr_in DiscoveryAddr;
+	C4NetIO::addr_t DiscoveryAddr;
 
-	int16_t iRefServerPort;
+	std::uint16_t iRefServerPort;
 	bool fEnabled;
 };
 
@@ -62,7 +63,7 @@ public:
 	int getDiscoverCount() const { return iDiscoverCount; }
 
 	void Clear() { iDiscoverCount = 0; }
-	bool Init(uint16_t iPort = P_NONE);
+	bool Init(uint16_t iPort = C4NetIO::addr_t::IPPORT_NONE);
 	bool StartDiscovery();
 	bool PopDiscover(C4NetIO::addr_t &Discover);
 

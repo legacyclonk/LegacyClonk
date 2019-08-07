@@ -20,7 +20,7 @@
 
 #ifdef _WIN32
 
-#include <windows.h>
+#include "C4Windows.h"
 #include "StdCompiler.h"
 
 bool GetRegistryDWord(HKEY hKey, const char *szSubKey,

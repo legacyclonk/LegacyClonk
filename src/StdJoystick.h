@@ -19,7 +19,7 @@
 #pragma once
 
 #include <Standard.h>
-#include <windows.h>
+#include "C4Windows.h"
 #include <mmsystem.h>
 
 const int32_t PAD_Axis_POVx = 6;

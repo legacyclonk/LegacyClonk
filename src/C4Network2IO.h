@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2013-2018, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -19,6 +20,7 @@
 #include "C4NetIO.h"
 #include "C4Client.h"
 #include "C4InteractiveThread.h"
+#include "C4PuncherPacket.h"
 
 #include <atomic>
 
@@ -93,7 +95,8 @@ protected:
 		iUDPIRate, iUDPORate, iUDPBCRate;
 
 	// punching
-	C4NetIO::addr_t PuncherAddr;
+	C4NetIO::addr_t PuncherAddrIPv4, PuncherAddrIPv6;
+	bool IsPuncherAddr(const C4NetIO::addr_t &addr) const;
 
 public:
 	bool hasTCP() const { return !!pNetIO_TCP; }
@@ -109,7 +112,8 @@ public:
 	C4NetIO *DataIO(); // by both
 
 	// connections
-	bool Connect(const C4NetIO::addr_t &addr, C4Network2IOProtocol eProt, const C4ClientCore &nCCore, const char *szPassword = nullptr); // by main thread
+	bool Connect(const C4NetIO::addr_t &addr, C4Network2IOProtocol prot, const C4ClientCore &ccore, const char *password = nullptr); // by main thread
+	bool ConnectWithSocket(const C4NetIO::addr_t &addr, C4Network2IOProtocol eProt, const C4ClientCore &nCCore, std::unique_ptr<C4NetIOTCP::Socket> socket, const char *szPassword = nullptr); // by main thread
 	void SetAcceptMode(bool fAcceptAll); // by main thread
 	void SetExclusiveConnMode(bool fExclusiveConn); // by main thread
 	int getConnectionCount(); // by main thread
@@ -130,7 +134,9 @@ public:
 	bool BroadcastMsg(const C4NetIOPacket &rPkt); // by both
 
 	// punch
-	bool Punch(C4NetIO::addr_t PuncherAddr); // by main thread
+	bool InitPuncher(C4NetIO::addr_t puncherAddr); // by main thread
+	void SendPuncherPacket(const C4NetpuncherPacket &, C4NetIO::HostAddress::AddressFamily family);
+	void Punch(const C4NetIO::addr_t &); // Sends a ping packet
 
 	// stuff
 	C4NetIO *getNetIO(C4Network2IOProtocol eProt); // by both
@@ -180,15 +186,13 @@ protected:
 	// packet handling (some are really handled here)
 	void HandlePacket(char cStatus, const C4PacketBase *pPacket, C4Network2IOConnection *pConn);
 	void HandleFwdReq(const class C4PacketFwd &rFwd, C4Network2IOConnection *pBy);
+	void HandlePuncherPacket(const C4NetIOPacket &packet);
 
 	// misc
 	bool Ping();
 	void CheckTimeout();
 	void GenerateStatistics(int iInterval);
 	void SendConnPackets();
-
-	// puncher
-	void OnPunch(C4NetIO::addr_t addr);
 };
 
 enum C4Network2IOConnStatus
@@ -214,6 +218,7 @@ protected:
 	class C4NetIO *pNetClass;
 	C4Network2IOProtocol eProt;
 	C4NetIO::addr_t PeerAddr, ConnectAddr;
+	std::unique_ptr<C4NetIOTCP::Socket> tcpSimOpenSocket;
 
 	// status data
 	C4Network2IOConnStatus Status;
@@ -252,7 +257,7 @@ protected:
 public:
 	C4NetIO               *getNetClass()    const { return pNetClass; }
 	C4Network2IOProtocol   getProtocol()    const { return eProt; }
-	const C4NetIO::addr_t &getPeerAddr()    const { return PeerAddr.sin_port ? PeerAddr : ConnectAddr; }
+	const C4NetIO::addr_t &getPeerAddr()    const { return PeerAddr.GetPort() ? PeerAddr : ConnectAddr; }
 	const C4NetIO::addr_t &getConnectAddr() const { return ConnectAddr; }
 	uint32_t               getID()          const { return iID; }
 	time_t                 getTimestamp()   const { return iTimestamp; }
@@ -280,6 +285,7 @@ public:
 protected:
 	// called by C4Network2IO only
 	void Set(C4NetIO *pnNetClass, C4Network2IOProtocol eProt, const C4NetIO::addr_t &nPeerAddr, const C4NetIO::addr_t &nConnectAddr, C4Network2IOConnStatus nStatus, const char *szPassword, uint32_t iID);
+	void SetSocket(std::unique_ptr<C4NetIOTCP::Socket> socket);
 	void SetRemoteID(uint32_t iRemoteID);
 	void SetPeerAddr(const C4NetIO::addr_t &nPeerAddr);
 	void OnPing();

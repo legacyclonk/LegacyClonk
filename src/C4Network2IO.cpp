@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2013-2018, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -54,7 +55,6 @@ C4Network2IO::C4Network2IO()
 	iTCPIRate(0), iTCPORate(0), iTCPBCRate(0),
 	iUDPIRate(0), iUDPORate(0), iUDPBCRate(0)
 {
-	std::memset(&PuncherAddr, 0, sizeof(PuncherAddr));
 }
 
 C4Network2IO::~C4Network2IO()
@@ -231,7 +231,12 @@ C4NetIO *C4Network2IO::DataIO() // by both
 	return nullptr;
 }
 
-bool C4Network2IO::Connect(const C4NetIO::addr_t &addr, C4Network2IOProtocol eProt, const C4ClientCore &nCCore, const char *szPassword) // by main thread
+bool C4Network2IO::Connect(const C4NetIO::addr_t &addr, const C4Network2IOProtocol prot, const C4ClientCore &ccore, const char *const password) // by main thread
+{
+	return ConnectWithSocket(addr, prot, ccore, nullptr, password);
+}
+
+bool C4Network2IO::ConnectWithSocket(const C4NetIO::addr_t &addr, C4Network2IOProtocol eProt, const C4ClientCore &nCCore, std::unique_ptr<C4NetIOTCP::Socket> socket, const char *szPassword) // by main thread
 {
 	// get network class
 	C4NetIO *pNetIO = getNetIO(eProt);
@@ -240,17 +245,19 @@ bool C4Network2IO::Connect(const C4NetIO::addr_t &addr, C4Network2IOProtocol ePr
 	if (GetConnectionByConnAddr(addr, pNetIO)) return true;
 	// assign new connection ID, peer address isn't known yet
 	uint32_t iConnID = iNextConnID++;
-	C4NetIO::addr_t paddr; std::memset(&paddr, 0, sizeof(paddr));
+	C4NetIO::addr_t paddr;
 	// create connection object and add to list
 	C4Network2IOConnection *pConn = new C4Network2IOConnection();
 	pConn->Set(pNetIO, eProt, paddr, addr, CS_Connect, szPassword, iConnID);
 	pConn->SetCCore(nCCore);
+	if (socket)
+		pConn->SetSocket(std::move(socket));
 	AddConnection(pConn);
 	// connect
 	if (!pConn->Connect())
 	{
 		// show error
-		LogF("Network: could not connect to %s:%d using %s: %s", inet_ntoa(addr.sin_addr), htons(addr.sin_port),
+		LogSilentF("Network: could not connect to %s using %s: %s", addr.ToString().getData(),
 			getNetIOName(pNetIO), pNetIO->GetError() ? pNetIO->GetError() : "");
 		pNetIO->ResetError();
 		// remove class
@@ -428,30 +435,61 @@ bool C4Network2IO::BroadcastMsg(const C4NetIOPacket &rPkt) // by both
 	return fSuccess;
 }
 
-bool C4Network2IO::Punch(C4NetIO::addr_t nPuncherAddr)
+bool C4Network2IO::InitPuncher(const C4NetIO::addr_t puncherAddr)
 {
 	// UDP must be initialized
 	if (!pNetIO_UDP)
 		return false;
 	// save address
-	PuncherAddr = nPuncherAddr;
+	switch (puncherAddr.GetFamily())
+	{
+	case C4NetIO::HostAddress::IPv4:
+		PuncherAddrIPv4 = puncherAddr;
+		break;
+	case C4NetIO::HostAddress::IPv6:
+		PuncherAddrIPv6 = puncherAddr;
+		break;
+	default:
+		assert(!"Unexpected address family");
+	}
 	// let's punch
-	return pNetIO_UDP->Connect(PuncherAddr);
+	return pNetIO_UDP->Connect(puncherAddr);
+}
+
+void C4Network2IO::Punch(const C4NetIO::addr_t &puncheeAddr)
+{
+	if (!pNetIO_UDP)
+		return;
+	dynamic_cast<C4NetIOUDP *>(pNetIO_UDP)->SendDirect(MkC4NetIOPacket(PID_Pong, C4PacketPing{}, puncheeAddr));
+}
+
+void C4Network2IO::SendPuncherPacket(const C4NetpuncherPacket &p, const C4NetIO::HostAddress::AddressFamily family)
+{
+	if (!pNetIO_UDP) return;
+	if (family == C4NetIO::HostAddress::IPv4 && !PuncherAddrIPv4.IsNull())
+		pNetIO_UDP->Send(p.PackTo(PuncherAddrIPv4));
+	else if (family == C4NetIO::HostAddress::IPv6 && !PuncherAddrIPv6.IsNull())
+		pNetIO_UDP->Send(p.PackTo(PuncherAddrIPv6));
+}
+
+bool C4Network2IO::IsPuncherAddr(const C4NetIO::addr_t &addr) const
+{
+	return
+		(!PuncherAddrIPv4.IsNull() && PuncherAddrIPv4 == addr) ||
+		(!PuncherAddrIPv6.IsNull() && PuncherAddrIPv6 == addr);
 }
 
 // C4NetIO interface
 bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t &ConnectAddr, const C4NetIO::addr_t *pOwnAddr, C4NetIO *pNetIO)
 {
-	// puncher answer? We just make sure here a connection /can/ be established, so close it instantly.
-	if (pNetIO == pNetIO_UDP)
-		if (PuncherAddr.sin_addr.s_addr && AddrEqual(PuncherAddr, ConnectAddr))
-		{
-			// got an address?
-			if (pOwnAddr)
-				OnPunch(*pOwnAddr);
-			// this is only a test connection - close it instantly
-			return false;
-		}
+	// Puncher answer?
+	if (pNetIO == pNetIO_UDP && IsPuncherAddr(ConnectAddr))
+	{
+		// Got an address?
+		if (pOwnAddr)
+			Game.Network.OnPuncherConnect(*pOwnAddr);
+		return true;
+	}
 #if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
 	ThreadLogS("OnConn: %d:%02d:%02d:%03d: %s",
@@ -460,7 +498,7 @@ bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t
 #endif
 	// search connection
 	C4Network2IOConnection *pConn = nullptr;
-	if (ConnectAddr.sin_addr.s_addr)
+	if (!ConnectAddr.IsNull())
 		pConn = GetConnectionByConnAddr(ConnectAddr, pNetIO);
 	// not found?
 	if (!pConn)
@@ -490,7 +528,7 @@ bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t
 	SendConnPackets();
 #if (C4NET2IO_DUMP_LEVEL > 0)
 	// log
-	Application.InteractiveThread.ThreadLogS("Network: got %s connection from %s:%d", getNetIOName(pNetIO), inet_ntoa(PeerAddr.sin_addr), htons(PeerAddr.sin_port));
+	Application.InteractiveThread.ThreadLogS("Network: got %s connection from %s", getNetIOName(pNetIO), PeerAddr.ToString().getData());
 #endif
 	// ok
 	return true;
@@ -498,13 +536,14 @@ bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t
 
 void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const char *szReason)
 {
-	// punch?
-	if (pNetIO == pNetIO_UDP)
-		if (PuncherAddr.sin_addr.s_addr && AddrEqual(PuncherAddr, addr))
-		{
-			std::memset(&PuncherAddr, 0, sizeof(PuncherAddr));
-			return;
-		}
+	if (pNetIO == pNetIO_UDP && IsPuncherAddr(addr))
+	{
+		if (PuncherAddrIPv4 == addr)
+			PuncherAddrIPv4.Clear();
+		else
+			PuncherAddrIPv6.Clear();
+		return;
+	}
 #if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
 	ThreadLogS("OnDisconn: %d:%02d:%02d:%03d: %s",
@@ -517,8 +556,8 @@ void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const
 	if (!pConn) return;
 #if (C4NET2IO_DUMP_LEVEL > 0)
 	// log
-	Application.InteractiveThread.ThreadLogS("Network: %s connection to %s:%d %s (%s)",
-		getNetIOName(pNetIO), inet_ntoa(addr.sin_addr), htons(addr.sin_port), pConn->isConnecting() ? "failed" : "closed", szReason);
+	Application.InteractiveThread.ThreadLogS("Network: %s connection to %s %s (%s)",
+		getNetIOName(pNetIO), addr.ToString().getData(), (pConn->isConnecting() ? "failed" : "closed"), szReason);
 #endif
 	// already closed? ignore
 	if (!pConn->isClosed())
@@ -541,10 +580,19 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
 		rPacket.getStatus(), getNetIOName(pNetIO));
 #endif
+	if (pNetIO == pNetIO_UDP && IsPuncherAddr(rPacket.getAddr()))
+	{
+		HandlePuncherPacket(rPacket);
+		return;
+	}
 	if (!rPacket.getSize()) return;
 	// find connection
 	C4Network2IOConnection *pConn = GetConnection(rPacket.getAddr(), pNetIO);
-	if (!pConn) { Application.InteractiveThread.ThreadLog("Network: could not find connection for packet from %s:%d!", inet_ntoa(rPacket.getAddr().sin_addr), htons(rPacket.getAddr().sin_port)); return; }
+	if (!pConn)
+	{
+		Application.InteractiveThread.ThreadLog("Network: could not find connection for %s packet (status %02x) from %s!", getNetIOName(pNetIO), rPacket.getStatus(), rPacket.getAddr().ToString().getData());
+		return;
+	}
 #if (C4NET2IO_DUMP_LEVEL > 2)
 	if (timeGetTime() - iTime > 100)
 		ThreadLogS("OnPacket: ... blocked %d ms for finding the connection!", timeGetTime() - iTime);
@@ -698,7 +746,7 @@ C4Network2IOConnection *C4Network2IO::GetConnection(const C4NetIO::addr_t &addr,
 	CStdLock ConnListLock(&ConnListCSec);
 	// search
 	for (C4Network2IOConnection *pConn = pConnList; pConn; pConn = pConn->pNext)
-		if (pConn->getNetClass() == pNetIO && AddrEqual(pConn->getPeerAddr(), addr))
+		if (pConn->getNetClass() == pNetIO && pConn->getPeerAddr() == addr)
 			return pConn;
 	return nullptr;
 }
@@ -708,7 +756,7 @@ C4Network2IOConnection *C4Network2IO::GetConnectionByConnAddr(const C4NetIO::add
 	CStdLock ConnListLock(&ConnListCSec);
 	// search
 	for (C4Network2IOConnection *pConn = pConnList; pConn; pConn = pConn->pNext)
-		if (pConn->getNetClass() == pNetIO && AddrEqual(pConn->getConnectAddr(), addr))
+		if (pConn->getNetClass() == pNetIO && pConn->getConnectAddr() == addr)
 			return pConn;
 	return nullptr;
 }
@@ -748,7 +796,7 @@ bool C4Network2IO::doAutoAccept(const C4ClientCore &CCore, const C4Network2IOCon
 			for (C4Network2IOConnection *pConn = pConnList; pConn; pConn = pConn->pNext)
 				if (pConn->isAccepted() &&
 					pConn->getCCore().getDiffLevel(CCore) <= C4ClientCoreDL_IDMatch &&
-					pConn->getPeerAddr().sin_addr.s_addr != Conn.getPeerAddr().sin_addr.s_addr)
+					pConn->getPeerAddr().GetHost() != Conn.getPeerAddr().GetHost())
 					return false;
 			// not found or IP matches? Let pass
 			return true;
@@ -790,9 +838,9 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 	if (fThread && Pkt.getPktType() != PID_Ping && Pkt.getPktType() != PID_Pong && Pkt.getPktType() != PID_NetResData)
 	{
 		unsigned int iTime = timeGetTime();
-		StdStrBuf PacketHeader = FormatString("HandlePacket: %d:%02d:%02d:%03d by %s:%d (%zu bytes, counter %d)",
+		StdStrBuf PacketHeader = FormatString("HandlePacket: %d:%02d:%02d:%03d by %s (%zu bytes, counter %d)",
 			(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
-			inet_ntoa(pConn->getPeerAddr().sin_addr), htons(pConn->getPeerAddr().sin_port),
+			pConn->getPeerAddr().ToString().getData(),
 			rPacket.getSize(), pConn->getInPacketCounter());
 		StdStrBuf Dump = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(Pkt, PacketHeader.getData()));
 		// Put it directly. The standard functions behind StdBuf.Format seem to choke when you pass them too much data.
@@ -1077,6 +1125,16 @@ void C4Network2IO::HandleFwdReq(const C4PacketFwd &rFwd, C4Network2IOConnection 
 		HandlePacket(rFwd.getData(), pBy, true);
 }
 
+void C4Network2IO::HandlePuncherPacket(const C4NetIOPacket &packet)
+{
+	auto pkt = C4NetpuncherPacket::Construct(packet);
+	if (!pkt || !Game.Network.HandlePuncherPacket(std::move(pkt), packet.getAddr().GetFamily()))
+	{
+		assert(pNetIO_UDP);
+		pNetIO_UDP->Close(packet.getAddr());
+	}
+}
+
 bool C4Network2IO::Ping()
 {
 	bool fSuccess = true;
@@ -1103,7 +1161,7 @@ void C4Network2IO::CheckTimeout()
 		if (!pConn->isClosed() && !pConn->isAccepted())
 			if (difftime(time(nullptr), pConn->getTimestamp()) > C4NetAcceptTimeout)
 			{
-				Application.InteractiveThread.ThreadLogS("Network: connection accept timeout to %s:%d", inet_ntoa(pConn->getPeerAddr().sin_addr), htons(pConn->getPeerAddr().sin_port));
+				Application.InteractiveThread.ThreadLogS("Network: connection accept timeout to %s", pConn->getPeerAddr().ToString().getData());
 				pConn->Close();
 			}
 		// ping timeout
@@ -1111,7 +1169,7 @@ void C4Network2IO::CheckTimeout()
 			if ((pConn->getLag() != -1 ? pConn->getLag() : 1000 * (time(nullptr) - pConn->getTimestamp()))
 		> C4NetPingTimeout)
 			{
-				Application.InteractiveThread.ThreadLogS("Network: ping timeout to %s:%d", inet_ntoa(pConn->getPeerAddr().sin_addr), htons(pConn->getPeerAddr().sin_port));
+				Application.InteractiveThread.ThreadLogS("Network: ping timeout to %s", pConn->getPeerAddr().ToString().getData());
 				pConn->Close();
 			}
 		// delayed connection removal
@@ -1193,20 +1251,6 @@ void C4Network2IO::SendConnPackets()
 		}
 }
 
-void C4Network2IO::OnPunch(C4NetIO::addr_t addr)
-{
-	// Sanity check
-	if (addr.sin_family != AF_INET && addr.sin_family != htons(AF_INET))
-		return;
-	addr.sin_family = AF_INET;
-	std::memset(&addr.sin_zero, 0, sizeof(addr.sin_zero));
-	// Add for local client
-	C4Network2Client *pLocal = Game.Network.Clients.GetLocal();
-	if (pLocal)
-		if (pLocal->AddAddr(C4Network2Address(addr, P_UDP), true))
-			Game.Network.InvalidateReference();
-}
-
 // *** C4Network2IOConnection
 
 C4Network2IOConnection::C4Network2IOConnection()
@@ -1258,6 +1302,11 @@ void C4Network2IOConnection::Set(C4NetIO *pnNetClass, C4Network2IOProtocol enPro
 	// initialize
 	fBroadcastTarget = false;
 	iTimestamp = time(nullptr); iPingTime = -1;
+}
+
+void C4Network2IOConnection::SetSocket(std::unique_ptr<C4NetIOTCP::Socket> socket)
+{
+	tcpSimOpenSocket = std::move(socket);
 }
 
 void C4Network2IOConnection::SetRemoteID(uint32_t inRemoteID)
@@ -1364,6 +1413,11 @@ void C4Network2IOConnection::SetCCore(const C4ClientCore &nCCore)
 bool C4Network2IOConnection::Connect()
 {
 	if (!pNetClass) return false;
+	if (tcpSimOpenSocket)
+	{
+		const auto netTcp = dynamic_cast<C4NetIOTCP *>(pNetClass);
+		return netTcp->Connect(ConnectAddr, std::move(tcpSimOpenSocket));
+	}
 	// try connect
 	return pNetClass->Connect(ConnectAddr);
 }

@@ -21,7 +21,7 @@
 #include <Standard.h>
 #include <StdVideo.h>
 
-#include <windows.h>
+#include "C4Windows.h"
 
 bool AVIOpenOutput(const char *szFilename,
 	PAVIFILE *ppAviFile,

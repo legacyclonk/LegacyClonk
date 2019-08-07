@@ -276,7 +276,7 @@ set(HAVE_PTHREAD ${CMAKE_USE_PTHREADS_INIT})
 
 # Link Windows libraries
 if (WIN32)
-	target_link_libraries(clonk winmm ws2_32)
+	target_link_libraries(clonk iphlpapi winmm ws2_32)
 endif ()
 
 # Link X11

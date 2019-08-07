@@ -23,7 +23,7 @@
 #endif
 
 #ifdef WIN32
-#include <windows.h>
+#include "C4Windows.h"
 #include <shellapi.h>
 #endif
 

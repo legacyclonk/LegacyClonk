@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2013-2017, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -28,15 +29,15 @@
 C4Network2Reference::C4Network2Reference()
 	: Icon(0), Time(0), Frame(0), StartTime(0), LeaguePerformance(0),
 	JoinAllowed(true), ObservingAllowed(true), PasswordNeeded(false), OfficialServer(false),
-	iAddrCnt(0) {}
+	iAddrCnt(0), NetpuncherGameID{} {}
 
 C4Network2Reference::~C4Network2Reference() {}
 
-void C4Network2Reference::SetSourceIP(in_addr ip)
+void C4Network2Reference::SetSourceAddress(const C4NetIO::EndpointAddress &ip)
 {
-	for (int i = 0; i < iAddrCnt; i++)
-		if (Addrs[i].isIPNull())
-			Addrs[i].SetIP(ip);
+	source = ip;
+	if (iAddrCnt < C4ClientMaxAddr)
+		Addrs[++iAddrCnt].SetAddr(ip);
 }
 
 #ifdef C4ENGINE
@@ -70,6 +71,8 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 	JoinAllowed = pGame->Network.isJoinAllowed();
 	ObservingAllowed = pGame->Network.isObservingAllowed();
 	PasswordNeeded = pGame->Network.isPassworded();
+	NetpuncherGameID = pGame->Network.getNetpuncherGameID();
+	NetpuncherAddr = pGame->Network.getNetpuncherAddr();
 	Game.Set();
 
 	// Addresses
@@ -103,6 +106,8 @@ void C4Network2Reference::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkArrayAdaptDM(Game.iVer, 0),                       "Version"));
 	pComp->Value(mkNamingAdapt(Game.iBuild,                                        "Build",             -1));
 	pComp->Value(mkNamingAdapt(OfficialServer,                                     "OfficialServer",    false));
+	pComp->Value(mkNamingAdapt(NetpuncherGameID,                                   "NetpuncherID",      C4NetpuncherID(), false, false));
+	pComp->Value(mkNamingAdapt(NetpuncherAddr,                                     "NetpuncherAddr",    "", false, false));
 
 	pComp->Value(Parameters);
 }
@@ -363,12 +368,15 @@ bool C4Network2HTTPClient::Decompress(StdBuf *pData)
 bool C4Network2HTTPClient::OnConn(const C4NetIO::addr_t &AddrPeer, const C4NetIO::addr_t &AddrConnect, const C4NetIO::addr_t *pOwnAddr, C4NetIO *pNetIO)
 {
 	// Make sure we're actually waiting for this connection
-	if (!AddrEqual(AddrConnect, ServerAddr))
+	if (AddrConnect != ServerAddr)
 		return false;
 	// Save pack peer address
 	PeerAddr = AddrPeer;
 	// Send the request
-	Send(C4NetIOPacket(Request, AddrPeer));
+	if (!Send(C4NetIOPacket(Request, AddrPeer)))
+	{
+		Error.Format("Unable to send HTTP request: %s", Error.getData());
+	}
 	Request.Clear();
 	fConnected = true;
 	return true;
@@ -513,15 +521,23 @@ bool C4Network2HTTPClient::SetServer(const char *szServerAddress)
 		RequestPath = "/";
 	}
 	// Resolve address
-	if (!ResolveAddress(Server.getData(), &ServerAddr, GetDefaultPort()))
+	ServerAddr.SetAddress(Server);
+	if (ServerAddr.IsNull())
 	{
 		SetError(FormatString("Could not resolve server address %s!", Server.getData()).getData());
 		return false;
 	}
+	ServerAddr.SetDefaultPort(GetDefaultPort());
 	// Remove port
-	const char *pColon = strchr(Server.getData(), ':');
-	if (pColon)
-		Server.SetLength(pColon - Server.getData());
+	const auto &firstColon = std::strchr(Server.getData(), ':');
+	const auto &lastColon = std::strrchr(Server.getData(), ':');
+	if (firstColon)
+	{
+		// Hostname/IPv4 address or IPv6 address with port (e.g. [::1]:1234)
+		if (firstColon == lastColon || (Server[0] == '[' && lastColon[-1] == ']'))
+			Server.SetLength(lastColon - Server.getData());
+	}
+
 	// Done
 	ResetError();
 	return true;
@@ -577,7 +593,7 @@ bool C4Network2RefClient::GetReferences(C4Network2Reference ** &rpReferences, in
 	}
 	// Set source ip
 	for (int i = 0; i < rRefCount; i++)
-		rpReferences[i]->SetSourceIP(getServerAddress().sin_addr);
+		rpReferences[i]->SetSourceAddress(getServerAddress());
 	// validate version
 	if (MasterVersion.iVer[0]) fVerSet = true;
 	// Done

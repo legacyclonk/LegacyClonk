@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2018, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -80,6 +81,7 @@ const C4PktHandlingData PktHandlingData[] =
 
 	// C4Network2ClientList (main thread)
 	{ PID_Addr,               PC_Network, "Client Address",              false, false, PH_C4Network2ClientList, PKT_UNPACK(C4PacketAddr) },
+	{ PID_TCPSimOpen,         PC_Network, "TCP simultaneous open req",   false, false, PH_C4Network2ClientList, PKT_UNPACK(C4PacketTCPSimOpen) },
 
 	// C4Network2ResList (network thread)
 	{ PID_NetResDis,          PC_Network, "Resource Discover",           true,  true,  PH_C4Network2ResList,    PKT_UNPACK(C4PacketResDiscover) },

@@ -19,7 +19,7 @@
 #include <Standard.h>
 #include <StdJoystick.h>
 
-#include <windows.h>
+#include "C4Windows.h"
 #include <windowsx.h>
 
 uint32_t POV2Position(DWORD dwPOV, bool fVertical)

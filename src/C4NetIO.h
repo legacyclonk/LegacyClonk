@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2013-2018, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -24,6 +25,8 @@
 #include "StdCompiler.h"
 #include "StdScheduler.h"
 
+#include <memory>
+
 #ifdef _WIN32
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
@@ -43,6 +46,10 @@
 #include <sys/socket.h>
 #endif
 
+#ifndef SOCK_CLOEXEC
+#define SOCK_CLOEXEC 0
+#endif
+
 #include <cstring>
 
 // net i/o base class
@@ -54,9 +61,154 @@ public:
 
 	// *** constants / types
 	static const int TO_INF; // = -1;
-	static const uint16_t P_NONE; // = -1
 
-	typedef sockaddr_in addr_t;
+	struct HostAddress
+	{
+		enum AddressFamily
+		{
+			IPv6 = AF_INET6,
+			IPv4 = AF_INET,
+			UnknownFamily = 0
+		};
+		enum SpecialAddress
+		{
+			Loopback, // IPv6 localhost (::1)
+			Any,      // IPv6 any-address (::)
+			AnyIPv4   // IPv4 any-address (0.0.0.0)
+		};
+
+		enum ToStringFlags
+		{
+			TSF_SkipZoneId = 1,
+			TSF_SkipPort = 2
+		};
+
+		HostAddress() { Clear(); }
+		HostAddress(const HostAddress &other) { SetHost(other); }
+		HostAddress(const SpecialAddress addr) { SetHost(addr); }
+		explicit HostAddress(const std::uint32_t addr) { SetHost(addr); }
+		HostAddress(const StdStrBuf &addr) { SetHost(addr); }
+		HostAddress(const sockaddr *const addr) { SetHost(addr); }
+
+		AddressFamily GetFamily() const;
+		std::size_t GetAddrLen() const;
+
+		void SetScopeId(int scopeId);
+		int GetScopeId() const;
+
+		void Clear();
+		void SetHost(const sockaddr *addr);
+		void SetHost(const HostAddress &host);
+		void SetHost(SpecialAddress host);
+		void SetHost(const StdStrBuf &host, AddressFamily family = UnknownFamily);
+		void SetHost(std::uint32_t host);
+
+		C4NetIO::HostAddress AsIPv6() const; // Convert an IPv4 address to an IPv6-mapped IPv4 address
+		bool IsIPv6MappedIPv4() const;
+		C4NetIO::HostAddress AsIPv4() const; // Try to convert an IPv6-mapped IPv4 address to an IPv4 address (returns unchanged address if not possible)
+
+		// General categories
+		bool IsNull() const;
+		bool IsMulticast() const;
+		bool IsLoopback() const;
+		bool IsLocal() const; // IPv6 link-local address
+		bool IsPrivate() const; // IPv6 ULA or IPv4 private address range
+
+		StdStrBuf ToString(int flags = 0) const;
+
+		bool operator ==(const HostAddress &rhs) const;
+		bool operator !=(const HostAddress &rhs) const { return !(*this == rhs); }
+
+	protected:
+		// Data
+		union
+		{
+			sockaddr gen;
+			sockaddr_in v4;
+			sockaddr_in6 v6;
+		};
+	};
+
+	struct EndpointAddress : public HostAddress // Host and port
+	{
+		static constexpr std::uint16_t IPPORT_NONE{0};
+
+		EndpointAddress() { Clear(); }
+		EndpointAddress(const EndpointAddress &other) : HostAddress{} { SetAddress(other); }
+		EndpointAddress(const HostAddress &host, const std::uint16_t port = IPPORT_NONE) : HostAddress{host} { SetPort(port); }
+		EndpointAddress(const HostAddress::SpecialAddress addr, const std::uint16_t port = IPPORT_NONE) : HostAddress{addr} { SetPort(port); }
+		explicit EndpointAddress(const StdStrBuf &addr) { SetAddress(addr); }
+
+		StdStrBuf ToString(int flags = 0) const;
+
+		void Clear();
+
+		void SetAddress(const sockaddr *addr);
+		void SetAddress(const EndpointAddress &other);
+		void SetAddress(HostAddress::SpecialAddress addr, std::uint16_t port = IPPORT_NONE);
+		void SetAddress(const HostAddress &host, std::uint16_t port = IPPORT_NONE);
+		void SetAddress(const StdStrBuf &addr, AddressFamily family = UnknownFamily);
+
+		HostAddress GetHost() const { return *this; } // HostAddress copy ctor slices off port information
+		EndpointAddress AsIPv6() const; // Convert an IPv4 address to an IPv6-mapped IPv4 address
+		EndpointAddress AsIPv4() const; // Try to convert an IPv6-mapped IPv4 address to an IPv4 address (returns unchanged address if not possible)
+
+		void SetPort(std::uint16_t port);
+		void SetDefaultPort(std::uint16_t port); // Set a port only if there is none
+		std::uint16_t GetPort() const;
+
+		bool IsNull() const;
+		bool IsNullHost() const { return HostAddress::IsNull(); }
+
+		// Pointer wrapper to be able to implicitly convert to sockaddr*
+		class EndpointAddressPtr;
+		const EndpointAddressPtr operator&() const;
+		EndpointAddressPtr operator&();
+
+		class EndpointAddressPtr
+		{
+			EndpointAddress *const p;
+			friend EndpointAddressPtr EndpointAddress::operator&();
+			friend const EndpointAddressPtr EndpointAddress::operator&() const;
+			EndpointAddressPtr(EndpointAddress *const p) : p(p) {}
+
+		public:
+			const EndpointAddress &operator*() const { return *p; }
+			EndpointAddress &operator*() { return *p; }
+
+			const EndpointAddress &operator->() const { return *p; }
+			EndpointAddress &operator->() { return *p; }
+
+			operator const EndpointAddress *() const { return p; }
+			operator EndpointAddress *() { return p; }
+
+			operator const sockaddr *() const { return &p->gen; }
+			operator sockaddr *() { return &p->gen; }
+
+			operator const sockaddr_in *() const { return &p->v4; }
+			operator sockaddr_in *() { return &p->v4; }
+
+			operator const sockaddr_in6 *() const { return &p->v6; }
+			operator sockaddr_in6 *() { return &p->v6; }
+		};
+
+		bool operator==(const EndpointAddress &rhs) const;
+		bool operator!=(const EndpointAddress &rhs) const { return !(*this == rhs); }
+
+		// Conversions
+		operator sockaddr() const { return gen; }
+		operator sockaddr_in() const { assert(gen.sa_family == AF_INET); return v4; }
+		operator sockaddr_in6() const { assert(gen.sa_family == AF_INET6); return v6; }
+
+		// StdCompiler
+		void CompileFunc(StdCompiler *comp);
+
+		friend class EndpointAddressPtr;
+	};
+
+	using addr_t = EndpointAddress;
+
+	static std::vector<HostAddress> GetLocalAddresses();
 
 	// callback class
 	class CBClass
@@ -100,10 +252,8 @@ public:
 	// *** interface
 
 	// * not multithreading safe
-	virtual bool Init(uint16_t iPort = P_NONE) = 0;
-	virtual bool InitBroadcast(addr_t *pBroadcastAddr) = 0;
+	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE) = 0;
 	virtual bool Close() = 0;
-	virtual bool CloseBroadcast() = 0;
 
 	virtual bool Execute(int iTimeout = -1) = 0; // (for StdSchedulerProc)
 
@@ -119,6 +269,10 @@ public:
 	virtual bool GetStatistic(int *pBroadcastRate) = 0;
 	virtual bool GetConnStatistic(const addr_t &addr, int *pIRate, int *pORate, int *pLoss) = 0;
 	virtual void ClearStatistic() = 0;
+
+protected:
+	// Makes IPv4 connections from an IPv6 socket work.
+	bool InitIPv6Socket(SOCKET socket);
 
 	// *** errors
 protected:
@@ -155,6 +309,8 @@ public:
 
 	uint8_t getStatus() const { return getSize() ? *getBufPtr<char>(*this) : 0; }
 	StdBuf  getPBuf()   const { return getSize() ? getPart(1, getSize() - 1) : getRef(); }
+	const char *getPData() const { return getSize() ? getBufPtr<char>(*this, 1) : nullptr; }
+	std::size_t getPSize() const { return getSize() ? getSize() - 1 : 0; }
 
 	// Some overloads
 	C4NetIOPacket getRef()    const { return C4NetIOPacket(StdBuf::getRef(), addr); }
@@ -173,10 +329,23 @@ public:
 	C4NetIOTCP();
 	virtual ~C4NetIOTCP();
 
+	// Socket is an unconnected, but bound socket.
+	class Socket
+	{
+		SOCKET sock;
+		Socket(const SOCKET s) : sock{s} {}
+		friend class C4NetIOTCP;
+
+	public:
+		~Socket();
+		// GetAddress returns the address the socket is bound to.
+		C4NetIO::addr_t GetAddress() const;
+	};
+
 	// *** interface
 
 	// * not multithreading safe
-	virtual bool Init(uint16_t iPort = P_NONE);
+	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE);
 	virtual bool InitBroadcast(addr_t *pBroadcastAddr);
 	virtual bool Close();
 	virtual bool CloseBroadcast();
@@ -184,6 +353,8 @@ public:
 	virtual bool Execute(int iMaxTime = TO_INF);
 
 	// * multithreading safe
+	std::unique_ptr<Socket> Bind(const addr_t &addr);
+	bool Connect(const addr_t &addr, std::unique_ptr<Socket> socket);
 	virtual bool Connect(const addr_t &addr);
 	virtual bool Close(const addr_t &addr);
 
@@ -314,6 +485,9 @@ protected:
 
 	bool Listen(uint16_t inListenPort);
 
+	SOCKET CreateSocket(addr_t::AddressFamily family);
+	bool Connect(const addr_t &addr, SOCKET nsock);
+
 	Peer *Accept(SOCKET nsock = INVALID_SOCKET, const addr_t &ConnectAddr = addr_t());
 	Peer *GetPeer(const addr_t &addr);
 	void OnShareFree(CStdCSecEx *pCSec);
@@ -341,7 +515,7 @@ public:
 	C4NetIOSimpleUDP();
 	virtual ~C4NetIOSimpleUDP();
 
-	virtual bool Init(uint16_t iPort = P_NONE);
+	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE);
 	virtual bool InitBroadcast(addr_t *pBroadcastAddr);
 	virtual bool Close();
 	virtual bool CloseBroadcast();
@@ -389,7 +563,7 @@ private:
 #endif
 
 	// multicast
-	addr_t MCAddr; ip_mreq MCGrpInfo;
+	addr_t MCAddr; ipv6_mreq MCGrpInfo;
 	bool fMCLoopback;
 
 	// multibind
@@ -432,7 +606,7 @@ public:
 
 	// *** interface
 
-	virtual bool Init(uint16_t iPort = P_NONE);
+	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE);
 	virtual bool InitBroadcast(addr_t *pBroadcastAddr);
 	virtual bool Close();
 	virtual bool CloseBroadcast();
@@ -443,6 +617,7 @@ public:
 	virtual bool Close(const addr_t &addr);
 
 	virtual bool Send(const C4NetIOPacket &rPacket);
+	bool SendDirect(C4NetIOPacket &&packet); // (mt-safe)
 	virtual bool Broadcast(const C4NetIOPacket &rPacket);
 	virtual bool SetBroadcast(const addr_t &addr, bool fSet = true);
 
@@ -469,6 +644,7 @@ protected:
 	};
 
 	// packet structures
+	struct BinAddr;
 	struct PacketHdr; struct TestPacket; struct ConnPacket; struct ConnOKPacket; struct AddAddrPacket;
 	struct DataPacketHdr; struct CheckPacketHdr; struct ClosePacket;
 
@@ -729,7 +905,6 @@ protected:
 
 	// sending
 	bool BroadcastDirect(const Packet &rPacket, unsigned int iNr = ~0u); // (mt-safe)
-	bool SendDirect(C4NetIOPacket &&rPacket); // (mt-safe)
 
 	// multicast related
 	bool DoLoopbackTest();
@@ -770,47 +945,7 @@ private:
 	void OnAddAddress(const addr_t &FromAddr, const AddAddrPacket &Packet);
 };
 
-// helpers
-inline bool AddrEqual(const C4NetIO::addr_t addr1, const C4NetIO::addr_t addr2)
-{
-	return addr1.sin_addr.s_addr == addr2.sin_addr.s_addr &&
-		addr1.sin_family == addr2.sin_family &&
-		addr1.sin_port == addr2.sin_port;
-}
-
-inline bool operator==(const C4NetIO::addr_t addr1, const C4NetIO::addr_t addr2) { return AddrEqual(addr1, addr2); }
-inline bool operator!=(const C4NetIO::addr_t addr1, const C4NetIO::addr_t addr2) { return !AddrEqual(addr1, addr2); }
-
-// there seems to be no standard way to get these numbers, so let's do it the dirty way...
-inline uint8_t &in_addr_b(in_addr &addr, int i)
-{
-	assert(0 <= i && i < 4);
-	return *(reinterpret_cast<uint8_t *>(&addr.s_addr) + i);
-}
-
-inline void CompileFunc(in_addr &ip, StdCompiler *pComp)
-{
-	pComp->Value(in_addr_b(ip, 0)); pComp->Separator(StdCompiler::SEP_PART);
-	pComp->Value(in_addr_b(ip, 1)); pComp->Separator(StdCompiler::SEP_PART);
-	pComp->Value(in_addr_b(ip, 2)); pComp->Separator(StdCompiler::SEP_PART);
-	pComp->Value(in_addr_b(ip, 3));
-}
-
-inline void CompileFunc(C4NetIO::addr_t &addr, StdCompiler *pComp)
-{
-	pComp->Value(addr.sin_addr); pComp->Separator(StdCompiler::SEP_PART2);
-	uint16_t iPort = htons(addr.sin_port);
-	pComp->Value(iPort);
-	addr.sin_port = htons(iPort);
-	if (pComp->isCompiler())
-	{
-		addr.sin_family = AF_INET;
-		std::memset(&addr.sin_zero, 0, sizeof(addr.sin_zero));
-	}
-}
-
 #ifdef HAVE_WINSOCK
 bool AcquireWinSock();
 void ReleaseWinSock();
 #endif
-bool ResolveAddress(const char *szAddress, C4NetIO::addr_t *paddr, uint16_t iPort);

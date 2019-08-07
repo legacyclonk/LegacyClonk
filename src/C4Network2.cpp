@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2013-2018, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -134,7 +135,8 @@ C4Network2::C4Network2()
 	pVoteDialog(nullptr),
 	fPausedForVote(false),
 	iLastOwnVoting(0),
-	fStreaming(nullptr) {}
+	fStreaming{false},
+	NetpuncherGameID{} {}
 
 bool C4Network2::InitHost(bool fLobby)
 {
@@ -147,6 +149,8 @@ bool C4Network2::InitHost(bool fLobby)
 	fChasing = false;
 	fAllowJoin = false;
 	iNextClientID = C4ClientIDStart;
+	NetpuncherGameID = {};
+	NetpuncherAddr = Config.Network.PuncherAddress;
 	// initialize client list
 	Clients.Init(&Game.Clients, true);
 	// initialize resource list
@@ -189,6 +193,57 @@ bool C4Network2::InitHost(bool fLobby)
 	return true;
 }
 
+// Orders connection addresses to optimize joining.
+static void SortAddresses(std::vector<C4Network2Address> &addrs)
+{
+	// TODO: Maybe use addresses from local client to avoid the extra system calls.
+	const auto &localAddrs = C4NetIO::GetLocalAddresses();
+	const bool haveIPv6{std::any_of(localAddrs.cbegin(), localAddrs.cend(), [](const auto &addr) { return
+		addr.GetFamily() == C4NetIO::HostAddress::IPv6 && !addr.IsLocal() && !addr.IsPrivate(); })};
+
+	const auto rank = [&](const C4Network2Address &Addr)
+	{
+		// Rank addresses. For IPv6-enabled clients, try public IPv6 addresses first, then IPv4,
+		// then link-local IPv6. For IPv4-only clients, skip IPv6.
+		int rank = 0;
+		const auto &addr = Addr.GetAddr();
+		switch (addr.GetFamily())
+		{
+		case C4NetIO::HostAddress::IPv6:
+			if (addr.IsLocal())
+			{
+				rank = 100;
+			}
+			else if (addr.IsPrivate())
+			{
+				rank = 150;
+			}
+			else if (haveIPv6)
+			{
+				// TODO: Rank public IPv6 addresses by longest matching prefix with local addresses.
+				rank = 300;
+			}
+			break;
+		case C4NetIO::HostAddress::IPv4:
+			if (addr.IsPrivate())
+			{
+				rank = 150;
+			}
+			else
+			{
+				rank = 200;
+			}
+			break;
+		default:
+			assert(!"Unexpected address family");
+		}
+		return rank;
+	};
+
+	// Sort by decreasing rank. Use stable sort to allow the host to prioritize addresses within a family.
+	std::stable_sort(addrs.begin(), addrs.end(), [&](const auto &a, const auto &b) { return rank(a) > rank(b); });
+}
+
 C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bool fObserver)
 {
 	if (isEnabled()) Clear();
@@ -196,7 +251,20 @@ C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bo
 	const C4ClientCore &HostCore = Ref.Parameters.Clients.getHost()->getCore();
 	// repeat if wrong password
 	fWrongPassword = Ref.isPasswordNeeded();
+	NetpuncherGameID = Ref.getNetpuncherGameID();
+	NetpuncherAddr = Ref.getNetpuncherAddr();
 	StdStrBuf Password;
+
+	// Copy addresses
+	std::vector<C4Network2Address> addrs;
+	for (int i = 0; i < Ref.getAddrCnt(); ++i)
+	{
+		auto a = Ref.getAddr(i);
+		a.GetAddr().SetScopeId(Ref.GetSourceAddress().GetScopeId());
+		addrs.push_back(std::move(a));
+	}
+	SortAddresses(addrs);
+
 	for (;;)
 	{
 		// ask for password (again)?
@@ -207,12 +275,9 @@ C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bo
 				return IR_Error;
 			fWrongPassword = false;
 		}
-		// copy addresses
-		C4Network2Address Addrs[C4ClientMaxAddr];
-		for (int i = 0; i < Ref.getAddrCnt(); i++)
-			Addrs[i] = Ref.getAddr(i);
+
 		// Try to connect to host
-		if (InitClient(Addrs, Ref.getAddrCnt(), HostCore, Password.getData()) == IR_Fatal)
+		if (InitClient(addrs, HostCore, Password.getData()) == IR_Fatal)
 			return IR_Fatal;
 		// success?
 		if (isEnabled())
@@ -242,8 +307,7 @@ C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bo
 	return IR_Success;
 }
 
-C4Network2::InitResult C4Network2::InitClient(const class C4Network2Address *pAddrs, int iAddrCount, const C4ClientCore &HostCore, const char *szPassword)
-{
+C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2Address> &addrs, const C4ClientCore &HostCore, const char *szPassword){
 	// initialization
 	Status.Set(GS_Init, -1);
 	fHost = false;
@@ -267,20 +331,40 @@ C4Network2::InitResult C4Network2::InitClient(const class C4Network2Address *pAd
 	pControl = &Game.Control.Network;
 	// set exclusive connection mode
 	NetIO.SetExclusiveConnMode(true);
+	// Warm up netpuncher
+	InitPuncher();
 	// try to connect host
 	StdStrBuf strAddresses; int iSuccesses = 0;
-	for (int i = 0; i < iAddrCount; i++)
-		if (!pAddrs[i].isIPNull())
+	for (const auto &addr : addrs)
+	{
+		if (!addr.isIPNull())
 		{
+			auto connAddr = addr.GetAddr();
+			std::vector<C4NetIO::addr_t> connAddrs;
+			if (connAddr.IsLocal())
+			{
+				// Local IPv6 addresses need a scope id.
+				for (const auto &id : Clients.GetLocal()->getInterfaceIDs())
+				{
+					connAddr.SetScopeId(id);
+					connAddrs.push_back(connAddr);
+				}
+			}
+			else
+			{
+				connAddrs.push_back(connAddr);
+			}
 			// connection
-			if (!NetIO.Connect(pAddrs[i].getAddr(), pAddrs[i].getProtocol(), HostCore, szPassword))
-				continue;
+			const auto cnt = std::count_if(connAddrs.cbegin(), connAddrs.cend(), [&](const auto &a) {
+				return NetIO.Connect(a, addr.GetProtocol(), HostCore, szPassword); });
+			if (cnt == 0) continue;
 			// format for message
 			if (strAddresses.getLength())
 				strAddresses.Append(", ");
-			strAddresses.Append(pAddrs[i].toString());
-			iSuccesses++;
+			strAddresses.Append(addr.toString());
+			++iSuccesses;
 		}
+	}
 	// no connection attempt running?
 	if (!iSuccesses)
 	{
@@ -295,7 +379,7 @@ C4Network2::InitResult C4Network2::InitClient(const class C4Network2Address *pAd
 	{
 		// create & show
 		pDlg = new C4GUI::MessageDialog(strMessage.getData(), LoadResStr("IDS_NET_JOINGAME"),
-			C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsMedium);
+			C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsRegular);
 		if (!pDlg->Show(Game.pGUI, true)) { Clear(); return IR_Fatal; }
 	}
 	// wait for connect / timeout / abort by user (host will change status on succesful connect)
@@ -654,6 +738,7 @@ void C4Network2::Clear()
 	if (Game.pGUI) delete pVoteDialog; pVoteDialog = nullptr;
 	fPausedForVote = false;
 	iLastOwnVoting = 0;
+	NetpuncherGameID = {};
 	Votes.Clear();
 	// don't clear fPasswordNeeded here, it's needed by InitClient
 }
@@ -863,6 +948,98 @@ void C4Network2::HandleLobbyPacket(char cStatus, const C4PacketBase *pBasePkt, C
 	if (pLobby) pLobby->HandlePacket(cStatus, pBasePkt, pClient);
 }
 
+bool C4Network2::HandlePuncherPacket(const C4NetpuncherPacket::uptr pkt, const C4NetIO::HostAddress::AddressFamily family)
+{
+	// TODO: is this all thread-safe?
+	assert(pkt);
+#pragma push_macro("GETPKT")
+#undef GETPKT
+#define GETPKT(c) dynamic_cast<C4NetpuncherPacket ##c *>(pkt.get())
+	switch (pkt->GetType())
+	{
+		case PID_Puncher_CReq:
+			if (isHost())
+			{
+				NetIO.Punch(GETPKT(CReq)->GetAddr());
+				return true;
+			}
+			else
+			{
+				// The IP/Port should be already in the masterserver list, so just keep trying.
+				return Status.getState() == GS_Init;
+			}
+		case PID_Puncher_AssID:
+			if (isHost())
+			{
+				getNetpuncherGameID(family) = GETPKT(AssID)->GetID();
+				InvalidateReference();
+			}
+			else
+			{
+				// The netpuncher hands out IDs for everyone, but clients have no use for them.
+			}
+			return true;
+		default:
+			return false;
+	}
+#pragma pop_macro("GETPKT")
+}
+
+C4NetpuncherID::value &C4Network2::getNetpuncherGameID(const C4NetIO::HostAddress::AddressFamily family)
+{
+	switch (family)
+	{
+	case C4NetIO::HostAddress::IPv4: return NetpuncherGameID.v4;
+	case C4NetIO::HostAddress::IPv6: return NetpuncherGameID.v6;
+	default:
+		assert(!"Unexpected address family");
+		// We need to return a valid reference to satisfy the compiler, even though the code here is unreachable.
+		return NetpuncherGameID.v4;
+	}
+}
+
+void C4Network2::OnPuncherConnect(const C4NetIO::addr_t addr)
+{
+	// NAT punching is only relevant for IPv4, so convert here to show a proper address.
+	const auto &maybeV4 = addr.AsIPv4();
+	Application.InteractiveThread.ThreadLogS("Adding address from puncher: %s", maybeV4.ToString().getData());
+	// Add for local client
+	if (const auto &local = Clients.GetLocal())
+	{
+		local->AddAddrFromPuncher(maybeV4);
+		// Do not Game.Network.InvalidateReference(); yet, we're expecting an ID from the netpuncher
+	}
+
+	const auto &family = maybeV4.GetFamily();
+	if (isHost())
+	{
+		// Host connection: request ID from netpuncher
+		NetIO.SendPuncherPacket(C4NetpuncherPacketIDReq{}, family);
+	}
+	else
+	{
+		if (Status.getState() == GS_Init && getNetpuncherGameID(family))
+		{
+			NetIO.SendPuncherPacket(C4NetpuncherPacketSReq{getNetpuncherGameID(family)}, family);
+		}
+	}
+}
+
+void C4Network2::InitPuncher()
+{
+	// We have an internet connection, so let's punch the puncher server here in order to open an udp port
+	for (const auto &family : { C4NetIO::HostAddress::IPv4, C4NetIO::HostAddress::IPv6 })
+	{
+		C4NetIO::addr_t puncherAddr{};
+		puncherAddr.SetAddress(getNetpuncherAddr(), family);
+		if (!puncherAddr.IsNull())
+		{
+			puncherAddr.SetDefaultPort(C4NetStdPortPuncher);
+			NetIO.InitPuncher(puncherAddr);
+		}
+	}
+}
+
 void C4Network2::OnGameSynchronized()
 {
 	// savegame needed?
@@ -970,18 +1147,16 @@ void C4Network2::DrawStatus(C4FacetEx &cgo)
 		// connections
 		if (pClient->isConnected())
 		{
-			Stat.AppendFormat("|   Connections: %s: %s (%s:%d p%d l%d)",
+			Stat.AppendFormat( "|   Connections: %s: %s (%s p%d l%d)",
 				pClient->getMsgConn() == pClient->getDataConn() ? "Msg/Data" : "Msg",
 				NetIO.getNetIOName(pClient->getMsgConn()->getNetClass()),
-				inet_ntoa(pClient->getMsgConn()->getPeerAddr().sin_addr),
-				htons(pClient->getMsgConn()->getPeerAddr().sin_port),
+				pClient->getMsgConn()->getPeerAddr().ToString().getData(),
 				pClient->getMsgConn()->getPingTime(),
 				pClient->getMsgConn()->getPacketLoss());
 			if (pClient->getMsgConn() != pClient->getDataConn())
 				Stat.AppendFormat(", Data: %s (%s:%d p%d l%d)",
 					NetIO.getNetIOName(pClient->getDataConn()->getNetClass()),
-					inet_ntoa(pClient->getDataConn()->getPeerAddr().sin_addr),
-					htons(pClient->getDataConn()->getPeerAddr().sin_port),
+					pClient->getDataConn()->getPeerAddr().ToString().getData(),
 					pClient->getDataConn()->getPingTime(),
 					pClient->getDataConn()->getPacketLoss());
 		}
@@ -1123,7 +1298,7 @@ void C4Network2::HandleConn(const C4PacketConn &Pkt, C4Network2IOConnection *pCo
 	else
 	{
 		// log & close
-		LogSilentF("Network: connection by %s (%s:%d) blocked: %s", CCore.getName(), inet_ntoa(pConn->getPeerAddr().sin_addr), htons(pConn->getPeerAddr().sin_port), szReply ? szReply : "");
+		LogSilentF("Network: connection by %s (%s) blocked: %s", CCore.getName(), pConn->getPeerAddr().ToString().getData(), szReply);
 		pConn->Close();
 	}
 }
@@ -1140,11 +1315,6 @@ bool C4Network2::CheckConn(const C4ClientCore &CCore, C4Network2IOConnection *pC
 	if (CCore.getDiffLevel(pClient->getCore()) > C4ClientCoreDL_IDMatch)
 	{
 		szReply = "wrong client core"; return false;
-	}
-	// check address
-	if (pClient->isConnected() && pClient->getMsgConn()->getPeerAddr().sin_addr.s_addr != pConn->getPeerAddr().sin_addr.s_addr)
-	{
-		szReply = "wrong address"; return false;
 	}
 	// accept
 	return true;
@@ -1218,7 +1388,7 @@ void C4Network2::HandleConnRe(const C4PacketConnRe &Pkt, C4Network2IOConnection 
 		// wrong password?
 		fWrongPassword = Pkt.isPasswordWrong();
 		// show message
-		LogSilentF("Network: connection to %s (%s:%d) refused: %s", pClient->getName(), inet_ntoa(pConn->getPeerAddr().sin_addr), htons(pConn->getPeerAddr().sin_port), Pkt.getMsg());
+		LogSilentF("Network: connection to %s (%s) refused: %s", pClient->getName(), pConn->getPeerAddr().ToString().getData(), Pkt.getMsg());
 		// close connection
 		pConn->Close();
 		return;
@@ -1243,7 +1413,7 @@ void C4Network2::HandleConnRe(const C4PacketConnRe &Pkt, C4Network2IOConnection 
 	if (pConn->getNetClass() == NetIO.DataIO()) pClient->SetDataConn(pConn);
 
 	// add peer connect address to client address list
-	if (pConn->getConnectAddr().sin_addr.s_addr)
+	if (!pConn->getConnectAddr().IsNull())
 	{
 		C4Network2Address Addr(pConn->getConnectAddr(), pConn->getProtocol());
 		pClient->AddAddr(Addr, Status.getState() != GS_Init);
@@ -1380,9 +1550,9 @@ void C4Network2::HandleJoinData(const C4PacketJoinData &rPkt)
 void C4Network2::OnConnect(C4Network2Client *pClient, C4Network2IOConnection *pConn, const char *szMsg, bool fFirstConnection)
 {
 	// log
-	LogSilentF("Network: %s %s connected (%s:%d/%s) (%s)", pClient->isHost() ? "host" : "client",
-		pClient->getName(), inet_ntoa(pConn->getPeerAddr().sin_addr), htons(pConn->getPeerAddr().sin_port),
-		NetIO.getNetIOName(pConn->getNetClass()), szMsg ? szMsg : "");
+	LogSilentF("Network: %s %s connected (%s/%s) (%s)", (pClient->isHost() ? "host" : "client"),
+		pClient->getName(), pConn->getPeerAddr().ToString().getData(),
+		NetIO.getNetIOName(pConn->getNetClass()), (szMsg ? szMsg : ""));
 
 	// first connection for this peer? call special handler
 	if (fFirstConnection) OnClientConnect(pClient, pConn);
@@ -1390,8 +1560,8 @@ void C4Network2::OnConnect(C4Network2Client *pClient, C4Network2IOConnection *pC
 
 void C4Network2::OnConnectFail(C4Network2IOConnection *pConn)
 {
-	LogSilentF("Network: %s connection to %s:%d failed!", NetIO.getNetIOName(pConn->getNetClass()),
-		inet_ntoa(pConn->getPeerAddr().sin_addr), htons(pConn->getPeerAddr().sin_port));
+	LogSilentF("Network: %s connection to %s failed!", NetIO.getNetIOName(pConn->getNetClass()),
+		pConn->getPeerAddr().ToString().getData());
 
 	// maybe client connection failure
 	// (happens if the connection is not fully accepted and the client disconnects.
@@ -1403,8 +1573,8 @@ void C4Network2::OnConnectFail(C4Network2IOConnection *pConn)
 
 void C4Network2::OnDisconnect(C4Network2Client *pClient, C4Network2IOConnection *pConn)
 {
-	LogSilentF("Network: %s connection to %s (%s:%d) lost!", NetIO.getNetIOName(pConn->getNetClass()),
-		pClient->getName(), inet_ntoa(pConn->getPeerAddr().sin_addr), htons(pConn->getPeerAddr().sin_port));
+	LogSilentF("Network: %s connection to %s (%s) lost!", NetIO.getNetIOName(pConn->getNetClass()),
+		pClient->getName(), pConn->getPeerAddr().ToString().getData());
 
 	// connection lost?
 	if (!pClient->isConnected())
@@ -1968,10 +2138,7 @@ bool C4Network2::LeagueStart(bool *pCancel)
 		return false;
 	}
 
-	// We have an internet connection, so let's punch the master server here in order to open an udp port
-	C4NetIO::addr_t PuncherAddr;
-	if (ResolveAddress(Config.Network.PuncherAddress, &PuncherAddr, C4NetStdPortPuncher))
-		NetIO.Punch(PuncherAddr);
+	InitPuncher();
 
 	// Let's wait for response
 	StdStrBuf Message = FormatString(LoadResStr("IDS_NET_LEAGUE_REGGAME"), pLeagueClient->getServerName());

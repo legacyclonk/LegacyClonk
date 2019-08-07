@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2017, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -206,6 +207,10 @@ protected:
 	class C4Network2HTTPClient *pStreamer;
 	unsigned int iCurrentStreamAmount, iCurrentStreamPosition;
 
+	// Puncher
+	C4NetpuncherID NetpuncherGameID;
+	StdCopyStrBuf NetpuncherAddr;
+
 public:
 	// data access
 	bool isEnabled()     const { return Status.isEnabled(); }
@@ -233,7 +238,7 @@ public:
 	// initialization
 	bool InitHost(bool fLobby);
 	InitResult InitClient(const class C4Network2Reference &Ref, bool fObserver);
-	InitResult InitClient(const class C4Network2Address *pAddrs, int iAddrCount, const class C4ClientCore &HostCore, const char *szPassword = nullptr);
+	InitResult InitClient(const std::vector<class C4Network2Address> &addrs, const class C4ClientCore &HostCore, const char *szPassword = nullptr);
 	bool DoLobby();
 	bool Start();
 	bool Pause();
@@ -263,6 +268,8 @@ public:
 	void OnDisconn(C4Network2IOConnection *pConn);
 	void HandlePacket(char cStatus, const C4PacketBase *pBasePkt, C4Network2IOConnection *pConn);
 	void HandleLobbyPacket(char cStatus, const C4PacketBase *pBasePkt, C4Network2IOConnection *pConn);
+	bool HandlePuncherPacket(C4NetpuncherPacket::uptr, C4NetIO::HostAddress::AddressFamily family);
+	void OnPuncherConnect(C4NetIO::addr_t addr);
 
 	// runtime join stuff
 	void OnGameSynchronized();
@@ -305,6 +312,11 @@ public:
 	bool StartStreaming(C4Record *pRecord);
 	bool FinishStreaming();
 	bool StopStreaming();
+
+	// Netpuncher
+	C4NetpuncherID::value &getNetpuncherGameID(C4NetIO::HostAddress::AddressFamily family);
+	C4NetpuncherID getNetpuncherGameID() const { return NetpuncherGameID; }
+	StdStrBuf getNetpuncherAddr() const { return NetpuncherAddr; }
 
 protected:
 	// net i/o initialization
@@ -355,6 +367,9 @@ protected:
 	// streaming
 	bool StreamIn(bool fFinish);
 	bool StreamOut();
+
+	// Puncher
+	void InitPuncher();
 };
 
 class C4VoteDialog : public C4GUI::MessageDialog

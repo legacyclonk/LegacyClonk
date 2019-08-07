@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2011-2018, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -20,11 +21,14 @@
 #include "C4Network2IO.h"
 #include "C4PacketBase.h"
 #include "C4Client.h"
+#include "C4Network2Address.h"
+
+#include <set>
 
 class C4Network2; class C4Network2IOConnection;
 
 // maximum address count that is saved for one client
-const int32_t C4ClientMaxAddr = 20;
+const int32_t C4ClientMaxAddr{40};
 
 // retry count and interval for connecting a client
 const int32_t C4NetClientConnectAttempts = 3,
@@ -38,46 +42,6 @@ enum C4Network2ClientStatus
 	NCS_NotReady, // client is behind (status not acknowledged)
 	NCS_Ready,    // client acknowledged network status
 	NCS_Remove,   // client is to be removed
-};
-
-class C4Network2Address
-{
-public:
-	C4Network2Address()
-		: eProtocol(P_NONE)
-	{
-		std::memset(&addr, 0, sizeof(addr));
-	}
-
-	C4Network2Address(C4NetIO::addr_t addr, C4Network2IOProtocol eProtocol)
-		: addr(addr), eProtocol(eProtocol) {}
-
-	C4Network2Address(const C4Network2Address &addr)
-		: addr(addr.getAddr()), eProtocol(addr.getProtocol()) {}
-
-	void operator=(const C4Network2Address &addr)
-	{
-		SetAddr(addr.getAddr()); SetProtocol(addr.getProtocol());
-	}
-
-	bool operator==(const C4Network2Address &addr) const;
-
-protected:
-	C4NetIO::addr_t addr;
-	C4Network2IOProtocol eProtocol;
-
-public:
-	const C4NetIO::addr_t &getAddr()     const { return addr; }
-	bool                   isIPNull()    const { return !addr.sin_addr.s_addr; }
-	C4Network2IOProtocol   getProtocol() const { return eProtocol; }
-
-	StdStrBuf toString() const;
-
-	void SetAddr(C4NetIO::addr_t naddr) { addr = naddr; }
-	void SetIP(in_addr ip) { addr.sin_addr = ip; }
-	void SetProtocol(C4Network2IOProtocol enProtocol) { eProtocol = enProtocol; }
-
-	void CompileFunc(StdCompiler *pComp);
 };
 
 class C4Network2Client
@@ -96,6 +60,10 @@ protected:
 	C4Network2Address Addr[C4ClientMaxAddr];
 	int32_t AddrAttempts[C4ClientMaxAddr];
 	int32_t iAddrCnt;
+	C4NetIO::addr_t IPv6AddrFromPuncher;
+
+	// Interface ids
+	std::set<int> InterfaceIDs;
 
 	// status
 	C4Network2ClientStatus eStatus;
@@ -106,6 +74,7 @@ protected:
 	// connections
 	C4Network2IOConnection *pMsgConn, *pDataConn;
 	time_t iNextConnAttempt;
+	std::unique_ptr<C4NetIOTCP::Socket> tcpSimOpenSocket;
 
 	// part of client list
 	C4Network2Client *pNext;
@@ -126,6 +95,8 @@ public:
 
 	int32_t                  getAddrCnt()       const { return iAddrCnt; }
 	const C4Network2Address &getAddr(int32_t i) const { return Addr[i]; }
+
+	const std::set<int> &getInterfaceIDs() const { return InterfaceIDs; }
 
 	C4Network2ClientStatus getStatus()   const { return eStatus; }
 	bool                   hasJoinData() const { return getStatus() != NCS_Joining; }
@@ -155,9 +126,11 @@ public:
 	bool SendMsg(C4NetIOPacket rPkt) const;
 
 	bool DoConnectAttempt(class C4Network2IO *pIO);
+	bool DoTCPSimultaneousOpen(class C4Network2IO *pIO, const C4Network2Address &addr);
 
 	// addresses
 	bool hasAddr(const C4Network2Address &addr) const;
+	void AddAddrFromPuncher(const C4NetIO::addr_t &addr);
 	bool AddAddr(const C4Network2Address &addr, bool fAnnounce);
 	void AddLocalAddrs(int16_t iPortTCP, int16_t iPortUDP);
 
@@ -236,4 +209,21 @@ public:
 	const C4Network2Address &getAddr()     const { return addr; }
 
 	virtual void CompileFunc(StdCompiler *pComp);
+};
+
+class C4PacketTCPSimOpen : public C4PacketBase
+{
+public:
+	C4PacketTCPSimOpen() = default;
+	C4PacketTCPSimOpen(const std::int32_t clientID, const C4Network2Address &addr)
+		: clientID{clientID}, addr{addr} {}
+
+	std::int32_t GetClientID() const { return clientID; }
+	const C4Network2Address &GetAddr() const { return addr; }
+
+	void CompileFunc(StdCompiler *comp) override;
+
+private:
+	std::int32_t clientID;
+	C4Network2Address addr;
 };

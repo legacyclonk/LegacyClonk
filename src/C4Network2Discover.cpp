@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 2011-2017, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -19,10 +20,22 @@
 
 // *** C4Network2IODiscover
 
+//
+// Quick multicast discovery guide by Luchs:
+//
+// All engines in network mode join a multicast group (defined by C4NetDiscoveryAddress).
+//
+// Engines searching for a game ("client") send a single byte c = 3 to that multicast group. This
+// happens while on the network list on each refresh.
+//
+// Engines hosting a game (when going into the lobby) send a byte c = 4 plus their reference server
+// port to the multicast group. Additionally, they listen for the c = 3 bytes and will reply with
+// another multicast answer.
+
 struct C4Network2IODiscoverReply
 {
 	char c;
-	int16_t Port;
+	std::uint16_t Port;
 };
 
 void C4Network2IODiscover::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
@@ -42,10 +55,8 @@ bool C4Network2IODiscover::Init(uint16_t iPort)
 	// Set callback
 	C4NetIOSimpleUDP::SetCallback(this);
 	// Build broadcast address
-	DiscoveryAddr.sin_addr.s_addr = C4NetDiscoveryAddress;
-	DiscoveryAddr.sin_port = htons(iPort);
-	DiscoveryAddr.sin_family = AF_INET;
-	std::memset(&DiscoveryAddr.sin_zero, 0, sizeof(DiscoveryAddr.sin_zero));
+	DiscoveryAddr.SetAddress(C4NetDiscoveryAddress);
+	DiscoveryAddr.SetPort(iPort);
 	// Initialize broadcast
 	if (!C4NetIOSimpleUDP::InitBroadcast(&DiscoveryAddr))
 		return false;
@@ -56,7 +67,7 @@ bool C4Network2IODiscover::Init(uint16_t iPort)
 bool C4Network2IODiscover::Announce()
 {
 	// Announce our presence
-	C4Network2IODiscoverReply Reply = { 4, static_cast<int16_t>(htons(iRefServerPort)) };
+	C4Network2IODiscoverReply Reply = { 4, iRefServerPort };
 	return Send(C4NetIOPacket(&Reply, sizeof(Reply), false, DiscoveryAddr));
 }
 
@@ -72,7 +83,7 @@ void C4Network2IODiscoverClient::OnPacket(const class C4NetIOPacket &rPacket, C4
 		{
 			const C4Network2IODiscoverReply *pReply = reinterpret_cast<const C4Network2IODiscoverReply *>(rPacket.getData());
 			Discovers[iDiscoverCount] = rPacket.getAddr();
-			Discovers[iDiscoverCount].sin_port = pReply->Port;
+			Discovers[iDiscoverCount].SetPort(pReply->Port);
 			iDiscoverCount++;
 		}
 	}
@@ -88,10 +99,8 @@ bool C4Network2IODiscoverClient::Init(uint16_t iPort)
 	// Set callback
 	C4NetIOSimpleUDP::SetCallback(this);
 	// Build broadcast address
-	DiscoveryAddr.sin_addr.s_addr = C4NetDiscoveryAddress;
-	DiscoveryAddr.sin_port = htons(iPort);
-	DiscoveryAddr.sin_family = AF_INET;
-	std::memset(&DiscoveryAddr.sin_zero, 0, sizeof(DiscoveryAddr.sin_zero));
+	DiscoveryAddr.SetAddress(C4NetDiscoveryAddress);
+	DiscoveryAddr.SetPort(iPort);
 	// Initialize broadcast
 	if (!C4NetIOSimpleUDP::InitBroadcast(&DiscoveryAddr))
 		return false;

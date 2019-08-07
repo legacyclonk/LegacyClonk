@@ -203,7 +203,10 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(LastUpdateTime,            "LastUpdateTime",         0,    false, true));
 	pComp->Value(mkNamingAdapt(AsyncMaxWait,              "AsyncMaxWait",           2,    false, true));
 
-	pComp->Value(mkNamingAdapt(s(PuncherAddress), "PuncherAddress", "clonk.de:11115", false, true));
+	constexpr auto defaultPuncherServer = "netpuncher.openclonk.org:11115";
+	pComp->Value(mkNamingAdapt(s(PuncherAddress), "PuncherAddress", defaultPuncherServer, false, true));
+
+	if (pComp->isCompiler() && SEqual(PuncherAddress, "clonk.de:11115")) strncpy(PuncherAddress, defaultPuncherServer, CFG_MaxString);
 }
 
 void C4ConfigLobby::CompileFunc(StdCompiler *pComp)

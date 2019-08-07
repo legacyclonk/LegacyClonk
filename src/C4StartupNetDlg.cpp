@@ -3,6 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2006, Sven2
+ * Copyright (c) 2013, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -902,8 +903,7 @@ void C4StartupNetDlg::UpdateList(bool fGotReference)
 	C4NetIO::addr_t Discover;
 	while (DiscoverClient.PopDiscover(Discover))
 	{
-		StdStrBuf Address;
-		Address.Format("%s:%d", inet_ntoa(Discover.sin_addr), htons(Discover.sin_port));
+		StdStrBuf Address(Discover.ToString());
 		AddReferenceQuery(Address.getData(), C4StartupNetListEntry::NRQT_GameDiscovery);
 	}
 

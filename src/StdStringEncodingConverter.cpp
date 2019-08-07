@@ -16,7 +16,7 @@
 #include <Standard.h>
 #include <StdStringEncodingConverter.h>
 
-#include <windows.h>
+#include "C4Windows.h"
 
 #include <memory>
 #include <stdexcept>

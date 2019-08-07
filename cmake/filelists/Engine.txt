@@ -155,6 +155,8 @@ src/C4NetIO.cpp
 src/C4NetIO.h
 src/C4Network2.cpp
 src/C4Network2.h
+src/C4Network2Address.cpp
+src/C4Network2Address.h
 src/C4Network2Client.cpp
 src/C4Network2Client.h
 src/C4Network2Dialogs.cpp
@@ -209,6 +211,8 @@ src/C4PlayerList.h
 src/C4PropertyDlg.cpp
 src/C4PropertyDlg.h
 src/C4Prototypes.h
+src/C4PuncherPacket.cpp
+src/C4PuncherPacket.h
 src/C4RTF.cpp
 src/C4RTF.h
 src/C4Random.cpp

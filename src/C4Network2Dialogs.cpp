@@ -3,6 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2004, Sven2
+ * Copyright (c) 2013-2016, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -88,14 +89,12 @@ void C4Network2ClientDlg::UpdateText()
 				AddLineFmt(LoadResStr("IDS_NET_CLIENT_INFO_CONNECTIONS"),
 					pNetClient->getMsgConn() == pNetClient->getDataConn() ? "Msg/Data" : "Msg",
 					Game.Network.NetIO.getNetIOName(pNetClient->getMsgConn()->getNetClass()),
-					inet_ntoa(pNetClient->getMsgConn()->getPeerAddr().sin_addr),
-					htons(pNetClient->getMsgConn()->getPeerAddr().sin_port),
+					pNetClient->getMsgConn()->getPeerAddr().ToString().getData(),
 					pNetClient->getMsgConn()->getPingTime());
 				if (pNetClient->getMsgConn() != pNetClient->getDataConn())
 					AddLineFmt(LoadResStr("IDS_NET_CLIENT_INFO_CONNDATA"),
 						Game.Network.NetIO.getNetIOName(pNetClient->getDataConn()->getNetClass()),
-						inet_ntoa(pNetClient->getDataConn()->getPeerAddr().sin_addr),
-						htons(pNetClient->getDataConn()->getPeerAddr().sin_port),
+						pNetClient->getDataConn()->getPeerAddr().ToString().getData(),
 						pNetClient->getDataConn()->getPingTime());
 			}
 			else
@@ -336,11 +335,10 @@ void C4Network2ClientListBox::ConnectionListItem::Update()
 	else
 		szConnType = "Data";
 	// display info
-	pDesc->SetText(FormatString("%s: %s (%s:%d l%d)",
+	pDesc->SetText(FormatString("%s: %s (%s l%d)",
 		szConnType,
 		Game.Network.NetIO.getNetIOName(pConn->getNetClass()),
-		inet_ntoa(pConn->getPeerAddr().sin_addr),
-		htons(pConn->getPeerAddr().sin_port),
+		pConn->getPeerAddr().ToString().getData(),
 		pConn->getPacketLoss()).getData());
 }
 
