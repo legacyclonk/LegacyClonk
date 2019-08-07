@@ -209,7 +209,7 @@ protected:
 
 	// Puncher
 	C4NetpuncherID NetpuncherGameID;
-	StdCopyStrBuf NetpuncherAddr;
+	StdStrBuf NetpuncherAddr;
 
 public:
 	// data access

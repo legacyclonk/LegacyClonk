@@ -56,7 +56,7 @@ private:
 	bool PasswordNeeded;
 	bool OfficialServer;
 	C4NetpuncherID NetpuncherGameID;
-	StdCopyStrBuf NetpuncherAddr;
+	StdStrBuf NetpuncherAddr;
 
 	// Engine information
 	C4GameVersion Game;
