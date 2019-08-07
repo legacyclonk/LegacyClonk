@@ -37,9 +37,6 @@ CStdWindow::~CStdWindow()
 // Only set title.
 // FIXME: Read from application bundle on the Mac.
 
-static size_t resolutionX;
-static size_t resolutionY;
-
 CStdWindow *CStdWindow::Init(CStdApp *pApp)
 {
 	return Init(pApp, STD_PRODUCT);
@@ -53,6 +50,9 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	const auto info = SDL_GetVideoInfo();
 	resolutionX = info->current_w;
 	resolutionY = info->current_h;
+	width = height = 0;
+	displayMode = DisplayMode::Window;
+	app = pApp;
 	return this;
 }
 
@@ -73,8 +73,7 @@ bool CStdWindow::GetSize(RECT *pRect)
 void CStdWindow::SetSize(unsigned int X, unsigned int Y)
 {
 	width = X, height = Y;
-	SDL_SetVideoMode(X, Y, 0, SDL_OPENGL | SDL_RESIZABLE);
-	SDL_ShowCursor(SDL_DISABLE);
+	SetDisplayMode(displayMode);
 }
 
 void CStdWindow::SetTitle(const char *Title)
@@ -92,5 +91,30 @@ void CStdWindow::FlashWindow()
 
 void CStdWindow::SetDisplayMode(DisplayMode mode)
 {
-	SDL_SetVideoMode(resolutionX, resolutionY, 0, SDL_OPENGL | (mode == DisplayMode::Fullscreen ? SDL_FULLSCREEN : SDL_RESIZABLE));
+	auto newWidth = width;
+	auto newHeight = height;
+	if (mode == DisplayMode::Fullscreen)
+	{
+		newWidth = resolutionX;
+		newHeight = resolutionY;
+	}
+	displayMode = mode;
+	SDL_SetVideoMode(newWidth, newHeight, 0, SDL_OPENGL | (mode == DisplayMode::Fullscreen ? SDL_FULLSCREEN : SDL_RESIZABLE));
+	SDL_ShowCursor(SDL_DISABLE);
+	UpdateSize(newWidth, newHeight);
+}
+
+void CStdWindow::UpdateSize(int newWidth, int newHeight)
+{
+	if (width != newWidth || height != newHeight)
+	{
+		width = newWidth;
+		height = newHeight;
+		SetDisplayMode(displayMode);
+		SDL_Event e;
+		e.type = SDL_VIDEORESIZE;
+		e.resize.w = width;
+		e.resize.h = height;
+		app->HandleSDLEvent(e);
+	}
 }
