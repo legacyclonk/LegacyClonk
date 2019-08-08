@@ -404,7 +404,7 @@ public:
 	// references the string literal
 	template<size_t N>
 	StdStrBuf(const char(&str)[N])
-		: StdBuf(str, N, false) { }
+		: StdBuf(str, strlen(str) + 1, false) { }
 
 	// See StdBuf::StdBuf. Copies by default or references if desired.
 	StdStrBuf(const StdStrBuf &Buf2, bool fCopy = true) : StdBuf(Buf2, fCopy) {}
@@ -539,7 +539,7 @@ public:
 	StdStrBuf &operator=(const char *szString)  { Copy(szString); return *this; }
 
 	template<size_t N>
-	StdStrBuf &operator=(const char (&szString)[N]) { Ref(szString, N - 1); return *this; }
+	StdStrBuf &operator=(const char (&szString)[N]) { Ref(szString); return *this; }
 
 	// conversion to "bool"
 	operator const void *() const { return getData(); }
