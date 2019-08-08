@@ -276,7 +276,7 @@ bool C4NetIO::HostAddress::IsMulticast() const
 	if (gen.sa_family == AF_INET6)
 		return IN6_IS_ADDR_MULTICAST(&v6.sin6_addr) != 0;
 	if (gen.sa_family == AF_INET)
-		return (::ntohl(v4.sin_addr.s_addr) >> 24) == 239;
+		return (ntohl(v4.sin_addr.s_addr) >> 24) == 239;
 	return false;
 }
 
@@ -285,7 +285,7 @@ bool C4NetIO::HostAddress::IsLoopback() const
 	if (gen.sa_family == AF_INET6)
 		return IN6_IS_ADDR_LOOPBACK(&v6.sin6_addr) != 0;
 	if (gen.sa_family == AF_INET)
-		return (::ntohl(v4.sin_addr.s_addr) >> 24) == 127;
+		return (ntohl(v4.sin_addr.s_addr) >> 24) == 127;
 	return false;
 }
 
@@ -306,7 +306,7 @@ bool C4NetIO::HostAddress::IsPrivate() const
 		return (v6.sin6_addr.s6_addr[0] & 0xfe) == 0xfc;
 	if (gen.sa_family == AF_INET)
 	{
-		const std::uint32_t addr{::ntohl(v4.sin_addr.s_addr)};
+		const std::uint32_t addr{ntohl(v4.sin_addr.s_addr)};
 		const std::uint32_t s{(addr >> 16) & 0xff};
 		switch (addr >> 24)
 		{
