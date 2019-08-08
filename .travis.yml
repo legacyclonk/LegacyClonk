@@ -8,7 +8,7 @@ branches:
 
 install:
   - brew update
-  - brew upgrade
+  - until brew upgrade; do true; done
   - brew install sdl_mixer libpng libjpeg freetype glew openssl@1.1 || true
   - brew unlink cmake
   - brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/74d54460d0af8e21deacee8dcced325cfc191141/Formula/cmake.rb
