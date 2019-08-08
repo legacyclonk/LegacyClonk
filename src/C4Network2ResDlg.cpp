@@ -216,6 +216,7 @@ void C4Network2ResDlg::Update()
 	{
 		Game.Network.GetLobby()->checkReady->SetEnabled(isComplete);
 		Game.Network.GetLobby()->checkReady->SetToolTip(isComplete ? LoadResStr("IDS_DLGTIP_READY") : LoadResStr("IDS_DLGTIP_READYNOTAVAILABLE"));
+		Game.Network.GetLobby()->checkReady->SetCaption(isComplete ? LoadResStr("IDS_DLG_READY") : LoadResStr("IDS_DLG_STILLLOADING"));
 	}
 	// del trailing items
 	while (pItem)

@@ -1392,7 +1392,7 @@ private:
 	char cHotkey;
 
 public:
-	CheckBox(const C4Rect &rtBounds, const char *szCaption, bool fChecked);
+	CheckBox(const C4Rect &rtBounds, const std::string &caption, bool fChecked);
 	~CheckBox();
 
 private:
@@ -1416,6 +1416,7 @@ public:
 	bool GetChecked() const { return fChecked; }
 	void SetOnChecked(BaseCallbackHandler *pCB);
 	void SetEnabled(bool fToVal) { if (!(fEnabled = fToVal)) DisableFocus(); }
+	void SetCaption(const std::string &caption);
 
 	const char *GetText() { return sCaption.getData(); }
 

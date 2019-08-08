@@ -31,14 +31,13 @@ namespace C4GUI
 
 // CheckBox
 
-CheckBox::CheckBox(const C4Rect &rtBounds, const char *szCaption, bool fChecked)
+CheckBox::CheckBox(const C4Rect &rtBounds, const std::string &caption, bool fChecked)
 	: Control(rtBounds), fChecked(fChecked), fMouseOn(false), fEnabled(true), pFont(nullptr)
 	, dwEnabledClr(C4GUI_CheckboxFontClr), dwDisabledClr(C4GUI_CheckboxDisabledFontClr), cHotkey(0)
 {
-	if (szCaption)
+	if (!caption.empty())
 	{
-		sCaption.Copy(szCaption);
-		ExpandHotkeyMarkup(sCaption, cHotkey);
+		SetCaption(caption);
 	}
 	// key callbacks: Check/Uncheck on space and primary joy button
 	C4CustomKey::CodeList Keys;
@@ -140,6 +139,12 @@ void CheckBox::SetOnChecked(BaseCallbackHandler *pCB)
 {
 	if (pCBHandler) pCBHandler->DeRef();
 	if (pCBHandler = pCB) pCB->Ref();
+}
+
+void CheckBox::SetCaption(const std::string &caption)
+{
+	sCaption.Copy(caption.c_str());
+	ExpandHotkeyMarkup(sCaption, cHotkey);
 }
 
 bool CheckBox::GetStandardCheckBoxSize(int *piWdt, int *piHgt, const char *szForCaptionText, CStdFont *pUseFont)
