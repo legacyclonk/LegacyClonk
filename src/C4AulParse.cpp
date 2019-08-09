@@ -2147,6 +2147,12 @@ void C4AulParseState::Parse_Statement()
 					FoundFn = a->Owner->GetFuncRecursive(Idtf);
 				else
 					FoundFn = a->GetFuncRecursive(Idtf);
+
+			if (FoundFn && FoundFn->SFunc() && FoundFn->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(FoundFn, Fn->pOrgScript))
+			{
+				throw new C4AulParseError(this, "insufficient access level", Idtf);
+			}
+
 			// ignore func-not-found errors in the preparser, because the function tables are not built yet
 			if (!FoundFn && Type == PARSER)
 			{
@@ -3054,6 +3060,12 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 				{
 					throw new C4AulParseError(this, FormatString("direct object call: function %s::%s not found", C4IdText(idNS), Idtf).getData());
 				}
+
+				if (pFunc->SFunc() && pFunc->SFunc()->Access < pDef->Script.GetAllowedAccess(pFunc, Fn->pOrgScript))
+				{
+					throw new C4AulParseError(this, "insufficient access level", Idtf);
+				}
+
 				// write namespace chunk to byte code
 				AddBCC(AB_CALLNS, (int)idNS);
 			}
@@ -3084,6 +3096,11 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 				AddBCC(AB_STACK, -1); AddBCC(AB_STACK, +1);
 				// done
 				break;
+			}
+
+			else if (pFunc->SFunc() && pFunc->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(pFunc, Fn->pOrgScript))
+			{
+				throw new C4AulParseError(this, "insufficient access level", Idtf);
 			}
 		}
 		// add call chunk

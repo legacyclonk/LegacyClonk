@@ -496,8 +496,9 @@ public:
 	C4AulFunc *GetFuncRecursive(const char *pIdtf); // search function by identifier, including global funcs
 	C4AulScriptFunc *GetSFunc(const char *pIdtf, C4AulAccess AccNeeded, bool fFailSafe = false); // get local sfunc, check access, check '~'-safety
 	C4AulScriptFunc *GetSFunc(const char *pIdtf); // get local script function by name
-	C4AulScriptFunc *GetSFunc(int iIndex, const char *szPattern = nullptr); // get local script function by index
+	C4AulScriptFunc *GetSFunc(int iIndex, const char *szPattern = nullptr, C4AulAccess AccNeeded = AA_PRIVATE); // get local script function by index
 	C4AulScriptFunc *GetSFuncWarn(const char *pIdtf, C4AulAccess AccNeeded, const char *WarnStr); // get function; return nullptr and warn if not existent
+	C4AulAccess GetAllowedAccess(C4AulFunc *func, C4AulScript *caller);
 
 	void AddFunc(const char *pIdtf, C4ScriptFnDef *Def); // add def def func to table
 
