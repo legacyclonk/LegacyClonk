@@ -1021,6 +1021,11 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			{
 				// Get function call data
 				C4AulFunc *pFunc = reinterpret_cast<C4AulFunc *>(pCPos->bccX);
+
+				if (C4AulScriptFunc *sfunc = pFunc->SFunc(); sfunc && sfunc->Access < sfunc->pOrgScript->GetAllowedAccess(pFunc, pCurCtx->Func->pOrgScript))
+				{
+					throw new C4AulExecError(pCurCtx->Obj, FormatString("Insufficient access level for function \"%s\"!", pFunc->Name).getData());
+				}
 				C4Value *pPars = pCurVal - pFunc->GetParCount() + 1;
 				// Save current position
 				pCurCtx->CPos = pCPos;
@@ -1189,6 +1194,15 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					else
 						throw new C4AulExecError(pCurCtx->Obj,
 							FormatString("Definition call: No function \"%s\" in definition \"%s\"!", szFuncName, pDestDef->Name.getData()).getData());
+				}
+
+				else if (C4AulScriptFunc *sfunc = pFunc->SFunc(); sfunc)
+				{
+					C4AulScript *script = sfunc->pOrgScript;
+					if (sfunc->Access < script->GetAllowedAccess(pFunc, sfunc->pOrgScript))
+					{
+						throw new C4AulExecError(pCurCtx->Obj, FormatString("Insufficient access level for function \"%s\"!", pFunc->Name).getData());
+					}
 				}
 
 				// Save function back (optimization)
