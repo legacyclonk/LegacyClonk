@@ -16,8 +16,13 @@
 
 #include <C4Include.h>
 #include <C4Value.h>
+#include <C4Aul.h>
 #include <C4StringTable.h>
 #include <C4ValueList.h>
+#include <C4ValueHash.h>
+
+#include <functional>
+#include <string_view>
 
 #include <C4Game.h>
 #ifdef C4ENGINE
@@ -36,7 +41,7 @@ C4Value::~C4Value()
 		FirstRef->Set(*this);
 
 	// delete contents
-	DelDataRef(Data, Type, GetNextRef(), GetBaseArray());
+	DelDataRef(Data, Type, GetNextRef(), GetBaseContainer());
 }
 
 StdStrBuf C4Value::toString() const
@@ -47,7 +52,6 @@ StdStrBuf C4Value::toString() const
 		case C4V_String:
 			return val._getStr()->Data;
 
-		case C4V_Any:
 		case C4V_Bool:
 		case C4V_Int:
 			return FormatString("%d", val._getInt());
@@ -78,7 +82,7 @@ void C4Value::AddDataRef()
 	case C4V_pC4Value: Data.Ref->AddRef(this); break;
 	case C4V_Any: if (Data) { GuessType(); } break;
 #ifdef C4ENGINE
-	case C4V_Array: Data.Array = Data.Array->IncRef(); break;
+	case C4V_Array: case C4V_Map: Data.Container = Data.Container->IncRef(); break;
 	case C4V_String: Data.Str->IncRef(); break;
 	case C4V_C4Object:
 		Data.Obj->AddRef(this);
@@ -99,19 +103,19 @@ void C4Value::AddDataRef()
 	}
 }
 
-void C4Value::DelDataRef(C4V_Data Data, C4V_Type Type, C4Value *pNextRef, C4ValueArray *pBaseArray)
+void C4Value::DelDataRef(C4V_Data Data, C4V_Type Type, C4Value *pNextRef, C4ValueContainer *pBaseContainer)
 {
 	// clean up
 	switch (Type)
 	{
 	case C4V_pC4Value:
 		// Save because AddDataRef does not set this flag
-		HasBaseArray = false;
-		Data.Ref->DelRef(this, pNextRef, pBaseArray);
+		HasBaseContainer = false;
+		Data.Ref->DelRef(this, pNextRef, pBaseContainer);
 		break;
 #ifdef C4ENGINE
 	case C4V_C4Object: Data.Obj->DelRef(this, pNextRef); break;
-	case C4V_Array: Data.Array->DecRef(); break;
+	case C4V_Array: case C4V_Map: Data.Container->DecRef(); break;
 	case C4V_String: Data.Str->DecRef(); break;
 #endif
 	default: break;
@@ -126,18 +130,20 @@ void C4Value::Set(C4V_Data nData, C4V_Type nType)
 	C4V_Data oData = Data;
 	C4V_Type oType = Type;
 	C4Value *oNextRef = NextRef;
-	C4ValueArray *oBaseArray = BaseArray;
-	bool oHasBaseArray = HasBaseArray;
+	auto *oBaseContainer = BaseContainer;
+	auto oHasBaseContainer = HasBaseContainer;
 
 	// change
 	Data = nData;
-	Type = nData ? nType : C4V_Any;
+	Type = (nData || nType == C4V_Int || nType == C4V_Bool) ? nType : C4V_Any;
+
+	CheckRemoveFromMap();
 
 	// hold
 	AddDataRef();
 
 	// clean up
-	DelDataRef(oData, oType, oHasBaseArray ? nullptr : oNextRef, oHasBaseArray ? oBaseArray : nullptr);
+	DelDataRef(oData, oType, oHasBaseContainer ? nullptr : oNextRef, oHasBaseContainer ? oBaseContainer : nullptr);
 }
 
 void C4Value::Set0()
@@ -149,8 +155,18 @@ void C4Value::Set0()
 	Data = 0;
 	Type = C4V_Any;
 
+	CheckRemoveFromMap();
+
 	// clean up (save even if Data was 0 before)
-	DelDataRef(oData, oType, HasBaseArray ? nullptr : NextRef, HasBaseArray ? BaseArray : nullptr);
+	DelDataRef(oData, oType, HasBaseContainer ? nullptr : NextRef, HasBaseContainer ? BaseContainer : nullptr);
+}
+
+void C4Value::CheckRemoveFromMap()
+{
+	if (Type == C4V_Any && OwningMap)
+	{
+		OwningMap->removeValue(this);
+	}
 }
 
 void C4Value::Move(C4Value *nValue)
@@ -172,39 +188,59 @@ void C4Value::Move(C4Value *nValue)
 
 #ifdef C4ENGINE
 
-void C4Value::GetArrayElement(int32_t Index, C4Value &target, C4AulContext *pctx, bool noref)
+void C4Value::GetContainerElement(C4Value *index, C4Value &target, C4AulContext *pctx, bool noref)
 {
-	C4Value &Ref = GetRefVal();
-	// No array (and no nullpointer because Data==0 => Type==any)
-	if (Ref.Type != C4V_Array)
-		throw new C4AulExecError(pctx->Obj, "Array access: array expected");
-	if (noref)
+	try
 	{
-		// Get the item, but do not resize the array - it might be used more than once
-		if (Index < Ref.Data.Array->GetSize())
-			target.Set(Ref.Data.Array->GetItem(Index));
-		else
-			target.Set(0);
-	}
-	else
-	{
-		// Is target the first ref?
-		if (Index >= Ref.Data.Array->GetSize() || !Ref.Data.Array->GetItem(Index).FirstRef)
+		C4Value &Ref = GetRefVal();
+		if (Ref.Type == C4V_C4Object)
 		{
-			Ref.Data.Array = Ref.Data.Array->IncElementRef();
-			target.SetRef(&Ref.Data.Array->GetItem(Index));
-			if (target.Type == C4V_pC4Value)
+			if (index->ConvertTo(C4V_String) && index->_getStr())
 			{
-				assert(!target.NextRef);
-				target.BaseArray = Ref.Data.Array;
-				target.HasBaseArray = true;
+				auto var = Ref.Data.Obj->LocalNamed.GetItem(index->_getStr()->Data.getData());
+				if (var) target.SetRef(var);
+				else target.Set0();
 			}
-			// else target apparently owned the last reference to the array
+			else
+				throw new C4AulExecError(pctx->Obj, "indexed access on object: only string keys are allowed");
+			return;
+		}
+		// No array (and no nullpointer because Data==0 => Type==any)
+		if (Ref.Type != C4V_Array && Ref.Type != C4V_Map)
+			throw new C4AulExecError(pctx->Obj, "indexed access: array or map expected");
+		if (noref)
+		{
+			// Get the item, but do not resize the array - it might be used more than once
+			if (Ref.Data.Container->hasIndex(*index))
+				target.Set((*Ref.Data.Container)[*index]);
+			else
+				target.Set(0);
 		}
 		else
 		{
-			target.SetRef(&Ref.Data.Array->GetItem(Index));
+			index->Deref();
+			// Is target the first ref?
+			if (!Ref.Data.Container->hasIndex(*index) || !(*Ref.Data.Container)[*index].FirstRef)
+			{
+				Ref.Data.Container = Ref.Data.Container->IncElementRef();
+				target.SetRef(&(*Ref.Data.Container)[*index]);
+				if (target.Type == C4V_pC4Value)
+				{
+					assert(!target.NextRef);
+					target.BaseContainer = Ref.Data.Container;
+					target.HasBaseContainer = true;
+				}
+				// else target apparently owned the last reference to the array
+			}
+			else
+			{
+				target.SetRef(&(*Ref.Data.Container)[*index]);
+			}
 		}
+	}
+	catch (const std::runtime_error &e)
+	{
+		throw new C4AulExecError(pctx->Obj, e.what());
 	}
 }
 
@@ -241,7 +277,7 @@ void C4Value::AddRef(C4Value *pRef)
 	FirstRef = pRef;
 }
 
-void C4Value::DelRef(const C4Value *pRef, C4Value *pNextRef, C4ValueArray *pBaseArray)
+void C4Value::DelRef(const C4Value *pRef, C4Value *pNextRef, C4ValueContainer *pBaseContainer)
 {
 	if (pRef == FirstRef)
 		FirstRef = pNextRef;
@@ -251,21 +287,21 @@ void C4Value::DelRef(const C4Value *pRef, C4Value *pNextRef, C4ValueArray *pBase
 		while (pVal->NextRef != pRef)
 		{
 			// assert that pRef really was in the list
-			assert(pVal->NextRef && !pVal->HasBaseArray);
+			assert(pVal->NextRef && !pVal->HasBaseContainer);
 			pVal = pVal->NextRef;
 		}
 		pVal->NextRef = pNextRef;
-		if (pBaseArray)
+		if (pBaseContainer)
 		{
-			pVal->HasBaseArray = true;
-			pVal->BaseArray = pBaseArray;
+			pVal->HasBaseContainer = true;
+			pVal->BaseContainer = pBaseContainer;
 		}
 	}
 	// Was pRef the last ref to an array element?
 #ifdef C4ENGINE
-	if (pBaseArray && !FirstRef)
+	if (pBaseContainer && !FirstRef)
 	{
-		pBaseArray->DecElementRef();
+		pBaseContainer->DecElementRef();
 	}
 #endif
 }
@@ -309,7 +345,7 @@ C4V_Type C4Value::GuessType()
 void C4Value::HintType(C4V_Type type)
 {
 	auto &ref = GetRefVal();
-	if (ref.Type == C4V_Any && ref.Data.Int != 0)
+	if (ref.Type == C4V_Any && (ref.Data.Int != 0 || type == C4V_Bool || type == C4V_Int))
 		ref.Type = type;
 }
 
@@ -331,6 +367,8 @@ const char *GetC4VName(const C4V_Type Type)
 		return "string";
 	case C4V_Array:
 		return "array";
+	case C4V_Map:
+		return "map";
 	case C4V_pC4Value:
 		return "&";
 	default:
@@ -360,6 +398,8 @@ char GetC4VID(const C4V_Type Type)
 		return 'O';
 	case C4V_Array:
 		return 'a';
+	case C4V_Map:
+		return 'm';
 	}
 	return ' ';
 }
@@ -386,6 +426,8 @@ C4V_Type GetC4VFromID(const char C4VID)
 		return C4V_C4ObjectEnum;
 	case 'a':
 		return C4V_Array;
+	case 'm':
+		return C4V_Map;
 	}
 	return C4V_Any;
 }
@@ -430,7 +472,7 @@ bool C4Value::FnCnvGuess(C4Value *Val, C4V_Type toType, bool fStrict)
 	}
 	else
 	{
-		// 0 is every possible type except a reference at the same time
+		// nil is every possible type except a reference at the same time
 		return true;
 	}
 }
@@ -463,6 +505,7 @@ C4VCnvFn C4Value::C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1] =
 		{ CnvGuess }, // C4Object
 		{ CnvGuess }, // String
 		{ CnvGuess }, // Array
+		{ CnvGuess }, // Map
 		{ CnvError }, // pC4Value
 	},
 	{
@@ -474,6 +517,7 @@ C4VCnvFn C4Value::C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1] =
 		{ CnvError },  // C4Object NEVER!
 		{ CnvError },  // String   NEVER!
 		{ CnvError },  // Array    NEVER!
+		{ CnvError },  // Map      NEVER!
 		{ CnvError },  // pC4Value
 	},
 	{
@@ -485,6 +529,7 @@ C4VCnvFn C4Value::C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1] =
 		{ CnvError },     // C4Object NEVER!
 		{ CnvError },     // String   NEVER!
 		{ CnvError },     // Array    NEVER!
+		{ CnvError },     // Map      NEVER!
 		{ CnvError },     // pC4Value
 	},
 	{
@@ -496,6 +541,7 @@ C4VCnvFn C4Value::C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1] =
 		{ CnvError },     // C4Object NEVER!
 		{ CnvError },     // String   NEVER!
 		{ CnvError },     // Array    NEVER!
+		{ CnvError },     // Map      NEVER!
 		{ CnvError },     // pC4Value
 	},
 	{
@@ -507,6 +553,7 @@ C4VCnvFn C4Value::C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1] =
 		{ CnvOK },        // C4Object same
 		{ CnvError },     // String   NEVER!
 		{ CnvError },     // Array    NEVER!
+		{ CnvError },     // Map      NEVER!
 		{ CnvError },     // pC4Value
 	},
 	{
@@ -518,6 +565,7 @@ C4VCnvFn C4Value::C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1] =
 		{ CnvError },     // C4Object NEVER!
 		{ CnvOK },        // String   same
 		{ CnvError },     // Array    NEVER!
+		{ CnvError },     // Map      NEVER!
 		{ CnvError },     // pC4Value
 	},
 	{
@@ -529,6 +577,19 @@ C4VCnvFn C4Value::C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1] =
 		{ CnvError }, // C4Object NEVER!
 		{ CnvError }, // String   NEVER!
 		{ CnvOK },    // Array    same
+		{ CnvError }, // Map      NEVER!
+		{ CnvError }, // pC4Value NEVER!
+	},
+	{
+		// C4V_Map
+		{ CnvOK },    // any
+		{ CnvError }, // int      NEVER!
+		{ CnvOK },    // Bool
+		{ CnvError }, // C4ID     NEVER!
+		{ CnvError }, // C4Object NEVER!
+		{ CnvError }, // String   NEVER!
+		{ CnvError }, // Array    NEVER!
+		{ CnvOK },    // Map      same
 		{ CnvError }, // pC4Value NEVER!
 	},
 	{
@@ -540,6 +601,7 @@ C4VCnvFn C4Value::C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1] =
 		{ CnvDeref }, // C4Object
 		{ CnvDeref }, // String
 		{ CnvDeref }, // Array
+		{ CnvDeref }, // Map
 		{ CnvOK },    // pC4Value same
 	},
 };
@@ -552,7 +614,7 @@ C4VCnvFn C4Value::C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1] =
 #undef CnvDeref
 
 // Humanreadable debug output
-StdStrBuf C4Value::GetDataString()
+StdStrBuf C4Value::GetDataString() const
 {
 	if (Type == C4V_pC4Value)
 		return GetRefVal().GetDataString() + "*";
@@ -560,8 +622,9 @@ StdStrBuf C4Value::GetDataString()
 	// ouput by type info
 	switch (GetType())
 	{
-	case C4V_Int:
 	case C4V_Any:
+		return StdStrBuf("nil");
+	case C4V_Int:
 		return FormatString("%ld", Data.Int);
 	case C4V_Bool:
 		return StdStrBuf::MakeRef(Data ? "true" : "false");
@@ -593,6 +656,23 @@ StdStrBuf C4Value::GetDataString()
 			DataString.Append(static_cast<const StdStrBuf &>(Data.Array->GetItem(i).GetDataString()));
 		}
 		DataString.AppendChar(']');
+		return DataString;
+	}
+	case C4V_Map:
+	{
+		if (Data.Map->size() == 0) return StdStrBuf("{}");
+		StdStrBuf DataString("{ ");
+		bool first = true;
+		for (auto [key, value] : *Data.Map)
+		{
+			if (!first) DataString.Append(", ");
+			else first = false;
+
+			DataString.Append(key.GetDataString());
+			DataString.Append(" = ");
+			DataString.Append(value.GetDataString());
+		}
+		DataString.Append(" }");
 		return DataString;
 	}
 #endif // C4ENGINE
@@ -627,9 +707,9 @@ void C4Value::DenumeratePointer()
 {
 #ifdef C4ENGINE
 	// array?
-	if (Type == C4V_Array)
+	if (Type == C4V_Array || Type == C4V_Map)
 	{
-		Data.Array->DenumeratePointers();
+		Data.Container->DenumeratePointers();
 		return;
 	}
 	// object types only
@@ -653,7 +733,7 @@ void C4Value::DenumeratePointer()
 		}
 		// object: invalid value - set to zero
 		else
-			Set(0);
+			Set0();
 	}
 #endif
 }
@@ -676,7 +756,7 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 	else
 	{
 		// Clear
-		Set(0);
+		Set0();
 		// Read type
 		char cC4VID;
 		try
@@ -746,7 +826,14 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 	case C4V_Array:
 		pComp->Separator(StdCompiler::SEP_START2);
 		pComp->Value(mkPtrAdapt(Data.Array, false));
-		if (fCompiler) Data.Array = Data.Array->IncRef();
+		if (fCompiler) Data.Container = Data.Array->IncRef();
+		pComp->Separator(StdCompiler::SEP_END2);
+		break;
+
+	case C4V_Map:
+		pComp->Separator(StdCompiler::SEP_START2);
+		pComp->Value(mkPtrAdapt(Data.Map, false));
+		if (fCompiler) Data.Container = Data.Map->IncRef();
 		pComp->Separator(StdCompiler::SEP_END2);
 		break;
 
@@ -758,6 +845,37 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 		assert(false);
 		break;
 	}
+}
+
+bool C4Value::Equals(const C4Value &other, C4AulScriptStrict strict) const
+{
+	switch (strict)
+	{
+		case C4AulScriptStrict::NONSTRICT: case C4AulScriptStrict::STRICT1:
+			return _getRaw() == other._getRaw();
+		case C4AulScriptStrict::STRICT2:
+			return *this == other;
+		case C4AulScriptStrict::STRICT3:
+			if (Type != other.Type) return false;
+			switch (Type)
+			{
+				case C4V_Any:
+					return true;
+				case C4V_Int: C4V_C4ID: case C4V_C4Object:
+					return Data.Int == other.Data.Int;
+				case C4V_Bool:
+					return _getBool() == other._getBool();
+				case C4V_String:
+					return Data.Str->Data == other.Data.Str->Data;
+				case C4V_Array:
+					return *Data.Array == *other.Data.Array;
+				case C4V_Map:
+					return *Data.Map == *other.Data.Map;
+				default:
+					return false;
+			}
+	}
+	return false;
 }
 
 bool C4Value::operator==(const C4Value &Value2) const
@@ -817,6 +935,8 @@ bool C4Value::operator==(const C4Value &Value2) const
 	case C4V_Array:
 		return Type == Value2.Type && *(Data.Array) == *(Value2.Data.Array);
 		break;
+	case C4V_Map:
+		return Type == Value2.Type && *(Data.Map) == *(Value2.Data.Map);
 	default:
 		// C4AulExec should have dereferenced both values, no need to implement comparison here
 		return Data == Value2.Data;
@@ -828,4 +948,112 @@ bool C4Value::operator!=(const C4Value &Value2) const
 {
 	// Fixme: implement faster
 	return !(*this == Value2);
+}
+
+namespace
+{
+	// based on boost container_hash's hashCombine
+	constexpr void hashCombine(std::uint32_t &hash, std::uint32_t nextHash)
+	{
+#define rotateLeft32(x, r) (x << r) | (x >> (32 - r))
+		constexpr std::uint32_t c1 = 0xcc9e2d51;
+		constexpr std::uint32_t c2 = 0x1b873593;
+
+		nextHash *= c1;
+		nextHash = rotateLeft32(nextHash, 15);
+		nextHash *= c2;
+
+		hash ^= nextHash;
+		hash = rotateLeft32(hash, 13);
+		hash = hash * 5 + 0xe6546b64;
+#undef rotateLeft32
+	}
+
+	constexpr void hashCombine(std::uint64_t &hash, std::uint64_t nextHash)
+	{
+		constexpr std::uint64_t m = 0xc6a4a7935bd1e995;
+		constexpr int r = 47;
+
+		nextHash *= m;
+		nextHash ^= nextHash >> r;
+		nextHash *= m;
+
+		hash ^= nextHash;
+		hash *= m;
+
+		// Completely arbitrary number, to prevent 0's
+		// from hashing to 0.
+		hash += 0xe6546b64;
+	}
+
+// 	void hashCombine(std::size_t &hash, std::size_t nextHash)
+// 	{
+// 		hash ^= nextHash + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+// 	}
+}
+
+std::size_t std::hash<C4Value>::operator()(C4Value value) const
+{
+	C4Value &ref = value.GetRefVal();
+	std::size_t hash = std::hash<C4V_Type>{}(ref.GetType());
+
+	if (ref.GetType() == C4V_C4ObjectEnum)
+	{
+		hash = std::hash<C4V_Type>{}(C4V_C4Object);
+		hashCombine(hash, std::hash<int32_t>{}(ref._getInt()));
+		return hash;
+	}
+
+	switch (ref.GetType())
+	{
+		case C4V_Any:
+			break;
+
+		case C4V_Int: case C4V_C4ID:
+			hashCombine(hash, std::hash<int32_t>{}(ref._getInt()));
+			break;
+
+		case C4V_Bool:
+			hashCombine(hash, std::hash<bool>{}(ref._getBool()));
+			break;
+
+		case C4V_C4Object:
+			hashCombine(hash, std::hash<int32_t>{}(ref._getObj()->Number));
+			break;
+
+		case C4V_String:
+		{
+			const auto& str = ref._getStr()->Data;
+			hashCombine(hash, std::hash<std::string_view>{}({str.getData(), str.getLength()}));
+			break;
+		}
+		case C4V_Array:
+		{
+			const auto &array = *ref._getArray();
+			for (size_t i = 0; i < array.GetSize(); ++i)
+			{
+				hashCombine(hash, (*this)(array.GetItem(i)));
+			}
+			break;
+		}
+		case C4V_Map:
+		{
+			std::size_t contentHash = 0;
+			auto &map = *ref._getMap();
+			for (const auto &it : map)
+			{
+				std::size_t itemHash = (*this)(it.first);
+				hashCombine(itemHash, (*this)(it.second));
+
+				// order mustn't matter
+				contentHash ^= itemHash;
+			}
+			hashCombine(hash, contentHash);
+			break;
+		}
+		default:
+			throw std::runtime_error("Invalid value type for hashing C4Value");
+	}
+
+	return hash;
 }

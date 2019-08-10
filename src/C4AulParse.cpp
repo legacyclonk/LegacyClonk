@@ -74,6 +74,9 @@
 #define C4AUL_TypeC4Object "object"
 #define C4AUL_TypeString   "string"
 #define C4AUL_TypeArray    "array"
+#define C4AUL_TypeMap    "map"
+
+#define C4AUL_Nil  "nil"
 
 #define C4AUL_True  "true"
 #define C4AUL_False "false"
@@ -88,6 +91,7 @@ enum C4AulTokenType
 	ATT_IDTF,     // identifier
 	ATT_INT,      // integer constant
 	ATT_BOOL,     // boolean constant
+	ATT_NIL,      // nil
 	ATT_STRING,   // string constant
 	ATT_C4ID,     // C4ID constant
 	ATT_COMMA,    // ","
@@ -106,6 +110,7 @@ enum C4AulTokenType
 	ATT_AMP,      // "&"
 	ATT_TILDE,    // '~'
 	ATT_LDOTS,    // '...'
+	ATT_DOT,      // '.'
 	ATT_OPERATOR, // operator
 	ATT_EOF       // end of file
 };
@@ -142,6 +147,7 @@ public:
 	void Parse_Block();
 	int Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFunc = nullptr);
 	void Parse_Array();
+	void Parse_Map();
 	void Parse_While();
 	void Parse_If();
 	void Parse_For();
@@ -152,6 +158,11 @@ public:
 	void Parse_Local();
 	void Parse_Static();
 	void Parse_Const();
+
+	bool IsMapLiteral();
+
+	template<C4AulTokenType closingAtt>
+	void SkipBlock();
 
 	bool AdvanceSpaces(); // skip whitespaces; return whether script ended
 	int GetOperator(const char *pScript);
@@ -229,7 +240,7 @@ void C4AulParseState::Warn(const char *pMsg, const char *pIdtf)
 
 void C4AulParseState::Strict2Error(const char *pMsg, const char *pIdtf)
 {
-	if (Fn ? (Fn->pOrgScript->Strict < C4AulScript::STRICT2) : (a->Strict < C4AulScript::STRICT2))
+	if (Fn ? (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2) : (a->Strict < C4AulScriptStrict::STRICT2))
 		Warn(pMsg, pIdtf);
 	else
 		throw new C4AulParseError(this, pMsg, pIdtf);
@@ -471,7 +482,7 @@ int C4AulParseState::GetOperator(const char *pScript)
 	if ((*pScript >= 'a' && *pScript <= 'z') ||
 		(*pScript >= 'A' && *pScript <= 'Z'))
 	{
-		if (Fn ? (Fn->pOrgScript->Strict >= C4AulScript::STRICT2) : (a->Strict >= C4AulScript::STRICT2))
+		if (Fn ? (Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2) : (a->Strict >= C4AulScriptStrict::STRICT2))
 			return -1;
 		if ((*(pScript + 1) >= 'a' && *(pScript + 1) <= 'z') ||
 			(*(pScript + 1) >= 'A' && *(pScript + 1) <= 'Z'))
@@ -576,11 +587,17 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 				else if (C == '&') { SPos++; return ATT_AMP; }   // "&"
 				else if (C == '~') { SPos++; return ATT_TILDE; } // "~"
 
+				if (C == '.')
+				{
+					++SPos;
+					return ATT_DOT; // "."
+				}
+
 				// identifier by all non-special chars
 				if (C >= '@')
 				{
 					// Old Scripts could have wacky identifier
-					if (a->Strict < C4AulScript::STRICT2)
+					if (a->Strict < C4AulScriptStrict::STRICT2)
 					{
 						State = TGS_Ident;
 						break;
@@ -652,6 +669,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					// check reserved names
 					if (SEqual(pToken, C4AUL_False)) { *pInt = false; return ATT_BOOL; }
 					if (SEqual(pToken, C4AUL_True)) { *pInt = true; return ATT_BOOL; }
+					if (SEqual(pToken, C4AUL_Nil) && a->Strict >= C4AulScriptStrict::STRICT3) { return ATT_NIL; }
 					// everything else is an identifier
 					return ATT_IDTF;
 				}
@@ -776,6 +794,8 @@ static const char *GetTTName(C4AulBCCType e)
 {
 	switch (e)
 	{
+	case AB_MAPA_R:    return "AB_MAPA_R";    // map access via .
+	case AB_MAPA_V:    return "AB_MAPA_V";    // not creating a reference
 	case AB_ARRAYA_R:  return "AB_ARRAYA_R";  // array access
 	case AB_ARRAYA_V:  return "AB_ARRAYA_V";  // not creating a reference
 	case AB_ARRAY_APPEND:  return "AB_ARRAYA_APPEND";  // not creating a reference
@@ -843,25 +863,27 @@ static const char *GetTTName(C4AulBCCType e)
 	case AB_XOrIt:            return "AB_XOrIt";            // ^=
 	case AB_Set:              return "AB_Set";              // =
 
-	case AB_CALL:         return "AB_CALL";         // direct object call
-	case AB_CALLFS:       return "AB_CALLFS";       // failsafe direct call
-	case AB_CALLNS:       return "AB_CALLNS";       // direct object call: namespace operator
-	case AB_STACK:        return "AB_STACK";        // push nulls / pop
-	case AB_INT:          return "AB_INT";          // constant: int
-	case AB_BOOL:         return "AB_BOOL";         // constant: bool
-	case AB_STRING:       return "AB_STRING";       // constant: string
-	case AB_C4ID:         return "AB_C4ID";         // constant: C4ID
-	case AB_ARRAY:        return "AB_ARRAY";        // semi-constant: array
-	case AB_IVARN:        return "AB_IVARN";        // initialization of named var
-	case AB_JUMP:         return "AB_JUMP";         // jump
-	case AB_JUMPAND:      return "AB_JUMPAND";
-	case AB_JUMPOR:       return "AB_JUMPOR";
-	case AB_CONDN:        return "AB_CONDN";        // conditional jump (negated, pops stack)
-	case AB_FOREACH_NEXT: return "AB_FOREACH_NEXT"; // foreach: next element
-	case AB_RETURN:       return "AB_RETURN";       // return statement
-	case AB_ERR:          return "AB_ERR";          // parse error at this position
-	case AB_EOFN:         return "AB_EOFN";         // end of function
-	case AB_EOF:          return "AB_EOF";
+	case AB_CALL:             return "AB_CALL";             // direct object call
+	case AB_CALLFS:           return "AB_CALLFS";           // failsafe direct call
+	case AB_CALLNS:           return "AB_CALLNS";           // direct object call: namespace operator
+	case AB_STACK:            return "AB_STACK";            // push nulls / pop
+	case AB_INT:              return "AB_INT";              // constant: int
+	case AB_BOOL:             return "AB_BOOL";             // constant: bool
+	case AB_STRING:           return "AB_STRING";           // constant: string
+	case AB_C4ID:             return "AB_C4ID";             // constant: C4ID
+	case AB_ARRAY:            return "AB_ARRAY";            // semi-constant: array
+	case AB_MAP:              return "AB_MAP";              // semi-constant: map
+	case AB_IVARN:            return "AB_IVARN";            // initialization of named var
+	case AB_JUMP:             return "AB_JUMP";             // jump
+	case AB_JUMPAND:          return "AB_JUMPAND";
+	case AB_JUMPOR:           return "AB_JUMPOR";
+	case AB_CONDN:            return "AB_CONDN";            // conditional jump (negated, pops stack)
+	case AB_FOREACH_NEXT:     return "AB_FOREACH_NEXT";     // foreach: next element
+	case AB_FOREACH_MAP_NEXT: return "AB_FOREACH_MAP_NEXT"; // foreach: next element
+	case AB_RETURN:           return "AB_RETURN";           // return statement
+	case AB_ERR:              return "AB_ERR";              // parse error at this position
+	case AB_EOFN:             return "AB_EOFN";             // end of function
+	case AB_EOF:              return "AB_EOF";
 
 	default: return "?";
 	}
@@ -914,7 +936,7 @@ bool C4AulScript::Preparse()
 	state.Parse_Script();
 
 	// no #strict? we don't like that :(
-	if (!Strict)
+	if (Strict == C4AulScriptStrict::NONSTRICT)
 	{
 		Engine->nonStrictCnt++;
 	}
@@ -1009,6 +1031,9 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 		iStack -= C4AUL_MAX_Par;
 		break;
 
+	case AB_NIL:
+	case AB_MAPA_R:
+	case AB_MAPA_V:
 	case AB_ARRAY_APPEND:
 	case AB_Inc1:
 	case AB_Dec1:
@@ -1022,6 +1047,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 	case AB_PAR_R:
 	case AB_PAR_V:
 	case AB_FOREACH_NEXT:
+	case AB_FOREACH_MAP_NEXT:
 	case AB_ERR:
 	case AB_EOFN:
 	case AB_EOF:
@@ -1033,6 +1059,10 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 		iStack += X;
 		break;
 
+	case AB_MAP:
+		iStack -= 2 * X - 1;
+		break;
+
 	case AB_ARRAY:
 		iStack -= X - 1;
 		break;
@@ -1042,7 +1072,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 	}
 
 	// Use stack operation instead of 0-Int (enable optimization)
-	if ((eType == AB_INT || eType == AB_BOOL) && !X)
+	if ((eType == AB_INT || eType == AB_BOOL) && !X && (Fn ? (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3) : (a->Strict < C4AulScriptStrict::STRICT3)))
 	{
 		eType = AB_STACK;
 		X = 1;
@@ -1075,19 +1105,124 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 	fJump = false;
 }
 
+namespace
+{
+	void SkipExpressions(int n, C4AulBCC *&CPos, C4AulBCC *const Code)
+	{
+		while (n > 0 && CPos > Code)
+		{
+			switch (CPos->bccType)
+			{
+				case AB_STACK:
+					if (CPos->bccX > 0) n -= CPos--->bccX;
+					break;
+
+				case AB_INT: case AB_BOOL: case AB_STRING: case AB_C4ID:
+				case AB_PARN_R: case AB_PARN_V: case AB_VARN_R: case AB_VARN_V:
+				case AB_LOCALN_R: case AB_LOCALN_V:
+				case AB_GLOBALN_R: case AB_GLOBALN_V:
+					--n;
+					--CPos;
+					break;
+
+				case AB_MAPA_R: case AB_MAPA_V: case AB_ARRAY_APPEND:
+					--CPos;
+					SkipExpressions(1, CPos, Code);
+					--n;
+					break;
+
+				case AB_ARRAYA_R: case AB_ARRAYA_V:
+					--CPos;
+					SkipExpressions(2, CPos, Code);
+					--n;
+					break;
+
+				case AB_ARRAY:
+				{
+					const auto size = CPos->bccX;
+					--CPos;
+					SkipExpressions(size, CPos, Code);
+					--n;
+					break;
+				}
+
+				case AB_MAP:
+				{
+					const auto size = 2 * CPos->bccX;
+					--CPos;
+					SkipExpressions(size, CPos, Code);
+					--n;
+					break;
+
+				}
+
+				case AB_PAR_R: case AB_PAR_V: case AB_VAR_R: case AB_VAR_V:
+					--CPos;
+					SkipExpressions(1, CPos, Code);
+					--n;
+					break;
+
+				case AB_FUNC:
+				{
+					const auto pars = reinterpret_cast<C4AulFunc *>(CPos->bccX)->GetParCount();
+					--CPos;
+					SkipExpressions(pars, CPos, Code);
+					--n;
+					break;
+				}
+
+				case AB_CALLNS:
+					--CPos;
+					break;
+
+				case AB_CALL: case AB_CALLFS:
+					--CPos;
+					SkipExpressions(C4AUL_MAX_Par + 1, CPos, Code);
+					--n;
+					break;
+
+				default:
+					// operator?
+					if (Inside(CPos->bccType, AB_Inc1, AB_Set) && CPos > Code)
+					{
+						const auto &op = C4ScriptOpMap[CPos->bccX];
+						--CPos;
+						SkipExpressions(op.NoSecondStatement || !op.Postfix ? 1 : 2, CPos, Code);
+						--n;
+					}
+					else
+						return;
+			}
+		}
+	}
+}
+
 void C4AulParseState::SetNoRef()
 {
 	if (Type != PARSER) return;
-	C4AulBCC *CPos = a->CPos - 1;
-	switch (CPos->bccType)
+	for(C4AulBCC *CPos = a->CPos - 1; CPos >= a->Code; )
 	{
-	case AB_ARRAYA_R: CPos->bccType = AB_ARRAYA_V; break;
-	case AB_PAR_R: CPos->bccType = AB_PAR_V; break;
-	case AB_VAR_R: CPos->bccType = AB_VAR_V; break;
-	case AB_PARN_R: CPos->bccType = AB_PARN_V; break;
-	case AB_VARN_R: CPos->bccType = AB_VARN_V; break;
-	case AB_LOCALN_R: CPos->bccType = AB_LOCALN_V; break;
-	case AB_GLOBALN_R: CPos->bccType = AB_GLOBALN_V; break;
+		switch (CPos->bccType)
+		{
+		case AB_MAPA_R:
+			CPos->bccType = AB_MAPA_V;
+			--CPos;
+			// propagate back to the accessed map
+			break;
+		case AB_ARRAYA_R:
+			CPos->bccType = AB_ARRAYA_V;
+			--CPos;
+			// propagate back to the accessed array
+			SkipExpressions(1, CPos, a->Code);
+			break;
+		case AB_PAR_R: CPos->bccType = AB_PAR_V; return;
+		case AB_VAR_R: CPos->bccType = AB_VAR_V; return;
+		case AB_PARN_R: CPos->bccType = AB_PARN_V; return;
+		case AB_VARN_R: CPos->bccType = AB_VARN_V; return;
+		case AB_LOCALN_R: CPos->bccType = AB_LOCALN_V; return;
+		case AB_GLOBALN_R: CPos->bccType = AB_GLOBALN_V; return;
+		default: return;
+		}
 	}
 }
 
@@ -1170,6 +1305,7 @@ const char *C4AulParseState::GetTokenName(C4AulTokenType TokenType)
 	case ATT_IDTF:     return "identifier";
 	case ATT_INT:      return "integer constant";
 	case ATT_BOOL:     return "boolean constant";
+	case ATT_NIL:      return "nil";
 	case ATT_STRING:   return "string constant";
 	case ATT_C4ID:     return "id constant";
 	case ATT_COMMA:    return "','";
@@ -1188,6 +1324,7 @@ const char *C4AulParseState::GetTokenName(C4AulTokenType TokenType)
 	case ATT_AMP:      return "'&'";
 	case ATT_TILDE:    return "'~'";
 	case ATT_LDOTS:    return "'...'";
+	case ATT_DOT:      return "'.'";
 	case ATT_OPERATOR: return "operator";
 	case ATT_EOF:      return "end of file";
 	default:           return "unrecognized token";
@@ -1299,12 +1436,14 @@ void C4AulParseState::Parse_Script()
 			else if (SEqual(Idtf, C4AUL_Strict))
 			{
 				// declare it as strict
-				a->Strict = C4AulScript::STRICT1;
+				a->Strict = C4AulScriptStrict::STRICT1;
 				Shift();
 				if (TokenType == ATT_INT)
 				{
 					if (cInt == 2)
-						a->Strict = C4AulScript::STRICT2;
+						a->Strict = C4AulScriptStrict::STRICT2;
+					else if (cInt == 3)
+						a->Strict = C4AulScriptStrict::STRICT3;
 					else
 						throw new C4AulParseError(this, "unknown strict level");
 					Shift();
@@ -1466,6 +1605,7 @@ void C4AulParseState::Parse_FuncHead()
 			else if (SEqual(Idtf, C4AUL_TypeC4Object)) { Fn->ParType[cpar] = C4V_C4Object; Shift(Discard, false); }
 			else if (SEqual(Idtf, C4AUL_TypeString)) { Fn->ParType[cpar] = C4V_String; Shift(Discard, false); }
 			else if (SEqual(Idtf, C4AUL_TypeArray)) { Fn->ParType[cpar] = C4V_Array; Shift(Discard, false); }
+			else if (SEqual(Idtf, C4AUL_TypeMap)) { Fn->ParType[cpar] = C4V_Map; Shift(Discard, false); }
 			// ampersand?
 			if (TokenType == ATT_AMP) { Fn->ParType[cpar] = C4V_pC4Value; Shift(Discard, false); }
 			if (TokenType != ATT_IDTF)
@@ -1514,7 +1654,7 @@ void C4AulParseState::Parse_FuncHead()
 		return;
 	}
 	// Must be old-style function declaration now
-	if (a->Strict >= C4AulScript::STRICT2)
+	if (a->Strict >= C4AulScriptStrict::STRICT2)
 		throw new C4AulParseError(this, "Declaration expected, but found identifier ", Idtf);
 	// check: symbol already in use?
 	switch (Acc)
@@ -1673,7 +1813,7 @@ void C4AulParseState::Parse_Function()
 			C4AulBCC *CPos = a->GetCodeByPos((std::max)(a->GetCodePos() - 1, 0));
 			if (!CPos || CPos->bccType != AB_RETURN || fJump)
 			{
-				AddBCC(AB_INT);
+				AddBCC(Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT3 ? AB_NIL : AB_INT);
 				AddBCC(AB_RETURN);
 			}
 			// and break
@@ -1721,12 +1861,20 @@ void C4AulParseState::Parse_Statement()
 	// do we have a block start?
 	case ATT_BLOPEN:
 	{
-		Parse_Block();
-		return;
+		const auto isMap = IsMapLiteral();
+		TokenType = ATT_BLOPEN;
+		if (!isMap)
+		{
+			Parse_Block();
+			return;
+		}
+
+		// fall through
 	}
 	case ATT_BOPEN:
 	case ATT_BOPEN2:
 	case ATT_OPERATOR:
+	case ATT_NIL:
 	case ATT_INT:   // constant in cInt
 	case ATT_BOOL:  // constant in cInt
 	case ATT_STRING: // reference in cInt
@@ -1821,37 +1969,45 @@ void C4AulParseState::Parse_Statement()
 		else if (SEqual(Idtf, C4AUL_For)) // for
 		{
 			Shift();
-			// Look if it's the "for ([var] foo in array)"-form
+			// Look if it's the "for ([var] foo in array) or for ([var] k, v in map)"-form
 			const char *SPos0 = SPos;
 			// must be followed by a bracket
 			Match(ATT_BOPEN);
 			// optional var
 			if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_VarNamed))
 				Shift();
+
+			bool isForEach = false;
 			// variable and "in"
 			if (TokenType == ATT_IDTF
 				&& GetNextToken(Idtf, &cInt, Discard, true) == ATT_IDTF
-				&& SEqual(Idtf, C4AUL_In))
+				&& SEqual(Idtf, C4AUL_In)) isForEach = true;
+
+			SPos = SPos0;
+			Shift();
+			if (!isForEach)
 			{
-				// reparse the stuff in the brackets like normal statements
+				if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_VarNamed))
+					Shift();
+				if (TokenType == ATT_IDTF
+				&& GetNextToken(Idtf, &cInt, Discard, true) == ATT_COMMA
+				&& GetNextToken(Idtf, &cInt, Discard, true) == ATT_IDTF
+				&& GetNextToken(Idtf, &cInt, Discard, true) == ATT_IDTF
+				&& SEqual(Idtf, C4AUL_In)) isForEach = true;
+
 				SPos = SPos0;
 				Shift();
-				Parse_ForEach();
 			}
-			else
-			{
-				// reparse the stuff in the brackets like normal statements
-				SPos = SPos0;
-				Shift();
-				Parse_For();
-			}
+
+			if (isForEach) Parse_ForEach();
+			else Parse_For();
 			break;
 		}
 		else if (SEqual(Idtf, C4AUL_Return)) // return
 		{
 			bool multi_params_hack = false;
 			Shift();
-			if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScript::STRICT2)
+			if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 			{
 				// parse return(retvals) - return(retval, unused, parameters, ...) allowed for backwards compatibility
 				if (Parse_Params(1, nullptr) == 1)
@@ -1978,12 +2134,12 @@ void C4AulParseState::Parse_Statement()
 			// none of these? then it's a function
 			// if it's a label, it will be missinterpreted here, which will be corrected later
 			// it may be the first goto() found? (old syntax only!)
-			if (SEqual(Idtf, C4AUL_Goto) && !Fn->pOrgScript->Strict)
+			if (SEqual(Idtf, C4AUL_Goto) && Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
 				// add AB_RETURN later on
 				gotohack = true;
 			C4AulFunc *FoundFn;
 			// old syntax: do not allow recursive calls in overloaded functions
-			if (!Fn->pOrgScript->Strict && Fn->OwnerOverloaded && SEqual(Idtf, Fn->Name))
+			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT && Fn->OwnerOverloaded && SEqual(Idtf, Fn->Name))
 				FoundFn = Fn->OwnerOverloaded;
 			else
 				// get regular function
@@ -1991,6 +2147,12 @@ void C4AulParseState::Parse_Statement()
 					FoundFn = a->Owner->GetFuncRecursive(Idtf);
 				else
 					FoundFn = a->GetFuncRecursive(Idtf);
+
+			if (FoundFn && FoundFn->SFunc() && FoundFn->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(FoundFn, Fn->pOrgScript))
+			{
+				throw new C4AulParseError(this, "insufficient access level", Idtf);
+			}
+
 			// ignore func-not-found errors in the preparser, because the function tables are not built yet
 			if (!FoundFn && Type == PARSER)
 			{
@@ -2054,7 +2216,7 @@ int C4AulParseState::Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFu
 			// () -> size 0, (*,) -> size 2, (*,*,) -> size 3
 			if (size > 0)
 			{
-				AddBCC(AB_INT, 0);
+				AddBCC(AB_NIL);
 				++size;
 			}
 			fDone = true;
@@ -2063,7 +2225,7 @@ int C4AulParseState::Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFu
 		case ATT_COMMA:
 		{
 			// got no parameter before a ","? then push a 0-constant
-			AddBCC(AB_INT, 0);
+			AddBCC(AB_NIL);
 			Shift();
 			++size;
 			break;
@@ -2156,6 +2318,7 @@ void C4AulParseState::Parse_Array()
 		default:
 		{
 			Parse_Expression();
+			SetNoRef();
 			++size;
 			if (TokenType == ATT_COMMA)
 				Shift();
@@ -2174,12 +2337,82 @@ void C4AulParseState::Parse_Array()
 	AddBCC(AB_ARRAY, size);
 }
 
+void C4AulParseState::Parse_Map()
+{
+	// force "{"
+	Match(ATT_BLOPEN);
+	// Create a map
+	int size = 0;
+	bool fDone = false;
+	do
+		switch (TokenType)
+		{
+		case ATT_BLCLOSE:
+		{
+			Shift();
+			fDone = true;
+			break;
+		}
+		case ATT_COMMA:
+		{
+			// got no parameter before a ","? this is an error in a map
+			throw new C4AulParseError(this, "',' found in a map without preceding key-value assignment ");
+			break;
+		}
+		default:
+		{
+			switch (TokenType)
+			{
+				case ATT_IDTF:
+				{
+					C4String *string;
+					if (!(string = a->Engine->Strings.FindString(Idtf)))
+						string = a->Engine->Strings.RegString(Idtf);
+					if (Type == PARSER) string->Hold = true;
+					AddBCC(AB_STRING, reinterpret_cast<long>(string));
+					Shift();
+					break;
+				}
+				case ATT_STRING:
+					AddBCC(AB_STRING, cInt);
+					Shift();
+					break;
+				default:
+					UnexpectedToken("string or identifier");
+			}
+
+			if (TokenType != ATT_OPERATOR || !SEqual(C4ScriptOpMap[cInt].Identifier, "="))
+			{
+				UnexpectedToken("'='");
+			}
+			Shift();
+
+			Parse_Expression();
+			SetNoRef();
+			++size;
+			if (TokenType == ATT_COMMA)
+				Shift();
+			else if (TokenType == ATT_BLCLOSE)
+			{
+				Shift();
+				fDone = true;
+				break;
+			}
+			else
+				UnexpectedToken("',' or '}'");
+		}
+		}
+	while (!fDone);
+	// add terminator
+	AddBCC(AB_MAP, size);
+}
+
 void C4AulParseState::Parse_While()
 {
 	// Save position for later jump back
 	int iStart = JumpHere();
 	// Execute condition
-	if (Fn->pOrgScript->Strict >= C4AulScript::STRICT2)
+	if (Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
 	{
 		Match(ATT_BOPEN);
 		Parse_Expression();
@@ -2211,7 +2444,7 @@ void C4AulParseState::Parse_While()
 
 void C4AulParseState::Parse_If()
 {
-	if (Fn->pOrgScript->Strict >= C4AulScript::STRICT2)
+	if (Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
 	{
 		Match(ATT_BOPEN);
 		Parse_Expression();
@@ -2322,6 +2555,8 @@ void C4AulParseState::Parse_For()
 
 void C4AulParseState::Parse_ForEach()
 {
+	bool forMap = false;
+
 	if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_VarNamed))
 	{
 		Shift();
@@ -2339,18 +2574,42 @@ void C4AulParseState::Parse_ForEach()
 	if (iVarID < 0)
 		throw new C4AulParseError(this, "internal error: var definition: var not found in variable table");
 	Shift();
+
+	int iVarIDForMapValue = 0;
+	if (TokenType == ATT_COMMA)
+	{
+		Shift();
+		if (TokenType == ATT_IDTF && !SEqual(Idtf, C4AUL_In))
+		{
+			forMap = true;
+
+			if (Type == PREPARSER)
+			{
+				// insert variable
+				Fn->VarNamed.AddName(Idtf);
+			}
+			// search variable (fail if not found)
+			iVarIDForMapValue = Fn->VarNamed.GetItemNr(Idtf);
+			if (iVarIDForMapValue < 0)
+				throw new C4AulParseError(this, "internal error: var definition: var not found in variable table");
+			Shift();
+		}
+	}
+
 	if (TokenType != ATT_IDTF || !SEqual(Idtf, C4AUL_In))
 		UnexpectedToken("'in'");
 	Shift();
-	// get expression for array
+	// get expression for array or map
 	Parse_Expression();
 	Match(ATT_BCLOSE);
+	// push second var id for the map iteration
+	if (forMap) AddBCC(AB_INT, iVarIDForMapValue);
 	// push initial position (0)
 	AddBCC(AB_INT);
 	// get array element
 	int iStart = a->GetCodePos();
-	AddBCC(AB_FOREACH_NEXT, iVarID);
-	// jump out (FOREACH_NEXT will jump over this if
+	AddBCC(forMap ? AB_FOREACH_MAP_NEXT : AB_FOREACH_NEXT, iVarID);
+	// jump out (FOREACH[_MAP]_NEXT will jump over this if
 	// we're not at the end of the array yet)
 	int iCond = a->GetCodePos();
 	AddBCC(AB_JUMP);
@@ -2370,8 +2629,8 @@ void C4AulParseState::Parse_ForEach()
 		else
 			SetJump(pCtrl->Pos, iStart);
 	PopLoop();
-	// remove array and counter from stack
-	AddBCC(AB_STACK, -2);
+	// remove array/map and counter/iterator from stack
+	AddBCC(AB_STACK, forMap ? -3 : -2);
 }
 
 void C4AulParseState::Parse_Expression(int iParentPrio)
@@ -2451,7 +2710,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 		{
 			Shift();
 			// inherited keyword: check strict syntax
-			if (!Fn->pOrgScript->Strict) throw new C4AulParseError(this, "inherited disabled; use #strict syntax!");
+			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT) throw new C4AulParseError(this, "inherited disabled; use #strict syntax!");
 			// get function
 			if (Fn->OwnerOverloaded)
 			{
@@ -2471,7 +2730,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 					AddBCC(AB_STACK, 1);
 				}
 		}
-		else if (!Fn->pOrgScript->Strict && Fn->OwnerOverloaded && SEqual(Idtf, Fn->Name))
+		else if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT && Fn->OwnerOverloaded && SEqual(Idtf, Fn->Name))
 		{
 			// old syntax: do not allow recursive calls in overloaded functions
 			Shift();
@@ -2534,7 +2793,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 					}
 					Shift();
 					// now let's check whether it used old- or new-style
-					if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScript::STRICT2)
+					if (TokenType == ATT_BOPEN && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 					{
 						// old-style usage: ignore function call
 						// must not use parameters here (although generating the byte code for that would be possible)
@@ -2549,6 +2808,12 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 				}
 			}
 		}
+		break;
+	}
+	case ATT_NIL:
+	{
+		AddBCC(AB_NIL);
+		Shift();
 		break;
 	}
 	case ATT_INT: // constant in cInt
@@ -2612,9 +2877,17 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 	case ATT_BOPEN2:
 	{
 		// Arrays are not tested in non-strict mode at all
-		if (!Fn->pOrgScript->Strict)
+		if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
 			throw new C4AulParseError(this, "unexpected '['");
 		Parse_Array();
+		break;
+	}
+	case ATT_BLOPEN:
+	{
+		// Maps are not tested below strict 3 mode at all
+		if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
+			throw new C4AulParseError(this, "unexpected '{'");
+		Parse_Map();
 		break;
 	}
 	default:
@@ -2661,7 +2934,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 			SetNoRef();
 		Shift();
 
-		if ((C4ScriptOpMap[OpID].Code == AB_And || C4ScriptOpMap[OpID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScript::STRICT2)
+		if ((C4ScriptOpMap[OpID].Code == AB_And || C4ScriptOpMap[OpID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
 		{
 			// create bytecode, remember position
 			int iCond = a->GetCodePos();
@@ -2680,8 +2953,8 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 			{
 				switch (TokenType)
 				{
-				case ATT_IDTF: case ATT_INT: case ATT_BOOL: case ATT_STRING: case ATT_C4ID:
-				case ATT_OPERATOR: case ATT_BOPEN: case ATT_BOPEN2:
+				case ATT_IDTF: case ATT_NIL: case ATT_INT: case ATT_BOOL: case ATT_STRING: case ATT_C4ID:
+				case ATT_OPERATOR: case ATT_BOPEN: case ATT_BOPEN2: case ATT_BLOPEN:
 					Parse_Expression(C4ScriptOpMap[OpID].Priority);
 					// If the operator does not modify the second argument, no reference is necessary
 					if (C4ScriptOpMap[OpID].Type2 != C4V_pC4Value)
@@ -2696,9 +2969,9 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 				}
 			}
 			// write byte code, with a few backward compat changes
-			if (C4ScriptOpMap[OpID].Code == AB_Equal && Fn->pOrgScript->Strict < C4AulScript::STRICT2)
+			if (C4ScriptOpMap[OpID].Code == AB_Equal && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 				AddBCC(AB_EqualIdent, OpID);
-			else if (C4ScriptOpMap[OpID].Code == AB_NotEqual && Fn->pOrgScript->Strict < C4AulScript::STRICT2)
+			else if (C4ScriptOpMap[OpID].Code == AB_NotEqual && Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2)
 				AddBCC(AB_NotEqualIdent, OpID);
 			else
 				AddBCC(C4ScriptOpMap[OpID].Code, OpID);
@@ -2708,9 +2981,10 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 	case ATT_BOPEN2:
 	{
 		// Arrays are not tested in non-strict mode at all
-		if (!Fn->pOrgScript->Strict)
+		if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
 			throw new C4AulParseError(this, "unexpected '['");
 		// Access the array
+		const char *SPos0 = SPos;
 		Shift();
 		if (TokenType == ATT_BCLOSE2)
 		{
@@ -2718,9 +2992,42 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 			AddBCC(AB_ARRAY_APPEND);
 			break;
 		}
+
+		// optimize map["foo"] to map.foo (because map.foo execution is less complicated)
+		if (TokenType == ATT_STRING && GetNextToken(Idtf, &cInt, Discard, true) == ATT_BCLOSE2)
+		{
+			AddBCC(AB_MAPA_R, cInt);
+			Shift();
+			break;
+		}
+
+		SPos = SPos0;
+		Shift();
+
 		Parse_Expression();
+		SetNoRef();
 		Match(ATT_BCLOSE2);
 		AddBCC(AB_ARRAYA_R);
+		break;
+	}
+	case ATT_DOT:
+	{
+		if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
+			throw new C4AulParseError(this, "unexpected '.'");
+		Shift();
+		if (TokenType == ATT_IDTF)
+		{
+			C4String *string;
+			if (!(string = a->Engine->Strings.FindString(Idtf)))
+				string = a->Engine->Strings.RegString(Idtf);
+			if (Type == PARSER) string->Hold = true;
+			AddBCC(AB_MAPA_R, reinterpret_cast<intptr_t>(string));
+			Shift();
+			break;
+		}
+		else
+
+		UnexpectedToken("identifier");
 		break;
 	}
 	case ATT_CALL:
@@ -2753,6 +3060,12 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 				{
 					throw new C4AulParseError(this, FormatString("direct object call: function %s::%s not found", C4IdText(idNS), Idtf).getData());
 				}
+
+				if (pFunc->SFunc() && pFunc->SFunc()->Access < pDef->Script.GetAllowedAccess(pFunc, Fn->pOrgScript))
+				{
+					throw new C4AulParseError(this, "insufficient access level", Idtf);
+				}
+
 				// write namespace chunk to byte code
 				AddBCC(AB_CALLNS, (int)idNS);
 			}
@@ -2783,6 +3096,11 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 				AddBCC(AB_STACK, -1); AddBCC(AB_STACK, +1);
 				// done
 				break;
+			}
+
+			else if (pFunc->SFunc() && pFunc->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(pFunc, Fn->pOrgScript))
+			{
+				throw new C4AulParseError(this, "insufficient access level", Idtf);
 			}
 		}
 		// add call chunk
@@ -2826,6 +3144,7 @@ void C4AulParseState::Parse_Var()
 				// insert initialization in byte code
 				Shift();
 				Parse_Expression();
+				SetNoRef();
 				AddBCC(AB_IVARN, iVarID);
 			}
 			else
@@ -2955,6 +3274,7 @@ void C4AulParseState::Parse_Const()
 			C4Value vGlobalValue;
 			switch (TokenType)
 			{
+			case ATT_NIL: vGlobalValue.Set0(); break;
 			case ATT_INT: vGlobalValue.SetInt(cInt); break;
 			case ATT_BOOL: vGlobalValue.SetBool(!!cInt); break;
 			case ATT_STRING: vGlobalValue.SetString(reinterpret_cast<C4String *>(cInt)); break; // increases ref count of C4String in cInt to 1
@@ -2989,6 +3309,71 @@ void C4AulParseState::Parse_Const()
 		}
 		}
 	}
+}
+
+template<C4AulTokenType closingAtt>
+void C4AulParseState::SkipBlock()
+{
+	for (;;)
+	{
+		switch (GetNextToken(Idtf, &cInt, Discard, true))
+		{
+			case closingAtt: case ATT_EOF:
+				return;
+			case ATT_BOPEN:
+				SkipBlock<ATT_BCLOSE>();
+				break;
+			case ATT_BOPEN2:
+				SkipBlock<ATT_BCLOSE2>();
+				break;
+			case ATT_BLOPEN:
+				SkipBlock<ATT_BLCLOSE>();
+				break;
+			default:
+				continue;
+		}
+	}
+}
+
+bool C4AulParseState::IsMapLiteral()
+{
+	bool result = false;
+	const char *SPos0 = SPos;
+	for (;;)
+	{
+		switch (GetNextToken(Idtf, &cInt, Discard, true))
+		{
+			case ATT_BOPEN:
+				SkipBlock<ATT_BCLOSE>();
+				break;
+			case ATT_BOPEN2:
+				SkipBlock<ATT_BCLOSE2>();
+				break;
+			case ATT_BLOPEN:
+				SkipBlock<ATT_BLCLOSE>();
+				break;
+
+			case ATT_OPERATOR:
+				if (SEqual(C4ScriptOpMap[cInt].Identifier, "=")) result = true;
+				break;
+
+				// in uncertain cases, {} is considered as an empty block
+			case ATT_BLCLOSE:
+				goto loopEnd;
+			case ATT_SCOLON:
+				result = false;
+				goto loopEnd;
+			case ATT_EOF:
+				goto loopEnd;
+			default:
+				// just continue
+				continue;
+		}
+	}
+
+loopEnd:
+	SPos = SPos0;
+	return result;
 }
 
 bool C4AulScript::Parse()
@@ -3134,7 +3519,7 @@ void C4AulScript::ParseDescs()
 C4AulScript *C4AulScript::FindFirstNonStrictScript()
 {
 	// self is not #strict?
-	if (Script && !Strict) return this;
+	if (Script && Strict == C4AulScriptStrict::NONSTRICT) return this;
 	// search children
 	C4AulScript *pNonStrScr;
 	for (C4AulScript *pScr = Child0; pScr; pScr = pScr->Next)

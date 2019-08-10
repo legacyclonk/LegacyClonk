@@ -1903,7 +1903,7 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 			// Picture
 			fctSymbol.Set(pDef->Graphics.GetBitmap(), pDef->PictureRect.x, pDef->PictureRect.y, pDef->PictureRect.Wdt, pDef->PictureRect.Hgt);
 			// Command
-			sprintf(szCommand, "SetCommand(this,\"Construct\",0,0,0,0,%s)", C4IdText(pDef->id));
+			sprintf(szCommand, "SetCommand(this,\"Construct\",,0,0,,%s)", C4IdText(pDef->id));
 			// Add menu item
 			Menu->AddRefSym(szCaption, fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pDef->GetDesc(), pDef->id);
 		}
@@ -3646,7 +3646,7 @@ bool C4Object::MenuCommand(const char *szCommand)
 {
 	// Native script execution
 	if (!Def || !Status) return false;
-	return !!Def->Script.DirectExec(this, szCommand, "MenuCommand");
+	return !!Def->Script.DirectExec(this, szCommand, "MenuCommand", false, Def->Script.Strict);
 }
 
 C4Object *C4Object::ComposeContents(C4ID id)

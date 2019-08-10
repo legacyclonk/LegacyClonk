@@ -35,6 +35,7 @@
 #include <C4ObjectInfoList.h>
 #include <C4Player.h>
 #include <C4ObjectMenu.h>
+#include <C4ValueHash.h>
 
 #ifndef _WIN32
 #include <sys/time.h>
@@ -103,7 +104,14 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			case 'v':
 			{
 				if (!Par[cPar]) throw new C4AulExecError(cthr->Obj, "format placeholder without parameter");
-				StringBuf.Append(static_cast<const StdStrBuf &>(Par[cPar++]->GetDataString()));
+				if (!Par[cPar]->_getRaw() && cthr->Caller && cthr->Caller->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
+				{
+					StringBuf.Append("0");
+				}
+				else
+				{
+					StringBuf.Append(static_cast<const StdStrBuf &>(Par[cPar++]->GetDataString()));
+				}
 				cpFormat += SLen(szField);
 				break;
 			}
@@ -1886,7 +1894,7 @@ static C4Object *FnCreateObject(C4AulContext *cthr,
 	{
 		iXOffset += cthr->Obj->x;
 		iYOffset += cthr->Obj->y;
-		if (!cthr->Caller || !cthr->Caller->Func->Owner->Strict)
+		if (!cthr->Caller || cthr->Caller->Func->Owner->Strict == C4AulScriptStrict::NONSTRICT)
 			iOwner = cthr->Obj->Owner;
 	}
 
@@ -1907,7 +1915,7 @@ static C4Object *FnCreateConstruction(C4AulContext *cthr,
 	{
 		iXOffset += cthr->Obj->x;
 		iYOffset += cthr->Obj->y;
-		if (!cthr->Caller || !cthr->Caller->Func->Owner->Strict)
+		if (!cthr->Caller || cthr->Caller->Func->Owner->Strict == C4AulScriptStrict::NONSTRICT)
 			iOwner = cthr->Obj->Owner;
 	}
 
@@ -3885,6 +3893,7 @@ static C4Value FnIsRef(C4AulContext *cthr, C4Value *Value)
 
 static C4Value FnGetType(C4AulContext *cthr, C4Value *Value)
 {
+	if (!Value->_getBool() && cthr->Caller && cthr->Caller->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3) return C4VInt(C4V_Any);
 	return C4VInt(Value->GetType());
 }
 
@@ -3898,13 +3907,15 @@ static C4Value FnGetLength(C4AulContext *cthr, C4Value *pPars)
 {
 	// support GetLength() etc.
 	if (!pPars[0]) return C4VNull;
+	if (auto map = pPars->getMap())
+		return C4VInt(map->size());
 	C4ValueArray *pArray = pPars->getArray();
 	if (pArray)
 		return C4VInt(pArray->GetSize());
 	C4String *pStr = pPars->getStr();
 	if (pStr)
 		return C4VInt(pStr->Data.getLength());
-	throw new C4AulExecError(cthr->Obj, "func \"GetLength\" par 0 cannot be converted to string or array");
+	throw new C4AulExecError(cthr->Obj, "func \"GetLength\" par 0 cannot be converted to string or array or map");
 }
 
 static C4Value FnGetIndexOf(C4AulContext *cthr, C4Value *pPars)
@@ -3919,11 +3930,24 @@ static C4Value FnGetIndexOf(C4AulContext *cthr, C4Value *pPars)
 	// find the element by comparing data only - this may result in bogus results if an object ptr array is searched for an int
 	// however, that's rather unlikely and strange scripting style
 	int32_t iSize = pArray->GetSize();
-	long cmp = pPars[0].GetData().Int;
-	for (int32_t i = 0; i < iSize; ++i)
-		if (cmp == pArray->GetItem(i).GetData().Int)
-			// element found
-			return C4VInt(i);
+
+	if (!cthr->Caller || cthr->Caller->Func->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
+	{
+		auto strict = cthr->Caller->Func->pOrgScript->Strict;
+		const auto &val = pPars[0].GetRefVal();
+		for (int32_t i = 0; i < iSize; ++i)
+			if (val.Equals(pArray->GetItem(i), strict))
+				// element found
+				return C4VInt(i);
+	}
+	else
+	{
+		long cmp = pPars[0].GetData().Int;
+		for (int32_t i = 0; i < iSize; ++i)
+			if (cmp == pArray->GetItem(i).GetData().Int)
+				// element found
+				return C4VInt(i);
+	}
 	// element not found
 	return C4VInt(-1);
 }
@@ -4627,7 +4651,7 @@ static C4String *FnGetNeededMatStr(C4AulContext *cthr, C4Object *pObj)
 static C4Value FnEval(C4AulContext *cthr, C4Value *strScript_C4V)
 {
 	// execute script in the same object
-	enum C4AulScript::Strict Strict = C4AulScript::MAXSTRICT;
+	C4AulScriptStrict Strict = C4AulScriptStrict::MAXSTRICT;
 	if (cthr->Caller)
 		Strict = cthr->Caller->Func->pOrgScript->Strict;
 	if (cthr->Obj)
@@ -6343,6 +6367,38 @@ static bool FnSetNextMission(C4AulContext *ctx, C4String *szNextMission, C4Strin
 	return true;
 }
 
+static C4ValueArray *FnGetKeys(C4AulContext *ctx, C4ValueHash *map)
+{
+	if (!map) throw new C4AulExecError(ctx->Obj, "GetKeys(): map expected, got 0");
+
+	C4ValueArray *keys = new C4ValueArray(map->size());
+
+	size_t i = 0;
+	for (const auto &[key, value] : *map)
+	{
+		(*keys)[i] = key;
+		++i;
+	}
+
+	return keys;
+}
+
+static C4ValueArray *FnGetValues(C4AulContext *ctx, C4ValueHash *map)
+{
+	if (!map) throw new C4AulExecError(ctx->Obj, "GetValues(): map expected, got 0");
+
+	C4ValueArray *keys = new C4ValueArray(map->size());
+
+	size_t i = 0;
+	for (const auto &[key, value] : *map)
+	{
+		(*keys)[i] = value;
+		++i;
+	}
+
+	return keys;
+}
+
 // C4Script Function Map
 
 // defined function class
@@ -6842,6 +6898,8 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "LocateFunc",                      FnLocateFunc);
 	AddFunc(pEngine, "PathFree",                        FnPathFree);
 	AddFunc(pEngine, "SetNextMission",                  FnSetNextMission);
+	AddFunc(pEngine, "GetKeys",                         FnGetKeys);
+	AddFunc(pEngine, "GetValues",                       FnGetValues);
 	new C4AulDefCastFunc(pEngine, "ScoreboardCol", C4V_C4ID, C4V_Int);
 	new C4AulDefCastFunc(pEngine, "CastInt",       C4V_Any,  C4V_Int);
 	new C4AulDefCastFunc(pEngine, "CastBool",      C4V_Any,  C4V_Bool);
@@ -6897,6 +6955,7 @@ C4ScriptConstDef C4ScriptConstMap[] =
 	{ "C4V_C4Object", C4V_Int, C4V_C4Object },
 	{ "C4V_String",   C4V_Int, C4V_String },
 	{ "C4V_Array",    C4V_Int, C4V_Array },
+	{ "C4V_Map",      C4V_Int, C4V_Map },
 
 	{ "COMD_None",      C4V_Int, COMD_None },
 	{ "COMD_Stop",      C4V_Int, COMD_Stop },
@@ -7252,8 +7311,8 @@ C4ScriptFnDef C4ScriptFnMap[] =
 	{ "Dec",                   1, C4V_Any,      { C4V_pC4Value, C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      MkFnC4V FnDec,                       0 },
 	{ "IsRef",                 1, C4V_Bool,     { C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      MkFnC4V FnIsRef,                     0 },
 	{ "GetType",               1, C4V_Int,      { C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      MkFnC4V FnGetType,                   0 },
-
 	{ "CreateArray",           1, C4V_Array,    { C4V_Int,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      0,                                   FnCreateArray },
+
 	{ "GetLength",             1, C4V_Int,      { C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      0,                                   FnGetLength },
 	{ "GetIndexOf",            1, C4V_Int,      { C4V_Any,      C4V_Array,    C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      0,                                   FnGetIndexOf },
 	{ "SetLength",             1, C4V_Bool,     { C4V_pC4Value, C4V_Int,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,      C4V_Any,   C4V_Any },      0,                                   FnSetLength },

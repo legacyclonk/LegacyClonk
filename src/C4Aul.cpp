@@ -189,7 +189,7 @@ void C4AulScript::Default()
 
 	// defaults
 	idDef = C4ID_None;
-	Strict = NONSTRICT;
+	Strict = C4AulScriptStrict::NONSTRICT;
 	Preparsing = Resolving = false;
 	Temporary = false;
 	LocalNamed.Reset();
@@ -351,9 +351,10 @@ C4AulScriptFunc *C4AulScript::GetSFunc(const char *pIdtf)
 	C4AulFunc *f = GetFunc(pIdtf);
 	if (!f) return nullptr;
 	return f->SFunc();
+
 }
 
-C4AulScriptFunc *C4AulScript::GetSFunc(int iIndex, const char *szPattern)
+C4AulScriptFunc *C4AulScript::GetSFunc(int iIndex, const char *szPattern, C4AulAccess AccNeeded)
 {
 	C4AulFunc *f;
 	C4AulScriptFunc *sf;
@@ -361,10 +362,18 @@ C4AulScriptFunc *C4AulScript::GetSFunc(int iIndex, const char *szPattern)
 	f = FuncL;
 	while (f)
 	{
-		if (sf = f->SFunc())
+		if (sf = f->SFunc(); sf)
 			if (!szPattern || SEqual2(sf->Name, szPattern))
 			{
-				if (!iIndex) return sf;
+				if (!iIndex)
+				{
+					if (sf->Access < AccNeeded)
+					{
+						C4AulParseError err(this, "insufficient access level");
+						err.show();
+					}
+					return sf;
+				}
 				--iIndex;
 			}
 		f = f->Prev;
@@ -372,6 +381,29 @@ C4AulScriptFunc *C4AulScript::GetSFunc(int iIndex, const char *szPattern)
 
 	// indexed script func not found
 	return nullptr;
+}
+
+C4AulAccess C4AulScript::GetAllowedAccess(C4AulFunc *func, C4AulScript *caller)
+{
+	C4AulScriptFunc *sfunc = func->SFunc();
+
+	if (!sfunc || sfunc->pOrgScript == caller
+			|| std::find(sfunc->pOrgScript->Includes.begin(), sfunc->pOrgScript->Includes.end(), caller->idDef) != sfunc->pOrgScript->Includes.end()
+			|| std::find(caller->Includes.begin(), caller->Includes.end(), sfunc->pOrgScript->idDef) != caller->Includes.end()
+			|| std::find(sfunc->pOrgScript->Appends.begin(), sfunc->pOrgScript->Appends.end(), caller->idDef) != sfunc->pOrgScript->Appends.end()
+			|| std::find(caller->Appends.begin(), caller->Appends.end(), sfunc->pOrgScript->idDef) != caller->Appends.end()
+			)
+	{
+		return AA_PRIVATE;
+	}
+
+	else if (sfunc->pOrgScript->Strict >= C4AulScriptStrict::STRICT3
+			 && caller->Strict >= C4AulScriptStrict::STRICT3)
+	{
+		return sfunc->Access;
+	}
+
+	return AA_PRIVATE;
 }
 
 void C4AulScriptFunc::CopyBody(C4AulScriptFunc &FromFunc)
@@ -411,7 +443,7 @@ C4AulScriptEngine::C4AulScriptEngine() :
 	// /me r b engine
 	Engine = this;
 	ScriptName.Ref(C4CFN_System);
-	Strict = MAXSTRICT;
+	Strict = C4AulScriptStrict::MAXSTRICT;
 
 	Global.Reset();
 

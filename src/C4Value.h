@@ -17,12 +17,17 @@
 #pragma once
 
 #include "C4Id.h"
+#include "C4AulScriptStrict.h"
+
+#include <string>
 
 // class declarations
 class C4Value;
 class C4Object;
 class C4String;
 class C4ValueArray;
+class C4ValueHash;
+class C4ValueContainer;
 
 const long C4EnumPointer1 = 1000000000,
            C4EnumPointer2 = 1001000000;
@@ -39,10 +44,12 @@ enum C4V_Type
 	C4V_String       = 5, // String
 
 	C4V_Array        = 6, // pointer on array of values
+	C4V_Map          = 7, // pointer on map of values
 
-	C4V_pC4Value     = 7, // reference on a value (variable)
+	C4V_pC4Value     = 8, // reference on a value (variable)
 
-	C4V_C4ObjectEnum = 8, // enumerated object
+	C4V_C4ObjectEnum = 9, // enumerated object
+
 };
 
 #define C4V_Last (int) C4V_pC4Value
@@ -57,7 +64,9 @@ union C4V_Data
 	C4Object *Obj;
 	C4String *Str;
 	C4Value *Ref;
+	C4ValueContainer *Container;
 	C4ValueArray *Array;
+	C4ValueHash *Map;
 	// cheat a little - assume that all members have the same length
 	operator void *() { return Ref; }
 	operator const void *() const { return Ref; }
@@ -76,41 +85,53 @@ template <typename T> struct C4ValueConv;
 class C4Value
 {
 public:
-	C4Value() : Type(C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr) { Data.Ref = 0; }
+	C4Value() : Type(C4V_Any), NextRef(nullptr), FirstRef(nullptr) { Data.Ref = 0; }
 
-	C4Value(const C4Value &nValue) : Data(nValue.Data), Type(nValue.Type), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
+	C4Value(const C4Value &nValue) : Data(nValue.Data), Type(nValue.Type), NextRef(nullptr), FirstRef(nullptr)
 	{
 		AddDataRef();
 	}
 
-	C4Value(C4V_Data nData, C4V_Type nType) : Data(nData), Type(nData ? nType : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
+	C4Value(C4V_Data nData, C4V_Type nType) : Data(nData), Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		AddDataRef();
 	}
 
-	C4Value(int32_t nData, C4V_Type nType) : Type(nData ? nType : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
+	C4Value(int32_t nData, C4V_Type nType) : Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Int = nData; AddDataRef();
 	}
 
-	explicit C4Value(C4Object *pObj) : Type(pObj ? C4V_C4Object : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4Object *pObj) : Type(pObj ? C4V_C4Object : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Obj = pObj; AddDataRef();
 	}
 
-	explicit C4Value(C4String *pStr) : Type(pStr ? C4V_String : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4String *pStr) : Type(pStr ? C4V_String : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Str = pStr; AddDataRef();
 	}
 
-	explicit C4Value(C4ValueArray *pArray) : Type(pArray ? C4V_Array : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4ValueArray *pArray) : Type(pArray ? C4V_Array : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Array = pArray; AddDataRef();
 	}
 
-	explicit C4Value(C4Value *pVal) : Type(pVal ? C4V_pC4Value : C4V_Any), HasBaseArray(false), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4ValueHash *pMap) : Type(pMap ? C4V_Map : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	{
+		Data.Map = pMap; AddDataRef();
+	}
+
+	explicit C4Value(C4Value *pVal) : Type(pVal ? C4V_pC4Value : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Ref = pVal; AddDataRef();
+	}
+
+	static C4Value *OfMap(C4ValueHash *map)
+	{
+		auto ret = new C4Value;
+		ret->OwningMap = map;
+		return ret;
 	}
 
 	C4Value &operator=(const C4Value &nValue);
@@ -128,6 +149,7 @@ public:
 	C4Object *getObj()       { return ConvertTo(C4V_C4Object) ? Data.Obj   : nullptr; }
 	C4String *getStr()       { return ConvertTo(C4V_String)   ? Data.Str   : nullptr; }
 	C4ValueArray *getArray() { return ConvertTo(C4V_Array)    ? Data.Array : nullptr; }
+	C4ValueHash *getMap()    { return ConvertTo(C4V_Map)      ? Data.Map   : nullptr; }
 	C4Value *getRef()        { return ConvertTo(C4V_pC4Value) ? Data.Ref   : nullptr; }
 
 	// Unchecked getters
@@ -137,6 +159,7 @@ public:
 	C4Object *_getObj()       const { return Data.Obj; }
 	C4String *_getStr()       const { return Data.Str; }
 	C4ValueArray *_getArray() const { return Data.Array; }
+	C4ValueHash *_getMap()    const { return Data.Map; }
 	C4Value *_getRef()              { return Data.Ref; }
 	long _getRaw()            const { return Data.Int; }
 
@@ -159,9 +182,13 @@ public:
 
 	void SetArray(C4ValueArray *Array) { C4V_Data d; d.Array = Array; Set(d, C4V_Array); }
 
+	void SetMap(C4ValueHash *Map) { C4V_Data d; d.Map = Map; Set(d, C4V_Map); }
+
 	void SetRef(C4Value *nValue) { C4V_Data d; d.Ref = nValue; Set(d, C4V_pC4Value); }
 
 	void Set0();
+
+	bool Equals(const C4Value &other, C4AulScriptStrict strict) const;
 
 	bool operator==(const C4Value &Value2) const;
 	bool operator!=(const C4Value &Value2) const;
@@ -191,8 +218,8 @@ public:
 	const C4Value &GetRefVal() const;
 	C4Value &GetRefVal();
 
-	// Get the Value at the index. Throws C4AulExecError if not an array
-	void GetArrayElement(int32_t index, C4Value &to, struct C4AulContext *pctx = 0, bool noref = false);
+	// Get the Value at the index. May Throw C4AulExecError
+	void GetContainerElement(C4Value *index, C4Value &to, struct C4AulContext *pctx = 0, bool noref = false);
 	// Set the length of the array. Throws C4AulExecError if not an array
 	void SetArrayLength(int32_t size, C4AulContext *cthr);
 
@@ -201,7 +228,7 @@ public:
 
 	void DenumeratePointer();
 
-	StdStrBuf GetDataString();
+	StdStrBuf GetDataString() const;
 
 	inline bool ConvertTo(C4V_Type vtToType, bool fStrict = true) // convert to dest type
 	{
@@ -224,25 +251,29 @@ protected:
 	union
 	{
 		C4Value *NextRef;
-		C4ValueArray *BaseArray;
+		C4ValueContainer *BaseContainer;
 	};
 	C4Value *FirstRef;
 
+	C4ValueHash *OwningMap = nullptr;
+
 	// data type
 	C4V_Type Type : 8;
-	bool HasBaseArray : 8;
+	bool HasBaseContainer = false;
 
-	C4Value *GetNextRef() { if (HasBaseArray) return 0; else return NextRef; }
-	C4ValueArray *GetBaseArray() { if (HasBaseArray) return BaseArray; else return 0; }
+	C4Value *GetNextRef() { if (HasBaseContainer) return 0; else return NextRef; }
+	C4ValueContainer *GetBaseContainer() { if (HasBaseContainer) return BaseContainer; else return nullptr; }
 
 	void Set(long nData, C4V_Type nType = C4V_Any) { C4V_Data d; d.Int = nData; Set(d, nType); }
 	void Set(C4V_Data nData, C4V_Type nType);
 
 	void AddRef(C4Value *pRef);
-	void DelRef(const C4Value *pRef, C4Value *pNextRef, C4ValueArray *pBaseArray);
+	void DelRef(const C4Value *pRef, C4Value *pNextRef, C4ValueContainer *pBaseContainer);
 
 	void AddDataRef();
-	void DelDataRef(C4V_Data Data, C4V_Type Type, C4Value *pNextRef, C4ValueArray *pBaseArray);
+	void DelDataRef(C4V_Data Data, C4V_Type Type, C4Value *pNextRef, C4ValueContainer *pBaseContainer);
+
+	void CheckRemoveFromMap();
 
 	// guess type from data (if type == c4v_any)
 	C4V_Type GuessType();
@@ -262,6 +293,7 @@ inline C4Value C4VID(C4ID iVal) { C4V_Data d; d.Int = iVal; return C4Value(d, C4
 inline C4Value C4VObj(C4Object *pObj) { return C4Value(pObj); }
 inline C4Value C4VString(C4String *pStr) { return C4Value(pStr); }
 inline C4Value C4VArray(C4ValueArray *pArray) { return C4Value(pArray); }
+inline C4Value C4VMap(C4ValueHash *pMap) { return C4Value(pMap); }
 inline C4Value C4VRef(C4Value *pVal) { return pVal->GetRef(); }
 
 C4Value C4VString(StdStrBuf &&strString);
@@ -316,6 +348,14 @@ template <> struct C4ValueConv<C4ValueArray *>
 	inline static C4Value ToC4V(C4ValueArray *v) { return C4VArray(v); }
 };
 
+template <> struct C4ValueConv<C4ValueHash *>
+{
+	inline static C4V_Type Type() { return C4V_Map; }
+	inline static C4ValueHash *FromC4V(C4Value &v) { return v.getMap(); }
+	inline static C4ValueHash *_FromC4V(C4Value &v) { return v._getMap(); }
+	inline static C4Value ToC4V(C4ValueHash *v) { return C4VMap(v); }
+};
+
 template <> struct C4ValueConv<C4Value *>
 {
 	inline static C4V_Type Type() { return C4V_pC4Value; }
@@ -326,5 +366,14 @@ template <> struct C4ValueConv<C4Value *>
 
 // aliases
 template <> struct C4ValueConv<long> : public C4ValueConv<int32_t> {};
+
+namespace std
+{
+	template<>
+	struct hash<C4Value>
+	{
+		std::size_t operator()(C4Value value) const;
+	};
+}
 
 extern const C4Value C4VNull, C4VFalse, C4VTrue;
