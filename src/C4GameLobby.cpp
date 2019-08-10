@@ -199,7 +199,7 @@ MainDlg::MainDlg(bool fHost)
 	}
 	else
 	{
-		checkReady = new C4GUI::CheckBox(caBottom.GetFromRight(90), LoadResStr("IDS_DLG_READY"), false);
+		checkReady = new C4GUI::CheckBox(caBottom.GetFromRight(110), LoadResStr("IDS_DLG_READY"), false);
 		checkReady->SetOnChecked(new C4GUI::CallbackHandler<MainDlg>(this, &MainDlg::OnReadyCheck));
 		caBottom.GetFromRight(90);
 	}
