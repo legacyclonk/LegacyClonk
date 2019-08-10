@@ -1053,10 +1053,16 @@ bool C4Network2Res::StartLoad(int32_t iFromClient, const C4Network2ResChunkData 
 	assert(pParent && pParent->getIOClass());
 	// all slots used? ignore
 	if (iLoadCnt + 1 >= C4NetResMaxLoad) return true;
-	// is there already a load by this client? ignore
+	int32_t loadsAtClient = 0;
+	// are there already enough loads by this client? ignore
 	for (C4Network2ResLoad *pPos = pLoads; pPos; pPos = pPos->Next())
+	{
 		if (pPos->getByClient() == iFromClient)
-			return true;
+		{
+			if (++loadsAtClient >= C4NetResMaxLoadPerPeerPerFile)
+				return true;
+		}
+	}
 	// find chunk to retrieve
 	int32_t iLoads[C4NetResMaxLoad]; int32_t i = 0;
 	for (C4Network2ResLoad *pLoad = pLoads; pLoad; pLoad = pLoad->Next())
