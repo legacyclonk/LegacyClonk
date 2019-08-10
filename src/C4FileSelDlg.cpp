@@ -63,7 +63,7 @@ C4FileSelDlg::DefaultListItem::DefaultListItem(const char *szFilename, bool fTru
 	int32_t iHeight = caMain.GetInnerHeight();
 	if (fCheckbox)
 	{
-		pCheck = new C4GUI::CheckBox(caMain.GetFromLeft(iHeight), nullptr, false);
+		pCheck = new C4GUI::CheckBox(caMain.GetFromLeft(iHeight), "", false);
 		if (fGrayed) pCheck->SetEnabled(false);
 		AddElement(pCheck);
 		pKeyCheck = new C4KeyBinding(C4KeyCodeEx(K_SPACE), "FileSelToggleFileActive", KEYSCOPE_Gui,
