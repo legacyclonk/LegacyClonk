@@ -5302,30 +5302,57 @@ static bool FnResetGamma(C4AulContext *ctx, long iRampIndex)
 
 static long FnFrameCounter(C4AulContext *) { return Game.FrameCounter; }
 
-struct PathInfo
+C4ValueHash *FnGetPath(C4AulContext *ctx, long iFromX, long iFromY, long iToX, long iToY)
 {
-	long ilx, ily;
-	long ilen;
-};
+	struct Waypoint
+	{
+		int32_t x = 0;
+		int32_t y = 0;
+		C4Object *obj = nullptr;
+	};
 
-static bool SumPathLength(int32_t iX, int32_t iY, intptr_t iTransferTarget, intptr_t ipPathInfo)
-{
-	PathInfo *pPathInfo = (PathInfo *)ipPathInfo;
-	pPathInfo->ilen += Distance(pPathInfo->ilx, pPathInfo->ily, iX, iY);
-	pPathInfo->ilx = iX;
-	pPathInfo->ily = iY;
-	return true;
-}
+	struct PathInfo
+	{
+		std::vector<Waypoint> path;
+		int32_t length = 0;
+	};
 
-static long FnGetPathLength(C4AulContext *ctx, long iFromX, long iFromY, long iToX, long iToY)
-{
-	PathInfo PathInfo;
-	PathInfo.ilx = iFromX;
-	PathInfo.ily = iFromY;
-	PathInfo.ilen = 0;
-	if (!Game.PathFinder.Find(iFromX, iFromY, iToX, iToY, &SumPathLength, (long)&PathInfo))
-		return 0;
-	return PathInfo.ilen + Distance(PathInfo.ilx, PathInfo.ily, iToX, iToY);
+	auto SetWaypoint = [](int32_t x, int32_t y, intptr_t transferTarget, intptr_t pathInfo) -> bool
+	{
+		auto *target = reinterpret_cast<C4Object *>(transferTarget);
+		auto *pathinfo = reinterpret_cast<PathInfo *>(pathInfo);
+
+		const Waypoint &last = pathinfo->path.back();
+
+		pathinfo->path.push_back(Waypoint{x, y, target});
+		pathinfo->length += Distance(last.x, last.y, x, y);
+		return true;
+	};
+
+	PathInfo pathinfo;
+
+	if (!Game.PathFinder.Find(iFromX, iFromY, iToX, iToY, SetWaypoint, reinterpret_cast<intptr_t>(&pathinfo)))
+	{
+		return nullptr;
+	}
+
+	auto *hash = new C4ValueHash;
+	(*hash)[C4VString("Length")] = C4VInt(pathinfo.length);
+
+	auto *array = new C4ValueArray(static_cast<int32_t>(pathinfo.path.size()));
+	for (size_t i = 0; i < pathinfo.path.size(); ++i)
+	{
+		auto *waypoint = new C4ValueHash;
+		(*waypoint)[C4VString("X")] = C4VInt(pathinfo.path[i].x);
+		(*waypoint)[C4VString("Y")] = C4VInt(pathinfo.path[i].y);
+		(*waypoint)[C4VString("TransferTarget")] = C4VObj(pathinfo.path[i].obj);
+
+		(*array)[static_cast<int32_t>(i)] = C4VMap(waypoint);
+	}
+
+	(*hash)[C4VString("Waypoints")] = C4VArray(array);
+
+	return hash;
 }
 
 static long FnSetTextureIndex(C4AulContext *ctx, C4String *psMatTex, long iNewIndex, bool fInsert)
@@ -6844,7 +6871,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "AddMsgBoardCmd",                  FnAddMsgBoardCmd);
 	AddFunc(pEngine, "SetGameSpeed",                    FnSetGameSpeed,                    false);
 	AddFunc(pEngine, "DrawMatChunks",                   FnDrawMatChunks,                   false);
-	AddFunc(pEngine, "GetPathLength",                   FnGetPathLength);
+	AddFunc(pEngine, "GetPath",                         FnGetPath);
 	AddFunc(pEngine, "SetTextureIndex",                 FnSetTextureIndex,                 false);
 	AddFunc(pEngine, "RemoveUnusedTexMapEntries",       FnRemoveUnusedTexMapEntries,       false);
 	AddFunc(pEngine, "SetObjDrawTransform",             FnSetObjDrawTransform);
