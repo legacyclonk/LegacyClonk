@@ -1540,6 +1540,9 @@ static C4Value FnAddMenuItem(C4AulContext *cthr, C4Value *pPars)
 	case C4V_Array:
 		// Arrays were never allowed, so tell the scripter
 		throw new C4AulExecError(cthr->Obj, "array as parameter to AddMenuItem");
+	case C4V_Map:
+		// Maps are not allowed either
+		throw new C4AulExecError(cthr->Obj, "map as parameter to AddMenuItem");
 	default:
 		return C4VBool(false);
 	}
