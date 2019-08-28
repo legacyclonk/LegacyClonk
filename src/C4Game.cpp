@@ -2159,7 +2159,7 @@ bool C4Game::ReloadFile(const char *szFile)
 	return true;
 }
 
-bool C4Game::ReloadDef(C4ID id)
+bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
 {
 	bool fSucc;
 	// not in network
@@ -2174,7 +2174,7 @@ bool C4Game::ReloadDef(C4ID id)
 	// Message
 	LogF("Reloading %s from %s", C4IdText(pDef->id), GetFilename(pDef->Filename));
 	// Reload def
-	if (Defs.Reload(pDef, C4D_Load_RX, Config.General.LanguageEx, &Application.SoundSystem))
+	if (Defs.Reload(pDef, reloadWhat, Config.General.LanguageEx, &Application.SoundSystem))
 	{
 		// Success, update all concerned object faces
 		// may have been done by graphics-update already - but not for objects using graphics of another def
