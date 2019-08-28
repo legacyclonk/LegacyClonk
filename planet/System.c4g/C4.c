@@ -97,6 +97,6 @@ global func BarrelConfiguration() { return 5; }
 
 global func GetPathLength(int fromX, int fromY, int toX, int toY)
 {
-	var path = GetPath(fromX, fromY, toX, toY);
-	return path && path.Length;
+  var path = GetPath(fromX, fromY, toX, toY);
+  return path && path.Length;
 }
