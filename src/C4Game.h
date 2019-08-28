@@ -223,7 +223,7 @@ public:
 	bool CreateViewport(int32_t iPlayer, bool fSilent = false);
 	bool DropDef(C4ID id, int32_t iX, int32_t iY);
 	bool ReloadFile(const char *szPath);
-	bool ReloadDef(C4ID id);
+	bool ReloadDef(C4ID id, uint32_t reloadWhat = C4D_Load_RX);
 	bool ReloadParticle(const char *szName);
 	// Object functions
 	void ClearPointers(C4Object *cobj);

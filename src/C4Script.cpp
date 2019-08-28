@@ -5255,7 +5255,7 @@ static long FnReloadDef(C4AulContext *ctx, C4ID idDef, long iReloadWhat)
 	// reload everything if nothing has been specified
 	if (!iReloadWhat) iReloadWhat = C4D_Load_RX;
 	// perform reload
-	return Game.ReloadDef(pDef->id);
+	return Game.ReloadDef(pDef->id, static_cast<uint32_t>(iReloadWhat));
 }
 
 static long FnReloadParticle(C4AulContext *ctx, C4String *szParticleName)
