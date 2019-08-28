@@ -94,3 +94,9 @@ global func MessageBoard(string msg)
 // Bit 1 (2): Fässer werden beim Verkaufen nicht entleert (sind wieder voll kaufbar)
 // Bit 2 (4): Nur Wasserfässer werden beim Verkaufen nicht entleert (sind wieder voll kaufbar)
 global func BarrelConfiguration() { return 5; }
+
+global func GetPathLength(int fromX, int fromY, int toX, int toY)
+{
+	var path = GetPath(fromX, fromY, toX, toY);
+	return path && path.Length;
+}
