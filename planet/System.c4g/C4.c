@@ -1,20 +1,20 @@
 /*-- Altes Zeug, das nicht mehr in die Engine muss --*/
 
-#strict
+#strict 3
 
 // Abgelöst durch SetPosition
-global func ForcePosition(object obj, int x, int y) { return(SetPosition(x, y, obj)); }
+global func ForcePosition(object obj, int x, int y) { return SetPosition(x, y, obj); }
 
 // Abgelöst durch RemoveObject
-global func AssignRemoval(object obj) { return(RemoveObject(obj)); }
+global func AssignRemoval(object obj) { return RemoveObject(obj); }
 
 // Für Szenarien ohne Objects.c4d...
-global func EmptyBarrelID() { return(BARL); }
+global func EmptyBarrelID() { return BARL; }
 
 // Fügt das Material in ein Fass im Objekt ein
 global func ObjectInsertMaterial(int imat, object pTarget)
 {
-  if (!pTarget || imat == -1) return(); // Kein Zielobjekt / Material?
+  if (!pTarget || imat == -1) return; // Kein Zielobjekt / Material?
   // Fasstyp ermitteln
   var idBarl;
   if (idBarl = GetBarrelType(imat))
@@ -23,12 +23,12 @@ global func ObjectInsertMaterial(int imat, object pTarget)
     var pBarl = FindFillBarrel(pTarget, idBarl);
     if (pBarl)
       // Fass auffüllen
-      return(pBarl->BarrelDoFill(1, imat+1));
+      return pBarl->BarrelDoFill(1, imat+1);
   }
   // Kein Fass? Dann Objekt überlaufen lassen
-  return(InsertMaterial(imat, GetX(pTarget)-GetX(), GetY(pTarget)-GetY()));
+  return InsertMaterial(imat, GetX(pTarget)-GetX(), GetY(pTarget)-GetY());
 }
-  
+
 // Auffüllbares Fass im Objekt suchen
 global func FindFillBarrel(object pInObj, id type)
 {
@@ -42,9 +42,9 @@ global func FindFillBarrel(object pInObj, id type)
         // Nehmen wir doch das
         return(pObj);
   // Nix? Dann halt ein leeres Fass suchen und füllen
-  if (!(pObj=FindContents(EmptyBarrelID(), pInObj))) return();
+  if (!(pObj = FindContents(EmptyBarrelID(), pInObj))) return;
   ChangeDef(type, pObj);
-  return(pObj);
+  return pObj;
 }
 
 // Flüssigkeit aus Fässern im Objekt extrahieren
@@ -56,36 +56,36 @@ global func ObjectExtractLiquid(object pFrom)
   {
     // Extrahieren
     var iRet = pObj->~BarrelExtractLiquid();
-    if(iRet != -1) return(iRet);
+    if(iRet != -1) return iRet;
   }
   // Extrahieren nicht möglich
-  return(-1);
+  return -1;
 }
-  
+
 global func ShowNeededMaterial(object pOfObject)
 {
-  MessageWindow(GetNeededMatStr(pOfObject), GetOwner(),CXCN,GetName(pOfObject));
-  return(1);
+  MessageWindow(GetNeededMatStr(pOfObject), GetOwner(), CXCN, GetName(pOfObject));
+  return true;
 }
 
 global func SetOnlyVisibleToOwner(bool fVisible, object pObj)
 {
-  var oldVal=GetOnlyVisibleToOwner(pObj);
-  if (fVisible) 
-    SetVisibility(VIS_Owner() | VIS_God(), pObj);
+  var oldVal = GetOnlyVisibleToOwner(pObj);
+  if (fVisible)
+    SetVisibility(VIS_Owner | VIS_God, pObj);
   else
-    SetVisibility(VIS_All(), pObj);
-  return(oldVal);
-}
-  
-global func GetOnlyVisibleToOwner(object pObj)
-{
-  return (GetVisibility(pObj) == VIS_Owner() | VIS_God());
+    SetVisibility(VIS_All, pObj);
+  return oldVal;
 }
 
-global func MessageBoard(string msg, par0, par1, par2, par3, par4, par5, par6, par7, par8)
+global func GetOnlyVisibleToOwner(object pObj)
 {
-  return(Log(msg, par0, par1, par2, par3, par4, par5, par6, par7, par8));
+  return GetVisibility(pObj) == VIS_Owner | VIS_God;
+}
+
+global func MessageBoard(string msg)
+{
+  return Log(msg, ...);
 }
 
 // Fasskonfiguration
@@ -93,4 +93,4 @@ global func MessageBoard(string msg, par0, par1, par2, par3, par4, par5, par6, p
 // Bit 0 (1): Wasserfässer sind auch im Verkauf 8 Clunker wert
 // Bit 1 (2): Fässer werden beim Verkaufen nicht entleert (sind wieder voll kaufbar)
 // Bit 2 (4): Nur Wasserfässer werden beim Verkaufen nicht entleert (sind wieder voll kaufbar)
-global func BarrelConfiguration() { return(5); }
+global func BarrelConfiguration() { return 5; }
