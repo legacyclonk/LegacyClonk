@@ -861,7 +861,9 @@ bool C4Value::Equals(const C4Value &other, C4AulScriptStrict strict) const
 			{
 				case C4V_Any:
 					return true;
-				case C4V_Int: C4V_C4ID: case C4V_C4Object:
+				case C4V_Int:
+				case C4V_C4ID:
+				case C4V_C4Object:
 					return Data.Int == other.Data.Int;
 				case C4V_Bool:
 					return _getBool() == other._getBool();
