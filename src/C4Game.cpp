@@ -51,6 +51,9 @@
 
 #include <StdFile.h>
 
+#include <iterator>
+#include <sstream>
+
 char OSTR[500];
 
 C4Game::C4Game()
