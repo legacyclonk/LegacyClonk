@@ -32,6 +32,8 @@
 #include "C4CompilerWrapper.h"
 #endif
 
+#include <iterator>
+
 // C4SVal
 
 C4SVal::C4SVal(int32_t std, int32_t rnd, int32_t min, int32_t max)
