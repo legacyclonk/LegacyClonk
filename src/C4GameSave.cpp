@@ -336,13 +336,14 @@ void C4GameSave::WriteDescLeague(StdStrBuf &sBuf, bool fLeague, const char *strL
 void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 {
 	// Definition specs
-	if (Game.DefinitionFilenames[0])
+	if (Game.DefinitionFilenames.size())
 	{
 		char szDef[_MAX_PATH + 1];
 		// Desc
 		sBuf.Append(LoadResStr("IDS_DESC_DEFSPECS"));
 		// Get definition modules
-		for (int cnt = 0; SGetModule(Game.DefinitionFilenames, cnt, szDef); cnt++)
+		int32_t i = 0;
+		for (const auto &def : Game.DefinitionFilenames)
 		{
 			// Get exe relative path
 			StdStrBuf sDefFilename;
@@ -350,7 +351,7 @@ void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 			// Convert rtf backslashes
 			sDefFilename.Replace("\\", "\\\\");
 			// Append comma
-			if (cnt > 0) sBuf.Append(", ");
+			if (i++ > 0) sBuf.Append(", ");
 			// Apend to desc
 			sBuf.Append(sDefFilename);
 		}

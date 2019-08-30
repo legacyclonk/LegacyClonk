@@ -1508,10 +1508,12 @@ void C4StartupPlrPropertiesDlg::SetNewPicture(const char *szFromFilename, bool f
 
 void C4StartupPlrPropertiesDlg::OnPictureBtn(C4GUI::Control *pBtn)
 {
-	StdStrBuf sNewPic; bool fSetPicture = true, fSetBigIcon = true;
-	if (C4PortraitSelDlg::SelectPortrait(GetScreen(), &sNewPic, &fSetPicture, &fSetBigIcon))
+	std::string newPic;
+	bool setPicture = true;
+	bool setBigIcon = true;
+	if (C4PortraitSelDlg::SelectPortrait(GetScreen(), newPic, &setPicture, &setBigIcon))
 	{
-		SetNewPicture(sNewPic.getData(), fSetPicture, fSetBigIcon);
+		SetNewPicture(newPic.c_str(), setPicture, setBigIcon);
 	}
 }
 

@@ -1581,16 +1581,22 @@ bool C4StartupScenSelDlg::StartScenario(C4ScenarioListLoader::Scenario *pStartSc
 	if (pStartScen->GetC4S().Definitions.AllowUserChange)
 	{
 		// get definitions as user selects them
-		StdStrBuf sDefinitions;
-		if (!pStartScen->GetC4S().Definitions.GetModules(&sDefinitions)) sDefinitions.Copy("Objects.c4d");
-		if (!C4DefinitionSelDlg::SelectDefinitions(GetScreen(), &sDefinitions))
+		std::vector<std::string> defs = pStartScen->GetC4S().Definitions.GetModules();
+		if (defs.empty())
+		{
+			defs.push_back("Objects.c4d");
+		}
+		if (!C4DefinitionSelDlg::SelectDefinitions(GetScreen(), defs))
 			// user aborted during definition selection
 			return false;
-		SCopy(sDefinitions.getData(), Game.DefinitionFilenames, sizeof(Game.DefinitionFilenames) - 1);
+
+		Game.DefinitionFilenames = defs;
 	}
 	else
+	{
 		// for no user change, just set default objects. Custom settings will override later anyway
-		SCopy("Objects.c4d", Game.DefinitionFilenames);
+		Game.DefinitionFilenames.push_back("Objects.c4d");
+	}
 	// set other default startup parameters
 	SCopy(pStartScen->GetEntryFilename().getData(), Game.ScenarioFilename);
 	Game.fLobby = !!Game.NetworkActive; // always lobby in network

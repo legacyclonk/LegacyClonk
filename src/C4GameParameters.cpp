@@ -200,29 +200,25 @@ void C4GameResList::Clear()
 	iResCount = iResCapacity = 0;
 }
 
-bool C4GameResList::Load(const char *szDefinitionFilenames)
+bool C4GameResList::Load(const std::vector<std::string> &DefinitionFilenames)
 {
 	// clear any prev
 	Clear();
 	// no defs to be added? that's OK (LocalOnly)
-	if (szDefinitionFilenames && *szDefinitionFilenames)
+	if (DefinitionFilenames.size())
 	{
-		// add them
-		char szSegment[_MAX_PATH + 1];
-		for (int32_t cseg = 0; SCopySegment(szDefinitionFilenames, cseg, szSegment, ';', _MAX_PATH); ++cseg)
-			if (*szSegment)
+		for (const auto &def : DefinitionFilenames)
+		{
+			C4Group Def;
+			if (!Def.Open(def.c_str()))
 			{
-				// Do a quick check whether the group file actually exists
-				C4Group Def;
-				if (!Def.Open(szSegment))
-				{
-					LogFatal(FormatString(LoadResStr("IDS_PRC_DEFNOTFOUND"), szSegment).getData());
-					return false;
-				}
+				LogFatal(FormatString(LoadResStr("IDS_PRC_DEFNOTFOUND"), def.c_str()).getData());
 				Def.Close();
-				// Okay, add it
-				CreateByFile(NRT_Definitions, szSegment);
+				return false;
 			}
+			Def.Close();
+			CreateByFile(NRT_Definitions, def.c_str());
+		}
 	}
 	// add System.c4g
 	CreateByFile(NRT_System, C4CFN_System);
@@ -333,7 +329,7 @@ void C4GameParameters::Clear()
 	Teams.Clear();
 }
 
-bool C4GameParameters::Load(C4Group &hGroup, C4Scenario *pScenario, const char *szGameText, C4LangStringTable *pLang, const char *DefinitionFilenames)
+bool C4GameParameters::Load(C4Group &hGroup, C4Scenario *pScenario, const char *szGameText, C4LangStringTable *pLang, const std::vector<std::string> &DefinitionFilenames)
 {
 	// Clear previous data
 	Clear();

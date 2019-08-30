@@ -50,6 +50,7 @@
 #include <C4ChatDlg.h>
 
 #include <StdFile.h>
+#include <sstream>
 
 #include <iterator>
 #include <sstream>
@@ -173,12 +174,18 @@ bool C4Game::OpenScenario()
 		GroupSet.RegisterParentFolders(C4S.Head.Origin.getData());
 
 	// Scenario definition preset
-	StdStrBuf sDefinitionFilenames;
-	if (!C4S.Definitions.AllowUserChange && C4S.Definitions.GetModules(&sDefinitionFilenames))
+	std::vector<std::string> defs = C4S.Definitions.GetModules();
+	if (!C4S.Definitions.AllowUserChange)
 	{
-		SCopy(sDefinitionFilenames.getData(), DefinitionFilenames, sizeof(DefinitionFilenames) - 1);
-		if (DefinitionFilenames[0]) Log(LoadResStr("IDS_PRC_SCEOWNDEFS"));
-		else Log(LoadResStr("IDS_PRC_LOCALONLY"));
+		DefinitionFilenames = defs;
+		if (defs.empty())
+		{
+			Log(LoadResStr("IDS_PRC_LOCALONLY"));
+		}
+		else
+		{
+			Log(LoadResStr("IDS_PRC_SCEOWNDEFS"));
+		}
 	}
 
 	// add any custom definition path
@@ -188,21 +195,17 @@ bool C4Game::OpenScenario()
 		char *szDefPath = sDefPath.GrabPointer(); TruncateBackslash(szDefPath); sDefPath.Take(szDefPath);
 		if (DirectoryExists(sDefPath.getData()))
 		{
-			StdStrBuf sDefs;
-			char szSegment[_MAX_PATH + 1];
-			int i = 0;
-			for (int cseg = 0; SCopySegment(Game.DefinitionFilenames, cseg, szSegment, ';', _MAX_PATH); cseg++)
+			std::transform(DefinitionFilenames.begin(), DefinitionFilenames.end(), std::inserter(DefinitionFilenames, DefinitionFilenames.begin()), [](const std::string &def)
 			{
-				if (i++) sDefs.AppendChar(';');
-				sDefs.Append(Config.General.DefinitionPath);
-				sDefs.Append(szSegment);
-			}
-			SCopy(sDefs.getData(), Game.DefinitionFilenames, sizeof(Game.DefinitionFilenames) - 1);
+				return std::string{Config.General.DefinitionPath} + def;
+			});
 		}
 	}
 
 	// Scan folder local definitions
-	SAddModules(DefinitionFilenames, FoldersWithLocalsDefs(ScenarioFilename));
+	std::vector<std::string> localDefs = FoldersWithLocalsDefs(ScenarioFilename);
+
+	DefinitionFilenames.insert(DefinitionFilenames.end(), localDefs.begin(), localDefs.end());
 
 	// Check mission access
 	if (C4S.Head.MissionAccess[0])
@@ -602,7 +605,8 @@ void C4Game::Clear()
 	if (IsResStrTableLoaded()) Log(LoadResStr("IDS_CNS_GAMECLOSED"));
 
 	// clear game starting parameters
-	*DefinitionFilenames = *DirectJoinAddress = *ScenarioFilename = *PlayerFilenames = 0;
+	DefinitionFilenames.clear();
+	*DirectJoinAddress = *ScenarioFilename = *PlayerFilenames = 0;
 
 	// join reference
 	delete pJoinReference; pJoinReference = nullptr;
@@ -1667,7 +1671,7 @@ void C4Game::Default()
 	GameOver = GameOverDlgShown = false;
 	ScenarioFilename[0] = 0;
 	PlayerFilenames[0] = 0;
-	DefinitionFilenames[0] = 0;
+	DefinitionFilenames.clear();
 	DirectJoinAddress[0] = 0;
 	pJoinReference = nullptr;
 	ScenarioTitle.Ref("Loading...");
@@ -2870,7 +2874,12 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 	Log("Command line: "); Log(szCmdLine);
 
 	// Definitions by registry config
-	SCopy(Config.General.Definitions, DefinitionFilenames);
+	DefinitionFilenames.clear();
+	std::istringstream stream(Config.General.Definitions);
+	for (std::string s; std::getline(stream, s, ';');)
+	{
+		DefinitionFilenames.push_back(s);
+	}
 	*PlayerFilenames = 0;
 	NetworkActive = false;
 
@@ -2898,7 +2907,7 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 		// Definition file
 		if (SEqualNoCase(GetExtension(szParameter), "c4d"))
 		{
-			SAddModule(DefinitionFilenames, szParameter);
+			DefinitionFilenames.push_back(szParameter);
 			continue;
 		}
 		// Update file
@@ -3382,39 +3391,35 @@ void C4Game::LocalPlayerControl(int32_t iPlayer, int32_t iCom)
 
 bool C4Game::DefinitionFilenamesFromSaveGame()
 {
-	const char *pSource;
-	char szDefinitionFilenames[20 * _MAX_PATH + 1];
-	szDefinitionFilenames[0] = 0;
+	std::string source(GameText.GetData());
 
 	// Use loaded game text component
-	if (pSource = GameText.GetData())
+	if (source.size())
 	{
-		const char *szPos;
-		char szLinebuf[30 + _MAX_PATH + 1];
 		// Search def file name section
-		if (szPos = SSearch((const char *)pSource, "[DefinitionFiles]"))
-			// Scan lines
-			while (true)
-			{
-				szPos = SAdvanceSpace(szPos);
-				SCopyUntil(szPos, szLinebuf, 0x0D, 30 + _MAX_PATH);
-				szPos += SLen(szLinebuf);
-				// Add definition file name
-				if (SEqual2(szLinebuf, "Definition") && (SCharPos('=', szLinebuf) > -1))
-				{
-					SNewSegment(szDefinitionFilenames);
-					SAppend(szLinebuf + SCharPos('=', szLinebuf) + 1, szDefinitionFilenames);
-				}
-				else
-					break;
-			}
-		// Overwrite prior def file name specification
-		if (szDefinitionFilenames[0])
+		size_t pos = source.find("[DefinitionFiles]");
+		if (pos != std::string::npos)
 		{
-			SCopy(szDefinitionFilenames, DefinitionFilenames); return true;
+			DefinitionFilenames.clear();
+			std::istringstream stream(source.substr(pos));
+			std::string line;
+			bool found = false;
+			while (std::getline(stream, line))
+			{
+				size_t p = line.find("Definition");
+				if (p == 0 && (p = line.find('=', p) != std::string::npos))
+				{
+					found = true;
+					DefinitionFilenames.push_back(line.substr(p));
+				}
+				else if (found)
+				{
+					break;
+				}
+			}
+			return found;
 		}
 	}
-
 	return false;
 }
 
@@ -3723,41 +3728,40 @@ bool C4Game::CheckObjectEnumeration()
 	return true;
 }
 
-const char *C4Game::FoldersWithLocalsDefs(const char *szPath)
+std::vector<std::string> C4Game::FoldersWithLocalsDefs(std::string path)
 {
-	static char szDefs[10 * _MAX_PATH + 1];
-	szDefs[0] = 0;
+	std::vector<std::string> defs;
 
 	// Get relative path
-	szPath = Config.AtExeRelativePath(szPath);
+	path = Config.AtExeRelativePath(path.c_str());
 
 	// Scan path for folder names
-	int32_t cnt, iBackslash;
-	char szFoldername[_MAX_PATH + 1];
-	C4Group hGroup;
-	for (cnt = 0; (iBackslash = SCharPos(DirectorySeparator, szPath, cnt)) > -1; cnt++)
+	std::string folderName;
+	C4Group group;
+	for (size_t pos = path.find(DirectorySeparator); pos != std::string::npos; pos = path.find(DirectorySeparator, pos + 1))
 	{
 		// Get folder name
-		SCopy(szPath, szFoldername, iBackslash);
+		folderName = path.substr(0, pos);
 		// Open folder
-		if (SEqualNoCase(GetExtension(szFoldername), "c4f"))
-			if (hGroup.Open(szFoldername))
+		if (SEqualNoCase(GetExtension(folderName.c_str()), "c4f"))
+		{
+			if (group.Open(folderName.c_str()))
 			{
 				// Check for contained defs
 				// do not, however, add them to the group set:
 				// parent folders are added by OpenScenario already!
-				int32_t iContents;
-				if (iContents = GroupSet.CheckGroupContents(hGroup, C4GSCnt_Definitions))
+				int32_t contents;
+				if ((contents = GroupSet.CheckGroupContents(group, C4GSCnt_Definitions)))
 				{
-					// Add folder to list
-					SNewSegment(szDefs); SAppend(szFoldername, szDefs);
+					defs.push_back(folderName);
 				}
 				// Close folder
-				hGroup.Close();
+				group.Close();
 			}
+		}
 	}
 
-	return szDefs;
+	return defs;
 }
 
 void C4Game::InitValueOverloads()

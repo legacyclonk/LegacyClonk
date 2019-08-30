@@ -22,8 +22,8 @@
 
 #include <C4Random.h>
 #include <C4Group.h>
-#include <C4Components.h>
 #include <C4Game.h>
+
 #ifdef C4ENGINE
 #include <C4Wrappers.h>
 #endif
@@ -149,7 +149,7 @@ int32_t C4Scenario::GetMinPlayer()
 void C4SDefinitions::Default()
 {
 	LocalOnly = AllowUserChange = false;
-	std::memset(Definition, 0, sizeof(Definition));
+	Definitions.clear();
 	SkipDefs.Default();
 }
 
@@ -473,63 +473,50 @@ void C4Scenario::SetExactLandscape()
 	Landscape.ExactLandscape = 1;
 }
 
-bool C4SDefinitions::GetModules(StdStrBuf *psOutModules) const
+std::vector<std::string> C4SDefinitions::GetModules() const
 {
-	// Local only
-	if (LocalOnly) { psOutModules->Copy(""); return true; }
-	// Scan for any valid entries
-	bool fSpecified = false;
-	int32_t cnt = 0;
-	for (; cnt < C4S_MaxDefinitions; cnt++)
-		if (Definition[cnt][0])
-			fSpecified = true;
-	// No valid entries
-	if (!fSpecified) return false;
-	// Compose entry list
-	psOutModules->Copy("");
-	for (cnt = 0; cnt < C4S_MaxDefinitions; cnt++)
-		if (Definition[cnt][0])
-		{
-			if (psOutModules->getLength()) psOutModules->AppendChar(';');
-			psOutModules->Append(Definition[cnt]);
-		}
-	// Done
-	return true;
+	return LocalOnly ? std::vector<std::string>() : Definitions;
 }
 
-void C4SDefinitions::SetModules(const char *szList, const char *szRelativeToPath, const char *szRelativeToPath2)
+void C4SDefinitions::SetModules(const std::vector<std::string> &modules, const std::string &relativeToPath, const std::string &relativeToPath2)
 {
-	int32_t cnt;
-
-	// Empty list: local only
-	if (!SModuleCount(szList))
+	Definitions.clear();
+	std::transform(modules.begin(), modules.end(), std::inserter(Definitions, Definitions.begin()), [relativeToPath, relativeToPath2](std::string def)
 	{
-		LocalOnly = true;
-		for (cnt = 0; cnt < C4S_MaxDefinitions; cnt++) Definition[cnt][0] = 0;
-		return;
-	}
+		if (relativeToPath.size() && SEqualNoCase(def, relativeToPath, static_cast<int32_t>(relativeToPath.length())))
+		{
+			def = def.substr(relativeToPath.length());
+		}
+		if (relativeToPath2.size() && SEqualNoCase(def, relativeToPath2, static_cast<int32_t>(relativeToPath2.length())))
+		{
+			def = def.substr(relativeToPath2.length());
+		}
+		return def;
+	});
 
-	// Set list
-	LocalOnly = false;
-	for (cnt = 0; cnt < C4S_MaxDefinitions; cnt++)
-	{
-		SGetModule(szList, cnt, Definition[cnt], _MAX_PATH);
-		// Make relative path
-		if (szRelativeToPath && *szRelativeToPath)
-			if (SEqualNoCase(Definition[cnt], szRelativeToPath, SLen(szRelativeToPath)))
-				SCopy(Definition[cnt] + SLen(szRelativeToPath), Definition[cnt]);
-		if (szRelativeToPath2 && *szRelativeToPath2)
-			if (SEqualNoCase(Definition[cnt], szRelativeToPath2, SLen(szRelativeToPath2)))
-				SCopy(Definition[cnt] + SLen(szRelativeToPath2), Definition[cnt]);
-	}
+	LocalOnly = Definitions.empty();
 }
 
 void C4SDefinitions::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(LocalOnly,       "LocalOnly",       false));
 	pComp->Value(mkNamingAdapt(AllowUserChange, "AllowUserChange", false));
-	for (int32_t i = 0; i < C4S_MaxDefinitions; i++)
-		pComp->Value(mkNamingAdapt(mkStringAdaptMA(Definition[i]), FormatString("Definition%i", i + 1).getData(), ""));
+	pComp->Value(mkNamingAdapt(mkSTLContainerAdapt(Definitions), "Definitions", decltype(Definitions)()));
+
+	if (Definitions.empty() && pComp->isCompiler())
+	{
+		for (size_t i = 0; i < C4S_MaxDefinitions; ++i)
+		{
+			std::string def;
+			pComp->Value(mkNamingAdapt(mkStringAdaptA(def), FormatString("Definition%zu", i + 1).getData(), ""));
+
+			if (!def.empty())
+			{
+				Definitions.push_back(def);
+			}
+		}
+	}
+
 	pComp->Value(mkNamingAdapt(SkipDefs, "SkipDefs", C4IDList()));
 }
 

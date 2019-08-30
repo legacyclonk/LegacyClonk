@@ -31,6 +31,7 @@
 #include <time.h>
 
 #include <sys/timeb.h>
+#include <cassert>
 #include <cctype>
 #include <cstring>
 
@@ -233,7 +234,32 @@ bool SEqual2(const char *szStr1, const char *szStr2)
 	return true;
 }
 
-bool SEqualNoCase(const char *szStr1, const char *szStr2, int iLen)
+bool SEqualNoCase(const std::string &str1, const std::string &str2, int32_t length)
+{
+	if (str1.size() != str2.size())
+	{
+		return false;
+	}
+
+	switch (length)
+	{
+	case -1:
+		length = static_cast<int32_t>(str1.size());
+		break;
+	case 0:
+		return true;
+	default:
+		length = std::min(length, static_cast<int32_t>(str1.size()));
+		break;
+	}
+
+	return std::equal(std::begin(str1), std::begin(str1) + length, std::begin(str2), [](const char &a, const char &b)
+	{
+		return tolower(a) == tolower(b);
+	});
+}
+
+bool SEqualNoCase(const char *szStr1, const char *szStr2, int32_t iLen)
 {
 	if (!szStr1 || !szStr2) return false;
 	if (iLen == 0) return true;
@@ -244,6 +270,12 @@ bool SEqualNoCase(const char *szStr1, const char *szStr2, int iLen)
 	}
 	if (*szStr1 || *szStr2) return false;
 	return true;
+}
+
+bool SEqual2NoCase(const std::string &str1, const std::string &str2, int32_t length)
+{
+	assert(str1.size() <= str2.size());
+	return SEqualNoCase(str1, str2.substr(0, std::min(static_cast<size_t>(length), str1.size())), length);
 }
 
 bool SEqual2NoCase(const char *szStr1, const char *szStr2, int iLen)

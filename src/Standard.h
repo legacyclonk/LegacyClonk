@@ -64,6 +64,7 @@
 #endif
 
 #include <string.h>
+#include <string>
 
 #ifdef _WIN32
 	#ifndef _INC_WINDOWS
@@ -147,7 +148,10 @@ int SLen(const char *sptr);
 
 bool SEqual(const char *szStr1, const char *szStr2);
 bool SEqual2(const char *szStr1, const char *szStr2);
-bool SEqualNoCase(const char *szStr1, const char *szStr2, int iLen = -1);
+
+bool SEqualNoCase(const std::string &str1, const std::string &str2, int32_t length = -1);
+bool SEqualNoCase(const char *szStr1, const char *szStr2, int32_t iLen);
+bool SEqual2NoCase(const std::string &str1, const std::string &str2, int32_t length = -1);
 bool SEqual2NoCase(const char *szStr1, const char *szStr2, int iLen = -1);
 
 void SCopy(const char *szSource, char *sTarget, int iMaxL = -1);

@@ -141,7 +141,7 @@ public:
 	char ScenarioFilename[_MAX_PATH + 1];
 	StdStrBuf ScenarioTitle;
 	char PlayerFilenames[20 * _MAX_PATH + 1];
-	char DefinitionFilenames[20 * _MAX_PATH + 1];
+	std::vector<std::string> DefinitionFilenames;
 	char DirectJoinAddress[_MAX_PATH + 1];
 	class C4Network2Reference *pJoinReference;
 	int32_t FPS, cFPS;
@@ -292,7 +292,7 @@ protected:
 	void DeleteObjects(bool fDeleteInactive);
 	void ExecObjects();
 	void Ticks();
-	const char *FoldersWithLocalsDefs(const char *szPath);
+	std::vector<std::string> FoldersWithLocalsDefs(std::string path);
 	bool CheckObjectEnumeration();
 	bool DefinitionFilenamesFromSaveGame();
 	bool LoadScenarioComponents();

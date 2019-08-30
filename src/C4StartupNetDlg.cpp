@@ -1059,7 +1059,7 @@ bool C4StartupNetDlg::DoOK()
 	// Set join parameters
 	*Game.ScenarioFilename = '\0';
 	if (szDirectJoinAddress) SCopy(szDirectJoinAddress, Game.DirectJoinAddress, _MAX_PATH); else *Game.DirectJoinAddress = '\0';
-	SCopy("Objects.c4d", Game.DefinitionFilenames);
+	Game.DefinitionFilenames.push_back("Objects.c4d");
 	Game.NetworkActive = true;
 	Game.fObserve = false;
 	Game.pJoinReference = pRef;

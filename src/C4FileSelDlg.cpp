@@ -294,44 +294,40 @@ void C4FileSelDlg::UpdateSelection()
 	}
 }
 
-void C4FileSelDlg::SetSelection(const char *szNewSelection, bool fFilenameOnly)
+void C4FileSelDlg::SetSelection(const std::vector<std::string> &newSelection, bool fFilenameOnly)
 {
 	// check all selected definitions
 	for (ListItem *pFileItem = static_cast<ListItem *>(pFileListBox->GetFirst()); pFileItem; pFileItem = static_cast<ListItem *>(pFileItem->GetNext()))
 	{
 		const char *szFileItemFilename = pFileItem->GetFilename();
 		if (fFilenameOnly) szFileItemFilename = GetFilename(szFileItemFilename);
-		pFileItem->SetChecked(SIsModule(szNewSelection, szFileItemFilename));
+		pFileItem->SetChecked(std::find(newSelection.begin(), newSelection.end(), szFileItemFilename) != newSelection.end());
 	}
 }
 
-StdStrBuf C4FileSelDlg::GetSelection(const char *szFixedSelection, bool fFilenameOnly) const
+void C4FileSelDlg::GetSelection(std::vector<std::string> &fixedSelection, bool filenameOnly) const
 {
-	StdStrBuf sResult;
 	if (!IsMultiSelection())
 	{
+		fixedSelection.clear();
 		// get single selected file for single selection dlg
-		if (pSelection) sResult.Copy(fFilenameOnly ? GetFilename(pSelection->GetFilename()) : pSelection->GetFilename());
+		fixedSelection.push_back(filenameOnly ? GetFilename(pSelection->GetFilename()) : pSelection->GetFilename());
 	}
 	else
 	{
 		// force fixed selection first
-		if (szFixedSelection) sResult.Append(szFixedSelection);
+		//if (fixedSelection.size()) sResult.Append(szFixedSelection);
 		//  get ';'-separated list for multi selection dlg
 		for (ListItem *pFileItem = static_cast<ListItem *>(pFileListBox->GetFirst()); pFileItem; pFileItem = static_cast<ListItem *>(pFileItem->GetNext()))
+		{
 			if (pFileItem->IsChecked())
 			{
 				const char *szAppendFilename = pFileItem->GetFilename();
-				if (fFilenameOnly) szAppendFilename = GetFilename(szAppendFilename);
-				// prevent adding entries twice (especially those from the fixed selection list)
-				if (!SIsModule(sResult.getData(), szAppendFilename))
-				{
-					if (sResult.getLength()) sResult.AppendChar(';');
-					sResult.Append(szAppendFilename);
-				}
+				if (filenameOnly) szAppendFilename = GetFilename(szAppendFilename);
+				fixedSelection.push_back(szAppendFilename);
 			}
+		}
 	}
-	return sResult;
 }
 
 void C4FileSelDlg::AddLocation(const char *szName, const char *szPath)
@@ -384,10 +380,9 @@ C4PlayerSelDlg::C4PlayerSelDlg(C4FileSel_BaseCB *pSelCallback)
 
 // C4DefinitionSelDlg
 
-C4DefinitionSelDlg::C4DefinitionSelDlg(C4FileSel_BaseCB *pSelCallback, const char *szFixedSelection)
-	: C4FileSelDlg(Config.AtExePath(Config.General.DefinitionPath), FormatString(LoadResStr("IDS_MSG_SELECT"), LoadResStr("IDS_DLG_DEFINITIONS")).getData(), pSelCallback)
+C4DefinitionSelDlg::C4DefinitionSelDlg(C4FileSel_BaseCB *pSelCallback, const std::vector<std::string> &fixedSelection)
+	: C4FileSelDlg(Config.AtExePath(Config.General.DefinitionPath), FormatString(LoadResStr("IDS_MSG_SELECT"), LoadResStr("IDS_DLG_DEFINITIONS")).getData(), pSelCallback), fixedSelection(fixedSelection)
 {
-	if (szFixedSelection) sFixedSelection.Copy(szFixedSelection);
 }
 
 void C4DefinitionSelDlg::OnShown()
@@ -395,24 +390,24 @@ void C4DefinitionSelDlg::OnShown()
 	// base call: load file list
 	C4FileSelDlg::OnShown();
 	// initial selection
-	if (sFixedSelection) SetSelection(sFixedSelection.getData(), true);
+	if (fixedSelection.size()) SetSelection(fixedSelection, true);
 }
 
 bool C4DefinitionSelDlg::IsItemGrayed(const char *szFilename) const
 {
 	// cannot change initial selection
-	if (!sFixedSelection) return false;
-	return SIsModule(sFixedSelection.getData(), GetFilename(szFilename));
+	if (fixedSelection.empty()) return false;
+	return std::find(fixedSelection.begin(), fixedSelection.end(), GetFilename(szFilename)) != fixedSelection.end();
 }
 
-bool C4DefinitionSelDlg::SelectDefinitions(C4GUI::Screen *pOnScreen, StdStrBuf *pSelection)
+bool C4DefinitionSelDlg::SelectDefinitions(C4GUI::Screen *pOnScreen, std::vector<std::string> &selection)
 {
 	// let the user select definitions by showing a modal selection dialog
-	C4DefinitionSelDlg *pDlg = new C4DefinitionSelDlg(nullptr, pSelection->getData());
+	C4DefinitionSelDlg *pDlg = new C4DefinitionSelDlg(nullptr, selection);
 	bool fResult;
 	if (fResult = pOnScreen->ShowModalDlg(pDlg, false))
 	{
-		pSelection->Copy(pDlg->GetSelection(pSelection->getData(), true));
+		pDlg->GetSelection(selection, true);
 	}
 	if (C4GUI::IsGUIValid()) delete pDlg;
 	return fResult;
@@ -617,7 +612,7 @@ void C4PortraitSelDlg::OnIdle()
 #endif
 }
 
-bool C4PortraitSelDlg::SelectPortrait(C4GUI::Screen *pOnScreen, StdStrBuf *pSelection, bool *pfSetPicture, bool *pfSetBigIcon)
+bool C4PortraitSelDlg::SelectPortrait(C4GUI::Screen *pOnScreen, std::string &selection, bool *pfSetPicture, bool *pfSetBigIcon)
 {
 	// copy some default potraits to UserPath (but only try this once, no real error handling)
 	if (!Config.General.UserPortraitsWritten)
@@ -641,10 +636,16 @@ bool C4PortraitSelDlg::SelectPortrait(C4GUI::Screen *pOnScreen, StdStrBuf *pSele
 	}
 	// let the user select a portrait by showing a modal selection dialog
 	C4PortraitSelDlg *pDlg = new C4PortraitSelDlg(nullptr, *pfSetPicture, *pfSetBigIcon);
-	bool fResult;
-	if (fResult = pOnScreen->ShowModalDlg(pDlg, false))
+	bool fResult = pOnScreen->ShowModalDlg(pDlg, false);
+	if (fResult)
 	{
-		pSelection->Take(pDlg->GetSelection(nullptr, false));
+		std::vector<std::string> s;
+		pDlg->GetSelection(s, false);
+		fResult = !s.empty();
+		if (fResult)
+		{
+			selection = *s.begin();
+		}
 		*pfSetPicture = pDlg->IsSetPicture();
 		*pfSetBigIcon = pDlg->IsSetBigIcon();
 	}

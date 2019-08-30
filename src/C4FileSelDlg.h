@@ -162,8 +162,8 @@ public:
 	void InitElements();
 
 	void SetPath(const char *szNewPath, bool fRefresh = true);
-	void SetSelection(const char *szNewSelection, bool fFilenameOnly);
-	StdStrBuf GetSelection(const char *szFixedSelection, bool fFilenameOnly) const; // get single selected file for single selection dlg ';'-separated list for multi selection dlg
+	void SetSelection(const std::vector<std::string> &newSelection, bool filenameOnly);
+	void GetSelection(std::vector<std::string> &fixedSelection, bool filenameOnly) const; // get single selected file for single selection dlg ';'-separated list for multi selection dlg
 };
 
 // dialog to select a player file
@@ -181,7 +181,7 @@ public:
 class C4DefinitionSelDlg : public C4FileSelDlg
 {
 private:
-	StdStrBuf sFixedSelection; // initial selection which cannot be deselected
+	std::vector<std::string> fixedSelection; // initial selection which cannot be deselected
 
 protected:
 	virtual void OnShown();
@@ -191,9 +191,9 @@ protected:
 	virtual C4GUI::Icons GetFileItemIcon() const { return C4GUI::Ico_Definition; }
 
 public:
-	C4DefinitionSelDlg(C4FileSel_BaseCB *pSelCallback, const char *szFixedSelection);
+	C4DefinitionSelDlg(C4FileSel_BaseCB *pSelCallback, const std::vector<std::string> &fixedSelection);
 
-	static bool SelectDefinitions(C4GUI::Screen *pOnScreen, StdStrBuf *pSelection);
+	static bool SelectDefinitions(C4GUI::Screen *pOnScreen, std::vector<std::string> &selection);
 };
 
 // dialog to select portrait files
@@ -265,5 +265,5 @@ public:
 	bool IsSetPicture() const { return pCheckSetPicture ? pCheckSetPicture->GetChecked() : fDefSetPicture; }
 	bool IsSetBigIcon() const { return pCheckSetBigIcon ? pCheckSetBigIcon->GetChecked() : fDefSetBigIcon; }
 
-	static bool SelectPortrait(C4GUI::Screen *pOnScreen, StdStrBuf *pSelection, bool *pfSetPicture, bool *pfSetBigIcon);
+	static bool SelectPortrait(C4GUI::Screen *pOnScreen, std::string &selection, bool *pfSetPicture, bool *pfSetBigIcon);
 };
