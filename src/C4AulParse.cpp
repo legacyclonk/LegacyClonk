@@ -958,6 +958,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 	// Track stack size
 	switch (eType)
 	{
+	case AB_NIL:
 	case AB_INT:
 	case AB_BOOL:
 	case AB_STRING:
@@ -1031,7 +1032,6 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 		iStack -= C4AUL_MAX_Par;
 		break;
 
-	case AB_NIL:
 	case AB_MAPA_R:
 	case AB_MAPA_V:
 	case AB_ARRAY_APPEND:
