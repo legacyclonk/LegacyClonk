@@ -5325,10 +5325,13 @@ C4ValueHash *FnGetPath(C4AulContext *ctx, long iFromX, long iFromY, long iToX, l
 		auto *target = reinterpret_cast<C4Object *>(transferTarget);
 		auto *pathinfo = reinterpret_cast<PathInfo *>(pathInfo);
 
-		const Waypoint &last = pathinfo->path.back();
+		if (!pathinfo->path.empty())
+		{
+			const Waypoint &last = pathinfo->path.back();
+			pathinfo->length += Distance(last.x, last.y, x, y);
+		}
 
 		pathinfo->path.push_back(Waypoint{x, y, target});
-		pathinfo->length += Distance(last.x, last.y, x, y);
 		return true;
 	};
 
@@ -5343,14 +5346,21 @@ C4ValueHash *FnGetPath(C4AulContext *ctx, long iFromX, long iFromY, long iToX, l
 	(*hash)[C4VString("Length")] = C4VInt(pathinfo.length);
 
 	auto *array = new C4ValueArray(static_cast<int32_t>(pathinfo.path.size()));
-	for (size_t i = 0; i < pathinfo.path.size(); ++i)
-	{
-		auto *waypoint = new C4ValueHash;
-		(*waypoint)[C4VString("X")] = C4VInt(pathinfo.path[i].x);
-		(*waypoint)[C4VString("Y")] = C4VInt(pathinfo.path[i].y);
-		(*waypoint)[C4VString("TransferTarget")] = C4VObj(pathinfo.path[i].obj);
 
-		(*array)[static_cast<int32_t>(i)] = C4VMap(waypoint);
+	if (!pathinfo.path.empty())
+	{
+		const Waypoint &first = pathinfo.path.front();
+		(*hash)[C4VString("Length")] += Distance(static_cast<int32_t>(iFromX), static_cast<int32_t>(iFromY), first.x, first.y);
+
+		for (size_t i = 0; i < pathinfo.path.size(); ++i)
+		{
+			auto *waypoint = new C4ValueHash;
+			(*waypoint)[C4VString("X")] = C4VInt(pathinfo.path[i].x);
+			(*waypoint)[C4VString("Y")] = C4VInt(pathinfo.path[i].y);
+			(*waypoint)[C4VString("TransferTarget")] = C4VObj(pathinfo.path[i].obj);
+
+			(*array)[static_cast<int32_t>(i)] = C4VMap(waypoint);
+		}
 	}
 
 	(*hash)[C4VString("Waypoints")] = C4VArray(array);
