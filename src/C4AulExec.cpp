@@ -419,9 +419,19 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				pCurVal->SetInt(~pCurVal->_getInt());
 				break;
 			case AB_Not: // !
+			{
 				CheckOpPar(pCPos->bccX);
-				pCurVal->SetBool(!pCurVal->_getRaw());
+				auto result = !pCurVal->_getRaw();
+				if (pCurCtx->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3 && !result)
+				{
+					pCurVal->Set0();
+				}
+				else
+				{
+					pCurVal->SetBool(result);
+				}
 				break;
+			}
 			case AB_Neg: // -
 				CheckOpPar<C4V_Any, false>(pCPos->bccX);
 				pCurVal->SetInt(-pCurVal->_getInt());
