@@ -50,4 +50,5 @@ private:
 public:
 
 	void DoBack(); // back to main menu
+	virtual bool HasBackground() { return true; }
 };
