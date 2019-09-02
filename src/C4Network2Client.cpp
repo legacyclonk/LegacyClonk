@@ -182,6 +182,7 @@ bool C4Network2Client::DoTCPSimultaneousOpen(C4Network2IO *const pIO, const C4Ne
 		if (bindAddr.IsNull()) return false;
 		bindAddr.SetPort(0);
 		tcpSimOpenSocket = NetIOTCP->Bind(bindAddr);
+		if (!tcpSimOpenSocket) return false;
 		const auto &boundAddr = tcpSimOpenSocket->GetAddress();
 		LogSilentF("Network: %s TCP simultaneous open request for client %s from %s...",
 			(addr.isIPNull() ? "initiating" : "responding to"),
