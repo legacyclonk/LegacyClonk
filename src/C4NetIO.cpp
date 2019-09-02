@@ -682,7 +682,7 @@ std::vector<C4NetIO::HostAddress> C4NetIO::GetLocalAddresses()
 
 #ifdef HAVE_WINSOCK
 	std::vector<IP_ADAPTER_ADDRESSES> addresses{32};
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
 		ULONG bufsz{sizeof(decltype(result)::value_type) * addresses.size()};
 		const auto &rv = GetAdaptersAddresses(AF_UNSPEC,
