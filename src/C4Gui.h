@@ -2301,6 +2301,7 @@ class MessageDialog : public Dialog
 private:
 	bool fHasOK;
 	bool *piConfigDontShowAgainSetting;
+	const int32_t zOrdering;
 
 public:
 	enum Buttons
@@ -2311,7 +2312,7 @@ public:
 
 	enum DlgSize { dsRegular = C4GUI_MessageDlgWdt, dsMedium = C4GUI_MessageDlgWdtMedium, dsSmall = C4GUI_MessageDlgWdtSmall };
 
-	MessageDialog(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, DlgSize eSize = dsRegular, bool *piConfigDontShowAgainSetting = nullptr, bool fDefaultNo = false);
+	MessageDialog(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, DlgSize eSize = dsRegular, bool *piConfigDontShowAgainSetting = nullptr, bool fDefaultNo = false, int32_t zOrdering = C4GUI_Z_INPUT);
 
 protected:
 	virtual bool OnEnter() { if (!fHasOK) return false; Close(true); return true; }
@@ -2322,7 +2323,7 @@ protected:
 	}
 
 	virtual const char *GetID() { return "MessageDialog"; }
-	virtual int32_t GetZOrdering() { return C4GUI_Z_INPUT; }
+	virtual int32_t GetZOrdering() { return zOrdering; }
 };
 
 // a confirmation dialog, which performs a callback after confirmation

@@ -539,7 +539,7 @@ bool C4Network2::FinalInit()
 				pDlg = new C4Network2StartWaitDlg();
 			else
 				pDlg = new C4GUI::MessageDialog(LoadResStr("IDS_NET_WAITFORSTART"), LoadResStr("IDS_NET_CAPTION"),
-					C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsSmall);
+					C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsSmall, nullptr, false, C4GUI_Z_DEFAULT);
 			// show it
 			if (!pDlg->Show(Game.pGUI, true)) return false;
 		}

@@ -881,8 +881,8 @@ void FullscreenDialog::DrawBackground(C4FacetEx &cgo, C4Facet &rFromFct)
 
 // MessageDialog
 
-MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, DlgSize eSize, bool *piConfigDontShowAgainSetting, bool fDefaultNo)
-	: Dialog(eSize, 100 /* will be resized */, szCaption, false), piConfigDontShowAgainSetting(piConfigDontShowAgainSetting)
+MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, DlgSize eSize, bool *piConfigDontShowAgainSetting, bool fDefaultNo, int32_t zOrdering)
+	: Dialog(eSize, 100 /* will be resized */, szCaption, false), piConfigDontShowAgainSetting(piConfigDontShowAgainSetting), zOrdering(zOrdering)
 {
 	CStdFont &rUseFont = GetRes()->TextFont;
 	// get positions
