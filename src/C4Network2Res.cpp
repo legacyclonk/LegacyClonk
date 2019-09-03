@@ -34,7 +34,7 @@
 
 // compile debug options
 // #define C4NET2RES_LOAD_ALL
-#define C4NET2RES_DEBUG_LOG
+// #define C4NET2RES_DEBUG_LOG
 
 // helper
 
