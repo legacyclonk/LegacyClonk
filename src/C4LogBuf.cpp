@@ -232,7 +232,7 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 		if (!(breakPos = strchr(szBroken, '\n'))) breakPos = szBroken + SLen(szBroken);
 		else ++breakPos;
 
-		AppendSingleLine(szBroken, breakPos - szBroken, nullptr, pFont, dwClr, true);
+		AppendSingleLine(szBroken, breakPos - szBroken - 1, nullptr, pFont, dwClr, true);
 		++iLineIndex;
 
 		// then with indentation
@@ -243,7 +243,7 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 		{
 			if (!(breakPos = strchr(szBroken, '\n'))) breakPos = szBroken + SLen(szBroken);
 			else ++breakPos;
-			AppendSingleLine(szBroken, breakPos - szBroken, szIndent, pFont, dwClr, false);
+			AppendSingleLine(szBroken, breakPos - szBroken - 1, szIndent, pFont, dwClr, false);
 			szBroken = breakPos;
 			++iLineIndex;
 		}
