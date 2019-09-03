@@ -368,7 +368,7 @@ bool C4Network2HTTPClient::Decompress(StdBuf *pData)
 bool C4Network2HTTPClient::OnConn(const C4NetIO::addr_t &AddrPeer, const C4NetIO::addr_t &AddrConnect, const C4NetIO::addr_t *pOwnAddr, C4NetIO *pNetIO)
 {
 	// Make sure we're actually waiting for this connection
-	if (AddrConnect != ServerAddr)
+	if (fConnected || (AddrConnect != ServerAddr && AddrConnect != ServerAddrFallback))
 		return false;
 	// Save pack peer address
 	PeerAddr = AddrPeer;
@@ -406,10 +406,20 @@ void C4Network2HTTPClient::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO 
 bool C4Network2HTTPClient::Execute(int iMaxTime)
 {
 	// Check timeout
-	if (fBusy && time(nullptr) > iRequestTimeout)
+	if (fBusy)
 	{
-		Cancel("Request timeout");
-		return true;
+		if (C4TimeMilliseconds::Now() > HappyEyeballsTimeout)
+		{
+			HappyEyeballsTimeout = C4TimeMilliseconds::PositiveInfinity;
+			Application.InteractiveThread.ThreadLogS("HTTP: Starting fallback connection to %s (%s)", Server.getData(), ServerAddrFallback.ToString().getData());
+			Connect(ServerAddrFallback);
+		}
+
+		if (time(nullptr) > iRequestTimeout)
+		{
+			Cancel("Request timeout");
+			return true;
+		}
 	}
 	// Execute normally
 	return C4NetIOTCP::Execute(iMaxTime);
@@ -473,6 +483,16 @@ bool C4Network2HTTPClient::Query(const StdBuf &Data, bool fBinary)
 	// Start connecting
 	if (!Connect(ServerAddr))
 		return false;
+
+	if (!ServerAddrFallback.IsNull())
+	{
+		HappyEyeballsTimeout = C4TimeMilliseconds::Now() + C4Network2HTTPHappyEyeballsTimeout;
+	}
+	else
+	{
+		HappyEyeballsTimeout = C4TimeMilliseconds::PositiveInfinity;
+	}
+
 	// Okay, request will be performed when connection is complete
 	fBusy = true;
 	iDataOffset = 0;
@@ -490,7 +510,10 @@ void C4Network2HTTPClient::ResetRequestTimeout()
 void C4Network2HTTPClient::Cancel(const char *szReason)
 {
 	// Close connection - and connection attempt
-	Close(ServerAddr); Close(PeerAddr);
+	Close(ServerAddr);
+	Close(ServerAddrFallback);
+	Close(PeerAddr);
+
 	// Reset flags
 	fBusy = fSuccess = fConnected = fBinary = false;
 	iDownloadedSize = iTotalSize = iDataOffset = 0;
@@ -528,6 +551,18 @@ bool C4Network2HTTPClient::SetServer(const char *szServerAddress)
 		return false;
 	}
 	ServerAddr.SetDefaultPort(GetDefaultPort());
+
+	if (ServerAddr.GetFamily() == C4NetIO::HostAddress::IPv6)
+	{
+		// Try to find a fallback IPv4 address for Happy Eyeballs.
+		ServerAddrFallback.SetAddress(Server, C4NetIO::HostAddress::IPv4);
+		ServerAddrFallback.SetDefaultPort(GetDefaultPort());
+	}
+	else
+	{
+		ServerAddrFallback.Clear();
+	}
+
 	// Remove port
 	const auto &firstColon = std::strchr(Server.getData(), ':');
 	const auto &lastColon = std::strrchr(Server.getData(), ':');

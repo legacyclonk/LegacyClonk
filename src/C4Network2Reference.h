@@ -28,8 +28,10 @@
 #include "C4Version.h"
 #include "C4GameVersion.h"
 #include "C4InputValidation.h"
+#include "C4TimeMilliseconds.h"
 
 const int C4Network2HTTPQueryTimeout = 20; // (s)
+constexpr uint32_t C4Network2HTTPHappyEyeballsTimeout = 300; // (ms)
 
 // Session data
 class C4Network2Reference
@@ -127,7 +129,7 @@ public:
 
 private:
 	// Address information
-	C4NetIO::addr_t ServerAddr, PeerAddr;
+	C4NetIO::addr_t ServerAddr, ServerAddrFallback, PeerAddr;
 	StdStrBuf Server, RequestPath;
 
 	bool fBinary;
@@ -135,6 +137,7 @@ private:
 	size_t iDataOffset;
 	StdBuf Request;
 	time_t iRequestTimeout;
+	C4TimeMilliseconds HappyEyeballsTimeout;
 
 	// Response header data
 	size_t iDownloadedSize, iTotalSize;
