@@ -270,6 +270,8 @@ src/C4Teams.cpp
 src/C4Teams.h
 src/C4Texture.cpp
 src/C4Texture.h
+src/C4TimeMilliseconds.cpp
+src/C4TimeMilliseconds.h
 src/C4ToolsDlg.cpp
 src/C4ToolsDlg.h
 src/C4TransferZone.cpp
