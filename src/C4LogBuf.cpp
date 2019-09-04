@@ -98,7 +98,7 @@ void C4LogBuffer::AppendSingleLine(const char *szLine, int iLineLength, const ch
 		else
 			DiscardFirstLine();
 	// include trailing zero-character
-	++iLineLength;
+	if (szLine[iLineLength] == '\0') ++iLineLength;
 	// include indent
 	if (szIndent) iLineLength += strlen(szIndent);
 	// but do not add a message that is longer than the buffer (shouldn't happen anyway)
@@ -232,7 +232,7 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 		if (!(breakPos = strchr(szBroken, '\n'))) breakPos = szBroken + SLen(szBroken);
 		else ++breakPos;
 
-		AppendSingleLine(szBroken, breakPos - szBroken - 1, nullptr, pFont, dwClr, true);
+		AppendSingleLine(szBroken, breakPos - szBroken, nullptr, pFont, dwClr, true);
 		++iLineIndex;
 
 		// then with indentation
@@ -243,7 +243,7 @@ void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwCl
 		{
 			if (!(breakPos = strchr(szBroken, '\n'))) breakPos = szBroken + SLen(szBroken);
 			else ++breakPos;
-			AppendSingleLine(szBroken, breakPos - szBroken - 1, szIndent, pFont, dwClr, false);
+			AppendSingleLine(szBroken, breakPos - szBroken, szIndent, pFont, dwClr, false);
 			szBroken = breakPos;
 			++iLineIndex;
 		}
