@@ -35,6 +35,8 @@
 
 #include <StdRegistry.h> // For DDraw emulation warning
 
+constexpr unsigned int defaultGameTickDelay = 16;
+
 C4Sec1TimerCallbackBase::C4Sec1TimerCallbackBase() : pNext(nullptr), iRefs(2)
 {
 	// register into engine callback stack
@@ -45,7 +47,7 @@ C4Sec1TimerCallbackBase::C4Sec1TimerCallbackBase() : pNext(nullptr), iRefs(2)
 C4Application::C4Application() :
 	isFullScreen(true), UseStartupDialog(true), launchEditor(false), restartAtEnd(false),
 	DDraw(nullptr), AppState(C4AS_None), pSec1TimerCallback(nullptr),
-	iLastGameTick(0), iGameTickDelay(28), iExtraGameTickDelay(0), pGamePadControl(nullptr),
+	iLastGameTick(0), iGameTickDelay(defaultGameTickDelay), iExtraGameTickDelay(0), pGamePadControl(nullptr),
 	CheckForUpdates(false) {}
 
 C4Application::~C4Application()
@@ -204,6 +206,8 @@ bool C4Application::DoInit()
 
 bool C4Application::PreInit()
 {
+	SetGameTickDelay(defaultGameTickDelay);
+
 	if (!Game.PreInit()) return false;
 
 	// startup dialog: Only use if no next mission has been provided
