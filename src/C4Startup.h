@@ -21,7 +21,7 @@
 
 #include "C4Gui.h"
 
-#define C4CFN_StartupBackgroundMain "StartupMainMenuBG"
+#define C4CFN_StartupBackgroundMain "LoaderGoldmine1"
 
 // special colors for startup designs
 const int32_t C4StartupFontClr         = 0xff000000,
