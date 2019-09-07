@@ -250,19 +250,33 @@ private:
 	template<bool asReference = false, bool allowAny = true>
 	void CheckOpPar(C4Value *value, C4V_Type expectedType, const char *operatorName, const char *operandPosition = "")
 	{
+		const bool isAtLeastStrict3 = pCurCtx->Func->pOrgScript->Strict >= C4AulScriptStrict::STRICT3;
 		if constexpr (asReference)
 		{
 			if (!value->ConvertTo(C4V_pC4Value))
+			{
 				throw new C4AulExecError(pCurCtx->Obj,
 					FormatString("operator \"%s\"%s: got \"%s\", but expected \"%s&\"!",
 						operatorName, operandPosition, value->GetTypeInfo(), GetC4VName(expectedType)).getData());
-				else if (!value->GetRefVal().ConvertTo(expectedType))
-					throw new C4AulExecError(pCurCtx->Obj,
-						FormatString("operator \"%s\"%s: got \"%s&\", but expected \"%s&\"!",
-							operatorName, operandPosition, value->GetRefVal().GetTypeInfo(), GetC4VName(expectedType)).getData());
+			}
+
+			if (!isAtLeastStrict3 && (expectedType != C4V_pC4Value) && !*value)
+			{
+				value->GetRefVal().Set0();
+			}
+			if (!value->GetRefVal().ConvertTo(expectedType))
+			{
+				throw new C4AulExecError(pCurCtx->Obj,
+					FormatString("operator \"%s\"%s: got \"%s&\", but expected \"%s&\"!",
+						operatorName, operandPosition, value->GetRefVal().GetTypeInfo(), GetC4VName(expectedType)).getData());
+			}
 		}
 		else
 		{
+			if (!isAtLeastStrict3 && (expectedType != C4V_pC4Value) && !*value)
+			{
+				value->Set0();
+			}
 			if (!value->ConvertTo(expectedType))
 				throw new C4AulExecError(pCurCtx->Obj,
 					FormatString("operator \"%s\"%s: got \"%s\", but expected \"%s\"!",
@@ -270,7 +284,7 @@ private:
 		}
 		if constexpr (!allowAny)
 		{
-			if (value->GetType() == C4V_Any && pCurCtx->Func->pOrgScript->Strict >= C4AulScriptStrict::STRICT3)
+			if (isAtLeastStrict3 && value->GetType() == C4V_Any)
 				throw new C4AulExecError(pCurCtx->Obj,
 					FormatString("operator \"%s\"%s: got nil, but expected \"%s\"!",
 						operatorName, operandPosition, GetC4VName(expectedType)).getData());
@@ -1270,14 +1284,22 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 		pDef = pCurCtx->Def;
 	}
 
+	const bool convertToAnyEagerly = pCurCtx->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3;
+
 	// Convert parameters (typecheck)
 	C4V_Type *pTypes = pFunc->GetParType();
 	for (int i = 0; i < pFunc->GetParCount(); i++)
+	{
+		if (convertToAnyEagerly && pTypes[i] != C4V_pC4Value && !pPars[i])
+		{
+			pPars[i].Set0();
+		}
 		if (!pPars[i].ConvertTo(pTypes[i]))
 			throw new C4AulExecError(pCurCtx->Obj,
 				FormatString("call to \"%s\" parameter %d: got \"%s\", but expected \"%s\"!",
 					pFunc->Name, i + 1, pPars[i].GetTypeName(), GetC4VName(pTypes[i])
 				).getData());
+	}
 
 	// Script function?
 	C4AulScriptFunc *pSFunc = pFunc->SFunc();
