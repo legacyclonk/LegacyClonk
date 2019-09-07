@@ -427,12 +427,19 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 	glLoadIdentity();
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
+
+	const uint32_t dwModClr = BlitModulated ? BlitModulateClr : 0xffffff;
+	int chunkSize = iTexSize;
+	if (fUseClrModMap && dwModClr)
+	{
+		chunkSize = pClrModMap->GetResolutionX();
+	}
+
 	for (int iY = iTexY; iY < iTexY2; ++iY)
 	{
 		for (int iX = iTexX; iX < iTexX2; ++iX)
 		{
 			// blit
-			const uint32_t dwModClr = BlitModulated ? BlitModulateClr : 0xffffff;
 
 			if (sfcSource2) glActiveTexture(GL_TEXTURE0);
 			const auto *const pTex = *(sfcSource->ppTex + iY * sfcSource->iTexX + iX);
@@ -444,68 +451,74 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 				glBindTexture(GL_TEXTURE_2D, pTex->texName);
 			}
 
-			// draw polygon
-			glBegin(GL_POLYGON);
-			// get current blitting offset in texture (beforing any last-tex-size-changes)
-			const int iBlitX = iTexSize * iX;
-			const int iBlitY = iTexSize * iY;
-			// size changed? recalc dependent, relevant (!) values
-			if (iTexSize != pTex->iSize) iTexSize = pTex->iSize;
-			// get new texture source bounds
-			FLOAT_RECT fTexBlt;
-			// get new dest bounds
-			FLOAT_RECT tTexBlt;
-			// set up blit data as rect
-			fTexBlt.left = std::max<float>(static_cast<float>(fx - iBlitX), 0.0f);
-			tTexBlt.left = ((fTexBlt.left + iBlitX - fx) + tx);
-			fTexBlt.top  = std::max<float>(static_cast<float>(fy - iBlitY), 0.0f);
-			tTexBlt.top  = fTexBlt.top + iBlitY - fy + ty;
-			fTexBlt.right  = static_cast<float>(std::min(fx + wdt - iBlitX, iTexSize));
-			tTexBlt.right  = fTexBlt.right + iBlitX - fx + tx;
-			fTexBlt.bottom = static_cast<float>(std::min(fy + hgt - iBlitY, iTexSize));
-			tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
-			float ftx[4]; float fty[4]; // blit positions
-			ftx[0] = tTexBlt.left;  fty[0] = tTexBlt.top;
-			ftx[1] = tTexBlt.right; fty[1] = tTexBlt.top;
-			ftx[2] = tTexBlt.right; fty[2] = tTexBlt.bottom;
-			ftx[3] = tTexBlt.left;  fty[3] = tTexBlt.bottom;
-			float tcx[4]; float tcy[4]; // blit positions
-			tcx[0] = fTexBlt.left;  tcy[0] = fTexBlt.top;
-			tcx[1] = fTexBlt.right; tcy[1] = fTexBlt.top;
-			tcx[2] = fTexBlt.right; tcy[2] = fTexBlt.bottom;
-			tcx[3] = fTexBlt.left;  tcy[3] = fTexBlt.bottom;
-
-			uint32_t fdwModClr[4]; // color modulation
-			// global modulation map
-			if (fUseClrModMap && dwModClr)
+			for (int yOffset = 0; yOffset < iTexSize; yOffset += chunkSize)
 			{
-				for (int i = 0; i < 4; ++i)
+				for (int xOffset = 0; xOffset < iTexSize; xOffset += chunkSize)
 				{
-					fdwModClr[i] = pClrModMap->GetModAt(
-						static_cast<int>(ftx[i]), static_cast<int>(fty[i]));
-					ModulateClr(fdwModClr[i], dwModClr);
+					// draw polygon
+					glBegin(GL_POLYGON);
+					// get current blitting offset in texture (beforing any last-tex-size-changes)
+					const int iBlitX = iTexSize * iX + xOffset;
+					const int iBlitY = iTexSize * iY + yOffset;
+					// size changed? recalc dependent, relevant (!) values
+					if (iTexSize != pTex->iSize) iTexSize = pTex->iSize;
+					// get new texture source bounds
+					FLOAT_RECT fTexBlt;
+					// get new dest bounds
+					FLOAT_RECT tTexBlt;
+					// set up blit data as rect
+					fTexBlt.left = std::max<float>(static_cast<float>(fx - iBlitX), 0.0f);
+					tTexBlt.left = ((fTexBlt.left + iBlitX - fx) + tx);
+					fTexBlt.top  = std::max<float>(static_cast<float>(fy - iBlitY), 0.0f);
+					tTexBlt.top  = fTexBlt.top + iBlitY - fy + ty;
+					fTexBlt.right  = static_cast<float>(std::min(fx + wdt - iBlitX, chunkSize));
+					tTexBlt.right  = fTexBlt.right + iBlitX - fx + tx;
+					fTexBlt.bottom = static_cast<float>(std::min(fy + hgt - iBlitY, chunkSize));
+					tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
+					float ftx[4]; float fty[4]; // blit positions
+					ftx[0] = tTexBlt.left;  fty[0] = tTexBlt.top;
+					ftx[1] = tTexBlt.right; fty[1] = tTexBlt.top;
+					ftx[2] = tTexBlt.right; fty[2] = tTexBlt.bottom;
+					ftx[3] = tTexBlt.left;  fty[3] = tTexBlt.bottom;
+					float tcx[4]; float tcy[4]; // blit positions
+					tcx[0] = fTexBlt.left;  tcy[0] = fTexBlt.top;
+					tcx[1] = fTexBlt.right; tcy[1] = fTexBlt.top;
+					tcx[2] = fTexBlt.right; tcy[2] = fTexBlt.bottom;
+					tcx[3] = fTexBlt.left;  tcy[3] = fTexBlt.bottom;
+
+					uint32_t fdwModClr[4]; // color modulation
+					// global modulation map
+					if (fUseClrModMap && dwModClr)
+					{
+						for (int i = 0; i < 4; ++i)
+						{
+							fdwModClr[i] = pClrModMap->GetModAt(
+								static_cast<int>(ftx[i]), static_cast<int>(fty[i]));
+							ModulateClr(fdwModClr[i], dwModClr);
+						}
+					}
+					else
+					{
+						std::fill(fdwModClr, std::end(fdwModClr), dwModClr);
+					}
+
+					for (int i = 0; i < 4; ++i)
+					{
+						glColorDw(fdwModClr[i] | dwModMask);
+						glTexCoord2f((tcx[i] + DDrawCfg.fTexIndent + xOffset) / iTexSize,
+							(tcy[i] + DDrawCfg.fTexIndent + yOffset) / iTexSize);
+						if (sfcSource2)
+						{
+							glMultiTexCoord2f(GL_TEXTURE1_ARB,
+								(tcx[i] + DDrawCfg.fTexIndent + xOffset) / iTexSize,
+								(tcy[i] + DDrawCfg.fTexIndent + yOffset) / iTexSize);
+						}
+						glVertex2f(ftx[i] + DDrawCfg.fBlitOff, fty[i] + DDrawCfg.fBlitOff);
+					}
+
+					glEnd();
 				}
 			}
-			else
-			{
-				std::fill(fdwModClr, std::end(fdwModClr), dwModClr);
-			}
-
-			for (int i = 0; i < 4; ++i)
-			{
-				glColorDw(fdwModClr[i] | dwModMask);
-				glTexCoord2f((tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
-					(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
-				if (sfcSource2)
-				{
-					glMultiTexCoord2f(GL_TEXTURE1_ARB,
-						(tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
-						(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
-				}
-				glVertex2f(ftx[i] + DDrawCfg.fBlitOff, fty[i] + DDrawCfg.fBlitOff);
-			}
-
-			glEnd();
 		}
 	}
 	if (shader)

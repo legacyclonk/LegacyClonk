@@ -172,7 +172,7 @@ bool CSurface::CreateTextures()
 	// free previous
 	FreeTextures();
 	// get max texture size
-	int iMaxTexSize = 64;
+	int iMaxTexSize = 4096;
 #ifndef USE_CONSOLE
 	if (pGL)
 	{
