@@ -189,6 +189,12 @@ const uint8_t COM_Left  = 1,
               COM_WheelUp   = 10,
               COM_WheelDown = 11,
 
+              COM_CursorLeft   = 12,
+              COM_CursorRight  = 13,
+              COM_CursorToggle = 14,
+              COM_CursorFirst = COM_CursorLeft,
+              COM_CursorLast = COM_CursorToggle,
+
               COM_Left_R       = COM_Left     + 16,
               COM_Right_R      = COM_Right    + 16,
               COM_Up_R         = COM_Up       + 16,
@@ -197,8 +203,11 @@ const uint8_t COM_Left  = 1,
               COM_Dig_R        = COM_Dig      + 16,
               COM_Special_R    = COM_Special  + 16,
               COM_Special2_R   = COM_Special2 + 16,
+              COM_CursorLeft_R   = COM_CursorLeft   + 16,
+              COM_CursorToggle_R = COM_CursorToggle + 16,
+              COM_CursorRight_R  = COM_CursorRight  + 16,
               COM_ReleaseFirst = COM_Left_R,
-              COM_ReleaseLast  = COM_Special2_R,
+              COM_ReleaseLast  = COM_CursorToggle_R,
 
               COM_Left_S     = COM_Left     | COM_Single,
               COM_Right_S    = COM_Right    | COM_Single,
@@ -208,6 +217,9 @@ const uint8_t COM_Left  = 1,
               COM_Dig_S      = COM_Dig      | COM_Single,
               COM_Special_S  = COM_Special  | COM_Single,
               COM_Special2_S = COM_Special2 | COM_Single,
+              COM_CursorLeft_S   = COM_CursorLeft   | COM_Single,
+              COM_CursorToggle_S = COM_CursorToggle | COM_Single,
+              COM_CursorRight_S  = COM_CursorRight  | COM_Single,
 
               COM_Left_D     = COM_Left     | COM_Double,
               COM_Right_D    = COM_Right    | COM_Double,
@@ -216,13 +228,11 @@ const uint8_t COM_Left  = 1,
               COM_Throw_D    = COM_Throw    | COM_Double,
               COM_Dig_D      = COM_Dig      | COM_Double,
               COM_Special_D  = COM_Special  | COM_Double,
-              COM_Special2_D = COM_Special2 | COM_Double;
+              COM_Special2_D = COM_Special2 | COM_Double,
+              COM_CursorLeft_D   = COM_CursorLeft   | COM_Double,
+              COM_CursorToggle_D = COM_CursorToggle | COM_Double,
+              COM_CursorRight_D  = COM_CursorRight  | COM_Double;
 
-const uint8_t COM_CursorLeft   = 30,
-              COM_CursorRight  = 31,
-              COM_CursorToggle = 32;
-
-const uint8_t COM_CursorToggle_D = COM_CursorToggle | COM_Double;
 
 const uint8_t COM_Help       = 35,
               COM_PlayerMenu = 36,

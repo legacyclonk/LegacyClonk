@@ -835,6 +835,18 @@ const char *ComName(int32_t iCom)
 	case COM_Special2_R: return "Special2Released";
 	case COM_WheelUp:    return "WheelUp";
 	case COM_WheelDown:  return "WheelDown";
+	case COM_CursorLeft:     return "CursorLeft";
+	case COM_CursorLeft_S:   return "CursorLeftSingle";
+	case COM_CursorLeft_D:   return "CursorLeftDouble";
+	case COM_CursorLeft_R:   return "CursorLeftReleased";
+	case COM_CursorToggle:   return "CursorToggle";
+	case COM_CursorToggle_S: return "CursorToggleSingle";
+	case COM_CursorToggle_D: return "CursorToggleDouble";
+	case COM_CursorToggle_R: return "CursorToggleReleased";
+	case COM_CursorRight:    return "CursorRight";
+	case COM_CursorRight_S:  return "CursorRightSingle";
+	case COM_CursorRight_D:  return "CursorRightDouble";
+	case COM_CursorRight_R:  return "CursorRightReleased";
 	}
 	return "Undefined";
 }
@@ -870,7 +882,7 @@ int32_t Control2Com(int32_t iControl, bool fUp)
 	};
 	static const char con2com_r[C4MaxKey] =
 	{
-		COM_None,    COM_None,      COM_None,
+		COM_CursorLeft_R, COM_CursorToggle_R, COM_CursorRight_R,
 		COM_Throw_R, COM_Up_R,      COM_Dig_R,
 		COM_Left_R,  COM_Down_R,    COM_Right_R,
 		COM_None,    COM_Special_R, COM_Special2_R

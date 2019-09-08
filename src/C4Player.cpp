@@ -1453,6 +1453,30 @@ void C4Player::DirectCom(uint8_t byCom, int32_t iData) // By InCom or ExecuteCon
 {
 	switch (byCom)
 	{
+		case COM_CursorLeft:
+		case COM_CursorLeft_D:
+		case COM_CursorRight:
+		case COM_CursorRight_D:
+		case COM_CursorToggle:
+		case COM_CursorToggle_D:
+			if (!Eliminated && Cursor)
+			{
+				Cursor->Controller = Number;
+				if (Cursor->CallControl(this, byCom))
+				{
+					if (!(byCom & COM_Double))
+					{
+						UpdateSelectionToggleStatus();
+					}
+					return;
+				}
+			}
+			break;
+		default:
+			break;
+	}
+	switch (byCom)
+	{
 	case COM_CursorLeft:     CursorLeft();    break;
 	case COM_CursorRight:    CursorRight();   break;
 	case COM_CursorToggle:   CursorToggle();  break;

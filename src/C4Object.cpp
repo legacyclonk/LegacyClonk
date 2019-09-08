@@ -3246,6 +3246,20 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 	AddDbgRec(RCT_ObjCom, &rc, sizeof(C4RCObjectCom));
 #endif
 
+	// Wether this is a KeyRelease-event
+	bool IsRelease = Inside(byCom, COM_ReleaseFirst, COM_ReleaseLast);
+	bool isCursor = Inside<int>((IsRelease ? byCom - 16 : byCom & ~(COM_Single | COM_Double)), COM_CursorFirst, COM_CursorLast);
+
+	// we only want the script callbacks for cursor controls
+	if (isCursor)
+	{
+		if (C4Player *pController = Game.Players.Get(Controller))
+		{
+			CallControl(pController, byCom);
+		}
+		return;
+	}
+
 	// COM_Special and COM_Contents specifically bypass the menu and always go to the object
 	bool fBypassMenu = ((byCom == COM_Special) || (byCom == COM_Contents));
 
@@ -3255,9 +3269,6 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 
 	// Ignore any menu com leftover in control queue from closed menu
 	if (Inside(byCom, COM_MenuNavigation1, COM_MenuNavigation2)) return;
-
-	// Wether this is a KeyRelease-event
-	bool IsRelease = Inside(byCom, COM_ReleaseFirst, COM_ReleaseLast);
 
 	// Decrease NoCollectDelay
 	if (!(byCom & COM_Single) && !(byCom & COM_Double) && !IsRelease)
