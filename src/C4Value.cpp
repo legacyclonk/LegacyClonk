@@ -345,7 +345,7 @@ C4V_Type C4Value::GuessType()
 void C4Value::HintType(C4V_Type type)
 {
 	auto &ref = GetRefVal();
-	if (ref.Type == C4V_Any && (ref.Data.Int != 0 || type == C4V_Bool || type == C4V_Int))
+	if (ref.Data.Int != 0 || type == C4V_Bool || type == C4V_Int || type == C4V_C4ID)
 		ref.Type = type;
 }
 
