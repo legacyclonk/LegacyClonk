@@ -1477,8 +1477,8 @@ void C4Player::DirectCom(uint8_t byCom, int32_t iData) // By InCom or ExecuteCon
 	}
 	switch (byCom)
 	{
-	case COM_CursorLeft:     CursorLeft();    break;
-	case COM_CursorRight:    CursorRight();   break;
+	case COM_CursorLeft:  case COM_CursorLeft_D:  CursorLeft();    break;
+	case COM_CursorRight: case COM_CursorRight_D: CursorRight();   break;
 	case COM_CursorToggle:   CursorToggle();  break;
 	case COM_CursorToggle_D: SelectAllCrew(); break;
 
