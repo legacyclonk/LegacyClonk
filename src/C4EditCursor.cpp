@@ -163,15 +163,16 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 
 bool C4EditCursor::UpdateStatusBar()
 {
-	StdStrBuf text;
+	StdStrBuf text{""};
 	switch (Mode)
 	{
 	case C4CNS_ModePlay:
-	{
-		const std::string caption{Game.MouseControl.GetCaption()};
-		if (Game.MouseControl.GetCaption()) text = caption.substr(0, caption.find('|') - 1).c_str();
+		if (Game.MouseControl.GetCaption())
+		{
+			const std::string caption{Game.MouseControl.GetCaption()};
+			text = caption.substr(0, caption.find('|') - 1).c_str();
+		}
 		break;
-	}
 
 	case C4CNS_ModeEdit:
 		text = FormatString("%i/%i (%s)", X, Y, (Target ? (Target->GetName()) : LoadResStr("IDS_CNS_NOTHING")));
