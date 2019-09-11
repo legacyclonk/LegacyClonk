@@ -1009,18 +1009,6 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	return;
 #endif
 
-	// landscape mod by FoW
-	C4Player *pPlr = Game.Players.Get(Player);
-	if (pPlr && pPlr->fFogOfWar)
-	{
-		ClrModMap.Reset(Game.C4S.Landscape.FoWRes, Game.C4S.Landscape.FoWRes, ViewWdt, ViewHgt, cgo.TargetX, cgo.TargetY, 0, 0, cgo.X, cgo.Y, Game.FoWColor, cgo.Surface);
-		pPlr->FoW2Map(ClrModMap, cgo.X - cgo.TargetX, cgo.Y - cgo.TargetY);
-		lpDDraw->SetClrModMap(&ClrModMap);
-		lpDDraw->SetClrModMapEnabled(true);
-	}
-	else
-		lpDDraw->SetClrModMapEnabled(false);
-
 	if (fDrawOverlay)
 	{
 		// Draw landscape borders. Only if overlay, so complete map screenshots don't get messed up
@@ -1034,6 +1022,18 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 		cgo.X += BorderLeft; cgo.Y += BorderTop; cgo.Wdt -= BorderLeft + BorderRight; cgo.Hgt -= BorderTop + BorderBottom;
 		cgo.TargetX += BorderLeft; cgo.TargetY += BorderTop;
 	}
+
+	// landscape mod by FoW
+	C4Player *pPlr = Game.Players.Get(Player);
+	if (pPlr && pPlr->fFogOfWar)
+	{
+		ClrModMap.Reset(Game.C4S.Landscape.FoWRes, Game.C4S.Landscape.FoWRes, ViewWdt, ViewHgt, cgo.TargetX, cgo.TargetY, 0, 0, cgo.X, cgo.Y, Game.FoWColor, cgo.Surface);
+		pPlr->FoW2Map(ClrModMap, cgo.X - cgo.TargetX, cgo.Y - cgo.TargetY);
+		lpDDraw->SetClrModMap(&ClrModMap);
+		lpDDraw->SetClrModMapEnabled(true);
+	}
+	else
+		lpDDraw->SetClrModMapEnabled(false);
 
 	C4ST_STARTNEW(SkyStat, "C4Viewport::Draw: Sky")
 	Game.Landscape.Sky.Draw(cgo);
