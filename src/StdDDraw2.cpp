@@ -679,14 +679,21 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	float scaleY2 = scaleY * (iTexSize + DDrawCfg.fTexIndent * 2);
 	// blit from all these textures
 	SetTexture();
+
+	int chunkSize = iTexSize;
+	if (fUseClrModMap)
+	{
+		chunkSize = std::min(iTexSize, pClrModMap->GetResolutionX());
+	}
+
 	for (int iY = iTexY; iY < iTexY2; ++iY)
 	{
 		for (int iX = iTexX; iX < iTexX2; ++iX)
 		{
-			CTexRef *pTex = *(sfcSource->ppTex + iY * sfcSource->iTexX + iX);
 			// get current blitting offset in texture (beforing any last-tex-size-changes)
 			int iBlitX = iTexSize * iX;
 			int iBlitY = iTexSize * iY;
+			CTexRef *pTex = *(sfcSource->ppTex + iY * sfcSource->iTexX + iX);
 			// size changed? recalc dependent, relevant (!) values
 			if (iTexSize != pTex->iSize)
 			{
@@ -694,54 +701,64 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 				scaleX2 = scaleX * (iTexSize + DDrawCfg.fTexIndent * 2);
 				scaleY2 = scaleY * (iTexSize + DDrawCfg.fTexIndent * 2);
 			}
-			// get new texture source bounds
-			FLOAT_RECT fTexBlt;
-			fTexBlt.left   = std::max<float>(fx - iBlitX, 0);
-			fTexBlt.top    = std::max<float>(fy - iBlitY, 0);
-			fTexBlt.right  = std::min<float>(fx + fwdt - (float)iBlitX, (float)iTexSize);
-			fTexBlt.bottom = std::min<float>(fy + fhgt - (float)iBlitY, (float)iTexSize);
-			// get new dest bounds
-			FLOAT_RECT tTexBlt;
-			tTexBlt.left   = (fTexBlt.left   + iBlitX - fx) * scaleX + tx;
-			tTexBlt.top    = (fTexBlt.top    + iBlitY - fy) * scaleY + ty;
-			tTexBlt.right  = (fTexBlt.right  + iBlitX - fx) * scaleX + tx;
-			tTexBlt.bottom = (fTexBlt.bottom + iBlitY - fy) * scaleY + ty;
-			// prepare blit data texture matrix
-			// - translate back to texture 0/0 regarding indent and blit offset
-			// - apply back scaling and texture-indent - simply scale matrix down
-			// - finally, move in texture - this must be done last, so no stupid zoom is applied...
-			// Set resulting matrix directly
-			BltData.TexPos.SetMoveScale(
-				(fTexBlt.left + DDrawCfg.fTexIndent) / iTexSize - (tTexBlt.left + DDrawCfg.fBlitOff) / scaleX2,
-				(fTexBlt.top  + DDrawCfg.fTexIndent) / iTexSize - (tTexBlt.top  + DDrawCfg.fBlitOff) / scaleY2,
-				1 / scaleX2,
-				1 / scaleY2);
-			// set up blit data as rect
-			BltData.byNumVertices = 4;
-			BltData.vtVtx[0].ftx = tTexBlt.left  + DDrawCfg.fBlitOff; BltData.vtVtx[0].fty = tTexBlt.top    + DDrawCfg.fBlitOff;
-			BltData.vtVtx[1].ftx = tTexBlt.right + DDrawCfg.fBlitOff; BltData.vtVtx[1].fty = tTexBlt.top    + DDrawCfg.fBlitOff;
-			BltData.vtVtx[2].ftx = tTexBlt.right + DDrawCfg.fBlitOff; BltData.vtVtx[2].fty = tTexBlt.bottom + DDrawCfg.fBlitOff;
-			BltData.vtVtx[3].ftx = tTexBlt.left  + DDrawCfg.fBlitOff; BltData.vtVtx[3].fty = tTexBlt.bottom + DDrawCfg.fBlitOff;
+			int maxXChunk = std::min<int>((fx + fwdt - iBlitX - 1) / chunkSize + 1, iTexSize / chunkSize);
+			int maxYChunk = std::min<int>((fy + fhgt - iBlitY - 1) / chunkSize + 1, iTexSize / chunkSize);
+			for (int yChunk = std::max<int>((fy - iBlitY) / chunkSize, 0); yChunk < maxYChunk; ++yChunk)
+			{
+				for (int xChunk = std::max<int>((fx - iBlitX) / chunkSize, 0); xChunk < maxXChunk; ++xChunk)
+				{
+					int xOffset = xChunk * chunkSize;
+					int yOffset = yChunk * chunkSize;
+					// get new texture source bounds
+					FLOAT_RECT fTexBlt;
+					fTexBlt.left   = std::max<float>(xOffset, fx - iBlitX);
+					fTexBlt.top    = std::max<float>(yOffset, fy - iBlitY);
+					fTexBlt.right  = std::min<float>(xOffset + chunkSize, fx + fwdt - iBlitX);
+					fTexBlt.bottom = std::min<float>(yOffset + chunkSize, fy + fhgt - iBlitY);
+					// get new dest bounds
+					FLOAT_RECT tTexBlt;
+					tTexBlt.left   = (fTexBlt.left - fx + iBlitX) * scaleX + tx;
+					tTexBlt.top    = (fTexBlt.top - fy + iBlitY) * scaleY + ty;
+					tTexBlt.right  = (fTexBlt.right - fx + iBlitX) * scaleX + tx;
+					tTexBlt.bottom = (fTexBlt.bottom - fy+ iBlitY) * scaleY + ty;
+					// prepare blit data texture matrix
+					// - translate back to texture 0/0 regarding indent and blit offset
+					// - apply back scaling and texture-indent - simply scale matrix down
+					// - finally, move in texture - this must be done last, so no stupid zoom is applied...
+					// Set resulting matrix directly
+					BltData.TexPos.SetMoveScale(
+						(fTexBlt.left + DDrawCfg.fTexIndent) / iTexSize - (tTexBlt.left + DDrawCfg.fBlitOff) / scaleX2,
+						(fTexBlt.top  + DDrawCfg.fTexIndent) / iTexSize - (tTexBlt.top  + DDrawCfg.fBlitOff) / scaleY2,
+						1 / scaleX2,
+						1 / scaleY2);
+					// set up blit data as rect
+					BltData.byNumVertices = 4;
+					BltData.vtVtx[0].ftx = tTexBlt.left  + DDrawCfg.fBlitOff; BltData.vtVtx[0].fty = tTexBlt.top    + DDrawCfg.fBlitOff;
+					BltData.vtVtx[1].ftx = tTexBlt.right + DDrawCfg.fBlitOff; BltData.vtVtx[1].fty = tTexBlt.top    + DDrawCfg.fBlitOff;
+					BltData.vtVtx[2].ftx = tTexBlt.right + DDrawCfg.fBlitOff; BltData.vtVtx[2].fty = tTexBlt.bottom + DDrawCfg.fBlitOff;
+					BltData.vtVtx[3].ftx = tTexBlt.left  + DDrawCfg.fBlitOff; BltData.vtVtx[3].fty = tTexBlt.bottom + DDrawCfg.fBlitOff;
 
-			CTexRef *pBaseTex = pTex;
-			// is there a base-surface to be blitted first?
-			if (fBaseSfc)
-			{
-				// then get this surface as same offset as from other surface
-				// assuming this is only valid as long as there's no texture management,
-				// organizing partially used textures together!
-				pBaseTex = *(sfcSource->pMainSfc->ppTex + iY * sfcSource->iTexX + iX);
-			}
-			// base blit
-			PerformBlt(BltData, pBaseTex, BlitModulated ? BlitModulateClr : 0xffffff, !!(dwBlitMode & C4GFXBLIT_MOD2), fExact);
-			// overlay
-			if (fBaseSfc)
-			{
-				uint32_t dwModClr = sfcSource->ClrByOwnerClr;
-				// apply global modulation to overlay surfaces only if desired
-				if (BlitModulated && !(dwBlitMode & C4GFXBLIT_CLRSFC_OWNCLR))
-					ModulateClr(dwModClr, BlitModulateClr);
-				PerformBlt(BltData, pTex, dwModClr, !!(dwBlitMode & C4GFXBLIT_CLRSFC_MOD2), fExact);
+					CTexRef *pBaseTex = pTex;
+					// is there a base-surface to be blitted first?
+					if (fBaseSfc)
+					{
+						// then get this surface as same offset as from other surface
+						// assuming this is only valid as long as there's no texture management,
+						// organizing partially used textures together!
+						pBaseTex = *(sfcSource->pMainSfc->ppTex + iY * sfcSource->iTexX + iX);
+					}
+					// base blit
+					PerformBlt(BltData, pBaseTex, BlitModulated ? BlitModulateClr : 0xffffff, !!(dwBlitMode & C4GFXBLIT_MOD2), fExact);
+					// overlay
+					if (fBaseSfc)
+					{
+						uint32_t dwModClr = sfcSource->ClrByOwnerClr;
+						// apply global modulation to overlay surfaces only if desired
+						if (BlitModulated && !(dwBlitMode & C4GFXBLIT_CLRSFC_OWNCLR))
+							ModulateClr(dwModClr, BlitModulateClr);
+						PerformBlt(BltData, pTex, dwModClr, !!(dwBlitMode & C4GFXBLIT_CLRSFC_MOD2), fExact);
+					}
+				}
 			}
 		}
 	}
