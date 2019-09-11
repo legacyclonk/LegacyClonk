@@ -683,7 +683,7 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	int chunkSize = iTexSize;
 	if (fUseClrModMap)
 	{
-		chunkSize = std::min(iTexSize, pClrModMap->GetResolutionX());
+		chunkSize = std::min(iTexSize, 64);
 	}
 
 	for (int iY = iTexY; iY < iTexY2; ++iY)
