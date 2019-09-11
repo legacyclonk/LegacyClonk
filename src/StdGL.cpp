@@ -722,6 +722,87 @@ bool CStdGL::RestoreDeviceObjects()
 	if (!DDrawCfg.Shader)
 	{
 	}
+	else if (GLEW_ARB_fragment_program)
+	{
+		if (!shaders[0])
+		{
+			glGenProgramsARB(6, shaders);
+
+			DefineShaderARB("!!ARBfp1.0\n"
+				"TEMP tmp;\n"
+				// sample the texture
+				"TXP tmp, fragment.texcoord[0], texture, 2D;\n"
+				// perform the modulation
+				"MUL tmp.rgb, tmp, fragment.color.primary;\n"
+				// Apparently, it is not possible to directly add and mul into the same register or something.
+				"ADD_SAT result.color.rgb, tmp, {0,0,0,0};\n"
+				"ADD_SAT result.color.a, tmp, fragment.color.primary;\n"
+				"END\n", shaders[0]);
+
+			DefineShaderARB("!!ARBfp1.0\n"
+				"ATTRIB tex = fragment.texcoord;\n"
+				"ATTRIB col = fragment.color.primary;\n"
+				"OUTPUT outColor = result.color;\n"
+				"TEMP tmp;\n"
+				// sample the texture
+				"TXP tmp, tex, texture, 2D;\n"
+				// perform the modulation
+				"ADD tmp, tmp, col;\n"
+				"MAD_SAT outColor, tmp, { 2.0, 2.0, 2.0, 1.0 }, { -1.0, -1.0, -1.0, 0.0 };\n"
+				"END\n", shaders[1]);
+
+			DefineShaderARB("!!ARBfp1.0\n"
+				"ATTRIB tex = fragment.texcoord;\n"
+				"ATTRIB col = fragment.color.primary;\n"
+				"OUTPUT outColor = result.color;\n"
+				"TEMP tmp, grey;\n"
+				// sample the texture
+				"TXP tmp, tex, texture, 2D;\n"
+				// perform the modulation
+				"MUL tmp.rgb, tmp, col;\n"
+				// grey
+				"DP3 grey, tmp, { 0.299, 0.587, 0.114, 1.0 };\n"
+				"LRP tmp.rgb, program.local[0], tmp, grey;"
+				"ADD_SAT tmp.a, tmp, col;\n"
+				"MOV outColor, tmp;\n"
+				"END\n", shaders[2]);
+
+			DefineShaderARB("!!ARBfp1.0\n"
+				"ATTRIB tex = fragment.texcoord;"
+				"ATTRIB col = fragment.color.primary;"
+				"OUTPUT outColor = result.color;"
+				"TEMP tmp, grey;"
+				// sample the texture
+				"TXP tmp, tex, texture, 2D;"
+				// perform the modulation
+				"ADD tmp, tmp, col;\n"
+				"MAD_SAT tmp, tmp, { 2.0, 2.0, 2.0, 1.0 }, { -1.0, -1.0, -1.0, 0.0 };\n"
+				// grey
+				"DP3 grey, tmp, { 0.299, 0.587, 0.114, 1.0 };\n"
+				"LRP tmp.rgb, program.local[0], tmp, grey;"
+				"MOV outColor, tmp;\n"
+				"END", shaders[3]);
+
+			DefineShaderARB("!!ARBfp1.0\n"
+				"TEMP tmp;\n"
+				"TEMP mask;\n"
+				"TEMP liquid;\n"
+				// sample the texture
+				"TXP tmp, fragment.texcoord, texture[0], 2D;\n"
+				"TXP mask, fragment.texcoord, texture[1], 2D;\n"
+				"TXP liquid, fragment.texcoord, texture[2], 2D;\n"
+				// animation
+				"SUB liquid.rgb, liquid, {0.5, 0.5, 0.5, 0};\n"
+				"DP3 liquid.rgb, liquid, program.local[1];\n"
+				"MUL liquid.rgb, mask.aaaa, liquid;\n"
+				"ADD_SAT tmp.rgb, liquid, tmp;\n"
+				// perform the modulation
+				"MUL tmp.rgb, tmp, fragment.color.primary;\n"
+				"ADD_SAT tmp.a, tmp, fragment.color.primary;\n"
+				"MOV result.color, tmp;\n"
+				"END\n", shaders[4]);
+		}
+	}
 	else if (!shader && GLEW_ATI_fragment_shader)
 	{
 		shader = glGenFragmentShadersATI(6);
@@ -852,84 +933,6 @@ bool CStdGL::RestoreDeviceObjects()
 			GL_REG_1_ATI, GL_ALPHA, GL_NONE,
 			GL_REG_0_ATI, GL_NONE, GL_NONE);
 		glEndFragmentShaderATI();
-	}
-	else if (!shaders[0] && GLEW_ARB_fragment_program)
-	{
-		glGenProgramsARB(6, shaders);
-
-		DefineShaderARB("!!ARBfp1.0\n"
-			"TEMP tmp;\n"
-			// sample the texture
-			"TXP tmp, fragment.texcoord[0], texture, 2D;\n"
-			// perform the modulation
-			"MUL tmp.rgb, tmp, fragment.color.primary;\n"
-			// Apparently, it is not possible to directly add and mul into the same register or something.
-			"ADD_SAT result.color.rgb, tmp, {0,0,0,0};\n"
-			"ADD_SAT result.color.a, tmp, fragment.color.primary;\n"
-			"END\n", shaders[0]);
-
-		DefineShaderARB("!!ARBfp1.0\n"
-			"ATTRIB tex = fragment.texcoord;\n"
-			"ATTRIB col = fragment.color.primary;\n"
-			"OUTPUT outColor = result.color;\n"
-			"TEMP tmp;\n"
-			// sample the texture
-			"TXP tmp, tex, texture, 2D;\n"
-			// perform the modulation
-			"ADD tmp, tmp, col;\n"
-			"MAD_SAT outColor, tmp, { 2.0, 2.0, 2.0, 1.0 }, { -1.0, -1.0, -1.0, 0.0 };\n"
-			"END\n", shaders[1]);
-
-		DefineShaderARB("!!ARBfp1.0\n"
-			"ATTRIB tex = fragment.texcoord;\n"
-			"ATTRIB col = fragment.color.primary;\n"
-			"OUTPUT outColor = result.color;\n"
-			"TEMP tmp, grey;\n"
-			// sample the texture
-			"TXP tmp, tex, texture, 2D;\n"
-			// perform the modulation
-			"MUL tmp.rgb, tmp, col;\n"
-			// grey
-			"DP3 grey, tmp, { 0.299, 0.587, 0.114, 1.0 };\n"
-			"LRP tmp.rgb, program.local[0], tmp, grey;"
-			"ADD_SAT tmp.a, tmp, col;\n"
-			"MOV outColor, tmp;\n"
-			"END\n", shaders[2]);
-
-		DefineShaderARB("!!ARBfp1.0\n"
-			"ATTRIB tex = fragment.texcoord;"
-			"ATTRIB col = fragment.color.primary;"
-			"OUTPUT outColor = result.color;"
-			"TEMP tmp, grey;"
-			// sample the texture
-			"TXP tmp, tex, texture, 2D;"
-			// perform the modulation
-			"ADD tmp, tmp, col;\n"
-			"MAD_SAT tmp, tmp, { 2.0, 2.0, 2.0, 1.0 }, { -1.0, -1.0, -1.0, 0.0 };\n"
-			// grey
-			"DP3 grey, tmp, { 0.299, 0.587, 0.114, 1.0 };\n"
-			"LRP tmp.rgb, program.local[0], tmp, grey;"
-			"MOV outColor, tmp;\n"
-			"END", shaders[3]);
-
-		DefineShaderARB("!!ARBfp1.0\n"
-			"TEMP tmp;\n"
-			"TEMP mask;\n"
-			"TEMP liquid;\n"
-			// sample the texture
-			"TXP tmp, fragment.texcoord, texture[0], 2D;\n"
-			"TXP mask, fragment.texcoord, texture[1], 2D;\n"
-			"TXP liquid, fragment.texcoord, texture[2], 2D;\n"
-			// animation
-			"SUB liquid.rgb, liquid, {0.5, 0.5, 0.5, 0};\n"
-			"DP3 liquid.rgb, liquid, program.local[1];\n"
-			"MUL liquid.rgb, mask.aaaa, liquid;\n"
-			"ADD_SAT tmp.rgb, liquid, tmp;\n"
-			// perform the modulation
-			"MUL tmp.rgb, tmp, fragment.color.primary;\n"
-			"ADD_SAT tmp.a, tmp, fragment.color.primary;\n"
-			"MOV result.color, tmp;\n"
-			"END\n", shaders[4]);
 	}
 	// done
 	return Active;
