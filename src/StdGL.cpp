@@ -432,7 +432,7 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 	int chunkSize = iTexSize;
 	if (fUseClrModMap && dwModClr)
 	{
-		chunkSize = pClrModMap->GetResolutionX();
+		chunkSize = std::min(iTexSize, pClrModMap->GetResolutionX());
 	}
 
 	for (int iY = iTexY; iY < iTexY2; ++iY)
@@ -443,6 +443,11 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 
 			if (sfcSource2) glActiveTexture(GL_TEXTURE0);
 			const auto *const pTex = *(sfcSource->ppTex + iY * sfcSource->iTexX + iX);
+			// get current blitting offset in texture (beforing any last-tex-size-changes)
+			const int iBlitX = iTexSize * iX;
+			const int iBlitY = iTexSize * iY;
+			// size changed? recalc dependent, relevant (!) values
+			if (iTexSize != pTex->iSize) iTexSize = pTex->iSize;
 			glBindTexture(GL_TEXTURE_2D, pTex->texName);
 			if (sfcSource2)
 			{
@@ -451,29 +456,29 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 				glBindTexture(GL_TEXTURE_2D, pTex->texName);
 			}
 
-			for (int yOffset = 0; yOffset < iTexSize; yOffset += chunkSize)
+			int maxXChunk = std::min<int>((fx + wdt - iBlitX - 1) / chunkSize + 1, iTexSize / chunkSize);
+			int maxYChunk = std::min<int>((fy + hgt - iBlitY - 1) / chunkSize + 1, iTexSize / chunkSize);
+			for (int yChunk = std::max<int>((fy - iBlitY) / chunkSize, 0); yChunk < maxYChunk; ++yChunk)
 			{
-				for (int xOffset = 0; xOffset < iTexSize; xOffset += chunkSize)
+				for (int xChunk = std::max<int>((fx - iBlitX) / chunkSize, 0); xChunk < maxXChunk; ++xChunk)
 				{
+					int xOffset = xChunk * chunkSize;
+					int yOffset = yChunk * chunkSize;
 					// draw polygon
 					glBegin(GL_POLYGON);
-					// get current blitting offset in texture (beforing any last-tex-size-changes)
-					const int iBlitX = iTexSize * iX + xOffset;
-					const int iBlitY = iTexSize * iY + yOffset;
-					// size changed? recalc dependent, relevant (!) values
-					if (iTexSize != pTex->iSize) iTexSize = pTex->iSize;
 					// get new texture source bounds
 					FLOAT_RECT fTexBlt;
 					// get new dest bounds
 					FLOAT_RECT tTexBlt;
 					// set up blit data as rect
-					fTexBlt.left = std::max<float>(static_cast<float>(fx - iBlitX), 0.0f);
-					tTexBlt.left = ((fTexBlt.left + iBlitX - fx) + tx);
-					fTexBlt.top  = std::max<float>(static_cast<float>(fy - iBlitY), 0.0f);
+					fTexBlt.left = std::max<float>(xOffset, fx - iBlitX);
+					fTexBlt.top  = std::max<float>(yOffset, fy - iBlitY);
+					fTexBlt.right  = std::min<float>(fx + wdt - iBlitX, xOffset + chunkSize);
+					fTexBlt.bottom = std::min<float>(fy + hgt - iBlitY, yOffset + chunkSize);
+
+					tTexBlt.left = fTexBlt.left + iBlitX - fx + tx;
 					tTexBlt.top  = fTexBlt.top + iBlitY - fy + ty;
-					fTexBlt.right  = static_cast<float>(std::min(fx + wdt - iBlitX, chunkSize));
 					tTexBlt.right  = fTexBlt.right + iBlitX - fx + tx;
-					fTexBlt.bottom = static_cast<float>(std::min(fy + hgt - iBlitY, chunkSize));
 					tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
 					float ftx[4]; float fty[4]; // blit positions
 					ftx[0] = tTexBlt.left;  fty[0] = tTexBlt.top;
@@ -505,13 +510,13 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 					for (int i = 0; i < 4; ++i)
 					{
 						glColorDw(fdwModClr[i] | dwModMask);
-						glTexCoord2f((tcx[i] + DDrawCfg.fTexIndent + xOffset) / iTexSize,
-							(tcy[i] + DDrawCfg.fTexIndent + yOffset) / iTexSize);
+						glTexCoord2f((tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
+							(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
 						if (sfcSource2)
 						{
 							glMultiTexCoord2f(GL_TEXTURE1_ARB,
-								(tcx[i] + DDrawCfg.fTexIndent + xOffset) / iTexSize,
-								(tcy[i] + DDrawCfg.fTexIndent + yOffset) / iTexSize);
+								(tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
+								(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
 						}
 						glVertex2f(ftx[i] + DDrawCfg.fBlitOff, fty[i] + DDrawCfg.fBlitOff);
 					}
