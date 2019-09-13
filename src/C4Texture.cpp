@@ -120,6 +120,8 @@ bool C4TextureMap::AddEntry(uint8_t byIndex, const char *szMaterial, const char 
 	// Security
 	if (byIndex <= 0 || byIndex >= C4M_MaxTexIndex)
 		return false;
+	if (!szMaterial || !szTexture)
+		return false;
 	// Set entry and initialize
 	Entry[byIndex].Create(szMaterial, szTexture);
 	if (fInitialized)
