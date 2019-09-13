@@ -36,8 +36,13 @@ C4Network2Reference::~C4Network2Reference() {}
 void C4Network2Reference::SetSourceAddress(const C4NetIO::EndpointAddress &ip)
 {
 	source = ip;
-	if (iAddrCnt < C4ClientMaxAddr)
-		Addrs[++iAddrCnt].SetAddr(ip);
+	for (int i = 0; i < iAddrCnt; i++)
+	{
+		if (Addrs[i].GetAddr().IsNullHost())
+		{
+			Addrs[i].GetAddr().SetHost(ip);
+		}
+	}
 }
 
 #ifdef C4ENGINE
