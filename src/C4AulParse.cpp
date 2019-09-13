@@ -3026,8 +3026,9 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 			break;
 		}
 		else
-
-		UnexpectedToken("identifier");
+		{
+			UnexpectedToken("identifier");
+		}
 		break;
 	}
 	case ATT_CALL:
