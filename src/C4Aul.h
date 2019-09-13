@@ -116,6 +116,7 @@ enum C4AulBCCType
 {
 	AB_MAPA_R,       // map access via .
 	AB_MAPA_V,       // not creating a reference
+	AB_MAPA_S,       // safe map access via ?. (only as value)
 	AB_ARRAYA_R,     // array access
 	AB_ARRAYA_V,     // not creating a reference
 	AB_ARRAY_APPEND, // always as a reference

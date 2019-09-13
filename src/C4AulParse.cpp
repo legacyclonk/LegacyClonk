@@ -111,6 +111,7 @@ enum C4AulTokenType
 	ATT_TILDE,    // '~'
 	ATT_LDOTS,    // '...'
 	ATT_DOT,      // '.'
+	ATT_QMARK,    // '?'
 	ATT_OPERATOR, // operator
 	ATT_EOF       // end of file
 };
@@ -593,6 +594,12 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					return ATT_DOT; // "."
 				}
 
+				if (C == '?')
+				{
+					++SPos;
+					return ATT_QMARK; // "?"
+				}
+
 				// identifier by all non-special chars
 				if (C >= '@')
 				{
@@ -796,6 +803,7 @@ static const char *GetTTName(C4AulBCCType e)
 	{
 	case AB_MAPA_R:    return "AB_MAPA_R";    // map access via .
 	case AB_MAPA_V:    return "AB_MAPA_V";    // not creating a reference
+	case AB_MAPA_S:    return "AB_MAPA_S";    // safe map access via ?. (only as value)
 	case AB_ARRAYA_R:  return "AB_ARRAYA_R";  // array access
 	case AB_ARRAYA_V:  return "AB_ARRAYA_V";  // not creating a reference
 	case AB_ARRAY_APPEND:  return "AB_ARRAYA_APPEND";  // not creating a reference
@@ -1034,6 +1042,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 
 	case AB_MAPA_R:
 	case AB_MAPA_V:
+	case AB_MAPA_S:
 	case AB_ARRAY_APPEND:
 	case AB_Inc1:
 	case AB_Dec1:
@@ -1125,7 +1134,8 @@ namespace
 					--CPos;
 					break;
 
-				case AB_MAPA_R: case AB_MAPA_V: case AB_ARRAY_APPEND:
+				case AB_MAPA_R: case AB_MAPA_V:
+				case AB_MAPA_S: case AB_ARRAY_APPEND:
 					--CPos;
 					SkipExpressions(1, CPos, Code);
 					--n;
@@ -1325,6 +1335,7 @@ const char *C4AulParseState::GetTokenName(C4AulTokenType TokenType)
 	case ATT_TILDE:    return "'~'";
 	case ATT_LDOTS:    return "'...'";
 	case ATT_DOT:      return "'.'";
+	case ATT_QMARK:    return "'?'";
 	case ATT_OPERATOR: return "operator";
 	case ATT_EOF:      return "end of file";
 	default:           return "unrecognized token";
@@ -3010,18 +3021,32 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 		AddBCC(AB_ARRAYA_R);
 		break;
 	}
+	case ATT_QMARK:
 	case ATT_DOT:
 	{
-		if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
-			throw new C4AulParseError(this, "unexpected '.'");
-		Shift();
+		const auto safe = TokenType == ATT_QMARK;
+		if (safe)
+		{
+			if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
+				throw new C4AulParseError(this, "unexpected '?'");
+			Shift();
+			Match(ATT_DOT);
+		}
+		else
+		{
+			if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
+				throw new C4AulParseError(this, "unexpected '.'");
+			Shift();
+		}
+
 		if (TokenType == ATT_IDTF)
 		{
 			C4String *string;
 			if (!(string = a->Engine->Strings.FindString(Idtf)))
 				string = a->Engine->Strings.RegString(Idtf);
 			if (Type == PARSER) string->Hold = true;
-			AddBCC(AB_MAPA_R, reinterpret_cast<intptr_t>(string));
+			if (safe) SetNoRef();
+			AddBCC(safe ? AB_MAPA_S : AB_MAPA_R, reinterpret_cast<intptr_t>(string));
 			Shift();
 			break;
 		}
