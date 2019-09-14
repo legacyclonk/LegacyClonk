@@ -453,7 +453,7 @@ bool C4GraphicsResource::ReloadResolutionDependentFiles()
 	// reload any files that depend on the current resolution
 	// reloads the cursor
 
-	const auto resX = Config.Graphics.ResX;
+	const auto resX = Config.Graphics.ResX * Application.GetScale();
 	size_t index = resX >= 1280 ? 0 : resX >= 800 ? 1 : 2;
 	if (!fctCursors[index].Wdt && !LoadCursorGfx()) return false;
 	if (fctCursors[index].Wdt)
