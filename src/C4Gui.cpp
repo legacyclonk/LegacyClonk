@@ -455,9 +455,14 @@ void CMouse::Draw(C4FacetEx &cgo, bool fDrawToolTip)
 		iOffsetX = -GfxR->fctMouseCursor.Wdt / 2;
 		iOffsetY = -GfxR->fctMouseCursor.Hgt / 2;
 	}
-	GfxR->fctMouseCursor.Draw(cgo.Surface, x + iOffsetX, y + iOffsetY, 0);
+
+	const auto scale = Application.GetScale();
+	const auto inverseScale = 1 / scale;
+	C4DrawTransform transform;
+	transform.SetMoveScale(0.f, 0.f, inverseScale, inverseScale);
+	GfxR->fctMouseCursor.DrawT(cgo.Surface, x * scale + iOffsetX, y * scale + iOffsetY, 0, 0, &transform);
 	if (Game.MouseControl.IsHelp())
-		GfxR->fctMouseCursor.Draw(cgo.Surface, x + iOffsetX + 5, y + iOffsetY - 5, 29);
+		GfxR->fctMouseCursor.DrawT(cgo.Surface, x * scale + iOffsetX + 5, y * scale + iOffsetY - 5, 29, 0, &transform);
 	// ToolTip
 	if (fDrawToolTip && pMouseOverElement)
 	{
