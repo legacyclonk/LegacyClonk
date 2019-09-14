@@ -327,6 +327,7 @@ void C4MouseControl::Draw(C4FacetEx &cgo)
 	switch (Drag)
 	{
 	case C4MC_Drag_None: case C4MC_Drag_Moving: case C4MC_Drag_Construct:
+	{
 		// Hotspot offset: Usually, hotspot is in center
 		iOffsetX = GfxR->fctMouseCursor.Wdt / 2;
 		iOffsetY = GfxR->fctMouseCursor.Hgt / 2;
@@ -368,6 +369,11 @@ void C4MouseControl::Draw(C4FacetEx &cgo)
 				&& (Cursor != C4MC_Cursor_JumpLeft) && (Cursor != C4MC_Cursor_JumpRight))
 				if (!IsPassive())
 					fAddMark = true;
+
+		const auto scale = Application.GetScale();
+		const auto inverseScale = 1 / scale;
+		C4DrawTransform transform;
+		transform.SetMoveScale(0.f, 0.f, inverseScale, inverseScale);
 		// Drag image
 		if (DragImage.Surface)
 		{
@@ -380,20 +386,21 @@ void C4MouseControl::Draw(C4FacetEx &cgo)
 		}
 		// Cursor
 		else
-			GfxR->fctMouseCursor.Draw(cgo.Surface, cgo.X + VpX - iOffsetX, cgo.Y + VpY - iOffsetY, Cursor);
+			GfxR->fctMouseCursor.DrawT(cgo.Surface, (cgo.X + VpX) * scale - iOffsetX, (cgo.Y + VpY) * scale - iOffsetY, Cursor, 0, &transform);
 		// Point
 		if ((ShowPointX != -1) && (ShowPointY != -1))
-			GfxR->fctMouseCursor.Draw(cgo.Surface,
-				cgo.X + ShowPointX - cgo.TargetX - GfxR->fctMouseCursor.Wdt / 2,
-				cgo.Y + ShowPointY - cgo.TargetY - GfxR->fctMouseCursor.Hgt / 2,
-				C4MC_Cursor_Point);
+			GfxR->fctMouseCursor.DrawT(cgo.Surface,
+				(cgo.X + ShowPointX - cgo.TargetX) * scale - GfxR->fctMouseCursor.Wdt / 2,
+				(cgo.Y + ShowPointY - cgo.TargetY) * scale - GfxR->fctMouseCursor.Hgt / 2,
+				C4MC_Cursor_Point, 0, &transform);
 		// Add mark
 		if (fAddMark)
-			GfxR->fctMouseCursor.Draw(cgo.Surface,
-				cgo.X + VpX - iOffsetX + 8,
-				cgo.Y + VpY - iOffsetY + 8,
-				C4MC_Cursor_Add);
+			GfxR->fctMouseCursor.DrawT(cgo.Surface,
+				(cgo.X + VpX) * scale - iOffsetX + 8,
+				(cgo.Y + VpY) * scale - iOffsetY + 8,
+				C4MC_Cursor_Add, 0, &transform);
 		break;
+	}
 
 	case C4MC_Drag_Selecting:
 		// Draw frame
