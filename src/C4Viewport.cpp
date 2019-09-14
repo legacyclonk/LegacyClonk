@@ -912,14 +912,17 @@ void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
 			int32_t iYOff = Config.Graphics.ShowPortraits ? 10 : 0;
 			// Energy
 			ccgo.Set(cgo.Surface, cgo.X + cx, cgo.Y + C4SymbolSize + 2 * C4SymbolBorder + iYOff, bar_wdt, cgo.Hgt - 3 * C4SymbolBorder - 2 * C4SymbolSize - iYOff);
-			cursor->DrawEnergy(ccgo); ccgo.X += bar_wdt + 1;
+			if (!(cursor->Def->HideHUDBars & C4DefCore::HB_Energy))
+			{
+				cursor->DrawEnergy(ccgo); ccgo.X += bar_wdt + 1;
+			}
 			// Magic energy
-			if (cursor->MagicEnergy)
+			if (cursor->MagicEnergy && !(cursor->Def->HideHUDBars & C4DefCore::HB_MagicEnergy))
 			{
 				cursor->DrawMagicEnergy(ccgo); ccgo.X += bar_wdt + 1;
 			}
 			// Breath
-			if (cursor->Breath && (cursor->Breath < cursor->GetPhysical()->Breath))
+			if (cursor->Breath && (cursor->Breath < cursor->GetPhysical()->Breath) && !(cursor->Def->HideHUDBars & C4DefCore::HB_Breath))
 			{
 				cursor->DrawBreath(ccgo); ccgo.X += bar_wdt + 1;
 			}

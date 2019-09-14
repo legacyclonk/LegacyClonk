@@ -451,6 +451,17 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(AllowPictureStack, AllowPictureStackModes),
 		"AllowPictureStack", 0));
 
+	const StdBitfieldEntry<int32_t> HideBarValues[] =
+	{
+		{ "Energy", HB_Energy },
+		{ "MagicEnergy", HB_MagicEnergy },
+		{ "Breath", HB_Breath },
+		{ "All", HB_All },
+		{ nullptr, 0 }
+	};
+
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(HideHUDBars, HideBarValues), "HideHUDBars", 0));
+
 	pComp->FollowName("Physical");
 	pComp->Value(Physical);
 }

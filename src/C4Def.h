@@ -269,8 +269,16 @@ public:
 	int32_t NoTransferZones;
 	int32_t AutoContextMenu; // automatically open context menu for this object
 	int32_t AllowPictureStack; // allow stacking of multiple items in menus even if some attributes do not match. APS_*-values
+	int32_t HideHUDBars; // A bit mask to selectively hide some of the Energy, Magic Energy and Breath bars.
 
 public:
+	enum HideBar : int32_t {
+		HB_Energy = 0x1,
+		HB_MagicEnergy = 0x2,
+		HB_Breath = 0x4,
+		HB_All = HB_Energy | HB_MagicEnergy | HB_Breath
+	};
+
 	void Default();
 	bool Load(C4Group &hGroup);
 	void CompileFunc(StdCompiler *pComp);
