@@ -211,7 +211,6 @@ bool C4GraphicsResource::Init(bool fInitGUI)
 	if (!LoadFile(fctPlayer,          "Player",       Files))                       return false; // (new format)
 	if (!LoadFile(fctRank,            "Rank",         Files, C4FCT_Height))         return false;
 	if (!LoadFile(fctCaptain,         "Captain",      Files))                       return false;
-	if (!LoadCursorGfx())                                                           return false;
 	if (!LoadFile(fctSelectMark,      "SelectMark",   Files, C4FCT_Height))         return false;
 	if (!LoadFile(fctMenu,            "Menu",         Files, 35, 35))               return false;
 	if (!LoadFile(fctLogo,            "Logo",         Files))                       return false;
@@ -227,6 +226,7 @@ bool C4GraphicsResource::Init(bool fInitGUI)
 	if (!LoadFile(fctBuild,           "Build",        Files))                       return false;
 	if (!LoadFile(fctEnergyBars,      "EnergyBars",   Files))                       return false;
 	if (!LoadFile(sfcLiquidAnimation, "Liquid",       Files, idSfcLiquidAnimation)) return false;
+	if (!ReloadResolutionDependentFiles()) return false;
 	// life bar facets
 	if (fctEnergyBars.Surface)
 	{
@@ -296,23 +296,12 @@ bool C4GraphicsResource::LoadCursorGfx()
 	if (!LoadFile(fctMouseCursor, "Cursor", Files, C4FCT_Height, C4FCT_Full, true))
 	{
 		static const char *cursors[3] = {"CursorLarge", "CursorMedium", "CursorSmall"};
-
-		size_t index = Config.Graphics.ResX >= 1280 ? 0 : Config.Graphics.ResX >= 800 ? 1 : 2;
-
 		for (size_t i = 0; i < sizeof(fctCursors) / sizeof(fctCursors[0]); ++i)
 		{
-			bool ret = LoadFile(fctCursors[i], cursors[i], Files, C4FCT_Height, C4FCT_Full);
-			if (i == index)
-			{
-				if (!ret)
-				{
-					return false;
-				}
-				fctMouseCursor.Set(fctCursors[i]);
-			}
+			if (!LoadFile(fctCursors[i], cursors[i], Files, C4FCT_Height, C4FCT_Full))
+				return false;
 		}
 	}
-	ApplyCursorGfx();
 	return true;
 }
 
@@ -463,12 +452,16 @@ bool C4GraphicsResource::ReloadResolutionDependentFiles()
 {
 	// reload any files that depend on the current resolution
 	// reloads the cursor
-	int index = Config.Graphics.ResX >= 1280 ? 0 : Config.Graphics.ResX >= 800 ? 1 : 2;
+
+	const auto resX = Config.Graphics.ResX;
+	size_t index = resX >= 1280 ? 0 : resX >= 800 ? 1 : 2;
+	if (!fctCursors[index].Wdt && !LoadCursorGfx()) return false;
 	if (fctCursors[index].Wdt)
 	{
 		fctMouseCursor.idSourceGroup = 0;
 		fctMouseCursor.Set(fctCursors[index]);
+		ApplyCursorGfx();
 		return true;
 	}
-	return LoadCursorGfx();
+	return false;
 }
