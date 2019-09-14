@@ -1275,7 +1275,7 @@ void C4Object::DoDamage(int32_t iChange, int32_t iCausedBy, int32_t iCause)
 void C4Object::DoEnergy(int32_t iChange, bool fExact, int32_t iCause, int32_t iCausedByPlr)
 {
 	// iChange 100% = Physical 100000
-	if (!fExact) iChange = iChange * C4MaxPhysical / 100;
+	if (!fExact) iChange = iChange * (C4MaxPhysical / 100);
 	// Was zero?
 	bool fWasZero = (Energy == 0);
 	// Mark last damage causing player to trace kills. Always update on C4FxCall_EngObjHit even if iChange==0
@@ -1309,7 +1309,7 @@ void C4Object::UpdatLastEnergyLossCause(int32_t iNewCausePlr)
 void C4Object::DoBreath(int32_t iChange)
 {
 	// iChange 100% = Physical 100000
-	iChange = iChange * C4MaxPhysical / 100;
+	iChange = iChange * (C4MaxPhysical / 100);
 	// Do change
 	Breath = BoundBy<int32_t>(Breath + iChange, 0, GetPhysical()->Breath);
 	// View change
