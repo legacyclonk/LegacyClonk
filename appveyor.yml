@@ -54,12 +54,9 @@ for:
         - image: Ubuntu1804
 
   build_script:
-  - sh: curl http://fulgen.bplaced.net/files/build.sh -o build.sh
-  - sh: chmod +x ./build.sh
   - sh: test "$PLATFORM" = "x86" && sudo rsync -rv --exclude=chroot . chroot/legacyclonk || true
-  - sh: test "$PLATFORM" = "x86" && sudo chmod +x chroot/legacyclonk/build.sh || true
-  - sh: test "$PLATFORM" = "x86" && sudo chroot chroot /legacyclonk/build.sh || true
-  - sh: test "$PLATFORM" = "x64" && source ./build.sh || true
+  - sh: test "$PLATFORM" = "x86" && sudo chroot chroot /legacyclonk/appveyor/build.sh || true
+  - sh: test "$PLATFORM" = "x64" && source appveyor/build.sh || true
 
 after_build:
   - cmd: ls
