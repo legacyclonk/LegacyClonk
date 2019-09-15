@@ -1115,7 +1115,7 @@ void C4Network2::DrawStatus(C4FacetEx &cgo)
 
 	// Streaming statistics
 	if (fStreaming)
-		Stat.AppendFormat("|Streaming: %d waiting, %d in, %d out, %d sent",
+		Stat.AppendFormat("|Streaming: %zu waiting, %d in, %zu out, %d sent",
 			pStreamedRecord ? pStreamedRecord->GetStreamingBuf().getSize() : 0,
 			pStreamedRecord ? pStreamedRecord->GetStreamingPos() : 0,
 			getPendingStreamData(),
@@ -1770,7 +1770,7 @@ bool C4Network2::CreateDynamic(bool fInit)
 	char szDynamicBase[_MAX_PATH + 1], szDynamicFilename[_MAX_PATH + 1];
 	sprintf(szDynamicBase, Config.AtNetworkPath("Dyn%s"), GetFilename(Game.ScenarioFilename), _MAX_PATH);
 	if (!ResList.FindTempResFileName(szDynamicBase, szDynamicFilename))
-		LogF(LoadResStr("IDS_NET_SAVE_ERR_CREATEDYNFILE"));
+		Log(LoadResStr("IDS_NET_SAVE_ERR_CREATEDYNFILE"));
 	// save dynamic data
 	C4GameSaveNetwork SaveGame(fInit);
 	if (!SaveGame.Save(szDynamicFilename) || !SaveGame.Close())

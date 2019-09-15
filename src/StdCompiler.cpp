@@ -202,7 +202,7 @@ void StdCompilerBinRead::Raw(void *pData, size_t iSize, RawCompileType eType)
 
 StdStrBuf StdCompilerBinRead::getPosition() const
 {
-	return FormatString("byte %d", iPos);
+	return FormatString("byte %zu", iPos);
 }
 
 template <class T>

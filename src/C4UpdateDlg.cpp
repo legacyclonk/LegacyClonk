@@ -188,7 +188,7 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 			}
 	UpdateGroup.Close();
 	// Execute update program
-	LogF(LoadResStr("IDS_PRC_LAUNCHINGUPDATE"));
+	Log(LoadResStr("IDS_PRC_LAUNCHINGUPDATE"));
 	succeeded = true;
 #ifdef _WIN32
 	// Close editor if open

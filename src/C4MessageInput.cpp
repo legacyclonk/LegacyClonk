@@ -414,7 +414,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 	// dev-scripts
 	if (SEqual(szCmdName, "help"))
 	{
-		LogF(LoadResStr("IDS_TEXT_COMMANDSAVAILABLEDURINGGA"));
+		Log(LoadResStr("IDS_TEXT_COMMANDSAVAILABLEDURINGGA"));
 		LogF("/private [player] [message] - %s", LoadResStr("IDS_MSG_SENDAPRIVATEMESSAGETOTHES"));
 		LogF("/team [message] - %s", LoadResStr("IDS_MSG_SENDAPRIVATEMESSAGETOYOUR"));
 		LogF("/me [action] - %s", LoadResStr("IDS_TEXT_PERFORMANACTIONINYOURNAME"));

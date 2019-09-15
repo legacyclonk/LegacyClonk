@@ -187,7 +187,7 @@ void C4StartupMainDlg::UpdateParticipants()
 	// Draw selected players - we are currently displaying the players stored in Config.General.Participants.
 	// Existence of the player files is not validated and player filenames are displayed directly
 	// (names are not loaded from the player core).
-	strPlayers.Format(LoadResStr("IDS_DESC_PLRS"));
+	strPlayers = LoadResStr("IDS_DESC_PLRS");
 	if (!Config.General.Participants[0])
 		strPlayers.Append(LoadResStr("IDS_DLG_NOPLAYERSSELECTED"));
 	else

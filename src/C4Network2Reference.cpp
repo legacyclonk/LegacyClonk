@@ -200,7 +200,7 @@ void C4Network2RefServer::RespondReference(const C4NetIO::addr_t &addr)
 	const char *szCharset = GetCharsetCodeName(Config.General.LanguageCharset);
 	StdStrBuf Header = FormatString(
 		"HTTP/1.1 200 Found\r\n"
-		"Content-Length: %d\r\n"
+		"Content-Length: %zu\r\n"
 		"Content-Type: text/plain; charset=%s\r\n"
 		"Server: " C4ENGINENAME "/" C4VERSION "\r\n"
 		"\r\n",
@@ -455,7 +455,7 @@ bool C4Network2HTTPClient::Query(const StdBuf &Data, bool fBinary)
 			"POST %s HTTP/1.0\r\n"
 			"Host: %s\r\n"
 			"Connection: Close\r\n"
-			"Content-Length: %d\r\n"
+			"Content-Length: %zu\r\n"
 			"Content-Type: text/plain; encoding=%s\r\n"
 			"Accept-Charset: %s\r\n"
 			"Accept-Encoding: gzip\r\n"

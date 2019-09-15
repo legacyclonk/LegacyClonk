@@ -1099,7 +1099,7 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 	// Parse
 	C4Playback Playback;
 	Playback.ReadBinary(StreamData);
-	LogF("Got %d chunks from stream", Playback.chunks.size());
+	LogF("Got %zu chunks from stream", Playback.chunks.size());
 
 	// Get first chunk, which must contain the initial
 	chunks_t::iterator chunkIter = Playback.chunks.begin();

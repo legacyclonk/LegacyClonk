@@ -574,7 +574,7 @@ C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *edt, bool fPasting, b
 			}
 			else if (SEqualNoCase(Command, "/help"))
 			{
-				LogF(LoadResStr("IDS_TEXT_COMMANDSAVAILABLEDURINGLO"));
+				Log(LoadResStr("IDS_TEXT_COMMANDSAVAILABLEDURINGLO"));
 				LogF("/start [time] - %s", LoadResStr("IDS_TEXT_STARTTHEROUNDWITHSPECIFIE"));
 				LogF("/abort - %s", LoadResStr("IDS_TEXT_ABORTSTARTCOUNTDOWN"));
 				LogF("/alert - %s", LoadResStr("IDS_TEXT_ALERTTHEHOSTIFTHEHOSTISAW"));
