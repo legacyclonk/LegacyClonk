@@ -20,6 +20,8 @@
 #include "Standard.h"
 #include "StdCompiler.h"
 
+#include <limits>
+
 // * Wrappers for C4Compiler-types
 
 // Whole-line string, automatic size deduction (C4Compiler-String)
@@ -763,7 +765,7 @@ struct StdEnumEntry
 
 // Enumeration: For text compilers, write a given name for a value.
 // For everything else, just write an integer of given type.
-template <class T, class int_t = int32_t>
+template <class T, class int_t = int32_t, size_t N = std::numeric_limits<size_t>::max()>
 struct StdEnumAdapt
 {
 	typedef StdEnumEntry<T> Entry;
@@ -784,7 +786,8 @@ struct StdEnumAdapt
 		{
 			// Find value
 			const Entry *pName = pNames;
-			for (; pName->Name; pName++)
+			size_t i = 0;
+			for (; i < N && pName->Name; ++pName, ++i)
 				if (pName->Val == rVal)
 				{
 					// Put name
@@ -792,7 +795,7 @@ struct StdEnumAdapt
 					break;
 				}
 			// No name found?
-			if (!pName->Name)
+			if (i >= N || !pName->Name)
 				// Put value as integer
 				pComp->Value(mkIntAdaptT<int_t>(rVal));
 		}
@@ -821,25 +824,26 @@ struct StdEnumAdapt
 				pComp->Value(mkParAdapt(Name, StdCompiler::RCT_Idtf));
 				// Search in name list
 				const Entry *pName = pNames;
-				for (; pName->Name; pName++)
+				size_t i = 0;
+				for (; i < N && pName->Name; ++pName, ++i)
 					if (Name == pName->Name)
 					{
 						rVal = pName->Val;
 						break;
 					}
 				// Not found? Warn
-				if (!pName->Name)
+				if (i >= N || !pName->Name)
 					pComp->Warn("Unknown bit name: %s", Name.getData());
 			}
 		}
 	}
 
 	template <class D> inline bool operator==(const D &nValue) const { return rVal == nValue; }
-	template <class D> inline StdEnumAdapt<T, int_t> &operator=(const D &nValue) { rVal = nValue; return *this; }
+	template <class D> inline auto &operator=(const D &nValue) { rVal = nValue; return *this; }
 };
 
-template <class int_t, class T>
-StdEnumAdapt<T, int_t> mkEnumAdaptT(T &rVal, const StdEnumEntry<T> *pNames) { return StdEnumAdapt<T, int_t>(rVal, pNames); }
+template <class int_t, class T, size_t N>
+auto mkEnumAdaptT(T &rVal, const StdEnumEntry<T> (&pNames)[N]) { return StdEnumAdapt<T, int_t, N>(rVal, pNames); }
 
 template <class T>
 struct StdBitfieldEntry
@@ -849,7 +853,7 @@ struct StdBitfieldEntry
 };
 
 // Convert a bitfield into/from something like "foo | bar | baz", where "foo", "bar" and "baz" are given constants.
-template <class T>
+template <class T, size_t N>
 struct StdBitfieldAdapt
 {
 	typedef StdBitfieldEntry<T> Entry;
@@ -871,7 +875,8 @@ struct StdBitfieldAdapt
 			T val = rVal;
 			// Write until value is comsumed
 			bool fFirst = true;
-			for (const Entry *pName = pNames; val && pName->Name; pName++)
+			size_t i = 0;
+			for (const Entry *pName = pNames; val && i < N && pName->Name; ++pName, ++i)
 				if ((pName->Val & val) == pName->Val)
 				{
 					// Put "|"
@@ -922,14 +927,15 @@ struct StdBitfieldAdapt
 					pComp->Value(mkParAdapt(Name, StdCompiler::RCT_Idtf));
 					// Search in name list
 					const Entry *pName = pNames;
-					for (; pName->Name; pName++)
+					size_t i = 0;
+					for (; i < N && pName->Name; ++pName, ++i)
 						if (Name == pName->Name)
 						{
 							val |= pName->Val;
 							break;
 						}
 					// Not found? Warn
-					if (!pName->Name)
+					if (i >= N || !pName->Name)
 						pComp->Warn("Unknown bit name: %s", Name.getData());
 				}
 				// Expect separation
@@ -940,11 +946,11 @@ struct StdBitfieldAdapt
 	}
 
 	template <class D> inline bool operator==(const D &nValue) const { return rVal == nValue; }
-	template <class D> inline StdBitfieldAdapt<T> &operator=(const D &nValue) { rVal = nValue; return *this; }
+	template <class D> inline auto &operator=(const D &nValue) { rVal = nValue; return *this; }
 };
 
-template <class T>
-StdBitfieldAdapt<T> mkBitfieldAdapt(T &rVal, const StdBitfieldEntry<T> *pNames) { return StdBitfieldAdapt<T>(rVal, pNames); }
+template <class T, size_t N>
+auto mkBitfieldAdapt(T &rVal, const StdBitfieldEntry<T> (&pNames)[N]) { return StdBitfieldAdapt<T, N>(rVal, pNames); }
 
 // * Name count adapter
 // For compilers without name support, this just compiles the given value. Otherwise, the count
