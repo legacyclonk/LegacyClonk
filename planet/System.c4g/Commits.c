@@ -164,13 +164,13 @@ global func SetRGBaValue(int val, int newval, int sel) {
   // Alte Farbe 'löschen'
   val = val & ~(0xFF << ((3 - sel) * 8));
   // Neue hinzufügen
-  return val | newval << ((3 - sel) * 8));
+  return val | newval << ((3 - sel) * 8);
 }
 
 // Diese Funktion verändert die angegebene Farbe eines RGB Wertes
 // select 0: a, select 1: R, select 2: G, select 3: B
 global func DoRGBaValue(int val, int chng, int sel) {
-  return (val + (chng << ((3 - sel) * 8)));
+  return val + (chng << ((3 - sel) * 8));
 }
 
 global func SplitRGBaValue(rgb, &red, &green, &blue, &alpha) {
