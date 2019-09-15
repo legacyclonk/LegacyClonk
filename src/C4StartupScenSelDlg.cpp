@@ -1364,6 +1364,8 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyCheat), C4CustomKey::PRIO_CtrlOverride));
 	keySearch.reset(new C4KeyBinding(C4KeyCodeEx(KEY_F, KEYS_Control), "StartupScenSelSearch", KEYSCOPE_Gui,
 		new C4GUI::ControlKeyDlgCB(pScenSelList, *this, &C4StartupScenSelDlg::KeySearch), C4CustomKey::PRIO_CtrlOverride));
+	keyEscape.reset(new C4KeyBinding(C4KeyCodeEx(K_ESCAPE), "StartupScenSelEscape", KEYSCOPE_Gui,
+		new C4GUI::ControlKeyDlgCB(pScenSelList, *this, &C4StartupScenSelDlg::KeyEscape), C4CustomKey::PRIO_CtrlOverride));
 }
 
 C4StartupScenSelDlg::~C4StartupScenSelDlg()
@@ -1743,6 +1745,16 @@ bool C4StartupScenSelDlg::KeySearch()
 {
 	SetFocus(searchBar, false);
 	return true;
+}
+
+bool C4StartupScenSelDlg::KeyEscape()
+{
+	if (GetFocus() == searchBar)
+	{
+		SetFocus(pScenSelList, false);
+		return true;
+	}
+	return false;
 }
 
 void C4StartupScenSelDlg::KeyCheat2(const StdStrBuf &rsCheatCode)

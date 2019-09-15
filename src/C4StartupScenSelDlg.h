@@ -377,7 +377,7 @@ private:
 	C4GUI::Label *pScenSelProgressLabel; // progress label shown while scenario list is being generated
 	C4GUI::TextWindow *pSelectionInfo; // used to display the description of the current selection
 
-	std::unique_ptr<C4KeyBinding> keyRefresh, keyBack, keyForward, keyRename, keyDelete, keyCheat, keySearch;
+	std::unique_ptr<C4KeyBinding> keyRefresh, keyBack, keyForward, keyRename, keyDelete, keyCheat, keySearch, keyEscape;
 	class C4GameOptionButtons *pGameOptionButtons;
 	C4GUI::Button *pOpenBtn;
 	C4GUI::Tabular *pScenSelStyleTabular;
@@ -411,6 +411,7 @@ protected:
 	bool KeyDelete();
 	bool KeyCheat();
 	bool KeySearch();
+	bool KeyEscape();
 	void KeyCheat2(const StdStrBuf &rsCheatCode);
 
 	void DeleteConfirm(ScenListItem *pSel);
