@@ -1362,6 +1362,8 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyDelete), C4CustomKey::PRIO_CtrlOverride));
 	keyCheat.reset(new C4KeyBinding(C4KeyCodeEx(KEY_M, KEYS_Alt), "StartupScenSelCheat", KEYSCOPE_Gui,
 		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyCheat), C4CustomKey::PRIO_CtrlOverride));
+	keySearch.reset(new C4KeyBinding(C4KeyCodeEx(KEY_F, KEYS_Control), "StartupScenSelSearch", KEYSCOPE_Gui,
+		new C4GUI::ControlKeyDlgCB(pScenSelList, *this, &C4StartupScenSelDlg::KeySearch), C4CustomKey::PRIO_CtrlOverride));
 }
 
 C4StartupScenSelDlg::~C4StartupScenSelDlg()
@@ -1735,6 +1737,12 @@ bool C4StartupScenSelDlg::KeyCheat()
 	return Game.pGUI->ShowRemoveDlg(new C4GUI::InputDialog(LoadResStr("IDS_TEXT_ENTERMISSIONPASSWORD"), LoadResStr("IDS_DLG_MISSIONACCESS"), C4GUI::Ico_Options,
 		new C4GUI::InputCallback<C4StartupScenSelDlg>(this, &C4StartupScenSelDlg::KeyCheat2),
 		false));
+}
+
+bool C4StartupScenSelDlg::KeySearch()
+{
+	SetFocus(searchBar, false);
+	return true;
 }
 
 void C4StartupScenSelDlg::KeyCheat2(const StdStrBuf &rsCheatCode)

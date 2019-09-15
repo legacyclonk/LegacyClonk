@@ -71,6 +71,7 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #define K_PAGEDOWN VK_NEXT
 #define KEY_A ((uint16_t) 'A') // select all in GUI-editbox
 #define KEY_C ((uint16_t) 'C') // copy in GUI-editbox
+#define KEY_F ((uint16_t) 'F') // search in ScenSelDlg
 #define KEY_I ((uint16_t) 'I') // console mode control key
 #define KEY_M ((uint16_t) 'M') // console mode control key
 #define KEY_T ((uint16_t) 'T') // console mode control key
@@ -115,6 +116,7 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #define K_PAGEDOWN XK_Page_Down
 #define KEY_A XK_a // select all in GUI-editbox
 #define KEY_C XK_c // copy in GUI-editbox
+#define KEY_F XK_f // search in ScenSelDlg
 #define KEY_I XK_i // console mode control key
 #define KEY_M XK_m // console mode control key
 #define KEY_T XK_t // console mode control key
@@ -169,6 +171,7 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #define KEY_V SDLK_v
 #define KEY_X SDLK_x
 #define KEY_A SDLK_a
+#define KEY_F SDLK_f
 #define MK_SHIFT (KMOD_LSHIFT | KMOD_RSHIFT)
 #define MK_CONTROL (KMOD_LCTRL | KMOD_RCTRL)
 #elif defined(USE_CONSOLE)
@@ -212,6 +215,7 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #define KEY_C 0
 #define KEY_V 0
 #define KEY_X 0
+#define KEY_F 0
 #define KEY_A 0
 #define MK_SHIFT 0
 #define MK_CONTROL 0
