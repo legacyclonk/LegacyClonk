@@ -7,17 +7,17 @@ branches:
     - /^continuous-/
 
 install:
+  - brew remove --force $(brew list) --ignore-dependencies 
   - brew update
-  - until brew upgrade; do true; done
-  - brew install sdl_mixer libpng libjpeg freetype glew openssl@1.1 || true
-  - brew unlink cmake
+  - until brew install sdl_mixer libpng libjpeg freetype glew openssl@1.1 git libyaml; do true; done
+  - brew unlink cmake || true
   - brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/74d54460d0af8e21deacee8dcced325cfc191141/Formula/cmake.rb
   - brew pin cmake
 
 before_script:
   - mkdir build
   - cd build
-  - cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-w" -DCMAKE_C_FLAGS="-w" ..
+  - cmake -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-w" -DCMAKE_C_FLAGS="-w" ..
 
 script:
   - make
