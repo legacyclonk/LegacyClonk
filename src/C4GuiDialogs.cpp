@@ -854,6 +854,12 @@ void FullscreenDialog::DrawElement(C4FacetEx &cgo)
 		lpDDraw->BlitSurfaceTile(Game.GraphicsResource.fctUpperBoard.Surface, cgo.Surface, 0, std::min<int32_t>(iFade - Game.GraphicsResource.fctUpperBoard.Hgt, 0), cgo.Wdt, Game.GraphicsResource.fctUpperBoard.Hgt);
 }
 
+int32_t FullscreenDialog::GetMarginTop()
+{
+	return (HasUpperBoard() ? C4UpperBoard::Height() : C4GUI_FullscreenDlg_TitleHeight)
+	+ iDlgMarginY;
+}
+
 void FullscreenDialog::UpdateOwnPos()
 {
 	// inherited to update client rect

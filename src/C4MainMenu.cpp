@@ -573,7 +573,22 @@ bool C4MainMenu::ActivateDisplay(int32_t iPlayer, int32_t selection)
 	// Upper Board
 	if (Application.isFullScreen)
 	{
-		AddRefSym(LoadResStr("IDS_MNU_UPPERBOARD"), GfxR->fctOptions.GetPhase(3 + Config.Graphics.UpperBoard), "Display:UpperBoard", C4MN_Item_NoCount);
+		std::string text{LoadResStr("IDS_MNU_UPPERBOARD")};
+		text += ": ";
+		auto modeName = "???";
+		if (Config.Graphics.UpperBoard >= C4UpperBoard::First && Config.Graphics.UpperBoard <= Config.Graphics.UpperBoard)
+		{
+			modeName = LoadResStr(std::map<decltype(Config.Graphics.UpperBoard), const char*>
+				{
+					{C4UpperBoard::Full, "IDS_MNU_UPPERBOARD_NORMAL"},
+					{C4UpperBoard::Small, "IDS_MNU_UPPERBOARD_SMALL"},
+					{C4UpperBoard::Mini, "IDS_MNU_UPPERBOARD_MINI"},
+					{C4UpperBoard::Hide, "IDS_MNU_UPPERBOARD_OFF"}
+				}.at(Config.Graphics.UpperBoard)
+			);
+		}
+		text += modeName;
+		AddRefSym(text.c_str(), GfxR->fctOptions.GetPhase(3 + (Config.Graphics.UpperBoard != C4UpperBoard::Hide)), "Display:UpperBoard", C4MN_Item_NoCount);
 	}
 	// FPS
 	if (Application.isFullScreen)
@@ -817,8 +832,10 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 		// Upper board
 		if (SEqual(szCommand + 8, "UpperBoard"))
 		{
-			Config.Graphics.UpperBoard = !Config.Graphics.UpperBoard;
-			Game.GraphicsSystem.RecalculateViewports();
+			++Config.Graphics.UpperBoard;
+			if (Config.Graphics.UpperBoard > C4UpperBoard::Last)
+				Config.Graphics.UpperBoard = C4UpperBoard::First;
+			Game.InitFullscreenComponents(true);
 		}
 		// FPS
 		if (SEqual(szCommand + 8, "FPS")) Config.General.FPS = !Config.General.FPS;

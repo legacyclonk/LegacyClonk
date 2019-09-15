@@ -23,12 +23,23 @@ class C4UpperBoard
 	friend class C4GraphicsSystem;
 
 public:
+	enum DisplayMode : int32_t {
+		Hide = 0,
+		Full = 1,
+		Small = 2,
+		Mini = 3,
+
+		First = Hide,
+		Last = Mini
+	};
+
 	C4UpperBoard();
 	~C4UpperBoard();
 	void Default();
 	void Clear();
-	void Init(C4Facet &cgo);
+	void Init(C4Facet &cgo, C4Facet &messageBoardCgo);
 	void Execute();
+	static int Height();
 
 protected:
 	void Draw(C4Facet &cgo);

@@ -260,7 +260,7 @@ public:
 		CSurface *sfcTarget, int tx, int ty, int twdt, int thgt,
 		int iAngle, bool fTransparency = true);
 	bool BlitSurface(CSurface *sfcSurface, CSurface *sfcTarget, int tx, int ty, bool fBlitBase);
-	bool BlitSurfaceTile(CSurface *sfcSurface, CSurface *sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX = 0, int iOffsetY = 0, bool fSrcColKey = false);
+	bool BlitSurfaceTile(CSurface *sfcSurface, CSurface *sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX = 0, int iOffsetY = 0, bool fSrcColKey = false, float scale = 1.f);
 	bool BlitSurfaceTile2(CSurface *sfcSurface, CSurface *sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX = 0, int iOffsetY = 0, bool fSrcColKey = false);
 	virtual void FillBG(uint32_t dwClr = 0) = 0;
 

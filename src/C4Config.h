@@ -107,7 +107,7 @@ public:
 	bool ColorAnimation;
 	int32_t SmokeLevel;
 	bool VideoModule;
-	bool UpperBoard;
+	int32_t UpperBoard;
 	bool ShowClock;
 	int32_t ResX, ResY;
 	int32_t Scale;

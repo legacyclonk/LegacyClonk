@@ -37,7 +37,7 @@ void C4UpperBoard::Clear() {}
 
 void C4UpperBoard::Execute()
 {
-	if (!Config.Graphics.UpperBoard) return;
+	if (Config.Graphics.UpperBoard == Hide) return;
 	// Make the time strings
 	sprintf(cTimeString, "%02d:%02d:%02d", Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60);
 	time_t t = time(0); strftime(cTimeString2, sizeof(cTimeString2), "[%H:%M:%S]", localtime(&t));
@@ -47,42 +47,70 @@ void C4UpperBoard::Execute()
 void C4UpperBoard::Draw(C4Facet &cgo)
 {
 	if (!cgo.Surface) return;
-	// Background
-	Application.DDraw->BlitSurfaceTile(Game.GraphicsResource.fctUpperBoard.Surface, Output.Surface, 0, 0, Output.Wdt, Output.Hgt);
-	// Logo
-	C4Facet cgo2;
-	float fLogoZoom = 0.21f;
-	cgo2.Set(cgo.Surface, (int32_t)(cgo.Wdt / 2 - (Game.GraphicsResource.fctLogo.Wdt / 2) * fLogoZoom), 0,
-		(int32_t)(Game.GraphicsResource.fctLogo.Wdt * fLogoZoom), (int32_t)(Game.GraphicsResource.fctLogo.Hgt * fLogoZoom));
-	Game.GraphicsResource.fctLogo.Draw(cgo2);
+	const auto mode = Config.Graphics.UpperBoard;
+	if (mode != Mini)
+	{
+		// Background
+		Application.DDraw->BlitSurfaceTile(Game.GraphicsResource.fctUpperBoard.Surface, Output.Surface, 0, 0, Output.Wdt, Output.Hgt, 0, 0, false, mode == Small ? 0.5f : 1.f);
+		// Logo
+		C4Facet cgo2;
+		float fLogoZoom = 0.21f;
+		if (mode == Small) fLogoZoom *= 8.f / 15.f;
+		cgo2.Set(cgo.Surface, (int32_t)(cgo.Wdt / 2 - (Game.GraphicsResource.fctLogo.Wdt / 2) * fLogoZoom), 0,
+			(int32_t)(Game.GraphicsResource.fctLogo.Wdt * fLogoZoom), (int32_t)(Game.GraphicsResource.fctLogo.Hgt * fLogoZoom));
+		Game.GraphicsResource.fctLogo.Draw(cgo2);
+	}
+
 	// Right text sections
 	int32_t iRightOff = 1;
 	// Playing time
-	Application.DDraw->TextOut(cTimeString, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, Config.Graphics.ResX - (iRightOff++) * TextWidth - 10, TextYPosition, 0xFFFFFFFF);
+	Application.DDraw->TextOut(cTimeString, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, Output.X + Output.Wdt - (iRightOff++) * TextWidth - 10, TextYPosition, 0xFFFFFFFF);
 	// Clock
 	if (Config.Graphics.ShowClock)
-		Application.DDraw->TextOut(cTimeString2, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, Config.Graphics.ResX - (iRightOff++) * TextWidth - 30, TextYPosition, 0xFFFFFFFF);
+		Application.DDraw->TextOut(cTimeString2, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, Output.X + Output.Wdt - (iRightOff++) * TextWidth - 30, TextYPosition, 0xFFFFFFFF);
 	// FPS
 	if (Config.General.FPS)
 	{
 		sprintf(cTimeString, "%d FPS", Game.FPS);
-		Application.DDraw->TextOut(cTimeString, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, Config.Graphics.ResX - (iRightOff++) * TextWidth - 30, TextYPosition, 0xFFFFFFFF);
+		Application.DDraw->TextOut(cTimeString, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, Output.X + Output.Wdt - (iRightOff++) * TextWidth - 30, TextYPosition, 0xFFFFFFFF);
 	}
-	// Scenario title
-	Application.DDraw->TextOut(Game.ScenarioTitle.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, 10, cgo.Hgt / 2 - Game.GraphicsResource.FontRegular.GetLineHeight() / 2, 0xFFFFFFFF);
+	if (mode != Mini)
+	{
+		// Scenario title
+		Application.DDraw->TextOut(Game.ScenarioTitle.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, 10, cgo.Hgt / 2 - Game.GraphicsResource.FontRegular.GetLineHeight() / 2, 0xFFFFFFFF);
+	}
 }
 
-void C4UpperBoard::Init(C4Facet &cgo)
+int C4UpperBoard::Height()
 {
-	// Save facet
-	Output = cgo;
-	if (!Game.GraphicsResource.fctUpperBoard.Surface) return;
-	// in newgfx, the upperboard may be larger and overlap the scene
-	Output.Hgt = (std::max)(Output.Hgt, Game.GraphicsResource.fctUpperBoard.Hgt);
-	// surface should not be too small
-	Game.GraphicsResource.fctUpperBoard.EnsureSize(128, Output.Hgt);
-	// Generate textposition
+	const auto mode = Config.Graphics.UpperBoard;
+	if (mode == Hide || mode == Mini) return 0;
+	if (mode == Small) return C4UpperBoardHeight / 2;
+	return C4UpperBoardHeight;
+}
+
+void C4UpperBoard::Init(C4Facet &cgo, C4Facet &messageBoardCgo)
+{
 	sprintf(cTimeString, "%02d:%02d:%02d", Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60);
 	TextWidth = Game.GraphicsResource.FontRegular.GetTextWidth(cTimeString);
-	TextYPosition = cgo.Hgt / 2 - Game.GraphicsResource.FontRegular.GetLineHeight() / 2;
+	if (Config.Graphics.UpperBoard == Mini)
+	{
+		const auto xStart = messageBoardCgo.Wdt - TextWidth * 3 - 30;
+		Output.Set(messageBoardCgo.Surface, xStart + messageBoardCgo.X, messageBoardCgo.Y, messageBoardCgo.Wdt - xStart, messageBoardCgo.Hgt);
+		messageBoardCgo.Wdt -= Output.Wdt;
+
+		TextYPosition = Output.Y + Output.Hgt / 2 - Game.GraphicsResource.FontRegular.GetLineHeight() / 2;
+	}
+	else
+	{
+		// Save facet
+		Output = cgo;
+		if (!Game.GraphicsResource.fctUpperBoard.Surface) return;
+		// in newgfx, the upperboard may be larger and overlap the scene
+		Output.Hgt = (std::max)(Output.Hgt, Config.Graphics.UpperBoard == Small ? Game.GraphicsResource.fctUpperBoard.Hgt / 2 : Game.GraphicsResource.fctUpperBoard.Hgt);
+		// surface should not be too small
+		Game.GraphicsResource.fctUpperBoard.EnsureSize(128, Output.Hgt);
+		// Generate textposition
+		TextYPosition = cgo.Hgt / 2 - Game.GraphicsResource.FontRegular.GetLineHeight() / 2;
+	}
 }

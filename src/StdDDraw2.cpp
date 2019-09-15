@@ -959,26 +959,32 @@ bool CStdDDraw::BlitSurface(CSurface *sfcSurface, CSurface *sfcTarget, int tx, i
 	}
 }
 
-bool CStdDDraw::BlitSurfaceTile(CSurface *sfcSurface, CSurface *sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX, int iOffsetY, bool fSrcColKey)
+bool CStdDDraw::BlitSurfaceTile(CSurface *sfcSurface, CSurface *sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX, int iOffsetY, bool fSrcColKey, float scale)
 {
+	iToHgt /= scale;
+	iToWdt /= scale;
+
 	int iSourceWdt, iSourceHgt, iX, iY, iBlitX, iBlitY, iBlitWdt, iBlitHgt;
 	// Get source surface size
 	if (!GetSurfaceSize(sfcSurface, iSourceWdt, iSourceHgt)) return false;
 	// reduce offset to needed size
 	iOffsetX %= iSourceWdt;
 	iOffsetY %= iSourceHgt;
+
+	CBltTransform transform;
+	transform.SetMoveScale(0.f, 0.f, scale, scale);
 	// Vertical blits
 	for (iY = iToY + iOffsetY; iY < iToY + iToHgt; iY += iSourceHgt)
 	{
 		// Vertical blit size
-		iBlitY = (std::max)(iToY - iY, 0); iBlitHgt = (std::min)(iSourceHgt, iToY + iToHgt - iY) - iBlitY;
+		iBlitY = (std::max)(static_cast<int>(std::floor((iToY - iY) / scale)), 0); iBlitHgt = (std::min)(iSourceHgt, iToY + iToHgt - iY) - iBlitY;
 		// Horizontal blits
 		for (iX = iToX + iOffsetX; iX < iToX + iToWdt; iX += iSourceWdt)
 		{
 			// Horizontal blit size
-			iBlitX = (std::max)(iToX - iX, 0); iBlitWdt = (std::min)(iSourceWdt, iToX + iToWdt - iX) - iBlitX;
+			iBlitX = (std::max)(static_cast<int>(std::floor((iToX - iX) / scale)), 0); iBlitWdt = (std::min)(iSourceWdt, iToX + iToWdt - iX) - iBlitX;
 			// Blit
-			if (!Blit(sfcSurface, float(iBlitX), float(iBlitY), float(iBlitWdt), float(iBlitHgt), sfcTarget, iX + iBlitX, iY + iBlitY, iBlitWdt, iBlitHgt, fSrcColKey)) return false;
+			if (!Blit(sfcSurface, float(iBlitX), float(iBlitY), float(iBlitWdt), float(iBlitHgt), sfcTarget, iX + iBlitX, iY + iBlitY, iBlitWdt, iBlitHgt, fSrcColKey, &transform)) return false;
 		}
 	}
 	return true;

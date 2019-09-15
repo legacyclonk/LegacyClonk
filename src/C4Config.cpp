@@ -19,6 +19,7 @@
 #include <C4Include.h>
 #include <C4Config.h>
 
+#include <C4UpperBoard.h>
 #include <C4Log.h>
 #ifdef C4ENGINE
 #include <C4Application.h>
@@ -126,7 +127,16 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(SmokeLevel,           "SmokeLevel",           200,   false, true));
 	pComp->Value(mkNamingAdapt(VerboseObjectLoading, "VerboseObjectLoading", 0,     false, true));
 	pComp->Value(mkNamingAdapt(VideoModule,          "VideoModule",          false, false, true));
-	pComp->Value(mkNamingAdapt(UpperBoard,           "UpperBoard",           true,  false, true));
+
+	StdEnumEntry<int32_t> UpperBoardDisplayModes[] =
+	{
+		{"Hide", C4UpperBoard::Hide},
+		{"Full", C4UpperBoard::Full},
+		{"Small", C4UpperBoard::Small},
+		{"Mini", C4UpperBoard::Mini}
+	};
+	pComp->Value(mkNamingAdapt(mkEnumAdaptT<int32_t>(UpperBoard, UpperBoardDisplayModes), "UpperBoard", C4UpperBoard::Full, false, true));
+
 	pComp->Value(mkNamingAdapt(ShowClock,            "ShowClock",            false, false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewNames,        "ShowCrewNames",        true,  false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewCNames,       "ShowCrewCNames",       true,  false, true));

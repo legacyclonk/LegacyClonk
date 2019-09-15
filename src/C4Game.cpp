@@ -823,13 +823,15 @@ void C4Game::InitFullscreenComponents(bool fRunning)
 	if (fRunning)
 	{
 		// running game: Message board upper board and viewports
+		C4Facet cgo2;
+		cgo2.Set(Application.DDraw->lpBack, 0, 0, Config.Graphics.ResX, C4UpperBoard::Height());
+
 		C4Facet cgo;
 		cgo.Set(Application.DDraw->lpBack, 0, Config.Graphics.ResY - Game.GraphicsResource.FontRegular.iLineHgt,
 			Config.Graphics.ResX, Game.GraphicsResource.FontRegular.iLineHgt);
+		GraphicsSystem.UpperBoard.Init(cgo2, cgo);
 		GraphicsSystem.MessageBoard.Init(cgo, false);
-		C4Facet cgo2;
-		cgo2.Set(Application.DDraw->lpBack, 0, 0, Config.Graphics.ResX, C4UpperBoardHeight);
-		GraphicsSystem.UpperBoard.Init(cgo2);
+
 		GraphicsSystem.RecalculateViewports();
 	}
 	else

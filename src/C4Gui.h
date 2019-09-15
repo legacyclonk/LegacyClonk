@@ -2201,7 +2201,7 @@ protected:
 	virtual bool IsFullscreenDialog() { return true; }
 	virtual bool DoPlacement(Screen *pOnScreen, const C4Rect &rPreferredDlgRect) { return true; } // fullscreen dlg already placed
 
-	virtual int32_t GetMarginTop() { return (HasUpperBoard() ? C4UpperBoardHeight : C4GUI_FullscreenDlg_TitleHeight) + iDlgMarginY; }
+	virtual int32_t GetMarginTop();
 	virtual int32_t GetMarginLeft()   { return iDlgMarginX; }
 	virtual int32_t GetMarginRight()  { return iDlgMarginX; }
 	virtual int32_t GetMarginBottom() { return iDlgMarginY; }

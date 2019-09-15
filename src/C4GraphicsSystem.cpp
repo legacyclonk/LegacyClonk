@@ -199,11 +199,11 @@ void C4GraphicsSystem::Execute()
 
 	if (Application.isFullScreen)
 	{
-		// Upper board
-		UpperBoard.Execute();
-
 		// Message board
 		MessageBoard.Execute();
+
+		// Upper board
+		UpperBoard.Execute();
 
 		// Help & Messages
 		DrawHelp();
@@ -393,7 +393,7 @@ void C4GraphicsSystem::RecalculateViewports()
 	// Viewport area
 	int32_t iBorderTop = 0, iBorderBottom = 0;
 	if (Config.Graphics.UpperBoard)
-		iBorderTop = C4UpperBoardHeight;
+		iBorderTop = C4UpperBoard::Height();
 	iBorderBottom = MessageBoard.Output.Hgt;
 	ViewportArea.Set(Application.DDraw->lpBack, 0, iBorderTop, Config.Graphics.ResX, Config.Graphics.ResY - iBorderTop - iBorderBottom);
 
@@ -699,8 +699,7 @@ void C4GraphicsSystem::FlashMessage(const char *szMessage)
 	FlashMessageX = -1;
 	FlashMessageY = 10;
 	// Upper board active: stay below upper board
-	if (Config.Graphics.UpperBoard)
-		FlashMessageY += C4UpperBoardHeight;
+	FlashMessageY += C4UpperBoard::Height();
 	// More than one viewport: try to stay below portraits etc.
 	if (GetViewportCount() > 1)
 		FlashMessageY += 64;

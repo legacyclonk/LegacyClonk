@@ -118,7 +118,6 @@ void C4MessageBoard::ChangeMode(int inMode)
 	// recalc output facet
 	Output.X = 0;
 	Output.Y = Config.Graphics.ResY - iHeight;
-	Output.Wdt = Config.Graphics.ResX;
 	Output.Hgt = iHeight;
 	LogBuffer.SetLBWidth(Output.Wdt);
 	// recalc viewports
@@ -258,7 +257,7 @@ void C4MessageBoard::Draw(C4Facet &cgo)
 
 	// Game running: message fader
 	// Background
-	Application.DDraw->BlitSurfaceTile(Game.GraphicsResource.fctBackground.Surface, cgo.Surface, cgo.X, cgo.Y, cgo.Wdt, cgo.Hgt, -cgo.X, -cgo.Y);
+	Application.DDraw->BlitSurfaceTile(Game.GraphicsResource.fctBackground.Surface, cgo.Surface, cgo.X, cgo.Y, Config.Graphics.ResX, cgo.Hgt, -cgo.X, -cgo.Y);
 
 	// draw messages
 	if (iMode != 2 || C4ChatInputDialog::IsShown())
