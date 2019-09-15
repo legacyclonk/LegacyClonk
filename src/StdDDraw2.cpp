@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <limits.h>
+#include <cmath>
 
 // Global access pointer
 CStdDDraw *lpDDraw = nullptr;
