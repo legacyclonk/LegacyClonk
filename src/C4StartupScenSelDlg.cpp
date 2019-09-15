@@ -1350,30 +1350,24 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 	SetFocus(pScenSelList, false);
 
 	// key bindings
-	pKeyBack = new C4KeyBinding(C4KeyCodeEx(K_LEFT), "StartupScenSelFolderUp", KEYSCOPE_Gui,
-		new C4GUI::DlgKeyCB<C4StartupScenSelDlg>(*this, &C4StartupScenSelDlg::KeyBack), C4CustomKey::PRIO_CtrlOverride);
-	pKeyRefresh = new C4KeyBinding(C4KeyCodeEx(K_F5), "StartupScenSelReload", KEYSCOPE_Gui,
-		new C4GUI::DlgKeyCB<C4StartupScenSelDlg>(*this, &C4StartupScenSelDlg::KeyRefresh), C4CustomKey::PRIO_CtrlOverride);
-	pKeyForward = new C4KeyBinding(C4KeyCodeEx(K_RIGHT), "StartupScenSelNext", KEYSCOPE_Gui,
-		new C4GUI::DlgKeyCB<C4StartupScenSelDlg>(*this, &C4StartupScenSelDlg::KeyForward), C4CustomKey::PRIO_CtrlOverride);
-	pKeyRename = new C4KeyBinding(C4KeyCodeEx(K_F2), "StartupScenSelRename", KEYSCOPE_Gui,
-		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyRename), C4CustomKey::PRIO_CtrlOverride);
-	pKeyDelete = new C4KeyBinding(C4KeyCodeEx(K_DELETE), "StartupScenSelDelete", KEYSCOPE_Gui,
-		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyDelete), C4CustomKey::PRIO_CtrlOverride);
-	pKeyCheat = new C4KeyBinding(C4KeyCodeEx(KEY_M, KEYS_Alt), "StartupScenSelCheat", KEYSCOPE_Gui,
-		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyCheat), C4CustomKey::PRIO_CtrlOverride);
+	keyBack.reset(new C4KeyBinding(C4KeyCodeEx(K_LEFT), "StartupScenSelFolderUp", KEYSCOPE_Gui,
+		new C4GUI::DlgKeyCB<C4StartupScenSelDlg>(*this, &C4StartupScenSelDlg::KeyBack), C4CustomKey::PRIO_CtrlOverride));
+	keyRefresh.reset(new C4KeyBinding(C4KeyCodeEx(K_F5), "StartupScenSelReload", KEYSCOPE_Gui,
+		new C4GUI::DlgKeyCB<C4StartupScenSelDlg>(*this, &C4StartupScenSelDlg::KeyRefresh), C4CustomKey::PRIO_CtrlOverride));
+	keyForward.reset(new C4KeyBinding(C4KeyCodeEx(K_RIGHT), "StartupScenSelNext", KEYSCOPE_Gui,
+		new C4GUI::DlgKeyCB<C4StartupScenSelDlg>(*this, &C4StartupScenSelDlg::KeyForward), C4CustomKey::PRIO_CtrlOverride));
+	keyRename.reset(new C4KeyBinding(C4KeyCodeEx(K_F2), "StartupScenSelRename", KEYSCOPE_Gui,
+		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyRename), C4CustomKey::PRIO_CtrlOverride));
+	keyDelete.reset(new C4KeyBinding(C4KeyCodeEx(K_DELETE), "StartupScenSelDelete", KEYSCOPE_Gui,
+		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyDelete), C4CustomKey::PRIO_CtrlOverride));
+	keyCheat.reset(new C4KeyBinding(C4KeyCodeEx(KEY_M, KEYS_Alt), "StartupScenSelCheat", KEYSCOPE_Gui,
+		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyCheat), C4CustomKey::PRIO_CtrlOverride));
 }
 
 C4StartupScenSelDlg::~C4StartupScenSelDlg()
 {
 	delete pScenLoader;
 	if (this == pInstance) pInstance = nullptr;
-	delete pKeyCheat;
-	delete pKeyDelete;
-	delete pKeyRename;
-	delete pKeyForward;
-	delete pKeyRefresh;
-	delete pKeyBack;
 }
 
 void C4StartupScenSelDlg::DrawElement(C4FacetEx &cgo)

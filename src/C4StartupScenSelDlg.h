@@ -23,6 +23,8 @@
 #include "C4Scenario.h"
 #include "C4Folder.h"
 
+#include <memory>
+
 class C4StartupScenSelDlg;
 
 const int32_t C4StartupScenSel_DefaultIcon_Scenario  = 14,
@@ -375,7 +377,7 @@ private:
 	C4GUI::Label *pScenSelProgressLabel; // progress label shown while scenario list is being generated
 	C4GUI::TextWindow *pSelectionInfo; // used to display the description of the current selection
 
-	C4KeyBinding *pKeyRefresh, *pKeyBack, *pKeyForward, *pKeyRename, *pKeyDelete, *pKeyCheat;
+	std::unique_ptr<C4KeyBinding> keyRefresh, keyBack, keyForward, keyRename, keyDelete, keyCheat;
 	class C4GameOptionButtons *pGameOptionButtons;
 	C4GUI::Button *pOpenBtn;
 	C4GUI::Tabular *pScenSelStyleTabular;
