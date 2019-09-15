@@ -206,8 +206,6 @@ void C4PlayerInfo::CompileFunc(StdCompiler *pComp)
 	{
 		{ "User",   C4PT_User },
 		{ "Script", C4PT_Script },
-
-		{ nullptr,     C4PT_User },
 	};
 	pComp->Value(mkNamingAdapt(mkEnumAdaptT<uint8_t>(eType, PlayerTypes), "Type", C4PT_User));
 

@@ -38,8 +38,7 @@ void C4Network2Address::CompileFunc(StdCompiler *const comp)
 	// Write protocol
 	const StdEnumEntry<C4Network2IOProtocol> Protocols[]{
 		{ "UDP",   P_UDP },
-		{ "TCP",   P_TCP },
-		{ nullptr, P_NONE },
+		{ "TCP",   P_TCP }
 	};
 	comp->Value(mkEnumAdaptT<std::uint8_t>(protocol, Protocols));
 	comp->Separator(StdCompiler::SEP_PART2); // ':'
