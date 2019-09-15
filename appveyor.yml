@@ -29,15 +29,8 @@ install:
   - cmd: copy fmodapi375win\api\inc\* deps\include
   - cmd: copy fmodapi375win\api\lib\* deps\lib
   - sh: sudo apt-get update
-  - sh: test "$PLATFORM" = "x86" && sudo DEBIAN_FRONTEND=noninteractive apt-get install debootstrap -y || true
-  - sh: test "$PLATFORM" = "x86" && mkdir chroot || true
-  - sh: test "$PLATFORM" = "x86" && sudo debootstrap --arch=i386 --components=main,universe,multiverse bionic chroot http://de.archive.ubuntu.com/ubuntu || true
-  - sh: test "$PLATFORM" = "x86" && sudo mount -o bind /dev chroot/dev || true
-  - sh: test "$PLATFORM" = "x86" && sudo mount -o bind /dev/pts chroot/dev/pts || true
-  - sh: test "$PLATFORM" = "x86" && sudo mount -t sysfs /sys chroot/sys || true
-  - sh: test "$PLATFORM" = "x86" && sudo mount -t proc /proc chroot/proc || true
-  - sh: test "$PLATFORM" = "x86" && sudo cp /proc/mounts chroot/etc/mtab || true
-  - sh: test "$PLATFORM" = "x86" && sudo cp /etc/resolv.conf chroot/etc/resolv.conf || true
+  - sh: test "$PLATFORM" = "x86" && (curl -L https://github.com/legacyclonk/ubuntu-1804-x86-chroot/releases/download/continuous-master/chroot.tar.gz | sudo tar xz) || true
+  - sh: test "$PLATFORM" = "x86" && (curl -L https://raw.githubusercontent.com/legacyclonk/ubuntu-1804-x86-chroot/master/setup_chroot.sh | sudo bash -e -) || true
 
 before_build:
   - cmd: cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=RelWithDebInfo .
