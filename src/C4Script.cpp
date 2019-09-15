@@ -5325,22 +5325,22 @@ C4ValueHash *FnGetPath(C4AulContext *ctx, long iFromX, long iFromY, long iToX, l
 		auto *target = reinterpret_cast<C4Object *>(transferTarget);
 		auto *pathinfo = reinterpret_cast<PathInfo *>(pathInfo);
 
-		if (!pathinfo->path.empty())
-		{
-			const Waypoint &last = pathinfo->path.back();
-			pathinfo->length += Distance(last.x, last.y, x, y);
-		}
+		const Waypoint &last = pathinfo->path.back();
+		pathinfo->length += Distance(last.x, last.y, x, y);
 
-		pathinfo->path.push_back(Waypoint{x, y, target});
+		pathinfo->path.push_back({x, y, target});
 		return true;
 	};
 
 	PathInfo pathinfo;
+	pathinfo.path.push_back({static_cast<int32_t>(iFromX), static_cast<int32_t>(iFromY), nullptr});
 
 	if (!Game.PathFinder.Find(iFromX, iFromY, iToX, iToY, SetWaypoint, reinterpret_cast<intptr_t>(&pathinfo)))
 	{
 		return nullptr;
 	}
+
+	SetWaypoint(static_cast<int32_t>(iToX), static_cast<int32_t>(iToY), reinterpret_cast<intptr_t>(nullptr), reinterpret_cast<intptr_t>(&pathinfo));
 
 	auto *hash = new C4ValueHash;
 	(*hash)[C4VString("Length")] = C4VInt(pathinfo.length);
