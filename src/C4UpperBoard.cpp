@@ -54,7 +54,17 @@ void C4UpperBoard::Draw(C4Facet &cgo)
 		Application.DDraw->BlitSurfaceTile(Game.GraphicsResource.fctUpperBoard.Surface, Output.Surface, 0, 0, Output.Wdt, Output.Hgt, 0, 0, false, mode == Small ? 0.5f : 1.f);
 		// Logo
 		C4Facet cgo2;
-		float fLogoZoom = 0.21f;
+		float fLogoZoom;
+		if (static_cast<float>(Game.GraphicsResource.fctLogo.Wdt) / Game.GraphicsResource.fctLogo.Hgt != 3.f)
+		{
+			// old logo factor
+			fLogoZoom = 0.25f;
+		}
+		else
+		{
+			fLogoZoom = 0.21f;
+		}
+		fLogoZoom *= 960.f / Game.GraphicsResource.fctLogo.Wdt;
 		if (mode == Small) fLogoZoom *= 8.f / 15.f;
 		cgo2.Set(cgo.Surface, (int32_t)(cgo.Wdt / 2 - (Game.GraphicsResource.fctLogo.Wdt / 2) * fLogoZoom), 0,
 			(int32_t)(Game.GraphicsResource.fctLogo.Wdt * fLogoZoom), (int32_t)(Game.GraphicsResource.fctLogo.Hgt * fLogoZoom));
