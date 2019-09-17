@@ -428,6 +428,20 @@ void C4Network2ClientListBox::Update()
 
 // C4Network2ClientListDlg
 
+namespace
+{
+	C4KeyBinding* registerStrongerEscape(C4GUI::Dialog* dialog)
+	{
+		C4CustomKey::CodeList keys;
+		keys.push_back(C4KeyCodeEx(K_ESCAPE));
+		if (Config.Controls.GamepadGuiControl)
+		{
+			keys.push_back(C4KeyCodeEx(KEY_Gamepad(0, KEY_JOY_AnyHighButton)));
+		}
+		return new C4KeyBinding(keys, "GUIDialogAbort", KEYSCOPE_Fullscreen, new C4GUI::DlgKeyCB<C4GUI::Dialog>(*dialog, &C4GUI::Dialog::KeyEscape), C4CustomKey::PRIO_Dlg);
+	}
+}
+
 // singleton
 C4Network2ClientListDlg *C4Network2ClientListDlg::pInstance = nullptr;
 
@@ -450,6 +464,8 @@ C4Network2ClientListDlg::C4Network2ClientListDlg()
 	AddElement(pListBox = new C4Network2ClientListBox(caAll.GetAll(), false));
 	// create status label
 	AddElement(pStatusLabel = new C4GUI::Label("", rcStatus));
+
+	keyEscape.reset(registerStrongerEscape(this));
 	// add timer
 	pSec1Timer = new C4Sec1TimerCallback<C4Network2ClientListDlg>(this);
 	// initial update
@@ -894,6 +910,8 @@ C4ChartDialog::C4ChartDialog() : Dialog(DialogWidth, DialogHeight, LoadResStr("I
 		AddChart(StdStrBuf("Pings"));
 	AddChart(StdStrBuf("Control"));
 	AddChart(StdStrBuf("APM"));
+
+	keyEscape.reset(registerStrongerEscape(this));
 }
 
 void C4ChartDialog::AddChart(const StdStrBuf &rszName)

@@ -24,6 +24,8 @@
 #include "C4Scenario.h"
 #include "C4Network2Res.h"
 
+#include <memory>
+
 // dialog showing info about a connected client
 class C4Network2ClientDlg : public C4GUI::InfoDialog
 {
@@ -167,6 +169,7 @@ public:
 class C4Network2ClientListDlg : public C4GUI::Dialog
 {
 private:
+	std::unique_ptr<C4KeyBinding> keyEscape;
 	C4Sec1TimerCallback<C4Network2ClientListDlg> *pSec1Timer; // engine timer hook for updates
 	class C4GameOptionsList *pGameOptions;
 	C4GUI::Label *pStatusLabel;
@@ -253,6 +256,7 @@ class C4ChartDialog : public C4GUI::Dialog
 {
 private:
 	C4GUI::Tabular *pChartTabular;
+	std::unique_ptr<C4KeyBinding> keyEscape;
 
 	// singleton-stuff
 	static C4ChartDialog *pChartDlg;
