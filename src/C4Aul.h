@@ -114,6 +114,7 @@ struct C4AulParSet
 // some special script functions defined hard-coded to reduce the exec context
 enum C4AulBCCType
 {
+	AB_DEREF,        // deref the current value
 	AB_MAPA_R,       // map access via .
 	AB_MAPA_V,       // not creating a reference
 	AB_ARRAYA_R,     // array access
@@ -198,6 +199,7 @@ enum C4AulBCCType
 	AB_JUMP,             // jump
 	AB_JUMPAND,          // jump if zero, else pop the stack
 	AB_JUMPOR,           // jump if not zero, else pop the stack
+	AB_JUMPNIL,          // jump if nil, otherwise just continue
 	AB_CONDN,            // conditional jump (negated, pops stack)
 	AB_FOREACH_NEXT,     // foreach: next element in array
 	AB_FOREACH_MAP_NEXT, // foreach: next key-value pair in map

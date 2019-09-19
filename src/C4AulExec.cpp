@@ -944,6 +944,9 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 			}
 
+			case AB_DEREF:
+				pCurVal[0].Deref();
+
 			case AB_STACK:
 				if (pCPos->bccX < 0)
 					PopValues(-pCPos->bccX);
@@ -977,6 +980,15 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				else
 				{
 					PopValue();
+				}
+				break;
+
+			case AB_JUMPNIL:
+				if (pCurVal[0].GetType() == C4V_Any)
+				{
+					pCurVal[0].Deref();
+					fJump = true;
+					pCPos += pCPos->bccX;
 				}
 				break;
 

@@ -111,6 +111,7 @@ enum C4AulTokenType
 	ATT_TILDE,    // '~'
 	ATT_LDOTS,    // '...'
 	ATT_DOT,      // '.'
+	ATT_QMARK,    // '?'
 	ATT_OPERATOR, // operator
 	ATT_EOF       // end of file
 };
@@ -152,8 +153,9 @@ public:
 	void Parse_If();
 	void Parse_For();
 	void Parse_ForEach();
-	void Parse_Expression(int iParentPrio = -1);
-	void Parse_Expression2(int iParentPrio = -1);
+	void Parse_Expression(int iParentPrio = -1); // includes Parse_Expression2
+	void Parse_Expression2(int iParentPrio = -1); // parses operators + Parse_Expression3
+	bool Parse_Expression3(); // navigation: ->, [], . and ?
 	void Parse_Var();
 	void Parse_Local();
 	void Parse_Static();
@@ -593,6 +595,12 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					return ATT_DOT; // "."
 				}
 
+				if (C == '?')
+				{
+					++SPos;
+					return ATT_QMARK; // "?"
+				}
+
 				// identifier by all non-special chars
 				if (C >= '@')
 				{
@@ -794,6 +802,7 @@ static const char *GetTTName(C4AulBCCType e)
 {
 	switch (e)
 	{
+	case AB_DEREF:     return "AB_DEREF";     // deref current value
 	case AB_MAPA_R:    return "AB_MAPA_R";    // map access via .
 	case AB_MAPA_V:    return "AB_MAPA_V";    // not creating a reference
 	case AB_ARRAYA_R:  return "AB_ARRAYA_R";  // array access
@@ -877,6 +886,7 @@ static const char *GetTTName(C4AulBCCType e)
 	case AB_JUMP:             return "AB_JUMP";             // jump
 	case AB_JUMPAND:          return "AB_JUMPAND";
 	case AB_JUMPOR:           return "AB_JUMPOR";
+	case AB_JUMPNIL:          return "AB_JUMPNIL";
 	case AB_CONDN:            return "AB_CONDN";            // conditional jump (negated, pops stack)
 	case AB_FOREACH_NEXT:     return "AB_FOREACH_NEXT";     // foreach: next element
 	case AB_FOREACH_MAP_NEXT: return "AB_FOREACH_MAP_NEXT"; // foreach: next element
@@ -1032,6 +1042,8 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 		iStack -= C4AUL_MAX_Par;
 		break;
 
+	case AB_DEREF:
+	case AB_JUMPNIL:
 	case AB_MAPA_R:
 	case AB_MAPA_V:
 	case AB_ARRAY_APPEND:
@@ -1325,6 +1337,7 @@ const char *C4AulParseState::GetTokenName(C4AulTokenType TokenType)
 	case ATT_TILDE:    return "'~'";
 	case ATT_LDOTS:    return "'...'";
 	case ATT_DOT:      return "'.'";
+	case ATT_QMARK:    return "'?'";
 	case ATT_OPERATOR: return "operator";
 	case ATT_EOF:      return "end of file";
 	default:           return "unrecognized token";
@@ -2978,145 +2991,180 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 		}
 		break;
 	}
-	case ATT_BOPEN2:
+	default:
 	{
-		// Arrays are not tested in non-strict mode at all
-		if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
-			throw new C4AulParseError(this, "unexpected '['");
-		// Access the array
-		const char *SPos0 = SPos;
-		Shift();
-		if (TokenType == ATT_BCLOSE2)
-		{
-			Shift();
-			AddBCC(AB_ARRAY_APPEND);
-			break;
-		}
-
-		// optimize map["foo"] to map.foo (because map.foo execution is less complicated)
-		if (TokenType == ATT_STRING && GetNextToken(Idtf, &cInt, Discard, true) == ATT_BCLOSE2)
-		{
-			AddBCC(AB_MAPA_R, cInt);
-			Shift();
-			break;
-		}
-
-		SPos = SPos0;
-		Shift();
-
-		Parse_Expression();
-		SetNoRef();
-		Match(ATT_BCLOSE2);
-		AddBCC(AB_ARRAYA_R);
-		break;
+		if (!Parse_Expression3()) return;
 	}
-	case ATT_DOT:
-	{
-		if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
-			throw new C4AulParseError(this, "unexpected '.'");
-		Shift();
-		if (TokenType == ATT_IDTF)
-		{
-			C4String *string;
-			if (!(string = a->Engine->Strings.FindString(Idtf)))
-				string = a->Engine->Strings.RegString(Idtf);
-			if (Type == PARSER) string->Hold = true;
-			AddBCC(AB_MAPA_R, reinterpret_cast<intptr_t>(string));
-			Shift();
-			break;
-		}
-		else
-		{
-			UnexpectedToken("identifier");
-		}
-		break;
 	}
-	case ATT_CALL:
+}
+
+bool C4AulParseState::Parse_Expression3()
+{
+	switch (TokenType)
 	{
-		// Here, a '~' is not an operator, but a token
-		Shift(Discard, false);
-		// C4ID -> namespace given
-		C4AulFunc *pFunc = nullptr;
-		C4AulBCCType eCallType = AB_CALL;
-		C4ID idNS = 0;
-		if (TokenType == ATT_C4ID)
+		case ATT_BOPEN2:
 		{
-			// from now on, stupid func names must stay outside ;P
-			idNS = (C4ID)cInt;
+			// Arrays are not tested in non-strict mode at all
+			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
+				throw new C4AulParseError(this, "unexpected '['");
+			// Access the array
+			const char *SPos0 = SPos;
 			Shift();
-			// expect namespace-operator now
-			Match(ATT_DCOLON);
-			// next, we need a function name
-			if (TokenType != ATT_IDTF) UnexpectedToken("function name");
-			if (Type == PARSER)
+			if (TokenType == ATT_BCLOSE2)
 			{
-				// get def from id
-				C4Def *pDef = C4Id2Def(idNS);
-				if (!pDef)
-				{
-					throw new C4AulParseError(this, "direct object call: def not found: ", C4IdText(idNS));
-				}
-				// search func
-				if (!(pFunc = pDef->Script.GetSFunc(Idtf)))
-				{
-					throw new C4AulParseError(this, FormatString("direct object call: function %s::%s not found", C4IdText(idNS), Idtf).getData());
-				}
-
-				if (pFunc->SFunc() && pFunc->SFunc()->Access < pDef->Script.GetAllowedAccess(pFunc, Fn->pOrgScript))
-				{
-					throw new C4AulParseError(this, "insufficient access level", Idtf);
-				}
-
-				// write namespace chunk to byte code
-				AddBCC(AB_CALLNS, (int)idNS);
-			}
-		}
-		else
-		{
-			// may it be a failsafe call?
-			if (TokenType == ATT_TILDE)
-			{
-				// store this and get the next token
-				eCallType = AB_CALLFS;
 				Shift();
-			}
-			// expect identifier of called function now
-			if (TokenType != ATT_IDTF) throw new C4AulParseError(this, "expecting func name after '->'");
-			// search a function with the given name
-			if (!(pFunc = a->Engine->GetFirstFunc(Idtf)))
-			{
-				// not failsafe?
-				if (eCallType != AB_CALLFS && Type == PARSER)
-				{
-					throw new C4AulParseError(this, FormatString("direct object call: function %s not found", Idtf).getData());
-				}
-				// otherwise: nothing to call - just execute parameters and discard them
-				Shift();
-				Parse_Params(0, nullptr);
-				// remove target from stack, push a zero value as result
-				AddBCC(AB_STACK, -1); AddBCC(AB_STACK, +1);
-				// done
+				AddBCC(AB_ARRAY_APPEND);
 				break;
 			}
 
-			else if (pFunc->SFunc() && pFunc->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(pFunc, Fn->pOrgScript))
+			// optimize map["foo"] to map.foo (because map.foo execution is less complicated)
+			if (TokenType == ATT_STRING && GetNextToken(Idtf, &cInt, Discard, true) == ATT_BCLOSE2)
 			{
-				throw new C4AulParseError(this, "insufficient access level", Idtf);
+				AddBCC(AB_MAPA_R, cInt);
+				Shift();
+				break;
 			}
+
+			SPos = SPos0;
+			Shift();
+
+			Parse_Expression();
+			SetNoRef();
+			Match(ATT_BCLOSE2);
+			AddBCC(AB_ARRAYA_R);
+			break;
 		}
-		// add call chunk
-		Shift();
-		Parse_Params(C4AUL_MAX_Par, pFunc ? pFunc->Name : 0, pFunc);
-		if (idNS != 0)
-			AddBCC(AB_CALLNS, (long)idNS);
-		AddBCC(eCallType, (long)pFunc);
-		break;
+		case ATT_QMARK:
+		{
+			if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
+				throw new C4AulParseError(this, "unexpected '?'");
+
+			SetNoRef();
+
+			int here = a->GetCodePos();
+			AddBCC(AB_JUMPNIL);
+
+			Shift();
+			if (TokenType == ATT_QMARK)
+				UnexpectedToken("navigation operator (->, [], .)");
+
+			if (!Parse_Expression3())
+				UnexpectedToken("navigation operator (->, [], .)");
+			SetNoRef();
+
+			while (Parse_Expression3()) SetNoRef();
+
+			// safe navigation mustn't return a reference because it doesn't make any sense if it is expected to return non-ref nil occasionally
+			AddBCC(AB_DEREF);
+			SetJumpHere(here);
+			break;
+		}
+		case ATT_DOT:
+		{
+			if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
+				throw new C4AulParseError(this, "unexpected '.'");
+			Shift();
+			if (TokenType == ATT_IDTF)
+			{
+				C4String *string;
+				if (!(string = a->Engine->Strings.FindString(Idtf)))
+					string = a->Engine->Strings.RegString(Idtf);
+				if (Type == PARSER) string->Hold = true;
+				AddBCC(AB_MAPA_R, reinterpret_cast<intptr_t>(string));
+				Shift();
+				break;
+			}
+			else
+			{
+				UnexpectedToken("identifier");
+			}
+			break;
+		}
+		case ATT_CALL:
+		{
+			// Here, a '~' is not an operator, but a token
+			Shift(Discard, false);
+			// C4ID -> namespace given
+			C4AulFunc *pFunc = nullptr;
+			C4AulBCCType eCallType = AB_CALL;
+			C4ID idNS = 0;
+			if (TokenType == ATT_C4ID)
+			{
+				// from now on, stupid func names must stay outside ;P
+				idNS = (C4ID)cInt;
+				Shift();
+				// expect namespace-operator now
+				Match(ATT_DCOLON);
+				// next, we need a function name
+				if (TokenType != ATT_IDTF) UnexpectedToken("function name");
+				if (Type == PARSER)
+				{
+					// get def from id
+					C4Def *pDef = C4Id2Def(idNS);
+					if (!pDef)
+					{
+						throw new C4AulParseError(this, "direct object call: def not found: ", C4IdText(idNS));
+					}
+					// search func
+					if (!(pFunc = pDef->Script.GetSFunc(Idtf)))
+					{
+						throw new C4AulParseError(this, FormatString("direct object call: function %s::%s not found", C4IdText(idNS), Idtf).getData());
+					}
+
+					if (pFunc->SFunc() && pFunc->SFunc()->Access < pDef->Script.GetAllowedAccess(pFunc, Fn->pOrgScript))
+					{
+						throw new C4AulParseError(this, "insufficient access level", Idtf);
+					}
+
+					// write namespace chunk to byte code
+					AddBCC(AB_CALLNS, (int)idNS);
+				}
+			}
+			else
+			{
+				// may it be a failsafe call?
+				if (TokenType == ATT_TILDE)
+				{
+					// store this and get the next token
+					eCallType = AB_CALLFS;
+					Shift();
+				}
+				// expect identifier of called function now
+				if (TokenType != ATT_IDTF) throw new C4AulParseError(this, "expecting func name after '->'");
+				// search a function with the given name
+				if (!(pFunc = a->Engine->GetFirstFunc(Idtf)))
+				{
+					// not failsafe?
+					if (eCallType != AB_CALLFS && Type == PARSER)
+					{
+						throw new C4AulParseError(this, FormatString("direct object call: function %s not found", Idtf).getData());
+					}
+					// otherwise: nothing to call - just execute parameters and discard them
+					Shift();
+					Parse_Params(0, nullptr);
+					// remove target from stack, push a zero value as result
+					AddBCC(AB_STACK, -1); AddBCC(AB_STACK, +1);
+					// done
+					break;
+				}
+
+				else if (pFunc->SFunc() && pFunc->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(pFunc, Fn->pOrgScript))
+				{
+					throw new C4AulParseError(this, "insufficient access level", Idtf);
+				}
+			}
+			// add call chunk
+			Shift();
+			Parse_Params(C4AUL_MAX_Par, pFunc ? pFunc->Name : 0, pFunc);
+			if (idNS != 0)
+				AddBCC(AB_CALLNS, (long)idNS);
+			AddBCC(eCallType, (long)pFunc);
+			break;
+		}
+		default:
+			return false;
 	}
-	default:
-	{
-		return;
-	}
-	}
+	return true;
 }
 
 void C4AulParseState::Parse_Var()
