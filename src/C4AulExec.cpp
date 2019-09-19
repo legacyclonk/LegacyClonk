@@ -912,30 +912,21 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					throw new C4AulExecError(pCurCtx->Obj, FormatString("indexed access: can't access %s by index!", Container.GetTypeName()).getData());
 			}
 
-			case AB_MAPA_R: case AB_MAPA_V: case AB_MAPA_S:
+			case AB_MAPA_R: case AB_MAPA_V:
 			{
-				const auto safe = pCPos->bccType == AB_MAPA_S;
 				C4Value &Map = pCurVal->GetRefVal();
 				if (Map.GetType() == C4V_Any)
 				{
-					if (safe)
-					{
-						pCurVal->Set0();
-						break;
-					}
-
 					throw new C4AulExecError(pCurCtx->Obj, "map access with .: map expected, but got nil!");
 				}
 
 				if (!Map.ConvertTo(C4V_Map) && !Map.ConvertTo(C4V_C4Object))
 				{
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("map access with %s: map expected, but got \"%s\"!", safe ? "?." : ".", GetC4VName(Map.GetType())).getData());
+					throw new C4AulExecError(pCurCtx->Obj, FormatString("map access with .: map expected, but got \"%s\"!", GetC4VName(Map.GetType())).getData());
 				}
 
 				C4Value key(reinterpret_cast<C4String *>(pCPos->bccX));
-				Map.GetContainerElement(&key, *pCurVal, pCurCtx, pCPos->bccType != AB_MAPA_R);
-
-				if (safe) pCurVal->Deref();
+				Map.GetContainerElement(&key, *pCurVal, pCurCtx, pCPos->bccType == AB_MAPA_V);
 
 				break;
 			}
