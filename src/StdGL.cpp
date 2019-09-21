@@ -104,6 +104,7 @@ bool CStdGL::UpdateClipper()
 	// no render target or clip all? do nothing
 	if (!CalculateClipper(&iX, &iY, &iWdt, &iHgt)) return true;
 	const auto scale = pApp->GetScale();
+	glLineWidth(scale);
 	// set it
 	glViewport(static_cast<int32_t>(floorf(iX * scale)), static_cast<int32_t>(floorf((RenderTarget->Hgt - iY - iHgt) * scale)), static_cast<int32_t>(ceilf(iWdt * scale)), static_cast<int32_t>(ceilf(iHgt * scale)));
 	glMatrixMode(GL_PROJECTION);
