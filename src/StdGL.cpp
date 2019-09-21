@@ -105,6 +105,7 @@ bool CStdGL::UpdateClipper()
 	if (!CalculateClipper(&iX, &iY, &iWdt, &iHgt)) return true;
 	const auto scale = pApp->GetScale();
 	glLineWidth(scale);
+	glPointSize(scale);
 	// set it
 	glViewport(static_cast<int32_t>(floorf(iX * scale)), static_cast<int32_t>(floorf((RenderTarget->Hgt - iY - iHgt) * scale)), static_cast<int32_t>(ceilf(iWdt * scale)), static_cast<int32_t>(ceilf(iHgt * scale)));
 	glMatrixMode(GL_PROJECTION);
