@@ -640,6 +640,12 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	if (!sfcTarget->IsRenderTarget())
 		return Blit8(sfcSource, int(fx), int(fy), int(fwdt), int(fhgt), sfcTarget, tx, ty, twdt, thgt, fSrcColKey, pTransform);
 	// calc stretch
+
+	const auto scalingCorrection = (pApp->GetScale() != 1.f ? 0.5f : 0.f);
+
+	fwdt -= scalingCorrection;
+	fhgt -= scalingCorrection;
+
 	float scaleX = (float)twdt / fwdt;
 	float scaleY = (float)thgt / fhgt;
 	// bound
