@@ -126,10 +126,9 @@ global func Schedule(string strScript, int iInterval, int iRepeat, object pObj)
 global func FxIntScheduleTimer(object pObj, int iEffect)
 {
 	// Nur eine bestimmte Anzahl Ausführungen
-	var fDone = (EffectVar(1, pObj, iEffect) <= 0) && FX_Execute_Kill;
+	if (--EffectVar(1, pObj, iEffect) < 0) return FX_Execute_Kill;
 	// Ausführen
 	eval(EffectVar(0, pObj, iEffect));
-	return fDone;
 }
 
 // Eine Funktion zeitverzögert und ggf. wiederholt aufrufen
@@ -154,11 +153,9 @@ global func ScheduleCall(object pObj, string strFunction, int iInterval, int iRe
 global func FxIntScheduleCallTimer(object pObj, int iEffect)
 {
 	// Nur eine bestimmte Anzahl Ausführungen
-	var fDone = (--EffectVar(1, pObj, iEffect) <= 0) && FX_Execute_Kill;
+	if (--EffectVar(1, pObj, iEffect) < 0) return FX_Execute_Kill;
 	// Ausführen
 	Call(EffectVar(0, pObj, iEffect), EffectVar(3, pObj, iEffect), EffectVar(4, pObj, iEffect), EffectVar(5, pObj, iEffect), EffectVar(6, pObj, iEffect), EffectVar(7, pObj, iEffect));
-	// Nur eine bestimmte Anzahl Ausführungen
-	return fDone;
 }
 
 global func ClearScheduleCall(object pObj, string strFunction)
