@@ -1296,7 +1296,12 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 		pDef = pCurCtx->Def;
 	}
 
+	// Script function?
+	C4AulScriptFunc *pSFunc = pFunc->SFunc();
+
 	const bool convertToAnyEagerly = pCurCtx->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3;
+
+	const bool convertNilToIntBool = convertToAnyEagerly && pSFunc && pSFunc->pOrgScript->Strict >= C4AulScriptStrict::STRICT3;
 
 	// Convert parameters (typecheck)
 	C4V_Type *pTypes = pFunc->GetParType();
@@ -1311,10 +1316,20 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 				FormatString("call to \"%s\" parameter %d: got \"%s\", but expected \"%s\"!",
 					pFunc->Name, i + 1, pPars[i].GetTypeName(), GetC4VName(pTypes[i])
 				).getData());
+
+		if (convertNilToIntBool && pPars[i].GetType() == C4V_Any)
+		{
+			if (pTypes[i] == C4V_Int)
+			{
+				pPars[i].SetInt(0);
+			}
+			else if (pTypes[i] == C4V_Bool)
+			{
+				pPars[i].SetBool(false);
+			}
+		}
 	}
 
-	// Script function?
-	C4AulScriptFunc *pSFunc = pFunc->SFunc();
 	if (pSFunc)
 	{
 		// Push variables
