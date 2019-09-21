@@ -643,8 +643,11 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 
 	const auto scalingCorrection = (pApp->GetScale() != 1.f ? 0.5f : 0.f);
 
-	fwdt -= scalingCorrection;
-	fhgt -= scalingCorrection;
+	fx += scalingCorrection;
+	fy += scalingCorrection;
+
+	fwdt -= 2 * scalingCorrection;
+	fhgt -= 2 * scalingCorrection;
 
 	float scaleX = (float)twdt / fwdt;
 	float scaleY = (float)thgt / fhgt;
