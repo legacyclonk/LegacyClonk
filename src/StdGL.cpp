@@ -334,6 +334,8 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		glActiveTexture(GL_TEXTURE2);
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, (*sfcLiquidAnimation->ppTex)->texName);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glActiveTexture(GL_TEXTURE0);
 	}
 	uint32_t dwModMask = 0;
@@ -519,6 +521,9 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 							glMultiTexCoord2f(GL_TEXTURE1_ARB,
 								(tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
 								(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
+							glMultiTexCoord2f(GL_TEXTURE2_ARB,
+								(tcx[i] + DDrawCfg.fTexIndent) / sfcLiquidAnimation->iTexSize,
+								(tcy[i] + DDrawCfg.fTexIndent) / sfcLiquidAnimation->iTexSize);
 						}
 						glVertex2f(ftx[i] + DDrawCfg.fBlitOff, fty[i] + DDrawCfg.fBlitOff);
 					}
@@ -792,7 +797,7 @@ bool CStdGL::RestoreDeviceObjects()
 				// sample the texture
 				"TXP tmp, fragment.texcoord, texture[0], 2D;\n"
 				"TXP mask, fragment.texcoord, texture[1], 2D;\n"
-				"TXP liquid, fragment.texcoord, texture[2], 2D;\n"
+				"TXP liquid, fragment.texcoord[2], texture[2], 2D;\n"
 				// animation
 				"SUB liquid.rgb, liquid, {0.5, 0.5, 0.5, 0};\n"
 				"DP3 liquid.rgb, liquid, program.local[1];\n"
@@ -912,7 +917,7 @@ bool CStdGL::RestoreDeviceObjects()
 		// Load the contents of the textures into two registers
 		glSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0, GL_SWIZZLE_STR_ATI);
 		glSampleMapATI(GL_REG_1_ATI, GL_TEXTURE1, GL_SWIZZLE_STR_ATI);
-		glSampleMapATI(GL_REG_2_ATI, GL_TEXTURE0, GL_SWIZZLE_STR_ATI);
+		glSampleMapATI(GL_REG_2_ATI, GL_TEXTURE2, GL_SWIZZLE_STR_ATI);
 		// to test: load both textures at the same coord glSampleMapATI (GL_REG_1_ATI, GL_TEXTURE0, GL_SWIZZLE_STR_ATI);
 		// X(d) = X(a1) * X(a2)
 		glColorFragmentOp2ATI(GL_MUL_ATI,
