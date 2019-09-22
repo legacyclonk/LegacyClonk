@@ -201,6 +201,7 @@ private:
 	Folder *pRootFolder, *pCurrFolder; // scenario list in working directory
 	int32_t iLoading, iProgress, iMaxProgress;
 	bool fAbortThis, fAbortPrevious; // activity state
+	unsigned long lastCheckTimer{0};
 
 public:
 	C4ScenarioListLoader();

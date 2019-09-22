@@ -1108,8 +1108,16 @@ bool C4ScenarioListLoader::DoProcessCallback(int32_t iProgress, int32_t iMaxProg
 	this->iMaxProgress = iMaxProgress;
 	// callback to dialog
 	if (C4StartupScenSelDlg::pInstance) C4StartupScenSelDlg::pInstance->ProcessCallback();
+	auto checkTimer = false;
+	const auto now = timeGetTime();
+	// limit to real 10 FPS, as it may unnecessarily slow down loading a lot otherwise
+	if (lastCheckTimer == 0 || now - lastCheckTimer > 100)
+	{
+		checkTimer = true;
+		lastCheckTimer = now;
+	}
 	// process callback - abort at a few ugly circumstances...
-	if (Application.HandleMessage(0) == HR_Failure // WM_QUIT message?
+	if (Application.HandleMessage(0, checkTimer) == HR_Failure // WM_QUIT message?
 		|| !C4StartupScenSelDlg::pInstance // host dialog removed?
 		|| !C4StartupScenSelDlg::pInstance->IsShown() // host dialog closed?
 		) return false;
