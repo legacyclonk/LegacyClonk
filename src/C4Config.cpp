@@ -217,6 +217,9 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(s(PuncherAddress), "PuncherAddress", defaultPuncherServer, false, true));
 
 	if (pComp->isCompiler() && SEqual(PuncherAddress, "clonk.de:11115")) strncpy(PuncherAddress, defaultPuncherServer, CFG_MaxString);
+
+	pComp->Value(mkNamingAdapt(LeagueAccount,     "LeagueNick",      "",               false, false));
+	pComp->Value(mkNamingAdapt(LeagueAutoLogin,   "LeagueAutoLogin", true,             false, false));
 }
 
 void C4ConfigLobby::CompileFunc(StdCompiler *pComp)

@@ -2441,12 +2441,14 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 		}
 		else
 		{
-			// no default password
-			Password.Clear();
-
-			// ask for account
-			if (!C4LeagueSignupDialog::ShowModal(pInfo->GetName(), "", pLeagueClient->getServerName(), &Account, &Password, !fOfficialLeague, false))
-				return false;
+			if(!Config.Network.LeaguePassword.getLength() || !Config.Network.LeagueAutoLogin)
+			{
+				// ask for account
+				if(!C4LeagueSignupDialog::ShowModal(pInfo->GetName(), "", pLeagueClient->getServerName(), &Config.Network.LeagueAccount, &Config.Network.LeaguePassword, !fOfficialLeague, false))
+					return false;
+			}
+			Account.Copy(Config.Network.LeagueAccount);
+			Password.Copy(Config.Network.LeaguePassword);
 		}
 
 		// safety (modal dlg may have deleted network)
@@ -2499,6 +2501,9 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 			// Set AUID
 			pInfo->SetAuthID(AUID.getData());
 
+			if(Config.Network.LeagueAutoLogin)
+				return true;
+
 			// Show welcome message, if any
 			bool fSuccess;
 			if (Message.getLength())
@@ -2519,8 +2524,11 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 				// Done
 				return true;
 			else
+			{
 				// Sign-up was cancelled by user
 				Game.pGUI->ShowMessageModal(FormatString(LoadResStr("IDS_MSG_LEAGUESIGNUPCANCELLED"), pInfo->GetName()).getData(), LoadResStr("IDS_DLG_LEAGUESIGNUP"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify);
+				Config.Network.LeaguePassword.Clear();
+			}
 		}
 		else
 		{
@@ -2529,6 +2537,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 			{
 				LogF(LoadResStr("IDS_MSG_LEAGUESIGNUPERROR"), Message.getData());
 				Game.pGUI->ShowMessageModal(FormatString(LoadResStr("IDS_MSG_LEAGUESERVERMSG"), Message.getData()).getData(), LoadResStr("IDS_DLG_LEAGUESIGNUPFAILED"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+				Config.Network.LeaguePassword.Clear();
 				// after a league server error message, always fall-through to try again
 			}
 		}

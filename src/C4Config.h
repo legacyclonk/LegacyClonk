@@ -172,6 +172,11 @@ public:
 	char AlternateServerAddress[CFG_MaxString + 1];
 	char UpdateServerAddress[CFG_MaxString + 1];
 	char PuncherAddress[CFG_MaxString + 1];
+
+	StdStrBuf LeagueAccount;
+	StdStrBuf LeaguePassword;
+	bool LeagueAutoLogin;
+
 	bool AutomaticUpdate;
 	int32_t LastUpdateTime;
 	int32_t AsyncMaxWait;

@@ -576,6 +576,12 @@ void C4PlayerInfoListBox::PlayerListItem::OnCtxRemove(C4GUI::Element *pListItem)
 	LocalInfoRequest.RemoveInfo(idPlayer);
 	// and request this update (host processes it directly)
 	Game.Network.Players.RequestPlayerInfoUpdate(LocalInfoRequest);
+
+	if (Game.Parameters.isLeague())
+	{
+		// rerequire the password in order to make it possible to change the account
+		Config.Network.LeaguePassword.Clear();
+	}
 }
 
 void C4PlayerInfoListBox::PlayerListItem::OnCtxNewColor(C4GUI::Element *pListItem)
