@@ -184,6 +184,7 @@ enum C4AulBCCType
 	AB_XOrIt,            // ^=
 	AB_Set,              // =
 
+	AB_CALLGLOBAL,       // global context call
 	AB_CALL,             // direct object call
 	AB_CALLFS,           // failsafe direct call
 	AB_CALLNS,           // direct object call: namespace operator

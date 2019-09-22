@@ -106,6 +106,7 @@ enum C4AulTokenType
 	ATT_BLCLOSE,  // "}"
 	ATT_SEP,      // "|"
 	ATT_CALL,     // "->"
+	ATT_GLOBALCALL, // "global->"
 	ATT_STAR,     // "*"
 	ATT_AMP,      // "&"
 	ATT_TILDE,    // '~'
@@ -678,6 +679,11 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					if (SEqual(pToken, C4AUL_False)) { *pInt = false; return ATT_BOOL; }
 					if (SEqual(pToken, C4AUL_True)) { *pInt = true; return ATT_BOOL; }
 					if (SEqual(pToken, C4AUL_Nil) && a->Strict >= C4AulScriptStrict::STRICT3) { return ATT_NIL; }
+					if (SEqual(pToken, C4AUL_Global) && a->Strict >= C4AulScriptStrict::STRICT3 && C == '-' && *(SPos + 1) == '>') // "global->"
+					{
+						SPos += 2;
+						return ATT_GLOBALCALL;
+					}
 					// everything else is an identifier
 					return ATT_IDTF;
 				}
@@ -873,6 +879,7 @@ static const char *GetTTName(C4AulBCCType e)
 	case AB_Set:              return "AB_Set";              // =
 
 	case AB_CALL:             return "AB_CALL";             // direct object call
+	case AB_CALLGLOBAL:       return "AB_CALLGLOBAL";       // global context call
 	case AB_CALLFS:           return "AB_CALLFS";           // failsafe direct call
 	case AB_CALLNS:           return "AB_CALLNS";           // direct object call: namespace operator
 	case AB_STACK:            return "AB_STACK";            // push nulls / pop
@@ -1039,6 +1046,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 
 	case AB_CALL:
 	case AB_CALLFS:
+	case AB_CALLGLOBAL:
 		iStack -= C4AUL_MAX_Par;
 		break;
 
@@ -1187,9 +1195,9 @@ namespace
 					--CPos;
 					break;
 
-				case AB_CALL: case AB_CALLFS:
+				case AB_CALL: case AB_CALLFS: case AB_CALLGLOBAL:
 					--CPos;
-					SkipExpressions(C4AUL_MAX_Par + 1, CPos, Code);
+					SkipExpressions(C4AUL_MAX_Par + (CPos->bccType != AB_CALLGLOBAL ? 1 : 0), CPos, Code);
 					--n;
 					break;
 
@@ -2903,6 +2911,8 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 		Parse_Map();
 		break;
 	}
+	case ATT_GLOBALCALL:
+		break;
 	default:
 	{
 		// -> unexpected token
@@ -3080,15 +3090,16 @@ bool C4AulParseState::Parse_Expression3()
 			}
 			break;
 		}
+		case ATT_GLOBALCALL:
 		case ATT_CALL:
 		{
+			C4AulBCCType eCallType = (TokenType == ATT_GLOBALCALL ? AB_CALLGLOBAL : AB_CALL);
 			// Here, a '~' is not an operator, but a token
 			Shift(Discard, false);
 			// C4ID -> namespace given
 			C4AulFunc *pFunc = nullptr;
-			C4AulBCCType eCallType = AB_CALL;
 			C4ID idNS = 0;
-			if (TokenType == ATT_C4ID)
+			if (TokenType == ATT_C4ID && eCallType != AB_CALLGLOBAL)
 			{
 				// from now on, stupid func names must stay outside ;P
 				idNS = (C4ID)cInt;
@@ -3122,20 +3133,31 @@ bool C4AulParseState::Parse_Expression3()
 			}
 			else
 			{
+				auto failSafe = false;
 				// may it be a failsafe call?
 				if (TokenType == ATT_TILDE)
 				{
 					// store this and get the next token
-					eCallType = AB_CALLFS;
+					if (eCallType != AB_CALLGLOBAL)
+						eCallType = AB_CALLFS;
 					Shift();
+					failSafe = true;
 				}
 				// expect identifier of called function now
 				if (TokenType != ATT_IDTF) throw new C4AulParseError(this, "expecting func name after '->'");
 				// search a function with the given name
-				if (!(pFunc = a->Engine->GetFirstFunc(Idtf)))
+				if (eCallType == AB_CALLGLOBAL)
+				{
+					pFunc = a->Engine->GetFunc(Idtf, a->Engine, nullptr);
+				}
+				else
+				{
+					pFunc = a->Engine->GetFirstFunc(Idtf);
+				}
+				if (!pFunc)
 				{
 					// not failsafe?
-					if (eCallType != AB_CALLFS && Type == PARSER)
+					if (!failSafe && Type == PARSER)
 					{
 						throw new C4AulParseError(this, FormatString("direct object call: function %s not found", Idtf).getData());
 					}
@@ -3143,7 +3165,11 @@ bool C4AulParseState::Parse_Expression3()
 					Shift();
 					Parse_Params(0, nullptr);
 					// remove target from stack, push a zero value as result
-					AddBCC(AB_STACK, -1); AddBCC(AB_STACK, +1);
+					if (eCallType != AB_CALLGLOBAL)
+					{
+						AddBCC(AB_STACK, -1);
+					}
+					AddBCC(AB_STACK, +1);
 					// done
 					break;
 				}
@@ -3535,7 +3561,7 @@ bool C4AulScript::Parse()
 					C4AulBCCType eType = pBCC->bccType; long X = pBCC->bccX;
 					switch (eType)
 					{
-					case AB_FUNC: case AB_CALL: case AB_CALLFS:
+					case AB_FUNC: case AB_CALL: case AB_CALLFS: case AB_CALLGLOBAL:
 						LogSilentF("%s\t'%s'\n", GetTTName(eType), X ? ((C4AulFunc *)X)->Name : ""); break;
 					case AB_STRING:
 						LogSilentF("%s\t'%s'\n", GetTTName(eType), X ? ((C4String *)X)->Data.getData() : ""); break;

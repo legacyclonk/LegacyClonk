@@ -307,7 +307,7 @@ private:
 			CheckOpPar<false>(pCurVal, C4ScriptOpMap[iOpID].Type1, C4ScriptOpMap[iOpID].Identifier);
 	}
 
-	C4AulBCC *Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4Object *pObj = nullptr, C4Def *pDef = nullptr);
+	C4AulBCC *Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4Object *pObj = nullptr, C4Def *pDef = nullptr, bool globalContext = false);
 };
 
 C4AulExec AulExec;
@@ -1166,48 +1166,56 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 
 			case AB_CALL:
 			case AB_CALLFS:
+			case AB_CALLGLOBAL:
 			{
+				const auto isGlobal = pCPos->bccType == AB_CALLGLOBAL;
 				C4Value *pPars = pCurVal - C4AUL_MAX_Par + 1;
 				C4Value *pTargetVal = pCurVal - C4AUL_MAX_Par;
 
 				// Check for call to null
-				if (!*pTargetVal)
+				if (!isGlobal && !*pTargetVal)
 					throw new C4AulExecError(pCurCtx->Obj, "Object call: target is zero!");
 
 				// Get call target - "object" or "id" are allowed
-				C4Object *pDestObj; C4Def *pDestDef;
-				if (pTargetVal->ConvertTo(C4V_C4Object))
+				C4Object *pDestObj{}; C4Def *pDestDef{};
+				if(!isGlobal)
 				{
-					// object call
-					pDestObj = pTargetVal->_getObj();
-					pDestDef = pDestObj->Def;
-				}
-				else if (pTargetVal->ConvertTo(C4V_C4ID))
-				{
-					// definition call
-					pDestObj = nullptr;
-					pDestDef = C4Id2Def(pTargetVal->_getC4ID());
-					// definition must be known
-					if (!pDestDef)
+					if (pTargetVal->ConvertTo(C4V_C4Object))
+					{
+						// object call
+						pDestObj = pTargetVal->_getObj();
+						pDestDef = pDestObj->Def;
+					}
+					else if (pTargetVal->ConvertTo(C4V_C4ID))
+					{
+						// definition call
+						pDestObj = nullptr;
+						pDestDef = C4Id2Def(pTargetVal->_getC4ID());
+						// definition must be known
+						if (!pDestDef)
+							throw new C4AulExecError(pCurCtx->Obj,
+								FormatString("Definition call: Definition for id %s not found!", C4IdText(pTargetVal->_getC4ID())).getData());
+					}
+					else
 						throw new C4AulExecError(pCurCtx->Obj,
-							FormatString("Definition call: Definition for id %s not found!", C4IdText(pTargetVal->_getC4ID())).getData());
+							FormatString("Object call: Invalid target type %s, expected object or id!", pTargetVal->GetTypeName()).getData());
 				}
-				else
-					throw new C4AulExecError(pCurCtx->Obj,
-						FormatString("Object call: Invalid target type %s, expected object or id!", pTargetVal->GetTypeName()).getData());
 
 				// Resolve overloads
 				C4AulFunc *pFunc = reinterpret_cast<C4AulFunc *>(pCPos->bccX);
 				while (pFunc->OverloadedBy)
 					pFunc = pFunc->OverloadedBy;
 
-				// Search function for given context
-				pFunc = pFunc->FindSameNameFunc(pDestDef);
-				if (!pFunc && pCPos->bccType == AB_CALLFS)
+				if (!isGlobal)
 				{
-					PopValuesUntil(pTargetVal);
-					pTargetVal->Set0();
-					break;
+					// Search function for given context
+					pFunc = pFunc->FindSameNameFunc(pDestDef);
+					if (!pFunc && pCPos->bccType == AB_CALLFS)
+					{
+						PopValuesUntil(pTargetVal);
+						pTargetVal->Set0();
+						break;
+					}
 				}
 
 				// Function not found?
@@ -1238,7 +1246,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				pCurCtx->CPos = pCPos;
 
 				// Call function
-				C4AulBCC *pNewCPos = Call(pFunc, pTargetVal, pPars, pDestObj, pDestDef);
+				C4AulBCC *pNewCPos = Call(pFunc, pTargetVal, pPars, pDestObj, pDestDef, isGlobal);
 				if (pNewCPos)
 				{
 					// Jump
@@ -1286,10 +1294,15 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 	return C4VNull;
 }
 
-C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4Object *pObj, C4Def *pDef)
+C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4Object *pObj, C4Def *pDef, bool globalContext)
 {
 	// No object given? Use current context
-	if (!pObj && !pDef)
+	if (globalContext)
+	{
+		pObj = nullptr;
+		pDef = nullptr;
+	}
+	else if (!pObj && !pDef)
 	{
 		assert(pCurCtx >= Contexts);
 		pObj = pCurCtx->Obj;
