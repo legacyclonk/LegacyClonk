@@ -1258,7 +1258,7 @@ void C4AulParseState::SetJumpHere(int iJumpOp)
 	if (Type != PARSER) return;
 	// Set target
 	C4AulBCC *pBCC = a->GetCodeByPos(iJumpOp);
-	assert(pBCC->bccType == AB_JUMP || pBCC->bccType == AB_JUMPAND || pBCC->bccType == AB_JUMPOR || pBCC->bccType == AB_CONDN);
+	assert(pBCC->bccType == AB_JUMP || pBCC->bccType == AB_JUMPAND || pBCC->bccType == AB_JUMPOR || pBCC->bccType == AB_CONDN || pBCC->bccType == AB_JUMPNIL);
 	pBCC->bccX = a->GetCodePos() - iJumpOp;
 	// Set flag so the next generated code chunk won't get joined
 	fJump = true;
