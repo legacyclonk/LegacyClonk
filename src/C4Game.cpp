@@ -174,10 +174,11 @@ bool C4Game::OpenScenario()
 		GroupSet.RegisterParentFolders(C4S.Head.Origin.getData());
 
 	// Scenario definition preset
-	std::vector<std::string> defs = C4S.Definitions.GetModules();
 	if (!C4S.Definitions.AllowUserChange)
 	{
+		const std::vector<std::string> &defs = C4S.Definitions.GetModules();
 		DefinitionFilenames.insert(DefinitionFilenames.end(), defs.begin(), defs.end());
+
 		if (DefinitionFilenames.empty())
 		{
 			Log(LoadResStr("IDS_PRC_LOCALONLY"));
