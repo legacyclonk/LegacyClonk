@@ -177,14 +177,20 @@ bool C4Game::OpenScenario()
 	std::vector<std::string> defs = C4S.Definitions.GetModules();
 	if (!C4S.Definitions.AllowUserChange)
 	{
-		DefinitionFilenames = defs;
-		if (defs.empty())
+		DefinitionFilenames.insert(DefinitionFilenames.end(), defs.begin(), defs.end());
+		if (DefinitionFilenames.empty())
 		{
 			Log(LoadResStr("IDS_PRC_LOCALONLY"));
 		}
 		else
 		{
 			Log(LoadResStr("IDS_PRC_SCEOWNDEFS"));
+
+			auto it = std::unique(DefinitionFilenames.begin(), DefinitionFilenames.end());
+			if (it != DefinitionFilenames.end())
+			{
+				DefinitionFilenames.erase(it);
+			}
 		}
 	}
 
