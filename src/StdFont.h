@@ -118,9 +118,9 @@ protected:
 	}
 
 	CFacet &GetUnicodeCharacterFacet(uint32_t c);
+	int iLineHgt; // height of one line of font (in pixels)
 
 public:
-	int iLineHgt; // height of one line of font (in pixels)
 	// draw ine line of text
 	void DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom);
 
