@@ -1168,6 +1168,7 @@ void C4StartupOptionsDlg::OnTestScaleBtn(C4GUI::Control *)
 	const auto realResY = static_cast<int32_t>(floorf(oldResY * oldScale));
 
 	Application.SetResolution(realResX, realResY);
+	Application.SetGameFont(Config.General.RXFontName, Config.General.RXFontSize);
 
 	// do it manually and temporarily here, beacuse RecreateDialog would delete this the second time which leads to a crash after this function returns
 	FadeOut(true);
@@ -1187,6 +1188,7 @@ void C4StartupOptionsDlg::OnTestScaleBtn(C4GUI::Control *)
 		if (C4GUI::IsGUIValid())
 		{
 			Application.SetResolution(realResX, realResY);
+			Application.SetGameFont(Config.General.RXFontName, Config.General.RXFontSize);
 		}
 		else
 		{

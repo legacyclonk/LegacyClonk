@@ -510,7 +510,7 @@ bool C4Application::SetGameFont(const char *szFontFace, int32_t iFontSize)
 	int32_t iOldFontSize = Config.General.RXFontSize;
 	SCopy(szFontFace, Config.General.RXFontName);
 	Config.General.RXFontSize = iFontSize;
-	if (!Game.GraphicsResource.InitFonts() || !C4Startup::Get()->Graphics.InitFonts())
+	if (!Game.GraphicsResource.InitFonts() || (C4Startup::Get() && !C4Startup::Get()->Graphics.InitFonts()))
 	{
 		// failed :o
 		// shouldn't happen. Better restore config.

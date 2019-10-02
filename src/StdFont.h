@@ -119,15 +119,16 @@ protected:
 
 	CFacet &GetUnicodeCharacterFacet(uint32_t c);
 	int iLineHgt; // height of one line of font (in pixels)
+	float scale = 1.f;
 
 public:
 	// draw ine line of text
 	void DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom);
 
 	// get text size
-	bool GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, bool fCheckMarkup = true);
+	bool GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, bool fCheckMarkup = true, bool ignoreScale = false);
 	// get height of a line
-	inline int GetLineHeight() { return iLineHgt; }
+	int GetLineHeight() const;
 	// Sometimes, only the width of a text is needed
 	int32_t GetTextWidth(const char *szText, bool fCheckMarkup = true) { int32_t x, y; GetTextExtent(szText, x, y, fCheckMarkup); return x; }
 	// insert line breaks into a message and return overall height - uses and regards '|' as line breaks; maxLines = 0 means unlimited
@@ -138,7 +139,7 @@ public:
 
 	// function throws std::runtime_error in case of failure
 	// font initialization - writes the surface data
-	void Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFontWeight = FW_NORMAL, const char *szCharset = "", bool fDoShadow = true);
+	void Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFontWeight = FW_NORMAL, const char *szCharset = "", bool fDoShadow = true, float scale = 1.f);
 
 	// font initialization - grabs the given surface data and extracts character sizes from it
 	void Init(const char *szFontName, CSurface *psfcFontSfc, int iIndent);

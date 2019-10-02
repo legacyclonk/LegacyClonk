@@ -23,6 +23,8 @@
 #include <StdDDraw2.h>
 #include <StdSurface2.h>
 #include <StdMarkup.h>
+
+#include <cmath>
 #include <stdexcept>
 #include <string>
 
@@ -202,6 +204,7 @@ bool CStdFont::CheckRenderedCharSpace(uint32_t iCharWdt, uint32_t iCharHgt)
 
 bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 {
+	int shadowSize = fDoShadow ? std::round(scale) : 0;
 #if defined(_WIN32) && !defined(HAVE_FREETYPE)
 
 	// Win32-API character rendering
@@ -224,7 +227,7 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 		GetTextExtentPoint32(hDC, str, 1, &size);
 	}
 	// keep text shadow in mind
-	if (fDoShadow) { ++size.cx; ++size.cy; }
+	if (fDoShadow) { size.cx += shadowSize; size.cy += shadowSize; }
 	// adjust line height to max character height
 	if (!fUnicode) iLineHgt = std::max<int>(iLineHgt, size.cy + 1);
 	// print character on empty surface
@@ -245,8 +248,8 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 		// get value; determine shadow value by pos moved 1px to upper left
 		uint8_t bAlpha = 255 - (uint8_t)(pBitmapBits[iBitmapSize * y + x] & 0xff);
 		uint8_t bAlphaShadow;
-		if (x && y && fDoShadow)
-			bAlphaShadow = 255 - (uint8_t)((pBitmapBits[iBitmapSize * (y - 1) + x - 1] & 0xff) * 1 / 1);
+		if (fDoShadow && x >= shadowSize && y >= shadowSize)
+			bAlphaShadow = 255 - static_cast<uint8_t>(pBitmapBits[iBitmapSize * (y - shadowSize) + x - shadowSize] & 0xff);
 		else
 			bAlphaShadow = 255;
 		// calc pixel value: white char on black shadow (if shadow is desired)
@@ -291,16 +294,16 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 		return true;
 	}
 	// linebreak/ new surface check
-	int width = std::max<int>(slot->advance.x / 64, (std::max)(slot->bitmap_left, 0) + slot->bitmap.width) + fDoShadow;
+	int width = std::max<int>(slot->advance.x / 64, (std::max)(slot->bitmap_left, 0) + slot->bitmap.width) + shadowSize;
 	if (!CheckRenderedCharSpace(width, iGfxLineHgt)) return false;
 	// offset from the top
 	int at_y = iCurrentSfcY + dwDefFontHeight * (*pVectorFont)->ascender / (*pVectorFont)->units_per_EM - slot->bitmap_top;
 	int at_x = iCurrentSfcX + (std::max)(slot->bitmap_left, 0);
 	// Copy to the surface
 	if (!sfcCurrent->Lock()) return false;
-	for (unsigned int y = 0; y < slot->bitmap.rows + fDoShadow; ++y)
+	for (unsigned int y = 0; y < slot->bitmap.rows + shadowSize; ++y)
 	{
-		for (unsigned int x = 0; x < slot->bitmap.width + fDoShadow; ++x)
+		for (unsigned int x = 0; x < slot->bitmap.width + shadowSize; ++x)
 		{
 			unsigned char bAlpha, bAlphaShadow;
 			if (x < slot->bitmap.width && y < slot->bitmap.rows)
@@ -310,18 +313,18 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 			// Make a shadow from the upper-left pixel, and blur with the eight neighbors
 			uint32_t dwPixVal = 0u;
 			bAlphaShadow = 255;
-			if ((x || y) && fDoShadow)
+			if (fDoShadow && x >= shadowSize && y >= shadowSize)
 			{
 				int iShadow = 0;
-				if (x < slot->bitmap.width && y < slot->bitmap.rows) iShadow += slot->bitmap.buffer[(x - 0) + slot->bitmap.width * (y - 0)];
-				if (x > 1 && y < slot->bitmap.rows) iShadow += slot->bitmap.buffer[(x - 2) + slot->bitmap.width * (y - 0)];
-				if (x > 0 && y < slot->bitmap.rows) iShadow += slot->bitmap.buffer[(x - 1) + slot->bitmap.width * (y - 0)];
-				if (x < slot->bitmap.width && y > 1) iShadow += slot->bitmap.buffer[(x - 0) + slot->bitmap.width * (y - 2)];
-				if (x > 1 && y > 1) iShadow += slot->bitmap.buffer[(x - 2) + slot->bitmap.width * (y - 2)];
-				if (x > 0 && y > 1) iShadow += slot->bitmap.buffer[(x - 1) + slot->bitmap.width * (y - 2)];
-				if (x < slot->bitmap.width && y > 0) iShadow += slot->bitmap.buffer[(x - 0) + slot->bitmap.width * (y - 1)];
-				if (x > 1 && y > 0) iShadow += slot->bitmap.buffer[(x - 2) + slot->bitmap.width * (y - 1)];
-				if (x > 0 && y > 0) iShadow += slot->bitmap.buffer[(x - 1) + slot->bitmap.width * (y - 1)] * 8;
+				if (x < slot->bitmap.width && y < slot->bitmap.rows) iShadow += slot->bitmap.buffer[(x - (shadowSize - 1)) + slot->bitmap.width * (y - (shadowSize - 1))];
+				if (x > shadowSize && y < slot->bitmap.rows) iShadow += slot->bitmap.buffer[(x - (shadowSize + 1)) + slot->bitmap.width * (y - (shadowSize - 1))];
+				if (x > (shadowSize - 1) && y < slot->bitmap.rows) iShadow += slot->bitmap.buffer[(x - shadowSize) + slot->bitmap.width * (y - (shadowSize - 1))];
+				if (x < slot->bitmap.width && y > shadowSize) iShadow += slot->bitmap.buffer[(x - (shadowSize - 1)) + slot->bitmap.width * (y - (shadowSize + 1))];
+				if (x > shadowSize && y > shadowSize) iShadow += slot->bitmap.buffer[(x - (shadowSize + 1)) + slot->bitmap.width * (y - (shadowSize + 1))];
+				if (x > (shadowSize - 1) && y > shadowSize) iShadow += slot->bitmap.buffer[(x - shadowSize) + slot->bitmap.width * (y - (shadowSize + 1))];
+				if (x < slot->bitmap.width && y > (shadowSize - 1)) iShadow += slot->bitmap.buffer[(x - (shadowSize - 1)) + slot->bitmap.width * (y - shadowSize)];
+				if (x > shadowSize && y > (shadowSize - 1)) iShadow += slot->bitmap.buffer[(x - (shadowSize + 1)) + slot->bitmap.width * (y - shadowSize)];
+				if (x > (shadowSize - 1) && y > (shadowSize - 1)) iShadow += slot->bitmap.buffer[(x - shadowSize) + slot->bitmap.width * (y - shadowSize)] * 8;
 				bAlphaShadow -= iShadow / 16;
 				// because blitting on a black pixel reduces luminosity as compared to shadowless font,
 				// assume luminosity as if blitting shadowless font on a 50% gray background
@@ -389,10 +392,13 @@ CFacet &CStdFont::GetUnicodeCharacterFacet(uint32_t c)
 	return rFacet;
 }
 
-void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFontWeight, const char *szCharset, bool fDoShadow)
+void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFontWeight, const char *szCharset, bool fDoShadow, float scale)
 {
+	const auto realHeight = dwHeight;
 	// clear previous
 	Clear();
+	dwHeight *= scale;
+	this->scale = static_cast<float>(dwHeight) / realHeight;
 	// set values
 	iHSpace = fDoShadow ? -1 : 0; // horizontal shadow
 	dwWeight = dwFontWeight;
@@ -694,12 +700,18 @@ void CStdFont::Clear()
 
 /* Text size measurement */
 
-bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, bool fCheckMarkup)
+bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, bool fCheckMarkup, bool ignoreScale)
 {
+	float realScale = 1.f;
+	if (!ignoreScale)
+	{
+		realScale = scale;
+	}
 	// safety
 	if (!szText) return false;
 	// keep track of each row's size
-	int iRowWdt = 0, iWdt = 0, iHgt = iLineHgt;
+	int lineStepHeight = std::ceil(iLineHgt / realScale);
+	int iRowWdt = 0, iWdt = 0, iHgt = lineStepHeight;
 	// ignore any markup
 	CMarkup MarkupChecker(false);
 	// go through all text
@@ -712,7 +724,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 		// done? (must check here, because markup-skip may have led to text end)
 		if (!c) break;
 		// line break?
-		if (c == _T('\n') || (fCheckMarkup && c == _T('|'))) { iRowWdt = 0; iHgt += iLineHgt; continue; }
+		if (c == _T('\n') || (fCheckMarkup && c == _T('|'))) { iRowWdt = 0; iHgt += lineStepHeight; continue; }
 		// ignore system characters
 		if (c < _T(' ')) continue;
 		// image?
@@ -729,7 +741,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 			if (fct.Hgt)
 			{
 				// image found: adjust aspect by font height and calc appropriate width
-				iRowWdt += (fct.Wdt * iGfxLineHgt) / fct.Hgt;
+				iRowWdt += (fct.Wdt * iGfxLineHgt) / realScale / fct.Hgt;
 			}
 			else
 			{
@@ -743,7 +755,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 		{
 			// regular char
 			// look up character width in texture coordinates table
-			iRowWdt += GetCharacterFacet(c).Wdt / iFontZoom;
+			iRowWdt += GetCharacterFacet(c).Wdt / realScale / iFontZoom;
 		}
 		// apply horizontal indent for all but last char
 		if (*szText) iRowWdt += iHSpace;
@@ -770,7 +782,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 	int iX = 0, // current text width at parse pos
 		iXBreak = 0, // text width as it was at last break pos
 		iXEmergencyBreak, // same, but at last char in case no suitable linebreak could be found
-		iHgt = iLineHgt; // total height of output text
+		iHgt = GetLineHeight(); // total height of output text
 	bool fIsFirstLineChar = true;
 	// ignore any markup
 	CMarkup MarkupChecker(false);
@@ -801,7 +813,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 				if (fct.Hgt)
 				{
 					// image found: adjust aspect by font height and calc appropriate width
-					iCharWdt = (fct.Wdt * iGfxLineHgt) / fct.Hgt;
+					iCharWdt = (fct.Wdt * iGfxLineHgt) / scale / fct.Hgt;
 				}
 				else
 				{
@@ -817,7 +829,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 				// regular char
 				// look up character width in texture coordinates table
 				if (c >= ' ')
-					iCharWdt = int(fZoom * GetCharacterFacet(c).Wdt / iFontZoom) + iHSpace;
+					iCharWdt = fZoom * GetCharacterFacet(c).Wdt / iFontZoom / scale + iHSpace;
 				else
 					iCharWdt = 0; // OMFG ctrl char
 			}
@@ -909,7 +921,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 		// forced or manual line break: set new line beginning to char after line break
 		szLastBreakPos = szMsg = szPos;
 		// manual line break or line width overflow: add char to next line
-		iHgt += iLineHgt;
+		iHgt += GetLineHeight();
 		fIsFirstLineChar = true;
 
 		if (maxLines == 1)
@@ -955,6 +967,7 @@ void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, con
 		iX -= sx;
 	}
 	// apply texture zoom
+	fZoom /= scale;
 	fZoom /= iFontZoom;
 	// set start markup transformation
 	if (!Markup.Clean()) pbt = &bt;
@@ -996,8 +1009,8 @@ void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, con
 			if (fctFromBlt.Surface && fctFromBlt.Hgt)
 			{
 				// image found: adjust aspect by font height and calc appropriate width
-				w2 = (fctFromBlt.Wdt * iGfxLineHgt) / fctFromBlt.Hgt;
-				h2 = iGfxLineHgt;
+				w2 = (fctFromBlt.Wdt * iGfxLineHgt) * fZoom / fctFromBlt.Hgt;
+				h2 = iGfxLineHgt * fZoom;
 			}
 			else
 			{
@@ -1047,6 +1060,11 @@ void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, con
 		lpDDraw->ActivateBlitModulation(dwOldModClr);
 	else
 		lpDDraw->DeactivateBlitModulation();
+}
+
+int CStdFont::GetLineHeight() const
+{
+	return iLineHgt / scale;
 }
 
 // The internal clonk charset is one of the windows charsets
