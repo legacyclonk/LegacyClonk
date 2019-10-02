@@ -231,7 +231,7 @@ void C4Command::MoveTo()
 			// Not too far
 			if (Distance(cx, cy, Tx._getInt(), Ty) < MaxPathRange)
 				// Not too close
-				if (!(Inside(cx - Tx._getInt(), -PathRange, +PathRange) && Inside(cy - Ty, -PathRange, +PathRange)))
+				if (!(Inside<C4ValueInt>(cx - Tx._getInt(), -PathRange, +PathRange) && Inside<C4ValueInt>(cy - Ty, -PathRange, +PathRange)))
 				{
 					// Path not free: find path
 					if (!PathFree(cx, cy, Tx._getInt(), Ty))
@@ -300,7 +300,7 @@ void C4Command::MoveTo()
 	}
 
 	// Target reached (success)
-	if (Inside(cx - Tx._getInt(), -iRangeFactorSide * iTargetRange, +iRangeFactorSide * iTargetRange)
+	if (Inside<C4ValueInt>(cx - Tx._getInt(), -iRangeFactorSide * iTargetRange, +iRangeFactorSide * iTargetRange)
 		&& Inside(cy - Ty, -iRangeFactorBottom * iTargetRange, +iRangeFactorTop * iTargetRange))
 	{
 		cObj->Action.ComDir = COMD_Stop;
@@ -723,7 +723,7 @@ void C4Command::PushTo()
 	else
 	{
 		// Object at target position: success
-		if (Inside(Target->x - Tx._getInt(), -PushToRange, +PushToRange))
+		if (Inside<C4ValueInt>(Target->x - Tx._getInt(), -PushToRange, +PushToRange))
 			if (Inside(Target->y - Ty, -PushToRange, +PushToRange))
 			{
 				cObj->Action.ComDir = COMD_Stop;
@@ -2100,7 +2100,7 @@ void C4Command::Acquire()
 		// Object is not in container to be ignored
 		if (!Target2 || pMaterial->Contained != Target2)
 			// Object is near enough
-			if (Inside(cObj->x - pMaterial->x, -Tx._getInt(), +Tx._getInt()))
+			if (Inside<C4ValueInt>(cObj->x - pMaterial->x, -Tx._getInt(), +Tx._getInt()))
 				if (Inside(cObj->y - pMaterial->y, -Ty, +Ty))
 					// Object is not connected to a pipe (for line construction kits)
 					if (!Game.FindObject(C4ID_SourcePipe, 0, 0, 0, 0, OCF_All, "Connect", pMaterial))

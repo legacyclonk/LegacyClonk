@@ -408,7 +408,7 @@ public:
 
 public:
 	static C4SortObject *CreateByValue(const C4Value &Data);
-	static C4SortObject *CreateByValue(int32_t iType, const C4ValueArray &Data);
+	static C4SortObject *CreateByValue(C4ValueInt iType, const C4ValueArray &Data);
 
 	void SortObjects(C4ValueArray *pArray);
 };

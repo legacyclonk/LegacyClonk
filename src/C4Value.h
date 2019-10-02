@@ -58,9 +58,11 @@ const char *GetC4VName(const C4V_Type Type);
 char GetC4VID(const C4V_Type Type);
 C4V_Type GetC4VFromID(char C4VID);
 
+using C4ValueInt = int32_t;
+
 union C4V_Data
 {
-	long Int;
+	C4ValueInt Int;
 	C4ID ID;
 	C4Object *Obj;
 	C4String *Str;
@@ -86,7 +88,7 @@ template <typename T> struct C4ValueConv;
 class C4Value
 {
 public:
-	C4Value() : Type(C4V_Any), NextRef(nullptr), FirstRef(nullptr) { Data.Ref = nullptr; }
+	C4Value() : Type(C4V_Any), NextRef(nullptr), FirstRef(nullptr) { Data.Raw = 0; }
 
 	C4Value(const C4Value &nValue) : Data(nValue.Data), Type(nValue.Type), NextRef(nullptr), FirstRef(nullptr)
 	{
@@ -101,13 +103,14 @@ public:
 	template<typename T, typename std::enable_if_t<!std::is_same_v<T, C4ID>, int> = 0>
 	explicit C4Value(T nData, C4V_Type nType) : Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
+		Data.Raw = 0;
 		Data.Int = nData; AddDataRef();
 	}
 
-	template<typename T, typename std::enable_if_t<std::is_same_v<T, C4ID>, int> = 0>
-	explicit C4Value(T nData, C4V_Type nType) : Type(nData || nType == C4V_C4ID || nType == C4V_Int ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	explicit C4Value(C4ID id) : Type(id ? C4V_C4ID : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
-		Data.ID = nData; AddDataRef();
+		Data.Raw = 0;
+		Data.ID = id;
 	}
 
 	explicit C4Value(C4Object *pObj) : Type(pObj ? C4V_C4Object : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
@@ -150,9 +153,9 @@ public:
 	std::optional<StdStrBuf> toString() const;
 
 	// Checked getters
-	int32_t getInt()         { return ConvertTo(C4V_Int)      ? Data.Int   : 0; }
-	int32_t getIntOrID()     { Deref(); if (Type == C4V_Int || Type == C4V_Bool) return Data.Int; else if (Type == C4V_C4ID) return static_cast<int32_t>(Data.ID); else return 0; }
-	bool getBool()           { return ConvertTo(C4V_Bool)     ? !!Data     : 0; }
+	C4ValueInt getInt()      { return ConvertTo(C4V_Int)      ? Data.Int   : 0; }
+	C4ValueInt getIntOrID()  { Deref(); if (Type == C4V_Int || Type == C4V_Bool) return Data.Int; else if (Type == C4V_C4ID) return static_cast<C4ValueInt>(Data.ID); else return 0; }
+	bool getBool()           { return ConvertTo(C4V_Bool)     ? !!Data.Int : false; }
 	C4ID getC4ID()           { return ConvertTo(C4V_C4ID)     ? Data.ID : C4ID_None; }
 	C4Object *getObj()       { return ConvertTo(C4V_C4Object) ? Data.Obj   : nullptr; }
 	C4String *getStr()       { return ConvertTo(C4V_String)   ? Data.Str   : nullptr; }
@@ -161,9 +164,9 @@ public:
 	C4Value *getRef()        { return ConvertTo(C4V_pC4Value) ? Data.Ref   : nullptr; }
 
 	// Unchecked getters
-	int32_t _getInt()         const { return Data.Int; }
+	C4ValueInt _getInt()      const { return Data.Int; }
 	bool _getBool()           const { return !!Data.Int; }
-	C4ID _getC4ID()           const { return Data.ID;  }
+	C4ID _getC4ID()           const { return Data.ID; }
 	C4Object *_getObj()       const { return Data.Obj; }
 	C4String *_getStr()       const { return Data.Str; }
 	C4ValueArray *_getArray() const { return Data.Array; }
@@ -178,11 +181,11 @@ public:
 
 	void Set(const C4Value &nValue) { if (this != &nValue) Set(nValue.Data, nValue.Type); }
 
-	void SetInt(int i) { C4V_Data d; d.Int = i; Set(d, C4V_Int); }
+	void SetInt(C4ValueInt i) { C4V_Data d; d.Raw = 0; d.Int = i; Set(d, C4V_Int); }
 
-	void SetBool(bool b) { C4V_Data d; d.Int = b; Set(d, C4V_Bool); }
+	void SetBool(bool b) { C4V_Data d; d.Raw = 0; d.Int = b; Set(d, C4V_Bool); }
 
-	void SetC4ID(C4ID id) { C4V_Data d; d.ID = id; Set(d, C4V_C4ID); }
+	void SetC4ID(C4ID id) { C4V_Data d; d.Raw = 0; d.ID = id; Set(d, C4V_C4ID); }
 
 	void SetObject(C4Object *Obj) { C4V_Data d; d.Obj = Obj; Set(d, C4V_C4Object); }
 
@@ -202,12 +205,12 @@ public:
 	bool operator!=(const C4Value &Value2) const;
 
 	// Change and set Type to int in case it was any before (avoids GuessType())
-	C4Value &operator+=(int32_t by) { GetData().Int += by;                        GetRefVal().Type = C4V_Int; return *this; }
-	C4Value &operator++()           { GetData().Int++;                            GetRefVal().Type = C4V_Int; return *this; }
-	C4Value operator++(int)         { C4Value alt = GetRefVal(); GetData().Int++; GetRefVal().Type = C4V_Int; return alt; }
-	C4Value &operator--()           { GetData().Int--;                            GetRefVal().Type = C4V_Int; return *this; }
-	C4Value &operator-=(int32_t by) { GetData().Int -= by;                        GetRefVal().Type = C4V_Int; return *this; }
-	C4Value operator--(int)         { C4Value alt = GetRefVal(); GetData().Int--; GetRefVal().Type = C4V_Int; return alt; }
+	C4Value &operator+=(C4ValueInt by) { GetData().Int += by;                        GetRefVal().Type = C4V_Int; return *this; }
+	C4Value &operator++()              { GetData().Int++;                            GetRefVal().Type = C4V_Int; return *this; }
+	C4Value operator++(int)            { C4Value alt = GetRefVal(); GetData().Int++; GetRefVal().Type = C4V_Int; return alt; }
+	C4Value &operator--()              { GetData().Int--;                            GetRefVal().Type = C4V_Int; return *this; }
+	C4Value &operator-=(C4ValueInt by) { GetData().Int -= by;                        GetRefVal().Type = C4V_Int; return *this; }
+	C4Value operator--(int)            { C4Value alt = GetRefVal(); GetData().Int--; GetRefVal().Type = C4V_Int; return alt; }
 
 	void Move(C4Value *nValue);
 
@@ -272,7 +275,6 @@ protected:
 	C4Value *GetNextRef() { if (HasBaseContainer) return nullptr; else return NextRef; }
 	C4ValueContainer *GetBaseContainer() { if (HasBaseContainer) return BaseContainer; else return nullptr; }
 
-	void Set(long nData, C4V_Type nType = C4V_Any) { C4V_Data d; d.Int = nData; Set(d, nType); }
 	void Set(C4V_Data nData, C4V_Type nType);
 
 	void AddRef(C4Value *pRef);
@@ -295,9 +297,9 @@ protected:
 };
 
 // converter
-inline C4Value C4VInt(int32_t iVal) { C4V_Data d; d.Int = iVal; return C4Value(d, C4V_Int); }
-inline C4Value C4VBool(bool fVal) { C4V_Data d; d.Int = fVal; return C4Value(d, C4V_Bool); }
-inline C4Value C4VID(C4ID idVal) { C4V_Data d; d.ID = idVal; return C4Value(d, C4V_C4ID); }
+inline C4Value C4VInt(C4ValueInt iVal) { return C4Value{iVal, C4V_Int}; }
+inline C4Value C4VBool(bool fVal) { return C4Value{fVal, C4V_Bool}; }
+inline C4Value C4VID(C4ID idVal) { return C4Value{idVal}; }
 inline C4Value C4VObj(C4Object *pObj) { return C4Value(pObj); }
 inline C4Value C4VString(C4String *pStr) { return C4Value(pStr); }
 inline C4Value C4VArray(C4ValueArray *pArray) { return C4Value(pArray); }
@@ -308,11 +310,11 @@ C4Value C4VString(StdStrBuf &&strString);
 C4Value C4VString(const char *strString);
 
 // converter templates
-template <> struct C4ValueConv<int32_t>
+template <> struct C4ValueConv<C4ValueInt>
 {
 	inline static C4V_Type Type() { return C4V_Int; }
-	inline static int32_t FromC4V(C4Value &v) { return v.getInt(); }
-	inline static int32_t _FromC4V(const C4Value &v) { return v._getInt(); }
+	inline static C4ValueInt FromC4V(C4Value &v) { return v.getInt(); }
+	inline static C4ValueInt _FromC4V(const C4Value &v) { return v._getInt(); }
 	inline static C4Value ToC4V(int32_t v) { return C4VInt(v); }
 };
 
@@ -371,9 +373,6 @@ template <> struct C4ValueConv<C4Value *>
 	inline static C4Value *_FromC4V(const C4Value &v) { return v._getRef(); }
 	inline static C4Value ToC4V(C4Value *v) { return C4VRef(v); }
 };
-
-// aliases
-template <> struct C4ValueConv<long> : public C4ValueConv<int32_t> {};
 
 namespace std
 {

@@ -36,8 +36,8 @@ C4FindObject *C4FindObject::CreateByValue(const C4Value &DataVal, C4SortObject *
 	if (!pArray) return nullptr;
 
 	const C4ValueArray &Data = *pArray;
-	int32_t iType = Data[0].getInt();
-	if (Inside<int32_t>(iType, C4SO_First, C4SO_Last))
+	const auto iType = Data[0].getInt();
+	if (Inside<decltype(iType)>(iType, C4SO_First, C4SO_Last))
 	{
 		// this is not a FindObject but a sort condition!
 		// sort condition not desired here?
@@ -133,9 +133,9 @@ C4FindObject *C4FindObject::CreateByValue(const C4Value &DataVal, C4SortObject *
 
 	case C4FO_ActionTarget:
 	{
-		int index = 0;
+		int32_t index = 0;
 		if (Data.GetSize() >= 3)
-			index = BoundBy(Data[2].getInt(), 0, 1);
+			index = static_cast<decltype(index)>(BoundBy<C4ValueInt>(Data[2].getInt(), 0, 1));
 		return new C4FindObjectActionTarget(Data[1].getObj(), index);
 	}
 
@@ -703,11 +703,10 @@ C4SortObject *C4SortObject::CreateByValue(const C4Value &DataVal)
 	const C4ValueArray *pArray = C4Value(DataVal).getArray();
 	if (!pArray) return nullptr;
 	const C4ValueArray &Data = *pArray;
-	int32_t iType = Data[0].getInt();
-	return CreateByValue(iType, Data);
+	return CreateByValue(Data[0].getInt(), Data);
 }
 
-C4SortObject *C4SortObject::CreateByValue(int32_t iType, const C4ValueArray &Data)
+C4SortObject *C4SortObject::CreateByValue(C4ValueInt iType, const C4ValueArray &Data)
 {
 	switch (iType)
 	{

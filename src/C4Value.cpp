@@ -21,6 +21,7 @@
 #include <C4ValueList.h>
 #include <C4ValueHash.h>
 
+#include <cinttypes>
 #include <functional>
 #include <string_view>
 
@@ -152,7 +153,7 @@ void C4Value::Set0()
 	C4V_Type oType = Type;
 
 	// change
-	Data = nullptr;
+	Data.Raw = 0;
 	Type = C4V_Any;
 
 	CheckRemoveFromMap();
@@ -183,7 +184,7 @@ void C4Value::Move(C4Value *nValue)
 
 	// delete usself
 	FirstRef = nullptr;
-	Set(0);
+	Set0();
 }
 
 #ifdef C4ENGINE
@@ -214,7 +215,7 @@ void C4Value::GetContainerElement(C4Value *index, C4Value &target, C4AulContext 
 			if (Ref.Data.Container->hasIndex(*index))
 				target.Set((*Ref.Data.Container)[*index]);
 			else
-				target.Set(0);
+				target.Set0();
 		}
 		else
 		{
@@ -627,7 +628,7 @@ StdStrBuf C4Value::GetDataString() const
 	case C4V_Any:
 		return StdStrBuf("nil");
 	case C4V_Int:
-		return FormatString("%ld", Data.Int);
+		return FormatString("%" PRId32, Data.Int);
 	case C4V_Bool:
 		return StdStrBuf::MakeRef(Data ? "true" : "false");
 	case C4V_C4ID:
@@ -637,7 +638,7 @@ StdStrBuf C4Value::GetDataString() const
 	{
 		// obj exists?
 		if (!Game.Objects.ObjectNumber(Data.Obj) && !Game.Objects.InactiveObjects.ObjectNumber(Data.Obj))
-			return FormatString("%ld", Data.Int);
+			return FormatString("%" PRIdPTR, Data.Raw);
 		else if (Data.Obj)
 			if (Data.Obj->Status == C4OS_NORMAL)
 				return FormatString("%s #%d", Data.Obj->GetName(), static_cast<int>(Data.Obj->Number));
@@ -901,11 +902,8 @@ bool C4Value::operator==(const C4Value &Value2) const
 			return Data == Value2.Data;
 		case C4V_Int:
 		case C4V_Bool:
-			return Data == Value2.Data;
 		case C4V_C4ID:
-			if (Inside<long>(Value2.Data.Int, 0, 9999))
-				return Data == Value2.Data;
-			return false;
+			return Data == Value2.Data;
 		default:
 			return false;
 		}
@@ -926,13 +924,10 @@ bool C4Value::operator==(const C4Value &Value2) const
 		{
 		case C4V_Any:
 			assert(!Value2.Data);
-			return Data == Value2.Data;
+			[[fallthrough]];
+		case C4V_Int:
 		case C4V_C4ID:
 			return Data == Value2.Data;
-		case C4V_Int:
-			if (Inside<long>(Value2.Data.Int, 0, 9999))
-				return Data == Value2.Data;
-			return false;
 		default:
 			return false;
 		}
@@ -1009,7 +1004,7 @@ std::size_t std::hash<C4Value>::operator()(C4Value value) const
 	if (ref.GetType() == C4V_C4ObjectEnum)
 	{
 		hash = std::hash<C4V_Type>{}(C4V_C4Object);
-		hashCombine(hash, std::hash<int32_t>{}(ref._getInt()));
+		hashCombine(hash, std::hash<C4ValueInt>{}(ref._getInt()));
 		return hash;
 	}
 
@@ -1019,7 +1014,7 @@ std::size_t std::hash<C4Value>::operator()(C4Value value) const
 			break;
 
 		case C4V_Int: case C4V_C4ID:
-			hashCombine(hash, std::hash<int32_t>{}(ref._getInt()));
+			hashCombine(hash, std::hash<C4ValueInt>{}(ref._getInt()));
 			break;
 
 		case C4V_Bool:
