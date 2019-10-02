@@ -605,7 +605,7 @@ bool CStdDDraw::CalculateClipper(int *const iX, int *const iY, int *const iWdt, 
 void CStdDDraw::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *sfcSource3, int fx, int fy,
 	CSurface *sfcTarget, int tx, int ty, int wdt, int hgt)
 {
-	Blit(sfcSource, float(fx), float(fy), float(wdt), float(hgt), sfcTarget, tx, ty, wdt, hgt, false);
+	Blit(sfcSource, float(fx), float(fy), float(wdt), float(hgt), sfcTarget, static_cast<float>(tx), static_cast<float>(ty), static_cast<float>(wdt), static_cast<float>(hgt), false);
 }
 
 void CStdDDraw::Blit8Fast(CSurface8 *sfcSource, int fx, int fy,
@@ -631,6 +631,13 @@ void CStdDDraw::Blit8Fast(CSurface8 *sfcSource, int fx, int fy,
 }
 
 bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float fhgt,
+	CSurface *sfcTarget, int tx, int ty, int twdt, int thgt,
+	bool fSrcColKey, CBltTransform *pTransform, bool noScalingCorrection)
+{
+	return Blit(sfcSource, fx, fy, fwdt, fhgt, sfcTarget, static_cast<float>(tx), static_cast<float>(ty), static_cast<float>(twdt), static_cast<float>(thgt), fSrcColKey, pTransform, noScalingCorrection);
+}
+
+bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float fhgt,
 	CSurface *sfcTarget, float tx, float ty, float twdt, float thgt,
 	bool fSrcColKey, CBltTransform *pTransform, bool noScalingCorrection)
 {
@@ -638,7 +645,7 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	if (!sfcSource || !sfcTarget || !twdt || !thgt || !fwdt || !fhgt) return false;
 	// emulated blit?
 	if (!sfcTarget->IsRenderTarget())
-		return Blit8(sfcSource, int(fx), int(fy), int(fwdt), int(fhgt), sfcTarget, tx, ty, twdt, thgt, fSrcColKey, pTransform);
+		return Blit8(sfcSource, static_cast<int>(fx), static_cast<int>(fy), static_cast<int>(fwdt), static_cast<int>(fhgt), sfcTarget, static_cast<int>(tx), static_cast<int>(ty), static_cast<int>(twdt), static_cast<int>(thgt), fSrcColKey, pTransform);
 	// calc stretch
 
 	const auto scalingCorrection = (pApp->GetScale() != 1.f && !noScalingCorrection ? 0.5f : 0.f);
@@ -666,7 +673,7 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 		if (sfcSource->fPrimary)
 		{
 			// blit emulated
-			return Blit8(sfcSource, int(fx), int(fy), int(fwdt), int(fhgt), sfcTarget, tx, ty, twdt, thgt, fSrcColKey);
+			return Blit8(sfcSource, static_cast<int>(fx), int(fy), int(fwdt), int(fhgt), sfcTarget, static_cast<int>(tx), static_cast<int>(ty), static_cast<int>(twdt), static_cast<int>(thgt), fSrcColKey);
 		}
 		return false;
 	}
@@ -711,20 +718,20 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 				scaleX2 = scaleX * (iTexSize + DDrawCfg.fTexIndent * 2);
 				scaleY2 = scaleY * (iTexSize + DDrawCfg.fTexIndent * 2);
 			}
-			int maxXChunk = std::min<int>((fx + fwdt - iBlitX - 1) / chunkSize + 1, iTexSize / chunkSize);
-			int maxYChunk = std::min<int>((fy + fhgt - iBlitY - 1) / chunkSize + 1, iTexSize / chunkSize);
-			for (int yChunk = std::max<int>((fy - iBlitY) / chunkSize, 0); yChunk < maxYChunk; ++yChunk)
+			int maxXChunk = std::min<int>(static_cast<int>((fx + fwdt - iBlitX - 1) / chunkSize + 1), iTexSize / chunkSize);
+			int maxYChunk = std::min<int>(static_cast<int>((fy + fhgt - iBlitY - 1) / chunkSize + 1), iTexSize / chunkSize);
+			for (int yChunk = std::max<int>(static_cast<int>((fy - iBlitY) / chunkSize), 0); yChunk < maxYChunk; ++yChunk)
 			{
-				for (int xChunk = std::max<int>((fx - iBlitX) / chunkSize, 0); xChunk < maxXChunk; ++xChunk)
+				for (int xChunk = std::max<int>(static_cast<int>((fx - iBlitX) / chunkSize), 0); xChunk < maxXChunk; ++xChunk)
 				{
 					int xOffset = xChunk * chunkSize;
 					int yOffset = yChunk * chunkSize;
 					// get new texture source bounds
 					FLOAT_RECT fTexBlt;
-					fTexBlt.left   = std::max<float>(xOffset, fx - iBlitX);
-					fTexBlt.top    = std::max<float>(yOffset, fy - iBlitY);
-					fTexBlt.right  = std::min<float>(xOffset + chunkSize, fx + fwdt - iBlitX);
-					fTexBlt.bottom = std::min<float>(yOffset + chunkSize, fy + fhgt - iBlitY);
+					fTexBlt.left   = std::max<float>(static_cast<float>(xOffset), fx - iBlitX);
+					fTexBlt.top    = std::max<float>(static_cast<float>(yOffset), fy - iBlitY);
+					fTexBlt.right  = std::min<float>(static_cast<float>(xOffset + chunkSize), fx + fwdt - iBlitX);
+					fTexBlt.bottom = std::min<float>(static_cast<float>(yOffset + chunkSize), fy + fhgt - iBlitY);
 					// get new dest bounds
 					FLOAT_RECT tTexBlt;
 					tTexBlt.left   = (fTexBlt.left - fx + iBlitX) * scaleX + tx;
@@ -849,7 +856,7 @@ bool CStdDDraw::BlitRotate(CSurface *sfcSource, int fx, int fy, int fwdt, int fh
 		sfcSource->Unlock(); return false;
 	}
 	// Rectangle centers
-	fcx = fwdt / 2; fcy = fhgt / 2;
+	fcx = static_cast<int>(fwdt / 2); fcy = static_cast<int>(fhgt / 2);
 	tcx = twdt / 2; tcy = thgt / 2;
 	// Adjust angle range
 	while (iAngle < 0) iAngle += 36000; while (iAngle > 35999) iAngle -= 36000;

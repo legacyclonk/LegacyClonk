@@ -460,7 +460,7 @@ void C4Object::DrawFace(C4FacetEx &cgo, int32_t cgoX, int32_t cgoY, int32_t iPha
 	{
 		lpDDraw->Blit(GetGraphics()->GetBitmap(Color),
 			fx, fy, fwdt, fhgt,
-			cgo.Surface, (int)tx, (int)ty, (int)twdt, (int)thgt,
+			cgo.Surface, tx, ty, twdt, thgt,
 			true, nullptr);
 	}
 	// Rotated or transformed
@@ -478,7 +478,7 @@ void C4Object::DrawFace(C4FacetEx &cgo, int32_t cgoX, int32_t cgoY, int32_t iPha
 		}
 		lpDDraw->Blit(GetGraphics()->GetBitmap(Color),
 			fx, fy, fwdt, fhgt,
-			cgo.Surface, (int)tx, (int)ty, (int)twdt, (int)thgt,
+			cgo.Surface, tx, ty, twdt, thgt,
 			true, &rot);
 	}
 }

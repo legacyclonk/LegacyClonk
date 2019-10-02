@@ -204,7 +204,7 @@ bool CStdFont::CheckRenderedCharSpace(uint32_t iCharWdt, uint32_t iCharHgt)
 
 bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 {
-	int shadowSize = fDoShadow ? std::round(scale) : 0;
+	int shadowSize = fDoShadow ? static_cast<int>(std::round(scale)) : 0;
 #if defined(_WIN32) && !defined(HAVE_FREETYPE)
 
 	// Win32-API character rendering
@@ -398,7 +398,7 @@ void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFo
 	// clear previous
 	Clear();
 	this->scale = scale;
-	dwHeight *= scale;
+	dwHeight = static_cast<uint32_t>(dwHeight * scale);
 	// set values
 	iHSpace = fDoShadow ? -1 : 0; // horizontal shadow
 	dwWeight = dwFontWeight;
@@ -711,7 +711,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 	// safety
 	if (!szText) return false;
 	// keep track of each row's size
-	int lineStepHeight = std::ceil(iLineHgt / realScale);
+	int lineStepHeight = static_cast<int>(std::ceil(iLineHgt / realScale));
 	int iRowWdt = 0, iWdt = 0, iHgt = lineStepHeight;
 	// ignore any markup
 	CMarkup MarkupChecker(false);
@@ -742,7 +742,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 			if (fct.Hgt)
 			{
 				// image found: adjust aspect by font height and calc appropriate width
-				iRowWdt += (fct.Wdt * iGfxLineHgt) / realScale / fct.Hgt;
+				iRowWdt += static_cast<int>((fct.Wdt * iGfxLineHgt) / realScale / fct.Hgt);
 			}
 			else
 			{
@@ -756,7 +756,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 		{
 			// regular char
 			// look up character width in texture coordinates table
-			iRowWdt += GetCharacterFacet(c).Wdt / realScale / iFontZoom;
+			iRowWdt += static_cast<int>(GetCharacterFacet(c).Wdt / realScale / iFontZoom);
 		}
 		// apply horizontal indent for all but last char
 		if (*szText) iRowWdt += iHSpace;
@@ -814,7 +814,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 				if (fct.Hgt)
 				{
 					// image found: adjust aspect by font height and calc appropriate width
-					iCharWdt = (fct.Wdt * iGfxLineHgt) / scale / fct.Hgt;
+					iCharWdt = static_cast<int>((fct.Wdt * iGfxLineHgt) / scale / fct.Hgt);
 				}
 				else
 				{
@@ -830,7 +830,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 				// regular char
 				// look up character width in texture coordinates table
 				if (c >= ' ')
-					iCharWdt = fZoom * GetCharacterFacet(c).Wdt / iFontZoom / scale + iHSpace;
+					iCharWdt = static_cast<int>(fZoom * GetCharacterFacet(c).Wdt / iFontZoom / scale + iHSpace);
 				else
 					iCharWdt = 0; // OMFG ctrl char
 			}
@@ -942,7 +942,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 
 void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom)
 {
-	float x = iX, y = iY;
+	float x = static_cast<float>(iX), y = static_cast<float>(iY);
 	CBltTransform bt, *pbt = nullptr;
 	// set blit color
 	dwColor = InvertRGBAAlpha(dwColor);
@@ -1029,7 +1029,7 @@ void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, con
 			// regular char
 			// get texture coordinates
 			fctFromBlt = GetCharacterFacet(c);
-			w2 = int(fctFromBlt.Wdt * fZoom); h2 = int(fctFromBlt.Hgt * fZoom);
+			w2 = fctFromBlt.Wdt * fZoom; h2 = fctFromBlt.Hgt * fZoom;
 			lpDDraw->ActivateBlitModulation(dwColor);
 		}
 		// do color/markup
@@ -1064,7 +1064,7 @@ void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, con
 
 int CStdFont::GetLineHeight() const
 {
-	return iLineHgt / scale;
+	return static_cast<int>(iLineHgt / scale);
 }
 
 // The internal clonk charset is one of the windows charsets

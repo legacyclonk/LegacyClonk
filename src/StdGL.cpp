@@ -475,10 +475,10 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 					// get new dest bounds
 					FLOAT_RECT tTexBlt;
 					// set up blit data as rect
-					fTexBlt.left = std::max<float>(xOffset, fx - iBlitX);
-					fTexBlt.top  = std::max<float>(yOffset, fy - iBlitY);
-					fTexBlt.right  = std::min<float>(fx + wdt - iBlitX, xOffset + chunkSize);
-					fTexBlt.bottom = std::min<float>(fy + hgt - iBlitY, yOffset + chunkSize);
+					fTexBlt.left = std::max<float>(static_cast<float>(xOffset), fx - iBlitX);
+					fTexBlt.top  = std::max<float>(static_cast<float>(yOffset), fy - iBlitY);
+					fTexBlt.right  = std::min<float>(fx + wdt - iBlitX, static_cast<float>(xOffset + chunkSize));
+					fTexBlt.bottom = std::min<float>(fy + hgt - iBlitY, static_cast<float>(yOffset + chunkSize));
 
 					tTexBlt.left = fTexBlt.left + iBlitX - fx + tx;
 					tTexBlt.top  = fTexBlt.top + iBlitY - fy + ty;
