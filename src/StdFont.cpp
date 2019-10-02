@@ -397,8 +397,8 @@ void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFo
 	const auto realHeight = dwHeight;
 	// clear previous
 	Clear();
+	this->scale = scale;
 	dwHeight *= scale;
-	this->scale = static_cast<float>(dwHeight) / realHeight;
 	// set values
 	iHSpace = fDoShadow ? -1 : 0; // horizontal shadow
 	dwWeight = dwFontWeight;
@@ -563,6 +563,7 @@ void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFo
 	}
 	// adjust line height
 	iLineHgt /= iFontZoom;
+	this->scale = static_cast<float>(dwHeight) / realHeight;
 
 	fPrerenderedFont = false;
 	if (0) for (int i = 0; i < iNumFontSfcs; ++i)
@@ -941,6 +942,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 
 void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom)
 {
+	float x = iX, y = iY;
 	CBltTransform bt, *pbt = nullptr;
 	// set blit color
 	dwColor = InvertRGBAAlpha(dwColor);
@@ -955,16 +957,14 @@ void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, con
 		// centered
 		int32_t sx, sy;
 		GetTextExtent(szText, sx, sy, !(dwFlags & STDFONT_NOMARKUP));
-		sx = int(fZoom * sx); sy = int(fZoom * sy);
-		iX -= sx / 2;
+		x -= fZoom * (sx / 2);
 	}
 	else if (dwFlags & STDFONT_RIGHTALGN)
 	{
 		// right-aligned
 		int32_t sx, sy;
 		GetTextExtent(szText, sx, sy, !(dwFlags & STDFONT_NOMARKUP));
-		sx = int(fZoom * sx); sy = int(fZoom * sy);
-		iX -= sx;
+		x -= fZoom * sx;
 	}
 	// apply texture zoom
 	fZoom /= scale;
@@ -993,7 +993,7 @@ void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, con
 			// invalid tag: render it as text
 			++szText;
 		}
-		int w2, h2; // dst width/height
+		float w2, h2; // dst width/height
 		// custom image?
 		int iImgLgt;
 		if (c == '{' && szText[0] == '{' && szText[1] != '{' && (iImgLgt = SCharPos('}', szText + 1)) > 0 && szText[iImgLgt + 2] == '}' && !(dwFlags & STDFONT_NOMARKUP))
@@ -1043,17 +1043,17 @@ void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, con
 			if (dwBlitClr != dwColor) ModulateClrA(dwBlitClr, dwAlphaMod);
 			lpDDraw->ActivateBlitModulation(dwBlitClr);
 			// move transformation center to center of letter
-			float fOffX = (float)w2 / 2 + iX;
-			float fOffY = (float)h2 / 2 + iY;
+			float fOffX = w2 / 2 + x;
+			float fOffY = h2 / 2 + y;
 			bt.mat[2] += fOffX - fOffX * bt.mat[0] - fOffY * bt.mat[1];
 			bt.mat[5] += fOffY - fOffX * bt.mat[3] - fOffY * bt.mat[4];
 		}
 		// blit character or image
 		lpDDraw->Blit(fctFromBlt.Surface, float(fctFromBlt.X), float(fctFromBlt.Y), float(fctFromBlt.Wdt), float(fctFromBlt.Hgt),
-			sfcDest, iX, iY, w2, h2,
-			true, pbt);
+			sfcDest, x, y, w2, h2,
+			true, pbt, true);
 		// advance pos and skip character indent
-		iX += w2 + iHSpace;
+		x += w2 + iHSpace;
 	}
 	// reset blit modulation
 	if (fWasModulated)

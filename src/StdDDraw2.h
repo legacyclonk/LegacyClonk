@@ -250,8 +250,8 @@ public:
 	void Blit8Fast(CSurface8 *sfcSource, int fx, int fy,
 		CSurface *sfcTarget, int tx, int ty, int wdt, int hgt);
 	bool Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float fhgt,
-		CSurface *sfcTarget, int tx, int ty, int twdt, int thgt,
-		bool fSrcColKey = false, CBltTransform *pTransform = nullptr);
+		CSurface *sfcTarget, float tx, float ty, float twdt, float thgt,
+		bool fSrcColKey = false, CBltTransform *pTransform = nullptr, bool noScalingCorrection = false);
 	virtual void PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact) = 0;
 	bool Blit8(CSurface *sfcSource, int fx, int fy, int fwdt, int fhgt, // force 8bit-blit (inline)
 		CSurface *sfcTarget, int tx, int ty, int twdt, int thgt,

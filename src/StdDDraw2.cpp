@@ -631,8 +631,8 @@ void CStdDDraw::Blit8Fast(CSurface8 *sfcSource, int fx, int fy,
 }
 
 bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float fhgt,
-	CSurface *sfcTarget, int tx, int ty, int twdt, int thgt,
-	bool fSrcColKey, CBltTransform *pTransform)
+	CSurface *sfcTarget, float tx, float ty, float twdt, float thgt,
+	bool fSrcColKey, CBltTransform *pTransform, bool noScalingCorrection)
 {
 	// safety
 	if (!sfcSource || !sfcTarget || !twdt || !thgt || !fwdt || !fhgt) return false;
@@ -641,7 +641,7 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 		return Blit8(sfcSource, int(fx), int(fy), int(fwdt), int(fhgt), sfcTarget, tx, ty, twdt, thgt, fSrcColKey, pTransform);
 	// calc stretch
 
-	const auto scalingCorrection = (pApp->GetScale() != 1.f ? 0.5f : 0.f);
+	const auto scalingCorrection = (pApp->GetScale() != 1.f && !noScalingCorrection ? 0.5f : 0.f);
 
 	fx += scalingCorrection;
 	fy += scalingCorrection;
@@ -649,8 +649,8 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	fwdt -= 2 * scalingCorrection;
 	fhgt -= 2 * scalingCorrection;
 
-	float scaleX = (float)twdt / fwdt;
-	float scaleY = (float)thgt / fhgt;
+	float scaleX = twdt / fwdt;
+	float scaleY = thgt / fhgt;
 	// bound
 	if (ClipAll) return true;
 	// check exact
