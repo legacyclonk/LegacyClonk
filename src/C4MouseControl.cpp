@@ -386,19 +386,19 @@ void C4MouseControl::Draw(C4FacetEx &cgo)
 		}
 		// Cursor
 		else
-			GfxR->fctMouseCursor.DrawT(cgo.Surface, (cgo.X + VpX) * scale - iOffsetX, (cgo.Y + VpY) * scale - iOffsetY, Cursor, 0, &transform);
+			GfxR->fctMouseCursor.DrawT(cgo.Surface, (cgo.X + VpX) * scale - iOffsetX, (cgo.Y + VpY) * scale - iOffsetY, Cursor, 0, &transform, true);
 		// Point
 		if ((ShowPointX != -1) && (ShowPointY != -1))
 			GfxR->fctMouseCursor.DrawT(cgo.Surface,
 				(cgo.X + ShowPointX - cgo.TargetX) * scale - GfxR->fctMouseCursor.Wdt / 2,
 				(cgo.Y + ShowPointY - cgo.TargetY) * scale - GfxR->fctMouseCursor.Hgt / 2,
-				C4MC_Cursor_Point, 0, &transform);
+				C4MC_Cursor_Point, 0, &transform, true);
 		// Add mark
 		if (fAddMark)
 			GfxR->fctMouseCursor.DrawT(cgo.Surface,
 				(cgo.X + VpX) * scale - iOffsetX + 8,
 				(cgo.Y + VpY) * scale - iOffsetY + 8,
-				C4MC_Cursor_Add, 0, &transform);
+				C4MC_Cursor_Add, 0, &transform, true);
 		break;
 	}
 

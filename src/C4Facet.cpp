@@ -62,17 +62,17 @@ void C4Facet::Draw(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX,
 
 #ifdef C4ENGINE
 
-void C4Facet::DrawT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform)
+void C4Facet::DrawT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection)
 {
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 
 	lpDDraw->Blit(Surface,
 		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
 		sfcTarget,
-		iX, iY, Wdt, Hgt, true, pTransform);
+		iX, iY, Wdt, Hgt, true, pTransform, noScalingCorrection);
 }
 
-void C4Facet::DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform)
+void C4Facet::DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection)
 {
 	if (!lpDDraw || !Surface || !cgo.Surface || !Wdt || !Hgt) return;
 
@@ -98,7 +98,7 @@ void C4Facet::DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY
 	lpDDraw->Blit(Surface,
 		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
 		ccgo.Surface, ccgo.X, ccgo.Y, ccgo.Wdt, ccgo.Hgt,
-		true, pTransform);
+		true, pTransform, noScalingCorrection);
 }
 
 #endif // C4ENGINE
@@ -338,14 +338,14 @@ void C4Facet::DrawXFloat(CSurface *sfcTarget, float fX, float fY, float fWdt, fl
 }
 
 #ifdef C4ENGINE
-void C4Facet::DrawXT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform)
+void C4Facet::DrawXT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection)
 {
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 	lpDDraw->Blit(Surface,
 		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
 		sfcTarget,
 		iX, iY, iWdt, iHgt,
-		true, pTransform);
+		true, pTransform, noScalingCorrection);
 }
 #endif // C4ENGINE
 
