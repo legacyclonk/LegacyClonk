@@ -834,8 +834,8 @@ void C4Game::InitFullscreenComponents(bool fRunning)
 		cgo2.Set(Application.DDraw->lpBack, 0, 0, Config.Graphics.ResX, C4UpperBoard::Height());
 
 		C4Facet cgo;
-		cgo.Set(Application.DDraw->lpBack, 0, Config.Graphics.ResY - Game.GraphicsResource.FontRegular.iLineHgt,
-			Config.Graphics.ResX, Game.GraphicsResource.FontRegular.iLineHgt);
+		cgo.Set(Application.DDraw->lpBack, 0, Config.Graphics.ResY - Game.GraphicsResource.FontRegular.GetLineHeight(),
+			Config.Graphics.ResX, Game.GraphicsResource.FontRegular.GetLineHeight());
 		GraphicsSystem.UpperBoard.Init(cgo2, cgo);
 		GraphicsSystem.MessageBoard.Init(cgo, false);
 
@@ -1787,7 +1787,7 @@ void C4Game::DrawCursors(C4FacetEx &cgo, int32_t iPlayer)
 						if (cursor->Info)
 						{
 							std::string text{cursor->GetName()};
-							int32_t texthgt = Game.GraphicsResource.FontRegular.iLineHgt;
+							int32_t texthgt = Game.GraphicsResource.FontRegular.GetLineHeight();
 							if (cursor->Info->Rank > 0)
 							{
 								text = FormatString("%s|%s", cursor->Info->sRankName.getData(), cursor->GetName()).getData();

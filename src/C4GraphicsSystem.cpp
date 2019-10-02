@@ -683,7 +683,7 @@ void C4GraphicsSystem::DrawHoldMessages()
 	{
 		if (Game.HaltCount)
 		{
-			Application.DDraw->TextOut("Pause", Game.GraphicsResource.FontRegular, 1.0, Application.DDraw->lpBack, Config.Graphics.ResX / 2, Config.Graphics.ResY / 2 - Game.GraphicsResource.FontRegular.iLineHgt * 2, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
+			Application.DDraw->TextOut("Pause", Game.GraphicsResource.FontRegular, 1.0, Application.DDraw->lpBack, Config.Graphics.ResX / 2, Config.Graphics.ResY / 2 - Game.GraphicsResource.FontRegular.GetLineHeight() * 2, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
 			Game.GraphicsSystem.OverwriteBg();
 		}
 	}

@@ -940,7 +940,7 @@ void DrawCommandKey(C4Facet &cgo, int32_t iCom, bool fPressed, const char *szTex
 	CStdFont &rFont = (cgo.Hgt <= C4MN_SymbolSize) ? Game.GraphicsResource.FontTiny : Game.GraphicsResource.FontRegular;
 	// Draw text
 	if (szText && Config.Graphics.ShowCommandKeys)
-		Application.DDraw->TextOut(szText, rFont, 1.0, cgo.Surface, cgo.X + cgo.Wdt / 2, cgo.Y + cgo.Hgt - rFont.iLineHgt - 2, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
+		Application.DDraw->TextOut(szText, rFont, 1.0, cgo.Surface, cgo.X + cgo.Wdt / 2, cgo.Y + cgo.Hgt - rFont.GetLineHeight() - 2, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
 }
 
 void DrawControlKey(C4Facet &cgo, int32_t iControl, bool fPressed, const char *szText)
@@ -953,7 +953,7 @@ void DrawControlKey(C4Facet &cgo, int32_t iControl, bool fPressed, const char *s
 	CStdFont &rFont = (cgo.Hgt <= C4MN_SymbolSize) ? Game.GraphicsResource.FontRegular : Game.GraphicsResource.FontTiny;
 	// Draw text
 	if (szText)
-		Application.DDraw->TextOut(szText, rFont, 1.0, cgo.Surface, cgo.X + cgo.Wdt / 2, cgo.Y + cgo.Hgt - rFont.iLineHgt - 2, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
+		Application.DDraw->TextOut(szText, rFont, 1.0, cgo.Surface, cgo.X + cgo.Wdt / 2, cgo.Y + cgo.Hgt - rFont.GetLineHeight() - 2, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
 }
 
 bool SellFromBase(int32_t iPlr, C4Object *pBaseObj, C4ID id, C4Object *pSellObj)

@@ -203,7 +203,7 @@ void C4MenuItem::DrawElement(C4FacetEx &cgo)
 	{
 		char szCount[10 + 1];
 		sprintf(szCount, "%ix", Count);
-		Application.DDraw->TextOut(szCount, Game.GraphicsResource.FontRegular, 1.0, cgoItemText.Surface, cgoItemText.X + cgoItemText.Wdt - 1, cgoItemText.Y + cgoItemText.Hgt - 1 - Game.GraphicsResource.FontRegular.iLineHgt, CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
+		Application.DDraw->TextOut(szCount, Game.GraphicsResource.FontRegular, 1.0, cgoItemText.Surface, cgoItemText.X + cgoItemText.Wdt - 1, cgoItemText.Y + cgoItemText.Hgt - 1 - Game.GraphicsResource.FontRegular.GetLineHeight(), CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 	}
 }
 

@@ -225,7 +225,7 @@ void C4MessageBoard::Init(C4Facet &cgo, bool fStartup)
 	Active = true;
 	Output = cgo;
 	Startup = fStartup;
-	iLineHgt = Game.GraphicsResource.FontRegular.iLineHgt;
+	iLineHgt = Game.GraphicsResource.FontRegular.GetLineHeight();
 	LogBuffer.SetLBWidth(Output.Wdt);
 
 	if (!Startup)
