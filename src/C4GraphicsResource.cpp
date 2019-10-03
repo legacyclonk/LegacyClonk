@@ -25,6 +25,8 @@
 
 #include <StdGL.h>
 
+#include <array>
+
 C4GraphicsResource::C4GraphicsResource()
 {
 	Default();
@@ -295,7 +297,7 @@ bool C4GraphicsResource::LoadCursorGfx()
 	// old-style cursor file overloads new-stye, because old scenarios might want to have their own cursors
 	if (!LoadFile(fctMouseCursor, "Cursor", Files, C4FCT_Height, C4FCT_Full, true))
 	{
-		static const char *cursors[3] = {"CursorLarge", "CursorMedium", "CursorSmall"};
+		static const char *cursors[8] = {"CursorXXXXXLarge", "CursorXXXXLarge", "CursorXXXLarge", "CursorXXLarge", "CursorXLarge", "CursorLarge", "CursorMedium", "CursorSmall"};
 		for (size_t i = 0; i < sizeof(fctCursors) / sizeof(fctCursors[0]); ++i)
 		{
 			if (!LoadFile(fctCursors[i], cursors[i], Files, C4FCT_Height, C4FCT_Full))
@@ -452,9 +454,27 @@ bool C4GraphicsResource::ReloadResolutionDependentFiles()
 {
 	// reload any files that depend on the current resolution
 	// reloads the cursor
-
-	const auto resX = Config.Graphics.ResX * Application.GetScale();
-	size_t index = resX >= 1280 ? 0 : resX >= 800 ? 1 : 2;
+	const auto scale = Application.GetScale();
+	const auto resX = Config.Graphics.ResX * scale * scale;
+	constexpr std::array breakPoints
+	{
+		8640,
+		5760,
+		3840,
+		2560,
+		1920,
+		1280,
+		800
+	};
+	size_t index = 0;
+	for (const auto selectX : breakPoints)
+	{
+		if (resX >= selectX)
+		{
+			break;
+		}
+		++index;
+	}
 	if (!fctCursors[index].Wdt && !LoadCursorGfx()) return false;
 	if (fctCursors[index].Wdt)
 	{

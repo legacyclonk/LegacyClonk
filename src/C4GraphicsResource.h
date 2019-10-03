@@ -58,7 +58,7 @@ public:
 	C4Surface sfcLiquidAnimation; int32_t idSfcLiquidAnimation;
 	C4FacetExID fctCaptain;
 	C4FacetExID fctMouseCursor;
-	C4FacetExID fctCursors[3];
+	C4FacetExID fctCursors[8];
 	bool fOldStyleCursor; // if set, offsets need to be applied to some cursor facets
 	C4FacetExID fctSelectMark;
 	C4FacetExID fctOptions;
