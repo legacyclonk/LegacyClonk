@@ -1768,6 +1768,10 @@ void C4Game::Evaluate()
 
 void C4Game::DrawCursors(C4FacetEx &cgo, int32_t iPlayer)
 {
+	const auto scale = Application.GetScale();
+	const auto inverseScale = 1 / scale;
+	C4DrawTransform transform;
+	transform.SetMoveScale(0.f, 0.f, inverseScale, inverseScale);
 	// Draw cursor mark arrow & cursor object name
 	int32_t cox, coy, cphase;
 	C4Object *cursor;
@@ -1778,12 +1782,12 @@ void C4Game::DrawCursors(C4FacetEx &cgo, int32_t iPlayer)
 				if (pPlr->Cursor)
 				{
 					cursor = pPlr->Cursor;
-					cox = cursor->x - fctCursor.Wdt / 2 - cgo.TargetX;
-					coy = cursor->y - cursor->Def->Shape.Hgt / 2 - fctCursor.Hgt - cgo.TargetY;
+					cox = cgo.X + cursor->x - cgo.TargetX;
+					coy = cgo.Y + cursor->y - cgo.TargetY;
 					if (Inside<int32_t>(cox, 1 - fctCursor.Wdt, cgo.Wdt) && Inside<int32_t>(coy, 1 - fctCursor.Hgt, cgo.Hgt))
 					{
 						cphase = 0; if (cursor->Contained) cphase = 1;
-						fctCursor.Draw(cgo.Surface, cgo.X + cox, cgo.Y + coy, cphase);
+						fctCursor.DrawT(cgo.Surface, static_cast<int>(cox * scale) - fctCursor.Wdt / 2, static_cast<int>(coy * scale) - cursor->Def->Shape.Hgt / 2 - fctCursor.Hgt, cphase, 0, &transform, true);
 						if (cursor->Info)
 						{
 							std::string text{cursor->GetName()};
@@ -1795,8 +1799,8 @@ void C4Game::DrawCursors(C4FacetEx &cgo, int32_t iPlayer)
 							}
 
 							Application.DDraw->TextOut(text.c_str(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
-								cgo.X + cox + fctCursor.Wdt / 2,
-								cgo.Y + coy - 2 - texthgt,
+								cox,
+								coy - cursor->Def->Shape.Hgt / 2 - static_cast<int>(fctCursor.Hgt / scale) - 2 - texthgt,
 								0xffff0000, ACenter);
 						}
 					}
