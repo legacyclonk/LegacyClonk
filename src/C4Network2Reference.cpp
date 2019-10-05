@@ -66,7 +66,6 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 
 	// Special additional information in reference
 	Icon = pGame->C4S.Head.Icon;
-	Title.CopyValidated(pGame->ScenarioTitle);
 	GameStatus = pGame->Network.Status;
 	Time = pGame->Time;
 	Frame = pGame->FrameCounter;
@@ -91,7 +90,6 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 void C4Network2Reference::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(Icon,                                               "Icon",              0));
-	pComp->Value(mkNamingAdapt(Title,                                              "Title",             "No title"));
 	pComp->Value(mkParAdapt(GameStatus, true));
 	pComp->Value(mkNamingAdapt(Time,                                               "Time",              0));
 	pComp->Value(mkNamingAdapt(Frame,                                              "Frame",             0));
@@ -111,10 +109,11 @@ void C4Network2Reference::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkArrayAdaptDM(Game.iVer, 0),                       "Version"));
 	pComp->Value(mkNamingAdapt(Game.iBuild,                                        "Build",             -1));
 	pComp->Value(mkNamingAdapt(OfficialServer,                                     "OfficialServer",    false));
-	pComp->Value(mkNamingAdapt(NetpuncherGameID,                                   "NetpuncherID",      C4NetpuncherID(), false, false));
-	pComp->Value(mkNamingAdapt(NetpuncherAddr,                                     "NetpuncherAddr",    "", false, false));
 
 	pComp->Value(Parameters);
+
+	pComp->Value(mkNamingAdapt(NetpuncherGameID,                                   "NetpuncherID",      C4NetpuncherID(), false, false));
+	pComp->Value(mkNamingAdapt(NetpuncherAddr,                                     "NetpuncherAddr",    "", false, false));
 }
 
 int32_t C4Network2Reference::getSortOrder() const // Don't go over 100, because that's for the masterserver...

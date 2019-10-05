@@ -46,7 +46,6 @@ public:
 private:
 	// General information
 	int32_t Icon;
-	ValidatedStdStrBuf<C4InVal::VAL_NameExNoEmpty> Title;
 	C4Network2Status GameStatus;
 	int32_t Time;
 	int32_t Frame;
@@ -72,7 +71,7 @@ public:
 	const C4Network2Address &getAddr(int i) const { return Addrs[i]; }
 	C4Network2Address &getAddr(const int i) { return Addrs[i]; }
 	int getAddrCnt() const { return iAddrCnt; }
-	const char *getTitle() const { return Title.getData(); }
+	const char *getTitle() const { return Parameters.ScenarioTitle.getData(); }
 	int32_t getIcon() const { return Icon; }
 	C4Network2Status getGameStatus() const { return GameStatus; }
 	const char *getComment() const { return Comment.getData(); }

@@ -321,6 +321,7 @@ void C4GameParameters::Clear()
 	LeagueAddress.Clear();
 	Rules.Clear();
 	Goals.Clear();
+	ScenarioTitle.Ref("No title");
 	Scenario.Clear();
 	GameRes.Clear();
 	Clients.Clear();
@@ -541,6 +542,7 @@ void C4GameParameters::CompileFunc(StdCompiler *pComp, C4Scenario *pScenario)
 	{
 		pComp->Value(mkNamingAdapt(LeagueAddress, "LeagueAddress", ""));
 
+		pComp->Value(mkNamingAdapt(ScenarioTitle, "Title", "No title"));
 		pComp->Value(mkNamingAdapt(Scenario, "Scenario"));
 		pComp->Value(GameRes);
 

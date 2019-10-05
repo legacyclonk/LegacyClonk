@@ -452,7 +452,7 @@ bool C4MainMenu::ActivateSavegame(int32_t iPlayer)
 	// * language titles are stored in folders as title component
 	StdStrBuf strFilename, strTitle;
 	strFilename.Format("%s.c4f%c%s%%d.c4s", ScenName, DirectorySeparator, ScenName);
-	strTitle.Ref(Game.ScenarioTitle);
+	strTitle.Ref(Game.Parameters.ScenarioTitle);
 
 	// Create menu items
 	StdStrBuf strFilenameIndexed, strCommand, strCaption, strSavePath;

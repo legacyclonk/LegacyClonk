@@ -72,7 +72,7 @@ bool C4GameSave::SaveCore()
 	// reset some network flags
 	rC4S.Head.NetworkGame = 0;
 	// Title in language game was started in (not: save scenarios and net references)
-	if (!GetKeepTitle()) SCopy(Game.ScenarioTitle.getData(), rC4S.Head.Title, C4MaxTitle);
+	if (!GetKeepTitle()) SCopy(Game.Parameters.ScenarioTitle.getData(), rC4S.Head.Title, C4MaxTitle);
 	// some adjustments for everything but saved scenarios
 	if (IsExact())
 	{
@@ -267,7 +267,7 @@ bool C4GameSave::SaveDesc(C4Group &hToGroup)
 	sBuffer.Append(LineFeed);
 
 	// Scenario title
-	sBuffer.AppendFormat("\\uc1\\pard\\ulnone\\b\\f0\\fs20 %s\\par", Game.ScenarioTitle.getData());
+	sBuffer.AppendFormat("\\uc1\\pard\\ulnone\\b\\f0\\fs20 %s\\par", Game.Parameters.ScenarioTitle.getData());
 	sBuffer.Append(LineFeed "\\b0\\fs16\\par" LineFeed);
 
 	// OK; each specializations has its own desc format
@@ -564,7 +564,7 @@ void C4GameSaveRecord::AdjustCore(C4Scenario &rC4S)
 	rC4S.Head.Icon = 29;
 	// default record title
 	char buf[1024 + 1];
-	sprintf(buf, "%03i %s [%d]", iNum, Game.ScenarioTitle.getData(), (int)C4XVERBUILD);
+	sprintf(buf, "%03i %s [%d]", iNum, Game.Parameters.ScenarioTitle.getData(), (int)C4XVERBUILD);
 	SCopy(buf, rC4S.Head.Title, C4MaxTitle);
 }
 

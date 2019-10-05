@@ -944,7 +944,7 @@ void C4Player::Evaluate()
 	const int32_t SuccessBonus = 100;
 
 	// Set last round
-	LastRound.Title = Game.ScenarioTitle;
+	LastRound.Title = Game.Parameters.ScenarioTitle;
 	time(reinterpret_cast<time_t *>(&LastRound.Date));
 	LastRound.Duration = Game.Time;
 	LastRound.Won = !Eliminated;

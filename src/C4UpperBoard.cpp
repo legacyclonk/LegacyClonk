@@ -87,7 +87,7 @@ void C4UpperBoard::Draw(C4Facet &cgo)
 	if (mode != Mini)
 	{
 		// Scenario title
-		Application.DDraw->TextOut(Game.ScenarioTitle.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, 10, cgo.Hgt / 2 - Game.GraphicsResource.FontRegular.GetLineHeight() / 2, 0xFFFFFFFF);
+		Application.DDraw->TextOut(Game.Parameters.ScenarioTitle.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, 10, cgo.Hgt / 2 - Game.GraphicsResource.FontRegular.GetLineHeight() / 2, 0xFFFFFFFF);
 	}
 }
 

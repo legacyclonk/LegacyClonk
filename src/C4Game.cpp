@@ -221,11 +221,6 @@ bool C4Game::OpenScenario()
 			LogFatal(LoadResStr("IDS_PRC_NOMISSIONACCESS")); return false;
 		}
 
-	// Title
-	Title.LoadEx(LoadResStr("IDS_CNS_TITLE"), ScenarioFile, C4CFN_Title, Config.General.LanguageEx);
-	if (!Title.GetLanguageString(Config.General.LanguageEx, ScenarioTitle))
-		ScenarioTitle.Copy(C4S.Head.Title);
-
 	// Game (runtime data)
 	GameText.Load(C4CFN_Game, ScenarioFile, C4CFN_Game);
 
@@ -240,6 +235,11 @@ bool C4Game::OpenScenario()
 	if (!Network.isEnabled() || Network.isHost())
 		if (!Parameters.Load(ScenarioFile, &C4S, GameText.GetData(), &ScenarioLangStringTable, DefinitionFilenames))
 			return false;
+
+	// Title
+	Title.LoadEx(LoadResStr("IDS_CNS_TITLE"), ScenarioFile, C4CFN_Title, Config.General.LanguageEx);
+	if (!Title.GetLanguageString(Config.General.LanguageEx, Parameters.ScenarioTitle))
+		Parameters.ScenarioTitle.CopyValidated(C4S.Head.Title);
 
 	// Load Strings (since kept objects aren't denumerated in sect-load, no problems should occur...)
 	if (ScenarioFile.FindEntry(C4CFN_Strings))
@@ -1682,7 +1682,7 @@ void C4Game::Default()
 	DefinitionFilenames.clear();
 	DirectJoinAddress[0] = 0;
 	pJoinReference = nullptr;
-	ScenarioTitle.Ref("Loading...");
+	Parameters.ScenarioTitle.Ref("Loading...");
 	HaltCount = 0;
 	Evaluated = false;
 	Verbose = false;
@@ -3631,7 +3631,7 @@ bool C4Game::InitNetworkFromReference(const C4Network2Reference &Reference)
 	C4Client *pHostData = Reference.Parameters.Clients.getClientByID(C4ClientIDHost);
 	if (!pHostData) { LogFatal(LoadResStr("IDS_NET_INVALIDREF")); return false; }
 	// Save scenario title
-	ScenarioTitle = Reference.getTitle();
+	Parameters.ScenarioTitle.CopyValidated(Reference.getTitle());
 	// Log
 	LogF(LoadResStr("IDS_NET_JOINGAMEBY"), pHostData->getName());
 	// Init clients

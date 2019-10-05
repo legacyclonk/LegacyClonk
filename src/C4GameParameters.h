@@ -125,6 +125,9 @@ public:
 	// Allow debug mode?
 	bool AllowDebug;
 
+	// Scenario title
+	ValidatedStdStrBuf<C4InVal::VAL_NameExNoEmpty> ScenarioTitle;
+
 	// Active rules and goals
 	C4IDList Rules;
 	C4IDList Goals;

@@ -92,7 +92,7 @@ void ScenDesc::Update()
 			if (!!sDesc)
 				pDescBox->AddTextLine(sDesc.getData(), &rTextFont, C4GUI_MessageFontClr, false, true, &rTitleFont);
 			else
-				pDescBox->AddTextLine(Game.ScenarioTitle.getData(), &rTitleFont, C4GUI_CaptionFontClr, false, true);
+				pDescBox->AddTextLine(Game.Parameters.ScenarioTitle.getData(), &rTitleFont, C4GUI_CaptionFontClr, false, true);
 		}
 		// okay, done loading. No more updates.
 		fDescFinished = true;
@@ -129,10 +129,10 @@ void ScenDesc::Deactivate()
 // MainDlg
 
 MainDlg::MainDlg(bool fHost)
-	: C4GUI::FullscreenDialog(!Game.ScenarioTitle ?
+	: C4GUI::FullscreenDialog(!Game.Parameters.ScenarioTitle ?
 	(const char *)LoadResStr("IDS_DLG_LOBBY") :
-		FormatString("%s - %s", Game.ScenarioTitle.getData(), LoadResStr("IDS_DLG_LOBBY")).getData(),
-		Game.ScenarioTitle.getData()),
+		FormatString("%s - %s", Game.Parameters.ScenarioTitle.getData(), LoadResStr("IDS_DLG_LOBBY")).getData(),
+		Game.Parameters.ScenarioTitle.getData()),
 	pPlayerList(nullptr), pResList(nullptr), pChatBox(nullptr), pRightTabLbl(nullptr), pRightTab(nullptr),
 	pEdt(nullptr), btnRun(nullptr), btnPlayers(nullptr), btnResources(nullptr), btnTeams(nullptr), btnChat(nullptr)
 {

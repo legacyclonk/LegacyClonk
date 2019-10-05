@@ -139,7 +139,6 @@ public:
 	class C4FileMonitor *pFileMonitor;
 	char CurrentScenarioSection[C4MaxName + 1];
 	char ScenarioFilename[_MAX_PATH + 1];
-	StdStrBuf ScenarioTitle;
 	char PlayerFilenames[20 * _MAX_PATH + 1];
 	std::vector<std::string> DefinitionFilenames;
 	char DirectJoinAddress[_MAX_PATH + 1];

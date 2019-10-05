@@ -373,7 +373,7 @@ void C4Application::Execute()
 #else
 		AppState = C4AS_Game;
 		// if no scenario or direct join has been specified, get game startup parameters by startup dialog
-		Game.ScenarioTitle.Copy(LoadResStr("IDS_PRC_INITIALIZE"));
+		Game.Parameters.ScenarioTitle.CopyValidated(LoadResStr("IDS_PRC_INITIALIZE"));
 		if (!C4Startup::Execute()) { Quit(); --iRecursionCount; return; }
 		AppState = C4AS_StartGame;
 #endif
