@@ -456,7 +456,7 @@ bool C4GraphicsResource::ReloadResolutionDependentFiles()
 	// reloads the cursor
 	const auto scale = Application.GetScale();
 	const auto resX = Config.Graphics.ResX * scale * scale;
-	constexpr std::array breakPoints
+	constexpr std::array<int32_t, 7> breakPoints
 	{
 		8640,
 		5760,
