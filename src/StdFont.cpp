@@ -781,10 +781,10 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 		*szLastEmergenyBreakPos, // same, but at last char in case no suitable linebreak could be found
 		*szLastPos;              // last position until which buffer has been transferred to output
 	int iLastBreakOutLen, iLastEmergencyBreakOutLen; // size of output string at break positions
-	int iX = 0, // current text width at parse pos
+	float iX = 0, // current text width at parse pos
 		iXBreak = 0, // text width as it was at last break pos
-		iXEmergencyBreak, // same, but at last char in case no suitable linebreak could be found
-		iHgt = GetLineHeight(); // total height of output text
+		iXEmergencyBreak; // same, but at last char in case no suitable linebreak could be found
+	int iHgt = GetLineHeight(); // total height of output text
 	bool fIsFirstLineChar = true;
 	// ignore any markup
 	CMarkup MarkupChecker(false);
@@ -798,7 +798,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 		// done? (must check here, because markup-skip may have led to text end)
 		if (!c) break;
 		// manual break?
-		int iCharWdt = 0;
+		float iCharWdt = 0;
 		if (c != '\n' && (!fCheckMarkup || c != '|'))
 		{
 			// image?
@@ -815,7 +815,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 				if (fct.Hgt)
 				{
 					// image found: adjust aspect by font height and calc appropriate width
-					iCharWdt = static_cast<int>((fct.Wdt * iGfxLineHgt) / scale / fct.Hgt);
+					iCharWdt = (fct.Wdt * iGfxLineHgt) / scale / fct.Hgt;
 				}
 				else
 				{
@@ -831,7 +831,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 				// regular char
 				// look up character width in texture coordinates table
 				if (c >= ' ')
-					iCharWdt = static_cast<int>(fZoom * GetCharacterFacet(c).Wdt / iFontZoom / scale + iHSpace);
+					iCharWdt = fZoom * GetCharacterFacet(c).Wdt / iFontZoom / scale + iHSpace;
 				else
 					iCharWdt = 0; // OMFG ctrl char
 			}
