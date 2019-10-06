@@ -712,7 +712,8 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 	if (!szText) return false;
 	// keep track of each row's size
 	int lineStepHeight = static_cast<int>(std::ceil(iLineHgt / realScale));
-	int iRowWdt = 0, iWdt = 0, iHgt = lineStepHeight;
+	float iRowWdt = 0, iWdt = 0;
+	int iHgt = lineStepHeight;
 	// ignore any markup
 	CMarkup MarkupChecker(false);
 	// go through all text
@@ -742,7 +743,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 			if (fct.Hgt)
 			{
 				// image found: adjust aspect by font height and calc appropriate width
-				iRowWdt += static_cast<int>((fct.Wdt * iGfxLineHgt) / realScale / fct.Hgt);
+				iRowWdt += (fct.Wdt * iGfxLineHgt) / realScale / fct.Hgt;
 			}
 			else
 			{
@@ -756,7 +757,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 		{
 			// regular char
 			// look up character width in texture coordinates table
-			iRowWdt += static_cast<int>(GetCharacterFacet(c).Wdt / realScale / iFontZoom);
+			iRowWdt += GetCharacterFacet(c).Wdt / realScale / iFontZoom;
 		}
 		// apply horizontal indent for all but last char
 		if (*szText) iRowWdt += iHSpace;
@@ -764,7 +765,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 		if (iRowWdt > iWdt) iWdt = iRowWdt;
 	}
 	// store output
-	rsx = iWdt; rsy = iHgt;
+	rsx = static_cast<int>(iWdt); rsy = iHgt;
 	// done, success
 	return true;
 }
