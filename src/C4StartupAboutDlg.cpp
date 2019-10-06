@@ -133,6 +133,7 @@ additionalArt =
 	{"Matthias Rottl\xe4nder", "Matthi"},
 	{"Christopher Reimann", "Benzol"},
 	{"Jonathan Veit", "AniProGuy"},
+	{"Arthur M\xf6ller", "Aqua"},
 },
 music =
 {
