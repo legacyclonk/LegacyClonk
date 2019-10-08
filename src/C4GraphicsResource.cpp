@@ -455,7 +455,7 @@ bool C4GraphicsResource::ReloadResolutionDependentFiles()
 	// reload any files that depend on the current resolution
 	// reloads the cursor
 	const auto scale = Application.GetScale();
-	const auto resX = Config.Graphics.ResX * scale * scale;
+	const auto resX = Config.Graphics.ResX * scale;
 	constexpr std::array<int32_t, 7> breakPoints
 	{
 		8640,
