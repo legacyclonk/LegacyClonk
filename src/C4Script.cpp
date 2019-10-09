@@ -5357,7 +5357,8 @@ C4ValueHash *FnGetPath(C4AulContext *ctx, long iFromX, long iFromY, long iToX, l
 			auto *waypoint = new C4ValueHash;
 			(*waypoint)[C4VString("X")] = C4VInt(pathinfo.path[i].x);
 			(*waypoint)[C4VString("Y")] = C4VInt(pathinfo.path[i].y);
-			(*waypoint)[C4VString("TransferTarget")] = C4VObj(pathinfo.path[i].obj);
+			if (pathinfo.path[i].obj)
+				(*waypoint)[C4VString("TransferTarget")] = C4VObj(pathinfo.path[i].obj);
 
 			(*array)[static_cast<int32_t>(i)] = C4VMap(waypoint);
 		}
