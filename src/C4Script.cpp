@@ -5349,9 +5349,6 @@ C4ValueHash *FnGetPath(C4AulContext *ctx, long iFromX, long iFromY, long iToX, l
 
 	if (!pathinfo.path.empty())
 	{
-		const Waypoint &first = pathinfo.path.front();
-		(*hash)[C4VString("Length")] += Distance(static_cast<int32_t>(iFromX), static_cast<int32_t>(iFromY), first.x, first.y);
-
 		for (size_t i = 0; i < pathinfo.path.size(); ++i)
 		{
 			auto *waypoint = new C4ValueHash;
