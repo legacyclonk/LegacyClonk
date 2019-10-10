@@ -2398,6 +2398,11 @@ void C4AulParseState::Parse_Map()
 					AddBCC(AB_STRING, cInt);
 					Shift();
 					break;
+				case ATT_BOPEN2:
+					Shift();
+					Parse_Expression();
+					Match(ATT_BCLOSE2);
+					break;
 				default:
 					UnexpectedToken("string or identifier");
 			}
