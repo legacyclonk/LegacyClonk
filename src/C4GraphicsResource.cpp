@@ -456,24 +456,26 @@ bool C4GraphicsResource::ReloadResolutionDependentFiles()
 	// reloads the cursor
 	const auto scale = Application.GetScale();
 	const auto resX = Config.Graphics.ResX * scale;
-	constexpr std::array<int32_t, 7> breakPoints
+	constexpr std::array<int32_t, 2> breakPoints
 	{
-		8640,
-		5760,
-		3840,
-		2560,
-		1920,
 		1280,
 		800
 	};
-	size_t index = 0;
-	for (const auto selectX : breakPoints)
+	size_t index = 5;
+	if(resX > breakPoints.front())
 	{
-		if (resX >= selectX)
+		index -= std::min(index, static_cast<size_t>(std::max(1.f, Application.GetScale()) - 0.5f));
+	}
+	else
+	{
+		for (const auto selectX : breakPoints)
 		{
-			break;
+			if (resX >= selectX)
+			{
+				break;
+			}
+			++index;
 		}
-		++index;
 	}
 	if (!fctCursors[index].Wdt && !LoadCursorGfx()) return false;
 	if (fctCursors[index].Wdt)
