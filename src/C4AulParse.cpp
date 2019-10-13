@@ -1609,6 +1609,14 @@ void C4AulParseState::Parse_FuncHead()
 			// too many parameters?
 			if (cpar >= C4AUL_MAX_Par)
 				throw new C4AulParseError(this, "'func' parameter list: too many parameters (max 10)");
+
+			if (TokenType == ATT_LDOTS)
+			{
+				Fn->Script = SPos;
+				Shift();
+				Match(ATT_BCLOSE);
+				break;
+			}
 			// must be a name or type now
 			if (TokenType != ATT_IDTF && TokenType != ATT_AMP)
 			{
