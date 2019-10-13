@@ -213,6 +213,7 @@ bool C4GraphicsResource::Init(bool fInitGUI)
 	if (!LoadFile(fctPlayer,          "Player",       Files))                       return false; // (new format)
 	if (!LoadFile(fctRank,            "Rank",         Files, C4FCT_Height))         return false;
 	if (!LoadFile(fctCaptain,         "Captain",      Files))                       return false;
+	if (!LoadCursorGfx())                                                           return false;
 	if (!LoadFile(fctSelectMark,      "SelectMark",   Files, C4FCT_Height))         return false;
 	if (!LoadFile(fctMenu,            "Menu",         Files, 35, 35))               return false;
 	if (!LoadFile(fctLogo,            "Logo",         Files))                       return false;
