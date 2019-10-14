@@ -2392,11 +2392,6 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 	Objects.Clear(!section);
 
-	for (C4Def *def = Defs.FirstDef; def; def = def->Next)
-	{
-		def->Script.Call(PSF_InitializeDef, &C4AulParSet(section ? C4VString(section->szName) : C4VNull));
-	}
-
 	// Load objects
 	int32_t iObjects = Objects.Load(hGroup, section);
 	if (iObjects) { LogF(LoadResStr("IDS_PRC_OBJECTSLOADED"), iObjects); }
@@ -2415,6 +2410,11 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		{
 			RoundResults.Init();
 		}
+
+	for (C4Def *def = Defs.FirstDef; def; def = def->Next)
+	{
+		def->Script.Call(PSF_InitializeDef, &C4AulParSet(section ? C4VString(section->szName) : C4VNull));
+	}
 
 	// Environment
 	if (!C4S.Head.NoInitialize && fLandscapeLoaded)
