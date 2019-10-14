@@ -75,9 +75,9 @@ global func VerticesStuck(object obj) { // [C4Object *pObj]
   // Kein Objekt vorhanden?
   if (!obj && !this) return nil;
 
-  var vertices;
-  var x_offset;
-  var y_offset;
+  var vertices = 0;
+  var x_offset = 0;
+  var y_offset = 0;
 
   // Offset zum Objekt anpassen
   if (obj) {
@@ -215,7 +215,7 @@ global func RGB2HSL(rgb) {
   var min_val = Min(red, Min(green, blue)), max_val = Max(red, Max(green, blue));
   var diff_val = max_val - min_val;
   var lightness = (max_val + min_val) / 2;
-  var hue, sat, diff_red, diff_green, diff_blue;
+  var hue = 0, sat, diff_red, diff_green, diff_blue;
 
   if (diff_val == 0) {
     hue = 0;
@@ -246,7 +246,7 @@ global func FindDefinition(id idDef) {
 
 // Erzeugt amount viele Objekte des Typs id im angegebenen Zielrechteck (optional) im angegeben Material. Gibt die Anzahl der Iterationen zurück, oder -1 wenn die Erzeugung fehlschlägt
 global func PlaceObjects(id id, int amount, string strmat, int x, int y, int wdt, int hgt, bool onsf, bool nostuck) {
-  var i, j;
+  var i = 0, j = 0;
   var rndx, rndy, obj;
   var mtype, mat;
   var func, objhgt = GetDefCoreVal("Height", "DefCore", id);

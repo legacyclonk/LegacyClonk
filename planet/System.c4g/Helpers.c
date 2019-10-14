@@ -17,7 +17,7 @@ global func MessageWindow(string pMsg, int iForPlr, id idIcon, string pCaption)
 
 global func RemoveAll(id idDef, int dwOCF)
 {
-	var Cnt, obj = FindObject(idDef, 0,0,nil,nil, dwOCF), next;
+	var Cnt = 0, obj = FindObject(idDef, 0,0,nil,nil, dwOCF), next;
 	while (obj)
 	{
 		// Get the next object in case obj->Destruction does funny things
