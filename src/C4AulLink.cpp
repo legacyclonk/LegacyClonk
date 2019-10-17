@@ -145,7 +145,7 @@ void C4AulScript::AppendTo(C4AulScript &Scr, bool bHighPrio)
 	Scr.CodeSize += CodeSize + 1;
 	// append all local vars (if any existing)
 	assert(!Def || this == &Def->Script);
-	assert(&Scr.Def->Script == &Scr);
+	assert(!Scr.Def || &Scr.Def->Script == &Scr);
 	if (LocalNamed.iSize == 0)
 		return;
 	if (!Scr.Def)
