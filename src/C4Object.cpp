@@ -5456,10 +5456,17 @@ void C4Object::PlrFoWActualize()
 
 void C4Object::SetAudibilityAt(C4FacetEx &cgo, int32_t iX, int32_t iY)
 {
-	// target pos (parallax)
-	int32_t cotx = cgo.TargetX, coty = cgo.TargetY; TargetPos(cotx, coty, cgo);
-	Audible = std::max<int32_t>(Audible, BoundBy(100 - 100 * Distance(cotx + cgo.Wdt / 2, coty + cgo.Hgt / 2, iX, iY) / 700, 0, 100));
-	AudiblePan = BoundBy(AudiblePan + (iX - (cotx + cgo.Wdt / 2)) / 5, -100, 100);
+	if (Category & C4D_Parallax)
+	{
+		// target pos (parallax)
+		int32_t cotx = cgo.TargetX, coty = cgo.TargetY; TargetPos(cotx, coty, cgo);
+		Audible = std::max<int32_t>(Audible, BoundBy(100 - 100 * Distance(cotx + cgo.Wdt / 2, coty + cgo.Hgt / 2, iX, iY) / C4AudibilityRadius, 0, 100));
+		AudiblePan = BoundBy(AudiblePan + (iX - (cotx + cgo.Wdt / 2)) / 5, -100, 100);
+	}
+	else
+	{
+		Audible = Game.GraphicsSystem.GetAudibility(iX, iY, &AudiblePan);
+	}
 }
 
 bool C4Object::IsVisible(int32_t iForPlr, bool fAsOverlay)

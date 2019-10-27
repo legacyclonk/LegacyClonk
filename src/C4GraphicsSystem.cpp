@@ -29,6 +29,7 @@
 #include <C4LoaderScreen.h>
 #include <C4Wrappers.h>
 #include <C4Player.h>
+#include <C4Object.h>
 #include <C4SoundSystem.h>
 
 #include <StdBitmap.h>
@@ -780,8 +781,30 @@ int32_t C4GraphicsSystem::GetAudibility(int32_t iX, int32_t iY, int32_t *iPan, i
 	int32_t iAudible = 0; *iPan = 0;
 	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
 	{
+		auto listenerX = cvp->ViewX + cvp->ViewWdt / 2;
+		auto listenerY = cvp->ViewY + cvp->ViewHgt / 2;
+
+		const auto player = Game.Players.Get(cvp->GetPlayer());
+		if (player)
+		{
+			auto cursor = player->ViewTarget;
+			if (!cursor)
+			{
+				player->ViewCursor;
+				if (!cursor)
+				{
+					cursor = player->Cursor;
+				}
+			}
+			if (cursor)
+			{
+				listenerX = cursor->x;
+				listenerY = cursor->y;
+			}
+		}
+
 		iAudible = (std::max)(iAudible,
-			BoundBy<int32_t>(100 - 100 * Distance(cvp->ViewX + cvp->ViewWdt / 2, cvp->ViewY + cvp->ViewHgt / 2, iX, iY) / C4AudibilityRadius, 0, 100));
+			BoundBy<int32_t>(100 - 100 * Distance(listenerX, listenerY, iX, iY) / C4AudibilityRadius, 0, 100));
 		*iPan += (iX - (cvp->ViewX + cvp->ViewWdt / 2)) / 5;
 	}
 	*iPan = BoundBy<int32_t>(*iPan, -100, 100);
