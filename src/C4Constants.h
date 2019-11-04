@@ -95,8 +95,7 @@ const int C4ViewportScrollBorder = 40; // scrolling past landscape allowed at ra
 // Engine Return Values
 
 const int C4XRV_Completed = 0,
-          C4XRV_Failure   = 1,
-          C4XRV_Aborted   = 2;
+          C4XRV_Failure   = 1;
 
 // Object Character Flags
 

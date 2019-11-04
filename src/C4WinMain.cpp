@@ -72,7 +72,6 @@ int WINAPI WinMain(HINSTANCE hInst,
 	Application.Clear();
 
 	// Return exit code
-	if (!Game.GameOver) return C4XRV_Aborted;
 	return C4XRV_Completed;
 }
 
@@ -195,7 +194,6 @@ int main(int argc, char *argv[])
 	Application.Clear();
 	if (Application.restartAtEnd) restart(argv);
 	// Return exit code
-	if (!Game.GameOver) return C4XRV_Aborted;
 	return C4XRV_Completed;
 }
 
