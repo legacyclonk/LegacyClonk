@@ -209,12 +209,24 @@ public:
 class C4GameOptionButtons : public C4GUI::Window
 {
 private:
-	C4GUI::IconButton *btnInternet, *btnLeague, *btnPassword, *btnComment, *btnFairCrew, *btnRecord;
+	C4GUI::IconButton *btnInternet = nullptr;
+	C4GUI::IconButton *btnLeague   = nullptr;
+	C4GUI::IconButton *btnPassword = nullptr;
+	C4GUI::IconButton *btnComment  = nullptr;
+	C4GUI::IconButton *btnFairCrew = nullptr;
+	C4GUI::IconButton *btnRecord   = nullptr;
 	C4SForceFairCrew eForceFairCrewState;
-	bool fNetwork, fHost, fLobby, fCountdown;
+	bool fHost, fLobby, fCountdown;
+
+	enum class InternetButtonState : uint8_t
+	{
+		Disabled = 0,
+		LocalOnly,
+		MasterServerSignup
+	};
 
 public:
-	C4GameOptionButtons(const C4Rect &rcBounds, bool fNetwork, bool fHost, bool fLobby);
+	C4GameOptionButtons(const C4Rect &rcBounds, bool fHost, bool fLobby);
 	~C4GameOptionButtons() {}
 
 	void SetForceFairCrewState(C4SForceFairCrew eToState);

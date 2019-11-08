@@ -365,7 +365,7 @@ public:
 	};
 
 public:
-	C4StartupScenSelDlg(bool fNetwork);
+	C4StartupScenSelDlg();
 	~C4StartupScenSelDlg();
 
 private:
@@ -391,7 +391,6 @@ private:
 	C4FacetEx *pfctBackground;
 
 	bool fIsInitialLoading;
-	bool fStartNetworkGame;
 
 	C4GUI::RenameEdit *pRenameEdit;
 
@@ -457,8 +456,6 @@ public:
 	void SetRenamingDone() { pRenameEdit = nullptr; }
 
 	void SetBackground(C4FacetEx *pNewBG) { pfctBackground = pNewBG; }
-
-	bool IsNetworkStart() const { return fStartNetworkGame; }
 
 	friend class ScenListItem;
 };

@@ -1110,7 +1110,8 @@ void C4StartupNetDlg::DoRefresh()
 
 void C4StartupNetDlg::CreateGame()
 {
-	C4Startup::Get()->SwitchDialog(C4Startup::SDID_ScenSelNetwork);
+	Game.NetworkActive = true;
+	C4Startup::Get()->SwitchDialog(C4Startup::SDID_ScenSel);
 }
 
 void C4StartupNetDlg::OnSec1Timer()

@@ -98,7 +98,7 @@ public:
 public:
 	C4StartupGraphics Graphics;
 
-	enum DialogID { SDID_Main = 0, SDID_ScenSel, SDID_ScenSelNetwork, SDID_NetJoin, SDID_Options, SDID_About, SDID_PlrSel, SDID_Back };
+	enum DialogID { SDID_Main = 0, SDID_ScenSel, SDID_NetJoin, SDID_Options, SDID_About, SDID_PlrSel, SDID_Back };
 
 private:
 	bool fInStartup, fAborted, fLastDlgWasBack;

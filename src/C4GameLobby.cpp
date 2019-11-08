@@ -203,7 +203,7 @@ MainDlg::MainDlg(bool fHost)
 		checkReady->SetOnChecked(new C4GUI::CallbackHandler<MainDlg>(this, &MainDlg::OnReadyCheck));
 		caBottom.GetFromLeft(10); // for centering the buttons between
 	}
-	pGameOptionButtons = new C4GameOptionButtons(caBottom.GetCentered(caBottom.GetInnerWidth(), std::min<int32_t>(C4GUI_IconExHgt, caBottom.GetHeight())), true, fHost, true);
+	pGameOptionButtons = new C4GameOptionButtons(caBottom.GetCentered(caBottom.GetInnerWidth(), std::min<int32_t>(C4GUI_IconExHgt, caBottom.GetHeight())), fHost, true);
 
 	// players / ressources sidebar
 	C4GUI::ComponentAligner caRight(caMain.GetFromRight(iClientListWdt), iIndentX3, iIndentY4);

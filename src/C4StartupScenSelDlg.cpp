@@ -723,7 +723,7 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 	if (C4S.Head.Replay)
 	{
 		// replays can currently not be launched in network mode
-		if (pDlg->IsNetworkStart())
+		if (Game.NetworkActive)
 		{
 			sErrOut.Copy(LoadResStr("IDS_PRC_NONETREPLAY"));
 			return false;
@@ -741,22 +741,11 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 			// make sure it's possible to start the savegame anyway
 			iMaxPlrCount = std::max<int32_t>(iMinPlrCount, iMaxPlrCount);
 		}
-		// normal scenarios: At least one player except in network mode, where it is possible to wait for the additional players
+		// normal scenarios: At least one player
 		// Melees need at least two
 		if ((iPlrCount < iMinPlrCount))
 		{
-			if (pDlg->IsNetworkStart())
-			{
-				// network game: Players may yet join in lobby
-				// only issue a warning for too few players (by setting the error but not returning false here)
-				sErrOut.Format(LoadResStr("IDS_MSG_TOOFEWPLAYERSNET"), (int)iMinPlrCount);
-			}
-			else
-			{
-				// for regular games, this is a fatal no-start-cause
-				sErrOut.Format(LoadResStr("IDS_MSG_TOOFEWPLAYERS"), (int)iMinPlrCount);
-				return false;
-			}
+			sErrOut.Format(LoadResStr("IDS_MSG_TOOFEWPLAYERS"), static_cast<int>(iMinPlrCount));
 		}
 		// scenarios (both normal and savegame) may also impose a maximum player restriction
 		if (iPlrCount > iMaxPlrCount)
@@ -1272,7 +1261,7 @@ C4GUI::RenameEdit::RenameResult C4StartupScenSelDlg::ScenListItem::DoRenaming(Re
 
 // C4StartupScenSelDlg
 
-C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResStrNoAmp(fNetwork ? "IDS_DLG_NETSTART" : "IDS_DLG_STARTGAME")), pScenLoader(nullptr), fIsInitialLoading(false), fStartNetworkGame(fNetwork), pMapData(nullptr), pRenameEdit(nullptr), pfctBackground(nullptr)
+C4StartupScenSelDlg::C4StartupScenSelDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_DLG_STARTGAME")), pScenLoader(nullptr), fIsInitialLoading(false), pMapData(nullptr), pRenameEdit(nullptr), pfctBackground(nullptr)
 {
 	// assign singleton
 	pInstance = this;
@@ -1349,7 +1338,7 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 	pOpenBtn = new C4GUI::CallbackButton<C4StartupScenSelDlg>(LoadResStr("IDS_BTN_OPEN"), caButtonArea.GetFromRight(iButtonWidth, iButtonHeight), &C4StartupScenSelDlg::OnNextBtn);
 	pOpenBtn->SetToolTip(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
 	// game options boxes
-	pGameOptionButtons = new C4GameOptionButtons(caButtonArea.GetAll(), fNetwork, true, false);
+	pGameOptionButtons = new C4GameOptionButtons(caButtonArea.GetAll(), true, false);
 	AddElement(pGameOptionButtons);
 	// next button adding
 	AddElement(pOpenBtn);
@@ -1401,8 +1390,6 @@ void C4StartupScenSelDlg::OnShown()
 	UpdateList();
 	UpdateSelection();
 	fIsInitialLoading = false;
-	// network activation by dialog type
-	Game.NetworkActive = fStartNetworkGame;
 }
 
 void C4StartupScenSelDlg::OnClosed(bool fOK)

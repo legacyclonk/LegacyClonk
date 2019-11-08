@@ -191,10 +191,7 @@ C4StartupDlg *C4Startup::SwitchDialog(DialogID eToDlg, bool fFade)
 		pToDlg = new C4StartupMainDlg();
 		break;
 	case SDID_ScenSel:
-		pToDlg = new C4StartupScenSelDlg(false);
-		break;
-	case SDID_ScenSelNetwork:
-		pToDlg = new C4StartupScenSelDlg(true);
+		pToDlg = new C4StartupScenSelDlg;
 		break;
 	case SDID_NetJoin:
 		pToDlg = new C4StartupNetDlg();
@@ -372,10 +369,8 @@ bool C4Startup::SetStartScreen(const char *szScreen)
 	// set dialog ID to be shown to specified value
 	if (SEqualNoCase(szScreen, "main"))
 		eLastDlgID = SDID_Main;
-	if (SEqualNoCase(szScreen, "scen"))
+	if (SEqualNoCase(szScreen, "scen") || SEqualNoCase(szScreen, "netscen"))
 		eLastDlgID = SDID_ScenSel;
-	if (SEqualNoCase(szScreen, "netscen"))
-		eLastDlgID = SDID_ScenSelNetwork;
 	else if (SEqualNoCase(szScreen, "net"))
 		eLastDlgID = SDID_NetJoin;
 	else if (SEqualNoCase(szScreen, "options"))

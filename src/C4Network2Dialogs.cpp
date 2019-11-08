@@ -513,12 +513,21 @@ C4Network2StartWaitDlg::C4Network2StartWaitDlg()
 
 // C4GameOptionButtons
 
-C4GameOptionButtons::C4GameOptionButtons(const C4Rect &rcBounds, bool fNetwork, bool fHost, bool fLobby)
-	: C4GUI::Window(), fNetwork(fNetwork), fHost(fHost), fLobby(fLobby), eForceFairCrewState(C4SFairCrew_Free), fCountdown(false)
+namespace
+{
+	template<typename T> T SelectCorrectValue(T &&off, T &&local, T &&on)
+	{
+		return Game.NetworkActive ? (Config.Network.MasterServerSignUp ? on : local) : off;
+	}
+}
+
+C4GameOptionButtons::C4GameOptionButtons(const C4Rect &rcBounds, bool fHost, bool fLobby)
+	: C4GUI::Window(), fHost(fHost), fLobby(fLobby), eForceFairCrewState(C4SFairCrew_Free), fCountdown(false)
 {
 	SetBounds(rcBounds);
+
 	// calculate button size from area
-	int32_t iButtonCount = fNetwork ? fHost ? 6 : 3 : 2;
+	int32_t iButtonCount = 3 + 3 * fHost;
 	int32_t iIconSize = std::min<int32_t>(C4GUI_IconExHgt, rcBounds.Hgt), iIconSpacing = rcBounds.Wdt / (rcBounds.Wdt >= 400 ? 64 : 128);
 	if ((iIconSize + iIconSpacing * 2) * iButtonCount > rcBounds.Wdt)
 	{
@@ -535,82 +544,103 @@ C4GameOptionButtons::C4GameOptionButtons(const C4Rect &rcBounds, bool fNetwork, 
 	C4GUI::ComponentAligner caButtonArea(rcBounds, 0, 0, true);
 	C4GUI::ComponentAligner caButtons(caButtonArea.GetCentered((iIconSize + 2 * iIconSpacing) * iButtonCount, iIconSize), iIconSpacing, 0);
 	// add buttons
-	if (fNetwork && fHost)
+	bool fIsInternet = !!Config.Network.MasterServerSignUp, fIsDisabled = false;
+	// league currently implies master server signup, and can thus not be turned off
+	if (fLobby && Game.Parameters.isLeague())
 	{
-		bool fIsInternet = !!Config.Network.MasterServerSignUp, fIsDisabled = false;
-		// league currently implies master server signup, and can thus not be turned off
-		if (fLobby && Game.Parameters.isLeague())
-		{
-			fIsInternet = true;
-			fIsDisabled = true;
-		}
-		btnInternet = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(fIsInternet ? C4GUI::Ico_Ex_InternetOn : C4GUI::Ico_Ex_InternetOff, caButtons.GetFromLeft(iIconSize, iIconSize), 'I' /* 2do */, &C4GameOptionButtons::OnBtnInternet, this);
-		btnInternet->SetToolTip(LoadResStr("IDS_DLGTIP_STARTINTERNETGAME"));
+		fIsInternet = true;
+		fIsDisabled = true;
+	}
+
+	if (fHost)
+	{
+		btnInternet = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(SelectCorrectValue(C4GUI::Ico_Player, C4GUI::Ico_Ex_InternetOff, C4GUI::Ico_Ex_InternetOn), caButtons.GetFromLeft(iIconSize, iIconSize), 'I' /* 2do */, &C4GameOptionButtons::OnBtnInternet, this);
+		btnInternet->SetToolTip(SelectCorrectValue(LoadResStr("IDS_DLGTIP_STARTGAME"), LoadResStr("IDS_DLGTIP_STARTLOCALGAME"), LoadResStr("IDS_DLGTIP_STARTINTERNETGAME")));
 		btnInternet->SetEnabled(!fIsDisabled);
 		AddElement(btnInternet);
 	}
-	else btnInternet = nullptr;
-	bool fIsLeague = false;
-	if (fNetwork)
-	{
-		C4GUI::Icons eLeagueIcon;
-		fIsLeague = fLobby ? Game.Parameters.isLeague() : !!Config.Network.LeagueServerSignUp;
-		eLeagueIcon = fIsLeague ? C4GUI::Ico_Ex_LeagueOn : C4GUI::Ico_Ex_LeagueOff;
-		btnLeague = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(eLeagueIcon, caButtons.GetFromLeft(iIconSize, iIconSize), 'L' /* 2do */, &C4GameOptionButtons::OnBtnLeague, this);
-		btnLeague->SetToolTip(LoadResStr("IDS_DLGTIP_STARTLEAGUEGAME"));
-		btnLeague->SetEnabled(fHost && !fLobby);
-		AddElement(btnLeague);
-	}
-	else btnLeague = nullptr;
-	if (fNetwork && fHost)
+
+	bool fIsLeague = fLobby ? Game.Parameters.isLeague() : !!Config.Network.LeagueServerSignUp;
+	C4GUI::Icons eLeagueIcon = fIsLeague ? C4GUI::Ico_Ex_LeagueOn : C4GUI::Ico_Ex_LeagueOff;
+	btnLeague = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(eLeagueIcon, caButtons.GetFromLeft(iIconSize, iIconSize), 'L' /* 2do */, &C4GameOptionButtons::OnBtnLeague, this);
+	btnLeague->SetToolTip(LoadResStr("IDS_DLGTIP_STARTLEAGUEGAME"));
+	btnLeague->SetEnabled(Game.NetworkActive && fHost && !fLobby);
+	AddElement(btnLeague);
+
+	if (fHost)
 	{
 		btnPassword = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(Game.Network.isPassworded() ? C4GUI::Ico_Ex_Locked : C4GUI::Ico_Ex_Unlocked, caButtons.GetFromLeft(iIconSize, iIconSize), 'P' /* 2do */, &C4GameOptionButtons::OnBtnPassword, this);
 		btnPassword->SetToolTip(LoadResStr("IDS_NET_PASSWORD_DESC"));
 		AddElement(btnPassword);
+
 		btnComment = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(C4GUI::Ico_Ex_Comment, caButtons.GetFromLeft(iIconSize, iIconSize), 'M' /* 2do */, &C4GameOptionButtons::OnBtnComment, this);
 		btnComment->SetToolTip(LoadResStr("IDS_DESC_COMMENTDESCRIPTIONFORTHIS"));
 		AddElement(btnComment);
 	}
-	else btnPassword = btnComment = nullptr;
+
 	btnFairCrew = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(C4GUI::Ico_Ex_NormalCrew, caButtons.GetFromLeft(iIconSize, iIconSize), 'F' /* 2do */, &C4GameOptionButtons::OnBtnFairCrew, this);
+	AddElement(btnFairCrew);
+
 	btnRecord = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(Game.Record || fIsLeague ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff, caButtons.GetFromLeft(iIconSize, iIconSize), 'R' /* 2do */, &C4GameOptionButtons::OnBtnRecord, this);
 	btnRecord->SetEnabled(!fIsLeague);
 	btnRecord->SetToolTip(LoadResStr("IDS_DLGTIP_RECORD"));
-	AddElement(btnFairCrew);
 	AddElement(btnRecord);
+
 	UpdateFairCrewBtn();
 }
 
 void C4GameOptionButtons::OnBtnInternet(C4GUI::Control *btn)
 {
-	if (!fNetwork || !fHost) return;
-	bool fCheck = Config.Network.MasterServerSignUp = !Config.Network.MasterServerSignUp;
-	// in lobby mode, do actual termination from masterserver
-	if (fLobby)
+	if (Game.NetworkActive && !fHost) return;
+
+	switch (InternetButtonState state = Game.NetworkActive ? (Config.Network.MasterServerSignUp ? InternetButtonState::MasterServerSignup : InternetButtonState::LocalOnly) : InternetButtonState::Disabled; state)
 	{
-		if (fCheck)
+	case InternetButtonState::MasterServerSignup:
+		if (fLobby)
 		{
-			fCheck = Game.Network.LeagueSignupEnable();
+			Game.Network.LeagueSignupDisable();
+			[[fallthrough]];
 		}
 		else
 		{
-			Game.Network.LeagueSignupDisable();
+			Config.Network.MasterServerSignUp = false;
+			Game.NetworkActive = false;
+
+			btnInternet->SetIcon(C4GUI::Ico_Player);
+			btnInternet->SetToolTip(LoadResStr("IDS_DLGTIP_STARTGAME"));
+			btnLeague->SetIcon(C4GUI::Ico_Ex_LeagueOff);
+			btnLeague->SetEnabled(false);
+			btnPassword->SetEnabled(false);
+			btnComment->SetEnabled(false);
+			break;
 		}
+
+	case InternetButtonState::Disabled:
+		Game.NetworkActive = true;
+		Config.Network.MasterServerSignUp = false;
+
+		btnLeague->SetEnabled(true);
+		btnInternet->SetIcon(C4GUI::Ico_Ex_InternetOff);
+		btnInternet->SetToolTip(LoadResStr("IDS_DLGTIP_STARTLOCALGAME"));
+		btnPassword->SetEnabled(true);
+		btnComment->SetEnabled(true);
+		break;
+
+	case InternetButtonState::LocalOnly:
+		Config.Network.MasterServerSignUp = true;
+
+		if (!fLobby || (Config.Network.MasterServerSignUp = Game.Network.LeagueSignupEnable()))
+		{
+			btnInternet->SetIcon(C4GUI::Ico_Ex_InternetOn);
+			btnInternet->SetToolTip(LoadResStr("IDS_DLGTIP_STARTINTERNETGAME"));
+		}
+		break;
 	}
-	btnInternet->SetIcon(fCheck ? C4GUI::Ico_Ex_InternetOn : C4GUI::Ico_Ex_InternetOff);
-	// also update league button, because turning off masterserver also turns off the league
-	if (!fCheck)
-	{
-		Config.Network.LeagueServerSignUp = false;
-		btnLeague->SetIcon(C4GUI::Ico_Ex_LeagueOff);
-	}
-	// re-set in config for the case of failure
-	Config.Network.MasterServerSignUp = fCheck;
 }
 
 void C4GameOptionButtons::OnBtnLeague(C4GUI::Control *btn)
 {
-	if (!fNetwork || !fHost) return;
+	if (!Game.NetworkActive || !fHost) return;
 	bool fCheck = Config.Network.LeagueServerSignUp = !Config.Network.LeagueServerSignUp;
 	btnLeague->SetIcon(fCheck ? C4GUI::Ico_Ex_LeagueOn : C4GUI::Ico_Ex_LeagueOff);
 	if (!Game.Record) OnBtnRecord(btnRecord);
@@ -646,7 +676,7 @@ void C4GameOptionButtons::OnBtnRecord(C4GUI::Control *btn)
 
 void C4GameOptionButtons::OnBtnPassword(C4GUI::Control *btn)
 {
-	if (!fNetwork || !fHost) return;
+	if (!Game.NetworkActive || !fHost) return;
 	// password is currently set - a single click only clears the password
 	if (Game.Network.GetPassword() && *Game.Network.GetPassword())
 	{
