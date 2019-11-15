@@ -1767,7 +1767,6 @@ void C4Game::DrawCursors(C4FacetEx &cgo, int32_t iPlayer)
 	C4DrawTransform transform;
 	transform.SetMoveScale(0.f, 0.f, inverseScale, inverseScale);
 	// Draw cursor mark arrow & cursor object name
-	int32_t cox, coy, cphase;
 	C4Object *cursor;
 	C4Facet &fctCursor = GraphicsResource.fctCursor;
 	for (C4Player *pPlr = Players.First; pPlr; pPlr = pPlr->Next)
@@ -1776,11 +1775,11 @@ void C4Game::DrawCursors(C4FacetEx &cgo, int32_t iPlayer)
 				if (pPlr->Cursor)
 				{
 					cursor = pPlr->Cursor;
-					cox = cgo.X + cursor->x - cgo.TargetX;
-					coy = cgo.Y + cursor->y - cgo.TargetY;
-					if (Inside<int32_t>(cox, 1 - fctCursor.Wdt, cgo.Wdt) && Inside<int32_t>(coy, 1 - fctCursor.Hgt, cgo.Hgt))
+					if (Inside<int32_t>(cursor->x - fctCursor.Wdt / 2 - cgo.TargetX, 1 - fctCursor.Wdt, cgo.Wdt) && Inside<int32_t>(cursor->y - cursor->Def->Shape.Hgt / 2 - fctCursor.Hgt - cgo.TargetY, 1 - fctCursor.Hgt, cgo.Hgt))
 					{
-						cphase = 0; if (cursor->Contained) cphase = 1;
+						int32_t cox = cgo.X + cursor->x - cgo.TargetX;
+						int32_t coy = cgo.Y + cursor->y - cgo.TargetY;
+						int32_t cphase = (cursor->Contained ? 1 : 0);
 						fctCursor.DrawT(cgo.Surface, static_cast<int>(cox * scale) - fctCursor.Wdt / 2, static_cast<int>(coy * scale) - cursor->Def->Shape.Hgt / 2 - fctCursor.Hgt, cphase, 0, &transform, true);
 						if (cursor->Info)
 						{
