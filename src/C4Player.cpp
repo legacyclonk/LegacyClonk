@@ -1086,6 +1086,7 @@ void C4Player::Default()
 	pGamepad = nullptr;
 	NoEliminationCheck = false;
 	Evaluated = false;
+	ColorDw = 0;
 }
 
 bool C4Player::Load(const char *szFilename, bool fSavegame, bool fLoadPortraits)
