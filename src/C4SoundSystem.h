@@ -31,7 +31,7 @@
 #endif
 
 const int32_t C4MaxSoundName      = 100,
-              C4MaxSoundInstances = 20,
+              C4MaxSoundInstances = 50,
               C4NearSoundRadius   = 50,
               C4AudibilityRadius  = 700;
 
