@@ -85,7 +85,7 @@ void CheckBox::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t i
 		// set mouse-on flag depending on whether mouse is over box area
 		fMouseOn = Inside<int32_t>(iX, 0, rcBounds.Hgt) && Inside<int32_t>(iY, 0, rcBounds.Hgt);
 		// left-click within checkbox toggles it
-		if (iButton == C4MC_Button_LeftDown && fMouseOn)
+		if (iButton == C4MC_Button_LeftUp && fMouseOn)
 		{
 			ToggleCheck(true);
 			return;
