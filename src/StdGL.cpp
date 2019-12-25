@@ -145,6 +145,7 @@ bool CStdGL::PrepareRendering(CSurface *const sfcToSurface)
 void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	const uint32_t dwModClr, bool fMod2, const bool fExact)
 {
+	constexpr auto VERTEX_NUM = std::tuple_size_v<decltype(rBltData.vtVtx)>;
 	// global modulation map
 	uint32_t dwModMask = 0;
 	bool fAnyModNotBlack;
@@ -152,7 +153,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	if (fUseClrModMap && dwModClr)
 	{
 		fAnyModNotBlack = false;
-		for (int i = 0; i < rBltData.byNumVertices; ++i)
+		for (size_t i = 0; i < VERTEX_NUM; ++i)
 		{
 			float x = rBltData.vtVtx[i].ftx;
 			float y = rBltData.vtVtx[i].fty;
@@ -170,7 +171,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	else
 	{
 		fAnyModNotBlack = !!dwModClr;
-		for (int i = 0; i < rBltData.byNumVertices; ++i)
+		for (size_t i = 0; i < VERTEX_NUM; ++i)
 			rBltData.vtVtx[i].dwModClr = dwModClr;
 		if (dwModClr != 0xffffff) fModClr = true;
 	}
@@ -273,17 +274,19 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		glLoadIdentity();
 	}
 
-	// draw polygon
-	glBegin(GL_POLYGON);
-	for (int i = 0; i < rBltData.byNumVertices; ++i)
+	// draw triangle fan for speed
+	static_assert (VERTEX_NUM == 4, "GL_TRIANGLE_STEP cannot be used with more than 4 vertices; you need to add the necessary code.");
+	glBegin(GL_TRIANGLE_STRIP);
+	for (const auto &vtx : {rBltData.vtVtx[0], rBltData.vtVtx[1], rBltData.vtVtx[3], rBltData.vtVtx[2]})
 	{
-		const auto &vtx = rBltData.vtVtx[i];
 		if (fModClr) glColorDw(vtx.dwModClr | dwModMask);
 		glTexCoord2f(vtx.ftx, vtx.fty);
 		glVertex2f(vtx.ftx, vtx.fty);
 	}
+
 	glEnd();
 	glLoadIdentity();
+
 	if (shader)
 	{
 		glDisable(GL_FRAGMENT_SHADER_ATI);
@@ -469,32 +472,31 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 				{
 					int xOffset = xChunk * chunkSize;
 					int yOffset = yChunk * chunkSize;
-					// draw polygon
-					glBegin(GL_POLYGON);
+					// draw triangle strip
+					glBegin(GL_TRIANGLE_STRIP);
+
 					// get new texture source bounds
 					FLOAT_RECT fTexBlt;
 					// get new dest bounds
 					FLOAT_RECT tTexBlt;
 					// set up blit data as rect
-					fTexBlt.left = std::max<float>(static_cast<float>(xOffset), fx - iBlitX);
-					fTexBlt.top  = std::max<float>(static_cast<float>(yOffset), fy - iBlitY);
-					fTexBlt.right  = std::min<float>(fx + wdt - iBlitX, static_cast<float>(xOffset + chunkSize));
-					fTexBlt.bottom = std::min<float>(fy + hgt - iBlitY, static_cast<float>(yOffset + chunkSize));
+
+					fTexBlt.left = std::max<float>(xOffset, fx - iBlitX);
+					fTexBlt.top  = std::max<float>(yOffset, fy - iBlitY);
+					fTexBlt.right  = std::min<float>(fx + wdt - iBlitX, xOffset + chunkSize);
+					fTexBlt.bottom = std::min<float>(fy + hgt - iBlitY, yOffset + chunkSize);
 
 					tTexBlt.left = fTexBlt.left + iBlitX - fx + tx;
 					tTexBlt.top  = fTexBlt.top + iBlitY - fy + ty;
 					tTexBlt.right  = fTexBlt.right + iBlitX - fx + tx;
 					tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
-					float ftx[4]; float fty[4]; // blit positions
-					ftx[0] = tTexBlt.left;  fty[0] = tTexBlt.top;
-					ftx[1] = tTexBlt.right; fty[1] = tTexBlt.top;
-					ftx[2] = tTexBlt.right; fty[2] = tTexBlt.bottom;
-					ftx[3] = tTexBlt.left;  fty[3] = tTexBlt.bottom;
-					float tcx[4]; float tcy[4]; // blit positions
-					tcx[0] = fTexBlt.left;  tcy[0] = fTexBlt.top;
-					tcx[1] = fTexBlt.right; tcy[1] = fTexBlt.top;
-					tcx[2] = fTexBlt.right; tcy[2] = fTexBlt.bottom;
-					tcx[3] = fTexBlt.left;  tcy[3] = fTexBlt.bottom;
+
+					// blit positions
+					// remember: order is 0, 1, 3, 2 because of GL_TRIANGLE_STRIP
+					float ftx[4] {tTexBlt.left, tTexBlt.right, tTexBlt.left, tTexBlt.right};
+					float fty[4] {tTexBlt.top, tTexBlt.top, tTexBlt.bottom, tTexBlt.bottom};
+					float tcx[4] {fTexBlt.left, fTexBlt.right, fTexBlt.left, fTexBlt.right};
+					float tcy[4] {fTexBlt.top, fTexBlt.top, fTexBlt.bottom, fTexBlt.bottom};
 
 					uint32_t fdwModClr[4]; // color modulation
 					// global modulation map

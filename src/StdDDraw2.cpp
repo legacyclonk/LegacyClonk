@@ -420,94 +420,6 @@ uint32_t CColorFadeMatrix::GetColorAt(int iX, int iY)
 	return dwResult;
 }
 
-bool CBltData::ClipBy(float fX, float fY, float fMax)
-{
-	CBltVertex *pLastVtx = &vtVtx[byNumVertices - 1], *pVtx = vtVtx;
-	CBltVertex v;
-	bool fLastVtxIn = (pLastVtx->ftx * fX + pLastVtx->fty * fY <= fMax);
-	for (int i = 0; i < byNumVertices; ++i)
-	{
-		// get in-state
-		bool fVtxIn = (pVtx->ftx * fX + pVtx->fty * fY <= fMax);
-		// does it lay outside?
-		if (!fVtxIn)
-		{
-			// backup vtx lying outside
-			v = *pVtx;
-			// previous was inside?
-			if (fLastVtxIn)
-			{
-				// move current vtx in
-				float lx = pLastVtx->ftx, ly = pLastVtx->fty;
-				float dx = v.ftx - lx, dy = v.fty - ly;
-				float dst = dx * fX + dy * fY;
-				if (dst)
-				{
-					// calculate hit point
-					float l = (fMax - fX * lx - fY * ly) / dst;
-					pVtx->ftx = lx + dx * l;
-					pVtx->fty = ly + dy * l;
-				}
-				else
-				{
-					// zero distance: looks like both points lie on the clipping border
-					// so the point counts as inside and needs not to be moved
-					fVtxIn = true;
-				}
-			}
-			else
-			{
-				// both vertices lying outside
-				// delete this vtx
-				--byNumVertices;
-				--i;
-				if (i + 1 < byNumVertices) memmove(pVtx, pVtx + 1, (byNumVertices - i - 1) * sizeof(*pVtx));
-				--pVtx;
-			}
-			// set last vtx
-			pLastVtx = &v;
-		}
-		else
-		{
-			// this vertex lies inside the clipping region
-			// was the last one outside?
-			if (!fLastVtxIn)
-			{
-				// then insert an intersection point
-				float lx = pLastVtx->ftx, ly = pLastVtx->fty;
-				float dx = pVtx->ftx - lx, dy = pVtx->fty - ly;
-				float dst = dx * fX + dy * fY;
-				if (dst)
-				{
-					// move up other vertices
-					if (++i < ++byNumVertices) memmove(pVtx + 1, pVtx, (byNumVertices - i) * sizeof(*pVtx));
-					// calculate hit point
-					float l = (fMax - fX * lx - fY * ly) / dst;
-					pVtx->ftx = lx + dx * l;
-					pVtx->fty = ly + dy * l;
-					++pVtx;
-				}
-				else
-				{
-					// zero distance: looks like both points lie on the clipping border
-					// that counts as all points inside
-					// nothing to do here
-				}
-			}
-			else
-			{
-				// last point in and this point in: nothing to do
-			}
-			// assign last vertex
-			pLastVtx = pVtx;
-		}
-		// next vertex
-		fLastVtxIn = fVtxIn; ++pVtx;
-	}
-	// return whether enough points remain inside
-	return byNumVertices > 2;
-}
-
 void CStdDDraw::Default()
 {
 	RenderTarget = nullptr;
@@ -762,7 +674,6 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 						1 / scaleX2,
 						1 / scaleY2);
 					// set up blit data as rect
-					BltData.byNumVertices = 4;
 					BltData.vtVtx[0].ftx = tTexBlt.left  + DDrawCfg.fBlitOff; BltData.vtVtx[0].fty = tTexBlt.top    + DDrawCfg.fBlitOff;
 					BltData.vtVtx[1].ftx = tTexBlt.right + DDrawCfg.fBlitOff; BltData.vtVtx[1].fty = tTexBlt.top    + DDrawCfg.fBlitOff;
 					BltData.vtVtx[2].ftx = tTexBlt.right + DDrawCfg.fBlitOff; BltData.vtVtx[2].fty = tTexBlt.bottom + DDrawCfg.fBlitOff;

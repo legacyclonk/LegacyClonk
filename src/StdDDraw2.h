@@ -143,17 +143,12 @@ struct CBltVertex
 	uint32_t dwModClr; // color modulation
 };
 
-// blit bounds polygon - note that blitting procedures are not designed for inner angles (>pi)
+// blit data for PerformBlt
 struct CBltData
 {
-	uint8_t byNumVertices;  // number of valid vertices
-	CBltVertex vtVtx[8]; // vertices for polygon - up to eight vertices may be needed
+	std::array<CBltVertex, 4> vtVtx; // vertices for triangle fan
 	CBltTransform TexPos; // texture mapping matrix
 	CBltTransform *pTransform; // Vertex transformation
-
-	// clip poly, so that for any point (x,y) is: (fX*x + fY*y <= fMax)
-	// assumes a valid poly!
-	bool ClipBy(float fX, float fY, float fMax);
 };
 
 // gamma ramp control
