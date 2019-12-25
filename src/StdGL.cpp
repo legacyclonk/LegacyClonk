@@ -633,12 +633,13 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	// set blitting state
 	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, iAdditive ? GL_ONE : GL_SRC_ALPHA);
-	// draw two triangles
-	glBegin(GL_POLYGON);
+
+	// draw triangle strip
+	glBegin(GL_TRIANGLE_STRIP);
 	glColorDw(dwClr1); glVertex2f(ipVtx[0] + DDrawCfg.fBlitOff, ipVtx[1] + DDrawCfg.fBlitOff);
 	glColorDw(dwClr2); glVertex2f(ipVtx[2] + DDrawCfg.fBlitOff, ipVtx[3] + DDrawCfg.fBlitOff);
-	glColorDw(dwClr3); glVertex2f(ipVtx[4] + DDrawCfg.fBlitOff, ipVtx[5] + DDrawCfg.fBlitOff);
 	glColorDw(dwClr4); glVertex2f(ipVtx[6] + DDrawCfg.fBlitOff, ipVtx[7] + DDrawCfg.fBlitOff);
+	glColorDw(dwClr3); glVertex2f(ipVtx[4] + DDrawCfg.fBlitOff, ipVtx[5] + DDrawCfg.fBlitOff);
 	glEnd();
 	glShadeModel(GL_FLAT);
 }
