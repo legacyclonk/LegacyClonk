@@ -450,8 +450,6 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 			// get current blitting offset in texture (beforing any last-tex-size-changes)
 			const int iBlitX = iTexSize * iX;
 			const int iBlitY = iTexSize * iY;
-			// size changed? recalc dependent, relevant (!) values
-			if (iTexSize != pTex->iSize) iTexSize = pTex->iSize;
 			glBindTexture(GL_TEXTURE_2D, pTex->texName);
 			if (sfcSource2)
 			{
@@ -462,6 +460,9 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 
 			int maxXChunk = std::min<int>((fx + wdt - iBlitX - 1) / chunkSize + 1, iTexSize / chunkSize);
 			int maxYChunk = std::min<int>((fy + hgt - iBlitY - 1) / chunkSize + 1, iTexSize / chunkSize);
+
+			// size changed? recalc dependent, relevant (!) values
+			if (iTexSize != pTex->iSize) iTexSize = pTex->iSize;
 			for (int yChunk = std::max<int>((fy - iBlitY) / chunkSize, 0); yChunk < maxYChunk; ++yChunk)
 			{
 				for (int xChunk = std::max<int>((fx - iBlitX) / chunkSize, 0); xChunk < maxXChunk; ++xChunk)
