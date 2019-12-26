@@ -417,6 +417,9 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 	// Lock - WARNING - maybe locking primary surface here...
 	if (!Lock()) return false;
 
+	if (lpDDraw->Gamma.GetSize() == 0)
+		fApplyGamma = false;
+
 	int realWdt = static_cast<int32_t>(ceilf(Wdt * scale));
 	int realHgt = static_cast<int32_t>(ceilf(Hgt * scale));
 

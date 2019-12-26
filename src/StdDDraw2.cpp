@@ -278,6 +278,11 @@ void CGammaControl::Set(uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, int n
 	SetClrChannel(blue,  GetRValue(dwClr1), GetRValue(dwClr2), GetRValue(dwClr3), ref ? ref->blue  : 0);
 }
 
+int CGammaControl::GetSize() const
+{
+	return size;
+}
+
 uint32_t CGammaControl::ApplyTo(uint32_t dwClr)
 {
 	// apply to reg, green and blue color component
