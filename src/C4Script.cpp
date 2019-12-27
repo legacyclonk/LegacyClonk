@@ -2383,7 +2383,7 @@ static bool FnMusic(C4AulContext *cthr, C4String *szSongname, bool fLoop)
 static long FnMusicLevel(C4AulContext *cthr, long iLevel)
 {
 	Game.SetMusicLevel(iLevel);
-	return Application.MusicSystem.SetVolume(iLevel);
+	return iLevel;
 }
 
 static long FnSetPlayList(C4AulContext *cth, C4String *szPlayList, bool fRestartMusic)
