@@ -34,6 +34,9 @@
 #include <C4Player.h>
 #include <C4ObjectMenu.h>
 
+#include <limits>
+#include <utility>
+
 void DrawVertex(C4Facet &cgo, int32_t tx, int32_t ty, int32_t col, int32_t contact)
 {
 	if (Inside<int32_t>(tx, 1, cgo.Wdt - 2) && Inside<int32_t>(ty, 1, cgo.Hgt - 2))
@@ -1272,10 +1275,62 @@ void C4Object::DoDamage(int32_t iChange, int32_t iCausedBy, int32_t iCause)
 	Call(PSF_Damage, &C4AulParSet(C4VInt(iChange), C4VInt(iCausedBy)));
 }
 
+// returns x * y, but returns std::numeric_limits<T>::min() or std::numeric_limits<T>::max() in case of a negative or positive overflow respectively
+template<typename T>
+constexpr T clampedMultiplication(T x, T y)
+{
+	if (y < 0)
+	{
+		if (x < 0)
+		{
+			x *= -1;
+			y *= -1;
+		}
+		else
+		{
+			std::swap(x, y);
+		}
+	}
+	constexpr auto min = std::numeric_limits<T>::min();
+	constexpr auto max = std::numeric_limits<T>::max();
+	if (x < 0 && x < min / y) // would give negative overflow, so make it the most negative possible
+	{
+		return min;
+	}
+	else if(x > 0 && x > max / y) // would give positive overflow, so make it the most positive possible
+	{
+		return max;
+	}
+	else
+	{
+		return x * y;
+	}
+}
+
+// same as above, but calculating x + y instead
+template<typename T>
+constexpr T clampedAddition(T x, T y)
+{
+	constexpr auto min = std::numeric_limits<T>::min();
+	constexpr auto max = std::numeric_limits<T>::max();
+	if (x < 0 && y < min - x) // would give negative overflow, so make it the most negative possible
+	{
+		return min;
+	}
+	else if(x > 0 && y > max - x) // would give positive overflow, so make it the most positive possible
+	{
+		return max;
+	}
+	else
+	{
+		return x + y;
+	}
+}
+
 void C4Object::DoEnergy(int32_t iChange, bool fExact, int32_t iCause, int32_t iCausedByPlr)
 {
 	// iChange 100% = Physical 100000
-	if (!fExact) iChange = iChange * (C4MaxPhysical / 100);
+	if (!fExact) iChange = clampedMultiplication(C4MaxPhysical / 100, iChange);
 	// Was zero?
 	bool fWasZero = (Energy == 0);
 	// Mark last damage causing player to trace kills. Always update on C4FxCall_EngObjHit even if iChange==0
@@ -1288,7 +1343,7 @@ void C4Object::DoEnergy(int32_t iChange, bool fExact, int32_t iCause, int32_t iC
 		if (!iChange) return;
 	}
 	// Do change
-	Energy = BoundBy<int32_t>(Energy + iChange, 0, GetPhysical()->Energy);
+	Energy = BoundBy<int32_t>(clampedAddition(Energy, iChange), 0, GetPhysical()->Energy);
 	// Alive and energy reduced to zero: death
 	if (Alive) if (Energy == 0) if (!fWasZero) AssignDeath(false);
 	// View change
@@ -1309,9 +1364,9 @@ void C4Object::UpdatLastEnergyLossCause(int32_t iNewCausePlr)
 void C4Object::DoBreath(int32_t iChange)
 {
 	// iChange 100% = Physical 100000
-	iChange = iChange * (C4MaxPhysical / 100);
+	iChange = clampedMultiplication(C4MaxPhysical / 100, iChange);
 	// Do change
-	Breath = BoundBy<int32_t>(Breath + iChange, 0, GetPhysical()->Breath);
+	Breath = BoundBy<int32_t>(clampedAddition(Breath, iChange), 0, GetPhysical()->Breath);
 	// View change
 	ViewEnergy = C4ViewDelay;
 }
