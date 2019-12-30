@@ -314,7 +314,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 {
 	if (!DeviceReady() || (!Active && !fForce)) return false;
 	if (pApp->xf86vmode_major_version < 2) return false;
-	if (gammasize != ramp.size) return false;
+	if (gammasize != ramp.size || ramp.size == 0) return false;
 	return XF86VidModeSetGammaRamp(pApp->dpy, DefaultScreen(pApp->dpy), ramp.size,
 		ramp.red, ramp.green, ramp.blue);
 }
