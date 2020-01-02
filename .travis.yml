@@ -7,6 +7,7 @@ branches:
     - /^continuous-/
 
 install:
+  - git config --global protocol.version 1
   - brew remove --force $(brew list) --ignore-dependencies 
   - brew update
   - until brew install sdl_mixer libpng libjpeg freetype glew openssl@1.1 git libyaml; do true; done
@@ -27,6 +28,7 @@ script:
 before_deploy:
   - git clone https://github.com/auriamg/macdylibbundler/
   - cd macdylibbundler
+  - git checkout 9cf053f8b399512e12d7931fa24f466057e58044
   - make
   - cd ..
   - macdylibbundler/dylibbundler -od -b -x clonk.app/Contents/MacOS/clonk -d clonk.app/Contents/libs/
