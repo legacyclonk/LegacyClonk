@@ -2696,7 +2696,10 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 	// Write the name only if the object has an individual name, use def name as default for reading.
 	// (Info may overwrite later, see C4Player::MakeCrewMember)
 	if (pComp->isCompiler())
-		pComp->Value(mkNamingAdapt(Name, "Name", Def->Name));
+	{
+		pComp->Value(mkNamingAdapt(Name, "Name", StdStrBuf{}));
+		if (!Name) Name.Ref(Def->Name);
+	}
 	else if (!Name.isRef())
 		// Write the name only if the object has an individual name
 		// 2do: And what about binary compilers?
