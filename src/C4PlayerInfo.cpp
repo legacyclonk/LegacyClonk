@@ -81,7 +81,7 @@ bool C4PlayerInfo::LoadFromLocalFile(const char *szFilename)
 	Grp.Close();
 	// set values
 	eType = C4PT_User;
-	sName = C4P.PrefName;
+	sName.Copy(C4P.PrefName);
 	this->szFilename = szFilename;
 	dwColor = dwOriginalColor = C4P.PrefColorDw & 0xffffff; // ignore alpha
 	dwAlternateColor = C4P.PrefColor2Dw & 0xffffff; // ignore alpha
