@@ -113,21 +113,21 @@ void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)
 
 void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(ResX,                 "ResolutionX",          800,   false, true));
-	pComp->Value(mkNamingAdapt(ResY,                 "ResolutionY",          600,   false, true));
-	pComp->Value(mkNamingAdapt(Scale,                "Scale",                100,   false, true));
-	pComp->Value(mkNamingAdapt(ShowAllResolutions,   "ShowAllResolutions",   false, false, true));
-	pComp->Value(mkNamingAdapt(SplitscreenDividers,  "SplitscreenDividers",  1));
-	pComp->Value(mkNamingAdapt(ShowPlayerHUDAlways,  "ShowPlayerHUDAlways",  true));
-	pComp->Value(mkNamingAdapt(ShowPortraits,        "ShowPortraits",        true,  false, true));
-	pComp->Value(mkNamingAdapt(AddNewCrewPortraits,  "AddNewCrewPortraits",  true,  false, true));
-	pComp->Value(mkNamingAdapt(SaveDefaultPortraits, "SaveDefaultPortraits", true,  false, true));
-	pComp->Value(mkNamingAdapt(ShowCommands,         "ShowCommands",         true,  false, true));
-	pComp->Value(mkNamingAdapt(ShowCommandKeys,      "ShowCommandKeys",      true,  false, true));
-	pComp->Value(mkNamingAdapt(ColorAnimation,       "ColorAnimation",       false, false, true));
-	pComp->Value(mkNamingAdapt(SmokeLevel,           "SmokeLevel",           200,   false, true));
-	pComp->Value(mkNamingAdapt(VerboseObjectLoading, "VerboseObjectLoading", 0,     false, true));
-	pComp->Value(mkNamingAdapt(VideoModule,          "VideoModule",          false, false, true));
+	pComp->Value(mkNamingAdapt(ResX,                          "ResolutionX",          800,   false, true));
+	pComp->Value(mkNamingAdapt(ResY,                          "ResolutionY",          600,   false, true));
+	pComp->Value(mkNamingAdapt(Scale,                         "Scale",                100,   false, true));
+	pComp->Value(mkNamingAdapt(ShowAllResolutions,            "ShowAllResolutions",   false, false, true));
+	pComp->Value(mkNamingAdapt(SplitscreenDividers,           "SplitscreenDividers",  1));
+	pComp->Value(mkNamingAdapt(ShowPlayerHUDAlways,           "ShowPlayerHUDAlways",  true));
+	pComp->Value(mkNamingAdapt(ShowPortraits,                 "ShowPortraits",        true,  false, true));
+	pComp->Value(mkNamingAdapt(AddNewCrewPortraits,           "AddNewCrewPortraits",  true,  false, true));
+	pComp->Value(mkNamingAdapt(SaveDefaultPortraits,          "SaveDefaultPortraits", true,  false, true));
+	pComp->Value(mkNamingAdapt(ShowCommands,                  "ShowCommands",         true,  false, true));
+	pComp->Value(mkNamingAdapt(ShowCommandKeys,               "ShowCommandKeys",      true,  false, true));
+	pComp->Value(mkNamingAdapt(DDrawCfg.ColorAnimation,       "ColorAnimation",       false, false, true));
+	pComp->Value(mkNamingAdapt(SmokeLevel,                    "SmokeLevel",           200,   false, true));
+	pComp->Value(mkNamingAdapt(VerboseObjectLoading,          "VerboseObjectLoading", 0,     false, true));
+	pComp->Value(mkNamingAdapt(VideoModule,                   "VideoModule",          false, false, true));
 
 	StdEnumEntry<int32_t> UpperBoardDisplayModes[] =
 	{
@@ -156,7 +156,6 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Monitor,              "Monitor",              0)); // 0 = D3DADAPTER_DEFAULT
 	pComp->Value(mkNamingAdapt(FireParticles,        "FireParticles",        true,  false, true));
 	pComp->Value(mkNamingAdapt(MaxRefreshDelay,      "MaxRefreshDelay",      30));
-	pComp->Value(mkNamingAdapt(DDrawCfg.Shader,      "Shader",               false, false, true));
 	pComp->Value(mkNamingAdapt(AutoFrameSkip,        "AutoFrameSkip",        true,  false, true));
 
 	StdEnumEntry<DisplayMode> DisplayModes[] =

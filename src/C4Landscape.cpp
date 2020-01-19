@@ -685,7 +685,7 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 		// Create landscape surface
 		Surface32 = new CSurface();
 		Surface8 = new CSurface8();
-		if (Config.Graphics.ColorAnimation && DDrawCfg.Shader)
+		if (DDrawCfg.ColorAnimation)
 			AnimationSurface = new CSurface(Width, Height);
 		if (!Surface32->Create(Width, Height, true)
 			|| !Surface8->Create(Width, Height, true)
@@ -1526,7 +1526,7 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 	Surface8->GetSurfaceSize(iWidth, iHeight);
 	Width = iWidth; Height = iHeight;
 	Surface32 = new CSurface(Width, Height);
-	if (Config.Graphics.ColorAnimation && DDrawCfg.Shader)
+	if (DDrawCfg.ColorAnimation)
 		AnimationSurface = new CSurface(Width, Height);
 	// adjust pal
 	if (!Mat2Pal()) return false;

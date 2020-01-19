@@ -38,7 +38,147 @@
 #endif
 #include <StdDDraw2.h>
 
+#include <utility>
+
 class CStdWindow;
+
+// one GLSL shader
+class CStdGLShader
+{
+public:
+	using Macro = std::pair<std::string, std::string>;
+
+public:
+	CStdGLShader() = default;
+	explicit CStdGLShader(const std::string &source) : source{source} {}
+	CStdGLShader(const CStdGLShader &) = delete;
+	CStdGLShader(CStdGLShader &&shader);
+
+	virtual ~CStdGLShader() { Clear(); }
+
+	bool operator==(const CStdGLShader &other) { return other.shader == shader; }
+
+	template<typename T> void SetMacro(const std::string &key, const T &value)
+	{
+		auto it = std::find_if(macros.begin(), macros.end(), [&key](const auto &macro) { return macro.first == key; });
+		if constexpr (std::is_null_pointer_v<T>)
+		{
+			if (it != macros.end())
+			{
+				macros.erase(it);
+			}
+		}
+
+		else
+		{
+			if (it != macros.end())
+			{
+				it->second = std::string{value};
+			}
+			else
+			{
+				macros.emplace_back(key, value);
+			}
+		}
+	}
+
+	void SetSource(const std::string &source);
+
+	GLuint Compile();
+	void Clear();
+
+	GLuint GetShader() const { return shader; }
+	std::string GetSource() const { return source; }
+	std::vector<Macro> GetMacros() const { return macros; }
+	std::string GetErrorMessage() const { return errorMessage; }
+	virtual GLenum GetType() const = 0;
+
+protected:
+	GLuint SetError(std::string_view message) { errorMessage = message; return 0; }
+
+	GLuint shader = 0;
+	std::string source;
+	std::vector<Macro> macros;
+	std::string errorMessage;
+};
+
+class CStdGLVertexShader : public CStdGLShader
+{
+public:
+	CStdGLVertexShader() = default;
+	explicit CStdGLVertexShader(const std::string &source) : CStdGLShader{source} {}
+
+	virtual GLenum GetType() const override { return GL_VERTEX_SHADER; }
+};
+
+class CStdGLFragmentShader : public CStdGLShader
+{
+public:
+	CStdGLFragmentShader() = default;
+	explicit CStdGLFragmentShader(const std::string &source) : CStdGLShader{source} {}
+
+	virtual GLenum GetType() const override { return GL_FRAGMENT_SHADER; }
+};
+
+class CStdGLShaderProgram
+{
+public:
+	CStdGLShaderProgram() = default;
+	CStdGLShaderProgram(const CStdGLShaderProgram &) = delete;
+	~CStdGLShaderProgram() { Clear(); }
+
+	explicit operator bool() const { return /*glIsProgram(*/shaderProgram/*)*/; }
+
+	void AddShader(CStdGLShader *shader);
+
+	bool Link();
+	void Select();
+	void Deselect();
+	void Clear();
+
+	void EnsureProgram();
+
+
+#if 0
+	template<typename T, typename... Args>
+	void SetUniform(const char *key, void (*function)(GLint, Args...), Args... args)
+	{
+		assert(shaderProgram);
+		int location = glGetUniformLocation(shaderProgram, key);
+		function(location, args...);
+	}
+	template<typename... Args>
+	void SetUniform(const char *key, Args... args)
+	{
+		assert(shaderProgram);
+
+		constexpr auto length = std::tuple_size_v<Args...>;
+		void (*function)(GLint, Args...) = nullptr;
+
+#define SELECT_UNIFORM(type, l) \
+	if constexpr(length == l) \
+	{ \
+		function = &glUniform##l##f; \
+	}
+
+		SELECT_UNIFORM(float, 1)
+		else SELECT_UNIFORM(float, 2)
+		else SELECT_UNIFORM(float, 3)
+		else SELECT_UNIFORM(float, 4)
+#undef SELECT_UNIFORM
+		SetUniform(key, function, args...);
+	}
+#endif
+
+	GLuint GetShaderProgram() const { return shaderProgram; }
+	std::string GetErrorMessage() const { return errorMessage; }
+
+private:
+	bool SetError(std::string_view message) { errorMessage = message; return false; }
+	GLuint shaderProgram = 0;
+	std::string errorMessage;
+	std::vector<CStdGLShader *> shaders;
+};
 
 // one OpenGL context
 class CStdGLCtx
@@ -89,10 +229,16 @@ protected:
 	GLenum sfcFmt; // texture surface format
 	CStdGLCtx MainCtx; // main GL context
 	CStdGLCtx *pCurrCtx; // current context
-	// continously numbered shaders for ATI cards
-	unsigned int shader;
-	// shaders for the ARB extension
-	GLuint shaders[6];
+
+	CStdGLShaderProgram BlitShader;
+	CStdGLShaderProgram BlitShaderMod2;
+	CStdGLShaderProgram LandscapeShader;
+
+	struct
+	{
+		GLuint VAO = 0;
+		GLuint VBO[3] {};
+	} VertexArray;
 
 public:
 	// General

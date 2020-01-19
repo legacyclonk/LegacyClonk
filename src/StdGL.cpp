@@ -28,6 +28,7 @@
 #include <math.h>
 #include <limits.h>
 
+[[deprecated("Immediate mode is deprecated")]]
 static void glColorDw(const uint32_t dwClr)
 {
 	glColor4ub(
@@ -37,13 +38,191 @@ static void glColorDw(const uint32_t dwClr)
 		static_cast<GLubyte>(dwClr >> 24));
 }
 
+template<typename T>
+static void SplitColor(const uint32_t &color, T &r, T&g, T&b, T&a)
+{
+	static_assert(std::is_floating_point_v<T>);
+	r = ((color >> 16) & 0xff) / static_cast<T>(255.0f);
+	g = ((color >> 8) & 0xff) / static_cast<T>(255.0f);
+	b = (color & 0xff) / static_cast<T>(255.0f);
+	a = ((color >> 24) & 0xff) / static_cast<T>(255.0f);
+}
+
+CStdGLShader::CStdGLShader(CStdGLShader &&s)
+{
+	shader = s.shader;
+	source = std::move(s.source);
+
+	errorMessage = std::move(s.errorMessage);
+	s.Clear();
+}
+
+void CStdGLShader::SetSource(const std::string &source)
+{
+	this->source = source;
+}
+
+void CStdGLShader::Clear()
+{
+	source.clear();
+	macros.clear();
+
+	if (shader)
+	{
+		glDeleteShader(shader);
+		shader = 0;
+	}
+	errorMessage.clear();
+}
+
+GLuint CStdGLShader::Compile()
+{
+	if (shader) // recompiling?
+	{
+		glDeleteShader(shader);
+		errorMessage.clear();
+	}
+
+	shader = glCreateShader(GetType());
+	if (!shader)
+	{
+		return SetError("Could not create shader");
+	}
+
+	size_t pos = source.find("#version");
+	if (pos == std::string::npos)
+	{
+		glDeleteShader(shader);
+		return SetError("Version directive must be first statement and may not be repeated");
+	}
+
+	pos = source.find('\n', pos + 1);
+	assert(pos != std::string::npos);
+
+	std::string buffer = "";
+	for (const auto &macro : macros)
+	{
+		buffer.append("#define ");
+		buffer.append(macro.first);
+		buffer.append(" ");
+		buffer.append(macro.second);
+		buffer.append("\n");
+	}
+	source.insert(pos + 1, buffer);
+
+	const char *s = source.c_str();
+	glShaderSource(shader, 1, &s, nullptr);
+
+	GLint status = 0;
+	glCompileShader(shader);
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+	if (!status)
+	{
+		GLint size = 0;
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
+		if (size)
+		{
+			errorMessage.resize(size);
+			glGetShaderInfoLog(shader, size, NULL, errorMessage.data());
+		}
+
+		return 0;
+	}
+
+	return shader;
+}
+
+void CStdGLShaderProgram::AddShader(CStdGLShader *shader)
+{
+	EnsureProgram();
+	if (std::find(shaders.cbegin(), shaders.cend(), shader) != shaders.cend())
+	{
+		return;
+	}
+
+	glAttachShader(shaderProgram, shader->GetShader());
+	shaders.push_back(shader);
+}
+
+bool CStdGLShaderProgram::Link()
+{
+	EnsureProgram();
+
+	glLinkProgram(shaderProgram);
+
+	GLint status = 0;
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
+	if (!status)
+	{
+		GLint size = 0;
+		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &size);
+		assert(size);
+		if (size)
+		{
+			errorMessage.resize(size);
+			glGetProgramInfoLog(shaderProgram, size, NULL, errorMessage.data());
+			LogF("Error linking shader program: %s", errorMessage.c_str());
+		}
+
+		return false;
+	}
+
+	glValidateProgram(shaderProgram);
+	glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &status);
+	if (!status)
+	{
+		GLint size = 0;
+		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &size);
+		if (size)
+		{
+			errorMessage.resize(size);
+			glGetProgramInfoLog(shaderProgram, size, NULL, errorMessage.data());
+		}
+
+		return false;
+	}
+
+	for (const auto &shader : shaders)
+	{
+		glDetachShader(shaderProgram, shader->GetShader());
+	}
+
+	shaders.clear();
+
+	return true;
+}
+
+void CStdGLShaderProgram::Select()
+{
+	assert(shaderProgram);
+	glUseProgram(shaderProgram);
+}
+
+void CStdGLShaderProgram::Deselect()
+{
+	glUseProgram(0);
+}
+
+void CStdGLShaderProgram::Clear()
+{
+	shaders.clear();
+	glDeleteProgram(shaderProgram);
+}
+
+void CStdGLShaderProgram::EnsureProgram()
+{
+	if (!shaderProgram)
+	{
+		shaderProgram = glCreateProgram();
+	}
+	assert(shaderProgram);
+}
+
 CStdGL::CStdGL()
 {
 	Default();
 	// global ptr
 	pGL = this;
-	shader = 0;
-	shaders[0] = 0;
 }
 
 CStdGL::~CStdGL()
@@ -106,6 +285,7 @@ bool CStdGL::UpdateClipper()
 	const auto scale = pApp->GetScale();
 	glLineWidth(scale);
 	glPointSize(scale);
+
 	// set it
 	glViewport(static_cast<int32_t>(floorf(iX * scale)), static_cast<int32_t>(floorf((RenderTarget->Hgt - iY - iHgt) * scale)), static_cast<int32_t>(ceilf(iWdt * scale)), static_cast<int32_t>(ceilf(iHgt * scale)));
 	glMatrixMode(GL_PROJECTION);
@@ -142,6 +322,14 @@ bool CStdGL::PrepareRendering(CSurface *const sfcToSurface)
 	return true;
 }
 
+static constexpr GLfloat IDENTITY_MATRIX[16]
+{
+	1, 0, 0, 0,
+	0, 1, 0, 0,
+	0, 0, 1, 0,
+	0, 0, 0, 1
+};
+
 void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	const uint32_t dwModClr, bool fMod2, const bool fExact)
 {
@@ -177,73 +365,34 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	}
 	// reset MOD2 for completely black modulations
 	if (fMod2 && !fAnyModNotBlack) fMod2 = 0;
-	if (shader)
+
+	GLuint program;
+	if (fMod2)
 	{
-		glEnable(GL_FRAGMENT_SHADER_ATI);
-		if (!fModClr) glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
-		dwModMask = 0;
-		if (Saturation < 255)
-		{
-			glBindFragmentShaderATI(fMod2 ? shader + 3 : shader + 2);
-			const GLfloat value[4] =
-				{ Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
-			glSetFragmentShaderConstantATI(GL_CON_1_ATI, value);
-		}
-		else
-		{
-			glBindFragmentShaderATI(fMod2 ? shader + 1 : shader);
-		}
-	}
-	else if (shaders[0])
-	{
-		glEnable(GL_FRAGMENT_PROGRAM_ARB);
-		if (!fModClr) glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
-		dwModMask = 0;
-		if (Saturation < 255)
-		{
-			glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, shaders[fMod2 ? 3 : 2]);
-			const GLfloat value[4] =
-				{ Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
-			glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 0, value);
-		}
-		else
-		{
-			glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, shaders[fMod2 ? 1 : 0]);
-		}
-	}
-	// modulated blit
-	else if (fModClr)
-	{
-		if (fMod2 || ((dwModClr >> 24 || dwModMask) && !DDrawCfg.NoAlphaAdd))
-		{
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB,      fMod2 ? GL_ADD_SIGNED : GL_MODULATE);
-			glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE,        fMod2 ? 2.0f : 1.0f);
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA,    GL_ADD);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB,      GL_TEXTURE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB,      GL_PRIMARY_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA,    GL_TEXTURE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA,    GL_PRIMARY_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB,     GL_SRC_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB,     GL_SRC_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA,   GL_SRC_ALPHA);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA,   GL_SRC_ALPHA);
-			dwModMask = 0;
-		}
-		else
-		{
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE,        1.0f);
-			dwModMask = 0xff000000;
-		}
+		BlitShaderMod2.Select();
+		program = BlitShaderMod2.GetShaderProgram();
 	}
 	else
 	{
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-		glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE, 1.0f);
+		BlitShader.Select();
+		program = BlitShader.GetShaderProgram();
 	}
+
+	glUniform1i(glGetUniformLocation(program, "textureSampler"), 0);
+	glUniform1f(glGetUniformLocation(program, "texIndent"), DDrawCfg.fTexIndent);
+	glUniform1f(glGetUniformLocation(program, "blitOffset"), DDrawCfg.fBlitOff);
+
+	glMatrixMode(GL_PROJECTION);
+	float matrix[16];
+	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
+
+	glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_FALSE, matrix);
+
+
 	// set texture+modes
 	glShadeModel((fUseClrModMap && fModClr && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
+
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, pTex->texName);
 	if (pApp->GetScale() != 1.f || (!fExact && !DDrawCfg.PointFiltering))
 	{
@@ -251,15 +400,13 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
 
-	glMatrixMode(GL_TEXTURE);
-	float matrix[16];
 	matrix[0] = rBltData.TexPos.mat[0];  matrix[ 1] = rBltData.TexPos.mat[3];  matrix[ 2] = 0; matrix[ 3] = rBltData.TexPos.mat[6];
 	matrix[4] = rBltData.TexPos.mat[1];  matrix[ 5] = rBltData.TexPos.mat[4];  matrix[ 6] = 0; matrix[ 7] = rBltData.TexPos.mat[7];
 	matrix[8] = 0;                       matrix[ 9] = 0;                       matrix[10] = 1; matrix[11] = 0;
 	matrix[12] = rBltData.TexPos.mat[2]; matrix[13] = rBltData.TexPos.mat[5];  matrix[14] = 0; matrix[15] = rBltData.TexPos.mat[8];
-	glLoadMatrixf(matrix);
 
-	glMatrixMode(GL_MODELVIEW);
+	glUniformMatrix4fv(glGetUniformLocation(program, "textureMatrix"), 1, GL_FALSE, matrix);
+
 	if (rBltData.pTransform)
 	{
 		const float *const mat = rBltData.pTransform->mat;
@@ -267,34 +414,53 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		matrix[ 4] = mat[1]; matrix[ 5] = mat[4]; matrix[ 6] = 0; matrix[ 7] = mat[7];
 		matrix[ 8] = 0;      matrix[ 9] = 0;      matrix[10] = 1; matrix[11] = 0;
 		matrix[12] = mat[2]; matrix[13] = mat[5]; matrix[14] = 0; matrix[15] = mat[8];
-		glLoadMatrixf(matrix);
+		glUniformMatrix4fv(glGetUniformLocation(program, "modelViewMatrix"), 1, GL_FALSE, matrix);
 	}
 	else
 	{
-		glLoadIdentity();
+		glUniformMatrix4fv(glGetUniformLocation(program, "modelViewMatrix"), 1, GL_FALSE, IDENTITY_MATRIX);
 	}
 
 	// draw triangle fan for speed
-	static_assert (VERTEX_NUM == 4, "GL_TRIANGLE_STEP cannot be used with more than 4 vertices; you need to add the necessary code.");
-	glBegin(GL_TRIANGLE_STRIP);
-	for (const auto &vtx : {rBltData.vtVtx[0], rBltData.vtVtx[1], rBltData.vtVtx[3], rBltData.vtVtx[2]})
+	static_assert (VERTEX_NUM == 4, "GL_TRIANGLE_STRIP cannot be used with more than 4 vertices; you need to add the necessary code.");
+
+	GLfloat vertices[VERTEX_NUM][2];
+	GLfloat color[std::size(vertices)][4];
+
+	std::array<CBltVertex, VERTEX_NUM> vtx {rBltData.vtVtx[0], rBltData.vtVtx[1], rBltData.vtVtx[3], rBltData.vtVtx[2]};
+
+	for (size_t i = 0; i < vtx.size(); ++i)
 	{
-		if (fModClr) glColorDw(vtx.dwModClr | dwModMask);
-		glTexCoord2f(vtx.ftx, vtx.fty);
-		glVertex2f(vtx.ftx, vtx.fty);
+		vertices[i][0] = vtx[i].ftx;
+		vertices[i][1] = vtx[i].fty;
+		SplitColor(vtx[i].dwModClr, color[i][0], color[i][1], color[i][2], color[i][3]);
 	}
 
-	glEnd();
-	glLoadIdentity();
+	glBindVertexArray(VertexArray.VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(0);
 
-	if (shader)
-	{
-		glDisable(GL_FRAGMENT_SHADER_ATI);
-	}
-	else if (shaders[0])
-	{
-		glDisable(GL_FRAGMENT_PROGRAM_ARB);
-	}
+	glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[2]);
+	glBufferData(GL_ARRAY_BUFFER,sizeof(color), color, GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(2);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	glBindVertexArray(0);
+
+	(fMod2 ? BlitShaderMod2 : BlitShader).Deselect();
+
 	if (pApp->GetScale() != 1.f || (!fExact && !DDrawCfg.PointFiltering))
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -310,18 +476,19 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 	if (!sfcSource || !sfcTarget || !wdt || !hgt) return;
 	assert(sfcTarget->IsRenderTarget());
 	assert(!(dwBlitMode & C4GFXBLIT_MOD2));
+
 	// bound
 	if (ClipAll) return;
-	// check exact
-	bool fExact = true;
+
 	// inside screen?
 	if (wdt <= 0 || hgt <= 0) return;
+
 	// prepare rendering to surface
 	if (!PrepareRendering(sfcTarget)) return;
+
 	// texture present?
 	if (!sfcSource->ppTex) return;
-	// blit with basesfc?
-	bool fBaseSfc = false;
+
 	// get involved texture offsets
 	int iTexSize = sfcSource->iTexSize;
 	const int iTexX = (std::max)(fx / iTexSize, 0);
@@ -341,97 +508,43 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glActiveTexture(GL_TEXTURE0);
 	}
-	uint32_t dwModMask = 0;
-	if (shader)
+
+	LandscapeShader.Select();
+	GLuint program = LandscapeShader.GetShaderProgram();
+	glUniform1i(glGetUniformLocation(program, "textureSampler"), 0);
+	glUniform1f(glGetUniformLocation(program, "texIndent"), DDrawCfg.fTexIndent);
+	glUniform1f(glGetUniformLocation(program, "blitOffset"), DDrawCfg.fBlitOff);
+
+	if (sfcSource2)
 	{
-		glEnable(GL_FRAGMENT_SHADER_ATI);
-		if (sfcSource2)
+		glUniform1i(glGetUniformLocation(program, "maskSampler"),    1);
+		glUniform1i(glGetUniformLocation(program, "liquidSampler"),  2);
+
+		static GLfloat value[4] = { -0.6f / 3, 0.0f, 0.6f / 3, 0.0f };
+		value[0] += 0.05f; value[1] += 0.05f; value[2] += 0.05f;
+		GLfloat mod[4];
+		for (int i = 0; i < 3; ++i)
 		{
-			glBindFragmentShaderATI(shader + 4);
-			static GLfloat value[4] = { -0.6f / 3, 0.0f, 0.6f / 3, 0.0f };
-			value[0] += 0.05f; value[1] += 0.05f; value[2] += 0.05f;
-			GLfloat mod[4];
-			for (int i = 0; i < 3; ++i)
-			{
-				if (value[i] > 0.9f) value[i] = -0.3f;
-				mod[i] = (value[i] > 0.3f ? 0.6f - value[i] : value[i]) / 3.0f;
-			}
-			mod[3] = 0;
-			glSetFragmentShaderConstantATI(GL_CON_2_ATI, mod);
+			if (value[i] > 0.9f) value[i] = -0.3f;
+			mod[i] = (value[i] > 0.3f ? 0.6f - value[i] : value[i]) / 3.0f;
 		}
-		else if (Saturation < 255)
-		{
-			glBindFragmentShaderATI(shader + 2);
-			const GLfloat value[4] =
-				{ Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
-			glSetFragmentShaderConstantATI(GL_CON_1_ATI, value);
-		}
-		else
-		{
-			glBindFragmentShaderATI(shader);
-		}
-		dwModMask = 0;
+
+		glUniform4f(glGetUniformLocation(program, "modulation"), mod[0], mod[1], mod[2], mod[3]);
 	}
-	else if (shaders[0])
-	{
-		glEnable(GL_FRAGMENT_PROGRAM_ARB);
-		if (sfcSource2)
-		{
-			glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, shaders[4]);
-			static GLfloat value[4] = { -0.6f / 3, 0.0f, 0.6f / 3, 0.0f };
-			value[0] += 0.05f; value[1] += 0.05f; value[2] += 0.05f;
-			GLfloat mod[4];
-			for (int i = 0; i < 3; ++i)
-			{
-				if (value[i] > 0.9f) value[i] = -0.3f;
-				mod[i] = (value[i] > 0.3f ? 0.6f - value[i] : value[i]) / 3.0f;
-			}
-			mod[3] = 0;
-			glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 1, mod);
-		}
-		else if (Saturation < 255)
-		{
-			glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, shaders[2]);
-			const GLfloat value[4] =
-				{ Saturation / 255.0f, Saturation / 255.0f, Saturation / 255.0f, 1.0f };
-			glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 0, value);
-		}
-		else
-		{
-			glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, shaders[0]);
-		}
-		dwModMask = 0;
-	}
-	// texture environment
-	else
-	{
-		if (DDrawCfg.NoAlphaAdd)
-		{
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE,        1.0f);
-			dwModMask = 0xff000000;
-		}
-		else
-		{
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB,      GL_MODULATE);
-			glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE,        1.0f);
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA,    GL_ADD);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB,      GL_TEXTURE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB,      GL_PRIMARY_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA,    GL_TEXTURE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA,    GL_PRIMARY_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB,     GL_SRC_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB,     GL_SRC_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA,   GL_SRC_ALPHA);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA,   GL_SRC_ALPHA);
-			dwModMask = 0;
-		}
-	}
+
+	glMatrixMode(GL_PROJECTION);
+	float matrix[16];
+	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
+	glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_FALSE, matrix);
+
 	// set texture+modes
 	glShadeModel((fUseClrModMap && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	glUniformMatrix4fv(glGetUniformLocation(program, "textureMatrix"), 1, GL_FALSE, IDENTITY_MATRIX);
+	glUniformMatrix4fv(glGetUniformLocation(program, "modelViewMatrix"), 1, GL_FALSE, IDENTITY_MATRIX);
+
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 
@@ -472,8 +585,6 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 				{
 					int xOffset = xChunk * chunkSize;
 					int yOffset = yChunk * chunkSize;
-					// draw triangle strip
-					glBegin(GL_TRIANGLE_STRIP);
 
 					// get new texture source bounds
 					FLOAT_RECT fTexBlt;
@@ -491,59 +602,93 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 					tTexBlt.right  = fTexBlt.right + iBlitX - fx + tx;
 					tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
 
-					// blit positions
-					// remember: order is 0, 1, 3, 2 because of GL_TRIANGLE_STRIP
-					float ftx[4] {tTexBlt.left, tTexBlt.right, tTexBlt.left, tTexBlt.right};
-					float fty[4] {tTexBlt.top, tTexBlt.top, tTexBlt.bottom, tTexBlt.bottom};
-					float tcx[4] {fTexBlt.left, fTexBlt.right, fTexBlt.left, fTexBlt.right};
-					float tcy[4] {fTexBlt.top, fTexBlt.top, fTexBlt.bottom, fTexBlt.bottom};
-
-					uint32_t fdwModClr[4]; // color modulation
-					// global modulation map
-					if (fUseClrModMap && dwModClr)
+					const GLfloat tc[]
 					{
-						for (int i = 0; i < 4; ++i)
+						fTexBlt.left / iTexSize,  fTexBlt.top / iTexSize,
+						fTexBlt.right / iTexSize, fTexBlt.top / iTexSize,
+						fTexBlt.left / iTexSize,  fTexBlt.bottom / iTexSize,
+						fTexBlt.right / iTexSize, fTexBlt.bottom / iTexSize
+					};
+
+					const GLfloat ft[4][2]
+					{
+						{tTexBlt.left, tTexBlt.top},
+						{tTexBlt.right, tTexBlt.top},
+						{tTexBlt.left, tTexBlt.bottom},
+						{tTexBlt.right, tTexBlt.bottom}
+					};
+
+					GLfloat color[std::size(ft)][4];
+
+					for (size_t i = 0; i < std::size(ft); ++i)
+					{
+						uint32_t c;
+						if (fUseClrModMap && dwModClr)
 						{
-							fdwModClr[i] = pClrModMap->GetModAt(
-								static_cast<int>(ftx[i]), static_cast<int>(fty[i]));
-							ModulateClr(fdwModClr[i], dwModClr);
-						}
-					}
-					else
-					{
-						std::fill(fdwModClr, std::end(fdwModClr), dwModClr);
-					}
+							c = pClrModMap->GetModAt(
+								static_cast<int>(ft[i][0]), static_cast<int>(ft[i][1]));
 
-					for (int i = 0; i < 4; ++i)
-					{
-						glColorDw(fdwModClr[i] | dwModMask);
-						glTexCoord2f((tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
-							(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
-						if (sfcSource2)
+							ModulateClr(c, dwModClr);
+						}
+						else
 						{
-							glMultiTexCoord2f(GL_TEXTURE1_ARB,
-								(tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
-								(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
-							glMultiTexCoord2f(GL_TEXTURE2_ARB,
-								(tcx[i] + DDrawCfg.fTexIndent) / sfcLiquidAnimation->iTexSize,
-								(tcy[i] + DDrawCfg.fTexIndent) / sfcLiquidAnimation->iTexSize);
+							c = dwModClr;
 						}
-						glVertex2f(ftx[i] + DDrawCfg.fBlitOff, fty[i] + DDrawCfg.fBlitOff);
+
+						SplitColor(c, color[i][0], color[i][1], color[i][2], color[i][3]);
 					}
 
-					glEnd();
+					glBindVertexArray(VertexArray.VAO);
+
+					glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[0]);
+					glBufferData(GL_ARRAY_BUFFER, sizeof(ft), ft, GL_STATIC_DRAW);
+					glVertexAttribPointer(
+								0,
+								2,
+								GL_FLOAT,
+								GL_FALSE,
+								0,
+								nullptr
+								);
+					glEnableVertexAttribArray(0);
+
+					glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[1]);
+					glBufferData(GL_ARRAY_BUFFER, sizeof(tc), tc, GL_STATIC_DRAW);
+					glVertexAttribPointer(
+								1,
+								2,
+								GL_FLOAT,
+								GL_FALSE,
+								0,
+								nullptr
+								);
+					glEnableVertexAttribArray(1);
+
+					glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[2]);
+					glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
+					glVertexAttribPointer(
+								2,
+								4,
+								GL_FLOAT,
+								GL_FALSE,
+								0,
+								nullptr
+								);
+					glEnableVertexAttribArray(2);
+
+					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+					glDisableVertexAttribArray(0);
+					glDisableVertexAttribArray(1);
+					glDisableVertexAttribArray(2);
+					glBindVertexArray(0);
 				}
 			}
 		}
 	}
-	if (shader)
-	{
-		glDisable(GL_FRAGMENT_SHADER_ATI);
-	}
-	else if (shaders[0])
-	{
-		glDisable(GL_FRAGMENT_PROGRAM_ARB);
-	}
+
+	LandscapeShader.Deselect();
+
 	if (sfcSource2)
 	{
 		glActiveTexture(GL_TEXTURE1);
@@ -697,18 +842,9 @@ void CStdGL::DrawPixInt(CSurface *const sfcTarget,
 	glVertex2f(tx + 0.5f, ty + 0.5f);
 	glEnd();
 }
-
-static void DefineShaderARB(const char *const p, GLuint &s)
+static void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
 {
-	glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, s);
-	glProgramStringARB(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, strlen(p), p);
-	if (GL_INVALID_OPERATION == glGetError())
-	{
-		GLint errPos; glGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &errPos);
-		fprintf(stderr, "ARB program%d:%d: Error: %s\n",
-			s, errPos, glGetString(GL_PROGRAM_ERROR_STRING_ARB));
-		s = 0;
-	}
+	std::printf("source: %d, type: %d, id: %ul, severity: %d, message: %s\n", source, type, id, severity, message);
 }
 
 bool CStdGL::RestoreDeviceObjects()
@@ -730,220 +866,139 @@ bool CStdGL::RestoreDeviceObjects()
 	// reset blit states
 	dwBlitMode = 0;
 
-	if (!DDrawCfg.Shader)
+	if (!BlitShader)
 	{
-	}
-	else if (GLEW_ARB_fragment_program)
-	{
-		if (!shaders[0])
+		assert(!LandscapeShader);
+		//glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(MessageCallback, nullptr);
+
+		CStdGLVertexShader vertexShader{
+					R"(
+					#version 330 core
+
+					uniform float texIndent;
+					uniform float blitOffset;
+					uniform mat4 textureMatrix;
+					uniform mat4 modelViewMatrix;
+					uniform mat4 projectionMatrix;
+
+					layout (location = 0) in vec2 vertexCoord;
+					layout (location = 1) in vec2 texCoord;
+					layout (location = 2) in vec4 vertexColor;
+
+					out vec2 vPosition;
+					out vec2 vTexCoord;
+					out vec4 vFragColor;
+
+					void main()
+					{
+						/*mat4 projectionMatrix = mat4(
+							vec4(2.0 / (projection.y - projection.x), 0, 0, 0),
+							vec4(0, 2.0 / (projection.w - projection.z), 0, 0),
+							vec4(0, 0, -1.0, 0),
+							vec4(
+								-(projection.y + projection.x) / (projection.y - projection.x),
+								-(projection.w + projection.z) / (projection.w - projection.z),
+								0,
+								1
+							)
+						);*/
+
+						vTexCoord = (textureMatrix * vec4(texCoord + texIndent, 0.0, 1.0)).xy;
+						vPosition = vertexCoord + blitOffset;
+						vFragColor = vertexColor;
+						gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 0.0, 1.0);
+					}
+					)"
+				};
+
+		vertexShader.Compile();
+
+		CStdGLFragmentShader blitFragmentShader{
+			R"(
+			#version 330 core
+
+			uniform sampler2D textureSampler;
+
+			in vec2 vPosition;
+			in vec2 vTexCoord;
+			in vec4 vFragColor;
+			out vec4 fragColor;
+
+			void main()
+			{
+				fragColor = texture(textureSampler, vTexCoord);
+			#ifdef LC_MOD2
+				fragColor.rgb += vFragColor.rgb;
+				fragColor.rgb = clamp(fragColor.rgb * 2.0 - 1.0, 0.0, 1.0);
+			#else
+				fragColor.rgb *= vFragColor.rgb;
+				fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0);
+				fragColor.a = clamp(fragColor.a + vFragColor.a, 0.0, 1.0);
+			#endif
+			}
+			)"
+		};
+
+		blitFragmentShader.Compile();
+
+		BlitShader.AddShader(&vertexShader);
+		BlitShader.AddShader(&blitFragmentShader);
+		BlitShader.Link();
+
+		blitFragmentShader.SetMacro("LC_MOD2", "1");
+		blitFragmentShader.Compile();
+
+		BlitShaderMod2.AddShader(&vertexShader);
+		BlitShaderMod2.AddShader(&blitFragmentShader);
+		BlitShaderMod2.Link();
+
+		CStdGLFragmentShader landscapeFragmentShader{
+					R"(
+					#version 330 core
+
+					uniform sampler2D textureSampler;
+					#ifdef LC_COLOR_ANIMATION
+					uniform sampler2D maskSampler;
+					uniform sampler2D liquidSampler;
+					uniform vec4 modulation;
+					#endif
+
+					in vec2 vPosition;
+					in vec2 vTexCoord;
+					in vec4 vFragColor;
+					out vec4 fragColor;
+
+					void main()
+					{
+						fragColor = texture(textureSampler, vTexCoord);
+					#ifdef LC_COLOR_ANIMATION
+						float mask = texture(maskSampler, vTexCoord).a;
+						vec3 liquid = texture(liquidSampler, vTexCoord).rgb;
+
+						liquid -= vec3(0.5, 0.5, 0.5);
+						liquid = vec3(dot(liquid, modulation.rgb));
+						liquid *= mask;
+						fragColor.rgb = fragColor.rgb + liquid;
+					#endif
+
+						fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0) * vFragColor.rgb;
+						fragColor.a = clamp(fragColor.a + vFragColor.a, 0.0, 1.0);
+					}
+					)"};
+
+		if (DDrawCfg.ColorAnimation)
 		{
-			glGenProgramsARB(6, shaders);
-
-			DefineShaderARB("!!ARBfp1.0\n"
-				"TEMP tmp;\n"
-				// sample the texture
-				"TXP tmp, fragment.texcoord[0], texture, 2D;\n"
-				// perform the modulation
-				"MUL tmp.rgb, tmp, fragment.color.primary;\n"
-				// Apparently, it is not possible to directly add and mul into the same register or something.
-				"ADD_SAT result.color.rgb, tmp, {0,0,0,0};\n"
-				"ADD_SAT result.color.a, tmp, fragment.color.primary;\n"
-				"END\n", shaders[0]);
-
-			DefineShaderARB("!!ARBfp1.0\n"
-				"ATTRIB tex = fragment.texcoord;\n"
-				"ATTRIB col = fragment.color.primary;\n"
-				"OUTPUT outColor = result.color;\n"
-				"TEMP tmp;\n"
-				// sample the texture
-				"TXP tmp, tex, texture, 2D;\n"
-				// perform the modulation
-				"ADD tmp, tmp, col;\n"
-				"MAD_SAT outColor, tmp, { 2.0, 2.0, 2.0, 1.0 }, { -1.0, -1.0, -1.0, 0.0 };\n"
-				"END\n", shaders[1]);
-
-			DefineShaderARB("!!ARBfp1.0\n"
-				"ATTRIB tex = fragment.texcoord;\n"
-				"ATTRIB col = fragment.color.primary;\n"
-				"OUTPUT outColor = result.color;\n"
-				"TEMP tmp, grey;\n"
-				// sample the texture
-				"TXP tmp, tex, texture, 2D;\n"
-				// perform the modulation
-				"MUL tmp.rgb, tmp, col;\n"
-				// grey
-				"DP3 grey, tmp, { 0.299, 0.587, 0.114, 1.0 };\n"
-				"LRP tmp.rgb, program.local[0], tmp, grey;"
-				"ADD_SAT tmp.a, tmp, col;\n"
-				"MOV outColor, tmp;\n"
-				"END\n", shaders[2]);
-
-			DefineShaderARB("!!ARBfp1.0\n"
-				"ATTRIB tex = fragment.texcoord;"
-				"ATTRIB col = fragment.color.primary;"
-				"OUTPUT outColor = result.color;"
-				"TEMP tmp, grey;"
-				// sample the texture
-				"TXP tmp, tex, texture, 2D;"
-				// perform the modulation
-				"ADD tmp, tmp, col;\n"
-				"MAD_SAT tmp, tmp, { 2.0, 2.0, 2.0, 1.0 }, { -1.0, -1.0, -1.0, 0.0 };\n"
-				// grey
-				"DP3 grey, tmp, { 0.299, 0.587, 0.114, 1.0 };\n"
-				"LRP tmp.rgb, program.local[0], tmp, grey;"
-				"MOV outColor, tmp;\n"
-				"END", shaders[3]);
-
-			DefineShaderARB("!!ARBfp1.0\n"
-				"TEMP tmp;\n"
-				"TEMP mask;\n"
-				"TEMP liquid;\n"
-				// sample the texture
-				"TXP tmp, fragment.texcoord, texture[0], 2D;\n"
-				"TXP mask, fragment.texcoord, texture[1], 2D;\n"
-				"TXP liquid, fragment.texcoord[2], texture[2], 2D;\n"
-				// animation
-				"SUB liquid.rgb, liquid, {0.5, 0.5, 0.5, 0};\n"
-				"DP3 liquid.rgb, liquid, program.local[1];\n"
-				"MUL liquid.rgb, mask.aaaa, liquid;\n"
-				"ADD_SAT tmp.rgb, liquid, tmp;\n"
-				// perform the modulation
-				"MUL tmp.rgb, tmp, fragment.color.primary;\n"
-				"ADD_SAT tmp.a, tmp, fragment.color.primary;\n"
-				"MOV result.color, tmp;\n"
-				"END\n", shaders[4]);
+			landscapeFragmentShader.SetMacro("LC_COLOR_ANIMATION", "1");
 		}
-	}
-	else if (!shader && GLEW_ATI_fragment_shader)
-	{
-		shader = glGenFragmentShadersATI(6);
-		if (!shader) return Active;
+		landscapeFragmentShader.Compile();
 
-		// Standard color modulation and alpha addition
-		glBindFragmentShaderATI(shader);
-		glBeginFragmentShaderATI();
-		// Load the contents of the texture into a register
-		glSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0, GL_SWIZZLE_STR_ATI);
-		// X(d) = X(a1) * X(a2)
-		glColorFragmentOp2ATI(GL_MUL_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_NONE,
-			GL_PRIMARY_COLOR_ARB, GL_NONE, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE);
-		// A(d) = BoundBy(A(a1) + A(a2), 0, 1)
-		glAlphaFragmentOp2ATI(GL_ADD_ATI,
-			GL_REG_0_ATI, GL_SATURATE_BIT_ATI,
-			GL_PRIMARY_COLOR_ARB, GL_NONE, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE);
-		glEndFragmentShaderATI();
+		LandscapeShader.AddShader(&vertexShader);
+		LandscapeShader.AddShader(&landscapeFragmentShader);
+		LandscapeShader.Link();
 
-		// Spezial "mod2" color addition and alpha addition
-		glBindFragmentShaderATI(shader + 1);
-		glBeginFragmentShaderATI();
-		// Load the contents of the texture into a register
-		glSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0, GL_SWIZZLE_STR_ATI);
-		// X(d) = BoundBy((X(a1) + X(a2) - 0.5) * 2, 0, 1)
-		glColorFragmentOp2ATI(GL_ADD_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_2X_BIT_ATI | GL_SATURATE_BIT_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_NONE,
-			GL_PRIMARY_COLOR_ARB, GL_NONE, GL_BIAS_BIT_ATI);
-		// A(d) = BoundBy(A(a1) + A(a2), 0, 1)
-		glAlphaFragmentOp2ATI(GL_ADD_ATI,
-			GL_REG_0_ATI, GL_SATURATE_BIT_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_NONE,
-			GL_PRIMARY_COLOR_ARB, GL_NONE, GL_NONE);
-		glEndFragmentShaderATI();
-
-		// Standard color modulation and alpha addition, with additional greying
-		glBindFragmentShaderATI(shader + 2);
-		glBeginFragmentShaderATI();
-		// Load the contents of the texture into a register
-		glSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0, GL_SWIZZLE_STR_ATI);
-		// Define the factors for each color
-		const GLfloat grey[4] = { 0.299f, 0.587f, 0.114f, 1.0f };
-		glSetFragmentShaderConstantATI(GL_CON_0_ATI, grey);
-		// X(d) = X(a1) * X(a2)
-		glColorFragmentOp2ATI(GL_MUL_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_NONE,
-			GL_PRIMARY_COLOR_ARB, GL_NONE, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE);
-		// A(d) = BoundBy(A(a1) + A(a2), 0, 1)
-		glAlphaFragmentOp2ATI(GL_ADD_ATI,
-			GL_REG_0_ATI, GL_SATURATE_BIT_ATI,
-			GL_PRIMARY_COLOR_ARB, GL_NONE, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE);
-		// X(d) = R(a1) * R(a2) + G(a1) * G(a2) + B(a1) * B(a2)
-		glColorFragmentOp2ATI(GL_DOT3_ATI,
-			GL_REG_1_ATI, GL_NONE, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE,
-			GL_CON_0_ATI, GL_NONE, GL_NONE);
-		// X(d) = X(a1) * X(a2) + (1 - X(a1)) * X(a3)
-		// CON_1 is defined in PerformBlt.
-		glColorFragmentOp3ATI(GL_LERP_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_SATURATE_BIT_ATI,
-			GL_CON_1_ATI, GL_NONE, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE,
-			GL_REG_1_ATI, GL_NONE, GL_NONE);
-		glEndFragmentShaderATI();
-
-		// Spezial "mod2" color addition and alpha addition
-		glBindFragmentShaderATI(shader + 3);
-		glBeginFragmentShaderATI();
-		// Load the contents of the texture into a register
-		glSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0, GL_SWIZZLE_STR_ATI);
-		// Define the factors for each color
-		glSetFragmentShaderConstantATI(GL_CON_0_ATI, grey);
-		// X(d) = BoundBy((X(a1) + X(a2) - 0.5) * 2, 0, 1)
-		glColorFragmentOp2ATI(GL_ADD_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_2X_BIT_ATI | GL_SATURATE_BIT_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_NONE,
-			GL_PRIMARY_COLOR_ARB, GL_NONE, GL_BIAS_BIT_ATI);
-		// A(d) = BoundBy(A(a1) + A(a2), 0, 1)
-		glAlphaFragmentOp2ATI(GL_ADD_ATI,
-			GL_REG_0_ATI, GL_SATURATE_BIT_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_NONE,
-			GL_PRIMARY_COLOR_ARB, GL_NONE, GL_NONE);
-		// X(d) = R(a1) * R(a2) + G(a1) * G(a2) + B(a1) * B(a2)
-		glColorFragmentOp2ATI(GL_DOT3_ATI,
-			GL_REG_1_ATI, GL_NONE, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE,
-			GL_CON_0_ATI, GL_NONE, GL_NONE);
-		// X(d) = X(a1) * X(a2) + (1 - X(a1)) * X(a3)
-		glColorFragmentOp3ATI(GL_LERP_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_SATURATE_BIT_ATI,
-			GL_CON_1_ATI, GL_NONE, GL_NONE,
-			GL_REG_1_ATI, GL_NONE, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE);
-		glEndFragmentShaderATI();
-
-		// Spezial animated landscape shader
-		glBindFragmentShaderATI(shader + 4);
-		glBeginFragmentShaderATI();
-		// Load the contents of the textures into two registers
-		glSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0, GL_SWIZZLE_STR_ATI);
-		glSampleMapATI(GL_REG_1_ATI, GL_TEXTURE1, GL_SWIZZLE_STR_ATI);
-		glSampleMapATI(GL_REG_2_ATI, GL_TEXTURE2, GL_SWIZZLE_STR_ATI);
-		// to test: load both textures at the same coord glSampleMapATI (GL_REG_1_ATI, GL_TEXTURE0, GL_SWIZZLE_STR_ATI);
-		// X(d) = X(a1) * X(a2)
-		glColorFragmentOp2ATI(GL_MUL_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_NONE,
-			GL_PRIMARY_COLOR_ARB, GL_NONE, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE);
-		// A(d) = BoundBy(A(a1) + A(a2), 0, 1)
-		glAlphaFragmentOp2ATI(GL_ADD_ATI,
-			GL_REG_0_ATI, GL_SATURATE_BIT_ATI,
-			GL_PRIMARY_COLOR_ARB, GL_NONE, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE);
-		// R(d) = R(a1) * R(a2) + R(a3)
-		glColorFragmentOp2ATI(GL_DOT3_ATI,
-			GL_REG_2_ATI, GL_NONE, GL_NONE,
-			GL_CON_2_ATI, GL_NONE, GL_NONE,
-			GL_REG_2_ATI, GL_NONE, GL_BIAS_BIT_ATI);
-		glColorFragmentOp3ATI(GL_MAD_ATI,
-			GL_REG_0_ATI, GL_NONE, GL_SATURATE_BIT_ATI,
-			GL_REG_2_ATI, GL_NONE, GL_NONE,
-			GL_REG_1_ATI, GL_ALPHA, GL_NONE,
-			GL_REG_0_ATI, GL_NONE, GL_NONE);
-		glEndFragmentShaderATI();
+		glGenVertexArrays(1, &VertexArray.VAO);
+		glGenBuffers(3, VertexArray.VBO);
 	}
 	// done
 	return Active;
@@ -960,11 +1015,6 @@ bool CStdGL::InvalidateDeviceObjects()
 	// invalidate font objects
 	// invalidate primary surfaces
 	if (lpPrimary) lpPrimary->Clear();
-	if (shader)
-	{
-		glDeleteFragmentShaderATI(shader);
-		shader = 0;
-	}
 	return true;
 }
 

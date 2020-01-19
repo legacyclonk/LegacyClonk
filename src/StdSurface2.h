@@ -72,11 +72,10 @@ public:
 	bool NoAcceleration; // wether direct rendering is used (X11)
 	int Cfg;
 
-	bool Shader; // wether to use pixelshaders
+	bool ColorAnimation = false; // whether to use color animation
 
-	CDDrawCfg() :
+	CDDrawCfg()
 		// Let's end this silly bitmask business in the config.
-		Shader(false)
 	{
 		Set(0, 0.01f, 0.0f);
 	}
