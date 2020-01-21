@@ -366,27 +366,18 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	// reset MOD2 for completely black modulations
 	if (fMod2 && !fAnyModNotBlack) fMod2 = 0;
 
-	GLuint program;
-	if (fMod2)
-	{
-		BlitShaderMod2.Select();
-		program = BlitShaderMod2.GetShaderProgram();
-	}
-	else
-	{
-		BlitShader.Select();
-		program = BlitShader.GetShaderProgram();
-	}
+	CStdGLShaderProgram &shader = fMod2 ? BlitShaderMod2 : BlitShader;
+	shader.Select();
 
-	glUniform1i(glGetUniformLocation(program, "textureSampler"), 0);
-	glUniform1f(glGetUniformLocation(program, "texIndent"), DDrawCfg.fTexIndent);
-	glUniform1f(glGetUniformLocation(program, "blitOffset"), DDrawCfg.fBlitOff);
+	shader.SetUniform("textureSampler", glUniform1i, 0);
+	shader.SetUniform("texIndent", glUniform1f, DDrawCfg.fTexIndent);
+	shader.SetUniform("blitOffset", glUniform1f, DDrawCfg.fBlitOff);
 
 	glMatrixMode(GL_PROJECTION);
 	float matrix[16];
 	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
 
-	glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_FALSE, matrix);
+	shader.SetUniform("projectionMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), const_cast<const float *>(matrix));
 
 
 	// set texture+modes
@@ -405,7 +396,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	matrix[8] = 0;                       matrix[ 9] = 0;                       matrix[10] = 1; matrix[11] = 0;
 	matrix[12] = rBltData.TexPos.mat[2]; matrix[13] = rBltData.TexPos.mat[5];  matrix[14] = 0; matrix[15] = rBltData.TexPos.mat[8];
 
-	glUniformMatrix4fv(glGetUniformLocation(program, "textureMatrix"), 1, GL_FALSE, matrix);
+	shader.SetUniform("textureMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), const_cast<const float *>(matrix));
 
 	if (rBltData.pTransform)
 	{
@@ -414,11 +405,12 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		matrix[ 4] = mat[1]; matrix[ 5] = mat[4]; matrix[ 6] = 0; matrix[ 7] = mat[7];
 		matrix[ 8] = 0;      matrix[ 9] = 0;      matrix[10] = 1; matrix[11] = 0;
 		matrix[12] = mat[2]; matrix[13] = mat[5]; matrix[14] = 0; matrix[15] = mat[8];
-		glUniformMatrix4fv(glGetUniformLocation(program, "modelViewMatrix"), 1, GL_FALSE, matrix);
+
+		shader.SetUniform("modelViewMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), const_cast<const float *>(matrix));
 	}
 	else
 	{
-		glUniformMatrix4fv(glGetUniformLocation(program, "modelViewMatrix"), 1, GL_FALSE, IDENTITY_MATRIX);
+		shader.SetUniform("modelViewMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), IDENTITY_MATRIX);
 	}
 
 	// draw triangle fan for speed
@@ -459,7 +451,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	glDisableVertexAttribArray(2);
 	glBindVertexArray(0);
 
-	(fMod2 ? BlitShaderMod2 : BlitShader).Deselect();
+	shader.Deselect();
 
 	if (pApp->GetScale() != 1.f || (!fExact && !DDrawCfg.PointFiltering))
 	{
@@ -510,15 +502,14 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 	}
 
 	LandscapeShader.Select();
-	GLuint program = LandscapeShader.GetShaderProgram();
-	glUniform1i(glGetUniformLocation(program, "textureSampler"), 0);
-	glUniform1f(glGetUniformLocation(program, "texIndent"), DDrawCfg.fTexIndent);
-	glUniform1f(glGetUniformLocation(program, "blitOffset"), DDrawCfg.fBlitOff);
+	LandscapeShader.SetUniform("textureSampler", glUniform1i, 0);
+	LandscapeShader.SetUniform("texIndent", glUniform1f, DDrawCfg.fTexIndent);
+	LandscapeShader.SetUniform("blitOffset", glUniform1f, DDrawCfg.fBlitOff);
 
 	if (sfcSource2)
 	{
-		glUniform1i(glGetUniformLocation(program, "maskSampler"),    1);
-		glUniform1i(glGetUniformLocation(program, "liquidSampler"),  2);
+		LandscapeShader.SetUniform("maskSampler", glUniform1i, 1);
+		LandscapeShader.SetUniform("liquidSampler", glUniform1i, 2);
 
 		static GLfloat value[4] = { -0.6f / 3, 0.0f, 0.6f / 3, 0.0f };
 		value[0] += 0.05f; value[1] += 0.05f; value[2] += 0.05f;
@@ -529,21 +520,21 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 			mod[i] = (value[i] > 0.3f ? 0.6f - value[i] : value[i]) / 3.0f;
 		}
 
-		glUniform4f(glGetUniformLocation(program, "modulation"), mod[0], mod[1], mod[2], mod[3]);
+		LandscapeShader.SetUniform("modulation", glUniform4f, mod[0], mod[1], mod[2], mod[3]);
 	}
 
 	glMatrixMode(GL_PROJECTION);
 	float matrix[16];
 	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
-	glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_FALSE, matrix);
+	LandscapeShader.SetUniform("projectionMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), const_cast<const float *>(matrix));
 
 	// set texture+modes
 	glShadeModel((fUseClrModMap && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glUniformMatrix4fv(glGetUniformLocation(program, "textureMatrix"), 1, GL_FALSE, IDENTITY_MATRIX);
-	glUniformMatrix4fv(glGetUniformLocation(program, "modelViewMatrix"), 1, GL_FALSE, IDENTITY_MATRIX);
+	LandscapeShader.SetUniform("textureMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), IDENTITY_MATRIX);
+	LandscapeShader.SetUniform("modelViewMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), IDENTITY_MATRIX);
 
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();

@@ -138,37 +138,30 @@ public:
 
 	void EnsureProgram();
 
-
-#if 0
-	template<typename T, typename... Args>
-	void SetUniform(const char *key, void (*function)(GLint, Args...), Args... args)
+	template<typename... Args> bool SetUniform(const std::string &key, void (*function)(GLint, Args...), Args... args)
 	{
 		assert(shaderProgram);
-		int location = glGetUniformLocation(shaderProgram, key);
+
+		GLint location;
+		if (auto it = uniformLocations.find(key); it != uniformLocations.end())
+		{
+			location = it->second;
+			assert(location != -1);
+		}
+		else
+		{
+			location = glGetUniformLocation(shaderProgram, key.c_str());
+			if (location == -1)
+			{
+				return false;
+			}
+
+			uniformLocations.emplace(key, location);
+		}
 		function(location, args...);
-	}
-	template<typename... Args>
-	void SetUniform(const char *key, Args... args)
-	{
-		assert(shaderProgram);
 
-		constexpr auto length = std::tuple_size_v<Args...>;
-		void (*function)(GLint, Args...) = nullptr;
-
-#define SELECT_UNIFORM(type, l) \
-	if constexpr(length == l) \
-	{ \
-		function = &glUniform##l##f; \
+		return true;
 	}
-
-		SELECT_UNIFORM(float, 1)
-		else SELECT_UNIFORM(float, 2)
-		else SELECT_UNIFORM(float, 3)
-		else SELECT_UNIFORM(float, 4)
-#undef SELECT_UNIFORM
-		SetUniform(key, function, args...);
-	}
-#endif
 
 	GLuint GetShaderProgram() const { return shaderProgram; }
 	std::string GetErrorMessage() const { return errorMessage; }
@@ -178,6 +171,7 @@ private:
 	GLuint shaderProgram = 0;
 	std::string errorMessage;
 	std::vector<CStdGLShader *> shaders;
+	std::unordered_map<std::string, GLint> uniformLocations;
 };
 
 // one OpenGL context
