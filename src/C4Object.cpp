@@ -1279,6 +1279,8 @@ void C4Object::DoDamage(int32_t iChange, int32_t iCausedBy, int32_t iCause)
 template<typename T>
 constexpr T clampedMultiplication(T x, T y)
 {
+	if (y == 0) return 0;
+
 	if (y < 0)
 	{
 		if (x < 0)
