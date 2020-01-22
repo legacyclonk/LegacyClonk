@@ -38,7 +38,10 @@
 #endif
 #include <StdDDraw2.h>
 
+#include <array>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 class CStdWindow;
 
