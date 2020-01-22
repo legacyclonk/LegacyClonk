@@ -231,7 +231,14 @@ protected:
 	struct
 	{
 		GLuint VAO = 0;
-		GLuint VBO[3] {};
+		GLuint VBO[4] {};
+		enum Index
+		{
+			Vertices = 0,
+			TexCoords = 1,
+			Color = 2,
+			LiquidTexCoords = 3,
+		};
 	} VertexArray;
 
 public:
