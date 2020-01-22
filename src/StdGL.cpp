@@ -416,33 +416,31 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	// draw triangle fan for speed
 	static_assert (VERTEX_NUM == 4, "GL_TRIANGLE_STRIP cannot be used with more than 4 vertices; you need to add the necessary code.");
 
-	GLfloat vertices[VERTEX_NUM][2];
-	GLfloat color[std::size(vertices)][4];
+	struct {
+		GLfloat vertices[VERTEX_NUM][2];
+		GLfloat color[VERTEX_NUM][4];
+	} VertexData;
 
 	std::array<CBltVertex, VERTEX_NUM> vtx {rBltData.vtVtx[0], rBltData.vtVtx[1], rBltData.vtVtx[3], rBltData.vtVtx[2]};
 
 	for (size_t i = 0; i < vtx.size(); ++i)
 	{
-		vertices[i][0] = vtx[i].ftx;
-		vertices[i][1] = vtx[i].fty;
-		SplitColor(vtx[i].dwModClr, color[i][0], color[i][1], color[i][2], color[i][3]);
+		VertexData.vertices[i][0] = vtx[i].ftx;
+		VertexData.vertices[i][1] = vtx[i].fty;
+		SplitColor(vtx[i].dwModClr, VertexData.color[i][0], VertexData.color[i][1], VertexData.color[i][2], VertexData.color[i][3]);
 	}
 
 	glBindVertexArray(VertexArray.VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.Vertices]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(VertexData), &VertexData, GL_STATIC_DRAW);
 	glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray(VertexArray.Vertices);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.TexCoords]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-	glEnableVertexAttribArray(VertexArray.TexCoords);
+	glEnableVertexAttribArray(1);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.Color]);
-	glBufferData(GL_ARRAY_BUFFER,sizeof(color), color, GL_STATIC_DRAW);
-	glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-	glEnableVertexAttribArray(VertexArray.Color);
+	glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(decltype(VertexData), color)));
+	glEnableVertexAttribArray(2);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -593,31 +591,44 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 					tTexBlt.right  = fTexBlt.right + iBlitX - fx + tx;
 					tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
 
-					const GLfloat tc[]
-					{
-						fTexBlt.left / iTexSize,  fTexBlt.top / iTexSize,
-						fTexBlt.right / iTexSize, fTexBlt.top / iTexSize,
-						fTexBlt.left / iTexSize,  fTexBlt.bottom / iTexSize,
-						fTexBlt.right / iTexSize, fTexBlt.bottom / iTexSize
+					const int texSize = sfcLiquidAnimation->iTexSize;
+					struct {
+						const GLfloat tc[8];
+						const GLfloat ft[4][2];
+
+						GLfloat color[4][4];
+
+						const GLfloat lt[8];
+					} VertexData {
+						{
+							fTexBlt.left / iTexSize,  fTexBlt.top / iTexSize,
+							fTexBlt.right / iTexSize, fTexBlt.top / iTexSize,
+							fTexBlt.left / iTexSize,  fTexBlt.bottom / iTexSize,
+							fTexBlt.right / iTexSize, fTexBlt.bottom / iTexSize
+						},
+						{
+							{tTexBlt.left, tTexBlt.top},
+							{tTexBlt.right, tTexBlt.top},
+							{tTexBlt.left, tTexBlt.bottom},
+							{tTexBlt.right, tTexBlt.bottom}
+						},
+						{},
+						{
+							fTexBlt.left / texSize,  fTexBlt.top / texSize,
+							fTexBlt.right / texSize, fTexBlt.top / texSize,
+							fTexBlt.left / texSize,  fTexBlt.bottom / texSize,
+							fTexBlt.right / texSize, fTexBlt.bottom / texSize
+						}
 					};
 
-					const GLfloat ft[4][2]
-					{
-						{tTexBlt.left, tTexBlt.top},
-						{tTexBlt.right, tTexBlt.top},
-						{tTexBlt.left, tTexBlt.bottom},
-						{tTexBlt.right, tTexBlt.bottom}
-					};
 
-					GLfloat color[std::size(ft)][4];
-
-					for (size_t i = 0; i < std::size(ft); ++i)
+					for (size_t i = 0; i < std::size(VertexData.ft); ++i)
 					{
 						uint32_t c;
 						if (fUseClrModMap && dwModClr)
 						{
 							c = pClrModMap->GetModAt(
-								static_cast<int>(ft[i][0]), static_cast<int>(ft[i][1]));
+								static_cast<int>(VertexData.ft[i][0]), static_cast<int>(VertexData.ft[i][1]));
 
 							ModulateClr(c, dwModClr);
 						}
@@ -626,62 +637,46 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 							c = dwModClr;
 						}
 
-						SplitColor(c, color[i][0], color[i][1], color[i][2], color[i][3]);
+						SplitColor(c, VertexData.color[i][0], VertexData.color[i][1], VertexData.color[i][2], VertexData.color[i][3]);
 					}
 
 					glBindVertexArray(VertexArray.VAO);
 
 					glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.Vertices]);
-					glBufferData(GL_ARRAY_BUFFER, sizeof(ft), ft, GL_STATIC_DRAW);
+					glBufferData(GL_ARRAY_BUFFER, sizeof(VertexData), &VertexData, GL_STATIC_DRAW);
 					glVertexAttribPointer(
 								VertexArray.Vertices,
 								2,
 								GL_FLOAT,
 								GL_FALSE,
 								0,
-								nullptr
+								reinterpret_cast<const void*>(offsetof(decltype(VertexData), ft))
 								);
 					glEnableVertexAttribArray(VertexArray.Vertices);
 
-					glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.TexCoords]);
-					glBufferData(GL_ARRAY_BUFFER, sizeof(tc), tc, GL_STATIC_DRAW);
 					glVertexAttribPointer(
 								VertexArray.TexCoords,
 								2,
 								GL_FLOAT,
 								GL_FALSE,
 								0,
-								nullptr
+								reinterpret_cast<const void*>(offsetof(decltype(VertexData), tc))
 								);
 					glEnableVertexAttribArray(VertexArray.TexCoords);
 
-					glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.Color]);
-					glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
 					glVertexAttribPointer(
 								VertexArray.Color,
 								4,
 								GL_FLOAT,
 								GL_FALSE,
 								0,
-								nullptr
+								reinterpret_cast<const void*>(offsetof(decltype(VertexData), color))
 								);
 					glEnableVertexAttribArray(VertexArray.Color);
 
-					const int texSize = sfcLiquidAnimation->iTexSize;
-					const GLfloat lt[]
-					{
-						fTexBlt.left / texSize,  fTexBlt.top / texSize,
-						fTexBlt.right / texSize, fTexBlt.top / texSize,
-						fTexBlt.left / texSize,  fTexBlt.bottom / texSize,
-						fTexBlt.right / texSize, fTexBlt.bottom / texSize
-					};
-
 					if (DDrawCfg.ColorAnimation)
 					{
-
-						glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.LiquidTexCoords]);
-						glBufferData(GL_ARRAY_BUFFER, sizeof(lt), lt, GL_STATIC_DRAW);
-						glVertexAttribPointer(VertexArray.LiquidTexCoords, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+						glVertexAttribPointer(VertexArray.LiquidTexCoords, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(decltype(VertexData), lt)));
 						glEnableVertexAttribArray(VertexArray.LiquidTexCoords);
 					}
 
