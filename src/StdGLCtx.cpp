@@ -100,6 +100,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
 	if (!Select()) return !!pGL->Error("  gl: Unable to select context");
 
 	// init extensions
+	glewExperimental = true;
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
@@ -226,10 +227,12 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	// without, rendering will be unacceptable slow, but that's better than nothing at all
 	if (!ctx)
 		ctx = glXCreateContext(pWindow->dpy, (XVisualInfo *)pWindow->Info, pGL->MainCtx.ctx, False);
+
 	// No luck at all?
 	if (!ctx) return pGL->Error("  gl: Unable to create context");
 	if (!Select(true)) return pGL->Error("  gl: Unable to select context");
 	// init extensions
+	glewExperimental = true;
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
@@ -374,6 +377,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	// No luck at all?
 	if (!Select(true)) return pGL->Error("  gl: Unable to select context");
 	// init extensions
+	glewExperimental = true;
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
