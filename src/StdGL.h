@@ -141,7 +141,7 @@ public:
 
 	void EnsureProgram();
 
-	template<typename... Args> bool SetUniform(const std::string &key, void (*function)(GLint, Args...), Args... args)
+	template<typename Func, typename... Args> bool SetUniform(const std::string &key, Func function, Args... args)
 	{
 		assert(shaderProgram);
 
