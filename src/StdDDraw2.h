@@ -24,6 +24,8 @@
 #include <StdFont.h>
 #include <StdBuf.h>
 
+#include <array>
+
 // texref-predef
 class CStdDDraw;
 class CTexRef;
