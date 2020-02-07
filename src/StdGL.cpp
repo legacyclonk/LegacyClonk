@@ -428,7 +428,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	}
 
 	// draw triangle fan for speed
-	static_assert (VERTEX_NUM == 4, "GL_TRIANGLE_STRIP cannot be used with more than 4 vertices; you need to add the necessary code.");
+	static_assert(VERTEX_NUM == 4, "GL_TRIANGLE_STRIP cannot be used with more than 4 vertices; you need to add the necessary code.");
 
 	std::array<CBltVertex, VERTEX_NUM> vtx {rBltData.vtVtx[0], rBltData.vtVtx[1], rBltData.vtVtx[3], rBltData.vtVtx[2]};
 
@@ -603,6 +603,7 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 					tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
 
 					const int texSize = sfcLiquidAnimation->iTexSize;
+
 					BlitLandscapeVertexData VertexData {
 						{
 							fTexBlt.left / iTexSize,  fTexBlt.top / iTexSize,
@@ -645,7 +646,6 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 					}
 
 					glBindVertexArray(VertexArray.VAO[VertexArray.BlitLandscape]);
-
 					glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
 
 					static bool init = false;
