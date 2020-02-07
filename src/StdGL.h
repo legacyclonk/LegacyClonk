@@ -250,6 +250,30 @@ protected:
 		GLuint VBO[NumVAO];
 	} VertexArray;
 
+	struct
+	{
+		enum
+		{
+			TexIndent = 0,
+			BlitOffset,
+			TextureMatrix,
+			ModelViewMatrix,
+			ProjectionMatrix,
+		};
+
+		GLuint VBO;
+		const char * const Names[5]
+		{
+			"texIndent",
+			"blitOffset",
+			"textureMatrix",
+			"modelViewMatrix",
+			"projectionMatrix"
+		};
+
+		std::array<GLint, 5> Offset;
+	} StandardUniforms;
+
 public:
 	// General
 	void Clear();

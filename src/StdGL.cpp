@@ -245,6 +245,17 @@ void CStdGL::Clear()
 	delete lpPrimary;
 	lpPrimary = lpBack = nullptr;
 	RenderTarget = nullptr;
+
+	glUseProgram(0);
+	BlitShader.Clear();
+	BlitShaderMod2.Clear();
+	LandscapeShader.Clear();
+
+	glDeleteBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
+	glDeleteVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
+
+	glDeleteBuffers(1, &StandardUniforms.VBO);
+
 	// clear context
 	if (pCurrCtx) pCurrCtx->Deselect();
 	MainCtx.Clear();
@@ -293,6 +304,10 @@ bool CStdGL::UpdateClipper()
 	gluOrtho2D(
 		static_cast<GLdouble>(iX),        static_cast<GLdouble>(iX + iWdt),
 		static_cast<GLdouble>(iY + iHgt), static_cast<GLdouble>(iY));
+
+	GLfloat matrix[16];
+	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
+	glNamedBufferSubData(StandardUniforms.VBO, StandardUniforms.Offset[StandardUniforms.ProjectionMatrix], sizeof(matrix), matrix);
 	return true;
 }
 
@@ -375,17 +390,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 
 	CStdGLShaderProgram &shader = fMod2 ? BlitShaderMod2 : BlitShader;
 	shader.Select();
-
 	shader.SetUniform("textureSampler", glUniform1i, 0);
-	shader.SetUniform("texIndent", glUniform1f, DDrawCfg.fTexIndent);
-	shader.SetUniform("blitOffset", glUniform1f, DDrawCfg.fBlitOff);
-
-	glMatrixMode(GL_PROJECTION);
-	float matrix[16];
-	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
-
-	shader.SetUniform("projectionMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), const_cast<const float *>(matrix));
-
 
 	// set texture+modes
 	glShadeModel((fUseClrModMap && fModClr && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
@@ -398,12 +403,14 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
 
+	GLfloat matrix[16];
 	matrix[0] = rBltData.TexPos.mat[0];  matrix[ 1] = rBltData.TexPos.mat[3];  matrix[ 2] = 0; matrix[ 3] = rBltData.TexPos.mat[6];
 	matrix[4] = rBltData.TexPos.mat[1];  matrix[ 5] = rBltData.TexPos.mat[4];  matrix[ 6] = 0; matrix[ 7] = rBltData.TexPos.mat[7];
 	matrix[8] = 0;                       matrix[ 9] = 0;                       matrix[10] = 1; matrix[11] = 0;
 	matrix[12] = rBltData.TexPos.mat[2]; matrix[13] = rBltData.TexPos.mat[5];  matrix[14] = 0; matrix[15] = rBltData.TexPos.mat[8];
 
-	shader.SetUniform("textureMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), const_cast<const float *>(matrix));
+	glBindBuffer(GL_UNIFORM_BUFFER, StandardUniforms.VBO);
+	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.TextureMatrix], sizeof(matrix), matrix);
 
 	if (rBltData.pTransform)
 	{
@@ -413,11 +420,11 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		matrix[ 8] = 0;      matrix[ 9] = 0;      matrix[10] = 1; matrix[11] = 0;
 		matrix[12] = mat[2]; matrix[13] = mat[5]; matrix[14] = 0; matrix[15] = mat[8];
 
-		shader.SetUniform("modelViewMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), const_cast<const float *>(matrix));
+		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(matrix), matrix);
 	}
 	else
 	{
-		shader.SetUniform("modelViewMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), IDENTITY_MATRIX);
+		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
 	}
 
 	// draw triangle fan for speed
@@ -511,8 +518,7 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 
 	LandscapeShader.Select();
 	LandscapeShader.SetUniform("textureSampler", glUniform1i, 0);
-	LandscapeShader.SetUniform("texIndent", glUniform1f, DDrawCfg.fTexIndent);
-	LandscapeShader.SetUniform("blitOffset", glUniform1f, DDrawCfg.fBlitOff);
+	glBindBuffer(GL_UNIFORM_BUFFER, StandardUniforms.VBO);
 
 	if (sfcSource2)
 	{
@@ -531,18 +537,13 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		LandscapeShader.SetUniform("modulation", glUniform4f, mod[0], mod[1], mod[2], mod[3]);
 	}
 
-	glMatrixMode(GL_PROJECTION);
-	float matrix[16];
-	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
-	LandscapeShader.SetUniform("projectionMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), const_cast<const float *>(matrix));
-
 	// set texture+modes
 	glShadeModel((fUseClrModMap && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	LandscapeShader.SetUniform("textureMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), IDENTITY_MATRIX);
-	LandscapeShader.SetUniform("modelViewMatrix", glUniformMatrix4fv, 1, static_cast<GLboolean>(GL_FALSE), IDENTITY_MATRIX);
+	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.TextureMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
+	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
 
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
@@ -673,7 +674,7 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		}
 	}
 
-	LandscapeShader.Deselect();
+	glBindBuffer(GL_UNIFORM_BUFFER, GL_NONE);
 
 	if (sfcSource2)
 	{
@@ -740,6 +741,7 @@ bool CStdGL::CreatePrimarySurfaces()
 void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
 {
+	glUseProgram(0);
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
 	// apply global modulation
@@ -780,6 +782,7 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	const float x1, const float y1, const float x2, const float y2, uint32_t dwClr)
 {
+	glUseProgram(0);
 	// apply color modulation
 	ClrByCurrentBlitMod(dwClr);
 	// render target?
@@ -815,6 +818,7 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 void CStdGL::DrawPixInt(CSurface *const sfcTarget,
 	const float tx, const float ty, const uint32_t dwClr)
 {
+	glUseProgram(0);
 	// render target?
 	assert(sfcTarget->IsRenderTarget());
 
@@ -862,11 +866,14 @@ bool CStdGL::RestoreDeviceObjects()
 					#version 150 core
 					#extension GL_ARB_explicit_attrib_location : enable
 
-					uniform float texIndent;
-					uniform float blitOffset;
-					uniform mat4 textureMatrix;
-					uniform mat4 modelViewMatrix;
-					uniform mat4 projectionMatrix;
+					layout (std140) uniform StandardUniforms
+					{
+						uniform float texIndent;
+						uniform float blitOffset;
+						uniform mat4 textureMatrix;
+						uniform mat4 modelViewMatrix;
+						uniform mat4 projectionMatrix;
+					};
 
 					// standard
 					layout (location = 0) in vec2 vertexCoord;
@@ -1019,6 +1026,29 @@ bool CStdGL::RestoreDeviceObjects()
 		glEnableVertexAttribArray(VertexArray.Vertices);
 		glEnableVertexAttribArray(VertexArray.TexCoords);
 		glEnableVertexAttribArray(VertexArray.Color);
+
+		GLuint indices[std::tuple_size_v<decltype(StandardUniforms.Offset)>]; // std::array::size() or std::size() won't work as they'd require a this pointer
+		glGetUniformIndices(BlitShader.GetShaderProgram(), std::size(indices), StandardUniforms.Names, indices);
+		glGetActiveUniformsiv(BlitShader.GetShaderProgram(), StandardUniforms.Offset.size(), indices, GL_UNIFORM_OFFSET, StandardUniforms.Offset.data());
+
+		GLuint blockIndex = glGetUniformBlockIndex(BlitShader.GetShaderProgram(), "StandardUniforms");
+
+		GLint blockSize;
+		glGetActiveUniformBlockiv(BlitShader.GetShaderProgram(), blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+
+		glGenBuffers(1, &StandardUniforms.VBO);
+		glBindBuffer(GL_UNIFORM_BUFFER, StandardUniforms.VBO);
+		glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_STATIC_DRAW);
+		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.TexIndent], sizeof(float), &DDrawCfg.fTexIndent);
+		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.BlitOffset], sizeof(float), &DDrawCfg.fBlitOff);
+
+		glBindBuffer(GL_UNIFORM_BUFFER, GL_NONE);
+		for (const auto *shader : {&BlitShader, &BlitShaderMod2, &LandscapeShader})
+		{
+			glUniformBlockBinding(shader->GetShaderProgram(), blockIndex, 0);
+		}
+
+		glBindBufferBase(GL_UNIFORM_BUFFER, 0, StandardUniforms.VBO);
 	}
 	// done
 	return Active;
