@@ -299,15 +299,18 @@ bool CStdGL::UpdateClipper()
 
 	// set it
 	glViewport(static_cast<int32_t>(floorf(iX * scale)), static_cast<int32_t>(floorf((RenderTarget->Hgt - iY - iHgt) * scale)), static_cast<int32_t>(ceilf(iWdt * scale)), static_cast<int32_t>(ceilf(iHgt * scale)));
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(
-		static_cast<GLdouble>(iX),        static_cast<GLdouble>(iX + iWdt),
-		static_cast<GLdouble>(iY + iHgt), static_cast<GLdouble>(iY));
+	const auto left = static_cast<GLfloat>(iX);
+	const auto right = static_cast<GLfloat>(iX + iWdt);
+	const auto bottom = static_cast<GLfloat>(iY + iHgt);
+	const auto top = static_cast<GLfloat>(iY);
 
-	GLfloat matrix[16];
-	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
-	glNamedBufferSubData(StandardUniforms.VBO, StandardUniforms.Offset[StandardUniforms.ProjectionMatrix], sizeof(matrix), matrix);
+	GLfloat ortho2D[16] { // column major!
+		2.f / (right - left), 0, 0, 0,
+		0, 2.f / (top - bottom), 0, 0,
+		0, 0, -1, 0,
+		-(right + left) / (right - left), -(top + bottom) / (top - bottom), 0, 1
+	};
+	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ProjectionMatrix], sizeof(ortho2D), ortho2D);
 	return true;
 }
 
