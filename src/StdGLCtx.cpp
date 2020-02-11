@@ -199,6 +199,8 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 #elif defined(USE_X11)
 
 #include <X11/extensions/xf86vmode.h>
+#include <GL/gl.h>
+#include <GL/glx.h>
 
 CStdGLCtx::CStdGLCtx() : pWindow(nullptr), ctx(nullptr), cx(0), cy(0) {}
 
@@ -220,13 +222,38 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	if (!pGL) return false;
 	// store window
 	this->pWindow = pWindow;
+
+	//const char *extensions = glXQueryExtensionsString(pWindow->dpy, DefaultScreen(pWindow->dpy));
+	auto *glXCreateContextAttribsARB = reinterpret_cast<GLXContext (*)(Display *, GLXFBConfig, GLXContext, Bool, const int *)>(glXGetProcAddressARB(reinterpret_cast<const GLubyte *>("glXCreateContextAttribsARB")));
+	//int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler([](Display *, XErrorEvent *) -> int {});
+	// FIXME: check if supported
+
+	int dummy;
+	GLXFBConfig *config = glXChooseFBConfig(pWindow->dpy, DefaultScreen(pWindow->dpy), nullptr, &dummy);
+	if (!config)
+	{
+		return pGL->Error("  gl: Couldn't retrieve framebuffer config!");
+	}
+
+	int contextAttributes[]
+	{
+		GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+		GLX_CONTEXT_MINOR_VERSION_ARB, 1,
+		None
+	};
+
 	// Create Context with sharing (if this is the main context, our ctx will be 0, so no sharing)
 	// try direct rendering first
 	if (!DDrawCfg.NoAcceleration)
-		ctx = glXCreateContext(pWindow->dpy, (XVisualInfo *)pWindow->Info, pGL->MainCtx.ctx, True);
+	{
+		ctx = glXCreateContextAttribsARB(pWindow->dpy, config[0], pGL->MainCtx.ctx, True, contextAttributes);
+	}
+
 	// without, rendering will be unacceptable slow, but that's better than nothing at all
 	if (!ctx)
-		ctx = glXCreateContext(pWindow->dpy, (XVisualInfo *)pWindow->Info, pGL->MainCtx.ctx, False);
+	{
+		ctx = glXCreateContextAttribsARB(pWindow->dpy, config[0], pGL->MainCtx.ctx, False, contextAttributes);
+	}
 
 	// No luck at all?
 	if (!ctx) return pGL->Error("  gl: Unable to create context");
