@@ -233,8 +233,6 @@ protected:
 
 	struct
 	{
-		GLuint VAO = 0;
-		GLuint VBO[4] {};
 		enum Index
 		{
 			Vertices = 0,
@@ -242,6 +240,14 @@ protected:
 			Color = 2,
 			LiquidTexCoords = 3,
 		};
+		enum
+		{
+			PerformBlt = 0,
+			BlitLandscape,
+			NumVAO
+		};
+		GLuint VAO[NumVAO];
+		GLuint VBO[NumVAO];
 	} VertexArray;
 
 public:
