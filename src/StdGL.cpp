@@ -256,6 +256,7 @@ void CStdGL::Clear()
 	BlitShader.Clear();
 	BlitShaderMod2.Clear();
 	LandscapeShader.Clear();
+	DummyShader.Clear();
 
 	glDeleteBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
 	glDeleteVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
@@ -747,12 +748,21 @@ bool CStdGL::CreatePrimarySurfaces()
 	return RestoreDeviceObjects();
 }
 
+namespace
+{
+	struct DrawPrimitiveVertexData
+	{
+		const GLint ft[4][2];
+		GLfloat color[4][4];
+	};
+}
+
 void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
 {
-	glUseProgram(0);
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
+
 	// apply global modulation
 	ClrByCurrentBlitMod(dwClr1);
 	ClrByCurrentBlitMod(dwClr2);
@@ -778,13 +788,38 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, iAdditive ? GL_ONE : GL_SRC_ALPHA);
 
-	// draw triangle strip
-	glBegin(GL_TRIANGLE_STRIP);
-	glColorDw(dwClr1); glVertex2f(ipVtx[0] + DDrawCfg.fBlitOff, ipVtx[1] + DDrawCfg.fBlitOff);
-	glColorDw(dwClr2); glVertex2f(ipVtx[2] + DDrawCfg.fBlitOff, ipVtx[3] + DDrawCfg.fBlitOff);
-	glColorDw(dwClr4); glVertex2f(ipVtx[6] + DDrawCfg.fBlitOff, ipVtx[7] + DDrawCfg.fBlitOff);
-	glColorDw(dwClr3); glVertex2f(ipVtx[4] + DDrawCfg.fBlitOff, ipVtx[5] + DDrawCfg.fBlitOff);
-	glEnd();
+	DummyShader.Select();
+
+	glBindBuffer(GL_UNIFORM_BUFFER, StandardUniforms.VBO);
+	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
+
+	DrawPrimitiveVertexData VertexData
+	{
+		{
+			{ipVtx[0], ipVtx[1]},
+			{ipVtx[2], ipVtx[3]},
+			{ipVtx[6], ipVtx[7]},
+			{ipVtx[4], ipVtx[5]}
+		},
+		{{}}
+	};
+
+	SplitColor(dwClr1, VertexData.color[0]);
+	SplitColor(dwClr2, VertexData.color[1]);
+	SplitColor(dwClr3, VertexData.color[2]);
+	SplitColor(dwClr4, VertexData.color[3]);
+
+	glBindVertexArray(VertexArray.VAO[VertexArray.DrawPrimitive]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
+
+	if (static bool init = false; !init)
+	{
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_INT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), ft)));
+		glVertexAttribPointer(VertexArray.PrimitiveColor, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), color)));
+		init = true;
+	}
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glShadeModel(GL_FLAT);
 }
 
@@ -886,7 +921,9 @@ bool CStdGL::RestoreDeviceObjects()
 
 					// standard
 					layout (location = 0) in vec2 vertexCoord;
+					#ifdef LC_TEXTURE
 					layout (location = 1) in vec2 texCoord;
+					#endif
 					layout (location = 2) in vec4 vertexColor;
 
 					// color animation
@@ -895,7 +932,9 @@ bool CStdGL::RestoreDeviceObjects()
 					#endif
 
 					out vec2 vPosition;
+					#ifdef LC_TEXTURE
 					out vec2 vTexCoord;
+					#endif
 					#ifdef LC_COLOR_ANIMATION
 					out vec2 vLiquidTexCoord;
 					#endif
@@ -903,19 +942,9 @@ bool CStdGL::RestoreDeviceObjects()
 
 					void main()
 					{
-						/*mat4 projectionMatrix = mat4(
-							vec4(2.0 / (projection.y - projection.x), 0, 0, 0),
-							vec4(0, 2.0 / (projection.w - projection.z), 0, 0),
-							vec4(0, 0, -1.0, 0),
-							vec4(
-								-(projection.y + projection.x) / (projection.y - projection.x),
-								-(projection.w + projection.z) / (projection.w - projection.z),
-								0,
-								1
-							)
-						);*/
-
+					#ifdef LC_TEXTURE
 						vTexCoord = (textureMatrix * vec4(texCoord + texIndent, 0.0, 1.0)).xy;
+					#endif
 					#ifdef LC_COLOR_ANIMATION
 						vLiquidTexCoord = liquidTexCoord + texIndent;
 					#endif
@@ -926,6 +955,7 @@ bool CStdGL::RestoreDeviceObjects()
 					)"
 				};
 
+		vertexShader.SetMacro("LC_TEXTURE", "1");
 		vertexShader.Compile();
 
 		CStdGLFragmentShader blitFragmentShader{
@@ -1017,6 +1047,32 @@ bool CStdGL::RestoreDeviceObjects()
 		LandscapeShader.AddShader(&landscapeFragmentShader);
 		LandscapeShader.Link();
 
+		vertexShader.SetMacro("LC_TEXTURE", nullptr);
+		vertexShader.SetMacro("LC_COLOR_ANIMATION", nullptr);
+		vertexShader.Compile();
+
+		CStdGLFragmentShader dummyFragmentShader{
+			R"(
+			#version 150 core
+			#extension GL_ARB_explicit_attrib_location : enable
+
+			in vec2 vPosition;
+			in vec4 vFragColor;
+			out vec4 fragColor;
+
+			void main()
+			{
+				fragColor = vFragColor;
+			}
+			)"
+		};
+
+		dummyFragmentShader.Compile();
+
+		DummyShader.AddShader(&vertexShader);
+		DummyShader.AddShader(&dummyFragmentShader);
+		DummyShader.Link();
+
 		glGenVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
 		glGenBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
 
@@ -1035,6 +1091,15 @@ bool CStdGL::RestoreDeviceObjects()
 		glEnableVertexAttribArray(VertexArray.Vertices);
 		glEnableVertexAttribArray(VertexArray.TexCoords);
 		glEnableVertexAttribArray(VertexArray.Color);
+
+		glBindVertexArray(VertexArray.VAO[VertexArray.DrawPrimitive]);
+		glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.DrawPrimitive]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(DrawPrimitiveVertexData), nullptr, GL_DYNAMIC_DRAW);
+
+		glEnableVertexAttribArray(VertexArray.Vertices);
+		glEnableVertexAttribArray(VertexArray.PrimitiveColor);
+
+		// StandardUniforms
 
 		GLuint indices[std::tuple_size_v<decltype(StandardUniforms.Offset)>]; // std::array::size() or std::size() won't work as they'd require a this pointer
 		glGetUniformIndices(BlitShader.GetShaderProgram(), std::size(indices), StandardUniforms.Names, indices);
