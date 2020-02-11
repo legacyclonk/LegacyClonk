@@ -48,6 +48,12 @@ static void SplitColor(const uint32_t &color, T &r, T&g, T&b, T&a)
 	a = ((color >> 24) & 0xff) / static_cast<T>(255.0f);
 }
 
+template<typename T>
+static void SplitColor(const uint32_t &color, T (&c)[4])
+{
+	SplitColor(color, c[0], c[1], c[2], c[3]);
+}
+
 CStdGLShader::CStdGLShader(CStdGLShader &&s)
 {
 	shader = s.shader;
@@ -441,7 +447,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	{
 		VertexData.vertices[i][0] = vtx[i].ftx;
 		VertexData.vertices[i][1] = vtx[i].fty;
-		SplitColor(vtx[i].dwModClr, VertexData.color[i][0], VertexData.color[i][1], VertexData.color[i][2], VertexData.color[i][3]);
+		SplitColor(vtx[i].dwModClr, VertexData.color[i]);
 	}
 
 	glBindVertexArray(VertexArray.VAO[VertexArray.PerformBlt]);
@@ -645,7 +651,7 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 							c = dwModClr;
 						}
 
-						SplitColor(c, VertexData.color[i][0], VertexData.color[i][1], VertexData.color[i][2], VertexData.color[i][3]);
+						SplitColor(c, VertexData.color[i]);
 					}
 
 					glBindVertexArray(VertexArray.VAO[VertexArray.BlitLandscape]);
