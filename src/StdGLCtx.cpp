@@ -255,6 +255,8 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 		ctx = glXCreateContextAttribsARB(pWindow->dpy, config[0], pGL->MainCtx.ctx, False, contextAttributes);
 	}
 
+	XFree(config);
+
 	// No luck at all?
 	if (!ctx) return pGL->Error("  gl: Unable to create context");
 	if (!Select(true)) return pGL->Error("  gl: Unable to select context");
