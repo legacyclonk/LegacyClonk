@@ -419,7 +419,6 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	matrix[8] = 0;                       matrix[ 9] = 0;                       matrix[10] = 1; matrix[11] = 0;
 	matrix[12] = rBltData.TexPos.mat[2]; matrix[13] = rBltData.TexPos.mat[5];  matrix[14] = 0; matrix[15] = rBltData.TexPos.mat[8];
 
-	glBindBuffer(GL_UNIFORM_BUFFER, StandardUniforms.VBO);
 	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.TextureMatrix], sizeof(matrix), matrix);
 
 	if (rBltData.pTransform)
@@ -528,7 +527,6 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 
 	LandscapeShader.Select();
 	LandscapeShader.SetUniform("textureSampler", glUniform1i, 0);
-	glBindBuffer(GL_UNIFORM_BUFFER, StandardUniforms.VBO);
 
 	if (sfcSource2)
 	{
@@ -684,8 +682,6 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		}
 	}
 
-	glBindBuffer(GL_UNIFORM_BUFFER, GL_NONE);
-
 	if (sfcSource2)
 	{
 		glActiveTexture(GL_TEXTURE1);
@@ -790,7 +786,6 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 
 	DummyShader.Select();
 
-	glBindBuffer(GL_UNIFORM_BUFFER, StandardUniforms.VBO);
 	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
 
 	DrawQuadVertexData VertexData
