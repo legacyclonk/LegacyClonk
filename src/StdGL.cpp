@@ -823,10 +823,18 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	glShadeModel(GL_FLAT);
 }
 
+namespace
+{
+	struct DrawLineVertexData
+	{
+		const GLfloat ft[2][2];
+		GLfloat color[2][4];
+	};
+}
+
 void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	const float x1, const float y1, const float x2, const float y2, uint32_t dwClr)
 {
-	glUseProgram(0);
 	// apply color modulation
 	ClrByCurrentBlitMod(dwClr);
 	// render target?
@@ -837,8 +845,6 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
 	// use a different blendfunc here, because GL_LINE_SMOOTH expects this one
 	glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
-	// draw one line
-	glBegin(GL_LINES);
 	// global clr modulation map
 	uint32_t dwClr1 = dwClr;
 	if (fUseClrModMap)
@@ -846,17 +852,34 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 		ModulateClr(dwClr1, pClrModMap->GetModAt(
 			static_cast<int>(x1), static_cast<int>(y1)));
 	}
-	// convert from clonk-alpha to GL_LINE_SMOOTH alpha
-	glColorDw(InvertRGBAAlpha(dwClr1));
-	glVertex2f(x1 + 0.5f, y1 + 0.5f);
-	if (fUseClrModMap)
+
+	DummyShader.Select();
+
+	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
+
+	DrawLineVertexData VertexData
 	{
-		ModulateClr(dwClr, pClrModMap->GetModAt(
-			static_cast<int>(x2), static_cast<int>(y2)));
-		glColorDw(InvertRGBAAlpha(dwClr));
+		{
+			{x1 + 0.5f, y1 + 0.5f},
+			{x2 + 0.5f, y2 + 0.5f}
+		},
+		{{}}
+	};
+
+	SplitColor(dwClr1, VertexData.color[0]);
+	SplitColor(dwClr1, VertexData.color[1]);
+
+	glBindVertexArray(VertexArray.VAO[VertexArray.DrawLineDw]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
+
+	if (static bool init = false; !init)
+	{
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), ft)));
+		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), color)));
+		init = true;
 	}
-	glVertex2f(x2 + 0.5f, y2 + 0.5f);
-	glEnd();
+
+	glDrawArrays(GL_LINE_STRIP, 0, 2);
 }
 
 void CStdGL::DrawPixInt(CSurface *const sfcTarget,
@@ -1079,6 +1102,7 @@ bool CStdGL::RestoreDeviceObjects()
 		InitializeVAO<decltype(VertexArray)::PerformBlt, PerformBltVertexData>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
 		InitializeVAO<decltype(VertexArray)::BlitLandscape, BlitLandscapeVertexData>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
 		InitializeVAO<decltype(VertexArray)::DrawQuadDw, DrawQuadVertexData>(VertexArray.Vertices, VertexArray.Color);
+		InitializeVAO<decltype(VertexArray)::DrawLineDw, DrawLineVertexData>(VertexArray.Vertices, VertexArray.Color);
 
 		// StandardUniforms
 
