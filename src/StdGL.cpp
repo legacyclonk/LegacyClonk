@@ -403,7 +403,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	shader.SetUniform("textureSampler", glUniform1i, 0);
 
 	// set texture+modes
-	glShadeModel((fUseClrModMap && fModClr && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
+	//glShadeModel((fUseClrModMap && fModClr && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, pTex->texName);
@@ -546,7 +546,7 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 	}
 
 	// set texture+modes
-	glShadeModel((fUseClrModMap && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
+	//glShadeModel((fUseClrModMap && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -776,10 +776,10 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	if (DDrawCfg.NoBoxFades)
 	{
 		NormalizeColors(dwClr1, dwClr2, dwClr3, dwClr4);
-		glShadeModel(GL_FLAT);
+		//glShadeModel(GL_FLAT);
 	}
-	else
-		glShadeModel((dwClr1 == dwClr2 && dwClr1 == dwClr3 && dwClr1 == dwClr4) ? GL_FLAT : GL_SMOOTH);
+	/*else
+		glShadeModel((dwClr1 == dwClr2 && dwClr1 == dwClr3 && dwClr1 == dwClr4) ? GL_FLAT : GL_SMOOTH);*/
 	// set blitting state
 	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, iAdditive ? GL_ONE : GL_SRC_ALPHA);
@@ -815,7 +815,6 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	}
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glShadeModel(GL_FLAT);
 }
 
 namespace

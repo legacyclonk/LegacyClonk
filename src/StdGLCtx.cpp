@@ -300,8 +300,6 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 		pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
 		// set some default states
 		glDisable(GL_DEPTH_TEST);
-		glShadeModel(GL_FLAT);
-		glDisable(GL_ALPHA_TEST);
 		glDisable(GL_CULL_FACE);
 		glEnable(GL_BLEND);
 		// update clipper - might have been done by UpdateSize
