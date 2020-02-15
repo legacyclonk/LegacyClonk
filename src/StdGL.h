@@ -238,7 +238,6 @@ protected:
 		{
 			Vertices = 0,
 			TexCoords = 1,
-			PrimitiveColor = 2,
 			Color = 2,
 			LiquidTexCoords = 3,
 		};
@@ -246,7 +245,7 @@ protected:
 		{
 			PerformBlt = 0,
 			BlitLandscape,
-			DrawPrimitive,
+			DrawQuadDw,
 			NumVAO
 		};
 		GLuint VAO[NumVAO];
@@ -326,6 +325,16 @@ public:
 protected:
 	bool CreatePrimarySurfaces();
 	bool CreateDirectDraw();
+
+	template<size_t index, typename Struct, typename... Args>
+	void InitializeVAO(Args&&... args)
+	{
+		glBindVertexArray(VertexArray.VAO[index]);
+		glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[index]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Struct), nullptr, GL_DYNAMIC_DRAW);
+
+		(glEnableVertexAttribArray(args), ...);
+	}
 
 #ifdef USE_X11
 	// Size of gamma ramps

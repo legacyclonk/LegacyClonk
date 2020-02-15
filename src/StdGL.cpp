@@ -750,7 +750,7 @@ bool CStdGL::CreatePrimarySurfaces()
 
 namespace
 {
-	struct DrawPrimitiveVertexData
+	struct DrawQuadVertexData
 	{
 		const GLint ft[4][2];
 		GLfloat color[4][4];
@@ -793,7 +793,7 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	glBindBuffer(GL_UNIFORM_BUFFER, StandardUniforms.VBO);
 	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
 
-	DrawPrimitiveVertexData VertexData
+	DrawQuadVertexData VertexData
 	{
 		{
 			{ipVtx[0], ipVtx[1]},
@@ -809,13 +809,13 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	SplitColor(dwClr3, VertexData.color[2]);
 	SplitColor(dwClr4, VertexData.color[3]);
 
-	glBindVertexArray(VertexArray.VAO[VertexArray.DrawPrimitive]);
+	glBindVertexArray(VertexArray.VAO[VertexArray.DrawQuadDw]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
 
 	if (static bool init = false; !init)
 	{
 		glVertexAttribPointer(VertexArray.Vertices, 2, GL_INT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), ft)));
-		glVertexAttribPointer(VertexArray.PrimitiveColor, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), color)));
+		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), color)));
 		init = true;
 	}
 
@@ -1076,28 +1076,9 @@ bool CStdGL::RestoreDeviceObjects()
 		glGenVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
 		glGenBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
 
-		glBindVertexArray(VertexArray.VAO[VertexArray.PerformBlt]);
-		glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.PerformBlt]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(PerformBltVertexData), nullptr, GL_DYNAMIC_DRAW);
-
-		glEnableVertexAttribArray(VertexArray.Vertices);
-		glEnableVertexAttribArray(VertexArray.TexCoords);
-		glEnableVertexAttribArray(VertexArray.Color);
-
-		glBindVertexArray(VertexArray.VAO[VertexArray.BlitLandscape]);
-		glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.BlitLandscape]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(BlitLandscapeVertexData), nullptr, GL_DYNAMIC_DRAW);
-
-		glEnableVertexAttribArray(VertexArray.Vertices);
-		glEnableVertexAttribArray(VertexArray.TexCoords);
-		glEnableVertexAttribArray(VertexArray.Color);
-
-		glBindVertexArray(VertexArray.VAO[VertexArray.DrawPrimitive]);
-		glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[VertexArray.DrawPrimitive]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(DrawPrimitiveVertexData), nullptr, GL_DYNAMIC_DRAW);
-
-		glEnableVertexAttribArray(VertexArray.Vertices);
-		glEnableVertexAttribArray(VertexArray.PrimitiveColor);
+		InitializeVAO<decltype(VertexArray)::PerformBlt, PerformBltVertexData>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
+		InitializeVAO<decltype(VertexArray)::BlitLandscape, BlitLandscapeVertexData>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
+		InitializeVAO<decltype(VertexArray)::DrawQuadDw, DrawQuadVertexData>(VertexArray.Vertices, VertexArray.Color);
 
 		// StandardUniforms
 
