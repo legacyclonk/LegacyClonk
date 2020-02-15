@@ -1121,8 +1121,7 @@ bool CStdGL::RestoreDeviceObjects()
 		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.TexIndent], sizeof(float), &DDrawCfg.fTexIndent);
 		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.BlitOffset], sizeof(float), &DDrawCfg.fBlitOff);
 
-		glBindBuffer(GL_UNIFORM_BUFFER, GL_NONE);
-		for (const auto *shader : {&BlitShader, &BlitShaderMod2, &LandscapeShader})
+		for (const auto *shader : {&BlitShader, &BlitShaderMod2, &LandscapeShader, &DummyShader})
 		{
 			glUniformBlockBinding(shader->GetShaderProgram(), blockIndex, 0);
 		}
