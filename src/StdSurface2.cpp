@@ -946,7 +946,7 @@ void CTexRef::Unlock()
 			// Default, changed in PerformBlt if necessary
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexImage2D(GL_TEXTURE_2D, 0, 4, iSize, iSize, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, iSize, iSize, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
 		}
 		else
 		{
