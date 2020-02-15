@@ -924,7 +924,7 @@ bool CStdGL::RestoreDeviceObjects()
 
 		CStdGLVertexShader vertexShader{
 					R"(
-					#version 150 core
+					#version 140
 					#extension GL_ARB_explicit_attrib_location : enable
 
 					layout (std140) uniform StandardUniforms
