@@ -450,17 +450,8 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		SplitColor(vtx[i].dwModClr, VertexData.color[i]);
 	}
 
-	glBindVertexArray(VertexArray.VAO[VertexArray.PerformBlt]);
+	SelectVAO(VertexArray.PerformBlt);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
-
-	static bool init = false;
-	if(!init)
-	{
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(PerformBltVertexData, color)));
-		init = true;
-	}
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -563,6 +554,13 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		chunkSize = std::min(iTexSize, 64);
 	}
 
+	SelectVAO(VertexArray.BlitLandscape);
+
+	if (DDrawCfg.ColorAnimation)
+	{
+		glEnableVertexAttribArray(VertexArray.LiquidTexCoords);
+	}
+
 	for (int iY = iTexY; iY < iTexY2; ++iY)
 	{
 		for (int iX = iTexX; iX < iTexX2; ++iX)
@@ -653,33 +651,17 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 						SplitColor(c, VertexData.color[i]);
 					}
 
-					glBindVertexArray(VertexArray.VAO[VertexArray.BlitLandscape]);
 					glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
 
-					static bool init = false;
-					if(!init)
-					{
-						glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, ft)));
-						glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, tc)));
-						glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, color)));
-						glVertexAttribPointer(VertexArray.LiquidTexCoords, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, lt)));
-						init = true;
-					}
-
-					if (DDrawCfg.ColorAnimation)
-					{
-						glEnableVertexAttribArray(VertexArray.LiquidTexCoords);
-					}
-
 					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-					if (DDrawCfg.ColorAnimation)
-					{
-						glDisableVertexAttribArray(VertexArray.LiquidTexCoords);
-					}
 				}
 			}
 		}
+	}
+
+	if (DDrawCfg.ColorAnimation)
+	{
+		glDisableVertexAttribArray(VertexArray.LiquidTexCoords);
 	}
 
 	if (sfcSource2)
@@ -804,15 +786,8 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	SplitColor(dwClr3, VertexData.color[2]);
 	SplitColor(dwClr4, VertexData.color[3]);
 
-	glBindVertexArray(VertexArray.VAO[VertexArray.DrawQuadDw]);
+	SelectVAO(VertexArray.DrawQuadDw);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
-
-	if (static bool init = false; !init)
-	{
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_INT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), ft)));
-		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), color)));
-		init = true;
-	}
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
@@ -863,15 +838,8 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	SplitColor(dwClr1, VertexData.color[0]);
 	SplitColor(dwClr1, VertexData.color[1]);
 
-	glBindVertexArray(VertexArray.VAO[VertexArray.DrawLineDw]);
+	SelectVAO(VertexArray.DrawLineDw);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
-
-	if (static bool init = false; !init)
-	{
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), ft)));
-		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(decltype(VertexData), color)));
-		init = true;
-	}
 
 	glDrawArrays(GL_LINE_STRIP, 0, 2);
 }
@@ -1094,9 +1062,23 @@ bool CStdGL::RestoreDeviceObjects()
 		glGenBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
 
 		InitializeVAO<decltype(VertexArray)::PerformBlt, PerformBltVertexData>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(PerformBltVertexData, color)));
+
 		InitializeVAO<decltype(VertexArray)::BlitLandscape, BlitLandscapeVertexData>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, ft)));
+		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, tc)));
+		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, color)));
+		glVertexAttribPointer(VertexArray.LiquidTexCoords, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, lt)));
+
 		InitializeVAO<decltype(VertexArray)::DrawQuadDw, DrawQuadVertexData>(VertexArray.Vertices, VertexArray.Color);
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_INT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(DrawQuadVertexData, ft)));
+		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(DrawQuadVertexData, color)));
+
 		InitializeVAO<decltype(VertexArray)::DrawLineDw, DrawLineVertexData>(VertexArray.Vertices, VertexArray.Color);
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(DrawLineVertexData, ft)));
+		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(DrawLineVertexData, color)));
 
 		// StandardUniforms
 
@@ -1169,6 +1151,13 @@ void CStdGL::Default()
 	CStdDDraw::Default();
 	sfcFmt = 0;
 	MainCtx.Clear();
+}
+
+void CStdGL::SelectVAO(decltype(VertexArray)::ArrayIndex index)
+{
+	assert(index < VertexArray.NumVAO);
+	glBindVertexArray(VertexArray.VAO[index]);
+	glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[index]);
 }
 
 #endif
