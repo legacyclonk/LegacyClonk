@@ -51,7 +51,7 @@
 CStdWindow::CStdWindow() :
 	Active(false)
 #ifdef USE_X11
-	, wnd(0), renderwnd(0), dpy(nullptr), Info(nullptr), Hints(nullptr), HasFocus(false)
+	, wnd(0), renderwnd(0), dpy(nullptr), Hints(nullptr), HasFocus(false)
 #endif
 {}
 
@@ -73,7 +73,9 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	Active = true;
 	dpy = pApp->dpy;
 
-	if (!FindInfo()) return nullptr;
+	if (!FindFBConfig()) return nullptr;
+
+	XVisualInfo *info = glXGetVisualFromFBConfig(dpy, FBConfig);
 
 	// Various properties
 	XSetWindowAttributes attr;
@@ -88,7 +90,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 		PointerMotionMask |
 		ButtonPressMask |
 		ButtonReleaseMask;
-	attr.colormap = XCreateColormap(dpy, DefaultRootWindow(dpy), ((XVisualInfo *)Info)->visual, AllocNone);
+	attr.colormap = XCreateColormap(dpy, DefaultRootWindow(dpy), info->visual, AllocNone);
 	unsigned long attrmask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 	Pixmap bitmap;
 	if (HideCursor)
@@ -102,7 +104,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	}
 
 	wnd = XCreateWindow(dpy, DefaultRootWindow(dpy),
-		0, 0, 640, 480, 0, ((XVisualInfo *)Info)->depth, InputOutput, ((XVisualInfo *)Info)->visual,
+		0, 0, 640, 480, 0, info->depth, InputOutput, info->visual,
 		attrmask, &attr);
 	if (HideCursor)
 	{
@@ -191,7 +193,6 @@ void CStdWindow::Clear()
 		CStdAppPrivate::SetWindow(wnd, nullptr);
 		XUnmapWindow(dpy, wnd);
 		XDestroyWindow(dpy, wnd);
-		if (Info) XFree(Info);
 		if (Hints) XFree(Hints);
 
 		// Might be necessary when the last window is closed
@@ -202,7 +203,7 @@ void CStdWindow::Clear()
 }
 
 #ifdef USE_X11
-bool CStdWindow::FindInfo()
+bool CStdWindow::FindFBConfig()
 {
 #ifndef USE_CONSOLE
 	// get an appropriate visual
@@ -218,28 +219,44 @@ bool CStdWindow::FindInfo()
 		None
 	};
 	// doublebuffered is the best
-	Info = glXChooseVisual(dpy, DefaultScreen(dpy), attrListDbl);
-	if (!Info)
+	int fbcount;
+	GLXFBConfig *config = glXChooseFBConfig(dpy, DefaultScreen(dpy), attrListDbl, &fbcount);
+
+	if (!config)
 	{
-		Log("  gl: no doublebuffered visual.");
+		Log("  gl: no doublebuffered config.");
+		XFree(config);
 		// a singlebuffered is probably better than the default
-		Info = glXChooseVisual(dpy, DefaultScreen(dpy), attrListSgl);
+		config = glXChooseFBConfig(dpy, DefaultScreen(dpy), attrListSgl, &fbcount);
 	}
 #endif
-	if (!Info)
+	if (!config)
 	{
-		Log("  gl: no singlebuffered visual, either.");
-		// just try to get the default
-		XVisualInfo vitmpl; int blub;
-		vitmpl.visual = DefaultVisual(dpy, DefaultScreen(dpy));
-		vitmpl.visualid = XVisualIDFromVisual(vitmpl.visual);
-		Info = XGetVisualInfo(dpy, VisualIDMask, &vitmpl, &blub);
-	}
-	if (!Info)
-	{
+#ifndef USE_CONSOLE
+		XFree(config);
+#endif
 		Log("  gl: no visual at all.");
 		return false;
 	}
+
+	struct {int framebuffer; int samples; } best{-1, -1};
+
+	for (int i = 0; i < fbcount; ++i)
+	{
+		int samples;
+		int framebuffer;
+		glXGetFBConfigAttrib(dpy, config[i], GLX_SAMPLE_BUFFERS, &framebuffer);
+		glXGetFBConfigAttrib(dpy, config[i], GLX_SAMPLES, &samples);
+
+		if (best.framebuffer < 0 || (framebuffer && samples > best.samples))
+		{
+			best.framebuffer = framebuffer;
+			best.samples = samples;
+		}
+	}
+
+	FBConfig = config[best.framebuffer];
+	XFree(config);
 
 	return true;
 }

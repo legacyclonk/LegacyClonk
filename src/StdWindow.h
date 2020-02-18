@@ -235,6 +235,8 @@ class CStdApp;
 // Forward declarations because xlib.h is evil
 typedef union _XEvent XEvent;
 typedef struct _XDisplay Display;
+
+typedef struct __GLXFBConfigRec *GLXFBConfig;
 #endif
 
 enum class DisplayMode {
@@ -296,7 +298,7 @@ private:
 #elif defined(USE_X11)
 
 protected:
-	bool FindInfo();
+	bool FindFBConfig();
 
 	unsigned long wnd;
 	unsigned long renderwnd;
@@ -305,8 +307,8 @@ protected:
 	// The currently set window hints
 	void *Hints;
 	bool HasFocus; // To clear urgency hint
-	// The XVisualInfo the window was created with
-	void *Info;
+	// The FBConfig the window was created with
+	GLXFBConfig FBConfig;
 
 #elif defined(USE_SDL_MAINLOOP)
 

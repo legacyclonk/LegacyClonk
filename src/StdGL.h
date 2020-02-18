@@ -28,6 +28,7 @@
 #define bool _BOOL
 #include <X11/Xmd.h>
 #undef bool
+#define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>
 #endif
 

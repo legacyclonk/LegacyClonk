@@ -223,17 +223,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	// store window
 	this->pWindow = pWindow;
 
-	//const char *extensions = glXQueryExtensionsString(pWindow->dpy, DefaultScreen(pWindow->dpy));
-	auto *glXCreateContextAttribsARB = reinterpret_cast<GLXContext (*)(Display *, GLXFBConfig, GLXContext, Bool, const int *)>(glXGetProcAddressARB(reinterpret_cast<const GLubyte *>("glXCreateContextAttribsARB")));
-	//int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler([](Display *, XErrorEvent *) -> int {});
-	// FIXME: check if supported
-
-	int dummy;
-	GLXFBConfig *config = glXChooseFBConfig(pWindow->dpy, DefaultScreen(pWindow->dpy), nullptr, &dummy);
-	if (!config)
-	{
-		return pGL->Error("  gl: Couldn't retrieve framebuffer config!");
-	}
+	assert(GLX_ARB_create_context);
 
 	int contextAttributes[]
 	{
@@ -246,16 +236,16 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	// try direct rendering first
 	if (!DDrawCfg.NoAcceleration)
 	{
-		ctx = glXCreateContextAttribsARB(pWindow->dpy, config[0], pGL->MainCtx.ctx, True, contextAttributes);
+		ctx = glXCreateContextAttribsARB(pWindow->dpy, pWindow->FBConfig, pGL->MainCtx.ctx, True, contextAttributes);
 	}
 
 	// without, rendering will be unacceptable slow, but that's better than nothing at all
 	if (!ctx)
 	{
-		ctx = glXCreateContextAttribsARB(pWindow->dpy, config[0], pGL->MainCtx.ctx, False, contextAttributes);
+		ctx = glXCreateContextAttribsARB(pWindow->dpy, pWindow->FBConfig, pGL->MainCtx.ctx, False, contextAttributes);
 	}
 
-	XFree(config);
+	XSync(pWindow->dpy, False);
 
 	// No luck at all?
 	if (!ctx) return pGL->Error("  gl: Unable to create context");
