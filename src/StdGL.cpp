@@ -28,6 +28,33 @@
 #include <math.h>
 #include <limits.h>
 
+namespace
+{
+	template<typename VertexType = GLfloat>
+	struct Vertex
+	{
+		VertexType coordinates[2];
+		GLuint color;
+	};
+
+	template<typename VertexType = GLfloat>
+	struct TextureVertex
+	{
+		VertexType coordinates[2];
+		GLuint color;
+		GLfloat textureCoordinates[2];
+	};
+
+	template<typename VertexType = GLfloat>
+	struct LiquidShadedTextureVertex
+	{
+		VertexType coordinates[2];
+		GLuint color;
+		GLfloat textureCoordinates[2];
+		GLfloat liquidTextureCoordinates[2];
+	};
+}
+
 [[deprecated("Immediate mode is deprecated")]]
 static void glColorDw(const uint32_t dwClr)
 {
@@ -355,13 +382,7 @@ static constexpr GLfloat IDENTITY_MATRIX[16]
 	0, 0, 0, 1
 };
 
-namespace {
-	constexpr auto VERTEX_NUM = std::tuple_size_v<decltype(CBltData::vtVtx)>;
-	struct PerformBltVertexData {
-		GLfloat vertices[VERTEX_NUM][2];
-		GLfloat color[VERTEX_NUM][4];
-	};
-}
+static std::array<Vertex<>, std::tuple_size_v<decltype(CBltData::vtVtx)>> PerformBltVertexData;
 
 void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	const uint32_t dwModClr, bool fMod2, const bool fExact)
@@ -373,7 +394,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	if (fUseClrModMap && dwModClr)
 	{
 		fAnyModNotBlack = false;
-		for (size_t i = 0; i < VERTEX_NUM; ++i)
+		for (size_t i = 0; i < PerformBltVertexData.size(); ++i)
 		{
 			float x = rBltData.vtVtx[i].ftx;
 			float y = rBltData.vtVtx[i].fty;
@@ -391,7 +412,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	else
 	{
 		fAnyModNotBlack = !!dwModClr;
-		for (size_t i = 0; i < VERTEX_NUM; ++i)
+		for (size_t i = 0; i < PerformBltVertexData.size(); ++i)
 			rBltData.vtVtx[i].dwModClr = dwModClr;
 		if (dwModClr != 0xffffff) fModClr = true;
 	}
@@ -437,21 +458,19 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	}
 
 	// draw triangle fan for speed
-	static_assert(VERTEX_NUM == 4, "GL_TRIANGLE_STRIP cannot be used with more than 4 vertices; you need to add the necessary code.");
+	static_assert(PerformBltVertexData.size() == 4, "GL_TRIANGLE_STRIP cannot be used with more than 4 vertices; you need to add the necessary code.");
 
-	std::array<CBltVertex, VERTEX_NUM> vtx {rBltData.vtVtx[0], rBltData.vtVtx[1], rBltData.vtVtx[3], rBltData.vtVtx[2]};
-
-	PerformBltVertexData VertexData;
+	std::array<CBltVertex, PerformBltVertexData.size()> vtx {rBltData.vtVtx[0], rBltData.vtVtx[1], rBltData.vtVtx[3], rBltData.vtVtx[2]};
 
 	for (size_t i = 0; i < vtx.size(); ++i)
 	{
-		VertexData.vertices[i][0] = vtx[i].ftx;
-		VertexData.vertices[i][1] = vtx[i].fty;
-		SplitColor(vtx[i].dwModClr, VertexData.color[i]);
+		PerformBltVertexData[i].coordinates[0] = vtx[i].ftx;
+		PerformBltVertexData[i].coordinates[1] = vtx[i].fty;
+		PerformBltVertexData[i].color = vtx[i].dwModClr;
 	}
 
 	SelectVAO(VertexArray.PerformBlt);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(PerformBltVertexData), PerformBltVertexData.data());
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -464,16 +483,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	}
 }
 
-namespace {
-	struct BlitLandscapeVertexData {
-		const GLfloat tc[8];
-		const GLfloat ft[4][2];
-
-		GLfloat color[4][4];
-
-		const GLfloat lt[8];
-	};
-}
+static std::array<LiquidShadedTextureVertex<>, 4> BlitLandscapeVertexData;
 
 void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2,
 	CSurface *const sfcLiquidAnimation, const int fx, const int fy,
@@ -610,48 +620,51 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 
 					const int texSize = sfcLiquidAnimation->iTexSize;
 
-					BlitLandscapeVertexData VertexData {
-						{
-							fTexBlt.left / iTexSize,  fTexBlt.top / iTexSize,
-							fTexBlt.right / iTexSize, fTexBlt.top / iTexSize,
-							fTexBlt.left / iTexSize,  fTexBlt.bottom / iTexSize,
-							fTexBlt.right / iTexSize, fTexBlt.bottom / iTexSize
-						},
+					new(BlitLandscapeVertexData.data()) decltype(BlitLandscapeVertexData)::value_type[BlitLandscapeVertexData.size()]
+					{
 						{
 							{tTexBlt.left, tTexBlt.top},
-							{tTexBlt.right, tTexBlt.top},
-							{tTexBlt.left, tTexBlt.bottom},
-							{tTexBlt.right, tTexBlt.bottom}
+							{},
+							{fTexBlt.left / iTexSize, fTexBlt.top / iTexSize},
+							{fTexBlt.left / texSize,  fTexBlt.top / texSize}
 						},
-						{},
 						{
-							fTexBlt.left / texSize,  fTexBlt.top / texSize,
-							fTexBlt.right / texSize, fTexBlt.top / texSize,
-							fTexBlt.left / texSize,  fTexBlt.bottom / texSize,
-							fTexBlt.right / texSize, fTexBlt.bottom / texSize
+							{tTexBlt.right, tTexBlt.top},
+							{},
+							{fTexBlt.right / iTexSize, fTexBlt.top / iTexSize},
+							{fTexBlt.right / texSize, fTexBlt.top / texSize},
+						},
+						{
+							{tTexBlt.left, tTexBlt.bottom},
+							{},
+							{fTexBlt.left / iTexSize, fTexBlt.bottom / iTexSize},
+							{fTexBlt.left / texSize, fTexBlt.bottom / texSize},
+						},
+						{
+							{tTexBlt.right, tTexBlt.bottom},
+							{},
+							{fTexBlt.right / iTexSize, fTexBlt.bottom / iTexSize},
+							{fTexBlt.right / texSize, fTexBlt.bottom / texSize}
 						}
 					};
 
 
-					for (size_t i = 0; i < std::size(VertexData.ft); ++i)
+					for (size_t i = 0; i < BlitLandscapeVertexData.size(); ++i)
 					{
-						uint32_t c;
 						if (fUseClrModMap && dwModClr)
 						{
-							c = pClrModMap->GetModAt(
-								static_cast<int>(VertexData.ft[i][0]), static_cast<int>(VertexData.ft[i][1]));
+							BlitLandscapeVertexData[i].color = pClrModMap->GetModAt(
+								static_cast<int>(BlitLandscapeVertexData[i].coordinates[0]), static_cast<int>(BlitLandscapeVertexData[i].coordinates[1]));
 
-							ModulateClr(c, dwModClr);
+							ModulateClr(BlitLandscapeVertexData[i].color, dwModClr);
 						}
 						else
 						{
-							c = dwModClr;
+							BlitLandscapeVertexData[i].color = dwModClr;
 						}
-
-						SplitColor(c, VertexData.color[i]);
 					}
 
-					glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
+					glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(BlitLandscapeVertexData), BlitLandscapeVertexData.data());
 
 					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 				}
@@ -726,14 +739,7 @@ bool CStdGL::CreatePrimarySurfaces()
 	return RestoreDeviceObjects();
 }
 
-namespace
-{
-	struct DrawQuadVertexData
-	{
-		const GLint ft[4][2];
-		GLfloat color[4][4];
-	};
-}
+static std::array<Vertex<GLint>, 4> DrawQuadVertexData;
 
 void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
@@ -763,43 +769,39 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	/*else
 		glShadeModel((dwClr1 == dwClr2 && dwClr1 == dwClr3 && dwClr1 == dwClr4) ? GL_FLAT : GL_SMOOTH);*/
 	// set blitting state
-	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
-	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, iAdditive ? GL_ONE : GL_SRC_ALPHA);
+	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, (dwBlitMode & C4GFXBLIT_ADDITIVE) ? GL_ONE : GL_SRC_ALPHA);
 
 	DummyShader.Select();
 
 	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
 
-	DrawQuadVertexData VertexData
+	new(DrawQuadVertexData.data()) decltype(DrawQuadVertexData)::value_type[DrawQuadVertexData.size()]
 	{
 		{
 			{ipVtx[0], ipVtx[1]},
-			{ipVtx[2], ipVtx[3]},
-			{ipVtx[6], ipVtx[7]},
-			{ipVtx[4], ipVtx[5]}
+			dwClr1
 		},
-		{{}}
+		{
+			{ipVtx[2], ipVtx[3]},
+			dwClr2
+		},
+		{
+			{ipVtx[6], ipVtx[7]},
+			dwClr3
+		},
+		{
+			{ipVtx[4], ipVtx[5]},
+			dwClr4
+		}
 	};
 
-	SplitColor(dwClr1, VertexData.color[0]);
-	SplitColor(dwClr2, VertexData.color[1]);
-	SplitColor(dwClr3, VertexData.color[2]);
-	SplitColor(dwClr4, VertexData.color[3]);
-
 	SelectVAO(VertexArray.DrawQuadDw);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(DrawQuadVertexData), DrawQuadVertexData.data());
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-namespace
-{
-	struct DrawLineVertexData
-	{
-		const GLfloat ft[2][2];
-		GLfloat color[2][4];
-	};
-}
+static std::array<Vertex<>, 2> DrawLineVertexData;
 
 void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	const float x1, const float y1, const float x2, const float y2, uint32_t dwClr)
@@ -815,10 +817,9 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	// use a different blendfunc here, because GL_LINE_SMOOTH expects this one
 	glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
 	// global clr modulation map
-	uint32_t dwClr1 = dwClr;
 	if (fUseClrModMap)
 	{
-		ModulateClr(dwClr1, pClrModMap->GetModAt(
+		ModulateClr(dwClr, pClrModMap->GetModAt(
 			static_cast<int>(x1), static_cast<int>(y1)));
 	}
 
@@ -826,20 +827,11 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 
 	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
 
-	DrawLineVertexData VertexData
-	{
-		{
-			{x1 + 0.5f, y1 + 0.5f},
-			{x2 + 0.5f, y2 + 0.5f}
-		},
-		{{}}
-	};
-
-	SplitColor(dwClr1, VertexData.color[0]);
-	SplitColor(dwClr1, VertexData.color[1]);
+	DrawLineVertexData[0] = Vertex<>{{x1 + 0.5f, y1 + 0.5f}, dwClr};
+	DrawLineVertexData[1] = Vertex<>{{x2 + 0.5f, y2 + 0.5f}, dwClr};
 
 	SelectVAO(VertexArray.DrawLineDw);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexData), &VertexData);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(DrawLineVertexData), DrawLineVertexData.data());
 
 	glDrawArrays(GL_LINE_STRIP, 0, 2);
 }
@@ -1061,24 +1053,25 @@ bool CStdGL::RestoreDeviceObjects()
 		glGenVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
 		glGenBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
 
-		InitializeVAO<decltype(VertexArray)::PerformBlt, PerformBltVertexData>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(PerformBltVertexData, color)));
+		InitializeVAO<decltype(VertexArray)::PerformBlt, decltype(PerformBltVertexData)>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), nullptr);
+		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), nullptr);
+		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void*>(offsetof(Vertex<>, color)));
 
-		InitializeVAO<decltype(VertexArray)::BlitLandscape, BlitLandscapeVertexData>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, ft)));
-		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, tc)));
-		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, color)));
-		glVertexAttribPointer(VertexArray.LiquidTexCoords, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(offsetof(BlitLandscapeVertexData, lt)));
+		InitializeVAO<decltype(VertexArray)::BlitLandscape, decltype(BlitLandscapeVertexData)>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(BlitLandscapeVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, coordinates)));
+		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(BlitLandscapeVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, textureCoordinates)));
+		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(BlitLandscapeVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, color)));
+		glVertexAttribPointer(VertexArray.LiquidTexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(BlitLandscapeVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, liquidTextureCoordinates)));
 
-		InitializeVAO<decltype(VertexArray)::DrawQuadDw, DrawQuadVertexData>(VertexArray.Vertices, VertexArray.Color);
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_INT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(DrawQuadVertexData, ft)));
-		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(DrawQuadVertexData, color)));
+		InitializeVAO<decltype(VertexArray)::DrawQuadDw, decltype(DrawQuadVertexData)>(VertexArray.Vertices, VertexArray.Color);
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_INT, GL_FALSE, sizeof(decltype(DrawQuadVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawQuadVertexData)::value_type, coordinates)));
+		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(DrawQuadVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawQuadVertexData)::value_type, color)));
 
-		InitializeVAO<decltype(VertexArray)::DrawLineDw, DrawLineVertexData>(VertexArray.Vertices, VertexArray.Color);
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(DrawLineVertexData, ft)));
-		glVertexAttribPointer(VertexArray.Color, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(offsetof(DrawLineVertexData, color)));
+		InitializeVAO<decltype(VertexArray)::DrawLineDw, decltype(DrawLineVertexData)>(VertexArray.Vertices, VertexArray.Color);
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawLineVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawLineVertexData)::value_type, coordinates)));
+		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(DrawLineVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawLineVertexData)::value_type, color)));
+
 
 		// StandardUniforms
 
