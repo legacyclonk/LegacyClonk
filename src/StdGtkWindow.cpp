@@ -17,6 +17,7 @@
 
 /* A wrapper class to OS dependent event and window interfaces, GTK+ version */
 
+#include <StdGL.h>
 #include <StdGtkWindow.h>
 
 #include "res/lc.xpm"
@@ -40,7 +41,7 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 	Active = true;
 	dpy = pApp->dpy;
 
-	if (!FindInfo()) return 0;
+	if (!FindFBConfig()) return 0;
 
 	assert(!window);
 
@@ -55,7 +56,9 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 
 	GtkWidget *render_widget = InitGUI();
 
-	gtk_widget_set_colormap(render_widget, gdk_colormap_new(gdkx_visual_get(((XVisualInfo *)Info)->visualid), TRUE));
+	XVisualInfo *info = glXGetVisualFromFBConfig(dpy, FBConfig);
+	gtk_widget_set_colormap(render_widget, gdk_colormap_new(gdkx_visual_get(info->visualid), TRUE));
+	XFree(info);
 
 	gtk_widget_show_all(window);
 
@@ -107,13 +110,6 @@ void CStdGtkWindow::Clear()
 
 	window = nullptr;
 	Active = false;
-
-	// We must free it here since we do not call CStdWindow::Clear()
-	if (Info)
-	{
-		XFree(Info);
-		Info = 0;
-	}
 }
 
 void CStdGtkWindow::OnDestroyStatic(GtkWidget *widget, gpointer data)
