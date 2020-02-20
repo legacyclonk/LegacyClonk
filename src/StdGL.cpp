@@ -797,7 +797,6 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	}
 
 	DummyShader.Select();
-
 	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
 
 	DrawLineVertexData[0] = Vertex<>{{x1 + 0.5f, y1 + 0.5f}, dwClr};
