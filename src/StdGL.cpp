@@ -516,10 +516,7 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 	SetTexture();
 	if (sfcSource2)
 	{
-		glActiveTexture(GL_TEXTURE1);
-		glEnable(GL_TEXTURE_2D);
 		glActiveTexture(GL_TEXTURE2);
-		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, (*sfcLiquidAnimation->ppTex)->texName);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -548,14 +545,9 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 
 	// set texture+modes
 	//glShadeModel((fUseClrModMap && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
 
 	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.TextureMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
 	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
-
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
 
 	const uint32_t dwModClr = BlitModulated ? BlitModulateClr : 0xffffff;
 	int chunkSize = iTexSize;
@@ -677,14 +669,6 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		glDisableVertexAttribArray(VertexArray.LiquidTexCoords);
 	}
 
-	if (sfcSource2)
-	{
-		glActiveTexture(GL_TEXTURE1);
-		glDisable(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE2);
-		glDisable(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE0);
-	}
 	// reset texture
 	ResetTexture();
 }
@@ -1119,13 +1103,10 @@ void CStdGL::SetTexture()
 {
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA,
 		(dwBlitMode & C4GFXBLIT_ADDITIVE) ? GL_ONE : GL_SRC_ALPHA);
-	glEnable(GL_TEXTURE_2D);
 }
 
 void CStdGL::ResetTexture()
 {
-	// disable texturing
-	glDisable(GL_TEXTURE_2D);
 }
 
 CStdGL *pGL = nullptr;
