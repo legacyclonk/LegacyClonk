@@ -1068,7 +1068,7 @@ bool CStdGL::RestoreDeviceObjects()
 
 		glGenBuffers(1, &StandardUniforms.VBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, StandardUniforms.VBO);
-		glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_STATIC_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_DYNAMIC_DRAW);
 		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.TexIndent], sizeof(float), &DDrawCfg.fTexIndent);
 		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.BlitOffset], sizeof(float), &DDrawCfg.fBlitOff);
 
