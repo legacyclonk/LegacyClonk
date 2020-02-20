@@ -797,9 +797,7 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
 	// set blitting state
-	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
-	// use a different blendfunc here, because GL_LINE_SMOOTH expects this one
-	glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, (dwBlitMode & C4GFXBLIT_ADDITIVE) ? GL_ONE : GL_SRC_ALPHA);
 	// global clr modulation map
 	if (fUseClrModMap)
 	{
