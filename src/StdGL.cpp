@@ -1124,8 +1124,6 @@ CStdGL *pGL = nullptr;
 
 bool CStdGL::OnResolutionChanged()
 {
-	InvalidateDeviceObjects();
-	RestoreDeviceObjects();
 	// Re-create primary clipper to adapt to new size.
 	CreatePrimaryClipper();
 	return true;
