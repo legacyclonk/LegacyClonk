@@ -925,7 +925,7 @@ bool CStdGL::RestoreDeviceObjects()
 
 		CStdGLFragmentShader blitFragmentShader{
 			R"(
-			#version 150 core
+			#version 140
 			#extension GL_ARB_explicit_attrib_location : enable
 
 			uniform sampler2D textureSampler;
@@ -965,7 +965,7 @@ bool CStdGL::RestoreDeviceObjects()
 
 		CStdGLFragmentShader landscapeFragmentShader{
 					R"(
-					#version 150 core
+					#version 140
 					#extension GL_ARB_explicit_attrib_location : enable
 
 					uniform sampler2D textureSampler;
@@ -1018,7 +1018,7 @@ bool CStdGL::RestoreDeviceObjects()
 
 		CStdGLFragmentShader dummyFragmentShader{
 			R"(
-			#version 150 core
+			#version 140
 			#extension GL_ARB_explicit_attrib_location : enable
 
 			in vec2 vPosition;
