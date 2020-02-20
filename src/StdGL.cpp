@@ -239,7 +239,9 @@ void CStdGLShaderProgram::Deselect()
 void CStdGLShaderProgram::Clear()
 {
 	shaders.clear();
+	uniformLocations.clear();
 	glDeleteProgram(shaderProgram);
+	shaderProgram = 0;
 }
 
 void CStdGLShaderProgram::EnsureProgram()
