@@ -55,32 +55,6 @@ namespace
 	};
 }
 
-[[deprecated("Immediate mode is deprecated")]]
-static void glColorDw(const uint32_t dwClr)
-{
-	glColor4ub(
-		static_cast<GLubyte>(dwClr >> 16),
-		static_cast<GLubyte>(dwClr >> 8),
-		static_cast<GLubyte>(dwClr),
-		static_cast<GLubyte>(dwClr >> 24));
-}
-
-template<typename T>
-static void SplitColor(const uint32_t &color, T &r, T&g, T&b, T&a)
-{
-	static_assert(std::is_floating_point_v<T>);
-	r = ((color >> 16) & 0xff) / static_cast<T>(255.0f);
-	g = ((color >> 8) & 0xff) / static_cast<T>(255.0f);
-	b = (color & 0xff) / static_cast<T>(255.0f);
-	a = ((color >> 24) & 0xff) / static_cast<T>(255.0f);
-}
-
-template<typename T>
-static void SplitColor(const uint32_t &color, T (&c)[4])
-{
-	SplitColor(color, c[0], c[1], c[2], c[3]);
-}
-
 CStdGLShader::CStdGLShader(CStdGLShader &&s)
 {
 	shader = s.shader;
