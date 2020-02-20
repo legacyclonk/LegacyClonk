@@ -227,7 +227,7 @@ public:
 protected:
 	GLenum sfcFmt; // texture surface format
 	CStdGLCtx MainCtx; // main GL context
-	CStdGLCtx *pCurrCtx; // current context
+	CStdGLCtx *pCurrCtx = nullptr; // current context
 
 	CStdGLShaderProgram BlitShader;
 	CStdGLShaderProgram BlitShaderMod2;

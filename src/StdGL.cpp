@@ -240,8 +240,11 @@ void CStdGLShaderProgram::Clear()
 {
 	shaders.clear();
 	uniformLocations.clear();
-	glDeleteProgram(shaderProgram);
-	shaderProgram = 0;
+	if (shaderProgram)
+	{
+		glDeleteProgram(shaderProgram);
+		shaderProgram = 0;
+	}
 }
 
 void CStdGLShaderProgram::EnsureProgram()
@@ -1092,16 +1095,19 @@ bool CStdGL::InvalidateDeviceObjects()
 	// deactivate
 	Active = false;
 
-	glUseProgram(GL_NONE);
-	BlitShader.Clear();
-	BlitShaderMod2.Clear();
-	LandscapeShader.Clear();
-	DummyShader.Clear();
+	if (pCurrCtx)
+	{
+		glUseProgram(GL_NONE);
+		BlitShader.Clear();
+		BlitShaderMod2.Clear();
+		LandscapeShader.Clear();
+		DummyShader.Clear();
 
-	glDeleteBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
-	glDeleteVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
+		glDeleteBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
+		glDeleteVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
 
-	glDeleteBuffers(1, &StandardUniforms.VBO);
+		glDeleteBuffers(1, &StandardUniforms.VBO);
+	}
 
 	// invalidate font objects
 	// invalidate primary surfaces
