@@ -216,13 +216,20 @@ bool CStdWindow::FindFBConfig()
 #ifndef USE_CONSOLE
 	// get an appropriate visual
 	// attributes for a single buffered visual in RGBA format with at least 4 bits per color
-	static int attrListSgl[] = { GLX_RGBA,
-		GLX_RED_SIZE, 4, GLX_GREEN_SIZE, 4, GLX_BLUE_SIZE, 4,
+	static int attrListSgl[]
+	{
+		GLX_RED_SIZE, 4,
+		GLX_GREEN_SIZE, 4,
+		GLX_BLUE_SIZE, 4,
 		None
 	};
 	// attributes for a double buffered visual in RGBA format with at least 4 bits per color
-	static int attrListDbl[] = { GLX_RGBA, GLX_DOUBLEBUFFER,
-		GLX_RED_SIZE, 4, GLX_GREEN_SIZE, 4, GLX_BLUE_SIZE, 4,
+	static int attrListDbl[]
+	{
+		GLX_DOUBLEBUFFER, True,
+		GLX_RED_SIZE, 4,
+		GLX_GREEN_SIZE, 4,
+		GLX_BLUE_SIZE, 4,
 		GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
 		None
 	};
@@ -237,15 +244,15 @@ bool CStdWindow::FindFBConfig()
 		// a singlebuffered is probably better than the default
 		config = glXChooseFBConfig(dpy, DefaultScreen(dpy), attrListSgl, &fbcount);
 	}
-#endif
 	if (!config)
 	{
-#ifndef USE_CONSOLE
 		XFree(config);
 #endif
 		Log("  gl: no visual at all.");
 		return false;
+#ifndef USE_CONSOLE
 	}
+#endif
 
 	struct {int framebuffer; int samples; } best{-1, -1};
 
