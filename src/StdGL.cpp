@@ -818,23 +818,29 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	glDrawArrays(GL_LINE_STRIP, 0, 2);
 }
 
+static Vertex<> DrawPixVertexData;
+
 void CStdGL::DrawPixInt(CSurface *const sfcTarget,
 	const float tx, const float ty, const uint32_t dwClr)
 {
-	glUseProgram(0);
 	// render target?
 	assert(sfcTarget->IsRenderTarget());
 
 	if (!PrepareRendering(sfcTarget)) return;
-	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
-	// use a different blendfunc here because of GL_POINT_SMOOTH
-	glBlendFunc(GL_SRC_ALPHA, iAdditive ? GL_ONE : GL_ONE_MINUS_SRC_ALPHA);
-	// convert the alpha value for that blendfunc
-	glBegin(GL_POINTS);
-	glColorDw(InvertRGBAAlpha(dwClr));
-	glVertex2f(tx + 0.5f, ty + 0.5f);
-	glEnd();
+
+	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, (dwBlitMode & C4GFXBLIT_ADDITIVE) ? GL_ONE : GL_SRC_ALPHA);
+
+	DummyShader.Select();
+	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
+
+	DrawPixVertexData = Vertex<>{{tx, ty}, dwClr};
+
+	SelectVAO(VertexArray.DrawPixInt);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(DrawPixVertexData), &DrawPixVertexData);
+
+	glDrawArrays(GL_POINT_SMOOTH, 0, 1);
 }
+
 static void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
 {
 	std::printf("source: %d, type: %d, id: %ul, severity: %d, message: %s\n", source, type, id, severity, message);
@@ -1053,6 +1059,10 @@ bool CStdGL::RestoreDeviceObjects()
 		InitializeVAO<decltype(VertexArray)::DrawLineDw, decltype(DrawLineVertexData)>(VertexArray.Vertices, VertexArray.Color);
 		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawLineVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawLineVertexData)::value_type, coordinates)));
 		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(DrawLineVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawLineVertexData)::value_type, color)));
+
+		InitializeVAO<decltype(VertexArray)::DrawLineDw, decltype(DrawPixVertexData)>(VertexArray.Vertices, VertexArray.Color);
+		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawPixVertexData)), reinterpret_cast<const void *>(offsetof(decltype(DrawPixVertexData), coordinates)));
+		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(DrawPixVertexData)), reinterpret_cast<const void *>(offsetof(decltype(DrawPixVertexData), color)));
 
 
 		// StandardUniforms
