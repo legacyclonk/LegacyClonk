@@ -281,17 +281,6 @@ void CStdGL::Clear()
 	lpPrimary = lpBack = nullptr;
 	RenderTarget = nullptr;
 
-	glUseProgram(0);
-	BlitShader.Clear();
-	BlitShaderMod2.Clear();
-	LandscapeShader.Clear();
-	DummyShader.Clear();
-
-	glDeleteBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
-	glDeleteVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
-
-	glDeleteBuffers(1, &StandardUniforms.VBO);
-
 	// clear context
 	if (pCurrCtx) pCurrCtx->Deselect();
 	MainCtx.Clear();
@@ -1103,6 +1092,18 @@ bool CStdGL::InvalidateDeviceObjects()
 #endif
 	// deactivate
 	Active = false;
+
+	glUseProgram(GL_NONE);
+	BlitShader.Clear();
+	BlitShaderMod2.Clear();
+	LandscapeShader.Clear();
+	DummyShader.Clear();
+
+	glDeleteBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
+	glDeleteVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
+
+	glDeleteBuffers(1, &StandardUniforms.VBO);
+
 	// invalidate font objects
 	// invalidate primary surfaces
 	if (lpPrimary) lpPrimary->Clear();
