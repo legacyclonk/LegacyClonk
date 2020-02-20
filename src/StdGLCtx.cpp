@@ -207,13 +207,18 @@ CStdGLCtx::CStdGLCtx() : pWindow(nullptr), ctx(nullptr), cx(0), cy(0) {}
 void CStdGLCtx::Clear()
 {
 	Deselect();
+	Destroy();
+	pWindow = nullptr;
+	cx = cy = 0;
+}
+
+void CStdGLCtx::Destroy()
+{
 	if (ctx)
 	{
 		glXDestroyContext(pWindow->dpy, ctx);
 		ctx = nullptr;
 	}
-	pWindow = nullptr;
-	cx = cy = 0;
 }
 
 bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
@@ -223,8 +228,6 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	// store window
 	this->pWindow = pWindow;
 
-	assert(GLX_ARB_create_context);
-
 	int contextAttributes[]
 	{
 		GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
@@ -233,32 +236,82 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 		None
 	};
 
-	// Create Context with sharing (if this is the main context, our ctx will be 0, so no sharing)
-	// try direct rendering first
-	if (!DDrawCfg.NoAcceleration)
+	auto createContext = [this, &contextAttributes](int major, int minor) -> bool
 	{
-		ctx = glXCreateContextAttribsARB(pWindow->dpy, pWindow->FBConfig, pGL->MainCtx.ctx, True, contextAttributes);
+		contextAttributes[1] = major;
+		contextAttributes[3] = minor;
+
+		static bool error;
+		error = false;
+
+		auto *errorHandler = XSetErrorHandler([](Display *, XErrorEvent *) -> int { error = true; return 0; });
+
+		// Create Context with sharing (if this is the main context, our ctx will be 0, so no sharing)
+		// try direct rendering first
+		if (!DDrawCfg.NoAcceleration)
+		{
+			ctx = glXCreateContextAttribsARB(this->pWindow->dpy, this->pWindow->FBConfig, pGL->MainCtx.ctx, True, contextAttributes);
+		}
+
+		// without, rendering will be unacceptable slow, but that's better than nothing at all
+		if (!ctx)
+		{
+			ctx = glXCreateContextAttribsARB(this->pWindow->dpy, this->pWindow->FBConfig, pGL->MainCtx.ctx, False, contextAttributes);
+		}
+
+		XSync(this->pWindow->dpy, False);
+		XSetErrorHandler(errorHandler);
+
+		if (error || !ctx)
+		{
+			return pGL->Error(
+						FormatString(
+							"  gl: Unable to create a %d.%d (%s) context!",
+							major,
+							minor,
+							contextAttributes[5] == GLX_CONTEXT_CORE_PROFILE_BIT_ARB ? "core" : "compat"
+						).getData()
+					);
+		}
+		if (!Select(true)) return pGL->Error("  gl: Unable to select context");
+		// init extensions
+		GLenum err = glewInit();
+		if (GLEW_OK != err)
+		{
+			// Problem: glewInit failed, something is seriously wrong.
+			pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
+		}
+
+		return true;
+	};
+
+	auto checkExtension = [](const char *extension) -> bool
+	{
+		if (!glewIsSupported(extension))
+		{
+			return pGL->Error(FormatString("  gl: Extension(s) %s not supported", extension).getData());
+		}
+
+		return true;
+	};
+
+	assert(GLX_ARB_create_context);
+
+	if (!createContext(3, 2))
+	{
+		if (!checkExtension("ARB_vertex_array_bgra")) return false;
+
+		if (!createContext(3, 1))
+		{
+			if (!checkExtension("ARB_uniform_buffer_object")) return false;
+
+			if (!createContext(3, 0))
+			{
+				/*if (!checkExtension("ARB_vertex_array_object"))*/ return false;
+			}
+		}
 	}
 
-	// without, rendering will be unacceptable slow, but that's better than nothing at all
-	if (!ctx)
-	{
-		ctx = glXCreateContextAttribsARB(pWindow->dpy, pWindow->FBConfig, pGL->MainCtx.ctx, False, contextAttributes);
-	}
-
-	XSync(pWindow->dpy, False);
-
-	// No luck at all?
-	if (!ctx) return pGL->Error("  gl: Unable to create context");
-	if (!Select(true)) return pGL->Error("  gl: Unable to select context");
-	// init extensions
-	glewExperimental = true;
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		// Problem: glewInit failed, something is seriously wrong.
-		pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
-	}
 	return true;
 }
 
