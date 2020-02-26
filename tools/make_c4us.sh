@@ -1,26 +1,26 @@
 #!/usr/bin/bash
 
-# example usage: OLDOBJVERSION=4,9,10,7 OBJVERSION=4.9.10.7 VERSION=335 C4GROUP=~/clonk/c4group64 ./make_c4us.sh
+# example usage: OLDOBJVERSION=4,9,10,8 OBJVERSION=4.9.10.8 VERSION=338 C4GROUP=~/clonk/c4group ./make_c4us.sh
 
 set -e
 
 if [ -z "$C4GROUP" ]; then
-	echo "Please define the environment variable C4GROUP to point to your c4group(64) binary" >&2
+	echo "Please define the environment variable C4GROUP to point to your c4group binary" >&2
 	exit 1
 fi
 
 if [ -z "$VERSION" ]; then
-	echo "Please define the environment variable VERSION and tell what version this will be (e.g. 335)" >&2
+	echo "Please define the environment variable VERSION and tell what version this will be (e.g. 338)" >&2
 	exit 1
 fi
 
 if [ -z "$OLDOBJVERSION" ]; then
-	echo "Please define the environment variable OLDOBJVERSION and tell what version the old definitions were (comma-separated, e.g. 4,9,10,7)" >&2
+	echo "Please define the environment variable OLDOBJVERSION and tell what version the old definitions were (comma-separated, e.g. 4,9,10,8)" >&2
 	exit 1
 fi
 
 if [ -z "$OBJVERSION" ]; then
-	echo "Please define the environment variable OBJVERSION and tell what version the new definitions are (e.g. 4.9.10.7)" >&2
+	echo "Please define the environment variable OBJVERSION and tell what version the new definitions are (e.g. 4.9.10.8)" >&2
 	exit 1
 fi
 
@@ -76,7 +76,6 @@ for PLATFORM in "win32" "linux" "linux64"; do
 	UPDATE=lc_${VERSION}_$PLATFORM.c4u
 	mkdir $UPDATE
 	cp "$TARGET_DIR/System.c4g.c4u" "$UPDATE"
-	cp "$TARGET_DIR/Graphics.c4g.c4u" "$UPDATE"
 	echo "$AUTOUPDATEFILE" > "$UPDATE/AutoUpdate.txt"
 	CMD="GET_$PLATFORM"
 	bash -c "${!CMD}"
