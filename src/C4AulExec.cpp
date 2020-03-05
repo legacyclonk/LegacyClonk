@@ -404,7 +404,21 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				if (!pCurCtx->Obj)
 					throw new C4AulExecError(pCurCtx->Obj, "can't access local variables in a definition call!");
 				if (pCurCtx->Func->Owner->Def != pCurCtx->Obj->Def)
-					throw new C4AulExecError(pCurCtx->Obj, "can't access local variables after ChangeDef!");
+				{
+					const auto localName = pCurCtx->Func->Owner->Def->Script.LocalNamed.pNames[pCPos->bccX];
+					if(pCurCtx->Func->pOrgScript->Strict >= C4AulScriptStrict::STRICT3 || pCurCtx->Obj->LocalNamed.pNames->iSize <= pCPos->bccX)
+					{
+						throw new C4AulExecError(pCurCtx->Obj, FormatString("can't access local variable \"%s\" after ChangeDef!", localName).getData());
+					}
+
+					const auto actualLocalName = pCurCtx->Obj->Def->Script.LocalNamed.pNames[pCPos->bccX];
+
+					if (!SEqual(localName, actualLocalName))
+					{
+						DebugLogF("WARNING: accessing local variable \"%s\" actually accesses \"%s\" because of illegal access after ChangeDef", localName, actualLocalName);
+						pCurCtx->dump(StdStrBuf(" by: "));
+					}
+				}
 				if (pCPos->bccType == AB_LOCALN_R)
 					PushValueRef(*pCurCtx->Obj->LocalNamed.GetItem(pCPos->bccX));
 				else
