@@ -1075,7 +1075,7 @@ bool CStdGL::RestoreDeviceObjects()
 		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawLineVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawLineVertexData)::value_type, coordinates)));
 		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(DrawLineVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawLineVertexData)::value_type, color)));
 
-		InitializeVAO<decltype(VertexArray)::DrawLineDw, decltype(DrawPixVertexData)>(VertexArray.Vertices, VertexArray.Color);
+		InitializeVAO<decltype(VertexArray)::DrawPixInt, decltype(DrawPixVertexData)>(VertexArray.Vertices, VertexArray.Color);
 		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawPixVertexData)), reinterpret_cast<const void *>(offsetof(decltype(DrawPixVertexData), coordinates)));
 		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(DrawPixVertexData)), reinterpret_cast<const void *>(offsetof(decltype(DrawPixVertexData), color)));
 
