@@ -135,6 +135,11 @@
 #define C4CFN_ScriptFiles     "*.c"
 #define C4CFN_ImageFiles      "*.png|*.bmp|*.jpeg|*.jpg"
 #define C4CFN_FontFiles       "*.fon|*.fnt|*.ttf|*.ttc|*.fot|*.otf"
+#define C4CFN_VertexShader    "*.vs.*"
+#define C4CFN_FragmentShader  "*.fs.*"
+#define C4CFN_GLSL            "*.glsl"
+#define C4CFN_HLSL            "*.hlsl"
+#define C4CFN_SPIRV           "*.spirv"
 
 // File Load Sequences
 

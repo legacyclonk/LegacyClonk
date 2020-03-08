@@ -577,6 +577,13 @@ bool C4Def::Load(C4Group &hGroup,
 
 #endif
 
+	if (dwLoadWhat & C4D_Load_Shader && lpDDraw)
+	{
+		LoadShaders(hGroup, CStdDDraw::ShaderLanguage::GLSL, C4CFN_GLSL);
+		LoadShaders(hGroup, CStdDDraw::ShaderLanguage::HLSL, C4CFN_HLSL);
+		LoadShaders(hGroup, CStdDDraw::ShaderLanguage::SPIRV, C4CFN_SPIRV);
+	}
+
 	// Read DefCore
 	if (fSuccess) fSuccess = C4DefCore::Load(hGroup);
 	// check id
@@ -854,6 +861,52 @@ void C4Def::CrossMapActMap()
 		if (SEqualNoCase(ActMap[cnt].SPhaseCall, "None")) ActMap[cnt].SPhaseCall[0] = 0;
 		if (SEqualNoCase(ActMap[cnt].SEndCall,   "None")) ActMap[cnt].SEndCall  [0] = 0;
 		if (SEqualNoCase(ActMap[cnt].SAbortCall, "None")) ActMap[cnt].SAbortCall[0] = 0;
+	}
+}
+
+void C4Def::LoadShaders(C4Group &group, CStdDDraw::ShaderLanguage language, const char *pattern)
+{
+	group.ResetSearch();
+
+	char filename[_MAX_FNAME];
+	size_t size;
+	while (group.FindNextEntry(pattern, filename, &size))
+	{
+		CStdShader::Type type;
+
+		if (WildcardMatch(C4CFN_VertexShader, filename)) // TODO: Move this to StdGL?
+		{
+			type = CStdShader::Type::Vertex;
+		}
+		else if (WildcardMatch(C4CFN_FragmentShader, filename))
+		{
+			type = CStdShader::Type::Fragment;
+		}
+		else
+		{
+			return;
+		}
+
+		StdStrBuf data;
+		group.LoadEntryString(filename, data);
+
+		CStdShader *shader = lpDDraw->CreateShader(type, language, data.getData());
+		if (!shader->Compile())
+		{
+			continue;
+		}
+
+		RemoveExtension(filename);
+		RemoveExtension(filename);
+
+		auto it = Game.LoadedShader.find(filename);
+		if (it == Game.LoadedShader.end())
+		{
+			it = Game.LoadedShader.emplace(filename, lpDDraw->CreateShaderProgram()).first;
+		}
+
+		it->second->AddShader(shader);
+		// yes, we don't delete the shaders here, this happens in C4Game
 	}
 }
 

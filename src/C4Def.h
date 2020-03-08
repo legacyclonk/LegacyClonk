@@ -121,7 +121,8 @@ const uint32_t C4D_Load_None       = 0,
                C4D_Load_ClonkNames = 128,
                C4D_Load_RankNames  = 256,
                C4D_Load_RankFaces  = 512,
-               C4D_Load_RX         = C4D_Load_Bitmap | C4D_Load_Script | C4D_Load_ClonkNames | C4D_Load_Desc | C4D_Load_ActMap | C4D_Load_Sounds | C4D_Load_RankNames | C4D_Load_RankFaces;
+               C4D_Load_Shader     = 1024,
+			   C4D_Load_RX         = C4D_Load_Bitmap | C4D_Load_Script | C4D_Load_ClonkNames | C4D_Load_Desc | C4D_Load_ActMap | C4D_Load_Sounds | C4D_Load_RankNames | C4D_Load_RankFaces | C4D_Load_Shader;
 
 #define C4D_Blit_Normal   0
 #define C4D_Blit_Additive 1
@@ -356,6 +357,7 @@ protected:
 	bool ColorizeByMaterial(class C4MaterialMap &rMats, uint8_t bGBM);
 	bool LoadActMap(C4Group &hGroup);
 	void CrossMapActMap();
+	void LoadShaders(C4Group &group, CStdDDraw::ShaderLanguage language, const char *pattern);
 
 private:
 	C4ValueArray *GetCustomComponents(C4Value *pvArrayHolder, C4Object *pBuilder, C4Object *pObjInstance = nullptr);

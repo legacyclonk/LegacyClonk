@@ -186,6 +186,10 @@ public:
 	StdStrBuf NextMission, NextMissionText, NextMissionDesc;
 	C4NetworkRestartInfos::Infos RestartRestoreInfos;
 
+	// shader
+	std::unordered_map<std::string, std::unique_ptr<CStdShaderProgram>> LoadedShader;
+	std::unordered_map<std::string, std::unique_ptr<CStdShaderProgram>> ScriptShader;
+
 public:
 	// Init and execution
 	void Default();
@@ -316,6 +320,7 @@ protected:
 	bool InitControl();
 	bool InitScriptEngine();
 	bool LinkScriptEngine();
+	void LinkShaders();
 	bool InitPlayers();
 	bool OpenScenario();
 	bool InitDefs();
