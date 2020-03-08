@@ -795,7 +795,7 @@ CTexRef::~CTexRef()
 		if (texName && pGL->pCurrCtx) glDeleteTextures(1, &texName);
 	}
 #endif
-	if (lpDDraw) lockData.release(); lockData = nullptr;
+	if (lpDDraw) lockData.reset(); lockData = nullptr;
 }
 
 bool CTexRef::LockForUpdate(const RECT &rtUpdate)
@@ -900,7 +900,7 @@ void CTexRef::Unlock()
 				LockSize.left, LockSize.top, LockSize.right - LockSize.left, LockSize.bottom - LockSize.top,
 				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, lockData.get());
 		}
-		lockData.release();
+		lockData.reset();
 		// switch back to original context
 	}
 	else
