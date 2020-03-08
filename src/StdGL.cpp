@@ -829,7 +829,7 @@ void CStdGL::DrawPixInt(CSurface *const sfcTarget,
 	SelectVAO(VertexArray.DrawPixInt);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(DrawPixVertexData), &DrawPixVertexData);
 
-	glDrawArrays(GL_POINT_SMOOTH, 0, 1);
+	glDrawArrays(GL_POINTS, 0, 1);
 }
 
 static void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
