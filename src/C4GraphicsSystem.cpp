@@ -787,10 +787,10 @@ int32_t C4GraphicsSystem::GetAudibility(int32_t iX, int32_t iY, int32_t *iPan, i
 		const auto player = Game.Players.Get(cvp->GetPlayer());
 		if (player)
 		{
-			auto cursor = player->ViewTarget;
+			auto cursor = player->ViewCursor;
 			if (!cursor)
 			{
-				player->ViewCursor;
+				cursor = player->ViewTarget;
 				if (!cursor)
 				{
 					cursor = player->Cursor;
