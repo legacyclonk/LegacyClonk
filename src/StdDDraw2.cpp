@@ -566,8 +566,8 @@ bool CStdDDraw::CalculateClipper(int *const iX, int *const iY, int *const iWdt, 
 	// no render target? do nothing
 	if (!RenderTarget || !Active) return false;
 	// negative/zero?
-	*iWdt = (std::min)(ClipX2, RenderTarget->Wdt - 1) - ClipX1 + 1;
-	*iHgt = (std::min)(ClipY2, RenderTarget->Hgt - 1) - ClipY1 + 1;
+	*iWdt = (std::min<uint32_t>)(ClipX2, RenderTarget->Wdt - 1) - ClipX1 + 1;
+	*iHgt = (std::min<uint32_t>)(ClipY2, RenderTarget->Hgt - 1) - ClipY1 + 1;
 	*iX = ClipX1; if (*iX < 0) { *iWdt += *iX; *iX = 0; }
 	*iY = ClipY1; if (*iY < 0) { *iHgt += *iY; *iY = 0; }
 	if (*iWdt <= 0 || *iHgt <= 0)
@@ -653,7 +653,7 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	// prepare rendering to surface
 	if (!PrepareRendering(sfcTarget)) return false;
 	// texture present?
-	if (!sfcSource->ppTex)
+	if (sfcSource->Textures.empty())
 	{
 		// primary surface?
 		if (sfcSource->fPrimary)
@@ -669,99 +669,67 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	BltData.pTransform = pTransform;
 	// blit with basesfc?
 	bool fBaseSfc = false;
-	if (sfcSource->pMainSfc) if (sfcSource->pMainSfc->ppTex) fBaseSfc = true;
+	if (sfcSource->pMainSfc) if (!sfcSource->pMainSfc->Textures.empty()) fBaseSfc = true;
 	// set blitting state - done by PerformBlt
-	// get involved texture offsets
-	int iTexSize = sfcSource->iTexSize;
-	int iTexX = (std::max)(int(fx / iTexSize), 0);
-	int iTexY = (std::max)(int(fy / iTexSize), 0);
-	int iTexX2 = (std::min)((int)(fx + fwdt - 1) / iTexSize + 1, sfcSource->iTexX);
-	int iTexY2 = (std::min)((int)(fy + fhgt - 1) / iTexSize + 1, sfcSource->iTexY);
-	// calc stretch regarding texture size and indent
-	float scaleX2 = scaleX * (iTexSize + DDrawCfg.fTexIndent * 2);
-	float scaleY2 = scaleY * (iTexSize + DDrawCfg.fTexIndent * 2);
 	// blit from all these textures
 	SetTexture();
 
-	int chunkSize = iTexSize;
-	if (fUseClrModMap)
+	for (const auto &texture : sfcSource->Textures)
 	{
-		chunkSize = std::min(iTexSize, 64);
-	}
+		float scaleX2 = scaleX * (texture->Width + DDrawCfg.fTexIndent * 2);
+		float scaleY2 = scaleY * (texture->Height + DDrawCfg.fTexIndent * 2);
 
-	for (int iY = iTexY; iY < iTexY2; ++iY)
-	{
-		for (int iX = iTexX; iX < iTexX2; ++iX)
+		FLOAT_RECT vertices;
+		vertices.left = std::max<float>(texture->X, fx);
+		vertices.top = std::max<float>(texture->Y, fy);
+		vertices.right = std::min<float>(texture->X + texture->Width, fx + fwdt);
+		vertices.bottom = std::min<float>(texture->Y + texture->Height, fy + fhgt);
+
+		if (vertices.right <= vertices.left || vertices.bottom <= vertices.top)
 		{
-			// get current blitting offset in texture (beforing any last-tex-size-changes)
-			int iBlitX = iTexSize * iX;
-			int iBlitY = iTexSize * iY;
-			CTexRef *pTex = *(sfcSource->ppTex + iY * sfcSource->iTexX + iX);
-			// size changed? recalc dependent, relevant (!) values
-			if (iTexSize != pTex->iSize)
-			{
-				iTexSize = pTex->iSize;
-				scaleX2 = scaleX * (iTexSize + DDrawCfg.fTexIndent * 2);
-				scaleY2 = scaleY * (iTexSize + DDrawCfg.fTexIndent * 2);
-			}
-			int maxXChunk = std::min<int>(static_cast<int>((fx + fwdt - iBlitX - 1) / chunkSize + 1), iTexSize / chunkSize);
-			int maxYChunk = std::min<int>(static_cast<int>((fy + fhgt - iBlitY - 1) / chunkSize + 1), iTexSize / chunkSize);
-			for (int yChunk = std::max<int>(static_cast<int>((fy - iBlitY) / chunkSize), 0); yChunk < maxYChunk; ++yChunk)
-			{
-				for (int xChunk = std::max<int>(static_cast<int>((fx - iBlitX) / chunkSize), 0); xChunk < maxXChunk; ++xChunk)
-				{
-					int xOffset = xChunk * chunkSize;
-					int yOffset = yChunk * chunkSize;
-					// get new texture source bounds
-					FLOAT_RECT fTexBlt;
-					fTexBlt.left   = std::max<float>(static_cast<float>(xOffset), fx - iBlitX);
-					fTexBlt.top    = std::max<float>(static_cast<float>(yOffset), fy - iBlitY);
-					fTexBlt.right  = std::min<float>(static_cast<float>(xOffset + chunkSize), fx + fwdt - iBlitX);
-					fTexBlt.bottom = std::min<float>(static_cast<float>(yOffset + chunkSize), fy + fhgt - iBlitY);
-					// get new dest bounds
-					FLOAT_RECT tTexBlt;
-					tTexBlt.left   = (fTexBlt.left - fx + iBlitX) * scaleX + tx;
-					tTexBlt.top    = (fTexBlt.top - fy + iBlitY) * scaleY + ty;
-					tTexBlt.right  = (fTexBlt.right - fx + iBlitX) * scaleX + tx;
-					tTexBlt.bottom = (fTexBlt.bottom - fy+ iBlitY) * scaleY + ty;
-					// prepare blit data texture matrix
-					// - translate back to texture 0/0 regarding indent and blit offset
-					// - apply back scaling and texture-indent - simply scale matrix down
-					// - finally, move in texture - this must be done last, so no stupid zoom is applied...
-					// Set resulting matrix directly
-					BltData.TexPos.SetMoveScale(
-						(fTexBlt.left + DDrawCfg.fTexIndent) / iTexSize - (tTexBlt.left + DDrawCfg.fBlitOff) / scaleX2,
-						(fTexBlt.top  + DDrawCfg.fTexIndent) / iTexSize - (tTexBlt.top  + DDrawCfg.fBlitOff) / scaleY2,
-						1 / scaleX2,
-						1 / scaleY2);
-					// set up blit data as rect
-					BltData.vtVtx[0].ftx = tTexBlt.left  + DDrawCfg.fBlitOff; BltData.vtVtx[0].fty = tTexBlt.top    + DDrawCfg.fBlitOff;
-					BltData.vtVtx[1].ftx = tTexBlt.right + DDrawCfg.fBlitOff; BltData.vtVtx[1].fty = tTexBlt.top    + DDrawCfg.fBlitOff;
-					BltData.vtVtx[2].ftx = tTexBlt.right + DDrawCfg.fBlitOff; BltData.vtVtx[2].fty = tTexBlt.bottom + DDrawCfg.fBlitOff;
-					BltData.vtVtx[3].ftx = tTexBlt.left  + DDrawCfg.fBlitOff; BltData.vtVtx[3].fty = tTexBlt.bottom + DDrawCfg.fBlitOff;
+			continue;
+		}
 
-					CTexRef *pBaseTex = pTex;
-					// is there a base-surface to be blitted first?
-					if (fBaseSfc)
-					{
-						// then get this surface as same offset as from other surface
-						// assuming this is only valid as long as there's no texture management,
-						// organizing partially used textures together!
-						pBaseTex = *(sfcSource->pMainSfc->ppTex + iY * sfcSource->iTexX + iX);
-					}
-					// base blit
-					PerformBlt(BltData, pBaseTex, BlitModulated ? BlitModulateClr : 0xffffff, !!(dwBlitMode & C4GFXBLIT_MOD2), fExact);
-					// overlay
-					if (fBaseSfc)
-					{
-						uint32_t dwModClr = sfcSource->ClrByOwnerClr;
-						// apply global modulation to overlay surfaces only if desired
-						if (BlitModulated && !(dwBlitMode & C4GFXBLIT_CLRSFC_OWNCLR))
-							ModulateClr(dwModClr, BlitModulateClr);
-						PerformBlt(BltData, pTex, dwModClr, !!(dwBlitMode & C4GFXBLIT_CLRSFC_MOD2), fExact);
-					}
-				}
-			}
+		if (!modes.empty() && modes.top() == DrawMode::Text)
+		{
+			asm("nop");
+		}
+
+		FLOAT_RECT target;
+		target.left   = (vertices.left - fx) * scaleX + tx;
+		target.top    = (vertices.top - fy) * scaleY + ty;
+		target.right  = (vertices.right - fx) * scaleX + tx;
+		target.bottom = (vertices.bottom - fy) * scaleY + ty;
+
+		BltData.TexPos.SetMoveScale(
+			(vertices.left + DDrawCfg.fTexIndent) / texture->Width - (target.left + DDrawCfg.fBlitOff) / scaleX2,
+			(vertices.top  + DDrawCfg.fTexIndent) / texture->Height - (target.top  + DDrawCfg.fBlitOff) / scaleY2,
+			1 / scaleX2,
+			1 / scaleY2);
+		// set up blit data as rect
+		BltData.vtVtx[0].ftx = target.left  + DDrawCfg.fBlitOff; BltData.vtVtx[0].fty = target.top    + DDrawCfg.fBlitOff;
+		BltData.vtVtx[1].ftx = target.right + DDrawCfg.fBlitOff; BltData.vtVtx[1].fty = target.top    + DDrawCfg.fBlitOff;
+		BltData.vtVtx[2].ftx = target.right + DDrawCfg.fBlitOff; BltData.vtVtx[2].fty = target.bottom + DDrawCfg.fBlitOff;
+		BltData.vtVtx[3].ftx = target.left  + DDrawCfg.fBlitOff; BltData.vtVtx[3].fty = target.bottom + DDrawCfg.fBlitOff;
+
+		// is there a base-surface to be blitted first?
+		if (fBaseSfc)
+		{
+			// then get this surface as same offset as from other surface
+			// assuming this is only valid as long as there's no texture management,
+			// organizing partially used textures together!
+			Blit(sfcSource->pMainSfc, fx, fy, fwdt, fhgt, sfcTarget, tx, ty, twdt, thgt, fSrcColKey, pTransform, noScalingCorrection);
+		}
+		// base blit
+		PerformBlt(BltData, texture.get(), BlitModulated ? BlitModulateClr : 0xffffff, !!(dwBlitMode & C4GFXBLIT_MOD2), fExact);
+		// overlay
+		if (fBaseSfc)
+		{
+			uint32_t dwModClr = sfcSource->ClrByOwnerClr;
+			// apply global modulation to overlay surfaces only if desired
+			if (BlitModulated && !(dwBlitMode & C4GFXBLIT_CLRSFC_OWNCLR))
+				ModulateClr(dwModClr, BlitModulateClr);
+			PerformBlt(BltData, texture.get(), dwModClr, !!(dwBlitMode & C4GFXBLIT_CLRSFC_MOD2), fExact);
 		}
 	}
 	// reset texture
@@ -850,33 +818,33 @@ bool CStdDDraw::BlitRotate(CSurface *sfcSource, int fx, int fy, int fwdt, int fh
 	{
 	case 0:
 		for (ycnt = 0; ycnt < thgt; ycnt++)
-			if (Inside(cpcy = ty + tcy - thgt / 2 + ycnt, 0, sfcTarget->Hgt - 1))
+			if (Inside<int32_t>(cpcy = ty + tcy - thgt / 2 + ycnt, 0, sfcTarget->Hgt - 1))
 				for (xcnt = 0; xcnt < twdt; xcnt++)
-					if (Inside(cpcx = tx + tcx - twdt / 2 + xcnt, 0, sfcTarget->Wdt - 1))
+					if (Inside<int32_t>(cpcx = tx + tcx - twdt / 2 + xcnt, 0, sfcTarget->Wdt - 1))
 						sfcTarget->BltPix(cpcx, cpcy, sfcSource, xcnt * fwdt / twdt + fx, ycnt * fhgt / thgt + fy, fTransparency);
 		break;
 
 	case 9000:
 		for (ycnt = 0; ycnt < thgt; ycnt++)
-			if (Inside(cpcx = ty + tcy + thgt / 2 - ycnt, 0, sfcTarget->Wdt - 1))
+			if (Inside<int32_t>(cpcx = ty + tcy + thgt / 2 - ycnt, 0, sfcTarget->Wdt - 1))
 				for (xcnt = 0; xcnt < twdt; xcnt++)
-					if (Inside(cpcy = tx + tcx - twdt / 2 + xcnt, 0, sfcTarget->Hgt - 1))
+					if (Inside<int32_t>(cpcy = tx + tcx - twdt / 2 + xcnt, 0, sfcTarget->Hgt - 1))
 						sfcTarget->BltPix(cpcx, cpcy, sfcSource, xcnt * fwdt / twdt + fx, ycnt * fhgt / thgt + fy, fTransparency);
 		break;
 
 	case 18000:
 		for (ycnt = 0; ycnt < thgt; ycnt++)
-			if (Inside(cpcy = ty + tcy + thgt / 2 - ycnt, 0, sfcTarget->Hgt - 1))
+			if (Inside<int32_t>(cpcy = ty + tcy + thgt / 2 - ycnt, 0, sfcTarget->Hgt - 1))
 				for (xcnt = 0; xcnt < twdt; xcnt++)
-					if (Inside(cpcx = tx + tcx + twdt / 2 - xcnt, 0, sfcTarget->Wdt - 1))
+					if (Inside<int32_t>(cpcx = tx + tcx + twdt / 2 - xcnt, 0, sfcTarget->Wdt - 1))
 						sfcTarget->BltPix(cpcx, cpcy, sfcSource, xcnt * fwdt / twdt + fx, ycnt * fhgt / thgt + fy, fTransparency);
 		break;
 
 	case 27000:
 		for (ycnt = 0; ycnt < thgt; ycnt++)
-			if (Inside(cpcx = ty + tcy - thgt / 2 + ycnt, 0, sfcTarget->Wdt - 1))
+			if (Inside<int32_t>(cpcx = ty + tcy - thgt / 2 + ycnt, 0, sfcTarget->Wdt - 1))
 				for (xcnt = 0; xcnt < twdt; xcnt++)
-					if (Inside(cpcy = tx + tcx + twdt / 2 - xcnt, 0, sfcTarget->Hgt - 1))
+					if (Inside<int32_t>(cpcy = tx + tcx + twdt / 2 - xcnt, 0, sfcTarget->Hgt - 1))
 						sfcTarget->BltPix(cpcx, cpcy, sfcSource, xcnt * fwdt / twdt + fx, ycnt * fhgt / thgt + fy, fTransparency);
 		break;
 

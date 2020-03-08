@@ -289,7 +289,6 @@ void CStdGL::Clear()
 	CStdDDraw::Clear();
 #endif
 	NoPrimaryClipper();
-	if (pTexMgr) pTexMgr->IntUnlock();
 	InvalidateDeviceObjects();
 	NoPrimaryClipper();
 	// del font objects
@@ -510,20 +509,15 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 	if (!PrepareRendering(sfcTarget)) return;
 
 	// texture present?
-	if (!sfcSource->ppTex) return;
+	if (sfcSource->Textures.empty()) return;
 
-	// get involved texture offsets
-	int iTexSize = sfcSource->iTexSize;
-	const int iTexX = (std::max)(fx / iTexSize, 0);
-	const int iTexY = (std::max)(fy / iTexSize, 0);
-	const int iTexX2 = (std::min)((fx + wdt - 1) / iTexSize + 1, sfcSource->iTexX);
-	const int iTexY2 = (std::min)((fy + hgt - 1) / iTexSize + 1, sfcSource->iTexY);
 	// blit from all these textures
 	SetTexture();
+
 	if (sfcSource2)
 	{
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, (*sfcLiquidAnimation->ppTex)->texName);
+		glBindTexture(GL_TEXTURE_2D, sfcLiquidAnimation->Textures[0]->texName);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glActiveTexture(GL_TEXTURE0);
@@ -559,11 +553,6 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 	glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.ModelViewMatrix], sizeof(IDENTITY_MATRIX), IDENTITY_MATRIX);
 
 	const uint32_t dwModClr = BlitModulated ? BlitModulateClr : 0xffffff;
-	int chunkSize = iTexSize;
-	if (fUseClrModMap && dwModClr)
-	{
-		chunkSize = std::min(iTexSize, 64);
-	}
 
 	SelectVAO(VertexArray.BlitLandscape);
 
@@ -572,112 +561,93 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		glEnableVertexAttribArray(VertexArray.LiquidTexCoords);
 	}
 
-	for (int iY = iTexY; iY < iTexY2; ++iY)
+	for (size_t i = 0; i < sfcSource->Textures.size(); ++i)
 	{
-		for (int iX = iTexX; iX < iTexX2; ++iX)
-		{
-			// blit
+		const auto &texture = sfcSource->Textures[i];
 
-			if (sfcSource2) glActiveTexture(GL_TEXTURE0);
-			const auto *const pTex = *(sfcSource->ppTex + iY * sfcSource->iTexX + iX);
-			// get current blitting offset in texture (beforing any last-tex-size-changes)
-			const int iBlitX = iTexSize * iX;
-			const int iBlitY = iTexSize * iY;
-			glBindTexture(GL_TEXTURE_2D, pTex->texName);
-			if (sfcSource2)
+		if (sfcSource2) glActiveTexture(GL_TEXTURE0);
+
+		glBindTexture(GL_TEXTURE_2D, texture->texName);
+		if (sfcSource2)
+		{
+			// assuming the same texture layout!
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, sfcSource2->Textures[i]->texName);
+		}
+
+		FLOAT_RECT vertices;
+		vertices.left = std::max<float>(texture->X, fx);
+		vertices.top = std::max<float>(texture->Y, fy);
+		vertices.right = std::min<float>(texture->X + texture->Width, fx + wdt);
+		vertices.bottom = std::min<float>(texture->Y + texture->Height, fy + wdt);
+
+		if (vertices.right <= vertices.left || vertices.bottom <= vertices.top)
+		{
+			continue;
+		}
+
+		FLOAT_RECT target;
+		target.left   = vertices.left   - fx + tx;
+		target.top    = vertices.top    - fy + ty;
+		target.right  = vertices.right  - fx + tx;
+		target.bottom = vertices.bottom - fy + ty;
+
+		uint32_t liquidTextureWidth = sfcLiquidAnimation->Textures[0]->Width;
+		uint32_t liquidTextureHeight = sfcLiquidAnimation->Textures[0]->Height;
+
+		new(BlitLandscapeVertexData.data()) decltype(BlitLandscapeVertexData)::value_type[BlitLandscapeVertexData.size()]
+		{
 			{
-				const auto *const pTex = *(sfcSource2->ppTex + iY * sfcSource2->iTexX + iX);
-				glActiveTexture(GL_TEXTURE1);
-				glBindTexture(GL_TEXTURE_2D, pTex->texName);
+				{target.left, target.top},
+				{},
+				{vertices.left / texture->Width, vertices.top / texture->Height},
+				{vertices.left / liquidTextureWidth, vertices.top / liquidTextureHeight}
+			},
+			{
+				{target.right, target.top},
+				{},
+				{vertices.right / texture->Width, vertices.top / texture->Height},
+				{vertices.right / liquidTextureWidth, vertices.top / liquidTextureHeight},
+			},
+			{
+				{target.left, target.bottom},
+				{},
+				{vertices.left / texture->Width, vertices.bottom / texture->Height},
+				{vertices.left / liquidTextureWidth, vertices.bottom / liquidTextureHeight},
+			},
+			{
+				{target.right, target.bottom},
+				{},
+				{vertices.right / texture->Width, vertices.bottom / texture->Height},
+				{vertices.right / liquidTextureWidth, vertices.bottom / liquidTextureHeight}
+			}
+		};
+
+		for (size_t i = 0; i < BlitLandscapeVertexData.size(); ++i)
+		{
+			if (fUseClrModMap && dwModClr)
+			{
+				BlitLandscapeVertexData[i].color = pClrModMap->GetModAt(
+					static_cast<int>(BlitLandscapeVertexData[i].coordinates[0]), static_cast<int>(BlitLandscapeVertexData[i].coordinates[1]));
+
+				ModulateClr(BlitLandscapeVertexData[i].color, dwModClr);
 			}
 
-			int maxXChunk = std::min<int>((fx + wdt - iBlitX - 1) / chunkSize + 1, iTexSize / chunkSize);
-			int maxYChunk = std::min<int>((fy + hgt - iBlitY - 1) / chunkSize + 1, iTexSize / chunkSize);
-
-			// size changed? recalc dependent, relevant (!) values
-			if (iTexSize != pTex->iSize) iTexSize = pTex->iSize;
-			for (int yChunk = std::max<int>((fy - iBlitY) / chunkSize, 0); yChunk < maxYChunk; ++yChunk)
+			else
 			{
-				for (int xChunk = std::max<int>((fx - iBlitX) / chunkSize, 0); xChunk < maxXChunk; ++xChunk)
-				{
-					int xOffset = xChunk * chunkSize;
-					int yOffset = yChunk * chunkSize;
-
-					// get new texture source bounds
-					FLOAT_RECT fTexBlt;
-					// get new dest bounds
-					FLOAT_RECT tTexBlt;
-					// set up blit data as rect
-
-					fTexBlt.left = std::max<float>(xOffset, fx - iBlitX);
-					fTexBlt.top  = std::max<float>(yOffset, fy - iBlitY);
-					fTexBlt.right  = std::min<float>(fx + wdt - iBlitX, xOffset + chunkSize);
-					fTexBlt.bottom = std::min<float>(fy + hgt - iBlitY, yOffset + chunkSize);
-
-					tTexBlt.left = fTexBlt.left + iBlitX - fx + tx;
-					tTexBlt.top  = fTexBlt.top + iBlitY - fy + ty;
-					tTexBlt.right  = fTexBlt.right + iBlitX - fx + tx;
-					tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
-
-					const int texSize = sfcLiquidAnimation->iTexSize;
-
-					new(BlitLandscapeVertexData.data()) decltype(BlitLandscapeVertexData)::value_type[BlitLandscapeVertexData.size()]
-					{
-						{
-							{tTexBlt.left, tTexBlt.top},
-							{},
-							{fTexBlt.left / iTexSize, fTexBlt.top / iTexSize},
-							{fTexBlt.left / texSize,  fTexBlt.top / texSize}
-						},
-						{
-							{tTexBlt.right, tTexBlt.top},
-							{},
-							{fTexBlt.right / iTexSize, fTexBlt.top / iTexSize},
-							{fTexBlt.right / texSize, fTexBlt.top / texSize},
-						},
-						{
-							{tTexBlt.left, tTexBlt.bottom},
-							{},
-							{fTexBlt.left / iTexSize, fTexBlt.bottom / iTexSize},
-							{fTexBlt.left / texSize, fTexBlt.bottom / texSize},
-						},
-						{
-							{tTexBlt.right, tTexBlt.bottom},
-							{},
-							{fTexBlt.right / iTexSize, fTexBlt.bottom / iTexSize},
-							{fTexBlt.right / texSize, fTexBlt.bottom / texSize}
-						}
-					};
-
-
-					for (size_t i = 0; i < BlitLandscapeVertexData.size(); ++i)
-					{
-						if (fUseClrModMap && dwModClr)
-						{
-							BlitLandscapeVertexData[i].color = pClrModMap->GetModAt(
-								static_cast<int>(BlitLandscapeVertexData[i].coordinates[0]), static_cast<int>(BlitLandscapeVertexData[i].coordinates[1]));
-
-							ModulateClr(BlitLandscapeVertexData[i].color, dwModClr);
-						}
-						else
-						{
-							BlitLandscapeVertexData[i].color = dwModClr;
-						}
-					}
-
-					glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(BlitLandscapeVertexData), BlitLandscapeVertexData.data());
-
-					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-				}
+				BlitLandscapeVertexData[i].color = dwModClr;
 			}
 		}
+
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(BlitLandscapeVertexData), BlitLandscapeVertexData.data());
+
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	}
 
 	if (DDrawCfg.ColorAnimation)
 	{
 		glDisableVertexAttribArray(VertexArray.LiquidTexCoords);
 	}
-
 	// reset texture
 	ResetTexture();
 }

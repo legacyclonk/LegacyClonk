@@ -132,52 +132,55 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 	if (!Create(width, height)) return false;
 	// lock for writing data
 	if (!Lock()) return false;
-	if (!ppTex)
+	if (Textures.empty())
 	{
 		Unlock();
 		return false;
 	}
 	// write pixels
-	for (int tY = 0; tY * iTexSize < Hgt; ++tY) for (int tX = 0; tX * iTexSize < Wdt; ++tX)
+	for (const auto &texture : Textures)
 	{
-		assert(tX >= 0 && tY >= 0 && tX < iTexX && tY < iTexY);
-		// Get Texture and lock it
-		CTexRef *pTexRef = *(ppTex + tY * iTexX + tX);
-		if (!pTexRef->Lock()) continue;
-		// At the edges, not the whole texture is used
-		int maxY = (std::min)(iTexSize, Hgt - tY * iTexSize), maxX = (std::min)(iTexSize, Wdt - tX * iTexSize);
-		for (int iY = 0; iY < maxY; ++iY)
+		if (!texture->Lock()) continue;
+		for (uint32_t y = 0; y < texture->Height; ++y)
 		{
-			// The global, not texture-relative position
-			int rY = iY + tY * iTexSize;
+#if 0
 #ifndef __BIG_ENDIAN__
 			if (useAlpha)
 			{
 				// Optimize the easy case of a png in the same format as the display
 				// 32 bit
-				uint32_t *pPix = (uint32_t *)(((char *)pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch);
-				memcpy(pPix, static_cast<const std::uint32_t *>(bmp->GetPixelAddr32(0, rY)) +
-					tX * iTexSize, maxX * 4);
-				int iX = maxX;
-				while (iX--) { if (((uint8_t *)pPix)[3] == 0xff) *pPix = 0xff000000; ++pPix; }
+				auto *pix = reinterpret_cast<uint32_t *>(texture->texLock.pBits + y + texture->texLock.Pitch);
+				memcpy(pix, static_cast<uint32_t *>(bmp->GetPixelAddr32(0, y)) + texture->X, texture->Width * 4);
+				for (uint32_t x = 0; x < texture->Width; ++x)
+				{
+					// if color is fully transparent, ensure it's black
+					if ((*pix & 0xff) == 0xff)
+					{
+						*pix = 0xff000000;
+					}
+
+					++pix;
+				}
 			}
 			else
 #endif
+#endif
 			{
 				// Loop through every pixel and convert
-				for (int iX = 0; iX < maxX; ++iX)
+				for (uint32_t x = 0; x < texture->Width; ++x)
 				{
-					uint32_t dwCol = bmp->GetPixel(iX + tX * iTexSize, rY);
+					uint32_t dwCol = bmp->GetPixel(texture->X + x, texture->Y + y);
 					// if color is fully transparent, ensure it's black
 					if (dwCol >> 24 == 0xff) dwCol = 0xff000000;
 					// set pix in surface
-					uint32_t *pPix = (uint32_t *)(((char *)pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch + iX * 4);
-					*pPix = dwCol;
+					texture->SetPix(x, y, dwCol);
 				}
 			}
 		}
-		pTexRef->Unlock();
+
+		texture->Unlock();
 	}
+
 	// unlock
 	Unlock();
 	// Success
