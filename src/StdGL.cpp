@@ -710,6 +710,8 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
 
+	PushDrawMode(DrawMode::GUI);
+
 	// apply global modulation
 	ClrByCurrentBlitMod(dwClr1);
 	ClrByCurrentBlitMod(dwClr2);
@@ -762,6 +764,8 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(DrawQuadVertexData), DrawQuadVertexData.data());
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	PopDrawMode();
 }
 
 static std::array<Vertex<>, 2> DrawLineVertexData;
@@ -775,6 +779,9 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	assert(sfcTarget->IsRenderTarget());
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
+
+	PushDrawMode(DrawMode::GUI);
+
 	// set blitting state
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, (dwBlitMode & C4GFXBLIT_ADDITIVE) ? GL_ONE : GL_SRC_ALPHA);
 	// global clr modulation map
@@ -794,6 +801,8 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(DrawLineVertexData), DrawLineVertexData.data());
 
 	glDrawArrays(GL_LINE_STRIP, 0, 2);
+
+	PopDrawMode();
 }
 
 static Vertex<> DrawPixVertexData;
