@@ -420,6 +420,45 @@ uint32_t CColorFadeMatrix::GetColorAt(int iX, int iY)
 	return dwResult;
 }
 
+void CStdShader::SetSource(const std::string &source)
+{
+	this->source = source;
+}
+
+void CStdShader::SetType(Type type)
+{
+	this->type = type;
+}
+
+void CStdShader::Clear()
+{
+	source.clear();
+	macros.clear();
+	errorMessage.clear();
+}
+
+bool CStdShaderProgram::AddShader(CStdShader *shader)
+{
+	EnsureProgram();
+	if (std::find(shaders.cbegin(), shaders.cend(), shader) != shaders.cend())
+	{
+		return true;
+	}
+
+	if (AddShaderInt(shader))
+	{
+		shaders.push_back(shader);
+		return true;
+	}
+
+	return false;
+}
+
+void CStdShaderProgram::Clear()
+{
+	shaders.clear();
+}
+
 void CStdDDraw::Default()
 {
 	RenderTarget = nullptr;
@@ -429,6 +468,7 @@ void CStdDDraw::Default()
 	dwBlitMode = 0;
 	Gamma.Default();
 	DefRamp.Default();
+	currentShaderProgram = nullptr;
 	lpPrimary = lpBack = nullptr;
 	fUseClrModMap = false;
 }
@@ -439,6 +479,11 @@ void CStdDDraw::Clear()
 	DisableGamma();
 	Active = BlitModulated = fUseClrModMap = false;
 	dwBlitMode = 0;
+	while (!modes.empty())
+	{
+		modes.pop();
+	}
+	currentShaderProgram = nullptr;
 }
 
 bool CStdDDraw::WipeSurface(CSurface *sfcSurface)
@@ -450,6 +495,22 @@ bool CStdDDraw::WipeSurface(CSurface *sfcSurface)
 bool CStdDDraw::GetSurfaceSize(CSurface *sfcSurface, int &iWdt, int &iHgt)
 {
 	return sfcSurface->GetSurfaceSize(iWdt, iHgt);
+}
+
+void CStdDDraw::PushDrawMode(DrawMode mode)
+{
+	DrawMode old = modes.empty() ? DrawMode::Other : modes.top();
+	modes.push(mode);
+	DrawModeChanged(old, mode);
+}
+
+void CStdDDraw::PopDrawMode()
+{
+	assert(!modes.empty());
+
+	DrawMode old = modes.top();
+	modes.pop();
+	DrawModeChanged(old, modes.empty() ? DrawMode::Other : modes.top());
 }
 
 bool CStdDDraw::SetPrimaryPalette(uint8_t *pBuf, uint8_t *pAlphaBuf)
@@ -996,6 +1057,7 @@ bool CStdDDraw::StringOut(const char *szText, CSurface *sfcDest, int iTx, int iT
 	if (ClipAll) return true;
 	// safety
 	if (!PrepareRendering(sfcDest)) return false;
+	PushDrawMode(DrawMode::Text);
 	// convert align
 	int iFlags = 0;
 	switch (byForm)
@@ -1008,6 +1070,7 @@ bool CStdDDraw::StringOut(const char *szText, CSurface *sfcDest, int iTx, int iT
 #ifdef C4ENGINE
 	pFont->DrawText(sfcDest, iTx, iTy, dwFCol, szText, iFlags, Markup, fZoom);
 #endif
+	PopDrawMode();
 	// done, success
 	return true;
 }
@@ -1283,6 +1346,8 @@ bool CStdDDraw::Init(CStdApp *pApp)
 	if (!CreatePrimaryClipper())
 		return Error("  Clipper failure.");
 
+	DrawModeChanged(DrawMode::Other, DrawMode::Other);
+
 	return true;
 }
 
@@ -1332,4 +1397,43 @@ void CStdDDraw::DrawBoxFade(CSurface *sfcDest, int iX, int iY, int iWdt, int iHg
 void CStdDDraw::DrawBoxDw(CSurface *sfcDest, int iX1, int iY1, int iX2, int iY2, uint32_t dwClr)
 {
 	DrawBoxFade(sfcDest, iX1, iY1, iX2 - iX1 + 1, iY2 - iY1 + 1, dwClr, dwClr, dwClr, dwClr, 0, 0);
+}
+
+void CStdDDraw::DrawModeChanged(DrawMode oldMode, DrawMode newMode)
+{
+	(void) oldMode;
+	if (auto it = modeShaders.find(newMode); it != modeShaders.end())
+	{
+		assert(it->second);
+		it->second->Select();
+		currentShaderProgram = it->second;
+	}
+	else
+	{
+		currentShaderProgram = nullptr;
+	}
+}
+
+void CStdDDraw::SetShaderProgramForMode(DrawMode mode, CStdShaderProgram *shader)
+{
+	if (!shader)
+	{
+		if (auto it = modeShaders.find(mode); it != modeShaders.end())
+		{
+			modeShaders.erase(it);
+		}
+	}
+
+	else
+	{
+		modeShaders[mode] = shader;
+	}
+
+	ShaderProgramSet(mode, shader);
+}
+
+void CStdDDraw::ClearModeShaderPrograms()
+{
+	// we don't delete the programs here, the caller has to take care of that
+	modeShaders.clear();
 }

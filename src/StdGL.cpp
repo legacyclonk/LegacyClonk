@@ -55,34 +55,7 @@ namespace
 	};
 }
 
-CStdGLShader::CStdGLShader(CStdGLShader &&s)
-{
-	shader = s.shader;
-	source = std::move(s.source);
-
-	errorMessage = std::move(s.errorMessage);
-	s.Clear();
-}
-
-void CStdGLShader::SetSource(const std::string &source)
-{
-	this->source = source;
-}
-
-void CStdGLShader::Clear()
-{
-	source.clear();
-	macros.clear();
-
-	if (shader)
-	{
-		glDeleteShader(shader);
-		shader = 0;
-	}
-	errorMessage.clear();
-}
-
-GLuint CStdGLShader::Compile()
+bool CStdGLShader::Compile()
 {
 	if (shader) // recompiling?
 	{
@@ -90,12 +63,73 @@ GLuint CStdGLShader::Compile()
 		errorMessage.clear();
 	}
 
-	shader = glCreateShader(GetType());
+	GLenum t;
+	switch (type)
+	{
+	case Type::Vertex:
+		t = GL_VERTEX_SHADER;
+		break;
+
+	case Type::TesselationControl:
+		t = GL_TESS_CONTROL_SHADER;
+		break;
+
+	case Type::TesselationEvaluation:
+		t = GL_TESS_EVALUATION_SHADER;
+		break;
+
+	case Type::Geometry:
+		t = GL_GEOMETRY_SHADER;
+		break;
+
+	case Type::Fragment:
+		t = GL_FRAGMENT_SHADER;
+		break;
+
+	default:
+		return SetError("Invalid shader type");
+	}
+
+	shader = glCreateShader(t);
 	if (!shader)
 	{
 		return SetError("Could not create shader");
 	}
 
+	PrepareSource();
+
+	GLint status = 0;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+	if (!status)
+	{
+		GLint size = 0;
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
+		if (size)
+		{
+			errorMessage.resize(size);
+			glGetShaderInfoLog(shader, size, NULL, errorMessage.data());
+			LogF("Error compiling shader: %s", errorMessage.c_str());
+		}
+
+		return 0;
+	}
+
+	return shader;
+}
+
+void CStdGLShader::Clear()
+{
+	if (shader)
+	{
+		glDeleteShader(shader);
+		shader = 0;
+	}
+
+	CStdShader::Clear();
+}
+
+bool CStdGLShader::PrepareSource()
+{
 	size_t pos = source.find("#version");
 	if (pos == std::string::npos)
 	{
@@ -107,48 +141,47 @@ GLuint CStdGLShader::Compile()
 	assert(pos != std::string::npos);
 
 	std::string buffer = "";
-	for (const auto &macro : macros)
+
+	auto addMacros = [&buffer](const std::vector<Macro> &macros)
 	{
-		buffer.append("#define ");
-		buffer.append(macro.first);
-		buffer.append(" ");
-		buffer.append(macro.second);
-		buffer.append("\n");
-	}
+		for (const auto &macro : macros)
+		{
+			buffer.append("#define ");
+			buffer.append(macro.first);
+			buffer.append(" ");
+			buffer.append(macro.second);
+			buffer.append("\n");
+		}
+	};
+
+	addMacros(macros);
+
 	source.insert(pos + 1, buffer);
 
 	const char *s = source.c_str();
 	glShaderSource(shader, 1, &s, nullptr);
-
-	GLint status = 0;
 	glCompileShader(shader);
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-	if (!status)
-	{
-		GLint size = 0;
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
-		if (size)
-		{
-			errorMessage.resize(size);
-			glGetShaderInfoLog(shader, size, NULL, errorMessage.data());
-		}
 
-		return 0;
-	}
-
-	return shader;
+	return true;
 }
 
-void CStdGLShaderProgram::AddShader(CStdGLShader *shader)
+bool CStdGLSPIRVShader::PrepareSource()
 {
-	EnsureProgram();
-	if (std::find(shaders.cbegin(), shaders.cend(), shader) != shaders.cend())
+	glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source.data(), source.size());
+	glSpecializeShader(shader, "main", 0, nullptr, nullptr);
+
+	return true;
+}
+
+bool CStdGLShaderProgram::AddShaderInt(CStdShader *shader)
+{
+	if (auto *s = dynamic_cast<CStdGLShader *>(shader); s)
 	{
-		return;
+		glAttachShader(shaderProgram, s->GetHandle());
+		return true;
 	}
 
-	glAttachShader(shaderProgram, shader->GetShader());
-	shaders.push_back(shader);
+	return false;
 }
 
 bool CStdGLShaderProgram::Link()
@@ -191,7 +224,7 @@ bool CStdGLShaderProgram::Link()
 
 	for (const auto &shader : shaders)
 	{
-		glDetachShader(shaderProgram, shader->GetShader());
+		glDetachShader(shaderProgram, dynamic_cast<CStdGLShader *>(shader)->GetHandle());
 	}
 
 	shaders.clear();
@@ -212,13 +245,20 @@ void CStdGLShaderProgram::Deselect()
 
 void CStdGLShaderProgram::Clear()
 {
-	shaders.clear();
-	uniformLocations.clear();
+	for (const auto &shader : shaders)
+	{
+		glDetachShader(shaderProgram, dynamic_cast<CStdGLShader *>(shader)->GetHandle());
+	}
+
 	if (shaderProgram)
 	{
 		glDeleteProgram(shaderProgram);
 		shaderProgram = 0;
 	}
+
+	uniformLocations.clear();
+
+	CStdShaderProgram::Clear();
 }
 
 void CStdGLShaderProgram::EnsureProgram()
@@ -387,9 +427,9 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	// reset MOD2 for completely black modulations
 	if (fMod2 && !fAnyModNotBlack) fMod2 = 0;
 
-	CStdGLShaderProgram &shader = fMod2 ? BlitShaderMod2 : BlitShader;
-	shader.Select();
-	shader.SetUniform("textureSampler", glUniform1i, 0);
+	auto *shader = dynamic_cast<CStdGLShaderProgram *>(currentShaderProgram);
+	assert(shader);
+	shader->SetUniform("textureSampler", glUniform1i, 0);
 
 	// set texture+modes
 	//glShadeModel((fUseClrModMap && fModClr && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
@@ -442,8 +482,6 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-	shader.Deselect();
-
 	if (pApp->GetScale() != 1.f || (!fExact && !DDrawCfg.PointFiltering))
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -491,13 +529,16 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-	LandscapeShader.Select();
-	LandscapeShader.SetUniform("textureSampler", glUniform1i, 0);
+	CStdGLShaderProgram *shader = dynamic_cast<CStdGLShaderProgram *>(currentShaderProgram);
+	assert(shader);
+
+	shader->Select();
+	shader->SetUniform("textureSampler", glUniform1i, 0);
 
 	if (sfcSource2)
 	{
-		LandscapeShader.SetUniform("maskSampler", glUniform1i, 1);
-		LandscapeShader.SetUniform("liquidSampler", glUniform1i, 2);
+		shader->SetUniform("maskSampler", glUniform1i, 1);
+		shader->SetUniform("liquidSampler", glUniform1i, 2);
 
 		static GLfloat value[4] = { -0.6f / 3, 0.0f, 0.6f / 3, 0.0f };
 		value[0] += 0.05f; value[1] += 0.05f; value[2] += 0.05f;
@@ -508,7 +549,7 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 			mod[i] = (value[i] > 0.3f ? 0.6f - value[i] : value[i]) / 3.0f;
 		}
 
-		LandscapeShader.SetUniform("modulation", glUniform4f, mod[0], mod[1], mod[2], mod[3]);
+		shader->SetUniform("modulation", glUniform4f, mod[0], mod[1], mod[2], mod[3]);
 	}
 
 	// set texture+modes
@@ -837,60 +878,62 @@ bool CStdGL::RestoreDeviceObjects()
 		assert(!LandscapeShader);
 		glDebugMessageCallback(MessageCallback, nullptr);
 
-		CStdGLVertexShader vertexShader{
-					R"(
-					#version 140
-					#extension GL_ARB_explicit_attrib_location : enable
+		CStdGLShader vertexShader{
+			CStdShader::Type::Vertex,
+			R"(
+			#version 140
+			#extension GL_ARB_explicit_attrib_location : enable
 
-					layout (std140) uniform StandardUniforms
-					{
-						uniform float texIndent;
-						uniform float blitOffset;
-						uniform mat4 textureMatrix;
-						uniform mat4 modelViewMatrix;
-						uniform mat4 projectionMatrix;
-					};
+			layout (std140) uniform StandardUniforms
+			{
+				uniform float texIndent;
+				uniform float blitOffset;
+				uniform mat4 textureMatrix;
+				uniform mat4 modelViewMatrix;
+				uniform mat4 projectionMatrix;
+			};
 
-					// standard
-					layout (location = 0) in vec2 vertexCoord;
-					#ifdef LC_TEXTURE
-					layout (location = 1) in vec2 texCoord;
-					#endif
-					layout (location = 2) in vec4 vertexColor;
+			// standard
+			layout (location = 0) in vec2 vertexCoord;
+			#ifdef LC_TEXTURE
+			layout (location = 1) in vec2 texCoord;
+			#endif
+			layout (location = 2) in vec4 vertexColor;
 
-					// color animation
-					#ifdef LC_COLOR_ANIMATION
-					layout (location = 3) in vec2 liquidTexCoord;
-					#endif
+			// color animation
+			#ifdef LC_COLOR_ANIMATION
+			layout (location = 3) in vec2 liquidTexCoord;
+			#endif
 
-					out vec2 vPosition;
-					#ifdef LC_TEXTURE
-					out vec2 vTexCoord;
-					#endif
-					#ifdef LC_COLOR_ANIMATION
-					out vec2 vLiquidTexCoord;
-					#endif
-					out vec4 vFragColor;
+			out vec2 vPosition;
+			#ifdef LC_TEXTURE
+			out vec2 vTexCoord;
+			#endif
+			#ifdef LC_COLOR_ANIMATION
+			out vec2 vLiquidTexCoord;
+			#endif
+			out vec4 vFragColor;
 
-					void main()
-					{
-					#ifdef LC_TEXTURE
-						vTexCoord = (textureMatrix * vec4(texCoord + texIndent, 0.0, 1.0)).xy;
-					#endif
-					#ifdef LC_COLOR_ANIMATION
-						vLiquidTexCoord = liquidTexCoord + texIndent;
-					#endif
-						vPosition = vertexCoord + blitOffset;
-						vFragColor = vertexColor;
-						gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 0.0, 1.0);
-					}
-					)"
-				};
+			void main()
+			{
+			#ifdef LC_TEXTURE
+				vTexCoord = (textureMatrix * vec4(texCoord + texIndent, 0.0, 1.0)).xy;
+			#endif
+			#ifdef LC_COLOR_ANIMATION
+				vLiquidTexCoord = liquidTexCoord + texIndent;
+			#endif
+				vPosition = vertexCoord + blitOffset;
+				vFragColor = vertexColor;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 0.0, 1.0);
+			}
+			)"
+		};
 
 		vertexShader.SetMacro("LC_TEXTURE", "1");
 		vertexShader.Compile();
 
-		CStdGLFragmentShader blitFragmentShader{
+		CStdGLShader blitFragmentShader{
+			CStdShader::Type::Fragment,
 			R"(
 			#version 140
 			#extension GL_ARB_explicit_attrib_location : enable
@@ -930,42 +973,44 @@ bool CStdGL::RestoreDeviceObjects()
 		BlitShaderMod2.AddShader(&blitFragmentShader);
 		BlitShaderMod2.Link();
 
-		CStdGLFragmentShader landscapeFragmentShader{
-					R"(
-					#version 140
-					#extension GL_ARB_explicit_attrib_location : enable
+		CStdGLShader landscapeFragmentShader{
+			CStdShader::Type::Fragment,
+			R"(
+			#version 140
+			#extension GL_ARB_explicit_attrib_location : enable
 
-					uniform sampler2D textureSampler;
-					#ifdef LC_COLOR_ANIMATION
-					uniform sampler2D maskSampler;
-					uniform sampler2D liquidSampler;
-					uniform vec4 modulation;
+			uniform sampler2D textureSampler;
+			#ifdef LC_COLOR_ANIMATION
+			uniform sampler2D maskSampler;
+			uniform sampler2D liquidSampler;
+			uniform vec4 modulation;
 
-					in vec2 vLiquidTexCoord;
-					#endif
+			in vec2 vLiquidTexCoord;
+			#endif
 
-					in vec2 vPosition;
-					in vec2 vTexCoord;
-					in vec4 vFragColor;
-					out vec4 fragColor;
+			in vec2 vPosition;
+			in vec2 vTexCoord;
+			in vec4 vFragColor;
+			out vec4 fragColor;
 
-					void main()
-					{
-						fragColor = texture(textureSampler, vTexCoord);
-					#ifdef LC_COLOR_ANIMATION
-						float mask = texture(maskSampler, vTexCoord).a;
-						vec3 liquid = texture(liquidSampler, vLiquidTexCoord).rgb;
+			void main()
+			{
+				fragColor = texture(textureSampler, vTexCoord);
+			#ifdef LC_COLOR_ANIMATION
+				float mask = texture(maskSampler, vTexCoord).a;
+				vec3 liquid = texture(liquidSampler, vLiquidTexCoord).rgb;
 
-						liquid -= vec3(0.5, 0.5, 0.5);
-						liquid = vec3(dot(liquid, modulation.rgb));
-						liquid *= mask;
-						fragColor.rgb = fragColor.rgb + liquid;
-					#endif
+				liquid -= vec3(0.5, 0.5, 0.5);
+				liquid = vec3(dot(liquid, modulation.rgb));
+				liquid *= mask;
+				fragColor.rgb = fragColor.rgb + liquid;
+			#endif
 
-						fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0) * vFragColor.rgb;
-						fragColor.a = clamp(fragColor.a + vFragColor.a, 0.0, 1.0);
-					}
-					)"};
+				fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0) * vFragColor.rgb;
+				fragColor.a = clamp(fragColor.a + vFragColor.a, 0.0, 1.0);
+			}
+			)"
+		};
 
 		if (DDrawCfg.ColorAnimation)
 		{
@@ -979,11 +1024,14 @@ bool CStdGL::RestoreDeviceObjects()
 		LandscapeShader.AddShader(&landscapeFragmentShader);
 		LandscapeShader.Link();
 
+		SetShaderProgramForMode(DrawMode::Landscape, &LandscapeShader);
+
 		vertexShader.SetMacro("LC_TEXTURE", nullptr);
 		vertexShader.SetMacro("LC_COLOR_ANIMATION", nullptr);
 		vertexShader.Compile();
 
-		CStdGLFragmentShader dummyFragmentShader{
+		CStdGLShader dummyFragmentShader{
+			CStdShader::Type::Fragment,
 			R"(
 			#version 140
 			#extension GL_ARB_explicit_attrib_location : enable
@@ -1035,13 +1083,13 @@ bool CStdGL::RestoreDeviceObjects()
 		// StandardUniforms
 
 		GLuint indices[std::tuple_size_v<decltype(StandardUniforms.Offset)>]; // std::array::size() or std::size() won't work as they'd require a this pointer
-		glGetUniformIndices(BlitShader.GetShaderProgram(), std::size(indices), StandardUniforms.Names, indices);
-		glGetActiveUniformsiv(BlitShader.GetShaderProgram(), StandardUniforms.Offset.size(), indices, GL_UNIFORM_OFFSET, StandardUniforms.Offset.data());
+		glGetUniformIndices(BlitShader.GetProgram(), std::size(indices), StandardUniforms.Names, indices);
+		glGetActiveUniformsiv(BlitShader.GetProgram(), StandardUniforms.Offset.size(), indices, GL_UNIFORM_OFFSET, StandardUniforms.Offset.data());
 
-		GLuint blockIndex = glGetUniformBlockIndex(BlitShader.GetShaderProgram(), "StandardUniforms");
+		GLuint blockIndex = glGetUniformBlockIndex(BlitShader.GetProgram(), "StandardUniforms");
 
 		GLint blockSize;
-		glGetActiveUniformBlockiv(BlitShader.GetShaderProgram(), blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+		glGetActiveUniformBlockiv(BlitShader.GetProgram(), blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
 
 		glGenBuffers(1, &StandardUniforms.VBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, StandardUniforms.VBO);
@@ -1051,7 +1099,7 @@ bool CStdGL::RestoreDeviceObjects()
 
 		for (const auto *shader : {&BlitShader, &BlitShaderMod2, &LandscapeShader, &DummyShader})
 		{
-			glUniformBlockBinding(shader->GetShaderProgram(), blockIndex, 0);
+			glUniformBlockBinding(shader->GetProgram(), blockIndex, 0);
 		}
 
 		glBindBufferBase(GL_UNIFORM_BUFFER, 0, StandardUniforms.VBO);
@@ -1120,6 +1168,53 @@ void CStdGL::SelectVAO(decltype(VertexArray)::ArrayIndex index)
 	assert(index < VertexArray.NumVAO);
 	glBindVertexArray(VertexArray.VAO[index]);
 	glBindBuffer(GL_ARRAY_BUFFER, VertexArray.VBO[index]);
+}
+
+void CStdGL::DrawModeChanged(DrawMode oldMode, DrawMode newMode)
+{
+	CStdDDraw::DrawModeChanged(oldMode, newMode);
+
+	if (newMode != DrawMode::Landscape && !currentShaderProgram)
+	{
+		currentShaderProgram = &BlitShader;
+		currentShaderProgram->Select();
+	}
+}
+
+CStdShader *CStdGL::CreateShader(CStdShader::Type type, ShaderLanguage language, const std::string &source)
+{
+	switch (language)
+	{
+	case ShaderLanguage::GLSL:
+		return new CStdGLShader{type, source};
+
+	case ShaderLanguage::SPIRV:
+	{
+		if (GLEW_ARB_gl_spirv)
+		{
+			return new CStdGLSPIRVShader{type, source};
+			break;
+		}
+		[[fallthrough]];
+	}
+
+	default:
+		return nullptr;
+	}
+}
+
+CStdShaderProgram *CStdGL::CreateShaderProgram()
+{
+	return new CStdGLShaderProgram;
+}
+
+void CStdGL::ShaderProgramSet(DrawMode mode, CStdShaderProgram *shaderProgram)
+{
+	(void) mode;
+	if (GLuint blockIndex = glGetUniformBlockIndex(shaderProgram->GetProgram(), "StandardUniforms"); blockIndex != GL_INVALID_INDEX)
+	{
+		glUniformBlockBinding(shaderProgram->GetProgram(), blockIndex, 0);
+	}
 }
 
 #endif

@@ -1039,38 +1039,63 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 		lpDDraw->SetClrModMapEnabled(false);
 
 	C4ST_STARTNEW(SkyStat, "C4Viewport::Draw: Sky")
+	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::Sky);
 	Game.Landscape.Sky.Draw(cgo);
+	lpDDraw->PopDrawMode();
 	C4ST_STOP(SkyStat)
+
+	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::BackObjects);
 	Game.BackObjects.DrawAll(cgo, Player);
+	lpDDraw->PopDrawMode();
 
 	// Draw Landscape
 	C4ST_STARTNEW(LandStat, "C4Viewport::Draw: Landscape")
+	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::Landscape);
 	Game.Landscape.Draw(cgo, Player);
+	lpDDraw->PopDrawMode();
 	C4ST_STOP(LandStat)
 
 	// draw PXS (unclipped!)
 	C4ST_STARTNEW(PXSStat, "C4Viewport::Draw: PXS")
+	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::PXS);
 	Game.PXS.Draw(cgo);
+	lpDDraw->PopDrawMode();
 	C4ST_STOP(PXSStat)
 
 	// draw objects
 	C4ST_STARTNEW(ObjStat, "C4Viewport::Draw: Objects")
+	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::Objects);
 	Game.Objects.Draw(cgo, Player);
+	lpDDraw->PopDrawMode();
 	C4ST_STOP(ObjStat)
 
 	// draw global particles
 	C4ST_STARTNEW(PartStat, "C4Viewport::Draw: Particles")
+	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::GlobalParticles);
 	Game.Particles.GlobalParticles.Draw(cgo, nullptr);
+	lpDDraw->PopDrawMode();
 	C4ST_STOP(PartStat)
 
 	// draw foreground objects
+	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::ForegroundObjects);
 	Game.ForeObjects.DrawIfCategory(cgo, Player, C4D_Parallax, true);
+	lpDDraw->PopDrawMode();
 
 	// Draw PathFinder
-	if (Game.GraphicsSystem.ShowPathfinder) Game.PathFinder.Draw(cgo);
+	if (Game.GraphicsSystem.ShowPathfinder)
+	{
+		lpDDraw->PushDrawMode(CStdDDraw::DrawMode::PathFinder);
+		Game.PathFinder.Draw(cgo);
+		lpDDraw->PopDrawMode();
+	}
 
 	// Draw overlay
-	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay) Game.DrawCursors(cgo, Player);
+	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay)
+	{
+		lpDDraw->PushDrawMode(CStdDDraw::DrawMode::Cursors);
+		Game.DrawCursors(cgo, Player);
+		lpDDraw->PopDrawMode();
+	}
 
 	// FogOfWar-mod off
 	lpDDraw->SetClrModMapEnabled(false);
@@ -1084,18 +1109,34 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	}
 
 	// draw custom GUI objects
+	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::ParallaxObjects);
 	Game.ForeObjects.DrawIfCategory(cgo, Player, C4D_Parallax, false);
+	lpDDraw->PopDrawMode();
 
 	// Draw overlay
 	C4ST_STARTNEW(OvrStat, "C4Viewport::Draw: Overlay")
 
-	if (!Application.isFullScreen) Console.EditCursor.Draw(cgo);
+	if (!Application.isFullScreen)
+	{
+		lpDDraw->PushDrawMode(CStdDDraw::DrawMode::EditCursor);
+		Console.EditCursor.Draw(cgo);
+		lpDDraw->PopDrawMode();
+	}
 
-	if (fDrawOverlay) DrawOverlay(cgo);
+	if (fDrawOverlay)
+	{
+		lpDDraw->PushDrawMode(CStdDDraw::DrawMode::Overlay);
+		DrawOverlay(cgo);
+		lpDDraw->PopDrawMode();
+	}
 
 	// Netstats
 	if (Game.GraphicsSystem.ShowNetstatus)
+	{
+		lpDDraw->PushDrawMode(CStdDDraw::DrawMode::NetworkStats);
 		Game.Network.DrawStatus(cgo);
+		lpDDraw->PopDrawMode();
+	}
 
 	C4ST_STOP(OvrStat)
 

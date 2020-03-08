@@ -47,100 +47,45 @@
 class CStdWindow;
 
 // one GLSL shader
-class CStdGLShader
+class CStdGLShader : public CStdShader
 {
 public:
-	using Macro = std::pair<std::string, std::string>;
+	using CStdShader::CStdShader;
 
-public:
-	CStdGLShader() = default;
-	explicit CStdGLShader(const std::string &source) : source{source} {}
-	CStdGLShader(const CStdGLShader &) = delete;
-	CStdGLShader(CStdGLShader &&shader);
+	bool Compile() override;
+	void Clear() override;
 
-	virtual ~CStdGLShader() { Clear(); }
-
-	bool operator==(const CStdGLShader &other) { return other.shader == shader; }
-
-	template<typename T> void SetMacro(const std::string &key, const T &value)
-	{
-		auto it = std::find_if(macros.begin(), macros.end(), [&key](const auto &macro) { return macro.first == key; });
-		if constexpr (std::is_null_pointer_v<T>)
-		{
-			if (it != macros.end())
-			{
-				macros.erase(it);
-			}
-		}
-
-		else
-		{
-			if (it != macros.end())
-			{
-				it->second = std::string{value};
-			}
-			else
-			{
-				macros.emplace_back(key, value);
-			}
-		}
-	}
-
-	void SetSource(const std::string &source);
-
-	GLuint Compile();
-	void Clear();
-
-	GLuint GetShader() const { return shader; }
-	std::string GetSource() const { return source; }
-	std::vector<Macro> GetMacros() const { return macros; }
-	std::string GetErrorMessage() const { return errorMessage; }
-	virtual GLenum GetType() const = 0;
+	virtual int64_t GetHandle() const override { return shader; }
 
 protected:
-	GLuint SetError(std::string_view message) { errorMessage = message; return 0; }
+	virtual bool PrepareSource();
 
+protected:
 	GLuint shader = 0;
-	std::string source;
-	std::vector<Macro> macros;
-	std::string errorMessage;
 };
 
-class CStdGLVertexShader : public CStdGLShader
+class CStdGLSPIRVShader : public CStdGLShader
 {
 public:
-	CStdGLVertexShader() = default;
-	explicit CStdGLVertexShader(const std::string &source) : CStdGLShader{source} {}
+	using CStdGLShader::CStdGLShader;
 
-	virtual GLenum GetType() const override { return GL_VERTEX_SHADER; }
+protected:
+	bool PrepareSource() override;
 };
 
-class CStdGLFragmentShader : public CStdGLShader
+class CStdGLShaderProgram : public CStdShaderProgram
 {
 public:
-	CStdGLFragmentShader() = default;
-	explicit CStdGLFragmentShader(const std::string &source) : CStdGLShader{source} {}
+	using CStdShaderProgram::CStdShaderProgram;
 
-	virtual GLenum GetType() const override { return GL_FRAGMENT_SHADER; }
-};
+	explicit operator bool() const override { return /*glIsProgram(*/shaderProgram/*)*/; }
 
-class CStdGLShaderProgram
-{
-public:
-	CStdGLShaderProgram() = default;
-	CStdGLShaderProgram(const CStdGLShaderProgram &) = delete;
-	~CStdGLShaderProgram() { Clear(); }
+	bool Link() override;
+	void Select() override;
+	void Deselect() override;
+	void Clear() override;
 
-	explicit operator bool() const { return /*glIsProgram(*/shaderProgram/*)*/; }
-
-	void AddShader(CStdGLShader *shader);
-
-	bool Link();
-	void Select();
-	void Deselect();
-	void Clear();
-
-	void EnsureProgram();
+	void EnsureProgram() override;
 
 	template<typename Func, typename... Args> bool SetUniform(const std::string &key, Func function, Args... args)
 	{
@@ -167,14 +112,13 @@ public:
 		return true;
 	}
 
-	GLuint GetShaderProgram() const { return shaderProgram; }
-	std::string GetErrorMessage() const { return errorMessage; }
+	virtual int64_t GetProgram() const override { return shaderProgram; }
 
-private:
-	bool SetError(std::string_view message) { errorMessage = message; return false; }
+protected:
+	bool AddShaderInt(CStdShader *shader) override;
+
+protected:
 	GLuint shaderProgram = 0;
-	std::string errorMessage;
-	std::vector<CStdGLShader *> shaders;
 	std::unordered_map<std::string, GLint> uniformLocations;
 };
 
@@ -342,6 +286,10 @@ protected:
 	}
 
 	void SelectVAO(decltype(VertexArray)::ArrayIndex index);
+	virtual void DrawModeChanged(DrawMode oldMode, DrawMode newMode) override;
+	virtual CStdShader *CreateShader(CStdShader::Type type, ShaderLanguage language, const std::string &source) override;
+	virtual CStdShaderProgram *CreateShaderProgram() override;
+	virtual void ShaderProgramSet(DrawMode mode, CStdShaderProgram *shaderProgram) override;
 
 #ifdef USE_X11
 	// Size of gamma ramps

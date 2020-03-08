@@ -2207,7 +2207,12 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 	if (Def->Line) { DrawLine(cgo); return; }
 
 	// background particles (bounds not checked)
-	if (BackParticles && !Contained && eDrawMode != ODM_BaseOnly) BackParticles.Draw(cgo, this);
+	if (BackParticles && !Contained && eDrawMode != ODM_BaseOnly)
+	{
+		lpDDraw->PushDrawMode(CStdDDraw::DrawMode::BackParticles);
+		BackParticles.Draw(cgo, this);
+		lpDDraw->PopDrawMode();
+	}
 
 	// Object output position
 	int32_t cotx = cgo.TargetX, coty = cgo.TargetY; if (eDrawMode != ODM_Overlay) TargetPos(cotx, coty, cgo);
@@ -2230,16 +2235,30 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 			if (!Inside(cox + Action.FacetX, 1 - Action.Facet.Wdt, cgo.Wdt)
 				|| (!Inside(coy + Action.FacetY, 1 - Action.Facet.Hgt, cgo.Hgt)))
 			{
-				if (FrontParticles && !Contained) FrontParticles.Draw(cgo, this); return;
+				if (FrontParticles && !Contained)
+				{
+					lpDDraw->PushDrawMode(CStdDDraw::DrawMode::FrontParticles);
+					FrontParticles.Draw(cgo, this);
+					lpDDraw->PopDrawMode();
+					return;
+				}
 			}
 		}
 		else
+		{
 			// idle
 			if (!Inside(cox, 1 - Shape.Wdt, cgo.Wdt)
 				|| (!Inside(coy, 1 - Shape.Hgt, cgo.Hgt)))
 			{
-				if (FrontParticles && !Contained) FrontParticles.Draw(cgo, this); return;
+				if (FrontParticles && !Contained)
+				{
+					lpDDraw->PushDrawMode(CStdDDraw::DrawMode::FrontParticles);
+					FrontParticles.Draw(cgo, this);
+					lpDDraw->PopDrawMode();
+					return;
+				}
 			}
+		}
 
 	// ensure correct color is set
 	if (GetGraphics()->BitmapClr) GetGraphics()->BitmapClr->SetClr(Color);
@@ -2626,6 +2645,7 @@ void C4Object::DrawTopFace(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode
 
 void C4Object::DrawLine(C4FacetEx &cgo)
 {
+	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::Lines);
 	// Audibility
 	SetAudibilityAt(cgo, Shape.VtxX[0], Shape.VtxY[0]);
 	SetAudibilityAt(cgo, Shape.VtxX[Shape.VtxNum - 1], Shape.VtxY[Shape.VtxNum - 1]);
@@ -2662,6 +2682,7 @@ void C4Object::DrawLine(C4FacetEx &cgo)
 				uint8_t(Local[0].getInt()), uint8_t(Local[1].getInt()));
 			break;
 		}
+	lpDDraw->PopDrawMode();
 	// reset blit mode
 	FinishedDrawing();
 }

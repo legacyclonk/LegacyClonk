@@ -25,6 +25,7 @@
 #include <StdBuf.h>
 
 #include <array>
+#include <stack>
 
 // texref-predef
 class CStdDDraw;
@@ -153,6 +154,118 @@ struct CBltData
 	CBltTransform *pTransform; // Vertex transformation
 };
 
+// shader
+class CStdShader
+{
+public:
+	using Macro = std::pair<std::string, std::string>;
+
+	enum class Type : uint8_t
+	{
+		Vertex,
+		TesselationControl,
+		TesselationEvaluation,
+		Geometry,
+		Fragment
+	};
+
+public:
+	CStdShader() = default;
+	explicit CStdShader(Type type, const std::string &source) : type{type}, source{source} {}
+	CStdShader(const CStdShader &) = delete;
+	CStdShader(CStdShader &&shader);
+
+	virtual ~CStdShader() { Clear(); }
+
+#define IMPL(m) \
+	auto it = std::find_if(m.begin(), m.end(), [&key](const auto &macro) { return macro.first == key; }); \
+	if constexpr (std::is_null_pointer_v<T>) \
+	{ \
+		if (it != m.end()) \
+		{ \
+			m.erase(it); \
+		} \
+	} \
+	\
+	else \
+	{ \
+		if (it != m.end()) \
+		{ \
+			it->second = std::string{value}; \
+		} \
+		else \
+		{ \
+			m.emplace_back(key, value); \
+		} \
+	}
+
+	template<typename T> void SetMacro(const std::string &key, const T &value)
+	{
+		IMPL(macros)
+	}
+
+	template<typename T> static void SetStaticMacro(const std::string &key, const T &value)
+	{
+		IMPL(staticMacros)
+	}
+
+#undef IMPL
+
+	void SetSource(const std::string &source);
+	void SetType(Type type);
+
+	virtual bool Compile() = 0;
+	virtual void Clear();
+
+	std::string GetSource() const { return source; }
+	virtual int64_t GetHandle() const = 0;
+	std::vector<Macro> GetMacros() const { return macros; }
+	static std::vector<Macro> GetStaticMacros() { return staticMacros; }
+	std::string GetErrorMessage() const { return errorMessage; }
+	virtual Type GetType() const { return type; }
+
+protected:
+	bool SetError(std::string_view message) { errorMessage = message; return false; }
+
+protected:
+	Type type;
+	std::string source;
+	std::vector<Macro> macros;
+	static std::vector<Macro> staticMacros;
+	std::string errorMessage;
+};
+
+class CStdShaderProgram
+{
+public:
+	CStdShaderProgram() = default;
+	CStdShaderProgram(const CStdShaderProgram &) = delete;
+	virtual ~CStdShaderProgram() { Clear(); }
+
+	virtual explicit operator bool() const = 0;
+
+	bool AddShader(CStdShader *shader);
+
+	virtual bool Link() = 0;
+	virtual void Select() = 0;
+	virtual void Deselect() = 0;
+	virtual void Clear();
+
+	virtual void EnsureProgram() = 0;
+	virtual int64_t GetProgram() const = 0;
+
+	std::string GetErrorMessage() const { return errorMessage; }
+	std::vector<CStdShader *> GetPendingShaders() const { return shaders; }
+
+protected:
+	bool SetError(std::string_view message) { errorMessage = message; return false; }
+	virtual bool AddShaderInt(CStdShader *shader) = 0;
+
+protected:
+	std::string errorMessage;
+	std::vector<CStdShader *> shaders;
+};
+
 // gamma ramp control
 class CGammaControl
 {
@@ -183,6 +296,38 @@ struct FLOAT_RECT { float left, right, top, bottom; };
 class CStdDDraw
 {
 public:
+	enum class DrawMode : uint8_t
+	{
+		GUI = 0,
+		Sky,
+		BackObjects,
+		Landscape,
+		PXS,
+		Objects,
+		BackParticles,
+		GlobalParticles,
+		FrontParticles,
+		ForegroundObjects,
+		PathFinder,
+		Cursors,
+		ParallaxObjects,
+		Overlay,
+		EditCursor,
+		NetworkStats,
+		Lines,
+		Text,
+
+		Other
+	};
+
+	enum class ShaderLanguage : uint8_t
+	{
+		GLSL,
+		HLSL,
+		SPIRV
+	};
+
+public:
 	CStdDDraw() : Saturation(255) { lpDDrawPal = &Pal; }
 	virtual ~CStdDDraw() { lpDDraw = nullptr; }
 
@@ -208,6 +353,10 @@ protected:
 	bool fUseClrModMap; // if set, pClrModMap will be checked for color modulations
 	unsigned char Saturation; // if < 255, an extra filter is used to reduce the saturation
 
+	std::stack<DrawMode> modes;
+	std::unordered_map<DrawMode, CStdShaderProgram *> modeShaders;
+	CStdShaderProgram *currentShaderProgram;
+
 public:
 	// General
 	bool Init(CStdApp *pApp);
@@ -222,6 +371,10 @@ public:
 	virtual bool OnResolutionChanged() = 0; // reinit window for new resolution
 	const char *GetLastError() { return sLastError.getData(); }
 
+	// Render callbacks
+	DrawMode GetDrawMode() const { return modes.top(); }
+	void PushDrawMode(DrawMode mode);
+	void PopDrawMode();
 	// Palette
 	bool SetPrimaryPalette(uint8_t *pBuf, uint8_t *pAlphaBuf = nullptr);
 	bool AttachPrimaryPalette(CSurface *sfcSurface);
@@ -321,6 +474,13 @@ public:
 	virtual bool InvalidateDeviceObjects() = 0; // free device dependent objects
 	virtual bool DeviceReady() = 0; // return whether device exists
 
+	// shaders
+	virtual CStdShader *CreateShader(CStdShader::Type type, ShaderLanguage language, const std::string &source) = 0;
+	virtual CStdShaderProgram *CreateShaderProgram() = 0;
+	void SetShaderProgramForMode(DrawMode mode, CStdShaderProgram *shader);
+
+	void ClearModeShaderPrograms();
+
 protected:
 	bool StringOut(const char *szText, CSurface *sfcDest, int iTx, int iTy, uint32_t dwFCol, uint8_t byForm, bool fDoMarkup, CMarkup &Markup, CStdFont *pFont, float fZoom);
 	virtual void DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwCol) = 0; // without ClrModMap
@@ -329,6 +489,8 @@ protected:
 	bool Error(const char *szMsg);
 	virtual bool CreateDirectDraw() = 0;
 	bool CalculateClipper(int *iX, int *iY, int *iWdt, int *iHgt);
+	virtual void DrawModeChanged(DrawMode oldMode, DrawMode newMode);
+	virtual void ShaderProgramSet(DrawMode mode, CStdShaderProgram *shaderProgram) = 0;
 
 	void DebugLog(const char *szMsg)
 	{
