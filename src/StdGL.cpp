@@ -773,14 +773,15 @@ static std::array<Vertex<>, 2> DrawLineVertexData;
 void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	const float x1, const float y1, const float x2, const float y2, uint32_t dwClr)
 {
-	// apply color modulation
-	ClrByCurrentBlitMod(dwClr);
 	// render target?
 	assert(sfcTarget->IsRenderTarget());
 	// prepare rendering to target
 	if (!PrepareRendering(sfcTarget)) return;
 
 	PushDrawMode(DrawMode::GUI);
+
+	// apply color modulation
+	ClrByCurrentBlitMod(dwClr);
 
 	// set blitting state
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, (dwBlitMode & C4GFXBLIT_ADDITIVE) ? GL_ONE : GL_SRC_ALPHA);
@@ -808,12 +809,15 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 static Vertex<> DrawPixVertexData;
 
 void CStdGL::DrawPixInt(CSurface *const sfcTarget,
-	const float tx, const float ty, const uint32_t dwClr)
+	const float tx, const float ty, uint32_t dwClr)
 {
 	// render target?
 	assert(sfcTarget->IsRenderTarget());
 
 	if (!PrepareRendering(sfcTarget)) return;
+
+	// apply color modulation
+	ClrByCurrentBlitMod(dwClr);
 
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, (dwBlitMode & C4GFXBLIT_ADDITIVE) ? GL_ONE : GL_SRC_ALPHA);
 
