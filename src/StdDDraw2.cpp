@@ -420,6 +420,16 @@ uint32_t CColorFadeMatrix::GetColorAt(int iX, int iY)
 	return dwResult;
 }
 
+void CStdShader::SetMacro(const std::string &key, const std::string &value)
+{
+	macros[key] = value;
+}
+
+void CStdShader::UnsetMacro(const std::string &key)
+{
+	macros.erase(key);
+}
+
 void CStdShader::SetSource(const std::string &source)
 {
 	this->source = source;
@@ -701,16 +711,25 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 		target.right  = (vertices.right - fx) * scaleX + tx;
 		target.bottom = (vertices.bottom - fy) * scaleY + ty;
 
-		BltData.TexPos.SetMoveScale(
+		CBltTransform texPos;
+		texPos.SetMoveScale(
 			(vertices.left + DDrawCfg.fTexIndent) / texture->Width - (target.left + DDrawCfg.fBlitOff) / scaleX2,
 			(vertices.top  + DDrawCfg.fTexIndent) / texture->Height - (target.top  + DDrawCfg.fBlitOff) / scaleY2,
 			1 / scaleX2,
 			1 / scaleY2);
 		// set up blit data as rect
-		BltData.vtVtx[0].ftx = target.left  + DDrawCfg.fBlitOff; BltData.vtVtx[0].fty = target.top    + DDrawCfg.fBlitOff;
-		BltData.vtVtx[1].ftx = target.right + DDrawCfg.fBlitOff; BltData.vtVtx[1].fty = target.top    + DDrawCfg.fBlitOff;
-		BltData.vtVtx[2].ftx = target.right + DDrawCfg.fBlitOff; BltData.vtVtx[2].fty = target.bottom + DDrawCfg.fBlitOff;
-		BltData.vtVtx[3].ftx = target.left  + DDrawCfg.fBlitOff; BltData.vtVtx[3].fty = target.bottom + DDrawCfg.fBlitOff;
+		BltData.vtVtx[0].coordinates[0] = target.left  + DDrawCfg.fBlitOff; BltData.vtVtx[0].coordinates[1] = target.top    + DDrawCfg.fBlitOff;
+		BltData.vtVtx[1].coordinates[0] = target.right + DDrawCfg.fBlitOff; BltData.vtVtx[1].coordinates[1] = target.top    + DDrawCfg.fBlitOff;
+		BltData.vtVtx[2].coordinates[0] = target.right + DDrawCfg.fBlitOff; BltData.vtVtx[2].coordinates[1] = target.bottom + DDrawCfg.fBlitOff;
+		BltData.vtVtx[3].coordinates[0] = target.left  + DDrawCfg.fBlitOff; BltData.vtVtx[3].coordinates[1] = target.bottom + DDrawCfg.fBlitOff;
+
+		for (auto &vertex : BltData.vtVtx)
+		{
+			vertex.textureCoordinates[0] = vertex.coordinates[0];
+			vertex.textureCoordinates[1] = vertex.coordinates[1];
+
+			texPos.TransformPoint(vertex.textureCoordinates[0], vertex.textureCoordinates[1]);
+		}
 
 		// is there a base-surface to be blitted first?
 		if (fBaseSfc)

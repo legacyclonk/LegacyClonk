@@ -139,18 +139,35 @@ public:
 	~CPattern() { Clear(); }
 };
 
-// blit position on screen
-struct CBltVertex
+
+template<typename VertexType>
+struct CVertex
 {
-	float ftx, fty; // blit positions
-	uint32_t dwModClr; // color modulation
+	VertexType coordinates[2];
+	uint32_t color;
+};
+
+template<typename VertexType>
+struct CTextureVertex
+{
+	VertexType coordinates[2];
+	uint32_t color;
+	VertexType textureCoordinates[2];
+};
+
+template<typename VertexType>
+struct CLiquidShadedTextureVertex
+{
+	VertexType coordinates[2];
+	GLuint color;
+	VertexType textureCoordinates[2];
+	VertexType liquidTextureCoordinates[2];
 };
 
 // blit data for PerformBlt
 struct CBltData
 {
-	std::array<CBltVertex, 4> vtVtx; // vertices for triangle fan
-	CBltTransform TexPos; // texture mapping matrix
+	std::array<CTextureVertex<float>, 4> vtVtx; // vertices for triangle strip
 	CBltTransform *pTransform; // Vertex transformation
 };
 
@@ -158,8 +175,6 @@ struct CBltData
 class CStdShader
 {
 public:
-	using Macro = std::pair<std::string, std::string>;
-
 	enum class Type : uint8_t
 	{
 		Vertex,
@@ -177,40 +192,8 @@ public:
 
 	virtual ~CStdShader() { Clear(); }
 
-#define IMPL(m) \
-	auto it = std::find_if(m.begin(), m.end(), [&key](const auto &macro) { return macro.first == key; }); \
-	if constexpr (std::is_null_pointer_v<T>) \
-	{ \
-		if (it != m.end()) \
-		{ \
-			m.erase(it); \
-		} \
-	} \
-	\
-	else \
-	{ \
-		if (it != m.end()) \
-		{ \
-			it->second = std::string{value}; \
-		} \
-		else \
-		{ \
-			m.emplace_back(key, value); \
-		} \
-	}
-
-	template<typename T> void SetMacro(const std::string &key, const T &value)
-	{
-		IMPL(macros)
-	}
-
-	template<typename T> static void SetStaticMacro(const std::string &key, const T &value)
-	{
-		IMPL(staticMacros)
-	}
-
-#undef IMPL
-
+	void SetMacro(const std::string &key, const std::string &value);
+	void UnsetMacro(const std::string &key);
 	void SetSource(const std::string &source);
 	void SetType(Type type);
 
@@ -219,8 +202,7 @@ public:
 
 	std::string GetSource() const { return source; }
 	virtual int64_t GetHandle() const = 0;
-	std::vector<Macro> GetMacros() const { return macros; }
-	static std::vector<Macro> GetStaticMacros() { return staticMacros; }
+	std::unordered_map<std::string, std::string> GetMacros() const { return macros; }
 	std::string GetErrorMessage() const { return errorMessage; }
 	virtual Type GetType() const { return type; }
 
@@ -230,8 +212,7 @@ protected:
 protected:
 	Type type;
 	std::string source;
-	std::vector<Macro> macros;
-	static std::vector<Macro> staticMacros;
+	std::unordered_map<std::string, std::string> macros;
 	std::string errorMessage;
 };
 
