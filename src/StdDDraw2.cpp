@@ -593,7 +593,9 @@ bool CStdDDraw::CalculateClipper(int *const iX, int *const iY, int *const iWdt, 
 void CStdDDraw::BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *sfcSource3, int fx, int fy,
 	CSurface *sfcTarget, int tx, int ty, int wdt, int hgt)
 {
-	Blit(sfcSource, float(fx), float(fy), float(wdt), float(hgt), sfcTarget, static_cast<float>(tx), static_cast<float>(ty), static_cast<float>(wdt), static_cast<float>(hgt), false);
+	(void) sfcSource2;
+	(void) sfcSource3;
+	Blit(sfcSource, fx, fy, wdt, hgt, sfcTarget, tx, ty, wdt, hgt, false);
 }
 
 void CStdDDraw::Blit8Fast(CSurface8 *sfcSource, int fx, int fy,
@@ -619,13 +621,6 @@ void CStdDDraw::Blit8Fast(CSurface8 *sfcSource, int fx, int fy,
 }
 
 bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float fhgt,
-	CSurface *sfcTarget, int tx, int ty, int twdt, int thgt,
-	bool fSrcColKey, CBltTransform *pTransform, bool noScalingCorrection)
-{
-	return Blit(sfcSource, fx, fy, fwdt, fhgt, sfcTarget, static_cast<float>(tx), static_cast<float>(ty), static_cast<float>(twdt), static_cast<float>(thgt), fSrcColKey, pTransform, noScalingCorrection);
-}
-
-bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float fhgt,
 	CSurface *sfcTarget, float tx, float ty, float twdt, float thgt,
 	bool fSrcColKey, CBltTransform *pTransform, bool noScalingCorrection)
 {
@@ -633,7 +628,9 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	if (!sfcSource || !sfcTarget || !twdt || !thgt || !fwdt || !fhgt) return false;
 	// emulated blit?
 	if (!sfcTarget->IsRenderTarget())
+	{
 		return Blit8(sfcSource, static_cast<int>(fx), static_cast<int>(fy), static_cast<int>(fwdt), static_cast<int>(fhgt), sfcTarget, static_cast<int>(tx), static_cast<int>(ty), static_cast<int>(twdt), static_cast<int>(thgt), fSrcColKey, pTransform);
+	}
 	// calc stretch
 
 	const auto scalingCorrection = (pApp->GetScale() != 1.f && !noScalingCorrection ? 0.5f : 0.f);
@@ -927,6 +924,7 @@ bool CStdDDraw::CreatePrimaryClipper()
 
 bool CStdDDraw::AttachPrimaryPalette(CSurface *sfcSurface)
 {
+	(void) sfcSurface;
 	return true;
 }
 
