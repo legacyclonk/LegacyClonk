@@ -890,8 +890,8 @@ void C4Def::LoadShaders(C4Group &group, CStdDDraw::ShaderLanguage language, cons
 		StdStrBuf data;
 		group.LoadEntryString(filename, data);
 
-		CStdShader *shader = lpDDraw->CreateShader(type, language, data.getData());
-		if (!shader->Compile())
+		std::unique_ptr<CStdShader> shader{lpDDraw->CreateShader(type, language, data.getData())};
+		if (!shader || !shader->Compile())
 		{
 			continue;
 		}
@@ -902,10 +902,18 @@ void C4Def::LoadShaders(C4Group &group, CStdDDraw::ShaderLanguage language, cons
 		auto it = Game.LoadedShader.find(filename);
 		if (it == Game.LoadedShader.end())
 		{
-			it = Game.LoadedShader.emplace(filename, lpDDraw->CreateShaderProgram()).first;
+			CStdShaderProgram *program = lpDDraw->CreateShaderProgram();
+			if (!program)
+			{
+				continue;
+			}
+
+			it = Game.LoadedShader.emplace(filename, program).first;
 		}
 
-		it->second->AddShader(shader);
+		it->second->AddShader(shader.get());
+		shader.release();
+
 		// yes, we don't delete the shaders here, this happens in C4Game
 	}
 }

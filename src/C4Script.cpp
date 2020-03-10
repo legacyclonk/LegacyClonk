@@ -6459,7 +6459,7 @@ static bool FnSetShaderProgramForMode(C4AulContext *ctx, long mode, C4String *na
 	return false;
 #else
 
-	if (mode < 0 || mode >= static_cast<long>(CStdDDraw::DrawMode::Other))
+	if (!lpDDraw || mode < 0 || mode >= static_cast<long>(CStdDDraw::DrawMode::Other))
 	{
 		return false;
 	}
