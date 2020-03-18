@@ -217,7 +217,6 @@ public:
 	char RealName[CFG_MaxString + 1];
 	char Channel[CFG_MaxString + 1];
 	void CompileFunc(StdCompiler *pComp);
-	bool AllowAllChannels;
 };
 
 const int C4ConfigMaxGamepads = 4;

@@ -371,16 +371,6 @@ bool C4Network2IRCClient::Quit(const char *szReason)
 
 bool C4Network2IRCClient::Join(const char *szChannel)
 {
-	// Newbie limitation: can only join channels beginning with #clonk
-	if (!Config.IRC.AllowAllChannels)
-		if (!SEqual2NoCase(szChannel, "#clonk"))
-		{
-			PushMessage(MSG_Status, "", "", "Can only join channels beginning with #clonk.");
-			SetError("Joining this channel not allowed");
-			if (C4GUI::Screen::GetScreenS())
-				C4GUI::Screen::GetScreenS()->ShowMessage(LoadResStr("IDS_CHAT_CHANNELNOTALLOWED"), LoadResStr("IDS_DLG_CHAT"), C4GUI::Ico_Error);
-			return false;
-		}
 	return Send("JOIN", szChannel);
 }
 

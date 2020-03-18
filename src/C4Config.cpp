@@ -234,7 +234,6 @@ void C4ConfigIRC::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(s(Nick),          "Nick",             "",              false, true));
 	pComp->Value(mkNamingAdapt(s(RealName),      "RealName",         "",              false, true));
 	pComp->Value(mkNamingAdapt(s(Channel),       "Channel",          "#clonken",      false, true));
-	pComp->Value(mkNamingAdapt(AllowAllChannels, "AllowAllChannels", false,           false, true));
 }
 
 void C4ConfigGamepad::CompileFunc(StdCompiler *pComp, bool fButtonsOnly)
