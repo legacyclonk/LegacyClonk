@@ -622,6 +622,8 @@ bool C4Network2::RetrieveScenario(char *szScenario)
 	// remove dynamic - isn't needed any more and will soon be out-of-date
 	pDynamic->Remove();
 
+	C4Group_PackDirectory(szScenario);
+
 	return true;
 }
 
