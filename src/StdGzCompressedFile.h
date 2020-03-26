@@ -31,7 +31,7 @@ using Exception = std::runtime_error;
 
 static constexpr uint8_t C4GroupMagic[2] = {0x1e, 0x8c};
 static constexpr uint8_t GZMagic[2] = {0x1f, 0x8b};
-static constexpr auto ChunkSize = 1024 * 1204;
+static constexpr auto ChunkSize = 1024 * 1024;
 
 class Read
 {
