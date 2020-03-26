@@ -30,11 +30,7 @@
 
 namespace
 {
-struct CStdGLBlitVertex
-{
-	CTextureVertex<GLfloat> vertex;
-	GLfloat modelViewMatrix[4 * 4];
-};
+	using CStdGLBlitVertex = CTextureVertex<GLfloat>;
 }
 
 bool CStdGLShader::Compile()
@@ -406,6 +402,8 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	// reset MOD2 for completely black modulations
 	if (fMod2 && !fAnyModNotBlack) fMod2 = 0;
 
+	glVertexAttrib1s(VertexArray.Mod2, !fMod2);
+
 	auto *shader = dynamic_cast<CStdGLShaderProgram *>(CStdShaderProgram::GetCurrentShaderProgram());
 	assert(shader);
 
@@ -420,8 +418,6 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
 
-	GLfloat modelViewMatrix[16];
-
 	if (rBltData.pTransform)
 	{
 		const float *const mat = rBltData.pTransform->mat;
@@ -432,25 +428,24 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		matrix[ 8] = 0;      matrix[ 9] = 0;      matrix[10] = 1; matrix[11] = 0;
 		matrix[12] = mat[2]; matrix[13] = mat[5]; matrix[14] = 0; matrix[15] = mat[8];
 
-		memmove(modelViewMatrix, matrix, sizeof(matrix));
+		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol0, matrix);
+		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol1, matrix + 4);
+		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol2, matrix + 8);
+		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol3, matrix + 12);
 	}
 	else
 	{
-		memmove(modelViewMatrix, IDENTITY_MATRIX, sizeof(IDENTITY_MATRIX));
+		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol0, IDENTITY_MATRIX);
+		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol1, IDENTITY_MATRIX + 4);
+		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol2, IDENTITY_MATRIX + 8);
+		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol3, IDENTITY_MATRIX + 12);
 	}
 
 	// draw triangle fan for speed
 	static_assert(PerformBltVertexData.size() == 4, "GL_TRIANGLE_STRIP cannot be used with more than 4 vertices; you need to add the necessary code.");
 
-	std::swap(rBltData.vtVtx[3], rBltData.vtVtx[2]);
-	for (size_t i = 0; i < PerformBltVertexData.size(); ++i)
-	{
-		PerformBltVertexData[i].vertex = rBltData.vtVtx[i];
-		memmove(PerformBltVertexData[i].modelViewMatrix, modelViewMatrix, sizeof(modelViewMatrix));
-	}
-
 	SelectVAO(VertexArray.PerformBlt);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(PerformBltVertexData), PerformBltVertexData.data());
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(rBltData.vtVtx), rBltData.vtVtx.data());
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -849,7 +844,8 @@ bool CStdGL::RestoreDeviceObjects()
 			#endif
 
 			#ifdef LC_BLIT
-			layout (location = 4) in mat4 modelViewMatrix;
+			layout (location = 4) in uint mod2;
+			layout (location = 5) in mat4 modelViewMatrix;
 			#endif
 
 			out vec3 vPosition;
@@ -858,6 +854,9 @@ bool CStdGL::RestoreDeviceObjects()
 			#endif
 			#ifdef LC_COLOR_ANIMATION
 			out vec2 vLiquidTexCoord;
+			#endif
+			#ifdef LC_BLIT
+			out uint vMod2;
 			#endif
 			out vec4 vFragColor;
 
@@ -872,6 +871,7 @@ bool CStdGL::RestoreDeviceObjects()
 				vPosition = vertexCoord + blitOffset;
 				vFragColor = vertexColor;
 			#ifdef LC_BLIT
+				vMod2 = mod2;
 				gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition.xy, 0.0, 1.0);
 			#else
 				gl_Position = projectionMatrix * vec4(vPosition.xy, 0.0, 1.0);
@@ -902,14 +902,25 @@ bool CStdGL::RestoreDeviceObjects()
 			in vec3 vPosition;
 			in vec2 vTexCoord;
 			in vec4 vFragColor;
+
+			#ifdef LC_BLIT
+			in uint vMod2;
+			#endif
 			out vec4 fragColor;
 
 			void main()
 			{
 				fragColor = texture(textureSampler, vTexCoord);
-			#ifdef LC_MOD2
-				fragColor.rgb += vFragColor.rgb;
-				fragColor.rgb = clamp(fragColor.rgb * 2.0 - 1.0, 0.0, 1.0);
+
+			#ifdef LC_BLIT
+				if (vMod2)
+				{
+					fragColor.rgb += vFragColor.rgb;
+					fragColor.rgb = clamp(fragColor.rgb * 2.0 - 1.0, 0.0, 1.0);
+					fragColor.rgb = vec3(1.0, 0.0, 1.0);
+				}
+				else
+				{
 			#else
 			#ifdef LC_COLOR_ANIMATION
 				float mask = texture(maskSampler, vTexCoord).a;
@@ -924,7 +935,12 @@ bool CStdGL::RestoreDeviceObjects()
 				fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0);
 				fragColor.a = clamp(fragColor.a + vFragColor.a, 0.0, 1.0);
 			#endif // LC_COLOR_ANIMATION
-			#endif // LC_MOD2
+			#endif // LC_BLIT
+			#ifdef LC_BLIT
+				}
+
+				fragColor.a = 0.0;
+			#endif
 			}
 			)"
 		};
@@ -935,19 +951,12 @@ bool CStdGL::RestoreDeviceObjects()
 		BlitShader.AddShader(&blitFragmentShader);
 		BlitShader.Link();
 
-		blitFragmentShader.SetMacro("LC_MOD2", "1");
-		blitFragmentShader.Compile();
-
-		BlitShaderMod2.AddShader(&vertexShader);
-		BlitShaderMod2.AddShader(&blitFragmentShader);
-		BlitShaderMod2.Link();
-
 		vertexShader.UnsetMacro("LC_BLIT");
 
 		if (DDrawCfg.ColorAnimation)
 		{
 			vertexShader.SetMacro("LC_COLOR_ANIMATION", "1");
-			blitFragmentShader.UnsetMacro("LC_MOD2");
+			blitFragmentShader.UnsetMacro("LC_BLIT");
 			blitFragmentShader.SetMacro("LC_COLOR_ANIMATION", "1");
 			blitFragmentShader.Compile();
 		}
@@ -995,10 +1004,6 @@ bool CStdGL::RestoreDeviceObjects()
 		glVertexAttribPointer(VertexArray.Vertices, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), nullptr);
 		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(PerformBltVertexData)::value_type, textureCoordinates)));
 		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(PerformBltVertexData)::value_type, color)));
-		glVertexAttribPointer(VertexArray.ModelViewMatrixCol0, 4, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(PerformBltVertexData)::value_type, modelViewMatrix)));
-		glVertexAttribPointer(VertexArray.ModelViewMatrixCol1, 4, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(PerformBltVertexData)::value_type, modelViewMatrix) + sizeof(GLfloat) * 4));
-		glVertexAttribPointer(VertexArray.ModelViewMatrixCol2, 4, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(PerformBltVertexData)::value_type, modelViewMatrix) + sizeof(GLfloat) * 8));
-		glVertexAttribPointer(VertexArray.ModelViewMatrixCol3, 4, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(PerformBltVertexData)::value_type, modelViewMatrix) + sizeof(GLfloat) * 12));
 
 		InitializeVAO<decltype(VertexArray)::BlitLandscape, decltype(BlitLandscapeVertexData)>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
 		glVertexAttribPointer(VertexArray.Vertices, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(BlitLandscapeVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, coordinates)));
@@ -1036,7 +1041,7 @@ bool CStdGL::RestoreDeviceObjects()
 		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.TexIndent], sizeof(float), &DDrawCfg.fTexIndent);
 		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.BlitOffset], sizeof(float), &DDrawCfg.fBlitOff);
 
-		for (const auto *shader : {&BlitShader, &BlitShaderMod2, &LandscapeShader, &DummyShader})
+		for (const auto *shader : {&BlitShader, &LandscapeShader, &DummyShader})
 		{
 			glUniformBlockBinding(shader->GetProgram(), blockIndex, 0);
 		}
@@ -1058,9 +1063,8 @@ bool CStdGL::InvalidateDeviceObjects()
 
 	if (pCurrCtx)
 	{
-		glUseProgram(GL_NONE);
+		BlitShader.Deselect();
 		BlitShader.Clear();
-		BlitShaderMod2.Clear();
 		LandscapeShader.Clear();
 		DummyShader.Clear();
 

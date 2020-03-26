@@ -174,7 +174,6 @@ protected:
 	CStdGLCtx *pCurrCtx = nullptr; // current context
 
 	CStdGLShaderProgram BlitShader;
-	CStdGLShaderProgram BlitShaderMod2;
 	CStdGLShaderProgram LandscapeShader;
 	CStdGLShaderProgram DummyShader;
 
@@ -186,10 +185,11 @@ protected:
 			TexCoords = 1,
 			Color = 2,
 			LiquidTexCoords = 3,
-			ModelViewMatrixCol0 = 4,
-			ModelViewMatrixCol1 = 5,
-			ModelViewMatrixCol2 = 6,
-			ModelViewMatrixCol3 = 7
+			Mod2 = 4,
+			ModelViewMatrixCol0 = 5,
+			ModelViewMatrixCol1 = 6,
+			ModelViewMatrixCol2 = 7,
+			ModelViewMatrixCol3 = 8
 		};
 
 		enum ArrayIndex
