@@ -272,7 +272,7 @@ bool C4ToolsDlg::Open()
 	LoadBitmaps();
 	// create target ctx for OpenGL rendering
 #ifndef USE_CONSOLE
-	if (lpDDraw && !pGLCtx) pGLCtx = lpDDraw->CreateContext(GetDlgItem(hDialog, IDC_PREVIEW), &Application);
+	if (lpDDraw && !pCtx) pCtx = lpDDraw->CreateContext(GetDlgItem(hDialog, IDC_PREVIEW), &Application);
 #endif
 	// Show window
 	RestoreWindowPosition(hDialog, "Property", Config.GetSubkeyPath("Console"));
@@ -407,7 +407,7 @@ void C4ToolsDlg::Default()
 #ifdef _WIN32
 	hDialog = nullptr;
 #ifndef USE_CONSOLE
-	pGLCtx = nullptr;
+	pCtx = nullptr;
 #endif
 #elif defined(WITH_DEVELOPER_MODE)
 	hbox = nullptr;
@@ -424,7 +424,7 @@ void C4ToolsDlg::Clear()
 {
 #ifdef _WIN32
 #ifndef USE_CONSOLE
-	delete pGLCtx; pGLCtx = nullptr;
+	delete pCtx; pCtx = nullptr;
 #endif
 	if (hDialog) DestroyWindow(hDialog); hDialog = nullptr;
 #endif
@@ -671,14 +671,14 @@ void C4ToolsDlg::UpdatePreview()
 	Application.DDraw->AttachPrimaryPalette(sfcPreview);
 
 #ifdef _WIN32
-#ifndef USE_CONSOLE
-	if (pGL && pGLCtx)
+#ifdef USE_GL
+	if (pGL && pCtx)
 	{
-		if (pGLCtx->Select())
+		if (pCtx->Select())
 		{
 			pGL->Blit(sfcPreview, 0, 0, (float)iPrvWdt, (float)iPrvHgt, pGL->lpPrimary, rect.left, rect.top, iPrvWdt, iPrvHgt);
 			pGL->PageFlip(nullptr, nullptr, nullptr);
-			pGL->GetMainCtx().Select();
+			lpDDraw->GetMainContext()->Select();
 		}
 	}
 #endif

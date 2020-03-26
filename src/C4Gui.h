@@ -2034,7 +2034,7 @@ protected:
 	StdStrBuf TitleString;
 	bool fViewportDlg; // set in ctor: if true, dlg is not independent, but drawn ad controlled within viewports
 	DialogWindow *pWindow; // window in console mode
-	CStdGLCtx *pCtx; // rendering context for OpenGL
+	CStdDDrawContext *pCtx; // rendering context
 	FrameDecoration *pFrameDeco;
 
 	bool CreateConsoleWindow();

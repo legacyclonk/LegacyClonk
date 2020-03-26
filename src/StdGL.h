@@ -18,8 +18,7 @@
 /* OpenGL implementation of NewGfx */
 
 #pragma once
-
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 
 #include <GL/glew.h>
 
@@ -123,7 +122,7 @@ protected:
 };
 
 // one OpenGL context
-class CStdGLCtx
+class CStdGLCtx : public CStdDDrawContext
 {
 public:
 	CStdGLCtx();
@@ -229,7 +228,7 @@ public:
 	// General
 	void Clear();
 	void Default();
-	virtual int GetEngine() { return 1; } // get indexed engine
+	virtual int GetEngine() { return GFXENGN_OPENGL; } // get indexed engine
 	virtual bool OnResolutionChanged(); // reinit OpenGL and window for new resolution
 
 	// Clipper
@@ -237,10 +236,10 @@ public:
 
 	// Surface
 	bool PrepareRendering(CSurface *sfcToSurface); // check if/make rendering possible to given surface
-	CStdGLCtx &GetMainCtx() { return MainCtx; }
-	virtual CStdGLCtx *CreateContext(CStdWindow *pWindow, CStdApp *pApp);
+	CStdDDrawContext *GetMainContext() override { return &MainCtx; }
+	CStdDDrawContext *CreateContext(CStdWindow *pWindow, CStdApp *pApp);
 #ifdef _WIN32
-	virtual CStdGLCtx *CreateContext(HWND hWindow, CStdApp *pApp);
+	CStdDDrawContext *CreateContext(HWND hWindow, CStdApp *pApp);
 #endif
 
 	// Blit

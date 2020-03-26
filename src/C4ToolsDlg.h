@@ -49,7 +49,7 @@ public:
 #ifdef _WIN32
 	HWND hDialog;
 #ifndef USE_CONSOLE
-	class CStdGLCtx *pGLCtx; // rendering context for OpenGL
+	class CStdDDrawContext *pCtx; // rendering context
 #endif
 #elif defined(WITH_DEVELOPER_MODE)
 	GtkWidget *hbox;

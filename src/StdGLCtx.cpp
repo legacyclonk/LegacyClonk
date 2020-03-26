@@ -24,7 +24,7 @@
 #include <StdSurface2.h>
 #include <StdWindow.h>
 
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 
 void CStdGLCtx::Deselect(bool secondary)
 {

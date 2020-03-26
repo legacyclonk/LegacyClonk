@@ -274,6 +274,13 @@ public:
 	friend class CStdGL;
 };
 
+class CStdDDrawContext
+{
+public:
+	virtual ~CStdDDrawContext() = 0;
+	virtual bool Select(bool verbose = false) = 0;
+};
+
 // helper struct
 struct FLOAT_RECT { float left, right, top, bottom; };
 
@@ -346,10 +353,11 @@ public:
 	bool Init(CStdApp *pApp);
 	virtual void Clear();
 	virtual void Default();
-	virtual CStdGLCtx *CreateContext(CStdWindow *, CStdApp *) { return nullptr; }
+	virtual CStdDDrawContext *CreateContext(CStdWindow *, CStdApp *) { return nullptr; }
 #ifdef _WIN32
-	virtual CStdGLCtx *CreateContext(HWND, CStdApp *) { return nullptr; }
+	virtual CStdDDrawContext *CreateContext(HWND, CStdApp *) { return nullptr; }
 #endif
+	virtual CStdDDrawContext *GetMainContext() = 0;
 	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) = 0;
 	virtual int GetEngine() = 0; // get indexed engine
 	virtual bool OnResolutionChanged() = 0; // reinit window for new resolution

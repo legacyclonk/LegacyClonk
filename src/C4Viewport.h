@@ -107,7 +107,7 @@ protected:
 	bool ResetMenuPositions;
 	C4RegionList *SetRegions;
 	C4Viewport *Next;
-	CStdGLCtx *pCtx; // rendering context for OpenGL
+	CStdDDrawContext *pCtx; // rendering context
 	C4ViewportWindow *pWindow;
 	CClrModAddMap ClrModMap; // color modulation map for viewport drawing
 	void DrawMouseButtons(C4FacetEx &cgo);

@@ -534,7 +534,7 @@ void Dialog::Draw(C4FacetEx &cgo)
 	}
 #ifndef USE_CONSOLE
 	// switch back to original context
-	if (pCtx) pGL->GetMainCtx().Select();
+	if (pCtx) lpDDraw->GetMainContext()->Select();
 #endif
 }
 

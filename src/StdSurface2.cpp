@@ -99,7 +99,7 @@ void CSurface::MoveFrom(CSurface *psfcFrom)
 	Textures = std::move(psfcFrom->Textures);
 	pMainSfc = psfcFrom->pMainSfc;
 	ClrByOwnerClr = psfcFrom->ClrByOwnerClr;
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	Format = psfcFrom->Format;
 #endif
 	fIsBackground = psfcFrom->fIsBackground;
@@ -147,7 +147,7 @@ bool CSurface::Create(int iWdt, int iHgt, bool fOwnPal)
 	if (!lpDDraw->DeviceReady()) return false;
 
 	// store color format that will be used
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	if (pGL)
 	{
 		Format = pGL->sfcFmt;
@@ -168,7 +168,7 @@ bool CSurface::CreateTextures()
 
 	// get max texture size
 	uint32_t maxTextureSize = 4096;
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	if (!pGL)
 	{
 		GLint m = 0;
@@ -415,7 +415,7 @@ bool CSurface::SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma
 	CSurface *pMainSfcBackup;
 	if (fSaveOverlayOnly) { pMainSfcBackup = pMainSfc; pMainSfc = nullptr; }
 
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	if (fPrimary && pGL)
 	{
 		// Take shortcut. FIXME: Check Endian
@@ -590,7 +590,7 @@ uint32_t CSurface::GetPixDw(uint32_t iX, uint32_t iY, bool fApplyModulation, flo
 	// primary?
 	if (fPrimary)
 	{
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 		// OpenGL?
 		if (pGL)
 		{
@@ -754,7 +754,7 @@ void CSurface::ClearBoxDw(uint32_t iX, uint32_t iY, uint32_t iWdt, uint32_t iHgt
 CTexRef::CTexRef(uint32_t x, uint32_t y, uint32_t width, uint32_t height) : X{x}, Y{y}, Width{width}, Height{height}
 {
 	// zero fields
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	texName = 0;
 #endif
 	fIntLock = false;
@@ -763,7 +763,7 @@ CTexRef::CTexRef(uint32_t x, uint32_t y, uint32_t width, uint32_t height) : X{x}
 	if (!lpDDraw) return;
 	if (!lpDDraw->DeviceReady()) return;
 	// create it!
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	if (pGL)
 	{
 		// OpenGL
@@ -789,7 +789,7 @@ CTexRef::~CTexRef()
 {
 	fIntLock = false;
 	// free texture
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	if (pGL)
 	{
 		if (texName && pGL->pCurrCtx) glDeleteTextures(1, &texName);
@@ -815,7 +815,7 @@ bool CTexRef::LockForUpdate(const RECT &rtUpdate)
 		}
 	}
 	// lock
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	if (pGL)
 	{
 		if (texName)
@@ -847,7 +847,7 @@ bool CTexRef::Lock()
 	LockSize.bottom = Height;
 	LockSize.top = LockSize.left = 0;
 	// lock
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	if (pGL)
 	{
 		if (texName)
@@ -874,7 +874,7 @@ void CTexRef::Unlock()
 {
 	// locked?
 	if (!lockData || fIntLock) return;
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	if (pGL)
 	{
 		// select context, if not already done

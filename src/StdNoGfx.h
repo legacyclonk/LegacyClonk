@@ -28,6 +28,7 @@ public:
 	virtual bool CreateDirectDraw();
 
 public:
+	virtual CStdDDrawContext *GetMainContext() override { return nullptr; }
 	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) { return true; }
 	virtual bool BeginScene() { return true; }
 	virtual void EndScene() {}

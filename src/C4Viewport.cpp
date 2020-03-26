@@ -780,7 +780,7 @@ bool C4Viewport::UpdateOutputSize()
 	ScrollBarsByViewPosition();
 	// Reset menus
 	ResetMenuPositions = true;
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	// update internal GL size
 	if (pCtx) pCtx->UpdateSize();
 #endif
@@ -800,7 +800,7 @@ C4Viewport::~C4Viewport()
 
 void C4Viewport::Clear()
 {
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	if (pCtx) { delete pCtx; pCtx = nullptr; }
 #endif
 	if (pWindow) { pWindow->Clear(); delete pWindow; pWindow = nullptr; }
@@ -1170,7 +1170,7 @@ void C4Viewport::Execute()
 	}
 	// Adjust position
 	AdjustPosition();
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	// select rendering context
 	if (pCtx) if (!pCtx->Select()) return;
 #endif
@@ -1187,7 +1187,7 @@ void C4Viewport::Execute()
 	BlitOutput();
 #ifndef USE_CONSOLE
 	// switch back to original context
-	if (pCtx) pGL->GetMainCtx().Select();
+	lpDDraw->GetMainContext()->Select();
 #endif
 }
 

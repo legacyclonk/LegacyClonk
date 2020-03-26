@@ -70,6 +70,9 @@ CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 # USE_FMOD
 CMAKE_DEPENDENT_OPTION(USE_FMOD "Whether FMOD shall be used" ON
 	"ENABLE_SOUND AND WIN32" OFF)
+# USE_GL
+CMAKE_DEPENDENT_OPTION(USE_GL "Compile with OpenGL support" ON
+	"NOT USE_CONSOLE" OFF)
 # USE_MP3
 CMAKE_DEPENDENT_OPTION(USE_MP3 "Enable MP3 support" OFF
 	"ENABLE_SOUND" OFF)
@@ -253,12 +256,14 @@ endif ()
 
 # Link OpenGL and GLEW
 if (NOT USE_CONSOLE)
-	find_package(OpenGL REQUIRED)
-	if (NOT TARGET OpenGL::GLU)
-		message(FATAL_ERROR "Cannot find GLU library")
+	if (USE_GL)
+		find_package(OpenGL REQUIRED)
+		if (NOT TARGET OpenGL::GLU)
+			message(FATAL_ERROR "Cannot find GLU library")
+		endif ()
+		find_package(GLEW REQUIRED)
+		target_link_libraries(standard OpenGL::GL OpenGL::GLU GLEW::GLEW)
 	endif ()
-	find_package(GLEW REQUIRED)
-	target_link_libraries(standard OpenGL::GL OpenGL::GLU GLEW::GLEW)
 endif ()
 
 # Link OpenSSL crypto library

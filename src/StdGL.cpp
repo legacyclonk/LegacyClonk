@@ -22,7 +22,7 @@
 #include <StdSurface2.h>
 #include <StdWindow.h>
 
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 
 #include <stdio.h>
 #include <math.h>
@@ -619,7 +619,7 @@ bool CStdGL::CreateDirectDraw()
 	return true;
 }
 
-CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
+CStdDDrawContext *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 {
 	// safety
 	if (!pWindow) return nullptr;
@@ -634,7 +634,7 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 }
 
 #ifdef _WIN32
-CStdGLCtx *CStdGL::CreateContext(const HWND hWindow, CStdApp *const pApp)
+CStdDDrawContext *CStdGL::CreateContext(const HWND hWindow, CStdApp *const pApp)
 {
 	// safety
 	if (!hWindow) return nullptr;

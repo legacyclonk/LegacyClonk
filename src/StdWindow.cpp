@@ -19,7 +19,7 @@
 
 #include <Standard.h>
 #include <StdRegistry.h>
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 #include <StdGL.h>
 #endif
 #include <StdWindow.h>

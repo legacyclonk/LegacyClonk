@@ -1313,7 +1313,7 @@ CStdDDraw *DDrawInit(CStdApp *pApp, int Engine)
 	switch (iGfxEngine = Engine)
 	{
 	default: // Use the first engine possible if none selected
-#ifndef USE_CONSOLE
+#ifdef USE_GL
 	case GFXENGN_OPENGL: lpDDraw = new CStdGL(); break;
 #endif
 	case GFXENGN_NOGFX: lpDDraw = new CStdNoGfx(); break;

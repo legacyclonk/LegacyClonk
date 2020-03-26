@@ -1,6 +1,7 @@
 #cmakedefine DEBUGREC 1
 #cmakedefine USE_CONSOLE 1
 #cmakedefine USE_FMOD 1
+#cmakedefine USE_GL 1
 #cmakedefine USE_MP3 1
 #cmakedefine USE_SDL_MAINLOOP 1
 #cmakedefine USE_X11 1
