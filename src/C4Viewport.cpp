@@ -1026,7 +1026,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 		cgo.TargetX += BorderLeft; cgo.TargetY += BorderTop;
 	}
 
-	// landscape mod by FoW
+	/*// landscape mod by FoW
 	C4Player *pPlr = Game.Players.Get(Player);
 	if (pPlr && pPlr->fFogOfWar)
 	{
@@ -1036,7 +1036,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 		lpDDraw->SetClrModMapEnabled(true);
 	}
 	else
-		lpDDraw->SetClrModMapEnabled(false);
+		lpDDraw->SetClrModMapEnabled(false);*/
 
 	C4ST_STARTNEW(SkyStat, "C4Viewport::Draw: Sky")
 	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::Sky);
@@ -1098,7 +1098,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	}
 
 	// FogOfWar-mod off
-	lpDDraw->SetClrModMapEnabled(false);
+	//lpDDraw->SetClrModMapEnabled(false);
 
 	// now restore complete cgo range for overlay drawing
 	if (fDrawOverlay)
