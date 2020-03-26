@@ -373,7 +373,6 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	// global modulation map
 	uint32_t dwModMask = 0;
 	bool fAnyModNotBlack;
-	bool fModClr = false;
 	if (fUseClrModMap && dwModClr)
 	{
 		fAnyModNotBlack = false;
@@ -389,7 +388,6 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 			if (rBltData.vtVtx[i].color >> 24) dwModMask = 0xff000000;
 			ModulateClr(rBltData.vtVtx[i].color, dwModClr);
 			if (rBltData.vtVtx[i].color) fAnyModNotBlack = true;
-			if (rBltData.vtVtx[i].color != 0xffffff) fModClr = true;
 		}
 	}
 	else
@@ -397,7 +395,6 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		fAnyModNotBlack = !!dwModClr;
 		for (size_t i = 0; i < PerformBltVertexData.size(); ++i)
 			rBltData.vtVtx[i].color = dwModClr;
-		if (dwModClr != 0xffffff) fModClr = true;
 	}
 	// reset MOD2 for completely black modulations
 	if (fMod2 && !fAnyModNotBlack) fMod2 = 0;
