@@ -144,6 +144,12 @@ public:
 
 protected:
 	void DoDeselect();
+	bool CreateContext(int major, int minor, bool core = true);
+	bool InitGLEW();
+	bool CheckExtension(const char *extension);
+	bool ApplyVAOWorkaround();
+
+protected:
 	// this handles are declared as pointers to structs
 	CStdWindow *pWindow; // window to draw in
 #ifdef _WIN32

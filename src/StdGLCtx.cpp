@@ -228,7 +228,30 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	// store window
 	this->pWindow = pWindow;
 
-	int contextAttributes[]
+	if (!CreateContext(3, 2))
+	{
+		if (!CheckExtension("ARB_vertex_array_bgra") && !CheckExtension("EXT_vertex_array_bgra")) return false;
+
+		if (!CreateContext(3, 1))
+		{
+			if (!CheckExtension("ARB_uniform_buffer_object")) return false;
+
+			if (!CreateContext(3, 0))
+			{
+				if (!CreateContext(2, 1) || !ApplyVAOWorkaround())
+				{
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+bool CStdGLCtx::CreateContext(int major, int minor, bool core)
+{
+	static int contextAttributes[]
 	{
 		GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
 		GLX_CONTEXT_MINOR_VERSION_ARB, 1,
@@ -236,83 +259,57 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 		None
 	};
 
-	auto createContext = [this, &contextAttributes](int major, int minor) -> bool
+	contextAttributes[1] = major;
+	contextAttributes[3] = minor;
+	contextAttributes[5] = (core ? GLX_CONTEXT_CORE_PROFILE_BIT_ARB : GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB) | GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+
+#ifdef _DEBUG
+	contextAttributes[5] |= GLX_CONTEXT_DEBUG_BIT_ARB;
+#endif
+
+	static bool error;
+	error = false;
+
+	auto *errorHandler = XSetErrorHandler([](Display *, XErrorEvent *) -> int { error = true; return 0; });
+
+	// Create Context with sharing (if this is the main context, our ctx will be 0, so no sharing)
+	// try direct rendering first
+	if (!DDrawCfg.NoAcceleration)
 	{
-		contextAttributes[1] = major;
-		contextAttributes[3] = minor;
-
-		static bool error;
-		error = false;
-
-		auto *errorHandler = XSetErrorHandler([](Display *, XErrorEvent *) -> int { error = true; return 0; });
-
-		// Create Context with sharing (if this is the main context, our ctx will be 0, so no sharing)
-		// try direct rendering first
-		if (!DDrawCfg.NoAcceleration)
-		{
-			ctx = glXCreateContextAttribsARB(this->pWindow->dpy, this->pWindow->FBConfig, pGL->MainCtx.ctx, True, contextAttributes);
-		}
-
-		// without, rendering will be unacceptable slow, but that's better than nothing at all
-		if (!ctx)
-		{
-			ctx = glXCreateContextAttribsARB(this->pWindow->dpy, this->pWindow->FBConfig, pGL->MainCtx.ctx, False, contextAttributes);
-		}
-
-		XSync(this->pWindow->dpy, False);
-		XSetErrorHandler(errorHandler);
-
-		if (error || !ctx)
-		{
-			return pGL->Error(
-						FormatString(
-							"  gl: Unable to create a %d.%d (%s) context!",
-							major,
-							minor,
-							contextAttributes[5] == GLX_CONTEXT_CORE_PROFILE_BIT_ARB ? "core" : "compat"
-						).getData()
-					);
-		}
-		if (!Select(true)) return pGL->Error("  gl: Unable to select context");
-		// init extensions
-		GLenum err = glewInit();
-		if (GLEW_OK != err)
-		{
-			// Problem: glewInit failed, something is seriously wrong.
-			pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
-		}
-
-		return true;
-	};
-
-	auto checkExtension = [](const char *extension) -> bool
-	{
-		if (!glewIsSupported(extension))
-		{
-			return pGL->Error(FormatString("  gl: Extension(s) %s not supported", extension).getData());
-		}
-
-		return true;
-	};
-
-	assert(GLX_ARB_create_context);
-
-	if (!createContext(3, 2))
-	{
-		if (!checkExtension("ARB_vertex_array_bgra")) return false;
-
-		if (!createContext(3, 1))
-		{
-			if (!checkExtension("ARB_uniform_buffer_object")) return false;
-
-			if (!createContext(3, 0))
-			{
-				/*if (!checkExtension("ARB_vertex_array_object"))*/ return false;
-			}
-		}
+		ctx = glXCreateContextAttribsARB(this->pWindow->dpy, this->pWindow->FBConfig, pGL->MainCtx.ctx, True, contextAttributes);
 	}
 
-	return true;
+	// without, rendering will be unacceptable slow, but that's better than nothing at all
+	if (!ctx)
+	{
+		ctx = glXCreateContextAttribsARB(this->pWindow->dpy, this->pWindow->FBConfig, pGL->MainCtx.ctx, False, contextAttributes);
+	}
+
+	XSync(this->pWindow->dpy, False);
+	XSetErrorHandler(errorHandler);
+
+	// select
+	if (!Select()) return pGL->Error("  gl: Unable to select context");
+
+	InitGLEW();
+
+#ifdef _DEBUG
+	pGL->DebugLog("  gl: Extensions:");
+	pGL->DebugLog(reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS)));
+#endif
+
+	return !error && ctx;
+}
+
+bool CStdGLCtx::InitGLEW()
+{
+	GLenum err = glewInit();
+	return err == GLEW_OK || pGL->Error(FormatString("  gl: glewInit(): %s", reinterpret_cast<const char *>(glewGetErrorString(err))).getData());
+}
+
+bool CStdGLCtx::CheckExtension(const char *extension)
+{
+	return glewIsSupported(extension) || pGL->Error(FormatString("  gl: Extension(s) %s not supported", extension).getData());
 }
 
 bool CStdGLCtx::Select(bool verbose, bool selectOnly)
@@ -362,6 +359,38 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 void CStdGLCtx::DoDeselect()
 {
 	glXMakeCurrent(pWindow->dpy, None, nullptr);
+}
+
+bool CStdGLCtx::ApplyVAOWorkaround()
+{
+	if (CheckExtension("APPLE_vertex_array_objects"))
+	{
+		pGL->DebugLog("  gl: Using APPLE_vertex_array_objects");
+
+		glGenVertexArrays = reinterpret_cast<PFNGLGENVERTEXARRAYSPROC>(glGenVertexArraysAPPLE);
+		glBindVertexArray = reinterpret_cast<PFNGLBINDVERTEXARRAYPROC>(glBindVertexArrayAPPLE);
+		glDeleteVertexArrays = reinterpret_cast<PFNGLDELETEVERTEXARRAYSPROC>(glDeleteVertexArraysAPPLE);
+		glIsVertexArray = reinterpret_cast<PFNGLISVERTEXARRAYPROC>(glIsVertexArrayAPPLE);
+
+		return true;
+	}
+
+	else if (CheckExtension("SGIX_vertex_array_objects"))
+	{
+		pGL->DebugLog("  gl: Using SGIX_vertex_array_objects");
+
+		glGenVertexArrays = reinterpret_cast<PFNGLGENVERTEXARRAYSPROC>(glGenVertexArraysSGIX);
+		glBindVertexArray = reinterpret_cast<PFNGLBINDVERTEXARRAYPROC>(glBindVertexArraySGIX);
+		glDeleteVertexArrays = reinterpret_cast<PFNGLDELETEVERTEXARRAYSPROC>(glDeleteVertexArraysSGIX);
+		glIsVertexArray = reinterpret_cast<PFNGLISVERTEXARRAYPROC>(glIsVertexArraySGIX);
+
+		return true;
+	}
+
+	else
+	{
+		return pGL->Error("  gl: Could not apply vertex array object workaround");
+	}
 }
 
 bool CStdGLCtx::UpdateSize()
