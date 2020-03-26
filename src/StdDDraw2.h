@@ -143,14 +143,14 @@ public:
 template<typename VertexType>
 struct CVertex
 {
-	VertexType coordinates[2];
+	VertexType coordinates[3];
 	uint32_t color;
 };
 
 template<typename VertexType>
 struct CTextureVertex
 {
-	VertexType coordinates[2];
+	VertexType coordinates[3];
 	uint32_t color;
 	VertexType textureCoordinates[2];
 };
@@ -158,7 +158,7 @@ struct CTextureVertex
 template<typename VertexType>
 struct CLiquidShadedTextureVertex
 {
-	VertexType coordinates[2];
+	VertexType coordinates[3];
 	GLuint color;
 	VertexType textureCoordinates[2];
 	VertexType liquidTextureCoordinates[2];

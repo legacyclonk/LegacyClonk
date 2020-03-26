@@ -346,7 +346,7 @@ void C4GraphicsSystem::DrawFullscreenBackground()
 
 void C4GraphicsSystem::ClearFullscreenBackground()
 {
-	Application.DDraw->FillBG(0);
+	Application.DDraw->FillBG(Game.FoWColor);
 	--iRedrawBackground;
 }
 

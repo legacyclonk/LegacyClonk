@@ -305,6 +305,8 @@ void CStdGL::FillBG(const uint32_t dwClr)
 		GetRValue(dwClr) / 255.0f,
 		1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glClearDepth(100);
 }
 
 bool CStdGL::UpdateClipper()
@@ -562,25 +564,25 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		new(BlitLandscapeVertexData.data()) decltype(BlitLandscapeVertexData)::value_type[BlitLandscapeVertexData.size()]
 		{
 			{
-				{target.left, target.top},
+				{target.left, target.top, 100.0f},
 				{},
 				{vertices.left / texture->Width, vertices.top / texture->Height},
 				{vertices.left / liquidTextureWidth, vertices.top / liquidTextureHeight}
 			},
 			{
-				{target.right, target.top},
+				{target.right, target.top, 100.0f},
 				{},
 				{vertices.right / texture->Width, vertices.top / texture->Height},
 				{vertices.right / liquidTextureWidth, vertices.top / liquidTextureHeight},
 			},
 			{
-				{target.left, target.bottom},
+				{target.left, target.bottom, 100.0f},
 				{},
 				{vertices.left / texture->Width, vertices.bottom / texture->Height},
 				{vertices.left / liquidTextureWidth, vertices.bottom / liquidTextureHeight},
 			},
 			{
-				{target.right, target.bottom},
+				{target.right, target.bottom, 100.0f},
 				{},
 				{vertices.right / texture->Width, vertices.bottom / texture->Height},
 				{vertices.right / liquidTextureWidth, vertices.bottom / liquidTextureHeight}
@@ -835,7 +837,7 @@ bool CStdGL::RestoreDeviceObjects()
 			};
 
 			// standard
-			layout (location = 0) in vec2 vertexCoord;
+			layout (location = 0) in vec3 vertexCoord;
 			#ifdef LC_TEXTURE
 			layout (location = 1) in vec2 texCoord;
 			#endif
@@ -850,7 +852,7 @@ bool CStdGL::RestoreDeviceObjects()
 			layout (location = 4) in mat4 modelViewMatrix;
 			#endif
 
-			out vec2 vPosition;
+			out vec3 vPosition;
 			#ifdef LC_TEXTURE
 			out vec2 vTexCoord;
 			#endif
@@ -870,9 +872,9 @@ bool CStdGL::RestoreDeviceObjects()
 				vPosition = vertexCoord + blitOffset;
 				vFragColor = vertexColor;
 			#ifdef LC_BLIT
-				gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 0.0, 1.0);
+				gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition.xy, 0.0, 1.0);
 			#else
-				gl_Position = projectionMatrix * vec4(vPosition, 0.0, 1.0);
+				gl_Position = projectionMatrix * vec4(vPosition.xy, 0.0, 1.0);
 			#endif
 			}
 			)"
@@ -897,7 +899,7 @@ bool CStdGL::RestoreDeviceObjects()
 			in vec2 vLiquidTexCoord;
 			#endif
 
-			in vec2 vPosition;
+			in vec3 vPosition;
 			in vec2 vTexCoord;
 			in vec4 vFragColor;
 			out vec4 fragColor;
@@ -969,7 +971,7 @@ bool CStdGL::RestoreDeviceObjects()
 			#version 140
 			#extension GL_ARB_explicit_attrib_location : enable
 
-			in vec2 vPosition;
+			in vec3 vPosition;
 			in vec4 vFragColor;
 			out vec4 fragColor;
 
@@ -989,31 +991,31 @@ bool CStdGL::RestoreDeviceObjects()
 		glGenVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
 		glGenBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
 
-		InitializeVAO<decltype(VertexArray)::PerformBlt, decltype(PerformBltVertexData)>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color, VertexArray.ModelViewMatrixCol0, VertexArray.ModelViewMatrixCol1, VertexArray.ModelViewMatrixCol2, VertexArray.ModelViewMatrixCol3);
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), nullptr);
-		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(decltype(PerformBltVertexData)::value_type::vertex), textureCoordinates)));
-		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(decltype(PerformBltVertexData)::value_type::vertex), color)));
+		InitializeVAO<decltype(VertexArray)::PerformBlt, decltype(PerformBltVertexData)>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
+		glVertexAttribPointer(VertexArray.Vertices, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), nullptr);
+		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(PerformBltVertexData)::value_type, textureCoordinates)));
+		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(PerformBltVertexData)::value_type, color)));
 		glVertexAttribPointer(VertexArray.ModelViewMatrixCol0, 4, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(PerformBltVertexData)::value_type, modelViewMatrix)));
 		glVertexAttribPointer(VertexArray.ModelViewMatrixCol1, 4, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(PerformBltVertexData)::value_type, modelViewMatrix) + sizeof(GLfloat) * 4));
 		glVertexAttribPointer(VertexArray.ModelViewMatrixCol2, 4, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(PerformBltVertexData)::value_type, modelViewMatrix) + sizeof(GLfloat) * 8));
 		glVertexAttribPointer(VertexArray.ModelViewMatrixCol3, 4, GL_FLOAT, GL_FALSE, sizeof(decltype(PerformBltVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(PerformBltVertexData)::value_type, modelViewMatrix) + sizeof(GLfloat) * 12));
 
 		InitializeVAO<decltype(VertexArray)::BlitLandscape, decltype(BlitLandscapeVertexData)>(VertexArray.Vertices, VertexArray.TexCoords, VertexArray.Color);
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(BlitLandscapeVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, coordinates)));
+		glVertexAttribPointer(VertexArray.Vertices, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(BlitLandscapeVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, coordinates)));
 		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(BlitLandscapeVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, textureCoordinates)));
 		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(BlitLandscapeVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, color)));
 		glVertexAttribPointer(VertexArray.LiquidTexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(BlitLandscapeVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, liquidTextureCoordinates)));
 
 		InitializeVAO<decltype(VertexArray)::DrawQuadDw, decltype(DrawQuadVertexData)>(VertexArray.Vertices, VertexArray.Color);
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_INT, GL_FALSE, sizeof(decltype(DrawQuadVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawQuadVertexData)::value_type, coordinates)));
+		glVertexAttribPointer(VertexArray.Vertices, 3, GL_INT, GL_FALSE, sizeof(decltype(DrawQuadVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawQuadVertexData)::value_type, coordinates)));
 		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(DrawQuadVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawQuadVertexData)::value_type, color)));
 
 		InitializeVAO<decltype(VertexArray)::DrawLineDw, decltype(DrawLineVertexData)>(VertexArray.Vertices, VertexArray.Color);
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawLineVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawLineVertexData)::value_type, coordinates)));
+		glVertexAttribPointer(VertexArray.Vertices, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawLineVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawLineVertexData)::value_type, coordinates)));
 		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(DrawLineVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawLineVertexData)::value_type, color)));
 
 		InitializeVAO<decltype(VertexArray)::DrawPixInt, decltype(DrawPixVertexData)>(VertexArray.Vertices, VertexArray.Color);
-		glVertexAttribPointer(VertexArray.Vertices, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawPixVertexData)), reinterpret_cast<const void *>(offsetof(decltype(DrawPixVertexData), coordinates)));
+		glVertexAttribPointer(VertexArray.Vertices, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawPixVertexData)), reinterpret_cast<const void *>(offsetof(decltype(DrawPixVertexData), coordinates)));
 		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(DrawPixVertexData)), reinterpret_cast<const void *>(offsetof(decltype(DrawPixVertexData), color)));
 
 

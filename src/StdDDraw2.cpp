@@ -747,6 +747,7 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 		{
 			vertex.textureCoordinates[0] = vertex.coordinates[0];
 			vertex.textureCoordinates[1] = vertex.coordinates[1];
+			vertex.coordinates[2] = 100.0;
 
 			texPos.TransformPoint(vertex.textureCoordinates[0], vertex.textureCoordinates[1]);
 		}
