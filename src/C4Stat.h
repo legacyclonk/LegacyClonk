@@ -120,7 +120,7 @@ protected:
 };
 
 // *** some directives
-#ifdef STAT
+#ifdef USE_STAT
 
 // used to create and start a new C4Stat object
 #define C4ST_STARTNEW(StatName, strName) static C4Stat StatName(strName); StatName.Start();

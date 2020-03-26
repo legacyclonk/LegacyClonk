@@ -59,6 +59,7 @@ CHECK_CXX_SYMBOL_EXISTS(vasprintf stdio.h HAVE_VASPRINTF)
 
 option(DEBUGREC "Write additional debug control to records" OFF)
 option(USE_CONSOLE "Dedicated server mode (compile as pure console application)" OFF)
+option(USE_STAT "Enable internal performance statistics for developers" OFF)
 
 # ENABLE_SOUND
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON

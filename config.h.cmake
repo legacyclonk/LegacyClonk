@@ -6,6 +6,7 @@
 #cmakedefine USE_X11 1
 #cmakedefine WITH_DEVELOPER_MODE 1
 #cmakedefine WITH_GLIB 1
+#cmakedefine WITH_STAT 1
 
 #cmakedefine HAVE_DIRECT_H 1
 #cmakedefine HAVE_EXECINFO_H 1
