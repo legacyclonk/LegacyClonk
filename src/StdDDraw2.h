@@ -228,8 +228,8 @@ public:
 	bool AddShader(CStdShader *shader);
 
 	virtual bool Link() = 0;
-	virtual void Select() = 0;
-	virtual void Deselect() = 0;
+	void Select();
+	static void Deselect();
 	virtual void Clear();
 
 	virtual void EnsureProgram() = 0;
@@ -237,14 +237,18 @@ public:
 
 	std::string GetErrorMessage() const { return errorMessage; }
 	std::vector<CStdShader *> GetPendingShaders() const { return shaders; }
+	static CStdShaderProgram *GetCurrentShaderProgram();
 
 protected:
 	bool SetError(std::string_view message) { errorMessage = message; return false; }
 	virtual bool AddShaderInt(CStdShader *shader) = 0;
+	virtual void OnSelect() = 0;
+	virtual void OnDeselect() = 0;
 
 protected:
 	std::string errorMessage;
 	std::vector<CStdShader *> shaders;
+	static CStdShaderProgram *currentShaderProgram;
 };
 
 // gamma ramp control
@@ -336,7 +340,6 @@ protected:
 
 	std::stack<DrawMode> modes;
 	std::unordered_map<DrawMode, CStdShaderProgram *> modeShaders;
-	CStdShaderProgram *currentShaderProgram;
 
 public:
 	// General
@@ -469,6 +472,7 @@ protected:
 	bool CalculateClipper(int *iX, int *iY, int *iWdt, int *iHgt);
 	virtual void DrawModeChanged(DrawMode oldMode, DrawMode newMode);
 	virtual void ShaderProgramSet(DrawMode mode, CStdShaderProgram *shaderProgram) = 0;
+	virtual void ShaderProgramsCleared() = 0;
 
 	void DebugLog(const char *szMsg)
 	{

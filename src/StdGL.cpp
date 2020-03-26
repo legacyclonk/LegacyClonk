@@ -151,17 +151,6 @@ bool CStdGLSPIRVShader::PrepareSource()
 	return true;
 }
 
-bool CStdGLShaderProgram::AddShaderInt(CStdShader *shader)
-{
-	if (auto *s = dynamic_cast<CStdGLShader *>(shader); s)
-	{
-		glAttachShader(shaderProgram, s->GetHandle());
-		return true;
-	}
-
-	return false;
-}
-
 bool CStdGLShaderProgram::Link()
 {
 	EnsureProgram();
@@ -210,17 +199,6 @@ bool CStdGLShaderProgram::Link()
 	return true;
 }
 
-void CStdGLShaderProgram::Select()
-{
-	assert(shaderProgram);
-	glUseProgram(shaderProgram);
-}
-
-void CStdGLShaderProgram::Deselect()
-{
-	glUseProgram(0);
-}
-
 void CStdGLShaderProgram::Clear()
 {
 	for (const auto &shader : shaders)
@@ -246,6 +224,28 @@ void CStdGLShaderProgram::EnsureProgram()
 		shaderProgram = glCreateProgram();
 	}
 	assert(shaderProgram);
+}
+
+bool CStdGLShaderProgram::AddShaderInt(CStdShader *shader)
+{
+	if (auto *s = dynamic_cast<CStdGLShader *>(shader); s)
+	{
+		glAttachShader(shaderProgram, s->GetHandle());
+		return true;
+	}
+
+	return false;
+}
+
+void CStdGLShaderProgram::OnSelect()
+{
+	assert(shaderProgram);
+	glUseProgram(shaderProgram);
+}
+
+void CStdGLShaderProgram::OnDeselect()
+{
+	glUseProgram(GL_NONE);
 }
 
 CStdGL::CStdGL()
@@ -404,9 +404,8 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	// reset MOD2 for completely black modulations
 	if (fMod2 && !fAnyModNotBlack) fMod2 = 0;
 
-	auto *shader = dynamic_cast<CStdGLShaderProgram *>(currentShaderProgram);
+	auto *shader = dynamic_cast<CStdGLShaderProgram *>(CStdShaderProgram::GetCurrentShaderProgram());
 	assert(shader);
-	shader->SetUniform("textureSampler", glUniform1i, 0);
 
 	// set texture+modes
 	//glShadeModel((fUseClrModMap && fModClr && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
@@ -495,17 +494,13 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-	CStdGLShaderProgram *shader = dynamic_cast<CStdGLShaderProgram *>(currentShaderProgram);
+	auto *shader = dynamic_cast<CStdGLShaderProgram *>(CStdShaderProgram::GetCurrentShaderProgram());
 	assert(shader);
 
 	shader->Select();
-	shader->SetUniform("textureSampler", glUniform1i, 0);
 
 	if (sfcSource2)
 	{
-		shader->SetUniform("maskSampler", glUniform1i, 1);
-		shader->SetUniform("liquidSampler", glUniform1i, 2);
-
 		static GLfloat value[4] = { -0.6f / 3, 0.0f, 0.6f / 3, 0.0f };
 		value[0] += 0.05f; value[1] += 0.05f; value[2] += 0.05f;
 		GLfloat mod[4];
@@ -961,7 +956,7 @@ bool CStdGL::RestoreDeviceObjects()
 		LandscapeShader.AddShader(&blitFragmentShader);
 		LandscapeShader.Link();
 
-		SetShaderProgramForMode(DrawMode::Landscape, &LandscapeShader);
+		ShaderProgramsCleared();
 
 		vertexShader.UnsetMacro("LC_LANDSCAPE");
 		vertexShader.UnsetMacro("LC_TEXTURE");
@@ -1116,10 +1111,9 @@ void CStdGL::DrawModeChanged(DrawMode oldMode, DrawMode newMode)
 {
 	CStdDDraw::DrawModeChanged(oldMode, newMode);
 
-	if (newMode != DrawMode::Landscape && !currentShaderProgram)
+	if (!CStdShaderProgram::GetCurrentShaderProgram())
 	{
-		currentShaderProgram = &BlitShader;
-		currentShaderProgram->Select();
+		BlitShader.Select();
 	}
 }
 
@@ -1154,12 +1148,41 @@ void CStdGL::ShaderProgramSet(DrawMode mode, CStdShaderProgram *shaderProgram)
 {
 	(void) mode;
 
-	if (auto *s = dynamic_cast<CStdGLShaderProgram *>(shaderProgram); s)
+	if (!shaderProgram)
+	{
+		return SetShaderProgramForMode(mode, mode == DrawMode::Landscape ? &LandscapeShader : &BlitShader);
+	}
+
+	else if (auto *s = dynamic_cast<CStdGLShaderProgram *>(shaderProgram); s)
 	{
 		if (GLuint blockIndex = glGetUniformBlockIndex(shaderProgram->GetProgram(), "StandardUniforms"); blockIndex != GL_INVALID_INDEX)
 		{
 			glUniformBlockBinding(shaderProgram->GetProgram(), blockIndex, 0);
 		}
+
+		CStdShaderProgram *currentShaderProgram = CStdShaderProgram::GetCurrentShaderProgram();
+
+		s->Select();
+		s->SetUniform("textureSampler", glUniform1i, 0);
+		if (mode == DrawMode::Landscape)
+		{
+			s->SetUniform("maskSampler", glUniform1i, 1);
+			s->SetUniform("liquidSampler", glUniform1i, 2);
+		}
+
+		if (currentShaderProgram)
+		{
+			currentShaderProgram->Select();
+		}
+	}
+}
+
+void CStdGL::ShaderProgramsCleared()
+{
+	for (uint8_t i = 0; i <= static_cast<decltype(i)>(DrawMode::Other); ++i)
+	{
+		auto mode = static_cast<DrawMode>(i);
+		SetShaderProgramForMode(mode, mode == DrawMode::Landscape ? &LandscapeShader : &BlitShader);
 	}
 }
 

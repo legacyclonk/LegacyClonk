@@ -81,8 +81,6 @@ public:
 	explicit operator bool() const override { return /*glIsProgram(*/shaderProgram/*)*/; }
 
 	bool Link() override;
-	void Select() override;
-	void Deselect() override;
 	void Clear() override;
 
 	void EnsureProgram() override;
@@ -116,6 +114,8 @@ public:
 
 protected:
 	bool AddShaderInt(CStdShader *shader) override;
+	void OnSelect() override;
+	void OnDeselect() override;
 
 protected:
 	GLuint shaderProgram = 0;
@@ -290,6 +290,7 @@ protected:
 	virtual CStdShader *CreateShader(CStdShader::Type type, ShaderLanguage language, const std::string &source) override;
 	virtual CStdShaderProgram *CreateShaderProgram() override;
 	virtual void ShaderProgramSet(DrawMode mode, CStdShaderProgram *shaderProgram) override;
+	virtual void ShaderProgramsCleared() override;
 
 #ifdef USE_X11
 	// Size of gamma ramps

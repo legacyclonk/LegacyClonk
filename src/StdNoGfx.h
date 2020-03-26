@@ -51,4 +51,5 @@ public:
 	virtual CStdShader *CreateShader(CStdShader::Type, CStdDDraw::ShaderLanguage, const std::string &) override { return nullptr; }
 	virtual CStdShaderProgram *CreateShaderProgram() override { return nullptr; }
 	virtual void ShaderProgramSet(DrawMode mode, CStdShaderProgram *shaderProgram) override {}
+	virtual void ShaderProgramsCleared() override {}
 };
