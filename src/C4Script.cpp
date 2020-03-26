@@ -6464,6 +6464,12 @@ static bool FnSetShaderProgramForMode(C4AulContext *ctx, long mode, C4String *na
 		return false;
 	}
 
+	if (!name)
+	{
+		lpDDraw->SetShaderProgramForMode(static_cast<CStdDDraw::DrawMode>(mode), nullptr);
+		return true;
+	}
+
 	if (auto it = Game.ScriptShader.find(FnStringPar(name)); it != Game.ScriptShader.end())
 	{
 		lpDDraw->SetShaderProgramForMode(static_cast<CStdDDraw::DrawMode>(mode), it->second.get());
