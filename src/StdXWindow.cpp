@@ -17,8 +17,9 @@
 
 /* A wrapper class to OS dependent event and window interfaces, X11 version */
 
-#ifdef USE_GL
 #include <Standard.h>
+
+#ifdef USE_GL
 #include <StdWindow.h>
 #include <StdGL.h>
 #include <StdDDraw2.h>

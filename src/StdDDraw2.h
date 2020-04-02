@@ -277,8 +277,10 @@ public:
 class CStdDDrawContext
 {
 public:
-	virtual ~CStdDDrawContext() = 0;
+	virtual ~CStdDDrawContext() {}
 	virtual bool Select(bool verbose = false) = 0;
+	virtual bool UpdateSize() = 0;
+	virtual bool PageFlip() = 0;
 };
 
 // helper struct
