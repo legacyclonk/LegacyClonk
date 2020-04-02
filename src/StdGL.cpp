@@ -441,6 +441,8 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	// draw triangle fan for speed
 	static_assert(PerformBltVertexData.size() == 4, "GL_TRIANGLE_STRIP cannot be used with more than 4 vertices; you need to add the necessary code.");
 
+	std::swap(rBltData.vtVtx[3], rBltData.vtVtx[2]);
+
 	SelectVAO(VertexArray.PerformBlt);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(rBltData.vtVtx), rBltData.vtVtx.data());
 
