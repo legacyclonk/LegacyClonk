@@ -938,6 +938,7 @@ bool CStdGL::RestoreDeviceObjects()
 			{
 				fragColor = texture(textureSampler, vTexCoord);
 
+			// MOD2
 			#ifdef LC_BLIT
 				if (vMod2)
 				{
@@ -947,7 +948,8 @@ bool CStdGL::RestoreDeviceObjects()
 				}
 				else
 				{
-			#else
+			#endif
+
 			#ifdef LC_COLOR_ANIMATION
 				float mask = texture(maskSampler, vTexCoord).a;
 				vec3 liquid = texture(liquidSampler, vLiquidTexCoord).rgb;
@@ -956,12 +958,13 @@ bool CStdGL::RestoreDeviceObjects()
 				liquid = vec3(dot(liquid, modulation.rgb));
 				liquid *= mask;
 				fragColor.rgb = fragColor.rgb + liquid;
-			#else
+
+			#else // standard blitting
 				fragColor.rgb *= vFragColor.rgb;
 				//fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0);
 				fragColor.a = clamp(fragColor.a + vFragColor.a, 0.0, 1.0);
 			#endif // LC_COLOR_ANIMATION
-			#endif // LC_BLIT
+
 			#ifdef LC_BLIT
 				}
 			#endif
