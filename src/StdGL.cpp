@@ -788,6 +788,33 @@ void CStdGL::DrawPixInt(CSurface *const sfcTarget,
 	glDrawArrays(GL_POINTS, 0, 1);
 }
 
+namespace
+{
+	struct HDRVertex
+	{
+		GLfloat coordinates[3];
+		GLfloat textureCoordinates[2];
+	};
+}
+
+static std::array<HDRVertex, 4> DrawHDRQuadVertexData
+{
+	HDRVertex{{-1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},
+	HDRVertex{{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f}},
+	HDRVertex{{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
+	HDRVertex{{1.0f, -1.0f, 0.0f}, {1.0f, 0.0f}}
+};
+
+void CStdGL::DrawHDRQuad()
+{
+	HDRShader.Select();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, HDR.Colorbuffer);
+
+	SelectVAO(VertexArray.HDRQuad);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
 static void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
 {
 	std::printf("source: %d, type: %d, id: %ul, severity: %d, message: %s\n", source, type, id, severity, message);
@@ -931,14 +958,12 @@ bool CStdGL::RestoreDeviceObjects()
 				fragColor.rgb = fragColor.rgb + liquid;
 			#else
 				fragColor.rgb *= vFragColor.rgb;
-				fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0);
+				//fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0);
 				fragColor.a = clamp(fragColor.a + vFragColor.a, 0.0, 1.0);
 			#endif // LC_COLOR_ANIMATION
 			#endif // LC_BLIT
 			#ifdef LC_BLIT
 				}
-
-				fragColor.a = 0.0;
 			#endif
 			}
 			)"
@@ -965,8 +990,6 @@ bool CStdGL::RestoreDeviceObjects()
 		LandscapeShader.AddShader(&vertexShader);
 		LandscapeShader.AddShader(&blitFragmentShader);
 		LandscapeShader.Link();
-
-		ShaderProgramsCleared();
 
 		vertexShader.UnsetMacro("LC_LANDSCAPE");
 		vertexShader.UnsetMacro("LC_TEXTURE");
@@ -996,6 +1019,63 @@ bool CStdGL::RestoreDeviceObjects()
 		DummyShader.AddShader(&dummyFragmentShader);
 		DummyShader.Link();
 
+		CStdGLShader HDRVertexShader{
+			CStdShader::Type::Vertex,
+			R"(
+			#version 330 core
+			layout (location = 0) in vec3 aPos;
+			layout (location = 1) in vec2 aTexCoords;
+
+			out vec2 TexCoords;
+
+			void main()
+			{
+				TexCoords = aTexCoords;
+				gl_Position = vec4(aPos, 1.0);
+			}
+			)"
+		};
+
+		HDRVertexShader.Compile();
+
+		CStdGLShader HDRFragmentShader{
+			CStdShader::Type::Fragment,
+			R"(
+			#version 330 core
+			out vec4 FragColor;
+
+			in vec2 TexCoords;
+
+			uniform sampler2D hdrBuffer;
+			uniform float exposure;
+
+			void main()
+			{
+				FragColor = texture(hdrBuffer, TexCoords);
+				const float gamma = 1.0;
+				vec3 hdrColor = texture(hdrBuffer, TexCoords).rgb;
+				// reinhard
+				//vec3 result = hdrColor / (hdrColor + vec3(1.0));
+				// exposure
+				vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
+				// also gamma correct while we're at it
+				//result = pow(result, vec3(1.0 / gamma));
+				FragColor = vec4(result, 0.0);
+			}
+			)"
+		};
+
+		HDRFragmentShader.Compile();
+		HDRShader.AddShader(&HDRVertexShader);
+		HDRShader.AddShader(&HDRFragmentShader);
+		HDRShader.Link();
+
+		HDRShader.Select();
+		HDRShader.SetUniform("hdrBuffer", glUniform1i, 0);
+		HDRShader.SetUniform("exposure", glUniform1f, 3.0f);
+
+		ShaderProgramsCleared();
+
 		glGenVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
 		glGenBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
 
@@ -1022,6 +1102,12 @@ bool CStdGL::RestoreDeviceObjects()
 		glVertexAttribPointer(VertexArray.Vertices, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawPixVertexData)), reinterpret_cast<const void *>(offsetof(decltype(DrawPixVertexData), coordinates)));
 		glVertexAttribPointer(VertexArray.Color, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(decltype(DrawPixVertexData)), reinterpret_cast<const void *>(offsetof(decltype(DrawPixVertexData), color)));
 
+		InitializeVAO<decltype(VertexArray)::HDRQuad, decltype(DrawHDRQuadVertexData)>(VertexArray.Vertices, VertexArray.TexCoords);
+		glVertexAttribPointer(VertexArray.Vertices, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawHDRQuadVertexData)::value_type), reinterpret_cast<const void*>(offsetof(decltype(BlitLandscapeVertexData)::value_type, coordinates)));
+		glVertexAttribPointer(VertexArray.TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(DrawHDRQuadVertexData)::value_type), reinterpret_cast<const void *>(offsetof(decltype(DrawHDRQuadVertexData)::value_type, textureCoordinates)));
+
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(DrawHDRQuadVertexData), DrawHDRQuadVertexData.data());
+
 
 		// StandardUniforms
 
@@ -1040,12 +1126,31 @@ bool CStdGL::RestoreDeviceObjects()
 		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.TexIndent], sizeof(float), &DDrawCfg.fTexIndent);
 		glBufferSubData(GL_UNIFORM_BUFFER, StandardUniforms.Offset[StandardUniforms.BlitOffset], sizeof(float), &DDrawCfg.fBlitOff);
 
-		for (const auto *shader : {&BlitShader, &LandscapeShader, &DummyShader})
+		for (const auto *shader : {&BlitShader, &LandscapeShader, &DummyShader, &HDRShader})
 		{
 			glUniformBlockBinding(shader->GetProgram(), blockIndex, 0);
 		}
 
 		glBindBufferBase(GL_UNIFORM_BUFFER, 0, StandardUniforms.VBO);
+
+		glGenFramebuffers(1, &HDR.Framebuffer);
+
+		glGenTextures(1, &HDR.Colorbuffer);
+		glBindTexture(GL_TEXTURE_2D, HDR.Colorbuffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, pApp->ScreenWidth(), pApp->ScreenHeight(), 0, GL_RGBA, GL_FLOAT, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glGenRenderbuffers(1, &HDR.Depthbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, HDR.Depthbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, pApp->ScreenWidth(), pApp->ScreenHeight());
+
+		glBindFramebuffer(GL_FRAMEBUFFER, HDR.Framebuffer);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, HDR.Colorbuffer, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, HDR.Depthbuffer);
+		assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 	}
 	// done
 	return Active;
@@ -1066,11 +1171,16 @@ bool CStdGL::InvalidateDeviceObjects()
 		BlitShader.Clear();
 		LandscapeShader.Clear();
 		DummyShader.Clear();
+		HDRShader.Clear();
 
 		glDeleteBuffers(std::size(VertexArray.VBO), VertexArray.VBO);
 		glDeleteVertexArrays(std::size(VertexArray.VAO), VertexArray.VAO);
 
 		glDeleteBuffers(1, &StandardUniforms.VBO);
+
+		glDeleteTextures(1, &HDR.Colorbuffer);
+		glDeleteRenderbuffers(1, &HDR.Depthbuffer);
+		glDeleteFramebuffers(1, &HDR.Framebuffer);
 	}
 
 	// invalidate font objects
@@ -1119,6 +1229,28 @@ void CStdGL::DrawModeChanged(DrawMode oldMode, DrawMode newMode)
 	if (!CStdShaderProgram::GetCurrentShaderProgram())
 	{
 		BlitShader.Select();
+	}
+
+	if (oldMode == DrawMode::Other && newMode == DrawMode::Viewport)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, HDR.Framebuffer);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		HDR.Selected = true;
+	}
+
+	else if (oldMode == DrawMode::Viewport && newMode == DrawMode::Other)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+		HDR.Selected = false;
+
+		CStdShaderProgram *currentShaderProgram = CStdShaderProgram::GetCurrentShaderProgram();
+
+		DrawHDRQuad();
+
+		if (currentShaderProgram)
+		{
+			currentShaderProgram->Select();
+		}
 	}
 }
 

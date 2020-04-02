@@ -1012,6 +1012,8 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	return;
 #endif
 
+	lpDDraw->PushDrawMode(CStdDDraw::DrawMode::Viewport);
+
 	if (fDrawOverlay)
 	{
 		// Draw landscape borders. Only if overlay, so complete map screenshots don't get messed up
@@ -1139,6 +1141,8 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	}
 
 	C4ST_STOP(OvrStat)
+
+	lpDDraw->PopDrawMode();
 
 	// Remove clippers
 	if (fDrawOverlay) Application.DDraw->NoPrimaryClipper();

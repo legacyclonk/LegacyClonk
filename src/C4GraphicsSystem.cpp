@@ -185,8 +185,12 @@ void C4GraphicsSystem::Execute()
 
 	// Background redraw
 	if (Application.isFullScreen)
+	{
+
+		InvalidateBg();
 		if (iRedrawBackground)
 			DrawFullscreenBackground();
+	}
 
 	// Screen rate skip frame draw
 	ScreenTick++; if (ScreenTick >= ScreenRate) ScreenTick = 0;

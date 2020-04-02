@@ -310,6 +310,7 @@ public:
 		NetworkStats,
 		Lines,
 		Text,
+		Viewport,
 
 		Other
 	};
