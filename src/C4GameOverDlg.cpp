@@ -116,7 +116,7 @@ bool C4GameOverDlg::is_shown = false;
 C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (C4GUI::GetScreenWdt() - 10) : std::min<int32_t>(C4GUI::GetScreenWdt() - 150, 800),
 	(C4GUI::GetScreenHgt() < 600) ? (C4GUI::GetScreenHgt() - 10) : std::min<int32_t>(C4GUI::GetScreenHgt() - 150, 600),
 	LoadResStr("IDS_TEXT_EVALUATION"),
-	false), pNetResultLabel(nullptr), fIsNetDone(false)
+	false), pNetResultLabel(nullptr), fIsNetDone(false), fIsQuitBtnVisible(false)
 {
 	is_shown = true; // assume dlg will be shown, soon
 
