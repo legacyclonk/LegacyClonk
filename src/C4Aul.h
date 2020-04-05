@@ -446,6 +446,14 @@ public:
 	virtual bool Delete() { return true; } // allow deletion on pure class
 
 protected:
+	struct Append
+	{
+		C4ID id;
+		bool nowarn;
+
+		bool operator==(C4ID other) const { return id == other; }
+	};
+
 	C4AulFunc *Func0, *FuncL; // owned functions
 	C4AulScriptEngine *Engine; // owning engine
 	C4AulScript *Owner, *Prev, *Next, *Child0, *ChildL; // tree structure
@@ -459,7 +467,7 @@ protected:
 	bool Resolving; // set while include-resolving, to catch circular includes
 
 	std::list<C4ID> Includes; // include list
-	std::list<C4ID> Appends; // append list
+	std::list<Append> Appends; // append list
 
 	// internal function used to find overloaded functions
 	C4AulFunc *GetOverloadedFunc(C4AulFunc *ByFunc);

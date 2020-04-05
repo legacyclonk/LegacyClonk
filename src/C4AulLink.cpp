@@ -31,14 +31,14 @@ bool C4AulScript::ResolveAppends(C4DefList *rDefs)
 	for (C4AulScript *s = Child0; s; s = s->Next) s->ResolveAppends(rDefs);
 	// resolve local appends
 	if (State != ASS_PREPARSED) return false;
-	for (const auto a : Appends)
+	for (const auto [a, nowarn] : Appends)
 	{
 		if ((long)a != -1)
 		{
 			C4Def *Def = rDefs->ID2Def(a);
 			if (Def)
 				AppendTo(Def->Script, true);
-			else
+			else if(!nowarn)
 			{
 				// save id in buffer because AulWarn will use the buffer of C4IdText
 				// to get the id of the object in which the error occurs...

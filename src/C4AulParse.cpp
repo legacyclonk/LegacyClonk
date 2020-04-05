@@ -29,6 +29,7 @@
 #define C4AUL_Include "#include"
 #define C4AUL_Strict  "#strict"
 #define C4AUL_Append  "#appendto"
+#define C4AUL_NoWarn "nowarn"
 
 #define C4AUL_Func "func"
 
@@ -1436,12 +1437,18 @@ void C4AulParseState::Parse_Script()
 				// for #appendto * '*' needs to be ATT_STAR, not an operator.
 				Shift(Hold, false);
 				// get id of script to include/append
+				bool nowarn = false;
 				C4ID Id;
 				switch (TokenType)
 				{
 				case ATT_C4ID:
 					Id = (C4ID)cInt;
 					Shift();
+					if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_NoWarn))
+					{
+						nowarn = true;
+						Shift();
+					}
 					break;
 				case ATT_STAR: // "*"
 					Id = ~0;
@@ -1452,7 +1459,7 @@ void C4AulParseState::Parse_Script()
 					UnexpectedToken("id constant");
 				}
 				// add to append list
-				a->Appends.push_back(Id);
+				a->Appends.push_back({Id, nowarn});
 			}
 			else if (SEqual(Idtf, C4AUL_Strict))
 			{
