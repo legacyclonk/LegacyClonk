@@ -404,7 +404,15 @@ bool C4SoundSystem::Init()
 	ClearEffects();
 	// Open sound file
 	if (!SoundFile.IsOpen())
-		if (!SoundFile.Open(Config.AtExePath(C4CFN_Sound))) return false;
+		if (!SoundFile.Open(Config.AtExePath(C4CFN_Sound))
+#ifdef __linux__
+&& !SoundFile.Open(C4CFN_Sound)
+#endif
+)
+        {
+		    return false;
+        }
+
 #ifdef HAVE_LIBSDL_MIXER
 	Mix_AllocateChannels(C4MaxSoundInstances);
 #endif

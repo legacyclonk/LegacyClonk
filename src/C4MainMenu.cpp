@@ -65,7 +65,13 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 	if (GfxR->fctPlayerClr.Surface)
 		GfxR->fctPlayerClr.Surface->SetClr(0xff);
 	InitRefSym(GfxR->fctPlayerClr, LoadResStr("IDS_MENU_NOPLRFILES"), iPlayer);
+#ifndef __linux__
 	for (DirectoryIterator iter(Config.General.PlayerPath); *iter; ++iter)
+#else
+	StdStrBuf search_path(Config.General.XDG_CONFIG_PATH);
+	search_path += Config.General.PlayerPath;
+    for (DirectoryIterator iter(search_path.getData()); *iter; ++iter)
+#endif
 		if (WildcardMatch("*.c4p", *iter))
 		{
 			char szFilename[_MAX_PATH + 1], szCommand[_MAX_PATH + 30 + 1];

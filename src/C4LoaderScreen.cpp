@@ -68,7 +68,11 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 	{
 		// open it
 		GfxGrp.Close();
-		if (!GfxGrp.Open(Config.AtExePath(C4CFN_Graphics)))
+		if (!GfxGrp.Open(Config.AtExePath(C4CFN_Graphics))
+#ifdef __linux__
+&& !GfxGrp.Open(C4CFN_Graphics) // attempt to load graphics from system / user data folder
+#endif
+)
 		{
 			LogFatal(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), C4CFN_Graphics, GfxGrp.GetError()).getData());
 			return false;

@@ -283,7 +283,13 @@ void C4StartupMainDlg::OnShown()
 	// first thing that's needed is a new player, if there's none - independent of first start
 	bool fHasPlayer = false;
 	StdStrBuf sSearchPath; const char *szFn;
+#ifndef __linux__
 	sSearchPath.Format("%s%s", (const char *)Config.General.ExePath, (const char *)Config.General.PlayerPath);
+#else
+	// search in user config directory instead.
+	sSearchPath.Format("%s%s", (const char*)Config.General.XDG_CONFIG_PATH, (const char*)Config.General.PlayerPath);
+#endif
+
 	for (DirectoryIterator i(sSearchPath.getData()); szFn = *i; i++)
 	{
 		szFn = Config.AtExeRelativePath(szFn);

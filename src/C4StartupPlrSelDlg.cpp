@@ -694,7 +694,12 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 		// player mode: insert all players
 		const char *szFn;
 		StdStrBuf sSearchPath;
+#ifndef __linux__
 		sSearchPath.Format("%s%s", (const char *)Config.General.ExePath, (const char *)Config.General.PlayerPath);
+#else
+        sSearchPath.Format("%s%s", (const char *)Config.General.XDG_CONFIG_PATH, (const char *)Config.General.PlayerPath);
+#endif
+
 		PlayerListItem *pFirstActivatedPlrItem = nullptr, *pFirstDeactivatedPlrItem = nullptr, *pPlrItem = nullptr;
 		for (DirectoryIterator i(sSearchPath.getData()); szFn = *i; i++)
 		{
@@ -897,7 +902,12 @@ bool C4StartupPlrSelDlg::CheckPlayerName(const StdStrBuf &Playername, StdStrBuf 
 	SReplaceChar(Filename.getMData(), '|', '_');
 	if (*Filename.getData() == '.') *Filename.getMData() = '_';
 	Filename.Append(".c4p");
+#ifndef __linux__
 	StdStrBuf Path(""); // start at local path
+#else
+    StdStrBuf Path(Config.General.XDG_CONFIG_PATH);
+    Path.Append("/"); // start at config dir
+#endif
 	Path.Append(Config.General.PlayerPath);
 	Path.Append(Filename);
 	// validity check: Must not exist yet if renamed

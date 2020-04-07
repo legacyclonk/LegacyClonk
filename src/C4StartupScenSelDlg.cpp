@@ -1400,6 +1400,21 @@ void C4StartupScenSelDlg::OnShown()
 	pScenLoader->Load(StdStrBuf(Config.General.ExePath));
 	UpdateList();
 	UpdateSelection();
+#ifdef __linux__
+	StdStrBuf data_folder(getenv("XDG_CONFIG_DATA"));
+	if (!data_folder.getSize()){
+	    data_folder = getenv("HOME");
+	    data_folder += "/.local/share/legacyclonk";
+	}
+    data_folder += "/";
+	pScenLoader->Load(data_folder);
+	UpdateList();
+	UpdateSelection();
+	data_folder = "/usr/share/legacyclonk/";
+	pScenLoader->Load(data_folder);
+	UpdateList();
+	UpdateSelection();
+#endif
 	fIsInitialLoading = false;
 	// network activation by dialog type
 	Game.NetworkActive = fStartNetworkGame;

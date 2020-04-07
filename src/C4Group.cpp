@@ -670,6 +670,35 @@ bool C4Group::Open(const char *szGroupName, bool fCreate)
 		// Open group or folder
 		return OpenReal(szGroupNameN);
 	}
+#ifdef __linux__
+	else
+	// check if file exists in user data directory
+    {
+        StdStrBuf data_directory(getenv("XDG_DATA_HOME"));
+	    if (!data_directory.getSize()) {
+	        data_directory = getenv("HOME");
+	        data_directory += "/.local/share";
+	    }
+	    data_directory += "/legacyclonk/";
+	    StdStrBuf filename = data_directory + szGroupNameN;
+	    if (FileExists(filename.getData()))
+        {
+	        Init();
+	        return OpenReal(filename.getData());
+        }
+	    // check if file exists in system distribution directory
+	    filename = "/usr/share/legacyclonk/";
+	    filename += szGroupNameN;
+	    if (FileExists(filename.getData()))
+        {
+	        Init();
+	        return OpenReal(filename.getData());
+        }
+
+	}
+#endif
+
+
 
 	// If requested, try creating a new group file
 	if (fCreate)

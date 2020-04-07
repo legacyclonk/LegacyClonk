@@ -37,7 +37,14 @@ StdStrBuf sFatalError;
 bool OpenLog()
 {
 	// open
-	sLogFileName = C4CFN_Log; int iLog = 2;
+#ifndef __linux__
+	sLogFileName = C4CFN_Log;
+#else
+	sLogFileName  = Config.General.XDG_CONFIG_PATH;
+	sLogFileName.Append("/");
+	sLogFileName.Append(C4CFN_Log);
+#endif
+	int iLog = 2;
 #ifdef _WIN32
 	while (!(C4LogFile = _fsopen(sLogFileName.getData(), "wt", _SH_DENYWR)))
 #else
@@ -45,7 +52,13 @@ bool OpenLog()
 #endif
 	{
 		// try different name
+#ifndef __linux__
 		sLogFileName.Format(C4CFN_LogEx, iLog++);
+#else
+		sLogFileName = Config.General.XDG_CONFIG_PATH;
+		sLogFileName.Append("/");
+		sLogFileName.AppendFormat(C4CFN_LogEx, iLog++);
+#endif
 	}
 	// save start time
 	time(&C4LogStartTime);

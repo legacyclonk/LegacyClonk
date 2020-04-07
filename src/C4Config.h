@@ -67,6 +67,9 @@ public:
 	int32_t ConfigResetSafety; // safety value: If this value is screwed, the config got currupted and must be reset
 	// Determined at run-time
 	char ExePath[CFG_MaxString + 1];
+#ifdef __linux__
+	char XDG_CONFIG_PATH[CFG_MaxString + 1];
+#endif
 	char TempPath[CFG_MaxString + 1];
 	char LogPath[CFG_MaxString + 1];
 	char ScreenshotPath[CFG_MaxString + 1];
@@ -267,7 +270,7 @@ public:
 	bool Save();
 	bool Load(bool forceWorkingDirectory = true, const char *szConfigFile = nullptr);
 	bool Init();
-	const char *AtExePath(const char *szFilename);
+	const char *AtExePath(const char *szFilename, bool forceExeFolder=false);
 	const char *AtTempPath(const char *szFilename);
 	const char *AtNetworkPath(const char *szFilename);
 	const char *AtExeRelativePath(const char *szFilename);

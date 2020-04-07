@@ -16,6 +16,7 @@
 
 /* Game configuration as stored in registry */
 
+
 #include <C4Include.h>
 #include <C4Config.h>
 
@@ -75,7 +76,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 #ifdef _WIN32
 	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "%APPDATA%\\LegacyClonk",                        false, true));
 #elif defined(__linux__)
-	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/.legacyclonk",                            false, true));
+	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$XDG_CONFIG_HOME/.legacyclonk",                            false, true));
 #elif defined(__APPLE__)
 	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/Library/Application Support/LegacyClonk", false, true));
 #endif
@@ -378,6 +379,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 		{
 			// Nonwindows or explicit config file: Determine filename to load config from
 			StdStrBuf filename;
+			StdStrBuf config_path;
 			if (szConfigFile)
 			{
 				// Config filename is specified
@@ -387,14 +389,22 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 			}
 			else
 			{
+#ifdef __APPLE__
 				// Config filename from home
 				StdStrBuf home(getenv("HOME"), false);
 				if (home) { home += "/"; }
 				filename.Copy(home);
-#ifdef __APPLE__
 				filename += "Library/Preferences/legacyclonk.config";
 #else
-				filename += ".legacyclonk/config";
+				// get XDG config folder instead of polluting ~
+				StdStrBuf xdg_config_home(getenv("XDG_CONFIG_HOME"));
+				if (!xdg_config_home.getLength()) {
+					// fall back to $USER/.config
+					xdg_config_home = getenv("HOME");
+					xdg_config_home += "/.config/";
+				}
+				config_path = xdg_config_home += "legacyclonk";
+				filename = xdg_config_home += "/config";
 #endif
 			}
 
@@ -408,10 +418,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 #ifdef __linux__
 				if (!szConfigFile)
 				{
-					StdStrBuf filename(getenv("HOME"), false);
-					if (filename) { filename += "/"; }
-					filename += ".legacyclonk";
-					CreateDirectory(filename.getData());
+					auto create_result = CreateDirectory(config_path.getData());
 				}
 #endif
 				// Buggy StdCompiler crashes when compiling a Null-StdStrBuf
@@ -497,12 +504,20 @@ bool C4Config::Save()
 			}
 			else
 			{
+#ifndef __linux__
 				filename.Copy(getenv("HOME"));
+#else
+				filename.Copy(Config.General.XDG_CONFIG_PATH);
+#endif
 				if (filename) { filename += "/"; }
 #ifdef __APPLE__
 				filename += "Library/Preferences/legacyclonk.config";
 #else
+#ifndef __linux__
 				filename += ".legacyclonk/config";
+#else
+				filename += "config";
+#endif
 #endif
 			}
 			StdCompilerINIWrite IniWrite;
@@ -547,6 +562,34 @@ void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 	}
 	else
 		SCopy("/tmp/", TempPath);
+	StdStrBuf xdg_config_path(getenv("XDG_CONFIG_HOME"));
+	if (!xdg_config_path.getSize()){
+	    xdg_config_path = getenv("HOME");
+	    xdg_config_path += "/.config/legacyclonk";
+	}
+	SCopy(xdg_config_path.getData(), XDG_CONFIG_PATH);
+    SCopy(xdg_config_path.getData(), UserPath);
+    SCopy(xdg_config_path.getData(), LogPath); // I'm not sure if this even gets used, but setting it makes the config look nicer :-)
+    StdStrBuf xdg_picture_path(getenv("XDG_PICTURES_DIR"));
+    if (!xdg_picture_path.getSize()){
+        xdg_picture_path = getenv("HOME");
+        xdg_picture_path += "/Pictures";
+    }
+    struct stat st;
+    if (!((stat(xdg_picture_path.getData(), &st) == 0) && S_ISDIR(st.st_mode))) {
+        // fall back to saving screenshots in config folder
+        xdg_picture_path = xdg_config_path;
+    }
+    else {
+        xdg_picture_path += "/legacyclonk";
+        if (!((stat(xdg_picture_path.getData(), &st) == 0) && S_ISDIR(st.st_mode))) {
+            // create screenshots folder
+            if (!CreateDirectory(xdg_picture_path.getData()))
+                xdg_picture_path = xdg_config_path;
+        }
+    }
+
+    SCopy(xdg_picture_path.getData(), ScreenshotPath);
 #else
 	// Mac: Just use the working directory as ExePath.
 	SCopy(GetWorkingDirectory(), ExePath);
@@ -556,6 +599,7 @@ void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 	// Force working directory to exe path if desired
 	if (forceWorkingDirectory)
 		SetWorkingDirectory(ExePath);
+#ifndef __linux__
 	// Log path
 	SCopy(ExePath, LogPath);
 	if (LogPath[0]) AppendBackslash(LogPath);
@@ -567,6 +611,9 @@ void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 		SAppend(ScreenshotFolder.getData(), ScreenshotPath);
 		AppendBackslash(ScreenshotPath);
 	}
+#else
+	ScreenshotFolder = ScreenshotPath;
+#endif
 	// Player path
 	if (PlayerPath[0]) AppendBackslash(PlayerPath);
 #ifdef C4ENGINE
@@ -578,9 +625,21 @@ void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 
 char AtPathFilename[_MAX_PATH + 1];
 
-const char *C4Config::AtExePath(const char *szFilename)
+const char *C4Config::AtExePath(const char *szFilename, bool forceExeFolder)
 {
+#ifndef __linux__
 	SCopy(General.ExePath, AtPathFilename, _MAX_PATH);
+#else
+	// don't put data in the exe path by default as it could be a system distribution
+	if(!forceExeFolder) {
+		StdStrBuf config_folder(Config.General.XDG_CONFIG_PATH);
+		config_folder += "/";
+		SCopy(config_folder.getData(), AtPathFilename, _MAX_PATH);
+	} else {
+		// optionally use old behavior
+		SCopy(General.ExePath, AtPathFilename, _MAX_PATH);
+	}
+#endif
 	SAppend(szFilename, AtPathFilename, _MAX_PATH);
 	return AtPathFilename;
 }
@@ -663,10 +722,9 @@ void C4ConfigControls::ResetKeys()
 	StdCompilerNull Comp; Comp.Compile(mkParAdapt(*this, true));
 }
 
-const char *C4Config::AtExeRelativePath(const char *szFilename)
-{
-	// Specified file is located in ExePath: return relative path
-	return GetRelativePathS(szFilename, General.ExePath);
+const char *C4Config::AtExeRelativePath(const char *szFilename) {
+    // Specified file is located in ExePath: return relative path
+    return GetRelativePathS(szFilename, General.ExePath);
 }
 
 void C4Config::ForceRelativePath(StdStrBuf *sFilename)
