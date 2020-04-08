@@ -530,6 +530,8 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 	static char StrBuff[C4AUL_MAX_String + 1];
 	char *pStrPos = StrBuff;
 
+	const auto strictLevel = Fn ? Fn->pOrgScript->Strict : a->Strict;
+
 	// loop until finished
 	while (true)
 	{
@@ -607,7 +609,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 				if (C >= '@')
 				{
 					// Old Scripts could have wacky identifier
-					if (a->Strict < C4AulScriptStrict::STRICT2)
+					if (strictLevel < C4AulScriptStrict::STRICT2)
 					{
 						State = TGS_Ident;
 						break;
@@ -679,8 +681,8 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					// check reserved names
 					if (SEqual(pToken, C4AUL_False)) { *pInt = false; return ATT_BOOL; }
 					if (SEqual(pToken, C4AUL_True)) { *pInt = true; return ATT_BOOL; }
-					if (SEqual(pToken, C4AUL_Nil) && a->Strict >= C4AulScriptStrict::STRICT3) { return ATT_NIL; }
-					if (SEqual(pToken, C4AUL_Global) && a->Strict >= C4AulScriptStrict::STRICT3 && C == '-' && *(SPos + 1) == '>') // "global->"
+					if (SEqual(pToken, C4AUL_Nil) && strictLevel >= C4AulScriptStrict::STRICT3) { return ATT_NIL; }
+					if (SEqual(pToken, C4AUL_Global) && strictLevel >= C4AulScriptStrict::STRICT3) && C == '-' && *(SPos + 1) == '>') // "global->"
 					{
 						SPos += 2;
 						return ATT_GLOBALCALL;
