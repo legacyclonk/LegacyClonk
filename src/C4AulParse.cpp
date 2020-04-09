@@ -682,7 +682,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					if (SEqual(pToken, C4AUL_False)) { *pInt = false; return ATT_BOOL; }
 					if (SEqual(pToken, C4AUL_True)) { *pInt = true; return ATT_BOOL; }
 					if (SEqual(pToken, C4AUL_Nil) && strictLevel >= C4AulScriptStrict::STRICT3) { return ATT_NIL; }
-					if (SEqual(pToken, C4AUL_Global) && strictLevel >= C4AulScriptStrict::STRICT3) && C == '-' && *(SPos + 1) == '>') // "global->"
+					if (SEqual(pToken, C4AUL_Global) && strictLevel >= C4AulScriptStrict::STRICT3 && C == '-' && *(SPos + 1) == '>') // "global->"
 					{
 						SPos += 2;
 						return ATT_GLOBALCALL;
