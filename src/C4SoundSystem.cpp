@@ -321,14 +321,14 @@ void C4SoundInstance::Execute()
 	// bound to an object?
 	if (pObj)
 	{
-		int iAudibility = pObj->Audible;
+		int iAudibility = pObj->GetAudibility();
 		// apply custom falloff distance
 		if (iFalloffDistance)
 		{
 			iAudibility = BoundBy<int32_t>(100 + (iAudibility - 100) * C4AudibilityRadius / iFalloffDistance, 0, 100);
 		}
 		iVol = iVol * iAudibility / 100;
-		iPan += pObj->AudiblePan;
+		iPan += pObj->GetAudiblePan();
 	}
 	// sound off?
 	if (!iVol)

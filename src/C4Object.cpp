@@ -110,7 +110,7 @@ void C4Object::Default()
 	OnFire = 0;
 	InLiquid = 0;
 	EntranceStatus = 0;
-	Audible = 0;
+	Audible = -1;
 	NeedEnergy = 0;
 	Timer = 0;
 	t_contact = 0;
@@ -209,7 +209,7 @@ bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
 	UpdateFace(true);
 
 	// Initial audibility
-	Audible = Game.GraphicsSystem.GetAudibility(x, y, &AudiblePan);
+	Audible = -1;
 
 	// Initial OCF
 	SetOCF();
@@ -348,7 +348,10 @@ void C4Object::UpdatePos()
 	// get new area covered
 	// do *NOT* do this while initializing, because object cannot be sorted by main list
 	if (!Initializing && Status == C4OS_NORMAL)
+	{
 		Game.Objects.UpdatePos(this);
+		Audible = -1; // outdated, needs to be recalculated if needed
+	}
 }
 
 void C4Object::UpdateFace(bool bUpdateShape, bool fTemp)
@@ -2215,8 +2218,9 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 		if (Def->ActMap[Action.Act].FacetTargetStretch)
 			fYStretchObject = true;
 
-	// Set audibility
-	if (!eDrawMode) SetAudibilityAt(cgo, x, y);
+	// Set audibility - only for parallax objects, others calculate it on demand
+	if (!eDrawMode && (Category & C4D_Parallax)) SetAudibilityAt(cgo, x, y);
+
 
 	// Output boundary
 	if (!fYStretchObject && !eDrawMode)
@@ -5518,6 +5522,7 @@ void C4Object::SetAudibilityAt(C4FacetEx &cgo, int32_t iX, int32_t iY)
 {
 	if (Category & C4D_Parallax)
 	{
+		Audible = 0;
 		// target pos (parallax)
 		int32_t cotx = cgo.TargetX, coty = cgo.TargetY; TargetPos(cotx, coty, cgo);
 		Audible = std::max<int32_t>(Audible, BoundBy(100 - 100 * Distance(cotx + cgo.Wdt / 2, coty + cgo.Hgt / 2, iX, iY) / C4AudibilityRadius, 0, 100));
@@ -5527,6 +5532,21 @@ void C4Object::SetAudibilityAt(C4FacetEx &cgo, int32_t iX, int32_t iY)
 	{
 		Audible = Game.GraphicsSystem.GetAudibility(iX, iY, &AudiblePan);
 	}
+}
+
+int32_t C4Object::GetAudibility()
+{
+	if (Audible == -1)
+	{
+		Audible = Game.GraphicsSystem.GetAudibility(x, y, &AudiblePan);
+	}
+	return Audible;
+}
+
+int32_t C4Object::GetAudiblePan()
+{
+	GetAudibility();
+	return AudiblePan;
 }
 
 bool C4Object::IsVisible(int32_t iForPlr, bool fAsOverlay)

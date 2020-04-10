@@ -780,7 +780,9 @@ void C4ObjectList::ResetAudibility()
 {
 	C4Object *cobj; C4ObjectLink *clnk;
 	for (clnk = First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
-		cobj->Audible = cobj->AudiblePan = 0;
+	{
+		cobj->ResetAudibility();
+	}
 }
 
 void C4ObjectList::SortByCategory()

@@ -137,7 +137,6 @@ public:
 	uint32_t Color;
 	int32_t Timer;
 	int32_t ViewEnergy; // NoSave //
-	int32_t Audible, AudiblePan; // NoSave //
 	C4ValueList Local;
 	C4ValueMapData LocalNamed;
 	int32_t PlrViewRange;
@@ -205,6 +204,7 @@ protected:
 	bool OnFire;
 	int32_t Con;
 	bool Alive;
+	int32_t Audible, AudiblePan; // NoSave //
 
 public:
 	void Resort();
@@ -361,6 +361,9 @@ public:
 	bool GetAlive() { return Alive; }
 	void PlrFoWActualize();
 	void SetAudibilityAt(C4FacetEx &cgo, int32_t iX, int32_t iY);
+	int32_t GetAudibility();
+	int32_t GetAudiblePan();
+	void ResetAudibility() { Audible = -1; AudiblePan = 0; }
 	bool IsVisible(int32_t iForPlr, bool fAsOverlay); // return whether an object is visible for the given player
 	void SetRotation(int32_t nr);
 	void PrepareDrawing(); // set blit modulation and/or additive blitting
