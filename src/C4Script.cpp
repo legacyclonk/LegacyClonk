@@ -6338,6 +6338,12 @@ static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, l
 	{
 		throw new C4AulExecError(ctx->Obj, "CustomMessage: Only one vertical positioning flag allowed!");
 	}
+
+	if (dwFlags & (C4GM_ALeft | C4GM_ACenter) || dwFlags & (C4GM_ALeft | C4GM_ARight) || dwFlags & (C4GM_ACenter | C4GM_ARight))
+	{
+		throw new C4AulExecError(ctx->Obj, "CustomMessage: Only one text alignment flag allowed!");
+	}
+
 	// message color
 	if (!dwClr) dwClr = 0xffffff;
 	dwClr = InvertRGBAAlpha(dwClr);
@@ -7263,6 +7269,9 @@ C4ScriptConstDef C4ScriptConstMap[] =
 	{ "MSG_WidthRel",    C4V_Int, C4GM_WidthRel },
 	{ "MSG_XRel",        C4V_Int, C4GM_XRel },
 	{ "MSG_YRel",        C4V_Int, C4GM_YRel },
+	{ "MSG_ALeft",       C4V_Int, C4GM_ALeft },
+	{ "MSG_ACenter",     C4V_Int, C4GM_ACenter },
+	{ "MSG_ARight",      C4V_Int, C4GM_ARight },
 
 	{ "C4PT_User",   C4V_Int, C4PT_User },
 	{ "C4PT_Script", C4V_Int, C4PT_Script },
