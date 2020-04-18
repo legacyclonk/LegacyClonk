@@ -6339,7 +6339,8 @@ static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, l
 		throw new C4AulExecError(ctx->Obj, "CustomMessage: Only one vertical positioning flag allowed!");
 	}
 
-	if (dwFlags & (C4GM_ALeft | C4GM_ACenter) || dwFlags & (C4GM_ALeft | C4GM_ARight) || dwFlags & (C4GM_ACenter | C4GM_ARight))
+	uint32_t alignment = dwFlags & (C4GM_ALeft | C4GM_ACenter | C4GM_ARight);
+	if (((alignment | alignment - 1) + 1) >> 1 != alignment)
 	{
 		throw new C4AulExecError(ctx->Obj, "CustomMessage: Only one text alignment flag allowed!");
 	}
