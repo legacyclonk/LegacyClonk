@@ -3171,6 +3171,8 @@ bool C4AulParseState::Parse_Expression3()
 				if (eCallType == AB_CALLGLOBAL)
 				{
 					pFunc = a->Engine->GetFunc(Idtf, a->Engine, nullptr);
+					// allocate space for return value, otherwise the call-target-variable is used, which is not present here
+					AddBCC(AB_STACK, +1);
 				}
 				else
 				{
@@ -3187,10 +3189,7 @@ bool C4AulParseState::Parse_Expression3()
 					Shift();
 					Parse_Params(0, nullptr);
 					// remove target from stack, push a zero value as result
-					if (eCallType != AB_CALLGLOBAL)
-					{
-						AddBCC(AB_STACK, -1);
-					}
+					AddBCC(AB_STACK, -1);
 					AddBCC(AB_STACK, +1);
 					// done
 					break;
