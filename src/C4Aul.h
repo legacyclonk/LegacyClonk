@@ -448,8 +448,8 @@ public:
 protected:
 	struct Append
 	{
-		C4ID id;
-		bool nowarn;
+		const C4ID id;
+		const bool nowarn;
 
 		bool operator==(C4ID other) const { return id == other; }
 	};

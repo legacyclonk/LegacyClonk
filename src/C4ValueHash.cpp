@@ -161,8 +161,14 @@ C4ValueHash::Iterator::Iterator(C4ValueHash *map, C4ValueHash::Iterator::iterato
 
 void C4ValueHash::Iterator::update()
 {
-	if(it != end) current = std::make_unique<pair_type>(**it, (*map)[**it]);
-	else current.reset();
+	if (it != end)
+	{
+		current = std::make_unique<pair_type>(**it, (*map)[**it]);
+	}
+	else
+	{
+		current.reset();
+	}
 }
 
 C4ValueHash::Iterator &C4ValueHash::Iterator::operator++()

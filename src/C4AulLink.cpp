@@ -38,7 +38,7 @@ bool C4AulScript::ResolveAppends(C4DefList *rDefs)
 			C4Def *Def = rDefs->ID2Def(a);
 			if (Def)
 				AppendTo(Def->Script, true);
-			else if(!nowarn)
+			else if (!nowarn)
 			{
 				// save id in buffer because AulWarn will use the buffer of C4IdText
 				// to get the id of the object in which the error occurs...

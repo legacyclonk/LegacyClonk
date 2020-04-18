@@ -2443,10 +2443,10 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 		}
 		else
 		{
-			if(!Config.Network.LeaguePassword.getLength() || !Config.Network.LeagueAutoLogin)
+			if (!Config.Network.LeaguePassword.getLength() || !Config.Network.LeagueAutoLogin)
 			{
 				// ask for account
-				if(!C4LeagueSignupDialog::ShowModal(pInfo->GetName(), "", pLeagueClient->getServerName(), &Config.Network.LeagueAccount, &Config.Network.LeaguePassword, !fOfficialLeague, false))
+				if (!C4LeagueSignupDialog::ShowModal(pInfo->GetName(), "", pLeagueClient->getServerName(), &Config.Network.LeagueAccount, &Config.Network.LeaguePassword, !fOfficialLeague, false))
 					return false;
 			}
 			Account.Copy(Config.Network.LeagueAccount);
@@ -2503,7 +2503,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 			// Set AUID
 			pInfo->SetAuthID(AUID.getData());
 
-			if(Config.Network.LeagueAutoLogin)
+			if (Config.Network.LeagueAutoLogin)
 				return true;
 
 			// Show welcome message, if any

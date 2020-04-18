@@ -177,7 +177,7 @@ bool C4Game::OpenScenario()
 	if (!C4S.Definitions.AllowUserChange)
 	{
 		const std::vector<std::string> &defs = C4S.Definitions.GetModules();
-		if(!defs.empty()) DefinitionFilenames = defs;
+		if (!defs.empty()) DefinitionFilenames = defs;
 
 		if (DefinitionFilenames.empty())
 		{

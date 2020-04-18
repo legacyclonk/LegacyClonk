@@ -654,7 +654,7 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	// calc stretch
 
 	const auto scalingCorrection = (pApp->GetScale() != 1.f && !noScalingCorrection ? 0.5f : 0.f);
-	if(scalingCorrection != 0)
+	if (scalingCorrection != 0)
 	{
 		if (fwdt > 1)
 		{

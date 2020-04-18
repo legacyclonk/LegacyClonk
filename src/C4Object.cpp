@@ -1302,7 +1302,7 @@ constexpr T clampedMultiplication(T x, T y)
 	{
 		return min;
 	}
-	else if(x > 0 && x > max / y) // would give positive overflow, so make it the most positive possible
+	else if (x > 0 && x > max / y) // would give positive overflow, so make it the most positive possible
 	{
 		return max;
 	}
@@ -1322,7 +1322,7 @@ constexpr T clampedAddition(T x, T y)
 	{
 		return min;
 	}
-	else if(x > 0 && y > max - x) // would give positive overflow, so make it the most positive possible
+	else if (x > 0 && y > max - x) // would give positive overflow, so make it the most positive possible
 	{
 		return max;
 	}

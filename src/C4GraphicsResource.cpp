@@ -463,7 +463,7 @@ bool C4GraphicsResource::ReloadResolutionDependentFiles()
 		800
 	};
 	size_t index = 5;
-	if(resX > breakPoints.front())
+	if (resX > breakPoints.front())
 	{
 		index -= std::min(index, static_cast<size_t>(std::max(1.f, Application.GetScale()) - 0.5f));
 	}

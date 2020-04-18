@@ -135,7 +135,7 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 		if (Application.DDraw)
 		{
 			if (!oldActive && Application.Active) Application.DDraw->RestoreDeviceObjects();
-			else if(oldActive && !Application.Active) Application.DDraw->InvalidateDeviceObjects();
+			else if (oldActive && !Application.Active) Application.DDraw->InvalidateDeviceObjects();
 		}
 	}
 		break;

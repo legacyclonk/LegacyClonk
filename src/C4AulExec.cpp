@@ -406,7 +406,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				if (pCurCtx->Func->Owner->Def != pCurCtx->Obj->Def)
 				{
 					const auto localName = pCurCtx->Func->Owner->Def->Script.LocalNamed.pNames[pCPos->bccX];
-					if(pCurCtx->Func->pOrgScript->Strict >= C4AulScriptStrict::STRICT3 || pCurCtx->Obj->LocalNamed.pNames->iSize <= pCPos->bccX)
+					if (pCurCtx->Func->pOrgScript->Strict >= C4AulScriptStrict::STRICT3 || pCurCtx->Obj->LocalNamed.pNames->iSize <= pCPos->bccX)
 					{
 						throw new C4AulExecError(pCurCtx->Obj, FormatString("can't access local variable \"%s\" after ChangeDef!", localName).getData());
 					}
@@ -1192,7 +1192,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 
 				// Get call target - "object" or "id" are allowed
 				C4Object *pDestObj{}; C4Def *pDestDef{};
-				if(!isGlobal)
+				if (!isGlobal)
 				{
 					if (pTargetVal->ConvertTo(C4V_C4Object))
 					{
