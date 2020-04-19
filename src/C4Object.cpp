@@ -3212,7 +3212,7 @@ bool C4Object::ContainedControl(uint8_t byCom)
 	// in old versions, do hardcoded actions first (until gwe3)
 	// new objects may overload them
 	C4Def *pCDef = Contained->Def;
-	bool fCallSfEarly = CompareVersion(pCDef->rC4XVer[0], pCDef->rC4XVer[1], pCDef->rC4XVer[2], pCDef->rC4XVer[3], 4, 9, 1, 3) >= 0;
+	bool fCallSfEarly = CompareVersion(pCDef->rC4XVer[0], pCDef->rC4XVer[1], pCDef->rC4XVer[2], pCDef->rC4XVer[3], 0, 4, 9, 1, 3) >= 0;
 	bool result = false;
 	C4Player *pPlr = Game.Players.Get(Controller);
 	if (fCallSfEarly)
@@ -3491,7 +3491,7 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 			// New grab-control model: objects version 4.95 or higher (CE)
 			// may overload control of grabbing clonks
 			C4Def *pTDef = Action.Target->Def;
-			if (CompareVersion(pTDef->rC4XVer[0], pTDef->rC4XVer[1], pTDef->rC4XVer[2], pTDef->rC4XVer[3], 4, 9, 5, 0) >= 0)
+			if (CompareVersion(pTDef->rC4XVer[0], pTDef->rC4XVer[1], pTDef->rC4XVer[2], pTDef->rC4XVer[3], 0, 4, 9, 5, 0) >= 0)
 				fGrabControlOverload = true;
 		}
 		// Call object control first in case it overloads
@@ -3642,7 +3642,7 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 			// New grab-control model: objects version 4.95 or higher (CE)
 			// may overload control of grabbing clonks
 			C4Def *pTDef = Action.Target->Def;
-			if (CompareVersion(pTDef->rC4XVer[0], pTDef->rC4XVer[1], pTDef->rC4XVer[2], pTDef->rC4XVer[3], 4, 9, 5, 0) >= 0)
+			if (CompareVersion(pTDef->rC4XVer[0], pTDef->rC4XVer[1], pTDef->rC4XVer[2], pTDef->rC4XVer[3], 0, 4, 9, 5, 0) >= 0)
 				fGrabControlOverload = true;
 			// Call object control first in case it overloads
 			if (fGrabControlOverload)

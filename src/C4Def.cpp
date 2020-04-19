@@ -140,7 +140,7 @@ C4DefCore::C4DefCore()
 
 void C4DefCore::Default()
 {
-	rC4XVer[0] = rC4XVer[1] = rC4XVer[2] = rC4XVer[3] = 0;
+	std::fill(rC4XVer, std::end(rC4XVer), 0);
 	RequireDef.Clear();
 	Name.Ref("Undefined");
 	Physical.Default();
@@ -1284,14 +1284,14 @@ C4Def *C4DefList::GetByPath(const char *szPath)
 }
 #endif
 
-int32_t C4DefList::CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, int32_t ver4)
+int32_t C4DefList::CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, int32_t ver4, int32_t ver5)
 {
 	int32_t rcount = 0;
 	C4Def *cdef, *prev, *next;
 	for (cdef = FirstDef, prev = nullptr; cdef; cdef = next)
 	{
 		next = cdef->Next;
-		if (CompareVersion(cdef->rC4XVer[0], cdef->rC4XVer[1], cdef->rC4XVer[2], cdef->rC4XVer[3], ver1, ver2, ver3, ver4) > 0)
+		if (CompareVersion(cdef->rC4XVer[0], cdef->rC4XVer[1], cdef->rC4XVer[2], cdef->rC4XVer[3], cdef->rC4XVer[4], ver1, ver2, ver3, ver4, ver5) > 0)
 		{
 			if (prev) prev->Next = cdef->Next;
 			else FirstDef = cdef->Next;
