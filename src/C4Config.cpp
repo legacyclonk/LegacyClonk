@@ -207,9 +207,9 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(s(ServerAddress),          "ServerAddress",          C4CFG_LeagueServer, false, true));
 	pComp->Value(mkNamingAdapt(UseAlternateServer,        "UseAlternateServer",     false,  false, true));
 	pComp->Value(mkNamingAdapt(s(AlternateServerAddress), "AlternateServerAddress", C4CFG_LeagueServer, false, true));
-	pComp->Value(mkNamingAdapt(s(UpdateServerAddress),    "UpdateServerAddress",    C4CFG_UpdateServer, false, true));
+	pComp->Value(mkNamingAdapt(s(UpdateServerAddress),    "UpdateServerAddress",    C4CFG_UpdateServer));
 	pComp->Value(mkNamingAdapt(s(LastPassword),           "LastPassword",           "Wipf", false, true));
-	pComp->Value(mkNamingAdapt(AutomaticUpdate,           "AutomaticUpdate",        false, false, true));
+	pComp->Value(mkNamingAdapt(AutomaticUpdate,           "EnableAutomaticUpdate",  true));
 	pComp->Value(mkNamingAdapt(LastUpdateTime,            "LastUpdateTime",         0,    false, true));
 	pComp->Value(mkNamingAdapt(AsyncMaxWait,              "AsyncMaxWait",           2,    false, true));
 
