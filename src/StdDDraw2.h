@@ -25,6 +25,7 @@
 #include <StdBuf.h>
 
 #include <array>
+#include <unordered_map>
 #include <stack>
 
 // texref-predef

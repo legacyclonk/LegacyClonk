@@ -28,6 +28,7 @@
 
 #include <list>
 #include <memory>
+#include <vector>
 
 // config settings
 #define C4GFXCFG_NO_ALPHA_ADD    1
