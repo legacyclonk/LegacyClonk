@@ -720,11 +720,6 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 			continue;
 		}
 
-		if (!modes.empty() && modes.top() == DrawMode::Text)
-		{
-			asm("nop");
-		}
-
 		FLOAT_RECT target;
 		target.left   = (vertices.left - fx) * scaleX + tx;
 		target.top    = (vertices.top - fy) * scaleY + ty;
