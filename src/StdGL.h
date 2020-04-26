@@ -145,6 +145,7 @@ public:
 	bool PageFlip() override; // present scene
 
 protected:
+	bool MakeCurrent();
 	void DoDeselect();
 	bool CreateContext(int major, int minor, bool core = true);
 	bool InitGLEW();

@@ -26,6 +26,40 @@
 
 #ifdef USE_GL
 
+#ifdef USE_X11
+#include <X11/extensions/xf86vmode.h>
+#include <GL/gl.h>
+#include <GL/glx.h>
+#endif
+
+bool CStdGLCtx::Select(bool verbose, bool selectOnly)
+{
+	// safety
+	if (!pGL || !hrc) return false; if (!pGL->lpPrimary) return false;
+
+	// make context current
+	if (!MakeCurrent()) return false;
+
+	if (!selectOnly)
+	{
+		pGL->pCurrCtx = this;
+		// update size
+		UpdateSize();
+		// assign size
+		pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
+		// set some default states
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+		glDisable(GL_CULL_FACE);
+		glEnable(GL_BLEND);
+		// update clipper - might have been done by UpdateSize
+		// however, the wrong size might have been assumed
+		if (!pGL->UpdateClipper()) return false;
+	}
+	// success
+	return true;
+}
+
 void CStdGLCtx::Deselect(bool secondary)
 {
 	if (pGL && pGL->pCurrCtx == this)
@@ -39,32 +73,99 @@ void CStdGLCtx::Deselect(bool secondary)
 	}
 }
 
-#ifdef _WIN32
+bool CStdGLCtx::InitGLEW()
+{
+	GLenum err = glewInit();
+	return err == GLEW_OK || pGL->Error(FormatString("  gl: glewInit(): %s", reinterpret_cast<const char *>(glewGetErrorString(err))).getData());
+}
 
-CStdGLCtx::CStdGLCtx() : hrc(nullptr), pWindow(nullptr), hDC(nullptr), cx(0), cy(0) {}
+bool CStdGLCtx::CheckExtension(const char *extension)
+{
+	return glewIsSupported(extension) || pGL->Error(FormatString("  gl: Extension(s) %s not supported", extension).getData());
+}
+
+bool CStdGLCtx::ApplyVAOWorkaround()
+{
+	if (CheckExtension("APPLE_vertex_array_objects"))
+	{
+		pGL->DebugLog("  gl: Using APPLE_vertex_array_objects");
+
+		glGenVertexArrays = reinterpret_cast<PFNGLGENVERTEXARRAYSPROC>(glGenVertexArraysAPPLE);
+		glBindVertexArray = reinterpret_cast<PFNGLBINDVERTEXARRAYPROC>(glBindVertexArrayAPPLE);
+		glDeleteVertexArrays = reinterpret_cast<PFNGLDELETEVERTEXARRAYSPROC>(glDeleteVertexArraysAPPLE);
+		glIsVertexArray = reinterpret_cast<PFNGLISVERTEXARRAYPROC>(glIsVertexArrayAPPLE);
+
+		return true;
+	}
+
+	/*else if (CheckExtension("SGIX_vertex_array_objects"))
+	{
+		pGL->DebugLog("  gl: Using SGIX_vertex_array_objects");
+
+		glGenVertexArrays = reinterpret_cast<PFNGLGENVERTEXARRAYSPROC>(glGenVertexArraysSGIX);
+		glBindVertexArray = reinterpret_cast<PFNGLBINDVERTEXARRAYPROC>(glBindVertexArraySGIX);
+		glDeleteVertexArrays = reinterpret_cast<PFNGLDELETEVERTEXARRAYSPROC>(glDeleteVertexArraysSGIX);
+		glIsVertexArray = reinterpret_cast<PFNGLISVERTEXARRAYPROC>(glIsVertexArraySGIX);
+
+		return true;
+	}*/
+
+	else
+	{
+		return pGL->Error("  gl: Could not apply vertex array object workaround");
+	}
+}
 
 void CStdGLCtx::Clear()
 {
-	if (hrc)
-	{
-		Deselect();
-		wglDeleteContext(hrc); hrc = nullptr;
-	}
-	if (hDC)
-	{
-		ReleaseDC(pWindow ? pWindow->GetRenderWindow() : hWindow, hDC);
-		hDC = nullptr;
-	}
-	pWindow = 0; cx = cy = 0; hWindow = nullptr;
+	Deselect();
+	Destroy();
+	pWindow = nullptr;
+	cx = cy = 0;
+}
+
+#ifdef _WIN32
+namespace
+{
+	using wglCreateContextAttribsARB_t = HGLRC WINAPI (HDC, HGLRC, const int *);
+	using wglChoosePixelFormatARB_t = BOOL WINAPI (HDC, const int *, const FLOAT *, UINT, int *, UINT *);
+
+	wglCreateContextAttribsARB_t *wglCreateContextAttribsARB = nullptr;
+	wglChoosePixelFormatARB_t *wglChoosePixelFormatARB = nullptr;
+
+	constexpr int WGL_CONTEXT_MAJOR_VERSION_ARB = 0x2091;
+	constexpr int WGL_CONTEXT_MINOR_VERSION_ARB = 0x2092;
+	constexpr int WGL_CONTEXT_PROFILE_MASK_ARB = 0x9126;
+	constexpr int WGL_CONTEXT_CORE_PROFILE_BIT_ARB = 0x00000001;
+	constexpr int WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB = 0x00000002;
+	constexpr int WGL_CONTEXT_DEBUG_BIT_ARB = 0x0001;
+	constexpr int WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB = 0x0002;
+
+	constexpr int WGL_DRAW_TO_WINDOW_ARB = 0x2001;
+	constexpr int WGL_ACCELERATION_ARB = 0x2003;
+	constexpr int WGL_SUPPORT_OPENGL_ARB = 0x2010;
+	constexpr int WGL_DOUBLE_BUFFER_ARB = 0x2011;
+	constexpr int WGL_PIXEL_TYPE_ARB = 0x2013;
+	constexpr int WGL_COLOR_BITS_ARB = 0x2014;
+	constexpr int WGL_DEPTH_BITS_ARB = 0x2022;
+	constexpr int WGL_STENCIL_BITS_ARB = 0x2023;
+	constexpr int WGL_FULL_ACCELERATION_ARB = 0x2027;
+	constexpr int WGL_TYPE_RGBA_ARB = 0x2028;
 }
 
 bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
+
+#else
+bool CStdGLCtx::Init(CStdWindow *pWIndow, CStdApp *pApp)
+#endif
 {
 	// safety
 	if (!pGL) return false;
 
 	// store window
 	this->pWindow = pWindow;
+
+#ifdef _WIN32
 	// default HWND
 	if (pWindow) hWindow = pWindow->GetRenderWindow(); else this->hWindow = hWindow;
 
@@ -81,152 +182,42 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
 	pfd.cColorBits = 32;
 	pfd.cDepthBits = 0;
 	pfd.iLayerType = PFD_MAIN_PLANE;
-	const auto pixelFormat = ChoosePixelFormat(hDC, &pfd);
-	if (pixelFormat == 0) return !!pGL->Error("  gl: Error getting pixel format");
-	if (!SetPixelFormat(hDC, pixelFormat, &pfd)) pGL->Error("  gl: Error setting pixel format");
+	int pixelFormat = ChoosePixelFormat(hDC, &pfd);
+	if (pixelFormat == 0) return !!pGL->Error("  gl: Error getting dummy pixel format");
+	if (!SetPixelFormat(hDC, pixelFormat, &pfd)) pGL->Error("  gl: Error setting dummy pixel format");
 
-	// create context
-	hrc = wglCreateContext(hDC); if (!hrc) return !!pGL->Error("  gl: Error creating gl context");
+	// create dummy context
+	hrc = wglCreateContext(hDC); if (!hrc) return !!pGL->Error("  gl: Error creating dummy gl context");
 
-	// share textures
+	MakeCurrent();
+
+	wglCreateContextAttribsARB = reinterpret_cast<wglCreateContextAttribsARB_t *>(wglGetProcAddress("wglCreateContextAttribsARB"));
+	wglChoosePixelFormatARB = reinterpret_cast<wglChoosePixelFormatARB_t *>(wglGetProcAddress("wglChoosePixelFormatARB"));
+
+	constexpr int pixelFormatAttributes[]
+	{
+		WGL_DRAW_TO_WINDOW_ARB, TRUE,
+		WGL_SUPPORT_OPENGL_ARB, TRUE,
+		WGL_DOUBLE_BUFFER_ARB, TRUE,
+		WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+		WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+		WGL_COLOR_BITS_ARB, 32,
+		WGL_DEPTH_BITS_ARB, 24,
+		WGL_STENCIL_BITS_ARB, 8,
+		0
+	};
+
+	UINT formatCount;
+	wglChoosePixelFormatARB(hDC, pixelFormatAttributes, nullptr, 1, &pixelFormat, &formatCount);
+	DescribePixelFormat(hDC, pixelFormat, sizeof(pfd), &pfd);
+
+	if (!SetPixelFormat(hDC, pixelFormat, &pfd))
+	{
+		return pGL->Error("  gl: Error setting pixel format");
+	}
+
 	wglMakeCurrent(nullptr, nullptr); pGL->pCurrCtx = nullptr;
-	if (this != &pGL->MainCtx)
-	{
-		if (!wglShareLists(pGL->MainCtx.hrc, hrc)) pGL->Error("  gl: Textures for secondary context not available");
-		return true;
-	}
-
-	// select
-	if (!Select()) return !!pGL->Error("  gl: Unable to select context");
-
-	// init extensions
-	glewExperimental = true;
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		// Problem: glewInit failed, something is seriously wrong.
-		pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
-	}
-	// success
-	return true;
-}
-
-bool CStdGLCtx::Select(bool verbose, bool selectOnly)
-{
-	// safety
-	if (!pGL || !hrc) return false; if (!pGL->lpPrimary) return false;
-	// make context current
-	if (!wglMakeCurrent(hDC, hrc)) return false;
-
-	if (!selectOnly)
-	{
-		pGL->pCurrCtx = this;
-		// update size
-		UpdateSize();
-		// assign size
-		pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
-		// set some default states
-		glDisable(GL_DEPTH_TEST);
-		glShadeModel(GL_FLAT);
-		glDisable(GL_ALPHA_TEST);
-		glDisable(GL_CULL_FACE);
-		glEnable(GL_BLEND);
-		// update clipper - might have been done by UpdateSize
-		// however, the wrong size might have been assumed
-		if (!pGL->UpdateClipper()) return false;
-	}
-	// success
-	return true;
-}
-
-void CStdGLCtx::DoDeselect()
-{
-	wglMakeCurrent(nullptr, nullptr);
-}
-
-bool CStdGLCtx::UpdateSize()
-{
-	// safety
-	if (!pWindow && !hWindow) return false;
-	// get size
-	RECT rt; if (!GetClientRect(pWindow ? pWindow->GetRenderWindow() : hWindow, &rt)) return false;
-	const auto scale = pGL->pApp->GetScale();
-	int cx2 = static_cast<int32_t>(ceilf((rt.right - rt.left) / scale)), cy2 = static_cast<int32_t>(ceilf((rt.bottom - rt.top) / scale));
-	// assign if different
-	if (cx != cx2 || cy != cy2)
-	{
-		cx = cx2; cy = cy2;
-		if (pGL) pGL->UpdateClipper();
-	}
-	// success
-	return true;
-}
-
-bool CStdGLCtx::PageFlip()
-{
-	// flush GL buffer
-	glFlush();
-	SwapBuffers(hDC);
-	return true;
-}
-
-bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
-{
-	HDC hDC = GetDC(pWindow->GetRenderWindow());
-	if (hDC)
-	{
-		if (!GetDeviceGammaRamp(hDC, DefRamp.red))
-		{
-			DefRamp.Default();
-			Log("  Error getting default gamma ramp; using standard");
-		}
-		ReleaseDC(pWindow->GetRenderWindow(), hDC);
-		return true;
-	}
-	return false;
-}
-
-bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
-{
-	if (!MainCtx.hDC || (!Active && !fForce)) return false;
-	if (!SetDeviceGammaRamp(MainCtx.hDC, ramp.red))
-	{
-		int i = ::GetLastError();
-	}
-	return true;
-}
-
-#elif defined(USE_X11)
-
-#include <X11/extensions/xf86vmode.h>
-#include <GL/gl.h>
-#include <GL/glx.h>
-
-CStdGLCtx::CStdGLCtx() : pWindow(nullptr), ctx(nullptr), cx(0), cy(0) {}
-
-void CStdGLCtx::Clear()
-{
-	Deselect();
-	Destroy();
-	pWindow = nullptr;
-	cx = cy = 0;
-}
-
-void CStdGLCtx::Destroy()
-{
-	if (ctx)
-	{
-		glXDestroyContext(pWindow->dpy, ctx);
-		ctx = nullptr;
-	}
-}
-
-bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
-{
-	// safety
-	if (!pGL) return false;
-	// store window
-	this->pWindow = pWindow;
+#endif
 
 	if (!CreateContext(3, 2))
 	{
@@ -246,11 +237,42 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 		}
 	}
 
+	// success
 	return true;
 }
 
 bool CStdGLCtx::CreateContext(int major, int minor, bool core)
 {
+#ifdef _WIN32
+	static int contextAttributes[]
+	{
+		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+		WGL_CONTEXT_MINOR_VERSION_ARB, 1,
+		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		0
+	};
+
+	contextAttributes[1] = major;
+	contextAttributes[3] = minor;
+	contextAttributes[5] = (core ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB);// | WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+
+#ifdef _DEBUG
+	contextAttributes[5] |= WGL_CONTEXT_DEBUG_BIT_ARB;
+#endif
+
+	hrc = wglCreateContextAttribsARB(hDC, 0, contextAttributes);
+
+	// select
+	if (!Select()) return !!pGL->Error(FormatString("  gl: Unable to select context: 0x%x", GetLastError() & 0xFFFF).getData());
+
+	if (this != &pGL->MainCtx)
+	{
+		if (!wglShareLists(pGL->MainCtx.hrc, hrc)) pGL->Error("  gl: Textures for secondary context not available");
+		return true;
+	}
+
+	return hrc && InitGLEW();
+#elif defined(USE_X11)
 	static int contextAttributes[]
 	{
 		GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
@@ -291,107 +313,117 @@ bool CStdGLCtx::CreateContext(int major, int minor, bool core)
 	// select
 	if (!Select()) return pGL->Error("  gl: Unable to select context");
 
-	InitGLEW();
-
-#ifdef _DEBUG
-	pGL->DebugLog("  gl: Extensions:");
-	pGL->DebugLog(reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS)));
+	return !error && ctx && InitGLEW();
+#elif defined(USE_SDL_MAINLOOP)
+	if (!Select(true)) return pGL->Error("  gl: Unable to select context");
+	return InitGLEW();
 #endif
-
-	return !error && ctx;
 }
 
-bool CStdGLCtx::InitGLEW()
+void CStdGLCtx::DoDeselect()
 {
-	GLenum err = glewInit();
-	return err == GLEW_OK || pGL->Error(FormatString("  gl: glewInit(): %s", reinterpret_cast<const char *>(glewGetErrorString(err))).getData());
+	if (pGL && pGL->pCurrCtx == this)
+	{
+#ifdef _WIN32
+		wglMakeCurrent(nullptr, nullptr);
+#elif defined(USE_X11)
+		glXMakeCurrent(pWindow->dpy, None, nullptr);
+#endif
+	}
 }
 
-bool CStdGLCtx::CheckExtension(const char *extension)
+bool CStdGLCtx::PageFlip()
 {
-	return glewIsSupported(extension) || pGL->Error(FormatString("  gl: Extension(s) %s not supported", extension).getData());
+	// flush GL buffer
+	glFlush();
+#ifdef _WIN32
+	SwapBuffers(hDC);
+#elif defined(USE_X11)
+	if (!pWindow || !pWindow->renderwnd) return false;
+	glXSwapBuffers(pWindow->dpy, pWindow->renderwnd);
+#elif defined(USE_SDL_MAINLOOP)
+	if (!pWindow) return false;
+	SDL_GL_SwapBuffers();
+#endif
+	return true;
 }
 
-bool CStdGLCtx::Select(bool verbose, bool selectOnly)
+#ifdef _WIN32
+
+CStdGLCtx::CStdGLCtx() : hrc(nullptr), pWindow(nullptr), hDC(nullptr), cx(0), cy(0) {}
+
+void CStdGLCtx::Destroy()
+{
+	if (hrc)
+	{
+		wglDeleteContext(hrc); hrc = nullptr;
+	}
+
+	if (hDC)
+	{
+		ReleaseDC(pWindow ? pWindow->GetRenderWindow() : hWindow, hDC);
+		hDC = nullptr;
+	}
+
+	hWindow = nullptr;
+}
+
+bool CStdGLCtx::UpdateSize()
 {
 	// safety
-	if (!pGL || !ctx)
+	if (!pWindow && !hWindow) return false;
+	// get size
+	RECT rt; if (!GetClientRect(pWindow ? pWindow->GetRenderWindow() : hWindow, &rt)) return false;
+	const auto scale = pGL->pApp->GetScale();
+	int cx2 = static_cast<int32_t>(ceilf((rt.right - rt.left) / scale)), cy2 = static_cast<int32_t>(ceilf((rt.bottom - rt.top) / scale));
+	// assign if different
+	if (cx != cx2 || cy != cy2)
 	{
-		if (verbose) pGL->Error("  gl: pGL is zero");
-		return false;
-	}
-	if (!pGL->lpPrimary)
-	{
-		if (verbose) pGL->Error("  gl: lpPrimary is zero");
-		return false;
-	}
-	// make context current
-	if (!pWindow->renderwnd || !glXMakeCurrent(pWindow->dpy, pWindow->renderwnd, ctx))
-	{
-		if (verbose) pGL->Error("  gl: glXMakeCurrent failed");
-		return false;
-	}
-
-	if (!selectOnly)
-	{
-		pGL->pCurrCtx = this;
-		// update size FIXME: Don't call this every frame
-		UpdateSize();
-		// assign size
-		pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
-		// set some default states
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
-		glDisable(GL_CULL_FACE);
-		glEnable(GL_BLEND);
-		// update clipper - might have been done by UpdateSize
-		// however, the wrong size might have been assumed
-		if (!pGL->UpdateClipper())
-		{
-			if (verbose) pGL->Error("  gl: UpdateClipper failed");
-			return false;
-		}
+		cx = cx2; cy = cy2;
+		if (pGL) pGL->UpdateClipper();
 	}
 	// success
 	return true;
 }
 
-void CStdGLCtx::DoDeselect()
+bool CStdGLCtx::MakeCurrent()
 {
-	glXMakeCurrent(pWindow->dpy, None, nullptr);
+	return wglMakeCurrent(hDC, hrc);
 }
 
-bool CStdGLCtx::ApplyVAOWorkaround()
+bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 {
-	if (CheckExtension("APPLE_vertex_array_objects"))
+	HDC hDC = GetDC(pWindow->GetRenderWindow());
+	if (hDC)
 	{
-		pGL->DebugLog("  gl: Using APPLE_vertex_array_objects");
-
-		glGenVertexArrays = reinterpret_cast<PFNGLGENVERTEXARRAYSPROC>(glGenVertexArraysAPPLE);
-		glBindVertexArray = reinterpret_cast<PFNGLBINDVERTEXARRAYPROC>(glBindVertexArrayAPPLE);
-		glDeleteVertexArrays = reinterpret_cast<PFNGLDELETEVERTEXARRAYSPROC>(glDeleteVertexArraysAPPLE);
-		glIsVertexArray = reinterpret_cast<PFNGLISVERTEXARRAYPROC>(glIsVertexArrayAPPLE);
-
+		if (!GetDeviceGammaRamp(hDC, DefRamp.red))
+		{
+			DefRamp.Default();
+			Log("  Error getting default gamma ramp; using standard");
+		}
+		ReleaseDC(pWindow->GetRenderWindow(), hDC);
 		return true;
 	}
-
-	else if (CheckExtension("SGIX_vertex_array_objects"))
-	{
-		pGL->DebugLog("  gl: Using SGIX_vertex_array_objects");
-
-		glGenVertexArrays = reinterpret_cast<PFNGLGENVERTEXARRAYSPROC>(glGenVertexArraysSGIX);
-		glBindVertexArray = reinterpret_cast<PFNGLBINDVERTEXARRAYPROC>(glBindVertexArraySGIX);
-		glDeleteVertexArrays = reinterpret_cast<PFNGLDELETEVERTEXARRAYSPROC>(glDeleteVertexArraysSGIX);
-		glIsVertexArray = reinterpret_cast<PFNGLISVERTEXARRAYPROC>(glIsVertexArraySGIX);
-
-		return true;
-	}
-
-	else
-	{
-		return pGL->Error("  gl: Could not apply vertex array object workaround");
-	}
+	return false;
 }
+
+bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
+{
+	if (!MainCtx.hDC || (!Active && !fForce)) return false;
+	if (!SetDeviceGammaRamp(MainCtx.hDC, ramp.red))
+	{
+		int i = ::GetLastError();
+	}
+	return true;
+}
+
+#elif defined(USE_X11)
+
+#include <X11/extensions/xf86vmode.h>
+#include <GL/gl.h>
+#include <GL/glx.h>
+
+CStdGLCtx::CStdGLCtx() : pWindow(nullptr), cx(0), cy(0), ctx(0) {}
 
 bool CStdGLCtx::UpdateSize()
 {
@@ -418,13 +450,9 @@ bool CStdGLCtx::UpdateSize()
 	return true;
 }
 
-bool CStdGLCtx::PageFlip()
+bool CStdGLCtx::MakeCurrent()
 {
-	// flush GL buffer
-	glFlush();
-	if (!pWindow || !pWindow->renderwnd) return false;
-	glXSwapBuffers(pWindow->dpy, pWindow->renderwnd);
-	return true;
+	return glXMakeCurrent(pWindow->dpy, pWindow->renderwnd, ctx);
 }
 
 bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
@@ -462,64 +490,6 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 
 CStdGLCtx::CStdGLCtx() : pWindow(nullptr), cx(0), cy(0) {}
 
-void CStdGLCtx::Clear()
-{
-	pWindow = nullptr;
-	cx = cy = 0;
-}
-
-bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
-{
-	// safety
-	if (!pGL) return false;
-	// store window
-	this->pWindow = pWindow;
-	assert(!DDrawCfg.NoAcceleration);
-	// No luck at all?
-	if (!Select(true)) return pGL->Error("  gl: Unable to select context");
-	// init extensions
-	glewExperimental = true;
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		// Problem: glewInit failed, something is seriously wrong.
-		pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
-	}
-	return true;
-}
-
-bool CStdGLCtx::Select(bool verbose, bool selectOnly)
-{
-	if (!selectOnly)
-	{
-		pGL->pCurrCtx = this;
-		// update size FIXME: Don't call this every frame
-		UpdateSize();
-		// assign size
-		pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
-		// set some default states
-		glDisable(GL_DEPTH_TEST);
-		glShadeModel(GL_FLAT);
-		glDisable(GL_ALPHA_TEST);
-		glDisable(GL_CULL_FACE);
-		glEnable(GL_BLEND);
-		// update clipper - might have been done by UpdateSize
-		// however, the wrong size might have been assumed
-		if (!pGL->UpdateClipper())
-		{
-			if (verbose) pGL->Error("  gl: UpdateClipper failed");
-			return false;
-		}
-	}
-	// success
-	return true;
-}
-
-void CStdGLCtx::DoDeselect()
-{
-
-}
-
 bool CStdGLCtx::UpdateSize()
 {
 	// safety
@@ -539,12 +509,8 @@ bool CStdGLCtx::UpdateSize()
 	return true;
 }
 
-bool CStdGLCtx::PageFlip()
+bool CStdGLCtx::MakeCurrent()
 {
-	// flush GL buffer
-	glFlush();
-	if (!pWindow) return false;
-	SDL_GL_SwapBuffers();
 	return true;
 }
 

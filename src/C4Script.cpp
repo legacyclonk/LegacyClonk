@@ -6981,11 +6981,8 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SetNextMission",                  FnSetNextMission);
 	AddFunc(pEngine, "GetKeys",                         FnGetKeys);
 	AddFunc(pEngine, "GetValues",                       FnGetValues);
-<<<<<<< HEAD
 	AddFunc(pEngine, "SetRestoreInfos",                 FnSetRestoreInfos);
-=======
 	AddFunc(pEngine, "SetShaderProgramForMode",         FnSetShaderProgramForMode);
->>>>>>> 41f02d8... Add script shaders
 	new C4AulDefCastFunc(pEngine, "ScoreboardCol", C4V_C4ID, C4V_Int);
 	new C4AulDefCastFunc(pEngine, "CastInt",       C4V_Any,  C4V_Int);
 	new C4AulDefCastFunc(pEngine, "CastBool",      C4V_Any,  C4V_Bool);

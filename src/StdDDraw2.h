@@ -279,7 +279,7 @@ class CStdDDrawContext
 {
 public:
 	virtual ~CStdDDrawContext() {}
-	virtual bool Select(bool verbose = false) = 0;
+	virtual bool Select(bool verbose = false, bool selectOnly = false) = 0;
 	virtual bool UpdateSize() = 0;
 	virtual bool PageFlip() = 0;
 };
