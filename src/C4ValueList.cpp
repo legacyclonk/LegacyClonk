@@ -188,10 +188,17 @@ void C4ValueList::CompileFunc(class StdCompiler *pComp)
 	}
 	else
 	{
-		// Allocate
-		if (pComp->isCompiler()) this->SetSize(inSize);
-		// Values
-		pComp->Value(mkArrayAdapt(pData, iSize, C4Value()));
+		if (pComp->isCompiler())
+		{
+			// Allocate
+			this->SetSize(inSize);
+			// Values
+			pComp->Value(mkArrayAdapt(pData, iSize, C4Value()));
+		}
+		else
+		{
+			pComp->Value(mkArrayAdapt(pData, iSize));
+		}
 	}
 }
 
