@@ -29,8 +29,11 @@
 #pragma once
 
 #include <C4FacetEx.h>
-#include <C4Group.h>
 #include <C4Shape.h>
+
+#include "cppc4group.hpp"
+
+#include <filesystem>
 
 // class predefs
 class C4ParticleDefCore;
@@ -80,7 +83,7 @@ public:
 	C4ParticleDefCore();
 	void CompileFunc(StdCompiler *pComp);
 
-	bool Compile(char *szSource, const char *szName); // compile from def file
+	bool Compile(const std::string &source, const char *szName); // compile from def file
 };
 
 // one particle definition
@@ -107,7 +110,7 @@ public:
 
 	void Clear(); // free mem associated with this class
 
-	bool Load(C4Group &rGrp); // load particle from group; assume file to be accessed already
+	bool Load(class CppC4Group &group); // load particle from group
 	bool Reload(); // reload particle from stored position
 };
 

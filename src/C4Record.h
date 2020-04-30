@@ -251,7 +251,7 @@ class C4Record // demo recording
 private:
 	CStdFile CtrlRec; // control file handle
 	StdStrBuf sFilename; // recorded scenario file name
-	C4Group RecordGrp; // record scenario group
+	CppC4Group RecordGrp; // record scenario group
 	bool fRecording; // set if recording is active
 	uint32_t iLastFrame; // frame of last chunk written
 	bool fStreaming; // perdiodically sent new control to server
@@ -307,7 +307,7 @@ public:
 	C4Playback();
 	~C4Playback();
 
-	bool Open(C4Group &rGrp);
+	bool Open(CppC4Group &group);
 	bool ReadBinary(const StdBuf &Buf);
 	bool ReadText(const StdStrBuf &Buf);
 	void NextChunk(); // point to next prepared chunk in mem or read it

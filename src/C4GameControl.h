@@ -107,7 +107,7 @@ public:
 	// initialization
 	bool InitLocal(C4Client *pLocal);
 	bool InitNetwork(C4Client *pLocal);
-	bool InitReplay(C4Group &rGroup);
+	bool InitReplay(CppC4Group &group);
 
 	void ChangeToLocal();
 

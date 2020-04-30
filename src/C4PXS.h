@@ -60,8 +60,8 @@ public:
 	void SyncClearance();
 	void Cast(int32_t mat, int32_t num, int32_t tx, int32_t ty, int32_t level);
 	bool Create(int32_t mat, FIXED ix, FIXED iy, FIXED ixdir = Fix0, FIXED iydir = Fix0);
-	bool Load(C4Group &hGroup);
-	bool Save(C4Group &hGroup);
+	bool Load(CppC4Group &group);
+	bool Save(CppC4Group &group);
 
 protected:
 	C4PXS *New();

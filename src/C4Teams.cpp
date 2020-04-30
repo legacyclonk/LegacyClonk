@@ -602,13 +602,12 @@ void C4TeamList::CompileFunc(StdCompiler *pComp)
 	}
 }
 
-bool C4TeamList::Load(C4Group &hGroup, class C4Scenario *pInitDefault, class C4LangStringTable *pLang)
+bool C4TeamList::Load(CppC4Group &group, class C4Scenario *pInitDefault, class C4LangStringTable *pLang)
 {
 	// clear previous
 	Clear();
 	// load file contents
-	StdStrBuf Buf;
-	if (!hGroup.LoadEntryString(C4CFN_Teams, Buf))
+	if (StdStrBuf Buf; !CppC4Group_LoadEntryString(group, C4CFN_Teams, Buf))
 	{
 		// no teams: Try default init
 		if (!pInitDefault) return false;
@@ -650,16 +649,26 @@ bool C4TeamList::Load(C4Group &hGroup, class C4Scenario *pInitDefault, class C4L
 	return true;
 }
 
-bool C4TeamList::Save(C4Group &hGroup)
+bool C4TeamList::Save(CppC4Group &group)
 {
-	// remove previous entry from group
-	hGroup.DeleteEntry(C4CFN_Teams);
 	// decompile
 	try
 	{
 		StdStrBuf Buf = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "Teams"));
 		// save it
-		hGroup.Add(C4CFN_Teams, Buf, false, true);
+		if (!group.getEntryInfo(C4CFN_Teams))
+		{
+			group.createFile(C4CFN_Teams);
+		}
+
+		size_t size = Buf.getSize();
+		char *pointer = Buf.GrabPointer();
+
+		if (!group.setEntryData(C4CFN_Teams, Buf, size, CppC4Group::MemoryManagement::Take))
+		{
+			free(pointer);
+			return false;
+		}
 	}
 	catch (StdCompiler::Exception *)
 	{

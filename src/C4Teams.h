@@ -187,8 +187,8 @@ public:
 
 	// compiler
 	void CompileFunc(StdCompiler *pComp);
-	bool Load(C4Group &hGroup, class C4Scenario *pInitDefault, class C4LangStringTable *pLang); // clear self and load from group file (C4CFN_Teams); init default by scen if no team fiel is present
-	bool Save(C4Group &hGroup); // save to group file (C4CFN_Teams)
+	bool Load(CppC4Group &group, class C4Scenario *pInitDefault, class C4LangStringTable *pLang); // clear self and load from group file (C4CFN_Teams); init default by scen if no team fiel is present
+	bool Save(CppC4Group &group); // save to group file (C4CFN_Teams)
 
 	// this rechecks teams for all (not removed) players; sets players here by team selection in player infos
 	void RecheckPlayers();

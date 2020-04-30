@@ -31,11 +31,11 @@ private:
 public:
 	C4Surface() : CSurface() {};
 
-	bool LoadAny(C4Group &hGroup, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
+	bool LoadAny(class CppC4Group &group, const std::string &filePath, bool fOwnPal = false, bool fNoErrIfNotFound = false);
 	bool LoadAny(C4GroupSet &hGroupset, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
-	bool Load(C4Group &hGroup, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
-	bool SavePNG(C4Group &hGroup, const char *szFilename, bool fSaveAlpha = true, bool fApplyGamma = false, bool fSaveOverlayOnly = false);
+	bool Load(class CppC4Group &group, const std::string &filePath, bool fOwnPal = false, bool fNoErrIfNotFound = false);
+	bool SavePNG(CppC4Group &group, const std::string &filePath, bool fSaveAlpha = true, bool fApplyGamma = false, bool fSaveOverlayOnly = false);
 	bool Copy(C4Surface &fromSfc);
-	bool ReadPNG(CStdStream &hGroup);
-	bool ReadJPEG(CStdStream &hGroup);
+	bool ReadPNG(class CppC4Group &group, const std::string &filePath);
+	bool ReadJPEG(class CppC4Group &group, const std::string &filePath);
 };

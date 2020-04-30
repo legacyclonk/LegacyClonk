@@ -72,13 +72,12 @@ bool C4PlayerInfo::LoadFromLocalFile(const char *szFilename)
 	// clear previous
 	Clear();
 	// open player file group
-	C4Group Grp;
-	if (!Grp.Open(szFilename)) return false;
+	CppC4Group group;
+	if (!group.openExisting(szFilename)) return false;
 	// read core
 	C4PlayerInfoCore C4P;
-	if (!C4P.Load(Grp)) return false;
-	// close group to free file handle
-	Grp.Close();
+	if (!C4P.Load(group)) return false;
+
 	// set values
 	eType = C4PT_User;
 	sName.Copy(C4P.PrefName);
@@ -334,7 +333,7 @@ bool C4PlayerInfo::LoadBigIcon(C4FacetExSurface &fctTarget)
 {
 	bool fSuccess = false;
 	// load BigIcon.png of player into target facet; return false if no bigicon present or player file not yet loaded
-	C4Group Plr;
+	CppC4Group Plr;
 	C4Network2Res *pRes = nullptr;
 	bool fIncompleteRes = false;
 	if (pRes = GetRes())
@@ -342,9 +341,9 @@ bool C4PlayerInfo::LoadBigIcon(C4FacetExSurface &fctTarget)
 			fIncompleteRes = true;
 	size_t iBigIconSize = 0;
 	if (!fIncompleteRes)
-		if (Plr.Open(pRes ? pRes->getFile() : GetFilename()))
-			if (Plr.AccessEntry(C4CFN_BigIcon, &iBigIconSize))
-				if (iBigIconSize <= C4NetResMaxBigicon * 1024)
+		if (Plr.openExisting(pRes ? pRes->getFile() : GetFilename()))
+			if (auto info = Plr.getEntryInfo(C4CFN_BigIcon); info)
+				if (info->size <= C4NetResMaxBigicon * 1024)
 					if (fctTarget.Load(Plr, C4CFN_BigIcon))
 						fSuccess = true;
 	return fSuccess;
@@ -1160,30 +1159,27 @@ bool C4PlayerInfoList::HasSameTeamPlayers(int32_t iClient1, int32_t iClient2) co
 	return false;
 }
 
-bool C4PlayerInfoList::Load(C4Group &hGroup, const char *szFromFile, C4LangStringTable *pLang)
+bool C4PlayerInfoList::Load(CppC4Group &group, const std::string &filePath, C4LangStringTable *pLang)
 {
 	// clear previous
 	Clear();
 	// load file contents
-	StdStrBuf Buf;
-	if (!hGroup.LoadEntryString(szFromFile, Buf))
-		// no file is OK; means no player infos
-		return true;
-	// replace strings
-	if (pLang) pLang->ReplaceStrings(Buf);
-	// (try to) compile
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
-		mkNamingAdapt(*this, "PlayerInfoList"),
-		Buf, szFromFile))
-		return false;
-	// done, success
+
+	if (StdStrBuf Buf; CppC4Group_LoadEntryString(group, filePath, Buf))
+	{
+		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
+			mkNamingAdapt(*this, "PlayerInfoList"),
+			Buf, filePath.c_str()))
+			return false;
+		// done, success
+	}
+
+	// no file is OK; means no player infos
 	return true;
 }
 
-bool C4PlayerInfoList::Save(C4Group &hGroup, const char *szToFile)
+bool C4PlayerInfoList::Save(CppC4Group &group, const char *szToFile)
 {
-	// remove previous entry from group
-	hGroup.DeleteEntry(szToFile);
 	// anything to save?
 	if (!iClientCount) return true;
 	// save it
@@ -1193,7 +1189,19 @@ bool C4PlayerInfoList::Save(C4Group &hGroup, const char *szToFile)
 		StdStrBuf Buf = DecompileToBuf<StdCompilerINIWrite>(
 			mkNamingAdapt(*this, "PlayerInfoList"));
 		// save buffer to group
-		hGroup.Add(szToFile, Buf, false, true);
+		if (!group.getEntryInfo(szToFile))
+		{
+			group.createFile(szToFile);
+		}
+
+		size_t size = Buf.getSize();
+		char *pointer = Buf.GrabPointer();
+
+		if (!group.setEntryData(szToFile, pointer, size, CppC4Group::MemoryManagement::Take))
+		{
+			free(pointer);
+			return false;
+		}
 	}
 	catch (StdCompiler::Exception *)
 	{
@@ -1486,7 +1494,7 @@ bool C4PlayerInfoList::RecreatePlayerFiles()
 					StdStrBuf szJoinPath;
 					szJoinPath = Config.AtTempPath(GetFilename(szCurrPlrFile));
 					// extract player there
-					if (!Game.ScenarioFile.FindEntry(GetFilename(szCurrPlrFile)) || !Game.ScenarioFile.Extract(GetFilename(szCurrPlrFile), szJoinPath.getData()))
+					if (!Game.ScenarioFile->getEntryInfo(GetFilename(szCurrPlrFile)) || !Game.ScenarioFile->extractSingle(GetFilename(szCurrPlrFile), szJoinPath.getData()))
 					{
 						// that's okay for script players, because those may join w/o recreation files
 						if (pInfo->GetType() != C4PT_Script)

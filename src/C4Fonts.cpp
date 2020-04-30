@@ -54,10 +54,10 @@ C4VectorFont::~C4VectorFont()
 	}
 }
 
-bool C4VectorFont::Init(C4Group &hGrp, const char *szFilename, C4Config &rCfg)
+bool C4VectorFont::Init(CppC4Group &group, const std::string &filePath, C4Config &rCfg)
 {
 	// name by file
-	Name.Copy(GetFilenameOnly(szFilename));
+	Name.Copy(GetFilenameOnly(filePath.c_str()));
 #if defined(_WIN32) && !defined(HAVE_FREETYPE)
 	// check whether group is directory or packed
 	if (!hGrp.IsPacked())
@@ -101,7 +101,14 @@ bool C4VectorFont::Init(C4Group &hGrp, const char *szFilename, C4Config &rCfg)
 		return false;
 	}
 #else
-	if (!hGrp.LoadEntry(szFilename, Data)) return false;
+	if (auto data = group.getEntryData(filePath); !data)
+	{
+		return false;
+	}
+	else
+	{
+		Data.Copy(data->data, data->size);
+	}
 #endif
 	// success
 	return true;
@@ -170,33 +177,37 @@ void C4FontLoader::AddVectorFont(C4VectorFont *pNewFont)
 	*ppFont = pNewFont;
 }
 
-int32_t C4FontLoader::LoadDefs(C4Group &hGroup, C4Config &rCfg)
+int32_t C4FontLoader::LoadDefs(CppC4Group &group, C4Config &rCfg)
 {
 	// load vector fonts
-	char fn[_MAX_PATH + 1], fnDef[32]; int32_t i = 0;
+	char fnDef[32]; int32_t i = 0;
 	while (SCopySegment(C4CFN_FontFiles, i++, fnDef, '|', 31))
 	{
-		hGroup.ResetSearch();
-		while (hGroup.FindNextEntry(fnDef, fn))
+		CppC4Group_ForEachEntryByWildcard(group, "", fnDef, [&group, &rCfg, this](const auto &info)
 		{
-			C4VectorFont *pVecFon = new C4VectorFont();
-			if (pVecFon->Init(hGroup, fn, rCfg))
+			auto *font = new C4VectorFont;
+			if (font->Init(group, info.fileName, rCfg))
 			{
-				pVecFon->pNext = pVectorFonts;
-				pVectorFonts = pVecFon;
+				font->pNext = pVectorFonts;
+				pVectorFonts = font;
 			}
-			else delete pVecFon;
-		}
+			else
+			{
+				delete font;
+			}
+			return true;
+		});
 	}
 	// load definition file
-	StdStrBuf DefFileContent;
-	if (!hGroup.LoadEntryString(C4CFN_FontDefs, DefFileContent)) return 0;
 	std::vector<C4FontDef> NewFontDefs;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
-		mkNamingAdapt(mkSTLContainerAdapt(NewFontDefs), "Font"),
-		DefFileContent,
-		C4CFN_FontDefs))
+	if (StdStrBuf Data; !CppC4Group_LoadEntryString(group, C4CFN_FontDefs, Data) || !CompileFromBuf_LogWarn<StdCompilerINIRead>(
+				mkNamingAdapt(mkSTLContainerAdapt(NewFontDefs), "Font"),
+				Data,
+				C4CFN_FontDefs
+				))
+	{
 		return 0;
+	}
 	// Copy the new FontDefs into the list
 	FontDefs.insert(FontDefs.end(), NewFontDefs.begin(), NewFontDefs.end());
 	// done
@@ -288,8 +299,8 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 			sscanf(FontParam, "%i", &iIndent);
 		// load font face from gfx group
 		int32_t iGrpId;
-		C4Group *pGrp = pGfxGroups->FindEntry(FontFaceName, nullptr, &iGrpId);
-		if (!pGrp)
+		auto [group, filename] = pGfxGroups->FindEntry(FontFaceName, nullptr, &iGrpId);
+		if (!group)
 		{
 			LogFatal(LoadResStr("IDS_ERR_INITFONTS"));
 			return false;
@@ -305,7 +316,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 				LogF(LoadResStr("IDS_PRC_UPDATEFONT"), FontFaceName, iIndent, 0);
 			}
 			C4Surface sfc;
-			if (!sfc.Load(*pGrp, FontFaceName))
+			if (!sfc.Load(*group, FontFaceName))
 			{
 				LogFatal(LoadResStr("IDS_ERR_INITFONTS"));
 				return false;

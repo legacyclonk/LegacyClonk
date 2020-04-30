@@ -58,7 +58,7 @@ public:
 	bool Retire(C4Player *pPlr);
 	bool Evaluate();
 	bool Save(bool fSaveLocalOnly);
-	bool Save(C4Group &hGroup, bool fStoreTiny, const C4PlayerInfoList &rStoreList); // save all players present in the restore list
+	bool Save(CppC4Group &group, bool fStoreTiny, const C4PlayerInfoList &rStoreList); // save all players present in the restore list
 	bool Remove(int iPlayer, bool fDisonnected, bool fNoCalls);
 	bool RemoveUnjoined(int32_t iPlayer); // remove player objects only
 	bool Remove(C4Player *pPlr, bool fDisonnected, bool fNoCalls);

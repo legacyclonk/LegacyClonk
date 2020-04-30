@@ -34,7 +34,7 @@ public:
 	~C4LoaderScreen();
 
 	bool Init(const char *szLoaderSpec); // inits and loads from global C4Game-class
-	int SeekLoaderScreens(C4Group &rFromGrp, const char *szWildcard, int iLoaderCount, char *szDstName, C4Group **ppDestGrp);
+	int SeekLoaderScreens(CppC4Group &group, const char *szWildcard, int iLoaderCount, std::string &destName, CppC4Group **destGroup);
 
 	void Draw(C4Facet &cgo, int iProgress = 0, class C4LogBuffer *pLog = nullptr, int Process = 0); // draw loader screen (does not page flip!)
 };

@@ -310,8 +310,8 @@ public:
 	void SetExactLandscape();
 	void Clear();
 	void Default();
-	bool Load(C4Group &hGroup, bool fLoadSection = false);
-	bool Save(C4Group &hGroup, bool fSaveSection = false);
+	bool Load(class CppC4Group &group, bool fLoadSection = false);
+	bool Save(class CppC4Group &group, bool fSaveSection = false);
 	void CompileFunc(StdCompiler *pComp, bool fSection);
 	int32_t GetMinPlayer(); // will try to determine the minimum player count for this scenario
 
@@ -342,8 +342,8 @@ public:
 	C4ScenarioSection *pNext; // next member of linked list
 
 public:
-	bool ScenarioLoad(char *szFilename); // called when scenario is loaded: extract to temp store
-	C4Group *GetGroupfile(C4Group &rGrp); // get group at section file (returns temp group, scenario subgroup or scenario group itself)
+	bool ScenarioLoad(const char *szFilename); // called when scenario is loaded: extract to temp store
+	std::tuple<CppC4Group *,  bool> GetGroupFile(); // get group at section file (returns temp group, scenario subgroup or scenario group itself)
 	bool EnsureTempStore(bool fExtractLandscape, bool fExtractObjects); // make sure that a temp file is created, and nothing is modified within the main scenario file
 };
 

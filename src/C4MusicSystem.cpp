@@ -148,25 +148,23 @@ bool C4MusicSystem::Init(const char *PlayList)
 	return true;
 }
 
-bool C4MusicSystem::InitForScenario(C4Group &hGroup)
+bool C4MusicSystem::InitForScenario(CppC4Group &group)
 {
 	// check if the scenario contains music
 	bool fLocalMusic = false;
-	StdStrBuf MusicDir;
-	if (GrpContainsMusic(hGroup))
+	if (GrpContainsMusic(group))
 	{
 		// clear global songs
 		ClearSongs();
 		fLocalMusic = true;
 		// add songs
-		MusicDir.Take(Game.ScenarioFile.GetFullName());
-		LoadDir(MusicDir.getData());
+		LoadDir(Game.ScenarioFile->getFullName().c_str());
 		// log
-		LogF(LoadResStr("IDS_PRC_LOCALMUSIC"), SGetRelativePath(MusicDir.getData()));
+		LogF(LoadResStr("IDS_PRC_LOCALMUSIC"), SGetRelativePath(Game.ScenarioFile->getFullName().c_str()));
 	}
 	// check for music folders in group set
-	C4Group *pMusicFolder = nullptr;
-	while (pMusicFolder = Game.GroupSet.FindGroup(C4GSCnt_Music, pMusicFolder))
+	CppC4Group *musicFolder = nullptr;
+	while ((musicFolder = Game.GroupSet.FindGroup(C4GSCnt_Music, musicFolder)))
 	{
 		if (!fLocalMusic)
 		{
@@ -175,12 +173,10 @@ bool C4MusicSystem::InitForScenario(C4Group &hGroup)
 			fLocalMusic = true;
 		}
 		// add songs
-		MusicDir.Take(pMusicFolder->GetFullName());
-		MusicDir.AppendChar(DirectorySeparator);
-		MusicDir.Append(C4CFN_Music);
-		LoadDir(MusicDir.getData());
+		std::string musicDir = group.getFullName() + DirSep C4CFN_Music;
+		LoadDir(musicDir.c_str());
 		// log
-		LogF(LoadResStr("IDS_PRC_LOCALMUSIC"), SGetRelativePath(MusicDir.getData()));
+		LogF(LoadResStr("IDS_PRC_LOCALMUSIC"), SGetRelativePath(musicDir.c_str()));
 	}
 	// no music?
 	if (!SongCount) return false;
@@ -482,18 +478,18 @@ MusicType GetMusicFileTypeByExtension(const char *ext)
 	return MUSICTYPE_UNKNOWN;
 }
 
-bool C4MusicSystem::GrpContainsMusic(C4Group &rGrp)
+bool C4MusicSystem::GrpContainsMusic(CppC4Group &group)
 {
 	// search for known file extensions
-	return rGrp.FindEntry("*.mid")
+	return group.getEntryInfo("*.mid")
 #ifdef USE_MP3
-		|| rGrp.FindEntry("*.mp3")
+		|| group.getEntryInfo("*.mp3")
 #endif
-		|| rGrp.FindEntry("*.xm")
-		|| rGrp.FindEntry("*.it")
-		|| rGrp.FindEntry("*.s3m")
-		|| rGrp.FindEntry("*.mod")
-		|| rGrp.FindEntry("*.ogg");
+		|| group.getEntryInfo("*.xm")
+		|| group.getEntryInfo("*.it")
+		|| group.getEntryInfo("*.s3m")
+		|| group.getEntryInfo("*.mod")
+		|| group.getEntryInfo("*.ogg");
 }
 
 int C4MusicSystem::SetPlayList(const char *szPlayList)

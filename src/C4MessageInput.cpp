@@ -505,7 +505,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 			{
 				C4Network2Res::Ref pScenario = Game.Network.ResList.getRefRes(pResCoreScen->getID());
 				if (pScenario)
-					if (C4Group_CopyItem(pScenario->getFile(), Config.AtExePath(GetFilename(Game.ScenarioFilename))))
+					if (CppC4Group_TransferItem(pScenario->getFile(), Config.AtExePath(GetFilename(Game.ScenarioFilename))))
 					{
 						LogF(LoadResStr("IDS_MSG_CMD_NETGETSCEN_SAVED"), Config.AtExePath(GetFilename(Game.ScenarioFilename)));
 						return true;

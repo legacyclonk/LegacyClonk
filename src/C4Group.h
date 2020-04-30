@@ -25,6 +25,10 @@
 #include <StdBuf.h>
 #include <StdCompiler.h>
 
+#include "cppc4group.hpp"
+
+#include <filesystem>
+
 // C4Group-Rewind-warning:
 // The current C4Group-implementation cannot handle random file access very well,
 // because all files are written within a single zlib-stream.
@@ -44,7 +48,7 @@
 // Maybe some day, someone will write a C4Group-implementation that is probably capable of
 // random access...
 #ifdef _DEBUG
-extern int iC4GroupRewindFilePtrNoWarn;
+[[deprecated]] extern int iC4GroupRewindFilePtrNoWarn;
 #define C4GRP_DISABLE_REWINDWARN ++iC4GroupRewindFilePtrNoWarn;
 #define C4GRP_ENABLE_REWINDWARN --iC4GroupRewindFilePtrNoWarn;
 #else
@@ -52,11 +56,11 @@ extern int iC4GroupRewindFilePtrNoWarn;
 #define C4GRP_ENABLE_REWINDWARN ;
 #endif
 
-const int C4GroupFileVer1 = 1, C4GroupFileVer2 = 2;
+[[deprecated]] const int C4GroupFileVer1 = 1, C4GroupFileVer2 = 2;
 
-const int C4GroupMaxMaker = 30,
-          C4GroupMaxPassword = 30,
-          C4GroupMaxError = 100;
+constexpr int C4GroupMaxMaker = 30;
+[[deprecated]] constexpr int C4GroupMaxPassword = 30;
+[[deprecated]] constexpr int C4GroupMaxError = 100;
 
 #define C4GroupFileID "RedWolf Design GrpFolder"
 
@@ -65,31 +69,43 @@ void C4Group_SetTempPath(const char *szPath);
 const char *C4Group_GetTempPath();
 void C4Group_SetSortList(const char **ppSortList);
 void C4Group_SetProcessCallback(bool(*fnCallback)(const char *, int));
-bool C4Group_IsGroup(const char *szFilename);
-bool C4Group_CopyItem(const char *szSource, const char *szTarget, bool fNoSort = false, bool fResetAttributes = false);
-bool C4Group_MoveItem(const char *szSource, const char *szTarget, bool fNoSort = false);
-bool C4Group_DeleteItem(const char *szItem, bool fRecycle = false);
-bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo);
+bool C4Group_TestIgnore(const std::filesystem::path &fileName);
+bool C4Group_IsGroup(const std::string &fileName);
+bool C4Group_DeleteItem(const std::filesystem::__cxx11::path &item, bool recycle = false);
+bool C4Group_PackDirectoryTo(const std::filesystem::path &fileName, const std::filesystem::path &targetPath);
 bool C4Group_PackDirectory(const char *szFilename);
-bool C4Group_UnpackDirectory(const char *szFilename);
-bool C4Group_ExplodeDirectory(const char *szFilename);
-bool C4Group_ReadFile(const char *szFilename, char **pData, size_t *iSize);
+
+[[deprecated("Unpacking a group without unpacking its contents not supported by cc4group")]]
+bool C4Group_UnpackDirectory(const std::filesystem::path &fileName);
+
+bool C4Group_ExplodeDirectory(const std::filesystem::path &fileName);
+[[deprecated]] bool C4Group_ReadFile(const char *szFilename, char **pData, size_t *iSize);
 bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32);
-bool C4Group_GetFileContentsCRC(const char *szFilename, uint32_t *pCRC32);
+bool C4Group_GetFileContentsCRC(std::string_view fileName, uint32_t *pCRC32);
 bool C4Group_GetFileSHA1(const char *szFilename, uint8_t *pSHA1);
 
 bool EraseItemSafe(const char *szFilename);
 
-extern const char *C4CFN_FLS[];
+[[deprecated]] extern const char *C4CFN_FLS[];
 
-extern time_t C4Group_AssumeTimeOffset;
+[[deprecated]] extern time_t C4Group_AssumeTimeOffset;
+
+void CppC4Group_ForEachEntryByWildcard(class CppC4Group &group, const std::string &path, const char *wildcard, const std::function<bool(const CppC4Group::EntryInfo &)> &function);
+bool CppC4Group_Add(class CppC4Group &group, const std::string &path, void *data, size_t size);
+bool CppC4Group_Add(class CppC4Group &group, const std::string &path, StdBuf &&buf);
+bool CppC4Group_Add(class CppC4Group &group, const std::string &path, StdStrBuf &&buf);
+bool CppC4Group_LoadEntryString(class CppC4Group &group, const std::string &path, StdStrBuf &buf);
+bool CppC4Group_LoadEntryString(class CppC4Group &group, const std::string &path, std::string &buf);
+bool CppC4Group_Open(class CppC4Group &group, const std::string &path, bool create = false);
+bool CppC4Group_TransferItem(const std::filesystem::path &source, std::filesystem::path target, bool deleteAfterMoving = false, bool resetAttributes = false);
+int CppC4Group_EntryNameMatchingCallback(const char* query, const char* name);
 
 #pragma pack (push, 1)
 
 class C4GroupHeader
 {
 public:
-	C4GroupHeader();
+	[[deprecated]] C4GroupHeader();
 
 public:
 	char id[24 + 4];
@@ -111,7 +127,7 @@ const char C4GECS_None = 0,
 class C4GroupEntryCore
 {
 public:
-	C4GroupEntryCore();
+	[[deprecated]] C4GroupEntryCore();
 
 public:
 	char FileName[260];
@@ -133,7 +149,7 @@ const int C4GRES_InGroup = 0,
 class C4GroupEntry : public C4GroupEntryCore
 {
 public:
-	C4GroupEntry();
+	[[deprecated]] C4GroupEntry();
 	~C4GroupEntry();
 
 public:
@@ -157,7 +173,7 @@ const int GRPF_Inactive = 0,
 class C4Group : public CStdStream
 {
 public:
-	C4Group();
+	[[deprecated]] C4Group();
 	~C4Group();
 
 protected:

@@ -22,6 +22,8 @@
 #include <C4ValueMap.h>
 #include <Fixed.h>
 
+#include <filesystem>
+
 class C4RankSystem;
 
 const int32_t C4MaxPhysical = 100000,
@@ -159,8 +161,8 @@ public:
 	C4ValueMapData ExtraData;
 
 public:
-	bool Save(C4Group &hGroup, class C4DefList *pDefs);
-	bool Load(C4Group &hGroup);
+	bool Save(class CppC4Group &hGroup, class C4DefList *pDefs);
+	bool Load(class CppC4Group &group);
 	void Default(C4ID n_id = C4ID_None, class C4DefList *pDefs = nullptr, const char *cpNames = nullptr);
 	void Promote(int32_t iRank, C4RankSystem &rRanks, bool fForceRankName);
 	bool GetNextRankInfo(C4RankSystem &rDefaultRanks, int32_t *piNextRankExp, StdStrBuf *psNextRankName);
@@ -219,8 +221,8 @@ public:
 
 public:
 	void Default(C4RankSystem *pRanks = nullptr);
-	bool Load(C4Group &hGroup);
-	bool Save(C4Group &hGroup);
+	bool Load(class CppC4Group &group);
+	bool Save(class CppC4Group &grouph);
 	static uint32_t GetPrefColorValue(int32_t iPrefColor);
 	void CompileFunc(StdCompiler *pComp);
 };

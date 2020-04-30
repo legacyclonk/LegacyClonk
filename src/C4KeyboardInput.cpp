@@ -814,12 +814,15 @@ void C4KeyboardInput::CompileFunc(StdCompiler *pComp)
 bool C4KeyboardInput::LoadCustomConfig()
 {
 	// load from INI file (2do: load from registry)
-	C4Group GrpExtra;
-	if (!GrpExtra.Open(C4CFN_Extra)) return false;
-	StdStrBuf sFileContentsString;
-	if (!GrpExtra.LoadEntryString(C4CFN_KeyConfig, sFileContentsString)) return false;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(*this, sFileContentsString, "Custom keys from" C4CFN_Extra DirSep C4CFN_KeyConfig))
+	CppC4Group group;
+	if (!group.openExisting(C4CFN_Extra)) return false;
+
+	if (StdStrBuf fileContentsString; !CppC4Group_LoadEntryString(group, C4CFN_KeyConfig, fileContentsString)
+			|| !CompileFromBuf_LogWarn<StdCompilerINIRead>(*this, fileContentsString, "Custom keys from" C4CFN_Extra DirSep C4CFN_KeyConfig))
+	{
 		return false;
+	}
+
 	LogF(LoadResStr("IDS_PRC_LOADEDKEYCONF"), C4CFN_Extra DirSep C4CFN_KeyConfig);
 	return true;
 }

@@ -721,12 +721,12 @@ void C4MapCreatorS2::Clear()
 	Default();
 }
 
-bool C4MapCreatorS2::ReadFile(const char *szFilename, C4Group *pGrp)
+bool C4MapCreatorS2::ReadFile(CppC4Group &group, const std::string &filePath)
 {
 	// create parser and read file
 	try
 	{
-		C4MCParser(this).ParseFile(szFilename, pGrp);
+		C4MCParser(this).ParseFile(group, filePath);
 	}
 	catch (C4MCParserErr err)
 	{
@@ -1276,27 +1276,28 @@ void C4MCParser::ParseValue(C4MCNode *pToNode, const char *szFieldName)
 		throw C4MCParserErr(this, C4MCErr_SColonExp);
 }
 
-void C4MCParser::ParseFile(const char *szFilename, C4Group *pGrp)
+void C4MCParser::ParseFile(CppC4Group &group, const std::string &filePath)
 {
-	size_t iSize; // file size
-
 	// clear any old data
 	Clear();
 	// store filename
-	SCopy(szFilename, Filename, C4MaxName);
-	// check group
-	if (!pGrp) throw C4MCParserErr(this, C4MCErr_NoGroup);
+	SCopy(GetFilename(filePath.c_str()), Filename, C4MaxName);
 	// get file
-	if (!pGrp->AccessEntry(szFilename, &iSize))
+	auto data = group.getEntryData(filePath);
+	if (!data)
+	{
 		// 404
 		throw C4MCParserErr(this, C4MCErr_404);
+	}
+
+
 	// file is empty?
-	if (!iSize) return;
+	if (!data->size) return;
 	// alloc mem
-	Code = new char[iSize + 1];
+	Code = new char[data->size + 1];
 	// read file
-	pGrp->Read((void *)Code, iSize);
-	Code[iSize] = 0;
+	memcpy(Code, data->data, data->size);
+	Code[data->size] = 0;
 	// parse it
 	CPos = Code;
 	ParseTo(MapCreator);

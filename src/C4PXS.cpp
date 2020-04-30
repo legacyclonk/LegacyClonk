@@ -315,7 +315,7 @@ void C4PXSSystem::Cast(int32_t mat, int32_t num, int32_t tx, int32_t ty, int32_t
 	}
 }
 
-bool C4PXSSystem::Save(C4Group &hGroup)
+bool C4PXSSystem::Save(CppC4Group &group)
 {
 	unsigned int cnt;
 
@@ -326,7 +326,7 @@ bool C4PXSSystem::Save(C4Group &hGroup)
 			iChunks++;
 	if (!iChunks)
 	{
-		hGroup.Delete(C4CFN_PXS);
+		group.deleteEntry(C4CFN_PXS);
 		return true;
 	}
 
@@ -350,38 +350,64 @@ bool C4PXSSystem::Save(C4Group &hGroup)
 		return false;
 
 	// Move temp file to group
-	if (!hGroup.Move(Config.AtTempPath(C4CFN_TempPXS),
+	if (!group.addFromDisk(Config.AtTempPath(C4CFN_TempPXS),
 		C4CFN_PXS))
 		return false;
 
 	return true;
 }
 
-bool C4PXSSystem::Load(C4Group &hGroup)
+bool C4PXSSystem::Load(CppC4Group &group)
 {
 	// load new
 	size_t iBinSize, iChunkNum, cnt2;
 	size_t iChunkSize = PXSChunkSize * sizeof(C4PXS);
-	if (!hGroup.AccessEntry(C4CFN_PXS, &iBinSize)) return false;
+
+	auto data = group.getEntryData(C4CFN_PXS);
+	if (!data)
+	{
+		return false;
+	}
 	// clear previous
 	Clear();
+
+	iBinSize = data->size;
+
+	if (iBinSize < 1)
+	{
+		return false;
+	}
+
+	const auto *buffer = static_cast<const uint8_t *>(data->data);
+
 	// using FIXED or float?
 	int32_t iNumForm = 1;
-	if (iBinSize % iChunkSize == 4)
+	if (data->size % iChunkSize == 4)
 	{
-		if (!hGroup.Read(&iNumForm, sizeof(iNumForm))) return false;
+		iNumForm = buffer[0];
+		++buffer;
 		if (!Inside<int32_t>(iNumForm, 1, 2)) return false;
 		iBinSize -= 4;
 	}
 	// old pxs-files have no tag for the number format
 	else if (iBinSize % iChunkSize != 0) return false;
+
 	// calc chunk count
 	iChunkNum = iBinSize / iChunkSize;
 	if (iChunkNum > PXSMaxChunk) return false;
+
 	for (uint32_t cnt = 0; cnt < iChunkNum; cnt++)
 	{
+		if ((buffer - static_cast<const uint8_t *>(data->data)) + iChunkSize > iBinSize)
+		{
+			return false;
+		}
+
 		if (!(Chunk[cnt] = new C4PXS[PXSChunkSize])) return false;
-		if (!hGroup.Read(Chunk[cnt], iChunkSize)) return false;
+
+		memcpy(Chunk[cnt], buffer, iChunkSize);
+		buffer += iChunkSize;
+
 		// count the PXS, Peter!
 		// convert num format, if neccessary
 		C4PXS *pxp; iChunkPXS[cnt] = 0;

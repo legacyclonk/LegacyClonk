@@ -356,7 +356,7 @@ bool C4Player::Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientNa
 	{
 		assert(pInfo->IsJoined());
 		// (compile using DefaultRuntimeData) - also check if compilation returned sane results, i.e. ID assigned
-		if (!LoadRuntimeData(Game.ScenarioFile) || !ID)
+		if (!LoadRuntimeData() || !ID)
 		{
 			// for script players in non-savegames, this is OK - it means they get restored using default values
 			// this happens when the users saves a scenario using the "Save scenario"-option while a script player
@@ -405,7 +405,6 @@ bool C4Player::Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientNa
 
 bool C4Player::Save()
 {
-	C4Group hGroup;
 	// Regular player saving need not be done for script players
 	if (GetType() == C4PT_Script) return false;
 	// Remote players need not be saved if they cannot resume
@@ -430,7 +429,7 @@ bool C4Player::Save()
 	{
 		// But make sure to copy it first so full hard (flgr stupid) disks
 		// won't corrupt any player files...
-		C4Group_CopyItem(Filename, szPath);
+		CppC4Group_TransferItem(Filename, szPath);
 	}
 	else
 	{
@@ -441,16 +440,19 @@ bool C4Player::Save()
 		CrewInfoList.Strip(Game.Defs);
 #endif
 	}
+
+
+	CppC4Group group;
 	// Open group
-	if (!hGroup.Open(szPath, true))
+	if (!CppC4Group_Open(group, szPath, true))
 		return false;
 	// Save
-	if (!Save(hGroup, false, !LocalControl))
+	if (!Save(group, false, !LocalControl))
 	{
-		hGroup.Close(); return false;
+		return false;
 	}
 	// Close group
-	if (!hGroup.Close()) return false;
+	if (!group.save()) return false;
 	// resource
 	C4Network2Res::Ref pRes = Game.Network.ResList.getRefRes(Filename),
 		pDRes = nullptr;
@@ -458,17 +460,17 @@ bool C4Player::Save()
 	if (pRes) pDRes = pRes->Derive();
 	// move back
 	if (ItemExists(Filename)) EraseItem(Filename);
-	if (!C4Group_MoveItem(szPath, Filename)) return false;
+	if (!CppC4Group_TransferItem(szPath, Filename, true)) return false;
 	// finish update
 	if (pDRes && fOfficial) pDRes->FinishDerive();
 	// Success
 	return true;
 }
 
-bool C4Player::Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny)
+bool C4Player::Save(CppC4Group &group, bool fSavegame, bool fStoreTiny)
 {
 	// Save core
-	if (!C4PlayerInfoCore::Save(hGroup))
+	if (!C4PlayerInfoCore::Save(group))
 		return false;
 	// Save crew
 #ifndef C4ENGINE
@@ -476,12 +478,11 @@ bool C4Player::Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny)
 #else
 	C4DefList *pDefs = &Game.Defs;
 #endif
-	if (!CrewInfoList.Save(hGroup, fSavegame, fStoreTiny, pDefs))
+	if (!CrewInfoList.Save(group, fSavegame, fStoreTiny, pDefs))
 	{
-		hGroup.Close(); return false;
+		return false;
 	}
-	// Sort
-	hGroup.Sort(C4FLS_Player);
+
 	return true;
 }
 
@@ -1091,60 +1092,72 @@ void C4Player::Default()
 
 bool C4Player::Load(const char *szFilename, bool fSavegame, bool fLoadPortraits)
 {
-	C4Group hGroup;
+	CppC4Group group;
 	// Open group
-	if (!hGroup.Open(szFilename)) return false;
+	if (!group.openExisting(szFilename)) return false;
 	// Load core
-	if (!C4PlayerInfoCore::Load(hGroup))
+	if (!C4PlayerInfoCore::Load(group))
 	{
-		hGroup.Close(); return false;
+		return false;
 	}
 	// Load BigIcon
-	if (hGroup.FindEntry(C4CFN_BigIcon)) BigIcon.Load(hGroup, C4CFN_BigIcon);
+	if (group.getEntryInfo(C4CFN_BigIcon))
+	{
+		BigIcon.Load(group, C4CFN_BigIcon);
+	}
+
 	// Load crew info list
-	CrewInfoList.Load(hGroup, fLoadPortraits);
-	// Close group
-	hGroup.Close();
+	CrewInfoList.Load(group, fLoadPortraits);
 	// Success
 	return true;
 }
 
 bool C4Player::Strip(const char *szFilename, bool fAggressive)
 {
-	// Opem group
-	C4Group Grp;
-	if (!Grp.Open(szFilename))
+	// Open group
+	CppC4Group group;
+	if (!group.openExisting(szFilename))
 		return false;
+
 	// Which type of stripping?
 	if (!fAggressive)
 	{
-		// remove portrais
-		Grp.Delete(C4CFN_Portraits, true);
+		// remove portraits
+
+		CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_Portraits, [&group](const auto &info)
+		{
+			group.deleteEntry(info.fileName);
+			return true;
+		});
+
 		// remove bigicon, if the file size is too large
-		size_t iBigIconSize = 0;
-		if (Grp.FindEntry(C4CFN_BigIcon, nullptr, &iBigIconSize))
-			if (iBigIconSize > C4NetResMaxBigicon * 1024)
-				Grp.Delete(C4CFN_BigIcon);
-		Grp.Close();
+		if (auto info = group.getEntryInfo(C4CFN_BigIcon); info && info->size > C4NetResMaxBigicon * 1024)
+		{
+			group.deleteEntry(C4CFN_BigIcon);
+		}
+
+		group.save();
 	}
 	else
 	{
 		// Load info core and crew info list
 		C4PlayerInfoCore PlrInfoCore;
 		C4ObjectInfoList CrewInfoList;
-		if (!PlrInfoCore.Load(Grp) || !CrewInfoList.Load(Grp, false))
+		if (!PlrInfoCore.Load(group) || !CrewInfoList.Load(group, false))
 			return false;
 		// Strip crew info list (remove object infos that are invalid for this scenario)
 		CrewInfoList.Strip(Game.Defs);
+
+		CppC4Group group2;
 		// Create a new group that receives the bare essentials
-		Grp.Close();
 		if (!EraseItem(szFilename) ||
-			!Grp.Open(szFilename, true))
+			!CppC4Group_Open(group2, szFilename, true))
 			return false;
 		// Save info core & crew info list to newly-created file
-		if (!PlrInfoCore.Save(Grp) || !CrewInfoList.Save(Grp, true, true, &Game.Defs))
+		if (!PlrInfoCore.Save(group2) || !CrewInfoList.Save(group2, true, true, &Game.Defs))
 			return false;
-		Grp.Close();
+
+		group2.saveAs(szFilename, true);
 	}
 	return true;
 }
@@ -1602,7 +1615,7 @@ void C4Player::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingPtrAdapt(pMsgBoardQuery,        "MsgBoardQueries"));
 }
 
-bool C4Player::LoadRuntimeData(C4Group &hGroup)
+bool C4Player::LoadRuntimeData()
 {
 	const char *pSource;
 	// Use loaded game text component

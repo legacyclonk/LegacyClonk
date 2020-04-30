@@ -32,8 +32,8 @@ public:
 	bool Init(); // init extra group, using scneario presets
 	bool InitGroup(); // open extra group
 
-	C4Group ExtraGrp; // extra.c4g root folder
+	CppC4Group *ExtraGrp; // extra.c4g root folder
 
 protected:
-	bool LoadDef(C4Group &hGroup, const char *szName); // load preset for definition
+	bool LoadDef(const char *szName); // load preset for definition
 };

@@ -752,9 +752,9 @@ bool C4Console::SaveGame(bool fSaveGame)
 	}
 
 	// Can't save to child groups
-	if (Game.ScenarioFile.GetMother())
+	if (!Game.ScenarioFile->saveWithWriteCallback([](const void* const, size_t const, void* const) { return true; }))
 	{
-		Message(FormatString(LoadResStr("IDS_CNS_NOCHILDSAVE"), GetFilename(Game.ScenarioFile.GetName())).getData());
+		Message(FormatString(LoadResStr("IDS_CNS_NOCHILDSAVE"), Game.ScenarioFilename).getData());
 		return false;
 	}
 
@@ -772,18 +772,16 @@ bool C4Console::SaveGame(bool fSaveGame)
 		pGameSave = new C4GameSaveSavegame();
 	else
 		pGameSave = new C4GameSaveScenario(!Console.Active || Game.Landscape.Mode == C4LSC_Exact, false);
-	if (!pGameSave->Save(Game.ScenarioFile, false))
+	if (!pGameSave->Save(*Game.ScenarioFile, false))
 	{
 		Out("Game::Save failed"); fOkay = false;
 	}
 	delete pGameSave;
 
 	// Close and reopen scenario file to fix file changes
-	if (!Game.ScenarioFile.Close())
-	{
-		Out("ScenarioFile::Close failed"); fOkay = false;
-	}
-	if (!Game.ScenarioFile.Open(Game.ScenarioFilename))
+	Game.ScenarioFile->~CppC4Group();
+	new (Game.ScenarioFile) CppC4Group;
+	if (!Game.ScenarioFile->openExisting(Game.ScenarioFilename))
 	{
 		Out("ScenarioFile::Open failed"); fOkay = false;
 	}
@@ -826,22 +824,25 @@ bool C4Console::FileSaveAs(bool fSaveGame)
 {
 	// Do save-as dialog
 	char filename[512 + 1];
-	SCopy(Game.ScenarioFile.GetName(), filename);
+	SCopy(Game.ScenarioFilename, filename);
 	if (!FileSelect(filename, 512,
 		"Clonk 4 Scenario\0*.c4s\0\0",
 		OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
 		true)) return false;
 	DefaultExtension(filename, "c4s");
 	bool fOkay = true;
-	// Close current scenario file
-	if (!Game.ScenarioFile.Close()) fOkay = false;
+
 	// Copy current scenario file to target
-	if (!C4Group_CopyItem(Game.ScenarioFilename, filename)) fOkay = false;
+	if (!Game.ScenarioFile->save(filename)) fOkay = false;
+
+	Game.ScenarioFile->~CppC4Group();
+	new (Game.ScenarioFile) CppC4Group;
+
 	// Open new scenario file
 	SCopy(filename, Game.ScenarioFilename);
 
 	SetCaption(GetFilename(Game.ScenarioFilename));
-	if (!Game.ScenarioFile.Open(Game.ScenarioFilename)) fOkay = false;
+	if (!Game.ScenarioFile->openExisting(Game.ScenarioFilename)) fOkay = false;
 	// Failure message
 	if (!fOkay)
 	{
@@ -1627,7 +1628,7 @@ bool C4Console::OpenGame(const char *szCmdLine)
 
 	// Default game dependent members
 	Default();
-	SetCaption(GetFilename(Game.ScenarioFile.GetName()));
+	SetCaption(GetFilename(Game.ScenarioFilename));
 	// Init game dependent members
 	if (!EditCursor.Init()) return false;
 	// Default game - only if open before, because we do not want to default out the GUI

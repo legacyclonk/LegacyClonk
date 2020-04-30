@@ -32,11 +32,11 @@ public:
 	const char *GetData() { return Data.getData(); }
 	size_t GetDataSize() { return Data.getLength(); }
 	virtual void Close();
-	bool Load(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage = nullptr);
+	bool Load(const char *szName, CppC4Group &group, const char *szFilename, const char *szLanguage = nullptr);
 	bool Load(const char *szName, C4GroupSet &hGroupSet, const char *szFilename, const char *szLanguage = nullptr);
-	bool LoadEx(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage = nullptr);
-	bool LoadAppend(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage = nullptr);
-	bool Save(C4Group &hGroup);
+	bool LoadEx(const char *szName, CppC4Group &group, const char *szFilename, const char *szLanguage = nullptr);
+	bool LoadAppend(const char *szName, CppC4Group &group, const char *szFilename, const char *szLanguage = nullptr);
+	bool Save(CppC4Group &group);
 	bool GetLanguageString(const char *szLanguage, class StdStrBuf &rTarget);
 	void TrimSpaces();
 
@@ -46,7 +46,7 @@ protected:
 	char Name[_MAX_FNAME + 1];
 	char Filename[_MAX_FNAME + 1];
 	char FilePath[_MAX_PATH + 1];
-	void CopyFilePathFromGroup(const C4Group &hGroup);
+	void CopyFilePathFromGroup(CppC4Group &group);
 #ifdef _WIN32
 	HWND hDialog;
 	void InitDialog(HWND hDlg);

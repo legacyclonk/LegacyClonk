@@ -412,8 +412,8 @@ public:
 	}
 
 public:
-	bool Load(C4Group &hGroup, const char *szFromFile, class C4LangStringTable *pLang = nullptr); // clear self and load from group file
-	bool Save(C4Group &hGroup, const char *szToFile); // save to group file
+	bool Load(class CppC4Group &group, const std::string &filePath, class C4LangStringTable *pLang = nullptr); // clear self and load from group file
+	bool Save(class CppC4Group &group, const char *szToFile); // save to group file
 	bool LoadFromGameText(const char *pSource); // load from Game.txt (old-style savegames)
 
 	// external ID counter manipulation used by C4Game

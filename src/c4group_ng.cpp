@@ -35,7 +35,6 @@
 //         4.95.4 September 2005 Unix-flavour
 
 #include <C4Include.h>
-#include <C4Group.h>
 #include <C4Version.h>
 #include <C4Update.h>
 #include <C4Config.h>
@@ -99,7 +98,6 @@ bool LogF(const char *strMessage, ...)
 bool ProcessGroup(const char *FilenamePar)
 {
 	C4Group hGroup;
-	hGroup.SetStdOutput(!fQuiet);
 	bool fDeleteGroup = false;
 
 	int argc = globalArgC;

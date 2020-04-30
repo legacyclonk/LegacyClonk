@@ -26,6 +26,10 @@
 #include <C4Surface.h>
 #include <C4ComponentHost.h>
 
+#include "cppc4group.hpp"
+
+#include <filesystem>
+
 #ifdef C4ENGINE
 #include <C4ScriptHost.h>
 #include <C4DefGraphics.h>
@@ -280,7 +284,7 @@ public:
 	};
 
 	void Default();
-	bool Load(C4Group &hGroup);
+	bool Load(CppC4Group &group);
 	void CompileFunc(StdCompiler *pComp);
 	const char *GetName() const { return Name.getData(); }
 
@@ -341,7 +345,7 @@ protected:
 public:
 	void Clear();
 	void Default();
-	bool Load(C4Group &hGroup,
+	bool Load(CppC4Group &group,
 		uint32_t dwLoadWhat, const char *szLanguage,
 		class C4SoundSystem *pSoundSystem = nullptr);
 	void Draw(C4Facet &cgo, bool fSelected = false, uint32_t iColor = 0, C4Object *pObj = nullptr, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
@@ -356,9 +360,9 @@ public:
 	const char *GetDesc() { return Desc.GetData(); }
 
 protected:
-	bool LoadPortraits(C4Group &hGroup);
+	bool LoadPortraits(CppC4Group &group);
 	bool ColorizeByMaterial(class C4MaterialMap &rMats, uint8_t bGBM);
-	bool LoadActMap(C4Group &hGroup);
+	bool LoadActMap(CppC4Group &group);
 	void CrossMapActMap();
 
 private:
@@ -392,7 +396,7 @@ public:
 public:
 	void Default();
 	void Clear();
-	int32_t Load(C4Group &hGroup,
+	int32_t Load(CppC4Group &group,
 		uint32_t dwLoadWhat, const char *szLanguage,
 		C4SoundSystem *pSoundSystem = nullptr,
 		bool fOverload = false,

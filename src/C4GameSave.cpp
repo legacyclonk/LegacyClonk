@@ -29,19 +29,19 @@
 
 // *** C4GameSave main class
 
-bool C4GameSave::SaveCreateGroup(const char *szFilename, C4Group &hUseGroup)
+bool C4GameSave::SaveCreateGroup(const char *szFilename, CppC4Group &group)
 {
 	// erase any previous item (2do: work in C4Groups?)
 	EraseItem(szFilename);
 	// copy from previous group?
 	if (GetCopyScenario())
 		if (!ItemIdentical(Game.ScenarioFilename, szFilename))
-			if (!C4Group_CopyItem(Game.ScenarioFilename, szFilename))
+			if (!CppC4Group_TransferItem(Game.ScenarioFilename, szFilename))
 			{
 				LogF(LoadResStr("IDS_CNS_SAVEASERROR"), szFilename); return false;
 			}
 	// open it
-	if (!hUseGroup.Open(szFilename, !GetCopyScenario()))
+	if (!CppC4Group_Open(group, szFilename, !GetCopyScenario()))
 	{
 		EraseItem(szFilename);
 		LogF(LoadResStr("IDS_CNS_SAVEASERROR"), szFilename);
@@ -79,7 +79,7 @@ bool C4GameSave::SaveCore()
 		// Store used definitions
 		rC4S.Definitions.SetModules(Game.DefinitionFilenames, Config.General.ExePath, Config.General.DefinitionPath);
 		// Save game parameters
-		if (!Game.Parameters.Save(*pSaveGroup, &Game.C4S)) return false;
+		if (!Game.Parameters.Save(*saveGroup, &Game.C4S)) return false;
 	}
 	// clear MissionAccess in save games and records (sulai)
 	*rC4S.Head.MissionAccess = 0;
@@ -101,7 +101,7 @@ bool C4GameSave::SaveCore()
 	// adjust specific values (virtual call)
 	AdjustCore(rC4S);
 	// Save scenario core
-	return !!rC4S.Save(*pSaveGroup);
+	return !!rC4S.Save(*saveGroup);
 }
 
 bool C4GameSave::SaveScenarioSections()
@@ -119,13 +119,13 @@ bool C4GameSave::SaveScenarioSections()
 		SDelete(fn, 1, iWildcardPos); SInsert(fn, pSect->szName, iWildcardPos);
 		// do not save self, because that is implied in CurrentScenarioSection and the main landscape/object data
 		if (pSect == Game.pCurrentScenarioSection)
-			pSaveGroup->DeleteEntry(fn);
+			saveGroup->deleteEntry(fn);
 		else if (pSect->fModified)
 		{
 			// modified section: delete current
-			pSaveGroup->DeleteEntry(fn);
+			saveGroup->deleteEntry(fn);
 			// replace by new
-			pSaveGroup->Add(pSect->szTempFilename, fn);
+			saveGroup->addFromDisk(pSect->szTempFilename, fn);
 		}
 	}
 	// done, success
@@ -142,34 +142,34 @@ bool C4GameSave::SaveLandscape()
 		Game.Objects.RemoveSolidMasks();
 		bool fSuccess;
 		if (Game.Landscape.Mode == C4LSC_Exact)
-			fSuccess = !!Game.Landscape.Save(*pSaveGroup);
+			fSuccess = !!Game.Landscape.Save(*saveGroup);
 		else
-			fSuccess = !!Game.Landscape.SaveDiff(*pSaveGroup, !IsSynced());
+			fSuccess = !!Game.Landscape.SaveDiff(*saveGroup, !IsSynced());
 		Game.Objects.PutSolidMasks();
 		if (!fSuccess) return false;
 		DBGRECOFF.Clear();
 		// PXS
-		if (!Game.PXS.Save(*pSaveGroup)) return false;
+		if (!Game.PXS.Save(*saveGroup)) return false;
 		// MassMover (create copy, may not modify running data)
 		C4MassMoverSet MassMoverSet;
 		MassMoverSet.Copy(Game.MassMover);
-		if (!MassMoverSet.Save(*pSaveGroup)) return false;
+		if (!MassMoverSet.Save(*saveGroup)) return false;
 		// Material enumeration
-		if (!Game.Material.SaveEnumeration(*pSaveGroup)) return false;
+		if (!Game.Material.SaveEnumeration(*saveGroup)) return false;
 	}
 	// static / dynamic
 	if (Game.Landscape.Mode == C4LSC_Static)
 	{
 		// static map
 		// remove old-style landscape.bmp
-		pSaveGroup->DeleteEntry(C4CFN_Landscape);
+		saveGroup->deleteEntry(C4CFN_Landscape);
 		// save materials if not already done
 		if (!GetForceExactLandscape())
 		{
 			// save map
-			if (!Game.Landscape.SaveMap(*pSaveGroup)) return false;
+			if (!Game.Landscape.SaveMap(*saveGroup)) return false;
 			// save textures (if changed)
-			if (!Game.Landscape.SaveTextures(*pSaveGroup)) return false;
+			if (!Game.Landscape.SaveTextures(*saveGroup)) return false;
 		}
 	}
 	else if (Game.Landscape.Mode != C4LSC_Exact)
@@ -192,22 +192,22 @@ bool C4GameSave::SaveRuntimeData()
 	if (!SaveLandscape()) { Log(LoadResStr("IDS_ERR_SAVE_LANDSCAPE")); return false; }
 	// Strings
 	Game.ScriptEngine.Strings.EnumStrings();
-	if (!Game.ScriptEngine.Strings.Save((*pSaveGroup)))
+	if (!Game.ScriptEngine.Strings.Save(*saveGroup))
 	{
 		Log(LoadResStr("IDS_ERR_SAVE_SCRIPTSTRINGS")); return false;
 	}
 	// Objects
-	if (!Game.Objects.Save((*pSaveGroup), IsExact(), true))
+	if (!Game.Objects.Save(*saveGroup, IsExact(), true))
 	{
 		Log(LoadResStr("IDS_ERR_SAVE_OBJECTS")); return false;
 	}
 	// Round results
-	if (GetSaveUserPlayers()) if (!Game.RoundResults.Save(*pSaveGroup))
+	if (GetSaveUserPlayers()) if (!Game.RoundResults.Save(*saveGroup))
 	{
 		Log(LoadResStr("IDS_ERR_ERRORSAVINGROUNDRESULTS")); return false;
 	}
 	// Teams
-	if (!Game.Teams.Save(*pSaveGroup))
+	if (!Game.Teams.Save(*saveGroup))
 	{
 		Log(LoadResStr(LoadResStr("IDS_ERR_ERRORSAVINGTEAMS"))); return false;
 	}
@@ -215,11 +215,11 @@ bool C4GameSave::SaveRuntimeData()
 	// such modifications cannot possibly be done before game start
 	// so it's runtime data
 	// Script
-	if (!Game.Script.Save((*pSaveGroup))) Log(LoadResStr("IDS_ERR_SAVE_SCRIPT")); /* nofail */
+	if (!Game.Script.Save(*saveGroup)) Log(LoadResStr("IDS_ERR_SAVE_SCRIPT")); /* nofail */
 	// Title - unexact only, because in savegames, the title will be set in core
-	if (!IsExact()) if (!Game.Title.Save((*pSaveGroup))) Log(LoadResStr("IDS_ERR_SAVE_TITLE")); /* nofail */
+	if (!IsExact()) if (!Game.Title.Save(*saveGroup)) Log(LoadResStr("IDS_ERR_SAVE_TITLE")); /* nofail */
 	// Info
-	if (!Game.Info.Save((*pSaveGroup))) Log(LoadResStr("IDS_ERR_SAVE_INFO")); /* nofail */
+	if (!Game.Info.Save(*saveGroup)) Log(LoadResStr("IDS_ERR_SAVE_INFO")); /* nofail */
 	if (GetSaveUserPlayers() || GetSaveScriptPlayers())
 	{
 		// player infos
@@ -228,7 +228,7 @@ bool C4GameSave::SaveRuntimeData()
 		// C4PlayerList
 		C4PlayerInfoList RestoreInfos;
 		RestoreInfos.SetAsRestoreInfos(Game.PlayerInfos, GetSaveUserPlayers(), GetSaveScriptPlayers(), GetSaveUserPlayerFiles(), GetSaveScriptPlayerFiles());
-		if (!RestoreInfos.Save(*pSaveGroup, C4CFN_SavePlayerInfos))
+		if (!RestoreInfos.Save(*saveGroup, C4CFN_SavePlayerInfos))
 		{
 			Log(LoadResStr("IDS_ERR_SAVE_RESTOREPLAYERINFOS")); return false;
 		}
@@ -238,7 +238,7 @@ bool C4GameSave::SaveRuntimeData()
 		// synchronization (via control queue)
 		if (GetSaveUserPlayerFiles() || GetSaveScriptPlayerFiles())
 		{
-			if (!Game.Players.Save((*pSaveGroup), GetCreateSmallFile(), RestoreInfos))
+			if (!Game.Players.Save(*saveGroup, GetCreateSmallFile(), RestoreInfos))
 			{
 				Log(LoadResStr("IDS_ERR_SAVE_PLAYERS")); return false;
 			}
@@ -248,16 +248,16 @@ bool C4GameSave::SaveRuntimeData()
 	{
 		// non-exact runtime data: remove any exact files
 		// No Game.txt
-		pSaveGroup->Delete(C4CFN_Game);
+		saveGroup->deleteEntry(C4CFN_Game);
 		// No player files
-		pSaveGroup->Delete(C4CFN_PlayerInfos);
-		pSaveGroup->Delete(C4CFN_SavePlayerInfos);
+		saveGroup->deleteEntry(C4CFN_PlayerInfos);
+		saveGroup->deleteEntry(C4CFN_SavePlayerInfos);
 	}
 	// done, success
 	return true;
 }
 
-bool C4GameSave::SaveDesc(C4Group &hToGroup)
+bool C4GameSave::SaveDesc(CppC4Group &group)
 {
 	// Unfortunately, there's no way to prealloc the buffer in an appropriate size
 	StdStrBuf sBuffer;
@@ -277,12 +277,24 @@ bool C4GameSave::SaveDesc(C4Group &hToGroup)
 	sBuffer.Append(LineFeed "}" LineFeed EndOfFile);
 
 	// Generate Filename
-	StdStrBuf sFilename; char szLang[3];
+	char szLang[3];
 	SCopyUntil(Config.General.Language, szLang, ',', 2);
-	sFilename.Format(C4CFN_ScenarioDesc, szLang);
+	std::string filename{FormatString(C4CFN_ScenarioDesc, szLang).getData()};
 
 	// Save to file
-	return !!hToGroup.Add(sFilename.getData(), sBuffer, false, true);
+	if (!group.getEntryInfo(filename))
+	{
+		group.createFile(filename);
+	}
+
+	size_t size = sBuffer.getLength();
+	char *pointer = sBuffer.GrabPointer();
+	if (!group.setEntryData(filename, pointer, size, CppC4Group::MemoryManagement::Take))
+	{
+		free(pointer);
+		return false;
+	}
+	return true;
 }
 
 void C4GameSave::WriteDescLineFeed(StdStrBuf &sBuf)
@@ -338,7 +350,6 @@ void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 	// Definition specs
 	if (Game.DefinitionFilenames.size())
 	{
-		char szDef[_MAX_PATH + 1];
 		// Desc
 		sBuf.Append(LoadResStr("IDS_DESC_DEFSPECS"));
 		// Get definition modules
@@ -347,7 +358,7 @@ void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 		{
 			// Get exe relative path
 			StdStrBuf sDefFilename;
-			sDefFilename.Copy(Config.AtExeRelativePath(szDef));
+			sDefFilename.Copy(Config.AtExeRelativePath(def.c_str()));
 			// Convert rtf backslashes
 			sDefFilename.Replace("\\", "\\\\");
 			// Append comma
@@ -434,41 +445,49 @@ bool C4GameSave::Save(const char *szFilename)
 {
 	// close any previous
 	Close();
+	fileName = szFilename;
 	// create group
-	C4Group *pLSaveGroup = new C4Group();
-	if (!SaveCreateGroup(szFilename, *pLSaveGroup))
+	auto *group = new CppC4Group;
+	if (!SaveCreateGroup(szFilename, *group))
 	{
 		LogF(LoadResStr("IDS_ERR_SAVE_TARGETGRP"), szFilename ? szFilename : "nullptr!");
-		delete pLSaveGroup;
 		return false;
 	}
 	// save to it
-	return Save(*pLSaveGroup, true);
+	return Save(*group, true);
 }
 
-bool C4GameSave::Save(C4Group &hToGroup, bool fKeepGroup)
+bool C4GameSave::Save(CppC4Group &group, bool fKeepGroup)
 {
 	// close any previous
 	Close();
 	// set group
-	pSaveGroup = &hToGroup; fOwnGroup = fKeepGroup;
+	saveGroup = &group; fOwnGroup = fKeepGroup;
 	// PreSave-actions (virtual call)
 	if (!OnSaving()) return false;
 	// always save core
 	if (!SaveCore()) { Log(LoadResStr("IDS_ERR_SAVE_CORE")); return false; }
 	// cleanup group
-	pSaveGroup->Delete(C4CFN_PlayerFiles);
+	CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_PlayerFiles, [&group](const auto &info)
+	{
+		group.deleteEntry(info.fileName);
+		return true;
+	});
 	// remove: Title text, image and icon if specified
 	if (!GetKeepTitle())
 	{
-		pSaveGroup->Delete(C4CFN_ScenarioTitle);
-		pSaveGroup->Delete(C4CFN_ScenarioIcon);
-		pSaveGroup->Delete(FormatString(C4CFN_ScenarioDesc, "*").getData());
-		pSaveGroup->Delete(C4CFN_Titles);
-		pSaveGroup->Delete(C4CFN_Info);
+		saveGroup->deleteEntry(C4CFN_ScenarioTitle);
+		saveGroup->deleteEntry(C4CFN_ScenarioIcon);
+		CppC4Group_ForEachEntryByWildcard(*saveGroup, "", FormatString(C4CFN_ScenarioDesc, "*").getData(), [&group](const auto &info)
+		{
+			group.deleteEntry(info.fileName);
+			return true;
+		});
+		saveGroup->deleteEntry(C4CFN_Titles);
+		saveGroup->deleteEntry(C4CFN_Info);
 	}
 	// Always save Game.txt; even for saved scenarios, because global effects need to be saved
-	if (!Game.SaveData(*pSaveGroup, false, fInitial, IsExact()))
+	if (!Game.SaveData(*saveGroup, false, fInitial, IsExact()))
 	{
 		Log(LoadResStr("IDS_ERR_SAVE_RUNTIMEDATA")); return false;
 	}
@@ -476,7 +495,7 @@ bool C4GameSave::Save(C4Group &hToGroup, bool fKeepGroup)
 	if (GetSaveRuntimeData()) if (!SaveRuntimeData()) return false;
 	// Desc
 	if (GetSaveDesc())
-		if (!SaveDesc(*pSaveGroup))
+		if (!SaveDesc(*saveGroup))
 			Log(LoadResStr("IDS_ERR_SAVE_DESC")); /* nofail */
 	// save specialized components (virtual call)
 	if (!SaveComponents()) return false;
@@ -488,19 +507,16 @@ bool C4GameSave::Close()
 {
 	bool fSuccess = true;
 	// any group open?
-	if (pSaveGroup)
+	if (saveGroup)
 	{
-		// sort group
-		const char *szSortOrder = GetSortOrder();
-		if (szSortOrder) pSaveGroup->Sort(szSortOrder);
 		// close if owned group
 		if (fOwnGroup)
 		{
-			fSuccess = !!pSaveGroup->Close();
-			delete pSaveGroup;
+			saveGroup->save();
+			delete saveGroup;
 			fOwnGroup = false;
 		}
-		pSaveGroup = nullptr;
+		saveGroup = nullptr;
 	}
 	return fSuccess;
 }
@@ -525,7 +541,7 @@ bool C4GameSaveSavegame::OnSaving()
 void C4GameSaveSavegame::AdjustCore(C4Scenario &rC4S)
 {
 	// Determine save game index from trailing number in group file name
-	int iSaveGameIndex = GetTrailingNumber(GetFilenameOnly(pSaveGroup->GetFullName().getData()));
+	int iSaveGameIndex = GetTrailingNumber(GetFilenameOnly(fileName.c_str()));
 	// Looks like a decent index: set numbered icon
 	if (Inside(iSaveGameIndex, 1, 10))
 		rC4S.Head.Icon = 2 + (iSaveGameIndex - 1);
@@ -537,7 +553,7 @@ void C4GameSaveSavegame::AdjustCore(C4Scenario &rC4S)
 bool C4GameSaveSavegame::SaveComponents()
 {
 	// special for savegames: save a screenshot
-	if (!Game.SaveGameTitle((*pSaveGroup)))
+	if (!Game.SaveGameTitle(*saveGroup))
 		Log(LoadResStr("IDS_ERR_SAVE_GAMETITLE")); /* nofail */
 	// done, success
 	return true;
@@ -571,7 +587,7 @@ void C4GameSaveRecord::AdjustCore(C4Scenario &rC4S)
 bool C4GameSaveRecord::SaveComponents()
 {
 	// special: records need player infos even if done initially
-	if (fInitial) Game.PlayerInfos.Save((*pSaveGroup), C4CFN_PlayerInfos);
+	if (fInitial) Game.PlayerInfos.Save(*saveGroup, C4CFN_PlayerInfos);
 	// for !fInitial, player infos will be saved as regular runtime data
 	// done, success
 	return true;

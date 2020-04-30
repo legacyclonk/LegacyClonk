@@ -178,7 +178,7 @@ public:
 	void Default();
 	void Clip(int iX, int iY, int iX2, int iY2);
 	void NoClip();
-	bool Read(class CStdStream &hGroup, bool fOwnPal = false);
+	bool Read(class CppC4Group &group, const std::string &path, bool fOwnPal = false);
 	bool SavePNG(const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly, float scale = 1.0f);
 	bool Wipe(); // empty to transparent
 	bool GetSurfaceSize(int &irX, int &irY); // get surface size

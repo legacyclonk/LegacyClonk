@@ -34,8 +34,8 @@ public:
 	void Default();
 	void Clear();
 	void Close();
-	bool Load(const char *szName, C4Group &hGroup, const char *szFilename,
-		const char *szLanguage, C4Def *pDef, class C4LangStringTable *pLocalTable, bool fLoadTable = false);
+	bool Load(const char *szName, class CppC4Group &group, const char *szFilename,
+		const char *szLanguage, class C4Def *pDef, class C4LangStringTable *pLocalTable, bool fLoadTable = false);
 	const char *GetControlDesc(const char *szFunctionFormat, int32_t iCom, C4ID *pidImage = nullptr, int32_t *piImagePhase = nullptr);
 	void GetControlMethodMask(const char *szFunctionFormat, int32_t &first, int32_t &second);
 	int32_t GetControlMethod(int32_t com, int32_t first, int32_t second);

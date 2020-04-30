@@ -58,15 +58,32 @@ StdStrBuf DateString(int iTime)
 static bool GetPortrait(char **ppBytes, size_t *ipSize)
 {
 	// select random portrait from Graphics.c4g
-	C4Group GfxGroup;
-	int iCount;
-	StdStrBuf EntryName;
-	if (!GfxGroup.Open(Config.AtExePath(C4CFN_Graphics))) return false;
-	if ((iCount = GfxGroup.EntryCount("Portrait*.png")) < 1) return false;
-	EntryName.Format("Portrait%d.png", SafeRandom(iCount) + 1);
-	if (!GfxGroup.LoadEntry(EntryName.getData(), ppBytes, ipSize)) return false;
-	GfxGroup.Close();
-	return true;
+	CppC4Group group;
+	if (!group.openExisting(Config.AtExePath(C4CFN_Graphics))) return false;
+
+	size_t count = 0;
+	CppC4Group_ForEachEntryByWildcard(group, "", "Portrait*.png", [&count](const auto &) { ++count; return true; });
+
+	if (!count)
+	{
+		return false;
+	}
+
+	StdStrBuf entryName;
+	entryName.Format("Portrait%d.png", SafeRandom(count) + 1);
+
+	if (auto data = group.getEntryData(entryName.getData()); !data)
+	{
+		return false;
+	}
+	else
+	{
+		*ppBytes = new char[data->size];
+		std::memcpy(*ppBytes, data->data, data->size);
+		*ipSize = data->size;
+
+		return true;
+	}
 }
 
 // C4StartupPlrSelDlg::ListItem
@@ -139,11 +156,11 @@ void C4StartupPlrSelDlg::ListItem::SetIcon(C4GUI::Icons icoNew)
 	pIcon->SetIcon(icoNew);
 }
 
-void C4StartupPlrSelDlg::ListItem::LoadPortrait(C4Group &rGrp, bool fUseDefault)
+void C4StartupPlrSelDlg::ListItem::LoadPortrait(CppC4Group &group, bool fUseDefault)
 {
 	bool fPortraitLinked = false;
-	if (!rGrp.FindEntry(C4CFN_Portrait) || !fctPortraitBase.Load(rGrp, C4CFN_Portrait))
-		if (!rGrp.FindEntry(C4CFN_Portrait_Old) || !fctPortraitBase.Load(rGrp, C4CFN_Portrait_Old))
+	if (!group.getEntryData(C4CFN_Portrait) || !fctPortraitBase.Load(group, C4CFN_Portrait))
+		if (!group.getEntryData(C4CFN_Portrait_Old) || !fctPortraitBase.Load(group, C4CFN_Portrait_Old))
 		{
 			// no custom portrait: Link to some default if desired
 			if (!fUseDefault) return;
@@ -217,14 +234,14 @@ void C4StartupPlrSelDlg::PlayerListItem::Load(const StdStrBuf &rsFilename)
 	// backup filename
 	SetFilename(rsFilename);
 	// load player info
-	C4Group PlrGroup;
-	if (!PlrGroup.Open(rsFilename.getData()))
-		throw LoadError(FormatString("Error loading player file from %s: Error opening group: %s", rsFilename.getData(), PlrGroup.GetError()));
-	if (!Core.Load(PlrGroup))
-		throw LoadError(FormatString("Error loading player file from %s: Core data invalid or missing (Group: %s)!", rsFilename.getData(), PlrGroup.GetError()));
+	CppC4Group playerGroup;
+	if (!playerGroup.openExisting(rsFilename.getData()))
+		throw LoadError(FormatString("Error loading player file from %s: Error opening group: %s", rsFilename.getData(), playerGroup.getErrorMessage().c_str()));
+	if (!Core.Load(playerGroup))
+		throw LoadError(FormatString("Error loading player file from %s: Core data invalid or missing (Group: %s)!", rsFilename.getData(), playerGroup.getErrorMessage().c_str()));
 	// load icon
 	C4FacetExSurface fctIcon;
-	if (PlrGroup.FindEntry(C4CFN_BigIcon) && fctIcon.Load(PlrGroup, C4CFN_BigIcon))
+	if (playerGroup.getEntryData(C4CFN_BigIcon) && fctIcon.Load(playerGroup, C4CFN_BigIcon))
 		fHasCustomIcon = true;
 	else
 	{
@@ -234,10 +251,7 @@ void C4StartupPlrSelDlg::PlayerListItem::Load(const StdStrBuf &rsFilename)
 	}
 	GrabIcon(fctIcon);
 	// load portrait
-	LoadPortrait(PlrGroup, true);
-	// done loading
-	if (!PlrGroup.Close())
-		throw LoadError(FormatString("Error loading player file from %s: Error closing group: %s", rsFilename.getData(), PlrGroup.GetError()));
+	LoadPortrait(playerGroup, true);
 	// default name
 	if (!*Core.PrefName) SCopy(GetFilenameOnly(rsFilename.getData()), Core.PrefName, sizeof(Core.PrefName) - 1);
 	SetName(Core.PrefName);
@@ -264,10 +278,10 @@ void C4StartupPlrSelDlg::PlayerListItem::GrabCustomIcon(C4FacetExSurface &fctGra
 
 void C4StartupPlrSelDlg::PlayerListItem::UpdateCore(C4PlayerInfoCore &NewCore)
 {
-	C4Group PlrGroup;
-	if (!PlrGroup.Open(GetFilename().getData())
-		|| !NewCore.Save(PlrGroup)
-		|| !PlrGroup.Close())
+	CppC4Group playerGroup;
+	if (!playerGroup.openExisting(GetFilename().getData())
+		|| !NewCore.Save(playerGroup)
+		|| !playerGroup.save())
 	{
 		GetScreen()->ShowMessage(LoadResStr("IDS_FAIL_MODIFY"), "", C4GUI::Ico_Error);
 		return;
@@ -337,23 +351,23 @@ void C4StartupPlrSelDlg::CrewListItem::UpdateClonkEnabled()
 	RewriteCore();
 }
 
-void C4StartupPlrSelDlg::CrewListItem::Load(C4Group &rGrp, const StdStrBuf &rsFilename)
+void C4StartupPlrSelDlg::CrewListItem::Load(CppC4Group &group, const StdStrBuf &rsFilename)
 {
 	// backup filename (doesn't include path)
 	SetFilename(rsFilename);
 	// load core
-	C4Group CrewGroup;
-	if (!CrewGroup.OpenAsChild(&rGrp, rsFilename.getData()))
+	auto crewGroup = group.openAsChild(rsFilename.getData());
+	if (!crewGroup)
 		throw LoadError(FormatString("Error loading crew file from %s in %s: Error opening group: %s",
-			rsFilename.getData(), rGrp.GetFullName().getData(), CrewGroup.GetError()));
-	if (!Core.Load(CrewGroup))
+			rsFilename.getData(), group.getFullName().c_str(), group.getErrorMessage().c_str()));
+	if (!Core.Load(*crewGroup))
 		throw LoadError(FormatString("Error loading crew file from %s: Core data invalid or missing (Group: %s)!",
-			CrewGroup.GetFullName().getData(), CrewGroup.GetError()));
+			crewGroup->getFullName().c_str(), crewGroup->getErrorMessage().c_str()));
 	ListItem::SetName(Core.Name);
 	pCheck->SetChecked(!!Core.Participation);
 	// load rank as icon
 	C4FacetExSurface fctIcon;
-	if (fctIcon.Load(CrewGroup, C4CFN_ClonkRank, C4FCT_Full, C4FCT_Full, false, true))
+	if (fctIcon.Load(*crewGroup, C4CFN_ClonkRank, C4FCT_Full, C4FCT_Full, false, true))
 	{
 		GrabIcon(fctIcon);
 	}
@@ -364,9 +378,9 @@ void C4StartupPlrSelDlg::CrewListItem::Load(C4Group &rGrp, const StdStrBuf &rsFi
 			GrabIcon(fctIcon);
 	}
 	// load portrait; empty by default
-	LoadPortrait(CrewGroup, false);
+	LoadPortrait(*crewGroup, false);
 	// backup group loaded from - assumes it stays valid!
-	pParentGrp = &rGrp;
+	pParentGrp = &group;
 	// load success!
 	fLoaded = true;
 }
@@ -405,10 +419,10 @@ void C4StartupPlrSelDlg::CrewListItem::OnDeathMessageSet(const StdStrBuf &rsNewM
 void C4StartupPlrSelDlg::CrewListItem::RewriteCore()
 {
 	if (!fLoaded) return;
-	C4Group CrewGroup;
-	if (!CrewGroup.OpenAsChild(pParentGrp, GetFilename().getData())
-		|| !Core.Save(CrewGroup, nullptr)
-		|| !CrewGroup.Close() || !pParentGrp->Save(true))
+	if (auto crewGroup = pParentGrp->openAsChild(GetFilename().getData());
+		!crewGroup
+		|| !Core.Save(*crewGroup, nullptr)
+		|| !crewGroup->save(true) || !pParentGrp->save())
 	{
 		GetScreen()->ShowMessage(LoadResStr("IDS_FAIL_MODIFY"), "", C4GUI::Ico_Error);
 		return;
@@ -431,14 +445,14 @@ bool C4StartupPlrSelDlg::CrewListItem::SetName(const char *szNewName)
 	if (!ItemIdentical(fn, GetFilename().getData()))
 	{
 		// check for duplicate filename
-		if (pParentGrp->FindEntry(fn))
+		if (pParentGrp->getEntryData(fn))
 		{
 			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_CLONKCOLLISION"), fn);
 			Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr("IDS_FAIL_RENAME"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		// OK; then rename
-		if (!pParentGrp->Rename(GetFilename().getData(), fn) || !pParentGrp->Save(true))
+		if (!pParentGrp->renameEntry(GetFilename().getData(), fn) || !pParentGrp->save())
 		{
 			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_RENAMEFILE"), GetFilename().getData(), fn);
 			Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr("IDS_FAIL_RENAME"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
@@ -733,23 +747,24 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 	case PSDM_Crew:
 	{
 		SetTitle(FormatString("%s %s", LoadResStrNoAmp("IDS_CTL_CREW"), CurrPlayer.Core.PrefName).getData());
+
 		// crew mode: Insert complete crew of player (2do: sort)
-		bool fSucc; char szFn[_MAX_PATH + 1];
-		for (fSucc = CurrPlayer.Grp.FindEntry(C4CFN_ObjectInfoFiles, szFn); fSucc; fSucc = CurrPlayer.Grp.FindNextEntry(C4CFN_ObjectInfoFiles, szFn, nullptr, nullptr, true))
+		CppC4Group_ForEachEntryByWildcard(*CurrPlayer.Grp, "", C4CFN_ObjectInfoFiles, [this](const auto &info)
 		{
-			CrewListItem *pCrewItem = new CrewListItem(this, pPlrListBox, CurrPlayer.Core.PrefColorDw);
+			auto *crewItem = new CrewListItem(this, pPlrListBox, CurrPlayer.Core.PrefColorDw);
 			try
 			{
-				pCrewItem->Load(CurrPlayer.Grp, StdStrBuf(szFn));
+				crewItem->Load(*CurrPlayer.Grp, StdStrBuf{info.fileName.c_str()});
 			}
 			catch (ListItem::LoadError &e)
 			{
 				// invalid player: ignore but log error message
 				DebugLog(e.getData());
-				delete pCrewItem;
-				continue;
+				delete crewItem;
 			}
-		}
+			return true;
+		});
+
 		// resort crew by type and experience
 		ResortCrew();
 		pPlrListBox->SelectFirstEntry(false);
@@ -925,8 +940,9 @@ void C4StartupPlrSelDlg::SetPlayerMode()
 	// change view to listing players
 	C4GUI::GUISound("DoorClose");
 	StdStrBuf LastPlrFilename;
-	LastPlrFilename.Copy(static_cast<const StdStrBuf &>(CurrPlayer.Grp.GetFullName()));
-	CurrPlayer.Grp.Close();
+	LastPlrFilename.Copy(CurrPlayer.Grp->getFullName().c_str());
+	CurrPlayer.Grp->save();
+	CurrPlayer.Grp.reset();
 	eMode = PSDM_Player;
 	UpdatePlayerList();
 	SelectItem(LastPlrFilename, false);
@@ -937,8 +953,9 @@ void C4StartupPlrSelDlg::SetCrewMode(PlayerListItem *pSel)
 {
 	// change view to listing crew of a player
 	CurrPlayer.Core = pSel->GetCore();
-	if (!CurrPlayer.Grp.Open(pSel->GetFilename().getData())) return;
-	if (!CurrPlayer.Grp.FindEntry(C4CFN_ObjectInfoFiles))
+	CurrPlayer.Grp.reset(new CppC4Group);
+	if (!CurrPlayer.Grp->openExisting(pSel->GetFilename().getData())) return;
+	if (!CurrPlayer.Grp->getEntryData(C4CFN_ObjectInfoFiles))
 	{
 		StdStrBuf strCrew(FormatString("%s %s", LoadResStrNoAmp("IDS_CTL_CREW"), CurrPlayer.Core.PrefName));
 		// player has no crew!
@@ -978,7 +995,7 @@ void C4StartupPlrSelDlg::OnDelBtnConfirm(ListItem *pSel)
 		break;
 
 	case PSDM_Crew:
-		if (!CurrPlayer.Grp.Delete(pSel->GetFilename().getData()))
+		if (!CurrPlayer.Grp->deleteEntry(pSel->GetFilename().getData()))
 		{
 			StdStrBuf sMsg; sMsg.Copy(LoadResStr("IDS_FAIL_DELETE"));
 			GetScreen()->ShowMessage(sMsg.getData(), LoadResStr("IDS_DLG_CLEAR"), C4GUI::Ico_Error);
@@ -1236,12 +1253,10 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	if (!pForPlayer)
 	{
 		// Set initial portrait and bigicon
-		C4Group hGroup;
 		StdStrBuf strPortrait; strPortrait.Format("Portrait%d.png", 1 + Random(5));
-		if (hGroup.Open(Config.AtExePath(C4CFN_Graphics)))
+		if (CppC4Group group; group.openExisting(Config.AtExePath(C4CFN_Graphics)))
 		{
-			hGroup.Extract(strPortrait.getData(), Config.AtTempPath("Portrait.png"));
-			hGroup.Close();
+			group.extractSingle(strPortrait.getData(), Config.AtTempPath("Portrait.png"));
 			SetNewPicture(Config.AtTempPath("Portrait.png"), true, true);
 			EraseItem(Config.AtTempPath("Portrait.png"));
 		}
@@ -1376,8 +1391,8 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 		if (C4StartupPlrSelDlg::CheckPlayerName(PlrName, Filename, pForPlayer ? &pForPlayer->GetFilename() : nullptr, true))
 		{
 			SCopy(PlrName.getData(), C4P.PrefName, C4MaxName);
-			C4Group PlrGroup;
 			bool fSucc = false;
+			CppC4Group playerGroup;
 			// existent player: update file
 			if (pForPlayer)
 			{
@@ -1386,14 +1401,13 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 				// update picture/bigicon
 				if (fClearPicture || fClearBigIcon || fctNewPicture.Surface || fctNewBigIcon.Surface)
 				{
-					C4Group PlrGroup;
-					if (PlrGroup.Open(Filename.getData()))
+					if (playerGroup.openExisting(Filename.getData()))
 					{
-						if (fClearPicture || fctNewPicture.Surface) PlrGroup.Delete(C4CFN_Portrait);
-						if (fClearBigIcon || fctNewBigIcon.Surface) PlrGroup.Delete(C4CFN_BigIcon);
-						if (fctNewPicture.Surface) fctNewPicture.GetFace().SavePNG(PlrGroup, C4CFN_Portrait);
-						if (fctNewBigIcon.Surface) fctNewBigIcon.GetFace().SavePNG(PlrGroup, C4CFN_BigIcon);
-						if (PlrGroup.Close()) fSucc = true;
+						if (fClearPicture || fctNewPicture.Surface) playerGroup.deleteEntry(C4CFN_Portrait);
+						if (fClearBigIcon || fctNewBigIcon.Surface) playerGroup.deleteEntry(C4CFN_BigIcon);
+						if (fctNewPicture.Surface) fctNewPicture.GetFace().SavePNG(playerGroup, C4CFN_Portrait);
+						if (fctNewBigIcon.Surface) fctNewBigIcon.GetFace().SavePNG(playerGroup, C4CFN_BigIcon);
+						if (playerGroup.save()) fSucc = true;
 						if (fClearBigIcon || fctNewBigIcon.Surface) pForPlayer->GrabCustomIcon(fctNewBigIcon);
 						if (fClearPicture || fctNewPicture.Surface) pForPlayer->GrabPortrait(&fctNewPicture);
 					}
@@ -1409,16 +1423,16 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 			else
 			{
 				// NewPlayer: Open new player group
-				if (PlrGroup.Open(Filename.getData(), true))
+				if (CppC4Group_Open(playerGroup, Filename.getData(), true))
 				{
 					// Do not overwrite (should have been caught earlier anyway)
-					if (PlrGroup.FindEntry(C4CFN_PlayerInfoCore)) return;
+					if (playerGroup.getEntryData(C4CFN_PlayerInfoCore)) return;
 					// Save info core
-					C4P.Save(PlrGroup);
+					C4P.Save(playerGroup);
 					// Add portrait
 					if (fctNewPicture.Surface)
 					{
-						fctNewPicture.GetFace().SavePNG(PlrGroup, C4CFN_Portrait);
+						fctNewPicture.GetFace().SavePNG(playerGroup, C4CFN_Portrait);
 					}
 					else if (!fClearPicture)
 					{
@@ -1426,16 +1440,17 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 						char *pBytes; size_t iSize;
 						if (GetPortrait(&pBytes, &iSize))
 						{
-							PlrGroup.Add(C4CFN_Portrait, pBytes, iSize, false, true);
+							playerGroup.setEntryData(C4CFN_Portrait, pBytes, iSize);
+							delete[] pBytes;
 						}
 					}
 					// Add BigIcon
 					if (fctNewBigIcon.Surface)
 					{
-						fctNewBigIcon.GetFace().SavePNG(PlrGroup, C4CFN_BigIcon);
+						fctNewBigIcon.GetFace().SavePNG(playerGroup, C4CFN_BigIcon);
 					}
 					// Close group
-					if (PlrGroup.Close()) fSucc = true;
+					if (playerGroup.save()) fSucc = true;
 					// update activate button text
 					if (pMainDlg)
 					{
@@ -1450,7 +1465,7 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 					}
 				}
 			}
-			if (!fSucc) GetScreen()->ShowErrorMessage(PlrGroup.GetError());
+			if (!fSucc) GetScreen()->ShowErrorMessage(playerGroup.getErrorMessage().c_str());
 		}
 	}
 	// Make the dialog go away
@@ -1483,13 +1498,13 @@ void C4StartupPlrPropertiesDlg::SetNewPicture(const char *szFromFilename, bool f
 	{
 		// else set new picture/bigicon by loading and scaling if necessary.
 		C4Surface sfcNewPic;
-		C4Group SrcGrp;
+		CppC4Group group;
 		StdStrBuf sParentPath;
 		GetParentPath(szFromFilename, &sParentPath);
 		bool fSucc = false;
-		if (SrcGrp.Open(sParentPath.getData()))
+		if (group.openExisting(sParentPath.getData()))
 		{
-			if (sfcNewPic.Load(SrcGrp, GetFilename(szFromFilename)))
+			if (sfcNewPic.Load(group, GetFilename(szFromFilename)))
 			{
 				fSucc = true;
 				if (fSetPicture) if (!SetNewPicture(sfcNewPic, &fctNewPicture, C4MaxPictureSize, false)) fSucc = false;
@@ -1499,7 +1514,7 @@ void C4StartupPlrPropertiesDlg::SetNewPicture(const char *szFromFilename, bool f
 		if (!fSucc)
 		{
 			// error!
-			GetScreen()->ShowErrorMessage(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), szFromFilename, SrcGrp.GetError()).getData());
+			GetScreen()->ShowErrorMessage(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), szFromFilename, group.getErrorMessage().c_str()).getData());
 		}
 	}
 	// update icon
@@ -1529,12 +1544,12 @@ void C4StartupPlrPropertiesDlg::UpdateBigIcon()
 	// old icon in existing player?
 	else if (!fClearBigIcon && pForPlayer)
 	{
-		C4Group PlrGroup;
-		if (PlrGroup.Open(pForPlayer->GetFilename().getData()))
+		CppC4Group playerGroup;
+		if (playerGroup.openExisting(pForPlayer->GetFilename().getData()))
 		{
-			if (PlrGroup.FindEntry(C4CFN_BigIcon))
+			if (playerGroup.getEntryData(C4CFN_BigIcon))
 			{
-				if (fctOldBigIcon.Load(PlrGroup, C4CFN_BigIcon))
+				if (fctOldBigIcon.Load(playerGroup, C4CFN_BigIcon))
 				{
 					pPictureBtn->SetFacet(fctOldBigIcon);
 					fHasIcon = true;

@@ -29,12 +29,8 @@
 #include <C4Landscape.h>
 #include <C4Wrappers.h>
 
-C4Texture::C4Texture()
+C4Texture::C4Texture(const std::string &name, CSurface *surface32, CSurface8 *surface8) : Surface32{surface32}, Surface8{surface8}, Name{name}
 {
-	Name[0] = 0;
-	Surface8 = nullptr;
-	Surface32 = nullptr;
-	Next = nullptr;
 }
 
 C4Texture::~C4Texture()
@@ -142,23 +138,13 @@ bool C4TextureMap::AddEntry(uint8_t byIndex, const char *szMaterial, const char 
 
 bool C4TextureMap::AddTexture(const char *szTexture, CSurface *sfcSurface)
 {
-	C4Texture *pTexture;
-	if (!(pTexture = new C4Texture)) return false;
-	SCopy(szTexture, pTexture->Name, C4M_MaxName);
-	pTexture->Surface32 = sfcSurface;
-	pTexture->Next = FirstTexture;
-	FirstTexture = pTexture;
+	Textures.push_back(new C4Texture{szTexture, sfcSurface, nullptr});
 	return true;
 }
 
 bool C4TextureMap::AddTexture(const char *szTexture, CSurface8 *sfcSurface)
 {
-	C4Texture *pTexture;
-	if (!(pTexture = new C4Texture)) return false;
-	SCopy(szTexture, pTexture->Name, C4M_MaxName);
-	pTexture->Surface8 = sfcSurface;
-	pTexture->Next = FirstTexture;
-	FirstTexture = pTexture;
+	Textures.push_back(new C4Texture{szTexture, nullptr, sfcSurface});
 	return true;
 }
 
@@ -166,22 +152,19 @@ void C4TextureMap::Clear()
 {
 	for (int32_t i = 1; i < C4M_MaxTexIndex; i++)
 		Entry[i].Clear();
-	C4Texture *ctex, *next2;
-	for (ctex = FirstTexture; ctex; ctex = next2)
-	{
-		next2 = ctex->Next;
-		delete ctex;
-	}
-	FirstTexture = nullptr;
+
+	Textures.clear();
 	fInitialized = false;
 }
 
-bool C4TextureMap::LoadFlags(C4Group &hGroup, const char *szEntryName, bool *pOverloadMaterials, bool *pOverloadTextures)
+bool C4TextureMap::LoadFlags(CppC4Group &group, const std::string &filePath, bool *pOverloadMaterials, bool *pOverloadTextures)
 {
 	// Load the file
 	StdStrBuf TexMap;
-	if (!hGroup.LoadEntryString(szEntryName, TexMap))
+	if (!CppC4Group_LoadEntryString(group, filePath, TexMap))
+	{
 		return false;
+	}
 	// Reset flags
 	if (pOverloadMaterials) *pOverloadMaterials = false;
 	if (pOverloadTextures) *pOverloadTextures = false;
@@ -200,15 +183,21 @@ bool C4TextureMap::LoadFlags(C4Group &hGroup, const char *szEntryName, bool *pOv
 	return true;
 }
 
-int32_t C4TextureMap::LoadMap(C4Group &hGroup, const char *szEntryName, bool *pOverloadMaterials, bool *pOverloadTextures)
+int32_t C4TextureMap::LoadMap(CppC4Group &group, const std::string &filePath, bool *pOverloadMaterials, bool *pOverloadTextures)
 {
-	char *bpMap;
 	char szLine[100 + 1];
-	int32_t cnt, iIndex, iTextures = 0;
+	int32_t iIndex, iTextures = 0;
 	// Load text file into memory
-	if (!hGroup.LoadEntry(szEntryName, &bpMap, nullptr, 1)) return 0;
+
+	std::string data;
+	if (!CppC4Group_LoadEntryString(group, filePath, data))
+	{
+		return 0;
+	}
+
 	// Scan text buffer lines
-	for (cnt = 0; SCopySegment(bpMap, cnt, szLine, 0x0A, 100); cnt++)
+	for (int32_t cnt = 0; SCopySegment(data.c_str(), cnt, szLine, 0x0A, 100); cnt++)
+	{
 		if ((szLine[0] != '#') && (SCharCount('=', szLine) == 1))
 		{
 			SReplaceChar(szLine, 0x0D, 0x00);
@@ -226,8 +215,7 @@ int32_t C4TextureMap::LoadMap(C4Group &hGroup, const char *szEntryName, bool *pO
 			if (SEqual2(szLine, "OverloadMaterials")) { fOverloadMaterials = true; if (pOverloadMaterials) *pOverloadMaterials = true; }
 			if (SEqual2(szLine, "OverloadTextures"))  { fOverloadTextures  = true; if (pOverloadTextures)  *pOverloadTextures  = true; }
 		}
-	// Delete buffer, return entry count
-	delete[] bpMap;
+	}
 	fEntriesAdded = false;
 	return iTextures;
 }
@@ -251,7 +239,7 @@ int32_t C4TextureMap::Init()
 	return iRemoved;
 }
 
-bool C4TextureMap::SaveMap(C4Group &hGroup, const char *szEntryName)
+bool C4TextureMap::SaveMap(CppC4Group &group, const std::string &filePath)
 {
 #ifdef C4ENGINE
 	// build file in memory
@@ -270,21 +258,19 @@ bool C4TextureMap::SaveMap(C4Group &hGroup, const char *szEntryName)
 			// compose line
 			sTexMapFile.AppendFormat("%d=%s-%s" LineFeed, i, Entry[i].GetMaterialName(), Entry[i].GetTextureName());
 		}
-	// create new buffer allocated with new [], because C4Group cannot handle StdStrBuf-buffers
+
+	// create new buffer allocated with malloc, because C4Group cannot handle StdStrBuf-buffers
 	size_t iBufSize = sTexMapFile.getLength();
-	uint8_t *pBuf = new uint8_t[iBufSize];
+	auto *pBuf = static_cast<uint8_t *>(malloc(iBufSize * sizeof(uint8_t)));
 	memcpy(pBuf, sTexMapFile.getData(), iBufSize);
 	// add to group
-	bool fSuccess = !!hGroup.Add(szEntryName, pBuf, iBufSize, false, true);
-	if (!fSuccess) delete[] pBuf;
-	// done
-	return fSuccess;
+	return CppC4Group_Add(group, filePath, std::move(sTexMapFile));
 #else
 	return false;
 #endif
 }
 
-int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group *OverloadFile)
+int32_t C4TextureMap::LoadTextures(CppC4Group &group, CppC4Group *OverloadFile)
 {
 	int32_t texnum = 0;
 
@@ -293,43 +279,56 @@ int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group *OverloadFile)
 	// overload: load from other file
 	if (OverloadFile) texnum += LoadTextures(*OverloadFile);
 
-	char texname[256 + 1];
-	C4Surface *ctex;
-	size_t binlen;
 	// newgfx: load PNG-textures first
-	hGroup.ResetSearch();
-	while (hGroup.AccessNextEntry(C4CFN_PNGFiles, &binlen, texname))
-	{
-		// check if it already exists in the map
-		SReplaceChar(texname, '.', 0);
-		if (GetTexture(texname)) continue;
-		SAppend(".png", texname);
-		// load
-		if (ctex = GroupReadSurfacePNG(hGroup))
-		{
-			SReplaceChar(texname, '.', 0);
-			if (AddTexture(texname, ctex)) texnum++;
-			else delete ctex;
-		}
-	}
-	// Load all bitmap files from group
-	hGroup.ResetSearch();
-	CSurface8 *ctex8;
-	while (hGroup.AccessNextEntry(C4CFN_BitmapFiles, &binlen, texname))
-	{
-		// check if it already exists in the map
-		SReplaceChar(texname, '.', 0);
-		if (GetTexture(texname)) continue;
-		SAppend(".bmp", texname);
-		if (ctex8 = GroupReadSurface8(hGroup))
-		{
-			ctex8->AllowColor(0, 2, true);
-			SReplaceChar(texname, '.', 0);
-			if (AddTexture(texname, ctex8)) texnum++;
-			else delete ctex;
-		}
-	}
 
+	CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_PNGFiles, [&group, &texnum, this](const auto &info)
+	{
+		char texname[_MAX_FNAME + 1];
+		SCopy(info.fileName.c_str(), texname, _MAX_FNAME);
+		SReplaceChar(texname, '.', 0);
+		if (GetTexture(texname)) return true;
+
+		SAppend(".png", texname);
+
+		if (C4Surface *texture = GroupReadSurfacePNG(group, texname))
+		{
+			SReplaceChar(texname, '.', 0);
+			if (AddTexture(texname, texture))
+			{
+				++texnum;
+			}
+			else
+			{
+				delete texture;
+			}
+		}
+		return true;
+	});
+
+	CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_BitmapFiles, [&group, &texnum, this](const auto &info)
+	{
+		char texname[_MAX_FNAME + 1];
+		SCopy(info.fileName.c_str(), texname, _MAX_FNAME);
+		SReplaceChar(texname, '.', 0);
+		if (GetTexture(texname)) return true;
+
+		SAppend(".bmp", texname);
+
+		if (CSurface8 *texture = GroupReadSurface8(group, texname))
+		{
+			texture->AllowColor(0, 2, true);
+			SReplaceChar(texname, '.', 0);
+			if (AddTexture(texname, texture))
+			{
+				++texnum;
+			}
+			else
+			{
+				delete texture;
+			}
+		}
+		return true;
+	});
 #endif
 
 	return texnum;
@@ -403,21 +402,17 @@ int32_t C4TextureMap::GetIndexMatTex(const char *szMaterialTexture, const char *
 
 C4Texture *C4TextureMap::GetTexture(const char *szTexture)
 {
-	C4Texture *pTexture;
-	for (pTexture = FirstTexture; pTexture; pTexture = pTexture->Next)
-		if (SEqualNoCase(pTexture->Name, szTexture))
-			return pTexture;
+	if (auto it = std::find_if(Textures.begin(), Textures.end(), [szTexture](const auto &texture) { return SEqualNoCase(texture->Name, szTexture); }); it != Textures.end())
+	{
+		return *it;
+	}
 	return nullptr;
 }
 
 bool C4TextureMap::CheckTexture(const char *szTexture)
 {
 #ifdef C4ENGINE
-	C4Texture *pTexture;
-	for (pTexture = FirstTexture; pTexture; pTexture = pTexture->Next)
-		if (SEqualNoCase(pTexture->Name, szTexture))
-			return true;
-	return false;
+	return GetTexture(szTexture);
 #else
 	return true;
 #endif
@@ -425,17 +420,18 @@ bool C4TextureMap::CheckTexture(const char *szTexture)
 
 const char *C4TextureMap::GetTexture(int32_t iIndex)
 {
-	C4Texture *pTexture;
-	int32_t cindex;
-	for (pTexture = FirstTexture, cindex = 0; pTexture; pTexture = pTexture->Next, cindex++)
-		if (cindex == iIndex)
-			return pTexture->Name;
-	return nullptr;
+	try
+	{
+		return Textures.at(iIndex)->Name.c_str();
+	}
+	catch (const std::out_of_range &)
+	{
+		return nullptr;
+	}
 }
 
 void C4TextureMap::Default()
 {
-	FirstTexture = nullptr;
 	fEntriesAdded = false;
 	fOverloadMaterials = false;
 	fOverloadTextures = false;

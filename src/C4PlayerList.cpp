@@ -337,7 +337,7 @@ void SetClientPrefix(char *szFilename, const char *szClient)
 	SAppend(szTemp, szFilename);
 }
 
-bool C4PlayerList::Save(C4Group &hGroup, bool fStoreTiny, const C4PlayerInfoList &rStoreList)
+bool C4PlayerList::Save(CppC4Group &group, bool fStoreTiny, const C4PlayerInfoList &rStoreList)
 {
 	StdStrBuf sTempFilename;
 	bool fSuccess = true;
@@ -353,17 +353,20 @@ bool C4PlayerList::Save(C4Group &hGroup, bool fStoreTiny, const C4PlayerInfoList
 		// Create temporary file
 		sTempFilename.Copy(Config.AtTempPath(pNfo->GetFilename()));
 		if (fStoreOnOriginal)
-			if (!C4Group_CopyItem(pPlr->Filename, sTempFilename.getData()))
+			if (!CppC4Group_TransferItem(pPlr->Filename, sTempFilename.getData()))
 				return false;
+
 		// Open group
-		C4Group PlrGroup;
-		if (!PlrGroup.Open(sTempFilename.getData(), !fStoreOnOriginal))
+		CppC4Group playerGroup;
+		if (!CppC4Group_Open(playerGroup, sTempFilename.getData(), true))
 			return false;
+
 		// Save player
-		if (!pPlr->Save(PlrGroup, true, fStoreOnOriginal)) return false;
-		PlrGroup.Close();
+		if (!pPlr->Save(playerGroup, true, fStoreOnOriginal)) return false;
+
+		playerGroup.save();
 		// Add temp file to group
-		if (!hGroup.Move(sTempFilename.getData(), pNfo->GetFilename())) return false;
+		if (!group.addFromDisk(sTempFilename.getData(), pNfo->GetFilename())) return false;
 	}
 	return fSuccess;
 }

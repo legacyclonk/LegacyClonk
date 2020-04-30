@@ -110,13 +110,12 @@ private:
 
 static ResTable *Table = nullptr;
 
-void SetResStrTable(char *pTable)
+void SetResStrTable(const char *pTable)
 {
 	// Clear any old table
 	ClearResStrTable();
 	// Create new Table
 	Table = new ResTable(pTable);
-	delete[] pTable;
 }
 
 void ClearResStrTable()

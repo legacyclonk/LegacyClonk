@@ -87,21 +87,28 @@ void C4Scenario::Default()
 	Environment.Default();
 }
 
-bool C4Scenario::Load(C4Group &hGroup, bool fLoadSection)
+bool C4Scenario::Load(CppC4Group &group, bool fLoadSection)
 {
-	char *pSource;
 	// Load
-	if (!hGroup.LoadEntry(C4CFN_ScenarioCore, &pSource, nullptr, 1)) return false;
-	// Compile
-	if (!Compile(pSource, fLoadSection)) { delete[] pSource; return false; }
-	delete[] pSource;
+	if (std::string data; !CppC4Group_LoadEntryString(group, C4CFN_ScenarioCore, data))
+	{
+		return false;
+	}
+	else
+	{
+		if (!Compile(data.c_str(), fLoadSection))
+		{
+			return false;
+		}
+	}
+
 	// Convert
 	Game.ConvertGoals(Game.Realism);
 	// Success
 	return true;
 }
 
-bool C4Scenario::Save(C4Group &hGroup, bool fSaveSection)
+bool C4Scenario::Save(CppC4Group &group, bool fSaveSection)
 {
 	StdStrBuf Buf;
 	try
@@ -113,10 +120,14 @@ bool C4Scenario::Save(C4Group &hGroup, bool fSaveSection)
 		return false;
 	}
 
-	if (!hGroup.Add(C4CFN_ScenarioCore, Buf, false, true))
+	size_t size = Buf.getSize();
+	char *pointer = Buf.GrabPointer();
+	if (!(group.createFile(C4CFN_ScenarioCore) && group.setEntryData(C4CFN_ScenarioCore, pointer, size, CppC4Group::MemoryManagement::Take)))
 	{
+		free(pointer);
 		return false;
 	}
+
 	return true;
 }
 
@@ -613,7 +624,7 @@ C4ScenarioSection::~C4ScenarioSection()
 	if (szName != C4ScenSect_Main) delete szName;
 }
 
-bool C4ScenarioSection::ScenarioLoad(char *szFilename)
+bool C4ScenarioSection::ScenarioLoad(const char *szFilename)
 {
 	// safety
 	if (this->szFilename || !szFilename) return false;
@@ -621,21 +632,44 @@ bool C4ScenarioSection::ScenarioLoad(char *szFilename)
 	this->szFilename = new char[strlen(szFilename) + 1];
 	SCopy(szFilename, this->szFilename, _MAX_FNAME);
 	// extract if it's not an open folder
-	if (Game.ScenarioFile.IsPacked()) if (!EnsureTempStore(true, true)) return false;
+	if (Game.ScenarioFile->isPacked())
+	{
+		if (!EnsureTempStore(true, true))
+		{
+			return false;
+		}
+	}
 	// donce, success
 	return true;
 }
 
-C4Group *C4ScenarioSection::GetGroupfile(C4Group &rGrp)
+std::tuple<CppC4Group *, bool> C4ScenarioSection::GetGroupFile()
 {
+	std::unique_ptr<CppC4Group> group{new CppC4Group};
 	// check temp filename
-	if (szTempFilename) if (rGrp.Open(szTempFilename)) return &rGrp; else return nullptr;
+	if (szTempFilename)
+	{
+		auto *group = new CppC4Group;
+		if (group->openExisting(szTempFilename))
+		{
+			return {group, true};
+		}
+	}
 	// check filename within scenario
-	if (szFilename) if (rGrp.OpenAsChild(&Game.ScenarioFile, szFilename)) return &rGrp; else return nullptr;
+	if (szFilename)
+	{
+		if (auto grp = Game.ScenarioFile->openAsChild(szFilename); grp)
+		{
+			return {new CppC4Group{std::move(*grp)}, true};
+		}
+	}
 	// unmodified main section: return main group
-	if (SEqualNoCase(szName, C4ScenSect_Main)) return &Game.ScenarioFile;
+	if (SEqualNoCase(szName, C4ScenSect_Main))
+	{
+		return {Game.ScenarioFile, false};
+	}
 	// failure
-	return nullptr;
+	return {};
 }
 
 bool C4ScenarioSection::EnsureTempStore(bool fExtractLandscape, bool fExtractObjects)
@@ -649,29 +683,36 @@ bool C4ScenarioSection::EnsureTempStore(bool fExtractLandscape, bool fExtractObj
 	if (!szFilename)
 	{
 		if (!CreateDirectory(szTmp, nullptr)) return false;
-		C4Group hGroup;
-		if (!hGroup.Open(szTmp, true)) { EraseItem(szTmp); return false; }
+
+		CppC4Group group;
+		if (!group.openExisting(szTmp)) { EraseItem(szTmp); return false; }
 		// extract all desired section files
-		Game.ScenarioFile.ResetSearch();
-		char fn[_MAX_FNAME + 1]; *fn = 0;
-		while (Game.ScenarioFile.FindNextEntry(C4FLS_Section, fn))
-			if (fExtractLandscape || !WildcardMatch(C4FLS_SectionLandscape, fn))
-				if (fExtractObjects || !WildcardMatch(C4FLS_SectionObjects, fn))
-					Game.ScenarioFile.ExtractEntry(fn, szTmp);
-		hGroup.Close();
+
+		CppC4Group_ForEachEntryByWildcard(*Game.ScenarioFile, "", C4FLS_Section, [&fExtractLandscape, &fExtractObjects, &szTmp](const auto &info)
+		{
+			if (fExtractLandscape || !WildcardMatch(C4FLS_SectionLandscape, info.fileName.c_str()))
+			{
+				if (fExtractObjects || !WildcardMatch(C4FLS_SectionObjects, info.fileName.c_str()))
+				{
+					Game.ScenarioFile->extractSingle(info.fileName, szTmp);
+				}
+			}
+
+			return true;
+		});
 	}
 	else
 	{
 		// subsection: simply extract section from main group
-		if (!Game.ScenarioFile.ExtractEntry(szFilename, szTmp)) return false;
+		if (!Game.ScenarioFile->extractSingle(szFilename, szTmp)) return false;
 		// delete undesired landscape/object files
 		if (!fExtractLandscape || !fExtractObjects)
 		{
-			C4Group hGroup;
-			if (hGroup.Open(szFilename))
+			CppC4Group group;
+			if (group.openExisting(szFilename))
 			{
-				if (!fExtractLandscape) hGroup.Delete(C4FLS_SectionLandscape);
-				if (!fExtractObjects) hGroup.Delete(C4FLS_SectionObjects);
+				if (!fExtractLandscape) group.deleteEntry(C4FLS_SectionLandscape);
+				if (!fExtractObjects) group.deleteEntry(C4FLS_SectionObjects);
 			}
 		}
 	}

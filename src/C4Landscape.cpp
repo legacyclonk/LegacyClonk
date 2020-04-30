@@ -526,17 +526,17 @@ CSurface8 *C4Landscape::CreateMap()
 	return sfcMap;
 }
 
-CSurface8 *C4Landscape::CreateMapS2(C4Group &ScenFile)
+CSurface8 *C4Landscape::CreateMapS2(CppC4Group &ScenFile)
 {
 	// file present?
-	if (!ScenFile.AccessEntry(C4CFN_DynLandscape)) return nullptr;
+	if (!ScenFile.getEntryInfo(C4CFN_DynLandscape)) return nullptr;
 
 	// create map creator
 	if (!pMapCreator)
 		pMapCreator = new C4MapCreatorS2(&Game.C4S.Landscape, &Game.TextureMap, &Game.Material, Game.Parameters.StartupPlayerCount);
 
 	// read file
-	pMapCreator->ReadFile(C4CFN_DynLandscape, &ScenFile);
+	pMapCreator->ReadFile(ScenFile, C4CFN_DynLandscape);
 	// render landscape
 	CSurface8 *sfc = pMapCreator->Render(nullptr);
 
@@ -556,7 +556,7 @@ bool C4Landscape::PostInitMap()
 	return true;
 }
 
-bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame)
+bool C4Landscape::Init(CppC4Group &group, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame)
 {
 	// set map seed, if not pre-assigned
 	if (!MapSeed) MapSeed = Random(3133700);
@@ -587,14 +587,14 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	{
 		CSurface8 *sfcMap = nullptr;
 		// Static map from scenario
-		if (hGroup.AccessEntry(C4CFN_Map))
-			if (sfcMap = GroupReadSurface8(hGroup))
+		if (group.getEntryData(C4CFN_Map))
+			if (sfcMap = GroupReadSurface8(group, C4CFN_Map))
 				if (!fLandscapeModeSet) Mode = C4LSC_Static;
 
 		// allow C4CFN_Landscape as map for downwards compatibility
 		if (!sfcMap)
-			if (hGroup.AccessEntry(C4CFN_Landscape))
-				if (sfcMap = GroupReadSurface8(hGroup))
+			if (group.getEntryData(C4CFN_Landscape))
+				if (sfcMap = GroupReadSurface8(group, C4CFN_Landscape))
 				{
 					if (!fLandscapeModeSet) Mode = C4LSC_Static;
 					fMapChanged = true;
@@ -602,7 +602,7 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 
 		// dynamic map from file
 		if (!sfcMap)
-			if (sfcMap = CreateMapS2(hGroup))
+			if (sfcMap = CreateMapS2(group))
 				if (!fLandscapeModeSet) Mode = C4LSC_Dynamic;
 
 		// Dynamic map by scenario
@@ -660,7 +660,7 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 		// load it
 		if (!fLandscapeModeSet) Mode = C4LSC_Exact;
 		rfLoaded = true;
-		if (!Load(hGroup, fLoadSky, fSavegame)) return false;
+		if (!Load(group, fLoadSky, fSavegame)) return false;
 	}
 
 	// Make pixel maps
@@ -721,7 +721,7 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 		return false;
 
 	// Load diff, if existent
-	ApplyDiff(hGroup);
+	ApplyDiff(group);
 
 	// enforce first color to be transparent
 	Surface8->EnforceC0Transparency();
@@ -1426,10 +1426,10 @@ bool C4Landscape::Incinerate(int32_t x, int32_t y)
 	return false;
 }
 
-bool C4Landscape::Save(C4Group &hGroup)
+bool C4Landscape::Save(CppC4Group &group)
 {
 	// Save members
-	if (!Sky.Save(hGroup))
+	if (!Sky.Save(group))
 		return false;
 
 	// Save landscape surface
@@ -1440,25 +1440,25 @@ bool C4Landscape::Save(C4Group &hGroup)
 		return false;
 
 	// Move temp file to group
-	if (!hGroup.Move(szTempLandscape, C4CFN_Landscape))
+	if (!group.addFromDisk(szTempLandscape, C4CFN_Landscape, CppC4Group::AllowedEntryTypes::File))
 		return false;
 
 	SCopy(Config.AtTempPath(C4CFN_TempLandscapePNG), szTempLandscape);
 	MakeTempFilename(szTempLandscape);
 	if (!Surface32->SavePNG(szTempLandscape, true, false, false))
 		return false;
-	if (!hGroup.Move(szTempLandscape, C4CFN_LandscapePNG)) return false;
+	if (!group.addFromDisk(szTempLandscape, C4CFN_LandscapePNG, CppC4Group::AllowedEntryTypes::File))
 
 	if (fMapChanged && Map)
-		if (!SaveMap(hGroup)) return false;
+		if (!SaveMap(group)) return false;
 
 	// save textures (if changed)
-	if (!SaveTextures(hGroup)) return false;
+	if (!SaveTextures(group)) return false;
 
 	return true;
 }
 
-bool C4Landscape::SaveDiff(C4Group &hGroup, bool fSyncSave)
+bool C4Landscape::SaveDiff(CppC4Group &group, bool fSyncSave)
 {
 	assert(pInitial);
 	if (!pInitial) return false;
@@ -1480,8 +1480,7 @@ bool C4Landscape::SaveDiff(C4Group &hGroup, bool fSyncSave)
 			return false;
 
 		// Move temp file to group
-		if (!hGroup.Move(Config.AtTempPath(C4CFN_TempLandscape),
-			C4CFN_DiffLandscape))
+		if (!group.addFromDisk(Config.AtTempPath(C4CFN_TempLandscape), C4CFN_DiffLandscape))
 			return false;
 	}
 
@@ -1495,10 +1494,10 @@ bool C4Landscape::SaveDiff(C4Group &hGroup, bool fSyncSave)
 
 	// Save changed map, too
 	if (fMapChanged && Map)
-		if (!SaveMap(hGroup)) return false;
+		if (!SaveMap(group)) return false;
 
 	// and textures (if changed)
-	if (!SaveTextures(hGroup)) return false;
+	if (!SaveTextures(group)) return false;
 
 	return true;
 }
@@ -1517,11 +1516,11 @@ bool C4Landscape::SaveInitial()
 	return true;
 }
 
-bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
+bool C4Landscape::Load(CppC4Group &group, bool fLoadSky, bool fSavegame)
 {
 	// Load exact landscape from group
-	if (!hGroup.AccessEntry(C4CFN_Landscape)) return false;
-	if (!(Surface8 = GroupReadSurfaceOwnPal8(hGroup))) return false;
+	if (!group.getEntryInfo(C4CFN_Landscape)) return false;
+	if (!(Surface8 = GroupReadSurfaceOwnPal8(group, C4CFN_Landscape))) return false;
 	int iWidth, iHeight;
 	Surface8->GetSurfaceSize(iWidth, iHeight);
 	Width = iWidth; Height = iHeight;
@@ -1531,15 +1530,12 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 	// adjust pal
 	if (!Mat2Pal()) return false;
 	// load the 32bit-surface, too
-	size_t iSize;
-	if (hGroup.AccessEntry(C4CFN_LandscapePNG, &iSize))
+	if (auto data = group.getEntryData(C4CFN_LandscapePNG); data)
 	{
-		const std::unique_ptr<uint8_t []> pPNG(new uint8_t[iSize]);
-		hGroup.Read(pPNG.get(), iSize);
 		bool locked = false;
 		try
 		{
-			CPNGFile png(pPNG.get(), iSize);
+			CPNGFile png(data->data, data->size);
 			StdBitmap bmp(png.Width(), png.Height(), png.UsesAlpha());
 			png.Decode(bmp.GetBytes());
 			if (!Surface32->Lock()) throw std::runtime_error("Could not lock surface");
@@ -1607,12 +1603,12 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 	return true;
 }
 
-bool C4Landscape::ApplyDiff(C4Group &hGroup)
+bool C4Landscape::ApplyDiff(CppC4Group &group)
 {
 	CSurface8 *pDiff;
 	// Load diff landscape from group
-	if (!hGroup.AccessEntry(C4CFN_DiffLandscape)) return false;
-	if (!(pDiff = GroupReadSurfaceOwnPal8(hGroup))) return false;
+	if (!group.getEntryInfo(C4CFN_DiffLandscape)) return false;
+	if (!(pDiff = GroupReadSurfaceOwnPal8(group, C4CFN_DiffLandscape))) return false;
 	// convert all pixels: keep if same material; re-set if different material
 	uint8_t byPix;
 	for (int32_t y = 0; y < Height; ++y) for (int32_t x = 0; x < Width; ++x)
@@ -2145,7 +2141,7 @@ void C4Landscape::ClearRectDensity(int32_t iTx, int32_t iTy, int32_t iWdt, int32
 	}
 }
 
-bool C4Landscape::SaveMap(C4Group &hGroup)
+bool C4Landscape::SaveMap(CppC4Group &group)
 {
 	// No map
 	if (!Map) return false;
@@ -2159,45 +2155,37 @@ bool C4Landscape::SaveMap(C4Group &hGroup)
 		return false;
 
 	// Move temp file to group
-	if (!hGroup.Move(Config.AtTempPath(C4CFN_TempMap),
-		C4CFN_Map))
+	if (!group.addFromDisk(Config.AtTempPath(C4CFN_TempMap), C4CFN_Map))
 		return false;
 
 	// Success
 	return true;
 }
 
-bool C4Landscape::SaveTextures(C4Group &hGroup)
+bool C4Landscape::SaveTextures(CppC4Group &group)
 {
 	// if material-texture-combinations have been added, write the texture map
 	if (Game.TextureMap.fEntriesAdded)
 	{
-		C4Group *pMatGroup = new C4Group();
+		CppC4Group matGroup;
 		bool fSuccess = false;
 		// create local material group
-		if (!hGroup.FindEntry(C4CFN_Material))
+		if (!group.getEntryInfo(C4CFN_Material))
 		{
 			// delete previous item at temp path
 			EraseItem(Config.AtTempPath(C4CFN_Material));
 			// create at temp path
-			if (pMatGroup->Open(Config.AtTempPath(C4CFN_Material), true))
+			if (matGroup.openExisting(Config.AtTempPath(C4CFN_Material)))
 				// write to it
-				if (Game.TextureMap.SaveMap(*pMatGroup, C4CFN_TexMap))
-					// close (flush)
-					if (pMatGroup->Close())
-						// add it
-						if (hGroup.Move(Config.AtTempPath(C4CFN_Material), C4CFN_Material))
-							fSuccess = true;
+				if (Game.TextureMap.SaveMap(matGroup, C4CFN_TexMap))
+					// add it
+					if (group.addFromDisk(Config.AtTempPath(C4CFN_Material), C4CFN_Material))
+						fSuccess = true;
 			// temp group must remain for scenario file closure
 			// it will be deleted when the group is closed
 		}
 		else
-			// simply write it to the local material file
-			if (pMatGroup->OpenAsChild(&hGroup, C4CFN_Material))
-				fSuccess = Game.TextureMap.SaveMap(*pMatGroup, C4CFN_TexMap);
-		// close material group again
-		if (pMatGroup->IsOpen()) pMatGroup->Close();
-		delete pMatGroup;
+			fSuccess = Game.TextureMap.SaveMap(group, std::string{C4CFN_Material} / C4CFN_TexMap);
 		// fail if unsuccessful
 		if (!fSuccess) return false;
 	}

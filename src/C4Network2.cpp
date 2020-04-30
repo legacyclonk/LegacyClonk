@@ -589,14 +589,14 @@ bool C4Network2::RetrieveScenario(char *szScenario)
 
 	// create unpacked copy of scenario
 	if (!ResList.FindTempResFileName(FormatString("Combined%d.c4s", Game.Clients.getLocalID()).getData(), szScenario) ||
-		!C4Group_CopyItem(pScenario->getFile(), szScenario) ||
+		!CppC4Group_TransferItem(pScenario->getFile(), szScenario) ||
 		!C4Group_UnpackDirectory(szScenario))
 		return false;
 
 	// create unpacked copy of dynamic data
 	char szTempDynamic[_MAX_PATH + 1];
 	if (!ResList.FindTempResFileName(pDynamic->getFile(), szTempDynamic) ||
-		!C4Group_CopyItem(pDynamic->getFile(), szTempDynamic) ||
+		!CppC4Group_TransferItem(pDynamic->getFile(), szTempDynamic) ||
 		!C4Group_UnpackDirectory(szTempDynamic))
 		return false;
 

@@ -198,29 +198,32 @@ C4String *C4StringTable::FindSaveString(C4String *pString)
 	return nullptr;
 }
 
-bool C4StringTable::Load(C4Group &ParentGroup)
+bool C4StringTable::Load(CppC4Group &parentGroup)
 {
 	// read data
-	char *pData;
-	if (!ParentGroup.LoadEntry(C4CFN_Strings, &pData, nullptr, 1))
-		return false;
-	// read all strings
-	char strBuf[C4AUL_MAX_String + 1];
-	for (int i = 0; SCopySegment(pData, i, strBuf, 0x0A, C4AUL_MAX_String); i++)
+	if (std::string data; !CppC4Group_LoadEntryString(parentGroup, C4CFN_Strings, data))
 	{
-		SReplaceChar(strBuf, 0x0D, 0x00);
-		// add string to list
-		C4String *pnString;
-		if (!(pnString = FindString(strBuf)))
-			pnString = RegString(strBuf);
-		pnString->iEnumID = i;
+		return false;
 	}
-	// delete data
-	delete[] pData;
-	return true;
+	else
+	{
+		// read all strings
+		char strBuf[C4AUL_MAX_String + 1];
+		for (int i = 0; SCopySegment(data.c_str(), i, strBuf, 0x0A, C4AUL_MAX_String); i++)
+		{
+			SReplaceChar(strBuf, 0x0D, 0x00);
+			// add string to list
+			C4String *pnString;
+			if (!(pnString = FindString(strBuf)))
+				pnString = RegString(strBuf);
+			pnString->iEnumID = i;
+		}
+		return true;
+	}
+
 }
 
-bool C4StringTable::Save(C4Group &ParentGroup)
+bool C4StringTable::Save(CppC4Group &parentGroup)
 {
 	// no tbl entries?
 	if (!First) return true;
@@ -261,5 +264,11 @@ bool C4StringTable::Save(C4Group &ParentGroup)
 	}
 
 	// write in group
-	return !!ParentGroup.Add(C4CFN_Strings, pData, iTableSize - 1, false, true);
+	if (!(parentGroup.createFile(C4CFN_Strings) && parentGroup.setEntryData(C4CFN_Strings, pData, iTableSize, CppC4Group::MemoryManagement::Take)))
+	{
+		delete[] pData;
+		return false;
+	}
+
+	return true;
 }

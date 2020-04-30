@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include "cppc4group.hpp"
+
 // group set priorities
 #define C4GSPrio_Base        0 // lowest priority for global system files
 #define C4GSPrio_ExtraRoot   2 // overloads by Extra.c4g root folder
@@ -57,13 +59,13 @@ protected:
 	C4GroupSet *pParent; // owning set
 	C4GroupSetNode *pPrev, *pNext; // linked list - always valid
 
-	C4Group *pGroup; // ptr to group owned by this node
+	CppC4Group *pGroup; // ptr to group owned by this node
 	bool fGrpOwned; // flag if group ptr is owned
 
 	int32_t id; // group node ID
 
 public:
-	C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, C4Group &rGroup, bool fGrpOwned, int32_t id);
+	C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, CppC4Group &group, bool fGrpOwned, int32_t id);
 	~C4GroupSetNode();
 
 	int32_t Priority; // group priority
@@ -87,15 +89,15 @@ public:
 	C4GroupSet(C4GroupSet &) = delete;
 	~C4GroupSet();
 
-	bool RegisterGroup(C4Group &rGroup, bool fOwnGrp, int32_t Priority, int32_t Contents, bool fCheckContent = true); // add group to list
+	bool RegisterGroup(CppC4Group &group, bool fOwnGrp, int32_t Priority, int32_t Contents, bool fCheckContent = true); // add group to list
 	bool RegisterGroups(C4GroupSet &rCopy, int32_t Contents, const char *szFilename = nullptr, int32_t iMaxSkipID = 0); // add all matching (child-)groups of the set
-	C4Group *FindGroup(int32_t Contents, C4Group *pAfter = nullptr, bool fSamePrio = false); // search for suitable group in list
-	C4Group *FindEntry(const char *szWildcard, int32_t *pPriority = nullptr, int32_t *pID = nullptr); // find entry in groups; store priority of group if ptr is given
-	C4Group *GetGroup(int32_t iIndex);
-	bool LoadEntryString(const char *szEntryName, StdStrBuf &rBuf);
-	C4Group *RegisterParentFolders(const char *szScenFilename); // register all parent .c4f groups to the given scenario filename and return an open group file of the innermost parent c4f
+	CppC4Group *FindGroup(int32_t Contents, CppC4Group *pAfter = nullptr, bool fSamePrio = false); // search for suitable group in list
+	std::tuple<CppC4Group *, std::string> FindEntry(const char *szWildcard, int32_t *pPriority = nullptr, int32_t *pID = nullptr); // find entry in groups; store priority of group if ptr is given
+	CppC4Group *GetGroup(int32_t iIndex);
+	bool LoadEntryString(const char *szEntryName, class StdStrBuf &rBuf);
+	CppC4Group *RegisterParentFolders(const char *szScenFilename); // register all parent .c4f groups to the given scenario filename and return an open group file of the innermost parent c4f
 
-	static int32_t CheckGroupContents(C4Group &rGroup, int32_t Contents);
+	static int32_t CheckGroupContents(CppC4Group &group, int32_t Contents);
 	int32_t GetLastID() { return iIndex; } // return ID assigned to the last added group
 
 	bool CloseFolders(); // remove all groups associated with scenario folders

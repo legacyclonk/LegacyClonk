@@ -1,0 +1,3 @@
+[submodule "src/cc4group"]
+	path = src/cc4group
+	url = https://git.maxmitti.tk/DerTod-pub/cc4group

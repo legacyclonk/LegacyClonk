@@ -21,7 +21,8 @@
 
 #include <C4Random.h>
 #include <C4Shape.h>
-#include <C4Group.h>
+
+#include "cppc4group.hpp"
 
 #ifdef C4ENGINE
 
@@ -141,12 +142,12 @@ bool C4FacetExSurface::EnsureSize(int iMinWdt, int iMinHgt)
 	return fSuccess;
 }
 
-bool C4FacetExSurface::Load(C4Group &hGroup, const char *szName, int iWdt, int iHgt, bool fOwnPal, bool fNoErrIfNotFound)
+bool C4FacetExSurface::Load(CppC4Group &group, const std::string &filePath, int iWdt, int iHgt, bool fOwnPal, bool fNoErrIfNotFound)
 {
 	Clear();
 	// Entry name
-	char szFilename[_MAX_FNAME + 1];
-	SCopy(szName, szFilename, _MAX_FNAME);
+	char szFilename[_MAX_PATH + 1];
+	SCopy(filePath.c_str(), szFilename, _MAX_PATH);
 	char *szExt = GetExtension(szFilename);
 	if (!*szExt)
 	{
@@ -156,11 +157,11 @@ bool C4FacetExSurface::Load(C4Group &hGroup, const char *szName, int iWdt, int i
 		while (szExt = extensions[i++])
 		{
 			EnforceExtension(szFilename, szExt);
-			if (hGroup.FindEntry(szFilename)) break;
+			if (group.getEntryInfo(szFilename)) break;
 		}
 	}
 	// Load surface
-	if (!Face.Load(hGroup, szFilename, fOwnPal, fNoErrIfNotFound)) return false;
+	if (!Face.Load(group, szFilename, fOwnPal, fNoErrIfNotFound)) return false;
 	// Set facet
 	if (iWdt == C4FCT_Full) iWdt = Face.Wdt; if (iWdt == C4FCT_Height) iWdt = Face.Hgt; if (iWdt == C4FCT_Width) iWdt = Face.Wdt;
 	if (iHgt == C4FCT_Full) iHgt = Face.Hgt; if (iHgt == C4FCT_Height) iHgt = Face.Hgt; if (iHgt == C4FCT_Width) iHgt = Face.Wdt;

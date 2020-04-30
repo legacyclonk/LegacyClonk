@@ -60,32 +60,49 @@ bool C4Language::Init()
 	Clear();
 
 	// Make sure Language.c4g is unpacked
-	if (ItemExists(C4CFN_Languages))
-		if (!DirectoryExists(C4CFN_Languages))
-			C4Group_UnpackDirectory(C4CFN_Languages);
+	if (std::filesystem::is_directory(C4CFN_Languages))
+	{
+		std::filesystem::path temp = C4CFN_Languages ".temp";
+
+		std::filesystem::rename(C4CFN_Languages, temp);
+
+		CppC4Group group;
+		group.openExisting(temp);
+		group.extractAll(C4CFN_Languages);
+
+		std::filesystem::remove(temp);
+	}
+
 
 	// Look for available language packs in Language.c4g
-	C4Group *pPack;
-	char strPackFilename[_MAX_FNAME + 1], strEntry[_MAX_FNAME + 1];
-	if (PackDirectory.Open(C4CFN_Languages))
-		while (PackDirectory.FindNextEntry("*.c4g", strEntry))
+	if (CppC4Group packs; packs.openExisting(C4CFN_Languages))
+	{
+		CppC4Group_ForEachEntryByWildcard(packs, "", "*.c4g", [this](const auto &info)
 		{
-			sprintf(strPackFilename, "%s" DirSep "%s", C4CFN_Languages, strEntry);
-			pPack = new C4Group();
-			if (pPack->Open(strPackFilename))
+			char strPackFilename[_MAX_FNAME + 1];
+			sprintf(strPackFilename, "%s" DirSep "%s", C4CFN_Languages, info.fileName.c_str());
+
+			auto *pack = new CppC4Group;
+			if (pack->openExisting(strPackFilename))
 			{
-				Packs.RegisterGroup(*pPack, true, C4GSCnt_Language, false);
+				Packs.RegisterGroup(*pack, "", true, C4GSCnt_Language, false);
 			}
 			else
 			{
-				delete pPack;
+				delete pack;
 			}
-		}
+			return true;
+		});
+	}
 
 	// Now create a pack group for each language pack (these pack groups are child groups
 	// that browse along each pack to access requested data)
-	for (int iPack = 0; pPack = Packs.GetGroup(iPack); iPack++)
-		PackGroups.RegisterGroup(*(new C4Group), true, C4GSPrio_Base, C4GSCnt_Language);
+
+	CppC4Group *pack = nullptr;
+	for (size_t i = 0; (pack = Packs.GetGroup(i)); ++i)
+	{
+		PackGroups.RegisterGroup(*(new CppC4Group), true, C4GSPrio_Base, C4GSCnt_Language);
+	}
 
 	// Load language infos by scanning string tables (the engine doesn't really need this at the moment)
 	InitInfos();
@@ -259,13 +276,18 @@ C4GroupSet &C4Language::GetPackGroups(const char *strRelativePath)
 	if (SEqualNoCase(strTargetLocation, PackGroupLocation))
 		return PackGroups;
 
+#if 0
 	// Process all language packs (and their respective pack groups)
-	C4Group *pPack, *pPackGroup;
-	for (int iPack = 0; (pPack = Packs.GetGroup(iPack)) && (pPackGroup = PackGroups.GetGroup(iPack)); iPack++)
+	CppC4Group *pack;
+	std::string path;
+	CppC4Group *packGroup;
+	std::string groupPath;
+
+	for (size_t i = 0; (std::tie(pack, path) = Packs.GetGroup(i), pack) && (std::tie(packGroup, groupPath) = PackGroups.GetGroup(i), packGroup); ++i)
 	{
 		// Get current pack group position within pack
-		SCopy(pPack->GetFullName().getData(), strPackPath, _MAX_PATH);
-		GetRelativePath(pPackGroup->GetFullName().getData(), strPackPath, strPackGroupLocation);
+		SCopy(path.c_str(), strPackPath, _MAX_PATH);
+		GetRelativePath(groupPath.c_str(), strPackPath, strPackGroupLocation);
 
 		// Pack group is at correct position within pack: continue with next pack
 		if (SEqualNoCase(strPackGroupLocation, strTargetLocation))
@@ -296,6 +318,7 @@ C4GroupSet &C4Language::GetPackGroups(const char *strRelativePath)
 			pPackGroup->OpenAsChild(pPack, strTargetLocation);
 		}
 	}
+#endif
 
 	// Store new target location
 	SCopy(strTargetLocation, PackGroupLocation, _MAX_FNAME);
@@ -306,58 +329,61 @@ C4GroupSet &C4Language::GetPackGroups(const char *strRelativePath)
 
 void C4Language::InitInfos()
 {
-	C4Group hGroup;
 	// First, look in System.c4g
-	if (hGroup.Open(C4CFN_System))
+	if (CppC4Group group; group.openExisting(C4CFN_System))
 	{
-		LoadInfos(hGroup);
-		hGroup.Close();
+		LoadInfos(group);
 	}
 	// Now look through the registered packs
-	C4Group *pPack;
-	for (int iPack = 0; pPack = Packs.GetGroup(iPack); iPack++)
+	CppC4Group *group = nullptr;
+	for (size_t i = 0; (group = Packs.GetGroup(i)); ++i)
+	{
 		// Does it contain a System.c4g child group?
-		if (hGroup.OpenAsChild(pPack, C4CFN_System))
+		if (auto grp = group->openAsChild(C4CFN_System); grp)
 		{
-			LoadInfos(hGroup);
-			hGroup.Close();
+			LoadInfos(*grp);
 		}
+	}
 }
 
-void C4Language::LoadInfos(C4Group &hGroup)
+void C4Language::LoadInfos(CppC4Group &group)
 {
-	char strEntry[_MAX_FNAME + 1];
-	char *strTable;
 	// Look for language string tables
-	hGroup.ResetSearch();
-	while (hGroup.FindNextEntry(C4CFN_Language, strEntry))
+
+	CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_Language, [&group, this](const auto &info)
+	{
 		// For now, we will only load info on the first string table found for a given
 		// language code as there is currently no handling for selecting different string tables
 		// of the same code - the system always loads the first string table found for a given code
-		if (!FindInfo(GetFilenameOnly(strEntry) + SLen(GetFilenameOnly(strEntry)) - 2))
+
+		if (!FindInfo(GetFilenameOnly(info.fileName.c_str()) + SLen(GetFilenameOnly(info.fileName.c_str())) - 2))
+		{
 			// Load language string table
-			if (hGroup.LoadEntry(strEntry, &strTable, 0, 1))
+			if (StdStrBuf Buf; CppC4Group_LoadEntryString(group, info.fileName, Buf))
 			{
+				const char *strTable = Buf.getData();
 				// New language info
 				C4LanguageInfo *pInfo = new C4LanguageInfo;
 				// Get language code by entry name
-				SCopy(GetFilenameOnly(strEntry) + SLen(GetFilenameOnly(strEntry)) - 2, pInfo->Code, 2);
+				SCopy(GetFilenameOnly(info.fileName.c_str()) + SLen(GetFilenameOnly(info.fileName.c_str())) - 2, pInfo->Code, 2);
 				SCapitalize(pInfo->Code);
 				// Get language name, info, fallback from table
-				SCopy(GetResStr("IDS_LANG_NAME", (char *)strTable), pInfo->Name, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_INFO", (char *)strTable), pInfo->Info, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_FALLBACK", (char *)strTable), pInfo->Fallback, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_CHARSET", (char *)strTable), pInfo->Charset, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_NAME", strTable), pInfo->Name, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_INFO", strTable), pInfo->Info, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_FALLBACK", strTable), pInfo->Fallback, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_CHARSET", strTable), pInfo->Charset, C4MaxLanguageInfo);
 				// Safety: pipe character is not allowed in any language info string
 				SReplaceChar(pInfo->Name, '|', ' ');
 				SReplaceChar(pInfo->Info, '|', ' ');
 				SReplaceChar(pInfo->Fallback, '|', ' ');
-				// Delete table
-				delete[] strTable;
 				// Add info to list
 				pInfo->Next = Infos;
 				Infos = pInfo;
 			}
+		}
+		return true;
+	});
+
 }
 
 C4LanguageInfo *C4Language::GetInfo(int iIndex)
@@ -397,47 +423,50 @@ bool C4Language::LoadLanguage(const char *strLanguages)
 
 bool C4Language::InitStringTable(const char *strCode)
 {
-	C4Group hGroup;
 	// First, look in System.c4g
-	if (hGroup.Open(C4CFN_System))
+	if (CppC4Group group; group.openExisting(C4CFN_System))
 	{
-		if (LoadStringTable(hGroup, strCode))
+		if (LoadStringTable(group, strCode))
 		{
-			hGroup.Close(); return true;
+			return true;
 		}
-		hGroup.Close();
 	}
+
 	// Now look through the registered packs
-	C4Group *pPack;
-	for (int iPack = 0; pPack = Packs.GetGroup(iPack); iPack++)
+	CppC4Group *group = nullptr;
+	for (size_t i = 0; (group = Packs.GetGroup(i)); ++i)
+	{
 		// Does it contain a System.c4g child group?
-		if (hGroup.OpenAsChild(pPack, C4CFN_System))
+		if (auto grp = group->openAsChild(C4CFN_System); grp)
 		{
-			if (LoadStringTable(hGroup, strCode))
+			if (LoadStringTable(*grp, strCode))
 			{
-				hGroup.Close(); return true;
+				return true;
 			}
-			hGroup.Close();
 		}
+	}
 	// No matching string table found
 	return false;
 }
 
-bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
+bool C4Language::LoadStringTable(CppC4Group &group, const char *strCode)
 {
 	// Compose entry name
 	char strEntry[_MAX_FNAME + 1];
 	sprintf(strEntry, "Language%s.txt", strCode); // ...should use C4CFN_Language here
 	// Load string table
-	char *strTable;
-	if (!hGroup.LoadEntry(strEntry, &strTable, 0, true))
+
+	if (std::string table; CppC4Group_LoadEntryString(group, strEntry, table))
 	{
-		hGroup.Close(); return false;
+		SetResStrTable(table.c_str());
 	}
+	else
+	{
+		return false;
+	}
+
 	// Set string table
-	SetResStrTable(strTable);
-	// Close group
-	hGroup.Close();
+
 	// Set the internal charset
 #ifdef C4ENGINE
 	SCopy(LoadResStr("IDS_LANG_CHARSET"), Config.General.LanguageCharset);

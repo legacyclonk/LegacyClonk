@@ -178,7 +178,7 @@ void C4MassMoverSet::Default()
 	CreatePtr = 0;
 }
 
-bool C4MassMoverSet::Save(C4Group &hGroup)
+bool C4MassMoverSet::Save(CppC4Group &group)
 {
 	int32_t cnt;
 	// Consolidate
@@ -191,28 +191,35 @@ bool C4MassMoverSet::Save(C4Group &hGroup)
 	// All empty: delete component
 	if (!Count)
 	{
-		hGroup.Delete(C4CFN_MassMover);
+		group.deleteEntry(C4CFN_MassMover);
 		return true;
 	}
 	// Save set
-	if (!hGroup.Add(C4CFN_MassMover, Set, Count * sizeof(C4MassMover)))
+	if (!group.getEntryInfo(C4CFN_MassMover))
+	{
+		group.createFile(C4CFN_MassMover);
+	}
+	if (!group.setEntryData(C4CFN_MassMover, Set, Count * sizeof(C4MassMover)))
 		return false;
 	// Success
 	return true;
 }
 
-bool C4MassMoverSet::Load(C4Group &hGroup)
+bool C4MassMoverSet::Load(CppC4Group &group)
 {
 	// clear previous
 	Clear(); Default();
 
-	size_t iBinSize, iMoverSize = sizeof(C4MassMover);
-	if (!hGroup.AccessEntry(C4CFN_MassMover, &iBinSize)) return false;
-	if ((iBinSize % iMoverSize) != 0) return false;
+	size_t iMoverSize = sizeof(C4MassMover);
+	auto data = group.getEntryData(C4CFN_MassMover);
+	if (!data || (data->size % iMoverSize) != 0)
+	{
+		return false;
+	}
 
 	// load new
-	Count = iBinSize / iMoverSize;
-	if (!hGroup.Read(Set, iBinSize)) return false;
+	Count = data->size / iMoverSize;
+	memcpy(Set, data->data, data->size);
 	return true;
 }
 

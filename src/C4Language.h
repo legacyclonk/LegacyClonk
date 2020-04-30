@@ -78,10 +78,10 @@ public:
 protected:
 	// Handling of language info loaded from string tables
 	void InitInfos();
-	void LoadInfos(C4Group &hGroup);
+	void LoadInfos(CppC4Group &group);
 	// Loading of actual resource string table
 	bool InitStringTable(const char *strCode);
-	bool LoadStringTable(C4Group &hGroup, const char *strCode);
+	bool LoadStringTable(CppC4Group &group, const char *strCode);
 #ifdef HAVE_ICONV
 	static iconv_t local_to_host;
 	static iconv_t host_to_local;

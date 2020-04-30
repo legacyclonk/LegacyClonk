@@ -22,6 +22,6 @@ const char *LoadResStr(const char *id);
 char *LoadResStrNoAmp(const char *id);
 char *GetResStr(const char *id, const char *strTable);
 
-void SetResStrTable(char *pTable);
+void SetResStrTable(const char *pTable);
 void ClearResStrTable();
 bool IsResStrTableLoaded();

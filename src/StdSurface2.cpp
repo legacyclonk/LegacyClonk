@@ -31,6 +31,8 @@
 #include <StdBitmap.h>
 #include <StdPNG.h>
 
+#include "cppc4group.hpp"
+
 #ifdef HAVE_IO_H
 #include <io.h>
 #endif
@@ -348,25 +350,41 @@ bool CSurface::AttachSfc(void *sfcSurface)
 	return true;
 }
 
-bool CSurface::Read(CStdStream &hGroup, bool fOwnPal)
+bool CSurface::Read(CppC4Group &group, const std::string &path, bool fOwnPal)
 {
 	int lcnt, iLineRest;
 	CBitmap256Info BitmapInfo;
 	// read bmpinfo-header
-	if (!hGroup.Read(&BitmapInfo, sizeof(CBitmapInfo))) return false;
+	auto data = group.getEntryData(path);
+	if (!data || data->size < sizeof(BitmapInfo)) return false;
+
+	memcpy(&BitmapInfo, data->data, sizeof(BitmapInfo));
+
+	auto *base = reinterpret_cast<const uint8_t *>(data->data);
+	auto *buffer = base + sizeof(BitmapInfo);
+
 	// is it 8bpp?
 	if (BitmapInfo.Info.biBitCount == 8)
 	{
-		if (!hGroup.Read(((uint8_t *)&BitmapInfo) + sizeof(CBitmapInfo),
-			(std::min)(sizeof(BitmapInfo) - sizeof(CBitmapInfo), sizeof(BitmapInfo) - sizeof(CBitmapInfo) + BitmapInfo.FileBitsOffset())))
+		size_t size = std::min(sizeof(BitmapInfo) - sizeof(CBitmapInfo), sizeof(BitmapInfo) - sizeof(CBitmapInfo) + BitmapInfo.FileBitsOffset());
+		if (buffer - base + size > data->size)
+		{
 			return false;
-		if (!hGroup.Advance(BitmapInfo.FileBitsOffset())) return false;
+		}
+
+		memcpy(reinterpret_cast<uint8_t *>(&BitmapInfo) + sizeof(CBitmapInfo), buffer, size);
+		buffer += size + BitmapInfo.FileBitsOffset();
 	}
 	else
 	{
 		// read 24bpp
 		if (BitmapInfo.Info.biBitCount != 24) return false;
-		if (!hGroup.Advance(((CBitmapInfo)BitmapInfo).FileBitsOffset())) return false;
+		buffer += BitmapInfo.FileBitsOffset();
+	}
+
+	if (static_cast<size_t>(buffer - base) > data->size)
+	{
+		return false;
 	}
 
 	// Create and lock surface
@@ -374,38 +392,38 @@ bool CSurface::Read(CStdStream &hGroup, bool fOwnPal)
 	if (!Lock()) { Clear(); return false; }
 
 	// create line buffer
-	int iBufSize = DWordAligned(BitmapInfo.Info.biWidth * BitmapInfo.Info.biBitCount / 8);
-	uint8_t *pBuf = new uint8_t[iBufSize];
+	size_t bufSize = DWordAligned(BitmapInfo.Info.biWidth * BitmapInfo.Info.biBitCount / 8);
+
 	// Read lines
 	iLineRest = DWordAligned(BitmapInfo.Info.biWidth) - BitmapInfo.Info.biWidth;
 	for (lcnt = Hgt - 1; lcnt >= 0; lcnt--)
 	{
-		if (!hGroup.Read(pBuf, iBufSize))
+		if ((buffer - base) + bufSize > data->size)
 		{
-			Clear(); delete[] pBuf; return false;
+			Clear(); return false;
 		}
-		uint8_t *pPix = pBuf;
+
+		buffer += bufSize;
+
 		for (int x = 0; x < BitmapInfo.Info.biWidth; ++x)
 			switch (BitmapInfo.Info.biBitCount)
 			{
 			case 8:
 				if (fOwnPal)
 					SetPixDw(x, lcnt, C4RGB(
-						BitmapInfo.Colors[*pPix].rgbRed,
-						BitmapInfo.Colors[*pPix].rgbGreen,
-						BitmapInfo.Colors[*pPix].rgbBlue));
+						BitmapInfo.Colors[*buffer].rgbRed,
+						BitmapInfo.Colors[*buffer].rgbGreen,
+						BitmapInfo.Colors[*buffer].rgbBlue));
 				else
-					SetPix(x, lcnt, *pPix);
-				++pPix;
+					SetPix(x, lcnt, *buffer);
+				++buffer;
 				break;
 			case 24:
-				SetPixDw(x, lcnt, C4RGB(pPix[0], pPix[1], pPix[2]));
-				pPix += 3;
+				SetPixDw(x, lcnt, C4RGB(buffer[0], buffer[1], buffer[2]));
+				buffer += 3;
 				break;
 			}
 	}
-	// free buffer again
-	delete[] pBuf;
 
 	Unlock();
 

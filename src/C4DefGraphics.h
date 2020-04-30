@@ -48,8 +48,8 @@ public:
 	C4DefGraphics(C4Def *pOwnDef = nullptr);
 	virtual ~C4DefGraphics() { Clear(); };
 
-	bool LoadBitmap(C4Group &hGroup, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG, bool fColorByOwner); // load specified graphics from group
-	bool LoadBitmaps(C4Group &hGroup, bool fColorByOwner); // load graphics from group
+	bool LoadBitmap(class CppC4Group &group, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG, bool fColorByOwner); // load specified graphics from group
+	bool LoadBitmaps(class CppC4Group &group, bool fColorByOwner); // load graphics from group
 	bool ColorizeByMaterial(int32_t iMat, C4MaterialMap &rMats, uint8_t bGBM); // colorize all graphics by material
 	C4DefGraphics *Get(const char *szGrpName); // get graphics by name
 	void Clear(); // clear fields; delete additional graphics
@@ -142,9 +142,9 @@ public:
 	bool CopyFrom(C4DefGraphics &rCopyGfx); // copy portrait from graphics
 	bool CopyFrom(C4Portrait &rCopy); // copy portrait
 
-	bool Load(C4Group &rGrp, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG); // load own portrait from group
+	bool Load(CppC4Group &group, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG); // load own portrait from group
 	bool Link(C4DefGraphics *pGfxPortrait); // link with a present portrait surface
-	bool SavePNG(C4Group &rGroup, const char *szFilename, const char *szOverlayFN); // store portrait gfx to file (including overlay)
+	bool SavePNG(CppC4Group &group, const char *szFilename, const char *szOverlayFN); // store portrait gfx to file (including overlay)
 
 	C4DefGraphics *GetGfx() { return pGfxPortrait; }
 	bool IsOwnedGfx() { return fGraphicsOwned; } // return if it's a custom portrait

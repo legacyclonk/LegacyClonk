@@ -172,14 +172,25 @@ bool C4GraphicsResource::Init(bool fInitGUI)
 	// Init fonts (double init will never if groups didnt change)
 	if (!InitFonts())
 		return false;
+
 	// Game palette - could perhaps be eliminated...
 	int32_t idNewPalGrp;
-	C4Group *pPalGrp = Files.FindEntry("C4.pal", nullptr, &idNewPalGrp);
-	if (!pPalGrp) { LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), "C4.pal"); return false; }
+
+	auto [palGroup, filename] = Files.FindEntry("C4.pal", nullptr, &idNewPalGrp);
+	if (!palGroup) { LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), "C4.pal"); return false; }
+
 	if (idPalGrp != idNewPalGrp)
 	{
-		if (!pPalGrp->AccessEntry("C4.pal")) { LogFatal("Pal error!"); return false; }
-		if (!pPalGrp->Read(GamePalette, 256 * 3)) { LogFatal("Pal error!"); return false; }
+		if (auto data = palGroup->getEntryData(filename); !data || data->size < sizeof(GamePalette))
+		{
+			LogFatal("Pal error!");
+			return false;
+		}
+		else
+		{
+			memcpy(GamePalette, data->data, data->size);
+		}
+
 		for (int32_t cnt = 0; cnt < 256 * 3; cnt++) GamePalette[cnt] <<= 2;
 		std::fill_n(AlphaPalette, 256, 0);
 		// Set default force field color
@@ -348,12 +359,13 @@ bool C4GraphicsResource::RegisterGlobalGraphics()
 	// overloaded font face is opened. The group indices could match and the old font would
 	// then be kept.
 	// The cleanest alternative would be to reinit all the fonts whenever a scenario is reloaded
-	C4Group *pMainGfxGrp = new C4Group();
-	if (!pMainGfxGrp->Open(C4CFN_Graphics) || !Files.RegisterGroup(*pMainGfxGrp, true, C4GSPrio_Base, C4GSCnt_Graphics, 1))
+
+	auto *mainGraphicsGroup = new CppC4Group;
+	if (!mainGraphicsGroup->openExisting(C4CFN_Graphics) || !Files.RegisterGroup(*mainGraphicsGroup, true, C4GSPrio_Base, C4GSCnt_Graphics, 1))
 	{
 		// error
-		LogFatal(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), C4CFN_Graphics, pMainGfxGrp->GetError()).getData());
-		delete pMainGfxGrp;
+		LogFatal(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), C4CFN_Graphics, mainGraphicsGroup->getErrorMessage().c_str()).getData());
+		delete mainGraphicsGroup;
 		return false;
 	}
 	return true;
@@ -374,80 +386,83 @@ void C4GraphicsResource::CloseFiles()
 	idRegisteredMainGroupSetFiles = -1;
 }
 
-C4Group *FindSuitableFile(const char *szName, C4GroupSet &rGfxSet, char *szFileName, int32_t &rGroupID)
+std::tuple<CppC4Group *, std::string, int32_t> FindSuitableFile(const char *szName, C4GroupSet &rGfxSet)
 {
 	const char *const extensions[] = { "bmp", "jpeg", "jpg", "png" };
 
-	C4Group *pGrp = nullptr;
-	C4Group *pGrp2;
+	CppC4Group *group = nullptr;
+	std::string filename;
+
 	int iPrio = -1;
 	int iPrio2;
-	int GroupID;
+	int32_t GroupID;
+
 	char FileName[_MAX_FNAME];
 	SCopy(szName, FileName);
+
 	for (int i = 0; i < 4; ++i)
 	{
 		EnforceExtension(FileName, extensions[i]);
-		pGrp2 = rGfxSet.FindEntry(FileName, reinterpret_cast<int32_t *>(&iPrio2), reinterpret_cast<int32_t *>(&GroupID));
-		if ((!pGrp || iPrio2 >= iPrio) && pGrp2)
+		auto [group2, fname] = rGfxSet.FindEntry(FileName, reinterpret_cast<int32_t *>(&iPrio2), reinterpret_cast<int32_t *>(&GroupID));
+		if ((!group || iPrio2 >= iPrio) && group2)
 		{
-			rGroupID = GroupID;
-			pGrp = pGrp2;
-			SCopy(FileName, szFileName);
+			group = group2;
+			filename = std::move(fname);
 		}
 	}
 	// return found group, if any
-	return pGrp;
+	return {group, filename, GroupID};
 }
 
 bool C4GraphicsResource::LoadFile(C4FacetExID &fct, const char *szName, C4GroupSet &rGfxSet, int32_t iWdt, int32_t iHgt, bool fNoWarnIfNotFound)
 {
-	char FileName[_MAX_FNAME]; int32_t ID;
-	C4Group *pGrp = FindSuitableFile(szName, rGfxSet, FileName, ID);
-	if (!pGrp)
+	auto [group, fileName, GroupID] = FindSuitableFile(szName, rGfxSet);
+	if (!group)
 	{
 		// FIXME: Use LogFatal here
 		if (!fNoWarnIfNotFound)
 		{
 			LogF(LoadResStr("IDS_PRC_NOGFXFILE"), szName, LoadResStr("IDS_PRC_FILENOTFOUND"));
 		}
+
 		return false;
 	}
 	// check group
-	if (fct.idSourceGroup == ID)
+	if (fct.idSourceGroup == GroupID)
+	{
 		// already up-to-date
 		return true;
-	// load
-	if (!fct.Load(*pGrp, FileName, iWdt, iHgt))
+	}
+
+	if (!fct.Load(*group,  fileName, iWdt, iHgt))
 	{
-		LogF(LoadResStr("IDS_PRC_NOGFXFILE"), FileName, LoadResStr("IDS_ERR_NOFILE"));
+		LogF(LoadResStr("IDS_PRC_NOGFXFILE"), fileName.c_str(), LoadResStr("IDS_ERR_NOFILE"));
 		return false;
 	}
-	fct.idSourceGroup = ID;
+	fct.idSourceGroup = GroupID;
 	return true;
 }
 
 bool C4GraphicsResource::LoadFile(C4Surface &sfc, const char *szName, C4GroupSet &rGfxSet, int32_t &ridCurrSfc)
 {
 	// find
-	char FileName[_MAX_FNAME]; int32_t ID;
-	C4Group *pGrp = FindSuitableFile(szName, rGfxSet, FileName, ID);
-	if (!pGrp)
+	auto [group, fileName, GroupID] = FindSuitableFile(szName, rGfxSet);
+	if (!group)
 	{
 		LogF(LoadResStr("IDS_PRC_NOGFXFILE"), szName, LoadResStr("IDS_PRC_FILENOTFOUND"));
 		return false;
 	}
 	// check group
-	if (ID == ridCurrSfc)
+	if (GroupID == ridCurrSfc)
 		// already up-to-date
 		return true;
 	// load
-	if (!sfc.Load(*pGrp, FileName))
+	if (!sfc.Load(*group, fileName))
 	{
-		LogF(LoadResStr("IDS_PRC_NOGFXFILE"), FileName, LoadResStr("IDS_ERR_NOFILE"));
+		LogF(LoadResStr("IDS_PRC_NOGFXFILE"), fileName.c_str(), LoadResStr("IDS_ERR_NOFILE"));
 		return false;
 	}
-	ridCurrSfc = ID;
+	ridCurrSfc = GroupID;
 	return true;
 }
 

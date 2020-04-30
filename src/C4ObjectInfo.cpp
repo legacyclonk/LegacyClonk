@@ -56,24 +56,22 @@ void C4ObjectInfo::Default()
 #endif
 }
 
-bool C4ObjectInfo::Load(C4Group &hMother, const char *szEntryname, bool fLoadPortrait)
+bool C4ObjectInfo::Load(CppC4Group &mother, const char *szEntryname, bool fLoadPortrait)
 {
 	// New version
 	if (SEqualNoCase(GetExtension(szEntryname), "c4i"))
 	{
-		C4Group hChild;
-		if (hChild.OpenAsChild(&hMother, szEntryname))
+		if (auto child = mother.openAsChild(szEntryname); child)
 		{
-			if (!C4ObjectInfo::Load(hChild, fLoadPortrait))
+			if (!C4ObjectInfo::LoadChild(*child, szEntryname, fLoadPortrait))
 			{
-				hChild.Close(); return false;
+				return false;
 			}
 			// resolve definition, if possible
 			// only works in game, but is not needed in frontend or startup editing anyway
 #ifdef C4ENGINE
 			pDef = C4Id2Def(id);
 #endif
-			hChild.Close();
 			return true;
 		}
 	}
@@ -81,12 +79,12 @@ bool C4ObjectInfo::Load(C4Group &hMother, const char *szEntryname, bool fLoadPor
 	return false;
 }
 
-bool C4ObjectInfo::Load(C4Group &hGroup, bool fLoadPortrait)
+bool C4ObjectInfo::LoadChild(CppC4Group &group, const std::string &entryName, bool fLoadPortrait)
 {
 	// Store group file name
-	SCopy(GetFilename(hGroup.GetName()), Filename, _MAX_FNAME);
+	SCopy(GetFilename(entryName.c_str()), Filename, _MAX_FNAME);
 	// Load core
-	if (!C4ObjectInfoCore::Load(hGroup)) return false;
+	if (!C4ObjectInfoCore::Load(group)) return false;
 #ifdef C4ENGINE
 	// Load portrait - always try linking, even if fLoadPortrait is false (doesn't cost mem anyway)
 	// evaluate portrait string in info
@@ -99,7 +97,7 @@ bool C4ObjectInfo::Load(C4Group &hGroup, bool fLoadPortrait)
 			// try to load it
 			delete pCustomPortrait;
 			pCustomPortrait = new C4Portrait();
-			if (pCustomPortrait->Load(hGroup, C4CFN_Portrait_Old, C4CFN_Portrait, C4CFN_PortraitOverlay))
+			if (pCustomPortrait->Load(group, C4CFN_Portrait_Old, C4CFN_Portrait, C4CFN_PortraitOverlay))
 			{
 				// link portrait to custom portrait
 				Portrait.Link(pCustomPortrait->GetGfx());
@@ -147,7 +145,7 @@ bool C4ObjectInfo::Load(C4Group &hGroup, bool fLoadPortrait)
 	// assign a new one (local players only)
 	if (!*PortraitFile && fLoadPortrait)
 		// try to load a custom portrait
-		if (!fPortraitFileChecked && Portrait.Load(hGroup, C4CFN_Portrait_Old, C4CFN_Portrait, C4CFN_PortraitOverlay))
+		if (!fPortraitFileChecked && Portrait.Load(group, C4CFN_Portrait_Old, C4CFN_Portrait, C4CFN_PortraitOverlay))
 			// assign it as custom portrait
 			SCopy(C4Portrait_Custom, PortraitFile);
 		else if (Config.Graphics.AddNewCrewPortraits)
@@ -157,7 +155,7 @@ bool C4ObjectInfo::Load(C4Group &hGroup, bool fLoadPortrait)
 	return true;
 }
 
-bool C4ObjectInfo::Save(C4Group &hGroup, bool fStoreTiny, C4DefList *pDefs)
+bool C4ObjectInfo::Save(CppC4Group &group, bool fStoreTiny, C4DefList *pDefs)
 {
 	// Set group file name; rename if necessary
 	char szTempGroup[_MAX_PATH + 1];
@@ -170,13 +168,13 @@ bool C4ObjectInfo::Save(C4Group &hGroup, bool fStoreTiny, C4DefList *pDefs)
 		{
 			// first time creation of file - make sure it's not a duplicate
 			SCopy(szTempGroup, Filename, _MAX_PATH);
-			while (hGroup.FindEntry(Filename))
+			while (group.getEntryInfo(Filename))
 			{
 				// if a crew info of that name exists already, rename!
 				RemoveExtension(Filename);
 				int32_t iFinNum = GetTrailingNumber(Filename), iLen = SLen(Filename);
 				while (iLen && Inside(Filename[iLen - 1], '0', '9')) --iLen;
-				if (iLen > _MAX_PATH - 22) { LogF("Error generating unique filename for %s(%s): Path overflow", Name, hGroup.GetFullName().getData()); break; }
+				if (iLen > _MAX_PATH - 22) { LogF("Error generating unique filename for %s(%s): Path overflow", Name, szTempGroup); break; }
 				snprintf(Filename + iLen, 22, "%d", iFinNum + 1);
 				EnforceExtension(Filename, "c4i");
 			}
@@ -184,35 +182,42 @@ bool C4ObjectInfo::Save(C4Group &hGroup, bool fStoreTiny, C4DefList *pDefs)
 		else
 		{
 			// Crew was renamed; file rename necessary, if the name is not blocked by another crew info
-			if (!hGroup.FindEntry(szTempGroup))
-				if (hGroup.Rename(Filename, szTempGroup))
+			if (!group.getEntryInfo(szTempGroup))
+			{
+				if (group.renameEntry(Filename, szTempGroup))
+				{
 					SCopy(szTempGroup, Filename, _MAX_PATH);
+				}
 				else
 				{
 					// could not rename. Not fatal; just use old file
-					LogF("Error adjusting crew info for %s into %s: Rename error from %s to %s!", Name, hGroup.GetFullName().getData(), Filename, szTempGroup);
+					LogF("Error adjusting crew info for %s into %s: Rename error from %s to %s!", Name, szTempGroup, Filename, szTempGroup);
 				}
+			}
 		}
 	}
 	// Set temp group file name
 	SCopy(Filename, szTempGroup);
 	MakeTempFilename(szTempGroup);
 	// If object info group exists, copy to temp group file
-	hGroup.Extract(Filename, szTempGroup);
+	group.extractSingle(Filename, szTempGroup);
+
 	// Open temp group
-	C4Group hTemp;
-	if (!hTemp.Open(szTempGroup, true))
+	CppC4Group temp;
+	if (!CppC4Group_Open(temp, szTempGroup, true))
+	{
 		return false;
+	}
 #ifdef C4ENGINE
 	// New portrait present, or old portrait not saved yet (old player begin updated)?
-	if (!fStoreTiny && Config.Graphics.SaveDefaultPortraits) if (pNewPortrait || (Config.Graphics.AddNewCrewPortraits && Portrait.GetGfx() && !hTemp.FindEntry(C4CFN_Portrait)))
+	if (!fStoreTiny && Config.Graphics.SaveDefaultPortraits) if (pNewPortrait || (Config.Graphics.AddNewCrewPortraits && Portrait.GetGfx() && !temp.getEntryInfo(C4CFN_Portrait)))
 	{
 		C4Portrait *pSavePortrait = pNewPortrait ? pNewPortrait : &Portrait;
 		C4DefGraphics *pPortraitGfx;
 		// erase any old-style portrait
-		hGroup.Delete(C4CFN_Portrait_Old, false);
+		temp.deleteEntry(C4CFN_Portrait_Old);
 		// save new
-		if (pSavePortrait->GetGfx()) pSavePortrait->SavePNG(hTemp, C4CFN_Portrait, C4CFN_PortraitOverlay);
+		if (pSavePortrait->GetGfx()) pSavePortrait->SavePNG(temp, C4CFN_Portrait, C4CFN_PortraitOverlay);
 		// save spec
 		if (pNewPortrait)
 		{
@@ -244,12 +249,12 @@ bool C4ObjectInfo::Save(C4Group &hGroup, bool fStoreTiny, C4DefList *pDefs)
 	}
 
 	// delete default portraits if they are not desired
-	if (!fStoreTiny && !Config.Graphics.SaveDefaultPortraits && hTemp.FindEntry(C4CFN_Portrait))
+	if (!fStoreTiny && !Config.Graphics.SaveDefaultPortraits && temp.getEntryInfo(C4CFN_Portrait))
 	{
 		if (!SEqual(PortraitFile, C4Portrait_Custom))
 		{
-			hTemp.Delete(C4CFN_Portrait);
-			hTemp.Delete(C4CFN_PortraitOverlay);
+			temp.deleteEntry(C4CFN_Portrait);
+			temp.deleteEntry(C4CFN_PortraitOverlay);
 		}
 	}
 
@@ -264,29 +269,28 @@ bool C4ObjectInfo::Save(C4Group &hGroup, bool fStoreTiny, C4DefList *pDefs)
 				C4FacetExSurface fctRankSymbol;
 				if (C4RankSystem::DrawRankSymbol(&fctRankSymbol, Rank, pDef->pRankSymbols, pDef->iNumRankSymbols, true))
 				{
-					fctRankSymbol.GetFace().SavePNG(hTemp, C4CFN_ClonkRank);
+					fctRankSymbol.GetFace().SavePNG(temp, C4CFN_ClonkRank);
 				}
 			}
 			else
 			{
 				// definition does not have custom rank symbols: Remove any rank image from Clonk
-				hTemp.Delete(C4CFN_ClonkRank);
+				temp.deleteEntry(C4CFN_ClonkRank);
 			}
 		}
 	}
 
 #endif
 	// Save info to temp group
-	if (!C4ObjectInfoCore::Save(hTemp, pDefs))
+	if (!C4ObjectInfoCore::Save(temp, pDefs))
 	{
-		hTemp.Close(); return false;
-	}
-	// Close temp group
-	hTemp.Sort(C4FLS_Object);
-	if (!hTemp.Close())
 		return false;
+	}
+
+	temp.save();
+
 	// Move temp group to mother group
-	if (!hGroup.Move(szTempGroup, Filename))
+	if (!group.addFromDisk(szTempGroup, Filename))
 		return false;
 	// Success
 	return true;

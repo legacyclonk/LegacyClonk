@@ -63,9 +63,9 @@ public:
 		Entry(class Folder *pParent);
 		virtual ~Entry(); // dtor: unlink from tree
 
-		bool Load(C4Group *pFromGrp, const StdStrBuf *psFilename, bool fLoadEx); // load as child if pFromGrp, else directly from filename
-		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded) { return true; } // load custom data for entry type (e.g. scenario title fallback in Scenario.txt)
-		virtual bool LoadCustomPre(C4Group &rGrp) { return true; } // preload stuff that's early in the group (Scenario.txt)
+		bool Load(CppC4Group *fromGroup, const StdStrBuf *psFilename, bool fLoadEx); // load as child if pFromGrp, else directly from filename
+		virtual bool LoadCustom(CppC4Group &group, bool fNameLoaded, bool fIconLoaded) { return true; } // load custom data for entry type (e.g. scenario title fallback in Scenario.txt)
+		virtual bool LoadCustomPre(CppC4Group &group) { return true; } // preload stuff that's early in the group (Scenario.txt)
 		virtual bool Start() = 0; // start/open entry
 		virtual Folder *GetIsFolder() { return nullptr; } // return this if this is a folder
 
@@ -93,7 +93,7 @@ public:
 		virtual C4SForceFairCrew GetFairCrewAllowed() const { return C4SFairCrew_Free; }
 
 		virtual const char *GetDefaultExtension() { return nullptr; } // extension to be added when item is renamed
-		virtual bool SetTitleInGroup(C4Group &rGrp, const char *szNewTitle);
+		virtual bool SetTitleInGroup(CppC4Group &group, const char *szNewTitle);
 		bool RenameTo(const char *szNewName); // change name+filename
 		virtual bool IsScenario() { return false; }
 	};
@@ -110,8 +110,8 @@ public:
 		Scenario(class Folder *pParent) : Entry(pParent), fNoMissionAccess(false), iMinPlrCount(0) {}
 		virtual ~Scenario() {}
 
-		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded); // do fallbacks for title and icon; check whether scenario is valid
-		virtual bool LoadCustomPre(C4Group &rGrp); // load scenario core
+		virtual bool LoadCustom(CppC4Group &group, bool fNameLoaded, bool fIconLoaded); // do fallbacks for title and icon; check whether scenario is valid
+		virtual bool LoadCustomPre(CppC4Group &group); // load scenario core
 		virtual bool Start(); // launch scenario!
 
 		virtual bool CanOpen(StdStrBuf &sError); // check mission access, player count, etc.
@@ -144,15 +144,15 @@ public:
 		Folder(Folder *pParent) : Entry(pParent), fContentsLoaded(false), pFirst(nullptr), pMapData(nullptr) {}
 		virtual ~Folder();
 
-		virtual bool LoadCustomPre(C4Group &rGrp); // load folder core
+		virtual bool LoadCustomPre(CppC4Group &group); // load folder core
 
-		bool LoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf *psFilename, bool fLoadEx, bool fReload); // load folder contents as child if pFromGrp, else directly from filename
+		bool LoadContents(C4ScenarioListLoader *pLoader, CppC4Group *fromGroup, const StdStrBuf *psFilename, bool fLoadEx, bool fReload); // load folder contents as child if pFromGrp, else directly from filename
 		uint32_t GetEntryCount() const;
 
 	protected:
 		void ClearChildren();
 		void Sort();
-		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx) = 0; // load folder contents as child if pFromGrp, else directly from filename
+		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, CppC4Group *fromGroup, const StdStrBuf &sFilename, bool fLoadEx) = 0; // load folder contents as child if pFromGrp, else directly from filename
 
 	public:
 		virtual bool Start(); // open as subfolder
@@ -179,8 +179,8 @@ public:
 		virtual StdStrBuf GetTypeName() { return StdStrBuf(LoadResStr("IDS_TYPE_FOLDER")); }
 
 	protected:
-		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded); // load custom data for entry type - icon fallback to folder icon
-		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx); // load folder contents as child if pFromGrp, else directly from filename
+		virtual bool LoadCustom(CppC4Group &, bool, bool fIconLoaded); // load custom data for entry type - icon fallback to folder icon
+		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, CppC4Group *fromGroup, const StdStrBuf &sFilename, bool fLoadEx); // load folder contents as child if pFromGrp, else directly from filename
 	};
 
 	// regular, open folder: Read through by directory iterator
@@ -193,8 +193,8 @@ public:
 		virtual StdStrBuf GetTypeName() { return StdStrBuf(LoadResStr("IDS_TYPE_DIRECTORY")); }
 
 	protected:
-		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded); // load custom data for entry type - icon fallback to folder icon
-		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx); // load folder contents as child if pFromGrp, else directly from filename
+		virtual bool LoadCustom(CppC4Group &, bool, bool fIconLoaded); // load custom data for entry type - icon fallback to folder icon
+		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, CppC4Group *fromGroup, const StdStrBuf &sFilename, bool fLoadEx); // load folder contents as child if pFromGrp, else directly from filename
 	};
 
 private:
@@ -317,7 +317,7 @@ protected:
 
 public:
 	void Clear();
-	bool Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenLoaderFolder);
+	bool Load(CppC4Group &group, C4ScenarioListLoader::Folder *pScenLoaderFolder);
 	void CompileFunc(StdCompiler *pComp);
 	void CreateGUIElements(C4StartupScenSelDlg *pMainDlg, C4GUI::Window &rContainer);
 	void ResetSelection();

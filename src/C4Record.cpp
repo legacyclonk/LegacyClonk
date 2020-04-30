@@ -162,8 +162,11 @@ bool C4Record::Start(bool fInitial)
 	sprintf(szCtrlRecFilename, "%s" DirSep C4CFN_CtrlRec, sFilename.getData());
 	if (!CtrlRec.Create(szCtrlRecFilename)) return false;
 
+	RecordGrp.~CppC4Group();
+	new (&RecordGrp) CppC4Group;
+
 	// open record group
-	if (!RecordGrp.Open(sFilename.getData()))
+	if (!RecordGrp.openExisting(sFilename.getData()))
 		return false;
 
 	// record go
@@ -188,7 +191,7 @@ bool C4Record::Stop(StdStrBuf *pRecordName, uint8_t *pRecordSHA1)
 
 	// save end player infos into record group
 	Game.PlayerInfos.Save(RecordGrp, C4CFN_RecPlayerInfos);
-	RecordGrp.Close();
+	RecordGrp.save();
 
 	// write last entry and close
 	C4RecordChunkHead Head;
@@ -299,15 +302,14 @@ bool C4Record::AddFile(const char *szLocalFilename, const char *szAddAs, bool fD
 	}
 
 	// Add to record group
+	if (!RecordGrp.addFromDisk(szLocalFilename, szAddAs))
+	{
+		return false;
+	}
+
 	if (fDelete)
 	{
-		if (!RecordGrp.Move(szLocalFilename, szAddAs))
-			return false;
-	}
-	else
-	{
-		if (!RecordGrp.Add(szLocalFilename, szAddAs))
-			return false;
+		std::filesystem::remove(szLocalFilename);
 	}
 
 	return true;
@@ -383,7 +385,7 @@ C4Playback::~C4Playback()
 	Clear();
 }
 
-bool C4Playback::Open(C4Group &rGrp)
+bool C4Playback::Open(CppC4Group &group)
 {
 	// clean up
 	Clear();
@@ -391,47 +393,27 @@ bool C4Playback::Open(C4Group &rGrp)
 	iLastSequentialFrame = 0;
 	bool fStrip = false;
 	// get text record file
-	StdStrBuf TextBuf;
-	if (rGrp.LoadEntryString(C4CFN_CtrlRecText, TextBuf))
+	if (StdStrBuf TextBuf; CppC4Group_LoadEntryString(group, C4CFN_CtrlRecText, TextBuf))
 	{
 		if (!ReadText(TextBuf))
 			return false;
 	}
 	else
 	{
-		// open group? Then do some sequential reading for large files
-		// Can't do this when a dump is forced, because the dump needs all data
-		// Also can't do this when stripping is desired
-		if (!rGrp.IsPacked()) if (!Game.RecordDumpFile.getLength()) if (!fStrip) fLoadSequential = true;
-		// get record file
-		if (fLoadSequential)
+
+		// non-sequential reading: Just read as a whole
+		if (auto data = group.getEntryData(C4CFN_CtrlRec); data)
 		{
-			if (!rGrp.FindEntry(C4CFN_CtrlRec)) return false;
-			if (!playbackFile.Open(FormatString("%s%c%s", rGrp.GetFullName().getData(), (char)DirectorySeparator, (const char *)C4CFN_CtrlRec).getData())) return false;
-			// forcing first chunk to be read; will call ReadBinary
-			currChunk = chunks.end();
-			if (!NextSequentialChunk())
-			{
-				// empty replay??!
-				LogFatal("Record: Binary read error.");
+			StdBuf BinaryBuf;
+			BinaryBuf.Ref(data->data, data->size);
+			if (!ReadBinary(BinaryBuf))
 				return false;
-			}
 		}
 		else
 		{
-			// non-sequential reading: Just read as a whole
-			StdBuf BinaryBuf;
-			if (rGrp.LoadEntry(C4CFN_CtrlRec, BinaryBuf))
-			{
-				if (!ReadBinary(BinaryBuf))
-					return false;
-			}
-			else
-			{
-				// no control data?
-				LogFatal("Record: No control data found!");
-				return false;
-			}
+			// no control data?
+			LogFatal("Record: No control data found!");
+			return false;
 		}
 	}
 	// rewrite record
@@ -1117,11 +1099,13 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 		return false;
 
 	// Load Scenario.txt from Initial
-	C4Group Grp; C4Scenario Initial;
-	if (!Grp.Open(szInitial) ||
-		!Initial.Load(Grp) ||
-		!Grp.Close())
-		return false;
+	C4Scenario Initial;
+	{
+		CppC4Group group;
+		if (!group.openExisting(szInitial) ||
+			!Initial.Load(group))
+			return false;
+	}
 
 	// Copy original scenario
 	const char *szOrigin = Initial.Head.Origin.getData();
@@ -1131,9 +1115,10 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 		*(GetExtension(szRecord) - 1) = 0;
 	SAppend(".c4s", szRecord, _MAX_PATH);
 	LogF("Original scenario is %s, creating %s.", szOrigin, szRecord);
-	if (!C4Group_CopyItem(szOrigin, szRecord, false, false))
+	if (!CppC4Group_TransferItem(szOrigin, szRecord, false, false))
 		return false;
 
+	C4Group Grp; // FIXME
 	// Merge initial
 	if (!Grp.Open(szRecord) ||
 		!Grp.Merge(szInitial))

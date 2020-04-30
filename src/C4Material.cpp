@@ -139,15 +139,14 @@ void C4MaterialCore::Clear()
 	SplashRate = 10;
 }
 
-bool C4MaterialCore::Load(C4Group &hGroup,
-	const char *szEntryName)
+bool C4MaterialCore::Load(CppC4Group &group,
+	const std::string &entryPath)
 {
-	StdStrBuf Source;
-	if (!hGroup.LoadEntryString(szEntryName, Source))
+	if (StdStrBuf Source; !(CppC4Group_LoadEntryString(group, entryPath, Source) && CompileFromBuf_LogWarn<StdCompilerINIRead>(*this, Source, entryPath.c_str())))
+	{
 		return false;
-	StdStrBuf Name = hGroup.GetFullName() + DirSep + szEntryName;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(*this, Source, Name.getData()))
-		return false;
+	}
+
 	// adjust placement, if not specified
 #ifdef C4ENGINE
 	if (!Placement)
@@ -278,43 +277,46 @@ void C4MaterialMap::Clear()
 	delete[] ppReactionMap; ppReactionMap = nullptr;
 }
 
-int32_t C4MaterialMap::Load(C4Group &hGroup, C4Group *OverloadFile)
+int32_t C4MaterialMap::Load(CppC4Group &group, CppC4Group *overloadFile)
 {
-	char entryname[256 + 1];
-
-	// Determine number of materials in files
-	int32_t mat_num = hGroup.EntryCount(C4CFN_MaterialFiles);
+	size_t matCount = 0;
+	CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_MaterialFiles, [&matCount](const auto &) { ++matCount; return true; });
 
 	// Allocate new map
-	C4Material *pNewMap = new C4Material[mat_num + Num];
+	C4Material *pNewMap = new C4Material[matCount + Num];
 	if (!pNewMap) return 0;
 
 	// Load material cores to map
-	hGroup.ResetSearch(); int32_t cnt = 0;
-	while (hGroup.FindNextEntry(C4CFN_MaterialFiles, entryname))
+	size_t count = 0;
+	CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_MaterialFiles, [&group, &count, &pNewMap, this](const auto &info)
 	{
-		// Load mat
-		if (!pNewMap[cnt].Load(hGroup, entryname))
+		if (!pNewMap[count].Load(group, info.fileName))
 		{
-			delete[] pNewMap; return 0;
+			delete[] pNewMap;
+			count = 0;
+			return false;
 		}
-		// A new material?
-		if (Get(pNewMap[cnt].Name) == MNone)
-			cnt++;
-	}
+
+		if (Get(pNewMap[count].Name) == MNone)
+		{
+			++count;
+		}
+
+		return true;
+	});
 
 	// Take over old materials.
 	for (int32_t i = 0; i < Num; i++)
 	{
-		pNewMap[cnt + i] = Map[i];
+		pNewMap[count + i] = Map[i];
 	}
 	delete[] Map;
 	Map = pNewMap;
 
 	// set material number
-	Num += cnt;
+	Num += count;
 
-	return cnt;
+	return count;
 }
 
 int32_t C4MaterialMap::Get(const char *szMaterial)
@@ -505,9 +507,9 @@ void C4MaterialMap::SetMatReaction(int32_t iPXSMat, int32_t iLSMat, C4MaterialRe
 	ppReactionMap[(iLSMat + 1) * (Num + 1) + iPXSMat + 1] = pReact;
 }
 
-bool C4MaterialMap::SaveEnumeration(C4Group &hGroup)
+bool C4MaterialMap::SaveEnumeration(CppC4Group &group)
 {
-	char *mapbuf = new char[1000];
+	auto *mapbuf = static_cast<char *>(malloc(1000 * sizeof(char)));
 	mapbuf[0] = 0;
 	SAppend("[Enumeration]", mapbuf); SAppend(LineFeed, mapbuf);
 	for (int32_t cnt = 0; cnt < Num; cnt++)
@@ -516,20 +518,24 @@ bool C4MaterialMap::SaveEnumeration(C4Group &hGroup)
 		SAppend(LineFeed, mapbuf);
 	}
 	SAppend(EndOfFile, mapbuf);
-	return hGroup.Add(C4CFN_MatMap, mapbuf, SLen(mapbuf), false, true);
+
+	return CppC4Group_Add(group, C4CFN_MatMap, mapbuf, strlen(mapbuf));
 }
 
-bool C4MaterialMap::LoadEnumeration(C4Group &hGroup)
+bool C4MaterialMap::LoadEnumeration(CppC4Group &group)
 {
 	// Load enumeration map (from savegame), succeed if not present
-	StdStrBuf mapbuf;
-	if (!hGroup.LoadEntryString(C4CFN_MatMap, mapbuf)) return true;
+	std::string data;
+	if (!CppC4Group_LoadEntryString(group, C4CFN_MatMap, data))
+	{
+		return true;
+	}
 
 	// Sort material array by enumeration map, fail if some missing
 	const char *csearch;
 	char cmatname[C4M_MaxName + 1];
 	int32_t cmat = 0;
-	if (!(csearch = SSearch(mapbuf.getData(), "[Enumeration]"))) { return false; }
+	if (!(csearch = SSearch(data.c_str(), "[Enumeration]"))) { return false; }
 	csearch = SAdvanceSpace(csearch);
 	while (IsIdentifier(*csearch))
 	{

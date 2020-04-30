@@ -25,6 +25,8 @@
 #include <C4Network2IRC.h>
 #include <StdWindow.h>
 
+#include "cppc4group.hpp"
+
 class CStdDDraw;
 
 class C4Sec1Callback
@@ -89,7 +91,7 @@ public:
 	// Flag for restarting the engine at the end
 	bool restartAtEnd;
 	// main System.c4g in working folder
-	C4Group SystemGroup;
+	CppC4Group SystemGroup;
 	C4MusicSystem MusicSystem;
 	C4SoundSystem SoundSystem;
 	C4GamePadControl *pGamePadControl;
@@ -106,7 +108,7 @@ public:
 	void Clear();
 	void Execute();
 	// System.c4g helper funcs
-	bool OpenSystemGroup() { return SystemGroup.IsOpen() || SystemGroup.Open(C4CFN_System); }
+	bool OpenSystemGroup() { return SystemGroup.openExisting(C4CFN_System); }
 	void DoSec1Timers();
 	void SetGameTickDelay(int iDelay);
 	bool SetResolution(int32_t iNewResX, int32_t iNewResY);

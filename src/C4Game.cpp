@@ -95,7 +95,7 @@ bool C4Game::InitDefs()
 	}
 
 	// Load for scenario file - ignore sys group here, because it has been loaded already
-	iDefs += Defs.Load(ScenarioFile, C4D_Load_RX, Config.General.LanguageEx, &Application.SoundSystem, true, true, 35, 40, false);
+	iDefs += Defs.Load(*ScenarioFile, C4D_Load_RX, Config.General.LanguageEx, &Application.SoundSystem, true, true, 35, 40, false);
 
 	// Absolutely no defs: we don't like that
 	if (!iDefs) { LogFatal(LoadResStr("IDS_PRC_NODEFS")); return false; }
@@ -141,23 +141,29 @@ bool C4Game::OpenScenario()
 	if (pParentGroup)
 	{
 		// open from parent group
-		if (!ScenarioFile.OpenAsChild(pParentGroup, GetFilename(ScenarioFilename)))
+		auto child = pParentGroup->openAsChild(GetFilename(ScenarioFilename));
+		if (!child)
+		{
+			LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), (const char *)ScenarioFilename); return false;
+		}
+
+		ScenarioFile = new CppC4Group{std::move(*child)};
+	}
+	else
+	{
+		// open directly
+		ScenarioFile = new CppC4Group;
+		if (!ScenarioFile->openExisting(ScenarioFilename))
 		{
 			LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), (const char *)ScenarioFilename); return false;
 		}
 	}
-	else
-		// open directly
-		if (!ScenarioFile.Open(ScenarioFilename))
-		{
-			LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), (const char *)ScenarioFilename); return false;
-		}
 
 	// add scenario to group
-	GroupSet.RegisterGroup(ScenarioFile, false, C4GSPrio_Scenario, C4GSCnt_Scenario);
+	GroupSet.RegisterGroup(*ScenarioFile, "", false, C4GSPrio_Scenario, C4GSCnt_Scenario);
 
 	// Read scenario core
-	if (!C4S.Load(ScenarioFile))
+	if (!C4S.Load(*ScenarioFile))
 	{
 		LogFatal(LoadResStr("IDS_PRC_FILEINVALID")); return false;
 	}
@@ -216,28 +222,35 @@ bool C4Game::OpenScenario()
 		}
 
 	// Game (runtime data)
-	GameText.Load(C4CFN_Game, ScenarioFile, C4CFN_Game);
+	GameText.Load(C4CFN_Game, *ScenarioFile, "", C4CFN_Game);
 
 	// SaveGame definition preset override (not needed with new scenarios that
 	// have def specs in scenario core, keep for downward compatibility)
 	if (C4S.Head.SaveGame) DefinitionFilenamesFromSaveGame();
 
+	// convert \ to /
+	std::transform(DefinitionFilenames.begin(), DefinitionFilenames.end(), DefinitionFilenames.begin(), [](std::string def)
+	{
+		std::replace(def.begin(), def.end(), '\\', '/');
+		return def;
+	});
+
 	// String tables
-	ScenarioLangStringTable.LoadEx("StringTbl", ScenarioFile, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
+	ScenarioLangStringTable.LoadEx("StringTbl", *ScenarioFile, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
 
 	// Load parameters (not as network client, because then team info has already been sent by host)
 	if (!Network.isEnabled() || Network.isHost())
-		if (!Parameters.Load(ScenarioFile, &C4S, GameText.GetData(), &ScenarioLangStringTable, DefinitionFilenames))
+		if (!Parameters.Load(*ScenarioFile, &C4S, GameText.GetData(), &ScenarioLangStringTable, DefinitionFilenames))
 			return false;
 
 	// Title
-	Title.LoadEx(LoadResStr("IDS_CNS_TITLE"), ScenarioFile, C4CFN_Title, Config.General.LanguageEx);
+	Title.LoadEx(LoadResStr("IDS_CNS_TITLE"), *ScenarioFile, C4CFN_Title, Config.General.LanguageEx);
 	if (!Title.GetLanguageString(Config.General.LanguageEx, Parameters.ScenarioTitle))
 		Parameters.ScenarioTitle.CopyValidated(C4S.Head.Title);
 
 	// Load Strings (since kept objects aren't denumerated in sect-load, no problems should occur...)
-	if (ScenarioFile.FindEntry(C4CFN_Strings))
-		if (!ScriptEngine.Strings.Load(ScenarioFile))
+	if (ScenarioFile->getEntryInfo(C4CFN_Strings))
+		if (!ScriptEngine.Strings.Load(*ScenarioFile))
 		{
 			LogFatal(LoadResStr("IDS_ERR_STRINGS")); return false;
 		}
@@ -250,25 +263,29 @@ bool C4Game::OpenScenario()
 	}
 
 	// If scenario is a directory: Watch for changes
-	if (!ScenarioFile.IsPacked() && pFileMonitor)
-		Game.pFileMonitor->AddDirectory(ScenarioFile.GetFullName().getData());
+	if (!ScenarioFile->isPacked() && pFileMonitor)
+		Game.pFileMonitor->AddDirectory(ScenarioFile->getFullName().c_str());
 
 	return true;
 }
 
 void C4Game::CloseScenario()
 {
-	// safe scenario file name
-	char szSzenarioFile[_MAX_PATH + 1];
-	SCopy(ScenarioFile.GetFullName().getData(), szSzenarioFile, _MAX_PATH);
-	// close scenario
-	ScenarioFile.Close();
+	// save scenario file name
+	std::string scenarioFileName{ScenarioFilename};
 	GroupSet.CloseFolders();
 	pParentGroup = nullptr;
 	// remove if temporary
 	if (TempScenarioFile)
 	{
-		EraseItem(szSzenarioFile);
+		try
+		{
+			std::filesystem::remove(scenarioFileName);
+		}
+		catch (const std::filesystem::filesystem_error &)
+		{
+		}
+
 		TempScenarioFile = false;
 	}
 	// clear scenario section
@@ -451,7 +468,7 @@ bool C4Game::Init()
 		DebugMode = false;
 
 	// Init game
-	if (!InitGame(ScenarioFile, nullptr, true)) return false;
+	if (!InitGame(*ScenarioFile, nullptr, true)) return false;
 
 	// Network final init
 	if (Network.isEnabled())
@@ -850,20 +867,24 @@ bool C4Game::InitMaterialTexture()
 	Material.Clear();
 
 	// Check for scenario local materials
-	bool fHaveScenMaterials = Game.ScenarioFile.FindEntry(C4CFN_Material);
+	bool fHaveScenMaterials = !!ScenarioFile->getEntryInfo(C4CFN_Material);
 
 	// Load all materials
 	C4GameRes *pMatRes = nullptr;
 	bool fFirst = true, fOverloadMaterials = true, fOverloadTextures = true;
 	long tex_count = 0, mat_count = 0;
+
+	CppC4Group *mats;
+	std::string path;
 	while (fOverloadMaterials || fOverloadTextures)
 	{
 		// Are there any scenario local materials that need to be looked at firs?
-		C4Group Mats;
 		if (fHaveScenMaterials)
 		{
-			if (!Mats.OpenAsChild(&Game.ScenarioFile, C4CFN_Material))
+			if (!ScenarioFile->getEntryInfo(C4CFN_Material))
 				return false;
+
+			mats = new CppC4Group(std::move(*ScenarioFile->openAsChild(C4CFN_Material)));
 			// Once only
 			fHaveScenMaterials = false;
 		}
@@ -872,7 +893,8 @@ bool C4Game::InitMaterialTexture()
 			// Find next external material source
 			pMatRes = Game.Parameters.GameRes.iterRes(pMatRes, NRT_Material);
 			if (!pMatRes) break;
-			if (!Mats.Open(pMatRes->getFile()))
+			mats = new CppC4Group;
+			if (!mats->openExisting(pMatRes->getFile()))
 				return false;
 		}
 
@@ -880,7 +902,7 @@ bool C4Game::InitMaterialTexture()
 		bool fNewOverloadMaterials = false, fNewOverloadTextures = false;
 		if (fFirst)
 		{
-			long tme_count = TextureMap.LoadMap(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures);
+			long tme_count = TextureMap.LoadMap(*mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures);
 			LogF(LoadResStr("IDS_PRC_TEXMAPENTRIES"), tme_count);
 			// Only once
 			fFirst = false;
@@ -888,14 +910,14 @@ bool C4Game::InitMaterialTexture()
 		else
 		{
 			// Check overload-flags only
-			if (!C4TextureMap::LoadFlags(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures))
+			if (!C4TextureMap::LoadFlags(*mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures))
 				fOverloadMaterials = fOverloadTextures = false;
 		}
 
 		// Load textures
 		if (fOverloadTextures)
 		{
-			int iTexs = TextureMap.LoadTextures(Mats);
+			int iTexs = TextureMap.LoadTextures(*mats);
 			// Automatically continue search if no texture was found
 			if (!iTexs) fNewOverloadTextures = true;
 			tex_count += iTexs;
@@ -904,7 +926,7 @@ bool C4Game::InitMaterialTexture()
 		// Load materials
 		if (fOverloadMaterials)
 		{
-			int iMats = Material.Load(Mats);
+			int iMats = Material.Load(*mats);
 			// Automatically continue search if no material was found
 			if (!iMats) fNewOverloadMaterials = true;
 			mat_count += iMats;
@@ -920,7 +942,7 @@ bool C4Game::InitMaterialTexture()
 	LogF(LoadResStr("IDS_PRC_MATERIALS"), mat_count);
 
 	// Load material enumeration
-	if (!Material.LoadEnumeration(ScenarioFile))
+	if (!Material.LoadEnumeration(*ScenarioFile))
 	{
 		LogFatal(LoadResStr("IDS_PRC_NOMATENUM")); return false;
 	}
@@ -1559,11 +1581,10 @@ bool C4Game::CreateViewport(int32_t iPlayer, bool fSilent)
 
 C4ID DefFileGetID(const char *szFilename)
 {
-	C4Group hDef;
+	CppC4Group group;
 	C4DefCore DefCore;
-	if (!hDef.Open(szFilename)) return C4ID_None;
-	if (!DefCore.Load(hDef)) { hDef.Close(); return C4ID_None; }
-	hDef.Close();
+	if (!group.openExisting(szFilename)) return C4ID_None;
+	if (!DefCore.Load(group)) { return C4ID_None; }
 	return DefCore.id;
 }
 
@@ -1915,7 +1936,7 @@ bool C4Game::CompileRuntimeData(C4ComponentHost &rGameData)
 	return true;
 }
 
-bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fSaveExact)
+bool C4Game::SaveData(CppC4Group &group, bool fSaveSection, bool fInitial, bool fSaveExact)
 {
 	// Enumerate pointers & strings
 	if (PointersDenumerated)
@@ -1953,24 +1974,44 @@ bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fS
 	// Empty? All default; just remove from group then
 	if (!Buf.getLength())
 	{
-		hGroup.Delete(C4CFN_Game);
+		group.deleteEntry(C4CFN_Game);
 		return true;
 	}
 
+	if (!group.getEntryInfo(C4CFN_Game))
+	{
+		group.createFile(C4CFN_Game);
+	}
+
+	size_t size = Buf.getLength();
+	char *pointer = Buf.GrabPointer();
+
+	if (!group.setEntryData(C4CFN_Game, pointer, size, CppC4Group::MemoryManagement::Take))
+	{
+		free(pointer);
+		return false;
+	}
+
 	// Save
-	return hGroup.Add(C4CFN_Game, Buf, false, true);
+	return true;
 }
 
-bool C4Game::SaveGameTitle(C4Group &hGroup)
+bool C4Game::SaveGameTitle(CppC4Group &group)
 {
 	// Game not running
 	if (!FrameCounter)
 	{
-		char *bpBytes; size_t iSize;
-		if (ScenarioFile.LoadEntry(C4CFN_ScenarioTitle, &bpBytes, &iSize))
-			hGroup.Add(C4CFN_ScenarioTitle, bpBytes, iSize, false, true);
-		if (ScenarioFile.LoadEntry(C4CFN_ScenarioTitlePNG, &bpBytes, &iSize))
-			hGroup.Add(C4CFN_ScenarioTitlePNG, bpBytes, iSize, false, true);
+		if (auto data = ScenarioFile->getEntryData(C4CFN_ScenarioTitle); data)
+		{
+			group.createFile(C4CFN_ScenarioTitle);
+			group.setEntryData(C4CFN_ScenarioTitle, data->data, data->size);
+		}
+
+		if (auto data = ScenarioFile->getEntryData(C4CFN_ScenarioTitlePNG); data)
+		{
+			group.createFile(C4CFN_ScenarioTitlePNG);
+			group.setEntryData(C4CFN_ScenarioTitlePNG, data->data, data->size);
+		}
 	}
 
 	// Fullscreen screenshot
@@ -1989,7 +2030,7 @@ bool C4Game::SaveGameTitle(C4Group &hGroup)
 		fOkay = sfcPic->SavePNG(Config.AtTempPath(C4CFN_TempTitle), false, true, false);
 		szDestFn = C4CFN_ScenarioTitlePNG;
 		delete sfcPic; if (!fOkay) return false;
-		if (!hGroup.Move(Config.AtTempPath(C4CFN_TempTitle), szDestFn)) return false;
+		if (!group.addFromDisk(Config.AtTempPath(C4CFN_TempTitle), szDestFn)) return false;
 	}
 
 	return true;
@@ -2245,7 +2286,7 @@ bool C4Game::ReloadParticle(const char *szName)
 	return true;
 }
 
-bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky)
+bool C4Game::InitGame(CppC4Group &group, C4ScenarioSection *section, bool fLoadSky)
 {
 	if (!section)
 	{
@@ -2331,7 +2372,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	// Landscape
 	Log(LoadResStr("IDS_PRC_LANDSCAPE"));
 	bool fLandscapeLoaded = false;
-	if (!Landscape.Init(hGroup, section, fLoadSky, fLandscapeLoaded, !!C4S.Head.SaveGame))
+	if (!Landscape.Init(group, section, fLoadSky, fLandscapeLoaded, !!C4S.Head.SaveGame))
 	{
 		LogFatal(LoadResStr("IDS_ERR_GBACK")); return false;
 	}
@@ -2349,9 +2390,9 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	SetInitProgress(90);
 
 	// PXS
-	if (hGroup.FindEntry(C4CFN_PXS))
+	if (group.getEntryInfo(C4CFN_PXS))
 	{
-		if (!PXS.Load(hGroup))
+		if (!PXS.Load(group))
 		{
 			LogFatal(LoadResStr("IDS_ERR_PXS")); return false;
 		}
@@ -2364,9 +2405,9 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	SetInitProgress(91);
 
 	// MassMover
-	if (hGroup.FindEntry(C4CFN_MassMover))
+	if (group.getEntryInfo(C4CFN_MassMover))
 	{
-		if (!MassMover.Load(hGroup))
+		if (!MassMover.Load(group))
 		{
 			LogFatal(LoadResStr("IDS_ERR_MOVER")); return false;
 		}
@@ -2386,15 +2427,15 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	Objects.Clear(!section);
 
 	// Load objects
-	int32_t iObjects = Objects.Load(hGroup, section);
+	int32_t iObjects = Objects.Load(group, section);
 	if (iObjects) { LogF(LoadResStr("IDS_PRC_OBJECTSLOADED"), iObjects); }
 	SetInitProgress(93);
 
 	// Load round results
 	if (!section)
-		if (hGroup.FindEntry(C4CFN_RoundResults))
+		if (group.getEntryInfo(C4CFN_RoundResults))
 		{
-			if (!RoundResults.Load(hGroup, C4CFN_RoundResults))
+			if (!RoundResults.Load(group, C4CFN_RoundResults))
 			{
 				LogFatal(LoadResStr("IDS_ERR_ERRORLOADINGROUNDRESULTS")); return false;
 			}
@@ -2453,7 +2494,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	if (!section)
 	{
 		// Music
-		Application.MusicSystem.InitForScenario(ScenarioFile);
+		Application.MusicSystem.InitForScenario(*ScenarioFile);
 		if (Config.Sound.RXMusic)
 		{
 			// Play something that is not Frontend.mid
@@ -2510,28 +2551,27 @@ bool C4Game::InitScriptEngine()
 	InitFunctionMap(&ScriptEngine);
 
 	// system functions: check if system group is open
-	if (!Application.OpenSystemGroup())
+	if (false && !Application.OpenSystemGroup())
 	{
 		LogFatal(LoadResStr("IDS_ERR_INVALIDSYSGRP")); return false;
 	}
-	C4Group &File = Application.SystemGroup;
+	CppC4Group &group = Application.SystemGroup;
 
 	// Load string table
-	MainSysLangStringTable.LoadEx("StringTbl", File, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
+	MainSysLangStringTable.LoadEx("StringTbl", group, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
 
 	// get scripts
-	char fn[_MAX_FNAME + 1] = { 0 };
-	File.ResetSearch();
-	while (File.FindNextEntry(C4CFN_ScriptFiles, (char *)&fn, nullptr, nullptr, !!fn[0]))
+	CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_ScriptFiles, [this](const auto &info)
 	{
 		// host will be destroyed by script engine, so drop the references
-		C4ScriptHost *scr = new C4ScriptHost();
+		C4ScriptHost *scr = new C4ScriptHost;
 		scr->Reg2List(&ScriptEngine, &ScriptEngine);
-		scr->Load(nullptr, File, fn, Config.General.LanguageEx, nullptr, &MainSysLangStringTable);
-	}
+		scr->Load(nullptr, group, info.fileName.c_str(), Config.General.LanguageEx, nullptr, &MainSysLangStringTable);
+		return true;
+	});
 
 	// load standard clonk names
-	Names.Load(LoadResStr("IDS_CNS_NAMES"), File, C4CFN_Names);
+	Names.Load(LoadResStr("IDS_CNS_NAMES"), group, "", C4CFN_Names);
 
 	return true;
 }
@@ -2555,7 +2595,7 @@ bool C4Game::InitPlayers()
 	{
 		// Load players to restore from scenario
 		C4PlayerInfoList LocalRestorePlayerInfos;
-		LocalRestorePlayerInfos.Load(ScenarioFile, C4CFN_SavePlayerInfos, &ScenarioLangStringTable);
+		LocalRestorePlayerInfos.Load(*ScenarioFile, C4CFN_SavePlayerInfos, &ScenarioLangStringTable);
 		// -- runtime join player restore
 		// all restore functions will be executed on RestorePlayerInfos, because the main playerinfos may be more up-to-date
 		// extract all players to temp store and update filenames to point there
@@ -2654,7 +2694,7 @@ bool C4Game::InitControl()
 		// no joins
 		PlayerFilenames[0] = 0;
 		// start playback
-		if (!Control.InitReplay(ScenarioFile))
+		if (!Control.InitReplay(*ScenarioFile))
 			return false;
 		// no record!
 		Record = false;
@@ -3066,61 +3106,77 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 bool C4Game::LoadScenarioComponents()
 {
 	// Info
-	Info.Load(LoadResStr("IDS_CNS_INFO"), ScenarioFile, C4CFN_Info);
+	Info.Load(LoadResStr("IDS_CNS_INFO"), *ScenarioFile, "", C4CFN_Info);
+
 	// Overload clonk names from scenario file
-	if (ScenarioFile.EntryCount(C4CFN_Names))
-		Names.Load(LoadResStr("IDS_CNS_NAMES"), ScenarioFile, C4CFN_Names);
+	if (auto info = ScenarioFile->getEntryInfo(C4CFN_Names))
+	{
+		Names.Load(LoadResStr("IDS_CNS_NAMES"), *ScenarioFile, "", C4CFN_Names);
+	}
+
 	// scenario sections
-	char fn[_MAX_FNAME + 1] = { 0 };
-	ScenarioFile.ResetSearch(); *fn = 0;
-	while (ScenarioFile.FindNextEntry(C4CFN_ScenarioSections, (char *)&fn, nullptr, nullptr, !!*fn))
+
+	bool success = true;
+
+	CppC4Group_ForEachEntryByWildcard(*ScenarioFile, "", C4CFN_ScenarioSections, [&success](const auto &info)
 	{
 		// get section name
 		char SctName[_MAX_FNAME + 1];
 		int32_t iWildcardPos = SCharPos('*', C4CFN_ScenarioSections);
-		SCopy(fn + iWildcardPos, SctName, _MAX_FNAME);
+		SCopy(info.fileName.c_str() + iWildcardPos, SctName, _MAX_FNAME);
 		RemoveExtension(SctName);
 		if (SLen(SctName) > C4MaxName || !*SctName)
 		{
 			DebugLog("invalid section name");
-			LogFatal(FormatString(LoadResStr("IDS_ERR_SCENSECTION"), fn).getData()); return false;
+			LogFatal(FormatString(LoadResStr("IDS_ERR_SCENSECTION"), info.fileName.c_str()).getData());
+			success = false;
+			return true;
 		}
 		// load this section into temp store
 		C4ScenarioSection *pSection = new C4ScenarioSection(SctName);
-		if (!pSection->ScenarioLoad(fn))
+		if (!pSection->ScenarioLoad(info.fileName.c_str()))
 		{
-			LogFatal(FormatString(LoadResStr("IDS_ERR_SCENSECTION"), fn).getData()); return false;
+			LogFatal(FormatString(LoadResStr("IDS_ERR_SCENSECTION"), info.fileName.c_str()).getData());
+			success = false;
 		}
-	}
 
+		return true;
+	});
 	// Success
-	return true;
+	return success;
 }
 
 bool C4Game::LoadScenarioScripts()
 {
 	// Script
 	Script.Reg2List(&ScriptEngine, &ScriptEngine);
-	Script.Load(LoadResStr("IDS_CNS_SCRIPT"), ScenarioFile, C4CFN_Script, Config.General.LanguageEx, nullptr, &ScenarioLangStringTable);
+	Script.Load(LoadResStr("IDS_CNS_SCRIPT"), *ScenarioFile, C4CFN_Script, Config.General.LanguageEx, nullptr, &ScenarioLangStringTable);
+
 	// additional system scripts?
-	C4Group SysGroup;
-	char fn[_MAX_FNAME + 1] = { 0 };
-	if (SysGroup.OpenAsChild(&ScenarioFile, C4CFN_System))
+	if (auto grp = ScenarioFile->openAsChild(C4CFN_System); grp)
 	{
-		ScenarioSysLangStringTable.LoadEx("StringTbl", SysGroup, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
+		ScenarioSysLangStringTable.LoadEx("StringTbl", *grp, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
+
 		// load all scripts in there
-		SysGroup.ResetSearch();
-		while (SysGroup.FindNextEntry(C4CFN_ScriptFiles, (char *)&fn, nullptr, nullptr, !!fn[0]))
+		auto *g = new CppC4Group{std::move(*grp)};
+		CppC4Group_ForEachEntryByWildcard(*g, "", C4CFN_ScriptFiles, [g, this](const auto &info)
 		{
-			// host will be destroyed by script engine, so drop the references
-			C4ScriptHost *scr = new C4ScriptHost();
+			C4ScriptHost *scr = new C4ScriptHost;
 			scr->Reg2List(&ScriptEngine, &ScriptEngine);
-			scr->Load(nullptr, SysGroup, fn, Config.General.LanguageEx, nullptr, &ScenarioSysLangStringTable);
+			scr->Load(nullptr, *g, info.fileName.c_str(), Config.General.LanguageEx, nullptr, &ScenarioSysLangStringTable);
+			return true;
+		});
+
+		delete g;
+
+		if (!ScenarioFile->isPacked() && Game.pFileMonitor)
+		{
+			Game.pFileMonitor->AddDirectory((ScenarioFile->getFullName() / C4CFN_System).c_str());
 		}
-		// if it's a physical group: watch out for changes
-		if (!SysGroup.IsPacked() && Game.pFileMonitor)
-			Game.pFileMonitor->AddDirectory(SysGroup.GetFullName().getData());
-		SysGroup.Close();
+	}
+	else
+	{
+		asm("nop");
 	}
 	return true;
 }
@@ -3738,19 +3794,20 @@ std::vector<std::string> C4Game::FoldersWithLocalsDefs(std::string path)
 	std::vector<std::string> defs;
 
 	// Get relative path
-	path = Config.AtExeRelativePath(path.c_str());
+	std::filesystem::path relativePath{Config.AtExeRelativePath(path.c_str())};
 
 	// Scan path for folder names
-	std::string folderName;
-	C4Group group;
-	for (size_t pos = path.find(DirectorySeparator); pos != std::string::npos; pos = path.find(DirectorySeparator, pos + 1))
+
+	std::filesystem::path p;
+
+	for (const auto &folderName : relativePath)
 	{
-		// Get folder name
-		folderName = path.substr(0, pos);
+		p /= folderName;
 		// Open folder
-		if (SEqualNoCase(GetExtension(folderName.c_str()), "c4f"))
+		if (SEqualNoCase(folderName.extension(), ".c4f"))
 		{
-			if (group.Open(folderName.c_str()))
+			CppC4Group group;
+			if (group.openExisting(p))
 			{
 				// Check for contained defs
 				// do not, however, add them to the group set:
@@ -3758,10 +3815,8 @@ std::vector<std::string> C4Game::FoldersWithLocalsDefs(std::string path)
 				int32_t contents;
 				if ((contents = GroupSet.CheckGroupContents(group, C4GSCnt_Definitions)))
 				{
-					defs.push_back(folderName);
+					defs.emplace_back(p);
 				}
-				// Close folder
-				group.Close();
 			}
 		}
 	}
@@ -3856,7 +3911,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	// returning to the main section with an unsaved landscape (and thus an unsaved scenario core),
 	// would leave those values in the altered state of the previous section
 	// scenario designers should regard this and always define any values, that are defined in subsections as well
-	C4Group hGroup, *pGrp;
+	CppC4Group *group;
 
 	// if current section was the loaded section (maybe main, but need not for resumed savegames)
 	if (!pCurrentScenarioSection)
@@ -3884,7 +3939,10 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 			return false;
 		}
 		// open current group
-		if (!(pGrp = pCurrentScenarioSection->GetGroupfile(hGroup)))
+
+		CppC4Group *group;
+		bool shouldDelete = false;
+		if (std::tie(group, shouldDelete) = pCurrentScenarioSection->GetGroupFile(); !group)
 		{
 			DebugLog("LoadScenarioSection: error opening current group file");
 			return false;
@@ -3897,34 +3955,58 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 			// maybe imply exact landscapes by the existance of Landscape.png-files?
 			C4Scenario rC4S = C4S;
 			rC4S.SetExactLandscape();
-			if (!rC4S.Save(*pGrp, true))
+			if (!rC4S.Save(*group, true))
 			{
 				DebugLog("LoadScenarioSection: Error saving C4S");
+
+				if (shouldDelete)
+				{
+					delete group;
+				}
+
 				return false;
 			}
 			// landscape
 			{
 				C4DebugRecOff DBGRECOFF;
 				Objects.RemoveSolidMasks();
-				if (!Landscape.Save(*pGrp))
+				if (!Landscape.Save(*group))
 				{
 					DebugLog("LoadScenarioSection: Error saving Landscape");
+
+					if (shouldDelete)
+					{
+						delete group;
+					}
+
 					return false;
 				}
 				Objects.PutSolidMasks();
 			}
 			// PXS
-			if (!PXS.Save(*pGrp))
+			if (!PXS.Save(*group))
 			{
 				DebugLog("LoadScenarioSection: Error saving PXS");
+
+				if (shouldDelete)
+				{
+					delete group;
+				}
+
 				return false;
 			}
 			// MassMover (create copy, may not modify running data)
 			C4MassMoverSet MassMoverSet;
 			MassMoverSet.Copy(MassMover);
-			if (!MassMoverSet.Save(*pGrp))
+			if (!MassMoverSet.Save(*group))
 			{
 				DebugLog("LoadScenarioSection: Error saving MassMover");
+
+				if (shouldDelete)
+				{
+					delete group;
+				}
+
 				return false;
 			}
 		}
@@ -3932,25 +4014,46 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 		if (dwFlags & C4S_SAVE_OBJECTS)
 		{
 			// strings; those will have to be merged when reloaded
-			if (!Game.ScriptEngine.Strings.Save(*pGrp))
+			if (!Game.ScriptEngine.Strings.Save(*group))
 			{
 				DebugLog("LoadScenarioSection: Error saving strings");
+
+				if (shouldDelete)
+				{
+					delete group;
+				}
+
 				return false;
 			}
 			// objects: do not save info objects or inactive objects
-			if (!Objects.Save(*pGrp, false, false))
+			if (!Objects.Save(*group, false, false))
 			{
 				DebugLog("LoadScenarioSection: Error saving objects");
+
+				if (shouldDelete)
+				{
+					delete group;
+				}
+
 				return false;
 			}
 		}
 		// close current group
-		if (hGroup.IsOpen()) hGroup.Close();
+		if (group)
+		{
+			group->save();
+		}
+
+		if (shouldDelete)
+		{
+			delete group;
+		}
 		// mark modified
 		pCurrentScenarioSection->fModified = true;
 	}
 	// open section group
-	if (!(pGrp = pLoadSect->GetGroupfile(hGroup)))
+	bool shouldDelete = false;
+	if (std::tie(group, shouldDelete) = pLoadSect->GetGroupFile(); !group)
 	{
 		DebugLog("LoadScenarioSection: error opening group file");
 		return false;
@@ -3982,13 +4085,22 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	char szOldSky[C4MaxDefString + 1];
 	SCopy(C4S.Landscape.SkyDef, szOldSky, C4MaxDefString);
 	// overload scenario values (fails if no scenario core is present; that's OK)
-	C4S.Load(*pGrp, true);
+	C4S.Load(*group, true);
 	// determine whether a new sky has to be loaded
-	bool fLoadNewSky = !SEqualNoCase(szOldSky, C4S.Landscape.SkyDef) || pGrp->FindEntry(C4CFN_Sky ".*");
+	bool fLoadNewSky = !SEqualNoCase(szOldSky, C4S.Landscape.SkyDef);
+	if (!fLoadNewSky)
+	{
+		CppC4Group_ForEachEntryByWildcard(*group, "", C4CFN_Sky ".*", [&fLoadNewSky](const auto &) { return fLoadNewSky = true; });
+	}
 	// re-init game in new section
-	if (!InitGame(*pGrp, pLoadSect, fLoadNewSky))
+	if (!InitGame(*group, pLoadSect, fLoadNewSky))
 	{
 		DebugLog("LoadScenarioSection: Error reiniting game");
+
+		if (shouldDelete)
+		{
+			delete group;
+		}
 		return false;
 	}
 	// set new current section
@@ -3997,6 +4109,11 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	// resize viewports
 	GraphicsSystem.RecalculateViewports();
 	// done, success
+
+	if (shouldDelete)
+	{
+		delete group;
+	}
 	return true;
 }
 

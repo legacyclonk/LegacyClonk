@@ -29,7 +29,7 @@ public:
 	void Default(); // zero fields
 
 	bool Init(bool fSavegame);
-	bool Save(C4Group &hGroup);
+	bool Save(CppC4Group &group);
 	void Clear();
 	void SetFadePalette(int32_t *ipColors);
 	void Draw(C4FacetEx &cgo); // draw sky

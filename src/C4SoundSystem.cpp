@@ -57,21 +57,21 @@ void C4SoundEffect::Clear()
 #endif
 }
 
-bool C4SoundEffect::Load(const char *szFileName, C4Group &hGroup, bool fStatic)
+bool C4SoundEffect::Load(CppC4Group &group, const std::string &filePath, bool fStatic)
 {
 	// Sound check
 	if (!Config.Sound.RXSound) return false;
 	// Locate sound in file
-	StdBuf WaveBuffer;
-	if (!hGroup.LoadEntry(szFileName, WaveBuffer)) return false;
-	// load it from mem
-	if (!Load((uint8_t *)WaveBuffer.getData(), WaveBuffer.getSize(), fStatic)) return false;
-	// Set name
-	SCopy(szFileName, Name, C4MaxSoundName);
-	return true;
+	if (auto data = group.getEntryData(filePath); data && Load(reinterpret_cast<const uint8_t *>(data->data), data->size, fStatic))
+	{
+		SCopy(GetFilename(filePath.c_str()), Name, C4MaxSoundName);
+		return true;
+	}
+
+	return false;
 }
 
-bool C4SoundEffect::Load(uint8_t *pData, size_t iDataLen, bool fStatic, bool fRaw)
+bool C4SoundEffect::Load(const uint8_t *pData, size_t iDataLen, bool fStatic, bool fRaw)
 {
 	// Sound check
 	if (!Config.Sound.RXSound) return false;
@@ -402,9 +402,15 @@ bool C4SoundSystem::Init()
 
 	// Might be reinitialisation
 	ClearEffects();
+	if (SoundFile)
+	{
+		delete SoundFile;
+	}
+
+	SoundFile = new CppC4Group;
+
 	// Open sound file
-	if (!SoundFile.IsOpen())
-		if (!SoundFile.Open(Config.AtExePath(C4CFN_Sound))) return false;
+	if (!SoundFile->openExisting(Config.AtExePath(C4CFN_Sound))) return false;
 #ifdef HAVE_LIBSDL_MIXER
 	Mix_AllocateChannels(C4MaxSoundInstances);
 #endif
@@ -414,8 +420,8 @@ bool C4SoundSystem::Init()
 void C4SoundSystem::Clear()
 {
 	ClearEffects();
-	// Close sound file
-	SoundFile.Close();
+	delete SoundFile;
+	SoundFile = nullptr;
 }
 
 void C4SoundSystem::ClearEffects()
@@ -473,8 +479,8 @@ C4SoundEffect *C4SoundSystem::AddEffect(const char *szSoundName)
 	if (!(nsfx = new C4SoundEffect)) return nullptr;
 	// Load sound to entry
 	C4GRP_DISABLE_REWINDWARN // dynamic load; must rewind here :(
-		if (!nsfx->Load(szSoundName, SoundFile, false))
-			if (!nsfx->Load(szSoundName, Game.ScenarioFile, false))
+		if (!nsfx->Load(*SoundFile, szSoundName, false))
+			if (!(Game.ScenarioFile && nsfx->Load(*Game.ScenarioFile, szSoundName, false)))
 			{
 				C4GRP_ENABLE_REWINDWARN delete nsfx; return nullptr;
 			}
@@ -501,13 +507,17 @@ C4SoundEffect *C4SoundSystem::GetEffect(const char *szSndName)
 	if (SCharCount('?', szName))
 	{
 		// Search global sound file
-		if (!(iNumber = SoundFile.EntryCount(szName)))
-			// Search scenario local files
-			if (!(iNumber = Game.ScenarioFile.EntryCount(szName)))
-				// Search bank loaded sounds
-				if (!(iNumber = EffectInBank(szName)))
-					// None found: failure
+		if (CppC4Group_ForEachEntryByWildcard(*SoundFile, "", szName, [&iNumber](const auto &) { ++iNumber; return true; }); !iNumber)
+		{
+			if (CppC4Group_ForEachEntryByWildcard(*Game.ScenarioFile, "", szName, [&iNumber](const auto &) { ++iNumber; return true; }); !iNumber)
+			{
+				if (iNumber = EffectInBank(szName); !iNumber)
+				{
 					return nullptr;
+				}
+			}
+		}
+
 		// Insert index to name
 		iNumber = BoundBy(1 + SafeRandom(iNumber), 1, 9);
 		SReplaceChar(szName, '?', '0' + iNumber);
@@ -556,31 +566,34 @@ C4SoundInstance *C4SoundSystem::FindInstance(const char *szSndName, C4Object *pO
 // command (e.g. Sound("Hello.ogg")), because all playback functions will default to wav only.
 // LoadEffects is currently used for static loading from object definitions only.
 
-int32_t C4SoundSystem::LoadEffects(C4Group &hGroup, bool fStatic)
+int32_t C4SoundSystem::LoadEffects(CppC4Group &group, bool fStatic)
 {
 	int32_t iNum = 0;
-	char szFilename[_MAX_FNAME + 1];
 	char szFileType[_MAX_FNAME + 1];
-	C4SoundEffect *nsfx;
+
 	// Process segmented list of file types
 	for (int32_t i = 0; SCopySegment(C4CFN_SoundFiles, i, szFileType, '|', _MAX_FNAME); i++)
 	{
 		// Search all sound files in group
-		hGroup.ResetSearch();
-		while (hGroup.FindNextEntry(szFileType, szFilename))
-			// Create and load effect
-			if (nsfx = new C4SoundEffect)
-				if (nsfx->Load(szFilename, hGroup, fStatic))
-				{
-					// Overload same name effects
-					RemoveEffect(szFilename);
-					// Add effect
-					nsfx->Next = FirstSound;
-					FirstSound = nsfx;
-					iNum++;
-				}
-				else
-					delete nsfx;
+		CppC4Group_ForEachEntryByWildcard(group, "", szFileType, [&group, &fStatic, &iNum, this](const auto &info)
+		{
+			auto *effect = new C4SoundEffect;
+			if (effect->Load(group, info.fileName, fStatic))
+			{
+				// Overload same name effects
+				RemoveEffect(info.fileName.c_str());
+				// Add effect
+				effect->Next = FirstSound;
+				FirstSound = effect;
+				++iNum;
+			}
+			else
+			{
+				delete effect;
+			}
+
+			return true;
+		});
 	}
 	return iNum;
 }

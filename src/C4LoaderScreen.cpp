@@ -50,42 +50,44 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 	SCopy(szLoaderSpec, szLoaderSpecJpg); DefaultExtension(szLoaderSpecJpg, "jpg");
 	SCopy(szLoaderSpec, szLoaderSpecJpeg); DefaultExtension(szLoaderSpecJpeg, "jpeg");
 	int iLoaders = 0;
-	C4Group *pGroup = nullptr, *pChosenGrp = nullptr;
-	char ChosenFilename[_MAX_PATH + 1];
+
+	CppC4Group *group = nullptr;
+	CppC4Group *chosenGroup = nullptr;
+	std::string chosenFilename;
+
 	// query groups of equal priority in set
-	while (pGroup = Game.GroupSet.FindGroup(C4GSCnt_Loaders, pGroup, true))
+	while ((group = Game.GroupSet.FindGroup(C4GSCnt_Loaders, group, true)))
 	{
-		iLoaders += SeekLoaderScreens(*pGroup, szLoaderSpecPng, iLoaders, ChosenFilename, &pChosenGrp);
-		iLoaders += SeekLoaderScreens(*pGroup, szLoaderSpecJpeg, iLoaders, ChosenFilename, &pChosenGrp);
-		iLoaders += SeekLoaderScreens(*pGroup, szLoaderSpecJpg, iLoaders, ChosenFilename, &pChosenGrp);
+		iLoaders += SeekLoaderScreens(*group, szLoaderSpecPng, iLoaders, chosenFilename, &chosenGroup);
+		iLoaders += SeekLoaderScreens(*group, szLoaderSpecJpeg, iLoaders, chosenFilename, &chosenGroup);
+		iLoaders += SeekLoaderScreens(*group, szLoaderSpecJpg, iLoaders, chosenFilename, &chosenGroup);
 		// lower the chance for any loader other than png
 		iLoaders *= 2;
-		iLoaders += SeekLoaderScreens(*pGroup, szLoaderSpecBmp, iLoaders, ChosenFilename, &pChosenGrp);
+		iLoaders += SeekLoaderScreens(*group, szLoaderSpecBmp, iLoaders, chosenFilename, &chosenGroup);
 	}
+
 	// nothing found? seek in main gfx grp
-	C4Group GfxGrp;
+	CppC4Group graphicsGroup;
 	if (!iLoaders)
 	{
-		// open it
-		GfxGrp.Close();
-		if (!GfxGrp.Open(Config.AtExePath(C4CFN_Graphics)))
+		if (!graphicsGroup.openExisting(Config.AtExePath(C4CFN_Graphics)))
 		{
-			LogFatal(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), C4CFN_Graphics, GfxGrp.GetError()).getData());
+			LogFatal(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), C4CFN_Graphics, graphicsGroup.getErrorMessage().c_str()).getData());
 			return false;
 		}
 		// seek for png-loaders
-		iLoaders = SeekLoaderScreens(GfxGrp, szLoaderSpecPng, iLoaders, ChosenFilename, &pChosenGrp);
-		iLoaders += SeekLoaderScreens(GfxGrp, szLoaderSpecJpg, iLoaders, ChosenFilename, &pChosenGrp);
-		iLoaders += SeekLoaderScreens(GfxGrp, szLoaderSpecJpeg, iLoaders, ChosenFilename, &pChosenGrp);
+		iLoaders = SeekLoaderScreens(graphicsGroup, szLoaderSpecPng, iLoaders, chosenFilename, &chosenGroup);
+		iLoaders += SeekLoaderScreens(graphicsGroup, szLoaderSpecJpg, iLoaders, chosenFilename, &chosenGroup);
+		iLoaders += SeekLoaderScreens(graphicsGroup, szLoaderSpecJpeg, iLoaders, chosenFilename, &chosenGroup);
 		iLoaders *= 2;
 		// seek for bmp-loaders
-		iLoaders += SeekLoaderScreens(GfxGrp, szLoaderSpecBmp, iLoaders, ChosenFilename, &pChosenGrp);
+		iLoaders += SeekLoaderScreens(graphicsGroup, szLoaderSpecBmp, iLoaders, chosenFilename, &chosenGroup);
 		// Still nothing found: fall back to general loader spec in main graphics group
 		if (!iLoaders)
 		{
-			iLoaders = SeekLoaderScreens(GfxGrp, "Loader*.png", 0, ChosenFilename, &pChosenGrp);
-			iLoaders += SeekLoaderScreens(GfxGrp, "Loader*.jpg", iLoaders, ChosenFilename, &pChosenGrp);
-			iLoaders += SeekLoaderScreens(GfxGrp, "Loader*.jpeg", iLoaders, ChosenFilename, &pChosenGrp);
+			iLoaders = SeekLoaderScreens(graphicsGroup, "Loader*.png", 0, chosenFilename, &chosenGroup);
+			iLoaders += SeekLoaderScreens(graphicsGroup,  "Loader*.jpg", iLoaders, chosenFilename, &chosenGroup);
+			iLoaders += SeekLoaderScreens(graphicsGroup, "Loader*.jpeg", iLoaders, chosenFilename, &chosenGroup);
 		}
 		// Not even default loaders available? Fail.
 		if (!iLoaders)
@@ -97,7 +99,7 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 
 	// load loader
 	fctBackground.GetFace().SetBackground();
-	if (!fctBackground.Load(*pChosenGrp, ChosenFilename, C4FCT_Full, C4FCT_Full, true)) return false;
+	if (!fctBackground.Load(*chosenGroup, chosenFilename, C4FCT_Full, C4FCT_Full, true)) return false;
 
 	// load info
 	delete[] szInfo; szInfo = nullptr;
@@ -115,22 +117,23 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 	return true;
 }
 
-int C4LoaderScreen::SeekLoaderScreens(C4Group &rFromGrp, const char *szWildcard, int iLoaderCount, char *szDstName, C4Group **ppDestGrp)
+int C4LoaderScreen::SeekLoaderScreens(CppC4Group &group, const char *szWildcard, int iLoaderCount, std::string &destName, CppC4Group **destGroup)
 {
-	bool fFound;
 	int iLocalLoaders = 0;
-	char Filename[_MAX_PATH + 1];
-	for (fFound = rFromGrp.FindEntry(szWildcard, Filename); fFound; fFound = rFromGrp.FindNextEntry(szWildcard, Filename))
+
+	CppC4Group_ForEachEntryByWildcard(group, "", szWildcard, [&](const auto &info)
 	{
 		// loader found; choose it, if Daniel wants it that way
 		++iLocalLoaders;
 		if (!SafeRandom(++iLoaderCount))
 		{
 			// copy group and path
-			*ppDestGrp = &rFromGrp;
-			SCopy(Filename, szDstName, _MAX_PATH);
+			*destGroup = &group;
+			destName = info.fileName;
 		}
-	}
+
+		return true;
+	});
 	return iLocalLoaders;
 }
 

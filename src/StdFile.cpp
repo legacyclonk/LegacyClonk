@@ -433,23 +433,22 @@ int FileTime(const char *szFilename)
 	return static_cast<int>(stStats.st_mtime);
 }
 
-bool EraseFile(const char *szFilename)
+bool EraseFile(const std::filesystem::path &fileName)
 {
 #ifdef _WIN32
-	SetFileAttributes(szFilename, FILE_ATTRIBUTE_NORMAL);
+	SetFileAttributes(fileName.c_str(), FILE_ATTRIBUTE_NORMAL);
 #endif
 	// either unlink or remove could be used. Well, stick to ANSI C where possible.
-	if (remove(szFilename))
+	try
 	{
-		if (errno == ENOENT)
-		{
-			// Hah, here the wrapper actually makes sense:
-			// The engine only cares about the file not being there after this call.
-			return true;
-		}
-		return false;
+		std::filesystem::remove(fileName);
+		return true;
 	}
-	return true;
+
+	catch (const std::filesystem::filesystem_error &e)
+	{
+		return e.code().value() == ENOENT;
+	}
 }
 
 #ifndef _WIN32
@@ -926,4 +925,9 @@ void AdvanceFileLine(FILE *fhnd)
 		cread = fgetc(fhnd);
 		if (cread == EOF) { rewind(fhnd); loops++; }
 	} while ((cread != 0x0A) && (loops < 2));
+}
+
+std::string operator/(const std::string &left, const std::string &right)
+{
+	return left + "/" + right;
 }

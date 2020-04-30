@@ -113,7 +113,7 @@ void C4ComponentHost::Clear()
 }
 
 bool C4ComponentHost::Load(const char *szName,
-	C4Group &hGroup,
+	CppC4Group &group,
 	const char *szFilename,
 	const char *szLanguage)
 {
@@ -132,22 +132,30 @@ bool C4ComponentHost::Load(const char *szName,
 		{
 			// Insert language code
 			sprintf(strEntryWithLanguage, strEntry, strCode);
-			if (hGroup.LoadEntryString(strEntryWithLanguage, Data))
+
+			bool success = false;
+			CppC4Group_ForEachEntryByWildcard(group, "", strEntryWithLanguage, [&group, &success, this](const auto &info)
 			{
+				CppC4Group_LoadEntryString(group, info.fileName, Data);
 				if (pConfig->General.fUTF8) Data.EnsureUnicode();
-				// Store actual filename
-				hGroup.FindEntry(strEntryWithLanguage, Filename);
-				CopyFilePathFromGroup(hGroup);
-				// Got it
+
+				SCopy(info.fileName.c_str(), Filename, _MAX_FNAME);
+				CopyFilePathFromGroup(group);
+				return !(success = true);
+			});
+
+			if (success)
+			{
 				return true;
 			}
+
 			// Couldn't insert language code anyway - no point in trying other languages
 			if (!SSearch(strEntry, "%s")) break;
 		}
 	}
 	// Truncate any additional segments from stored filename
 	SReplaceChar(Filename, '|', 0);
-	CopyFilePathFromGroup(hGroup);
+	CopyFilePathFromGroup(group);
 	// Not loaded
 	return false;
 }
@@ -172,13 +180,15 @@ bool C4ComponentHost::Load(const char *szName,
 		{
 			// Insert language code
 			sprintf(strEntryWithLanguage, strEntry, strCode);
+
 			if (hGroupSet.LoadEntryString(strEntryWithLanguage, Data))
 			{
 				if (pConfig->General.fUTF8) Data.EnsureUnicode();
+
 				// Store actual filename
-				C4Group *pGroup = hGroupSet.FindEntry(strEntryWithLanguage);
-				pGroup->FindEntry(strEntryWithLanguage, Filename);
-				CopyFilePathFromGroup(*pGroup);
+				auto [group, fileName] = hGroupSet.FindEntry(strEntryWithLanguage);
+				SCopy(fileName.c_str(), Filename, _MAX_FNAME);
+				CopyFilePathFromGroup(*group);
 				// Got it
 				return true;
 			}
@@ -195,21 +205,21 @@ bool C4ComponentHost::Load(const char *szName,
 }
 
 bool C4ComponentHost::LoadEx(const char *szName,
-	C4Group &hGroup,
+	CppC4Group &group,
 	const char *szFilename,
 	const char *szLanguage)
 {
 	// Load from a group set containing the provided group and
 	// alternative groups for cross-loading from a language pack
 	C4GroupSet hGroups;
-	hGroups.RegisterGroup(hGroup, false, 1000, C4GSCnt_Component); // Provided group gets highest priority
-	hGroups.RegisterGroups(Languages.GetPackGroups(pConfig->AtExeRelativePath(hGroup.GetFullName().getData())), C4GSCnt_Language);
+	hGroups.RegisterGroup(group, false, 1000, C4GSCnt_Component); // Provided group gets highest priority
+	hGroups.RegisterGroups(Languages.GetPackGroups(pConfig->AtExeRelativePath(group.getFullName().c_str())), C4GSCnt_Language);
 	// Load from group set
 	return Load(szName, hGroups, szFilename, szLanguage);
 }
 
 bool C4ComponentHost::LoadAppend(const char *szName,
-	C4Group &hGroup, const char *szFilename,
+	CppC4Group &group, const char *szFilename,
 	const char *szLanguage)
 {
 	Clear();
@@ -220,22 +230,24 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 
 	// Load component (segmented filename)
 	char str1[_MAX_FNAME + 1], str2[_MAX_FNAME + 1];
-	int iFileCnt = 0, iFileSizeSum = 0;
+	size_t iFileCnt = 0, iFileSizeSum = 0;
 	int cseg, clseg;
+	std::string fileName;
 	for (cseg = 0; SCopySegment(Filename, cseg, str1, '|', _MAX_FNAME); cseg++)
 	{
 		char szLang[3] = "";
 		for (clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
 		{
 			sprintf(str2, str1, szLang);
-			// Check existance
-			size_t iFileSize;
-			if (hGroup.FindEntry(str2, nullptr, &iFileSize))
+
+			CppC4Group_ForEachEntryByWildcard(group, "", str2, [&iFileCnt, &iFileSizeSum, &fileName](const auto &info) -> bool
 			{
-				iFileCnt++;
-				iFileSizeSum += 1 + iFileSize;
-				break;
-			}
+				++iFileCnt;
+				iFileSizeSum += 1 + info.size;
+				fileName = info.fileName;
+				return false;
+			});
+
 			if (!SSearch(str1, "%s")) break;
 		}
 	}
@@ -254,39 +266,45 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 		for (clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
 		{
 			sprintf(str2, str1, szLang);
-			// Load data
-			char *pTemp;
-			if (hGroup.LoadEntry(str2, &pTemp, nullptr, 1))
+
+			CppC4Group_ForEachEntryByWildcard(group, "", str2, [&group, &pPos, this](const auto &info) -> bool
 			{
-				*pPos++ = '\n';
-				SCopy(pTemp, pPos, Data.getPtr(Data.getLength()) - pPos);
-				pPos += SLen(pPos);
-				delete[] pTemp;
-				break;
-			}
-			delete[] pTemp;
+				auto data = group.getEntryData(info.fileName);
+				if (data)
+				{
+					*pPos++ = '\n';
+					SCopy(static_cast<const char *>(data->data), pPos, Data.getPtr(Data.getLength()) - pPos);
+					return false;
+				}
+
+				return true;
+			});
+
 			if (!SSearch(str1, "%s")) break;
 		}
 	}
 
 	SReplaceChar(Filename, '|', 0);
-	CopyFilePathFromGroup(hGroup);
+	CopyFilePathFromGroup(group);
 	return !!iFileCnt;
 }
 
 // Construct full path
-void C4ComponentHost::CopyFilePathFromGroup(const C4Group &hGroup)
+void C4ComponentHost::CopyFilePathFromGroup(CppC4Group &group)
 {
-	SCopy(pConfig->AtExeRelativePath(hGroup.GetFullName().getData()), FilePath, _MAX_PATH - 1);
+	SCopy(pConfig->AtExeRelativePath(group.getFullName().c_str()), FilePath, _MAX_PATH - 1);
 	SAppendChar(DirectorySeparator, FilePath);
 	SAppend(Filename, FilePath, _MAX_PATH);
 }
 
-bool C4ComponentHost::Save(C4Group &hGroup)
+bool C4ComponentHost::Save(CppC4Group &group)
 {
 	if (!Modified) return true;
-	if (!Data) return hGroup.Delete(Filename);
-	return hGroup.Add(Filename, Data);
+	if (!Data) return group.deleteEntry(Filename);
+
+	StdStrBuf buf;
+	buf.Copy(Data);
+	return CppC4Group_Add(group, Filename, std::move(buf));
 }
 
 void C4ComponentHost::Open()

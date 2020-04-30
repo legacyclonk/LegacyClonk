@@ -73,10 +73,10 @@ C4ParticleDefCore::C4ParticleDefCore() :
 	Parallaxity[0] = Parallaxity[1] = 100;
 }
 
-bool C4ParticleDefCore::Compile(char *szSource, const char *szName)
+bool C4ParticleDefCore::Compile(const std::string &source, const char *szName)
 {
 	return CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(*this, "Particle"),
-		StdStrBuf::MakeRef(szSource), szName);
+		StdStrBuf::MakeRef(source.data()), szName);
 }
 
 C4ParticleDef::C4ParticleDef() :
@@ -115,22 +115,20 @@ void C4ParticleDef::Clear()
 	Name.Clear();
 }
 
-bool C4ParticleDef::Load(C4Group &rGrp)
+bool C4ParticleDef::Load(CppC4Group &group)
 {
 	// store file
-	Filename.Copy(rGrp.GetFullName());
+	Filename.Copy(group.getFullName().c_str());
 	// load
-	char *pSource;
-	if (rGrp.LoadEntry(C4CFN_ParticleCore, &pSource, nullptr, 1))
+	if (std::string data; CppC4Group_LoadEntryString(group, C4CFN_ParticleCore, data))
 	{
-		if (!Compile(pSource, Filename.getData()))
+		if (!Compile(data.c_str(), Filename.getData()))
 		{
-			DebugLogF("invalid particle def at '%s'", rGrp.GetFullName().getData());
-			delete[] pSource; return false;
+			DebugLogF("invalid particle def at '%s'", group.getFullName().c_str());
+			 return false;
 		}
-		delete[] pSource;
 		// load graphics
-		if (!Gfx.Load(rGrp, C4CFN_DefGraphicsPNG))
+		if (!Gfx.Load(group, C4CFN_DefGraphicsPNG))
 		{
 			DebugLogF("particle %s has no valid graphics defined", Name.getData());
 			return false;
@@ -196,12 +194,12 @@ bool C4ParticleDef::Reload()
 	// no file?
 	if (!Filename[0]) return false;
 	// open group
-	C4Group hGroup;
-	if (!hGroup.Open(Filename.getData())) return false;
+	CppC4Group group;
+	if (!group.openExisting(Filename.getData())) return false;
 	// reset class
 	Clear();
 	// load
-	return Load(hGroup);
+	return Load(group);
 }
 
 void C4Particle::MoveList(C4ParticleList &rFrom, C4ParticleList &rTo)

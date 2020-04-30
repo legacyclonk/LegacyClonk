@@ -107,25 +107,32 @@ void C4MapFolderData::Clear()
 	pMainDlg = nullptr;
 }
 
-bool C4MapFolderData::Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenLoaderFolder)
+bool C4MapFolderData::Load(CppC4Group &group, C4ScenarioListLoader::Folder *pScenLoaderFolder)
 {
 	// clear previous
 	Clear();
 	// load localization info
 	C4LangStringTable LangTable;
-	bool fHasLangTable = !!LangTable.LoadEx("StringTbl", hGroup, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
+	bool fHasLangTable = !!LangTable.LoadEx("StringTbl", group, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
 	// load core data
-	StdStrBuf Buf;
-	if (!hGroup.LoadEntryString(C4CFN_MapFolderData, Buf)) return false;
-	if (fHasLangTable) LangTable.ReplaceStrings(Buf);
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(*this, "FolderMap"), Buf, C4CFN_MapFolderData)) return false;
+
+	if (StdStrBuf Buf; !CppC4Group_LoadEntryString(group, C4CFN_MapFolderData, Buf))
+	{
+		return false;
+	}
+	else
+	{
+		if (fHasLangTable) LangTable.ReplaceStrings(Buf);
+		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(*this, "FolderMap"), Buf, C4CFN_MapFolderData)) return false;
+	}
+
 	// check resolution requirement
 	if (MinResX && MinResX > C4GUI::GetScreenWdt()) return false;
 	if (MinResY && MinResY > C4GUI::GetScreenHgt()) return false;
 	// load images
-	if (!fctBackgroundPicture.Load(hGroup, C4CFN_MapFolderBG))
+	if (!fctBackgroundPicture.Load(group, C4CFN_MapFolderBG))
 	{
-		DebugLogF("C4MapFolderData::Load(%s): Could not load background graphic \"%s\"", hGroup.GetName(), C4CFN_MapFolderBG);
+		DebugLogF("C4MapFolderData::Load(%s): Could not load background graphic \"%s\"", group.getName().c_str(), C4CFN_MapFolderBG); // FIXME
 		return false;
 	}
 	int i;
@@ -151,27 +158,27 @@ bool C4MapFolderData::Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenL
 				fSuccess = fctDump.Surface->SavePNG(pScen->sBaseImage.getData(), true, false, false);
 			}
 			if (!fSuccess)
-				DebugLogF("C4MapFolderData::Load(%s): Could not dump graphic \"%s\"", hGroup.GetName(), pScen->sBaseImage.getData());
+				DebugLogF("C4MapFolderData::Load(%s): Could not dump graphic \"%s\"", group.getName().c_str(), pScen->sBaseImage.getData());
 			continue;
 		}
 		// load images
-		if (pScen->sBaseImage.getLength() > 0) if (!pScen->fctBase.Load(hGroup, pScen->sBaseImage.getData()))
+		if (pScen->sBaseImage.getLength() > 0) if (!pScen->fctBase.Load(group, pScen->sBaseImage.getData()))
 		{
-			DebugLogF("C4MapFolderData::Load(%s): Could not load base graphic \"%s\"", hGroup.GetName(), pScen->sBaseImage.getData());
+			DebugLogF("C4MapFolderData::Load(%s): Could not load base graphic \"%s\"", group.getName().c_str(), pScen->sBaseImage.getData());
 			return false;
 		}
-		if (pScen->sOverlayImage.getLength() > 0) if (!pScen->fctOverlay.Load(hGroup, pScen->sOverlayImage.getData()))
+		if (pScen->sOverlayImage.getLength() > 0) if (!pScen->fctOverlay.Load(group, pScen->sOverlayImage.getData()))
 		{
-			DebugLogF("C4MapFolderData::Load(%s): Could not load graphic \"%s\"", hGroup.GetName(), pScen->sOverlayImage.getData());
+			DebugLogF("C4MapFolderData::Load(%s): Could not load graphic \"%s\"", group.getName().c_str(), pScen->sOverlayImage.getData());
 			return false;
 		}
 	}
 	for (i = 0; i < iAccessGfxCount; ++i)
 	{
 		AccessGfx *pGfx = ppAccessGfxList[i];
-		if (pGfx->sOverlayImage.getLength() > 0) if (!pGfx->fctOverlay.Load(hGroup, pGfx->sOverlayImage.getData()))
+		if (pGfx->sOverlayImage.getLength() > 0) if (!pGfx->fctOverlay.Load(group, pGfx->sOverlayImage.getData()))
 		{
-			DebugLogF("C4MapFolderData::Load(%s): Could not load graphic \"%s\"", hGroup.GetName(), pGfx->sOverlayImage.getData());
+			DebugLogF("C4MapFolderData::Load(%s): Could not load graphic \"%s\"", group.getName().c_str(), pGfx->sOverlayImage.getData()); // FIXME
 			return false;
 		}
 	}
@@ -418,25 +425,34 @@ C4ScenarioListLoader::Entry::~Entry()
 	}
 }
 
-bool C4ScenarioListLoader::Entry::Load(C4Group *pFromGrp, const StdStrBuf *psFilename, bool fLoadEx)
+bool C4ScenarioListLoader::Entry::Load(CppC4Group *fromGroup, const StdStrBuf *psFilename, bool fLoadEx)
 {
 	// nothing to do if already loaded
 	if (fBaseLoaded && (fExLoaded || !fLoadEx)) return true;
-	C4Group Group;
+	std::unique_ptr<CppC4Group> group;
 	// group specified: Load as child
-	if (pFromGrp)
+	if (fromGroup)
 	{
 		assert(psFilename);
-		if (!Group.OpenAsChild(pFromGrp, psFilename->getData())) return false;
-		// set FN by complete entry name
-		this->sFilename.Take(Group.GetFullName());
+		if (auto grp = fromGroup->openAsChild(psFilename->getData()); !grp)
+		{
+			return false;
+		}
+		else
+		{
+			group.reset(new CppC4Group{std::move(*grp)});
+			// set FN by complete entry name
+			this->sFilename.Copy(group->getFullName().c_str());
+		}
 	}
 	else
 	{
 		// set FN by complete entry name
 		if (psFilename) this->sFilename.Copy(*psFilename);
 		// no parent group: Direct load from filename
-		if (!Group.Open(sFilename.getData())) return false;
+
+		group.reset(new CppC4Group);
+		if (!group->openExisting(sFilename.getData())) return false;
 	}
 	// okay; load standard stuff from group
 	bool fNameLoaded = false, fIconLoaded = false;
@@ -453,21 +469,21 @@ bool C4ScenarioListLoader::Entry::Load(C4Group *pFromGrp, const StdStrBuf *psFil
 		sName.Take(szBuf);
 		sName.Take(C4Language::IconvClonk(sName.getData()));
 		// load entry specific stuff that's in the front of the group
-		if (!LoadCustomPre(Group))
+		if (!LoadCustomPre(*group))
 			return false;
 		// Load entry name
 		C4ComponentHost DefNames;
-		if (DefNames.LoadEx("Title", Group, C4CFN_Title, Config.General.LanguageEx))
+		if (DefNames.LoadEx("Title", *group, C4CFN_Title, Config.General.LanguageEx))
 			if (DefNames.GetLanguageString(Config.General.LanguageEx, sName))
 				fNameLoaded = true;
 		DefNames.Close();
 		// load entry icon
-		if (Group.FindEntry(C4CFN_IconPNG) && fctIcon.Load(Group, C4CFN_IconPNG))
+		if (group->getEntryInfo(C4CFN_IconPNG) && fctIcon.Load(*group, C4CFN_IconPNG))
 			fIconLoaded = true;
 		else
 		{
 			C4FacetExSurface fctTemp;
-			if (Group.FindEntry(C4CFN_ScenarioIcon) && fctTemp.Load(Group, C4CFN_ScenarioIcon, C4FCT_Full, C4FCT_Full, true))
+			if (group->getEntryInfo(C4CFN_ScenarioIcon) && fctTemp.Load(*group, C4CFN_ScenarioIcon, C4FCT_Full, C4FCT_Full, true))
 			{
 				// old style icon: Blit it on a pieace of paper
 				fctTemp.Surface->Lock();
@@ -491,9 +507,9 @@ bool C4ScenarioListLoader::Entry::Load(C4Group *pFromGrp, const StdStrBuf *psFil
 			}
 		}
 		// load any entryx-type-specific custom data (e.g. fallbacks for scenario title, and icon)
-		if (!LoadCustom(Group, fNameLoaded, fIconLoaded)) return false;
+		if (!LoadCustom(*group, fNameLoaded, fIconLoaded)) return false;
 		// store maker
-		sMaker.Copy(Group.GetMaker());
+		sMaker.Copy(group->getEntryInfo("")->author.c_str());
 		fBaseLoaded = true;
 	}
 	// load extended stuff: title picture
@@ -501,7 +517,7 @@ bool C4ScenarioListLoader::Entry::Load(C4Group *pFromGrp, const StdStrBuf *psFil
 	{
 		// load desc
 		C4ComponentHost DefDesc;
-		if (DefDesc.LoadEx("Desc", Group, C4CFN_ScenarioDesc, Config.General.LanguageEx))
+		if (DefDesc.LoadEx("Desc", *group, C4CFN_ScenarioDesc, Config.General.LanguageEx))
 		{
 			C4RTFFile rtf;
 			rtf.Load(StdBuf::MakeRef(DefDesc.GetData(), SLen(DefDesc.GetData())));
@@ -509,29 +525,38 @@ bool C4ScenarioListLoader::Entry::Load(C4Group *pFromGrp, const StdStrBuf *psFil
 		}
 		DefDesc.Close();
 		// load title
-		if (!fctTitle.Load(Group, C4CFN_ScenarioTitlePNG, C4FCT_Full, C4FCT_Full, false, true))
-			fctTitle.Load(Group, C4CFN_ScenarioTitle, C4FCT_Full, C4FCT_Full, true, true);
+		if (!fctTitle.Load(*group,  C4CFN_ScenarioTitlePNG, C4FCT_Full, C4FCT_Full, false, true))
+			fctTitle.Load(*group, C4CFN_ScenarioTitle, C4FCT_Full, C4FCT_Full, true, true);
 		fExLoaded = true;
 		// load author
-		if (Group.IsPacked())
+		if (group->isPacked())
 		{
 			const char *strSecAuthors = "RedWolf Design;Clonk History Project;GWE-Team"; // Now hardcoded...
-			if (SIsModule(strSecAuthors, Group.GetMaker()) && Group.LoadEntryString(C4CFN_Author, sAuthor))
+			if (SIsModule(strSecAuthors, group->getEntryInfo("")->author.c_str()))
 			{
-				// OK; custom author by txt
+				if (StdStrBuf Buf; CppC4Group_LoadEntryString(*group, C4CFN_Author, Buf))
+				{
+					sAuthor.Take(Buf);
+				}
 			}
 			else
+			{
 				// defeault author by group
-				sAuthor.Copy(Group.GetMaker());
+				sAuthor.Copy(group->getEntryInfo("")->author.c_str());
+			}
 		}
 		else
 		{
 			// unpacked groups do not have an author
 			sAuthor.Clear();
 		}
-		// load version
-		Group.LoadEntryString(C4CFN_Version, sVersion);
+
+		if (StdStrBuf Buf; CppC4Group_LoadEntryString(*group, C4CFN_Version, Buf))
+		{
+			sAuthor.Take(Buf);
+		}
 	}
+
 	// done, success
 	return true;
 }
@@ -605,7 +630,7 @@ bool C4ScenarioListLoader::Entry::RenameTo(const char *szNewName)
 			return false;
 		}
 		// OK; then rename
-		if (!C4Group_MoveItem(sFilename.getData(), fullfn, true))
+		if (!CppC4Group_TransferItem(sFilename.getData(), fullfn, true))
 		{
 			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_RENAMEFILE"), sFilename.getData(), fullfn);
 			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
@@ -616,23 +641,23 @@ bool C4ScenarioListLoader::Entry::RenameTo(const char *szNewName)
 	// update real name in group, if this is a group
 	if (C4Group_IsGroup(fullfn))
 	{
-		C4Group Grp;
-		if (!Grp.Open(fullfn))
+		CppC4Group group;
+		if (!group.openExisting(fullfn))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_OPENFILE"), sFilename.getData(), Grp.GetError());
+			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_OPENFILE"), sFilename.getData(), group.getErrorMessage().c_str());
 			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
-		if (!Grp.Delete(C4CFN_Title))
+		if (!group.deleteEntry(C4CFN_Title) && false)
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_DELOLDTITLE"), sFilename.getData(), Grp.GetError());
+			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_DELOLDTITLE"), sFilename.getData(), group.getErrorMessage().c_str());
 			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
-		if (!SetTitleInGroup(Grp, szNewName)) return false;
-		if (!Grp.Close())
+		if (!SetTitleInGroup(group, szNewName)) return false;
+		if (!group.save())
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_WRITENEWTITLE"), sFilename.getData(), Grp.GetError());
+			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_WRITENEWTITLE"), sFilename.getData(), group.getErrorMessage().c_str());
 			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
@@ -643,7 +668,7 @@ bool C4ScenarioListLoader::Entry::RenameTo(const char *szNewName)
 	return true;
 }
 
-bool C4ScenarioListLoader::Entry::SetTitleInGroup(C4Group &rGrp, const char *szNewTitle)
+bool C4ScenarioListLoader::Entry::SetTitleInGroup(CppC4Group &group, const char *szNewTitle)
 {
 	// default for group files: Create a title text file and set the title in there
 	// no title needed if filename is sufficient - except for scenarios, where a Scenario.txt could overwrite the title
@@ -657,9 +682,10 @@ bool C4ScenarioListLoader::Entry::SetTitleInGroup(C4Group &rGrp, const char *szN
 	}
 	// okay, make a title
 	StdStrBuf sTitle; sTitle.Format("%s:%s", Config.General.Language, szNewTitle);
-	if (!rGrp.Add(C4CFN_WriteTitle, sTitle, false, true))
+
+	if (!CppC4Group_Add(group, C4CFN_WriteTitle, std::move(sTitle)))
 	{
-		StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_ERRORADDINGNEWTITLEFORFIL"), sFilename.getData(), rGrp.GetError());
+		StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_ERRORADDINGNEWTITLEFORFIL"), sFilename.getData(), group.getErrorMessage().c_str());
 		Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr("IDS_FAIL_RENAME"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 		return false;
 	}
@@ -668,17 +694,15 @@ bool C4ScenarioListLoader::Entry::SetTitleInGroup(C4Group &rGrp, const char *szN
 
 // Scenario
 
-bool C4ScenarioListLoader::Scenario::LoadCustomPre(C4Group &rGrp)
+bool C4ScenarioListLoader::Scenario::LoadCustomPre(CppC4Group &group)
 {
 	// load scenario core first
-	StdStrBuf sFileContents;
-	if (!rGrp.LoadEntryString(C4CFN_ScenarioCore, sFileContents)) return false;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkParAdapt(C4S, false), sFileContents, (rGrp.GetFullName() + DirSep C4CFN_ScenarioCore).getData()))
-		return false;
-	return true;
+	StdStrBuf Buf;
+	return CppC4Group_LoadEntryString(group, C4CFN_ScenarioCore, Buf)
+		&& CompileFromBuf_LogWarn<StdCompilerINIRead>(mkParAdapt(C4S, false), Buf, (group.getFullName() + DirSep C4CFN_ScenarioCore).c_str());
 }
 
-bool C4ScenarioListLoader::Scenario::LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded)
+bool C4ScenarioListLoader::Scenario::LoadCustom(CppC4Group &group, bool fNameLoaded, bool fIconLoaded)
 {
 	// icon fallback: Standard scenario icon
 	if (!fIconLoaded)
@@ -876,7 +900,7 @@ void C4ScenarioListLoader::Folder::ClearChildren()
 	}
 }
 
-bool C4ScenarioListLoader::Folder::LoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf *psFilename, bool fLoadEx, bool fReload)
+bool C4ScenarioListLoader::Folder::LoadContents(C4ScenarioListLoader *pLoader, CppC4Group *fromGroup, const StdStrBuf *psFilename, bool fLoadEx, bool fReload)
 {
 	// contents already loaded?
 	if (fContentsLoaded && !fReload) return true;
@@ -885,7 +909,7 @@ bool C4ScenarioListLoader::Folder::LoadContents(C4ScenarioListLoader *pLoader, C
 	// if filename is not given, assume it's been loaded in this entry
 	if (!psFilename) psFilename = &this->sFilename; else this->sFilename.Ref(*psFilename);
 	// nothing loaded: Load now
-	if (!DoLoadContents(pLoader, pFromGrp, *psFilename, fLoadEx)) return false;
+	if (!DoLoadContents(pLoader, fromGroup, *psFilename, fLoadEx)) return false;
 	// sort loaded stuff by name
 	Sort();
 	return true;
@@ -911,19 +935,19 @@ StdStrBuf C4ScenarioListLoader::Folder::GetOpenTooltip()
 	return StdStrBuf(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
 }
 
-bool C4ScenarioListLoader::Folder::LoadCustomPre(C4Group &rGrp)
+bool C4ScenarioListLoader::Folder::LoadCustomPre(CppC4Group &group)
 {
 	// load folder core if available
-	StdStrBuf sFileContents;
-	if (rGrp.LoadEntryString(C4CFN_FolderCore, sFileContents))
-		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(C4F, sFileContents, (rGrp.GetFullName() + DirSep C4CFN_FolderCore).getData()))
-			return false;
+	if (StdStrBuf Buf; CppC4Group_LoadEntryString(group, C4CFN_FolderCore, Buf))
+	{
+		return CompileFromBuf_LogWarn<StdCompilerINIRead>(C4F, Buf, (group.getFullName() + DirSep C4CFN_FolderCore).c_str());
+	}
 	return true;
 }
 
 // SubFolder
 
-bool C4ScenarioListLoader::SubFolder::LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded)
+bool C4ScenarioListLoader::SubFolder::LoadCustom(CppC4Group &, bool, bool fIconLoaded)
 {
 	// default icon fallback
 	if (!fIconLoaded)
@@ -933,68 +957,80 @@ bool C4ScenarioListLoader::SubFolder::LoadCustom(C4Group &rGrp, bool fNameLoaded
 	return true;
 }
 
-bool C4ScenarioListLoader::SubFolder::DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx)
+bool C4ScenarioListLoader::SubFolder::DoLoadContents(C4ScenarioListLoader *pLoader, CppC4Group *fromGroup, const StdStrBuf &sFilename, bool fLoadEx)
 {
 	assert(pLoader);
 	// clear any previous
 	ClearChildren();
 	// group specified: Load as child
-	C4Group Group;
-	if (pFromGrp)
+	std::unique_ptr<CppC4Group> group;
+	if (fromGroup)
 	{
-		if (!Group.OpenAsChild(pFromGrp, sFilename.getData())) return false;
+		if (auto grp = fromGroup->openAsChild(sFilename.getData()); !grp)
+		{
+			return false;
+		}
+		else
+		{
+			group.reset(new CppC4Group{std::move(*grp)});
+		}
 	}
 	else
+	{
 		// no parent group: Direct load from filename
-		if (!Group.Open(sFilename.getData())) return false;
-	// get number of entries, to estimate progress
-	const char *szC4CFN_ScenarioFiles = C4CFN_ScenarioFiles; // assign values for constant comparison
-	const char *szSearchMask; int32_t iEntryCount = 0;
-	for (szSearchMask = szC4CFN_ScenarioFiles; szSearchMask;)
-	{
-		Group.ResetSearch();
-		while (Group.FindNextEntry(szSearchMask)) ++iEntryCount;
-		// next search mask
-		if (szSearchMask == szC4CFN_ScenarioFiles)
-			szSearchMask = C4CFN_FolderFiles;
-		else
-			szSearchMask = nullptr;
-	}
-	// initial progress estimate
-	if (!pLoader->DoProcessCallback(0, iEntryCount)) return false;
-	// iterate through group contents
-	char ChildFilename[_MAX_FNAME + 1]; StdStrBuf sChildFilename; int32_t iLoadCount = 0;
-	for (szSearchMask = szC4CFN_ScenarioFiles; szSearchMask;)
-	{
-		Group.ResetSearch();
-		while (Group.FindNextEntry(szSearchMask, ChildFilename))
+		group.reset(new CppC4Group);
+		if (!group->openExisting(sFilename.getData()))
 		{
-			sChildFilename.Ref(ChildFilename);
-			// okay; create this item
-			Entry *pNewEntry = Entry::CreateEntryForFile(sChildFilename, this);
-			if (pNewEntry)
-			{
-				// ...and load it
-				if (!pNewEntry->Load(&Group, &sChildFilename, fLoadEx))
-				{
-					DebugLogF("Error loading entry \"%s\" in SubFolder \"%s\"!", sChildFilename.getData(), Group.GetFullName().getData());
-					delete pNewEntry;
-				}
-			}
-			// mark progress
-			if (!pLoader->DoProcessCallback(++iLoadCount, iEntryCount)) return false;
+			return false;
 		}
-		// next search mask
-		if (szSearchMask == szC4CFN_ScenarioFiles)
-			szSearchMask = C4CFN_FolderFiles;
-		else
-			szSearchMask = nullptr;
 	}
+	// get number of entries, to estimate progress
+
+	size_t entryCount = 0;
+	CppC4Group_ForEachEntryByWildcard(*group, "", C4CFN_ScenarioFiles, [&entryCount](const auto &) { ++entryCount; return true; });
+	CppC4Group_ForEachEntryByWildcard(*group, "", C4CFN_FolderFiles, [&entryCount](const auto &) { ++entryCount; return true; });
+
+	// initial progress estimate
+	if (!pLoader->DoProcessCallback(0, entryCount)) return false;
+
+	size_t loadCount = 0;
+
+	struct Callback
+	{
+		CppC4Group *group;
+		const bool &loadEx;
+		size_t &loadCount;
+		size_t &entryCount;
+		C4ScenarioListLoader *loader;
+		C4ScenarioListLoader::SubFolder *that;
+
+		bool operator()(const CppC4Group::EntryInfo &info)
+		{
+			StdStrBuf fileName{info.fileName.c_str()};
+			auto *entry = Entry::CreateEntryForFile(fileName, that);
+			if (entry && !entry->Load(group, &fileName, loadEx))
+			{
+				DebugLogF("Error loading entry \"%s\" in SubFolder \"%s\"!", fileName.getData(), group->getFullName().c_str());
+				delete entry;
+			}
+			return true;
+			// mark progress
+			if (!loader->DoProcessCallback(++loadCount, entryCount)) return false;
+			return true;
+		}
+	};
+
+	Callback callback{group.get(), fLoadEx, loadCount, entryCount, pLoader, this};
+
+	// iterate through group contents
+	CppC4Group_ForEachEntryByWildcard(*group, "", C4CFN_ScenarioFiles, callback);
+	CppC4Group_ForEachEntryByWildcard(*group, "", C4CFN_FolderFiles, callback);
+
 	// load map folder data
-	if (Group.FindEntry(C4CFN_MapFolderData))
+	if (group->getEntryInfo(C4CFN_MapFolderData))
 	{
 		pMapData = new C4MapFolderData();
-		if (!pMapData->Load(Group, this))
+		if (!pMapData->Load(*group, this))
 		{
 			// load error :(
 			delete pMapData;
@@ -1008,7 +1044,7 @@ bool C4ScenarioListLoader::SubFolder::DoLoadContents(C4ScenarioListLoader *pLoad
 
 // RegularFolder
 
-bool C4ScenarioListLoader::RegularFolder::LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded)
+bool C4ScenarioListLoader::RegularFolder::LoadCustom(CppC4Group &, bool, bool fIconLoaded)
 {
 	// default icon fallback
 	if (!fIconLoaded)
@@ -1018,12 +1054,12 @@ bool C4ScenarioListLoader::RegularFolder::LoadCustom(C4Group &rGrp, bool fNameLo
 	return true;
 }
 
-bool C4ScenarioListLoader::RegularFolder::DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx)
+bool C4ScenarioListLoader::RegularFolder::DoLoadContents(C4ScenarioListLoader *pLoader, CppC4Group *fromGroup, const StdStrBuf &sFilename, bool fLoadEx)
 {
 	// clear any previous
 	ClearChildren();
 	// regular folders must exist and not be within group!
-	assert(!pFromGrp);
+	assert(!fromGroup);
 	if (!DirectoryExists(sFilename.getData())) return false;
 	DirectoryIterator DirIter(sFilename.getData());
 	const char *szChildFilename; StdStrBuf sChildFilename;
@@ -1111,7 +1147,7 @@ bool C4ScenarioListLoader::DoProcessCallback(int32_t iProgress, int32_t iMaxProg
 	auto checkTimer = false;
 	const auto now = timeGetTime();
 	// limit to real 10 FPS, as it may unnecessarily slow down loading a lot otherwise
-	if (lastCheckTimer == 0 || now - lastCheckTimer > 100)
+	if (true || lastCheckTimer == 0 || now - lastCheckTimer > 100)
 	{
 		checkTimer = true;
 		lastCheckTimer = now;
@@ -1713,12 +1749,11 @@ bool C4StartupScenSelDlg::KeyDelete()
 	bool fOriginal = false;
 	if (C4Group_IsGroup(pEnt->GetEntryFilename().getData()))
 	{
-		C4Group Grp;
-		if (Grp.Open(pEnt->GetEntryFilename().getData()))
+		CppC4Group group;
+		if (group.openExisting(pEnt->GetEntryFilename().getData()))
 		{
-			fOriginal = !!Grp.GetOriginal();
+			fOriginal = group.getEntryInfo("")->official;
 		}
-		Grp.Close();
 	}
 	sWarning.Format(LoadResStr(fOriginal ? "IDS_MSG_DELETEORIGINAL" : "IDS_MSG_PROMPTDELETE"), FormatString("%s %s", pEnt->GetTypeName().getData(), pEnt->GetName().getData()).getData());
 	GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(sWarning.getData(), LoadResStr("IDS_MNU_DELETE"),

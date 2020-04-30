@@ -108,11 +108,13 @@ bool C4Application::DoInit()
 	C4Group_SetTempPath(Config.General.TempPath);
 	C4Group_SetSortList(C4CFN_FLS);
 
+	CppC4Group::setEntryNameMatchingCallback(CppC4Group_EntryNameMatchingCallback);
+
 	// Open log
 	if (!OpenLog()) return false;
 
 	// init system group
-	if (!SystemGroup.Open(C4CFN_System))
+	if (!OpenSystemGroup())
 	{
 		// Error opening system group - no LogFatal, because it needs language table.
 		// This will *not* use the FatalErrors stack, but this will cause the game
@@ -252,7 +254,7 @@ void C4Application::Clear()
 	Game.Clear();
 	NextMission.Clear();
 	// close system group (System.c4g)
-	SystemGroup.Close();
+	//
 	// Close timers
 	C4Sec1TimerCallbackBase *pSec1Timer, *pNextSec1Timer = pSec1TimerCallback;
 	pSec1TimerCallback = nullptr;

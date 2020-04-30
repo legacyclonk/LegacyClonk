@@ -20,6 +20,8 @@
 
 #include <C4Id.h>
 
+#include "cppc4group.hpp"
+
 class C4ObjectInfoList
 {
 public:
@@ -27,7 +29,7 @@ public:
 	~C4ObjectInfoList();
 
 protected:
-	C4ObjectInfo *First;
+	class C4ObjectInfo *First;
 
 public:
 	int32_t iNumCreated; // number of new defs created during this round
@@ -37,10 +39,10 @@ public:
 	void Clear();
 	void Evaluate();
 	void DetachFromObjects();
-	int32_t Load(C4Group &hGroup, bool fLoadPortraits);
+	int32_t Load(CppC4Group &group, bool fLoadPortraits);
 	bool Add(C4ObjectInfo *pInfo);
-	bool Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny, C4DefList *pDefs);
-	C4ObjectInfo *New(C4ID n_id, C4DefList *pDefs, const char *cpNames);
+	bool Save(CppC4Group &group, bool fSavegame, bool fStoreTiny, C4DefList *pDefs);
+	C4ObjectInfo *New(C4ID n_id, class C4DefList *pDefs, const char *cpNames);
 	C4ObjectInfo *GetIdle(C4ID c_id, C4DefList &rDefs);
 	C4ObjectInfo *GetIdle(const char *szByName);
 	C4ObjectInfo *GetFirst() { return First; }
@@ -54,4 +56,5 @@ public:
 protected:
 	C4ObjectInfo *GetLast();
 	C4ObjectInfo *GetPrevious(C4ObjectInfo *pInfo);
+	void Load(CppC4Group &group, const bool &fLoadPortraits, size_t &infoCount, const CppC4Group::EntryInfo &info);
 };

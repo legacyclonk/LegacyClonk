@@ -198,8 +198,8 @@ public:
 	const char *GetNetResultString() const { return sNetResult.getData(); }
 	bool HasNetResult() const { return eNetResult != NR_None; }
 
-	bool Load(C4Group &hGroup, const char *szFilename = C4CFN_RoundResults);
-	bool Save(C4Group &hGroup, const char *szFilename = C4CFN_RoundResults);
+	bool Load(CppC4Group &group, const std::string &filePath = C4CFN_RoundResults);
+	bool Save(CppC4Group &group, const std::string &filePath = C4CFN_RoundResults);
 
 	const C4IDList &GetGoals() const { return Goals; }
 	const C4IDList &GetFulfilledGoals() const { return FulfilledGoals; }

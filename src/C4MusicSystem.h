@@ -37,7 +37,7 @@ public:
 	void Execute();
 	void NotifySuccess();
 	bool Init(const char *PlayList = nullptr);
-	bool InitForScenario(C4Group &hGroup);
+	bool InitForScenario(CppC4Group &group);
 	bool Play(const char *szSongname = nullptr, bool fLoop = false);
 	bool Stop();
 	void FadeOut(int fadeout_ms);
@@ -60,7 +60,7 @@ protected:
 	void LoadMoreMusic(); // load music file names from MoreMusic.txt
 	void ClearSongs();
 
-	bool GrpContainsMusic(C4Group &rGrp); // return whether this group contains music files
+	bool GrpContainsMusic(CppC4Group &group); // return whether this group contains music files
 
 	// FMod / SDL_mixer
 	bool MODInitialized;

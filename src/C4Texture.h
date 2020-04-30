@@ -25,14 +25,13 @@ class C4Texture
 	friend class C4TextureMap;
 
 public:
-	C4Texture();
+	C4Texture(const std::string &name, CSurface *surface32, CSurface8 *surface8);
 	~C4Texture();
 	CSurface *Surface32;
 	CSurface8 *Surface8;
 
 protected:
-	char Name[C4M_MaxName + 1];
-	C4Texture *Next;
+	std::string Name;
 };
 
 class C4TexMapEntry
@@ -68,7 +67,7 @@ public:
 
 protected:
 	C4TexMapEntry Entry[C4M_MaxTexIndex];
-	C4Texture *FirstTexture;
+	std::vector<C4Texture *> Textures;
 	bool fOverloadMaterials;
 	bool fOverloadTextures;
 	bool fInitialized; // Set after Init() - newly added entries initialized automatically
@@ -82,11 +81,11 @@ public:
 	void Default();
 	void Clear();
 	void StoreMapPalette(uint8_t *bypPalette, C4MaterialMap &rMaterials);
-	static bool LoadFlags(C4Group &hGroup, const char *szEntryName, bool *pOverloadMaterials, bool *pOverloadTextures);
-	int32_t LoadMap(C4Group &hGroup, const char *szEntryName, bool *pOverloadMaterials, bool *pOverloadTextures);
+	static bool LoadFlags(CppC4Group &group, const std::string &filePath, bool *pOverloadMaterials, bool *pOverloadTextures);
+	int32_t LoadMap(CppC4Group &group, const std::string &filePath, bool *pOverloadMaterials, bool *pOverloadTextures);
 	int32_t Init();
-	bool SaveMap(C4Group &hGroup, const char *szEntryName);
-	int32_t LoadTextures(C4Group &hGroup, C4Group *OverloadFile = 0);
+	bool SaveMap(CppC4Group &group, const std::string &filePath);
+	int32_t LoadTextures(CppC4Group &group, CppC4Group *OverloadFile = nullptr);
 	const char *GetTexture(int32_t iIndex);
 	void MoveIndex(uint8_t byOldIndex, uint8_t byNewIndex); // change index of texture
 	int32_t GetIndex(const char *szMaterial, const char *szTexture, bool fAddIfNotExist = true, const char *szErrorIfFailed = nullptr);

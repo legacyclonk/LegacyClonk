@@ -119,7 +119,7 @@ void C4Network2ResDlg::ListItem::LocalSaveResource(bool fDoOverwrite)
 			new C4GUI::CallbackHandler<C4Network2ResDlg::ListItem>(this, &C4Network2ResDlg::ListItem::OnButtonSaveConfirm), C4GUI::MessageDialog::btnYesNo));
 		return;
 	}
-	if (!C4Group_CopyItem(szResFile, szTarget))
+	if (!CppC4Group_TransferItem(szResFile, szTarget))
 		GetScreen()->ShowMessage(strErrCopyFile.getData(), strErrCopyFile.getData(), C4GUI::Ico_Error);
 	else
 	{

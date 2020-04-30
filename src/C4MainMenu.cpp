@@ -65,49 +65,61 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 	if (GfxR->fctPlayerClr.Surface)
 		GfxR->fctPlayerClr.Surface->SetClr(0xff);
 	InitRefSym(GfxR->fctPlayerClr, LoadResStr("IDS_MENU_NOPLRFILES"), iPlayer);
-	for (DirectoryIterator iter(Config.General.PlayerPath); *iter; ++iter)
-		if (WildcardMatch("*.c4p", *iter))
+
+	for (const auto &entry : std::filesystem::path{Config.General.PlayerPath})
+	{
+		if (std::filesystem::is_directory(entry) || !WildcardMatch("*.c4p", entry.filename().c_str()) || Game.Players.FileInUse(entry.filename().c_str()))
 		{
-			char szFilename[_MAX_PATH + 1], szCommand[_MAX_PATH + 30 + 1];
-			SCopy(*iter, szFilename, _MAX_PATH);
-			if (DirectoryExists(szFilename)) continue;
-			if (Game.Players.FileInUse(szFilename)) continue;
-			// Open group
-			C4Group hGroup;
-			if (!hGroup.Open(szFilename)) continue;
-			// Load player info
-			C4PlayerInfoCore C4P;
-			if (!C4P.Load(hGroup)) { hGroup.Close(); continue; }
-			// Load custom portrait
-			C4FacetExSurface fctPortrait;
-			if (Config.Graphics.ShowPortraits)
-				if (!fctPortrait.Load(hGroup, C4CFN_BigIcon, C4FCT_Full, C4FCT_Full, false, true))
-					if (!fctPortrait.Load(hGroup, C4CFN_Portrait, C4FCT_Full, C4FCT_Full, false, true))
-						fctPortrait.Load(hGroup, C4CFN_Portrait_Old, C4FCT_Full, C4FCT_Full, false, true);
-			// Close group
-			hGroup.Close();
-			// Add player item
-			sprintf(szCommand, "JoinPlayer:%s", szFilename);
-			StdStrBuf sItemText;
-			sItemText.Format(LoadResStr("IDS_MENU_NEWPLAYER"), C4P.PrefName);
-			// No custom portrait: use default player image
-			if (!fctPortrait.Surface)
-			{
-				fctPortrait.Create(C4SymbolSize, C4SymbolSize);
-				GfxR->fctPlayerClr.DrawClr(fctPortrait, true, 0xff);
-			}
-			// Create color overlay for portrait
-			C4FacetExSurface fctPortraitClr;
-			fctPortraitClr.CreateClrByOwner(fctPortrait.Surface);
-			// Create menu symbol from colored portrait
-			C4FacetExSurface fctSymbol;
-			fctSymbol.Create(C4SymbolSize, C4SymbolSize);
-			fctPortraitClr.DrawClr(fctSymbol, true, C4P.PrefColorDw);
-			// Add menu item
-			Add(sItemText.getData(), fctSymbol, szCommand);
-			// Reset symbol facet (menu holds on to the surface)
-			fctSymbol.Default();
+			continue;
 		}
+
+		CppC4Group group;
+		if (!group.openExisting(entry.generic_string()))
+		{
+			continue;
+		}
+
+		C4PlayerInfoCore C4P;
+		if (!C4P.Load(group))
+		{
+			continue;
+		}
+
+		C4FacetExSurface fctPortrait;
+		if (Config.Graphics.ShowPortraits)
+		{
+			if (!fctPortrait.Load(group, C4CFN_BigIcon, C4FCT_Full, C4FCT_Full, false, true))
+			{
+				if (!fctPortrait.Load(group, C4CFN_Portrait, C4FCT_Full, C4FCT_Full, false, true))
+				{
+					fctPortrait.Load(group, C4CFN_Portrait_Old, C4FCT_Full, C4FCT_Full, false, true);
+				}
+			}
+		}
+
+		std::string command{"JoinPlayer:"};
+		command.append(entry.filename());
+
+		StdStrBuf sItemText;
+		sItemText.Format(LoadResStr("IDS_MENU_NEWPLAYER"), C4P.PrefName);
+		// No custom portrait: use default player image
+		if (!fctPortrait.Surface)
+		{
+			fctPortrait.Create(C4SymbolSize, C4SymbolSize);
+			GfxR->fctPlayerClr.DrawClr(fctPortrait, true, 0xff);
+		}
+		// Create color overlay for portrait
+		C4FacetExSurface fctPortraitClr;
+		fctPortraitClr.CreateClrByOwner(fctPortrait.Surface);
+		// Create menu symbol from colored portrait
+		C4FacetExSurface fctSymbol;
+		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
+		fctPortraitClr.DrawClr(fctSymbol, true, C4P.PrefColorDw);
+		// Add menu item
+		Add(sItemText.getData(), fctSymbol, command.c_str());
+		// Reset symbol facet (menu holds on to the surface)
+		fctSymbol.Default();
+	}
 
 	// Alignment
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
@@ -422,13 +434,13 @@ bool C4MainMenu::ActivateSavegame(int32_t iPlayer)
 		if (Game.pParentGroup)
 		{
 			// owning folder determines filename
-			SCopy(GetFilenameOnly(Game.pParentGroup->GetName()), ScenName);
+			SCopy(GetFilenameOnly(Game.ScenarioFile->getName().c_str()), ScenName);
 		}
 		else
 		{
 			// no owning folder known: too bad
 			// make a vague guess based on the scenario title
-			SCopy(GetFilenameOnly(Game.ScenarioFilename), ScenName);
+			SCopy(GetFilenameOnly(Game.ScenarioFile->getName().c_str()), ScenName);
 		}
 	}
 	else

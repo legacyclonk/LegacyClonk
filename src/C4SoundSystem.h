@@ -61,8 +61,8 @@ public:
 
 public:
 	void Clear();
-	bool Load(const char *szFileName, C4Group &hGroup, bool fStatic);
-	bool Load(uint8_t *pData, size_t iDataLen, bool fStatic, bool fRaw = false); // load directly from memory
+	bool Load(class CppC4Group &group, const std::string &filePath, bool fStatic);
+	bool Load(const uint8_t *pData, size_t iDataLen, bool fStatic, bool fRaw = false); // load directly from memory
 	void Execute();
 	C4SoundInstance *New(bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = nullptr, int32_t iCustomFalloffDistance = 0);
 	C4SoundInstance *GetInstance(C4Object *pObj);
@@ -121,14 +121,14 @@ public:
 	~C4SoundSystem();
 	void Clear();
 	void Execute();
-	int32_t LoadEffects(C4Group &hGroup, bool fStatic = true);
+	int32_t LoadEffects(CppC4Group &group, bool fStatic = true);
 	C4SoundInstance *NewEffect(const char *szSound, bool fLoop = false, int32_t iVolume = 100, C4Object *pObj = nullptr, int32_t iCustomFalloffDistance = 0);
 	C4SoundInstance *FindInstance(const char *szSound, C4Object *pObj);
 	bool Init();
 	void ClearPointers(C4Object *pObj);
 
 protected:
-	C4Group SoundFile;
+	class CppC4Group *SoundFile = nullptr;
 	C4SoundEffect *FirstSound;
 	void ClearEffects();
 	C4SoundEffect *GetEffect(const char *szSound);

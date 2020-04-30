@@ -249,7 +249,7 @@ public:
 	int32_t                  getPresentPercent() const { return fLoading ? Chunks.getPresentPercent() : 100; }
 
 	bool SetByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName = nullptr, bool fSilent = false);
-	bool SetByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName = nullptr, bool fSilent = false);
+	bool SetByGroup(class CppC4Group &group, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName = nullptr, bool fSilent = false);
 	bool SetByCore(const C4Network2ResCore &nCore, bool fSilent = false, const char *szAsFilename = nullptr, int32_t iRecursion = 0);
 	bool SetLoad(const C4Network2ResCore &nCore);
 

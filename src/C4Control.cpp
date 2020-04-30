@@ -751,19 +751,20 @@ void C4ControlJoinPlayer::Strip()
 	if (PlrData.SaveToFile(PlayerFilename.getData()))
 	{
 		// open as group
-		C4Group Grp;
-		if (!Grp.Open(PlayerFilename.getData()))
+		CppC4Group group;
+		if (!group.openExisting(PlayerFilename.getData()))
 		{
 			EraseFile(PlayerFilename.getData()); return;
 		}
 		// remove portrais
-		Grp.Delete(C4CFN_Portraits, true);
+		group.deleteEntry(C4CFN_Portraits);
 		// remove bigicon, if the file size is too large
-		size_t iBigIconSize = 0;
-		if (Grp.FindEntry(C4CFN_BigIcon, nullptr, &iBigIconSize))
-			if (iBigIconSize > C4NetResMaxBigicon * 1024)
-				Grp.Delete(C4CFN_BigIcon);
-		Grp.Close();
+
+		if (auto info = group.getEntryInfo(C4CFN_BigIcon); info && info->size > C4NetResMaxBigicon * 1024)
+		{
+			group.deleteEntry(C4CFN_BigIcon);
+		}
+		group.save();
 		// Set new data
 		StdBuf NewPlrData;
 		if (!NewPlrData.LoadFromFile(PlayerFilename.getData()))
@@ -804,7 +805,7 @@ void C4ControlJoinPlayer::PreRec(C4Record *pRecord)
 		// create a copy of the resource
 		StdStrBuf szTemp; szTemp.Copy(pRes->getFile());
 		MakeTempFilename(&szTemp);
-		if (C4Group_CopyItem(pRes->getFile(), szTemp.getData()))
+		if (CppC4Group_TransferItem(pRes->getFile(), szTemp.getData()))
 		{
 			// add to record
 			StdStrBuf szTarget = FormatString("%d-%s", ResCore.getID(), GetFilename(ResCore.getFileName()));

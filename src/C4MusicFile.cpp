@@ -33,7 +33,7 @@ bool C4MusicFile::ExtractFile()
 	// safety
 	if (SongExtracted) return true;
 	// extract entry
-	if (!C4Group_CopyItem(FileName, Config.AtTempPath(C4CFN_TempMusic2))) return false;
+	if (!CppC4Group_TransferItem(FileName, Config.AtTempPath(C4CFN_TempMusic2))) return false;
 	// ok
 	SongExtracted = true;
 	return true;

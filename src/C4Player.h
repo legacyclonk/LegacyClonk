@@ -181,7 +181,7 @@ public:
 	bool ScenarioInit();
 	bool FinalInit(bool fInitialValue);
 	bool Save();
-	bool Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny);
+	bool Save(CppC4Group &group, bool fSavegame, bool fStoreTiny);
 	bool MakeCrewMember(C4Object *pObj, bool fForceInfo = true, bool fDoCalls = true);
 	bool Load(const char *szFilename, bool fSavegame, bool fLoadPortraits);
 	static bool Strip(const char *szFilename, bool fAggressive);
@@ -191,7 +191,7 @@ public:
 	bool DoWealth(int32_t change);
 	bool SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent = false);
 	void CompileFunc(StdCompiler *pComp);
-	bool LoadRuntimeData(C4Group &hGroup);
+	bool LoadRuntimeData();
 	bool ActivateMenuMain();
 	bool ActivateMenuTeamSelection(bool fFromMain);
 	void DoTeamSelection(int32_t idTeam);

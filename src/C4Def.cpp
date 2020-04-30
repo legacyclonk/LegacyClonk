@@ -221,16 +221,12 @@ void C4DefCore::Default()
 	NoTransferZones = 0;
 }
 
-bool C4DefCore::Load(C4Group &hGroup)
+bool C4DefCore::Load(CppC4Group &group)
 {
-	StdStrBuf Source;
-	if (hGroup.LoadEntryString(C4CFN_DefCore, Source))
+	if (StdStrBuf Data; CppC4Group_LoadEntryString(group, C4CFN_DefCore, Data))
 	{
-		StdStrBuf Name = hGroup.GetFullName() + (const StdStrBuf &)FormatString("%cDefCore.txt", DirectorySeparator);
-		if (!Compile(Source.getData(), Name.getData()))
+		if (!Compile(Data.getData(), (group.getFullName() + DirSep C4CFN_DefCore).c_str()))
 			return false;
-		Source.Clear();
-
 		// Adjust category: C4D_CrewMember by CrewMember flag
 		if (CrewMember) Category |= C4D_CrewMember;
 
@@ -244,14 +240,14 @@ bool C4DefCore::Load(C4Group &hGroup)
 		{
 			// special: Allow this for spells
 			if (~Category & C4D_Magic)
-				DebugLogF("WARNING: Def %s (%s) at %s has invalid category!", GetName(), C4IdText(id), hGroup.GetFullName().getData());
+				DebugLogF("WARNING: Def %s (%s) at %s has invalid category!", GetName(), C4IdText(id), group.getFullName().c_str());
 			// assign a default category here
 			Category = (Category & ~C4D_SortLimit) | 1;
 		}
 		// Check mass
 		if (Mass < 0)
 		{
-			DebugLogF("WARNING: Def %s (%s) at %s has invalid mass!", GetName(), C4IdText(id), hGroup.GetFullName().getData());
+			DebugLogF("WARNING: Def %s (%s) at %s has invalid mass!", GetName(), C4IdText(id), group.getFullName().c_str());
 			Mass = 0;
 		}
 #endif
@@ -535,7 +531,7 @@ void C4Def::Clear()
 	Desc.Clear();
 }
 
-bool C4Def::Load(C4Group &hGroup,
+bool C4Def::Load(CppC4Group &group,
 	uint32_t dwLoadWhat,
 	const char *szLanguage,
 	C4SoundSystem *pSoundSystem)
@@ -544,31 +540,34 @@ bool C4Def::Load(C4Group &hGroup,
 
 #ifdef C4ENGINE
 	bool AddFileMonitoring = false;
-	if (Game.pFileMonitor && !SEqual(hGroup.GetFullName().getData(), Filename) && !hGroup.IsPacked())
+	if (Game.pFileMonitor && group.getFullName() != Filename && !group.isPacked())
 		AddFileMonitoring = true;
 #endif
 
 	// Store filename, maker, creation
-	SCopy(hGroup.GetFullName().getData(), Filename);
-	SCopy(hGroup.GetMaker(), Maker, C4MaxName);
-	Creation = hGroup.GetCreation();
+	SCopy(group.getFullName().c_str(), Filename);
+
+	auto info = group.getEntryInfo("");
+
+	SCopy(info->author.c_str(), Maker, C4MaxName);
+	Creation = info->modified;
 
 #ifdef C4ENGINE
 	// Verbose log filename
 	if (Config.Graphics.VerboseObjectLoading >= 3)
-		Log(hGroup.GetFullName().getData());
+		Log(group.getFullName().c_str());
 
 	if (AddFileMonitoring) Game.pFileMonitor->AddDirectory(Filename);
 
 	// particle def?
-	if (hGroup.AccessEntry(C4CFN_ParticleCore))
+	if (auto data = group.getEntryData(C4CFN_ParticleCore); data)
 	{
 		// def loading not successful; abort after reading sounds
 		fSuccess = false;
 		// create new particle def
 		C4ParticleDef *pParticleDef = new C4ParticleDef();
 		// load it
-		if (!pParticleDef->Load(hGroup))
+		if (!pParticleDef->Load(group))
 		{
 			// not successful :( - destroy it again
 			delete pParticleDef;
@@ -579,13 +578,13 @@ bool C4Def::Load(C4Group &hGroup,
 #endif
 
 	// Read DefCore
-	if (fSuccess) fSuccess = C4DefCore::Load(hGroup);
+	if (fSuccess) fSuccess = C4DefCore::Load(group);
 	// check id
 	if (fSuccess) if (!LooksLikeID(id))
 	{
 #ifdef C4ENGINE
 		// wie geth ID?????ßßßß
-		if (!Name[0]) Name = GetFilename(hGroup.GetName());
+		if (!Name[0]) Name = GetFilename(group.getName().c_str());
 		LogF(LoadResStr("IDS_ERR_INVALIDID"), Name.getData());
 #endif
 		fSuccess = false;
@@ -605,7 +604,7 @@ bool C4Def::Load(C4Group &hGroup,
 		// Read sounds even if not a valid def (for pure c4d sound folders)
 		if (dwLoadWhat & C4D_Load_Sounds)
 			if (pSoundSystem)
-				pSoundSystem->LoadEffects(hGroup);
+				pSoundSystem->LoadEffects(group);
 #endif
 
 		return false;
@@ -614,63 +613,28 @@ bool C4Def::Load(C4Group &hGroup,
 #ifdef C4ENGINE
 	// Read surface bitmap
 	if (dwLoadWhat & C4D_Load_Bitmap)
-		if (!Graphics.LoadBitmaps(hGroup, !!ColorByOwner))
+		if (!Graphics.LoadBitmaps(group, !!ColorByOwner))
 		{
-			DebugLogF("  Error loading graphics of %s (%s)", hGroup.GetFullName().getData(), C4IdText(id));
+			DebugLogF("  Error loading graphics of %s (%s)", group.getFullName().c_str(), C4IdText(id));
 			return false;
 		}
 
 	// Read portraits
 	if (dwLoadWhat & C4D_Load_Bitmap)
-		if (!LoadPortraits(hGroup))
+		if (!LoadPortraits(group))
 		{
-			DebugLogF("  Error loading portrait graphics of %s (%s)", hGroup.GetFullName().getData(), C4IdText(id));
+			DebugLogF("  Error loading portrait graphics of %s (%s)", group.getFullName().c_str(), C4IdText(id));
 			return false;
 		}
 
 #endif
 
-#if !defined(C4ENGINE) && !defined(C4GROUP)
-
-	// Override PictureRect if PictureRectFE is given
-	if (PictureRectFE.Wdt > 0)
-		PictureRect = PictureRectFE;
-
-	// Read picture section (this option is currently unused...)
-	if (dwLoadWhat & C4D_Load_Picture)
-		// Load from PNG graphics
-		if (!hGroup.AccessEntry(C4CFN_DefGraphicsPNG)
-			|| !hGroup.ReadPNGSection(&Picture, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt))
-			// Load from BMP graphics
-			if (!hGroup.AccessEntry(C4CFN_DefGraphics)
-				|| !hGroup.ReadDDBSection(&Picture, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt))
-				// None loaded
-				return false;
-
-	// Read picture section for use in image list
-	if (dwLoadWhat & C4D_Load_Image)
-		// Load from PNG title
-		if (!hGroup.AccessEntry(C4CFN_ScenarioTitlePNG)
-			|| !hGroup.ReadPNGSection(&Image, nullptr, -1, -1, -1, -1, 32, 32))
-			// Load from BMP title
-			if (!hGroup.AccessEntry(C4CFN_ScenarioTitle)
-				|| !hGroup.ReadDDBSection(&Image, nullptr, -1, -1, -1, -1, 32, 32, true))
-				// Load from PNG graphics
-				if (!hGroup.AccessEntry(C4CFN_DefGraphicsPNG)
-					|| !hGroup.ReadPNGSection(&Image, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt, 32, 32))
-					// Load from BMP graphics
-					if (!hGroup.AccessEntry(C4CFN_DefGraphics)
-						|| !hGroup.ReadDDBSection(&Image, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt, 32, 32, true))
-						// None loaded
-						return false;
-#endif
-
 #ifdef C4ENGINE
 	// Read ActMap
 	if (dwLoadWhat & C4D_Load_ActMap)
-		if (!LoadActMap(hGroup))
+		if (!LoadActMap(group))
 		{
-			DebugLogF("  Error loading ActMap of %s (%s)", hGroup.GetFullName().getData(), C4IdText(id));
+			DebugLogF("  Error loading ActMap of %s (%s)", group.getFullName().c_str(), C4IdText(id));
 			return false;
 		}
 #endif
@@ -683,13 +647,13 @@ bool C4Def::Load(C4Group &hGroup,
 		Script.Reg2List(&Game.ScriptEngine, &Game.ScriptEngine);
 		// Load script - loads string table as well, because that must be done after script load
 		// for downwards compatibility with packing order
-		Script.Load("Script", hGroup, C4CFN_Script, szLanguage, this, &StringTable, true);
+		Script.Load("Script", group, C4CFN_Script, szLanguage, this, &StringTable, true);
 	}
 #endif
 
 	// Read name
 	C4ComponentHost DefNames;
-	if (DefNames.LoadEx("Names", hGroup, C4CFN_DefNames, szLanguage))
+	if (DefNames.LoadEx("Names", group, C4CFN_DefNames, szLanguage))
 		DefNames.GetLanguageString(szLanguage, Name);
 	DefNames.Close();
 
@@ -699,17 +663,14 @@ bool C4Def::Load(C4Group &hGroup,
 	{
 		// clear any previous
 		delete pClonkNames; pClonkNames = nullptr;
-		if (hGroup.FindEntry(C4CFN_ClonkNameFiles))
+
+		pClonkNames = new C4ComponentHost();
+		if (!pClonkNames->LoadEx(LoadResStr("IDS_CNS_NAMES"), group, C4CFN_ClonkNames, szLanguage))
 		{
-			// create new
-			pClonkNames = new C4ComponentHost();
-			if (!pClonkNames->LoadEx(LoadResStr("IDS_CNS_NAMES"), hGroup, C4CFN_ClonkNames, szLanguage))
-			{
-				delete pClonkNames; pClonkNames = nullptr;
-			}
-			else
-				fClonkNamesOwned = true;
+			delete pClonkNames; pClonkNames = nullptr;
 		}
+		else
+			fClonkNamesOwned = true;
 	}
 
 	// read clonkranks
@@ -717,18 +678,15 @@ bool C4Def::Load(C4Group &hGroup,
 	{
 		// clear any previous
 		delete pRankNames; pRankNames = nullptr;
-		if (hGroup.FindEntry(C4CFN_RankNameFiles))
+		// create new
+		pRankNames = new C4RankSystem();
+		// load from group
+		if (!pRankNames->Load(group, C4CFN_RankNames, 1000, szLanguage))
 		{
-			// create new
-			pRankNames = new C4RankSystem();
-			// load from group
-			if (!pRankNames->Load(hGroup, C4CFN_RankNames, 1000, szLanguage))
-			{
-				delete pRankNames; pRankNames = nullptr;
-			}
-			else
-				fRankNamesOwned = true;
+			delete pRankNames; pRankNames = nullptr;
 		}
+		else
+			fRankNamesOwned = true;
 	}
 
 	// read rankfaces
@@ -737,15 +695,15 @@ bool C4Def::Load(C4Group &hGroup,
 		// clear any previous
 		delete pRankSymbols; pRankSymbols = nullptr;
 		// load new: try png first
-		if (hGroup.AccessEntry(C4CFN_RankFacesPNG))
+		if (group.getEntryData(C4CFN_RankFacesPNG))
 		{
 			pRankSymbols = new C4FacetExSurface();
-			if (!pRankSymbols->GetFace().ReadPNG(hGroup)) { delete pRankSymbols; pRankSymbols = nullptr; }
+			if (!pRankSymbols->GetFace().ReadPNG(group, C4CFN_RankFacesPNG)) { delete pRankSymbols; pRankSymbols = nullptr; }
 		}
-		else if (hGroup.AccessEntry(C4CFN_RankFaces))
+		else if (group.getEntryData(C4CFN_RankFacesPNG))
 		{
 			pRankSymbols = new C4FacetExSurface();
-			if (!pRankSymbols->GetFace().Read(hGroup)) { delete pRankSymbols; pRankSymbols = nullptr; }
+			if (!pRankSymbols->GetFace().Read(group, C4CFN_RankFaces)) { delete pRankSymbols; pRankSymbols = nullptr; }
 		}
 		// set size
 		if (pRankSymbols)
@@ -770,7 +728,7 @@ bool C4Def::Load(C4Group &hGroup,
 	// Read desc
 	if (dwLoadWhat & C4D_Load_Desc)
 	{
-		Desc.LoadEx("Desc", hGroup, C4CFN_DefDesc, szLanguage);
+		Desc.LoadEx("Desc", group, C4CFN_DefDesc, szLanguage);
 		Desc.TrimSpaces();
 	}
 
@@ -779,7 +737,7 @@ bool C4Def::Load(C4Group &hGroup,
 	// Read sounds
 	if (dwLoadWhat & C4D_Load_Sounds)
 		if (pSoundSystem)
-			pSoundSystem->LoadEffects(hGroup);
+			pSoundSystem->LoadEffects(group);
 
 	// Bitmap post-load settings
 	if (Graphics.GetBitmap())
@@ -806,11 +764,10 @@ bool C4Def::Load(C4Group &hGroup,
 	return true;
 }
 
-bool C4Def::LoadActMap(C4Group &hGroup)
+bool C4Def::LoadActMap(CppC4Group &group)
 {
 	// New format
-	StdStrBuf Data;
-	if (hGroup.LoadEntryString(C4CFN_DefActMap, Data))
+	if (StdStrBuf Data; CppC4Group_LoadEntryString(group, C4CFN_DefActMap, Data))
 	{
 		// Get action count (hacky), create buffer
 		int actnum;
@@ -821,7 +778,7 @@ bool C4Def::LoadActMap(C4Group &hGroup)
 		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
 			mkNamingAdapt(mkArrayAdapt(ActMap, actnum), "Action"),
 			Data,
-			(hGroup.GetFullName() + DirSep C4CFN_DefActMap).getData()))
+			(group.getFullName() + DirSep C4CFN_DefActMap).c_str()))
 			return false;
 		ActNum = actnum;
 		// Process map
@@ -971,7 +928,8 @@ C4DefList::~C4DefList()
 	Clear();
 }
 
-int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
+int32_t C4DefList::Load(CppC4Group &group,
+	uint32_t dwLoadWhat,
 	const char *szLanguage,
 	C4SoundSystem *pSoundSystem,
 	bool fOverload,
@@ -979,28 +937,32 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 {
 	int32_t iResult = 0;
 	C4Def *nDef;
-	char szEntryname[_MAX_FNAME + 1];
-	C4Group hChild;
 	bool fPrimaryDef = false;
 	bool fThisSearchMessage = false;
 
+	std::filesystem::path name{group.getName()};
 	// This search message
 	if (fSearchMessage)
-		if (SEqualNoCase(GetExtension(hGroup.GetName()), "c4d")
-			|| SEqualNoCase(GetExtension(hGroup.GetName()), "c4s")
-			|| SEqualNoCase(GetExtension(hGroup.GetName()), "c4f"))
+	{
+		std::filesystem::path extension = name.extension();
+
+		if (SEqualNoCase(extension.c_str(), ".c4d")
+			|| SEqualNoCase(extension.c_str(), ".c4s")
+			|| SEqualNoCase(extension.c_str(), ".c4f"))
 		{
 			fThisSearchMessage = true;
 			fSearchMessage = false;
 		}
+	}
 
 #ifdef C4ENGINE // Message
-	if (fThisSearchMessage) { LogF("%s...", GetFilename(hGroup.GetName())); }
+	if (fThisSearchMessage) { LogF("%s...", name.filename().c_str()); }
 #endif
 
 	// Load primary definition
-	if (nDef = new C4Def)
-		if (nDef->Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem) && Add(nDef, fOverload))
+	if ((nDef = new C4Def))
+	{
+		if (nDef->Load(group, dwLoadWhat, szLanguage, pSoundSystem) && Add(nDef, fOverload))
 		{
 			iResult++; fPrimaryDef = true;
 		}
@@ -1008,42 +970,49 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 		{
 			delete nDef;
 		}
+	}
 
 	// Load sub definitions
 	int i = 0;
-	hGroup.ResetSearch();
-	while (hGroup.FindNextEntry(C4CFN_DefFiles, szEntryname))
-		if (hChild.OpenAsChild(&hGroup, szEntryname))
+	CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_DefFiles, [&, this](const auto &info)
+	{
+		if (auto grp = group.openAsChild(info.fileName); grp)
 		{
 			// Hack: Assume that there are sixteen sub definitions to avoid unnecessary I/O
 			int iSubMinProgress = std::min<int32_t>(iMaxProgress, iMinProgress + ((iMaxProgress - iMinProgress) * i) / 16);
 			int iSubMaxProgress = std::min<int32_t>(iMaxProgress, iMinProgress + ((iMaxProgress - iMinProgress) * (i + 1)) / 16);
+
 			++i;
-			iResult += Load(hChild, dwLoadWhat, szLanguage, pSoundSystem, fOverload, fSearchMessage, iSubMinProgress, iSubMaxProgress);
-			hChild.Close();
+			iResult += Load(*grp, dwLoadWhat, szLanguage, pSoundSystem, fOverload, fSearchMessage, iSubMinProgress, iSubMaxProgress);
 		}
+		return true;
+	});
 
 	// load additional system scripts for def groups only
 #ifdef C4ENGINE
-	C4Group SysGroup;
-	char fn[_MAX_FNAME + 1] = { 0 };
-	if (!fPrimaryDef && fLoadSysGroups) if (SysGroup.OpenAsChild(&hGroup, C4CFN_System))
+	if (!fPrimaryDef && fLoadSysGroups)
 	{
-		C4LangStringTable SysGroupString;
-		SysGroupString.LoadEx("StringTbl", SysGroup, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
-		// load all scripts in there
-		SysGroup.ResetSearch();
-		while (SysGroup.FindNextEntry(C4CFN_ScriptFiles, (char *)&fn, nullptr, nullptr, !!fn[0]))
+		if (auto grp = group.openAsChild(C4CFN_System); grp)
 		{
-			// host will be destroyed by script engine, so drop the references
-			C4ScriptHost *scr = new C4ScriptHost();
-			scr->Reg2List(&Game.ScriptEngine, &Game.ScriptEngine);
-			scr->Load(nullptr, SysGroup, fn, Config.General.LanguageEx, nullptr, &SysGroupString);
+			C4LangStringTable SysGroupString;
+			SysGroupString.LoadEx("StringTbl", *grp, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
+			// load all scripts in there
+
+			auto *g = new CppC4Group{std::move(*grp)};
+			CppC4Group_ForEachEntryByWildcard(*g, "", C4CFN_ScriptFiles, [g, &SysGroupString](const auto &info)
+			{
+				C4ScriptHost *scr = new C4ScriptHost();
+				scr->Reg2List(&Game.ScriptEngine, &Game.ScriptEngine);
+				scr->Load(nullptr, *g, info.fileName.c_str(), Config.General.LanguageEx, nullptr, &SysGroupString);
+				return true;
+			});
+
+			// if it's a physical group: watch out for changes
+			if (!g->isPacked() && Game.pFileMonitor)
+				Game.pFileMonitor->AddDirectory(g->getFullName().c_str());
+
+			delete g;
 		}
-		// if it's a physical group: watch out for changes
-		if (!SysGroup.IsPacked() && Game.pFileMonitor)
-			Game.pFileMonitor->AddDirectory(SysGroup.GetFullName().getData());
-		SysGroup.Close();
 	}
 #endif
 
@@ -1114,8 +1083,8 @@ int32_t C4DefList::Load(const char *szSearch,
 	}
 
 	// Load from specified file
-	C4Group hGroup;
-	if (!hGroup.Open(szSearch))
+	CppC4Group group{false};
+	if (!group.openExisting(szSearch))
 	{
 		// Specified file not found (failure)
 #ifdef C4ENGINE
@@ -1124,8 +1093,7 @@ int32_t C4DefList::Load(const char *szSearch,
 		LoadFailure = true;
 		return iResult;
 	}
-	iResult += Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem, fOverload, true, iMinProgress, iMaxProgress);
-	hGroup.Close();
+	iResult += Load(group, dwLoadWhat, szLanguage, pSoundSystem, fOverload, true, iMinProgress, iMaxProgress);
 
 #ifdef C4ENGINE
 	// progress (could go down one level of recursion...)
@@ -1360,13 +1328,18 @@ bool C4DefList::Reload(C4Def *pDef, uint32_t dwLoadWhat, const char *szLanguage,
 	// clear any pointers into def (name)
 	Game.Objects.ClearDefPointers(pDef);
 #endif
+	std::string filename{pDef->Filename};
+
 	// Clear def
 	pDef->Clear(); // Assume filename is being kept
 	// Reload def
-	C4Group hGroup;
-	if (!hGroup.Open(pDef->Filename)) return false;
-	if (!pDef->Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem)) return false;
-	hGroup.Close();
+
+	CppC4Group group;
+	if (!group.openAsChild(filename)) return false;
+	if (!pDef->Load(group, dwLoadWhat, szLanguage, pSoundSystem)) return false;
+
+	SCopy(filename.c_str(), pDef->Filename, _MAX_FNAME);
+
 	// rebuild quick access table
 	BuildTable();
 #ifdef C4ENGINE
@@ -1421,7 +1394,7 @@ void C4DefList::BuildTable()
 	SortByID();
 }
 
-bool C4Def::LoadPortraits(C4Group &hGroup)
+bool C4Def::LoadPortraits(CppC4Group &group)
 {
 #ifdef C4ENGINE
 	// reset any previous portraits

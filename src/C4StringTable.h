@@ -19,7 +19,6 @@
 #pragma once
 
 class C4StringTable;
-class C4Group;
 
 class C4String
 {
@@ -62,8 +61,8 @@ public:
 
 	int EnumStrings();
 
-	bool Load(C4Group &ParentGroup);
-	bool Save(C4Group &ParentGroup);
+	bool Load(class CppC4Group &parentGroup);
+	bool Save(class CppC4Group &parentGroup);
 
 	C4String *First, *Last; // string list
 };

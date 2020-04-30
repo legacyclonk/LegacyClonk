@@ -78,7 +78,7 @@ int iC4GroupRewindFilePtrNoWarn = 0;
 char C4Group_Maker[C4GroupMaxMaker + 1] = "";
 char C4Group_Passwords[CFG_MaxString + 1] = "";
 char C4Group_TempPath[_MAX_PATH + 1] = "";
-char C4Group_Ignore[_MAX_PATH + 1] = "cvs;Thumbs.db";
+constexpr std::array<std::string_view, 2> C4Group_Ignore{"cvs", "Thumbs.db"};
 const char **C4Group_SortList = nullptr;
 time_t C4Group_AssumeTimeOffset = 0;
 bool(*C4Group_ProcessCallback)(const char *, int) = nullptr;
@@ -110,203 +110,184 @@ const char *C4Group_GetTempPath()
 	return C4Group_TempPath;
 }
 
-bool C4Group_TestIgnore(const char *szFilename)
+bool C4Group_TestIgnore(const std::filesystem::path &fileName)
 {
-	return *GetFilename(szFilename) == '.' || SIsModule(C4Group_Ignore, GetFilename(szFilename));
+	return *fileName.filename().c_str() == '.' || std::find(C4Group_Ignore.cbegin(), C4Group_Ignore.cend(), fileName.filename());
 }
 
-bool C4Group_IsGroup(const char *szFilename)
+bool C4Group_IsGroup(const std::string &path)
 {
-	C4Group hGroup; if (hGroup.Open(szFilename)) { hGroup.Close(); return true; }
-	return false;
+	return CppC4Group{false}.openExisting(path);
 }
 
-bool C4Group_CopyItem(const char *szSource, const char *szTarget1, bool fNoSort, bool fResetAttributes)
+bool CppC4Group_TransferItem(const std::filesystem::path &source, std::filesystem::path target, bool deleteAfterMoving, bool resetAttributes)
 {
 	// Parameter check
-	char szTarget[_MAX_PATH + 1]; SCopy(szTarget1, szTarget, _MAX_PATH);
-	if (!szSource || !szTarget || !szSource[0] || !szTarget[0]) return false;
+	if (source.empty() || target.empty()) return false;
 
 	// Backslash terminator indicates target is a path only (append filename)
-	if (szTarget[SLen(szTarget) - 1] == DirectorySeparator) SAppend(GetFilename(szSource), szTarget);
+	if (!target.has_filename())
+	{
+		target /= source.filename();
+	}
+
+	std::error_code code;
 
 	// Check for identical source and target
-	// Note that attributes aren't reset here
-	if (ItemIdentical(szSource, szTarget)) return true;
+	if (std::filesystem::equivalent(source, target, code))
+	{
+		return true;
+	}
 
-	// Source and target are simple items
-	if (ItemExists(szSource) && CreateItem(szTarget)) return CopyItem(szSource, szTarget, fResetAttributes);
+	if (std::filesystem::is_regular_file(source) && CreateItem(target.c_str()))
+	{
+		std::filesystem::remove(target);
 
-	// For items within groups, attribute resetting isn't needed, because packing/unpacking will kill all
-	// attributes anyway
+		try
+		{
+			if (deleteAfterMoving)
+			{
+				std::filesystem::rename(source, target);
+			}
+			else
+			{
+				std::filesystem::copy_file(source, target);
+			}
+
+			if (resetAttributes)
+			{
+#ifdef _WIN32
+				if (!SetFileAttributes(target.c_str(), FILE_ATTRIBUTE_NORMAL)) return false;
+#else
+				if (chmod(target.c_str(), S_IRWXU)) return false;
+#endif
+			}
+
+			return true;
+		}
+
+		catch (const std::filesystem::filesystem_error &e)
+		{
+			return false;
+		}
+	}
 
 	// Source & target
-	C4Group hSourceParent, hTargetParent;
-	char szSourceParentPath[_MAX_PATH + 1], szTargetParentPath[_MAX_PATH + 1];
-	GetParentPath(szSource, szSourceParentPath); GetParentPath(szTarget, szTargetParentPath);
+	CppC4Group sourceParent;
+	CppC4Group targetParent;
+	std::filesystem::path sourceParentPath{source.parent_path()};
+	std::filesystem::path targetParentPath{target.parent_path()};
 
-	// Temp filename
-	char szTempFilename[_MAX_PATH + 1];
-	SCopy(C4Group_TempPath, szTempFilename, _MAX_PATH);
-	SAppend(GetFilename(szSource), szTempFilename);
-	MakeTempFilename(szTempFilename);
+	std::string tempFile = (std::filesystem::path{C4Group_TempPath} / source.filename()).generic_string();
+	MakeTempFilename(tempFile.data());
 
 	// Extract source to temp file
-	if (!hSourceParent.Open(szSourceParentPath)
-		|| !hSourceParent.Extract(GetFilename(szSource), szTempFilename)
-		|| !hSourceParent.Close()) return false;
+	if (!sourceParent.openExisting(sourceParentPath.generic_string())
+		|| !sourceParent.extractSingle(source.filename(), tempFile))
+	{
+		return false;
+	}
+
+	if (deleteAfterMoving)
+	{
+		if (!(sourceParent.deleteEntry(source.filename()) || !sourceParent.save()))
+		{
+			return false;
+		}
+	}
 
 	// Move temp file to target
-	if (!hTargetParent.Open(szTargetParentPath)
-		|| !hTargetParent.SetNoSort(fNoSort)
-		|| !hTargetParent.Move(szTempFilename, GetFilename(szTarget))
-		|| !hTargetParent.Close())
+	if (!targetParent.openExisting(targetParentPath)
+		/*|| !targetParent.SetNoSort(fNoSort)*/
+		|| !targetParent.addFromDisk(tempFile, target.filename())
+		|| !targetParent.save(true))
 	{
-		EraseItem(szTempFilename); return false;
+		std::error_code code;
+		std::filesystem::remove(tempFile, code);
+		return false;
 	}
 
 	return true;
 }
 
-bool C4Group_MoveItem(const char *szSource, const char *szTarget1, bool fNoSort)
+bool C4Group_DeleteItem(const std::filesystem::path &item, bool recycle)
 {
 	// Parameter check
-	char szTarget[_MAX_PATH + 1]; SCopy(szTarget1, szTarget, _MAX_PATH);
-	if (!szSource || !szTarget || !szSource[0] || !szTarget[0]) return false;
-
-	// Backslash terminator indicates target is a path only (append filename)
-	if (szTarget[SLen(szTarget) - 1] == DirectorySeparator) SAppend(GetFilename(szSource), szTarget);
-
-	// Check for identical source and target
-	if (ItemIdentical(szSource, szTarget)) return true;
-
-	// Source and target are simple items
-	if (ItemExists(szSource) && CreateItem(szTarget))
-	{
-		// erase test file, because it may block moving a directory
-		EraseItem(szTarget);
-		return MoveItem(szSource, szTarget);
-	}
-
-	// Source & target
-	C4Group hSourceParent, hTargetParent;
-	char szSourceParentPath[_MAX_PATH + 1], szTargetParentPath[_MAX_PATH + 1];
-	GetParentPath(szSource, szSourceParentPath); GetParentPath(szTarget, szTargetParentPath);
-
-	// Temp filename
-	char szTempFilename[_MAX_PATH + 1];
-	SCopy(C4Group_TempPath, szTempFilename, _MAX_PATH);
-	SAppend(GetFilename(szSource), szTempFilename);
-	MakeTempFilename(szTempFilename);
-
-	// Extract source to temp file
-	if (!hSourceParent.Open(szSourceParentPath)
-		|| !hSourceParent.Extract(GetFilename(szSource), szTempFilename)
-		|| !hSourceParent.Close()) return false;
-
-	// Move temp file to target
-	if (!hTargetParent.Open(szTargetParentPath)
-		|| !hTargetParent.SetNoSort(fNoSort)
-		|| !hTargetParent.Move(szTempFilename, GetFilename(szTarget))
-		|| !hTargetParent.Close())
-	{
-		EraseItem(szTempFilename); return false;
-	}
-
-	// Delete original file
-	if (!hSourceParent.Open(szSourceParentPath)
-		|| !hSourceParent.DeleteEntry(GetFilename(szSource))
-		|| !hSourceParent.Close()) return false;
-
-	return true;
-}
-
-bool C4Group_DeleteItem(const char *szItem, bool fRecycle)
-{
-	// Parameter check
-	if (!szItem || !szItem[0]) return false;
+	if (item.empty()) return false;
 
 	// simple item?
-	if (ItemExists(szItem))
+	if (std::filesystem::exists(item))
 	{
-		if (fRecycle)
-			return EraseItemSafe(szItem);
+		if (recycle)
+			return EraseItemSafe(item.c_str());
 		else
-			return EraseItem(szItem);
+			return EraseItem(item.c_str());
 	}
 
 	// delete from parent
-	C4Group hParent;
-	char szParentPath[_MAX_PATH + 1];
-	GetParentPath(szItem, szParentPath);
+	CppC4Group parent;
 
 	// Delete original file
-	if (!hParent.Open(szParentPath)
-		|| !hParent.DeleteEntry(GetFilename(szItem), fRecycle)
-		|| !hParent.Close()) return false;
+	if (!parent.openExisting(item.parent_path().generic_string()))
+	{
+		return false;
+	}
 
-	return true;
+	if (recycle)
+	{
+		std::string tempFile = std::filesystem::path{C4Group_TempPath} / item.filename();
+		MakeTempFilename(tempFile.data());
+
+		if (!parent.extractSingle(item.filename(), tempFile) || !EraseItemSafe(tempFile.c_str()))
+		{
+			return false;
+		}
+	}
+
+	return parent.deleteEntry(item.filename()) && parent.save(true);
 }
 
-bool C4Group_PackDirectoryTo(const char *szFilename, const char *szFilenameTo)
+bool C4Group_PackDirectoryTo(const std::filesystem::path &fileName, const std::filesystem::path &targetPath)
 {
 	// Check file type
-	if (!DirectoryExists(szFilename)) return false;
+	if (!std::filesystem::is_directory(fileName))
+	{
+		return false;
+	}
+
 	// Target mustn't exist
-	if (FileExists(szFilenameTo)) return false;
+	if (FileExists(targetPath.c_str())) return false;
+
 	// Ignore
-	if (C4Group_TestIgnore(szFilename))
+	if (C4Group_TestIgnore(fileName))
 		return true;
+
 	// Process message
 	if (C4Group_ProcessCallback)
-		C4Group_ProcessCallback(szFilename, 0);
+		C4Group_ProcessCallback(fileName.c_str(), 0);
+
 	// Create group file
-	C4Group hGroup;
-	if (!hGroup.Open(szFilenameTo, true))
+	CppC4Group group;
+	if (!CppC4Group_Open(group, fileName.generic_string(), true))
+	{
 		return false;
+	}
+
 	// Add folder contents to group
-	DirectoryIterator i(szFilename);
-	for (; *i; i++)
+	for (const auto &entry : std::filesystem::directory_iterator{fileName})
 	{
 		// Ignore
-		if (C4Group_TestIgnore(*i))
+		if (C4Group_TestIgnore(entry.path().c_str()))
 			continue;
-		// Must pack?
-		if (DirectoryExists(*i))
+
+		if (!group.addFromDisk(entry.path(), entry.path().filename()))
 		{
-			// Find temporary filename
-			char szTempFilename[_MAX_PATH + 1];
-			// At C4Group temp path
-			SCopy(C4Group_TempPath, szTempFilename, _MAX_PATH);
-			SAppend(GetFilename(*i), szTempFilename, _MAX_PATH);
-			// Make temporary filename
-			MakeTempFilename(szTempFilename);
-			// Pack and move into group
-			if (!C4Group_PackDirectoryTo(*i, szTempFilename)) break;
-			if (!hGroup.Move(szTempFilename, GetFilename(*i)))
-			{
-				EraseFile(szTempFilename);
-				break;
-			}
+			return false;
 		}
-		// Add normally otherwise
-		else if (!hGroup.Add(*i, nullptr))
-			break;
 	}
-	// Something went wrong?
-	if (*i)
-	{
-		// Close group and remove temporary file
-		hGroup.Close();
-		EraseItem(szFilenameTo);
-		return false;
-	}
-	// Reset iterator
-	i.Reset();
-	// Close group
-	hGroup.SortByList(C4Group_SortList, szFilename);
-	if (!hGroup.Close())
-		return false;
+
+	group.save();
+
 	// Done
 	return true;
 }
@@ -333,88 +314,91 @@ bool C4Group_PackDirectory(const char *szFilename)
 	return EraseDirectory(szTempFilename2);
 }
 
-bool C4Group_UnpackDirectory(const char *szFilename)
+bool C4Group_UnpackDirectory(const std::filesystem::path &fileName)
+{
+	return C4Group_ExplodeDirectory(fileName);
+}
+
+bool C4Group_ExplodeDirectory(const std::filesystem::path &fileName)
 {
 	// Already unpacked: success
-	if (DirectoryExists(szFilename)) return true;
+	if (std::filesystem::is_directory(fileName))
+	{
+		return true;
+	}
 
 	// Not a real file: unpack parent directory first
-	char szParentFilename[_MAX_PATH + 1];
-	if (!FileExists(szFilename))
-		if (GetParentPath(szFilename, szParentFilename))
-			if (!C4Group_UnpackDirectory(szParentFilename))
+	std::string parentFilename;
+
+	if (!std::filesystem::is_regular_file(fileName))
+	{
+		if (!(parentFilename = std::filesystem::path{fileName}.parent_path()).empty())
+		{
+			if (!C4Group_UnpackDirectory(parentFilename))
+			{
 				return false;
+			}
+		}
+	}
 
 	// Open group
-	C4Group hGroup;
-	if (!hGroup.Open(szFilename)) return false;
+	CppC4Group group;
+	if (!group.openExisting(fileName.generic_string())) return false;
 
 	// Process message
 	if (C4Group_ProcessCallback)
-		C4Group_ProcessCallback(szFilename, 0);
+		C4Group_ProcessCallback(fileName.c_str(), 0);
 
 	// Create target directory
 	char szFoldername[_MAX_PATH + 1];
-	SCopy(szFilename, szFoldername, _MAX_PATH);
+	SCopy(fileName.c_str(), szFoldername, _MAX_PATH);
 	MakeTempFilename(szFoldername);
-	if (!CreateDirectory(szFoldername, nullptr)) { hGroup.Close(); return false; }
 
-	// Extract files to folder
-	if (!hGroup.Extract("*", szFoldername)) { hGroup.Close(); return false; }
+	if (!std::filesystem::create_directory(szFoldername))
+	{
+		return false;
+	}
 
-	// Close group
-	hGroup.Close();
+	if (!group.extractAll(szFoldername))
+	{
+		return false;
+	}
 
 	// Rename group file
 	char szTempFilename[_MAX_PATH + 1];
-	SCopy(szFilename, szTempFilename, _MAX_PATH);
+	SCopy(fileName.c_str(), szTempFilename, _MAX_PATH);
 	MakeTempFilename(szTempFilename);
-	if (!RenameFile(szFilename, szTempFilename)) return false;
+	if (!RenameFile(fileName.c_str(), szTempFilename)) return false;
 
 	// Rename target directory
-	if (!RenameFile(szFoldername, szFilename)) return false;
+	if (!RenameFile(szFoldername, fileName.c_str())) return false;
 
 	// Delete renamed group file
 	return EraseItem(szTempFilename);
 }
 
-bool C4Group_ExplodeDirectory(const char *szFilename)
-{
-	// Ignore
-	if (C4Group_TestIgnore(szFilename)) return true;
-
-	// Unpack this directory
-	if (!C4Group_UnpackDirectory(szFilename)) return false;
-
-	// Explode all children
-	ForEachFile(szFilename, C4Group_ExplodeDirectory);
-
-	// Success
-	return true;
-}
-
 bool C4Group_ReadFile(const char *szFile, char **pData, size_t *iSize)
 {
-	// security
-	if (!szFile || !pData) return false;
-	// get mother path & file name
-	char szPath[_MAX_PATH + 1];
-	GetParentPath(szFile, szPath);
-	const char *pFileName = GetFilename(szFile);
-	// open mother group
-	C4Group MotherGroup;
-	if (!MotherGroup.Open(szPath)) return false;
-	// access the file
-	size_t iFileSize;
-	if (!MotherGroup.AccessEntry(pFileName, &iFileSize)) return false;
-	// create buffer
-	*pData = new char[iFileSize];
-	// read it
-	if (!MotherGroup.Read(*pData, iFileSize)) { delete[] *pData; *pData = nullptr; return false; }
-	// ok
-	MotherGroup.Close();
-	if (iSize) *iSize = iFileSize;
-	return true;
+	   // security
+	   if (!szFile || !pData) return false;
+	   // get mother path & file name
+	   char szPath[_MAX_PATH + 1];
+	   GetParentPath(szFile, szPath);
+	   const char *pFileName = GetFilename(szFile);
+	   // open mother group
+	   C4Group MotherGroup;
+	   if (!MotherGroup.Open(szPath)) return false;
+	   // access the file
+	   size_t iFileSize;
+	   if (!MotherGroup.AccessEntry(pFileName, &iFileSize)) return false;
+	   // create buffer
+	   *pData = new char[iFileSize];
+	   // read it
+	   if (!MotherGroup.Read(*pData, iFileSize)) { delete[] *pData; *pData = nullptr; return false; }
+	   // ok
+	   MotherGroup.Close();
+	   if (iSize) *iSize = iFileSize;
+	   return true;
 }
 
 bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32)
@@ -429,7 +413,7 @@ bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32)
 		// Expect file to be packed: Extract to temporary
 		SCopy(GetFilename(szFilename), szPath, _MAX_PATH);
 		MakeTempFilename(szPath);
-		if (!C4Group_CopyItem(szFilename, szPath)) return false;
+		if (!CppC4Group_TransferItem(szFilename, szPath)) return false;
 		fTemporary = true;
 	}
 	// open file
@@ -455,13 +439,12 @@ bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32)
 	return true;
 }
 
-bool C4Group_GetFileContentsCRC(const char *szFilename, uint32_t *pCRC32)
+bool C4Group_GetFileContentsCRC(std::string_view fileName, uint32_t *pCRC32)
 {
-	C4Group hGroup;
-	if (hGroup.Open(szFilename))
+	CppC4Group group;
+	if (group.openExisting(fileName.data()))
 	{
-		*pCRC32 = hGroup.EntryCRC32();
-		hGroup.Close();
+		*pCRC32 = group.getEntryInfo("")->crc;
 		return true;
 	}
 
@@ -480,7 +463,7 @@ bool C4Group_GetFileSHA1(const char *szFilename, uint8_t *pSHA1)
 		// Expect file to be packed: Extract to temporary
 		SCopy(GetFilename(szFilename), szPath, _MAX_PATH);
 		MakeTempFilename(szPath);
-		if (!C4Group_CopyItem(szFilename, szPath)) return false;
+		if (!CppC4Group_TransferItem(szFilename, szPath)) return false;
 		fTemporary = true;
 	}
 	// open file
@@ -519,6 +502,106 @@ void MemScramble(uint8_t *bypBuffer, int iSize)
 		bypBuffer[cnt] = bypBuffer[cnt + 2];
 		bypBuffer[cnt + 2] = temp;
 	}
+}
+
+void CppC4Group_ForEachEntryByWildcard(class CppC4Group &group, const std::string &path, const char *wildcard, const std::function<bool(const CppC4Group::EntryInfo &)> &function)
+{
+	if (auto infos = group.getEntryInfos(path); infos)
+	{
+		for (const auto &info : *infos)
+		{
+			if (WildcardMatch(wildcard, info.fileName.c_str()))
+			{
+				if (!function(info))
+				{
+					return;
+				}
+			}
+		}
+	}
+}
+
+bool CppC4Group_Add(class CppC4Group &group, const std::string &path, void *data, size_t size)
+{
+	if (!group.getEntryInfo(path) && !group.createFile(path))
+	{
+		return false;
+	}
+
+	if (!group.setEntryData(path, data, size, CppC4Group::MemoryManagement::Take))
+	{
+		::free(data);
+		return false;
+	}
+
+	return true;
+}
+
+bool CppC4Group_Add(class CppC4Group &group, const std::string &path, StdBuf &&buf)
+{
+	size_t size = buf.getSize();
+	return CppC4Group_Add(group, path, buf.GrabPointer(), size);
+}
+
+bool CppC4Group_Add(class CppC4Group &group, const std::string &path, StdStrBuf &&buf)
+{
+	size_t size = buf.getLength();
+	return CppC4Group_Add(group, path, buf.GrabPointer(), size);
+}
+
+bool CppC4Group_LoadEntryString(class CppC4Group &group, const std::string &path, StdStrBuf &buf)
+{
+	if (auto data = group.getEntryData(path); data && data->size)
+	{
+		buf.SetLength(data->size);
+		memcpy(buf.getMData(), data->data, data->size);
+
+		return true;
+	}
+	return false;
+}
+
+bool CppC4Group_LoadEntryString(class CppC4Group &group, const std::string &path, std::string &buf)
+{
+	if (auto data = group.getEntryData(path); data && data->size)
+	{
+		buf.resize(data->size);
+		memcpy(buf.data(), data->data, data->size);
+
+		return true;
+	}
+	return false;
+}
+
+bool CppC4Group_Open(class CppC4Group &group, const std::string &path, bool create)
+{
+	if (!ItemExists(path.c_str()))
+	{
+		if (create)
+		{
+			CppC4Group temp;
+			if (!(temp.create() && temp.setMaker(C4Group_Maker) && temp.saveAs(path, true)))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	return group.openExisting(path);
+}
+
+int CppC4Group_EntryNameMatchingCallback(const char *query, const char *name)
+{
+	if (WildcardMatch(query, name))
+	{
+		return 0;
+	}
+
+	return strcasecmp(query, name);
 }
 
 // C4Group

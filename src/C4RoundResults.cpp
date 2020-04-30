@@ -393,31 +393,37 @@ int32_t C4RoundResults::GetLeaguePerformance(int32_t idPlayer) const
 	return 0;
 }
 
-bool C4RoundResults::Load(C4Group &hGroup, const char *szFilename)
+bool C4RoundResults::Load(CppC4Group &group, const std::string &filePath)
 {
 	// clear previous
 	Clear();
 	// load file contents
 	StdStrBuf Buf;
-	if (!hGroup.LoadEntryString(szFilename, Buf)) return false;
-	// compile
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(*this, "RoundResults"), Buf, szFilename)) return false;
-	// done, success
-	return true;
+	return CppC4Group_LoadEntryString(group, filePath, Buf)
+			&& CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(*this, "RoundResults"), Buf, filePath.c_str());
 }
 
-bool C4RoundResults::Save(C4Group &hGroup, const char *szFilename)
+bool C4RoundResults::Save(CppC4Group &group, const std::string &filePath)
 {
-	// remove previous entry from group
-	hGroup.DeleteEntry(szFilename);
+	if (!group.getEntryInfo(filePath))
+	{
+		group.createFile(filePath);
+	}
 	// decompile
 	try
 	{
 		StdStrBuf Buf = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "RoundResults"));
 		// save it, if not empty
-		if (Buf.getLength())
-			if (!hGroup.Add(szFilename, Buf, false, true))
+		size_t size = Buf.getLength();
+		if (size)
+		{
+			char *pointer = Buf.GrabPointer();
+			if (!group.setEntryData(filePath, pointer, size, CppC4Group::MemoryManagement::Take))
+			{
+				free(pointer);
 				return false;
+			}
+		}
 	}
 	catch (StdCompiler::Exception *)
 	{

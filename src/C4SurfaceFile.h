@@ -21,7 +21,7 @@
 class CStdStream;
 class C4Surface;
 
-C4Surface *GroupReadSurface(CStdStream &hGroup, uint8_t *bpPalette = nullptr);
-CSurface8 *GroupReadSurface8(CStdStream &hGroup);
-C4Surface *GroupReadSurfacePNG(CStdStream &hGroup);
-CSurface8 *GroupReadSurfaceOwnPal8(CStdStream &hGroup);
+C4Surface *GroupReadSurface(CppC4Group &group, const std::string &path, uint8_t *bpPalette = nullptr);
+CSurface8 *GroupReadSurface8(CppC4Group &group, const std::string &path);
+C4Surface *GroupReadSurfacePNG(CppC4Group &group, const std::string &path);
+CSurface8 *GroupReadSurfaceOwnPal8(CppC4Group &group, const std::string &path);

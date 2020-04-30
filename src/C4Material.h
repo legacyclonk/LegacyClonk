@@ -129,7 +129,7 @@ public:
 
 public:
 	void Clear();
-	bool Load(C4Group &hGroup, const char *szEntryName);
+	bool Load(CppC4Group &group, const std::string &entryPath);
 	uint32_t GetDWordColor(int32_t iIndex); // get indexed material color as DWord
 	void CompileFunc(StdCompiler *pComp);
 };
@@ -182,10 +182,10 @@ public:
 public:
 	void Default();
 	void Clear();
-	int32_t Load(C4Group &hGroup, C4Group *OverloadFile = 0);
+	int32_t Load(CppC4Group &group, CppC4Group *OverloadFile = nullptr);
 	int32_t Get(const char *szMaterial);
-	bool SaveEnumeration(C4Group &hGroup);
-	bool LoadEnumeration(C4Group &hGroup);
+	bool SaveEnumeration(CppC4Group &group);
+	bool LoadEnumeration(CppC4Group &group);
 
 	C4MaterialReaction *GetReactionUnsafe(int32_t iPXSMat, int32_t iLandscapeMat)
 	{

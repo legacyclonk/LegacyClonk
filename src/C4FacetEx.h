@@ -85,7 +85,7 @@ public:
 	C4Surface &GetFace() { return Face; } // get internal face
 	bool CreateClrByOwner(CSurface *pBySurface);
 	bool EnsureSize(int iMinWdt, int iMinHgt);
-	bool Load(C4Group &hGroup, const char *szName, int iWdt = C4FCT_Full, int iHgt = C4FCT_Full, bool fOwnPal = false, bool fNoErrIfNotFound = false);
+	bool Load(class CppC4Group &group, const std::string &fileName, int iWdt = C4FCT_Full, int iHgt = C4FCT_Full, bool fOwnPal = false, bool fNoErrIfNotFound = false);
 
 	void GrabFrom(C4FacetExSurface &rSource)
 	{

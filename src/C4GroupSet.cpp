@@ -29,7 +29,9 @@
 #include <C4Components.h>
 #endif
 
-C4GroupSetNode::C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, C4Group &rGroup, bool fGrpOwned, int32_t id)
+#include <filesystem>
+
+C4GroupSetNode::C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, CppC4Group &group, bool fGrpOwned, int32_t id)
 {
 	// set parent
 	pParent = &rParent;
@@ -39,7 +41,7 @@ C4GroupSetNode::C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, C4Gro
 	else { pNext = pParent->pFirst; pParent->pFirst = this; }
 	if (pNext) pNext->pPrev = this; else pParent->pLast = this;
 	// set group
-	pGroup = &rGroup;
+	pGroup = &group;
 	this->fGrpOwned = fGrpOwned;
 	// set id
 	this->id = id;
@@ -47,8 +49,6 @@ C4GroupSetNode::C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, C4Gro
 
 C4GroupSetNode::~C4GroupSetNode()
 {
-	// remove group
-	if (fGrpOwned) delete pGroup;
 	// unlink from list
 	(pPrev ? pPrev->pNext : pParent->pFirst) = pNext;
 	(pNext ? pNext->pPrev : pParent->pLast) = pPrev;
@@ -83,7 +83,7 @@ C4GroupSet::~C4GroupSet()
 	Clear();
 }
 
-bool C4GroupSet::RegisterGroup(C4Group &rGroup, bool fOwnGrp, int32_t Priority, int32_t Contents, bool fCheckContent)
+bool C4GroupSet::RegisterGroup(CppC4Group &group, bool fOwnGrp, int32_t Priority, int32_t Contents, bool fCheckContent)
 {
 	// get node to sort in
 	// begin at back end and search for higher priority
@@ -91,9 +91,9 @@ bool C4GroupSet::RegisterGroup(C4Group &rGroup, bool fOwnGrp, int32_t Priority, 
 	for (pNode = pLast; pNode; pNode = pNode->pPrev)
 		if (pNode->Priority > Priority) break;
 	// create new node
-	C4GroupSetNode *pNewNode = new C4GroupSetNode(*this, pNode, rGroup, fOwnGrp, ++iIndex);
+	C4GroupSetNode *pNewNode = new C4GroupSetNode(*this, pNode, group, fOwnGrp, ++iIndex);
 	// check content
-	if (fCheckContent) Contents = CheckGroupContents(rGroup, Contents);
+	if (fCheckContent) Contents = CheckGroupContents(group, Contents);
 	// set priority and contents mask
 	pNewNode->Priority = Priority;
 	pNewNode->Contents = Contents;
@@ -101,31 +101,31 @@ bool C4GroupSet::RegisterGroup(C4Group &rGroup, bool fOwnGrp, int32_t Priority, 
 #if defined(C4ENGINE) && !defined(USE_CONSOLE)
 	// always add fonts directly
 	if (Contents & C4GSCnt_FontDefs)
-		Game.FontLoader.LoadDefs(rGroup, Config);
+		Game.FontLoader.LoadDefs(group, Config);
 	// success
 #endif
 
 	return true;
 }
 
-int32_t C4GroupSet::CheckGroupContents(C4Group &rGroup, int32_t Contents)
+int32_t C4GroupSet::CheckGroupContents(CppC4Group &group, int32_t Contents)
 {
 	// update mask
-	if (Contents & C4GSCnt_Graphics) if (!rGroup.FindEntry(C4CFN_Graphics)) Contents = Contents & ~C4GSCnt_Graphics;
+	if (Contents & C4GSCnt_Graphics) if (!group.getEntryInfo(C4CFN_Graphics)) Contents = Contents & ~C4GSCnt_Graphics;
 	if (Contents & C4GSCnt_Loaders)
 	{
-		if (!rGroup.FindEntry("Loader*.bmp")
-			&& !rGroup.FindEntry("Loader*.png")
-			&& !rGroup.FindEntry("Loader*.jpg")
-			&& !rGroup.FindEntry("Loader*.jpeg"))
+		if (!group.getEntryInfo("Loader*.bmp")
+			&& !group.getEntryInfo("Loader*.png")
+			&& !group.getEntryInfo("Loader*.jpg")
+			&& !group.getEntryInfo("Loader*.jpeg"))
 		{
 			Contents = Contents & ~C4GSCnt_Loaders;
 		}
 	}
-	if (Contents & C4GSCnt_Material) if (!rGroup.FindEntry(C4CFN_Material)) Contents = Contents & ~C4GSCnt_Material;
-	if (Contents & C4GSCnt_Music) if (!rGroup.FindEntry(C4CFN_Music)) Contents = Contents & ~C4GSCnt_Music;
-	if (Contents & C4GSCnt_Definitions) if (!rGroup.FindEntry(C4CFN_DefFiles)) Contents = Contents & ~C4GSCnt_Definitions;
-	if (Contents & C4GSCnt_FontDefs) if (!rGroup.FindEntry(C4CFN_FontFiles)) if (!rGroup.FindEntry(C4CFN_FontDefs)) Contents = Contents & ~C4GSCnt_FontDefs;
+	if (Contents & C4GSCnt_Material) if (!group.getEntryInfo(C4CFN_Material)) Contents = Contents & ~C4GSCnt_Material;
+	if (Contents & C4GSCnt_Music) if (!group.getEntryInfo(C4CFN_Music)) Contents = Contents & ~C4GSCnt_Music;
+	if (Contents & C4GSCnt_Definitions) if (!group.getEntryInfo(C4CFN_DefFiles)) Contents = Contents & ~C4GSCnt_Definitions;
+	if (Contents & C4GSCnt_FontDefs) if (!group.getEntryInfo( C4CFN_FontFiles)) if (!group.getEntryInfo(C4CFN_FontDefs)) Contents = Contents & ~C4GSCnt_FontDefs;
 	// return it
 	return Contents;
 }
@@ -135,29 +135,34 @@ bool C4GroupSet::RegisterGroups(C4GroupSet &rCopy, int32_t Contents, const char 
 	// get all groups of rCopy
 	int32_t Contents2;
 	for (C4GroupSetNode *pNode = rCopy.pFirst; pNode; pNode = pNode->pNext)
+	{
 		if (Contents2 = pNode->Contents & Contents)
+		{
 			if (pNode->id > iMaxSkipID)
+			{
 				if (!szFilename)
+				{
 					// add group but don't check the content again!
 					RegisterGroup(*pNode->pGroup, false, pNode->Priority, Contents2, false);
+				}
 				else
 				{
 					// if a filename is given, open the child group
-					C4Group *pGroup = new C4Group();
-					if (!pGroup->OpenAsChild(pNode->pGroup, szFilename))
+					if (auto group = pNode->pGroup->openAsChild(szFilename); group)
 					{
-						delete pGroup; continue;
+						// add the child group to the local list; contents equal Contents2
+						// but this flag is not likely to be used
+						RegisterGroup(*(new CppC4Group{std::move(*group)}), true, pNode->Priority, Contents2, false);
 					}
-					// add the child group to the local list; contents equal Contents2
-					// but this flag is not likely to be used
-					if (!RegisterGroup(*pGroup, true, pNode->Priority, Contents2, false))
-						delete pGroup;
 				}
+			}
+		}
+	}
 	// done, success
 	return true;
 }
 
-C4Group *C4GroupSet::FindGroup(int32_t Contents, C4Group *pAfter, bool fSamePrio)
+CppC4Group * C4GroupSet::FindGroup(int32_t Contents, CppC4Group *pAfter, bool fSamePrio)
 {
 	// get priority
 	int32_t iPriority = -1;
@@ -177,28 +182,36 @@ C4Group *C4GroupSet::FindGroup(int32_t Contents, C4Group *pAfter, bool fSamePrio
 	return nullptr;
 }
 
-C4Group *C4GroupSet::FindEntry(const char *szWildcard, int32_t *pPriority, int32_t *pID)
+std::tuple<CppC4Group *, std::string> C4GroupSet::FindEntry(const char *szWildcard, int32_t *pPriority, int32_t *pID)
 {
 	// find group that has this entry
 	for (C4GroupSetNode *pNode = pFirst; pNode; pNode = pNode->pNext)
-		if (pNode->pGroup->FindEntry(szWildcard))
+	{
+		auto infos = pNode->pGroup->getEntryInfos();
+		for (const auto &info : *infos)
 		{
-			// assign priority and ID, if ptrs is given
-			if (pPriority) *pPriority = pNode->Priority;
-			if (pID) *pID = pNode->id;
-			// return found group
-			return pNode->pGroup;
+			if (WildcardMatch(szWildcard, info.fileName.c_str()))
+			{
+				// assign priority and ID, if ptrs is given
+				if (pPriority) *pPriority = pNode->Priority;
+				if (pID) *pID = pNode->id;
+				// return found group
+				return {pNode->pGroup, info.fileName};
+			}
 		}
+
+	}
 	// nothing found
-	return nullptr;
+	return {};
 }
 
 bool C4GroupSet::LoadEntryString(const char *szEntryName, StdStrBuf &rBuf)
 {
 	// Load the entry from the first group that has it
-	C4Group *pGroup;
-	if (pGroup = FindEntry(szEntryName))
-		return pGroup->LoadEntryString(szEntryName, rBuf);
+	if (auto [group, fileName] = FindEntry(szEntryName); group)
+	{
+		return CppC4Group_LoadEntryString(*group, fileName, rBuf);
+	}
 	// Didn't find it
 	return false;
 }
@@ -219,7 +232,7 @@ bool C4GroupSet::CloseFolders()
 	return true;
 }
 
-C4Group *C4GroupSet::GetGroup(int32_t iIndex)
+CppC4Group *C4GroupSet::GetGroup(int32_t iIndex)
 {
 	// Invalid index
 	if (iIndex < 0)
@@ -235,86 +248,74 @@ C4Group *C4GroupSet::GetGroup(int32_t iIndex)
 }
 
 #ifdef C4ENGINE
-C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
+CppC4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 {
 	// the scenario filename may be a scenario or directly a group folder
-	C4Group *pParentGroup = nullptr; bool fParentC4F;
-	char szParentfolder[_MAX_PATH + 1];
+	CppC4Group *parentGroup = nullptr; bool fParentC4F;
+	char parentFolder[_MAX_PATH + 1];
+
 	if (SEqualNoCase(GetExtension(szScenFilename), "c4f"))
 	{
 		fParentC4F = true;
-		SCopy(szScenFilename, szParentfolder, _MAX_PATH);
+		SCopy(szScenFilename, parentFolder, _MAX_PATH);
 	}
 	else
 	{
-		GetParentPath(szScenFilename, szParentfolder);
-		fParentC4F = SEqualNoCase(GetExtension(szParentfolder), "c4f");
+		GetParentPath(szScenFilename, parentFolder);
+		fParentC4F = SEqualNoCase(GetExtension(parentFolder), "c4f");
 	}
+
 	if (fParentC4F)
 	{
-		// replace all (back)slashes with zero-fields
-		int32_t iOriginalLen = SLen(szParentfolder);
-		for (int32_t i = 0; i < iOriginalLen; ++i) if (szParentfolder[i] == DirectorySeparator || szParentfolder[i] == '/') szParentfolder[i] = 0;
+		std::filesystem::path parent{parentFolder};
+		std::vector<std::string> parts;
+
 		// trace back until the file extension is no more .c4f
-		int32_t iPos = iOriginalLen - 1;
-		while (iPos)
+		while (parent.extension() == ".c4f")
 		{
-			// ignore additional zero fields (double-backslashes)
-			while (iPos && !szParentfolder[iPos]) --iPos;
-			// break if end has been reached
-			if (!iPos) break;
-			// trace back until next zero field
-			while (iPos && szParentfolder[iPos]) --iPos;
-			// check extension of this folder
-			if (!SEqualNoCase(GetExtension(szParentfolder + iPos + 1), "c4f", 3)) break;
-			// continue
+			parts.emplace_back(parent.filename());
+			parent = parent.parent_path();
 		}
-		// trace backwards, putting the (back)slashes in place again
-		if (iPos)
+
+		size_t groupIndex = 0;
+
+		for (auto it = parts.rbegin(); it != parts.rend(); ++it)
 		{
-			szParentfolder[iPos + 1 + SLen(szParentfolder + iPos + 1)] = szParentfolder[iPos] = DirectorySeparator;
-			while (iPos--) if (!szParentfolder[iPos]) szParentfolder[iPos] = DirectorySeparator;
-			++iPos;
-		}
-		// trace forward again, opening all folders (iPos is 0 again)
-		int32_t iGroupIndex = 0;
-		while (iPos < iOriginalLen)
-		{
-			// ignore additional zero-fields
-			while (iPos < iOriginalLen && !szParentfolder[iPos]) ++iPos;
-			// break if end has been reached
-			if (iPos >= iOriginalLen) break;
-			// open this folder
-			C4Group *pGroup = new C4Group();
-			if (pParentGroup)
+			parent /= *it;
+
+			CppC4Group *group = nullptr;
+			if (parentGroup)
 			{
-				if (!pGroup->OpenAsChild(pParentGroup, szParentfolder + iPos))
+				if (auto grp = parentGroup->openAsChild(*it); !grp)
 				{
-					LogFatal(FormatString("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), szParentfolder + iPos).getData());
-					delete pGroup; return nullptr;
+					LogFatal(FormatString("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), parent.c_str()).getData());
+					return nullptr;
+				}
+				else
+				{
+					group = new CppC4Group{std::move(*grp)};
 				}
 			}
-			else if (!pGroup->Open(szParentfolder + iPos))
+			else if (!(group = new CppC4Group{false})->openExisting(parent))
 			{
-				LogFatal(FormatString("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), szParentfolder + iPos).getData());
-				delete pGroup; return nullptr;
+				LogFatal(FormatString("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), parent.c_str()).getData());
+				delete group;
+				return nullptr;
 			}
-			// set this group as new parent
-			pParentGroup = pGroup;
+
+			parentGroup = group;
+
 			// add to group set, if this is a true scenario folder
-			int32_t iContentsMask;
-			if (WildcardMatch(C4CFN_FolderFiles, pParentGroup->GetName()))
-				iContentsMask = C4GSCnt_Folder;
-			else
-				iContentsMask = C4GSCnt_Directory;
-			if (!RegisterGroup(*pParentGroup, true, C4GSPrio_Folder + iGroupIndex++, iContentsMask))
+			uint32_t contentsMask = WildcardMatch(C4CFN_FolderFiles, it->c_str()) ? C4GSCnt_Folder : C4GSCnt_Directory;
+			if (!RegisterGroup(*group, true, C4GSPrio_Folder + groupIndex++, contentsMask))
 			{
-				delete pParentGroup; LogFatal("RegGrp: internal error"); return nullptr;
+				CloseFolders();
+				LogFatal("RegGrp: internal error");
+				return nullptr;
 			}
-			// advance by file name length
-			iPos += SLen(szParentfolder + iPos);
 		}
 	}
-	return pParentGroup;
+
+	return parentGroup;
 }
 #endif

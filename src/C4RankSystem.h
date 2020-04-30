@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <string>
+
 class C4RankSystem
 {
 public:
@@ -40,7 +42,7 @@ public:
 	void Default();
 	void Clear();
 	int Init(const char *szRegister, const char *szDefRanks, int iRankBase);
-	bool Load(C4Group &hGroup, const char *szFilenames, int DefRankBase, const char *szLanguage); // init based on nk file in group
+	bool Load(class CppC4Group &group, const char *szFilenames, int DefRankBase, const char *szLanguage); // init based on nk file in group
 	int Experience(int iRank);
 	int RankByExperience(int iExp); // get rank by experience
 	StdStrBuf GetRankName(int iRank, bool fReturnLastIfOver);

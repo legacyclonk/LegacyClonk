@@ -23,6 +23,8 @@
 #include <C4Scenario.h>
 #include <C4Surface.h>
 
+#include <string>
+
 #define C4MC_SizeRes 100 // positions in percent
 #define C4MC_ZoomRes 100 // zoom resolution (-100 to +99)
 
@@ -352,7 +354,7 @@ public:
 
 	void Default(); // set default data
 	void Clear(); // clear any data
-	bool ReadFile(const char *szFilename, C4Group *pGrp); // read defs of file
+	bool ReadFile(CppC4Group &group, const std::string &filePath); // read defs of file
 	bool ReadScript(const char *szScript); // reads def directly from mem
 
 public:
@@ -421,7 +423,7 @@ public:
 
 	void Clear(); // clear stuff
 
-	void ParseFile(const char *szFilename, C4Group *pGrp); // load and parse file
+	void ParseFile(CppC4Group &group, const std::string &filePath); // load and parse file
 	void Parse(const char *szScript); // load and parse from mem
 
 	friend class C4MCParserErr;

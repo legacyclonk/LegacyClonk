@@ -37,7 +37,8 @@ private:
 	C4Scenario rC4S; // local scenario core copy
 
 protected:
-	C4Group *pSaveGroup; // group file written to
+	CppC4Group *saveGroup; // group file written to
+	std::string fileName;
 	bool fOwnGroup; // whether group file is owned
 
 	// if set, the game is saved at initial (pre-frame0) state
@@ -81,7 +82,7 @@ protected:
 	bool IsSynced() { return Sync >= SyncSynchronized; } // synchronized
 
 	// protected constructor
-	C4GameSave(bool fAInitial, SyncState ASync) : pSaveGroup(nullptr), fOwnGroup(false), fInitial(fAInitial), Sync(ASync) {}
+	C4GameSave(bool fAInitial, SyncState ASync) : saveGroup(nullptr), fOwnGroup(false), fInitial(fAInitial), Sync(ASync) {}
 
 protected:
 	// some desc writing helpers
@@ -97,7 +98,7 @@ protected:
 
 private:
 	// saving subcalls
-	bool SaveCreateGroup(const char *szFilename, C4Group &hUseGroup); // create/copy group at target filename
+	bool SaveCreateGroup(const char *szFilename, CppC4Group &group); // create/copy group at target filename
 	bool SaveCore(); // save C4S core
 	bool SaveScenarioSections(); // save scenario sections
 	bool SaveLandscape(); // save current landscape
@@ -107,11 +108,11 @@ public:
 	virtual ~C4GameSave() { Close(); } // dtor: close group
 
 	bool Save(const char *szFilename); // create group at filename and do actual saving; group is kept open until dtor or Close()-call!
-	bool Save(C4Group &hToGroup, bool fKeepGroup); // save game directly to target group
-	bool SaveDesc(C4Group &hToGroup); // save scenario desc to file
+	bool Save(CppC4Group &group, bool fKeepGroup); // save game directly to target group
+	bool SaveDesc(CppC4Group &group); // save scenario desc to file
 	bool Close(); // close scenario group
 
-	C4Group *GetGroup() { return pSaveGroup; } // get scenario saving group; only open between calls to Save() and Close()
+	CppC4Group *GetGroup() { return saveGroup; } // get scenario saving group; only open between calls to Save() and Close()
 };
 
 class C4GameSaveScenario : public C4GameSave

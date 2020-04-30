@@ -102,16 +102,16 @@ uint32_t C4PlayerInfoCore::GetPrefColorValue(int32_t iPrefColor)
 	return 0xAAAAAA;
 }
 
-bool C4PlayerInfoCore::Load(C4Group &hGroup)
+bool C4PlayerInfoCore::Load(CppC4Group &group)
 {
 	// New version
-	StdStrBuf Source;
-	if (hGroup.LoadEntryString(C4CFN_PlayerInfoCore, Source))
+	if (StdStrBuf Source; CppC4Group_LoadEntryString(group, C4CFN_PlayerInfoCore, Source))
 	{
 		// Compile
-		StdStrBuf GrpName = hGroup.GetFullName(); GrpName.Append(DirSep C4CFN_PlayerInfoCore);
-		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(*this, Source, GrpName.getData()))
+		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(*this, Source, C4CFN_PlayerInfoCore))
+		{
 			return false;
+		}
 		// Pref for AutoContextMenus is still undecided: default by player's control style
 		if (PrefAutoContextMenu == -1)
 			PrefAutoContextMenu = PrefControlStyle;
@@ -133,14 +133,20 @@ bool C4PlayerInfoCore::Load(C4Group &hGroup)
 	return false;
 }
 
-bool C4PlayerInfoCore::Save(C4Group &hGroup)
+bool C4PlayerInfoCore::Save(CppC4Group &group)
 {
-	StdStrBuf Source, Name = hGroup.GetFullName(); Name.Append(DirSep C4CFN_PlayerInfoCore);
-	if (!DecompileToBuf_Log<StdCompilerINIWrite>(*this, &Source, Name.getData()))
+	StdStrBuf Source;
+	if (!DecompileToBuf_Log<StdCompilerINIWrite>(*this, &Source, (std::string{PrefName} / C4CFN_PlayerInfoCore).c_str()))
+	{
 		return false;
-	if (!hGroup.Add(C4CFN_PlayerInfoCore, Source, false, true))
+	}
+
+	if (!CppC4Group_Add(group, C4CFN_PlayerInfoCore, std::move(Source)))
+	{
 		return false;
-	hGroup.Delete("C4Player.c4b");
+	}
+
+	group.deleteEntry("C4Player.c4b");
 	return true;
 }
 
@@ -504,14 +510,17 @@ bool C4ObjectInfoCore::GetNextRankInfo(C4RankSystem &rDefaultRanks, int32_t *piN
 	return iNextRankExp != C4RankSystem::EXP_NoPromotion;
 }
 
-bool C4ObjectInfoCore::Load(C4Group &hGroup)
+bool C4ObjectInfoCore::Load(CppC4Group &group)
 {
-	StdStrBuf Source;
-	return hGroup.LoadEntryString(C4CFN_ObjectInfoCore, Source) &&
-		Compile(Source.getData());
+	if (StdStrBuf Buf; CppC4Group_LoadEntryString(group, C4CFN_ObjectInfoCore, Buf))
+	{
+		return Compile(Buf.getData());
+	}
+
+	return false;
 }
 
-bool C4ObjectInfoCore::Save(C4Group &hGroup, C4DefList *pDefs)
+bool C4ObjectInfoCore::Save(CppC4Group &group, C4DefList *pDefs)
 {
 #ifdef C4ENGINE
 	// rank overload by def: Update any NextRank-stuff
@@ -520,18 +529,12 @@ bool C4ObjectInfoCore::Save(C4Group &hGroup, C4DefList *pDefs)
 	StdStrBuf Buf;
 	try
 	{
-		Buf.Take(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "ObjectInfo")));
+		return CppC4Group_Add(group, C4CFN_ObjectInfoCore, DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "ObjectInfo")));
 	}
 	catch(StdCompiler::Exception*)
 	{
 		return false;
 	}
-
-	if (!hGroup.Add(C4CFN_ObjectInfoCore, Buf, false, true))
-	{
-		return false;
-	}
-	return true;
 }
 
 void C4ObjectInfoCore::CompileFunc(StdCompiler *pComp)

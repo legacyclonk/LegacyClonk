@@ -62,11 +62,11 @@ bool C4GameControl::InitNetwork(C4Client *pLocal)
 	return true;
 }
 
-bool C4GameControl::InitReplay(C4Group &rGroup)
+bool C4GameControl::InitReplay(CppC4Group &group)
 {
 	// open replay
 	pPlayback = new C4Playback();
-	if (!pPlayback->Open(rGroup))
+	if (!pPlayback->Open(group))
 	{
 		LogFatal(LoadResStr("IDS_ERR_REPLAYREAD"));
 		delete pPlayback; pPlayback = nullptr;

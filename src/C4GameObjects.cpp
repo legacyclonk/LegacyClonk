@@ -531,20 +531,26 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 #endif
 }
 
-int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
+int C4GameObjects::Load(CppC4Group &group, bool fKeepInactive)
 {
 	// Load data component
-	StdStrBuf Source;
-	if (!hGroup.LoadEntryString(C4CFN_ScenarioObjects, Source))
+
+	if (auto data = group.getEntryData(C4CFN_ScenarioObjects); !data)
+	{
 		return 0;
+	}
+	else
+	{
+		StdStrBuf Source;
+		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
+			mkParAdapt(*this, false),
+			Source,
+			C4CFN_ScenarioObjects))
+			return 0;
+	}
 
 	// Compile
-	StdStrBuf Name = hGroup.GetFullName() + DirSep C4CFN_ScenarioObjects;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
-		mkParAdapt(*this, false),
-		Source,
-		Name.getData()))
-		return 0;
+
 
 	// Process objects
 	C4ObjectLink *cLnk;
@@ -675,14 +681,14 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 	return ObjectCount();
 }
 
-bool C4GameObjects::Save(C4Group &hGroup, bool fSaveGame, bool fSaveInactive)
+bool C4GameObjects::Save(CppC4Group &group, bool fSaveGame, bool fSaveInactive)
 {
 	// Save to temp file
 	char szFilename[_MAX_PATH + 1]; SCopy(Config.AtTempPath(C4CFN_ScenarioObjects), szFilename);
 	if (!Save(szFilename, fSaveGame, fSaveInactive)) return false;
 
 	// Move temp file to group
-	hGroup.Move(szFilename, nullptr); // check?
+	group.addFromDisk(szFilename, nullptr); // check?
 	// Success
 	return true;
 }

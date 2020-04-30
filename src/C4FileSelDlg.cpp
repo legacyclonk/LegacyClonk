@@ -443,18 +443,17 @@ void C4PortraitSelDlg::ListItem::Load()
 		// safety
 		fLoaded = false;
 		// load image file
-		C4Group SrcGrp;
+		CppC4Group sourceGroup;
 		StdStrBuf sParentPath;
 		GetParentPath(sFilename.getData(), &sParentPath);
 		bool fLoadError = true;
-		if (SrcGrp.Open(sParentPath.getData()))
-			if (fctLoadedImage.Load(SrcGrp, ::GetFilename(sFilename.getData())))
+		if (sourceGroup.openExisting(sParentPath.getData()))
+			if (fctLoadedImage.Load(sourceGroup, ::GetFilename(sFilename.getData())))
 			{
 				// image loaded. Can only be put into facet by main thread, because those operations aren't thread safe
 				fLoaded = true;
 				fLoadError = false;
 			}
-		SrcGrp.Close();
 		fError = fLoadError;
 	}
 }
@@ -618,19 +617,18 @@ bool C4PortraitSelDlg::SelectPortrait(C4GUI::Screen *pOnScreen, std::string &sel
 	if (!Config.General.UserPortraitsWritten)
 	{
 		Log("Copying default portraits to user path...");
-		C4Group hGroup;
-		if (hGroup.Open(Config.AtExePath(C4CFN_Graphics)))
+		CppC4Group group;
+		if (group.openExisting(Config.AtExePath(C4CFN_Graphics)))
 		{
-			hGroup.Extract("Portrait1.png", Config.AtUserPath("Clonk.png"));
-			hGroup.Extract("PortraitBandit.png", Config.AtUserPath("Bandit.png"));
-			hGroup.Extract("PortraitIndianChief.png", Config.AtUserPath("IndianChief.png"));
-			hGroup.Extract("PortraitKing.png", Config.AtUserPath("King.png"));
-			hGroup.Extract("PortraitKnight.png", Config.AtUserPath("Knight.png"));
-			hGroup.Extract("PortraitMage.png", Config.AtUserPath("Mage.png"));
-			hGroup.Extract("PortraitPiranha.png", Config.AtUserPath("Piranha.png"));
-			hGroup.Extract("PortraitSheriff.png", Config.AtUserPath("Sheriff.png"));
-			hGroup.Extract("PortraitWipf.png", Config.AtUserPath("Wipf.png"));
-			hGroup.Close();
+			group.extractSingle("Portrait1.png", Config.AtUserPath("Clonk.png"));
+			group.extractSingle("PortraitBandit.png", Config.AtUserPath("Bandit.png"));
+			group.extractSingle("PortraitIndianChief.png", Config.AtUserPath("IndianChief.png"));
+			group.extractSingle("PortraitKing.png", Config.AtUserPath("King.png"));
+			group.extractSingle("PortraitKnight.png", Config.AtUserPath("Knight.png"));
+			group.extractSingle("PortraitMage.png", Config.AtUserPath("Mage.png"));
+			group.extractSingle("PortraitPiranha.png", Config.AtUserPath("Piranha.png"));
+			group.extractSingle("PortraitSheriff.png", Config.AtUserPath("Sheriff.png"));
+			group.extractSingle("PortraitWipf.png", Config.AtUserPath("Wipf.png"));
 		}
 		Config.General.UserPortraitsWritten = true;
 	}

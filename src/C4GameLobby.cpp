@@ -72,8 +72,8 @@ void ScenDesc::Update()
 	pDescBox->ClearText(false);
 	if (pRes->isComplete())
 	{
-		C4Group ScenarioFile;
-		if (!ScenarioFile.Open(pRes->getFile()))
+		CppC4Group ScenarioFile;
+		if (!ScenarioFile.openExisting(pRes->getFile()))
 		{
 			pDescBox->AddTextLine("scenario file load error", &rTextFont, C4GUI_MessageFontClr, false, true);
 		}

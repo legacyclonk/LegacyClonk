@@ -56,8 +56,8 @@ public:
 	void Clear();
 	void Execute();
 	bool Create(int32_t x, int32_t y, bool fExecute = false);
-	bool Load(C4Group &hGroup);
-	bool Save(C4Group &hGroup);
+	bool Load(CppC4Group &group);
+	bool Save(CppC4Group &group);
 
 protected:
 	void Consolidate();

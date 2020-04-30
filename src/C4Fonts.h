@@ -19,9 +19,9 @@
 
 #pragma once
 
+#include <string>
 #include <vector>
 
-class C4Group;
 class C4GroupSet;
 class C4Config;
 class CStdFont;
@@ -58,7 +58,7 @@ public:
 	C4VectorFont() : pFont(nullptr), fIsTempFile(false), pNext(nullptr) { *FileName = 0; }
 	~C4VectorFont(); // dtor - releases font and deletes temp file
 
-	bool Init(C4Group &hGrp, const char *szFilename, C4Config &rCfg); // load font from group
+	bool Init(class CppC4Group &group, const std::string &filePath, C4Config &rCfg); // load font from group
 	bool Init(const char *szFacename, int32_t iSize, uint32_t dwWeight, const char *szCharSet); // load system font specified by face name
 
 	friend class C4FontLoader;
@@ -80,7 +80,7 @@ public:
 	~C4FontLoader() { Clear(); }
 
 	void Clear(); // clear loaded fonts
-	int32_t LoadDefs(C4Group &hGroup, C4Config &rCfg); // load font definitions from group file; return number of loaded font defs
+	int32_t LoadDefs(class CppC4Group &group, C4Config &rCfg); // load font definitions from group file; return number of loaded font defs
 	void AddVectorFont(C4VectorFont *pAddFont); // adds a new font to the list
 
 #ifdef C4ENGINE

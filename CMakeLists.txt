@@ -153,7 +153,7 @@ else ()
 	list(APPEND C4GROUP_SOURCES src/c4group_ng.cpp)
 endif ()
 add_executable(c4group ${C4GROUP_SOURCES})
-target_link_libraries(c4group standard)
+target_link_libraries(c4group standard cppc4group)
 
 # Add libstandard target
 
@@ -323,6 +323,11 @@ endif ()
 # Link zlib
 find_package(ZLIB REQUIRED)
 target_link_libraries(standard ZLIB::ZLIB)
+
+# Link cc4group
+add_subdirectory(src/cc4group EXCLUDE_FROM_ALL)
+include_directories(src/cc4group/src)
+target_link_libraries(standard cppc4group)
 
 # Define _DEBUG or NDEBUG depending on project configuration (Already defined by MSVC)
 if (NOT MSVC)

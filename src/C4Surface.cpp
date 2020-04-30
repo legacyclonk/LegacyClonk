@@ -29,15 +29,17 @@
 #include <StdPNG.h>
 #include <StdDDraw2.h>
 
+#include "cppc4group.hpp"
+
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
 
-bool C4Surface::LoadAny(C4Group &hGroup, const char *szName, bool fOwnPal, bool fNoErrIfNotFound)
+bool C4Surface::LoadAny(CppC4Group &group, const std::string &filePath, bool fOwnPal, bool fNoErrIfNotFound)
 {
 	// Entry name
-	char szFilename[_MAX_FNAME + 1];
-	SCopy(szName, szFilename, _MAX_FNAME);
+	char szFilename[_MAX_PATH + 1];
+	SCopy(filePath.c_str(), szFilename, _MAX_PATH);
 	char *szExt = GetExtension(szFilename);
 	if (!*szExt)
 	{
@@ -47,11 +49,11 @@ bool C4Surface::LoadAny(C4Group &hGroup, const char *szName, bool fOwnPal, bool 
 		while (szExt = extensions[i++])
 		{
 			EnforceExtension(szFilename, szExt);
-			if (hGroup.FindEntry(szFilename)) break;
+			if (group.getEntryInfo(szFilename)) break;
 		}
 	}
 	// Load surface
-	return Load(hGroup, szFilename, fOwnPal, fNoErrIfNotFound);
+	return Load(group, szFilename, fOwnPal, fNoErrIfNotFound);
 }
 
 bool C4Surface::LoadAny(C4GroupSet &hGroupset, const char *szName, bool fOwnPal, bool fNoErrIfNotFound)
@@ -60,7 +62,7 @@ bool C4Surface::LoadAny(C4GroupSet &hGroupset, const char *szName, bool fOwnPal,
 	char szFilename[_MAX_FNAME + 1];
 	SCopy(szName, szFilename, _MAX_FNAME);
 	char *szExt = GetExtension(szFilename);
-	C4Group *pGroup;
+	CppC4Group *pGroup = nullptr;
 	if (!*szExt)
 	{
 		// no extension: Default to extension that is found as file in group
@@ -69,7 +71,7 @@ bool C4Surface::LoadAny(C4GroupSet &hGroupset, const char *szName, bool fOwnPal,
 		while (szExt = extensions[i++])
 		{
 			EnforceExtension(szFilename, szExt);
-			pGroup = hGroupset.FindEntry(szFilename);
+			std::tie(pGroup, std::ignore) = hGroupset.FindEntry(szFilename);
 			if (pGroup) break;
 		}
 	}
@@ -78,43 +80,40 @@ bool C4Surface::LoadAny(C4GroupSet &hGroupset, const char *szName, bool fOwnPal,
 	return Load(*pGroup, szFilename, fOwnPal, fNoErrIfNotFound);
 }
 
-bool C4Surface::Load(C4Group &hGroup, const char *szFilename, bool fOwnPal, bool fNoErrIfNotFound)
+bool C4Surface::Load(CppC4Group &group, const std::string &filePath, bool fOwnPal, bool fNoErrIfNotFound)
 {
-	if (!hGroup.AccessEntry(szFilename))
+	if (!group.getEntryInfo(filePath))
 	{
 		// file not found
-		if (!fNoErrIfNotFound) LogF("%s: %s%c%s", LoadResStr("IDS_PRC_FILENOTFOUND"), hGroup.GetFullName().getData(), (char)DirectorySeparator, szFilename);
+		if (!fNoErrIfNotFound) LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), filePath.c_str());
 		return false;
 	}
 	// determine file type by file extension and load accordingly
 	bool fSuccess;
-	if (SEqualNoCase(GetExtension(szFilename), "png"))
-		fSuccess = !!ReadPNG(hGroup);
-	else if (SEqualNoCase(GetExtension(szFilename), "jpeg")
-		|| SEqualNoCase(GetExtension(szFilename), "jpg"))
-		fSuccess = ReadJPEG(hGroup);
+	if (SEqualNoCase(GetExtension(filePath.c_str()), "png"))
+		fSuccess = !!ReadPNG(group, filePath);
+	else if (SEqualNoCase(GetExtension(filePath.c_str()), "jpeg")
+		|| SEqualNoCase(GetExtension(filePath.c_str()), "jpg"))
+		fSuccess = ReadJPEG(group, filePath);
 	else
-		fSuccess = !!Read(hGroup, fOwnPal);
+		fSuccess = !!Read(group, filePath, fOwnPal);
 	// loading error? log!
 	if (!fSuccess)
-		LogF("%s: %s%c%s", LoadResStr("IDS_ERR_NOFILE"), hGroup.GetFullName().getData(), (char)DirectorySeparator, szFilename);
+		LogF("%s: %s", LoadResStr("IDS_ERR_NOFILE"), filePath.c_str());
 	// done, success
 	return fSuccess;
 }
 
-bool C4Surface::ReadPNG(CStdStream &hGroup)
+bool C4Surface::ReadPNG(CppC4Group &group, const std::string &filePath)
 {
-	// create mem block
-	int iSize = hGroup.AccessedEntrySize();
-	std::unique_ptr<uint8_t[]> pData(new uint8_t[iSize]);
-	// load file into mem
-	hGroup.Read(pData.get(), iSize);
+	auto data = group.getEntryData(filePath);
+
 	// load as png file
 	std::unique_ptr<StdBitmap> bmp;
 	std::uint32_t width, height; bool useAlpha;
 	try
 	{
-		CPNGFile png(pData.get(), iSize);
+		CPNGFile png{data->data, data->size};
 		width = png.Width(); height = png.Height(), useAlpha = png.UsesAlpha();
 		bmp.reset(new StdBitmap(width, height, useAlpha));
 		png.Decode(bmp->GetBytes());
@@ -124,8 +123,6 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 		LogF("Could not create surface from PNG file: %s", e.what());
 		bmp.reset();
 	}
-	// free file data
-	pData.reset();
 	// abort if loading wasn't successful
 	if (!bmp) return false;
 	// create surface(s) - do not create an 8bit-buffer!
@@ -184,17 +181,17 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 	return true;
 }
 
-bool C4Surface::SavePNG(C4Group &hGroup, const char *szFilename, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly)
+bool C4Surface::SavePNG(CppC4Group &group, const std::string &filePath, bool fSaveAlpha, bool fApplyGamma, bool fSaveOverlayOnly)
 {
 	// Using temporary file at C4Group temp path
 	char szTemp[_MAX_PATH + 1];
 	SCopy(C4Group_GetTempPath(), szTemp);
-	SAppend(GetFilename(szFilename), szTemp);
+	SAppend(GetFilename(filePath.c_str()), szTemp);
 	MakeTempFilename(szTemp);
 	// Save to temporary file
 	if (!CSurface::SavePNG(szTemp, fSaveAlpha, fApplyGamma, fSaveOverlayOnly)) return false;
 	// Move temp file to group
-	if (!hGroup.Move(szTemp, GetFilename(szFilename))) return false;
+	if (!group.addFromDisk(szTemp, filePath)) return false;
 	// Success
 	return true;
 }
@@ -216,18 +213,13 @@ bool C4Surface::Copy(C4Surface &fromSfc)
 	return true;
 }
 
-bool C4Surface::ReadJPEG(CStdStream &hGroup)
+bool C4Surface::ReadJPEG(CppC4Group &group, const std::string &filePath)
 {
-	// create mem block
-	size_t size = hGroup.AccessedEntrySize();
-	unsigned char *pData = new unsigned char[size];
-	// load file into mem
-	hGroup.Read(pData, size);
-
+	auto data = group.getEntryData(filePath);
 	bool locked = false;
 	try
 	{
-		StdJpeg jpeg(pData, size);
+		StdJpeg jpeg(data->data, data->size);
 		const std::uint32_t width = jpeg.Width(), height = jpeg.Height();
 
 		// create surface(s) - do not create an 8bit-buffer!
@@ -256,8 +248,6 @@ bool C4Surface::ReadJPEG(CStdStream &hGroup)
 
 	// unlock
 	if (locked) Unlock();
-	// free data
-	delete[] pData;
 	// return if successful
 	return true;
 }

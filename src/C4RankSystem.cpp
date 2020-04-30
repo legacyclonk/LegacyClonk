@@ -90,14 +90,14 @@ int C4RankSystem::Init(const char *szRegister,
 #endif
 }
 
-bool C4RankSystem::Load(C4Group &hGroup, const char *szFilenames, int DefRankBase, const char *szLanguage)
+bool C4RankSystem::Load(CppC4Group &group, const char *szFilenames, int DefRankBase, const char *szLanguage)
 {
 	// clear any loaded rank names
 	Clear();
 	assert(szFilenames); assert(szLanguage);
 	// load new
 	C4ComponentHost Ranks;
-	if (!Ranks.LoadEx("Ranks", hGroup, szFilenames, szLanguage)) return false;
+	if (!Ranks.LoadEx("Ranks", group, szFilenames, szLanguage)) return false;
 	size_t iSize = Ranks.GetDataSize();
 	if (!iSize) return false;
 	szRankNames = new char[iSize + 1];

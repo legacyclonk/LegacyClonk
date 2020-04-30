@@ -22,43 +22,43 @@
 #include <C4Surface.h>
 #include <C4Group.h>
 
-C4Surface *GroupReadSurface(CStdStream &hGroup, uint8_t *bpPalette)
+C4Surface *GroupReadSurface(CppC4Group &group, const std::string &path, uint8_t *bpPalette)
 {
 	// create surface
 	C4Surface *pSfc = new C4Surface();
-	if (!pSfc->Read(hGroup, !!bpPalette))
+	if (!pSfc->Read(group, path, !!bpPalette))
 	{
 		delete pSfc; return nullptr;
 	}
 	return pSfc;
 }
 
-CSurface8 *GroupReadSurface8(CStdStream &hGroup)
+CSurface8 *GroupReadSurface8(CppC4Group &group, const std::string &path)
 {
 	// create surface
 	CSurface8 *pSfc = new CSurface8();
-	if (!pSfc->Read(hGroup, false))
+	if (!pSfc->Read(group, path, false))
 	{
 		delete pSfc; return nullptr;
 	}
 	return pSfc;
 }
 
-CSurface8 *GroupReadSurfaceOwnPal8(CStdStream &hGroup)
+CSurface8 *GroupReadSurfaceOwnPal8(CppC4Group &group, const std::string &path)
 {
 	// create surface
 	CSurface8 *pSfc = new CSurface8();
-	if (!pSfc->Read(hGroup, true))
+	if (!pSfc->Read(group, path, true))
 	{
 		delete pSfc; return nullptr;
 	}
 	return pSfc;
 }
 
-C4Surface *GroupReadSurfacePNG(CStdStream &hGroup)
+C4Surface *GroupReadSurfacePNG(CppC4Group &group, const std::string &path)
 {
 	// create surface
 	C4Surface *pSfc = new C4Surface();
-	pSfc->ReadPNG(hGroup);
+	pSfc->ReadPNG(group, path);
 	return pSfc;
 }

@@ -53,13 +53,15 @@ public:
 	void Retire();
 	void Recruit();
 	void Draw(C4Facet &cgo, bool fShowPortrait, bool fShowCaptain, C4Object *pOfObj);
-	bool Save(C4Group &hGroup, bool fStoreTiny, C4DefList *pDefs);
-	bool Load(C4Group &hGroup, bool fLoadPortrait);
-	bool Load(C4Group &hMother, const char *szEntryname, bool fLoadPortrait);
+	bool Save(CppC4Group &group, bool fStoreTiny, C4DefList *pDefs);
+	bool Load(CppC4Group &mother, const char *szEntryname, bool fLoadPortrait);
 #ifdef C4ENGINE
 	bool SetRandomPortrait(C4ID idSourceDef, bool fAssignPermanently, bool fCopyFile);
 	bool SetPortrait(const char *szPortraitName, C4Def *pSourceDef, bool fAssignPermanently, bool fCopyFile);
 	bool SetPortrait(C4PortraitGraphics *pNewPortraitGfx, bool fAssignPermanently, bool fCopyFile);
 	bool ClearPortrait(bool fPermanently);
 #endif
+
+protected:
+	bool LoadChild(CppC4Group &group, const std::string &entryName, bool fLoadPortrait);
 };

@@ -141,7 +141,7 @@ bool CStdApp::Init(int argc, char *argv[])
 	if (dir[0] != '/')
 	{
 		SInsert(dir, "/");
-		SInsert(dir, GetWorkingDirectory());
+		SInsert(dir, std::filesystem::current_path().c_str());
 		Location = dir;
 	}
 	else

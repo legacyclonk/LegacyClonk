@@ -43,20 +43,20 @@ void C4ScriptHost::Clear()
 	pStringTable = nullptr;
 }
 
-bool C4ScriptHost::Load(const char *szName, C4Group &hGroup, const char *szFilename,
+bool C4ScriptHost::Load(const char *szName, CppC4Group &group, const char *szFilename,
 	const char *szLanguage, C4Def *pDef, class C4LangStringTable *pLocalTable, bool fLoadTable)
 {
 	// Set definition and id
 	Def = pDef; idDef = Def ? Def->id : 0;
 	// Base load
-	bool fSuccess = C4ComponentHost::LoadAppend(szName, hGroup, szFilename, szLanguage);
+	bool fSuccess = C4ComponentHost::LoadAppend(szName, group, szFilename, szLanguage);
 	// String Table
 	pStringTable = pLocalTable;
 	// load it if specified
 	if (pStringTable && fLoadTable)
-		pStringTable->LoadEx("StringTbl", hGroup, C4CFN_ScriptStringTbl, szLanguage);
+		pStringTable->LoadEx("StringTbl", group, C4CFN_ScriptStringTbl, szLanguage);
 	// set name
-	ScriptName.Format("%s" DirSep "%s", hGroup.GetFullName().getData(), Filename);
+	ScriptName.Copy((group.getFullName() + DirSep + Filename).c_str());
 	// preparse script
 #ifdef C4ENGINE
 	MakeScript();
@@ -152,10 +152,11 @@ bool C4ScriptHost::ReloadScript(const char *szPath)
 	if (SEqualNoCase(szPath, FilePath) || (pStringTable && SEqualNoCase(szPath, pStringTable->GetFilePath())))
 	{
 		// try reload
-		char szParentPath[_MAX_PATH + 1]; C4Group ParentGrp;
+		char szParentPath[_MAX_PATH + 1];
+		CppC4Group group;
 		if (GetParentPath(szPath, szParentPath))
-			if (ParentGrp.Open(szParentPath))
-				if (Load(Name, ParentGrp, Filename, Config.General.Language, nullptr, pStringTable))
+			if (group.openExisting(szParentPath))
+				if (Load(Name, group, Filename, Config.General.Language, nullptr, pStringTable))
 					return true;
 	}
 	// call for childs

@@ -122,9 +122,9 @@ public:
 
 	C4PathFinder PathFinder;
 	C4TransferZones TransferZones;
-	C4Group ScenarioFile;
+	CppC4Group *ScenarioFile;
 	C4GroupSet GroupSet;
-	C4Group *pParentGroup;
+	CppC4Group *pParentGroup;
 	C4Extra Extra;
 	C4GUIScreen *pGUI;
 	C4ScenarioSection *pScenarioSections, *pCurrentScenarioSection;
@@ -298,10 +298,10 @@ protected:
 	bool LoadScenarioScripts();
 
 public:
-	bool SaveGameTitle(C4Group &hGroup);
+	bool SaveGameTitle(CppC4Group &group);
 
 protected:
-	bool InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky);
+	bool InitGame(CppC4Group &group, C4ScenarioSection *section, bool fLoadSky);
 	bool InitGameFinal();
 	bool InitNetworkFromAddress(const char *szAddress);
 	bool InitNetworkFromReference(const C4Network2Reference &Reference);
@@ -321,7 +321,7 @@ protected:
 
 public:
 	void CompileFunc(StdCompiler *pComp, CompileSettings comp);
-	bool SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fSaveExact);
+	bool SaveData(CppC4Group &group, bool fSaveSection, bool fInitial, bool fSaveExact);
 
 protected:
 	bool CompileRuntimeData(C4ComponentHost &rGameData);

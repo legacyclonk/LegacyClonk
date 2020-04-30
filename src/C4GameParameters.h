@@ -152,9 +152,9 @@ public:
 	bool CheckLeagueRulesStart(bool fFixIt);
 
 	void Clear();
-	bool Load(C4Group &hGroup, C4Scenario *pDefault, const char *szGameText, C4LangStringTable *pLang, const std::vector<std::string> &DefinitionFilenames);
+	bool Load(CppC4Group &group, C4Scenario *pDefault, const char *szGameText, C4LangStringTable *pLang, const std::vector<std::string> &DefinitionFilenames);
 	bool InitNetwork(C4Network2ResList *pResList);
-	bool Save(C4Group &hGroup, C4Scenario *pDefault);
+	bool Save(CppC4Group &group, C4Scenario *pDefault);
 
 	void CompileFunc(StdCompiler *pComp, C4Scenario *pScenario = nullptr);
 };

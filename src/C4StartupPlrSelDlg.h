@@ -61,7 +61,7 @@ private:
 			return ContextMenu();
 		}
 
-		void LoadPortrait(C4Group &rGrp, bool fUseDefault);
+		void LoadPortrait(CppC4Group &group, bool fUseDefault);
 		void CreateColoredPortrait();
 		void SetDefaultPortrait();
 
@@ -131,13 +131,13 @@ private:
 		bool fLoaded;
 		C4ObjectInfoCore Core;
 		uint32_t dwPlrClr;
-		C4Group *pParentGrp;
+		CppC4Group *pParentGrp;
 
 	public:
 		CrewListItem(C4StartupPlrSelDlg *pForDlg, C4GUI::ListBox *pForListBox, uint32_t dwPlrClr);
 		~CrewListItem() {}
 
-		void Load(C4Group &rGrp, const StdStrBuf &rsFilename); // may throw LoadError
+		void Load(CppC4Group &group, const StdStrBuf &rsFilename); // may throw LoadError
 
 	protected:
 		virtual C4GUI::ContextMenu *ContextMenu();
@@ -182,7 +182,7 @@ private:
 	struct CurrPlayer_t
 	{
 		C4PlayerInfoCore Core; // loaded player main core
-		C4Group Grp; // group to player file; opened when in crew mode
+		std::unique_ptr<CppC4Group> Grp; // group to player file; opened when in crew mode
 	}
 	CurrPlayer;
 

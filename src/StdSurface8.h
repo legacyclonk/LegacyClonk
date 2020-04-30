@@ -64,7 +64,7 @@ public:
 	void Clear();
 	void Clip(int iX, int iY, int iX2, int iY2);
 	void NoClip();
-	bool Read(class CStdStream &hGroup, bool fOwnPal);
+	bool Read(class CppC4Group &group, const std::string &filePath, bool fOwnPal);
 	bool Save(const char *szFilename, uint8_t *bpPalette = nullptr);
 	void GetSurfaceSize(int &irX, int &irY); // get surface size
 	void EnforceC0Transparency() { pPal->EnforceC0Transparency(); }

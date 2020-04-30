@@ -97,15 +97,15 @@ public:
 	void RaiseTerrain(int32_t tx, int32_t ty, int32_t wdt);
 	void FindMatTop(int32_t mat, int32_t &x, int32_t &y);
 	uint8_t GetMapIndex(int32_t iX, int32_t iY);
-	bool Load(C4Group &hGroup, bool fLoadSky, bool fSavegame);
-	bool Save(C4Group &hGroup);
-	bool SaveDiff(C4Group &hGroup, bool fSyncSave);
-	bool SaveMap(C4Group &hGroup);
+	bool Load(CppC4Group &group, bool fLoadSky, bool fSavegame);
+	bool Save(CppC4Group &group);
+	bool SaveDiff(CppC4Group &group, bool fSyncSave);
+	bool SaveMap(CppC4Group &group);
 	bool SaveInitial();
-	bool SaveTextures(C4Group &hGroup);
-	bool Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame);
+	bool SaveTextures(CppC4Group &group);
+	bool Init(CppC4Group &group, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame);
 	bool MapToLandscape();
-	bool ApplyDiff(C4Group &hGroup);
+	bool ApplyDiff(CppC4Group &group);
 	bool SetMode(int32_t iMode);
 	bool SetPix(int32_t x, int32_t y, uint8_t npix); // set landscape pixel (bounds checked)
 	bool SetPixDw(int32_t x, int32_t y, uint32_t dwPix); // set pixel how it is visible only
@@ -220,7 +220,7 @@ protected:
 	bool GetMapColorIndex(const char *szMaterial, const char *szTexture, bool fIFT, uint8_t &rbyCol);
 	bool SkyToLandscape(int32_t iToX, int32_t iToY, int32_t iToWdt, int32_t iToHgt, int32_t iOffX, int32_t iOffY);
 	CSurface8 *CreateMap(); // create map by landscape attributes
-	CSurface8 *CreateMapS2(C4Group &ScenFile); // create map by def file
+	CSurface8 *CreateMapS2(CppC4Group &group); // create map by def file
 	bool Relight(C4Rect To);
 	bool ApplyLighting(C4Rect To);
 	uint32_t GetClrByTex(int32_t iX, int32_t iY);

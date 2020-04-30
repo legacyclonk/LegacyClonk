@@ -183,7 +183,10 @@ C4GameRes *C4GameResList::iterRes(C4GameRes *pLast, C4Network2ResType eType)
 		if (!pLast)
 		{
 			if (eType == NRT_Null || pResList[i]->getType() == eType)
+			{
+				LogF("iterRes: %s", pResList[i]->getFile());
 				return pResList[i];
+			}
 		}
 		else if (pLast == pResList[i])
 			pLast = nullptr;
@@ -209,25 +212,25 @@ bool C4GameResList::Load(const std::vector<std::string> &DefinitionFilenames)
 	{
 		for (const auto &def : DefinitionFilenames)
 		{
-			C4Group Def;
-			if (!Def.Open(def.c_str()))
+			CppC4Group Def;
+			std::filesystem::path p{def};
+			if (!Def.openExisting(p.generic_string()))
 			{
 				LogFatal(FormatString(LoadResStr("IDS_PRC_DEFNOTFOUND"), def.c_str()).getData());
-				Def.Close();
 				return false;
 			}
-			Def.Close();
 			CreateByFile(NRT_Definitions, def.c_str());
 		}
 	}
 	// add System.c4g
 	CreateByFile(NRT_System, C4CFN_System);
+
 	// add all instances of Material.c4g, except those inside the scenario file
-	C4Group *pMatParentGrp = nullptr;
-	while (pMatParentGrp = Game.GroupSet.FindGroup(C4GSCnt_Material, pMatParentGrp))
-		if (pMatParentGrp != &Game.ScenarioFile)
+	CppC4Group *matParentGroup = nullptr;
+	while ((matParentGroup = Game.GroupSet.FindGroup(C4GSCnt_Material, matParentGroup)))
+		if (matParentGroup != Game.ScenarioFile)
 		{
-			CreateByFile(NRT_Material, (pMatParentGrp->GetFullName() + DirSep C4CFN_Material).getData());
+			CreateByFile(NRT_Material, (matParentGroup->getFullName() + DirSep C4CFN_Material).c_str());
 		}
 	// add global Material.c4g
 	CreateByFile(NRT_Material, C4CFN_Material);
@@ -237,6 +240,7 @@ bool C4GameResList::Load(const std::vector<std::string> &DefinitionFilenames)
 
 C4GameRes *C4GameResList::CreateByFile(C4Network2ResType eType, const char *szFile)
 {
+	LogF("C4GameResList::CreateByFile(%u, %s)", eType, szFile);
 	// Create & set
 	C4GameRes *pRes = new C4GameRes();
 	pRes->SetFile(eType, szFile);
@@ -330,13 +334,13 @@ void C4GameParameters::Clear()
 	Teams.Clear();
 }
 
-bool C4GameParameters::Load(C4Group &hGroup, C4Scenario *pScenario, const char *szGameText, C4LangStringTable *pLang, const std::vector<std::string> &DefinitionFilenames)
+bool C4GameParameters::Load(CppC4Group &group, C4Scenario *pScenario, const char *szGameText, C4LangStringTable *pLang, const std::vector<std::string> &DefinitionFilenames)
 {
 	// Clear previous data
 	Clear();
 
 	// Scenario
-	Scenario.SetFile(NRT_Scenario, hGroup.GetFullName().getData());
+	Scenario.SetFile(NRT_Scenario, Game.ScenarioFile->getFullName().c_str());
 
 	// Additional game resources
 	if (!GameRes.Load(DefinitionFilenames))
@@ -344,14 +348,14 @@ bool C4GameParameters::Load(C4Group &hGroup, C4Scenario *pScenario, const char *
 
 	// Player infos (replays only)
 	if (pScenario->Head.Replay)
-		if (hGroup.FindEntry(C4CFN_PlayerInfos))
-			PlayerInfos.Load(hGroup, C4CFN_PlayerInfos);
+		if (group.getEntryInfo(C4CFN_PlayerInfos))
+			PlayerInfos.Load(group, C4CFN_PlayerInfos);
 
 	// Savegame restore infos: Used for savegames to rejoin joined players
-	if (hGroup.FindEntry(C4CFN_SavePlayerInfos))
+	if (group.getEntryInfo(C4CFN_SavePlayerInfos))
 	{
 		// load to savegame info list
-		RestorePlayerInfos.Load(hGroup, C4CFN_SavePlayerInfos, pLang);
+		RestorePlayerInfos.Load(group, C4CFN_SavePlayerInfos, pLang);
 		// transfer counter to allow for additional player joins in savegame resumes
 		PlayerInfos.SetIDCounter(RestorePlayerInfos.GetIDCounter());
 		// in network mode, savegame players may be reassigned in the lobby
@@ -371,14 +375,14 @@ bool C4GameParameters::Load(C4Group &hGroup, C4Scenario *pScenario, const char *
 	}
 
 	// Load teams
-	if (!Teams.Load(hGroup, pScenario, pLang))
+	if (!Teams.Load(group, pScenario, pLang))
 	{
 		LogFatal(LoadResStr("IDS_PRC_ERRORLOADINGTEAMS")); return false;
 	}
 
 	// Compile data
 	StdStrBuf Buf;
-	if (hGroup.LoadEntryString(C4CFN_Parameters, Buf))
+	if (StdStrBuf Buf; CppC4Group_LoadEntryString(group, C4CFN_Parameters, Buf))
 	{
 		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
 			mkNamingAdapt(mkParAdapt(*this, pScenario), "Parameters"),
@@ -494,12 +498,13 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 	return true;
 }
 
-bool C4GameParameters::Save(C4Group &hGroup, C4Scenario *pScenario)
+bool C4GameParameters::Save(CppC4Group &group, C4Scenario *pScenario)
 {
 	// Write Parameters.txt
 	StdStrBuf ParData = DecompileToBuf<StdCompilerINIWrite>(
 		mkNamingAdapt(mkParAdapt(*this, pScenario), "Parameters"));
-	if (!hGroup.Add(C4CFN_Parameters, ParData, false, true))
+
+	if (!CppC4Group_Add(group, C4CFN_Parameters, std::move(ParData)))
 		return false;
 
 	// Done

@@ -53,31 +53,50 @@ void C4ObjectInfoList::Clear()
 	}
 }
 
-int32_t C4ObjectInfoList::Load(C4Group &hGroup, bool fLoadPortraits)
+int32_t C4ObjectInfoList::Load(CppC4Group &group, bool fLoadPortraits)
 {
-	C4ObjectInfo *ninf;
-	int32_t infn = 0;
-	char entryname[256 + 1];
+	size_t infoCount = 0;
 
 	// Search all c4i files
-	hGroup.ResetSearch();
-	while (hGroup.FindNextEntry(C4CFN_ObjectInfoFiles, entryname))
-		if (ninf = new C4ObjectInfo)
-			if (ninf->Load(hGroup, entryname, fLoadPortraits)) { Add(ninf); infn++; }
-			else delete ninf;
+	CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_ObjectInfoFiles, [&group, &fLoadPortraits, &infoCount, this](const auto &info)
+	{
+		Load(group, fLoadPortraits, infoCount, info);
+		return true;
+	});
 
-			// Search subfolders
-			hGroup.ResetSearch();
-			while (hGroup.FindNextEntry("*", entryname))
-			{
-				C4Group ItemGroup;
-				if (ItemGroup.OpenAsChild(&hGroup, entryname))
-					Load(ItemGroup, fLoadPortraits);
-			}
-
-			return infn;
+	return infoCount;
 }
 
+
+void C4ObjectInfoList::Load(CppC4Group &group, const bool &fLoadPortraits, size_t &infoCount, const CppC4Group::EntryInfo &info)
+{
+	auto *objectInfo = new C4ObjectInfo;
+	if (objectInfo->Load(group, info.fileName.c_str(), fLoadPortraits))
+	{
+		//Add(objectInfo);
+		++infoCount;
+	}
+	else
+	{
+		delete objectInfo;
+	}
+
+	if (info.directory)
+	{
+		auto infos = group.getEntryInfos(info.fileName);
+		if (infos)
+		{
+			for (const auto &i : *infos)
+			{
+				auto grp = group.openAsChild(info.fileName / i.fileName);
+				if (grp)
+				{
+					Load(*grp, true);
+				}
+			}
+		}
+	}
+}
 bool C4ObjectInfoList::Add(C4ObjectInfo *pInfo)
 {
 	if (!pInfo) return false;
@@ -176,7 +195,7 @@ void C4ObjectInfoList::Evaluate()
 		cinf->Evaluate();
 }
 
-bool C4ObjectInfoList::Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny, C4DefList *pDefs)
+bool C4ObjectInfoList::Save(CppC4Group &group, bool fSavegame, bool fStoreTiny, C4DefList *pDefs)
 {
 	// Save in opposite order (for identical crew order on load)
 	C4ObjectInfo *pInfo;
@@ -189,7 +208,7 @@ bool C4ObjectInfoList::Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny, C4
 			if (pDef) if (pDef->TemporaryCrew) continue;
 		}
 		// save
-		if (!pInfo->Save(hGroup, fStoreTiny, pDefs))
+		if (!pInfo->Save(group, fStoreTiny, pDefs))
 			return false;
 	}
 	return true;

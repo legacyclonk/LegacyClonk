@@ -33,7 +33,8 @@ void C4Extra::Default()
 void C4Extra::Clear()
 {
 	// free class members
-	ExtraGrp.Close();
+	delete ExtraGrp;
+	ExtraGrp = nullptr;
 }
 
 bool C4Extra::InitGroup()
@@ -41,9 +42,15 @@ bool C4Extra::InitGroup()
 	// exists?
 	if (!ItemExists(Config.AtExePath(C4CFN_Extra))) return false;
 	// open extra group
-	if (!ExtraGrp.Open(Config.AtExePath(C4CFN_Extra))) return false;
+	ExtraGrp = new CppC4Group;
+	if (!ExtraGrp->openExisting(Config.AtExePath(C4CFN_Extra)))
+	{
+		Clear();
+		return false;
+	}
+
 	// register extra root into game group set
-	Game.GroupSet.RegisterGroup(ExtraGrp, false, C4GSPrio_ExtraRoot, C4GSCnt_ExtraRoot);
+	Game.GroupSet.RegisterGroup(*ExtraGrp, "", false, C4GSPrio_ExtraRoot, C4GSCnt_ExtraRoot);
 	// done, success
 	return true;
 }
@@ -51,14 +58,14 @@ bool C4Extra::InitGroup()
 bool C4Extra::Init()
 {
 	// no group: OK
-	if (!ExtraGrp.IsOpen()) return true;
+	if (!ExtraGrp) return true;
 	// load from all definitions that are activated
 	// add first definition first, so the priority will be lowest
 	// (according to definition load/overload order)
 	bool fAnythingLoaded = false;
 	for (const auto &def : Game.DefinitionFilenames)
 	{
-		if (LoadDef(ExtraGrp, GetFilename(def.c_str())))
+		if (LoadDef(GetFilename(def.c_str())))
 		{
 			fAnythingLoaded = true;
 		}
@@ -67,16 +74,25 @@ bool C4Extra::Init()
 	return true;
 }
 
-bool C4Extra::LoadDef(C4Group &hGroup, const char *szName)
+bool C4Extra::LoadDef(const char *szName)
 {
 	// check if file exists
-	if (!hGroup.FindEntry(szName)) return false;
+	if (!ExtraGrp->getEntryData(szName)) return false;
+
 	// log that extra group is loaded
-	LogF(LoadResStr("IDS_PRC_LOADEXTRA"), ExtraGrp.GetName(), szName);
+	LogF(LoadResStr("IDS_PRC_LOADEXTRA"), C4CFN_Extra, szName);
+
 	// open and add group to set
-	C4Group *pGrp = new C4Group;
-	if (!pGrp->OpenAsChild(&hGroup, szName)) { Log(LoadResStr("IDS_ERR_FAILURE")); delete pGrp; return false; }
-	Game.GroupSet.RegisterGroup(*pGrp, true, C4GSPrio_Extra, C4GSCnt_Extra);
+	if (auto grp = ExtraGrp->openAsChild(szName); grp)
+	{
+		auto *group = new CppC4Group{std::move(*grp)};
+		Game.GroupSet.RegisterGroup(*group, "", true, C4GSPrio_Extra, C4GSCnt_Extra);
+	}
+	else
+	{
+		Log(LoadResStr("IDS_ERR_FAILURE"));
+		return false;
+	}
 	// done, success
 	return true;
 }

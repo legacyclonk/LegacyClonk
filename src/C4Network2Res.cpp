@@ -366,9 +366,9 @@ bool C4Network2Res::SetByFile(const char *strFilePath, bool fTemp, C4Network2Res
 	if (!szResName) szResName = Config.AtExeRelativePath(strFilePath);
 	SCopy(strFilePath, szFile, sizeof(szFile) - 1);
 	// group?
-	C4Group Grp;
-	if (Grp.Open(strFilePath))
-		return SetByGroup(&Grp, fTemp, eType, iResID, szResName, fSilent);
+	CppC4Group group;
+	if (group.openExisting(strFilePath))
+		return SetByGroup(group, fTemp, eType, iResID, szResName, fSilent);
 	// so it needs to be a file
 	if (!FileExists(szFile))
 	{
@@ -394,7 +394,7 @@ bool C4Network2Res::SetByFile(const char *strFilePath, bool fTemp, C4Network2Res
 	return true;
 }
 
-bool C4Network2Res::SetByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName, bool fSilent) // by main thread
+bool C4Network2Res::SetByGroup(CppC4Group &group, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName, bool fSilent) // by main thread
 {
 	Clear();
 	CStdLock FileLock(&FileCSec);
@@ -404,12 +404,13 @@ bool C4Network2Res::SetByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eTyp
 		sResName.Ref(szResName);
 	else
 	{
-		StdStrBuf sFullName = pGrp->GetFullName();
-		sResName.Copy(Config.AtExeRelativePath(sFullName.getData()));
+		sResName.Copy(Config.AtExeRelativePath(group.getFullName().c_str()));
 	}
-	SCopy(pGrp->GetFullName().getData(), szFile, sizeof(szFile) - 1);
+
+	SCopy(group.getFullName().c_str(), szFile, sizeof(szFile) - 1);
 	// set core
-	Core.Set(eType, iResID, sResName.getData(), pGrp->EntryCRC32(), pGrp->GetMaker());
+	auto info = group.getEntryInfo("");
+	Core.Set(eType, iResID, sResName.getData(), info->crc, info->author.c_str());
 #ifdef C4NET2RES_DEBUG_LOG
 	// log
 	LogSilentF("Network: Resource: complete %d:%s is file %s (%s)", iResID, sResName.getData(), szFile, fTemp ? "temp" : "static");
@@ -623,7 +624,7 @@ bool C4Network2Res::GetStandalone(char *pTo, int32_t iMaxL, bool fSetOfficial, b
 		{
 			if (!fSilent) Log("GetStandalone: could not find free name for temporary file!"); szStandalone[0] = '\0'; return false;
 		}
-		if (!C4Group_CopyItem(szFile, szStandalone))
+		if (!CppC4Group_TransferItem(szFile, szStandalone))
 		{
 			if (!fSilent) Log("GetStandalone: could not copy to temporary file!"); szStandalone[0] = '\0'; return false;
 		}
@@ -724,7 +725,7 @@ C4Network2Res::Ref C4Network2Res::Derive()
 		{
 			Log("Derive: could not find free name for temporary file!"); return nullptr;
 		}
-		if (!C4Group_CopyItem(szOrgFile, szFile))
+		if (!CppC4Group_TransferItem(szOrgFile, szFile))
 		{
 			Log("Derive: could not copy to temporary file!"); return nullptr;
 		}
@@ -1166,26 +1167,32 @@ bool C4Network2Res::OptimizeStandalone(bool fSilent)
 			{
 				if (!fSilent) Log("OptimizeStandalone: could not find free name for temporary file!"); return false;
 			}
-			if (!C4Group_CopyItem(szStandalone, szNewStandalone))
+			if (!CppC4Group_TransferItem(szStandalone, szNewStandalone))
 			{
 				if (!fSilent) Log("OptimizeStandalone: could not copy to temporary file!"); return false;
 			} /* TODO: Test failure */
 			SCopy(szNewStandalone, szStandalone, sizeof(szStandalone) - 1);
 		}
 		// open as group
-		C4Group Grp;
-		if (!Grp.Open(szStandalone))
+		CppC4Group group;
+		if (!group.openExisting(szStandalone))
 		{
 			if (!fSilent) Log("OptimizeStandalone: could not open player file!"); return false;
 		}
-		// remove portrais
-		Grp.Delete(C4CFN_Portraits, true);
+		// remove portraits
+		CppC4Group_ForEachEntryByWildcard(group, "", C4CFN_Portraits, [&group](const auto &info)
+		{
+			group.deleteEntry(info.fileName, true);
+			return true;
+		});
+
 		// remove bigicon, if the file size is too large
-		size_t iBigIconSize = 0;
-		if (Grp.FindEntry(C4CFN_BigIcon, nullptr, &iBigIconSize))
-			if (iBigIconSize > C4NetResMaxBigicon * 1024)
-				Grp.Delete(C4CFN_BigIcon);
-		Grp.Close();
+		if (auto data = group.getEntryData(C4CFN_BigIcon); data && data->size > C4NetResMaxBigicon * 1024)
+		{
+			group.deleteEntry(C4CFN_BigIcon);
+		}
+
+		group.save();
 	}
 	return true;
 }
