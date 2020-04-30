@@ -696,6 +696,9 @@ bool C4ScenarioListLoader::Scenario::LoadCustom(C4Group &rGrp, bool fNameLoaded,
 		iDifficulty = C4S.Head.Difficulty;
 	else
 		iDifficulty = 0;
+
+	allowUserChange = C4S.Definitions.AllowUserChange;
+
 	// minimum required player count
 	iMinPlrCount = C4S.GetMinPlayer();
 	return true;
@@ -1272,7 +1275,7 @@ C4GUI::RenameEdit::RenameResult C4StartupScenSelDlg::ScenListItem::DoRenaming(Re
 
 // C4StartupScenSelDlg
 
-C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResStrNoAmp(fNetwork ? "IDS_DLG_NETSTART" : "IDS_DLG_STARTGAME")), pScenLoader(nullptr), fIsInitialLoading(false), fStartNetworkGame(fNetwork), pMapData(nullptr), pRenameEdit(nullptr), pfctBackground(nullptr)
+C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResStrNoAmp(fNetwork ? "IDS_DLG_NETSTART" : "IDS_DLG_STARTGAME")), pScenLoader(nullptr), fIsInitialLoading(false), fStartNetworkGame(fNetwork), pMapData(nullptr), pRenameEdit(nullptr), pfctBackground(nullptr), btnAllowUserChange{nullptr}
 {
 	// assign singleton
 	pInstance = this;
@@ -1348,6 +1351,10 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 	// next button
 	pOpenBtn = new C4GUI::CallbackButton<C4StartupScenSelDlg>(LoadResStr("IDS_BTN_OPEN"), caButtonArea.GetFromRight(iButtonWidth, iButtonHeight), &C4StartupScenSelDlg::OnNextBtn);
 	pOpenBtn->SetToolTip(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
+
+	// allow user change button
+	AddElement(btnAllowUserChange = new C4GUI::CheckBox(caButtonArea.GetFromRight(iButtonWidth, iButtonHeight), LoadResStr("IDS_DLG_ALLOWUSERCHANGE"), false));
+
 	// game options boxes
 	pGameOptionButtons = new C4GameOptionButtons(caButtonArea.GetAll(), fNetwork, true, false);
 	AddElement(pGameOptionButtons);
@@ -1548,9 +1555,19 @@ void C4StartupScenSelDlg::UpdateSelection()
 		// selection specific open/start button
 		pOpenBtn->SetText(pSel->GetOpenText().getData());
 		pOpenBtn->SetToolTip(pSel->GetOpenTooltip().getData());
+
+		if (auto *scenario = dynamic_cast<C4ScenarioListLoader::Scenario *>(pSel); scenario)
+		{
+			btnAllowUserChange->SetEnabled(true);
+			btnAllowUserChange->SetChecked(scenario->AllowUserChange());
+		}
 	}
 	else
+	{
 		SetOpenButtonDefaultText();
+		btnAllowUserChange->SetChecked(false);
+		btnAllowUserChange->SetEnabled(false);
+	}
 	// set data in selection component
 	pSelectionInfo->ClearText(false);
 	pSelectionInfo->SetPicture(fctTitle);
@@ -1584,7 +1601,7 @@ bool C4StartupScenSelDlg::StartScenario(C4ScenarioListLoader::Scenario *pStartSc
 	assert(pStartScen);
 	if (!pStartScen) return false;
 	// get required object definitions
-	if (pStartScen->GetC4S().Definitions.AllowUserChange)
+	if (btnAllowUserChange->GetChecked())
 	{
 		// get definitions as user selects them
 		std::vector<std::string> defs = pStartScen->GetC4S().Definitions.GetModules();

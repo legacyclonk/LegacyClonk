@@ -105,6 +105,7 @@ public:
 		C4Scenario C4S;
 		bool fNoMissionAccess;
 		int32_t iMinPlrCount;
+		bool allowUserChange = false;
 
 	public:
 		Scenario(class Folder *pParent) : Entry(pParent), fNoMissionAccess(false), iMinPlrCount(0) {}
@@ -127,6 +128,7 @@ public:
 		virtual const char *GetDefaultExtension() { return "c4s"; }
 
 		virtual bool IsScenario() { return true; }
+		bool AllowUserChange() const { return allowUserChange; }
 	};
 
 	// scenario folder
@@ -394,6 +396,7 @@ private:
 	bool fStartNetworkGame;
 
 	C4GUI::RenameEdit *pRenameEdit;
+	C4GUI::CheckBox *btnAllowUserChange;
 
 public:
 	static C4StartupScenSelDlg *pInstance; // singleton

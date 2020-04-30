@@ -483,6 +483,7 @@ IDS_DLGTIP_STARTLEAGUEGAME=Ligaspiel: die Runde soll in der Liga ausgewertet wer
 IDS_DLGTIP_UPDATE=Update verfügbar: hier klicken, um die neue Version des Spiels herunterzuladen und zu installieren.
 IDS_DLG_ABORT=Abbruch
 IDS_DLG_ABOUT=&Info
+IDS_DLG_ALLOWUSERCHANGE=&Definitionen wählen
 IDS_DLG_CANCEL=&Abbrechen
 IDS_DLG_CHAT=Chat
 IDS_DLG_CLASSIC=Klassisch

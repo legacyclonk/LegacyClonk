@@ -484,6 +484,7 @@ IDS_DLGTIP_STARTLEAGUEGAME=League game: this round will be evaluated in the leag
 IDS_DLGTIP_UPDATE=Update available: click here to download and install the new version of the game.
 IDS_DLG_ABORT=Abort
 IDS_DLG_ABOUT=&About
+IDS_DLG_ALLOWUSERCHANGE=Choose &definitions
 IDS_DLG_CANCEL=Cancel
 IDS_DLG_CHAT=Chat
 IDS_DLG_CLASSIC=Classic
