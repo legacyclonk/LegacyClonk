@@ -170,6 +170,7 @@ enum C4AulBCCType
 	AB_BitOr,            // |
 	AB_And,              // &&
 	AB_Or,               // ||
+	AB_NilCoalescing,    // ??
 	AB_PowIt,            // **=
 	AB_MulIt,            // *=
 	AB_DivIt,            // /=

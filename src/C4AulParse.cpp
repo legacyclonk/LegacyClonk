@@ -455,6 +455,7 @@ C4ScriptOpDef C4ScriptOpMap[] =
 	{ 6, "|",    AB_BitOr,            1, 0, 0, C4V_Int,    C4V_Int,      C4V_Int },
 	{ 5, "&&",   AB_And,              1, 0, 0, C4V_Bool,   C4V_Bool,     C4V_Bool },
 	{ 4, "||",   AB_Or,               1, 0, 0, C4V_Bool,   C4V_Bool,     C4V_Bool },
+	{ 3, "??",   AB_NilCoalescing,    1, 0, 0, C4V_Any,    C4V_Any,      C4V_Any },
 	{ 2, "**=",  AB_PowIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "*=",   AB_MulIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "/=",   AB_DivIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
@@ -867,6 +868,7 @@ static const char *GetTTName(C4AulBCCType e)
 	case AB_BitOr:            return "AB_BitOr";            // |
 	case AB_And:              return "AB_And";              // &&
 	case AB_Or:               return "AB_Or";               // ||
+	case AB_NilCoalescing:    return "AB_NilCoalescing";    // ??
 	case AB_PowIt:            return "AB_PowIt";            // **=
 	case AB_MulIt:            return "AB_MulIt";            // *=
 	case AB_DivIt:            return "AB_DivIt";            // /=
@@ -1018,6 +1020,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
 	case AB_BitOr:
 	case AB_And:
 	case AB_Or:
+	case AB_NilCoalescing:
 	case AB_PowIt:
 	case AB_MulIt:
 	case AB_DivIt:

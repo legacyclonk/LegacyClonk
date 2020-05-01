@@ -732,6 +732,21 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				PopValue();
 				break;
 			}
+
+			case AB_NilCoalescing: // ??
+			{
+				CheckOpPars(pCPos->bccX);
+				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
+				if (pPar1->GetType() == C4V_Any)
+				{
+					C4V_Data data;
+					data.Int = pPar2->_getRaw();
+					pPar1->Set(C4Value{data, pPar1->GetType()});
+				}
+				PopValue();
+				break;
+			}
+
 			case AB_PowIt: // **=
 			{
 				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
