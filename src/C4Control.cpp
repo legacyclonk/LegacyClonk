@@ -143,6 +143,7 @@ void C4ControlSet::Execute() const
 		{
 			Game.DebugMode = false;
 			Game.GraphicsSystem.DeactivateDebugOutput();
+			Game.MessageInput.RemoveCommand(C4MessageInput::SPEED);
 		}
 		// save flag, log
 		Game.Parameters.AllowDebug = false;

@@ -239,7 +239,7 @@ bool C4MessageInput::Init()
 	// add default commands
 	if (Commands.empty())
 	{
-		AddCommand("speed", "SetGameSpeed(%d)");
+		AddCommand(SPEED, "SetGameSpeed(%d)");
 	}
 	return true;
 }
@@ -682,6 +682,11 @@ C4MessageBoardCommand *C4MessageInput::GetCommand(const std::string &strName)
 	auto command = Commands.find(strName);
 	if (command != Commands.end()) return &command->second;
 	return nullptr;
+}
+
+void C4MessageInput::RemoveCommand(const std::string &command)
+{
+	Commands.erase(command);
 }
 
 void C4MessageInput::ClearPointers(C4Object *pObj)

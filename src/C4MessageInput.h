@@ -109,6 +109,7 @@ public:
 class C4MessageInput
 {
 public:
+	static constexpr auto SPEED = "speed";
 	C4MessageInput() { Default(); }
 	~C4MessageInput() { Clear(); }
 	void Default();
@@ -126,6 +127,7 @@ private:
 public:
 	void AddCommand(const std::string &strCommand, const std::string &strScript, C4MessageBoardCommand::Restriction eRestriction = C4MessageBoardCommand::C4MSGCMDR_Escaped);
 	C4MessageBoardCommand *GetCommand(const std::string &strName);
+	void RemoveCommand(const std::string &command);
 
 	// Input
 public:
