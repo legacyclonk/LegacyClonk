@@ -359,6 +359,10 @@ void C4GameOverDlg::OnClosed(bool fOK)
 	typedef C4GUI::Dialog BaseClass;
 	auto _nextMissionMode = nextMissionMode;
 	BaseClass::OnClosed(fOK); // deletes this!
+	if (_nextMissionMode != Restart)
+	{
+		Game.RestartRestoreInfos.Clear();
+	}
 	// continue round
 	if (fOK)
 	{

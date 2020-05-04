@@ -2250,6 +2250,17 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 {
 	if (!section)
 	{
+		RestartRestoreInfos.Clear();
+
+		C4PlayerInfo* info;
+		for (int32_t i = 0; info = PlayerInfos.GetPlayerInfoByIndex(i); ++i)
+		{
+			if (!info->IsRemoved() && !info->IsInvisible())
+			{
+				RestartRestoreInfos.Players.emplace(std::string{info->GetName()}, C4NetworkRestartInfos::Player{std::string{info->GetName()}, info->GetType(), info->GetColor(), info->GetTeam()});
+			}
+		}
+
 		// file monitor
 		if (Config.Developer.AutoFileReload && !Application.isFullScreen && !pFileMonitor)
 			pFileMonitor = new C4FileMonitor(FileMonitorCallback);

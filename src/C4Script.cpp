@@ -36,6 +36,7 @@
 #include <C4Player.h>
 #include <C4ObjectMenu.h>
 #include <C4ValueHash.h>
+#include <C4NetworkRestartInfos.h>
 
 #ifndef _WIN32
 #include <sys/time.h>
@@ -6441,6 +6442,12 @@ static C4ValueArray *FnGetValues(C4AulContext *ctx, C4ValueHash *map)
 	return keys;
 }
 
+static bool FnSetRestoreInfos(C4AulContext *ctx, long what)
+{
+	Game.RestartRestoreInfos.What = static_cast<std::underlying_type_t<C4NetworkRestartInfos::RestoreInfo>>(what);
+	return true;
+}
+
 // C4Script Function Map
 
 // defined function class
@@ -6942,6 +6949,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SetNextMission",                  FnSetNextMission);
 	AddFunc(pEngine, "GetKeys",                         FnGetKeys);
 	AddFunc(pEngine, "GetValues",                       FnGetValues);
+	AddFunc(pEngine, "SetRestoreInfos",                 FnSetRestoreInfos);
 	new C4AulDefCastFunc(pEngine, "ScoreboardCol", C4V_C4ID, C4V_Int);
 	new C4AulDefCastFunc(pEngine, "CastInt",       C4V_Any,  C4V_Int);
 	new C4AulDefCastFunc(pEngine, "CastBool",      C4V_Any,  C4V_Bool);
@@ -7279,6 +7287,10 @@ C4ScriptConstDef C4ScriptConstMap[] =
 	{ "CSPF_NoScenarioInit",     C4V_Int, CSPF_NoScenarioInit },
 	{ "CSPF_NoEliminationCheck", C4V_Int, CSPF_NoEliminationCheck },
 	{ "CSPF_Invisible",          C4V_Int, CSPF_Invisible },
+
+	{ "RESTORE_None",          C4V_Int, C4NetworkRestartInfos::None },
+	{ "RESTORE_ScriptPlayers", C4V_Int, C4NetworkRestartInfos::ScriptPlayers },
+	{ "RESTORE_PlayerTeams",   C4V_Int, C4NetworkRestartInfos::PlayerTeams },
 
 	{ nullptr, C4V_Any, 0 }
 };

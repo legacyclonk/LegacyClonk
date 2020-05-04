@@ -163,6 +163,19 @@ C4PlayerInfoListBox::PlayerListItem::PlayerListItem(C4PlayerInfoListBox *pForLis
 	// update collapsed/not collapsed
 	fShownCollapsed = false;
 	UpdateCollapsed();
+
+	if (Game.Network.isHost() && Game.RestartRestoreInfos.What & C4NetworkRestartInfos::PlayerTeams && pInfo->GetType() == C4PT_User)
+	{
+		if (const auto restoreInfo = Game.RestartRestoreInfos.Players.find(sPlayerName.getData()); restoreInfo != Game.RestartRestoreInfos.Players.end() && restoreInfo->second.team != pInfo->GetTeam())
+		{
+			C4ClientPlayerInfos infoRequest{*Game.PlayerInfos.GetInfoByClientID(idClient)};
+			C4PlayerInfo* info = infoRequest.GetPlayerInfoByID(idPlayer);
+			const auto team = restoreInfo->second.team;
+			Game.Teams.GetGenerateTeamByID(team);
+			info->SetTeam(team);
+			Game.Network.Players.RequestPlayerInfoUpdate(infoRequest);
+		}
+	}
 }
 
 void C4PlayerInfoListBox::PlayerListItem::UpdateOwnPos()
@@ -1486,7 +1499,7 @@ void C4PlayerInfoListBox::UpdatePlayersByClient(ListItem **ppCurrInList)
 		if (pInfoPacket)
 		{
 			C4PlayerInfo *pPlrInfo; int32_t i = 0;
-			while (pPlrInfo = pInfoPacket->GetPlayerInfo(i++))
+			while (pPlrInfo = Game.PlayerInfos.GetInfoByClientID(pClient->getID())->GetPlayerInfo(i++))
 			{
 				if (pPlrInfo->GetType() == C4PT_Script) continue;
 				if (pPlrInfo->IsRemoved()) continue;

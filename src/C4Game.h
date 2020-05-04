@@ -55,6 +55,7 @@
 #include <C4Client.h>
 #include <C4Network2Reference.h>
 #include <C4RoundResults.h>
+#include <C4NetworkRestartInfos.h>
 
 class C4Game
 {
@@ -183,6 +184,7 @@ public:
 	bool DebugMode;
 	// next mission to be played after this one
 	StdStrBuf NextMission, NextMissionText, NextMissionDesc;
+	C4NetworkRestartInfos::Infos RestartRestoreInfos;
 
 public:
 	// Init and execution

@@ -48,7 +48,25 @@ void C4Network2Players::Init()
 	JoinLocalPlayer(Game.PlayerFilenames, false);
 	// host: Rejoin script players from savegame
 	if (Game.Network.isHost())
-		Game.PlayerInfos.CreateRestoreInfosForJoinedScriptPlayers(Game.RestorePlayerInfos);
+	{
+		rInfoList.CreateRestoreInfosForJoinedScriptPlayers(Game.RestorePlayerInfos);
+		if (Game.RestartRestoreInfos.What & C4NetworkRestartInfos::ScriptPlayers)
+		{
+			C4ClientPlayerInfos joinInfo = *rInfoList.GetIndexedInfo(0);
+			for (const auto& [name, player] : Game.RestartRestoreInfos.Players)
+			{
+				if (player.type == C4PT_Script)
+				{
+					const auto playerInfo = new C4PlayerInfo;
+					playerInfo->SetAsScriptPlayer(name.c_str(), player.color, 0, C4ID_None);
+					Game.Teams.GetGenerateTeamByID(player.team);
+					playerInfo->SetTeam(player.team);
+					joinInfo.AddInfo(playerInfo);
+				}
+			}
+			HandlePlayerInfoUpdRequest(&joinInfo, true);
+		}
+	}
 }
 
 void C4Network2Players::Clear()
@@ -85,6 +103,21 @@ bool C4Network2Players::JoinLocalPlayer(const char *szLocalPlayerFilename, bool 
 		// error joining players? Zero players is OK for initial packet; marks host as observer
 		if (fAdd && !JoinInfo.GetPlayerCount()) return false;
 		// handle it as a direct request
+
+		if (Game.RestartRestoreInfos.What & C4NetworkRestartInfos::PlayerTeams)
+		{
+			C4PlayerInfo* info;
+			for (int i = 0; info = JoinInfo.GetPlayerInfo(i); ++i)
+			{
+				if (const auto restoreInfo = Game.RestartRestoreInfos.Players.find(info->GetName()); restoreInfo != Game.RestartRestoreInfos.Players.end() && restoreInfo->second.team)
+				{
+					const auto team = restoreInfo->second.team;
+					Game.Teams.GetGenerateTeamByID(team);
+					info->SetTeam(team);
+				}
+			}
+		}
+
 		HandlePlayerInfoUpdRequest(&JoinInfo, true);
 	}
 	else
