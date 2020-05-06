@@ -61,7 +61,7 @@ public:
 	C4AulError();
 	C4AulError(const C4AulError &Error) { sMessage.Copy(Error.sMessage); }
 	virtual ~C4AulError() {}
-	virtual void show(); // present error message
+	virtual void show() const; // present error message
 };
 
 // parse error
@@ -79,7 +79,7 @@ class C4AulExecError : public C4AulError
 
 public:
 	C4AulExecError(C4Object *pObj, const char *szError);
-	virtual void show(); // present error message
+	virtual void show() const override; // present error message
 };
 
 // function access

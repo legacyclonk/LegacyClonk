@@ -27,7 +27,7 @@
 
 C4AulError::C4AulError() {}
 
-void C4AulError::show()
+void C4AulError::show() const
 {
 #ifdef C4ENGINE
 	// simply log error message

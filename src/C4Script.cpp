@@ -86,7 +86,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			// number
 			case 'd': case 'x': case 'X': case 'c':
 			{
-				if (!Par[cPar]) throw new C4AulExecError(cthr->Obj, "format placeholder without parameter");
+				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
 				StringBuf.AppendFormat(szField, Par[cPar++]->getInt());
 				cpFormat += SLen(szField);
 				break;
@@ -94,7 +94,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			// C4ID
 			case 'i':
 			{
-				if (!Par[cPar]) throw new C4AulExecError(cthr->Obj, "format placeholder without parameter");
+				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
 				C4ID id = Par[cPar++]->getC4ID();
 				StringBuf.Append(C4IdText(id));
 				cpFormat += SLen(szField);
@@ -103,7 +103,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			// C4Value
 			case 'v':
 			{
-				if (!Par[cPar]) throw new C4AulExecError(cthr->Obj, "format placeholder without parameter");
+				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
 				if (!Par[cPar]->_getRaw() && cthr->Caller && cthr->Caller->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
 				{
 					StringBuf.Append("0");
@@ -119,12 +119,12 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			case 's':
 			{
 				// get string
-				if (!Par[cPar]) throw new C4AulExecError(cthr->Obj, "format placeholder without parameter");
+				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
 				const char *szStr = "(null)";
 				if (Par[cPar]->GetData())
 				{
 					C4String *pStr = Par[cPar++]->getStr();
-					if (!pStr) throw new C4AulExecError(cthr->Obj, "string format placeholder without string");
+					if (!pStr) throw C4AulExecError(cthr->Obj, "string format placeholder without string");
 					szStr = pStr->Data.getData();
 				}
 				StringBuf.AppendFormat(szField, szStr);
@@ -1539,10 +1539,10 @@ static C4Value FnAddMenuItem(C4AulContext *cthr, C4Value *pPars)
 		break;
 	case C4V_Array:
 		// Arrays were never allowed, so tell the scripter
-		throw new C4AulExecError(cthr->Obj, "array as parameter to AddMenuItem");
+		throw C4AulExecError(cthr->Obj, "array as parameter to AddMenuItem");
 	case C4V_Map:
 		// Maps are not allowed either
-		throw new C4AulExecError(cthr->Obj, "map as parameter to AddMenuItem");
+		throw C4AulExecError(cthr->Obj, "map as parameter to AddMenuItem");
 	default:
 		return C4VBool(false);
 	}
@@ -2041,7 +2041,7 @@ static C4Value FnObjectCount2(C4AulContext *cthr, C4Value *pPars)
 	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, nullptr);
 	// Error?
 	if (!pFO)
-		throw new C4AulExecError(cthr->Obj, "ObjectCount: No valid search criterions supplied!");
+		throw C4AulExecError(cthr->Obj, "ObjectCount: No valid search criterions supplied!");
 	// Search
 	int32_t iCnt = pFO->Count(Game.Objects, Game.Objects.Sectors);
 	// Free
@@ -2058,7 +2058,7 @@ static C4Value FnFindObject2(C4AulContext *cthr, C4Value *pPars)
 	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, pSOs);
 	// Error?
 	if (!pFO)
-		throw new C4AulExecError(cthr->Obj, "FindObject: No valid search criterions supplied!");
+		throw C4AulExecError(cthr->Obj, "FindObject: No valid search criterions supplied!");
 	// Search
 	C4Object *pObj = pFO->Find(Game.Objects, Game.Objects.Sectors);
 	// Free
@@ -2075,7 +2075,7 @@ static C4Value FnFindObjects(C4AulContext *cthr, C4Value *pPars)
 	C4FindObject *pFO = CreateCriterionsFromPars(pPars, pFOs, pSOs);
 	// Error?
 	if (!pFO)
-		throw new C4AulExecError(cthr->Obj, "FindObjects: No valid search criterions supplied!");
+		throw C4AulExecError(cthr->Obj, "FindObjects: No valid search criterions supplied!");
 	// Search
 	C4ValueArray *pResult = pFO->FindMany(Game.Objects, Game.Objects.Sectors);
 	// Free
@@ -3918,7 +3918,7 @@ static C4Value FnGetLength(C4AulContext *cthr, C4Value *pPars)
 	C4String *pStr = pPars->getStr();
 	if (pStr)
 		return C4VInt(pStr->Data.getLength());
-	throw new C4AulExecError(cthr->Obj, "func \"GetLength\" par 0 cannot be converted to string or array or map");
+	throw C4AulExecError(cthr->Obj, "func \"GetLength\" par 0 cannot be converted to string or array or map");
 }
 
 static C4Value FnGetIndexOf(C4AulContext *cthr, C4Value *pPars)
@@ -3929,7 +3929,7 @@ static C4Value FnGetIndexOf(C4AulContext *cthr, C4Value *pPars)
 	// if the second param is nonzero, it must be an array
 	const C4ValueArray *pArray = pPars[1].getArray();
 	if (!pArray)
-		throw new C4AulExecError(cthr->Obj, "func \"GetIndexOf\" par 1 cannot be converted to array");
+		throw C4AulExecError(cthr->Obj, "func \"GetIndexOf\" par 1 cannot be converted to array");
 	// find the element by comparing data only - this may result in bogus results if an object ptr array is searched for an int
 	// however, that's rather unlikely and strange scripting style
 	int32_t iSize = pArray->GetSize();
@@ -3962,7 +3962,7 @@ static C4Value FnSetLength(C4AulContext *cthr, C4Value *pPars)
 
 	// safety
 	if (iNewSize < 0 || iNewSize > C4ValueList::MaxSize)
-		throw new C4AulExecError(cthr->Obj, FormatString("SetLength: invalid array size (%d)", iNewSize).getData());
+		throw C4AulExecError(cthr->Obj, FormatString("SetLength: invalid array size (%d)", iNewSize).getData());
 
 	// set new size
 	pArrayRef.SetArrayLength(iNewSize, cthr);
@@ -4478,7 +4478,7 @@ static bool FnResortObjects(C4AulContext *cthr, C4String *szFunc, long Category)
 	// get function
 	C4AulFunc *pFn = cthr->Caller->Func->GetLocalSFunc(FnStringPar(szFunc));
 	if (!pFn)
-		throw new C4AulExecError(cthr->Obj, FormatString("ResortObjects: Resort function %s not found", FnStringPar(szFunc)).getData());
+		throw C4AulExecError(cthr->Obj, FormatString("ResortObjects: Resort function %s not found", FnStringPar(szFunc)).getData());
 	// create object resort
 	C4ObjResort *pObjRes = new C4ObjResort();
 	pObjRes->Category = Category;
@@ -4499,7 +4499,7 @@ static bool FnResortObject(C4AulContext *cthr, C4String *szFunc, C4Object *pObj)
 	// get function
 	C4AulFunc *pFn = cthr->Caller->Func->GetLocalSFunc(FnStringPar(szFunc));
 	if (!pFn)
-		throw new C4AulExecError(cthr->Obj, FormatString("ResortObjects: Resort function %s not found", FnStringPar(szFunc)).getData());
+		throw C4AulExecError(cthr->Obj, FormatString("ResortObjects: Resort function %s not found", FnStringPar(szFunc)).getData());
 	// create object resort
 	C4ObjResort *pObjRes = new C4ObjResort();
 	pObjRes->OrderFunc = pFn;
@@ -6286,7 +6286,7 @@ static long FnActivateGameGoalMenu(C4AulContext *ctx, long iPlayer)
 
 static bool FnFatalError(C4AulContext *ctx, C4String *pErrorMsg)
 {
-	throw new C4AulExecError(ctx->Obj, FormatString("User error: %s", pErrorMsg ? pErrorMsg->Data.getData() : "(no error)").getData());
+	throw C4AulExecError(ctx->Obj, FormatString("User error: %s", pErrorMsg ? pErrorMsg->Data.getData() : "(no error)").getData());
 }
 
 static bool FnStartCallTrace(C4AulContext *ctx)
@@ -6332,17 +6332,17 @@ static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, l
 	uint32_t vpos = dwFlags & (C4GM_Top | C4GM_VCenter | C4GM_Bottom);
 	if (((hpos | hpos - 1) + 1) >> 1 != hpos)
 	{
-		throw new C4AulExecError(ctx->Obj, "CustomMessage: Only one horizontal positioning flag allowed!");
+		throw C4AulExecError(ctx->Obj, "CustomMessage: Only one horizontal positioning flag allowed!");
 	}
 	if (((vpos | vpos - 1) + 1) >> 1 != vpos)
 	{
-		throw new C4AulExecError(ctx->Obj, "CustomMessage: Only one vertical positioning flag allowed!");
+		throw C4AulExecError(ctx->Obj, "CustomMessage: Only one vertical positioning flag allowed!");
 	}
 
 	uint32_t alignment = dwFlags & (C4GM_ALeft | C4GM_ACenter | C4GM_ARight);
 	if (((alignment | alignment - 1) + 1) >> 1 != alignment)
 	{
-		throw new C4AulExecError(ctx->Obj, "CustomMessage: Only one text alignment flag allowed!");
+		throw C4AulExecError(ctx->Obj, "CustomMessage: Only one text alignment flag allowed!");
 	}
 
 	// message color
@@ -6413,7 +6413,7 @@ static bool FnSetNextMission(C4AulContext *ctx, C4String *szNextMission, C4Strin
 
 static C4ValueArray *FnGetKeys(C4AulContext *ctx, C4ValueHash *map)
 {
-	if (!map) throw new C4AulExecError(ctx->Obj, "GetKeys(): map expected, got 0");
+	if (!map) throw C4AulExecError(ctx->Obj, "GetKeys(): map expected, got 0");
 
 	C4ValueArray *keys = new C4ValueArray(map->size());
 
@@ -6429,7 +6429,7 @@ static C4ValueArray *FnGetKeys(C4AulContext *ctx, C4ValueHash *map)
 
 static C4ValueArray *FnGetValues(C4AulContext *ctx, C4ValueHash *map)
 {
-	if (!map) throw new C4AulExecError(ctx->Obj, "GetValues(): map expected, got 0");
+	if (!map) throw C4AulExecError(ctx->Obj, "GetValues(): map expected, got 0");
 
 	C4ValueArray *keys = new C4ValueArray(map->size());
 

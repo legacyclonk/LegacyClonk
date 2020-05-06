@@ -1458,10 +1458,9 @@ bool AlgoScript(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 	{
 		return !!pFunc->Exec(0, &Pars);
 	}
-	catch (C4AulError *err)
+	catch (const C4AulError &err)
 	{
 		// do nothing
-		delete err;
 	}
 #endif
 	return false;

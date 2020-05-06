@@ -306,11 +306,10 @@ void C4AulScriptEngine::Link(C4DefList *rDefs)
 		// reset counters
 		warnCnt = errCnt = nonStrictCnt = lineCnt = 0;
 	}
-	catch (C4AulError *err)
+	catch (const C4AulError &err)
 	{
 		// error??! show it!
-		err->show();
-		delete err;
+		err.show();
 	}
 
 #endif

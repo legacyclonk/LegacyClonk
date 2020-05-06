@@ -202,12 +202,12 @@ void C4Value::GetContainerElement(C4Value *index, C4Value &target, C4AulContext 
 				else target.Set0();
 			}
 			else
-				throw new C4AulExecError(pctx->Obj, "indexed access on object: only string keys are allowed");
+				throw C4AulExecError(pctx->Obj, "indexed access on object: only string keys are allowed");
 			return;
 		}
 		// No array (and no nullpointer because Data==0 => Type==any)
 		if (Ref.Type != C4V_Array && Ref.Type != C4V_Map)
-			throw new C4AulExecError(pctx->Obj, "indexed access: array or map expected");
+			throw C4AulExecError(pctx->Obj, "indexed access: array or map expected");
 		if (noref)
 		{
 			// Get the item, but do not resize the array - it might be used more than once
@@ -240,7 +240,7 @@ void C4Value::GetContainerElement(C4Value *index, C4Value &target, C4AulContext 
 	}
 	catch (const std::runtime_error &e)
 	{
-		throw new C4AulExecError(pctx->Obj, e.what());
+		throw C4AulExecError(pctx->Obj, e.what());
 	}
 }
 
@@ -249,7 +249,7 @@ void C4Value::SetArrayLength(int32_t size, C4AulContext *cthr)
 	C4Value &Ref = GetRefVal();
 	// No array
 	if (Ref.Type != C4V_Array)
-		throw new C4AulExecError(cthr->Obj, "SetLength: array expected");
+		throw C4AulExecError(cthr->Obj, "SetLength: array expected");
 	Ref.Data.Array = Ref.Data.Array->SetLength(size);
 }
 

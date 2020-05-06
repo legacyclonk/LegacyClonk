@@ -32,7 +32,7 @@ C4AulExecError::C4AulExecError(C4Object *pObj, const char *szError) : cObj(pObj)
 	sMessage.Format("ERROR: %s", szError ? szError : "(no error message)");
 }
 
-void C4AulExecError::show()
+void C4AulExecError::show() const
 {
 #ifdef C4ENGINE
 	// log
@@ -127,7 +127,7 @@ private:
 	void PushContext(const C4AulScriptContext &rContext)
 	{
 		if (pCurCtx >= Contexts + MAX_CONTEXT_STACK - 1)
-			throw new C4AulExecError(pCurCtx->Obj, "context stack overflow!");
+			throw C4AulExecError(pCurCtx->Obj, "context stack overflow!");
 		*++pCurCtx = rContext;
 		// Trace?
 		if (iTraceStart >= 0)
@@ -143,7 +143,7 @@ private:
 	void PopContext()
 	{
 		if (pCurCtx < Contexts)
-			throw new C4AulExecError(pCurCtx->Obj, "context stack underflow!");
+			throw C4AulExecError(pCurCtx->Obj, "context stack underflow!");
 		// Profiler adding up times
 		if (fProfiling)
 		{
@@ -167,7 +167,7 @@ private:
 	void CheckOverflow(int iCnt)
 	{
 		if (ValueStackSize() + iCnt > MAX_VALUE_STACK)
-			throw new C4AulExecError(pCurCtx->Obj, "internal error: value stack overflow!");
+			throw C4AulExecError(pCurCtx->Obj, "internal error: value stack overflow!");
 	}
 
 	void PushString(C4String *Str)
@@ -209,7 +209,7 @@ private:
 	bool PopValue()
 	{
 		if (LocalValueStackSize() < 1)
-			throw new C4AulExecError(pCurCtx->Obj, "internal error: value stack underflow!");
+			throw C4AulExecError(pCurCtx->Obj, "internal error: value stack underflow!");
 		(pCurVal--)->Set0();
 		return true;
 	}
@@ -217,7 +217,7 @@ private:
 	void PopValues(int n)
 	{
 		if (LocalValueStackSize() < n)
-			throw new C4AulExecError(pCurCtx->Obj, "internal error: value stack underflow!");
+			throw C4AulExecError(pCurCtx->Obj, "internal error: value stack underflow!");
 		while (n--)
 			(pCurVal--)->Set0();
 	}
@@ -225,7 +225,7 @@ private:
 	void PopValuesUntil(C4Value *pUntilVal)
 	{
 		if (pUntilVal < Values - 1)
-			throw new C4AulExecError(pCurCtx->Obj, "internal error: value stack underflow!");
+			throw C4AulExecError(pCurCtx->Obj, "internal error: value stack underflow!");
 		while (pCurVal > pUntilVal)
 			(pCurVal--)->Set0();
 	}
@@ -255,7 +255,7 @@ private:
 		{
 			if (!value->ConvertTo(C4V_pC4Value))
 			{
-				throw new C4AulExecError(pCurCtx->Obj,
+				throw C4AulExecError(pCurCtx->Obj,
 					FormatString("operator \"%s\"%s: got \"%s\", but expected \"%s&\"!",
 						operatorName, operandPosition, value->GetTypeInfo(), GetC4VName(expectedType)).getData());
 			}
@@ -266,7 +266,7 @@ private:
 			}
 			if (!value->GetRefVal().ConvertTo(expectedType))
 			{
-				throw new C4AulExecError(pCurCtx->Obj,
+				throw C4AulExecError(pCurCtx->Obj,
 					FormatString("operator \"%s\"%s: got \"%s&\", but expected \"%s&\"!",
 						operatorName, operandPosition, value->GetRefVal().GetTypeInfo(), GetC4VName(expectedType)).getData());
 			}
@@ -278,14 +278,14 @@ private:
 				value->Set0();
 			}
 			if (!value->ConvertTo(expectedType))
-				throw new C4AulExecError(pCurCtx->Obj,
+				throw C4AulExecError(pCurCtx->Obj,
 					FormatString("operator \"%s\"%s: got \"%s\", but expected \"%s\"!",
 						operatorName, operandPosition, value->GetTypeInfo(), GetC4VName(expectedType)).getData());
 		}
 		if constexpr (!allowAny)
 		{
 			if (isAtLeastStrict3 && value->GetType() == C4V_Any)
-				throw new C4AulExecError(pCurCtx->Obj,
+				throw C4AulExecError(pCurCtx->Obj,
 					FormatString("operator \"%s\"%s: got nil, but expected \"%s\"!",
 						operatorName, operandPosition, GetC4VName(expectedType)).getData());
 		}
@@ -381,10 +381,10 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 
 			case AB_EOFN:
-				throw new C4AulExecError(pCurCtx->Obj, "function didn't return");
+				throw C4AulExecError(pCurCtx->Obj, "function didn't return");
 
 			case AB_ERR:
-				throw new C4AulExecError(pCurCtx->Obj, "syntax error: see previous parser error for details.");
+				throw C4AulExecError(pCurCtx->Obj, "syntax error: see previous parser error for details.");
 
 			case AB_PARN_R:
 				PushValueRef(pCurCtx->Pars[pCPos->bccX]);
@@ -402,13 +402,13 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 
 			case AB_LOCALN_R: case AB_LOCALN_V:
 				if (!pCurCtx->Obj)
-					throw new C4AulExecError(pCurCtx->Obj, "can't access local variables in a definition call!");
+					throw C4AulExecError(pCurCtx->Obj, "can't access local variables in a definition call!");
 				if (pCurCtx->Func->Owner->Def != pCurCtx->Obj->Def)
 				{
 					const auto localName = pCurCtx->Func->Owner->Def->Script.LocalNamed.pNames[pCPos->bccX];
 					if (pCurCtx->Func->pOrgScript->Strict >= C4AulScriptStrict::STRICT3 || pCurCtx->Obj->LocalNamed.pNames->iSize <= pCPos->bccX)
 					{
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("can't access local variable \"%s\" after ChangeDef!", localName).getData());
+						throw C4AulExecError(pCurCtx->Obj, FormatString("can't access local variable \"%s\" after ChangeDef!", localName).getData());
 					}
 
 					const auto actualLocalName = pCurCtx->Obj->Def->Script.LocalNamed.pNames[pCPos->bccX];
@@ -632,12 +632,12 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 							}
 							catch (C4V_Type type)
 							{
-								throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"%s\" right side: can not convert \"%s\" to \"string\"!", operatorName, GetC4VName(type)).getData());
+								throw C4AulExecError(pCurCtx->Obj, FormatString("operator \"%s\" right side: can not convert \"%s\" to \"string\"!", operatorName, GetC4VName(type)).getData());
 							}
 						}
 						catch (C4V_Type type)
 						{
-							throw new C4AulExecError(pCurCtx->Obj, FormatString("operator \"%s\" left side: can not convert \"%s\" to \"string\", \"array\" or \"map\"!", operatorName, GetC4VName(type)).getData());
+							throw C4AulExecError(pCurCtx->Obj, FormatString("operator \"%s\" left side: can not convert \"%s\" to \"string\", \"array\" or \"map\"!", operatorName, GetC4VName(type)).getData());
 						}
 				}
 				break;
@@ -900,7 +900,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				C4Value &Index = pCurVal[0];
 				if (Container.GetType() == C4V_Any)
 				{
-					throw new C4AulExecError(pCurCtx->Obj, "indexed access [index]: array, map or string expected, but got nil");
+					throw C4AulExecError(pCurCtx->Obj, "indexed access [index]: array, map or string expected, but got nil");
 				}
 
 				if (Container.ConvertTo(C4V_Map) || Container.ConvertTo(C4V_Array) || Container.ConvertTo(C4V_C4Object))
@@ -915,7 +915,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				if (Container.ConvertTo(C4V_String))
 				{
 					if (!Index.ConvertTo(C4V_Int))
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("indexed string access: index of type %s, int expected!", Index.GetTypeName()).getData());
+						throw C4AulExecError(pCurCtx->Obj, FormatString("indexed string access: index of type %s, int expected!", Index.GetTypeName()).getData());
 
 					auto index = Index._getInt();
 					StdStrBuf &str = Container._getStr()->Data;
@@ -938,7 +938,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					break;
 				}
 				else
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("indexed access: can't access %s by index!", Container.GetTypeName()).getData());
+					throw C4AulExecError(pCurCtx->Obj, FormatString("indexed access: can't access %s by index!", Container.GetTypeName()).getData());
 			}
 
 			case AB_MAPA_R: case AB_MAPA_V:
@@ -946,12 +946,12 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				C4Value &Map = pCurVal->GetRefVal();
 				if (Map.GetType() == C4V_Any)
 				{
-					throw new C4AulExecError(pCurCtx->Obj, "map access with .: map expected, but got nil!");
+					throw C4AulExecError(pCurCtx->Obj, "map access with .: map expected, but got nil!");
 				}
 
 				if (!Map.ConvertTo(C4V_Map) && !Map.ConvertTo(C4V_C4Object))
 				{
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("map access with .: map expected, but got \"%s\"!", GetC4VName(Map.GetType())).getData());
+					throw C4AulExecError(pCurCtx->Obj, FormatString("map access with .: map expected, but got \"%s\"!", GetC4VName(Map.GetType())).getData());
 				}
 
 				C4Value key(reinterpret_cast<C4String *>(pCPos->bccX));
@@ -965,7 +965,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				C4Value &Array = pCurVal[0].GetRefVal();
 				// Typcheck
 				if (!Array.ConvertTo(C4V_Array) || Array.GetType() != C4V_Array)
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("array append accesss: can't access %s as an array!", Array.GetType() == C4V_Any ? "nil" : Array.GetTypeName()).getData());
+					throw C4AulExecError(pCurCtx->Obj, FormatString("array append accesss: can't access %s as an array!", Array.GetType() == C4V_Any ? "nil" : Array.GetTypeName()).getData());
 
 				C4Value index = C4VInt(Array._getArray()->GetSize());
 				Array.GetContainerElement(&index, pCurVal[0], pCurCtx);
@@ -1079,7 +1079,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 
 				if (C4AulScriptFunc *sfunc = pFunc->SFunc(); sfunc && sfunc->Access < sfunc->pOrgScript->GetAllowedAccess(pFunc, pCurCtx->Func->pOrgScript))
 				{
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("Insufficient access level for function \"%s\"!", pFunc->Name).getData());
+					throw C4AulExecError(pCurCtx->Obj, FormatString("Insufficient access level for function \"%s\"!", pFunc->Name).getData());
 				}
 				C4Value *pPars = pCurVal - pFunc->GetParCount() + 1;
 				// Save current position
@@ -1096,7 +1096,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 
 			case AB_VAR_R: case AB_VAR_V:
 				if (!pCurVal->ConvertTo(C4V_Int))
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("Var: index of type %s, int expected!", pCurVal->GetTypeName()).getData());
+					throw C4AulExecError(pCurCtx->Obj, FormatString("Var: index of type %s, int expected!", pCurVal->GetTypeName()).getData());
 				// Push reference to variable on the stack
 				if (pCPos->bccType == AB_VAR_R)
 					pCurVal->SetRef(&pCurCtx->NumVars.GetItem(pCurVal->_getInt()));
@@ -1106,7 +1106,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 
 			case AB_PAR_R: case AB_PAR_V:
 				if (!pCurVal->ConvertTo(C4V_Int))
-					throw new C4AulExecError(pCurCtx->Obj, FormatString("Par: index of type %s, int expected!", pCurVal->GetTypeName()).getData());
+					throw C4AulExecError(pCurCtx->Obj, FormatString("Par: index of type %s, int expected!", pCurVal->GetTypeName()).getData());
 				// Push reference to parameter on the stack
 				if (pCurVal->_getInt() >= 0 && pCurVal->_getInt() < pCurCtx->ParCnt())
 				{
@@ -1128,9 +1128,9 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				if (!iItem)
 				{
 					if (!pCurVal[-1].ConvertTo(C4V_Array))
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: array expected, but got %s!", pCurVal[-1].GetTypeName()).getData());
+						throw C4AulExecError(pCurCtx->Obj, FormatString("for: array expected, but got %s!", pCurVal[-1].GetTypeName()).getData());
 					if (!pCurVal[-1]._getArray())
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: array expected, but got nil!").getData());
+						throw C4AulExecError(pCurCtx->Obj, FormatString("for: array expected, but got nil!").getData());
 				}
 				C4ValueArray *pArray = pCurVal[-1]._getArray();
 				// No more entries?
@@ -1156,9 +1156,9 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				if (!iterator)
 				{
 					if (!pCurVal[-2].ConvertTo(C4V_Map))
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: map expected, but got %s!", pCurVal[-1].GetTypeName()).getData());
+						throw C4AulExecError(pCurCtx->Obj, FormatString("for: map expected, but got %s!", pCurVal[-1].GetTypeName()).getData());
 					if (!pCurVal[-2]._getMap())
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("for: map expected, but got nil!").getData());
+						throw C4AulExecError(pCurCtx->Obj, FormatString("for: map expected, but got nil!").getData());
 				}
 				C4ValueHash *map = pCurVal[-2]._getMap();
 				if (!iterator)
@@ -1203,7 +1203,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 
 				// Check for call to null
 				if (!isGlobal && !*pTargetVal)
-					throw new C4AulExecError(pCurCtx->Obj, "Object call: target is zero!");
+					throw C4AulExecError(pCurCtx->Obj, "Object call: target is zero!");
 
 				// Get call target - "object" or "id" are allowed
 				C4Object *pDestObj{}; C4Def *pDestDef{};
@@ -1222,11 +1222,11 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 						pDestDef = C4Id2Def(pTargetVal->_getC4ID());
 						// definition must be known
 						if (!pDestDef)
-							throw new C4AulExecError(pCurCtx->Obj,
+							throw C4AulExecError(pCurCtx->Obj,
 								FormatString("Definition call: Definition for id %s not found!", C4IdText(pTargetVal->_getC4ID())).getData());
 					}
 					else
-						throw new C4AulExecError(pCurCtx->Obj,
+						throw C4AulExecError(pCurCtx->Obj,
 							FormatString("Object call: Invalid target type %s, expected object or id!", pTargetVal->GetTypeName()).getData());
 				}
 
@@ -1252,10 +1252,10 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				{
 					const char *szFuncName = reinterpret_cast<C4AulFunc *>(pCPos->bccX)->Name;
 					if (pDestObj)
-						throw new C4AulExecError(pCurCtx->Obj,
+						throw C4AulExecError(pCurCtx->Obj,
 							FormatString("Object call: No function \"%s\" in object \"%s\"!", szFuncName, pTargetVal->GetDataString().getData()).getData());
 					else
-						throw new C4AulExecError(pCurCtx->Obj,
+						throw C4AulExecError(pCurCtx->Obj,
 							FormatString("Definition call: No function \"%s\" in definition \"%s\"!", szFuncName, pDestDef->Name.getData()).getData());
 				}
 
@@ -1264,7 +1264,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					C4AulScript *script = sfunc->pOrgScript;
 					if (sfunc->Access < script->GetAllowedAccess(pFunc, sfunc->pOrgScript))
 					{
-						throw new C4AulExecError(pCurCtx->Obj, FormatString("Insufficient access level for function \"%s\"!", pFunc->Name).getData());
+						throw C4AulExecError(pCurCtx->Obj, FormatString("Insufficient access level for function \"%s\"!", pFunc->Name).getData());
 					}
 				}
 
@@ -1295,7 +1295,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				pCPos++;
 		}
 	}
-	catch (C4AulError *e)
+	catch (const C4AulError &e)
 	{
 		// Save current position
 		pOldCtx->CPos = pCPos;
@@ -1303,8 +1303,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 		if (fPassErrors)
 			throw;
 		// Show
-		e->show();
-		delete e;
+		e.show();
 		// Trace
 		for (C4AulScriptContext *pCtx = pCurCtx; pCtx >= Contexts; pCtx--)
 			pCtx->dump(StdStrBuf(" by: "));
@@ -1354,7 +1353,7 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 			pPars[i].Set0();
 		}
 		if (!pPars[i].ConvertTo(pTypes[i]))
-			throw new C4AulExecError(pCurCtx->Obj,
+			throw C4AulExecError(pCurCtx->Obj,
 				FormatString("call to \"%s\" parameter %d: got \"%s\", but expected \"%s\"!",
 					pFunc->Name, i + 1, pPars[i].GetTypeName(), GetC4VName(pTypes[i])
 				).getData());
@@ -1633,10 +1632,9 @@ C4Value C4AulScript::DirectExec(C4Object *pObj, const char *szScript, const char
 	{
 		pScript->ParseFn(pFunc, true);
 	}
-	catch (C4AulError *ex)
+	catch (const C4AulError &ex)
 	{
-		ex->show();
-		delete ex;
+		ex.show();
 		delete pFunc;
 		delete pScript;
 		return C4VNull;

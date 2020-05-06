@@ -247,7 +247,7 @@ void C4AulParseState::Strict2Error(const char *pMsg, const char *pIdtf)
 	if (Fn ? (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2) : (a->Strict < C4AulScriptStrict::STRICT2))
 		Warn(pMsg, pIdtf);
 	else
-		throw new C4AulParseError(this, pMsg, pIdtf);
+		throw C4AulParseError(this, pMsg, pIdtf);
 }
 
 C4AulParseError::C4AulParseError(C4AulParseState *state, const char *pMsg, const char *pIdtf, bool Warn)
@@ -650,9 +650,9 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 				// unrecognized char
 				// show appropriate error message
 				if (C >= '!' && C <= '~')
-					throw new C4AulParseError(this, FormatString("unexpected character '%c' found", (int)(unsigned char)C).getData());
+					throw C4AulParseError(this, FormatString("unexpected character '%c' found", (int)(unsigned char)C).getData());
 				else
-					throw new C4AulParseError(this, FormatString("unexpected character 0x%x found", (int)(unsigned char)C).getData());
+					throw C4AulParseError(this, FormatString("unexpected character 0x%x found", (int)(unsigned char)C).getData());
 			}
 			break;
 		}
@@ -752,7 +752,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					return ATT_IDTF;
 				}
 				// check if valid
-				if (!LooksLikeID(pToken)) throw new C4AulParseError(this, "erroneous Ident: ", pToken);
+				if (!LooksLikeID(pToken)) throw C4AulParseError(this, "erroneous Ident: ", pToken);
 				// get id of it
 				*pInt = (int)C4Id(pToken);
 				return ATT_C4ID;
@@ -796,7 +796,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					}
 					}
 				else if (C == 0 || C == 10 || C == 13) // line break / feed
-					throw new C4AulParseError(this, "string not closed");
+					throw C4AulParseError(this, "string not closed");
 				else
 					// copy character
 					*(pStrPos++) = C;
@@ -1367,14 +1367,14 @@ void C4AulParseState::Match(C4AulTokenType RefTokenType, const char *Message)
 {
 	if (TokenType != RefTokenType)
 		// error
-		throw new C4AulParseError(this, Message ? Message :
+		throw C4AulParseError(this, Message ? Message :
 			FormatString("%s expected, but found %s", GetTokenName(RefTokenType), GetTokenName(TokenType)).getData());
 	Shift();
 }
 
 void C4AulParseState::UnexpectedToken(const char *Expected)
 {
-	throw new C4AulParseError(this, FormatString("%s expected, but found %s", Expected, GetTokenName(TokenType)).getData());
+	throw C4AulParseError(this, FormatString("%s expected, but found %s", Expected, GetTokenName(TokenType)).getData());
 }
 
 void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
@@ -1478,25 +1478,25 @@ void C4AulParseState::Parse_Script()
 					else if (cInt == 3)
 						a->Strict = C4AulScriptStrict::STRICT3;
 					else
-						throw new C4AulParseError(this, "unknown strict level");
+						throw C4AulParseError(this, "unknown strict level");
 					Shift();
 				}
 			}
 			else
 				// -> unknown directive
-				throw new C4AulParseError(this, "unknown directive: ", Idtf);
+				throw C4AulParseError(this, "unknown directive: ", Idtf);
 			break;
 		}
 		case ATT_IDTF:
 		{
 			if (SEqual(Idtf, C4AUL_For))
 			{
-				throw new C4AulParseError(this, "unexpected for outside function");
+				throw C4AulParseError(this, "unexpected for outside function");
 			}
 			// check for variable definition (var)
 			else if (SEqual(Idtf, C4AUL_VarNamed))
 			{
-				throw new C4AulParseError(this, "unexpected variable definition outside function");
+				throw C4AulParseError(this, "unexpected variable definition outside function");
 			}
 			// check for object-local variable definition (local)
 			else if (SEqual(Idtf, C4AUL_LocalNamed))
@@ -1533,14 +1533,13 @@ void C4AulParseState::Parse_Script()
 		}
 		all_ok = true;
 	}
-	catch (C4AulError *err)
+	catch (const C4AulError &err)
 	{
 		// damn! something went wrong, print it out
 		// but only one error per function
 		if (all_ok)
-			err->show();
+			err.show();
 		all_ok = false;
-		delete err;
 	}
 }
 
@@ -1572,13 +1571,13 @@ void C4AulParseState::Parse_FuncHead()
 		case AA_PROTECTED:
 		case AA_PUBLIC:
 			if (a->LocalNamed.GetItemNr(Idtf) != -1)
-				throw new C4AulParseError(this, "function definition: name already in use (local variable)");
+				throw C4AulParseError(this, "function definition: name already in use (local variable)");
 			if (a->Def)
 				break;
 			// func in global context: fallthru
 		case AA_GLOBAL:
 			if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
-				throw new C4AulParseError(this, "function definition: name already in use (global variable)");
+				throw C4AulParseError(this, "function definition: name already in use (global variable)");
 			if (a->Engine->GlobalConstNames.GetItemNr(Idtf) != -1)
 				Strict2Error("function definition: name already in use (global variable)", 0);
 		}
@@ -1620,7 +1619,7 @@ void C4AulParseState::Parse_FuncHead()
 			}
 			// too many parameters?
 			if (cpar >= C4AUL_MAX_Par)
-				throw new C4AulParseError(this, "'func' parameter list: too many parameters (max 10)");
+				throw C4AulParseError(this, "'func' parameter list: too many parameters (max 10)");
 
 			if (TokenType == ATT_LDOTS)
 			{
@@ -1696,7 +1695,7 @@ void C4AulParseState::Parse_FuncHead()
 	}
 	// Must be old-style function declaration now
 	if (a->Strict >= C4AulScriptStrict::STRICT2)
-		throw new C4AulParseError(this, "Declaration expected, but found identifier ", Idtf);
+		throw C4AulParseError(this, "Declaration expected, but found identifier ", Idtf);
 	// check: symbol already in use?
 	switch (Acc)
 	{
@@ -1704,19 +1703,19 @@ void C4AulParseState::Parse_FuncHead()
 	case AA_PROTECTED:
 	case AA_PUBLIC:
 		if (a->LocalNamed.GetItemNr(Idtf) != -1)
-			throw new C4AulParseError(this, "function definition: name already in use (local variable)");
+			throw C4AulParseError(this, "function definition: name already in use (local variable)");
 		if (a->Def)
 			break;
 		// func in global context: fallthru
 	case AA_GLOBAL:
 		if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
-			throw new C4AulParseError(this, "function definition: name already in use (global variable)");
+			throw C4AulParseError(this, "function definition: name already in use (global variable)");
 	}
 	char FuncIdtf[C4AUL_MAX_Identifier] = ""; // current identifier
 	SCopy(Idtf, FuncIdtf);
 	Shift();
 	if (TokenType != ATT_COLON)
-		throw new C4AulParseError(this, FormatString("declaration expected, but found identifier '%s'", FuncIdtf).getData());
+		throw C4AulParseError(this, FormatString("declaration expected, but found identifier '%s'", FuncIdtf).getData());
 	// create script fn
 	if (Acc == AA_GLOBAL)
 	{
@@ -1766,7 +1765,7 @@ void C4AulParseState::Parse_FuncHead()
 				Parse_Local();
 			}
 			else
-				throw new C4AulParseError(this, "'local' variable declaration in global script");
+				throw C4AulParseError(this, "'local' variable declaration in global script");
 		}
 		// check for variable definition (static)
 		else if (SEqual(Idtf, C4AUL_GlobalNamed))
@@ -1824,7 +1823,7 @@ void C4AulParseState::Parse_Desc()
 			// check for eof
 			if (!*SPos)
 				// -> function desc not closed
-				throw new C4AulParseError(this, "function desc not closed");
+				throw C4AulParseError(this, "function desc not closed");
 			// next char
 			SPos++; Len++;
 		}
@@ -1863,7 +1862,7 @@ void C4AulParseState::Parse_Function()
 			Fn = 0;
 			return;
 		}
-		throw new C4AulParseError(this, "no '{' found for '}'");
+		throw C4AulParseError(this, "no '{' found for '}'");
 	}
 	case ATT_EOF:
 	{
@@ -1972,7 +1971,7 @@ void C4AulParseState::Parse_Statement()
 		{
 			// global func?
 			if (Fn->Owner == &Game.ScriptEngine)
-				throw new C4AulParseError(this, "using local variable in global function!");
+				throw C4AulParseError(this, "using local variable in global function!");
 			// insert variable by id
 			Parse_Expression();
 			AddBCC(AB_STACK, -1);
@@ -1999,7 +1998,7 @@ void C4AulParseState::Parse_Statement()
 		}
 		else if (SEqual(Idtf, C4AUL_Else)) // else
 		{
-			throw new C4AulParseError(this, "misplaced 'else'");
+			throw C4AulParseError(this, "misplaced 'else'");
 		}
 		else if (SEqual(Idtf, C4AUL_While)) // while
 		{
@@ -2191,7 +2190,7 @@ void C4AulParseState::Parse_Statement()
 
 			if (FoundFn && FoundFn->SFunc() && FoundFn->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(FoundFn, Fn->pOrgScript))
 			{
-				throw new C4AulParseError(this, "insufficient access level", Idtf);
+				throw C4AulParseError(this, "insufficient access level", Idtf);
 			}
 
 			// ignore func-not-found errors in the preparser, because the function tables are not built yet
@@ -2208,7 +2207,7 @@ void C4AulParseState::Parse_Statement()
 					break;
 				}
 				// -> func not found
-				throw new C4AulParseError(this, "unknown identifier: ", Idtf);
+				throw C4AulParseError(this, "unknown identifier: ", Idtf);
 			}
 			Shift();
 			// check if it's a label - labels like OCF_Living are OK (ugh...)
@@ -2397,7 +2396,7 @@ void C4AulParseState::Parse_Map()
 		case ATT_COMMA:
 		{
 			// got no parameter before a ","? this is an error in a map
-			throw new C4AulParseError(this, "',' found in a map without preceding key-value assignment ");
+			throw C4AulParseError(this, "',' found in a map without preceding key-value assignment ");
 			break;
 		}
 		default:
@@ -2618,7 +2617,7 @@ void C4AulParseState::Parse_ForEach()
 	// search variable (fail if not found)
 	int iVarID = Fn->VarNamed.GetItemNr(Idtf);
 	if (iVarID < 0)
-		throw new C4AulParseError(this, "internal error: var definition: var not found in variable table");
+		throw C4AulParseError(this, "internal error: var definition: var not found in variable table");
 	Shift();
 
 	int iVarIDForMapValue = 0;
@@ -2637,7 +2636,7 @@ void C4AulParseState::Parse_ForEach()
 			// search variable (fail if not found)
 			iVarIDForMapValue = Fn->VarNamed.GetItemNr(Idtf);
 			if (iVarIDForMapValue < 0)
-				throw new C4AulParseError(this, "internal error: var definition: var not found in variable table");
+				throw C4AulParseError(this, "internal error: var definition: var not found in variable table");
 			Shift();
 		}
 	}
@@ -2704,7 +2703,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 		{
 			// global func?
 			if (Fn->Owner == &Game.ScriptEngine)
-				throw new C4AulParseError(this, "using local variable in global function!");
+				throw C4AulParseError(this, "using local variable in global function!");
 			// insert variable by id
 			AddBCC(AB_LOCALN_R, a->LocalNamed.GetItemNr(Idtf));
 			Shift();
@@ -2719,16 +2718,16 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 		// function identifier: check special functions
 		else if (SEqual(Idtf, C4AUL_If))
 			// -> if is not a valid parameter
-			throw new C4AulParseError(this, "'if' may not be used as a parameter");
+			throw C4AulParseError(this, "'if' may not be used as a parameter");
 		else if (SEqual(Idtf, C4AUL_While))
 			// -> while is not a valid parameter
-			throw new C4AulParseError(this, "'while' may not be used as a parameter");
+			throw C4AulParseError(this, "'while' may not be used as a parameter");
 		else if (SEqual(Idtf, C4AUL_Else))
 			// -> else is not a valid parameter
-			throw new C4AulParseError(this, "misplaced 'else'");
+			throw C4AulParseError(this, "misplaced 'else'");
 		else if (SEqual(Idtf, C4AUL_For))
 			// -> for is not a valid parameter
-			throw new C4AulParseError(this, "'for' may not be used as a parameter");
+			throw C4AulParseError(this, "'for' may not be used as a parameter");
 		else if (SEqual(Idtf, C4AUL_Return))
 		{
 			// return: treat as regular function with special byte code
@@ -2756,7 +2755,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 		{
 			Shift();
 			// inherited keyword: check strict syntax
-			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT) throw new C4AulParseError(this, "inherited disabled; use #strict syntax!");
+			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT) throw C4AulParseError(this, "inherited disabled; use #strict syntax!");
 			// get function
 			if (Fn->OwnerOverloaded)
 			{
@@ -2767,7 +2766,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 			else
 				// not found? raise an error, if it's not a safe call
 				if (SEqual(Idtf, C4AUL_Inherited) && Type == PARSER)
-					throw new C4AulParseError(this, "inherited function not found, use _inherited to call failsafe");
+					throw C4AulParseError(this, "inherited function not found, use _inherited to call failsafe");
 				else
 				{
 					// otherwise, parse parameters, but discard them
@@ -2834,7 +2833,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 						// otherwise: fall through to error
 					default:
 					{
-						throw new C4AulParseError(this, FormatString("internal error: constant %s has undefined type %d", Idtf, val.GetType()).getData());
+						throw C4AulParseError(this, FormatString("internal error: constant %s has undefined type %d", Idtf, val.GetType()).getData());
 					}
 					}
 					Shift();
@@ -2850,7 +2849,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 				else
 				{
 					// identifier could not be resolved
-					throw new C4AulParseError(this, "unknown identifier: ", Idtf);
+					throw C4AulParseError(this, "unknown identifier: ", Idtf);
 				}
 			}
 		}
@@ -2894,7 +2893,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 		// postfix?
 		if (C4ScriptOpMap[OpID].Postfix)
 			// oops. that's wrong
-			throw new C4AulParseError(this, "postfix operator without first expression");
+			throw C4AulParseError(this, "postfix operator without first expression");
 		Shift();
 		// generate code for the following expression
 		Parse_Expression(C4ScriptOpMap[OpID].Priority);
@@ -2924,7 +2923,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 	{
 		// Arrays are not tested in non-strict mode at all
 		if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
-			throw new C4AulParseError(this, "unexpected '['");
+			throw C4AulParseError(this, "unexpected '['");
 		Parse_Array();
 		break;
 	}
@@ -2932,7 +2931,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 	{
 		// Maps are not tested below strict 3 mode at all
 		if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
-			throw new C4AulParseError(this, "unexpected '{'");
+			throw C4AulParseError(this, "unexpected '{'");
 		Parse_Map();
 		break;
 	}
@@ -2967,7 +2966,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 			// not found?
 			if (!C4ScriptOpMap[nOpID].Identifier)
 			{
-				throw new C4AulParseError(this, "unexpected prefix operator: ", C4ScriptOpMap[OpID].Identifier);
+				throw C4AulParseError(this, "unexpected prefix operator: ", C4ScriptOpMap[OpID].Identifier);
 			}
 			// otherwise use the new-found correct postfix operator
 			OpID = nOpID;
@@ -3041,7 +3040,7 @@ bool C4AulParseState::Parse_Expression3()
 		{
 			// Arrays are not tested in non-strict mode at all
 			if (Fn->pOrgScript->Strict == C4AulScriptStrict::NONSTRICT)
-				throw new C4AulParseError(this, "unexpected '['");
+				throw C4AulParseError(this, "unexpected '['");
 			// Access the array
 			const char *SPos0 = SPos;
 			Shift();
@@ -3072,7 +3071,7 @@ bool C4AulParseState::Parse_Expression3()
 		case ATT_QMARK:
 		{
 			if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
-				throw new C4AulParseError(this, "unexpected '?'");
+				throw C4AulParseError(this, "unexpected '?'");
 
 			SetNoRef();
 
@@ -3097,7 +3096,7 @@ bool C4AulParseState::Parse_Expression3()
 		case ATT_DOT:
 		{
 			if (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
-				throw new C4AulParseError(this, "unexpected '.'");
+				throw C4AulParseError(this, "unexpected '.'");
 			Shift();
 			if (TokenType == ATT_IDTF)
 			{
@@ -3139,17 +3138,17 @@ bool C4AulParseState::Parse_Expression3()
 					C4Def *pDef = C4Id2Def(idNS);
 					if (!pDef)
 					{
-						throw new C4AulParseError(this, "direct object call: def not found: ", C4IdText(idNS));
+						throw C4AulParseError(this, "direct object call: def not found: ", C4IdText(idNS));
 					}
 					// search func
 					if (!(pFunc = pDef->Script.GetSFunc(Idtf)))
 					{
-						throw new C4AulParseError(this, FormatString("direct object call: function %s::%s not found", C4IdText(idNS), Idtf).getData());
+						throw C4AulParseError(this, FormatString("direct object call: function %s::%s not found", C4IdText(idNS), Idtf).getData());
 					}
 
 					if (pFunc->SFunc() && pFunc->SFunc()->Access < pDef->Script.GetAllowedAccess(pFunc, Fn->pOrgScript))
 					{
-						throw new C4AulParseError(this, "insufficient access level", Idtf);
+						throw C4AulParseError(this, "insufficient access level", Idtf);
 					}
 
 					// write namespace chunk to byte code
@@ -3169,7 +3168,7 @@ bool C4AulParseState::Parse_Expression3()
 					failSafe = true;
 				}
 				// expect identifier of called function now
-				if (TokenType != ATT_IDTF) throw new C4AulParseError(this, "expecting func name after '->'");
+				if (TokenType != ATT_IDTF) throw C4AulParseError(this, "expecting func name after '->'");
 				// search a function with the given name
 				if (eCallType == AB_CALLGLOBAL)
 				{
@@ -3186,7 +3185,7 @@ bool C4AulParseState::Parse_Expression3()
 					// not failsafe?
 					if (!failSafe && Type == PARSER)
 					{
-						throw new C4AulParseError(this, FormatString("direct object call: function %s not found", Idtf).getData());
+						throw C4AulParseError(this, FormatString("direct object call: function %s not found", Idtf).getData());
 					}
 					// otherwise: nothing to call - just execute parameters and discard them
 					Shift();
@@ -3200,7 +3199,7 @@ bool C4AulParseState::Parse_Expression3()
 
 				else if (pFunc->SFunc() && pFunc->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(pFunc, Fn->pOrgScript))
 				{
-					throw new C4AulParseError(this, "insufficient access level", Idtf);
+					throw C4AulParseError(this, "insufficient access level", Idtf);
 				}
 			}
 			// add call chunk
@@ -3232,7 +3231,7 @@ void C4AulParseState::Parse_Var()
 		// search variable (fail if not found)
 		int iVarID = Fn->VarNamed.GetItemNr(Idtf);
 		if (iVarID < 0)
-			throw new C4AulParseError(this, "internal error: var definition: var not found in variable table");
+			throw C4AulParseError(this, "internal error: var definition: var not found in variable table");
 		Shift();
 		if (TokenType == ATT_OPERATOR)
 		{
@@ -3247,7 +3246,7 @@ void C4AulParseState::Parse_Var()
 				AddBCC(AB_IVARN, iVarID);
 			}
 			else
-				throw new C4AulParseError(this, "unexpected operator");
+				throw C4AulParseError(this, "unexpected operator");
 		}
 		switch (TokenType)
 		{
@@ -3279,7 +3278,7 @@ void C4AulParseState::Parse_Local()
 				UnexpectedToken("variable name");
 			// check: symbol already in use?
 			if (a->GetFunc(Idtf))
-				throw new C4AulParseError(this, "variable definition: name already in use");
+				throw C4AulParseError(this, "variable definition: name already in use");
 			// insert variable
 			a->LocalNamed.AddName(Idtf);
 		}
@@ -3314,7 +3313,7 @@ void C4AulParseState::Parse_Static()
 				UnexpectedToken("variable name");
 			// global variable definition
 			// check: symbol already in use?
-			if (a->Engine->GetFuncRecursive(Idtf)) throw new C4AulParseError(this, "variable definition: name already in use");
+			if (a->Engine->GetFuncRecursive(Idtf)) throw C4AulParseError(this, "variable definition: name already in use");
 			if (a->Engine->GetGlobalConstant(Idtf, nullptr)) Strict2Error("constant and variable with name ", Idtf);
 			// insert variable if not defined already
 			if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) == -1)
@@ -3516,20 +3515,19 @@ bool C4AulScript::Parse()
 			{
 				ParseFn(Fn);
 			}
-			catch (C4AulError *err)
+			catch (const C4AulError &err)
 			{
 				// do not show errors for System.c4g scripts that appear to be pure #appendto scripts
 				if (Fn->Owner->Def || Fn->Owner->Appends.empty())
 				{
 					// show
-					err->show();
+					err.show();
 					// show a warning if the error is in a remote script
 					if (Fn->pOrgScript != this)
 						DebugLogF("  (as #appendto/#include to %s)", Fn->Owner->ScriptName.getData());
 					// and count (visible only ;) )
 					++Game.ScriptEngine.errCnt;
 				}
-				delete err;
 				// make all jumps that don't have their destination yet jump here
 				// intptr_t to make it work on 64bit
 				for (intptr_t i = reinterpret_cast<intptr_t>(Fn->Code); i < CPos - Code; i++)

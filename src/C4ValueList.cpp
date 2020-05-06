@@ -104,7 +104,7 @@ C4Value &C4ValueList::GetItem(int32_t iElem)
 	// out-of-memory? This might not be catched, but it's better than a segfault
 	if (iElem >= iSize)
 #ifdef C4ENGINE
-		throw new C4AulExecError(nullptr, "out of memory");
+		throw C4AulExecError(nullptr, "out of memory");
 #else
 		return pData[0]; // must return something here...
 #endif
