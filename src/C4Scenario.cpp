@@ -483,11 +483,11 @@ void C4SDefinitions::SetModules(const std::vector<std::string> &modules, const s
 	Definitions.clear();
 	std::transform(modules.begin(), modules.end(), std::inserter(Definitions, Definitions.begin()), [relativeToPath, relativeToPath2](std::string def)
 	{
-		if (relativeToPath.size() && SEqualNoCase(def, relativeToPath, static_cast<int32_t>(relativeToPath.length())))
+		if (relativeToPath.size() && SEqualNoCase(def.c_str(), relativeToPath.c_str(), static_cast<int32_t>(relativeToPath.length())))
 		{
 			def = def.substr(relativeToPath.length());
 		}
-		if (relativeToPath2.size() && SEqualNoCase(def, relativeToPath2, static_cast<int32_t>(relativeToPath2.length())))
+		if (relativeToPath2.size() && SEqualNoCase(def.c_str(), relativeToPath2.c_str(), static_cast<int32_t>(relativeToPath2.length())))
 		{
 			def = def.substr(relativeToPath2.length());
 		}
