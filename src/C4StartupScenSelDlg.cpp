@@ -697,8 +697,6 @@ bool C4ScenarioListLoader::Scenario::LoadCustom(C4Group &rGrp, bool fNameLoaded,
 	else
 		iDifficulty = 0;
 
-	allowUserChange = C4S.Definitions.AllowUserChange;
-
 	// minimum required player count
 	iMinPlrCount = C4S.GetMinPlayer();
 	return true;
@@ -1558,15 +1556,20 @@ void C4StartupScenSelDlg::UpdateSelection()
 
 		if (auto *scenario = dynamic_cast<C4ScenarioListLoader::Scenario *>(pSel); scenario)
 		{
-			btnAllowUserChange->SetEnabled(true);
-			btnAllowUserChange->SetChecked(scenario->AllowUserChange());
+			btnAllowUserChange->SetEnabled(!scenario->GetC4S().Definitions.LocalOnly);
+			btnAllowUserChange->SetChecked(scenario->GetC4S().Definitions.AllowUserChange);
+		}
+		else
+		{
+			btnAllowUserChange->SetChecked(false);
+			btnAllowUserChange->SetEnabled(false);
 		}
 	}
 	else
 	{
-		SetOpenButtonDefaultText();
 		btnAllowUserChange->SetChecked(false);
 		btnAllowUserChange->SetEnabled(false);
+		SetOpenButtonDefaultText();
 	}
 	// set data in selection component
 	pSelectionInfo->ClearText(false);
@@ -1614,6 +1617,7 @@ bool C4StartupScenSelDlg::StartScenario(C4ScenarioListLoader::Scenario *pStartSc
 			return false;
 
 		Game.DefinitionFilenames = defs;
+		Game.AllowUserChange = true;
 	}
 	else
 	{
