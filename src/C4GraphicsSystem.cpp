@@ -133,7 +133,9 @@ bool C4GraphicsSystem::StartDrawing()
 	if (!Application.DDraw->Active) return false;
 
 	// only if application is active or windowed (if config allows)
-	if (!Application.Active && (Application.isFullScreen || !Config.Graphics.RenderInactiveEM)) return false;
+	if (!Application.Active && (
+				(Application.isFullScreen && !(Config.Graphics.RenderInactive & C4ConfigGraphics::Fullscreen))
+				 || (!(Config.Graphics.RenderInactive & C4ConfigGraphics::Console)))) return false;
 
 	// drawing OK
 	return true;

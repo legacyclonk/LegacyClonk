@@ -96,6 +96,12 @@ public:
 class C4ConfigGraphics
 {
 public:
+	enum RenderInactive : uint32_t
+	{
+		Fullscreen = 1 << 0,
+		Console = 1 << 1
+	};
+
 	int32_t SplitscreenDividers;
 	bool ShowPlayerHUDAlways;
 	bool ShowCommands;
@@ -122,7 +128,7 @@ public:
 	int32_t TexIndent; // blit offset (per mille) (OpenGL)
 	int32_t Gamma1, Gamma2, Gamma3; // gamma ramps
 	bool Currency; // default wealth symbolseb
-	bool RenderInactiveEM; // draw vieports even if inactive in CPEM
+	uint32_t RenderInactive; // draw viewports even if inactive. 1 = Fullscreen, 2 = EM, 1 | 2 = both
 	bool DisableGamma;
 	int32_t Monitor; // monitor index to play on
 	bool FireParticles; // draw extended fire particles if enabled (defualt on)
