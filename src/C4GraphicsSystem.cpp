@@ -132,6 +132,9 @@ bool C4GraphicsSystem::StartDrawing()
 	if (!Application.DDraw) return false;
 	if (!Application.DDraw->Active) return false;
 
+	// only in main thread
+	if (!Application.IsMainThread()) return false;
+
 	// only if application is active or windowed (if config allows)
 	if (!Application.Active && (
 				(Application.isFullScreen && !(Config.Graphics.RenderInactive & C4ConfigGraphics::Fullscreen))

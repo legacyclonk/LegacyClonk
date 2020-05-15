@@ -210,12 +210,13 @@ void C4Network2ResDlg::Update()
 			isComplete = isComplete && pRes->isComplete();
 		}
 	}
-	if (Game.Network.GetLobby() != nullptr && Game.Network.GetLobby()->checkReady != nullptr)
+
+	// check for lobby != nullptr because it is nullptr at the first call as it gets called from C4GameLobby::MainDlg's constructor
+	if (isComplete != loadingCompleted && Game.Network.GetLobby())
 	{
-		Game.Network.GetLobby()->checkReady->SetEnabled(isComplete);
-		Game.Network.GetLobby()->checkReady->SetToolTip(isComplete ? LoadResStr("IDS_DLGTIP_READY") : LoadResStr("IDS_DLGTIP_READYNOTAVAILABLE"));
-		Game.Network.GetLobby()->checkReady->SetCaption(isComplete ? LoadResStr("IDS_DLG_READY") : LoadResStr("IDS_DLG_STILLLOADING"));
+		Game.Network.GetLobby()->ResourceProgress(loadingCompleted = isComplete);
 	}
+
 	// del trailing items
 	while (pItem)
 	{

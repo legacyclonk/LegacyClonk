@@ -103,6 +103,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(UseWhiteIngameChat,   "UseWhiteIngameChat",   false, false, true));
 	pComp->Value(mkNamingAdapt(UseWhiteLobbyChat,    "UseWhiteLobbyChat",    false, false, true));
 	pComp->Value(mkNamingAdapt(ShowLogTimestamps,    "ShowLogTimestamps",    false, false, true));
+	pComp->Value(mkNamingAdapt(Preloading,           "Preloading",           false));
 }
 
 void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)

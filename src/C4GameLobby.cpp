@@ -217,8 +217,26 @@ MainDlg::MainDlg(bool fHost)
 	C4GUI::Tabular::Sheet *pScenarioSheet = pRightTab->AddSheet(LoadResStr("IDS_DLG_SCENARIO"));
 	pPlayerList = new C4PlayerInfoListBox(pPlayerSheet->GetContainedClientRect(), C4PlayerInfoListBox::PILBM_LobbyClientSort);
 	pPlayerSheet->AddElement(pPlayerList);
-	pResList = new C4Network2ResDlg(pResSheet->GetContainedClientRect(), false);
+
+	const C4Rect resSheetBounds{pResSheet->GetContainedClientRect()};
+	C4Rect resDlgBounds{resSheetBounds};
+
+	if (!Config.General.Preloading)
+	{
+		resDlgBounds.Hgt -= iDefBtnHeight;
+	}
+
+	pResList = new C4Network2ResDlg(resDlgBounds, true);
 	pResSheet->AddElement(pResList);
+
+	if (!Config.General.Preloading)
+	{
+		const C4Rect btnPreloadBounds{resSheetBounds.x, resSheetBounds.Hgt - iDefBtnHeight, resSheetBounds.Wdt, iDefBtnHeight};
+		btnPreload = new C4GUI::CallbackButton<MainDlg>{LoadResStr("IDS_DLG_PRELOAD"), btnPreloadBounds, &MainDlg::OnBtnPreload, this};
+		btnPreload->SetToolTip(LoadResStr("IDS_DLGTIP_PRELOAD"));
+		pResSheet->AddElement(btnPreload);
+	}
+
 	pOptionsList = new C4GameOptionsList(pResSheet->GetContainedClientRect(), false, false);
 	pOptionsSheet->AddElement(pOptionsList);
 	pScenarioInfo = new ScenDesc(pResSheet->GetContainedClientRect(), false);
@@ -271,14 +289,11 @@ MainDlg::MainDlg(bool fHost)
 		AddElement(btnRun);
 		btnRun->SetToolTip(LoadResStr("IDS_DLGTIP_GAMEGO"));
 	}
-	else
-	{
-		pResList->Activate();
-	}
 
 	AddElement(checkReady);
-	checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READY"));
-	checkReady->SetEnabled(fHost);
+
+	// set initial button state
+	ResourceProgress(false);
 
 	// set initial focus
 	SetFocus(pEdt, false);
@@ -847,12 +862,12 @@ void MainDlg::UpdateRightTab()
 	// copy active sheet data to label
 	pRightTabLbl->SetText(pRightTab->GetActiveSheet()->GetTitle());
 	pRightTabLbl->SetToolTip(pRightTab->GetActiveSheet()->GetToolTip());
+
 	// update
 	if (pRightTab->GetActiveSheetIndex() == SheetIdx_PlayerList) UpdatePlayerList();
-	if (Game.Network.isHost())
-	{
-		if (pRightTab->GetActiveSheetIndex() == SheetIdx_Res) pResList->Activate(); else pResList->Deactivate();
-	}
+
+	// no checks for C4Network2ResDlg - needs to stay active for preloading to work
+
 	if (pRightTab->GetActiveSheetIndex() == SheetIdx_Options) pOptionsList->Activate(); else pOptionsList->Deactivate();
 	if (pRightTab->GetActiveSheetIndex() == SheetIdx_Scenario) pScenarioInfo->Activate(); else pScenarioInfo->Deactivate();
 	// update selection buttons
@@ -867,6 +882,22 @@ void MainDlg::OnBtnChat(C4GUI::Control *btn)
 {
 	// open chat dialog
 	C4ChatDlg::ShowChat();
+}
+
+void MainDlg::OnBtnPreload(C4GUI::Control *)
+{
+	// disable it for the max. one second delay until C4Network2ResDlg's callback resets it again
+	const int32_t buttonHeight{btnPreload->GetHeight()};
+	RemoveElement(btnPreload);
+	delete btnPreload;
+	btnPreload = nullptr;
+
+	if (pResList)
+	{
+		pResList->GetBounds().Hgt += buttonHeight;
+	}
+
+	Game.Preload();
 }
 
 bool MainDlg::KeyHistoryUpDown(bool fUp)
@@ -909,6 +940,35 @@ int32_t MainDlg::ValidatedCountdownTime(int32_t iTimeout)
 void MainDlg::ClearLog()
 {
 	pChatBox->ClearText(true);
+}
+
+void MainDlg::ResourceProgress(bool isComplete)
+{
+	assert(checkReady);
+	checkReady->SetEnabled(isComplete);
+
+	if (btnPreload)
+	{
+		bool active{isComplete && Game.CanPreload()};
+		btnPreload->SetEnabled(active);
+		btnPreload->SetVisibility(active);
+	}
+
+	if (isComplete)
+	{
+		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READY"));
+		checkReady->SetCaption(LoadResStr("IDS_DLG_READY"));
+
+		if (Config.General.Preloading)
+		{
+			Game.Preload();
+		}
+	}
+	else
+	{
+		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READYNOTAVAILABLE"));
+		checkReady->SetCaption(LoadResStr("IDS_DLG_STILLLOADING"));
+	}
 }
 
 void LobbyError(const char *szErrorMsg)

@@ -77,6 +77,7 @@ public:
 	bool UseWhiteIngameChat;
 	bool UseWhiteLobbyChat;
 	bool ShowLogTimestamps;
+	bool Preloading;
 
 public:
 	static int GetLanguageSequence(const char *strSource, char *strTarget);

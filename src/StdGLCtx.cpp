@@ -97,26 +97,30 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
 	return true;
 }
 
-bool CStdGLCtx::Select(bool verbose)
+bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 {
 	// safety
 	if (!pGL || !hrc) return false; if (!pGL->lpPrimary) return false;
 	// make context current
 	if (!wglMakeCurrent(hDC, hrc)) return false;
-	pGL->pCurrCtx = this;
-	// update size
-	UpdateSize();
-	// assign size
-	pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
-	// set some default states
-	glDisable(GL_DEPTH_TEST);
-	glShadeModel(GL_FLAT);
-	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	// update clipper - might have been done by UpdateSize
-	// however, the wrong size might have been assumed
-	if (!pGL->UpdateClipper()) return false;
+
+	if (!selectOnly)
+	{
+		pGL->pCurrCtx = this;
+		// update size
+		UpdateSize();
+		// assign size
+		pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
+		// set some default states
+		glDisable(GL_DEPTH_TEST);
+		glShadeModel(GL_FLAT);
+		glDisable(GL_ALPHA_TEST);
+		glDisable(GL_CULL_FACE);
+		glEnable(GL_BLEND);
+		// update clipper - might have been done by UpdateSize
+		// however, the wrong size might have been assumed
+		if (!pGL->UpdateClipper()) return false;
+	}
 	// success
 	return true;
 }
@@ -226,7 +230,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	return true;
 }
 
-bool CStdGLCtx::Select(bool verbose)
+bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 {
 	// safety
 	if (!pGL || !ctx)
@@ -245,23 +249,27 @@ bool CStdGLCtx::Select(bool verbose)
 		if (verbose) pGL->Error("  gl: glXMakeCurrent failed");
 		return false;
 	}
-	pGL->pCurrCtx = this;
-	// update size FIXME: Don't call this every frame
-	UpdateSize();
-	// assign size
-	pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
-	// set some default states
-	glDisable(GL_DEPTH_TEST);
-	glShadeModel(GL_FLAT);
-	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	// update clipper - might have been done by UpdateSize
-	// however, the wrong size might have been assumed
-	if (!pGL->UpdateClipper())
+
+	if (!selectOnly)
 	{
-		if (verbose) pGL->Error("  gl: UpdateClipper failed");
-		return false;
+		pGL->pCurrCtx = this;
+		// update size FIXME: Don't call this every frame
+		UpdateSize();
+		// assign size
+		pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
+		// set some default states
+		glDisable(GL_DEPTH_TEST);
+		glShadeModel(GL_FLAT);
+		glDisable(GL_ALPHA_TEST);
+		glDisable(GL_CULL_FACE);
+		glEnable(GL_BLEND);
+		// update clipper - might have been done by UpdateSize
+		// however, the wrong size might have been assumed
+		if (!pGL->UpdateClipper())
+		{
+			if (verbose) pGL->Error("  gl: UpdateClipper failed");
+			return false;
+		}
 	}
 	// success
 	return true;
@@ -370,25 +378,28 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	return true;
 }
 
-bool CStdGLCtx::Select(bool verbose)
+bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 {
-	pGL->pCurrCtx = this;
-	// update size FIXME: Don't call this every frame
-	UpdateSize();
-	// assign size
-	pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
-	// set some default states
-	glDisable(GL_DEPTH_TEST);
-	glShadeModel(GL_FLAT);
-	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	// update clipper - might have been done by UpdateSize
-	// however, the wrong size might have been assumed
-	if (!pGL->UpdateClipper())
+	if (!selectOnly)
 	{
-		if (verbose) pGL->Error("  gl: UpdateClipper failed");
-		return false;
+		pGL->pCurrCtx = this;
+		// update size FIXME: Don't call this every frame
+		UpdateSize();
+		// assign size
+		pGL->lpPrimary->Wdt = cx; pGL->lpPrimary->Hgt = cy;
+		// set some default states
+		glDisable(GL_DEPTH_TEST);
+		glShadeModel(GL_FLAT);
+		glDisable(GL_ALPHA_TEST);
+		glDisable(GL_CULL_FACE);
+		glEnable(GL_BLEND);
+		// update clipper - might have been done by UpdateSize
+		// however, the wrong size might have been assumed
+		if (!pGL->UpdateClipper())
+		{
+			if (verbose) pGL->Error("  gl: UpdateClipper failed");
+			return false;
+		}
 	}
 	// success
 	return true;

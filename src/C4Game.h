@@ -302,9 +302,13 @@ protected:
 
 public:
 	bool SaveGameTitle(C4Group &hGroup);
+	void Preload();
+	bool CanPreload() const;
 
 protected:
 	bool InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky);
+	bool InitGameFirstPart();
+	bool InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky, bool preloading);
 	bool InitGameFinal();
 	bool InitNetworkFromAddress(const char *szAddress);
 	bool InitNetworkFromReference(const C4Network2Reference &Reference);
@@ -343,6 +347,18 @@ protected:
 public:
 	bool ToggleChart(); // chart dlg on/off
 	void SetMusicLevel(int32_t iToLvl); // change game music volume; multiplied by config volume for real volume
+
+protected:
+	enum class PreloadLevel
+	{
+		None,
+		Basic,
+		LandscapeObjects
+	};
+	std::thread PreloadThread;
+	PreloadLevel PreloadStatus;
+	CStdCSecEx PreloadMutex;
+	bool LandscapeLoaded;
 };
 
 const int32_t C4RULE_StructuresNeedEnergy      = 1,

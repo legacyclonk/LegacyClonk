@@ -370,11 +370,16 @@ public:
 #endif
 	}
 
+	bool IsMainThread()
+	{
+		return mainThread == std::this_thread::get_id();
+	}
+
 	bool AssertMainThread()
 	{
 #ifdef _DEBUG
-		assert(mainThread == std::this_thread::get_id());
-		return mainThread == std::this_thread::get_id();
+		assert(IsMainThread());
+		return IsMainThread();
 #else
 		return true;
 #endif

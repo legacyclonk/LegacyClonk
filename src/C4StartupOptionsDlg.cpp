@@ -732,7 +732,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	UpdateLanguage();
 	// font
 	const char *szFontTip = LoadResStr("IDS_DESC_SELECTFONT");
-	C4GUI::ComponentAligner caFontBox(caSheetProgram.GetGridCell(0, 1, 2, 8, -1, C4GUI::ComboBox::GetDefaultHeight(), true), 0, 0, false);
+	C4GUI::ComponentAligner caFontBox(caSheetProgram.GetGridCell(0, 1, 2, 9, -1, C4GUI::ComboBox::GetDefaultHeight(), true), 0, 0, false);
 	StdStrBuf sFontStr; sFontStr.Copy(LoadResStr("IDS_CTL_FONT")); sFontStr.AppendChar(':');
 	pUseFont->GetTextExtent(sFontStr.getData(), w, q, true);
 	pLbl = new C4GUI::Label(sFontStr.getData(), caFontBox.GetFromLeft(w + C4GUI_DefDlgSmallIndent), ALeft, C4StartupFontClr, pUseFont, false);
@@ -757,7 +757,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	UpdateFontControls();
 
 	// white chat
-	C4GUI::ComponentAligner caWhiteChat(caSheetProgram.GetGridCell(0, 1, 3, 8, -1, C4GUI::ComboBox::GetDefaultHeight(), true), 0, 0, false);
+	C4GUI::ComponentAligner caWhiteChat(caSheetProgram.GetGridCell(0, 1, 3, 9, -1, C4GUI::ComboBox::GetDefaultHeight(), true), 0, 0, false);
 
 	StdStrBuf sWhiteChat(LoadResStr("IDS_MNU_WHITECHAT"), false);
 	sWhiteChat.AppendChar(':');
@@ -781,18 +781,24 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pSheetGeneral->AddElement(pCheck);
 
 	// timestamps
-	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 4, 8, -1, iCheckHgt, true), LoadResStr("IDS_CTL_TIMESTAMPS"), &Config.General.ShowLogTimestamps);
+	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 4, 9, -1, iCheckHgt, true), LoadResStr("IDS_CTL_TIMESTAMPS"), &Config.General.ShowLogTimestamps);
 	pCheck->SetToolTip(LoadResStr("IDS_DESC_TIMESTAMPS"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pSheetGeneral->AddElement(pCheck);
 
+	// preloading
+	pCheck = new BoolConfig{caSheetProgram.GetGridCell(0, 1, 5, 9, -1, iCheckHgt, true), LoadResStr("IDS_CTL_PRELOADING"), &Config.General.Preloading};
+	pCheck->SetToolTip(LoadResStr("IDS_MSG_PRELOADING_DESC"));
+	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
+	pSheetGeneral->AddElement(pCheck);
+
 	// MM timer
-	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 5, 8, -1, iCheckHgt, true), LoadResStr("IDS_CTL_MMTIMER"), &Config.General.MMTimer, true, &Config.Startup.HideMsgMMTimerChange);
+	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 6, 9, -1, iCheckHgt, true), LoadResStr("IDS_CTL_MMTIMER"), &Config.General.MMTimer, true, &Config.Startup.HideMsgMMTimerChange);
 	pCheck->SetToolTip(LoadResStr("IDS_MSG_MMTIMER_DESC"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pSheetGeneral->AddElement(pCheck);
 	// fair crew strength
-	C4GUI::GroupBox *pGroupFairCrewStrength = new C4GUI::GroupBox(caSheetProgram.GetGridCell(0, 2, 6, 8, -1, pUseFont->GetLineHeight() * 2 + iIndentY2 * 2 + C4GUI_ScrollBarHgt, true, 1, 2));
+	C4GUI::GroupBox *pGroupFairCrewStrength = new C4GUI::GroupBox(caSheetProgram.GetGridCell(0, 2, 7, 9, -1, pUseFont->GetLineHeight() * 2 + iIndentY2 * 2 + C4GUI_ScrollBarHgt, true, 1, 2));
 	pGroupFairCrewStrength->SetTitle(LoadResStr("IDS_CTL_FAIRCREWSTRENGTH"));
 	pGroupFairCrewStrength->SetFont(pUseFont);
 	pGroupFairCrewStrength->SetColors(C4StartupEditBorderColor, C4StartupFontClr);
@@ -814,7 +820,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	const char *szBtnText = LoadResStr("IDS_BTN_RESETCONFIG");
 	C4GUI::CallbackButton<C4StartupOptionsDlg, SmallButton> *pSmallBtn;
 	C4GUI::GetRes()->CaptionFont.GetTextExtent(szBtnText, iButtonWidth, iButtonHeight, true);
-	C4Rect rcResetBtn = caSheetProgram.GetGridCell(1, 2, 7, 8, std::min<int32_t>(iButtonWidth + iButtonHeight * 4, caSheetProgram.GetInnerWidth() * 2 / 5), SmallButton::GetDefaultButtonHeight(), true);
+	C4Rect rcResetBtn = caSheetProgram.GetGridCell(1, 2, 8, 9, std::min<int32_t>(iButtonWidth + iButtonHeight * 4, caSheetProgram.GetInnerWidth() * 2 / 5), SmallButton::GetDefaultButtonHeight(), true);
 	pSheetGeneral->AddElement(pSmallBtn = new C4GUI::CallbackButton<C4StartupOptionsDlg, SmallButton>(szBtnText, rcResetBtn, &C4StartupOptionsDlg::OnResetConfigBtn, this));
 	pSmallBtn->SetToolTip(LoadResStr("IDS_DESC_RESETCONFIG"));
 

@@ -105,6 +105,7 @@ private:
 	C4GUI::CallbackButton<MainDlg> *btnRun; // host only
 	C4GUI::CallbackButton<MainDlg, C4GUI::IconButton> *btnPlayers, *btnResources, *btnTeams, *btnOptions, *btnScenario, *btnChat; // right list sheet selection
 	C4GUI::CheckBox *checkReady;
+	C4GUI::CallbackButton<MainDlg> *btnPreload{nullptr};
 
 protected:
 	void OnReadyCheck(C4GUI::Element *pCheckBox); // callback: checkbox ticked
@@ -128,6 +129,7 @@ protected:
 	void OnTabScenario(C4GUI::Control *btn);
 	void UpdateRightTab(); // update label and tooltips for sheet change
 	void OnBtnChat(C4GUI::Control *btn);
+	void OnBtnPreload(C4GUI::Control *);
 
 	virtual class C4GUI::Control *GetDefaultControl() { return pEdt; } // def focus chat input
 
@@ -161,6 +163,7 @@ public:
 	void UpdateFairCrew();
 	void UpdatePassword();
 	void ClearLog();
+	void ResourceProgress(bool isComplete);
 
 	friend class C4Sec1TimerCallback<MainDlg>;
 	friend class ::C4Network2ResDlg;

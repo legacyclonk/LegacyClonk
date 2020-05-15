@@ -54,7 +54,7 @@ public:
 	bool Init(CStdWindow *pWindow, CStdApp *pApp);
 #endif
 
-	bool Select(bool verbose = false); // select this context
+	bool Select(bool verbose = false, bool selectOnly = false); // select this context
 	void Deselect(); // select this context
 	bool UpdateSize(); // get new size from hWnd
 

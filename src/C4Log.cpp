@@ -70,9 +70,31 @@ int GetLogFD()
 
 bool LogSilent(const char *szMessage, bool fConsole)
 {
-	if (!Application.AssertMainThread()) return false;
+
 	// security
 	if (!szMessage) return false;
+
+
+	if (!Application.IsMainThread())
+	{
+		if (Game.Network.GetLobby())
+		{
+			if (fConsole)
+			{
+				Application.InteractiveThread.ThreadLog(szMessage);
+			}
+			else
+			{
+				Application.InteractiveThread.ThreadLogS(szMessage);
+			}
+		}
+		else
+		{
+			Application.AssertMainThread();
+		}
+
+		return true;
+	}
 
 	// add timestamp
 	StdStrBuf TimeMessage;
@@ -137,10 +159,24 @@ int iDisableLog = 0;
 
 bool Log(const char *szMessage)
 {
-	if (!Application.AssertMainThread()) return false;
 	if (iDisableLog) return true;
 	// security
 	if (!szMessage) return false;
+
+	if (!Application.IsMainThread())
+	{
+		if (Game.Network.GetLobby())
+		{
+			Application.InteractiveThread.ThreadLog(szMessage);
+		}
+		else
+		{
+			Application.AssertMainThread();
+		}
+
+		return true;
+	}
+
 	// Pass on to console
 	Console.Out(szMessage);
 	// pass on to lobby

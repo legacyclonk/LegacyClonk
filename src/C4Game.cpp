@@ -50,7 +50,15 @@
 #include <C4ChatDlg.h>
 
 #include <StdFile.h>
-#include <sstream>
+#include <StdGL.h>
+
+#ifdef Status
+#undef Status
+#endif
+
+#ifdef None
+#undef None
+#endif
 
 #include <iterator>
 #include <sstream>
@@ -389,10 +397,13 @@ bool C4Game::Init()
 		SetInitProgress(6);
 		if (!Network.RetrieveScenario(szScenario)) return false;
 
-		// open new scenario
-		SCopy(szScenario, ScenarioFilename, _MAX_PATH);
-		if (!OpenScenario()) return false;
-		TempScenarioFile = true;
+		if (PreloadStatus == PreloadLevel::None)
+		{
+			// open new scenario
+			SCopy(szScenario, ScenarioFilename, _MAX_PATH);
+			if (!OpenScenario()) return false;
+			TempScenarioFile = true;
+		}
 
 		// get everything else
 		if (!Parameters.GameRes.RetrieveFiles()) return false;
@@ -524,6 +535,12 @@ bool C4Game::Init()
 
 void C4Game::Clear()
 {
+	// join the thread first as it will mess with the cleared state otherwise
+	if (PreloadThread.joinable())
+	{
+		PreloadThread.join();
+	}
+
 	delete pFileMonitor; pFileMonitor = nullptr;
 	// fade out music
 	Application.MusicSystem.FadeOut(2000);
@@ -1693,6 +1710,7 @@ void C4Game::Default()
 	ObjectEnumerationIndex = 0;
 	FullSpeed = false;
 	FrameSkip = 1; DoSkipFrame = false;
+	PreloadStatus = PreloadLevel::None;
 	Defs.Default();
 	Material.Default();
 	Objects.Default();
@@ -1904,6 +1922,34 @@ bool C4Game::Decompile(StdStrBuf &rBuf, bool fSaveSection, bool fSaveExact)
 	// Decompile (without players for scenario sections)
 	rBuf.Take(DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, CompileSettings(fSaveSection, !fSaveSection && fSaveExact, fSaveExact))));
 	return true;
+}
+
+void C4Game::Preload()
+{
+	if (CanPreload())
+	{
+#ifndef USE_CONSOLE
+		const auto context = lpDDraw->CreateContext(Application.pWindow, &Application);
+		context->Deselect();
+		PreloadThread = std::thread{[](std::unique_ptr<CStdGLCtx> preloadContext)
+		{
+			preloadContext->Select(false, true);
+			CStdLock lock{&Game.PreloadMutex};
+			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
+		},
+		std::unique_ptr<CStdGLCtx>{context}};
+#else
+		PreloadThread = std::thread{[]
+		{
+			Game.InitGameFirstPart();
+		}};
+#endif
+	}
+}
+
+bool C4Game::CanPreload() const
+{
+	return PreloadStatus == PreloadLevel::None && !PreloadThread.joinable();
 }
 
 bool C4Game::CompileRuntimeData(C4ComponentHost &rGameData)
@@ -2265,19 +2311,12 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		if (Config.Developer.AutoFileReload && !Application.isFullScreen && !pFileMonitor)
 			pFileMonitor = new C4FileMonitor(FileMonitorCallback);
 
-		// system scripts
-		if (!InitScriptEngine())
+		CStdLock lock{&Game.PreloadMutex};
+		if (!InitGameFirstPart())
 		{
-			LogFatal(LoadResStr("IDS_PRC_FAIL")); return false;
+			LogFatal("IDS_PRC_FAIL");
+			return false;
 		}
-		SetInitProgress(8);
-
-		// Scenario components
-		if (!LoadScenarioComponents())
-		{
-			LogFatal(LoadResStr("IDS_PRC_FAIL")); return false;
-		}
-		SetInitProgress(9);
 
 		// join local players for regular games
 		// should be done before record/replay is initialized, so the players are stored in PlayerInfos.txt
@@ -2316,34 +2355,8 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		{
 			LogFatal(LoadResStr("IDS_PRC_FAIL")); return false;
 		}
+
 		SetInitProgress(10);
-
-		// Definitions
-		if (!InitDefs()) return false;
-		SetInitProgress(40);
-
-		// Scenario scripts (and local system.c4g)
-		// After defs to get overloading priority
-		if (!LoadScenarioScripts())
-		{
-			LogFatal(LoadResStr("IDS_PRC_FAIL")); return false;
-		}
-		SetInitProgress(56);
-
-		// Link scripts
-		if (!LinkScriptEngine()) return false;
-		SetInitProgress(57);
-
-		// Materials
-		if (!InitMaterialTexture())
-		{
-			LogFatal(LoadResStr("IDS_PRC_MATERROR")); return false;
-		}
-		SetInitProgress(58);
-
-		// Colorize defs by material
-		Defs.ColorizeByMaterial(Material, GBM);
-		SetInitProgress(60);
 	}
 
 	// determine startup player count
@@ -2351,67 +2364,12 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 	// The Landscape is the last long chunk of loading time, so it's a good place to start the music fadeout
 	if (!section) Application.MusicSystem.FadeOut(2000);
-	// Landscape
-	Log(LoadResStr("IDS_PRC_LANDSCAPE"));
-	bool fLandscapeLoaded = false;
-	if (!Landscape.Init(hGroup, section, fLoadSky, fLandscapeLoaded, !!C4S.Head.SaveGame))
+
+	if (!InitGameSecondPart(hGroup, section, fLoadSky, false))
 	{
-		LogFatal(LoadResStr("IDS_ERR_GBACK")); return false;
+		LogFatal("IDS_PRC_FAIL");
+		return false;
 	}
-	SetInitProgress(88);
-	// the savegame flag is set if runtime data is present, in which case this is to be used
-	// except for scenario sections
-	if (fLandscapeLoaded && (!C4S.Head.SaveGame || section))
-		Landscape.ScenarioInit();
-	SetInitProgress(89);
-	// Init main object list
-	Objects.Init(Landscape.Width, Landscape.Height);
-
-	// Pathfinder
-	if (!section) PathFinder.Init(&LandscapeFree, &TransferZones);
-	SetInitProgress(90);
-
-	// PXS
-	if (hGroup.FindEntry(C4CFN_PXS))
-	{
-		if (!PXS.Load(hGroup))
-		{
-			LogFatal(LoadResStr("IDS_ERR_PXS")); return false;
-		}
-	}
-	else if (fLandscapeLoaded)
-	{
-		PXS.Clear();
-		PXS.Default();
-	}
-	SetInitProgress(91);
-
-	// MassMover
-	if (hGroup.FindEntry(C4CFN_MassMover))
-	{
-		if (!MassMover.Load(hGroup))
-		{
-			LogFatal(LoadResStr("IDS_ERR_MOVER")); return false;
-		}
-	}
-	else if (fLandscapeLoaded)
-	{
-		// clear and set mass-mover to default values
-		MassMover.Clear();
-		MassMover.Default();
-	}
-
-	SetInitProgress(92);
-
-	// definition value overloads
-	if (!section) InitValueOverloads();
-
-	Objects.Clear(!section);
-
-	// Load objects
-	int32_t iObjects = Objects.Load(hGroup, section);
-	if (iObjects) { LogF(LoadResStr("IDS_PRC_OBJECTSLOADED"), iObjects); }
-	SetInitProgress(93);
 
 	// Load round results
 	if (!section)
@@ -2433,7 +2391,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	}
 
 	// Environment
-	if (!C4S.Head.NoInitialize && fLandscapeLoaded)
+	if (!C4S.Head.NoInitialize && LandscapeLoaded)
 	{
 		Log(LoadResStr("IDS_PRC_ENVIRONMENT"));
 		InitVegetation();
@@ -2447,7 +2405,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	SetInitProgress(94);
 
 	// Weather
-	if (fLandscapeLoaded) Weather.Init(!C4S.Head.SaveGame);
+	if (LandscapeLoaded) Weather.Init(!C4S.Head.SaveGame);
 	SetInitProgress(95);
 
 	// FoW-color
@@ -2487,6 +2445,153 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		SetMusicLevel(iMusicLevel);
 		SetInitProgress(97);
 	}
+	return true;
+}
+
+bool C4Game::InitGameFirstPart()
+{
+	if (PreloadStatus >= PreloadLevel::Basic)
+	{
+		return true;
+	}
+	if (NetworkActive && !Network.isHost())
+	{
+		if (!Network.RetrieveScenario(ScenarioFilename)) return false;
+		if (!OpenScenario()) return false;
+		TempScenarioFile = true;
+	}
+
+	// system scripts
+	if (!InitScriptEngine())
+	{
+		LogFatal(LoadResStr("IDS_PRC_FAIL"));
+		return false;
+	}
+
+	SetInitProgress(8);
+
+	// Scenario components;
+	if (!LoadScenarioComponents())
+	{
+		LogFatal(LoadResStr("IDS_PRC_FAIL"));
+		return false;
+	}
+
+	// Definitions
+	if (!InitDefs())
+	{
+		return false;
+	}
+
+	SetInitProgress(40);
+
+	// Scenario scripts (and local System.c4g)
+	// After defs to get overloading priority
+	if (!LoadScenarioScripts())
+	{
+		LogFatal(LoadResStr("IDS_PRC_FAIL"));
+		return false;
+	}
+
+	SetInitProgress(56);
+
+	// Link scripts
+	if (!LinkScriptEngine())
+	{
+		return false;
+	}
+
+	SetInitProgress(57);
+
+	// Materials
+	if (!InitMaterialTexture())
+	{
+		LogFatal(LoadResStr("IDS_PRC_MATERROR")); return false;
+	}
+	SetInitProgress(58);
+
+	// Colorize defs by material
+	Defs.ColorizeByMaterial(Material, GBM);
+	SetInitProgress(60);
+
+	PreloadStatus = PreloadLevel::Basic;
+
+	return true;
+}
+
+bool C4Game::InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky, bool preloading)
+{
+	if (PreloadStatus >= PreloadLevel::LandscapeObjects || (C4S.Landscape.MapPlayerExtend && preloading))
+	{
+		return true;
+	}
+
+	FixRandom(Parameters.RandomSeed);
+
+	// Landscape
+	Log(LoadResStr("IDS_PRC_LANDSCAPE"));
+	LandscapeLoaded = false;
+	if (!Landscape.Init(hGroup, section, fLoadSky, LandscapeLoaded, !!C4S.Head.SaveGame))
+	{
+		LogFatal(LoadResStr("IDS_ERR_GBACK")); return false;
+	}
+	SetInitProgress(88);
+	// the savegame flag is set if runtime data is present, in which case this is to be used
+	// except for scenario sections
+	if (LandscapeLoaded && (!C4S.Head.SaveGame || section))
+		Landscape.ScenarioInit();
+	SetInitProgress(89);
+	// Init main object list
+	Objects.Init(Landscape.Width, Landscape.Height);
+
+	// Pathfinder
+	if (!section) PathFinder.Init(&LandscapeFree, &TransferZones);
+	SetInitProgress(90);
+
+	// PXS
+	if (hGroup.FindEntry(C4CFN_PXS))
+	{
+		if (!PXS.Load(hGroup))
+		{
+			LogFatal(LoadResStr("IDS_ERR_PXS")); return false;
+		}
+	}
+	else if (LandscapeLoaded)
+	{
+		PXS.Clear();
+		PXS.Default();
+	}
+	SetInitProgress(91);
+
+	// MassMover
+	if (hGroup.FindEntry(C4CFN_MassMover))
+	{
+		if (!MassMover.Load(hGroup))
+		{
+			LogFatal(LoadResStr("IDS_ERR_MOVER")); return false;
+		}
+	}
+	else if (LandscapeLoaded)
+	{
+		// clear and set mass-mover to default values
+		MassMover.Clear();
+		MassMover.Default();
+	}
+
+	SetInitProgress(92);
+
+	// definition value overloads
+	if (!section) InitValueOverloads();
+
+	Objects.Clear(!section);
+
+	// Load objects
+	int32_t iObjects = Objects.Load(hGroup, section);
+	if (iObjects) { LogF(LoadResStr("IDS_PRC_OBJECTSLOADED"), iObjects); }
+	SetInitProgress(93);
+
+	PreloadStatus = PreloadLevel::LandscapeObjects;
+
 	return true;
 }
 
@@ -2668,9 +2773,6 @@ bool C4Game::InitPlayers()
 
 bool C4Game::InitControl()
 {
-	// Randomize
-	FixRandom(Parameters.RandomSeed);
-
 	// Replay?
 	if (C4S.Head.Replay)
 	{
