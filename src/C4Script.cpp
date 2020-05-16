@@ -2338,7 +2338,7 @@ static bool FnSound(C4AulContext *cthr, C4String *szSound, bool fGlobal, C4Objec
 		if (!pPlr) return false;
 		// network client: don't play here
 		// return true for network sync
-		if (!pPlr->LocalControl) return true;
+		if (!pPlr->LocalControl && !Game.GraphicsSystem.GetViewport(iAtPlayer - 1)) return true;
 	}
 	// even less than nothing?
 	if (iLevel < 0) return true;
