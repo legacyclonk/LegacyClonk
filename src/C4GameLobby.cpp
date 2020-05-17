@@ -195,12 +195,13 @@ MainDlg::MainDlg(bool fHost)
 	if (fHost)
 	{
 		btnRun = new C4GUI::CallbackButton<MainDlg>(LoadResStr("IDS_DLG_GAMEGO"), caBottom.GetFromRight(100), &MainDlg::OnRunBtn);
-		checkReady = nullptr;
 	}
-	else
+
+	checkReady = new C4GUI::CheckBox(caBottom.GetFromRight(110), LoadResStr("IDS_DLG_READY"), false);
+	checkReady->SetOnChecked(new C4GUI::CallbackHandler<MainDlg>(this, &MainDlg::OnReadyCheck));
+
+	if (!fHost)
 	{
-		checkReady = new C4GUI::CheckBox(caBottom.GetFromRight(110), LoadResStr("IDS_DLG_READY"), false);
-		checkReady->SetOnChecked(new C4GUI::CallbackHandler<MainDlg>(this, &MainDlg::OnReadyCheck));
 		caBottom.GetFromLeft(10); // for centering the buttons between
 	}
 	pGameOptionButtons = new C4GameOptionButtons(caBottom.GetCentered(caBottom.GetInnerWidth(), std::min<int32_t>(C4GUI_IconExHgt, caBottom.GetHeight())), true, fHost, true);
@@ -272,11 +273,13 @@ MainDlg::MainDlg(bool fHost)
 	}
 	else
 	{
-		AddElement(checkReady);
-		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READY"));
-		checkReady->SetEnabled(false);
 		pResList->Activate();
 	}
+
+	AddElement(checkReady);
+	checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READY"));
+	checkReady->SetEnabled(fHost);
+
 	// set initial focus
 	SetFocus(pEdt, false);
 
@@ -739,6 +742,30 @@ C4GUI::ContextMenu *MainDlg::OnRightTabContext(C4GUI::Element *pLabel, int32_t i
 		new C4GUI::CBMenuHandler<MainDlg>(this, &MainDlg::OnCtxTabOptions));
 	// open it
 	return pMenu;
+}
+
+void MainDlg::OnClientReadyStateChange(C4Client *client)
+{
+	UpdatePlayerList();
+
+	for (C4Client *clnt = nullptr; (clnt = Game.Clients.getClient(clnt)); )
+	{
+		if (!clnt->isLobbyReady())
+		{
+			// the client was ready and now isn't? stop the countdown
+			if (client->getID() == clnt->getID() && Game.Network.isHost() && IsCountdown())
+			{
+				Game.Network.AbortLobbyCountdown();
+			}
+
+			return;
+		}
+	}
+
+	if (Game.Network.isHost() && !IsCountdown())
+	{
+		Start(Config.Lobby.CountdownTime);
+	}
 }
 
 void MainDlg::OnClientAddPlayer(const char *szFilename, int32_t idClient)

@@ -585,10 +585,11 @@ void C4ControlClientUpdate::Execute() const
 			{
 				LogF(LoadResStr(iData ? "IDS_NET_CLIENT_READY" : "IDS_NET_CLIENT_UNREADY"), strClient.getData(), pClient->getName());
 			}
-			// Also update icons
-			C4GameLobby::MainDlg *lobby = Game.Network.GetLobby();
-			if (lobby) lobby->OnClientReadyStateChange();
 		}
+
+		// Also update icons
+		C4GameLobby::MainDlg *lobby = Game.Network.GetLobby();
+		if (lobby) lobby->OnClientReadyStateChange(pClient);
 		break;
 	}
 }
