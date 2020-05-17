@@ -1027,7 +1027,7 @@ bool C4ScenarioListLoader::SubFolder::DoLoadContents(C4ScenarioListLoader *pLoad
 	CppC4Group_ForEachEntryByWildcard(*group, "", C4CFN_FolderFiles, callback);
 
 	// load map folder data
-	if (group->getEntryInfo(C4CFN_MapFolderData))
+	if (group->getEntryData(C4CFN_MapFolderData))
 	{
 		pMapData = new C4MapFolderData();
 		if (!pMapData->Load(*group, this))
