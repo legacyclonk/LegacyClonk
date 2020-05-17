@@ -267,13 +267,15 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 		{
 			sprintf(str2, str1, szLang);
 
-			CppC4Group_ForEachEntryByWildcard(group, "", str2, [&group, &pPos, this](const auto &info) -> bool
+			CppC4Group_ForEachEntryByWildcard(group, "", str2, [&group, &pPos](const auto &info) -> bool
 			{
 				auto data = group.getEntryData(info.fileName);
 				if (data)
 				{
 					*pPos++ = '\n';
-					SCopy(static_cast<const char *>(data->data), pPos, Data.getPtr(Data.getLength()) - pPos);
+					memcpy(pPos, data->data, data->size);
+					pPos += data->size;
+					*pPos++ = '\0';
 					return false;
 				}
 
