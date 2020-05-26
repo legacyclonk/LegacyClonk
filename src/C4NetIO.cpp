@@ -684,7 +684,7 @@ std::vector<C4NetIO::HostAddress> C4NetIO::GetLocalAddresses()
 	std::vector<IP_ADAPTER_ADDRESSES> addresses{32};
 	for (int i = 0; i < 10; ++i)
 	{
-		ULONG bufsz{sizeof(decltype(result)::value_type) * addresses.size()};
+		auto bufsz = static_cast<ULONG>(sizeof(decltype(result)::value_type) * addresses.size());
 		const auto &rv = GetAdaptersAddresses(AF_UNSPEC,
 			GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME,
 			nullptr, addresses.data(), &bufsz);

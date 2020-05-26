@@ -49,7 +49,7 @@
 	#define ALWAYS_INLINE __forceinline
 #endif
 
-#if defined(_DEBUG) && defined(_MSC_VER)
+#if defined(_DEBUG) && defined(_MSC_VER) && _M_IX86 == 600
 	// use inline assembler to invoke the "breakpoint exception"
 	#define BREAKPOINT_HERE _asm int 3
 #elif defined(_DEBUG) && defined(HAVE_SIGNAL_H)
