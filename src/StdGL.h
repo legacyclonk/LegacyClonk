@@ -65,6 +65,7 @@ protected:
 	GLuint shader = 0;
 };
 
+#ifdef GL_ARB_gl_spirv
 class CStdGLSPIRVShader : public CStdGLShader
 {
 public:
@@ -73,6 +74,8 @@ public:
 protected:
 	bool PrepareSource() override;
 };
+
+#endif
 
 class CStdGLShaderProgram : public CStdShaderProgram
 {

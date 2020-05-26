@@ -139,6 +139,7 @@ bool CStdGLShader::PrepareSource()
 	return true;
 }
 
+#ifdef GL_ARB_gl_spirv
 bool CStdGLSPIRVShader::PrepareSource()
 {
 	glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source.data(), source.size());
@@ -146,6 +147,7 @@ bool CStdGLSPIRVShader::PrepareSource()
 
 	return true;
 }
+#endif
 
 bool CStdGLShaderProgram::Link()
 {
@@ -1264,6 +1266,7 @@ CStdShader *CStdGL::CreateShader(CStdShader::Type type, ShaderLanguage language,
 	case ShaderLanguage::GLSL:
 		return new CStdGLShader{type, source};
 
+#ifdef GL_ARB_gl_spirv
 	case ShaderLanguage::SPIRV:
 	{
 		if (GLEW_ARB_gl_spirv)
@@ -1273,6 +1276,7 @@ CStdShader *CStdGL::CreateShader(CStdShader::Type type, ShaderLanguage language,
 		}
 		[[fallthrough]];
 	}
+#endif
 
 	default:
 		return nullptr;
