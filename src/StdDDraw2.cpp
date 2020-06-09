@@ -747,16 +747,28 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 			texPos.TransformPoint(vertex.textureCoordinates[0], vertex.textureCoordinates[1]);
 		}
 
+		CTexRef *baseTexture = texture.get();
+
 		// is there a base-surface to be blitted first?
 		if (fBaseSfc)
 		{
 			// then get this surface as same offset as from other surface
 			// assuming this is only valid as long as there's no texture management,
 			// organizing partially used textures together!
-			Blit(sfcSource->pMainSfc, fx, fy, fwdt, fhgt, sfcTarget, tx, ty, twdt, thgt, fSrcColKey, pTransform, noScalingCorrection);
+
+			uint32_t x = texture->X;
+			uint32_t y = texture->Y;
+
+			if (!sfcSource->pMainSfc->GetTexAt(&baseTexture, x, y))
+			{
+				DebugLog(FormatString("PerformBlt: Could not find texture for %u, %u in base surface!", texture->X).getData());
+				fBaseSfc = false;
+			}
 		}
+
 		// base blit
-		PerformBlt(BltData, texture.get(), BlitModulated ? BlitModulateClr : 0xffffff, !!(dwBlitMode & C4GFXBLIT_MOD2), fExact);
+		PerformBlt(BltData, baseTexture, BlitModulated ? BlitModulateClr : 0xffffff, !!(dwBlitMode & C4GFXBLIT_MOD2), fExact);
+
 		// overlay
 		if (fBaseSfc)
 		{
