@@ -557,32 +557,33 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		uint32_t liquidTextureWidth = sfcLiquidAnimation->Textures[0]->Width;
 		uint32_t liquidTextureHeight = sfcLiquidAnimation->Textures[0]->Height;
 
-		new(BlitLandscapeVertexData.data()) decltype(BlitLandscapeVertexData)::value_type[BlitLandscapeVertexData.size()]
+		BlitLandscapeVertexData[0] =
 		{
-			{
-				{target.left, target.top, 100.0f},
-				{},
-				{vertices.left / texture->Width, vertices.top / texture->Height},
-				{vertices.left / liquidTextureWidth, vertices.top / liquidTextureHeight}
-			},
-			{
-				{target.right, target.top, 100.0f},
-				{},
-				{vertices.right / texture->Width, vertices.top / texture->Height},
-				{vertices.right / liquidTextureWidth, vertices.top / liquidTextureHeight},
-			},
-			{
-				{target.left, target.bottom, 100.0f},
-				{},
-				{vertices.left / texture->Width, vertices.bottom / texture->Height},
-				{vertices.left / liquidTextureWidth, vertices.bottom / liquidTextureHeight},
-			},
-			{
-				{target.right, target.bottom, 100.0f},
-				{},
-				{vertices.right / texture->Width, vertices.bottom / texture->Height},
-				{vertices.right / liquidTextureWidth, vertices.bottom / liquidTextureHeight}
-			}
+			{target.left, target.top, 100.0f},
+			{},
+			{vertices.left / texture->Width, vertices.top / texture->Height},
+			{vertices.left / liquidTextureWidth, vertices.top / liquidTextureHeight}
+		};
+		BlitLandscapeVertexData[1] =
+		{
+			{target.right, target.top, 100.0f},
+			{},
+			{vertices.right / texture->Width, vertices.top / texture->Height},
+			{vertices.right / liquidTextureWidth, vertices.top / liquidTextureHeight},
+		};
+		BlitLandscapeVertexData[2] =
+		{
+			{target.left, target.bottom, 100.0f},
+			{},
+			{vertices.left / texture->Width, vertices.bottom / texture->Height},
+			{vertices.left / liquidTextureWidth, vertices.bottom / liquidTextureHeight},
+		};
+		BlitLandscapeVertexData[3] =
+		{
+			{target.right, target.bottom, 100.0f},
+			{},
+			{vertices.right / texture->Width, vertices.bottom / texture->Height},
+			{vertices.right / liquidTextureWidth, vertices.bottom / liquidTextureHeight}
 		};
 
 		for (size_t i = 0; i < BlitLandscapeVertexData.size(); ++i)
@@ -700,25 +701,10 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 
 	DummyShader.Select();
 
-	new(DrawQuadVertexData.data()) decltype(DrawQuadVertexData)::value_type[DrawQuadVertexData.size()]
-	{
-		{
-			{ipVtx[0], ipVtx[1]},
-			dwClr1
-		},
-		{
-			{ipVtx[2], ipVtx[3]},
-			dwClr2
-		},
-		{
-			{ipVtx[6], ipVtx[7]},
-			dwClr3
-		},
-		{
-			{ipVtx[4], ipVtx[5]},
-			dwClr4
-		}
-	};
+	DrawQuadVertexData[0] = {{ipVtx[0], ipVtx[1]}, dwClr1};
+	DrawQuadVertexData[1] = {{ipVtx[2], ipVtx[3]}, dwClr2};
+	DrawQuadVertexData[2] = {{ipVtx[6], ipVtx[7]}, dwClr4};
+	DrawQuadVertexData[3] = {{ipVtx[4], ipVtx[5]}, dwClr3};
 
 	SelectVAO(VertexArray.DrawQuadDw);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(DrawQuadVertexData), DrawQuadVertexData.data());
