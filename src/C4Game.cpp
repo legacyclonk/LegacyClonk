@@ -3832,6 +3832,30 @@ void C4Game::SetInitProgress(float fToProgress)
 		LastInitProgress = InitProgress;
 		LastInitProgressShowTime = timeGetTime();
 		GraphicsSystem.MessageBoard.LogNotify();
+
+#ifdef _WIN32
+		static ITaskbarList3 *taskBarList = nullptr;
+
+		static HWND handle = Application.GetWindowHandle();
+		if (InitProgress == 100 && taskBarList)
+		{
+			taskBarList->SetProgressState(handle, TBPF_NOPROGRESS);
+			taskBarList->Release();
+			taskBarList = nullptr;
+			return;
+		}
+
+		else if (taskBarList == nullptr)
+		{
+			HRESULT hr = CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_ALL, IID_ITaskbarList3, reinterpret_cast<void **>(&taskBarList));
+			if (SUCCEEDED(hr))
+			{
+				taskBarList->SetProgressState(handle, TBPF_INDETERMINATE);
+			}
+		}
+
+		taskBarList->SetProgressValue(handle, InitProgress, 100);
+#endif
 	}
 }
 
