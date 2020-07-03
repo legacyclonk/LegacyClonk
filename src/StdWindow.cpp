@@ -189,6 +189,22 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 	}
 }
 
+void CStdWindow::SetProgress(uint32_t progress)
+{
+	if (taskBarList)
+	{
+		if (progress == 100)
+		{
+			taskBarList->SetProgressState(hWindow, TBPF_NOPROGRESS);
+		}
+		else
+		{
+			taskBarList->SetProgressState(hWindow, TBPF_INDETERMINATE);
+			taskBarList->SetProgressValue(hWindow, progress, 100);
+		}
+	}
+}
+
 void CStdWindow::Maximize()
 {
 	ShowWindow(hWindow, SW_SHOWMAXIMIZED);

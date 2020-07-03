@@ -319,6 +319,10 @@ void C4Application::Quit()
 
 void C4Application::QuitGame()
 {
+	if (pWindow)
+	{
+		pWindow->SetProgress(100);
+	}
 	// reinit desired? Do restart
 	if (UseStartupDialog || NextMission)
 	{

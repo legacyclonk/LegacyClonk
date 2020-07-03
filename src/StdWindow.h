@@ -265,6 +265,7 @@ public:
 	void SetTitle(const char *Title);
 	void FlashWindow();
 	void SetDisplayMode(DisplayMode mode);
+	void SetProgress(uint32_t progress); // progress 100 disables the progress bar
 
 protected:
 	virtual void Sec1Timer() {};
@@ -285,7 +286,7 @@ protected:
 private:
 	DWORD style = WS_OVERLAPPEDWINDOW;
 	DWORD styleEx = 0;
-	Microsoft::WRL::ComPtr<ITaskbarList2> taskBarList = nullptr;
+	Microsoft::WRL::ComPtr<ITaskbarList3> taskBarList = nullptr;
 
 	struct ComUnInit
 	{

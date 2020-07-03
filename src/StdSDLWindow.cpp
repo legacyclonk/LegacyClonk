@@ -104,6 +104,8 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 	UpdateSize(newWidth, newHeight);
 }
 
+void CStdWindow::SetProgress(uint32_t) {} // stub
+
 void CStdWindow::UpdateSize(int newWidth, int newHeight)
 {
 	if (width != newWidth || height != newHeight)

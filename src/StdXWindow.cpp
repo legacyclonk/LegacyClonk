@@ -353,3 +353,5 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 	XSendEvent(dpy, DefaultRootWindow(dpy), false, SubstructureNotifyMask | SubstructureRedirectMask, &e);
 #endif
 }
+
+void CStdWindow::SetProgress(uint32_t) {} // stub
