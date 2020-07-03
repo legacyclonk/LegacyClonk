@@ -297,6 +297,7 @@ private:
 	C4GUI::TextWindow *pSelectionInfoBox;
 	int32_t MinResX, MinResY; // minimum resolution for display of the map
 	bool fUseFullscreenMap;
+	bool hideTitle;
 	Scenario **ppScenList; int32_t iScenCount;
 	AccessGfx **ppAccessGfxList; int32_t iAccessGfxCount;
 	class C4StartupScenSelDlg *pMainDlg;
@@ -403,6 +404,7 @@ protected:
 	virtual int32_t GetMarginTop() { return (rcBounds.Hgt / 7); }
 	virtual bool HasBackground() { return true; }
 	virtual void DrawElement(C4FacetEx &cgo);
+	void HideTitle(bool hide = false);
 
 	virtual bool OnEnter() { DoOK(); return true; }
 	virtual bool OnEscape() { DoBack(true); return true; }

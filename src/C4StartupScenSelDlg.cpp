@@ -187,6 +187,7 @@ void C4MapFolderData::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(MinResX,           "MinResX",      0));
 	pComp->Value(mkNamingAdapt(MinResY,           "MinResY",      0));
 	pComp->Value(mkNamingAdapt(fUseFullscreenMap, "FullscreenBG", false));
+	pComp->Value(mkNamingAdapt(hideTitle,         "HideTitle",    false));
 	// compile scenario list
 	int32_t iOldScenCount = iScenCount;
 	pComp->Value(mkNamingCountAdapt(iScenCount, "Scenario"));
@@ -297,6 +298,12 @@ void C4MapFolderData::ConvertFacet2ScreenCoord(C4Rect &rcMapArea, bool fAspect)
 void C4MapFolderData::CreateGUIElements(C4StartupScenSelDlg *pMainDlg, C4GUI::Window &rContainer)
 {
 	this->pMainDlg = pMainDlg;
+
+	if (hideTitle)
+	{
+		this->pMainDlg->HideTitle(true);
+	}
+
 	// convert all coordinates to match the container sizes
 	// do this only once; assume container won't change between loads
 	if (!fCoordinatesAdjusted)
@@ -1396,6 +1403,16 @@ void C4StartupScenSelDlg::DrawElement(C4FacetEx &cgo)
 		DrawBackground(cgo, C4Startup::Get()->Graphics.fctScenSelBG);
 }
 
+void C4StartupScenSelDlg::HideTitle(bool hide)
+{
+	if (hide == !pFullscreenTitle)
+	{
+		return;
+	}
+
+	FullscreenDialog::SetTitle(hide ? "" : LoadResStrNoAmp(fStartNetworkGame ? "IDS_DLG_NETSTART" : "IDS_DLG_STARTGAME"));
+}
+
 void C4StartupScenSelDlg::OnShown()
 {
 	C4StartupDlg::OnShown();
@@ -1476,6 +1493,8 @@ void C4StartupScenSelDlg::UpdateList()
 	else
 	{
 		// book style selection
+		HideTitle(false);
+
 		// add what has been loaded
 		for (C4ScenarioListLoader::Entry *pEnt = pScenLoader->GetFirstEntry(); pEnt; pEnt = pEnt->GetNext())
 		{
