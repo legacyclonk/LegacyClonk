@@ -1891,6 +1891,7 @@ void C4NetIOTCP::Peer::Close() // (mt-safe)
 	if (!fOpen) return;
 	// close socket
 	closesocket(sock);
+	sock = 0;
 	// set flag
 	fOpen = false;
 	// clear buffers
