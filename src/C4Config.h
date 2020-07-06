@@ -140,6 +140,8 @@ public:
 	int PositionX;
 	int PositionY;
 #endif
+	bool HideFolderMaps; // if true, folder maps are not shown
+
 	void CompileFunc(StdCompiler *pComp);
 };
 

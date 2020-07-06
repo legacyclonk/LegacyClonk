@@ -170,6 +170,8 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(PositionX,   "PositionX",   0,     false, true));
 	pComp->Value(mkNamingAdapt(PositionY,   "PositionY",   0,     false, true));
 #endif
+
+	pComp->Value(mkNamingAdapt(HideFolderMaps, "HideFolderMaps", false));
 }
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)

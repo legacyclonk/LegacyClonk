@@ -935,7 +935,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	// load values of currently selected engine for troubleshooting
 	LoadGfxTroubleshoot();
 	// --subgroup options
-	iNumGfxOptions = 3; iOpt = 0;
+	iNumGfxOptions = 4; iOpt = 0;
 	C4GUI::GroupBox *pGroupOptions = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(0, 2, 2, 3));
 	pGroupOptions->SetTitle(LoadResStrNoAmp("IDS_DLG_OPTIONS"));
 	pGroupOptions->SetFont(pUseFont);
@@ -955,6 +955,11 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	// automatic gfx frame skip
 	pCheck = new BoolConfig(caGroupOptions.GetGridCell(0, 1, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_MSG_AUTOFRAMESKIP"), &Config.Graphics.AutoFrameSkip);
 	pCheck->SetToolTip(LoadResStr("IDS_DESC_AUTOFRAMESKIP"));
+	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
+	pGroupOptions->AddElement(pCheck);
+	// hide folder maps
+	pCheck = new BoolConfig(caGroupOptions.GetGridCell(0, 1, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_MSG_HIDEFOLDERMAPS"), &Config.Graphics.HideFolderMaps);
+	pCheck->SetToolTip(LoadResStr("IDS_DESC_HIDEFOLDERMAPS"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pGroupOptions->AddElement(pCheck);
 	// --subgroup effects
