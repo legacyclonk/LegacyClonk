@@ -471,7 +471,7 @@ protected:
 
 	// listen socket
 	uint16_t iListenPort;
-	SOCKET lsock;
+	SOCKET lsock{INVALID_SOCKET};
 
 #ifdef STDSCHEDULER_USE_EVENTS
 	// event indicating network activity
@@ -555,7 +555,7 @@ private:
 	uint16_t iPort;
 
 	// the socket and the associated event
-	SOCKET sock;
+	SOCKET sock{INVALID_SOCKET};
 #ifdef STDSCHEDULER_USE_EVENTS
 	HANDLE hEvent;
 #else

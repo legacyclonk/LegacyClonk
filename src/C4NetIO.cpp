@@ -1040,7 +1040,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 		pNext = pWait->Next;
 
 		// not closed?
-		if (pWait->sock)
+		if (pWait->sock != INVALID_SOCKET)
 		{
 #ifdef STDSCHEDULER_USE_EVENTS
 			// get event list
@@ -1054,7 +1054,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 #endif
 			{
 				// remove from list
-				SOCKET sock = pWait->sock; pWait->sock = 0;
+				SOCKET sock = pWait->sock; pWait->sock = INVALID_SOCKET;
 
 #ifdef STDSCHEDULER_USE_EVENTS
 				// error?
@@ -1112,7 +1112,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 #else
 					int iBytesToRead;
 #endif
-					if (::ioctlsocket(pPeer->GetSocket(), FIONREAD, &iBytesToRead) == SOCKET_ERROR)
+					if (::ioctlsocket(sock, FIONREAD, &iBytesToRead) == SOCKET_ERROR)
 					{
 						pPeer->Close();
 						if (pCB) pCB->OnDisconn(pPeer->GetAddr(), this, GetSocketErrorMsg());
@@ -1309,7 +1309,7 @@ bool C4NetIOTCP::Close(const addr_t &addr) // (mt-safe)
 	if (pWait)
 	{
 		// close socket, do callback
-		closesocket(pWait->sock); pWait->sock = 0;
+		closesocket(pWait->sock); pWait->sock = INVALID_SOCKET;
 		if (pCB) pCB->OnDisconn(pWait->addr, this, "closed");
 	}
 	else
@@ -1408,7 +1408,7 @@ void C4NetIOTCP::GetFDs(fd_set *pFDs, int *pMaxFD)
 	}
 	// add sockets
 	for (Peer *pPeer = pPeerList; pPeer; pPeer = pPeer->Next)
-		if (pPeer->GetSocket())
+		if (pPeer->GetSocket() != INVALID_SOCKET)
 		{
 			// Wait for socket to become readable
 			assert(!FD_ISSET(pPeer->GetSocket(), &pFDs[0]));
@@ -1566,8 +1566,11 @@ bool C4NetIOTCP::Listen(uint16_t inListenPort)
 {
 	// already listening?
 	if (lsock != INVALID_SOCKET)
+	{
 		// close existing socket
 		closesocket(lsock);
+		lsock = INVALID_SOCKET;
+	}
 	iListenPort = addr_t::IPPORT_NONE;
 
 	// create socket
@@ -1656,7 +1659,7 @@ void C4NetIOTCP::OnShareFree(CStdCSecEx *pCSec)
 		while (pWait)
 		{
 			// delete?
-			if (!pWait->sock)
+			if (pWait->sock == INVALID_SOCKET)
 			{
 				// unlink
 				ConnectWait *pDelete = pWait;
@@ -1704,10 +1707,10 @@ void C4NetIOTCP::ClearConnectWaits() // (mt-safe)
 {
 	CStdShareLock PeerListLock(&PeerListCSec);
 	for (ConnectWait *pWait = pConnectWaits; pWait; pWait = pWait->Next)
-		if (pWait->sock)
+		if (pWait->sock != INVALID_SOCKET)
 		{
 			closesocket(pWait->sock);
-			pWait->sock = 0;
+			pWait->sock = INVALID_SOCKET;
 		}
 }
 
@@ -1891,7 +1894,7 @@ void C4NetIOTCP::Peer::Close() // (mt-safe)
 	if (!fOpen) return;
 	// close socket
 	closesocket(sock);
-	sock = 0;
+	sock = INVALID_SOCKET;
 	// set flag
 	fOpen = false;
 	// clear buffers
