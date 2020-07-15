@@ -142,39 +142,3 @@ private:
 #endif
 	unsigned int ThreadFunc();
 };
-
-class StdThread
-{
-private:
-	bool fStarted;
-	bool fStopSignaled;
-
-#ifdef HAVE_WINTHREAD
-	unsigned long iThread;
-#elif HAVE_PTHREAD
-	pthread_t Thread;
-#endif
-
-public:
-	StdThread();
-	virtual ~StdThread() { Stop(); }
-
-	void SignalStop(); // mark thread to stop but don't wait
-	void Stop();
-
-	bool IsStarted() { return fStarted; }
-
-protected:
-	virtual void Execute() = 0;
-
-	bool IsStopSignaled();
-
-private:
-	// thread func
-#ifdef HAVE_WINTHREAD
-	static void __cdecl _ThreadFunc(void *);
-#elif defined(HAVE_PTHREAD)
-	static void *_ThreadFunc(void *);
-#endif
-	unsigned int ThreadFunc();
-};
