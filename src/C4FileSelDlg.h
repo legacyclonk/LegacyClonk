@@ -222,15 +222,12 @@ private:
 	};
 
 	// portrait loader thread
-	class LoaderThread : public StdThread
+	class ImageLoader
 	{
 	private:
 		std::list<ListItem *> LoadItems; // items to be loaded by this thread
 
 	public:
-		LoaderThread() {}
-		virtual ~LoaderThread() { Stop(); }
-
 		void ClearLoadItems(); // stops thread
 		void AddLoadItem(ListItem *pItem); // not to be called when thread is running!
 
@@ -242,7 +239,7 @@ private:
 	C4GUI::CheckBox *pCheckSetPicture, *pCheckSetBigIcon;
 	bool fDefSetPicture, fDefSetBigIcon;
 
-	LoaderThread ImageLoader;
+	ImageLoader ImageLoader;
 
 protected:
 	void OnClosed(bool fOK);
@@ -255,7 +252,6 @@ protected:
 
 	virtual C4FileSelDlg::ListItem *CreateListItem(const char *szFilename);
 	virtual void BeginFileListUpdate();
-	virtual void EndFileListUpdate();
 
 	virtual void OnIdle();
 

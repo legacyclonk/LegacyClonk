@@ -30,11 +30,6 @@
 #endif
 #endif
 
-// def 1 if gfx loading works in background thread. Right now, it doesn't
-// C4Group and C4Surface just don't like it
-// So for now, the loading will be done in 1/10 of the frames in OnIdle of the dialog
-#define USE_BACKGROUND_THREAD_LOAD 0
-
 // C4FileSelDlg::ListItem
 
 C4FileSelDlg::ListItem::ListItem(const char *szFilename) : C4GUI::Control(C4Rect(0, 0, 0, 0))
@@ -494,36 +489,31 @@ void C4PortraitSelDlg::ListItem::DrawElement(C4FacetEx &cgo)
 	lpDDraw->TextOut(sFilenameLabelText.getData(), *pUseFont, 1.0f, cgo.Surface, cgoPicture.X + rcBounds.Wdt / 2, cgoPicture.Y + cgoPicture.Hgt, C4GUI_MessageFontClr, ACenter, false);
 }
 
-// C4PortraitSelDlg::LoaderThread
+// C4PortraitSelDlg::ImageLoader
 
-void C4PortraitSelDlg::LoaderThread::ClearLoadItems()
+void C4PortraitSelDlg::ImageLoader::ClearLoadItems()
 {
-	// stop thread so list can be accessed
-	Stop();
 	// clear list
 	LoadItems.clear();
 }
 
-void C4PortraitSelDlg::LoaderThread::AddLoadItem(ListItem *pItem)
+void C4PortraitSelDlg::ImageLoader::AddLoadItem(ListItem *pItem)
 {
-	// not to be called when thread is running!
-	assert(!IsStarted());
 	LoadItems.push_back(pItem);
 }
 
-void C4PortraitSelDlg::LoaderThread::Execute()
+void C4PortraitSelDlg::ImageLoader::Execute()
 {
 	// list empty?
 	if (!LoadItems.size())
 	{
 		// then we're done!
-		SignalStop();
 		return;
 	}
 	// load one item at the time
 	ListItem *pLoadItem = LoadItems.front();
 	pLoadItem->Load();
-	LoadItems.erase(LoadItems.begin());
+	LoadItems.pop_front();
 }
 
 // C4PortraitSelDlg
@@ -595,21 +585,11 @@ void C4PortraitSelDlg::BeginFileListUpdate()
 	ImageLoader.ClearLoadItems();
 }
 
-void C4PortraitSelDlg::EndFileListUpdate()
-{
-#if USE_BACKGROUND_THREAD_LOAD
-	// Begin loading images
-	ImageLoader.Start();
-#endif
-}
-
 void C4PortraitSelDlg::OnIdle()
 {
-#if !USE_BACKGROUND_THREAD_LOAD
-	// no multithreading? Workaround for image loading then...
+	// no multithreading. Workaround for image loading then...
 	static int32_t i = 0;
 	if (!(i++ % 10)) ImageLoader.Execute();
-#endif
 }
 
 bool C4PortraitSelDlg::SelectPortrait(C4GUI::Screen *pOnScreen, std::string &selection, bool *pfSetPicture, bool *pfSetBigIcon)
