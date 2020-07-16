@@ -1034,6 +1034,18 @@ void C4ControlMessage::Execute() const
 	C4Player *pPlr = (iPlayer < 0 ? nullptr : Game.Players.Get(iPlayer));
 	// security
 	if (pPlr && pPlr->AtClient != iByClient) return;
+
+	// should we flash the window?
+	bool alert = false;
+
+	auto checkAlert = [&alert, this]
+	{
+		if (!alert && SSearch(Message.getData(), Game.Clients.getLocal()->getNick()))
+		{
+			alert = true;
+		}
+	};
+
 	// get lobby to forward to
 	C4GameLobby::MainDlg *pLobby = Game.Network.GetLobby();
 	switch (eType)
@@ -1062,6 +1074,8 @@ void C4ControlMessage::Execute() const
 		// or 2 log
 		else
 			Log(log.getData());
+
+		checkAlert();
 		break;
 	}
 	case C4CMT_Say:
@@ -1104,6 +1118,8 @@ void C4ControlMessage::Execute() const
 			pLobby->OnMessage(Game.Clients.getClientByID(iByClient),
 				FormatString(Config.General.UseWhiteLobbyChat ? "{%s} <c ffffff>%s" : "{%s} %s", pClient ? pClient->getNick() : "???", szMessage).getData());
 		}
+
+		checkAlert();
 	}
 	break;
 
@@ -1119,6 +1135,8 @@ void C4ControlMessage::Execute() const
 		{
 			LogF(Config.General.UseWhiteIngameChat ? "<c %x>[%s]</c> %s" : "<c %x>[%s] %s", pPlr->ColorDw, pPlr->GetName(), szMessage);
 		}
+
+		checkAlert();
 	}
 	break;
 
@@ -1132,7 +1150,7 @@ void C4ControlMessage::Execute() const
 
 	case C4CMT_Alert:
 		// notify inactive users
-		Application.NotifyUserIfInactive();
+		alert = true;
 		break;
 
 	case C4CMT_System:
@@ -1141,6 +1159,11 @@ void C4ControlMessage::Execute() const
 		// show
 		LogF("Network: %s", szMessage);
 		break;
+	}
+
+	if (alert)
+	{
+		Application.NotifyUserIfInactive();
 	}
 }
 
