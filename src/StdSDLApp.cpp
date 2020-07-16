@@ -34,7 +34,7 @@
 /* CStdApp */
 
 CStdApp::CStdApp() : Active(false), fQuitMsgReceived(false),
-	Location(""), DoNotDelay(false), MainThread(pthread_self()),
+	Location(""), DoNotDelay(false), mainThread(std::this_thread::get_id()),
 	// 36 FPS
 	Delay(27777) {}
 

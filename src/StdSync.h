@@ -18,148 +18,68 @@
 
 #pragma once
 
-#ifdef _WIN32
+#include <limits>
+#include <mutex>
+#include <chrono>
+#include <condition_variable>
 
 class CStdCSec
 {
 public:
-	CStdCSec() { InitializeCriticalSection(&sec); }
-	virtual ~CStdCSec() { DeleteCriticalSection(&sec); }
+	virtual ~CStdCSec() = default;
 
 protected:
-	CRITICAL_SECTION sec;
+	std::recursive_mutex mutex;
 
 public:
-	virtual void Enter() { EnterCriticalSection(&sec); }
-	virtual void Leave() { LeaveCriticalSection(&sec); }
+	virtual void Enter() { mutex.lock(); }
+	virtual void Leave() { mutex.unlock(); }
 };
 
 class CStdEvent
 {
 public:
-	CStdEvent(bool fManualReset) { hEvent = CreateEvent(nullptr, fManualReset, false, nullptr); }
-	~CStdEvent() { CloseHandle(hEvent); }
+	static constexpr auto Infinite = std::numeric_limits<unsigned int>::max();
+
+	CStdEvent(bool fManualReset) : fManualReset{fManualReset} { }
 
 protected:
-	HANDLE hEvent;
-
-public:
-	void Set() { SetEvent(hEvent); }
-	void Reset() { ResetEvent(hEvent); }
-	bool WaitFor(int iMillis) { return WaitForSingleObject(hEvent, iMillis) == WAIT_OBJECT_0; }
-};
-
-#elif defined(HAVE_PTHREAD)
-
-#include <pthread.h>
-
-// Value to specify infinite wait.
-#ifndef INFINITE
-#define INFINITE (~0)
-#endif
-
-class CStdCSec
-{
-public:
-	CStdCSec()
-	{
-		pthread_mutexattr_t attr;
-		pthread_mutexattr_init(&attr);
-		pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-		pthread_mutex_init(&mutex, &attr);
-	}
-
-	virtual ~CStdCSec() { pthread_mutex_destroy(&mutex); }
-
-protected:
-	pthread_mutex_t mutex;
-
-public:
-	virtual void Enter() { pthread_mutex_lock(&mutex); }
-	virtual void Leave() { pthread_mutex_unlock(&mutex); }
-};
-
-class CStdEvent
-{
-public:
-	CStdEvent(bool fManualReset) : fManualReset(fManualReset), fSet(false)
-	{
-		pthread_cond_init(&cond, nullptr);
-		pthread_mutex_init(&mutex, nullptr);
-	}
-
-	~CStdEvent()
-	{
-		pthread_cond_destroy(&cond);
-		pthread_mutex_destroy(&mutex);
-	}
-
-protected:
-	pthread_cond_t cond;
-	pthread_mutex_t mutex;
-	bool fManualReset, fSet;
+	std::mutex mutex;
+	std::condition_variable cv;
+	bool fManualReset;
+	bool fSet{false};
 
 public:
 	void Set()
 	{
-		pthread_mutex_lock(&mutex);
+		const std::lock_guard lock{mutex};
 		fSet = true;
-		pthread_cond_broadcast(&cond);
-		pthread_mutex_unlock(&mutex);
+		cv.notify_all();
 	}
 
 	void Reset()
 	{
-		pthread_mutex_lock(&mutex);
+		const std::lock_guard lock{mutex};
 		fSet = false;
-		pthread_mutex_unlock(&mutex);
 	}
 
 	bool WaitFor(unsigned int iMillis)
 	{
-		pthread_mutex_lock(&mutex);
-		// Already set?
-		while (!fSet)
+		std::unique_lock lock{mutex};
+		const auto predicate = [this]{ return fSet; };
+		if (iMillis == Infinite)
 		{
-			// Use pthread_cond_wait or pthread_cond_timedwait depending on wait length. Check return value.
-			// Note this will temporarily unlock the mutex, so no deadlock should occur.
-			timespec ts = { iMillis / 1000, (iMillis % 1000) * 1000000 };
-			if (0 != (iMillis != INFINITE ? pthread_cond_timedwait(&cond, &mutex, &ts) : pthread_cond_wait(&cond, &mutex)))
-			{
-				pthread_mutex_unlock(&mutex);
-				return false;
-			}
+			cv.wait(lock, predicate);
+		}
+		else
+		{
+			cv.wait_for(lock, std::chrono::milliseconds{iMillis}, predicate);
 		}
 		// Reset flag, release mutex, done.
 		if (!fManualReset) fSet = false;
-		pthread_mutex_unlock(&mutex);
 		return true;
 	}
 };
-
-#else
-
-// Some stubs to silence the compiler
-class CStdCSec
-{
-public:
-	CStdCSec() {}
-	virtual ~CStdCSec() {}
-	virtual void Enter() {}
-	virtual void Leave() {}
-};
-
-class CStdEvent
-{
-public:
-	CStdEvent(bool) {}
-	~CStdEvent() {}
-	void Set() {}
-	void Reset() {}
-	bool WaitFor(int) { return false; }
-};
-
-#endif // HAVE_PTHREAD
 
 class CStdLock
 {
@@ -223,7 +143,7 @@ public:
 			// leave section for waiting
 			CStdCSec::Leave();
 			// wait
-			ShareFreeEvent.WaitFor(INFINITE);
+			ShareFreeEvent.WaitFor(CStdEvent::Infinite);
 			// reenter section
 			CStdCSec::Enter();
 		}

@@ -310,14 +310,16 @@ bool StdSchedulerThread::Start()
 	if (fThread) Stop();
 	// begin thread
 	fRunThreadRun = true;
-#ifdef HAVE_WINTHREAD
-	iThread = _beginthread(_ThreadFunc, 0, this);
-	fThread = (iThread != -1);
-#elif HAVE_PTHREAD
-	fThread = !pthread_create(&Thread, nullptr, _ThreadFunc, this);
-#endif
+	thread = std::thread{[this]
+	{
+		while (fRunThreadRun)
+		{
+			Execute();
+		}
+	}};
+	fThread = true;
 	// success?
-	return fThread;
+	return true;
 }
 
 void StdSchedulerThread::Stop()
@@ -328,40 +330,8 @@ void StdSchedulerThread::Stop()
 	fRunThreadRun = false;
 	// Unblock
 	UnBlock();
-#ifdef HAVE_WINTHREAD
-	// Wait for thread to terminate itself
-	HANDLE hThread = reinterpret_cast<HANDLE>(iThread);
-	if (WaitForSingleObject(hThread, 10000) == WAIT_TIMEOUT)
-		// ... or kill it in case it refuses to do so
-		TerminateThread(hThread, -1);
-#elif HAVE_PTHREAD
-	// wait for thread to terminate itself
-	// (without security - let's trust these unwashed hackers for once)
-	pthread_join(Thread, nullptr);
-#endif
+	thread.join();
 	fThread = false;
 	// ok
 	return;
-}
-
-#ifdef HAVE_WINTHREAD
-void __cdecl StdSchedulerThread::_ThreadFunc(void *pPar)
-{
-	StdSchedulerThread *pThread = reinterpret_cast<StdSchedulerThread *>(pPar);
-	_endthreadex(pThread->ThreadFunc());
-}
-#elif HAVE_PTHREAD
-void *StdSchedulerThread::_ThreadFunc(void *pPar)
-{
-	StdSchedulerThread *pThread = reinterpret_cast<StdSchedulerThread *>(pPar);
-	return reinterpret_cast<void *>(pThread->ThreadFunc());
-}
-#endif
-
-unsigned int StdSchedulerThread::ThreadFunc()
-{
-	// Keep calling Execute until someone gets fed up and calls StopThread()
-	while (fRunThreadRun)
-		Execute();
-	return (0);
 }

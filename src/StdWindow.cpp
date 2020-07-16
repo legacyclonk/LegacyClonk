@@ -225,10 +225,7 @@ CStdApp::CStdApp() : Active(false), hInstance(nullptr), fQuitMsgReceived(false),
 	uCriticalTimerResolution(5),
 	fTimePeriod(false),
 	iLastExecute(0),
-	iTimerOffset(0)
-{
-	hMainThread = nullptr;
-}
+	iTimerOffset(0) {}
 
 CStdApp::~CStdApp()
 {
@@ -243,7 +240,7 @@ bool CStdApp::Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine)
 	// Set instance vars
 	hInstance = hInst;
 	this->szCmdLine = szCmdLine;
-	hMainThread = ::GetCurrentThread();
+	mainThread = std::this_thread::get_id();
 	// Custom initialization
 	return DoInit();
 }
@@ -252,7 +249,6 @@ void CStdApp::Clear()
 {
 	// Close timers
 	CloseCriticalTimer();
-	hMainThread = nullptr;
 }
 
 void CStdApp::Run()

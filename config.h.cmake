@@ -16,7 +16,6 @@
 #cmakedefine HAVE_LANGINFO_H 1
 #cmakedefine HAVE_LIBSDL_MIXER 1
 #cmakedefine HAVE_LOCALE_H 1
-#cmakedefine HAVE_PTHREAD 1
 #cmakedefine HAVE_SDL 1
 #cmakedefine HAVE_SHARE_H 1
 #cmakedefine HAVE_SIGNAL_H 1

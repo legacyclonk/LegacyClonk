@@ -110,11 +110,7 @@ namespace
 CStdAppPrivate::WindowListT CStdAppPrivate::WindowList;
 
 CStdApp::CStdApp() : Active(false), fQuitMsgReceived(false), dpy(nullptr), Priv(new CStdAppPrivate()),
-	Location(""), DoNotDelay(false),
-	// main thread
-#ifdef HAVE_PTHREAD
-	MainThread(pthread_self()),
-#endif
+	Location(""), DoNotDelay(false), mainThread(std::this_thread::get_id()),
 	// 36 FPS
 	Delay(27777) {}
 

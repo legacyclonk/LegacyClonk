@@ -23,16 +23,14 @@
 // Events are Windows-specific
 #ifdef _WIN32
 	#define STDSCHEDULER_USE_EVENTS
-	#define HAVE_WINTHREAD
 	#ifndef STDSCHEDULER_USE_EVENTS
 		#include <winsock2.h>
 	#endif
 #else
 	#include <sys/select.h>
-	#ifdef HAVE_PTHREAD
-		#include <pthread.h>
-	#endif
 #endif
+
+#include <thread>
 
 // helper
 inline int MaxTimeout(int iTimeout1, int iTimeout2)
@@ -119,11 +117,7 @@ private:
 	bool fRunThreadRun;
 
 	bool fThread;
-#ifdef HAVE_WINTHREAD
-	unsigned long iThread;
-#elif HAVE_PTHREAD
-	pthread_t Thread;
-#endif
+	std::thread thread;
 
 public:
 	void Clear();
@@ -134,11 +128,5 @@ public:
 	void Stop();
 
 private:
-	// thread func
-#ifdef HAVE_WINTHREAD
-	static void __cdecl _ThreadFunc(void *);
-#elif defined(HAVE_PTHREAD)
-	static void *_ThreadFunc(void *);
-#endif
 	unsigned int ThreadFunc();
 };

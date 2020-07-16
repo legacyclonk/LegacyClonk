@@ -295,7 +295,6 @@ find_package(Threads)
 if (THREADS_FOUND)
 	target_link_libraries(standard Threads::Threads)
 endif ()
-set(HAVE_PTHREAD ${CMAKE_USE_PTHREADS_INIT})
 
 # Link Windows libraries
 if (WIN32)

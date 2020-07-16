@@ -17,7 +17,7 @@
 /* All kinds of valuable helpers */
 
 #include <Standard.h>
-#if defined(HAVE_PTHREAD) && defined(C4ENGINE)
+#ifdef C4ENGINE
 // c4group is single-threaded
 #include <StdSync.h>
 #endif

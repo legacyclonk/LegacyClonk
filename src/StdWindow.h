@@ -30,9 +30,7 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 
 #endif
 
-#ifdef HAVE_PTHREAD
-#include <pthread.h>
-#endif
+#include <thread>
 
 #ifdef _WIN32
 #define K_ALT VK_MENU
@@ -372,9 +370,18 @@ public:
 #endif
 	}
 
+	bool AssertMainThread()
+	{
+#ifdef _DEBUG
+		assert(mainThread == std::this_thread::get_id());
+		return mainThread == std::this_thread::get_id();
+#else
+		return true;
+#endif
+	}
+
 #ifdef _WIN32
 	HINSTANCE hInstance;
-	HANDLE hMainThread; // handle to main thread that initialized the app
 	int iLastExecute, iTimerOffset;
 	HANDLE hTimerEvent, // set periodically by critical timer (C4Engine)
 		hNetworkEvent; // set if a network event occured
@@ -384,18 +391,6 @@ public:
 	bool IsControlDown() { return GetKeyState(VK_CONTROL) < 0; }
 	bool IsAltDown() { return GetKeyState(VK_MENU) < 0; }
 	HWND GetWindowHandle() { return pWindow ? pWindow->hWindow : nullptr; }
-
-	bool AssertMainThread()
-	{
-#ifdef _DEBUG
-		if (hMainThread && hMainThread != ::GetCurrentThread())
-		{
-			assert(false);
-			return false;
-		}
-#endif
-		return true;
-	}
 
 protected:
 	bool SetCriticalTimer();
@@ -413,7 +408,6 @@ protected:
 	void HandleSDLEvent(SDL_Event &event);
 #endif
 	const char *Location;
-	pthread_t MainThread;
 	bool Init(int argc, char *argv[]);
 	bool DoNotDelay;
 	void NextTick(bool fYield);
@@ -421,12 +415,6 @@ protected:
 	bool IsControlDown() { return KeyMask & MK_CONTROL; }
 	bool IsAltDown() { return KeyMask & (1 << 3); }
 	bool SignalNetworkEvent();
-
-	bool AssertMainThread()
-	{
-		assert(MainThread == pthread_self());
-		return MainThread == pthread_self();
-	}
 
 	// These must be public to be callable from callback functions from
 	// the glib main loop that are in an anonymous namespace in
@@ -448,6 +436,7 @@ protected:
 	unsigned int KeyMask;
 #endif
 	const char *szCmdLine;
+	std::thread::id mainThread{};
 	bool InitTimer();
 	virtual bool DoInit() = 0;
 	virtual void OnNetworkEvents() = 0;
