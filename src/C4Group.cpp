@@ -112,7 +112,8 @@ const char *C4Group_GetTempPath()
 
 bool C4Group_TestIgnore(const char *szFilename)
 {
-	return *GetFilename(szFilename) == '.' || SIsModule(C4Group_Ignore, GetFilename(szFilename));
+	const auto fileName = GetFilename(szFilename);
+	return !SEqual(fileName, ".legacyclonk") && (*fileName == '.' || SIsModule(C4Group_Ignore, GetFilename(szFilename)));
 }
 
 bool C4Group_IsGroup(const char *szFilename)
