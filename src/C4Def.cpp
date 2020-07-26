@@ -487,7 +487,6 @@ void C4Def::Default()
 	ActNum = 0;
 	ActMap = nullptr;
 	Next = nullptr;
-	Temporary = false;
 	Maker[0] = 0;
 	Filename[0] = 0;
 	Creation = 0;
@@ -799,9 +798,6 @@ bool C4Def::Load(C4Group &hGroup,
 	}
 
 #endif
-
-	// Temporary flag
-	if (dwLoadWhat & C4D_Load_Temporary) Temporary = true;
 
 	return true;
 }
