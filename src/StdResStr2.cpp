@@ -14,137 +14,87 @@
  * for the above references.
  */
 
-/* Load strings from a primitive memory string table */
-
 #include <Standard.h>
 #include <StdResStr2.h>
-#include <StdBuf.h>
 
-#include <stdio.h>
+#include <iostream>
+#include <optional>
+#include <string_view>
+#include <unordered_map>
 
 class ResTable
 {
 public:
-	ResTable(const char *table) : Capacity(int(1.10 * SCharCount('\n', table))), Count(0), Entries(new Entry[Capacity])
+	ResTable(std::string_view table)
 	{
-		// reduce the capacity so that there is always an empty entry to mark the end of the search for an nonexistent key
-		--Capacity;
-		while (Count < Capacity)
+		for (auto pos = table.find_first_of('='); pos != std::string_view::npos; pos = table.find_first_of('='))
 		{
-			// search '='
-			const char *pos = table;
-			const char *equalpos = nullptr;
-			while (*pos && *pos != '\n' && *pos != '\r')
+			const auto key = table.substr(0, pos);
+			table.remove_prefix(pos + 1);
+
+			const auto endPos = table.find_first_not_of("\r\n", table.find_first_of("\r\n"));
+			auto value = table.substr(0, endPos);
+			table.remove_prefix(value.size());
+			value = value.substr(0, value.find_last_not_of("\r\n") + 1);
+
+			const auto [it, inserted] = entries.emplace(key, value);
+			if (!inserted)
 			{
-				if (*pos == '=') equalpos = pos;
-				++pos;
+				std::cerr << "LanguageXX entry \"" << key << "\" not inserted (duplicate?)\n";
 			}
-			if (equalpos)
+			else
 			{
-				unsigned int h = Hash(table);
-				// Get a pointer to the bucket
-				Entry *e = &(Entries[h % Capacity]);
-				// Search an empty spot
-				int i = 0;
-				while (*e)
+				std::string &valueStr = it->second;
+				for (auto backslashPos = valueStr.find_first_of('\\'); backslashPos < valueStr.size() - 1; backslashPos = valueStr.find_first_of('\\', backslashPos + 1))
 				{
-#ifdef _DEBUG
-					if (e->Hash == h) printf("Hash Collision: %d (\"%.50s\")\nSTRINGTABLE WILL BREAK\n", h, table);
-#endif
-					e = &(Entries[(h + ++i) % Capacity]);
-				}
-				// Fill
-				e->Hash = h;
-				e->Data.CopyUntil(equalpos + 1, *pos);
-				// Compile line feeds ("\n" -> 0D0A)
-				for (i = 0; i < pos - equalpos; ++i)
-					if (e->Data.getMData()[i] == '\\' && e->Data.getMData()[i + 1] == 'n')
+					if (valueStr[backslashPos + 1] == 'n')
 					{
-						e->Data.getMData()[i] = 0x0D; e->Data.getMData()[i + 1] = 0x0A;
+						valueStr.replace(backslashPos, 2, "\r\n");
 					}
-				// Count!
-				++Count;
+				}
 			}
-			while (*pos == '\n' || *pos == '\r') ++pos;
-			table = pos;
-			if (!*table) break;
 		}
 	}
 
-	~ResTable()
+	const char *GetEntry(const std::string& key) const
 	{
-		delete[] Entries;
-	}
-
-	const char *GetEntry(const char *Key)
-	{
-		if (!Key) return nullptr;
-		unsigned int h = Hash(Key);
-		Entry *e = &(Entries[h % Capacity]);
-		int i = 0;
-		while (e->Hash != h && *e) e = &(Entries[(h + ++i) % Capacity]);
-		return e->Data.getData();
+		if (const auto it = entries.find(key); it != entries.end())
+		{
+			return it->second.c_str();
+		}
+		return nullptr;
 	}
 
 private:
-	struct Entry
-	{
-		StdStrBuf Data;
-		unsigned int Hash;
-		Entry() : Data(), Hash(0) {}
-		Entry(const StdStrBuf &Data, int32_t Hash) : Data(Data), Hash(Hash) {}
-		operator const void *() { return Data; }
-	};
-	int Capacity;
-	int Count;
-	Entry *Entries;
-	static unsigned int Hash(const char *Key)
-	{
-		// Fowler/Noll/Vo hash
-		unsigned int h = 2166136261u;
-		while (*Key && *Key != '=')
-			h = (h ^ * (Key++)) * 16777619;
-		return h;
-	}
+	std::unordered_map<std::string, std::string> entries;
 };
 
-static ResTable *Table = nullptr;
+static std::optional<ResTable> Table;
 
 void SetResStrTable(char *pTable)
 {
-	// Clear any old table
-	ClearResStrTable();
-	// Create new Table
-	Table = new ResTable(pTable);
-	delete[] pTable;
+	Table.emplace(pTable);
 }
 
 void ClearResStrTable()
 {
-	delete Table;
-	Table = nullptr;
+	Table.reset();
 }
 
-bool IsResStrTableLoaded() { return Table != nullptr; }
+bool IsResStrTableLoaded() { return Table.has_value(); }
 
-const char *GetResStr(const char *id, ResTable *Table)
+static std::string result;
+static const char *GetResStr(const char *id, const std::optional<ResTable>& Table)
 {
-	if (!Table) return "Language string table not loaded.";
+	if (!Table.has_value()) return "Language string table not loaded.";
 	const char *r = Table->GetEntry(id);
 	if (!r)
 	{
-		static char strResult[1024];
-		// Default
-		sprintf(strResult, "[Undefined:%s]", id);
-		return strResult;
+		result = "[Undefined:";
+		result += id;
+		result += ']';
+		return result.c_str();
 	}
-	// Compile line feeds ("\n" -> 0D0A)
-	const char *pos = r;
-	while ((pos = SSearch(pos, "\\n")))
-	{
-		((char *)pos)[-2] = 0x0D; ((char *)pos)[-1] = 0x0A;
-	}
-	// Return string
 	return r;
 }
 
@@ -153,42 +103,15 @@ const char *LoadResStr(const char *id)
 	return GetResStr(id, Table);
 }
 
-const int ResStrMaxLen = 4096;
-static char strResult[ResStrMaxLen + 1];
-char *LoadResStrNoAmp(const char *id)
+const char *LoadResStrNoAmp(const char *id)
 {
-	const char *str = LoadResStr(id);
-	char *cpd = strResult;
-	for (const char *cps = str; *cps; ++cps, ++cpd)
-	{
-		if (*cps == '&')
-			--cpd;
-		else
-			*cpd = *cps;
-	}
-	*cpd = 0;
-	return strResult;
+	result = LoadResStr(id);
+	result.erase(std::remove(result.begin(), result.end(), '&'), result.end());
+	return result.c_str();
 }
 
-char *GetResStr(const char *id, const char *strTable)
+const char *GetResStr(const char *id, const char *strTable)
 {
-	const char *pos;
-	// Default
-	sprintf(strResult, "[Undefined:%s]", id);
-	// Compose identifier with operator
-	char idExt[256 + 1 + 1]; SCopy(id, idExt, 256); SAppendChar('=', idExt);
-	// String table present and id not empty
-	if (strTable && id && id[0])
-		// Search for identifier with operator
-		if ((pos = SSearch(strTable, idExt)))
-			// Get string until end of line
-			SCopyUntil(pos, strResult, "\r\n", ResStrMaxLen);
-	// Compile line feeds ("\n" -> 0D0A)
-	pos = strResult;
-	while ((pos = SSearch(pos, "\\n")))
-	{
-		((char *)pos)[-2] = 0x0D; ((char *)pos)[-1] = 0x0A;
-	}
-	// Return string
-	return strResult;
+	result = GetResStr(id, {ResTable{strTable}});
+	return result.c_str();
 }
