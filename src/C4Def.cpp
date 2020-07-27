@@ -1396,7 +1396,7 @@ void C4DefList::BuildTable()
 	// get mem for table; !!! leave space for stop entry !!!
 	for (i = 0; i < 64; i++) if (Counts[i])
 	{
-		C4Def **ppDef = (C4Def **)new long[Counts[i] + 1]{};
+		C4Def **ppDef = new C4Def*[Counts[i] + 1]{};
 		Table[i] = ppDef;
 	}
 	// build table
