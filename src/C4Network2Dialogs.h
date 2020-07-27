@@ -195,7 +195,7 @@ class C4Network2StartWaitDlg : public C4GUI::Dialog
 private:
 	C4Network2ClientListBox *pClientListBox;
 
-	enum { DialogWidth = 250, DialogHeight = 300 };
+	enum { DialogWidth = 250, DialogHeight = 300, DialogWidthLarge = 500, DialogHeightLarge = 600 };
 
 protected:
 	virtual const char *GetID() { return "NetStartWaitDialog"; }
