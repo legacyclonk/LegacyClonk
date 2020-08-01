@@ -5265,7 +5265,7 @@ static bool FnDoCrewExp(C4AulContext *ctx, long iChange, C4Object *pObj)
 	return true;
 }
 
-static long FnReloadDef(C4AulContext *ctx, C4ID idDef, long iReloadWhat)
+static long FnReloadDef(C4AulContext *ctx, C4ID idDef)
 {
 	// get def
 	C4Def *pDef = nullptr;
@@ -5279,10 +5279,8 @@ static long FnReloadDef(C4AulContext *ctx, C4ID idDef, long iReloadWhat)
 		pDef = Game.Defs.ID2Def(idDef);
 	// safety
 	if (!pDef) return false;
-	// reload everything if nothing has been specified
-	if (!iReloadWhat) iReloadWhat = C4D_Load_RX;
 	// perform reload
-	return Game.ReloadDef(pDef->id, static_cast<uint32_t>(iReloadWhat));
+	return Game.ReloadDef(pDef->id, C4D_Load_RX);
 }
 
 static long FnReloadParticle(C4AulContext *ctx, C4String *szParticleName)
