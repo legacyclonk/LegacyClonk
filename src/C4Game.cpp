@@ -2298,8 +2298,19 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		// set up control (inits Record/Replay)
 		if (!InitControl()) return false;
 
+		for (auto *def = Parameters.GameRes.iterRes(nullptr, NRT_Definitions); def; def = Parameters.GameRes.iterRes(def, NRT_Definitions))
+		{
+			auto group = std::make_unique<C4Group>();
+			if (!group->Open(def->getFile()))
+			{
+				return false;
+			}
+
+			GroupSet.RegisterGroup(*group.release(), true, C4GSPrio_Definitions, C4GSCnt_DefinitionRoot, true);
+		}
+
 		// Graphics and fonts (may reinit main font, too)
-		// redundant call in NETWORK2; but it may do scenario local overloads
+		// Call it here for overloads by C4GroupSet (definitions, Extra.c4g, scenario, folders etc.)
 		Log(LoadResStr("IDS_PRC_GFXRES"));
 		if (!GraphicsResource.Init(true))
 		{

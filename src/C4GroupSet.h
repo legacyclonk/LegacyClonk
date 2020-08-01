@@ -22,6 +22,7 @@
 
 // group set priorities
 #define C4GSPrio_Base        0 // lowest priority for global system files
+#define C4GSPrio_Definitions 1 // overloads by scenario root definitions
 #define C4GSPrio_ExtraRoot   2 // overloads by Extra.c4g root folder
 #define C4GSPrio_Extra       3 // overloads by Extra.c4g
 #define C4GSPrio_Folder    100 // overloads by local scenario folder - each child folder has higher priority
@@ -43,6 +44,7 @@
 #define C4GSCnt_Scenario  C4GSCnt_Folder
 #define C4GSCnt_Extra     (C4GSCnt_Graphics | C4GSCnt_Loaders | C4GSCnt_Material | C4GSCnt_Music | C4GSCnt_FontDefs)
 #define C4GSCnt_ExtraRoot (C4GSCnt_Graphics | C4GSCnt_Loaders | C4GSCnt_Material | C4GSCnt_Music | C4GSCnt_FontDefs)
+#define C4GSCnt_DefinitionRoot (C4GSCnt_Graphics | C4GSCnt_Material | C4GSCnt_Music)
 
 #define C4GSCnt_All ~0
 
