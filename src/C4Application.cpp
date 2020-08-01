@@ -319,10 +319,6 @@ void C4Application::Quit()
 
 void C4Application::QuitGame()
 {
-	if (pWindow)
-	{
-		pWindow->SetProgress(100);
-	}
 	// reinit desired? Do restart
 	if (UseStartupDialog || NextMission)
 	{
@@ -372,6 +368,11 @@ void C4Application::Execute()
 		if (!PreInit()) Quit();
 		break;
 	case C4AS_Startup:
+		if (pWindow)
+		{
+			pWindow->SetProgress(100);
+		}
+
 #ifdef USE_CONSOLE
 		// Console engines just stay in this state until aborted or new commands arrive on stdin
 #else
