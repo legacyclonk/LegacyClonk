@@ -39,6 +39,8 @@ C4Config Config;
 
 #ifdef _WIN32
 
+void InstallCrashHandler();
+
 int WINAPI WinMain(HINSTANCE hInst,
 	HINSTANCE hPrevInstance,
 	LPSTR lpszCmdParam,
@@ -48,6 +50,8 @@ int WINAPI WinMain(HINSTANCE hInst,
 	// enable debugheap!
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+
+	InstallCrashHandler();
 
 	// Initialize COM library for use by main thread
 	const auto resultCoInit = CoInitializeEx(nullptr, COINIT_MULTITHREADED);

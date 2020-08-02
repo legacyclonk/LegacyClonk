@@ -34,6 +34,9 @@ set(EXTRA_DEPS_DIR "deps" CACHE PATH "Additional directory to search for librari
 include_directories(${EXTRA_DEPS_DIR}/include)
 list(APPEND CMAKE_PREFIX_PATH ${EXTRA_DEPS_DIR})
 
+# Add cmake directory to module path
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 # Check which header files and functions are present
 
 CHECK_INCLUDE_FILE_CXX(direct.h           HAVE_DIRECT_H)
@@ -93,9 +96,16 @@ if (ENABLE_SOUND AND NOT WIN32)
 	set(USE_SDL_MIXER ON)
 endif ()
 
-# Use Microsoft CryptoAPI instead of OpenSSL when compiling for Windows
 if (WIN32)
+	# Use Microsoft CryptoAPI instead of OpenSSL when compiling for Windows
 	set(USE_MSCAPI ON)
+
+	# Use DbgHelp for the crash handler
+	find_package(DbgHelp)
+	if(DBGHELP_FOUND)
+		include_directories(${DBGHELP_INCLUDE_DIR})
+	endif()
+	set(HAVE_DBGHELP ${DBGHELP_FOUND})
 endif ()
 
 # Disable some Visual C++ warnings
@@ -299,6 +309,9 @@ endif ()
 # Link Windows libraries
 if (WIN32)
 	target_link_libraries(clonk iphlpapi winmm ws2_32)
+	if (HAVE_DBGHELP)
+		target_link_libraries(clonk ${DBGHELP_LIBRARIES})
+	endif ()
 endif ()
 
 # Link X11
