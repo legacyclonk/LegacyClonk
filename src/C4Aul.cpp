@@ -429,12 +429,6 @@ void C4AulScriptFunc::CopyBody(C4AulScriptFunc &FromFunc)
 	NextSNFunc = nullptr;
 }
 
-void C4AulScript::AddFunc(const char *pIdtf, C4ScriptFnDef *Def)
-{
-	// create def func
-	new C4AulDefFunc(this, pIdtf, Def);
-}
-
 // C4AulScriptEngine
 
 C4AulScriptEngine::C4AulScriptEngine() :

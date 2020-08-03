@@ -36,7 +36,6 @@
 class C4AulError;
 class C4AulFunc;
 class C4AulScriptFunc;
-class C4AulDefFunc;
 class C4AulScript;
 class C4AulScriptEngine;
 
@@ -294,7 +293,7 @@ public:
 	// Wether this function should be visible to players
 	virtual bool GetPublic() { return false; }
 	virtual int GetParCount() { return C4AUL_MAX_Par; }
-	virtual C4V_Type *GetParType() { return 0; }
+	virtual const C4V_Type *GetParType() { return 0; }
 	virtual C4V_Type GetRetType() { return C4V_Any; }
 	virtual C4Value Exec(C4AulContext *pCallerCtx, C4Value pPars[], bool fPassErrors = false) { return C4Value(); } // execute func (script call)
 	virtual C4Value Exec(C4Object *pObj = nullptr, C4AulParSet *pPars = nullptr, bool fPassErrors = false); // execute func (engine call)
@@ -346,7 +345,7 @@ public:
 	virtual void UnLink();
 
 	virtual bool GetPublic() { return true; }
-	virtual C4V_Type *GetParType() { return ParType; }
+	virtual const C4V_Type *GetParType() { return ParType; }
 	virtual C4V_Type GetRetType() { return bReturnRef ? C4V_pC4Value : C4V_Any; }
 	virtual C4Value Exec(C4AulContext *pCallerCtx, C4Value pPars[], bool fPassErrors = false); // execute func (script call, should not happen)
 	virtual C4Value Exec(C4Object *pObj = nullptr, C4AulParSet *pPars = nullptr, bool fPassErrors = false); // execute func (engine call)
@@ -358,24 +357,6 @@ public:
 	time_t tProfileTime; // internally set by profiler
 
 	friend class C4AulScript;
-};
-
-// defined function class
-class C4AulDefFunc : C4AulFunc
-{
-public:
-	C4ScriptFnDef *Def;
-
-	C4AulDefFunc(C4AulScript *pOwner, const char *pName, C4ScriptFnDef *pDef) : C4AulFunc(pOwner, pName)
-	{
-		Def = pDef;
-	}
-
-	virtual bool GetPublic() { return !!Def->Public; }
-	virtual C4V_Type *GetParType() { return Def->ParType; }
-	virtual C4V_Type GetRetType() { return Def->RetType; }
-
-	virtual C4Value Exec(C4AulContext *pCallerCtx, C4Value pPars[], bool fPassErrors = false); // execute func (script call)
 };
 
 class C4AulFuncMap
@@ -516,8 +497,6 @@ public:
 	C4AulScriptFunc *GetSFunc(int iIndex, const char *szPattern = nullptr, C4AulAccess AccNeeded = AA_PRIVATE); // get local script function by index
 	C4AulScriptFunc *GetSFuncWarn(const char *pIdtf, C4AulAccess AccNeeded, const char *WarnStr); // get function; return nullptr and warn if not existent
 	C4AulAccess GetAllowedAccess(C4AulFunc *func, C4AulScript *caller);
-
-	void AddFunc(const char *pIdtf, C4ScriptFnDef *Def); // add def def func to table
 
 public:
 	C4Value DirectExec(C4Object *pObj, const char *szScript, const char *szContext, bool fPassErrors = false, C4AulScriptStrict Strict = C4AulScriptStrict::MAXSTRICT); // directly parse uncompiled script (WARG! CYCLES!)

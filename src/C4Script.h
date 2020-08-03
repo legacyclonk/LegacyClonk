@@ -46,9 +46,6 @@ struct C4ScriptFnDef
 	C4Value(*FunctionC4V2)(struct C4AulContext *, C4Value *);
 };
 
-extern C4ScriptConstDef C4ScriptConstMap[];
-extern C4ScriptFnDef C4ScriptFnMap[];
-
 void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 
 /* Engine-Calls */

@@ -1344,7 +1344,7 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 	const bool convertNilToIntBool = convertToAnyEagerly && pSFunc && pSFunc->pOrgScript->Strict >= C4AulScriptStrict::STRICT3;
 
 	// Convert parameters (typecheck)
-	C4V_Type *pTypes = pFunc->GetParType();
+	const auto pTypes = pFunc->GetParType();
 	for (int i = 0; i < pFunc->GetParCount(); i++)
 	{
 		if (convertToAnyEagerly && pTypes[i] != C4V_pC4Value && !pPars[i])
@@ -1579,21 +1579,6 @@ C4Value C4AulScriptFunc::Exec(C4Object *pObj, C4AulParSet *pPars, bool fPassErro
 	return C4AulNull;
 
 #endif
-}
-
-C4Value C4AulDefFunc::Exec(C4AulContext *pCallerCtx, C4Value pPars[], bool fPassErrors)
-{
-	// Choose function call format to use
-	if (Def->FunctionC4V2 != 0)
-		// C4V function
-		return Def->FunctionC4V2(pCallerCtx, pPars);
-
-	if (Def->FunctionC4V != 0)
-		// C4V function
-		return Def->FunctionC4V(pCallerCtx, &pPars[0], &pPars[1], &pPars[2], &pPars[3], &pPars[4], &pPars[5], &pPars[6], &pPars[7], &pPars[8], &pPars[9]);
-
-	// should never happen...
-	return C4VNull;
 }
 
 C4Value C4AulScript::DirectExec(C4Object *pObj, const char *szScript, const char *szContext, bool fPassErrors, C4AulScriptStrict Strict)
