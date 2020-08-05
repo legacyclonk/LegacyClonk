@@ -1802,13 +1802,13 @@ static std::optional<long> FnContentsCount(C4AulContext *cthr, C4ID id, C4Object
 
 static C4Object *FnFindContents(C4AulContext *cthr, C4ID c_id, C4Object *pObj)
 {
-	if (!pObj) pObj = cthr->Obj; if (!pObj) return 0;
+	if (!pObj) pObj = cthr->Obj; if (!pObj) return nullptr;
 	return pObj->Contents.Find(c_id);
 }
 
 static C4Object *FnFindOtherContents(C4AulContext *cthr, C4ID c_id, C4Object *pObj)
 {
-	if (!pObj) pObj = cthr->Obj; if (!pObj) return 0;
+	if (!pObj) pObj = cthr->Obj; if (!pObj) return nullptr;
 	return pObj->Contents.FindOther(c_id);
 }
 
@@ -3734,10 +3734,10 @@ static C4Object *FnBuy(C4AulContext *cthr, C4ID idBuyObj, long iForPlr, long iPa
 	return pThing;
 }
 
-static long FnSell(C4AulContext *cthr, long iToPlr, C4Object *pObj)
+static bool FnSell(C4AulContext *cthr, long iToPlr, C4Object *pObj)
 {
 	// local/safety
-	if (!pObj) pObj = cthr->Obj; if (!pObj) return 0;
+	if (!pObj) pObj = cthr->Obj; if (!pObj) return false;
 	if (!ValidPlr(iToPlr)) return false;
 	// sell
 	return Game.Players.Get(iToPlr)->Sell2Home(pObj);
@@ -4300,7 +4300,7 @@ static C4Value FnGetMaterialVal(C4AulContext *cthr, C4String *strEntry, C4String
 	return GetValByStdCompiler(FnStringPar(strEntry), nullptr, iEntryNr, *pMaterialCore);
 }
 
-static long FnCloseMenu(C4AulContext *cthr, C4Object *pObj)
+static bool FnCloseMenu(C4AulContext *cthr, C4Object *pObj)
 {
 	if (!pObj) pObj = cthr->Obj;
 	if (!pObj) return false;
@@ -5616,7 +5616,7 @@ static bool FnRemoveEffect(C4AulContext *ctx, C4String *psEffectName, C4Object *
 	const char *szEffect = FnStringPar(psEffectName);
 	// get effects
 	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
-	if (!pEffect) return 0;
+	if (!pEffect) return false;
 	// name/wildcard given: find effect by name and index
 	if (szEffect && *szEffect)
 		pEffect = pEffect->Get(szEffect, iIndex);
@@ -5624,7 +5624,7 @@ static bool FnRemoveEffect(C4AulContext *ctx, C4String *psEffectName, C4Object *
 		// otherwise, get by number
 		pEffect = pEffect->Get(iIndex, false);
 	// effect found?
-	if (!pEffect) return 0;
+	if (!pEffect) return false;
 	// kill it
 	if (fDoNoCalls)
 		pEffect->SetDead();
@@ -5803,15 +5803,15 @@ static std::optional<long> FnGetObjectBlitMode(C4AulContext *ctx, C4Object *pObj
 
 static bool FnSetViewOffset(C4AulContext *ctx, long iPlayer, long iX, long iY)
 {
-	if (!ValidPlr(iPlayer)) return 0;
+	if (!ValidPlr(iPlayer)) return false;
 	// get player viewport
 	C4Viewport *pView = Game.GraphicsSystem.GetViewport(iPlayer);
-	if (!pView) return 1; // sync safety
+	if (!pView) return true; // sync safety
 	// set
 	pView->ViewOffsX = iX;
 	pView->ViewOffsY = iY;
 	// ok
-	return 1;
+	return true;
 }
 
 static bool FnSetPreSend(C4AulContext *cthr, long iToVal, C4String *pNewName)
@@ -6081,7 +6081,7 @@ static long FnActivateGameGoalMenu(C4AulContext *ctx, long iPlayer)
 	return pPlr->Menu.ActivateGoals(pPlr->Number, pPlr->LocalControl && !Game.Control.isReplay());
 }
 
-static bool FnFatalError(C4AulContext *ctx, C4String *pErrorMsg)
+static void FnFatalError(C4AulContext *ctx, C4String *pErrorMsg)
 {
 	throw C4AulExecError(ctx->Obj, FormatString("User error: %s", pErrorMsg ? pErrorMsg->Data.getData() : "(no error)").getData());
 }
