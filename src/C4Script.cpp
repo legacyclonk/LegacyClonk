@@ -3081,28 +3081,24 @@ static long FnLaunchVolcano(C4AulContext *cthr, long x)
 		BoundBy(15 * GBackHgt / 500 + Random(10), 10, 60));
 }
 
-static bool FnLaunchEarthquake(C4AulContext *cthr, long x, long y)
+static void FnLaunchEarthquake(C4AulContext *cthr, long x, long y)
 {
 	Game.Weather.LaunchEarthquake(x, y);
-	return 1;
 }
 
-static bool FnShakeFree(C4AulContext *cthr, long x, long y, long rad)
+static void FnShakeFree(C4AulContext *cthr, long x, long y, long rad)
 {
 	Game.Landscape.ShakeFree(x, y, rad);
-	return 1;
 }
 
-static bool FnShakeObjects(C4AulContext *cthr, long x, long y, long rad)
+static void FnShakeObjects(C4AulContext *cthr, long x, long y, long rad)
 {
 	Game.ShakeObjects(x, y, rad, cthr->Obj ? cthr->Obj->Controller : NO_OWNER);
-	return 1;
 }
 
-static bool FnDigFree(C4AulContext *cthr, long x, long y, long rad, bool fRequest)
+static void FnDigFree(C4AulContext *cthr, long x, long y, long rad, bool fRequest)
 {
 	Game.Landscape.DigFree(x, y, rad, fRequest, cthr->Obj);
-	return 1;
 }
 
 static void FnDigFreeRect(C4AulContext *cthr, long iX, long iY, long iWdt, long iHgt, bool fRequest)
