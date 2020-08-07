@@ -958,8 +958,8 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pGroupOptions->AddElement(pCheck);
 	// hide folder maps
-	pCheck = new BoolConfig(caGroupOptions.GetGridCell(0, 1, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_MSG_HIDEFOLDERMAPS"), &Config.Graphics.HideFolderMaps);
-	pCheck->SetToolTip(LoadResStr("IDS_DESC_HIDEFOLDERMAPS"));
+	pCheck = new BoolConfig(caGroupOptions.GetGridCell(0, 1, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_MSG_SHOWFOLDERMAPS"), &Config.Graphics.ShowFolderMaps);
+	pCheck->SetToolTip(LoadResStr("IDS_DESC_SHOWFOLDERMAPS"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pGroupOptions->AddElement(pCheck);
 	// --subgroup effects

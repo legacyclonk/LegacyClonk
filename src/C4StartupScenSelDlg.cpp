@@ -999,7 +999,7 @@ bool C4ScenarioListLoader::SubFolder::DoLoadContents(C4ScenarioListLoader *pLoad
 			szSearchMask = nullptr;
 	}
 	// load map folder data
-	if (!Config.Graphics.HideFolderMaps && Group.FindEntry(C4CFN_MapFolderData))
+	if (Config.Graphics.ShowFolderMaps && Group.FindEntry(C4CFN_MapFolderData))
 	{
 		pMapData = new C4MapFolderData();
 		if (!pMapData->Load(Group, this))
