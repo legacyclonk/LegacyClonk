@@ -186,7 +186,7 @@ public:
 	bool LeagueAutoLogin;
 
 	bool AutomaticUpdate;
-	int32_t LastUpdateTime;
+	uint64_t LastUpdateTime;
 	int32_t AsyncMaxWait;
 
 public:

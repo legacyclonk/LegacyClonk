@@ -59,6 +59,8 @@ char StdCompiler::SeparatorToChar(Sep eSep)
 
 // *** StdCompilerBinWrite
 
+void StdCompilerBinWrite::QWord    (int64_t  &rInt)   { WriteValue(rInt); }
+void StdCompilerBinWrite::QWord    (uint64_t  &rInt)  { WriteValue(rInt); }
 void StdCompilerBinWrite::DWord    (int32_t  &rInt)   { WriteValue(rInt); }
 void StdCompilerBinWrite::DWord    (uint32_t &rInt)   { WriteValue(rInt); }
 void StdCompilerBinWrite::Word     (int16_t  &rShort) { WriteValue(rShort); }
@@ -124,6 +126,8 @@ void StdCompilerBinWrite::BeginSecond()
 
 // *** StdCompilerBinRead
 
+void StdCompilerBinRead::QWord(int64_t &rInt) { ReadValue(rInt); }
+void StdCompilerBinRead::QWord(uint64_t &rInt) { ReadValue(rInt); }
 void StdCompilerBinRead::DWord(int32_t &rInt) { ReadValue(rInt); }
 void StdCompilerBinRead::DWord(uint32_t &rInt) { ReadValue(rInt); }
 void StdCompilerBinRead::Word(int16_t &rShort) { ReadValue(rShort); }
@@ -272,6 +276,18 @@ bool StdCompilerINIWrite::Separator(Sep eSep)
 		Buf.AppendChar(SeparatorToChar(eSep));
 	}
 	return true;
+}
+
+void StdCompilerINIWrite::QWord(int64_t &rInt)
+{
+	PrepareForValue();
+	Buf.AppendFormat("%ld", rInt);
+}
+
+void StdCompilerINIWrite::QWord(uint64_t &rInt)
+{
+	PrepareForValue();
+	Buf.AppendFormat("%lu", rInt);
 }
 
 void StdCompilerINIWrite::DWord(int32_t &rInt)
@@ -605,20 +621,30 @@ int StdCompilerINIRead::NameCount(const char *szName)
 }
 
 // Various data readers
+void StdCompilerINIRead::QWord(int64_t &rInt)
+{
+	rInt = ReadNum(strtoll);
+}
+
+void StdCompilerINIRead::QWord(uint64_t &rInt)
+{
+	rInt = ReadNum(strtoull);
+}
+
 void StdCompilerINIRead::DWord(int32_t &rInt)
 {
-	rInt = ReadNum();
+	rInt = ReadNum(strtol);
 }
 
 void StdCompilerINIRead::DWord(uint32_t &rInt)
 {
-	rInt = ReadUNum();
+	rInt = ReadNum(strtoul);
 }
 
 void StdCompilerINIRead::Word(int16_t &rShort)
 {
 	const int MIN = -(1 << 15), MAX = (1 << 15) - 1;
-	int iNum = ReadNum();
+	int iNum = ReadNum(strtol);
 	if (iNum < MIN || iNum > MAX)
 		Warn("number out of range (%d to %d): %d ", MIN, MAX, iNum);
 	rShort = BoundBy(iNum, MIN, MAX);
@@ -627,7 +653,7 @@ void StdCompilerINIRead::Word(int16_t &rShort)
 void StdCompilerINIRead::Word(uint16_t &rShort)
 {
 	const unsigned int MIN = 0, MAX = (1 << 16) - 1;
-	unsigned int iNum = ReadUNum();
+	unsigned int iNum = ReadNum(strtoul);
 	if (iNum > MAX)
 		Warn("number out of range (%u to %u): %u ", MIN, MAX, iNum);
 	rShort = BoundBy(iNum, MIN, MAX);
@@ -636,7 +662,7 @@ void StdCompilerINIRead::Word(uint16_t &rShort)
 void StdCompilerINIRead::Byte(int8_t &rByte)
 {
 	const int MIN = -(1 << 7), MAX = (1 << 7) - 1;
-	int iNum = ReadNum();
+	int iNum = ReadNum(strtol);
 	if (iNum < MIN || iNum > MAX)
 		Warn("number out of range (%d to %d): %d ", MIN, MAX, iNum);
 	rByte = BoundBy(iNum, MIN, MAX);
@@ -645,7 +671,7 @@ void StdCompilerINIRead::Byte(int8_t &rByte)
 void StdCompilerINIRead::Byte(uint8_t &rByte)
 {
 	const unsigned int MIN = 0, MAX = (1 << 8) - 1;
-	unsigned int iNum = ReadUNum();
+	unsigned int iNum = ReadNum(strtoul);
 	if (iNum > MAX)
 		Warn("number out of range (%u to %u): %u ", MIN, MAX, iNum);
 	rByte = BoundBy(iNum, MIN, MAX);
@@ -852,48 +878,6 @@ void StdCompilerINIRead::SkipWhitespace()
 {
 	while (*pPos == ' ' || *pPos == '\t')
 		pPos++;
-}
-
-long StdCompilerINIRead::ReadNum()
-{
-	if (!pPos)
-	{
-		notFound("Number"); return 0;
-	}
-	// Skip whitespace
-	SkipWhitespace();
-	// Read number. If this breaks, Günther is to blame!
-	const char *pnPos = pPos;
-	long iNum = strtol(pPos, const_cast<char **>(&pnPos), 10);
-	// Could not read?
-	if (!iNum && pnPos == pPos)
-	{
-		notFound("Number"); return 0;
-	}
-	// Get over it
-	pPos = pnPos;
-	return iNum;
-}
-
-unsigned long StdCompilerINIRead::ReadUNum()
-{
-	if (!pPos)
-	{
-		notFound("Number"); return 0;
-	}
-	// Skip whitespace
-	SkipWhitespace();
-	// Read number. If this breaks, Günther is to blame!
-	const char *pnPos = pPos;
-	unsigned long iNum = strtoul(pPos, const_cast<char **>(&pnPos), 10);
-	// Could not read?
-	if (!iNum && pnPos == pPos)
-	{
-		notFound("Number"); return 0;
-	}
-	// Get over it
-	pPos = pnPos;
-	return iNum;
 }
 
 size_t StdCompilerINIRead::GetStringLength(RawCompileType eRawType)

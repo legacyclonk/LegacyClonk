@@ -81,6 +81,8 @@ public:
 	virtual bool Separator(Sep eSep);
 
 	// Data writers
+	virtual void QWord(int64_t &rInt);
+	virtual void QWord(uint64_t &rInt);
 	virtual void DWord(int32_t &rInt);
 	virtual void DWord(uint32_t &rInt);
 	virtual void Word(int16_t &rShort);
@@ -110,6 +112,8 @@ private:
 
 	// Writing
 	void CreateKey(HKEY hParent = 0);
+	template<typename T>
+	void WriteInteger(T value);
 	void WriteDWord(uint32_t iVal);
 	void WriteString(const char *szStr);
 };
@@ -135,6 +139,8 @@ public:
 	virtual bool Separator(Sep eSep);
 
 	// Data writers
+	virtual void QWord(int64_t &rInt);
+	virtual void QWord(uint64_t &rInt);
 	virtual void DWord(int32_t &rInt);
 	virtual void DWord(uint32_t &rInt);
 	virtual void Word(int16_t &rShort);
@@ -165,6 +171,8 @@ private:
 	} *pKey;
 
 	// Reading
+	template<typename T>
+	T ReadInteger(DWORD type, DWORD alternativeType);
 	uint32_t ReadDWord();
 	StdStrBuf ReadString();
 };

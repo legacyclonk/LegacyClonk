@@ -125,6 +125,8 @@ public:
 
 	// * Data
 	// Compiling functions for different data types
+	virtual void QWord(int64_t &rInt) = 0;   // Needs separator!
+	virtual void QWord(uint64_t &rInt) = 0;  // Needs separator!
 	virtual void DWord(int32_t &rInt) = 0;   // Needs separator!
 	virtual void DWord(uint32_t &rInt) = 0;  // Needs separator!
 	virtual void Word(int16_t &rShort) = 0;  // Needs separator!
@@ -165,6 +167,8 @@ public:
 	template <class T> void Value(const T &rStruct) { rStruct.CompileFunc(this); }
 	template <class T> void Value(T &rStruct) { CompileFunc(rStruct, this); }
 
+	void Value(int64_t &rInt) { QWord(rInt); }
+	void Value(uint64_t &rInt) { QWord(rInt); }
 	void Value(int32_t &rInt) { DWord(rInt); }
 	void Value(uint32_t &rInt) { DWord(rInt); }
 	void Value(int16_t &rInt) { Word(rInt); }
@@ -279,6 +283,8 @@ public:
 	template <class T> bool ValueSafe(const T &rStruct) { rStruct.CompileFunc(this); return true; }
 	template <class T> bool ValueSafe(T &rStruct) { CompileFunc(rStruct, this); return true; }
 
+	bool ValueSafe(int64_t &rInt)  { beginFailSafe(); QWord(rInt);    return endFailSafe(); }
+	bool ValueSafe(uint64_t &rInt) { beginFailSafe(); QWord(rInt);    return endFailSafe(); }
 	bool ValueSafe(int32_t &rInt)  { beginFailSafe(); DWord(rInt);    return endFailSafe(); }
 	bool ValueSafe(uint32_t &rInt) { beginFailSafe(); DWord(rInt);    return endFailSafe(); }
 	bool ValueSafe(int16_t &rInt)  { beginFailSafe(); Word(rInt);     return endFailSafe(); }
@@ -378,6 +384,8 @@ public:
 	virtual int NameCount(const char *szName = nullptr) { return 0; }
 
 	// Data readers
+	virtual void QWord(int64_t &) override {}
+	virtual void QWord(uint64_t &) override {}
 	virtual void DWord(int32_t &rInt) {}
 	virtual void DWord(uint32_t &rInt) {}
 	virtual void Word(int16_t &rShort) {}
@@ -408,6 +416,8 @@ public:
 	virtual bool isDoublePass() { return true; }
 
 	// Data writers
+	virtual void QWord(int64_t &rInt);
+	virtual void QWord(uint64_t &rInt);
 	virtual void DWord(int32_t &rInt);
 	virtual void DWord(uint32_t &rInt);
 	virtual void Word(int16_t &rShort);
@@ -448,6 +458,8 @@ public:
 	virtual bool isCompiler() { return true; }
 
 	// Data readers
+	virtual void QWord(int64_t &rInt) override;
+	virtual void QWord(uint64_t &rInt) override;
 	virtual void DWord(int32_t &rInt);
 	virtual void DWord(uint32_t &rInt);
 	virtual void Word(int16_t &rShort);
@@ -525,6 +537,8 @@ public:
 	virtual bool Separator(Sep eSep);
 
 	// Data writers
+	virtual void QWord(int64_t &rInt) override;
+	virtual void QWord(uint64_t &rInt) override;
 	virtual void DWord(int32_t &rInt);
 	virtual void DWord(uint32_t &rInt);
 	virtual void Word(int16_t &rShort);
@@ -596,6 +610,8 @@ public:
 	virtual int NameCount(const char *szName = nullptr);
 
 	// Data writers
+	virtual void QWord(int64_t &rInt) override;
+	virtual void QWord(uint64_t &rInt) override;
 	virtual void DWord(int32_t &rInt);
 	virtual void DWord(uint32_t &rInt);
 	virtual void Word(int16_t &rShort);
@@ -664,12 +680,33 @@ protected:
 
 	// Navigation
 	void SkipWhitespace();
-	long ReadNum();
+
+	template<typename T> T ReadNum(T (*function)(const char *, char **, int))
+	{
+		if (!pPos)
+		{
+			notFound("Number"); return 0;
+		}
+		// Skip whitespace
+		SkipWhitespace();
+		// Read number. If this breaks, Günther is to blame!
+		const char *pnPos = pPos;
+		T iNum = function(pPos, const_cast<char **>(&pnPos), 10);
+		// Could not read?
+		if (!iNum && pnPos == pPos)
+		{
+			notFound("Number"); return 0;
+		}
+		// Get over it
+		pPos = pnPos;
+		return iNum;
+	}
+
+	template<typename T> std::enable_if_t<std::is_unsigned_v<T>, T> ReadUNum();
 	size_t GetStringLength(RawCompileType eTyped);
 	StdBuf ReadString(size_t iLength, RawCompileType eTyped, bool fAppendNull = true);
 	bool TestStringEnd(RawCompileType eType);
 	char ReadEscapedChar();
-	unsigned long ReadUNum();
 
 	void notFound(const char *szWhat);
 };

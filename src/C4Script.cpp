@@ -4110,6 +4110,8 @@ protected:
 
 public:
 	// value functions
+	virtual void QWord(int64_t &rInt)   { if (haveCompleteMatch()) if (!iEntryNr--) { auto i = static_cast<int32_t>(rInt); ProcessInt(i); rInt = i; } }
+	virtual void QWord(uint64_t &rInt)  { if (haveCompleteMatch()) if (!iEntryNr--) { auto i = static_cast<int32_t>(rInt); ProcessInt(i); rInt = i; } }
 	virtual void DWord(int32_t &rInt)   { if (haveCompleteMatch()) if (!iEntryNr--) ProcessInt(rInt); }
 	virtual void DWord(uint32_t &rInt)  { if (haveCompleteMatch()) if (!iEntryNr--) { int32_t i = rInt;   ProcessInt(i); rInt = i; } }
 	virtual void Word(int16_t &rShort)  { if (haveCompleteMatch()) if (!iEntryNr--) { int32_t i = rShort; ProcessInt(i); rShort = i; } }

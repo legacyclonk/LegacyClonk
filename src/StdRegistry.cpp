@@ -403,6 +403,16 @@ bool StdCompilerConfigWrite::Separator(Sep eSep)
 	return false;
 }
 
+void StdCompilerConfigWrite::QWord(int64_t &rInt)
+{
+	WriteInteger(rInt);
+}
+
+void StdCompilerConfigWrite::QWord(uint64_t &rInt)
+{
+	WriteInteger(rInt);
+}
+
 void StdCompilerConfigWrite::DWord(int32_t &rInt)
 {
 	WriteDWord(rInt);
@@ -484,16 +494,25 @@ void StdCompilerConfigWrite::CreateKey(HKEY hParent)
 		0, "", REG_OPTION_NON_VOLATILE,
 		KEY_WRITE, nullptr,
 		&pKey->Handle, nullptr) != ERROR_SUCCESS)
-		excCorrupt(0, FormatString("Could not create key %s!", pKey->Name.getData()));
+		excCorrupt(0, FormatString("Could not create key %s!", pKey->Name.getData()).getData());
+}
+
+template<typename T>
+void StdCompilerConfigWrite::WriteInteger(T value)
+{
+	static_assert(sizeof(T) <= 8, "Type doesn't fit");
+
+	DWORD type = sizeof(T) == 8 ? REG_QWORD : REG_DWORD;
+	// Set the value
+	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
+		0, type, reinterpret_cast<const BYTE *>(&value),
+		sizeof(value)) != ERROR_SUCCESS)
+		excCorrupt(0, FormatString("Could not write key %s!", pKey->Name.getData()).getData());
 }
 
 void StdCompilerConfigWrite::WriteDWord(uint32_t iVal)
 {
-	// Set the value
-	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
-		0, REG_DWORD, reinterpret_cast<const BYTE *>(&iVal),
-		sizeof(iVal)) != ERROR_SUCCESS)
-		excCorrupt(0, FormatString("Could not write key %s!", pKey->Name.getData()));
+	WriteInteger(iVal);
 }
 
 void StdCompilerConfigWrite::WriteString(const char *szString)
@@ -502,7 +521,7 @@ void StdCompilerConfigWrite::WriteString(const char *szString)
 	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
 		0, REG_SZ, reinterpret_cast<const BYTE *>(szString),
 		strlen(szString) + 1) != ERROR_SUCCESS)
-		excCorrupt(0, FormatString("Could not write key %s!", pKey->Name.getData()));
+		excCorrupt(0, FormatString("Could not write key %s!", pKey->Name.getData()).getData());
 }
 
 // *** StdCompilerConfigRead
@@ -575,6 +594,16 @@ bool StdCompilerConfigRead::Separator(Sep eSep)
 {
 	excCorrupt(0, "Separators not supported by registry compiler!");
 	return false;
+}
+
+void StdCompilerConfigRead::QWord(int64_t &rInt)
+{
+	rInt = ReadInteger<int64_t>(REG_QWORD, REG_QWORD_LITTLE_ENDIAN);
+}
+
+void StdCompilerConfigRead::QWord(uint64_t &rInt)
+{
+	rInt = ReadInteger<uint64_t>(REG_QWORD, REG_QWORD_LITTLE_ENDIAN);
 }
 
 void StdCompilerConfigRead::DWord(int32_t &rInt)
@@ -665,7 +694,8 @@ void StdCompilerConfigRead::End()
 	assert(!iDepth);
 }
 
-uint32_t StdCompilerConfigRead::ReadDWord()
+template<typename T>
+T StdCompilerConfigRead::ReadInteger(DWORD type, DWORD alternativeType)
 {
 	// Virtual key?
 	if (pKey->Virtual)
@@ -673,12 +703,12 @@ uint32_t StdCompilerConfigRead::ReadDWord()
 		excNotFound("Could not read value %s! Parent key doesn't exist!", pKey->Name.getData()); return 0;
 	}
 	// Wrong type?
-	if (pKey->Type != REG_DWORD && pKey->Type != REG_DWORD_LITTLE_ENDIAN)
+	if (pKey->Type != type && pKey->Type != alternativeType)
 	{
 		excNotFound("Wrong value type!"); return 0;
 	}
 	// Read
-	uint32_t iVal; DWORD iSize = sizeof(iVal);
+	T iVal; DWORD iSize = sizeof(iVal);
 	if (RegQueryValueEx(pKey->Parent->Handle, pKey->Name.getData(),
 		0, nullptr,
 		reinterpret_cast<LPBYTE>(&iVal),
@@ -693,6 +723,11 @@ uint32_t StdCompilerConfigRead::ReadDWord()
 	}
 	// Return
 	return iVal;
+}
+
+uint32_t StdCompilerConfigRead::ReadDWord()
+{
+	return ReadInteger<uint32_t>(REG_DWORD, REG_DWORD_LITTLE_ENDIAN);
 }
 
 StdStrBuf StdCompilerConfigRead::ReadString()
