@@ -41,7 +41,7 @@ class CStdEvent
 public:
 	static constexpr auto Infinite = std::numeric_limits<unsigned int>::max();
 
-	CStdEvent(bool fManualReset) : fManualReset{fManualReset} { }
+	CStdEvent(bool fManualReset) : fManualReset{fManualReset} {}
 
 protected:
 	std::mutex mutex;
