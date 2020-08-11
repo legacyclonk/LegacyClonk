@@ -943,7 +943,7 @@ private:
 	CStdFont *GetTitleFont() const;
 
 public:
-	GroupBox(C4Rect &rtBounds) : Window(), pFont(nullptr), dwFrameClr(0u), dwTitleClr(C4GUI_CaptionFontClr), dwBackClr(0xffffffff), iMargin(4)
+	GroupBox(const C4Rect &rtBounds) : Window(), pFont(nullptr), dwFrameClr(0u), dwTitleClr(C4GUI_CaptionFontClr), dwBackClr(0xffffffff), iMargin(4)
 	{
 		// init client rect
 		SetBounds(rtBounds);
@@ -1144,7 +1144,7 @@ protected:
 public:
 	CallbackButton(ArrowButton::ArrowFct eDir, const C4Rect &rtBounds, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB = nullptr)
 		: Base(eDir, rtBounds, 0), pCallbackFn(pFn), pCB(pCB) {}
-	CallbackButton(const char *szBtnText, C4Rect &rtBounds, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB = nullptr)
+	CallbackButton(const char *szBtnText, const C4Rect &rtBounds, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB = nullptr)
 		: Base(szBtnText, rtBounds), pCallbackFn(pFn), pCB(pCB) {}
 	CallbackButton(Icons eUseIcon, const C4Rect &rtBounds, char cHotkey, typename DlgCallback<CallbackDlg>::Func pFn, CallbackDlg *pCB = nullptr)
 		: Base(eUseIcon, rtBounds, cHotkey), pCallbackFn(pFn), pCB(pCB) {}
@@ -1642,7 +1642,7 @@ protected:
 	virtual bool IsSelectedChild(Element *pChild) { return pChild == pActiveSheet || (pActiveSheet && pActiveSheet->IsParentOf(pChild)); }
 
 public:
-	Tabular(C4Rect &rtBounds, TabPosition eTabPos);
+	Tabular(const C4Rect &rtBounds, TabPosition eTabPos);
 	~Tabular();
 
 	virtual void RemoveElement(Element *pChild); // clear ptr
@@ -1684,7 +1684,7 @@ protected:
 	virtual Control *IsFocusElement() { return nullptr; }; // no focus element for now, because there's nothing to do (2do: scroll?)
 
 public:
-	TextWindow(C4Rect &rtBounds, size_t iPicWdt = 0, size_t iPicHgt = 0, size_t iPicPadding = 0, size_t iMaxLines = 100, size_t iMaxTextLen = 4096, const char *szIndentChars = "    ", bool fAutoGrow = false, const C4Facet *pOverlayPic = nullptr, int iOverlayBorder = 0, bool fMarkup = false);
+	TextWindow(const C4Rect &rtBounds, size_t iPicWdt = 0, size_t iPicHgt = 0, size_t iPicPadding = 0, size_t iMaxLines = 100, size_t iMaxTextLen = 4096, const char *szIndentChars = "    ", bool fAutoGrow = false, const C4Facet *pOverlayPic = nullptr, int iOverlayBorder = 0, bool fMarkup = false);
 
 	void AddTextLine(const char *szText, CStdFont *pFont, uint32_t dwClr, bool fDoUpdate, bool fMakeReadableOnBlack, CStdFont *pCaptionFont = nullptr) // add text in a new line
 	{

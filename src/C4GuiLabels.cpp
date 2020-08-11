@@ -444,7 +444,7 @@ C4FacetEx Icon::GetIconFacet(Icons icoIconIndex)
 
 // TextWindow
 
-TextWindow::TextWindow(C4Rect &rtBounds, size_t iPicWdt, size_t iPicHgt, size_t iPicPadding, size_t iMaxLines, size_t iMaxTextLen, const char *szIndentChars, bool fAutoGrow, const C4Facet *pOverlayPic, int iOverlayBorder, bool fMarkup)
+TextWindow::TextWindow(const C4Rect &rtBounds, size_t iPicWdt, size_t iPicHgt, size_t iPicPadding, size_t iMaxLines, size_t iMaxTextLen, const char *szIndentChars, bool fAutoGrow, const C4Facet *pOverlayPic, int iOverlayBorder, bool fMarkup)
 	: Control(rtBounds), fDrawBackground(true), fDrawFrame(true), iPicPadding(iPicPadding), pLogBuffer(nullptr)
 {
 	// calc client rect
