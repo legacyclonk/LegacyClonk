@@ -1268,7 +1268,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				}
 
 				// Save function back (optimization)
-				pCPos->bccX = reinterpret_cast<long>(pFunc);
+				pCPos->bccX = reinterpret_cast<std::intptr_t>(pFunc);
 
 				// Save current position
 				pCurCtx->CPos = pCPos;

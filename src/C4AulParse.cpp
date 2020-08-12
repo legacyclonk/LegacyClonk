@@ -139,7 +139,7 @@ public:
 	const char *SPos; // current position in the script
 	char Idtf[C4AUL_MAX_Identifier]; // current identifier
 	C4AulTokenType TokenType; // current token type
-	long cInt; // current int constant (long for compatibility with x86_64)
+	std::intptr_t cInt; // current int constant (std::intptr_t for compatibility with x86_64)
 	bool Done; // done parsing?
 	TypeType Type; // emitting bytecode?
 	void Parse_Script();
@@ -171,7 +171,7 @@ public:
 	bool AdvanceSpaces(); // skip whitespaces; return whether script ended
 	int GetOperator(const char *pScript);
 	enum HoldStringsPolicy { Discard, Hold, Ref };
-	C4AulTokenType GetNextToken(char *pToken, long *pInt, HoldStringsPolicy HoldStrings, bool bOperator); // get next token of SPos
+	C4AulTokenType GetNextToken(char *pToken, std::intptr_t *pInt, HoldStringsPolicy HoldStrings, bool bOperator); // get next token of SPos
 
 	void Shift(HoldStringsPolicy HoldStrings = Hold, bool bOperator = true);
 	void Match(C4AulTokenType TokenType, const char *Message = nullptr);
@@ -187,7 +187,7 @@ private:
 	bool fJump;
 	int iStack;
 
-	void AddBCC(C4AulBCCType eType, intptr_t X = 0);
+	void AddBCC(C4AulBCCType eType, std::intptr_t X = 0);
 
 
 	int JumpHere(); // Get position for a later jump to next instruction added
@@ -508,7 +508,7 @@ int C4AulParseState::GetOperator(const char *pScript)
 	return -1;
 }
 
-C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldStringsPolicy HoldStrings, bool bOperator)
+C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, HoldStringsPolicy HoldStrings, bool bOperator)
 {
 	// move to start of token
 	if (!AdvanceSpaces()) return ATT_EOF;
@@ -773,7 +773,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, long int *pInt, HoldS
 					pString = a->Engine->Strings.RegString(StrBuff);
 				if (HoldStrings == Hold) pString->Hold = 1;
 				// return pointer on string object
-				*pInt = (long)pString;
+				*pInt = reinterpret_cast<std::intptr_t>(pString);
 				return ATT_STRING;
 			}
 			// check: enough buffer space?
@@ -911,7 +911,7 @@ static const char *GetTTName(C4AulBCCType e)
 	}
 }
 
-void C4AulScript::AddBCC(C4AulBCCType eType, intptr_t X, const char *SPos)
+void C4AulScript::AddBCC(C4AulBCCType eType, std::intptr_t X, const char *SPos)
 {
 	// range check
 	if (CodeSize >= CodeBufSize)
@@ -974,7 +974,7 @@ bool C4AulScript::Preparse()
 	return true;
 }
 
-void C4AulParseState::AddBCC(C4AulBCCType eType, intptr_t X)
+void C4AulParseState::AddBCC(C4AulBCCType eType, std::intptr_t X)
 {
 	if (Type != PARSER) return;
 	// Track stack size
@@ -2220,7 +2220,7 @@ void C4AulParseState::Parse_Statement()
 			// The preparser assumes the syntax is correct
 			if (TokenType == ATT_BOPEN || Type == PARSER)
 				Parse_Params(FoundFn ? FoundFn->GetParCount() : 10, FoundFn ? FoundFn->Name : Idtf, FoundFn);
-			AddBCC(AB_FUNC, (long)FoundFn);
+			AddBCC(AB_FUNC, reinterpret_cast<std::intptr_t>(FoundFn));
 			if (gotohack)
 			{
 				AddBCC(AB_RETURN);
@@ -2409,7 +2409,7 @@ void C4AulParseState::Parse_Map()
 					if (!(string = a->Engine->Strings.FindString(Idtf)))
 						string = a->Engine->Strings.RegString(Idtf);
 					if (Type == PARSER) string->Hold = true;
-					AddBCC(AB_STRING, reinterpret_cast<long>(string));
+					AddBCC(AB_STRING, reinterpret_cast<std::intptr_t>(string));
 					Shift();
 					break;
 				}
@@ -2761,7 +2761,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 			{
 				// add direct call to byte code
 				Parse_Params(Fn->OwnerOverloaded->GetParCount(), nullptr, Fn->OwnerOverloaded);
-				AddBCC(AB_FUNC, (long)Fn->OwnerOverloaded);
+				AddBCC(AB_FUNC, reinterpret_cast<std::intptr_t>(Fn->OwnerOverloaded));
 			}
 			else
 				// not found? raise an error, if it's not a safe call
@@ -2780,7 +2780,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 			// old syntax: do not allow recursive calls in overloaded functions
 			Shift();
 			Parse_Params(Fn->OwnerOverloaded->GetParCount(), Fn->Name, Fn);
-			AddBCC(AB_FUNC, (long)Fn->OwnerOverloaded);
+			AddBCC(AB_FUNC, reinterpret_cast<std::intptr_t>(Fn->OwnerOverloaded));
 		}
 		else
 		{
@@ -2805,7 +2805,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 					Parse_Params(FoundFn->GetParCount(), FoundFn->Name, FoundFn);
 				else
 					AddBCC(AB_STACK, FoundFn->GetParCount());
-				AddBCC(AB_FUNC, (long)FoundFn);
+				AddBCC(AB_FUNC, reinterpret_cast<std::intptr_t>(FoundFn));
 			}
 			else
 			{
@@ -2821,7 +2821,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 					{
 					case C4V_Int:    AddBCC(AB_INT, val.GetData().Int); break;
 					case C4V_Bool:   AddBCC(AB_BOOL, val.GetData().Int); break;
-					case C4V_String: AddBCC(AB_STRING, reinterpret_cast<intptr_t>(val.GetData().Str)); break;
+					case C4V_String: AddBCC(AB_STRING, reinterpret_cast<std::intptr_t>(val.GetData().Str)); break;
 					case C4V_C4ID:   AddBCC(AB_C4ID, val.GetData().Int); break;
 					case C4V_Any:
 						// any: allow zero; add it as int
@@ -3104,7 +3104,7 @@ bool C4AulParseState::Parse_Expression3()
 				if (!(string = a->Engine->Strings.FindString(Idtf)))
 					string = a->Engine->Strings.RegString(Idtf);
 				if (Type == PARSER) string->Hold = true;
-				AddBCC(AB_MAPA_R, reinterpret_cast<intptr_t>(string));
+				AddBCC(AB_MAPA_R, reinterpret_cast<std::intptr_t>(string));
 				Shift();
 				break;
 			}
@@ -3152,7 +3152,7 @@ bool C4AulParseState::Parse_Expression3()
 					}
 
 					// write namespace chunk to byte code
-					AddBCC(AB_CALLNS, (int)idNS);
+					AddBCC(AB_CALLNS, static_cast<std::intptr_t>(idNS));
 				}
 			}
 			else
@@ -3206,8 +3206,8 @@ bool C4AulParseState::Parse_Expression3()
 			Shift();
 			Parse_Params(C4AUL_MAX_Par, pFunc ? pFunc->Name : 0, pFunc);
 			if (idNS != 0)
-				AddBCC(AB_CALLNS, (long)idNS);
-			AddBCC(eCallType, (long)pFunc);
+				AddBCC(AB_CALLNS, static_cast<std::intptr_t>(idNS));
+			AddBCC(eCallType, reinterpret_cast<std::intptr_t>(pFunc));
 			break;
 		}
 		default:
@@ -3529,8 +3529,8 @@ bool C4AulScript::Parse()
 					++Game.ScriptEngine.errCnt;
 				}
 				// make all jumps that don't have their destination yet jump here
-				// intptr_t to make it work on 64bit
-				for (intptr_t i = reinterpret_cast<intptr_t>(Fn->Code); i < CPos - Code; i++)
+				// std::intptr_t to make it work on 64bit
+				for (std::intptr_t i = reinterpret_cast<std::intptr_t>(Fn->Code); i < CPos - Code; i++)
 				{
 					C4AulBCC *pBCC = Code + i;
 					if (pBCC->bccType == AB_JUMP || pBCC->bccType == AB_JUMPAND || pBCC->bccType == AB_JUMPOR || pBCC->bccType == AB_CONDN)
@@ -3559,7 +3559,7 @@ bool C4AulScript::Parse()
 			if (Fn) if (Fn->Owner != Engine) Fn = nullptr;
 		}
 		if (Fn)
-			Fn->Code = Code + (long)Fn->Code;
+			Fn->Code = Code + reinterpret_cast<std::intptr_t>(Fn->Code);
 	}
 
 	// save line count
@@ -3580,7 +3580,8 @@ bool C4AulScript::Parse()
 				LogSilentF("%s:", Fn->Name);
 				for (C4AulBCC *pBCC = Fn->Code;; pBCC++)
 				{
-					C4AulBCCType eType = pBCC->bccType; long X = pBCC->bccX;
+					C4AulBCCType eType = pBCC->bccType;
+					const auto X = pBCC->bccX;
 					switch (eType)
 					{
 					case AB_FUNC: case AB_CALL: case AB_CALLFS: case AB_CALLGLOBAL:

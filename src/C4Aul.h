@@ -29,6 +29,7 @@
 #include <C4Id.h>
 #include <C4Script.h>
 #include <C4StringTable.h>
+#include <cstdint>
 
 #include <vector>
 
@@ -236,7 +237,7 @@ extern C4ScriptOpDef C4ScriptOpMap[];
 struct C4AulBCC
 {
 	C4AulBCCType bccType; // chunk type
-	intptr_t bccX; // extra info (long for use with amd64)
+	std::intptr_t bccX;
 	const char *SPos;
 };
 
@@ -460,7 +461,7 @@ protected:
 	C4AulFunc *GetOverloadedFunc(C4AulFunc *ByFunc);
 	C4AulFunc *GetFunc(const char *pIdtf); // get local function by name
 
-	void AddBCC(C4AulBCCType eType, intptr_t = 0, const char *SPos = 0); // add byte code chunk and advance
+	void AddBCC(C4AulBCCType eType, std::intptr_t = 0, const char *SPos = 0); // add byte code chunk and advance
 	bool Preparse(); // preparse script; return if successfull
 	void ParseFn(C4AulScriptFunc *Fn, bool fExprOnly = false); // parse single script function
 

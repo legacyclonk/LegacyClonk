@@ -21,6 +21,7 @@
 
 #include <optional>
 #include <string>
+#include <type_traits>
 
 // class declarations
 class C4Value;
@@ -53,7 +54,7 @@ enum C4V_Type
 
 };
 
-#define C4V_Last (int) C4V_pC4Value
+constexpr auto C4V_Last = static_cast<std::underlying_type_t<C4V_Type>>(C4V_pC4Value);
 
 const char *GetC4VName(const C4V_Type Type);
 char GetC4VID(const C4V_Type Type);
@@ -69,9 +70,8 @@ union C4V_Data
 	C4ValueArray *Array;
 	C4ValueHash *Map;
 	// cheat a little - assume that all members have the same length
-	operator void *() { return Ref; }
-	operator const void *() const { return Ref; }
-	bool operator==(C4V_Data b) { return Ref == b.Ref; }
+	explicit operator bool() const noexcept { return Ref; }
+	bool operator==(C4V_Data b) const noexcept { return Ref == b.Ref; }
 	C4V_Data &operator=(C4Value *p) { Ref = p; return *this; }
 };
 // converter function, used in converter table

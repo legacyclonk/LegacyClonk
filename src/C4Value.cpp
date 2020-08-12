@@ -30,9 +30,9 @@
 #include <C4Log.h>
 #endif
 
-const C4Value C4VNull = C4Value();
-const C4Value C4VTrue = C4VBool(true);
-const C4Value C4VFalse = C4VBool(false);
+const C4Value C4VNull{};
+const C4Value C4VTrue{C4VBool(true)};
+const C4Value C4VFalse{C4VBool(false)};
 
 C4Value::~C4Value()
 {
