@@ -908,7 +908,7 @@ int32_t C4Def::GetValue(C4Object *pInBase, int32_t iBuyPlayer)
 	int32_t iValue;
 	if (pCalcValueFn)
 		// then call it!
-		iValue = pCalcValueFn->Exec(nullptr, &C4AulParSet(C4VObj(pInBase), C4VInt(iBuyPlayer))).getInt();
+		iValue = pCalcValueFn->Exec(nullptr, {C4VObj(pInBase), C4VInt(iBuyPlayer)}).getInt();
 	else
 		// otherwise, use default value
 		iValue = Value;
@@ -917,7 +917,7 @@ int32_t C4Def::GetValue(C4Object *pInBase, int32_t iBuyPlayer)
 	{
 		C4AulFunc *pFn;
 		if (pFn = pInBase->Def->Script.GetSFunc(PSF_CalcBuyValue, AA_PROTECTED))
-			iValue = pFn->Exec(pInBase, &C4AulParSet(C4VID(id), C4VInt(iValue))).getInt();
+			iValue = pFn->Exec(pInBase, {C4VID(id), C4VInt(iValue)}).getInt();
 	}
 	return iValue;
 }
@@ -1441,8 +1441,7 @@ C4ValueArray *C4Def::GetCustomComponents(C4Value *pvArrayHolder, C4Object *pBuil
 #ifdef C4ENGINE
 	if (Script.SFn_CustomComponents)
 	{
-		C4AulParSet pars(C4VObj(pBuilder));
-		*pvArrayHolder = Script.SFn_CustomComponents->Exec(pObjInstance, &pars);
+		*pvArrayHolder = Script.SFn_CustomComponents->Exec(pObjInstance, {C4VObj(pBuilder)});
 		return pvArrayHolder->getArray();
 	}
 #endif

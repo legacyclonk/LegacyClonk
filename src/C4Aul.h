@@ -109,7 +109,7 @@ struct C4AulParSet
 	}
 
 	C4Value &operator[](int iIdx) { return Par[iIdx]; }
-	C4AulParSet *operator&() { return this; }
+	const C4Value &operator[](int iIdx) const { return Par[iIdx]; }
 };
 
 #define Copy2ParSet8(Pars, Vars) Pars[0].Set(Vars##0); Pars[1].Set(Vars##1); Pars[2].Set(Vars##2); Pars[3].Set(Vars##3); Pars[4].Set(Vars##4); Pars[5].Set(Vars##5); Pars[6].Set(Vars##6); Pars[7].Set(Vars##7);
@@ -296,8 +296,8 @@ public:
 	virtual int GetParCount() { return C4AUL_MAX_Par; }
 	virtual const C4V_Type *GetParType() { return 0; }
 	virtual C4V_Type GetRetType() { return C4V_Any; }
-	virtual C4Value Exec(C4AulContext *pCallerCtx, C4Value pPars[], bool fPassErrors = false) { return C4Value(); } // execute func (script call)
-	virtual C4Value Exec(C4Object *pObj = nullptr, C4AulParSet *pPars = nullptr, bool fPassErrors = false); // execute func (engine call)
+	virtual C4Value Exec(C4AulContext *pCallerCtx, const C4Value pPars[], bool fPassErrors = false) { return C4Value(); } // execute func (script call)
+	virtual C4Value Exec(C4Object *pObj = nullptr, const C4AulParSet &pPars = C4AulParSet{}, bool fPassErrors = false); // execute func (engine call)
 	virtual void UnLink() { OverloadedBy = NextSNFunc = nullptr; }
 
 	C4AulFunc *GetLocalSFunc(const char *szIdtf); // find script function in own scope
@@ -348,8 +348,8 @@ public:
 	virtual bool GetPublic() { return true; }
 	virtual const C4V_Type *GetParType() { return ParType; }
 	virtual C4V_Type GetRetType() { return bReturnRef ? C4V_pC4Value : C4V_Any; }
-	virtual C4Value Exec(C4AulContext *pCallerCtx, C4Value pPars[], bool fPassErrors = false); // execute func (script call, should not happen)
-	virtual C4Value Exec(C4Object *pObj = nullptr, C4AulParSet *pPars = nullptr, bool fPassErrors = false); // execute func (engine call)
+	virtual C4Value Exec(C4AulContext *pCallerCtx, const C4Value pPars[], bool fPassErrors = false); // execute func (script call, should not happen)
+	virtual C4Value Exec(C4Object *pObj = nullptr, const C4AulParSet &pPars = C4AulParSet{}, bool fPassErrors = false); // execute func (engine call)
 
 	void CopyBody(C4AulScriptFunc &FromFunc); // copy script/code, etc from given func
 

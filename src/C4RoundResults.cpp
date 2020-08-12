@@ -293,8 +293,7 @@ void C4RoundResults::EvaluateGoals(C4IDList &GoalList, C4IDList &FulfilledGoalLi
 		{
 			if (fRivalvry)
 			{
-				C4AulParSet pars(C4VInt(iPlayerNumber));
-				fFulfilled = !!pObj->Call(PSF_IsFulfilledforPlr, &pars);
+				fFulfilled = !!pObj->Call(PSF_IsFulfilledforPlr, {C4VInt(iPlayerNumber)});
 			}
 			else
 				fFulfilled = !!pObj->Call(PSF_IsFulfilled);

@@ -1109,7 +1109,7 @@ bool C4Command::GetTryEnter()
 	// if not successfully entered for any other reason, fail
 	if (!fSuccess) { Finish(); return false; }
 	// get-callback for getting out of containers
-	if (fWasContained) cObj->Call(PSF_Get, &C4AulParSet(C4VObj(Target)));
+	if (fWasContained) cObj->Call(PSF_Get, {C4VObj(Target)});
 	// entered
 	return true;
 }
@@ -1755,7 +1755,7 @@ void C4Command::Construct()
 	}
 
 	// command has been validated: check for script overload now
-	int32_t scriptresult = cObj->Call(PSF_ControlCommandConstruction, &C4AulParSet(C4VObj(Target), Tx, C4VInt(Ty), C4VObj(Target2), C4VID(Data))).getInt();
+	int32_t scriptresult = cObj->Call(PSF_ControlCommandConstruction, {C4VObj(Target), Tx, C4VInt(Ty), C4VObj(Target2), C4VID(Data)}).getInt();
 	// script call might have deleted object
 	if (!cObj->Status) return;
 	if (1 == scriptresult) return;
@@ -1920,7 +1920,7 @@ void C4Command::Transfer()
 	{
 		C4AulScriptFunc *f;
 		bool fHandled = (f = Target->Def->Script.SFn_ControlTransfer) != nullptr;
-		if (fHandled) fHandled = f->Exec(Target, &C4AulParSet(C4VObj(cObj), Tx, C4VInt(Ty))).getBool();
+		if (fHandled) fHandled = f->Exec(Target, {C4VObj(cObj), Tx, C4VInt(Ty)}).getBool();
 
 		if (!fHandled)
 			// Transfer not handled by target: done
@@ -2079,7 +2079,7 @@ void C4Command::Acquire()
 	}
 
 	// script overload
-	int32_t scriptresult = cObj->Call(PSF_ControlCommandAcquire, &C4AulParSet(C4VObj(Target), Tx, C4VInt(Ty), C4VObj(Target2), C4VID(Data))).getInt();
+	int32_t scriptresult = cObj->Call(PSF_ControlCommandAcquire, {C4VObj(Target), Tx, C4VInt(Ty), C4VObj(Target2), C4VID(Data)}).getInt();
 
 	// script call might have deleted object
 	if (!cObj->Status) return;
@@ -2175,8 +2175,8 @@ void C4Command::Fail(const char *szFailMessage)
 			// Needed components
 			if (!Target) break;
 			// BuildNeedsMaterial call to builder script...
-			if (!!cObj->Call(PSF_BuildNeedsMaterial, &C4AulParSet(
-				C4VID(Target->Component.GetID(0)), C4VInt(Target->Component.GetCount(0))))) // WTF? This is passing current components. Not needed ones!
+			if (!!cObj->Call(PSF_BuildNeedsMaterial, {
+				C4VID(Target->Component.GetID(0)), C4VInt(Target->Component.GetCount(0))})) // WTF? This is passing current components. Not needed ones!
 				break; // no message
 			if (szFailMessage) break;
 			failMessage = Target->GetNeededMatStr(cObj).getData();
@@ -2350,7 +2350,7 @@ void C4Command::Call()
 	// Done: success
 	Finish(true);
 	// Object call
-	Target->Call(Text, &C4AulParSet(C4VObj(cObj), Tx, C4VInt(Ty), C4VObj(Target2)));
+	Target->Call(Text, {C4VObj(cObj), Tx, C4VInt(Ty), C4VObj(Target2)});
 	// Extreme caution notice: the script call might do just about anything
 	// including clearing all commands (including this) i.e. through a call
 	// to SetCommand. Thus, we must not do anything in this command anymore
@@ -2432,7 +2432,7 @@ int32_t C4Command::CallFailed()
 	// Compose fail-function name
 	char szFunctionFailed[1024 + 1]; sprintf(szFunctionFailed, "~%sFailed", Text);
 	// Call failed-function
-	return Target->Call(szFunctionFailed, &C4AulParSet(C4VObj(cObj), Tx, C4VInt(Ty), C4VObj(Target2)))._getInt();
+	return Target->Call(szFunctionFailed, {C4VObj(cObj), Tx, C4VInt(Ty), C4VObj(Target2)})._getInt();
 	// Extreme caution notice: the script call might do just about anything
 	// including clearing all commands (including this) i.e. through a call
 	// to SetCommand. Thus, we must not do anything in this command anymore

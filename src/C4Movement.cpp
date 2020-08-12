@@ -453,9 +453,9 @@ void C4Object::DoMovement()
 	if (fAnyContact)
 	{
 		C4AulParSet pars(C4VInt(fixtoi(oldxdir, 100)), C4VInt(fixtoi(oldydir, 100)));
-		if (old_ocf & OCF_HitSpeed1) Call(PSF_Hit,  &pars);
-		if (old_ocf & OCF_HitSpeed2) Call(PSF_Hit2, &pars);
-		if (old_ocf & OCF_HitSpeed3) Call(PSF_Hit3, &pars);
+		if (old_ocf & OCF_HitSpeed1) Call(PSF_Hit,  pars);
+		if (old_ocf & OCF_HitSpeed2) Call(PSF_Hit2, pars);
+		if (old_ocf & OCF_HitSpeed3) Call(PSF_Hit3, pars);
 	}
 
 	// Rotation gfx

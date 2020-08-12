@@ -1082,7 +1082,7 @@ C4Object *C4Game::NewObject(C4Def *pDef, C4Object *pCreator,
 	// ---- From now on, object is ready to be used in scripts!
 	// Construction callback
 	C4AulParSet pars(C4VObj(pCreator));
-	pObj->Call(PSF_Construction, &pars);
+	pObj->Call(PSF_Construction, pars);
 	// AssignRemoval called? (Con 0)
 	if (!pObj->Status) { return nullptr; }
 	// Do initial con
@@ -2391,7 +2391,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 	for (C4Def *def = Defs.FirstDef; def; def = def->Next)
 	{
-		def->Script.Call(PSF_InitializeDef, &C4AulParSet(section ? C4VString(section->szName) : C4VNull));
+		def->Script.Call(PSF_InitializeDef, {section ? C4VString(section->szName) : C4VNull});
 	}
 
 	// Environment

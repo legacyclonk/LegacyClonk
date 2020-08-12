@@ -53,10 +53,10 @@ bool C4ObjectMenu::IsCloseDenied()
 		C4AulParSet pars(C4VInt(Selection), C4VObj(ParentObject));
 		if (eCallbackType == CB_Object)
 		{
-			if (Object) fResult = !!Object->Call(PSF_MenuQueryCancel, &pars);
+			if (Object) fResult = !!Object->Call(PSF_MenuQueryCancel, pars);
 		}
 		else if (eCallbackType == CB_Scenario)
-			fResult = !!Game.Script.Call(PSF_MenuQueryCancel, &pars);
+			fResult = !!Game.Script.Call(PSF_MenuQueryCancel, pars);
 		CloseQuerying = false;
 		if (fResult) return true;
 	}
@@ -86,9 +86,9 @@ void C4ObjectMenu::OnSelectionChanged(int32_t iNewSelection)
 	{
 		C4AulParSet pars(C4VInt(iNewSelection), C4VObj(ParentObject));
 		if (eCallbackType == CB_Object && Object)
-			Object->Call(PSF_MenuSelection, &pars);
+			Object->Call(PSF_MenuSelection, pars);
 		else if (eCallbackType == CB_Scenario)
-			Game.Script.Call(PSF_MenuSelection, &pars);
+			Game.Script.Call(PSF_MenuSelection, pars);
 	}
 }
 
@@ -266,7 +266,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				if (Identification == C4MN_Contents)
 				{
 					if (Object && Object->Def->CollectionLimit && (Object->Contents.ObjectCount() >= Object->Def->CollectionLimit)) fGet = false; // collection limit reached
-					if (Object && !!Object->Call(PSF_RejectCollection, &C4AulParSet(C4VID(pObj->Def->id), C4VObj(pObj)))) fGet = false; // collection rejected
+					if (Object && !!Object->Call(PSF_RejectCollection, {C4VID(pObj->Def->id), C4VObj(pObj)})) fGet = false; // collection rejected
 				}
 				if (!(pTarget->OCF & OCF_Entrance)) fGet = true; // target object has no entrance: cannot activate - force get
 				// Caption
@@ -508,7 +508,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 		if (cObj = pTarget->Action.Target)
 			for (iFunction = 0; pFunction = cObj->Def->Script.GetSFunc(iFunction, "ActionContext"); iFunction++)
 				if (!pFunction->OverloadedBy)
-					if (!pFunction->Condition || !!pFunction->Condition->Exec(cObj, &C4AulParSet(C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget))))
+					if (!pFunction->Condition || !!pFunction->Condition->Exec(cObj, {C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget)}))
 						if (!fCountOnly)
 						{
 							sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this,Object(%d))", cObj->Number, pFunction->Name, pTarget->Number);
@@ -528,7 +528,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 			if (pEffScript)
 				for (iFunction = 0; pFunction = pEffScript->GetSFunc(iFunction, sPattern.getData()); iFunction++)
 					if (!pFunction->OverloadedBy)
-						if (!pFunction->Condition || !!pFunction->Condition->Exec(pEff->pCommandTarget, &C4AulParSet(C4VObj(pTarget), C4VInt(pEff->iNumber), C4VObj(Object), C4VID(pFunction->idImage))))
+						if (!pFunction->Condition || !!pFunction->Condition->Exec(pEff->pCommandTarget, {C4VObj(pTarget), C4VInt(pEff->iNumber), C4VObj(Object), C4VID(pFunction->idImage)}))
 							if (!fCountOnly)
 							{
 								sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",Object(%d),%d,Object(%d),%s)", pEff->pCommandTarget->Number, pFunction->Name, pTarget->Number, (int)pEff->iNumber, Object->Number, C4IdText(pFunction->idImage));
@@ -548,7 +548,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 				if (cObj->Def->ActMap[cObj->Action.Act].Procedure == DFA_ATTACH)
 					for (iFunction = 0; pFunction = cObj->Def->Script.GetSFunc(iFunction, "AttachContext"); iFunction++)
 						if (!pFunction->OverloadedBy)
-							if (!pFunction->Condition || !!pFunction->Condition->Exec(cObj, &C4AulParSet(C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget))))
+							if (!pFunction->Condition || !!pFunction->Condition->Exec(cObj, {C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget)}))
 								if (!fCountOnly)
 								{
 									sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this,Object(%d))", cObj->Number, pFunction->Name, pTarget->Number);
@@ -570,7 +570,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 				// Find function not overloaded
 				if (!pFunction->OverloadedBy)
 					// Function condition valid
-					if (!pFunction->Condition || !!pFunction->Condition->Exec(pTarget, &C4AulParSet(C4VObj(Object), C4VID(pFunction->idImage))))
+					if (!pFunction->Condition || !!pFunction->Condition->Exec(pTarget, {C4VObj(Object), C4VID(pFunction->idImage)}))
 					{
 						// Get function text
 						strDescText = pFunction->DescText.getData() ? pFunction->DescText.getData() : pTarget->GetName();
@@ -578,7 +578,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						bool fDouble = false;
 						for (iFunction = 0; pFunction2 = pTarget->Def->Script.GetSFunc(iFunction, "Context"); iFunction++)
 							if (!pFunction2->OverloadedBy)
-								if (!pFunction2->Condition || !!pFunction2->Condition->Exec(pTarget, &C4AulParSet(C4VObj(Object), C4VID(pFunction2->idImage))))
+								if (!pFunction2->Condition || !!pFunction2->Condition->Exec(pTarget, {C4VObj(Object), C4VID(pFunction2->idImage)}))
 									if (SEqual(strDescText, pFunction2->DescText.getData()))
 										fDouble = true;
 						// If so, skip this function to prevent duplicate entries
@@ -604,7 +604,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 		if (!(pTarget->Category & C4D_Living) || pTarget->GetAlive()) // No dead livings
 			for (iFunction = 0; pFunction = pTarget->Def->Script.GetSFunc(iFunction, "Context"); iFunction++)
 				if (!pFunction->OverloadedBy)
-					if (!pFunction->Condition || !!pFunction->Condition->Exec(pTarget, &C4AulParSet(C4VObj(Object), C4VID(pFunction->idImage))))
+					if (!pFunction->Condition || !!pFunction->Condition->Exec(pTarget, {C4VObj(Object), C4VID(pFunction->idImage)}))
 						if (!fCountOnly)
 						{
 							sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this)", pTarget->Number, pFunction->Name);

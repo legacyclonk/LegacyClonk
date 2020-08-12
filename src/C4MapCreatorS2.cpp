@@ -89,7 +89,7 @@ void C4MCCallbackArray::Execute(int32_t iMapZoom)
 			Pars[0] = C4VInt((iIndex % iWdt) * iMapZoom - (iMapZoom / 2));
 			Pars[1] = C4VInt((iIndex / iWdt) * iMapZoom - (iMapZoom / 2));
 			// call
-			pSF->Exec(nullptr, &Pars);
+			pSF->Exec(nullptr, Pars);
 		}
 	// done
 }
@@ -1456,7 +1456,7 @@ bool AlgoScript(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 	// catch error (damn insecure C4Aul)
 	try
 	{
-		return !!pFunc->Exec(0, &Pars);
+		return !!pFunc->Exec(0, Pars);
 	}
 	catch (const C4AulError &err)
 	{

@@ -191,26 +191,6 @@ uint32_t StringBitEval(const char *str)
 	return rval;
 }
 
-typedef int32_t t_int;
-typedef bool t_bool;
-typedef C4ID t_id;
-typedef C4Object *t_object;
-typedef C4String *t_string;
-typedef C4Value &t_ref;
-typedef C4Value &t_any;
-typedef C4ValueArray *t_array;
-
-inline t_int getPar_int(C4Value *pVal)       { return pVal->getInt(); }
-inline t_bool getPar_bool(C4Value *pVal)     { return pVal->getBool(); }
-inline t_id getPar_id(C4Value *pVal)         { return pVal->getC4ID(); }
-inline t_object getPar_object(C4Value *pVal) { return pVal->getObj(); }
-inline t_string getPar_string(C4Value *pVal) { return pVal->getStr(); }
-inline t_ref getPar_ref(C4Value *pVal)       { return pVal->GetRefVal(); }
-inline t_any getPar_any(C4Value *pVal)       { return pVal->GetRefVal(); }
-inline t_array getPar_array(C4Value *pVal)   { return pVal->getArray(); }
-
-#define PAR(type, name) t_##type name = getPar_##type(pPars++)
-
 // C4Script Functions
 
 static C4Object *Fn_this(C4AulContext *cthr)
@@ -1969,13 +1949,13 @@ static C4Object *FnFindBase(C4AulContext *cthr, long iOwner, long iIndex)
 	return Game.FindBase(iOwner, iIndex);
 }
 
-C4FindObject *CreateCriterionsFromPars(C4Value *pPars, C4FindObject **pFOs, C4SortObject **pSOs)
+C4FindObject *CreateCriterionsFromPars(const C4Value *pPars, C4FindObject **pFOs, C4SortObject **pSOs)
 {
 	int i, iCnt = 0, iSortCnt = 0;
 	// Read all parameters
 	for (i = 0; i < C4AUL_MAX_Par; i++)
 	{
-		PAR(any, Data);
+		const C4Value &Data = pPars[i].GetRefVal();
 		// No data given?
 		if (!Data) break;
 		// Construct
@@ -2017,7 +1997,7 @@ C4FindObject *CreateCriterionsFromPars(C4Value *pPars, C4FindObject **pFOs, C4So
 	return pFO;
 }
 
-static C4Value FnObjectCount2(C4AulContext *cthr, C4Value *pPars)
+static C4Value FnObjectCount2(C4AulContext *cthr, const C4Value *pPars)
 {
 	// Create FindObject-structure
 	C4FindObject *pFOs[C4AUL_MAX_Par];
@@ -2033,7 +2013,7 @@ static C4Value FnObjectCount2(C4AulContext *cthr, C4Value *pPars)
 	return C4VInt(iCnt);
 }
 
-static C4Value FnFindObject2(C4AulContext *cthr, C4Value *pPars)
+static C4Value FnFindObject2(C4AulContext *cthr, const C4Value *pPars)
 {
 	// Create FindObject-structure
 	C4FindObject *pFOs[C4AUL_MAX_Par];
@@ -2050,7 +2030,7 @@ static C4Value FnFindObject2(C4AulContext *cthr, C4Value *pPars)
 	return C4VObj(pObj);
 }
 
-static C4Value FnFindObjects(C4AulContext *cthr, C4Value *pPars)
+static C4Value FnFindObjects(C4AulContext *cthr, const C4Value *pPars)
 {
 	// Create FindObject-structure
 	C4FindObject *pFOs[C4AUL_MAX_Par];
@@ -2515,14 +2495,14 @@ static bool FnSetHostility(C4AulContext *cthr, long iPlr, long iPlr2, bool fHost
 	// do rejection test first
 	if (!fNoCalls)
 	{
-		if (!!Game.Script.GRBroadcast(PSF_RejectHostilityChange, &C4AulParSet(C4VInt(iPlr), C4VInt(iPlr2), C4VBool(fHostile)), true, true))
+		if (!!Game.Script.GRBroadcast(PSF_RejectHostilityChange, {C4VInt(iPlr), C4VInt(iPlr2), C4VBool(fHostile)}, true, true))
 			return false;
 	}
 	// OK; set hostility
 	bool fOldHostility = Game.Players.HostilityDeclared(iPlr, iPlr2);
 	if (!pPlr->SetHostility(iPlr2, fHostile, fSilent)) return false;
 	// calls afterwards
-	Game.Script.GRBroadcast(PSF_OnHostilityChange, &C4AulParSet(C4VInt(iPlr), C4VInt(iPlr2), C4VBool(fHostile), C4VBool(fOldHostility)), true);
+	Game.Script.GRBroadcast(PSF_OnHostilityChange, {C4VInt(iPlr), C4VInt(iPlr2), C4VBool(fHostile), C4VBool(fOldHostility)}, true);
 	return true;
 }
 
@@ -3412,7 +3392,7 @@ static C4Value FnCall(C4AulContext *cthr, C4String *szFunction,
 	if (!szFunction || !cthr->Obj) return C4VNull;
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);
-	return cthr->Obj->Call(FnStringPar(szFunction), &Pars, true);
+	return cthr->Obj->Call(FnStringPar(szFunction), Pars, true);
 }
 
 static C4Value FnObjectCall(C4AulContext *cthr,
@@ -3429,7 +3409,7 @@ static C4Value FnObjectCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, &Pars, true);
+	return f->Exec(pObj, Pars, true);
 }
 
 static C4Value FnDefinitionCall(C4AulContext *cthr,
@@ -3447,7 +3427,7 @@ static C4Value FnDefinitionCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// Call
-	return pDef->Script.Call(szFunc2, &Pars, true);
+	return pDef->Script.Call(szFunc2, Pars, true);
 }
 
 static C4Value FnGameCall(C4AulContext *cthr,
@@ -3462,7 +3442,7 @@ static C4Value FnGameCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);
 	// Call
-	return Game.Script.Call(szFunc2, &Pars, true);
+	return Game.Script.Call(szFunc2, Pars, true);
 }
 
 static C4Value FnGameCallEx(C4AulContext *cthr,
@@ -3477,7 +3457,7 @@ static C4Value FnGameCallEx(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);
 	// Call
-	return Game.Script.GRBroadcast(szFunc2, &Pars, true);
+	return Game.Script.GRBroadcast(szFunc2, Pars, true);
 }
 
 static C4Value FnProtectedCall(C4AulContext *cthr,
@@ -3494,7 +3474,7 @@ static C4Value FnProtectedCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, &Pars, true);
+	return f->Exec(pObj, Pars, true);
 }
 
 static C4Value FnPrivateCall(C4AulContext *cthr,
@@ -3511,7 +3491,7 @@ static C4Value FnPrivateCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, &Pars, true);
+	return f->Exec(pObj, Pars, true);
 }
 
 static C4Object *FnEditCursor(C4AulContext *cth)
@@ -3590,7 +3570,7 @@ static bool FnOnMessageBoardAnswer(C4AulContext *cthr, C4Object *pObj, long iFor
 	C4ScriptHost *scr;
 	if (pObj) scr = &pObj->Def->Script; else scr = &Game.Script;
 	// exec func
-	return !!scr->ObjectCall(nullptr, pObj, PSF_InputCallback, &C4AulParSet(C4VString(FnStringPar(szAnswerString)), C4VInt(iForPlr)));
+	return !!scr->ObjectCall(nullptr, pObj, PSF_InputCallback, {C4VString(FnStringPar(szAnswerString)), C4VInt(iForPlr)});
 }
 
 static long FnScriptCounter(C4AulContext *cthr)
@@ -5245,10 +5225,8 @@ static bool FnFightWith(C4AulContext *ctx, C4Object *pTarget, C4Object *pClonk)
 	// check OCF
 	if (~(pTarget->OCF & pClonk->OCF) & OCF_FightReady) return false;
 	// RejectFight callback
-	C4AulParSet parset1(C4VObj(pTarget));
-	C4AulParSet parset2(C4VObj(pClonk));
-	if (pTarget->Call(PSF_RejectFight, &parset1).getBool()) return false;
-	if (pClonk->Call(PSF_RejectFight, &parset2).getBool()) return false;
+	if (pTarget->Call(PSF_RejectFight, {C4VObj(pTarget)}).getBool()) return false;
+	if (pClonk->Call(PSF_RejectFight, {C4VObj(pClonk)}).getBool()) return false;
 	// begin fighting
 	ObjectActionFight(pClonk, pTarget);
 	ObjectActionFight(pTarget, pClonk);
@@ -5861,7 +5839,7 @@ static bool FnSetPlayerTeam(C4AulContext *cthr, long iPlayer, long idNewTeam, bo
 	// ask script if it's allowed
 	if (!fNoCalls)
 	{
-		if (!!Game.Script.GRBroadcast(PSF_RejectTeamSwitch, &C4AulParSet(C4VInt(iPlayer), C4VInt(idNewTeam)), true, true))
+		if (!!Game.Script.GRBroadcast(PSF_RejectTeamSwitch, {C4VInt(iPlayer), C4VInt(idNewTeam)}, true, true))
 			return false;
 	}
 	// exit previous team
@@ -5896,7 +5874,7 @@ static bool FnSetPlayerTeam(C4AulContext *cthr, long iPlayer, long idNewTeam, bo
 	}
 	// do callback to reflect change in scenario
 	if (!fNoCalls)
-		Game.Script.GRBroadcast(PSF_OnTeamSwitch, &C4AulParSet(C4VInt(iPlayer), C4VInt(idNewTeam), C4VInt(idOldTeam)), true);
+		Game.Script.GRBroadcast(PSF_OnTeamSwitch, {C4VInt(iPlayer), C4VInt(idNewTeam), C4VInt(idOldTeam)}, true);
 	return true;
 }
 
@@ -6268,9 +6246,9 @@ public:
 		else return C4ValueConv<Ret>::Type();
 	}
 
-	C4Value Exec(C4AulContext *context, C4Value pars[], bool = false) override
+	C4Value Exec(C4AulContext *context, const C4Value pars[], bool = false) override
 	{
-		constexpr auto callHelper = [](C4AulEngineFunc *that, C4AulContext *context, C4Value pars[])
+		constexpr auto callHelper = [](C4AulEngineFunc *that, C4AulContext *context, const C4Value pars[])
 		{
 			return that->ExecHelper(context, pars, std::make_index_sequence<ParCount>());
 		};
@@ -6287,7 +6265,7 @@ public:
 
 private:
 	template<std::size_t... indices>
-	auto ExecHelper(C4AulContext *context, C4Value pars[], std::index_sequence<indices...>) const
+	auto ExecHelper(C4AulContext *context, const C4Value pars[], std::index_sequence<indices...>) const
 	{
 		return func(context, C4ValueConv<Pars>::_FromC4V(pars[indices])...);
 	}
@@ -6306,7 +6284,7 @@ public:
 	C4AulDefCastFunc(C4AulScript *owner, const char *name) :
 		C4AulEngineFuncHelper<1>(owner, name, false, fromType) {}
 
-	C4Value Exec(C4AulContext *, C4Value pars[], bool = false) override
+	C4Value Exec(C4AulContext *, const C4Value pars[], bool = false) override
 	{
 		return C4Value{pars->GetData(), toType};
 	}
@@ -6316,14 +6294,14 @@ public:
 
 template<std::size_t ParCount, C4V_Type RetType>
 class C4AulEngineFuncParArray : public C4AulEngineFuncHelper<ParCount> {
-	using Func = C4Value(&)(C4AulContext *context, C4Value *pars);
+	using Func = C4Value(&)(C4AulContext *context, const C4Value *pars);
 	const Func func;
 
 public:
 	template<typename... ParTypes>
 	C4AulEngineFuncParArray(C4AulScript *owner, const char *name, Func func, ParTypes... parTypes) : C4AulEngineFuncHelper<ParCount>{owner, name, true, parTypes...}, func{func} {}
 	C4V_Type GetRetType() noexcept override { return RetType; }
-	C4Value Exec(C4AulContext *context, C4Value pars[], bool = false) override
+	C4Value Exec(C4AulContext *context, const C4Value pars[], bool = false) override
 	{
 		return func(context, pars);
 	}
@@ -6669,7 +6647,7 @@ template <> struct C4ValueConv<C4Value>
 {
 	inline static C4V_Type Type() { return C4V_Any; }
 	inline static C4Value FromC4V(C4Value &v) { return v; }
-	inline static C4Value _FromC4V(C4Value &v) { return v; }
+	inline static C4Value _FromC4V(const C4Value &v) { return v; }
 	inline static C4Value ToC4V(C4Value v) { return v; }
 };
 
@@ -6681,7 +6659,7 @@ template <typename T> struct C4ValueConv<std::optional<T>>
 		if (v.GetType() != C4V_Any) return {C4ValueConv<T>::FromC4V(v)};
 		return {};
 	}
-	inline static std::optional<T> _FromC4V(C4Value &v)
+	inline static std::optional<T> _FromC4V(const C4Value &v)
 	{
 		if (v.GetType() != C4V_Any) return {C4ValueConv<T>::_FromC4V(v)};
 		return {};

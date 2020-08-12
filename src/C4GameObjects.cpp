@@ -128,10 +128,8 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 							if (Game.Players.Hostile(obj1->Owner, obj2->Owner))
 							{
 								// RejectFight callback
-								C4AulParSet parset1(C4VObj(obj2));
-								C4AulParSet parset2(C4VObj(obj1));
-								if (obj1->Call(PSF_RejectFight, &parset1).getBool()) continue;
-								if (obj2->Call(PSF_RejectFight, &parset2).getBool()) continue;
+								if (obj1->Call(PSF_RejectFight, {C4VObj(obj2)}).getBool()) continue;
+								if (obj2->Call(PSF_RejectFight, {C4VObj(obj1)}).getBool()) continue;
 								ObjectActionFight(obj1, obj2);
 								ObjectActionFight(obj2, obj1);
 								continue;
@@ -167,7 +165,7 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 										obj2->Marker = Marker;
 										// Hit
 										if ((obj2->OCF & OCF_HitSpeed2) && (obj1->OCF & OCF_Alive) && (obj2->Category & C4D_Object))
-											if (!obj1->Call(PSF_QueryCatchBlow, &C4AulParSet(C4VObj(obj2))))
+											if (!obj1->Call(PSF_QueryCatchBlow, {C4VObj(obj2)}))
 											{
 												// "realistic" hit energy
 												FIXED dXDir = obj2->xdir - obj1->xdir, dYDir = obj2->ydir - obj1->ydir;
@@ -177,8 +175,8 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 												int tmass = std::max<int32_t>(obj1->Mass, 50);
 												if (!Tick3 || (obj1->Action.Act >= 0 && obj1->Def->ActMap[obj1->Action.Act].Procedure != DFA_FLIGHT))
 													obj1->Fling(obj2->xdir * 50 / tmass, -Abs(obj2->ydir / 2) * 50 / tmass, false, obj2->Controller);
-												obj1->Call(PSF_CatchBlow, &C4AulParSet(C4VInt(-iHitEnergy / 5),
-													C4VObj(obj2)));
+												obj1->Call(PSF_CatchBlow, {C4VInt(-iHitEnergy / 5),
+													C4VObj(obj2)});
 												// obj1 might have been tampered with
 												if (!obj1->Status || obj1->Contained || !(obj1->OCF & focf))
 													goto out1;
@@ -424,7 +422,7 @@ void C4ObjResort::SortObject()
 		if (!(pObj2->Category & pSortObj->Category)) break;
 		// perform the check
 		Pars[0].Set(C4VObj(pObj2));
-		iResult = OrderFunc->Exec(nullptr, &Pars).getInt();
+		iResult = OrderFunc->Exec(nullptr, Pars).getInt();
 		if (iResult > 0) break;
 		if (iResult < 0) pMoveLink = pLnk;
 	}
@@ -452,7 +450,7 @@ void C4ObjResort::SortObject()
 			if (!(pObj2->Category & pSortObj->Category)) break;
 			// perform the check
 			Pars[1].Set(C4VObj(pObj2));
-			iResult = OrderFunc->Exec(nullptr, &Pars).getInt();
+			iResult = OrderFunc->Exec(nullptr, Pars).getInt();
 			if (iResult > 0) break;
 			if (iResult < 0) pMoveLink = pLnk;
 		}
@@ -497,7 +495,7 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 			while (!pCurr2->Obj->Status) pCurr2 = pCurr2->Prev;
 			// perform the check
 			Pars[0].Set(C4VObj(pCurr->Obj)); Pars[1].Set(C4VObj(pCurr2->Obj));
-			if (OrderFunc->Exec(nullptr, &Pars).getInt() < 0)
+			if (OrderFunc->Exec(nullptr, Pars).getInt() < 0)
 			{
 				// so there's something to be reordered: swap the links
 				// FIXME: Inform C4ObjectList about this reorder

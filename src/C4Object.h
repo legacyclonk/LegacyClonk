@@ -238,8 +238,8 @@ public:
 	C4Object *ComposeContents(C4ID id);
 	bool MenuCommand(const char *szCommand);
 
-	bool CallControl(C4Player *pPlr, uint8_t byCom, C4AulParSet *pPars = nullptr);
-	C4Value Call(const char *szFunctionCall, C4AulParSet *pPars = nullptr, bool fPassError = false);
+	bool CallControl(C4Player *pPlr, uint8_t byCom, const C4AulParSet &pPars = C4AulParSet{});
+	C4Value Call(const char *szFunctionCall, const C4AulParSet &pPars = C4AulParSet{}, bool fPassError = false);
 
 	bool ContainedControl(uint8_t byCom);
 

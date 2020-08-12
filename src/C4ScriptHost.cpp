@@ -125,7 +125,7 @@ void C4ScriptHost::GetControlMethodMask(const char *szFunctionFormat, int32_t &f
 #endif
 }
 
-C4Value C4ScriptHost::FunctionCall(C4Object *pCaller, const char *szFunction, C4Object *pObj, C4AulParSet *Pars, bool fPrivateCall, bool fPassError)
+C4Value C4ScriptHost::FunctionCall(C4Object *pCaller, const char *szFunction, C4Object *pObj, const C4AulParSet &Pars, bool fPrivateCall, bool fPassError)
 {
 #ifdef C4ENGINE
 
@@ -246,7 +246,7 @@ bool C4GameScriptHost::Execute()
 	return false;
 }
 
-C4Value C4GameScriptHost::GRBroadcast(const char *szFunction, C4AulParSet *pPars, bool fPassError, bool fRejectTest)
+C4Value C4GameScriptHost::GRBroadcast(const char *szFunction, const C4AulParSet &pPars, bool fPassError, bool fRejectTest)
 {
 	// call objects first - scenario script might overwrite hostility, etc...
 	C4Object *pObj;

@@ -113,7 +113,7 @@ private:
 	C4AulScript *pProfiledScript;
 
 public:
-	C4Value Exec(C4AulScriptFunc *pSFunc, C4Object *pObj, C4Value pPars[], bool fPassErrors, bool fTemporaryScript = false);
+	C4Value Exec(C4AulScriptFunc *pSFunc, C4Object *pObj, const C4Value pPars[], bool fPassErrors, bool fTemporaryScript = false);
 	C4Value Exec(C4AulBCC *pCPos, bool fPassErrors);
 
 	void StartTrace();
@@ -312,7 +312,7 @@ private:
 
 C4AulExec AulExec;
 
-C4Value C4AulExec::Exec(C4AulScriptFunc *pSFunc, C4Object *pObj, C4Value *pnPars, bool fPassErrors, bool fTemporaryScript)
+C4Value C4AulExec::Exec(C4AulScriptFunc *pSFunc, C4Object *pObj, const C4Value *pnPars, bool fPassErrors, bool fTemporaryScript)
 {
 	// Push parameters
 	C4Value *pPars = pCurVal + 1;
@@ -1536,7 +1536,7 @@ void C4AulProfiler::Show()
 	// done!
 }
 
-C4Value C4AulFunc::Exec(C4Object *pObj, C4AulParSet *pPars, bool fPassErrors)
+C4Value C4AulFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors)
 {
 	// construct a dummy caller context
 	C4AulContext ctx;
@@ -1544,10 +1544,10 @@ C4Value C4AulFunc::Exec(C4Object *pObj, C4AulParSet *pPars, bool fPassErrors)
 	ctx.Def = pObj ? pObj->Def : nullptr;
 	ctx.Caller = nullptr;
 	// execute
-	return Exec(&ctx, pPars ? pPars->Par : C4AulParSet().Par, fPassErrors);
+	return Exec(&ctx, pPars.Par, fPassErrors);
 }
 
-C4Value C4AulScriptFunc::Exec(C4AulContext *pCtx, C4Value pPars[], bool fPassErrors)
+C4Value C4AulScriptFunc::Exec(C4AulContext *pCtx, const C4Value pPars[], bool fPassErrors)
 {
 #ifdef C4ENGINE
 
@@ -1564,7 +1564,7 @@ C4Value C4AulScriptFunc::Exec(C4AulContext *pCtx, C4Value pPars[], bool fPassErr
 #endif
 }
 
-C4Value C4AulScriptFunc::Exec(C4Object *pObj, C4AulParSet *pPars, bool fPassErrors)
+C4Value C4AulScriptFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors)
 {
 #ifdef C4ENGINE
 
@@ -1572,7 +1572,7 @@ C4Value C4AulScriptFunc::Exec(C4Object *pObj, C4AulParSet *pPars, bool fPassErro
 	if (Owner->State != ASS_PARSED) return C4VNull;
 
 	// execute
-	return AulExec.Exec(this, pObj, pPars ? pPars->Par : C4AulParSet().Par, fPassErrors);
+	return AulExec.Exec(this, pObj, pPars.Par, fPassErrors);
 
 #else
 

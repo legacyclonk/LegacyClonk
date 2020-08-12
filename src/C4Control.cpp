@@ -316,7 +316,7 @@ void C4ControlPlayerSelect::Execute() const
 			iControlChecksum += pObj->Number * (iControlChecksum + 4787821);
 			// user defined object selection: callback to object
 			if (pObj->Category & C4D_MouseSelect)
-				pObj->Call(PSF_MouseSelection, &C4AulParSet(C4VInt(iPlr)));
+				pObj->Call(PSF_MouseSelection, {C4VInt(iPlr)});
 			// player crew selection (recheck status of pObj)
 			if (pObj->Status && pPlr->ObjectInCrew(pObj))
 				SelectObjs.Add(pObj, C4ObjectList::stNone);

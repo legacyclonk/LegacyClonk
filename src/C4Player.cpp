@@ -335,15 +335,14 @@ bool C4Player::Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientNa
 			C4Def *pDefCallback;
 			if (idCallback && (pDefCallback = C4Id2Def(idCallback)))
 			{
-				pDefCallback->Script.Call(PSF_InitializeScriptPlayer, &C4AulParSet(C4VInt(Number),
-					C4VInt(Team)));
+				pDefCallback->Script.Call(PSF_InitializeScriptPlayer, {C4VInt(Number), C4VInt(Team)});
 			}
 		}
 		else
 		{
 			// player preinit: In case a team needs to be chosen first, no InitializePlayer-broadcast is done
 			// this callback shall give scripters a chance to do stuff like starting an intro or enabling FoW, which might need to be done
-			Game.Script.GRBroadcast(PSF_PreInitializePlayer, &C4AulParSet(C4VInt(Number)));
+			Game.Script.GRBroadcast(PSF_PreInitializePlayer, {C4VInt(Number)});
 			// direct init
 			if (Status != PS_TeamSelection) if (!ScenarioInit()) return false;
 			// ...and home base material from team
@@ -527,8 +526,7 @@ void C4Player::PlaceReadyCrew(int32_t tx1, int32_t tx2, int32_t ty, C4Object *Fi
 #ifndef DEBUGREC_RECRUITMENT
 				C4DebugRecOff DBGRECOFF;
 #endif
-				C4AulParSet parset(C4VInt(Number));
-				nobj->Call(PSF_OnJoinCrew, &parset);
+				nobj->Call(PSF_OnJoinCrew, {C4VInt(Number)});
 			}
 		}
 	}
@@ -569,8 +567,7 @@ void C4Player::PlaceReadyCrew(int32_t tx1, int32_t tx2, int32_t ty, C4Object *Fi
 #ifndef DEBUGREC_RECRUITMENT
 						C4DebugRecOff DbgRecOff;
 #endif
-						C4AulParSet parset(C4VInt(Number));
-						nobj->Call(PSF_OnJoinCrew, &parset);
+						nobj->Call(PSF_OnJoinCrew, {C4VInt(Number)});
 					}
 				}
 			}
@@ -775,12 +772,12 @@ bool C4Player::ScenarioInit()
 		}
 
 	// Scenario script initialization
-	Game.Script.GRBroadcast(PSF_InitializePlayer, &C4AulParSet(C4VInt(Number),
+	Game.Script.GRBroadcast(PSF_InitializePlayer, {C4VInt(Number),
 		C4VInt(ptx),
 		C4VInt(pty),
 		C4VObj(FirstBase),
 		C4VInt(Team),
-		C4VID(GetInfo()->GetScriptPlayerExtraID())));
+		C4VID(GetInfo()->GetScriptPlayerExtraID())});
 	return true;
 }
 
@@ -867,8 +864,7 @@ C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pB
 	if (pDef->CrewMember) if (ValidPlr(iForPlr))
 		Game.Players.Get(iForPlr)->MakeCrewMember(pThing);
 	// success
-	C4AulParSet parset(C4VInt(Number), C4VObj(pBuyObj));
-	pThing->Call(PSF_Purchase, &parset);
+	pThing->Call(PSF_Purchase, {C4VInt(Number), C4VObj(pBuyObj)});
 	if (!pThing->Status) return nullptr;
 	return pThing;
 }
@@ -894,7 +890,7 @@ bool C4Player::Sell2Home(C4Object *pObj)
 	C4Def *pSellDef = pObj->Def;
 	if (C4AulScriptFunc *f = pObj->Def->Script.SFn_SellTo)
 	{
-		id = f->Exec(pObj, &C4AulParSet(C4VInt(Number))).getC4ID();
+		id = f->Exec(pObj, {C4VInt(Number)}).getC4ID();
 		pSellDef = C4Id2Def(id);
 	}
 	// Add to homebase material
@@ -905,7 +901,7 @@ bool C4Player::Sell2Home(C4Object *pObj)
 	}
 	// Remove object, eject any crew members
 	if (pObj->Contained) pObj->Exit();
-	pObj->Call(PSF_Sale, &C4AulParSet(C4VInt(Number)));
+	pObj->Call(PSF_Sale, {C4VInt(Number)});
 	pObj->AssignRemoval(true);
 	// Done
 	return true;
@@ -1208,8 +1204,7 @@ bool C4Player::MakeCrewMember(C4Object *pObj, bool fForceInfo, bool fDoCalls)
 	// OnJoinCrew callback
 	if (fDoCalls)
 	{
-		C4AulParSet parset(C4VInt(Number));
-		pObj->Call(PSF_OnJoinCrew, &parset);
+		pObj->Call(PSF_OnJoinCrew, {C4VInt(Number)});
 	}
 
 	return true;
