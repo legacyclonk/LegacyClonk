@@ -1,0 +1,202 @@
+name: Autobuild
+
+on: [push, pull_request]
+
+jobs:
+  Windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Auto CRLF
+      shell: cmd
+      run: git config --global core.autocrlf true
+    - name: Dependencies
+      shell: powershell
+      run: |
+        (New-Object System.Net.WebClient).DownloadFile("http://assets.maxmitti.tk/openclonk-deps-vs140-i386-easy.7z", "openclonk-deps-vs140-i386-easy.7z")
+        7z.exe x openclonk-deps-vs140-i386-easy.7z
+    - name: FMOD
+      shell: powershell
+      run: |
+        (New-Object System.Net.WebClient).DownloadFile("http://fulgen.bplaced.net/files/fmodapi375win.zip", "fmodapi375win.zip")
+        7z.exe x fmodapi375win.zip
+        copy fmodapi375win\api\inc\* deps\include
+        copy fmodapi375win\api\lib\* deps\lib
+
+    - name: Setup VS Dev Environment
+      uses: seanmiddleditch/gha-setup-vsdevenv@v1
+      with:
+        arch: x86
+
+    - name: Configure
+      run: cmake -G "Visual Studio 16 2019" -A Win32 .
+
+    - name: Build
+      run: cmake --build . --config RelWithDebInfo
+
+    - name: Pack
+      shell: cmd
+      run: |
+        mkdir appdir
+        copy glew32.dll appdir
+        copy RelWithDebInfo\*.exe appdir
+        copy RelWithDebInfo\*.pdb appdir
+        cd appdir
+        7z a LegacyClonk.zip *
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Windows x86
+        path: appdir/*
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: appdir/LegacyClonk.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  Linux:
+    strategy:
+      matrix:
+        arch: [x86, x64]
+    env:
+      PLATFORM: ${{ matrix.arch }}
+
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Prepare build ramdisk
+        run: |
+          mkdir ramdisk
+          sudo mount -t tmpfs tmpfs ramdisk
+          cd ramdisk
+          if [ "$PLATFORM" = "x86" ]; then
+              curl -L https://github.com/legacyclonk/ubuntu-1804-x86-chroot/releases/download/continuous-master/chroot.tar.xz | sudo tar xJ
+              curl -L https://raw.githubusercontent.com/legacyclonk/ubuntu-1804-x86-chroot/master/setup_chroot.sh | sudo bash -e -
+          fi
+
+      - name: Build
+        run: |
+          cd ramdisk
+          if [ "$PLATFORM" = "x86" ]; then
+            sudo rsync -rv --exclude=ramdisk .. chroot/legacyclonk
+            sudo chroot chroot bash -c 'cd /legacyclonk && autobuild/build.sh'
+            cp chroot/legacyclonk/build/LegacyClonk.tar.gz .
+          else
+            rsync -rv --exclude=ramdisk .. legacyclonk
+            cd legacyclonk
+            autobuild/build.sh
+            C4GROUP=$PWD/build/c4group tools/make_Graphics.c4g.sh
+            C4GROUP=$PWD/build/c4group tools/make_System.c4g.sh
+            mv build/LegacyClonk.tar.gz .
+          fi
+
+          mkdir LegacyClonk
+          cd LegacyClonk
+          tar xzf ../LegacyClonk.tar.gz
+          cd ..
+          mv LegacyClonk.tar.gz LegacyClonk-$PLATFORM.tar.gz
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ matrix.arch == 'x64' }}
+        with:
+          name: Linux x64
+          path: ramdisk/legacyclonk/LegacyClonk
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ matrix.arch == 'x64' }}
+        with:
+          name: Graphics.c4g
+          path: ramdisk/legacyclonk/Graphics.c4g
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ matrix.arch == 'x64' }}
+        with:
+          name: System.c4g
+          path: ramdisk/legacyclonk/System.c4g
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ matrix.arch == 'x86' }}
+        with:
+          name: Linux x86
+          path: ramdisk/LegacyClonk
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.arch == 'x64' }}
+        with:
+          files: |
+            ramdisk/legacyclonk/LegacyClonk-x64.tar.gz
+            ramdisk/legacyclonk/Graphics.c4g
+            ramdisk/legacyclonk/System.c4g
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.arch == 'x86' }}
+        with:
+          files: ramdisk/LegacyClonk-x86.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  Mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Git Protocol Version 1
+        run: git config --global protocol.version 1
+
+      - name: Dependencies
+        run: |
+          brew remove --force $(brew list) --ignore-dependencies
+          brew update
+          until brew install sdl_mixer libpng libjpeg freetype glew openssl@1.1 git libyaml; do true; done
+          brew unlink cmake || true
+          brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/74d54460d0af8e21deacee8dcced325cfc191141/Formula/cmake.rb
+          brew pin cmake
+
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-w" -DCMAKE_C_FLAGS="-w" ..
+
+      - name: Build
+        run: |
+          cd build
+          make
+
+      - name: Build Macdylibbundler
+        run: |
+          cd build
+          git clone https://github.com/auriamg/macdylibbundler/
+          cd macdylibbundler
+          git checkout 9cf053f8b399512e12d7931fa24f466057e58044
+          make
+          cd ..
+          macdylibbundler/dylibbundler -od -b -x clonk.app/Contents/MacOS/clonk -d clonk.app/Contents/libs/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Mac
+          path: |
+            build/c4group
+            build/clonk.app
+
+      - name: Pack
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd build
+          tar -cvzf LegacyClonk-mac.tar.gz c4group clonk.app
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/LegacyClonk-mac.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
