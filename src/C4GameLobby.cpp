@@ -226,7 +226,7 @@ MainDlg::MainDlg(bool fHost)
 		resDlgBounds.Hgt -= iDefBtnHeight;
 	}
 
-	pResList = new C4Network2ResDlg(resDlgBounds, true);
+	pResList = new C4Network2ResDlg(resDlgBounds, false);
 	pResSheet->AddElement(pResList);
 
 	if (!Config.General.Preloading)
@@ -294,6 +294,7 @@ MainDlg::MainDlg(bool fHost)
 
 	// set initial button state
 	ResourceProgress(false);
+	pResList->Activate();
 
 	// set initial focus
 	SetFocus(pEdt, false);
