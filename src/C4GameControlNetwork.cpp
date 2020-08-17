@@ -727,7 +727,7 @@ void C4GameControlNetwork::CheckCompleteCtrl(bool fSetEvent) // by both
 		(!fActivated || iControlSent > iControlReady) &&
 		timeGetTime() >= iNextControlReqeust)
 	{
-		Application.InteractiveThread.ThreadLogS("Network: Recovering: Requesting control for tick %d...", iControlReady + 1);
+		Application.InteractiveThread.ThreadLogSF("Network: Recovering: Requesting control for tick %d...", iControlReady + 1);
 		// make request
 		C4NetIOPacket Pkt = MkC4NetIOPacket(PID_ControlReq, C4PacketControlReq(iControlReady + 1));
 		// send control requests

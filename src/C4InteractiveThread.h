@@ -89,8 +89,10 @@ public:
 	void ProcessEvents(); // by main thread
 
 	// special events
-	bool ThreadLog(const char *szMessage, ...) GNUC_FORMAT_ATTRIBUTE_O;
-	bool ThreadLogS(const char *szMessage, ...) GNUC_FORMAT_ATTRIBUTE_O;
+	bool ThreadLog(const char *szMessage);
+	bool ThreadLogF(const char *szMessage, ...) GNUC_FORMAT_ATTRIBUTE_O;
+	bool ThreadLogS(const char *szMessage);
+	bool ThreadLogSF(const char *szMessage, ...) GNUC_FORMAT_ATTRIBUTE_O;
 
 	// event handlers
 	void SetCallback(C4InteractiveEventType eEvent, Callback *pnNetworkCallback)

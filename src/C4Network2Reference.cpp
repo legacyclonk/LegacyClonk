@@ -415,7 +415,7 @@ bool C4Network2HTTPClient::Execute(int iMaxTime)
 		if (C4TimeMilliseconds::Now() > HappyEyeballsTimeout)
 		{
 			HappyEyeballsTimeout = C4TimeMilliseconds::PositiveInfinity;
-			Application.InteractiveThread.ThreadLogS("HTTP: Starting fallback connection to %s (%s)", Server.getData(), ServerAddrFallback.ToString().getData());
+			Application.InteractiveThread.ThreadLogSF("HTTP: Starting fallback connection to %s (%s)", Server.getData(), ServerAddrFallback.ToString().getData());
 			Connect(ServerAddrFallback);
 		}
 
