@@ -120,11 +120,11 @@ void C4DownloadDlg::OnIdle()
 			// file size known: Download in progress
 			sStatus.Ref(LoadResStr("IDS_CTL_DL_PROGRESS"));
 			if (iSize <= 1024)
-				sSize.Format(" (%ld Bytes)", iSize);
+				sSize.Format(" (%zu Bytes)", iSize);
 			else if (iSize <= 1024 * 1024)
-				sSize.Format(" (%ld KB)", iSize / 1024);
+				sSize.Format(" (%zu KB)", iSize / 1024);
 			else
-				sSize.Format(" (%ld MB)", iSize / 1024 / 1024);
+				sSize.Format(" (%zu MB)", iSize / 1024 / 1024);
 			iProgress = int64_t(100) * HTTPClient.getDownloadedSize() / iSize;
 		}
 	}

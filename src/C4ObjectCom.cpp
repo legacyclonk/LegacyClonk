@@ -439,7 +439,7 @@ bool ObjectComLineConstruction(C4Object *cObj)
 		{
 			// No connect
 			StartSoundEffect("Error", false, 100, cObj);
-			GameMsgObject(FormatString(LoadResStr("IDS_OBJ_NOCONNECT")).getData(), cObj); return false;
+			GameMsgObject(LoadResStr("IDS_OBJ_NOCONNECT"), cObj); return false;
 		}
 
 		// Check short circuit -> removal
@@ -492,7 +492,7 @@ bool ObjectComLineConstruction(C4Object *cObj)
 	if (!tstruct || !(ocf & OCF_LineConstruct))
 	{
 		StartSoundEffect("Error", false, 100, cObj);
-		GameMsgObject(FormatString(LoadResStr("IDS_OBJ_NONEWLINE")).getData(), cObj); return false;
+		GameMsgObject(LoadResStr("IDS_OBJ_NONEWLINE"), cObj); return false;
 	}
 
 	// Determine new line type
@@ -515,7 +515,7 @@ bool ObjectComLineConstruction(C4Object *cObj)
 	if (linetype == C4ID_None)
 	{
 		StartSoundEffect("Error", false, 100, cObj);
-		GameMsgObject(FormatString(LoadResStr("IDS_OBJ_NONEWLINE")).getData(), cObj); return false;
+		GameMsgObject(LoadResStr("IDS_OBJ_NONEWLINE"), cObj); return false;
 	}
 
 	// Create new line

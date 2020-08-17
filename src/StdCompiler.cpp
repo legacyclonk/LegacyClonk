@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <cinttypes>
 #include <cstring>
 
 // *** StdCompiler
@@ -281,49 +282,49 @@ bool StdCompilerINIWrite::Separator(Sep eSep)
 void StdCompilerINIWrite::QWord(int64_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%ld", rInt);
+	Buf.AppendFormat(PRId64, rInt);
 }
 
 void StdCompilerINIWrite::QWord(uint64_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%lu", rInt);
+	Buf.AppendFormat(PRIu64, rInt);
 }
 
 void StdCompilerINIWrite::DWord(int32_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%d", rInt);
+	Buf.AppendFormat(PRId32, rInt);
 }
 
 void StdCompilerINIWrite::DWord(uint32_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%u", rInt);
+	Buf.AppendFormat(PRIu32, rInt);
 }
 
 void StdCompilerINIWrite::Word(int16_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%d", rInt);
+	Buf.AppendFormat(PRId16, rInt);
 }
 
 void StdCompilerINIWrite::Word(uint16_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%u", rInt);
+	Buf.AppendFormat(PRIu16, rInt);
 }
 
 void StdCompilerINIWrite::Byte(int8_t &rByte)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%d", rByte);
+	Buf.AppendFormat(PRId8, rByte);
 }
 
 void StdCompilerINIWrite::Byte(uint8_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%u", rInt);
+	Buf.AppendFormat(PRIu8, rInt);
 }
 
 void StdCompilerINIWrite::Boolean(bool &rBool)
