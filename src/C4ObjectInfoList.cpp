@@ -146,11 +146,10 @@ C4ObjectInfo *C4ObjectInfoList::New(C4ID n_id, C4DefList *pDefs, const char *cpN
 	if (n_id == C4ID_None) n_id = C4ID_Clonk;
 	// Check type valid and def available
 	C4Def *pDef = nullptr;
-	if (pDefs)
-		if (!(pDef = pDefs->ID2Def(n_id)))
-		{
-			delete pInfo; return nullptr;
-		}
+	if (!pDefs || !(pDef = pDefs->ID2Def(n_id)))
+	{
+		delete pInfo; return nullptr;
+	}
 	// Override name source by definition
 	if (pDef->pClonkNames)
 		cpNames = pDef->pClonkNames->GetData();
