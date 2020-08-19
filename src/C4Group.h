@@ -232,8 +232,8 @@ public:
 		size_t *iSize = nullptr,
 		bool *fChild = nullptr,
 		bool fStartAtFilename = false);
-	bool Read(void *pBuffer, size_t iSize);
-	bool Advance(int iOffset);
+	bool Read(void *pBuffer, size_t iSize) override;
+	bool Advance(int iOffset) override;
 	void SetMaker(const char *szMaker);
 	void SetStdOutput(bool fStatus);
 	void MakeOriginal(bool fOriginal);
@@ -245,7 +245,7 @@ public:
 	StdStrBuf GetFullName() const;
 	int EntryCount(const char *szWildCard = nullptr);
 	int EntrySize(const char *szWildCard = nullptr);
-	int AccessedEntrySize() { return iCurrFileSize; } // retrieve size of last accessed entry
+	int AccessedEntrySize() override { return iCurrFileSize; } // retrieve size of last accessed entry
 	int EntryTime(const char *szFilename);
 	unsigned int EntryCRC32(const char *szWildCard = nullptr);
 	int GetCreation();

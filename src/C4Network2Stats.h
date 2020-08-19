@@ -97,16 +97,16 @@ public:
 	void SetDumpFile(StdStrBuf &szFile) { szDumpFile.Ref(szFile); }
 
 	// retrieve timeframe covered by backlog
-	virtual TimeType GetStartTime() const; // inclusively
-	virtual TimeType GetEndTime() const;   // exclusively
+	virtual TimeType GetStartTime() const override; // inclusively
+	virtual TimeType GetEndTime() const override;   // exclusively
 
 	// retrieve values within backlog timeframe - guarantueed to be working inside [GetStartTime(), GetEndTime()[
-	virtual ValueType GetValue(TimeType iAtTime) const; // retrieve averaged value!
+	virtual ValueType GetValue(TimeType iAtTime) const override; // retrieve averaged value!
 	ValueType GetAtValue(TimeType iAtTime) const; // retrieve not-averaged value
 	void SetAvgValue(TimeType iAtTime, ValueType iValue) const; // overwrite avg value at time - considered const because it modifies mutable only
-	virtual ValueType GetMedianValue(TimeType iStartTime, TimeType iEndTime) const; // median within [iStartTime, iEndTime[
-	virtual ValueType GetMinValue() const;
-	virtual ValueType GetMaxValue() const;
+	virtual ValueType GetMedianValue(TimeType iStartTime, TimeType iEndTime) const override; // median within [iStartTime, iEndTime[
+	virtual ValueType GetMinValue() const override;
+	virtual ValueType GetMaxValue() const override;
 
 	// record a value for this frame; increases time by one
 	void RecordValue(ValueType iValue);
@@ -115,13 +115,13 @@ public:
 	virtual bool DumpToFile(const StdStrBuf &rszFilename, bool fAppend) const;
 
 	// base graph has always just one series (self)
-	virtual int GetSeriesCount() const { return 1; }
-	virtual const C4Graph *GetSeries(int iIndex) const { return iIndex ? nullptr : this; }
+	virtual int GetSeriesCount() const override { return 1; }
+	virtual const C4Graph *GetSeries(int iIndex) const override { return iIndex ? nullptr : this; }
 
-	virtual void SetAverageTime(int iToTime);
-	virtual void Update() const; // make sure average times are correctly calculated
+	virtual void SetAverageTime(int iToTime) override;
+	virtual void Update() const override; // make sure average times are correctly calculated
 
-	virtual void SetMultiplier(ValueType fToVal) { fMultiplier = fToVal; }
+	virtual void SetMultiplier(ValueType fToVal) override { fMultiplier = fToVal; }
 };
 
 // A graph collection; grouping similar graphs
@@ -137,30 +137,30 @@ public:
 	C4GraphCollection() : iCommonAvgTime(0), fMultiplier(0) {}
 
 	// retrieve max timeframe covered by all graphs
-	virtual C4Graph::TimeType GetStartTime() const;
-	virtual C4Graph::TimeType GetEndTime() const;
+	virtual C4Graph::TimeType GetStartTime() const override;
+	virtual C4Graph::TimeType GetEndTime() const override;
 
 	// must be called on base series only!
-	virtual C4Graph::ValueType GetValue(C4Graph::TimeType iAtTime) const { assert(0); return 0; }
-	virtual C4Graph::ValueType GetMedianValue(C4Graph::TimeType iStartTime, C4Graph::TimeType iEndTime) const { assert(0); return 0; }
+	virtual C4Graph::ValueType GetValue(C4Graph::TimeType iAtTime) const override { assert(0); return 0; }
+	virtual C4Graph::ValueType GetMedianValue(C4Graph::TimeType iStartTime, C4Graph::TimeType iEndTime) const override { assert(0); return 0; }
 
 	// get overall min/max for all series
-	virtual C4Graph::ValueType GetMinValue() const;
-	virtual C4Graph::ValueType GetMaxValue() const;
+	virtual C4Graph::ValueType GetMinValue() const override;
+	virtual C4Graph::ValueType GetMaxValue() const override;
 
 	// retrieve child (or grandchild) graphs
-	virtual int GetSeriesCount() const;
-	virtual const C4Graph *GetSeries(int iIndex) const;
+	virtual int GetSeriesCount() const override;
+	virtual const C4Graph *GetSeries(int iIndex) const override;
 
 	void AddGraph(C4Graph *pAdd) { push_back(pAdd); if (iCommonAvgTime) pAdd->SetAverageTime(iCommonAvgTime); if (fMultiplier) pAdd->SetMultiplier(fMultiplier); }
 	void RemoveGraph(const C4Graph *pRemove) { iterator i = std::find(begin(), end(), pRemove); if (i != end()) erase(i); }
 
 	// update all children
-	virtual void Update() const;
+	virtual void Update() const override;
 
 	// force values for all children
-	virtual void SetAverageTime(int iToTime);
-	virtual void SetMultiplier(ValueType fToVal);
+	virtual void SetAverageTime(int iToTime) override;
+	virtual void SetMultiplier(ValueType fToVal) override;
 };
 
 // network stat collection wrapper
@@ -201,7 +201,7 @@ public:
 	void ExecuteSecond();
 	void ExecuteControlFrame();
 
-	virtual void OnSec1Timer() { ExecuteSecond(); }
+	virtual void OnSec1Timer() override { ExecuteSecond(); }
 
 	C4Graph *GetGraphByName(const StdStrBuf &rszName, bool &rfIsTemp);
 };

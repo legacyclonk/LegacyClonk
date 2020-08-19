@@ -39,7 +39,7 @@ private:
 		GoalPicture(const C4Rect &rcBounds, C4ID idGoal, bool fFulfilled);
 
 	protected:
-		virtual void DrawElement(C4FacetEx &cgo);
+		virtual void DrawElement(C4FacetEx &cgo) override;
 	};
 
 public:
@@ -78,18 +78,18 @@ private:
 	void SetNetResult(const char *szResultString, C4RoundResults::NetResult eResultType, size_t iPendingStreamingData, bool fIsStreaming);
 
 protected:
-	virtual void OnShown();
-	virtual void OnClosed(bool fOK);
+	virtual void OnShown() override;
+	virtual void OnClosed(bool fOK) override;
 
-	virtual bool OnEnter() { if (fIsQuitBtnVisible) OnExitBtn(nullptr); return true; } // enter on non-button: Always quit
-	virtual bool OnEscape() { if (fIsQuitBtnVisible) UserClose(false); return true; } // escape ignored if still streaming
+	virtual bool OnEnter() override { if (fIsQuitBtnVisible) OnExitBtn(nullptr); return true; } // enter on non-button: Always quit
+	virtual bool OnEscape() override { if (fIsQuitBtnVisible) UserClose(false); return true; } // escape ignored if still streaming
 
 	// true for dialogs that should span the whole screen
 	// not just the mouse-viewport
-	virtual bool IsFreePlaceDialog() { return true; }
+	virtual bool IsFreePlaceDialog() override { return true; }
 
 	// true for dialogs that receive full keyboard and mouse input even in shared mode
-	virtual bool IsExclusiveDialog() { return true; }
+	virtual bool IsExclusiveDialog() override { return true; }
 
 public:
 	C4GameOverDlg();

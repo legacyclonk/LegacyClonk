@@ -248,7 +248,7 @@ public:
 	C4MCOverlay(C4MCNode *pOwner = nullptr);
 	C4MCOverlay(C4MCNode *pOwner, C4MCOverlay &rTemplate, bool fClone); // construct of template
 
-	C4MCNode *clone(C4MCNode *pToNode) { return new C4MCOverlay(pToNode, *this, true); }
+	C4MCNode *clone(C4MCNode *pToNode) override { return new C4MCOverlay(pToNode, *this, true); }
 
 protected:
 	void Default(); // set default values for default presets
@@ -271,15 +271,15 @@ public:
 	C4MCCallbackArray *pEvaluateFunc; // function called for nodes being evaluated and fulfilled
 	C4MCCallbackArray *pDrawFunc; // function called when this node is drawn - pass drawcolor as first param, return color to be actually used
 
-	bool SetOp(C4MCTokenType eOp) { Op = eOp; return true; } // set following operator
+	bool SetOp(C4MCTokenType eOp) override { Op = eOp; return true; } // set following operator
 
 	C4MCAlgorithm *GetAlgo(const char *szName);
 
-	bool SetField(C4MCParser *pParser, const char *szField, const char *szSVal, int32_t iVal, C4MCTokenType ValType); // set field
+	bool SetField(C4MCParser *pParser, const char *szField, const char *szSVal, int32_t iVal, C4MCTokenType ValType) override; // set field
 
-	void Evaluate(); // called when all fields are initialized
+	void Evaluate() override; // called when all fields are initialized
 
-	C4MCOverlay *Overlay() { return this; } // this is an overlay
+	C4MCOverlay *Overlay() override { return this; } // this is an overlay
 	C4MCOverlay *FirstOfChain(); // go backwards in op chain until first overlay of chain
 
 	bool CheckMask(int32_t iX, int32_t iY); // check whether algorithms succeeds at iX/iY
@@ -288,7 +288,7 @@ public:
 	bool InBounds(int32_t iX, int32_t iY) { return iX >= X && iY >= Y && iX < X + Wdt && iY < Y + Hgt; } // return whether point iX/iY is inside bounds
 
 public:
-	C4MCNodeType Type() { return MCN_Overlay; } // get node type
+	C4MCNodeType Type() override { return MCN_Overlay; } // get node type
 
 	friend class C4MapCreatorS2;
 	friend class C4MCParser;
@@ -301,7 +301,7 @@ public:
 	C4MCPoint(C4MCNode *pOwner = nullptr);
 	C4MCPoint(C4MCNode *pOwner, C4MCPoint &rTemplate, bool fClone); // construct of template
 
-	C4MCNode *clone(C4MCNode *pToNode) { return new C4MCPoint(pToNode, *this, true); }
+	C4MCNode *clone(C4MCNode *pToNode) override { return new C4MCPoint(pToNode, *this, true); }
 
 protected:
 	void Default(); // set default values for default presets
@@ -310,11 +310,11 @@ public:
 	int32_t X, Y;
 	int_bool RX, RY;
 
-	virtual void Evaluate(); // called when all fields are initialized
-	bool SetField(C4MCParser *pParser, const char *szField, const char *szSVal, int32_t iVal, C4MCTokenType ValType); // set field
+	virtual void Evaluate() override; // called when all fields are initialized
+	bool SetField(C4MCParser *pParser, const char *szField, const char *szSVal, int32_t iVal, C4MCTokenType ValType) override; // set field
 
 public:
-	C4MCNodeType Type() { return MCN_Point; } // get node type
+	C4MCNodeType Type() override { return MCN_Point; } // get node type
 
 	friend class C4MapCreatorS2;
 	friend class C4MCParser;
@@ -327,7 +327,7 @@ public:
 	C4MCMap(C4MCNode *pOwner = nullptr);
 	C4MCMap(C4MCNode *pOwner, C4MCMap &rTemplate, bool fClone); // construct of template
 
-	C4MCNode *clone(C4MCNode *pToNode) { return new C4MCMap(pToNode, *this, true); }
+	C4MCNode *clone(C4MCNode *pToNode) override { return new C4MCMap(pToNode, *this, true); }
 
 protected:
 	void Default(); // set default values for default presets
@@ -337,7 +337,7 @@ public:
 	void SetSize(int32_t iWdt, int32_t iHgt);
 
 public:
-	C4MCNodeType Type() { return MCN_Map; } // get node type
+	C4MCNodeType Type() override { return MCN_Map; } // get node type
 
 	friend class C4MapCreatorS2;
 	friend class C4MCParser;
@@ -374,7 +374,7 @@ protected:
 	C4MCCallbackArrayList CallbackArrays; // list of callback arrays
 	int PlayerCount; // player count for MapPlayerExtend
 
-	bool GlobalScope() { return true; } // it's the global node
+	bool GlobalScope() override { return true; } // it's the global node
 
 public:
 	void ExecuteCallbacks(int32_t iMapZoom) { CallbackArrays.Execute(iMapZoom); }

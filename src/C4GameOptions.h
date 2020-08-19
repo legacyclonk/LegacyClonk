@@ -39,7 +39,7 @@ private:
 		// primary subcomponent: forward focus to this element
 		C4GUI::Control *pPrimarySubcomponent;
 
-		virtual bool IsFocused(C4GUI::Control *pCtrl)
+		virtual bool IsFocused(C4GUI::Control *pCtrl) override
 		{
 			// also forward own focus to primary control
 			return BaseClass::IsFocused(pCtrl) || (HasFocus() && pPrimarySubcomponent == pCtrl);
@@ -86,10 +86,10 @@ private:
 		OptionControlMode(class C4GameOptionsList *pForDlg);
 
 	protected:
-		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller);
-		virtual void DoDropdownSelChange(int32_t idNewSelection);
+		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller) override;
+		virtual void DoDropdownSelChange(int32_t idNewSelection) override;
 
-		virtual void Update(); // update data to current control rate
+		virtual void Update() override; // update data to current control rate
 	};
 
 	// drop down list option to adjust control rate
@@ -99,10 +99,10 @@ private:
 		OptionControlRate(class C4GameOptionsList *pForDlg);
 
 	protected:
-		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller);
-		virtual void DoDropdownSelChange(int32_t idNewSelection);
+		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller) override;
+		virtual void DoDropdownSelChange(int32_t idNewSelection) override;
 
-		virtual void Update(); // update data to current control rate
+		virtual void Update() override; // update data to current control rate
 	};
 
 	// drop down list option to adjust team usage
@@ -112,10 +112,10 @@ private:
 		OptionTeamDist(class C4GameOptionsList *pForDlg);
 
 	protected:
-		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller);
-		virtual void DoDropdownSelChange(int32_t idNewSelection);
+		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller) override;
+		virtual void DoDropdownSelChange(int32_t idNewSelection) override;
 
-		virtual void Update(); // update data to current team mode
+		virtual void Update() override; // update data to current team mode
 	};
 
 	// drop down list option to adjust team color state
@@ -125,10 +125,10 @@ private:
 		OptionTeamColors(class C4GameOptionsList *pForDlg);
 
 	protected:
-		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller);
-		virtual void DoDropdownSelChange(int32_t idNewSelection);
+		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller) override;
+		virtual void DoDropdownSelChange(int32_t idNewSelection) override;
 
-		virtual void Update(); // update data to current team color mode
+		virtual void Update() override; // update data to current team color mode
 	};
 
 	// drop down list option to adjust control rate
@@ -138,10 +138,10 @@ private:
 		OptionRuntimeJoin(class C4GameOptionsList *pForDlg);
 
 	protected:
-		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller);
-		virtual void DoDropdownSelChange(int32_t idNewSelection);
+		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller) override;
+		virtual void DoDropdownSelChange(int32_t idNewSelection) override;
 
-		virtual void Update(); // update data to current runtime join state
+		virtual void Update() override; // update data to current runtime join state
 	};
 
 public:

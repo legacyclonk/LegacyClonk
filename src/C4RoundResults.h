@@ -219,5 +219,5 @@ public:
 	C4PacketLeagueRoundResults(const char *szResultsString, bool fSuccess, const C4RoundResultsPlayers &Players) : Players(Players), sResultsString(szResultsString), fSuccess(fSuccess) {}
 	C4PacketLeagueRoundResults(const char *szResultsString, bool fSuccess) : sResultsString(szResultsString), fSuccess(fSuccess) {}
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };

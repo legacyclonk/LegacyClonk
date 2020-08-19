@@ -131,7 +131,7 @@ protected:
 
 public:
 	// (cycles forever if shared locked by calling thread!)
-	void Enter()
+	void Enter() override
 	{
 		// lock
 		CStdCSec::Enter();
@@ -149,7 +149,7 @@ public:
 		}
 	}
 
-	void Leave()
+	void Leave() override
 	{
 		// set event
 		ShareFreeEvent.Set();

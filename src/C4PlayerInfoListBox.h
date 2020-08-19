@@ -88,7 +88,7 @@ private:
 		virtual void Update() {} // periodic update callback
 
 	protected:
-		virtual void DrawElement(C4FacetEx &cgo); // draw background
+		virtual void DrawElement(C4FacetEx &cgo) override; // draw background
 		bool CanLocalChooseTeams(int32_t idPlayer = 0) const; // whether the local client can change any teams
 
 	public:
@@ -119,8 +119,8 @@ private:
 		bool fShownCollapsed; // true if small view is shown
 
 	protected:
-		virtual void UpdateOwnPos(); // recalculate item positioning
-		virtual int32_t GetListItemTopSpacing();
+		virtual void UpdateOwnPos() override; // recalculate item positioning
+		virtual int32_t GetListItemTopSpacing() override;
 
 	public:
 		PlayerListItem(C4PlayerInfoListBox *pForListBox, int32_t idClient, int32_t idPlayer, bool fSavegamePlayer, C4GUI::Element *pInsertBeforeElement);
@@ -141,7 +141,7 @@ private:
 		void OnTeamComboFill(C4GUI::ComboBox_FillCB *pFiller);
 		bool OnTeamComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection);
 
-		virtual void Update(); // update icon and team
+		virtual void Update() override; // update icon and team
 
 		C4Network2Client *GetNetClient() const; // return associated network client
 		C4PlayerInfo *GetPlayerInfo() const;
@@ -186,8 +186,8 @@ private:
 		void SetSoundIcon(); // sets the sound icon as current icon and schedules reset after some time
 
 		// spacing inserted between two client list items
-		virtual int32_t GetListItemTopSpacing() { return ClientListBoxSpacing; }
-		virtual bool GetListItemTopSpacingBar() { return true; }
+		virtual int32_t GetListItemTopSpacing() override { return ClientListBoxSpacing; }
+		virtual bool GetListItemTopSpacingBar() override { return true; }
 
 	public:
 		void UpdateInfo(); // update for changed player info
@@ -198,7 +198,7 @@ private:
 		C4GUI::Icons GetCurrentStatusIcon(); // get status icon that shows the current client state
 		class C4Network2Client *GetNetClient() const; // return assicuated network client; nullptr for local
 
-		virtual void Update() { UpdatePing(); UpdateInfo(); }
+		virtual void Update() override { UpdatePing(); UpdateInfo(); }
 		void UpdatePing(); // update ping label
 
 		C4GUI::ContextMenu *OnContext(C4GUI::Element *pListItem, int32_t iX, int32_t iY); // open context menu
@@ -220,17 +220,17 @@ private:
 		int32_t idTeam; // team ID
 
 	protected:
-		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
-		virtual void UpdateOwnPos(); // recalculate item positioning
+		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam) override; // input: mouse movement or buttons
+		virtual void UpdateOwnPos() override; // recalculate item positioning
 
 	public:
 		TeamListItem(C4PlayerInfoListBox *pForListBox, int32_t idTeam, ListItem *pInsertBefore);
 
 		// spacing inserted between of those list items; usually this is top anyway...
-		virtual bool GetListItemTopSpacingBar() { return true; }
-		virtual int32_t GetListItemTopSpacing() { return ClientListBoxSpacing; }
+		virtual bool GetListItemTopSpacingBar() override { return true; }
+		virtual int32_t GetListItemTopSpacing() override { return ClientListBoxSpacing; }
 
-		virtual void Update();
+		virtual void Update() override;
 
 	private:
 		void MoveLocalPlayersIntoTeam(); // move all local players into team marked by this label
@@ -249,10 +249,10 @@ private:
 
 		// spacing inserted between of those list items; usually this is top anyway...
 		virtual bool ListItemTopSpacingBar() { return true; }
-		virtual int32_t GetListItemTopSpacing() { return ClientListBoxSpacing; }
+		virtual int32_t GetListItemTopSpacing() override { return ClientListBoxSpacing; }
 
 	public:
-		virtual void Update();
+		virtual void Update() override;
 	};
 
 	// list of script players (both savegame recreation and regular)
@@ -269,13 +269,13 @@ private:
 
 		// spacing inserted between of those list items; usually this is top anyway...
 		virtual bool ListItemTopSpacingBar() { return true; }
-		virtual int32_t GetListItemTopSpacing() { return ClientListBoxSpacing; }
+		virtual int32_t GetListItemTopSpacing() override { return ClientListBoxSpacing; }
 
 	protected:
 		void OnBtnAddPlr(C4GUI::Control *btn);
 
 	public:
-		virtual void Update();
+		virtual void Update() override;
 	};
 
 	// list of players in record (currently not used, because replays in network are not allowed :C)
@@ -290,8 +290,8 @@ private:
 		ReplayPlayersListItem(C4PlayerInfoListBox *pForListBox, ListItem *pInsertBefore);
 
 		// spacing inserted between of those list items; usually this is top anyway...
-		virtual bool GetListItemTopSpacingBar() { return true; }
-		virtual int32_t GetListItemTopSpacing() { return ClientListBoxSpacing; }
+		virtual bool GetListItemTopSpacingBar() override { return true; }
+		virtual int32_t GetListItemTopSpacing() override { return ClientListBoxSpacing; }
 	};
 
 private:

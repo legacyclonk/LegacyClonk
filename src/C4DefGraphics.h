@@ -80,7 +80,7 @@ protected:
 
 public:
 	C4AdditionalDefGraphics(C4Def *pOwnDef, const char *szName);
-	virtual const char *GetName() { return Name; }
+	virtual const char *GetName() override { return Name; }
 };
 
 // portrait graphics within object definition
@@ -90,7 +90,7 @@ public:
 	C4PortraitGraphics(C4Def *pOwnDef, const char *szName)
 		: C4AdditionalDefGraphics(pOwnDef, szName) {}
 
-	virtual C4PortraitGraphics *IsPortrait() { return this; }
+	virtual C4PortraitGraphics *IsPortrait() override { return this; }
 	C4PortraitGraphics *GetByIndex(int32_t iIndex);
 	C4PortraitGraphics *Get(const char *szGrpName); // get portrait graphics by name
 };

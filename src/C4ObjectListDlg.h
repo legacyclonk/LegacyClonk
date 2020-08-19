@@ -36,9 +36,9 @@ public:
 	void Open();
 	void Update(C4ObjectList &rSelection);
 
-	virtual void OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk);
-	virtual void OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk);
-	virtual void OnObjectRename(C4ObjectList *pList, C4ObjectLink *pLnk);
+	virtual void OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk) override;
+	virtual void OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk) override;
+	virtual void OnObjectRename(C4ObjectList *pList, C4ObjectLink *pLnk) override;
 
 #ifdef WITH_DEVELOPER_MODE
 private:

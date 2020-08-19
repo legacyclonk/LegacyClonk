@@ -29,9 +29,9 @@ public:
 	CStdGtkWindow();
 	virtual ~CStdGtkWindow();
 
-	virtual void Clear();
+	virtual void Clear() override;
 
-	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent = nullptr, bool HideCursor = true);
+	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent = nullptr, bool HideCursor = true) override;
 
 	GtkWidget *window;
 

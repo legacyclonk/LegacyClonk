@@ -59,9 +59,9 @@ public:
 	C4ObjectListDlg ObjectListDlg;
 	C4EditCursor    EditCursor;
 	void Default();
-	virtual void Clear();
-	virtual void Close();
-	virtual CStdWindow *Init(CStdApp *app);
+	virtual void Clear() override;
+	virtual void Close() override;
+	virtual CStdWindow *Init(CStdApp *app) override;
 	void Execute();
 	void ClearPointers(C4Object *pObj);
 	bool Message(const char *szMessage, bool fQuery = false);
@@ -86,7 +86,7 @@ protected:
 	bool UpdatePlayerMenu();
 	bool UpdateViewportMenu();
 	bool UpdateStatusBars();
-	void Sec1Timer() { Game.Sec1Timer(); Application.DoSec1Timers(); }
+	void Sec1Timer() override { Game.Sec1Timer(); Application.DoSec1Timers(); }
 	// Menu
 	void ClearPlayerMenu();
 	void ClearViewportMenu();
@@ -128,7 +128,7 @@ protected:
 	void UpdateMenuText(HMENU hMenu);
 	bool AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool fEnabled = true);
 
-	virtual bool Win32DialogMessageHandling(MSG *msg)
+	virtual bool Win32DialogMessageHandling(MSG *msg) override
 	{
 		return (hWindow && IsDialogMessage(hWindow, msg)) || (PropertyDlg.hDialog && IsDialogMessage(PropertyDlg.hDialog, msg));
 	};
@@ -147,7 +147,7 @@ protected:
 
 #elif defined(WITH_DEVELOPER_MODE)
 
-	virtual GtkWidget *InitGUI();
+	virtual GtkWidget *InitGUI() override;
 
 	GdkCursor *cursorDefault;
 	GdkCursor *cursorWait;
@@ -230,7 +230,7 @@ protected:
 
 #elif defined(USE_X11) && !defined(WITH_DEVELOPER_MODE)
 
-	virtual void HandleMessage(XEvent &);
+	virtual void HandleMessage(XEvent &) override;
 
 #endif
 };

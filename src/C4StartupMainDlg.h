@@ -31,8 +31,8 @@ private:
 	bool fFirstShown;
 
 protected:
-	virtual void DrawElement(C4FacetEx &cgo);
-	virtual void OnClosed(bool fOK); // callback when dlg got closed: Abort startup
+	virtual void DrawElement(C4FacetEx &cgo) override;
+	virtual void OnClosed(bool fOK) override; // callback when dlg got closed: Abort startup
 	C4GUI::ContextMenu *OnPlayerSelContext(C4GUI::Element *pBtn, int32_t iX, int32_t iY); // preliminary player selection via simple context menu
 	C4GUI::ContextMenu *OnPlayerSelContextAdd(C4GUI::Element *pBtn, int32_t iX, int32_t iY);
 	C4GUI::ContextMenu *OnPlayerSelContextRemove(C4GUI::Element *pBtn, int32_t iX, int32_t iY);
@@ -52,7 +52,7 @@ protected:
 	bool KeyEnterDown(); // return pressed -> reroute as space
 	bool KeyEnterUp(); // return released -> reroute as space
 
-	virtual void OnShown(); // callback when shown: Show log if restart after failure; show player creation dlg on first start
+	virtual void OnShown() override; // callback when shown: Show log if restart after failure; show player creation dlg on first start
 
 public:
 	C4StartupMainDlg();

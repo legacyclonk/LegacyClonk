@@ -417,7 +417,7 @@ public:
 #endif
 
 	// callback from font renderer: get ID image
-	virtual bool GetFontImage(const char *szImageTag, CFacet &rOutImgFacet);
+	virtual bool GetFontImage(const char *szImageTag, CFacet &rOutImgFacet) override;
 
 private:
 	void SortByID(); // sorts list by quick access table

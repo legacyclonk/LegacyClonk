@@ -311,7 +311,7 @@ public:
 
 	C4PacketPlayerInfoUpdRequest(const C4ClientPlayerInfos &rInfo) : Info(rInfo) {}
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 // player info list

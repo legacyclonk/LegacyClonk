@@ -103,7 +103,7 @@ template <int V> struct ValidatedStdStrBuf : public ValidatedStdStrBufBase
 	ValidatedStdStrBuf(const char *szCopy) : ValidatedStdStrBufBase(szCopy) {}
 	ValidatedStdStrBuf() : ValidatedStdStrBufBase() {}
 
-	virtual bool Validate()
+	virtual bool Validate() override
 	{
 		return C4InVal::ValidateString(*this, (C4InVal::ValidationOption) V);
 	}

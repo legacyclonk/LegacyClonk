@@ -97,8 +97,8 @@ private:
 	void UpdateText(); // strings to labels
 
 protected:
-	virtual int32_t GetListItemTopSpacing() { return fIsCollapsed ? 5 : 10; }
-	virtual void DrawElement(C4FacetEx &cgo);
+	virtual int32_t GetListItemTopSpacing() override { return fIsCollapsed ? 5 : 10; }
+	virtual void DrawElement(C4FacetEx &cgo) override;
 
 	C4GUI::Element *GetNextLower(int32_t sortOrder); // returns the element before which this element should be inserted
 
@@ -152,20 +152,20 @@ private:
 	bool fIgnoreUpdate; // set after user pressed "No" on a server redirect once
 
 protected:
-	virtual bool HasBackground() { return true; }
-	virtual void DrawElement(C4FacetEx &cgo);
+	virtual bool HasBackground() override { return true; }
+	virtual void DrawElement(C4FacetEx &cgo) override;
 
-	virtual C4GUI::Control *GetDefaultControl(); // get Auto-Focus control
+	virtual C4GUI::Control *GetDefaultControl() override; // get Auto-Focus control
 	C4GUI::Control *GetDlgModeFocusControl(); // get control to be focused when main tabular sheet changes
 
-	virtual bool OnEnter() { DoOK(); return true; }
-	virtual bool OnEscape() { DoBack(); return true; }
+	virtual bool OnEnter() override { DoOK(); return true; }
+	virtual bool OnEscape() override { DoBack(); return true; }
 	bool KeyBack() { return DoBack(); }
 	bool KeyRefresh() { DoRefresh(); return true; }
 	bool KeyForward() { DoOK(); return true; }
 
-	virtual void OnShown(); // callback when shown: Start searching for games
-	virtual void OnClosed(bool fOK); // callback when dlg got closed: Return to main screen
+	virtual void OnShown() override; // callback when shown: Start searching for games
+	virtual void OnClosed(bool fOK) override; // callback when dlg got closed: Return to main screen
 	void OnBackBtn(C4GUI::Control *btn) { DoBack(); }
 	void OnRefreshBtn(C4GUI::Control *btn) { DoRefresh(); }
 	void OnCreateGameBtn(C4GUI::Control *btn) { CreateGame(); }
@@ -197,7 +197,7 @@ private:
 	DlgMode GetDlgMode();
 
 	// callback from C4Network2ReferenceClient
-	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData);
+	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) override;
 
 public:
 	bool DoOK(); // join currently selected item

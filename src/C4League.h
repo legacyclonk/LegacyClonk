@@ -262,7 +262,7 @@ public:
 	const char *GetPass() { return pEdtPass->GetText(); }
 
 	// check for errors (overridden)
-	virtual void UserClose(bool fOK);
+	virtual void UserClose(bool fOK) override;
 
 	// show modal league dialog to query password for player; return
 	static bool ShowModal(const char *szPlayerName, const char *szLeagueName, const char *szLeagueServerName, StdStrBuf *psAccount, StdStrBuf *psPass, bool fWarnThirdParty, bool fRegister);

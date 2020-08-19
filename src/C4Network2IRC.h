@@ -152,13 +152,13 @@ private:
 
 private:
 	// Overridden
-	virtual void PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf);
-	virtual size_t UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr);
+	virtual void PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf) override;
+	virtual size_t UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr) override;
 
 	// Callbacks
-	bool OnConn(const C4NetIO::addr_t &AddrPeer, const C4NetIO::addr_t &AddrConnect, const addr_t *pOwnAddr, C4NetIO *pNetIO);
-	void OnDisconn(const C4NetIO::addr_t &AddrPeer, C4NetIO *pNetIO, const char *szReason);
-	void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO);
+	bool OnConn(const C4NetIO::addr_t &AddrPeer, const C4NetIO::addr_t &AddrConnect, const addr_t *pOwnAddr, C4NetIO *pNetIO) override;
+	void OnDisconn(const C4NetIO::addr_t &AddrPeer, C4NetIO *pNetIO, const char *szReason) override;
+	void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO) override;
 
 public:
 	CStdCSec *getCSec() { return &CSec; }
@@ -175,7 +175,7 @@ public:
 
 	// Simple network communication
 	bool Connect(const char *szServer, const char *szNick, const char *szRealName, const char *szPassword = nullptr, const char *szChannel = nullptr);
-	bool Close();
+	bool Close() override;
 	bool Send(const char *szCommand, const char *szParameters = nullptr);
 
 	// Notfiy interface

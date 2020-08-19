@@ -58,32 +58,32 @@ protected:
 	// chat input callback
 	C4GUI::Edit::InputResult OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore);
 	void OnChatCancel();
-	virtual void OnClosed(bool fOK);
+	virtual void OnClosed(bool fOK) override;
 
-	virtual const char *GetID() { return "ChatDialog"; }
+	virtual const char *GetID() override { return "ChatDialog"; }
 
 public:
 	C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bool fUpperCase, bool fTeam, int32_t iPlr, const StdStrBuf &rsInputQuery); // construct by screen ratios
 	~C4ChatInputDialog();
 
 	// place on top of normal dialogs
-	virtual int32_t GetZOrdering() { return C4GUI_Z_CHAT; }
+	virtual int32_t GetZOrdering() override { return C4GUI_Z_CHAT; }
 
 	// align by screen, not viewport
-	virtual bool IsFreePlaceDialog() { return true; }
+	virtual bool IsFreePlaceDialog() override { return true; }
 
 	// place more to the bottom of the screen
-	virtual bool IsBottomPlacementDialog() { return true; }
+	virtual bool IsBottomPlacementDialog() override { return true; }
 
 	// true for dialogs that receive full keyboard and mouse input even in shared mode
-	virtual bool IsExclusiveDialog() { return true; }
+	virtual bool IsExclusiveDialog() override { return true; }
 
 	// don't enable mouse just for this dlg
-	virtual bool IsMouseControlled() { return false; }
+	virtual bool IsMouseControlled() override { return false; }
 
 	// usually processed by edit;
 	// but may reach this if the user managed to deselect the edit control
-	virtual bool OnEnter() { OnChatInput(pEdit, false, false); return true; }
+	virtual bool OnEnter() override { OnChatInput(pEdit, false, false); return true; }
 
 	static bool IsShown() { return !!pInstance; } // external query fn whether dlg is visible
 	static C4ChatInputDialog *GetInstance() { return pInstance; }

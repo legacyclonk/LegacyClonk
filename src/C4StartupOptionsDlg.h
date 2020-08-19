@@ -38,12 +38,12 @@ private:
 	C4GUI::Tabular *pOptionsTabular;
 
 protected:
-	virtual bool OnEnter() { return false; } // Enter ignored
-	virtual bool OnEscape() { DoBack(); return true; }
+	virtual bool OnEnter() override { return false; } // Enter ignored
+	virtual bool OnEscape() override { DoBack(); return true; }
 	bool KeyBack() { DoBack(); return true; }
-	virtual void OnClosed(bool fOK); // callback when dlg got closed - save config
+	virtual void OnClosed(bool fOK) override; // callback when dlg got closed - save config
 
-	virtual void UserClose(bool fOK) // callback when the user tried to close the dialog (e.g., by pressing Enter in an edit) - just ignore this and save config instead
+	virtual void UserClose(bool fOK) override // callback when the user tried to close the dialog (e.g., by pressing Enter in an edit) - just ignore this and save config instead
 	{
 		if (fOK) SaveConfig(false, true);
 	}
@@ -64,7 +64,7 @@ private:
 	class SmallButton : public C4GUI::Button
 	{
 	protected:
-		virtual void DrawElement(C4FacetEx &cgo); // draw the button
+		virtual void DrawElement(C4FacetEx &cgo) override; // draw the button
 
 	public:
 		SmallButton(const char *szText, const C4Rect &rtBounds)
@@ -135,8 +135,8 @@ private:
 		void OnSec1Timer(); // update timer label
 
 	protected:
-		virtual bool OnEnter() { return true; } // Pressing Enter does not confirm this dialog, so "blind" users are less likely to accept their change
-		virtual const char *GetID() { return "ResChangeConfirmDialog"; }
+		virtual bool OnEnter() override { return true; } // Pressing Enter does not confirm this dialog, so "blind" users are less likely to accept their change
+		virtual const char *GetID() override { return "ResChangeConfirmDialog"; }
 	};
 
 	void OnGfxTroubleCheck(C4GUI::Element *pCheckBox)
@@ -161,8 +161,8 @@ private:
 		ScaleEdit(C4StartupOptionsDlg *pDlg, const C4Rect &rtBounds, bool fFocusEdit = false);
 
 	protected:
-		virtual bool CharIn(const char *c);
-		virtual InputResult OnFinishInput(bool fPasting, bool fPastingMore);
+		virtual bool CharIn(const char *c) override;
+		virtual InputResult OnFinishInput(bool fPasting, bool fPastingMore) override;
 	};
 
 	C4GUI::ScrollBar *pScaleSlider;
@@ -213,8 +213,8 @@ private:
 		C4KeyCode key;
 
 	protected:
-		virtual void DrawElement(C4FacetEx &cgo);
-		virtual bool IsComponentOutsideClientArea() { return true; }
+		virtual void DrawElement(C4FacetEx &cgo) override;
+		virtual bool IsComponentOutsideClientArea() override { return true; }
 
 	public:
 		KeySelButton(int32_t iKeyID, const C4Rect &rcBounds, char cHotkey);

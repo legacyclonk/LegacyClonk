@@ -72,7 +72,7 @@ public:
 
 	int32_t getDiffLevel(const C4ClientCore &CCore2) const;
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4Client

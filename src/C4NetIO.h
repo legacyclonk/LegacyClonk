@@ -229,17 +229,17 @@ public:
 	public:
 		CBProxy *operator()(T *pnTarget) { pTarget = pnTarget; return this; }
 
-		virtual bool OnConn(const addr_t &AddrPeer, const addr_t &AddrConnect, const addr_t *pOwnAddr, C4NetIO *pNetIO)
+		virtual bool OnConn(const addr_t &AddrPeer, const addr_t &AddrConnect, const addr_t *pOwnAddr, C4NetIO *pNetIO) override
 		{
 			return pTarget->T::OnConn(AddrPeer, AddrConnect, pOwnAddr, pNetIO);
 		}
 
-		virtual void OnDisconn(const addr_t &AddrPeer, C4NetIO *pNetIO, const char *szReason)
+		virtual void OnDisconn(const addr_t &AddrPeer, C4NetIO *pNetIO, const char *szReason) override
 		{
 			pTarget->T::OnDisconn(AddrPeer, pNetIO, szReason);
 		}
 
-		virtual void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
+		virtual void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO) override
 		{
 			pTarget->T::OnPacket(rPacket, pNetIO);
 		}
@@ -255,7 +255,7 @@ public:
 	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE) = 0;
 	virtual bool Close() = 0;
 
-	virtual bool Execute(int iTimeout = -1) = 0; // (for StdSchedulerProc)
+	virtual bool Execute(int iTimeout = -1) override = 0; // (for StdSchedulerProc)
 
 	// * multithreading safe
 	virtual bool Connect(const addr_t &addr) = 0; // async!
@@ -345,35 +345,35 @@ public:
 	// *** interface
 
 	// * not multithreading safe
-	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE);
+	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE) override;
 	virtual bool InitBroadcast(addr_t *pBroadcastAddr);
-	virtual bool Close();
+	virtual bool Close() override;
 	virtual bool CloseBroadcast();
 
-	virtual bool Execute(int iMaxTime = TO_INF);
+	virtual bool Execute(int iMaxTime = TO_INF) override;
 
 	// * multithreading safe
 	std::unique_ptr<Socket> Bind(const addr_t &addr);
 	bool Connect(const addr_t &addr, std::unique_ptr<Socket> socket);
-	virtual bool Connect(const addr_t &addr);
-	virtual bool Close(const addr_t &addr);
+	virtual bool Connect(const addr_t &addr) override;
+	virtual bool Close(const addr_t &addr) override;
 
-	virtual bool Send(const C4NetIOPacket &rPacket);
-	virtual bool Broadcast(const C4NetIOPacket &rPacket);
-	virtual bool SetBroadcast(const addr_t &addr, bool fSet = true);
+	virtual bool Send(const C4NetIOPacket &rPacket) override;
+	virtual bool Broadcast(const C4NetIOPacket &rPacket) override;
+	virtual bool SetBroadcast(const addr_t &addr, bool fSet = true) override;
 
 	virtual void UnBlock();
 #ifdef STDSCHEDULER_USE_EVENTS
-	virtual HANDLE GetEvent();
+	virtual HANDLE GetEvent() override;
 #else
-	virtual void GetFDs(fd_set *pSet, int *pMaxFD);
+	virtual void GetFDs(fd_set *pSet, int *pMaxFD) override;
 #endif
-	virtual int GetTimeout();
+	virtual int GetTimeout() override;
 
 	// statistics
-	virtual bool GetStatistic(int *pBroadcastRate);
-	virtual bool GetConnStatistic(const addr_t &addr, int *pIRate, int *pORate, int *pLoss);
-	virtual void ClearStatistic();
+	virtual bool GetStatistic(int *pBroadcastRate) override;
+	virtual bool GetConnStatistic(const addr_t &addr, int *pIRate, int *pORate, int *pLoss) override;
+	virtual void ClearStatistic() override;
 
 protected:
 	// * overridables (packet format)
@@ -490,7 +490,7 @@ protected:
 
 	Peer *Accept(SOCKET nsock = INVALID_SOCKET, const addr_t &ConnectAddr = addr_t());
 	Peer *GetPeer(const addr_t &addr);
-	void OnShareFree(CStdCSecEx *pCSec);
+	void OnShareFree(CStdCSecEx *pCSec) override;
 
 	void AddConnectWait(SOCKET sock, const addr_t &addr);
 	ConnectWait *GetConnectWait(const addr_t &addr);
@@ -499,7 +499,7 @@ protected:
 	// *** callbacks
 
 public:
-	virtual void SetCallback(CBClass *pnCallback) { pCB = pnCallback; };
+	virtual void SetCallback(CBClass *pnCallback) override { pCB = pnCallback; };
 
 private:
 	CBClass *pCB;
@@ -515,38 +515,38 @@ public:
 	C4NetIOSimpleUDP();
 	virtual ~C4NetIOSimpleUDP();
 
-	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE);
+	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE) override;
 	virtual bool InitBroadcast(addr_t *pBroadcastAddr);
-	virtual bool Close();
+	virtual bool Close() override;
 	virtual bool CloseBroadcast();
 
-	virtual bool Execute(int iMaxTime = TO_INF);
+	virtual bool Execute(int iMaxTime = TO_INF) override;
 
-	virtual bool Send(const C4NetIOPacket &rPacket);
-	virtual bool Broadcast(const C4NetIOPacket &rPacket);
+	virtual bool Send(const C4NetIOPacket &rPacket) override;
+	virtual bool Broadcast(const C4NetIOPacket &rPacket) override;
 
 	virtual void UnBlock();
 #ifdef STDSCHEDULER_USE_EVENTS
-	virtual HANDLE GetEvent();
+	virtual HANDLE GetEvent() override;
 #else
-	virtual void GetFDs(fd_set *pSet, int *pMaxFD);
+	virtual void GetFDs(fd_set *pSet, int *pMaxFD) override;
 #endif
-	virtual int GetTimeout();
+	virtual int GetTimeout() override;
 
 	// not implemented
-	virtual bool Connect(const addr_t &addr) { assert(false); return false; }
-	virtual bool Close(const addr_t &addr) { assert(false); return false; }
+	virtual bool Connect(const addr_t &addr) override { assert(false); return false; }
+	virtual bool Close(const addr_t &addr) override { assert(false); return false; }
 
-	virtual bool SetBroadcast(const addr_t &addr, bool fSet = true) { assert(false); return false; }
+	virtual bool SetBroadcast(const addr_t &addr, bool fSet = true) override { assert(false); return false; }
 
-	virtual bool GetStatistic(int *pBroadcastRate) { assert(false); return false; }
+	virtual bool GetStatistic(int *pBroadcastRate) override { assert(false); return false; }
 
-	virtual bool GetConnStatistic(const addr_t &addr, int *pIRate, int *pORate, int *pLoss)
+	virtual bool GetConnStatistic(const addr_t &addr, int *pIRate, int *pORate, int *pLoss) override
 	{
 		assert(false); return false;
 	}
 
-	virtual void ClearStatistic() { assert(false); }
+	virtual void ClearStatistic() override { assert(false); }
 
 private:
 	// status
@@ -587,7 +587,7 @@ private:
 
 	// *** callbacks
 public:
-	virtual void SetCallback(CBClass *pnCallback) { pCB = pnCallback; };
+	virtual void SetCallback(CBClass *pnCallback) override { pCB = pnCallback; };
 
 private:
 	CBClass *pCB;
@@ -606,26 +606,26 @@ public:
 
 	// *** interface
 
-	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE);
-	virtual bool InitBroadcast(addr_t *pBroadcastAddr);
-	virtual bool Close();
-	virtual bool CloseBroadcast();
+	virtual bool Init(uint16_t iPort = addr_t::IPPORT_NONE) override;
+	virtual bool InitBroadcast(addr_t *pBroadcastAddr) override;
+	virtual bool Close() override;
+	virtual bool CloseBroadcast() override;
 
-	virtual bool Execute(int iMaxTime = TO_INF);
+	virtual bool Execute(int iMaxTime = TO_INF) override;
 
-	virtual bool Connect(const addr_t &addr);
-	virtual bool Close(const addr_t &addr);
+	virtual bool Connect(const addr_t &addr) override;
+	virtual bool Close(const addr_t &addr) override;
 
-	virtual bool Send(const C4NetIOPacket &rPacket);
+	virtual bool Send(const C4NetIOPacket &rPacket) override;
 	bool SendDirect(C4NetIOPacket &&packet); // (mt-safe)
-	virtual bool Broadcast(const C4NetIOPacket &rPacket);
-	virtual bool SetBroadcast(const addr_t &addr, bool fSet = true);
+	virtual bool Broadcast(const C4NetIOPacket &rPacket) override;
+	virtual bool SetBroadcast(const addr_t &addr, bool fSet = true) override;
 
-	virtual int GetTimeout();
+	virtual int GetTimeout() override;
 
-	virtual bool GetStatistic(int *pBroadcastRate);
-	virtual bool GetConnStatistic(const addr_t &addr, int *pIRate, int *pORate, int *pLoss);
-	virtual void ClearStatistic();
+	virtual bool GetStatistic(int *pBroadcastRate) override;
+	virtual bool GetConnStatistic(const addr_t &addr, int *pIRate, int *pORate, int *pLoss) override;
+	virtual void ClearStatistic() override;
 
 protected:
 	// *** data
@@ -914,7 +914,7 @@ protected:
 	void AddPeer(Peer *pPeer);
 	Peer *GetPeer(const addr_t &addr);
 	Peer *ConnectPeer(const addr_t &PeerAddr, bool fFailCallback);
-	void OnShareFree(CStdCSecEx *pCSec);
+	void OnShareFree(CStdCSecEx *pCSec) override;
 
 	// connection check
 	void DoCheck();
@@ -932,7 +932,7 @@ protected:
 
 	// *** callbacks
 public:
-	virtual void SetCallback(CBClass *pnCallback) { pCB = pnCallback; };
+	virtual void SetCallback(CBClass *pnCallback) override { pCB = pnCallback; };
 
 private:
 	CBClass *pCB;

@@ -202,7 +202,7 @@ protected:
 	CallbackFunc pFuncDown, pFuncUp, pFuncPressed;
 
 protected:
-	virtual bool OnKeyEvent(C4KeyCodeEx key, C4KeyEventType eEv)
+	virtual bool OnKeyEvent(C4KeyCodeEx key, C4KeyEventType eEv) override
 	{
 		if (!CheckCondition()) return false;
 		switch (eEv)
@@ -232,7 +232,7 @@ protected:
 	CallbackFunc pFuncDown, pFuncUp, pFuncPressed;
 
 protected:
-	virtual bool OnKeyEvent(C4KeyCodeEx key, C4KeyEventType eEv)
+	virtual bool OnKeyEvent(C4KeyCodeEx key, C4KeyEventType eEv) override
 	{
 		if (!CheckCondition()) return false;
 		switch (eEv)
@@ -263,7 +263,7 @@ protected:
 	ParameterType par;
 
 protected:
-	virtual bool OnKeyEvent(C4KeyCodeEx key, C4KeyEventType eEv)
+	virtual bool OnKeyEvent(C4KeyCodeEx key, C4KeyEventType eEv) override
 	{
 		if (!CheckCondition()) return false;
 		switch (eEv)
@@ -293,7 +293,7 @@ protected:
 	ParameterType par;
 
 protected:
-	virtual bool OnKeyEvent(C4KeyCodeEx key, C4KeyEventType eEv)
+	virtual bool OnKeyEvent(C4KeyCodeEx key, C4KeyEventType eEv) override
 	{
 		if (!CheckCondition()) return false;
 		switch (eEv)

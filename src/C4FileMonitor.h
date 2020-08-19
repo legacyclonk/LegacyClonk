@@ -35,17 +35,17 @@ public:
 	void AddDirectory(const char *szDir);
 
 	// StdSchedulerProc:
-	virtual bool Execute(int iTimeout = -1);
+	virtual bool Execute(int iTimeout = -1) override;
 
 	// Signal for calling Execute()
 #ifdef STDSCHEDULER_USE_EVENTS
-	virtual HANDLE GetEvent();
+	virtual HANDLE GetEvent() override;
 #else
-	virtual void GetFDs(fd_set *pFDs, int *pMaxFD);
+	virtual void GetFDs(fd_set *pFDs, int *pMaxFD) override;
 #endif
 
 	// C4InteractiveThread::Callback:
-	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData);
+	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) override;
 
 private:
 	bool fStarted;

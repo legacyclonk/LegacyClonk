@@ -44,8 +44,8 @@ class CMarkupTagItalic : public CMarkupTag
 public:
 	CMarkupTagItalic() : CMarkupTag() {}
 
-	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr); // assign markup
-	virtual const char *TagName() { return "i"; }
+	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr) override; // assign markup
+	virtual const char *TagName() override { return "i"; }
 };
 
 // markup tag for colored text
@@ -57,9 +57,9 @@ private:
 public:
 	CMarkupTagColor(uint32_t dwClr) : CMarkupTag(), dwClr(dwClr) {}
 
-	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr); // assign markup
-	virtual const char *TagName() { return "c"; }
-	virtual StdStrBuf ToMarkup() { return FormatString("<%s %x>", TagName(), dwClr); };
+	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr) override; // assign markup
+	virtual const char *TagName() override { return "c"; }
+	virtual StdStrBuf ToMarkup() override { return FormatString("<%s %x>", TagName(), dwClr); };
 };
 
 // markup rendering functionality for text

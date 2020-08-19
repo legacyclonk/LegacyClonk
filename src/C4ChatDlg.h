@@ -44,7 +44,7 @@ private:
 			NickItem(class C4Network2IRCUser *pByUser);
 
 		protected:
-			virtual void UpdateOwnPos();
+			virtual void UpdateOwnPos() override;
 
 		public:
 			const char *GetNick() const { return pNameLabel->GetText(); }
@@ -91,9 +91,9 @@ private:
 		void ResetUnread(); // mark messages as read
 
 	protected:
-		virtual void UpdateSize();
-		virtual void OnShown(bool fByUser);
-		virtual void UserClose(); // user pressed close button: Close queries, part channels, etc.
+		virtual void UpdateSize() override;
+		virtual void OnShown(bool fByUser) override;
+		virtual void UserClose() override; // user pressed close button: Close queries, part channels, etc.
 
 		C4GUI::Edit::InputResult OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore);
 		bool KeyHistoryUpDown(bool fUp);
@@ -123,7 +123,7 @@ public:
 	virtual ~C4ChatControl();
 
 protected:
-	virtual void UpdateSize();
+	virtual void UpdateSize() override;
 	C4GUI::Edit::InputResult OnLoginDataEnter(C4GUI::Edit *edt, bool fPasting, bool fPastingMore); // advance focus when user presses enter in one of the login edits
 	void OnConnectBtn(C4GUI::Control *btn); // callback: connect button pressed
 
@@ -152,7 +152,7 @@ private:
 	void ClearChatSheets();
 
 	// IRC event hook
-	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) { if (std::any_cast<decltype(pIRCClient)>(eventData) == pIRCClient) Update(); }
+	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) override { if (std::any_cast<decltype(pIRCClient)>(eventData) == pIRCClient) Update(); }
 };
 
 // container dialog for the C4ChatControl
@@ -175,22 +175,22 @@ public:
 
 protected:
 	// default control to be set if unprocessed keyboard input has been detected
-	virtual class C4GUI::Control *GetDefaultControl();
+	virtual class C4GUI::Control *GetDefaultControl() override;
 
 	// true for dialogs that should span the whole screen
 	// not just the mouse-viewport
-	virtual bool IsFreePlaceDialog() { return true; }
+	virtual bool IsFreePlaceDialog() override { return true; }
 
 	// true for dialogs that receive keyboard input even in shared mode
-	virtual bool IsExclusiveDialog() { return true; }
+	virtual bool IsExclusiveDialog() override { return true; }
 
 	// for custom placement procedures; should call SetPos
-	virtual bool DoPlacement(C4GUI::Screen *pOnScreen, const C4Rect &rPreferredDlgRect);
+	virtual bool DoPlacement(C4GUI::Screen *pOnScreen, const C4Rect &rPreferredDlgRect) override;
 
-	virtual void OnClosed(bool fOK); // callback when dlg got closed
-	virtual void OnShown(); // callback when shown - should not delete the dialog
+	virtual void OnClosed(bool fOK) override; // callback when dlg got closed
+	virtual void OnShown() override; // callback when shown - should not delete the dialog
 
-	virtual void UpdateSize();
+	virtual void UpdateSize() override;
 
 	void OnChatTitleChange(const StdStrBuf &sNewTitle);
 };

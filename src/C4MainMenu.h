@@ -36,7 +36,7 @@ class C4MainMenu : public C4Menu
 public:
 	C4MainMenu();
 
-	virtual void Default();
+	virtual void Default() override;
 
 protected:
 	int32_t Player;
@@ -59,13 +59,13 @@ public:
 	bool ActivateObserver();
 
 protected:
-	virtual bool MenuCommand(const char *szCommand, bool fIsCloseCommand);
+	virtual bool MenuCommand(const char *szCommand, bool fIsCloseCommand) override;
 
-	virtual bool DoRefillInternal(bool &rfRefilled);
+	virtual bool DoRefillInternal(bool &rfRefilled) override;
 
-	virtual void OnSelectionChanged(int32_t iNewSelection);
-	virtual void OnUserSelectItem(int32_t Player, int32_t iIndex);
-	virtual void OnUserEnter(int32_t Player, int32_t iIndex, bool fRight);
-	virtual void OnUserClose();
-	virtual int32_t GetControllingPlayer() { return Player; }
+	virtual void OnSelectionChanged(int32_t iNewSelection) override;
+	virtual void OnUserSelectItem(int32_t Player, int32_t iIndex) override;
+	virtual void OnUserEnter(int32_t Player, int32_t iIndex, bool fRight) override;
+	virtual void OnUserClose() override;
+	virtual int32_t GetControllingPlayer() override { return Player; }
 };

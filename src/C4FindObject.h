@@ -110,9 +110,9 @@ private:
 	C4FindObject *pCond;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual bool IsImpossible() { return pCond->IsEnsured(); }
-	virtual bool IsEnsured() { return pCond->IsImpossible(); }
+	virtual bool Check(C4Object *pObj) override;
+	virtual bool IsImpossible() override { return pCond->IsEnsured(); }
+	virtual bool IsEnsured() override { return pCond->IsImpossible(); }
 };
 
 class C4FindObjectAnd : public C4FindObject
@@ -127,11 +127,11 @@ private:
 	C4Rect Bounds; bool fHasBounds;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual C4Rect *GetBounds() { return fHasBounds ? &Bounds : nullptr; }
-	virtual bool UseShapes() { return fUseShapes; }
-	virtual bool IsEnsured() { return !iCnt; }
-	virtual bool IsImpossible();
+	virtual bool Check(C4Object *pObj) override;
+	virtual C4Rect *GetBounds() override { return fHasBounds ? &Bounds : nullptr; }
+	virtual bool UseShapes() override { return fUseShapes; }
+	virtual bool IsEnsured() override { return !iCnt; }
+	virtual bool IsImpossible() override;
 };
 
 class C4FindObjectOr : public C4FindObject
@@ -146,10 +146,10 @@ private:
 	C4Rect Bounds; bool fHasBounds;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual C4Rect *GetBounds() { return fHasBounds ? &Bounds : nullptr; }
-	virtual bool IsEnsured();
-	virtual bool IsImpossible() { return !iCnt; }
+	virtual bool Check(C4Object *pObj) override;
+	virtual C4Rect *GetBounds() override { return fHasBounds ? &Bounds : nullptr; }
+	virtual bool IsEnsured() override;
+	virtual bool IsImpossible() override { return !iCnt; }
 };
 
 // Primitive conditions
@@ -163,7 +163,7 @@ private:
 	C4Object *pExclude;
 
 protected:
-	virtual bool Check(C4Object *pObj);
+	virtual bool Check(C4Object *pObj) override;
 };
 
 class C4FindObjectID : public C4FindObject
@@ -176,8 +176,8 @@ private:
 	C4ID id;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual bool IsImpossible();
+	virtual bool Check(C4Object *pObj) override;
+	virtual bool IsImpossible() override;
 };
 
 class C4FindObjectInRect : public C4FindObject
@@ -190,9 +190,9 @@ private:
 	C4Rect rect;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual C4Rect *GetBounds() { return &rect; }
-	virtual bool IsImpossible();
+	virtual bool Check(C4Object *pObj) override;
+	virtual C4Rect *GetBounds() override { return &rect; }
+	virtual bool IsImpossible() override;
 };
 
 class C4FindObjectAtPoint : public C4FindObject
@@ -205,9 +205,9 @@ private:
 	C4Rect bounds;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual C4Rect *GetBounds() { return &bounds; }
-	virtual bool UseShapes() { return true; }
+	virtual bool Check(C4Object *pObj) override;
+	virtual C4Rect *GetBounds() override { return &bounds; }
+	virtual bool UseShapes() override { return true; }
 };
 
 class C4FindObjectAtRect : public C4FindObject
@@ -220,9 +220,9 @@ private:
 	C4Rect bounds;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual C4Rect *GetBounds() { return &bounds; }
-	virtual bool UseShapes() { return true; }
+	virtual bool Check(C4Object *pObj) override;
+	virtual C4Rect *GetBounds() override { return &bounds; }
+	virtual bool UseShapes() override { return true; }
 };
 
 class C4FindObjectOnLine : public C4FindObject
@@ -239,9 +239,9 @@ private:
 	C4Rect bounds;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual C4Rect *GetBounds() { return &bounds; }
-	virtual bool UseShapes() { return true; }
+	virtual bool Check(C4Object *pObj) override;
+	virtual C4Rect *GetBounds() override { return &bounds; }
+	virtual bool UseShapes() override { return true; }
 };
 
 class C4FindObjectDistance : public C4FindObject
@@ -255,8 +255,8 @@ private:
 	C4Rect bounds;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual C4Rect *GetBounds() { return &bounds; }
+	virtual bool Check(C4Object *pObj) override;
+	virtual C4Rect *GetBounds() override { return &bounds; }
 };
 
 class C4FindObjectOCF : public C4FindObject
@@ -269,8 +269,8 @@ private:
 	int32_t ocf;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual bool IsImpossible();
+	virtual bool Check(C4Object *pObj) override;
+	virtual bool IsImpossible() override;
 };
 
 class C4FindObjectCategory : public C4FindObject
@@ -283,8 +283,8 @@ private:
 	int32_t iCategory;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual bool IsEnsured();
+	virtual bool Check(C4Object *pObj) override;
+	virtual bool IsEnsured() override;
 };
 
 class C4FindObjectAction : public C4FindObject
@@ -297,7 +297,7 @@ private:
 	const char *szAction;
 
 protected:
-	virtual bool Check(C4Object *pObj);
+	virtual bool Check(C4Object *pObj) override;
 };
 
 class C4FindObjectActionTarget : public C4FindObject
@@ -311,7 +311,7 @@ private:
 	int index;
 
 protected:
-	virtual bool Check(C4Object *pObj);
+	virtual bool Check(C4Object *pObj) override;
 };
 
 class C4FindObjectContainer : public C4FindObject
@@ -324,7 +324,7 @@ private:
 	C4Object *pContainer;
 
 protected:
-	virtual bool Check(C4Object *pObj);
+	virtual bool Check(C4Object *pObj) override;
 };
 
 class C4FindObjectAnyContainer : public C4FindObject
@@ -333,7 +333,7 @@ public:
 	C4FindObjectAnyContainer() {}
 
 protected:
-	virtual bool Check(C4Object *pObj);
+	virtual bool Check(C4Object *pObj) override;
 };
 
 class C4FindObjectOwner : public C4FindObject
@@ -346,8 +346,8 @@ private:
 	int32_t iOwner;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual bool IsImpossible();
+	virtual bool Check(C4Object *pObj) override;
+	virtual bool IsImpossible() override;
 };
 
 class C4FindObjectFunc : public C4FindObject
@@ -361,8 +361,8 @@ private:
 	C4AulParSet Pars;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual bool IsImpossible();
+	virtual bool Check(C4Object *pObj) override;
+	virtual bool IsImpossible() override;
 };
 
 class C4FindObjectLayer : public C4FindObject
@@ -374,8 +374,8 @@ private:
 	C4Object *pLayer;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual bool IsImpossible();
+	virtual bool Check(C4Object *pObj) override;
+	virtual bool IsImpossible() override;
 };
 
 class C4FindObjectController : public C4FindObject
@@ -388,8 +388,8 @@ private:
 	int32_t controller;
 
 protected:
-	virtual bool Check(C4Object *pObj);
-	virtual bool IsImpossible();
+	virtual bool Check(C4Object *pObj) override;
+	virtual bool IsImpossible() override;
 };
 
 // result sorting
@@ -425,11 +425,11 @@ private:
 
 public:
 	// Overridables
-	virtual int32_t Compare(C4Object *pObj1, C4Object *pObj2);
+	virtual int32_t Compare(C4Object *pObj1, C4Object *pObj2) override;
 	virtual int32_t CompareGetValue(C4Object *pOf) = 0;
 
-	virtual bool PrepareCache(const C4ValueList *pObjs);
-	virtual int32_t CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2);
+	virtual bool PrepareCache(const C4ValueList *pObjs) override;
+	virtual int32_t CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2) override;
 };
 
 class C4SortObjectReverse : public C4SortObject // reverse sort
@@ -443,10 +443,10 @@ private:
 	C4SortObject *pSort;
 
 protected:
-	int32_t Compare(C4Object *pObj1, C4Object *pObj2);
+	int32_t Compare(C4Object *pObj1, C4Object *pObj2) override;
 
-	virtual bool PrepareCache(const C4ValueList *pObjs);
-	virtual int32_t CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2);
+	virtual bool PrepareCache(const C4ValueList *pObjs) override;
+	virtual int32_t CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2) override;
 };
 
 class C4SortObjectMultiple : public C4SortObject // apply next sort if previous compares to equality
@@ -462,10 +462,10 @@ private:
 	C4SortObject **ppSorts;
 
 protected:
-	int32_t Compare(C4Object *pObj1, C4Object *pObj2);
+	int32_t Compare(C4Object *pObj1, C4Object *pObj2) override;
 
-	virtual bool PrepareCache(const C4ValueList *pObjs);
-	virtual int32_t CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2);
+	virtual bool PrepareCache(const C4ValueList *pObjs) override;
+	virtual int32_t CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2) override;
 };
 
 class C4SortObjectDistance : public C4SortObjectByValue // sort by distance from point x/y
@@ -478,7 +478,7 @@ private:
 	int iX, iY;
 
 protected:
-	int32_t CompareGetValue(C4Object *pFor);
+	int32_t CompareGetValue(C4Object *pFor) override;
 };
 
 class C4SortObjectRandom : public C4SortObjectByValue // randomize order
@@ -487,7 +487,7 @@ public:
 	C4SortObjectRandom() : C4SortObjectByValue() {}
 
 protected:
-	int32_t CompareGetValue(C4Object *pFor);
+	int32_t CompareGetValue(C4Object *pFor) override;
 };
 
 class C4SortObjectSpeed : public C4SortObjectByValue // sort by object xdir/ydir
@@ -496,7 +496,7 @@ public:
 	C4SortObjectSpeed() : C4SortObjectByValue() {}
 
 protected:
-	int32_t CompareGetValue(C4Object *pFor);
+	int32_t CompareGetValue(C4Object *pFor) override;
 };
 
 class C4SortObjectMass : public C4SortObjectByValue // sort by mass
@@ -505,7 +505,7 @@ public:
 	C4SortObjectMass() : C4SortObjectByValue() {}
 
 protected:
-	int32_t CompareGetValue(C4Object *pFor);
+	int32_t CompareGetValue(C4Object *pFor) override;
 };
 
 class C4SortObjectValue : public C4SortObjectByValue // sort by value
@@ -514,7 +514,7 @@ public:
 	C4SortObjectValue() : C4SortObjectByValue() {}
 
 protected:
-	int32_t CompareGetValue(C4Object *pFor);
+	int32_t CompareGetValue(C4Object *pFor) override;
 };
 
 class C4SortObjectFunc : public C4SortObjectByValue // sort by script function
@@ -528,5 +528,5 @@ private:
 	C4AulParSet Pars;
 
 protected:
-	int32_t CompareGetValue(C4Object *pFor);
+	int32_t CompareGetValue(C4Object *pFor) override;
 };

@@ -27,7 +27,7 @@
 class C4UpdateDlg : public C4GUI::InfoDialog
 {
 protected:
-	virtual void UpdateText();
+	virtual void UpdateText() override;
 
 	bool UpdateRunning;
 
@@ -50,7 +50,7 @@ public:
 class C4Network2VersionInfoClient : public C4Network2HTTPClient
 {
 protected:
-	virtual int32_t GetDefaultPort() { return C4NetStdPortHTTP; }
+	virtual int32_t GetDefaultPort() override { return C4NetStdPortHTTP; }
 
 public:
 	C4Network2VersionInfoClient() : C4Network2HTTPClient() {}

@@ -111,13 +111,13 @@ protected:
 	void InvalidateRows() { delete[] piColWidths; piColWidths = nullptr; }
 	void Update(); // update row widths and own size and caption
 
-	virtual bool DoPlacement(C4GUI::Screen *pOnScreen, const C4Rect &rPreferredDlgRect);
-	virtual void Draw(C4FacetEx &cgo);
-	virtual void DrawElement(C4FacetEx &cgo);
+	virtual bool DoPlacement(C4GUI::Screen *pOnScreen, const C4Rect &rPreferredDlgRect) override;
+	virtual void Draw(C4FacetEx &cgo) override;
+	virtual void DrawElement(C4FacetEx &cgo) override;
 
-	virtual const char *GetID() { return "Scoreboard"; }
+	virtual const char *GetID() override { return "Scoreboard"; }
 
-	virtual bool IsMouseControlled() { return false; }
+	virtual bool IsMouseControlled() override { return false; }
 
 	friend class C4Scoreboard;
 };

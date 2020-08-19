@@ -313,7 +313,7 @@ class C4AulScriptFunc : public C4AulFunc
 {
 public:
 	C4AulFunc *OwnerOverloaded; // overloaded owner function; if present
-	C4AulScriptFunc *SFunc() { return this; } // type check func...
+	C4AulScriptFunc *SFunc() override { return this; } // type check func...
 
 protected:
 	void ParseDesc(); // evaluate desc (i.e. get idImage and Condition
@@ -343,13 +343,13 @@ public:
 		for (int i = 0; i < C4AUL_MAX_Par; i++) ParType[i] = C4V_Any;
 	}
 
-	virtual void UnLink();
+	virtual void UnLink() override;
 
-	virtual bool GetPublic() { return true; }
-	virtual const C4V_Type *GetParType() { return ParType; }
-	virtual C4V_Type GetRetType() { return bReturnRef ? C4V_pC4Value : C4V_Any; }
-	virtual C4Value Exec(C4AulContext *pCallerCtx, const C4Value pPars[], bool fPassErrors = false); // execute func (script call, should not happen)
-	virtual C4Value Exec(C4Object *pObj = nullptr, const C4AulParSet &pPars = C4AulParSet{}, bool fPassErrors = false); // execute func (engine call)
+	virtual bool GetPublic() override { return true; }
+	virtual const C4V_Type *GetParType() override { return ParType; }
+	virtual C4V_Type GetRetType() override { return bReturnRef ? C4V_pC4Value : C4V_Any; }
+	virtual C4Value Exec(C4AulContext *pCallerCtx, const C4Value pPars[], bool fPassErrors = false) override; // execute func (script call, should not happen)
+	virtual C4Value Exec(C4Object *pObj = nullptr, const C4AulParSet &pPars = C4AulParSet{}, bool fPassErrors = false) override; // execute func (engine call)
 
 	void CopyBody(C4AulScriptFunc &FromFunc); // copy script/code, etc from given func
 

@@ -28,12 +28,12 @@ class C4ScriptHost : public C4AulScript, public C4ComponentHost
 public:
 	C4ScriptHost();
 	~C4ScriptHost();
-	bool Delete() { return true; }
+	bool Delete() override { return true; }
 
 public:
 	void Default();
 	void Clear();
-	void Close();
+	void Close() override;
 	bool Load(const char *szName, C4Group &hGroup, const char *szFilename,
 		const char *szLanguage, C4Def *pDef, class C4LangStringTable *pLocalTable, bool fLoadTable = false);
 	const char *GetControlDesc(const char *szFunctionFormat, int32_t iCom, C4ID *pidImage = nullptr, int32_t *piImagePhase = nullptr);
@@ -56,7 +56,7 @@ protected:
 	class C4LangStringTable *pStringTable;
 	void MakeScript();
 	C4Value FunctionCall(C4Object *pCaller, const char *szFunction, C4Object *pObj, const C4AulParSet &pPars = C4AulParSet{}, bool fPrivateCall = false, bool fPassError = false);
-	bool ReloadScript(const char *szPath);
+	bool ReloadScript(const char *szPath) override;
 };
 
 // script host for defs
@@ -67,10 +67,10 @@ public:
 
 	void Default();
 
-	bool Delete() { return false; } // do NOT delete this - it's just a class member!
+	bool Delete() override { return false; } // do NOT delete this - it's just a class member!
 
 protected:
-	void AfterLink(); // get common funcs
+	void AfterLink() override; // get common funcs
 
 public:
 	C4AulScriptFunc *SFn_CalcValue; // get object value
@@ -86,7 +86,7 @@ class C4GameScriptHost : public C4ScriptHost
 public:
 	C4GameScriptHost();
 	~C4GameScriptHost();
-	bool Delete() { return false; } // do NOT delete this - it's just a class member!
+	bool Delete() override { return false; } // do NOT delete this - it's just a class member!
 	void Default();
 	C4Value GRBroadcast(const char *szFunction, const C4AulParSet &pPars = C4AulParSet{}, bool fPassError = false, bool fRejectTest = false); // call function in scenario script and all goals/rules/environment objects
 

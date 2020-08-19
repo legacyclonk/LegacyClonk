@@ -59,7 +59,7 @@ public:
 	int32_t GetCountdown() const { return iCountdown; }
 	StdStrBuf GetCountdownMsg(bool fInitialMsg = false) const;
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 // scneario info tab: displays scenario description
@@ -114,7 +114,7 @@ protected:
 	bool KeyHistoryUpDown(bool fUp); // key callback
 	C4GUI::Edit::InputResult OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore); // callback: chat input performed
 
-	void OnClosed(bool fOK); // callback when dlg is closed
+	void OnClosed(bool fOK) override; // callback when dlg is closed
 	void OnSec1Timer(); // timer proc; update pings
 
 	C4GUI::ContextMenu *OnRightTabContext(C4GUI::Element *pLabel, int32_t iX, int32_t iY); // open context menu
@@ -131,7 +131,7 @@ protected:
 	void OnBtnChat(C4GUI::Control *btn);
 	void OnBtnPreload(C4GUI::Control *);
 
-	virtual class C4GUI::Control *GetDefaultControl() { return pEdt; } // def focus chat input
+	virtual class C4GUI::Control *GetDefaultControl() override { return pEdt; } // def focus chat input
 
 private:
 	void SetCountdownState(CountdownState eToState, int32_t iTimer);

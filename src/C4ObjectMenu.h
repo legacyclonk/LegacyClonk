@@ -49,7 +49,7 @@ class C4ObjectMenu : public C4Menu
 public:
 	C4ObjectMenu();
 
-	virtual void Default();
+	virtual void Default() override;
 
 	enum CallbackType { CB_None = 0, CB_Object, CB_Scenario };
 
@@ -70,20 +70,20 @@ public:
 	bool Init(C4FacetExSurface &fctSymbol, const char *szEmpty, C4Object *pObject, int32_t iExtra = C4MN_Extra_None, int32_t iExtraData = 0, int32_t iId = 0, int32_t iStyle = C4MN_Style_Normal, bool fUserMenu = false);
 	void Execute();
 
-	virtual C4Object *GetParentObject();
+	virtual C4Object *GetParentObject() override;
 	bool IsCloseQuerying() const { return !!CloseQuerying; }
 
 protected:
-	virtual bool MenuCommand(const char *szCommand, bool fIsCloseCommand);
+	virtual bool MenuCommand(const char *szCommand, bool fIsCloseCommand) override;
 
-	virtual bool DoRefillInternal(bool &rfRefilled);
-	virtual void OnSelectionChanged(int32_t iNewSelection); // do object callbacks if selection changed in user menus
-	virtual bool IsCloseDenied(); // do MenuQueryCancel-callbacks for user menus
-	virtual bool IsReadOnly(); // determine whether the menu is just viewed by an observer, and should not issue any calls
-	virtual void OnUserSelectItem(int32_t Player, int32_t iIndex);
-	virtual void OnUserEnter(int32_t Player, int32_t iIndex, bool fRight);
-	virtual void OnUserClose();
-	virtual int32_t GetControllingPlayer();
+	virtual bool DoRefillInternal(bool &rfRefilled) override;
+	virtual void OnSelectionChanged(int32_t iNewSelection) override; // do object callbacks if selection changed in user menus
+	virtual bool IsCloseDenied() override; // do MenuQueryCancel-callbacks for user menus
+	virtual bool IsReadOnly() override; // determine whether the menu is just viewed by an observer, and should not issue any calls
+	virtual void OnUserSelectItem(int32_t Player, int32_t iIndex) override;
+	virtual void OnUserEnter(int32_t Player, int32_t iIndex, bool fRight) override;
+	virtual void OnUserClose() override;
+	virtual int32_t GetControllingPlayer() override;
 
 private:
 	int32_t AddContextFunctions(C4Object *pTarget, bool fCountOnly = false);

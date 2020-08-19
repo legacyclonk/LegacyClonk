@@ -110,8 +110,8 @@ public:
 
 protected:
 	// Overridden
-	virtual void PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf);
-	virtual size_t UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr);
+	virtual void PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf) override;
+	virtual size_t UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr) override;
 
 private:
 	// Responses
@@ -151,13 +151,13 @@ protected:
 
 protected:
 	// Overridden
-	virtual void PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf);
-	virtual size_t UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr);
+	virtual void PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf) override;
+	virtual size_t UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr) override;
 
 	// Callbacks
-	bool OnConn(const C4NetIO::addr_t &AddrPeer, const C4NetIO::addr_t &AddrConnect, const addr_t *pOwnAddr, C4NetIO *pNetIO);
-	void OnDisconn(const C4NetIO::addr_t &AddrPeer, C4NetIO *pNetIO, const char *szReason);
-	void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO);
+	bool OnConn(const C4NetIO::addr_t &AddrPeer, const C4NetIO::addr_t &AddrConnect, const addr_t *pOwnAddr, C4NetIO *pNetIO) override;
+	void OnDisconn(const C4NetIO::addr_t &AddrPeer, C4NetIO *pNetIO, const char *szReason) override;
+	void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO) override;
 
 	void ResetRequestTimeout();
 	virtual int32_t GetDefaultPort() { return 80; }
@@ -184,8 +184,8 @@ public:
 	void SetNotify(class C4InteractiveThread *pnNotify) { pNotify = pnNotify; }
 
 	// Overridden
-	virtual bool Execute(int iMaxTime = TO_INF);
-	virtual int GetTimeout();
+	virtual bool Execute(int iMaxTime = TO_INF) override;
+	virtual int GetTimeout() override;
 
 private:
 	bool ReadHeader(const StdStrBuf &Data);
@@ -201,7 +201,7 @@ class C4Network2RefClient : public C4Network2HTTPClient
 	bool fVerSet;
 
 protected:
-	virtual int32_t GetDefaultPort() { return C4NetStdPortRefServer; }
+	virtual int32_t GetDefaultPort() override { return C4NetStdPortRefServer; }
 
 public:
 	C4Network2RefClient() : fVerSet(false), C4Network2HTTPClient() {}

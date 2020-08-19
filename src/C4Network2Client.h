@@ -208,7 +208,7 @@ public:
 	int32_t                  getClientID() const { return iClientID; }
 	const C4Network2Address &getAddr()     const { return addr; }
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4PacketTCPSimOpen : public C4PacketBase

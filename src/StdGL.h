@@ -85,7 +85,7 @@ class CStdGL : public CStdDDraw
 public:
 	CStdGL();
 	~CStdGL();
-	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr);
+	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) override;
 
 protected:
 	GLenum sfcFmt; // texture surface format
@@ -98,53 +98,53 @@ protected:
 
 public:
 	// General
-	void Clear();
-	void Default();
-	virtual int GetEngine() { return 1; } // get indexed engine
-	virtual bool OnResolutionChanged(); // reinit OpenGL and window for new resolution
+	void Clear() override;
+	void Default() override;
+	virtual int GetEngine() override { return 1; } // get indexed engine
+	virtual bool OnResolutionChanged() override; // reinit OpenGL and window for new resolution
 
 	// Clipper
-	bool UpdateClipper(); // set current clipper to render target
+	bool UpdateClipper() override; // set current clipper to render target
 
 	// Surface
-	bool PrepareRendering(CSurface *sfcToSurface); // check if/make rendering possible to given surface
+	bool PrepareRendering(CSurface *sfcToSurface) override; // check if/make rendering possible to given surface
 	CStdGLCtx &GetMainCtx() { return MainCtx; }
-	virtual CStdGLCtx *CreateContext(CStdWindow *pWindow, CStdApp *pApp);
+	virtual CStdGLCtx *CreateContext(CStdWindow *pWindow, CStdApp *pApp) override;
 #ifdef _WIN32
-	virtual CStdGLCtx *CreateContext(HWND hWindow, CStdApp *pApp);
+	virtual CStdGLCtx *CreateContext(HWND hWindow, CStdApp *pApp) override;
 #endif
 
 	// Blit
-	void PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact);
+	void PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact) override;
 	virtual void BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *sfcLiquidAnimation, int fx, int fy,
-		CSurface *sfcTarget, int tx, int ty, int wdt, int hgt);
-	void FillBG(uint32_t dwClr = 0);
+		CSurface *sfcTarget, int tx, int ty, int wdt, int hgt) override;
+	void FillBG(uint32_t dwClr = 0) override;
 
 	// Drawing
-	void DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4);
-	void DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr);
-	void DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwCol);
+	void DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4) override;
+	void DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr) override;
+	void DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwCol) override;
 
 	// Gamma
-	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool fForce);
-	virtual bool SaveDefaultGammaRamp(CStdWindow *pWindow);
+	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool fForce) override;
+	virtual bool SaveDefaultGammaRamp(CStdWindow *pWindow) override;
 
 	// device objects
-	bool RestoreDeviceObjects(); // init/restore device dependent objects
-	bool InvalidateDeviceObjects(); // free device dependent objects
-	void SetTexture();
-	void ResetTexture();
+	bool RestoreDeviceObjects() override; // init/restore device dependent objects
+	bool InvalidateDeviceObjects() override; // free device dependent objects
+	void SetTexture() override;
+	void ResetTexture() override;
 #ifdef _WIN32
-	bool DeviceReady() { return !!MainCtx.hrc; }
+	bool DeviceReady() override { return !!MainCtx.hrc; }
 #elif defined(USE_X11)
-	bool DeviceReady() { return !!MainCtx.ctx; }
+	bool DeviceReady() override { return !!MainCtx.ctx; }
 #else
-	bool DeviceReady() { return true; } // SDL
+	bool DeviceReady() override { return true; } // SDL
 #endif
 
 protected:
-	bool CreatePrimarySurfaces();
-	bool CreateDirectDraw();
+	bool CreatePrimarySurfaces() override;
+	bool CreateDirectDraw() override;
 
 #ifdef USE_X11
 	// Size of gamma ramps

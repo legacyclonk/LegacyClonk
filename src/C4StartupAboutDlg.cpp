@@ -65,7 +65,7 @@ static struct DeveloperList : public PersonList
 
 	DeveloperList(std::initializer_list<Entry> l) : developers(l) { }
 
-	void WriteTo(C4GUI::TextWindow *textbox, CStdFont &font, bool newline = true)
+	void WriteTo(C4GUI::TextWindow *textbox, CStdFont &font, bool newline = true) override
 	{
 		if (!newline)
 		{
@@ -79,7 +79,7 @@ static struct DeveloperList : public PersonList
 		}
 	}
 
-	std::string ToString(bool newline = true, bool with_color = false)
+	std::string ToString(bool newline = true, bool with_color = false) override
 	{
 		const char *opening_tag = with_color ? "<c f7f76f>" : "";
 		const char *closing_tag = with_color ? "</c>" : "";

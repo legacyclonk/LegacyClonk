@@ -33,10 +33,10 @@ public:
 
 protected:
 	// callbacks (will handle everything here)
-	virtual void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO);
+	virtual void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO) override;
 
 public:
-	bool Init(uint16_t iPort = C4NetIO::addr_t::IPPORT_NONE);
+	bool Init(uint16_t iPort = C4NetIO::addr_t::IPPORT_NONE) override;
 	void SetDiscoverable(bool fnEnabled) { fEnabled = fnEnabled; }
 	bool Announce();
 
@@ -57,13 +57,13 @@ public:
 
 protected:
 	// callbacks (will handle everything here)
-	virtual void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO);
+	virtual void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO) override;
 
 public:
 	int getDiscoverCount() const { return iDiscoverCount; }
 
 	void Clear() { iDiscoverCount = 0; }
-	bool Init(uint16_t iPort = C4NetIO::addr_t::IPPORT_NONE);
+	bool Init(uint16_t iPort = C4NetIO::addr_t::IPPORT_NONE) override;
 	bool StartDiscovery();
 	bool PopDiscover(C4NetIO::addr_t &Discover);
 

@@ -155,16 +155,16 @@ public:
 protected:
 	// *** callbacks
 	// C4NetIO-Callbacks
-	virtual bool OnConn(const C4NetIO::addr_t &addr, const C4NetIO::addr_t &AddrConnect, const C4NetIO::addr_t *pOwnAddr, C4NetIO *pNetIO);
-	virtual void OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const char *szReason);
-	virtual void OnPacket(const C4NetIOPacket &rPacket, C4NetIO *pNetIO);
+	virtual bool OnConn(const C4NetIO::addr_t &addr, const C4NetIO::addr_t &AddrConnect, const C4NetIO::addr_t *pOwnAddr, C4NetIO *pNetIO) override;
+	virtual void OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const char *szReason) override;
+	virtual void OnPacket(const C4NetIOPacket &rPacket, C4NetIO *pNetIO) override;
 	// C4NetIOMan
 	virtual void OnError(const char *strError, C4NetIO *pNetIO);
 	// StdSchedulerProc
-	virtual bool Execute(int iTimeout);
-	virtual int GetTimeout();
+	virtual bool Execute(int iTimeout) override;
+	virtual int GetTimeout() override;
 	// Event callback by C4InteractiveThread
-	void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData); // by main thread
+	void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) override; // by main thread
 
 	// connections list
 	void AddConnection(C4Network2IOConnection *pConn); // by both
@@ -334,7 +334,7 @@ public:
 	uint32_t getTravelTime() const;
 	uint32_t getPacketCounter() const { return iPacketCounter; }
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4PacketConn : public C4PacketBase
@@ -355,7 +355,7 @@ public:
 	const C4ClientCore &getCCore() const { return CCore; }
 	const char *getPassword()      const { return Password.getData(); }
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4PacketConnRe : public C4PacketBase
@@ -373,7 +373,7 @@ public:
 	bool isPasswordWrong() const { return fWrongPassword; }
 	const char *getMsg() const { return szMsg.getData(); }
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4PacketFwd : public C4PacketBase
@@ -398,7 +398,7 @@ public:
 	void SetListType(bool fnNegativeList);
 	void AddClient(int32_t iClient);
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4PacketPostMortem : public C4PacketBase
@@ -427,5 +427,5 @@ public:
 	void SetPacketCounter(uint32_t iPacketCounter);
 	void Add(const C4NetIOPacket &rPkt);
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };

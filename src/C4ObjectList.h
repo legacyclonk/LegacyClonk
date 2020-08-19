@@ -166,9 +166,9 @@ public:
 	virtual ~C4NotifyingObjectList() {}
 
 protected:
-	virtual void InsertLinkBefore(C4ObjectLink *pLink, C4ObjectLink *pBefore);
-	virtual void InsertLink(C4ObjectLink *pLink, C4ObjectLink *pAfter);
-	virtual void RemoveLink(C4ObjectLink *pLnk);
+	virtual void InsertLinkBefore(C4ObjectLink *pLink, C4ObjectLink *pBefore) override;
+	virtual void InsertLink(C4ObjectLink *pLink, C4ObjectLink *pAfter) override;
+	virtual void RemoveLink(C4ObjectLink *pLnk) override;
 
 	friend class C4ObjResort;
 };

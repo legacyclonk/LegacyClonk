@@ -48,10 +48,10 @@ private:
 
 protected:
 	// idle proc: Continue download; close when finished
-	virtual void OnIdle();
+	virtual void OnIdle() override;
 
 	// user presses cancel button: Abort download
-	virtual void UserClose(bool fOK);
+	virtual void UserClose(bool fOK) override;
 
 	// downloads the specified file to the specified location. Returns whether successful
 	bool ShowModal(C4GUI::Screen *pScreen, const char *szURL, const char *szSaveAsFilename);

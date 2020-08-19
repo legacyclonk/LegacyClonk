@@ -59,7 +59,7 @@ class C4NetpuncherPacketIDReq : public C4NetpuncherPacket
 public:
 	C4NetpuncherPacketIDReq() = default;
 	C4NetpuncherPacketIDReq(const C4NetIOPacket &pkt) {}
-	C4NetpuncherPacketType GetType() const final { return PID_Puncher_IDReq; }
+	C4NetpuncherPacketType GetType() const override final { return PID_Puncher_IDReq; }
 
 private:
 	StdBuf PackInto() const override { return StdBuf{}; }
@@ -69,7 +69,7 @@ template<C4NetpuncherPacketType Type>
 class C4NetpuncherPacketID : public C4NetpuncherPacket
 {
 public:
-	C4NetpuncherPacketType GetType() const final { return Type; }
+	C4NetpuncherPacketType GetType() const override final { return Type; }
 	CID GetID() const { return id; }
 	virtual ~C4NetpuncherPacketID() = default;
 
@@ -99,7 +99,7 @@ class C4NetpuncherPacketCReq : public C4NetpuncherPacket
 public:
 	explicit C4NetpuncherPacketCReq(const C4NetIOPacket &pkt);
 	explicit C4NetpuncherPacketCReq(const C4NetIO::addr_t &addr) : addr{addr} {};
-	C4NetpuncherPacketType GetType() const final { return PID_Puncher_CReq; }
+	C4NetpuncherPacketType GetType() const override final { return PID_Puncher_CReq; }
 	const C4NetIO::addr_t &GetAddr() { return addr; }
 
 private:

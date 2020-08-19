@@ -110,23 +110,23 @@ public:
 		Scenario(class Folder *pParent) : Entry(pParent), fNoMissionAccess(false), iMinPlrCount(0) {}
 		virtual ~Scenario() {}
 
-		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded); // do fallbacks for title and icon; check whether scenario is valid
-		virtual bool LoadCustomPre(C4Group &rGrp); // load scenario core
-		virtual bool Start(); // launch scenario!
+		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded) override; // do fallbacks for title and icon; check whether scenario is valid
+		virtual bool LoadCustomPre(C4Group &rGrp) override; // load scenario core
+		virtual bool Start() override; // launch scenario!
 
-		virtual bool CanOpen(StdStrBuf &sError); // check mission access, player count, etc.
-		virtual bool HasMissionAccess() const { return !fNoMissionAccess; }; // check mission access only
-		virtual StdStrBuf GetOpenText(); // get open button text
-		virtual StdStrBuf GetOpenTooltip();
+		virtual bool CanOpen(StdStrBuf &sError) override; // check mission access, player count, etc.
+		virtual bool HasMissionAccess() const override { return !fNoMissionAccess; }; // check mission access only
+		virtual StdStrBuf GetOpenText() override; // get open button text
+		virtual StdStrBuf GetOpenTooltip() override;
 		const C4Scenario &GetC4S() const { return C4S; } // get scenario core
 
-		virtual C4SForceFairCrew GetFairCrewAllowed() const { return static_cast<C4SForceFairCrew>(C4S.Head.ForcedFairCrew); }
+		virtual C4SForceFairCrew GetFairCrewAllowed() const override { return static_cast<C4SForceFairCrew>(C4S.Head.ForcedFairCrew); }
 
-		virtual StdStrBuf GetTypeName() { return StdStrBuf(LoadResStr("IDS_TYPE_SCENARIO")); }
+		virtual StdStrBuf GetTypeName() override { return StdStrBuf(LoadResStr("IDS_TYPE_SCENARIO")); }
 
-		virtual const char *GetDefaultExtension() { return "c4s"; }
+		virtual const char *GetDefaultExtension() override { return "c4s"; }
 
-		virtual bool IsScenario() { return true; }
+		virtual bool IsScenario() override { return true; }
 	};
 
 	// scenario folder
@@ -144,7 +144,7 @@ public:
 		Folder(Folder *pParent) : Entry(pParent), fContentsLoaded(false), pFirst(nullptr), pMapData(nullptr) {}
 		virtual ~Folder();
 
-		virtual bool LoadCustomPre(C4Group &rGrp); // load folder core
+		virtual bool LoadCustomPre(C4Group &rGrp) override; // load folder core
 
 		bool LoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf *psFilename, bool fLoadEx, bool fReload); // load folder contents as child if pFromGrp, else directly from filename
 		uint32_t GetEntryCount() const;
@@ -155,15 +155,15 @@ public:
 		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx) = 0; // load folder contents as child if pFromGrp, else directly from filename
 
 	public:
-		virtual bool Start(); // open as subfolder
-		virtual Folder *GetIsFolder() { return this; } // this is a folder
+		virtual bool Start() override; // open as subfolder
+		virtual Folder *GetIsFolder() override { return this; } // this is a folder
 		Entry *GetFirstEntry() const { return pFirst; }
 		void Resort() { Sort(); }
 		Entry *FindEntryByName(const char *szFilename) const; // find entry by filename comparison
 
-		virtual bool CanOpen(StdStrBuf &sError) { return true; } // can always open folders
-		virtual StdStrBuf GetOpenText(); // get open button text
-		virtual StdStrBuf GetOpenTooltip();
+		virtual bool CanOpen(StdStrBuf &sError) override { return true; } // can always open folders
+		virtual StdStrBuf GetOpenText() override; // get open button text
+		virtual StdStrBuf GetOpenTooltip() override;
 		C4MapFolderData *GetMapData() const { return pMapData; }
 	};
 
@@ -174,13 +174,13 @@ public:
 		SubFolder(Folder *pParent) : Folder(pParent) {}
 		virtual ~SubFolder() {}
 
-		virtual const char *GetDefaultExtension() { return "c4f"; }
+		virtual const char *GetDefaultExtension() override { return "c4f"; }
 
-		virtual StdStrBuf GetTypeName() { return StdStrBuf(LoadResStr("IDS_TYPE_FOLDER")); }
+		virtual StdStrBuf GetTypeName() override { return StdStrBuf(LoadResStr("IDS_TYPE_FOLDER")); }
 
 	protected:
-		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded); // load custom data for entry type - icon fallback to folder icon
-		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx); // load folder contents as child if pFromGrp, else directly from filename
+		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded) override; // load custom data for entry type - icon fallback to folder icon
+		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx) override; // load folder contents as child if pFromGrp, else directly from filename
 	};
 
 	// regular, open folder: Read through by directory iterator
@@ -190,11 +190,11 @@ public:
 		RegularFolder(Folder *pParent) : Folder(pParent) {}
 		virtual ~RegularFolder() {}
 
-		virtual StdStrBuf GetTypeName() { return StdStrBuf(LoadResStr("IDS_TYPE_DIRECTORY")); }
+		virtual StdStrBuf GetTypeName() override { return StdStrBuf(LoadResStr("IDS_TYPE_DIRECTORY")); }
 
 	protected:
-		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded); // load custom data for entry type - icon fallback to folder icon
-		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx); // load folder contents as child if pFromGrp, else directly from filename
+		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded) override; // load custom data for entry type - icon fallback to folder icon
+		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx) override; // load folder contents as child if pFromGrp, else directly from filename
 	};
 
 private:
@@ -284,8 +284,8 @@ private:
 		MapPic(const FLOAT_RECT &rcfBounds, const C4Facet &rfct);
 
 	protected:
-		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons - deselect everything if clicked
-		virtual void DrawElement(C4FacetEx &cgo); // draw the image
+		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam) override; // input: mouse movement or buttons - deselect everything if clicked
+		virtual void DrawElement(C4FacetEx &cgo) override; // draw the image
 	};
 
 private:
@@ -353,8 +353,8 @@ public:
 		bool KeyRename();
 
 	protected:
-		virtual void UpdateOwnPos(); // recalculate item positioning
-		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam);
+		virtual void UpdateOwnPos() override; // recalculate item positioning
+		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam) override;
 
 		void Update() {}
 
@@ -362,7 +362,7 @@ public:
 		C4ScenarioListLoader::Entry *GetEntry() const { return pScenListEntry; }
 		ScenListItem *GetNext() { return static_cast<ScenListItem *>(BaseClass::GetNext()); }
 
-		virtual bool CheckNameHotkey(const char *c); // return whether this item can be selected by entering given char
+		virtual bool CheckNameHotkey(const char *c) override; // return whether this item can be selected by entering given char
 	};
 
 public:
@@ -401,13 +401,13 @@ public:
 	static C4StartupScenSelDlg *pInstance; // singleton
 
 protected:
-	virtual int32_t GetMarginTop() { return (rcBounds.Hgt / 7); }
-	virtual bool HasBackground() { return true; }
-	virtual void DrawElement(C4FacetEx &cgo);
+	virtual int32_t GetMarginTop() override { return (rcBounds.Hgt / 7); }
+	virtual bool HasBackground() override { return true; }
+	virtual void DrawElement(C4FacetEx &cgo) override;
 	void HideTitle(bool hide = false);
 
-	virtual bool OnEnter() { DoOK(); return true; }
-	virtual bool OnEscape() { DoBack(true); return true; }
+	virtual bool OnEnter() override { DoOK(); return true; }
+	virtual bool OnEscape() override { DoBack(true); return true; }
 	bool KeyBack() { return DoBack(true); }
 	bool KeyRefresh() { DoRefresh(); return true; }
 	bool KeyForward() { DoOK(); return true; }
@@ -420,8 +420,8 @@ protected:
 
 	void DeleteConfirm(ScenListItem *pSel);
 
-	virtual void OnShown(); // callback when shown: Init file list
-	virtual void OnClosed(bool fOK); // callback when dlg got closed: Return to main screen
+	virtual void OnShown() override; // callback when shown: Init file list
+	virtual void OnClosed(bool fOK) override; // callback when dlg got closed: Return to main screen
 	void OnBackBtn(C4GUI::Control *btn) { DoBack(true); }
 	void OnNextBtn(C4GUI::Control *btn) { DoOK(); }
 	void OnSelChange(class C4GUI::Element *pEl) { UpdateSelection(); }

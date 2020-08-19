@@ -197,7 +197,7 @@ public:
 	void Set(int32_t iClientID, int32_t iCtrlTick, const C4Control &Ctrl);
 	void Add(const C4GameControlPacket &Ctrl);
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4GameControlClient
@@ -245,7 +245,7 @@ protected:
 public:
 	int32_t getCtrlTick() const { return iCtrlTick; }
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4PacketControlPkt : public C4PacketBase
@@ -263,7 +263,7 @@ public:
 	C4ControlDeliveryType getDelivery() const { return eDelivery; }
 	const C4IDPacket &getCtrl() const { return Ctrl; }
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4PacketExecSyncCtrl : public C4PacketBase
@@ -277,7 +277,7 @@ protected:
 public:
 	int32_t getControlTick() const { return iControlTick; }
 
-	virtual void CompileFunc(StdCompiler *pComp) { pComp->Value(mkNamingAdapt(iControlTick, "ControlTick", -1)); }
+	virtual void CompileFunc(StdCompiler *pComp) override { pComp->Value(mkNamingAdapt(iControlTick, "ControlTick", -1)); }
 };
 
 #endif // INC_C4GameControlNetwork

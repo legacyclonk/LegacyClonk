@@ -66,9 +66,9 @@ private:
 		void CreateColoredPortrait();
 		void SetDefaultPortrait();
 
-		virtual void UpdateOwnPos(); // recalculate item positioning
+		virtual void UpdateOwnPos() override; // recalculate item positioning
 		bool KeyCheck() { pCheck->ToggleCheck(true); return true; }
-		virtual bool IsFocusOnClick() { return false; } // do not focus; keep focus on listbox
+		virtual bool IsFocusOnClick() override { return false; } // do not focus; keep focus on listbox
 
 		void SetName(const char *szNewName);
 		void SetIcon(C4GUI::Icons icoNew);
@@ -88,7 +88,7 @@ private:
 		void GrabIcon(C4FacetExSurface &rFromFacet);
 		void GrabPortrait(C4FacetExSurface *pFromFacet);
 
-		virtual bool CheckNameHotkey(const char *c); // return whether this item can be selected by entering given char
+		virtual bool CheckNameHotkey(const char *c) override; // return whether this item can be selected by entering given char
 
 		class LoadError : public StdStrBuf
 		{
@@ -112,15 +112,15 @@ public:
 		void Load(const StdStrBuf &rsFilename); // may throw LoadError
 
 	protected:
-		virtual C4GUI::ContextMenu *ContextMenu();
+		virtual C4GUI::ContextMenu *ContextMenu() override;
 
 	public:
 		const C4PlayerInfoCore &GetCore() const { return Core; }
 		void UpdateCore(C4PlayerInfoCore &NewCore); // Save Core to disk and update this item
 		void GrabCustomIcon(C4FacetExSurface &fctGrabFrom);
-		virtual void SetSelectionInfo(C4GUI::TextWindow *pSelectionInfo);
-		virtual uint32_t GetColorDw() const { return Core.PrefColorDw; }
-		virtual StdStrBuf GetDelWarning();
+		virtual void SetSelectionInfo(C4GUI::TextWindow *pSelectionInfo) override;
+		virtual uint32_t GetColorDw() const override { return Core.PrefColorDw; }
+		virtual StdStrBuf GetDelWarning() override;
 		bool MoveFilename(const char *szToFilename); // change filename to given
 	};
 
@@ -141,7 +141,7 @@ private:
 		void Load(C4Group &rGrp, const StdStrBuf &rsFilename); // may throw LoadError
 
 	protected:
-		virtual C4GUI::ContextMenu *ContextMenu();
+		virtual C4GUI::ContextMenu *ContextMenu() override;
 
 		void RewriteCore();
 
@@ -155,9 +155,9 @@ private:
 	public:
 		void UpdateClonkEnabled();
 
-		virtual uint32_t GetColorDw() const { return dwPlrClr; }; // get drawing color for portrait
-		virtual void SetSelectionInfo(C4GUI::TextWindow *pSelectionInfo); // clears text field and writes selection info text into it
-		virtual StdStrBuf GetDelWarning();
+		virtual uint32_t GetColorDw() const override { return dwPlrClr; }; // get drawing color for portrait
+		virtual void SetSelectionInfo(C4GUI::TextWindow *pSelectionInfo) override; // clears text field and writes selection info text into it
+		virtual StdStrBuf GetDelWarning() override;
 		const C4ObjectInfoCore &GetCore() const { return Core; }
 
 		CrewListItem *GetNext() const { return static_cast<CrewListItem *>(ListItem::GetNext()); }
@@ -218,12 +218,12 @@ protected:
 	friend class C4StartupPlrPropertiesDlg;
 
 protected:
-	virtual int32_t GetMarginTop() { return (rcBounds.Hgt / 7); }
-	virtual bool HasBackground() { return true; }
-	virtual void DrawElement(C4FacetEx &cgo);
+	virtual int32_t GetMarginTop() override { return (rcBounds.Hgt / 7); }
+	virtual bool HasBackground() override { return true; }
+	virtual void DrawElement(C4FacetEx &cgo) override;
 
-	virtual bool OnEnter() { return false; } // Enter ignored
-	virtual bool OnEscape() { DoBack(); return true; }
+	virtual bool OnEnter() override { return false; } // Enter ignored
+	virtual bool OnEscape() override { DoBack(); return true; }
 	bool KeyBack()          { DoBack(); return true; }
 	bool KeyProperties() { OnPropertyBtn(nullptr); return true; }
 	bool KeyCrew()       { OnCrewBtn    (nullptr); return true; }
@@ -259,16 +259,16 @@ protected:
 	C4FacetExSurface fctOldBigIcon;
 	C4FacetExSurface fctNewPicture, fctNewBigIcon; // if assigned, save new picture/bigicon
 	bool fClearPicture, fClearBigIcon; // if true, delete current picture/bigicon
-	virtual const char *GetID() { return "PlrPropertiesDlg"; }
+	virtual const char *GetID() override { return "PlrPropertiesDlg"; }
 
-	void DrawElement(C4FacetEx &cgo);
-	virtual int32_t GetMarginTop()    { return 16; }
-	virtual int32_t GetMarginLeft()   { return 45; }
-	virtual int32_t GetMarginRight()  { return 55; }
-	virtual int32_t GetMarginBottom() { return 30; }
+	void DrawElement(C4FacetEx &cgo) override;
+	virtual int32_t GetMarginTop() override    { return 16; }
+	virtual int32_t GetMarginLeft() override   { return 45; }
+	virtual int32_t GetMarginRight() override  { return 55; }
+	virtual int32_t GetMarginBottom() override { return 30; }
 
-	virtual void UserClose(bool fOK); // OK only with a valid name
-	virtual bool IsComponentOutsideClientArea() { return true; } // OK and close btn
+	virtual void UserClose(bool fOK) override; // OK only with a valid name
+	virtual bool IsComponentOutsideClientArea() override { return true; } // OK and close btn
 
 	void OnClrChangeLeft(C4GUI::Control *pBtn);
 	void OnClrChangeRight(C4GUI::Control *pBtn);
@@ -294,5 +294,5 @@ public:
 	C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerListItem *pForPlayer, C4StartupPlrSelDlg *pMainDlg);
 	~C4StartupPlrPropertiesDlg() {}
 
-	virtual void OnClosed(bool fOK); // close CB
+	virtual void OnClosed(bool fOK) override; // close CB
 };

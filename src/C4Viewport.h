@@ -41,7 +41,7 @@ public:
 #ifdef _WIN32
 	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool);
 #elif defined(WITH_DEVELOPER_MODE)
-	virtual GtkWidget *InitGUI();
+	virtual GtkWidget *InitGUI() override;
 
 	static gboolean OnKeyPressStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 	static gboolean OnKeyReleaseStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
@@ -63,9 +63,9 @@ public:
 	GtkWidget *v_scrollbar;
 	GtkWidget *drawing_area;
 #elif defined(USE_X11) && !defined(WITH_DEVELOPER_MODE)
-	virtual void HandleMessage(XEvent &);
+	virtual void HandleMessage(XEvent &) override;
 #endif
-	virtual void Close();
+	virtual void Close() override;
 };
 
 class C4Viewport

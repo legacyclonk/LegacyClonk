@@ -62,7 +62,7 @@ private:
 	T *pCallback;
 
 protected:
-	virtual void OnSec1Timer() { pCallback->OnSec1Timer(); }
+	virtual void OnSec1Timer() override { pCallback->OnSec1Timer(); }
 
 public:
 	C4Sec1TimerCallback(T *pCB) : pCallback(pCB) {}
@@ -104,11 +104,11 @@ public:
 	// Tick timing
 	unsigned int iLastGameTick, iGameTickDelay, iExtraGameTickDelay;
 	class CStdDDraw *DDraw;
-	virtual int32_t &ScreenWidth() { return Config.Graphics.ResX; }
-	virtual int32_t &ScreenHeight() { return Config.Graphics.ResY; }
-	virtual float GetScale() { return Config.Graphics.Scale / 100.0f; }
-	void Clear();
-	void Execute();
+	virtual int32_t &ScreenWidth() override { return Config.Graphics.ResX; }
+	virtual int32_t &ScreenHeight() override { return Config.Graphics.ResY; }
+	virtual float GetScale() override { return Config.Graphics.Scale / 100.0f; }
+	void Clear() override;
+	void Execute() override;
 	// System.c4g helper funcs
 	bool OpenSystemGroup() { return SystemGroup.IsOpen() || SystemGroup.Open(C4CFN_System); }
 	void DoSec1Timers();
@@ -120,19 +120,19 @@ protected:
 	enum State { C4AS_None, C4AS_PreInit, C4AS_Startup, C4AS_StartGame, C4AS_Game, C4AS_Quit, } AppState;
 
 protected:
-	virtual bool DoInit();
+	virtual bool DoInit() override;
 	bool OpenGame();
 	bool PreInit();
-	virtual void OnNetworkEvents();
+	virtual void OnNetworkEvents() override;
 	static bool ProcessCallback(const char *szMessage, int iProcess);
 	C4Sec1TimerCallbackBase *pSec1TimerCallback;
 
 	friend class C4Sec1TimerCallbackBase;
 
-	virtual void OnCommand(const char *szCmd);
+	virtual void OnCommand(const char *szCmd) override;
 
 public:
-	virtual void Quit();
+	virtual void Quit() override;
 	void QuitGame(); // quit game only, but restart application if in fullscreen startup menu mode
 	void Activate(); // activate app to gain full focus in OS
 	void SetNextMission(const char *szMissionFilename);

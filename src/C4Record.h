@@ -243,7 +243,7 @@ public:
 	size_t getSize() const { return Data.getSize(); }
 	const void *getData() const { return Data.getData(); }
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4Record // demo recording

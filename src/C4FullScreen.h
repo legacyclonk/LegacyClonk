@@ -33,18 +33,18 @@ public:
 	~C4FullScreen();
 	void Execute();
 	bool ViewportCheck();
-	void Sec1Timer() { Game.Sec1Timer(); Application.DoSec1Timers(); }
+	void Sec1Timer() override { Game.Sec1Timer(); Application.DoSec1Timers(); }
 	bool ShowAbortDlg(); // show game abort dialog (Escape pressed)
 	bool ActivateMenuMain();
 	void CloseMenu();
 	bool MenuKeyControl(uint8_t byCom); // direct keyboard callback
 	// User requests close
-	virtual void Close();
-	virtual void CharIn(const char *c);
+	virtual void Close() override;
+	virtual void CharIn(const char *c) override;
 #ifdef USE_X11
-	virtual void HandleMessage(XEvent &e);
+	virtual void HandleMessage(XEvent &e) override;
 #elif USE_SDL_MAINLOOP
-	virtual void HandleMessage(SDL_Event &e);
+	virtual void HandleMessage(SDL_Event &e) override;
 #endif
 };
 

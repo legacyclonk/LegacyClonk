@@ -250,7 +250,7 @@ public:
 	void Clear();
 	void Default();
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 // list of identified packets
@@ -278,5 +278,5 @@ public:
 	void Remove(C4IDPacket *pPkt);
 	void Delete(C4IDPacket *pPkt);
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };

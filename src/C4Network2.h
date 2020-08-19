@@ -106,7 +106,7 @@ public:
 	void Clear();
 
 	void CompileFunc(StdCompiler *pComp, bool fReference);
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4Network2
@@ -388,11 +388,11 @@ public:
 	int32_t getVoteData() const { return iVoteData; }
 
 private:
-	virtual bool OnEnter() { UserClose(false); return true; } // the vote dialog defaults to "No" [MarkFra]
-	virtual void OnClosed(bool fOK);
+	virtual bool OnEnter() override { UserClose(false); return true; } // the vote dialog defaults to "No" [MarkFra]
+	virtual void OnClosed(bool fOK) override;
 
 	// true for dialogs that receive full keyboard and mouse input even in shared mode
-	virtual bool IsExclusiveDialog() { return true; }
+	virtual bool IsExclusiveDialog() override { return true; }
 };
 
 // Packets
@@ -430,7 +430,7 @@ public:
 	void SetDynamicCore(const C4Network2ResCore &Core) { Dynamic = Core; }
 	void SetStartCtrlTick(int32_t iTick)               { iStartCtrlTick = iTick; }
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };
 
 class C4PacketActivateReq : public C4PacketBase
@@ -444,5 +444,5 @@ protected:
 public:
 	int32_t getTick() const { return iTick; }
 
-	virtual void CompileFunc(StdCompiler *pComp);
+	virtual void CompileFunc(StdCompiler *pComp) override;
 };

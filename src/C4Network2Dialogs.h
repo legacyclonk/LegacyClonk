@@ -33,9 +33,9 @@ protected:
 	int iClientID; // ID of client info is shown about
 
 protected:
-	virtual void UpdateText(); // compose message text
+	virtual void UpdateText() override; // compose message text
 
-	virtual const char *GetID() { return "ClientDialog"; }
+	virtual const char *GetID() override { return "ClientDialog"; }
 
 public:
 	C4Network2ClientDlg(int iForClientID);
@@ -127,7 +127,7 @@ private:
 	public:
 		ClientListItem(class C4Network2ClientListBox *pForDlg, int iClientID);
 
-		virtual void Update(); // update data
+		virtual void Update() override; // update data
 		C4Client *GetClient() const; // get client by associated ID
 
 		void OnButtonToggleMute(C4GUI::Control *pButton);
@@ -152,9 +152,9 @@ private:
 	public:
 		ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, int32_t iConnectionID);
 
-		virtual void Update(); // update data
+		virtual void Update() override; // update data
 		C4Network2IOConnection *GetConnection() const; // get connection by connection ID
-		virtual int32_t GetConnectionID() const { return iConnID; }
+		virtual int32_t GetConnectionID() const override { return iConnID; }
 
 		void OnButtonMute(C4GUI::Control *pButton);
 		void OnButtonDisconnect(C4GUI::Control *pButton);
@@ -187,7 +187,7 @@ private:
 
 	static C4Network2ClientListDlg *pInstance; // singleton-instance
 
-	virtual const char *GetID() { return "ClientListDialog"; }
+	virtual const char *GetID() override { return "ClientListDialog"; }
 
 public:
 	C4Network2ClientListDlg();
@@ -208,7 +208,7 @@ private:
 	enum { DialogWidth = 250, DialogHeight = 300, DialogWidthLarge = 500, DialogHeightLarge = 600 };
 
 protected:
-	virtual const char *GetID() { return "NetStartWaitDialog"; }
+	virtual const char *GetID() override { return "NetStartWaitDialog"; }
 
 public:
 	C4Network2StartWaitDlg();
@@ -252,7 +252,7 @@ protected:
 	const C4Graph *pDisplayGraph;
 	bool fOwnGraph;
 
-	virtual void DrawElement(C4FacetEx &cgo); // draw the chart
+	virtual void DrawElement(C4FacetEx &cgo) override; // draw the chart
 
 public:
 	C4Chart(C4Rect &rcBounds);
@@ -276,7 +276,7 @@ private:
 	void AddChart(const StdStrBuf &rszName);
 
 protected:
-	virtual const char *GetID() { return "ChartDialog"; }
+	virtual const char *GetID() override { return "ChartDialog"; }
 
 public:
 	C4ChartDialog();

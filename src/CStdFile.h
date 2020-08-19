@@ -58,12 +58,12 @@ public:
 	bool Append(const char *szFilename); // append (uncompressed only)
 	bool Close();
 	bool Default();
-	bool Read(void *pBuffer, size_t iSize) { return Read(pBuffer, iSize, 0); }
+	bool Read(void *pBuffer, size_t iSize) override { return Read(pBuffer, iSize, 0); }
 	bool Read(void *pBuffer, size_t iSize, size_t *ipFSize);
 	bool Write(const void *pBuffer, int iSize);
 	bool WriteString(const char *szStr);
 	bool Rewind();
-	bool Advance(int iOffset);
+	bool Advance(int iOffset) override;
 	// Single line commands
 	bool Load(const char *szFileName, uint8_t **lpbpBuf,
 		int *ipSize = nullptr, int iAppendZeros = 0,
@@ -73,7 +73,7 @@ public:
 		bool fCompressed = false);
 	// flush contents to disk
 	inline bool Flush() { if (ModeWrite && BufferLoad) return SaveBuffer(); else return true; }
-	int AccessedEntrySize();
+	int AccessedEntrySize() override;
 
 protected:
 	void ClearBuffer();
