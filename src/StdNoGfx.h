@@ -29,8 +29,6 @@ public:
 
 public:
 	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) override { return true; }
-	virtual bool BeginScene() { return true; }
-	virtual void EndScene() {}
 	virtual int GetEngine() override { return GFXENGN_NOGFX; }
 	virtual bool UpdateClipper() override { return true; }
 	virtual bool OnResolutionChanged() override { return true; }
