@@ -153,7 +153,7 @@ bool C4ParticleDef::Load(C4Group &rGrp)
 		// if phase num is 1, no reverse is allowed
 		if (Length == 1) Reverse = 0;
 		// calc aspect
-		Aspect = (float)Gfx.Wdt / Gfx.Hgt;
+		Aspect = static_cast<float>(Gfx.Wdt) / Gfx.Hgt;
 		// get proc pointers
 		if (!(InitProc = ParticleSystem.GetProc(InitFn.getData())))
 		{
@@ -425,7 +425,7 @@ bool C4ParticleSystem::Cast(C4ParticleDef *pOfDef, int32_t iAmount,
 	// safety
 	if (!pOfDef) return false;
 	// get range for a and b
-	int32_t iA0 = (int32_t)(a0 * 100), iA1 = (int32_t)(a1 * 100);
+	int32_t iA0 = static_cast<int32_t>(a0 * 100), iA1 = static_cast<int32_t>(a1 * 100);
 	if (iA1 < iA0) std::swap(iA0, iA1);
 	int32_t iAd = iA1 - iA0 + 1;
 	if (b1 < b0) { uint32_t dwX = b0; b0 = b1; b1 = dwX; }
@@ -434,9 +434,9 @@ bool C4ParticleSystem::Cast(C4ParticleDef *pOfDef, int32_t iAmount,
 	// create them
 	for (int32_t i = iAmount; i > 0; --i)
 		Create(pOfDef, x, y,
-		(float)(SafeRandom(level + 1) - level / 2) / 10.0f,
-			(float)(SafeRandom(level + 1) - level / 2) / 10.0f,
-			(float)(iA0 + SafeRandom(iAd)) / 100.0f,
+		static_cast<int32_t>(SafeRandom(level + 1) - level / 2) / 10.0f,
+			static_cast<int32_t>(SafeRandom(level + 1) - level / 2) / 10.0f,
+			static_cast<int32_t>(iA0 + SafeRandom(iAd)) / 100.0f,
 			b0 + (SafeRandom(db1) << 24) + (SafeRandom(db2) << 16) + (SafeRandom(db3) << 8) + SafeRandom(db4), pPxList, pObj);
 	// success
 	return true;
@@ -527,7 +527,7 @@ bool fxSmokeInit(C4Particle *pPrt, C4Object *pTarget)
 	// use high-word of life to store init-status
 	pPrt->life |= (pPrt->life / 17) << 16;
 	// set kind - ydir is unused anyway; set last kind reeeaaally seldom
-	pPrt->ydir = (float)SafeRandom(15) + SafeRandom(300) / 299;
+	pPrt->ydir = static_cast<float>(SafeRandom(15)) + SafeRandom(300) / 299;
 	// set color
 	if (!pPrt->b) pPrt->b = 0xff4b4b4b; else pPrt->b |= 0xff000000;
 	// always OK
@@ -588,7 +588,7 @@ void fxSmokeDraw(C4Particle *pPrt, C4FacetEx &cgo, C4Object *pTarget)
 	int32_t cx = int32_t(pPrt->x) + cgo.X - tx;
 	int32_t cy = int32_t(pPrt->y) + cgo.Y - ty;
 	// get phase by particle index
-	int32_t i = (int32_t)pPrt->ydir;
+	int32_t i = static_cast<int32_t>(pPrt->ydir);
 	int32_t ipx = i / 4;
 	int32_t ipy = i % 4;
 	// draw at pos
@@ -768,9 +768,9 @@ void fxStdDraw(C4Particle *pPrt, C4FacetEx &cgo, C4Object *pTarget)
 		// get rotation
 		int32_t r = 0;
 		if ((pDef->RByV == 1) || (pDef->RByV == 2)) // rotation by direction
-			r = Angle(0, 0, (int32_t)(dxdir * 10.0f), (int32_t)(dydir * 10.0f)) * 100;
+			r = Angle(0, 0, static_cast<int32_t>(dxdir * 10.0f), static_cast<int32_t>(dydir * 10.0f)) * 100;
 		if (pDef->RByV == 3) // random rotation - currently a pseudo random rotation by x/y position
-			r = (((int32_t)(pPrt->x * 23 + pPrt->y * 12)) % 360) * 100;
+			r = (static_cast<int32_t>(pPrt->x * 23 + pPrt->y * 12) % 360) * 100;
 		// draw at pos
 		Application.DDraw->ActivateBlitModulation(pPrt->b);
 		Application.DDraw->StorePrimaryClipper();

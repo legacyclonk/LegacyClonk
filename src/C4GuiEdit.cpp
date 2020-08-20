@@ -498,7 +498,7 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 bool Edit::CharIn(const char *c)
 {
 	// no control codes
-	if (((unsigned char)(c[0])) < ' ' || c[0] == 0x7f) return false;
+	if (static_cast<unsigned char>(c[0]) < ' ' || c[0] == 0x7f) return false;
 	// no '|'
 	if (c[0] == '|') return false;
 	// all extended characters are OK

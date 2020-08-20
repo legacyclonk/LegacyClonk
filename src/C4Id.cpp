@@ -33,7 +33,7 @@ C4ID C4Id(const char *szId)
 	if (SEqual(szId, "NONE"))
 		return 0;
 	// Literal id
-	return (((uint32_t)szId[3]) << 24) + (((uint32_t)szId[2]) << 16) + (((uint32_t)szId[1]) << 8) + ((uint32_t)szId[0]);
+	return (static_cast<uint32_t>(szId[3]) << 24) + (static_cast<uint32_t>(szId[2]) << 16) + (static_cast<uint32_t>(szId[1]) << 8) + static_cast<uint32_t>(szId[0]);
 }
 
 static char C4IdTextBuffer[5];
@@ -51,17 +51,17 @@ void GetC4IdText(C4ID id, char *sBuf)
 	// No id
 	if (id == C4ID_None) { SCopy("NONE", sBuf); return; }
 	// Numerical id
-	if (Inside((int)id, 0, 9999))
+	if (Inside(static_cast<int>(id), 0, 9999))
 	{
 		osprintf(sBuf, "%04i", static_cast<unsigned int>(id));
 	}
 	// Literal id
 	else
 	{
-		sBuf[0] = (char)((id & 0x000000FF) >> 0);
-		sBuf[1] = (char)((id & 0x0000FF00) >> 8);
-		sBuf[2] = (char)((id & 0x00FF0000) >> 16);
-		sBuf[3] = (char)((id & 0xFF000000) >> 24);
+		sBuf[0] = static_cast<char>((id & 0x000000FF) >> 0);
+		sBuf[1] = static_cast<char>((id & 0x0000FF00) >> 8);
+		sBuf[2] = static_cast<char>((id & 0x00FF0000) >> 16);
+		sBuf[3] = static_cast<char>((id & 0xFF000000) >> 24);
 		sBuf[4] = 0;
 	}
 }
@@ -79,11 +79,11 @@ bool LooksLikeID(const char *szText)
 bool LooksLikeID(C4ID id)
 {
 	// don't allow 0000, since this may indicate error
-	if (Inside((int)id, 1, 9999)) return true;
+	if (Inside(static_cast<int>(id), 1, 9999)) return true;
 	for (int cnt = 0; cnt < 4; cnt++)
 	{
-		uint8_t b = (uint8_t)id & 0xFF;
-		if (!(Inside((char)b, 'A', 'Z') || Inside((char)b, '0', '9') || (b == '_'))) return false;
+		char b = static_cast<char>(id & 0xFF);
+		if (!(Inside(b, 'A', 'Z') || Inside(b, '0', '9') || (b == '_'))) return false;
 		id >>= 8;
 	}
 	return true;

@@ -130,13 +130,13 @@ bool C4UpdateDlg::DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *p
 	if (!IsValidUpdate(rUpdateVersion)) return false;
 	// Objects major update: we will update to the first minor of the next major version - we can not skip major versions or jump directly to a higher minor of the next major version.
 	if (rUpdateVersion.iVer[2] > C4XVER3)
-		strUpdateFile.Format(C4CFG_UpdateMajor, (int)rUpdateVersion.iVer[0], (int)rUpdateVersion.iVer[1], C4XVER3 + 1, 0, C4_OS);
+		strUpdateFile.Format(C4CFG_UpdateMajor, static_cast<int>(rUpdateVersion.iVer[0]), static_cast<int>(rUpdateVersion.iVer[1]), C4XVER3 + 1, 0, C4_OS);
 	// Objects version match: engine update only
 	else if ((rUpdateVersion.iVer[2] == C4XVER3) && (rUpdateVersion.iVer[3] == C4XVER4))
-		strUpdateFile.Format(C4CFG_UpdateEngine, (int)rUpdateVersion.iBuild, C4_OS);
+		strUpdateFile.Format(C4CFG_UpdateEngine, static_cast<int>(rUpdateVersion.iBuild), C4_OS);
 	// Objects version mismatch: full objects update
 	else
-		strUpdateFile.Format(C4CFG_UpdateObjects, (int)rUpdateVersion.iVer[0], (int)rUpdateVersion.iVer[1], (int)rUpdateVersion.iVer[2], (int)rUpdateVersion.iVer[3], (int)rUpdateVersion.iBuild, C4_OS);
+		strUpdateFile.Format(C4CFG_UpdateObjects, static_cast<int>(rUpdateVersion.iVer[0]), static_cast<int>(rUpdateVersion.iVer[1]), static_cast<int>(rUpdateVersion.iVer[2]), static_cast<int>(rUpdateVersion.iVer[3]), static_cast<int>(rUpdateVersion.iBuild), C4_OS);
 	// Compose full update URL by using update server address and replacing last path element name with the update file
 	int iLastElement = SCharLastPos('/', Config.Network.UpdateServerAddress);
 	if (iLastElement > -1)

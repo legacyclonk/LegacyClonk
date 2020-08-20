@@ -357,7 +357,7 @@ bool CSurface::Read(CStdStream &hGroup, bool fOwnPal)
 	// is it 8bpp?
 	if (BitmapInfo.Info.biBitCount == 8)
 	{
-		if (!hGroup.Read(((uint8_t *)&BitmapInfo) + sizeof(CBitmapInfo),
+		if (!hGroup.Read((reinterpret_cast<uint8_t *>(&BitmapInfo)) + sizeof(CBitmapInfo),
 			(std::min)(sizeof(BitmapInfo) - sizeof(CBitmapInfo), sizeof(BitmapInfo) - sizeof(CBitmapInfo) + BitmapInfo.FileBitsOffset())))
 			return false;
 		if (!hGroup.Advance(BitmapInfo.FileBitsOffset())) return false;
@@ -366,7 +366,7 @@ bool CSurface::Read(CStdStream &hGroup, bool fOwnPal)
 	{
 		// read 24bpp
 		if (BitmapInfo.Info.biBitCount != 24) return false;
-		if (!hGroup.Advance(((CBitmapInfo)BitmapInfo).FileBitsOffset())) return false;
+		if (!hGroup.Advance((static_cast<CBitmapInfo>(BitmapInfo)).FileBitsOffset())) return false;
 	}
 
 	// Create and lock surface
@@ -612,7 +612,7 @@ uint32_t CSurface::GetPixDw(int iX, int iY, bool fApplyModulation, float scale)
 				glReadPixels(0, 0, wdt, hgt, GL_BGR, GL_UNSIGNED_BYTE, PrimarySurfaceLockBits);
 				PrimarySurfaceLockPitch = wdt * 3;
 			}
-			return *(uint32_t *)(PrimarySurfaceLockBits + (hgt - iY - 1) * PrimarySurfaceLockPitch + iX * 3);
+			return *reinterpret_cast<uint32_t *>(PrimarySurfaceLockBits + (hgt - iY - 1) * PrimarySurfaceLockPitch + iX * 3);
 		}
 #endif
 	}
@@ -622,11 +622,11 @@ uint32_t CSurface::GetPixDw(int iX, int iY, bool fApplyModulation, float scale)
 		if (!ppTex) return 0;
 		CTexRef *pTexRef;
 		if (!GetLockTexAt(&pTexRef, iX, iY)) return 0;
-		pBuf = (uint8_t *)pTexRef->texLock.pBits;
+		pBuf = reinterpret_cast<uint8_t *>(pTexRef->texLock.pBits);
 		iPitch = pTexRef->texLock.Pitch;
 	}
 	// get pix of surface
-	uint32_t dwPix = *(uint32_t *)(pBuf + iY * iPitch + iX * 4);
+	uint32_t dwPix = *reinterpret_cast<uint32_t *>(pBuf + iY * iPitch + iX * 4);
 	// this is a ColorByOwner-surface?
 	if (pMainSfc)
 	{
@@ -703,7 +703,7 @@ bool CSurface::BltPix(int iX, int iY, CSurface *sfcSource, int iSrcX, int iSrcY,
 	CTexRef *pTexRef;
 	if (!GetLockTexAt(&pTexRef, iX, iY)) return false;
 
-	uint32_t *pPix = (uint32_t *)(((uint8_t *)pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch + iX * 4);
+	uint32_t *pPix = reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch + iX * 4);
 	// get source pix as dword
 	uint32_t srcPix = sfcSource->GetPixDw(iSrcX, iSrcY, true);
 	// merge
@@ -784,7 +784,7 @@ bool CSurface::CopyBytes(uint8_t *pImageData)
 		{
 			pTex = *ppCurrTex++;
 			if (!pTex->Lock()) return false;
-			uint8_t *pTarget = (uint8_t *)pTex->texLock.pBits;
+			uint8_t *pTarget = reinterpret_cast<uint8_t *>(pTex->texLock.pBits);
 			int iCpyNum = (std::min)(pTex->iSize, Wdt - iXImgPos) * 4;
 			int iYMax = (std::min)(pTex->iSize, Hgt - iLineTotal);
 			for (int iLine = 0; iLine < iYMax; ++iLine)

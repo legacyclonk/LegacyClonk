@@ -141,8 +141,8 @@ bool C4FileMonitor::Execute(int iTimeout) // some other thread
 	char buf[sizeof(inotify_event) + _MAX_FNAME + 1];
 	if (read(fd, buf, sizeof(buf)) > 0)
 	{
-		const char *file = watch_descriptors[(*(inotify_event *)buf).wd];
-		uint32_t mask = (*(inotify_event *)buf).mask;
+		const char *file = watch_descriptors[reinterpret_cast<inotify_event *>(buf)->wd];
+		uint32_t mask = reinterpret_cast<inotify_event *>(buf)->mask;
 		C4InteractiveThread &Thread = Application.InteractiveThread;
 
 		if (mask & IN_CREATE || mask & IN_MODIFY || mask & IN_MOVED_TO || mask & IN_MOVE_SELF)

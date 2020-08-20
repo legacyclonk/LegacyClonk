@@ -171,7 +171,7 @@ void C4Facet::DrawXR(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, 
 #ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 	CBltTransform rot;
-	rot.SetRotate(r, (float)(iX + iX + iWdt) / 2, (float)(iY + iY + iHgt) / 2);
+	rot.SetRotate(r, (iX + iX + iWdt) / 2.f, (iY + iY + iHgt) / 2.f);
 	lpDDraw->Blit(Surface,
 		float(X + Wdt * iSectionX), float(Y + Hgt * iSectionY), float(Wdt), float(Hgt),
 		sfcTarget,
@@ -324,7 +324,7 @@ void C4Facet::DrawXFloat(CSurface *sfcTarget, float fX, float fY, float fWdt, fl
 	// Since only source coordinates are available as floats for blitting, go inwards into this facet to match blit
 	// for closest integer target coordinates
 	float zx = fWdt / float(Wdt), zy = fHgt / float(Hgt);
-	int32_t iX = (int32_t)ceilf(fX), iY = (int32_t)ceilf(fY), iX2 = (int32_t)floorf(fX + fWdt), iY2 = (int32_t)floorf(fY + fHgt);
+	int32_t iX = static_cast<int32_t>(ceilf(fX)), iY = static_cast<int32_t>(ceilf(fY)), iX2 = static_cast<int32_t>(floorf(fX + fWdt)), iY2 = static_cast<int32_t>(floorf(fY + fHgt));
 	float ox = (-fX + iX) / zx, oy = (-fY + iY) / zy;
 	float oxs = (+fX + fWdt - iX2) / zx, oys = (+fY + fHgt - iY2) / zy;
 	lpDDraw->Blit(Surface,

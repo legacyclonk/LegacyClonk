@@ -43,7 +43,7 @@ int DoNoDebugRec = 0; // debugrec disable counter
 
 void AddDbgRec(C4RecordChunkType eType, const void *pData, int iSize)
 {
-	Game.Control.DbgRec(eType, (const uint8_t *)pData, iSize);
+	Game.Control.DbgRec(eType, static_cast<const uint8_t *>(pData), iSize);
 }
 
 #endif
@@ -407,7 +407,7 @@ bool C4Playback::Open(C4Group &rGrp)
 		if (fLoadSequential)
 		{
 			if (!rGrp.FindEntry(C4CFN_CtrlRec)) return false;
-			if (!playbackFile.Open(FormatString("%s%c%s", rGrp.GetFullName().getData(), (char)DirectorySeparator, (const char *)C4CFN_CtrlRec).getData())) return false;
+			if (!playbackFile.Open(FormatString("%s%c%s", rGrp.GetFullName().getData(), DirectorySeparator, C4CFN_CtrlRec).getData())) return false;
 			// forcing first chunk to be read; will call ReadBinary
 			currChunk = chunks.end();
 			if (!NextSequentialChunk())
@@ -933,7 +933,7 @@ StdStrBuf GetDbgRecPktData(C4RecordChunkType eType, const StdBuf &RawData)
 		break;
 	default:
 		for (std::size_t i = 0; i < RawData.getSize(); ++i)
-			r.AppendFormat("%02x ", (uint32_t)((uint8_t *)RawData.getData())[i]);
+			r.AppendFormat("%02x ", static_cast<uint32_t>(reinterpret_cast<const uint8_t *>(RawData.getData())[i]));
 		break;
 	}
 	return r;
@@ -1022,7 +1022,7 @@ void C4Playback::Check(C4RecordChunkType eType, const uint8_t *pData, int iSize)
 	}
 	if (PktInReplay.getSize() != iSize)
 	{
-		DebugRecError(FormatString("Size %d != %d", (int)PktInReplay.getSize(), (int)iSize).getData());
+		DebugRecError(FormatString("Size %d != %d", static_cast<int>(PktInReplay.getSize()), static_cast<int>(iSize)).getData());
 	}
 	// check packet data
 	if (memcmp(PktInReplay.getData(), pData, iSize))

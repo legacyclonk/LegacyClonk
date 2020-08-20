@@ -32,6 +32,10 @@
 #include <X11/extensions/xf86vmode.h>
 #endif
 
+#ifdef WITH_GLIB
+#include <glib.h>
+#endif
+
 #include <string>
 #include <map>
 #include <sstream>
@@ -39,10 +43,6 @@
 #include <time.h>
 #include <errno.h>
 #include <unistd.h>
-
-#ifdef WITH_GLIB
-#include <glib.h>
-#endif
 
 #include "StdXPrivate.h"
 
@@ -88,7 +88,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 		PointerMotionMask |
 		ButtonPressMask |
 		ButtonReleaseMask;
-	attr.colormap = XCreateColormap(dpy, DefaultRootWindow(dpy), ((XVisualInfo *)Info)->visual, AllocNone);
+	attr.colormap = XCreateColormap(dpy, DefaultRootWindow(dpy), static_cast<XVisualInfo *>(Info)->visual, AllocNone);
 	unsigned long attrmask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 	Pixmap bitmap;
 	if (HideCursor)
@@ -102,7 +102,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	}
 
 	wnd = XCreateWindow(dpy, DefaultRootWindow(dpy),
-		0, 0, 640, 480, 0, ((XVisualInfo *)Info)->depth, InputOutput, ((XVisualInfo *)Info)->visual,
+		0, 0, 640, 480, 0, static_cast<XVisualInfo *>(Info)->depth, InputOutput, static_cast<XVisualInfo *>(Info)->visual,
 		attrmask, &attr);
 	if (HideCursor)
 	{

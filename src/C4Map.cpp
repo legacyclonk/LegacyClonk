@@ -89,33 +89,33 @@ void C4MapCreator::Create(CSurface8 *sfcMap,
 
 	// Surface
 	ccol = rTexMap.GetIndexMatTex(rLScape.Material, "Smooth") + MapIFT;
-	float amplitude = (float)rLScape.Amplitude.Evaluate();
-	float phase = (float)rLScape.Phase.Evaluate();
-	float period = (float)rLScape.Period.Evaluate();
+	float amplitude = static_cast<float>(rLScape.Amplitude.Evaluate());
+	float phase = static_cast<float>(rLScape.Phase.Evaluate());
+	float period = static_cast<float>(rLScape.Period.Evaluate());
 	if (rLScape.MapPlayerExtend) period *= (std::min)(iPlayerNum, C4S_MaxMapPlayerExtend);
-	float natural = (float)rLScape.Random.Evaluate();
+	float natural = static_cast<float>(rLScape.Random.Evaluate());
 	int32_t level0 = (std::min)(MapWdt, MapHgt) / 2;
 	int32_t maxrange = level0 * 3 / 4;
 	double cy_curve, cy_natural; // -1.0 - +1.0 !
 
 	double rnd_cy, rnd_tend; // -1.0 - +1.0 !
-	rnd_cy = (double)(Random(2000 + 1) - 1000) / 1000.0;
-	rnd_tend = (double)(Random(200 + 1) - 100) / 20000.0;
+	rnd_cy = (Random(2000 + 1) - 1000) / 1000.0;
+	rnd_tend = (Random(200 + 1) - 100) / 20000.0;
 
 	for (cx = 0; cx < MapWdt; cx++)
 	{
 		rnd_cy += rnd_tend;
-		rnd_tend += (double)(Random(100 + 1) - 50) / 10000;
+		rnd_tend += (Random(100 + 1) - 50) / 10000.0;
 		if (rnd_tend > +0.05) rnd_tend = +0.05;
 		if (rnd_tend < -0.05) rnd_tend = -0.05;
 		if (rnd_cy < -0.5) rnd_tend += 0.01;
 		if (rnd_cy > +0.5) rnd_tend -= 0.01;
 
 		cy_natural = rnd_cy * natural / 100.0;
-		cy_curve = sin(fullperiod * period / 100.0 * (float)cx / (float)MapWdt +
+		cy_curve = sin(fullperiod * period / 100.0 * cx / static_cast<double>(MapWdt) +
 			2.0 * M_PI * phase / 100.0) * amplitude / 100.0;
 
-		cy = level0 + BoundBy((int32_t)((float)maxrange * (cy_curve + cy_natural)),
+		cy = level0 + BoundBy(static_cast<int32_t>(maxrange * (cy_curve + cy_natural)),
 			-maxrange, +maxrange);
 
 		SetPix(cx, cy, ccol);

@@ -74,7 +74,7 @@ C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :
 	}
 
 	// store name
-	SCopy(pName, (char *)&Name, C4AUL_MAX_Identifier);
+	SCopy(pName, Name, C4AUL_MAX_Identifier);
 	// add to global lookuptable with this name
 	Owner->Engine->FuncLookUp.Add(this, bAtEnd);
 }

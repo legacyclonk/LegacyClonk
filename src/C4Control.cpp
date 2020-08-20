@@ -28,6 +28,8 @@
 #include <C4Wrappers.h>
 #include <C4Player.h>
 
+#include <cinttypes>
+
 // *** C4ControlPacket
 C4ControlPacket::C4ControlPacket()
 	: iByClient(Game.Control.ClientID()) {}
@@ -165,7 +167,7 @@ void C4ControlSet::Execute() const
 		}
 		// set it
 		Game.Parameters.MaxPlayers = iData;
-		LogF("MaxPlayer = %d", (int)Game.Parameters.MaxPlayers);
+		LogF("MaxPlayer = %" PRId32, Game.Parameters.MaxPlayers);
 		break;
 
 	case C4CVT_TeamDistribution:
@@ -719,7 +721,7 @@ void C4ControlJoinPlayer::Execute() const
 		else
 		{
 			// no player data for user player present: Must not happen
-			LogF("ERROR: Ghost player join: No player data for %s", (const char *)pInfo->GetName());
+			LogF("ERROR: Ghost player join: No player data for %s", pInfo->GetName());
 			assert(false);
 			return;
 		}
@@ -1555,7 +1557,7 @@ StdStrBuf C4ControlCustomCommand::FormatScript() const
 	if (SSearch(CmdScript.getData(), "%d"))
 	{
 		// make sure it's a number by converting
-		Script.Format(CmdScript.getData(), static_cast<int>(atoi(argument.c_str())));
+		Script.Format(CmdScript.getData(), atoi(argument.c_str()));
 	}
 	else if (SSearch(CmdScript.getData(), "%s"))
 	{

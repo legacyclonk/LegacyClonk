@@ -135,7 +135,7 @@ void C4StartupNetListEntry::SetRefQuery(const char *szAddress, enum QueryType eQ
 	// safety: clear previous
 	ClearRef();
 	// setup layout
-	((C4Facet &)pIcon->GetFacet()) = (const C4Facet &)C4Startup::Get()->Graphics.fctNetGetRef;
+	const_cast<C4Facet &>(static_cast<const C4Facet &>(pIcon->GetFacet())) = static_cast<const C4Facet &>(C4Startup::Get()->Graphics.fctNetGetRef);
 	pIcon->SetAnimated(true, 1);
 	pIcon->SetBounds(rctIconLarge);
 	// init a new ref client to query
@@ -190,7 +190,7 @@ bool C4StartupNetListEntry::Execute()
 		{
 			fError = false;
 			sError.Clear();
-			((C4Facet &)pIcon->GetFacet()) = (const C4Facet &)C4Startup::Get()->Graphics.fctNetGetRef;
+			const_cast<C4Facet &>(static_cast<const C4Facet &>(pIcon->GetFacet())) = static_cast<const C4Facet &>(C4Startup::Get()->Graphics.fctNetGetRef);
 			pIcon->SetAnimated(true, 1);
 			pIcon->SetBounds(rctIconLarge);
 			sInfoText[1].Copy(LoadResStr("IDS_NET_INFOQUERY"));
@@ -270,7 +270,7 @@ bool C4StartupNetListEntry::OnReference()
 			iPlayerCount += ppNewRefs[i]->Parameters.PlayerInfos.GetActivePlayerCount(false);
 		}
 		// Update text accordingly
-		sInfoText[1].Format(LoadResStr("IDS_NET_INFOGAMES"), (int)iNewRefCount, iPlayerCount);
+		sInfoText[1].Format(LoadResStr("IDS_NET_INFOGAMES"), static_cast<int>(iNewRefCount), iPlayerCount);
 		UpdateText();
 	}
 	delete[] ppNewRefs;
@@ -448,8 +448,8 @@ void C4StartupNetListEntry::SetReference(C4Network2Reference *pRef)
 	C4Client *pHost = pRef->Parameters.Clients.getHost();
 	sInfoText[0].Format(LoadResStr("IDS_NET_REFONCLIENT"), pRef->getTitle(), pHost ? pHost->getName() : "unknown");
 	sInfoText[1].Format(LoadResStr("IDS_NET_INFOPLRSGOALDESC"),
-		(int)iPlrCnt,
-		(int)pRef->Parameters.MaxPlayers,
+		static_cast<int>(iPlrCnt),
+		static_cast<int>(pRef->Parameters.MaxPlayers),
 		pRef->Parameters.GetGameGoalString().getData(),
 		StdStrBuf(pRef->getGameStatus().getDescription(), true).getData());
 	if (pRef->getTime() > 0)

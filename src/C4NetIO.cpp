@@ -1735,7 +1735,7 @@ size_t C4NetIOTCP::UnpackPacket(const StdBuf &IBuf, const C4NetIO::addr_t &addr)
 {
 	size_t iPos = 0;
 	// check first byte (should be 0xff)
-	if (*getBufPtr<uint8_t>(IBuf, iPos) != (uint8_t)0xff)
+	if (*getBufPtr<uint8_t>(IBuf, iPos) != 0xff)
 		// clear buffer
 		return IBuf.getSize();
 	iPos += sizeof(char);
@@ -1834,7 +1834,7 @@ void *C4NetIOTCP::Peer::GetRecvBuf(int iSize) // (mt-safe)
 	CStdLock ILock(&ICSec);
 	// Enlarge input buffer?
 	size_t iIBufSize = std::max<size_t>(iMinIBufSize, IBuf.getSize());
-	while ((size_t)(iIBufUsage + iSize) > iIBufSize)
+	while (static_cast<size_t>(iIBufUsage + iSize) > iIBufSize)
 		iIBufSize *= 2;
 	if (iIBufSize != IBuf.getSize())
 		IBuf.SetSize(iIBufSize);
@@ -1852,7 +1852,7 @@ void C4NetIOTCP::Peer::OnRecv(int iSize) // (mt-safe)
 	assert(iIBufUsage <= IBuf.getSize());
 	// read packets
 	size_t iPos = 0, iPacketPos;
-	while ((iPacketPos = iPos) < (size_t)iIBufUsage)
+	while ((iPacketPos = iPos) < static_cast<size_t>(iIBufUsage))
 	{
 		// Try to unpack a packet
 		StdBuf IBufPart = IBuf.getPart(iPos, iIBufUsage - iPos);
@@ -1864,7 +1864,7 @@ void C4NetIOTCP::Peer::OnRecv(int iSize) // (mt-safe)
 		iPos += iBytes;
 	}
 	// data left?
-	if (iPacketPos < (size_t)iIBufUsage)
+	if (iPacketPos < static_cast<size_t>(iIBufUsage))
 	{
 		// no packet read?
 		if (!iPacketPos) return;

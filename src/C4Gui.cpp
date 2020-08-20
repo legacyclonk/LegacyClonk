@@ -53,7 +53,7 @@ bool ExpandHotkeyMarkup(StdStrBuf &sText, char &rcHotkey)
 	char *szText = sText.GrabPointer();
 	char *szTextBegin = szText;
 	rcHotkey = szText[iHotkeyPos + 1]; char cOrigHotkey = rcHotkey;
-	if (Inside(rcHotkey, 'a', 'z')) rcHotkey += ((int32_t)'A' - 'a');
+	if (Inside(rcHotkey, 'a', 'z')) rcHotkey += 'A' - 'a';
 	// mark hotkey
 	size_t iTextLen = SLen(szText);
 	szText += iHotkeyPos; iTextLen -= iHotkeyPos;
@@ -266,14 +266,14 @@ void Element::Draw3DFrame(C4FacetEx &cgo, bool fUp, int32_t iIndent, uint8_t byA
 		y0 = cgo.TargetY + rcBounds.y + iTopOff,
 		x1 = cgo.TargetX + rcBounds.x + rcBounds.Wdt - 1,
 		y1 = cgo.TargetY + rcBounds.y + rcBounds.Hgt - 1;
-	if (fDrawTop) lpDDraw->DrawLineDw(cgo.Surface, (float)x0, (float)y0, (float)x1, (float)y0, C4GUI_BorderColor1 | dwAlpha);
-	if (fDrawLeft) lpDDraw->DrawLineDw(cgo.Surface, (float)x0, (float)y0, (float)x0, (float)y1, C4GUI_BorderColor1 | dwAlpha);
-	if (fDrawTop) lpDDraw->DrawLineDw(cgo.Surface, (float)(x0 + 1), (float)(y0 + 1), (float)(x1 - 1), (float)(y0 + 1), C4GUI_BorderColor2 | dwAlpha);
-	if (fDrawLeft) lpDDraw->DrawLineDw(cgo.Surface, (float)(x0 + 1), (float)(y0 + 1), (float)(x0 + 1), (float)(y1 - 1), C4GUI_BorderColor2 | dwAlpha);
-	lpDDraw->DrawLineDw(cgo.Surface, (float)x0, (float)y1, (float)x1, (float)y1, C4GUI_BorderColor3 | dwAlpha);
-	lpDDraw->DrawLineDw(cgo.Surface, (float)x1, (float)y0, (float)x1, (float)y1, C4GUI_BorderColor3 | dwAlpha);
-	lpDDraw->DrawLineDw(cgo.Surface, (float)(x0 + 1), (float)(y1 - 1), (float)(x1 - 1), (float)(y1 - 1), C4GUI_BorderColor1 | dwAlpha);
-	lpDDraw->DrawLineDw(cgo.Surface, (float)(x1 - 1), (float)(y0 + 1), (float)(x1 - 1), (float)(y1 - 1), C4GUI_BorderColor1 | dwAlpha);
+	if (fDrawTop) lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x0), static_cast<float>(y0), static_cast<float>(x1), static_cast<float>(y0), C4GUI_BorderColor1 | dwAlpha);
+	if (fDrawLeft) lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x0), static_cast<float>(y0), static_cast<float>(x0), static_cast<float>(y1), C4GUI_BorderColor1 | dwAlpha);
+	if (fDrawTop) lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x0 + 1), static_cast<float>(y0 + 1), static_cast<float>(x1 - 1), static_cast<float>(y0 + 1), C4GUI_BorderColor2 | dwAlpha);
+	if (fDrawLeft) lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x0 + 1), static_cast<float>(y0 + 1), static_cast<float>(x0 + 1), static_cast<float>(y1 - 1), C4GUI_BorderColor2 | dwAlpha);
+	lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x0), static_cast<float>(y1), static_cast<float>(x1), static_cast<float>(y1), C4GUI_BorderColor3 | dwAlpha);
+	lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x1), static_cast<float>(y0), static_cast<float>(x1), static_cast<float>(y1), C4GUI_BorderColor3 | dwAlpha);
+	lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x0 + 1), static_cast<float>(y1 - 1), static_cast<float>(x1 - 1), static_cast<float>(y1 - 1), C4GUI_BorderColor1 | dwAlpha);
+	lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x1 - 1), static_cast<float>(y0 + 1), static_cast<float>(x1 - 1), static_cast<float>(y1 - 1), C4GUI_BorderColor1 | dwAlpha);
 }
 
 void Element::DrawBar(C4FacetEx &cgo, DynBarFacet &rFacets)
@@ -311,7 +311,7 @@ void Element::DrawBar(C4FacetEx &cgo, DynBarFacet &rFacets)
 	else
 	{
 		// zoomed bar
-		float fZoom = (float)rcBounds.Hgt / rFacets.fctMiddle.Hgt;
+		float fZoom = static_cast<float>(rcBounds.Hgt) / rFacets.fctMiddle.Hgt;
 		int32_t x0 = cgo.TargetX + rcBounds.x, y0 = cgo.TargetY + rcBounds.y;
 		int32_t iX = int32_t(fZoom * rFacets.fctBegin.Wdt), w = int32_t(fZoom * rFacets.fctMiddle.Wdt), wOld = rFacets.fctMiddle.Wdt;
 		int32_t iRightShowLength = rFacets.fctEnd.Wdt / 3;
@@ -346,7 +346,7 @@ void Element::DrawHBarByVGfx(C4FacetEx &cgo, DynBarFacet &rFacets)
 {
 	int32_t y0 = cgo.TargetY + rcBounds.y, x0 = cgo.TargetX + rcBounds.x;
 	int32_t iY = rFacets.fctBegin.Hgt, h = rFacets.fctMiddle.Hgt;
-	C4DrawTransform trf; trf.SetRotate(-90 * 100, (float)(cgo.TargetX + rcBounds.x + rcBounds.Hgt / 2), (float)(cgo.TargetY + rcBounds.y + rcBounds.Hgt / 2));
+	C4DrawTransform trf; trf.SetRotate(-90 * 100, cgo.TargetX + rcBounds.x + rcBounds.Hgt / 2.f, cgo.TargetY + rcBounds.y + rcBounds.Hgt / 2.f);
 	rFacets.fctBegin.DrawT(cgo.Surface, x0, y0, 0, 0, &trf);
 	while (iY < rcBounds.Wdt - 5)
 	{
@@ -1138,7 +1138,7 @@ CStdFont &Resource::GetFontByHeight(int32_t iHgt, float *pfZoom)
 	{
 		int32_t iLineHgt = pUseFont->GetLineHeight();
 		if (iLineHgt)
-			*pfZoom = (float)iHgt / (float)iLineHgt;
+			*pfZoom = static_cast<float>(iHgt) / static_cast<float>(iLineHgt);
 		else
 			*pfZoom = 1.0f; // error
 	}

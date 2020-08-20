@@ -172,7 +172,7 @@ void StdCompilerBinRead::String(char **pszString, RawCompileType eType)
 			excEOF(); return;
 		}
 	// Allocate and copy data
-	*pszString = (char*)malloc(sizeof(char) * (iPos - iStart));
+	*pszString = static_cast<char *>(malloc(sizeof(char) * (iPos - iStart)));
 	memcpy(*pszString, Buf.getPtr(iStart), iPos - iStart);
 }
 
@@ -282,49 +282,49 @@ bool StdCompilerINIWrite::Separator(Sep eSep)
 void StdCompilerINIWrite::QWord(int64_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat(PRId64, rInt);
+	Buf.AppendFormat("%" PRId64, rInt);
 }
 
 void StdCompilerINIWrite::QWord(uint64_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat(PRIu64, rInt);
+	Buf.AppendFormat("%" PRIu64, rInt);
 }
 
 void StdCompilerINIWrite::DWord(int32_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat(PRId32, rInt);
+	Buf.AppendFormat("%" PRId32, rInt);
 }
 
 void StdCompilerINIWrite::DWord(uint32_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat(PRIu32, rInt);
+	Buf.AppendFormat("%" PRIu32, rInt);
 }
 
 void StdCompilerINIWrite::Word(int16_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat(PRId16, rInt);
+	Buf.AppendFormat("%" PRId16, rInt);
 }
 
 void StdCompilerINIWrite::Word(uint16_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat(PRIu16, rInt);
+	Buf.AppendFormat("%" PRIu16, rInt);
 }
 
 void StdCompilerINIWrite::Byte(int8_t &rByte)
 {
 	PrepareForValue();
-	Buf.AppendFormat(PRId8, rByte);
+	Buf.AppendFormat("%" PRId8, rByte);
 }
 
 void StdCompilerINIWrite::Byte(uint8_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat(PRIu8, rInt);
+	Buf.AppendFormat("%" PRIu8, rInt);
 }
 
 void StdCompilerINIWrite::Boolean(bool &rBool)
@@ -419,7 +419,7 @@ void StdCompilerINIWrite::WriteEscaped(const char *szString, const char *pEnd)
 	const char *pStart, *pPos; pStart = pPos = szString;
 	bool fLastNumEscape = false; // catch "\1""1", which must become "\1\61"
 	for (; pPos < pEnd; pPos++)
-		if (!isprint((unsigned char)(unsigned char)*pPos) || *pPos == '\\' || *pPos == '"' || (fLastNumEscape && isdigit((unsigned char)*pPos)))
+		if (!isprint(static_cast<unsigned char>(*pPos)) || *pPos == '\\' || *pPos == '"' || (fLastNumEscape && isdigit(static_cast<unsigned char>(*pPos))))
 		{
 			// Write everything up to this point
 			if (pPos - pStart) Buf.Append(pStart, pPos - pStart);
@@ -494,13 +494,13 @@ bool StdCompilerINIRead::Name(const char *szName)
 	if (iDepth - 1 > iRealDepth)
 		return false;
 	// Name must be alphanumerical and non-empty (force it)
-	if (!isalpha((unsigned char)*szName))
+	if (!isalpha(static_cast<unsigned char>(*szName)))
 	{
 		assert(false); return false;
 	}
 	for (const char *p = szName + 1; *p; p++)
 		// C4Update needs Name**...
-		if (!isalnum((unsigned char)*p) && *p != ' ' && *p != '_' && *p != '*')
+		if (!isalnum(static_cast<unsigned char>(*p)) && *p != ' ' && *p != '_' && *p != '*')
 		{
 			assert(false); return false;
 		}
@@ -681,11 +681,11 @@ void StdCompilerINIRead::Byte(uint8_t &rByte)
 void StdCompilerINIRead::Boolean(bool &rBool)
 {
 	if (!pPos) { notFound("Boolean"); return; }
-	if (*pPos == '1' && !isdigit((unsigned char) * (pPos + 1)))
+	if (*pPos == '1' && !isdigit(static_cast<unsigned char>(*(pPos + 1))))
 	{
 		rBool = true; pPos++;
 	}
-	else if (*pPos == '0' && !isdigit((unsigned char) * (pPos + 1)))
+	else if (*pPos == '0' && !isdigit(static_cast<unsigned char>(*(pPos + 1))))
 	{
 		rBool = false; pPos++;
 	}
@@ -705,7 +705,7 @@ void StdCompilerINIRead::Boolean(bool &rBool)
 
 void StdCompilerINIRead::Character(char &rChar)
 {
-	if (!pPos || !isalpha((unsigned char)*pPos))
+	if (!pPos || !isalpha(static_cast<unsigned char>(*pPos)))
 	{
 		notFound("Character"); return;
 	}
@@ -799,8 +799,8 @@ void StdCompilerINIRead::CreateNameTree()
 			pPos++; iIndent++;
 		}
 		// Name/Section?
-		bool fSection = *pPos == '[' && isalpha((unsigned char) * (pPos + 1));
-		if (fSection || isalpha((unsigned char)*pPos))
+		bool fSection = *pPos == '[' && isalpha(static_cast<unsigned char>(*(pPos + 1)));
+		if (fSection || isalpha(static_cast<unsigned char>(*pPos)))
 		{
 			// Treat values as if they had more indention
 			// (so they become children of sections on the same level)
@@ -810,12 +810,12 @@ void StdCompilerINIRead::CreateNameTree()
 				pName = pName->Parent;
 			// Copy name
 			StdStrBuf Name;
-			while (isalnum((unsigned char)*pPos) || *pPos == ' ' || *pPos == '_')
+			while (isalnum(static_cast<unsigned char>(*pPos)) || *pPos == ' ' || *pPos == '_')
 				Name.AppendChar(*pPos++);
 			while (*pPos == ' ' || *pPos == '\t') pPos++;
 			if (*pPos != (fSection ? ']' : '='))
 				// Warn, ignore
-				Warn(isprint((unsigned char)*pPos) ? "Unexpected character ('%c'): %s ignored" : "Unexpected character ('0x%02x'): %s ignored", unsigned(*pPos), fSection ? "section" : "value");
+				Warn(isprint(static_cast<unsigned char>(*pPos)) ? "Unexpected character ('%c'): %s ignored" : "Unexpected character ('0x%02x'): %s ignored", unsigned(*pPos), fSection ? "section" : "value");
 			else
 			{
 				pPos++;
@@ -978,7 +978,7 @@ bool StdCompilerINIRead::TestStringEnd(RawCompileType eType)
 	case RCT_Escaped: return *pPos == '"' || !*pPos || *pPos == '\n' || *pPos == '\r';
 	case RCT_All: return !*pPos || *pPos == '\n' || *pPos == '\r';
 	// '-' is needed for Layers in Scenario.txt (C4NameList) and other Material-Texture combinations
-	case RCT_Idtf: case RCT_IdtfAllowEmpty: case RCT_ID: return !isalnum((unsigned char)*pPos) && *pPos != '_' && *pPos != '-';
+	case RCT_Idtf: case RCT_IdtfAllowEmpty: case RCT_ID: return !isalnum(static_cast<unsigned char>(*pPos)) && *pPos != '_' && *pPos != '-';
 	}
 	// unreachable
 	return true;
@@ -987,7 +987,7 @@ bool StdCompilerINIRead::TestStringEnd(RawCompileType eType)
 char StdCompilerINIRead::ReadEscapedChar()
 {
 	// Catch some no-noes like \0, \n etc.
-	if (*pPos >= 0 && iscntrl((unsigned char)*pPos))
+	if (*pPos >= 0 && iscntrl(static_cast<unsigned char>(*pPos)))
 	{
 		Warn("Nonprintable character found in string: %02x", static_cast<unsigned char>(*pPos));
 		return *pPos;
@@ -1010,7 +1010,7 @@ char StdCompilerINIRead::ReadEscapedChar()
 	case '?': pPos++; return '?';
 	case 'x':
 		// Treat '\x' as 'x' - damn special cases
-		if (!isxdigit((unsigned char)*++pPos))
+		if (!isxdigit(static_cast<unsigned char>(*++pPos)))
 			return 'x';
 		else
 		{
@@ -1018,14 +1018,14 @@ char StdCompilerINIRead::ReadEscapedChar()
 			int iCode = 0;
 			do
 			{
-				iCode = iCode * 16 + (isdigit((unsigned char)*pPos) ? *pPos - '0' : *pPos - 'a' + 10); pPos++;
-			} while (isxdigit((unsigned char)*pPos));
+				iCode = iCode * 16 + (isdigit(static_cast<unsigned char>(*pPos)) ? *pPos - '0' : *pPos - 'a' + 10); pPos++;
+			} while (isxdigit(static_cast<unsigned char>(*pPos)));
 			// Done. Don't bother to check the range (we aren't doing anything mission-critical here, are we?)
 			return char(iCode);
 		}
 	default:
 		// Not octal? Let it pass through.
-		if (!isdigit((unsigned char)*pPos) || *pPos >= '8')
+		if (!isdigit(static_cast<unsigned char>(*pPos)) || *pPos >= '8')
 			return *pPos++;
 		else
 		{
@@ -1034,7 +1034,7 @@ char StdCompilerINIRead::ReadEscapedChar()
 			do
 			{
 				iCode = iCode * 8 + (*pPos - '0'); pPos++;
-			} while (isdigit((unsigned char)*pPos) && *pPos < '8');
+			} while (isdigit(static_cast<unsigned char>(*pPos)) && *pPos < '8');
 			// Done. See above.
 			return char(iCode);
 		}

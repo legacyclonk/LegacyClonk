@@ -50,7 +50,7 @@ void CBitmap256Info::Set(int iWdt, int iHgt, uint8_t *bypPalette)
 {
 	Default();
 	// Set header
-	Head.bfType = *((uint16_t *)"BM");
+	Head.bfType = 0x4d42; // bmp magic "BM"
 	Head.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD) + DWordAligned(iWdt) * iHgt;
 	Head.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD);
 	// Set bitmap info

@@ -28,7 +28,7 @@ const int CBlack = 0, CGray1 = 1, CGray2 = 2, CGray3 = 3, CGray4 = 4, CGray5 = 5
 extern const uint8_t FColors[];
 
 // helper function
-#define RGBA(r, g, b, a) (((uint32_t)(a) << 24) | (((uint32_t)(r) & 0xff) << 16) | (((uint32_t)(g) & 0xff) << 8) | ((b) & 0xff))
+constexpr uint32_t RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { return (a << 24) | (r << 16) | (g << 8) | b; }
 
 inline void BltAlpha(uint32_t &dwDst, uint32_t dwSrc)
 {
@@ -38,18 +38,18 @@ inline void BltAlpha(uint32_t &dwDst, uint32_t dwSrc)
 	dwDst = std::min<uint32_t>((int(dwDst & 0xff) * byAlphaDst + int(dwSrc & 0xff) * byAlphaSrc) >> 8, 0xff) | // blue
 		std::min<uint32_t>((int(dwDst & 0xff00) * byAlphaDst + int(dwSrc & 0xff00) * byAlphaSrc) >> 8 & 0xff00, 0xff00) | // green
 		std::min<uint32_t>((int(dwDst & 0xff0000) * byAlphaDst + uint32_t(dwSrc & 0xff0000) * byAlphaSrc) >> 8 & 0xff0000, 0xff0000) | // red
-		uint32_t((std::max)((int)(dwDst >> 24) - byAlphaSrc, 0)) << 24; // alpha
+		uint32_t((std::max)(static_cast<int>(dwDst >> 24) - byAlphaSrc, 0)) << 24; // alpha
 }
 
 inline void BltAlphaAdd(uint32_t &dwDst, uint32_t dwSrc)
 {
 	// blit one color value w/alpha on another in additive mode
 	if (dwDst >> 24 == 0xff) { dwDst = dwSrc; return; }
-	uint8_t byAlphaSrc = 255 - uint8_t(dwSrc >> 24);
-	dwDst = std::min<uint32_t>((dwDst & 0xff) + ((int(dwSrc & 0xff) * byAlphaSrc) >> 8), 0xff) | // blue
-		std::min<uint32_t>((dwDst & 0xff00) + (int(dwSrc >> 8 & 0xff) * byAlphaSrc) & 0x00ffff00, 0xff00) | // green
-		std::min<uint32_t>((dwDst & 0xff0000) + (int(dwSrc >> 8 & 0xff00) * byAlphaSrc) & 0xffff0000, 0xff0000) | // red
-		uint32_t((std::max)((int)(dwDst >> 24) - byAlphaSrc, 0)) << 24; // alpha
+	uint8_t byAlphaSrc = 255 - static_cast<uint8_t>(dwSrc >> 24);
+	dwDst = std::min<uint32_t>((dwDst & 0xff) + (((dwSrc & 0xff) * byAlphaSrc) >> 8), 0xff) | // blue
+		std::min<uint32_t>((dwDst & 0xff00) + ((dwSrc >> 8 & 0xff) * byAlphaSrc) & 0x00ffff00, 0xff00) | // green
+		std::min<uint32_t>((dwDst & 0xff0000) + ((dwSrc >> 8 & 0xff00) * byAlphaSrc) & 0xffff0000, 0xff0000) | // red
+		(std::max<uint32_t>(dwDst >> 24, byAlphaSrc) - byAlphaSrc) << 24; // alpha
 }
 
 inline void ModulateClr(uint32_t &dwDst, uint32_t dwMod) // modulate two color values
@@ -61,7 +61,7 @@ inline void ModulateClr(uint32_t &dwDst, uint32_t dwMod) // modulate two color v
 	dwDst = ((dwDst & 0xff) * (dwMod & 0xff)) >> 8 | // blue
 		((dwDst >> 8 & 0xff) * (dwMod >> 8 & 0xff)) & 0xff00 | // green
 		((dwDst >> 16 & 0xff) * (dwMod >> 8 & 0xff00)) & 0xff0000 | // red
-		uint32_t((std::min)(iA1 + iA2 - ((iA1 * iA2) >> 8), 255)) << 24; // alpha (=255-(255*iA1)(255*iA2)/255)
+		(std::min<uint32_t>(iA1 + iA2 - ((iA1 * iA2) >> 8), 255)) << 24; // alpha (=255-(255*iA1)(255*iA2)/255)
 }
 
 inline void ModulateClrA(uint32_t &dwDst, uint32_t dwMod) // modulate two color values and add alpha value
@@ -76,9 +76,9 @@ inline void ModulateClrA(uint32_t &dwDst, uint32_t dwMod) // modulate two color 
 inline void ModulateClrMOD2(uint32_t &dwDst, uint32_t dwMod) // clr1+clr2-0.5
 {
 	// signed color addition
-	dwDst = (BoundBy<int>(((int)(dwDst & 0xff) + (dwMod & 0xff) - 0x7f) << 1, 0, 0xff) & 0xff) | // B
-		(BoundBy<int>(((int)(dwDst & 0xff00) + (dwMod & 0xff00) - 0x7f00) << 1, 0, 0xff00) & 0xff00) | // G
-		(BoundBy<int>(((int)(dwDst & 0xff0000) + (dwMod & 0xff0000) - 0x7f0000) << 1, 0, 0xff0000) & 0xff0000) | // R
+	dwDst = static_cast<uint32_t>(BoundBy<int>((static_cast<int>((dwDst & 0xff) + (dwMod & 0xff)) - 0x7f) * 2, 0, 0xff) | // B
+		(BoundBy<int>((static_cast<int>((dwDst & 0xff00) + (dwMod & 0xff00)) - 0x7f00) * 2, 0, 0xff00) & 0xff00) | // G
+		(BoundBy<int>((static_cast<int>((dwDst & 0xff0000) + (dwMod & 0xff0000)) - 0x7f0000) * 2, 0, 0xff0000) & 0xff0000)) | // R
 		std::min<uint32_t>((dwDst >> 24) + (dwMod >> 24), 0xff) << 24;
 }
 
@@ -117,9 +117,9 @@ inline uint32_t DarkenClrBy(uint32_t &dwDst, int iBy) // darken a color
 {
 	// darken a color
 	// quite a desaturating method...
-	dwDst = std::max<int>(int(dwDst & 0xff) - iBy, 0) | // blue
-		std::max<int>(int(dwDst >> 8 & 0xff) - iBy, 0) << 8 | // green
-		std::max<int>(int(dwDst >> 16 & 0xff) - iBy, 0) << 16 | // red
+	dwDst = static_cast<uint32_t>(std::max<int>(static_cast<int>(dwDst & 0xff) - iBy, 0) | // blue
+		std::max<int>(static_cast<int>(dwDst >> 8 & 0xff) - iBy, 0) << 8 | // green
+		std::max<int>(static_cast<int>(dwDst >> 16 & 0xff) - iBy, 0) << 16) | // red
 		(dwDst & 0xff000000); // alpha
 	return dwDst;
 }
@@ -127,7 +127,7 @@ inline uint32_t DarkenClrBy(uint32_t &dwDst, int iBy) // darken a color
 inline uint32_t PlrClr2TxtClr(uint32_t dwClr)
 {
 	// convert player color to text color, lightening up when necessary
-	int lgt = (std::max)((std::max)(GetRValue(dwClr), GetGValue(dwClr)), GetBValue(dwClr));
+	const auto lgt = (std::max)((std::max)(GetRValue(dwClr), GetGValue(dwClr)), GetBValue(dwClr));
 	if (lgt < 0x8f) LightenClrBy(dwClr, 0x8f - lgt);
 	return dwClr | 0xff000000;
 }
@@ -137,17 +137,17 @@ inline uint32_t GetClrModulation(uint32_t dwSrcClr, uint32_t dwDstClr, uint32_t 
 	// get modulation that is necessary to transform dwSrcClr to dwDstClr
 	// does not support alpha values in dwSrcClr and dwDstClr
 	// get source color
-	uint8_t sB = uint8_t(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
-	uint8_t sG = uint8_t(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
-	uint8_t sR = uint8_t(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
+	uint8_t sB = static_cast<uint8_t>(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
+	uint8_t sG = static_cast<uint8_t>(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
+	uint8_t sR = static_cast<uint8_t>(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
 	// get dest color
-	uint8_t dB = uint8_t(dwDstClr); dwDstClr = dwDstClr >> 8;
-	uint8_t dG = uint8_t(dwDstClr); dwDstClr = dwDstClr >> 8;
-	uint8_t dR = uint8_t(dwDstClr); dwDstClr = dwDstClr >> 8;
+	uint8_t dB = static_cast<uint8_t>(dwDstClr); dwDstClr = dwDstClr >> 8;
+	uint8_t dG = static_cast<uint8_t>(dwDstClr); dwDstClr = dwDstClr >> 8;
+	uint8_t dR = static_cast<uint8_t>(dwDstClr); dwDstClr = dwDstClr >> 8;
 	// get difference
-	int cR = (int)dR - sR;
-	int cG = (int)dG - sG;
-	int cB = (int)dB - sB;
+	int cR = static_cast<int>(dR) - sR;
+	int cG = static_cast<int>(dG) - sG;
+	int cB = static_cast<int>(dB) - sB;
 	// get max enlightment
 	int diffN = 0;
 	if (cR > 0) diffN = cR;
@@ -163,7 +163,7 @@ inline uint32_t GetClrModulation(uint32_t dwSrcClr, uint32_t dwDstClr, uint32_t 
 		dwBack = RGBA(bR, bG, bB, 0);
 	}
 	if (!sR) sR = 1; if (!sG) sG = 1; if (!sB) sB = 1;
-	return RGBA((std::min)((int)dR * 256 / sR, 255), (std::min)((int)dG * 256 / sG, 255), (std::min)((int)dB * 256 / sB, 255), diffN);
+	return RGBA((std::min)(static_cast<int>(dR) * 256 / sR, 255), (std::min)(static_cast<int>(dG) * 256 / sG, 255), (std::min)(static_cast<int>(dB) * 256 / sB, 255), diffN);
 }
 
 inline uint32_t NormalizeColors(uint32_t &dwClr1, uint32_t &dwClr2, uint32_t &dwClr3, uint32_t &dwClr4)
@@ -187,10 +187,10 @@ inline uint32_t InvertRGBAAlpha(uint32_t dwFromClr)
 inline uint16_t ClrDw2W(uint32_t dwClr)
 {
 	return
-		uint16_t((dwClr & 0x000000f0) >>  4) |
-		uint16_t((dwClr & 0x0000f000) >>  8) |
-		uint16_t((dwClr & 0x00f00000) >> 12) |
-		uint16_t((dwClr & 0xf0000000) >> 16);
+	static_cast<uint16_t>((dwClr & 0x000000f0) >>  4) |
+		static_cast<uint16_t>((dwClr & 0x0000f000) >>  8) |
+		static_cast<uint16_t>((dwClr & 0x00f00000) >> 12) |
+		static_cast<uint16_t>((dwClr & 0xf0000000) >> 16);
 }
 
 inline bool rgb2xyY(double r, double g, double b, double *px, double *py, double *pY) // linear rgb to CIE xyY
@@ -222,9 +222,9 @@ inline bool xy2upvp(double x, double y, double *pu, double *pv) // CIE xy to u'v
 
 inline bool RGB2rgb(int R, int G, int B, double *pr, double *pg, double *pb, double gamma = 2.2) // monitor RGB (0 to 255) to linear rgb (0.0 to 1.0) assuming default gamma 2.2
 {
-	*pr = pow((double)R / 255.0, 1.0 / gamma);
-	*pg = pow((double)G / 255.0, 1.0 / gamma);
-	*pb = pow((double)B / 255.0, 1.0 / gamma);
+	*pr = pow(static_cast<double>(R) / 255.0, 1.0 / gamma);
+	*pg = pow(static_cast<double>(G) / 255.0, 1.0 / gamma);
+	*pb = pow(static_cast<double>(B) / 255.0, 1.0 / gamma);
 	return true;
 }
 

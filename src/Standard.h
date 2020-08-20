@@ -83,10 +83,10 @@ inline int stricmp(const char *s1, const char *s2)
 	return strcasecmp(s1, s2);
 }
 
-#define GetRValue(rgb) ((unsigned char)(rgb))
-#define GetGValue(rgb) ((unsigned char)(((unsigned short)(rgb)) >> 8))
-#define GetBValue(rgb) ((unsigned char)((rgb) >> 16))
-#define RGB(r, g, b) ((uint32_t)((uint8_t)(r) | ((uint8_t)(g) << 8) | ((uint8_t)(b) << 16)))
+#define GetRValue(rgb) (static_cast<unsigned char>(rgb))
+#define GetGValue(rgb) (static_cast<unsigned char>((static_cast<unsigned short>(rgb)) >> 8))
+#define GetBValue(rgb) (static_cast<unsigned char>((rgb) >> 16))
+constexpr uint32_t RGB(uint8_t r, uint8_t g, uint8_t b) { return r | (g << 8) | (b << 16); }
 #endif // _WIN32
 
 // These functions have to be provided by the application.
@@ -102,7 +102,7 @@ bool LogSilentF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;
 #include <utility>
 
 // Color triplets
-#define C4RGB(r, g, b) ((((uint32_t)(r) & 0xff) << 16) | (((uint32_t)(g) & 0xff) << 8) | ((b) & 0xff))
+#define C4RGB(r, g, b) (((static_cast<uint32_t>(r) & 0xff) << 16) | ((static_cast<uint32_t>(g) & 0xff) << 8) | ((b) & 0xff))
 
 // Small helpers
 template <class T> inline T Abs(T val) { return val > 0 ? val : -val; }

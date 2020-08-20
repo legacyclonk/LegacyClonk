@@ -1017,7 +1017,7 @@ void C4MouseControl::RightUp()
 
 void C4MouseControl::Wheel(uint32_t dwFlags)
 {
-	short iDelta = (short)(dwFlags >> 16);
+	short iDelta = static_cast<short>(dwFlags >> 16);
 
 	if (iDelta > 0) Game.LocalPlayerControl(Player, COM_WheelUp);
 	if (iDelta < 0) Game.LocalPlayerControl(Player, COM_WheelDown);

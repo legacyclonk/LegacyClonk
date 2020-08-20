@@ -380,15 +380,15 @@ C4Group *FindSuitableFile(const char *szName, C4GroupSet &rGfxSet, char *szFileN
 
 	C4Group *pGrp = nullptr;
 	C4Group *pGrp2;
-	int iPrio = -1;
-	int iPrio2;
-	int GroupID;
+	int32_t iPrio = -1;
+	int32_t iPrio2;
+	int32_t GroupID;
 	char FileName[_MAX_FNAME];
 	SCopy(szName, FileName);
 	for (int i = 0; i < 4; ++i)
 	{
 		EnforceExtension(FileName, extensions[i]);
-		pGrp2 = rGfxSet.FindEntry(FileName, reinterpret_cast<int32_t *>(&iPrio2), reinterpret_cast<int32_t *>(&GroupID));
+		pGrp2 = rGfxSet.FindEntry(FileName, &iPrio2, &GroupID);
 		if ((!pGrp || iPrio2 >= iPrio) && pGrp2)
 		{
 			rGroupID = GroupID;

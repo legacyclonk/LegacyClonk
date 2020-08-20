@@ -225,7 +225,7 @@ public:
 
 	void SetPix(int iX, int iY, uint32_t v)
 	{
-		*((uint32_t *)(((uint8_t *)texLock.pBits) + (iY - LockSize.top) * texLock.Pitch + (iX - LockSize.left) * 4)) = v;
+		*reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(texLock.pBits) + (iY - LockSize.top) * texLock.Pitch + (iX - LockSize.left) * 4) = v;
 	}
 };
 

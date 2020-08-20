@@ -638,9 +638,9 @@ StdStrBuf C4Value::GetDataString() const
 			return FormatString("%ld", Data.Int);
 		else if (Data.Obj)
 			if (Data.Obj->Status == C4OS_NORMAL)
-				return FormatString("%s #%d", Data.Obj->GetName(), (int)Data.Obj->Number);
+				return FormatString("%s #%d", Data.Obj->GetName(), static_cast<int>(Data.Obj->Number));
 			else
-				return FormatString("{%s #%d}", Data.Obj->GetName(), (int)Data.Obj->Number);
+				return FormatString("{%s #%d}", Data.Obj->GetName(), static_cast<int>(Data.Obj->Number));
 		else
 			return StdStrBuf("0"); // (impossible)
 	}

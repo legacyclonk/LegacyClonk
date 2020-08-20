@@ -252,7 +252,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				sMsg.Format("<c %x>%s</c>", C4GUI::MakeColorReadableOnBlack(dwClr), pPlr->GetName());
 				// Command
 				StdStrBuf sCommand;
-				sCommand.Format("Observe:%d", (int)pPlr->Number);
+				sCommand.Format("Observe:%d", static_cast<int>(pPlr->Number));
 				// Info caption
 				StdStrBuf sInfo;
 				sInfo.Format(LoadResStr("IDS_TEXT_FOLLOWVIEWOFPLAYER"), pPlr->GetName());

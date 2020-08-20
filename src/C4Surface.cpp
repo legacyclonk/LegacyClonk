@@ -83,7 +83,7 @@ bool C4Surface::Load(C4Group &hGroup, const char *szFilename, bool fOwnPal, bool
 	if (!hGroup.AccessEntry(szFilename))
 	{
 		// file not found
-		if (!fNoErrIfNotFound) LogF("%s: %s%c%s", LoadResStr("IDS_PRC_FILENOTFOUND"), hGroup.GetFullName().getData(), (char)DirectorySeparator, szFilename);
+		if (!fNoErrIfNotFound) LogF("%s: %s%c%s", LoadResStr("IDS_PRC_FILENOTFOUND"), hGroup.GetFullName().getData(), DirectorySeparator, szFilename);
 		return false;
 	}
 	// determine file type by file extension and load accordingly
@@ -97,7 +97,7 @@ bool C4Surface::Load(C4Group &hGroup, const char *szFilename, bool fOwnPal, bool
 		fSuccess = !!Read(hGroup, fOwnPal);
 	// loading error? log!
 	if (!fSuccess)
-		LogF("%s: %s%c%s", LoadResStr("IDS_ERR_NOFILE"), hGroup.GetFullName().getData(), (char)DirectorySeparator, szFilename);
+		LogF("%s: %s%c%s", LoadResStr("IDS_ERR_NOFILE"), hGroup.GetFullName().getData(), DirectorySeparator, szFilename);
 	// done, success
 	return fSuccess;
 }
@@ -155,11 +155,11 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 			{
 				// Optimize the easy case of a png in the same format as the display
 				// 32 bit
-				uint32_t *pPix = (uint32_t *)(((char *)pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch);
+				uint32_t *pPix = reinterpret_cast<uint32_t *>((reinterpret_cast<char *>(pTexRef->texLock.pBits)) + iY * pTexRef->texLock.Pitch);
 				memcpy(pPix, static_cast<const std::uint32_t *>(bmp->GetPixelAddr32(0, rY)) +
 					tX * iTexSize, maxX * 4);
 				int iX = maxX;
-				while (iX--) { if (((uint8_t *)pPix)[3] == 0xff) *pPix = 0xff000000; ++pPix; }
+				while (iX--) { if (reinterpret_cast<uint8_t *>(pPix)[3] == 0xff) *pPix = 0xff000000; ++pPix; }
 			}
 			else
 #endif
@@ -171,7 +171,7 @@ bool C4Surface::ReadPNG(CStdStream &hGroup)
 					// if color is fully transparent, ensure it's black
 					if (dwCol >> 24 == 0xff) dwCol = 0xff000000;
 					// set pix in surface
-					uint32_t *pPix = (uint32_t *)(((char *)pTexRef->texLock.pBits) + iY * pTexRef->texLock.Pitch + iX * 4);
+					uint32_t *pPix = reinterpret_cast<uint32_t *>((reinterpret_cast<char *>(pTexRef->texLock.pBits)) + iY * pTexRef->texLock.Pitch + iX * 4);
 					*pPix = dwCol;
 				}
 			}

@@ -339,7 +339,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInPacket()
 		uint32_t dwPrevColor = pResolveInfo->GetColor();
 		StdStrBuf sPrevForcedName; sPrevForcedName.Copy(pResolveInfo->GetForcedName());
 		// check attributes: Name and color
-		for (eAttr = C4PlayerInfo::PLRATT_Color; eAttr != C4PlayerInfo::PLRATT_Last; eAttr = (C4PlayerInfo::Attribute)(eAttr + 1))
+		for (eAttr = C4PlayerInfo::PLRATT_Color; eAttr != C4PlayerInfo::PLRATT_Last; eAttr = static_cast<C4PlayerInfo::Attribute>(eAttr + 1))
 		{
 			if (eAttr == C4PlayerInfo::PLRATT_Color)
 			{

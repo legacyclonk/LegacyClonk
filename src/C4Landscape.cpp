@@ -970,7 +970,7 @@ void C4Landscape::DigFree(int32_t tx, int32_t ty, int32_t rad, bool fRequest, C4
 	// Dig free
 	for (ycnt = -rad; ycnt < rad; ycnt++)
 	{
-		iLineWidth = (int32_t)sqrt(double(rad * rad - ycnt * ycnt));
+		iLineWidth = static_cast<int32_t>(sqrt(double(rad * rad - ycnt * ycnt)));
 		iLineY = ty + ycnt;
 		for (xcnt = -iLineWidth; xcnt < iLineWidth + (iLineWidth == 0); xcnt++)
 			if (MatValid(iMaterial = DigFreePix(tx + xcnt, iLineY)))
@@ -1007,7 +1007,7 @@ void C4Landscape::ShakeFree(int32_t tx, int32_t ty, int32_t rad)
 	// Shake free pixels
 	for (ycnt = rad - 1; ycnt >= -rad; ycnt--)
 	{
-		lwdt = (int32_t)sqrt(double(rad * rad - ycnt * ycnt));
+		lwdt = static_cast<int32_t>(sqrt(double(rad * rad - ycnt * ycnt)));
 		dpy = ty + ycnt;
 		for (xcnt = -lwdt; xcnt < lwdt + (lwdt == 0); xcnt++)
 			ShakeFreePix(tx + xcnt, dpy);
@@ -1035,7 +1035,7 @@ void C4Landscape::BlastFree(int32_t tx, int32_t ty, int32_t rad, int32_t grade, 
 	// count pixel before, so BlastShiftTo can be evaluated
 	for (ycnt = -rad; ycnt <= rad; ycnt++)
 	{
-		lwdt = (int32_t)sqrt(double(rad * rad - ycnt * ycnt)); dpy = ty + ycnt;
+		lwdt = static_cast<int32_t>(sqrt(double(rad * rad - ycnt * ycnt))); dpy = ty + ycnt;
 		for (xcnt = -lwdt; xcnt < lwdt + (lwdt == 0); xcnt++)
 			if (MatValid(mat = GetMat(tx + xcnt, dpy)))
 				BlastMatCount[mat]++;
@@ -1044,7 +1044,7 @@ void C4Landscape::BlastFree(int32_t tx, int32_t ty, int32_t rad, int32_t grade, 
 	int32_t iBlastSize = rad * rad * 6283 / 2000; // rad^2 * pi
 	for (ycnt = -rad; ycnt <= rad; ycnt++)
 	{
-		lwdt = (int32_t)sqrt(double(rad * rad - ycnt * ycnt)); dpy = ty + ycnt;
+		lwdt = static_cast<int32_t>(sqrt(double(rad * rad - ycnt * ycnt))); dpy = ty + ycnt;
 		for (xcnt = -lwdt; xcnt < lwdt + (lwdt == 0); xcnt++)
 			BlastFreePix(tx + xcnt, dpy, grade, iBlastSize);
 	}
@@ -1592,7 +1592,7 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 			int32_t iMat = PixCol2Mat(byPix);
 			if (byPix && !MatValid(iMat))
 			{
-				LogFatal(FormatString("Landscape loading error at (%d/%d): Pixel value %d not a valid material!", (int)x, (int)y, (int)byPix).getData());
+				LogFatal(FormatString("Landscape loading error at (%d/%d): Pixel value %d not a valid material!", static_cast<int>(x), static_cast<int>(y), static_cast<int>(byPix)).getData());
 				return false;
 			}
 		}
@@ -2634,7 +2634,7 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 {
 	if (((!szMatTex || !*szMatTex) && !fInsert) || !Inside<int>(iNewIndex, 0x01, 0x7f))
 	{
-		DebugLogF("Cannot insert new texture %s to index %d: Invalid parameters.", (const char *)szMatTex, (int)iNewIndex);
+		DebugLogF("Cannot insert new texture %s to index %d: Invalid parameters.", szMatTex, static_cast<int>(iNewIndex));
 		return false;
 	}
 	// get last mat index - returns zero for not found (valid for insertion mode)
@@ -2649,7 +2649,7 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 		while (Game.TextureMap.GetEntry(byLastMoveIndex))
 			if (--byLastMoveIndex == iNewIndex)
 			{
-				DebugLogF("Cannot insert new texture %s to index %d: No room for insertion.", (const char *)szMatTex, (int)iNewIndex);
+				DebugLogF("Cannot insert new texture %s to index %d: No room for insertion.", szMatTex, static_cast<int>(iNewIndex));
 				return false;
 			}
 		// then move up all other textures first
@@ -2676,7 +2676,7 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 				// new insertion
 				if (!Game.TextureMap.AddEntry(iNewIndex, Material.getData(), Texture.getData()))
 				{
-					LogF("Cannot insert new texture %s to index %d: Texture map entry error", (const char *)szMatTex, (int)iNewIndex);
+					LogF("Cannot insert new texture %s to index %d: Texture map entry error", szMatTex, static_cast<int>(iNewIndex));
 					return false;
 				}
 			}
@@ -2690,13 +2690,13 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 		const C4TexMapEntry *pOld;
 		if ((pOld = Game.TextureMap.GetEntry(iNewIndex)) && !pOld->isNull())
 		{
-			DebugLogF("Cannot move texture %s to index %d: Index occupied by %s-%s.", (const char *)szMatTex, (int)iNewIndex, pOld->GetMaterialName(), pOld->GetTextureName());
+			DebugLogF("Cannot move texture %s to index %d: Index occupied by %s-%s.", szMatTex, static_cast<int>(iNewIndex), pOld->GetMaterialName(), pOld->GetTextureName());
 			return false;
 		}
 		// must only move existing textures
 		if (!iOldIndex)
 		{
-			DebugLogF("Cannot move texture %s to index %d: Texture not found.", (const char *)szMatTex, (int)iNewIndex);
+			DebugLogF("Cannot move texture %s to index %d: Texture not found.", szMatTex, iNewIndex);
 			return false;
 		}
 		// update map

@@ -244,7 +244,7 @@ void C4Shape::Rotate(int32_t iAngle, bool bUpdateVertices)
 	}
 
 	// Enlarge Rect
-	rdia = (int32_t)sqrt(double(x * x + y * y)) + 2;
+	rdia = static_cast<int32_t>(sqrt(double(x * x + y * y))) + 2;
 	x = -rdia;
 	y = -rdia;
 	Wdt = 2 * rdia;
@@ -609,7 +609,7 @@ void C4Shape::CopyFrom(C4Shape rFrom, bool bCpyVertices, bool fCopyVerticesFromS
 		memcpy(VtxContactMat, rVtxFrom.VtxContactMat + iCopyPos, VtxNum * sizeof(*VtxContactMat));
 		// continue: copies other members
 	}
-	*((C4Rect *) this) = rFrom;
+	*static_cast<C4Rect *>(this) = rFrom;
 	AttachMat = rFrom.AttachMat;
 	ContactCNAT = rFrom.ContactCNAT;
 	ContactCount = rFrom.ContactCount;

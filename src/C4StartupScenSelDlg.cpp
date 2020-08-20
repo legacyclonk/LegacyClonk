@@ -143,8 +143,8 @@ bool C4MapFolderData::Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenL
 			if (fctDump.Create(pScen->rcOverlayPos.Wdt, pScen->rcOverlayPos.Hgt, C4FCT_Full, C4FCT_Full))
 			{
 				lpDDraw->Blit(fctBackgroundPicture.Surface,
-					(float)pScen->rcOverlayPos.x, (float)pScen->rcOverlayPos.y,
-					(float)pScen->rcOverlayPos.Wdt, (float)pScen->rcOverlayPos.Hgt,
+					static_cast<float>(pScen->rcOverlayPos.x), static_cast<float>(pScen->rcOverlayPos.y),
+					static_cast<float>(pScen->rcOverlayPos.Wdt), static_cast<float>(pScen->rcOverlayPos.Hgt),
 					fctDump.Surface,
 					0, 0,
 					fctDump.Wdt, fctDump.Hgt);
@@ -251,34 +251,34 @@ void C4MapFolderData::ConvertFacet2ScreenCoord(C4Rect &rcMapArea, bool fAspect)
 		if (fctBackgroundPicture.Wdt * rcMapArea.Hgt > rcMapArea.Wdt * fctBackgroundPicture.Hgt)
 		{
 			// background image is limited by width
-			fBGZoomX = fBGZoomY = (float)rcMapArea.Wdt / fctBackgroundPicture.Wdt;
-			iOffY = std::max<int>(0, (int)(rcMapArea.Hgt - (fBGZoomX * fctBackgroundPicture.Hgt))) / 2;
+			fBGZoomX = fBGZoomY = static_cast<float>(rcMapArea.Wdt) / fctBackgroundPicture.Wdt;
+			iOffY = std::max<int>(0, static_cast<int>(rcMapArea.Hgt - (fBGZoomX * fctBackgroundPicture.Hgt))) / 2;
 		}
 		else
 		{
 			// background image is limited by height
-			fBGZoomX = fBGZoomY = (float)rcMapArea.Hgt / fctBackgroundPicture.Hgt;
-			iOffX = std::max<int>(0, (int)(rcMapArea.Wdt - (fBGZoomY * fctBackgroundPicture.Wdt))) / 2;
+			fBGZoomX = fBGZoomY = static_cast<float>(rcMapArea.Hgt) / fctBackgroundPicture.Hgt;
+			iOffX = std::max<int>(0, static_cast<int>(rcMapArea.Wdt - (fBGZoomY * fctBackgroundPicture.Wdt))) / 2;
 		}
 	}
 	else
 	{
 		// do not keep aspect: Independent X and Y zoom
-		fBGZoomX = (float)rcMapArea.Wdt / fctBackgroundPicture.Wdt;;
-		fBGZoomY = (float)rcMapArea.Hgt / fctBackgroundPicture.Hgt;;
+		fBGZoomX = static_cast<float>(rcMapArea.Wdt) / fctBackgroundPicture.Wdt;;
+		fBGZoomY = static_cast<float>(rcMapArea.Hgt) / fctBackgroundPicture.Hgt;;
 	}
 	iOffX -= rcMapArea.x; iOffY -= rcMapArea.y;
 	C4Rect rcBG; rcBG.Set(0, 0, fctBackgroundPicture.Wdt, fctBackgroundPicture.Hgt);
 	ConvertFacet2ScreenCoord(rcBG, &rcfBG, fBGZoomX, fBGZoomY, iOffX, iOffY);
 	// default for scenario info area: 1/3rd of right area
 	if (!rcScenInfoArea.Wdt)
-		rcScenInfoArea.Set((int32_t)(fctBackgroundPicture.Wdt * 2 / 3), (int32_t)(fctBackgroundPicture.Hgt / 16), (int32_t)(fctBackgroundPicture.Wdt / 3), (int32_t)(fctBackgroundPicture.Hgt * 7 / 8));
+		rcScenInfoArea.Set(static_cast<int32_t>(fctBackgroundPicture.Wdt * 2 / 3), static_cast<int32_t>(fctBackgroundPicture.Hgt / 16), static_cast<int32_t>(fctBackgroundPicture.Wdt / 3), static_cast<int32_t>(fctBackgroundPicture.Hgt * 7 / 8));
 	// assume all facet coordinates are referring to background image zoom; convert them to screen coordinates by applying zoom and offset
 	FLOAT_RECT rcfScenInfoArea;
 	ConvertFacet2ScreenCoord(rcScenInfoArea, &rcfScenInfoArea, fBGZoomX, fBGZoomY, iOffX, iOffY);
-	rcScenInfoArea.x = (int32_t)rcfScenInfoArea.left; rcScenInfoArea.y = (int32_t)rcfScenInfoArea.top;
-	rcScenInfoArea.Wdt = (int32_t)(rcfScenInfoArea.right - rcfScenInfoArea.left);
-	rcScenInfoArea.Hgt = (int32_t)(rcfScenInfoArea.bottom - rcfScenInfoArea.top);
+	rcScenInfoArea.x = static_cast<int32_t>(rcfScenInfoArea.left); rcScenInfoArea.y = static_cast<int32_t>(rcfScenInfoArea.top);
+	rcScenInfoArea.Wdt = static_cast<int32_t>(rcfScenInfoArea.right - rcfScenInfoArea.left);
+	rcScenInfoArea.Hgt = static_cast<int32_t>(rcfScenInfoArea.bottom - rcfScenInfoArea.top);
 	int i;
 	for (i = 0; i < iScenCount; ++i)
 	{
@@ -757,19 +757,19 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 			{
 				// network game: Players may yet join in lobby
 				// only issue a warning for too few players (by setting the error but not returning false here)
-				sErrOut.Format(LoadResStr("IDS_MSG_TOOFEWPLAYERSNET"), (int)iMinPlrCount);
+				sErrOut.Format(LoadResStr("IDS_MSG_TOOFEWPLAYERSNET"), static_cast<int>(iMinPlrCount));
 			}
 			else
 			{
 				// for regular games, this is a fatal no-start-cause
-				sErrOut.Format(LoadResStr("IDS_MSG_TOOFEWPLAYERS"), (int)iMinPlrCount);
+				sErrOut.Format(LoadResStr("IDS_MSG_TOOFEWPLAYERS"), static_cast<int>(iMinPlrCount));
 				return false;
 			}
 		}
 		// scenarios (both normal and savegame) may also impose a maximum player restriction
 		if (iPlrCount > iMaxPlrCount)
 		{
-			sErrOut.Format(LoadResStr("IDS_MSG_TOOMANYPLAYERS"), (int)C4S.Head.MaxPlayer);
+			sErrOut.Format(LoadResStr("IDS_MSG_TOOMANYPLAYERS"), static_cast<int>(C4S.Head.MaxPlayer));
 			return false;
 		}
 	}
@@ -808,7 +808,7 @@ __cdecl
 #endif
 EntrySortFunc(const void *pEl1, const void *pEl2)
 {
-	C4ScenarioListLoader::Entry *pEntry1 = *(C4ScenarioListLoader::Entry * const *) pEl1, *pEntry2 = *(C4ScenarioListLoader::Entry * const *) pEl2;
+	C4ScenarioListLoader::Entry *pEntry1 = *static_cast<C4ScenarioListLoader::Entry * const *>(pEl1), *pEntry2 = *static_cast<C4ScenarioListLoader::Entry * const *>(pEl2);
 	// sort folders before scenarios
 	bool fS1, fS2;
 	if (!(fS1 = !pEntry1->GetIsFolder()) != !true != !(fS2 = !pEntry2->GetIsFolder())) return fS1 - fS2;
@@ -1476,14 +1476,14 @@ void C4StartupScenSelDlg::UpdateList()
 	if (pScenLoader->IsLoading())
 	{
 		StdStrBuf sProgressText;
-		sProgressText.Format(LoadResStr("IDS_MSG_SCENARIODESC_LOADING"), (int32_t)pScenLoader->GetProgressPercent());
+		sProgressText.Format(LoadResStr("IDS_MSG_SCENARIODESC_LOADING"), static_cast<int32_t>(pScenLoader->GetProgressPercent()));
 		pScenSelProgressLabel->SetText(sProgressText.getData());
 		pScenSelProgressLabel->SetVisibility(true);
 		return;
 	}
 	pScenSelProgressLabel->SetVisibility(false);
 	// is this a map folder? Then show the map instead
-	C4ScenarioListLoader::Folder *pFolder = static_cast<C4ScenarioListLoader::Folder *>(pScenLoader->GetCurrFolder());
+	C4ScenarioListLoader::Folder *pFolder = pScenLoader->GetCurrFolder();
 	if (pMapData = pFolder->GetMapData())
 	{
 		pMapData->ResetSelection();

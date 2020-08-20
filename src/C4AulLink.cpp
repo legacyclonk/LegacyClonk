@@ -33,7 +33,7 @@ bool C4AulScript::ResolveAppends(C4DefList *rDefs)
 	if (State != ASS_PREPARSED) return false;
 	for (const auto [a, nowarn] : Appends)
 	{
-		if ((long)a != -1)
+		if (a != static_cast<C4ID>(-1))
 		{
 			C4Def *Def = rDefs->ID2Def(a);
 			if (Def)
@@ -88,7 +88,7 @@ bool C4AulScript::ResolveIncludes(C4DefList *rDefs)
 		if (Def)
 		{
 			// resolve #includes in included script first (#include-chains :( )
-			if (!((C4AulScript &)Def->Script).IncludesResolved)
+			if (!(static_cast<C4AulScript &>(Def->Script)).IncludesResolved)
 				if (!Def->Script.ResolveIncludes(rDefs))
 					continue; // skip this #include
 

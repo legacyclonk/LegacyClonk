@@ -79,12 +79,12 @@ inline bool Key_IsGamepad(C4KeyCode key)
 
 inline uint8_t Key_GetGamepad(C4KeyCode key)
 {
-	return ((uint32_t)key >> 8) & 0xff;
+	return (static_cast<uint32_t>(key) >> 8) & 0xff;
 }
 
 inline uint8_t Key_GetGamepadButton(C4KeyCode key)
 {
-	return ((uint32_t)key) & 0xff;
+	return static_cast<uint32_t>(key) & 0xff;
 }
 
 inline bool Key_IsGamepadButton(C4KeyCode key)

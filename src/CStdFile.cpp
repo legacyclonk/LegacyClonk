@@ -162,7 +162,7 @@ bool CStdFile::Read(void *pBuffer, size_t iSize, size_t *ipFSize)
 	int transfer;
 	if (!pBuffer) return false;
 	if (ModeWrite) return false;
-	uint8_t *bypBuffer = (uint8_t *)pBuffer;
+	uint8_t *bypBuffer = static_cast<uint8_t *>(pBuffer);
 	if (ipFSize) *ipFSize = 0;
 	while (iSize > 0)
 	{
@@ -231,7 +231,7 @@ bool CStdFile::Write(const void *pBuffer, int iSize)
 	int transfer;
 	if (!pBuffer) return false;
 	if (!ModeWrite) return false;
-	uint8_t *bypBuffer = (uint8_t *)pBuffer;
+	const uint8_t *bypBuffer = static_cast<const uint8_t *>(pBuffer);
 	while (iSize > 0)
 	{
 		// Space in buffer: Transfer as much as possible
@@ -254,7 +254,7 @@ bool CStdFile::WriteString(const char *szStr)
 	uint8_t nl[2] = { 0x0D, 0x0A };
 	if (!szStr) return false;
 	int size = SLen(szStr);
-	if (!Write((void *)szStr, size)) return false;
+	if (!Write(static_cast<const void *>(szStr), size)) return false;
 	if (!Write(nl, 2)) return false;
 	return true;
 }

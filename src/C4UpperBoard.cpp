@@ -66,8 +66,8 @@ void C4UpperBoard::Draw(C4Facet &cgo)
 		}
 		fLogoZoom *= 960.f / Game.GraphicsResource.fctLogo.Wdt;
 		if (mode == Small) fLogoZoom *= 8.f / 15.f;
-		cgo2.Set(cgo.Surface, (int32_t)(cgo.Wdt / 2 - (Game.GraphicsResource.fctLogo.Wdt / 2) * fLogoZoom), 0,
-			(int32_t)(Game.GraphicsResource.fctLogo.Wdt * fLogoZoom), (int32_t)(Game.GraphicsResource.fctLogo.Hgt * fLogoZoom));
+		cgo2.Set(cgo.Surface, static_cast<int32_t>(cgo.Wdt / 2 - (Game.GraphicsResource.fctLogo.Wdt / 2) * fLogoZoom), 0,
+			static_cast<int32_t>(Game.GraphicsResource.fctLogo.Wdt * fLogoZoom), static_cast<int32_t>(Game.GraphicsResource.fctLogo.Hgt * fLogoZoom));
 		Game.GraphicsResource.fctLogo.Draw(cgo2);
 	}
 

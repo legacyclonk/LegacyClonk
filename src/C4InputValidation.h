@@ -98,14 +98,14 @@ struct ValidatedStdStrBufBase : public StdStrBuf
 	virtual ~ValidatedStdStrBufBase() {}
 };
 
-template <int V> struct ValidatedStdStrBuf : public ValidatedStdStrBufBase
+template <C4InVal::ValidationOption V> struct ValidatedStdStrBuf : public ValidatedStdStrBufBase
 {
 	ValidatedStdStrBuf(const char *szCopy) : ValidatedStdStrBufBase(szCopy) {}
 	ValidatedStdStrBuf() : ValidatedStdStrBufBase() {}
 
 	virtual bool Validate() override
 	{
-		return C4InVal::ValidateString(*this, (C4InVal::ValidationOption) V);
+		return C4InVal::ValidateString(*this, V);
 	}
 
 	template <class D> inline bool operator==(const D &nValue) const { return static_cast<const StdStrBuf &>(*this) == nValue; }

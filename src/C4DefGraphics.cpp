@@ -61,7 +61,7 @@ bool C4DefGraphics::LoadBitmap(C4Group &hGroup, const char *szFilename, const ch
 	if (szFilenamePNG && hGroup.AccessEntry(szFilenamePNG))
 	{
 		Bitmap = new C4Surface();
-		if (!((C4Surface *)Bitmap)->ReadPNG(hGroup)) return false;
+		if (!Bitmap->ReadPNG(hGroup)) return false;
 	}
 	else
 	{
@@ -669,7 +669,7 @@ void C4GraphicsOverlay::CompileFunc(StdCompiler *pComp)
 	// read ID
 	pComp->Value(iID); pComp->Separator();
 	// read def-graphics
-	pComp->Value(mkDefaultAdapt(C4DefGraphicsAdapt(pSourceGfx), (C4DefGraphics *)nullptr));
+	pComp->Value(mkDefaultAdapt(C4DefGraphicsAdapt(pSourceGfx), nullptr));
 	pComp->Separator();
 	// read mode
 	pComp->Value(mkIntAdapt(eMode)); pComp->Separator();
@@ -774,7 +774,7 @@ void C4GraphicsOverlay::Draw(C4FacetEx &cgo, C4Object *pForObj, int32_t iByPlaye
 		C4DrawTransform trf(Transform, float(iTx), float(iTy));
 		if (fZoomToShape)
 		{
-			float fZoom = std::min<float>((float)pForObj->Shape.Wdt / std::max<int>(fctBlit.Wdt, 1), (float)pForObj->Shape.Hgt / std::max<int>(fctBlit.Hgt, 1));
+			float fZoom = std::min<float>(static_cast<float>(pForObj->Shape.Wdt) / std::max<int>(fctBlit.Wdt, 1), static_cast<float>(pForObj->Shape.Hgt) / std::max<int>(fctBlit.Hgt, 1));
 			trf.ScaleAt(fZoom, fZoom, float(iTx), float(iTy));
 		}
 		fctBlit.DrawT(cgo.Surface, iTx - fctBlit.Wdt / 2 + fctBlit.TargetX, iTy - fctBlit.Hgt / 2 + fctBlit.TargetY, iPhase, 0, &trf);

@@ -286,7 +286,7 @@ void C4PlayerInfo::LoadResource()
 		{
 			dwFlags &= ~PIF_HasRes;
 			// add failed? invalid ressource??! -- TODO: may be too large to load
-			LogF("Error: Could not add resource %d for player %s! Player file too large to load?", (int)ResCore.getID(), (const char *)GetFilename());
+			LogF("Error: Could not add resource %d for player %s! Player file too large to load?", static_cast<int>(ResCore.getID()), GetFilename());
 		}
 }
 
@@ -787,7 +787,7 @@ bool C4PlayerInfoList::AssignPlayerIDs(C4ClientPlayerInfos *pNewClientInfo)
 			if (GetFreePlayerSlotCount() - iJoinsGranted < 1)
 			{
 				// nope - then deny this join!
-				LogF(LoadResStr("IDS_MSG_TOOMANYPLAYERS"), (int)Game.Parameters.MaxPlayers);
+				LogF(LoadResStr("IDS_MSG_TOOMANYPLAYERS"), static_cast<int>(Game.Parameters.MaxPlayers));
 				pNewClientInfo->RemoveIndexedInfo(--i);
 				continue;
 			}
@@ -1377,7 +1377,7 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 					int32_t j = 0, id; C4PlayerInfo *pInfo, *pSavegameInfo;
 					while (pInfo = pkInfo->GetPlayerInfo(j++))
 						if (!(id = pInfo->GetAssociatedSavegamePlayerID()))
-							if (pSavegameInfo = rSavegamePlayers.FindSavegameResumePlayerInfo(pInfo, (MatchingLevel)eMatchingLevel, (MatchingLevel)eMatchingLevel))
+							if (pSavegameInfo = rSavegamePlayers.FindSavegameResumePlayerInfo(pInfo, static_cast<MatchingLevel>(eMatchingLevel), static_cast<MatchingLevel>(eMatchingLevel)))
 							{
 								pInfo->SetAssociatedSavegamePlayer(pSavegameInfo->GetID());
 								if (eMatchingLevel > PML_PlrName)
@@ -1415,7 +1415,7 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 				{
 					// no association for this info: Joins as new player
 					// in savegames, this is unusual. For regular script player restore, it's not
-					if (Game.C4S.Head.SaveGame) LogF(LoadResStr("IDS_PRC_RESUMENOPLRASSOCIATION"), (const char *)pInfo->GetName());
+					if (Game.C4S.Head.SaveGame) LogF(LoadResStr("IDS_PRC_RESUMENOPLRASSOCIATION"), pInfo->GetName());
 				}
 		}
 		// otherwise any remaining players
@@ -1662,7 +1662,7 @@ bool C4PlayerInfoList::SetAsRestoreInfos(C4PlayerInfoList &rFromPlayers, bool fS
 						{
 							C4Client *pGameClient = Game.Clients.getClientByID(pClient->GetClientID());
 							const char *szName = pGameClient ? pGameClient->getName() : "Unknown";
-							sNewName.Format("%s-%s", szName, (const char *)GetFilename(pInfo->GetLocalJoinFilename()));
+							sNewName.Format("%s-%s", szName, GetFilename(pInfo->GetLocalJoinFilename()));
 						}
 						else
 							sNewName.Copy(GetFilename(pInfo->GetFilename()));
@@ -1689,7 +1689,7 @@ bool C4PlayerInfoList::SetAsRestoreInfos(C4PlayerInfoList &rFromPlayers, bool fS
 					if (fSetScriptPlrRefToLocalGroup)
 					{
 						// just compose a unique filename for script player
-						pInfo->SetFilename(FormatString("ScriptPlr-%d.c4p", (int)pInfo->GetID()).getData());
+						pInfo->SetFilename(FormatString("ScriptPlr-%d.c4p", static_cast<int>(pInfo->GetID())).getData());
 					}
 				}
 			}

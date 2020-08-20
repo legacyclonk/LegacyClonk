@@ -135,7 +135,7 @@ void ListBox::DrawElement(C4FacetEx &cgo)
 			// clip
 			if (iY < GetClientRect().y || iY >= GetClientRect().y + GetClientRect().Hgt) continue;
 			// draw
-			lpDDraw->DrawLineDw(cgo.Surface, (float)(iX0 + cgo.TargetX), (float)(iY + cgo.TargetY), (float)(iX1 + cgo.TargetX), (float)(iY + cgo.TargetY), C4GUI_ListBoxBarColor);
+			lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(iX0 + cgo.TargetX), static_cast<float>(iY + cgo.TargetY), static_cast<float>(iX1 + cgo.TargetX), static_cast<float>(iY + cgo.TargetY), C4GUI_ListBoxBarColor);
 		}
 }
 

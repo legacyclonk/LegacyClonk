@@ -635,7 +635,7 @@ C4Object *C4ObjectList::Enumerated(C4Object *pObj)
 	int iPtrNum;
 	// If object is enumerated, convert to enumerated pointer
 	if (iPtrNum = ObjectNumber(pObj))
-		return (C4Object *)(C4EnumPointer1 + iPtrNum);
+		return reinterpret_cast<C4Object *>(C4EnumPointer1 + iPtrNum);
 	// Oops!
 	return 0;
 }
@@ -643,8 +643,8 @@ C4Object *C4ObjectList::Enumerated(C4Object *pObj)
 C4Object *C4ObjectList::Denumerated(C4Object *pObj)
 {
 	// If valid enumeration, convert to pointer
-	if (Inside((long)pObj, C4EnumPointer1, C4EnumPointer2))
-		return ObjectPointer((long)pObj - C4EnumPointer1);
+	if (Inside(reinterpret_cast<long>(pObj), C4EnumPointer1, C4EnumPointer2))
+		return ObjectPointer(reinterpret_cast<long>(pObj) - C4EnumPointer1);
 	// Oops!
 	return nullptr;
 }

@@ -53,7 +53,7 @@ bool OpenURL(const char *szURL)
 	for (int i = 0; argv[i][0]; ++i)
 	{
 		GError *error = 0;
-		if (g_spawn_async(g_get_home_dir(), (char **)argv[i], 0, G_SPAWN_SEARCH_PATH, 0, 0, 0, &error))
+		if (g_spawn_async(g_get_home_dir(), const_cast<gchar**>(argv[i]), 0, G_SPAWN_SEARCH_PATH, 0, 0, 0, &error))
 			return true;
 		else fprintf(stderr, "%s\n", error->message);
 	}

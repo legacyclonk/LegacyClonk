@@ -154,7 +154,7 @@ C4ObjectInfo *C4ObjectInfoList::New(C4ID n_id, C4DefList *pDefs, const char *cpN
 	if (pDef->pClonkNames)
 		cpNames = pDef->pClonkNames->GetData();
 	// Default by type
-	((C4ObjectInfoCore *)pInfo)->Default(n_id, pDefs, cpNames);
+	static_cast<C4ObjectInfoCore *>(pInfo)->Default(n_id, pDefs, cpNames);
 	// Set birthday
 	pInfo->Birthday = static_cast<int32_t>(time(nullptr));
 	// Make valid names

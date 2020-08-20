@@ -188,11 +188,11 @@ bool CStdFont::AddSurface()
 bool CStdFont::CheckRenderedCharSpace(uint32_t iCharWdt, uint32_t iCharHgt)
 {
 	// need to do a line break?
-	if (iCurrentSfcX + iCharWdt >= (uint32_t)iSfcSizes) if (iCurrentSfcX)
+	if (iCurrentSfcX + iCharWdt >= static_cast<uint32_t>(iSfcSizes)) if (iCurrentSfcX)
 	{
 		iCurrentSfcX = 0;
 		iCurrentSfcY += iCharHgt;
-		if (iCurrentSfcY + iCharHgt >= (uint32_t)iSfcSizes)
+		if (iCurrentSfcY + iCharHgt >= static_cast<uint32_t>(iSfcSizes))
 		{
 			// surface is full: Next one
 			if (!AddSurface()) return false;
@@ -307,7 +307,7 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 		{
 			unsigned char bAlpha, bAlphaShadow;
 			if (x < slot->bitmap.width && y < slot->bitmap.rows)
-				bAlpha = 255 - (unsigned char)(slot->bitmap.buffer[slot->bitmap.width * y + x]);
+				bAlpha = 255 - slot->bitmap.buffer[slot->bitmap.width * y + x];
 			else
 				bAlpha = 255;
 			// Make a shadow from the upper-left pixel, and blur with the eight neighbors
@@ -358,7 +358,7 @@ uint32_t CStdFont::GetNextUTF8Character(const char **pszString)
 	{
 		unsigned char c2 = *szString++;
 		if ((c2 & 192) != 128) { *pszString = szString; return '?'; }
-		dwResult = (int(c & 31) << 6) | (c2 & 63); // two char code
+		dwResult = ((c & 31) << 6) | (c2 & 63); // two char code
 	}
 	else if (c >= 224 && c <= 239)
 	{
@@ -366,7 +366,7 @@ uint32_t CStdFont::GetNextUTF8Character(const char **pszString)
 		if ((c2 & 192) != 128) { *pszString = szString; return '?'; }
 		unsigned char c3 = *szString++;
 		if ((c3 & 192) != 128) { *pszString = szString; return '?'; }
-		dwResult = (int(c & 15) << 12) | (int(c2 & 63) << 6) | int(c3 & 63); // three char code
+		dwResult = ((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63); // three char code
 	}
 	else if (c >= 240 && c <= 247)
 	{
@@ -376,7 +376,7 @@ uint32_t CStdFont::GetNextUTF8Character(const char **pszString)
 		if ((c3 & 192) != 128) { *pszString = szString; return '?'; }
 		unsigned char c4 = *szString++;
 		if ((c4 & 192) != 128) { *pszString = szString; return '?'; }
-		dwResult = (int(c & 7) << 18) | (int(c2 & 63) << 12) | (int(c3 & 63) << 6) | int(c4 & 63); // four char code
+		dwResult = ((c & 7) << 18) | ((c2 & 63) << 12) | ((c3 & 63) << 6) | (c4 & 63); // four char code
 	}
 	*pszString = szString;
 	return dwResult;
@@ -842,7 +842,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 			{
 				// check whether linebreak possibility shall be marked here
 				// 2do: What about unicode-spaces?
-				if (c < 256) if (isspace((unsigned char)c) || c == '-')
+				if (c < 256) if (isspace(static_cast<unsigned char>(c)) || c == '-')
 				{
 					szLastBreakPos = szPos;
 					iLastBreakOutLen = pOut->getLength();
@@ -862,7 +862,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 			// line must be broken now
 			// check if a linebreak is possible directly here, because it's a space
 			// only check for space and not for other breakable characters (such as '-'), because the break would happen after those characters instead of at them
-			if (c < 128 && isspace((unsigned char)c))
+			if (c < 128 && isspace(static_cast<unsigned char>(c)))
 			{
 				szLastBreakPos = szPos - 1;
 				iLastBreakOutLen = pOut->getLength();
@@ -878,7 +878,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 			StdStrBuf tempPart;
 			// insert linebreak at linebreak pos
 			// was it a space? Then just overwrite space with a linebreak
-			if (uint8_t(*szLastBreakPos) < 128 && isspace((unsigned char)*szLastBreakPos))
+			if (static_cast<uint8_t>(*szLastBreakPos) < 128 && isspace(static_cast<unsigned char>(*szLastBreakPos)))
 			{
 				*pOut->getMPtr(iLastBreakOutLen - 1) = '\n';
 				if (fCheckMarkup)
@@ -951,7 +951,7 @@ void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, con
 	bool fWasModulated = lpDDraw->GetBlitModulation(dwOldModClr);
 	if (fWasModulated) ModulateClr(dwColor, dwOldModClr);
 	// get alpha fade percentage
-	uint32_t dwAlphaMod = BoundBy<int>((((int)(dwColor >> 0x18) - 0x50) * 0xff) / 0xaf, 0, 255) << 0x18 | 0xffffff;
+	uint32_t dwAlphaMod = BoundBy<int>(((static_cast<int>(dwColor >> 0x18) - 0x50) * 0xff) / 0xaf, 0, 255) << 0x18 | 0xffffff;
 	// adjust text starting position (horizontal only)
 	if (dwFlags & STDFONT_CENTERED)
 	{

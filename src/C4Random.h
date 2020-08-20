@@ -29,7 +29,7 @@ extern unsigned int RandomHold;
 inline void FixedRandom(uint32_t dwSeed)
 {
 	// for SafeRandom
-	srand((unsigned)time(nullptr));
+	srand(static_cast<unsigned>(time(nullptr)));
 	RandomHold = dwSeed;
 	RandomCount = 0;
 }

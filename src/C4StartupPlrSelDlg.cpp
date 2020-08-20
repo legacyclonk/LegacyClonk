@@ -293,9 +293,9 @@ void C4StartupPlrSelDlg::PlayerListItem::SetSelectionInfo(C4GUI::TextWindow *pSe
 	// write info text for player
 	pSelectionInfo->ClearText(false);
 	pSelectionInfo->AddTextLine(FormatString("%s", Core.PrefName).getData(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_DESC_PLAYER"), (int)Core.Score, (int)Core.Rounds, (int)Core.RoundsWon, (int)Core.RoundsLost, TimeString(Core.TotalPlayingTime).getData(), Core.Comment).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
+	pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_DESC_PLAYER"), static_cast<int>(Core.Score), static_cast<int>(Core.Rounds), static_cast<int>(Core.RoundsWon), static_cast<int>(Core.RoundsLost), TimeString(Core.TotalPlayingTime).getData(), Core.Comment).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	if (Core.LastRound.Title[0])
-		pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_DESC_LASTGAME"), Core.LastRound.Title.getData(), DateString(Core.LastRound.Date).getData(), TimeString(Core.LastRound.Duration).getData(), (int)Core.LastRound.FinalScore).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
+		pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_DESC_LASTGAME"), Core.LastRound.Title.getData(), DateString(Core.LastRound.Date).getData(), TimeString(Core.LastRound.Duration).getData(), static_cast<int>(Core.LastRound.FinalScore)).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	pSelectionInfo->UpdateHeight();
 }
 
@@ -471,7 +471,7 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 	StdStrBuf sPromo;
 	int32_t iNextRankExp; StdStrBuf sNextRankName;
 	if (Core.GetNextRankInfo(Game.Rank, &iNextRankExp, &sNextRankName))
-		sPromo.Format(LoadResStr("IDS_DESC_PROMO"), sNextRankName.getData(), (int)iNextRankExp);
+		sPromo.Format(LoadResStr("IDS_DESC_PROMO"), sNextRankName.getData(), static_cast<int>(iNextRankExp));
 	else
 		sPromo.Copy(LoadResStr("IDS_DESC_NOPROMO"));
 	pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_DESC_OBJECT"),
@@ -694,7 +694,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 		// player mode: insert all players
 		const char *szFn;
 		StdStrBuf sSearchPath;
-		sSearchPath.Format("%s%s", (const char *)Config.General.ExePath, (const char *)Config.General.PlayerPath);
+		sSearchPath.Format("%s%s", Config.General.ExePath, Config.General.PlayerPath);
 		PlayerListItem *pFirstActivatedPlrItem = nullptr, *pFirstDeactivatedPlrItem = nullptr, *pPlrItem = nullptr;
 		for (DirectoryIterator i(sSearchPath.getData()); szFn = *i; i++)
 		{

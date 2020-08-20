@@ -40,8 +40,8 @@ void CBltTransform::SetRotate(int iAngle, float fOffX, float fOffY) // set by an
 	// iAngle is in 1/100-degrees (cycling from 0 to 36000)
 	// determine sine and cos of reversed angle in radians
 	// fAngle = -iAngle/100 * pi/180 = iAngle * -pi/18000
-	float fAngle = (float)iAngle * (-1.7453292519943295769236907684886e-4f);
-	float fsin = (float)sin(fAngle); float fcos = (float)cos(fAngle);
+	float fAngle = static_cast<float>(iAngle) * (-1.7453292519943295769236907684886e-4f);
+	float fsin = sinf(fAngle); float fcos = cosf(fAngle);
 	// set matrix values
 	mat[0] = +fcos; mat[1] = +fsin; mat[2] = (1 - fcos) * fOffX - fsin * fOffY;
 	mat[3] = -fsin; mat[4] = +fcos; mat[5] = (1 - fcos) * fOffY + fsin * fOffX;
@@ -183,7 +183,7 @@ bool CPattern::PatternClr(int iX, int iY, uint8_t &byClr, uint32_t &dwClr, CStdP
 	// position zoomed?
 	if (Zoom) { iX /= Zoom; iY /= Zoom; }
 	// modulate position
-	((unsigned int &)iX) %= Wdt; ((unsigned int &)iY) %= Hgt;
+	reinterpret_cast<unsigned int &>(iX) %= Wdt; reinterpret_cast<unsigned int &>(iY) %= Hgt;
 	// new style: modulate clr
 	if (CachedPattern)
 	{
@@ -191,7 +191,7 @@ bool CPattern::PatternClr(int iX, int iY, uint8_t &byClr, uint32_t &dwClr, CStdP
 		if (byClr)
 		{
 			if (Monochrome)
-				ModulateClrMonoA(dwClr, uint8_t(dwPix), uint8_t(dwPix >> 24));
+				ModulateClrMonoA(dwClr, static_cast<uint8_t>(dwPix), static_cast<uint8_t>(dwPix >> 24));
 			else
 				ModulateClrA(dwClr, dwPix);
 			LightenClr(dwClr);
@@ -629,7 +629,7 @@ void CStdDDraw::Blit8Fast(CSurface8 *sfcSource, int fx, int fy,
 		for (int xcnt = 0; xcnt < wdt; ++xcnt)
 		{
 			uint8_t byPix = sfcSource->GetPix(fx + xcnt, fy + ycnt);
-			if (byPix) DrawPixInt(sfcTarget, (float)(tx + xcnt), (float)(ty + ycnt), sfcSource->pPal->GetClr(byPix));
+			if (byPix) DrawPixInt(sfcTarget, static_cast<float>(tx + xcnt), static_cast<float>(ty + ycnt), sfcSource->pPal->GetClr(byPix));
 		}
 	// unlock
 	if (!fRender) sfcTarget->Unlock();
@@ -700,10 +700,10 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 	// set blitting state - done by PerformBlt
 	// get involved texture offsets
 	int iTexSize = sfcSource->iTexSize;
-	int iTexX = (std::max)(int(fx / iTexSize), 0);
-	int iTexY = (std::max)(int(fy / iTexSize), 0);
-	int iTexX2 = (std::min)((int)(fx + fwdt - 1) / iTexSize + 1, sfcSource->iTexX);
-	int iTexY2 = (std::min)((int)(fy + fhgt - 1) / iTexSize + 1, sfcSource->iTexY);
+	int iTexX = (std::max)(static_cast<int>(fx / iTexSize), 0);
+	int iTexY = (std::max)(static_cast<int>(fy / iTexSize), 0);
+	int iTexX2 = (std::min)(static_cast<int>(fx + fwdt - 1) / iTexSize + 1, sfcSource->iTexX);
+	int iTexY2 = (std::min)(static_cast<int>(fy + fhgt - 1) / iTexSize + 1, sfcSource->iTexY);
 	// calc stretch regarding texture size and indent
 	float scaleX2 = scaleX * (iTexSize + DDrawCfg.fTexIndent * 2);
 	float scaleY2 = scaleY * (iTexSize + DDrawCfg.fTexIndent * 2);
@@ -815,25 +815,25 @@ bool CStdDDraw::Blit8(CSurface *sfcSource, int fx, int fy, int fwdt, int fhgt,
 	// transformed, emulated blit
 	// Calculate transform target rect
 	CBltTransform Transform;
-	Transform.SetMoveScale(tx - (float)fx * twdt / fwdt, ty - (float)fy * thgt / fhgt, (float)twdt / fwdt, (float)thgt / fhgt);
+	Transform.SetMoveScale(tx - static_cast<float>(fx) * twdt / fwdt, ty - static_cast<float>(fy) * thgt / fhgt, static_cast<float>(twdt) / fwdt, static_cast<float>(thgt) / fhgt);
 	Transform *= *pTransform;
 	CBltTransform TransformBack;
 	TransformBack.SetAsInv(Transform);
-	float ttx0 = (float)tx, tty0 = (float)ty, ttx1 = (float)(tx + twdt), tty1 = (float)(ty + thgt);
-	float ttx2 = (float)ttx0, tty2 = (float)tty1, ttx3 = (float)ttx1, tty3 = (float)tty0;
+	float ttx0 = static_cast<float>(tx), tty0 = static_cast<float>(ty), ttx1 = static_cast<float>(tx + twdt), tty1 = static_cast<float>(ty + thgt);
+	float ttx2 = ttx0, tty2 = tty1, ttx3 = ttx1, tty3 = tty0;
 	pTransform->TransformPoint(ttx0, tty0);
 	pTransform->TransformPoint(ttx1, tty1);
 	pTransform->TransformPoint(ttx2, tty2);
 	pTransform->TransformPoint(ttx3, tty3);
-	int ttxMin = std::max<int>((int)floor((std::min)((std::min)(ttx0, ttx1), (std::min)(ttx2, ttx3))), 0);
-	int ttxMax = std::min<int>((int)ceil((std::max)((std::max)(ttx0, ttx1), (std::max)(ttx2, ttx3))), sfcTarget->Wdt);
-	int ttyMin = std::max<int>((int)floor((std::min)((std::min)(tty0, tty1), (std::min)(tty2, tty3))), 0);
-	int ttyMax = std::min<int>((int)ceil((std::max)((std::max)(tty0, tty1), (std::max)(tty2, tty3))), sfcTarget->Hgt);
+	int ttxMin = std::max<int>(static_cast<int>(floor((std::min)((std::min)(ttx0, ttx1), (std::min)(ttx2, ttx3)))), 0);
+	int ttxMax = std::min<int>(static_cast<int>(ceil((std::max)((std::max)(ttx0, ttx1), (std::max)(ttx2, ttx3)))), sfcTarget->Wdt);
+	int ttyMin = std::max<int>(static_cast<int>(floor((std::min)((std::min)(tty0, tty1), (std::min)(tty2, tty3)))), 0);
+	int ttyMax = std::min<int>(static_cast<int>(ceil((std::max)((std::max)(tty0, tty1), (std::max)(tty2, tty3)))), sfcTarget->Hgt);
 	// blit within target rect
 	for (int y = ttyMin; y < ttyMax; ++y)
 		for (int x = ttxMin; x < ttxMax; ++x)
 		{
-			float ffx = (float)x, ffy = (float)y;
+			float ffx = static_cast<float>(x), ffy = static_cast<float>(y);
 			TransformBack.TransformPoint(ffx, ffy);
 			int ifx = static_cast<int>(ffx), ify = static_cast<int>(ffy);
 			if (ifx < fx || ify < fy || ifx >= fx + fwdt || ify >= fy + fhgt) continue;
@@ -853,8 +853,8 @@ bool CStdDDraw::BlitRotate(CSurface *sfcSource, int fx, int fy, int fwdt, int fh
 	if (sfcTarget->IsRenderTarget())
 	{
 		CBltTransform rot;
-		rot.SetRotate(iAngle, (float)(tx + tx + twdt) / 2, (float)(ty + ty + thgt) / 2);
-		return Blit(sfcSource, float(fx), float(fy), float(fwdt), float(fhgt), sfcTarget, tx, ty, twdt, thgt, true, &rot);
+		rot.SetRotate(iAngle, static_cast<float>(tx + tx + twdt) / 2, static_cast<float>(ty + ty + thgt) / 2);
+		return Blit(sfcSource, static_cast<float>(fx), static_cast<float>(fy), static_cast<float>(fwdt), static_cast<float>(fhgt), sfcTarget, tx, ty, twdt, thgt, true, &rot);
 	}
 	// Object is first stretched to dest rect, then rotated at place.
 	int xcnt, ycnt, fcx, fcy, tcx, tcy, cpcx, cpcy;
@@ -869,7 +869,7 @@ bool CStdDDraw::BlitRotate(CSurface *sfcSource, int fx, int fy, int fwdt, int fh
 		sfcSource->Unlock(); return false;
 	}
 	// Rectangle centers
-	fcx = static_cast<int>(fwdt / 2); fcy = static_cast<int>(fhgt / 2);
+	fcx = fwdt / 2; fcy = fhgt / 2;
 	tcx = twdt / 2; tcy = thgt / 2;
 	// Adjust angle range
 	while (iAngle < 0) iAngle += 36000; while (iAngle > 35999) iAngle -= 36000;
@@ -924,8 +924,8 @@ bool CStdDDraw::BlitRotate(CSurface *sfcSource, int fx, int fy, int fwdt, int fh
 				// Convert to coordinate as in dest
 				cpcx = cpcx * twdt / fwdt; cpcy = cpcy * thgt / fhgt;
 				// Rotate current pixel coordinate
-				npcx = (int)(mtx[0] * cpcx + mtx[1] * cpcy);
-				npcy = (int)(mtx[2] * cpcx + mtx[3] * cpcy);
+				npcx = static_cast<int>(mtx[0] * cpcx + mtx[1] * cpcy);
+				npcy = static_cast<int>(mtx[2] * cpcx + mtx[3] * cpcy);
 				// Place in dest
 				sfcTarget->BltPix(tx + tcx + npcx,     ty + tcy + npcy, sfcSource, xcnt + fx, ycnt + fy, fTransparency);
 				sfcTarget->BltPix(tx + tcx + npcx + 1, ty + tcy + npcy, sfcSource, xcnt + fx, ycnt + fy, fTransparency);
@@ -975,7 +975,7 @@ bool CStdDDraw::BlitSurface(CSurface *sfcSurface, CSurface *sfcTarget, int tx, i
 {
 	if (fBlitBase)
 	{
-		Blit(sfcSurface, 0.0f, 0.0f, (float)sfcSurface->Wdt, (float)sfcSurface->Hgt, sfcTarget, tx, ty, sfcSurface->Wdt, sfcSurface->Hgt, false);
+		Blit(sfcSurface, 0.0f, 0.0f, static_cast<float>(sfcSurface->Wdt), static_cast<float>(sfcSurface->Hgt), sfcTarget, tx, ty, sfcSurface->Wdt, sfcSurface->Hgt, false);
 		return true;
 	}
 	else
@@ -983,7 +983,7 @@ bool CStdDDraw::BlitSurface(CSurface *sfcSurface, CSurface *sfcTarget, int tx, i
 		if (!sfcSurface) return false;
 		CSurface *pSfcBase = sfcSurface->pMainSfc;
 		sfcSurface->pMainSfc = nullptr;
-		Blit(sfcSurface, 0.0f, 0.0f, (float)sfcSurface->Wdt, (float)sfcSurface->Hgt, sfcTarget, tx, ty, sfcSurface->Wdt, sfcSurface->Hgt, false);
+		Blit(sfcSurface, 0.0f, 0.0f, static_cast<float>(sfcSurface->Wdt), static_cast<float>(sfcSurface->Hgt), sfcTarget, tx, ty, sfcSurface->Wdt, sfcSurface->Hgt, false);
 		sfcSurface->pMainSfc = pSfcBase;
 		return true;
 	}
@@ -1014,7 +1014,7 @@ bool CStdDDraw::BlitSurfaceTile(CSurface *sfcSurface, CSurface *sfcTarget, int i
 			// Horizontal blit size
 			iBlitX = (std::max)(static_cast<int>(std::floor((iToX - iX) / scale)), 0); iBlitWdt = (std::min)(iSourceWdt, iToX + iToWdt - iX) - iBlitX;
 			// Blit
-			if (!Blit(sfcSurface, float(iBlitX), float(iBlitY), float(iBlitWdt), float(iBlitHgt), sfcTarget, iX + iBlitX, iY + iBlitY, iBlitWdt, iBlitHgt, fSrcColKey, &transform)) return false;
+			if (!Blit(sfcSurface, static_cast<float>(iBlitX), static_cast<float>(iBlitY), static_cast<float>(iBlitWdt), static_cast<float>(iBlitHgt), sfcTarget, iX + iBlitX, iY + iBlitY, iBlitWdt, iBlitHgt, fSrcColKey, &transform)) return false;
 		}
 	}
 	return true;
@@ -1051,7 +1051,7 @@ bool CStdDDraw::BlitSurfaceTile2(CSurface *sfcSurface, CSurface *sfcTarget, int 
 			if (iX < iToX) { iBlitX = iToX - iX; iBlitWdt += iX - iToX; }
 			iOver = tx + iBlitWdt - iToWdt; if (iOver > 0) iBlitWdt -= iOver;
 			// blit
-			if (!Blit(sfcSurface, float(iBlitX), float(iBlitY), float(iBlitWdt), float(iBlitHgt), sfcTarget, tx + iToX, ty + iToY, iBlitWdt, iBlitHgt, fSrcColKey)) return false;
+			if (!Blit(sfcSurface, static_cast<float>(iBlitX), static_cast<float>(iBlitY), static_cast<float>(iBlitWdt), static_cast<float>(iBlitHgt), sfcTarget, tx + iToX, ty + iToY, iBlitWdt, iBlitHgt, fSrcColKey)) return false;
 			// next col
 			tx += iBlitWdt;
 		}
@@ -1107,7 +1107,7 @@ void CStdDDraw::DrawPix(CSurface *sfcDest, float tx, float ty, uint32_t dwClr)
 	ClrByCurrentBlitMod(dwClr);
 	// apply modulation map
 	if (fUseClrModMap)
-		ModulateClr(dwClr, pClrModMap->GetModAt((int)tx, (int)ty));
+		ModulateClr(dwClr, pClrModMap->GetModAt(static_cast<int>(tx), static_cast<int>(ty)));
 	// Draw
 	DrawPixInt(sfcDest, tx, ty, dwClr);
 }
@@ -1212,10 +1212,10 @@ void CStdDDraw::DrawFrame(CSurface *sfcDest, int x1, int y1, int x2, int y2, uin
 
 void CStdDDraw::DrawFrameDw(CSurface *sfcDest, int x1, int y1, int x2, int y2, uint32_t dwClr) // make these parameters float...?
 {
-	DrawLineDw(sfcDest, (float)x1, (float)y1, (float)x2, (float)y1, dwClr);
-	DrawLineDw(sfcDest, (float)x2, (float)y1, (float)x2, (float)y2, dwClr);
-	DrawLineDw(sfcDest, (float)x2, (float)y2, (float)x1, (float)y2, dwClr);
-	DrawLineDw(sfcDest, (float)x1, (float)y2, (float)x1, (float)y1, dwClr);
+	DrawLineDw(sfcDest, static_cast<float>(x1), static_cast<float>(y1), static_cast<float>(x2), static_cast<float>(y1), dwClr);
+	DrawLineDw(sfcDest, static_cast<float>(x2), static_cast<float>(y1), static_cast<float>(x2), static_cast<float>(y2), dwClr);
+	DrawLineDw(sfcDest, static_cast<float>(x2), static_cast<float>(y2), static_cast<float>(x1), static_cast<float>(y2), dwClr);
+	DrawLineDw(sfcDest, static_cast<float>(x1), static_cast<float>(y2), static_cast<float>(x1), static_cast<float>(y1), dwClr);
 }
 
 // Globally locked surface variables - for DrawLine callback crap
@@ -1225,7 +1225,7 @@ void CStdDDraw::DrawPatternedCircle(CSurface *sfcDest, int x, int y, int r, uint
 	if (!sfcDest->Lock()) return;
 	for (int ycnt = -r; ycnt < r; ycnt++)
 	{
-		int lwdt = (int)sqrt(float(r * r - ycnt * ycnt));
+		int lwdt = static_cast<int>(sqrt(static_cast<float>(r * r - ycnt * ycnt)));
 		// Set line
 		for (int xcnt = x - lwdt; xcnt < x + lwdt; ++xcnt)
 		{

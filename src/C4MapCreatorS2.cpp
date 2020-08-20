@@ -638,7 +638,7 @@ void C4MCMap::Default()
 	// map player extend
 	MapCreator->PlayerCount = (std::max)(MapCreator->PlayerCount, 1);
 	if (MapCreator->Landscape->MapPlayerExtend)
-		Wdt = (std::min)(Wdt * (std::min)(MapCreator->PlayerCount, (int)C4S_MaxMapPlayerExtend), (int)MapCreator->Landscape->MapWdt.Max);
+		Wdt = (std::min)(Wdt * (std::min)(MapCreator->PlayerCount, C4S_MaxMapPlayerExtend), MapCreator->Landscape->MapWdt.Max);
 }
 
 bool C4MCMap::RenderTo(uint8_t *pToBuf, int32_t iPitch)
@@ -762,7 +762,7 @@ C4MCMap *C4MapCreatorS2::GetMap(const char *szMapName)
 		// by name...
 		if (pNode = GetNodeByName(szMapName))
 			if (pNode->Type() == MCN_Map)
-				pMap = (C4MCMap *)pNode;
+				pMap = static_cast<C4MCMap *>(pNode);
 	}
 	else
 	{
@@ -770,7 +770,7 @@ C4MCMap *C4MapCreatorS2::GetMap(const char *szMapName)
 		for (pNode = ChildL; pNode; pNode = pNode->Prev)
 			if (pNode->Type() == MCN_Map)
 			{
-				pMap = (C4MCMap *)pNode;
+				pMap = static_cast<C4MCMap *>(pNode);
 				break;
 			}
 	}
@@ -850,7 +850,7 @@ void C4MCParser::Clear()
 
 bool C4MCParser::AdvanceSpaces()
 {
-	char C, C2 = (char)0;
+	char C, C2{0};
 	// defaultly, not in comment
 	int32_t InComment = 0; // 0/1/2 = no comment/line comment/multi line comment
 	// don't go past end
@@ -870,10 +870,10 @@ bool C4MCParser::AdvanceSpaces()
 				default: CPos--; return true;
 				}
 			}
-			else if ((uint8_t)C > 32) return true;
+			else if (static_cast<uint8_t>(C) > 32) return true;
 			break;
 		case 1:
-			if (((uint8_t)C == 13) || ((uint8_t)C == 10)) InComment = 0;
+			if ((static_cast<uint8_t>(C) == 13) || (static_cast<uint8_t>(C) == 10)) InComment = 0;
 			break;
 		case 2:
 			if ((C == '/') && (C2 == '*')) InComment = 0;
@@ -1133,7 +1133,7 @@ void C4MCParser::ParseTo(C4MCNode *pToNode)
 				{
 				case MCN_Overlay:
 					// create overlay
-					pNewNode = new C4MCOverlay(pToNode, *((C4MCOverlay *)pCpyNode), false);
+					pNewNode = new C4MCOverlay(pToNode, *static_cast<C4MCOverlay *>(pCpyNode), false);
 					break;
 				case MCN_Map:
 					// maps not allowed
@@ -1295,7 +1295,7 @@ void C4MCParser::ParseFile(const char *szFilename, C4Group *pGrp)
 	// alloc mem
 	Code = new char[iSize + 1];
 	// read file
-	pGrp->Read((void *)Code, iSize);
+	pGrp->Read(static_cast<void *>(Code), iSize);
 	Code[iSize] = 0;
 	// parse it
 	CPos = Code;
@@ -1423,8 +1423,8 @@ bool AlgoMandel(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 	uint32_t iMandelIter = a.Evaluate(C4MC_SizeRes) != 0 ? a.Evaluate(C4MC_SizeRes) : 1000;
 	if (iMandelIter < 10) iMandelIter = 10;
 	// calc c & ci values
-	double c = ((double)iX / z / pOvrl->Wdt - .5 * ((double)pOvrl->ZoomX / z)) * 4;
-	double ci = ((double)iY / z / pOvrl->Hgt - .5 * ((double)pOvrl->ZoomY / z)) * 4;
+	double c = (static_cast<double>(iX) / z / pOvrl->Wdt - .5 * (static_cast<double>(pOvrl->ZoomX) / z)) * 4;
+	double ci = (static_cast<double>(iY) / z / pOvrl->Hgt - .5 * (static_cast<double>(pOvrl->ZoomY) / z)) * 4;
 	// create _z & _zi
 	double _z = c, _zi = ci;
 	double xz;
@@ -1488,9 +1488,9 @@ bool AlgoPolygon(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 	for (pChild = pOvrl->ChildL; pChild->Prev; pChild = pChild->Prev)
 		if (pChild->Type() == MCN_Point)
 		{
-			uX = ((C4MCPoint *)pChild)->X * 100;
+			uX = static_cast<C4MCPoint *>(pChild)->X * 100;
 			lX = uX;
-			uY = ((C4MCPoint *)pChild)->Y * 100;
+			uY = static_cast<C4MCPoint *>(pChild)->Y * 100;
 			if (iY != uY) break;
 		}
 	pStartChild = pChild->Next;
@@ -1501,8 +1501,8 @@ bool AlgoPolygon(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 		if (!pChild) pChild = pOvrl->Child0;
 		if (pChild->Type() == MCN_Point)
 		{
-			cX = ((C4MCPoint *)pChild)->X * 100;
-			cY = ((C4MCPoint *)pChild)->Y * 100;
+			cX = static_cast<C4MCPoint *>(pChild)->X * 100;
+			cY = static_cast<C4MCPoint *>(pChild)->Y * 100;
 			// If looking at line
 			if (ignore)
 			{

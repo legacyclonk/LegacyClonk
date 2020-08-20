@@ -319,12 +319,12 @@ void C4AulScriptFunc::ParseDesc()
 		if (DPos2)
 		{
 			char Val[C4AUL_MAX_String + 1];
-			SCopyUntil(DPos2 + 1, (char *)&Val, *DPos, C4AUL_MAX_String);
+			SCopyUntil(DPos2 + 1, Val, *DPos, C4AUL_MAX_String);
 			// Image
 			if (SEqual2(DPos0, C4AUL_Image))
 			{
 				// image: special contents-image?
-				if (SEqual((const char *)&Val, C4AUL_Contents))
+				if (SEqual(Val, C4AUL_Contents))
 					idImage = C4ID_Contents;
 				else
 				{
@@ -334,7 +334,7 @@ void C4AulScriptFunc::ParseDesc()
 					if (*colon == ':') *colon = '\0';
 					else colon = nullptr;
 					// get image id
-					idImage = C4Id((const char *)&Val);
+					idImage = C4Id(Val);
 					// get image phase
 					if (colon)
 						iImagePhase = atoi(colon + 1);
@@ -343,7 +343,7 @@ void C4AulScriptFunc::ParseDesc()
 			// Condition
 			else if (SEqual2(DPos0, C4AUL_Condition))
 				// condition? get condition func
-				Condition = Owner->GetFuncRecursive((const char *)&Val);
+				Condition = Owner->GetFuncRecursive(Val);
 			// Method
 			else if (SEqual2(DPos0, C4AUL_Method))
 			{
@@ -376,7 +376,7 @@ void C4AulScriptFunc::ParseDesc()
 
 bool C4AulParseState::AdvanceSpaces()
 {
-	char C, C2 = (char)0;
+	char C, C2{0};
 	// defaultly, not in comment
 	int InComment = 0; // 0/1/2 = no comment/line comment/multi line comment
 	// don't go past end
@@ -396,10 +396,10 @@ bool C4AulParseState::AdvanceSpaces()
 				default: SPos--; return true;
 				}
 			}
-			else if ((uint8_t)C > 32) return true;
+			else if (static_cast<uint8_t>(C) > 32) return true;
 			break;
 		case 1:
-			if (((uint8_t)C == 13) || ((uint8_t)C == 10)) InComment = 0;
+			if ((static_cast<uint8_t>(C) == 13) || (static_cast<uint8_t>(C) == 10)) InComment = 0;
 			break;
 		case 2:
 			if ((C == '/') && (C2 == '*')) InComment = 0;
@@ -650,9 +650,9 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 				// unrecognized char
 				// show appropriate error message
 				if (C >= '!' && C <= '~')
-					throw C4AulParseError(this, FormatString("unexpected character '%c' found", (int)(unsigned char)C).getData());
+					throw C4AulParseError(this, FormatString("unexpected character '%c' found", C).getData());
 				else
-					throw C4AulParseError(this, FormatString("unexpected character 0x%x found", (int)(unsigned char)C).getData());
+					throw C4AulParseError(this, FormatString("unexpected character 0x%x found", C).getData());
 			}
 			break;
 		}
@@ -754,7 +754,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 				// check if valid
 				if (!LooksLikeID(pToken)) throw C4AulParseError(this, "erroneous Ident: ", pToken);
 				// get id of it
-				*pInt = (int)C4Id(pToken);
+				*pInt = static_cast<intptr_t>(C4Id(pToken));
 				return ATT_C4ID;
 			}
 			break;
@@ -1389,7 +1389,7 @@ void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
 	// store byte code pos
 	// (relative position to code start; code pointer may change while
 	//  parsing)
-	Fn->Code = (C4AulBCC *)(CPos - Code);
+	Fn->Code = reinterpret_cast<C4AulBCC *>(CPos - Code);
 	// parse
 	C4AulParseState state(Fn, this, C4AulParseState::PARSER);
 	// get first token
@@ -1431,7 +1431,7 @@ void C4AulParseState::Parse_Script()
 				// get id of script to include
 				if (TokenType != ATT_C4ID)
 					UnexpectedToken("id constant");
-				C4ID Id = (C4ID)cInt;
+				C4ID Id = static_cast<C4ID>(cInt);
 				Shift();
 				// add to include list
 				a->Includes.push_front(Id);
@@ -1447,7 +1447,7 @@ void C4AulParseState::Parse_Script()
 				switch (TokenType)
 				{
 				case ATT_C4ID:
-					Id = (C4ID)cInt;
+					Id = static_cast<C4ID>(cInt);
 					Shift();
 					if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_NoWarn))
 					{
@@ -3126,7 +3126,7 @@ bool C4AulParseState::Parse_Expression3()
 			if (TokenType == ATT_C4ID && eCallType != AB_CALLGLOBAL)
 			{
 				// from now on, stupid func names must stay outside ;P
-				idNS = (C4ID)cInt;
+				idNS = static_cast<C4ID>(cInt);
 				Shift();
 				// expect namespace-operator now
 				Match(ATT_DCOLON);
@@ -3585,9 +3585,9 @@ bool C4AulScript::Parse()
 					switch (eType)
 					{
 					case AB_FUNC: case AB_CALL: case AB_CALLFS: case AB_CALLGLOBAL:
-						LogSilentF("%s\t'%s'\n", GetTTName(eType), X ? ((C4AulFunc *)X)->Name : ""); break;
+						LogSilentF("%s\t'%s'\n", GetTTName(eType), X ? (reinterpret_cast<C4AulFunc *>(X))->Name : ""); break;
 					case AB_STRING:
-						LogSilentF("%s\t'%s'\n", GetTTName(eType), X ? ((C4String *)X)->Data.getData() : ""); break;
+						LogSilentF("%s\t'%s'\n", GetTTName(eType), X ? (reinterpret_cast<C4String *>(X))->Data.getData() : ""); break;
 					default:
 						LogSilentF("%s\t%ld\n", GetTTName(eType), X); break;
 					}

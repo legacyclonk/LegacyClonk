@@ -286,7 +286,7 @@ public:
 
 	virtual void DrawLine(CSurface *sfcTarget, int x1, int y1, int x2, int y2, uint8_t byCol)
 	{
-		DrawLineDw(sfcTarget, (float)x1, (float)y1, (float)x2, (float)y2, Pal.GetClr(byCol));
+		DrawLineDw(sfcTarget, static_cast<float>(x1), static_cast<float>(y1), static_cast<float>(x2), static_cast<float>(y2), Pal.GetClr(byCol));
 	}
 
 	virtual void DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr) = 0;

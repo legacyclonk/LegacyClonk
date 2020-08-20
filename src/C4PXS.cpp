@@ -253,7 +253,7 @@ void C4PXSSystem::Draw(C4FacetEx &cgo)
 					if (pMat->PXSFace.Surface && Config.Graphics.PXSGfx)
 						continue;
 					// old-style: unicolored pixels or lines
-					uint32_t dwMatClr = Game.Landscape.GetPal()->GetClr((uint8_t)(Mat2PixColDefault(pxp->Mat)));
+					uint32_t dwMatClr = Game.Landscape.GetPal()->GetClr(Mat2PixColDefault(pxp->Mat));
 					if (fixtoi(pxp->xdir) || fixtoi(pxp->ydir))
 					{
 						// lines for stuff that goes whooosh!

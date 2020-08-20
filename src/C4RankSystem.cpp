@@ -225,7 +225,7 @@ StdStrBuf C4RankSystem::GetRankName(int iRank, bool fReturnLastIfOver)
 int C4RankSystem::Experience(int iRank)
 {
 	if (iRank < 0) return 0;
-	return (int)(pow(double(iRank), 1.5) * RankBase);
+	return static_cast<int>(pow(double(iRank), 1.5) * RankBase);
 }
 
 int C4RankSystem::RankByExperience(int iExp)
@@ -272,7 +272,7 @@ bool C4RankSystem::DrawRankSymbol(C4FacetExSurface *fctSymbol, int32_t iRank, C4
 		{
 			// extended rank: draw
 			// extension star defaults to captain star; but use extended symbols if they are in the gfx
-			C4Facet fctExtended = (const C4Facet &)Game.GraphicsResource.fctCaptain;
+			C4Facet fctExtended = static_cast<const C4Facet &>(Game.GraphicsResource.fctCaptain);
 			if (iMaxRankSym > iRankSymbolCount)
 			{
 				int32_t iExtended = iRank / iRankSymbolCount - 1 + iRankSymbolCount;
@@ -282,7 +282,7 @@ bool C4RankSystem::DrawRankSymbol(C4FacetExSurface *fctSymbol, int32_t iRank, C4
 					iExtended = iMaxRankSym - 1;
 					iBaseRank = iRankSymbolCount - 1;
 				}
-				fctExtended = (const C4Facet &)pfctRankSymbols->GetPhase(iExtended);
+				fctExtended = static_cast<const C4Facet &>(pfctRankSymbols->GetPhase(iExtended));
 			}
 			int32_t iSize = pfctRankSymbols->Wdt;
 			if (!cgoDrawDirect)

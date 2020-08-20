@@ -668,8 +668,8 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	float fRot[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 	if (pObj->r && pObj->Def->Rotateable)
 	{
-		fRot[0] = (float) cosf((float)(pObj->r * M_PI / 180.0));
-		fRot[1] = (float)-sinf((float)(pObj->r * M_PI / 180.0));
+		fRot[0] =  cosf(static_cast<float>(pObj->r * M_PI / 180.0));
+		fRot[1] = -sinf(static_cast<float>(pObj->r * M_PI / 180.0));
 		fRot[2] = -fRot[1];
 		fRot[3] = fRot[0];
 		// rotated objects usually better burn from the center
@@ -680,7 +680,7 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	iCount = (std::max)(2, iCount * iWdtCon / 100);
 
 	// calc base for particle size parameter
-	iA = (int32_t)(sqrt(sqrt(double(iWidth * iHeight)) * (iCon + 20) / 120) * iRelParticleSize);
+	iA = static_cast<int32_t>(sqrt(sqrt(double(iWidth * iHeight)) * (iCon + 20) / 120) * iRelParticleSize);
 
 	// create a double set of particles; first quarter normal (Fire); remaining three quarters additive (Fire2)
 	for (int32_t i = 0; i < iCount * 2; ++i)
@@ -718,7 +718,7 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 		if (iFireMode != C4Fx_FireMode_Object)
 		{
 			// ...for normal fire proc
-			iXDir = iRandX * iCon / 400 - int32_t(iPx / 3) - int32_t(fixtof(pObj->xdir) * 3);
+			iXDir = iRandX * iCon / 400 - (iPx / 3) - int32_t(fixtof(pObj->xdir) * 3);
 			iYDir = -SafeRandom(15 + iHeight * iCon / 300) - 1 - int32_t(fixtof(pObj->ydir) * 3);
 		}
 		else
@@ -730,7 +730,7 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 		}
 
 		// OK; create it!
-		Game.Particles.Create(pPartDef, float(iX) + fRot[0] * iPx + fRot[1] * iPy, float(iY) + fRot[2] * iPx + fRot[3] * iPy, (float)iXDir / 10.0f, (float)iYDir / 10.0f, (float)iSize / 10.0f, dwClr, pParticleList, pObj);
+		Game.Particles.Create(pPartDef, float(iX) + fRot[0] * iPx + fRot[1] * iPy, float(iY) + fRot[2] * iPx + fRot[3] * iPy, iXDir / 10.0f, iYDir / 10.0f, iSize / 10.0f, dwClr, pParticleList, pObj);
 	}
 
 	return C4Fx_OK;
@@ -868,9 +868,9 @@ void Explosion(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t i
 		// create particle
 		if (pPrtDef)
 		{
-			Game.Particles.Create(pPrtDef, (float)tx, (float)ty, 0.0f, 0.0f, (float)level, 0);
+			Game.Particles.Create(pPrtDef, static_cast<float>(tx), static_cast<float>(ty), 0.0f, 0.0f, static_cast<float>(level), 0);
 			if (SEqual2(pPrtDef->Name.getData(), "Blast"))
-				Game.Particles.Cast(Game.Particles.pFSpark, level / 5 + 1, (float)tx, (float)ty, level, level / 2 + 1.0f, 0x00ef0000, level + 1.0f, 0xffff1010);
+				Game.Particles.Cast(Game.Particles.pFSpark, level / 5 + 1, static_cast<float>(tx), static_cast<float>(ty), level, level / 2 + 1.0f, 0x00ef0000, level + 1.0f, 0xffff1010);
 		}
 		else if (pBlast = Game.CreateObjectConstruction(idEffect ? idEffect : C4Id("FXB1"), pByObj, iCausedBy, tx, ty + level, FullCon * level / 20))
 			pBlast->Call(PSF_Activate);

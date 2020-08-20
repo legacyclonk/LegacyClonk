@@ -86,7 +86,7 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 			{
 				*rsString.getMPtr(1) = '_'; fValid = false;
 			}
-			else if (!isalpha((unsigned char)*rsString.getData()) || (*rsString.getPtr(2) != '\\' && *rsString.getPtr(2) != '/'))
+			else if (!isalpha(static_cast<unsigned char>(*rsString.getData())) || (*rsString.getPtr(2) != '\\' && *rsString.getPtr(2) != '/'))
 			{
 				*rsString.getMData() = *rsString.getMPtr(1) = '_'; fValid = false;
 			}

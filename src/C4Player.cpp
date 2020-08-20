@@ -1577,9 +1577,9 @@ void C4Player::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(SelectCount,              "SelectCount",       0));
 	pComp->Value(mkNamingAdapt(SelectFlash,              "SelectFlash",       0));
 	pComp->Value(mkNamingAdapt(CursorFlash,              "CursorFlash",       0));
-	pComp->Value(mkNamingAdapt((int32_t &)Cursor,        "Cursor",            0));
-	pComp->Value(mkNamingAdapt((int32_t &)ViewCursor,    "ViewCursor",        0));
-	pComp->Value(mkNamingAdapt((int32_t &)Captain,       "Captain",           0));
+	pComp->Value(mkNamingAdapt(reinterpret_cast<int32_t &>(Cursor),        "Cursor",            0));
+	pComp->Value(mkNamingAdapt(reinterpret_cast<int32_t &>(ViewCursor),    "ViewCursor",        0));
+	pComp->Value(mkNamingAdapt(reinterpret_cast<int32_t &>(Captain),       "Captain",           0));
 	pComp->Value(mkNamingAdapt(LastCom,                  "LastCom",           0));
 	pComp->Value(mkNamingAdapt(LastComDelay,             "LastComDel",        0));
 	pComp->Value(mkNamingAdapt(PressedComs,              "PressedComs",       0));
@@ -1947,7 +1947,7 @@ void C4Player::FoWGenerators2Map(CClrModAddMap &rMap, int iOffX, int iOffY)
 	for (clnk = FoWViewObjs.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 		if (!cobj->Contained || cobj->Contained->Def->ClosedContainer != 1)
 			if (cobj->PlrViewRange < 0)
-				rMap.AddModulation(cobj->x + iOffX, cobj->y + iOffY, -cobj->PlrViewRange, -cobj->PlrViewRange + 200, ((uint32_t)cobj->ColorMod) >> 24);
+				rMap.AddModulation(cobj->x + iOffX, cobj->y + iOffY, -cobj->PlrViewRange, -cobj->PlrViewRange + 200, cobj->ColorMod >> 24);
 }
 
 bool C4Player::FoWIsVisible(int32_t x, int32_t y)

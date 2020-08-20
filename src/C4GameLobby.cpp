@@ -46,7 +46,7 @@ StdStrBuf C4PacketCountdown::GetCountdownMsg(bool fInitialMsg) const
 {
 	const char *szCountdownMsg;
 	if (iCountdown < AlmostStartCountdownTime && !fInitialMsg) szCountdownMsg = "%d..."; else szCountdownMsg = LoadResStr("IDS_PRC_COUNTDOWN");
-	return FormatString(szCountdownMsg, (int)iCountdown);
+	return FormatString(szCountdownMsg, static_cast<int>(iCountdown));
 }
 
 // ScenDescs
@@ -100,7 +100,7 @@ void ScenDesc::Update()
 	}
 	else
 	{
-		pDescBox->AddTextLine(FormatString(LoadResStr("IDS_MSG_SCENARIODESC_LOADING"), (int)pRes->getPresentPercent()).getData(),
+		pDescBox->AddTextLine(FormatString(LoadResStr("IDS_MSG_SCENARIODESC_LOADING"), static_cast<int>(pRes->getPresentPercent())).getData(),
 			&rTextFont, C4GUI_MessageFontClr, false, true);
 	}
 	pDescBox->UpdateHeight();
@@ -130,7 +130,7 @@ void ScenDesc::Deactivate()
 
 MainDlg::MainDlg(bool fHost)
 	: C4GUI::FullscreenDialog(!Game.Parameters.ScenarioTitle ?
-	(const char *)LoadResStr("IDS_DLG_LOBBY") :
+	LoadResStr("IDS_DLG_LOBBY") :
 		FormatString("%s - %s", Game.Parameters.ScenarioTitle.getData(), LoadResStr("IDS_DLG_LOBBY")).getData(),
 		Game.Parameters.ScenarioTitle.getData()),
 	pPlayerList(nullptr), pResList(nullptr), pChatBox(nullptr), pRightTabLbl(nullptr), pRightTab(nullptr),
@@ -450,10 +450,9 @@ void MainDlg::Start(int32_t iCountdownTime)
 		Game.Network.StartLobbyCountdown(iCountdownTime);
 }
 
-C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
+C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool fPastingMore)
 {
 	// get edit text
-	C4GUI::Edit *pEdt = reinterpret_cast<C4GUI::Edit *>(edt);
 	const char *szInputText = pEdt->GetText();
 	// no input?
 	if (!szInputText || !*szInputText)

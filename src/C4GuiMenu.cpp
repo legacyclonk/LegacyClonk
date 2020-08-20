@@ -472,7 +472,7 @@ void ContextMenu::CheckOpenSubmenu()
 	// anything selected?
 	if (!pSelectedItem) return;
 	// get as entry
-	Entry *pSelEntry = (Entry *)pSelectedItem;
+	Entry *pSelEntry = static_cast<Entry *>(pSelectedItem);
 	// has submenu handler?
 	ContextHandler *pSubmenuHandler = pSelEntry->pSubmenuHandler;
 	if (!pSubmenuHandler) return;
@@ -516,7 +516,7 @@ void ContextMenu::DoOK()
 	// anything selected?
 	if (!pSelectedItem) return;
 	// get as entry
-	Entry *pSelEntry = (Entry *)pSelectedItem;
+	Entry *pSelEntry = static_cast<Entry *>(pSelectedItem);
 	// get CB; take over pointer
 	MenuHandler *pCallback = pSelEntry->GetAndZeroCallback();
 	Element *pTarget = this->pTarget;

@@ -528,9 +528,9 @@ void C4Network2ClientListDlg::Update()
 	// Compose status text
 	StdStrBuf sStatusText;
 	sStatusText.Format("Tick %d, Behind %d, Rate %d, PreSend %d, ACT: %d",
-		(int)Game.Control.ControlTick, (int)Game.Control.Network.GetBehind(Game.Control.ControlTick),
-		(int)Game.Control.ControlRate, (int)Game.Control.Network.getControlPreSend(),
-		(int)Game.Control.Network.getAvgControlSendTime());
+		static_cast<int>(Game.Control.ControlTick), static_cast<int>(Game.Control.Network.GetBehind(Game.Control.ControlTick)),
+		static_cast<int>(Game.Control.ControlRate), static_cast<int>(Game.Control.Network.getControlPreSend()),
+		static_cast<int>(Game.Control.Network.getAvgControlSendTime()));
 	// Update status label
 	pStatusLabel->SetText(sStatusText.getData());
 }
@@ -860,7 +860,7 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 		iMinVal = ((iMinVal - (iMinVal < 0)) / ddv + (iMinVal < 0)) * ddv;
 	ValueType dv = iMaxVal - iMinVal; TimeType dt = iMaxTime - iMinTime;
 	// axis calculations
-	sbuf.Format("-%d", (int)(std::max)(Abs(iMaxVal), Abs(iMinVal)));
+	sbuf.Format("-%d", static_cast<int>((std::max)(Abs(iMaxVal), Abs(iMinVal))));
 	rFont.GetTextExtent(sbuf.getData(), XAxisMinStepWdt, YAxisMinStepHgt, false);
 	YAxisWdt += XAxisMinStepWdt; XAxisHgt += YAxisMinStepHgt;
 	XAxisMinStepWdt += 2; YAxisMinStepHgt += 2;
@@ -907,7 +907,7 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 	{
 		iX = tx + tw * (iTime - iMinTime) / dt;
 		lpDDraw->DrawVerticalLine(cgo.Surface, iX, ty + th + 1, ty + th + AxisMarkerLen, CGray3);
-		sbuf.Format("%d", (int)iTime);
+		sbuf.Format("%d", static_cast<int>(iTime));
 		lpDDraw->TextOut(sbuf.getData(), rFont, 1.0f, cgo.Surface, iX, ty + th + AxisMarkerLen, 0xff7f7f7f, ACenter, false);
 	}
 	iVal = int(((iMinVal - (iMinVal > 0)) / iYAxisSteps + (iMinVal > 0)) * iYAxisSteps);
@@ -915,7 +915,7 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 	{
 		iY = ty + th - int((iVal - iMinVal) / dv * th);
 		lpDDraw->DrawHorizontalLine(cgo.Surface, tx - AxisMarkerLen, tx - 1, iY, CGray3);
-		sbuf.Format("%d", (int)iVal);
+		sbuf.Format("%d", static_cast<int>(iVal));
 		lpDDraw->TextOut(sbuf.getData(), rFont, 1.0f, cgo.Surface, tx - AxisMarkerLen, iY - rFont.GetLineHeight() / 2, 0xff7f7f7f, ARight, false);
 	}
 	// draw graph series(es)
@@ -930,7 +930,7 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 			iTime = iMinTime + dt * iX / tw;
 			if (!Inside(iTime, iThisMinTime, iThisMaxTime)) continue;
 			int iY2 = int((-pSeries->GetValue(iTime) + iMinVal) * th / dv) + ty + th;
-			if (fAnyVal) lpDDraw->DrawLineDw(cgo.Surface, (float)(tx + iX - 1), (float)iY, (float)(tx + iX), (float)iY2, pSeries->GetColorDw());
+			if (fAnyVal) lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(tx + iX - 1), static_cast<float>(iY), static_cast<float>(tx + iX), static_cast<float>(iY2), pSeries->GetColorDw());
 			iY = iY2;
 			fAnyVal = true;
 		}

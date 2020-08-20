@@ -61,7 +61,7 @@ void C4Action::GetBridgeData(int32_t &riBridgeTime, bool &rfMoveClonk, bool &rfW
 {
 	// mask from this->Data
 	uint32_t uiData = Data;
-	riBridgeTime = (uint32_t(uiData) >> 16);
+	riBridgeTime = uiData >> 16;
 	rfMoveClonk = !!(uiData & 0x100);
 	rfWall = !!(uiData & 0x200);
 	riBridgeMaterial = (uiData & 0xff);
@@ -441,23 +441,23 @@ void C4Object::DrawFace(C4FacetEx &cgo, int32_t cgoX, int32_t cgoY, int32_t iPha
 	const int swdt = Def->Shape.Wdt;
 	const int shgt = Def->Shape.Hgt;
 	// Grow Type Display
-	float fx = (float)(swdt * iPhaseX);
-	float fy = (float)(shgt * iPhaseY);
-	float fwdt = (float)swdt;
-	float fhgt = (float)shgt;
+	float fx = static_cast<float>(swdt * iPhaseX);
+	float fy = static_cast<float>(shgt * iPhaseY);
+	float fwdt = static_cast<float>(swdt);
+	float fhgt = static_cast<float>(shgt);
 
-	float tx = (float)(cgoX + (Shape.Wdt - swdt * Con / FullCon) / 2);
-	float ty = (float)(cgoY + (Shape.Hgt - shgt * Con / FullCon) / 2);
-	float twdt = (float)(swdt * Con / FullCon);
-	float thgt = (float)(shgt * Con / FullCon);
+	float tx = static_cast<float>(cgoX + (Shape.Wdt - swdt * Con / FullCon) / 2);
+	float ty = static_cast<float>(cgoY + (Shape.Hgt - shgt * Con / FullCon) / 2);
+	float twdt = static_cast<float>(swdt * Con / FullCon);
+	float thgt = static_cast<float>(shgt * Con / FullCon);
 
 	// Construction Type Display
 	if (!Def->GrowthType)
 	{
-		tx = (float)cgoX + (Shape.Wdt - swdt) / 2.0f;
-		twdt = (float)swdt;
-		fy += (float)shgt * std::max<int32_t>(FullCon - Con, 0) / FullCon;
-		fhgt = (float)std::min<int32_t>(shgt * Con / FullCon, shgt);
+		tx = static_cast<float>(cgoX) + (Shape.Wdt - swdt) / 2.0f;
+		twdt = static_cast<float>(swdt);
+		fy += static_cast<float>(shgt * std::max<int32_t>(FullCon - Con, 0) / FullCon);
+		fhgt = static_cast<float>(std::min<int32_t>(shgt * Con / FullCon, shgt));
 	}
 
 	// Straight
@@ -2431,14 +2431,14 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 							cgo.X + cox + Action.FacetX,
 							cgo.Y + coy + Action.FacetY,
 							iPhase, Action.DrawDir,
-							pDrawTransform ? &C4DrawTransform(*pDrawTransform, (float)Shape.Wdt / 2 + cgo.X + cox, (float)Shape.Hgt / 2 + cgo.Y + coy) : nullptr);
+							pDrawTransform ? &C4DrawTransform(*pDrawTransform, static_cast<float>(Shape.Wdt) / 2 + cgo.X + cox, static_cast<float>(Shape.Hgt) / 2 + cgo.Y + coy) : nullptr);
 					// Growth strechted
 					else
 						Action.Facet.DrawXT(cgo.Surface,
 							cgo.X + cox, cgo.Y + coy,
 							Shape.Wdt, Shape.Hgt,
 							iPhase, Action.DrawDir,
-							pDrawTransform ? &C4DrawTransform(*pDrawTransform, (float)Shape.Wdt / 2 + cgo.X + cox, (float)Shape.Hgt / 2 + cgo.Y + coy) : nullptr);
+							pDrawTransform ? &C4DrawTransform(*pDrawTransform, static_cast<float>(Shape.Wdt) / 2 + cgo.X + cox, static_cast<float>(Shape.Hgt) / 2 + cgo.Y + coy) : nullptr);
 				}
 			}
 		}
@@ -2768,7 +2768,7 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(C4DefGraphicsAdapt(pGraphics),           "Graphics",           &Def->Graphics));
 	pComp->Value(mkNamingPtrAdapt(pDrawTransform,                       "DrawTransform"));
 	pComp->Value(mkNamingPtrAdapt(pEffects,                             "Effects"));
-	pComp->Value(mkNamingAdapt(C4GraphicsOverlayListAdapt(pGfxOverlay), "GfxOverlay",         (C4GraphicsOverlay *)nullptr));
+	pComp->Value(mkNamingAdapt(C4GraphicsOverlayListAdapt(pGfxOverlay), "GfxOverlay",         nullptr));
 
 	if (PhysicalTemporary)
 	{

@@ -188,11 +188,11 @@ void C4Command::Default()
 
 static bool ObjectAddWaypoint(int32_t iX, int32_t iY, intptr_t iTransferTarget, intptr_t ipObject)
 {
-	C4Object *cObj = (C4Object *)ipObject; if (!cObj) return false;
+	C4Object *cObj = reinterpret_cast<C4Object *>(ipObject); if (!cObj) return false;
 
 	// Transfer waypoint
 	if (iTransferTarget)
-		return cObj->AddCommand(C4CMD_Transfer, (C4Object *)iTransferTarget, iX, iY, 0, nullptr, false);
+		return cObj->AddCommand(C4CMD_Transfer, reinterpret_cast<C4Object *>(iTransferTarget), iX, iY, 0, nullptr, false);
 
 	// Solid offset
 	AdjustSolidOffset(iX, iY, cObj->Shape.Wdt / 2, cObj->Shape.Hgt / 2);
@@ -241,7 +241,7 @@ void C4Command::MoveTo()
 						if (!Game.PathFinder.Find(cObj->x, cObj->y,
 							Tx._getInt(), Ty,
 							&ObjectAddWaypoint,
-							(intptr_t)cObj)) // intptr for 64bit?
+							reinterpret_cast<intptr_t>(cObj))) // intptr for 64bit?
 						{
 							/* Path not found: react? */ PathChecked = true; /* recheck delay */
 						}
@@ -2414,15 +2414,15 @@ void C4Command::CompileFunc(StdCompiler *pComp)
 
 void C4Command::DenumeratePointers()
 {
-	Target = Game.Objects.ObjectPointer((long)Target);
-	Target2 = Game.Objects.ObjectPointer((long)Target2);
+	Target = Game.Objects.ObjectPointer(reinterpret_cast<intptr_t>(Target));
+	Target2 = Game.Objects.ObjectPointer(reinterpret_cast<intptr_t>(Target2));
 	Tx.DenumeratePointer();
 }
 
 void C4Command::EnumeratePointers()
 {
-	Target = (C4Object *)Game.Objects.ObjectNumber(Target);
-	Target2 = (C4Object *)Game.Objects.ObjectNumber(Target2);
+	Target = reinterpret_cast<C4Object *>(Game.Objects.ObjectNumber(Target));
+	Target2 = reinterpret_cast<C4Object *>(Game.Objects.ObjectNumber(Target2));
 }
 
 int32_t C4Command::CallFailed()

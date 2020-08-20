@@ -89,7 +89,7 @@ void Tabular::Sheet::DrawCaption(C4FacetEx &cgo, int32_t x, int32_t y, int32_t i
 				cgoIcon.X -= iTxtWdt / 2;
 				x += iTxtHgt / 2;
 			}
-			Icon::GetIconFacet((Icons)icoTitle).Draw(cgoIcon);
+			Icon::GetIconFacet(static_cast<Icons>(icoTitle)).Draw(cgoIcon);
 		}
 		// text
 		if (!fLarge && fHasCloseButton) x -= iTxtHgt / 2;
@@ -281,7 +281,7 @@ void Tabular::SheetsChanged()
 		iSheetSpacing = (eTabPos == tbLeft) ? -10 : 20;
 		int32_t iSheetNum = 0, iTotalHgt = iSheetOff;
 		iCaptionLengthTotal = iSheetOff;
-		for (pSheet = (Sheet *)GetFirst(); pSheet; pSheet = (Sheet *)pSheet->GetNext())
+		for (pSheet = static_cast<Sheet *>(GetFirst()); pSheet; pSheet = static_cast<Sheet *>(pSheet->GetNext()))
 		{
 			int32_t iTabWidth, iTabHeight;
 			pSheet->GetCaptionSize(&iTabWidth, &iTabHeight, HasLargeCaptions(), pSheet == pActiveSheet, pfctClip, pfctIcons, pSheetCaptionFont);
@@ -381,7 +381,7 @@ void Tabular::DrawElement(C4FacetEx &cgo)
 	int32_t iScrollSize = GetTopSize();
 	if (fScrollingLeft) d -= iCaptionScrollPos + iScrollSize;
 	// tabs
-	for (Sheet *pSheet = (Sheet *)GetFirst(); pSheet; pSheet = (Sheet *)pSheet->GetNext())
+	for (Sheet *pSheet = static_cast<Sheet *>(GetFirst()); pSheet; pSheet = static_cast<Sheet *>(pSheet->GetNext()))
 	{
 		// get tab size
 		int32_t iTabWidth, iTabHeight;
@@ -410,12 +410,12 @@ void Tabular::DrawElement(C4FacetEx &cgo)
 			uint32_t dwClr = (pSheet == pActiveSheet) ? C4GUI_ActiveTabBGColor : C4GUI_StandardBGColor;
 			lpDDraw->DrawQuadDw(cgo.Surface, vtx, dwClr, dwClr, dwClr, dwClr);
 			// draw caption frame
-			lpDDraw->DrawLineDw(cgo.Surface, (float)vtx[0] - 1, (float)vtx[1], (float)vtx[2] - 1, (float)vtx[3], C4GUI_BorderColorA1);
-			lpDDraw->DrawLineDw(cgo.Surface, (float)vtx[2] - 1, (float)vtx[3], (float)vtx[4] - fLeft, (float)vtx[5], C4GUI_BorderColorA1);
-			lpDDraw->DrawLineDw(cgo.Surface, (float)vtx[4], (float)vtx[5], (float)vtx[6], (float)vtx[7], C4GUI_BorderColorA1);
-			lpDDraw->DrawLineDw(cgo.Surface, (float)vtx[0], (float)vtx[1] + fLeft, (float)vtx[2], (float)vtx[3] + fLeft, C4GUI_BorderColorA2);
-			lpDDraw->DrawLineDw(cgo.Surface, (float)vtx[2] - !fLeft, (float)vtx[3] + 1, (float)vtx[4], (float)vtx[5] + !fLeft, C4GUI_BorderColorA2);
-			lpDDraw->DrawLineDw(cgo.Surface, (float)vtx[4] + 1, (float)vtx[5] + fLeft, (float)vtx[6], (float)vtx[7] + fLeft, C4GUI_BorderColorA2);
+			lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(vtx[0] - 1), static_cast<float>(vtx[1]), static_cast<float>(vtx[2] - 1), static_cast<float>(vtx[3]), C4GUI_BorderColorA1);
+			lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(vtx[2] - 1), static_cast<float>(vtx[3]), static_cast<float>(vtx[4] - fLeft), static_cast<float>(vtx[5]), C4GUI_BorderColorA1);
+			lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(vtx[4]), static_cast<float>(vtx[5]), static_cast<float>(vtx[6]), static_cast<float>(vtx[7]), C4GUI_BorderColorA1);
+			lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(vtx[0]), static_cast<float>(vtx[1] + fLeft), static_cast<float>(vtx[2]), static_cast<float>(vtx[3] + fLeft), C4GUI_BorderColorA2);
+			lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(vtx[2] - !fLeft), static_cast<float>(vtx[3] + 1), static_cast<float>(vtx[4]), static_cast<float>(vtx[5] + !fLeft), C4GUI_BorderColorA2);
+			lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(vtx[4] + 1), static_cast<float>(vtx[5] + fLeft), static_cast<float>(vtx[6]), static_cast<float>(vtx[7] + fLeft), C4GUI_BorderColorA2);
 		}
 		// draw caption text
 		int32_t iCptTextX = fLeft ? (x0 - GetLeftSize() + 10) : (d + iTabWidth / 2);
@@ -439,10 +439,10 @@ void Tabular::DrawElement(C4FacetEx &cgo)
 	// draw tab border line across everything but active tab
 	if (!fGfx) if (ad0 || ad1)
 	{
-		lpDDraw->DrawLineDw(cgo.Surface, (float)x0, (float)y0, (float)(fLeft ? x0 : ad0), (float)(fLeft ? ad0 : y0), C4GUI_BorderColorA1);
-		lpDDraw->DrawLineDw(cgo.Surface, (float)(x0 + 1), (float)(y0 + 1), (float)((fLeft ? x0 : ad0) + 1), (float)((fLeft ? ad0 : y0) + 1), C4GUI_BorderColorA2);
-		lpDDraw->DrawLineDw(cgo.Surface, (float)(fLeft ? x0 : ad1), (float)(fLeft ? ad1 : y0), (float)(fLeft ? x0 : x1), (float)(fLeft ? y1 : y0), C4GUI_BorderColorA1);
-		lpDDraw->DrawLineDw(cgo.Surface, (float)((fLeft ? x0 : ad1) + 1), (float)((fLeft ? ad1 : y0) + 1), (float)((fLeft ? x0 : x1) + 1), (float)((fLeft ? y1 : y0) + 1), C4GUI_BorderColorA2);
+		lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x0), static_cast<float>(y0), static_cast<float>(fLeft ? x0 : ad0), static_cast<float>(fLeft ? ad0 : y0), C4GUI_BorderColorA1);
+		lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x0 + 1), static_cast<float>(y0 + 1), static_cast<float>((fLeft ? x0 : ad0) + 1), static_cast<float>((fLeft ? ad0 : y0) + 1), C4GUI_BorderColorA2);
+		lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(fLeft ? x0 : ad1), static_cast<float>(fLeft ? ad1 : y0), static_cast<float>(fLeft ? x0 : x1), static_cast<float>(fLeft ? y1 : y0), C4GUI_BorderColorA1);
+		lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>((fLeft ? x0 : ad1) + 1), static_cast<float>((fLeft ? ad1 : y0) + 1), static_cast<float>((fLeft ? x0 : x1) + 1), static_cast<float>((fLeft ? y1 : y0) + 1), C4GUI_BorderColorA2);
 	}
 	// main area bg in gfx: Atop inactive tabs
 	if (fGfx)
@@ -495,7 +495,7 @@ void Tabular::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY
 				}
 			}
 			// check on sheet captions
-			if (!fProcessed) for (Sheet *pSheet = (Sheet *)GetFirst(); pSheet; pSheet = (Sheet *)pSheet->GetNext())
+			if (!fProcessed) for (Sheet *pSheet = static_cast<Sheet *>(GetFirst()); pSheet; pSheet = static_cast<Sheet *>(pSheet->GetNext()))
 			{
 				// default: Mouse not on close button
 				pSheet->SetCloseButtonHighlight(false);
@@ -542,7 +542,7 @@ void Tabular::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY
 void Tabular::MouseLeaveCaptionArea()
 {
 	// no more close buttons or scroll buttons highlighted
-	for (Sheet *pSheet = (Sheet *)GetFirst(); pSheet; pSheet = (Sheet *)pSheet->GetNext())
+	for (Sheet *pSheet = static_cast<Sheet *>(GetFirst()); pSheet; pSheet = static_cast<Sheet *>(pSheet->GetNext()))
 	{
 		// default: Mouse not on close button
 		pSheet->SetCloseButtonHighlight(false);
@@ -576,7 +576,7 @@ void Tabular::RemoveElement(Element *pChild)
 	if (pChild == pActiveSheet)
 	{
 		// select new active sheet
-		pActiveSheet = (Sheet *)GetFirst();
+		pActiveSheet = static_cast<Sheet *>(GetFirst());
 		SelectionChanged(false);
 	}
 	// update sheet labels

@@ -419,21 +419,21 @@ void C4EditCursor::DrawSelectMark(C4Facet &cgo)
 
 	if (!cgo.Surface) return;
 
-	Application.DDraw->DrawPix(cgo.Surface, (float) cgo.X,      (float) cgo.Y,      0xFFFFFF);
-	Application.DDraw->DrawPix(cgo.Surface, (float)(cgo.X + 1), (float) cgo.Y,      0xFFFFFF);
-	Application.DDraw->DrawPix(cgo.Surface, (float) cgo.X,      (float)(cgo.Y + 1), 0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X),     static_cast<float>(cgo.Y),     0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X + 1), static_cast<float>(cgo.Y),     0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X),     static_cast<float>(cgo.Y + 1), 0xFFFFFF);
 
-	Application.DDraw->DrawPix(cgo.Surface, (float) cgo.X,      (float)(cgo.Y + cgo.Hgt - 1), 0xFFFFFF);
-	Application.DDraw->DrawPix(cgo.Surface, (float)(cgo.X + 1), (float)(cgo.Y + cgo.Hgt - 1), 0xFFFFFF);
-	Application.DDraw->DrawPix(cgo.Surface, (float) cgo.X,      (float)(cgo.Y + cgo.Hgt - 2), 0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X),     static_cast<float>(cgo.Y + cgo.Hgt - 1), 0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X + 1), static_cast<float>(cgo.Y + cgo.Hgt - 1), 0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X),     static_cast<float>(cgo.Y + cgo.Hgt - 2), 0xFFFFFF);
 
-	Application.DDraw->DrawPix(cgo.Surface, (float)(cgo.X + cgo.Wdt - 1), (float) cgo.Y,      0xFFFFFF);
-	Application.DDraw->DrawPix(cgo.Surface, (float)(cgo.X + cgo.Wdt - 2), (float) cgo.Y,      0xFFFFFF);
-	Application.DDraw->DrawPix(cgo.Surface, (float)(cgo.X + cgo.Wdt - 1), (float)(cgo.Y + 1), 0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X + cgo.Wdt - 1), static_cast<float>(cgo.Y),     0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X + cgo.Wdt - 2), static_cast<float>(cgo.Y),     0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X + cgo.Wdt - 1), static_cast<float>(cgo.Y + 1), 0xFFFFFF);
 
-	Application.DDraw->DrawPix(cgo.Surface, (float)(cgo.X + cgo.Wdt - 1), (float)(cgo.Y + cgo.Hgt - 1), 0xFFFFFF);
-	Application.DDraw->DrawPix(cgo.Surface, (float)(cgo.X + cgo.Wdt - 2), (float)(cgo.Y + cgo.Hgt - 1), 0xFFFFFF);
-	Application.DDraw->DrawPix(cgo.Surface, (float)(cgo.X + cgo.Wdt - 1), (float)(cgo.Y + cgo.Hgt - 2), 0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X + cgo.Wdt - 1), static_cast<float>(cgo.Y + cgo.Hgt - 1), 0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X + cgo.Wdt - 2), static_cast<float>(cgo.Y + cgo.Hgt - 1), 0xFFFFFF);
+	Application.DDraw->DrawPix(cgo.Surface, static_cast<float>(cgo.X + cgo.Wdt - 1), static_cast<float>(cgo.Y + cgo.Hgt - 2), 0xFFFFFF);
 }
 
 void C4EditCursor::MoveSelection(int32_t iXOff, int32_t iYOff)

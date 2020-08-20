@@ -170,7 +170,7 @@ bool C4TableGraph::DumpToFile(const StdStrBuf &rszFilename, bool fAppend) const
 	StdStrBuf buf;
 	for (int iWriteTime = GetStartTime(); iWriteTime < iEndTime; ++iWriteTime)
 	{
-		buf.Format("%d\t%d\n\r", (int)iWriteTime, (int)GetValue(iWriteTime));
+		buf.Format("%d\t%d\n\r", static_cast<int>(iWriteTime), static_cast<int>(GetValue(iWriteTime)));
 		out.WriteString(buf.getData());
 	}
 	return true;
@@ -212,7 +212,7 @@ void C4TableGraph::Update() const
 		ValueType iSum = 0, iSumWeight = 0, iWeight;
 		for (int iSumTime = (std::max)(iUpdateTime - iAvgRange, iStartTime); iSumTime < (std::min)(iUpdateTime + iAvgFwRange + 1, iTime); ++iSumTime)
 		{
-			iWeight = (ValueType)iAvgRange - Abs(iUpdateTime - iSumTime) + 1;
+			iWeight = static_cast<ValueType>(iAvgRange) - Abs(iUpdateTime - iSumTime) + 1;
 			iSum += GetAtValue(iSumTime) * iWeight;
 			iSumWeight += iWeight;
 		}
@@ -348,8 +348,8 @@ void C4Network2Stats::ExecuteSecond()
 void C4Network2Stats::ExecuteControlFrame()
 {
 	// control rate may have updated: always convert values to actions per minute
-	statControls.SetMultiplier((C4Graph::ValueType) 1000 / 38 / Game.Control.ControlRate);
-	statActions.SetMultiplier((C4Graph::ValueType) 1000 / 38 * 60 / Game.Control.ControlRate);
+	statControls.SetMultiplier(static_cast<C4Graph::ValueType>(1000) / 38 / Game.Control.ControlRate);
+	statActions.SetMultiplier(static_cast<C4Graph::ValueType>(1000) / 38 * 60 / Game.Control.ControlRate);
 	// register and reset control counts for all players
 	for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next)
 	{

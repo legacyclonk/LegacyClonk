@@ -412,7 +412,7 @@ void C4Network2IRCClient::OnCommand(const char *szSender, const char *szCommand,
 {
 	CStdLock Lock(&CSec);
 	// Numeric command?
-	if (isdigit((unsigned char)*szCommand) && SLen(szCommand) == 3)
+	if (isdigit(static_cast<unsigned char>(*szCommand)) && SLen(szCommand) == 3)
 	{
 		OnNumericCommand(szSender, atoi(szCommand), szParameters);
 		return;

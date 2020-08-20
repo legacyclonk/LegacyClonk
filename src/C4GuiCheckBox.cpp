@@ -123,7 +123,7 @@ void CheckBox::DrawElement(C4FacetEx &cgo)
 	else
 	{
 		yOff = 0;
-		fZoom = (float)rcBounds.Hgt / (std::max)(pUseFont->GetLineHeight(), 1);
+		fZoom = static_cast<float>(rcBounds.Hgt) / (std::max)(pUseFont->GetLineHeight(), 1);
 	}
 	lpDDraw->TextOut(sCaption.getData(), *pUseFont, fZoom, cgo.Surface, x0 + rcBounds.Hgt + C4GUI_CheckBoxLabelSpacing, y0 + yOff, fEnabled ? dwEnabledClr : dwDisabledClr, ALeft, true);
 	// selection marker

@@ -116,14 +116,14 @@ bool CSurface8::Read(CStdStream &hGroup, bool fOwnPal)
 	// is it 8bpp?
 	if (BitmapInfo.Info.biBitCount == 8)
 	{
-		if (!hGroup.Read(((uint8_t *)&BitmapInfo) + sizeof(CBitmapInfo), sizeof(BitmapInfo) - sizeof(CBitmapInfo))) return false;
+		if (!hGroup.Read((reinterpret_cast<uint8_t *>(&BitmapInfo)) + sizeof(CBitmapInfo), sizeof(BitmapInfo) - sizeof(CBitmapInfo))) return false;
 		if (!hGroup.Advance(BitmapInfo.FileBitsOffset())) return false;
 	}
 	else
 	{
 		// read 24bpp
 		if (BitmapInfo.Info.biBitCount != 24) return false;
-		if (!hGroup.Advance(((CBitmapInfo)BitmapInfo).FileBitsOffset())) return false;
+		if (!hGroup.Advance((static_cast<CBitmapInfo>(BitmapInfo)).FileBitsOffset())) return false;
 	}
 
 	// Create and lock surface
@@ -229,7 +229,7 @@ void CSurface8::Circle(int x, int y, int r, uint8_t col)
 {
 	for (int ycnt = -r; ycnt < r; ycnt++)
 	{
-		int lwdt = (int)sqrt(float(r * r - ycnt * ycnt));
+		int lwdt = static_cast<int>(sqrt(float(r * r - ycnt * ycnt)));
 		for (int xcnt = 2 * lwdt - 1; xcnt >= 0; xcnt--)
 			SetPix(x - lwdt + xcnt, y + ycnt, col);
 	}

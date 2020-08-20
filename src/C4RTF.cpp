@@ -51,7 +51,7 @@ void C4RTFFile::ChangeDest(StdStrBuf &sResult, int iDest)
 	// nothing to do if text is already skipped
 	if (pState->dest == dsSkip) return;
 	// otherwise, set new dest (always skip)
-	pState->dest = (DestState)iDest;
+	pState->dest = static_cast<DestState>(iDest);
 }
 
 void C4RTFFile::SpecialKeyword(StdStrBuf &sResult, int iKeyw, int iParam)
@@ -121,8 +121,9 @@ void C4RTFFile::ParseKeyword(StdStrBuf &sResult, size_t &iPos)
 	char szParameter[20 + 1]; *szParameter = 0;
 
 	AssertNoEOF(iPos);
-	char c = ((const char *)sRTF.getData())[iPos++];
-	if (!isalpha((unsigned char)c))
+	const auto rtfString = static_cast<const char *>(sRTF.getData());
+	char c = rtfString[iPos++];
+	if (!isalpha(static_cast<unsigned char>(c)))
 	{
 		// parse direct control symbol
 		szKeyword[0] = c;
@@ -140,16 +141,16 @@ void C4RTFFile::ParseKeyword(StdStrBuf &sResult, size_t &iPos)
 			// do not go past rtf file
 			if (iPos >= sRTF.getSize()) break;
 			// next char
-			c = ((const char *)sRTF.getData())[iPos++];
-		} while (isalpha((unsigned char)c));
+			c = rtfString[iPos++];
+		} while (isalpha(static_cast<unsigned char>(c)));
 		*szWrite = 0;
 		// parameter is a negative number?
 		if (c == '-')
 		{
 			iSign = -1;
-			if (iPos < sRTF.getSize()) c = ((const char *)sRTF.getData())[iPos++];
+			if (iPos < sRTF.getSize()) c = rtfString[iPos++];
 		}
-		if (isdigit((unsigned char)c))
+		if (isdigit(static_cast<unsigned char>(c)))
 		{
 			// get parameter as number
 			char *szWrite = szParameter;
@@ -161,8 +162,8 @@ void C4RTFFile::ParseKeyword(StdStrBuf &sResult, size_t &iPos)
 				// do not go past rtf file
 				if (iPos >= sRTF.getSize()) break;
 				// next char
-				c = ((const char *)sRTF.getData())[iPos++];
-			} while (isdigit((unsigned char)c));
+				c = rtfString[iPos++];
+			} while (isdigit(static_cast<unsigned char>(c)));
 			*szWrite = 0;
 			iParamInt = atoi(szParameter) * iSign;
 			fHasIntParam = true;
@@ -201,7 +202,7 @@ void C4RTFFile::ParseChars(StdStrBuf &sResult, const char *szChars)
 void C4RTFFile::ParseHexChar(StdStrBuf &sResult, char c)
 {
 	pState->bHex = pState->bHex << 4;
-	if (isdigit((unsigned char)c))
+	if (isdigit(static_cast<unsigned char>(c)))
 		pState->bHex += c - '0';
 	else if (Inside<char>(c, 'a', 'f'))
 		pState->bHex += c - 'a' + 10;
@@ -254,7 +255,7 @@ StdStrBuf C4RTFFile::GetPlainText()
 		char c; size_t iPos = 0;
 		while (iPos < sRTF.getSize())
 		{
-			c = ((const char *)sRTF.getData())[iPos++];
+			c = reinterpret_cast<const char *>(sRTF.getData())[iPos++];
 			// binary parsing?
 			if (pState->eState == psBinary)
 			{

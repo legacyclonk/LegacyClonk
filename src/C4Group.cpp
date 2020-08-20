@@ -570,8 +570,8 @@ void C4GroupEntry::Set(const DirectoryIterator &iter, const char *szPath)
 	Time = static_cast<uint32_t>(iter.fdt.time_create);
 	SCopy(*iter, DiskPath, _MAX_PATH - 1);
 	Status = C4GRES_OnDisk;
-	Packed = (int32_t)false;
-	ChildGroup = (int32_t)false;
+	Packed = false;
+	ChildGroup = false;
 	// Notice folder entries are not checked for ChildGroup status.
 	// This would cause extreme performance loss and be good for
 	// use in entry list display only.
@@ -593,8 +593,8 @@ void C4GroupEntry::Set(const DirectoryIterator &iter, const char *path)
 	else
 		Size = 0;
 	Status = C4GRES_OnDisk;
-	Packed = (int32_t)false;
-	ChildGroup = (int32_t)false;
+	Packed = false;
+	ChildGroup = false;
 	// Notice folder entries are not checked for ChildGroup status.
 	// This would cause extreme performance loss and be good for
 	// use in entry list display only.
@@ -759,8 +759,8 @@ bool C4Group::OpenRealGrpFile()
 	if (!StdFile.Open(FileName, true)) return Error("OpenRealGrpFile: Cannot open standard file");
 
 	// Read header
-	if (!StdFile.Read((uint8_t *)&Head, sizeof(C4GroupHeader))) return Error("OpenRealGrpFile: Error reading header");
-	MemScramble((uint8_t *)&Head, sizeof(C4GroupHeader));
+	if (!StdFile.Read(reinterpret_cast<uint8_t *>(&Head), sizeof(C4GroupHeader))) return Error("OpenRealGrpFile: Error reading header");
+	MemScramble(reinterpret_cast<uint8_t *>(&Head), sizeof(C4GroupHeader));
 	EntryOffset += sizeof(C4GroupHeader);
 
 	// Check Header
@@ -773,7 +773,7 @@ bool C4Group::OpenRealGrpFile()
 	Head.Entries = 0; // Reset, will be recounted by AddEntry
 	for (cnt = 0; cnt < file_entries; cnt++)
 	{
-		if (!StdFile.Read((uint8_t *)&corebuf, sizeof(C4GroupEntryCore))) return Error("OpenRealGrpFile: Error reading entries");
+		if (!StdFile.Read(reinterpret_cast<uint8_t *>(&corebuf), sizeof(C4GroupEntryCore))) return Error("OpenRealGrpFile: Error reading entries");
 		C4InVal::ValidateFilename(corebuf.FileName); // filename validation: Prevent overwriting of user stuff by malicuous groups
 		EntryOffset += sizeof(C4GroupEntryCore);
 		if (!AddEntry(C4GRES_InGroup, !!corebuf.ChildGroup,
@@ -855,7 +855,7 @@ bool C4Group::AddEntry(int status,
 	else SCopy(GetFilename(fname), nentry->FileName, _MAX_FNAME);
 	nentry->Size = size;
 	nentry->Time = static_cast<uint32_t>(time + C4Group_AssumeTimeOffset);
-	nentry->ChildGroup = (int32_t)childgroup;
+	nentry->ChildGroup = childgroup;
 	nentry->Offset = 0;
 	nentry->HasCRC = cCRC;
 	nentry->CRC = iCRC;
@@ -964,7 +964,7 @@ bool C4Group::Save(bool fReOpen)
 	for (centry = FirstEntry; centry; centry = centry->Next)
 		if (centry->Status != C4GRES_Deleted)
 		{
-			save_core[cscore] = (C4GroupEntryCore)*centry;
+			save_core[cscore] = *centry;
 			// Make actual offset
 			save_core[cscore].Offset = 0;
 			if (cscore > 0) save_core[cscore].Offset = save_core[cscore - 1].Offset + save_core[cscore - 1].Size;
@@ -991,9 +991,9 @@ bool C4Group::Save(bool fReOpen)
 
 	// Save header and core list
 	C4GroupHeader headbuf = Head;
-	MemScramble((uint8_t *)&headbuf, sizeof(C4GroupHeader));
-	if (!tfile.Write((uint8_t *)&headbuf, sizeof(C4GroupHeader))
-		|| !tfile.Write((uint8_t *)save_core, Head.Entries * sizeof(C4GroupEntryCore)))
+	MemScramble(reinterpret_cast<uint8_t *>(&headbuf), sizeof(C4GroupHeader));
+	if (!tfile.Write(reinterpret_cast<uint8_t *>(&headbuf), sizeof(C4GroupHeader))
+		|| !tfile.Write(reinterpret_cast<uint8_t *>(save_core), Head.Entries * sizeof(C4GroupEntryCore)))
 	{
 		tfile.Close(); delete[] save_core; return Error("Close: ...");
 	}
@@ -1862,7 +1862,7 @@ bool C4Group::OpenAsChild(C4Group *pMother,
 	{
 		CloseExclusiveMother(); Clear(); return Error("OpenAsChild: Entry reading error");
 	}
-	MemScramble((uint8_t *)&Head, sizeof(C4GroupHeader));
+	MemScramble(reinterpret_cast<uint8_t *>(&Head), sizeof(C4GroupHeader));
 	EntryOffset += sizeof(C4GroupHeader);
 
 	// Check Header
@@ -2092,7 +2092,7 @@ bool C4Group::Add(const char *szName, void *pBuffer, int iSize, bool fChild, boo
 		false,
 		0,
 		szName,
-		(uint8_t *)pBuffer,
+		reinterpret_cast<uint8_t *>(pBuffer),
 		false,
 		fHoldBuffer,
 		fExecutable);
@@ -2108,7 +2108,7 @@ bool C4Group::Add(const char *szName, StdBuf &pBuffer, bool fChild, bool fHoldBu
 		false,
 		0,
 		szName,
-		(uint8_t *)pBuffer.getData(),
+		const_cast<uint8_t *>(reinterpret_cast<const uint8_t *>(pBuffer.getData())),
 		false,
 		fHoldBuffer,
 		fExecutable,
@@ -2128,7 +2128,7 @@ bool C4Group::Add(const char *szName, StdStrBuf &pBuffer, bool fChild, bool fHol
 		false,
 		0,
 		szName,
-		(uint8_t *)pBuffer.getData(),
+		const_cast<uint8_t *>(reinterpret_cast<const uint8_t *>(pBuffer.getData())),
 		false,
 		fHoldBuffer,
 		fExecutable,

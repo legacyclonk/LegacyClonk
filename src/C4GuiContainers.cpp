@@ -613,7 +613,7 @@ void ScrollWindow::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32
 	// process wheel: Scroll
 	if (iButton == C4MC_Button_Wheel)
 	{
-		short iDelta = (short)(dwKeyParam >> 16);
+		short iDelta = static_cast<short>(dwKeyParam >> 16);
 		ScrollBy(-iDelta);
 		return;
 	}
@@ -656,11 +656,11 @@ void GroupBox::DrawElement(C4FacetEx &cgo)
 		{
 			for (int i = 0; i < 2; ++i)
 			{
-				lpDDraw->DrawLineDw(cgo.Surface, (float)x1 + i, (float)y1, (float)(x1 + i), (float)(y2 - 1), dwFrameClr); // left
-				lpDDraw->DrawLineDw(cgo.Surface, (float)(x1 + 2), (float)(y1 + i), (float)(x1 + iTitleGapX), (float)(y1 + i), dwFrameClr); // top - left side
-				lpDDraw->DrawLineDw(cgo.Surface, (float)(x1 + iTitleGapX + iTitleGapWdt), (float)(y1 + i), (float)(x2 - 3), (float)(y1 + i), dwFrameClr); // top - right side
-				lpDDraw->DrawLineDw(cgo.Surface, (float)(x2 - 1 - i), (float)y1, (float)(x2 - 1 - i), (float)(y2 - 1), dwFrameClr); // right
-				lpDDraw->DrawLineDw(cgo.Surface, (float)(x1 + 2), (float)(y2 - 1 - i), (float)(x2 - 3), (float)(y2 - 1 - i), dwFrameClr); // bottom
+				lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x1 + i), static_cast<float>(y1), static_cast<float>(x1 + i), static_cast<float>(y2 - 1), dwFrameClr); // left
+				lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x1 + 2), static_cast<float>(y1 + i), static_cast<float>(x1 + iTitleGapX), static_cast<float>(y1 + i), dwFrameClr); // top - left side
+				lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x1 + iTitleGapX + iTitleGapWdt), static_cast<float>(y1 + i), static_cast<float>(x2 - 3), static_cast<float>(y1 + i), dwFrameClr); // top - right side
+				lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x2 - 1 - i), static_cast<float>(y1), static_cast<float>(x2 - 1 - i), static_cast<float>(y2 - 1), dwFrameClr); // right
+				lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(x1 + 2), static_cast<float>(y2 - 1 - i), static_cast<float>(x2 - 3), static_cast<float>(y2 - 1 - i), dwFrameClr); // bottom
 			}
 		}
 		else

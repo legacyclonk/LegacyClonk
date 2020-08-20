@@ -1069,7 +1069,7 @@ bool C4Network2Res::StartLoad(int32_t iFromClient, const C4Network2ResChunkData 
 		iLoads[i++] = pLoad->getChunk();
 	int32_t iRetrieveChunk = Chunks.GetChunkToRetrieve(Available, i, iLoads);
 	// nothing? ignore
-	if (iRetrieveChunk < 0 || (uint32_t)iRetrieveChunk >= Core.getChunkCnt())
+	if (iRetrieveChunk < 0 || static_cast<uint32_t>(iRetrieveChunk) >= Core.getChunkCnt())
 		return true;
 	// search message connection for client
 	C4Network2IOConnection *pConn = pParent->getIOClass()->GetMsgConnection(iFromClient);
@@ -1231,7 +1231,7 @@ bool C4Network2ResChunk::Set(C4Network2Res *pRes, uint32_t inChunk)
 			close(f); LogF("Network: could not read resource file %s!", pRes->getFile()); return false;
 		}
 	// read chunk of data
-	char *pBuf = (char*)malloc(sizeof(char) * iSize);
+	char *pBuf = static_cast<char *>(malloc(sizeof(char) * iSize));
 	if (read(f, pBuf, iSize) != iSize)
 	{
 		free(pBuf); close(f); LogF("Network: could not read resource file %s!", pRes->getFile()); return false;

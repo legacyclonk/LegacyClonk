@@ -460,7 +460,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 #ifndef USE_CONSOLE
 	if (Graphics.Engine != GFXENGN_NOGFX) Graphics.Engine = GFXENGN_OPENGL;
 	// OpenGL
-	DDrawCfg.Set(Graphics.NewGfxCfg, (float)Graphics.TexIndent / 1000.0f, (float)Graphics.BlitOffset / 100.0f);
+	DDrawCfg.Set(Graphics.NewGfxCfg, static_cast<float>(Graphics.TexIndent) / 1000.0f, static_cast<float>(Graphics.BlitOffset) / 100.0f);
 #endif
 	// Warning against invalid ports
 #ifdef C4ENGINE
@@ -784,7 +784,7 @@ void C4Config::ExpandEnvironmentVariables(char *strPath, int iMaxLen)
 #else // __linux__ or __APPLE___
 	StdStrBuf home(getenv("HOME"), false);
 	char *rest;
-	if (home && (rest = (char *)SSearch(strPath, "$HOME")) && (SLen(strPath) - 5 + home.getLength() <= iMaxLen))
+	if (home && (rest = const_cast<char *>(SSearch(strPath, "$HOME"))) && (SLen(strPath) - 5 + home.getLength() <= iMaxLen))
 	{
 		// String replace... there might be a more elegant way to do this.
 		memmove(rest + home.getLength() - SLen("$HOME"), rest, SLen(rest) + 1);

@@ -767,7 +767,7 @@ StdStrBuf C4TeamList::GetTeamDistName(TeamDist eTeamDist) const
 	case TEAMDIST_None:      return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_NONE"),   true));
 	case TEAMDIST_Random:    return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_RND"),    true));
 	case TEAMDIST_RandomInv: return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_RNDINV"), true));
-	default: return (FormatString("TEAMDIST_undefined(%d)", (int)eTeamDist));
+	default: return (FormatString("TEAMDIST_undefined(%d)", static_cast<int>(eTeamDist)));
 	}
 }
 

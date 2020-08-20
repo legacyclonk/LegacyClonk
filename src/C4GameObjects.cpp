@@ -785,7 +785,7 @@ void C4GameObjects::FixObjectOrder()
 			// must have exactly one SortOrder-bit set
 			if (!dwCategory)
 			{
-				DebugLogF("Objects.txt: Object #%d is missing sorting category!", (int)pObj->Number);
+				DebugLogF("Objects.txt: Object #%d is missing sorting category!", static_cast<int>(pObj->Number));
 				++pObj->Category; dwCategory = 1;
 			}
 			else
@@ -794,7 +794,7 @@ void C4GameObjects::FixObjectOrder()
 				while (~dwCat2 & 1) { dwCat2 = dwCat2 >> 1; ++i; }
 				if (dwCat2 != 1)
 				{
-					DebugLogF("Objects.txt: Object #%d has invalid sorting category %x!", (int)pObj->Number, (unsigned int)dwCategory);
+					DebugLogF("Objects.txt: Object #%d has invalid sorting category %x!", static_cast<int>(pObj->Number), static_cast<unsigned int>(dwCategory));
 					dwCategory = (1 << i);
 					pObj->Category = (pObj->Category & ~C4D_SortLimit) | dwCategory;
 				}
@@ -805,7 +805,7 @@ void C4GameObjects::FixObjectOrder()
 				// SORT ERROR! (note that pLnkPrev can't be 0)
 				if (pLnkPrev->Obj != pLastWarnObj)
 				{
-					DebugLogF("Objects.txt: Wrong object order of #%d-#%d! (down)", (int)pObj->Number, (int)pLnkPrev->Obj->Number);
+					DebugLogF("Objects.txt: Wrong object order of #%d-#%d! (down)", static_cast<int>(pObj->Number), static_cast<int>(pLnkPrev->Obj->Number));
 					pLastWarnObj = pLnkPrev->Obj;
 				}
 				pLnk->Obj = pLnkPrev->Obj;
@@ -830,7 +830,7 @@ void C4GameObjects::FixObjectOrder()
 				// SORT ERROR! (note that pLnkPrev can't be 0)
 				if (pLnkPrev->Obj != pLastWarnObj)
 				{
-					DebugLogF("Objects.txt: Wrong object order of #%d-#%d! (up)", (int)pObj->Number, (int)pLnkPrev->Obj->Number);
+					DebugLogF("Objects.txt: Wrong object order of #%d-#%d! (up)", static_cast<int>(pObj->Number), static_cast<int>(pLnkPrev->Obj->Number));
 					pLastWarnObj = pLnkPrev->Obj;
 				}
 				pLnk->Obj = pLnkPrev->Obj;

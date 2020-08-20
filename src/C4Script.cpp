@@ -667,7 +667,7 @@ static bool FnSetXDir(C4AulContext *cthr, long nxdir, C4Object *pObj, long iPrec
 	// precision (default 10.0)
 	if (!iPrec) iPrec = 10;
 	// update xdir
-	pObj->xdir = ftofix((float)nxdir / iPrec);
+	pObj->xdir = ftofix(static_cast<float>(nxdir) / iPrec);
 	pObj->Mobile = 1;
 	// success
 	return true;
@@ -680,7 +680,7 @@ static bool FnSetRDir(C4AulContext *cthr, long nrdir, C4Object *pObj, long iPrec
 	// precision (default 10.0)
 	if (!iPrec) iPrec = 10;
 	// update rdir
-	pObj->rdir = ftofix((float)nrdir / iPrec);
+	pObj->rdir = ftofix(static_cast<float>(nrdir) / iPrec);
 	pObj->Mobile = 1;
 	// success
 	return true;
@@ -694,7 +694,7 @@ static bool FnSetYDir(C4AulContext *cthr, long nydir, C4Object *pObj, long iPrec
 	if (!iPrec) iPrec = 10;
 	// update ydir
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return false;
-	pObj->ydir = ftofix((float)nydir / iPrec);
+	pObj->ydir = ftofix(static_cast<float>(nydir) / iPrec);
 	pObj->Mobile = 1;
 	// success
 	return true;
@@ -1635,7 +1635,7 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 			// draw rank
 			if (pGfxObj->Info)
 			{
-				C4Facet fctBackup = (const C4Facet &)fctSymbol;
+				C4Facet fctBackup = static_cast<const C4Facet &>(fctSymbol);
 				fctSymbol.Set(fctRank);
 				C4RankSystem::DrawRankSymbol(&fctSymbol, pGfxObj->Info->Rank, pRankRes, iRankCnt, true);
 				fctSymbol.Set(fctBackup);
@@ -2776,14 +2776,14 @@ static long FnGetPlayerCount(C4AulContext *cthr, long iType)
 	if (!iType)
 		return Game.Players.GetCount();
 	else
-		return Game.Players.GetCount((C4PlayerType)iType);
+		return Game.Players.GetCount(static_cast<C4PlayerType>(iType));
 }
 
 static long FnGetPlayerByIndex(C4AulContext *cthr, long iIndex, long iType)
 {
 	C4Player *pPlayer;
 	if (iType)
-		pPlayer = Game.Players.GetByIndex(iIndex, (C4PlayerType)iType);
+		pPlayer = Game.Players.GetByIndex(iIndex, static_cast<C4PlayerType>(iType));
 	else
 		pPlayer = Game.Players.GetByIndex(iIndex);
 	if (!pPlayer) return NO_OWNER;
@@ -3252,7 +3252,7 @@ static long FnArcSin(C4AulContext *cthr, long iVal, long iRadius)
 	double f1 = iVal;
 	f1 = asin(f1 / iRadius) * 180.0 / M_PI;
 	// return rounded angle
-	return (long)floor(f1 + 0.5);
+	return static_cast<long>(floor(f1 + 0.5));
 }
 
 static long FnArcCos(C4AulContext *cthr, long iVal, long iRadius)
@@ -3264,7 +3264,7 @@ static long FnArcCos(C4AulContext *cthr, long iVal, long iRadius)
 	double f1 = iVal;
 	f1 = acos(f1 / iRadius) * 180.0 / M_PI;
 	// return rounded angle
-	return (long)floor(f1 + 0.5);
+	return static_cast<long>(floor(f1 + 0.5));
 }
 
 static long FnMin(C4AulContext *cthr, long iVal1, long iVal2)
@@ -3847,7 +3847,7 @@ static bool FnSetClrModulation(C4AulContext *cthr, long dwClr, C4Object *pObj, l
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("SetClrModulation: Overlay %d not defined for object %d (%s)", (int)iOverlayID, (int)pObj->Number, (const char *)pObj->GetName());
+			DebugLogF("SetClrModulation: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return false;
 		}
 		pOverlay->SetClrModulation(dwClr);
@@ -3871,7 +3871,7 @@ static std::optional<long> FnGetClrModulation(C4AulContext *cthr, C4Object *pObj
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("GetClrModulation: Overlay %d not defined for object %d (%s)", (int)iOverlayID, (int)pObj->Number, (const char *)pObj->GetName());
+			DebugLogF("GetClrModulation: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return {};
 		}
 		return pOverlay->GetClrModulation();
@@ -4184,7 +4184,7 @@ static C4Value FnGetObjectInfoCoreVal(C4AulContext *cthr, C4String *strEntry, C4
 	if (!pObjInfo) return C4VNull;
 
 	// get obj info core
-	C4ObjectInfoCore *pObjInfoCore = (C4ObjectInfoCore *)pObjInfo;
+	C4ObjectInfoCore *pObjInfoCore = static_cast<C4ObjectInfoCore *>(pObjInfo);
 
 	// get value
 	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkNamingAdapt(*pObjInfoCore, "ObjectInfo"));
@@ -4250,7 +4250,7 @@ static C4Value FnGetPlayerInfoCoreVal(C4AulContext *cthr, C4String *strEntry, C4
 	C4Player *pPlayer = Game.Players.Get(iPlr);
 
 	// get plr info core
-	C4PlayerInfoCore *pPlayerInfoCore = (C4PlayerInfoCore *)pPlayer;
+	C4PlayerInfoCore *pPlayerInfoCore = static_cast<C4PlayerInfoCore *>(pPlayer);
 
 	// get value
 	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, *pPlayerInfoCore);
@@ -4342,7 +4342,7 @@ static std::optional<long> FnGetChar(C4AulContext *cthr, C4String *pString, long
 	for (int i = 0; i < iIndex; i++, szText++)
 		if (!*szText) return 0;
 	// return indiced character value
-	return (unsigned char)*szText;
+	return static_cast<unsigned char>(*szText);
 }
 
 static bool FnSetGraphics(C4AulContext *pCtx, C4String *pGfxName, C4Object *pObj, C4ID idSrcGfx, long iOverlayID, long iOverlayMode, C4String *pAction, long dwBlitMode, C4Object *pOverlayObject)
@@ -4540,7 +4540,7 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 			else
 			{
 				int32_t iLine = SGetLine(pSFunc->pOrgScript->GetScript(), pSFunc->Script);
-				LogF("%s%s (%s:%d)", szPrefix, pFunc->Name, pSFunc->pOrgScript->ScriptName.getData(), (int)iLine);
+				LogF("%s%s (%s:%d)", szPrefix, pFunc->Name, pSFunc->pOrgScript->ScriptName.getData(), static_cast<int>(iLine));
 			}
 			// next func in overload chain
 			pFunc = pSFunc ? pSFunc->OwnerOverloaded : nullptr;
@@ -4935,7 +4935,7 @@ static bool FnDrawModLandscape(C4AulContext *cctx, long iX, long iY, long iWdt, 
 						if (*pZ <= -16)
 							dwPix = pMatI->iClr1;
 						else
-							dwPix = FadeClr(pMatI->iClr1, pMatI->iClr2, (int)*pZ * -16);
+							dwPix = FadeClr(pMatI->iClr1, pMatI->iClr2, static_cast<int>(*pZ) * -16);
 					}
 					else
 						dwPix = pMatI->iClr2;
@@ -4979,7 +4979,7 @@ static bool FnCreateParticle(C4AulContext *cthr, C4String *szName, long iX, long
 	C4ParticleDef *pDef = Game.Particles.GetDef(FnStringPar(szName));
 	if (!pDef) return false;
 	// create
-	Game.Particles.Create(pDef, (float)iX, (float)iY, (float)iXDir / 10.0f, (float)iYDir / 10.0f, (float)a / 10.0f, b, pObj ? (fBack ? &pObj->BackParticles : &pObj->FrontParticles) : nullptr, pObj);
+	Game.Particles.Create(pDef, static_cast<float>(iX), static_cast<float>(iY), static_cast<float>(iXDir) / 10.0f, static_cast<float>(iYDir) / 10.0f, static_cast<float>(a) / 10.0f, b, pObj ? (fBack ? &pObj->BackParticles : &pObj->FrontParticles) : nullptr, pObj);
 	// success, even if not created
 	return true;
 }
@@ -4998,7 +4998,7 @@ static bool FnCastAParticles(C4AulContext *cthr, C4String *szName, long iAmount,
 	C4ParticleDef *pDef = Game.Particles.GetDef(FnStringPar(szName));
 	if (!pDef) return false;
 	// cast
-	Game.Particles.Cast(pDef, iAmount, (float)iX, (float)iY, iLevel, (float)a0 / 10.0f, b0, (float)a1 / 10.0f, b1, pObj ? (fBack ? &pObj->BackParticles : &pObj->FrontParticles) : nullptr, pObj);
+	Game.Particles.Cast(pDef, iAmount, static_cast<float>(iX), static_cast<float>(iY), iLevel, static_cast<float>(a0) / 10.0f, b0, static_cast<float>(a1) / 10.0f, b1, pObj ? (fBack ? &pObj->BackParticles : &pObj->FrontParticles) : nullptr, pObj);
 	// success, even if not created
 	return true;
 }
@@ -5023,7 +5023,7 @@ static bool FnPushParticles(C4AulContext *cthr, C4String *szName, long iAX, long
 		if (!pDef) return false;
 	}
 	// push them
-	Game.Particles.Push(pDef, (float)iAX / 10.0f, (float)iAY / 10.0f);
+	Game.Particles.Push(pDef, static_cast<float>(iAX) / 10.0f, static_cast<float>(iAY) / 10.0f);
 	// success
 	return true;
 }
@@ -5368,7 +5368,7 @@ static bool FnSetObjDrawTransform(C4AulContext *ctx, long iA, long iB, long iC, 
 		if (!pTransform) pTransform = pObj->pDrawTransform = new C4DrawTransform();
 	}
 	// assign values
-	pTransform->Set((float)iA / 1000, (float)iB / 1000, (float)iC / 1000, (float)iD / 1000, (float)iE / 1000, (float)iF / 1000, 0, 0, 1);
+	pTransform->Set(static_cast<float>(iA) / 1000, static_cast<float>(iB) / 1000, static_cast<float>(iC) / 1000, static_cast<float>(iD) / 1000, static_cast<float>(iE) / 1000, static_cast<float>(iF) / 1000, 0, 0, 1);
 	// done, success
 	return true;
 }
@@ -5395,7 +5395,7 @@ static bool FnSetObjDrawTransform2(C4AulContext *ctx, long iA, long iB, long iC,
 		if (!pTransform) pTransform = pObj->pDrawTransform = new C4DrawTransform(1);
 	}
 	// assign values
-#define L2F(l) ((float)l/1000)
+#define L2F(l) (static_cast<float>(l)/1000)
 	CBltTransform matrix;
 	matrix.Set(L2F(iA), L2F(iB), L2F(iC), L2F(iD), L2F(iE), L2F(iF), L2F(iG), L2F(iH), L2F(iI));
 	*pTransform *= matrix;
@@ -5737,7 +5737,7 @@ static std::optional<long> FnSetObjectBlitMode(C4AulContext *ctx, long dwNewBlit
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("SetObjectBlitMode: Overlay %d not defined for object %d (%s)", (int)iOverlayID, (int)pObj->Number, (const char *)pObj->GetName());
+			DebugLogF("SetObjectBlitMode: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return {};
 		}
 		pOverlay->SetBlitMode(dwNewBlitMode);
@@ -5766,7 +5766,7 @@ static std::optional<long> FnGetObjectBlitMode(C4AulContext *ctx, C4Object *pObj
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("SetObjectBlitMode: Overlay %d not defined for object %d (%s)", (int)iOverlayID, (int)pObj->Number, (const char *)pObj->GetName());
+			DebugLogF("SetObjectBlitMode: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return {};
 		}
 		return {pOverlay->GetBlitMode()};
@@ -6133,7 +6133,7 @@ static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, l
 	sMsg.Ref(szMsg);
 	if (dwFlags & C4GM_DropSpeech) sMsg.SplitAtChar('$', nullptr);
 	// create it!
-	return Game.Messages.New(iType, sMsg, pObj, iOwner, iOffX, iOffY, (uint32_t)dwClr, idDeco, sPortrait ? sPortrait->Data.getData() : nullptr, dwFlags, iHSize);
+	return Game.Messages.New(iType, sMsg, pObj, iOwner, iOffX, iOffY, static_cast<uint32_t>(dwClr), idDeco, sPortrait ? sPortrait->Data.getData() : nullptr, dwFlags, iHSize);
 }
 
 static void FnPauseGame(C4AulContext *ctx, bool fToggle)
@@ -6414,7 +6414,7 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 	{ "OCF_PowerConsumer",    C4V_Int, OCF_PowerConsumer },
 	{ "OCF_PowerSupply",      C4V_Int, OCF_PowerSupply },
 	{ "OCF_Container",        C4V_Int, OCF_Container },
-	{ "OCF_Alive",            C4V_Int, (int)OCF_Alive },
+	{ "OCF_Alive",            C4V_Int, static_cast<int>(OCF_Alive) },
 
 	{ "VIS_All",         C4V_Int, VIS_All },
 	{ "VIS_None",        C4V_Int, VIS_None },

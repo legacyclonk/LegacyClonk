@@ -550,7 +550,7 @@ C4PortraitSelDlg::C4PortraitSelDlg(C4FileSel_BaseCB *pSelCallback, bool fSetPict
 	AddCheckedLocation(LoadResStr("IDS_TEXT_HOMEFOLDER"), getenv("HOME"));
 #endif
 #ifndef _WIN32
-	sprintf(path, "%s%c%s", getenv("HOME"), (char)DirectorySeparator, (const char *)"Desktop");
+	sprintf(path, "%s%cDesktop", getenv("HOME"), DirectorySeparator);
 	AddCheckedLocation(LoadResStr("IDS_TEXT_DESKTOP"), path);
 #endif
 	// build dialog

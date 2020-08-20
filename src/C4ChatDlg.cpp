@@ -565,7 +565,7 @@ void C4ChatControl::UpdateShownPage()
 	else
 	{
 		// not connected: Login stuff
-		pTabMain->SelectSheet((int)0, false);
+		pTabMain->SelectSheet(0, false);
 		UpdateTitle();
 	}
 }

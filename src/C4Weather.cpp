@@ -87,7 +87,7 @@ void C4Weather::Execute()
 	// Temperature
 	if (!Tick35)
 	{
-		int32_t iTemperature = Climate - (int32_t)(TemperatureRange * cos(6.28 * (float)Season / 100.0));
+		int32_t iTemperature = Climate - static_cast<int32_t>(TemperatureRange * cos(6.28 * static_cast<float>(Season) / 100.0));
 		if (Temperature < iTemperature) Temperature++;
 		else if (Temperature > iTemperature) Temperature--;
 	}

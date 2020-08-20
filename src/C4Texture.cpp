@@ -242,7 +242,7 @@ int32_t C4TextureMap::Init()
 			if (!Entry[i].Init())
 			{
 #ifdef C4ENGINE
-				LogF("Error in TextureMap initialization at entry %d", (int)i);
+				LogF("Error in TextureMap initialization at entry %d", static_cast<int>(i));
 #endif
 				Entry[i].Clear();
 				iRemoved++;

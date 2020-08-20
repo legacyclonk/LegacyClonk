@@ -1657,7 +1657,7 @@ public:
 	void SelectSheet(int32_t iIndex, bool fByUser);
 	void SelectSheet(Sheet *pSelSheet, bool fByUser);
 
-	Sheet *GetSheet(int32_t iIndex) { return (Sheet *)GetElementByIndex(iIndex); }
+	Sheet *GetSheet(int32_t iIndex) { return static_cast<Sheet *>(GetElementByIndex(iIndex)); }
 	Sheet *GetActiveSheet() { return pActiveSheet; }
 	int32_t GetActiveSheetIndex();
 	int32_t GetSheetCount() { return GetElementCount(); }
@@ -1783,7 +1783,7 @@ public:
 
 		virtual void MouseLeave(CMouse &rMouse) override
 		{
-			if (GetParent())((ContextMenu *)GetParent())->MouseLeaveEntry(rMouse, this);
+			if (GetParent()) static_cast<ContextMenu *>(GetParent())->MouseLeaveEntry(rMouse, this);
 		}
 
 		virtual bool OnHotkey(char cKey) override { return cKey == cHotkey; }

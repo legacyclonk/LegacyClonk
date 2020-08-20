@@ -414,7 +414,7 @@ void C4GraphicsSystem::RecalculateViewports()
 	int32_t iViews = 0;
 	for (cvp = FirstViewport; cvp; cvp = cvp->Next) iViews++;
 	if (!iViews) return;
-	int32_t iViewsH = (int32_t)sqrt(float(iViews));
+	int32_t iViewsH = static_cast<int32_t>(sqrt(float(iViews)));
 	int32_t iViewsX = iViews / iViewsH;
 	int32_t iViewsL = iViews % iViewsH;
 	int32_t cViewH, cViewX, ciViewsX;
@@ -838,7 +838,7 @@ void C4GraphicsSystem::ApplyGamma()
 			// ...ramps...
 			for (int32_t iRamp = 0; iRamp < C4MaxGammaRamps; ++iRamp)
 				// add offset
-				ChanOff[iChan] += (int32_t)uint8_t(dwGamma[iRamp * 3 + iCurve] >> (16 - iChan * 8)) - DefChanVal[iCurve];
+				ChanOff[iChan] += uint8_t(dwGamma[iRamp * 3 + iCurve] >> (16 - iChan * 8)) - DefChanVal[iCurve];
 		// calc curve point
 		Gamma[iCurve] = C4RGB(BoundBy<int32_t>(DefChanVal[iCurve] + ChanOff[0], 0, 255), BoundBy<int32_t>(DefChanVal[iCurve] + ChanOff[1], 0, 255), BoundBy<int32_t>(DefChanVal[iCurve] + ChanOff[2], 0, 255));
 	}

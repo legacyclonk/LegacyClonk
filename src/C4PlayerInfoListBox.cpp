@@ -359,7 +359,7 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 				fPlayerHasEvaluationData = true;
 		}
 		if (pList->IsEvaluation() && pList->IsTeamFilter())
-			iScoreYPos = GetBounds().Hgt - (C4GUI::ComboBox::GetDefaultHeight() * (1 + (int32_t)fPlayerHasEvaluationData)) - IconLabelSpacing;
+			iScoreYPos = GetBounds().Hgt - (C4GUI::ComboBox::GetDefaultHeight() * (1 + fPlayerHasEvaluationData)) - IconLabelSpacing;
 
 		// score label visible
 		if (!pScoreLabel)
@@ -384,29 +384,29 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 					int32_t iDiscrepancy = iNewScore - (iOldScore + iScoreGain);
 					if (!iDiscrepancy)
 					{
-						sText.Format("{{Ico:League}}<c afafaf>%d (%+d)</c> %d %s", (int)iOldScore, (int)iScoreGain, (int)iNewScore, LoadResStr("IDS_TEXT_SCORE"));
+						sText.Format("{{Ico:League}}<c afafaf>%d (%+d)</c> %d %s", static_cast<int>(iOldScore), static_cast<int>(iScoreGain), static_cast<int>(iNewScore), LoadResStr("IDS_TEXT_SCORE"));
 					}
 					else
 					{
 						// If there's a discrepancy, there must have been some kind of admin intervention during the game - display it in red!
-						sText.Format("{{Ico:League}}<c afafaf>%d (%+d)</c><c ff0000>(%+d)</c> %d %s", (int)iOldScore, (int)iScoreGain, (int)iDiscrepancy, (int)iNewScore, LoadResStr("IDS_TEXT_SCORE"));
+						sText.Format("{{Ico:League}}<c afafaf>%d (%+d)</c><c ff0000>(%+d)</c> %d %s", static_cast<int>(iOldScore), static_cast<int>(iScoreGain), static_cast<int>(iDiscrepancy), static_cast<int>(iNewScore), LoadResStr("IDS_TEXT_SCORE"));
 					}
 				}
 				// Show old league score only
 				else
 				{
-					sText.Format("{{Ico:League}}<c afafaf>(%d)</c> %s", (int)pInfo->getLeagueScore(), LoadResStr("IDS_TEXT_SCORE"));
+					sText.Format("{{Ico:League}}<c afafaf>(%d)</c> %s", static_cast<int>(pInfo->getLeagueScore()), LoadResStr("IDS_TEXT_SCORE"));
 				}
 			}
 			else if (pRoundResultsPlr && pRoundResultsPlr->IsScoreNewValid() && !Game.RoundResults.SettlementScoreIsHidden())
 			{
 				// new score known
-				sText.Format("{{Ico:Settlement}}<c afafaf>%d (%+d)</c> %d %s", (int)pRoundResultsPlr->GetScoreOld(), (int)(pRoundResultsPlr->GetScoreNew() - pRoundResultsPlr->GetScoreOld()), (int)pRoundResultsPlr->GetScoreNew(), LoadResStr("IDS_TEXT_SCORE"));
+				sText.Format("{{Ico:Settlement}}<c afafaf>%d (%+d)</c> %d %s", static_cast<int>(pRoundResultsPlr->GetScoreOld()), static_cast<int>(pRoundResultsPlr->GetScoreNew() - pRoundResultsPlr->GetScoreOld()), static_cast<int>(pRoundResultsPlr->GetScoreNew()), LoadResStr("IDS_TEXT_SCORE"));
 			}
 			else if (pRoundResultsPlr && !pRoundResultsPlr->IsScoreNewValid() && !Game.RoundResults.SettlementScoreIsHidden())
 			{
 				// only old score known (e.g., player disconnected)
-				sText.Format("{{Ico:Settlement}}<c afafaf>(%d)</c> %s", (int)pRoundResultsPlr->GetScoreOld(), LoadResStr("IDS_TEXT_SCORE"));
+				sText.Format("{{Ico:Settlement}}<c afafaf>(%d)</c> %s", static_cast<int>(pRoundResultsPlr->GetScoreOld()), LoadResStr("IDS_TEXT_SCORE"));
 			}
 			else
 			{
@@ -420,10 +420,10 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 			// Show current league score and projected gain
 			// Don't show if team invisible, so random surprise teams don't get spoiled
 			if (pInfo->IsLeagueProjectedGainValid() && Game.Teams.IsTeamVisible())
-				sText.Format("%d (%+d)", (int)pInfo->getLeagueScore(), (int)pInfo->GetLeagueProjectedGain());
+				sText.Format("%d (%+d)", static_cast<int>(pInfo->getLeagueScore()), static_cast<int>(pInfo->GetLeagueProjectedGain()));
 			// Show current league score only
 			else
-				sText.Format("%d", (int)pInfo->getLeagueScore());
+				sText.Format("%d", static_cast<int>(pInfo->getLeagueScore()));
 		}
 		pScoreLabel->SetX0(iScoreRightPos);
 		pScoreLabel->SetText(sText.getData(), false);
@@ -443,7 +443,7 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 			iSym = pInfo->getLeagueRankSymbol();
 		if (iSym && !fShownCollapsed)
 		{
-			C4GUI::Icons eRankIcon = (C4GUI::Icons)(C4GUI::Ico_Rank1 + BoundBy<int32_t>(iSym - 1, 0, C4GUI::Ico_Rank9 - C4GUI::Ico_Rank1));
+			C4GUI::Icons eRankIcon = static_cast<C4GUI::Icons>(C4GUI::Ico_Rank1 + BoundBy<int32_t>(iSym - 1, 0, C4GUI::Ico_Rank9 - C4GUI::Ico_Rank1));
 			pRankIcon->SetVisibility(true);
 			pRankIcon->SetIcon(eRankIcon);
 		}

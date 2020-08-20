@@ -50,7 +50,7 @@ int32_t Distance(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2)
 
 int Angle(int iX1, int iY1, int iX2, int iY2)
 {
-	int iAngle = (int)(180.0 * atan2f(float(Abs(iY1 - iY2)), float(Abs(iX1 - iX2))) / M_PI);
+	int iAngle = static_cast<int>(180.0 * atan2f(float(Abs(iY1 - iY2)), float(Abs(iX1 - iX2))) / M_PI);
 	if (iX2 > iX1)
 	{
 		if (iY2 < iY1) iAngle = 90 - iAngle; else iAngle = 90 + iAngle;
@@ -525,7 +525,7 @@ void SInsert(char *szString, const char *szInsert, int iPosition, int iMaxLen)
 	// Safety
 	if (!szString || !szInsert || !szInsert[0]) return;
 	size_t insertlen = strlen(szInsert);
-	if (iMaxLen >= 0 && strlen(szString) + insertlen > (size_t)iMaxLen) return;
+	if (iMaxLen >= 0 && strlen(szString) + insertlen > static_cast<size_t>(iMaxLen)) return;
 	// Move up string remainder
 	memmove(szString + iPosition + insertlen, szString + iPosition, SLen(szString + iPosition) + 1);
 	// Copy insertion

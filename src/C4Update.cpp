@@ -183,15 +183,15 @@ public:
 	C4GroupEntryCore SavedCore;
 	void SaveEntryCore(C4Group &rByGrp, const char *szEntry)
 	{
-		C4GroupEntryCore *pCore = ((C4GroupEx &)rByGrp).GetEntry(szEntry);
+		C4GroupEntryCore *pCore = (static_cast<C4GroupEx &>(rByGrp)).GetEntry(szEntry);
 		// copy core
-		memcpy(&SavedCore.Time, &pCore->Time, (char *)&SavedCore + sizeof(SavedCore) - (char *)&SavedCore.Time);
+		memcpy(&SavedCore.Time, &pCore->Time, reinterpret_cast<char *>(&SavedCore) + sizeof(SavedCore) - reinterpret_cast<char *>(&SavedCore.Time));
 	}
 	void SetSavedEntryCore(const char *szEntry)
 	{
 		C4GroupEntryCore *pCore = GetEntry(szEntry);
 		// copy core
-		memcpy(&pCore->Time, &SavedCore.Time, (char *)&SavedCore + sizeof(SavedCore) - (char *)&SavedCore.Time);
+		memcpy(&pCore->Time, &SavedCore.Time, reinterpret_cast<char *>(&SavedCore) + sizeof(SavedCore) - reinterpret_cast<char *>(&SavedCore.Time));
 	}
 
 	void SetEntryTime(const char *szEntry, int iEntryTime)

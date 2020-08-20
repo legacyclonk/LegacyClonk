@@ -655,7 +655,7 @@ void C4Network2::Execute()
 		// check for inactive clients and deactivate them
 		DeactivateInactiveClients();
 		// reference
-		if (!iLastReferenceUpdate || time(nullptr) > (time_t)(iLastReferenceUpdate + C4NetReferenceUpdateInterval))
+		if (!iLastReferenceUpdate || time(nullptr) > static_cast<time_t>(iLastReferenceUpdate + C4NetReferenceUpdateInterval))
 			if (NetIO.IsReferenceNeeded())
 			{
 				// create
@@ -666,7 +666,7 @@ void C4Network2::Execute()
 				iLastReferenceUpdate = time(nullptr);
 			}
 		// league server reference
-		if (!iLastLeagueUpdate || time(nullptr) > (time_t)(iLastLeagueUpdate + iLeagueUpdateDelay))
+		if (!iLastLeagueUpdate || time(nullptr) > static_cast<time_t>(iLastLeagueUpdate + iLeagueUpdateDelay))
 		{
 			LeagueUpdate();
 		}
@@ -676,7 +676,7 @@ void C4Network2::Execute()
 			LeagueUpdateProcessReply();
 		}
 		// voting timeout
-		if (Votes.firstPkt() && time(nullptr) > (time_t)(iVoteStartTime + C4NetVotingTimeout))
+		if (Votes.firstPkt() && time(nullptr) > static_cast<time_t>(iVoteStartTime + C4NetVotingTimeout))
 		{
 			C4ControlVote *pVote = static_cast<C4ControlVote *>(Votes.firstPkt()->getPkt());
 			Game.Control.DoInput(
@@ -1990,7 +1990,7 @@ void C4Network2::UpdateChaseTarget()
 		return;
 	}
 	// not time for an update?
-	if (!iLastChaseTargetUpdate || long(iLastChaseTargetUpdate + C4NetChaseTargetUpdateInterval) > time(nullptr))
+	if (!iLastChaseTargetUpdate || static_cast<time_t>(iLastChaseTargetUpdate + C4NetChaseTargetUpdateInterval) > time(nullptr))
 		return;
 	// copy status, set current tick
 	C4Network2Status ChaseTarget = Status;
@@ -2612,7 +2612,7 @@ void C4Network2::LeagueNotifyDisconnect(int32_t iClientID, C4LeagueDisconnectRea
 	// Make sure league client is avilable
 	LeagueWaitNotBusy();
 	// report the disconnect!
-	LogF(LoadResStr("IDS_LEAGUE_LEAGUEREPORTINGUNEXPECTED"), (int)eReason);
+	LogF(LoadResStr("IDS_LEAGUE_LEAGUEREPORTINGUNEXPECTED"), static_cast<int>(eReason));
 	pLeagueClient->ReportDisconnect(*pInfos, eReason);
 	// wait for the reply
 	LeagueWaitNotBusy();
@@ -2665,7 +2665,7 @@ void C4Network2::Vote(C4ControlVoteType eType, bool fApprove, int32_t iData)
 	if (!GetVote(C4ClientIDUnknown, eType, iData))
 	{
 		// Too fast?
-		if (time(nullptr) < (time_t)(iLastOwnVoting + C4NetMinVotingInterval))
+		if (time(nullptr) < static_cast<time_t>(iLastOwnVoting + C4NetMinVotingInterval))
 		{
 			Log(LoadResStr("IDS_TEXT_YOUCANONLYSTARTONEVOTINGE"));
 			if ((eType == VT_Kick && iData == Game.Clients.getLocalID()) || eType == VT_Cancel)

@@ -95,7 +95,7 @@ C4StartupOptionsDlg::ResChangeConfirmDlg::ResChangeConfirmDlg()
 	C4GUI::Label *pLblMessage = new C4GUI::Label(sMsgBroken.getData(), caMain.GetFromTop(iMsgHeight), ACenter, C4GUI_MessageFontClr, &C4GUI::GetRes()->TextFont, false);
 	AddElement(pLblMessage);
 	iMsgHeight = C4GUI::GetRes()->TextFont.BreakMessage(FormatString(LoadResStr("IDS_MNU_SWITCHRESOLUTION_UNDO"),
-		(int)iResChangeSwitchTime).getData(),
+		static_cast<int>(iResChangeSwitchTime)).getData(),
 		caMain.GetInnerWidth(), &sMsgBroken, true);
 	pOperationCancelLabel = new C4GUI::Label(sMsgBroken.getData(), caMain.GetFromTop(iMsgHeight), ACenter, C4GUI_MessageFontClr, &C4GUI::GetRes()->TextFont, false, false);
 	AddElement(pOperationCancelLabel);
@@ -132,7 +132,7 @@ void C4StartupOptionsDlg::ResChangeConfirmDlg::OnSec1Timer()
 	// update timer label
 	StdStrBuf sTimerText;
 	C4GUI::GetRes()->TextFont.BreakMessage(FormatString(LoadResStr("IDS_MNU_SWITCHRESOLUTION_UNDO"),
-		(int)iResChangeSwitchTime).getData(),
+		static_cast<int>(iResChangeSwitchTime)).getData(),
 		pOperationCancelLabel->GetBounds().Wdt, &sTimerText, true);
 	pOperationCancelLabel->SetText(sTimerText.getData());
 }
@@ -309,7 +309,7 @@ C4StartupOptionsDlg::ControlConfigArea::ControlConfigArea(const C4Rect &rcArea, 
 	C4GUI::ComponentAligner caKeyboardSetSel(caArea.GetFromTop(2 * iCtrlSetVMargin + iCtrlSetBtnHgt), iCtrlSetHMargin, iCtrlSetVMargin);
 	const char *szCtrlSetHotkeys = "1234567890"; /* 2do */
 	uint32_t i;
-	for (i = 0; i < (uint32_t)iMaxControlSets; ++i)
+	for (i = 0; i < static_cast<uint32_t>(iMaxControlSets); ++i)
 	{
 		char cCtrlSetHotkey = 0;
 		if (i <= strlen(szCtrlSetHotkeys)) cCtrlSetHotkey = szCtrlSetHotkeys[i];
@@ -467,7 +467,7 @@ void C4StartupOptionsDlg::ControlConfigArea::OnResetKeysBtn(C4GUI::Control *btn)
 void C4StartupOptionsDlg::ControlConfigArea::OnGUIGamepadCheckChange(C4GUI::Element *pCheckBox)
 {
 	// same as before?
-	bool fChecked = ((C4GUI::CheckBox *)(pCheckBox))->GetChecked();
+	bool fChecked = static_cast<C4GUI::CheckBox *>(pCheckBox)->GetChecked();
 	if (fChecked == !!Config.Controls.GamepadGuiControl) return;
 	// reflect change
 	Config.Controls.GamepadGuiControl = fChecked;
@@ -497,7 +497,7 @@ C4StartupOptionsDlg::NetworkPortConfig::NetworkPortConfig(const C4Rect &rcBounds
 	pPortEdit = new C4GUI::Edit(caBottomLine.GetAll(), true);
 	pPortEdit->SetColors(C4StartupEditBGColor, C4StartupFontClr, C4StartupEditBorderColor);
 	pPortEdit->SetFont(pUseFont);
-	pPortEdit->InsertText(FormatString("%d", fEnabled ? ((int)*pConfigValue) : (int)iDefault).getData(), false);
+	pPortEdit->InsertText(FormatString("%d", fEnabled ? static_cast<int>(*pConfigValue) : static_cast<int>(iDefault)).getData(), false);
 	pPortEdit->SetMaxText(10); // 65535 is five characters long - but allow some more for easier editing
 	pPortEdit->SetVisibility(fEnabled);
 	AddElement(pPortEdit);
@@ -987,7 +987,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pEffectLevelSlider = new C4GUI::ScrollBar(caEffectsLevel.GetCentered(caEffectsLevel.GetInnerWidth(), C4GUI_ScrollBarHgt), true, new C4GUI::ParCallbackHandler<C4StartupOptionsDlg, int32_t>(this, &C4StartupOptionsDlg::OnEffectsSliderChange), 301);
 	pEffectLevelSlider->SetDecoration(&C4Startup::Get()->Graphics.sfctBookScroll, false);
 	pEffectLevelSlider->SetToolTip(LoadResStr("IDS_MSG_PARTICLES_DESC"));
-	pEffectLevelSlider->SetScrollPos(static_cast<int32_t>(Config.Graphics.SmokeLevel));
+	pEffectLevelSlider->SetScrollPos(Config.Graphics.SmokeLevel);
 	pGroupEffects->AddElement(pEffectLevelSlider);
 	// fire particles
 	pCheck = new BoolConfig(caGroupEffects.GetGridCell(0, 1, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_MSG_FIREPARTICLES"), &Config.Graphics.FireParticles);
@@ -1299,7 +1299,7 @@ void C4StartupOptionsDlg::OnLangComboFill(C4GUI::ComboBox_FillCB *pFiller)
 	C4LanguageInfo *pNfo;
 	for (int i = 0; i < Languages.GetInfoCount(); ++i)
 		if (pNfo = Languages.GetInfo(i))
-			pFiller->AddEntry(FormatString("%s - %s", pNfo->Code, pNfo->Name).getData(), (unsigned char)(pNfo->Code[0]) + ((unsigned char)(pNfo->Code[1]) << 8));
+			pFiller->AddEntry(FormatString("%s - %s", pNfo->Code, pNfo->Name).getData(), static_cast<unsigned char>(pNfo->Code[0]) + (static_cast<unsigned char>(pNfo->Code[1]) << 8));
 }
 
 bool C4StartupOptionsDlg::OnLangComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection)
@@ -1319,7 +1319,7 @@ void C4StartupOptionsDlg::UpdateFontControls()
 {
 	// display current language and size in comboboxes
 	pFontFaceCombo->SetText(Config.General.RXFontName);
-	StdStrBuf sSize; sSize.Format("%d", (int)Config.General.RXFontSize);
+	StdStrBuf sSize; sSize.Format("%d", static_cast<int>(Config.General.RXFontSize));
 	pFontSizeCombo->SetText(sSize.getData());
 }
 
@@ -1430,7 +1430,7 @@ void C4StartupOptionsDlg::SaveGfxTroubleshoot()
 	Config.Graphics.TexIndent = iGfxTexIndent;
 	Config.Graphics.BlitOffset = iGfxBlitOff;
 	// and apply them directly
-	DDrawCfg.Set(dwGfxCfg, (float)iGfxTexIndent / 1000.0f, (float)iGfxBlitOff / 100.0f);
+	DDrawCfg.Set(dwGfxCfg, static_cast<float>(iGfxTexIndent) / 1000.0f, static_cast<float>(iGfxBlitOff) / 100.0f);
 	lpDDraw->InvalidateDeviceObjects();
 	lpDDraw->RestoreDeviceObjects();
 }

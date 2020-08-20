@@ -48,9 +48,9 @@ extern long SineTable[9001]; // external table of sine values
 #endif
 
 // fixpoint shift (check 64 bit emulation before changing!)
-#define FIXED_SHIFT 16
+constexpr int32_t FIXED_SHIFT{16};
 // fixpoint factor
-#define FIXED_FPF int32_t(1 << FIXED_SHIFT)
+constexpr int32_t FIXED_FPF{1 << FIXED_SHIFT};
 
 class C4Fixed
 {

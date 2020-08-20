@@ -53,7 +53,7 @@ void C4FacetEx::DrawLine(int iX1, int iY1, int iX2, int iY2, uint8_t bCol1, uint
 	// No clipping is done here, because clipping will be done by gfx wrapper anyway
 	// Draw line
 	lpDDraw->DrawLine(Surface, X + iX1, Y + iY1, X + iX2, Y + iY2, bCol1);
-	lpDDraw->DrawPix(Surface, (float)(X + iX1), (float)(Y + iY1), lpDDraw->Pal.GetClr(bCol2));
+	lpDDraw->DrawPix(Surface, static_cast<float>(X + iX1), static_cast<float>(Y + iY1), lpDDraw->Pal.GetClr(bCol2));
 }
 
 // bolt random size

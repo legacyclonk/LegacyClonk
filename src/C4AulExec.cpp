@@ -1530,7 +1530,7 @@ void C4AulProfiler::Show()
 	for (EntryList::iterator i = Times.begin(); i != Times.end(); ++i)
 	{
 		Entry &e = (*i);
-		LogF("%05dms\t%s", (int)e.tProfileTime, e.pFunc ? (e.pFunc->GetFullName().getData()) : "Direct exec");
+		LogF("%05dms\t%s", static_cast<int>(e.tProfileTime), e.pFunc ? (e.pFunc->GetFullName().getData()) : "Direct exec");
 	}
 	Log("==============================");
 	// done!

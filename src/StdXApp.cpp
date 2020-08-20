@@ -516,7 +516,7 @@ void CStdApp::HandleXMessage()
 		{
 			re.property = event.xselectionrequest.property;
 			XChangeProperty(dpy, re.requestor, re.property, re.target, 8, PropModeReplace,
-				(const unsigned char *)d.Text.getData(), d.Text.getLength());
+				reinterpret_cast<const unsigned char *>(d.Text.getData()), d.Text.getLength());
 		}
 		else
 		{
@@ -658,7 +658,7 @@ bool CStdApp::ReadStdInCommand()
 			OnCommand(CmdBuf.getData()); CmdBuf.Clear();
 		}
 	}
-	else if (isprint((unsigned char)c))
+	else if (isprint(static_cast<unsigned char>(c)))
 		CmdBuf.AppendChar(c);
 	return true;
 #endif

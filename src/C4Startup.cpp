@@ -129,7 +129,7 @@ CStdFont &C4StartupGraphics::GetBlackFontByHeight(int32_t iHgt, float *pfZoom)
 	{
 		int32_t iLineHgt = pUseFont->GetLineHeight();
 		if (iLineHgt)
-			*pfZoom = (float)iHgt / (float)iLineHgt;
+			*pfZoom = static_cast<float>(iHgt) / static_cast<float>(iLineHgt);
 		else
 			*pfZoom = 1.0f; // error
 	}

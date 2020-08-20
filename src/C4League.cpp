@@ -121,8 +121,8 @@ void C4LeagueResponseHeadStart::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(StreamingAddr,  "StreamTo",   ""));
 	pComp->Value(mkNamingCountAdapt(fHaveSeed, "Seed"));
 	if (fHaveSeed)
-		pComp->Value(mkNamingAdapt(iSeed, "Seed", (int32_t)0));
-	pComp->Value(mkNamingAdapt(iMaxPlayers,    "MaxPlayers", (int32_t)0));
+		pComp->Value(mkNamingAdapt(iSeed, "Seed", 0));
+	pComp->Value(mkNamingAdapt(iMaxPlayers,    "MaxPlayers", 0));
 }
 
 // *** C4LeagueResponseHeadUpdate
@@ -545,7 +545,7 @@ void C4LeagueClient::ModifyForChecksum(const void *pData, size_t iDataSize, char
 		sha1.Update(pData, iDataSize);
 		sha1.GetHash(sha);
 		// Correct checksum?
-		if (!((*(uint32_t *)&sha ^ iChecksum) & iCheckMask))
+		if (!((*reinterpret_cast<uint32_t *>(&sha) ^ iChecksum) & iCheckMask))
 			return;
 		sha1.Reset();
 	}

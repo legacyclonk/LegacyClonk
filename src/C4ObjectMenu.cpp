@@ -153,7 +153,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					if (pObj2) if (pObj2->CanConcatPictureWith(pObj)) pObj = pObj2;
 				}
 				// Caption
-				sprintf(szCaption, LoadResStr("IDS_MENU_ACTIVATE"), (const char *)pObj->GetName());
+				sprintf(szCaption, LoadResStr("IDS_MENU_ACTIVATE"), pObj->GetName());
 				// Picture
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, C4SymbolSize, C4SymbolSize);
 				pObj->Picture2Facet(fctSymbol);
@@ -222,7 +222,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					if (pObj2) if (pObj2->CanConcatPictureWith(pObj)) pObj = pObj2;
 				}
 				// Caption
-				sprintf(szCaption, LoadResStr("IDS_MENU_SELL"), (const char *)pObj->GetName());
+				sprintf(szCaption, LoadResStr("IDS_MENU_SELL"), pObj->GetName());
 				// Picture
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, C4SymbolSize, C4SymbolSize);
 				pObj->Picture2Facet(fctSymbol);
@@ -270,7 +270,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				}
 				if (!(pTarget->OCF & OCF_Entrance)) fGet = true; // target object has no entrance: cannot activate - force get
 				// Caption
-				sprintf(szCaption, LoadResStr(fGet ? "IDS_MENU_GET" : "IDS_MENU_ACTIVATE"), (const char *)pObj->GetName());
+				sprintf(szCaption, LoadResStr(fGet ? "IDS_MENU_GET" : "IDS_MENU_ACTIVATE"), pObj->GetName());
 				// Picture
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, C4SymbolSize, C4SymbolSize);
 				pObj->Picture2Facet(fctSymbol);
@@ -531,7 +531,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						if (!pFunction->Condition || !!pFunction->Condition->Exec(pEff->pCommandTarget, {C4VObj(pTarget), C4VInt(pEff->iNumber), C4VObj(Object), C4VID(pFunction->idImage)}))
 							if (!fCountOnly)
 							{
-								sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",Object(%d),%d,Object(%d),%s)", pEff->pCommandTarget->Number, pFunction->Name, pTarget->Number, (int)pEff->iNumber, Object->Number, C4IdText(pFunction->idImage));
+								sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",Object(%d),%d,Object(%d),%s)", pEff->pCommandTarget->Number, pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
 								fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, false, 0, nullptr, pFunction->iImagePhase);
 								Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 								fctSymbol.Default();

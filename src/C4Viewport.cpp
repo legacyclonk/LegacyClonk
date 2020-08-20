@@ -476,10 +476,10 @@ gboolean C4ViewportWindow::OnScrollStatic(GtkWidget *widget, GdkEventScroll *eve
 		switch (event->direction)
 		{
 		case GDK_SCROLL_UP:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, (int32_t)event->x, (int32_t)event->y, event->state + (short(1) << 16), window->cvp);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state + (short(1) << 16), window->cvp);
 			break;
 		case GDK_SCROLL_DOWN:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, (int32_t)event->x, (int32_t)event->y, event->state + (short(-1) << 16), window->cvp);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state + (short(-1) << 16), window->cvp);
 			break;
 		}
 	}
@@ -497,18 +497,18 @@ gboolean C4ViewportWindow::OnButtonPressStatic(GtkWidget *widget, GdkEventButton
 		{
 		case 1:
 			if (event->type == GDK_BUTTON_PRESS)
-				Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDown, (int32_t)event->x, (int32_t)event->y, event->state, window->cvp);
+				Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDown, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 			else if (event->type == GDK_2BUTTON_PRESS)
-				Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDouble, (int32_t)event->x, (int32_t)event->y, event->state, window->cvp);
+				Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDouble, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 			break;
 		case 2:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_MiddleDown, (int32_t)event->x, (int32_t)event->y, event->state, window->cvp);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_MiddleDown, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 			break;
 		case 3:
 			if (event->type == GDK_BUTTON_PRESS)
-				Game.GraphicsSystem.MouseMove(C4MC_Button_RightDown, (int32_t)event->x, (int32_t)event->y, event->state, window->cvp);
+				Game.GraphicsSystem.MouseMove(C4MC_Button_RightDown, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 			else if (event->type == GDK_2BUTTON_PRESS)
-				Game.GraphicsSystem.MouseMove(C4MC_Button_RightDouble, (int32_t)event->x, (int32_t)event->y, event->state, window->cvp);
+				Game.GraphicsSystem.MouseMove(C4MC_Button_RightDouble, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 			break;
 		}
 	}
@@ -537,13 +537,13 @@ gboolean C4ViewportWindow::OnButtonReleaseStatic(GtkWidget *widget, GdkEventButt
 		switch (event->button)
 		{
 		case 1:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_LeftUp, (int32_t)event->x, (int32_t)event->y, event->state, window->cvp);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_LeftUp, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 			break;
 		case 2:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_MiddleUp, (int32_t)event->x, (int32_t)event->y, event->state, window->cvp);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_MiddleUp, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 			break;
 		case 3:
-			Game.GraphicsSystem.MouseMove(C4MC_Button_RightUp, (int32_t)event->x, (int32_t)event->y, event->state, window->cvp);
+			Game.GraphicsSystem.MouseMove(C4MC_Button_RightUp, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 			break;
 		}
 	}
@@ -569,7 +569,7 @@ gboolean C4ViewportWindow::OnMotionNotifyStatic(GtkWidget *widget, GdkEventMotio
 
 	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
 	{
-		Game.GraphicsSystem.MouseMove(C4MC_Button_None, (int32_t)event->x, (int32_t)event->y, event->state, window->cvp);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_None, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 	}
 	else
 	{

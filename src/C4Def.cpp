@@ -226,7 +226,7 @@ bool C4DefCore::Load(C4Group &hGroup)
 	StdStrBuf Source;
 	if (hGroup.LoadEntryString(C4CFN_DefCore, Source))
 	{
-		StdStrBuf Name = hGroup.GetFullName() + (const StdStrBuf &)FormatString("%cDefCore.txt", DirectorySeparator);
+		StdStrBuf Name = hGroup.GetFullName() + FormatString("%cDefCore.txt", DirectorySeparator);
 		if (!Compile(Source.getData(), Name.getData()))
 			return false;
 		Source.Clear();
@@ -1029,7 +1029,7 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 		SysGroupString.LoadEx("StringTbl", SysGroup, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
 		// load all scripts in there
 		SysGroup.ResetSearch();
-		while (SysGroup.FindNextEntry(C4CFN_ScriptFiles, (char *)&fn, nullptr, nullptr, !!fn[0]))
+		while (SysGroup.FindNextEntry(C4CFN_ScriptFiles, fn, nullptr, nullptr, !!fn[0]))
 		{
 			// host will be destroyed by script engine, so drop the references
 			C4ScriptHost *scr = new C4ScriptHost();
@@ -1571,7 +1571,7 @@ int __cdecl C4DefListSortFunc(const void *elem1, const void *elem2)
 int C4DefListSortFunc(const void *elem1, const void *elem2)
 #endif
 {
-	return (*(C4Def * const *)elem1)->id - (*(C4Def * const *)elem2)->id;
+	return (*static_cast<C4Def * const *>(elem1))->id - (*static_cast<C4Def * const *>(elem2))->id;
 }
 
 void C4DefList::SortByID()

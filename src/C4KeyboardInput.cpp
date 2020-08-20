@@ -348,16 +348,16 @@ StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool
 			{
 				if (fHumanReadable)
 					// This is still not great, but it is not really possible to assign unknown axes to "left/right" "up/down"...
-					return FormatString("[%d] %s", int(1 + Key_GetGamepadAxisIndex(wCode)), Key_IsGamepadAxisHigh(wCode) ? "Max" : "Min");
+					return FormatString("[%d] %s", 1 + Key_GetGamepadAxisIndex(wCode), Key_IsGamepadAxisHigh(wCode) ? "Max" : "Min");
 				else
-					return FormatString("Joy%dAxis%d%s", iGamepad + 1, static_cast<char>(Key_GetGamepadAxisIndex(wCode)), Key_IsGamepadAxisHigh(wCode) ? "Max" : "Min");
+					return FormatString("Joy%dAxis%d%s", iGamepad + 1, Key_GetGamepadAxisIndex(wCode), Key_IsGamepadAxisHigh(wCode) ? "Max" : "Min");
 			}
 			else
 			{
 				// button
 				if (fHumanReadable)
 					// If there should be gamepads around with A B C D... on the buttons, we might create a display option to show letters instead...
-					return FormatString("< %d >", int(1 + Key_GetGamepadButtonIndex(wCode)));
+					return FormatString("< %d >", 1 + Key_GetGamepadButtonIndex(wCode));
 				else
 					return FormatString("Joy%d%c", iGamepad + 1, static_cast<char>(Key_GetGamepadButtonIndex(wCode) + 'A'));
 			}
@@ -369,7 +369,7 @@ StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool
 	while (pCheck->szName)
 		if (wCode == pCheck->wCode) return StdStrBuf::MakeRef((pCheck->szShortName && fShort) ? pCheck->szShortName : pCheck->szName); else ++pCheck;
 	// not found: Compose as direct code
-	return FormatString("\\x%x", (uint32_t)wCode);
+	return FormatString("\\x%x", static_cast<uint32_t>(wCode));
 #elif defined(USE_X11)
 	return StdStrBuf::MakeRef(XKeysymToString(wCode));
 #elif defined(USE_SDL_MAINLOOP)
@@ -386,7 +386,7 @@ StdStrBuf C4KeyCodeEx::ToString(bool fHumanReadable, bool fShort)
 	for (uint32_t dwShiftCheck = KEYS_First; dwShiftCheck <= KEYS_Max; dwShiftCheck <<= 1)
 		if (dwShiftCheck & dwShift)
 		{
-			sResult.Append(KeyShift2String((C4KeyShiftState)dwShiftCheck));
+			sResult.Append(KeyShift2String(static_cast<C4KeyShiftState>(dwShiftCheck)));
 			sResult.AppendChar('+');
 		}
 	// Add key
@@ -437,7 +437,7 @@ void C4KeyCodeEx::CompileFunc(StdCompiler *pComp)
 		for (uint32_t dwShiftCheck = KEYS_First; dwShiftCheck <= KEYS_Max; dwShiftCheck <<= 1)
 			if (dwShiftCheck & dwShift)
 			{
-				pComp->Value(mkDecompileAdapt(KeyShift2String((C4KeyShiftState)dwShiftCheck)));
+				pComp->Value(mkDecompileAdapt(KeyShift2String(static_cast<C4KeyShiftState>(dwShiftCheck))));
 				pComp->Separator(StdCompiler::SEP_PLUS);
 			}
 		// write key
@@ -713,7 +713,7 @@ bool C4KeyboardInput::DoInput(const C4KeyCodeEx &InKey, C4KeyEventType InEvent, 
 		if (byAxis % 2)
 			if (fHigh) keyAxisDir = KEY_JOY_Down; else keyAxisDir = KEY_JOY_Up;
 		else if (fHigh) keyAxisDir = KEY_JOY_Right; else keyAxisDir = KEY_JOY_Left;
-		KeyRanges[iKeyRangeCnt++] = KeysByCode.equal_range(C4KeyCodeEx(KEY_Gamepad(byGamepad, (uint8_t)keyAxisDir)));
+		KeyRanges[iKeyRangeCnt++] = KeysByCode.equal_range(C4KeyCodeEx(KEY_Gamepad(byGamepad, static_cast<uint8_t>(keyAxisDir))));
 	}
 	if (InKey.Key != KEY_Any) KeyRanges[iKeyRangeCnt++] = KeysByCode.equal_range(C4KeyCodeEx(KEY_Any, C4KeyShiftState(InKey.dwShift)));
 	assert(iKeyRangeCnt <= iKeyRangeMax);
@@ -807,7 +807,7 @@ StdStrBuf C4KeyboardInput::GetKeyCodeNameByKeyName(const char *szKeyName, bool f
 	if (pKey)
 	{
 		const C4CustomKey::CodeList &codes = pKey->GetCodes();
-		if ((size_t)iIndex < codes.size())
+		if (static_cast<size_t>(iIndex) < codes.size())
 		{
 			C4KeyCodeEx code = codes[iIndex];
 			return code.ToString(true, fShort);

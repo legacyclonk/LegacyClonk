@@ -112,7 +112,7 @@ inline bool MatVehicle(int32_t iMat)
 inline int32_t PixCol2Tex(uint8_t pixc)
 {
 	// Remove IFT
-	int32_t iTex = int32_t(pixc & (IFT - 1));
+	int32_t iTex = pixc & (IFT - 1);
 	// Validate
 	if (iTex >= C4M_MaxTexIndex) return 0;
 	// Done

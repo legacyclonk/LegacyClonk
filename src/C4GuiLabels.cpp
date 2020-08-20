@@ -308,8 +308,8 @@ void HorizontalLine::DrawElement(C4FacetEx &cgo)
 	// draw horizontal line
 	int32_t iX1 = rcBounds.x + cgo.TargetX, iX2 = iX1 + rcBounds.Wdt,
 		iY = rcBounds.y + cgo.TargetY;
-	lpDDraw->DrawLineDw(cgo.Surface, (float)(iX1 + 1), (float)(iY + 1), (float)(iX2 - 1), (float)(iY + 1), dwShadowClr);
-	lpDDraw->DrawLineDw(cgo.Surface, (float)iX1, (float)iY, (float)(iX2 - 2), (float)iY, dwClr);
+	lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(iX1 + 1), static_cast<float>(iY + 1), static_cast<float>(iX2 - 1), static_cast<float>(iY + 1), dwShadowClr);
+	lpDDraw->DrawLineDw(cgo.Surface, static_cast<float>(iX1), static_cast<float>(iY), static_cast<float>(iX2 - 2), static_cast<float>(iY), dwClr);
 }
 
 // ProgressBar

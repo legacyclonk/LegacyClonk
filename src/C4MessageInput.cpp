@@ -111,12 +111,11 @@ void C4ChatInputDialog::OnClosed(bool fOK)
 	BaseDlg::OnClosed(fOK);
 }
 
-C4GUI::Edit::InputResult C4ChatInputDialog::OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
+C4GUI::Edit::InputResult C4ChatInputDialog::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool fPastingMore)
 {
 	// no double processing
 	if (fProcessed) return C4GUI::Edit::IR_CloseDlg;
 	// get edit text
-	C4GUI::Edit *pEdt = reinterpret_cast<C4GUI::Edit *>(edt);
 	char *szInputText = const_cast<char *>(pEdt->GetText());
 	// Store to back buffer
 	Game.MessageInput.StoreBackBuffer(szInputText);
@@ -487,7 +486,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 				pSet = new C4ControlSet(C4CVT_FairCrew, Config.General.FairCrewStrength);
 			else if (SEqual(pCmdPar + 9, "off"))
 				pSet = new C4ControlSet(C4CVT_FairCrew, -1);
-			else if (isdigit((unsigned char)pCmdPar[9]))
+			else if (isdigit(static_cast<unsigned char>(pCmdPar[9])))
 				pSet = new C4ControlSet(C4CVT_FairCrew, atoi(pCmdPar + 9));
 			else
 				return false;

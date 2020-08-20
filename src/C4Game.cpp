@@ -151,14 +151,14 @@ bool C4Game::OpenScenario()
 		// open from parent group
 		if (!ScenarioFile.OpenAsChild(pParentGroup, GetFilename(ScenarioFilename)))
 		{
-			LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), (const char *)ScenarioFilename); return false;
+			LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), ScenarioFilename); return false;
 		}
 	}
 	else
 		// open directly
 		if (!ScenarioFile.Open(ScenarioFilename))
 		{
-			LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), (const char *)ScenarioFilename); return false;
+			LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), ScenarioFilename); return false;
 		}
 
 	// add scenario to group
@@ -709,7 +709,7 @@ bool C4Game::GameOverCheck()
 			if (MatValid(mat = Game.Material.Get(C4S.Game.ClearMaterial.Name[cnt])))
 			{
 				condition_valid = true;
-				if (Game.Landscape.EffectiveMatCount[mat] > (uint32_t)C4S.Game.ClearMaterial.Count[cnt])
+				if (Game.Landscape.EffectiveMatCount[mat] > static_cast<uint32_t>(C4S.Game.ClearMaterial.Count[cnt]))
 					condition_true = false;
 			}
 	if (condition_valid)
@@ -2653,7 +2653,7 @@ bool C4Game::InitScriptEngine()
 	// get scripts
 	char fn[_MAX_FNAME + 1] = { 0 };
 	File.ResetSearch();
-	while (File.FindNextEntry(C4CFN_ScriptFiles, (char *)&fn, nullptr, nullptr, !!fn[0]))
+	while (File.FindNextEntry(C4CFN_ScriptFiles, fn, nullptr, nullptr, !!fn[0]))
 	{
 		// host will be destroyed by script engine, so drop the references
 		C4ScriptHost *scr = new C4ScriptHost();
@@ -3201,7 +3201,7 @@ bool C4Game::LoadScenarioComponents()
 	// scenario sections
 	char fn[_MAX_FNAME + 1] = { 0 };
 	ScenarioFile.ResetSearch(); *fn = 0;
-	while (ScenarioFile.FindNextEntry(C4CFN_ScenarioSections, (char *)&fn, nullptr, nullptr, !!*fn))
+	while (ScenarioFile.FindNextEntry(C4CFN_ScenarioSections, fn, nullptr, nullptr, !!*fn))
 	{
 		// get section name
 		char SctName[_MAX_FNAME + 1];
@@ -3238,7 +3238,7 @@ bool C4Game::LoadScenarioScripts()
 		ScenarioSysLangStringTable.LoadEx("StringTbl", SysGroup, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
 		// load all scripts in there
 		SysGroup.ResetSearch();
-		while (SysGroup.FindNextEntry(C4CFN_ScriptFiles, (char *)&fn, nullptr, nullptr, !!fn[0]))
+		while (SysGroup.FindNextEntry(C4CFN_ScriptFiles, fn, nullptr, nullptr, !!fn[0]))
 		{
 			// host will be destroyed by script engine, so drop the references
 			C4ScriptHost *scr = new C4ScriptHost();
@@ -4093,7 +4093,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	for (clnk = Objects.First; clnk; clnk = clnk->Next)
 		if (clnk->Obj->Status)
 		{
-			DebugLogF("LoadScenarioSection: WARNING: Object %d created in destruction process!", (int)clnk->Obj->Number);
+			DebugLogF("LoadScenarioSection: WARNING: Object %d created in destruction process!", static_cast<int>(clnk->Obj->Number));
 			ClearPointers(clnk->Obj);
 			// clnk->Obj->AssignRemoval(); - this could create additional objects in endless recursion...
 		}
@@ -4219,37 +4219,37 @@ bool C4Game::DrawTextSpecImage(C4FacetExSurface &fctTarget, const char *szSpec, 
 	}
 	else if (SEqual2(szSpec, "Ico:Locked"))
 	{
-		((C4Facet &)fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_Ex_LockedFrontal);
+		static_cast<C4Facet &>(fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_Ex_LockedFrontal);
 		return true;
 	}
 	else if (SEqual2(szSpec, "Ico:League"))
 	{
-		((C4Facet &)fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_Ex_League);
+		static_cast<C4Facet &>(fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_Ex_League);
 		return true;
 	}
 	else if (SEqual2(szSpec, "Ico:GameRunning"))
 	{
-		((C4Facet &)fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_GameRunning);
+		static_cast<C4Facet &>(fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_GameRunning);
 		return true;
 	}
 	else if (SEqual2(szSpec, "Ico:Lobby"))
 	{
-		((C4Facet &)fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_Lobby);
+		static_cast<C4Facet &>(fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_Lobby);
 		return true;
 	}
 	else if (SEqual2(szSpec, "Ico:RuntimeJoin"))
 	{
-		((C4Facet &)fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_RuntimeJoin);
+		static_cast<C4Facet &>(fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_RuntimeJoin);
 		return true;
 	}
 	else if (SEqual2(szSpec, "Ico:FairCrew"))
 	{
-		((C4Facet &)fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_Ex_FairCrew);
+		static_cast<C4Facet &>(fctTarget) = C4GUI::Icon::GetIconFacet(C4GUI::Ico_Ex_FairCrew);
 		return true;
 	}
 	else if (SEqual2(szSpec, "Ico:Settlement"))
 	{
-		((C4Facet &)fctTarget) = GraphicsResource.fctScore;
+		static_cast<C4Facet &>(fctTarget) = GraphicsResource.fctScore;
 		return true;
 	}
 	// unknown spec

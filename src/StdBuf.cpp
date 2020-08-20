@@ -44,7 +44,7 @@ bool StdBuf::LoadFromFile(const char *szFile)
 	// Create buf
 	New(FileSize(fh));
 	// Read
-	if (read(fh, getMData(), getSize()) != (signed int)getSize())
+	if (read(fh, getMData(), getSize()) != static_cast<signed int>(getSize()))
 	{
 		close(fh);
 		return false;
@@ -60,7 +60,7 @@ bool StdBuf::SaveToFile(const char *szFile) const
 	int fh = open(szFile, O_BINARY | O_CREAT | O_WRONLY | O_SEQUENTIAL | O_TRUNC, S_IREAD | S_IWRITE);
 	if (fh < 0) return false;
 	// Write data
-	if (write(fh, getData(), getSize()) != (signed int)getSize())
+	if (write(fh, getData(), getSize()) != static_cast<signed int>(getSize()))
 	{
 		close(fh);
 		return false;
@@ -78,7 +78,7 @@ bool StdStrBuf::LoadFromFile(const char *szFile)
 	// Create buf
 	SetLength(FileSize(fh));
 	// Read
-	if (read(fh, getMData(), getLength()) != (size_t)getLength())
+	if (read(fh, getMData(), getLength()) != getLength())
 	{
 		close(fh);
 		return false;
@@ -94,7 +94,7 @@ bool StdStrBuf::SaveToFile(const char *szFile) const
 	int fh = open(szFile, O_BINARY | O_CREAT | O_WRONLY | O_SEQUENTIAL | O_TRUNC, S_IREAD | S_IWRITE);
 	if (fh < 0) return false;
 	// Write data
-	if (write(fh, getData(), getLength()) != (size_t)getLength())
+	if (write(fh, getData(), getLength()) != getLength())
 	{
 		close(fh);
 		return false;
@@ -426,7 +426,7 @@ bool StdStrBuf::TrimSpaces()
 	if (!iLength) return false;
 	const char *szStr = getData();
 	while (iSpaceLeftCount < iLength)
-		if (isspace((unsigned char)(unsigned char)szStr[iSpaceLeftCount]))
+		if (isspace(static_cast<unsigned char>(szStr[iSpaceLeftCount])))
 			++iSpaceLeftCount;
 		else
 			break;
@@ -438,7 +438,7 @@ bool StdStrBuf::TrimSpaces()
 	}
 	// get right trim
 	int32_t iSpaceRightCount = 0;
-	while (isspace((unsigned char)szStr[iLength - 1 - iSpaceRightCount])) ++iSpaceRightCount;
+	while (isspace(static_cast<unsigned char>(szStr[iLength - 1 - iSpaceRightCount]))) ++iSpaceRightCount;
 	// anything to trim?
 	if (!iSpaceLeftCount && !iSpaceRightCount) return false;
 	// only right trim? Can do this by shortening
