@@ -667,7 +667,7 @@ static bool FnSetXDir(C4AulContext *cthr, long nxdir, C4Object *pObj, long iPrec
 	// precision (default 10.0)
 	if (!iPrec) iPrec = 10;
 	// update xdir
-	pObj->xdir = ftofix(static_cast<float>(nxdir) / iPrec);
+	pObj->xdir = itofix(nxdir, iPrec);
 	pObj->Mobile = 1;
 	// success
 	return true;
@@ -680,7 +680,7 @@ static bool FnSetRDir(C4AulContext *cthr, long nrdir, C4Object *pObj, long iPrec
 	// precision (default 10.0)
 	if (!iPrec) iPrec = 10;
 	// update rdir
-	pObj->rdir = ftofix(static_cast<float>(nrdir) / iPrec);
+	pObj->rdir = itofix(nrdir, iPrec);
 	pObj->Mobile = 1;
 	// success
 	return true;
@@ -694,7 +694,7 @@ static bool FnSetYDir(C4AulContext *cthr, long nydir, C4Object *pObj, long iPrec
 	if (!iPrec) iPrec = 10;
 	// update ydir
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return false;
-	pObj->ydir = ftofix(static_cast<float>(nydir) / iPrec);
+	pObj->ydir = itofix(nydir, iPrec);
 	pObj->Mobile = 1;
 	// success
 	return true;
