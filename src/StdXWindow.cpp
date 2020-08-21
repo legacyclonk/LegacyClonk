@@ -160,12 +160,12 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	wm_hint->initial_state = NormalState;
 	wm_hint->input = True;
 	// Trust XpmCreatePixmapFromData to not modify the xpm...
-	XpmCreatePixmapFromData(dpy, wnd, const_cast<char **>(c4x_xpm), &wm_hint->icon_pixmap, &wm_hint->icon_mask, 0);
+	XpmCreatePixmapFromData(dpy, wnd, const_cast<char **>(c4x_xpm), &wm_hint->icon_pixmap, &wm_hint->icon_mask, nullptr);
 	// Window class
 	XClassHint *class_hint = XAllocClassHint();
 	class_hint->res_name = STD_PRODUCT;
 	class_hint->res_class = STD_PRODUCT;
-	XSetWMProperties(dpy, wnd, &title_property, &title_property, pApp->Priv->argv, pApp->Priv->argc, 0, wm_hint, class_hint);
+	XSetWMProperties(dpy, wnd, &title_property, &title_property, pApp->Priv->argv, pApp->Priv->argc, nullptr, wm_hint, class_hint);
 	// Set "parent". Clonk does not use "real" parent windows, but multiple toplevel windows.
 	if (pParent) XSetTransientForHint(dpy, wnd, pParent->wnd);
 	// Show window

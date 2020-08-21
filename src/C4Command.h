@@ -106,14 +106,14 @@ protected:
 	void Home();
 	void Retry();
 	void Energy();
-	void Fail(const char *szFailMessage = 0);
+	void Fail(const char *szFailMessage = nullptr);
 	void Acquire();
 	void Sell();
 	void Buy();
 	void Attack();
 	void Transfer();
 	void Construct();
-	void Finish(bool fSuccess = false, const char *szFailMessage = 0);
+	void Finish(bool fSuccess = false, const char *szFailMessage = nullptr);
 	void Follow();
 	void MoveTo();
 	void Enter();

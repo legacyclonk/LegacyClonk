@@ -40,7 +40,7 @@ void C4UpperBoard::Execute()
 	if (Config.Graphics.UpperBoard == Hide) return;
 	// Make the time strings
 	sprintf(cTimeString, "%02d:%02d:%02d", Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60);
-	time_t t = time(0); strftime(cTimeString2, sizeof(cTimeString2), "[%H:%M:%S]", localtime(&t));
+	time_t t = time(nullptr); strftime(cTimeString2, sizeof(cTimeString2), "[%H:%M:%S]", localtime(&t));
 	Draw(Output);
 }
 

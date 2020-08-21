@@ -349,7 +349,7 @@ public:
 	C4PhysicalInfo *GetPhysical(bool fPermanent = false);
 	bool TrainPhysical(C4PhysicalInfo::Offset mpiOffset, int32_t iTrainBy, int32_t iMaxTrain);
 	const char *GetName();
-	void SetName(const char *NewName = 0);
+	void SetName(const char *NewName = nullptr);
 	int32_t GetValue(C4Object *pInBase, int32_t iForPlayer);
 	void DirectCom(uint8_t byCom, int32_t iData);
 	void AutoStopDirectCom(uint8_t byCom, int32_t iData);

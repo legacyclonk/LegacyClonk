@@ -142,5 +142,5 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 
 void C4LangStringTable::ReplaceStrings(StdStrBuf &rBuf)
 {
-	ReplaceStrings(rBuf, rBuf, 0);
+	ReplaceStrings(rBuf, rBuf, nullptr);
 }

@@ -294,7 +294,7 @@ public:
 	// Wether this function should be visible to players
 	virtual bool GetPublic() { return false; }
 	virtual int GetParCount() { return C4AUL_MAX_Par; }
-	virtual const C4V_Type *GetParType() { return 0; }
+	virtual const C4V_Type *GetParType() { return nullptr; }
 	virtual C4V_Type GetRetType() { return C4V_Any; }
 	virtual C4Value Exec(C4AulContext *pCallerCtx, const C4Value pPars[], bool fPassErrors = false) { return C4Value(); } // execute func (script call)
 	virtual C4Value Exec(C4Object *pObj = nullptr, const C4AulParSet &pPars = C4AulParSet{}, bool fPassErrors = false); // execute func (engine call)
@@ -461,7 +461,7 @@ protected:
 	C4AulFunc *GetOverloadedFunc(C4AulFunc *ByFunc);
 	C4AulFunc *GetFunc(const char *pIdtf); // get local function by name
 
-	void AddBCC(C4AulBCCType eType, std::intptr_t = 0, const char *SPos = 0); // add byte code chunk and advance
+	void AddBCC(C4AulBCCType eType, std::intptr_t = 0, const char *SPos = nullptr); // add byte code chunk and advance
 	bool Preparse(); // preparse script; return if successfull
 	void ParseFn(C4AulScriptFunc *Fn, bool fExprOnly = false); // parse single script function
 

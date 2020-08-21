@@ -637,7 +637,7 @@ C4Object *C4ObjectList::Enumerated(C4Object *pObj)
 	if (iPtrNum = ObjectNumber(pObj))
 		return reinterpret_cast<C4Object *>(C4EnumPointer1 + iPtrNum);
 	// Oops!
-	return 0;
+	return nullptr;
 }
 
 C4Object *C4ObjectList::Denumerated(C4Object *pObj)
@@ -1023,7 +1023,7 @@ C4ObjectList::iterator &C4ObjectList::iterator::operator++()
 
 C4Object *C4ObjectList::iterator::operator*()
 {
-	return pLink ? pLink->Obj : 0;
+	return pLink ? pLink->Obj : nullptr;
 }
 
 bool C4ObjectList::iterator::operator==(const iterator &iter) const
@@ -1052,7 +1052,7 @@ C4ObjectList::iterator C4ObjectList::begin()
 
 const C4ObjectList::iterator C4ObjectList::end()
 {
-	return iterator(*this, 0);
+	return iterator(*this, nullptr);
 }
 
 C4ObjectList::iterator *C4ObjectList::AddIter(iterator *iter)

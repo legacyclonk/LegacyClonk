@@ -1347,7 +1347,7 @@ void C4Command::Activate()
 			// Activate object to exit
 			Target->Controller = cObj->Controller;
 			Target->SetCommand(C4CMD_Exit);
-			Target = 0;
+			Target = nullptr;
 		}
 
 		Finish(true); return;
@@ -1772,7 +1772,7 @@ void C4Command::Construct()
 	C4Object *pKit;
 	if (!(pKit = cObj->Contents.Find(C4ID_Conkit)))
 	{
-		cObj->AddCommand(C4CMD_Acquire, 0, 0, 0, 50, 0, true, C4ID_Conkit, false, 5, 0, C4CMD_Mode_Sub); return;
+		cObj->AddCommand(C4CMD_Acquire, nullptr, 0, 0, 50, nullptr, true, C4ID_Conkit, false, 5, nullptr, C4CMD_Mode_Sub); return;
 	}
 
 	// Move to construction site
@@ -2121,7 +2121,7 @@ void C4Command::Acquire()
 	// No available material found: buy material
 	// This command will fail immediately if buying at bases is not possible
 	// - but the command should be created anyway because it might be overloaded
-	cObj->AddCommand(C4CMD_Buy, nullptr, 0, 0, 100, nullptr, true, Data, false, 0, 0, C4CMD_Mode_Sub);
+	cObj->AddCommand(C4CMD_Buy, nullptr, 0, 0, 100, nullptr, true, Data, false, 0, nullptr, C4CMD_Mode_Sub);
 }
 
 void C4Command::Fail(const char *szFailMessage)

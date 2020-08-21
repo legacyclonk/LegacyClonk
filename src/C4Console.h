@@ -76,7 +76,7 @@ public:
 	bool UpdateModeCtrls(int iMode);
 	void UpdateInputCtrl();
 	void UpdateMenus();
-	bool OpenGame(const char *szCmdLine = 0);
+	bool OpenGame(const char *szCmdLine = nullptr);
 	bool TogglePause(); // key callpack: pause
 
 protected:

@@ -168,7 +168,7 @@ protected:
 public:
 	CGammaControl() : red(nullptr), green(nullptr), blue(nullptr), size(0) { Default(); }
 	~CGammaControl();
-	void Default() { Set(0x000000, 0x808080, 0xffffff, 256, 0); } // set default ramp
+	void Default() { Set(0x000000, 0x808080, 0xffffff, 256, nullptr); } // set default ramp
 
 	void Set(uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, int size, CGammaControl *ref); // set color ramp
 	int GetSize() const;

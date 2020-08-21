@@ -1456,7 +1456,7 @@ bool AlgoScript(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 	// catch error (damn insecure C4Aul)
 	try
 	{
-		return !!pFunc->Exec(0, Pars);
+		return !!pFunc->Exec(nullptr, Pars);
 	}
 	catch (const C4AulError &err)
 	{
@@ -1586,7 +1586,7 @@ C4MCAlgorithm C4MCAlgoMap[] =
 	{ "script",     &AlgoScript },
 	{ "rndall",     &AlgoRndAll },
 	{ "poly",       &AlgoPolygon },
-	{ "", 0 }
+	{ "", nullptr }
 };
 
 C4MCNodeAttr C4MCOvrlMap[] =

@@ -48,12 +48,12 @@ bool OpenURL(const char *szURL)
 		{ "mozilla",          szURL, nullptr },
 		{ "konqueror",        szURL, nullptr },
 		{ "epiphany",         szURL, nullptr },
-		{ 0, 0, 0 }
+		{ nullptr, nullptr, nullptr }
 	};
 	for (int i = 0; argv[i][0]; ++i)
 	{
-		GError *error = 0;
-		if (g_spawn_async(g_get_home_dir(), const_cast<gchar**>(argv[i]), 0, G_SPAWN_SEARCH_PATH, 0, 0, 0, &error))
+		GError *error = nullptr;
+		if (g_spawn_async(g_get_home_dir(), const_cast<gchar**>(argv[i]), nullptr, G_SPAWN_SEARCH_PATH, nullptr, nullptr, nullptr, &error))
 			return true;
 		else fprintf(stderr, "%s\n", error->message);
 	}

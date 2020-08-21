@@ -105,7 +105,7 @@ private:
 
 public:
 	C4PlayerInfo() // construct empty
-		: dwFlags(0), iID(0), pRes(0), szFilename(0), dwColor(0xffffff), sLeagueAccount(""),
+		: dwFlags(0), iID(0), pRes(nullptr), szFilename(nullptr), dwColor(0xffffff), sLeagueAccount(""),
 		dwOriginalColor(0xffffff), dwAlternateColor(0), idSavegamePlayer(0), idTeam(0),
 		iLeagueScore(0), iLeagueRank(0), iLeagueRankSymbol(0), iLeagueProjectedGain(-1), iLeaguePerformance(0),
 		iInGameNumber(-1), iInGameJoinFrame(-1), iInGamePartFrame(-1), eType(C4PT_User), idExtraData(C4ID_None) {}

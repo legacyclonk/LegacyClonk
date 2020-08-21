@@ -587,7 +587,7 @@ C4ScenarioSection::C4ScenarioSection(char *szName)
 	else
 		this->szName = const_cast<char *>(C4ScenSect_Main);
 	// zero fields
-	szTempFilename = szFilename = 0;
+	szTempFilename = szFilename = nullptr;
 	fModified = false;
 	// link into main list
 	pNext = Game.pScenarioSections;

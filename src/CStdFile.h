@@ -58,7 +58,7 @@ public:
 	bool Append(const char *szFilename); // append (uncompressed only)
 	bool Close();
 	bool Default();
-	bool Read(void *pBuffer, size_t iSize) override { return Read(pBuffer, iSize, 0); }
+	bool Read(void *pBuffer, size_t iSize) override { return Read(pBuffer, iSize, nullptr); }
 	bool Read(void *pBuffer, size_t iSize, size_t *ipFSize);
 	bool Write(const void *pBuffer, int iSize);
 	bool WriteString(const char *szStr);

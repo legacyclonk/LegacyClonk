@@ -20,7 +20,7 @@
 // *** C4ValueMapData ***
 
 C4ValueMapData::C4ValueMapData()
-	: pData(0), pNames(0), bTempNameList(false), pNext(0) {}
+	: pData(nullptr), pNames(nullptr), bTempNameList(false), pNext(nullptr) {}
 
 C4ValueMapData &C4ValueMapData::operator=(const C4ValueMapData &DataToCopy)
 {
@@ -134,7 +134,7 @@ C4ValueMapNames *C4ValueMapData::CreateTempNameList()
 	if (pNames != pTempNames)
 	{
 		delete pTempNames;
-		return 0;
+		return nullptr;
 	}
 
 	// set flag
@@ -202,20 +202,20 @@ void C4ValueMapData::OnNameListChanged(const char **pOldNames, int32_t iOldSize)
 C4Value *C4ValueMapData::GetItem(int32_t iNr)
 {
 	// the list is nothing without name list...
-	if (!pNames) return 0;
+	if (!pNames) return nullptr;
 
-	if (iNr >= pNames->iSize) return 0;
+	if (iNr >= pNames->iSize) return nullptr;
 
 	return &pData[iNr];
 }
 
 C4Value *C4ValueMapData::GetItem(const char *strName)
 {
-	if (!pNames) return 0;
+	if (!pNames) return nullptr;
 
 	int32_t iNr = pNames->GetItemNr(strName);
 
-	if (iNr == -1) return 0;
+	if (iNr == -1) return nullptr;
 
 	return &pData[iNr];
 }
@@ -247,7 +247,7 @@ void C4ValueMapData::CompileFunc(StdCompiler *pComp)
 	pComp->Separator(StdCompiler::SEP_SEP2);
 	// Data
 	char **ppNames = !fCompiler ? pNames->pNames : new char *[iValueCnt];
-	if (fCompiler) for (int32_t i = 0; i < iValueCnt; i++) ppNames[i] = 0;
+	if (fCompiler) for (int32_t i = 0; i < iValueCnt; i++) ppNames[i] = nullptr;
 	C4Value *pValues = !fCompiler ? pData : new C4Value[iValueCnt];
 	// Compile
 	try
@@ -296,7 +296,7 @@ void C4ValueMapData::CompileFunc(StdCompiler *pComp)
 // *** C4ValueMapNames ***
 
 C4ValueMapNames::C4ValueMapNames()
-	: pNames(0), pExtra(0), iSize(0), pFirst(0) {}
+	: pNames(nullptr), pExtra(nullptr), iSize(0), pFirst(nullptr) {}
 
 C4ValueMapNames &C4ValueMapNames::operator=(C4ValueMapNames &NamesToCopy)
 {
@@ -334,7 +334,7 @@ void C4ValueMapNames::Register(C4ValueMapData *pData)
 void C4ValueMapNames::UnRegister(C4ValueMapData *pData)
 {
 	// find in list
-	C4ValueMapData *pAktData = pFirst, *pLastData = 0;
+	C4ValueMapData *pAktData = pFirst, *pLastData = nullptr;
 	while (pAktData && pAktData != pData)
 	{
 		pLastData = pAktData;

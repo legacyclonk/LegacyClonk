@@ -594,7 +594,7 @@ void C4AulFuncMap::Add(C4AulFunc *func, bool bAtStart)
 				// proceed with the next list member
 				Funcs[i] = Funcs[i]->MapNext;
 				// Terminate the linked list
-				(*pNFunc)->MapNext = 0;
+				(*pNFunc)->MapNext = nullptr;
 			}
 		}
 		Capacity = NCapacity;

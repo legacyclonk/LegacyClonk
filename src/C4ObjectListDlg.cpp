@@ -241,7 +241,7 @@ c4_list_iter_has_child(GtkTreeModel *tree_model,
 	C4ObjectList *pList = c4_list->data;
 	if (parent)
 		pList = &((C4ObjectLink *)parent->user_data)->Obj->Contents;
-	return pList->First != 0;
+	return pList->First != nullptr;
 }
 
 // Counts the children 'parent' has.
@@ -520,7 +520,7 @@ void C4ObjectListDlg::OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk)
 	}
 
 	// Cheat: For the signals it must look as if the object had it's parent removed already
-	pLnk->Obj->Contained = 0;
+	pLnk->Obj->Contained = nullptr;
 	// if removed from contents, it get's added to main list
 	if (pList != c4_list->data)
 	{
@@ -594,9 +594,9 @@ void C4ObjectListDlg::OnObjectRename(C4ObjectList *pList, C4ObjectLink *pLnk) {}
 
 void C4ObjectListDlg::OnDestroy(GtkWidget *widget, C4ObjectListDlg *dlg)
 {
-	dlg->window = 0;
-	dlg->model = 0;
-	dlg->treeview = 0;
+	dlg->window = nullptr;
+	dlg->model = nullptr;
+	dlg->treeview = nullptr;
 }
 
 void C4ObjectListDlg::OnSelectionChanged(GtkTreeSelection *selection, C4ObjectListDlg *dlg)
@@ -650,9 +650,9 @@ void C4ObjectListDlg::Update(C4ObjectList &rSelection)
 
 C4ObjectListDlg::C4ObjectListDlg() :
 	updating_selection(false),
-	window(0),
-	treeview(0),
-	model(0) {}
+	window(nullptr),
+	treeview(nullptr),
+	model(nullptr) {}
 
 C4ObjectListDlg::~C4ObjectListDlg() {}
 

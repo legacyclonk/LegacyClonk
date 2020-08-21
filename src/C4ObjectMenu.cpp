@@ -561,7 +561,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 									iResult++;
 
 	// 'Activate' and 'ControlDigDouble' script functions of target
-	const char *func, *funcs[] = { "Activate", "ControlDigDouble", 0 };
+	const char *func, *funcs[] = { "Activate", "ControlDigDouble", nullptr };
 	for (int i = 0; func = funcs[i]; i++)
 		// 'Activate' function only if in clonk's inventory; 'ControlDigDouble' function only if pushed by clonk
 		if ((SEqual(func, "Activate") && (pTarget->Contained == Object)) || (SEqual(func, "ControlDigDouble") && (Object->GetProcedure() == DFA_PUSH) && (Object->Action.Target == pTarget)))

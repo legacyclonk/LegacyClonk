@@ -25,7 +25,7 @@
 // ** implemetation of C4MainStat
 
 C4MainStat::C4MainStat()
-	: bStatFileOpen(false), pFirst(0) {}
+	: bStatFileOpen(false), pFirst(nullptr) {}
 
 C4MainStat::~C4MainStat()
 {

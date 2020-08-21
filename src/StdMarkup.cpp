@@ -45,7 +45,7 @@ bool CMarkup::Read(const char **ppText, bool fSkip)
 	if (!SCopyEnclosed(*ppText, '<', '>', Tag, 49)) return false;
 	iTagLen = SLen(Tag);
 	// split tag to name and pars
-	char *szPars = 0; int iSPos;
+	char *szPars = nullptr; int iSPos;
 	if ((iSPos = SCharPos(' ', Tag)) > -1)
 	{
 		Tag[iSPos] = 0;

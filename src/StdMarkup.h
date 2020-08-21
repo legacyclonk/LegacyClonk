@@ -28,9 +28,9 @@ class CBltTransform;
 class CMarkupTag
 {
 public:
-	CMarkupTag *pPrev, *pNext;
+	CMarkupTag *pPrev{}, *pNext{};
 
-	CMarkupTag() : pPrev(0), pNext(0) {};
+	CMarkupTag() {};
 	virtual ~CMarkupTag() {};
 
 	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr) = 0; // assign markup
@@ -76,7 +76,7 @@ private:
 
 	CMarkupTag *Pop()
 	{
-		CMarkupTag *pL = pLast; if (!pL) return 0; if ((pLast = pL->pPrev)) pLast->pNext = nullptr; else pTags = nullptr; return pL;
+		CMarkupTag *pL = pLast; if (!pL) return nullptr; if ((pLast = pL->pPrev)) pLast->pNext = nullptr; else pTags = nullptr; return pL;
 	}
 
 public:

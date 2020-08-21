@@ -557,9 +557,9 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 			else cobj->Exit(cobj->x, cobj->y);
 		}
 	// Detach attached objects
-	cobj = 0;
+	cobj = nullptr;
 	if (!pObj->Def->IncompleteActivity && !pObj->Def->NoBurnDecay)
-		while (cobj = Game.FindObject(0, 0, 0, 0, 0, OCF_All, 0, pObj, 0, 0, ANY_OWNER, cobj))
+		while (cobj = Game.FindObject(0, 0, 0, 0, 0, OCF_All, nullptr, pObj, nullptr, nullptr, ANY_OWNER, cobj))
 			if ((cobj->Action.Act > ActIdle) && (cobj->Def->ActMap[cobj->Action.Act].Procedure == DFA_ATTACH))
 				cobj->SetAction(ActIdle);
 	// fire caused?

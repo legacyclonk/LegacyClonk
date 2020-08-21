@@ -32,7 +32,7 @@
 #define _MAX_PATH PATH_MAX
 #define _MAX_FNAME NAME_MAX
 
-bool CreateDirectory(const char *pathname, void * = 0);
+bool CreateDirectory(const char *pathname, void * = nullptr);
 bool CopyFile(const char *szSource, const char *szTarget, bool FailIfExists);
 #endif
 

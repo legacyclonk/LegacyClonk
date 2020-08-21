@@ -86,7 +86,7 @@ template <typename T> struct C4ValueConv;
 class C4Value
 {
 public:
-	C4Value() : Type(C4V_Any), NextRef(nullptr), FirstRef(nullptr) { Data.Ref = 0; }
+	C4Value() : Type(C4V_Any), NextRef(nullptr), FirstRef(nullptr) { Data.Ref = nullptr; }
 
 	C4Value(const C4Value &nValue) : Data(nValue.Data), Type(nValue.Type), NextRef(nullptr), FirstRef(nullptr)
 	{
@@ -220,7 +220,7 @@ public:
 	C4Value &GetRefVal();
 
 	// Get the Value at the index. May Throw C4AulExecError
-	void GetContainerElement(C4Value *index, C4Value &to, struct C4AulContext *pctx = 0, bool noref = false);
+	void GetContainerElement(C4Value *index, C4Value &to, struct C4AulContext *pctx = nullptr, bool noref = false);
 	// Set the length of the array. Throws C4AulExecError if not an array
 	void SetArrayLength(int32_t size, C4AulContext *cthr);
 
@@ -262,7 +262,7 @@ protected:
 	C4V_Type Type : 8;
 	bool HasBaseContainer = false;
 
-	C4Value *GetNextRef() { if (HasBaseContainer) return 0; else return NextRef; }
+	C4Value *GetNextRef() { if (HasBaseContainer) return nullptr; else return NextRef; }
 	C4ValueContainer *GetBaseContainer() { if (HasBaseContainer) return BaseContainer; else return nullptr; }
 
 	void Set(long nData, C4V_Type nType = C4V_Any) { C4V_Data d; d.Int = nData; Set(d, nType); }

@@ -235,7 +235,7 @@ protected:
 	virtual bool IsReadOnly() { return false; } // determine whether the menu is just viewed by an observer, and should not issue any calls
 	virtual int32_t GetControllingPlayer() { return NO_OWNER; }
 
-	virtual const char *GetID() override { return 0; } // no ID needed, because it's a viewport dlg
+	virtual const char *GetID() override { return nullptr; } // no ID needed, because it's a viewport dlg
 
 	bool HasPortrait() { return fHasPortrait; } // dialog menus only: Whether a portrait is shown in the topleft
 

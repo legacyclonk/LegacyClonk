@@ -273,9 +273,9 @@ void CGammaControl::Set(uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, int n
 		size = nsize;
 	}
 	// set red, green and blue channel
-	SetClrChannel(red,   GetBValue(dwClr1), GetBValue(dwClr2), GetBValue(dwClr3), ref ? ref->red   : 0);
-	SetClrChannel(green, GetGValue(dwClr1), GetGValue(dwClr2), GetGValue(dwClr3), ref ? ref->green : 0);
-	SetClrChannel(blue,  GetRValue(dwClr1), GetRValue(dwClr2), GetRValue(dwClr3), ref ? ref->blue  : 0);
+	SetClrChannel(red,   GetBValue(dwClr1), GetBValue(dwClr2), GetBValue(dwClr3), ref ? ref->red   : nullptr);
+	SetClrChannel(green, GetGValue(dwClr1), GetGValue(dwClr2), GetGValue(dwClr3), ref ? ref->green : nullptr);
+	SetClrChannel(blue,  GetRValue(dwClr1), GetRValue(dwClr2), GetRValue(dwClr3), ref ? ref->blue  : nullptr);
 }
 
 int CGammaControl::GetSize() const

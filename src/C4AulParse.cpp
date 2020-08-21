@@ -954,7 +954,7 @@ bool C4AulScript::Preparse()
 		delete Func0;
 	}
 
-	C4AulParseState state(0, this, C4AulParseState::PREPARSER);
+	C4AulParseState state(nullptr, this, C4AulParseState::PREPARSER);
 	state.Parse_Script();
 
 	// no #strict? we don't like that :(
@@ -1579,7 +1579,7 @@ void C4AulParseState::Parse_FuncHead()
 			if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
 				throw C4AulParseError(this, "function definition: name already in use (global variable)");
 			if (a->Engine->GlobalConstNames.GetItemNr(Idtf) != -1)
-				Strict2Error("function definition: name already in use (global variable)", 0);
+				Strict2Error("function definition: name already in use (global variable)", nullptr);
 		}
 		// create script fn
 		if (Acc == AA_GLOBAL)
@@ -1679,7 +1679,7 @@ void C4AulParseState::Parse_FuncHead()
 		if (TokenType != ATT_BLOPEN)
 		{
 			// warn
-			Strict2Error("'func': expecting opening block ('{') after func declaration", 0);
+			Strict2Error("'func': expecting opening block ('{') after func declaration", nullptr);
 			// not really new syntax (a sort of legacy mode)
 			Fn->bNewFormat = false;
 		}
@@ -1859,7 +1859,7 @@ void C4AulParseState::Parse_Function()
 			// and break
 			Done = true;
 			// Do not blame this function for script errors between functions
-			Fn = 0;
+			Fn = nullptr;
 			return;
 		}
 		throw C4AulParseError(this, "no '{' found for '}'");
@@ -2731,7 +2731,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 		else if (SEqual(Idtf, C4AUL_Return))
 		{
 			// return: treat as regular function with special byte code
-			Strict2Error("return used as a parameter", 0);
+			Strict2Error("return used as a parameter", nullptr);
 			Shift();
 			Parse_Params(1, nullptr);
 			AddBCC(AB_RETURN);
@@ -3204,7 +3204,7 @@ bool C4AulParseState::Parse_Expression3()
 			}
 			// add call chunk
 			Shift();
-			Parse_Params(C4AUL_MAX_Par, pFunc ? pFunc->Name : 0, pFunc);
+			Parse_Params(C4AUL_MAX_Par, pFunc ? pFunc->Name : nullptr, pFunc);
 			if (idNS != 0)
 				AddBCC(AB_CALLNS, static_cast<std::intptr_t>(idNS));
 			AddBCC(eCallType, reinterpret_cast<std::intptr_t>(pFunc));
@@ -3478,7 +3478,7 @@ bool C4AulScript::Parse()
 {
 	if (DEBUG_BYTECODE_DUMP)
 	{
-		C4ScriptHost *scripthost = 0;
+		C4ScriptHost *scripthost{nullptr};
 		if (Def) scripthost = &Def->Script;
 		if (scripthost) LogSilentF("parsing %s...\n", scripthost->GetFilePath());
 		else LogSilentF("parsing unknown...\n");

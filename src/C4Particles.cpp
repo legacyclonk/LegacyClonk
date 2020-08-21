@@ -797,12 +797,12 @@ C4ParticleProcRec C4ParticleProcMap[] =
 	{ "BounceY",   fxBounceY },
 	{ "Stop",      fxStop },
 	{ "Die",       fxDie },
-	{ "",          0 }
+	{ "",          nullptr }
 };
 
 C4ParticleDrawProcRec C4ParticleDrawProcMap[] =
 {
 	{ "Smoke", fxSmokeDraw },
 	{ "Std",   fxStdDraw },
-	{ "",      0 }
+	{ "",      nullptr }
 };

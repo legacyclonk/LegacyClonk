@@ -639,7 +639,7 @@ StdStrBuf C4NetIO::HostAddress::ToString(const int flags) const
 	}
 
 	char buf[INET6_ADDRSTRLEN];
-	if (::getnameinfo(&gen, GetAddrLen(), buf, sizeof(buf), 0, 0, NI_NUMERICHOST) != 0)
+	if (::getnameinfo(&gen, GetAddrLen(), buf, sizeof(buf), nullptr, 0, NI_NUMERICHOST) != 0)
 		return {};
 
 	return StdStrBuf{buf, true};

@@ -796,14 +796,14 @@ DirectoryIterator::~DirectoryIterator()
 
 #else
 
-DirectoryIterator::DirectoryIterator() : d(0) { filename[0] = 0; }
+DirectoryIterator::DirectoryIterator() : d{} { filename[0] = 0; }
 
 void DirectoryIterator::Reset()
 {
 	if (d)
 	{
 		closedir(d);
-		d = 0;
+		d = nullptr;
 	}
 	filename[0] = 0;
 }

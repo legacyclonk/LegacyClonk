@@ -67,13 +67,13 @@ inline C4String *String(StdStrBuf&& str)
 	return str ? new C4String(std::forward<StdStrBuf>(str), &Game.ScriptEngine.Strings) : nullptr;
 }
 
-static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4Value *Par0 = 0, C4Value *Par1 = 0, C4Value *Par2 = 0, C4Value *Par3 = 0,
-	C4Value *Par4 = 0, C4Value *Par5 = 0, C4Value *Par6 = 0, C4Value *Par7 = 0, C4Value *Par8 = 0, C4Value *Par9 = 0)
+static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4Value *Par0 = nullptr, C4Value *Par1 = nullptr, C4Value *Par2 = nullptr, C4Value *Par3 = nullptr,
+	C4Value *Par4 = nullptr, C4Value *Par5 = nullptr, C4Value *Par6 = nullptr, C4Value *Par7 = nullptr, C4Value *Par8 = nullptr, C4Value *Par9 = nullptr)
 {
 	C4Value *Par[11];
 	Par[0] = Par0; Par[1] = Par1; Par[2] = Par2; Par[3] = Par3; Par[4] = Par4;
 	Par[5] = Par5; Par[6] = Par6; Par[7] = Par7; Par[8] = Par8; Par[9] = Par9;
-	Par[10] = 0;
+	Par[10] = nullptr;
 	int cPar = 0;
 
 	StdStrBuf StringBuf("", false);
@@ -1528,7 +1528,7 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 		// Search for "%d" an replace it by "%s" for insertion of formatted parameter
 		SCopy(FnStringPar(szCommand), dummy, 256);
 		char *pFound = const_cast<char *>(SSearch(dummy, "%d"));
-		if (pFound != 0)
+		if (pFound != nullptr)
 			*(pFound - 1) = 's';
 		// Compose left-click command
 		sprintf(command, dummy, parameter, 0);
@@ -2407,7 +2407,7 @@ static bool FnAddMessage(C4AulContext *cthr, C4String *szMessage, C4Object *pObj
 	if (!szMessage) return false;
 
 	if (pObj) Game.Messages.Append(C4GM_Target, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), pObj, NO_OWNER, 0, 0, FWhite);
-	else Game.Messages.Append(C4GM_Global, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), 0, ANY_OWNER, 0, 0, FWhite);
+	else Game.Messages.Append(C4GM_Global, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), nullptr, ANY_OWNER, 0, 0, FWhite);
 
 	return true;
 }
@@ -4483,9 +4483,9 @@ static C4Value FnEval(C4AulContext *cthr, C4String *strScript)
 	if (cthr->Obj)
 		return cthr->Obj->Def->Script.DirectExec(cthr->Obj, FnStringPar(strScript), "eval", true, Strict);
 	else if (cthr->Def)
-		return cthr->Def->Script.DirectExec(0, FnStringPar(strScript), "eval", true, Strict);
+		return cthr->Def->Script.DirectExec(nullptr, FnStringPar(strScript), "eval", true, Strict);
 	else
-		return Game.Script.DirectExec(0, FnStringPar(strScript), "eval", true, Strict);
+		return Game.Script.DirectExec(nullptr, FnStringPar(strScript), "eval", true, Strict);
 }
 
 static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj, C4ID idDef)
@@ -5659,7 +5659,7 @@ static long FnGetEffectCount(C4AulContext *ctx, C4String *psEffectName, C4Object
 	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
 	if (!pEffect) return false;
 	// count effects
-	if (!*szEffect) szEffect = 0;
+	if (!*szEffect) szEffect = nullptr;
 	return pEffect->GetCount(szEffect, iMaxPriority);
 }
 

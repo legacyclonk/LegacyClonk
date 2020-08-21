@@ -130,7 +130,7 @@ bool C4Sky::Init(bool fSavegame)
 	{
 		SetFadePalette(Game.C4S.Landscape.SkyDefFade);
 		delete Surface;
-		Surface = 0;
+		Surface = nullptr;
 	}
 
 	// no sky - using fade in newgfx

@@ -392,7 +392,7 @@ C4SolidMask::C4SolidMask(C4Object *pForObject) : pForObject(pForObject)
 	ppAttachingObjects = nullptr;
 	iAttachingObjectsCount = iAttachingObjectsCapacity = 0;
 	// Update linked list
-	Next = 0;
+	Next = nullptr;
 	Prev = Last;
 	Last = this;
 	if (Prev) Prev->Next = this;
@@ -427,8 +427,8 @@ C4SolidMask::~C4SolidMask()
 	Clear();
 }
 
-C4SolidMask *C4SolidMask::First = 0;
-C4SolidMask *C4SolidMask::Last = 0;
+C4SolidMask *C4SolidMask::First = nullptr;
+C4SolidMask *C4SolidMask::Last = nullptr;
 
 #ifdef SOLIDMASK_DEBUG
 

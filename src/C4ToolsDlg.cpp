@@ -631,7 +631,7 @@ void C4ToolsDlg::UpdatePreview()
 	// Sky material: sky as pattern only
 	if (SEqual(Material, C4TLS_MatSky))
 	{
-		Pattern1.SetColors(0, 0);
+		Pattern1.SetColors(nullptr, nullptr);
 		Pattern1.Set(Game.Landscape.Sky.Surface, 0, false);
 	}
 	// Material-Texture

@@ -170,7 +170,7 @@ const char *C4LeagueResponseHeadAuthCheck::getProgressData(const char *szLeague)
 	for (int32_t i = 0; i < C4NetMaxLeagues; i++)
 		if (Leagues[i] == szLeague)
 			return ProgressData[i].getData();
-	return 0;
+	return nullptr;
 }
 
 void C4LeagueResponseHeadAuthCheck::CompileFunc(StdCompiler *pComp)

@@ -774,7 +774,7 @@ void C4StartupNetDlg::OnShown()
 	UpdateMasterserver();
 	btnUpdate->SetVisibility(C4UpdateDlg::CheckForUpdates());
 	OnSec1Timer();
-	tLastRefresh = time(0);
+	tLastRefresh = time(nullptr);
 	// also update chat
 	if (pChatCtrl) pChatCtrl->OnShown();
 }
@@ -1078,7 +1078,7 @@ bool C4StartupNetDlg::DoBack()
 void C4StartupNetDlg::DoRefresh()
 {
 	// check min refresh timer
-	time_t tNow = time(0);
+	time_t tNow = time(nullptr);
 	if (tLastRefresh && tNow < tLastRefresh + C4NetMinRefreshInterval)
 	{
 		// avoid hammering on refresh key

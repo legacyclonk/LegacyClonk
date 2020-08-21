@@ -161,7 +161,7 @@ bool C4FileMonitor::Execute(int iTimeout) // some other thread
 void C4FileMonitor::OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) // main thread
 {
 	if (eEvent != Ev_FileChange) return;
-	pCallback(std::any_cast<const char *>(eventData), 0);
+	pCallback(std::any_cast<const char *>(eventData), nullptr);
 }
 
 void C4FileMonitor::GetFDs(fd_set *pFDs, int *pMaxFD)

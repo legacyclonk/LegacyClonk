@@ -766,7 +766,7 @@ unsigned long timeGetTime(void)
 {
 	static time_t sec_offset;
 	timeval tv;
-	gettimeofday(&tv, 0);
+	gettimeofday(&tv, nullptr);
 	if (!sec_offset) sec_offset = tv.tv_sec;
 	return (tv.tv_sec - sec_offset) * 1000 + tv.tv_usec / 1000;
 }

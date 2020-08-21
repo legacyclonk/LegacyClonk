@@ -2183,7 +2183,7 @@ protected:
 	int32_t iDlgMarginX, iDlgMarginY; // dialog margin set by screen size
 	IconButton *pBtnHelp;
 
-	virtual const char *GetID() override { return 0; } // no ID needed, because it's never created as a window
+	virtual const char *GetID() override { return nullptr; } // no ID needed, because it's never created as a window
 
 public:
 	FullscreenDialog(const char *szTitle, const char *szSubtitle);

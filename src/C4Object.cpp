@@ -2816,7 +2816,7 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 		int32_t iTime = Action.Time;
 		int32_t iPhase = Action.Phase;
 		int32_t iPhaseDelay = Action.PhaseDelay;
-		if (SetActionByName(Action.Name, 0, 0, false))
+		if (SetActionByName(Action.Name, nullptr, nullptr, false))
 		{
 			Action.Time = iTime;
 			Action.Phase = iPhase; // No checking for valid phase
@@ -4175,7 +4175,7 @@ bool C4Object::SetActionByName(const char *szActName,
 	int32_t cnt;
 	// Check for ActIdle passed by name
 	if (SEqual(szActName, "ActIdle") || SEqual(szActName, "Idle"))
-		return SetAction(ActIdle, 0, 0, SAC_StartCall | SAC_AbortCall, fForce);
+		return SetAction(ActIdle, nullptr, nullptr, SAC_StartCall | SAC_AbortCall, fForce);
 	// Find act in ActMap of object
 	for (cnt = 0; cnt < Def->ActNum; cnt++)
 		if (SEqual(szActName, Def->ActMap[cnt].Name))

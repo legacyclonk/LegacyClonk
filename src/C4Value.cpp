@@ -152,7 +152,7 @@ void C4Value::Set0()
 	C4V_Type oType = Type;
 
 	// change
-	Data = 0;
+	Data = nullptr;
 	Type = C4V_Any;
 
 	CheckRemoveFromMap();
@@ -487,7 +487,7 @@ bool C4Value::FnCnvInt2Id(C4Value *Val, C4V_Type toType, bool fStrict)
 }
 
 // Type conversion table
-#define CnvOK        0, false // allow conversion by same value
+#define CnvOK        nullptr, false // allow conversion by same value
 #define CnvError     FnCnvError, true
 #define CnvGuess     C4Value::FnCnvGuess, false
 #define CnvInt2Id    C4Value::FnCnvInt2Id, false

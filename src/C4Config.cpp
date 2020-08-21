@@ -48,7 +48,7 @@ bool isGermanSystem()
 	bool isGerman();
 	if (isGerman()) return true;
 #elif defined(HAVE_LOCALE_H)
-	if (strstr(setlocale(LC_MESSAGES, 0), "de")) return true;
+	if (strstr(setlocale(LC_MESSAGES, nullptr), "de")) return true;
 #endif
 	return false;
 }

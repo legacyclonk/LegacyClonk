@@ -544,7 +544,7 @@ void C4MouseControl::UpdateCursorTarget()
 		TimeOnTargetObject++;
 		if (TimeOnTargetObject >= C4MC_Time_on_Target)
 		{
-			const char *idCaption = 0;
+			const char *idCaption = nullptr;
 			const char *szName = "";
 			bool fDouble = false;
 			C4Def *pDef;

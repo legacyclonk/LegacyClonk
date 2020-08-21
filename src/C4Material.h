@@ -182,7 +182,7 @@ public:
 public:
 	void Default();
 	void Clear();
-	int32_t Load(C4Group &hGroup, C4Group *OverloadFile = 0);
+	int32_t Load(C4Group &hGroup, C4Group *OverloadFile = nullptr);
 	int32_t Get(const char *szMaterial);
 	bool SaveEnumeration(C4Group &hGroup);
 	bool LoadEnumeration(C4Group &hGroup);
