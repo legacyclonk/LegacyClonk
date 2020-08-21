@@ -531,4 +531,4 @@ void TextWindow::SetPicture(const C4Facet &rNewPic)
 	pTitlePicture->SetVisibility(!!rNewPic.Surface);
 }
 
-}; // end of namespace
+} // end of namespace

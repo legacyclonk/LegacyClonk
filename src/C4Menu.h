@@ -225,13 +225,13 @@ protected:
 	void UserEnter(int32_t Player, C4MenuItem *pItem, bool fRight); // enter on an item
 	bool HasMouse(); // returns whether the controlling player has mouse control
 
-	virtual bool DoRefillInternal(bool &rfRefilled) { return true; };
+	virtual bool DoRefillInternal(bool &rfRefilled) { return true; }
 	virtual bool MenuCommand(const char *szCommand, bool fIsCloseCommand) { return true; }
 	virtual void OnSelectionChanged(int32_t iNewSelection) {} // do object callbacks if selection changed in user menus
 	virtual bool IsCloseDenied() { return false; } // do MenuQueryCancel-callbacks for user menus
 	virtual void OnUserSelectItem(int32_t Player, int32_t iIndex) {}
 	virtual void OnUserEnter(int32_t Player, int32_t iIndex, bool fRight) {}
-	virtual void OnUserClose() {};
+	virtual void OnUserClose() {}
 	virtual bool IsReadOnly() { return false; } // determine whether the menu is just viewed by an observer, and should not issue any calls
 	virtual int32_t GetControllingPlayer() { return NO_OWNER; }
 

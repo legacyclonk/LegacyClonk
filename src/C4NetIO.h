@@ -247,7 +247,7 @@ public:
 
 #define NETIO_CREATE_CALLBACK_PROXY(ForClass, ProxyName) \
 	friend class C4NetIO::CBProxy<ForClass>; \
-	C4NetIO::CBProxy<ForClass> ProxyName;
+	C4NetIO::CBProxy<ForClass> ProxyName
 
 	// *** interface
 
@@ -499,7 +499,7 @@ protected:
 	// *** callbacks
 
 public:
-	virtual void SetCallback(CBClass *pnCallback) override { pCB = pnCallback; };
+	virtual void SetCallback(CBClass *pnCallback) override { pCB = pnCallback; }
 
 private:
 	CBClass *pCB;
@@ -587,7 +587,7 @@ private:
 
 	// *** callbacks
 public:
-	virtual void SetCallback(CBClass *pnCallback) override { pCB = pnCallback; };
+	virtual void SetCallback(CBClass *pnCallback) override { pCB = pnCallback; }
 
 private:
 	CBClass *pCB;
@@ -932,7 +932,7 @@ protected:
 
 	// *** callbacks
 public:
-	virtual void SetCallback(CBClass *pnCallback) override { pCB = pnCallback; };
+	virtual void SetCallback(CBClass *pnCallback) override { pCB = pnCallback; }
 
 private:
 	CBClass *pCB;

@@ -57,7 +57,7 @@ struct PersonList
 
 namespace {
 	constexpr auto SEE_LGPL = "See LGPL.txt";
-};
+}
 
 static struct DeveloperList : public PersonList
 {

@@ -269,7 +269,7 @@ public:
 	void SetProgress(uint32_t progress); // progress 100 disables the progress bar
 
 protected:
-	virtual void Sec1Timer() {};
+	virtual void Sec1Timer() {}
 
 #ifdef _WIN32
 

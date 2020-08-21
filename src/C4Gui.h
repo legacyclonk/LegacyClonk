@@ -379,7 +379,7 @@ protected:
 	C4Rect rcBounds; // element bounds
 
 	virtual void Draw(C4FacetEx &cgo) { DrawElement(cgo); } // draw this class (this + any contents)
-	virtual void DrawElement(C4FacetEx &cgo) {}; // draw element itself
+	virtual void DrawElement(C4FacetEx &cgo) {} // draw element itself
 
 	virtual void RemoveElement(Element *pChild); // clear ptrs
 
@@ -402,8 +402,8 @@ public:
 	virtual Container *GetContainer() { return pParent; } // returns parent for elements; this for containers
 
 	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam); // input: mouse movement or buttons
-	virtual void MouseEnter(CMouse &rMouse) {}; // called when mouse cursor enters element region
-	virtual void MouseLeave(CMouse &rMouse) {}; // called when mouse cursor leaves element region
+	virtual void MouseEnter(CMouse &rMouse) {} // called when mouse cursor enters element region
+	virtual void MouseLeave(CMouse &rMouse) {} // called when mouse cursor leaves element region
 
 	virtual void StartDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam); // called by element in MouseInput: start dragging
 	virtual void DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam);    // called by mouse: dragging process
@@ -421,9 +421,9 @@ public:
 	Container *GetParent() { return pParent; } // get owning container
 	virtual class Dialog *GetDlg(); // return contained dialog
 	virtual Screen *GetScreen(); // return contained screen
-	virtual Control *IsFocusElement() { return nullptr; }; // return control to gain focus in search-cycle
+	virtual Control *IsFocusElement() { return nullptr; } // return control to gain focus in search-cycle
 
-	virtual void UpdateOwnPos() {}; // called when element bounds were changed externally
+	virtual void UpdateOwnPos() {} // called when element bounds were changed externally
 	void ScreenPos2ClientPos(int32_t &riX, int32_t &riY); // transform screen coordinates to element coordinates
 	void ClientPos2ScreenPos(int32_t &riX, int32_t &riY); // transform element coordinates to screen coordinates
 
@@ -981,9 +981,9 @@ protected:
 
 	void DisableFocus(); // called when control gets disabled: Make sure it loses focus
 	virtual bool IsFocusOnClick() { return true; } // defaultly, controls get focused on left-down
-	virtual Control *IsFocusElement() override { return this; }; // this control can gain focus
-	virtual void OnGetFocus(bool fByMouse) {}; // callback when control gains focus
-	virtual void OnLooseFocus() {}; // callback when control looses focus
+	virtual Control *IsFocusElement() override { return this; } // this control can gain focus
+	virtual void OnGetFocus(bool fByMouse) {} // callback when control gains focus
+	virtual void OnLooseFocus() {} // callback when control looses focus
 
 	bool KeyContext() { return DoContext(); }
 
@@ -1212,11 +1212,11 @@ private:
 protected:
 	// context callbacks
 	ContextMenu *OnContext(C4GUI::Element *pListItem, int32_t iX, int32_t iY);
-	void OnCtxCopy(C4GUI::Element *pThis)   { Copy(); };
-	void OnCtxPaste(C4GUI::Element *pThis)  { Paste(); };
-	void OnCtxCut(C4GUI::Element *pThis)    { Cut(); };
-	void OnCtxClear(C4GUI::Element *pThis)  { DeleteSelection(); };
-	void OnCtxSelAll(C4GUI::Element *pThis) { SelectAll(); };
+	void OnCtxCopy(C4GUI::Element *pThis)   { Copy(); }
+	void OnCtxPaste(C4GUI::Element *pThis)  { Paste(); }
+	void OnCtxCut(C4GUI::Element *pThis)    { Cut(); }
+	void OnCtxClear(C4GUI::Element *pThis)  { DeleteSelection(); }
+	void OnCtxSelAll(C4GUI::Element *pThis) { SelectAll(); }
 
 private:
 	void Deselect(); // clear selection range
@@ -1412,7 +1412,7 @@ protected:
 	virtual void MouseEnter(CMouse &rMouse) override;
 	virtual void MouseLeave(CMouse &rMouse) override;
 	virtual bool IsFocusOnClick() override { return false; } // just check/uncheck on click; do not gain keyboard focus as well
-	virtual Control *IsFocusElement() override { return fEnabled ? Control::IsFocusElement() : nullptr; }; // this control can gain focus if enabled
+	virtual Control *IsFocusElement() override { return fEnabled ? Control::IsFocusElement() : nullptr; } // this control can gain focus if enabled
 	virtual void DrawElement(C4FacetEx &cgo) override; // draw checkbox
 	virtual bool OnHotkey(char cHotkey) override; // return true when hotkey has been processed
 
@@ -1470,7 +1470,7 @@ protected:
 
 	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam) override; // input: mouse movement or buttons
 	virtual bool IsFocusOnClick() override { return true; } // list boxes do get focus on click
-	virtual Control *IsFocusElement() override { return this; }; // this control can gain focus
+	virtual Control *IsFocusElement() override { return this; } // this control can gain focus
 	virtual void OnGetFocus(bool fByMouse) override; // callback when control gains focus - select a list item if none are selected
 	virtual bool CharIn(const char *c) override; // character input for direct list element selection
 
@@ -1630,7 +1630,7 @@ protected:
 	virtual void MouseLeave(CMouse &rMouse) override;
 	virtual void OnGetFocus(bool fByMouse) override;
 
-	virtual Control *IsFocusElement() override { return eTabPos ? this : nullptr; }; // this control can gain focus only if tabs are enabled only
+	virtual Control *IsFocusElement() override { return eTabPos ? this : nullptr; } // this control can gain focus only if tabs are enabled only
 	virtual bool IsFocusOnClick() override { return false; } // but never get focus on single mouse click, because this would de-focus any contained controls!
 
 	int32_t GetTopSize() { return (eTabPos == tbTop) ? 20 : 0; } // vertical size of tab selection bar
@@ -1686,7 +1686,7 @@ protected:
 	virtual void ElementPosChanged(Element *pOfElement) override;  // called when an element position is changed
 	virtual void UpdateSize() override;
 
-	virtual Control *IsFocusElement() override { return nullptr; }; // no focus element for now, because there's nothing to do (2do: scroll?)
+	virtual Control *IsFocusElement() override { return nullptr; } // no focus element for now, because there's nothing to do (2do: scroll?)
 
 public:
 	TextWindow(const C4Rect &rtBounds, size_t iPicWdt = 0, size_t iPicHgt = 0, size_t iPicPadding = 0, size_t iMaxLines = 100, size_t iMaxTextLen = 4096, const char *szIndentChars = "    ", bool fAutoGrow = false, const C4Facet *pOverlayPic = nullptr, int iOverlayBorder = 0, bool fMarkup = false);
@@ -1954,7 +1954,7 @@ protected:
 	virtual void MouseLeave(CMouse &rMouse) override; // called when mouse cursor leaves element region
 
 	virtual bool IsFocusOnClick() override { return false; } // don't select control on click
-	virtual Control *IsFocusElement() override { return fReadOnly ? nullptr : this; }; // this control can gain focus if not readonly
+	virtual Control *IsFocusElement() override { return fReadOnly ? nullptr : this; } // this control can gain focus if not readonly
 
 	void OnCtxComboSelect(C4GUI::Element *pListItem, const ComboMenuCBStruct &rNewSel);
 
@@ -2424,7 +2424,7 @@ protected:
 	void BeginUpdateText(); // backup scrolling and clear text window
 	void EndUpdateText();   // restore scroll pos; set last update time
 
-	virtual void UpdateText() {}; // function to be overwritten for timed dlgs: Update window text
+	virtual void UpdateText() {} // function to be overwritten for timed dlgs: Update window text
 
 	virtual void OnSec1Timer(); // idle proc: update text if necessary
 
@@ -2607,7 +2607,7 @@ public:
 	void Render(bool fDoBG); // render to lpDDraw
 	void RenderMouse(C4FacetEx &cgo); // draw mouse only
 
-	virtual Screen *GetScreen() override { return this; }; // return contained screen
+	virtual Screen *GetScreen() override { return this; } // return contained screen
 	static Screen *GetScreenS() { return pScreen; } // get global screen
 
 	bool IsActive() { return !!GetTopDialog(); } // return whether GUI is active
@@ -2848,6 +2848,6 @@ int32_t GetScreenHgt();
 // sound effect in GUI: Only if enabled
 void GUISound(const char *szSound);
 
-}; // end of namespace
+} // end of namespace
 
 typedef C4GUI::Screen C4GUIScreen;

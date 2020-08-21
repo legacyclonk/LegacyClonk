@@ -168,7 +168,7 @@ void C4Startup::Start()
 	fAborted = false;
 	fInStartup = false;
 	fLastDlgWasBack = false;
-};
+}
 
 void C4Startup::Exit()
 {
@@ -176,7 +176,7 @@ void C4Startup::Exit()
 	// flag game start
 	fAborted = true;
 	fInStartup = false;
-};
+}
 
 C4StartupDlg *C4Startup::SwitchDialog(DialogID eToDlg, bool fFade)
 {

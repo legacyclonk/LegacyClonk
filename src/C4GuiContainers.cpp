@@ -735,4 +735,4 @@ void Control::DisableFocus()
 	pDlg->AdvanceFocus(true);
 }
 
-}; // end of namespace
+} // end of namespace

@@ -49,7 +49,7 @@ private:
 		Option(class C4GameOptionsList *pForDlg); // adds to list
 		void InitOption(C4GameOptionsList *pForDlg); // add to list and do initial update
 
-		virtual void Update() {}; // update data
+		virtual void Update() {} // update data
 
 		Option *GetNext() { return static_cast<Option *>(BaseClass::GetNext()); }
 	};

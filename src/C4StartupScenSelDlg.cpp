@@ -1142,7 +1142,7 @@ bool C4ScenarioListLoader::Load(const StdStrBuf &sRootFolder)
 	bool fSuccess = pRootFolder->LoadContents(this, nullptr, &sRootFolder, false, false);
 	EndActivity();
 	return fSuccess;
-};
+}
 
 bool C4ScenarioListLoader::Load(Folder *pSpecifiedFolder, bool fReload)
 {

@@ -234,4 +234,4 @@ void ComboBox::OnCtxComboSelect(C4GUI::Element *pListItem, const ComboMenuCBStru
 	// don't do anything else, because this might be deleted
 }
 
-}; // namespace C4GUI
+} // namespace C4GUI

@@ -22,7 +22,7 @@
 class C4TeamList;
 
 // class predec
-namespace C4GUI { class ComboBox_FillCB; };
+namespace C4GUI { class ComboBox_FillCB; }
 
 // constant used by lobby to indicate invisible, random team
 const int32_t TEAMID_Unknown = -1;

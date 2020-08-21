@@ -424,7 +424,7 @@ Screen *ContextMenu::GetScreen()
 {
 	// context menus don't have a parent; get screen by static var
 	return Screen::GetScreenS();
-};
+}
 
 bool ContextMenu::CtxMouseInput(CMouse &rMouse, int32_t iButton, int32_t iScreenX, int32_t iScreenY, uint32_t dwKeyParam)
 {
@@ -531,4 +531,4 @@ void ContextMenu::DoOK()
 	delete pCallback;
 }
 
-}; // end of namespace
+} // end of namespace

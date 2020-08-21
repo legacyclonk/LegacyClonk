@@ -30,7 +30,7 @@ private:
 	C4Surface &operator=(const C4Surface &rCpy); // do NOT copy
 
 public:
-	C4Surface() : CSurface() {};
+	C4Surface() : CSurface() {}
 
 	bool LoadAny(C4Group &hGroup, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);
 	bool LoadAny(C4GroupSet &hGroupset, const char *szFilename, bool fOwnPal = false, bool fNoErrIfNotFound = false);

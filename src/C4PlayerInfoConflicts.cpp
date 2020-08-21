@@ -146,7 +146,7 @@ void C4PlayerInfoListAttributeConflictResolver::ReaddInfoForCheck(C4ClientPlayer
 	// readd it - must have been in there before, so array is large enough
 	// and it must have been at the head of the list
 	ppCheckInfos[iCheckInfoCount++] = pCheckAdd;
-};
+}
 
 int32_t C4PlayerInfoListAttributeConflictResolver::GetAttributePriorityDifference(const C4PlayerInfo *pInfo1, const C4ClientPlayerInfos *pPck1, const C4PlayerInfo *pInfo2, const C4ClientPlayerInfos *pPck2)
 {

@@ -30,12 +30,12 @@ class CMarkupTag
 public:
 	CMarkupTag *pPrev{}, *pNext{};
 
-	CMarkupTag() {};
-	virtual ~CMarkupTag() {};
+	CMarkupTag() {}
+	virtual ~CMarkupTag() {}
 
 	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr) = 0; // assign markup
 	virtual const char *TagName() = 0; // get character string for this tag
-	virtual StdStrBuf ToMarkup() { return FormatString("<%s>", TagName()); };
+	virtual StdStrBuf ToMarkup() { return FormatString("<%s>", TagName()); }
 };
 
 // markup tag for italic text
@@ -59,7 +59,7 @@ public:
 
 	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr) override; // assign markup
 	virtual const char *TagName() override { return "c"; }
-	virtual StdStrBuf ToMarkup() override { return FormatString("<%s %x>", TagName(), dwClr); };
+	virtual StdStrBuf ToMarkup() override { return FormatString("<%s %x>", TagName(), dwClr); }
 };
 
 // markup rendering functionality for text
@@ -80,7 +80,7 @@ private:
 	}
 
 public:
-	CMarkup(bool fDoClr) { pTags = pLast = nullptr; this->fDoClr = fDoClr; };
+	CMarkup(bool fDoClr) { pTags = pLast = nullptr; this->fDoClr = fDoClr; }
 
 	~CMarkup()
 	{

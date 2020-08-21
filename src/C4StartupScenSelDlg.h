@@ -115,7 +115,7 @@ public:
 		virtual bool Start() override; // launch scenario!
 
 		virtual bool CanOpen(StdStrBuf &sError) override; // check mission access, player count, etc.
-		virtual bool HasMissionAccess() const override { return !fNoMissionAccess; }; // check mission access only
+		virtual bool HasMissionAccess() const override { return !fNoMissionAccess; } // check mission access only
 		virtual StdStrBuf GetOpenText() override; // get open button text
 		virtual StdStrBuf GetOpenTooltip() override;
 		const C4Scenario &GetC4S() const { return C4S; } // get scenario core

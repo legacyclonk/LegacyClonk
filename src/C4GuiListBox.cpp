@@ -658,4 +658,4 @@ void ListBox::SortElements(SortFunction SortFunc, void *par)
 	UpdateElementPositions();
 }
 
-}; // end of namespace
+} // end of namespace

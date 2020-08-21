@@ -100,7 +100,7 @@ public:
 	enum Restriction { C4MSGCMDR_Escaped = 0, C4MSGCMDR_Plain, C4MSGCMDR_Identifier };
 	Restriction restriction;
 
-	C4MessageBoardCommand() {};
+	C4MessageBoardCommand() {}
 	C4MessageBoardCommand(const std::string &script, Restriction restriction) : script(script), restriction(restriction) {}
 	void CompileFunc(StdCompiler *pComp);
 	bool operator==(const C4MessageBoardCommand &other) const;

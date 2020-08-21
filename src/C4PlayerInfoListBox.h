@@ -124,7 +124,7 @@ private:
 
 	public:
 		PlayerListItem(C4PlayerInfoListBox *pForListBox, int32_t idClient, int32_t idPlayer, bool fSavegamePlayer, C4GUI::Element *pInsertBeforeElement);
-		~PlayerListItem() {};
+		~PlayerListItem() {}
 
 		void UpdateIcon(C4PlayerInfo *pInfo, C4PlayerInfo *pJoinedInfo); // update player icon
 		void UpdateTeam();

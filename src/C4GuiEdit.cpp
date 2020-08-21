@@ -869,4 +869,4 @@ bool LabeledEdit::GetControlSize(int *piWdt, int *piHgt, const char *szForText, 
 	return true;
 }
 
-}; // end of namespace
+} // end of namespace

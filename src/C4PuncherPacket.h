@@ -75,7 +75,7 @@ public:
 
 protected:
 	C4NetpuncherPacketID(const C4NetIOPacket &pkt);
-	C4NetpuncherPacketID(const CID id) : id{id} {};
+	C4NetpuncherPacketID(const CID id) : id{id} {}
 
 private:
 	CID id;
@@ -88,8 +88,8 @@ private:
 	class C4NetpuncherPacket##n : public C4NetpuncherPacketID<PID_Puncher_##n> \
 	{ \
 	public: \
-		explicit C4NetpuncherPacket##n(const C4NetIOPacket &p) : C4NetpuncherPacketID<PID_Puncher_##n>{p} {}; \
-		explicit C4NetpuncherPacket##n(const CID id) : C4NetpuncherPacketID<PID_Puncher_##n>{id} {}; \
+		explicit C4NetpuncherPacket##n(const C4NetIOPacket &p) : C4NetpuncherPacketID<PID_Puncher_##n>{p} {} \
+		explicit C4NetpuncherPacket##n(const CID id) : C4NetpuncherPacketID<PID_Puncher_##n>{id} {} \
 	}
 PIDC(AssID); PIDC(SReq);
 #pragma pop_macro("PIDC")
@@ -98,7 +98,7 @@ class C4NetpuncherPacketCReq : public C4NetpuncherPacket
 {
 public:
 	explicit C4NetpuncherPacketCReq(const C4NetIOPacket &pkt);
-	explicit C4NetpuncherPacketCReq(const C4NetIO::addr_t &addr) : addr{addr} {};
+	explicit C4NetpuncherPacketCReq(const C4NetIO::addr_t &addr) : addr{addr} {}
 	C4NetpuncherPacketType GetType() const override final { return PID_Puncher_CReq; }
 	const C4NetIO::addr_t &GetAddr() { return addr; }
 

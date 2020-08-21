@@ -95,7 +95,7 @@ namespace
 		gdk_pixbuf_unref(pixbuf);
 		return image;
 	}
-};
+}
 
 #endif
 

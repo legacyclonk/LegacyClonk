@@ -301,7 +301,7 @@ public:
 	const C4ClientPlayerInfos &GetInfo() const { return PlrInfo; }
 	virtual bool Sync() const override { return false; }
 	virtual bool Lobby() const override { return true; }
-	DECLARE_C4CONTROL_VIRTUALS;
+	DECLARE_C4CONTROL_VIRTUALS
 };
 
 struct C4ControlJoinPlayer : public C4ControlPacket // sync
@@ -320,7 +320,7 @@ protected:
 	C4Network2ResCore ResCore; // for fByRes == true
 
 public:
-	DECLARE_C4CONTROL_VIRTUALS;
+	DECLARE_C4CONTROL_VIRTUALS
 	virtual bool PreExecute() const override;
 	virtual void PreRec(C4Record *pRecord) override;
 	void Strip();

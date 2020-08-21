@@ -170,4 +170,4 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 	return !fValid;
 }
 
-};
+}

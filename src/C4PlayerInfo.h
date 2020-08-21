@@ -307,7 +307,7 @@ public:
 
 	C4PacketPlayerInfoUpdRequest() : Info() {}
 	C4PacketPlayerInfoUpdRequest(const char *szFilenames, bool fAdd)
-		: Info(szFilenames, fAdd) {};
+		: Info(szFilenames, fAdd) {}
 
 	C4PacketPlayerInfoUpdRequest(const C4ClientPlayerInfos &rInfo) : Info(rInfo) {}
 

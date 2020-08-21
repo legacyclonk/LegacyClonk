@@ -45,7 +45,7 @@ class CStdGLCtx
 {
 public:
 	CStdGLCtx();
-	~CStdGLCtx() { Clear(); };
+	~CStdGLCtx() { Clear(); }
 
 	void Clear(); // clear objects
 #ifdef _WIN32

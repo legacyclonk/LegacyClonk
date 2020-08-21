@@ -155,7 +155,7 @@ private:
 	public:
 		void UpdateClonkEnabled();
 
-		virtual uint32_t GetColorDw() const override { return dwPlrClr; }; // get drawing color for portrait
+		virtual uint32_t GetColorDw() const override { return dwPlrClr; } // get drawing color for portrait
 		virtual void SetSelectionInfo(C4GUI::TextWindow *pSelectionInfo) override; // clears text field and writes selection info text into it
 		virtual StdStrBuf GetDelWarning() override;
 		const C4ObjectInfoCore &GetCore() const { return Core; }

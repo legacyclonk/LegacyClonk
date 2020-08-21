@@ -160,4 +160,4 @@ bool CheckBox::GetStandardCheckBoxSize(int *piWdt, int *piHgt, const char *szFor
 	return true;
 }
 
-}; // namespace C4GUI
+} // namespace C4GUI

@@ -1066,4 +1066,4 @@ void Countdown::Abort()
 	}
 }
 
-}; // end of namespace
+} // end of namespace

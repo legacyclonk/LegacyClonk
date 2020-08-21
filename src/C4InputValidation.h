@@ -48,7 +48,7 @@ namespace C4InVal
 	bool ValidateString(StdStrBuf &rsString, ValidationOption eOption);
 
 	inline bool ValidateFilename(char *szFilename, size_t iMaxSize = _MAX_PATH) { return ValidateString(szFilename, VAL_Filename, iMaxSize); }
-};
+}
 
 // Validation adapter: Call ValidateString on string after compiling it
 template <class T> struct C4StrValAdapt

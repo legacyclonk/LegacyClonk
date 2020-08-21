@@ -313,4 +313,4 @@ void FacetButton::DrawElement(C4FacetEx &cgo)
 	}
 }
 
-}; // end of namespace
+} // end of namespace

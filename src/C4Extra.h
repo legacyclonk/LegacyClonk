@@ -24,8 +24,8 @@
 class C4Extra
 {
 public:
-	C4Extra() { Default(); };
-	~C4Extra() { Clear(); };
+	C4Extra() { Default(); }
+	~C4Extra() { Clear(); }
 	void Default(); // zero fields
 	void Clear(); // free class members
 

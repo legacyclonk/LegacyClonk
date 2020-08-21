@@ -47,7 +47,7 @@ public:
 	inline C4Surface *GetBitmap(uint32_t dwClr = 0) { if (BitmapClr) { BitmapClr->SetClr(dwClr); return BitmapClr; } else return Bitmap; }
 
 	C4DefGraphics(C4Def *pOwnDef = nullptr);
-	virtual ~C4DefGraphics() { Clear(); };
+	virtual ~C4DefGraphics() { Clear(); }
 
 	bool LoadBitmap(C4Group &hGroup, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG, bool fColorByOwner); // load specified graphics from group
 	bool LoadBitmaps(C4Group &hGroup, bool fColorByOwner); // load graphics from group

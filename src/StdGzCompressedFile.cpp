@@ -325,4 +325,4 @@ void Write::WriteData(const uint8_t *const fromBuffer, const size_t size)
 {
 	DeflateToBuffer(fromBuffer, size, Z_NO_FLUSH, Z_OK);
 }
-};
+}

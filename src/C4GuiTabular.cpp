@@ -671,4 +671,4 @@ void Tabular::UpdateSize()
 		pSheet->SetBounds(GetContainedClientRect());
 }
 
-}; // end of namespace
+} // end of namespace

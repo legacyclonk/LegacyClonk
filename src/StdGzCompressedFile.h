@@ -74,4 +74,4 @@ private:
 	void FlushBuffer();
 	void DeflateToBuffer(const uint8_t *const fromBuffer, const size_t size, int flushMode, int expectedRet);
 };
-};
+}

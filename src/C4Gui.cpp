@@ -1171,4 +1171,4 @@ C4Rect ComponentAligner::rcTemp;
 Resource *Resource::pRes;
 Screen *Screen::pScreen;
 
-}; // end of namespace
+} // end of namespace

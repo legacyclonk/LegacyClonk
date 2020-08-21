@@ -871,7 +871,7 @@ void FullscreenDialog::UpdateOwnPos()
 	Dialog::UpdateOwnPos();
 	// reposition help button
 	UpdateHelpButtonPos();
-};
+}
 
 void FullscreenDialog::UpdateHelpButtonPos()
 {
@@ -1253,7 +1253,7 @@ void InfoDialog::BeginUpdateText()
 	iScroll = pTextWin->GetScrollPos();
 	// clear text window, so new text can be added
 	pTextWin->ClearText(false);
-};
+}
 
 void InfoDialog::EndUpdateText()
 {
@@ -1271,4 +1271,4 @@ void InfoDialog::OnSec1Timer()
 	UpdateText();
 }
 
-}; // end of namespace
+} // end of namespace
