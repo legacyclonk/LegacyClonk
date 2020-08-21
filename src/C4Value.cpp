@@ -763,9 +763,8 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 		{
 			pComp->Character(cC4VID);
 		}
-		catch (StdCompiler::NotFoundException *pExc)
+		catch (const StdCompiler::NotFoundException &)
 		{
-			delete pExc;
 			cC4VID = 'A';
 		}
 		Type = GetC4VFromID(cC4VID);

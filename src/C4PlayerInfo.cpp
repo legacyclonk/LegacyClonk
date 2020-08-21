@@ -1195,7 +1195,7 @@ bool C4PlayerInfoList::Save(C4Group &hGroup, const char *szToFile)
 		// save buffer to group
 		hGroup.Add(szToFile, Buf, false, true);
 	}
-	catch (StdCompiler::Exception *)
+	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}

@@ -521,7 +521,7 @@ bool C4ObjectInfoCore::Save(C4Group &hGroup, C4DefList *pDefs)
 	{
 		Buf.Take(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "ObjectInfo")));
 	}
-	catch(StdCompiler::Exception*)
+	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}

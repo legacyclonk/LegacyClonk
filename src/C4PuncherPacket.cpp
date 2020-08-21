@@ -45,9 +45,8 @@ std::unique_ptr<C4NetpuncherPacket> C4NetpuncherPacket::Construct(const C4NetIOP
 			default: return nullptr;
 		}
 	}
-	catch (const StdCompiler::Exception *const e)
+	catch (const StdCompiler::Exception &)
 	{
-		delete e;
 		return nullptr;
 	}
 	catch (const std::runtime_error &)

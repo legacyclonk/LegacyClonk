@@ -823,10 +823,9 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 	{
 		PktB.unpack(rPacket);
 	}
-	catch (StdCompiler::Exception *pExc)
+	catch (const StdCompiler::Exception &e)
 	{
-		Application.InteractiveThread.ThreadLogF("Network: error: Failed to unpack packet id %02x: %s", rPacket.getStatus(), pExc->Msg.getData());
-		delete pExc;
+		Application.InteractiveThread.ThreadLogF("Network: error: Failed to unpack packet id %02x: %s", rPacket.getStatus(), e.Msg.getData());
 #ifndef _DEBUG
 		pConn->Close();
 #endif

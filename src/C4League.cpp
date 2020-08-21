@@ -278,7 +278,7 @@ public:
 						StdStrBuf sFBID;
 						if (rFBIDList.FindFBIDByAccount(pInfo->getLeagueAccount(), &sFBID)) pComp->Value(mkNamingAdapt(mkParAdapt(sFBID, StdCompiler::RCT_IdtfAllowEmpty), "FBID"));
 					}
-					catch (StdCompiler::Exception *)
+					catch (const StdCompiler::Exception &)
 					{
 						pComp->NameEnd();
 						throw;

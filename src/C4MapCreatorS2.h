@@ -395,7 +395,7 @@ public:
 
 	C4MCParserErr(C4MCParser *pParser, const char *szMsg); // construct setting error msg
 	C4MCParserErr(C4MCParser *pParser, const char *szMsg, const char *szPar); // construct setting error msg
-	void show(); // log error
+	void show() const; // log error
 };
 
 // the parser

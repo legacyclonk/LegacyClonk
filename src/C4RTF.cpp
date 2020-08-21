@@ -43,7 +43,7 @@ void C4RTFFile::ClearState()
 
 void C4RTFFile::AssertNoEOF(size_t iPos)
 {
-	if (iPos >= sRTF.getSize()) throw new ParserError("Unexpected end of file");
+	if (iPos >= sRTF.getSize()) throw ParserError("Unexpected end of file");
 }
 
 void C4RTFFile::ChangeDest(StdStrBuf &sResult, int iDest)
@@ -209,7 +209,7 @@ void C4RTFFile::ParseHexChar(StdStrBuf &sResult, char c)
 	else if (Inside<char>(c, 'A', 'F'))
 		pState->bHex += c - 'A' + 10;
 	else
-		throw new ParserError("Invalid hex character");
+		throw ParserError("Invalid hex character");
 	if (!--pState->iHexBinCnt)
 	{
 		pState->eState = psNormal;
@@ -229,7 +229,7 @@ void C4RTFFile::PushState()
 
 void C4RTFFile::PopState()
 {
-	if (!pState->pNext) throw new ParserError("Too many brackets closed");
+	if (!pState->pNext) throw ParserError("Too many brackets closed");
 	// if the destination ends, finish it
 	if (pState->dest != pState->pNext->dest) EndGroupAction();
 	// return to last state
@@ -281,20 +281,19 @@ StdStrBuf C4RTFFile::GetPlainText()
 				else if (pState->eState == psHex)
 					ParseHexChar(sResult, c);
 				else
-					throw new ParserError("Invalid State");
+					throw ParserError("Invalid State");
 				break;
 			}
 			// next char
 		}
 		// all states must be closed in the end
-		if (pState->pNext) throw new ParserError("Block not closed");
+		if (pState->pNext) throw ParserError("Block not closed");
 	}
-	catch (ParserError *pe)
+	catch (const ParserError &pe)
 	{
 		// invalid RTF file: Display error message instead
 		sResult = "Invalid RTF file: ";
-		sResult.Append(pe->ErrorText);
-		delete pe;
+		sResult.Append(pe.ErrorText);
 	}
 	// cleanup
 	ClearState();

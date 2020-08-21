@@ -170,9 +170,9 @@ void C4ValueList::CompileFunc(class StdCompiler *pComp)
 	{
 		pComp->Value(inSize);
 	}
-	catch (StdCompiler::NotFoundException *pExc)
+	catch (const StdCompiler::NotFoundException &)
 	{
-		Reset(); delete pExc; return;
+		Reset(); return;
 	}
 	// Separator
 	if (!pComp->Separator(StdCompiler::SEP_SEP2))
@@ -233,13 +233,13 @@ C4ValueArray *C4ValueArray::SetLength(int32_t size)
 bool C4ValueArray::hasIndex(const C4Value &index) const
 {
 	C4Value copyIndex = index;
-	if (!copyIndex.ConvertTo(C4V_Int)) throw new std::runtime_error(std::string{"array access: can not convert \""} + GetC4VName(index.GetType()) + "\" to int");
+	if (!copyIndex.ConvertTo(C4V_Int)) throw std::runtime_error(std::string{"array access: can not convert \""} + GetC4VName(index.GetType()) + "\" to int");
 	return copyIndex._getInt() < iSize;
 }
 
 C4Value &C4ValueArray::operator[](const C4Value &index)
 {
 	C4Value copyIndex = index;
-	if (!copyIndex.ConvertTo(C4V_Int)) throw new std::runtime_error(std::string{"array access: can not convert \""} + GetC4VName(index.GetType()) + "\" to int");
+	if (!copyIndex.ConvertTo(C4V_Int)) throw std::runtime_error(std::string{"array access: can not convert \""} + GetC4VName(index.GetType()) + "\" to int");
 	return (*this)[copyIndex._getInt()];
 }

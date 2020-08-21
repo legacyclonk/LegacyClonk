@@ -4117,7 +4117,7 @@ C4Value GetValByStdCompiler(const char *strEntry, const char *strSection, int iE
 		return Comp.getResult();
 	}
 	// Should not happen, catch it anyway.
-	catch (StdCompiler::Exception *)
+	catch (const StdCompiler::Exception &)
 	{
 		return C4VNull;
 	}
@@ -4138,7 +4138,7 @@ bool SetValByStdCompiler(const char *strEntry, const char *strSection, int iEntr
 		return Comp.getSuccess();
 	}
 	// Should not happen, catch it anyway.
-	catch (StdCompiler::Exception *)
+	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}

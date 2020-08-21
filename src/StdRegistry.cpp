@@ -642,9 +642,8 @@ void StdCompilerConfigRead::Boolean(bool &rBool)
 	{
 		rBool = !!ReadDWord();
 	}
-	catch (NotFoundException *pExc)
+	catch (const NotFoundException &)
 	{
-		delete pExc;
 	}
 }
 
@@ -655,9 +654,8 @@ void StdCompilerConfigRead::Character(char &rChar)
 		StdStrBuf szVal = ReadString();
 		rChar = *szVal.getData();
 	}
-	catch (NotFoundException *pExc)
+	catch (const NotFoundException &)
 	{
-		delete pExc;
 		uint32_t iVal = ReadDWord();
 		rChar = char(iVal);
 	}

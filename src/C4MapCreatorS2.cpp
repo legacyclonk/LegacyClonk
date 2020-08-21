@@ -728,7 +728,7 @@ bool C4MapCreatorS2::ReadFile(const char *szFilename, C4Group *pGrp)
 	{
 		C4MCParser(this).ParseFile(szFilename, pGrp);
 	}
-	catch (C4MCParserErr err)
+	catch (const C4MCParserErr &err)
 	{
 		err.show();
 		return false;
@@ -744,7 +744,7 @@ bool C4MapCreatorS2::ReadScript(const char *szScript)
 	{
 		C4MCParser(this).Parse(szScript);
 	}
-	catch (C4MCParserErr err)
+	catch (const C4MCParserErr &err)
 	{
 		err.show();
 		return false;
@@ -814,7 +814,7 @@ C4MCParserErr::C4MCParserErr(C4MCParser *pParser, const char *szMsg, const char 
 	sprintf(Msg, "%s: %s (%d)", pParser->Filename, Buf, pParser->Code ? SGetLine(pParser->Code, pParser->CPos) : 0);
 }
 
-void C4MCParserErr::show()
+void C4MCParserErr::show() const
 {
 #ifdef C4ENGINE
 	// log error
@@ -1458,7 +1458,7 @@ bool AlgoScript(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 	{
 		return !!pFunc->Exec(nullptr, Pars);
 	}
-	catch (const C4AulError &err)
+	catch (const C4AulError &)
 	{
 		// do nothing
 	}

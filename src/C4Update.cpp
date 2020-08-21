@@ -243,9 +243,8 @@ bool C4UpdatePackageCore::Load(C4Group &hGroup)
 		// Compile data
 		CompileFromBuf<StdCompilerINIRead>(mkNamingAdapt(*this, "Update"), Source);
 	}
-	catch (StdCompiler::Exception *pExc)
+	catch (const StdCompiler::Exception &)
 	{
-		delete pExc;
 		return false;
 	}
 	return true;
@@ -262,9 +261,8 @@ bool C4UpdatePackageCore::Save(C4Group &hGroup)
 		// add to group
 		return hGroup.Add(C4CFN_UpdateCore, stupid_buffer, Core.getLength(), false, true);
 	}
-	catch (StdCompiler::Exception *pExc)
+	catch (const StdCompiler::Exception &)
 	{
-		delete pExc;
 		return false;
 	}
 }
@@ -282,11 +280,10 @@ bool C4UpdatePackage::Load(C4Group *pGroup)
 		// Compile data
 		CompileFromBuf<StdCompilerINIRead>(mkNamingAdapt(*this, "Update"), Source);
 	}
-	catch (StdCompiler::Exception *pExc)
+	catch (const StdCompiler::Exception &e)
 	{
 		StdStrBuf Name = pGroup->GetFullName() + DirSep + C4CFN_UpdateCore;
-		WriteLog("ERROR: %s (in %s)", pExc->Msg.getData(), Name.getData());
-		delete pExc;
+		WriteLog("ERROR: %s (in %s)", e.Msg.getData(), Name.getData());
 		return false;
 	}
 	return true;

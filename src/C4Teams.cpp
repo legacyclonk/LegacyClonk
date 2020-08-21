@@ -661,7 +661,7 @@ bool C4TeamList::Save(C4Group &hGroup)
 		// save it
 		hGroup.Add(C4CFN_Teams, Buf, false, true);
 	}
-	catch (StdCompiler::Exception *)
+	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}

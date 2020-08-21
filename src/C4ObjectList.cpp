@@ -524,14 +524,13 @@ void C4ObjectList::CompileFunc(StdCompiler *pComp, bool fSaveRefs, bool fSkipPla
 					pComp->Value(mkNamingAdapt(mkPtrAdaptNoNull(pObj), "Object"));
 					Add(pObj, stReverse);
 				}
-				catch (StdCompiler::Exception *pExc)
+				catch (const StdCompiler::Exception &e)
 				{
 					// Failsafe object loading: If an error occurs during object loading, just skip that object and load the next one
-					if (!pExc->Pos.getLength())
-						LogF("ERROR: Object loading: %s", pExc->Msg.getData());
+					if (!e.Pos.getLength())
+						LogF("ERROR: Object loading: %s", e.Msg.getData());
 					else
-						LogF("ERROR: Object loading(%s): %s", pExc->Pos.getData(), pExc->Msg.getData());
-					delete pExc;
+						LogF("ERROR: Object loading(%s): %s", e.Pos.getData(), e.Msg.getData());
 				}
 			}
 		}

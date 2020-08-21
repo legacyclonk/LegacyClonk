@@ -774,10 +774,10 @@ void C4KeyboardInput::CompileFunc(StdCompiler *pComp)
 			}
 		}
 	}
-	catch (StdCompiler::Exception *pEx)
+	catch (const StdCompiler::Exception &)
 	{
 		pComp->NameEnd(true);
-		throw pEx;
+		throw;
 	}
 	pComp->NameEnd();
 }

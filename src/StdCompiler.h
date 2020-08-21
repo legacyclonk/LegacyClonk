@@ -254,21 +254,21 @@ public:
 #endif
 		// Throw the appropriate exception
 		va_list args; va_start(args, szMessage);
-		throw new NotFoundException(getPosition(), FormatStringV(szMessage, args));
+		throw NotFoundException(getPosition(), FormatStringV(szMessage, args));
 	}
 
 	void excEOF(const char *szMessage = "EOF", ...)
 	{
 		// Throw the appropriate exception
 		va_list args; va_start(args, szMessage);
-		throw new EOFException(getPosition(), FormatStringV(szMessage, args));
+		throw EOFException(getPosition(), FormatStringV(szMessage, args));
 	}
 
 	void excCorrupt(const char *szMessage, ...)
 	{
 		// Throw the appropriate exception
 		va_list args; va_start(args, szMessage);
-		throw new CorruptException(getPosition(), FormatStringV(szMessage, args));
+		throw CorruptException(getPosition(), FormatStringV(szMessage, args));
 	}
 
 protected:
@@ -344,7 +344,7 @@ void CompileNewFunc(T *&pStruct, StdCompiler *pComp)
 	{
 		pComp->Value(*pStruct);
 	}
-	catch (StdCompiler::Exception *)
+	catch (const StdCompiler::Exception &)
 	{
 		delete pStruct;
 		throw;

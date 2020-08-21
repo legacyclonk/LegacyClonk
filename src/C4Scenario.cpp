@@ -108,7 +108,7 @@ bool C4Scenario::Save(C4Group &hGroup, bool fSaveSection)
 	{
 		Buf.Take(DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, fSaveSection)));
 	}
-	catch (StdCompiler::Exception*)
+	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}
@@ -457,7 +457,7 @@ bool C4Scenario::Decompile(char **ppOutput, int32_t *ipSize, bool fSaveSection)
 		*ppOutput = Buf.GrabPointer();
 		*ipSize = Buf.getSize();
 	}
-	catch (StdCompiler::Exception *)
+	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}

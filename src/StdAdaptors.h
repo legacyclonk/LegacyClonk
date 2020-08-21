@@ -60,10 +60,9 @@ struct StdDefaultAdapt
 			pComp->Value(rValue);
 #endif
 		}
-		catch (StdCompiler::NotFoundException *pEx)
+		catch (const StdCompiler::NotFoundException &)
 		{
 			rValue = rDefault;
-			delete pEx;
 		}
 	}
 };
@@ -88,7 +87,7 @@ struct StdNamingAdapt
 		{
 			pComp->Value(rValue);
 		}
-		catch (StdCompiler::Exception *)
+		catch (const StdCompiler::Exception &)
 		{
 			pComp->NameEnd(true);
 			throw;
@@ -130,7 +129,7 @@ struct StdNamingDefaultAdapt
 			else
 				rValue = rDefault;
 		}
-		catch (StdCompiler::Exception *)
+		catch (const StdCompiler::Exception &)
 		{
 			pComp->NameEnd(true);
 			throw;
@@ -603,10 +602,9 @@ struct StdSTLContainerAdapt
 					pComp->Value(val);
 					rStruct.push_back(val);
 				}
-				catch (StdCompiler::NotFoundException *pEx)
+				catch (const StdCompiler::NotFoundException &)
 				{
 					// No value found: Stop reading loop
-					delete pEx;
 					break;
 				}
 			} while (pComp->Separator(eSep));
@@ -816,9 +814,8 @@ struct StdEnumAdapt
 				pComp->Value(val);
 				rVal = T(val);
 			}
-			catch (StdCompiler::NotFoundException *pEx)
+			catch (const StdCompiler::NotFoundException &)
 			{
-				delete pEx;
 #endif
 				// Try to read as string
 				StdStrBuf Name;
@@ -919,9 +916,8 @@ struct StdBitfieldAdapt
 					pComp->Value(tmp);
 					val |= tmp;
 				}
-				catch (StdCompiler::NotFoundException *pEx)
+				catch (const StdCompiler::NotFoundException &)
 				{
-					delete pEx;
 #endif
 					// Try to read as string
 					StdStrBuf Name;

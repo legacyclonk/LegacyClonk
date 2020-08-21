@@ -396,9 +396,9 @@ bool C4Network2VersionInfoClient::GetVersion(C4GameVersion *piVerOut)
 				"Version"),
 			C4ENGINENAME), ResultString);
 	}
-	catch (StdCompiler::Exception *pExc)
+	catch (const StdCompiler::Exception &e)
 	{
-		SetError(pExc->Msg.getData());
+		SetError(e.Msg.getData());
 		return false;
 	}
 	// validate version
@@ -422,9 +422,9 @@ bool C4Network2VersionInfoClient::GetRedirect(StdStrBuf &rRedirect)
 			mkNamingAdapt(mkParAdapt(strUpdateRedirect, StdCompiler::RCT_All), "UpdateServerRedirect", ""),
 			C4ENGINENAME), ResultString);
 	}
-	catch (StdCompiler::Exception *pExc)
+	catch (const StdCompiler::Exception &e)
 	{
-		SetError(pExc->Msg.getData());
+		SetError(e.Msg.getData());
 		return false;
 	}
 	// did we get something?

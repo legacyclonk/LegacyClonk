@@ -430,13 +430,12 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 			IniRead.Compile(*this);
 		}
 	}
-	catch (StdCompiler::Exception *pExc)
+	catch (const StdCompiler::Exception &e)
 	{
 		// Configuration file syntax error?
 #ifdef C4ENGINE
-		LogF("Error loading configuration: %s"/*restbl not yet loaded*/, pExc->Msg.getData());
+		LogF("Error loading configuration: %s"/*restbl not yet loaded*/, e.Msg.getData());
 #endif
-		delete pExc;
 		return false;
 	}
 
@@ -516,12 +515,11 @@ bool C4Config::Save()
 			IniWrite.getOutput().SaveToFile(filename.getData());
 		}
 	}
-	catch (StdCompiler::Exception *pExc)
+	catch (const StdCompiler::Exception &e)
 	{
 #ifdef C4ENGINE
-		LogF(LoadResStr("IDS_ERR_CONFSAVE"), pExc->Msg.getData());
+		LogF(LoadResStr("IDS_ERR_CONFSAVE"), e.Msg.getData());
 #endif
-		delete pExc;
 		return false;
 	}
 	return true;

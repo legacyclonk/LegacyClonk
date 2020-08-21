@@ -418,7 +418,7 @@ bool C4RoundResults::Save(C4Group &hGroup, const char *szFilename)
 			if (!hGroup.Add(szFilename, Buf, false, true))
 				return false;
 	}
-	catch (StdCompiler::Exception *)
+	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}

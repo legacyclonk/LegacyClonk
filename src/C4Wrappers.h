@@ -208,13 +208,12 @@ bool CompileFromBuf_LogWarn(StructT &&TargetStruct, const typename CompT::InT &S
 		Compiler.Compile(TargetStruct);
 		return true;
 	}
-	catch (StdCompiler::Exception *pExc)
+	catch (const StdCompiler::Exception &e)
 	{
-		if (!pExc->Pos.getLength())
-			LogF("ERROR: %s (in %s)", pExc->Msg.getData(), szName);
+		if (!e.Pos.getLength())
+			LogF("ERROR: %s (in %s)", e.Msg.getData(), szName);
 		else
-			LogF("ERROR: %s (in %s, %s)", pExc->Msg.getData(), pExc->Pos.getData(), szName);
-		delete pExc;
+			LogF("ERROR: %s (in %s, %s)", e.Msg.getData(), e.Pos.getData(), szName);
 		return false;
 	}
 }
@@ -228,10 +227,9 @@ bool DecompileToBuf_Log(StructT &&TargetStruct, typename CompT::OutT *pOut, cons
 		pOut->Take(DecompileToBuf<CompT>(TargetStruct));
 		return true;
 	}
-	catch (StdCompiler::Exception *pExc)
+	catch (const StdCompiler::Exception &e)
 	{
-		LogF("ERROR: %s (in %s)", pExc->Msg.getData(), szName);
-		delete pExc;
+		LogF("ERROR: %s (in %s)", e.Msg.getData(), szName);
 		return false;
 	}
 }

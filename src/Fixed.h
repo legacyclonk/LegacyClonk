@@ -327,9 +327,8 @@ inline void CompileFunc(FIXED &rValue, StdCompiler *pComp)
 		// Read/write type
 		pComp->Character(cFormat);
 	}
-	catch (StdCompiler::NotFoundException *pEx)
+	catch (const StdCompiler::NotFoundException &)
 	{
-		delete pEx;
 		// Expect old format if not found
 		cFormat = 'F';
 	}

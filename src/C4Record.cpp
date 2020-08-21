@@ -526,26 +526,23 @@ bool C4Playback::ReadBinary(const StdBuf &Buf)
 			Compiler.End();
 			iPos += Compiler.getPosition();
 		}
-		catch (StdCompiler::EOFException *pEx)
+		catch (const StdCompiler::EOFException &e)
 		{
 			// This is to be expected for sequential reading
 			if (fLoadSequential)
 			{
 				iPos -= sizeof(C4RecordChunkHead);
 				iFrame -= pHead->iFrm;
-				delete pEx;
 				break;
 			}
-			LogF("Record: Binary unpack error: %s", pEx->Msg.getData());
+			LogF("Record: Binary unpack error: %s", e.Msg.getData());
 			c.Delete();
-			delete pEx;
 			return false;
 		}
-		catch (StdCompiler::Exception *pEx)
+		catch (const StdCompiler::Exception &e)
 		{
-			LogF("Record: Binary unpack error: %s", pEx->Msg.getData());
+			LogF("Record: Binary unpack error: %s", e.Msg.getData());
 			c.Delete();
-			delete pEx;
 			return false;
 		}
 		// Add to list
@@ -650,10 +647,9 @@ StdBuf C4Playback::ReWriteBinary()
 				break;
 			}
 		}
-		catch (StdCompiler::Exception *pEx)
+		catch (const StdCompiler::Exception &e)
 		{
-			LogF("Record: Binary unpack error: %s", pEx->Msg.getData());
-			delete pEx;
+			LogF("Record: Binary unpack error: %s", e.Msg.getData());
 			return StdBuf();
 		}
 		// Grow output

@@ -850,9 +850,8 @@ void C4GraphicsOverlayListAdapt::CompileFunc(StdCompiler *pComp)
 				// read an overlay
 				pComp->Value(*pNext);
 			}
-			catch (StdCompiler::NotFoundException *e)
+			catch (const StdCompiler::NotFoundException &)
 			{
-				delete e;
 				// delete unused overlay
 				delete pNext; pNext = nullptr;
 				// clear up
