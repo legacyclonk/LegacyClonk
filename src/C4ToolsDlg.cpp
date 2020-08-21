@@ -92,7 +92,7 @@ namespace
 	{
 		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_inline(-1, pixbuf_data, FALSE, nullptr);
 		GtkWidget *image = gtk_image_new_from_pixbuf(pixbuf);
-		gdk_pixbuf_unref(pixbuf);
+		g_object_unref(pixbuf);
 		return image;
 	}
 }
@@ -698,7 +698,7 @@ void C4ToolsDlg::UpdatePreview()
 
 	sfcPreview->Unlock();
 	gtk_image_set_from_pixbuf(GTK_IMAGE(preview), pixbuf);
-	gdk_pixbuf_unref(pixbuf);
+	g_object_unref(pixbuf);
 #endif
 	delete sfcPreview;
 }

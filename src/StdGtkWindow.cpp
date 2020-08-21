@@ -61,7 +61,7 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 
 	GdkPixbuf *icon = gdk_pixbuf_new_from_xpm_data(c4x_xpm);
 	gtk_window_set_icon(GTK_WINDOW(window), icon);
-	gdk_pixbuf_unref(icon);
+	g_object_unref(icon);
 
 	gtk_window_set_title(GTK_WINDOW(window), Title);
 
