@@ -66,23 +66,11 @@ const char *ProcedureName[C4D_MaxDFA] =
 
 // C4ActionDef
 
-C4ActionDef::C4ActionDef()
-{
-	Default();
-}
+C4ActionDef::C4ActionDef() : Procedure{DFA_NONE} {}
 
 void C4ActionDef::Default()
 {
-	std::memset(this, 0, sizeof(C4ActionDef));
-	Procedure = DFA_NONE;
-	NextAction = ActIdle;
-	Directions = 1;
-	FlipDir = 0;
-	Length = 1;
-	Delay = 0;
-	FacetBase = 0;
-	Step = 1;
-	StartCall = PhaseCall = EndCall = AbortCall = nullptr;
+	*this = {};
 }
 
 void C4ActionDef::CompileFunc(StdCompiler *pComp)

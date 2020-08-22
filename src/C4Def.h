@@ -136,42 +136,40 @@ const int32_t ActHold = -2;
 class C4ActionDef
 {
 public:
-	C4ActionDef();
-
-public:
-	char Name[C4D_MaxIDLen + 1];
-	char ProcedureName[C4D_MaxIDLen + 1];
+	char Name[C4D_MaxIDLen + 1]{};
+	char ProcedureName[C4D_MaxIDLen + 1]{};
 	int32_t Procedure; // Mapped by C4Def::Load
-	int32_t Directions;
-	int32_t FlipDir;
-	int32_t Length;
-	int32_t Delay;
-	int32_t Attach;
-	char NextActionName[C4D_MaxIDLen + 1];
-	int32_t NextAction; // Mapped by C4Def::Load
-	char InLiquidAction[C4D_MaxIDLen + 1];
-	char TurnAction[C4D_MaxIDLen + 1];
-	int32_t FacetBase;
-	C4TargetRect Facet;
-	int32_t FacetTopFace;
-	int32_t NoOtherAction;
-	int32_t Disabled;
-	int32_t DigFree;
-	int32_t FacetTargetStretch;
-	char Sound[C4D_MaxIDLen + 1];
-	int32_t EnergyUsage;
-	int32_t Reverse;
-	int32_t Step;
-	char SStartCall[C4D_MaxIDLen + 1];
-	char SEndCall[C4D_MaxIDLen + 1];
-	char SAbortCall[C4D_MaxIDLen + 1];
-	char SPhaseCall[C4D_MaxIDLen + 1];
-	class C4AulScriptFunc *StartCall;
-	C4AulScriptFunc *EndCall;
-	C4AulScriptFunc *AbortCall;
-	C4AulScriptFunc *PhaseCall;
+	int32_t Directions{1};
+	int32_t FlipDir{};
+	int32_t Length{1};
+	int32_t Delay{};
+	int32_t Attach{};
+	char NextActionName[C4D_MaxIDLen + 1]{};
+	int32_t NextAction{ActIdle}; // Mapped by C4Def::Load
+	char InLiquidAction[C4D_MaxIDLen + 1]{};
+	char TurnAction[C4D_MaxIDLen + 1]{};
+	int32_t FacetBase{};
+	C4TargetRect Facet{};
+	int32_t FacetTopFace{};
+	int32_t NoOtherAction{};
+	int32_t Disabled{};
+	int32_t DigFree{};
+	int32_t FacetTargetStretch{};
+	char Sound[C4D_MaxIDLen + 1]{};
+	int32_t EnergyUsage{};
+	int32_t Reverse{};
+	int32_t Step{1};
+	char SStartCall[C4D_MaxIDLen + 1]{};
+	char SEndCall[C4D_MaxIDLen + 1]{};
+	char SAbortCall[C4D_MaxIDLen + 1]{};
+	char SPhaseCall[C4D_MaxIDLen + 1]{};
+	class C4AulScriptFunc *StartCall{};
+	C4AulScriptFunc *EndCall{};
+	C4AulScriptFunc *AbortCall{};
+	C4AulScriptFunc *PhaseCall{};
 
 public:
+	C4ActionDef();
 	void Default();
 	void CompileFunc(StdCompiler *pComp);
 };

@@ -69,31 +69,32 @@ enum C4SFilmMode
 class C4SHead
 {
 public:
-	int32_t C4XVer[5];
-	char Title[C4MaxTitle + 1];
-	char Loader[C4MaxTitle + 1];
-	char Font[C4MaxTitle + 1]; // scenario specific font; may be 0
-	int32_t Difficulty;
-	int32_t Icon;
-	int32_t NoInitialize;
-	int32_t MaxPlayer, MinPlayer, MaxPlayerLeague;
-	int32_t SaveGame;
-	int32_t Replay;
-	int32_t Film;
-	int32_t DisableMouse;
-	int32_t RandomSeed;
-	char Engine[C4MaxTitle + 1]; // Relative filename of engine to be used for this scenario
-	char MissionAccess[C4MaxTitle + 1];
-	bool NetworkGame;
-	bool NetworkRuntimeJoin;
-	int32_t ForcedGfxMode; // 0: free; 1/2: newgfx/oldgfx
-	int32_t ForcedFairCrew; // 0: free; 1: force FairCrew; 2: force normal Crew (C4SForceFairCrew)
-	int32_t FairCrewStrength;
-	int32_t ForcedAutoContextMenu; // -1: Not forced; 0: Force off; 1: Force on
-	int32_t ForcedControlStyle; // -1: Not forced; 0: Force off; 1: Force on
-	StdStrBuf Origin; // original oath and filename to scenario (for records and savegames)
+	int32_t C4XVer[5]{};
+	char Title[C4MaxTitle + 1]{"Default Title"};
+	char Loader[C4MaxTitle + 1]{};
+	char Font[C4MaxTitle + 1]{}; // scenario specific font; may be 0
+	int32_t Difficulty{};
+	int32_t Icon{18};
+	int32_t NoInitialize{};
+	int32_t MaxPlayer, MinPlayer{}, MaxPlayerLeague;
+	int32_t SaveGame{};
+	int32_t Replay{};
+	int32_t Film{};
+	int32_t DisableMouse{};
+	int32_t RandomSeed{};
+	char Engine[C4MaxTitle + 1]{}; // Relative filename of engine to be used for this scenario
+	char MissionAccess[C4MaxTitle + 1]{};
+	bool NetworkGame{};
+	bool NetworkRuntimeJoin{};
+	int32_t ForcedGfxMode{}; // 0: free; 1/2: newgfx/oldgfx
+	int32_t ForcedFairCrew{}; // 0: free; 1: force FairCrew; 2: force normal Crew (C4SForceFairCrew)
+	int32_t FairCrewStrength{};
+	int32_t ForcedAutoContextMenu{-1}; // -1: Not forced; 0: Force off; 1: Force on
+	int32_t ForcedControlStyle{-1}; // -1: Not forced; 0: Force off; 1: Force on
+	StdStrBuf Origin{}; // original oath and filename to scenario (for records and savegames)
 
 public:
+	C4SHead();
 	void Default();
 	void CompileFunc(StdCompiler *pComp, bool fSection);
 };

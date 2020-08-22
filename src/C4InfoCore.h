@@ -178,16 +178,13 @@ protected:
 class C4RoundResult
 {
 public:
-	C4RoundResult();
-
-public:
-	StdStrBuf Title;
-	uint32_t Date;
-	int32_t Duration;
-	int32_t Won;
-	int32_t Score, FinalScore, TotalScore;
-	int32_t Bonus;
-	int32_t Level;
+	StdStrBuf Title{};
+	uint32_t Date{};
+	int32_t Duration{};
+	int32_t Won{};
+	int32_t Score{}, FinalScore{}, TotalScore{};
+	int32_t Bonus{};
+	int32_t Level{};
 
 public:
 	void Default();

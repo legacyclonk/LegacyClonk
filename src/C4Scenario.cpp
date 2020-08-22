@@ -155,17 +155,11 @@ void C4SDefinitions::Default()
 
 const int32_t C4S_MaxPlayerDefault = 12;
 
+C4SHead::C4SHead() : MaxPlayer{C4S_MaxPlayerDefault}, MaxPlayerLeague{C4S_MaxPlayerDefault} {}
+
 void C4SHead::Default()
 {
-	Origin.Clear();
-	std::memset(this, 0, sizeof(C4SHead));
-	Icon = 18;
-	MaxPlayer = MaxPlayerLeague = C4S_MaxPlayerDefault;
-	MinPlayer = 0; // auto-determine by mode
-	RandomSeed = 0;
-	ForcedAutoContextMenu = -1;
-	ForcedControlStyle = -1;
-	SCopy("Default Title", Title, C4MaxTitle);
+	*this = {};
 }
 
 void C4SHead::CompileFunc(StdCompiler *pComp, bool fSection)

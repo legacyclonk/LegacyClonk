@@ -31,16 +31,11 @@ bool C4Shape::AddVertex(int32_t iX, int32_t iY)
 	return true;
 }
 
+C4Shape::C4Shape() : ContactDensity{C4M_Solid}, AttachMat{MNone} {}
+
 void C4Shape::Default()
 {
-	std::memset(this, 0, sizeof(C4Shape));
-	AttachMat = MNone;
-	ContactDensity = C4M_Solid;
-}
-
-C4Shape::C4Shape()
-{
-	Default();
+	*this = {};
 }
 
 void C4Rect::Default()

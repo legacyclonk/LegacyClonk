@@ -524,11 +524,6 @@ void MemScramble(uint8_t *bypBuffer, int iSize)
 
 // C4Group
 
-C4GroupHeader::C4GroupHeader()
-{
-	std::memset(this, 0, sizeof(C4GroupHeader));
-}
-
 void C4GroupHeader::Init()
 {
 	SCopy(C4GroupFileID, id, sizeof(id) - 1);
@@ -536,16 +531,6 @@ void C4GroupHeader::Init()
 	Entries = 0;
 	SCopy("New C4Group", Maker, C4GroupMaxMaker);
 	Password[0] = 0;
-}
-
-C4GroupEntryCore::C4GroupEntryCore()
-{
-	std::memset(this, 0, sizeof(C4GroupEntryCore));
-}
-
-C4GroupEntry::C4GroupEntry()
-{
-	std::memset(this, 0, sizeof(C4GroupEntry));
 }
 
 C4GroupEntry::~C4GroupEntry()
@@ -564,7 +549,7 @@ C4GroupEntry::~C4GroupEntry()
 
 void C4GroupEntry::Set(const DirectoryIterator &iter, const char *szPath)
 {
-	std::memset(this, 0, sizeof(C4GroupEntry));
+	*this = {};
 	SCopy(iter.fdt.name, FileName, _MAX_FNAME);
 	Size = iter.fdt.size;
 	Time = static_cast<uint32_t>(iter.fdt.time_create);
@@ -581,7 +566,7 @@ void C4GroupEntry::Set(const DirectoryIterator &iter, const char *szPath)
 
 void C4GroupEntry::Set(const DirectoryIterator &iter, const char *path)
 {
-	std::memset(this, 0, sizeof(C4GroupEntry));
+	*this = {};
 	SCopy(GetFilename(*iter), FileName, _MAX_FNAME);
 	SCopy(*iter, DiskPath, _MAX_PATH - 1);
 	struct stat buf;

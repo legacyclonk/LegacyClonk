@@ -89,16 +89,13 @@ extern time_t C4Group_AssumeTimeOffset;
 class C4GroupHeader
 {
 public:
-	C4GroupHeader();
-
-public:
-	char id[24 + 4];
-	int32_t Ver1, Ver2;
-	int32_t Entries;
-	char Maker[C4GroupMaxMaker + 2];
-	char Password[C4GroupMaxPassword + 2];
-	int32_t Creation, Original;
-	uint8_t fbuf[92];
+	char id[24 + 4]{};
+	int32_t Ver1{}, Ver2{};
+	int32_t Entries{};
+	char Maker[C4GroupMaxMaker + 2]{};
+	char Password[C4GroupMaxPassword + 2]{};
+	int32_t Creation{}, Original{};
+	uint8_t fbuf[92]{};
 
 public:
 	void Init();
@@ -111,16 +108,14 @@ const char C4GECS_None = 0,
 class C4GroupEntryCore
 {
 public:
-	C4GroupEntryCore();
-
-public:
-	char FileName[260];
-	int32_t Packed, ChildGroup;
-	int32_t Size, __Unused, Offset;
-	uint32_t Time;
-	char HasCRC; unsigned int CRC;
-	char Executable;
-	uint8_t fbuf[26];
+	char FileName[260]{};
+	int32_t Packed{}, ChildGroup{};
+	int32_t Size{}, __Unused{}, Offset{};
+	uint32_t Time{};
+	char HasCRC{};
+	unsigned int CRC{};
+	char Executable{};
+	uint8_t fbuf[26]{};
 };
 
 #pragma pack (pop)
@@ -133,18 +128,17 @@ const int C4GRES_InGroup = 0,
 class C4GroupEntry : public C4GroupEntryCore
 {
 public:
-	C4GroupEntry();
 	~C4GroupEntry();
 
 public:
-	char DiskPath[_MAX_PATH + 1];
-	int Status;
-	bool DeleteOnDisk;
-	bool HoldBuffer;
-	bool BufferIsStdbuf;
-	bool NoSort;
-	uint8_t *bpMemBuf;
-	C4GroupEntry *Next;
+	char DiskPath[_MAX_PATH + 1]{};
+	int Status{};
+	bool DeleteOnDisk{};
+	bool HoldBuffer{};
+	bool BufferIsStdbuf{};
+	bool NoSort{};
+	uint8_t *bpMemBuf{};
+	C4GroupEntry *Next{};
 
 public:
 	void Set(const DirectoryIterator &iter, const char *szPath);

@@ -67,17 +67,21 @@ const char *GetAName(const char *szNameFile)
 
 C4PlayerInfoCore::C4PlayerInfoCore()
 {
-	std::memset(this, 0, sizeof(C4PlayerInfoCore));
 	Default();
 }
 
 void C4PlayerInfoCore::Default(C4RankSystem *pRanks)
 {
-	std::memset(this, 0, sizeof(C4PlayerInfoCore));
 	Rank = 0;
 	SCopy("Neuling", PrefName);
+	Comment[0] = 0;
 	if (pRanks) SCopy(pRanks->GetRankName(Rank, false).getData(), RankName);
 	else SCopy("Rang", RankName);
+	Score = 0;
+	Rounds = 0;
+	RoundsWon = 0;
+	RoundsLost = 0;
+	TotalPlayingTime = 0;
 	PrefColor = 0;
 	PrefColorDw = 0xff;
 	PrefColor2Dw = 0;
@@ -87,6 +91,7 @@ void C4PlayerInfoCore::Default(C4RankSystem *pRanks)
 	PrefControlStyle = 0;
 	PrefAutoContextMenu = 0;
 	ExtraData.Reset();
+	LastRound.Default();
 }
 
 uint32_t C4PlayerInfoCore::GetPrefColorValue(int32_t iPrefColor)
@@ -589,14 +594,9 @@ bool C4ObjectInfoCore::Decompile(char **ppOutput, size_t *ipSize)
 
 // Round Info
 
-C4RoundResult::C4RoundResult()
-{
-	Default();
-}
-
 void C4RoundResult::Default()
 {
-	std::memset(this, 0, sizeof(C4RoundResult));
+	*this = {};
 }
 
 void C4RoundResult::CompileFunc(StdCompiler *pComp)
