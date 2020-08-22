@@ -497,22 +497,13 @@ bool C4Network2ClientListDlg::Toggle()
 // C4Network2StartWaitDlg
 
 C4Network2StartWaitDlg::C4Network2StartWaitDlg()
-	: C4GUI::Dialog(DialogWidth, DialogHeight, LoadResStr("IDS_NET_CAPTION"), false), pClientListBox(nullptr)
+	: C4GUI::Dialog(
+		  Config.Graphics.ResX > 800 ? DialogWidthLarge : DialogWidth,
+		  Config.Graphics.ResY > 600 ? DialogHeightLarge : DialogHeight,
+		  LoadResStr("IDS_NET_CAPTION"),
+		  false
+	), pClientListBox(nullptr)
 {
-	C4Rect bounds = GetBounds();
-
-	if (Config.Graphics.ResX > 800)
-	{
-		bounds.Wdt = DialogWidthLarge;
-	}
-
-	if (Config.Graphics.ResY > 600)
-	{
-		bounds.Hgt = DialogHeightLarge;
-	}
-
-	SetBounds(bounds);
-
 	C4GUI::ComponentAligner caAll(GetContainedClientRect(), C4GUI_DefDlgIndent, C4GUI_DefDlgIndent);
 	C4GUI::ComponentAligner caButtonArea(caAll.GetFromBottom(C4GUI_ButtonAreaHgt), 0, 0);
 	// create top label
