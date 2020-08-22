@@ -280,7 +280,7 @@ bool C4Viewport::ScrollBarsByViewPosition()
 #elif defined(WITH_DEVELOPER_MODE)
 static GtkTargetEntry drag_drop_entries[] =
 {
-	{ "text/uri-list", 0, 0 }
+	{ const_cast<char *>("text/uri-list"), 0, 0 }
 };
 
 // GTK+ Viewport window implementation

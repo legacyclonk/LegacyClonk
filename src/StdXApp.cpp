@@ -185,8 +185,8 @@ bool CStdApp::Init(int argc, char *argv[])
 	if (!Priv->xim) Log("Failed to open input method.");
 
 	// Get the Atoms for the Clipboard
-	char *names[] = { "CLIPBOARD" };
-	XInternAtoms(dpy, names, 1, false, ClipboardAtoms);
+	const char *names[] = { "CLIPBOARD" };
+	XInternAtoms(dpy, const_cast<char **>(names), 1, false, ClipboardAtoms);
 
 #ifdef WITH_GLIB
 	Priv->x_channel = g_io_channel_unix_new(XConnectionNumber(dpy));

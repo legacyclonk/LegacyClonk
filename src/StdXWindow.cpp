@@ -142,8 +142,8 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	}
 	// We want notification of closerequests and be killed if we hang
 	Atom WMProtocols[2];
-	char *WMProtocolnames[] = { "WM_DELETE_WINDOW", "_NET_WM_PING" };
-	XInternAtoms(dpy, WMProtocolnames, 2, false, WMProtocols);
+	const char *WMProtocolnames[] = { "WM_DELETE_WINDOW", "_NET_WM_PING" };
+	XInternAtoms(dpy, const_cast<char **>(WMProtocolnames), 2, false, WMProtocols);
 	XSetWMProtocols(dpy, wnd, WMProtocols, 2);
 	// Let the window manager know our pid so it can kill us
 	Atom PID = XInternAtom(pApp->dpy, "_NET_WM_PID", false);
@@ -163,8 +163,8 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	XpmCreatePixmapFromData(dpy, wnd, const_cast<char **>(c4x_xpm), &wm_hint->icon_pixmap, &wm_hint->icon_mask, nullptr);
 	// Window class
 	XClassHint *class_hint = XAllocClassHint();
-	class_hint->res_name = STD_PRODUCT;
-	class_hint->res_class = STD_PRODUCT;
+	class_hint->res_name = const_cast<char *>(STD_PRODUCT);
+	class_hint->res_class = const_cast<char *>(STD_PRODUCT);
 	XSetWMProperties(dpy, wnd, &title_property, &title_property, pApp->Priv->argv, pApp->Priv->argc, nullptr, wm_hint, class_hint);
 	// Set "parent". Clonk does not use "real" parent windows, but multiple toplevel windows.
 	if (pParent) XSetTransientForHint(dpy, wnd, pParent->wnd);
@@ -338,8 +338,8 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 	const auto fullscreen = mode == DisplayMode::Fullscreen;
 
 	static Atom atoms[4];
-	static char* names[] = {"_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN", "_NET_WM_MAXIMIZED_VERT", "_NET_WM_MAXIMIZED_HORZ"};
-	if (!atoms[0]) XInternAtoms(dpy, names, 4, false, atoms);
+	static const char *names[] = {"_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN", "_NET_WM_MAXIMIZED_VERT", "_NET_WM_MAXIMIZED_HORZ"};
+	if (!atoms[0]) XInternAtoms(dpy, const_cast<char **>(names), 4, false, atoms);
 	XEvent e;
 	e.xclient.type = ClientMessage;
 	e.xclient.window = wnd;
