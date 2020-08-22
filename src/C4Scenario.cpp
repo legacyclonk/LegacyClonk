@@ -178,12 +178,12 @@ void C4SHead::CompileFunc(StdCompiler *pComp, bool fSection)
 		pComp->Value(mkNamingAdapt(MaxPlayer,                 "MaxPlayer",       C4S_MaxPlayerDefault));
 		pComp->Value(mkNamingAdapt(MaxPlayerLeague,           "MaxPlayerLeague", MaxPlayer));
 		pComp->Value(mkNamingAdapt(MinPlayer,                 "MinPlayer",       0));
-		pComp->Value(mkNamingAdapt(SaveGame,                  "SaveGame",        false));
-		pComp->Value(mkNamingAdapt(Replay,                    "Replay",          false));
-		pComp->Value(mkNamingAdapt(Film,                      "Film",            false));
-		pComp->Value(mkNamingAdapt(DisableMouse,              "DisableMouse",    false));
+		pComp->Value(mkNamingAdapt(SaveGame,                  "SaveGame",        0));
+		pComp->Value(mkNamingAdapt(Replay,                    "Replay",          0));
+		pComp->Value(mkNamingAdapt(Film,                      "Film",            0));
+		pComp->Value(mkNamingAdapt(DisableMouse,              "DisableMouse",    0));
 	}
-	pComp->Value(mkNamingAdapt(NoInitialize, "NoInitialize", false));
+	pComp->Value(mkNamingAdapt(NoInitialize, "NoInitialize", 0));
 	pComp->Value(mkNamingAdapt(RandomSeed,   "RandomSeed",   0));
 	if (!fSection)
 	{
