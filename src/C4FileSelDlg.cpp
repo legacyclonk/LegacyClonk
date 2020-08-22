@@ -23,11 +23,8 @@
 #include <C4Game.h> // only for single use of Game.GraphicsResource.fctOKCancel below...
 
 #ifdef _WIN32
-#define _WIN32_IE 0x0400
+#include "C4Windows.h"
 #include <shlobj.h>
-#ifndef CSIDL_MYPICTURES
-#define CSIDL_MYPICTURES 0x0027
-#endif
 #endif
 
 // C4FileSelDlg::ListItem
