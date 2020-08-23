@@ -31,6 +31,7 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #endif
 
 #include <thread>
+#include <stdexcept>
 
 #ifdef _WIN32
 #define K_ALT VK_MENU
@@ -377,12 +378,12 @@ public:
 
 	bool AssertMainThread()
 	{
-#ifdef _DEBUG
-		assert(IsMainThread());
-		return IsMainThread();
-#else
+		if (!IsMainThread())
+		{
+			throw std::runtime_error{"Not in main thread"};
+		}
+
 		return true;
-#endif
 	}
 
 #ifdef _WIN32
