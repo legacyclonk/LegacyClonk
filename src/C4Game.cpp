@@ -3955,7 +3955,10 @@ void C4Game::SetInitProgress(float fToProgress)
 	{
 		LastInitProgress = InitProgress;
 		LastInitProgressShowTime = timeGetTime();
-		GraphicsSystem.MessageBoard.LogNotify();
+		if (Application.IsMainThread())
+		{
+			GraphicsSystem.MessageBoard.LogNotify();
+		}
 
 		if (Application.pWindow)
 		{
