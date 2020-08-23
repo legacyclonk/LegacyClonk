@@ -26,6 +26,19 @@
 
 #ifndef USE_CONSOLE
 
+void CStdGLCtx::Deselect(bool secondary)
+{
+	if (pGL && pGL->pCurrCtx == this)
+	{
+		DoDeselect();
+		pGL->pCurrCtx = nullptr;
+	}
+	else if (secondary)
+	{
+		DoDeselect();
+	}
+}
+
 #ifdef _WIN32
 
 CStdGLCtx::CStdGLCtx() : hrc(nullptr), pWindow(nullptr), hDC(nullptr), cx(0), cy(0) {}
@@ -125,13 +138,9 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 	return true;
 }
 
-void CStdGLCtx::Deselect()
+void CStdGLCtx::DoDeselect()
 {
-	if (pGL && pGL->pCurrCtx == this)
-	{
-		wglMakeCurrent(nullptr, nullptr);
-		pGL->pCurrCtx = nullptr;
-	}
+	wglMakeCurrent(nullptr, nullptr);
 }
 
 bool CStdGLCtx::UpdateSize()
@@ -275,13 +284,9 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 	return true;
 }
 
-void CStdGLCtx::Deselect()
+void CStdGLCtx::DoDeselect()
 {
-	if (pGL && pGL->pCurrCtx == this)
-	{
-		glXMakeCurrent(pWindow->dpy, None, nullptr);
-		pGL->pCurrCtx = nullptr;
-	}
+	glXMakeCurrent(pWindow->dpy, None, nullptr);
 }
 
 bool CStdGLCtx::UpdateSize()
@@ -405,12 +410,9 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 	return true;
 }
 
-void CStdGLCtx::Deselect()
+void CStdGLCtx::DoDeselect()
 {
-	if (pGL && pGL->pCurrCtx == this)
-	{
-		pGL->pCurrCtx = nullptr;
-	}
+
 }
 
 bool CStdGLCtx::UpdateSize()

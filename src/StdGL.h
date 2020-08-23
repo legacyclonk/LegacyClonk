@@ -55,12 +55,13 @@ public:
 #endif
 
 	bool Select(bool verbose = false, bool selectOnly = false); // select this context
-	void Deselect(); // select this context
+	void Deselect(bool secondary = false); // select this context
 	bool UpdateSize(); // get new size from hWnd
 
 	bool PageFlip(); // present scene
 
 protected:
+	void DoDeselect();
 	// this handles are declared as pointers to structs
 	CStdWindow *pWindow; // window to draw in
 #ifdef _WIN32
