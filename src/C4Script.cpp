@@ -4106,8 +4106,8 @@ template <class T>
 C4Value GetValByStdCompiler(const char *strEntry, const char *strSection, int iEntryNr, const T &rFrom)
 {
 	// Set up name array, create compiler
-	const char *szNames[2] = { strSection ? strSection : strEntry, strSection ? strEntry : nullptr };
-	C4ValueGetCompiler Comp(szNames, strSection ? 2 : 1, iEntryNr);
+	const char *szNames[2] = { *strSection ? strSection : strEntry, *strSection ? strEntry : nullptr };
+	C4ValueGetCompiler Comp(szNames,  *strSection ? 2 : 1, iEntryNr);
 
 	// Compile
 	try
@@ -4127,8 +4127,8 @@ template <class T>
 bool SetValByStdCompiler(const char *strEntry, const char *strSection, int iEntryNr, const T &rTo, const C4Value &rvNewVal)
 {
 	// Set up name array, create compiler
-	const char *szNames[2] = { strSection ? strSection : strEntry, strSection ? strEntry : nullptr };
-	C4ValueSetCompiler Comp(szNames, strSection ? 2 : 1, iEntryNr, rvNewVal);
+	const char *szNames[2] = { *strSection ? strSection : strEntry, *strSection ? strEntry : nullptr };
+	C4ValueSetCompiler Comp(szNames, *strSection ? 2 : 1, iEntryNr, rvNewVal);
 
 	// Compile
 	try
@@ -4143,139 +4143,206 @@ bool SetValByStdCompiler(const char *strEntry, const char *strSection, int iEntr
 	}
 }
 
-static C4Value FnGetDefCoreVal(C4AulContext *cthr, C4String *strEntry, C4String *section, C4ID idDef, long iEntryNr)
+static C4Value FnGetDefCoreVal(C4AulContext *cthr, C4String *entry, C4String *section, C4ID id, long entryNumber)
 {
-	const char *strSection = FnStringPar(section);
-	if (strSection && !*strSection) strSection = nullptr;
+	if (!id && cthr->Def) id = cthr->Def->id;
+	if (!id) return C4VNull;
 
-	if (!idDef && cthr->Def) idDef = cthr->Def->id;
-	if (!idDef) return C4VNull;
+	if (C4Def *const def{C4Id2Def(id)}; def)
+	{
+		return GetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, mkNamingAdapt(*def, "DefCore"));
+	}
 
-	C4Def *pDef = C4Id2Def(idDef);
-	if (!pDef) return C4VNull;
-
-	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkNamingAdapt(*pDef, "DefCore"));
+	return C4VNull;
 }
 
-static C4Value FnGetObjectVal(C4AulContext *cthr, C4String *strEntry, C4String *section, C4Object *pObj, long iEntryNr)
+static bool FnSetDefCoreVal(C4AulContext *cthr, C4String *entry, C4String *section, C4ID id, long entryNumber, std::optional<C4Value> value)
 {
-	const char *strSection = FnStringPar(section);
-	if (!*strSection) strSection = nullptr;
+	if (!id && cthr->Def) id = cthr->Def->id;
+	if (!id) return false;
 
-	if (!pObj) pObj = cthr->Obj;
-	if (!pObj) return C4VNull;
+	if (C4Def *const def{C4Id2Def(id)}; def)
+	{
+		return SetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, mkNamingAdapt(*def, "DefCore"), value ? *value : C4VNull);
+	}
+
+	return false;
+}
+
+static C4Value FnGetObjectVal(C4AulContext *cthr, C4String *entry, C4String *section, C4Object *obj, long entryNumber)
+{
+	if (!obj) obj = cthr->Obj;
+	if (!obj) return C4VNull;
 
 	// get value
-	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkNamingAdapt(*pObj, "Object"));
+	return GetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, mkNamingAdapt(*obj, "Object"));
 }
 
-static C4Value FnGetObjectInfoCoreVal(C4AulContext *cthr, C4String *strEntry, C4String *section, C4Object *pObj, long iEntryNr)
+static bool FnSetObjectVal(C4AulContext *cthr, C4String *entry, C4String *section, C4Object *obj, long entryNumber, std::optional<C4Value> value)
 {
-	const char *strSection = FnStringPar(section);
-	if (strSection && !*strSection) strSection = nullptr;
+	if (!obj) obj = cthr->Obj;
+	if (!obj) return false;
 
-	if (!pObj) pObj = cthr->Obj;
-	if (!pObj) return C4VNull;
+	return SetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, mkNamingAdapt(*obj, "Object"), value ? *value : C4VNull);
+}
+
+static C4Value FnGetObjectInfoCoreVal(C4AulContext *cthr, C4String *entry, C4String *section, C4Object *obj, long entryNumber)
+{
+	if (!obj) obj = cthr->Obj;
+	if (!obj) return C4VNull;
 
 	// get obj info
-	C4ObjectInfo *pObjInfo = pObj->Info;
+	if (auto *const objectInfoCore{static_cast<C4ObjectInfoCore *>(obj->Info)}; objectInfoCore)
+	{
+		return GetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, mkNamingAdapt(*objectInfoCore, "ObjectInfo"));
+	}
 
-	if (!pObjInfo) return C4VNull;
-
-	// get obj info core
-	C4ObjectInfoCore *pObjInfoCore = static_cast<C4ObjectInfoCore *>(pObjInfo);
-
-	// get value
-	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkNamingAdapt(*pObjInfoCore, "ObjectInfo"));
+	return C4VNull;
 }
 
-static C4Value FnGetActMapVal(C4AulContext *cthr, C4String *strEntry, C4String *action, C4ID idDef, long iEntryNr)
+static bool FnSetObjectInfoCoreVal(C4AulContext *cthr, C4String *entry, C4String *section, C4Object *obj, long entryNumber, std::optional<C4Value> value)
 {
-	if (!idDef && cthr->Def) idDef = cthr->Def->id;
-	if (!idDef) return C4VNull;
+	if (!obj) obj = cthr->Obj;
+	if (!obj) return false;
 
-	C4Def *pDef = C4Id2Def(idDef);
+	// get obj info
+	if (C4ObjectInfoCore *const objectInfoCore{obj->Info}; objectInfoCore)
+	{
+		return SetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, mkNamingAdapt(*objectInfoCore, "ObjectInfo"), value ? *value : C4VNull);
+	}
 
-	if (!pDef) return C4VNull;
+	return false;
+}
 
-	C4ActionDef *pAct = pDef->ActMap;
+static C4Value FnGetActMapVal(C4AulContext *cthr, C4String *entry, C4String *action, C4ID id, long entryNumber)
+{
+	if (!id && cthr->Def) id = cthr->Def->id;
+	if (!id) return C4VNull;
 
-	if (!pAct) return C4VNull;
+	C4Def *const def{C4Id2Def(id)};
+	if (!def) return C4VNull;
 
-	const char* strAction = FnStringPar(action);
-	long iAct;
-	for (iAct = 0; iAct < pDef->ActNum; iAct++, pAct++)
-		if (SEqual(pAct->Name, strAction))
+	C4ActionDef *actionDef{def->ActMap};
+	if (!actionDef) return C4VNull;
+
+	const char *const strAction{FnStringPar(action)};
+
+	int32_t act;
+	for (act = 0; act < def->ActNum; ++act, ++actionDef)
+	{
+		if (SEqual(actionDef->Name, strAction))
+		{
 			break;
+		}
+	}
 
 	// not found?
-	if (iAct >= pDef->ActNum)
+	if (act >= def->ActNum)
+	{
 		return C4VNull;
+	}
 
 	// get value
-	return GetValByStdCompiler(FnStringPar(strEntry), nullptr, iEntryNr, *pAct);
+	return GetValByStdCompiler(FnStringPar(entry), "", entryNumber, *actionDef);
 }
 
-static C4Value FnGetScenarioVal(C4AulContext *cthr, C4String *strEntry, C4String *section, long iEntryNr)
+static bool FnSetActMapVal(C4AulContext *cthr, C4String *entry, C4String *action, C4ID id, long entryNumber, std::optional<C4Value> value)
 {
-	const char *strSection = FnStringPar(section);
-	if (strSection && !*strSection) strSection = nullptr;
+	if (!id && cthr->Def) id = cthr->Def->id;
+	if (!id) return false;
 
-	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkParAdapt(Game.C4S, false));
+	C4Def *const def{C4Id2Def(id)};
+	if (!def) return false;
+
+	C4ActionDef *actionDef{def->ActMap};
+	if (!actionDef) return false;
+
+	const char *const strAction{FnStringPar(action)};
+
+	int32_t act;
+	for (act = 0; act < def->ActNum; ++act, ++actionDef)
+	{
+		if (SEqual(actionDef->Name, strAction))
+		{
+			break;
+		}
+	}
+
+	// not found?
+	if (act >= def->ActNum)
+	{
+		return false;
+	}
+
+	// set value
+	return SetValByStdCompiler(FnStringPar(entry), "", entryNumber, *actionDef, value ? *value : C4VNull);
 }
 
-static C4Value FnGetPlayerVal(C4AulContext *cthr, C4String *strEntry, C4String *section, long iPlr, long iEntryNr)
+static C4Value FnGetScenarioVal(C4AulContext *cthr, C4String *entry, C4String *section, long entryNumber)
 {
-	const char *strSection = FnStringPar(section);
-	if (strSection && !*strSection) strSection = nullptr;
-
-	if (!ValidPlr(iPlr)) return C4VNull;
-
-	// get player
-	C4Player *pPlayer = Game.Players.Get(iPlr);
-
-	// get value
-	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkNamingAdapt(*pPlayer, "Player"));
+	return GetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, mkParAdapt(Game.C4S, false));
 }
 
-static C4Value FnGetPlayerInfoCoreVal(C4AulContext *cthr, C4String *strEntry, C4String *section, long iPlr, long iEntryNr)
+static bool FnSetScenarioVal(C4AulContext *cthr, C4String *entry, C4String *section, long entryNumber, std::optional<C4Value> value)
 {
-	const char *strSection = FnStringPar(section);
-	if (strSection && !*strSection) strSection = nullptr;
-
-	if (!ValidPlr(iPlr)) return C4VNull;
-
-	// get player
-	C4Player *pPlayer = Game.Players.Get(iPlr);
-
-	// get plr info core
-	C4PlayerInfoCore *pPlayerInfoCore = static_cast<C4PlayerInfoCore *>(pPlayer);
-
-	// get value
-	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, *pPlayerInfoCore);
+	return SetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, mkParAdapt(Game.C4S, false), value ? *value : C4VNull);
 }
 
-static C4Value FnGetMaterialVal(C4AulContext *cthr, C4String *strEntry, C4String *section, long iMat, long iEntryNr)
+static C4Value FnGetPlayerVal(C4AulContext *cthr, C4String *entry, C4String *section, long playerNumber, long entryNumber)
 {
-	const char *strSection = FnStringPar(section);
-	if (strSection && !*strSection) strSection = nullptr;
+	if (C4Player *const player{Game.Players.Get(playerNumber)}; player)
+	{
+		return GetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, mkNamingAdapt(*player, "Player"));
+	}
 
-	if (iMat < 0 || iMat >= Game.Material.Num) return C4VNull;
-
-	// get material
-	C4Material *pMaterial = &Game.Material.Map[iMat];
-
-	// get plr info core
-	C4MaterialCore *pMaterialCore = static_cast<C4MaterialCore *>(pMaterial);
-
-	// material core implicates section "Material"
-	if (!SEqual(strSection, "Material")) return C4VNull;
-
-	// get value
-	return GetValByStdCompiler(FnStringPar(strEntry), nullptr, iEntryNr, *pMaterialCore);
+	return C4VNull;
 }
 
-static bool FnCloseMenu(C4AulContext *cthr, C4Object *pObj)
+static bool FnSetPlayerVal(C4AulContext *cthr, C4String *entry, C4String *section, long playerNumber, long entryNumber, std::optional<C4Value> value)
+{
+	if (C4Player *const player{Game.Players.Get(playerNumber)}; player)
+	{
+		return SetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, mkNamingAdapt(*player, "Player"), value ? *value : C4VNull);
+	}
+
+	return false;
+}
+
+static C4Value FnGetPlayerInfoCoreVal(C4AulContext *cthr, C4String *entry, C4String *section, long playerNumber, long entryNumber)
+{
+	if (C4PlayerInfoCore *const playerInfoCore{Game.Players.Get(playerNumber)}; playerInfoCore)
+	{
+		return GetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, *playerInfoCore);
+	}
+
+	return C4VNull;
+}
+
+static bool FnSetPlayerInfoCoreVal(C4AulContext *cthr, C4String *entry, C4String *section, long playerNumber, long entryNumber, std::optional<C4Value> value)
+{
+	if (auto *const playerInfoCore{static_cast<C4PlayerInfoCore *>(Game.Players.Get(playerNumber))}; playerInfoCore)
+	{
+		return SetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, *playerInfoCore, value ? *value : C4VNull);
+	}
+
+	return false;
+}
+
+static C4Value FnGetMaterialVal(C4AulContext *cthr, C4String *entry, C4String *section, long materialNumber, long entryNumber)
+{
+	if (materialNumber < 0 || materialNumber >= Game.Material.Num) return C4VNull;
+
+	return GetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, Game.Material.Map[materialNumber]);
+}
+
+static bool FnSetMaterialVal(C4AulContext *cthr, C4String *entry, C4String *section, long materialNumber, long entryNumber, std::optional<C4Value> value)
+{
+	if (materialNumber < 0 || materialNumber >= Game.Material.Num) return false;
+
+	return SetValByStdCompiler(FnStringPar(entry), FnStringPar(section), entryNumber, Game.Material.Map[materialNumber], value ? *value : C4VNull);
+}
+
+static long FnCloseMenu(C4AulContext *cthr, C4Object *pObj)
 {
 	if (!pObj) pObj = cthr->Obj;
 	if (!pObj) return false;
@@ -6797,13 +6864,21 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetLength", FnGetLength);
 	AddFunc(pEngine, "GetIndexOf", FnGetIndexOf);
 	AddFunc(pEngine, "GetDefCoreVal", FnGetDefCoreVal);
+	AddFunc(pEngine, "SetDefCoreVal", FnSetDefCoreVal);
 	AddFunc(pEngine, "GetActMapVal", FnGetActMapVal);
+	AddFunc(pEngine, "SetActMapVal", FnSetActMapVal);
 	AddFunc(pEngine, "GetObjectVal", FnGetObjectVal);
+	AddFunc(pEngine, "SetObjectVal", FnSetObjectVal);
 	AddFunc(pEngine, "GetObjectInfoCoreVal", FnGetObjectInfoCoreVal);
+	AddFunc(pEngine, "SetObjectInfoCoreVal", FnSetObjectInfoCoreVal);
 	AddFunc(pEngine, "GetScenarioVal", FnGetScenarioVal);
+	AddFunc(pEngine, "SetScenarioVal", FnSetScenarioVal);
 	AddFunc(pEngine, "GetPlayerVal", FnGetPlayerVal);
+	AddFunc(pEngine, "SetPlayerVal", FnSetPlayerVal);
 	AddFunc(pEngine, "GetPlayerInfoCoreVal", FnGetPlayerInfoCoreVal);
+	AddFunc(pEngine, "SetPlayerInfoCoreVal", FnSetPlayerInfoCoreVal);
 	AddFunc(pEngine, "GetMaterialVal", FnGetMaterialVal);
+	AddFunc(pEngine, "SetMaterialVal", FnSetMaterialVal);
 	AddFunc(pEngine, "SetPlrExtraData", FnSetPlrExtraData);
 	AddFunc(pEngine, "GetPlrExtraData", FnGetPlrExtraData);
 	AddFunc(pEngine, "SetCrewExtraData", FnSetCrewExtraData);
