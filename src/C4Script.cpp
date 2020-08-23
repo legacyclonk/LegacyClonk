@@ -4133,7 +4133,9 @@ bool SetValByStdCompiler(const char *strEntry, const char *strSection, int iEntr
 	// Compile
 	try
 	{
+		Comp.setRuntimeWritesAllowed(+1);
 		Comp.Decompile(rTo);
+		Comp.setRuntimeWritesAllowed(-1);
 		return Comp.getSuccess();
 	}
 	// Should not happen, catch it anyway.
