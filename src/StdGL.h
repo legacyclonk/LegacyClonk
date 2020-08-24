@@ -140,16 +140,15 @@ public:
 	bool Init(CStdWindow *pWindow, CStdApp *pApp);
 #endif
 
-	bool Select(bool verbose = false, bool selectOnly = false); // select this context
-	void Deselect(bool secondary = false); // select this context
-	void Destroy(); // destroy this context
+	bool Select(bool verbose = false, bool selectOnly = false) override; // select this context
+	void Deselect(bool secondary = false) override; // select this context
 	bool UpdateSize() override; // get new size from hWnd
-
 	bool PageFlip() override; // present scene
 
 protected:
 	bool MakeCurrent();
 	void DoDeselect();
+	void Destroy(); // destroy this context
 	bool CreateContext(int major, int minor, bool core = true);
 	bool InitGLEW();
 	bool CheckExtension(const char *extension);

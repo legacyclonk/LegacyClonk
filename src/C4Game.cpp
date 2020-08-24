@@ -1947,15 +1947,15 @@ void C4Game::Preload()
 #ifndef USE_CONSOLE
 		const auto context = lpDDraw->CreateContext(Application.pWindow, &Application);
 		context->Deselect();
-		pGL->GetMainCtx().Select();
-		PreloadThread = std::thread{[](std::unique_ptr<CStdGLCtx> preloadContext)
+		pGL->GetMainContext()->Select();
+		PreloadThread = std::thread{[](std::unique_ptr<CStdDDrawContext> preloadContext)
 		{
 			preloadContext->Select(false, true);
 			CStdLock lock{&Game.PreloadMutex};
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
 			preloadContext->Deselect(true);
 		},
-		std::unique_ptr<CStdGLCtx>{context}};
+		std::unique_ptr<CStdDDrawContext>{context}};
 #else
 		PreloadThread = std::thread{[]
 		{
