@@ -4,6 +4,9 @@ on: [push, pull_request]
 
 jobs:
   Windows:
+    strategy:
+      matrix:
+        configuration: [Normal, Debugrec]
     runs-on: windows-latest
 
     steps:
@@ -29,7 +32,12 @@ jobs:
       with:
         arch: x86
 
+    - name: Configure Debugrec
+      if: ${{ matrix.configuration == 'Debugrec' }}
+      run: cmake -DCMAKE_BUILD_TYPE=Debug -DDEBUGREC=On -G "Visual Studio 16 2019" -A Win32 .
+
     - name: Configure
+      if: ${{ matrix.configuration == 'Normal' }}
       run: cmake -G "Visual Studio 16 2019" -A Win32 .
 
     - name: Build
@@ -42,19 +50,44 @@ jobs:
         copy glew32.dll appdir
         copy RelWithDebInfo\*.exe appdir
         copy RelWithDebInfo\*.pdb appdir
-        cd appdir
-        7z a LegacyClonk.zip *
 
     - uses: actions/upload-artifact@v2
+      if: ${{ matrix.configuration == 'Normal' }}
+      with:
+        name: Windows x86 Debugrec
+        path: appdir/*
+
+    - uses: actions/upload-artifact@v2
+      if: ${{ matrix.configuration == 'Debugrec' }}
       with:
         name: Windows x86
         path: appdir/*
 
+    - shell: cmd
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        cd appdir
+        7z a LegacyClonk.zip *
+
+    - shell: cmd
+      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.configuration == 'Debugrec' }}
+      run: |
+        cd appdir
+        ren LegacyClonk.zip LegacyClonk-Debugrec.zip
+
     - name: Release
       uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
+      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.configuration == 'Normal' }}
       with:
         files: appdir/LegacyClonk.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.configuration == 'Debugrec' }}
+      with:
+        files: appdir/LegacyClonk-debugrec.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
