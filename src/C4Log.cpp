@@ -70,30 +70,19 @@ int GetLogFD()
 
 bool LogSilent(const char *szMessage, bool fConsole)
 {
-
 	// security
 	if (!szMessage) return false;
 
-
 	if (!Application.IsMainThread())
 	{
-		if (Game.Network.GetLobby())
+		if (fConsole)
 		{
-			if (fConsole)
-			{
-				Application.InteractiveThread.ThreadLog(szMessage);
-			}
-			else
-			{
-				Application.InteractiveThread.ThreadLogS(szMessage);
-			}
+			return Application.InteractiveThread.ThreadLog(szMessage);
 		}
 		else
 		{
-			Application.AssertMainThread();
+			return Application.InteractiveThread.ThreadLogS(szMessage);
 		}
-
-		return true;
 	}
 
 	// add timestamp
@@ -165,16 +154,7 @@ bool Log(const char *szMessage)
 
 	if (!Application.IsMainThread())
 	{
-		if (Game.Network.GetLobby())
-		{
-			Application.InteractiveThread.ThreadLog(szMessage);
-		}
-		else
-		{
-			Application.AssertMainThread();
-		}
-
-		return true;
+		return Application.InteractiveThread.ThreadLog(szMessage);
 	}
 
 	// Pass on to console
