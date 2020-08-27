@@ -19,6 +19,7 @@
 #pragma once
 
 #include <C4AudioSystem.h>
+#include <C4Object.h>
 
 #include <chrono>
 #include <cstddef>
@@ -26,8 +27,7 @@
 #include <list>
 #include <optional>
 #include <string>
-
-class C4Object;
+#include <variant>
 
 bool IsSoundPlaying(const char *name, const C4Object *obj);
 void SoundLevel(const char *name, C4Object *obj, std::int32_t iLevel);
@@ -77,6 +77,19 @@ private:
 
 	struct Instance
 	{
+		struct ObjPos
+		{
+			const int32_t x;
+			const int32_t y;
+
+			ObjPos() = delete;
+			ObjPos(const C4Object &obj) : x{obj.x}, y{obj.y} {}
+			ObjPos(const ObjPos &) = delete;
+			ObjPos(ObjPos &&) = delete;
+			~ObjPos() = default;
+			ObjPos &operator=(const ObjPos &) = delete;
+		};
+
 		Instance(Sample &sample, bool loop, std::int32_t volume,
 			C4Object *obj, std::int32_t falloffDistance)
 			: sample{sample}, loop{loop}, volume{volume},
@@ -91,7 +104,7 @@ private:
 		std::optional<C4AudioSystem::SoundChannel> channel;
 		const bool loop;
 		std::int32_t volume, pan{0};
-		C4Object *obj;
+		std::variant<C4Object *, const ObjPos> obj;
 		const std::int32_t falloffDistance;
 		const std::chrono::time_point<std::chrono::steady_clock> startTime;
 
@@ -99,6 +112,7 @@ private:
 		bool DetachObj();
 		// Returns false if this instance should be removed.
 		bool Execute(bool justStarted = false);
+		C4Object *GetObj() const;
 		// Estimates playback position (milliseconds)
 		std::uint32_t GetPlaybackPosition() const;
 	};

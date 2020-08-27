@@ -90,7 +90,7 @@ void C4SoundSystem::ClearPointers(const C4Object *const obj)
 	for (auto &sample : samples)
 	{
 		sample.instances.remove_if(
-			[&](auto &inst) { return obj == inst.obj && !inst.DetachObj(); });
+			[&](auto &inst) { return obj == inst.GetObj() && !inst.DetachObj(); });
 	}
 }
 
@@ -144,8 +144,9 @@ bool C4SoundSystem::Instance::DetachObj()
 	// Stop if looping (would most likely loop forever)
 	if (loop) return false;
 	// Otherwise: set volume by last position
-	GetVolumeByPos(obj->x, obj->y, volume, pan);
-	obj = nullptr;
+	const auto detachedObj = GetObj();
+	obj.emplace<const ObjPos>(*detachedObj);
+	GetVolumeByPos(detachedObj->x, detachedObj->y, volume, pan);
 
 	// Do not stop instance
 	return true;
@@ -154,6 +155,7 @@ bool C4SoundSystem::Instance::DetachObj()
 bool C4SoundSystem::Instance::Execute(const bool justStarted)
 {
 	// Object deleted? Detach object and check if this would delete this instance
+	const auto obj = GetObj();
 	if (obj && !obj->Status && !DetachObj()) return false;
 
 	// Remove instances that have stopped
@@ -214,6 +216,12 @@ bool C4SoundSystem::Instance::Execute(const bool justStarted)
 	return true;
 }
 
+C4Object *C4SoundSystem::Instance::GetObj() const
+{
+	const auto ptr = std::get_if<C4Object *>(&obj);
+	return ptr ? *ptr : nullptr;
+}
+
 std::uint32_t C4SoundSystem::Instance::GetPlaybackPosition() const
 {
 	return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -232,7 +240,7 @@ auto C4SoundSystem::FindInst(const char *wildcard, const C4Object *const obj) ->
 		if (!WildcardMatch(wildcard, sample.name.c_str())) continue;
 		// Try to find an instance that is bound to obj
 		auto it = std::find_if(sample.instances.begin(), sample.instances.end(),
-			[&](const auto &inst) { return inst.obj == obj; });
+			[&](const auto &inst) { return inst.GetObj() == obj; });
 		if (it != sample.instances.end()) return it;
 	}
 
