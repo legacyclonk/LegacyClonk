@@ -854,7 +854,7 @@ C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pB
 		StartSoundEffect("Error", false, 100, pBuyObj); return nullptr;
 	}
 	// Decrease homebase material count
-	if (!HomeBaseMaterial.DecreaseIDCount(id, false)) return nullptr;
+	HomeBaseMaterial.DecreaseIDCount(id, false);
 	if (Game.Rules & C4RULE_TeamHombase) SyncHomebaseMaterialToTeam();
 	// Reduce wealth
 	DoWealth(-iValue);
@@ -1637,8 +1637,10 @@ void C4Player::ExecHomeBaseProduction()
 			if (HomeBaseProduction.GetCount(cnt) > 0)
 				if (ProductionUnit % BoundBy<int32_t>(11 - HomeBaseProduction.GetCount(cnt), 1, 10) == 0)
 					if (HomeBaseMaterial.GetIDCount(HomeBaseProduction.GetID(cnt)) < MaxHomeBaseProduction)
-						if (HomeBaseMaterial.IncreaseIDCount(HomeBaseProduction.GetID(cnt)))
-							fAnyChange = true;
+					{
+						HomeBaseMaterial.IncreaseIDCount(HomeBaseProduction.GetID(cnt));
+						fAnyChange = true;
+					}
 		// All team members get same production if rule is active
 		if (fAnyChange) if (Game.Rules & C4RULE_TeamHombase)
 			SyncHomebaseMaterialToTeam();
@@ -1732,11 +1734,11 @@ void C4Player::DefaultRuntimeData()
 	CursorSelection = CursorToggled = 0;
 	MessageStatus = 0;
 	MessageBuf[0] = 0;
-	Hostility.Default();
-	HomeBaseMaterial.Default();
-	HomeBaseProduction.Default();
-	Knowledge.Default();
-	Magic.Default();
+	Hostility.Clear();
+	HomeBaseMaterial.Clear();
+	HomeBaseProduction.Clear();
+	Knowledge.Clear();
+	Magic.Clear();
 	FlashCom = 0;
 }
 

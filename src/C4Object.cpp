@@ -119,7 +119,7 @@ void C4Object::Default()
 	Shape.Default();
 	fOwnVertices = 0;
 	Contents.Default();
-	Component.Default();
+	Component.Clear();
 	SolidMask.Default();
 	PictureRect.Default();
 	Def = nullptr;

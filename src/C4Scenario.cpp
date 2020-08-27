@@ -150,7 +150,7 @@ void C4SDefinitions::Default()
 {
 	LocalOnly = AllowUserChange = false;
 	Definitions.clear();
-	SkipDefs.Default();
+	SkipDefs.Clear();
 }
 
 const int32_t C4S_MaxPlayerDefault = 12;
@@ -268,14 +268,14 @@ void C4SPlrStart::Default()
 	Wealth.Set(0, 0, 0, 250);
 	Position[0] = Position[1] = -1;
 	EnforcePosition = 0;
-	ReadyCrew.Default();
-	ReadyBase.Default();
-	ReadyVehic.Default();
-	ReadyMaterial.Default();
-	BuildKnowledge.Default();
-	HomeBaseMaterial.Default();
-	HomeBaseProduction.Default();
-	Magic.Default();
+	ReadyCrew.Clear();
+	ReadyBase.Clear();
+	ReadyVehic.Clear();
+	ReadyMaterial.Clear();
+	BuildKnowledge.Clear();
+	HomeBaseMaterial.Clear();
+	HomeBaseProduction.Clear();
+	Magic.Clear();
 }
 
 void C4SPlrStart::CompileFunc(StdCompiler *pComp)
@@ -304,9 +304,9 @@ void C4SLandscape::Default()
 	NoSky = 0;
 	for (int32_t cnt = 0; cnt < 6; cnt++) SkyDefFade[cnt] = 0;
 	VegLevel.Set(50, 30, 0, 100);
-	Vegetation.Default();
+	Vegetation.Clear();
 	InEarthLevel.Set(50, 0, 0, 100);
-	InEarth.Default();
+	InEarth.Clear();
 	MapWdt.Set(100, 0, 64, 250);
 	MapHgt.Set(50, 0, 40, 250);
 	MapZoom.Set(10, 0, 5, 15);
@@ -422,7 +422,7 @@ void C4SRealism::Default()
 	StructuresNeedEnergy = 1;
 	LandscapePushPull = 0;
 	LandscapeInsertThrust = 0;
-	ValueOverloads.Default();
+	ValueOverloads.Clear();
 	BaseFunctionality = BASEFUNC_Default;
 	BaseRegenerateEnergyPrice = BASE_RegenerateEnergyPrice;
 }

@@ -150,7 +150,7 @@ void C4DefCore::Default()
 	PictureRect.Default();
 	SolidMask.Default();
 	TopFace.Default();
-	Component.Default();
+	Component.Clear();
 	BurnTurnTo = C4ID_None;
 	BuildTurnTo = C4ID_None;
 	STimerCall[0] = 0;
