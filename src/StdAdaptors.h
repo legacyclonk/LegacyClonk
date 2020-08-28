@@ -560,7 +560,8 @@ struct StdSTLContainerAdapt
 
 	C &rStruct; const StdCompiler::Sep eSep;
 
-	inline void CompileFunc(StdCompiler *pComp) const
+	template<typename... Parameters>
+	inline void CompileFunc(StdCompiler *pComp, Parameters &&... parameters) const
 	{
 		typedef typename C::value_type T;
 		// Get compiler specs
@@ -575,11 +576,26 @@ struct StdSTLContainerAdapt
 				int32_t iSize = rStruct.size();
 				pComp->Value(iSize);
 			}
+			auto first = true;
 			// Write all entries
-			for (typename C::const_iterator i = rStruct.begin(); i != rStruct.end(); ++i)
+			for (auto it : rStruct)
 			{
-				if (i != rStruct.begin()) pComp->Separator(eSep);
-				pComp->Value(const_cast<T &>(*i));
+				if (!first)
+				{
+					pComp->Separator(eSep);
+				}
+				else
+				{
+					first = false;
+				}
+				if constexpr (sizeof...(parameters) > 0)
+				{
+					pComp->Value(mkParAdapt(it, std::forward<Parameters>(parameters)...));
+				}
+				else
+				{
+					pComp->Value(it);
+				}
 			}
 		}
 		else
@@ -599,8 +615,15 @@ struct StdSTLContainerAdapt
 				try
 				{
 					T val;
-					pComp->Value(val);
-					rStruct.push_back(val);
+					if constexpr (sizeof...(parameters) > 0)
+					{
+						pComp->Value(mkParAdapt(val, std::forward<Parameters>(parameters)...));
+					}
+					else
+					{
+						pComp->Value(val);
+					}
+					rStruct.emplace_back(val);
 				}
 				catch (const StdCompiler::NotFoundException &)
 				{
