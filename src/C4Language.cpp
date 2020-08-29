@@ -429,13 +429,13 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 	char strEntry[_MAX_FNAME + 1];
 	sprintf(strEntry, "Language%s.txt", strCode); // ...should use C4CFN_Language here
 	// Load string table
-	char *strTable;
-	if (!hGroup.LoadEntry(strEntry, &strTable, 0, true))
+	StdStrBuf strTable;
+	if (!hGroup.LoadEntryString(strEntry, strTable))
 	{
 		hGroup.Close(); return false;
 	}
 	// Set string table
-	SetResStrTable(strTable);
+	SetResStrTable(strTable.getData());
 	// Close group
 	hGroup.Close();
 	// Set the internal charset

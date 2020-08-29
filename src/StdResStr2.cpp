@@ -71,7 +71,7 @@ private:
 
 static std::optional<ResTable> Table;
 
-void SetResStrTable(char *pTable)
+void SetResStrTable(const char *pTable)
 {
 	Table.emplace(pTable);
 }
