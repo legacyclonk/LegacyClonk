@@ -1040,17 +1040,20 @@ void C4ControlMessage::Execute() const
 
 	auto checkAlert = [&alert, this]
 	{
-		if (!alert)
+		if (auto *local = Game.Clients.getLocal(); local)
 		{
-			if (const char *pos = SSearchNoCase(Message.getData(), Game.Clients.getLocal()->getNick()); pos && !IsIdentifier(*pos))
+			if (!alert)
 			{
-				if (const char *begin = pos - strlen(Game.Clients.getLocal()->getNick()); begin - Message.getData() > 0)
+				if (const char *pos = SSearchNoCase(Message.getData(), local->getNick()); pos && !IsIdentifier(*pos))
 				{
-					alert = !IsIdentifier(begin[-1]);
-				}
-				else
-				{
-					alert = true;
+					if (const char *begin = pos - strlen(local->getNick()); begin - Message.getData() > 0)
+					{
+						alert = !IsIdentifier(begin[-1]);
+					}
+					else
+					{
+						alert = true;
+					}
 				}
 			}
 		}

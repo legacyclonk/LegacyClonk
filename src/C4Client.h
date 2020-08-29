@@ -133,7 +133,7 @@ protected:
 	// client list
 	C4Client *pFirst;
 
-	// pointer to local client
+	// pointer to local client (is nullptr if a recording is played)
 	C4Client *pLocal;
 
 	// network client list (may be nullptr if network is not active)
