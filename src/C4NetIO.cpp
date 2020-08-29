@@ -2369,9 +2369,9 @@ const unsigned int C4NetIOUDP::iUDPHeaderSize = 8 + 24; // (bytes)
 // between platforms.
 struct C4NetIOUDP::BinAddr
 {
-	BinAddr() : type{0} {}
+	BinAddr() : type{0}, v6{} {}
 
-	BinAddr(const C4NetIO::addr_t &addr)
+	BinAddr(const C4NetIO::addr_t &addr) : v6{}
 	{
 		switch (addr.GetFamily())
 		{
