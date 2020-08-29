@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-# example usage: OLDOBJVERSION=4,9,10,8 OBJVERSION=4.9.10.8 VERSION=338 C4GROUP=~/clonk/c4group ./make_c4us.sh
+# example usage: OLDOBJVERSION=4,9,10,10 OBJVERSION=4.9.10.10 VERSION=342 C4GROUP=~/clonk/c4group ./make_c4us.sh
 
 set -e
 
@@ -10,17 +10,17 @@ if [ -z "$C4GROUP" ]; then
 fi
 
 if [ -z "$VERSION" ]; then
-	echo "Please define the environment variable VERSION and tell what version this will be (e.g. 338)" >&2
+	echo "Please define the environment variable VERSION and tell what version this will be (e.g. 342)" >&2
 	exit 1
 fi
 
 if [ -z "$OLDOBJVERSION" ]; then
-	echo "Please define the environment variable OLDOBJVERSION and tell what version the old definitions were (comma-separated, e.g. 4,9,10,8)" >&2
+	echo "Please define the environment variable OLDOBJVERSION and tell what version the old definitions were (comma-separated, e.g. 4,9,10,10)" >&2
 	exit 1
 fi
 
 if [ -z "$OBJVERSION" ]; then
-	echo "Please define the environment variable OBJVERSION and tell what version the new definitions are (e.g. 4.9.10.8)" >&2
+	echo "Please define the environment variable OBJVERSION and tell what version the new definitions are (e.g. 4.9.10.10)" >&2
 	exit 1
 fi
 
@@ -28,7 +28,7 @@ SCRIPT_DIR="$(realpath $(dirname $0))"
 
 TARGET_DIR="$(realpath .)"
 
-TAG="continuous-v$VERSION"
+TAG="v$VERSION"
 
 if [ -z "$GET_win32" ]; then
 	GET_win32="curl -L -o /tmp/LegacyClonk.zip https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk.zip && unzip /tmp/LegacyClonk.zip && rm /tmp/LegacyClonk.zip"
@@ -76,6 +76,7 @@ for PLATFORM in "win32" "linux" "linux64"; do
 	UPDATE=lc_${VERSION}_$PLATFORM.c4u
 	mkdir $UPDATE
 	cp "$TARGET_DIR/System.c4g.c4u" "$UPDATE"
+	cp "$TARGET_DIR/Graphics.c4g.c4u" "$UPDATE"
 	echo "$AUTOUPDATEFILE" > "$UPDATE/AutoUpdate.txt"
 	CMD="GET_$PLATFORM"
 	bash -c "${!CMD}"
