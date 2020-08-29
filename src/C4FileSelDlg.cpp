@@ -297,18 +297,22 @@ void C4FileSelDlg::SetSelection(const std::vector<std::string> &newSelection, bo
 	}
 }
 
-void C4FileSelDlg::GetSelection(std::vector<std::string> &fixedSelection, bool filenameOnly) const
+std::vector<std::string> C4FileSelDlg::GetSelection(const std::vector<std::string> &fixedSelection, bool filenameOnly) const
 {
 	if (!IsMultiSelection())
 	{
-		fixedSelection.clear();
 		// get single selected file for single selection dlg
-		fixedSelection.push_back(filenameOnly ? GetFilename(pSelection->GetFilename()) : pSelection->GetFilename());
+		if (const char *str{filenameOnly ? GetFilename(pSelection->GetFilename()) : pSelection->GetFilename()}; str)
+		{
+			return {str};
+		}
+
+		return {};
 	}
 	else
 	{
-		// force fixed selection first
-		//if (fixedSelection.size()) sResult.Append(szFixedSelection);
+		std::vector<std::string> selection{fixedSelection};
+
 		//  get ';'-separated list for multi selection dlg
 		for (ListItem *pFileItem = static_cast<ListItem *>(pFileListBox->GetFirst()); pFileItem; pFileItem = static_cast<ListItem *>(pFileItem->GetNext()))
 		{
@@ -316,9 +320,16 @@ void C4FileSelDlg::GetSelection(std::vector<std::string> &fixedSelection, bool f
 			{
 				const char *szAppendFilename = pFileItem->GetFilename();
 				if (filenameOnly) szAppendFilename = GetFilename(szAppendFilename);
-				fixedSelection.push_back(szAppendFilename);
+
+				// prevent adding entries twice (especially those from the fixed selection list)
+				if (std::find(selection.cbegin(), selection.cend(), szAppendFilename) == selection.cend())
+				{
+					selection.push_back(szAppendFilename);
+				}
 			}
 		}
+
+		return selection;
 	}
 }
 
@@ -399,7 +410,7 @@ bool C4DefinitionSelDlg::SelectDefinitions(C4GUI::Screen *pOnScreen, std::vector
 	bool fResult;
 	if (fResult = pOnScreen->ShowModalDlg(pDlg, false))
 	{
-		pDlg->GetSelection(selection, true);
+		selection = pDlg->GetSelection(selection, true);
 	}
 	if (C4GUI::IsGUIValid()) delete pDlg;
 	return fResult;
@@ -616,8 +627,7 @@ bool C4PortraitSelDlg::SelectPortrait(C4GUI::Screen *pOnScreen, std::string &sel
 	bool fResult = pOnScreen->ShowModalDlg(pDlg, false);
 	if (fResult)
 	{
-		std::vector<std::string> s;
-		pDlg->GetSelection(s, false);
+		std::vector<std::string> s{pDlg->GetSelection({}, false)};
 		fResult = !s.empty();
 		if (fResult)
 		{

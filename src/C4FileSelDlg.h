@@ -163,7 +163,7 @@ public:
 
 	void SetPath(const char *szNewPath, bool fRefresh = true);
 	void SetSelection(const std::vector<std::string> &newSelection, bool filenameOnly);
-	void GetSelection(std::vector<std::string> &fixedSelection, bool filenameOnly) const; // get single selected file for single selection dlg ';'-separated list for multi selection dlg
+	std::vector<std::string> GetSelection(const std::vector<std::string> &fixedSelection, bool filenameOnly) const; // get single selected file for single selection dlg ';'-separated list for multi selection dlg
 };
 
 // dialog to select a player file
