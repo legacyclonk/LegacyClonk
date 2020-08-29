@@ -1040,7 +1040,7 @@ void C4ControlMessage::Execute() const
 
 	auto checkAlert = [&alert, this]
 	{
-		if (auto *local = Game.Clients.getLocal(); local)
+		if (auto *local = Game.Clients.getLocal(); local && local->getID() != iByClient)
 		{
 			if (!alert)
 			{
