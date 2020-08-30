@@ -2245,11 +2245,9 @@ bool C4Group::LoadEntryString(const char *szEntryName, StdStrBuf &Buf)
 	// Access entry, allocate buffer, read data
 	if (!AccessEntry(szEntryName, &size)) return Error("LoadEntry: Not found");
 	// Allocate memory
-	Buf.SetLength(size + 1);
+	Buf.SetLength(size);
 	// other parts crash when they get a zero length buffer, so fail here
 	if (!size) return false;
-	// add terminating null char, as it might not be in the file
-	*Buf.getMPtr(size) = '\0';
 	// Load data
 	if (!Read(Buf.getMData(), size))
 	{
