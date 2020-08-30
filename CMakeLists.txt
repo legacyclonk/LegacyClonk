@@ -158,6 +158,10 @@ endif ()
 
 if (USE_SDL_MAINLOOP)
 	append_filelist(CLONK_SOURCES EngineSdlMainloop.txt)
+
+	if (APPLE)
+		list(APPEND LIBSTANDARD_SOURCES src/SDLMain/SDLMain.m)
+	endif ()
 endif ()
 
 if (USE_SDL_MIXER)
@@ -360,3 +364,22 @@ endif ()
 target_compile_definitions(clonk PRIVATE HAVE_CONFIG_H)
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+if (APPLE AND NOT USE_CONSOLE)
+	set(BUNDLE_RESOURCES
+		src/res/lc.icns
+		src/res/C4U.icns
+		src/res/C4P.icns
+		src/res/C4S.icns
+		src/res/C4F.icns
+		src/res/C4G.icns
+		src/res/C4D.icns
+	)
+
+	set_target_properties(clonk PROPERTIES RESOURCE "${BUNDLE_RESOURCES}")
+	set_target_properties(clonk PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/src/res/Info.plist")
+
+	install(TARGETS clonk BUNDLE DESTINATION . RESOURCE DESTINATION ./clonk.app/Contents/Resources/)
+	install(DIRECTORY src/SDLMain/SDLMain.nib DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${CMAKE_INSTALL_PREFIX}/clonk.app/Contents/Resources)
+	install(TARGETS c4group RUNTIME DESTINATION .)
+endif ()

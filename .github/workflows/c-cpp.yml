@@ -192,10 +192,17 @@ jobs:
         run: |
           brew remove --force $(brew list) --ignore-dependencies
           brew update
-          until brew install sdl_mixer libpng libjpeg freetype glew openssl@1.1 git libyaml; do true; done
+          until brew install libpng libjpeg freetype glew openssl@1.1 git libyaml; do true; done
           brew unlink cmake || true
           brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/74d54460d0af8e21deacee8dcced325cfc191141/Formula/cmake.rb
           brew pin cmake
+          curl -L -O https://www.libsdl.org/release/SDL-1.2.15.dmg
+          curl -L -O https://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-1.2.12.dmg
+          hdiutil attach SDL-1.2.15.dmg
+          hdiutil attach SDL_mixer-1.2.12.dmg
+          mkdir -p $HOME/Library/Frameworks
+          cp -r /Volumes/SDL/SDL.framework $HOME/Library/Frameworks/
+          cp -r /Volumes/SDL_mixer/SDL_mixer.framework $HOME/Library/Frameworks/
 
       - name: Configure
         run: |
@@ -206,35 +213,38 @@ jobs:
       - name: Build
         run: |
           cd build
-          make
+          make DESTDIR=inst install
 
       - name: Build Macdylibbundler
         run: |
-          cd build
+          cd build/inst/usr/local
           git clone https://github.com/auriamg/macdylibbundler/
           cd macdylibbundler
           git checkout 9cf053f8b399512e12d7931fa24f466057e58044
           make
           cd ..
           macdylibbundler/dylibbundler -od -b -x clonk.app/Contents/MacOS/clonk -d clonk.app/Contents/libs/
+          mkdir clonk.app/Contents/Frameworks
+          cp -r /Volumes/SDL/SDL.framework clonk.app/Contents/Frameworks
+          cp -r /Volumes/SDL_mixer/SDL_mixer.framework clonk.app/Contents/Frameworks
 
       - uses: actions/upload-artifact@v2
         with:
           name: Mac
           path: |
-            build/c4group
-            build/clonk.app
+            build/inst/usr/local/c4group
+            build/inst/usr/local/clonk.app
 
       - name: Pack
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          cd build
+          cd build/inst/usr/local/
           tar -cvzf LegacyClonk-mac.tar.gz c4group clonk.app
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: build/LegacyClonk-mac.tar.gz
+          files: build/inst/usr/local/LegacyClonk-mac.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

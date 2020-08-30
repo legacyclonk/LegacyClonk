@@ -31,6 +31,10 @@
 #include <objbase.h>
 #endif
 
+#ifdef __APPLE__
+#include <libgen.h>
+#endif
+
 C4Application Application;
 C4Console Console;
 C4FullScreen FullScreen;
@@ -164,6 +168,9 @@ static void restart(char *argv[])
 
 int main(int argc, char *argv[])
 {
+#ifdef __APPLE__
+	chdir(dirname(dirname(dirname(dirname(argv[0])))));
+#endif
 	if (!geteuid())
 	{
 		printf("Do not run %s as root!\n", argc ? argv[0] : "this program");
