@@ -70,7 +70,7 @@ option(USE_STAT "Enable internal performance statistics for developers" OFF)
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
 # USE_FMOD
-CMAKE_DEPENDENT_OPTION(USE_FMOD "Whether FMOD shall be used" ON
+CMAKE_DEPENDENT_OPTION(USE_FMOD "Whether FMOD shall be used" OFF
 	"ENABLE_SOUND AND WIN32" OFF)
 # USE_MP3
 CMAKE_DEPENDENT_OPTION(USE_MP3 "Enable MP3 support" OFF
@@ -94,7 +94,7 @@ CMAKE_DEPENDENT_OPTION(WITH_DEVELOPER_MODE "Use GTK for the developer mode" OFF
 	"NOT USE_CONSOLE" OFF)
 
 # Check whether SDL_mixer should be used
-if (ENABLE_SOUND AND NOT WIN32)
+if (ENABLE_SOUND AND (NOT WIN32 OR NOT USE_FMOD))
 	set(USE_SDL_MIXER ON)
 endif ()
 
