@@ -158,7 +158,7 @@ C4GamePadControl::C4GamePadControl()
 {
 	// Initialize SDL, if necessary.
 	if (!SDL_WasInit(SDL_INIT_JOYSTICK)
-		&& SDL_Init(SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE))
+		&& SDL_InitSubSystem(SDL_INIT_JOYSTICK))
 		LogF("SDL: %s", SDL_GetError());
 	SDL_JoystickEventState(SDL_ENABLE);
 	if (!SDL_NumJoysticks()) Log("No Gamepad found");

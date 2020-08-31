@@ -64,7 +64,7 @@ bool CStdApp::Init(int argc, char *argv[])
 	s.append("\"");
 	szCmdLine = s.c_str();
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		Log("Error initializing SDL.");
 		return false;

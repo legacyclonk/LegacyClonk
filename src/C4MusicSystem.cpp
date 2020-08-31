@@ -95,7 +95,7 @@ bool C4MusicSystem::InitializeMOD()
 	LogF("SDL_mixer runtime version is %d.%d.%d (compiled with %d.%d.%d)",
 		link_version->major, link_version->minor, link_version->patch,
 		compile_version.major, compile_version.minor, compile_version.patch);
-	if (!SDL_WasInit(SDL_INIT_AUDIO) && SDL_Init(SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_NOPARACHUTE))
+	if (!SDL_WasInit(SDL_INIT_AUDIO) && SDL_InitSubSystem(SDL_INIT_AUDIO))
 	{
 		LogF("SDL: %s", SDL_GetError());
 		return false;
