@@ -23,6 +23,11 @@
 #include <stdexcept>
 #include <string>
 
+// this is used instead of MIX_MAX_VOLUME, because MIX_MAX_VOLUME is very loud and easily leads to clipping
+// the lower volume gives more headroom until clipping occurs
+// the selected volume is chosen to be similar to FMod's original volume
+static constexpr auto MaximumVolume = 80;
+
 C4AudioSystem::C4AudioSystem(const int maxChannels)
 {
 	// Check SDL_mixer version
@@ -67,7 +72,7 @@ void C4AudioSystem::PlayMusic(const MusicFile &music, const bool loop)
 
 void C4AudioSystem::SetMusicVolume(const float volume)
 {
-	Mix_VolumeMusic(std::lrint(volume * MIX_MAX_VOLUME));
+	Mix_VolumeMusic(std::lrint(volume * MaximumVolume));
 }
 
 void C4AudioSystem::StopMusic()
@@ -117,7 +122,7 @@ void C4AudioSystem::SoundChannel::SetPosition(const std::uint32_t ms)
 
 void C4AudioSystem::SoundChannel::SetVolumeAndPan(const float volume, const float pan)
 {
-	Mix_Volume(channel, std::lrint(volume * MIX_MAX_VOLUME));
+	Mix_Volume(channel, std::lrint(volume * MaximumVolume));
 	const Uint8
 		left  = std::clamp(std::lrint((1.0f - pan) * 255.0f), 0L, 255L),
 		right = std::clamp(std::lrint((1.0f + pan) * 255.0f), 0L, 255L);
