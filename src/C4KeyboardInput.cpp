@@ -28,34 +28,7 @@
 #endif
 
 #ifdef USE_SDL_MAINLOOP
-
-#include <SDL/SDL.h>
-#include <string>
-#include <vector>
-
-#include <SDL/SDL_keysym.h>
-
-namespace
-{
-	std::string getKeyName(C4KeyCode k)
-	{
-		std::string result = SDL_GetKeyName(static_cast<SDLKey>(k));
-		// unknown key
-		if (result == "unknown key")
-			result = FormatString("\\x%x", (uint32_t)k).getData();
-		// some special cases
-		if (result == "world 0") result = "\xb4"; // ´
-		if (result == "world 1") result = "\xdf"; // ß
-		if (result == "world 2") result = "\xdc"; // Ü
-		if (result == "world 3") result = "\xc4"; // Ä
-		if (result == "world 4") result = "\xd6"; // Ö
-		// capitalize first letter
-		result[0] = toupper(result[0]);
-		// return key name
-		return result;
-	}
-}
-
+#include <SDL.h>
 #endif
 
 // Key maps
@@ -350,10 +323,8 @@ C4KeyCode C4KeyCodeEx::String2KeyCode(const StdStrBuf &sName)
 #elif defined(USE_X11)
 	return XStringToKeysym(sName.getData());
 #elif defined(USE_SDL_MAINLOOP)
-	for (C4KeyCode k = 0; k < SDLK_LAST; ++k)
-		if (getKeyName(k) == sName.getData())
-			return k;
-	return KEY_Default;
+	const auto code = SDL_GetScancodeFromName(sName.getData());
+	return code != SDL_SCANCODE_UNKNOWN ? code : KEY_Default;
 #else
 	return KEY_Default;
 #endif
@@ -402,7 +373,7 @@ StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool
 #elif defined(USE_X11)
 	return StdStrBuf::MakeRef(XKeysymToString(wCode));
 #elif defined(USE_SDL_MAINLOOP)
-	return StdStrBuf::MakeRef(getKeyName(wCode).c_str());
+	return StdStrBuf::MakeRef(SDL_GetScancodeName(static_cast<SDL_Scancode>(wCode)));
 #else
 	return StdStrBuf("unknown");
 #endif

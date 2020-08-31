@@ -131,48 +131,48 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #include <StdSdlSubSystem.h>
 #include <SDL.h>
 #include <optional>
-#define K_F1 SDLK_F1
-#define K_F2 SDLK_F2
-#define K_F3 SDLK_F3
-#define K_F4 SDLK_F4
-#define K_F5 SDLK_F5
-#define K_F6 SDLK_F6
-#define K_F7 SDLK_F7
-#define K_F8 SDLK_F8
-#define K_F9 SDLK_F9
-#define K_F10 SDLK_F10
-#define K_F11 SDLK_F11
-#define K_F12 SDLK_F12
-#define K_ADD SDLK_KP_PLUS
-#define K_SUBTRACT SDLK_KP_MINUS
-#define K_MULTIPLY SDLK_KP_MULTIPLY
-#define K_ESCAPE SDLK_ESCAPE
-#define K_PAUSE SDLK_PAUSE
-#define K_TAB SDLK_TAB
-#define K_RETURN SDLK_RETURN
-#define K_DELETE SDLK_DELETE
-#define K_INSERT SDLK_INSERT
-#define K_BACK SDLK_BACKSPACE
-#define K_SPACE SDLK_SPACE
-#define K_UP SDLK_UP
-#define K_DOWN SDLK_DOWN
-#define K_LEFT SDLK_LEFT
-#define K_RIGHT SDLK_RIGHT
-#define K_HOME SDLK_HOME
-#define K_END SDLK_END
-#define K_SCROLL SDLK_SCROLLOCK
-#define K_MENU SDLK_MENU
-#define K_PAGEUP SDLK_PAGEUP
-#define K_PAGEDOWN SDLK_PAGEDOWN
-#define KEY_M SDLK_m
-#define KEY_T SDLK_t
-#define KEY_W SDLK_w
-#define KEY_I SDLK_i
-#define KEY_C SDLK_c
-#define KEY_V SDLK_v
-#define KEY_X SDLK_x
-#define KEY_A SDLK_a
-#define KEY_F SDLK_f
+#define K_F1 SDL_SCANCODE_F1
+#define K_F2 SDL_SCANCODE_F2
+#define K_F3 SDL_SCANCODE_F3
+#define K_F4 SDL_SCANCODE_F4
+#define K_F5 SDL_SCANCODE_F5
+#define K_F6 SDL_SCANCODE_F6
+#define K_F7 SDL_SCANCODE_F7
+#define K_F8 SDL_SCANCODE_F8
+#define K_F9 SDL_SCANCODE_F9
+#define K_F10 SDL_SCANCODE_F10
+#define K_F11 SDL_SCANCODE_F11
+#define K_F12 SDL_SCANCODE_F12
+#define K_ADD SDL_SCANCODE_KP_PLUS
+#define K_SUBTRACT SDL_SCANCODE_MINUS
+#define K_MULTIPLY SDL_SCANCODE_KP_MULTIPLY
+#define K_ESCAPE SDL_SCANCODE_ESCAPE
+#define K_PAUSE SDL_SCANCODE_PAUSE
+#define K_TAB SDL_SCANCODE_TAB
+#define K_RETURN SDL_SCANCODE_RETURN
+#define K_DELETE SDL_SCANCODE_DELETE
+#define K_INSERT SDL_SCANCODE_INSERT
+#define K_BACK SDL_SCANCODE_BACKSPACE
+#define K_SPACE SDL_SCANCODE_SPACE
+#define K_UP SDL_SCANCODE_UP
+#define K_DOWN SDL_SCANCODE_DOWN
+#define K_LEFT SDL_SCANCODE_LEFT
+#define K_RIGHT SDL_SCANCODE_RIGHT
+#define K_HOME SDL_SCANCODE_HOME
+#define K_END SDL_SCANCODE_END
+#define K_SCROLL SDL_SCANCODE_SCROLLOCK
+#define K_MENU SDL_SCANCODE_MENU
+#define K_PAGEUP SDL_SCANCODE_PAGEUP
+#define K_PAGEDOWN SDL_SCANCODE_PAGEDOWN
+#define KEY_M SDL_SCANCODE_M
+#define KEY_T SDL_SCANCODE_T
+#define KEY_W SDL_SCANCODE_W
+#define KEY_I SDL_SCANCODE_I
+#define KEY_C SDL_SCANCODE_C
+#define KEY_V SDL_SCANCODE_V
+#define KEY_X SDL_SCANCODE_X
+#define KEY_A SDL_SCANCODE_A
+#define KEY_F SDL_SCANCODE_F
 #define MK_SHIFT (KMOD_LSHIFT | KMOD_RSHIFT)
 #define MK_CONTROL (KMOD_LCTRL | KMOD_RCTRL)
 #elif defined(USE_CONSOLE)
@@ -317,6 +317,7 @@ private:
 	int resolutionX, resolutionY;
 	CStdApp *app;
 	DisplayMode displayMode;
+	SDL_Window *sdlWindow;
 
 protected:
 	virtual void HandleMessage(SDL_Event &) {}

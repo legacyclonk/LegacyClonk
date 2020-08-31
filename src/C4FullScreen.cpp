@@ -304,24 +304,7 @@ namespace
 			else
 				button = C4MC_Button_MiddleUp;
 			break;
-		case SDL_BUTTON_WHEELUP:
-			button = C4MC_Button_Wheel;
-			flags = (+32) << 16;
-			break;
-		case SDL_BUTTON_WHEELDOWN:
-			button = C4MC_Button_Wheel;
-			flags = (-32) << 16;
-			break;
 		}
-	}
-
-	bool isSpecialKey(unsigned unicode)
-	{
-		if (unicode >= 0xe00)
-			return true;
-		if (unicode < 32 || unicode == 127)
-			return true;
-		return false;
 	}
 }
 
@@ -331,17 +314,17 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 {
 	switch (e.type)
 	{
+	case SDL_TEXTINPUT:
+	{
+		if (Game.pGUI)
+		{
+			Game.pGUI->CharIn(e.text.text);
+		}
+		break;
+	}
 	case SDL_KEYDOWN:
 	{
-		// Only forward real characters to UI. (Nothing outside of "private use" range.)
-		// This works without iconv for some reason. Yay!
-		// FIXME: convert to UTF-8
-		char c[2];
-		c[0] = e.key.keysym.unicode;
-		c[1] = 0;
-		if (Game.pGUI && !isSpecialKey(e.key.keysym.unicode))
-			Game.pGUI->CharIn(c);
-		Game.DoKeyboardInput(e.key.keysym.sym, KEYEV_Down,
+		Game.DoKeyboardInput(e.key.keysym.scancode, KEYEV_Down,
 			e.key.keysym.mod & (KMOD_LALT | KMOD_RALT),
 			e.key.keysym.mod & (KMOD_LCTRL | KMOD_RCTRL),
 			e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT),
@@ -349,13 +332,18 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 		break;
 	}
 	case SDL_KEYUP:
-		Game.DoKeyboardInput(e.key.keysym.sym, KEYEV_Up,
+		Game.DoKeyboardInput(e.key.keysym.scancode, KEYEV_Up,
 			e.key.keysym.mod & (KMOD_LALT | KMOD_RALT),
 			e.key.keysym.mod & (KMOD_LCTRL | KMOD_RCTRL),
 			e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT), false, nullptr);
 		break;
 	case SDL_MOUSEMOTION:
 		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.motion.x, e.motion.y, 0, nullptr);
+		break;
+	case SDL_MOUSEWHEEL:
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, x, y, (e.wheel.y * 60) << 16, nullptr);
 		break;
 	case SDL_MOUSEBUTTONUP:
 	case SDL_MOUSEBUTTONDOWN:
@@ -371,9 +359,21 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 	case SDL_JOYBUTTONUP:
 		Application.pGamePadControl->FeedEvent(e);
 		break;
-	case SDL_VIDEORESIZE:
-		Application.pWindow->UpdateSize(e.resize.w, e.resize.h);
-		Application.SetResolution(e.resize.w, e.resize.h);
+	case SDL_WINDOWEVENT:
+		switch (e.window.event)
+		{
+		case SDL_WINDOWEVENT_RESIZED:
+			Application.pWindow->UpdateSize(e.window.data1, e.window.data2);
+			Application.SetResolution(e.window.data1, e.window.data2);
+			break;
+		case SDL_WINDOWEVENT_MINIMIZED:
+		case SDL_WINDOWEVENT_HIDDEN:
+			Application.Active = false;
+			break;
+		case SDL_WINDOWEVENT_SHOWN:
+		case SDL_WINDOWEVENT_EXPOSED:
+			Application.Active = true;
+		}
 		break;
 	}
 }

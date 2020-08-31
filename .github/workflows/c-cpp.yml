@@ -196,13 +196,13 @@ jobs:
           brew unlink cmake || true
           brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/74d54460d0af8e21deacee8dcced325cfc191141/Formula/cmake.rb
           brew pin cmake
-          curl -L -O https://www.libsdl.org/release/SDL-1.2.15.dmg
-          curl -L -O https://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-1.2.12.dmg
-          hdiutil attach SDL-1.2.15.dmg
-          hdiutil attach SDL_mixer-1.2.12.dmg
+          curl -L -O https://www.libsdl.org/release/SDL2-2.0.12.dmg
+          curl -L -O https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.dmg
+          hdiutil attach SDL2-2.0.12.dmg
+          hdiutil attach SDL2_mixer-2.0.4.dmg
           mkdir -p $HOME/Library/Frameworks
-          cp -r /Volumes/SDL/SDL.framework $HOME/Library/Frameworks/
-          cp -r /Volumes/SDL_mixer/SDL_mixer.framework $HOME/Library/Frameworks/
+          cp -r /Volumes/SDL2/SDL2.framework $HOME/Library/Frameworks/
+          cp -r /Volumes/SDL2_mixer/SDL2_mixer.framework $HOME/Library/Frameworks/
 
       - name: Configure
         run: |
@@ -225,8 +225,8 @@ jobs:
           cd ..
           macdylibbundler/dylibbundler -od -b -x clonk.app/Contents/MacOS/clonk -d clonk.app/Contents/libs/
           mkdir clonk.app/Contents/Frameworks
-          cp -r /Volumes/SDL/SDL.framework clonk.app/Contents/Frameworks
-          cp -r /Volumes/SDL_mixer/SDL_mixer.framework clonk.app/Contents/Frameworks
+          cp -r /Volumes/SDL2/SDL2.framework clonk.app/Contents/Frameworks
+          cp -r /Volumes/SDL2_mixer/SDL2_mixer.framework clonk.app/Contents/Frameworks
 
       - uses: actions/upload-artifact@v2
         with:

@@ -67,16 +67,13 @@ bool CStdApp::Init(int argc, char *argv[])
 
 	try
 	{
-		sdlVideoSubSys.emplace(SDL_INIT_VIDEO));
+		sdlVideoSubSys.emplace(SDL_INIT_VIDEO);
 	}
 	catch (const std::runtime_error &)
 	{
 		Log("Error initializing SDL.");
 		return false;
 	}
-
-	SDL_EnableUNICODE(1);
-	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
 	// create pipe
 	if (pipe(this->Pipe) != 0)

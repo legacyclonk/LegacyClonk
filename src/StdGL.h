@@ -70,6 +70,8 @@ protected:
 	HDC hDC; // device context handle
 #elif defined(USE_X11)
 	GLXContext ctx;
+#elif defined(USE_SDL_MAINLOOP)
+	/*SDL_GLContext*/ void *ctx;
 #endif
 	int cx, cy; // context window size
 

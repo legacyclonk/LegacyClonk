@@ -356,10 +356,16 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 
 #elif defined(USE_SDL_MAINLOOP)
 
-CStdGLCtx::CStdGLCtx() : pWindow(nullptr), cx(0), cy(0) {}
+CStdGLCtx::CStdGLCtx() : pWindow{}, cx{}, cy{}, ctx{} {}
 
 void CStdGLCtx::Clear()
 {
+	Deselect();
+	if (ctx)
+	{
+		SDL_GL_DeleteContext(ctx);
+		ctx = nullptr;
+	}
 	pWindow = nullptr;
 	cx = cy = 0;
 }
@@ -368,6 +374,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 {
 	// safety
 	if (!pGL) return false;
+	ctx = SDL_GL_CreateContext(pWindow->sdlWindow);
 	// store window
 	this->pWindow = pWindow;
 	assert(!DDrawCfg.NoAcceleration);
@@ -385,6 +392,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 
 bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 {
+	SDL_GL_MakeCurrent(this->pWindow->sdlWindow, ctx);
 	if (!selectOnly)
 	{
 		pGL->pCurrCtx = this;
@@ -412,7 +420,7 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 
 void CStdGLCtx::DoDeselect()
 {
-
+	SDL_GL_MakeCurrent(this->pWindow->sdlWindow, nullptr);
 }
 
 bool CStdGLCtx::UpdateSize()
@@ -439,20 +447,20 @@ bool CStdGLCtx::PageFlip()
 	// flush GL buffer
 	glFlush();
 	if (!pWindow) return false;
-	SDL_GL_SwapBuffers();
+	SDL_GL_SwapWindow(this->pWindow->sdlWindow);
 	return true;
 }
 
 bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 {
 	assert(ramp.size == 256);
-	return SDL_SetGammaRamp(ramp.red, ramp.green, ramp.blue) != -1;
+	return SDL_SetWindowGammaRamp(MainCtx.pWindow->sdlWindow, ramp.red, ramp.green, ramp.blue) != -1;
 }
 
 bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 {
 	assert(DefRamp.size == 256);
-	return SDL_GetGammaRamp(DefRamp.red, DefRamp.green, DefRamp.blue) != -1;
+	return SDL_GetWindowGammaRamp(MainCtx.pWindow->sdlWindow, DefRamp.red, DefRamp.green, DefRamp.blue) != -1;
 }
 
 #endif // USE_X11/USE_SDL_MAINLOOP

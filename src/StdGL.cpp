@@ -564,6 +564,11 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 {
 	// safety
 	if (!pWindow) return nullptr;
+
+#ifdef USE_SDL_MAINLOOP
+	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+#endif
+
 	// create it
 	const auto pCtx = new CStdGLCtx();
 	if (!pCtx->Init(pWindow, pApp))

@@ -1353,9 +1353,6 @@ bool CStdDDraw::Init(CStdApp *pApp)
 
 	this->pApp = pApp;
 
-	// store default gamma
-	SaveDefaultGammaRamp(pApp->pWindow);
-
 	DebugLog("Init DX");
 	DebugLog("  Create DirectDraw...");
 
@@ -1371,6 +1368,9 @@ bool CStdDDraw::Init(CStdApp *pApp)
 
 	if (!CreatePrimaryClipper())
 		return Error("  Clipper failure.");
+
+	// store default gamma
+	SaveDefaultGammaRamp(pApp->pWindow);
 
 	return true;
 }

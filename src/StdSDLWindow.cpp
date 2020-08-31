@@ -27,7 +27,7 @@
 /* CStdWindow */
 
 CStdWindow::CStdWindow() :
-	Active(false) {}
+	Active{false}, sdlWindow{} {}
 
 CStdWindow::~CStdWindow()
 {
@@ -47,12 +47,17 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	Active = true;
 	SetTitle(Title);
 
-	const auto info = SDL_GetVideoInfo();
-	resolutionX = info->current_w;
-	resolutionY = info->current_h;
+	SDL_DisplayMode mode;
+	SDL_GetCurrentDisplayMode(0, &mode);
+
+	resolutionX = mode.w;
+	resolutionY = mode.h;
 	width = height = 0;
 	displayMode = DisplayMode::Window;
 	app = pApp;
+
+	sdlWindow = SDL_CreateWindow(Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolutionX, resolutionY, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+
 	return this;
 }
 
@@ -78,7 +83,7 @@ void CStdWindow::SetSize(unsigned int X, unsigned int Y)
 
 void CStdWindow::SetTitle(const char *Title)
 {
-	SDL_WM_SetCaption(Title, 0);
+	SDL_SetWindowTitle(sdlWindow, Title);
 }
 
 void CStdWindow::FlashWindow()
@@ -97,9 +102,15 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 	{
 		newWidth = resolutionX;
 		newHeight = resolutionY;
+		SDL_SetWindowFullscreen(sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
+	else
+	{
+		SDL_SetWindowFullscreen(sdlWindow, 0);
+		SDL_SetWindowSize(sdlWindow, newWidth, newHeight);
+	}
+
 	displayMode = mode;
-	SDL_SetVideoMode(newWidth, newHeight, 0, SDL_OPENGL | (mode == DisplayMode::Fullscreen ? SDL_FULLSCREEN : SDL_RESIZABLE));
 	SDL_ShowCursor(SDL_DISABLE);
 	UpdateSize(newWidth, newHeight);
 }
@@ -114,9 +125,10 @@ void CStdWindow::UpdateSize(int newWidth, int newHeight)
 		height = newHeight;
 		SetDisplayMode(displayMode);
 		SDL_Event e;
-		e.type = SDL_VIDEORESIZE;
-		e.resize.w = width;
-		e.resize.h = height;
+		e.type = SDL_WINDOWEVENT;
+		e.window.event = SDL_WINDOWEVENT_RESIZED;
+		e.window.data1 = width;
+		e.window.data2 = height;
 		app->HandleSDLEvent(e);
 	}
 }
