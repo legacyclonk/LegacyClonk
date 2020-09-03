@@ -46,6 +46,4 @@ src/StdSurface2.h
 src/StdSurface8.cpp
 src/StdSurface8.h
 src/StdSync.h
-src/StdVideo.cpp
-src/StdVideo.h
 src/StdWindow.h

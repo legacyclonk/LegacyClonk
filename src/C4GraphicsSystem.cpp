@@ -84,9 +84,6 @@ bool C4GraphicsSystem::Init()
 			return false;
 	fViewportClassRegistered = true;
 #endif
-	// Init video module
-	if (Config.Graphics.VideoModule)
-		Video.Init(Application.DDraw->lpBack);
 	// Success
 	return true;
 }
@@ -108,8 +105,6 @@ void C4GraphicsSystem::Clear()
 		FirstViewport = next;
 	}
 	FirstViewport = nullptr;
-	// Clear video system
-	Video.Clear();
 	// No debug stuff
 	DeactivateDebugOutput();
 }
@@ -233,10 +228,6 @@ void C4GraphicsSystem::Execute()
 		fSetGamma = false;
 	}
 
-	// Video record & status (fullsrceen)
-	if (Application.isFullScreen)
-		Video.Execute();
-
 	// done
 	FinishDrawing();
 }
@@ -325,7 +316,6 @@ void C4GraphicsSystem::Default()
 	FlashMessageText[0] = 0;
 	FlashMessageTime = 0; FlashMessageX = FlashMessageY = 0;
 	fSetPalette = false;
-	Video.Default();
 	for (int32_t iRamp = 0; iRamp < 3 * C4MaxGammaRamps; iRamp += 3)
 	{
 		dwGamma[iRamp + 0] = 0; dwGamma[iRamp + 1] = 0x808080; dwGamma[iRamp + 2] = 0xffffff;

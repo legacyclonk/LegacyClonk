@@ -21,7 +21,6 @@
 #include <C4FacetEx.h>
 #include <C4MessageBoard.h>
 #include <C4UpperBoard.h>
-#include <C4Video.h>
 #include <C4Shape.h>
 
 class C4Game;
@@ -47,7 +46,6 @@ public:
 	bool fSetPalette;
 	uint32_t dwGamma[C4MaxGammaRamps * 3]; // gamma ramps
 	bool fSetGamma; // must gamma ramp be reassigned?
-	C4Video Video;
 	C4LoaderScreen *pLoaderScreen;
 	void Default();
 	void Clear();

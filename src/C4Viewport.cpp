@@ -1138,10 +1138,6 @@ void C4Viewport::Execute()
 	cgo.Set(Application.DDraw->lpBack, DrawX, DrawY, ViewWdt, ViewHgt, ViewX, ViewY);
 	// Draw
 	Draw(cgo, true);
-	// Video record & status (developer mode, first player viewport)
-	if (!Application.isFullScreen)
-		if (Player == 0 && (this == Game.GraphicsSystem.GetViewport((int32_t)0)))
-			Game.GraphicsSystem.Video.Execute();
 	// Blit output
 	BlitOutput();
 #ifndef USE_CONSOLE

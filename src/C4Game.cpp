@@ -3279,11 +3279,6 @@ bool C4Game::InitKeyboard()
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F7, KEYS_Control), "DbgShowActionToggle",    KEYSCOPE_Generic, new C4KeyCB<C4GraphicsSystem>(GraphicsSystem, &C4GraphicsSystem::ToggleShowAction)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F8, KEYS_Control), "DbgShowSolidMaskToggle", KEYSCOPE_Generic, new C4KeyCB<C4GraphicsSystem>(GraphicsSystem, &C4GraphicsSystem::ToggleShowSolidMask)));
 
-	// video recording - improve...
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_ADD,      KEYS_Alt), "VideoEnlarge", KEYSCOPE_Generic, new C4KeyCB<C4Video>(GraphicsSystem.Video, &C4Video::Enlarge)));
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_SUBTRACT, KEYS_Alt), "VideoReduce",  KEYSCOPE_Generic, new C4KeyCB<C4Video>(GraphicsSystem.Video, &C4Video::Reduce)));
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_MULTIPLY, KEYS_Alt), "VideoToggle",  KEYSCOPE_Generic, new C4KeyCB<C4Video>(GraphicsSystem.Video, &C4Video::Toggle)));
-
 	// playback speed - improve...
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_ADD,      KEYS_Shift), "GameSpeedUp",  KEYSCOPE_Generic, new C4KeyCB<C4Game>(*this, &C4Game::SpeedUp)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_SUBTRACT, KEYS_Shift), "GameSlowDown", KEYSCOPE_Generic, new C4KeyCB<C4Game>(*this, &C4Game::SlowDown)));

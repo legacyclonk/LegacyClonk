@@ -202,12 +202,6 @@ bool SWildcardMatchEx(const char *szString, const char *szWildcard);
 #define DirSep "/"
 #endif
 
-void StdBlit(uint8_t *bypSource, int iSourcePitch, int iSrcBufHgt,
-	int iSrcX, int iSrcY, int iSrcWdt, int iSrcHgt,
-	uint8_t *bypTarget, int iTargetPitch, int iTrgBufHgt,
-	int iTrgX, int iTrgY, int iTrgWdt, int iTrgHgt,
-	int iBytesPerPixel = 1, bool fFlip = false);
-
 // sprintf wrapper
 
 #include <stdio.h>

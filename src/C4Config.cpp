@@ -127,7 +127,6 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ColorAnimation,       "ColorAnimation",       false, false, true));
 	pComp->Value(mkNamingAdapt(SmokeLevel,           "SmokeLevel",           200,   false, true));
 	pComp->Value(mkNamingAdapt(VerboseObjectLoading, "VerboseObjectLoading", 0,     false, true));
-	pComp->Value(mkNamingAdapt(VideoModule,          "VideoModule",          false, false, true));
 
 	StdEnumEntry<int32_t> UpperBoardDisplayModes[] =
 	{
