@@ -1918,6 +1918,21 @@ void C4Game::Preload()
 			CStdLock lock{&Game.PreloadMutex};
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
 			preloadContext->Deselect(true);
+
+			Application.InteractiveThread.ExecuteInMainThread([]
+			{
+				Log(LoadResStr("IDS_PRC_GFXRES"));
+				if (!Game.GraphicsResource.Init(true))
+				{
+					LogFatal(LoadResStr("IDS_PRC_FAIL"));
+				}
+
+				// init loader
+				if (Application.isFullScreen && !Game.Network.isHost() && !Game.GraphicsSystem.InitLoaderScreen(Game.C4S.Head.Loader))
+				{
+					LogFatal(LoadResStr("IDS_PRC_ERRLOADER"));
+				}
+			});
 		},
 		std::unique_ptr<CStdGLCtx>{context}};
 #else
