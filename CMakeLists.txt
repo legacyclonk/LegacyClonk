@@ -12,6 +12,7 @@
 # for the above references.
 
 cmake_minimum_required(VERSION 3.8)
+cmake_policy(SET CMP0042 NEW) # enable MACOSX_RPATH by default
 
 if (WIN32)
 	set(CMAKE_SYSTEM_VERSION 6.1) # Windows 7
@@ -376,6 +377,7 @@ if (APPLE AND NOT USE_CONSOLE)
 
 	set_target_properties(clonk PROPERTIES RESOURCE "${BUNDLE_RESOURCES}")
 	set_target_properties(clonk PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/src/res/Info.plist")
+	set_target_properties(clonk PROPERTIES INSTALL_RPATH "@loader_path/../Frameworks")
 
 	install(TARGETS clonk BUNDLE DESTINATION . RESOURCE DESTINATION ./clonk.app/Contents/Resources/)
 	install(TARGETS c4group RUNTIME DESTINATION .)
