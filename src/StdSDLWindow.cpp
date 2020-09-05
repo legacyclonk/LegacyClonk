@@ -47,16 +47,12 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	Active = true;
 	SetTitle(Title);
 
-	SDL_DisplayMode mode;
-	SDL_GetCurrentDisplayMode(0, &mode);
-
-	resolutionX = mode.w;
-	resolutionY = mode.h;
-	width = height = 0;
+	width = 100;
+	height = 100;
 	displayMode = DisplayMode::Window;
 	app = pApp;
 
-	sdlWindow = SDL_CreateWindow(Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolutionX, resolutionY, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	sdlWindow = SDL_CreateWindow(Title, 0, 0, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
 	return this;
 }
@@ -70,14 +66,18 @@ bool CStdWindow::RestorePosition(const char *, const char *, bool) { return true
 
 bool CStdWindow::GetSize(RECT *pRect)
 {
+	SDL_GL_GetDrawableSize(sdlWindow, &width, &height);
+
 	pRect->left = pRect->top = 0;
-	pRect->right = width, pRect->bottom = height;
+	pRect->right = width;
+	pRect->bottom = height;
 	return true;
 }
 
 void CStdWindow::SetSize(unsigned int X, unsigned int Y)
 {
-	width = X, height = Y;
+	const auto scale = GetInputScale();
+	width = X / scale, height = Y / scale;
 	SetDisplayMode(displayMode);
 }
 
@@ -96,39 +96,39 @@ void CStdWindow::FlashWindow()
 
 void CStdWindow::SetDisplayMode(DisplayMode mode)
 {
-	auto newWidth = width;
-	auto newHeight = height;
 	if (mode == DisplayMode::Fullscreen)
 	{
-		newWidth = resolutionX;
-		newHeight = resolutionY;
 		SDL_SetWindowFullscreen(sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
 	else
 	{
+		if (displayMode == DisplayMode::Fullscreen)
+		{
+			const auto currentDisplay = SDL_GetWindowDisplayIndex(sdlWindow);
+			SDL_DisplayMode mode;
+			SDL_GetCurrentDisplayMode(currentDisplay, &mode);
+
+			width = mode.w - 100;
+			height = mode.h - 100;
+		}
+
 		SDL_SetWindowFullscreen(sdlWindow, 0);
-		SDL_SetWindowSize(sdlWindow, newWidth, newHeight);
+		SDL_SetWindowSize(sdlWindow, width, height);
 	}
 
 	displayMode = mode;
 	SDL_ShowCursor(SDL_DISABLE);
-	UpdateSize(newWidth, newHeight);
 }
 
 void CStdWindow::SetProgress(uint32_t) {} // stub
 
-void CStdWindow::UpdateSize(int newWidth, int newHeight)
+float CStdWindow::GetInputScale()
 {
-	if (width != newWidth || height != newHeight)
-	{
-		width = newWidth;
-		height = newHeight;
-		SetDisplayMode(displayMode);
-		SDL_Event e;
-		e.type = SDL_WINDOWEVENT;
-		e.window.event = SDL_WINDOWEVENT_RESIZED;
-		e.window.data1 = width;
-		e.window.data2 = height;
-		app->HandleSDLEvent(e);
-	}
+	int width, height;
+	SDL_GetWindowSize(sdlWindow, &width, &height);
+
+	int drawableWidth, drawableHeight;
+	SDL_GL_GetDrawableSize(sdlWindow, &drawableWidth, &drawableHeight);
+
+	return static_cast<float>(drawableWidth) / static_cast<float>(width);
 }

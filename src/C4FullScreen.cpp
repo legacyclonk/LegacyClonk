@@ -338,20 +338,29 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 			e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT), false, nullptr);
 		break;
 	case SDL_MOUSEMOTION:
-		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.motion.x, e.motion.y, 0, nullptr);
+	{
+		const auto scale = GetInputScale();
+		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.motion.x * scale, e.motion.y * scale, 0, nullptr);
 		break;
+	}
 	case SDL_MOUSEWHEEL:
+	{
+		const auto scale = GetInputScale();
 		int x, y;
 		SDL_GetMouseState(&x, &y);
-		Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, x, y, (e.wheel.y * 60) << 16, nullptr);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, x * scale, y * scale, (e.wheel.y * 60) << 16, nullptr);
 		break;
+	}
 	case SDL_MOUSEBUTTONUP:
 	case SDL_MOUSEBUTTONDOWN:
+	{
+		const auto scale = GetInputScale();
 		int32_t button;
 		uint32_t flags;
 		sdlToC4MCBtn(e.button, button, flags);
-		Game.GraphicsSystem.MouseMove(button, e.button.x, e.button.y, flags, nullptr);
+		Game.GraphicsSystem.MouseMove(button, e.button.x * scale, e.button.y * scale, flags, nullptr);
 		break;
+	}
 	case SDL_JOYAXISMOTION:
 	case SDL_JOYHATMOTION:
 	case SDL_JOYBALLMOTION:
@@ -363,8 +372,9 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 		switch (e.window.event)
 		{
 		case SDL_WINDOWEVENT_RESIZED:
-			Application.pWindow->UpdateSize(e.window.data1, e.window.data2);
-			Application.SetResolution(e.window.data1, e.window.data2);
+			int width, height;
+			SDL_GL_GetDrawableSize(sdlWindow, &width, &height);
+			Application.SetResolution(width, height);
 			break;
 		case SDL_WINDOWEVENT_MINIMIZED:
 		case SDL_WINDOWEVENT_HIDDEN:

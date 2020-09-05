@@ -311,20 +311,17 @@ protected:
 	void *Info;
 
 #elif defined(USE_SDL_MAINLOOP)
+public:
+	float GetInputScale();
 
 private:
 	int width, height;
-	int resolutionX, resolutionY;
 	CStdApp *app;
 	DisplayMode displayMode;
-	SDL_Window *sdlWindow;
 
 protected:
+	SDL_Window *sdlWindow;
 	virtual void HandleMessage(SDL_Event &) {}
-
-public:
-	void UpdateSize(int width, int height);
-
 #endif
 
 	friend class CStdDDraw;
