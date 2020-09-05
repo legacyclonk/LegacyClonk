@@ -185,8 +185,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Git Protocol Version 1
-        run: git config --global protocol.version 1
 
       - name: Dependencies
         run: |
