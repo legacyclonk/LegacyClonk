@@ -647,13 +647,13 @@ int C4Network2IO::GetTimeout()
 	return std::max<int>(0, iLastExecute + C4NetTimer - timeGetTime());
 }
 
-void C4Network2IO::OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData) // by main thread
+void C4Network2IO::OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) // by main thread
 {
 	switch (eEvent)
 	{
 	case Ev_Net_Conn: // got a connection
 	{
-		C4Network2IOConnection *pConn = reinterpret_cast<C4Network2IOConnection *>(pEventData);
+		C4Network2IOConnection *pConn = std::any_cast<C4Network2IOConnection *>(eventData);
 		// do callback
 		Game.Network.OnConn(pConn);
 		// remove reference
@@ -663,7 +663,7 @@ void C4Network2IO::OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData
 
 	case Ev_Net_Disconn: // connection closed
 	{
-		C4Network2IOConnection *pConn = reinterpret_cast<C4Network2IOConnection *>(pEventData);
+		C4Network2IOConnection *pConn = std::any_cast<C4Network2IOConnection *>(eventData);
 		assert(pConn->isClosed());
 		// do callback
 		Game.Network.OnDisconn(pConn);
@@ -674,7 +674,7 @@ void C4Network2IO::OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData
 
 	case Ev_Net_Packet: // got packet
 	{
-		NetEvPacketData *pData = reinterpret_cast<NetEvPacketData *>(pEventData);
+		NetEvPacketData *pData = std::any_cast<NetEvPacketData *>(eventData);
 		// handle
 		HandlePacket(pData->Packet, pData->Conn, false);
 		// clear up

@@ -164,7 +164,7 @@ protected:
 	virtual bool Execute(int iTimeout);
 	virtual int GetTimeout();
 	// Event callback by C4InteractiveThread
-	void OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData); // by main thread
+	void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData); // by main thread
 
 	// connections list
 	void AddConnection(C4Network2IOConnection *pConn); // by both

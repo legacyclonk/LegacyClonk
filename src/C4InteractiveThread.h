@@ -19,6 +19,8 @@
 #include "StdScheduler.h"
 #include "StdSync.h"
 
+#include <any>
+
 // Event types
 enum C4InteractiveEventType
 {
@@ -53,7 +55,7 @@ public:
 	class Callback
 	{
 	public:
-		virtual void OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData) = 0;
+		virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) = 0;
 		virtual ~Callback() {}
 	};
 
@@ -65,7 +67,7 @@ private:
 	struct Event
 	{
 		C4InteractiveEventType Type;
-		void *Data;
+		std::any Data;
 #ifdef _DEBUG
 		int Time;
 #endif
@@ -83,7 +85,7 @@ public:
 	void RemoveProc(StdSchedulerProc *pProc);
 
 	// event queue
-	bool PushEvent(C4InteractiveEventType eEventType, void *pData = nullptr);
+	bool PushEvent(C4InteractiveEventType eEventType, const std::any &data);
 	void ProcessEvents(); // by main thread
 
 	// special events
@@ -102,5 +104,5 @@ public:
 	}
 
 private:
-	bool PopEvent(C4InteractiveEventType *pEventType, void **ppData); // by main thread
+	bool PopEvent(C4InteractiveEventType *pEventType, std::any *data); // by main thread
 };

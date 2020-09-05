@@ -45,7 +45,7 @@ public:
 #endif
 
 	// C4InteractiveThread::Callback:
-	virtual void OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData);
+	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData);
 
 private:
 	bool fStarted;

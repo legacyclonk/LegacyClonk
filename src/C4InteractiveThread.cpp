@@ -67,14 +67,14 @@ void C4InteractiveThread::RemoveProc(StdSchedulerProc *pProc)
 	Scheduler.Remove(pProc);
 }
 
-bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, void *pData)
+bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, const std::any &data)
 {
 	CStdLock PushLock(&EventPushCSec);
 	if (!pLastEvent) return false;
 	// create event
 	Event *pEvent = new Event;
 	pEvent->Type = eEvent;
-	pEvent->Data = pData;
+	pEvent->Data = data;
 #ifdef _DEBUG
 	pEvent->Time = timeGetTime();
 #endif
@@ -100,7 +100,7 @@ bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, void *pData)
 double AvgNetEvDelay = 0;
 #endif
 
-bool C4InteractiveThread::PopEvent(C4InteractiveEventType *pEventType, void **ppData) // (by main thread)
+bool C4InteractiveThread::PopEvent(C4InteractiveEventType *pEventType, std::any *data) // (by main thread)
 {
 	CStdLock PopLock(&EventPopCSec);
 	if (!pFirstEvent) return false;
@@ -110,8 +110,8 @@ bool C4InteractiveThread::PopEvent(C4InteractiveEventType *pEventType, void **pp
 	// return
 	if (pEventType)
 		*pEventType = pEvent->Type;
-	if (ppData)
-		*ppData = pEvent->Data;
+	if (data)
+		*data = pEvent->Data;
 #ifdef _DEBUG
 	if (Game.IsRunning)
 		AvgNetEvDelay += ((timeGetTime() - pEvent->Time) - AvgNetEvDelay) / 100;
@@ -125,24 +125,23 @@ bool C4InteractiveThread::PopEvent(C4InteractiveEventType *pEventType, void **pp
 
 void C4InteractiveThread::ProcessEvents() // by main thread
 {
-	C4InteractiveEventType eEventType; void *pEventData;
-	while (PopEvent(&eEventType, &pEventData))
+	C4InteractiveEventType eEventType; std::any eventData;
+	while (PopEvent(&eEventType, &eventData))
 		switch (eEventType)
 		{
 		// Logging
 		case Ev_Log: case Ev_LogSilent: case Ev_LogFatal:
 		{
 			// Reconstruct the StdStrBuf which allocated the data.
-			StdStrBuf pLog;
-			pLog.Take(reinterpret_cast<char *>(pEventData));
+			auto log = std::any_cast<const StdStrBuf &>(eventData);
 			switch (eEventType)
 			{
 			case Ev_Log:
-				Log(pLog.getData()); break;
+				Log(log.getData()); break;
 			case Ev_LogSilent:
-				LogSilent(pLog.getData()); break;
+				LogSilent(log.getData()); break;
 			case Ev_LogFatal:
-				LogFatal(pLog.getData()); break;
+				LogFatal(log.getData()); break;
 			}
 		}
 		break;
@@ -151,7 +150,7 @@ void C4InteractiveThread::ProcessEvents() // by main thread
 		default:
 			if (eEventType >= Ev_None && eEventType <= Ev_Last)
 				if (pCallbacks[eEventType])
-					pCallbacks[eEventType]->OnThreadEvent(eEventType, pEventData);
+					pCallbacks[eEventType]->OnThreadEvent(eEventType, eventData);
 			// Note that memory might leak if the event wasn't processed....
 		}
 }
@@ -162,7 +161,7 @@ bool C4InteractiveThread::ThreadLog(const char *szMessage, ...)
 	va_list lst; va_start(lst, szMessage);
 	StdStrBuf Msg = FormatStringV(szMessage, lst);
 	// send to main thread
-	return PushEvent(Ev_Log, Msg.GrabPointer());
+	return PushEvent(Ev_Log, Msg);
 }
 
 bool C4InteractiveThread::ThreadLogS(const char *szMessage, ...)
@@ -171,5 +170,5 @@ bool C4InteractiveThread::ThreadLogS(const char *szMessage, ...)
 	va_list lst; va_start(lst, szMessage);
 	StdStrBuf Msg = FormatStringV(szMessage, lst);
 	// send to main thread
-	return PushEvent(Ev_LogSilent, Msg.GrabPointer());
+	return PushEvent(Ev_LogSilent, Msg);
 }

@@ -144,14 +144,11 @@ bool C4FileMonitor::Execute(int iTimeout) // some other thread
 		const char *file = watch_descriptors[(*(inotify_event *)buf).wd];
 		uint32_t mask = (*(inotify_event *)buf).mask;
 		C4InteractiveThread &Thread = Application.InteractiveThread;
-		if (mask & IN_CREATE)
-			Thread.PushEvent(Ev_FileChange, (void *)file);
-		if (mask & IN_MODIFY)
-			Thread.PushEvent(Ev_FileChange, (void *)file);
-		if (mask & IN_MOVED_TO)
-			Thread.PushEvent(Ev_FileChange, (void *)file);
-		if (mask & IN_MOVE_SELF)
-			Thread.PushEvent(Ev_FileChange, (void *)file);
+
+		if (mask & IN_CREATE || mask & IN_MODIFY || mask & IN_MOVED_TO || mask & IN_MOVE_SELF)
+		{
+			Thread.PushEvent(Ev_FileChange, file);
+		}
 		// FIXME: (*(inotify_event*)buf).name);
 	}
 	else
@@ -161,10 +158,10 @@ bool C4FileMonitor::Execute(int iTimeout) // some other thread
 	return true;
 }
 
-void C4FileMonitor::OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData) // main thread
+void C4FileMonitor::OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) // main thread
 {
 	if (eEvent != Ev_FileChange) return;
-	pCallback((const char *)pEventData, 0);
+	pCallback(std::any_cast<const char *>(eventData), 0);
 }
 
 void C4FileMonitor::GetFDs(fd_set *pFDs, int *pMaxFD)
@@ -273,11 +270,11 @@ bool C4FileMonitor::Execute(int iTimeout)
 	return true;
 }
 
-void C4FileMonitor::OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData) // main thread
+void C4FileMonitor::OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) // main thread
 {
 	if (eEvent != Ev_FileChange) return;
-	pCallback((const char *)pEventData, 0);
-	delete pEventData;
+
+	pCallback(std::any_cast<const StdStrBuf &>(eventData).getData(), 0);
 }
 
 HANDLE C4FileMonitor::GetEvent()
@@ -304,7 +301,7 @@ void C4FileMonitor::HandleNotify(const char *szDir, const _FILE_NOTIFY_INFORMATI
 	if (iWritten != iFileNameBytes)
 		Path.Shrink(iFileNameBytes + 1);
 	// Send notification
-	Application.InteractiveThread.PushEvent(Ev_FileChange, Path.GrabPointer());
+	Application.InteractiveThread.PushEvent(Ev_FileChange, Path);
 }
 
 #else // !defined(HAVE_SYS_INOTIFY_H) && !defined(HAVE_SYS_SYSCALL_H)
@@ -320,7 +317,7 @@ C4FileMonitor::C4FileMonitor(ChangeNotify pCallback)
 C4FileMonitor::~C4FileMonitor() {}
 bool C4FileMonitor::Execute(int iTimeout) { return false; /* blarg... function must return a value */ }
 void C4FileMonitor::StartMonitoring() {}
-void C4FileMonitor::OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData) {}
+void C4FileMonitor::OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) {}
 void C4FileMonitor::AddDirectory(const char *szDir) {}
 
 // Signal for calling Execute()

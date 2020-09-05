@@ -967,7 +967,7 @@ C4StartupNetDlg::DlgMode C4StartupNetDlg::GetDlgMode()
 	if (pMainTabular->GetActiveSheetIndex() == SNDM_Chat) return SNDM_Chat; else return SNDM_GameList;
 }
 
-void C4StartupNetDlg::OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData)
+void C4StartupNetDlg::OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData)
 {
 	UpdateList(true);
 }

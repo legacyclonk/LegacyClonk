@@ -152,7 +152,7 @@ private:
 	void ClearChatSheets();
 
 	// IRC event hook
-	virtual void OnThreadEvent(C4InteractiveEventType eEvent, void *pEventData) { if (pEventData == pIRCClient) Update(); }
+	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) { if (std::any_cast<decltype(pIRCClient)>(eventData) == pIRCClient) Update(); }
 };
 
 // container dialog for the C4ChatControl
