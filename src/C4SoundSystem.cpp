@@ -120,9 +120,16 @@ void C4SoundSystem::LoadEffects(C4Group &group)
 			// Load sample
 			StdBuf buf;
 			if (!group.LoadEntry(filename, buf)) continue;
-			const auto &newSample = samples.emplace_back(filename, buf.getData(), buf.getSize());
-			// Overload (i.e. remove) existing sample of the same name
-			if (existingSample != samples.cend()) samples.erase(existingSample);
+			try
+			{
+				const auto &newSample = samples.emplace_back(filename, buf.getData(), buf.getSize());
+				// Overload (i.e. remove) existing sample of the same name
+				if (existingSample != samples.cend()) samples.erase(existingSample);
+			}
+			catch(const std::runtime_error &e)
+			{
+				LogF("WARNING: Could not load sound effect \"%s/%s\": %s", group.GetFullName().getData(), filename, e.what());
+			}
 		}
 	}
 }
