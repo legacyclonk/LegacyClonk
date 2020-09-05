@@ -190,8 +190,6 @@ jobs:
 
       - name: Dependencies
         run: |
-          brew remove --force $(brew list) --ignore-dependencies
-          brew update
           until brew install cmake libpng libjpeg freetype glew openssl@1.1 git libyaml; do true; done
           curl -L -O https://www.libsdl.org/release/SDL2-2.0.12.dmg
           curl -L -O https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.dmg
