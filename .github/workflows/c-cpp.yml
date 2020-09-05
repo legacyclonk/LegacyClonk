@@ -203,7 +203,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-w" -DCMAKE_C_FLAGS="-w" ..
+          cmake -DPNG_PNG_INCLUDE_DIR=/usr/local/include -DPNG_ROOT="/usr/local/Cellar/libpng/1.6.37" -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-w" -DCMAKE_C_FLAGS="-w" ..
 
       - name: Build
         run: |

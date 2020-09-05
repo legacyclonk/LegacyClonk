@@ -14,6 +14,10 @@
 cmake_minimum_required(VERSION 3.8)
 cmake_policy(SET CMP0042 NEW) # enable MACOSX_RPATH by default
 
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")
+	cmake_policy(SET CMP0074 NEW) # enable <PackageName>_ROOT for find_package
+endif ()
+
 if (WIN32)
 	set(CMAKE_SYSTEM_VERSION 6.1) # Windows 7
 endif ()
