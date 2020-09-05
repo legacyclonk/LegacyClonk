@@ -22,6 +22,7 @@
 #include <png.h>
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -280,7 +281,7 @@ struct CPNGFile::Impl
 	// Warning callback for libpng
 	static void PNGAPI WarningCallbackFn(const png_structp png_ptr, const png_const_charp msg)
 	{
-		// Ignore
+		std::cerr << "libpng warning: " << msg << '\n';
 	}
 };
 
