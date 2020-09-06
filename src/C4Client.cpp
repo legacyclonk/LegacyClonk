@@ -85,15 +85,20 @@ void C4ClientCore::CompileFunc(StdCompiler *pComp)
 // *** C4Client
 
 C4Client::C4Client()
-	: fLocal(false), pNetClient(nullptr), last_lobby_ready_change(0) {}
+	: fLocal(false), pNetClient(nullptr), last_lobby_ready_change(0), lastSound{} {}
 
 C4Client::C4Client(const C4ClientCore &Core)
-	: Core(Core), fLocal(false), pNetClient(nullptr), pNext(nullptr), last_lobby_ready_change(0) {}
+	: Core(Core), fLocal(false), pNetClient(nullptr), pNext(nullptr), last_lobby_ready_change(0), lastSound{} {}
 
 C4Client::~C4Client()
 {
 	// network client bind must be removed before
 	assert(!pNetClient);
+}
+
+bool C4Client::canSound() const
+{
+	return std::chrono::steady_clock::now() - lastSound > Config.Sound.SoundCommandCooldown;
 }
 
 void C4Client::SetActivated(bool fnActivated)

@@ -155,6 +155,7 @@ public:
 	int32_t FMMode;
 	int32_t MusicVolume;
 	int32_t SoundVolume;
+	std::chrono::seconds SoundCommandCooldown;
 	void CompileFunc(StdCompiler *pComp);
 };
 

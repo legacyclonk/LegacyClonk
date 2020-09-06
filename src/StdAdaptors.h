@@ -20,6 +20,7 @@
 #include "Standard.h"
 #include "StdCompiler.h"
 
+#include <chrono>
 #include <limits>
 
 // * Wrappers for C4Compiler-types
@@ -1009,3 +1010,19 @@ public:
 inline StdHexAdapt mkHexAdapt(void *pData, size_t iSize) { return StdHexAdapt(pData, iSize); }
 template <class T>
 inline StdHexAdapt mkHexAdapt(T &rData) { return StdHexAdapt(&rData, sizeof(rData)); }
+
+template<typename Rep, typename Period>
+inline void CompileFunc(std::chrono::duration<Rep, Period> &duration, StdCompiler *comp)
+{
+	if (comp->isCompiler())
+	{
+		Rep temp;
+		comp->Value(temp);
+		duration = std::chrono::duration<Rep, Period>{temp};
+	}
+	else
+	{
+		Rep temp{duration.count()};
+		comp->Value(temp);
+	}
+}
