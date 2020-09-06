@@ -1154,12 +1154,16 @@ void C4ControlMessage::Execute() const
 	break;
 
 	case C4CMT_Sound:
+	{
 		// tehehe, sound!
-		if (StartSoundEffect(szMessage, false, 100, nullptr))
+		C4Client* pClient = Game.Clients.getClientByID(iByClient);
+		if (pClient->isMuted() || StartSoundEffect(szMessage, false, 100, nullptr))
 		{
+			// todo: different icon when someone plays a muted sound
 			if (pLobby) pLobby->OnClientSound(Game.Clients.getClientByID(iByClient));
 		}
 		break;
+	}
 
 	case C4CMT_Alert:
 		// notify inactive users

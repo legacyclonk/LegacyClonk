@@ -85,10 +85,10 @@ void C4ClientCore::CompileFunc(StdCompiler *pComp)
 // *** C4Client
 
 C4Client::C4Client()
-	: fLocal(false), pNetClient(nullptr), last_lobby_ready_change(0) {}
+	: C4Client(C4ClientCore()) {}
 
 C4Client::C4Client(const C4ClientCore &Core)
-	: Core(Core), fLocal(false), pNetClient(nullptr), pNext(nullptr), last_lobby_ready_change(0) {}
+	: Core(Core), fLocal(false), pNetClient(nullptr), pNext(nullptr), last_lobby_ready_change(0), muted(Config.Lobby.MuteSoundCommand) {}
 
 C4Client::~C4Client()
 {

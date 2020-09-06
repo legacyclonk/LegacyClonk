@@ -228,6 +228,7 @@ void C4ConfigLobby::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(AllowPlayerSave, "AllowPlayerSave", false, false, true));
 	pComp->Value(mkNamingAdapt(CountdownTime,   "CountdownTime",   5,     false, true));
+	pComp->Value(mkNamingAdapt(MuteSoundCommand, "MuteSoundCommand", false, false, true));
 }
 
 void C4ConfigIRC::CompileFunc(StdCompiler *pComp)

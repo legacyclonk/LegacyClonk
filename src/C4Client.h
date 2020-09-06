@@ -88,6 +88,7 @@ private:
 	bool fLocal; // Local, NoSync
 	class C4Network2Client *pNetClient; // Local, NoSync
 	time_t last_lobby_ready_change; // Local, NoSync: Time when the lobby ready state was changed last through the SetLobbyReady call. 0 for never changed.
+	bool muted; // Local, NoSync: whether /sound command is muted
 
 	C4Client *pNext;
 
@@ -100,6 +101,7 @@ public:
 	bool                isActivated() const { return Core.isActivated(); }
 	bool                isObserver()  const { return Core.isObserver(); }
 	bool                isLobbyReady() const { return Core.isLobbyReady(); }
+	bool                isMuted()     const { return muted; }
 
 	bool              isLocal()      const { return fLocal; }
 	C4Network2Client *getNetClient() const { return pNetClient; }
@@ -111,6 +113,8 @@ public:
 	void SetObserver() { Core.SetObserver(true); }
 	void SetLobbyReady(bool fnLobbyReady, time_t *time_since_last_change = nullptr);
 	void SetLocal();
+
+	void SetMuted(bool muted) { muted = muted; }
 
 	void UnlinkNetClient() { pNetClient = nullptr; }
 
