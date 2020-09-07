@@ -216,6 +216,7 @@ public:
 	int32_t CountdownTime;
 	bool AllowPlayerSave; // whether save-to-disk function is enabled for player ressources
 	void CompileFunc(StdCompiler *pComp);
+	bool MuteSoundCommand; // whether to mute /sound by default
 };
 
 class C4ConfigIRC

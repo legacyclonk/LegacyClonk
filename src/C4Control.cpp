@@ -1158,7 +1158,7 @@ void C4ControlMessage::Execute() const
 		if (auto *client = Game.Clients.getClientByID(iByClient); client->canSound())
 		{
 			client->ResetSoundCooldown();
-			if (StartSoundEffect(szMessage, false, 100, nullptr))
+			if (client->isMuted() || StartSoundEffect(szMessage, false, 100, nullptr))
 			{
 				if (pLobby) pLobby->OnClientSound(Game.Clients.getClientByID(iByClient));
 			}

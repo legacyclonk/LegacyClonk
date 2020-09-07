@@ -91,6 +91,7 @@ private:
 	class C4Network2Client *pNetClient; // Local, NoSync
 	time_t last_lobby_ready_change; // Local, NoSync: Time when the lobby ready state was changed last through the SetLobbyReady call. 0 for never changed.
 	std::chrono::steady_clock::time_point lastSound; // Local, NoSync
+	bool muted; // Local, NoSync: whether /sound command is muted
 
 	C4Client *pNext;
 
@@ -104,6 +105,7 @@ public:
 	bool                isObserver()  const { return Core.isObserver(); }
 	bool                isLobbyReady() const { return Core.isLobbyReady(); }
 	bool                canSound()    const;
+	bool                isMuted()     const { return muted; }
 
 	bool              isLocal()      const { return fLocal; }
 	C4Network2Client *getNetClient() const { return pNetClient; }
@@ -116,6 +118,8 @@ public:
 	void SetLobbyReady(bool fnLobbyReady, time_t *time_since_last_change = nullptr);
 	void SetLocal();
 	void ResetSoundCooldown() { lastSound = std::chrono::steady_clock::now(); }
+
+	void SetMuted(bool muted) { this->muted = muted; }
 
 	void UnlinkNetClient() { pNetClient = nullptr; }
 
