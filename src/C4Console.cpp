@@ -598,7 +598,7 @@ bool C4Console::In(const char *szText)
 		// done
 		return true;
 	}
-	// begins with '#'? then it's a message. Route cia ProcessInput to allow #/sound
+	// begins with '#'? then it's a message. Route via ProcessInput to allow #/sound
 	if (*szText == '#')
 	{
 		Game.MessageInput.ProcessInput(szText + 1);
