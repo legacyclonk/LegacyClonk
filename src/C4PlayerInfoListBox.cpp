@@ -924,27 +924,22 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::ClientListItem::OnContext(C4GUI::Elemen
 	// helper function
 	auto AddMenuItem = [&](const char *text, const char *description, auto callbackFn)
 	{
-		pMenu -> AddItem(text, description, C4GUI::Ico_None,
+		pMenu -> AddItem(LoadResStr(text), LoadResStr(description), C4GUI::Ico_None,
 			new C4GUI::CBMenuHandler<ClientListItem>(this, callbackFn));
 	};
 	// host options
 	if (Game.Network.isHost() && GetNetClient())
 	{
-		AddMenuItem(LoadResStr("IDS_NET_KICKCLIENT"), LoadResStr("IDS_NET_KICKCLIENT_DESC"), &ClientListItem::OnCtxKick);
-		AddMenuItem(LoadResStr(pClient->isActivated() ? "IDS_NET_DEACTIVATECLIENT" : "IDS_NET_ACTIVATECLIENT"),
-			LoadResStr("IDS_NET_ACTIVATECLIENT_DESC"), &ClientListItem::OnCtxActivate);
+		AddMenuItem("IDS_NET_KICKCLIENT", "IDS_NET_KICKCLIENT_DESC", &ClientListItem::OnCtxKick);
+		AddMenuItem(pClient->isActivated() ? "IDS_NET_DEACTIVATECLIENT" : "IDS_NET_ACTIVATECLIENT", "IDS_NET_ACTIVATECLIENT_DESC", &ClientListItem::OnCtxActivate);
 	}
 	// info
-	AddMenuItem(LoadResStr("IDS_NET_CLIENTINFO"), LoadResStr("IDS_NET_CLIENTINFO_DESC"), &ClientListItem::OnCtxInfo);
+	AddMenuItem("IDS_NET_CLIENTINFO", "IDS_NET_CLIENTINFO_DESC", &ClientListItem::OnCtxInfo);
 	// mute / unmute
 	if (pClient->isMuted())
-		AddMenuItem(LoadResStr("IDS_NET_UNMUTE"),
-			FormatString(LoadResStr("IDS_NET_UNMUTE_DESC"), pClient->getName()).getData(),
-			&ClientListItem::OnCtxUnmute);
+		AddMenuItem("IDS_NET_UNMUTE", "IDS_NET_UNMUTE_DESC", &ClientListItem::OnCtxUnmute);
 	else
-		AddMenuItem(LoadResStr("IDS_NET_MUTE"),
-			FormatString(LoadResStr("IDS_NET_MUTE_DESC"), pClient->getName()).getData(),
-			&ClientListItem::OnCtxMute);
+		AddMenuItem("IDS_NET_MUTE", "IDS_NET_MUTE_DESC", &ClientListItem::OnCtxMute);
 	// open it
 	return pMenu;
 }
