@@ -861,7 +861,7 @@ C4GUI::Icons C4PlayerInfoListBox::ClientListItem::GetCurrentStatusIcon()
 		else
 		{
 			// time not up yet: show sound icon
-			return C4GUI::Ico_Sound;
+			return GetClient()->isMuted() ? C4GUI::Ico_NoSound : C4GUI::Ico_Sound;
 		}
 	}
 	// info present?
