@@ -156,6 +156,7 @@ public:
 	int32_t MusicVolume;
 	int32_t SoundVolume;
 	std::chrono::seconds SoundCommandCooldown;
+	bool MuteSoundChatCommand; // whether to mute /sound by default
 	void CompileFunc(StdCompiler *pComp);
 };
 
@@ -216,7 +217,6 @@ public:
 	int32_t CountdownTime;
 	bool AllowPlayerSave; // whether save-to-disk function is enabled for player ressources
 	void CompileFunc(StdCompiler *pComp);
-	bool MuteSoundCommand; // whether to mute /sound by default
 };
 
 class C4ConfigIRC

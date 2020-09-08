@@ -88,7 +88,7 @@ C4Client::C4Client()
 	: C4Client(C4ClientCore()) {}
 
 C4Client::C4Client(const C4ClientCore &Core)
-	: Core(Core), fLocal(false), pNetClient(nullptr), pNext(nullptr), last_lobby_ready_change(0), muted(Config.Lobby.MuteSoundCommand), lastSound{} {}
+	: Core(Core), fLocal(false), pNetClient(nullptr), pNext(nullptr), last_lobby_ready_change(0), muted(Config.Sound.MuteSoundChatCommand), lastSound{} {}
 
 C4Client::~C4Client()
 {
