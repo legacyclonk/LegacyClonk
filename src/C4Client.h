@@ -118,8 +118,8 @@ public:
 	void SetLobbyReady(bool fnLobbyReady, time_t *time_since_last_change = nullptr);
 	void SetLocal();
 	void ResetSoundCooldown() { lastSound = std::chrono::steady_clock::now(); }
-
 	void SetMuted(bool muted) { this->muted = muted; }
+	void ToggleMuted() { muted = !muted; }
 
 	void UnlinkNetClient() { pNetClient = nullptr; }
 

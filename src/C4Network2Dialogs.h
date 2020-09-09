@@ -130,7 +130,7 @@ private:
 		virtual void Update(); // update data
 		const C4Client *GetClient() const; // get client by associated ID
 
-		void OnButtonMute(C4GUI::Control *pButton);
+		void OnButtonToggleMute(C4GUI::Control *pButton);
 		void OnButtonActivate(C4GUI::Control *pButton);
 		void OnButtonKick(C4GUI::Control *pButton);
 	};

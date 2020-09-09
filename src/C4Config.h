@@ -156,7 +156,7 @@ public:
 	int32_t MusicVolume;
 	int32_t SoundVolume;
 	std::chrono::seconds SoundCommandCooldown;
-	bool MuteSoundChatCommand; // whether to mute /sound by default
+	bool MuteSoundCommand; // whether to mute /sound by default
 	void CompileFunc(StdCompiler *pComp);
 };
 

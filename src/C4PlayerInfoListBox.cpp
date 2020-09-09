@@ -922,10 +922,10 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::ClientListItem::OnContext(C4GUI::Elemen
 	// create context menu
 	C4GUI::ContextMenu *pMenu = new C4GUI::ContextMenu();
 	// helper function
-	auto AddMenuItem = [&](const char *text, const char *description, auto callbackFn)
+	auto AddMenuItem = [this, pMenu](const char *text, const char *description, auto callbackFn)
 	{
-		pMenu -> AddItem(LoadResStr(text), LoadResStr(description), C4GUI::Ico_None,
-			new C4GUI::CBMenuHandler<ClientListItem>(this, callbackFn));
+		pMenu->AddItem(LoadResStr(text), LoadResStr(description), C4GUI::Ico_None,
+			new C4GUI::CBMenuHandler<ClientListItem>{this, callbackFn});
 	};
 	// host options
 	if (Game.Network.isHost() && GetNetClient())
@@ -936,10 +936,8 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::ClientListItem::OnContext(C4GUI::Elemen
 	// info
 	AddMenuItem("IDS_NET_CLIENTINFO", "IDS_NET_CLIENTINFO_DESC", &ClientListItem::OnCtxInfo);
 	// mute / unmute
-	if (pClient->isMuted())
-		AddMenuItem("IDS_NET_UNMUTE", "IDS_NET_UNMUTE_DESC", &ClientListItem::OnCtxUnmute);
-	else
-		AddMenuItem("IDS_NET_MUTE", "IDS_NET_MUTE_DESC", &ClientListItem::OnCtxMute);
+	bool muted = pClient->isMuted();
+	AddMenuItem(muted ? "IDS_NET_UNMUTE" : "IDS_NET_MUTE", muted ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC", &ClientListItem::OnCtxToggleMute);
 	// open it
 	return pMenu;
 }
@@ -967,18 +965,10 @@ void C4PlayerInfoListBox::ClientListItem::OnCtxInfo(C4GUI::Element *pListItem)
 	Game.pGUI->ShowRemoveDlg(new C4Network2ClientDlg(idClient));
 }
 
-void C4PlayerInfoListBox::ClientListItem::OnCtxUnmute(C4GUI::Element *pListItem)
+void C4PlayerInfoListBox::ClientListItem::OnCtxToggleMute(C4GUI::Element *pListItem)
 {
-	C4Client *pClient = GetClient();
-	if (pClient)
-		pClient->SetMuted(false);
-}
-
-void C4PlayerInfoListBox::ClientListItem::OnCtxMute(C4GUI::Element *pListItem)
-{
-	C4Client *pClient = GetClient();
-	if (pClient)
-		pClient->SetMuted(true);
+	if (C4Client *client = GetClient(); client)
+		client->ToggleMuted();
 }
 
 void C4PlayerInfoListBox::ClientListItem::OnBtnAddPlr(C4GUI::Control *btn)

@@ -108,7 +108,7 @@ void C4Network2ClientDlg::UpdateText()
 // C4Network2ClientListBox::ClientListItem
 
 C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientListBox *pForDlg, int iClientID)
-	: ListItem(pForDlg, iClientID), pStatusIcon(nullptr), pName(nullptr), pPing(nullptr), pMuteBtn(nullptr), pActivateBtn(nullptr), pKickBtn(nullptr)
+	: ListItem{pForDlg, iClientID}, pStatusIcon{nullptr}, pName{nullptr}, pPing{nullptr}, pMuteBtn{nullptr}, pActivateBtn{nullptr}, pKickBtn{nullptr}
 {
 	// get associated client
 	const C4Client *pClient = GetClient();
@@ -136,7 +136,7 @@ C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientLi
 	}
 	pName = new C4GUI::Label(sNameLabel.getData(), iIconSize + IconLabelSpacing, iVerticalIndent, ALeft);
 	int iPingRightPos = GetBounds().Wdt - IconLabelSpacing;
-	pMuteBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>(C4GUI::Ico_Sound, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, 0), 0, this, &ClientListItem::OnButtonMute);
+	pMuteBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>{C4GUI::Ico_Sound, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, 0), 0, this, &ClientListItem::OnButtonToggleMute};
 	pMuteBtn->SetToolTip(FormatString(LoadResStrNoAmp(pClient && pClient->isMuted() ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC"), sNameLabel.getData()).getData());
 	if (Game.Network.isHost()) iPingRightPos -= 3 * 24; // 3 buttons
 	if (Game.Network.isHost() && pClient && !pClient->isHost())
@@ -242,13 +242,10 @@ const C4Client *C4Network2ClientListBox::ClientListItem::GetClient() const
 	return Game.Clients.getClientByID(iClientID);
 }
 
-void C4Network2ClientListBox::ClientListItem::OnButtonMute(C4GUI::Control *pButton)
+void C4Network2ClientListBox::ClientListItem::OnButtonToggleMute(C4GUI::Control *pButton)
 {
-    C4Client* pClient = Game.Clients.getClientByID(iClientID);
-	if (pClient)
-	{
-		pClient->SetMuted(!pClient->isMuted());
-	}
+	if (auto *client = Game.Clients.getClientByID(iClientID); client)
+		client->ToggleMuted();
 }
 
 void C4Network2ClientListBox::ClientListItem::OnButtonActivate(C4GUI::Control *pButton)

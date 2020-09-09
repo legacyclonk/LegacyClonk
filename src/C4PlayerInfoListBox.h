@@ -205,8 +205,7 @@ private:
 		void OnCtxKick(C4GUI::Element *pListItem); // kick item selected in client ctx menu
 		void OnCtxActivate(C4GUI::Element *pListItem); // toggle player/observer
 		void OnCtxInfo(C4GUI::Element *pListItem); // show info dlg (modal)
-		void OnCtxUnmute(C4GUI::Element *pListItem); // unmute /sound
-		void OnCtxMute(C4GUI::Element *pListItem); // mute /sound
+		void OnCtxToggleMute(C4GUI::Element *pListItem); // mute /sound
 		void OnBtnAddPlr(C4GUI::Control *btn);
 	};
 
