@@ -184,6 +184,7 @@ void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(MusicVolume, "MusicVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(SoundVolume, "SoundVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(SoundCommandCooldown, "SoundCommandCooldown", std::chrono::seconds{5}));
+	pComp->Value(mkNamingAdapt(MuteSoundCommand, "MuteSoundCommand", false, false, true));
 }
 
 void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)

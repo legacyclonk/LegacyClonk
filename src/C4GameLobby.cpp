@@ -602,6 +602,8 @@ C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *edt, bool fPasting, b
 				LogF("/observer [client] - %s", LoadResStr("IDS_TEXT_SETTHESPECIFIEDCLIENTTOOB"));
 				LogF("/me [action] - %s", LoadResStr("IDS_TEXT_PERFORMANACTIONINYOURNAME"));
 				LogF("/sound [sound] - %s", LoadResStr("IDS_TEXT_PLAYASOUNDFROMTHEGLOBALSO"));
+				LogF("/mute [client] - %s", LoadResStr("IDS_NET_MUTE_DESC"));
+				LogF("/unmute [client] - %s", LoadResStr("IDS_NET_UNMUTE_DESC"));
 				LogF("/team [message] - %s", LoadResStr("IDS_MSG_SENDAPRIVATEMESSAGETOYOUR"));
 				LogF("/plrclr [player] [RGB] - %s", LoadResStr("IDS_TEXT_CHANGETHECOLOROFTHESPECIF"));
 				LogF("/plrclr [RGB] - %s", LoadResStr("IDS_TEXT_CHANGEYOUROWNPLAYERCOLOR"));

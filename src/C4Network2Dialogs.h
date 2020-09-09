@@ -119,7 +119,9 @@ private:
 		C4GUI::Icon *pStatusIcon;  // client network status
 		C4GUI::Label *pName;       // client name
 		C4GUI::Label *pPing;       // client control ping
-		C4GUI::IconButton *pActivateBtn, *pKickBtn; // buttons for host
+		C4GUI::IconButton *pMuteBtn;     // mute client (/sound command)
+		C4GUI::IconButton *pActivateBtn; // activate client (host only)
+		C4GUI::IconButton *pKickBtn;     // kick client (host only)
 		bool fShownActive;
 
 	public:
@@ -128,6 +130,7 @@ private:
 		virtual void Update(); // update data
 		const C4Client *GetClient() const; // get client by associated ID
 
+		void OnButtonToggleMute(C4GUI::Control *pButton);
 		void OnButtonActivate(C4GUI::Control *pButton);
 		void OnButtonKick(C4GUI::Control *pButton);
 	};
@@ -148,6 +151,7 @@ private:
 		C4Network2IOConnection *GetConnection() const; // get connection by connection ID
 		virtual int32_t GetConnectionID() const { return iConnID; }
 
+		void OnButtonMute(C4GUI::Control *pButton);
 		void OnButtonDisconnect(C4GUI::Control *pButton);
 	};
 

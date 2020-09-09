@@ -419,6 +419,8 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 		LogF("/team [message] - %s", LoadResStr("IDS_MSG_SENDAPRIVATEMESSAGETOYOUR"));
 		LogF("/me [action] - %s", LoadResStr("IDS_TEXT_PERFORMANACTIONINYOURNAME"));
 		LogF("/sound [sound] - %s", LoadResStr("IDS_TEXT_PLAYASOUNDFROMTHEGLOBALSO"));
+		LogF("/mute [client] - %s", LoadResStr("IDS_TEXT_MUTESOUNDCOMMANDSBYTHESPE"));
+		LogF("/unmute [client] - %s", LoadResStr("IDS_TEXT_UNMUTESOUNDCOMMANDSBYTHESP"));
 		LogF("/kick [client] - %s", LoadResStr("IDS_TEXT_KICKTHESPECIFIEDCLIENT"));
 		LogF("/observer [client] - %s", LoadResStr("IDS_TEXT_SETTHESPECIFIEDCLIENTTOOB"));
 		LogF("/fast [x] - %s", LoadResStr("IDS_TEXT_SETTOFASTMODESKIPPINGXFRA"));
@@ -646,6 +648,22 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 			Log(LoadResStr("IDS_LOG_COMMANDNOTALLOWEDINLEAGUE")); return false;
 		}
 		Game.Network.SetCtrlMode(*szCmdName == 'c' ? CNM_Central : *szCmdName == 'd' ? CNM_Decentral : CNM_Async);
+		return true;
+	}
+
+	// mute
+	if (SEqual(szCmdName, "mute"))
+	{
+		if (auto *client = Game.Clients.getClientByName(pCmdPar); client)
+			client->SetMuted(true);
+		return true;
+	}
+
+	// unmute
+	if (SEqual(szCmdName, "unmute"))
+	{
+		if (auto *client = Game.Clients.getClientByName(pCmdPar); client)
+			client->SetMuted(false);
 		return true;
 	}
 

@@ -861,7 +861,7 @@ C4GUI::Icons C4PlayerInfoListBox::ClientListItem::GetCurrentStatusIcon()
 		else
 		{
 			// time not up yet: show sound icon
-			return C4GUI::Ico_Sound;
+			return GetClient()->isMuted() ? C4GUI::Ico_NoSound : C4GUI::Ico_Sound;
 		}
 	}
 	// info present?
@@ -921,21 +921,23 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::ClientListItem::OnContext(C4GUI::Elemen
 	C4Client *pClient = GetClient();
 	// create context menu
 	C4GUI::ContextMenu *pMenu = new C4GUI::ContextMenu();
+	// helper function
+	auto AddMenuItem = [this, pMenu](const char *text, const char *description, auto callbackFn)
+	{
+		pMenu->AddItem(LoadResStr(text), LoadResStr(description), C4GUI::Ico_None,
+			new C4GUI::CBMenuHandler<ClientListItem>{this, callbackFn});
+	};
 	// host options
 	if (Game.Network.isHost() && GetNetClient())
 	{
-		StdStrBuf strKickDesc(LoadResStr("IDS_NET_KICKCLIENT_DESC"));
-		pMenu->AddItem(LoadResStr("IDS_NET_KICKCLIENT"), strKickDesc.getData(), C4GUI::Ico_None,
-			new C4GUI::CBMenuHandler<ClientListItem>(this, &ClientListItem::OnCtxKick));
-		StdStrBuf strActivateDesc(LoadResStr("IDS_NET_ACTIVATECLIENT_DESC"));
-		pMenu->AddItem(LoadResStr(pClient->isActivated() ? "IDS_NET_DEACTIVATECLIENT" : "IDS_NET_ACTIVATECLIENT"),
-			strActivateDesc.getData(), C4GUI::Ico_None,
-			new C4GUI::CBMenuHandler<ClientListItem>(this, &ClientListItem::OnCtxActivate));
+		AddMenuItem("IDS_NET_KICKCLIENT", "IDS_NET_KICKCLIENT_DESC", &ClientListItem::OnCtxKick);
+		AddMenuItem(pClient->isActivated() ? "IDS_NET_DEACTIVATECLIENT" : "IDS_NET_ACTIVATECLIENT", "IDS_NET_ACTIVATECLIENT_DESC", &ClientListItem::OnCtxActivate);
 	}
 	// info
-	StdStrBuf strClientInfoDesc(LoadResStr("IDS_NET_CLIENTINFO_DESC"));
-	pMenu->AddItem(LoadResStr("IDS_NET_CLIENTINFO"), strClientInfoDesc.getData(), C4GUI::Ico_None,
-		new C4GUI::CBMenuHandler<ClientListItem>(this, &ClientListItem::OnCtxInfo));
+	AddMenuItem("IDS_NET_CLIENTINFO", "IDS_NET_CLIENTINFO_DESC", &ClientListItem::OnCtxInfo);
+	// mute / unmute
+	bool muted = pClient->isMuted();
+	AddMenuItem(muted ? "IDS_NET_UNMUTE" : "IDS_NET_MUTE", muted ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC", &ClientListItem::OnCtxToggleMute);
 	// open it
 	return pMenu;
 }
@@ -961,6 +963,12 @@ void C4PlayerInfoListBox::ClientListItem::OnCtxInfo(C4GUI::Element *pListItem)
 {
 	// show client info dialog
 	Game.pGUI->ShowRemoveDlg(new C4Network2ClientDlg(idClient));
+}
+
+void C4PlayerInfoListBox::ClientListItem::OnCtxToggleMute(C4GUI::Element *pListItem)
+{
+	if (C4Client *client = GetClient(); client)
+		client->ToggleMuted();
 }
 
 void C4PlayerInfoListBox::ClientListItem::OnBtnAddPlr(C4GUI::Control *btn)

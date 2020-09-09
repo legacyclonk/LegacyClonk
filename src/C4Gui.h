@@ -682,6 +682,8 @@ enum Icons
 	Ico_Star = 48,
 	Ico_Disconnect = 49,
 	Ico_View = 50,
+	// 51?
+	Ico_NoSound = 52,
 
 	Ico_Ex_RecordOff      = Ico_Extended + 0,
 	Ico_Ex_RecordOn       = Ico_Extended + 1,
