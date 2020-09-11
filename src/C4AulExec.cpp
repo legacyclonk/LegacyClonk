@@ -607,9 +607,9 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					}
 					case C4V_Array:
 					{
+						CheckOpPar(pPar2, C4V_Array, operatorName, " right side");
 						const auto lhsSize = pPar1->_getArray()->GetSize();
 						const auto rhsSize = pPar2->_getArray()->GetSize();
-						CheckOpPar(pPar2, C4V_Array, operatorName, " right side");
 						pPar1->SetArrayLength(lhsSize + rhsSize, pCurCtx);
 						auto &lhs = *pPar1->_getArray();
 						auto &rhs = *pPar2->_getArray();
