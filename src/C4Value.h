@@ -19,6 +19,7 @@
 #include "C4Id.h"
 #include "C4AulScriptStrict.h"
 
+#include <optional>
 #include <string>
 
 // class declarations
@@ -139,7 +140,7 @@ public:
 	~C4Value();
 
 	// explicit conversion from int, bool and id
-	StdStrBuf toString() const;
+	std::optional<StdStrBuf> toString() const;
 
 	// Checked getters
 	int32_t getInt()         { return ConvertTo(C4V_Int)      ? Data.Int   : 0; }

@@ -621,24 +621,23 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 						break;
 					}
 					default:
-						try
+					{
+						auto par1String = pPar1->toString();
+						if (!par1String)
 						{
-							StdStrBuf result = pPar1->toString();
-							try
-							{
-								result.Append(pPar2->toString());
-								pPar1->SetString(new C4String(std::move(result), &pCurCtx->Func->Owner->GetEngine()->Strings));
-								PopValue();
-							}
-							catch (C4V_Type type)
-							{
-								throw C4AulExecError(pCurCtx->Obj, FormatString("operator \"%s\" right side: can not convert \"%s\" to \"string\"!", operatorName, GetC4VName(type)).getData());
-							}
+							throw C4AulExecError(pCurCtx->Obj, FormatString("operator \"%s\" left side: can not convert \"%s\" to \"string\", \"array\" or \"map\"!", operatorName, GetC4VName(pPar1->GetType())).getData());
 						}
-						catch (C4V_Type type)
+						auto par2String = pPar2->toString();
+						if (!par2String)
 						{
-							throw C4AulExecError(pCurCtx->Obj, FormatString("operator \"%s\" left side: can not convert \"%s\" to \"string\", \"array\" or \"map\"!", operatorName, GetC4VName(type)).getData());
+							throw C4AulExecError(pCurCtx->Obj, FormatString("operator \"%s\" right side: can not convert \"%s\" to \"string\"!", operatorName, GetC4VName(pPar2->GetType())).getData());
 						}
+
+						par1String->Append(*par2String);
+						pPar1->SetString(new C4String(std::move(*par1String), &pCurCtx->Func->Owner->GetEngine()->Strings));
+						PopValue();
+						break;
+					}
 				}
 				break;
 			}

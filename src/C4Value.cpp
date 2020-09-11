@@ -44,23 +44,23 @@ C4Value::~C4Value()
 	DelDataRef(Data, Type, GetNextRef(), GetBaseContainer());
 }
 
-StdStrBuf C4Value::toString() const
+std::optional<StdStrBuf> C4Value::toString() const
 {
 	const C4Value& val = GetRefVal();
-	switch(val.Type)
+	switch (val.Type)
 	{
-		case C4V_String:
-			return val._getStr()->Data;
+	case C4V_String:
+		return {val._getStr()->Data};
 
-		case C4V_Bool:
-		case C4V_Int:
-			return FormatString("%d", val._getInt());
+	case C4V_Bool:
+	case C4V_Int:
+		return {FormatString("%d", val._getInt())};
 
-		case C4V_C4ID:
-			return StdStrBuf(C4IdText(val._getC4ID()));
+	case C4V_C4ID:
+		return {StdStrBuf(C4IdText(val._getC4ID()))};
 
-		default:
-			throw val.Type;
+	default:
+		return {};
 	}
 }
 
