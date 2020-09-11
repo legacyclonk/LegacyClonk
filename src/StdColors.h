@@ -37,7 +37,7 @@ inline void BltAlpha(uint32_t &dwDst, uint32_t dwSrc)
 	uint8_t byAlphaDst = uint8_t(dwSrc >> 24); uint8_t byAlphaSrc = 255 - byAlphaDst;
 	dwDst = std::min<uint32_t>((int(dwDst & 0xff) * byAlphaDst + int(dwSrc & 0xff) * byAlphaSrc) >> 8, 0xff) | // blue
 		std::min<uint32_t>((int(dwDst & 0xff00) * byAlphaDst + int(dwSrc & 0xff00) * byAlphaSrc) >> 8 & 0xff00, 0xff00) | // green
-		std::min<uint32_t>((int(dwDst & 0xff0000) * byAlphaDst + int(dwSrc & 0xff0000) * byAlphaSrc) >> 8 & 0xff0000, 0xff0000) | // red
+		std::min<uint32_t>((int(dwDst & 0xff0000) * byAlphaDst + uint32_t(dwSrc & 0xff0000) * byAlphaSrc) >> 8 & 0xff0000, 0xff0000) | // red
 		uint32_t((std::max)((int)(dwDst >> 24) - byAlphaSrc, 0)) << 24; // alpha
 }
 
