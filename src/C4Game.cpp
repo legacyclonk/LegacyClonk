@@ -2523,12 +2523,15 @@ bool C4Game::InitGameFirstPart()
 
 bool C4Game::InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky, bool preloading)
 {
-	if (PreloadStatus >= PreloadLevel::LandscapeObjects || (C4S.Landscape.MapPlayerExtend && preloading))
+	if (!section)
 	{
-		return true;
-	}
+		if (PreloadStatus >= PreloadLevel::LandscapeObjects || (C4S.Landscape.MapPlayerExtend && preloading))
+		{
+			return true;
+		}
 
-	FixRandom(Parameters.RandomSeed);
+		FixRandom(Parameters.RandomSeed);
+	}
 
 	// Landscape
 	Log(LoadResStr("IDS_PRC_LANDSCAPE"));
@@ -2592,7 +2595,10 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, boo
 	if (iObjects) { LogF(LoadResStr("IDS_PRC_OBJECTSLOADED"), iObjects); }
 	SetInitProgress(93);
 
-	PreloadStatus = PreloadLevel::LandscapeObjects;
+	if (!section)
+	{
+		PreloadStatus = PreloadLevel::LandscapeObjects;
+	}
 
 	return true;
 }
