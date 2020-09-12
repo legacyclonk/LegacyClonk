@@ -927,6 +927,14 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::ClientListItem::OnContext(C4GUI::Elemen
 		pMenu->AddItem(LoadResStr(text), LoadResStr(description), C4GUI::Ico_None,
 			new C4GUI::CBMenuHandler<ClientListItem>{this, callbackFn});
 	};
+
+	// mute / unmute
+	if (!pClient->isLocal())
+	{
+		bool muted = pClient->isMuted();
+		AddMenuItem(muted ? "IDS_NET_UNMUTE" : "IDS_NET_MUTE", muted ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC", &ClientListItem::OnCtxToggleMute);
+	}
+
 	// host options
 	if (Game.Network.isHost() && GetNetClient())
 	{
@@ -935,9 +943,6 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::ClientListItem::OnContext(C4GUI::Elemen
 	}
 	// info
 	AddMenuItem("IDS_NET_CLIENTINFO", "IDS_NET_CLIENTINFO_DESC", &ClientListItem::OnCtxInfo);
-	// mute / unmute
-	bool muted = pClient->isMuted();
-	AddMenuItem(muted ? "IDS_NET_UNMUTE" : "IDS_NET_MUTE", muted ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC", &ClientListItem::OnCtxToggleMute);
 	// open it
 	return pMenu;
 }
