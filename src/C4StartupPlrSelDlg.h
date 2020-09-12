@@ -20,8 +20,9 @@
 
 #pragma once
 
-#include "C4Startup.h"
 #include "C4InfoCore.h"
+#include "C4Group.h"
+#include "C4Startup.h"
 
 // startup dialog: Player selection
 class C4StartupPlrSelDlg : public C4StartupDlg

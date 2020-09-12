@@ -31,6 +31,8 @@ typedef CStdGtkWindow C4ViewportBase;
 typedef CStdWindow C4ViewportBase;
 #endif
 
+class C4Viewport;
+
 class C4ViewportWindow : public C4ViewportBase
 {
 public:

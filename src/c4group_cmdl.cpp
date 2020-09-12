@@ -33,7 +33,6 @@
 //         4.95.0 November 2003
 //         4.95.4 July     2005 PORT/HEAD mixmax
 
-#include <C4Include.h>
 #include <C4Config.h>
 #include <StdRegistry.h>
 #include <C4Group.h>
@@ -58,7 +57,6 @@ int iResult = 0;
 
 C4Config Config;
 C4Config *GetCfg() { return &Config; }
-CDDrawCfg DDrawCfg; // to satisfy the linker
 
 #ifdef _WIN32
 #ifdef _DEBUG

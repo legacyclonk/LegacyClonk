@@ -23,6 +23,7 @@
 #include "C4Shape.h"
 #include "C4Gui.h"
 #include "C4IDList.h"
+#include "C4Viewport.h"
 
 enum
 {
@@ -240,7 +241,7 @@ protected:
 
 protected:
 	// C4GUI
-	virtual class C4Viewport *GetViewport(); // return associated viewport
+	virtual C4Viewport *GetViewport(); // return associated viewport
 	virtual bool IsExternalDrawDialog() { return true; } // drawn by viewport drawing proc
 	virtual bool IsMouseControlled() { return false; }
 	virtual void UpdateOwnPos();
@@ -256,6 +257,6 @@ protected:
 	virtual int32_t GetMarginLeft() { return C4MN_FrameWidth + BaseClass::GetMarginLeft(); }
 	virtual int32_t GetMarginRight() { return C4MN_FrameWidth + BaseClass::GetMarginRight(); }
 
-	friend class C4Viewport; // for drawing
+	friend C4Viewport; // for drawing
 	friend class C4MenuItem;
 };

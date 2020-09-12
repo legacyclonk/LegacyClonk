@@ -22,6 +22,8 @@
 #include <C4ValueMap.h>
 #include <Fixed.h>
 
+#include <vector>
+
 class C4RankSystem;
 
 const int32_t C4MaxPhysical = 100000,

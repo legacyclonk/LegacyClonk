@@ -16,7 +16,6 @@
 
 /* Game configuration as stored in registry */
 
-#include <C4Include.h>
 #include <C4Config.h>
 
 #include <C4UpperBoard.h>
@@ -25,10 +24,10 @@
 #include <C4Application.h>
 #include <C4Network2.h>
 #include <C4Language.h>
+#include <StdResStr2.h>
 #endif
 
 #include <StdFile.h>
-#include <StdWindow.h>
 #include <StdRegistry.h>
 
 #ifdef HAVE_SYS_STAT_H
@@ -48,7 +47,7 @@ bool isGermanSystem()
 #elif defined(__APPLE__) and defined(C4ENGINE)
 	bool isGerman();
 	if (isGerman()) return true;
-#else
+#elif defined(HAVE_LOCALE_H)
 	if (strstr(setlocale(LC_MESSAGES, 0), "de")) return true;
 #endif
 	return false;
@@ -111,6 +110,7 @@ void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(AutoFileReload, "AutoFileReload", true, false, true));
 }
 
+#ifdef C4ENGINE
 void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(ResX,                 "ResolutionX",          800,   false, true));
@@ -173,6 +173,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 
 	pComp->Value(mkNamingAdapt(ShowFolderMaps, "ShowFolderMaps", true));
 }
+#endif
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 {
@@ -457,9 +458,9 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 	General.DefaultLanguage();
 #ifndef USE_CONSOLE
 	if (Graphics.Engine != GFXENGN_NOGFX) Graphics.Engine = GFXENGN_OPENGL;
-#endif
 	// OpenGL
 	DDrawCfg.Set(Graphics.NewGfxCfg, (float)Graphics.TexIndent / 1000.0f, (float)Graphics.BlitOffset / 100.0f);
+#endif
 	// Warning against invalid ports
 #ifdef C4ENGINE
 	if (Config.Network.PortTCP > 0 && Config.Network.PortTCP == Config.Network.PortRefServer)
@@ -762,7 +763,9 @@ void C4Config::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Controls,  "Controls"));
 	for (int i = 0; i < C4ConfigMaxGamepads; ++i)
 		pComp->Value(mkNamingAdapt(Gamepads[i], FormatString("Gamepad%d", i).getData()));
+#ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(Graphics,  "Graphics"));
+#endif
 	pComp->Value(mkNamingAdapt(Sound,     "Sound"));
 	pComp->Value(mkNamingAdapt(Network,   "Network"));
 	pComp->Value(mkNamingAdapt(Lobby,     "Lobby"));

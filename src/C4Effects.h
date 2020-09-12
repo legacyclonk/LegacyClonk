@@ -22,7 +22,9 @@
 
 #pragma once
 
-#include <C4Constants.h>
+#include "C4Aul.h"
+#include "C4Constants.h"
+#include "C4ValueList.h"
 
 typedef unsigned long C4ID;
 

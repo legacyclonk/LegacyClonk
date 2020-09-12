@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include <C4Id.h>
-#include <C4Def.h>
+#include "C4Id.h"
+#include "C4Def.h"
+#include "C4Region.h"
 
 class C4Object;
 class C4FacetEx;
@@ -30,17 +31,6 @@ public:
 	C4Object *Obj;
 	C4ObjectLink *Prev, *Next;
 };
-
-class C4ObjectListChangeListener
-{
-public:
-	virtual void OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk) = 0;
-	virtual void OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk) = 0;
-	virtual void OnObjectRename(C4ObjectList *pList, C4ObjectLink *pLnk) = 0;
-	virtual ~C4ObjectListChangeListener() {}
-};
-
-extern C4ObjectListChangeListener &ObjectListChangeListener;
 
 class C4ObjectList
 {
@@ -155,6 +145,17 @@ protected:
 	friend class iterator;
 	friend class C4ObjResort;
 };
+
+class C4ObjectListChangeListener
+{
+public:
+	virtual void OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk) = 0;
+	virtual void OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk) = 0;
+	virtual void OnObjectRename(C4ObjectList *pList, C4ObjectLink *pLnk) = 0;
+	virtual ~C4ObjectListChangeListener() {}
+};
+
+extern C4ObjectListChangeListener &ObjectListChangeListener;
 
 class C4NotifyingObjectList : public C4ObjectList
 {

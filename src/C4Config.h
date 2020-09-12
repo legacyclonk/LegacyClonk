@@ -20,6 +20,11 @@
 
 #include "C4Constants.h"
 #include "C4InputValidation.h"
+#include "StdConfig.h"
+
+#ifdef C4ENGINE
+#include "StdWindow.h"
+#endif
 
 #define C4CFG_Company "LegacyClonk Team"
 #define C4CFG_Product "LegacyClonk"
@@ -32,9 +37,6 @@
 #define C4CFG_UpdateEngine  "lc_%d_%s.c4u"
 #define C4CFG_UpdateObjects "lc_%d%d%d%d_%d_%s.c4u"
 #define C4CFG_UpdateMajor   "lc_%d%d%d%d_%s.c4u"
-
-#include "C4Include.h"
-#include "StdWindow.h"
 
 class C4ConfigGeneral
 {
@@ -94,6 +96,7 @@ public:
 	void CompileFunc(StdCompiler *pComp);
 };
 
+#ifdef C4ENGINE
 class C4ConfigGraphics
 {
 public:
@@ -144,6 +147,7 @@ public:
 
 	void CompileFunc(StdCompiler *pComp);
 };
+#endif
 
 class C4ConfigSound
 {
@@ -260,7 +264,9 @@ public:
 public:
 	C4ConfigGeneral   General;
 	C4ConfigDeveloper Developer;
+#ifdef C4ENGINE
 	C4ConfigGraphics  Graphics;
+#endif
 	C4ConfigSound     Sound;
 	C4ConfigNetwork   Network;
 	C4ConfigLobby     Lobby;
@@ -285,7 +291,14 @@ public:
 	const char *AtUserPath(const char *szFilename); // this one will expand environment variables on-the-fly
 	void ForceRelativePath(StdStrBuf *sFilename); // try AtExeRelativePath; force GetC4Filename if not possible
 	void CompileFunc(StdCompiler *pComp);
-	bool IsCorrupted() { return (General.ConfigResetSafety != C4ConfigGeneral::ConfigResetSafetyVal) || !Graphics.ResX; }
+	bool IsCorrupted()
+	{
+		return (General.ConfigResetSafety != C4ConfigGeneral::ConfigResetSafetyVal)
+#ifdef C4ENGINE
+		|| !Graphics.ResX
+#endif
+		;
+	}
 
 protected:
 	void ExpandEnvironmentVariables(char *strPath, int iMaxLen);

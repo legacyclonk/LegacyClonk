@@ -12,8 +12,6 @@ src/StdFile.cpp
 src/StdFile.h
 src/StdGzCompressedFile.cpp
 src/StdGzCompressedFile.h
-src/StdMarkup.cpp
-src/StdMarkup.h
 src/StdRegistry.cpp
 src/StdRegistry.h
 src/StdSha1.h

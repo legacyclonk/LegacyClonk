@@ -21,9 +21,11 @@
 #include <C4Surface.h>
 #include <C4InfoCore.h>
 #ifdef C4ENGINE
-#include <C4Object.h>
+#include <C4DefGraphics.h>
 #include <C4FacetEx.h>
 #endif
+
+class C4Object;
 
 class C4ObjectInfo : public C4ObjectInfoCore
 {

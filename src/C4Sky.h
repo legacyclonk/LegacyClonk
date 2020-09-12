@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include "Fixed.h"
+#include "C4FacetEx.h"
+
 #define C4SkyPM_Fixed 0 // sky parallax mode: fixed
 #define C4SkyPM_Wind  1 // sky parallax mode: blown by the wind
 

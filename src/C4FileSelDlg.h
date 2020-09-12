@@ -19,7 +19,8 @@
 
 #pragma once
 
-#include <C4Gui.h>
+#include "C4Components.h"
+#include "C4Gui.h"
 
 // callback handler for file selection dialog
 class C4FileSel_BaseCB

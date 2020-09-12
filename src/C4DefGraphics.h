@@ -20,6 +20,7 @@
 #pragma once
 
 #include <C4FacetEx.h>
+#include <C4Material.h>
 #include <C4Surface.h>
 
 #define C4Portrait_None   "none"

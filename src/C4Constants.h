@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 // Main
 
 const int C4MaxNameList = 10,

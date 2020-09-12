@@ -21,6 +21,8 @@
 #include "C4FacetEx.h"
 #include "C4Constants.h"
 
+#include <vector>
+
 #define C4D_VertexCpyPos (C4D_MaxVertex/2)
 
 class C4Rect

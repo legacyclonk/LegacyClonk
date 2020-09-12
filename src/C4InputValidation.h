@@ -19,6 +19,11 @@
 
 #pragma once
 
+#include "C4Constants.h"
+#include "StdAdaptors.h"
+#include "StdBuf.h"
+#include "StdFile.h"
+
 namespace C4InVal
 {
 	// validation options

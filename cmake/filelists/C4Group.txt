@@ -5,3 +5,5 @@ src/C4InputValidation.cpp
 src/C4Update.cpp
 src/C4Update.h
 src/C4Version.h
+src/StdMarkup.cpp
+src/StdMarkup.h
