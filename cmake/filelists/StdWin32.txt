@@ -1,6 +1,0 @@
-src/C4Windows.h
-src/StdJoystick.cpp
-src/StdJoystick.h
-src/StdStringEncodingConverter.cpp
-src/StdStringEncodingConverter.h
-src/StdWindow.cpp

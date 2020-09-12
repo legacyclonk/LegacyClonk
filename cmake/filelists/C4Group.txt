@@ -5,11 +5,3 @@ src/C4InputValidation.cpp
 src/C4Update.cpp
 src/C4Update.h
 src/C4Version.h
-src/CStdFile.cpp
-src/Standard.cpp
-src/StdBuf.cpp
-src/StdCompiler.cpp
-src/StdFile.cpp
-src/StdMarkup.cpp
-src/StdRegistry.cpp
-src/StdResStr2.cpp

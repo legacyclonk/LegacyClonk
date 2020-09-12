@@ -147,6 +147,30 @@ elseif (APPLE)
 	append_filelist(CLONK_SOURCES EngineApple.txt)
 endif ()
 
+if (USE_SDL_MAINLOOP)
+	append_filelist(CLONK_SOURCES EngineSdl.txt)
+endif ()
+
+if (USE_X11)
+	append_filelist(CLONK_SOURCES EngineX.txt)
+endif ()
+
+if (USE_WIC)
+	list(APPEND CLONK_SOURCES
+		src/StdJpegWic.cpp src/StdPNGWic.cpp src/StdWic.cpp src/StdWic.h)
+else ()
+	list(APPEND CLONK_SOURCES
+		src/StdJpegLibjpeg.cpp src/StdPNGLibpng.cpp)
+endif ()
+
+if (WITH_DEVELOPER_MODE)
+	append_filelist(CLONK_SOURCES EngineGtk.txt)
+endif ()
+
+if (USE_CONSOLE AND NOT WIN32)
+	append_filelist(CLONK_SOURCES EngineConsoleNonWin32.txt)
+endif ()
+
 if (USE_CONSOLE)
 	add_executable(clonk                     ${CLONK_SOURCES})
 else ()
@@ -169,96 +193,16 @@ target_link_libraries(c4group standard)
 
 append_filelist(LIBSTANDARD_SOURCES Std.txt)
 
-if (USE_CONSOLE AND NOT WIN32)
-	append_filelist(LIBSTANDARD_SOURCES StdConsoleNonWin32.txt)
-endif ()
-
 if (USE_MSCAPI)
 	list(APPEND LIBSTANDARD_SOURCES src/StdSha1MSCapi.cpp)
 else ()
 	list(APPEND LIBSTANDARD_SOURCES src/StdSha1OpenSSL.cpp)
 endif ()
 
-if (USE_SDL_MAINLOOP)
-	append_filelist(LIBSTANDARD_SOURCES StdSdl.txt)
-endif ()
-
-if (USE_X11)
-	append_filelist(LIBSTANDARD_SOURCES StdX.txt)
-endif ()
-
-if (USE_WIC)
-	list(APPEND LIBSTANDARD_SOURCES
-		src/StdJpegWic.cpp src/StdPNGWic.cpp src/StdWic.cpp src/StdWic.h)
-else ()
-	list(APPEND LIBSTANDARD_SOURCES
-		src/StdJpegLibjpeg.cpp src/StdPNGLibpng.cpp)
-endif ()
-
-if (WIN32)
-	append_filelist(LIBSTANDARD_SOURCES StdWin32.txt)
-endif ()
-
-if (WITH_DEVELOPER_MODE)
-	append_filelist(LIBSTANDARD_SOURCES StdGtk.txt)
-endif ()
-
 add_library(standard STATIC ${LIBSTANDARD_SOURCES})
 target_compile_definitions(standard PRIVATE C4ENGINE)
 if (WIN32)
 	target_link_libraries(standard vfw32)
-endif ()
-target_link_libraries(clonk standard)
-
-# Link libraries
-
-# Link FMOD
-if (USE_FMOD)
-	find_library(FMOD_LIBRARY fmodvc)
-	if (NOT FMOD_LIBRARY)
-		message(FATAL_ERROR "Cannot find FMOD library")
-	endif ()
-	target_link_libraries(standard ${FMOD_LIBRARY})
-endif ()
-
-# Link Freetype
-if (NOT USE_CONSOLE)
-	find_package(Freetype REQUIRED)
-	target_include_directories(standard PRIVATE ${FREETYPE_INCLUDE_DIRS})
-	target_link_libraries(standard ${FREETYPE_LIBRARIES})
-	set(HAVE_FREETYPE ${FREETYPE_FOUND})
-endif ()
-
-# Link GTK2
-if (WITH_DEVELOPER_MODE)
-	set(WITH_GLIB 1)
-	find_package(GTK2 2.4 REQUIRED gtk)
-	target_include_directories(clonk    PRIVATE ${GTK2_INCLUDE_DIRS})
-	target_include_directories(standard PRIVATE ${GTK2_INCLUDE_DIRS})
-	target_link_libraries(clonk    ${GTK2_LIBRARIES})
-	target_link_libraries(standard ${GTK2_LIBRARIES})
-endif ()
-
-# Link iconv
-if (HAVE_ICONV AND APPLE)
-	target_link_libraries(clonk iconv)
-endif ()
-
-# Link libjpeg
-if (NOT USE_WIC)
-	find_package(JPEG REQUIRED)
-	target_include_directories(standard PRIVATE ${JPEG_INCLUDE_DIR})
-	target_link_libraries(standard ${JPEG_LIBRARIES})
-endif ()
-
-# Link OpenGL and GLEW
-if (NOT USE_CONSOLE)
-	find_package(OpenGL REQUIRED)
-	if (NOT TARGET OpenGL::GLU)
-		message(FATAL_ERROR "Cannot find GLU library")
-	endif ()
-	find_package(GLEW REQUIRED)
-	target_link_libraries(standard OpenGL::GL OpenGL::GLU GLEW::GLEW)
 endif ()
 
 # Link OpenSSL crypto library
@@ -270,10 +214,61 @@ if (NOT USE_MSCAPI)
 	target_link_libraries(standard OpenSSL::Crypto)
 endif ()
 
+target_link_libraries(clonk standard)
+
+# Link libraries
+
+# Link FMOD
+if (USE_FMOD)
+	find_library(FMOD_LIBRARY fmodvc)
+	if (NOT FMOD_LIBRARY)
+		message(FATAL_ERROR "Cannot find FMOD library")
+	endif ()
+	target_link_libraries(clonk ${FMOD_LIBRARY})
+endif ()
+
+# Link Freetype
+if (NOT USE_CONSOLE)
+	find_package(Freetype REQUIRED)
+	target_include_directories(clonk PRIVATE ${FREETYPE_INCLUDE_DIRS})
+	target_link_libraries(clonk ${FREETYPE_LIBRARIES})
+	set(HAVE_FREETYPE ${FREETYPE_FOUND})
+endif ()
+
+# Link GTK2
+if (WITH_DEVELOPER_MODE)
+	set(WITH_GLIB 1)
+	find_package(GTK2 2.4 REQUIRED gtk)
+	target_include_directories(clonk PRIVATE ${GTK2_INCLUDE_DIRS})
+	target_link_libraries(clonk ${GTK2_LIBRARIES})
+endif ()
+
+# Link iconv
+if (HAVE_ICONV AND APPLE)
+	target_link_libraries(clonk iconv)
+endif ()
+
+# Link libjpeg
+if (NOT USE_WIC)
+	find_package(JPEG REQUIRED)
+	target_include_directories(clonk PRIVATE ${JPEG_INCLUDE_DIR})
+	target_link_libraries(clonk ${JPEG_LIBRARIES})
+endif ()
+
+# Link OpenGL and GLEW
+if (NOT USE_CONSOLE)
+	find_package(OpenGL REQUIRED)
+	if (NOT TARGET OpenGL::GLU)
+		message(FATAL_ERROR "Cannot find GLU library")
+	endif ()
+	find_package(GLEW REQUIRED)
+	target_link_libraries(clonk OpenGL::GL OpenGL::GLU GLEW::GLEW)
+endif ()
+
 # Link libpng
 if (NOT USE_WIC)
 	find_package(PNG REQUIRED)
-	target_link_libraries(standard PNG::PNG)
+	target_link_libraries(clonk PNG::PNG)
 endif ()
 
 # Link SDL
@@ -282,8 +277,8 @@ if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
 	if (USE_SDL_MAINLOOP)
 		set(HAVE_SDL ON)
 	endif ()
-	target_include_directories(standard PUBLIC ${SDL_INCLUDE_DIR})
-	target_link_libraries(standard ${SDL_LIBRARY})
+	target_include_directories(clonk PRIVATE ${SDL_INCLUDE_DIR})
+	target_link_libraries(clonk ${SDL_LIBRARY})
 endif ()
 
 # Link SDL_mixer
@@ -296,14 +291,14 @@ endif ()
 
 # Link Windows Imaging Component
 if (USE_WIC)
-	target_link_libraries(standard windowscodecs)
+	target_link_libraries(clonk windowscodecs)
 endif ()
 
 # Link thread library
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads)
 if (THREADS_FOUND)
-	target_link_libraries(standard Threads::Threads)
+	target_link_libraries(clonk Threads::Threads)
 endif ()
 
 # Link Windows libraries
@@ -326,9 +321,9 @@ if (USE_X11)
 	if (NOT X11_xf86vmode_FOUND)
 		message(FATAL_ERROR "XF86VidMode not found.")
 	endif ()
-	target_include_directories(standard PRIVATE
+	target_include_directories(clonk PRIVATE
 		${X11_X11_INCLUDE_PATH} ${X11_Xpm_INCLUDE_PATH} ${X11_xf86vmode_INCLUDE_PATH})
-	target_link_libraries(standard
+	target_link_libraries(clonk
 		${X11_X11_LIB}          ${X11_Xpm_LIB}          ${X11_Xxf86vm_LIB})
 endif ()
 
