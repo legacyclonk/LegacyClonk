@@ -22,6 +22,9 @@
 #include "C4PacketBase.h"
 #include "C4PlayerInfo.h"
 #include "C4Client.h"
+#include "C4ObjectList.h"
+
+class C4Record;
 
 // *** control base classes
 

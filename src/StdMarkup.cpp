@@ -18,12 +18,18 @@
 // markup tags for fonts
 
 #include <StdMarkup.h>
+#include <StdColors.h>
+
+#ifdef C4ENGINE
 #include <StdDDraw2.h>
+#endif
 
 void CMarkupTagItalic::Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr)
 {
+#ifdef C4ENGINE
 	// do sheering
 	rBltTrf.mat[1] -= 0.3f;
+#endif
 }
 
 void CMarkupTagColor::Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr)

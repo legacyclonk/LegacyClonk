@@ -26,6 +26,7 @@
 #include <StdWindow.h>
 
 class CStdDDraw;
+class C4GamePadControl;
 
 class C4Sec1Callback
 {

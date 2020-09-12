@@ -34,6 +34,7 @@
 // lobby predef - no need to include lobby in header just for the class ptr
 namespace C4GameLobby { class MainDlg; class Countdown; }
 class C4PacketJoinData;
+class C4Record;
 
 // standard ports
 const int16_t C4NetStdPortTCP = 11112,

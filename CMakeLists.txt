@@ -188,6 +188,7 @@ else ()
 endif ()
 add_executable(c4group ${C4GROUP_SOURCES})
 target_link_libraries(c4group standard)
+target_compile_definitions(c4group PRIVATE USE_CONSOLE)
 
 # Add libstandard target
 

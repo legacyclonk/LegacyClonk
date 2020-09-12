@@ -401,6 +401,11 @@ C4Network2ClientListBox::C4Network2ClientListBox(C4Rect &rcBounds, bool fStartup
 	Update();
 }
 
+C4Network2ClientListBox::~C4Network2ClientListBox()
+{
+	pSec1Timer->Release();
+}
+
 void C4Network2ClientListBox::Update()
 {
 	// sync with client list
@@ -510,6 +515,12 @@ C4Network2ClientListDlg::C4Network2ClientListDlg()
 	pSec1Timer = new C4Sec1TimerCallback<C4Network2ClientListDlg>(this);
 	// initial update
 	Update();
+}
+
+C4Network2ClientListDlg::~C4Network2ClientListDlg()
+{
+	if (this == pInstance) pInstance = nullptr;
+	pSec1Timer->Release();
 }
 
 void C4Network2ClientListDlg::Update()

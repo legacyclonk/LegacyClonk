@@ -20,6 +20,8 @@
 
 #include <C4Id.h>
 
+class C4DefList;
+
 // note that setting the chunk size for ID-Lists so low looks like an enormous waste
 // at first glance - however, due there's an incredibly large number of small ID-Lists
 // (99% of the lists have only one to three items!)

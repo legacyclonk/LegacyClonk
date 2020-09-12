@@ -19,6 +19,8 @@
 
 #pragma once
 
+class C4TeamList;
+
 // class predec
 namespace C4GUI { class ComboBox_FillCB; };
 

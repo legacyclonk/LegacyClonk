@@ -42,6 +42,7 @@
 class C4PlayerInfo;
 class C4ClientPlayerInfos;
 class C4PlayerInfoList;
+class C4FacetExSurface;
 
 // information about one player at a client
 class C4PlayerInfo

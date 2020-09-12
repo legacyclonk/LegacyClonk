@@ -18,7 +18,9 @@
 
 #pragma once
 
-#include <C4Value.h>
+#include "C4Value.h"
+
+class C4AulScriptEngine;
 
 // ** a definition of a script constant
 struct C4ScriptConstDef

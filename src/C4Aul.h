@@ -30,6 +30,8 @@
 #include <C4Script.h>
 #include <C4StringTable.h>
 
+#include <vector>
+
 // class predefs
 class C4AulError;
 class C4AulFunc;
@@ -40,6 +42,9 @@ class C4AulScriptEngine;
 
 struct C4AulContext;
 struct C4AulBCC;
+
+class C4Def;
+class C4DefList;
 
 // consts
 #define C4AUL_MAX_String 1024 // max string length

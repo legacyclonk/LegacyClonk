@@ -27,6 +27,7 @@
 #include <C4Application.h>
 #include <C4RankSystem.h>
 #include <C4Log.h>
+#include <C4Object.h>
 #include <C4Player.h>
 
 C4ObjectInfo::C4ObjectInfo()

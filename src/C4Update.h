@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "C4Constants.h"
 #include "C4Group.h"
 
 const int C4UP_MaxUpGrpCnt = 50;

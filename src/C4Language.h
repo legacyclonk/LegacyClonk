@@ -20,6 +20,7 @@
 
 #include <C4Group.h>
 #include <C4GroupSet.h>
+#include <StdResStr2.h>
 
 #ifdef HAVE_ICONV
 #include <iconv.h>

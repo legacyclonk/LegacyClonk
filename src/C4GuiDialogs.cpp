@@ -1205,6 +1205,11 @@ InfoDialog::InfoDialog(const char *szCaption, int iLineCount, const StdStrBuf &s
 	pTextWin->UpdateHeight();
 }
 
+InfoDialog::~InfoDialog()
+{
+	if (pSec1Timer) pSec1Timer->Release();
+}
+
 void InfoDialog::CreateSubComponents()
 {
 	// get positions

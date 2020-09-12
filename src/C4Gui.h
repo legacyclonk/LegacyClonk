@@ -27,16 +27,20 @@
 #define ConsoleDlgClassName "C4GUIdlg"
 #define ConsoleDlgWindowStyle (WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX)
 
-#include "C4Shape.h"
 #include "C4FacetEx.h"
-#include "C4LogBuf.h"
+#include "C4GamePadCon.h"
 #include "C4KeyboardInput.h"
+#include "C4LogBuf.h"
+#include "C4Shape.h"
+#include "C4Viewport.h"
 
-#include "C4Application.h"
-
-#include <StdWindow.h>
+#include "StdResStr2.h"
+#include "StdWindow.h"
 
 class C4GroupSet;
+
+template<typename T>
+class C4Sec1TimerCallback;
 
 // consts (load those from a def file some time)
 // font colors - alpha is font alpha, which is inversed opaque
@@ -2112,7 +2116,7 @@ public:
 	virtual bool IsMouseControlled() { return true; }
 
 	// For dialogs associated to a viewport: Return viewport (for placement)
-	virtual class C4Viewport *GetViewport() { return nullptr; }
+	virtual C4Viewport *GetViewport() { return nullptr; }
 	bool IsViewportDialog() { return fViewportDlg; }
 
 	// for custom placement procedures; should call SetPos
@@ -2427,7 +2431,7 @@ protected:
 public:
 	InfoDialog(const char *szCaption, int32_t iLineCount);
 	InfoDialog(const char *szCaption, int iLineCount, const StdStrBuf &sText); // init w/o timer
-	~InfoDialog() { if (pSec1Timer) pSec1Timer->Release(); }
+	~InfoDialog();
 
 	friend class C4Sec1TimerCallback<InfoDialog>;
 };
@@ -2610,7 +2614,7 @@ public:
 
 	bool KeyAny(); // to be called on keystrokes; resets some tooltip-times
 	virtual bool CharIn(const char *c); // input: character key pressed - should return false for none-character-inputs
-	bool MouseInput(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, Dialog *pDlg, class C4Viewport *pVP); // input: mouse movement or buttons; sends MouseEnter/Leave; return whether inside dialog
+	bool MouseInput(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, Dialog *pDlg, C4Viewport *pVP); // input: mouse movement or buttons; sends MouseEnter/Leave; return whether inside dialog
 
 	bool ShowMessage(const char *szMessage, const char *szCaption, Icons icoIcon, bool *pbConfigDontShowAgainSetting = nullptr); // show message
 	bool ShowErrorMessage(const char *szMessage); // show message: Error caption and icon
@@ -2838,8 +2842,8 @@ inline bool IsActive() { return Screen::GetScreenS() && Screen::GetScreenS()->Is
 inline bool IsExclusive() { return Screen::GetScreenS() && Screen::GetScreenS()->IsExclusive(); }
 
 // shortcut for GUI screen size
-inline int32_t GetScreenWdt() { Screen *pScreen = Screen::GetScreenS(); return pScreen ? pScreen->GetBounds().Wdt : Config.Graphics.ResX; }
-inline int32_t GetScreenHgt() { Screen *pScreen = Screen::GetScreenS(); return pScreen ? pScreen->GetBounds().Hgt : Config.Graphics.ResY; }
+int32_t GetScreenWdt();
+int32_t GetScreenHgt();
 
 // sound effect in GUI: Only if enabled
 void GUISound(const char *szSound);

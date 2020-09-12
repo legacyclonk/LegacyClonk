@@ -1147,6 +1147,18 @@ CStdFont &Resource::GetFontByHeight(int32_t iHgt, float *pfZoom)
 
 // Global stuff
 
+int32_t GetScreenWdt()
+{
+	Screen *pScreen = Screen::GetScreenS();
+	return pScreen ? pScreen->GetBounds().Wdt : Config.Graphics.ResX;
+}
+
+int32_t GetScreenHgt()
+{
+	Screen *pScreen = Screen::GetScreenS();
+	return pScreen ? pScreen->GetBounds().Hgt : Config.Graphics.ResY;
+}
+
 void GUISound(const char *szSound)
 {
 	if (Config.Sound.FESamples)
