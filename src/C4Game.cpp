@@ -182,7 +182,7 @@ bool C4Game::OpenScenario()
 		GroupSet.RegisterParentFolders(C4S.Head.Origin.getData());
 
 	// Scenario definition preset
-	if (!AllowUserChange)
+	if (!FixedDefinitions)
 	{
 		const std::vector<std::string> &defs = C4S.Definitions.GetModules();
 		if (!defs.empty()) DefinitionFilenames = defs;
@@ -1691,7 +1691,7 @@ void C4Game::Default()
 	ScenarioFilename[0] = 0;
 	PlayerFilenames[0] = 0;
 	DefinitionFilenames.clear();
-	AllowUserChange = false;
+	FixedDefinitions = false;
 	DirectJoinAddress[0] = 0;
 	pJoinReference = nullptr;
 	Parameters.ScenarioTitle.Ref("Loading...");

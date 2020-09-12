@@ -1636,7 +1636,7 @@ bool C4StartupScenSelDlg::StartScenario(C4ScenarioListLoader::Scenario *pStartSc
 			return false;
 
 		Game.DefinitionFilenames = defs;
-		Game.AllowUserChange = true;
+		Game.FixedDefinitions = true;
 	}
 	else
 	{

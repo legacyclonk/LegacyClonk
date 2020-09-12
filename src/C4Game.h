@@ -142,7 +142,7 @@ public:
 	char ScenarioFilename[_MAX_PATH + 1];
 	char PlayerFilenames[20 * _MAX_PATH + 1];
 	std::vector<std::string> DefinitionFilenames;
-	bool AllowUserChange;
+	bool FixedDefinitions;
 	char DirectJoinAddress[_MAX_PATH + 1];
 	class C4Network2Reference *pJoinReference;
 	int32_t FPS, cFPS;

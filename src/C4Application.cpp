@@ -340,6 +340,7 @@ void C4Application::QuitGame()
 			Game.fLobby = Game.NetworkActive = fWasNetworkActive;
 			if (fWasNetworkActive) Game.Network.SetPassword(password.getData());
 			Game.DefinitionFilenames = defs;
+			Game.FixedDefinitions = true;
 			Game.fObserve = false;
 			Game.Record = !!Config.General.Record;
 			NextMission.Clear();
