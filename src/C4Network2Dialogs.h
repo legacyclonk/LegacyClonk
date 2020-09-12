@@ -128,11 +128,16 @@ private:
 		ClientListItem(class C4Network2ClientListBox *pForDlg, int iClientID);
 
 		virtual void Update(); // update data
-		const C4Client *GetClient() const; // get client by associated ID
+		C4Client *GetClient() const; // get client by associated ID
 
 		void OnButtonToggleMute(C4GUI::Control *pButton);
 		void OnButtonActivate(C4GUI::Control *pButton);
 		void OnButtonKick(C4GUI::Control *pButton);
+
+	private:
+		// precondition: GetClient() != nullptr
+		void UpdateMuteButton();
+		const StdStrBuf GetNameLabel() const;
 	};
 
 	class ConnectionListItem : public ListItem

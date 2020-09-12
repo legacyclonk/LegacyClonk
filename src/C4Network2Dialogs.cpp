@@ -112,50 +112,51 @@ C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientLi
 {
 	// get associated client
 	const C4Client *pClient = GetClient();
+	if (!pClient) return;
+
 	// get size
 	int iIconSize = C4GUI::GetRes()->TextFont.GetLineHeight();
-	if (pForDlg->IsStartup()) iIconSize *= 2;
+	bool startup{pForDlg->IsStartup()};
+
+	if (startup) iIconSize *= 2;
 	int iWidth = pForDlg->GetItemWidth();
 	int iVerticalIndent = 2;
 	SetBounds(C4Rect(0, 0, iWidth, iIconSize + 2 * iVerticalIndent));
 	C4GUI::ComponentAligner ca(GetContainedClientRect(), 0, iVerticalIndent);
 	// create subcomponents
-	bool fIsHost = pClient && pClient->isHost();
+	bool fIsHost{pClient->isHost()};
 	pStatusIcon = new C4GUI::Icon(ca.GetFromLeft(iIconSize), fIsHost ? C4GUI::Ico_Host : C4GUI::Ico_Client);
-	StdStrBuf sNameLabel;
-	if (pClient)
-	{
-		if (pForDlg->IsStartup())
-			sNameLabel.Ref(pClient->getName());
-		else
-			sNameLabel.Format("%s:%s", pClient->getName(), pClient->getNick());
-	}
-	else
-	{
-		sNameLabel.Ref("???");
-	}
+
+	bool local{pClient->isLocal()};
+	StdStrBuf sNameLabel{GetNameLabel()};
+
 	pName = new C4GUI::Label(sNameLabel.getData(), iIconSize + IconLabelSpacing, iVerticalIndent, ALeft);
-	int iPingRightPos = GetBounds().Wdt - IconLabelSpacing;
-	pMuteBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>{C4GUI::Ico_Sound, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, 0), 0, this, &ClientListItem::OnButtonToggleMute};
-	pMuteBtn->SetToolTip(FormatString(LoadResStrNoAmp(pClient && pClient->isMuted() ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC"), sNameLabel.getData()).getData());
-	if (Game.Network.isHost()) iPingRightPos -= 3 * 24; // 3 buttons
-	if (Game.Network.isHost() && pClient && !pClient->isHost())
+
+	auto pos = 0;
+	if (Game.Network.isHost() && !fIsHost)
 	{
 		// activate/deactivate and kick btns for clients at host
-		if (!pForDlg->IsStartup())
+		pKickBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>(C4GUI::Ico_Kick, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, pos++), 0, this, &ClientListItem::OnButtonKick);
+		pKickBtn->SetToolTip(LoadResStrNoAmp("IDS_NET_KICKCLIENT"));
+
+		if (!startup)
 		{
-			pActivateBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>(C4GUI::Ico_Active, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, 2), 0, this, &ClientListItem::OnButtonActivate);
+			pActivateBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>(C4GUI::Ico_Active, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, pos++), 0, this, &ClientListItem::OnButtonActivate);
 			fShownActive = true;
 		}
-		pKickBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>(C4GUI::Ico_Kick, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, 1), 0, this, &ClientListItem::OnButtonKick);
-		pKickBtn->SetToolTip(LoadResStrNoAmp("IDS_NET_KICKCLIENT"));
 	}
-	if (!pForDlg->IsStartup()) if (pClient && !pClient->isLocal())
+
+	if (!local && !startup)
 	{
+		// mute button
+		pMuteBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>{C4GUI::Ico_Sound, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, pos++), 0, this, &ClientListItem::OnButtonToggleMute};
+		pMuteBtn->SetToolTip(FormatString(LoadResStrNoAmp(pClient && pClient->isMuted() ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC"), sNameLabel.getData()).getData());
+
 		// wait time
-		pPing = new C4GUI::Label("???", iPingRightPos, iVerticalIndent, ARight);
+		pPing = new C4GUI::Label("???", GetBounds().Wdt - IconLabelSpacing - pos * 24, iVerticalIndent, ARight);
 		pPing->SetToolTip(LoadResStr("IDS_DESC_CONTROLWAITTIME"));
 	}
+
 	// add components
 	AddElement(pStatusIcon); AddElement(pName);
 	if (pPing) AddElement(pPing);
@@ -182,7 +183,7 @@ void C4Network2ClientListBox::ClientListItem::Update()
 	}
 	// update activation status
 	const C4Client *pClient = GetClient(); if (!pClient) return;
-	pMuteBtn->SetIcon(pClient->isMuted() ? C4GUI::Ico_NoSound : C4GUI::Ico_Sound);
+
 	bool fIsActive = pClient->isActivated();
 	if (fIsActive != fShownActive)
 	{
@@ -237,15 +238,18 @@ void C4Network2ClientListBox::ClientListItem::Update()
 	pStatusIcon->SetIcon(icoStatus);
 }
 
-const C4Client *C4Network2ClientListBox::ClientListItem::GetClient() const
+C4Client *C4Network2ClientListBox::ClientListItem::GetClient() const
 {
 	return Game.Clients.getClientByID(iClientID);
 }
 
 void C4Network2ClientListBox::ClientListItem::OnButtonToggleMute(C4GUI::Control *pButton)
 {
-	if (auto *client = Game.Clients.getClientByID(iClientID); client)
+	if (auto *client = GetClient(); client)
+	{
 		client->ToggleMuted();
+		UpdateMuteButton();
+	}
 }
 
 void C4Network2ClientListBox::ClientListItem::OnButtonActivate(C4GUI::Control *pButton)
@@ -268,6 +272,32 @@ void C4Network2ClientListBox::ClientListItem::OnButtonKick(C4GUI::Control *pButt
 		Game.Network.Vote(VT_Kick, true, iClientID);
 	else
 		Game.Clients.CtrlRemove(GetClient(), LoadResStr(pForDlg->IsStartup() ? "IDS_MSG_KICKFROMSTARTUPDLG" : "IDS_MSG_KICKFROMCLIENTLIST"));
+}
+
+void C4Network2ClientListBox::ClientListItem::UpdateMuteButton()
+{
+	auto *client = GetClient();
+	pMuteBtn->SetIcon(client->isMuted() ? C4GUI::Ico_NoSound : C4GUI::Ico_Sound);
+	pMuteBtn->SetToolTip(FormatString(LoadResStrNoAmp(client && client->isMuted() ? "IDS_NET_UNMUTE_DESC" : "IDS_NET_MUTE_DESC"), GetNameLabel().getData()).getData());
+}
+
+const StdStrBuf C4Network2ClientListBox::ClientListItem::GetNameLabel() const
+{
+	if (auto *client = GetClient(); client)
+	{
+		if (pForDlg->IsStartup())
+		{
+			return StdStrBuf::MakeRef(client->getName());
+		}
+		else
+		{
+			return FormatString("%s:%s", client->getName(), client->getNick());
+		}
+	}
+	else
+	{
+		return StdStrBuf::MakeRef("???");
+	}
 }
 
 // C4Network2ClientListBox::ConnectionListItem
