@@ -240,16 +240,19 @@ void CStdApp::HandleSDLEvent(SDL_Event &event)
 
 // Clipboard not implemented.
 
-void CStdApp::Copy(const StdStrBuf &text, bool fClipboard) {}
-
-StdStrBuf CStdApp::Paste(bool fClipboard)
+void CStdApp::Copy(const StdStrBuf &text, bool)
 {
-	return StdStrBuf(0);
+	SDL_SetClipboardText(text.getData());
 }
 
-bool CStdApp::IsClipboardFull(bool fClipboard)
+StdStrBuf CStdApp::Paste(bool)
 {
-	return false;
+	return StdStrBuf::MakeRef(SDL_GetClipboardText());
+}
+
+bool CStdApp::IsClipboardFull(bool)
+{
+	return SDL_HasClipboardText() == SDL_TRUE;
 }
 
 // Event-pipe-whatever stuff I do not understand.
