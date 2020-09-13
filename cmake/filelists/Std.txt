@@ -1,3 +1,4 @@
+src/BuildConfig.h
 src/CStdFile.cpp
 src/CStdFile.h
 src/Standard.cpp

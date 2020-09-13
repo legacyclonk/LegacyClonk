@@ -18,9 +18,7 @@
 
 #pragma once
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif // HAVE_CONFIG_H
+#include "BuildConfig.h"
 
 #ifdef _WIN32
 #define C4_OS "win32"

@@ -18,17 +18,10 @@
 
 #pragma once
 
+#include "BuildConfig.h"
+
 // A standard product name for this project which is used in window registration etc.
 #define STD_PRODUCT "LegacyClonk"
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#elif defined(_WIN32)
-#define HAVE_IO_H 1
-#define HAVE_DIRECT_H 1
-#define HAVE_SHARE_H 1
-#define HAVE_FREETYPE
-#endif // _WIN32, HAVE_CONFIG_H
 
 // debug memory management
 #if !defined(NODEBUGMEM) && defined(_MSC_VER)
