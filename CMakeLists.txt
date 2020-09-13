@@ -13,6 +13,10 @@
 
 cmake_minimum_required(VERSION 3.8)
 
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.11.0")
+	cmake_policy(SET CMP0072 NEW) # prefer GLVND OpenGL libraries
+endif ()
+
 if (WIN32)
 	set(CMAKE_SYSTEM_VERSION 6.1) # Windows 7
 endif ()
