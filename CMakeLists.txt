@@ -224,9 +224,6 @@ endif ()
 
 add_library(standard STATIC ${LIBSTANDARD_SOURCES})
 target_compile_definitions(standard PRIVATE C4ENGINE HAVE_CONFIG_H)
-if (WIN32)
-	target_link_libraries(standard vfw32)
-endif ()
 
 # Link OpenSSL crypto library
 if (NOT USE_MSCAPI)
