@@ -211,7 +211,7 @@ void C4SGame::Default()
 	ClearMaterial.Clear();
 	Mode = C4S_Cooperative;
 	CooperativeGoal = C4S_NoGoal;
-	EnableRemoveFlag = 0;
+	EnableRemoveFlag = false;
 	Goals.Clear();
 	Rules.Clear();
 	FoWColor = 0;
@@ -412,8 +412,8 @@ void C4SEnvironment::CompileFunc(StdCompiler *pComp)
 
 void C4SRealism::Default()
 {
-	ConstructionNeedsMaterial = 0;
-	StructuresNeedEnergy = 1;
+	ConstructionNeedsMaterial = false;
+	StructuresNeedEnergy = true;
 	LandscapePushPull = 0;
 	LandscapeInsertThrust = 0;
 	ValueOverloads.Clear();
@@ -535,11 +535,11 @@ void C4SGame::ConvertGoals(C4SRealism &rRealism)
 	// CreateObjects,ClearObjects,ClearMaterials are still valid but invisible
 
 	// Convert realism to rules
-	if (rRealism.ConstructionNeedsMaterial) Rules.SetIDCount(C4Id("CNMT"), 1, true); rRealism.ConstructionNeedsMaterial = 0;
-	if (rRealism.StructuresNeedEnergy) Rules.SetIDCount(C4Id("ENRG"), 1, true); rRealism.StructuresNeedEnergy = 0;
+	if (rRealism.ConstructionNeedsMaterial) Rules.SetIDCount(C4Id("CNMT"), 1, true); rRealism.ConstructionNeedsMaterial = false;
+	if (rRealism.StructuresNeedEnergy) Rules.SetIDCount(C4Id("ENRG"), 1, true); rRealism.StructuresNeedEnergy = false;
 
 	// Convert rules
-	if (EnableRemoveFlag) Rules.SetIDCount(C4Id("FGRV"), 1, true); EnableRemoveFlag = 0;
+	if (EnableRemoveFlag) Rules.SetIDCount(C4Id("FGRV"), 1, true); EnableRemoveFlag = false;
 
 	// Convert eliminiation to rules
 	switch (Elimination)

@@ -119,8 +119,8 @@ public:
 class C4SRealism
 {
 public:
-	int32_t ConstructionNeedsMaterial;
-	int32_t StructuresNeedEnergy;
+	bool ConstructionNeedsMaterial;
+	bool StructuresNeedEnergy;
 	C4IDList ValueOverloads;
 	int32_t LandscapePushPull; // Use new experimental push-pull-algorithms
 	int32_t LandscapeInsertThrust; // Inserted material may thrust material of lower density aside
@@ -136,7 +136,7 @@ class C4SGame
 public:
 	int32_t Mode;
 	int32_t Elimination;
-	int32_t EnableRemoveFlag;
+	bool EnableRemoveFlag;
 
 	// Player winning
 	int32_t ValueGain; // If nonzero and value gain is equal or higher
