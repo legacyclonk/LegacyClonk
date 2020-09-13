@@ -187,7 +187,7 @@ long C4MusicSystem::SetPlayList(const char *const playlist)
 		}
 
 		auto startIt = playlist;
-		const auto endIt = std::strchr(playlist, 0);
+		const char *const endIt = std::strchr(playlist, 0);
 		while (true)
 		{
 			// Read next filename from playlist string
