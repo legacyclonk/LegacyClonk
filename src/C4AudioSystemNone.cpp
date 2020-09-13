@@ -16,11 +16,10 @@
 #include <C4Include.h>
 #include <C4AudioSystem.h>
 
-C4AudioSystem::C4AudioSystem() {}
 void C4AudioSystem::FadeOutMusic(const std::int32_t ms) {}
 bool C4AudioSystem::IsMusicPlaying() const { return false; }
 void C4AudioSystem::PlayMusic(const MusicFile &music, const bool loop) {}
-void C4AudioSystem::SetMusicVolume(const std::int32_t volume) {}
+void C4AudioSystem::SetMusicVolume(const float volume) {}
 void C4AudioSystem::StopMusic() {}
 void C4AudioSystem::UnpauseMusic() {}
 
@@ -29,7 +28,7 @@ C4AudioSystem::MusicFile::MusicFile(const void *const buf, const std::size_t siz
 C4AudioSystem::SoundChannel::SoundChannel(const SoundFile &sound, const bool loop) {}
 bool C4AudioSystem::SoundChannel::IsPlaying() const { return false; }
 void C4AudioSystem::SoundChannel::SetPosition(const std::uint32_t ms) {}
-void C4AudioSystem::SoundChannel::SetVolumeAndPan(const std::int32_t volume, const std::int32_t pan) {}
+void C4AudioSystem::SoundChannel::SetVolumeAndPan(const float volume, const float pan) {}
 void C4AudioSystem::SoundChannel::Unpause() {}
 
 C4AudioSystem::SoundFile::SoundFile(const void *const buf, const std::size_t size) {}
