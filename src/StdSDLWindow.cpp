@@ -24,6 +24,19 @@
 #include <StdFile.h>
 #include <StdBuf.h>
 
+#include <stdexcept>
+
+namespace {
+	void ThrowIfFailed(const char *const funcName, const bool failed)
+	{
+		if (failed)
+		{
+			throw std::runtime_error(std::string{"SDL: "} +
+			funcName + " failed: " + SDL_GetError());
+		}
+	}
+}
+
 /* CStdWindow */
 
 CStdWindow::CStdWindow() :
@@ -53,6 +66,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	app = pApp;
 
 	sdlWindow = SDL_CreateWindow(Title, 0, 0, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	ThrowIfFailed("SDL_CreateWindow", !sdlWindow);
 
 	return this;
 }
@@ -98,26 +112,27 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 {
 	if (mode == DisplayMode::Fullscreen)
 	{
-		SDL_SetWindowFullscreen(sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+		ThrowIfFailed("SDL_SetWindowFullscreen", SDL_SetWindowFullscreen(sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0);
 	}
 	else
 	{
 		if (displayMode == DisplayMode::Fullscreen)
 		{
 			const auto currentDisplay = SDL_GetWindowDisplayIndex(sdlWindow);
+			ThrowIfFailed("SDL_GetWindowDisplayIndex", currentDisplay < 0);
 			SDL_DisplayMode mode;
-			SDL_GetCurrentDisplayMode(currentDisplay, &mode);
+			ThrowIfFailed("SDL_GetCurrentDisplayMode", SDL_GetCurrentDisplayMode(currentDisplay, &mode) != 0);
 
 			width = mode.w - 100;
 			height = mode.h - 100;
 		}
 
-		SDL_SetWindowFullscreen(sdlWindow, 0);
+		ThrowIfFailed("SDL_SetWindowFullscreen", SDL_SetWindowFullscreen(sdlWindow, 0) != 0);
 		SDL_SetWindowSize(sdlWindow, width, height);
 	}
 
 	displayMode = mode;
-	SDL_ShowCursor(SDL_DISABLE);
+	ThrowIfFailed("SDL_ShowCursor", SDL_ShowCursor(SDL_DISABLE) < 0);
 }
 
 void CStdWindow::SetProgress(uint32_t) {} // stub
