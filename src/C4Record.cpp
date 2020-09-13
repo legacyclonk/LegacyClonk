@@ -239,13 +239,13 @@ bool C4Record::Rec(C4PacketType eCtrlType, C4ControlPacket *pCtrl, int iFrame)
 	return Rec(iFrame, DecompileToBuf<StdCompilerBinWrite>(Pkt), RCT_CtrlPkt);
 }
 
-bool C4Record::Rec(int iFrame, const StdBuf &sBuf, C4RecordChunkType eType)
+bool C4Record::Rec(uint32_t iFrame, const StdBuf &sBuf, C4RecordChunkType eType)
 {
 	// filler chunks (this should never be necessary, though)
 	while (iFrame > iLastFrame + 0xff)
 		Rec(iLastFrame + 0xff, StdBuf(), RCT_Frame);
 	// get frame difference
-	uint32_t iFrameDiff = std::max<uint32_t>(0, iFrame - iLastFrame);
+	const uint32_t iFrameDiff = iLastFrame > iFrame ? 0 : iFrame - iLastFrame;
 	iLastFrame += iFrameDiff;
 	// create head
 	C4RecordChunkHead Head = { static_cast<uint8_t>(iFrameDiff), static_cast<uint8_t>(eType) };

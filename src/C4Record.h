@@ -274,7 +274,7 @@ public:
 
 	bool Rec(const C4Control &Ctrl, int iFrame); // record control
 	bool Rec(C4PacketType eCtrlType, C4ControlPacket *pCtrl, int iFrame); // record control packet
-	bool Rec(int iFrame, const StdBuf &sBuf, C4RecordChunkType eType);
+	bool Rec(uint32_t iFrame, const StdBuf &sBuf, C4RecordChunkType eType);
 
 	bool AddFile(const char *szLocalFilename, const char *szAddAs, bool fDelete = false);
 
