@@ -28,6 +28,8 @@
 #include <io.h>
 #include <ctype.h>
 #include <conio.h>
+
+#include <mutex>
 #include <stdexcept>
 
 #include "res/engine_resource.h"
@@ -405,6 +407,98 @@ void CStdApp::ResetTimer(unsigned int uDelay)
 	uCriticalTimerDelay = uDelay;
 	CloseCriticalTimer();
 	SetCriticalTimer();
+}
+
+namespace
+{
+	struct ClipboardCleanup
+	{
+		~ClipboardCleanup() { CloseClipboard(); }
+	};
+
+	struct GlobalLockHandle
+	{
+		explicit GlobalLockHandle(HGLOBAL handle) : handle{handle} {}
+
+		void lock()
+		{
+			data = reinterpret_cast<decltype(data)>(GlobalLock(handle));
+		}
+
+		void unlock()
+		{
+			GlobalUnlock(handle);
+			data = nullptr;
+		}
+
+		bool try_lock()
+		{
+			if (!data)
+			{
+				lock();
+				return true;
+			}
+
+			return false;
+		}
+
+		HGLOBAL handle;
+		char *data{nullptr};
+	};
+}
+
+bool CStdApp::Copy(std::string_view text, bool fClipboard)
+{
+	if (!fClipboard)
+	{
+		throw std::runtime_error{"No primary selection on Windows"};
+	}
+
+	// gain clipboard ownership
+	if (!OpenClipboard(GetWindowHandle())) return false;
+	const ClipboardCleanup cleanup;
+
+	// must empty the global clipboard, so the application clipboard equals the Windows clipboard
+	EmptyClipboard();
+
+	// allocate a global memory object for the text.
+	GlobalLockHandle handle{GlobalAlloc(GMEM_MOVEABLE, text.size() + 1)};
+	if (!handle.handle)
+	{
+		return false;
+	}
+
+	// lock the handle and copy the text to the buffer.
+	std::lock_guard guard{handle};
+	memcpy(handle.data, text.data(), text.size());
+	handle.data[text.size()] = '\0';
+
+	// place the handle on the clipboard.
+	return SetClipboardData(CF_TEXT, handle.data);
+}
+
+std::string CStdApp::Paste(bool fClipboard)
+{
+	if (!fClipboard)
+	{
+		throw std::runtime_error{"No primary selection on Windows"};
+	}
+
+	if (!IsClipboardFormatAvailable(CF_TEXT) || !OpenClipboard(GetWindowHandle())) return "";
+
+	const ClipboardCleanup cleanup;
+
+	// get text from clipboard
+	if (GlobalLockHandle handle{GetClipboardData(CF_TEXT)}; handle.handle)
+	{
+		std::lock_guard guard{handle};
+		if (handle.data)
+		{
+			return handle.data;
+		}
+	}
+
+	return "";
 }
 
 bool CStdApp::ReadStdInCommand()

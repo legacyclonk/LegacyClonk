@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <string>
+
 class CStdAppPrivate
 {
 public:
@@ -40,7 +42,7 @@ public:
 #ifdef USE_X11
 	struct ClipboardData
 	{
-		StdStrBuf Text;
+		std::string Text;
 	} PrimarySelection, ClipboardSelection;
 	unsigned long LastEventTime;
 	typedef std::map<unsigned long, CStdWindow *> WindowListT;

@@ -512,11 +512,11 @@ void CStdApp::HandleXMessage()
 		re.time = event.xselectionrequest.time;
 		re.requestor = event.xselectionrequest.requestor;
 		// Note: we're implementing the spec only partially here
-		if (d.Text.getData())
+		if (!d.Text.empty())
 		{
 			re.property = event.xselectionrequest.property;
 			XChangeProperty(dpy, re.requestor, re.property, re.target, 8, PropModeReplace,
-				reinterpret_cast<const unsigned char *>(d.Text.getData()), d.Text.getLength());
+			    reinterpret_cast<const unsigned char *>(d.Text.c_str()), d.Text.size());
 		}
 		else
 		{
@@ -529,7 +529,7 @@ void CStdApp::HandleXMessage()
 	{
 		CStdAppPrivate::ClipboardData &d = (event.xselectionrequest.selection == XA_PRIMARY) ?
 			Priv->PrimarySelection : Priv->ClipboardSelection;
-		d.Text.Clear();
+		d.Text.clear();
 		break;
 	}
 	case ClientMessage:
@@ -570,20 +570,21 @@ void CStdApp::HandleXMessage()
 }
 
 // Copy the text to the clipboard or the primary selection
-void CStdApp::Copy(const StdStrBuf &text, bool fClipboard)
+bool CStdApp::Copy(std::string_view text, bool fClipboard)
 {
 	CStdAppPrivate::ClipboardData &d = fClipboard ? Priv->ClipboardSelection : Priv->PrimarySelection;
 	XSetSelectionOwner(dpy, fClipboard ? ClipboardAtoms[0] : XA_PRIMARY, pWindow->wnd, Priv->LastEventTime);
 	Window owner = XGetSelectionOwner(dpy, fClipboard ? ClipboardAtoms[0] : XA_PRIMARY);
-	if (owner != pWindow->wnd) return;
-	d.Text.Copy(text);
+	if (owner != pWindow->wnd) return false;
+	d.Text.assign(text.data());
+	return true;
 }
 
 // Paste the text from the clipboard or the primary selection
-StdStrBuf CStdApp::Paste(bool fClipboard)
+std::string CStdApp::Paste(bool fClipboard)
 {
 	Window owner = XGetSelectionOwner(dpy, fClipboard ? ClipboardAtoms[0] : XA_PRIMARY);
-	if (owner == None) return StdStrBuf();
+	if (owner == None) return "";
 	// Retrieve the selection into the XA_STRING property of our main window
 	XConvertSelection(dpy, fClipboard ? ClipboardAtoms[0] : XA_PRIMARY, XA_STRING, XA_STRING,
 		pWindow->wnd, Priv->LastEventTime);
@@ -604,14 +605,14 @@ StdStrBuf CStdApp::Paste(bool fClipboard)
 		&len, &bytes_left, // that
 		&data);
 	// nothing to read?
-	if (bytes_left == 0) return StdStrBuf();
+	if (bytes_left == 0) return "";
 	int result = XGetWindowProperty(dpy, pWindow->wnd,
 		XA_STRING, 0, bytes_left,
 		1, // delete it now
 		AnyPropertyType,
 		&type, &format, &len, &bytes_left, &data);
-	if (result != Success) return StdStrBuf();
-	StdStrBuf res(reinterpret_cast<char *>(data), true);
+	if (result != Success) return "";
+	std::string res{reinterpret_cast<char *>(data)};
 	XFree(data);
 	return res;
 }

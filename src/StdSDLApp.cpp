@@ -238,16 +238,22 @@ void CStdApp::HandleSDLEvent(SDL_Event &event)
 		pWindow->HandleMessage(event);
 }
 
-// Clipboard not implemented.
-
-void CStdApp::Copy(const StdStrBuf &text, bool)
+bool CStdApp::Copy(std::string_view text, bool)
 {
-	SDL_SetClipboardText(text.getData());
+	return !SDL_SetClipboardText(text.data());
 }
 
-StdStrBuf CStdApp::Paste(bool)
+std::string CStdApp::Paste(bool)
 {
-	return StdStrBuf::MakeRef(SDL_GetClipboardText());
+	char *const text{SDL_GetClipboardText()};
+	if (text)
+	{
+		std::string ret{text};
+		free(text);
+		return ret;
+	}
+
+	return "";
 }
 
 bool CStdApp::IsClipboardFull(bool)

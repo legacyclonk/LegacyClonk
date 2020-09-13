@@ -251,12 +251,15 @@ bool CStdApp::SignalNetworkEvent()
 }
 
 // Copy the text to the clipboard or the primary selection
-void CStdApp::Copy(const StdStrBuf &text, bool fClipboard) {}
+bool CStdApp::Copy(std::string_view, bool)
+{
+	return false;
+}
 
 // Paste the text from the clipboard or the primary selection
-StdStrBuf CStdApp::Paste(bool fClipboard)
+std::string CStdApp::Paste(bool)
 {
-	return StdStrBuf("");
+	return "";
 }
 
 // Is there something in the clipboard?

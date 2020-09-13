@@ -355,9 +355,9 @@ public:
 	const char *GetCommandLine() { return szCmdLine; }
 
 	// Copy the text to the clipboard or the primary selection
-	void Copy(const StdStrBuf &text, bool fClipboard = true);
+	bool Copy(std::string_view text, bool fClipboard = true);
 	// Paste the text from the clipboard or the primary selection
-	StdStrBuf Paste(bool fClipboard = true);
+	std::string Paste(bool fClipboard = true);
 	// Is there something in the clipboard?
 	bool IsClipboardFull(bool fClipboard = true);
 	// a command from stdin
