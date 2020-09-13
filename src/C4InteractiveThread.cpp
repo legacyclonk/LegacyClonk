@@ -158,7 +158,7 @@ void C4InteractiveThread::ProcessEvents() // by main thread
 bool C4InteractiveThread::ThreadLog(const char *szMessage)
 {
 	// send to main thread
-	return PushEvent(Ev_Log, StdStrBuf{szMessage}.GrabPointer());
+	return PushEvent(Ev_Log, StdStrBuf{szMessage});
 }
 
 bool C4InteractiveThread::ThreadLogF(const char *szMessage, ...)
@@ -173,7 +173,7 @@ bool C4InteractiveThread::ThreadLogF(const char *szMessage, ...)
 bool C4InteractiveThread::ThreadLogS(const char *szMessage)
 {
 	// send to main thread
-	return PushEvent(Ev_LogSilent, StdStrBuf{szMessage}.GrabPointer());
+	return PushEvent(Ev_LogSilent, StdStrBuf{szMessage});
 }
 
 bool C4InteractiveThread::ThreadLogSF(const char *szMessage, ...)
