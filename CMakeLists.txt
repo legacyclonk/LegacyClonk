@@ -158,12 +158,12 @@ elseif (APPLE)
 	append_filelist(CLONK_SOURCES EngineApple.txt)
 endif ()
 
-if (USE_SDL_MAINLOOP)
-	append_filelist(CLONK_SOURCES EngineSdlMainloop.txt)
+if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
+	append_filelist(CLONK_SOURCES EngineSdl.txt)
 endif ()
 
-if (USE_SDL_MIXER)
-	append_filelist(CLONK_SOURCES EngineSdl.txt)
+if (USE_SDL_MAINLOOP)
+	append_filelist(CLONK_SOURCES EngineSdlMainloop.txt)
 endif ()
 
 if (USE_X11)
