@@ -121,12 +121,12 @@ jobs:
           cd ramdisk
           if [ "$PLATFORM" = "x86" ]; then
             sudo rsync -rv --exclude=ramdisk .. chroot/legacyclonk
-            sudo chroot chroot bash -c 'cd /legacyclonk && autobuild/build.sh'
+            sudo chroot chroot bash -c 'cd /legacyclonk && autobuild/build.sh -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_DEVELOPER_MODE=On '
             cp chroot/legacyclonk/build/LegacyClonk.tar.gz .
           else
             rsync -rv --exclude=ramdisk .. legacyclonk
             cd legacyclonk
-            autobuild/build.sh
+            autobuild/build.sh -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_DEVELOPER_MODE=On
             C4GROUP=$PWD/build/c4group tools/make_Graphics.c4g.sh
             C4GROUP=$PWD/build/c4group tools/make_System.c4g.sh
             mv build/LegacyClonk.tar.gz .

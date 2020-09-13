@@ -8,6 +8,6 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends zlib
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_DEVELOPER_MODE=On ..
+cmake -DCMAKE_INSTALL_PREFIX="/usr" "$@" ..
 make -j$(nproc)
 test -e clonk && tar -cvzf LegacyClonk.tar.gz clonk c4group
