@@ -23,11 +23,6 @@
 #include <string>
 #include <utility>
 
-// Try to avoid casting NotFoundExceptions for trivial cases (MSVC log flood workaround)
-#if defined(_MSC_VER)
-#define STDCOMPILER_EXCEPTION_WORKAROUND
-#endif
-
 // Provides an interface of generalized compiling/decompiling
 // (serialization/deserialization - note that the term "compile" is used for both directions)
 
@@ -44,11 +39,7 @@
 class StdCompiler
 {
 public:
-	StdCompiler() : pWarnCB(nullptr)
-#ifdef STDCOMPILER_EXCEPTION_WORKAROUND
-		, fFailSafe(false), fFail(false)
-#endif
-	{}
+	StdCompiler() : pWarnCB(nullptr) {}
 
 	// *** Overridables (Interface)
 	virtual ~StdCompiler() {}
@@ -248,10 +239,6 @@ public:
 	// Throw helpers (might redirect)
 	void excNotFound(const char *szMessage, ...)
 	{
-#ifdef STDCOMPILER_EXCEPTION_WORKAROUND
-		// Exception workaround: Just set a flag in failesafe mode.
-		if (fFailSafe) { fFail = true; return; }
-#endif
 		// Throw the appropriate exception
 		va_list args; va_start(args, szMessage);
 		throw NotFoundException(getPosition(), FormatStringV(szMessage, args));
@@ -270,29 +257,6 @@ public:
 		va_list args; va_start(args, szMessage);
 		throw CorruptException(getPosition(), FormatStringV(szMessage, args));
 	}
-
-protected:
-	// Exception workaround
-#ifdef STDCOMPILER_EXCEPTION_WORKAROUND
-	bool fFailSafe, fFail;
-
-	void beginFailSafe() { fFailSafe = true; fFail = false; }
-	bool endFailSafe() { fFailSafe = false; return !fFail; }
-
-public:
-	template <class T> bool ValueSafe(const T &rStruct) { rStruct.CompileFunc(this); return true; }
-	template <class T> bool ValueSafe(T &rStruct) { CompileFunc(rStruct, this); return true; }
-
-	bool ValueSafe(int64_t &rInt)  { beginFailSafe(); QWord(rInt);    return endFailSafe(); }
-	bool ValueSafe(uint64_t &rInt) { beginFailSafe(); QWord(rInt);    return endFailSafe(); }
-	bool ValueSafe(int32_t &rInt)  { beginFailSafe(); DWord(rInt);    return endFailSafe(); }
-	bool ValueSafe(uint32_t &rInt) { beginFailSafe(); DWord(rInt);    return endFailSafe(); }
-	bool ValueSafe(int16_t &rInt)  { beginFailSafe(); Word(rInt);     return endFailSafe(); }
-	bool ValueSafe(uint16_t &rInt) { beginFailSafe(); Word(rInt);     return endFailSafe(); }
-	bool ValueSafe(int8_t &rInt)   { beginFailSafe(); Byte(rInt);     return endFailSafe(); }
-	bool ValueSafe(uint8_t &rInt)  { beginFailSafe(); Byte(rInt);     return endFailSafe(); }
-	bool ValueSafe(bool &rBool)    { beginFailSafe(); Boolean(rBool); return endFailSafe(); }
-#endif
 
 public:
 	// * Warnings

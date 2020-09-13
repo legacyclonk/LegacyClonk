@@ -53,12 +53,7 @@ struct StdDefaultAdapt
 	{
 		try
 		{
-#ifdef STDCOMPILER_EXCEPTION_WORKAROUND
-			if (!pComp->ValueSafe(rValue))
-				rValue = rDefault;
-#else
 			pComp->Value(rValue);
-#endif
 		}
 		catch (const StdCompiler::NotFoundException &)
 		{
@@ -825,12 +820,6 @@ struct StdEnumAdapt
 		else
 		{
 			int_t val = 0;
-#ifdef STDCOMPILER_EXCEPTION_WORKAROUND
-			// Try to read as number
-			if (!pComp->ValueSafe(val))
-			{
-				rVal = T(val);
-#else
 			// Try to read as number
 			try
 			{
@@ -839,7 +828,6 @@ struct StdEnumAdapt
 			}
 			catch (const StdCompiler::NotFoundException &)
 			{
-#endif
 				// Try to read as string
 				StdStrBuf Name;
 				pComp->Value(mkParAdapt(Name, StdCompiler::RCT_Idtf));
@@ -924,14 +912,6 @@ struct StdBitfieldAdapt
 			// Read
 			do
 			{
-#ifdef STDCOMPILER_EXCEPTION_WORKAROUND
-				T tmp;
-				// Try to read as number
-				if (pComp->ValueSafe(tmp))
-					val |= tmp;
-				else
-				{
-#else
 				// Try to read as number
 				try
 				{
@@ -941,7 +921,6 @@ struct StdBitfieldAdapt
 				}
 				catch (const StdCompiler::NotFoundException &)
 				{
-#endif
 					// Try to read as string
 					StdStrBuf Name;
 					pComp->Value(mkParAdapt(Name, StdCompiler::RCT_Idtf));
