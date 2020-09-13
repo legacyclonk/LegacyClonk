@@ -566,7 +566,10 @@ CStdGLCtx *CStdGL::CreateContext(CStdWindow *const pWindow, CStdApp *const pApp)
 	if (!pWindow) return nullptr;
 
 #ifdef USE_SDL_MAINLOOP
-	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+	if (SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1) != 0)
+	{
+		LogF("  SDL: Enabling context sharing failed: %s", SDL_GetError());
+	}
 #endif
 
 	// create it

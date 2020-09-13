@@ -356,6 +356,9 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 
 #elif defined(USE_SDL_MAINLOOP)
 
+#include <stdexcept>
+#include <string>
+
 CStdGLCtx::CStdGLCtx() : pWindow{}, cx{}, cy{}, ctx{} {}
 
 void CStdGLCtx::Clear()
@@ -375,6 +378,10 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	// safety
 	if (!pGL) return false;
 	ctx = SDL_GL_CreateContext(pWindow->sdlWindow);
+	if (!ctx)
+	{
+		return pGL->Error(FormatString("  gl: Unable to create context: %s", SDL_GetError()).getData());
+	}
 	// store window
 	this->pWindow = pWindow;
 	assert(!DDrawCfg.NoAcceleration);
@@ -420,7 +427,10 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 
 void CStdGLCtx::DoDeselect()
 {
-	SDL_GL_MakeCurrent(this->pWindow->sdlWindow, nullptr);
+	if (SDL_GL_MakeCurrent(this->pWindow->sdlWindow, nullptr) != 0)
+	{
+		throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
+	}
 }
 
 bool CStdGLCtx::UpdateSize()
@@ -454,13 +464,13 @@ bool CStdGLCtx::PageFlip()
 bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 {
 	assert(ramp.size == 256);
-	return SDL_SetWindowGammaRamp(MainCtx.pWindow->sdlWindow, ramp.red, ramp.green, ramp.blue) != -1;
+	return SDL_SetWindowGammaRamp(MainCtx.pWindow->sdlWindow, ramp.red, ramp.green, ramp.blue) == 0;
 }
 
 bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 {
 	assert(DefRamp.size == 256);
-	return SDL_GetWindowGammaRamp(MainCtx.pWindow->sdlWindow, DefRamp.red, DefRamp.green, DefRamp.blue) != -1;
+	return SDL_GetWindowGammaRamp(MainCtx.pWindow->sdlWindow, DefRamp.red, DefRamp.green, DefRamp.blue) == 0;
 }
 
 #endif // USE_X11/USE_SDL_MAINLOOP
