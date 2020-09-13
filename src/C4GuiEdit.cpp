@@ -304,7 +304,7 @@ bool Edit::Paste()
 
 		// replace any '|'
 		int32_t iLBPos = 0, iLBPos2;
-		while ((iLBPos = SCharPos('|', text, iLBPos)) >= 0) text[iLBPos] = 'l';
+		while ((iLBPos = SCharPos('|', text, iLBPos)) >= 0) text[iLBPos] = '\xa6';
 		// caution when inserting line breaks: Those must be stripped, and sent as Enter-commands
 		iLBPos = 0;
 		for (;;)
@@ -430,11 +430,10 @@ bool Edit::CharIn(const char *c)
 {
 	// no control codes
 	if (static_cast<unsigned char>(c[0]) < ' ' || c[0] == 0x7f) return false;
-	// no '|'
-	if (c[0] == '|') return false;
-	// all extended characters are OK
+
+	// all characters except '|' and extended characters are OK
 	// insert character at cursor position
-	return InsertText(c, true);
+	return InsertText(c[0] == '|' ? "\xa6" : c, true);
 }
 
 void Edit::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
