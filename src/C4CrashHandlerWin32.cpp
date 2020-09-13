@@ -20,8 +20,6 @@
 
 #include "C4Include.h"
 
-#ifdef HAVE_DBGHELP
-
 // Dump generation on crash
 #include "C4Config.h"
 #include "C4Log.h"
@@ -666,12 +664,3 @@ void InstallCrashHandler()
 		HookAssert(&assertionHandler);
 #endif
 }
-
-#else
-
-void InstallCrashHandler()
-{
-	// no-op
-}
-
-#endif // HAVE_DBGHELP
