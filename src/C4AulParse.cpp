@@ -24,6 +24,8 @@
 #include <C4Game.h>
 #include <C4Wrappers.h>
 
+#include <cinttypes>
+
 #define DEBUG_BYTECODE_DUMP 0
 
 #define C4AUL_Include "#include"
@@ -3589,7 +3591,7 @@ bool C4AulScript::Parse()
 					case AB_STRING:
 						LogSilentF("%s\t'%s'\n", GetTTName(eType), X ? (reinterpret_cast<C4String *>(X))->Data.getData() : ""); break;
 					default:
-						LogSilentF("%s\t%ld\n", GetTTName(eType), X); break;
+						LogSilentF("%s\t%" PRIdPTR "\n", GetTTName(eType), X); break;
 					}
 					if (eType == AB_EOFN) break;
 				}

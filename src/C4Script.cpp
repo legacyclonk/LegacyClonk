@@ -3812,7 +3812,7 @@ static void FnSetLength(C4AulContext *cthr, C4Value *pArrayRef, long iNewSize)
 {
 	// safety
 	if (iNewSize < 0 || iNewSize > C4ValueList::MaxSize)
-		throw C4AulExecError(cthr->Obj, FormatString("SetLength: invalid array size (%d)", iNewSize).getData());
+		throw C4AulExecError(cthr->Obj, FormatString("SetLength: invalid array size (%ld)", iNewSize).getData());
 
 	// set new size
 	pArrayRef->SetArrayLength(iNewSize, cthr);
