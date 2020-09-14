@@ -155,8 +155,8 @@ C4ID C4IDList::GetID(C4DefList &defs, int32_t category, int32_t index, int32_t *
 			if (cindex == index)
 			{
 				if (ipCount) *ipCount = it.count;
+				return it.id;
 			}
-			return it.id;
 		}
 	}
 
