@@ -804,6 +804,9 @@ void C4Network2::SetCtrlMode(int32_t iCtrlMode)
 	if (!isHost()) return;
 	// no change?
 	if (iCtrlMode == Status.getCtrlMode()) return;
+
+	// update config value
+	Config.Network.ControlMode = iCtrlMode;
 	// change game status
 	ChangeGameStatus(Status.getState(), Game.Control.ControlTick, iCtrlMode);
 }
