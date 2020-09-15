@@ -1,6 +1,10 @@
 name: Autobuild
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore: 'build-test*'
+  pull_request:
+    branches: '*'
 
 jobs:
   Windows:
