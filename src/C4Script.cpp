@@ -1162,7 +1162,7 @@ static std::optional<long> FnGetComDir(C4AulContext *cthr, C4Object *pObj)
 	return {pObj->Action.ComDir};
 }
 
-static long FnGetX(C4AulContext *cthr, C4Object *pObj)
+static std::optional<long> FnGetX(C4AulContext *cthr, C4Object *pObj)
 {
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return {};
 	return {pObj->x};
