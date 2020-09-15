@@ -47,7 +47,7 @@ bool isGermanSystem()
 #ifdef _WIN32
 	if (PRIMARYLANGID(GetUserDefaultLangID()) == LANG_GERMAN) return true;
 #elif defined(__APPLE__) and defined(C4ENGINE)
-	bool isGerman();
+	extern bool isGerman();
 	if (isGerman()) return true;
 #elif defined(HAVE_LOCALE_H)
 	if (strstr(setlocale(LC_MESSAGES, nullptr), "de")) return true;
