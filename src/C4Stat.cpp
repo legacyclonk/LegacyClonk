@@ -132,7 +132,7 @@ void C4MainStat::Show()
 		StatArray[i] = pBestStat;
 	}
 
-	delete bHS;
+	delete[] bHS;
 
 	fprintf(StatFile, "** Stat\n");
 
