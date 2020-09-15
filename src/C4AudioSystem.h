@@ -107,9 +107,9 @@ public:
 
 	private:
 #ifdef USE_FMOD
-		const FmodUniquePtr<FMOD::Sound> sample;
+		FmodUniquePtr<FMOD::Sound> sample;
 #elif defined(USE_SDL_MIXER)
-		const SDLMixMusicUniquePtr sample;
+		SDLMixMusicUniquePtr sample;
 #endif
 
 		friend class C4AudioSystem;
