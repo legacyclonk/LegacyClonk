@@ -1567,7 +1567,7 @@ bool EraseItemSafe(const char *szFilename)
 	return !SHFileOperation(&shs);
 #elif defined(USE_SDL_MAINLOOP) && defined(C4ENGINE) && defined(__APPLE__)
 	bool sendFileToTrash(const char *filename);
-	sendFileToTrash(szFilename);
+	return sendFileToTrash(szFilename);
 #else
 	return false;
 #endif
