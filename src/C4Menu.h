@@ -23,7 +23,8 @@
 #include "C4Shape.h"
 #include "C4Gui.h"
 #include "C4IDList.h"
-#include "C4Viewport.h"
+
+class C4Viewport;
 
 enum
 {

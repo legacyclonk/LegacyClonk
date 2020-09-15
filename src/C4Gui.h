@@ -32,12 +32,12 @@
 #include "C4KeyboardInput.h"
 #include "C4LogBuf.h"
 #include "C4Shape.h"
-#include "C4Viewport.h"
 
 #include "StdResStr2.h"
 #include "StdWindow.h"
 
 class C4GroupSet;
+class C4Viewport;
 
 template<typename T>
 class C4Sec1TimerCallback;
