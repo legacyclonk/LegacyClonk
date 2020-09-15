@@ -3874,7 +3874,7 @@ static std::optional<long> FnGetClrModulation(C4AulContext *cthr, C4Object *pObj
 			DebugLogF("GetClrModulation: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return {};
 		}
-		return pOverlay->GetClrModulation();
+		return {pOverlay->GetClrModulation()};
 	}
 	else
 		// get it
