@@ -203,7 +203,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-w" -DCMAKE_C_FLAGS="-w" ..
+          cmake -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-Wno-parentheses" ..
 
       - name: Build
         run: |
