@@ -3890,7 +3890,6 @@ static bool FnGetMissionAccess(C4AulContext *cthr, C4String *strMissionAccess)
 	if (Game.Control.SyncMode())
 		Log("Warning: using GetMissionAccess may cause desyncs when playing records!");
 
-	if (!Config.General.MissionAccess) return false;
 	return SIsModule(Config.General.MissionAccess, FnStringPar(strMissionAccess));
 }
 
