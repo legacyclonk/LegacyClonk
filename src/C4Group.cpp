@@ -126,7 +126,7 @@ bool C4Group_CopyItem(const char *szSource, const char *szTarget1, bool fNoSort,
 {
 	// Parameter check
 	char szTarget[_MAX_PATH + 1]; SCopy(szTarget1, szTarget, _MAX_PATH);
-	if (!szSource || !szTarget || !szSource[0] || !szTarget[0]) return false;
+	if (!szSource || !szSource[0] || !szTarget[0]) return false;
 
 	// Backslash terminator indicates target is a path only (append filename)
 	if (szTarget[SLen(szTarget) - 1] == DirectorySeparator) SAppend(GetFilename(szSource), szTarget);
@@ -173,7 +173,7 @@ bool C4Group_MoveItem(const char *szSource, const char *szTarget1, bool fNoSort)
 {
 	// Parameter check
 	char szTarget[_MAX_PATH + 1]; SCopy(szTarget1, szTarget, _MAX_PATH);
-	if (!szSource || !szTarget || !szSource[0] || !szTarget[0]) return false;
+	if (!szSource || !szSource[0] || !szTarget[0]) return false;
 
 	// Backslash terminator indicates target is a path only (append filename)
 	if (szTarget[SLen(szTarget) - 1] == DirectorySeparator) SAppend(GetFilename(szSource), szTarget);
