@@ -318,6 +318,10 @@ if (WIN32)
 	target_link_libraries(clonk dbghelp iphlpapi winmm ws2_32)
 endif ()
 
+if (APPLE)
+	target_link_libraries(clonk "-framework AppKit")
+endif ()
+
 # Link X11
 if (USE_X11)
 	find_package(X11 REQUIRED)
@@ -358,8 +362,6 @@ configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if (APPLE AND NOT USE_CONSOLE)
-	target_link_libraries(clonk "-framework AppKit")
-
 	set(BUNDLE_RESOURCES
 		src/res/lc.icns
 		src/res/C4U.icns
