@@ -6235,7 +6235,7 @@ class C4AulEngineFunc : public C4AulEngineFuncHelper<sizeof...(Pars)>
 	constexpr static auto ParCount = sizeof...(Pars);
 	using Func = Ret(&)(C4AulContext *context, Pars...);
 	constexpr auto static isVoid = std::is_same_v<Ret, void>;
-	const Func func;
+	Func func;
 
 public:
 	C4AulEngineFunc(C4AulScript *owner, const char *name, Func func, bool pub) : C4AulEngineFuncHelper<ParCount>{owner, name, pub, C4ValueConv<Pars>::Type()...}, func{func} {}
@@ -6295,7 +6295,7 @@ public:
 template<std::size_t ParCount, C4V_Type RetType>
 class C4AulEngineFuncParArray : public C4AulEngineFuncHelper<ParCount> {
 	using Func = C4Value(&)(C4AulContext *context, const C4Value *pars);
-	const Func func;
+	Func func;
 
 public:
 	template<typename... ParTypes>
