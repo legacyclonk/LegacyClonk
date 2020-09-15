@@ -3668,10 +3668,8 @@ void C4NetIOUDP::Peer::SetTimeout(int iLength, int iRetryCnt) // (mt-safe)
 
 void C4NetIOUDP::Peer::OnTimeout()
 {
-	// what state?
-	switch (eStatus)
+	if (eStatus == CS_Conn)
 	{
-	case CS_Conn:
 		// retries left?
 		if (iRetries)
 		{
@@ -3684,7 +3682,6 @@ void C4NetIOUDP::Peer::OnTimeout()
 		}
 		// connection timeout: close
 		Close("connection timeout");
-		break;
 	}
 	// reset timeout
 	SetTimeout(TO_INF);
