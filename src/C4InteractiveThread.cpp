@@ -21,6 +21,8 @@
 
 #include <C4Game.h>
 
+#include <cassert>
+
 // *** C4InteractiveThread
 
 C4InteractiveThread::C4InteractiveThread()
@@ -142,6 +144,10 @@ void C4InteractiveThread::ProcessEvents() // by main thread
 				LogSilent(log.getData()); break;
 			case Ev_LogFatal:
 				LogFatal(log.getData()); break;
+			default:
+				// can't really get here in any sane way
+				assert(!"Unhandled switch case");
+				break;
 			}
 		}
 		break;

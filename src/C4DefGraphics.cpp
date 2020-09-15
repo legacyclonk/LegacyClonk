@@ -630,6 +630,10 @@ void C4GraphicsOverlay::UpdateFacet()
 	case MODE_ExtraGraphics: // like ColorByOwner-sfc
 		// calculated at runtime
 		break;
+
+	case MODE_Object:
+		// nothing to do
+		break;
 	}
 }
 

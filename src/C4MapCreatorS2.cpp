@@ -30,6 +30,8 @@
 #include <C4Texture.h>
 #endif
 
+#include <cassert>
+
 // C4MCCallbackArray
 
 C4MCCallbackArray::C4MCCallbackArray(C4AulFunc *pSFunc, C4MapCreatorS2 *pMapCreator)
@@ -376,7 +378,11 @@ bool C4MCOverlay::SetField(C4MCParser *pParser, const char *szField, const char 
 				// add to main
 				this->*(pAttr->scriptFunc) = new C4MCCallbackArray(pSFunc, MapCreator);
 #endif
+				break;
 			}
+			case C4MCV_None:
+				assert(!"C4MCNodeAttr of type C4MCV_None");
+				break;
 			}
 			// done
 			return true;

@@ -31,6 +31,8 @@
 #include <arpa/inet.h>
 #endif
 
+#include <cassert>
+
 // internal structures
 struct C4Network2IO::NetEvPacketData
 {
@@ -682,6 +684,10 @@ void C4Network2IO::OnThreadEvent(C4InteractiveEventType eEvent, const std::any &
 		delete pData;
 	}
 	break;
+
+	default:
+		// not in our interest
+		break;
 	}
 }
 
@@ -691,6 +697,9 @@ C4NetIO *C4Network2IO::getNetIO(C4Network2IOProtocol eProt) // by both
 	{
 	case P_UDP: return pNetIO_UDP;
 	case P_TCP: return pNetIO_TCP;
+	case P_NONE:
+		assert(!"C4Network2IOProtocol P_NONE");
+		return nullptr;
 	}
 	return nullptr;
 }

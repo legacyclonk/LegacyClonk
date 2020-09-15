@@ -481,6 +481,9 @@ gboolean C4ViewportWindow::OnScrollStatic(GtkWidget *widget, GdkEventScroll *eve
 		case GDK_SCROLL_DOWN:
 			Game.GraphicsSystem.MouseMove(C4MC_Button_Wheel, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state + (short(-1) << 16), window->cvp);
 			break;
+		case GDK_SCROLL_LEFT: case GDK_SCROLL_RIGHT:
+			// no horizontal scrolling implemented so far
+			break;
 		}
 	}
 

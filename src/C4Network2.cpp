@@ -41,6 +41,8 @@
 #include <arpa/inet.h>
 #endif
 
+#include <cassert>
+
 // *** C4Network2Status
 
 C4Network2Status::C4Network2Status()
@@ -1094,11 +1096,17 @@ void C4Network2::DrawStatus(C4FacetEx &cgo)
 		{
 		case P_TCP: iMsgPort = Config.Network.PortTCP; break;
 		case P_UDP: iMsgPort = Config.Network.PortUDP; break;
+		case P_NONE:
+			assert(!"C4Network2IOProtocol of protocol P_NONE");
+			break;
 		}
 		switch (eDataProt)
 		{
 		case P_TCP: iDataPort = Config.Network.PortTCP; break;
 		case P_UDP: iDataPort = Config.Network.PortUDP; break;
+		case P_NONE:
+			assert(!"C4Network2IOProtocol of protocol P_NONE");
+			break;
 		}
 		Stat.AppendFormat("|Protocols: %s: %s (%d i%d o%d bc%d)",
 			pMsgIO != pDataIO ? "Msg" : "Msg/Data",
@@ -1141,6 +1149,7 @@ void C4Network2::DrawStatus(C4FacetEx &cgo)
 		case NCS_Chasing: szClientStatus = " (chasing)"; break;
 		case NCS_NotReady: szClientStatus = " (!rdy)"; break;
 		case NCS_Remove: szClientStatus = " (removed)"; break;
+		case NCS_Ready: szClientStatus = " (ready to start)"; break;
 		}
 		Stat.AppendFormat("|- %s %s %s (ID %d) (wait %d ms, behind %d)%s%s",
 			Core.isObserver() ? "Observing" : Core.isActivated() ? "Active" : "Inactive", Core.isHost() ? "host" : "client",

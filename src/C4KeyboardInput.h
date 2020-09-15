@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <cassert>
+
 // key context classifications
 enum C4KeyScope
 {
@@ -210,6 +212,7 @@ protected:
 		case KEYEV_Down: return pFuncDown ? (rTarget.*pFuncDown)() : false;
 		case KEYEV_Up: return pFuncUp ? (rTarget.*pFuncUp)() : false;
 		case KEYEV_Pressed: return pFuncPressed ? (rTarget.*pFuncPressed)() : false;
+		case KEYEV_None: assert(!"KeyEvent of type KEYEV_None");
 		}
 		return false;
 	}
@@ -240,6 +243,7 @@ protected:
 		case KEYEV_Down: return pFuncDown ? (rTarget.*pFuncDown)(key) : false;
 		case KEYEV_Up: return pFuncUp ? (rTarget.*pFuncUp)(key) : false;
 		case KEYEV_Pressed: return pFuncPressed ? (rTarget.*pFuncPressed)(key) : false;
+		case KEYEV_None: assert(!"KeyEvent of type KEYEV_None");
 		}
 		return false;
 	}
@@ -271,6 +275,7 @@ protected:
 		case KEYEV_Down: return pFuncDown ? (rTarget.*pFuncDown)(par) : false;
 		case KEYEV_Up: return pFuncUp ? (rTarget.*pFuncUp)(par) : false;
 		case KEYEV_Pressed: return pFuncPressed ? (rTarget.*pFuncPressed)(par) : false;
+		case KEYEV_None: assert(!"KeyEvent of type KEYEV_None");
 		}
 		return false;
 	}
@@ -301,6 +306,7 @@ protected:
 		case KEYEV_Down: return pFuncDown ? (rTarget.*pFuncDown)(key, par) : false;
 		case KEYEV_Up: return pFuncUp ? (rTarget.*pFuncUp)(key, par) : false;
 		case KEYEV_Pressed: return pFuncPressed ? (rTarget.*pFuncPressed)(key, par) : false;
+		case KEYEV_None: assert(!"KeyEvent of type KEYEV_None");
 		}
 		return false;
 	}

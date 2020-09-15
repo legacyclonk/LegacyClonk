@@ -35,6 +35,7 @@
 
 #include <StdRegistry.h> // For DDraw emulation warning
 
+#include <cassert>
 #include <stdexcept>
 
 constexpr unsigned int defaultGameTickDelay = 16;
@@ -372,7 +373,6 @@ void C4Application::Execute()
 	static int32_t iRecursionCount = 0;
 	++iRecursionCount;
 	// Exec depending on game state
-	assert(AppState != C4AS_None);
 	switch (AppState)
 	{
 	case C4AS_Quit:
@@ -442,6 +442,8 @@ void C4Application::Execute()
 		if (pGamePadControl) pGamePadControl->Execute();
 		break;
 	}
+	case C4AS_None:
+		assert(!"Unhandled switch case");
 	}
 
 	--iRecursionCount;
@@ -602,6 +604,9 @@ void C4Application::OnCommand(const char *szCmd)
 		// Normal commands
 		Game.MessageInput.ProcessInput(szCmd);
 		break;
+
+	case C4AS_None: case C4AS_PreInit: case C4AS_StartGame: case C4AS_Quit:
+		assert(!"Unhandled switch case");
 	}
 }
 

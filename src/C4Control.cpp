@@ -28,6 +28,7 @@
 #include <C4Wrappers.h>
 #include <C4Player.h>
 
+#include <cassert>
 #include <cinttypes>
 
 // *** C4ControlPacket
@@ -230,6 +231,10 @@ void C4ControlSet::Execute() const
 		// this setting is part of the reference
 		if (Game.Network.isEnabled() && Game.Network.isHost())
 			Game.Network.InvalidateReference();
+		break;
+
+	case C4CVT_None:
+		assert(!"C4ControlSet of type C4CVT_None");
 		break;
 	}
 }
@@ -575,6 +580,7 @@ void C4ControlClientUpdate::Execute() const
 		Game.Players.RemoveAtClient(iID, true);
 		break;
 	case CUT_SetReady:
+	{
 		// nothing to do?
 		if (pClient->isLobbyReady() == !!iData) break;
 		// ready/unready (while keeping track of time)
@@ -592,6 +598,10 @@ void C4ControlClientUpdate::Execute() const
 		// Also update icons
 		C4GameLobby::MainDlg *lobby = Game.Network.GetLobby();
 		if (lobby) lobby->OnClientReadyStateChange(pClient);
+		break;
+	}
+	case CUT_None:
+		assert(!"C4ControlClientUpdate of type CUT_None");
 		break;
 	}
 }
@@ -1009,6 +1019,11 @@ void C4ControlEMDrawTool::Execute() const
 		}
 	}
 	break;
+
+	case EMDT_SetMode:
+		// should be handled above already
+		assert(!"Unhandled switch case");
+		break;
 	}
 }
 
@@ -1441,6 +1456,12 @@ void C4ControlVoteEnd::Execute() const
 			// Game over immediately, so poor player won't continue game alone
 			Game.DoGameOver();
 		}
+		break;
+	case VT_None:
+		assert(!"C4ControlVoteEnd of type VT_None");
+		break;
+	case VT_Pause:
+		// handled elsewhere
 		break;
 	}
 }

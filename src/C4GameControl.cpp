@@ -26,6 +26,8 @@
 #include <C4Log.h>
 #include <C4Network2Stats.h>
 
+#include <cassert>
+
 // *** C4GameControl
 
 C4GameControl::C4GameControl()
@@ -255,6 +257,9 @@ bool C4GameControl::Prepare()
 
 		// check GameGo
 		return Network.CtrlReady(ControlTick);
+
+	case CM_None:
+		assert(!"Unhandled switch case");
 	}
 
 	return false;

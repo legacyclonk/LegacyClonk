@@ -31,6 +31,8 @@
 #include <sys/socket.h>
 #endif
 
+#include <cassert>
+
 // C4StartupNetListEntry
 
 C4StartupNetListEntry::C4StartupNetListEntry(C4GUI::ListBox *pForListBox, C4GUI::Element *pInsertBefore, C4StartupNetDlg *pNetDlg)
@@ -126,6 +128,9 @@ const char *C4StartupNetListEntry::GetQueryTypeName(QueryType eQueryType)
 	case NRQT_GameDiscovery: return LoadResStr("IDS_NET_QUERY_LOCALNET");
 	case NRQT_Masterserver:  return LoadResStr("IDS_NET_QUERY_MASTERSRV");
 	case NRQT_DirectJoin:    return LoadResStr("IDS_NET_QUERY_DIRECTJOIN");
+	case NRQT_Unknown:
+		assert(!"Unknown QueryType");
+		return "";
 	};
 	return "";
 }

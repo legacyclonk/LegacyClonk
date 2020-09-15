@@ -26,6 +26,8 @@
 #include <C4Player.h>
 #include <C4Viewport.h>
 
+#include <cassert>
+
 // C4ObjectMenu
 
 C4ObjectMenu::C4ObjectMenu() : C4Menu()
@@ -483,6 +485,10 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 	case CB_Scenario:
 		// Object menu with scenario script callback
 		Game.Script.DirectExec(nullptr, szCommand, "MenuCommand", false, Game.Script.Strict);
+		break;
+
+	case CB_None:
+		assert(!"Callback type is CB_None");
 		break;
 	}
 

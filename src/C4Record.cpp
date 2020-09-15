@@ -730,6 +730,9 @@ void C4Playback::Strip()
 						i->pCtrl->Remove(pPkt);
 					}
 					break;
+				default:
+					// don't strip anything else
+					break;
 				}
 			}
 			// Strip empty control lists (always)
@@ -759,6 +762,9 @@ void C4Playback::Strip()
 				break;
 			case CID_Message:
 				if (fStripMessages) fStripThis = true;
+				break;
+			default:
+				// don't strip anything else
 				break;
 			}
 			if (fStripThis)

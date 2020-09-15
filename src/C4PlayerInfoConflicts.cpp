@@ -187,6 +187,7 @@ bool C4PlayerInfoListAttributeConflictResolver::IsAttributeConflict(const C4Play
 		{
 		case C4PlayerInfo::PLRAL_Current: szName2 = pInfo2->GetName(); break;
 		case C4PlayerInfo::PLRAL_Original: szName2 = pInfo2->GetOriginalName(); break;
+		case C4PlayerInfo::PLRAL_Alternate: break; // there is no definable alternate
 		}
 		return SEqualNoCase(szName1, szName2);
 	}
