@@ -21,6 +21,8 @@
 
 #include <Standard.h>
 
+#include <algorithm>
+
 // color definitions
 const int FTrans = -1, FWhite = 0, FBlack = 1, FPlayer = 2, FRed = 3;
 const int CBlack = 0, CGray1 = 1, CGray2 = 2, CGray3 = 3, CGray4 = 4, CGray5 = 5, CWhite = 6,
@@ -30,140 +32,260 @@ extern const uint8_t FColors[];
 // helper function
 constexpr uint32_t RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { return (a << 24) | (r << 16) | (g << 8) | b; }
 
-inline void BltAlpha(uint32_t &dwDst, uint32_t dwSrc)
+namespace
 {
-	// blit one color value w/alpha on another
-	if (dwDst >> 24 == 0xff) { dwDst = dwSrc; return; }
-	uint8_t byAlphaDst = uint8_t(dwSrc >> 24); uint8_t byAlphaSrc = 255 - byAlphaDst;
-	dwDst = std::min<uint32_t>((int(dwDst & 0xff) * byAlphaDst + int(dwSrc & 0xff) * byAlphaSrc) >> 8, 0xff) | // blue
-		std::min<uint32_t>((int(dwDst & 0xff00) * byAlphaDst + int(dwSrc & 0xff00) * byAlphaSrc) >> 8 & 0xff00, 0xff00) | // green
-		std::min<uint32_t>((int(dwDst & 0xff0000) * byAlphaDst + uint32_t(dwSrc & 0xff0000) * byAlphaSrc) >> 8 & 0xff0000, 0xff0000) | // red
-		uint32_t((std::max)(static_cast<int>(dwDst >> 24) - byAlphaSrc, 0)) << 24; // alpha
+	struct Color
+	{
+		uint8_t r;
+		uint8_t g;
+		uint8_t b;
+		uint8_t a;
+	};
+
+	constexpr Color SplitRGB(uint32_t color)
+	{
+		return
+		{
+			static_cast<uint8_t>(color >> 16),
+			static_cast<uint8_t>(color >> 8),
+			static_cast<uint8_t>(color),
+			static_cast<uint8_t>(color >> 24)
+		};
+	}
+
+	template<typename Func>
+	constexpr uint32_t CombineColors(uint32_t dst, uint32_t src, Func func)
+	{
+		const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
+		const auto [srcR, srcG, srcB, srcA] = SplitRGB(src);
+
+		return func(srcR, srcG, srcB, srcA, dstR, dstG, dstB, dstA);
+	}
 }
 
-inline void BltAlphaAdd(uint32_t &dwDst, uint32_t dwSrc)
+constexpr void BltAlpha(uint32_t &dst, uint32_t src)
 {
-	// blit one color value w/alpha on another in additive mode
-	if (dwDst >> 24 == 0xff) { dwDst = dwSrc; return; }
-	uint8_t byAlphaSrc = 255 - static_cast<uint8_t>(dwSrc >> 24);
-	dwDst = std::min<uint32_t>((dwDst & 0xff) + (((dwSrc & 0xff) * byAlphaSrc) >> 8), 0xff) | // blue
-		std::min<uint32_t>((dwDst & 0xff00) + ((dwSrc >> 8 & 0xff) * byAlphaSrc) & 0x00ffff00, 0xff00) | // green
-		std::min<uint32_t>((dwDst & 0xff0000) + ((dwSrc >> 8 & 0xff00) * byAlphaSrc) & 0xffff0000, 0xff0000) | // red
-		(std::max<uint32_t>(dwDst >> 24, byAlphaSrc) - byAlphaSrc) << 24; // alpha
+	dst = CombineColors(dst, src, [src](const uint8_t srcR, const uint8_t srcG, const uint8_t srcB, const uint8_t srcA, const uint8_t dstR, const uint8_t dstG, const uint8_t dstB, const uint8_t dstA)
+	{
+		if (dstA == 0xff)
+		{
+			return src;
+		}
+
+		const uint8_t byAlphaSrc = 0xff - srcA;
+		const uint8_t byAlphaDst = srcA;
+
+		auto combine = [byAlphaDst, byAlphaSrc](uint16_t src, uint16_t dst)
+		{
+			return static_cast<uint8_t>(std::min((src * byAlphaSrc + dst * byAlphaDst) >> 8, 0xff));
+		};
+
+		return RGBA
+		(
+			combine(srcR, dstR),
+			combine(srcG, dstG),
+			combine(srcB, dstB),
+			static_cast<uint8_t>(std::max(dstA - byAlphaSrc, 0))
+		);
+	});
 }
 
-inline void ModulateClr(uint32_t &dwDst, uint32_t dwMod) // modulate two color values
+constexpr void BltAlphaAdd(uint32_t &dst, uint32_t src)
 {
-	// modulate two color values
-	// get alpha
-	int iA1 = dwDst >> 24, iA2 = dwMod >> 24;
-	// modulate color values; mod alpha upwards
-	dwDst = ((dwDst & 0xff) * (dwMod & 0xff)) >> 8 | // blue
-		((dwDst >> 8 & 0xff) * (dwMod >> 8 & 0xff)) & 0xff00 | // green
-		((dwDst >> 16 & 0xff) * (dwMod >> 8 & 0xff00)) & 0xff0000 | // red
-		(std::min<uint32_t>(iA1 + iA2 - ((iA1 * iA2) >> 8), 255)) << 24; // alpha (=255-(255*iA1)(255*iA2)/255)
+	dst = CombineColors(dst, src, [src](const uint8_t srcR, const uint8_t srcG, const uint8_t srcB, const uint8_t srcA, const uint8_t dstR, const uint8_t dstG, const uint8_t dstB, const uint8_t dstA)
+	{
+		if (dstA == 0xff)
+		{
+			return src;
+		}
+
+		const uint8_t byAlphaSrc = 0xff - srcA;
+
+		auto combine = [byAlphaSrc](uint16_t src, uint16_t dst)
+		{
+			return static_cast<uint8_t>(std::min(dst + ((src * byAlphaSrc) >> 8), 0xff));
+		};
+
+		return RGBA
+		(
+			combine(srcR, dstR),
+			combine(srcG, dstG),
+			combine(srcB, dstB),
+			static_cast<uint8_t>(std::max(dstA - byAlphaSrc, 0))
+		);
+	});
 }
 
-inline void ModulateClrA(uint32_t &dwDst, uint32_t dwMod) // modulate two color values and add alpha value
+constexpr void ModulateClr(uint32_t &dst, uint32_t src)
 {
-	// modulate two color values and add alpha value
-	dwDst = (((dwDst & 0xff) * (dwMod & 0xff)) >> 8) | // B
-		(((dwDst >> 8 & 0xff) * (dwMod >> 8 & 0xff)) & 0xff00) | // G
-		(((dwDst >> 16 & 0xff) * (dwMod >> 8 & 0xff00)) & 0xff0000) | // R
-		std::min<uint32_t>((dwDst >> 24) + (dwMod >> 24), 0xff) << 24;
+	dst = CombineColors(dst, src, [](const uint8_t srcR, const uint8_t srcG, const uint8_t srcB, const uint8_t srcA, const uint8_t dstR, const uint8_t dstG, const uint8_t dstB, const uint8_t dstA)
+	{
+		auto combine = [](uint16_t src, uint16_t dst)
+		{
+			return static_cast<uint8_t>((src * dst) >> 8);
+		};
+
+		return RGBA
+		(
+			combine(srcR, dstR),
+			combine(srcG, dstG),
+			combine(srcB, dstB),
+			static_cast<uint8_t>(std::min(srcA + dstA - ((srcA * dstA) >> 8), 0xff))
+		);
+	});
 }
 
-inline void ModulateClrMOD2(uint32_t &dwDst, uint32_t dwMod) // clr1+clr2-0.5
+constexpr void ModulateClrA(uint32_t &dst, uint32_t src)
 {
-	// signed color addition
-	dwDst = static_cast<uint32_t>(BoundBy<int>((static_cast<int>((dwDst & 0xff) + (dwMod & 0xff)) - 0x7f) * 2, 0, 0xff) | // B
-		(BoundBy<int>((static_cast<int>((dwDst & 0xff00) + (dwMod & 0xff00)) - 0x7f00) * 2, 0, 0xff00) & 0xff00) | // G
-		(BoundBy<int>((static_cast<int>((dwDst & 0xff0000) + (dwMod & 0xff0000)) - 0x7f0000) * 2, 0, 0xff0000) & 0xff0000)) | // R
-		std::min<uint32_t>((dwDst >> 24) + (dwMod >> 24), 0xff) << 24;
+	dst = CombineColors(dst, src, [](const uint8_t srcR, const uint8_t srcG, const uint8_t srcB, const uint8_t srcA, const uint8_t dstR, const uint8_t dstG, const uint8_t dstB, const uint8_t dstA)
+	{
+		auto combine = [](uint16_t src, uint16_t dst)
+		{
+			return static_cast<uint8_t>((src * dst) >> 8);
+		};
+
+		return RGBA
+		(
+			combine(srcR, dstR),
+			combine(srcG, dstG),
+			combine(srcB, dstB),
+			static_cast<uint8_t>(std::min(srcA + dstA, 0xff))
+		);
+	});
 }
 
-inline void ModulateClrMonoA(uint32_t &dwDst, uint8_t byMod, uint8_t byA)
+constexpr void ModulateClrMOD2(uint32_t &dst, uint32_t src)
 {
-	// darken a color value by constant modulation and add an alpha value
-	dwDst = ((dwDst & 0xff) * byMod) >> 8 | // blue
-		((dwDst >> 8 & 0xff) * byMod) & 0xff00 | // green
-		((dwDst >> 8 & 0xff00) * byMod) & 0xff0000 | // red
-		std::min<uint32_t>((dwDst >> 24) + byA, 255) << 24; // alpha
+	dst = CombineColors(dst, src, [](const uint8_t srcR, const uint8_t srcG, const uint8_t srcB, const uint8_t srcA, const uint8_t dstR, const uint8_t dstG, const uint8_t dstB, const uint8_t dstA)
+	{
+		auto combine = [](uint16_t src, uint16_t dst)
+		{
+			return static_cast<uint8_t>(std::clamp((src + dst - 0x7f) * 2, 0, 0xff));
+		};
+
+		return RGBA
+		(
+			combine(srcR, dstR),
+			combine(srcG, dstG),
+			combine(srcB, dstB),
+			static_cast<uint8_t>(std::min(srcA + dstA, 255))
+		);
+	});
 }
 
-inline uint32_t LightenClr(uint32_t &dwDst) // enlight a color
+constexpr void ModulateClrMonoA(uint32_t &dst, uint8_t byMod, uint8_t byA)
 {
-	// enlight a color
-	uint32_t dw = dwDst;
-	dwDst = (dw & 0xff808080) | ((dw << 1) & 0xfefefe);
-	if (dw & 0x80) dwDst |= 0xff;
-	if (dw & 0x8000) dwDst |= 0xff00;
-	if (dw & 0x800000) dwDst |= 0xff0000;
-	return dwDst;
+	const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
+	auto modulate = [byMod](uint16_t dst)
+	{
+		return static_cast<uint8_t>((dst * byMod) >> 8);
+	};
+	dst = RGBA
+	(
+		modulate(dstR),
+		modulate(dstG),
+		modulate(dstB),
+		static_cast<uint8_t>(std::min(dstA + byA, 0xff))
+	);
 }
 
-inline uint32_t LightenClrBy(uint32_t &dwDst, int iBy) // enlight a color
+constexpr uint32_t LightenClr(uint32_t &dst)
 {
-	// enlight a color
+	const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
+	auto lighten = [](uint8_t dst)
+	{
+		const auto tmp = (dst & 0x80) | ((dst << 1) & 0xfe);
+		return (dst & 0x80) ? tmp | 0xff : tmp;
+	};
+	return dst = RGBA
+	(
+		lighten(dstR),
+		lighten(dstG),
+		lighten(dstB),
+		dstA
+	);
+}
+
+constexpr uint32_t LightenClrBy(uint32_t &dst, uint8_t by)
+{
 	// quite a desaturating method...
-	dwDst = std::min<int>((dwDst & 0xff) + iBy, 255) | // blue
-		std::min<int>((dwDst >> 8 & 0xff) + iBy, 255) << 8 | // green
-		std::min<int>((dwDst >> 16 & 0xff) + iBy, 255) << 16 | // red
-		(dwDst & 0xff000000); // alpha
-	return dwDst;
+	const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
+	auto lighten = [by](uint8_t dst)
+	{
+		return static_cast<uint8_t>(std::min(dst + by, 0xff));
+	};
+	return dst = RGBA
+	(
+		lighten(dstR),
+		lighten(dstG),
+		lighten(dstB),
+		dstA
+	);
 }
 
-inline uint32_t DarkenClrBy(uint32_t &dwDst, int iBy) // darken a color
+constexpr uint32_t DarkenClrBy(uint32_t &dst, uint8_t by)
 {
-	// darken a color
 	// quite a desaturating method...
-	dwDst = static_cast<uint32_t>(std::max<int>(static_cast<int>(dwDst & 0xff) - iBy, 0) | // blue
-		std::max<int>(static_cast<int>(dwDst >> 8 & 0xff) - iBy, 0) << 8 | // green
-		std::max<int>(static_cast<int>(dwDst >> 16 & 0xff) - iBy, 0) << 16) | // red
-		(dwDst & 0xff000000); // alpha
-	return dwDst;
+	const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
+	auto lighten = [by](uint8_t dst)
+	{
+		return static_cast<uint8_t>(std::max(dst - by, 0));
+	};
+	return dst = RGBA
+	(
+		lighten(dstR),
+		lighten(dstG),
+		lighten(dstB),
+		dstA
+	);
 }
 
-inline uint32_t PlrClr2TxtClr(uint32_t dwClr)
+[[nodiscard]] constexpr uint32_t PlrClr2TxtClr(uint32_t clr)
 {
 	// convert player color to text color, lightening up when necessary
-	const auto lgt = (std::max)((std::max)(GetRValue(dwClr), GetGValue(dwClr)), GetBValue(dwClr));
-	if (lgt < 0x8f) LightenClrBy(dwClr, 0x8f - lgt);
-	return dwClr | 0xff000000;
+	const auto [r, g, b, a] = SplitRGB(clr);
+	const auto lgt = std::max({r, g, b});
+
+	return ((lgt < 0x8f) ? LightenClrBy(clr, 0x8f - lgt) : clr) | 0xff000000;
 }
 
-inline uint32_t GetClrModulation(uint32_t dwSrcClr, uint32_t dwDstClr, uint32_t &dwBack)
+// get modulation that is necessary to transform dwSrcClr to dwDstClr
+// does not support alpha values in dwSrcClr and dwDstClr
+[[nodiscard]] constexpr uint32_t GetClrModulation(uint32_t src, uint32_t dst, uint32_t &back)
 {
-	// get modulation that is necessary to transform dwSrcClr to dwDstClr
-	// does not support alpha values in dwSrcClr and dwDstClr
-	// get source color
-	uint8_t sB = static_cast<uint8_t>(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
-	uint8_t sG = static_cast<uint8_t>(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
-	uint8_t sR = static_cast<uint8_t>(dwSrcClr); dwSrcClr = dwSrcClr >> 8;
-	// get dest color
-	uint8_t dB = static_cast<uint8_t>(dwDstClr); dwDstClr = dwDstClr >> 8;
-	uint8_t dG = static_cast<uint8_t>(dwDstClr); dwDstClr = dwDstClr >> 8;
-	uint8_t dR = static_cast<uint8_t>(dwDstClr); dwDstClr = dwDstClr >> 8;
-	// get difference
-	int cR = static_cast<int>(dR) - sR;
-	int cG = static_cast<int>(dG) - sG;
-	int cB = static_cast<int>(dB) - sB;
-	// get max enlightment
-	int diffN = 0;
-	if (cR > 0) diffN = cR;
-	if (cG > 0) diffN = (std::max)(diffN, cG);
-	if (cB > 0) diffN = (std::max)(diffN, cB);
-	// is dest > src?
-	if (diffN)
+	return CombineColors(dst, src, [&back](const int16_t srcR, const int16_t srcG, const int16_t srcB, const uint8_t, const int16_t dstR, const int16_t dstG, const int16_t dstB, const uint8_t)
 	{
-		// so a back mask must be used
-		int bR = sR + (cR * 255) / diffN;
-		int bG = sG + (cG * 255) / diffN;
-		int bB = sB + (cB * 255) / diffN;
-		dwBack = RGBA(bR, bG, bB, 0);
-	}
-	if (!sR) sR = 1; if (!sG) sG = 1; if (!sB) sB = 1;
-	return RGBA((std::min)(static_cast<int>(dR) * 256 / sR, 255), (std::min)(static_cast<int>(dG) * 256 / sG, 255), (std::min)(static_cast<int>(dB) * 256 / sB, 255), diffN);
+		const auto diffR = dstR - srcR;
+		const auto diffG = dstG - srcG;
+		const auto diffB = dstB - srcB;
+
+		// get max enlightment
+		const auto diff = std::max({0, diffR, diffG, diffB});
+
+		// is dest > src?
+		if (diff > 0)
+		{
+			// so a back mask must be used
+			auto backVal = [diff](int src, int diffComponent)
+			{
+				return static_cast<uint8_t>(src + (diffComponent * 0xff) / diff);
+			};
+			back = RGBA(backVal(srcR, diffR), backVal(dstG, diffG), backVal(srcB, diffB), 0);
+		}
+
+		auto combine = [](uint8_t src, uint16_t dst)
+		{
+			return static_cast<uint8_t>(std::min(dst * 256 / std::max<uint8_t>(src, 1), 0xff));
+		};
+
+		return RGBA
+		(
+			combine(srcR, dstR),
+			combine(srcG, dstG),
+			combine(srcB, dstB),
+			diff
+		);
+	});
 }
 
 inline uint32_t NormalizeColors(uint32_t &dwClr1, uint32_t &dwClr2, uint32_t &dwClr3, uint32_t &dwClr4)
@@ -187,7 +309,7 @@ inline uint32_t InvertRGBAAlpha(uint32_t dwFromClr)
 inline uint16_t ClrDw2W(uint32_t dwClr)
 {
 	return
-	static_cast<uint16_t>((dwClr & 0x000000f0) >>  4) |
+		static_cast<uint16_t>((dwClr & 0x000000f0) >>  4) |
 		static_cast<uint16_t>((dwClr & 0x0000f000) >>  8) |
 		static_cast<uint16_t>((dwClr & 0x00f00000) >> 12) |
 		static_cast<uint16_t>((dwClr & 0xf0000000) >> 16);
