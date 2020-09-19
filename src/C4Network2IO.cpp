@@ -494,7 +494,7 @@ bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t
 	}
 #if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
-	ThreadLogSF("OnConn: %d:%02d:%02d:%03d: %s",
+	Application.InteractiveThread.ThreadLogSF("OnConn: %d:%02d:%02d:%03d: %s",
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
 		getNetIOName(pNetIO));
 #endif
@@ -548,7 +548,7 @@ void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const
 	}
 #if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
-	ThreadLogSF("OnDisconn: %d:%02d:%02d:%03d: %s",
+	Application.InteractiveThread.ThreadLogSF("OnDisconn: %d:%02d:%02d:%03d: %s",
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
 		getNetIOName(pNetIO));
 #endif
@@ -578,7 +578,7 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 {
 #if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
-	ThreadLogSF("OnPacket: %d:%02d:%02d:%03d: status %02x %s",
+	Application.InteractiveThread.ThreadLogSF("OnPacket: %d:%02d:%02d:%03d: status %02x %s",
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
 		rPacket.getStatus(), getNetIOName(pNetIO));
 #endif
@@ -597,7 +597,7 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 	}
 #if (C4NET2IO_DUMP_LEVEL > 2)
 	if (timeGetTime() - iTime > 100)
-		ThreadLogSF("OnPacket: ... blocked %d ms for finding the connection!", timeGetTime() - iTime);
+		Application.InteractiveThread.ThreadLogSF("OnPacket: ... blocked %d ms for finding the connection!", timeGetTime() - iTime);
 #endif
 	// notify
 	pConn->OnPacketReceived(rPacket.getStatus());
@@ -606,7 +606,7 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 	// log time
 #if (C4NET2IO_DUMP_LEVEL > 1)
 	if (timeGetTime() - iTime > 100)
-		ThreadLogSF("OnPacket: ... blocked %d ms for handling!", timeGetTime() - iTime);
+		Application.InteractiveThread.ThreadLogSF("OnPacket: ... blocked %d ms for handling!", timeGetTime() - iTime);
 #endif
 }
 
@@ -851,8 +851,7 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 			pConn->getPeerAddr().ToString().getData(),
 			rPacket.getSize(), pConn->getInPacketCounter());
 		StdStrBuf Dump = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(Pkt, PacketHeader.getData()));
-		// Put it directly. The standard functions behind StdBuf.Format seem to choke when you pass them too much data.
-		Application.InteractiveThread.PushEvent(Ev_LogSilent, Dump.GrabPointer());
+		Application.InteractiveThread.ThreadLogS(Dump.getData());
 	}
 #endif
 
@@ -876,7 +875,7 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 
 #if (C4NET2IO_DUMP_LEVEL > 2)
 					if (fThread && timeGetTime() - iStart > 100)
-						ThreadLogSF("HandlePacket: ... blocked for %d ms!", timeGetTime() - iStart);
+						Application.InteractiveThread.ThreadLogSF("HandlePacket: ... blocked for %d ms!", timeGetTime() - iStart);
 #endif
 				}
 			}
