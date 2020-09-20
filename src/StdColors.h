@@ -56,188 +56,160 @@ namespace
 	template<typename Func>
 	constexpr uint32_t CombineColors(uint32_t dst, uint32_t src, Func func)
 	{
-		const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
 		const auto [srcR, srcG, srcB, srcA] = SplitRGB(src);
+		const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
 
 		return func(srcR, srcG, srcB, srcA, dstR, dstG, dstB, dstA);
+	}
+
+	template<typename RgbFunc, typename AFunc>
+	constexpr uint32_t CombineColors(uint32_t dst, uint32_t src, RgbFunc rgbFunc, AFunc aFunc)
+	{
+		const auto [srcR, srcG, srcB, srcA] = SplitRGB(src);
+		const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
+
+		return RGBA
+		(
+			rgbFunc(srcR, dstR),
+			rgbFunc(srcG, dstG),
+			rgbFunc(srcB, dstB),
+			aFunc(srcA, dstA)
+		);
+	}
+
+	template<typename RgbFunc, typename AFunc>
+	constexpr uint32_t ModifyColor(uint32_t src, RgbFunc rgbFunc, AFunc aFunc)
+	{
+		const auto [srcR, srcG, srcB, srcA] = SplitRGB(src);
+
+		return RGBA
+		(
+			rgbFunc(srcR),
+			rgbFunc(srcG),
+			rgbFunc(srcB),
+			aFunc(srcA)
+		);
+	}
+
+	template<typename RgbFunc>
+	constexpr uint32_t ModifyColor(uint32_t src, RgbFunc rgbFunc)
+	{
+		return ModifyColor(src, rgbFunc, [](uint8_t src) { return src; });
 	}
 }
 
 constexpr void BltAlpha(uint32_t &dst, uint32_t src)
 {
-	dst = CombineColors(dst, src, [src](const uint8_t srcR, const uint8_t srcG, const uint8_t srcB, const uint8_t srcA, const uint8_t dstR, const uint8_t dstG, const uint8_t dstB, const uint8_t dstA)
+	if (SplitRGB(dst).a == 0xff)
 	{
-		if (dstA == 0xff)
-		{
-			return src;
-		}
+		dst = src;
+		return;
+	}
 
-		const uint8_t byAlphaSrc = 0xff - srcA;
-		const uint8_t byAlphaDst = srcA;
-
-		auto combine = [byAlphaDst, byAlphaSrc](uint16_t src, uint16_t dst)
-		{
-			return static_cast<uint8_t>(std::min((src * byAlphaSrc + dst * byAlphaDst) >> 8, 0xff));
-		};
-
-		return RGBA
-		(
-			combine(srcR, dstR),
-			combine(srcG, dstG),
-			combine(srcB, dstB),
-			static_cast<uint8_t>(std::max(dstA - byAlphaSrc, 0))
-		);
+	const auto byAlphaDst = SplitRGB(src).a;
+	const auto byAlphaSrc = 0xff - byAlphaDst;
+	dst = CombineColors(dst, src, [byAlphaDst, byAlphaSrc](uint16_t src, uint16_t dst)
+	{
+		return static_cast<uint8_t>(std::min((src * byAlphaSrc + dst * byAlphaDst) >> 8, 0xff));
+	},
+	[byAlphaSrc](uint8_t src, uint8_t dst)
+	{
+		return static_cast<uint8_t>(std::max(dst - byAlphaSrc, 0));
 	});
 }
 
 constexpr void BltAlphaAdd(uint32_t &dst, uint32_t src)
 {
-	dst = CombineColors(dst, src, [src](const uint8_t srcR, const uint8_t srcG, const uint8_t srcB, const uint8_t srcA, const uint8_t dstR, const uint8_t dstG, const uint8_t dstB, const uint8_t dstA)
+	if (SplitRGB(dst).a == 0xff)
 	{
-		if (dstA == 0xff)
-		{
-			return src;
-		}
+		dst = src;
+		return;
+	}
 
-		const uint8_t byAlphaSrc = 0xff - srcA;
-
-		auto combine = [byAlphaSrc](uint16_t src, uint16_t dst)
-		{
-			return static_cast<uint8_t>(std::min(dst + ((src * byAlphaSrc) >> 8), 0xff));
-		};
-
-		return RGBA
-		(
-			combine(srcR, dstR),
-			combine(srcG, dstG),
-			combine(srcB, dstB),
-			static_cast<uint8_t>(std::max(dstA - byAlphaSrc, 0))
-		);
+	const auto byAlphaSrc = 0xff - SplitRGB(src).a;
+	dst = CombineColors(dst, src, [byAlphaSrc](uint16_t src, uint16_t dst)
+	{
+		return static_cast<uint8_t>(std::min(dst + ((src * byAlphaSrc) >> 8), 0xff));
+	},
+	[byAlphaSrc](uint8_t src, uint8_t dst)
+	{
+		return static_cast<uint8_t>(std::max(dst - byAlphaSrc, 0));
 	});
 }
 
 constexpr void ModulateClr(uint32_t &dst, uint32_t src)
 {
-	dst = CombineColors(dst, src, [](const uint8_t srcR, const uint8_t srcG, const uint8_t srcB, const uint8_t srcA, const uint8_t dstR, const uint8_t dstG, const uint8_t dstB, const uint8_t dstA)
+	dst = CombineColors(dst, src, [](uint16_t src, uint16_t dst)
 	{
-		auto combine = [](uint16_t src, uint16_t dst)
-		{
-			return static_cast<uint8_t>((src * dst) >> 8);
-		};
-
-		return RGBA
-		(
-			combine(srcR, dstR),
-			combine(srcG, dstG),
-			combine(srcB, dstB),
-			static_cast<uint8_t>(std::min(srcA + dstA - ((srcA * dstA) >> 8), 0xff))
-		);
+		return static_cast<uint8_t>((src * dst) >> 8);
+	},
+	[](uint16_t src, uint16_t dst)
+	{
+		return static_cast<uint8_t>(std::min(src + dst - ((src * dst) >> 8), 0xff));
 	});
 }
 
 constexpr void ModulateClrA(uint32_t &dst, uint32_t src)
 {
-	dst = CombineColors(dst, src, [](const uint8_t srcR, const uint8_t srcG, const uint8_t srcB, const uint8_t srcA, const uint8_t dstR, const uint8_t dstG, const uint8_t dstB, const uint8_t dstA)
+	dst = CombineColors(dst, src, [](uint16_t src, uint16_t dst)
 	{
-		auto combine = [](uint16_t src, uint16_t dst)
-		{
-			return static_cast<uint8_t>((src * dst) >> 8);
-		};
-
-		return RGBA
-		(
-			combine(srcR, dstR),
-			combine(srcG, dstG),
-			combine(srcB, dstB),
-			static_cast<uint8_t>(std::min(srcA + dstA, 0xff))
-		);
+		return static_cast<uint8_t>((src * dst) >> 8);
+	},
+	[](uint16_t src, uint16_t dst)
+	{
+		return static_cast<uint8_t>(std::min(src + dst, 0xff));
 	});
 }
 
 constexpr void ModulateClrMOD2(uint32_t &dst, uint32_t src)
 {
-	dst = CombineColors(dst, src, [](const uint8_t srcR, const uint8_t srcG, const uint8_t srcB, const uint8_t srcA, const uint8_t dstR, const uint8_t dstG, const uint8_t dstB, const uint8_t dstA)
+	dst = CombineColors(dst, src, [](uint16_t src, uint16_t dst)
 	{
-		auto combine = [](uint16_t src, uint16_t dst)
-		{
-			return static_cast<uint8_t>(std::clamp((src + dst - 0x7f) * 2, 0, 0xff));
-		};
-
-		return RGBA
-		(
-			combine(srcR, dstR),
-			combine(srcG, dstG),
-			combine(srcB, dstB),
-			static_cast<uint8_t>(std::min(srcA + dstA, 255))
-		);
+		return static_cast<uint8_t>(std::clamp((src + dst - 0x7f) * 2, 0, 0xff));
+	},
+	[](uint16_t src, uint16_t dst)
+	{
+		return static_cast<uint8_t>(std::min(src + dst, 0xff));
 	});
 }
 
 constexpr void ModulateClrMonoA(uint32_t &dst, uint8_t byMod, uint8_t byA)
 {
-	const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
-	auto modulate = [byMod](uint16_t dst)
+	dst = ModifyColor(dst, [byMod](uint16_t dst)
 	{
 		return static_cast<uint8_t>((dst * byMod) >> 8);
-	};
-	dst = RGBA
-	(
-		modulate(dstR),
-		modulate(dstG),
-		modulate(dstB),
-		static_cast<uint8_t>(std::min(dstA + byA, 0xff))
-	);
+	},
+	[byA](uint16_t dst)
+	{
+		return static_cast<uint8_t>(std::min(dst + byA, 0xff));
+	});
 }
 
 constexpr uint32_t LightenClr(uint32_t &dst)
 {
-	const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
-	auto lighten = [](uint8_t dst)
+	return dst = ModifyColor(dst, [](uint8_t dst)
 	{
 		const auto tmp = (dst & 0x80) | ((dst << 1) & 0xfe);
 		return (dst & 0x80) ? tmp | 0xff : tmp;
-	};
-	return dst = RGBA
-	(
-		lighten(dstR),
-		lighten(dstG),
-		lighten(dstB),
-		dstA
-	);
+	});
 }
 
 constexpr uint32_t LightenClrBy(uint32_t &dst, uint8_t by)
 {
 	// quite a desaturating method...
-	const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
-	auto lighten = [by](uint8_t dst)
+	return dst = ModifyColor(dst, [by](uint8_t dst)
 	{
 		return static_cast<uint8_t>(std::min(dst + by, 0xff));
-	};
-	return dst = RGBA
-	(
-		lighten(dstR),
-		lighten(dstG),
-		lighten(dstB),
-		dstA
-	);
+	});
 }
 
 constexpr uint32_t DarkenClrBy(uint32_t &dst, uint8_t by)
 {
 	// quite a desaturating method...
-	const auto [dstR, dstG, dstB, dstA] = SplitRGB(dst);
-	auto lighten = [by](uint8_t dst)
+	return dst = ModifyColor(dst, [by](uint8_t dst)
 	{
 		return static_cast<uint8_t>(std::max(dst - by, 0));
-	};
-	return dst = RGBA
-	(
-		lighten(dstR),
-		lighten(dstG),
-		lighten(dstB),
-		dstA
-	);
+	});
 }
 
 [[nodiscard]] constexpr uint32_t PlrClr2TxtClr(uint32_t clr)
