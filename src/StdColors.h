@@ -232,7 +232,7 @@ constexpr uint32_t DarkenClrBy(uint32_t &dst, uint8_t by)
 		const auto diffB = dstB - srcB;
 
 		// get max enlightment
-		const auto diff = std::max({0, diffR, diffG, diffB});
+		const auto diff = static_cast<uint8_t>(std::max({0, diffR, diffG, diffB}));
 
 		// is dest > src?
 		if (diff > 0)
@@ -245,9 +245,9 @@ constexpr uint32_t DarkenClrBy(uint32_t &dst, uint8_t by)
 			back = RGBA(backVal(srcR, diffR), backVal(dstG, diffG), backVal(srcB, diffB), 0);
 		}
 
-		auto combine = [](uint8_t src, uint16_t dst)
+		auto combine = [](int16_t src, uint16_t dst)
 		{
-			return static_cast<uint8_t>(std::min(dst * 256 / std::max<uint8_t>(src, 1), 0xff));
+			return static_cast<uint8_t>(std::min(dst * 256 / std::max<int16_t>(src, 1), 0xff));
 		};
 
 		return RGBA
