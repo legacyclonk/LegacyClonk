@@ -43,6 +43,7 @@ void C4MapFolderData::Scenario::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(sFilename,       "File",               StdStrBuf()));
 	pComp->Value(mkNamingAdapt(sBaseImage,      "BaseImage",          StdStrBuf()));
 	pComp->Value(mkNamingAdapt(sOverlayImage,   "OverlayImage",       StdStrBuf()));
+	pComp->Value(mkNamingAdapt(singleClick,     "SingleClick",        false));
 	pComp->Value(mkNamingAdapt(rcOverlayPos,    "Area",               C4Rect()));
 	pComp->Value(mkNamingAdapt(sTitle,          "Title",              StdStrBuf()));
 	pComp->Value(mkNamingAdapt(iTitleFontSize,  "TitleFontSize",      20));
@@ -377,16 +378,17 @@ void C4MapFolderData::CreateGUIElements(C4StartupScenSelDlg *pMainDlg, C4GUI::Wi
 	rContainer.AddElement(pSelectionInfoBox);
 }
 
-void C4MapFolderData::OnButtonScenario(C4GUI::Control *pEl)
+bool C4MapFolderData::OnButtonScenario(C4GUI::Control *pEl)
 {
 	// get associated scenario entry
 	int i;
 	for (i = 0; i < iScenCount; ++i)
 		if (pEl == ppScenList[i]->pBtn)
 			break;
-	if (i == iScenCount) return;
+	if (i == iScenCount) return false;
 	// select the associated entry
 	pSelectedEntry = ppScenList[i]->pScenEntry;
+	return ppScenList[i]->singleClick;
 }
 
 void C4MapFolderData::ResetSelection()
@@ -1840,15 +1842,14 @@ void C4StartupScenSelDlg::OnButtonScenario(C4GUI::Control *pEl)
 {
 	// map button was clicked: Update selected scenario
 	if (!pMapData || !pEl) return;
-	C4ScenarioListLoader::Entry *pSel = GetSelectedEntry(), *pSel2;
-	pMapData->OnButtonScenario(pEl);
-	pSel2 = GetSelectedEntry();
-	if (pSel && pSel == pSel2)
+
+	// OnButtonScenario may change the current selection
+	if (C4ScenarioListLoader::Entry *pSel{GetSelectedEntry()}; pMapData->OnButtonScenario(pEl) || (pSel && pSel == GetSelectedEntry()))
 	{
-		// clicking on the selected scenario again starts it
 		DoOK();
 		return;
 	}
+
 	// the first click selects it
 	SetFocus(pEl, false);
 	UpdateSelection();
