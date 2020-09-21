@@ -239,6 +239,7 @@ private:
 		// compiled data
 		StdStrBuf sFilename;
 		StdStrBuf sBaseImage, sOverlayImage;
+		bool singleClick{false}; // selected by single click instead of double click
 
 		// parameters for title as drawn on the map (if desired; otherwise sTitle empty)
 		StdStrBuf sTitle;
@@ -312,7 +313,7 @@ private:
 	void ConvertFacet2ScreenCoord(C4Rect &rcMapArea, bool fAspect); // adjust coordinates of loaded facets so they match given area
 
 protected:
-	void OnButtonScenario(C4GUI::Control *pEl);
+	bool OnButtonScenario(C4GUI::Control *pEl);
 
 	friend class C4StartupScenSelDlg;
 
