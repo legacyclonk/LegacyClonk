@@ -68,6 +68,7 @@ public:
 	bool LeftButtonDown(bool fControl);
 	bool RightButtonUp();
 	bool RightButtonDown(bool fControl);
+	void MiddleButtonUp();
 	bool Move(int32_t iX, int32_t iY, uint16_t wKeyFlags);
 	bool Init();
 	bool EditingOK();

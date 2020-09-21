@@ -341,6 +341,13 @@ bool C4EditCursor::RightButtonUp()
 	return true;
 }
 
+void C4EditCursor::MiddleButtonUp()
+{
+	if (Hold) return;
+
+	ApplyToolPicker();
+}
+
 bool C4EditCursor::Delete()
 {
 	if (!EditingOK()) return false;

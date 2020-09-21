@@ -189,6 +189,8 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		case WM_RBUTTONUP: Console.EditCursor.RightButtonUp(); break;
 
+		case WM_MBUTTONUP: Console.EditCursor.MiddleButtonUp(); break;
+
 		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp->ViewX + static_cast<int32_t>(LOWORD(lParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(lParam) / scale), wParam); break;
 		}
 	}
@@ -556,6 +558,9 @@ gboolean C4ViewportWindow::OnButtonReleaseStatic(GtkWidget *widget, GdkEventButt
 		{
 		case 1:
 			Console.EditCursor.LeftButtonUp();
+			break;
+		case 2:
+			Console.EditCursor.MiddleButtonUp();
 			break;
 		case 3:
 			Console.EditCursor.RightButtonUp();
