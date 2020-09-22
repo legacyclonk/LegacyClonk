@@ -267,7 +267,11 @@ bool C4GameSave::SaveDesc(C4Group &hToGroup)
 	sBuffer.Append(LineFeed);
 
 	// Scenario title
-	sBuffer.AppendFormat("\\uc1\\pard\\ulnone\\b\\f0\\fs20 %s\\par", Game.Parameters.ScenarioTitle.getData());
+	StdStrBuf title{Game.Parameters.ScenarioTitle};
+	CMarkup markup{true};
+	markup.StripMarkup(&title);
+
+	sBuffer.AppendFormat("\\uc1\\pard\\ulnone\\b\\f0\\fs20 %s\\par", title.getData());
 	sBuffer.Append(LineFeed "\\b0\\fs16\\par" LineFeed);
 
 	// OK; each specializations has its own desc format
