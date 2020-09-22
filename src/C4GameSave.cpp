@@ -338,7 +338,6 @@ void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 	// Definition specs
 	if (Game.DefinitionFilenames.size())
 	{
-		char szDef[_MAX_PATH + 1];
 		// Desc
 		sBuf.Append(LoadResStr("IDS_DESC_DEFSPECS"));
 		// Get definition modules
@@ -347,7 +346,7 @@ void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 		{
 			// Get exe relative path
 			StdStrBuf sDefFilename;
-			sDefFilename.Copy(Config.AtExeRelativePath(szDef));
+			sDefFilename.Copy(Config.AtExeRelativePath(def.c_str()));
 			// Convert rtf backslashes
 			sDefFilename.Replace("\\", "\\\\");
 			// Append comma
