@@ -268,8 +268,7 @@ bool C4GameSave::SaveDesc(C4Group &hToGroup)
 
 	// Scenario title
 	StdStrBuf title{Game.Parameters.ScenarioTitle};
-	CMarkup markup{true};
-	markup.StripMarkup(&title);
+	CMarkup::StripMarkup(&title);
 
 	sBuffer.AppendFormat("\\uc1\\pard\\ulnone\\b\\f0\\fs20 %s\\par", title.getData());
 	sBuffer.Append(LineFeed "\\b0\\fs16\\par" LineFeed);
