@@ -368,9 +368,16 @@ void C4GameSave::WriteDescNetworkClients(StdStrBuf &sBuf)
 	// Desc
 	sBuf.Append(LoadResStr("IDS_DESC_CLIENTS"));
 	// Client names
+	bool comma{false};
 	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(nullptr); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
 	{
-		sBuf.Append(", "); sBuf.Append(pClient->getName());
+		if (comma)
+		{
+			sBuf.Append(", ");
+		}
+
+		sBuf.Append(pClient->getName());
+		comma = true;
 	}
 	// End of line
 	WriteDescLineFeed(sBuf);
