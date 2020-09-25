@@ -356,13 +356,13 @@ void C4SLandscape::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkStringAdaptMA(Material), "Material",          "Earth"));
 	pComp->Value(mkNamingAdapt(mkStringAdaptMA(Liquid),   "Liquid",            "Water"));
 	pComp->Value(mkNamingAdapt(LiquidLevel,               "LiquidLevel",       C4SVal()));
-	pComp->Value(mkNamingAdapt(MapPlayerExtend,           "MapPlayerExtend",   0));
+	pComp->Value(mkNamingAdapt(MapPlayerExtend,           "MapPlayerExtend",   false));
 	pComp->Value(mkNamingAdapt(Layers,                    "Layers",            C4NameList()));
 	pComp->Value(mkNamingAdapt(Gravity,                   "Gravity",           C4SVal(100, 0, 10, 200), true));
 	pComp->Value(mkNamingAdapt(NoScan,                    "NoScan",            false));
 	pComp->Value(mkNamingAdapt(KeepMapCreator,            "KeepMapCreator",    false));
 	pComp->Value(mkNamingAdapt(SkyScrollMode,             "SkyScrollMode",     0));
-	pComp->Value(mkNamingAdapt(NewStyleLandscape,         "NewStyleLandscape", false));
+	pComp->Value(mkNamingAdapt(NewStyleLandscape,         "NewStyleLandscape", 0));
 	pComp->Value(mkNamingAdapt(FoWRes,                    "FoWRes",            static_cast<int32_t>(CClrModAddMap::iDefResolutionX)));
 }
 
