@@ -673,7 +673,7 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	Game.C4S.Landscape.NewStyleLandscape = 2;
 
 	// copy noscan-var
-	NoScan = Game.C4S.Landscape.NoScan != 0;
+	NoScan = Game.C4S.Landscape.NoScan;
 
 	// Scan settings
 	ScanSpeed = BoundBy(Width / 500, 2, 15);
@@ -1638,7 +1638,8 @@ void C4Landscape::Default()
 	ClearBlastMatCount();
 	ScanX = 0;
 	ScanSpeed = 2;
-	LeftOpen = RightOpen = TopOpen = BottomOpen = 0;
+	LeftOpen = RightOpen = 0;
+	TopOpen = BottomOpen = false;
 	Gravity = FIXED100(20); // == 0.2
 	MapSeed = 0; NoScan = false;
 	pMapCreator = nullptr;
@@ -2873,8 +2874,8 @@ void C4Landscape::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(MapSeed,                 "MapSeed",       0));
 	pComp->Value(mkNamingAdapt(LeftOpen,                "LeftOpen",      0));
 	pComp->Value(mkNamingAdapt(RightOpen,               "RightOpen",     0));
-	pComp->Value(mkNamingAdapt(TopOpen,                 "TopOpen",       0));
-	pComp->Value(mkNamingAdapt(BottomOpen,              "BottomOpen",    0));
+	pComp->Value(mkNamingAdapt(TopOpen,                 "TopOpen",       false));
+	pComp->Value(mkNamingAdapt(BottomOpen,              "BottomOpen",    false));
 	pComp->Value(mkNamingAdapt(mkCastIntAdapt(Gravity), "Gravity",       FIXED100(20)));
 	pComp->Value(mkNamingAdapt(Modulation,              "MatModulation", 0U));
 	pComp->Value(mkNamingAdapt(Mode,                    "Mode",          C4LSC_Undefined));

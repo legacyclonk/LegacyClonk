@@ -58,7 +58,8 @@ public:
 	int32_t BlastMatCount[C4MaxMaterial]; // SyncClearance-NoSave //
 	bool NoScan; // ExecuteScan() disabled
 	int32_t ScanX, ScanSpeed; // SyncClearance-NoSave //
-	int32_t LeftOpen, RightOpen, TopOpen, BottomOpen;
+	int32_t LeftOpen, RightOpen;
+	bool TopOpen, BottomOpen;
 	FIXED Gravity;
 	uint32_t Modulation; // landscape blit modulation; 0 means normal
 	int32_t MapSeed; // random seed for MapToLandscape

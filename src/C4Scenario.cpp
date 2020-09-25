@@ -291,11 +291,11 @@ void C4SPlrStart::CompileFunc(StdCompiler *pComp)
 
 void C4SLandscape::Default()
 {
-	BottomOpen = 0; TopOpen = 1;
+	BottomOpen = false; TopOpen = true;
 	LeftOpen = 0; RightOpen = 0;
-	AutoScanSideOpen = 1;
+	AutoScanSideOpen = true;
 	SkyDef[0] = 0;
-	NoSky = 0;
+	NoSky = false;
 	for (int32_t cnt = 0; cnt < 6; cnt++) SkyDefFade[cnt] = 0;
 	VegLevel.Set(50, 30, 0, 100);
 	Vegetation.Clear();
@@ -309,14 +309,14 @@ void C4SLandscape::Default()
 	Period.Set(15);
 	Random.Set(0);
 	LiquidLevel.Default();
-	MapPlayerExtend = 0;
+	MapPlayerExtend = false;
 	Layers.Clear();
 	SCopy("Earth", Material, C4M_MaxName);
 	SCopy("Water", Liquid, C4M_MaxName);
-	ExactLandscape = 0;
+	ExactLandscape = false;
 	Gravity.Set(100, 0, 10, 200);
-	NoScan = 0;
-	KeepMapCreator = 0;
+	NoScan = false;
+	KeepMapCreator = false;
 	SkyScrollMode = 0;
 	NewStyleLandscape = 0;
 	FoWRes = CClrModAddMap::iDefResolutionX;
@@ -373,7 +373,7 @@ void C4SWeather::Default()
 	YearSpeed.Set(50);
 	Rain.Default(); Lightning.Default(); Wind.Set(0, 70, -100, +100);
 	SCopy("Water", Precipitation, C4M_MaxName);
-	NoGamma = 1;
+	NoGamma = true;
 }
 
 void C4SWeather::CompileFunc(StdCompiler *pComp)
@@ -464,7 +464,7 @@ void C4Scenario::SetExactLandscape()
 {
 	if (Landscape.ExactLandscape) return;
 	// Set landscape
-	Landscape.ExactLandscape = 1;
+	Landscape.ExactLandscape = true;
 }
 
 std::vector<std::string> C4SDefinitions::GetModules() const

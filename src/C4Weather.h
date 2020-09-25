@@ -29,7 +29,7 @@ public:
 	int32_t Wind, TargetWind;
 	int32_t Temperature, TemperatureRange, Climate;
 	int32_t MeteoriteLevel, VolcanoLevel, EarthquakeLevel, LightningLevel;
-	int32_t NoGamma;
+	bool NoGamma;
 
 public:
 	void Default();

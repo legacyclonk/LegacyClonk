@@ -104,8 +104,8 @@ const int32_t C4S_MaxDefinitions = 10;
 class C4SDefinitions
 {
 public:
-	int32_t LocalOnly;
-	int32_t AllowUserChange;
+	bool LocalOnly;
+	bool AllowUserChange;
 	std::vector<std::string> Definitions;
 	C4IDList SkipDefs;
 
@@ -212,28 +212,28 @@ public:
 class C4SLandscape
 {
 public:
-	int32_t ExactLandscape;
+	bool ExactLandscape;
 	C4SVal VegLevel;
 	C4IDList Vegetation;
 	C4SVal InEarthLevel;
 	C4IDList InEarth;
-	int32_t BottomOpen, TopOpen;
+	bool BottomOpen, TopOpen;
 	int32_t LeftOpen, RightOpen;
-	int32_t AutoScanSideOpen;
+	bool AutoScanSideOpen;
 	char SkyDef[C4MaxDefString + 1];
 	int32_t SkyDefFade[6];
-	int32_t NoSky;
-	int32_t NoScan;
+	bool NoSky;
+	bool NoScan;
 	C4SVal Gravity;
 	// Dynamic map
 	C4SVal MapWdt, MapHgt, MapZoom;
 	C4SVal Amplitude, Phase, Period, Random;
 	C4SVal LiquidLevel;
-	int32_t MapPlayerExtend;
+	bool MapPlayerExtend;
 	C4NameList Layers;
 	char Material[C4M_MaxDefName + 1];
 	char Liquid[C4M_MaxDefName + 1];
-	int32_t KeepMapCreator; // set if the mapcreator will be needed in the scenario (for DrawDefMap)
+	bool KeepMapCreator; // set if the mapcreator will be needed in the scenario (for DrawDefMap)
 	int32_t SkyScrollMode; // sky scrolling mode for newgfx
 	int32_t NewStyleLandscape; // if set to 2, the landscape uses up to 125 mat/texture pairs
 	int32_t FoWRes; // chunk size of FoGOfWar
@@ -251,7 +251,7 @@ public:
 	C4SVal StartSeason, YearSpeed;
 	C4SVal Rain, Lightning, Wind;
 	char Precipitation[C4M_MaxName + 1];
-	int32_t NoGamma;
+	bool NoGamma;
 
 public:
 	void Default();
