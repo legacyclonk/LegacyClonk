@@ -124,8 +124,8 @@ void C4AudioSystem::SoundChannel::SetVolumeAndPan(const float volume, const floa
 {
 	Mix_Volume(channel, std::lrint(volume * MaximumVolume));
 	const Uint8
-		left  = std::clamp(std::lrint((1.0f - pan) * 255.0f), 0L, 255L),
-		right = std::clamp(std::lrint((1.0f + pan) * 255.0f), 0L, 255L);
+		left  = static_cast<Uint8>(std::clamp(std::lrint((1.0f - pan) * 255.0f), 0L, 255L)),
+		right = static_cast<Uint8>(std::clamp(std::lrint((1.0f + pan) * 255.0f), 0L, 255L));
 	ThrowIfFailed("Mix_SetPanning", Mix_SetPanning(channel, left, right) == 0);
 }
 
