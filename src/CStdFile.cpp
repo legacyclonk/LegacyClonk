@@ -226,7 +226,7 @@ void CStdFile::ClearBuffer()
 	BufferLoad = BufferPtr = 0;
 }
 
-bool CStdFile::Write(const void *pBuffer, int iSize)
+bool CStdFile::Write(const void *pBuffer, size_t iSize)
 {
 	int transfer;
 	if (!pBuffer) return false;
@@ -237,7 +237,7 @@ bool CStdFile::Write(const void *pBuffer, int iSize)
 		// Space in buffer: Transfer as much as possible
 		if (BufferLoad < CStdFileBufSize)
 		{
-			transfer = (std::min)(CStdFileBufSize - BufferLoad, iSize);
+			transfer = std::min<int>(CStdFileBufSize - BufferLoad, iSize);
 			memcpy(Buffer + BufferLoad, bypBuffer, transfer);
 			BufferLoad += transfer;
 			bypBuffer += transfer;
@@ -294,7 +294,7 @@ bool CStdFile::Advance(int iOffset)
 }
 
 bool CStdFile::Save(const char *szFilename, const uint8_t *bpBuf,
-	int iSize, bool fCompressed)
+	size_t iSize, bool fCompressed)
 {
 	if (!bpBuf || (iSize < 1)) return false;
 	if (!Create(szFilename, fCompressed)) return false;
@@ -304,10 +304,10 @@ bool CStdFile::Save(const char *szFilename, const uint8_t *bpBuf,
 }
 
 bool CStdFile::Load(const char *szFilename, uint8_t **lpbpBuf,
-	int *ipSize, int iAppendZeros,
+	size_t *ipSize, int iAppendZeros,
 	bool fCompressed)
 {
-	int iSize = fCompressed ? UncompressedFileSize(szFilename) : FileSize(szFilename);
+	size_t iSize = fCompressed ? UncompressedFileSize(szFilename) : FileSize(szFilename);
 	if (!lpbpBuf || (iSize < 1)) return false;
 	if (!Open(szFilename, fCompressed)) return false;
 	*lpbpBuf = new uint8_t[iSize + iAppendZeros];
@@ -318,7 +318,7 @@ bool CStdFile::Load(const char *szFilename, uint8_t **lpbpBuf,
 	return true;
 }
 
-int UncompressedFileSize(const char *szFilename)
+size_t UncompressedFileSize(const char *szFilename)
 {
 	try
 	{

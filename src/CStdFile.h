@@ -60,16 +60,16 @@ public:
 	bool Default();
 	bool Read(void *pBuffer, size_t iSize) override { return Read(pBuffer, iSize, nullptr); }
 	bool Read(void *pBuffer, size_t iSize, size_t *ipFSize);
-	bool Write(const void *pBuffer, int iSize);
+	bool Write(const void *pBuffer, size_t iSize);
 	bool WriteString(const char *szStr);
 	bool Rewind();
 	bool Advance(int iOffset) override;
 	// Single line commands
 	bool Load(const char *szFileName, uint8_t **lpbpBuf,
-		int *ipSize = nullptr, int iAppendZeros = 0,
+		size_t *ipSize = nullptr, int iAppendZeros = 0,
 		bool fCompressed = false);
 	bool Save(const char *szFileName, const uint8_t *bpBuf,
-		int iSize,
+		size_t iSize,
 		bool fCompressed = false);
 	// flush contents to disk
 	inline bool Flush() { if (ModeWrite && BufferLoad) return SaveBuffer(); else return true; }
@@ -81,4 +81,4 @@ protected:
 	bool SaveBuffer();
 };
 
-int UncompressedFileSize(const char *szFileName);
+size_t UncompressedFileSize(const char *szFileName);

@@ -251,7 +251,7 @@ bool GetLogSection(size_t iStart, size_t iLength, StdStrBuf &rsOut)
 	// read section from log file
 	CStdFile LogFileRead;
 	char *szBuf, *szBufOrig; size_t iSize; // size exclusing terminator
-	if (!LogFileRead.Load(sLogFileName.getData(), reinterpret_cast<uint8_t **>(&szBuf), reinterpret_cast<int *>(&iSize), 1)) return false;
+	if (!LogFileRead.Load(sLogFileName.getData(), reinterpret_cast<uint8_t **>(&szBuf), &iSize, 1)) return false;
 	szBufOrig = szBuf;
 	// reduce to desired buffer section
 	if (iStart > iSize) iStart = iSize;
