@@ -148,7 +148,7 @@ protected:
 
 #ifdef USE_X11
 	// Size of gamma ramps
-	int gammasize;
+	int gammasize{};
 #endif
 
 	friend class CSurface;
