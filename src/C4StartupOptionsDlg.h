@@ -148,7 +148,7 @@ private:
 	C4GUI::GroupBox *pGroupTrouble;
 	C4GUI::CheckBox *pCheckGfxNoAlphaAdd, *pCheckGfxPointFilter, *pCheckGfxNoAddBlit, *pCheckGfxNoBoxFades;
 	BoolConfig *pCheckGfxDisableGamma;
-	int32_t iGfxTexIndent, iGfxBlitOff; EditConfig *pEdtGfxTexIndent, *pEdtGfxBlitOff;
+	int32_t iGfxTexIndent{}, iGfxBlitOff{}; EditConfig *pEdtGfxTexIndent, *pEdtGfxBlitOff;
 	C4GUI::ScrollBar *pEffectLevelSlider;
 
 	void LoadGfxTroubleshoot(); void SaveGfxTroubleshoot();
