@@ -283,7 +283,7 @@ public:
 	}
 
 	// Append data from address
-	void Append(const void *pnData, int inSize)
+	void Append(const void *pnData, size_t inSize)
 	{
 		Grow(inSize);
 		Write(pnData, inSize, iSize - inSize);
