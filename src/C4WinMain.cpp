@@ -32,6 +32,7 @@
 #endif
 
 #ifdef __APPLE__
+#include "MacAppTranslocation.h"
 #include <libgen.h>
 #endif
 
@@ -169,7 +170,12 @@ static void restart(char *argv[])
 int main(int argc, char *argv[])
 {
 #ifdef __APPLE__
-	chdir(dirname(dirname(dirname(dirname(argv[0])))));
+	std::string enginePath{argv[0]};
+	if (const auto originalPath = GetNonTranslocatedPath(argv[0]); originalPath)
+	{
+		enginePath = *originalPath;
+	}
+	chdir(dirname(dirname(dirname(dirname(enginePath.data())))));
 #endif
 	if (!geteuid())
 	{
