@@ -127,6 +127,7 @@ bool C4Game::InitDefs()
 
 bool C4Game::OpenScenario()
 {
+	CStdLock lock{&OpenScenarioMutex};
 	// Scenario from record stream
 	if (RecordStream.getSize())
 	{
@@ -260,6 +261,8 @@ bool C4Game::OpenScenario()
 	// If scenario is a directory: Watch for changes
 	if (!ScenarioFile.IsPacked() && pFileMonitor)
 		Game.pFileMonitor->AddDirectory(ScenarioFile.GetFullName().getData());
+
+	PreloadStatus = PreloadLevel::Scenario;
 
 	return true;
 }
@@ -2451,7 +2454,8 @@ bool C4Game::InitGameFirstPart()
 	{
 		return true;
 	}
-	if (NetworkActive && !Network.isHost())
+
+	if (PreloadStatus == PreloadLevel::None && NetworkActive && !Network.isHost())
 	{
 		if (!Network.RetrieveScenario(ScenarioFilename)) return false;
 		if (!OpenScenario()) return false;

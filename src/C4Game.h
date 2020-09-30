@@ -353,12 +353,14 @@ protected:
 	enum class PreloadLevel
 	{
 		None,
+		Scenario,
 		Basic,
 		LandscapeObjects
 	};
 	std::thread PreloadThread;
 	PreloadLevel PreloadStatus;
 	CStdCSecEx PreloadMutex;
+	CStdCSecEx OpenScenarioMutex;
 	bool LandscapeLoaded;
 };
 
