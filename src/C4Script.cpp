@@ -4549,6 +4549,59 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 	return true;
 }
 
+static bool FnHasScriptFunc(C4AulContext *ctx, C4String *name, std::optional<long> access)
+{
+	const char *const functionName{FnStringPar(name)};
+	if (!functionName) return false;
+
+	C4AulAccess functionAccess;
+	if (access)
+	{
+		switch (const auto value{static_cast<C4AulAccess>(*access)}; value)
+		{
+		case AA_PRIVATE:
+		case AA_PROTECTED:
+		case AA_PUBLIC:
+		case AA_GLOBAL:
+			functionAccess = value;
+			break;
+
+		default:
+			throw C4AulExecError{ctx->Obj, "HasScriptFunc: Invalid access modifier specified"};
+		}
+	}
+	else
+	{
+		functionAccess = AA_GLOBAL;
+	}
+
+	C4AulScript *script;
+
+	if (ctx->Obj)
+	{
+		script = &ctx->Obj->Def->Script;
+	}
+	else if (ctx->Def)
+	{
+		script = &ctx->Def->Script;
+	}
+	else if (ctx->Caller)
+	{
+		script = ctx->Caller->Func->Owner;
+	}
+	else
+	{
+		return false;
+	}
+
+	if (C4AulScriptFunc *func{script->GetSFunc(functionName)}; func && func->Access >= functionAccess)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 static C4Value FnVarN(C4AulContext *cthr, C4String *name)
 {
 	const char *strName = FnStringPar(name);
@@ -6639,7 +6692,11 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 
 	{ "RESTORE_None",          C4V_Int, C4NetworkRestartInfos::None },
 	{ "RESTORE_ScriptPlayers", C4V_Int, C4NetworkRestartInfos::ScriptPlayers },
-	{ "RESTORE_PlayerTeams",   C4V_Int, C4NetworkRestartInfos::PlayerTeams }
+	{ "RESTORE_PlayerTeams",   C4V_Int, C4NetworkRestartInfos::PlayerTeams },
+
+	{ "AA_PRIVATE",   C4V_Int, AA_PRIVATE },
+	{ "AA_PROTECTED", C4V_Int, AA_PROTECTED },
+	{ "AA_PUBLIC",    C4V_Int, AA_PUBLIC }
 };
 
 template <> struct C4ValueConv<C4Value>
@@ -7124,6 +7181,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "PauseGame",                       FnPauseGame);
 	AddFunc(pEngine, "ExecuteCommand",                  FnExecuteCommand);
 	AddFunc(pEngine, "LocateFunc",                      FnLocateFunc);
+	AddFunc(pEngine, "HasScriptFunc",                   FnHasScriptFunc);
 	AddFunc(pEngine, "PathFree",                        FnPathFree);
 	AddFunc(pEngine, "PathFree2",                       FnPathFree2);
 	AddFunc(pEngine, "SetNextMission",                  FnSetNextMission);
