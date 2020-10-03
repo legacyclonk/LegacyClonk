@@ -713,7 +713,7 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 	btnInternet->SetToolTip(LoadResStr("IDS_DLGTIP_SEARCHINTERNETGAME"));
 	btnInternet->SetText(LoadResStr("IDS_CTL_INETSERVER"));
 	AddElement(btnInternet);
-	btnRecord = new C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton>(Game.Record ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff, caConfigArea.GetFromTop(iIconSize, iIconSize), '\0', &C4StartupNetDlg::OnBtnRecord);
+	btnRecord = new C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton>(Config.General.Record ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff, caConfigArea.GetFromTop(iIconSize, iIconSize), '\0', &C4StartupNetDlg::OnBtnRecord);
 	btnRecord->SetToolTip(LoadResStr("IDS_DLGTIP_RECORD"));
 	btnRecord->SetText(LoadResStr("IDS_CTL_RECORD"));
 	AddElement(btnRecord);
@@ -848,8 +848,7 @@ void C4StartupNetDlg::OnBtnInternet(C4GUI::Control *btn)
 void C4StartupNetDlg::OnBtnRecord(C4GUI::Control *btn)
 {
 	// toggle league signup flag
-	bool fCheck = Game.Record = !Game.Record;
-	btnRecord->SetIcon(fCheck ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff);
+	btnRecord->SetIcon((Config.General.Record = !Config.General.Record) ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff);
 }
 
 void C4StartupNetDlg::UpdateMasterserver()

@@ -155,7 +155,6 @@ public:
 	int32_t iLobbyTimeout;
 	bool fObserve;
 	bool NetworkActive;
-	bool Record;
 	bool Verbose; // default false; set to true only by command line
 	StdStrBuf RecordDumpFile;
 	StdStrBuf RecordStream;
