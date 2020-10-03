@@ -200,16 +200,19 @@ void StdStrBuf::CompileFunc(StdCompiler *pComp, int iRawType)
 {
 	if (pComp->isCompiler())
 	{
-		char *pnData;
-		pComp->String(&pnData, StdCompiler::RawCompileType(iRawType));
-		Take(pnData);
+		std::string data;
+		pComp->String(data, StdCompiler::RawCompileType(iRawType));
+		Copy(data.c_str(), data.size());
 	}
 	else
 	{
-		const char *pData = getData();
-		if (!pData) pData = "";
 		// pData is only read anyway, since it is a decompiler
-		pComp->String(const_cast<char **>(&pData), StdCompiler::RawCompileType(iRawType));
+		const char *data{getData()};
+		if (!data)
+		{
+			data = "";
+		}
+		pComp->String(data, getLength(), StdCompiler::RawCompileType(iRawType));
 	}
 }
 
