@@ -2788,8 +2788,6 @@ bool C4Game::InitControl()
 		// start playback
 		if (!Control.InitReplay(ScenarioFile))
 			return false;
-		// no record!
-		Record = false;
 	}
 	else if (Network.isEnabled())
 	{
@@ -2799,8 +2797,6 @@ bool C4Game::InitControl()
 		// league?
 		if (Parameters.isLeague())
 		{
-			// always record
-			Record = true;
 			// enforce league rules
 			if (Network.isHost())
 				if (!Game.Parameters.CheckLeagueRulesStart(true))
@@ -2816,7 +2812,7 @@ bool C4Game::InitControl()
 	}
 
 	// record?
-	if (Record)
+	if (!C4S.Head.Replay && (Config.General.Record || Parameters.isLeague()))
 		if (!Control.StartRecord(true, Parameters.doStreaming()))
 		{
 			// Special: If this happens for a league host, the game must not start.
@@ -3058,11 +3054,6 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 		{
 			RecordStream.Copy(szParameter);
 		}
-		// Record
-		if (SEqualNoCase(szParameter, "/record"))
-		{
-			Record = true;
-		}
 		// Fair Crew
 		if (SEqualNoCase(szParameter, "/ncrw") || SEqualNoCase(szParameter, "/faircrew"))
 			Config.General.FairCrew = true;
@@ -3187,9 +3178,6 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 	// verbose
 	if (SSearchNoCase(szCmdLine, "/verbose"))
 		Verbose = true;
-
-	// default record?
-	Record = Record || Config.General.Record || (Config.Network.LeagueServerSignUp && NetworkActive);
 
 	// startup dialog required?
 	Application.UseStartupDialog = Application.isFullScreen && !*DirectJoinAddress && !*ScenarioFilename && !RecordStream.getSize();
