@@ -458,11 +458,6 @@ void StdCompilerConfigWrite::String(char *szString, size_t iMaxLength, RawCompil
 	WriteString(szString);
 }
 
-void StdCompilerConfigWrite::String(char **pszString, RawCompileType eType)
-{
-	WriteString(pszString ? *pszString : "");
-}
-
 void StdCompilerConfigWrite::String(std::string &str, RawCompileType type)
 {
 	WriteString(str.c_str());
@@ -665,11 +660,6 @@ void StdCompilerConfigRead::String(char *szString, size_t iMaxLength, RawCompile
 {
 	StdStrBuf Result = ReadString();
 	SCopy(Result.getData(), szString, iMaxLength);
-}
-
-void StdCompilerConfigRead::String(char **pszString, RawCompileType eType)
-{
-	*pszString = ReadString().GrabPointer();
 }
 
 void StdCompilerConfigRead::String(std::string &str, RawCompileType type)

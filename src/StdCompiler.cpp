@@ -76,14 +76,6 @@ void StdCompilerBinWrite::String(char *szString, size_t iMaxLength, RawCompileTy
 	WriteData(szString, strlen(szString) + 1);
 }
 
-void StdCompilerBinWrite::String(char **pszString, RawCompileType eType)
-{
-	if (*pszString)
-		WriteData(*pszString, strlen(*pszString) + 1);
-	else
-		WriteValue('\0');
-}
-
 void StdCompilerBinWrite::String(std::string &str, RawCompileType type)
 {
 	WriteData(str.c_str(), str.size() + 1);
@@ -155,25 +147,6 @@ void StdCompilerBinRead::String(char *szString, size_t iMaxLength, RawCompileTyp
 		{
 			excCorrupt("string too long"); return;
 		}
-}
-
-void StdCompilerBinRead::String(char **pszString, RawCompileType eType)
-{
-	// At least one byte data needed
-	if (iPos >= Buf.getSize())
-	{
-		excEOF(); return;
-	}
-	int iStart = iPos;
-	// Search string end
-	while (*getBufPtr<char>(Buf, iPos++))
-		if (iPos >= Buf.getSize())
-		{
-			excEOF(); return;
-		}
-	// Allocate and copy data
-	*pszString = static_cast<char *>(malloc(sizeof(char) * (iPos - iStart)));
-	memcpy(*pszString, Buf.getPtr(iStart), iPos - iStart);
 }
 
 void StdCompilerBinRead::String(std::string &str, RawCompileType type)
@@ -358,12 +331,6 @@ void StdCompilerINIWrite::StringN(const char *szString, size_t iMaxLength, RawCo
 	case RCT_ID:
 		Buf.Append(szString);
 	}
-}
-
-void StdCompilerINIWrite::String(char **pszString, RawCompileType eType)
-{
-	char cNull = '\0';
-	String(*pszString ? *pszString : &cNull, 0, eType);
 }
 
 void StdCompilerINIWrite::String(std::string &str, RawCompileType type)
@@ -720,20 +687,10 @@ void StdCompilerINIRead::String(char *szString, size_t iMaxLength, RawCompileTyp
 	SCopy(getBufPtr<char>(Buf), szString, iMaxLength);
 }
 
-void StdCompilerINIRead::String(char **pszString, RawCompileType eType)
-{
-	// For Backwards compatibility: Escaped strings default to normal strings if no escaped string is given
-	if (eType == RCT_Escaped && pPos && *pPos != '"') eType = RCT_All;
-	// Get length
-	size_t iLength = GetStringLength(eType);
-	// Read data
-	StdBuf Buf = ReadString(iLength, eType, true);
-	// Set
-	*pszString = reinterpret_cast<char *>(Buf.GrabPointer());
-}
-
 void StdCompilerINIRead::String(std::string &str, RawCompileType type)
 {
+	// For Backwards compatibility: Escaped strings default to normal strings if no escaped string is given
+	if (type == RCT_Escaped && pPos && *pPos != '"') type = RCT_All;
 	// Get length
 	size_t iLength = GetStringLength(type);
 	// Read data
