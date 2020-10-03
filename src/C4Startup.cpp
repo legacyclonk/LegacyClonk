@@ -162,8 +162,6 @@ C4Startup::~C4Startup()
 void C4Startup::Start()
 {
 	assert(fInStartup);
-	// record if desired
-	if (Config.General.Record) Game.Record = true;
 	// flag game start
 	fAborted = false;
 	fInStartup = false;

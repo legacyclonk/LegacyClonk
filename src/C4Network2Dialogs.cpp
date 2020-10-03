@@ -629,7 +629,7 @@ C4GameOptionButtons::C4GameOptionButtons(const C4Rect &rcBounds, bool fNetwork, 
 	}
 	else btnPassword = btnComment = nullptr;
 	btnFairCrew = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(C4GUI::Ico_Ex_NormalCrew, caButtons.GetFromLeft(iIconSize, iIconSize), 'F' /* 2do */, &C4GameOptionButtons::OnBtnFairCrew, this);
-	btnRecord = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(Game.Record || fIsLeague ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff, caButtons.GetFromLeft(iIconSize, iIconSize), 'R' /* 2do */, &C4GameOptionButtons::OnBtnRecord, this);
+	btnRecord = new C4GUI::CallbackButton<C4GameOptionButtons, C4GUI::IconButton>(Config.General.Record || fIsLeague ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff, caButtons.GetFromLeft(iIconSize, iIconSize), 'R' /* 2do */, &C4GameOptionButtons::OnBtnRecord, this);
 	btnRecord->SetEnabled(!fIsLeague);
 	btnRecord->SetToolTip(LoadResStr("IDS_DLGTIP_RECORD"));
 	AddElement(btnFairCrew);
@@ -669,7 +669,7 @@ void C4GameOptionButtons::OnBtnLeague(C4GUI::Control *btn)
 	if (!fNetwork || !fHost) return;
 	bool fCheck = Config.Network.LeagueServerSignUp = !Config.Network.LeagueServerSignUp;
 	btnLeague->SetIcon(fCheck ? C4GUI::Ico_Ex_LeagueOn : C4GUI::Ico_Ex_LeagueOff);
-	if (!Game.Record) OnBtnRecord(btnRecord);
+	btnRecord->SetIcon(fCheck || Config.General.Record ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff);
 	btnRecord->SetEnabled(!fCheck);
 	// if the league is turned on, the game must be signed up at the masterserver
 	if (fCheck && !Config.Network.MasterServerSignUp) OnBtnInternet(btnInternet);
@@ -696,8 +696,7 @@ void C4GameOptionButtons::OnBtnFairCrew(C4GUI::Control *btn)
 
 void C4GameOptionButtons::OnBtnRecord(C4GUI::Control *btn)
 {
-	bool fCheck = Game.Record = !Game.Record;
-	btnRecord->SetIcon(fCheck ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff);
+	btnRecord->SetIcon((Config.General.Record = !Config.General.Record) ? C4GUI::Ico_Ex_RecordOn : C4GUI::Ico_Ex_RecordOff);
 }
 
 void C4GameOptionButtons::OnBtnPassword(C4GUI::Control *btn)

@@ -342,7 +342,6 @@ void C4Application::QuitGame()
 			Game.DefinitionFilenames = defs;
 			Game.FixedDefinitions = true;
 			Game.fObserve = false;
-			Game.Record = !!Config.General.Record;
 			NextMission.Clear();
 		}
 	}
