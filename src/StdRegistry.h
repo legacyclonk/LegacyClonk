@@ -92,7 +92,6 @@ public:
 	virtual void Boolean(bool &rBool) override;
 	virtual void Character(char &rChar) override;
 	virtual void String(char *szString, size_t iMaxLength, RawCompileType eType = RCT_Escaped) override;
-	virtual void String(char **pszString, RawCompileType eType = RCT_Escaped) override;
 	virtual void String(std::string &str, RawCompileType type = RCT_Escaped) override;
 	virtual void Raw(void *pData, size_t iSize, RawCompileType eType = RCT_Escaped) override;
 
@@ -150,7 +149,6 @@ public:
 	virtual void Boolean(bool &rBool) override;
 	virtual void Character(char &rChar) override;
 	virtual void String(char *szString, size_t iMaxLength, RawCompileType eType = RCT_Escaped) override;
-	virtual void String(char **pszString, RawCompileType eType = RCT_Escaped) override;
 	virtual void String(std::string &str, RawCompileType type = RCT_Escaped) override;
 	virtual void Raw(void *pData, size_t iSize, RawCompileType eType = RCT_Escaped) override;
 

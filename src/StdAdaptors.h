@@ -808,7 +808,7 @@ struct StdEnumAdapt
 				if (pName->Val == rVal)
 				{
 					// Put name
-					pComp->String(const_cast<char **>(&pName->Name), StdCompiler::RCT_Idtf);
+					pComp->String(pName->Name, strlen(pName->Name), StdCompiler::RCT_Idtf);
 					break;
 				}
 			// No name found?
@@ -891,7 +891,7 @@ struct StdBitfieldAdapt
 					// Put "|"
 					if (!fFirst) pComp->Separator(StdCompiler::SEP_VLINE);
 					// Put name
-					pComp->String(const_cast<char **>(&pName->Name), StdCompiler::RCT_Idtf);
+					pComp->String(pName->Name, strlen(pName->Name), StdCompiler::RCT_Idtf);
 					fFirst = false;
 					// Remove bits
 					val &= ~pName->Val;

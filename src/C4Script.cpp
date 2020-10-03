@@ -3950,7 +3950,6 @@ protected:
 	virtual void ProcessBool(bool &rBool) = 0;
 	virtual void ProcessChar(char &rChar) = 0;
 	virtual void ProcessString(char *szString, size_t iMaxLength, bool fIsID) = 0;
-	virtual void ProcessString(char **pszString, bool fIsID) = 0;
 	virtual void ProcessString(std::string &str, bool isID) = 0;
 
 public:
@@ -3970,10 +3969,6 @@ public:
 	virtual void String(char *szString, size_t iMaxLength, RawCompileType eType) override
 	{
 		if (haveCompleteMatch()) if (!iEntryNr--) ProcessString(szString, iMaxLength, eType == StdCompiler::RCT_ID);
-	}
-	virtual void String(char **pszString, RawCompileType eType) override
-	{
-		if (haveCompleteMatch()) if (!iEntryNr--) ProcessString(pszString, eType == StdCompiler::RCT_ID);
 	}
 	virtual void String(std::string &str, RawCompileType type) override
 	{
@@ -4027,10 +4022,6 @@ protected:
 	{
 		Res = (fIsID ? C4VID(C4Id(szString)) : C4VString(szString));
 	}
-	virtual void ProcessString(char **pszString, bool fIsID) override
-	{
-		Res = (fIsID ? C4VID(C4Id(*pszString)) : C4VString(*pszString));
-	}
 	virtual void ProcessString(std::string &str, bool fIsID) override
 	{
 		Res = (fIsID ? C4VID(C4Id(str.c_str())) : C4VString(str.c_str()));
@@ -4074,12 +4065,6 @@ protected:
 			if (rsBuf.getData()) SCopy(rsBuf.getData(), szString, iMaxLength); else *szString = 0;
 		}
 		fSuccess = true;
-	}
-
-	virtual void ProcessString(char **pszString, bool fIsID) override
-	{
-		if (iRuntimeWriteAllowed <= 0 || !Val.ConvertTo(fIsID ? C4V_C4ID : C4V_String)) return;
-		// This cannot be allowed, because it is run during decompilation and wouldn't update assiciated length fields in StdStrBuf!
 	}
 
 	virtual void ProcessString(std::string &str, bool isID) override
