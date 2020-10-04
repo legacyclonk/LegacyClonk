@@ -346,6 +346,10 @@ endif ()
 find_package(ZLIB REQUIRED)
 target_link_libraries(standard ZLIB::ZLIB)
 
+# Link curl
+find_package(CURL REQUIRED)
+target_link_libraries(clonk CURL::libcurl)
+
 # Define _DEBUG or NDEBUG depending on project configuration (Already defined by MSVC)
 if (NOT MSVC)
 	set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS

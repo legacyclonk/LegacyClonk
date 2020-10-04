@@ -158,7 +158,7 @@ void C4StartupNetListEntry::SetRefQuery(const char *szAddress, enum QueryType eQ
 	sInfoText[0].Format(LoadResStr("IDS_NET_CLIENTONNET"), GetQueryTypeName(eQueryType), pRefClient->getServerName());
 	sInfoText[1].Copy(LoadResStr("IDS_NET_INFOQUERY"));
 	UpdateSmallState(); UpdateText();
-	pRefClient->SetNotify(&Application.InteractiveThread);
+	pRefClient->SetNotify([this](C4Network2HTTPClient *) { pNetDlg->UpdateList(true); }, &Application.InteractiveThread);
 	// masterserver: always on top
 	if (eQueryType == NRQT_Masterserver)
 		iSortOrder = 100;
@@ -747,15 +747,10 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 
 	// create timer
 	pSec1Timer = new C4Sec1TimerCallback<C4StartupNetDlg>(this);
-
-	// register as receiver of reference notifies
-	Application.InteractiveThread.SetCallback(Ev_HTTP_Response, this);
 }
 
 C4StartupNetDlg::~C4StartupNetDlg()
 {
-	// disable notifies
-	Application.InteractiveThread.ClearCallback(Ev_HTTP_Response, this);
 	DiscoverClient.Close();
 	pSec1Timer->Release();
 	delete pMasterserverClient;
@@ -969,11 +964,6 @@ C4StartupNetDlg::DlgMode C4StartupNetDlg::GetDlgMode()
 {
 	// dlg mode determined by active tabular sheet
 	if (pMainTabular->GetActiveSheetIndex() == SNDM_Chat) return SNDM_Chat; else return SNDM_GameList;
-}
-
-void C4StartupNetDlg::OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData)
-{
-	UpdateList(true);
 }
 
 bool C4StartupNetDlg::DoOK()

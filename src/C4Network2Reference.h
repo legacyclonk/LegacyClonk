@@ -30,8 +30,10 @@
 #include "C4InputValidation.h"
 #include "C4TimeMilliseconds.h"
 
+#include <functional>
+#include <unordered_map>
+
 const int C4Network2HTTPQueryTimeout = 20; // (s)
-constexpr uint32_t C4Network2HTTPHappyEyeballsTimeout = 300; // (ms)
 
 // Session data
 class C4Network2Reference
@@ -119,77 +121,101 @@ private:
 	void RespondReference(const C4NetIO::addr_t &addr);
 };
 
+using CURLM = struct Curl_multi;
+using CURL = struct Curl_easy;
+using curl_socket_t = SOCKET;
+
 // mini HTTP client
-class C4Network2HTTPClient : public C4NetIOTCP, private C4NetIO::CBClass
+class C4Network2HTTPClient : public StdSchedulerProc
 {
 public:
-	C4Network2HTTPClient();
-	virtual ~C4Network2HTTPClient();
+	using Headers = std::unordered_map<std::string_view, std::string_view>;
+	using Notify = std::function<void(C4Network2HTTPClient *)>;
+
+public:
+	C4Network2HTTPClient() = default;
+	~C4Network2HTTPClient() override;
+
+public:
+	bool Init();
 
 private:
-	// Address information
-	C4NetIO::addr_t ServerAddr, ServerAddrFallback, PeerAddr;
-	StdStrBuf Server, RequestPath;
 
-	bool fBinary;
-	bool fBusy, fSuccess, fConnected;
-	size_t iDataOffset;
-	StdBuf Request;
-	time_t iRequestTimeout;
-	C4TimeMilliseconds HappyEyeballsTimeout;
+	CURLM *multiHandle{nullptr};
+	CURL *curlHandle{nullptr};
+
+#ifdef STDSCHEDULER_USE_EVENTS
+	// event indicating network activity
+	HANDLE event{nullptr};
+#endif
+	std::unordered_map<SOCKET, int> sockets;
+
+	std::string url;
+	std::string serverName;
+	C4NetIO::addr_t serverAddress;
+	StdBuf requestData;
+
+	bool binary{false};
+	bool success{false};
 
 	// Response header data
-	size_t iDownloadedSize, iTotalSize;
-	bool fCompressed;
+	size_t downloadedSize{0};
+	size_t totalSize{0};
+	bool compressed{false};
 
-	// Event queue to use for notify when something happens
-	class C4InteractiveThread *pNotify;
-
-protected:
-	StdBuf ResultBin; // set if fBinary
-	StdStrBuf ResultString; // set if !fBinary
+	// Callback to call when something happens
+	Notify notify;
 
 protected:
-	// Overridden
-	virtual void PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf) override;
-	virtual size_t UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr) override;
-
-	// Callbacks
-	bool OnConn(const C4NetIO::addr_t &AddrPeer, const C4NetIO::addr_t &AddrConnect, const addr_t *pOwnAddr, C4NetIO *pNetIO) override;
-	void OnDisconn(const C4NetIO::addr_t &AddrPeer, C4NetIO *pNetIO, const char *szReason) override;
-	void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO) override;
+	StdBuf resultBin;
+	std::string resultString;
+	std::string error;
+	void SetError(std::string_view error) { this->error = error; }
 
 	void ResetRequestTimeout();
 	virtual int32_t GetDefaultPort() { return 80; }
 
 public:
-	bool Query(const StdBuf &Data, bool fBinary);
-	bool Query(const char *szData, bool fBinary) { return Query(StdBuf::MakeRef(szData, SLen(szData)), fBinary); }
+	bool Query(const StdBuf &Data, bool binary, Headers headers = {});
+	bool Query(const char *szData, bool binary, Headers headers = {}) { return Query(StdBuf::MakeRef(szData, SLen(szData)), binary, headers); }
 
-	bool isBusy() const { return fBusy; }
-	bool isSuccess() const { return fSuccess; }
-	bool isConnected() const { return fConnected; }
-	size_t getTotalSize() const { return iTotalSize; }
-	size_t getDownloadedSize() const { return iDownloadedSize; }
-	const StdBuf &getResultBin() const { assert(fBinary); return ResultBin; }
-	const char *getServerName() const { return Server.getData(); }
-	const char *getRequest() const { return RequestPath.getData(); }
-	const C4NetIO::addr_t &getServerAddress() const { return ServerAddr; }
+	bool isBusy() const { return curlHandle; }
+	bool isSuccess() const { return success; }
+	bool isConnected() const { return downloadedSize + totalSize != 0; }
+	size_t getTotalSize() const { return totalSize; }
+	size_t getDownloadedSize() const { return downloadedSize; }
+	const auto &getResultBin() const { assert(binary); return resultBin; }
+	const auto &getResultString() const { assert(!binary); return resultString; }
+	const char *getURL() const { return url.c_str(); }
+	const char *getServerName() const { return serverName.c_str(); }
+	const C4NetIO::addr_t &getServerAddress() const { return serverAddress; }
+	virtual const char *GetError() const { return !error.empty() && *error.c_str() ? error.c_str() : nullptr; }
+	void ResetError() { error.clear(); }
 
-	void Cancel(const char *szReason);
+	void Cancel(std::string_view reason);
 	void Clear();
 
-	bool SetServer(const char *szServerAddress);
+	bool SetServer(std::string_view serverAddress);
 
-	void SetNotify(class C4InteractiveThread *pnNotify) { pNotify = pnNotify; }
+	void SetNotify(const Notify &notify = {}, class C4InteractiveThread *thread = nullptr);
 
 	// Overridden
-	virtual bool Execute(int iMaxTime = TO_INF) override;
+	virtual bool Execute(int iMaxTime = C4NetIO::TO_INF) override;
 	virtual int GetTimeout() override;
 
+#ifdef STDSCHEDULER_USE_EVENTS
+	HANDLE GetEvent() override { return event; }
+#else
+	void GetFDs(fd_set *FDs, int *maxFD) override;
+#endif
+
 private:
-	bool ReadHeader(const StdStrBuf &Data);
-	bool Decompress(StdBuf *pData);
+	static size_t SWriteCallback(char *data, size_t size, size_t nmemb, void *userData);
+	size_t WriteCallback(char *data, size_t size);
+	static int SProgressCallback(void *client, int64_t dltotal, int64_t dlnow, int64_t ultotal, int64_t ulnow);
+	int ProgressCallback(int64_t dltotal, int64_t dlnow);
+	static int SSocketCallback(CURL *easy, curl_socket_t s, int what, void *userData, void *socketPointer);
+	int SocketCallback(curl_socket_t s, int what);
 };
 
 // Loads references (mini-HTTP-client)

@@ -122,7 +122,7 @@ public:
 };
 
 // startup dialog: Network game selection
-class C4StartupNetDlg : public C4StartupDlg, private C4InteractiveThread::Callback
+class C4StartupNetDlg : public C4StartupDlg
 {
 public:
 	C4StartupNetDlg();
@@ -196,9 +196,6 @@ private:
 
 	DlgMode GetDlgMode();
 
-	// callback from C4Network2ReferenceClient
-	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) override;
-
 public:
 	bool DoOK(); // join currently selected item
 	bool DoBack(); // abort dialog
@@ -211,4 +208,6 @@ public:
 
 	void SetIgnoreUpdate(bool to_val) { fIgnoreUpdate = to_val; }
 	bool GetIgnoreUpdate() const { return fIgnoreUpdate; }
+
+	friend class C4StartupNetListEntry;
 };
