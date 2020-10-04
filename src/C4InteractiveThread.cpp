@@ -152,6 +152,11 @@ void C4InteractiveThread::ProcessEvents() // by main thread
 		}
 		break;
 
+		// Execute in main thread
+		case Ev_MainThread:
+			std::any_cast<const std::function<void()> &>(eventData)();
+			break;
+
 		// Other events: check for a registered handler
 		default:
 			if (eEventType >= Ev_None && eEventType <= Ev_Last)
@@ -189,4 +194,9 @@ bool C4InteractiveThread::ThreadLogSF(const char *szMessage, ...)
 	StdStrBuf Msg = FormatStringV(szMessage, lst);
 	// send to main thread
 	return PushEvent(Ev_LogSilent, Msg);
+}
+
+bool C4InteractiveThread::ExecuteInMainThread(const std::function<void()> &function)
+{
+	return PushEvent(Ev_MainThread, function);
 }
