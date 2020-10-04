@@ -31,11 +31,11 @@
 #define C4CFG_Company "LegacyClonk Team"
 #define C4CFG_Product "LegacyClonk"
 
-#define C4CFG_LeagueServer   "league.clonkspot.org:80"
-#define C4CFG_FallbackServer "league.clonkspot.org:80"
 #define C4CFG_OfficialLeagueServer "league.clonkspot.org"
+#define C4CFG_LeagueServer   "https://" C4CFG_OfficialLeagueServer
+#define C4CFG_FallbackServer C4CFG_LeagueServer
 
-#define C4CFG_UpdateServer "update.clonkspot.org/lc/update" // for download files, replace 'update' with the below
+#define C4CFG_UpdateServer "https://update.clonkspot.org/lc/update" // for download files, replace 'update' with the below
 
 #define C4CFG_UpdateEngine  "lc_%d_%s.c4u"
 #define C4CFG_UpdateObjects "lc_%d%d%d%d_%d_%s.c4u"

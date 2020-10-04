@@ -49,8 +49,7 @@ const std::uint16_t C4NetStdPortTCP = 11112,
                     C4NetStdPortUDP = 11113,
                     C4NetStdPortDiscovery = 11114,
                     C4NetStdPortRefServer = 11111,
-                    C4NetStdPortPuncher = 11115,
-                    C4NetStdPortHTTP = 80;
+					C4NetStdPortPuncher = 11115;
 
 // ressource retrieve wait timeout
 const int C4NetResRetrieveTimeout = 100000; // (ms)

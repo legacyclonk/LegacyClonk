@@ -123,7 +123,7 @@ void C4DownloadDlg::OnIdle()
 		}
 	}
 	const char *szStatusString = LoadResStr("IDS_PRC_DOWNLOADINGFILE");
-	SetStatus(FormatString(szStatusString, GetFilename(HTTPClient.getRequest())).getData(), iProgress);
+	SetStatus(FormatString(szStatusString, GetFilename(HTTPClient.getURL())).getData(), iProgress);
 }
 
 void C4DownloadDlg::UserClose(bool fOK)

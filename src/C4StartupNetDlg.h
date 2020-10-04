@@ -198,7 +198,7 @@ private:
 	DlgMode GetDlgMode();
 
 	// callback from C4Network2ReferenceClient
-	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) override;
+	void OnThreadEvent(C4InteractiveEventType, const std::any &) override;
 
 public:
 	bool DoOK(); // join currently selected item

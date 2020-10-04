@@ -577,6 +577,7 @@ IDS_ERR_CLONKCOLLISION=A Clonk with the file name "%s" exists already.
 IDS_ERR_CONFIG=Configuration error
 IDS_ERR_CONFREAD=Could not read configuration: %s
 IDS_ERR_CONFSAVE=Could not save configuration: %s
+IDS_ERR_CURLGLOBALINIT=Error initialising libcurl: {}
 IDS_ERR_DDRAW=Error while initialising OpenGL. Please check this system's OpenGL installation and, if necessary, update your graphics drivers.
 IDS_ERR_DELOLDTITLE=Error deleting old title from file "%s": %s
 IDS_ERR_ERRORADDINGNEWTITLEFORFIL=Error adding new title for file \"%s\": %s
