@@ -18,6 +18,7 @@
 
 #include <C4AudioSystem.h>
 #include <C4Config.h>
+#include "C4CurlSystem.h"
 #include <C4Group.h>
 #include <C4MusicSystem.h>
 #include <C4SoundSystem.h>
@@ -97,6 +98,7 @@ public:
 	// main System.c4g in working folder
 	C4Group SystemGroup;
 	std::unique_ptr<C4AudioSystem> AudioSystem;
+	std::optional<C4CurlSystem> CurlSystem;
 	std::optional<C4MusicSystem> MusicSystem;
 	std::optional<C4SoundSystem> SoundSystem;
 	std::unique_ptr<C4ToastSystem> ToastSystem;

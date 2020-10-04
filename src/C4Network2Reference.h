@@ -17,7 +17,9 @@
 
 #pragma once
 
+#include "C4Coroutine.h"
 #include "C4ForwardDeclarations.h"
+#include "C4HTTPClient.h"
 #include "C4Network2.h"
 #include "C4Network2Client.h"
 
@@ -26,10 +28,13 @@
 #include "C4GameVersion.h"
 #include "C4InputValidation.h"
 
+#include <atomic>
 #include <chrono>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <string>
 #include <vector>
-
-const int C4Network2HTTPQueryTimeout = 20; // (s)
 
 // Session data
 class C4Network2Reference
@@ -113,77 +118,75 @@ private:
 	void RespondReference(const C4NetIO::addr_t &addr);
 };
 
-// mini HTTP client
-class C4Network2HTTPClient : public C4NetIOTCP, private C4NetIO::CBClass
+class C4Network2HTTPClient : public StdSchedulerProc
 {
 public:
-	C4Network2HTTPClient();
-	virtual ~C4Network2HTTPClient();
-
-private:
-	// Address information
-	C4NetIO::addr_t ServerAddr, ServerAddrFallback, PeerAddr;
-	StdStrBuf Server, RequestPath;
-
-	bool fBinary;
-	bool fBusy, fSuccess, fConnected;
-	size_t iDataOffset;
-	StdBuf Request;
-	time_t iRequestTimeout;
-	std::chrono::time_point<std::chrono::steady_clock> HappyEyeballsTimeout;
-
-	// Response header data
-	size_t iDownloadedSize, iTotalSize;
-	bool fCompressed;
-
-	// Event queue to use for notify when something happens
-	class C4InteractiveThread *pNotify;
-
-protected:
-	StdBuf ResultBin; // set if fBinary
-	StdStrBuf ResultString; // set if !fBinary
-
-protected:
-	// Overridden
-	virtual void PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf) override;
-	virtual size_t UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr) override;
-
-	// Callbacks
-	bool OnConn(const C4NetIO::addr_t &AddrPeer, const C4NetIO::addr_t &AddrConnect, const addr_t *pOwnAddr, C4NetIO *pNetIO) override;
-	void OnDisconn(const C4NetIO::addr_t &AddrPeer, C4NetIO *pNetIO, const char *szReason) override;
-	void OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO) override;
-
-	void ResetRequestTimeout();
-	virtual int32_t GetDefaultPort() { return 80; }
+	C4Network2HTTPClient() = default;
+	~C4Network2HTTPClient() override;
 
 public:
-	bool Query(const StdBuf &Data, bool fBinary);
-	bool Query(const char *szData, bool fBinary) { return Query(StdBuf::MakeRef(szData, SLen(szData)), fBinary); }
+	bool Init();
+	bool Query(const StdBuf &Data, bool binary);
+	bool Query(const char *szData, bool binary) { return Query(StdBuf::MakeRef(szData, SLen(szData)), binary); }
 
-	bool isBusy() const { return fBusy; }
-	bool isSuccess() const { return fSuccess; }
-	bool isConnected() const { return fConnected; }
-	size_t getTotalSize() const { return iTotalSize; }
-	size_t getDownloadedSize() const { return iDownloadedSize; }
-	const StdBuf &getResultBin() const { assert(fBinary); return ResultBin; }
-	const char *getServerName() const { return Server.getData(); }
-	const char *getRequest() const { return RequestPath.getData(); }
-	const C4NetIO::addr_t &getServerAddress() const { return ServerAddr; }
-
-	void Cancel(const char *szReason);
+	bool isBusy() const { return busy.load(std::memory_order_acquire); }
+	bool isSuccess() const { return success.load(std::memory_order_acquire); }
+	bool isConnected() const { return downloadedSize.load(std::memory_order_acquire) + totalSize.load(std::memory_order_acquire) != 0; }
+	std::size_t getTotalSize() const { return totalSize.load(std::memory_order_acquire); }
+	std::size_t getDownloadedSize() const { return downloadedSize.load(std::memory_order_acquire); }
+	const auto &getResultBin() const { assert(binary); return resultBin; }
+	const auto &getResultString() const { assert(!binary); return resultString; }
+	const char *getURL() const { return url.c_str(); }
+	const char *getServerName() const { return serverName.c_str(); }
+	const C4NetIO::addr_t &getServerAddress() const { return serverAddress; }
+	virtual const char *GetError() const { return !error.empty() && *error.c_str() ? error.c_str() : nullptr; }
+	void ResetError() { error.clear(); }
+	bool Cancel(std::string_view reason);
 	void Clear();
 
-	bool SetServer(const char *szServerAddress);
+	bool SetServer(std::string_view serverAddress, std::uint16_t defaultPort = 0);
+	void SetNotify(class C4InteractiveThread *thread) { this->thread.store(thread, std::memory_order_release); }
 
-	void SetNotify(class C4InteractiveThread *pnNotify) { pNotify = pnNotify; }
+	bool Execute(int iMaxTime = C4NetIO::TO_INF) override final { return true; }
+	int GetTimeout() override final { return C4NetIO::TO_INF; }
 
-	// Overridden
-	virtual bool Execute(int iMaxTime = TO_INF) override;
-	virtual int GetTimeout() override;
+#ifdef _WIN32
+	HANDLE GetEvent() override final { return nullptr; }
+#else
+	void GetFDs(std::vector<pollfd> &fds) override final {}
+#endif
+
+protected:
+	void SetError(std::string_view error) { this->error = error; }
 
 private:
-	bool ReadHeader(const StdStrBuf &Data);
-	bool Decompress(StdBuf *pData);
+	C4Task::Hot<void> QueryAsync(C4Task::Hot<C4HTTPClient::Result> &&queryTask);
+
+protected:
+	StdBuf resultBin;
+	std::string resultString;
+
+private:
+	std::optional<C4HTTPClient> client;
+	C4Task::Hot<void> task;
+	StdBuf data;
+
+private:
+	std::string url;
+	std::string serverName;
+	std::atomic_bool binary{false};
+
+	std::atomic_bool busy{false};
+	std::atomic_bool success{false};
+
+	std::mutex dataMutex;
+	std::string error;
+	C4NetIO::addr_t serverAddress;
+
+	std::atomic_size_t totalSize;
+	std::atomic_size_t downloadedSize;
+
+	std::atomic<class C4InteractiveThread *> thread{nullptr};
 };
 
 // Loads references (mini-HTTP-client)
@@ -193,9 +196,6 @@ class C4Network2RefClient : public C4Network2HTTPClient
 	StdStrBuf MessageOfTheDay, MessageOfTheDayHyperlink;
 	StdStrBuf LeagueServerRedirect;
 	bool fVerSet;
-
-protected:
-	virtual int32_t GetDefaultPort() override { return C4NetStdPortRefServer; }
 
 public:
 	C4Network2RefClient() : fVerSet(false), C4Network2HTTPClient() {}

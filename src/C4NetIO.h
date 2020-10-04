@@ -31,6 +31,7 @@
 
 
 #include <cstring>
+#include <vector>
 
 class C4Network2Address;
 
