@@ -279,7 +279,6 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	StdStrBuf strQuery; strQuery.Format("%s?action=version", Config.Network.UpdateServerAddress);
 	if (VerChecker.Init() && VerChecker.SetServer(strQuery.getData()) && VerChecker.QueryVersion())
 	{
-		VerChecker.SetNotify(&Application.InteractiveThread);
 		Application.InteractiveThread.AddProc(&VerChecker);
 		// wait for version check to terminate
 		while (VerChecker.isBusy())
@@ -297,7 +296,6 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 			VerChecker.GetRedirect(strUpdateRedirect);
 		}
 		Application.InteractiveThread.RemoveProc(&VerChecker);
-		VerChecker.SetNotify(nullptr);
 	}
 	if (pScreen && C4GUI::IsGUIValid()) delete pWaitDlg;
 	// User abort
@@ -396,7 +394,7 @@ bool C4Network2VersionInfoClient::GetVersion(C4GameVersion *piVerOut)
 			mkNamingAdapt(
 				mkParAdapt(*piVerOut, false),
 				"Version"),
-			C4ENGINENAME), ResultString);
+			C4ENGINENAME), StdStrBuf::MakeRef(resultString.c_str()));
 	}
 	catch (const StdCompiler::Exception &e)
 	{
@@ -422,7 +420,7 @@ bool C4Network2VersionInfoClient::GetRedirect(StdStrBuf &rRedirect)
 	{
 		CompileFromBuf<StdCompilerINIRead>(mkNamingAdapt(
 			mkNamingAdapt(mkParAdapt(strUpdateRedirect, StdCompiler::RCT_All), "UpdateServerRedirect", ""),
-			C4ENGINENAME), ResultString);
+			C4ENGINENAME), StdStrBuf::MakeRef(resultString.c_str()));
 	}
 	catch (const StdCompiler::Exception &e)
 	{

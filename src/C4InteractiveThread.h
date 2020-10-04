@@ -20,6 +20,7 @@
 #include "StdSync.h"
 
 #include <any>
+#include <functional>
 
 // Event types
 enum C4InteractiveEventType
@@ -32,13 +33,13 @@ enum C4InteractiveEventType
 
 	Ev_FileChange,
 
-	Ev_HTTP_Response,
-
 	Ev_IRC_Message,
 
 	Ev_Net_Conn,
 	Ev_Net_Disconn,
 	Ev_Net_Packet,
+
+	Ev_MainThread,
 
 	Ev_Last = Ev_Net_Packet,
 };
@@ -105,6 +106,8 @@ public:
 		// send to main thread
 		return PushEvent(Ev_LogSilent, FormatString(szMessage, args...));
 	}
+
+	bool ExecuteInMainThread(const std::function<void()> &function);
 
 	// event handlers
 	void SetCallback(C4InteractiveEventType eEvent, Callback *pnNetworkCallback)

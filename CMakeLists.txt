@@ -301,6 +301,10 @@ endif ()
 
 # Link libraries
 
+# Link CURL
+find_package(CURL REQUIRED)
+target_link_libraries(clonk CURL::libcurl)
+
 # Link fmt
 find_package(fmt REQUIRED)
 target_link_libraries(standard fmt::fmt)
