@@ -140,6 +140,9 @@ void C4Application::DoInit()
 	// Parse command line
 	Game.ParseCommandLine(GetCommandLine());
 
+	// Initialize curl
+	CurlSystem.emplace();
+
 #ifdef _WIN32
 	// Windows: handle incoming updates directly, even before starting up the gui
 	//          because updates will be applied in the console anyway.

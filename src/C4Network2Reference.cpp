@@ -20,9 +20,9 @@
 #include "C4Version.h"
 #include "C4Network2Reference.h"
 
-#include <fcntl.h>
+#include <stdexcept>
 
-constexpr std::chrono::milliseconds C4Network2HTTPHappyEyeballsTimeout{300};
+#include <fcntl.h>
 
 // *** C4Network2Reference
 
@@ -205,385 +205,146 @@ void C4Network2RefServer::RespondReference(const C4NetIO::addr_t &addr)
 
 // *** C4Network2HTTPClient
 
-C4Network2HTTPClient::C4Network2HTTPClient()
-	: fBusy(false), fSuccess(false), fConnected(false), iDownloadedSize(0), iTotalSize(0), fBinary(false), iDataOffset(0),
-	pNotify(nullptr)
+C4Network2HTTPClient::~C4Network2HTTPClient()
 {
-	C4NetIOTCP::SetCallback(this);
+	Cancel({});
 }
 
-C4Network2HTTPClient::~C4Network2HTTPClient() {}
-
-void C4Network2HTTPClient::PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf)
+bool C4Network2HTTPClient::Init() try
 {
-	// Just append the packet
-	rOutBuf.Append(rPacket);
-}
-
-size_t C4Network2HTTPClient::UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr)
-{
-	// since new data arrived, increase timeout time
-	ResetRequestTimeout();
-	// Check for complete header
-	if (!iDataOffset)
-	{
-		// Copy data into string buffer (terminate)
-		StdStrBuf Data; Data.Copy(rInBuf.getPtr<char>(), rInBuf.getSize());
-		const char *pData = Data.getData();
-		// Header complete?
-		const char *pContent = SSearch(pData, "\r\n\r\n");
-		if (!pContent)
-			return 0;
-		// Read the header
-		if (!ReadHeader(Data))
-		{
-			fBusy = fSuccess = false;
-			Close(addr);
-			return rInBuf.getSize();
-		}
-	}
-	iDownloadedSize = rInBuf.getSize() - iDataOffset;
-	// Check if the packet is complete
-	if (iTotalSize > iDownloadedSize)
-	{
-		return 0;
-	}
-	// Get data, uncompress it if needed
-	StdBuf Data = rInBuf.getPart(iDataOffset, iTotalSize);
-	if (fCompressed)
-		if (!Decompress(&Data))
-		{
-			fBusy = fSuccess = false;
-			Close(addr);
-			return rInBuf.getSize();
-		}
-	// Save the result
-	if (fBinary)
-		ResultBin.Copy(Data);
-	else
-		ResultString.Copy(Data.getPtr<char>(), Data.getSize());
-	fBusy = false; fSuccess = true;
-	// Callback
-	OnPacket(C4NetIOPacket(Data, addr), this);
-	// Done
-	Close(addr);
-	return rInBuf.getSize();
-}
-
-bool C4Network2HTTPClient::ReadHeader(const StdStrBuf &Data)
-{
-	const char *pData = Data.getData();
-	const char *pContent = SSearch(pData, "\r\n\r\n");
-	if (!pContent)
-		return 0;
-	// Parse header line
-	int iHTTPVer1, iHTTPVer2, iResponseCode, iStatusStringPtr;
-	if (sscanf(pData, "HTTP/%d.%d %d %n", &iHTTPVer1, &iHTTPVer2, &iResponseCode, &iStatusStringPtr) != 3)
-	{
-		Error = "Invalid status line!";
-		return false;
-	}
-	// Check HTTP version
-	if (iHTTPVer1 != 1)
-	{
-		Error.Format("Unsupported HTTP version: %d.%d!", iHTTPVer1, iHTTPVer2);
-		return false;
-	}
-	// Check code
-	if (iResponseCode != 200)
-	{
-		// Get status string
-		StdStrBuf StatusString; StatusString.CopyUntil(pData + iStatusStringPtr, '\r');
-		// Create error message
-		Error.Format("HTTP server responded %d: %s", iResponseCode, StatusString.getData());
-		return false;
-	}
-	// Get content length
-	const char *pContentLength = SSearch(pData, "\r\nContent-Length:");
-	int iContentLength;
-	if (!pContentLength || pContentLength > pContent ||
-		sscanf(pContentLength, "%d", &iContentLength) != 1)
-	{
-		Error.Format("Invalid server response: Content-Length is missing!");
-		return false;
-	}
-	iTotalSize = iContentLength;
-	iDataOffset = (pContent - pData);
-	// Get content encoding
-	const char *pContentEncoding = SSearch(pData, "\r\nContent-Encoding:");
-	if (pContentEncoding)
-	{
-		while (*pContentEncoding == ' ') pContentEncoding++;
-		StdStrBuf Encoding; Encoding.CopyUntil(pContentEncoding, '\r');
-		if (Encoding == "gzip")
-			fCompressed = true;
-		else
-			fCompressed = false;
-	}
-	else
-		fCompressed = false;
-	// Okay
+	client.emplace();
 	return true;
 }
-
-bool C4Network2HTTPClient::Decompress(StdBuf *pData)
+catch (const std::runtime_error &e)
 {
-	size_t iSize = pData->getSize();
-	// Create buffer
-	uint32_t iOutSize = *pData->getPtr<uint32_t>(pData->getSize() - sizeof(uint32_t));
-	iOutSize = std::min<uint32_t>(iOutSize, iSize * 1000);
-	StdBuf Out; Out.New(iOutSize);
-	// Prepare stream
-	z_stream zstrm{};
-	zstrm.next_in = const_cast<Byte *>(pData->getPtr<Byte>());
-	zstrm.avail_in = pData->getSize();
-	zstrm.next_out = Out.getMPtr<Byte>();
-	zstrm.avail_out = Out.getSize();
-	// Inflate...
-	if (inflateInit2(&zstrm, 15 + 16) != Z_OK)
+	SetError(e.what());
+	return false;
+}
+
+bool C4Network2HTTPClient::Query(const StdBuf &Data, const bool binary)
+{
+	if (!Cancel({}))
 	{
-		Error.Format("Could not decompress data!");
 		return false;
 	}
-	// Inflate!
-	if (inflate(&zstrm, Z_FINISH) != Z_STREAM_END)
-	{
-		inflateEnd(&zstrm);
-		Error.Format("Could not decompress data!");
-		return false;
-	}
-	// Return the buffer
-	Out.SetSize(zstrm.total_out);
-	pData->Take(Out);
-	// Okay
-	inflateEnd(&zstrm);
-	return true;
-}
 
-bool C4Network2HTTPClient::OnConn(const C4NetIO::addr_t &AddrPeer, const C4NetIO::addr_t &AddrConnect, const C4NetIO::addr_t *pOwnAddr, C4NetIO *pNetIO)
-{
-	// Make sure we're actually waiting for this connection
-	if (fConnected || (AddrConnect != ServerAddr && AddrConnect != ServerAddrFallback))
-		return false;
-	// Save pack peer address
-	PeerAddr = AddrPeer;
-	// Send the request
-	if (!Send(C4NetIOPacket(Request, AddrPeer)))
-	{
-		Error.Format("Unable to send HTTP request: %s", Error.getData());
-	}
-	Request.Clear();
-	fConnected = true;
-	return true;
-}
+	data = Data;
+	this->binary.store(binary, std::memory_order_release);
+	success.store(false, std::memory_order_release);
 
-void C4Network2HTTPClient::OnDisconn(const C4NetIO::addr_t &AddrPeer, C4NetIO *pNetIO, const char *szReason)
-{
-	// Got no complete packet? Failure...
-	if (!fSuccess && Error.isNull())
-	{
-		fBusy = false;
-		Error.Format("Unexpected disconnect: %s", szReason);
-	}
-	fConnected = false;
-	// Notify
-	if (pNotify)
-		pNotify->PushEvent(Ev_HTTP_Response, this);
-}
+	downloadedSize.store(0, std::memory_order_release);
+	totalSize.store(0, std::memory_order_release);
 
-void C4Network2HTTPClient::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
-{
-	// Everything worthwhile was already done in UnpackPacket. Only do notify callback
-	if (pNotify)
-		pNotify->PushEvent(Ev_HTTP_Response, this);
-}
-
-bool C4Network2HTTPClient::Execute(int iMaxTime)
-{
-	// Check timeout
-	if (fBusy)
+	try
 	{
-		if (std::chrono::steady_clock::now() > HappyEyeballsTimeout)
+		C4HTTPClient::Request request{{url}, binary, {reinterpret_cast<const std::byte *>(this->data.getData()), this->data.getSize()}};
+
+		const auto progressCallback = [this](const std::size_t downloadedSize, const std::size_t totalSize)
 		{
-			HappyEyeballsTimeout = decltype(HappyEyeballsTimeout)::max();
-			Application.InteractiveThread.ThreadLogSF("HTTP: Starting fallback connection to %s (%s)", Server.getData(), ServerAddrFallback.ToString().getData());
-			Connect(ServerAddrFallback);
-		}
-
-		if (time(nullptr) > iRequestTimeout)
-		{
-			Cancel("Request timeout");
+			this->downloadedSize.store(downloadedSize, std::memory_order_release);
+			this->totalSize.store(totalSize, std::memory_order_release);
 			return true;
-		}
+		};
+
+		task = QueryAsync(this->data.isNull() ? client->GetAsync(std::move(request), progressCallback) : client->PostAsync(std::move(request), progressCallback));
+		return true;
 	}
-	// Execute normally
-	return C4NetIOTCP::Execute(iMaxTime);
-}
-
-int C4Network2HTTPClient::GetTimeout()
-{
-	if (!fBusy)
-		return C4NetIOTCP::GetTimeout();
-	return MaxTimeout(C4NetIOTCP::GetTimeout(), static_cast<int>(1000 * std::max<time_t>(time(nullptr) - iRequestTimeout, 0)));
-}
-
-bool C4Network2HTTPClient::Query(const StdBuf &Data, bool fBinary)
-{
-	if (Server.isNull()) return false;
-	// Cancel previous request
-	if (fBusy)
-		Cancel("Cancelled");
-	// No result known yet
-	ResultString.Clear();
-	// store mode
-	this->fBinary = fBinary;
-	// Create request
-	const char *szCharset = GetCharsetCodeName(Config.General.LanguageCharset);
-	StdStrBuf Header;
-	if (Data.getSize())
-		Header.Format(
-			"POST %s HTTP/1.0\r\n"
-			"Host: %s\r\n"
-			"Connection: Close\r\n"
-			"Content-Length: %zu\r\n"
-			"Content-Type: text/plain; encoding=%s\r\n"
-			"Accept-Charset: %s\r\n"
-			"Accept-Encoding: gzip\r\n"
-			"Accept-Language: %s\r\n"
-			"User-Agent: " C4ENGINENAME "/" C4VERSION "\r\n"
-			"\r\n",
-			RequestPath.getData(),
-			Server.getData(),
-			Data.getSize(),
-			szCharset,
-			szCharset,
-			Config.General.LanguageEx);
-	else
-		Header.Format(
-			"GET %s HTTP/1.0\r\n"
-			"Host: %s\r\n"
-			"Connection: Close\r\n"
-			"Accept-Charset: %s\r\n"
-			"Accept-Encoding: gzip\r\n"
-			"Accept-Language: %s\r\n"
-			"User-Agent: " C4ENGINENAME "/" C4VERSION "\r\n"
-			"\r\n",
-			RequestPath.getData(),
-			Server.getData(),
-			szCharset,
-			Config.General.LanguageEx);
-	// Compose query
-	Request.Take(Header.GrabPointer(), Header.getLength());
-	Request.Append(Data);
-
-	bool enableFallback{!ServerAddrFallback.IsNull()};
-	// Start connecting
-	if (!Connect(ServerAddr))
+	catch (const std::runtime_error &e)
 	{
-		if (!enableFallback)
-		{
-			return false;
-		}
+		SetError(e.what());
+		return false;
+	}
+}
 
-		std::swap(ServerAddr, ServerAddrFallback);
-		enableFallback = false;
-		if (!Connect(ServerAddr))
+bool C4Network2HTTPClient::Cancel(const std::string_view reason)
+{
+	if (task)
+	{
+		task.Cancel();
+
+		try
 		{
+			std::move(task).Get();
+		}
+		catch (const C4Task::CancelledException &)
+		{
+		}
+		catch (const std::runtime_error &)
+		{
+			SetError("Could not cancel");
 			return false;
 		}
 	}
-	if (enableFallback)
-	{
-		HappyEyeballsTimeout = std::chrono::steady_clock::now() + C4Network2HTTPHappyEyeballsTimeout;
-	}
-	else
-	{
-		HappyEyeballsTimeout = decltype(HappyEyeballsTimeout)::max();
-	}
 
-	// Okay, request will be performed when connection is complete
-	fBusy = true;
-	iDataOffset = 0;
-	ResetRequestTimeout();
-	ResetError();
+	SetError(reason);
 	return true;
-}
-
-void C4Network2HTTPClient::ResetRequestTimeout()
-{
-	// timeout C4Network2HTTPQueryTimeout seconds from this point
-	iRequestTimeout = time(nullptr) + C4Network2HTTPQueryTimeout;
-}
-
-void C4Network2HTTPClient::Cancel(const char *szReason)
-{
-	// Close connection - and connection attempt
-	Close(ServerAddr);
-	Close(ServerAddrFallback);
-	Close(PeerAddr);
-
-	// Reset flags
-	fBusy = fSuccess = fConnected = fBinary = false;
-	iDownloadedSize = iTotalSize = iDataOffset = 0;
-	Error = szReason;
 }
 
 void C4Network2HTTPClient::Clear()
 {
-	fBusy = fSuccess = fConnected = fBinary = false;
-	iDownloadedSize = iTotalSize = iDataOffset = 0;
-	ResultBin.Clear();
-	ResultString.Clear();
-	Error.Clear();
+	Cancel({});
+	resultBin.Clear();
+	resultString.clear();
+	ResetError();
+	serverAddress.Clear();
+	url.clear();
 }
 
-bool C4Network2HTTPClient::SetServer(const char *szServerAddress)
+bool C4Network2HTTPClient::SetServer(const std::string_view serverAddress, const std::uint16_t defaultPort) try
 {
-	// Split address
-	const char *pRequestPath;
-	if (pRequestPath = strchr(szServerAddress, '/'))
-	{
-		Server.CopyUntil(szServerAddress, '/');
-		RequestPath = pRequestPath;
-	}
-	else
-	{
-		Server = szServerAddress;
-		RequestPath = "/";
-	}
-	// Resolve address
-	ServerAddr.SetAddress(Server);
-	if (ServerAddr.IsNull())
-	{
-		SetError(FormatString("Could not resolve server address %s!", Server.getData()).getData());
-		return false;
-	}
-	ServerAddr.SetDefaultPort(GetDefaultPort());
-
-	if (ServerAddr.GetFamily() == C4Network2HostAddress::IPv6)
-	{
-		// Try to find a fallback IPv4 address for Happy Eyeballs.
-		ServerAddrFallback.SetAddress(Server, C4Network2HostAddress::IPv4);
-		ServerAddrFallback.SetDefaultPort(GetDefaultPort());
-	}
-	else
-	{
-		ServerAddrFallback.Clear();
-	}
-
-	// Remove port
-	const auto &firstColon = std::strchr(Server.getData(), ':');
-	const auto &lastColon = std::strrchr(Server.getData(), ':');
-	if (firstColon)
-	{
-		// Hostname/IPv4 address or IPv6 address with port (e.g. [::1]:1234)
-		if (firstColon == lastColon || (Server[0] == '[' && lastColon[-1] == ']'))
-			Server.SetLength(lastColon - Server.getData());
-	}
-
-	// Done
-	ResetError();
+	const C4HTTPClient::Uri uri{std::string{serverAddress}, defaultPort};
+	url = uri.GetUriAsString();
+	serverName = uri.GetServerAddress();
 	return true;
+}
+catch (const std::runtime_error &e)
+{
+	SetError(e.what());
+	return false;
+}
+
+C4Task::Hot<void> C4Network2HTTPClient::QueryAsync(C4Task::Hot<C4HTTPClient::Result> &&queryTask)
+{
+	busy.store(true, std::memory_order_release);
+
+	const struct Cleanup
+	{
+		~Cleanup()
+		{
+			busy.store(false, std::memory_order_release);
+		}
+
+		std::atomic_bool &busy;
+	} cleanup{busy};
+
+	try
+	{
+		auto result = co_await std::move(queryTask);
+
+		const std::lock_guard lock{dataMutex};
+		if (binary)
+		{
+			resultBin = std::move(result.Buffer);
+		}
+		else
+		{
+			resultString = {reinterpret_cast<const char *>(result.Buffer.getData()), result.Buffer.getSize()};
+		}
+
+		success.store(true, std::memory_order_release);
+		serverAddress = result.ServerAddress;
+
+		if (auto *const thread = this->thread.load(std::memory_order_acquire); thread)
+		{
+			thread->PushEvent(Ev_HTTP_Response, this);
+		}
+	}
+	catch (const std::runtime_error &e)
+	{
+		const std::lock_guard lock{dataMutex};
+		SetError(e.what());
+		success.store(false, std::memory_order_release);
+	}
 }
 
 // *** C4Network2RefClient
@@ -608,15 +369,15 @@ bool C4Network2RefClient::GetReferences(C4Network2Reference ** &rpReferences, in
 	{
 		// Create compiler
 		StdCompilerINIRead Comp;
-		Comp.setInput(ResultString);
+		Comp.setInput(StdStrBuf::MakeRef(getResultString().c_str()));
 		Comp.Begin();
 		// get current version
 		Comp.Value(mkNamingAdapt(mkInsertAdapt(mkInsertAdapt(mkInsertAdapt(
-			mkNamingAdapt(mkParAdapt(MasterVersion, false), "Version"),
-			mkNamingAdapt(mkParAdapt(MessageOfTheDay, StdCompiler::RCT_All), "MOTD", "")),
-			mkNamingAdapt(mkParAdapt(MessageOfTheDayHyperlink, StdCompiler::RCT_All), "MOTDURL", "")),
-			mkNamingAdapt(mkParAdapt(LeagueServerRedirect, StdCompiler::RCT_All), "LeagueServerRedirect", "")),
-			C4ENGINENAME));
+																 mkNamingAdapt(mkParAdapt(MasterVersion, false), "Version"),
+																 mkNamingAdapt(mkParAdapt(MessageOfTheDay, StdCompiler::RCT_All), "MOTD", "")),
+															 mkNamingAdapt(mkParAdapt(MessageOfTheDayHyperlink, StdCompiler::RCT_All), "MOTDURL", "")),
+											   mkNamingAdapt(mkParAdapt(LeagueServerRedirect, StdCompiler::RCT_All), "LeagueServerRedirect", "")),
+								 C4ENGINENAME));
 		// Read reference count
 		Comp.Value(mkNamingCountAdapt(rRefCount, "Reference"));
 		// Create reference array and initialize

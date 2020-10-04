@@ -32,6 +32,8 @@ src/C4Control.cpp
 src/C4Control.h
 src/C4Coroutine.h
 src/C4Cooldown.h
+src/C4CurlSystem.cpp
+src/C4CurlSystem.h
 src/C4Def.cpp
 src/C4Def.h
 src/C4DefGraphics.cpp
@@ -117,6 +119,8 @@ src/C4GuiMenu.cpp
 src/C4GuiResource.h
 src/C4GuiTabular.cpp
 src/C4GuiTabular.h
+src/C4HTTPClient.cpp
+src/C4HTTPClient.h
 src/C4IDList.cpp
 src/C4IDList.h
 src/C4Id.cpp
