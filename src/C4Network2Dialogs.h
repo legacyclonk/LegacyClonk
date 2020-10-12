@@ -213,6 +213,9 @@ protected:
 public:
 	C4Network2StartWaitDlg();
 	~C4Network2StartWaitDlg() {}
+
+private:
+	void OnBtnRestart(C4GUI::Control *);
 };
 
 // button area for some game options during lobby and scenario selection time

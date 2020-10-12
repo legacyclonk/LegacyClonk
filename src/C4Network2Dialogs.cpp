@@ -562,9 +562,21 @@ C4Network2StartWaitDlg::C4Network2StartWaitDlg()
 	AddElement(pLbl = new C4GUI::Label(LoadResStr("IDS_NET_WAITFORSTART"), caAll.GetFromTop(25), ACenter));
 	// create client list box
 	AddElement(pClientListBox = new C4Network2ClientListBox(caAll.GetAll(), true));
+
+	C4Rect bounds{caButtonArea.GetCentered(2 * C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace, C4GUI_ButtonHgt)};
+	bounds.Wdt = C4GUI_DefButton2Wdt;
+
+	// place restart button
+	AddElement(new C4GUI::CallbackButton<C4Network2StartWaitDlg>{LoadResStr("IDS_BTN_RESTART"), bounds, &C4Network2StartWaitDlg::OnBtnRestart, this});
+	bounds.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 	// place abort button
-	C4GUI::Button *pBtnAbort = new C4GUI::CancelButton(caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_ButtonHgt));
-	AddElement(pBtnAbort);
+	AddElement(new C4GUI::CancelButton{bounds});
+}
+
+void C4Network2StartWaitDlg::OnBtnRestart(C4GUI::Control *)
+{
+	Application.SetNextMission(Game.ScenarioFilename);
+	UserClose(false);
 }
 
 // C4GameOptionButtons
