@@ -26,6 +26,7 @@
 #include "StdScheduler.h"
 
 #include <memory>
+#include <vector>
 
 #ifdef _WIN32
 	#include <winsock2.h>
