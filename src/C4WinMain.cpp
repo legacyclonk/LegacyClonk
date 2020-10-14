@@ -58,6 +58,48 @@ int WINAPI WinMain(HINSTANCE hInst,
 
 	InstallCrashHandler();
 
+	auto allocConsole = []
+	{
+		if (!AllocConsole())
+		{
+			return false;
+		}
+
+		freopen("CONIN$", "r", stdin);
+		freopen("CONOUT$", "w", stdout);
+		freopen("CONOUT$", "w", stderr);
+
+		const HANDLE out{CreateFile(_T("CONOUT$"), GENERIC_READ, FILE_SHARE_READ , nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr)};
+		SetStdHandle(STD_OUTPUT_HANDLE, out);
+		SetStdHandle(STD_ERROR_HANDLE, out);
+		SetStdHandle(STD_INPUT_HANDLE, CreateFile(_T("CONIN$"), GENERIC_READ, FILE_SHARE_READ , nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+
+		return true;
+	};
+
+#ifndef USE_CONSOLE
+#ifdef _DEBUG
+	allocConsole();
+#else
+#define PAR "/allocconsole"
+	char parameter[sizeof(PAR)];
+	for (int32_t par = 0; SGetParameter(lpszCmdParam, par, parameter, sizeof(PAR) - 1); ++par)
+	{
+		if (SEqual2NoCase(parameter, PAR))
+		{
+			if (!allocConsole())
+			{
+				// console has been explicitely requested; fail if not available
+				return EXIT_FAILURE;
+			}
+
+			break;
+		}
+	}
+#undef PAR
+#endif
+#endif
+
 	// Initialize COM library for use by main thread
 	const auto resultCoInit = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 	// Make sure CoUninitialize gets called on exit
