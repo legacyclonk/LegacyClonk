@@ -679,7 +679,7 @@ void StdCompilerConfigRead::String(std::string &str, RawCompileType type)
 
 void StdCompilerConfigRead::Raw(void *pData, size_t iSize, RawCompileType eType)
 {
-	excCorrupt(0, "Raw values aren't supported for registry compilers!");
+	excCorrupt("Raw values aren't supported for registry compilers!");
 }
 
 void StdCompilerConfigRead::Begin()
