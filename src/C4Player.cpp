@@ -2209,7 +2209,7 @@ void C4Player::ExecMsgBoardQueries()
 	while (pCheck) if (!pCheck->fAnswered) break; else pCheck = pCheck->pNext;
 	if (!pCheck) return;
 	// open it
-	Game.MessageInput.StartTypeIn(true, pCheck->pCallbackObj, pCheck->fIsUppercase, false, Number, pCheck->sInputQuery);
+	Game.MessageInput.StartTypeIn(true, pCheck->pCallbackObj, pCheck->fIsUppercase, C4ChatInputDialog::All, Number, pCheck->sInputQuery);
 }
 
 void C4Player::CallMessageBoard(C4Object *pForObj, const StdStrBuf &sQueryString, bool fIsUppercase)

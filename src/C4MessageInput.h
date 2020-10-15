@@ -29,6 +29,14 @@ const int32_t C4MSGB_BackBufferMax = 20;
 // chat input dialog
 class C4ChatInputDialog : public C4GUI::InputDialog
 {
+public:
+	enum Mode
+	{
+		All = 0,
+		Allies,
+		Say
+	};
+
 private:
 	typedef C4GUI::InputDialog BaseClass;
 	class C4KeyBinding *pKeyHistoryUp, *pKeyHistoryDown, *pKeyAbort, *pKeyNickComplete, *pKeyPlrControl, *pKeyGamepadControl, *pKeyBackClose;
@@ -63,7 +71,7 @@ protected:
 	virtual const char *GetID() override { return "ChatDialog"; }
 
 public:
-	C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bool fUpperCase, bool fTeam, int32_t iPlr, const StdStrBuf &rsInputQuery); // construct by screen ratios
+	C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bool fUpperCase, Mode mode, int32_t iPlr, const StdStrBuf &rsInputQuery); // construct by screen ratios
 	~C4ChatInputDialog();
 
 	// place on top of normal dialogs
@@ -132,8 +140,8 @@ public:
 	// Input
 public:
 	bool CloseTypeIn();
-	bool StartTypeIn(bool fObjInput = false, C4Object *pObj = nullptr, bool fUpperCase = false, bool fTeam = false, int32_t iPlr = -1, const StdStrBuf &rsInputQuery = StdStrBuf());
-	bool KeyStartTypeIn(bool fTeam);
+	bool StartTypeIn(bool fObjInput = false, C4Object *pObj = nullptr, bool fUpperCase = false, C4ChatInputDialog::Mode mode = C4ChatInputDialog::All, int32_t iPlr = -1, const StdStrBuf &rsInputQuery = StdStrBuf());
+	bool KeyStartTypeIn(C4ChatInputDialog::Mode mode);
 	bool IsTypeIn();
 	C4ChatInputDialog *GetTypeIn() { return C4ChatInputDialog::GetInstance(); }
 	void StoreBackBuffer(const char *szMessage);
