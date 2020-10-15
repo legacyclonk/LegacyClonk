@@ -3309,8 +3309,10 @@ bool C4Game::InitKeyboard()
 	Keys.clear();
 	Keys.push_back(C4KeyCodeEx(K_RETURN));
 	Keys.push_back(C4KeyCodeEx(K_F2)); // alternate chat key, if RETURN is blocked by player control
-	KeyboardInput.RegisterKey(new C4CustomKey(Keys,                              "ChatOpen",        KEYSCOPE_Generic, new C4KeyCBEx<C4MessageInput, bool>(MessageInput, false, &C4MessageInput::KeyStartTypeIn)));
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_RETURN, KEYS_Shift), "ChatOpen2Allies", KEYSCOPE_Generic, new C4KeyCBEx<C4MessageInput, bool>(MessageInput, true,  &C4MessageInput::KeyStartTypeIn)));
+	KeyboardInput.RegisterKey(new C4CustomKey(Keys,                                "ChatOpen",        KEYSCOPE_Generic, new C4KeyCBEx<C4MessageInput, C4ChatInputDialog::Mode>(MessageInput, C4ChatInputDialog::All,    &C4MessageInput::KeyStartTypeIn)));
+	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_RETURN, KEYS_Shift),   "ChatOpen2Allies", KEYSCOPE_Generic, new C4KeyCBEx<C4MessageInput, C4ChatInputDialog::Mode>(MessageInput, C4ChatInputDialog::Allies, &C4MessageInput::KeyStartTypeIn)));
+	KeyboardInput.RegisterKey(new C4CustomKey{C4KeyCodeEx{K_RETURN, KEYS_Control}, "ChatOpen2Say",    KEYSCOPE_Generic, new C4KeyCBEx<C4MessageInput, C4ChatInputDialog::Mode>{MessageInput, C4ChatInputDialog::Say,    &C4MessageInput::KeyStartTypeIn}});
+
 
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_LEFT),   "FreeViewScrollLeft",    KEYSCOPE_FreeView,   new C4KeyCBEx<C4GraphicsSystem, C4Vec2D>(GraphicsSystem, C4Vec2D(-5, 0), &C4GraphicsSystem::FreeScroll)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_RIGHT),  "FreeViewScrollRight",   KEYSCOPE_FreeView,   new C4KeyCBEx<C4GraphicsSystem, C4Vec2D>(GraphicsSystem, C4Vec2D(+5, 0), &C4GraphicsSystem::FreeScroll)));

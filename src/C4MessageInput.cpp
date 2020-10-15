@@ -47,7 +47,7 @@ bool IsSmallInputQuery(const char *szInputQuery)
 	return w < C4GUI::GetScreenWdt() / 5;
 }
 
-C4ChatInputDialog::C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bool fUppercase, bool fTeam, int32_t iPlr, const StdStrBuf &rsInputQuery)
+C4ChatInputDialog::C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bool fUppercase, Mode mode, int32_t iPlr, const StdStrBuf &rsInputQuery)
 	: C4GUI::InputDialog(fObjInput ? rsInputQuery.getData() : LoadResStrNoAmp("IDS_CTL_CHAT"), nullptr, C4GUI::Ico_None, nullptr, !fObjInput || IsSmallInputQuery(rsInputQuery.getData())),
 	fObjInput(fObjInput), fUppercase(fUppercase), pTarget(pScriptTarget), BackIndex(-1), iPlr(iPlr), fProcessed(false)
 {
@@ -65,8 +65,21 @@ C4ChatInputDialog::C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bo
 	pKeyBackClose = new C4KeyBinding(C4KeyCodeEx(K_BACK), "ChatBackspaceClose", KEYSCOPE_Gui, new C4GUI::DlgKeyCB<C4ChatInputDialog>(*this, &C4ChatInputDialog::KeyBackspaceClose), C4CustomKey::PRIO_CtrlOverride);
 	// free when closed...
 	SetDelOnClose();
-	// initial team text
-	if (fTeam) pEdit->InsertText("/team ", true);
+
+	// initial text
+	switch (mode)
+	{
+	case Allies:
+		pEdit->InsertText("/team ", true);
+		break;
+
+	case Say:
+		pEdit->InsertText("\"", true);
+		break;
+
+	default:
+		break;
+	}
 }
 
 C4ChatInputDialog::~C4ChatInputDialog()
@@ -266,21 +279,21 @@ bool C4MessageInput::CloseTypeIn()
 	return true;
 }
 
-bool C4MessageInput::StartTypeIn(bool fObjInput, C4Object *pObj, bool fUpperCase, bool fTeam, int32_t iPlr, const StdStrBuf &rsInputQuery)
+bool C4MessageInput::StartTypeIn(bool fObjInput, C4Object *pObj, bool fUpperCase, C4ChatInputDialog::Mode mode, int32_t iPlr, const StdStrBuf &rsInputQuery)
 {
 	if (!C4GUI::IsGUIValid()) return false;
 	// close any previous
 	if (IsTypeIn()) CloseTypeIn();
 	// start new
-	return Game.pGUI->ShowRemoveDlg(new C4ChatInputDialog(fObjInput, pObj, fUpperCase, fTeam, iPlr, rsInputQuery));
+	return Game.pGUI->ShowRemoveDlg(new C4ChatInputDialog(fObjInput, pObj, fUpperCase, mode, iPlr, rsInputQuery));
 }
 
-bool C4MessageInput::KeyStartTypeIn(bool fTeam)
+bool C4MessageInput::KeyStartTypeIn(C4ChatInputDialog::Mode mode)
 {
 	// fullscreen only
 	if (!Application.isFullScreen) return false;
 	// OK, start typing
-	return StartTypeIn(false, nullptr, false, fTeam);
+	return StartTypeIn(false, nullptr, false, mode);
 }
 
 bool C4MessageInput::IsTypeIn()
