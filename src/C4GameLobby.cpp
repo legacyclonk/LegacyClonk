@@ -767,7 +767,7 @@ void MainDlg::OnClientReadyStateChange(C4Client *client)
 
 	for (C4Client *clnt = nullptr; (clnt = Game.Clients.getClient(clnt)); )
 	{
-		if (!clnt->isLobbyReady())
+		if (!clnt->isObserver() && !clnt->isLobbyReady())
 		{
 			// the client was ready and now isn't? stop the countdown
 			if (client->getID() == clnt->getID() && Game.Network.isHost() && IsCountdown())
