@@ -9,8 +9,6 @@
 
 std::optional<std::string> GetNonTranslocatedPath(std::string_view path)
 {
-// 	const auto stringRef = CFStringCreateWithCString(nullptr, path.c_str(), kCFStringEncodingUTF8);
-
 	const std::unique_ptr<void, decltype(&dlclose)> handle{dlopen("/System/Library/Frameworks/Security.framework/Security", RTLD_LAZY), dlclose};
 	if (!handle)
 	{
