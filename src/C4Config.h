@@ -31,6 +31,7 @@
 
 #define C4CFG_LeagueServer   "league.clonkspot.org:80"
 #define C4CFG_FallbackServer "league.clonkspot.org:80"
+#define C4CFG_OfficialLeagueServer "league.clonkspot.org"
 
 #define C4CFG_UpdateServer "update.clonkspot.org/lc/update" // for download files, replace 'update' with the below
 
