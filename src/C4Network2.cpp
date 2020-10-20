@@ -2441,7 +2441,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 	LeagueWaitNotBusy();
 
 	// Official league?
-	bool fOfficialLeague = SEqual(pLeagueClient->getServerName(), "clonk.de");
+	bool fOfficialLeague = SEqual(pLeagueClient->getServerName(), C4CFG_OfficialLeagueServer);
 
 	StdStrBuf Account, Password;
 	bool fRegister = false;
