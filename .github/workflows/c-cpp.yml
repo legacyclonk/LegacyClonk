@@ -3,247 +3,179 @@ name: Autobuild
 on:
   push:
     branches-ignore: 'build-test*'
+    tags: '*'
   pull_request:
     branches: '*'
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  Windows:
+  Autobuild:
     strategy:
+      fail-fast: false
       matrix:
-        configuration: [Normal, Debugrec]
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Auto CRLF
-      shell: cmd
-      run: git config --global core.autocrlf true
-    - name: Dependencies
-      shell: powershell
-      run: |
-        (New-Object System.Net.WebClient).DownloadFile("http://assets.maxmitti.tk/openclonk-deps-vs140-i386-easy.7z", "openclonk-deps-vs140-i386-easy.7z")
-        7z.exe x openclonk-deps-vs140-i386-easy.7z
-    - name: SDL2
-      shell: powershell
-      run: |
-        (New-Object System.Net.WebClient).DownloadFile("https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip", "SDL2.zip")
-        (New-Object System.Net.WebClient).DownloadFile("https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.4-VC.zip", "SDL2_mixer.zip")
-        7z.exe x SDL2.zip
-        7z.exe x SDL2_mixer.zip
-        copy SDL2-2.0.12\include\* deps\include
-        copy SDL2-2.0.12\lib\x86\* deps\lib
-        copy SDL2_mixer-2.0.4\include\* deps\include
-        copy SDL2_mixer-2.0.4\lib\x86\* deps\lib
-
-    - name: Setup VS Dev Environment
-      uses: seanmiddleditch/gha-setup-vsdevenv@v1
-      with:
-        arch: x86
-
-    - name: Configure Debugrec
-      if: ${{ matrix.configuration == 'Debugrec' }}
-      run: cmake -DCMAKE_BUILD_TYPE=Debug -DDEBUGREC=On -G "Visual Studio 16 2019" -A Win32 .
-
-    - name: Configure
-      if: ${{ matrix.configuration == 'Normal' }}
-      run: cmake -G "Visual Studio 16 2019" -A Win32 .
-
-    - name: Build
-      run: cmake --build . --config RelWithDebInfo
-
-    - name: Pack
-      shell: cmd
-      run: |
-        mkdir appdir
-        copy glew32.dll appdir
-        copy deps\lib\*.dll appdir
-        copy RelWithDebInfo\*.exe appdir
-        copy RelWithDebInfo\*.pdb appdir
-
-    - uses: actions/upload-artifact@v2
-      if: ${{ matrix.configuration == 'Normal' }}
-      with:
-        name: Windows x86 Debugrec
-        path: appdir/*
-
-    - uses: actions/upload-artifact@v2
-      if: ${{ matrix.configuration == 'Debugrec' }}
-      with:
-        name: Windows x86
-        path: appdir/*
-
-    - shell: cmd
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        cd appdir
-        7z a LegacyClonk.zip *
-
-    - shell: cmd
-      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.configuration == 'Debugrec' }}
-      run: |
-        cd appdir
-        ren LegacyClonk.zip LegacyClonk-Debugrec.zip
-
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.configuration == 'Normal' }}
-      with:
-        files: appdir/LegacyClonk.zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.configuration == 'Debugrec' }}
-      with:
-        files: appdir/LegacyClonk-debugrec.zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  Linux:
-    strategy:
-      matrix:
-        arch: [x86, x64]
-    env:
-      PLATFORM: ${{ matrix.arch }}
-
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Prepare build ramdisk
-        run: |
-          mkdir ramdisk
-          sudo mount -t tmpfs tmpfs ramdisk
-          cd ramdisk
-          if [ "$PLATFORM" = "x86" ]; then
-              curl -L https://github.com/legacyclonk/ubuntu-1804-x86-chroot/releases/download/continuous-master/chroot.tar.xz | sudo tar xJ
-              curl -L https://raw.githubusercontent.com/legacyclonk/ubuntu-1804-x86-chroot/master/setup_chroot.sh | sudo bash -e -
-          fi
-
-      - name: Build
-        run: |
-          cd ramdisk
-          if [ "$PLATFORM" = "x86" ]; then
-            sudo rsync -rv --exclude=ramdisk .. chroot/legacyclonk
-            sudo chroot chroot bash -c 'cd /legacyclonk && autobuild/build.sh -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_DEVELOPER_MODE=On '
-            cp chroot/legacyclonk/build/LegacyClonk.tar.gz .
-          else
-            rsync -rv --exclude=ramdisk .. legacyclonk
-            cd legacyclonk
-            autobuild/build.sh -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_DEVELOPER_MODE=On
-            C4GROUP=$PWD/build/c4group tools/make_Graphics.c4g.sh
-            C4GROUP=$PWD/build/c4group tools/make_System.c4g.sh
-            mv build/LegacyClonk.tar.gz .
-          fi
-
-          mkdir LegacyClonk
-          cd LegacyClonk
-          tar xzf ../LegacyClonk.tar.gz
-          cd ..
-          mv LegacyClonk.tar.gz LegacyClonk-$PLATFORM.tar.gz
-
-      - uses: actions/upload-artifact@v2
-        if: ${{ matrix.arch == 'x64' }}
-        with:
-          name: Linux x64
-          path: ramdisk/legacyclonk/LegacyClonk
-
-      - uses: actions/upload-artifact@v2
-        if: ${{ matrix.arch == 'x64' }}
-        with:
-          name: Graphics.c4g
-          path: ramdisk/legacyclonk/Graphics.c4g
-
-      - uses: actions/upload-artifact@v2
-        if: ${{ matrix.arch == 'x64' }}
-        with:
-          name: System.c4g
-          path: ramdisk/legacyclonk/System.c4g
-
-      - uses: actions/upload-artifact@v2
-        if: ${{ matrix.arch == 'x86' }}
-        with:
-          name: Linux x86
-          path: ramdisk/LegacyClonk
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.arch == 'x64' }}
-        with:
-          files: |
-            ramdisk/legacyclonk/LegacyClonk-x64.tar.gz
-            ramdisk/legacyclonk/Graphics.c4g
-            ramdisk/legacyclonk/System.c4g
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.arch == 'x86' }}
-        with:
-          files: ramdisk/LegacyClonk-x86.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  Mac:
-    runs-on: macos-latest
+        include:
+          - os: windows-latest
+            arch: x86
+            env: Windows
+          - os: windows-latest
+            arch: x86
+            env: Windows
+            config: Debugrec
+          - os: windows-latest
+            arch: x64
+            env: Windows
+          - os: ubuntu-18.04
+            arch: x64
+            env: Linux
+          - os: ubuntu-18.04
+            arch: x86
+            env: Linux
+          - os: macos-10.15
+            arch: x64
+            env: Mac
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
-      - name: Dependencies
-        run: |
-          until brew install cmake libpng libjpeg freetype glew openssl@1.1; do true; done
-          curl -L -O https://www.libsdl.org/release/SDL2-2.0.12.dmg
-          curl -L -O https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.dmg
-          hdiutil attach SDL2-2.0.12.dmg
-          hdiutil attach SDL2_mixer-2.0.4.dmg
-          mkdir -p $HOME/Library/Frameworks
-          cp -r /Volumes/SDL2/SDL2.framework $HOME/Library/Frameworks/
-          cp -r /Volumes/SDL2_mixer/SDL2_mixer.framework $HOME/Library/Frameworks/
+      - name: "Setup Directories"
+        run: mkdir output
 
-          sudo rm -r /Library/Frameworks/Mono.framework/Headers
+      - name: "Configure Platform"
+        run: |
+          autobuild/${{ matrix.env }}.sh
+          autobuild/${{ matrix.env }}-${{ matrix.arch }}.sh
+          echo "CONFIG_SUFFIX=${{ matrix.env }}-${{ matrix.arch }}" >> $GITHUB_ENV
+
+      - name: "Linux x86: Setup chroot"
+        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x86' }}
+        run: |
+          curl -L https://github.com/legacyclonk/ubuntu-1804-x86-chroot/releases/download/2020-09-26/chroot.tar.xz | sudo tar -xJ
+          curl -L https://raw.githubusercontent.com/legacyclonk/ubuntu-1804-x86-chroot/master/setup_chroot.sh | sudo bash -e -
+          sudo mkdir -p chroot/$PWD
+          sudo mount --bind . chroot/$PWD
+
+      - name: "Linux: Setup"
+        if: ${{ matrix.env == 'Linux' }}
+        run: $CHROOT autobuild/setup_linux.sh
+
+      - name: "Mac: Work around libpng mess"
+        if: ${{ matrix.env == 'Mac' }}
+        run: sudo rm -r /Library/Frameworks/Mono.framework/Headers
+
+      - name: "Windows: Setup VS Dev Environment"
+        if: ${{ matrix.env == 'Windows' }}
+        uses: seanmiddleditch/gha-setup-vsdevenv@v1
+        with:
+          arch: ${{ env.VS_ARCH }}
+
+      - name: "Dependencies"
+        run: |
+          mkdir deps
+          cd deps
+          curl -L https://github.com/legacyclonk/deps/releases/download/2020-10-20/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
 
       - name: Configure
         run: |
-          mkdir build
-          cd build
-          cmake -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-Wno-parentheses" ..
+          $CHROOT cmake -B build . $CMAKE_CONFIGURE_ARGS
+
+      - name: "Enable Debugrec"
+        if: ${{ matrix.config == 'Debugrec' }}
+        run: |
+          cmake -B build -DDEBUGREC=On
+          echo "CONFIG_SUFFIX=${{ matrix.env }}-${{ matrix.arch }}-debugrec" >> $GITHUB_ENV
 
       - name: Build
         run: |
+          $CHROOT cmake --build build $CMAKE_BUILD_ARGS
+
+      - name: "Build c4gs"
+        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x64' }}
+        run: |
+          C4GROUP=$PWD/build/c4group tools/make_Graphics.c4g.sh
+          C4GROUP=$PWD/build/c4group tools/make_System.c4g.sh
+
+      - name: "Windows: Collect binaries"
+        if: ${{ matrix.env == 'Windows' }}
+        run: |
+          cd build
+          mv RelWithDebInfo/*.{exe,pdb} ../output
+
+      - name: "Linux: Collect binaries"
+        if: ${{ matrix.env == 'Linux' }}
+        run: |
+          cd build
+          cp clonk c4group ../output
+
+      - name: "Mac: Create Bundle"
+        if: ${{ matrix.env == 'Mac' }}
+        run: |
           cd build
           make DESTDIR=inst install
+          mv inst/usr/local/c4group inst/usr/local/clonk.app ../output
 
-      - name: Build Macdylibbundler
-        run: |
-          cd build/inst/usr/local
-          git clone https://github.com/auriamg/macdylibbundler/
-          cd macdylibbundler
-          git checkout 9cf053f8b399512e12d7931fa24f466057e58044
-          make
-          cd ..
-          macdylibbundler/dylibbundler -od -b -x clonk.app/Contents/MacOS/clonk -d clonk.app/Contents/libs/
-          mkdir clonk.app/Contents/Frameworks
-          cp -r /Volumes/SDL2/SDL2.framework clonk.app/Contents/Frameworks
-          cp -r /Volumes/SDL2_mixer/SDL2_mixer.framework clonk.app/Contents/Frameworks
-
-      - uses: actions/upload-artifact@v2
+      - name: "Publish Main Artifact"
+        uses: actions/upload-artifact@v2
         with:
-          name: Mac
-          path: |
-            build/inst/usr/local/c4group
-            build/inst/usr/local/clonk.app
+          name: ${{ env.CONFIG_SUFFIX }}
+          path: output/*
 
-      - name: Pack
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: "Publish System.c4g"
+        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x64' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: System.c4g
+          path: System.c4g
+
+      - name: "Publish Graphics.c4g"
+        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x64' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Graphics.c4g
+          path: Graphics.c4g
+
+      - name: "Pack: Windows"
+        if: ${{ matrix.env == 'Windows' }}
         run: |
-          cd build/inst/usr/local/
-          tar -cvzf LegacyClonk-mac.tar.gz c4group clonk.app
+          cd output
+          7z a LegacyClonk-$CONFIG_SUFFIX.zip *
 
-      - name: Release
+      - name: "Pack: Linux"
+        if: ${{ matrix.env == 'Linux' }}
+        run: |
+          cd output
+          tar czf LegacyClonk-$CONFIG_SUFFIX.tar.gz *
+
+      - name: "Pack: Mac"
+        if: ${{ matrix.env == 'Mac' }}
+        run: |
+          cd output
+          zip -r LegacyClonk-$CONFIG_SUFFIX.zip *
+
+      - name: "Release: Windows / Mac"
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.env != 'Linux' }}
         with:
-          files: build/inst/usr/local/LegacyClonk-mac.tar.gz
+          files: output/LegacyClonk-${{ env.CONFIG_SUFFIX }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Release: Linux"
+        uses: softprops/action-gh-release@v1
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.env == 'Linux' }}
+        with:
+          files: output/LegacyClonk-${{ env.CONFIG_SUFFIX }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Release: c4gs"
+        uses: softprops/action-gh-release@v1
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.env == 'Linux' && matrix.arch == 'x64' }}
+        with:
+          files: |
+            System.c4g
+            Graphics.c4g
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

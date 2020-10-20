@@ -4,11 +4,6 @@ on:
   push:
     branches: ['build-test*']
 
-env:
-  os_lin: ubuntu-18.04
-  os_win: windows-latest
-  os_mac: macos-10.15
-
 defaults:
   run:
     shell: bash
@@ -20,11 +15,25 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, windows-latest, macos-10.15]
+        env: [Linux, Windows, Mac]
         arch: [x64, x86]
         sound: [OFF, SDL_mixer]
         windowing: [Console, X11, GTK, SDL, Windows]
         debugrec: [OFF, ON]
         exclude:
+          - os: ubuntu-18.04
+            env: Mac
+          - os: ubuntu-18.04
+            env: Windows
+          - os: windows-latest
+            env: Mac
+          - os: windows-latest
+            env: Linux
+          - os: macos-10.15
+            env: Windows
+          - os: macos-10.15
+            env: Linux
+
           - arch: x86
             os: macos-10.15
           - arch: x64
@@ -58,112 +67,69 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: "Linux: Prepare build ramdisk"
-        if: ${{ matrix.os == env.os_lin }}
+      - name: "Configure Platform"
         run: |
-          mkdir ramdisk
-          sudo mount -t tmpfs tmpfs ramdisk
-          cd ramdisk
-          if [ "$PLATFORM" = "x86" ]; then
-              curl -L https://github.com/legacyclonk/ubuntu-1804-x86-chroot/releases/download/continuous-master/chroot.tar.xz | sudo tar xJ
-              curl -L https://raw.githubusercontent.com/legacyclonk/ubuntu-1804-x86-chroot/master/setup_chroot.sh | sudo bash -e -
-          fi
+          autobuild/${{ matrix.env }}.sh
+          autobuild/${{ matrix.env }}-${{ matrix.arch }}.sh
+          echo "CONFIG_SUFFIX=${{ matrix.env }}-${{ matrix.arch }}" >> $GITHUB_ENV
 
-      - name: "Mac: Dependencies"
-        if: ${{ matrix.os == env.os_mac }}
+      - name: "Linux x86: Setup chroot"
+        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x86' }}
         run: |
-          until brew install cmake libpng libjpeg freetype glew openssl@1.1; do true; done
-          curl -L -O https://www.libsdl.org/release/SDL2-2.0.12.dmg
-          curl -L -O https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.dmg
-          hdiutil attach SDL2-2.0.12.dmg
-          hdiutil attach SDL2_mixer-2.0.4.dmg
-          mkdir -p $HOME/Library/Frameworks
-          cp -r /Volumes/SDL2/SDL2.framework $HOME/Library/Frameworks/
-          cp -r /Volumes/SDL2_mixer/SDL2_mixer.framework $HOME/Library/Frameworks/
+          curl -L https://github.com/legacyclonk/ubuntu-1804-x86-chroot/releases/download/2020-09-26/chroot.tar.xz | sudo tar -xJ
+          curl -L https://raw.githubusercontent.com/legacyclonk/ubuntu-1804-x86-chroot/master/setup_chroot.sh | sudo bash -e -
+          sudo mkdir -p chroot/$PWD
+          sudo mount --bind . chroot/$PWD
 
-          sudo rm -r /Library/Frameworks/Mono.framework/Headers
+      - name: "Linux: Setup"
+        if: ${{ matrix.env == 'Linux' }}
+        run: $CHROOT autobuild/setup_linux.sh
 
-      - name: "Windows: Dependencies"
-        if: ${{ matrix.os == env.os_win }}
-        shell: powershell
-        run: |
-          (New-Object System.Net.WebClient).DownloadFile("http://assets.maxmitti.tk/openclonk-deps-vs140-i386-easy.7z", "openclonk-deps-vs140-i386-easy.7z")
-          7z.exe x openclonk-deps-vs140-i386-easy.7z
-
-          (New-Object System.Net.WebClient).DownloadFile("https://www.libsdl.org/release/SDL2-devel-2.0.12-VC.zip", "SDL2.zip")
-          (New-Object System.Net.WebClient).DownloadFile("https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.4-VC.zip", "SDL2_mixer.zip")
-          7z.exe x SDL2.zip
-          7z.exe x SDL2_mixer.zip
-          copy SDL2-2.0.12\include\* deps\include
-          copy SDL2-2.0.12\lib\x86\* deps\lib
-          copy SDL2_mixer-2.0.4\include\* deps\include
-          copy SDL2_mixer-2.0.4\lib\x86\* deps\lib
+      - name: "Mac: Work around libpng mess"
+        if: ${{ matrix.env == 'Mac' }}
+        run: sudo rm -r /Library/Frameworks/Mono.framework/Headers
 
       - name: "Windows: Setup VS Dev Environment"
-        if: ${{ matrix.os == env.os_win }}
+        if: ${{ matrix.env == 'Windows' }}
         uses: seanmiddleditch/gha-setup-vsdevenv@v1
         with:
-          arch: x86
+          arch: ${{ env.VS_ARCH }}
 
-      - name: Configuration setup
+      - name: "Dependencies"
         run: |
-          touch config.txt
-          echo "set(CMAKE_BUILD_TYPE DEBUG CACHE STRING Buildtype)" >> config.txt
-          echo "set(DEBUGREC ${{ matrix.debugrec }} CACHE BOOL Debugrec)" >> config.txt
+          mkdir deps
+          cd deps
+          curl -L https://github.com/legacyclonk/deps/releases/download/2020-10-20/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
+
+      - name: Configure
+        run: |
+          $CHROOT cmake -B build . $CMAKE_CONFIGURE_ARGS
 
       - name: "Configuration setup: No Sound"
         if: ${{ matrix.sound == 'OFF' }}
-        run: echo "set(ENABLE_SOUND OFF CACHE BOOL Sound)" >> config.txt
+        run: $CHROOT cmake -B build -DENABLE_SOUND=Off
 
       - name: "Configuration setup: SDL_mixer"
         if: ${{ matrix.sound == 'SDL_mixer' }}
-        run: echo "set(USE_SDL_MIXER ON CACHE BOOL SDL_mixer)" >> config.txt
+        run: $CHROOT cmake -B build -DUSE_SDL_MIXER=On
 
       - name: "Configuration setup: Console"
         if: ${{ matrix.windowing == 'Console' }}
-        run: echo "set(USE_CONSOLE ON CACHE BOOL Console)" >> config.txt
+        run: $CHROOT cmake -B build -DUSE_CONSOLE=On
 
       - name: "Configuration setup: GTK"
         if: ${{ matrix.windowing == 'GTK' }}
-        run: echo "set(WITH_DEVELOPER_MODE ON CACHE BOOL Editor)" >> config.txt
+        run: $CHROOT cmake -B build -DWITH_DEVELOPER_MODE=On
 
       - name: "Configuration setup: SDL"
         if: ${{ matrix.windowing == 'SDL' }}
-        run: echo "set(USE_SDL_MAINLOOP ON CACHE BOOL SDL)" >> config.txt
+        run: $CHROOT cmake -B build -DUSE_SDL_MAINLOOP=On -DWITH_DEVELOPER_MODE=Off
 
-      - name: "Build: Linux"
-        if: ${{ matrix.os == env.os_lin }}
+      - name: "Configuration setup: X11"
+        if: ${{ matrix.windowing == 'X11' }}
+        run: $CHROOT cmake -B build -DWITH_DEVELOPER_MODE=Off
+
+      - name: Build
         run: |
-          cd ramdisk
-          if [ "$PLATFORM" = "x86" ]; then
-            sudo rsync -rv --exclude=ramdisk .. chroot/legacyclonk
-            sudo chroot chroot bash -c 'cd /legacyclonk && autobuild/build.sh -C ../config.txt'
-            cp chroot/legacyclonk/build/LegacyClonk.tar.gz .
-          else
-            rsync -rv --exclude=ramdisk .. legacyclonk
-            cd legacyclonk
-            autobuild/build.sh -C ../config.txt
-            C4GROUP=$PWD/build/c4group tools/make_Graphics.c4g.sh
-            C4GROUP=$PWD/build/c4group tools/make_System.c4g.sh
-            mv build/LegacyClonk.tar.gz .
-          fi
+          $CHROOT cmake --build build -v $CMAKE_BUILD_ARGS
 
-          mkdir LegacyClonk
-          cd LegacyClonk
-          tar xzf ../LegacyClonk.tar.gz
-          cd ..
-          mv LegacyClonk.tar.gz LegacyClonk-$PLATFORM.tar.gz
-
-      - name: "Build: Windows"
-        if: ${{ matrix.os == env.os_win }}
-        run: |
-          cmake -G "Visual Studio 16 2019" -A Win32 -C config.txt .
-          cmake --build . --config RelWithDebInfo
-
-      - name: "Build: Mac"
-        if: ${{ matrix.os == env.os_mac }}
-        run: |
-          mkdir build
-          cd build
-          cmake -C ../config.txt -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-Wno-parentheses" ..
-          cmake --build .

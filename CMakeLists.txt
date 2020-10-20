@@ -322,6 +322,8 @@ if (APPLE)
 	target_link_libraries(clonk "-framework AppKit")
 endif ()
 
+target_link_libraries(clonk ${EXTRA_LINK_LIBS})
+
 # Link X11
 if (USE_X11)
 	find_package(X11 REQUIRED)
