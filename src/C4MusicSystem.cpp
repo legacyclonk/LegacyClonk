@@ -253,6 +253,10 @@ bool C4MusicSystem::ToggleOnOff()
 	{
 		Stop();
 	}
+	if (Game.IsRunning)
+	{
+		Game.GraphicsSystem.FlashMessageOnOff(LoadResStr("IDS_CTL_MUSIC"), enabled);
+	}
 	return enabled;
 }
 
