@@ -689,6 +689,8 @@ void StdCompilerINIRead::String(char *szString, size_t iMaxLength, RawCompileTyp
 
 void StdCompilerINIRead::String(std::string &str, RawCompileType type)
 {
+	// For Backwards compatibility: Escaped strings default to normal strings if no escaped string is given
+	if (type == RCT_Escaped && pPos && *pPos != '"') type = RCT_All;
 	// Get length
 	size_t iLength = GetStringLength(type);
 	// Read data
