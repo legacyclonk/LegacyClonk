@@ -772,7 +772,23 @@ void C4StartupNetDlg::OnShown()
 	C4StartupDlg::OnShown();
 	UpdateList();
 	UpdateMasterserver();
-	btnUpdate->SetVisibility(C4UpdateDlg::CheckForUpdates());
+
+	static size_t updateStackCounter{0};
+	if (updateStackCounter == 0)
+	{
+		++updateStackCounter;
+		bool update{C4UpdateDlg::CheckForUpdates()};
+
+		if (C4Startup::Get() && C4Startup::Get()->pCurrDlg == this)
+		{
+			btnUpdate->SetVisibility(update);
+		}
+		else
+		{
+			return;
+		}
+		--updateStackCounter;
+	}
 	OnSec1Timer();
 	tLastRefresh = time(nullptr);
 	// also update chat
