@@ -161,6 +161,10 @@ bool C4MapFolderData::Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenL
 			DebugLogF("C4MapFolderData::Load(%s): Could not load base graphic \"%s\"", hGroup.GetName(), pScen->sBaseImage.getData());
 			return false;
 		}
+	}
+	for (i = 0; i < iScenCount; ++i)
+	{
+		Scenario *pScen = ppScenList[i];
 		if (pScen->sOverlayImage.getLength() > 0) if (!pScen->fctOverlay.Load(hGroup, pScen->sOverlayImage.getData()))
 		{
 			DebugLogF("C4MapFolderData::Load(%s): Could not load graphic \"%s\"", hGroup.GetName(), pScen->sOverlayImage.getData());
