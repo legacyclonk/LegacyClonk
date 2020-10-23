@@ -208,7 +208,7 @@ public:
 	bool DoGameOver();
 	bool CanQuickSave();
 	bool QuickSave(const char *strFilename, const char *strTitle, bool fForceSave = false);
-	void SetInitProgress(float fToProgress);
+	void SetInitProgress(float fToProgress, bool forceUpdate = false);
 	void OnResolutionChanged(); // update anything that's dependent on screen resolution
 	void InitFullscreenComponents(bool fRunning);
 	bool ToggleChat();

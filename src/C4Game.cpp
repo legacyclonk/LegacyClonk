@@ -331,8 +331,7 @@ bool C4Game::Init()
 {
 	IsRunning = false;
 
-	InitProgress = 0; LastInitProgress = 0; LastInitProgressShowTime = 0;
-	SetInitProgress(0);
+	SetInitProgress(0, true);
 
 	// start log pos (used by startup)
 	StartupLogPos = GetLogPos();
@@ -392,12 +391,15 @@ bool C4Game::Init()
 
 		// do lobby (if desired)
 		if (Network.isLobbyActive())
+		{
+			SetInitProgress(100);
 			if (!Network.DoLobby())
 				return false;
+		}
 
 		// get scenario
 		char szScenario[_MAX_PATH + 1];
-		SetInitProgress(6);
+		SetInitProgress(6, true);
 		if (!Network.RetrieveScenario(szScenario)) return false;
 
 		if (PreloadStatus == PreloadLevel::None)
@@ -449,8 +451,9 @@ bool C4Game::Init()
 		}
 
 		// Init network
+		SetInitProgress(100);
 		if (!InitNetworkHost()) return false;
-		SetInitProgress(7);
+		SetInitProgress(7, true);
 	}
 
 	Application.SetGameTickDelay(defaultIngameGameTickDelay);
@@ -1942,6 +1945,7 @@ void C4Game::Preload()
 			preloadContext->Select(false, true);
 			CStdLock lock{&Game.PreloadMutex};
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
+			Game.SetInitProgress(100);
 			preloadContext->Deselect(true);
 		},
 		std::unique_ptr<CStdGLCtx>{context}};
@@ -2454,6 +2458,7 @@ bool C4Game::InitGameFirstPart()
 	{
 		return true;
 	}
+	SetInitProgress(7, true);
 
 	if (PreloadStatus == PreloadLevel::None && NetworkActive && !Network.isHost())
 	{
@@ -3938,12 +3943,12 @@ void C4Game::UpdateRules()
 	if (ObjectCount(C4ID_TeamHomebase)) Rules |= C4RULE_TeamHombase;
 }
 
-void C4Game::SetInitProgress(float fToProgress)
+void C4Game::SetInitProgress(float fToProgress, bool forceUpdate)
 {
 	// set new progress
 	InitProgress = int32_t(fToProgress);
 	// if progress is more than one percent, display it
-	if (InitProgress > LastInitProgress)
+	if (InitProgress > LastInitProgress || forceUpdate)
 	{
 		LastInitProgress = InitProgress;
 		LastInitProgressShowTime = timeGetTime();
