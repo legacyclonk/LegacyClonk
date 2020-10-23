@@ -788,7 +788,6 @@ void C4StartupNetDlg::OnShown()
 		{
 			btnUpdate->SetVisibility(update);
 		}
-
 		--updateStackCounter;
 	}
 	OnSec1Timer();
