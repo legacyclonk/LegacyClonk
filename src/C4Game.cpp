@@ -2319,17 +2319,6 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 		// set up control (inits Record/Replay)
 		if (!InitControl()) return false;
-
-		for (auto *def = Parameters.GameRes.iterRes(nullptr, NRT_Definitions); def; def = Parameters.GameRes.iterRes(def, NRT_Definitions))
-		{
-			auto group = std::make_unique<C4Group>();
-			if (!group->Open(def->getFile()))
-			{
-				return false;
-			}
-
-			GroupSet.RegisterGroup(*group.release(), true, C4GSPrio_Definitions, C4GSCnt_DefinitionRoot, true);
-		}
 	}
 
 	// determine startup player count
@@ -2444,6 +2433,17 @@ bool C4Game::InitGameFirstPart(bool preloading)
 		}
 
 		SetInitProgress(7);
+	}
+
+	for (auto *def = Parameters.GameRes.iterRes(nullptr, NRT_Definitions); def; def = Parameters.GameRes.iterRes(def, NRT_Definitions))
+	{
+		auto group = std::make_unique<C4Group>();
+		if (!group->Open(def->getFile()))
+		{
+			return false;
+		}
+
+		GroupSet.RegisterGroup(*group.release(), true, C4GSPrio_Definitions, C4GSCnt_DefinitionRoot, true);
 	}
 
 	constexpr auto loadGraphics = []
