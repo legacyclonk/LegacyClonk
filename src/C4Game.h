@@ -358,7 +358,6 @@ protected:
 	std::thread PreloadThread;
 	PreloadLevel PreloadStatus;
 	CStdCSecEx PreloadMutex;
-	CStdCSecEx OpenScenarioMutex;
 	bool LandscapeLoaded;
 };
 
