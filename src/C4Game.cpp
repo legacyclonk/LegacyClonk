@@ -127,7 +127,6 @@ bool C4Game::InitDefs()
 
 bool C4Game::OpenScenario()
 {
-	CStdLock lock{&OpenScenarioMutex};
 	// Scenario from record stream
 	if (RecordStream.getSize())
 	{
@@ -394,30 +393,6 @@ bool C4Game::Init()
 		if (Network.isLobbyActive())
 			if (!Network.DoLobby())
 				return false;
-
-		// get scenario
-		char szScenario[_MAX_PATH + 1];
-		SetInitProgress(6);
-		if (!Network.RetrieveScenario(szScenario)) return false;
-
-		if (PreloadStatus == PreloadLevel::None)
-		{
-			// open new scenario
-			SCopy(szScenario, ScenarioFilename, _MAX_PATH);
-			if (!OpenScenario()) return false;
-			TempScenarioFile = true;
-		}
-
-		// get everything else
-		if (!Parameters.GameRes.RetrieveFiles()) return false;
-
-		// Check network game data scenario type (safety)
-		if (!C4S.Head.NetworkGame)
-		{
-			LogFatal(LoadResStr("IDS_NET_NONETGAME")); return false;
-		}
-
-		SetInitProgress(7);
 	}
 
 	// Local game or host?
@@ -1956,7 +1931,7 @@ void C4Game::Preload()
 
 bool C4Game::CanPreload() const
 {
-	return PreloadStatus == PreloadLevel::None && !PreloadThread.joinable();
+	return PreloadStatus <= PreloadLevel::Scenario && !PreloadThread.joinable();
 }
 
 bool C4Game::CompileRuntimeData(C4ComponentHost &rGameData)
@@ -2457,9 +2432,27 @@ bool C4Game::InitGameFirstPart()
 
 	if (PreloadStatus == PreloadLevel::None && NetworkActive && !Network.isHost())
 	{
-		if (!Network.RetrieveScenario(ScenarioFilename)) return false;
+		// get scenario
+		SetInitProgress(6);
+		char scenario[_MAX_PATH + 1];
+
+		if (!Network.RetrieveScenario(scenario)) return false;
+
+		// open new scenario
+		SCopy(scenario, ScenarioFilename, _MAX_PATH);
 		if (!OpenScenario()) return false;
 		TempScenarioFile = true;
+
+		// get everything else
+		if (!Parameters.GameRes.RetrieveFiles()) return false;
+
+		// Check network game data scenario type (safety)
+		if (!C4S.Head.NetworkGame)
+		{
+			LogFatal(LoadResStr("IDS_NET_NONETGAME")); return false;
+		}
+
+		SetInitProgress(7);
 	}
 
 	// system scripts
