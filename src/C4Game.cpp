@@ -1923,7 +1923,8 @@ void C4Game::Preload()
 #else
 		PreloadThread = std::thread{[]
 		{
-			Game.InitGameFirstPart();
+			CStdLock lock{&Game.PreloadMutex};
+			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
 		}};
 #endif
 	}
