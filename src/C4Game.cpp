@@ -1916,29 +1916,14 @@ void C4Game::Preload()
 		{
 			preloadContext->Select(false, true);
 			CStdLock lock{&Game.PreloadMutex};
-			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
+			Game.InitGameFirstPart(true) && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
 			preloadContext->Deselect(true);
-
-			Application.InteractiveThread.ExecuteInMainThread([]
-			{
-				Log(LoadResStr("IDS_PRC_GFXRES"));
-				if (!Game.GraphicsResource.Init(true))
-				{
-					LogFatal(LoadResStr("IDS_PRC_FAIL"));
-				}
-
-				// init loader
-				if (Application.isFullScreen && !Game.Network.isHost() && !Game.GraphicsSystem.InitLoaderScreen(Game.C4S.Head.Loader))
-				{
-					LogFatal(LoadResStr("IDS_PRC_ERRLOADER"));
-				}
-			});
 		},
 		std::unique_ptr<CStdGLCtx>{context}};
 #else
 		PreloadThread = std::thread{[]
 		{
-			Game.InitGameFirstPart();
+			Game.InitGameFirstPart(true);
 		}};
 #endif
 	}
@@ -2344,16 +2329,6 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 			GroupSet.RegisterGroup(*group.release(), true, C4GSPrio_Definitions, C4GSCnt_DefinitionRoot, true);
 		}
-
-		// Graphics and fonts (may reinit main font, too)
-		// Call it here for overloads by C4GroupSet (definitions, Extra.c4g, scenario, folders etc.)
-		Log(LoadResStr("IDS_PRC_GFXRES"));
-		if (!GraphicsResource.Init(true))
-		{
-			LogFatal(LoadResStr("IDS_PRC_FAIL")); return false;
-		}
-
-		SetInitProgress(10);
 	}
 
 	// determine startup player count
@@ -2438,7 +2413,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	return true;
 }
 
-bool C4Game::InitGameFirstPart()
+bool C4Game::InitGameFirstPart(bool preloading)
 {
 	if (PreloadStatus >= PreloadLevel::Basic)
 	{
@@ -2470,6 +2445,34 @@ bool C4Game::InitGameFirstPart()
 		SetInitProgress(7);
 	}
 
+	constexpr auto loadGraphics = []
+	{
+		// Graphics and fonts (may reinit main font, too)
+		// Call it here for overloads by C4GroupSet (definitions, Extra.c4g, scenario, folders etc.)
+		Log(LoadResStr("IDS_PRC_GFXRES"));
+		if (!Game.GraphicsResource.Init(true))
+		{
+			LogFatal(LoadResStr("IDS_PRC_FAIL"));
+		}
+
+		// init loader
+		if (Application.isFullScreen && !Game.Network.isHost() && !Game.GraphicsSystem.InitLoaderScreen(Game.C4S.Head.Loader))
+		{
+			LogFatal(LoadResStr("IDS_PRC_ERRLOADER"));
+		}
+	};
+
+	if (preloading)
+	{
+		Application.InteractiveThread.ExecuteInMainThread(loadGraphics);
+	}
+	else
+	{
+		SetInitProgress(8);
+		loadGraphics();
+	}
+	SetInitProgress(9);
+
 	// system scripts
 	if (!InitScriptEngine())
 	{
@@ -2477,7 +2480,7 @@ bool C4Game::InitGameFirstPart()
 		return false;
 	}
 
-	SetInitProgress(8);
+	SetInitProgress(10);
 
 	// Scenario components;
 	if (!LoadScenarioComponents())

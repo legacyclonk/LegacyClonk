@@ -307,7 +307,7 @@ public:
 
 protected:
 	bool InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky);
-	bool InitGameFirstPart();
+	bool InitGameFirstPart(bool preloading = false);
 	bool InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky, bool preloading);
 	bool InitGameFinal();
 	bool InitNetworkFromAddress(const char *szAddress);
