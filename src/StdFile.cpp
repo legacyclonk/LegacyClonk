@@ -114,12 +114,7 @@ char *GetExtension(char *szFilename)
 
 const char *GetExtension(const char *szFilename)
 {
-	int pos, end;
-	for (end = 0; szFilename[end]; end++);
-	pos = end;
-	while ((pos > 0) && (szFilename[pos - 1] != '.') && (szFilename[pos - 1] != DirectorySeparator)) pos--;
-	if (szFilename[pos - 1] == '.') return szFilename + pos;
-	return szFilename + end;
+	return GetExtension(const_cast<char *>(szFilename));
 }
 
 void RealPath(const char *szFilename, char *pFullFilename)
