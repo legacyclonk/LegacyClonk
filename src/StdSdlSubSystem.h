@@ -24,7 +24,7 @@ class StdSdlSubSystem
 public:
 	StdSdlSubSystem(Uint32 flags);
 	StdSdlSubSystem(const StdSdlSubSystem &) = delete;
-	StdSdlSubSystem(StdSdlSubSystem &&o) noexcept { o.flags = 0; }
+	StdSdlSubSystem(StdSdlSubSystem &&o) noexcept;
 	~StdSdlSubSystem() { if (flags != 0) SDL_QuitSubSystem(flags); }
 	StdSdlSubSystem &operator=(const StdSdlSubSystem &) = delete;
 

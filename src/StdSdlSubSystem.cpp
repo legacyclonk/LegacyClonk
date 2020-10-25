@@ -18,8 +18,10 @@
 
 #include <SDL.h>
 
+#include <iostream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 StdSdlSubSystem::StdSdlSubSystem(const Uint32 flags) : flags(flags)
 {
@@ -28,4 +30,9 @@ StdSdlSubSystem::StdSdlSubSystem(const Uint32 flags) : flags(flags)
 		throw std::runtime_error{std::string{} +
 			"SDL_InitSubSystem failed: " + SDL_GetError()};
 	}
+}
+
+StdSdlSubSystem::StdSdlSubSystem(StdSdlSubSystem &&o) noexcept
+{
+	flags = std::exchange(o.flags, 0);
 }
