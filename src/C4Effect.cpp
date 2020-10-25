@@ -65,6 +65,7 @@ C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t
 	iIntervall = iTimerIntervall;
 	iTime = 0;
 	pCommandTarget = pCmdTarget;
+	nCommandTarget = Game.Objects.ObjectNumber(pCommandTarget);
 	idCommandTarget = idCmdTarget;
 	AssignCallbackFunctions();
 	// get effect target
