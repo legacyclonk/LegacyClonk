@@ -1,7 +1,7 @@
 /*
  * LegacyClonk
  *
- * Copyright (c) 2017, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -24,8 +24,8 @@ class StdSdlSubSystem
 public:
 	StdSdlSubSystem(Uint32 flags);
 	StdSdlSubSystem(const StdSdlSubSystem &) = delete;
-	StdSdlSubSystem(StdSdlSubSystem &&o) noexcept;
-	~StdSdlSubSystem() { if (flags != 0) SDL_QuitSubSystem(flags); }
+	StdSdlSubSystem(StdSdlSubSystem &&o) noexcept : flags{o.flags} { o.flags = 0; }
+	~StdSdlSubSystem() { SDL_QuitSubSystem(flags); }
 	StdSdlSubSystem &operator=(const StdSdlSubSystem &) = delete;
 
 private:
