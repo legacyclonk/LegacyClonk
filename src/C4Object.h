@@ -20,6 +20,7 @@
 
 #include "C4Command.h"
 #include "C4Effects.h"
+#include "C4EnumeratedObjectPtr.h"
 #include "C4Facet.h"
 #include "C4Id.h"
 #include "C4Landscape.h"
@@ -97,7 +98,7 @@ public:
 	int32_t Data;
 	int32_t Phase, PhaseDelay;
 	int32_t t_attach; // SyncClearance-NoSave //
-	C4Object *Target, *Target2;
+	C4EnumeratedObjectPtr Target, Target2;
 	C4Facet Facet; // NoSave //
 	int32_t FacetX, FacetY; // NoSave //
 
@@ -157,11 +158,7 @@ public:
 	uint32_t OCF;
 	int32_t Visibility;
 	uint32_t Marker; // state var used by Objects::CrossCheck and C4FindObject - NoSave
-	union
-	{
-		C4Object *pLayer; // layer-object containing this object
-		int32_t nLayer; // enumerated ptr
-	};
+	C4EnumeratedObjectPtr pLayer; // layer-object containing this object
 	C4DrawTransform *pDrawTransform; // assigned drawing transformation
 
 	// Menu
@@ -169,7 +166,7 @@ public:
 
 	C4Facet TopFace; // NoSave //
 	C4Def *Def;
-	C4Object *Contained;
+	C4EnumeratedObjectPtr Contained;
 	C4ObjectInfo *Info;
 
 	C4Action Action;
@@ -195,8 +192,6 @@ public:
 	// Commands
 	C4Command *Command;
 
-	int32_t nActionTarget1, nActionTarget2;
-	int32_t nContained;
 	StdStrBuf nInfo;
 
 	C4Value *FirstRef; // No-Save

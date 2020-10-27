@@ -127,7 +127,6 @@ void C4Object::Default()
 	Command = nullptr;
 	Contained = nullptr;
 	TopFace.Default();
-	nContained = nActionTarget1 = nActionTarget2 = 0;
 	Menu = nullptr;
 	PhysicalTemporary = false;
 	TemporaryPhysical.Default();
@@ -2766,9 +2765,9 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(NeedEnergy,                              "NeedEnergy",         false));
 	pComp->Value(mkNamingAdapt(OCF,                                     "OCF",                0u));
 	pComp->Value(Action);
-	pComp->Value(mkNamingAdapt(nContained,                              "Contained",          0));
-	pComp->Value(mkNamingAdapt(nActionTarget1,                          "ActionTarget1",      0));
-	pComp->Value(mkNamingAdapt(nActionTarget2,                          "ActionTarget2",      0));
+	pComp->Value(mkNamingAdapt(Contained,                               "Contained",          C4EnumeratedObjectPtr{}));
+	pComp->Value(mkNamingAdapt(Action.Target,                           "ActionTarget1",      C4EnumeratedObjectPtr{}));
+	pComp->Value(mkNamingAdapt(Action.Target2,                          "ActionTarget2",      C4EnumeratedObjectPtr{}));
 	pComp->Value(mkNamingAdapt(Component,                               "Component"));
 	pComp->Value(mkNamingAdapt(Contents,                                "Contents"));
 	pComp->Value(mkNamingAdapt(PlrViewRange,                            "PlrViewRange",       0));
@@ -2777,7 +2776,7 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ColorMod,                                "ColorMod",           0u));
 	pComp->Value(mkNamingAdapt(BlitMode,                                "BlitMode",           0u));
 	pComp->Value(mkNamingAdapt(CrewDisabled,                            "CrewDisabled",       false));
-	pComp->Value(mkNamingAdapt(nLayer,                                  "Layer",              0));
+	pComp->Value(mkNamingAdapt(pLayer,                                  "Layer",              C4EnumeratedObjectPtr{}));
 	pComp->Value(mkNamingAdapt(C4DefGraphicsAdapt(pGraphics),           "Graphics",           &Def->Graphics));
 	pComp->Value(mkNamingPtrAdapt(pDrawTransform,                       "DrawTransform"));
 	pComp->Value(mkNamingPtrAdapt(pEffects,                             "Effects"));
@@ -2854,11 +2853,7 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 
 void C4Object::EnumeratePointers()
 {
-	// Standard enumerated pointers
-	nContained = Game.Objects.ObjectNumber(Contained);
-	nActionTarget1 = Game.Objects.ObjectNumber(Action.Target);
-	nActionTarget2 = Game.Objects.ObjectNumber(Action.Target2);
-	nLayer = Game.Objects.ObjectNumber(pLayer);
+	EnumerateObjectPtrs(Contained, Action.Target, Action.Target2, pLayer);
 
 	// Info by name
 	if (Info) nInfo = Info->Name; else nInfo.Clear();
@@ -2878,11 +2873,7 @@ void C4Object::EnumeratePointers()
 
 void C4Object::DenumeratePointers()
 {
-	// Standard enumerated pointers
-	Contained = Game.Objects.ObjectPointer(nContained);
-	Action.Target = Game.Objects.ObjectPointer(nActionTarget1);
-	Action.Target2 = Game.Objects.ObjectPointer(nActionTarget2);
-	pLayer = Game.Objects.ObjectPointer(nLayer);
+	DenumerateObjectPtrs(Contained, Action.Target, Action.Target2, pLayer);
 
 	// Post-compile object list
 	Contents.DenumerateRead();
