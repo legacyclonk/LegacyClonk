@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -202,7 +202,7 @@ class ComboBox;
 
 // C4GuiDialog.cpp
 class Dialog; class MessageDialog; class ProgressDialog;
-class InputDialog; class InfoDialog;
+class InputDialog; class InfoDialog; class TimedDialog;
 
 // inline
 class MenuHandler; class ContextHandler;
@@ -2308,6 +2308,9 @@ private:
 	bool *piConfigDontShowAgainSetting;
 	const int32_t zOrdering;
 
+protected:
+	Label *lblText;
+
 public:
 	enum Buttons
 	{
@@ -2434,6 +2437,25 @@ public:
 	~InfoDialog();
 
 	friend class C4Sec1TimerCallback<InfoDialog>;
+};
+
+// message dialog with a timer
+class TimedDialog : public MessageDialog
+{
+private:
+	C4Sec1TimerCallback<TimedDialog> *sec1Timer;
+	uint32_t time;
+
+public:
+	TimedDialog(uint32_t time, const char *message, const char *caption, uint32_t buttons, Icons icon, DlgSize size = dsRegular, bool *configDontShowAgainSetting = nullptr, bool defaultNo = false, int32_t zOrdering = C4GUI_Z_INPUT);
+	virtual ~TimedDialog();
+	void OnSec1Timer();
+
+protected:
+	virtual const char *GetID() override { return "TimedDialog"; }
+	virtual void UpdateText() {}
+	void SetText(const char *message);
+	uint32_t GetRemainingTime() const { return time; }
 };
 
 // a keyboard event that's only executed if the dialog is activated

@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -912,9 +912,9 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint3
 	// use text with line breaks
 	StdStrBuf sMsgBroken;
 	int iMsgHeight = rUseFont.BreakMessage(szMessage, caMain.GetInnerWidth(), &sMsgBroken, true);
-	Label *pLblMessage = new Label("", caMain.GetFromTop(iMsgHeight), fTextCentered ? ACenter : ALeft, C4GUI_MessageFontClr, &rUseFont, false);
-	pLblMessage->SetText(sMsgBroken.getData(), false);
-	AddElement(pLblMessage);
+	lblText = new Label("", caMain.GetFromTop(iMsgHeight), fTextCentered ? ACenter : ALeft, C4GUI_MessageFontClr, &rUseFont, false);
+	lblText->SetText(sMsgBroken.getData(), false);
+	AddElement(lblText);
 	// place do-not-show-again-checkbox
 	if (piConfigDontShowAgainSetting)
 	{
@@ -1266,4 +1266,61 @@ void InfoDialog::OnSec1Timer()
 	UpdateText();
 }
 
-}; // end of namespace
+TimedDialog::TimedDialog(uint32_t time, const char *message, const char *caption, uint32_t buttons, Icons icon, DlgSize size, bool *configDontShowAgainSetting, bool defaultNo, int32_t zOrdering)
+	: MessageDialog{message, caption, buttons, icon, size, configDontShowAgainSetting, defaultNo, zOrdering}, time{time}
+{
+	sec1Timer = new C4Sec1TimerCallback<TimedDialog>{this};
+}
+
+TimedDialog::~TimedDialog()
+{
+	sec1Timer->Release();
+}
+
+void TimedDialog::OnSec1Timer()
+{
+	if (--time == 0)
+	{
+		Close(false);
+		return;
+	}
+
+	UpdateText();
+}
+
+void TimedDialog::SetText(const char *message)
+{
+	lblText->SetText(message);
+
+	ComponentAligner caMain{GetClientRect(), C4GUI_DefDlgIndent, C4GUI_DefDlgIndent, true};
+	caMain.ExpandTop(-lblText->GetHeight());
+	ComponentAligner caButtonArea{caMain.GetFromTop(C4GUI_ButtonAreaHgt), 0, 0};
+	const C4Rect &bounds{caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_DefButton2HSpace)};
+
+	int32_t oldButtonY{-1};
+	int32_t oldButtonHeight{0};
+
+	for (Element *element{GetFirst()}; element; element = element->GetNext())
+	{
+		if (element != pCloseBtn)
+		{
+			if (auto *btn = dynamic_cast<Button *>(element); btn)
+			{
+				int32_t &y{btn->GetBounds().y};
+				if (oldButtonY == -1)
+				{
+					oldButtonY = y;
+					oldButtonHeight = btn->GetHeight();
+				}
+
+				y = bounds.y;
+			}
+		}
+	}
+
+	GetClientRect().Hgt = bounds.y + oldButtonHeight + C4GUI_DefButton2HSpace;
+	GetBounds().Hgt = GetClientRect().Hgt + pTitle->GetHeight();
+	UpdateSize();
+}
+
+} // end of namespace
