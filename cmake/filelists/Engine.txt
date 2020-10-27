@@ -11,6 +11,7 @@ src/C4ChatDlg.cpp
 src/C4ChatDlg.h
 src/C4Client.cpp
 src/C4Client.h
+src/C4Cooldown.h
 src/C4Command.cpp
 src/C4Command.h
 src/C4ComponentHost.cpp

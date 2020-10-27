@@ -794,6 +794,7 @@ IDS_MSG_CHATDISCLAIMER=Chat - Disclaimer
 IDS_MSG_CLEARTHEMESSAGEBOARD=Clear the message board.
 IDS_MSG_CLIENT=client
 IDS_MSG_CMD_ABORT_NOCOUNTDOWN=Not in countdown!
+IDS_MSG_CMD_COOLDOWN=Too early! Please wait %s seconds.
 IDS_MSG_CMD_HOSTONLY=Host only!
 IDS_MSG_CMD_JOINPLR_NOFILE=Cannot join player %s: File not found!
 IDS_MSG_CMD_NETGETSCEN_SAVED=Got it! Saved to %s
