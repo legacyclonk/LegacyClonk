@@ -72,69 +72,21 @@ int32_t C4StartupOptionsDlg::SmallButton::GetDefaultButtonHeight()
 // C4StartupOptionsDlg::ResChangeConfirmDlg
 
 C4StartupOptionsDlg::ResChangeConfirmDlg::ResChangeConfirmDlg()
-	: C4GUI::Dialog(C4GUI_MessageDlgWdt, 100 /* will be resized */, LoadResStr("IDS_MNU_SWITCHRESOLUTION"), false)
+	: C4GUI::TimedDialog{12, "", LoadResStr("IDS_MNU_SWITCHRESOLUTION"), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_None}
 {
-	// update-timer
-	// Note that the actual time may be up to 1 second shorter, depending on the current position within the sec1-timer-cycle
-	pSec1Timer = new C4Sec1TimerCallback<ResChangeConfirmDlg>(this);
-	// An independent group of fourteen highly trained apes and one blind lawnmower have determined
-	//  that twelve seconds is just right for normal people
-	iResChangeSwitchTime = 12;
-	// However, some people need more time
-	// Those can be identified by their configuration settings
-	if (Config.Graphics.SaveDefaultPortraits) iResChangeSwitchTime += 2;
-	// get positions
-	C4GUI::ComponentAligner caMain(GetClientRect(), C4GUI_DefDlgIndent, C4GUI_DefDlgIndent, true);
-	// place icon
-	C4Rect rcIcon = caMain.GetFromLeft(C4GUI_IconWdt); rcIcon.Hgt = C4GUI_IconHgt;
-	C4GUI::Icon *pIcon = new C4GUI::Icon(rcIcon, C4GUI::Ico_Confirm); AddElement(pIcon);
-	// place message labels
-	// use text with line breaks
-	StdStrBuf sMsgBroken;
-	int iMsgHeight = C4GUI::GetRes()->TextFont.BreakMessage(LoadResStr("IDS_MNU_SWITCHRESOLUTION_LIKEIT"), caMain.GetInnerWidth(), &sMsgBroken, true);
-	C4GUI::Label *pLblMessage = new C4GUI::Label(sMsgBroken.getData(), caMain.GetFromTop(iMsgHeight), ACenter, C4GUI_MessageFontClr, &C4GUI::GetRes()->TextFont, false);
-	AddElement(pLblMessage);
-	iMsgHeight = C4GUI::GetRes()->TextFont.BreakMessage(FormatString(LoadResStr("IDS_MNU_SWITCHRESOLUTION_UNDO"),
-		static_cast<int>(iResChangeSwitchTime)).getData(),
-		caMain.GetInnerWidth(), &sMsgBroken, true);
-	pOperationCancelLabel = new C4GUI::Label(sMsgBroken.getData(), caMain.GetFromTop(iMsgHeight), ACenter, C4GUI_MessageFontClr, &C4GUI::GetRes()->TextFont, false, false);
-	AddElement(pOperationCancelLabel);
-	// place buttons
-	C4GUI::ComponentAligner caButtonArea(caMain.GetFromTop(C4GUI_ButtonAreaHgt), 0, 0);
-	int32_t iButtonCount = 2;
-	C4Rect rcBtn = caButtonArea.GetCentered(iButtonCount * C4GUI_DefButton2Wdt + (iButtonCount - 1) * C4GUI_DefButton2HSpace, C4GUI_ButtonHgt);
-	rcBtn.Wdt = C4GUI_DefButton2Wdt;
-	// Yes
-	C4GUI::Button *pBtnYes = new C4GUI::YesButton(rcBtn);
-	AddElement(pBtnYes);
-	rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
-	// No
-	C4GUI::Button *pBtnNo = new C4GUI::NoButton(rcBtn);
-	AddElement(pBtnNo);
-	// initial focus on abort button, to prevent accidental acceptance of setting by "blind" users
-	SetFocus(pBtnNo, false);
-	// resize to actually needed size
-	SetClientSize(GetClientRect().Wdt, GetClientRect().Hgt - caMain.GetHeight());
+	UpdateText();
 }
 
-C4StartupOptionsDlg::ResChangeConfirmDlg::~ResChangeConfirmDlg()
+void C4StartupOptionsDlg::ResChangeConfirmDlg::UpdateText()
 {
-	pSec1Timer->Release();
-}
-
-void C4StartupOptionsDlg::ResChangeConfirmDlg::OnSec1Timer()
-{
-	// timer ran out? Then cancel dlg
-	if (!--iResChangeSwitchTime)
-	{
-		Close(false); return;
-	}
-	// update timer label
-	StdStrBuf sTimerText;
-	C4GUI::GetRes()->TextFont.BreakMessage(FormatString(LoadResStr("IDS_MNU_SWITCHRESOLUTION_UNDO"),
-		static_cast<int>(iResChangeSwitchTime)).getData(),
-		pOperationCancelLabel->GetBounds().Wdt, &sTimerText, true);
-	pOperationCancelLabel->SetText(sTimerText.getData());
+	StdStrBuf text;
+	C4GUI::GetRes()->TextFont.BreakMessage(
+			FormatString(LoadResStr("IDS_MNU_SWITCHRESOLUTION_TEXT"), GetRemainingTime()).getData(),
+			GetClientRect().Wdt,
+			&text,
+			false
+			);
+	SetText(text.getData());
 }
 
 // C4StartupOptionsDlg::ScaleEdit

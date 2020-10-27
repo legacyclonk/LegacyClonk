@@ -123,20 +123,16 @@ private:
 	} *pNetworkNameEdit, *pNetworkNickEdit;
 
 	// message dialog with a timer; used to restore the resolution if the user didn't press anything for a while
-	class ResChangeConfirmDlg : public C4GUI::Dialog
+	class ResChangeConfirmDlg : public C4GUI::TimedDialog
 	{
-	private:
-		C4Sec1TimerCallback<ResChangeConfirmDlg> *pSec1Timer;
-		C4GUI::Label *pOperationCancelLabel; int32_t iResChangeSwitchTime;
-
 	public:
 		ResChangeConfirmDlg();
-		~ResChangeConfirmDlg();
-		void OnSec1Timer(); // update timer label
+		~ResChangeConfirmDlg() = default;
 
 	protected:
 		virtual bool OnEnter() override { return true; } // Pressing Enter does not confirm this dialog, so "blind" users are less likely to accept their change
 		virtual const char *GetID() override { return "ResChangeConfirmDialog"; }
+		void UpdateText() override;
 	};
 
 	void OnGfxTroubleCheck(C4GUI::Element *pCheckBox)
