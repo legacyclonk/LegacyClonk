@@ -65,7 +65,7 @@ C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t
 	iIntervall = iTimerIntervall;
 	iTime = 0;
 	pCommandTarget = pCmdTarget;
-	nCommandTarget = Game.Objects.ObjectNumber(pCommandTarget);
+	pCommandTarget.Enumerate();
 	idCommandTarget = idCmdTarget;
 	AssignCallbackFunctions();
 	// get effect target
@@ -135,8 +135,7 @@ C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t
 C4Effect::C4Effect(StdCompiler *pComp) : EffectVars(0)
 {
 	// defaults
-	iNumber = iPriority = nCommandTarget = iTime = iIntervall = 0;
-	pCommandTarget = nullptr;
+	iNumber = iPriority = iTime = iIntervall = 0;
 	pNext = nullptr;
 	// compile
 	pComp->Value(*this);
@@ -161,7 +160,7 @@ void C4Effect::EnumeratePointers()
 	do
 	{
 		// command target
-		pEff->nCommandTarget = Game.Objects.ObjectNumber(pEff->pCommandTarget);
+		pEff->pCommandTarget.Enumerate();
 		// effect var denumeration: not necessary, because this is done while saving
 	} while (pEff = pEff->pNext);
 }
@@ -173,7 +172,7 @@ void C4Effect::DenumeratePointers()
 	do
 	{
 		// command target
-		pEff->pCommandTarget = Game.Objects.ObjectPointer(pEff->nCommandTarget);
+		pEff->pCommandTarget.Denumerate();
 		// variable pointers
 		pEff->EffectVars.DenumeratePointers();
 		// assign any callback functions
@@ -487,7 +486,7 @@ void C4Effect::CompileFunc(StdCompiler *pComp)
 	pComp->Value(iTime); pComp->Separator();
 	pComp->Value(iIntervall); pComp->Separator();
 	// read object number
-	pComp->Value(nCommandTarget); pComp->Separator();
+	pComp->Value(pCommandTarget); pComp->Separator();
 	// read ID
 	pComp->Value(mkC4IDAdapt(idCommandTarget));
 	pComp->Separator(StdCompiler::SEP_END); // ')'
