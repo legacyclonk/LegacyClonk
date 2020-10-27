@@ -2903,7 +2903,7 @@ static C4Object *FnGetViewCursor(C4AulContext *cthr, long iPlr)
 	// get player
 	C4Player *pPlr = Game.Players.Get(iPlr);
 	// get viewcursor
-	return pPlr ? pPlr->ViewCursor : nullptr;
+	return pPlr ? pPlr->ViewCursor.Object() : nullptr;
 }
 
 static C4Object *FnGetCaptain(C4AulContext *cthr, long iPlr)

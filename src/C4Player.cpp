@@ -1781,27 +1781,16 @@ void C4Player::DoTeamSelection(int32_t idTeam)
 
 void C4Player::EnumeratePointers()
 {
-	// Cursor
-	Cursor = Game.Objects.Enumerated(Cursor);
-	// ViewCursor
-	ViewCursor = Game.Objects.Enumerated(ViewCursor);
-	// Captain
-	Captain = Game.Objects.Enumerated(Captain);
-	// messageboard-queries
+	EnumerateObjectPtrs(Cursor, ViewCursor, Captain);
 	for (C4MessageBoardQuery *pCheck = pMsgBoardQuery; pCheck; pCheck = pCheck->pNext)
 		pCheck->nCallbackObj = pCheck->pCallbackObj ? Game.Objects.ObjectNumber(pCheck->pCallbackObj) : 0;
 }
 
 void C4Player::DenumeratePointers()
 {
+	DenumerateObjectPtrs(Cursor, ViewCursor, Captain);
 	// Crew
 	Crew.DenumerateRead();
-	// Cursor
-	Cursor = Game.Objects.Denumerated(Cursor);
-	// ViewCursor
-	ViewCursor = Game.Objects.Denumerated(ViewCursor);
-	// Captain
-	Captain = Game.Objects.Denumerated(Captain);
 	// messageboard-queries
 	for (C4MessageBoardQuery *pCheck = pMsgBoardQuery; pCheck; pCheck = pCheck->pNext)
 		pCheck->pCallbackObj = pCheck->nCallbackObj ? Game.Objects.ObjectPointer(pCheck->nCallbackObj) : nullptr;

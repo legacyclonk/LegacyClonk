@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "C4EnumeratedObjectPtr.h"
 #include "C4MainMenu.h"
 #include <C4ObjectInfoList.h>
 #include <C4InfoCore.h>
@@ -98,7 +99,7 @@ public:
 	int32_t Wealth, Points;
 	int32_t Value, InitialValue, ValueGain;
 	int32_t ObjectsOwned;
-	C4Object *Captain;
+	C4EnumeratedObjectPtr Captain;
 	C4IDList Hostility;
 	// Home Base
 	C4IDList HomeBaseMaterial;
@@ -114,7 +115,7 @@ public:
 	// Control
 	int32_t AutoContextMenu;
 	int32_t ControlStyle;
-	C4Object *Cursor, *ViewCursor;
+	C4EnumeratedObjectPtr Cursor, ViewCursor;
 	int32_t SelectCount;
 	int32_t SelectFlash, CursorFlash;
 	int32_t LastCom;

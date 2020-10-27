@@ -452,7 +452,7 @@ void C4MouseControl::UpdateCursorTarget()
 	}
 
 	// Check player cursor
-	C4Object *pPlrCursor = pPlayer ? pPlayer->Cursor : nullptr;
+	C4Object *pPlrCursor = pPlayer ? pPlayer->Cursor.Object() : nullptr;
 
 	// Target object
 	uint32_t ocf = OCF_Grab | OCF_Chop | OCF_Container | OCF_Construct | OCF_Living | OCF_Carryable | OCF_Container | OCF_Exclusive;
