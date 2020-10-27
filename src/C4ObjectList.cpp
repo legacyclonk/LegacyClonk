@@ -47,7 +47,7 @@ void C4ObjectList::Clear()
 		nextLnk = cLnk->Next; delete cLnk;
 	}
 	First = Last = nullptr;
-	delete pEnumerated; pEnumerated = nullptr;
+	pEnumerated.reset();
 }
 
 const int MaxTempListID = 500;
@@ -454,10 +454,10 @@ bool C4ObjectList::DenumerateRead()
 {
 	if (!pEnumerated) return false;
 	// Denumerate all object pointers
-	for (std::list<int32_t>::const_iterator pNum = pEnumerated->begin(); pNum != pEnumerated->end(); ++pNum)
-		Add(Game.Objects.ObjectPointer(*pNum), stNone); // Add to tail, unsorted
+	for (const auto num : *pEnumerated)
+		Add(Game.Objects.ObjectPointer(num), stNone); // Add to tail, unsorted
 	// Delete old list
-	delete pEnumerated; pEnumerated = nullptr;
+	pEnumerated.reset();
 	return true;
 }
 
@@ -476,7 +476,7 @@ void C4ObjectList::CompileFunc(StdCompiler *pComp, bool fSaveRefs, bool fSkipPla
 		// this mode not supported
 		assert(!fSkipPlayerObjects);
 		// (Re)create list
-		delete pEnumerated; pEnumerated = new std::list<int32_t>();
+		pEnumerated.reset(new decltype(pEnumerated)::element_type);
 		// Decompiling: Build list
 		if (!pComp->isCompiler())
 			for (C4ObjectLink *pPos = First; pPos; pPos = pPos->Next)
@@ -487,7 +487,7 @@ void C4ObjectList::CompileFunc(StdCompiler *pComp, bool fSaveRefs, bool fSkipPla
 		// Decompiling: Delete list
 		if (!pComp->isCompiler())
 		{
-			delete pEnumerated; pEnumerated = nullptr;
+			pEnumerated.reset();
 		}
 		// Compiling: Nothing to do - list will e denumerated later
 	}
@@ -746,7 +746,7 @@ void C4ObjectList::Default()
 {
 	First = Last = nullptr;
 	Mass = 0;
-	pEnumerated = nullptr;
+	pEnumerated.reset();
 }
 
 void C4ObjectList::UpdateTransferZones()

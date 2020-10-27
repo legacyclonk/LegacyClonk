@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "C4Id.h"
 #include "C4Def.h"
 #include "C4Region.h"
@@ -38,6 +40,8 @@ public:
 
 class C4ObjectList
 {
+	std::unique_ptr<std::list<int32_t>> pEnumerated;
+
 public:
 	C4ObjectList();
 	C4ObjectList(const C4ObjectList &List);
@@ -45,7 +49,6 @@ public:
 
 	C4ObjectLink *First, *Last;
 	int Mass;
-	std::list<int32_t> *pEnumerated;
 
 	enum SortType { stNone = 0, stMain, stContents, stReverse, };
 
