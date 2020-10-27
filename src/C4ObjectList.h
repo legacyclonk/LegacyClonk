@@ -19,6 +19,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include "C4Id.h"
 #include "C4Def.h"
@@ -40,7 +41,7 @@ public:
 
 class C4ObjectList
 {
-	std::unique_ptr<std::list<int32_t>> pEnumerated;
+	std::unique_ptr<std::vector<int32_t>> pEnumerated;
 
 public:
 	C4ObjectList();
