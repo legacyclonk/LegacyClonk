@@ -298,10 +298,25 @@ bool C4GraphicsResource::LoadCursorGfx()
 	// old-style cursor file overloads new-stye, because old scenarios might want to have their own cursors
 	if (!LoadFile(fctMouseCursor, "Cursor", Files, C4FCT_Height, C4FCT_Full, true))
 	{
-		static const char *cursors[8] = {"CursorXXXXXLarge", "CursorXXXXLarge", "CursorXXXLarge", "CursorXXLarge", "CursorXLarge", "CursorLarge", "CursorMedium", "CursorSmall"};
-		for (size_t i = 0; i < sizeof(fctCursors) / sizeof(fctCursors[0]); ++i)
+		struct CursorSize {
+			const char *filename;
+			std::size_t facetIndex;
+		};
+		// the order needs to match the order defined in the sorting list in C4Components.h
+		static constexpr CursorSize cursors[]
 		{
-			if (!LoadFile(fctCursors[i], cursors[i], Files, C4FCT_Height, C4FCT_Full))
+			{"CursorSmall", 7},
+			{"CursorMedium", 6},
+			{"CursorLarge", 5},
+			{"CursorXLarge", 4},
+			{"CursorXXLarge", 3},
+			{"CursorXXXLarge", 2},
+			{"CursorXXXXLarge", 1},
+			{"CursorXXXXXLarge", 0},
+		};
+		for (const auto &cursor : cursors)
+		{
+			if (!LoadFile(fctCursors[cursor.facetIndex], cursor.filename, Files, C4FCT_Height, C4FCT_Full))
 				return false;
 		}
 	}
