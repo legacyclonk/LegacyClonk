@@ -715,7 +715,7 @@ void C4Value::DenumeratePointer()
 	// object types only
 	if (Type != C4V_C4ObjectEnum && Type != C4V_Any) return;
 	// in range?
-	if (Type != C4V_C4ObjectEnum && !Inside(Data.Int, C4EnumPointer1, C4EnumPointer2)) return;
+	if (Type != C4V_C4ObjectEnum && !Inside<long>(Data.Int, C4EnumPointer1, C4EnumPointer2)) return;
 	// get obj id, search object
 	int iObjID = (Data.Int >= C4EnumPointer1 ? Data.Int - C4EnumPointer1 : Data.Int);
 	C4Object *pObj = Game.Objects.ObjectPointer(iObjID);

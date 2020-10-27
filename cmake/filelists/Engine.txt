@@ -37,6 +37,8 @@ src/C4EditCursor.cpp
 src/C4EditCursor.h
 src/C4Effect.cpp
 src/C4Effects.h
+src/C4EnumeratedObjectPtr.h
+src/C4EnumeratedObjectPtr.cpp
 src/C4Extra.cpp
 src/C4Extra.h
 src/C4Facet.cpp

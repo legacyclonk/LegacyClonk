@@ -25,6 +25,10 @@
 class C4Object;
 class C4FacetEx;
 
+constexpr std::int32_t
+	C4EnumPointer1 = 1000000000,
+	C4EnumPointer2 = 1001000000;
+
 class C4ObjectLink
 {
 public:

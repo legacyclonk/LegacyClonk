@@ -31,9 +31,6 @@ class C4ValueArray;
 class C4ValueHash;
 class C4ValueContainer;
 
-const long C4EnumPointer1 = 1000000000,
-           C4EnumPointer2 = 1001000000;
-
 // C4Value type
 enum C4V_Type
 {

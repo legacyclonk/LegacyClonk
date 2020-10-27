@@ -642,7 +642,7 @@ C4Object *C4ObjectList::Enumerated(C4Object *pObj)
 C4Object *C4ObjectList::Denumerated(C4Object *pObj)
 {
 	// If valid enumeration, convert to pointer
-	if (Inside(reinterpret_cast<long>(pObj), C4EnumPointer1, C4EnumPointer2))
+	if (Inside<long>(reinterpret_cast<long>(pObj), C4EnumPointer1, C4EnumPointer2))
 		return ObjectPointer(reinterpret_cast<long>(pObj) - C4EnumPointer1);
 	// Oops!
 	return nullptr;
