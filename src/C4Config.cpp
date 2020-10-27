@@ -353,8 +353,10 @@ void C4ConfigControls::CompileFunc(StdCompiler *pComp, bool fKeysOnly)
 void C4ConfigCooldowns::CompileFunc(StdCompiler *comp)
 {
 	using namespace std::chrono_literals;
+	static constexpr auto mkNamingDefaultParAdapt = [](auto &value, const char *name, const auto &par) { return mkNamingAdapt(mkParAdapt(value, par), name, par); };
 
 	comp->Value(mkNamingAdapt(SoundCommand, "SoundCommand", 5s));
+	comp->Value(mkNamingAdapt(mkParAdapt(ReadyCheck, 5s), "ReadyCheck", 10s));
 }
 #endif
 

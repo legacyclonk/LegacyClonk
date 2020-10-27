@@ -114,6 +114,18 @@ class C4Network2
 	friend class C4Network2IO;
 	friend class C4Sec1TimerCallback<C4Network2>;
 
+#ifndef USE_CONSOLE
+	class ReadyCheckDialog : public C4GUI::TimedDialog
+	{
+	public:
+		ReadyCheckDialog();
+		~ReadyCheckDialog() override = default;
+
+	public:
+		void UpdateText() override;
+	};
+#endif
+
 public:
 	C4Network2();
 	virtual ~C4Network2() { Clear(); }
@@ -159,6 +171,9 @@ protected:
 	C4GameLobby::MainDlg *pLobby;
 	bool fLobbyRunning;
 	C4GameLobby::Countdown *pLobbyCountdown;
+#ifndef USE_CONSOLE
+	ReadyCheckDialog *readyCheckDialog;
+#endif
 
 	// master server used
 	StdStrBuf MasterServerAddress;
@@ -333,6 +348,7 @@ protected:
 	void HandleStatusAck(const C4Network2Status &nStatus, C4Network2Client *pClient);
 	void HandleActivateReq(int32_t iTick, C4Network2Client *pClient);
 	void HandleJoinData(const class C4PacketJoinData &rPkt);
+	void HandleReadyCheck(const class C4PacketReadyCheck &packet);
 
 	// events
 	void OnConnect(C4Network2Client *pClient, C4Network2IOConnection *pConn, const char *szMsg, bool fFirstConnection);
@@ -431,6 +447,32 @@ public:
 	void SetStartCtrlTick(int32_t iTick)               { iStartCtrlTick = iTick; }
 
 	virtual void CompileFunc(StdCompiler *pComp);
+};
+
+// shows ready check dialog or sends back information
+
+class C4PacketReadyCheck : public C4PacketBase
+{
+public:
+	enum Data : int32_t
+	{
+		Request = -1,
+		NotReady = 0,
+		Ready = 1
+	};
+
+	C4PacketReadyCheck() = default;
+	C4PacketReadyCheck(int32_t client, Data data) : client{client}, data{data} {}
+	void CompileFunc(StdCompiler *comp) override;
+
+	int32_t GetClientID() const { return client; }
+	auto GetData() const { return static_cast<Data>(data); }
+	bool VoteRequested() const { return data == Request; }
+	bool IsReady() const { return data == Ready; }
+
+private:
+	int32_t client;
+	std::underlying_type_t<Data> data;
 };
 
 class C4PacketActivateReq : public C4PacketBase

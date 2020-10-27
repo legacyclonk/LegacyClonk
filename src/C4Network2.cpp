@@ -116,6 +116,25 @@ void C4Network2Status::CompileFunc(StdCompiler *pComp, bool fReference)
 
 // *** C4Network2
 
+C4Network2::ReadyCheckDialog::ReadyCheckDialog()
+	: TimedDialog{15, "", LoadResStr("IDS_DLG_READYCHECK"), btnYesNo, C4GUI::Ico_GameRunning}
+{
+	SetFocus(nullptr, false);
+	UpdateText();
+}
+
+void C4Network2::ReadyCheckDialog::UpdateText()
+{
+	StdStrBuf text;
+	C4GUI::GetRes()->TextFont.BreakMessage(
+			FormatString(LoadResStr("IDS_DLG_READYCHECKTEXT"), GetRemainingTime()).getData(),
+			GetClientRect().Wdt,
+			&text,
+			false
+			);
+	SetText(text.getData());
+}
+
 C4Network2::C4Network2()
 	: Clients(&NetIO),
 	fAllowJoin(false),
@@ -123,6 +142,9 @@ C4Network2::C4Network2()
 	fStatusAck(false), fStatusReached(false),
 	fChasing(false),
 	pLobby(nullptr), fLobbyRunning(false), pLobbyCountdown(nullptr),
+#ifndef USE_CONSOLE
+	readyCheckDialog{nullptr},
+#endif
 	pSec1Timer(nullptr),
 	pControl(nullptr),
 	iNextClientID(0),
@@ -909,6 +931,13 @@ void C4Network2::HandlePacket(char cStatus, const C4PacketBase *pPacket, C4Netwo
 	}
 	break;
 
+	case PID_ReadyCheck:
+	{
+		GETPKT(C4PacketReadyCheck, rPkt);
+		HandleReadyCheck(rPkt);
+	}
+	break;
+
 	case PID_Status: // status change
 	{
 		// by host only
@@ -1558,6 +1587,92 @@ void C4Network2::HandleJoinData(const C4PacketJoinData &rPkt)
 	Game.Parameters.PlayerInfos.LoadResources();
 	// send additional addresses
 	Clients.SendAddresses(nullptr);
+}
+
+void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
+{
+	C4Client *client{Game.Clients.getClientByID(packet.GetClientID())};
+	if (!client)
+	{
+		return;
+	}
+
+	bool ready;
+
+	if (packet.VoteRequested())
+	{
+#ifndef USE_CONSOLE
+		// ShowModalDlg calls HandleMessage, which can handle additional ready check packets,
+		// leading to multiple dialogs.
+		if (readyCheckDialog)
+		{
+			return;
+		}
+#endif
+
+		if (!client->isHost())
+		{
+			LogF("Network: Got ready check request from non-host client %s!", client->getName());
+			return;
+		}
+		else if (isHost())
+		{
+			LogF("Network: Got ready check request from client %s, but is host!", client->getName());
+			return;
+		}
+
+		for (C4Client *clnt{nullptr}; (clnt = Game.Clients.getClient(clnt)); )
+		{
+			if (!clnt->isHost()) // host state isn't changed
+			{
+				clnt->SetLobbyReady(false);
+			}
+		}
+
+#ifndef USE_CONSOLE
+		if (pLobby)
+		{
+			pLobby->CheckReady(false);
+		}
+#endif
+
+		Application.NotifyUserIfInactive();
+
+#ifndef USE_CONSOLE
+		readyCheckDialog = new ReadyCheckDialog;
+		ready = Game.pGUI ? Game.pGUI->ShowModalDlg(readyCheckDialog, true) : false;
+		readyCheckDialog = nullptr;
+#else
+		ready = false;
+#endif
+		Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_ReadyCheck, C4PacketReadyCheck{Clients.GetLocal()->getID(), ready ? C4PacketReadyCheck::Ready : C4PacketReadyCheck::NotReady}), true);
+
+		if (pLobby)
+		{
+			pLobby->CheckReady(ready);
+		}
+
+		client = Game.Clients.getLocal();
+	}
+	else
+	{
+		ready = packet.IsReady();
+	}
+
+	if (!client->isLocal())
+	{
+		LogF(LoadResStr(ready ? "IDS_NET_CLIENT_READY" : "IDS_NET_CLIENT_UNREADY"), client->getName());
+	}
+
+	if (ready != client->isLobbyReady())
+	{
+		client->SetLobbyReady(ready);
+
+		if (pLobby)
+		{
+			pLobby->OnClientReadyStateChange(client);
+		}
+	}
 }
 
 void C4Network2::OnConnect(C4Network2Client *pClient, C4Network2IOConnection *pConn, const char *szMsg, bool fFirstConnection)

@@ -170,7 +170,7 @@ public:
 
 	// messages
 	bool BroadcastMsgToConnClients(const C4NetIOPacket &rPkt);
-	bool BroadcastMsgToClients(const C4NetIOPacket &rPkt);
+	bool BroadcastMsgToClients(const C4NetIOPacket &rPkt, bool includeHost = false);
 	bool SendMsgToHost(C4NetIOPacket rPkt);
 	bool SendMsgToClient(int32_t iClient, C4NetIOPacket &&rPkt);
 

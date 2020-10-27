@@ -1319,7 +1319,10 @@ void TimedDialog::SetText(const char *message)
 	}
 
 	GetClientRect().Hgt = bounds.y + oldButtonHeight + C4GUI_DefButton2HSpace;
-	GetBounds().Hgt = GetClientRect().Hgt + pTitle->GetHeight();
+	if (pTitle)
+	{
+		GetBounds().Hgt = GetClientRect().Hgt + pTitle->GetHeight();
+	}
 	UpdateSize();
 }
 

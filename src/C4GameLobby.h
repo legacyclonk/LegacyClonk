@@ -23,6 +23,7 @@
 
 #include "C4Gui.h"
 #include "C4Client.h"
+#include "C4Cooldown.h"
 #include "C4PlayerInfo.h"
 
 class C4PlayerInfo;
@@ -106,6 +107,7 @@ private:
 	C4GUI::CallbackButton<MainDlg, C4GUI::IconButton> *btnPlayers, *btnResources, *btnTeams, *btnOptions, *btnScenario, *btnChat; // right list sheet selection
 	C4GUI::CheckBox *checkReady;
 	C4GUI::CallbackButton<MainDlg> *btnPreload{nullptr};
+	C4CooldownSeconds readyButtonCooldown{std::chrono::seconds{2}}; // not in C4Config as it is dependent on
 
 protected:
 	void OnReadyCheck(C4GUI::Element *pCheckBox); // callback: checkbox ticked
@@ -164,6 +166,8 @@ public:
 	void UpdatePassword();
 	void ClearLog();
 	void ResourceProgress(bool isComplete);
+	void RequestReadyCheck();
+	void CheckReady(bool check);
 
 	friend class C4Sec1TimerCallback<MainDlg>;
 	friend class ::C4Network2ResDlg;

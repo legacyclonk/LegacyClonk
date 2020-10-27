@@ -1679,6 +1679,14 @@ void C4PacketJoinData::CompileFunc(StdCompiler *pComp)
 	pComp->Value(Parameters);
 }
 
+// C4PacketReadyCheck
+
+void C4PacketReadyCheck::CompileFunc(StdCompiler *comp)
+{
+	comp->Value(mkNamingAdapt(client, "Client", 0));
+	comp->Value(mkNamingAdapt(static_cast<std::underlying_type_t<Data> &>(data), "Data", Request));
+}
+
 // *** C4PacketPing
 
 C4PacketPing::C4PacketPing(uint32_t iPacketCounter)
