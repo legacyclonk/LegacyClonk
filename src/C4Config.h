@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -19,6 +19,7 @@
 #pragma once
 
 #include "C4Constants.h"
+#include "C4Cooldown.h"
 #include "C4InputValidation.h"
 #include "StdConfig.h"
 
@@ -161,7 +162,6 @@ public:
 	int32_t MusicVolume;
 	int32_t SoundVolume;
 	int32_t MaxChannels;
-	std::chrono::seconds SoundCommandCooldown;
 	bool MuteSoundCommand; // whether to mute /sound by default
 	void CompileFunc(StdCompiler *pComp);
 };
@@ -257,6 +257,15 @@ public:
 	void ResetKeys(); // reset all keys to default
 };
 
+#ifdef C4ENGINE
+class C4ConfigCooldowns
+{
+public:
+	C4CooldownSeconds SoundCommand;
+	void CompileFunc(StdCompiler *comp);
+};
+#endif
+
 class C4Config
 {
 public:
@@ -276,6 +285,9 @@ public:
 	C4ConfigGamepad   Gamepads[C4ConfigMaxGamepads];
 	C4ConfigControls  Controls;
 	C4ConfigStartup   Startup;
+#ifdef C4ENGINE
+	C4ConfigCooldowns Cooldowns;
+#endif
 	bool fConfigLoaded; // true if config has been successfully loaded
 	StdStrBuf ConfigFilename; // set for configs loaded from a nondefault config file
 
