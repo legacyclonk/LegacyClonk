@@ -695,22 +695,22 @@ void C4GraphicsOverlay::CompileFunc(StdCompiler *pComp)
 		if (pComp->isCompiler()) dwClrModulation = 0xffffff;
 	// read overlay target object
 	if (pComp->Separator())
-		pComp->Value(nOverlayObj);
+		pComp->Value(pOverlayObj);
 	else
 		// default
-		if (pComp->isCompiler()) nOverlayObj = 0;
+		if (pComp->isCompiler()) pOverlayObj.Reset();
 	// update used facet according to read data
 	if (pComp->isCompiler()) UpdateFacet();
 }
 
 void C4GraphicsOverlay::EnumeratePointers()
 {
-	nOverlayObj = Game.Objects.ObjectNumber(pOverlayObj);
+	pOverlayObj.Enumerate();
 }
 
 void C4GraphicsOverlay::DenumeratePointers()
 {
-	pOverlayObj = Game.Objects.ObjectPointer(nOverlayObj);
+	pOverlayObj.Denumerate();
 }
 
 void C4GraphicsOverlay::Draw(C4FacetEx &cgo, C4Object *pForObj, int32_t iByPlayer)

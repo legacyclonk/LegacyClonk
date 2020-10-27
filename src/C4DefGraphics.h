@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <C4EnumeratedObjectPtr.h>
 #include <C4FacetEx.h>
 #include <C4Material.h>
 #include <C4Surface.h>
@@ -177,8 +178,7 @@ protected:
 	uint32_t dwBlitMode; // extra parameters for additive blits, etc.
 	uint32_t dwClrModulation; // colormod for this overlay
 #ifdef C4ENGINE
-	C4Object *pOverlayObj; // object to be drawn as overlay in MODE_Object
-	int32_t nOverlayObj; // compiled ptr
+	C4EnumeratedObjectPtr pOverlayObj; // object to be drawn as overlay in MODE_Object
 	C4DrawTransform Transform; // drawing transformation: Rotation, zoom, etc.
 #endif
 	int32_t iPhase; // action face for MODE_Action
@@ -194,7 +194,7 @@ protected:
 public:
 	C4GraphicsOverlay() : eMode(MODE_None), pSourceGfx(nullptr), fctBlit(), dwBlitMode(0), dwClrModulation(0xffffff),
 #ifdef C4ENGINE
-		pOverlayObj(nullptr), nOverlayObj(0), Transform(+1),
+		Transform(+1),
 #endif
 		iPhase(0), fZoomToShape(false), iID(0), pNext(nullptr)
 	{
