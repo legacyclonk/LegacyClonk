@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "C4EnumeratedObjectPtr.h"
 #include "C4Gui.h"
 #include "C4KeyboardInput.h"
 
@@ -161,11 +162,7 @@ public:
 class C4MessageBoardQuery
 {
 public:
-	union
-	{
-		C4Object *pCallbackObj; // callback target object
-		int32_t nCallbackObj; // callback target object (enumerated)
-	};
+	C4EnumeratedObjectPtr pCallbackObj; // callback target object
 	StdStrBuf sInputQuery; // question being asked to the player
 	bool fAnswered; // if set, an answer packet is in the queue (NOSAVE, as the queue isn't saved either!)
 	bool fIsUppercase; // if set, any input is converted to uppercase be4 sending to script
@@ -180,7 +177,7 @@ public:
 		sInputQuery.Copy(rsInputQuery);
 	}
 
-	C4MessageBoardQuery() : pCallbackObj(nullptr), fAnswered(false), fIsUppercase(false), pNext(nullptr) {}
+	C4MessageBoardQuery() : fAnswered(false), fIsUppercase(false), pNext(nullptr) {}
 
 	// use default copy ctor
 

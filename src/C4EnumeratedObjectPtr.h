@@ -35,6 +35,7 @@ public:
 	C4EnumeratedObjectPtr() = default;
 	C4EnumeratedObjectPtr(const C4EnumeratedObjectPtr &) = default;
 	C4EnumeratedObjectPtr(C4EnumeratedObjectPtr &&) = default;
+	explicit C4EnumeratedObjectPtr(C4Object *object) : object{object} {}
 
 	constexpr C4Object *operator->() const noexcept { return Object(); }
 	constexpr C4Object *operator*() const noexcept { return Object(); }

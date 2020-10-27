@@ -1783,7 +1783,7 @@ void C4Player::EnumeratePointers()
 {
 	EnumerateObjectPtrs(Cursor, ViewCursor, Captain);
 	for (C4MessageBoardQuery *pCheck = pMsgBoardQuery; pCheck; pCheck = pCheck->pNext)
-		pCheck->nCallbackObj = pCheck->pCallbackObj ? Game.Objects.ObjectNumber(pCheck->pCallbackObj) : 0;
+		pCheck->pCallbackObj.Enumerate();
 }
 
 void C4Player::DenumeratePointers()
@@ -1793,7 +1793,7 @@ void C4Player::DenumeratePointers()
 	Crew.DenumerateRead();
 	// messageboard-queries
 	for (C4MessageBoardQuery *pCheck = pMsgBoardQuery; pCheck; pCheck = pCheck->pNext)
-		pCheck->pCallbackObj = pCheck->nCallbackObj ? Game.Objects.ObjectPointer(pCheck->nCallbackObj) : nullptr;
+		pCheck->pCallbackObj.Denumerate();
 }
 
 void C4Player::RemoveCrewObjects()

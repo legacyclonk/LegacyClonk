@@ -778,7 +778,7 @@ void C4MessageBoardQuery::CompileFunc(StdCompiler *pComp)
 	// note that this CompileFunc does not save the fAnswered-flag, so pending message board queries will be re-asked when resuming SaveGames
 	pComp->Separator(StdCompiler::SEP_START); // '('
 	// callback object number
-	pComp->Value(nCallbackObj); pComp->Separator();
+	pComp->Value(pCallbackObj); pComp->Separator();
 	// input query string
 	pComp->Value(sInputQuery); pComp->Separator();
 	// options
