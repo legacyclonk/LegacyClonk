@@ -426,7 +426,7 @@ void C4ObjectList::Enumerate()
 			cLnk->Obj->EnumeratePointers();
 }
 
-long C4ObjectList::ObjectNumber(C4Object *pObj)
+int32_t C4ObjectList::ObjectNumber(C4Object *pObj)
 {
 	C4ObjectLink *cLnk;
 	if (!pObj) return 0;

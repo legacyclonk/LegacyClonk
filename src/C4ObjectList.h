@@ -107,7 +107,7 @@ public:
 	bool DenumerateRead();
 	void CompileFunc(StdCompiler *pComp, bool fSaveRefs = true, bool fSkipPlayerObjects = false);
 
-	long ObjectNumber(C4Object *pObj);
+	int32_t ObjectNumber(C4Object *pObj);
 	bool IsContained(C4Object *pObj);
 	int ClearPointers(C4Object *pObj);
 	int ObjectCount(C4ID id = C4ID_None, int32_t dwCategory = C4D_All) const;
