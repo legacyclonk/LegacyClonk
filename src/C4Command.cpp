@@ -2379,8 +2379,8 @@ void C4Command::CompileFunc(StdCompiler *pComp)
 	pComp->Value(Tx); pComp->Separator(StdCompiler::SEP_SEP);
 	pComp->Value(mkIntPackAdapt(Ty)); pComp->Separator(StdCompiler::SEP_SEP);
 	// Target
-	pComp->Value(mkIntPackAdapt(reinterpret_cast<int32_t &>(Target))); pComp->Separator(StdCompiler::SEP_SEP);
-	pComp->Value(mkIntPackAdapt(reinterpret_cast<int32_t &>(Target2))); pComp->Separator(StdCompiler::SEP_SEP);
+	pComp->Value(mkParAdapt(Target, true)); pComp->Separator(StdCompiler::SEP_SEP);
+	pComp->Value(mkParAdapt(Target2, true)); pComp->Separator(StdCompiler::SEP_SEP);
 	// Data
 	pComp->Value(mkIntPackAdapt(Data)); pComp->Separator(StdCompiler::SEP_SEP);
 	// Update interval
@@ -2414,15 +2414,12 @@ void C4Command::CompileFunc(StdCompiler *pComp)
 
 void C4Command::DenumeratePointers()
 {
-	Target = Game.Objects.ObjectPointer(reinterpret_cast<intptr_t>(Target));
-	Target2 = Game.Objects.ObjectPointer(reinterpret_cast<intptr_t>(Target2));
-	Tx.DenumeratePointer();
+	DenumerateObjectPtrs(Target, Target2);
 }
 
 void C4Command::EnumeratePointers()
 {
-	Target = reinterpret_cast<C4Object *>(Game.Objects.ObjectNumber(Target));
-	Target2 = reinterpret_cast<C4Object *>(Game.Objects.ObjectNumber(Target2));
+	EnumerateObjectPtrs(Target, Target2);
 }
 
 int32_t C4Command::CallFailed()
