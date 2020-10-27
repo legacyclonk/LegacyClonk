@@ -88,7 +88,7 @@ C4Client::C4Client()
 	: C4Client{C4ClientCore()} {}
 
 C4Client::C4Client(const C4ClientCore &Core)
-	: Core{Core}, fLocal{false}, pNetClient{nullptr}, pNext{nullptr}, last_lobby_ready_change{0}, muted{Config.Sound.MuteSoundCommand}, lastSound{} {}
+	: Core{Core}, fLocal{false}, pNetClient{nullptr}, pNext{nullptr}, last_lobby_ready_change{0}, muted{Config.Sound.MuteSoundCommand} {}
 
 C4Client::~C4Client()
 {
@@ -96,9 +96,9 @@ C4Client::~C4Client()
 	assert(!pNetClient);
 }
 
-bool C4Client::canSound() const
+bool C4Client::TryAllowSound()
 {
-	return std::chrono::steady_clock::now() - lastSound > Config.Sound.SoundCommandCooldown;
+	return Config.Cooldowns.SoundCommand.TryReset();
 }
 
 void C4Client::SetActivated(bool fnActivated)
