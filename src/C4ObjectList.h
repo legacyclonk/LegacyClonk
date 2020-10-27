@@ -114,8 +114,6 @@ public:
 	int MassCount();
 	int ListIDCount(int32_t dwCategory);
 
-	C4Object *Denumerated(C4Object *pObj);
-	C4Object *Enumerated(C4Object *pObj);
 	virtual C4Object *ObjectPointer(int32_t iNumber);
 	C4Object *SafeObjectPointer(int32_t iNumber);
 	C4Object *GetObject(int Index = 0);

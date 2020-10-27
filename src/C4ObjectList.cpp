@@ -629,25 +629,6 @@ void C4ObjectList::UpdateDefPointers(C4Def *pDef)
 		}
 }
 
-C4Object *C4ObjectList::Enumerated(C4Object *pObj)
-{
-	int iPtrNum;
-	// If object is enumerated, convert to enumerated pointer
-	if (iPtrNum = ObjectNumber(pObj))
-		return reinterpret_cast<C4Object *>(C4EnumPointer1 + iPtrNum);
-	// Oops!
-	return nullptr;
-}
-
-C4Object *C4ObjectList::Denumerated(C4Object *pObj)
-{
-	// If valid enumeration, convert to pointer
-	if (Inside<long>(reinterpret_cast<long>(pObj), C4EnumPointer1, C4EnumPointer2))
-		return ObjectPointer(reinterpret_cast<long>(pObj) - C4EnumPointer1);
-	// Oops!
-	return nullptr;
-}
-
 void C4ObjectList::RemoveLink(C4ObjectLink *pLnk)
 {
 	if (pLnk->Prev) pLnk->Prev->Next = pLnk->Next; else First = pLnk->Next;
