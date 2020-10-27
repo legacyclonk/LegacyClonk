@@ -113,7 +113,7 @@ public:
 
 	void SetActivated(bool fnActivated);
 	void SetObserver() { Core.SetObserver(true); }
-	void SetLobbyReady(bool fnLobbyReady, time_t *time_since_last_change = nullptr);
+	void SetLobbyReady(bool lobbyReady);
 	void SetLocal();
 	bool TryAllowSound();
 	void SetMuted(bool muted) { this->muted = muted; }

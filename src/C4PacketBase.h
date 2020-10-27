@@ -125,6 +125,7 @@ enum C4PacketType
 
 	// * lobby
 	PID_LobbyCountdown = 0x20,
+	PID_ReadyCheck     = 0x21,
 
 	// * ressources
 	PID_NetResDis    = 0x30,

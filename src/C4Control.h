@@ -246,7 +246,7 @@ public:
 
 enum C4ControlClientUpdType
 {
-	CUT_None = -1, CUT_Activate = 0, CUT_SetObserver = 1, CUT_SetReady = 2
+	CUT_None = -1, CUT_Activate = 0, CUT_SetObserver = 1
 };
 
 class C4ControlClientUpdate : public C4ControlPacket // sync, lobby

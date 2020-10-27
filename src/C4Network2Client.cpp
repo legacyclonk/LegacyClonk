@@ -486,7 +486,7 @@ bool C4Network2ClientList::BroadcastMsgToConnClients(const C4NetIOPacket &rPkt)
 	return fSuccess;
 }
 
-bool C4Network2ClientList::BroadcastMsgToClients(const C4NetIOPacket &rPkt)
+bool C4Network2ClientList::BroadcastMsgToClients(const C4NetIOPacket &rPkt, bool includeHost)
 {
 	// Send a msg to all clients, including clients that are not connected to
 	// this computer (will get forwarded by host).
@@ -496,7 +496,7 @@ bool C4Network2ClientList::BroadcastMsgToClients(const C4NetIOPacket &rPkt)
 	pIO->BeginBroadcast(false);
 	// select connections for broadcast
 	for (C4Network2Client *pClient = pFirst; pClient; pClient = pClient->getNext())
-		if (!pClient->isHost())
+		if (!pClient->isHost() || includeHost)
 			if (pClient->isConnected())
 			{
 				pClient->getMsgConn()->SetBroadcastTarget(true);

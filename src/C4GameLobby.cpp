@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -322,8 +322,19 @@ void MainDlg::OnExitBtn(C4GUI::Control *btn)
 
 void MainDlg::OnReadyCheck(C4GUI::Element *pCheckBox)
 {
-	bool rIsOn = static_cast<C4GUI::CheckBox *>(pCheckBox)->GetChecked();
-	::Game.Control.DoInput(CID_ClientUpdate, new C4ControlClientUpdate(::Game.Clients.getLocalID(), CUT_SetReady, rIsOn), CDT_Direct);
+	auto *const checkBox = static_cast<C4GUI::CheckBox *>(pCheckBox);
+	const bool isOn{checkBox->GetChecked()};
+
+	if (!readyButtonCooldown.TryReset())
+	{
+		checkBox->SetChecked(!isOn);
+		return;
+	}
+
+	::Game.Network.Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_ReadyCheck, C4PacketReadyCheck{Game.Clients.getLocalID(), isOn ? C4PacketReadyCheck::Ready : C4PacketReadyCheck::NotReady}), true);
+	C4Client *const local{Game.Clients.getLocal()};
+	local->SetLobbyReady(isOn);
+	OnClientReadyStateChange(local);
 }
 
 void MainDlg::SetCountdownState(CountdownState eToState, int32_t iTimer)
@@ -590,6 +601,21 @@ C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, 
 				else
 					LobbyError(LoadResStr("IDS_MSG_CMD_ABORT_NOCOUNTDOWN"));
 			}
+			else if (SEqualNoCase(Command, "/readycheck"))
+			{
+				if (!Game.Network.isHost())
+				{
+					LobbyError(LoadResStr("IDS_MSG_CMD_HOSTONLY"));
+				}
+				else if (Config.Cooldowns.ReadyCheck.TryReset())
+				{
+					RequestReadyCheck();
+				}
+				else
+				{
+					LobbyError(FormatString(LoadResStr("IDS_MSG_CMD_COOLDOWN"), std::to_string(Config.Cooldowns.ReadyCheck.GetRemainingTime().count()).c_str()).getData());
+				}
+			}
 			else if (SEqualNoCase(Command, "/help"))
 			{
 				Log(LoadResStr("IDS_TEXT_COMMANDSAVAILABLEDURINGLO"));
@@ -611,6 +637,7 @@ C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, 
 				LogF("/set faircrew [on/off] - %s", LoadResStr("IDS_TEXT_ENABLEORDISABLEFAIRCREW"));
 				LogF("/set maxplayer [number] - %s", LoadResStr("IDS_TEXT_SETANEWMAXIMUMNUMBEROFPLA"));
 				LogF("/clear - %s", LoadResStr("IDS_MSG_CLEARTHEMESSAGEBOARD"));
+				LogF("/readycheck - %s", LoadResStr("IDS_MSG_READYCHECK"));
 			}
 			else
 			{
@@ -971,6 +998,31 @@ void MainDlg::ResourceProgress(bool isComplete)
 		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READYNOTAVAILABLE"));
 		checkReady->SetCaption(LoadResStr("IDS_DLG_STILLLOADING"));
 	}
+}
+
+void MainDlg::RequestReadyCheck()
+{
+	if (IsCountdown())
+	{
+		Game.Network.AbortLobbyCountdown();
+	}
+
+	for (C4Client *client{nullptr}; (client = Game.Clients.getClient(client)); )
+	{
+		if (!client->isHost())
+		{
+			client->SetLobbyReady(false);
+		}
+	}
+
+	UpdatePlayerList();
+	Game.Network.Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_ReadyCheck, C4PacketReadyCheck{Game.Clients.getLocalID(), C4PacketReadyCheck::Request}));
+}
+
+void MainDlg::CheckReady(bool check)
+{
+	checkReady->SetChecked(check);
+	UpdatePlayerList();
 }
 
 void LobbyError(const char *szErrorMsg)

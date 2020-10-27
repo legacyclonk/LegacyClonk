@@ -547,7 +547,7 @@ void C4ControlClientJoin::CompileFunc(StdCompiler *pComp)
 void C4ControlClientUpdate::Execute() const
 {
 	// host only
-	if (iByClient != C4ClientIDHost && eType != CUT_SetReady) return;
+	if (iByClient != C4ClientIDHost) return;
 	// find client
 	C4Client *pClient = Game.Clients.getClientByID(iID);
 	if (!pClient) return;
@@ -579,27 +579,6 @@ void C4ControlClientUpdate::Execute() const
 		// remove all players ("soft kick")
 		Game.Players.RemoveAtClient(iID, true);
 		break;
-	case CUT_SetReady:
-	{
-		// nothing to do?
-		if (pClient->isLobbyReady() == !!iData) break;
-		// ready/unready (while keeping track of time)
-		time_t last_change_time = MinReadyAnnouncementDelay;
-		pClient->SetLobbyReady(!!iData, &last_change_time);
-		// log to others, but don't spam
-		if (last_change_time >= MinReadyAnnouncementDelay)
-		{
-			if (!pClient->isLocal())
-			{
-				LogF(LoadResStr(iData ? "IDS_NET_CLIENT_READY" : "IDS_NET_CLIENT_UNREADY"), strClient.getData(), pClient->getName());
-			}
-		}
-
-		// Also update icons
-		C4GameLobby::MainDlg *lobby = Game.Network.GetLobby();
-		if (lobby) lobby->OnClientReadyStateChange(pClient);
-		break;
-	}
 	case CUT_None:
 		assert(!"C4ControlClientUpdate of type CUT_None");
 		break;
@@ -610,7 +589,7 @@ void C4ControlClientUpdate::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(mkIntAdaptT<uint8_t>(eType), "Type",     CUT_None));
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iID),         "ClientID", C4ClientIDUnknown));
-	if (eType == CUT_Activate || eType == CUT_SetReady)
+	if (eType == CUT_Activate)
 		pComp->Value(mkNamingAdapt(mkIntPackAdapt(iData), "Data", 0));
 	C4ControlPacket::CompileFunc(pComp);
 }

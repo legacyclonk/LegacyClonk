@@ -70,6 +70,7 @@ const C4PktHandlingData PktHandlingData[] =
 	{ PID_ClientActReq,       PC_Network, "Client Activation Request",   false, false, PH_C4Network2,           PKT_UNPACK(C4PacketActivateReq) },
 
 	{ PID_JoinData,           PC_Network, "Join Data",                   false, false, PH_C4Network2,           PKT_UNPACK(C4PacketJoinData) },
+	{ PID_ReadyCheck,         PC_Network, "Ready Check",                 false, false, PH_C4Network2,           PKT_UNPACK(C4PacketReadyCheck) },
 
 	// C4Network2PlayerList (main thread)
 	{ PID_PlayerInfoUpdReq,   PC_Network, "Player info update request",  true,  false, PH_C4Network2Players,    PKT_UNPACK(C4PacketPlayerInfoUpdRequest) },

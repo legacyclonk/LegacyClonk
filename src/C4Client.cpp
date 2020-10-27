@@ -109,17 +109,10 @@ void C4Client::SetActivated(bool fnActivated)
 		pNetClient->SetLastActivity(Game.FrameCounter);
 }
 
-void C4Client::SetLobbyReady(bool fnLobbyReady, time_t *time_since_last_change)
+void C4Client::SetLobbyReady(bool lobbyReady)
 {
 	// Change state
-	Core.SetLobbyReady(fnLobbyReady);
-	// Keep track of times
-	if (time_since_last_change)
-	{
-		time_t now = time(nullptr);
-		*time_since_last_change = now - last_lobby_ready_change;
-		last_lobby_ready_change = now;
-	}
+	Core.SetLobbyReady(lobbyReady);
 }
 
 void C4Client::SetLocal()

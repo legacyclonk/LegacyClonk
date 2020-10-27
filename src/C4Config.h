@@ -263,6 +263,7 @@ class C4ConfigCooldowns
 {
 public:
 	C4CooldownSeconds SoundCommand;
+	C4CooldownSeconds ReadyCheck;
 	void CompileFunc(StdCompiler *comp);
 };
 #endif
