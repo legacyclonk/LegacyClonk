@@ -1155,9 +1155,8 @@ void C4ControlMessage::Execute() const
 
 	case C4CMT_Sound:
 		// tehehe, sound!
-		if (auto *client = Game.Clients.getClientByID(iByClient); client && client->canSound())
+		if (auto *client = Game.Clients.getClientByID(iByClient); client && client->TryAllowSound())
 		{
-			client->ResetSoundCooldown();
 			if (client->isMuted() || StartSoundEffect(szMessage, false, 100, nullptr))
 			{
 				if (pLobby) pLobby->OnClientSound(Game.Clients.getClientByID(iByClient));

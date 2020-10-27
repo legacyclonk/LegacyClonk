@@ -186,7 +186,6 @@ void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(FMMode,      "FMMode",      1));
 	pComp->Value(mkNamingAdapt(MusicVolume, "MusicVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(SoundVolume, "SoundVolume", 100, false, true));
-	pComp->Value(mkNamingAdapt(SoundCommandCooldown, "SoundCommandCooldown", std::chrono::seconds{5}));
 	pComp->Value(mkNamingAdapt(MuteSoundCommand, "MuteSoundCommand", false, false, true));
 }
 
@@ -349,6 +348,15 @@ void C4ConfigControls::CompileFunc(StdCompiler *pComp, bool fKeysOnly)
 #undef s
 #endif // USE_CONSOLE
 }
+
+#ifdef C4ENGINE
+void C4ConfigCooldowns::CompileFunc(StdCompiler *comp)
+{
+	using namespace std::chrono_literals;
+
+	comp->Value(mkNamingAdapt(SoundCommand, "SoundCommand", 5s));
+}
+#endif
 
 C4Config::C4Config()
 {
@@ -774,6 +782,9 @@ void C4Config::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(IRC,       "IRC"));
 	pComp->Value(mkNamingAdapt(Developer, "Developer"));
 	pComp->Value(mkNamingAdapt(Startup,   "Startup"));
+#ifdef C4ENGINE
+	pComp->Value(mkNamingAdapt(Cooldowns, "Cooldowns"));
+#endif
 }
 
 void C4Config::ExpandEnvironmentVariables(char *strPath, int iMaxLen)
