@@ -419,6 +419,11 @@ bool C4Network2HTTPClient::Query(const StdBuf &Data, bool binary, Headers header
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, C4Network2HTTPQueryTimeout);
 	curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
 
+	if (port)
+	{
+		curl_easy_setopt(curl, CURLOPT_PORT, port);
+	}
+
 	// Create request
 	const char *const charset{GetCharsetCodeName(Config.General.LanguageCharset)};
 
@@ -574,9 +579,10 @@ void C4Network2HTTPClient::Clear()
 	serverAddress.Clear();
 	resultBin.Clear();
 	resultString.clear();
+	port = 0;
 }
 
-bool C4Network2HTTPClient::SetServer(std::string_view serverAddress)
+bool C4Network2HTTPClient::SetServer(std::string_view serverAddress, uint16_t port)
 {
 	static const std::regex hostnameRegex{R"(^(:?[a-z]+:\/\/)?([^/:]+).*)", std::regex::icase};
 	if (std::cmatch match; std::regex_match(serverAddress.data(), match, hostnameRegex))
@@ -584,6 +590,13 @@ bool C4Network2HTTPClient::SetServer(std::string_view serverAddress)
 		// CURL validates URLs only on connect.
 		url = serverAddress;
 		serverName = match[2].str();
+
+		if (port)
+		{
+			this->port = port;
+		}
+
+		// no dedicated port? CURL will deduce it automatically then
 		return true;
 	}
 	// The hostnameRegex above is pretty stupid, so we will reject only very

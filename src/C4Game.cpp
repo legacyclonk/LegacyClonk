@@ -3697,7 +3697,7 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 	// Query reference
 	C4Network2RefClient RefClient;
 	if (!RefClient.Init() ||
-		!RefClient.SetServer(szAddress) ||
+		!RefClient.SetServer(szAddress, Config.Network.PortRefServer) ||
 		!RefClient.QueryReferences())
 	{
 		LogFatal(FormatString(strRefQueryFailed.getData(), RefClient.GetError()).getData()); return false;

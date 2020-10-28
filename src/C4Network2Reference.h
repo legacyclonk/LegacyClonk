@@ -154,6 +154,7 @@ private:
 	std::string serverName;
 	C4NetIO::addr_t serverAddress;
 	StdBuf requestData;
+	uint16_t port{0};
 
 	bool binary{false};
 	bool success{false};
@@ -173,7 +174,6 @@ protected:
 	void SetError(std::string_view error) { this->error = error; }
 
 	void ResetRequestTimeout();
-	virtual int32_t GetDefaultPort() { return 80; }
 
 public:
 	bool Query(const StdBuf &Data, bool binary, Headers headers = {});
@@ -195,7 +195,7 @@ public:
 	void Cancel(std::string_view reason);
 	void Clear();
 
-	bool SetServer(std::string_view serverAddress);
+	bool SetServer(std::string_view serverAddress, uint16_t port = 0);
 
 	void SetNotify(const Notify &notify = {}, class C4InteractiveThread *thread = nullptr);
 
@@ -225,9 +225,6 @@ class C4Network2RefClient : public C4Network2HTTPClient
 	StdStrBuf MessageOfTheDay, MessageOfTheDayHyperlink;
 	StdStrBuf LeagueServerRedirect;
 	bool fVerSet;
-
-protected:
-	virtual int32_t GetDefaultPort() override { return C4NetStdPortRefServer; }
 
 public:
 	C4Network2RefClient() : fVerSet(false), C4Network2HTTPClient() {}

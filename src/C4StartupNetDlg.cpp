@@ -147,7 +147,7 @@ void C4StartupNetListEntry::SetRefQuery(const char *szAddress, enum QueryType eQ
 	sRefClientAddress.Copy(szAddress);
 	this->eQueryType = eQueryType;
 	pRefClient = new C4Network2RefClient();
-	if (!pRefClient->Init() || !pRefClient->SetServer(szAddress))
+	if (!pRefClient->Init() || !pRefClient->SetServer(szAddress, eQueryType != NRQT_Masterserver ? Config.Network.PortRefServer : 0))
 	{
 		// should not happen
 		sInfoText[0].Clear();
