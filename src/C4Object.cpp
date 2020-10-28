@@ -5747,7 +5747,7 @@ void C4Object::ApplyParallaxity(int32_t &riTx, int32_t &riTy, const C4Facet &fct
 {
 	// parallaxity by locals
 	// special: Negative positions with parallaxity 0 mean HUD elements positioned to the right/bottom
-	int iParX = Local[0].Data.Int, iParY = Local[1].Data.Int;
+	int iParX = Local[0].getInt(), iParY = Local[1].getInt();
 	if (!iParX && x < 0)
 		riTx = -fctViewport.Wdt;
 	else
@@ -5780,7 +5780,7 @@ void C4Object::UnSelect(bool fCursor)
 
 void C4Object::GetViewPosPar(int32_t &riX, int32_t &riY, int32_t tx, int32_t ty, const C4Facet &fctViewport)
 {
-	int iParX = Local[0].Data.Int, iParY = Local[1].Data.Int;
+	int iParX = Local[0].getInt(), iParY = Local[1].getInt();
 	// get drawing pos, then subtract original target pos to get drawing pos on landscape
 	if (!iParX && x < 0)
 		// HUD element at right viewport pos

@@ -2821,10 +2821,10 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 					// store as direct constant
 					switch (val.GetType())
 					{
-					case C4V_Int:    AddBCC(AB_INT, val.GetData().Int); break;
-					case C4V_Bool:   AddBCC(AB_BOOL, val.GetData().Int); break;
+					case C4V_Int:    AddBCC(AB_INT, val._getInt()); break;
+					case C4V_Bool:   AddBCC(AB_BOOL, val._getBool()); break;
 					case C4V_String: AddBCC(AB_STRING, reinterpret_cast<std::intptr_t>(val.GetData().Str)); break;
-					case C4V_C4ID:   AddBCC(AB_C4ID, val.GetData().Int); break;
+					case C4V_C4ID:   AddBCC(AB_C4ID, val._getC4ID()); break;
 					case C4V_Any:
 						// any: allow zero; add it as int
 						if (!val.GetData())

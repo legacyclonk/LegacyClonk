@@ -938,7 +938,7 @@ static bool FnPlayerObjectCommand(C4AulContext *cthr, int iPlr, C4String *szComm
 	if (iCommand == C4CMD_Call)
 	{
 		szText = FnStringPar(data.getStr());
-		iTx = Tx.GetData().Int;
+		iTx = Tx.getInt();
 	}
 	else
 	{
@@ -5253,8 +5253,8 @@ static std::optional<bool> FnSimFlight(C4AulContext *ctx, C4Value *pvrX, C4Value
 	int iPrec = oiPrec.value_or(10);
 
 	// convert to FIXED
-	FIXED x = itofix(pvrX->GetData().Int), y = itofix(pvrY->GetData().Int),
-		xdir = itofix(pvrXDir->GetData().Int, iPrec), ydir = itofix(pvrYDir->GetData().Int, iPrec);
+	FIXED x = itofix(pvrX->getInt()), y = itofix(pvrY->getInt()),
+	xdir = itofix(pvrXDir->getInt(), iPrec), ydir = itofix(pvrYDir->getInt(), iPrec);
 
 	// simulate
 	if (!SimFlight(x, y, xdir, ydir, iDensityMin, iDensityMax, iIter))
