@@ -60,6 +60,7 @@ C4V_Type GetC4VFromID(char C4VID);
 union C4V_Data
 {
 	long Int;
+	C4ID ID;
 	C4Object *Obj;
 	C4String *Str;
 	C4Value *Ref;
@@ -95,9 +96,16 @@ public:
 		AddDataRef();
 	}
 
-	C4Value(int32_t nData, C4V_Type nType) : Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	template<typename T, typename std::enable_if_t<!std::is_same_v<T, C4ID>, int> = 0>
+	explicit C4Value(T nData, C4V_Type nType) : Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Int = nData; AddDataRef();
+	}
+
+	template<typename T, typename std::enable_if_t<std::is_same_v<T, C4ID>, int> = 0>
+	explicit C4Value(T nData, C4V_Type nType) : Type(nData || nType == C4V_C4ID || nType == C4V_Int ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
+	{
+		Data.ID = nData; AddDataRef();
 	}
 
 	explicit C4Value(C4Object *pObj) : Type(pObj ? C4V_C4Object : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
@@ -141,9 +149,9 @@ public:
 
 	// Checked getters
 	int32_t getInt()         { return ConvertTo(C4V_Int)      ? Data.Int   : 0; }
-	int32_t getIntOrID() { Deref(); if (Type == C4V_Int || Type == C4V_Bool || Type == C4V_C4ID) return Data.Int; else return 0; }
+	int32_t getIntOrID()     { Deref(); if (Type == C4V_Int || Type == C4V_Bool) return Data.Int; else if (Type == C4V_C4ID) return static_cast<int32_t>(Data.ID); else return 0; }
 	bool getBool()           { return ConvertTo(C4V_Bool)     ? !!Data     : 0; }
-	unsigned long getC4ID()  { return ConvertTo(C4V_C4ID)     ? Data.Int   : 0; }
+	C4ID getC4ID()           { return ConvertTo(C4V_C4ID)     ? Data.ID : C4ID_None; }
 	C4Object *getObj()       { return ConvertTo(C4V_C4Object) ? Data.Obj   : nullptr; }
 	C4String *getStr()       { return ConvertTo(C4V_String)   ? Data.Str   : nullptr; }
 	C4ValueArray *getArray() { return ConvertTo(C4V_Array)    ? Data.Array : nullptr; }
@@ -153,7 +161,7 @@ public:
 	// Unchecked getters
 	int32_t _getInt()         const { return Data.Int; }
 	bool _getBool()           const { return !!Data.Int; }
-	C4ID _getC4ID()           const { return Data.Int; }
+	C4ID _getC4ID()           const { return Data.ID;  }
 	C4Object *_getObj()       const { return Data.Obj; }
 	C4String *_getStr()       const { return Data.Str; }
 	C4ValueArray *_getArray() const { return Data.Array; }
@@ -172,7 +180,7 @@ public:
 
 	void SetBool(bool b) { C4V_Data d; d.Int = b; Set(d, C4V_Bool); }
 
-	void SetC4ID(C4ID id) { C4V_Data d; d.Int = id; Set(d, C4V_C4ID); }
+	void SetC4ID(C4ID id) { C4V_Data d; d.ID = id; Set(d, C4V_C4ID); }
 
 	void SetObject(C4Object *Obj) { C4V_Data d; d.Obj = Obj; Set(d, C4V_C4Object); }
 
@@ -287,7 +295,7 @@ protected:
 // converter
 inline C4Value C4VInt(int32_t iVal) { C4V_Data d; d.Int = iVal; return C4Value(d, C4V_Int); }
 inline C4Value C4VBool(bool fVal) { C4V_Data d; d.Int = fVal; return C4Value(d, C4V_Bool); }
-inline C4Value C4VID(C4ID iVal) { C4V_Data d; d.Int = iVal; return C4Value(d, C4V_C4ID); }
+inline C4Value C4VID(C4ID idVal) { C4V_Data d; d.ID = idVal; return C4Value(d, C4V_C4ID); }
 inline C4Value C4VObj(C4Object *pObj) { return C4Value(pObj); }
 inline C4Value C4VString(C4String *pStr) { return C4Value(pStr); }
 inline C4Value C4VArray(C4ValueArray *pArray) { return C4Value(pArray); }

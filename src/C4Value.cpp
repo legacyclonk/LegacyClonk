@@ -314,7 +314,7 @@ C4V_Type C4Value::GuessType()
 	if (Type != C4V_Any) return Type;
 
 	// C4ID?
-	if (LooksLikeID(Data.Int) && Data.Int >= 10000)
+	if (LooksLikeID(Data.ID) && Data.ID >= 10000)
 		return Type = C4V_C4ID;
 
 #ifdef C4ENGINE
@@ -480,9 +480,11 @@ bool C4Value::FnCnvGuess(C4Value *Val, C4V_Type toType, bool fStrict)
 bool C4Value::FnCnvInt2Id(C4Value *Val, C4V_Type toType, bool fStrict)
 {
 	// inside range?
-	if (!Inside<long>(Val->Data.Int, 0, 9999)) return false;
+	const auto i = Val->Data.Int;
+	if (!Inside<decltype(i)>(i, 0, 9999)) return false;
 	// convert
 	Val->Type = C4V_C4ID;
+	Val->Data.ID = static_cast<C4ID>(i);
 	return true;
 }
 
@@ -629,7 +631,7 @@ StdStrBuf C4Value::GetDataString() const
 	case C4V_Bool:
 		return StdStrBuf::MakeRef(Data ? "true" : "false");
 	case C4V_C4ID:
-		return StdStrBuf(C4IdText(Data.Int));
+		return StdStrBuf(C4IdText(Data.ID));
 #ifdef C4ENGINE
 	case C4V_C4Object:
 	{
@@ -717,7 +719,7 @@ void C4Value::DenumeratePointer()
 	// in range?
 	if (Type != C4V_C4ObjectEnum && !Inside<long>(Data.Int, C4EnumPointer1, C4EnumPointer2)) return;
 	// get obj id, search object
-	int iObjID = (Data.Int >= C4EnumPointer1 ? Data.Int - C4EnumPointer1 : Data.Int);
+	C4ID iObjID = (Data.ID >= C4EnumPointer1 ? Data.ID - static_cast<C4ID>(C4EnumPointer1) : Data.ID);
 	C4Object *pObj = Game.Objects.ObjectPointer(iObjID);
 	if (!pObj)
 		pObj = Game.Objects.InactiveObjects.ObjectPointer(iObjID);
@@ -777,11 +779,15 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 	case C4V_Any:
 	case C4V_Int:
 	case C4V_Bool:
-	case C4V_C4ID:
 		// these are 32-bit integers
 		iTmp = Data.Int;
 		pComp->Value(iTmp);
 		Data.Int = iTmp;
+		break;
+
+
+	case C4V_C4ID:
+		pComp->Value(mkC4IDAdapt(Data.ID));
 		break;
 
 	// object: save object number instead
@@ -861,9 +867,10 @@ bool C4Value::Equals(const C4Value &other, C4AulScriptStrict strict) const
 				case C4V_Any:
 					return true;
 				case C4V_Int:
-				case C4V_C4ID:
 				case C4V_C4Object:
 					return Data.Int == other.Data.Int;
+				case C4V_C4ID:
+					return Data.ID == other.Data.ID;
 				case C4V_Bool:
 					return _getBool() == other._getBool();
 				case C4V_String:
