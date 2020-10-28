@@ -795,15 +795,19 @@ void MainDlg::OnClientReadyStateChange(C4Client *client)
 
 	for (C4Client *clnt = nullptr; (clnt = Game.Clients.getClient(clnt)); )
 	{
-		if (!clnt->isObserver() && !clnt->isLobbyReady())
+		// does the client have players?
+		if (C4ClientPlayerInfos *const infos{Game.PlayerInfos.GetInfoByClientID(clnt->getID())}; clnt->isHost() || (infos && infos->GetPlayerCount()))
 		{
-			// the client was ready and now isn't? stop the countdown
-			if (client->getID() == clnt->getID() && Game.Network.isHost() && IsCountdown())
+			if (!clnt->isLobbyReady())
 			{
-				Game.Network.AbortLobbyCountdown();
-			}
+				// the client was ready and now isn't? stop the countdown
+				if (client->getID() == clnt->getID() && Game.Network.isHost() && IsCountdown())
+				{
+					Game.Network.AbortLobbyCountdown();
+				}
 
-			return;
+				return;
+			}
 		}
 	}
 
