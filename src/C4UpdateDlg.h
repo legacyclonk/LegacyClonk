@@ -49,9 +49,6 @@ public:
 // Loads current version string (mini-HTTP-client)
 class C4Network2VersionInfoClient : public C4Network2HTTPClient
 {
-protected:
-	virtual int32_t GetDefaultPort() override { return C4NetStdPortHTTP; }
-
 public:
 	C4Network2VersionInfoClient() : C4Network2HTTPClient() {}
 
