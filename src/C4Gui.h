@@ -679,14 +679,14 @@ enum Icons
 	Ico_Rank7 = 41,
 	Ico_Rank8 = 42,
 	Ico_Rank9 = 43,
-	// 44?
+	Ico_OfficialServer = 44,
 	Ico_Surrender = 45,
 	Ico_MeleeLeague = 46,
 	Ico_Ready = 47,
 	Ico_Star = 48,
 	Ico_Disconnect = 49,
 	Ico_View = 50,
-	Ico_OfficialServer = 51,
+	// 51?
 	Ico_NoSound = 52,
 
 	Ico_Ex_RecordOff      = Ico_Extended + 0,
