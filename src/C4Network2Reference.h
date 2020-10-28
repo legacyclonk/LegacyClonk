@@ -154,6 +154,7 @@ private:
 	std::string serverName;
 	C4NetIO::addr_t serverAddress;
 	StdBuf requestData;
+	bool urlHasPort{false};
 
 	bool binary{false};
 	bool success{false};
