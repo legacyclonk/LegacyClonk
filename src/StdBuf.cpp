@@ -44,7 +44,7 @@ bool StdBuf::LoadFromFile(const char *szFile)
 	// Create buf
 	New(FileSize(fh));
 	// Read
-	if (read(fh, getMData(), getSize()) != static_cast<signed int>(getSize()))
+	if (read(fh, getMData(), getSize()) != static_cast<size_t>(getSize()))
 	{
 		close(fh);
 		return false;
@@ -60,7 +60,7 @@ bool StdBuf::SaveToFile(const char *szFile) const
 	int fh = open(szFile, O_BINARY | O_CREAT | O_WRONLY | O_SEQUENTIAL | O_TRUNC, S_IREAD | S_IWRITE);
 	if (fh < 0) return false;
 	// Write data
-	if (write(fh, getData(), getSize()) != static_cast<signed int>(getSize()))
+	if (write(fh, getData(), getSize()) != static_cast<size_t>(getSize()))
 	{
 		close(fh);
 		return false;
@@ -78,7 +78,7 @@ bool StdStrBuf::LoadFromFile(const char *szFile)
 	// Create buf
 	SetLength(FileSize(fh));
 	// Read
-	if (read(fh, getMData(), getLength()) != getLength())
+	if (static_cast<size_t>(read(fh, getMData(), getLength())) != getLength())
 	{
 		close(fh);
 		return false;
@@ -94,7 +94,7 @@ bool StdStrBuf::SaveToFile(const char *szFile) const
 	int fh = open(szFile, O_BINARY | O_CREAT | O_WRONLY | O_SEQUENTIAL | O_TRUNC, S_IREAD | S_IWRITE);
 	if (fh < 0) return false;
 	// Write data
-	if (write(fh, getData(), getLength()) != getLength())
+	if (static_cast<size_t>(write(fh, getData(), getLength())) != getLength())
 	{
 		close(fh);
 		return false;
@@ -107,7 +107,7 @@ bool StdStrBuf::SaveToFile(const char *szFile) const
 void StdBuf::CompileFunc(StdCompiler *pComp, int iType)
 {
 	// Size (guess it is a small value most of the time - if it's big, an extra byte won't hurt anyway)
-	uint32_t tmp = iSize; pComp->Value(mkIntPackAdapt(tmp)); iSize = tmp;
+	auto tmp = static_cast<uint32_t>(iSize); pComp->Value(mkIntPackAdapt(tmp)); iSize = tmp;
 	pComp->Separator(StdCompiler::SEP_PART2);
 	// Read/write data
 	if (pComp->isCompiler())
@@ -156,7 +156,7 @@ void StdStrBuf::AppendFormatV(const char *szFmt, va_list args)
 	}
 
 	// Save append start
-	int iStart = getLength();
+	const auto iStart = getLength();
 #ifdef HAVE_VSCPRINTF
 	// Calculate size, allocate
 	int iLength = vscprintf(szFmt, args);
@@ -173,10 +173,10 @@ void StdStrBuf::AppendFormatV(const char *szFmt, va_list args)
 	if (iBytes < 0 || !pStr) return;
 	// Append
 	if (isNull())
-		Take(pStr, iBytes);
+		Take(pStr, static_cast<size_t>(iBytes));
 	else
 	{
-		Append(pStr, iBytes);
+		Append(pStr, static_cast<size_t>(iBytes));
 		free(pStr);
 	}
 #else
@@ -187,12 +187,11 @@ void StdStrBuf::AppendFormatV(const char *szFmt, va_list args)
 		Grow(512);
 		// Try output
 		iBytes = vsnprintf(getMPtr(iStart), getLength() - iStart, szFmt, args);
-	} while (iBytes < 0 || (unsigned int)(iBytes) >= getLength() - iStart);
+	} while (iBytes < 0 || static_cast<size_t>(iBytes) >= getLength() - iStart);
 	// Calculate real length, if vsnprintf didn't return anything of value
 #endif
-	iBytes = strlen(getMPtr(iStart));
 	// Shrink to fit
-	SetSize(iStart + iBytes + 1);
+	SetSize(iStart + strlen(getMPtr(iStart)) + 1);
 #endif
 }
 
@@ -425,7 +424,7 @@ void StdStrBuf::EnsureUnicode()
 bool StdStrBuf::TrimSpaces()
 {
 	// get left trim
-	int32_t iSpaceLeftCount = 0, iLength = getLength();
+	size_t iSpaceLeftCount = 0, iLength = getLength();
 	if (!iLength) return false;
 	const char *szStr = getData();
 	while (iSpaceLeftCount < iLength)
@@ -440,7 +439,7 @@ bool StdStrBuf::TrimSpaces()
 		return true;
 	}
 	// get right trim
-	int32_t iSpaceRightCount = 0;
+	size_t iSpaceRightCount = 0;
 	while (isspace(static_cast<unsigned char>(szStr[iLength - 1 - iSpaceRightCount]))) ++iSpaceRightCount;
 	// anything to trim?
 	if (!iSpaceLeftCount && !iSpaceRightCount) return false;

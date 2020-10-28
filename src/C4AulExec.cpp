@@ -1107,7 +1107,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				if (!pCurVal->ConvertTo(C4V_Int))
 					throw C4AulExecError(pCurCtx->Obj, FormatString("Par: index of type %s, int expected!", pCurVal->GetTypeName()).getData());
 				// Push reference to parameter on the stack
-				if (pCurVal->_getInt() >= 0 && pCurVal->_getInt() < pCurCtx->ParCnt())
+				if (pCurVal->_getInt() >= 0 && pCurVal->_getInt() < static_cast<int>(pCurCtx->ParCnt()))
 				{
 					if (pCPos->bccType == AB_PAR_R)
 						pCurVal->SetRef(&pCurCtx->Pars[pCurVal->_getInt()]);

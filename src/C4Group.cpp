@@ -1360,7 +1360,7 @@ bool C4Group::View(const char *szFiles)
 	{
 		fcount++;
 		bcount += centry->Size;
-		maxfnlen = (std::max)(maxfnlen, SLen(centry->FileName));
+		maxfnlen = (std::max)(maxfnlen, static_cast<int>(SLen(centry->FileName)));
 	}
 	sprintf(oformat, "%%%ds %%8ld Bytes %%02d.%%02d.%%02d %%02d:%%02d:%%02d %%s%%08X %%s\n", maxfnlen);
 

@@ -239,7 +239,7 @@ public:
 	StdStrBuf GetFullName() const;
 	int EntryCount(const char *szWildCard = nullptr);
 	int EntrySize(const char *szWildCard = nullptr);
-	int AccessedEntrySize() override { return iCurrFileSize; } // retrieve size of last accessed entry
+	size_t AccessedEntrySize() override { return iCurrFileSize; } // retrieve size of last accessed entry
 	int EntryTime(const char *szFilename);
 	unsigned int EntryCRC32(const char *szWildCard = nullptr);
 	int GetCreation();

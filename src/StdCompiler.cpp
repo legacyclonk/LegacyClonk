@@ -156,7 +156,7 @@ void StdCompilerBinRead::String(std::string &str, RawCompileType type)
 	{
 		excEOF(); return;
 	}
-	int iStart = iPos;
+	const auto iStart = iPos;
 	// Search string end
 	while (*getBufPtr<char>(Buf, iPos++))
 		if (iPos >= Buf.getSize())

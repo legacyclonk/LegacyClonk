@@ -326,7 +326,7 @@ void C4GraphicsSystem::Default()
 
 void C4GraphicsSystem::DrawFullscreenBackground()
 {
-	for (int i = 0, iNum = BackgroundAreas.GetCount(); i < iNum; ++i)
+	for (size_t i = 0, iNum = BackgroundAreas.GetCount(); i < iNum; ++i)
 	{
 		const C4Rect &rc = BackgroundAreas.Get(i);
 		Application.DDraw->BlitSurfaceTile(Game.GraphicsResource.fctBackground.Surface, Application.DDraw->lpBack, rc.x, rc.y, rc.Wdt, rc.Hgt, -rc.x, -rc.y);

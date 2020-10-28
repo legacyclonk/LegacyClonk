@@ -24,7 +24,7 @@
 #include <memory>
 #include <cstdio>
 
-const int CStdFileBufSize = 4096;
+constexpr unsigned int CStdFileBufSize = 4096;
 
 class CStdStream
 {
@@ -32,7 +32,7 @@ public:
 	virtual bool Read(void *pBuffer, size_t iSize) = 0;
 	virtual bool Advance(int iOffset) = 0;
 	// Get size. compatible with c4group!
-	virtual int AccessedEntrySize() = 0;
+	virtual size_t AccessedEntrySize() = 0;
 	virtual ~CStdStream() {}
 };
 
@@ -49,7 +49,7 @@ protected:
 	std::shared_ptr<StdGzCompressedFile::Read> readCompressedFile;
 	std::shared_ptr<StdGzCompressedFile::Write> writeCompressedFile;
 	uint8_t Buffer[CStdFileBufSize];
-	int BufferLoad, BufferPtr;
+	size_t BufferLoad, BufferPtr;
 	bool ModeWrite;
 
 public:
@@ -73,7 +73,7 @@ public:
 		bool fCompressed = false);
 	// flush contents to disk
 	inline bool Flush() { if (ModeWrite && BufferLoad) return SaveBuffer(); else return true; }
-	int AccessedEntrySize() override;
+	size_t AccessedEntrySize() override;
 
 protected:
 	void ClearBuffer();

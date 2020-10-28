@@ -159,7 +159,7 @@ bool CStdFile::Default()
 
 bool CStdFile::Read(void *pBuffer, size_t iSize, size_t *ipFSize)
 {
-	int transfer;
+	size_t transfer;
 	if (!pBuffer) return false;
 	if (ModeWrite) return false;
 	uint8_t *bypBuffer = static_cast<uint8_t *>(pBuffer);
@@ -237,7 +237,7 @@ bool CStdFile::Write(const void *pBuffer, size_t iSize)
 		// Space in buffer: Transfer as much as possible
 		if (BufferLoad < CStdFileBufSize)
 		{
-			transfer = std::min<int>(CStdFileBufSize - BufferLoad, iSize);
+			transfer = std::min(CStdFileBufSize - BufferLoad, iSize);
 			memcpy(Buffer + BufferLoad, bypBuffer, transfer);
 			BufferLoad += transfer;
 			bypBuffer += transfer;
@@ -279,7 +279,7 @@ bool CStdFile::Advance(int iOffset)
 		// Valid data in the buffer: Transfer as much as possible
 		if (BufferLoad > BufferPtr)
 		{
-			int transfer = (std::min)(BufferLoad - BufferPtr, iOffset);
+			int transfer = std::min(static_cast<int>(BufferLoad) - static_cast<int>(BufferPtr), iOffset);
 			BufferPtr += transfer;
 			iOffset -= transfer;
 		}
@@ -331,15 +331,15 @@ size_t UncompressedFileSize(const char *szFilename)
 	}
 }
 
-int CStdFile::AccessedEntrySize()
+size_t CStdFile::AccessedEntrySize()
 {
 	if (hFile)
 	{
 		long pos = ftell(hFile);
 		fseek(hFile, 0, SEEK_END);
-		int r = ftell(hFile);
+		long r = ftell(hFile);
 		fseek(hFile, pos, SEEK_SET);
-		return r;
+		return static_cast<size_t>(r);
 	}
 	assert(!readCompressedFile);
 	return 0;

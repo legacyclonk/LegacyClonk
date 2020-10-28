@@ -405,7 +405,7 @@ public:
 protected:
 	// Process data
 	bool fSecondPass;
-	int iPos;
+	size_t iPos;
 	StdBuf Buf;
 
 	// Helpers
@@ -446,7 +446,7 @@ public:
 	virtual void Begin() override;
 
 	// Data
-	int getPosition() { return iPos; }
+	size_t getPosition() { return iPos; }
 
 protected:
 	// Process data

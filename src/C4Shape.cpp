@@ -697,7 +697,7 @@ void C4Shape::CompileFunc(StdCompiler *pComp, bool fRuntime)
 void C4RectList::ClipByRect(const C4Rect &rClip)
 {
 	// split up all rectangles
-	for (int32_t i = 0; i < GetCount(); ++i)
+	for (size_t i = 0; i < GetCount(); ++i)
 	{
 		C4Rect *pTarget = &Get(i);
 		// any overlap?
@@ -708,7 +708,7 @@ void C4RectList::ClipByRect(const C4Rect &rClip)
 		// okay; split up rectangle
 		// first split will just reduce the target rectangle size
 		// if more splits are done, additional rectangles need to be added
-		int32_t iSplitCount = 0, iOver; C4Rect rcThis(*pTarget);
+		size_t iSplitCount = 0, iOver; C4Rect rcThis(*pTarget);
 		// clipped by right side
 		if ((iOver = rcThis.x + rcThis.Wdt - rClip.x - rClip.Wdt) > 0)
 		{
@@ -748,10 +748,10 @@ void C4RectList::ClipByRect(const C4Rect &rClip)
 	while (!fDone)
 	{
 		fDone = true;
-		for (int32_t i = 0, cnt = GetCount(); i < cnt && fDone; ++i)
+		for (size_t i = 0, cnt = GetCount(); i < cnt && fDone; ++i)
 		{
 			C4Rect &rc1 = Get(i);
-			for (int32_t j = i + 1; j < cnt; ++j)
+			for (size_t j = i + 1; j < cnt; ++j)
 			{
 				C4Rect &rc2 = Get(j);
 				if (rc1.y == rc2.y && rc1.Hgt == rc2.Hgt)

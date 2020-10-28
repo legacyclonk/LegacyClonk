@@ -92,7 +92,10 @@ bool LogSilentF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;
 #include <math.h>
 
 #include <algorithm>
+#include <limits>
 #include <utility>
+
+constexpr auto SizeMax = std::numeric_limits<size_t>::max();
 
 // Color triplets
 #define C4RGB(r, g, b) (((static_cast<uint32_t>(r) & 0xff) << 16) | ((static_cast<uint32_t>(g) & 0xff) << 8) | ((b) & 0xff))
@@ -129,29 +132,29 @@ char CharCapital(char cChar);
 bool IsIdentifier(char cChar);
 bool IsWhiteSpace(char cChar);
 
-int SLen(const char *sptr);
+size_t SLen(const char *sptr);
 
 bool SEqual(const char *szStr1, const char *szStr2);
 bool SEqual2(const char *szStr1, const char *szStr2);
 
-bool SEqualNoCase(const char *szStr1, const char *szStr2, int32_t iLen = -1);
-bool SEqual2NoCase(const char *szStr1, const char *szStr2, int iLen = -1);
+bool SEqualNoCase(const char *szStr1, const char *szStr2, size_t iLen = SizeMax);
+bool SEqual2NoCase(const char *szStr1, const char *szStr2, size_t iLen = SizeMax);
 
-void SCopy(const char *szSource, char *sTarget, int iMaxL = -1);
-void SCopyUntil(const char *szSource, char *sTarget, char cUntil, int iMaxL = -1, int iIndex = 0);
+void SCopy(const char *szSource, char *sTarget, size_t iMaxL = SizeMax);
+void SCopyUntil(const char *szSource, char *sTarget, char cUntil, size_t iMaxL = SizeMax, size_t iIndex = 0);
 void SCopyUntil(const char *szSource, char *sTarget, const char *sUntil, size_t iMaxL);
-void SCopyIdentifier(const char *szSource, char *sTarget, int iMaxL = 0);
-bool SCopySegment(const char *fstr, int segn, char *tstr, char sepa = ';', int iMaxL = -1, bool fSkipWhitespace = false);
-bool SCopySegmentEx(const char *fstr, int segn, char *tstr, char sepa1, char sepa2, int iMaxL = -1, bool fSkipWhitespace = false);
-bool SCopyEnclosed(const char *szSource, char cOpen, char cClose, char *sTarget, int iSize);
+void SCopyIdentifier(const char *szSource, char *sTarget, size_t iMaxL = SizeMax);
+bool SCopySegment(const char *fstr, size_t segn, char *tstr, char sepa = ';', size_t iMaxL = SizeMax, bool fSkipWhitespace = false);
+bool SCopySegmentEx(const char *fstr, size_t segn, char *tstr, char sepa1, char sepa2, size_t iMaxL = SizeMax, bool fSkipWhitespace = false);
+bool SCopyEnclosed(const char *szSource, char cOpen, char cClose, char *sTarget, size_t iSize);
 
-void SAppend(const char *szSource, char *szTarget, int iMaxL = -1);
+void SAppend(const char *szSource, char *szTarget, size_t iMaxL = SizeMax);
 void SAppendChar(char cChar, char *szStr);
 
-void SInsert(char *szString, const char *szInsert, int iPosition = 0, int iMaxLen = -1);
-void SDelete(char *szString, int iLen, int iPosition = 0);
+void SInsert(char *szString, const char *szInsert, size_t iPosition = 0, size_t iMaxL = SizeMax);
+void SDelete(char *szString, size_t iLen, size_t iPosition = 0);
 
-int SCharPos(char cTarget, const char *szInStr, int iIndex = 0);
+int SCharPos(char cTarget, const char *szInStr, size_t iIndex = 0);
 int SCharLastPos(char cTarget, const char *szInStr);
 int SCharCount(char cTarget, const char *szInStr, const char *cpUntil = nullptr);
 int SCharCountEx(const char *szString, const char *szCharList);
@@ -164,19 +167,19 @@ const char *SSearchNoCase(const char *szString, const char *szIndex);
 const char *SAdvanceSpace(const char *szSPos);
 const char *SAdvancePast(const char *szSPos, char cPast);
 
-bool SGetModule(const char *szList, int iIndex, char *sTarget, int iSize = -1);
-bool SIsModule(const char *szList, const char *szString, int *ipIndex = nullptr, bool fCaseSensitive = false);
+bool SGetModule(const char *szList, size_t iIndex, char *sTarget, size_t iSize = SizeMax);
+bool SIsModule(const char *szList, const char *szString, size_t *ipIndex = nullptr, bool fCaseSensitive = false);
 bool SAddModule(char *szList, const char *szModule, bool fCaseSensitive = false);
 bool SAddModules(char *szList, const char *szModules, bool fCaseSensitive = false);
 bool SRemoveModule(char *szList, const char *szModule, bool fCaseSensitive = false);
 bool SRemoveModules(char *szList, const char *szModules, bool fCaseSensitive = false);
 int SModuleCount(const char *szList);
 
-const char *SGetParameter(const char *strCommandLine, int iParameter, char *strTarget = nullptr, int iSize = -1, bool *pWasQuoted = nullptr);
+const char *SGetParameter(const char *strCommandLine, size_t iParameter, char *strTarget = nullptr, size_t iSize = SizeMax, bool *pWasQuoted = nullptr);
 
 void SNewSegment(char *szStr, const char *szSepa = ";");
 void SCapitalize(char *szString);
-void SWordWrap(char *szText, char cSpace, char cSepa, int iMaxLine);
+void SWordWrap(char *szText, char cSpace, char cSepa, size_t iMaxLine);
 int SClearFrontBack(char *szString, char cClear = ' ');
 
 int SGetLine(const char *szText, const char *cpPosition);
@@ -229,7 +232,7 @@ inline int ssprintf(T &str, const char *fmt, ...)
 		BREAKPOINT_HERE
 			fmt = "<UNSAFE FORMAT STRING>";
 	}
-	int n = sizeof(str);
+	const int n{sizeof(str)};
 	// Build string
 	va_list args; va_start(args, fmt);
 	int m = vsnprintf(str, n, fmt, args);

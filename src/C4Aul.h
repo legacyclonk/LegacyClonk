@@ -261,7 +261,7 @@ struct C4AulScriptContext : public C4AulContext
 	C4AulBCC *CPos;
 	time_t tTime; // initialized only by profiler if active
 
-	int ParCnt() const { return Vars - Pars; }
+	size_t ParCnt() const { return Vars - Pars; }
 	void dump(StdStrBuf Dump = "");
 };
 
@@ -478,8 +478,8 @@ protected:
 
 	C4AulScript *FindFirstNonStrictScript(); // find first script that is not #strict
 
-	int GetCodePos() const { return CPos - Code; }
-	C4AulBCC *GetCodeByPos(int iPos) { return Code + iPos; }
+	size_t GetCodePos() const { return CPos - Code; }
+	C4AulBCC *GetCodeByPos(size_t iPos) { return Code + iPos; }
 
 public:
 	StdStrBuf ScriptName; // script name

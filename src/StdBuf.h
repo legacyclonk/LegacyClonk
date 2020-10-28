@@ -369,7 +369,7 @@ public:
 	int GetHash() const
 	{
 		if (isNull()) return 0;
-		return crc32(0, reinterpret_cast<const Bytef *>(getData()), getSize());
+		return crc32(0, reinterpret_cast<const Bytef *>(getData()), static_cast<unsigned int>(getSize()));
 	}
 
 	// *** Compiling
@@ -550,7 +550,7 @@ public:
 	// less-than operation for map
 	inline bool operator<(const StdStrBuf &v2)
 	{
-		int iLen = getLength(), iLen2 = v2.getLength();
+		size_t iLen = getLength(), iLen2 = v2.getLength();
 		if (iLen == iLen2)
 			return iLen ? (strcmp(getData(), v2.getData()) < 0) : false;
 		else

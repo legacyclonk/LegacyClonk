@@ -168,51 +168,47 @@ bool IsWhiteSpace(char cChar)
 
 // Strings
 
-int SLen(const char *sptr)
+size_t SLen(const char *sptr)
 {
-	int slen = 0;
 	if (!sptr) return 0;
-	while (*sptr) { slen++; sptr++; }
-	return slen;
+	return strlen(sptr);
 }
 
-void SCopyL(const char *szSource, char *sTarget, int iMaxL)
+void SCopyL(const char *szSource, char *sTarget, size_t iMaxL)
 {
 	if (szSource == sTarget) return;
-	if (!sTarget) return; *sTarget = 0; if (!szSource) return;
-	while (*szSource && (iMaxL > 0))
+	if (!sTarget) return;
+	*sTarget = 0;
+	if (!szSource) return;
+	for (; *szSource && iMaxL > 0; --iMaxL)
 	{
-		*sTarget = *szSource; iMaxL--; szSource++; sTarget++;
+		*sTarget++ = *szSource++;
 	}
 	*sTarget = 0;
 }
 
-void SCopy(const char *szSource, char *sTarget, int iMaxL)
+void SCopy(const char *szSource, char *sTarget, size_t iMaxL)
 {
-	if (szSource == sTarget) return;
-	if (iMaxL == -1)
-	{
-		if (!sTarget) return; *sTarget = 0; if (!szSource) return;
-		strcpy(sTarget, szSource);
-	}
-	else
-		SCopyL(szSource, sTarget, iMaxL);
+	SCopyL(szSource, sTarget, iMaxL);
 }
 
-void SCopyUntil(const char *szSource, char *sTarget, char cUntil, int iMaxL, int iIndex)
+void SCopyUntil(const char *szSource, char *sTarget, char cUntil, size_t iMaxL, size_t iIndex)
 {
 	if (szSource == sTarget) return;
-	if (!sTarget) return; *sTarget = 0; if (!szSource) return;
-	while (*szSource && ((*szSource != cUntil) || (iIndex > 0)) && (iMaxL != 0))
+	if (!sTarget) return;
+	*sTarget = 0;
+	if (!szSource) return;
+	for (; *szSource && ((*szSource != cUntil) || (iIndex > 0)) && iMaxL > 0; --iMaxL)
 	{
-		*sTarget = *szSource; if (*szSource == cUntil) iIndex--; szSource++; sTarget++; iMaxL--;
+		if (*szSource == cUntil) --iIndex;
+		*sTarget++ = *szSource++;
 	}
 	*sTarget = 0;
 }
 
 void SCopyUntil(const char *szSource, char *sTarget, const char *sUntil, size_t iMaxL)
 {
-	size_t n = (std::min)(strcspn(szSource, sUntil), iMaxL - 1);
+	size_t n = std::min(strcspn(szSource, sUntil), iMaxL - 1);
 	strncpy(sTarget, szSource, n);
 	sTarget[n] = 0;
 }
@@ -234,7 +230,7 @@ bool SEqual2(const char *szStr1, const char *szStr2)
 	return true;
 }
 
-bool SEqualNoCase(const char *szStr1, const char *szStr2, int32_t iLen)
+bool SEqualNoCase(const char *szStr1, const char *szStr2, size_t iLen)
 {
 	if (!szStr1 || !szStr2) return false;
 	if (iLen == 0) return true;
@@ -247,7 +243,7 @@ bool SEqualNoCase(const char *szStr1, const char *szStr2, int32_t iLen)
 	return true;
 }
 
-bool SEqual2NoCase(const char *szStr1, const char *szStr2, int iLen)
+bool SEqual2NoCase(const char *szStr1, const char *szStr2, size_t iLen)
 {
 	if (!szStr1 || !szStr2) return false;
 	if (iLen == 0) return true;
@@ -260,7 +256,7 @@ bool SEqual2NoCase(const char *szStr1, const char *szStr2, int iLen)
 	return true;
 }
 
-int SCharPos(char cTarget, const char *szInStr, int iIndex)
+int SCharPos(char cTarget, const char *szInStr, size_t iIndex)
 {
 	const char *cpos;
 	int ccpos;
@@ -268,7 +264,7 @@ int SCharPos(char cTarget, const char *szInStr, int iIndex)
 	for (cpos = szInStr, ccpos = 0; *cpos; cpos++, ccpos++)
 		if (*cpos == cTarget)
 			if (iIndex == 0) return ccpos;
-			else iIndex--;
+			else --iIndex;
 			return -1;
 }
 
@@ -282,7 +278,7 @@ int SCharLastPos(char cTarget, const char *szInStr)
 	return lcpos;
 }
 
-void SAppend(const char *szSource, char *szTarget, int iMaxL)
+void SAppend(const char *szSource, char *szTarget, size_t iMaxL)
 {
 	if (iMaxL == -1)
 		SCopy(szSource, szTarget + SLen(szTarget));
@@ -298,8 +294,8 @@ void SAppendChar(char cChar, char *szStr)
 	*cPos = cChar; *(cPos + 1) = 0;
 }
 
-bool SCopySegment(const char *szString, int iSegment, char *sTarget,
-	char cSeparator, int iMaxL, bool fSkipWhitespace)
+bool SCopySegment(const char *szString, size_t iSegment, char *sTarget,
+	char cSeparator, size_t iMaxL, bool fSkipWhitespace)
 {
 	// Advance to indexed segment
 	while (iSegment > 0)
@@ -319,8 +315,8 @@ bool SCopySegment(const char *szString, int iSegment, char *sTarget,
 	return true;
 }
 
-bool SCopySegmentEx(const char *szString, int iSegment, char *sTarget,
-	char cSep1, char cSep2, int iMaxL, bool fSkipWhitespace)
+bool SCopySegmentEx(const char *szString, size_t iSegment, char *sTarget,
+										char cSep1, char cSep2, size_t iMaxL, bool fSkipWhitespace)
 {
 	// Advance to indexed segment
 	while (iSegment > 0)
@@ -424,12 +420,12 @@ const char *SSearchNoCase(const char *szString, const char *szIndex)
 	return nullptr;
 }
 
-void SWordWrap(char *szText, char cSpace, char cSepa, int iMaxLine)
+void SWordWrap(char *szText, char cSpace, char cSepa, size_t iMaxLine)
 {
 	if (!szText) return;
 	// Scan string
 	char *cPos, *cpLastSpace = nullptr;
-	int iLineRun = 0;
+	size_t iLineRun = 0;
 	for (cPos = szText; *cPos; cPos++)
 	{
 		// Store last space
@@ -465,13 +461,11 @@ const char *SAdvancePast(const char *szSPos, char cPast)
 	return szSPos;
 }
 
-void SCopyIdentifier(const char *szSource, char *sTarget, int iMaxL)
+void SCopyIdentifier(const char *szSource, char *sTarget, size_t iMaxL)
 {
 	if (!szSource || !sTarget) return;
-	while (IsIdentifier(*szSource))
+	for (; iMaxL > 0 && IsIdentifier(*szSource); --iMaxL)
 	{
-		if (iMaxL == 1) { *sTarget++ = *szSource++; break; }
-		iMaxL--;
 		*sTarget++ = *szSource++;
 	}
 	*sTarget = 0;
@@ -520,19 +514,19 @@ int SLineGetCharacters(const char *szText, const char *cpPosition)
 	return iChars;
 }
 
-void SInsert(char *szString, const char *szInsert, int iPosition, int iMaxLen)
+void SInsert(char *szString, const char *szInsert, size_t iPosition, size_t iMaxLen)
 {
 	// Safety
 	if (!szString || !szInsert || !szInsert[0]) return;
 	size_t insertlen = strlen(szInsert);
-	if (iMaxLen >= 0 && strlen(szString) + insertlen > static_cast<size_t>(iMaxLen)) return;
+	if (strlen(szString) + insertlen > iMaxLen) return;
 	// Move up string remainder
 	memmove(szString + iPosition + insertlen, szString + iPosition, SLen(szString + iPosition) + 1);
 	// Copy insertion
 	std::memmove(szString + iPosition, szInsert, SLen(szInsert));
 }
 
-void SDelete(char *szString, int iLen, int iPosition)
+void SDelete(char *szString, size_t iLen, size_t iPosition)
 {
 	// Safety
 	if (!szString) return;
@@ -540,17 +534,17 @@ void SDelete(char *szString, int iLen, int iPosition)
 	std::memmove(szString + iPosition, szString + iPosition + iLen, SLen(szString + iPosition + iLen) + 1);
 }
 
-bool SCopyEnclosed(const char *szSource, char cOpen, char cClose, char *sTarget, int iSize)
+bool SCopyEnclosed(const char *szSource, char cOpen, char cClose, char *sTarget, size_t iSize)
 {
 	int iPos, iLen;
 	if (!szSource || !sTarget) return false;
 	if ((iPos = SCharPos(cOpen, szSource)) < 0) return false;
 	if ((iLen = SCharPos(cClose, szSource + iPos + 1)) < 0) return false;
-	SCopy(szSource + iPos + 1, sTarget, (std::min)(iLen, iSize));
+	SCopy(szSource + iPos + 1, sTarget, std::min<size_t>(iLen, iSize));
 	return true;
 }
 
-bool SGetModule(const char *szList, int iIndex, char *sTarget, int iSize)
+bool SGetModule(const char *szList, size_t iIndex, char *sTarget, size_t iSize)
 {
 	if (!szList || !sTarget) return false;
 	if (!SCopySegment(szList, iIndex, sTarget, ';', iSize)) return false;
@@ -558,11 +552,11 @@ bool SGetModule(const char *szList, int iIndex, char *sTarget, int iSize)
 	return true;
 }
 
-bool SIsModule(const char *szList, const char *szString, int *ipIndex, bool fCaseSensitive)
+bool SIsModule(const char *szList, const char *szString, size_t *ipIndex, bool fCaseSensitive)
 {
 	char szModule[1024 + 1];
 	// Compare all modules
-	for (int iMod = 0; SGetModule(szList, iMod, szModule, 1024); iMod++)
+	for (size_t iMod = 0; SGetModule(szList, iMod, szModule, 1024); iMod++)
 		if (fCaseSensitive ? SEqual(szString, szModule) : SEqualNoCase(szString, szModule))
 		{
 			// Provide index if desired
@@ -593,7 +587,7 @@ bool SAddModules(char *szList, const char *szModules, bool fCaseSensitive)
 	if (!szList || !szModules || !szModules[0]) return false;
 	// Add modules
 	char szModule[1024 + 1]; // limited
-	for (int cnt = 0; SGetModule(szModules, cnt, szModule, 1024); cnt++)
+	for (size_t cnt = 0; SGetModule(szModules, cnt, szModule, 1024); cnt++)
 		SAddModule(szList, szModule, fCaseSensitive);
 	// Success
 	return true;
@@ -601,7 +595,7 @@ bool SAddModules(char *szList, const char *szModules, bool fCaseSensitive)
 
 bool SRemoveModule(char *szList, const char *szModule, bool fCaseSensitive)
 {
-	int iMod, iPos, iLen;
+	size_t iMod, iPos, iLen;
 	// Not a module
 	if (!SIsModule(szList, szModule, &iMod, fCaseSensitive)) return false;
 	// Get module start
@@ -679,10 +673,8 @@ bool SWildcardMatchEx(const char *szString, const char *szWildcard)
 	return !*pWild && !*pPos;
 }
 
-const char *SGetParameter(const char *strCommandLine, int iParameter, char *strTarget, int iSize, bool *pWasQuoted)
+const char *SGetParameter(const char *strCommandLine, size_t iParameter, char *strTarget, size_t iSize, bool *pWasQuoted)
 {
-	// Safeties
-	if (iParameter < 0) return nullptr;
 	// Parse command line which may contain spaced or quoted parameters
 	static char strParameter[2048 + 1];
 	const char *c = strCommandLine;
@@ -701,7 +693,7 @@ const char *SGetParameter(const char *strCommandLine, int iParameter, char *strT
 		{
 			bool fWrongQuote = (SCharPos('"', c) > -1) && (SCharPos('"', c) < SCharPos(' ', c));
 			SCopyUntil(c, strParameter, fWrongQuote ? '"' : ' ', 2048);
-			c += (std::max)(SLen(strParameter), 1);
+			c += std::max<size_t>(SLen(strParameter), 1);
 		}
 		// Process (non-empty) parameter
 		if (strParameter[0])

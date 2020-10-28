@@ -192,10 +192,10 @@ private:
 	void AddBCC(C4AulBCCType eType, std::intptr_t X = 0);
 
 
-	int JumpHere(); // Get position for a later jump to next instruction added
-	void SetJumpHere(int iJumpOp); // Use the next inserted instruction as jump target for the given jump operation
-	void SetJump(int iJumpOp, int iWhere);
-	void AddJump(C4AulBCCType eType, int iWhere);
+	size_t JumpHere(); // Get position for a later jump to next instruction added
+	void SetJumpHere(size_t iJumpOp); // Use the next inserted instruction as jump target for the given jump operation
+	void SetJump(size_t iJumpOp, size_t iWhere);
+	void AddJump(C4AulBCCType eType, size_t iWhere);
 
 	// Keep track of loops and break/continue usages
 	struct Loop
@@ -203,7 +203,7 @@ private:
 		struct Control
 		{
 			bool Break;
-			int Pos;
+			size_t Pos;
 			Control *Next;
 		};
 		Control *Controls;
@@ -1254,14 +1254,14 @@ void C4AulParseState::SetNoRef()
 	}
 }
 
-int C4AulParseState::JumpHere()
+size_t C4AulParseState::JumpHere()
 {
 	// Set flag so the next generated code chunk won't get joined
 	fJump = true;
 	return a->GetCodePos();
 }
 
-void C4AulParseState::SetJumpHere(int iJumpOp)
+void C4AulParseState::SetJumpHere(size_t iJumpOp)
 {
 	if (Type != PARSER) return;
 	// Set target
@@ -1272,7 +1272,7 @@ void C4AulParseState::SetJumpHere(int iJumpOp)
 	fJump = true;
 }
 
-void C4AulParseState::SetJump(int iJumpOp, int iWhere)
+void C4AulParseState::SetJump(size_t iJumpOp, size_t iWhere)
 {
 	if (Type != PARSER) return;
 	// Set target
@@ -1281,7 +1281,7 @@ void C4AulParseState::SetJump(int iJumpOp, int iWhere)
 	pBCC->bccX = iWhere - iJumpOp;
 }
 
-void C4AulParseState::AddJump(C4AulBCCType eType, int iWhere)
+void C4AulParseState::AddJump(C4AulBCCType eType, size_t iWhere)
 {
 	AddBCC(eType, iWhere - a->GetCodePos());
 }
@@ -1852,7 +1852,7 @@ void C4AulParseState::Parse_Function()
 		if (Fn->bNewFormat)
 		{
 			// all ok, insert a return
-			C4AulBCC *CPos = a->GetCodeByPos((std::max)(a->GetCodePos() - 1, 0));
+			C4AulBCC *CPos = a->GetCodeByPos(std::max<size_t>(a->GetCodePos() - 1, 0));
 			if (!CPos || CPos->bccType != AB_RETURN || fJump)
 			{
 				AddBCC(Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT3 ? AB_NIL : AB_INT);
@@ -2457,7 +2457,7 @@ void C4AulParseState::Parse_Map()
 void C4AulParseState::Parse_While()
 {
 	// Save position for later jump back
-	int iStart = JumpHere();
+	const auto iStart = JumpHere();
 	// Execute condition
 	if (Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
 	{
@@ -2469,7 +2469,7 @@ void C4AulParseState::Parse_While()
 		Parse_Params(1, C4AUL_While);
 	SetNoRef();
 	// Check condition
-	int iCond = a->GetCodePos();
+	const auto iCond = a->GetCodePos();
 	AddBCC(AB_CONDN);
 	// We got a loop
 	PushLoop();
@@ -2501,14 +2501,14 @@ void C4AulParseState::Parse_If()
 		Parse_Params(1, C4AUL_If);
 	SetNoRef();
 	// create bytecode, remember position
-	int iCond = a->GetCodePos();
+	const auto iCond = a->GetCodePos();
 	AddBCC(AB_CONDN);
 	// parse controlled statement
 	Parse_Statement();
 	if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_Else))
 	{
 		// add jump
-		int iJump = a->GetCodePos();
+		const auto iJump = a->GetCodePos();
 		AddBCC(AB_JUMP);
 		// set condition jump target
 		SetJumpHere(iCond);
@@ -2540,7 +2540,7 @@ void C4AulParseState::Parse_For()
 	// Consume first semicolon
 	Match(ATT_SCOLON);
 	// Condition
-	int iCondition = -1, iJumpBody = -1, iJumpOut = -1;
+	size_t iCondition = SizeMax, iJumpBody = SizeMax, iJumpOut = SizeMax;
 	if (TokenType != ATT_SCOLON)
 	{
 		// Add condition code
@@ -2554,7 +2554,7 @@ void C4AulParseState::Parse_For()
 	// Consume second semicolon
 	Match(ATT_SCOLON);
 	// Incrementor
-	int iIncrementor = -1;
+	size_t iIncrementor = SizeMax;
 	if (TokenType != ATT_BCLOSE)
 	{
 		// Must jump over incrementor
@@ -2566,7 +2566,7 @@ void C4AulParseState::Parse_For()
 		SetNoRef();
 		AddBCC(AB_STACK, -1);
 		// Jump to condition
-		if (iCondition != -1)
+		if (iCondition != SizeMax)
 			AddJump(AB_JUMP, iCondition);
 	}
 	// Consume closing bracket
@@ -2574,22 +2574,22 @@ void C4AulParseState::Parse_For()
 	// Allow break/continue from now on
 	PushLoop();
 	// Body
-	int iBody = JumpHere();
-	if (iJumpBody != -1)
+	const auto iBody = JumpHere();
+	if (iJumpBody != SizeMax)
 		SetJumpHere(iJumpBody);
 	Parse_Statement();
 	if (Type != PARSER) return;
 	// Where to jump back?
-	int iJumpBack;
-	if (iIncrementor != -1)
+	size_t iJumpBack;
+	if (iIncrementor != SizeMax)
 		iJumpBack = iIncrementor;
-	else if (iCondition != -1)
+	else if (iCondition != SizeMax)
 		iJumpBack = iCondition;
 	else
 		iJumpBack = iBody;
 	AddJump(AB_JUMP, iJumpBack);
 	// Set target for condition
-	if (iJumpOut != -1)
+	if (iJumpOut != SizeMax)
 		SetJumpHere(iJumpOut);
 	// Set targets for break/continue
 	for (Loop::Control *pCtrl = pLoopStack->Controls; pCtrl; pCtrl = pCtrl->Next)
@@ -2654,11 +2654,11 @@ void C4AulParseState::Parse_ForEach()
 	// push initial position (0)
 	AddBCC(AB_INT);
 	// get array element
-	int iStart = a->GetCodePos();
+	const auto iStart = a->GetCodePos();
 	AddBCC(forMap ? AB_FOREACH_MAP_NEXT : AB_FOREACH_NEXT, iVarID);
 	// jump out (FOREACH[_MAP]_NEXT will jump over this if
 	// we're not at the end of the array yet)
-	int iCond = a->GetCodePos();
+	const auto iCond = a->GetCodePos();
 	AddBCC(AB_JUMP);
 	// got a loop...
 	PushLoop();
@@ -2986,7 +2986,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 		if ((C4ScriptOpMap[OpID].Code == AB_And || C4ScriptOpMap[OpID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
 		{
 			// create bytecode, remember position
-			int iCond = a->GetCodePos();
+			const auto iCond = a->GetCodePos();
 			// Jump or discard first parameter
 			AddBCC(C4ScriptOpMap[OpID].Code == AB_And ? AB_JUMPAND : AB_JUMPOR);
 			// parse second expression
@@ -3077,7 +3077,7 @@ bool C4AulParseState::Parse_Expression3()
 
 			SetNoRef();
 
-			int here = a->GetCodePos();
+			const auto here = a->GetCodePos();
 			AddBCC(AB_JUMPNIL);
 
 			Shift();
