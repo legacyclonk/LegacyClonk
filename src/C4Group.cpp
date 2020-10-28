@@ -775,7 +775,7 @@ bool C4Group::OpenRealGrpFile()
 bool C4Group::AddEntry(int status,
 	bool childgroup,
 	const char *fname,
-	long size,
+	size_t size,
 	time_t time,
 	char cCRC,
 	unsigned int iCRC,
@@ -838,7 +838,7 @@ bool C4Group::AddEntry(int status,
 	// Init entry core data
 	if (entryname) SCopy(entryname, nentry->FileName, _MAX_FNAME);
 	else SCopy(GetFilename(fname), nentry->FileName, _MAX_FNAME);
-	nentry->Size = size;
+	nentry->Size = static_cast<int32_t>(size);
 	nentry->Time = static_cast<uint32_t>(time + C4Group_AssumeTimeOffset);
 	nentry->ChildGroup = childgroup;
 	nentry->Offset = 0;

@@ -268,7 +268,7 @@ protected:
 	bool AddEntry(int status,
 		bool childgroup,
 		const char *fname,
-		long size,
+		size_t size,
 		time_t time,
 		char cCRC,
 		unsigned int iCRC,

@@ -388,7 +388,7 @@ int32_t C4TextureMap::GetIndexMatTex(const char *szMaterialTexture, const char *
 			return iMatTex;
 #ifdef C4ENGINE
 	// search material
-	long iMaterial = Game.Material.Get(szMaterialTexture);
+	const auto iMaterial = Game.Material.Get(szMaterialTexture);
 	if (!MatValid(iMaterial))
 	{
 		if (szErrorIfFailed) DebugLogF("Error getting MatTex for %s: Invalid material", szErrorIfFailed);
