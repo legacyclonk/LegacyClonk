@@ -739,7 +739,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				if (pPar1->GetType() == C4V_Any)
 				{
 					C4V_Data data;
-					data.Int = pPar2->_getRaw();
+					data.Raw = pPar2->_getRaw();
 					pPar1->Set(C4Value{data, pPar1->GetType()});
 				}
 				PopValue();

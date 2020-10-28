@@ -40,6 +40,7 @@
 #include <C4SoundSystem.h>
 
 #include <array>
+#include <cinttypes>
 #include <optional>
 #include <type_traits>
 #include <utility>
@@ -1498,7 +1499,7 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 		SAppendChar('"', command);
 		break;
 	case C4V_Any:
-		sprintf(parameter, "CastAny(%ld)", Parameter.GetData().Int);
+		sprintf(parameter, "CastAny(%" PRIdPTR ")", Parameter._getRaw());
 		break;
 	case C4V_Array:
 		// Arrays were never allowed, so tell the scripter
@@ -3798,9 +3799,9 @@ static long FnGetIndexOf(C4AulContext *cthr, C4Value searchVal, C4ValueArray* pA
 	}
 	else
 	{
-		long cmp = searchVal.GetData().Int;
+		const auto cmp = searchVal._getRaw();
 		for (int32_t i = 0; i < iSize; ++i)
-			if (cmp == pArray->GetItem(i).GetData().Int)
+			if (cmp == pArray->GetItem(i)._getRaw())
 				// element found
 				return i;
 	}

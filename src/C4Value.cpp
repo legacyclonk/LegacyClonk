@@ -717,7 +717,7 @@ void C4Value::DenumeratePointer()
 	// object types only
 	if (Type != C4V_C4ObjectEnum && Type != C4V_Any) return;
 	// in range?
-	if (Type != C4V_C4ObjectEnum && !Inside<long>(Data.Int, C4EnumPointer1, C4EnumPointer2)) return;
+	if (Type != C4V_C4ObjectEnum && !Inside<std::intptr_t>(Data.Raw, C4EnumPointer1, C4EnumPointer2)) return;
 	// get obj id, search object
 	C4ID iObjID = (Data.ID >= C4EnumPointer1 ? Data.ID - static_cast<C4ID>(C4EnumPointer1) : Data.ID);
 	C4Object *pObj = Game.Objects.ObjectPointer(iObjID);
@@ -868,7 +868,7 @@ bool C4Value::Equals(const C4Value &other, C4AulScriptStrict strict) const
 					return true;
 				case C4V_Int:
 				case C4V_C4Object:
-					return Data.Int == other.Data.Int;
+					return Data.Raw == other.Data.Raw;
 				case C4V_C4ID:
 					return Data.ID == other.Data.ID;
 				case C4V_Bool:

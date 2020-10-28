@@ -19,6 +19,7 @@
 #include "C4Id.h"
 #include "C4AulScriptStrict.h"
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <type_traits>
@@ -67,6 +68,7 @@ union C4V_Data
 	C4ValueContainer *Container;
 	C4ValueArray *Array;
 	C4ValueHash *Map;
+	std::intptr_t Raw;
 	// cheat a little - assume that all members have the same length
 	explicit operator bool() const noexcept { return Ref; }
 	bool operator==(C4V_Data b) const noexcept { return Ref == b.Ref; }
@@ -167,7 +169,7 @@ public:
 	C4ValueArray *_getArray() const { return Data.Array; }
 	C4ValueHash *_getMap()    const { return Data.Map; }
 	C4Value *_getRef()        const { return Data.Ref; }
-	long _getRaw()            const { return Data.Int; }
+	std::intptr_t _getRaw()   const { return Data.Raw; }
 
 	// Template versions
 	template <typename T> inline T Get() { return C4ValueConv<T>::FromC4V(*this); }
