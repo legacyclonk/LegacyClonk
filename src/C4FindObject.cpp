@@ -65,13 +65,12 @@ C4FindObject *C4FindObject::CreateByValue(const C4Value &DataVal, C4SortObject *
 		if (Data.GetSize() == 2)
 			return C4FindObject::CreateByValue(Data[1]);
 		// Create all childs
-		int32_t i;
 		C4FindObject **ppConds = new C4FindObject *[Data.GetSize() - 1];
-		for (i = 0; i < Data.GetSize() - 1; i++)
+		for (int32_t i = 0; i < Data.GetSize() - 1; i++)
 			ppConds[i] = C4FindObject::CreateByValue(Data[i + 1]);
 		// Count real entries, move them to start of list
 		int32_t iSize = 0;
-		for (i = 0; i < Data.GetSize() - 1; i++)
+		for (int32_t i = 0; i < Data.GetSize() - 1; i++)
 			if (ppConds[i])
 				if (iSize++ != i)
 					ppConds[iSize - 1] = ppConds[i];
@@ -413,8 +412,7 @@ C4FindObjectAnd::C4FindObjectAnd(int32_t inCnt, C4FindObject **ppConds, bool fFr
 	: iCnt(inCnt), ppConds(ppConds), fHasBounds(false), fUseShapes(false), fFreeArray(fFreeArray)
 {
 	// Filter ensured entries
-	int32_t i;
-	for (i = 0; i < iCnt;)
+	for (int32_t i = 0; i < iCnt;)
 		if (ppConds[i]->IsEnsured())
 		{
 			delete ppConds[i];
@@ -425,7 +423,7 @@ C4FindObjectAnd::C4FindObjectAnd(int32_t inCnt, C4FindObject **ppConds, bool fFr
 		else
 			i++;
 	// Intersect all child bounds
-	for (i = 0; i < iCnt; i++)
+	for (int32_t i = 0; i < iCnt; i++)
 	{
 		C4Rect *pChildBounds = ppConds[i]->GetBounds();
 		if (pChildBounds)
@@ -480,8 +478,7 @@ C4FindObjectOr::C4FindObjectOr(int32_t inCnt, C4FindObject **ppConds)
 	: iCnt(inCnt), ppConds(ppConds), fHasBounds(false)
 {
 	// Filter impossible entries
-	int32_t i;
-	for (i = 0; i < iCnt;)
+	for (int32_t i = 0; i < iCnt;)
 		if (ppConds[i]->IsImpossible())
 		{
 			delete ppConds[i];
@@ -492,7 +489,7 @@ C4FindObjectOr::C4FindObjectOr(int32_t inCnt, C4FindObject **ppConds)
 		else
 			i++;
 	// Sum up all child bounds
-	for (i = 0; i < iCnt; i++)
+	for (int32_t i = 0; i < iCnt; i++)
 	{
 		C4Rect *pChildBounds = ppConds[i]->GetBounds();
 		if (!pChildBounds) { fHasBounds = false; break; }
@@ -727,15 +724,14 @@ C4SortObject *C4SortObject::CreateByValue(C4ValueInt iType, const C4ValueArray &
 			return C4SortObject::CreateByValue(Data[1]);
 		}
 		// Create all children
-		int32_t i;
 		C4SortObject **ppSorts = new C4SortObject *[Data.GetSize() - 1];
-		for (i = 0; i < Data.GetSize() - 1; i++)
+		for (int32_t i = 0; i < Data.GetSize() - 1; i++)
 		{
 			ppSorts[i] = C4SortObject::CreateByValue(Data[i + 1]);
 		}
 		// Count real entries, move them to start of list
 		int32_t iSize = 0;
-		for (i = 0; i < Data.GetSize() - 1; i++)
+		for (int32_t i = 0; i < Data.GetSize() - 1; i++)
 			if (ppSorts[i])
 				if (iSize++ != i)
 					ppSorts[iSize - 1] = ppSorts[i];
