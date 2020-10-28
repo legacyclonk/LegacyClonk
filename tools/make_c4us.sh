@@ -31,25 +31,24 @@ TARGET_DIR="$(realpath .)"
 TAG="v$VERSION"
 
 if [ -z "$GET_win32" ]; then
-	GET_win32="curl -L -o /tmp/LegacyClonk.zip https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk.zip && unzip /tmp/LegacyClonk.zip && rm /tmp/LegacyClonk.zip"
+	GET_win32="curl -L -o /tmp/LegacyClonk.zip https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-Windows-x86.zip && unzip /tmp/LegacyClonk.zip && rm /tmp/LegacyClonk.zip"
 fi
 
 if [ -z "$GET_linux" ]; then
-	GET_linux="curl -L https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-x86.tar.gz | tar xz"
+	GET_linux="curl -L https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-Linux-x86.tar.gz | tar xz"
 fi
 
 if [ -z "$GET_linux64" ]; then
-	GET_linux64="curl -L https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-x64.tar.gz | tar xz"
+	GET_linux64="curl -L https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-Linux-x64.tar.gz | tar xz"
 fi
 
 if [ -z "$GET_mac" ]; then
-	GET_mac="curl -L https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-mac.tar.gz | tar xz"
+	GET_mac="curl -L -o /tmp/LegacyClonk.zip https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-Mac-x64.zip | unzip /tmp/LegacyClonk.zip && rm /tmp/LegacyClonk.zip"
 fi
 
 function win32() {
 	mv clonk.exe "$1/Clonk.exe"
 	mv clonk.pdb "$1/Clonk.pdb"
-	mv *.dll *.pdb *.exe "$1"
 }
 
 function linux() {
