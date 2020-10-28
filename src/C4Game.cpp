@@ -2465,7 +2465,10 @@ bool C4Game::InitGameFirstPart(bool preloading)
 
 	if (preloading)
 	{
-		Application.InteractiveThread.ExecuteInMainThread(loadGraphics);
+		if (Config.Lobby.PreloadGraphics)
+		{
+			Application.InteractiveThread.ExecuteInMainThread(loadGraphics);
+		}
 	}
 	else
 	{

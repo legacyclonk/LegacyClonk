@@ -221,6 +221,7 @@ class C4ConfigLobby
 {
 public:
 	int32_t CountdownTime;
+	bool PreloadGraphics;
 	bool AllowPlayerSave; // whether save-to-disk function is enabled for player ressources
 	void CompileFunc(StdCompiler *pComp);
 };
