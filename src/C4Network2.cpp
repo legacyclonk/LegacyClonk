@@ -116,6 +116,7 @@ void C4Network2Status::CompileFunc(StdCompiler *pComp, bool fReference)
 
 // *** C4Network2
 
+#ifndef USE_CONSOLE
 C4Network2::ReadyCheckDialog::ReadyCheckDialog()
 	: TimedDialog{15, "", LoadResStr("IDS_DLG_READYCHECK"), btnYesNo, C4GUI::Ico_GameRunning}
 {
@@ -134,6 +135,7 @@ void C4Network2::ReadyCheckDialog::UpdateText()
 			);
 	SetText(text.getData());
 }
+#endif
 
 C4Network2::C4Network2()
 	: Clients(&NetIO),
