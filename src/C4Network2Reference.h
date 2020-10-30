@@ -136,6 +136,7 @@ public:
 private:
 	CURLM *multiHandle{nullptr};
 	CURL *curlHandle{nullptr};
+	int32_t timeout{-1};
 
 #ifdef _WIN32
 	// event indicating network activity
@@ -209,6 +210,7 @@ private:
 	int ProgressCallback(int64_t dltotal, int64_t dlnow);
 	static int SSocketCallback(CURL *easy, curl_socket_t s, int what, void *userData, void *socketPointer);
 	int SocketCallback(curl_socket_t s, int what);
+	static int STimerCallback(CURLM *, long timeout, void *userData);
 };
 
 // Loads references (mini-HTTP-client)
