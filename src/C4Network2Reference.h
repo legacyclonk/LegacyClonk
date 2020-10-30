@@ -165,8 +165,9 @@ private:
 	size_t totalSize{0};
 	bool compressed{false};
 
-	// Callback to call when something happens
-	Notify notify;
+	// Thread to notify if something happens
+	class C4InteractiveThread *thread{nullptr};
+	struct { C4InteractiveEventType type; std::any data; } eventData{Ev_None, {}};
 
 protected:
 	StdBuf resultBin;
@@ -198,7 +199,7 @@ public:
 
 	bool SetServer(std::string_view serverAddress, uint16_t port = 0);
 
-	void SetNotify(const Notify &notify = {}, class C4InteractiveThread *thread = nullptr);
+	void SetNotify(class C4InteractiveThread *thread, const Notify &notify = {});
 
 	// Overridden
 	virtual bool Execute(int iMaxTime = C4NetIO::TO_INF) override;
