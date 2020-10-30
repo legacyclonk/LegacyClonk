@@ -770,6 +770,11 @@ void C4StartupNetDlg::DrawElement(C4FacetEx &cgo)
 	DrawBackground(cgo, C4Startup::Get()->Graphics.fctNetBG);
 }
 
+bool C4StartupNetDlg::IsOpen(C4StartupNetDlg *const instance)
+{
+	return C4Startup::Get() && C4Startup::Get()->pCurrDlg == instance;
+}
+
 void C4StartupNetDlg::OnShown()
 {
 	// callback when shown: Start searching for games
@@ -777,7 +782,20 @@ void C4StartupNetDlg::OnShown()
 	C4StartupDlg::OnShown();
 	UpdateList();
 	UpdateMasterserver();
-	btnUpdate->SetVisibility(C4UpdateDlg::CheckForUpdates());
+
+	static size_t updateStackCounter{0};
+	if (updateStackCounter == 0)
+	{
+		++updateStackCounter;
+		bool update{C4UpdateDlg::CheckForUpdates()};
+
+		if (IsOpen(this))
+		{
+			btnUpdate->SetVisibility(update);
+		}
+
+		--updateStackCounter;
+	}
 	OnSec1Timer();
 	tLastRefresh = time(nullptr);
 	// also update chat

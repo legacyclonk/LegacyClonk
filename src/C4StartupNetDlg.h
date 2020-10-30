@@ -186,6 +186,7 @@ protected:
 	void OnChatTitleChange(const StdStrBuf &sNewTitle);
 
 private:
+	static bool IsOpen(C4StartupNetDlg *instance);
 	void UpdateMasterserver(); // creates masterserver object if masterserver is enabled; destroy otherwise
 	void UpdateList(bool fGotReference = false);
 	void UpdateCollapsed();
