@@ -588,7 +588,7 @@ void C4Network2HTTPClient::Clear()
 	port = 0;
 }
 
-bool C4Network2HTTPClient::SetServer(std::string_view serverAddress, uint16_t port)
+bool C4Network2HTTPClient::SetServer(std::string_view serverAddress, uint16_t defaultPort)
 {
 	static const std::regex hostnameRegex{R"(^(:?[a-z]+:\/\/)?([^/:]+).*)", std::regex::icase};
 	if (std::cmatch match; std::regex_match(serverAddress.data(), match, hostnameRegex))
@@ -597,9 +597,9 @@ bool C4Network2HTTPClient::SetServer(std::string_view serverAddress, uint16_t po
 		url = serverAddress;
 		serverName = match[2].str();
 
-		if (port)
+		if (port && !match[3].length())
 		{
-			this->port = port;
+			this->port = defaultPort;
 		}
 
 		// no dedicated port? CURL will deduce it automatically then

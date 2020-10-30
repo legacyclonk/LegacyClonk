@@ -197,7 +197,7 @@ public:
 	void Cancel(std::string_view reason);
 	void Clear();
 
-	bool SetServer(std::string_view serverAddress, uint16_t port = 0);
+	bool SetServer(std::string_view serverAddress, uint16_t defaultPort = 0);
 
 	void SetNotify(class C4InteractiveThread *thread, const Notify &notify = {});
 
