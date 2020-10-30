@@ -257,6 +257,8 @@ bool C4Network2HTTPClient::Init()
 
 	curl_multi_setopt(multiHandle, CURLMOPT_SOCKETFUNCTION, &C4Network2HTTPClient::SSocketCallback);
 	curl_multi_setopt(multiHandle, CURLMOPT_SOCKETDATA, this);
+	curl_multi_setopt(multiHandle, CURLMOPT_TIMERFUNCTION, &C4Network2HTTPClient::STimerCallback);
+	curl_multi_setopt(multiHandle, CURLMOPT_TIMERDATA, this);
 
 	return true;
 }
@@ -361,9 +363,7 @@ bool C4Network2HTTPClient::Execute(int)
 
 int C4Network2HTTPClient::GetTimeout()
 {
-	long timeout;
-	curl_multi_timeout(multiHandle, &timeout);
-	return timeout >= 0 ? timeout : 1000;
+	return timeout;
 }
 
 #ifndef STDSCHEDULER_USE_EVENTS
@@ -556,6 +556,12 @@ int C4Network2HTTPClient::SocketCallback(curl_socket_t s, int what)
 		sockets[s] = what;
 	}
 
+	return 0;
+}
+
+int C4Network2HTTPClient::STimerCallback(CURLM *, long timeout, void *userData)
+{
+	reinterpret_cast<C4Network2HTTPClient *>(userData)->timeout = timeout >= 0 ? static_cast<int32_t>(timeout) : 1000;
 	return 0;
 }
 
