@@ -220,7 +220,7 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(LastUpdateTime,            "LastUpdateTime",         0,    false, true));
 	pComp->Value(mkNamingAdapt(AsyncMaxWait,              "AsyncMaxWait",           2,    false, true));
 
-	constexpr auto defaultPuncherServer = "https://netpuncher.openclonk.org:11115";
+	constexpr auto defaultPuncherServer = "netpuncher.openclonk.org:11115";
 	pComp->Value(mkNamingAdapt(s(PuncherAddress), "PuncherAddress", defaultPuncherServer, false, true));
 
 	pComp->Value(mkNamingAdapt(LeagueAccount,     "LeagueNick",      "",               false, false));
@@ -240,7 +240,7 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 		migrate(AlternateServerAddress, "league.clonkspot.org:80", C4CFG_FallbackServer);
 		migrate(UpdateServerAddress, "update.clonkspot.org/lc/update", C4CFG_UpdateServer);
 		migrate(PuncherAddress, "clonk.de:11115", defaultPuncherServer);
-		migrate(PuncherAddress, "netpuncher.openclonk.org:11115", defaultPuncherServer);
+		migrate(PuncherAddress, "https://netpuncher.openclonk.org:11115", defaultPuncherServer);
 	}
 }
 
