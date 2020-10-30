@@ -31,6 +31,10 @@ jobs:
             arch: x64
             env: Linux
           - os: ubuntu-18.04
+            arch: x64
+            env: Linux
+            config: Debugrec
+          - os: ubuntu-18.04
             arch: x86
             env: Linux
           - os: macos-10.15
