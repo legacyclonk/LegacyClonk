@@ -278,12 +278,12 @@ protected:
 
 	// *** errors
 protected:
-	StdStrBuf Error;
+	std::string Error;
 	void SetError(const char *strnError, bool fSockErr = false);
 
 public:
-	virtual const char *GetError() const { return Error.getData(); }
-	void ResetError() { Error.Clear(); }
+	virtual const char *GetError() const { return !Error.empty() ? Error.c_str() : nullptr; }
+	void ResetError() { Error.clear(); }
 
 	// *** callbacks
 	virtual void SetCallback(CBClass *pnCallback) = 0;

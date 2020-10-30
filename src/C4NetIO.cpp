@@ -811,10 +811,9 @@ bool C4NetIO::InitIPv6Socket(const SOCKET socket)
 void C4NetIO::SetError(const char *strnError, bool fSockErr)
 {
 	fSockErr &= HaveSocketError();
+	Error = strnError;
 	if (fSockErr)
-		Error.Format("%s (%s)", strnError, GetSocketErrorMsg());
-	else
-		Error.Copy(strnError);
+		Error.append("(").append(GetSocketErrorMsg()).append(")");
 }
 
 // *** C4NetIOPacket
