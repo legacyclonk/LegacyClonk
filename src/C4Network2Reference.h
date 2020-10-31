@@ -30,7 +30,10 @@
 #include "C4InputValidation.h"
 #include "C4TimeMilliseconds.h"
 
+#include <cstdint>
 #include <functional>
+#include <string>
+#include <string_view>
 #include <unordered_map>
 
 const int C4Network2HTTPQueryTimeout = 20; // (s)
@@ -155,7 +158,6 @@ private:
 	std::string serverName;
 	C4NetIO::addr_t serverAddress;
 	StdBuf requestData;
-	uint16_t port{0};
 
 	bool binary{false};
 	bool success{false};
@@ -197,7 +199,7 @@ public:
 	void Cancel(std::string_view reason);
 	void Clear();
 
-	bool SetServer(std::string_view serverAddress, uint16_t defaultPort = 0);
+	bool SetServer(std::string_view serverAddress, std::uint16_t defaultPort = 0);
 
 	void SetNotify(class C4InteractiveThread *thread, const Notify &notify = {});
 
@@ -219,6 +221,8 @@ private:
 	static int SSocketCallback(CURL *easy, curl_socket_t s, int what, void *userData, void *socketPointer);
 	int SocketCallback(curl_socket_t s, int what);
 	static int STimerCallback(CURLM *, long timeout, void *userData);
+
+	void SetServer2(std::string_view serverAddress, std::uint16_t defaultPort);
 };
 
 // Loads references (mini-HTTP-client)

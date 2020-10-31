@@ -27,7 +27,8 @@
 
 #include <fcntl.h>
 
-#include <regex>
+#include <memory>
+#include <stdexcept>
 
 // *** C4Network2Reference
 
@@ -419,11 +420,6 @@ bool C4Network2HTTPClient::Query(const StdBuf &Data, bool binary, Headers header
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, C4Network2HTTPQueryTimeout);
 	curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
 
-	if (port)
-	{
-		curl_easy_setopt(curl, CURLOPT_PORT, port);
-	}
-
 	// Create request
 	const char *const charset{GetCharsetCodeName(Config.General.LanguageCharset)};
 
@@ -585,30 +581,66 @@ void C4Network2HTTPClient::Clear()
 	serverAddress.Clear();
 	resultBin.Clear();
 	resultString.clear();
-	port = 0;
 }
 
-bool C4Network2HTTPClient::SetServer(std::string_view serverAddress, uint16_t defaultPort)
+bool C4Network2HTTPClient::SetServer(const std::string_view serverAddress, const std::uint16_t defaultPort)
 {
-	static const std::regex hostnameRegex{R"(^(:?[a-z]+:\/\/)?([^/:]+).*)", std::regex::icase};
-	if (std::cmatch match; std::regex_match(serverAddress.data(), match, hostnameRegex))
+	try
 	{
-		// CURL validates URLs only on connect.
-		url = serverAddress;
-		serverName = match[2].str();
-
-		if (port && !match[3].length())
-		{
-			this->port = defaultPort;
-		}
-
-		// no dedicated port? CURL will deduce it automatically then
+		SetServer2(url, defaultPort);
 		return true;
 	}
-	// The hostnameRegex above is pretty stupid, so we will reject only very
-	// malformed URLs immediately.
-	SetError("Malformed URL");
-	return false;
+	catch (const std::runtime_error &e)
+	{
+		SetError(e.what());
+		return false;
+	}
+}
+
+void C4Network2HTTPClient::SetServer2(const std::string_view serverAddress, const std::uint16_t defaultPort)
+{
+	// Convert string to CURLU
+	std::unique_ptr<CURLU, decltype(&curl_url_cleanup)> url{curl_url(), curl_url_cleanup};
+	if (!url)
+		throw std::runtime_error{"curl_url failed"};
+	if (curl_url_set(url.get(), CURLUPART_URL,
+		std::string{serverAddress}.c_str(), CURLU_DEFAULT_SCHEME) != CURLUE_OK)
+	{
+		throw std::runtime_error{"Malformed URL"};
+	}
+
+	// Get host name part
+	using UniqueCurlCharPtr = std::unique_ptr<char, decltype(&curl_free)>;
+	char *host;
+	if (curl_url_get(url.get(), CURLUPART_HOST, &host, 0) != CURLUE_OK)
+		throw std::runtime_error{"curl_url_get HOST failed"};
+	UniqueCurlCharPtr hostPtr{host, curl_free};
+
+	// Use default port if URL has no port part
+	char *port;
+	const auto errGetPort = curl_url_get(url.get(), CURLUPART_PORT, &port, 0);
+	curl_free(port);
+	if (errGetPort == CURLUE_NO_PORT)
+	{
+		if (curl_url_set(url.get(), CURLUPART_PORT,
+			std::to_string(defaultPort).c_str(), 0) != CURLUE_OK)
+		{
+			throw std::runtime_error{"curl_url_set PORT failed"};
+		}
+	}
+	else if (errGetPort != CURLUE_OK)
+	{
+		throw std::runtime_error{"curl_url_get PORT failed"};
+	}
+
+	// Convert CURLU back to string
+	char *urlStr;
+	if (curl_url_get(url.get(), CURLUPART_URL, &urlStr, 0) != CURLUE_OK)
+		throw std::runtime_error{"curl_url_get URL failed"};
+	UniqueCurlCharPtr urlStrPtr{urlStr, curl_free};
+
+	this->url = urlStr;
+	serverName = host;
 }
 
 void C4Network2HTTPClient::SetNotify(class C4InteractiveThread *thread, const Notify &notify)
