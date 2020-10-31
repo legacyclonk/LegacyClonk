@@ -174,8 +174,6 @@ protected:
 	std::string error;
 	void SetError(std::string_view error) { this->error = error; }
 
-	void ResetRequestTimeout();
-
 public:
 	bool Query(const StdBuf &Data, bool binary, Headers headers = {});
 	bool Query(const char *szData, bool binary, Headers headers = {}) { return Query(StdBuf::MakeRef(szData, SLen(szData)), binary, headers); }
