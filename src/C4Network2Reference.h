@@ -36,8 +36,6 @@
 #include <string_view>
 #include <unordered_map>
 
-const int C4Network2HTTPQueryTimeout = 20; // (s)
-
 // Session data
 class C4Network2Reference
 {
