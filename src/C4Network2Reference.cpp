@@ -29,6 +29,8 @@
 
 #include <fcntl.h>
 
+static constexpr long C4Network2HTTPQueryTimeout{20}; // (s)
+
 // *** C4Network2Reference
 
 C4Network2Reference::C4Network2Reference()
