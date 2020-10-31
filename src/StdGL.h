@@ -59,6 +59,7 @@ public:
 	bool UpdateSize(); // get new size from hWnd
 
 	bool PageFlip(); // present scene
+	void Finish();
 
 protected:
 	void DoDeselect();
