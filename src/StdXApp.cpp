@@ -162,6 +162,11 @@ bool CStdApp::Init(int argc, char *argv[])
 	Priv->stdin_channel = nullptr;
 #endif
 
+	if (XInitThreads() == 0)
+	{
+		Log("WARNING: No threading support from Xlib.");
+	}
+
 	if (!(dpy = XOpenDisplay(nullptr)))
 	{
 		Log("Error opening display.");

@@ -199,6 +199,23 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 
 #include <X11/extensions/xf86vmode.h>
 
+class XDisplayLock
+{
+	Display *dpy;
+public:
+	XDisplayLock(Display *dpy) : dpy{dpy}
+	{
+		XLockDisplay(dpy);
+	}
+	XDisplayLock(const XDisplayLock &) = delete;
+	XDisplayLock &operator=(const XDisplayLock &) = delete;
+
+	~XDisplayLock()
+	{
+		XUnlockDisplay(dpy);
+	}
+};
+
 CStdGLCtx::CStdGLCtx() : pWindow(nullptr), ctx(nullptr), cx(0), cy(0) {}
 
 void CStdGLCtx::Clear()
@@ -206,6 +223,7 @@ void CStdGLCtx::Clear()
 	Deselect();
 	if (ctx)
 	{
+		const XDisplayLock lock{pWindow->dpy};
 		glXDestroyContext(pWindow->dpy, ctx);
 		ctx = nullptr;
 	}
@@ -252,11 +270,14 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 		if (verbose) pGL->Error("  gl: lpPrimary is zero");
 		return false;
 	}
-	// make context current
-	if (!pWindow->renderwnd || !glXMakeCurrent(pWindow->dpy, pWindow->renderwnd, ctx))
 	{
-		if (verbose) pGL->Error("  gl: glXMakeCurrent failed");
-		return false;
+		const XDisplayLock lock{pWindow->dpy};
+		// make context current
+		if (!pWindow->renderwnd || !glXMakeCurrent(pWindow->dpy, pWindow->renderwnd, ctx))
+		{
+			if (verbose) pGL->Error("  gl: glXMakeCurrent failed");
+			return false;
+		}
 	}
 
 	if (!selectOnly)
@@ -286,6 +307,7 @@ bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 
 void CStdGLCtx::DoDeselect()
 {
+	const XDisplayLock lock{pWindow->dpy};
 	glXMakeCurrent(pWindow->dpy, None, nullptr);
 }
 
