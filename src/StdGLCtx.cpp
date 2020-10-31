@@ -39,6 +39,11 @@ void CStdGLCtx::Deselect(bool secondary)
 	}
 }
 
+void CStdGLCtx::Finish()
+{
+	glFinish();
+}
+
 #ifdef _WIN32
 
 CStdGLCtx::CStdGLCtx() : hrc(nullptr), pWindow(nullptr), hDC(nullptr), cx(0), cy(0) {}

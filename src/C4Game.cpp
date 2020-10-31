@@ -1915,6 +1915,7 @@ void C4Game::Preload()
 			preloadContext->Select(false, true);
 			CStdLock lock{&Game.PreloadMutex};
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
+			preloadContext->Finish();
 			preloadContext->Deselect(true);
 		},
 		std::unique_ptr<CStdGLCtx>{context}};
