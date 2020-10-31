@@ -165,7 +165,6 @@ private:
 	// Response header data
 	size_t downloadedSize{0};
 	size_t totalSize{0};
-	bool compressed{false};
 
 	// Thread to notify if something happens
 	class C4InteractiveThread *thread{nullptr};
