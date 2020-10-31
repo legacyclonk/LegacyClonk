@@ -261,7 +261,7 @@ bool C4Network2HTTPClient::Init()
 	return true;
 }
 
-bool C4Network2HTTPClient::Execute(int maxTime)
+bool C4Network2HTTPClient::Execute(int)
 {
 	int running{0};
 #ifdef STDSCHEDULER_USE_EVENTS
@@ -291,10 +291,10 @@ bool C4Network2HTTPClient::Execute(int maxTime)
 	GetFDs(fds, &max);
 
 	// build timeout value
-	timeval to{maxTime / 1000, (maxTime % 1000) * 1000};
+	timeval to{0, 0};
 
 	// wait for something to happen
-	int ret{select(max + 1, &fds[0], &fds[1], nullptr, (maxTime == C4NetIO::TO_INF ? nullptr : &to))};
+	int ret{select(max + 1, &fds[0], &fds[1], nullptr, &to)};
 
 	// error
 	if (ret < 0)
