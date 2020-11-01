@@ -1647,6 +1647,11 @@ void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
 #else
 		ready = false;
 #endif
+		if (!isLobbyActive())
+		{
+			return;
+		}
+
 		Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_ReadyCheck, C4PacketReadyCheck{Clients.GetLocal()->getID(), ready ? C4PacketReadyCheck::Ready : C4PacketReadyCheck::NotReady}), true);
 
 		if (pLobby)
