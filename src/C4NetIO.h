@@ -51,6 +51,7 @@
 #endif
 
 #include <cstring>
+#include <vector>
 
 // net i/o base class
 class C4NetIO : public StdSchedulerProc
