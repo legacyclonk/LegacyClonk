@@ -222,10 +222,25 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	constexpr auto defaultPuncherServer = "netpuncher.openclonk.org:11115";
 	pComp->Value(mkNamingAdapt(s(PuncherAddress), "PuncherAddress", defaultPuncherServer, false, true));
 
-	if (pComp->isCompiler() && SEqual(PuncherAddress, "clonk.de:11115")) strncpy(PuncherAddress, defaultPuncherServer, CFG_MaxString);
-
 	pComp->Value(mkNamingAdapt(LeagueAccount,     "LeagueNick",      "",               false, false));
 	pComp->Value(mkNamingAdapt(LeagueAutoLogin,   "LeagueAutoLogin", true,             false, false));
+
+	if (pComp->isCompiler())
+	{
+		constexpr auto migrate = [](char *const field, const char *const oldAddress, const char *const newAddress)
+		{
+			if (SEqual(field, oldAddress))
+			{
+				strncpy(field, newAddress, CFG_MaxString);
+			}
+		};
+
+		migrate(ServerAddress, "https://league.clonkspot.org", C4CFG_LeagueServer);
+		migrate(AlternateServerAddress, "https://league.clonkspot.org", C4CFG_FallbackServer);
+		migrate(UpdateServerAddress, "https://update.clonkspot.org/lc/update", C4CFG_UpdateServer);
+		migrate(PuncherAddress, "clonk.de:11115", defaultPuncherServer);
+		migrate(PuncherAddress, "https://netpuncher.openclonk.org:11115", defaultPuncherServer);
+	}
 }
 
 void C4ConfigLobby::CompileFunc(StdCompiler *pComp)
