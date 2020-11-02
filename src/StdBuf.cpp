@@ -34,74 +34,53 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include <ios>
+#include <fstream>
+
 // *** StdBuf
 
-bool StdBuf::LoadFromFile(const char *szFile)
+bool StdBuf::LoadFromFile(const char *szFile) try
 {
-	// Open file
-	int fh = open(szFile, O_BINARY | O_RDONLY | O_SEQUENTIAL, S_IREAD | S_IWRITE);
-	if (fh < 0) return false;
+	std::ifstream file{szFile, std::ios::binary};
 	// Create buf
-	New(FileSize(fh));
-	// Read
-	if (read(fh, getMData(), getSize()) != static_cast<size_t>(getSize()))
-	{
-		close(fh);
-		return false;
-	}
-	close(fh);
-	// Ok
-	return true;
+	New(FileSize(szFile));
+	return file && file.read(static_cast<char *>(getMData()), getSize());
+}
+catch (const std::ios_base::failure &)
+{
+	return false;
 }
 
-bool StdBuf::SaveToFile(const char *szFile) const
+bool StdBuf::SaveToFile(const char *szFile) const try
 {
-	// Open file
-	int fh = open(szFile, O_BINARY | O_CREAT | O_WRONLY | O_SEQUENTIAL | O_TRUNC, S_IREAD | S_IWRITE);
-	if (fh < 0) return false;
-	// Write data
-	if (write(fh, getData(), getSize()) != static_cast<size_t>(getSize()))
-	{
-		close(fh);
-		return false;
-	}
-	close(fh);
-	// Ok
-	return true;
+	std::ofstream file{szFile, std::ios::binary | std::ios::trunc};
+	return file && file.write(static_cast<const char *>(getData()), getSize());
+}
+catch (const std::ios_base::failure &)
+{
+	return false;
 }
 
-bool StdStrBuf::LoadFromFile(const char *szFile)
+bool StdStrBuf::LoadFromFile(const char *szFile) try
 {
-	// Open file
-	int fh = open(szFile, O_BINARY | O_RDONLY | O_SEQUENTIAL, S_IREAD | S_IWRITE);
-	if (fh < 0) return false;
+	std::ifstream file{szFile, std::ios::binary};
 	// Create buf
-	SetLength(FileSize(fh));
-	// Read
-	if (static_cast<size_t>(read(fh, getMData(), getLength())) != getLength())
-	{
-		close(fh);
-		return false;
-	}
-	close(fh);
-	// Ok
-	return true;
+	SetLength(FileSize(szFile));
+	return file && file.read(getMData(), getLength());
+}
+catch (const std::ios_base::failure &)
+{
+	return false;
 }
 
-bool StdStrBuf::SaveToFile(const char *szFile) const
+bool StdStrBuf::SaveToFile(const char *szFile) const try
 {
-	// Open file
-	int fh = open(szFile, O_BINARY | O_CREAT | O_WRONLY | O_SEQUENTIAL | O_TRUNC, S_IREAD | S_IWRITE);
-	if (fh < 0) return false;
-	// Write data
-	if (static_cast<size_t>(write(fh, getData(), getLength())) != getLength())
-	{
-		close(fh);
-		return false;
-	}
-	close(fh);
-	// Ok
-	return true;
+	std::ofstream file{szFile, std::ios::binary | std::ios::trunc};
+	return file && file.write(getData(), getLength());
+}
+catch (const std::ios_base::failure &)
+{
+	return false;
 }
 
 void StdBuf::CompileFunc(StdCompiler *pComp, int iType)
