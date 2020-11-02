@@ -53,10 +53,7 @@ char *GetFilename(char *szPath)
 
 const char *GetFilename(const char *szPath)
 {
-	if (!szPath) return nullptr;
-	const char *pPos, *pFilename = szPath;
-	for (pPos = szPath; *pPos; pPos++) if (*pPos == DirectorySeparator || *pPos == '/') pFilename = pPos + 1;
-	return pFilename;
+	return GetFilename(const_cast<char *>(szPath));
 }
 
 const char *GetFilenameOnly(const char *strFilename)
