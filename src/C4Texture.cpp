@@ -423,10 +423,10 @@ bool C4TextureMap::CheckTexture(const char *szTexture)
 #endif
 }
 
-const char *C4TextureMap::GetTexture(int32_t iIndex)
+const char *C4TextureMap::GetTexture(size_t iIndex)
 {
 	C4Texture *pTexture;
-	int32_t cindex;
+	size_t cindex;
 	for (pTexture = FirstTexture, cindex = 0; pTexture; pTexture = pTexture->Next, cindex++)
 		if (cindex == iIndex)
 			return pTexture->Name;

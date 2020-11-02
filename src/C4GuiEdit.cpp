@@ -150,8 +150,8 @@ bool Edit::InsertText(const char *szText, bool fUser)
 	// empty previous selection
 	if (iSelectionStart != iSelectionEnd) DeleteSelection();
 	// check buffer length
-	int32_t iTextLen = SLen(szText);
-	int32_t iTextEnd = SLen(Text);
+	auto iTextLen = SLen(szText);
+	const auto iTextEnd = SLen(Text);
 	bool fBufferOK = (iTextLen + iTextEnd <= (iMaxTextLength - 1));
 	if (!fBufferOK) iTextLen -= iTextEnd + iTextLen - (iMaxTextLength - 1);
 	if (iTextLen <= 0) return false;

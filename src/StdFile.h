@@ -112,7 +112,7 @@ public:
 protected:
 	char filename[_MAX_PATH + 1];
 #ifdef _WIN32
-	struct _finddata_t fdt; int fdthnd;
+	struct _finddata_t fdt; intptr_t fdthnd;
 
 	friend class C4GroupEntry;
 #else

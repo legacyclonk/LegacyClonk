@@ -124,7 +124,7 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 	pBtnNextMission = nullptr;
 
 	bool hideRestart = false;
-	size_t buttonCount = 2;
+	int32_t buttonCount = 2;
 	if (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2))
 	{
 		++buttonCount;

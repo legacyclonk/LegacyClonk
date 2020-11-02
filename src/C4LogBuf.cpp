@@ -20,7 +20,7 @@
 #include "C4Include.h"
 #include "C4LogBuf.h"
 
-C4LogBuffer::C4LogBuffer(int iSize, int iMaxLines, int iLBWidth, const char *szIndentChars, bool fDynamicGrow, bool fMarkup)
+C4LogBuffer::C4LogBuffer(size_t iSize, size_t iMaxLines, int iLBWidth, const char *szIndentChars, bool fDynamicGrow, bool fMarkup)
 	: iBufSize(iSize), iFirstLinePos(0), iAfterLastLinePos(0), iLineDataPos(0),
 	iNextLineDataPos(0), iMaxLineCount(iMaxLines), iLineCount(0), iLineBreakWidth(iLBWidth), fDynamicGrow(fDynamicGrow), fMarkup(fMarkup)
 {
@@ -87,7 +87,7 @@ void C4LogBuffer::DiscardFirstLine()
 	if (!iLineCount) iLineDataPos = iNextLineDataPos = 0;
 }
 
-void C4LogBuffer::AppendSingleLine(const char *szLine, int iLineLength, const char *szIndent, CStdFont *pFont, uint32_t dwClr, bool fNewPar)
+void C4LogBuffer::AppendSingleLine(const char *szLine, size_t iLineLength, const char *szIndent, CStdFont *pFont, uint32_t dwClr, bool fNewPar)
 {
 	// security: do not append empty line
 	if (!szLine || !iLineLength || !*szLine) return;
@@ -132,10 +132,10 @@ void C4LogBuffer::AppendSingleLine(const char *szLine, int iLineLength, const ch
 	}
 	// discard any messages within insertion range of new message
 	if (!fDynamicGrow)
-		while (iLineCount && Inside(iFirstLinePos, iAfterLastLinePos, iAfterLastLinePos + iLineLength - 1))
+		while (iLineCount && Inside<size_t>(iFirstLinePos, iAfterLastLinePos, iAfterLastLinePos + iLineLength - 1))
 			DiscardFirstLine();
 	// copy indent
-	int iIndentLen = 0;
+	size_t iIndentLen = 0;
 	if (szIndent)
 	{
 		iIndentLen = strlen(szIndent);
@@ -168,7 +168,7 @@ void C4LogBuffer::AppendSingleLine(const char *szLine, int iLineLength, const ch
 void C4LogBuffer::AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwClr, CStdFont *pFirstLineFont)
 {
 	char LineBreakChars[] = { 0x0D, 0x0A, '|' };
-	int32_t iLineBreakCharCount = 2 + fMarkup;
+	int iLineBreakCharCount = 2 + fMarkup;
 	// safety
 	if (!szLine) return;
 	// split '|'/CR/LF-separations first, if there are any

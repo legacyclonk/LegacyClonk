@@ -165,7 +165,7 @@ protected:
 	CStdFile StdFile;
 	size_t iCurrFileSize; // size of last accessed file
 	// File only
-	int FilePtr;
+	size_t FilePtr;
 	int MotherOffset;
 	int EntryOffset;
 	bool Modified;
@@ -192,9 +192,9 @@ public:
 	bool OpenMother();
 	bool Add(const char *szFiles);
 	bool Add(const char *szFile, const char *szAddAs);
-	bool Add(const char *szName, void *pBuffer, int iSize, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
-	bool Add(const char *szName, StdBuf &pBuffer, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
-	bool Add(const char *szName, StdStrBuf &pBuffer, bool fChild = false, bool fHoldBuffer = false, int iTime = 0, bool fExecutable = false);
+	bool Add(const char *szName, void *pBuffer, size_t iSize, bool fChild = false, bool fHoldBuffer = false, time_t iTime = 0, bool fExecutable = false);
+	bool Add(const char *szName, StdBuf &pBuffer, bool fChild = false, bool fHoldBuffer = false, time_t iTime = 0, bool fExecutable = false);
+	bool Add(const char *szName, StdStrBuf &pBuffer, bool fChild = false, bool fHoldBuffer = false, time_t iTime = 0, bool fExecutable = false);
 	bool Merge(const char *szFolders);
 	bool Move(const char *szFiles);
 	bool Move(const char *szFile, const char *szAddAs);
@@ -227,7 +227,7 @@ public:
 		bool *fChild = nullptr,
 		bool fStartAtFilename = false);
 	bool Read(void *pBuffer, size_t iSize) override;
-	bool Advance(int iOffset) override;
+	bool Advance(size_t iOffset) override;
 	void SetMaker(const char *szMaker);
 	void SetStdOutput(bool fStatus);
 	void MakeOriginal(bool fOriginal);
@@ -240,9 +240,9 @@ public:
 	int EntryCount(const char *szWildCard = nullptr);
 	int EntrySize(const char *szWildCard = nullptr);
 	size_t AccessedEntrySize() override { return iCurrFileSize; } // retrieve size of last accessed entry
-	int EntryTime(const char *szFilename);
+	uint32_t EntryTime(const char *szFilename);
 	unsigned int EntryCRC32(const char *szWildCard = nullptr);
-	int GetCreation();
+	int32_t GetCreation();
 	int GetStatus();
 	inline bool IsOpen() { return Status != GRPF_Inactive; }
 	C4Group *GetMother();
@@ -262,9 +262,9 @@ protected:
 	bool Error(const char *szStatus);
 	bool OpenReal(const char *szGroupName);
 	bool OpenRealGrpFile();
-	bool SetFilePtr(int iOffset);
+	bool SetFilePtr(size_t iOffset);
 	bool RewindFilePtr();
-	bool AdvanceFilePtr(int iOffset, C4Group *pByChild = nullptr);
+	bool AdvanceFilePtr(size_t iOffset, C4Group *pByChild = nullptr);
 	bool AddEntry(int status,
 		bool childgroup,
 		const char *fname,

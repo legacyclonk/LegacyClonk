@@ -182,7 +182,7 @@ bool CStdFile::Read(void *pBuffer, size_t iSize, size_t *ipFSize)
 	return true;
 }
 
-int CStdFile::LoadBuffer()
+size_t CStdFile::LoadBuffer()
 {
 	if (hFile) BufferLoad = fread(Buffer, 1, CStdFileBufSize, hFile);
 	if (readCompressedFile)
@@ -202,7 +202,7 @@ int CStdFile::LoadBuffer()
 
 bool CStdFile::SaveBuffer()
 {
-	int saved = 0;
+	size_t saved = 0;
 	if (hFile) saved = fwrite(Buffer, 1, BufferLoad, hFile);
 	if (writeCompressedFile)
 	{
@@ -228,7 +228,7 @@ void CStdFile::ClearBuffer()
 
 bool CStdFile::Write(const void *pBuffer, size_t iSize)
 {
-	int transfer;
+	size_t transfer;
 	if (!pBuffer) return false;
 	if (!ModeWrite) return false;
 	const uint8_t *bypBuffer = static_cast<const uint8_t *>(pBuffer);
@@ -253,7 +253,7 @@ bool CStdFile::WriteString(const char *szStr)
 {
 	uint8_t nl[2] = { 0x0D, 0x0A };
 	if (!szStr) return false;
-	int size = SLen(szStr);
+	const auto size = SLen(szStr);
 	if (!Write(static_cast<const void *>(szStr), size)) return false;
 	if (!Write(nl, 2)) return false;
 	return true;
@@ -271,7 +271,7 @@ bool CStdFile::Rewind()
 	return true;
 }
 
-bool CStdFile::Advance(int iOffset)
+bool CStdFile::Advance(size_t iOffset)
 {
 	if (ModeWrite) return false;
 	while (iOffset > 0)
@@ -279,7 +279,7 @@ bool CStdFile::Advance(int iOffset)
 		// Valid data in the buffer: Transfer as much as possible
 		if (BufferLoad > BufferPtr)
 		{
-			int transfer = std::min(static_cast<int>(BufferLoad) - static_cast<int>(BufferPtr), iOffset);
+			const auto transfer = std::min(BufferLoad - BufferPtr, iOffset);
 			BufferPtr += transfer;
 			iOffset -= transfer;
 		}

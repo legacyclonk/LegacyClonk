@@ -30,7 +30,7 @@ class CStdStream
 {
 public:
 	virtual bool Read(void *pBuffer, size_t iSize) = 0;
-	virtual bool Advance(int iOffset) = 0;
+	virtual bool Advance(size_t iOffset) = 0;
 	// Get size. compatible with c4group!
 	virtual size_t AccessedEntrySize() = 0;
 	virtual ~CStdStream() {}
@@ -63,7 +63,7 @@ public:
 	bool Write(const void *pBuffer, size_t iSize);
 	bool WriteString(const char *szStr);
 	bool Rewind();
-	bool Advance(int iOffset) override;
+	bool Advance(size_t iOffset) override;
 	// Single line commands
 	bool Load(const char *szFileName, uint8_t **lpbpBuf,
 		size_t *ipSize = nullptr, int iAppendZeros = 0,
@@ -77,7 +77,7 @@ public:
 
 protected:
 	void ClearBuffer();
-	int LoadBuffer();
+	size_t LoadBuffer();
 	bool SaveBuffer();
 };
 

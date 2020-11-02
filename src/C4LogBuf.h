@@ -32,11 +32,11 @@ private:
 
 	char *szBuf; // string buffer
 	LineData *pLineDataBuf; // line data buffer
-	int iBufSize; // size of string buffer
+	size_t iBufSize; // size of string buffer
 	int iFirstLinePos, iAfterLastLinePos; // current string buffer positions
 	int iLineDataPos, iNextLineDataPos; // current line data buffer positions
-	int iMaxLineCount; // max number of valid lines - size of line data buffer
-	int iLineCount; // number of valid lines in buffer
+	size_t iMaxLineCount; // max number of valid lines - size of line data buffer
+	size_t iLineCount; // number of valid lines in buffer
 	int iLineBreakWidth; // line breaking width
 	char *szIndent; // chars inserted as indent space
 	bool fDynamicGrow; // if true, lines are always added to the buffer. If false, the buffer is used circular and old lines removed
@@ -45,10 +45,10 @@ private:
 	void GrowLineCountBuffer(size_t iGrowBy);
 	void GrowTextBuffer(size_t iGrowBy);
 	void DiscardFirstLine(); // discard oldest line in buffer
-	void AppendSingleLine(const char *szLine, int iLineLength, const char *szIndent, CStdFont *pFont, uint32_t dwClr, bool fNewParagraph); // append given string as single line
+	void AppendSingleLine(const char *szLine, size_t iLineLength, const char *szIndent, CStdFont *pFont, uint32_t dwClr, bool fNewParagraph); // append given string as single line
 
 public:
-	C4LogBuffer(int iSize, int iMaxLines, int iLBWidth, const char *szIndentChars = "    ", bool fDynamicGrow = false, bool fMarkup = true);
+	C4LogBuffer(size_t iSize, size_t iMaxLines, int iLBWidth, const char *szIndentChars = "    ", bool fDynamicGrow = false, bool fMarkup = true);
 	~C4LogBuffer();
 
 	void AppendLines(const char *szLine, CStdFont *pFont, uint32_t dwClr, CStdFont *pFirstLineFont = nullptr); // append message line to buffer; overwriting old lines if necessary

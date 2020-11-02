@@ -626,9 +626,8 @@ const char *C4Config::AtNetworkPath(const char *szFilename)
 
 const char *C4Config::AtScreenshotPath(const char *szFilename)
 {
-	int len;
 	SCopy(General.ScreenshotPath, AtPathFilename, _MAX_PATH);
-	if (len = SLen(AtPathFilename))
+	if (const auto len = SLen(AtPathFilename); len > 0)
 		if (AtPathFilename[len - 1] == DirectorySeparator)
 			AtPathFilename[len - 1] = '\0';
 	if (!DirectoryExists(AtPathFilename) && !CreateDirectory(AtPathFilename, nullptr))

@@ -1457,7 +1457,7 @@ int32_t C4Game::ObjectCount(C4ID id,
 							// ActionTarget
 							if (!pActionTarget || ((cObj->Action.Act > ActIdle) && ((cObj->Action.Target == pActionTarget) || (cObj->Action.Target2 == pActionTarget))))
 								// Container
-								if (!pContainer || (cObj->Contained == pContainer) || ((reinterpret_cast<long>(pContainer) == NO_CONTAINER) && !cObj->Contained) || ((reinterpret_cast<long>(pContainer) == ANY_CONTAINER) && cObj->Contained))
+								if (!pContainer || (cObj->Contained == pContainer) || ((reinterpret_cast<std::intptr_t>(pContainer) == NO_CONTAINER) && !cObj->Contained) || ((reinterpret_cast<std::intptr_t>(pContainer) == ANY_CONTAINER) && cObj->Contained))
 									// Owner
 									if ((iOwner == ANY_OWNER) || (cObj->Owner == iOwner))
 										// Area

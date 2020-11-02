@@ -195,8 +195,8 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	HWND hwnd = FindWindow(nullptr, C4EDITORCAPTION);
 	if (hwnd) PostMessage(hwnd, WM_CLOSE, 0, 0);
 	StdStrBuf strUpdateArgs; strUpdateArgs.Format("\"%s\" /p -w \"" C4ENGINECAPTION "\" -w \"" C4EDITORCAPTION "\" -w 2000 %s", strUpdateFile, fDeleteUpdate ? "-yd" : "-y");
-	int iError = (int)ShellExecute(nullptr, "runas", strUpdateProg.getData(), strUpdateArgs.getData(), Config.General.ExePath, SW_SHOW);
-	if (iError <= 32) return false;
+	const auto iError = ShellExecute(nullptr, "runas", strUpdateProg.getData(), strUpdateArgs.getData(), Config.General.ExePath, SW_SHOW);
+	if (reinterpret_cast<intptr_t>(iError) <= 32) return false;
 	// must quit ourselves for update program to work
 	if (succeeded) Application.Quit();
 #else

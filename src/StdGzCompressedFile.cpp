@@ -14,6 +14,7 @@
  */
 
 #include <StdGzCompressedFile.h>
+#include <Standard.h>
 
 #include <algorithm>
 #include <cerrno>
@@ -62,7 +63,7 @@ void Read::CheckMagicBytes()
 {
 	uint8_t magicBytesBuffer[2];
 	uint8_t *readTarget = magicBytesBuffer;
-	size_t readLeft = 2;
+	unsigned int readLeft = 2;
 
 	for (; readLeft > 0;)
 	{
@@ -152,7 +153,7 @@ size_t Read::ReadData(uint8_t *const toBuffer, const size_t size)
 {
 	size_t readSize = 0;
 	gzStream.next_out = toBuffer;
-	gzStream.avail_out = size;
+	gzStream.avail_out = checked_cast<unsigned int>(size);
 	for (; size > readSize;)
 	{
 		if (!gzStreamValid && !(feof(file) && bufferedSize == 0))
@@ -205,7 +206,7 @@ size_t Read::ReadData(uint8_t *const toBuffer, const size_t size)
 
 void Read::RefillBuffer()
 {
-	bufferedSize = fread(buffer.get(), 1, ChunkSize, file);
+	bufferedSize = static_cast<unsigned int>(fread(buffer.get(), 1, ChunkSize, file));
 	if (ferror(file)) throw Exception("fread failed");
 	bufferPtr = buffer.get();
 }
@@ -261,7 +262,7 @@ Write::~Write() noexcept(false)
 
 void Write::FlushBuffer()
 {
-	if (fwrite(buffer.get(), 1, bufferedSize, file) != bufferedSize)
+	if (static_cast<unsigned int>(fwrite(buffer.get(), 1, bufferedSize, file)) != bufferedSize)
 	{
 		throw Exception("fwrite failed");
 	}
@@ -272,7 +273,7 @@ void Write::FlushBuffer()
 void Write::DeflateToBuffer(const uint8_t *const fromBuffer, const size_t size, int flushMode, int expectedRet)
 {
 	gzStream.next_in = fromBuffer;
-	gzStream.avail_in = size;
+	gzStream.avail_in = checked_cast<unsigned int>(size);
 
 	if (!magicBytesDone)
 	{

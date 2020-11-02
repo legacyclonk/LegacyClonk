@@ -611,9 +611,9 @@ bool C4Console::Out(const char *szText)
 #ifdef _WIN32
 	if (!Active) return false;
 	if (!szText || !*szText) return true;
-	int len, len2, lines; char *buffer, *buffer2;
+	int len, len2; char *buffer, *buffer2;
 	len = 65000;
-	len2 = len + std::min<int32_t>(strlen(szText) + 2, 5000);
+	len2 = len + std::min<int>(strlen(szText) + 2, 5000);
 	buffer = new char[len2];
 	buffer[0] = 0;
 	GetDlgItemText(hWindow, IDC_EDITOUTPUT, buffer, len);
@@ -622,7 +622,7 @@ bool C4Console::Out(const char *szText)
 	if (strlen(buffer) > 60000) buffer2 = buffer + strlen(buffer) - 60000; else buffer2 = buffer; // max log length: Otherwise, discard beginning
 	SetDlgItemText(hWindow, IDC_EDITOUTPUT, buffer2);
 	delete[] buffer;
-	lines = SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_GETLINECOUNT, (WPARAM)0, (LPARAM)0);
+	const auto lines = SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_GETLINECOUNT, (WPARAM)0, (LPARAM)0);
 	SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_LINESCROLL, (WPARAM)0, (LPARAM)lines);
 	UpdateWindow(hWindow);
 #elif WITH_DEVELOPER_MODE
@@ -1530,7 +1530,7 @@ void C4Console::UpdateNetMenu()
 	ClearNetMenu();
 	// Insert menu
 #ifdef _WIN32
-	if (!InsertMenu(GetMenu(hWindow), MenuIndexHelp, MF_BYPOSITION | MF_POPUP, (UINT)CreateMenu(), LoadResStr("IDS_MNU_NET"))) return;
+	if (!InsertMenu(GetMenu(hWindow), MenuIndexHelp, MF_BYPOSITION | MF_POPUP, reinterpret_cast<UINT_PTR>(CreateMenu()), LoadResStr("IDS_MNU_NET"))) return;
 #elif WITH_DEVELOPER_MODE
 	itemNet = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_NET"));
 	GtkWidget *menuNet = gtk_menu_new();

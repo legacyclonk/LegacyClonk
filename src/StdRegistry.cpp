@@ -120,7 +120,7 @@ bool SetRegistryString(const char *szSubKey,
 		0,
 		REG_SZ,
 		(BYTE *)szValue,
-		SLen(szValue) + 1
+		checked_cast<DWORD>(SLen(szValue) + 1)
 	)) != ERROR_SUCCESS)
 	{
 		RegCloseKey(ckey); return false;
@@ -177,7 +177,7 @@ bool SetRegClassesRoot(const char *szSubKey,
 		0,
 		REG_SZ,
 		(BYTE *)szStringValue,
-		SLen(szStringValue) + 1
+		checked_cast<DWORD>(SLen(szStringValue) + 1)
 	)) != ERROR_SUCCESS)
 	{
 		RegCloseKey(ckey); return false;
@@ -215,7 +215,7 @@ bool SetRegClassesRootString(const char *szSubKey,
 		0,
 		REG_SZ,
 		(BYTE *)szValue,
-		SLen(szValue) + 1
+		checked_cast<DWORD>(SLen(szValue) + 1)
 	)) != ERROR_SUCCESS)
 	{
 		RegCloseKey(ckey); return false;
@@ -515,7 +515,7 @@ void StdCompilerConfigWrite::WriteString(const char *szString)
 	// Set the value
 	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
 		0, REG_SZ, reinterpret_cast<const BYTE *>(szString),
-		strlen(szString) + 1) != ERROR_SUCCESS)
+		checked_cast<DWORD>(strlen(szString) + 1)) != ERROR_SUCCESS)
 		excCorrupt(0, FormatString("Could not write key %s!", pKey->Name.getData()).getData());
 }
 

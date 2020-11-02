@@ -237,7 +237,7 @@ bool TruncatePath(char *szPath)
 
 void AppendBackslash(char *szFilename)
 {
-	int i = SLen(szFilename);
+	const auto i = SLen(szFilename);
 	if (i > 0) if ((szFilename[i - 1] == DirectorySeparator)) return;
 	SAppendChar(DirectorySeparator, szFilename);
 }
@@ -246,7 +246,7 @@ void AppendBackslash(char *szFilename)
 
 void TruncateBackslash(char *szFilename)
 {
-	int i = SLen(szFilename);
+	const auto i = SLen(szFilename);
 	if (i > 0) if ((szFilename[i - 1] == DirectorySeparator)) szFilename[i - 1] = 0;
 }
 
@@ -490,7 +490,7 @@ bool MakeOriginalFilename(char *szFilename)
 		if (GetDriveType(szFilename) == DRIVE_NO_ROOT_DIR) return false;
 		return true;
 	}
-	struct _finddata_t fdt; long shnd;
+	struct _finddata_t fdt; intptr_t shnd;
 	if ((shnd = _findfirst((char *)szFilename, &fdt)) < 0) return false;
 	_findclose(shnd);
 	SCopy(GetFilename(fdt.name), GetFilename(szFilename), _MAX_FNAME);
@@ -544,7 +544,7 @@ bool DirectoryExists(const char *szFilename)
 		}
 	// Check file attributes
 #ifdef _WIN32
-	struct _finddata_t fdt; int shnd;
+	struct _finddata_t fdt; intptr_t shnd;
 	if ((shnd = _findfirst(szFilename, &fdt)) < 0) return false;
 	_findclose(shnd);
 	if (fdt.attrib & _A_SUBDIR) return true;
@@ -575,7 +575,7 @@ bool CopyDirectory(const char *szSource, const char *szTarget, bool fResetAttrib
 	char contents[_MAX_PATH + 1];
 	SCopy(szSource, contents); AppendBackslash(contents);
 	SAppend("*", contents);
-	_finddata_t fdt; int hfdt;
+	_finddata_t fdt; intptr_t hfdt;
 	if ((hfdt = _findfirst(contents, &fdt)) > -1)
 	{
 		do
@@ -858,7 +858,7 @@ int ForEachFile(const char *szDirName, bool(*fnCallback)(const char *))
 		AppendBackslash(szFilename);
 	int iFileCount = 0;
 #ifdef _WIN32
-	struct _finddata_t fdt; int fdthnd;
+	struct _finddata_t fdt; intptr_t fdthnd;
 	if (!fHasWildcard) // parameter without wildcard: Append "/*.*" or "\*.*"
 		SAppend("*", szFilename, _MAX_PATH);
 	if ((fdthnd = _findfirst((char *)szFilename, &fdt)) < 0)

@@ -187,7 +187,7 @@ public:
 
 private:
 	bool fJump;
-	int iStack;
+	std::intptr_t iStack;
 
 	void AddBCC(C4AulBCCType eType, std::intptr_t X = 0);
 
@@ -207,7 +207,7 @@ private:
 			Control *Next;
 		};
 		Control *Controls;
-		int StackSize;
+		size_t StackSize;
 		Loop *Next;
 	};
 	Loop *pLoopStack;
@@ -716,13 +716,13 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 						break;
 					}
 					// parse as decimal int
-					szScanCode = "%ld";
+					szScanCode = "%" SCNdPTR;
 				}
 				else
 				{
 					// parse as hexadecimal int: Also allow 'a' to 'f' and 'A' to 'F'
 					if ((C >= 'A' && C <= 'F') || (C >= 'a' && C <= 'f')) break;
-					szScanCode = "%lx";
+					szScanCode = "%" SCNxPTR;
 				}
 				// return integer
 				Len = (std::min)(Len, C4AUL_MAX_Identifier);
@@ -1135,7 +1135,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, std::intptr_t X)
 
 namespace
 {
-	void SkipExpressions(int n, C4AulBCC *&CPos, C4AulBCC *const Code)
+	void SkipExpressions(intptr_t n, C4AulBCC *&CPos, C4AulBCC *const Code)
 	{
 		while (n > 0 && CPos > Code)
 		{
@@ -1852,7 +1852,7 @@ void C4AulParseState::Parse_Function()
 		if (Fn->bNewFormat)
 		{
 			// all ok, insert a return
-			C4AulBCC *CPos = a->GetCodeByPos(std::max<size_t>(a->GetCodePos() - 1, 0));
+			C4AulBCC *CPos = a->GetCodeByPos(std::max<size_t>(a->GetCodePos(), 1) - 1);
 			if (!CPos || CPos->bccType != AB_RETURN || fJump)
 			{
 				AddBCC(Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT3 ? AB_NIL : AB_INT);
@@ -2891,7 +2891,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 	{
 		// -> must be a prefix operator
 		// get operator ID
-		int OpID = cInt;
+		const auto OpID = cInt;
 		// postfix?
 		if (C4ScriptOpMap[OpID].Postfix)
 			// oops. that's wrong
@@ -2955,13 +2955,13 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 	case ATT_OPERATOR:
 	{
 		// expect postfix operator
-		int OpID = cInt;
+		auto OpID = cInt;
 		if (!C4ScriptOpMap[OpID].Postfix)
 		{
 			// does an operator with the same name exist?
 			// when it's a postfix-operator, it can be used instead.
-			int nOpID;
-			for (nOpID = OpID + 1; C4ScriptOpMap[nOpID].Identifier; nOpID++)
+			auto nOpID = OpID + 1;
+			for (; C4ScriptOpMap[nOpID].Identifier; nOpID++)
 				if (SEqual(C4ScriptOpMap[OpID].Identifier, C4ScriptOpMap[nOpID].Identifier))
 					if (C4ScriptOpMap[nOpID].Postfix)
 						break;
@@ -3238,7 +3238,7 @@ void C4AulParseState::Parse_Var()
 		if (TokenType == ATT_OPERATOR)
 		{
 			// only accept "="
-			int iOpID = cInt;
+			const auto iOpID = cInt;
 			if (SEqual(C4ScriptOpMap[iOpID].Identifier, "="))
 			{
 				// insert initialization in byte code
@@ -3375,10 +3375,10 @@ void C4AulParseState::Parse_Const()
 			switch (TokenType)
 			{
 			case ATT_NIL: vGlobalValue.Set0(); break;
-			case ATT_INT: vGlobalValue.SetInt(cInt); break;
+			case ATT_INT: vGlobalValue.SetInt(static_cast<C4ValueInt>(cInt)); break;
 			case ATT_BOOL: vGlobalValue.SetBool(!!cInt); break;
 			case ATT_STRING: vGlobalValue.SetString(reinterpret_cast<C4String *>(cInt)); break; // increases ref count of C4String in cInt to 1
-			case ATT_C4ID: vGlobalValue.SetC4ID(cInt); break;
+			case ATT_C4ID: vGlobalValue.SetC4ID(static_cast<C4ID>(cInt)); break;
 			case ATT_IDTF:
 				// identifier is only OK if it's another constant
 				if (!a->Engine->GetGlobalConstant(Idtf, &vGlobalValue))

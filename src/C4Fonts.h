@@ -80,7 +80,7 @@ public:
 	~C4FontLoader() { Clear(); }
 
 	void Clear(); // clear loaded fonts
-	int32_t LoadDefs(C4Group &hGroup, C4Config &rCfg); // load font definitions from group file; return number of loaded font defs
+	size_t LoadDefs(C4Group &hGroup, C4Config &rCfg); // load font definitions from group file; return number of loaded font defs
 	void AddVectorFont(C4VectorFont *pAddFont); // adds a new font to the list
 
 #ifdef C4ENGINE

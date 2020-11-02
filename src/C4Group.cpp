@@ -447,7 +447,7 @@ bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32)
 			if (!iSize)
 				break;
 		// update CRC
-		iCRC32 = crc32(iCRC32, szData, iSize);
+		iCRC32 = crc32(iCRC32, szData, checked_cast<unsigned int>(iSize));
 	}
 	// close file
 	File.Close();
@@ -838,8 +838,8 @@ bool C4Group::AddEntry(int status,
 	// Init entry core data
 	if (entryname) SCopy(entryname, nentry->FileName, _MAX_FNAME);
 	else SCopy(GetFilename(fname), nentry->FileName, _MAX_FNAME);
-	nentry->Size = static_cast<int32_t>(size);
-	nentry->Time = static_cast<uint32_t>(time + C4Group_AssumeTimeOffset);
+	nentry->Size = checked_cast<int32_t>(size);
+	nentry->Time = checked_cast<uint32_t>(time + C4Group_AssumeTimeOffset);
 	nentry->ChildGroup = childgroup;
 	nentry->Offset = 0;
 	nentry->HasCRC = cCRC;
@@ -1216,7 +1216,7 @@ C4GroupEntry *C4Group::SearchNextEntry(const char *szName)
 	return nullptr;
 }
 
-bool C4Group::SetFilePtr(int iOffset)
+bool C4Group::SetFilePtr(size_t iOffset)
 {
 	if (Status == GRPF_Folder)
 		return Error("SetFilePtr not implemented for Folders");
@@ -1235,7 +1235,7 @@ bool C4Group::SetFilePtr(int iOffset)
 	return true;
 }
 
-bool C4Group::Advance(int iOffset)
+bool C4Group::Advance(size_t iOffset)
 {
 	if (Status == GRPF_Folder) return !!StdFile.Advance(iOffset);
 	// FIXME: reading the file one byte at a time sounds just slow.
@@ -1276,7 +1276,7 @@ bool C4Group::Read(void *pBuffer, size_t iSize)
 	return true;
 }
 
-bool C4Group::AdvanceFilePtr(int iOffset, C4Group *pByChild)
+bool C4Group::AdvanceFilePtr(size_t iOffset, C4Group *pByChild)
 {
 	// Child group file: pass command to mother
 	if ((Status == GRPF_File) && Mother)
@@ -1458,7 +1458,7 @@ bool C4Group::AddEntryOnDisk(const char *szFilename,
 
 	// Determine size
 	bool fIsGroup = !!C4Group_IsGroup(szFilename);
-	int iSize = fIsGroup ? UncompressedFileSize(szFilename) : FileSize(szFilename);
+	const auto iSize = fIsGroup ? UncompressedFileSize(szFilename) : FileSize(szFilename);
 
 	// Determine executable bit (linux only)
 	bool fExecutable = false;
@@ -1939,7 +1939,7 @@ bool C4Group::SetFilePtr2Entry(const char *szName, C4Group *pByChild)
 		C4GroupEntry *centry;
 		if (!(centry = GetEntry(szName))) return false;
 		if (centry->Status != C4GRES_InGroup) return false;
-		return SetFilePtr(centry->Offset);
+		return SetFilePtr(static_cast<size_t>(centry->Offset));
 
 	case GRPF_Folder:
 		StdFile.Close();
@@ -1989,7 +1989,7 @@ bool C4Group::Add(const char *szFiles)
 	char szFileName[_MAX_FNAME + 1];
 	int iFileCount = 0;
 	long lAttrib = 0x037; // _A_ALL
-	struct _finddata_t fdt; long fdthnd;
+	struct _finddata_t fdt; intptr_t fdthnd;
 
 	// Process segmented path & search wildcards
 	char cSeparator = (SCharCount(';', szFiles) ? ';' : '|');
@@ -2032,7 +2032,7 @@ bool C4Group::Move(const char *szFiles)
 	char szFileName[_MAX_FNAME + 1];
 	int iFileCount = 0;
 	long lAttrib = 0x037; // _A_ALL
-	struct _finddata_t fdt; long fdthnd;
+	struct _finddata_t fdt; intptr_t fdthnd;
 
 	// Process segmented path & search wildcards
 	char cSeparator = (SCharCount(';', szFiles) ? ';' : '|');
@@ -2067,7 +2067,7 @@ bool C4Group::Move(const char *szFiles)
 
 #endif
 
-bool C4Group::Add(const char *szName, void *pBuffer, int iSize, bool fChild, bool fHoldBuffer, int iTime, bool fExecutable)
+bool C4Group::Add(const char *szName, void *pBuffer, size_t iSize, bool fChild, bool fHoldBuffer, time_t iTime, bool fExecutable)
 {
 	return AddEntry(C4GRES_InMemory,
 		fChild,
@@ -2083,7 +2083,7 @@ bool C4Group::Add(const char *szName, void *pBuffer, int iSize, bool fChild, boo
 		fExecutable);
 }
 
-bool C4Group::Add(const char *szName, StdBuf &pBuffer, bool fChild, bool fHoldBuffer, int iTime, bool fExecutable)
+bool C4Group::Add(const char *szName, StdBuf &pBuffer, bool fChild, bool fHoldBuffer, time_t iTime, bool fExecutable)
 {
 	if (!AddEntry(C4GRES_InMemory,
 		fChild,
@@ -2103,7 +2103,7 @@ bool C4Group::Add(const char *szName, StdBuf &pBuffer, bool fChild, bool fHoldBu
 	return true;
 }
 
-bool C4Group::Add(const char *szName, StdStrBuf &pBuffer, bool fChild, bool fHoldBuffer, int iTime, bool fExecutable)
+bool C4Group::Add(const char *szName, StdStrBuf &pBuffer, bool fChild, bool fHoldBuffer, time_t iTime, bool fExecutable)
 {
 	if (!AddEntry(C4GRES_InMemory,
 		fChild,
@@ -2168,9 +2168,9 @@ unsigned int C4Group::EntryCRC32(const char *szWildCard)
 	return iCRC;
 }
 
-int C4Group::EntryTime(const char *szFilename)
+uint32_t C4Group::EntryTime(const char *szFilename)
 {
-	int iTime = 0;
+	uint32_t iTime = 0;
 	switch (Status)
 	{
 	case GRPF_File:
@@ -2332,7 +2332,7 @@ bool C4Group::CloseExclusiveMother()
 	return false;
 }
 
-int C4Group::GetCreation()
+int32_t C4Group::GetCreation()
 {
 	return Head.Creation;
 }
@@ -2479,7 +2479,7 @@ bool C4Group::CalcCRC32(C4GroupEntry *pEntry)
 			if (fOwnData) delete[] pData;
 		}
 		// add file name
-		pEntry->CRC = crc32(pEntry->CRC, reinterpret_cast<uint8_t *>(pEntry->FileName), SLen(pEntry->FileName));
+		pEntry->CRC = crc32(pEntry->CRC, reinterpret_cast<uint8_t *>(pEntry->FileName), checked_cast<unsigned int>(SLen(pEntry->FileName)));
 	}
 	// set flag
 	pEntry->HasCRC = C4GECS_New;

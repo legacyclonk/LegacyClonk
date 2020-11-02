@@ -369,7 +369,7 @@ public:
 	int GetHash() const
 	{
 		if (isNull()) return 0;
-		return crc32(0, reinterpret_cast<const Bytef *>(getData()), static_cast<unsigned int>(getSize()));
+		return crc32(0, reinterpret_cast<const Bytef *>(getData()), checked_cast<unsigned int>(getSize()));
 	}
 
 	// *** Compiling

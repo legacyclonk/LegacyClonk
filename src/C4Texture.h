@@ -87,7 +87,7 @@ public:
 	int32_t Init();
 	bool SaveMap(C4Group &hGroup, const char *szEntryName);
 	int32_t LoadTextures(C4Group &hGroup, C4Group *OverloadFile = nullptr);
-	const char *GetTexture(int32_t iIndex);
+	const char *GetTexture(size_t iIndex);
 	void MoveIndex(uint8_t byOldIndex, uint8_t byNewIndex); // change index of texture
 	int32_t GetIndex(const char *szMaterial, const char *szTexture, bool fAddIfNotExist = true, const char *szErrorIfFailed = nullptr);
 	int32_t GetIndexMatTex(const char *szMaterialTexture, const char *szDefaultTexture = nullptr, bool fAddIfNotExist = true, const char *szErrorIfFailed = nullptr);

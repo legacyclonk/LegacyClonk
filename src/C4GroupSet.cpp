@@ -253,10 +253,10 @@ C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 	if (fParentC4F)
 	{
 		// replace all (back)slashes with zero-fields
-		int32_t iOriginalLen = SLen(szParentfolder);
-		for (int32_t i = 0; i < iOriginalLen; ++i) if (szParentfolder[i] == DirectorySeparator || szParentfolder[i] == '/') szParentfolder[i] = 0;
+		const auto iOriginalLen = SLen(szParentfolder);
+		for (size_t i = 0; i < iOriginalLen; ++i) if (szParentfolder[i] == DirectorySeparator || szParentfolder[i] == '/') szParentfolder[i] = 0;
 		// trace back until the file extension is no more .c4f
-		int32_t iPos = iOriginalLen - 1;
+		auto iPos = iOriginalLen - 1;
 		while (iPos)
 		{
 			// ignore additional zero fields (double-backslashes)

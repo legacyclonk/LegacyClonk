@@ -125,7 +125,7 @@ void C4DownloadDlg::OnIdle()
 				sSize.Format(" (%zu KB)", iSize / 1024);
 			else
 				sSize.Format(" (%zu MB)", iSize / 1024 / 1024);
-			iProgress = int64_t(100) * HTTPClient.getDownloadedSize() / iSize;
+			iProgress = static_cast<int32_t>(100 * HTTPClient.getDownloadedSize() / iSize);
 		}
 	}
 	const char *szStatusString = LoadResStr("IDS_PRC_DOWNLOADINGFILE");

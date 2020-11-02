@@ -170,7 +170,7 @@ void C4FontLoader::AddVectorFont(C4VectorFont *pNewFont)
 	*ppFont = pNewFont;
 }
 
-int32_t C4FontLoader::LoadDefs(C4Group &hGroup, C4Config &rCfg)
+size_t C4FontLoader::LoadDefs(C4Group &hGroup, C4Config &rCfg)
 {
 	// load vector fonts
 	char fn[_MAX_PATH + 1], fnDef[32]; int32_t i = 0;

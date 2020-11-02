@@ -93,6 +93,8 @@ bool LogSilentF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;
 
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 constexpr auto SizeMax = std::numeric_limits<size_t>::max();
@@ -106,6 +108,36 @@ template <class T> inline bool Inside(T ival, T lbound, T rbound) { return ival 
 template <class T> inline T BoundBy(T bval, T lbound, T rbound) { return bval < lbound ? lbound : bval > rbound ? rbound : bval; }
 template <class T> inline int Sign(T val) { return val < 0 ? -1 : val > 0 ? 1 : 0; }
 template <class T> inline void Toggle(T &v) { v = !v; }
+
+template<typename To, typename From>
+To checked_cast(From from)
+{
+	static_assert(std::is_integral_v<To> && std::is_integral_v<From>, "Only implemented for integral types");
+	if constexpr (!(sizeof(To) < sizeof(From) || std::is_unsigned_v<To> != std::is_unsigned_v<From>))
+	{
+		if constexpr (std::is_signed_v<From>)
+		{
+			if constexpr (std::is_unsigned_v<To>)
+			{
+				if (from < 0)
+				{
+					throw std::runtime_error{"Conversion of negative value to unsigned type requested"};
+				}
+			}
+			else if (from < std::numeric_limits<To>::min())
+			{
+				throw std::runtime_error{"Conversion of value requested that is smaller than the target-type minimum"};
+			}
+		}
+
+		if (from > std::numeric_limits<To>::max())
+		{
+			throw std::runtime_error{"Conversion of value requested that is bigger than the target-type maximum"};
+		}
+	}
+
+	return static_cast<To>(from);
+}
 
 inline int DWordAligned(int val)
 {

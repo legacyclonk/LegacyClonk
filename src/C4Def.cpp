@@ -1071,7 +1071,7 @@ int32_t C4DefList::Load(const char *szSearch,
 	if (SCharCount('*', szSearch))
 	{
 #ifdef _WIN32
-		struct _finddata_t fdt; int32_t fdthnd;
+		struct _finddata_t fdt; intptr_t fdthnd;
 		if ((fdthnd = _findfirst(szSearch, &fdt)) < 0) return false;
 		do
 		{

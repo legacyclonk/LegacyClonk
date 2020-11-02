@@ -220,12 +220,11 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 
 	// Load component (segmented filename)
 	char str1[_MAX_FNAME + 1], str2[_MAX_FNAME + 1];
-	int iFileCnt = 0, iFileSizeSum = 0;
-	int cseg, clseg;
-	for (cseg = 0; SCopySegment(Filename, cseg, str1, '|', _MAX_FNAME); cseg++)
+	size_t iFileCnt = 0, iFileSizeSum = 0;
+	for (size_t cseg = 0; SCopySegment(Filename, cseg, str1, '|', _MAX_FNAME); cseg++)
 	{
 		char szLang[3] = "";
-		for (clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
+		for (size_t clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
 		{
 			sprintf(str2, str1, szLang);
 			// Check existance
@@ -248,10 +247,10 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 
 	// Search files to read contents
 	char *pPos = Data.getMData(); *pPos = 0;
-	for (cseg = 0; SCopySegment(Filename, cseg, str1, '|', _MAX_FNAME); cseg++)
+	for (size_t cseg = 0; SCopySegment(Filename, cseg, str1, '|', _MAX_FNAME); cseg++)
 	{
 		char szLang[3] = "";
-		for (clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
+		for (size_t clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
 		{
 			sprintf(str2, str1, szLang);
 			// Load data
@@ -316,7 +315,7 @@ bool C4ComponentHost::GetLanguageString(const char *szLanguage, StdStrBuf &rTarg
 		if (cptr = SSearch(Data.getData(), langindex))
 		{
 			// Return the according string
-			int iEndPos = SCharPos('\r', cptr);
+			auto iEndPos = SCharPos('\r', cptr);
 			if (iEndPos < 0) iEndPos = SCharPos('\n', cptr);
 			if (iEndPos < 0) iEndPos = strlen(cptr);
 			rTarget.Copy(cptr, iEndPos);

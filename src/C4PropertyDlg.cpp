@@ -251,9 +251,9 @@ bool C4PropertyDlg::Update()
 	}
 	// Update info edit control
 #ifdef _WIN32
-	int iLine = SendDlgItemMessage(hDialog, IDC_EDITOUTPUT, EM_GETFIRSTVISIBLELINE, (WPARAM)0, (LPARAM)0);
+	const auto iLine = SendDlgItemMessage(hDialog, IDC_EDITOUTPUT, EM_GETFIRSTVISIBLELINE, 0, 0);
 	SetDlgItemText(hDialog, IDC_EDITOUTPUT, Output.getData());
-	SendDlgItemMessage(hDialog, IDC_EDITOUTPUT, EM_LINESCROLL, (WPARAM)0, (LPARAM)iLine);
+	SendDlgItemMessage(hDialog, IDC_EDITOUTPUT, EM_LINESCROLL, 0, iLine);
 	UpdateWindow(GetDlgItem(hDialog, IDC_EDITOUTPUT));
 #elif defined(WITH_DEVELOPER_MODE)
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));

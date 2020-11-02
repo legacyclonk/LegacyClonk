@@ -164,7 +164,7 @@ private:
 		pCurCtx--;
 	}
 
-	void CheckOverflow(int iCnt)
+	void CheckOverflow(intptr_t iCnt)
 	{
 		if (ValueStackSize() + iCnt > MAX_VALUE_STACK)
 			throw C4AulExecError(pCurCtx->Obj, "internal error: value stack overflow!");
@@ -200,7 +200,7 @@ private:
 		(++pCurVal)->SetRef(&rVal);
 	}
 
-	void PushNullVals(int iCnt)
+	void PushNullVals(intptr_t iCnt)
 	{
 		CheckOverflow(iCnt);
 		pCurVal += iCnt;
@@ -214,7 +214,7 @@ private:
 		return true;
 	}
 
-	void PopValues(int n)
+	void PopValues(intptr_t n)
 	{
 		if (LocalValueStackSize() < n)
 			throw C4AulExecError(pCurCtx->Obj, "internal error: value stack underflow!");
@@ -292,14 +292,14 @@ private:
 	}
 
 	template<C4V_Type leftAsReference = C4V_Any, C4V_Type rightAsReference = C4V_Any, bool leftAllowAny = true, bool rightAllowAny = true>
-	void CheckOpPars(int iOpID)
+	void CheckOpPars(intptr_t iOpID)
 	{
 		CheckOpPar<leftAsReference != C4V_Any, leftAllowAny>(&pCurVal[-1], leftAsReference != C4V_Any ? leftAsReference : C4ScriptOpMap[iOpID].Type1, C4ScriptOpMap[iOpID].Identifier, " left side");
 		CheckOpPar<rightAsReference != C4V_Any, rightAllowAny>(pCurVal, rightAsReference != C4V_Any ? rightAsReference : C4ScriptOpMap[iOpID].Type2, C4ScriptOpMap[iOpID].Identifier, " right side");
 	}
 
 	template<C4V_Type asReference = C4V_Any, bool allowAny = true>
-	void CheckOpPar(int iOpID)
+	void CheckOpPar(intptr_t iOpID)
 	{
 		if constexpr (asReference != C4V_Any)
 			CheckOpPar<true>(pCurVal, asReference, C4ScriptOpMap[iOpID].Identifier);
@@ -365,7 +365,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 
 			case AB_INT:
-				PushValue(C4VInt(pCPos->bccX));
+				PushValue(C4VInt(static_cast<C4ValueInt>(pCPos->bccX)));
 				break;
 
 			case AB_BOOL:
@@ -377,7 +377,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 
 			case AB_C4ID:
-				PushValue(C4VID(pCPos->bccX));
+				PushValue(C4VID(static_cast<C4ID>(pCPos->bccX)));
 				break;
 
 			case AB_EOFN:
@@ -920,7 +920,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					StdStrBuf &str = Container._getStr()->Data;
 					if (index < 0)
 					{
-						index += str.getLength();
+						index += checked_cast<C4ValueInt>(str.getLength());
 					}
 
 					if (index < 0 || static_cast<std::size_t>(index) >= str.getLength())

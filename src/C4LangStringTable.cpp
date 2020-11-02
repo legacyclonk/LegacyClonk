@@ -66,7 +66,7 @@ void C4LangStringTable::ReplaceStrings(const StdStrBuf &rBuf, StdStrBuf &rTarget
 	}
 
 	// Find Replace Positions
-	int iScriptLen = SLen(Data);
+	auto iScriptLen = SLen(Data);
 	struct RP { const char *Pos, *String; unsigned int Len; RP *Next; } *pRPList = nullptr, *pRPListEnd = nullptr;
 	for (const char *pPos = SSearch(Data, "$"); pPos; pPos = SSearch(pPos, "$"))
 	{

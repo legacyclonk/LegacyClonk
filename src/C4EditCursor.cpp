@@ -324,7 +324,7 @@ bool SetMenuItemText(HMENU hMenu, WORD id, const char *szText)
 	minfo.fType = MFT_STRING;
 	minfo.wID = id;
 	minfo.dwTypeData = (char *)szText;
-	minfo.cch = SLen(szText);
+	minfo.cch = checked_cast<UINT>(SLen(szText));
 	return SetMenuItemInfo(hMenu, id, FALSE, &minfo);
 }
 

@@ -568,7 +568,7 @@ struct StdSTLContainerAdapt
 			// Write size (binary only)
 			if (!fNaming)
 			{
-				int32_t iSize = rStruct.size();
+				auto iSize = checked_cast<int32_t>(rStruct.size());
 				pComp->Value(iSize);
 			}
 			auto first = true;
@@ -648,7 +648,7 @@ struct StdSTLMapAdapt
 
 	void CompileFunc(StdCompiler *pComp) const
 	{
-		int32_t count = map.size();
+		auto count = checked_cast<int32_t>(map.size());
 		pComp->Value(count);
 		if (pComp->isCompiler())
 		{

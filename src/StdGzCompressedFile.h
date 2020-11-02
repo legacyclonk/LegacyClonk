@@ -37,7 +37,10 @@ class Read
 {
 	std::unique_ptr<uint8_t[]> buffer{new uint8_t[ChunkSize]};
 	uint8_t *bufferPtr = nullptr;
-	size_t bufferedSize = 0;
+
+	// the gzip struct only has size fields of unsigned int
+	// and this value is bounded by ChunkSize anyway
+	unsigned int bufferedSize = 0;
 
 	FILE *file;
 	size_t position = 0;
@@ -62,7 +65,9 @@ class Write
 	FILE *file;
 	z_stream gzStream;
 	std::unique_ptr<uint8_t[]> buffer{new uint8_t[ChunkSize]};
-	size_t bufferedSize = 0;
+	// the gzip struct only has size fields of unsigned int
+	// and this value is bounded by ChunkSize anyway
+	unsigned int bufferedSize = 0;
 	bool magicBytesDone = false;
 
 public:

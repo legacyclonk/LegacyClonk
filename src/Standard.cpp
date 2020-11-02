@@ -393,9 +393,9 @@ void SCapitalize(char *str)
 const char *SSearch(const char *szString, const char *szIndex)
 {
 	const char *cscr;
-	int indexlen, match = 0;
+	size_t match = 0;
 	if (!szString || !szIndex) return nullptr;
-	indexlen = SLen(szIndex);
+	const auto indexlen = SLen(szIndex);
 	for (cscr = szString; cscr && *cscr; cscr++)
 	{
 		if (*cscr == szIndex[match]) match++;
@@ -408,9 +408,9 @@ const char *SSearch(const char *szString, const char *szIndex)
 const char *SSearchNoCase(const char *szString, const char *szIndex)
 {
 	const char *cscr;
-	int indexlen, match = 0;
+	size_t match = 0;
 	if (!szString || !szIndex) return nullptr;
-	indexlen = SLen(szIndex);
+	const auto indexlen = SLen(szIndex);
 	for (cscr = szString; cscr && *cscr; cscr++)
 	{
 		if (CharCapital(*cscr) == CharCapital(szIndex[match])) match++;

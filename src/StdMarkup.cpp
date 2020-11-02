@@ -40,10 +40,10 @@ void CMarkupTagColor::Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr
 
 bool CMarkup::Read(const char **ppText, bool fSkip)
 {
-	char Tag[50]; CMarkupTag *pNewTag = nullptr; int iTagLen, iParLen;
+	char Tag[50]; CMarkupTag *pNewTag = nullptr;
 	// get tag
 	if (!SCopyEnclosed(*ppText, '<', '>', Tag, 49)) return false;
-	iTagLen = SLen(Tag);
+	const auto iTagLen = SLen(Tag);
 	// split tag to name and pars
 	char *szPars = nullptr; int iSPos;
 	if ((iSPos = SCharPos(' ', Tag)) > -1)
@@ -78,8 +78,11 @@ bool CMarkup::Read(const char **ppText, bool fSkip)
 	{
 		// no parameters?
 		if (!szPars) return false;
-		if ((iParLen = SLen(szPars)) > 8) return false;
-		if (!fSkip)
+		if (const auto iParLen = SLen(szPars); iParLen > 8)
+		{
+			return false;
+		}
+		else if (!fSkip)
 		{
 			// get color value by parameter
 			uint32_t dwClr = 0;

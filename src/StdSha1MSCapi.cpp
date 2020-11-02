@@ -83,7 +83,7 @@ struct StdSha1::Impl
 
 	void Update(const void *const buffer, const size_t len)
 	{
-		ThrowIfFailed(CryptHashData(hHash, static_cast<const BYTE *>(buffer), len, 0),
+		ThrowIfFailed(CryptHashData(hHash, static_cast<const BYTE *>(buffer), checked_cast<DWORD>(len), 0),
 			"CryptHashData failed");
 	}
 
