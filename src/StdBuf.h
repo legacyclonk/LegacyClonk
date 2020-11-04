@@ -544,8 +544,7 @@ public:
 	template<size_t N>
 	StdStrBuf &operator=(const char (&szString)[N]) { Ref(szString); return *this; }
 
-	// conversion to "bool"
-	operator const void *() const { return getData(); }
+	explicit operator bool() const { return getData(); }
 
 	// less-than operation for map
 	inline bool operator<(const StdStrBuf &v2)

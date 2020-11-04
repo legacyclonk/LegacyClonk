@@ -360,7 +360,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInPacket()
 			ResolveInInfo();
 		}
 		// mark change for return value if anything was changed
-		if (pResolveInfo->GetColor() != dwPrevColor || (pResolveInfo->GetForcedName() != sPrevForcedName))
+		if (pResolveInfo->GetColor() != dwPrevColor || (pResolveInfo->GetForcedName() != sPrevForcedName.getData()))
 			fAnyChange = true;
 		// next player info check
 	}

@@ -206,8 +206,8 @@ void C4Network2RefServer::RespondReference(const C4NetIO::addr_t &addr)
 		PacketData.getLength(),
 		szCharset);
 	// Send back
-	Send(C4NetIOPacket(Header, Header.getLength(), false, addr));
-	Send(C4NetIOPacket(PacketData, PacketData.getLength(), false, addr));
+	Send(C4NetIOPacket(Header.getData(), Header.getLength(), false, addr));
+	Send(C4NetIOPacket(PacketData.getData(), PacketData.getLength(), false, addr));
 	// Close the connection
 	Close(addr);
 }
