@@ -442,7 +442,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 			IniRead.Compile(*this);
 		}
 	}
-	catch (const StdCompiler::Exception &e)
+	catch ([[maybe_unused]] const StdCompiler::Exception &e)
 	{
 		// Configuration file syntax error?
 #ifdef C4ENGINE
@@ -527,7 +527,7 @@ bool C4Config::Save()
 			IniWrite.getOutput().SaveToFile(filename.getData());
 		}
 	}
-	catch (const StdCompiler::Exception &e)
+	catch ([[maybe_unused]] const StdCompiler::Exception &e)
 	{
 #ifdef C4ENGINE
 		LogF(LoadResStr("IDS_ERR_CONFSAVE"), e.Msg.getData());
