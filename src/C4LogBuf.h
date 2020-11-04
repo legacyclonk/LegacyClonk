@@ -55,6 +55,5 @@ public:
 	const char *GetLine(int iLineIndex, CStdFont **ppFont, uint32_t *pdwClr, bool *pNewParagraph) const; // get indexed line - negative indices -n return last-n'th-line
 	void Clear(); // clear all lines
 
-	int GetCount() const { return iLineCount; } // retrieve number of valid lines in buffer
 	void SetLBWidth(int iToWidth);
 };
