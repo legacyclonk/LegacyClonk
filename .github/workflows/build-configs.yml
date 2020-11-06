@@ -91,7 +91,7 @@ jobs:
 
       - name: "Windows: Setup VS Dev Environment"
         if: ${{ matrix.env == 'Windows' }}
-        uses: seanmiddleditch/gha-setup-vsdevenv@v1
+        uses: seanmiddleditch/gha-setup-vsdevenv@v3
         with:
           arch: ${{ env.VS_ARCH }}
 
