@@ -49,8 +49,8 @@ public:
 	C4DefGraphics(C4Def *pOwnDef = nullptr);
 	virtual ~C4DefGraphics() { Clear(); }
 
-	bool LoadBitmap(C4Group &hGroup, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG, bool fColorByOwner); // load specified graphics from group
-	bool LoadBitmaps(C4Group &hGroup, bool fColorByOwner); // load graphics from group
+	bool LoadGraphics(C4Group &hGroup, const char *szFilename, const char *szFilenamePNG, const char *szOverlayPNG, bool fColorByOwner); // load specified graphics from group
+	bool LoadAllGraphics(C4Group &hGroup, bool fColorByOwner); // load graphics from group
 	bool ColorizeByMaterial(int32_t iMat, C4MaterialMap &rMats, uint8_t bGBM); // colorize all graphics by material
 	C4DefGraphics *Get(const char *szGrpName); // get graphics by name
 	void Clear(); // clear fields; delete additional graphics

@@ -601,7 +601,7 @@ bool C4Def::Load(C4Group &hGroup,
 #ifdef C4ENGINE
 	// Read surface bitmap
 	if (dwLoadWhat & C4D_Load_Bitmap)
-		if (!Graphics.LoadBitmaps(hGroup, !!ColorByOwner))
+		if (!Graphics.LoadAllGraphics(hGroup, !!ColorByOwner))
 		{
 			DebugLogF("  Error loading graphics of %s (%s)", hGroup.GetFullName().getData(), C4IdText(id));
 			return false;
