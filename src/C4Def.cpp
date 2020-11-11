@@ -207,6 +207,7 @@ void C4DefCore::Default()
 	RotatedSolidmasks = 0;
 	NeededGfxMode = 0;
 	NoTransferZones = 0;
+	Scale = 100;
 }
 
 bool C4DefCore::Load(C4Group &hGroup)
@@ -449,6 +450,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 	};
 
 	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(HideHUDBars, HideBarValues), "HideHUDBars", 0));
+	pComp->Value(mkNamingAdapt(Scale, "Scale", 100));
 
 	pComp->FollowName("Physical");
 	pComp->Value(Physical);
@@ -492,6 +494,7 @@ void C4Def::Default()
 	PortraitCount = 0;
 	Portraits = nullptr;
 	pFairCrewPhysical = nullptr;
+	Scale = 1.0f;
 #endif
 }
 
@@ -515,7 +518,7 @@ void C4Def::Clear()
 
 	PortraitCount = 0;
 	Portraits = nullptr;
-
+	Scale = 1.0f;
 #endif
 
 	delete[] ActMap; ActMap = nullptr;
@@ -768,17 +771,19 @@ bool C4Def::Load(C4Group &hGroup,
 		if (pSoundSystem)
 			pSoundSystem->LoadEffects(hGroup);
 
-	// Bitmap post-load settings
+	// Post-load settings
+	Scale = C4DefCore::Scale / 100.0f;
+
 	if (Graphics.GetBitmap())
 	{
 		// check SolidMask
-		if (SolidMask.x < 0 || SolidMask.y < 0 || SolidMask.x + SolidMask.Wdt > Graphics.Bitmap->Wdt || SolidMask.y + SolidMask.Hgt > Graphics.Bitmap->Hgt) SolidMask.Default();
+		if (SolidMask.x < 0 || SolidMask.y < 0 || SolidMask.x + SolidMask.Wdt > Graphics.Bitmap->Wdt / Scale || SolidMask.y + SolidMask.Hgt > Graphics.Bitmap->Hgt / Scale) SolidMask.Default();
 		// Set MainFace (unassigned bitmap: will be set by GetMainFace())
 		MainFace.Set(nullptr, 0, 0, Shape.Wdt, Shape.Hgt);
 	}
 
 	// validate TopFace
-	if (TopFace.x < 0 || TopFace.y < 0 || TopFace.x + TopFace.Wdt > Graphics.Bitmap->Wdt || TopFace.y + TopFace.Hgt > Graphics.Bitmap->Hgt)
+	if (TopFace.x < 0 || TopFace.y < 0 || TopFace.x + TopFace.Wdt > Graphics.Bitmap->Wdt / Scale || TopFace.y + TopFace.Hgt > Graphics.Bitmap->Hgt / Scale)
 	{
 		TopFace.Default();
 		// warn in debug mode
@@ -877,7 +882,7 @@ void C4Def::Draw(C4Facet &cgo, bool fSelected, uint32_t iColor, C4Object *pObj, 
 
 	// specific object color?
 	if (pObj) pObj->PrepareDrawing();
-	fctPicture.Draw(cgo, true, iPhaseX, iPhaseY, true);
+	fctPicture.Draw(cgo, true, iPhaseX, iPhaseY, true, Scale);
 	if (pObj) pObj->FinishedDrawing();
 
 	// draw overlays

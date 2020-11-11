@@ -460,6 +460,13 @@ void C4Object::DrawFace(C4FacetEx &cgo, int32_t cgoX, int32_t cgoY, int32_t iPha
 		fhgt = static_cast<float>(std::min<int32_t>(shgt * Con / FullCon, shgt));
 	}
 
+	const float scale{GetGraphics()->pDef->Scale};
+
+	fx *= scale;
+	fy *= scale;
+	fwdt *= scale;
+	fhgt *= scale;
+
 	// Straight
 	if ((!Def->Rotateable || (r == 0)) && !pDrawTransform)
 	{
@@ -2387,7 +2394,8 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 						cgo.X + cox + Action.FacetX,
 						cgo.Y + coy + Action.FacetY,
 						Action.Facet.Wdt,
-						(Action.Target->y + Action.Target->Shape.y) - (y + Shape.y + Action.FacetY));
+						(Action.Target->y + Action.Target->Shape.y) - (y + Shape.y + Action.FacetY),
+						0, 0, GetGraphics()->pDef->Scale);
 			}
 			// Regular action facet
 			else
@@ -2415,7 +2423,8 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 							(Def->Shape.x + Action.FacetX) * Con / FullCon + cgo.X + cox - Shape.x,
 							(Def->Shape.y + Action.FacetY) * Con / FullCon + cgo.Y + coy - Shape.y,
 							Action.Facet.Wdt * Con / FullCon, Action.Facet.Hgt * Con / FullCon,
-							iPhase, Action.DrawDir, &rot);
+							iPhase, Action.DrawDir, &rot,
+							false, GetGraphics()->pDef->Scale);
 					}
 					else
 					{
@@ -2431,14 +2440,16 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 							cgo.X + cox + Action.FacetX,
 							cgo.Y + coy + Action.FacetY,
 							iPhase, Action.DrawDir,
-							pDrawTransform ? &C4DrawTransform(*pDrawTransform, static_cast<float>(Shape.Wdt) / 2 + cgo.X + cox, static_cast<float>(Shape.Hgt) / 2 + cgo.Y + coy) : nullptr);
+							pDrawTransform ? &C4DrawTransform(*pDrawTransform, static_cast<float>(Shape.Wdt) / 2 + cgo.X + cox, static_cast<float>(Shape.Hgt) / 2 + cgo.Y + coy) : nullptr,
+							false, GetGraphics()->pDef->Scale);
 					// Growth strechted
 					else
 						Action.Facet.DrawXT(cgo.Surface,
 							cgo.X + cox, cgo.Y + coy,
 							Shape.Wdt, Shape.Hgt,
 							iPhase, Action.DrawDir,
-							pDrawTransform ? &C4DrawTransform(*pDrawTransform, static_cast<float>(Shape.Wdt) / 2 + cgo.X + cox, static_cast<float>(Shape.Hgt) / 2 + cgo.Y + coy) : nullptr);
+							pDrawTransform ? &C4DrawTransform(*pDrawTransform, static_cast<float>(Shape.Wdt) / 2 + cgo.X + cox, static_cast<float>(Shape.Hgt) / 2 + cgo.Y + coy) : nullptr,
+							false, GetGraphics()->pDef->Scale);
 				}
 			}
 		}
@@ -2607,14 +2618,16 @@ void C4Object::DrawTopFace(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode
 			TopFace.Wdt * Con / FullCon,
 			TopFace.Hgt * Con / FullCon,
 			0, 0,
-			pDrawTransform ? &C4DrawTransform(*pDrawTransform, cgo.X + cox + float(Shape.Wdt) / 2, cgo.Y + coy + float(Shape.Hgt) / 2) : nullptr);
+			pDrawTransform ? &C4DrawTransform(*pDrawTransform, cgo.X + cox + float(Shape.Wdt) / 2, cgo.Y + coy + float(Shape.Hgt) / 2) : nullptr,
+			false, GetGraphics()->pDef->Scale);
 	else
 		// normal
 		TopFace.DrawT(cgo.Surface,
 			cgo.X + cox + Def->TopFace.tx,
 			cgo.Y + coy + Def->TopFace.ty,
 			0, 0,
-			pDrawTransform ? &C4DrawTransform(*pDrawTransform, cgo.X + cox + float(Shape.Wdt) / 2, cgo.Y + coy + float(Shape.Hgt) / 2) : nullptr);
+			pDrawTransform ? &C4DrawTransform(*pDrawTransform, cgo.X + cox + float(Shape.Wdt) / 2, cgo.Y + coy + float(Shape.Hgt) / 2) : nullptr,
+			false, GetGraphics()->pDef->Scale);
 	// end of color modulation
 	if (!eDrawMode) FinishedDrawing();
 }

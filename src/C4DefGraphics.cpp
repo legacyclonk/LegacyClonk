@@ -781,7 +781,7 @@ void C4GraphicsOverlay::Draw(C4FacetEx &cgo, C4Object *pForObj, int32_t iByPlaye
 			float fZoom = std::min<float>(static_cast<float>(pForObj->Shape.Wdt) / std::max<int>(fctBlit.Wdt, 1), static_cast<float>(pForObj->Shape.Hgt) / std::max<int>(fctBlit.Hgt, 1));
 			trf.ScaleAt(fZoom, fZoom, float(iTx), float(iTy));
 		}
-		fctBlit.DrawT(cgo.Surface, iTx - fctBlit.Wdt / 2 + fctBlit.TargetX, iTy - fctBlit.Hgt / 2 + fctBlit.TargetY, iPhase, 0, &trf);
+		fctBlit.DrawT(cgo.Surface, iTx - fctBlit.Wdt / 2 + fctBlit.TargetX, iTy - fctBlit.Hgt / 2 + fctBlit.TargetY, iPhase, 0, &trf, false, pSourceGfx->pDef->Scale);
 	}
 
 	// cleanup
@@ -810,7 +810,7 @@ void C4GraphicsOverlay::DrawPicture(C4Facet &cgo, C4Object *pForObj)
 		if (dwClrModulation != 0xffffff) Application.DDraw->ActivateBlitModulation(dwClrModulation);
 	}
 	// draw at given rect
-	fctBlit.DrawT(cgo, true, iPhase, 0, &C4DrawTransform(Transform, cgo.X + float(cgo.Wdt) / 2, cgo.Y + float(cgo.Hgt) / 2));
+	fctBlit.DrawT(cgo, true, iPhase, 0, &C4DrawTransform(Transform, cgo.X + float(cgo.Wdt) / 2, cgo.Y + float(cgo.Hgt) / 2), pSourceGfx->pDef->Scale);
 	// cleanup
 	if (dwBlitMode == C4GFXBLIT_PARENT)
 	{

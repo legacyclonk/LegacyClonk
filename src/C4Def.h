@@ -267,6 +267,7 @@ public:
 	int32_t AutoContextMenu; // automatically open context menu for this object
 	int32_t AllowPictureStack; // allow stacking of multiple items in menus even if some attributes do not match. APS_*-values
 	int32_t HideHUDBars; // A bit mask to selectively hide some of the Energy, Magic Energy and Breath bars.
+	uint32_t Scale; // graphics scale
 
 public:
 	enum HideBar : int32_t {
@@ -324,6 +325,7 @@ public:
 	C4DefGraphics Graphics; // base graphics. points to additional graphics
 	int32_t PortraitCount;
 	C4PortraitGraphics *Portraits; // Portraits (linked list of C4AdditionalDefGraphics)
+	float Scale;
 
 protected:
 	// copy of the physical info used in FairCrew-mode

@@ -48,13 +48,13 @@ C4Facet C4Facet::GetSection(int32_t iSection)
 	return rval;
 }
 
-void C4Facet::Draw(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY)
+void C4Facet::Draw(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, const float scale)
 {
 #ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 
 	lpDDraw->Blit(Surface,
-		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
+		float(X + Wdt * iPhaseX) * scale, float(Y + Hgt * iPhaseY) * scale, float(Wdt) * scale, float(Hgt) * scale,
 		sfcTarget,
 		iX, iY, Wdt, Hgt, true);
 #endif
@@ -62,17 +62,17 @@ void C4Facet::Draw(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX,
 
 #ifdef C4ENGINE
 
-void C4Facet::DrawT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection)
+void C4Facet::DrawT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection, const float scale)
 {
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 
 	lpDDraw->Blit(Surface,
-		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
+		float(X + Wdt * iPhaseX) * scale, float(Y + Hgt * iPhaseY) * scale, float(Wdt) * scale, float(Hgt) * scale,
 		sfcTarget,
 		iX, iY, Wdt, Hgt, true, pTransform, noScalingCorrection);
 }
 
-void C4Facet::DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection)
+void C4Facet::DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection, const float scale)
 {
 	if (!lpDDraw || !Surface || !cgo.Surface || !Wdt || !Hgt) return;
 
@@ -96,14 +96,14 @@ void C4Facet::DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY
 	}
 
 	lpDDraw->Blit(Surface,
-		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
+		float(X + Wdt * iPhaseX) * scale, float(Y + Hgt * iPhaseY) * scale, float(Wdt) * scale, float(Hgt) * scale,
 		ccgo.Surface, ccgo.X, ccgo.Y, ccgo.Wdt, ccgo.Hgt,
 		true, pTransform, noScalingCorrection);
 }
 
 #endif // C4ENGINE
 
-void C4Facet::Draw(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, bool fTransparent)
+void C4Facet::Draw(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, bool fTransparent, const float scale)
 {
 #ifdef C4ENGINE
 	// Valid parameter check
@@ -128,7 +128,7 @@ void C4Facet::Draw(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY,
 	}
 	// Blit
 	lpDDraw->Blit(Surface,
-		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
+		float(X + Wdt * iPhaseX) * scale, float(Y + Hgt * iPhaseY) * scale, float(Wdt) * scale, float(Hgt) * scale,
 		ccgo.Surface,
 		ccgo.X, ccgo.Y, ccgo.Wdt, ccgo.Hgt,
 		fTransparent);
@@ -305,12 +305,12 @@ void C4Facet::DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t
 #endif
 }
 
-void C4Facet::DrawX(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iSectionX, int32_t iSectionY) const
+void C4Facet::DrawX(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iSectionX, int32_t iSectionY, const float scale) const
 {
 #ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 	lpDDraw->Blit(Surface,
-		float(X + Wdt * iSectionX), float(Y + Hgt * iSectionY), float(Wdt), float(Hgt),
+		float(X + Wdt * iSectionX) * scale, float(Y + Hgt * iSectionY) * scale, float(Wdt) * scale, float(Hgt) * scale,
 		sfcTarget,
 		iX, iY, iWdt, iHgt,
 		true);
@@ -338,11 +338,11 @@ void C4Facet::DrawXFloat(CSurface *sfcTarget, float fX, float fY, float fWdt, fl
 }
 
 #ifdef C4ENGINE
-void C4Facet::DrawXT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection)
+void C4Facet::DrawXT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection, const float scale)
 {
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 	lpDDraw->Blit(Surface,
-		float(X + Wdt * iPhaseX), float(Y + Hgt * iPhaseY), float(Wdt), float(Hgt),
+		float(X + Wdt * iPhaseX) * scale, float(Y + Hgt * iPhaseY) * scale, float(Wdt) * scale, float(Hgt) * scale,
 		sfcTarget,
 		iX, iY, iWdt, iHgt,
 		true, pTransform, noScalingCorrection);
