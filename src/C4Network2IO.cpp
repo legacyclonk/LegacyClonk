@@ -556,11 +556,9 @@ void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const
 	C4Network2IOConnection *pConn = GetConnection(addr, pNetIO);
 	if (!pConn) pConn = GetConnectionByConnAddr(addr, pNetIO);
 	if (!pConn) return;
-#if (C4NET2IO_DUMP_LEVEL > 0)
 	// log
 	Application.InteractiveThread.ThreadLogSF("Network: %s connection to %s %s (%s)",
 		getNetIOName(pNetIO), addr.ToString().getData(), (pConn->isConnecting() ? "failed" : "closed"), szReason);
-#endif
 	// already closed? ignore
 	if (!pConn->isClosed())
 		// not accepted yet? count as connection failure
