@@ -20,7 +20,9 @@
 
 #include "BuildConfig.h"
 
-#ifdef _WIN32
+#ifdef _WIN64
+#define C4_OS "win64"
+#elif defined(_WIN32)
 #define C4_OS "win32"
 #elif defined(__linux__)
 #ifdef __x86_64
