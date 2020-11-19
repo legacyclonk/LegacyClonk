@@ -1389,6 +1389,11 @@ bool C4Player::ObjectCom(uint8_t byCom, int32_t iData) // By DirectCom
 	return true;
 }
 
+void C4Player::ClearPressedComsSynced()
+{
+	Game.Input.Add(CID_PlrControl, new C4ControlPlayerControl(Number, COM_ClearPressedComs, 0));
+}
+
 bool C4Player::ObjectCommand(int32_t iCommand, C4Object *pTarget, int32_t iX, int32_t iY, C4Object *pTarget2, int32_t iData, int32_t iMode)
 {
 	// Eliminated
@@ -1488,6 +1493,12 @@ void C4Player::InCom(uint8_t byCom, int32_t iData)
 	C4RCObjectCom rc = { byCom, iData, Number };
 	AddDbgRec(RCT_PlrInCom, &rc, sizeof(C4RCObjectCom));
 #endif
+	if (byCom == COM_ClearPressedComs)
+	{
+		PressedComs = 0;
+		LastCom = COM_None;
+		return;
+	}
 	// Cursor object menu active: convert regular com to menu com
 	if (Cursor) if (Cursor->Menu)
 	{
@@ -1528,7 +1539,13 @@ void C4Player::InCom(uint8_t byCom, int32_t iData)
 	{
 		// Update state
 		if (Inside(byCom, COM_ReleaseFirst, COM_ReleaseLast))
+		{
+			if (!(PressedComs & (1 << (byCom - 16))))
+			{
+				return;
+			}
 			PressedComs &= ~(1 << (byCom - 16));
+		}
 	}
 	// Pass regular/COM_Double byCom to player
 	DirectCom(byCom, iData);

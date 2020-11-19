@@ -67,5 +67,6 @@ protected:
 	virtual void OnUserSelectItem(int32_t Player, int32_t iIndex) override;
 	virtual void OnUserEnter(int32_t Player, int32_t iIndex, bool fRight) override;
 	virtual void OnUserClose() override;
+	virtual void OnClosed(bool ok) override;
 	virtual int32_t GetControllingPlayer() override { return Player; }
 };

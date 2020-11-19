@@ -173,6 +173,7 @@ public:
 	void DirectCom(uint8_t byCom, int32_t iData);
 	void InCom(uint8_t byCom, int32_t iData);
 	bool ObjectCom(uint8_t byCom, int32_t iData);
+	void ClearPressedComsSynced();
 	bool ObjectCommand(int32_t iCommand, C4Object *pTarget, int32_t iTx, int32_t iTy, C4Object *pTarget2 = nullptr, int32_t iData = 0, int32_t iAddMode = C4P_Command_Set);
 	void ObjectCommand2Obj(C4Object *cObj, int32_t iCommand, C4Object *pTarget, int32_t iX, int32_t iY, C4Object *pTarget2, int32_t iData, int32_t iMode);
 	bool DoPoints(int32_t iChange);

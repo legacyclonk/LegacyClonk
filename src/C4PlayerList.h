@@ -74,6 +74,7 @@ public:
 	bool ColorTaken(int iColor) const;
 	bool ControlTaken(int iControl) const;
 	bool SynchronizeLocalFiles(); // syncrhonize all local player files; resetting InGame times
+	void ClearLocalPlayerPressedComs();
 
 protected:
 	int GetFreeNumber() const;

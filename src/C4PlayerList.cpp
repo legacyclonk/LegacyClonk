@@ -578,6 +578,15 @@ bool C4PlayerList::SynchronizeLocalFiles()
 	return fSuccess;
 }
 
+void C4PlayerList::ClearLocalPlayerPressedComs()
+{
+	C4Player *plr;
+	for (int cnt = 0; plr = Game.Players.GetLocalByIndex(cnt); cnt++)
+	{
+		plr->ClearPressedComsSynced();
+	}
+}
+
 void C4PlayerList::RecheckPlayerSort(C4Player *pForPlayer)
 {
 	if (!pForPlayer || !First) return;

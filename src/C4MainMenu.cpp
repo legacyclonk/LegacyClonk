@@ -312,6 +312,19 @@ void C4MainMenu::OnUserClose()
 	TryClose(false, true);
 }
 
+void C4MainMenu::OnClosed(bool ok)
+{
+	if (const auto player = GetControllingPlayer(); player != NO_OWNER)
+	{
+		if (const auto plr = Game.Players.Get(player); plr)
+		{
+			plr->ClearPressedComsSynced();
+		}
+	}
+
+	C4Menu::OnClosed(ok);
+}
+
 bool C4MainMenu::ActivateGoals(int32_t iPlayer, bool fDoActivate)
 {
 	C4FacetExSurface fctSymbol;

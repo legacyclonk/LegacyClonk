@@ -120,6 +120,7 @@ void C4ChatInputDialog::OnClosed(bool fOK)
 			OnChatInput(pEdit, false, false); else OnChatCancel();
 	else
 		OnChatCancel();
+	Game.Players.ClearLocalPlayerPressedComs();
 	typedef C4GUI::InputDialog BaseDlg;
 	BaseDlg::OnClosed(fOK);
 }

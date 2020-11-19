@@ -114,6 +114,10 @@ void C4AbortGameDialog::OnClosed(bool fOK)
 
 		Game.Abort();
 	}
+	else
+	{
+		Game.Players.ClearLocalPlayerPressedComs();
+	}
 }
 
 void C4AbortGameDialog::OnYesBtn(C4GUI::Control *)

@@ -253,7 +253,9 @@ const uint8_t COM_MenuEnter    = 38,
               COM_MenuLast  = COM_MenuSelect,
 
               COM_MenuNavigation1 = COM_MenuShowText,
-              COM_MenuNavigation2 = COM_MenuSelect;
+              COM_MenuNavigation2 = COM_MenuSelect,
+
+              COM_ClearPressedComs = 61;
 
 // SendCommand
 
