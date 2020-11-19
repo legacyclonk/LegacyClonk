@@ -99,14 +99,14 @@ void C4AbortGameDialog::OnClosed(bool fOK)
 	typedef C4GUI::Dialog Base;
 	Base::OnClosed(fOK);
 
-	if (!restart)
-	{
-		Game.RestartRestoreInfos.Clear();
-	}
-
 	// abort
 	if (fOK)
 	{
+		if (!restart)
+		{
+			Game.RestartRestoreInfos.Clear();
+		}
+
 		if (restart)
 		{
 			Application.SetNextMission(Game.ScenarioFilename);
