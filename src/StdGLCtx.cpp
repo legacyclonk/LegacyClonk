@@ -35,7 +35,7 @@
 bool CStdGLCtx::Select(bool verbose, bool selectOnly)
 {
 	// safety
-	if (!pGL || !hrc) return false; if (!pGL->lpPrimary) return false;
+	if (!pGL) return false; if (!pGL->lpPrimary) return false;
 
 	// make context current
 	if (!MakeCurrent()) return false;
@@ -393,6 +393,7 @@ bool CStdGLCtx::UpdateSize()
 
 bool CStdGLCtx::MakeCurrent()
 {
+	if (!hrc) return false;
 	return wglMakeCurrent(hDC, hrc);
 }
 
