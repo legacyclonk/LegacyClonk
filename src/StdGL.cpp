@@ -821,7 +821,19 @@ bool CStdGL::RestoreDeviceObjects()
 	if (!BlitShader)
 	{
 		assert(!LandscapeShader);
-		glDebugMessageCallback(MessageCallback, nullptr);
+
+		GLint debugContext;
+		glGetIntegerv(GL_CONTEXT_FLAGS, &debugContext);
+
+		if (debugContext & GL_CONTEXT_FLAG_DEBUG_BIT)
+		{
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		}
+
+		if (!(debugContext & GL_CONTEXT_FLAG_NO_ERROR_BIT))
+		{
+			glDebugMessageCallback(MessageCallback, nullptr);
+		}
 
 		CStdGLShader vertexShader{
 			CStdShader::Type::Vertex,

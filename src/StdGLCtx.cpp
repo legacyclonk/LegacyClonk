@@ -136,6 +136,7 @@ namespace
 
 	constexpr int WGL_CONTEXT_MAJOR_VERSION_ARB = 0x2091;
 	constexpr int WGL_CONTEXT_MINOR_VERSION_ARB = 0x2092;
+	constexpr int WGL_CONTEXT_FLAGS_ARB = 0x2094;
 	constexpr int WGL_CONTEXT_PROFILE_MASK_ARB = 0x9126;
 	constexpr int WGL_CONTEXT_CORE_PROFILE_BIT_ARB = 0x00000001;
 	constexpr int WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB = 0x00000002;
@@ -250,15 +251,16 @@ bool CStdGLCtx::CreateContext(int major, int minor, bool core)
 		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
 		WGL_CONTEXT_MINOR_VERSION_ARB, 1,
 		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
 		0
 	};
 
 	contextAttributes[1] = major;
 	contextAttributes[3] = minor;
-	contextAttributes[5] = (core ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB);// | WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+	contextAttributes[5] = (core ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB);
 
 #ifdef _DEBUG
-	contextAttributes[5] |= WGL_CONTEXT_DEBUG_BIT_ARB;
+	contextAttributes[7] |= WGL_CONTEXT_DEBUG_BIT_ARB;
 #endif
 
 	hrc = wglCreateContextAttribsARB(hDC, 0, contextAttributes);
