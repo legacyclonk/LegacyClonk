@@ -429,6 +429,23 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 #include <GL/gl.h>
 #include <GL/glx.h>
 
+class XDisplayLock
+{
+	Display *dpy;
+public:
+	XDisplayLock(Display *dpy) : dpy{dpy}
+	{
+		XLockDisplay(dpy);
+	}
+	XDisplayLock(const XDisplayLock &) = delete;
+	XDisplayLock &operator=(const XDisplayLock &) = delete;
+
+	~XDisplayLock()
+	{
+		XUnlockDisplay(dpy);
+	}
+};
+
 CStdGLCtx::CStdGLCtx() : pWindow(nullptr), cx(0), cy(0), ctx(0) {}
 
 bool CStdGLCtx::UpdateSize()
@@ -459,6 +476,16 @@ bool CStdGLCtx::UpdateSize()
 bool CStdGLCtx::MakeCurrent()
 {
 	return glXMakeCurrent(pWindow->dpy, pWindow->renderwnd, ctx);
+}
+
+void CStdGLCtx::Destroy()
+{
+	if (ctx)
+	{
+		const XDisplayLock lock{pWindow->dpy};
+		glXDestroyContext(pWindow->dpy, ctx);
+		ctx = nullptr;
+	}
 }
 
 bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
