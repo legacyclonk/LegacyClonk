@@ -1029,7 +1029,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	}
 
 	// landscape mod by FoW
-	C4Player *pPlr = Game.Players.Get(Player);
+	/*C4Player *pPlr = Game.Players.Get(Player);
 	if (pPlr && pPlr->fFogOfWar)
 	{
 		ClrModMap.Reset(Game.C4S.Landscape.FoWRes, Game.C4S.Landscape.FoWRes, ViewWdt, ViewHgt, cgo.TargetX, cgo.TargetY, 0, 0, cgo.X, cgo.Y, Game.FoWColor, cgo.Surface);
@@ -1037,7 +1037,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 		lpDDraw->SetClrModMap(&ClrModMap);
 		lpDDraw->SetClrModMapEnabled(true);
 	}
-	else
+	else*/
 		lpDDraw->SetClrModMapEnabled(false);
 
 	C4ST_STARTNEW(SkyStat, "C4Viewport::Draw: Sky")
