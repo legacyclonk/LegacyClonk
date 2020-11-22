@@ -427,28 +427,17 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 		matrix[ 8] = 0;      matrix[ 9] = 0;      matrix[10] = 1; matrix[11] = 0;
 		matrix[12] = mat[2]; matrix[13] = mat[5]; matrix[14] = 0; matrix[15] = mat[8];
 
-		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol0, matrix);
-		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol1, matrix + 4);
-		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol2, matrix + 8);
-		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol3, matrix + 12);
+		shader->SetUniform("modelViewMatrix", glUniformMatrix4fv, 1, GL_FALSE, matrix);
 	}
 	else
 	{
-		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol0, IDENTITY_MATRIX);
-		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol1, IDENTITY_MATRIX + 4);
-		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol2, IDENTITY_MATRIX + 8);
-		glVertexAttrib4fv(VertexArray.ModelViewMatrixCol3, IDENTITY_MATRIX + 12);
+		shader->SetUniform("modelViewMatrix", glUniformMatrix4fv, 1, GL_FALSE, IDENTITY_MATRIX);
 	}
-
-	// draw triangle fan for speed
-	static_assert(PerformBltVertexData.size() == 4, "GL_TRIANGLE_STRIP cannot be used with more than 4 vertices; you need to add the necessary code.");
-
-	std::swap(rBltData.vtVtx[3], rBltData.vtVtx[2]);
 
 	SelectVAO(VertexArray.PerformBlt);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(rBltData.vtVtx), rBltData.vtVtx.data());
 
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	if (pApp->GetScale() != 1.f || (!fExact && !DDrawCfg.PointFiltering))
 	{
@@ -457,7 +446,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	}
 }
 
-static std::array<CLiquidShadedTextureVertex<GLfloat>, 4> BlitLandscapeVertexData;
+static std::array<CLiquidShadedTextureVertex<GLfloat>, 6> BlitLandscapeVertexData;
 
 void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2,
 	CSurface *const sfcLiquidAnimation, const int fx, const int fy,
@@ -573,18 +562,20 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 		};
 		BlitLandscapeVertexData[2] =
 		{
-			{target.left, target.bottom, 100.0f},
-			{},
-			{vertices.left / texture->Width, vertices.bottom / texture->Height},
-			{vertices.left / liquidTextureWidth, vertices.bottom / liquidTextureHeight},
-		};
-		BlitLandscapeVertexData[3] =
-		{
 			{target.right, target.bottom, 100.0f},
 			{},
 			{vertices.right / texture->Width, vertices.bottom / texture->Height},
 			{vertices.right / liquidTextureWidth, vertices.bottom / liquidTextureHeight}
 		};
+		BlitLandscapeVertexData[3] =
+		{
+			{target.left, target.bottom, 100.0f},
+			{},
+			{vertices.left / texture->Width, vertices.bottom / texture->Height},
+			{vertices.left / liquidTextureWidth, vertices.bottom / liquidTextureHeight},
+		};
+		BlitLandscapeVertexData[4] = BlitLandscapeVertexData[0];
+		BlitLandscapeVertexData[5] = BlitLandscapeVertexData[2];
 
 		for (size_t i = 0; i < BlitLandscapeVertexData.size(); ++i)
 		{
@@ -604,7 +595,7 @@ void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2
 
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(BlitLandscapeVertexData), BlitLandscapeVertexData.data());
 
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
 	if (DDrawCfg.ColorAnimation)
@@ -859,7 +850,7 @@ bool CStdGL::RestoreDeviceObjects()
 
 			#ifdef LC_BLIT
 			layout (location = 4) in uint mod2;
-			layout (location = 5) in mat4 modelViewMatrix;
+			uniform mat4 modelViewMatrix;
 			#endif
 
 			out vec3 vPosition;

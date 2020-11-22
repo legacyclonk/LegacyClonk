@@ -168,7 +168,7 @@ struct CLiquidShadedTextureVertex
 // blit data for PerformBlt
 struct CBltData
 {
-	std::array<CTextureVertex<float>, 4> vtVtx; // vertices for triangle strip
+	std::array<CTextureVertex<float>, 6> vtVtx; // vertices for triangle strip
 	CBltTransform *pTransform; // Vertex transformation
 };
 

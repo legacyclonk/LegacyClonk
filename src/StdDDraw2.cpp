@@ -737,6 +737,8 @@ bool CStdDDraw::Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float 
 		BltData.vtVtx[1].coordinates[0] = target.right + DDrawCfg.fBlitOff; BltData.vtVtx[1].coordinates[1] = target.top    + DDrawCfg.fBlitOff;
 		BltData.vtVtx[2].coordinates[0] = target.right + DDrawCfg.fBlitOff; BltData.vtVtx[2].coordinates[1] = target.bottom + DDrawCfg.fBlitOff;
 		BltData.vtVtx[3].coordinates[0] = target.left  + DDrawCfg.fBlitOff; BltData.vtVtx[3].coordinates[1] = target.bottom + DDrawCfg.fBlitOff;
+		BltData.vtVtx[4] = BltData.vtVtx[0];
+		BltData.vtVtx[5] = BltData.vtVtx[2];
 
 		for (auto &vertex : BltData.vtVtx)
 		{
