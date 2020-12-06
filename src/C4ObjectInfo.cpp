@@ -312,10 +312,11 @@ void C4ObjectInfo::Draw(C4Facet &cgo, bool fShowPortrait, bool fCaptain, C4Objec
 {
 #ifdef C4ENGINE
 
+	const auto hideElements = pOfObj ? pOfObj->Def->HideHUDElements : 0;
 	int iX = 0;
 
 	// Portrait
-	if (fShowPortrait)
+	if (fShowPortrait && !(hideElements & C4DefCore::HH_Portrait))
 	{
 		C4DefGraphics *pPortraitGfx;
 		if (pPortraitGfx = Portrait.GetGfx()) if (pPortraitGfx->Bitmap->Wdt)
@@ -330,7 +331,7 @@ void C4ObjectInfo::Draw(C4Facet &cgo, bool fShowPortrait, bool fCaptain, C4Objec
 	}
 
 	// Captain symbol
-	if (fCaptain)
+	if (fCaptain && !(hideElements & C4DefCore::HH_Captain))
 	{
 		Game.GraphicsResource.fctCaptain.Draw(cgo.Surface, cgo.X + iX, cgo.Y, 0, 0);
 		iX += Game.GraphicsResource.fctCaptain.Wdt;
@@ -353,11 +354,28 @@ void C4ObjectInfo::Draw(C4Facet &cgo, bool fShowPortrait, bool fCaptain, C4Objec
 			pRankSys = pDef->pRankNames;
 		}
 	}
-	pRankSys->DrawRankSymbol(nullptr, Rank, pRankRes, iRankCnt, false, iX, &cgo);
-	iX += Game.GraphicsResource.fctRank.Wdt;
+	if (!(hideElements & C4DefCore::HH_RankImage))
+	{
+		pRankSys->DrawRankSymbol(nullptr, Rank, pRankRes, iRankCnt, false, iX, &cgo);
+		iX += Game.GraphicsResource.fctRank.Wdt;
+	}
+
+	std::string nameAndRank;
+	if (!(hideElements & C4DefCore::HH_Name))
+	{
+		nameAndRank += pOfObj->GetName();
+	}
+	if (Rank > 0 && !(hideElements & C4DefCore::HH_Rank))
+	{
+		nameAndRank += '|';
+		nameAndRank += sRankName.getData();
+	}
 	// Rank & Name
-	Application.DDraw->TextOut((Rank > 0 ? FormatString("%s|%s", sRankName.getData(), pOfObj->GetName()).getData() : pOfObj->GetName()),
-		Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + iX, cgo.Y, CStdDDraw::DEFAULT_MESSAGE_COLOR, ALeft);
+	if (!nameAndRank.empty())
+	{
+		Application.DDraw->TextOut(nameAndRank.c_str(),
+			Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + iX, cgo.Y, CStdDDraw::DEFAULT_MESSAGE_COLOR, ALeft);
+	}
 
 #endif
 }

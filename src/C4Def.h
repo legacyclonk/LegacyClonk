@@ -267,6 +267,7 @@ public:
 	int32_t AutoContextMenu; // automatically open context menu for this object
 	int32_t AllowPictureStack; // allow stacking of multiple items in menus even if some attributes do not match. APS_*-values
 	int32_t HideHUDBars; // A bit mask to selectively hide some of the Energy, Magic Energy and Breath bars.
+	int32_t HideHUDElements; // A bit mask to selectively hide clonk portrait, clonk name, clonk rank, clonk rank image, captain icon
 	uint32_t Scale; // graphics scale
 
 public:
@@ -275,6 +276,15 @@ public:
 		HB_MagicEnergy = 0x2,
 		HB_Breath = 0x4,
 		HB_All = HB_Energy | HB_MagicEnergy | HB_Breath
+	};
+
+	enum HideHud : int32_t {
+		HH_Portrait = 0x1,
+		HH_Captain = 0x2,
+		HH_Name = 0x4,
+		HH_Rank = 0x8,
+		HH_RankImage = 0x10,
+		HH_All = HH_Portrait | HH_Captain | HH_Name | HH_Rank | HH_RankImage
 	};
 
 	void Default();

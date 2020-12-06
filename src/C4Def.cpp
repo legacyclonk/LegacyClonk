@@ -450,6 +450,20 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 	};
 
 	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(HideHUDBars, HideBarValues), "HideHUDBars", 0));
+
+	const StdBitfieldEntry<int32_t> HideHUDValues[] =
+	{
+		{ "Portrait", HH_Portrait },
+		{ "Captain", HH_Captain },
+		{ "Name", HH_Name },
+		{ "Rank", HH_Rank },
+		{ "RankImage", HH_RankImage },
+		{ "All", HH_All },
+		{ nullptr, 0 }
+	};
+
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(HideHUDElements, HideHUDValues), "HideHUDElements", 0));
+
 	pComp->Value(mkNamingAdapt(Scale, "Scale", 100));
 
 	pComp->FollowName("Physical");
