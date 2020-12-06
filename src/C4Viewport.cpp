@@ -872,13 +872,15 @@ void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
 	C4Facet ccgo, ccgo2;
 
 	// Get cursor
-	C4Object *cursor, *realcursor;
 	C4Player *pPlr = Game.Players.Get(Player);
-	if (!pPlr) return;
-	realcursor = pPlr->Cursor;
-	if (!(cursor = pPlr->ViewCursor))
-		if (!(cursor = realcursor))
-			return;
+	if (!pPlr)
+		return;
+
+	const auto realCursor = pPlr->Cursor;
+	const auto viewCursor = pPlr->ViewCursor;
+	const auto cursor = viewCursor ? viewCursor : realCursor;
+	if (!cursor)
+		return;
 
 	// Draw info
 	if (Config.Graphics.ShowPlayerHUDAlways)
@@ -939,7 +941,7 @@ void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
 
 	// Draw commands
 	if (Config.Graphics.ShowCommands)
-		if (realcursor)
+		if (realCursor)
 			if (cgo.Hgt > C4SymbolSize)
 			{
 				C4ST_STARTNEW(CmdStat, "C4Viewport::DrawCursorInfo: Commands")
@@ -950,7 +952,7 @@ void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
 				// Secondary area (side)
 				ccgo2.Set(cgo.Surface, cgo.X + cgo.Wdt - iSize2, cgo.Y, iSize2, cgo.Hgt - iSize - 5);
 				// Draw commands
-				realcursor->DrawCommands(ccgo, ccgo2, SetRegions);
+				realCursor->DrawCommands(ccgo, ccgo2, SetRegions);
 				C4ST_STOP(CmdStat)
 			}
 }
