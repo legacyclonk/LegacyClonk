@@ -112,11 +112,11 @@ bool C4Game::InitDefs()
 	iDefs = Defs.CheckEngineVersion(C4XVER1, C4XVER2, C4XVER3, C4XVER4, C4XVERBUILD);
 	if (iDefs > 0) { LogF(LoadResStr("IDS_PRC_DEFSINVC4X"), iDefs); }
 
+	// sort before CheckRequireDef for better id-lookup performance
+	Defs.SortByID();
+
 	// Check for unmet requirements
 	Defs.CheckRequireDef();
-
-	// build quick access table
-	Defs.BuildTable();
 
 	// get default particles
 	Particles.SetDefParticles();
@@ -2369,7 +2369,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 			RoundResults.Init();
 		}
 
-	for (C4Def *def = Defs.FirstDef; def; def = def->Next)
+	for (const auto &def : Defs)
 	{
 		def->Script.Call(PSF_InitializeDef, {section ? C4VString(section->szName) : C4VNull});
 	}

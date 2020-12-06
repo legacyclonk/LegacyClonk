@@ -40,6 +40,8 @@
 #include "C4CompilerWrapper.h"
 #endif
 
+#include <algorithm>
+
 // Default Action Procedures
 
 const char *ProcedureName[C4D_MaxDFA] =
@@ -490,7 +492,6 @@ void C4Def::Default()
 #endif
 	ActNum = 0;
 	ActMap = nullptr;
-	Next = nullptr;
 	Maker[0] = 0;
 	Filename[0] = 0;
 	Creation = 0;
@@ -1143,146 +1144,128 @@ bool C4DefList::Add(C4Def *pDef, bool fOverload)
 	if (!pDef) return false;
 
 	// Check old def to overload
-	C4Def *pLastDef = ID2Def(pDef->id);
-	if (pLastDef && !fOverload) return false;
+	const auto old = FindDefByID(pDef->id);
+	const auto hasOld = (old != Defs.end());
+	if (hasOld && !fOverload) return false;
 
 #ifdef C4ENGINE
 	// Log overloaded def
 	if (Config.Graphics.VerboseObjectLoading >= 1)
-		if (pLastDef)
+		if (hasOld)
 		{
-			LogF(LoadResStr("IDS_PRC_DEFOVERLOAD"), pDef->GetName(), C4IdText(pLastDef->id));
+			LogF(LoadResStr("IDS_PRC_DEFOVERLOAD"), pDef->GetName(), C4IdText((*old)->id));
 			if (Config.Graphics.VerboseObjectLoading >= 2)
 			{
-				LogF("      Old def at %s", pLastDef->Filename);
+				LogF("      Old def at %s", (*old)->Filename);
 				LogF("     Overload by %s", pDef->Filename);
 			}
 		}
 #endif
 
-	// Remove old def
-	Remove(pDef->id);
-
-	// Add new def
-	pDef->Next = FirstDef;
-	FirstDef = pDef;
+	if (hasOld)
+	{
+		// Replace old def
+		old->reset(pDef);
+	}
+	else
+	{
+		// Add new def
+		Defs.emplace_back(pDef);
+	}
 
 	return true;
 }
 
 bool C4DefList::Remove(C4ID id)
 {
-	C4Def *cdef, *prev;
-	for (cdef = FirstDef, prev = nullptr; cdef; prev = cdef, cdef = cdef->Next)
-		if (cdef->id == id)
-		{
-			if (prev) prev->Next = cdef->Next;
-			else FirstDef = cdef->Next;
-			delete cdef;
-			return true;
-		}
+	if (const auto it = FindDefByID(id); it != Defs.end())
+	{
+		Defs.erase(it);
+		return true;
+	}
 	return false;
 }
 
 void C4DefList::Remove(C4Def *def)
 {
-	C4Def *cdef, *prev;
-	for (cdef = FirstDef, prev = nullptr; cdef; prev = cdef, cdef = cdef->Next)
-		if (cdef == def)
+	if (const auto it = std::find_if(Defs.begin(), Defs.end(), [def](const auto &check)
 		{
-			if (prev) prev->Next = cdef->Next;
-			else FirstDef = cdef->Next;
-			delete cdef;
-			return;
-		}
+			return check.get() == def;
+		}); it != Defs.end())
+	{
+		Defs.erase(it);
+	}
 }
 
 void C4DefList::Clear()
 {
-	C4Def *cdef, *next;
-	for (cdef = FirstDef; cdef; cdef = next)
-	{
-		next = cdef->Next;
-		delete cdef;
-	}
-	FirstDef = nullptr;
-	// clear quick access table
-	for (int32_t i = 0; i < 64; i++) { delete[] Table[i]; Table[i] = nullptr; }
-	fTable = false;
+	Defs.clear();
+	LoadFailure = false;
+	Sorted = false;
 }
 
 C4Def *C4DefList::ID2Def(C4ID id)
 {
 	if (id == C4ID_None) return nullptr;
-	if (!fTable)
+	if (const auto it = FindDefByID(id); it != Defs.end())
 	{
-		// table not yet built: search list
-		C4Def *cdef;
-		for (cdef = FirstDef; cdef; cdef = cdef->Next)
-			if (cdef->id == id) return cdef;
+		return it->get();
 	}
-	C4Def **ppDef, ***pppDef = Table;
-	// get table entry to query
-	int32_t iTblIndex = (id >> 24) - 32;
-	if (Inside<int32_t>(iTblIndex, 0, 63)) pppDef += iTblIndex;
-	// no entry matching?
-	if (!(ppDef = *pppDef)) return nullptr;
-	// search list
-	for (C4Def *pDef = *ppDef; pDef = *ppDef; ppDef++)
-	{
-		if (pDef->id == id) return pDef;
-	}
-	// none found
 	return nullptr;
 }
 
 int32_t C4DefList::GetIndex(C4ID id)
 {
-	C4Def *cdef;
-	int32_t cindex;
-	for (cdef = FirstDef, cindex = 0; cdef; cdef = cdef->Next, cindex++)
-		if (cdef->id == id) return cindex;
+	if (const auto it = FindDefByID(id); it != Defs.end())
+	{
+		return std::distance(Defs.begin(), it);
+	}
 	return -1;
 }
 
 int32_t C4DefList::GetDefCount(uint32_t dwCategory)
 {
-	C4Def *cdef; int32_t ccount = 0;
-	for (cdef = FirstDef; cdef; cdef = cdef->Next)
-		if (cdef->Category & dwCategory)
-			ccount++;
-	return ccount;
+	return std::count_if(Defs.begin(), Defs.end(), [dwCategory](const auto &def)
+	{
+		return def->Category & dwCategory;
+	});
 }
 
 C4Def *C4DefList::GetDef(int32_t iIndex, uint32_t dwCategory)
 {
-	C4Def *pDef; int32_t iCurrentIndex;
 	if (iIndex < 0) return nullptr;
-	for (pDef = FirstDef, iCurrentIndex = -1; pDef; pDef = pDef->Next)
-		if (pDef->Category & dwCategory)
+
+	if (dwCategory == C4D_All && iIndex < Defs.size())
+	{
+		return Defs[iIndex].get();
+	}
+
+	int32_t currentIndex = -1;
+	for (const auto &it : Defs)
+	{
+		if (it->Category & dwCategory)
 		{
-			iCurrentIndex++;
-			if (iCurrentIndex == iIndex) return pDef;
+			if (++currentIndex == iIndex) return it.get();
 		}
+	}
 	return nullptr;
 }
 
 #ifdef C4ENGINE
 C4Def *C4DefList::GetByPath(const char *szPath)
 {
-	// search defs
-	const char *szDefPath;
-	for (C4Def *pDef = FirstDef; pDef; pDef = pDef->Next)
-		if (szDefPath = Config.AtExeRelativePath(pDef->Filename))
-			if (SEqual2NoCase(szPath, szDefPath))
-				// the definition itself?
-				if (!szPath[SLen(szDefPath)])
-					return pDef;
-	// or a component?
-				else if (szPath[SLen(szDefPath)] == '\\')
-					if (!strchr(szPath + SLen(szDefPath) + 1, '\\'))
-						return pDef;
-	// not found
+	if (const auto it = std::find_if(Defs.begin(), Defs.end(), [szPath](const auto &def)
+		{
+			const auto defPath = Config.AtExeRelativePath(def->Filename);
+			if (defPath && SEqual2NoCase(szPath, defPath))
+			{
+				return !szPath[SLen(defPath)] || (szPath[SLen(defPath)] == '\\' && !strchr(szPath + SLen(defPath) + 1, '\\'));
+			}
+			return false;
+		}); it != Defs.end())
+	{
+		return it->get();
+	}
 	return nullptr;
 }
 #endif
@@ -1290,66 +1273,59 @@ C4Def *C4DefList::GetByPath(const char *szPath)
 int32_t C4DefList::CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, int32_t ver4, int32_t ver5)
 {
 	int32_t rcount = 0;
-	C4Def *cdef, *prev, *next;
-	for (cdef = FirstDef, prev = nullptr; cdef; cdef = next)
+	Defs.erase(std::remove_if(Defs.begin(), Defs.end(), [ver1, ver2, ver3, ver4, ver5, &rcount](const auto &def)
 	{
-		next = cdef->Next;
-		if (CompareVersion(cdef->rC4XVer[0], cdef->rC4XVer[1], cdef->rC4XVer[2], cdef->rC4XVer[3], cdef->rC4XVer[4], ver1, ver2, ver3, ver4, ver5) > 0)
+		if (CompareVersion(def->rC4XVer[0], def->rC4XVer[1], def->rC4XVer[2], def->rC4XVer[3], def->rC4XVer[4], ver1, ver2, ver3, ver4, ver5) > 0)
 		{
-			if (prev) prev->Next = cdef->Next;
-			else FirstDef = cdef->Next;
-			delete cdef;
-			rcount++;
+			++rcount;
+			return true;
 		}
-		else prev = cdef;
-	}
+		return false;
+	}), Defs.end());
 	return rcount;
 }
 
 int32_t C4DefList::CheckRequireDef()
 {
 	int32_t rcount = 0, rcount2;
-	C4Def *cdef, *prev, *next;
 	do
 	{
 		rcount2 = rcount;
-		for (cdef = FirstDef, prev = nullptr; cdef; cdef = next)
+		Defs.erase(std::remove_if(Defs.begin(), Defs.end(), [this, &rcount](const auto &def)
 		{
-			next = cdef->Next;
-			for (int32_t i = 0; i < cdef->RequireDef.GetNumberOfIDs(); i++)
-				if (GetIndex(cdef->RequireDef.GetID(i)) < 0)
+			for (const auto &it : def->RequireDef)
+			{
+				if (GetIndex(it.id) < 0)
 				{
-					(prev ? prev->Next : FirstDef) = cdef->Next;
-					delete cdef;
-					rcount++;
+					++rcount;
+					return true;
 				}
-		}
+			}
+			return false;
+		}), Defs.end());
 	} while (rcount != rcount2);
 	return rcount;
 }
 
 int32_t C4DefList::ColorizeByMaterial(C4MaterialMap &rMats, uint8_t bGBM)
 {
-	C4Def *cdef;
-	int32_t rval = 0;
-	for (cdef = FirstDef; cdef; cdef = cdef->Next)
-		if (cdef->ColorizeByMaterial(rMats, bGBM))
-			rval++;
-	return rval;
+	return std::count_if(Defs.begin(), Defs.end(), [bGBM, &rMats](const auto &def)
+	{
+		return def->ColorizeByMaterial(rMats, bGBM);
+	});
 }
 
 void C4DefList::Draw(C4ID id, C4Facet &cgo, bool fSelected, int32_t iColor)
 {
-	C4Def *cdef = ID2Def(id);
-	if (cdef) cdef->Draw(cgo, fSelected, iColor);
+	if (C4Def *def = ID2Def(id); def)
+		def->Draw(cgo, fSelected, iColor);
 }
 
 void C4DefList::Default()
 {
-	FirstDef = nullptr;
+	Defs.clear();
 	LoadFailure = false;
-	std::fill(Table, std::end(Table), nullptr);
-	fTable = false;
+	Sorted = false;
 }
 
 bool C4DefList::Reload(C4Def *pDef, uint32_t dwLoadWhat, const char *szLanguage, C4SoundSystem *pSoundSystem)
@@ -1371,7 +1347,7 @@ bool C4DefList::Reload(C4Def *pDef, uint32_t dwLoadWhat, const char *szLanguage,
 	if (!pDef->Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem)) return false;
 	hGroup.Close();
 	// rebuild quick access table
-	BuildTable();
+	SortByID();
 #ifdef C4ENGINE
 	// update script engine - this will also do include callbacks
 	Game.ScriptEngine.ReLink(this);
@@ -1384,44 +1360,6 @@ bool C4DefList::Reload(C4Def *pDef, uint32_t dwLoadWhat, const char *szLanguage,
 #endif
 	// Success
 	return true;
-}
-
-void C4DefList::BuildTable()
-{
-	// clear any current table
-	int32_t i;
-	for (i = 0; i < 64; i++) { delete[] Table[i]; Table[i] = nullptr; }
-	// build temp count list
-	int32_t Counts[64]{};
-	C4Def *pDef;
-	for (pDef = FirstDef; pDef; pDef = pDef->Next)
-		if (LooksLikeID(pDef->id))
-			if (pDef->id < 10000)
-				Counts[0]++;
-			else
-				Counts[(pDef->id >> 24) - 32]++;
-	// get mem for table; !!! leave space for stop entry !!!
-	for (i = 0; i < 64; i++) if (Counts[i])
-	{
-		C4Def **ppDef = new C4Def*[Counts[i] + 1]{};
-		Table[i] = ppDef;
-	}
-	// build table
-	for (pDef = FirstDef; pDef; pDef = pDef->Next)
-		if (LooksLikeID(pDef->id))
-		{
-			C4Def **ppDef;
-			if (pDef->id < 10000)
-				ppDef = Table[0];
-			else
-				ppDef = Table[(pDef->id >> 24) - 32];
-			while (*ppDef) ppDef++;
-			*ppDef = pDef;
-		}
-	// done
-	fTable = true;
-	// use table for sorting now
-	SortByID();
 }
 
 bool C4Def::LoadPortraits(C4Group &hGroup)
@@ -1572,15 +1510,6 @@ bool C4DefList::GetFontImage(const char *szImageTag, CFacet &rOutImgFacet)
 	return true;
 }
 
-#ifdef _WIN32
-int __cdecl C4DefListSortFunc(const void *elem1, const void *elem2)
-#else
-int C4DefListSortFunc(const void *elem1, const void *elem2)
-#endif
-{
-	return (*static_cast<C4Def * const *>(elem1))->id - (*static_cast<C4Def * const *>(elem2))->id;
-}
-
 void C4DefList::SortByID()
 {
 	// ID sorting will prevent some possible sync losses due to definition loading in different order
@@ -1588,42 +1517,40 @@ void C4DefList::SortByID()
 	//  within the same object pack and multiple appendtos with function overloads that depend on their
 	//  order.)
 
-	// Must be called directly after quick access table has been built.
-	assert(fTable);
-	// sort all quick access slots
-	int i = sizeof(Table) / sizeof(C4Def **);
-	FirstDef = nullptr;
-	C4Def ***pppDef = Table, **ppDef, **ppDefCount, **ppCurrLastDef = &FirstDef;
-	while (i--)
+	std::sort(Defs.begin(), Defs.end(), [](const auto &a, const auto &b)
 	{
-		// only used slots
-		if (ppDefCount = ppDef = *pppDef)
-		{
-			int cnt = 0; while (*ppDefCount++) ++cnt;
-			if (cnt)
-			{
-				qsort(ppDef, cnt, sizeof(C4Def *), &C4DefListSortFunc);
-				// build new linked list from sorted table
-				// note this method also terminates the list!
-				while (*ppCurrLastDef = *ppDef++) ppCurrLastDef = &((*ppCurrLastDef)->Next);
-			}
-		}
-		++pppDef;
-	}
+		return a->id < b->id;
+	});
+
+	Sorted = true;
 }
 
 #ifdef C4ENGINE
 void C4DefList::Synchronize()
 {
-	C4Def *pDef;
-	for (pDef = FirstDef; pDef; pDef = pDef->Next)
-		pDef->Synchronize();
+	for (const auto &it : Defs)
+		it->Synchronize();
 }
 #endif
 
 void C4DefList::ResetIncludeDependencies()
 {
-	C4Def *pDef;
-	for (pDef = FirstDef; pDef; pDef = pDef->Next)
-		pDef->ResetIncludeDependencies();
+	for (const auto &it : Defs)
+		it->ResetIncludeDependencies();
+}
+
+std::vector<std::unique_ptr<C4Def>>::iterator C4DefList::FindDefByID(C4ID id)
+{
+	if (Sorted)
+	{
+		return std::lower_bound(Defs.begin(), Defs.end(), id, [](const auto &def, C4ID id)
+		{
+			return def->id < id;
+		});
+	}
+
+	return std::find_if(Defs.begin(), Defs.end(), [id](const auto &def)
+	{
+		return def->id == id;
+	});
 }

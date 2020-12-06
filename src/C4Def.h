@@ -32,6 +32,11 @@
 #include "C4LangStringTable.h"
 #endif
 
+#include "C4DelegatedIterable.h"
+
+#include <memory>
+#include <vector>
+
 const int32_t C4D_None                   = 0,
               C4D_All                    = ~C4D_None,
 
@@ -317,7 +322,6 @@ public:
 	int32_t Count; // number of instanciations
 	C4AulScriptFunc *TimerCall;
 	C4ComponentHost Desc;
-	C4Def *Next;
 
 #ifdef C4ENGINE
 	// Currently cannot have script host in frontend because that
@@ -380,9 +384,9 @@ public:
 	void ResetIncludeDependencies(); // resets all pointers into foreign definitions caused by include chains
 };
 
-class C4DefList
+class C4DefList : public C4DelegatedIterable<C4DefList>
 #ifdef C4ENGINE
-	: public CStdFont::CustomImages
+	, public CStdFont::CustomImages
 #endif
 {
 public:
@@ -391,9 +395,6 @@ public:
 
 public:
 	bool LoadFailure;
-	C4Def **Table[64]; // From space to _; some minor waste of mem
-	bool fTable;
-	C4Def *FirstDef;
 
 public:
 	void Default();
@@ -420,8 +421,8 @@ public:
 	bool Remove(C4ID id);
 	bool Reload(C4Def *pDef, uint32_t dwLoadWhat, const char *szLanguage, C4SoundSystem *pSoundSystem = nullptr);
 	bool Add(C4Def *ndef, bool fOverload);
-	void BuildTable(); // build quick access table
 	void ResetIncludeDependencies(); // resets all pointers into foreign definitions caused by include chains
+	void SortByID();
 #ifdef C4ENGINE
 	void Synchronize();
 #endif
@@ -430,7 +431,13 @@ public:
 	virtual bool GetFontImage(const char *szImageTag, CFacet &rOutImgFacet) override;
 
 private:
-	void SortByID(); // sorts list by quick access table
+	std::vector<std::unique_ptr<C4Def>>::iterator FindDefByID(C4ID id);
+
+	std::vector<std::unique_ptr<C4Def>> Defs;
+	bool Sorted;
+
+public:
+	using Iterable = ConstIterableMember<&C4DefList::Defs>;
 };
 
 // Default Action Procedures
