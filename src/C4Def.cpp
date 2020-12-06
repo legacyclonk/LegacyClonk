@@ -967,7 +967,7 @@ void C4Def::Synchronize()
 
 C4DefList::C4DefList()
 {
-	Default();
+	Clear();
 }
 
 C4DefList::~C4DefList()
@@ -1319,13 +1319,6 @@ void C4DefList::Draw(C4ID id, C4Facet &cgo, bool fSelected, int32_t iColor)
 {
 	if (C4Def *def = ID2Def(id); def)
 		def->Draw(cgo, fSelected, iColor);
-}
-
-void C4DefList::Default()
-{
-	Defs.clear();
-	LoadFailure = false;
-	Sorted = false;
 }
 
 bool C4DefList::Reload(C4Def *pDef, uint32_t dwLoadWhat, const char *szLanguage, C4SoundSystem *pSoundSystem)

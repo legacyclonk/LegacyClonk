@@ -1689,7 +1689,7 @@ void C4Game::Default()
 	FullSpeed = false;
 	FrameSkip = 1; DoSkipFrame = false;
 	PreloadStatus = PreloadLevel::None;
-	Defs.Default();
+	Defs.Clear();
 	Material.Default();
 	Objects.Default();
 	BackObjects.Default();

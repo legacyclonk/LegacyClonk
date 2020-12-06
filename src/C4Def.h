@@ -397,7 +397,6 @@ public:
 	bool LoadFailure;
 
 public:
-	void Default();
 	void Clear();
 	int32_t Load(C4Group &hGroup,
 		uint32_t dwLoadWhat, const char *szLanguage,
