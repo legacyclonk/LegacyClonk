@@ -18,11 +18,12 @@
 
 #pragma once
 
-#include <C4Id.h>
+#include "C4DelegatedIterable.h"
+#include "C4Id.h"
 
 #include <vector>
 
-class C4IDList
+class C4IDList : public C4DelegatedIterable<C4IDList>
 {
 public:
 	struct Entry
@@ -77,4 +78,7 @@ public:
 
 private:
 	std::vector<Entry> content;
+
+public:
+	using Iterable = ConstIterableMember<&C4IDList::content>;
 };
