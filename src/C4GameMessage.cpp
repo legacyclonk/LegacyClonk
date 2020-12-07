@@ -25,6 +25,8 @@
 #include <C4Game.h>
 #include <C4Player.h>
 
+#include <algorithm>
+
 const int32_t TextMsgDelayFactor = 2; // frames per char message display time
 
 C4GameMessage::C4GameMessage() : pFrameDeco(nullptr) {}
@@ -243,7 +245,7 @@ void C4GameMessage::UpdateDef(C4ID idUpdDef)
 
 C4GameMessageList::C4GameMessageList()
 {
-	Default();
+	Clear();
 }
 
 C4GameMessageList::~C4GameMessageList()
@@ -251,50 +253,25 @@ C4GameMessageList::~C4GameMessageList()
 	Clear();
 }
 
-void C4GameMessageList::Default()
-{
-	First = nullptr;
-}
-
 void C4GameMessageList::ClearPointers(C4Object *pObj)
 {
-	C4GameMessage *cmsg, *next, *prev = nullptr;
-	for (cmsg = First; cmsg; cmsg = next)
+	Messages.erase(std::remove_if(Messages.begin(), Messages.end(), [pObj](const auto &msg)
 	{
-		next = cmsg->Next;
-		if (cmsg->Target == pObj)
-		{
-			delete cmsg; if (prev) prev->Next = next; else First = next;
-		}
-		else
-			prev = cmsg;
-	}
+		return msg->Target == pObj;
+	}), Messages.end());
 }
 
 void C4GameMessageList::Clear()
 {
-	C4GameMessage *cmsg, *next;
-	for (cmsg = First; cmsg; cmsg = next)
-	{
-		next = cmsg->Next;
-		delete cmsg;
-	}
-	First = nullptr;
+	Messages.clear();
 }
 
 void C4GameMessageList::Execute()
 {
-	C4GameMessage *cmsg, *next, *prev = nullptr;
-	for (cmsg = First; cmsg; cmsg = next)
+	Messages.erase(std::remove_if(Messages.begin(), Messages.end(), [](const auto &msg)
 	{
-		next = cmsg->Next;
-		if (!cmsg->Execute())
-		{
-			delete cmsg; if (prev) prev->Next = next; else First = next;
-		}
-		else
-			prev = cmsg;
-	}
+		return !msg->Execute();
+	}), Messages.end());
 }
 
 bool C4GameMessageList::New(int32_t iType, const char *szText,
@@ -330,62 +307,48 @@ bool C4GameMessageList::New(int32_t iType, const StdStrBuf &sText, C4Object *pTa
 	// Add new message
 	C4GameMessage *msgNew = new C4GameMessage;
 	msgNew->Init(iType, sText, pTarget, iPlayer, iX, iY, dwClr, idDecoID, szPortraitDef, dwFlags, width);
-	msgNew->Next = First;
-	First = msgNew;
+	Messages.emplace_back(msgNew);
 
 	return true;
 }
 
 bool C4GameMessageList::Append(int32_t iType, const char *szText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint8_t bCol, bool fNoDuplicates)
 {
-	C4GameMessage *cmsg = nullptr;
-	if (iType == C4GM_Target)
+	if (const auto &msg = std::find_if(Messages.begin(), Messages.end(), [iType, pTarget, iPlayer](const auto &msg)
 	{
-		for (cmsg = Game.Messages.First; cmsg; cmsg = cmsg->Next)
-			if (pTarget == cmsg->Target)
-				break;
-	}
-	if (iType == C4GM_Global || iType == C4GM_GlobalPlayer)
+		return (iType == C4GM_Target && msg->Target == pTarget)
+			|| ((iType == C4GM_Global || iType == C4GM_GlobalPlayer) && msg->Player == iPlayer);
+	}); msg != Messages.end() && (*msg)->Target == pTarget)
 	{
-		for (cmsg = Game.Messages.First; cmsg; cmsg = cmsg->Next)
-			if (iPlayer == cmsg->Player)
-				break;
-	}
-	if (!cmsg || pTarget != cmsg->Target)
-	{
-		New(iType, szText, pTarget, iPlayer, iX, iY, bCol);
+		(*msg)->Append(szText, fNoDuplicates);
 	}
 	else
 	{
-		cmsg->Append(szText, fNoDuplicates);
+		New(iType, szText, pTarget, iPlayer, iX, iY, bCol);
 	}
 	return true;
 }
 
 void C4GameMessageList::ClearPlayers(int32_t iPlayer, int32_t dwPositioningFlags)
 {
-	C4GameMessage *cmsg, *next, *prev = nullptr;
-	for (cmsg = First; cmsg; cmsg = next)
+	Messages.erase(std::remove_if(Messages.begin(), Messages.end(), [iPlayer, dwPositioningFlags](const auto &msg)
 	{
-		next = cmsg->Next;
-		if (cmsg->Player == iPlayer && cmsg->GetPositioningFlags() == dwPositioningFlags)
-		{
-			delete cmsg; if (prev) prev->Next = next; else First = next;
-		}
-		else
-			prev = cmsg;
-	}
+		return msg->Player == iPlayer && msg->GetPositioningFlags() == dwPositioningFlags;
+	}), Messages.end());
 }
 
 void C4GameMessageList::UpdateDef(C4ID idUpdDef)
 {
-	C4GameMessage *cmsg;
-	for (cmsg = First; cmsg; cmsg = cmsg->Next) cmsg->UpdateDef(idUpdDef);
+	for (const auto &it : Messages)
+	{
+		it->UpdateDef(idUpdDef);
+	}
 }
 
 void C4GameMessageList::Draw(C4FacetEx &cgo, int32_t iPlayer)
 {
-	C4GameMessage *cmsg;
-	for (cmsg = First; cmsg; cmsg = cmsg->Next)
-		cmsg->Draw(cgo, iPlayer);
+	for (const auto &it : Messages)
+	{
+		it->Draw(cgo, iPlayer);
+	}
 }

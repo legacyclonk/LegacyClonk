@@ -1703,7 +1703,7 @@ void C4Game::Default()
 	PXS.Default();
 	GraphicsSystem.Default();
 	C4S.Default();
-	Messages.Default();
+	Messages.Clear();
 	MessageInput.Default();
 	Info.Default();
 	Title.Default();

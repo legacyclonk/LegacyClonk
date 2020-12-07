@@ -21,6 +21,9 @@
 #include <C4Surface.h>
 #include <C4Gui.h>
 
+#include <memory>
+#include <vector>
+
 const int32_t C4GM_MaxText = 256,
               C4GM_MinDelay = 20;
 
@@ -64,7 +67,6 @@ protected:
 	int32_t Type;
 	C4Object *Target;
 	StdStrBuf Text;
-	C4GameMessage *Next;
 	C4ID DecoID; StdStrBuf PortraitDef;
 	C4GUI::FrameDecoration *pFrameDeco;
 	uint32_t dwFlags;
@@ -86,10 +88,9 @@ public:
 	~C4GameMessageList();
 
 protected:
-	C4GameMessage *First;
+	std::vector<std::unique_ptr<C4GameMessage>> Messages;
 
 public:
-	void Default();
 	void Clear();
 	void Execute();
 	void Draw(C4FacetEx &cgo, int32_t iPlayer);
