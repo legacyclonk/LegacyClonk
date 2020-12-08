@@ -18,10 +18,14 @@
 
 #pragma once
 
+#include "C4DelegatedIterable.h"
 #include "C4IDList.h"
 #include "C4PlayerInfo.h"
 #include "C4LangStringTable.h"
 #include "C4Teams.h"
+
+#include <memory>
+#include <vector>
 
 class C4GameRes
 {
@@ -61,19 +65,42 @@ public:
 	void CompileFunc(StdCompiler *pComp);
 };
 
-class C4GameResList
+class C4GameResList : public C4DelegatedIterable<C4GameResList>
 {
 private:
-	C4GameRes **pResList;
-	int32_t iResCount, iResCapacity;
+	std::vector<std::unique_ptr<C4GameRes>> resList;
 
 public:
-	C4GameResList() : pResList(nullptr), iResCount(0), iResCapacity(0) {}
-	~C4GameResList() { Clear(); }
+	class ResTypeIterator
+	{
+		using InternalIterator = std::vector<std::unique_ptr<C4GameRes>>::const_iterator;
+		const std::vector<std::unique_ptr<C4GameRes>> &resList;
+		C4Network2ResType type;
+		InternalIterator it;
+
+	public:
+		ResTypeIterator(C4Network2ResType type, const std::vector<std::unique_ptr<C4GameRes>> &resList);
+
+		ResTypeIterator &operator++();
+
+		bool operator==(const ResTypeIterator &other) const;
+		bool operator!=(const ResTypeIterator &other) const { return !(*this == other); }
+
+		C4GameRes &operator*() const;
+		C4GameRes *operator->() const;
+
+		ResTypeIterator begin() const { return *this; }
+		ResTypeIterator end() const;
+
+	private:
+		void filter();
+	};
+
+	using Iterable = ConstIterableMember<&C4GameResList::resList>;
 
 	C4GameResList &operator=(const C4GameResList &List);
 
-	C4GameRes *iterRes(C4GameRes *pLast, C4Network2ResType eType = NRT_Null);
+	ResTypeIterator iterRes(C4Network2ResType eType);
 
 	void Clear();
 	bool Load(const std::vector<std::string> &DefinitionFilenames); // host: create res cores by definition filenames

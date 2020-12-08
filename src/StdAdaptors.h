@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <limits>
+#include <memory>
 
 // * Wrappers for C4Compiler-types
 
@@ -483,20 +484,22 @@ inline StdParameter2Adapt<T, P1, P2> mkParAdapt(T &rObj, const P1 &rPar1, const 
 
 // * Store pointer (contents)
 // Defaults to null
-template <class T>
+template <class PointerWrapper>
 struct StdPtrAdapt
 {
-	StdPtrAdapt(T *&rpObj, bool fAllowNull = true, const char *szNaming = "Data")
+	using T = typename PointerWrapper::element_type;
+
+	StdPtrAdapt(PointerWrapper &rpObj, bool fAllowNull = true, const char *szNaming = "Data")
 		: rpObj(rpObj), fAllowNull(fAllowNull), szNaming(szNaming) {}
 
-	T *&rpObj; bool fAllowNull; const char *szNaming;
+	PointerWrapper &rpObj; bool fAllowNull; const char *szNaming;
 
 	void CompileFunc(StdCompiler *pComp) const
 	{
 		bool fCompiler = pComp->isCompiler(),
 			fNaming = pComp->hasNaming();
 		// Compiling? Clear object before
-		if (fCompiler) { delete rpObj; rpObj = nullptr; }
+		if (fCompiler) { rpObj.reset(); }
 		// Null checks - different with naming support.
 		if (fAllowNull)
 			if (fNaming)
@@ -520,7 +523,7 @@ struct StdPtrAdapt
 		{
 			T *rpnObj;
 			CompileNewFunc(rpnObj, pComp);
-			rpObj = rpnObj;
+			rpObj.reset(rpnObj);
 		}
 		else
 			pComp->Value(mkDecompileAdapt(*rpObj));
@@ -530,19 +533,54 @@ struct StdPtrAdapt
 
 	// Operators for default checking/setting
 	inline bool operator==(const T &nValue) const { return rpObj && *rpObj == nValue; }
-	inline StdPtrAdapt &operator=(const T &nValue) { delete rpObj; rpObj = new T(nValue); return *this; }
-	inline bool operator==(const T *pValue) const { return rpObj == pValue; }
-	inline StdPtrAdapt &operator=(const T *pValue) { delete rpObj; rpObj = pValue; return *this; }
+	inline StdPtrAdapt &operator=(const T &nValue) { rpObj.reset(new T(nValue)); return *this; }
+	inline bool operator==(const T *pValue) const { return rpObj.get() == pValue; }
+	inline StdPtrAdapt &operator=(const T *pValue) { rpObj.reset(pValue); return *this; }
+};
+
+template <typename T>
+void CompileFunc(std::unique_ptr<T> &smartPtr, StdCompiler *comp)
+{
+	comp->Value(StdPtrAdapt{smartPtr, false});
+}
+
+// only for use with StdPlainPtrAdapt
+// does not delete on destruction; only on reset
+template <typename T>
+class PlainPtrRef
+{
+	T *&ptr;
+
+public:
+	using element_type = T;
+
+	explicit PlainPtrRef(T *&ptr) noexcept : ptr{ptr} {}
+
+	T *get() const noexcept { return ptr; }
+	void reset(T *ptr_ = nullptr) { delete ptr; ptr = ptr_; }
+	explicit operator bool() const noexcept { return ptr; }
+
+	T& operator*() const noexcept { return *ptr; }
+};
+
+template <typename T>
+class StdPlainPtrAdapt : public StdPtrAdapt<PlainPtrRef<T>>
+{
+	PlainPtrRef<T> ptr;
+
+public:
+	StdPlainPtrAdapt(T *&rpObj, bool fAllowNull = true, const char *szNaming = "Data")
+	: ptr{rpObj}, StdPtrAdapt<PlainPtrRef<T>>{ptr, fAllowNull, szNaming} {}
 };
 
 template <class T>
-inline StdPtrAdapt<T> mkPtrAdapt(T *&rpObj, bool fAllowNull = true) { return StdPtrAdapt<T>(rpObj, fAllowNull); }
+inline StdPlainPtrAdapt<T> mkPtrAdapt(T *&rpObj, bool fAllowNull = true) { return StdPlainPtrAdapt<T>(rpObj, fAllowNull); }
 
 template <class T>
-inline StdPtrAdapt<T> mkNamingPtrAdapt(T *&rpObj, const char *szNaming) { return StdPtrAdapt<T>(rpObj, true, szNaming); }
+inline StdPlainPtrAdapt<T> mkNamingPtrAdapt(T *&rpObj, const char *szNaming) { return StdPlainPtrAdapt<T>(rpObj, true, szNaming); }
 
 template <class T>
-inline StdPtrAdapt<T> mkPtrAdaptNoNull(T *&rpObj) { return mkPtrAdapt<T>(rpObj, false); }
+inline StdPlainPtrAdapt<T> mkPtrAdaptNoNull(T *&rpObj) { return mkPtrAdapt<T>(rpObj, false); }
 
 // * Adaptor for STL containers
 // Writes a comma-separated list for compilers that support it. Otherwise, the size is calculated and safed.

@@ -86,17 +86,16 @@ bool C4Game::InitDefs()
 	int32_t iDefs = 0;
 	Log(LoadResStr("IDS_PRC_INITDEFS"));
 	int iDefResCount = 0;
-	C4GameRes *pDef;
-	for (pDef = Parameters.GameRes.iterRes(nullptr, NRT_Definitions); pDef; pDef = Parameters.GameRes.iterRes(pDef, NRT_Definitions))
+	for (const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
 		++iDefResCount;
 	int i = 0;
 	// Load specified defs
-	for (pDef = Parameters.GameRes.iterRes(nullptr, NRT_Definitions); pDef; pDef = Parameters.GameRes.iterRes(pDef, NRT_Definitions))
+	for (const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
 	{
 		int iMinProgress = 10 + (25 * i) / iDefResCount;
 		int iMaxProgress = 10 + (25 * (i + 1)) / iDefResCount;
 		++i;
-		iDefs += Defs.Load(pDef->getFile(), C4D_Load_RX, Config.General.LanguageEx, &*Application.SoundSystem, true, iMinProgress, iMaxProgress);
+		iDefs += Defs.Load(def.getFile(), C4D_Load_RX, Config.General.LanguageEx, &*Application.SoundSystem, true, iMinProgress, iMaxProgress);
 
 		// Def load failure
 		if (Defs.LoadFailure) return false;
@@ -848,7 +847,7 @@ bool C4Game::InitMaterialTexture()
 	bool fHaveScenMaterials = Game.ScenarioFile.FindEntry(C4CFN_Material);
 
 	// Load all materials
-	C4GameRes *pMatRes = nullptr;
+	auto matRes = Game.Parameters.GameRes.iterRes(NRT_Material);
 	bool fFirst = true, fOverloadMaterials = true, fOverloadTextures = true;
 	long tex_count = 0, mat_count = 0;
 	while (fOverloadMaterials || fOverloadTextures)
@@ -864,11 +863,11 @@ bool C4Game::InitMaterialTexture()
 		}
 		else
 		{
+			if (matRes == matRes.end()) break;
 			// Find next external material source
-			pMatRes = Game.Parameters.GameRes.iterRes(pMatRes, NRT_Material);
-			if (!pMatRes) break;
-			if (!Mats.Open(pMatRes->getFile()))
+			if (!Mats.Open(matRes->getFile()))
 				return false;
+			++matRes;
 		}
 
 		// First material file? Load texture map.
@@ -2321,10 +2320,10 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		// set up control (inits Record/Replay)
 		if (!InitControl()) return false;
 
-		for (auto *def = Parameters.GameRes.iterRes(nullptr, NRT_Definitions); def; def = Parameters.GameRes.iterRes(def, NRT_Definitions))
+		for (const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
 		{
 			auto group = std::make_unique<C4Group>();
-			if (!group->Open(def->getFile()))
+			if (!group->Open(def.getFile()))
 			{
 				return false;
 			}

@@ -23,6 +23,8 @@
 #include "C4Gui.h"
 #include "C4Wrappers.h"
 
+#include <iterator>
+
 // C4GameRes
 
 C4GameRes::C4GameRes()
@@ -169,35 +171,22 @@ void C4GameRes::CalcHash()
 C4GameResList &C4GameResList::operator=(const C4GameResList &List)
 {
 	Clear();
-	// Copy the list
-	iResCount = iResCapacity = List.iResCount;
-	pResList = new C4GameRes *[iResCapacity];
-	for (int i = 0; i < iResCount; i++)
-		pResList[i] = new C4GameRes(*List.pResList[i]);
+	resList.reserve(List.resList.size());
+	std::transform(List.resList.begin(), List.resList.end(), std::back_inserter(resList), [](const auto& res)
+	{
+		return std::make_unique<C4GameRes>(*res);
+	});
 	return *this;
 }
 
-C4GameRes *C4GameResList::iterRes(C4GameRes *pLast, C4Network2ResType eType)
+C4GameResList::ResTypeIterator C4GameResList::iterRes(C4Network2ResType type)
 {
-	for (int i = 0; i < iResCount; i++)
-		if (!pLast)
-		{
-			if (eType == NRT_Null || pResList[i]->getType() == eType)
-				return pResList[i];
-		}
-		else if (pLast == pResList[i])
-			pLast = nullptr;
-	return nullptr;
+	return {type, resList};
 }
 
 void C4GameResList::Clear()
 {
-	// clear them
-	for (int32_t i = 0; i < iResCount; i++)
-		delete pResList[i];
-	delete[] pResList;
-	pResList = nullptr;
-	iResCount = iResCapacity = 0;
+	resList.clear();
 }
 
 bool C4GameResList::Load(const std::vector<std::string> &DefinitionFilenames)
@@ -238,7 +227,7 @@ bool C4GameResList::Load(const std::vector<std::string> &DefinitionFilenames)
 C4GameRes *C4GameResList::CreateByFile(C4Network2ResType eType, const char *szFile)
 {
 	// Create & set
-	C4GameRes *pRes = new C4GameRes();
+	C4GameRes *pRes = new C4GameRes;
 	pRes->SetFile(eType, szFile);
 	// Add to list
 	Add(pRes);
@@ -248,25 +237,27 @@ C4GameRes *C4GameResList::CreateByFile(C4Network2ResType eType, const char *szFi
 bool C4GameResList::InitNetwork(C4Network2ResList *pNetResList)
 {
 	// Check all resources without attached network resource object
-	for (int i = 0; i < iResCount; i++)
-		if (!pResList[i]->InitNetwork(pNetResList))
+	for (const auto &it : resList)
+	{
+		if (!it->InitNetwork(pNetResList))
 			return false;
+	}
 	// Success
 	return true;
 }
 
 void C4GameResList::CalcHashes()
 {
-	for (int32_t i = 0; i < iResCount; i++)
-		pResList[i]->CalcHash();
+	for (const auto &it : resList)
+		it->CalcHash();
 }
 
 bool C4GameResList::RetrieveFiles()
 {
 	// wait for all resources
-	for (int32_t i = 0; i < iResCount; i++)
+	for (const auto &it : resList)
 	{
-		const C4Network2ResCore &Core = *pResList[i]->getResCore();
+		const C4Network2ResCore &Core = *it->getResCore();
 		StdStrBuf ResNameBuf = FormatString("%s: %s", LoadResStr("IDS_DLG_DEFINITION"), GetFilename(Core.getFileName()));
 		if (!Game.Network.RetrieveRes(Core, C4NetResRetrieveTimeout, ResNameBuf.getData()))
 			return false;
@@ -276,37 +267,69 @@ bool C4GameResList::RetrieveFiles()
 
 void C4GameResList::Add(C4GameRes *pRes)
 {
-	// Enlarge
-	if (iResCount >= iResCapacity)
-	{
-		iResCapacity += 10;
-		C4GameRes **pnResList = new C4GameRes *[iResCapacity];
-		for (int i = 0; i < iResCount; i++)
-			pnResList[i] = pResList[i];
-		pResList = pnResList;
-	}
-	// Add
-	pResList[iResCount++] = pRes;
+	resList.emplace_back(pRes);
 }
 
 void C4GameResList::CompileFunc(StdCompiler *pComp)
 {
 	bool fCompiler = pComp->isCompiler();
 	// Clear previous data
-	if (fCompiler) Clear();
+	int resCount = resList.size();
 	// Compile resource count
-	pComp->Value(mkNamingCountAdapt(iResCount, "Resource"));
+	pComp->Value(mkNamingCountAdapt(resCount, "Resource"));
 	// Create list
 	if (fCompiler)
 	{
-		pResList = new C4GameRes *[iResCapacity = iResCount]{};
+		Clear();
+		resList.resize(resCount);
 	}
 	// Compile list
 	pComp->Value(
 		mkNamingAdapt(
-			mkArrayAdaptMap(pResList, iResCount, mkPtrAdaptNoNull<C4GameRes>),
+			mkArrayAdapt(resList.data(), resCount),
 			"Resource"));
-	mkPtrAdaptNoNull<C4GameRes>(*pResList);
+}
+
+C4GameResList::ResTypeIterator::ResTypeIterator(C4Network2ResType type, const std::vector<std::unique_ptr<C4GameRes>> &resList) : resList{resList}, type{type}, it{resList.begin()}
+{
+	filter();
+}
+
+void C4GameResList::ResTypeIterator::filter()
+{
+	while (it != resList.end() && (*it)->getType() != type)
+	{
+		++it;
+	}
+}
+
+C4GameResList::ResTypeIterator &C4GameResList::ResTypeIterator::operator++()
+{
+	++it;
+	filter();
+	return *this;
+}
+
+C4GameRes &C4GameResList::ResTypeIterator::operator*() const
+{
+	return **it;
+}
+
+C4GameRes *C4GameResList::ResTypeIterator::operator->() const
+{
+	return it->get();
+}
+
+bool C4GameResList::ResTypeIterator::operator==(const ResTypeIterator &other) const
+{
+	return type == other.type && it == other.it;
+}
+
+C4GameResList::ResTypeIterator C4GameResList::ResTypeIterator::end() const
+{
+	auto ret = *this;
+	ret.it = resList.end();
+	return ret;
 }
 
 // *** C4GameParameters
