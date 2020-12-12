@@ -78,6 +78,9 @@ option(USE_STAT "Enable internal performance statistics for developers" OFF)
 # ENABLE_SOUND
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
+# USE_FMOD
+CMAKE_DEPENDENT_OPTION(USE_FMOD "Whether FMod should be tried to be loaded dynamically for sound" OFF
+	"ENABLE_SOUND" OFF)
 # USE_SDL_MIXER
 CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON
 	"ENABLE_SOUND" OFF)
@@ -137,6 +140,10 @@ make_includable(COPYING "${CMAKE_CURRENT_BINARY_DIR}/generated/COPYING.h")
 make_includable(TRADEMARK "${CMAKE_CURRENT_BINARY_DIR}/generated/TRADEMARK.h")
 
 if (ENABLE_SOUND)
+	if (USE_FMOD)
+		list(APPEND CLONK_SOURCES src/C4AudioSystemFmodRuntime.cpp)
+		list(APPEND CLONK_SOURCES src/C4AudioSystemFmodRuntime.h)
+	endif ()
 	if (USE_SDL_MIXER)
 		list(APPEND CLONK_SOURCES src/C4AudioSystemSdl.cpp)
 		list(APPEND CLONK_SOURCES src/C4AudioSystemSdl.h)
