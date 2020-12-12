@@ -23,13 +23,6 @@
 #include <C4Game.h>
 #include <C4Wrappers.h>
 
-#ifdef USE_FMOD
-#include <fmod_errors.h>
-#endif
-#ifdef HAVE_LIBSDL_MIXER
-#include <SDL.h>
-#endif
-
 #include <algorithm>
 #include <cstring>
 #include <utility>
@@ -110,8 +103,8 @@ void C4MusicSystem::Play(const char *const songname, const bool loop)
 			throw std::runtime_error("Cannot read file");
 		}
 		playingFileContents.reset(data);
-		playingFile.emplace(data, size);
-		Application.AudioSystem->PlayMusic(*playingFile, loop);
+		playingFile.reset(Application.AudioSystem->CreateMusicFile(data, size));
+		Application.AudioSystem->PlayMusic(playingFile.get(), loop);
 		UpdateVolume();
 		Application.AudioSystem->UnpauseMusic();
 	}

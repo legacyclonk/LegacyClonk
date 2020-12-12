@@ -62,12 +62,11 @@ private:
 	struct Sample
 	{
 		const std::string name;
-		const C4AudioSystem::SoundFile sample;
+		const std::unique_ptr<C4AudioSystem::SoundFile> sample;
 		const std::uint32_t duration;
 		std::list<Instance> instances;
 
-		Sample(const char *const name, const void *const buf, const std::size_t size)
-			: name{name}, sample{buf, size}, duration{sample.GetDuration()} {}
+		Sample(const char *const name, const void *const buf, const std::size_t size);
 		Sample(const Sample &) = delete;
 		Sample(Sample &&) = delete;
 		~Sample() = default;
@@ -102,7 +101,7 @@ private:
 		Instance &operator=(const Instance &) = delete;
 
 		Sample &sample;
-		std::optional<C4AudioSystem::SoundChannel> channel;
+		std::unique_ptr<C4AudioSystem::SoundChannel> channel;
 		const bool loop;
 		std::int32_t volume, pan{0};
 		std::variant<C4Object *, const ObjPos> obj;

@@ -69,7 +69,7 @@ private:
 
 	// Valid when a song is currently playing
 	std::unique_ptr<const char[]> playingFileContents;
-	std::optional<C4AudioSystem::MusicFile> playingFile;
+	std::unique_ptr<C4AudioSystem::MusicFile> playingFile;
 
 	// Returns a reference to the "music enabled" config entry of the current game mode
 	static bool &GetCfgMusicEnabled();
