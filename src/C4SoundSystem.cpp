@@ -140,6 +140,9 @@ bool C4SoundSystem::ToggleOnOff()
 	return enabled = !enabled;
 }
 
+C4SoundSystem::Sample::Sample(const char *const name, const void *const buf, const std::size_t size)
+	: name{name}, sample{Application.AudioSystem->CreateSoundFile(buf, size)}, duration{sample->GetDuration()} {}
+
 void C4SoundSystem::Sample::Execute()
 {
 	// Execute each instance and remove it if necessary
@@ -208,7 +211,7 @@ bool C4SoundSystem::Instance::Execute(const bool justStarted)
 	const auto createChannel = !channel;
 	if (createChannel)
 	{
-		channel.emplace(sample.sample, loop);
+		channel.reset(Application.AudioSystem->CreateSoundChannel(sample.sample.get(), loop));
 		if (!justStarted)
 		{
 			if (pos == ~0) pos = GetPlaybackPosition();

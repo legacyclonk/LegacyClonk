@@ -1,7 +1,9 @@
 src/C4Action.cpp
 src/C4Application.cpp
 src/C4Application.h
+src/C4AudioSystem.cpp
 src/C4AudioSystem.h
+src/C4AudioSystemNone.h
 src/C4Aul.cpp
 src/C4Aul.h
 src/C4AulExec.cpp

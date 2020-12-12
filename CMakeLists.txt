@@ -78,11 +78,8 @@ option(USE_STAT "Enable internal performance statistics for developers" OFF)
 # ENABLE_SOUND
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
-# USE_FMOD
-CMAKE_DEPENDENT_OPTION(USE_FMOD "Whether FMOD shall be used" OFF
-	"ENABLE_SOUND AND WIN32" OFF)
-# USE_MP3
-CMAKE_DEPENDENT_OPTION(USE_MP3 "Enable MP3 support" OFF
+# USE_SDL_MIXER
+CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON
 	"ENABLE_SOUND" OFF)
 # USE_SDL_MAINLOOP
 if (APPLE)
@@ -101,11 +98,6 @@ CMAKE_DEPENDENT_OPTION(USE_WIC "Use WIC instead of libjpeg and libpng" ON
 # WITH_DEVELOPER_MODE
 CMAKE_DEPENDENT_OPTION(WITH_DEVELOPER_MODE "Use GTK for the developer mode" OFF
 	"NOT USE_CONSOLE" OFF)
-
-# Check whether SDL_mixer should be used
-if (ENABLE_SOUND AND (NOT WIN32 OR NOT USE_FMOD))
-	set(USE_SDL_MIXER ON)
-endif ()
 
 # Use Microsoft CryptoAPI instead of OpenSSL when compiling for Windows
 if (WIN32)
@@ -144,12 +136,11 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/generated")
 make_includable(COPYING "${CMAKE_CURRENT_BINARY_DIR}/generated/COPYING.h")
 make_includable(TRADEMARK "${CMAKE_CURRENT_BINARY_DIR}/generated/TRADEMARK.h")
 
-if (NOT ENABLE_SOUND)
-	list(APPEND CLONK_SOURCES src/C4AudioSystemNone.cpp)
-elseif (USE_FMOD)
-	list(APPEND CLONK_SOURCES src/C4AudioSystemFmod.cpp)
-elseif (USE_SDL_MIXER)
-	list(APPEND CLONK_SOURCES src/C4AudioSystemSdl.cpp)
+if (ENABLE_SOUND)
+	if (USE_SDL_MIXER)
+		list(APPEND CLONK_SOURCES src/C4AudioSystemSdl.cpp)
+		list(APPEND CLONK_SOURCES src/C4AudioSystemSdl.h)
+	endif ()
 endif ()
 
 if (WIN32)
@@ -230,15 +221,6 @@ endif ()
 target_link_libraries(clonk standard)
 
 # Link libraries
-
-# Link FMOD
-if (USE_FMOD)
-	find_library(FMOD_LIBRARY fmod_vc fmod64_vc)
-	if (NOT FMOD_LIBRARY)
-		message(FATAL_ERROR "Cannot find FMOD library")
-	endif ()
-	target_link_libraries(clonk ${FMOD_LIBRARY})
-endif ()
 
 # Link Freetype
 if (NOT USE_CONSOLE)

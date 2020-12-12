@@ -93,7 +93,7 @@ public:
 	bool restartAtEnd;
 	// main System.c4g in working folder
 	C4Group SystemGroup;
-	std::optional<C4AudioSystem> AudioSystem;
+	std::unique_ptr<C4AudioSystem> AudioSystem;
 	std::optional<C4MusicSystem> MusicSystem;
 	std::optional<C4SoundSystem> SoundSystem;
 	C4GamePadControl *pGamePadControl;
