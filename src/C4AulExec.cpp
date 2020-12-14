@@ -831,6 +831,15 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				PopValue();
 				break;
 			}
+			case AB_NilCoalescingIt:
+			{
+				if (pCurVal[0].GetType() != C4V_Any)
+				{
+					fJump = true;
+					pCPos += pCPos->bccX;
+				}
+				break;
+			}
 			case AB_Set: // =
 			{
 				CheckOpPars(pCPos->bccX);

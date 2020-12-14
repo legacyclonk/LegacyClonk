@@ -188,6 +188,7 @@ enum C4AulBCCType
 	AB_AndIt,            // &=
 	AB_OrIt,             // |=
 	AB_XOrIt,            // ^=
+	AB_NilCoalescingIt,  // ??= only the jumping part
 	AB_Set,              // =
 
 	AB_CALLGLOBAL,       // global context call

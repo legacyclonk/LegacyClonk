@@ -470,6 +470,7 @@ C4ScriptOpDef C4ScriptOpMap[] =
 	{ 2, "&=",   AB_AndIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "|=",   AB_OrIt,             1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
 	{ 2, "^=",   AB_XOrIt,            1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Int },
+	{ 2, "??=",  AB_NilCoalescingIt,  1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Any },
 	{ 2, "=",    AB_Set,              1, 1, 0, C4V_Any,    C4V_pC4Value, C4V_Any },
 
 	{ 0, nullptr,  AB_ERR,            0, 0, 0, C4V_Any,    C4V_Any,      C4V_Any }
@@ -883,6 +884,7 @@ static const char *GetTTName(C4AulBCCType e)
 	case AB_AndIt:            return "AB_AndIt";            // &=
 	case AB_OrIt:             return "AB_OrIt";             // |=
 	case AB_XOrIt:            return "AB_XOrIt";            // ^=
+	case AB_NilCoalescingIt:  return "AB_NilCoalescingIt";  // ??=
 	case AB_Set:              return "AB_Set";              // =
 
 	case AB_CALL:             return "AB_CALL";             // direct object call
@@ -1082,6 +1084,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, std::intptr_t X)
 	case AB_EOF:
 	case AB_JUMP:
 	case AB_CALLNS:
+	case AB_NilCoalescingIt: // does not pop, the following AB_Set does
 		break;
 
 	case AB_STACK:
@@ -2993,14 +2996,29 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 			SetNoRef();
 		Shift();
 
-		if (((C4ScriptOpMap[OpID].Code == AB_And || C4ScriptOpMap[OpID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2) || C4ScriptOpMap[OpID].Code == AB_NilCoalescing)
+		if (((C4ScriptOpMap[OpID].Code == AB_And || C4ScriptOpMap[OpID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2) || C4ScriptOpMap[OpID].Code == AB_NilCoalescing || C4ScriptOpMap[OpID].Code == AB_NilCoalescingIt)
 		{
 			// create bytecode, remember position
 			const auto iCond = a->GetCodePos();
-			// Jump or discard first parameter
-			AddBCC(C4ScriptOpMap[OpID].Code == AB_And ? AB_JUMPAND : C4ScriptOpMap[OpID].Code == AB_Or ? AB_JUMPOR : AB_JUMPNOTNIL);
+
+			if (C4ScriptOpMap[OpID].Code == AB_NilCoalescingIt)
+			{
+				AddBCC(AB_NilCoalescingIt);
+			}
+			else
+			{
+				// Jump or discard first parameter
+				AddBCC(C4ScriptOpMap[OpID].Code == AB_And ? AB_JUMPAND : C4ScriptOpMap[OpID].Code == AB_Or ? AB_JUMPOR : AB_JUMPNOTNIL);
+			}
+
 			// parse second expression
 			Parse_Expression(C4ScriptOpMap[OpID].Priority);
+
+			if (C4ScriptOpMap[OpID].Code == AB_NilCoalescingIt)
+			{
+				AddBCC(AB_Set, OpID);
+			}
+
 			// set condition jump target
 			SetJumpHere(iCond);
 			break;
