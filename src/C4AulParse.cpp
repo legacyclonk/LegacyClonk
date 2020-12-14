@@ -1261,12 +1261,20 @@ size_t C4AulParseState::JumpHere()
 	return a->GetCodePos();
 }
 
+namespace
+{
+	bool IsJumpType(C4AulBCCType type) noexcept
+	{
+		return type == AB_JUMP || type == AB_JUMPAND || type == AB_JUMPOR || type == AB_CONDN || type == AB_JUMPNIL;
+	}
+}
+
 void C4AulParseState::SetJumpHere(size_t iJumpOp)
 {
 	if (Type != PARSER) return;
 	// Set target
 	C4AulBCC *pBCC = a->GetCodeByPos(iJumpOp);
-	assert(pBCC->bccType == AB_JUMP || pBCC->bccType == AB_JUMPAND || pBCC->bccType == AB_JUMPOR || pBCC->bccType == AB_CONDN || pBCC->bccType == AB_JUMPNIL);
+	assert(IsJumpType(pBCC->bccType));
 	pBCC->bccX = a->GetCodePos() - iJumpOp;
 	// Set flag so the next generated code chunk won't get joined
 	fJump = true;
@@ -1277,7 +1285,7 @@ void C4AulParseState::SetJump(size_t iJumpOp, size_t iWhere)
 	if (Type != PARSER) return;
 	// Set target
 	C4AulBCC *pBCC = a->GetCodeByPos(iJumpOp);
-	assert(pBCC->bccType == AB_JUMP || pBCC->bccType == AB_JUMPAND || pBCC->bccType == AB_JUMPOR || pBCC->bccType == AB_CONDN);
+	assert(IsJumpType(pBCC->bccType));
 	pBCC->bccX = iWhere - iJumpOp;
 }
 
@@ -3535,7 +3543,7 @@ bool C4AulScript::Parse()
 				for (std::intptr_t i = reinterpret_cast<std::intptr_t>(Fn->Code); i < CPos - Code; i++)
 				{
 					C4AulBCC *pBCC = Code + i;
-					if (pBCC->bccType == AB_JUMP || pBCC->bccType == AB_JUMPAND || pBCC->bccType == AB_JUMPOR || pBCC->bccType == AB_CONDN)
+					if (IsJumpType(pBCC->bccType))
 						if (!pBCC->bccX)
 							pBCC->bccX = CPos - Code - i;
 				}
