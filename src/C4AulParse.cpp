@@ -901,6 +901,7 @@ static const char *GetTTName(C4AulBCCType e)
 	case AB_JUMPAND:          return "AB_JUMPAND";
 	case AB_JUMPOR:           return "AB_JUMPOR";
 	case AB_JUMPNIL:          return "AB_JUMPNIL";
+	case AB_JUMPNOTNIL:       return "AB_JUMPNOTNIL";
 	case AB_CONDN:            return "AB_CONDN";            // conditional jump (negated, pops stack)
 	case AB_FOREACH_NEXT:     return "AB_FOREACH_NEXT";     // foreach: next element
 	case AB_FOREACH_MAP_NEXT: return "AB_FOREACH_MAP_NEXT"; // foreach: next element
@@ -1022,7 +1023,6 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, std::intptr_t X)
 	case AB_BitOr:
 	case AB_And:
 	case AB_Or:
-	case AB_NilCoalescing:
 	case AB_PowIt:
 	case AB_MulIt:
 	case AB_DivIt:
@@ -1041,10 +1041,11 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, std::intptr_t X)
 	case AB_CONDN:
 	case AB_IVARN:
 	case AB_RETURN:
-	// JUMPAND/JUMPOR are special: They either jump over instructions adding one to the stack
+	// JUMPAND/JUMPOR/JUMPNOTNIL are special: They either jump over instructions adding one to the stack
 	// or decrement the stack. Thus, for stack counting purposes, they decrement.
 	case AB_JUMPAND:
 	case AB_JUMPOR:
+	case AB_JUMPNOTNIL:
 		iStack--;
 		break;
 
@@ -1096,6 +1097,7 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, std::intptr_t X)
 		break;
 
 	default:
+	case AB_NilCoalescing:
 		assert(false);
 	}
 
@@ -1265,7 +1267,7 @@ namespace
 {
 	bool IsJumpType(C4AulBCCType type) noexcept
 	{
-		return type == AB_JUMP || type == AB_JUMPAND || type == AB_JUMPOR || type == AB_CONDN || type == AB_JUMPNIL;
+		return type == AB_JUMP || type == AB_JUMPAND || type == AB_JUMPOR || type == AB_CONDN || type == AB_JUMPNIL || type == AB_JUMPNOTNIL;
 	}
 }
 
@@ -2991,12 +2993,12 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 			SetNoRef();
 		Shift();
 
-		if ((C4ScriptOpMap[OpID].Code == AB_And || C4ScriptOpMap[OpID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2)
+		if (((C4ScriptOpMap[OpID].Code == AB_And || C4ScriptOpMap[OpID].Code == AB_Or) && Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT2) || C4ScriptOpMap[OpID].Code == AB_NilCoalescing)
 		{
 			// create bytecode, remember position
 			const auto iCond = a->GetCodePos();
 			// Jump or discard first parameter
-			AddBCC(C4ScriptOpMap[OpID].Code == AB_And ? AB_JUMPAND : AB_JUMPOR);
+			AddBCC(C4ScriptOpMap[OpID].Code == AB_And ? AB_JUMPAND : C4ScriptOpMap[OpID].Code == AB_Or ? AB_JUMPOR : AB_JUMPNOTNIL);
 			// parse second expression
 			Parse_Expression(C4ScriptOpMap[OpID].Priority);
 			// set condition jump target

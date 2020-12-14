@@ -732,20 +732,6 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 			}
 
-			case AB_NilCoalescing: // ??
-			{
-				CheckOpPars(pCPos->bccX);
-				C4Value *pPar1 = pCurVal - 1, *pPar2 = pCurVal;
-				if (pPar1->GetType() == C4V_Any)
-				{
-					C4V_Data data;
-					data.Raw = pPar2->_getRaw();
-					pPar1->Set(C4Value{data, pPar1->GetType()});
-				}
-				PopValue();
-				break;
-			}
-
 			case AB_PowIt: // **=
 			{
 				CheckOpPars<C4V_Int, C4V_Any, false, false>(pCPos->bccX);
@@ -1020,6 +1006,18 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				}
 				break;
 
+			case AB_JUMPNOTNIL:
+				if (pCurVal[0].GetType() != C4V_Any)
+				{
+					fJump = true;
+					pCPos += pCPos->bccX;
+				}
+				else
+				{
+					PopValue();
+				}
+				break;
+
 			case AB_CONDN:
 				if (!pCurVal[0])
 				{
@@ -1286,6 +1284,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 			}
 
 			default:
+			case AB_NilCoalescing:
 				assert(false);
 			}
 

@@ -207,6 +207,7 @@ enum C4AulBCCType
 	AB_JUMPAND,          // jump if zero, else pop the stack
 	AB_JUMPOR,           // jump if not zero, else pop the stack
 	AB_JUMPNIL,          // jump if nil, otherwise just continue
+	AB_JUMPNOTNIL,       // jump if not nil, otherwise just continue
 	AB_CONDN,            // conditional jump (negated, pops stack)
 	AB_FOREACH_NEXT,     // foreach: next element in array
 	AB_FOREACH_MAP_NEXT, // foreach: next key-value pair in map
