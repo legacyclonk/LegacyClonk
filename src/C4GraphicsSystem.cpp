@@ -35,6 +35,7 @@
 #include <StdBitmap.h>
 #include <StdPNG.h>
 
+#include <algorithm>
 #include <stdexcept>
 
 C4GraphicsSystem::C4GraphicsSystem()
@@ -97,14 +98,7 @@ void C4GraphicsSystem::Clear()
 	// clear loader
 	delete pLoaderScreen; pLoaderScreen = nullptr;
 	// Close viewports
-	C4Viewport *next;
-	while (FirstViewport)
-	{
-		next = FirstViewport->Next;
-		delete FirstViewport;
-		FirstViewport = next;
-	}
-	FirstViewport = nullptr;
+	Viewports.clear();
 	// No debug stuff
 	DeactivateDebugOutput();
 }
@@ -195,7 +189,7 @@ void C4GraphicsSystem::Execute()
 		SetMouseInGUI(false, false);
 
 	// Viewports
-	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
+	for (const auto &cvp : Viewports)
 		cvp->Execute();
 
 	if (Application.isFullScreen)
@@ -235,23 +229,18 @@ void C4GraphicsSystem::Execute()
 bool C4GraphicsSystem::CloseViewport(C4Viewport *cvp)
 {
 	if (!cvp) return false;
-	// Chop the start of the chain off
-	if (FirstViewport == cvp)
-	{
-		FirstViewport = cvp->Next;
-		delete cvp;
-		StartSoundEffect("CloseViewport");
-	}
-	// Take out of the chain
-	else for (C4Viewport *prev = FirstViewport; prev; prev = prev->Next)
-	{
-		if (prev->Next == cvp)
+	if (const auto it = std::find_if(Viewports.begin(), Viewports.end(), [cvp](const auto &viewport)
 		{
-			prev->Next = cvp->Next;
-			delete cvp;
-			StartSoundEffect("CloseViewport");
-		}
+			return viewport.get() == cvp;
+		}); it != Viewports.end())
+	{
+		Viewports.erase(it);
 	}
+	else
+	{
+		return false;
+	}
+	StartSoundEffect("CloseViewport");
 	// Recalculate viewports
 	RecalculateViewports();
 	// Done
@@ -261,9 +250,13 @@ bool C4GraphicsSystem::CloseViewport(C4Viewport *cvp)
 #ifdef _WIN32
 C4Viewport *C4GraphicsSystem::GetViewport(HWND hwnd)
 {
-	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
-		if (cvp->pWindow->hWindow == hwnd)
-			return cvp;
+	if (const auto cvp = std::find_if(Viewports.begin(), Viewports.end(), [hwnd](const auto &viewport)
+		{
+			return viewport->pWindow->hWindow == hwnd;
+		}); cvp != Viewports.end())
+	{
+		return cvp->get();
+	}
 	return nullptr;
 }
 #endif
@@ -271,30 +264,33 @@ C4Viewport *C4GraphicsSystem::GetViewport(HWND hwnd)
 bool C4GraphicsSystem::CreateViewport(int32_t iPlayer, bool fSilent)
 {
 	// Create and init new viewport, add to viewport list
-	int32_t iLastCount = GetViewportCount();
 	C4Viewport *nvp = new C4Viewport;
 	bool fOkay = false;
 	if (Application.isFullScreen)
 		fOkay = nvp->Init(iPlayer, false);
 	else
 		fOkay = nvp->Init(&Console, &Application, iPlayer);
-	if (!fOkay) { delete nvp; return false; }
-	C4Viewport *pLast;
-	for (pLast = FirstViewport; pLast && pLast->Next; pLast = pLast->Next);
-	if (pLast) pLast->Next = nvp; else FirstViewport = nvp;
+	if (!fOkay)
+	{
+		delete nvp;
+		return false;
+	}
+	Viewports.emplace_back(nvp);
 	// Recalculate viewports
 	RecalculateViewports();
 	// Viewports start off at centered position
 	nvp->CenterPosition();
 	// Action sound
-	if (GetViewportCount() != iLastCount) if (!fSilent)
+	if (!fSilent)
+	{
 		StartSoundEffect("CloseViewport");
+	}
 	return true;
 }
 
 void C4GraphicsSystem::ClearPointers(C4Object *pObj)
 {
-	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
+	for (const auto &cvp : Viewports)
 		cvp->ClearPointers(pObj);
 }
 
@@ -302,7 +298,7 @@ void C4GraphicsSystem::Default()
 {
 	UpperBoard.Default();
 	MessageBoard.Default();
-	FirstViewport = nullptr;
+	Viewports.clear();
 	InvalidateBg();
 	ViewportArea.Default();
 	ShowVertices = false;
@@ -356,25 +352,20 @@ bool C4GraphicsSystem::InitLoaderScreen(const char *szLoaderSpec)
 bool C4GraphicsSystem::CloseViewport(int32_t iPlayer, bool fSilent)
 {
 	// Close all matching viewports
-	int32_t iLastCount = GetViewportCount();
-	C4Viewport *next, *prev = nullptr;
-	for (C4Viewport *cvp = FirstViewport; cvp; cvp = next)
-	{
-		next = cvp->Next;
-		if (cvp->Player == iPlayer || (iPlayer == NO_OWNER && cvp->fIsNoOwnerViewport))
+	if (const auto it = std::remove_if(Viewports.begin(), Viewports.end(), [iPlayer](const auto &viewport)
 		{
-			delete cvp;
-			if (prev) prev->Next = next;
-			else FirstViewport = next;
+			return viewport->Player == iPlayer || (iPlayer == NO_OWNER && viewport->fIsNoOwnerViewport);
+		}); it != Viewports.end())
+	{
+		Viewports.erase(it, Viewports.end());
+		// Recalculate viewports
+		RecalculateViewports();
+		if (!fSilent)
+		{
+			// Action sound
+			StartSoundEffect("CloseViewport");
 		}
-		else
-			prev = cvp;
 	}
-	// Recalculate viewports
-	RecalculateViewports();
-	// Action sound
-	if (GetViewportCount() != iLastCount) if (!fSilent)
-		StartSoundEffect("CloseViewport");
 	return true;
 }
 
@@ -410,16 +401,14 @@ void C4GraphicsSystem::RecalculateViewports()
 	BackgroundAreas.AddRect(C4Rect(ViewportArea.X, ViewportArea.Y, ViewportArea.Wdt, ViewportArea.Hgt));
 
 	// Viewports
-	C4Viewport *cvp;
-	int32_t iViews = 0;
-	for (cvp = FirstViewport; cvp; cvp = cvp->Next) iViews++;
+	const int32_t iViews{GetViewportCount()};
 	if (!iViews) return;
 	int32_t iViewsH = static_cast<int32_t>(sqrt(float(iViews)));
 	int32_t iViewsX = iViews / iViewsH;
 	int32_t iViewsL = iViews % iViewsH;
 	int32_t cViewH, cViewX, ciViewsX;
 	int32_t cViewWdt, cViewHgt, cOffWdt, cOffHgt, cOffX, cOffY;
-	cvp = FirstViewport;
+	auto cvp = Viewports.begin();
 	for (cViewH = 0; cViewH < iViewsH; cViewH++)
 	{
 		ciViewsX = iViewsX; if (cViewH < iViewsL) ciViewsX++;
@@ -443,8 +432,8 @@ void C4GraphicsSystem::RecalculateViewports()
 			int32_t coViewWdt = cViewWdt - cOffWdt; if (coViewWdt > GBackWdt + 2 * ViewportScrollBorder) { coViewWdt = GBackWdt + 2 * ViewportScrollBorder; }
 			int32_t coViewHgt = cViewHgt - cOffHgt; if (coViewHgt > GBackHgt + 2 * ViewportScrollBorder) { coViewHgt = GBackHgt + 2 * ViewportScrollBorder; }
 			C4Rect rcOut(cOffX + cViewX * cViewWdt, cOffY + cViewH * cViewHgt, coViewWdt, coViewHgt);
-			cvp->SetOutputSize(rcOut.x, rcOut.y, rcOut.x, rcOut.y, rcOut.Wdt, rcOut.Hgt);
-			cvp = cvp->Next;
+			(*cvp)->SetOutputSize(rcOut.x, rcOut.y, rcOut.x, rcOut.y, rcOut.Wdt, rcOut.Hgt);
+			++cvp;
 			// clip down area avaiable for background drawing
 			BackgroundAreas.ClipByRect(rcOut);
 		}
@@ -453,16 +442,18 @@ void C4GraphicsSystem::RecalculateViewports()
 
 int32_t C4GraphicsSystem::GetViewportCount()
 {
-	int32_t iResult = 0;
-	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next) iResult++;
-	return iResult;
+	return Viewports.size();
 }
 
 C4Viewport *C4GraphicsSystem::GetViewport(int32_t iPlayer)
 {
-	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
-		if (cvp->Player == iPlayer || (iPlayer == NO_OWNER && cvp->fIsNoOwnerViewport))
-			return cvp;
+	if (const auto cvp = std::find_if(Viewports.begin(), Viewports.end(), [iPlayer](const auto &viewport)
+		{
+			return viewport->Player == iPlayer || (iPlayer == NO_OWNER && viewport->fIsNoOwnerViewport);
+		}); cvp != Viewports.end())
+	{
+		return cvp->get();
+	}
 	return nullptr;
 }
 
@@ -481,35 +472,12 @@ int32_t LayoutOrder(int32_t iControl)
 
 void C4GraphicsSystem::SortViewportsByPlayerControl()
 {
-	// Sort
-	bool fSorted;
-	C4Player *pPlr1, *pPlr2;
-	C4Viewport *pView, *pNext, *pPrev;
-	do
-	{
-		fSorted = true;
-		for (pPrev = nullptr, pView = FirstViewport; pView && (pNext = pView->Next); pView = pNext)
+	std::sort(Viewports.begin(), Viewports.end(), [](const auto &a, const auto &b)
 		{
-			// Get players
-			pPlr1 = Game.Players.Get(pView->Player);
-			pPlr2 = Game.Players.Get(pNext->Player);
-			// Swap order
-			if (pPlr1 && pPlr2 && (LayoutOrder(pPlr1->Control) > LayoutOrder(pPlr2->Control)))
-			{
-				if (pPrev) pPrev->Next = pNext; else FirstViewport = pNext;
-				pView->Next = pNext->Next;
-				pNext->Next = pView;
-				pPrev = pNext;
-				pNext = pView;
-				fSorted = false;
-			}
-			// Don't swap
-			else
-			{
-				pPrev = pView;
-			}
-		}
-	} while (!fSorted);
+			const auto plrA = Game.Players.Get(a->Player);
+			const auto plrB = Game.Players.Get(b->Player);
+			return plrA && plrB && LayoutOrder(plrA->Control) < LayoutOrder(plrB->Control);
+		});
 }
 
 void C4GraphicsSystem::MouseMove(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam, class C4Viewport *pVP)
@@ -546,8 +514,8 @@ void C4GraphicsSystem::MouseMove(int32_t iButton, int32_t iX, int32_t iY, uint32
 void C4GraphicsSystem::MouseMoveToViewport(int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
 {
 	// Pass on to mouse controlled viewport
-	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
-		if (Game.MouseControl.IsViewport(cvp))
+	for (const auto &cvp : Viewports)
+		if (Game.MouseControl.IsViewport(cvp.get()))
 			Game.MouseControl.Move(iButton,
 				BoundBy<int32_t>(iX - cvp->OutX, 0, cvp->ViewWdt - 1),
 				BoundBy<int32_t>(iY - cvp->OutY, 0, cvp->ViewHgt - 1),
@@ -600,8 +568,9 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 	// save landscape
 	if (fSaveAll)
 	{
+		if (Viewports.empty()) return false;
 		// get viewport to draw in
-		C4Viewport *pVP = GetFirstViewport(); if (!pVP) return false;
+		const auto &pVP = Viewports.front();
 		// create image large enough to hold the landcape
 		int32_t lWdt = static_cast<int32_t>(ceilf(GBackWdt * scale)), lHgt = static_cast<int32_t>(ceilf(GBackHgt * scale));
 		StdBitmap bmp(lWdt, lHgt, false);
@@ -774,7 +743,7 @@ int32_t C4GraphicsSystem::GetAudibility(int32_t iX, int32_t iY, int32_t *iPan, i
 	if (!iAudibilityRadius) iAudibilityRadius = C4SoundSystem::AudibilityRadius;
 	// Accumulate audibility by viewports
 	int32_t iAudible = 0; *iPan = 0;
-	for (C4Viewport *cvp = FirstViewport; cvp; cvp = cvp->Next)
+	for (const auto &cvp : Viewports)
 	{
 		auto listenerX = cvp->ViewX + cvp->ViewWdt / 2;
 		auto listenerY = cvp->ViewY + cvp->ViewHgt / 2;
@@ -904,9 +873,8 @@ bool C4GraphicsSystem::ViewportNextPlayer()
 	// safety: switch valid?
 	if ((!Game.C4S.Head.Film || !Game.C4S.Head.Replay) && !Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
 	// do switch then
-	C4Viewport *vp = GetFirstViewport();
-	if (!vp) return false;
-	vp->NextPlayer();
+	if (Viewports.empty()) return false;
+	Viewports.front()->NextPlayer();
 	return true;
 }
 
@@ -914,8 +882,8 @@ bool C4GraphicsSystem::FreeScroll(C4Vec2D vScrollBy)
 {
 	// safety: move valid?
 	if ((!Game.C4S.Head.Replay || !Game.C4S.Head.Film) && !Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
-	C4Viewport *vp = GetFirstViewport();
-	if (!vp) return false;
+	if (Viewports.empty()) return false;
+	const auto &vp = Viewports.front();
 	// move then (old static code crap...)
 	static int32_t vp_vx = 0; static int32_t vp_vy = 0; static int32_t vp_vf = 0;
 	int32_t dx = vScrollBy.x; int32_t dy = vScrollBy.y;

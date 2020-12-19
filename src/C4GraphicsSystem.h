@@ -23,6 +23,9 @@
 #include <C4UpperBoard.h>
 #include <C4Shape.h>
 
+#include <memory>
+#include <vector>
+
 class C4Game;
 class C4LoaderScreen;
 extern C4Game Game;
@@ -70,7 +73,7 @@ public:
 	int32_t GetAudibility(int32_t iX, int32_t iY, int32_t *iPan, int32_t iAudibilityRadius = 0);
 	int32_t GetViewportCount();
 	C4Viewport *GetViewport(int32_t iPlayer);
-	C4Viewport *GetFirstViewport() { return FirstViewport; }
+	const std::vector<std::unique_ptr<C4Viewport>> &GetViewports() { return Viewports; }
 	inline void InvalidateBg() { iRedrawBackground = 2; }
 	inline void OverwriteBg() { InvalidateBg(); }
 	void SetGamma(uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, int32_t iRampIndex); // set gamma ramp
@@ -82,7 +85,7 @@ public:
 #endif
 
 protected:
-	C4Viewport *FirstViewport;
+	std::vector<std::unique_ptr<C4Viewport>> Viewports;
 	bool fViewportClassRegistered;
 	C4Facet ViewportArea;
 #ifdef C4ENGINE

@@ -1262,7 +1262,6 @@ void C4Viewport::Default()
 	BorderLeft = BorderTop = BorderRight = BorderBottom = 0;
 	OutX = OutY = ViewWdt = ViewHgt = 0;
 	DrawX = DrawY = 0;
-	Next = nullptr;
 	PlayerLock = true;
 	ResetMenuPositions = false;
 	SetRegions = nullptr;

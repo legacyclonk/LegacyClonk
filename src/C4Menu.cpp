@@ -1106,9 +1106,9 @@ bool C4Menu::SetTextProgress(int32_t iToProgress, bool fAdd)
 C4Viewport *C4Menu::GetViewport()
 {
 	// ask all viewports
-	for (C4Viewport *pVP = Game.GraphicsSystem.GetFirstViewport(); pVP; pVP = pVP->GetNext())
+	for (const auto &pVP : Game.GraphicsSystem.GetViewports())
 		if (pVP->IsViewportMenu(this))
-			return pVP;
+			return pVP.get();
 	// none matching
 	return nullptr;
 }

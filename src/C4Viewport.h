@@ -98,7 +98,6 @@ public:
 	void NextPlayer();
 	C4Rect GetOutputRect() { return C4Rect(OutX, OutY, ViewWdt, ViewHgt); }
 	bool IsViewportMenu(class C4Menu *pMenu);
-	C4Viewport *GetNext() { return Next; }
 	int32_t GetPlayer() { return Player; }
 	void CenterPosition();
 
@@ -108,7 +107,6 @@ protected:
 	int32_t OutX, OutY;
 	bool ResetMenuPositions;
 	C4RegionList *SetRegions;
-	C4Viewport *Next;
 	CStdGLCtx *pCtx; // rendering context for OpenGL
 	C4ViewportWindow *pWindow;
 	CClrModAddMap ClrModMap; // color modulation map for viewport drawing

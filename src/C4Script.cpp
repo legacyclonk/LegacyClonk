@@ -5077,7 +5077,10 @@ static bool FnSetFilmView(C4AulContext *ctx, C4ValueInt iToPlr)
 	// real switch in replays only
 	if (!Game.Control.isReplay()) return true;
 	// set new target plr
-	if (C4Viewport *vp = Game.GraphicsSystem.GetFirstViewport()) vp->Init(iToPlr, true);
+	if (const auto &viewports = Game.GraphicsSystem.GetViewports(); viewports.size() > 0)
+	{
+		viewports.front()->Init(iToPlr, true);
+	}
 	// done, always success (sync)
 	return true;
 }
