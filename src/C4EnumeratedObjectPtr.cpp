@@ -46,7 +46,6 @@ void C4EnumeratedObjectPtr::Denumerate()
 
 void C4EnumeratedObjectPtr::CompileFunc(StdCompiler *compiler, bool intPack)
 {
-	assert(compiler->isCompiler() || (number == 0) == (object == nullptr));
 	if (intPack)
 	{
 		compiler->Value(mkIntPackAdapt(number));
