@@ -1536,10 +1536,15 @@ std::vector<std::unique_ptr<C4Def>>::iterator C4DefList::FindDefByID(C4ID id)
 {
 	if (Sorted)
 	{
-		return std::lower_bound(Defs.begin(), Defs.end(), id, [](const auto &def, C4ID id)
+		const auto it = std::lower_bound(Defs.begin(), Defs.end(), id, [](const auto &def, C4ID id)
 		{
 			return def->id < id;
 		});
+		if (it != Defs.end() && (*it)->id != id)
+		{
+			return Defs.end();
+		}
+		return it;
 	}
 
 	return std::find_if(Defs.begin(), Defs.end(), [id](const auto &def)
