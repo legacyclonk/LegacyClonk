@@ -104,7 +104,7 @@ constexpr auto SizeMax = std::numeric_limits<size_t>::max();
 
 // Small helpers
 template <class T> inline T Abs(T val) { return val > 0 ? val : -val; }
-template <class T> inline bool Inside(T ival, T lbound, T rbound) { return ival >= lbound && ival <= rbound; }
+template <class T> inline constexpr bool Inside(T ival, T lbound, T rbound) { return ival >= lbound && ival <= rbound; }
 template <class T> inline T BoundBy(T bval, T lbound, T rbound) { return bval < lbound ? lbound : bval > rbound ? rbound : bval; }
 template <class T> inline int Sign(T val) { return val < 0 ? -1 : val > 0 ? 1 : 0; }
 template <class T> inline void Toggle(T &v) { v = !v; }

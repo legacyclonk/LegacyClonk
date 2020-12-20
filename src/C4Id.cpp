@@ -19,23 +19,6 @@
 #include <C4Include.h>
 #include <C4Id.h>
 
-C4ID C4Id(const char *szId)
-{
-	if (!szId) return C4ID_None;
-	// Numerical id
-	if (Inside(szId[0], '0', '9') && Inside(szId[1], '0', '9') && Inside(szId[2], '0', '9') && Inside(szId[3], '0', '9'))
-	{
-		int iResult;
-		sscanf(szId, "%d", &iResult);
-		return iResult;
-	}
-	// NONE?
-	if (SEqual(szId, "NONE"))
-		return 0;
-	// Literal id
-	return (static_cast<uint32_t>(szId[3]) << 24) + (static_cast<uint32_t>(szId[2]) << 16) + (static_cast<uint32_t>(szId[1]) << 8) + static_cast<uint32_t>(szId[0]);
-}
-
 static char C4IdTextBuffer[5];
 
 const char *C4IdText(C4ID id)
@@ -66,16 +49,6 @@ void GetC4IdText(C4ID id, char *sBuf)
 	}
 }
 
-bool LooksLikeID(const char *szText)
-{
-	int cnt;
-	if (SLen(szText) != 4) return false;
-	for (cnt = 0; cnt < 4; cnt++)
-		if (!(Inside(szText[cnt], 'A', 'Z') || Inside(szText[cnt], '0', '9') || (szText[cnt] == '_')))
-			return false;
-	return true;
-}
-
 bool LooksLikeID(C4ID id)
 {
 	// don't allow 0000, since this may indicate error
@@ -88,3 +61,9 @@ bool LooksLikeID(C4ID id)
 	}
 	return true;
 }
+
+// make sure that C4ID values are consistent
+
+static_assert("NONE"_id == 0);
+static_assert("CLNK"_id == 0x4B4E4C43);
+static_assert("1337"_id == 1337);
