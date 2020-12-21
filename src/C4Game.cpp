@@ -1907,26 +1907,30 @@ void C4Game::Preload()
 {
 	if (CanPreload())
 	{
+		CStdEvent preloadingStartedEvent{false};
 #ifndef USE_CONSOLE
 		const auto context = lpDDraw->CreateContext(Application.pWindow, &Application);
 		context->Deselect();
 		pGL->GetMainCtx().Select();
-		PreloadThread = std::thread{[](std::unique_ptr<CStdGLCtx> preloadContext)
+		PreloadThread = std::thread{[&preloadingStartedEvent](std::unique_ptr<CStdGLCtx> preloadContext)
 		{
 			preloadContext->Select(false, true);
 			CStdLock lock{&Game.PreloadMutex};
+			preloadingStartedEvent.Set();
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
 			preloadContext->Finish();
 			preloadContext->Deselect(true);
 		},
 		std::unique_ptr<CStdGLCtx>{context}};
 #else
-		PreloadThread = std::thread{[]
+		PreloadThread = std::thread{[&preloadingStartedEvent]
 		{
 			CStdLock lock{&Game.PreloadMutex};
+			preloadingStartedEvent.Set();
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
 		}};
 #endif
+		preloadingStartedEvent.WaitFor(CStdEvent::Infinite);
 	}
 }
 
@@ -2279,6 +2283,11 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 {
 	if (!section)
 	{
+		if (CanPreload())
+		{
+			Preload();
+		}
+
 		RestartRestoreInfos.Clear();
 
 		C4PlayerInfo* info;
