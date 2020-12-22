@@ -390,6 +390,7 @@ bool C4Network2Res::SetByFile(const char *strFilePath, bool fTemp, C4Network2Res
 	fRemoved = false;
 	iLastReqTime = time(nullptr);
 	fLoading = false;
+	local = true;
 	// ok
 	return true;
 }
@@ -421,6 +422,7 @@ bool C4Network2Res::SetByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eTyp
 	fRemoved = false;
 	iLastReqTime = time(nullptr);
 	fLoading = false;
+	local = true;
 	// ok
 	return true;
 }

@@ -224,6 +224,9 @@ protected:
 
 	// loading
 	bool fLoading;
+
+	// not savable if true
+	bool local{false};
 	struct ClientChunks { C4Network2ResChunkData Chunks; int32_t ClientID; ClientChunks *Next; }
 	*pCChunks;
 	time_t iDiscoverStartTime;
@@ -246,6 +249,7 @@ public:
 	bool                     isRemoved()         const { return fRemoved; }
 	bool                     isLoading()         const { return fLoading; }
 	bool                     isComplete()        const { return !fLoading; }
+	bool                     isLocal()           const { return local; }
 	int32_t                  getPresentPercent() const { return fLoading ? Chunks.getPresentPercent() : 100; }
 
 	bool SetByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName = nullptr, bool fSilent = false);

@@ -141,7 +141,7 @@ bool C4Network2ResDlg::ListItem::IsSavePossible()
 	if (!pRes) return false;
 	// check for local filename
 	const char *szResFile = pRes->getFile();
-	if (SEqual2(szResFile, Config.Network.WorkPath))
+	if (!pRes->isLocal() && SEqual2(szResFile, Config.Network.WorkPath))
 	{
 		// check type
 		C4Network2ResType eType = pRes->getType();
