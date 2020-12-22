@@ -438,6 +438,9 @@ bool C4Network2Res::SetByCore(const C4Network2ResCore &nCore, bool fSilent, cons
 			// set core
 			fDirty = true;
 			Core = nCore;
+
+			// to ensure correct file sorting
+			GetStandalone(nullptr, 0, false, false, false);
 			// ok then
 			return true;
 		}
