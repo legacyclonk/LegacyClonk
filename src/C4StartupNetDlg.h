@@ -134,7 +134,7 @@ private:
 	C4GUI::ListBox *pGameSelList; // game selection listbox
 	C4KeyBinding *pKeyRefresh, *pKeyBack, *pKeyForward;
 	C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton> *btnGameList, *btnChat; // left side buttons
-	C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton> *btnInternet, *btnRecord, *btnUpdate; // right side buttons
+	C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton> *btnInternet, *btnRecord; // right side buttons
 	C4GUI::Button *btnJoin, *btnRefresh;
 	C4GUI::Edit *pJoinAddressEdt;
 	class C4ChatControl *pChatCtrl;

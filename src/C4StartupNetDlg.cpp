@@ -717,11 +717,6 @@ C4StartupNetDlg::C4StartupNetDlg() : C4StartupDlg(LoadResStr("IDS_DLG_NETSTART")
 	btnRecord->SetToolTip(LoadResStr("IDS_DLGTIP_RECORD"));
 	btnRecord->SetText(LoadResStr("IDS_CTL_RECORD"));
 	AddElement(btnRecord);
-	btnUpdate = new C4GUI::CallbackButton<C4StartupNetDlg, C4GUI::IconButton>(C4GUI::Ico_Ex_Update, caConfigArea.GetFromTop(iIconSize, iIconSize), '\0', &C4StartupNetDlg::OnBtnUpdate);
-	btnUpdate->SetVisibility(false);
-	btnUpdate->SetToolTip(LoadResStr("IDS_DLGTIP_UPDATE"));
-	btnUpdate->SetText(LoadResStr("IDS_CTL_UPDATE"));
-	AddElement(btnUpdate);
 
 	// button area
 	C4GUI::CallbackButton<C4StartupNetDlg> *btn;
@@ -782,20 +777,6 @@ void C4StartupNetDlg::OnShown()
 	C4StartupDlg::OnShown();
 	UpdateList();
 	UpdateMasterserver();
-
-	static size_t updateStackCounter{0};
-	if (updateStackCounter == 0)
-	{
-		++updateStackCounter;
-		bool update{C4UpdateDlg::CheckForUpdates()};
-
-		if (IsOpen(this))
-		{
-			btnUpdate->SetVisibility(update);
-		}
-
-		--updateStackCounter;
-	}
 	OnSec1Timer();
 	tLastRefresh = time(nullptr);
 	// also update chat
