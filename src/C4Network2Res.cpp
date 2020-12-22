@@ -618,6 +618,7 @@ bool C4Network2Res::GetStandalone(char *pTo, int32_t iMaxL, bool fSetOfficial, b
 			if (!fSilent) Log("GetStandalone: directory hasn't been packed!"); if (!SEqual(szFile, szStandalone)) EraseDirectory(szStandalone); szStandalone[0] = '\0'; return false;
 		}
 		strcpy(szFile, szStandalone);
+		fTempFile = true;
 		// fallthru
 	}
 
