@@ -1389,9 +1389,9 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 	keyCheat.reset(new C4KeyBinding(C4KeyCodeEx(KEY_M, KEYS_Alt), "StartupScenSelCheat", KEYSCOPE_Gui,
 		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyCheat), C4CustomKey::PRIO_CtrlOverride));
 	keySearch.reset(new C4KeyBinding(C4KeyCodeEx(KEY_F, KEYS_Control), "StartupScenSelSearch", KEYSCOPE_Gui,
-		new C4GUI::ControlKeyDlgCB(pScenSelList, *this, &C4StartupScenSelDlg::KeySearch), C4CustomKey::PRIO_CtrlOverride));
+		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeySearch), C4CustomKey::PRIO_CtrlOverride));
 	keyEscape.reset(new C4KeyBinding(C4KeyCodeEx(K_ESCAPE), "StartupScenSelEscape", KEYSCOPE_Gui,
-		new C4GUI::ControlKeyDlgCB(pScenSelList, *this, &C4StartupScenSelDlg::KeyEscape), C4CustomKey::PRIO_CtrlOverride));
+		new C4GUI::ControlKeyDlgCB<C4StartupScenSelDlg>(pScenSelList, *this, &C4StartupScenSelDlg::KeyEscape), C4CustomKey::PRIO_CtrlOverride));
 }
 
 C4StartupScenSelDlg::~C4StartupScenSelDlg()
