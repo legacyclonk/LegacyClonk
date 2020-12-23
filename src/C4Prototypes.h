@@ -83,4 +83,3 @@ class C4Surface;
 class C4RoundResults;
 
 namespace C4GUI { class Screen; }
-typedef C4GUI::Screen C4GUIScreen;

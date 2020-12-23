@@ -318,7 +318,7 @@ bool C4Game::PreInit()
 
 	// load GUI
 	if (!pGUI)
-		pGUI = new C4GUIScreen(0, 0, Config.Graphics.ResX, Config.Graphics.ResY);
+		pGUI = new C4GUI::Screen(0, 0, Config.Graphics.ResX, Config.Graphics.ResY);
 
 	fPreinited = true;
 

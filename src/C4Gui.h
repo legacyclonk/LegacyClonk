@@ -2871,5 +2871,3 @@ int32_t GetScreenHgt();
 void GUISound(const char *szSound);
 
 } // end of namespace
-
-typedef C4GUI::Screen C4GUIScreen;
