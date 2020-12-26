@@ -2317,9 +2317,6 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 			Teams.RecheckPlayers();                  // syncs player list of teams with teams set in PlayerInfos
 		}
 
-		// set up control (inits Record/Replay)
-		if (!InitControl()) return false;
-
 		for (const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
 		{
 			auto group = std::make_unique<C4Group>();
@@ -2352,6 +2349,12 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	{
 		LogFatal("IDS_PRC_FAIL");
 		return false;
+	}
+
+	if (!section)
+	{
+		// set up control (inits Record/Replay)
+		if (!InitControl()) return false;
 	}
 
 	// Load round results
