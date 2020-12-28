@@ -5,10 +5,10 @@
 #cmakedefine USE_SDL_MAINLOOP 1
 #cmakedefine USE_SDL_MIXER 1
 #cmakedefine USE_SDL_FOR_GAMEPAD 1
+#cmakedefine USE_STAT 1
 #cmakedefine USE_X11 1
 #cmakedefine WITH_DEVELOPER_MODE 1
 #cmakedefine WITH_GLIB 1
-#cmakedefine WITH_STAT 1
 
 #cmakedefine HAVE_DIRECT_H 1
 #cmakedefine HAVE_EXECINFO_H 1
