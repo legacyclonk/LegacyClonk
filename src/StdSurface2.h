@@ -227,6 +227,9 @@ public:
 	{
 		*reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(texLock.pBits) + (iY - LockSize.top) * texLock.Pitch + (iX - LockSize.left) * 4) = v;
 	}
+
+private:
+	int32_t LockCount;
 };
 
 // texture management

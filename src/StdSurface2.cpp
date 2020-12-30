@@ -17,6 +17,7 @@
 
 // a wrapper class to DirectDraw surfaces
 
+#include <C4Config.h>
 #include <Standard.h>
 #include <StdFile.h>
 #include <CStdFile.h>
@@ -801,7 +802,7 @@ bool CSurface::CopyBytes(uint8_t *pImageData)
 	return true;
 }
 
-CTexRef::CTexRef(int iSize, bool fSingle)
+CTexRef::CTexRef(int iSize, bool fSingle) : LockCount{0}
 {
 	// zero fields
 #ifndef USE_CONSOLE
@@ -914,6 +915,7 @@ bool CTexRef::Lock()
 			texLock.Pitch = iSize * 4;
 			glBindTexture(GL_TEXTURE_2D, texName);
 			glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
+			++LockCount;
 			return true;
 		}
 	}
@@ -959,7 +961,10 @@ void CTexRef::Unlock([[maybe_unused]] bool noUpload)
 					GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
 			}
 		}
-		delete[] texLock.pBits; texLock.pBits = nullptr;
+		if (!noUpload || Config.Graphics.CacheTexturesInRAM == -1 || LockCount < Config.Graphics.CacheTexturesInRAM)
+		{
+			delete[] texLock.pBits; texLock.pBits = nullptr;
+		}
 		// switch back to original context
 	}
 	else

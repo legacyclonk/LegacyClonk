@@ -159,6 +159,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(MaxRefreshDelay,      "MaxRefreshDelay",      30));
 	pComp->Value(mkNamingAdapt(DDrawCfg.Shader,      "Shader",               false, false, true));
 	pComp->Value(mkNamingAdapt(AutoFrameSkip,        "AutoFrameSkip",        true,  false, true));
+	pComp->Value(mkNamingAdapt(CacheTexturesInRAM,   "CacheTexturesInRAM",   100));
 
 	StdEnumEntry<DisplayMode> DisplayModes[] =
 	{
