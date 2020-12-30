@@ -115,7 +115,7 @@ protected:
 
 private:
 	// Responses
-	void RespondNotImplemented(const C4NetIO::addr_t &addr, const char *szMessage);
+	void RespondMethodNotAllowed(const C4NetIO::addr_t &addr);
 	void RespondReference(const C4NetIO::addr_t &addr);
 };
 

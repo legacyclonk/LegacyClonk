@@ -172,7 +172,7 @@ size_t C4Network2RefServer::UnpackPacket(const StdBuf &rInBuf, const C4NetIO::ad
 	// Check method (only GET is allowed for now)
 	if (!SEqual2(pData, "GET "))
 	{
-		RespondNotImplemented(addr, "Method not implemented");
+		RespondMethodNotAllowed(addr);
 		return rInBuf.getSize();
 	}
 	// Check target
@@ -181,11 +181,11 @@ size_t C4Network2RefServer::UnpackPacket(const StdBuf &rInBuf, const C4NetIO::ad
 	return rInBuf.getSize();
 }
 
-void C4Network2RefServer::RespondNotImplemented(const C4NetIO::addr_t &addr, const char *szMessage)
+void C4Network2RefServer::RespondMethodNotAllowed(const C4NetIO::addr_t &addr)
 {
 	// Send the message
-	StdStrBuf Data = FormatString("HTTP/1.0 501 %s\r\n\r\n", szMessage);
-	Send(C4NetIOPacket(Data.getData(), Data.getLength(), false, addr));
+	const std::string data{"HTTP/1.0 405 Method Not Allowed\r\n\r\n"};
+	Send(C4NetIOPacket(data.c_str(), data.size(), false, addr));
 	// Close the connection
 	Close(addr);
 }
@@ -198,7 +198,7 @@ void C4Network2RefServer::RespondReference(const C4NetIO::addr_t &addr)
 	// Create header
 	const char *szCharset = GetCharsetCodeName(Config.General.LanguageCharset);
 	StdStrBuf Header = FormatString(
-		"HTTP/1.1 200 Found\r\n"
+		"HTTP/1.0 200 OK\r\n"
 		"Content-Length: %zu\r\n"
 		"Content-Type: text/plain; charset=%s\r\n"
 		"Server: " C4ENGINENAME "/" C4VERSION "\r\n"
