@@ -43,13 +43,12 @@ constexpr unsigned int defaultGameTickDelay = 16;
 C4Sec1TimerCallbackBase::C4Sec1TimerCallbackBase() : pNext(nullptr), iRefs(2)
 {
 	// register into engine callback stack
-	pNext = Application.pSec1TimerCallback;
-	Application.pSec1TimerCallback = this;
+	Application.AddSec1Timer(this);
 }
 
 C4Application::C4Application() :
 	isFullScreen(true), UseStartupDialog(true), launchEditor(false), restartAtEnd(false),
-	DDraw(nullptr), AppState(C4AS_None), pSec1TimerCallback(nullptr),
+	DDraw(nullptr), AppState(C4AS_None),
 	iLastGameTick(0), iGameTickDelay(defaultGameTickDelay), iExtraGameTickDelay(0), pGamePadControl(nullptr),
 	CheckForUpdates(false) {}
 
@@ -270,13 +269,7 @@ void C4Application::Clear()
 	// close system group (System.c4g)
 	SystemGroup.Close();
 	// Close timers
-	C4Sec1TimerCallbackBase *pSec1Timer, *pNextSec1Timer = pSec1TimerCallback;
-	pSec1TimerCallback = nullptr;
-	while (pSec1Timer = pNextSec1Timer)
-	{
-		pNextSec1Timer = pSec1Timer->pNext;
-		delete pSec1Timer;
-	}
+	sec1TimerCallbacks.clear();
 	// Log
 	if (IsResStrTableLoaded()) // Avoid (double and undefined) message on (second?) shutdown...
 		Log(LoadResStr("IDS_PRC_DEINIT"));
@@ -458,19 +451,15 @@ void C4Application::OnNetworkEvents()
 
 void C4Application::DoSec1Timers()
 {
-	C4Sec1TimerCallbackBase *pCBNext, *pCB, **ppCBCurr = &pSec1TimerCallback;
-	while ((pCB = pCBNext = *ppCBCurr))
+	for (auto it = sec1TimerCallbacks.begin(); it != sec1TimerCallbacks.end(); )
 	{
-		pCBNext = pCB->pNext;
-		if (pCB->IsReleased())
+		if ((*it)->IsReleased())
 		{
-			delete pCB;
-			*ppCBCurr = pCBNext;
+			it = sec1TimerCallbacks.erase(it);
 		}
 		else
 		{
-			pCB->OnSec1Timer();
-			ppCBCurr = &(pCB->pNext);
+			(*it++)->OnSec1Timer();
 		}
 	}
 }
@@ -544,6 +533,11 @@ bool C4Application::SetGameFont(const char *szFontFace, int32_t iFontSize)
 #endif
 	// save changes
 	return true;
+}
+
+void C4Application::AddSec1Timer(C4Sec1TimerCallbackBase *callback)
+{
+	sec1TimerCallbacks.emplace_back(callback);
 }
 
 void C4Application::OnCommand(const char *szCmd)

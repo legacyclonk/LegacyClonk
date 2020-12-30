@@ -125,7 +125,9 @@ protected:
 	bool PreInit();
 	virtual void OnNetworkEvents() override;
 	static bool ProcessCallback(const char *szMessage, int iProcess);
-	C4Sec1TimerCallbackBase *pSec1TimerCallback;
+
+	std::vector<std::unique_ptr<C4Sec1TimerCallbackBase>> sec1TimerCallbacks;
+	void AddSec1Timer(C4Sec1TimerCallbackBase *callback);
 
 	friend class C4Sec1TimerCallbackBase;
 
