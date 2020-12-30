@@ -161,7 +161,7 @@ public:
 	void SetBackground() { fIsBackground = true; }
 	// Note: This uses partial locks, anything but SetPixDw and Unlock is undefined afterwards until unlock.
 	void ClearBoxDw(int iX, int iY, int iWdt, int iHgt);
-	bool Unlock();
+	bool Unlock(bool noUpload = false);
 	bool Lock();
 	bool GetTexAt(CTexRef **ppTexRef, int &rX, int &rY); // get texture and adjust x/y
 	bool GetLockTexAt(CTexRef **ppTexRef, int &rX, int &rY); // get texture; ensure it's locked and adjust x/y
@@ -219,7 +219,7 @@ public:
 	// Lock a part of the rect, discarding the content
 	// Note: Calling Lock afterwards without an Unlock first is undefined
 	bool LockForUpdate(RECT &rtUpdate);
-	void Unlock(); // unlock texture
+	void Unlock(bool noUpload = false); // unlock texture
 	bool ClearRect(RECT &rtClear); // clear rect in texture to transparent
 	bool FillBlack(); // fill complete texture in black
 

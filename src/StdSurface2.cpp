@@ -517,10 +517,10 @@ bool CSurface::Lock()
 	Locked++; return true;
 }
 
-bool CSurface::Unlock()
+bool CSurface::Unlock(bool noUpload)
 {
 	// unlock main sfc
-	if (pMainSfc) pMainSfc->Unlock();
+	if (pMainSfc) pMainSfc->Unlock(noUpload);
 	// locked?
 	if (!Locked) return false;
 	// decrease lock counter; check if zeroed
@@ -542,7 +542,7 @@ bool CSurface::Unlock()
 			// non-primary unlock: unlock all texture surfaces (if locked)
 			CTexRef **ppTx = ppTex;
 			for (int i = 0; i < iTexX * iTexY; ++i, ++ppTx)
-				(*ppTx)->Unlock();
+				(*ppTx)->Unlock(noUpload);
 		}
 	}
 	return true;
@@ -926,35 +926,38 @@ bool CTexRef::Lock()
 	return false;
 }
 
-void CTexRef::Unlock()
+void CTexRef::Unlock([[maybe_unused]] bool noUpload)
 {
 	// locked?
 	if (!texLock.pBits || fIntLock) return;
 #ifndef USE_CONSOLE
 	if (pGL)
 	{
-		// select context, if not already done
-		if (!pGL->pCurrCtx) if (!pGL->MainCtx.Select()) return;
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		if (!texName)
+		if (!noUpload)
 		{
-			// create a new texture
-			glGenTextures(1, &texName);
-			glBindTexture(GL_TEXTURE_2D, texName);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			// Default, changed in PerformBlt if necessary
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexImage2D(GL_TEXTURE_2D, 0, 4, iSize, iSize, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
-		}
-		else
-		{
-			// reuse the existing texture
-			glBindTexture(GL_TEXTURE_2D, texName);
-			glTexSubImage2D(GL_TEXTURE_2D, 0,
-				LockSize.left, LockSize.top, LockSize.right - LockSize.left, LockSize.bottom - LockSize.top,
-				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
+			// select context, if not already done
+			if (!pGL->pCurrCtx) if (!pGL->MainCtx.Select()) return;
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			if (!texName)
+			{
+				// create a new texture
+				glGenTextures(1, &texName);
+				glBindTexture(GL_TEXTURE_2D, texName);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				// Default, changed in PerformBlt if necessary
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexImage2D(GL_TEXTURE_2D, 0, 4, iSize, iSize, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
+			}
+			else
+			{
+				// reuse the existing texture
+				glBindTexture(GL_TEXTURE_2D, texName);
+				glTexSubImage2D(GL_TEXTURE_2D, 0,
+					LockSize.left, LockSize.top, LockSize.right - LockSize.left, LockSize.bottom - LockSize.top,
+					GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
+			}
 		}
 		delete[] texLock.pBits; texLock.pBits = nullptr;
 		// switch back to original context

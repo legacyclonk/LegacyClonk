@@ -414,7 +414,7 @@ C4SolidMask::C4SolidMask(C4Object *pForObject) : pForObject(pForObject)
 	// the upper left corner is here the [objpos]+rot([shapexy]+[targetxy]+[realWH]/2)-maxWH/2
 	MatBuffPitch = static_cast<int>(sqrt(double(pForObject->SolidMask.Wdt * pForObject->SolidMask.Wdt + pForObject->SolidMask.Hgt * pForObject->SolidMask.Hgt))) + 1;
 	if (!(pSolidMaskMatBuff = new uint8_t[MatBuffPitch * MatBuffPitch]{})) return;
-	sfcBitmap->Unlock();
+	sfcBitmap->Unlock(true);
 }
 
 C4SolidMask::~C4SolidMask()
