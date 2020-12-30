@@ -164,7 +164,7 @@ void C4Network2RefServer::PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutB
 
 size_t C4Network2RefServer::UnpackPacket(const StdBuf &rInBuf, const C4NetIO::addr_t &addr)
 {
-	const char *pData = getBufPtr<char>(rInBuf);
+	const char *pData = rInBuf.getPtr<char>();
 	// Check for complete header
 	const char *pHeaderEnd = strstr(pData, "\r\n\r\n");
 	if (!pHeaderEnd)
@@ -237,7 +237,7 @@ size_t C4Network2HTTPClient::UnpackPacket(const StdBuf &rInBuf, const C4NetIO::a
 	if (!iDataOffset)
 	{
 		// Copy data into string buffer (terminate)
-		StdStrBuf Data; Data.Copy(getBufPtr<char>(rInBuf), rInBuf.getSize());
+		StdStrBuf Data; Data.Copy(rInBuf.getPtr<char>(), rInBuf.getSize());
 		const char *pData = Data.getData();
 		// Header complete?
 		const char *pContent = SSearch(pData, "\r\n\r\n");
@@ -270,7 +270,7 @@ size_t C4Network2HTTPClient::UnpackPacket(const StdBuf &rInBuf, const C4NetIO::a
 	if (fBinary)
 		ResultBin.Copy(Data);
 	else
-		ResultString.Copy(getBufPtr<char>(Data), Data.getSize());
+		ResultString.Copy(Data.getPtr<char>(), Data.getSize());
 	fBusy = false; fSuccess = true;
 	// Callback
 	OnPacket(C4NetIOPacket(Data, addr), this);
@@ -339,14 +339,14 @@ bool C4Network2HTTPClient::Decompress(StdBuf *pData)
 {
 	size_t iSize = pData->getSize();
 	// Create buffer
-	uint32_t iOutSize = *getBufPtr<uint32_t>(*pData, pData->getSize() - sizeof(uint32_t));
+	uint32_t iOutSize = *pData->getPtr<uint32_t>(pData->getSize() - sizeof(uint32_t));
 	iOutSize = std::min<uint32_t>(iOutSize, iSize * 1000);
 	StdBuf Out; Out.New(iOutSize);
 	// Prepare stream
 	z_stream zstrm{};
-	zstrm.next_in = const_cast<Byte *>(getBufPtr<Byte>(*pData));
+	zstrm.next_in = const_cast<Byte *>(pData->getPtr<Byte>());
 	zstrm.avail_in = pData->getSize();
-	zstrm.next_out = getMBufPtr<Byte>(Out);
+	zstrm.next_out = Out.getMPtr<Byte>();
 	zstrm.avail_out = Out.getSize();
 	// Inflate...
 	if (inflateInit2(&zstrm, 15 + 16) != Z_OK)

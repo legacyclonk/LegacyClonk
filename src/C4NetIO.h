@@ -308,9 +308,9 @@ protected:
 public:
 	const C4NetIO::addr_t &getAddr() const { return addr; }
 
-	uint8_t getStatus() const { return getSize() ? *getBufPtr<char>(*this) : 0; }
+	uint8_t getStatus() const { return getSize() ? *getPtr<char>() : 0; }
 	StdBuf  getPBuf()   const { return getSize() ? getPart(1, getSize() - 1) : getRef(); }
-	const char *getPData() const { return getSize() ? getBufPtr<char>(*this, 1) : nullptr; }
+	const char *getPData() const { return getSize() ? getPtr<char>(1) : nullptr; }
 	std::size_t getPSize() const { return getSize() ? getSize() - 1 : 0; }
 
 	// Some overloads

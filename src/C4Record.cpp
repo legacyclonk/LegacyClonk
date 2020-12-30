@@ -486,7 +486,7 @@ bool C4Playback::ReadBinary(const StdBuf &Buf)
 	{
 		// unpack header
 		if (pUseBuf->getSize() - iPos < sizeof(C4RecordChunkHead)) break;
-		const C4RecordChunkHead *pHead = getBufPtr<C4RecordChunkHead>(*pUseBuf, iPos);
+		const C4RecordChunkHead *pHead = pUseBuf->getPtr<C4RecordChunkHead>(iPos);
 		// get chunk
 		iPos += sizeof(C4RecordChunkHead);
 		StdBuf Chunk = pUseBuf->getPart(iPos, pUseBuf->getSize() - iPos);
@@ -656,7 +656,7 @@ StdBuf C4Playback::ReWriteBinary()
 		while (Output.getSize() - iPos < sizeof(C4RecordChunkHead) + Chunk.getSize())
 			Output.Grow(OUTPUT_GROW);
 		// Write header
-		C4RecordChunkHead *pHead = getMBufPtr<C4RecordChunkHead>(Output, iPos);
+		C4RecordChunkHead *pHead = Output.getMPtr<C4RecordChunkHead>(iPos);
 		pHead->Type = i->Type;
 		pHead->iFrm = i->Frame - iFrame;
 		iPos += sizeof(C4RecordChunkHead);
@@ -1067,9 +1067,9 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 	{
 		// Initialize stream
 		z_stream strm{};
-		strm.next_in = getMBufPtr<uint8_t>(CompressedData);
+		strm.next_in = CompressedData.getMPtr<uint8_t>();
 		strm.avail_in = CompressedData.getSize();
-		strm.next_out = getMBufPtr<uint8_t>(StreamData);
+		strm.next_out = StreamData.getMPtr<uint8_t>();
 		strm.avail_out = StreamData.getSize();
 
 		// Decompress

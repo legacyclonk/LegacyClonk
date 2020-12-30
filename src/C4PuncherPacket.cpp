@@ -74,9 +74,9 @@ C4NetIOPacket C4NetpuncherPacket::PackTo(const C4NetIO::addr_t &addr) const
 C4NetpuncherPacketCReq::C4NetpuncherPacketCReq(const C4NetIOPacket &pkt)
 {
 	if (pkt.getPSize() < HeaderPSize + 2 + 16) throw std::runtime_error{"invalid size"};
-	const std::uint16_t port{*getBufPtr<std::uint16_t>(pkt, HeaderSize)};
+	const std::uint16_t port{*pkt.getPtr<std::uint16_t>(HeaderSize)};
 	addr.SetAddress(C4NetIO::addr_t::Any, port);
-	std::memcpy(&static_cast<sockaddr_in6 *>(&addr)->sin6_addr, getBufPtr<char>(pkt, HeaderSize + sizeof(port)), 16);
+	std::memcpy(&static_cast<sockaddr_in6 *>(&addr)->sin6_addr, pkt.getPtr<char>(HeaderSize + sizeof(port)), 16);
 }
 
 StdBuf C4NetpuncherPacketCReq::PackInto() const
@@ -97,7 +97,7 @@ template<C4NetpuncherPacketType Type>
 C4NetpuncherPacketID<Type>::C4NetpuncherPacketID(const C4NetIOPacket &pkt)
 {
 	if (pkt.getPSize() < HeaderPSize + sizeof(id)) throw std::runtime_error{"invalid size"};
-	id = *getBufPtr<CID>(pkt, HeaderSize);
+	id = *pkt.getPtr<CID>(HeaderSize);
 }
 
 template<C4NetpuncherPacketType Type>

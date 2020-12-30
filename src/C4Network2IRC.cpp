@@ -192,7 +192,7 @@ void C4Network2IRCClient::PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutB
 	// Write packet
 	rOutBuf.Write(rPacket, iPos);
 	// Terminate
-	uint8_t *pPos = getMBufPtr<uint8_t>(rOutBuf, iPos + iSize);
+	uint8_t *pPos = rOutBuf.getMPtr<uint8_t>(iPos + iSize);
 	*pPos = '\r'; *(pPos + 1) = '\n';
 }
 
@@ -203,12 +203,12 @@ size_t C4Network2IRCClient::UnpackPacket(const StdBuf &rInBuf, const C4NetIO::ad
 	if (!pSep)
 		return 0;
 	// Check if it's actually correct separation (rarely the case)
-	int iSize = pSep - getBufPtr<char>(rInBuf) + 1,
+	int iSize = pSep - rInBuf.getPtr<char>() + 1,
 		iLength = iSize - 1;
 	if (iLength && *(pSep - 1) == '\r')
 		iLength--;
 	// Copy the line
-	StdStrBuf Buf; Buf.Copy(getBufPtr<char>(rInBuf), iLength);
+	StdStrBuf Buf; Buf.Copy(rInBuf.getPtr<char>(), iLength);
 	// Ignore prefix
 	const char *pMsg = Buf.getData();
 	StdStrBuf Prefix;

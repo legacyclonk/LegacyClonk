@@ -3088,7 +3088,7 @@ bool C4Network2::StreamIn(bool fFinish)
 	do
 	{
 		// Compress
-		StreamCompressor.next_in = const_cast<uint8_t *>(getBufPtr<uint8_t>(Data));
+		StreamCompressor.next_in = const_cast<uint8_t *>(Data.getPtr<uint8_t>());
 		StreamCompressor.avail_in = Data.getSize();
 		int ret = deflate(&StreamCompressor, fFinish ? Z_FINISH : Z_NO_FLUSH);
 
@@ -3110,7 +3110,7 @@ bool C4Network2::StreamIn(bool fFinish)
 		size_t iGrow = StreamingBuf.getSize();
 		StreamingBuf.Grow(iGrow);
 		StreamCompressor.avail_out += iGrow;
-		StreamCompressor.next_out = getMBufPtr<uint8_t>(StreamingBuf, iPending);
+		StreamCompressor.next_out = StreamingBuf.getMPtr<uint8_t>(iPending);
 	} while (true);
 
 	return true;

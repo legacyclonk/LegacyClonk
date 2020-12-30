@@ -1726,8 +1726,8 @@ void C4NetIOTCP::PackPacket(const C4NetIOPacket &rPacket, StdBuf &rOutBuf)
 	rOutBuf.Grow(iOASize);
 
 	// write packet at end of outgoing buffer
-	*getMBufPtr<uint8_t>(rOutBuf, iPos) = cFirstByte; iPos += sizeof(uint8_t);
-	*getMBufPtr<uint32_t>(rOutBuf, iPos) = iSize; iPos += sizeof(uint32_t);
+	*rOutBuf.getMPtr<uint8_t>(iPos) = cFirstByte; iPos += sizeof(uint8_t);
+	*rOutBuf.getMPtr<uint32_t>(iPos) = iSize; iPos += sizeof(uint32_t);
 	rOutBuf.Write(rPacket, iPos);
 }
 
@@ -1735,7 +1735,7 @@ size_t C4NetIOTCP::UnpackPacket(const StdBuf &IBuf, const C4NetIO::addr_t &addr)
 {
 	size_t iPos = 0;
 	// check first byte (should be 0xff)
-	if (*getBufPtr<uint8_t>(IBuf, iPos) != 0xff)
+	if (*IBuf.getPtr<uint8_t>(iPos) != 0xff)
 		// clear buffer
 		return IBuf.getSize();
 	iPos += sizeof(char);
@@ -1743,7 +1743,7 @@ size_t C4NetIOTCP::UnpackPacket(const StdBuf &IBuf, const C4NetIO::addr_t &addr)
 	uint32_t iPacketSize;
 	if (iPos + sizeof(uint32_t) > IBuf.getSize())
 		return 0;
-	iPacketSize = *getBufPtr<uint32_t>(IBuf, iPos);
+	iPacketSize = *IBuf.getPtr<uint32_t>(iPos);
 	iPos += sizeof(uint32_t);
 	// packet incomplete?
 	if (iPos + iPacketSize < iPos || iPos + iPacketSize > IBuf.getSize())
@@ -1797,7 +1797,7 @@ bool C4NetIOTCP::Peer::Send() // (mt-safe)
 
 	// send as much as possibile
 	int iBytesSent;
-	if ((iBytesSent = ::send(sock, getBufPtr<char>(OBuf), OBuf.getSize(), 0)) == SOCKET_ERROR)
+	if ((iBytesSent = ::send(sock, OBuf.getPtr<char>(), OBuf.getSize(), 0)) == SOCKET_ERROR)
 		if (!HaveWouldBlockError())
 		{
 			pParent->SetError("send failed", true);
@@ -2164,7 +2164,7 @@ bool C4NetIOSimpleUDP::Execute(int iMaxTime)
 		C4NetIOPacket Pkt; Pkt.New(iMaxMsgSize);
 		// read data (note: it is _not_ garantueed that iMaxMsgSize bytes are available)
 		addr_t SrcAddr; socklen_t iSrcAddrLen{sizeof(sockaddr_in6)};
-		int iMsgSize = ::recvfrom(sock, getMBufPtr<char>(Pkt), iMaxMsgSize, 0, &SrcAddr, &iSrcAddrLen);
+		int iMsgSize = ::recvfrom(sock, Pkt.getMPtr<char>(), iMaxMsgSize, 0, &SrcAddr, &iSrcAddrLen);
 		// error?
 		if (iMsgSize == SOCKET_ERROR)
 			if (HaveConnResetError())
@@ -2208,7 +2208,7 @@ bool C4NetIOSimpleUDP::Send(const C4NetIOPacket &rPacket)
 
 	// send it
 	C4NetIO::addr_t addr = rPacket.getAddr();
-	if (::sendto(sock, getBufPtr<char>(rPacket), rPacket.getSize(), 0,
+	if (::sendto(sock, rPacket.getPtr<char>(), rPacket.getSize(), 0,
 		&addr, addr.GetAddrLen())
 		!= int(rPacket.getSize()) &&
 		!HaveWouldBlockError())
@@ -2919,7 +2919,7 @@ void C4NetIOUDP::OnPacket(const C4NetIOPacket &Packet, C4NetIO *pNetIO)
 		// address add?
 		if (Packet.getStatus() == IPID_AddAddr)
 		{
-			OnAddAddress(Packet.getAddr(), *getBufPtr<AddAddrPacket>(Packet)); return;
+			OnAddAddress(Packet.getAddr(), *Packet.getPtr<AddAddrPacket>()); return;
 		}
 
 		// forward to Peer object
@@ -3000,7 +3000,7 @@ C4NetIOPacket C4NetIOUDP::Packet::GetFragment(nr_t iFNr, bool fBroadcastFlag) co
 	const auto iFragmentSize = FragmentSize(iFNr);
 	StdBuf Packet; Packet.New(sizeof(DataPacketHdr) + iFragmentSize);
 	// set up header
-	DataPacketHdr *pnHdr = getMBufPtr<DataPacketHdr>(Packet);
+	DataPacketHdr *pnHdr = Packet.getMPtr<DataPacketHdr>();
 	pnHdr->StatusByte = IPID_Data | (fBroadcastFlag ? 0x80 : 0x00);
 	pnHdr->Nr = iNr + iFNr;
 	pnHdr->FNr = iNr;
@@ -3032,7 +3032,7 @@ bool C4NetIOUDP::Packet::AddFragment(const C4NetIOPacket &Packet, const C4NetIO:
 	if (Packet.getSize() < sizeof(DataPacketHdr)) return false;
 	size_t iPacketDataSize = Packet.getSize() - sizeof(DataPacketHdr);
 	// get header
-	const DataPacketHdr *pHdr = getBufPtr<DataPacketHdr>(Packet);
+	const DataPacketHdr *pHdr = Packet.getPtr<DataPacketHdr>();
 	// first fragment got?
 	bool fFirstFragment = Empty();
 	if (fFirstFragment)
@@ -3289,7 +3289,7 @@ void C4NetIOUDP::Peer::OnRecv(const C4NetIOPacket &rPacket) // (mt-safe)
 	{ CStdLock StatLock(&StatCSec); iIRate += rPacket.getSize() + iUDPHeaderSize; }
 	// get packet header
 	if (rPacket.getSize() < sizeof(PacketHdr)) return;
-	const PacketHdr *pHdr = getBufPtr<PacketHdr>(rPacket);
+	const PacketHdr *pHdr = rPacket.getPtr<PacketHdr>();
 	bool fBroadcasted = !!(pHdr->StatusByte & 0x80);
 	// save packet nr
 	(fBroadcasted ? iRIMCPacketCounter : iRIPacketCounter) = std::max<unsigned int>((fBroadcasted ? iRIMCPacketCounter : iRIPacketCounter), pHdr->Nr);
@@ -3305,7 +3305,7 @@ void C4NetIOUDP::Peer::OnRecv(const C4NetIOPacket &rPacket) // (mt-safe)
 	{
 		// check size
 		if (rPacket.getSize() != sizeof(ConnPacket)) break;
-		const ConnPacket *pPkt = getBufPtr<ConnPacket>(rPacket);
+		const ConnPacket *pPkt = rPacket.getPtr<ConnPacket>();
 		// right version?
 		if (pPkt->ProtocolVer != pParent->iVersion) break;
 		if (!fBroadcasted)
@@ -3384,7 +3384,7 @@ void C4NetIOUDP::Peer::OnRecv(const C4NetIOPacket &rPacket) // (mt-safe)
 		if (eStatus != CS_Conn) break;
 		// check size
 		if (rPacket.getSize() != sizeof(ConnOKPacket)) break;
-		const ConnOKPacket *pPkt = getBufPtr<ConnOKPacket>(rPacket);
+		const ConnOKPacket *pPkt = rPacket.getPtr<ConnOKPacket>();
 		// save port
 		PeerAddr = pPkt->Addr;
 		// Needs another Conn/ConnOK-sequence?
@@ -3417,7 +3417,7 @@ void C4NetIOUDP::Peer::OnRecv(const C4NetIOPacket &rPacket) // (mt-safe)
 	{
 		// get the packet header
 		if (rPacket.getSize() < sizeof(DataPacketHdr)) return;
-		const DataPacketHdr *pHdr = getBufPtr<DataPacketHdr>(rPacket);
+		const DataPacketHdr *pHdr = rPacket.getPtr<DataPacketHdr>();
 		// already complet?
 		if (pHdr->Nr < (fBroadcasted ? iIMCPacketCounter : iIPacketCounter)) break;
 		// find or create packet
@@ -3443,7 +3443,7 @@ void C4NetIOUDP::Peer::OnRecv(const C4NetIOPacket &rPacket) // (mt-safe)
 	{
 		// get the packet header
 		if (rPacket.getSize() < sizeof(CheckPacketHdr)) break;
-		const CheckPacketHdr *pPkt = getBufPtr<CheckPacketHdr>(rPacket);
+		const CheckPacketHdr *pPkt = rPacket.getPtr<CheckPacketHdr>();
 		// check packet size
 		if (rPacket.getSize() < sizeof(CheckPacketHdr) + (pPkt->AskCount + pPkt->MCAskCount) * sizeof(int)) break;
 		// clear all acknowledged packets
@@ -3456,7 +3456,7 @@ void C4NetIOUDP::Peer::OnRecv(const C4NetIOPacket &rPacket) // (mt-safe)
 		}
 		OutLock.Clear();
 		// read ask list
-		const int *pAskList = getBufPtr<int>(rPacket, sizeof(CheckPacketHdr));
+		const int *pAskList = rPacket.getPtr<int>(sizeof(CheckPacketHdr));
 		// send the packets he asks for
 		unsigned int i;
 		for (i = 0; i < pPkt->AskCount + pPkt->MCAskCount; i++)
@@ -3479,7 +3479,7 @@ void C4NetIOUDP::Peer::OnRecv(const C4NetIOPacket &rPacket) // (mt-safe)
 	{
 		// check packet size
 		if (rPacket.getSize() < sizeof(ClosePacket)) break;
-		const ClosePacket *pPkt = getBufPtr<ClosePacket>(rPacket);
+		const ClosePacket *pPkt = rPacket.getPtr<ClosePacket>();
 		// ignore if it's for another address
 		if (!PeerAddr.IsNull() && PeerAddr != pPkt->Addr)
 			break;
@@ -3549,7 +3549,7 @@ bool C4NetIOUDP::Peer::DoCheck(int iAskCnt, int iMCAskCnt, unsigned int *pAskLis
 	// alloc data
 	int iAskListSize = (iAskCnt + iMCAskCnt) * sizeof(*pAskList);
 	StdBuf Packet; Packet.New(sizeof(CheckPacketHdr) + iAskListSize);
-	CheckPacketHdr *pChkPkt = getMBufPtr<CheckPacketHdr>(Packet);
+	CheckPacketHdr *pChkPkt = Packet.getMPtr<CheckPacketHdr>();
 	// set up header
 	pChkPkt->StatusByte = IPID_Check; // (note: always du here, see C4NetIOUDP::DoCheck)
 	pChkPkt->Nr = iOPacketCounter;

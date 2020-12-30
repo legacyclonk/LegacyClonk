@@ -375,23 +375,19 @@ public:
 	// *** Compiling
 
 	void CompileFunc(class StdCompiler *pComp, int iType = 0);
+
+	template<class elem_t>
+	const elem_t *getPtr(size_t pos = 0) const
+	{
+		return reinterpret_cast<const elem_t *>(reinterpret_cast<const char *>(getData()) + pos);
+	}
+
+	template<class elem_t>
+	elem_t *getMPtr(size_t pos = 0)
+	{
+		return reinterpret_cast<elem_t *>(reinterpret_cast<char *>(getMData()) + pos);
+	}
 };
-
-// Cast Hide Helpers - MSVC doesn't allow this as member template
-
-template <class elem_t>
-const elem_t *getBufPtr(const StdBuf &Buf, size_t iPos = 0)
-{
-	const void *pPos = reinterpret_cast<const char *>(Buf.getData()) + iPos;
-	return reinterpret_cast<const elem_t *>(pPos);
-}
-
-template <class elem_t>
-elem_t *getMBufPtr(StdBuf &Buf, size_t iPos = 0)
-{
-	void *pPos = reinterpret_cast<char *>(Buf.getMData()) + iPos;
-	return reinterpret_cast<elem_t *>(pPos);
-}
 
 // Stringbuffer (operates on null-terminated character buffers)
 class StdStrBuf : protected StdBuf
@@ -426,14 +422,14 @@ public:
 	// *** Getters
 
 	bool        isNull()    const { return StdBuf::isNull(); }
-	const char *getData()   const { return getBufPtr<char>(*this); }
-	char       *getMData()        { return getMBufPtr<char>(*this); }
+	const char *getData()   const { return StdBuf::getPtr<char>(); }
+	char       *getMData()        { return StdBuf::getMPtr<char>(); }
 	size_t      getSize()   const { return StdBuf::getSize(); }
 	size_t      getLength() const { return getSize() ? getSize() - 1 : 0; }
 	bool        isRef()     const { return StdBuf::isRef(); }
 
-	const char *getPtr(size_t i) const { return getBufPtr<char>(*this, i); }
-	char       *getMPtr(size_t i)      { return getMBufPtr<char>(*this, i); }
+	const char *getPtr(size_t i) const { return StdBuf::getPtr<char>(i); }
+	char       *getMPtr(size_t i)      { return StdBuf::getMPtr<char>(i); }
 
 	// For convenience. Note that writing can't be allowed.
 	char operator[](size_t i) const { return *getPtr(i); }

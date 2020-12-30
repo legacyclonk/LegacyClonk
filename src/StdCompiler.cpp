@@ -86,7 +86,7 @@ void StdCompilerBinWrite::WriteValue(const T &rValue)
 {
 	// Copy data
 	if (fSecondPass)
-		*getMBufPtr<T>(Buf, iPos) = rValue;
+		*Buf.getMPtr<T>(iPos) = rValue;
 	iPos += sizeof(rValue);
 }
 
@@ -138,7 +138,7 @@ void StdCompilerBinRead::String(char *szString, size_t iMaxLength, RawCompileTyp
 	}
 	// Copy until no data left
 	char *pPos = szString;
-	while (*pPos++ = *getBufPtr<char>(Buf, iPos++))
+	while (*pPos++ = *Buf.getPtr<char>(iPos++))
 		if (iPos >= Buf.getSize())
 		{
 			excEOF(); return;
@@ -158,13 +158,13 @@ void StdCompilerBinRead::String(std::string &str, RawCompileType type)
 	}
 	const auto iStart = iPos;
 	// Search string end
-	while (*getBufPtr<char>(Buf, iPos++))
+	while (*Buf.getPtr<char>(iPos++))
 		if (iPos >= Buf.getSize())
 		{
 			excEOF(); return;
 		}
 	// Copy data
-	str.assign(getBufPtr<char>(Buf, iStart), getBufPtr<char>(Buf, iPos - 1));
+	str.assign(Buf.getPtr<char>(iStart), Buf.getPtr<char>(iPos - 1));
 }
 
 void StdCompilerBinRead::Raw(void *pData, size_t iSize, RawCompileType eType)
@@ -192,7 +192,7 @@ inline void StdCompilerBinRead::ReadValue(T &rValue)
 		excEOF(); return;
 	}
 	// Kopieren
-	rValue = *getBufPtr<T>(Buf, iPos);
+	rValue = *Buf.getPtr<T>(iPos);
 	iPos += sizeof(T);
 }
 
@@ -684,7 +684,7 @@ void StdCompilerINIRead::String(char *szString, size_t iMaxLength, RawCompileTyp
 	// Read data
 	StdBuf Buf = ReadString(iMaxLength, eType, true);
 	// Copy
-	SCopy(getBufPtr<char>(Buf), szString, iMaxLength);
+	SCopy(Buf.getPtr<char>(), szString, iMaxLength);
 }
 
 void StdCompilerINIRead::String(std::string &str, RawCompileType type)
@@ -695,7 +695,7 @@ void StdCompilerINIRead::String(std::string &str, RawCompileType type)
 	size_t iLength = GetStringLength(type);
 	// Read data
 	StdBuf Buf = ReadString(iLength, type, true);
-	str = getBufPtr<char>(Buf);
+	str = Buf.getPtr<char>();
 }
 
 void StdCompilerINIRead::Raw(void *pData, size_t iSize, RawCompileType eType)
@@ -888,7 +888,7 @@ StdBuf StdCompilerINIRead::ReadString(size_t iLength, RawCompileType eRawType, b
 	// Create buffer
 	StdBuf OutBuf; OutBuf.New(iLength + (fAppendNull ? sizeof('\0') : 0));
 	// Read
-	char *pOut = getMBufPtr<char>(OutBuf);
+	char *pOut = OutBuf.getMPtr<char>();
 	while (iLength && !TestStringEnd(eRawType))
 	{
 		// Read a character
