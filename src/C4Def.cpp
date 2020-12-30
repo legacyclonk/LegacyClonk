@@ -467,6 +467,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(HideHUDElements, HideHUDValues), "HideHUDElements", 0));
 
 	pComp->Value(mkNamingAdapt(Scale, "Scale", 100));
+	pComp->Value(mkNamingAdapt(BaseAutoSell, "BaseAutoSell", false));
 
 	pComp->FollowName("Physical");
 	pComp->Value(Physical);

@@ -274,6 +274,7 @@ public:
 	int32_t HideHUDBars; // A bit mask to selectively hide some of the Energy, Magic Energy and Breath bars.
 	int32_t HideHUDElements; // A bit mask to selectively hide clonk portrait, clonk name, clonk rank, clonk rank image, captain icon
 	uint32_t Scale; // graphics scale
+	bool BaseAutoSell; // if set, the object will automatically be sold in a base if the corresponding base functionality is enabled
 
 public:
 	enum HideBar : int32_t {

@@ -967,21 +967,27 @@ bool C4Object::ExecLife()
 
 void C4Object::AutoSellContents()
 {
-	C4ObjectLink *clnk; C4Object *cobj1, *cobj2;
 	C4Player *pPlr = Game.Players.Get(Base); if (!pPlr) return;
 
-	// Content's gold contents
-	for (clnk = Contents.First; clnk && (cobj1 = clnk->Obj); clnk = clnk->Next)
-		if (cobj1->Status)
-			while (cobj2 = cobj1->Contents.Find(C4ID_Gold))
+	for (const auto &obj : Contents)
+	{
+		if (obj && obj->Status)
+		{
+			for (const auto &contents : obj->Contents)
 			{
-				cobj2->Exit(); pPlr->Sell2Home(cobj2);
+				if (contents && contents->Status && contents->Def->BaseAutoSell)
+				{
+					contents->Exit();
+					pPlr->Sell2Home(contents);
+				}
 			}
 
-	// Gold contents
-	while (cobj1 = Contents.Find(C4ID_Gold))
-	{
-		cobj1->Exit(); pPlr->Sell2Home(cobj1);
+			if (obj->Def->BaseAutoSell)
+			{
+				obj->Exit();
+				pPlr->Sell2Home(obj);
+			}
+		}
 	}
 }
 
