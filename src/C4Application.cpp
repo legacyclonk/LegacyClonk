@@ -313,12 +313,15 @@ void C4Application::Quit()
 	// Clear definitions passed by frontend for this round
 	Config.General.Definitions[0] = 0;
 #ifdef _WIN32
-	// store if window is maximized and where it is positioned
-	WINDOWPLACEMENT placement;
-	GetWindowPlacement(pWindow->hWindow, &placement);
-	Config.Graphics.Maximized = placement.showCmd == SW_SHOWMAXIMIZED;
-	Config.Graphics.PositionX = placement.rcNormalPosition.left;
-	Config.Graphics.PositionY = placement.rcNormalPosition.top;
+	if (pWindow)
+	{
+		// store if window is maximized and where it is positioned
+		WINDOWPLACEMENT placement;
+		GetWindowPlacement(pWindow->hWindow, &placement);
+		Config.Graphics.Maximized = placement.showCmd == SW_SHOWMAXIMIZED;
+		Config.Graphics.PositionX = placement.rcNormalPosition.left;
+		Config.Graphics.PositionY = placement.rcNormalPosition.top;
+	}
 #endif
 	// Save config if there was no loading error
 	if (Config.fConfigLoaded) Config.Save();
