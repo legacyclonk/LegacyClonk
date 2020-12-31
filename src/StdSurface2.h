@@ -33,7 +33,6 @@
 #define C4GFXCFG_POINT_FILTERING 2
 #define C4GFXCFG_NOADDITIVEBLTS  8
 #define C4GFXCFG_NOBOXFADES      16
-#define C4GFXCFG_GLCLAMP         128
 #define C4GFXCFG_NOACCELERATION  512
 
 // blitting modes
@@ -65,7 +64,6 @@ public:
 	bool PointFilteringStd; // backup value of PointFiltering
 	bool AdditiveBlts; // enable additive blitting
 	bool NoBoxFades; // map all DrawBoxFade-calls to DrawBoxDw
-	bool GLClamp; // special texture clamping in OpenGL
 	float fTexIndent; // texture indent
 	float fBlitOff; // blit offsets
 	uint32_t AllowedBlitModes; // bit mask for allowed blitting modes
@@ -88,7 +86,6 @@ public:
 		PointFiltering = PointFilteringStd = !!(dwCfg & C4GFXCFG_POINT_FILTERING);
 		AdditiveBlts = !(dwCfg & C4GFXCFG_NOADDITIVEBLTS);
 		NoBoxFades = !!(dwCfg & C4GFXCFG_NOBOXFADES);
-		GLClamp = !!(dwCfg & C4GFXCFG_GLCLAMP);
 		this->fTexIndent = fTexIndent;
 		this->fBlitOff = fBlitOff;
 		AllowedBlitModes = AdditiveBlts ? C4GFXBLIT_ALL : C4GFXBLIT_NOADD;
@@ -102,7 +99,6 @@ public:
 			(PointFiltering ? C4GFXCFG_POINT_FILTERING : 0) |
 			(AdditiveBlts ? 0 : C4GFXCFG_NOADDITIVEBLTS) |
 			(NoBoxFades ? C4GFXCFG_NOBOXFADES : 0) |
-			(GLClamp ? C4GFXCFG_GLCLAMP : 0) |
 			(NoAcceleration ? C4GFXCFG_NOACCELERATION : 0);
 		fTexIndent = this->fTexIndent;
 		fBlitOff = this->fBlitOff;
