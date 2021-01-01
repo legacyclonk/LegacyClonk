@@ -4,8 +4,6 @@ src/C4Windows.h
 src/res/engine.rc
 src/res/engine_resource.h
 
-src/StdJoystick.cpp
-src/StdJoystick.h
 src/StdStringEncodingConverter.cpp
 src/StdStringEncodingConverter.h
 src/StdWindow.cpp
