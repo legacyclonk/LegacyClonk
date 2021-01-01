@@ -25,7 +25,7 @@
 
 #ifdef C4ENGINE
 
-void C4FacetEx::Set(CSurface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx, int nty)
+void C4FacetEx::Set(C4Surface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx, int nty)
 {
 	C4Facet::Set(nsfc, nx, ny, nwdt, nhgt);
 	TargetX = ntx; TargetY = nty;
@@ -102,7 +102,7 @@ bool C4FacetExSurface::Create(int iWdt, int iHgt, int iWdt2, int iHgt2)
 	return true;
 }
 
-bool C4FacetExSurface::CreateClrByOwner(CSurface *pBySurface)
+bool C4FacetExSurface::CreateClrByOwner(C4Surface *pBySurface)
 {
 	Clear();
 	// create surface
@@ -121,7 +121,7 @@ bool C4FacetExSurface::EnsureSize(int iMinWdt, int iMinHgt)
 	int iWdt = Face.Wdt, iHgt = Face.Hgt;
 	if (iWdt >= iMinWdt && iHgt >= iMinHgt) return true;
 	// create temp surface
-	CSurface *sfcDup = new CSurface(iWdt, iHgt);
+	C4Surface *sfcDup = new C4Surface(iWdt, iHgt);
 	if (!sfcDup) return false;
 	if (!lpDDraw->BlitSurface(&Face, sfcDup, 0, 0, false))
 	{

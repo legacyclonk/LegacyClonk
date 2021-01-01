@@ -82,7 +82,7 @@
 #include <StdMarkup.h>
 #include <StdPNG.h>
 #include <StdResStr2.h>
-#include <StdSurface2.h>
+#include <C4Surface.h>
 
 #include "C4Id.h"
 #include "C4Prototypes.h"

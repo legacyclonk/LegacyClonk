@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <StdSurface2.h>
+#include <C4Surface.h>
 
 class CFacet
 {
@@ -27,14 +27,14 @@ public:
 	~CFacet() {}
 
 public:
-	CSurface *Surface;
+	C4Surface *Surface;
 	int X, Y, Wdt, Hgt;
 
 public:
 	void Default() { Surface = nullptr; X = Y = Wdt = Hgt = 0; }
 	void Clear() { Surface = nullptr; X = Y = Wdt = Hgt = 0; }
 
-	void Set(CSurface *nsfc, int nx, int ny, int nwdt, int nhgt)
+	void Set(C4Surface *nsfc, int nx, int ny, int nwdt, int nhgt)
 	{
 		Surface = nsfc; X = nx; Y = ny; Wdt = nwdt; Hgt = nhgt;
 	}

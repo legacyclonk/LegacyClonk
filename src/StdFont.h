@@ -69,14 +69,14 @@ protected:
 	char szFontName[80 + 1]; // used font name (or surface file name)
 
 	bool fPrerenderedFont; // true for fonts that came from a prerendered bitmap surface - no runtime adding of characters
-	CSurface **psfcFontData; // font recource surfaces - additional surfaces created as needed
+	C4Surface **psfcFontData; // font recource surfaces - additional surfaces created as needed
 	int iNumFontSfcs; // number of created font surfaces
 	int iSfcSizes; // size for font surfaces
 	int iFontZoom; // zoom of font in texture
 
 	bool fUTF8; // if set, UTF8-characters are decoded
 
-	CSurface *sfcCurrent; // current surface font data can be written to at runtime
+	C4Surface *sfcCurrent; // current surface font data can be written to at runtime
 	int32_t iCurrentSfcX, iCurrentSfcY; // current character rendering position
 
 	int iHSpace; // horizontal space to be added betwen two characters
@@ -123,7 +123,7 @@ protected:
 
 public:
 	// draw ine line of text
-	void DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom);
+	void DrawText(C4Surface *sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom);
 
 	// get text size
 	bool GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, bool fCheckMarkup = true, bool ignoreScale = false);
@@ -142,7 +142,7 @@ public:
 	void Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFontWeight = FW_NORMAL, const char *szCharset = "", bool fDoShadow = true, float scale = 1.f);
 
 	// font initialization - grabs the given surface data and extracts character sizes from it
-	void Init(const char *szFontName, CSurface *psfcFontSfc, int iIndent);
+	void Init(const char *szFontName, C4Surface *psfcFontSfc, int iIndent);
 
 	void Clear(); // clear font
 

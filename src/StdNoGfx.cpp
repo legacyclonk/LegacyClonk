@@ -37,6 +37,6 @@ CStdNoGfx::~CStdNoGfx()
 bool CStdNoGfx::CreatePrimarySurfaces()
 {
 	// Create dummy surface
-	lpPrimary = lpBack = new CSurface();
+	lpPrimary = lpBack = new C4Surface();
 	return true;
 }

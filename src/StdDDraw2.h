@@ -19,15 +19,15 @@
 
 #pragma once
 
-#include <StdSurface2.h>
+#include <C4Surface.h>
 #include <StdSurface8.h>
 #include <StdFont.h>
 #include <StdBuf.h>
 
 // texref-predef
 class CStdDDraw;
-class CTexRef;
-class CSurface;
+class C4TexRef;
+class C4Surface;
 struct CStdPalette;
 class CStdGLCtx;
 class CStdApp;
@@ -111,7 +111,7 @@ class CPattern
 {
 private:
 	// pattern surface for new-style patterns
-	class CSurface *sfcPattern32;
+	class C4Surface *sfcPattern32;
 	class CSurface8 *sfcPattern8;
 	// Faster access
 	uint32_t *CachedPattern; int Wdt; int Hgt;
@@ -127,7 +127,7 @@ private:
 public:
 	CPattern &operator=(const CPattern &);
 	bool PatternClr(int iX, int iY, uint8_t &byClr, uint32_t &dwClr, CStdPalette &rPal) const; // apply pattern to color
-	bool Set(class CSurface *sfcSource, int iZoom = 0, bool fMonochrome = false); // set and enable pattern
+	bool Set(class C4Surface *sfcSource, int iZoom = 0, bool fMonochrome = false); // set and enable pattern
 	bool Set(class CSurface8 *sfcSource, int iZoom = 0, bool fMonochrome = false); // set and enable pattern
 	void SetColors(uint32_t *pClrs, uint32_t *pAlpha) { this->pClrs = pClrs; this->pAlpha = pAlpha; } // set color triplet for old-style textures
 	void SetZoom(int iZoom) { Zoom = iZoom; }
@@ -191,8 +191,8 @@ public:
 
 public:
 	CStdApp *pApp; // the application
-	CSurface *lpPrimary; // primary and back surface (emulation...)
-	CSurface *lpBack;
+	C4Surface *lpPrimary; // primary and back surface (emulation...)
+	C4Surface *lpBack;
 	CStdPalette Pal; // 8bit-pal
 	bool Active; // set if device is ready to render, etc.
 	CGammaControl Gamma; // gamma
@@ -203,7 +203,7 @@ protected:
 	int ClipX1, ClipY1, ClipX2, ClipY2;
 	int StClipX1, StClipY1, StClipX2, StClipY2;
 	bool ClipAll; // set if clipper clips everything away
-	CSurface *RenderTarget; // current render target
+	C4Surface *RenderTarget; // current render target
 	bool BlitModulated; // set if blits should be modulated with BlitModulateClr
 	uint32_t BlitModulateClr; // modulation color for blitting
 	uint32_t dwBlitMode; // extra flags for blit
@@ -227,7 +227,7 @@ public:
 
 	// Palette
 	bool SetPrimaryPalette(uint8_t *pBuf, uint8_t *pAlphaBuf = nullptr);
-	bool AttachPrimaryPalette(CSurface *sfcSurface);
+	bool AttachPrimaryPalette(C4Surface *sfcSurface);
 
 	// Clipper
 	bool GetPrimaryClipper(int &rX1, int &rY1, int &rX2, int &rY2);
@@ -239,58 +239,58 @@ public:
 	virtual bool UpdateClipper() = 0; // set current clipper to render target
 
 	// Surface
-	bool GetSurfaceSize(CSurface *sfcSurface, int &iWdt, int &iHgt);
-	bool WipeSurface(CSurface *sfcSurface);
-	void SurfaceAllowColor(CSurface *sfcSfc, uint32_t *pdwColors, int iNumColors, bool fAllowZero = false);
-	void Grayscale(CSurface *sfcSfc, int32_t iOffset = 0);
-	virtual bool PrepareRendering(CSurface *sfcToSurface) = 0; // check if/make rendering possible to given surface
+	bool GetSurfaceSize(C4Surface *sfcSurface, int &iWdt, int &iHgt);
+	bool WipeSurface(C4Surface *sfcSurface);
+	void SurfaceAllowColor(C4Surface *sfcSfc, uint32_t *pdwColors, int iNumColors, bool fAllowZero = false);
+	void Grayscale(C4Surface *sfcSfc, int32_t iOffset = 0);
+	virtual bool PrepareRendering(C4Surface *sfcToSurface) = 0; // check if/make rendering possible to given surface
 
 	// Blit
-	virtual void BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *sfcLiquidAnimation, int fx, int fy,
-		CSurface *sfcTarget, int tx, int ty, int wdt, int hgt);
+	virtual void BlitLandscape(C4Surface *sfcSource, C4Surface *sfcSource2, C4Surface *sfcLiquidAnimation, int fx, int fy,
+		C4Surface *sfcTarget, int tx, int ty, int wdt, int hgt);
 	void Blit8Fast(CSurface8 *sfcSource, int fx, int fy,
-		CSurface *sfcTarget, int tx, int ty, int wdt, int hgt);
-	bool Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float fhgt,
-		CSurface *sfcTarget, int tx, int ty, int twdt, int thgt,
+		C4Surface *sfcTarget, int tx, int ty, int wdt, int hgt);
+	bool Blit(C4Surface *sfcSource, float fx, float fy, float fwdt, float fhgt,
+		C4Surface *sfcTarget, int tx, int ty, int twdt, int thgt,
 		bool fSrcColKey = false, CBltTransform *pTransform = nullptr, bool noScalingCorrection = false);
-	bool Blit(CSurface *sfcSource, float fx, float fy, float fwdt, float fhgt,
-		CSurface *sfcTarget, float tx, float ty, float twdt, float thgt,
+	bool Blit(C4Surface *sfcSource, float fx, float fy, float fwdt, float fhgt,
+		C4Surface *sfcTarget, float tx, float ty, float twdt, float thgt,
 		bool fSrcColKey = false, CBltTransform *pTransform = nullptr, bool noScalingCorrection = false);
-	virtual void PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact) = 0;
-	bool Blit8(CSurface *sfcSource, int fx, int fy, int fwdt, int fhgt, // force 8bit-blit (inline)
-		CSurface *sfcTarget, int tx, int ty, int twdt, int thgt,
+	virtual void PerformBlt(CBltData &rBltData, C4TexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact) = 0;
+	bool Blit8(C4Surface *sfcSource, int fx, int fy, int fwdt, int fhgt, // force 8bit-blit (inline)
+		C4Surface *sfcTarget, int tx, int ty, int twdt, int thgt,
 		bool fSrcColKey = false, CBltTransform *pTransform = nullptr);
-	bool BlitRotate(CSurface *sfcSource, int fx, int fy, int fwdt, int fhgt,
-		CSurface *sfcTarget, int tx, int ty, int twdt, int thgt,
+	bool BlitRotate(C4Surface *sfcSource, int fx, int fy, int fwdt, int fhgt,
+		C4Surface *sfcTarget, int tx, int ty, int twdt, int thgt,
 		int iAngle, bool fTransparency = true);
-	bool BlitSurface(CSurface *sfcSurface, CSurface *sfcTarget, int tx, int ty, bool fBlitBase);
-	bool BlitSurfaceTile(CSurface *sfcSurface, CSurface *sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX = 0, int iOffsetY = 0, bool fSrcColKey = false, float scale = 1.f);
-	bool BlitSurfaceTile2(CSurface *sfcSurface, CSurface *sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX = 0, int iOffsetY = 0, bool fSrcColKey = false);
+	bool BlitSurface(C4Surface *sfcSurface, C4Surface *sfcTarget, int tx, int ty, bool fBlitBase);
+	bool BlitSurfaceTile(C4Surface *sfcSurface, C4Surface *sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX = 0, int iOffsetY = 0, bool fSrcColKey = false, float scale = 1.f);
+	bool BlitSurfaceTile2(C4Surface *sfcSurface, C4Surface *sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX = 0, int iOffsetY = 0, bool fSrcColKey = false);
 	virtual void FillBG(uint32_t dwClr = 0) = 0;
 
 	// Text
 	enum { DEFAULT_MESSAGE_COLOR = 0xffffffff };
-	bool TextOut(const char *szText, CStdFont &rFont, float fZoom, CSurface *sfcDest, int iTx, int iTy, uint32_t dwFCol = 0xffffffff, uint8_t byForm = ALeft, bool fDoMarkup = true);
-	bool StringOut(const char *szText, CStdFont &rFont, float fZoom, CSurface *sfcDest, int iTx, int iTy, uint32_t dwFCol = 0xffffffff, uint8_t byForm = ALeft, bool fDoMarkup = true);
+	bool TextOut(const char *szText, CStdFont &rFont, float fZoom, C4Surface *sfcDest, int iTx, int iTy, uint32_t dwFCol = 0xffffffff, uint8_t byForm = ALeft, bool fDoMarkup = true);
+	bool StringOut(const char *szText, CStdFont &rFont, float fZoom, C4Surface *sfcDest, int iTx, int iTy, uint32_t dwFCol = 0xffffffff, uint8_t byForm = ALeft, bool fDoMarkup = true);
 
 	// Drawing
-	virtual void DrawPix(CSurface *sfcDest, float tx, float ty, uint32_t dwCol);
-	void DrawBox(CSurface *sfcDest, int iX1, int iY1, int iX2, int iY2, uint8_t byCol); // calls DrawBoxDw
-	void DrawBoxDw(CSurface *sfcDest, int iX1, int iY1, int iX2, int iY2, uint32_t dwClr); // calls DrawBoxFade
-	void DrawBoxFade(CSurface *sfcDest, int iX, int iY, int iWdt, int iHgt, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4, int iBoxOffX, int iBoxOffY); // calls DrawQuadDw
-	void DrawPatternedCircle(CSurface *sfcDest, int x, int y, int r, uint8_t col, CPattern &Pattern1, CPattern &Pattern2, CStdPalette &rPal);
-	void DrawHorizontalLine(CSurface *sfcDest, int x1, int x2, int y, uint8_t col);
-	void DrawVerticalLine(CSurface *sfcDest, int x, int y1, int y2, uint8_t col);
-	void DrawFrame(CSurface *sfcDest, int x1, int y1, int x2, int y2, uint8_t col);
-	void DrawFrameDw(CSurface *sfcDest, int x1, int y1, int x2, int y2, uint32_t dwClr);
+	virtual void DrawPix(C4Surface *sfcDest, float tx, float ty, uint32_t dwCol);
+	void DrawBox(C4Surface *sfcDest, int iX1, int iY1, int iX2, int iY2, uint8_t byCol); // calls DrawBoxDw
+	void DrawBoxDw(C4Surface *sfcDest, int iX1, int iY1, int iX2, int iY2, uint32_t dwClr); // calls DrawBoxFade
+	void DrawBoxFade(C4Surface *sfcDest, int iX, int iY, int iWdt, int iHgt, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4, int iBoxOffX, int iBoxOffY); // calls DrawQuadDw
+	void DrawPatternedCircle(C4Surface *sfcDest, int x, int y, int r, uint8_t col, CPattern &Pattern1, CPattern &Pattern2, CStdPalette &rPal);
+	void DrawHorizontalLine(C4Surface *sfcDest, int x1, int x2, int y, uint8_t col);
+	void DrawVerticalLine(C4Surface *sfcDest, int x, int y1, int y2, uint8_t col);
+	void DrawFrame(C4Surface *sfcDest, int x1, int y1, int x2, int y2, uint8_t col);
+	void DrawFrameDw(C4Surface *sfcDest, int x1, int y1, int x2, int y2, uint32_t dwClr);
 
-	virtual void DrawLine(CSurface *sfcTarget, int x1, int y1, int x2, int y2, uint8_t byCol)
+	virtual void DrawLine(C4Surface *sfcTarget, int x1, int y1, int x2, int y2, uint8_t byCol)
 	{
 		DrawLineDw(sfcTarget, static_cast<float>(x1), static_cast<float>(y1), static_cast<float>(x2), static_cast<float>(y2), Pal.GetClr(byCol));
 	}
 
-	virtual void DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr) = 0;
-	virtual void DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4) = 0;
+	virtual void DrawLineDw(C4Surface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr) = 0;
+	virtual void DrawQuadDw(C4Surface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4) = 0;
 
 	// gamma
 	void SetGamma(uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3); // set gamma ramp
@@ -325,8 +325,8 @@ public:
 	virtual bool DeviceReady() = 0; // return whether device exists
 
 protected:
-	bool StringOut(const char *szText, CSurface *sfcDest, int iTx, int iTy, uint32_t dwFCol, uint8_t byForm, bool fDoMarkup, CMarkup &Markup, CStdFont *pFont, float fZoom);
-	virtual void DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwCol) = 0; // without ClrModMap
+	bool StringOut(const char *szText, C4Surface *sfcDest, int iTx, int iTy, uint32_t dwFCol, uint8_t byForm, bool fDoMarkup, CMarkup &Markup, CStdFont *pFont, float fZoom);
+	virtual void DrawPixInt(C4Surface *sfcDest, float tx, float ty, uint32_t dwCol) = 0; // without ClrModMap
 	bool CreatePrimaryClipper();
 	virtual bool CreatePrimarySurfaces() = 0;
 	bool Error(const char *szMsg);
@@ -342,8 +342,8 @@ protected:
 #endif
 	}
 
-	friend class CSurface;
-	friend class CTexRef;
+	friend class C4Surface;
+	friend class C4TexRef;
 	friend class CPattern;
 };
 

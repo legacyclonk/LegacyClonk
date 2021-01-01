@@ -117,35 +117,35 @@ public:
 class C4Facet
 {
 public:
-	CSurface *Surface;
+	C4Surface *Surface;
 	int32_t X, Y, Wdt, Hgt;
 
 public:
 	C4Facet();
-	C4Facet(CSurface *pSfc, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt)
+	C4Facet(C4Surface *pSfc, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt)
 		: Surface(pSfc), X(iX), Y(iY), Wdt(iWdt), Hgt(iHgt) {}
 
 public:
 	void Default();
-	void Set(CSurface *nsfc, int32_t nx, int32_t ny, int32_t nwdt, int32_t nhgt);
+	void Set(C4Surface *nsfc, int32_t nx, int32_t ny, int32_t nwdt, int32_t nhgt);
 	void Set(const C4Facet &cpy) { *this = cpy; }
 	void DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &gfx, int32_t bar_idx); // draw energy level using graphics
-	void DrawX(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0, float scale = 1.0f) const;
-	void DrawXFloat(CSurface *sfcTarget, float fX, float fY, float fWdt, float fHgt) const;
+	void DrawX(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0, float scale = 1.0f) const;
+	void DrawXFloat(C4Surface *sfcTarget, float fX, float fY, float fWdt, float fHgt) const;
 	void DrawValue(C4Facet &cgo, int32_t iValue, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center);
 	void DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center, int32_t *piUsedWidth = nullptr);
 	void Draw(C4Facet &cgo, bool fAspect = true, int32_t iPhaseX = 0, int32_t iPhaseY = 0, bool fTransparent = true, float scale = 1.0f);
 	void DrawFullScreen(C4Facet &cgo);
 #ifdef C4ENGINE
-	void DrawT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection = false, float scale = 1.0f); // draw with transformation (if pTransform is assigned)
+	void DrawT(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection = false, float scale = 1.0f); // draw with transformation (if pTransform is assigned)
 	void DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection = false, float scale = 1.0f);
-	void DrawXT(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection = false, float scale = 1.0f);
+	void DrawXT(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection = false, float scale = 1.0f);
 #endif // C4ENGINE
 	void DrawClr(C4Facet &cgo, bool fAspect = true, uint32_t dwClr = 0); // set surface color and draw
 	void DrawValue2Clr(C4Facet &cgo, int32_t iValue1, int32_t iValue2, uint32_t dwClr); // set surface color and draw
-	void DrawXR(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t r = 0); // draw rotated
-	void DrawClrMod(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0, uint32_t dwModClr = 0); // draw the facet modulated by given color
-	void Draw(CSurface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0, float scale = 1.0f);
+	void DrawXR(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t r = 0); // draw rotated
+	void DrawClrMod(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0, uint32_t dwModClr = 0); // draw the facet modulated by given color
+	void Draw(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX = 0, int32_t iPhaseY = 0, float scale = 1.0f);
 	bool GetPhaseNum(int32_t &rX, int32_t &rY); // return number of phases in this graphic
 	C4Facet GetSection(int32_t iSection);
 	C4Facet GetFraction(int32_t percentWdt, int32_t percentHgt = 0, int32_t alignX = C4FCT_Left, int32_t alignY = C4FCT_Top);

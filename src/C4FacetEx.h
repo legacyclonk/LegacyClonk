@@ -40,7 +40,7 @@ public:
 
 	void Set(const C4Facet &cpy) { TargetX = TargetY = 0; C4Facet::Set(cpy); }
 	void Set(const C4FacetEx &cpy) { *this = cpy; }
-	void Set(CSurface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx = 0, int nty = 0);
+	void Set(C4Surface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx = 0, int nty = 0);
 
 	void DrawBolt(int iX1, int iY1, int iX2, int iY2, uint8_t bCol, uint8_t bCol2);
 	void DrawLine(int iX1, int iY1, int iX2, int iY2, uint8_t bCol1, uint8_t bCol2);
@@ -75,7 +75,7 @@ public:
 	void Set(const C4Facet &cpy) { Clear(); C4Facet::Set(cpy); }
 	void Set(const C4FacetEx &cpy) { Clear(); C4FacetEx::Set(cpy); }
 
-	void Set(CSurface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx = 0, int nty = 0)
+	void Set(C4Surface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx = 0, int nty = 0)
 	{
 		C4FacetEx::Set(nsfc, nx, ny, nwdt, nhgt, ntx, nty);
 	}
@@ -83,7 +83,7 @@ public:
 	void Grayscale(int32_t iOffset = 0);
 	bool Create(int iWdt, int iHgt, int iWdt2 = C4FCT_Full, int iHgt2 = C4FCT_Full);
 	C4Surface &GetFace() { return Face; } // get internal face
-	bool CreateClrByOwner(CSurface *pBySurface);
+	bool CreateClrByOwner(C4Surface *pBySurface);
 	bool EnsureSize(int iMinWdt, int iMinHgt);
 	bool Load(C4Group &hGroup, const char *szName, int iWdt = C4FCT_Full, int iHgt = C4FCT_Full, bool fOwnPal = false, bool fNoErrIfNotFound = false);
 

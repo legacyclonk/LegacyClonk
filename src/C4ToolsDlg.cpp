@@ -601,7 +601,7 @@ void C4ToolsDlg::UpdatePreview()
 	if (!hbox) return;
 #endif
 
-	CSurface *sfcPreview;
+	C4Surface *sfcPreview;
 
 	int32_t iPrvWdt, iPrvHgt;
 
@@ -619,7 +619,7 @@ void C4ToolsDlg::UpdatePreview()
 	iPrvWdt = rect.right - rect.left;
 	iPrvHgt = rect.bottom - rect.top;
 
-	if (!(sfcPreview = new CSurface(iPrvWdt, iPrvHgt))) return;
+	if (!(sfcPreview = new C4Surface(iPrvWdt, iPrvHgt))) return;
 
 	// fill bg
 #ifdef _WIN32

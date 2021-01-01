@@ -682,7 +682,7 @@ static void icon_cell_data_func(GtkTreeViewColumn *column, GtkCellRenderer *rend
 	if (pixbuf == nullptr)
 	{
 		/* Not yet cached, create from Graphics */
-		CSurface *surface = object->Def->Graphics.Bitmap;
+		C4Surface *surface = object->Def->Graphics.Bitmap;
 		if (object->Def->Graphics.BitmapClr) surface = object->Def->Graphics.BitmapClr;
 
 		const C4Rect &picture = object->Def->PictureRect;

@@ -363,7 +363,7 @@ public:
 	CClrModAddMap() : pMap(nullptr), iMapSize(0), iWdt(0), iHgt(0), iOffX(0), iOffY(0), fFadeTransparent(false), iResolutionX(iDefResolutionX), iResolutionY(iDefResolutionY) {}
 	~CClrModAddMap() { delete[] pMap; }
 
-	void Reset(int iResX, int iResY, int iWdtPx, int iHgtPx, int iOffX, int iOffY, uint32_t dwModClr, uint32_t dwAddClr, int x0, int y0, uint32_t dwBackClr = 0, class CSurface *backsfc = nullptr); // reset all of map to given values; uses transparent mode and clears rect if a back color is given
+	void Reset(int iResX, int iResY, int iWdtPx, int iHgtPx, int iOffX, int iOffY, uint32_t dwModClr, uint32_t dwAddClr, int x0, int y0, uint32_t dwBackClr = 0, class C4Surface *backsfc = nullptr); // reset all of map to given values; uses transparent mode and clears rect if a back color is given
 	void ReduceModulation(int cx, int cy, int iRadius1, int iRadius2); // reveal all within iRadius1; fade off until iRadius2
 	void AddModulation(int cx, int cy, int iRadius1, int iRadius2, uint8_t byTransparency); // hide all within iRadius1; fade off until iRadius2
 

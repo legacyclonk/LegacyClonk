@@ -19,7 +19,7 @@
 
 #include <Standard.h>
 #include <StdGL.h>
-#include <StdSurface2.h>
+#include <C4Surface.h>
 #include <StdWindow.h>
 
 #ifndef USE_CONSOLE
@@ -116,7 +116,7 @@ bool CStdGL::UpdateClipper()
 	return true;
 }
 
-bool CStdGL::PrepareRendering(CSurface *const sfcToSurface)
+bool CStdGL::PrepareRendering(C4Surface *const sfcToSurface)
 {
 	// call from gfx thread only!
 	if (!pApp || !pApp->AssertMainThread()) return false;
@@ -142,7 +142,7 @@ bool CStdGL::PrepareRendering(CSurface *const sfcToSurface)
 	return true;
 }
 
-void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
+void CStdGL::PerformBlt(CBltData &rBltData, C4TexRef *const pTex,
 	const uint32_t dwModClr, bool fMod2, const bool fExact)
 {
 	// global modulation map
@@ -299,9 +299,9 @@ void CStdGL::PerformBlt(CBltData &rBltData, CTexRef *const pTex,
 	}
 }
 
-void CStdGL::BlitLandscape(CSurface *const sfcSource, CSurface *const sfcSource2,
-	CSurface *const sfcLiquidAnimation, const int fx, const int fy,
-	CSurface *const sfcTarget, const int tx, const int ty, const int wdt, const int hgt)
+void CStdGL::BlitLandscape(C4Surface *const sfcSource, C4Surface *const sfcSource2,
+	C4Surface *const sfcLiquidAnimation, const int fx, const int fy,
+	C4Surface *const sfcTarget, const int tx, const int ty, const int wdt, const int hgt)
 {
 	// safety
 	if (!sfcSource || !sfcTarget || !wdt || !hgt) return;
@@ -601,7 +601,7 @@ CStdGLCtx *CStdGL::CreateContext(const HWND hWindow, CStdApp *const pApp)
 bool CStdGL::CreatePrimarySurfaces()
 {
 	// create lpPrimary and lpBack (used in first context selection)
-	lpPrimary = lpBack = new CSurface();
+	lpPrimary = lpBack = new C4Surface();
 	lpPrimary->fPrimary = true;
 	lpPrimary->AttachSfc(nullptr);
 
@@ -612,7 +612,7 @@ bool CStdGL::CreatePrimarySurfaces()
 	return RestoreDeviceObjects();
 }
 
-void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
+void CStdGL::DrawQuadDw(C4Surface *const sfcTarget, int *const ipVtx,
 	uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4)
 {
 	// prepare rendering to target
@@ -651,7 +651,7 @@ void CStdGL::DrawQuadDw(CSurface *const sfcTarget, int *const ipVtx,
 	glShadeModel(GL_FLAT);
 }
 
-void CStdGL::DrawLineDw(CSurface *const sfcTarget,
+void CStdGL::DrawLineDw(C4Surface *const sfcTarget,
 	const float x1, const float y1, const float x2, const float y2, uint32_t dwClr)
 {
 	// apply color modulation
@@ -686,7 +686,7 @@ void CStdGL::DrawLineDw(CSurface *const sfcTarget,
 	glEnd();
 }
 
-void CStdGL::DrawPixInt(CSurface *const sfcTarget,
+void CStdGL::DrawPixInt(C4Surface *const sfcTarget,
 	const float tx, const float ty, const uint32_t dwClr)
 {
 	// render target?

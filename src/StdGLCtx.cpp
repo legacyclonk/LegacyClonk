@@ -21,7 +21,7 @@
 
 #include <Standard.h>
 #include <StdGL.h>
-#include <StdSurface2.h>
+#include <C4Surface.h>
 #include <StdWindow.h>
 
 #ifndef USE_CONSOLE

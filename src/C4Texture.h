@@ -27,7 +27,7 @@ class C4Texture
 public:
 	C4Texture();
 	~C4Texture();
-	CSurface *Surface32;
+	C4Surface *Surface32;
 	CSurface8 *Surface8;
 
 protected:
@@ -96,6 +96,6 @@ public:
 	bool AddEntry(uint8_t byIndex, const char *szMaterial, const char *szTexture);
 
 protected:
-	bool AddTexture(const char *szTexture, CSurface *sfcSurface);
+	bool AddTexture(const char *szTexture, C4Surface *sfcSurface);
 	bool AddTexture(const char *szTexture, CSurface8 *sfcSurface);
 };

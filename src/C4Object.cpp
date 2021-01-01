@@ -3767,7 +3767,7 @@ bool C4Object::CheckSolidMaskRect()
 {
 	// check NewGfx only, because invalid SolidMask-rects are OK in OldGfx
 	// the bounds-check is done in CStdDDraw::GetPixel()
-	CSurface *sfcGraphics = GetGraphics()->GetBitmap();
+	C4Surface *sfcGraphics = GetGraphics()->GetBitmap();
 	SolidMask.Set(std::max<int32_t>(SolidMask.x, 0), std::max<int32_t>(SolidMask.y, 0), std::min<int32_t>(SolidMask.Wdt, sfcGraphics->Wdt - SolidMask.x), std::min<int32_t>(SolidMask.Hgt, sfcGraphics->Hgt - SolidMask.y), SolidMask.tx, SolidMask.ty);
 	if (SolidMask.Hgt <= 0) SolidMask.Wdt = 0;
 	return SolidMask.Wdt > 0;

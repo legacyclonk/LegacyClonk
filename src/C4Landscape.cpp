@@ -683,10 +683,10 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	{
 		// map to big surface and sectionize it
 		// Create landscape surface
-		Surface32 = new CSurface();
+		Surface32 = new C4Surface();
 		Surface8 = new CSurface8();
 		if (Config.Graphics.ColorAnimation && DDrawCfg.Shader)
-			AnimationSurface = new CSurface(Width, Height);
+			AnimationSurface = new C4Surface(Width, Height);
 		if (!Surface32->Create(Width, Height, true)
 			|| !Surface8->Create(Width, Height, true)
 			|| (AnimationSurface && !AnimationSurface->Create(Width, Height))
@@ -1525,9 +1525,9 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 	int iWidth, iHeight;
 	Surface8->GetSurfaceSize(iWidth, iHeight);
 	Width = iWidth; Height = iHeight;
-	Surface32 = new CSurface(Width, Height);
+	Surface32 = new C4Surface(Width, Height);
 	if (Config.Graphics.ColorAnimation && DDrawCfg.Shader)
-		AnimationSurface = new CSurface(Width, Height);
+		AnimationSurface = new C4Surface(Width, Height);
 	// adjust pal
 	if (!Mat2Pal()) return false;
 	// load the 32bit-surface, too

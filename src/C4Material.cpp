@@ -397,7 +397,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 			Map[cnt].MatPattern.SetZoom((Map[cnt].OverlayType & C4MatOv_Exact) ? 1 : 2);
 		}
 		// init PXS facet
-		CSurface *sfcTexture;
+		C4Surface *sfcTexture;
 		C4Texture *Texture;
 		if (Map[cnt].sPXSGfx.getLength())
 			if (Texture = Game.TextureMap.GetTexture(Map[cnt].sPXSGfx.getData()))

@@ -206,7 +206,7 @@ bool C4DefGraphics::LoadAllGraphics(C4Group &hGroup, bool fColorByOwner)
 
 bool C4DefGraphics::ColorizeByMaterial(int32_t iMat, C4MaterialMap &rMats, uint8_t bGBM)
 {
-	CSurface *sfcBitmap = GetBitmap(); // first bitmap only
+	C4Surface *sfcBitmap = GetBitmap(); // first bitmap only
 	if (sfcBitmap)
 	{
 		uint32_t dwMatColors[C4M_ColsPerMat];

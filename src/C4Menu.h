@@ -218,7 +218,7 @@ protected:
 	void AdjustSelection();
 	void AdjustPosition();
 	bool RefillInternal();
-	void DrawFrame(CSurface *sfcSurface, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt);
+	void DrawFrame(C4Surface *sfcSurface, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt);
 	void InitLocation(C4Facet &cgo);
 	void InitSize();
 	void UpdateScrollBar(); // call InitSize if a scroll bar is needed but not present or vice vera

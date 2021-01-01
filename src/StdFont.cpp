@@ -21,7 +21,7 @@
 #include <Standard.h>
 #include <StdBuf.h>
 #include <StdDDraw2.h>
-#include <StdSurface2.h>
+#include <C4Surface.h>
 #include <StdMarkup.h>
 
 #include <cmath>
@@ -173,11 +173,11 @@ CStdFont::CStdFont()
 bool CStdFont::AddSurface()
 {
 	// add new surface as render target; copy old ones
-	CSurface **pNewSfcs = new CSurface *[iNumFontSfcs + 1];
-	if (iNumFontSfcs) memcpy(pNewSfcs, psfcFontData, iNumFontSfcs * sizeof(CSurface *));
+	C4Surface **pNewSfcs = new C4Surface *[iNumFontSfcs + 1];
+	if (iNumFontSfcs) memcpy(pNewSfcs, psfcFontData, iNumFontSfcs * sizeof(C4Surface *));
 	delete[] psfcFontData;
 	psfcFontData = pNewSfcs;
-	CSurface *sfcNew = psfcFontData[iNumFontSfcs] = new CSurface();
+	C4Surface *sfcNew = psfcFontData[iNumFontSfcs] = new C4Surface();
 	++iNumFontSfcs;
 	if (iSfcSizes) if (!sfcNew->Create(iSfcSizes, iSfcSizes)) return false;
 	sfcCurrent = sfcNew;
@@ -584,7 +584,7 @@ inline bool ColorMatch(uint32_t dwClr1, uint32_t dwClr2)
 	return ClrDw2W(dwClr1) == ClrDw2W(dwClr2);
 }
 
-void CStdFont::Init(const char *szFontName, CSurface *psfcFontSfc, int iIndent)
+void CStdFont::Init(const char *szFontName, C4Surface *psfcFontSfc, int iIndent)
 {
 	// clear previous
 	Clear();
@@ -941,7 +941,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 
 /* Text drawing */
 
-void CStdFont::DrawText(CSurface *sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom)
+void CStdFont::DrawText(C4Surface *sfcDest, int iX, int iY, uint32_t dwColor, const char *szText, uint32_t dwFlags, CMarkup &Markup, float fZoom)
 {
 	float x = static_cast<float>(iX), y = static_cast<float>(iY);
 	CBltTransform bt, *pbt = nullptr;

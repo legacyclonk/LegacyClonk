@@ -69,8 +69,8 @@ public:
 	uint8_t *pInitial; // Initial landscape after creation - used for diff
 
 protected:
-	CSurface *Surface32;
-	CSurface *AnimationSurface;
+	C4Surface *Surface32;
+	C4Surface *AnimationSurface;
 	CSurface8 *Surface8;
 	int32_t Pix2Mat[256], Pix2Dens[256], Pix2Place[256];
 	int32_t PixCntPitch;

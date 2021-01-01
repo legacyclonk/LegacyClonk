@@ -77,7 +77,7 @@ protected:
 	int cx, cy; // context window size
 
 	friend class CStdGL;
-	friend class CSurface;
+	friend class C4Surface;
 };
 
 // OpenGL encapsulation
@@ -108,7 +108,7 @@ public:
 	bool UpdateClipper() override; // set current clipper to render target
 
 	// Surface
-	bool PrepareRendering(CSurface *sfcToSurface) override; // check if/make rendering possible to given surface
+	bool PrepareRendering(C4Surface *sfcToSurface) override; // check if/make rendering possible to given surface
 	CStdGLCtx &GetMainCtx() { return MainCtx; }
 	virtual CStdGLCtx *CreateContext(CStdWindow *pWindow, CStdApp *pApp) override;
 #ifdef _WIN32
@@ -116,15 +116,15 @@ public:
 #endif
 
 	// Blit
-	void PerformBlt(CBltData &rBltData, CTexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact) override;
-	virtual void BlitLandscape(CSurface *sfcSource, CSurface *sfcSource2, CSurface *sfcLiquidAnimation, int fx, int fy,
-		CSurface *sfcTarget, int tx, int ty, int wdt, int hgt) override;
+	void PerformBlt(CBltData &rBltData, C4TexRef *pTex, uint32_t dwModClr, bool fMod2, bool fExact) override;
+	virtual void BlitLandscape(C4Surface *sfcSource, C4Surface *sfcSource2, C4Surface *sfcLiquidAnimation, int fx, int fy,
+		C4Surface *sfcTarget, int tx, int ty, int wdt, int hgt) override;
 	void FillBG(uint32_t dwClr = 0) override;
 
 	// Drawing
-	void DrawQuadDw(CSurface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4) override;
-	void DrawLineDw(CSurface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr) override;
-	void DrawPixInt(CSurface *sfcDest, float tx, float ty, uint32_t dwCol) override;
+	void DrawQuadDw(C4Surface *sfcTarget, int *ipVtx, uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, uint32_t dwClr4) override;
+	void DrawLineDw(C4Surface *sfcTarget, float x1, float y1, float x2, float y2, uint32_t dwClr) override;
+	void DrawPixInt(C4Surface *sfcDest, float tx, float ty, uint32_t dwCol) override;
 
 	// Gamma
 	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool fForce) override;
@@ -152,8 +152,8 @@ protected:
 	int gammasize{};
 #endif
 
-	friend class CSurface;
-	friend class CTexRef;
+	friend class C4Surface;
+	friend class C4TexRef;
 	friend class CPattern;
 	friend class CStdGLCtx;
 	friend class C4StartupOptionsDlg;

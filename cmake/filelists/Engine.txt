@@ -331,8 +331,6 @@ src/StdResStr2.cpp
 src/StdResStr2.h
 src/StdScheduler.cpp
 src/StdScheduler.h
-src/StdSurface2.cpp
-src/StdSurface2.h
 src/StdSurface8.cpp
 src/StdSurface8.h
 src/StdSync.h
