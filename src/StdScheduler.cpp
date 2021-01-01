@@ -33,13 +33,6 @@
 #include <process.h>
 #include <mmsystem.h>
 
-static int pipe(int *phandles)
-{
-	// This doesn't work with select(), rendering the non-event-solution
-	// unusable for Win32. Oh well, it isn't desirable performance-wise, anyway.
-	return _pipe(phandles, 10, O_BINARY);
-}
-
 #endif
 
 #ifdef HAVE_UNISTD_H
