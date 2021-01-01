@@ -24,16 +24,142 @@
 #include <C4Game.h>
 
 #ifdef _WIN32
+#include "C4Windows.h"
+#include <windowsx.h>
+
+static uint32_t POV2Position(DWORD dwPOV, bool fVertical)
+{
+	// POV value is a 360° angle multiplied by 100
+	double dAxis;
+	// Centered
+	if (dwPOV == JOY_POVCENTERED)
+		dAxis = 0.0;
+	// Angle: convert to linear value -100 to +100
+	else
+	{
+		const auto angleRad = dwPOV * M_PI / (180.0 * 100);
+		dAxis = (fVertical ? -cos(angleRad) : sin(angleRad)) * 100.0;
+	}
+	// Gamepad configuration wants unsigned and gets 0 to 200
+	return static_cast<uint32_t>(dAxis + 100.0);
+}
+
+C4GamePad::C4GamePad(int id) : iRefCount{1}, Buttons{0}, id{id}
+{
+	std::fill(AxisPosis.begin(), AxisPosis.end(), Mid);
+	SetCalibration(&(Config.Gamepads[id].AxisMin[0]), &(Config.Gamepads[id].AxisMax[0]), &(Config.Gamepads[id].AxisCalibrated[0]));
+}
+
+C4GamePad::~C4GamePad()
+{
+	GetCalibration(&(Config.Gamepads[id].AxisMin[0]), &(Config.Gamepads[id].AxisMax[0]), &(Config.Gamepads[id].AxisCalibrated[0]));
+}
+
+void C4GamePad::SetCalibration(uint32_t *pdwAxisMin, uint32_t *pdwAxisMax, bool *pfAxisCalibrated)
+{
+	// params to calibration
+	for (int i = 0; i < MaxCalAxis; ++i)
+	{
+		dwAxisMin[i] = pdwAxisMin[i];
+		dwAxisMax[i] = pdwAxisMax[i];
+		fAxisCalibrated[i] = pfAxisCalibrated[i];
+	}
+}
+
+void C4GamePad::GetCalibration(uint32_t *pdwAxisMin, uint32_t *pdwAxisMax, bool *pfAxisCalibrated)
+{
+	// calibration to params
+	for (int i = 0; i < MaxCalAxis; ++i)
+	{
+		pdwAxisMin[i] = dwAxisMin[i];
+		pdwAxisMax[i] = dwAxisMax[i];
+		pfAxisCalibrated[i] = fAxisCalibrated[i];
+	}
+}
+
+bool C4GamePad::Update()
+{
+	joynfo.dwSize = sizeof(joynfo);
+	joynfo.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNRAWDATA | JOY_RETURNX | JOY_RETURNY | JOY_RETURNZ | JOY_RETURNR | JOY_RETURNU | JOY_RETURNV | JOY_RETURNPOV;
+	return joyGetPosEx(JOYSTICKID1 + id, &joynfo) == JOYERR_NOERROR;
+}
+
+uint32_t C4GamePad::GetCurrentButtons()
+{
+	return joynfo.dwButtons;
+}
+
+constexpr DWORD GetAxisValue(const JOYINFOEX &info, const int axis) noexcept
+{
+	assert(Inside(axis, 0, C4GamePad::MaxCalAxis - 1));
+	switch (axis)
+	{
+		case 0: return info.dwXpos;
+		case 1: return info.dwYpos;
+		case 2: return info.dwZpos;
+		case 3: return info.dwRpos;
+		case 4: return info.dwUpos;
+		case 5: return info.dwVpos;
+	}
+	return -1;
+}
+
+C4GamePad::AxisPos C4GamePad::GetAxisPos(int idAxis)
+{
+	if (idAxis < 0 || idAxis >= MaxAxis) return Mid; // wrong axis
+	// get raw axis data
+	if (idAxis < MaxCalAxis)
+	{
+		uint32_t dwPos = GetAxisValue(joynfo, idAxis);
+		// evaluate axis calibration
+		if (fAxisCalibrated[idAxis])
+		{
+			// update it
+			dwAxisMin[idAxis] = std::min<uint32_t>(dwAxisMin[idAxis], dwPos);
+			dwAxisMax[idAxis] = std::max<uint32_t>(dwAxisMax[idAxis], dwPos);
+			// Calculate center
+			uint32_t dwCenter = (dwAxisMin[idAxis] + dwAxisMax[idAxis]) / 2;
+			// Trigger range is 30% off center
+			uint32_t dwRange = (dwAxisMax[idAxis] - dwCenter) / 3;
+			if (dwPos < dwCenter - dwRange) return Low;
+			if (dwPos > dwCenter + dwRange) return High;
+		}
+		else
+		{
+			// init it
+			dwAxisMin[idAxis] = dwAxisMax[idAxis] = dwPos;
+			fAxisCalibrated[idAxis] = true;
+		}
+	}
+	else
+	{
+		// It's a POV head
+		uint32_t dwPos = POV2Position(joynfo.dwPOV, idAxis == AxisPOV::Y);
+		if (dwPos > 130) return High; else if (dwPos < 70) return Low;
+	}
+	return Mid;
+}
+
+void C4GamePad::IncRef()
+{
+	++iRefCount;
+}
+
+bool C4GamePad::DecRef()
+{
+	if (!--iRefCount)
+	{
+		delete this;
+		return false;
+	}
+
+	return true;
+}
 
 C4GamePadControl *C4GamePadControl::pInstance = nullptr;
 
 C4GamePadControl::C4GamePadControl()
 {
-	for (int i = 0; i < CStdGamepad_MaxGamePad; ++i)
-	{
-		Gamepads[i].pGamepad = nullptr;
-		Gamepads[i].iRefCount = 0;
-	}
 	iNumGamepads = 0;
 	// singleton
 	if (!pInstance) pInstance = this;
@@ -47,34 +173,34 @@ C4GamePadControl::~C4GamePadControl()
 
 void C4GamePadControl::Clear()
 {
-	for (int i = 0; i < CStdGamepad_MaxGamePad; ++i)
-		while (Gamepads[i].iRefCount) CloseGamepad(i);
+	for (int i = 0; i < C4GamePad::MaxGamePad; ++i)
+		while (Gamepads[i]) Gamepads[i]->DecRef();
+
+	iNumGamepads = 0;
 }
 
 void C4GamePadControl::OpenGamepad(int id)
 {
-	if (!Inside(id, 0, CStdGamepad_MaxGamePad - 1)) return;
-	// add gamepad ref
-	if (!(Gamepads[id].iRefCount++))
+	if (!Inside(id, 0, C4GamePad::MaxGamePad - 1)) return;
+
+	if (!(Gamepads[id]))
 	{
-		// this is the first gamepad opening: Init it
-		Pad &rPad = Gamepads[id];
-		rPad.pGamepad = new CStdGamePad(id);
-		rPad.Buttons = 0;
-		for (int i = 0; i < CStdGamepad_MaxAxis; ++i) rPad.AxisPosis[i] = CStdGamePad::Mid;
-		rPad.pGamepad->SetCalibration(&(Config.Gamepads[id].AxisMin[0]), &(Config.Gamepads[id].AxisMax[0]), &(Config.Gamepads[id].AxisCalibrated[0]));
+		Gamepads[id] = new C4GamePad{id};
 		++iNumGamepads;
+	}
+	else
+	{
+		Gamepads[id]->IncRef();
 	}
 }
 
 void C4GamePadControl::CloseGamepad(int id)
 {
-	if (!Inside(id, 0, CStdGamepad_MaxGamePad - 1)) return;
-	// del gamepad ref
-	if (!--Gamepads[id].iRefCount)
+	if (!Inside(id, 0, C4GamePad::MaxGamePad - 1)) return;
+
+	if (!Gamepads[id]->DecRef())
 	{
-		Gamepads[id].pGamepad->GetCalibration(&(Config.Gamepads[id].AxisMin[0]), &(Config.Gamepads[id].AxisMax[0]), &(Config.Gamepads[id].AxisCalibrated[0]));
-		delete Gamepads[id].pGamepad; Gamepads[id].pGamepad = nullptr;
+		Gamepads[id] = nullptr;
 		--iNumGamepads;
 	}
 }
@@ -84,46 +210,43 @@ int C4GamePadControl::GetGamePadCount()
 	JOYINFOEX joy{};
 	joy.dwSize = sizeof(JOYINFOEX); joy.dwFlags = JOY_RETURNALL;
 	int iCnt = 0;
-	while (iCnt < CStdGamepad_MaxGamePad && ::joyGetPosEx(iCnt, &joy) == JOYERR_NOERROR) ++iCnt;
+	while (iCnt < C4GamePad::MaxGamePad && ::joyGetPosEx(iCnt, &joy) == JOYERR_NOERROR) ++iCnt;
 	return iCnt;
 }
 
-const int MaxGamePadButton = 10;
+const int MaxGamePadButton = 22;
 
 void C4GamePadControl::Execute()
 {
 	// Get gamepad inputs
-	int iNum = iNumGamepads;
-	for (int idGamepad = 0; iNum && idGamepad < CStdGamepad_MaxGamePad; ++idGamepad)
+	for (auto &pad : Gamepads)
 	{
-		Pad &rPad = Gamepads[idGamepad];
-		if (!rPad.iRefCount) continue;
-		--iNum;
-		if (!rPad.pGamepad->Update()) continue;
-		for (int iAxis = 0; iAxis < CStdGamepad_MaxAxis; ++iAxis)
+		if (!pad || !pad->Update()) continue;
+		for (int iAxis = 0; iAxis < C4GamePad::MaxAxis; ++iAxis)
 		{
-			CStdGamePad::AxisPos eAxisPos = rPad.pGamepad->GetAxisPos(iAxis), ePrevAxisPos = rPad.AxisPosis[iAxis];
+			C4GamePad::AxisPos eAxisPos = pad->GetAxisPos(iAxis), ePrevAxisPos = pad->AxisPosis[iAxis];
 			// Evaluate changes and pass single controls
 			// this is a generic Gamepad-control: Create events
 			if (eAxisPos != ePrevAxisPos)
 			{
-				rPad.AxisPosis[iAxis] = eAxisPos;
-				if (ePrevAxisPos != CStdGamePad::Mid)
-					Game.DoKeyboardInput(KEY_Gamepad(idGamepad, KEY_JOY_Axis(iAxis, (ePrevAxisPos == CStdGamePad::High))), KEYEV_Up, false, false, false, false);
-				if (eAxisPos != CStdGamePad::Mid)
-					Game.DoKeyboardInput(KEY_Gamepad(idGamepad, KEY_JOY_Axis(iAxis, (eAxisPos == CStdGamePad::High))), KEYEV_Down, false, false, false, false);
+				pad->AxisPosis[iAxis] = eAxisPos;
+				if (ePrevAxisPos != C4GamePad::Mid)
+					Game.DoKeyboardInput(KEY_Gamepad(pad->GetID(), KEY_JOY_Axis(iAxis, (ePrevAxisPos == C4GamePad::High))), KEYEV_Up, false, false, false, false);
+				if (eAxisPos != C4GamePad::Mid)
+					Game.DoKeyboardInput(KEY_Gamepad(pad->GetID(), KEY_JOY_Axis(iAxis, (eAxisPos == C4GamePad::High))), KEYEV_Down, false, false, false, false);
 			}
 		}
-		uint32_t Buttons = rPad.pGamepad->GetButtons();
-		uint32_t PrevButtons = rPad.Buttons;
+
+		const uint32_t Buttons = pad->GetCurrentButtons();
+		const uint32_t PrevButtons = pad->Buttons;
 		if (Buttons != PrevButtons)
 		{
-			rPad.Buttons = Buttons;
+			pad->Buttons = Buttons;
 			for (int iButton = 0; iButton < MaxGamePadButton; ++iButton)
 				if ((Buttons & (1 << iButton)) != (PrevButtons & (1 << iButton)))
 				{
 					bool fRelease = ((Buttons & (1 << iButton)) == 0);
-					Game.DoKeyboardInput(KEY_Gamepad(idGamepad, KEY_JOY_Button(iButton)), fRelease ? KEYEV_Up : KEYEV_Down, false, false, false, false);
+					Game.DoKeyboardInput(KEY_Gamepad(pad->GetID(), KEY_JOY_Button(iButton)), fRelease ? KEYEV_Up : KEYEV_Down, false, false, false, false);
 				}
 		}
 	}
