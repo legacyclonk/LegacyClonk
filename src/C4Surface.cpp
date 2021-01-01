@@ -34,8 +34,6 @@
 #include <memory>
 #include <stdexcept>
 
-C4DDrawCfg DDrawCfg; // ddraw config
-
 C4Surface::C4Surface() : fIsBackground(false)
 {
 	Default();

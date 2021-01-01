@@ -127,12 +127,17 @@ public:
 	bool ShowAllResolutions;
 	bool ShowCrewNames; // show player name above clonks?
 	bool ShowCrewCNames; // show clonk names above clonks?
-	int32_t NewGfxCfg; // some configuration settings for newgfx (OpenGL)
+	bool NoAlphaAdd; // always modulate alpha values instead of assing them (->no custom modulated alpha)
+	bool PointFiltering; // don't use linear filtering, because some crappy graphic cards can't handle it...
+	bool NoBoxFades; // map all DrawBoxFade-calls to DrawBoxDw
+	uint32_t AllowedBlitModes; // bit mask for allowed blitting modes
+	bool NoAcceleration; // whether direct rendering is used (X11)
+	bool Shader; // whether to use pixelshaders
 	bool MsgBoard;
 	bool PXSGfx; // show PXS-graphics (instead of sole pixels)
 	int32_t Engine; // 0: OpenGL; 3: disabled graphics
-	int32_t BlitOffset;   // blit offset (percent) (OpenGL)
-	int32_t TexIndent; // blit offset (per mille) (OpenGL)
+	float BlitOffset;   // blit offset (percent) (OpenGL)
+	float TexIndent; // blit offset (per mille) (OpenGL)
 	int32_t Gamma1, Gamma2, Gamma3; // gamma ramps
 	bool Currency; // default wealth symbolseb
 	uint32_t RenderInactive; // draw viewports even if inactive. 1 = Fullscreen, 2 = EM, 1 | 2 = both
@@ -151,6 +156,9 @@ public:
 	bool ShowFolderMaps; // if true, folder maps are shown
 
 	void CompileFunc(StdCompiler *pComp);
+
+	void Get(bool &noAdditiveBlits, int32_t &blitOffset, int32_t &texIndent);
+	void Set(bool noAdditiveBlits, int32_t blitOffset, int32_t texIndent);
 };
 
 class C4ConfigSound

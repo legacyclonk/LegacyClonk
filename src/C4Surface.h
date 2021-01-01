@@ -54,58 +54,6 @@ class CStdGL;
 extern CStdGL *pGL;
 #endif
 
-// config
-class C4DDrawCfg
-{
-public:
-	bool NoAlphaAdd; // always modulate alpha values instead of assing them (->no custom modulated alpha)
-	bool PointFiltering; // don't use linear filtering, because some crappy graphic cards can't handle it...
-	bool PointFilteringStd; // backup value of PointFiltering
-	bool AdditiveBlts; // enable additive blitting
-	bool NoBoxFades; // map all DrawBoxFade-calls to DrawBoxDw
-	float fTexIndent; // texture indent
-	float fBlitOff; // blit offsets
-	uint32_t AllowedBlitModes; // bit mask for allowed blitting modes
-	bool NoAcceleration; // wether direct rendering is used (X11)
-	int Cfg;
-
-	bool Shader; // wether to use pixelshaders
-
-	C4DDrawCfg() :
-		// Let's end this silly bitmask business in the config.
-		Shader(false)
-	{
-		Set(0, 0.01f, 0.0f);
-	}
-
-	void Set(int dwCfg, float fTexIndent, float fBlitOff) // set cfg
-	{
-		Cfg = dwCfg;
-		NoAlphaAdd = !!(dwCfg & C4GFXCFG_NO_ALPHA_ADD);
-		PointFiltering = PointFilteringStd = !!(dwCfg & C4GFXCFG_POINT_FILTERING);
-		AdditiveBlts = !(dwCfg & C4GFXCFG_NOADDITIVEBLTS);
-		NoBoxFades = !!(dwCfg & C4GFXCFG_NOBOXFADES);
-		this->fTexIndent = fTexIndent;
-		this->fBlitOff = fBlitOff;
-		AllowedBlitModes = AdditiveBlts ? C4GFXBLIT_ALL : C4GFXBLIT_NOADD;
-		NoAcceleration = !!(dwCfg & C4GFXCFG_NOACCELERATION);
-	}
-
-	void Get(int32_t &dwCfg, float &fTexIndent, float &fBlitOff)
-	{
-		dwCfg =
-			(NoAlphaAdd ? C4GFXCFG_NO_ALPHA_ADD : 0) |
-			(PointFiltering ? C4GFXCFG_POINT_FILTERING : 0) |
-			(AdditiveBlts ? 0 : C4GFXCFG_NOADDITIVEBLTS) |
-			(NoBoxFades ? C4GFXCFG_NOBOXFADES : 0) |
-			(NoAcceleration ? C4GFXCFG_NOACCELERATION : 0);
-		fTexIndent = this->fTexIndent;
-		fBlitOff = this->fBlitOff;
-	}
-};
-
-extern C4DDrawCfg DDrawCfg; // ddraw config
-
 // class predefs
 class C4TexRef;
 class C4TexMgr;

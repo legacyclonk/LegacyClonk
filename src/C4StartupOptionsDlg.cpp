@@ -1354,14 +1354,14 @@ void C4StartupOptionsDlg::LoadGfxTroubleshoot()
 {
 	// config to controls
 	// get config values for this config
-	uint32_t dwGfxCfg = Config.Graphics.NewGfxCfg;
-	iGfxTexIndent = Config.Graphics.TexIndent;
-	iGfxBlitOff = Config.Graphics.BlitOffset;
+	pCheckGfxNoAlphaAdd->SetChecked(Config.Graphics.NoAlphaAdd);
+	pCheckGfxPointFilter->SetChecked(Config.Graphics.PointFiltering);
+	pCheckGfxNoBoxFades->SetChecked(Config.Graphics.NoBoxFades);
+
+	bool noAdditiveBlits;
+	Config.Graphics.Get(noAdditiveBlits, iGfxBlitOff, iGfxTexIndent);
+	pCheckGfxNoAddBlit->SetChecked(noAdditiveBlits);
 	// set it in controls
-	pCheckGfxNoAlphaAdd->SetChecked(!!(dwGfxCfg & C4GFXCFG_NO_ALPHA_ADD));
-	pCheckGfxPointFilter->SetChecked(!!(dwGfxCfg & C4GFXCFG_POINT_FILTERING));
-	pCheckGfxNoAddBlit->SetChecked(!!(dwGfxCfg & C4GFXCFG_NOADDITIVEBLTS));
-	pCheckGfxNoBoxFades->SetChecked(!!(dwGfxCfg & C4GFXCFG_NOBOXFADES));
 	pEdtGfxTexIndent->SetIntVal(iGfxTexIndent);
 	pEdtGfxBlitOff->SetIntVal(iGfxBlitOff);
 	// title of troubleshooting-box by config set
@@ -1372,19 +1372,13 @@ void C4StartupOptionsDlg::SaveGfxTroubleshoot()
 {
 	// copntrols to config
 	// get it from controls
-	uint32_t dwGfxCfg = 0u;
-	if (pCheckGfxNoAlphaAdd->GetChecked()) dwGfxCfg |= C4GFXCFG_NO_ALPHA_ADD;
-	if (pCheckGfxPointFilter->GetChecked()) dwGfxCfg |= C4GFXCFG_POINT_FILTERING;
-	if (pCheckGfxNoAddBlit->GetChecked()) dwGfxCfg |= C4GFXCFG_NOADDITIVEBLTS;
-	if (pCheckGfxNoBoxFades->GetChecked()) dwGfxCfg |= C4GFXCFG_NOBOXFADES;
 	pEdtGfxTexIndent->Save2Config();
 	pEdtGfxBlitOff->Save2Config();
 	// set config values into this set
-	Config.Graphics.NewGfxCfg = dwGfxCfg;
-	Config.Graphics.TexIndent = iGfxTexIndent;
-	Config.Graphics.BlitOffset = iGfxBlitOff;
-	// and apply them directly
-	DDrawCfg.Set(dwGfxCfg, static_cast<float>(iGfxTexIndent) / 1000.0f, static_cast<float>(iGfxBlitOff) / 100.0f);
+	Config.Graphics.NoAlphaAdd = pCheckGfxNoAlphaAdd->GetChecked();
+	Config.Graphics.PointFiltering = pCheckGfxPointFilter->GetChecked();
+	Config.Graphics.NoBoxFades = pCheckGfxNoBoxFades->GetChecked();
+	Config.Graphics.Set(pCheckGfxNoAddBlit->GetChecked(), iGfxBlitOff, iGfxTexIndent);
 	lpDDraw->InvalidateDeviceObjects();
 	lpDDraw->RestoreDeviceObjects();
 }

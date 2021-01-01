@@ -149,12 +149,52 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ShowClock,            "ShowClock",            false, false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewNames,        "ShowCrewNames",        true,  false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewCNames,       "ShowCrewCNames",       true,  false, true));
-	pComp->Value(mkNamingAdapt(NewGfxCfg,            "NewGfxCfg",            0,     false, true));
 	pComp->Value(mkNamingAdapt(MsgBoard,             "MsgBoard",             true,  false, true));
 	pComp->Value(mkNamingAdapt(PXSGfx,               "PXSGfx",               true));
 	pComp->Value(mkNamingAdapt(Engine,               "Engine",               GFXENGN_OPENGL, false, true));
-	pComp->Value(mkNamingAdapt(TexIndent,            "TexIndent",            0));
-	pComp->Value(mkNamingAdapt(BlitOffset,           "BlitOffset",           0));
+
+	if (pComp->isCompiler())
+	{
+		if(pComp->Name("NewGfxCfg"))
+		{
+			try
+			{
+				uint32_t newGfxCfg;
+				pComp->Value(newGfxCfg);
+
+				NoAlphaAdd = newGfxCfg & C4GFXCFG_NO_ALPHA_ADD;
+				PointFiltering = newGfxCfg & C4GFXCFG_POINT_FILTERING;
+				NoBoxFades = newGfxCfg & C4GFXCFG_NOBOXFADES;
+				AllowedBlitModes = newGfxCfg & C4GFXCFG_NOADDITIVEBLTS ? C4GFXBLIT_NOADD : C4GFXBLIT_ALL;
+				NoAcceleration = newGfxCfg & C4GFXCFG_NOACCELERATION;
+			}
+			catch (const StdCompiler::Exception &)
+			{
+				pComp->NameEnd(true);
+				throw;
+			}
+
+			pComp->Default("NewGfxCfg");
+		}
+		pComp->NameEnd();
+	}
+
+	pComp->Value(mkNamingAdapt(NoAlphaAdd,           "NoAlphaAdd",           false));
+	pComp->Value(mkNamingAdapt(PointFiltering,       "PointFiltering",       false));
+	pComp->Value(mkNamingAdapt(NoBoxFades,           "NoBoxFades",           false));
+	pComp->Value(mkNamingAdapt(NoAcceleration,       "NoAcceleration",       false));
+
+	bool noAdditiveBlits;
+	int32_t texIndent;
+	int32_t blitOffset;
+	Get(noAdditiveBlits, texIndent, blitOffset);
+
+	pComp->Value(mkNamingAdapt(texIndent,        "TexIndent",            0));
+	pComp->Value(mkNamingAdapt(blitOffset,       "BlitOffset",           0));
+	pComp->Value(mkNamingAdapt(noAdditiveBlits,  "NoAdditiveBlits",      false));
+
+	Set(noAdditiveBlits, texIndent, blitOffset);
+
 	pComp->Value(mkNamingAdapt(Gamma1,               "Gamma1",               0));
 	pComp->Value(mkNamingAdapt(Gamma2,               "Gamma2",               0x808080));
 	pComp->Value(mkNamingAdapt(Gamma3,               "Gamma3",               0xffffff));
@@ -164,7 +204,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Monitor,              "Monitor",              0)); // 0 = D3DADAPTER_DEFAULT
 	pComp->Value(mkNamingAdapt(FireParticles,        "FireParticles",        true,  false, true));
 	pComp->Value(mkNamingAdapt(MaxRefreshDelay,      "MaxRefreshDelay",      30));
-	pComp->Value(mkNamingAdapt(DDrawCfg.Shader,      "Shader",               false, false, true));
+	pComp->Value(mkNamingAdapt(Shader,               "Shader",               false, false, true));
 	pComp->Value(mkNamingAdapt(AutoFrameSkip,        "AutoFrameSkip",        true,  false, true));
 	pComp->Value(mkNamingAdapt(CacheTexturesInRAM,   "CacheTexturesInRAM",   100));
 
@@ -182,6 +222,20 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 #endif
 
 	pComp->Value(mkNamingAdapt(ShowFolderMaps, "ShowFolderMaps", true));
+}
+
+void C4ConfigGraphics::Get(bool &noAdditiveBlits, int32_t &blitOffset, int32_t &texIndent)
+{
+	noAdditiveBlits = !(AllowedBlitModes & C4GFXBLIT_ADDITIVE);
+	blitOffset = static_cast<int32_t>(BlitOffset * 100);
+	texIndent = static_cast<int32_t>(TexIndent * 1000);
+}
+
+void C4ConfigGraphics::Set(bool noAdditiveBlits, int32_t blitOffset, int32_t texIndent)
+{
+	AllowedBlitModes = noAdditiveBlits ? C4GFXBLIT_NOADD : C4GFXBLIT_ALL;
+	BlitOffset = static_cast<float>(blitOffset) / 1000.0f;
+	TexIndent = static_cast<float>(texIndent) / 100.0f;
 }
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)
@@ -488,8 +542,6 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 	General.DefaultLanguage();
 #ifndef USE_CONSOLE
 	if (Graphics.Engine != GFXENGN_NOGFX) Graphics.Engine = GFXENGN_OPENGL;
-	// OpenGL
-	DDrawCfg.Set(Graphics.NewGfxCfg, static_cast<float>(Graphics.TexIndent) / 1000.0f, static_cast<float>(Graphics.BlitOffset) / 100.0f);
 #endif
 	// Warning against invalid ports
 #ifdef C4ENGINE
