@@ -55,12 +55,9 @@ static bool FD_INTERSECTS(int n, fd_set *a, fd_set *b)
 // *** StdScheduler
 
 StdScheduler::StdScheduler()
-	: ppProcs(nullptr), iProcCnt(0), iProcCapacity(0)
 {
 #ifdef STDSCHEDULER_USE_EVENTS
-	hUnblocker = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-	pEventHandles = nullptr;
-	ppEventProcs = nullptr;
+	unblocker = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 #else
 	pipe(Unblocker);
 	// Experimental castration of the unblocker.
@@ -73,91 +70,77 @@ StdScheduler::~StdScheduler()
 	Clear();
 }
 
-int StdScheduler::getProc(StdSchedulerProc *pProc)
-{
-	for (int i = 0; i < iProcCnt; i++)
-		if (ppProcs[i] == pProc)
-			return i;
-	return -1;
-}
-
 void StdScheduler::Clear()
 {
-	delete[] ppProcs; ppProcs = nullptr;
-#ifdef STDSCHEDULER_USE_EVENTS
-	delete[] pEventHandles; pEventHandles = nullptr;
-	delete[] ppEventProcs; ppEventProcs = nullptr;
-#endif
-	iProcCnt = iProcCapacity = 0;
+	procs.clear();
 }
 
 void StdScheduler::Add(StdSchedulerProc *pProc)
 {
-	// Alrady in list?
-	if (hasProc(pProc)) return;
-	// Enlarge
-	if (iProcCnt >= iProcCapacity) Enlarge(1);
-	// Add
-	ppProcs[iProcCnt] = pProc;
-	iProcCnt++;
+	procs.insert(pProc);
 }
 
 void StdScheduler::Remove(StdSchedulerProc *pProc)
 {
-	// Search
-	int iPos = getProc(pProc);
-	// Not found?
-	if (iPos >= iProcCnt) return;
-	// Remove
-	for (int i = iPos + 1; i < iProcCnt; i++)
-		ppProcs[i - 1] = ppProcs[i];
-	iProcCnt--;
+	procs.erase(pProc);
 }
 
-bool StdScheduler::Execute(int iTimeout)
+bool StdScheduler::Execute(int timeout)
 {
 	// Needs at least one process to work properly
-	if (!iProcCnt) return false;
+	if (procs.empty()) return false;
 
 	// Get timeout
-	int i; int iProcTimeout;
-	for (i = 0; i < iProcCnt; i++)
-		if ((iProcTimeout = ppProcs[i]->GetTimeout()) >= 0)
-			if (iTimeout == -1 || iTimeout > iProcTimeout)
-				iTimeout = iProcTimeout;
+	for (const auto &proc : procs)
+	{
+		if (const int32_t procTimeout{proc->GetTimeout()}; procTimeout >= 0 && (timeout == -1 || timeout > procTimeout))
+		{
+			timeout = procTimeout;
+		}
+	}
 
 #ifdef STDSCHEDULER_USE_EVENTS
 
 	// Collect event handles
-	int iEventCnt = 0; HANDLE hEvent;
-	for (i = 0; i < iProcCnt; i++)
-		if (hEvent = ppProcs[i]->GetEvent())
+	eventHandles.resize(0);
+	eventProcs.resize(0);
+	for (const auto &proc : procs)
+	{
+		if (const HANDLE event{proc->GetEvent()}; event)
 		{
-			pEventHandles[iEventCnt] = hEvent;
-			ppEventProcs[iEventCnt] = ppProcs[i];
-			iEventCnt++;
+			eventHandles.push_back(event);
+			eventProcs.push_back(proc);
 		}
+	}
 
-	// Add Unblocker
-	pEventHandles[iEventCnt++] = hUnblocker;
+	// Add unblocker
+	eventHandles.push_back(unblocker);
 
 	// Wait for something to happen
-	DWORD ret = WaitForMultipleObjects(iEventCnt, pEventHandles, FALSE, iTimeout < 0 ? INFINITE : iTimeout);
+	DWORD ret = WaitForMultipleObjects(eventHandles.size(), eventHandles.data(), FALSE, timeout < 0 ? INFINITE : timeout);
 
-	bool fSuccess = true;
+	bool success = true;
 
-	if (ret != WAIT_TIMEOUT)
+	switch (ret)
 	{
-		// Which event?
-		int iEventNr = ret - WAIT_OBJECT_0;
+	case WAIT_FAILED:
+		success = false;
+		break;
 
-		// Execute the signaled proces
-		if (iEventNr < iEventCnt - 1)
-			if (!ppEventProcs[iEventNr]->Execute())
+	case WAIT_TIMEOUT:
+		break;
+
+	default:
+		// Which event?
+		const std::size_t eventNumber{ret - WAIT_OBJECT_0};
+		if (eventNumber < eventHandles.size() - 1)
+		{
+			if (!eventProcs[eventNumber]->Execute())
 			{
-				OnError(ppEventProcs[iEventNr]);
-				fSuccess = false;
+				OnError(eventProcs[eventNumber]);
+				success = false;
 			}
+		}
 	}
 
 #else
@@ -170,16 +153,18 @@ bool StdScheduler::Execute(int iTimeout)
 	FD_SET(Unblocker[0], &fds[0]);
 
 	// Collect file descriptors
-	for (i = 0; i < iProcCnt; i++)
-		ppProcs[i]->GetFDs(fds, &iMaxFDs);
+	for (const auto &proc : procs)
+	{
+		proc->GetFDs(fds, &iMaxFDs);
+	}
 
 	// Build timeout structure
-	timeval to = { iTimeout / 1000, (iTimeout % 1000) * 1000 };
+	timeval to = { timeout / 1000, (timeout % 1000) * 1000 };
 
 	// Wait for something to happen
-	int cnt = select(iMaxFDs + 1, &fds[0], &fds[1], nullptr, iTimeout < 0 ? nullptr : &to);
+	int cnt = select(iMaxFDs + 1, &fds[0], &fds[1], nullptr, timeout < 0 ? nullptr : &to);
 
-	bool fSuccess = true;
+	bool success = true;
 
 	if (cnt > 0)
 	{
@@ -192,21 +177,21 @@ bool StdScheduler::Execute(int iTimeout)
 
 		// Which process?
 		fd_set test_fds[2];
-		for (i = 0; i < iProcCnt; i++)
+		for (const auto &proc : procs)
 		{
 			// Get FDs for this process alone
 			int test_iMaxFDs = 0;
 			FD_ZERO(&test_fds[0]); FD_ZERO(&test_fds[1]);
-			ppProcs[i]->GetFDs(test_fds, &test_iMaxFDs);
+			proc->GetFDs(test_fds, &test_iMaxFDs);
 
 			// Check intersection
 			if (FD_INTERSECTS(test_iMaxFDs + 1, &test_fds[0], &fds[0]) ||
 				FD_INTERSECTS(test_iMaxFDs + 1, &test_fds[1], &fds[1]))
 			{
-				if (!ppProcs[i]->Execute(0))
+				if (!proc->Execute(0))
 				{
-					OnError(ppProcs[i]);
-					fSuccess = false;
+					OnError(proc);
+					success = false;
 				}
 			}
 		}
@@ -219,41 +204,28 @@ bool StdScheduler::Execute(int iTimeout)
 #endif
 
 	// Execute all processes with timeout
-	for (i = 0; i < iProcCnt; i++)
-		if (ppProcs[i]->GetTimeout() == 0)
-			if (!ppProcs[i]->Execute())
+	for (const auto &proc : procs)
+	{
+		if (proc->GetTimeout() == 0)
+		{
+			if (!proc->Execute())
 			{
-				OnError(ppProcs[i]);
-				fSuccess = false;
+				OnError(proc);
+				success = false;
 			}
+		}
+	}
 
-	return fSuccess;
+	return success;
 }
 
 void StdScheduler::UnBlock()
 {
 #ifdef STDSCHEDULER_USE_EVENTS
-	SetEvent(hUnblocker);
+	SetEvent(unblocker);
 #else
 	char c = 42;
 	write(Unblocker[1], &c, 1);
-#endif
-}
-
-void StdScheduler::Enlarge(int iBy)
-{
-	iProcCapacity += iBy;
-	// Realloc
-	StdSchedulerProc **ppnProcs = new StdSchedulerProc *[iProcCapacity];
-	// Set data
-	for (int i = 0; i < iProcCnt; i++)
-		ppnProcs[i] = ppProcs[i];
-	delete[] ppProcs;
-	ppProcs = ppnProcs;
-#ifdef STDSCHEDULER_USE_EVENTS
-	// Allocate dummy arrays (one handle neede for unlocker!)
-	delete[] pEventHandles; pEventHandles = new HANDLE            [iProcCapacity + 1];
-	delete[] ppEventProcs;  ppEventProcs  = new StdSchedulerProc *[iProcCapacity];
 #endif
 }
 

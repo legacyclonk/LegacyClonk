@@ -20,6 +20,10 @@
 
 #include "Standard.h"
 
+#include <set>
+#include <thread>
+#include <vector>
+
 // Events are Windows-specific
 #ifdef _WIN32
 	#define STDSCHEDULER_USE_EVENTS
@@ -29,8 +33,6 @@
 #else
 	#include <sys/select.h>
 #endif
-
-#include <thread>
 
 // helper
 inline int MaxTimeout(int iTimeout1, int iTimeout2)
@@ -69,26 +71,23 @@ public:
 
 private:
 	// Process list
-	StdSchedulerProc **ppProcs;
-	int iProcCnt, iProcCapacity;
+	std::set<StdSchedulerProc *> procs;
 
 	// Unblocker
 #ifdef STDSCHEDULER_USE_EVENTS
-	HANDLE hUnblocker;
+	HANDLE unblocker;
 #else
 	int Unblocker[2];
 #endif
 
-	// Dummy lists (preserved to reduce allocs)
 #ifdef STDSCHEDULER_USE_EVENTS
-	HANDLE *pEventHandles;
-	StdSchedulerProc **ppEventProcs;
+	std::vector<HANDLE> eventHandles;
+	std::vector<StdSchedulerProc *> eventProcs;
 #endif
 
 public:
-	int getProcCnt() const { return iProcCnt; }
-	int getProc(StdSchedulerProc *pProc);
-	bool hasProc(StdSchedulerProc *pProc) { return getProc(pProc) >= 0; }
+	std::size_t getProcCnt() const { return procs.size(); }
+	bool hasProc(StdSchedulerProc *pProc) { return procs.find(pProc) != procs.end(); }
 
 	void Clear();
 	void Add(StdSchedulerProc *pProc);
@@ -99,10 +98,7 @@ public:
 
 protected:
 	// overridable
-	virtual void OnError(StdSchedulerProc *pProc) {}
-
-private:
-	void Enlarge(int iBy);
+	virtual void OnError(StdSchedulerProc *proc) { (void) proc; }
 };
 
 // A simple process scheduler thread
