@@ -793,7 +793,7 @@ bool C4Def::Load(C4Group &hGroup,
 	if (Graphics.GetBitmap())
 	{
 		// check SolidMask
-		if (SolidMask.x < 0 || SolidMask.y < 0 || SolidMask.x + SolidMask.Wdt > Graphics.Bitmap->Wdt / Scale || SolidMask.y + SolidMask.Hgt > Graphics.Bitmap->Hgt / Scale) SolidMask.Default();
+		if (SolidMask.x < 0 || SolidMask.y < 0 || SolidMask.x + SolidMask.Wdt > Graphics.Bitmap->Wdt || SolidMask.y + SolidMask.Hgt > Graphics.Bitmap->Hgt) SolidMask.Default();
 		// Set MainFace (unassigned bitmap: will be set by GetMainFace())
 		MainFace.Set(nullptr, 0, 0, Shape.Wdt, Shape.Hgt);
 	}
