@@ -190,6 +190,7 @@ public:
 	bool ObjectInCrew(C4Object *tobj);
 	C4Object *Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pBuyObj = nullptr); // buy object of player's wealth
 	bool Sell2Home(C4Object *tobj);
+	bool CanSell(C4Object *obj) const;
 	bool DoWealth(int32_t change);
 	bool SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent = false);
 	void CompileFunc(StdCompiler *pComp);

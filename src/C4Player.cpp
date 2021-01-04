@@ -872,11 +872,7 @@ C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pB
 bool C4Player::Sell2Home(C4Object *pObj)
 {
 	C4Object *cObj;
-	// Valid checks
-	if (!pObj || !pObj->Status) return false;
-	if (Eliminated) return false;
-	// No crew members
-	if (pObj->OCF & OCF_CrewMember) return false;
+	if (!CanSell(pObj)) return false;
 	// Sell contents first
 	while (cObj = pObj->Contents.GetObject())
 	{
@@ -905,6 +901,11 @@ bool C4Player::Sell2Home(C4Object *pObj)
 	pObj->AssignRemoval(true);
 	// Done
 	return true;
+}
+
+bool C4Player::CanSell(C4Object *const obj) const
+{
+	return !Eliminated && obj && obj->Status && !(obj->OCF & OCF_CrewMember);
 }
 
 bool C4Player::DoWealth(int32_t iChange)

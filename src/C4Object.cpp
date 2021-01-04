@@ -975,14 +975,14 @@ void C4Object::AutoSellContents()
 		{
 			for (const auto &contents : obj->Contents)
 			{
-				if (contents && contents->Status && contents->Def->BaseAutoSell)
+				if (contents && contents->Status && contents->Def->BaseAutoSell && pPlr->CanSell(contents))
 				{
 					contents->Exit();
 					pPlr->Sell2Home(contents);
 				}
 			}
 
-			if (obj->Def->BaseAutoSell)
+			if (obj->Def->BaseAutoSell && pPlr->CanSell(obj))
 			{
 				obj->Exit();
 				pPlr->Sell2Home(obj);
