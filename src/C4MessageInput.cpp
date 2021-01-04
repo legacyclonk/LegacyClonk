@@ -282,8 +282,17 @@ bool C4MessageInput::CloseTypeIn()
 bool C4MessageInput::StartTypeIn(bool fObjInput, C4Object *pObj, bool fUpperCase, C4ChatInputDialog::Mode mode, int32_t iPlr, const StdStrBuf &rsInputQuery)
 {
 	if (!C4GUI::IsGUIValid()) return false;
-	// close any previous
-	if (IsTypeIn()) CloseTypeIn();
+
+	// existing dialog? only close if empty
+	if (C4ChatInputDialog *const dialog{GetTypeIn()}; dialog && dialog->IsEmpty())
+	{
+		dialog->Close(false);
+	}
+	else
+	{
+		return false;
+	}
+
 	// start new
 	return Game.pGUI->ShowRemoveDlg(new C4ChatInputDialog(fObjInput, pObj, fUpperCase, mode, iPlr, rsInputQuery));
 }

@@ -100,6 +100,7 @@ public:
 	bool IsScriptQueried() const { return fObjInput; }
 	class C4Object *GetScriptTargetObject() const { return pTarget; }
 	int32_t GetScriptTargetPlayer() const { return iPlr; }
+	bool IsEmpty() const { return !*pEdit->GetText(); }
 };
 
 class C4MessageBoardCommand
