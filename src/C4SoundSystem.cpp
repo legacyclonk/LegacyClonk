@@ -29,6 +29,8 @@
 #include <utility>
 #include <vector>
 
+const std::string C4SoundSystem::fileExtensions[] = { ".wav", ".ogg" };
+
 bool IsSoundPlaying(const char *const name, const C4Object *const obj)
 {
 	return Application.SoundSystem->FindInst(name, obj).has_value();
@@ -107,12 +109,12 @@ void C4SoundSystem::LoadEffects(C4Group &group)
 	if (!Application.AudioSystem) return;
 
 	// Process segmented list of file types
-	for (const auto fileType : { "*.wav", "*.ogg" })
+	for (const auto fileExtension : fileExtensions)
 	{
 		char filename[_MAX_FNAME + 1];
 		// Search all sound files in group
 		group.ResetSearch();
-		while (group.FindNextEntry(fileType, filename))
+		while (group.FindNextEntry((std::string{ "*" } + fileExtension).c_str(), filename))
 		{
 			// Try to find existing sample of the same name
 			const auto existingSample = std::find_if(samples.cbegin(), samples.cend(),
@@ -256,20 +258,24 @@ bool C4SoundSystem::Instance::IsNear(const C4Object &obj2) const
 	return false;
 }
 
+// Finds an existing sound instance
+// Returns an array of matching files
 auto C4SoundSystem::FindInst(const char *wildcard, const C4Object *const obj) ->
 	std::optional<decltype(Sample::instances)::iterator>
 {
-	const auto wildcardStr = PrepareFilename(wildcard);
-	wildcard = wildcardStr.c_str();
+	for (const auto fallbackFileExtension : fileExtensions) {
+		const auto wildcardStr = PrepareFilename(wildcard, fallbackFileExtension);
+		wildcard = wildcardStr.c_str();
 
-	for (auto &sample : samples)
-	{
-		// Skip samples whose names do not match the wildcard
-		if (!WildcardMatch(wildcard, sample.name.c_str())) continue;
-		// Try to find an instance that is bound to obj
-		auto it = std::find_if(sample.instances.begin(), sample.instances.end(),
-			[&](const auto &inst) { return inst.GetObj() == obj; });
-		if (it != sample.instances.end()) return it;
+		for (auto& sample : samples)
+		{
+			// Skip samples whose names do not match the wildcard
+			if (!WildcardMatch(wildcard, sample.name.c_str())) continue;
+			// Try to find an instance that is bound to obj
+			auto it = std::find_if(sample.instances.begin(), sample.instances.end(),
+				[&](const auto& inst) { return inst.GetObj() == obj; });
+			if (it != sample.instances.end()) return it;
+		}
 	}
 
 	// Not found
@@ -293,37 +299,46 @@ auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
 {
 	if (!Application.AudioSystem) return nullptr;
 
-	const auto filenameStr = PrepareFilename(filename);
-	filename = filenameStr.c_str();
+	Sample *sample = nullptr;
 
-	Sample *sample;
-	// Search for matching file if name contains no wildcard
-	if (filenameStr.find('?') == std::string::npos)
-	{
-		const auto end = samples.end();
-		const auto it = std::find_if(samples.begin(), end,
-			[&](const auto &sample) { return SEqualNoCase(filename, sample.name.c_str()); });
-		// File not found
-		if (it == end) return nullptr;
-		// Success: Found the file
-		sample = &*it;
-	}
-	// Randomly select any matching file if name contains wildcard
-	else
-	{
-		std::vector<Sample *> matches;
-		for (auto &sample : samples)
+	for (const auto fallbackFileExtension : fileExtensions) {
+
+		const std::string editedFilenameStr = PrepareFilename(filename, fallbackFileExtension);
+		const char *editedFilenameCharPtr = editedFilenameStr.c_str();
+
+		// Search for matching file if name contains no wildcard
+		if (editedFilenameStr.find('?') == std::string::npos)
 		{
-			if (WildcardMatch(filename, sample.name.c_str()))
-			{
-				matches.push_back(&sample);
+			const auto end = samples.end();
+			const auto it = std::find_if(samples.begin(), end,
+				[&](const auto &sample) { return SEqualNoCase(editedFilenameCharPtr, sample.name.c_str()); });
+
+			if (it != end) {
+				// Success: Found the file
+				sample = &*it;
+				break;
 			}
 		}
-		// File not found
-		if (matches.empty()) return nullptr;
-		// Success: Randomly select any of the matching files
-		sample = matches[SafeRandom(matches.size())];
+		// Randomly select any matching file if name contains wildcard
+		else
+		{
+			std::vector<Sample *> matches;
+			for (auto &sample : samples)
+			{
+				if (WildcardMatch(editedFilenameCharPtr, sample.name.c_str()))
+				{
+					matches.push_back(&sample);
+				}
+			}
+			if (!matches.empty()) {
+				// Success: Randomly select any of the matching files
+				sample = matches[SafeRandom(matches.size())];
+				break;
+			}
+		}
 	}
+	// File not found
+	if (!sample) return nullptr;
 
 	// Too many instances?
 	if (!loop && sample->instances.size() >= MaxSoundInstances) return nullptr;
@@ -347,10 +362,10 @@ auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
 	return &inst;
 }
 
-std::string C4SoundSystem::PrepareFilename(const char *const filename)
+std::string C4SoundSystem::PrepareFilename(const char *const filename, std::string fallbackFileExtension)
 {
 	auto result = *GetExtension(filename) ?
-		filename : std::string{filename} + ".wav";
+		filename : std::string{filename} + fallbackFileExtension;
 	std::replace(result.begin(), result.end(), '*', '?');
 	return result;
 }

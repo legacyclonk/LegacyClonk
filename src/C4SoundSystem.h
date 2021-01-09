@@ -118,6 +118,7 @@ private:
 		bool IsNear(const C4Object &obj) const;
 	};
 
+	static const std::string fileExtensions[];
 	static constexpr std::int32_t MaxSoundInstances = 20;
 	std::list<Sample> samples;
 
@@ -131,7 +132,7 @@ private:
 	Instance *NewInstance(const char *filename, bool loop,
 		std::int32_t volume, std::int32_t pan, C4Object *obj, std::int32_t falloffDistance);
 	// Adds default file extension if missing and replaces "*" with "?"
-	static std::string PrepareFilename(const char *filename);
+	static std::string PrepareFilename(const char *const filename, std::string fileExtension);
 
 	friend bool IsSoundPlaying(const char *, const C4Object *);
 	friend void SoundLevel(const char *, C4Object *, std::int32_t);
