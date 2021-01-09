@@ -1153,7 +1153,9 @@ void C4ControlMessage::Execute() const
 		// tehehe, sound!
 		if (auto *client = Game.Clients.getClientByID(iByClient); client && client->TryAllowSound())
 		{
-			if (client->isMuted() || StartSoundEffect(szMessage, false, 100, nullptr))
+			if (client->isMuted()
+				|| StartSoundEffect(szMessage, false, 100, nullptr)
+				|| StartSoundEffect((szMessage + std::string{".ogg"}).c_str(), false, 100, nullptr))
 			{
 				if (pLobby) pLobby->OnClientSound(Game.Clients.getClientByID(iByClient));
 			}
