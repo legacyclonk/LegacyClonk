@@ -284,13 +284,16 @@ bool C4MessageInput::StartTypeIn(bool fObjInput, C4Object *pObj, bool fUpperCase
 	if (!C4GUI::IsGUIValid()) return false;
 
 	// existing dialog? only close if empty
-	if (C4ChatInputDialog *const dialog{GetTypeIn()}; dialog && dialog->IsEmpty())
+	if (C4ChatInputDialog *const dialog{GetTypeIn()}; dialog)
 	{
-		dialog->Close(false);
-	}
-	else
-	{
-		return false;
+		if (dialog->IsEmpty())
+		{
+			dialog->Close(false);
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	// start new
