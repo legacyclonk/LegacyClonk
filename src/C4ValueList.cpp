@@ -164,6 +164,7 @@ void C4ValueList::DenumeratePointers()
 
 void C4ValueList::CompileFunc(class StdCompiler *pComp)
 {
+	// FIXME: this should be one of C4ValueInt or (u)intptr_t (or C4ID), but which one?
 	int32_t inSize = iSize;
 	// Size. Reset if not found.
 	try
@@ -182,7 +183,7 @@ void C4ValueList::CompileFunc(class StdCompiler *pComp)
 		pComp->Separator(StdCompiler::SEP_SEP);
 		this->SetSize(C4MaxVariable);
 		// First variable was misinterpreted as size
-		pData[0].SetInt(inSize);
+		pData[0] = C4Value{C4V_Data{inSize}, C4V_Any};
 		// Read remaining data
 		pComp->Value(mkArrayAdapt(pData + 1, C4MaxVariable - 1, C4Value()));
 	}
