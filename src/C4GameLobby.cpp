@@ -977,6 +977,8 @@ void MainDlg::ClearLog()
 
 void MainDlg::ResourceProgress(bool isComplete)
 {
+	resourcesLoaded = isComplete;
+
 	assert(checkReady);
 	checkReady->SetEnabled(isComplete);
 

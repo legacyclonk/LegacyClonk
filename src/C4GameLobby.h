@@ -108,6 +108,7 @@ private:
 	C4GUI::CheckBox *checkReady;
 	C4GUI::CallbackButton<MainDlg> *btnPreload{nullptr};
 	C4CooldownSeconds readyButtonCooldown{std::chrono::seconds{2}}; // not in C4Config as it is dependent on
+	bool resourcesLoaded{false};
 
 protected:
 	void OnReadyCheck(C4GUI::Element *pCheckBox); // callback: checkbox ticked
@@ -168,6 +169,7 @@ public:
 	void ResourceProgress(bool isComplete);
 	void RequestReadyCheck();
 	void CheckReady(bool check);
+	bool CanBeReady() const { return resourcesLoaded; }
 
 	friend class C4Sec1TimerCallback<MainDlg>;
 	friend class ::C4Network2ResDlg;

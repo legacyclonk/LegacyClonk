@@ -1644,31 +1644,40 @@ void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
 		if (pLobby)
 		{
 			pLobby->CheckReady(false);
-		}
 #endif
-
-		Application.NotifyUserIfInactive();
+			Application.NotifyUserIfInactive();
 
 #ifndef USE_CONSOLE
-		readyCheckDialog = new ReadyCheckDialog;
-		ready = Game.pGUI ? Game.pGUI->ShowModalDlg(readyCheckDialog, true) : false;
-		readyCheckDialog = nullptr;
-#else
-		ready = false;
+			if (pLobby->CanBeReady())
+			{
+				readyCheckDialog = new ReadyCheckDialog;
+				ready = Game.pGUI ? Game.pGUI->ShowModalDlg(readyCheckDialog, true) : false;
+				readyCheckDialog = nullptr;
+			}
+			else
 #endif
-		if (!isLobbyActive())
-		{
-			return;
-		}
+				ready = false;
 
-		Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_ReadyCheck, C4PacketReadyCheck{Clients.GetLocal()->getID(), ready ? C4PacketReadyCheck::Ready : C4PacketReadyCheck::NotReady}), true);
+			if (!isLobbyActive())
+			{
+				return;
+			}
 
-		if (pLobby)
-		{
+			Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_ReadyCheck, C4PacketReadyCheck{Clients.GetLocal()->getID(), ready ? C4PacketReadyCheck::Ready : C4PacketReadyCheck::NotReady}), true);
+
+#ifndef USE_CONSOLE
 			pLobby->CheckReady(ready);
-		}
+#endif
 
-		client = Game.Clients.getLocal();
+			client = Game.Clients.getLocal();
+
+#ifndef USE_CONSOLE
+		}
+		else
+		{
+			ready = false;
+		}
+#endif
 	}
 	else
 	{
@@ -1684,10 +1693,12 @@ void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
 	{
 		client->SetLobbyReady(ready);
 
+#ifndef USE_CONSOLE
 		if (pLobby)
 		{
 			pLobby->OnClientReadyStateChange(client);
 		}
+#endif
 	}
 }
 
