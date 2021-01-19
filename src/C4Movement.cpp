@@ -452,7 +452,7 @@ void C4Object::DoMovement()
 	// Movement Script Execution
 	if (fAnyContact)
 	{
-		C4AulParSet pars(C4VInt(fixtoi(oldxdir, 100)), C4VInt(fixtoi(oldydir, 100)));
+		auto pars = CompareVersion(Def->rC4XVer[0], Def->rC4XVer[1], Def->rC4XVer[2], Def->rC4XVer[3], 0, 4, 9, 7, 0) >= 0 ? C4AulParSet{C4VInt(fixtoi(oldxdir, 100)), C4VInt(fixtoi(oldydir, 100))} : C4AulParSet{};
 		if (old_ocf & OCF_HitSpeed1) Call(PSF_Hit,  pars);
 		if (old_ocf & OCF_HitSpeed2) Call(PSF_Hit2, pars);
 		if (old_ocf & OCF_HitSpeed3) Call(PSF_Hit3, pars);
