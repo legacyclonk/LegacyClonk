@@ -63,6 +63,7 @@ public:
 	FIXED Gravity;
 	uint32_t Modulation; // landscape blit modulation; 0 means normal
 	int32_t MapSeed; // random seed for MapToLandscape
+	bool ShadeMaterials; // shade materials
 	C4Sky Sky;
 	C4MapCreatorS2 *pMapCreator; // map creator for script-generated maps
 	bool fMapChanged;

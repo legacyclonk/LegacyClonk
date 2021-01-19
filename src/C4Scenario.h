@@ -237,11 +237,12 @@ public:
 	int32_t SkyScrollMode; // sky scrolling mode for newgfx
 	int32_t NewStyleLandscape; // if set to 2, the landscape uses up to 125 mat/texture pairs
 	int32_t FoWRes; // chunk size of FoGOfWar
+	bool ShadeMaterials;
 
 public:
 	void Default();
 	void GetMapSize(int32_t &rWdt, int32_t &rHgt, int32_t iPlayerNum);
-	void CompileFunc(StdCompiler *pComp);
+	void CompileFunc(StdCompiler *pComp, bool newScenario = true);
 };
 
 class C4SWeather

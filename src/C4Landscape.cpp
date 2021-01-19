@@ -561,6 +561,8 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	// set map seed, if not pre-assigned
 	if (!MapSeed) MapSeed = Random(3133700);
 
+	ShadeMaterials = Game.C4S.Landscape.ShadeMaterials;
+
 	// increase max map size, since developers might set a greater one here
 	Game.C4S.Landscape.MapWdt.Max = 10000;
 	Game.C4S.Landscape.MapHgt.Max = 10000;
@@ -1645,6 +1647,7 @@ void C4Landscape::Default()
 	pMapCreator = nullptr;
 	Modulation = 0;
 	fMapChanged = false;
+	ShadeMaterials = true;
 }
 
 void C4Landscape::ClearBlastMatCount()
@@ -2474,48 +2477,60 @@ bool C4Landscape::ApplyLighting(C4Rect To)
 	for (int32_t iX = To.x; iX < To.x + To.Wdt; ++iX)
 	{
 		int AboveDensity = 0, BelowDensity = 0;
-		for (int i = 1; i <= 8; ++i)
+		if (ShadeMaterials)
 		{
-			AboveDensity += GetPlacement(iX, To.y - i - 1);
-			BelowDensity += GetPlacement(iX, To.y + i - 1);
+			for (int i = 1; i <= 8; ++i)
+			{
+				AboveDensity += GetPlacement(iX, To.y - i - 1);
+				BelowDensity += GetPlacement(iX, To.y + i - 1);
+			}
 		}
+
 		for (int32_t iY = To.y; iY < To.y + To.Hgt; ++iY)
 		{
+			// do not move that code into the if (ShadeMaterials) block, as it needs to be run for sky pixels as well
 			AboveDensity -= GetPlacement(iX, iY - 9);
 			AboveDensity += GetPlacement(iX, iY - 1);
 			BelowDensity -= GetPlacement(iX, iY);
 			BelowDensity += GetPlacement(iX, iY + 8);
+
+			// Normal color
+			uint32_t dwBackClr = GetClrByTex(iX, iY);
+
 			uint8_t pix = _GetPix(iX, iY);
 			// Sky
 			if (!pix)
 			{
-				Surface32->SetPixDw(iX, iY, GetClrByTex(iX, iY));
+				Surface32->SetPixDw(iX, iY, dwBackClr);
 				continue;
 			}
-			// get density
-			int iOwnDens = Pix2Place[pix];
-			if (!iOwnDens) continue;
-			iOwnDens *= 2;
-			iOwnDens += GetPlacement(iX + 1, iY) + GetPlacement(iX - 1, iY);
-			iOwnDens /= 4;
-			// Normal color
-			uint32_t dwBackClr = GetClrByTex(iX, iY);
-			// get density of surrounding materials
-			int iCompareDens = AboveDensity / 8;
-			if (iOwnDens > iCompareDens)
+
+			if (ShadeMaterials)
 			{
-				// apply light
-				LightenClrBy(dwBackClr, (std::min)(30, 2 * (iOwnDens - iCompareDens)));
+				// get density
+				int iOwnDens = Pix2Place[pix];
+				if (!iOwnDens) continue;
+				iOwnDens *= 2;
+				iOwnDens += GetPlacement(iX + 1, iY) + GetPlacement(iX - 1, iY);
+				iOwnDens /= 4;
+				// get density of surrounding materials
+				int iCompareDens = AboveDensity / 8;
+				if (iOwnDens > iCompareDens)
+				{
+					// apply light
+					LightenClrBy(dwBackClr, (std::min)(30, 2 * (iOwnDens - iCompareDens)));
+				}
+				else if (iOwnDens < iCompareDens && iOwnDens < 30)
+				{
+					DarkenClrBy(dwBackClr, (std::min)(30, 2 * (iCompareDens - iOwnDens)));
+				}
+				iCompareDens = BelowDensity / 8;
+				if (iOwnDens > iCompareDens)
+				{
+					DarkenClrBy(dwBackClr, (std::min)(30, 2 * (iOwnDens - iCompareDens)));
+				}
 			}
-			else if (iOwnDens < iCompareDens && iOwnDens < 30)
-			{
-				DarkenClrBy(dwBackClr, (std::min)(30, 2 * (iCompareDens - iOwnDens)));
-			}
-			iCompareDens = BelowDensity / 8;
-			if (iOwnDens > iCompareDens)
-			{
-				DarkenClrBy(dwBackClr, (std::min)(30, 2 * (iOwnDens - iCompareDens)));
-			}
+
 			Surface32->SetPixDw(iX, iY, dwBackClr);
 			if (AnimationSurface) AnimationSurface->SetPixDw(iX, iY, DensityLiquid(Pix2Dens[pix]) ? 255 << 24 : 0);
 		}

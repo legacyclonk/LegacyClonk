@@ -127,7 +127,9 @@ void C4Scenario::CompileFunc(StdCompiler *pComp, bool fSection)
 	pComp->Value(mkNamingAdapt(mkParAdapt(Game, fSection), "Game"));
 	for (int32_t i = 0; i < C4S_MaxPlayer; i++)
 		pComp->Value(mkNamingAdapt(PlrStart[i], FormatString("Player%d", i + 1).getData()));
-	pComp->Value(mkNamingAdapt(Landscape,   "Landscape"));
+
+	const bool newScenario{!Head.C4XVer[0] || CompareVersion(Head.C4XVer[0], Head.C4XVer[1], Head.C4XVer[2], Head.C4XVer[3], Head.C4XVer[4], 4, 6, 5, 0, 0) >= 0};
+	pComp->Value(mkNamingAdapt(mkParAdapt(Landscape, newScenario),   "Landscape"));
 	pComp->Value(mkNamingAdapt(Animals,     "Animals"));
 	pComp->Value(mkNamingAdapt(Weather,     "Weather"));
 	pComp->Value(mkNamingAdapt(Disasters,   "Disasters"));
@@ -320,6 +322,7 @@ void C4SLandscape::Default()
 	SkyScrollMode = 0;
 	NewStyleLandscape = 0;
 	FoWRes = CClrModAddMap::iDefResolutionX;
+	ShadeMaterials = true;
 }
 
 void C4SLandscape::GetMapSize(int32_t &rWdt, int32_t &rHgt, int32_t iPlayerNum)
@@ -331,7 +334,7 @@ void C4SLandscape::GetMapSize(int32_t &rWdt, int32_t &rHgt, int32_t iPlayerNum)
 		rWdt = (std::min)(rWdt * (std::min)(iPlayerNum, C4S_MaxMapPlayerExtend), MapWdt.Max);
 }
 
-void C4SLandscape::CompileFunc(StdCompiler *pComp)
+void C4SLandscape::CompileFunc(StdCompiler *pComp, bool newScenario)
 {
 	pComp->Value(mkNamingAdapt(ExactLandscape,            "ExactLandscape",    false));
 	pComp->Value(mkNamingAdapt(Vegetation,                "Vegetation",        C4IDList()));
@@ -364,6 +367,7 @@ void C4SLandscape::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(SkyScrollMode,             "SkyScrollMode",     0));
 	pComp->Value(mkNamingAdapt(NewStyleLandscape,         "NewStyleLandscape", 0));
 	pComp->Value(mkNamingAdapt(FoWRes,                    "FoWRes",            static_cast<int32_t>(CClrModAddMap::iDefResolutionX)));
+	pComp->Value(mkNamingAdapt(ShadeMaterials,            "ShadeMaterials",    newScenario));
 }
 
 void C4SWeather::Default()
