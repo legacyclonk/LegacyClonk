@@ -28,10 +28,6 @@
 #include <C4Wrappers.h>
 #endif
 
-#ifdef C4GROUP
-#include "C4CompilerWrapper.h"
-#endif
-
 #include <iterator>
 
 // C4SVal

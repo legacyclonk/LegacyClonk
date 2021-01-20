@@ -27,10 +27,6 @@
 #include <C4Wrappers.h>
 #endif
 
-#ifdef C4GROUP
-#include "C4CompilerWrapper.h"
-#endif
-
 // C4FolderHead
 
 void C4FolderHead::Default()

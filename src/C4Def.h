@@ -311,7 +311,7 @@ public:
 	~C4Def();
 
 public:
-#if defined(_WIN32) && !defined(C4ENGINE) && !defined(C4GROUP)
+#if defined(_WIN32) && !defined(C4ENGINE)
 	HBITMAP Picture;
 	HBITMAP Image;
 #endif

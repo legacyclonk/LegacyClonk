@@ -894,7 +894,4 @@ void C4UpdatePackage::WriteLog(const char *strMsg, ...)
 	vsprintf(strOutp, strMsg, arglist);
 	Log.Write(strOutp, strlen(strOutp));
 	Log.Flush();
-#ifdef C4GROUP
-	printf(strOutp);
-#endif
 }

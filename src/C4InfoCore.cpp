@@ -29,11 +29,6 @@
 
 #include <C4Random.h>
 
-#ifdef C4GROUP
-#include "C4CompilerWrapper.h"
-#include "C4Def.h"
-#endif
-
 // Name File Handling
 
 char GetANameBuffer[C4MaxName + 1];

@@ -34,12 +34,6 @@
 #include "C4Network2Res.h"
 #endif
 
-#ifdef C4GROUP
-#include "C4Group.h"
-#include "C4Scenario.h"
-#include "C4CompilerWrapper.h"
-#endif
-
 #include <algorithm>
 
 // Default Action Procedures
@@ -487,7 +481,7 @@ void C4Def::Default()
 {
 	C4DefCore::Default();
 
-#if !defined(C4ENGINE) && !defined(C4GROUP)
+#if !defined(C4ENGINE)
 	Picture = nullptr;
 	Image = nullptr;
 #endif
@@ -636,7 +630,7 @@ bool C4Def::Load(C4Group &hGroup,
 
 #endif
 
-#if !defined(C4ENGINE) && !defined(C4GROUP)
+#if !defined(C4ENGINE)
 
 	// Override PictureRect if PictureRectFE is given
 	if (PictureRectFE.Wdt > 0)
