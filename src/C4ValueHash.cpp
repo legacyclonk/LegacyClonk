@@ -126,7 +126,7 @@ C4Value &C4ValueHash::operator[](const C4Value &key)
 			emptyValues.pop_front();
 		}
 
-		const auto& inserted = map.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(MapEntry{value})).first;
+		const auto &inserted = map.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(MapEntry{value, {}})).first;
 		inserted->second.keyOrderIterator = keyOrder.insert(keyOrder.end(), &inserted->first);
 		return *value;
 	}
