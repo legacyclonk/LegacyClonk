@@ -77,7 +77,8 @@
 #define C4AUL_TypeC4Object "object"
 #define C4AUL_TypeString   "string"
 #define C4AUL_TypeArray    "array"
-#define C4AUL_TypeMap    "map"
+#define C4AUL_TypeMap      "map"
+#define C4AUL_TypeAny      "any"
 
 #define C4AUL_Nil  "nil"
 
@@ -1661,6 +1662,7 @@ void C4AulParseState::Parse_FuncHead()
 			else if (SEqual(Idtf, C4AUL_TypeString)) { Fn->ParType[cpar] = C4V_String; Shift(Discard, false); }
 			else if (SEqual(Idtf, C4AUL_TypeArray)) { Fn->ParType[cpar] = C4V_Array; Shift(Discard, false); }
 			else if (SEqual(Idtf, C4AUL_TypeMap)) { Fn->ParType[cpar] = C4V_Map; Shift(Discard, false); }
+			else if (SEqual(Idtf, C4AUL_TypeAny)) { Fn->ParType[cpar] = C4V_Any; Shift(Discard, false); }
 			// ampersand?
 			if (TokenType == ATT_AMP) { Fn->ParType[cpar] = C4V_pC4Value; Shift(Discard, false); }
 			if (TokenType != ATT_IDTF)
