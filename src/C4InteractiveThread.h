@@ -20,6 +20,8 @@
 #include "StdSync.h"
 
 #include <any>
+#include <array>
+#include <queue>
 
 // Event types
 enum C4InteractiveEventType
@@ -69,15 +71,16 @@ private:
 		C4InteractiveEventType Type;
 		std::any Data;
 #ifdef _DEBUG
-		int Time;
+		decltype(timeGetTime()) Time;
 #endif
-		Event *Next;
 	};
-	Event *pFirstEvent, *pLastEvent;
+
+	std::queue<Event> events;
+	bool destroyed{false};
 	CStdCSec EventPushCSec, EventPopCSec;
 
 	// callback objects for events of special types
-	Callback *pCallbacks[Ev_Last + 1];
+	std::array<Callback *, Ev_Last + 1> callbacks;
 
 public:
 	// process management
@@ -85,7 +88,7 @@ public:
 	void RemoveProc(StdSchedulerProc *pProc);
 
 	// event queue
-	bool PushEvent(C4InteractiveEventType eEventType, const std::any &data);
+	bool PushEvent(C4InteractiveEventType eventType, const std::any &data);
 	void ProcessEvents(); // by main thread
 
 	// special events
@@ -109,14 +112,14 @@ public:
 	// event handlers
 	void SetCallback(C4InteractiveEventType eEvent, Callback *pnNetworkCallback)
 	{
-		pCallbacks[eEvent] = pnNetworkCallback;
+		callbacks[eEvent] = pnNetworkCallback;
 	}
 
 	void ClearCallback(C4InteractiveEventType eEvent, Callback *pnNetworkCallback)
 	{
-		if (pCallbacks[eEvent] == pnNetworkCallback) pCallbacks[eEvent] = nullptr;
+		if (callbacks[eEvent] == pnNetworkCallback) callbacks[eEvent] = nullptr;
 	}
 
 private:
-	bool PopEvent(C4InteractiveEventType *pEventType, std::any *data); // by main thread
+	bool PopEvent(C4InteractiveEventType &eventType, std::any &data); // by main thread
 };

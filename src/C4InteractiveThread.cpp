@@ -27,22 +27,22 @@
 
 C4InteractiveThread::C4InteractiveThread()
 {
-	// Add head-item
-	pFirstEvent = pLastEvent = new Event();
-	pFirstEvent->Type = Ev_None;
-	pFirstEvent->Next = nullptr;
 	// reset event handlers
-	std::fill(pCallbacks, std::end(pCallbacks), nullptr);
+	callbacks.fill(nullptr);
 }
 
 C4InteractiveThread::~C4InteractiveThread()
 {
-	CStdLock PushLock(&EventPushCSec), PopLock(&EventPopCSec);
+	const CStdLock PushLock(&EventPushCSec);
+	const CStdLock PopLock(&EventPopCSec);
+
 	// Remove all items. This may leak data, if pData was allocated on the heap.
-	while (PopEvent(nullptr, nullptr));
-	// Delete head-item
-	delete pFirstEvent;
-	pFirstEvent = pLastEvent = nullptr;
+	while (!events.empty())
+	{
+		events.pop();
+	}
+
+	destroyed = true;
 }
 
 bool C4InteractiveThread::AddProc(StdSchedulerProc *pProc)
@@ -69,30 +69,26 @@ void C4InteractiveThread::RemoveProc(StdSchedulerProc *pProc)
 	Scheduler.Remove(pProc);
 }
 
-bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, const std::any &data)
+bool C4InteractiveThread::PushEvent(C4InteractiveEventType eventType, const std::any &data)
 {
 	CStdLock PushLock(&EventPushCSec);
-	if (!pLastEvent) return false;
-	// create event
-	Event *pEvent = new Event;
-	pEvent->Type = eEvent;
-	pEvent->Data = data;
+	if (destroyed) return false;
+
 #ifdef _DEBUG
-	pEvent->Time = timeGetTime();
+	events.push(Event{eventType, data, timeGetTime()});
+#else
+	events.push(Event{eventType, data});
 #endif
-	pEvent->Next = nullptr;
-	// add item (at end)
-	pLastEvent->Next = pEvent;
-	pLastEvent = pEvent;
+
 	PushLock.Clear();
 #ifdef _WIN32
 	// post message to main thread
-	bool fSuccess = !!SetEvent(Application.hNetworkEvent);
-	if (!fSuccess)
+	const bool success = SetEvent(Application.hNetworkEvent);
+	if (!success)
 		// ThreadLog most likely won't work here, so Log will be used directly in hope
 		// it doesn't screw too much
 		LogFatal("Network: could not post message to main thread!");
-	return fSuccess;
+	return success;
 #else
 	return Application.SignalNetworkEvent();
 #endif
@@ -102,41 +98,41 @@ bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, const std::an
 double AvgNetEvDelay = 0;
 #endif
 
-bool C4InteractiveThread::PopEvent(C4InteractiveEventType *pEventType, std::any *data) // (by main thread)
+bool C4InteractiveThread::PopEvent(C4InteractiveEventType &eventType, std::any &data) // (by main thread)
 {
 	CStdLock PopLock(&EventPopCSec);
-	if (!pFirstEvent) return false;
+	if (events.empty() || destroyed) return false;
 	// get event
-	Event *pEvent = pFirstEvent->Next;
-	if (!pEvent) return false;
+	const Event &event{events.front()};
+
 	// return
-	if (pEventType)
-		*pEventType = pEvent->Type;
-	if (data)
-		*data = pEvent->Data;
+	eventType = event.Type;
+	data = event.Data;
+
 #ifdef _DEBUG
 	if (Game.IsRunning)
-		AvgNetEvDelay += ((timeGetTime() - pEvent->Time) - AvgNetEvDelay) / 100;
+		AvgNetEvDelay += ((timeGetTime() - event.Time) - AvgNetEvDelay) / 100;
 #endif
 	// remove
-	delete pFirstEvent;
-	pFirstEvent = pEvent;
-	pFirstEvent->Type = Ev_None;
+	events.pop();
 	return true;
 }
 
 void C4InteractiveThread::ProcessEvents() // by main thread
 {
-	C4InteractiveEventType eEventType; std::any eventData;
-	while (PopEvent(&eEventType, &eventData))
-		switch (eEventType)
+	C4InteractiveEventType eventType;
+	std::any eventData;
+
+	while (PopEvent(eventType, eventData))
+	{
+		switch (eventType)
 		{
 		// Logging
 		case Ev_Log: case Ev_LogSilent: case Ev_LogFatal:
 		{
 			// Reconstruct the StdStrBuf which allocated the data.
 			auto log = std::any_cast<const StdStrBuf &>(eventData);
-			switch (eEventType)
+			switch (eventType)
 			{
 			case Ev_Log:
 				Log(log.getData()); break;
@@ -154,11 +150,14 @@ void C4InteractiveThread::ProcessEvents() // by main thread
 
 		// Other events: check for a registered handler
 		default:
-			if (eEventType >= Ev_None && eEventType <= Ev_Last)
-				if (pCallbacks[eEventType])
-					pCallbacks[eEventType]->OnThreadEvent(eEventType, eventData);
+			if (eventType >= Ev_None && eventType <= Ev_Last && callbacks[eventType])
+			{
+				callbacks[eventType]->OnThreadEvent(eventType, eventData);
+			}
+
 			// Note that memory might leak if the event wasn't processed....
 		}
+	}
 }
 
 bool C4InteractiveThread::ThreadLog(const char *szMessage)
