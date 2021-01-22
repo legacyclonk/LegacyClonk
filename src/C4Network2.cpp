@@ -119,11 +119,17 @@ void C4Network2Status::CompileFunc(StdCompiler *pComp, bool fReference)
 // *** C4Network2
 
 #ifndef USE_CONSOLE
+
+std::optional<C4Toast> C4Network2::ReadyCheckDialog::toast = {};
+
 C4Network2::ReadyCheckDialog::ReadyCheckDialog()
 	: TimedDialog{15, "", LoadResStr("IDS_DLG_READYCHECK"), btnYesNo, C4GUI::Ico_GameRunning}
 {
 	SetFocus(nullptr, false);
 	UpdateText();
+
+	toast->SetEventHandler(this);
+	toast->Show();
 }
 
 void C4Network2::ReadyCheckDialog::UpdateText()
@@ -135,7 +141,49 @@ void C4Network2::ReadyCheckDialog::UpdateText()
 			&text,
 			false
 			);
+
+	if (!toast)
+	{
+		StdStrBuf toastText;
+		toastText.Copy(text);
+		toastText.Replace("|", "\n");
+
+		toast.emplace();
+		toast->AddAction(LoadResStrNoAmp("IDS_DLG_YES"));
+		toast->AddAction(LoadResStrNoAmp("IDS_DLG_NO"));
+		toast->SetTitle(LoadResStr("IDS_DLG_READYCHECK"));
+		toast->SetText(toastText.getData());
+		toast->SetExpiration(1000 * GetRemainingTime());
+	}
+
 	SetText(text.getData());
+}
+
+void C4Network2::ReadyCheckDialog::OnClosed(bool)
+{
+	if (toast)
+	{
+		toast->SetEventHandler(nullptr);
+		toast->Hide();
+	}
+}
+
+bool C4Network2::ReadyCheckDialog::Activated()
+{
+	Close(true);
+	return true;
+}
+
+bool C4Network2::ReadyCheckDialog::OnAction(std::string_view action)
+{
+	Close(action == LoadResStrNoAmp("IDS_DLG_YES"));
+	return true;
+}
+
+bool C4Network2::ReadyCheckDialog::Dismissed()
+{
+	Close(false);
+	return true;
 }
 #endif
 

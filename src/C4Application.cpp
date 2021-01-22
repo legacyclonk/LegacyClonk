@@ -245,6 +245,12 @@ bool C4Application::PreInit()
 	// Sound
 	SoundSystem.emplace();
 
+	// Toasts
+	if (!ToastSystem)
+	{
+		ToastSystem.reset(C4ToastSystem::NewInstance());
+	}
+
 	Game.SetInitProgress(fDoUseStartupDialog ? 30.0f : 3.0f);
 
 	AppState = fDoUseStartupDialog ? C4AS_Startup : C4AS_StartGame;

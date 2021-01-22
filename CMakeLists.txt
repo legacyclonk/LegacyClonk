@@ -304,6 +304,7 @@ endif ()
 
 # Link Windows libraries
 if (WIN32)
+	target_include_directories(clonk PRIVATE src/WinToast/src)
 	target_link_libraries(clonk dbghelp iphlpapi winmm ws2_32)
 
 	if (USE_SDL_MIXER)
