@@ -24,8 +24,7 @@
 #include <C4Log.h>
 
 #ifdef WITH_DEVELOPER_MODE
-#include <gtk/gtkmain.h>
-#include <gtk/gtkmessagedialog.h>
+#include <gtk/gtk.h>
 #endif
 
 // debug memory management

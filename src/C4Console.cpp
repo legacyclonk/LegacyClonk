@@ -66,24 +66,7 @@ namespace
 
 #include <gdk/gdkcursor.h>
 #include <gdk/gdkx.h>
-#include <gtk/gtkstock.h>
-#include <gtk/gtkwindow.h>
-#include <gtk/gtkmessagedialog.h>
-#include <gtk/gtkfilechooserdialog.h>
-#include <gtk/gtkaboutdialog.h>
-#include <gtk/gtklabel.h>
-#include <gtk/gtkbutton.h>
-#include <gtk/gtktogglebutton.h>
-#include <gtk/gtkhbox.h>
-#include <gtk/gtkvbox.h>
-#include <gtk/gtkscrolledwindow.h>
-#include <gtk/gtkentry.h>
-#include <gtk/gtkframe.h>
-#include <gtk/gtkvseparator.h>
-#include <gtk/gtktextview.h>
-#include <gtk/gtkmenubar.h>
-#include <gtk/gtkmenuitem.h>
-#include <gtk/gtkseparatormenuitem.h>
+#include <gtk/gtk.h>
 
 #include <res/Play.h>
 #include <res/Halt.h>
@@ -404,9 +387,9 @@ GtkWidget *C4Console::InitGUI()
 	gtk_container_add(GTK_CONTAINER(btnModeEdit), image_mode_edit);
 	gtk_container_add(GTK_CONTAINER(btnModeDraw), image_mode_draw);
 
-	GtkWidget *top_hbox = gtk_hbox_new(FALSE, 18);
-	GtkWidget *play_hbox = gtk_hbox_new(FALSE, 6);
-	GtkWidget *mode_hbox = gtk_hbox_new(FALSE, 6);
+	GtkWidget *top_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 18);
+	GtkWidget *play_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+	GtkWidget *mode_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 
 	gtk_box_pack_start(GTK_BOX(play_hbox), btnPlay,     FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(play_hbox), btnHalt,     FALSE, TRUE, 0);
@@ -423,7 +406,7 @@ GtkWidget *C4Console::InitGUI()
 
 	// Statusbar
 
-	GtkWidget *statusbar = gtk_hbox_new(FALSE, 6);
+	GtkWidget *statusbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 
 	GtkWidget *status_frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(status_frame), GTK_SHADOW_IN);
@@ -437,8 +420,8 @@ GtkWidget *C4Console::InitGUI()
 	gtk_misc_set_alignment(GTK_MISC(lblScript), 0.0, 0.5);
 	gtk_misc_set_alignment(GTK_MISC(lblTime), 0.0, 0.5);
 
-	GtkWidget *sep1 = gtk_vseparator_new();
-	GtkWidget *sep2 = gtk_vseparator_new();
+	GtkWidget *sep1 = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+	GtkWidget *sep2 = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
 
 	gtk_box_pack_start(GTK_BOX(statusbar), lblFrame,  TRUE,  TRUE,  0);
 	gtk_box_pack_start(GTK_BOX(statusbar), sep1,      FALSE, FALSE, 0);
@@ -544,8 +527,8 @@ GtkWidget *C4Console::InitGUI()
 
 	// Window
 
-	GtkWidget *topbox = gtk_vbox_new(FALSE, 0);
-	GtkWidget *midbox = gtk_vbox_new(FALSE, 6);
+	GtkWidget *topbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	GtkWidget *midbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 	gtk_container_set_border_width(GTK_CONTAINER(midbox), 6);
 
 	gtk_box_pack_start(GTK_BOX(midbox), scroll,    TRUE,  TRUE,  0);
@@ -760,7 +743,7 @@ bool C4Console::SaveGame(bool fSaveGame)
 	SetCursor(LoadCursor(0, IDC_WAIT));
 #elif WITH_DEVELOPER_MODE
 	// Seems not to work. Don't know why...
-	gdk_window_set_cursor(window->window, cursorWait);
+	gdk_window_set_cursor(gtk_widget_get_window(window), cursorWait);
 #endif
 
 	C4GameSave *pGameSave;
@@ -787,7 +770,7 @@ bool C4Console::SaveGame(bool fSaveGame)
 #ifdef _WIN32
 	SetCursor(LoadCursor(0, IDC_ARROW));
 #elif WITH_DEVELOPER_MODE
-	gdk_window_set_cursor(window->window, nullptr);
+	gdk_window_set_cursor(gtk_widget_get_window(window), nullptr);
 #endif
 
 	// Initialize/script notification
@@ -1027,7 +1010,7 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 	SetCurrentDirectory(Config.General.ExePath);
 	return fResult;
 #elif WITH_DEVELOPER_MODE
-	GtkWidget *dialog = gtk_file_chooser_dialog_new(fSave ? "Save file..." : "Load file...", GTK_WINDOW(window), fSave ? GTK_FILE_CHOOSER_ACTION_SAVE : GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, fSave ? GTK_STOCK_SAVE : GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, nullptr);
+	GtkWidget *dialog = gtk_file_chooser_dialog_new(fSave ? "Save file..." : "Load file...", GTK_WINDOW(window), fSave ? GTK_FILE_CHOOSER_ACTION_SAVE : GTK_FILE_CHOOSER_ACTION_OPEN, "format-text-bold", GTK_RESPONSE_CANCEL, fSave ? "document-save" : "document-open", GTK_RESPONSE_ACCEPT, nullptr);
 
 	// TODO: Set dialog modal?
 

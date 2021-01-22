@@ -336,11 +336,14 @@ if (NOT USE_CONSOLE)
 	set(HAVE_FREETYPE 1)
 endif ()
 
-# Link GTK2
+# Link GTK3
 if (WITH_DEVELOPER_MODE)
 	set(WITH_GLIB 1)
-	find_package(GTK2 2.4 REQUIRED gtk)
-	target_link_libraries(clonk GTK2::gtk)
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+	target_include_directories(clonk PRIVATE ${GTK3_INCLUDE_DIRS})
+	target_link_libraries(clonk ${GTK3_LIBRARIES})
+	target_compile_definitions(clonk PRIVATE GTK_DISABLE_SINGLE_INCLUDES GDK_DISABLE_DEPRECATED GSEAL_ENABLE)
 endif ()
 
 # Link iconv

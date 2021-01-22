@@ -27,7 +27,7 @@
 #endif
 
 #ifdef WITH_DEVELOPER_MODE
-#include <gtk/gtkwidget.h>
+#include <gtk/gtk.h>
 #endif
 
 const int32_t C4TLS_Brush  = 0,

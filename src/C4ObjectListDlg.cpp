@@ -25,8 +25,6 @@
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtk.h>
-#include <gtk/gtknotebook.h>
-#include <gtk/gtklabel.h>
 
 /* Some boilerplate GObject defines. 'klass' is used instead of 'class', because 'class' is a C++ keyword */
 
@@ -745,7 +743,7 @@ void C4ObjectListDlg::Open()
 		g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(OnDestroy), this);
 
 		// The VBox and Tree
-		GtkWidget *vbox = gtk_vbox_new(FALSE, 8);
+		GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
 
 		GtkWidget *scrolled_wnd = gtk_scrolled_window_new(nullptr, nullptr);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_wnd), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

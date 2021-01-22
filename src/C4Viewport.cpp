@@ -46,12 +46,7 @@
 #ifdef WITH_DEVELOPER_MODE
 #include <gdk/gdkx.h>
 #include <gdk/gdkkeysyms.h>
-#include <gtk/gtktable.h>
-#include <gtk/gtkdnd.h>
-#include <gtk/gtkselection.h>
-#include <gtk/gtkdrawingarea.h>
-#include <gtk/gtkhscrollbar.h>
-#include <gtk/gtkvscrollbar.h>
+#include <gtk/gtk.h>
 #endif
 #endif
 
@@ -311,14 +306,14 @@ GtkWidget *C4ViewportWindow::InitGUI()
 	GtkWidget *table;
 
 	drawing_area = gtk_drawing_area_new();
-	h_scrollbar = gtk_hscrollbar_new(nullptr);
-	v_scrollbar = gtk_vscrollbar_new(nullptr);
+	h_scrollbar = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, nullptr);
+	v_scrollbar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, nullptr);
 	table = gtk_table_new(2, 2, FALSE);
 
 	GtkAdjustment *adjustment = gtk_range_get_adjustment(GTK_RANGE(h_scrollbar));
-	adjustment->lower = 0;
-	adjustment->upper = GBackWdt;
-	adjustment->step_increment = ViewportScrollSpeed;
+	gtk_adjustment_set_lower(adjustment, 0);
+	gtk_adjustment_set_upper(adjustment, GBackWdt);
+	gtk_adjustment_set_step_increment(adjustment, ViewportScrollSpeed);
 
 	g_signal_connect(
 		G_OBJECT(adjustment),
@@ -328,9 +323,9 @@ GtkWidget *C4ViewportWindow::InitGUI()
 	);
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(v_scrollbar));
-	adjustment->lower = 0;
-	adjustment->upper = GBackHgt;
-	adjustment->step_increment = ViewportScrollSpeed;
+	gtk_adjustment_set_lower(adjustment, 0);
+	gtk_adjustment_set_upper(adjustment, GBackHgt);
+	gtk_adjustment_set_step_increment(adjustment, ViewportScrollSpeed);
 
 	g_signal_connect(
 		G_OBJECT(adjustment),
@@ -391,16 +386,18 @@ bool C4Viewport::ScrollBarsByViewPosition()
 {
 	if (PlayerLock) return false;
 
+	GtkAllocation allocation;
+	gtk_widget_get_allocation(pWindow->drawing_area, &allocation);
 	GtkAdjustment *adjustment = gtk_range_get_adjustment(GTK_RANGE(pWindow->h_scrollbar));
-	adjustment->page_increment = pWindow->drawing_area->allocation.width;
-	adjustment->page_size = pWindow->drawing_area->allocation.width;
-	adjustment->value = ViewX;
+	gtk_adjustment_set_page_increment(adjustment, allocation.width);
+	gtk_adjustment_set_page_size(adjustment, allocation.width);
+	gtk_adjustment_set_value(adjustment, ViewX);
 	gtk_adjustment_changed(adjustment);
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(pWindow->v_scrollbar));
-	adjustment->page_increment = pWindow->drawing_area->allocation.height;
-	adjustment->page_size = pWindow->drawing_area->allocation.height;
-	adjustment->value = ViewY;
+	gtk_adjustment_set_page_increment(adjustment, allocation.height);
+	gtk_adjustment_set_page_size(adjustment, allocation.height);
+	gtk_adjustment_set_value(adjustment, ViewY);
 	gtk_adjustment_changed(adjustment);
 
 	return true;
@@ -411,10 +408,10 @@ bool C4Viewport::ViewPositionByScrollBars()
 	if (PlayerLock) return false;
 
 	GtkAdjustment *adjustment = gtk_range_get_adjustment(GTK_RANGE(pWindow->h_scrollbar));
-	ViewX = static_cast<int32_t>(adjustment->value);
+	ViewX = static_cast<int32_t>(gtk_adjustment_get_value(adjustment));
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(pWindow->v_scrollbar));
-	ViewY = static_cast<int32_t>(adjustment->value);
+	ViewY = static_cast<int32_t>(gtk_adjustment_get_value(adjustment));
 
 	return true;
 }
@@ -461,15 +458,15 @@ void C4ViewportWindow::OnRealizeStatic(GtkWidget *widget, gpointer user_data)
 
 gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-	if (event->keyval == GDK_Scroll_Lock)
+	if (event->keyval == GDK_KEY_Scroll_Lock)
 		static_cast<C4ViewportWindow *>(user_data)->cvp->TogglePlayerLock();
 #ifndef NDEBUG
 	switch (event->keyval)
 	{
-	case GDK_1: Config.Graphics.BlitOffset -= 0.05; printf("%f\n", Config.Graphics.BlitOffset); break;
-	case GDK_2: Config.Graphics.BlitOffset += 0.05; printf("%f\n", Config.Graphics.BlitOffset); break;
-	case GDK_3: Config.Graphics.TexIndent  -= 0.05; printf("%f\n", Config.Graphics.TexIndent);  break;
-	case GDK_4: Config.Graphics.TexIndent  += 0.05; printf("%f\n", Config.Graphics.TexIndent);  break;
+	case GDK_KEY_1: Config.Graphics.BlitOffset -= 0.05; printf("%f\n", Config.Graphics.BlitOffset); break;
+	case GDK_KEY_2: Config.Graphics.BlitOffset += 0.05; printf("%f\n", Config.Graphics.BlitOffset); break;
+	case GDK_KEY_3: Config.Graphics.TexIndent  -= 0.05; printf("%f\n", Config.Graphics.TexIndent);  break;
+	case GDK_KEY_4: Config.Graphics.TexIndent  += 0.05; printf("%f\n", Config.Graphics.TexIndent);  break;
 	}
 #endif
 	uint32_t key = XkbKeycodeToKeysym(GDK_WINDOW_XDISPLAY(event->window), event->hardware_keycode, 0, 0);
@@ -788,11 +785,13 @@ bool C4Viewport::UpdateOutputSize()
 	// Output size
 	C4Rect rect;
 #ifdef WITH_DEVELOPER_MODE
+	GtkAllocation allocation;
+	gtk_widget_get_allocation(pWindow->drawing_area, &allocation);
 	// Use only size of drawing area without scrollbars
-	rect.x = pWindow->drawing_area->allocation.x;
-	rect.y = pWindow->drawing_area->allocation.y;
-	rect.Wdt = pWindow->drawing_area->allocation.width;
-	rect.Hgt = pWindow->drawing_area->allocation.height;
+	rect.x = allocation.x;
+	rect.y = allocation.y;
+	rect.Wdt = allocation.x + allocation.width;
+	rect.Hgt = allocation.y + allocation.height;
 #else
 	if (!pWindow->GetSize(rect)) return false;
 #endif

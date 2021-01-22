@@ -35,14 +35,6 @@
 #include <C4Language.h>
 #include <C4DevmodeDlg.h>
 
-#include <gtk/gtkwindow.h>
-#include <gtk/gtkimage.h>
-#include <gtk/gtktogglebutton.h>
-#include <gtk/gtkvscale.h>
-#include <gtk/gtkhbox.h>
-#include <gtk/gtkvbox.h>
-#include <gtk/gtkcombobox.h>
-#include <gtk/gtkstock.h>
 #include <gtk/gtk.h>
 
 #include <res/Brush.h>
@@ -284,8 +276,8 @@ bool C4ToolsDlg::Open()
 #elif defined(WITH_DEVELOPER_MODE)
 	if (hbox == nullptr)
 	{
-		hbox = gtk_hbox_new(FALSE, 12);
-		GtkWidget *vbox = gtk_vbox_new(FALSE, 6);
+		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+		GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 
 		GtkWidget *image_brush =  CreateImageFromInlinedPixbuf(brush_pixbuf_data);
 		GtkWidget *image_line =   CreateImageFromInlinedPixbuf(line_pixbuf_data);
@@ -313,9 +305,9 @@ bool C4ToolsDlg::Open()
 		gtk_box_pack_start(GTK_BOX(vbox), landscape_exact,   FALSE, FALSE, 0);
 
 		gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, FALSE, 0);
-		vbox = gtk_vbox_new(FALSE, 12);
+		vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
 		gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE,  TRUE,  0);
-		GtkWidget *local_hbox = gtk_hbox_new(FALSE, 6);
+		GtkWidget *local_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 
 		brush =  gtk_toggle_button_new();
 		line =   gtk_toggle_button_new();
@@ -336,16 +328,16 @@ bool C4ToolsDlg::Open()
 		gtk_box_pack_start(GTK_BOX(local_hbox), picker, FALSE, FALSE, 0);
 
 		gtk_box_pack_start(GTK_BOX(vbox), local_hbox, FALSE, FALSE, 0);
-		local_hbox = gtk_hbox_new(FALSE, 12);
+		local_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
 		gtk_box_pack_start(GTK_BOX(vbox), local_hbox, TRUE,  TRUE,  0);
 
 		preview = gtk_image_new();
 		gtk_box_pack_start(GTK_BOX(local_hbox), preview, FALSE, FALSE, 0);
 
-		scale = gtk_vscale_new(nullptr);
+		scale = gtk_scale_new(GTK_ORIENTATION_VERTICAL, nullptr);
 		gtk_box_pack_start(GTK_BOX(local_hbox), scale, FALSE, FALSE, 0);
 
-		vbox = gtk_vbox_new(FALSE, 6);
+		vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 
 		ift = gtk_toggle_button_new();
 		no_ift = gtk_toggle_button_new();
@@ -358,10 +350,10 @@ bool C4ToolsDlg::Open()
 
 		gtk_box_pack_start(GTK_BOX(local_hbox), vbox, FALSE, FALSE, 0);
 
-		vbox = gtk_vbox_new(FALSE, 6);
+		vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 
-		materials = gtk_combo_box_new_text();
-		textures =  gtk_combo_box_new_text();
+		materials = gtk_combo_box_text_new();
+		textures =  gtk_combo_box_text_new();
 
 		gtk_combo_box_set_row_separator_func(GTK_COMBO_BOX(materials), RowSeparatorFunc, nullptr, nullptr);
 		gtk_combo_box_set_row_separator_func(GTK_COMBO_BOX(textures),  RowSeparatorFunc, nullptr, nullptr);
@@ -491,10 +483,10 @@ void C4ToolsDlg::InitMaterialCtrls()
 	g_signal_handler_block(materials, handlerMaterials);
 	gtk_list_store_clear(list);
 
-	gtk_combo_box_append_text(GTK_COMBO_BOX(materials), C4TLS_MatSky);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(materials), C4TLS_MatSky);
 	for (int32_t cnt = 0; cnt < Game.Material.Num; cnt++)
 	{
-		gtk_combo_box_append_text(GTK_COMBO_BOX(materials), Game.Material.Map[cnt].Name);
+		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(materials), Game.Material.Map[cnt].Name);
 	}
 	g_signal_handler_unblock(materials, handlerMaterials);
 	SelectComboBoxText(GTK_COMBO_BOX(materials), Material);
@@ -523,7 +515,7 @@ void C4ToolsDlg::UpdateTextures()
 #ifdef _WIN32
 				SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(szTexture));
 #elif defined(WITH_DEVELOPER_MODE)
-				gtk_combo_box_prepend_text(GTK_COMBO_BOX(textures), szTexture);
+				gtk_combo_box_text_prepend_text(GTK_COMBO_BOX_TEXT(textures), szTexture);
 #endif
 			}
 		}
@@ -533,7 +525,7 @@ void C4ToolsDlg::UpdateTextures()
 #ifdef _WIN32
 		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>("-------"));
 #elif defined(WITH_DEVELOPER_MODE)
-		gtk_combo_box_prepend_text(GTK_COMBO_BOX(textures), "-------");
+		gtk_combo_box_text_prepend_text(GTK_COMBO_BOX_TEXT(textures), "-------");
 #endif
 	}
 
@@ -546,7 +538,7 @@ void C4ToolsDlg::UpdateTextures()
 #ifdef _WIN32
 			SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(szTexture));
 #elif defined(WITH_DEVELOPER_MODE)
-			gtk_combo_box_prepend_text(GTK_COMBO_BOX(textures), szTexture);
+			gtk_combo_box_text_prepend_text(GTK_COMBO_BOX_TEXT(textures), szTexture);
 #endif
 		}
 	}
@@ -667,7 +659,7 @@ void C4ToolsDlg::UpdatePreview()
 #ifdef _WIN32
 	if (IsWindowEnabled(GetDlgItem(hDialog, IDC_PREVIEW)))
 #elif defined(WITH_DEVELOPER_MODE)
-	if (GTK_WIDGET_SENSITIVE(preview))
+	if (gtk_widget_get_sensitive(preview))
 #endif
 		Application.DDraw->DrawPatternedCircle(surfacePreview.get(),
 			previewWidth / 2, previewHeight / 2,
@@ -1043,14 +1035,14 @@ void C4ToolsDlg::OnButtonNoIft(GtkWidget *widget, gpointer data)
 
 void C4ToolsDlg::OnComboMaterial(GtkWidget *widget, gpointer data)
 {
-	gchar *text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(widget));
+	gchar *text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget));
 	static_cast<C4ToolsDlg *>(data)->SetMaterial(text);
 	g_free(text);
 }
 
 void C4ToolsDlg::OnComboTexture(GtkWidget *widget, gpointer data)
 {
-	gchar *text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(widget));
+	gchar *text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget));
 	static_cast<C4ToolsDlg *>(data)->SetTexture(text);
 	g_free(text);
 }
