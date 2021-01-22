@@ -21,9 +21,10 @@
 
 #include "res/lc.xpm"
 #include <X11/Xlib.h>
+#include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gdk/gdkkeysyms.h>
-#include <gtk/gtklayout.h>
+#include <gtk/gtk.h>
 
 /* CStdGtkWindow */
 
@@ -55,7 +56,7 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 
 	GtkWidget *render_widget = InitGUI();
 
-	gtk_widget_set_colormap(render_widget, gdk_colormap_new(gdkx_visual_get(((XVisualInfo *)Info)->visualid), TRUE));
+	gtk_widget_set_visual(render_widget, gdk_x11_screen_lookup_visual(gtk_window_get_screen(GTK_WINDOW(window)), static_cast<XVisualInfo *>(Info)->visualid));
 
 	gtk_widget_show_all(window);
 
@@ -65,30 +66,32 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 
 	gtk_window_set_title(GTK_WINDOW(window), Title);
 
+	auto *gdkWindow = gtk_widget_get_window(window);
+
 	// Wait until window is mapped to get the window's XID
 	gtk_widget_show_now(window);
-	wnd = GDK_WINDOW_XWINDOW(window->window);
-	gdk_window_add_filter(window->window, OnFilter, this);
+	wnd = gdk_x11_window_get_xid(gdkWindow);
+	gdk_window_add_filter(gdkWindow, OnFilter, this);
 
 	XWMHints *wm_hint = XGetWMHints(dpy, wnd);
 	if (!wm_hint) wm_hint = XAllocWMHints();
 	Hints = wm_hint;
 
 	if (GTK_IS_LAYOUT(render_widget))
-		renderwnd = GDK_WINDOW_XWINDOW(GTK_LAYOUT(render_widget)->bin_window);
+		renderwnd = gdk_x11_window_get_xid(gtk_layout_get_bin_window(GTK_LAYOUT(render_widget)));
 	else
-		renderwnd = GDK_WINDOW_XWINDOW(render_widget->window);
+		renderwnd = gdk_x11_window_get_xid(gtk_widget_get_window(render_widget));
 
 	if (pParent) XSetTransientForHint(dpy, wnd, pParent->wnd);
 
 	if (HideCursor)
 	{
-		gdk_window_set_cursor(window->window, nullptr);
+		gdk_window_set_cursor(gdkWindow, nullptr);
 	}
 
 	// Make sure the window is shown and ready to be rendered into,
 	// this avoids an async X error.
-	gdk_flush();
+	gdk_display_flush(gdk_display_get_default());
 
 	return this;
 }
@@ -147,9 +150,9 @@ gboolean CStdGtkWindow::OnUpdateKeyMask(GtkWidget *widget, GdkEventKey *event, g
 
 	// For keypress/relases, event->state contains the state _before_
 	// the event, but we need to store the current state.
-	if (event->keyval == GDK_Shift_L   || event->keyval == GDK_Shift_R)   mask ^= MK_SHIFT;
-	if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) mask ^= MK_CONTROL;
-	if (event->keyval == GDK_Alt_L     || event->keyval == GDK_Alt_R)     mask ^= (1 << 3);
+	if (event->keyval == GDK_KEY_Shift_L   || event->keyval == GDK_KEY_Shift_R)   mask ^= MK_SHIFT;
+	if (event->keyval == GDK_KEY_Control_L || event->keyval == GDK_KEY_Control_R) mask ^= MK_CONTROL;
+	if (event->keyval == GDK_KEY_Alt_L     || event->keyval == GDK_KEY_Alt_R)     mask ^= (1 << 3);
 
 	static_cast<CStdApp *>(user_data)->KeyMask = mask;
 	return FALSE;

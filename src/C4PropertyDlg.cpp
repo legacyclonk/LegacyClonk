@@ -31,11 +31,7 @@
 #include <C4DevmodeDlg.h>
 #include <C4Language.h>
 
-#include <gtk/gtkentry.h>
-#include <gtk/gtkvbox.h>
-#include <gtk/gtktextview.h>
-#include <gtk/gtkwindow.h>
-#include <gtk/gtkscrolledwindow.h>
+#include <gtk/gtk.h>
 #endif
 
 #ifdef _WIN32
@@ -119,7 +115,7 @@ bool C4PropertyDlg::Open()
 #ifdef WITH_DEVELOPER_MODE
 	if (vbox == nullptr)
 	{
-		vbox = gtk_vbox_new(FALSE, 6);
+		vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 
 		GtkWidget *scrolled_wnd = gtk_scrolled_window_new(nullptr, nullptr);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_wnd), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

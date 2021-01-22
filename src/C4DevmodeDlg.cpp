@@ -22,8 +22,7 @@
 
 #ifdef WITH_DEVELOPER_MODE
 
-#include <gtk/gtknotebook.h>
-#include <gtk/gtklabel.h>
+#include <gtk/gtk.h>
 
 GtkWidget *C4DevmodeDlg::window = nullptr;
 GtkWidget *C4DevmodeDlg::notebook = nullptr;
@@ -89,7 +88,7 @@ void C4DevmodeDlg::RemovePage(GtkWidget *widget)
 
 void C4DevmodeDlg::SwitchPage(GtkWidget *widget)
 {
-	bool is_visible = GTK_WIDGET_VISIBLE(GTK_WIDGET(window));
+	bool is_visible = gtk_widget_get_visible(GTK_WIDGET(window));
 
 	// Remember window position
 	if (window != nullptr && is_visible)
