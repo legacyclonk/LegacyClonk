@@ -2371,6 +2371,17 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 			RoundResults.Init();
 		}
 
+
+	// Denumerate game data pointers
+	if (!section) ScriptEngine.DenumerateVariablePointers();
+	if (!section && pGlobalEffects) pGlobalEffects->DenumeratePointers();
+
+	// Check object enumeration
+	if (!CheckObjectEnumeration()) return false;
+
+	// Okay; everything in denumerated state from now on
+	PointersDenumerated = true;
+
 	for (const auto &def : Defs)
 	{
 		def->Script.Call(PSF_InitializeDef, {section ? C4VString(section->szName) : C4VNull});
@@ -2396,16 +2407,6 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 	// FoW-color
 	FoWColor = C4S.Game.FoWColor;
-
-	// Denumerate game data pointers
-	if (!section) ScriptEngine.DenumerateVariablePointers();
-	if (!section && pGlobalEffects) pGlobalEffects->DenumeratePointers();
-
-	// Check object enumeration
-	if (!CheckObjectEnumeration()) return false;
-
-	// Okay; everything in denumerated state from now on
-	PointersDenumerated = true;
 
 	// goal objects exist, but no GOAL? create it
 	if (!C4S.Head.SaveGame)
