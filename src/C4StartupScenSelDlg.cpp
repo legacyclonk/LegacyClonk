@@ -669,7 +669,7 @@ bool C4ScenarioListLoader::Entry::SetTitleInGroup(C4Group &rGrp, const char *szN
 		if (SEqual(szNewTitle, sNameByFile.getData())) return true;
 	}
 	// okay, make a title
-	StdStrBuf sTitle; sTitle.Format("%s:%s", Config.General.Language, szNewTitle);
+	StdStrBuf sTitle; sTitle.Format("%.2s:%s", Config.General.Language, szNewTitle);
 	if (!rGrp.Add(C4CFN_WriteTitle, sTitle, false, true))
 	{
 		StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_ERRORADDINGNEWTITLEFORFIL"), sFilename.getData(), rGrp.GetError());
