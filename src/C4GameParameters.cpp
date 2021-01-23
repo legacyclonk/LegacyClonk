@@ -257,10 +257,16 @@ bool C4GameResList::RetrieveFiles()
 	// wait for all resources
 	for (const auto &it : resList)
 	{
-		const C4Network2ResCore &Core = *it->getResCore();
-		StdStrBuf ResNameBuf = FormatString("%s: %s", LoadResStr("IDS_DLG_DEFINITION"), GetFilename(Core.getFileName()));
-		if (!Game.Network.RetrieveRes(Core, C4NetResRetrieveTimeout, ResNameBuf.getData()))
+		if (const C4Network2ResCore *const core{it->getResCore()}; core)
+		{
+			StdStrBuf ResNameBuf = FormatString("%s: %s", LoadResStr("IDS_DLG_DEFINITION"), GetFilename(core->getFileName()));
+			if (!Game.Network.RetrieveRes(*core, C4NetResRetrieveTimeout, ResNameBuf.getData()))
+				return false;
+		}
+		else
+		{
 			return false;
+		}
 	}
 	return true;
 }
