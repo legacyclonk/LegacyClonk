@@ -19,6 +19,7 @@
 #include "StdStringEncodingConverter.h"
 
 #include <functional>
+#include <memory>
 #include <stdexcept>
 
 using namespace WinToastLib;
@@ -58,6 +59,19 @@ void C4ToastImplWinToastLib::SetExpiration(const std::uint32_t expiration)
 	toastTemplate.setExpiration(expiration);
 }
 
+void C4ToastImplWinToastLib::SetEventHandler(C4ToastEventHandler *const eventHandler)
+{
+	C4ToastImpl::SetEventHandler(eventHandler);
+	if (eventHandler)
+	{
+		eventHandlerGuard = std::shared_ptr<C4ToastEventHandler>{eventHandler, [](auto) {}};
+	}
+	else
+	{
+		eventHandlerGuard.reset();
+	}
+}
+
 void C4ToastImplWinToastLib::SetText(const std::string_view text)
 {
 	toastTemplate.setSecondLine(StdStringEncodingConverter{}.WinAcpToUtf16(text.data()));
@@ -73,39 +87,43 @@ namespace
 	class C4WinToastEventHandler final : public IWinToastHandler
 	{
 	public:
-		C4WinToastEventHandler(C4ToastEventHandler *&eventHandler, std::vector<std::string> actions) : eventHandler{eventHandler}, actions{actions} {}
+		C4WinToastEventHandler(std::weak_ptr<C4ToastEventHandler> eventHandler, std::vector<std::string> actions) : eventHandler{eventHandler}, actions{actions} {}
 
 	public:
 		void toastActivated() const override
 		{
-			Call([this]{ return eventHandler->Activated(); });
+			if (const auto lock = eventHandler.lock(); lock)
+			{
+				lock->Activated();
+			}
 		}
 
 		void toastActivated(int actionIndex) const override
 		{
-			Call([this, actionIndex]{ return eventHandler->OnAction(actions.at(actionIndex)); }); // yes, this throws out_of_range if the index is invalid
+			if (const auto lock = eventHandler.lock(); lock)
+			{
+				lock->OnAction(actions.at(actionIndex)); // yes, this throws out_of_range if the index is invalid
+			}
 		}
 
 		void toastDismissed(WinToastDismissalReason) const override
 		{
-			Call([this]{ return eventHandler->Dismissed(); });
+			if (const auto lock = eventHandler.lock(); lock)
+			{
+				lock->Dismissed();
+			}
 		}
 
 		void toastFailed() const override
 		{
-			Call([this]{ return eventHandler->Failed(); });
-		}
-
-	private:
-		void Call(const std::function<bool()> &function) const
-		{
-			if (eventHandler && function())
+			if (const auto lock = eventHandler.lock(); lock)
 			{
-				eventHandler = nullptr;
+				lock->Failed();
 			}
 		}
 
-		C4ToastEventHandler *&eventHandler;
+	private:
+		std::weak_ptr<C4ToastEventHandler> eventHandler;
 		std::vector<std::string> actions;
 	};
 }
@@ -113,7 +131,7 @@ namespace
 void C4ToastImplWinToastLib::Show()
 {
 	Hide();
-	id = std::max(WinToast::instance()->showToast(toastTemplate, new C4WinToastEventHandler{eventHandler, actions}), 0LL);
+	id = std::max(WinToast::instance()->showToast(toastTemplate, new C4WinToastEventHandler{eventHandlerGuard, actions}), 0LL);
 }
 
 void C4ToastImplWinToastLib::Hide()

@@ -20,6 +20,7 @@
 
 #include "wintoastlib.h"
 
+#include <memory>
 #include <vector>
 
 class C4ToastSystemWinToastLib : public C4ToastSystem
@@ -36,6 +37,7 @@ public:
 public:
 	void AddAction(std::string_view action) override;
 	void SetExpiration(std::uint32_t expiration) override;
+	void SetEventHandler(C4ToastEventHandler *const eventHandler) override;
 	void SetText(std::string_view text) override;
 	void SetTitle(std::string_view title) override;
 
@@ -46,4 +48,5 @@ private:
 	WinToastLib::WinToastTemplate toastTemplate{WinToastLib::WinToastTemplate::Text02};
 	std::vector<std::string> actions;
 	int64_t id{0};
+	std::shared_ptr<C4ToastEventHandler> eventHandlerGuard;
 };

@@ -267,6 +267,14 @@ public:
 	C4CooldownSeconds ReadyCheck;
 	void CompileFunc(StdCompiler *comp);
 };
+
+class C4ConfigToasts
+{
+public:
+	bool ReadyCheck;
+	void CompileFunc(StdCompiler *comp);
+};
+
 #endif
 
 class C4Config
@@ -290,6 +298,7 @@ public:
 	C4ConfigStartup   Startup;
 #ifdef C4ENGINE
 	C4ConfigCooldowns Cooldowns;
+	C4ConfigToasts    Toasts;
 #endif
 	bool fConfigLoaded; // true if config has been successfully loaded
 	StdStrBuf ConfigFilename; // set for configs loaded from a nondefault config file

@@ -35,23 +35,23 @@ public:
 	virtual ~C4ToastEventHandler() = default;
 
 public:
-	virtual bool Activated() { return false; }
-	virtual bool Dismissed() { return false; }
-	virtual bool Failed() { return false; }
-	virtual bool OnAction(std::string_view action) { (void) action; return false; }
+	virtual void Activated() {}
+	virtual void Dismissed() {}
+	virtual void Failed() { }
+	virtual void OnAction(std::string_view action) { (void) action; }
 };
 
 class C4ToastImpl
 {
 protected:
-	virtual void AddAction(std::string_view action) = 0;
+	virtual void AddAction(std::string_view action) { (void) action; }
 	virtual void SetEventHandler(C4ToastEventHandler *const eventHandler);
-	virtual void SetExpiration(std::uint32_t expiration) = 0;
-	virtual void SetText(std::string_view text) = 0;
-	virtual void SetTitle(std::string_view title) = 0;
+	virtual void SetExpiration(std::uint32_t expiration) { (void) expiration; }
+	virtual void SetText(std::string_view text) { (void) text; }
+	virtual void SetTitle(std::string_view title) { (void) title; }
 
-	virtual void Show() = 0;
-	virtual void Hide() = 0;
+	virtual void Show() {}
+	virtual void Hide() {}
 
 protected:
 	C4ToastEventHandler *eventHandler;
@@ -63,6 +63,8 @@ class C4Toast
 {
 public:
 	C4Toast();
+
+	static void ShowToast(std::string_view title, std::string_view text, C4ToastEventHandler *const eventHandler = nullptr, std::uint32_t expiration = 0, std::initializer_list<std::string_view> actions = {});
 
 public:
 	virtual void AddAction(std::string_view action) { return impl->AddAction(action); }

@@ -128,8 +128,11 @@ C4Network2::ReadyCheckDialog::ReadyCheckDialog()
 	SetFocus(nullptr, false);
 	UpdateText();
 
-	toast->SetEventHandler(this);
-	toast->Show();
+	if (toast)
+	{
+		toast->SetEventHandler(this);
+		toast->Show();
+	}
 }
 
 void C4Network2::ReadyCheckDialog::UpdateText()
@@ -142,18 +145,21 @@ void C4Network2::ReadyCheckDialog::UpdateText()
 			false
 			);
 
-	if (!toast)
+	if (Config.Toasts.ReadyCheck)
 	{
-		StdStrBuf toastText;
-		toastText.Copy(text);
-		toastText.Replace("|", "\n");
+		if (!toast)
+		{
+			StdStrBuf toastText;
+			toastText.Copy(text);
+			toastText.Replace("|", "\n");
 
-		toast.emplace();
-		toast->AddAction(LoadResStrNoAmp("IDS_DLG_YES"));
-		toast->AddAction(LoadResStrNoAmp("IDS_DLG_NO"));
-		toast->SetTitle(LoadResStr("IDS_DLG_READYCHECK"));
-		toast->SetText(toastText.getData());
-		toast->SetExpiration(1000 * GetRemainingTime());
+			toast.emplace();
+			toast->AddAction(LoadResStrNoAmp("IDS_DLG_YES"));
+			toast->AddAction(LoadResStrNoAmp("IDS_DLG_NO"));
+			toast->SetTitle(LoadResStr("IDS_DLG_READYCHECK"));
+			toast->SetText(toastText.getData());
+			toast->SetExpiration(1000 * GetRemainingTime());
+		}
 	}
 
 	SetText(text.getData());
@@ -168,22 +174,19 @@ void C4Network2::ReadyCheckDialog::OnClosed(bool)
 	}
 }
 
-bool C4Network2::ReadyCheckDialog::Activated()
+void C4Network2::ReadyCheckDialog::Activated()
 {
 	Close(true);
-	return true;
 }
 
-bool C4Network2::ReadyCheckDialog::OnAction(std::string_view action)
+void C4Network2::ReadyCheckDialog::OnAction(std::string_view action)
 {
 	Close(action == LoadResStrNoAmp("IDS_DLG_YES"));
-	return true;
 }
 
-bool C4Network2::ReadyCheckDialog::Dismissed()
+void C4Network2::ReadyCheckDialog::Dismissed()
 {
 	Close(false);
-	return true;
 }
 #endif
 

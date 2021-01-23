@@ -44,7 +44,25 @@ void C4ToastImpl::SetEventHandler(C4ToastEventHandler *const eventHandler)
 C4Toast::C4Toast() : impl{
 #ifdef _WIN32
 						 new C4ToastImplWinToastLib{}
+#else
+						 new C4ToastImpl{}
 #endif
 						 }
 {
+}
+
+void C4Toast::ShowToast(std::string_view title, std::string_view text, C4ToastEventHandler *const eventHandler, uint32_t expiration, std::initializer_list<std::string_view> actions)
+{
+	C4Toast toast;
+	toast.SetTitle(title);
+	toast.SetText(text);
+	toast.SetEventHandler(eventHandler);
+	toast.SetExpiration(expiration);
+
+	for (const auto &action : actions)
+	{
+		toast.AddAction(action);
+	}
+
+	toast.Show();
 }

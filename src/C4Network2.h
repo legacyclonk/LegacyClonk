@@ -135,9 +135,9 @@ class C4Network2
 		const char *GetID() override { return "ReadyCheckDialog"; }
 
 	private:
-		bool Activated() override;
-		bool OnAction(std::string_view action) override;
-		bool Dismissed() override;
+		void Activated() override;
+		void OnAction(std::string_view action) override;
+		void Dismissed() override;
 
 	private:
 		static std::optional<C4Toast> toast;
