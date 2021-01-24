@@ -788,49 +788,53 @@ bool C4Landscape::_SetPix(int32_t x, int32_t y, uint8_t npix)
 	{
 		if (Pix2Dens[opix]) PixCnt[(y / 15) + (x / 17) * PixCntPitch]--;
 	}
+
 	// count material
-	assert(!npix || MatValid(Pix2Mat[npix]));
-	int32_t omat = Pix2Mat[opix], nmat = Pix2Mat[npix];
-	if (opix) MatCount[omat]--;
-	if (npix) MatCount[nmat]++;
-	// count effective material
-	if (omat != nmat)
+	if (!npix || MatValid(Pix2Mat[npix]))
 	{
-		if (npix && Game.Material.Map[nmat].MinHeightCount)
+		int32_t omat = Pix2Mat[opix], nmat = Pix2Mat[npix];
+		if (opix) MatCount[omat]--;
+		if (npix) MatCount[nmat]++;
+		// count effective material
+		if (omat != nmat)
 		{
-			// Check for material above & below
-			int iMinHeight = Game.Material.Map[nmat].MinHeightCount,
-				iBelow = GetMatHeight(x, y + 1, +1, nmat, iMinHeight),
-				iAbove = GetMatHeight(x, y - 1, -1, nmat, iMinHeight);
-			// Will be above treshold?
-			if (iBelow + iAbove + 1 >= iMinHeight)
+			if (npix && Game.Material.Map[nmat].MinHeightCount)
 			{
-				int iChange = 1;
-				// Check for heights below threshold
-				if (iBelow < iMinHeight) iChange += iBelow;
-				if (iAbove < iMinHeight) iChange += iAbove;
-				// Change
-				EffectiveMatCount[nmat] += iChange;
+				// Check for material above & below
+				int iMinHeight = Game.Material.Map[nmat].MinHeightCount,
+					iBelow = GetMatHeight(x, y + 1, +1, nmat, iMinHeight),
+					iAbove = GetMatHeight(x, y - 1, -1, nmat, iMinHeight);
+				// Will be above treshold?
+				if (iBelow + iAbove + 1 >= iMinHeight)
+				{
+					int iChange = 1;
+					// Check for heights below threshold
+					if (iBelow < iMinHeight) iChange += iBelow;
+					if (iAbove < iMinHeight) iChange += iAbove;
+					// Change
+					EffectiveMatCount[nmat] += iChange;
+				}
 			}
-		}
-		if (opix && Game.Material.Map[omat].MinHeightCount)
-		{
-			// Check for material above & below
-			int iMinHeight = Game.Material.Map[omat].MinHeightCount,
-				iBelow = GetMatHeight(x, y + 1, +1, omat, iMinHeight),
-				iAbove = GetMatHeight(x, y - 1, -1, omat, iMinHeight);
-			// Not already below threshold?
-			if (iBelow + iAbove + 1 >= iMinHeight)
+			if (opix && Game.Material.Map[omat].MinHeightCount)
 			{
-				int iChange = 1;
-				// Check for heights that will get below threshold
-				if (iBelow < iMinHeight) iChange += iBelow;
-				if (iAbove < iMinHeight) iChange += iAbove;
-				// Change
-				EffectiveMatCount[omat] -= iChange;
+				// Check for material above & below
+				int iMinHeight = Game.Material.Map[omat].MinHeightCount,
+					iBelow = GetMatHeight(x, y + 1, +1, omat, iMinHeight),
+					iAbove = GetMatHeight(x, y - 1, -1, omat, iMinHeight);
+				// Not already below threshold?
+				if (iBelow + iAbove + 1 >= iMinHeight)
+				{
+					int iChange = 1;
+					// Check for heights that will get below threshold
+					if (iBelow < iMinHeight) iChange += iBelow;
+					if (iAbove < iMinHeight) iChange += iAbove;
+					// Change
+					EffectiveMatCount[omat] -= iChange;
+				}
 			}
 		}
 	}
+
 	// set 8bpp-surface only!
 	Surface8->SetPix(x, y, npix);
 	// success
