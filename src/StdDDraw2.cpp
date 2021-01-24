@@ -95,6 +95,11 @@ CPattern &CPattern::operator=(const CPattern &nPattern)
 	delete[] CachedPattern;
 	if (nPattern.CachedPattern)
 	{
+		if (!sfcPattern32)
+		{
+			throw std::runtime_error{"Cached pattern without surface to back it"};
+		}
+
 		CachedPattern = new uint32_t[sfcPattern32->Wdt * sfcPattern32->Hgt];
 		memcpy(CachedPattern, nPattern.CachedPattern, sfcPattern32->Wdt * sfcPattern32->Hgt * 4);
 	}
