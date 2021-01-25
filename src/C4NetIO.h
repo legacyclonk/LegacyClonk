@@ -53,6 +53,23 @@
 
 #include <cstring>
 
+class C4NetAddressInfo
+{
+public:
+	C4NetAddressInfo(const char *const node, const char *const service,
+		const struct addrinfo *const hints)
+	{
+		if (::getaddrinfo(node, service, hints, &addrs) != 0) addrs = nullptr;
+	}
+
+	~C4NetAddressInfo() { if (addrs) ::freeaddrinfo(addrs); }
+	explicit operator bool() const { return addrs != nullptr; }
+	addrinfo *GetAddrs() const { return addrs; }
+
+private:
+	addrinfo *addrs;
+};
+
 // net i/o base class
 class C4NetIO : public StdSchedulerProc
 {

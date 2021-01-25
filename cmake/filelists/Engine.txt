@@ -182,6 +182,8 @@ src/C4Network2Res.h
 src/C4Network2ResDlg.cpp
 src/C4Network2Stats.cpp
 src/C4Network2Stats.h
+src/C4Network2UPnP.cpp
+src/C4Network2UPnP.h
 src/C4Object.cpp
 src/C4Object.h
 src/C4ObjectCom.cpp

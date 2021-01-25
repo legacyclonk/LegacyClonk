@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
- * Copyright (c) 2013-2018, The OpenClonk Team and contributors
+ * Copyright (c) 2012-2018, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -59,6 +59,9 @@ protected:
 
 	// reference server
 	class C4Network2RefServer *pRefServer;
+
+	// UPnP port mapping
+	std::unique_ptr<class C4Network2UPnP> UPnPManager;
 
 	// local client core
 	C4ClientCore LCCore;

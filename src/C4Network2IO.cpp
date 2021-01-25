@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
- * Copyright (c) 2013-2018, The OpenClonk Team and contributors
+ * Copyright (c) 2012-2018, The OpenClonk Team and contributors
  * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
@@ -20,6 +20,7 @@
 #include <C4Network2Reference.h>
 
 #include <C4Network2Discover.h>
+#include "C4Network2UPnP.h"
 #include <C4Application.h>
 #include <C4UserMessages.h>
 #include <C4Log.h>
@@ -80,6 +81,19 @@ bool C4Network2IO::Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscove
 	Thread.SetCallback(Ev_Net_Disconn, this);
 	Thread.SetCallback(Ev_Net_Packet, this);
 
+	if (iPortTCP > 0 || iPortUDP >= 0)
+	{
+		assert(!UPnPManager);
+		try
+		{
+			UPnPManager.reset(new C4Network2UPnP);
+		}
+		catch (const std::runtime_error &e)
+		{
+			LogF("Failed to initialize UPnP: %s", e.what());
+		}
+	}
+
 	// initialize net i/o classes: TCP first
 	if (iPortTCP > 0)
 	{
@@ -99,6 +113,11 @@ bool C4Network2IO::Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscove
 		{
 			Thread.AddProc(pNetIO_TCP);
 			pNetIO_TCP->SetCallback(this);
+
+			if (UPnPManager)
+			{
+				UPnPManager->AddMapping(P_TCP, iPortTCP, iPortTCP);
+			}
 		}
 	}
 	// then UDP
@@ -120,6 +139,11 @@ bool C4Network2IO::Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscove
 		{
 			Thread.AddProc(pNetIO_UDP);
 			pNetIO_UDP->SetCallback(this);
+
+			if (UPnPManager)
+			{
+				UPnPManager->AddMapping(P_UDP, iPortUDP, iPortUDP);
+			}
 		}
 	}
 
@@ -205,6 +229,8 @@ void C4Network2IO::Clear() // by main thread
 	if (pNetIO_TCP)     { Thread.RemoveProc(pNetIO_TCP);     delete pNetIO_TCP;     pNetIO_TCP     = nullptr; }
 	if (pNetIO_UDP)     { Thread.RemoveProc(pNetIO_UDP);     delete pNetIO_UDP;     pNetIO_UDP     = nullptr; }
 	if (pRefServer)     { Thread.RemoveProc(pRefServer);     delete pRefServer;     pRefServer     = nullptr; }
+	UPnPManager.reset();
+
 	// remove auto-accepts
 	ClearAutoAccept();
 	// reset flags

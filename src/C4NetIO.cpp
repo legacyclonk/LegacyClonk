@@ -73,26 +73,6 @@ const int C4NetIO::TO_INF = -1;
 // simulate packet loss (loss probability in percent)
 // #define C4NETIO_SIMULATE_PACKETLOSS 10
 
-namespace
-{
-	class AddrInfo
-	{
-	public:
-		AddrInfo(const char *const node, const char *const service,
-			const struct addrinfo *const hints)
-		{
-			if (::getaddrinfo(node, service, hints, &addrs) != 0) addrs = nullptr;
-		}
-
-		~AddrInfo() { if (addrs) ::freeaddrinfo(addrs); }
-		explicit operator bool() const { return addrs != nullptr; }
-		addrinfo *GetAddrs() const { return addrs; }
-
-	private:
-		addrinfo *addrs;
-	};
-}
-
 // *** helpers
 
 #ifdef HAVE_WINSOCK
@@ -452,7 +432,7 @@ void C4NetIO::HostAddress::SetHost(const StdStrBuf &addr, const AddressFamily fa
 	addrinfo hints{};
 	hints.ai_family = family;
 
-	if (const AddrInfo ai{addr.getData(), nullptr, &hints})
+	if (const C4NetAddressInfo ai{addr.getData(), nullptr, &hints})
 	{
 		SetHost(ai.GetAddrs()->ai_addr);
 	}
@@ -515,7 +495,7 @@ void C4NetIO::EndpointAddress::SetAddress(const StdStrBuf &addr, const AddressFa
 
 	addrinfo hints{};
 	hints.ai_family = family;
-	if (const AddrInfo ai{std::string{ab, ae}.c_str(),
+	if (const C4NetAddressInfo ai{std::string{ab, ae}.c_str(),
 		(pb != end ? std::string{pb, pe}.c_str() : nullptr), &hints})
 	{
 		SetAddress(ai.GetAddrs()->ai_addr);
