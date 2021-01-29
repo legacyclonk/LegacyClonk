@@ -24,6 +24,8 @@
 #include "C4LangStringTable.h"
 #include "C4Teams.h"
 
+#include "StdHelpers.h"
+
 #include <memory>
 #include <vector>
 
@@ -70,30 +72,33 @@ class C4GameResList : public C4DelegatedIterable<C4GameResList>
 private:
 	std::vector<std::unique_ptr<C4GameRes>> resList;
 
-public:
-	class ResTypeIterator
+	class ResTypeFilter
 	{
-		using InternalIterator = std::vector<std::unique_ptr<C4GameRes>>::const_iterator;
-		const std::vector<std::unique_ptr<C4GameRes>> &resList;
+	public:
+		ResTypeFilter(C4Network2ResType type) : type{type} {}
+		bool operator()(const std::unique_ptr<C4GameRes> &res) { return res->getType() == type; }
+
+	private:
 		C4Network2ResType type;
-		InternalIterator it;
+	};
+
+	template<typename T>
+	using ResTypeFilteratorBase = StdFilterator<const std::vector<std::unique_ptr<C4GameRes>>, ResTypeFilter, std::vector<std::unique_ptr<C4GameRes>>::const_iterator, T>;
+
+public:
+	class ResTypeIterator : public ResTypeFilteratorBase<ResTypeIterator>
+	{
+		using Base = ResTypeFilteratorBase<ResTypeIterator>;
 
 	public:
-		ResTypeIterator(C4Network2ResType type, const std::vector<std::unique_ptr<C4GameRes>> &resList);
-
-		ResTypeIterator &operator++();
-
-		bool operator==(const ResTypeIterator &other) const;
-		bool operator!=(const ResTypeIterator &other) const { return !(*this == other); }
+		ResTypeIterator(C4Network2ResType type, const std::vector<std::unique_ptr<C4GameRes>> &resList) : ResTypeIterator{resList, ResTypeFilter{type}, resList.begin()} {}
 
 		C4GameRes &operator*() const;
 		C4GameRes *operator->() const;
 
-		ResTypeIterator begin() const { return *this; }
-		ResTypeIterator end() const;
-
 	private:
-		void filter();
+		ResTypeIterator(const std::vector<std::unique_ptr<C4GameRes>> &resList, const ResTypeFilter &filter, const internal_iterator &iterator) : Base{resList, filter, iterator} {}
+		friend Base;
 	};
 
 	using Iterable = ConstIterableMember<&C4GameResList::resList>;

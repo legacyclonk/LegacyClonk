@@ -296,46 +296,14 @@ void C4GameResList::CompileFunc(StdCompiler *pComp)
 			"Resource"));
 }
 
-C4GameResList::ResTypeIterator::ResTypeIterator(C4Network2ResType type, const std::vector<std::unique_ptr<C4GameRes>> &resList) : resList{resList}, type{type}, it{resList.begin()}
-{
-	filter();
-}
-
-void C4GameResList::ResTypeIterator::filter()
-{
-	while (it != resList.end() && (*it)->getType() != type)
-	{
-		++it;
-	}
-}
-
-C4GameResList::ResTypeIterator &C4GameResList::ResTypeIterator::operator++()
-{
-	++it;
-	filter();
-	return *this;
-}
-
 C4GameRes &C4GameResList::ResTypeIterator::operator*() const
 {
-	return **it;
+	return *Base::operator*();
 }
 
 C4GameRes *C4GameResList::ResTypeIterator::operator->() const
 {
-	return it->get();
-}
-
-bool C4GameResList::ResTypeIterator::operator==(const ResTypeIterator &other) const
-{
-	return type == other.type && it == other.it;
-}
-
-C4GameResList::ResTypeIterator C4GameResList::ResTypeIterator::end() const
-{
-	auto ret = *this;
-	ret.it = resList.end();
-	return ret;
+	return Base::operator->()->get();
 }
 
 // *** C4GameParameters
