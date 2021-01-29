@@ -902,7 +902,7 @@ void C4Command::Throw()
 
 	// Throw specific object not in contents: get object
 	if (Target)
-		if (!cObj->Contents.GetLink(Target))
+		if (!cObj->Contents.IsContained(Target))
 		{
 			cObj->AddCommand(C4CMD_Get, Target, 0, 0, 40);
 			return;
@@ -990,7 +990,7 @@ void C4Command::Drop()
 
 	// Drop specific object not in contents: get object
 	if (Target)
-		if (!cObj->Contents.GetLink(Target))
+		if (!cObj->Contents.IsContained(Target))
 		{
 			cObj->AddCommand(C4CMD_Get, Target, 0, 0, 40);
 			return;
@@ -1327,9 +1327,8 @@ void C4Command::Activate()
 		{
 			// If not specified get object from target contents by type
 			// Find first object requested id that has no command exit yet
-			C4Object *pObj; C4ObjectLink *cLnk;
 			if (!Target)
-				for (cLnk = Target2->Contents.First; cLnk && (pObj = cLnk->Obj); cLnk = cLnk->Next)
+				for (const auto pObj : Target2->Contents)
 					if (pObj->Status && (pObj->Def->id == static_cast<C4ID>(Data)))
 						if (!pObj->Command || (pObj->Command->Command != C4CMD_Exit))
 						{
@@ -1406,7 +1405,7 @@ void C4Command::Put() // Notice: Put command is currently using Ty as an interna
 		}
 
 	// Thing to put not in contents: get object
-	if (!cObj->Contents.GetLink(Target2))
+	if (!cObj->Contents.IsContained(Target2))
 	{
 		// Object is nearby and traveling: wait
 		if (!Target2->Contained)
@@ -1938,9 +1937,8 @@ void C4Command::Attack()
 	// Target is crew member
 	if (Target->OCF & OCF_CrewMember)
 	{
-		C4Object *pProjectile = nullptr;
 		// Throw projectile at target
-		for (C4ObjectLink *pLnk = cObj->Contents.First; pLnk && (pProjectile = pLnk->Obj); pLnk = pLnk->Next)
+		for (const auto pProjectile : cObj->Contents)
 			if (pProjectile->Def->Projectile)
 			{
 				// Add throw command

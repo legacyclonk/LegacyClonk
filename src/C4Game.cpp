@@ -642,14 +642,13 @@ bool C4Game::GameOverCheck()
 		{
 			condition_valid = true;
 			// Count objects, fullsize only
-			C4ObjectLink *cLnk;
-			int32_t iCount = 0;
-			for (cLnk = Game.Objects.First; cLnk; cLnk = cLnk->Next)
-				if (cLnk->Obj->Status)
-					if (cLnk->Obj->Def->id == c_id)
-						if (cLnk->Obj->GetCon() >= FullCon)
-							iCount++;
-			if (iCount < count) condition_true = false;
+			if (std::count_if(Game.Objects.cbegin(), Game.Objects.cend(), [c_id](const auto obj)
+				{
+					return obj->Status && obj->Def->id == c_id && obj->GetCon() >= FullCon;
+				}) < count)
+			{
+				condition_true = false;
+			}
 		}
 	if (condition_valid)
 	{
@@ -662,21 +661,21 @@ bool C4Game::GameOverCheck()
 	{
 		condition_valid = true;
 		// Count objects, if category living, live only
-		C4ObjectLink *cLnk;
 		C4Def *cdef = C4Id2Def(c_id);
 		bool alive_only = false;
 		if (cdef && (cdef->Category & C4D_Living)) alive_only = true;
-		int32_t iCount = 0;
-		for (cLnk = Game.Objects.First; cLnk; cLnk = cLnk->Next)
-			if (cLnk->Obj->Status)
-				if (cLnk->Obj->Def->id == c_id)
-					if (!alive_only || cLnk->Obj->GetAlive())
-						iCount++;
-		if (iCount > count) condition_true = false;
+		if (std::count_if(Game.Objects.cbegin(), Game.Objects.cend(), [alive_only, c_id](const auto obj)
+			{
+				return obj->Status && obj->Def->id == c_id && (!alive_only || obj->GetAlive());
+			}) < count)
+		{
+			condition_true = false;
+		}
 	}
 	if (condition_valid)
 	{
-		game_over_valid = true; if (!condition_true) game_over = false;
+		game_over_valid = true;
+		if (!condition_true) game_over = false;
 	}
 	// ClearMaterial
 	condition_valid = false;
@@ -939,12 +938,13 @@ void C4Game::ClearObjectPtrs(C4Object *pObj)
 	// May not call Objects.ClearPointers() because that would
 	// remove pObj from primary list and pObj is to be kept
 	// until CheckObjectRemoval().
-	C4Object *cObj; C4ObjectLink *clnk;
-	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
-		cObj->ClearPointers(pObj);
-	// check in inactive objects as well
-	for (clnk = Objects.InactiveObjects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
-		cObj->ClearPointers(pObj);
+	for (const auto list : std::initializer_list<C4ObjectList *>{&Objects, &Objects.InactiveObjects})
+	{
+		for (const auto obj : *list)
+		{
+			obj->ClearPointers(pObj);
+		}
+	}
 	Application.SoundSystem->ClearPointers(pObj);
 }
 
@@ -1166,8 +1166,6 @@ C4Object *C4Game::CreateObjectConstruction(C4ID id,
 
 void C4Game::BlastObjects(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t iCausedBy, C4Object *pByObj)
 {
-	C4Object *cObj; C4ObjectLink *clnk;
-
 	// layer check: Blast in same layer only
 	if (pByObj) pByObj = pByObj->pLayer;
 
@@ -1175,16 +1173,16 @@ void C4Game::BlastObjects(int32_t tx, int32_t ty, int32_t level, C4Object *inobj
 	if (inobj)
 	{
 		inobj->Blast(level, iCausedBy);
-		for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
-			if (cObj->Status) if (cObj->Contained == inobj) if (cObj->pLayer == pByObj)
+		for (const auto cObj : Objects)
+			if (cObj->Status && cObj->Contained == inobj && cObj->pLayer == pByObj)
 				cObj->Blast(level, iCausedBy);
 	}
 
 	// Uncontained blast local outside objects
 	else
 	{
-		for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
-			if (cObj->Status) if (!cObj->Contained) if (cObj->pLayer == pByObj)
+		for (const auto cObj : Objects)
+			if (cObj->Status && !cObj->Contained && cObj->pLayer == pByObj)
 			{
 				// Direct hit (5 pixel range to all sides)
 				if (Inside<int32_t>(ty - (cObj->y + cObj->Shape.y), -5, cObj->Shape.Hgt - 1 + 10))
@@ -1223,35 +1221,27 @@ void C4Game::BlastObjects(int32_t tx, int32_t ty, int32_t level, C4Object *inobj
 
 void C4Game::ShakeObjects(int32_t tx, int32_t ty, int32_t range, int32_t iCausedBy)
 {
-	C4Object *cObj; C4ObjectLink *clnk;
-
-	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
-		if (cObj->Status) if (!cObj->Contained)
-			if (cObj->Category & C4D_Living)
-				if (Abs(ty - cObj->y) <= range)
-					if (Abs(tx - cObj->x) <= range)
-						if (!Random(3))
-							if (cObj->Action.t_attach)
-								if (!MatVehicle(cObj->Shape.AttachMat))
-								{
-									cObj->Fling(itofix(Rnd3()), Fix0, false, iCausedBy);
-								}
+	for (const auto cObj : Objects)
+		if (cObj->Status && !cObj->Contained && (cObj->Category & C4D_Living)
+			&& Abs(ty - cObj->y) <= range && Abs(tx - cObj->x) <= range
+			&& !Random(3) && cObj->Action.t_attach && !MatVehicle(cObj->Shape.AttachMat))
+		{
+			cObj->Fling(itofix(Rnd3()), Fix0, false, iCausedBy);
+		}
 }
 
 C4Object *C4Game::OverlapObject(int32_t tx, int32_t ty, int32_t wdt, int32_t hgt, int32_t category)
 {
-	C4Object *cObj; C4ObjectLink *clnk;
 	C4Rect rect1, rect2;
 	rect1.x = tx; rect1.y = ty; rect1.Wdt = wdt; rect1.Hgt = hgt;
 	C4LArea Area(&Game.Objects.Sectors, tx, ty, wdt, hgt); C4LSector *pSector;
 	for (C4ObjectList *pObjs = Area.FirstObjectShapes(&pSector); pSector; pObjs = Area.NextObjectShapes(pObjs, &pSector))
-		for (clnk = pObjs->First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
-			if (cObj->Status) if (!cObj->Contained)
-				if (cObj->Category & category & C4D_SortLimit)
-				{
-					rect2 = cObj->Shape; rect2.x += cObj->x; rect2.y += cObj->y;
-					if (rect1.Overlap(rect2)) return cObj;
-				}
+		for (const auto cObj : *pObjs)
+			if (cObj->Status && !cObj->Contained && (cObj->Category & category & C4D_SortLimit))
+			{
+				rect2 = cObj->Shape; rect2.x += cObj->x; rect2.y += cObj->y;
+				if (rect1.Overlap(rect2)) return cObj;
+			}
 	return nullptr;
 }
 
@@ -1266,8 +1256,6 @@ C4Object *C4Game::FindObject(C4ID id,
 {
 	C4Object *pClosest = nullptr;
 	int32_t iClosest = 0, iDistance, iFartherThan = -1;
-	C4Object *cObj;
-	C4ObjectLink *cLnk;
 	C4Def *pDef;
 	C4Object *pFindNextCpy = pFindNext;
 
@@ -1288,7 +1276,7 @@ C4Object *C4Game::FindObject(C4ID id,
 	bool bFindActIdle = SEqual(szAction, "Idle") || SEqual(szAction, "ActIdle");
 
 	// Scan all objects
-	for (cLnk = Objects.First; cLnk && (cObj = cLnk->Obj); cLnk = cLnk->Next)
+	for (const auto cObj : Objects)
 	{
 		// Not skipping to find next
 		if (!pFindNext)
@@ -1355,20 +1343,18 @@ C4Object *C4Game::FindVisObject(int32_t tx, int32_t ty, int32_t iPlr, const C4Fa
 	C4Object *pFindNext)
 {
 	// FIXME: Use C4FindObject here for optimization
-	C4Object *cObj; C4ObjectLink *cLnk; C4ObjectList *pLst = &ForeObjects;
-
 	// scan all object lists separately
-	while (pLst)
+	for (const auto list : std::initializer_list<C4ObjectList *>{&ForeObjects, &Objects, &BackObjects})
 	{
 		// Scan all objects in list
-		for (cLnk = Objects.First; cLnk && (cObj = cLnk->Obj); cLnk = cLnk->Next)
+		for (const auto cObj : *list)
 		{
 			// Not skipping to find next
 			if (!pFindNext)
 				// Status
 				if (cObj->Status == C4OS_NORMAL)
 					// exclude fore/back-objects from main list
-					if ((pLst != &Objects) || (!(cObj->Category & C4D_BackgroundOrForeground)))
+					if ((list != &Objects) || (!(cObj->Category & C4D_BackgroundOrForeground)))
 						// exclude MouseIgnore-objects
 						if (~cObj->Category & C4D_MouseIgnore)
 							// OCF (match any specified)
@@ -1412,10 +1398,6 @@ C4Object *C4Game::FindVisObject(int32_t tx, int32_t ty, int32_t iPlr, const C4Fa
 			// Find next mark reached
 			if (cObj == pFindNext) pFindNext = nullptr;
 		}
-		// next list
-		if (pLst == &ForeObjects) pLst = &Objects;
-		else if (pLst == &Objects) pLst = &BackObjects;
-		else pLst = nullptr;
 	}
 
 	// none found
@@ -1440,9 +1422,8 @@ int32_t C4Game::ObjectCount(C4ID id,
 			// plain id-search: return known count
 			return pDef->Count;
 	}
-	C4Object *cObj; C4ObjectLink *clnk;
 	bool bFindActIdle = SEqual(szAction, "Idle") || SEqual(szAction, "ActIdle");
-	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	for (const auto cObj : Objects)
 		// Status
 		if (cObj->Status)
 			// ID
@@ -1491,10 +1472,10 @@ int32_t C4Game::ObjectCount(C4ID id,
 
 void C4Game::ObjectRemovalCheck() // Every Tick255 by ExecObjects
 {
-	C4Object *cObj; C4ObjectLink *clnk, *next;
-	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = next)
+	for (auto it = Objects.cbegin(); it != Objects.cend(); )
 	{
-		next = clnk->Next;
+		const auto cObj = *it;
+		++it;
 		if (!cObj->Status && (cObj->RemovalDelay == 0))
 		{
 			Objects.Remove(cObj);
@@ -1510,8 +1491,7 @@ void C4Game::ExecObjects() // Every Tick1 by Execute
 #endif
 
 	// Execute objects - reverse order to ensure
-	C4Object *cObj; C4ObjectLink *clnk;
-	for (clnk = Objects.Last; clnk && (cObj = clnk->Obj); clnk = clnk->Prev)
+	for (const auto cObj : StdReversed{Objects})
 		if (cObj->Status)
 			// Execute object
 			cObj->Execute();
@@ -1691,8 +1671,8 @@ void C4Game::Default()
 	Defs.Clear();
 	Material.Default();
 	Objects.Default();
-	BackObjects.Default();
-	ForeObjects.Default();
+	BackObjects.Clear();
+	ForeObjects.Clear();
 	Players.Default();
 	Weather.Default();
 	Landscape.Default();
@@ -2210,7 +2190,6 @@ bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
 	// no need to sync back player files, though
 	Synchronize(false);
 	// reload def
-	C4ObjectLink *clnk;
 	C4Def *pDef = Defs.ID2Def(id);
 	if (!pDef) return false;
 	// Message
@@ -2221,19 +2200,19 @@ bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
 		// Success, update all concerned object faces
 		// may have been done by graphics-update already - but not for objects using graphics of another def
 		// better update everything :)
-		for (clnk = Objects.First; clnk && clnk->Obj; clnk = clnk->Next)
+		for (const auto obj : Objects)
 		{
-			if (clnk->Obj->id == id)
-				clnk->Obj->UpdateFace(true);
+			if (obj->id == id)
+				obj->UpdateFace(true);
 		}
 		fSucc = true;
 	}
 	else
 	{
 		// Failure, remove all objects of this type
-		for (clnk = Objects.First; clnk && clnk->Obj; clnk = clnk->Next)
-			if (clnk->Obj->id == id)
-				clnk->Obj->AssignRemoval();
+		for (const auto obj : Objects)
+			if (obj->id == id)
+				obj->AssignRemoval();
 		// safety: If a removed def is being profiled, profiling must stop
 		C4AulProfiler::Abort();
 		// Kill def
@@ -3618,8 +3597,7 @@ void C4Game::Synchronize(bool fSavePlayerFiles)
 
 C4Object *C4Game::FindBase(int32_t iPlayer, int32_t iIndex)
 {
-	C4Object *cObj; C4ObjectLink *clnk;
-	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	for (const auto cObj : Objects)
 		// Status
 		if (cObj->Status)
 			// Base
@@ -3633,8 +3611,7 @@ C4Object *C4Game::FindBase(int32_t iPlayer, int32_t iIndex)
 
 C4Object *C4Game::FindFriendlyBase(int32_t iPlayer, int32_t iIndex)
 {
-	C4Object *cObj; C4ObjectLink *clnk;
-	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	for (const auto cObj : Objects)
 		// Status
 		if (cObj->Status)
 			// Base
@@ -3650,8 +3627,7 @@ C4Object *C4Game::FindFriendlyBase(int32_t iPlayer, int32_t iIndex)
 
 C4Object *C4Game::FindObjectByCommand(int32_t iCommand, C4Object *pTarget, C4Value iTx, int32_t iTy, C4Object *pTarget2, C4Object *pFindNext)
 {
-	C4Object *cObj; C4ObjectLink *clnk;
-	for (clnk = Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	for (const auto cObj : Objects)
 	{
 		// find next
 		if (pFindNext) { if (cObj == pFindNext) pFindNext = nullptr; continue; }
@@ -3807,40 +3783,32 @@ bool C4Game::CheckObjectEnumeration()
 {
 	// Check valid & maximum number & duplicate numbers
 	int32_t iMax = 0;
-	C4Object *cObj; C4ObjectLink *clnk;
-	C4Object *cObj2; C4ObjectLink *clnk2;
-	clnk = Objects.First; if (!clnk) clnk = Objects.InactiveObjects.First;
-	while (clnk)
+	const std::initializer_list<C4ObjectList *> lists{&Objects, &Objects.InactiveObjects};
+	for (const auto list : lists)
 	{
-		// Invalid number
-		cObj = clnk->Obj;
-		if (cObj->Number < 1)
+		for (const auto cObj : *list)
 		{
-			LogF("Invalid object enumeration number (%d) of object %s (x=%d)", cObj->Number, C4IdText(cObj->id), cObj->x);
-			return false;
+			// Invalid number
+			if (cObj->Number < 1)
+			{
+				LogF("Invalid object enumeration number (%d) of object %s (x=%d)", cObj->Number, C4IdText(cObj->id), cObj->x);
+				return false;
+			}
+			// Max
+			if (cObj->Number > iMax) iMax = cObj->Number;
+			// Duplicate
+			for (const auto list : lists)
+			{
+				for (const auto cObj2 : Objects)
+				{
+					if (cObj2 != cObj && cObj->Number == cObj2->Number)
+					{
+						LogF("Duplicate object enumeration number %d (%s and %s%s)", cObj2->Number, cObj->GetName(), cObj2->GetName(), list == &Objects.InactiveObjects ? "(i)" : "");
+						return false;
+					}
+				}
+			}
 		}
-		// Max
-		if (cObj->Number > iMax) iMax = cObj->Number;
-		// Duplicate
-		for (clnk2 = Objects.First; clnk2 && (cObj2 = clnk2->Obj); clnk2 = clnk2->Next)
-			if (cObj2 != cObj)
-				if (cObj->Number == cObj2->Number)
-				{
-					LogF("Duplicate object enumeration number %d (%s and %s)", cObj2->Number, cObj->GetName(), cObj2->GetName());
-					return false;
-				}
-		for (clnk2 = Objects.InactiveObjects.First; clnk2 && (cObj2 = clnk2->Obj); clnk2 = clnk2->Next)
-			if (cObj2 != cObj)
-				if (cObj->Number == cObj2->Number)
-				{
-					LogF("Duplicate object enumeration number %d (%s and %s(i))", cObj2->Number, cObj->GetName(), cObj2->GetName());
-					return false;
-				}
-		// next
-		if (!clnk->Next)
-			if (clnk == Objects.Last) clnk = Objects.InactiveObjects.First; else clnk = nullptr;
-		else
-			clnk = clnk->Next;
 	}
 	// Adjust enumeration index
 	if (iMax > ObjectEnumerationIndex) ObjectEnumerationIndex = iMax;
@@ -4080,14 +4048,13 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	}
 	// remove all objects (except inactive)
 	// do correct removal calls, because this will stop fire sounds, etc.
-	C4ObjectLink *clnk;
-	for (clnk = Objects.First; clnk; clnk = clnk->Next) clnk->Obj->AssignRemoval();
-	for (clnk = Objects.First; clnk; clnk = clnk->Next)
-		if (clnk->Obj->Status)
+	for (const auto obj : Objects) obj->AssignRemoval();
+	for (const auto obj : Objects)
+		if (obj->Status)
 		{
-			DebugLogF("LoadScenarioSection: WARNING: Object %d created in destruction process!", static_cast<int>(clnk->Obj->Number));
-			ClearPointers(clnk->Obj);
-			// clnk->Obj->AssignRemoval(); - this could create additional objects in endless recursion...
+			DebugLogF("LoadScenarioSection: WARNING: Object %d created in destruction process!", static_cast<int>(obj->Number));
+			ClearPointers(obj);
+			// obj->AssignRemoval(); - this could create additional objects in endless recursion...
 		}
 	DeleteObjects(false);
 	// remove global effects

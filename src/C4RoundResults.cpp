@@ -283,8 +283,7 @@ void C4RoundResults::EvaluateGoals(C4IDList &GoalList, C4IDList &FulfilledGoalLi
 	GoalList.Clear(); FulfilledGoalList.Clear();
 	// Items
 	bool fRivalvry = !!Game.ObjectCount(C4Id("RVLR"));
-	int32_t cnt; C4ID idGoal;
-	for (cnt = 0; idGoal = Game.Objects.GetListID(C4D_Goal, cnt); cnt++)
+	for (const auto idGoal : Game.Objects.GetListIDs(C4D_Goal))
 	{
 		// determine if the goal is fulfilled - do the calls even if the menu is not to be opened to ensure synchronization
 		bool fFulfilled = false;;
@@ -298,7 +297,7 @@ void C4RoundResults::EvaluateGoals(C4IDList &GoalList, C4IDList &FulfilledGoalLi
 			else
 				fFulfilled = !!pObj->Call(PSF_IsFulfilled);
 		}
-		GoalList.SetIDCount(idGoal, cnt, true);
+		GoalList.SetIDCount(idGoal, 1, true);
 		if (fFulfilled) FulfilledGoalList.SetIDCount(idGoal, 1, true);
 	}
 }

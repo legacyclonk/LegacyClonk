@@ -250,9 +250,8 @@ C4Value C4GameScriptHost::GRBroadcast(const char *szFunction, const C4AulParSet 
 {
 	// call objects first - scenario script might overwrite hostility, etc...
 	C4Object *pObj;
-	for (C4ObjectLink *clnk = Game.Objects.ObjectsInt().First; clnk; clnk = clnk->Next) if (pObj = clnk->Obj)
-		if (pObj->Category & (C4D_Goal | C4D_Rule | C4D_Environment))
-			if (pObj->Status)
+	for (const auto pObj : Game.Objects.ObjectsInt())
+		if ((pObj->Category & (C4D_Goal | C4D_Rule | C4D_Environment)) && pObj->Status)
 			{
 				C4Value vResult(pObj->Call(szFunction, pPars, fPassError));
 				// rejection tests abort on first nonzero result

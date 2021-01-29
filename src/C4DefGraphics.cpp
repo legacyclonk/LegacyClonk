@@ -352,9 +352,8 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 	if (pGraphicsPtr)
 	{
 		// check all objects
-		C4Object *pObj;
-		for (C4ObjectLink *pLnk = Game.Objects.First; pLnk; pLnk = pLnk->Next)
-			if (pObj = pLnk->Obj) if (pObj->Status)
+		for (const auto pObj : Game.Objects)
+			if (pObj->Status)
 			{
 				if (pObj->pGraphics == pGraphicsPtr)
 				{
@@ -418,9 +417,8 @@ void C4DefGraphicsPtrBackup::AssignRemoval()
 	if (pGraphicsPtr)
 	{
 		// check all objects
-		C4Object *pObj;
-		for (C4ObjectLink *pLnk = Game.Objects.First; pLnk; pLnk = pLnk->Next)
-			if (pObj = pLnk->Obj) if (pObj->Status)
+		for (const auto pObj : Game.Objects)
+			if (pObj->Status)
 			{
 				if (pObj->pGraphics == pGraphicsPtr)
 					// same graphics found: reset them

@@ -32,6 +32,20 @@ namespace
 		using std::end;
 		return end(container);
 	}
+
+	template<typename T>
+	constexpr decltype(auto) adlRbegin(T &&container)
+	{
+		using std::rbegin;
+		return rbegin(container);
+	}
+
+	template<typename T>
+	constexpr decltype(auto) adlRend(T &&container)
+	{
+		using std::rend;
+		return rend(container);
+	}
 }
 
 template<typename... T>
@@ -41,6 +55,21 @@ public:
 	StdOverloadedCallable(T... bases) : T{bases}... {}
 	using T::operator()...;
 };
+
+template <typename T>
+class StdReversed
+{
+public:
+	constexpr StdReversed(T& container) : container{container} {}
+	constexpr auto begin() const { return adlRbegin(container); }
+	constexpr auto end() const { return adlRend(container); }
+
+private:
+	T& container;
+};
+
+template <typename T>
+StdReversed(T &) -> StdReversed<T>;
 
 template<typename Container, typename Filter, typename Iterator = std::decay_t<decltype(adlBegin(std::declval<Container>()))>, typename Derived = void>
 class StdFilterator {

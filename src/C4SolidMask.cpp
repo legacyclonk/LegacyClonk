@@ -281,8 +281,8 @@ void C4SolidMask::Remove(bool fCauseInstability, bool fBackupAttachment)
 		C4LArea SolidArea(&Game.Objects.Sectors, MaskPutRect.x - 1, MaskPutRect.y - 1, MaskPutRect.Wdt + 2, MaskPutRect.Hgt + 2);
 		C4LSector *pSct; C4Object *pObj;
 		for (C4ObjectList *pLst = SolidArea.FirstObjectShapes(&pSct); pLst; pLst = SolidArea.NextObjectShapes(pLst, &pSct))
-			for (C4ObjectLink *clnk = pLst->First; clnk; clnk = clnk->Next)
-				if ((pObj = clnk->Obj) && pObj != pForObject && pObj->IsMoveableBySolidMask() && !pObj->Shape.CheckContact(pObj->x, pObj->y))
+			for (const auto pObj : *pLst)
+				if (pObj != pForObject && pObj->IsMoveableBySolidMask() && !pObj->Shape.CheckContact(pObj->x, pObj->y))
 				{
 					// check for any contact to own SolidMask - attach-directions, bottom - "stuck" (CNAT_Center) is ignored, because that causes problems with things being stuck in basements :(
 					int iVtx = 0;

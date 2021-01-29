@@ -343,11 +343,13 @@ C4ParticleChunk *C4ParticleSystem::AddChunk()
 void C4ParticleSystem::ClearParticles()
 {
 	// clear particle lists
-	C4ObjectLink *pLnk;
-	for (pLnk = Game.Objects.First; pLnk; pLnk = pLnk->Next)
-		pLnk->Obj->FrontParticles.pFirst = pLnk->Obj->BackParticles.pFirst = nullptr;
-	for (pLnk = Game.Objects.InactiveObjects.First; pLnk; pLnk = pLnk->Next)
-		pLnk->Obj->FrontParticles.pFirst = pLnk->Obj->BackParticles.pFirst = nullptr;
+	for (const auto list : std::initializer_list<C4ObjectList *>{&Game.Objects, &Game.Objects.InactiveObjects})
+	{
+		for (const auto obj : *list)
+		{
+			obj->FrontParticles.pFirst = obj->BackParticles.pFirst = nullptr;
+		}
+	}
 	GlobalParticles.pFirst = nullptr;
 	// reset chunks
 	C4ParticleChunk *pNextChnk = Chunk.pNext, *pChnk;

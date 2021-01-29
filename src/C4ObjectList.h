@@ -18,12 +18,14 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
-
 #include "C4Id.h"
 #include "C4Def.h"
+#include "C4DelegatedIterable.h"
 #include "C4Region.h"
+
+#include <list>
+#include <memory>
+#include <vector>
 
 class C4Object;
 class C4FacetEx;
@@ -32,55 +34,47 @@ constexpr std::int32_t
 	C4EnumPointer1 = 1000000000,
 	C4EnumPointer2 = 1001000000;
 
-class C4ObjectLink
+class C4ObjectList : public C4DelegatedIterable<C4ObjectList>
 {
-public:
-	C4Object *Obj;
-	C4ObjectLink *Prev, *Next;
-};
-
-class C4ObjectList
-{
-	std::unique_ptr<std::vector<int32_t>> pEnumerated;
+	using Container = std::list<C4Object *>;
 
 public:
 	C4ObjectList();
 	C4ObjectList(const C4ObjectList &List);
 	virtual ~C4ObjectList();
 
-	C4ObjectLink *First, *Last;
 	int Mass;
 
 	enum SortType { stNone = 0, stMain, stContents, stReverse, };
+	using iterator = Container::const_iterator;
+	using mutable_iterator = Container::iterator;
 
 	// An iterator which survives if an object is removed from the list
-	class iterator
+	class SafeIterator
 	{
 	public:
-		~iterator();
-		iterator &operator++(); // prefix ++
-		iterator(const iterator &iter);
+		~SafeIterator();
+		SafeIterator &operator++(); // prefix ++
+		SafeIterator(const SafeIterator &iter);
 		C4Object *operator*();
 		C4Object *operator->() { return operator*(); }
-		bool operator==(const iterator &iter) const;
-		bool operator!=(const iterator &iter) const;
+		bool operator==(const SafeIterator &iter) const;
+		bool operator!=(const SafeIterator &iter) const;
 
-		iterator &operator=(const iterator &iter);
+		SafeIterator &operator=(const SafeIterator &iter);
 
 	private:
-		explicit iterator(C4ObjectList &List);
-		iterator(C4ObjectList &List, C4ObjectLink *pLink);
+		explicit SafeIterator(C4ObjectList &List);
+		SafeIterator(C4ObjectList &List, const C4ObjectList::iterator &pLink);
 		C4ObjectList &List;
-		C4ObjectLink *pLink;
-		iterator *Next;
+		C4ObjectList::iterator pLink;
 
 		friend class C4ObjectList;
 	};
-	iterator begin();
-	const iterator end();
+	SafeIterator safeBegin();
+	const SafeIterator safeEnd();
 
 	void SortByCategory();
-	void Default();
 	void Clear();
 	void Enumerate();
 	void Denumerate();
@@ -102,11 +96,11 @@ public:
 	void UpdateDefPointers(C4Def *pDef); // restore any cleared pointers after def reload
 
 	bool Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted = nullptr);
-	bool Remove(C4Object *pObj);
+	virtual bool Remove(C4Object *pObj);
 
-	bool AssignInfo();
-	bool ValidateOwners();
-	bool AssignPlrViewRange();
+	void AssignInfo();
+	void ValidateOwners();
+	void AssignPlrViewRange();
 	StdStrBuf GetNameList(C4DefList &rDefs, uint32_t dwCategory = C4D_All);
 	bool IsClear() const;
 	bool DenumerateRead();
@@ -117,7 +111,6 @@ public:
 	int ClearPointers(C4Object *pObj);
 	int ObjectCount(C4ID id = C4ID_None, int32_t dwCategory = C4D_All) const;
 	int MassCount();
-	int ListIDCount(int32_t dwCategory);
 
 	virtual C4Object *ObjectPointer(int32_t iNumber);
 	C4Object *SafeObjectPointer(int32_t iNumber);
@@ -125,9 +118,9 @@ public:
 	C4Object *Find(C4ID id, int iOwner = ANY_OWNER, uint32_t dwOCF = OCF_All);
 	C4Object *FindOther(C4ID id, int iOwner = ANY_OWNER);
 
-	C4ObjectLink *GetLink(C4Object *pObj);
+	iterator GetLink(C4Object *pObj) const;
 
-	C4ID GetListID(int32_t dwCategory, int Index);
+	std::vector<C4ID> GetListIDs(int32_t dwCategory);
 
 	bool OrderObjectBefore(C4Object *pObj1, C4Object *pObj2); // order pObj1 before pObj2
 	bool OrderObjectAfter(C4Object *pObj1, C4Object *pObj2); // order pObj1 after pObj2
@@ -142,23 +135,31 @@ public:
 	void CheckCategorySort(); // assertwhether sorting by category is done right
 
 protected:
-	virtual void InsertLinkBefore(C4ObjectLink *pLink, C4ObjectLink *pBefore);
-	virtual void InsertLink(C4ObjectLink *pLink, C4ObjectLink *pAfter);
-	virtual void RemoveLink(C4ObjectLink *pLnk);
-	iterator *FirstIter;
-	iterator *AddIter(iterator *iter);
-	void RemoveIter(iterator *iter);
+	// the virtuals are only for subclass callbacks
+	virtual void InsertLinkBefore(const iterator &pLink, const iterator &pBefore) {}
+	virtual void InsertLink(const iterator &pLink, const iterator &pAfter) {}
+	virtual void RemoveLink(const iterator &pLnk) {}
+	std::vector<SafeIterator*> SafeIterators;
+	void AddIter(SafeIterator *iter);
+	void RemoveIter(SafeIterator *iter);
 
-	friend class iterator;
+	friend class SafeIterator;
 	friend class C4ObjResort;
+
+	// TODO: optional?
+	std::unique_ptr<std::vector<int32_t>> Enumerated;
+	Container Objects;
+
+public:
+	using Iterable = IterableMember<&C4ObjectList::Objects>;
 };
 
 class C4ObjectListChangeListener
 {
 public:
-	virtual void OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk) = 0;
-	virtual void OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk) = 0;
-	virtual void OnObjectRename(C4ObjectList *pList, C4ObjectLink *pLnk) = 0;
+	virtual void OnObjectRemove(C4ObjectList *pList, const C4ObjectList::iterator &pLnk) = 0;
+	virtual void OnObjectAdded(C4ObjectList *pList, const C4ObjectList::iterator &pLnk) = 0;
+	virtual void OnObjectRename(C4ObjectList *pList, const C4ObjectList::iterator &pLnk) = 0;
 	virtual ~C4ObjectListChangeListener() {}
 };
 
@@ -173,9 +174,9 @@ public:
 	virtual ~C4NotifyingObjectList() {}
 
 protected:
-	virtual void InsertLinkBefore(C4ObjectLink *pLink, C4ObjectLink *pBefore) override;
-	virtual void InsertLink(C4ObjectLink *pLink, C4ObjectLink *pAfter) override;
-	virtual void RemoveLink(C4ObjectLink *pLnk) override;
+	virtual void InsertLinkBefore(const C4ObjectList::iterator &pLink, const C4ObjectList::iterator &pBefore) override;
+	virtual void InsertLink(const C4ObjectList::iterator &pLink, const C4ObjectList::iterator &pAfter) override;
+	virtual void RemoveLink(const C4ObjectList::iterator &pLnk) override;
 
 	friend class C4ObjResort;
 };
@@ -188,12 +189,12 @@ class C4ObjectListIterator
 {
 private:
 	C4ObjectList &rList; // iterated list
-	C4ObjectList::iterator pCurr; // link to last returned object
-	C4ObjectList::iterator pCurrID; // link to head of link group with same ID
+	C4ObjectList::SafeIterator pCurr; // link to last returned object
+	C4ObjectList::SafeIterator pCurrID; // link to head of link group with same ID
 
 	C4ObjectListIterator(const C4ObjectListIterator &rCopy); // no copy ctor
 
 public:
-	C4ObjectListIterator(C4ObjectList &rList) : rList(rList), pCurr(rList.end()), pCurrID(rList.begin()) {}
+	C4ObjectListIterator(C4ObjectList &rList) : rList(rList), pCurr(rList.safeEnd()), pCurrID(rList.safeBegin()) {}
 	C4Object *GetNext(int32_t *piCount, uint32_t dwCategory = 0); // get next object; return nullptr if end is reached
 };

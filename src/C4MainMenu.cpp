@@ -380,9 +380,8 @@ bool C4MainMenu::ActivateRules(int32_t iPlayer)
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	SetPermanent(false);
 	// Items
-	int32_t cnt; C4ID idGoal; C4Def *pDef;
-	for (cnt = 0; idGoal = Game.Objects.ObjectsInt().GetListID(C4D_Rule, cnt); cnt++)
-		if (pDef = C4Id2Def(idGoal))
+	for (const auto idGoal : Game.Objects.ObjectsInt().GetListIDs(C4D_Rule))
+		if (const auto pDef = C4Id2Def(idGoal))
 		{
 			fctSymbol.Create(C4SymbolSize, C4SymbolSize); pDef->Draw(fctSymbol);
 			sprintf(Command, "Player:Rule:%s", C4IdText(idGoal));

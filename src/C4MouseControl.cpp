@@ -107,7 +107,7 @@ void C4MouseControl::Default()
 	DragID = C4ID_None;
 	KeepCaption = 0;
 	Drag = C4MC_Drag_None; DragSelecting = C4MC_Selecting_Unknown;
-	Selection.Default();
+	Selection.Clear();
 	TargetObject = DownTarget = nullptr;
 	TimeOnTargetObject = 0;
 	ControlDown = false;
@@ -589,8 +589,7 @@ int32_t C4MouseControl::UpdateCrewSelection()
 {
 	Selection.Clear();
 	// Add all active crew objects in drag frame to Selection
-	C4Object *cObj; C4ObjectLink *cLnk;
-	for (cLnk = pPlayer->Crew.First; cLnk && (cObj = cLnk->Obj); cLnk = cLnk->Next)
+	for (const auto cObj : pPlayer->Crew)
 		if (!cObj->CrewDisabled)
 		{
 			int32_t iObjX, iObjY; cObj->GetViewPos(iObjX, iObjY, ViewX, ViewY, fctViewport);
@@ -605,8 +604,7 @@ int32_t C4MouseControl::UpdateObjectSelection()
 {
 	Selection.Clear();
 	// Add all collectible objects in drag frame to Selection
-	C4Object *cObj; C4ObjectLink *cLnk;
-	for (cLnk = Game.Objects.First; cLnk && (cObj = cLnk->Obj); cLnk = cLnk->Next)
+	for (const auto cObj : Game.Objects)
 		if (cObj->Status)
 			if (cObj->OCF & OCF_Carryable)
 				if (!cObj->Contained)
@@ -903,7 +901,7 @@ void C4MouseControl::DragNone()
 			{
 				Drag = C4MC_Drag_Moving;
 				// Down target is not part of selection: drag single object
-				if (!Selection.GetLink(DownTarget))
+				if (!Selection.IsContained(DownTarget))
 				{
 					Selection.Clear(); Selection.Add(DownTarget, C4ObjectList::stNone);
 				}
@@ -928,9 +926,9 @@ void C4MouseControl::DragNone()
 				// Multiple object selection from container
 				if (RightButtonDown && DownRegion.Target->Contained && (DownRegion.Target->Contained->Contents.ObjectCount(DownRegion.Target->id) > 1))
 				{
-					for (C4ObjectLink *cLnk = DownRegion.Target->Contained->Contents.First; cLnk && cLnk->Obj; cLnk = cLnk->Next)
-						if (cLnk->Obj->id == DownRegion.Target->id)
-							Selection.Add(cLnk->Obj, C4ObjectList::stNone);
+					for (const auto obj : DownRegion.Target->Contained->Contents)
+						if (obj->id == DownRegion.Target->id)
+							Selection.Add(obj, C4ObjectList::stNone);
 				}
 				// Single object selection
 				else
@@ -1151,11 +1149,10 @@ void C4MouseControl::ButtonUpDragMoving()
 	// Finish drag
 	Drag = C4MC_Drag_None;
 	// Evaluate to command by cursor for each selected object
-	C4ObjectLink *pLnk; C4Object *pObj;
 	int32_t iCommand; C4Object *pTarget1, *pTarget2;
 	int32_t iAddMode; iAddMode = C4P_Command_Set;
 	int32_t iX = X, iY = Y;
-	for (pLnk = Selection.First; pLnk && (pObj = pLnk->Obj); pLnk = pLnk->Next)
+	for (const auto pObj : Selection)
 	{
 		iCommand = C4CMD_None; pTarget1 = pTarget2 = nullptr;
 		switch (Cursor)
@@ -1261,17 +1258,10 @@ void C4MouseControl::UpdateFogOfWar()
 
 void C4MouseControl::SendPlayerSelectNext()
 {
-	C4ObjectLink *cLnk;
-	if (cLnk = pPlayer->Crew.GetLink(pPlayer->Cursor))
-		for (cLnk = cLnk->Next; cLnk; cLnk = cLnk->Next)
-			if (cLnk->Obj->Status && !cLnk->Obj->CrewDisabled) break;
-	if (!cLnk)
-		for (cLnk = pPlayer->Crew.First; cLnk; cLnk = cLnk->Next)
-			if (cLnk->Obj->Status && !cLnk->Obj->CrewDisabled) break;
-	if (cLnk)
+	if (const auto next = pPlayer->GetNextCrew(); next)
 	{
 		// Crew selection to control queue
-		Selection.Clear(); Selection.Add(cLnk->Obj, C4ObjectList::stNone);
+		Selection.Clear(); Selection.Add(next, C4ObjectList::stNone);
 		Game.Input.Add(CID_PlrSelect,
 			new C4ControlPlayerSelect(Player, Selection));
 		Selection.Clear();

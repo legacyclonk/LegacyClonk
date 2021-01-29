@@ -165,10 +165,11 @@ int32_t C4FindObject::Count(const C4ObjectList &Objs)
 		return Objs.ObjectCount();
 	// Count
 	int32_t iCount = 0;
-	for (C4ObjectLink *pLnk = Objs.First; pLnk; pLnk = pLnk->Next)
-		if (pLnk->Obj->Status)
-			if (Check(pLnk->Obj))
-				iCount++;
+	for (const auto obj : Objs)
+	{
+		if (obj->Status && Check(obj))
+			++iCount;
+	}
 	return iCount;
 }
 
@@ -178,20 +179,20 @@ C4Object *C4FindObject::Find(const C4ObjectList &Objs)
 	if (IsImpossible())
 		return nullptr;
 	// Search
-	// Double-check object status, as object might be deleted after Check()!
 	C4Object *pBestResult = nullptr;
-	for (C4ObjectLink *pLnk = Objs.First; pLnk; pLnk = pLnk->Next)
-		if (pLnk->Obj->Status)
-			if (Check(pLnk->Obj))
-				if (pLnk->Obj->Status)
-				{
-					// no sorting: Use first object found
-					if (!pSort) return pLnk->Obj;
-					// Sorting: Check if found object is better
-					if (!pBestResult || pSort->Compare(pLnk->Obj, pBestResult) > 0)
-						if (pLnk->Obj->Status)
-							pBestResult = pLnk->Obj;
-				}
+	for (const auto obj : Objs)
+	{
+		// Double-check object status, as object might be deleted (i.e. AssignRemoval) after Check()!
+		if (obj->Status && Check(obj) && obj->Status)
+		{
+			// no sorting: Use first object found
+			if (!pSort) return obj;
+			// Sorting: Check if found object is better
+			if (!pBestResult || pSort->Compare(obj, pBestResult) > 0)
+				if (obj->Status) // compare might assign removal too
+					pBestResult = obj;
+		}
+	}
 	return pBestResult;
 }
 
@@ -204,16 +205,17 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs)
 	C4ValueArray *pArray = new C4ValueArray(32);
 	int32_t iSize = 0;
 	// Search
-	for (C4ObjectLink *pLnk = Objs.First; pLnk; pLnk = pLnk->Next)
-		if (pLnk->Obj->Status)
-			if (Check(pLnk->Obj))
-			{
-				// Grow the array, if neccessary
-				if (iSize >= pArray->GetSize())
-					pArray->SetSize(iSize * 2);
-				// Add object
-				(*pArray)[iSize++] = C4VObj(pLnk->Obj);
-			}
+	for (const auto obj : Objs)
+	{
+		if (obj->Status && Check(obj))
+		{
+			// Grow the array, if neccessary
+			if (iSize >= pArray->GetSize())
+				pArray->SetSize(iSize * 2);
+			// Add object
+			(*pArray)[iSize++] = C4VObj(obj);
+		}
+	}
 	// Shrink array
 	pArray->SetSize(iSize);
 	// Recheck object status (may shrink array again)
@@ -246,14 +248,17 @@ int32_t C4FindObject::Count(const C4ObjectList &Objs, const C4LSectors &Sct)
 		uint32_t iMarker = ::Game.Objects.GetNextMarker();
 		int32_t iCount = 0;
 		for (; pLst; pLst = Area.NextObjectShapes(pLst, &pSct))
-			for (C4ObjectLink *pLnk = pLst->First; pLnk; pLnk = pLnk->Next)
-				if (pLnk->Obj->Status)
-					if (pLnk->Obj->Marker != iMarker)
-					{
-						pLnk->Obj->Marker = iMarker;
-						if (Check(pLnk->Obj))
-							iCount++;
-					}
+		{
+			for (const auto obj : *pLst)
+			{
+				if (obj->Status && obj->Marker != iMarker)
+				{
+					obj->Marker = iMarker;
+					if (Check(obj))
+						iCount++;
+				}
+			}
+		}
 		return iCount;
 	}
 	else
@@ -329,20 +334,23 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs, const C4LSectors 
 		// Create marker, search all areas
 		uint32_t iMarker = ::Game.Objects.GetNextMarker();
 		for (; pLst; pLst = Area.NextObjectShapes(pLst, &pSct))
-			for (C4ObjectLink *pLnk = pLst->First; pLnk; pLnk = pLnk->Next)
-				if (pLnk->Obj->Status)
-					if (pLnk->Obj->Marker != iMarker)
+		{
+			for (const auto obj : *pLst)
+			{
+				if (obj->Status && obj->Marker != iMarker)
+				{
+					obj->Marker = iMarker;
+					if (Check(obj))
 					{
-						pLnk->Obj->Marker = iMarker;
-						if (Check(pLnk->Obj))
-						{
-							// Grow the array, if neccessary
-							if (iSize >= pArray->GetSize())
-								pArray->SetSize(iSize * 2);
-							// Add object
-							(*pArray)[iSize++] = C4VObj(pLnk->Obj);
-						}
+						// Grow the array, if neccessary
+						if (iSize >= pArray->GetSize())
+							pArray->SetSize(iSize * 2);
+						// Add object
+						(*pArray)[iSize++] = C4VObj(obj);
 					}
+				}
+			}
+		}
 	}
 	else
 	{
@@ -351,16 +359,17 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs, const C4LSectors 
 		// Search
 		C4LArea Area(&Game.Objects.Sectors, *pBounds); C4LSector *pSct;
 		for (C4ObjectList *pLst = Area.FirstObjects(&pSct); pLst; pLst = Area.NextObjects(pLst, &pSct))
-			for (C4ObjectLink *pLnk = pLst->First; pLnk; pLnk = pLnk->Next)
-				if (pLnk->Obj->Status)
-					if (Check(pLnk->Obj))
-					{
-						// Grow the array, if neccessary
-						if (iSize >= pArray->GetSize())
-							pArray->SetSize(iSize * 2);
-						// Add object
-						(*pArray)[iSize++] = C4VObj(pLnk->Obj);
-					}
+			for (const auto obj : *pLst)
+			{
+				if (obj->Status && Check(obj))
+				{
+					// Grow the array, if neccessary
+					if (iSize >= pArray->GetSize())
+						pArray->SetSize(iSize * 2);
+					// Add object
+					(*pArray)[iSize++] = C4VObj(obj);
+				}
+			}
 	}
 	// Shrink array
 	pArray->SetSize(iSize);

@@ -164,7 +164,7 @@ bool CheckEnergyNeedChain(C4Object *pObj, C4ObjectList &rEnergyChainChecked)
 	if (!pObj) return false;
 
 	// No recursion, flag check
-	if (rEnergyChainChecked.GetLink(pObj)) return false;
+	if (rEnergyChainChecked.IsContained(pObj)) return false;
 	rEnergyChainChecked.Add(pObj, C4ObjectList::stNone);
 
 	// This object needs energy
@@ -173,8 +173,7 @@ bool CheckEnergyNeedChain(C4Object *pObj, C4ObjectList &rEnergyChainChecked)
 			return true;
 
 	// Check all power line connected structures
-	C4Object *cline; C4ObjectLink *clnk;
-	for (clnk = Game.Objects.First; clnk && (cline = clnk->Obj); clnk = clnk->Next)
+	for (const auto cline : Game.Objects)
 		if (cline->Status) if (cline->Def->id == C4ID_PowerLine)
 			if (cline->Action.Target == pObj)
 				if (CheckEnergyNeedChain(cline->Action.Target2, rEnergyChainChecked))
@@ -2884,17 +2883,15 @@ static C4Object *FnGetCursor(C4AulContext *cthr, C4ValueInt iPlr, C4ValueInt iIn
 	// iterate through selected crew for iIndex times
 	// status needs not be checked, as dead objects are never in Crew list
 	C4Object *pCrew;
-	for (C4ObjectLink *pLnk = pPlr->Crew.First; pLnk; pLnk = pLnk->Next)
-		// get crew object
-		if (pCrew = pLnk->Obj)
-			// is it selected?
-			if (pCrew->Select)
-				// is it not the cursor? (which is always first)
-				if (pCrew != pPlr->Cursor)
-					// enough searched?
-					if (!--iIndex)
-						// return it
-						return pCrew;
+	for (const auto pCrew : pPlr->Crew)
+		// is it selected?
+		if (pCrew->Select)
+			// is it not the cursor? (which is always first)
+			if (pCrew != pPlr->Cursor)
+				// enough searched?
+				if (!--iIndex)
+					// return it
+					return pCrew;
 	// nothing found at that index
 	return nullptr;
 }
@@ -5112,9 +5109,9 @@ static bool FnSetObjectLayer(C4AulContext *ctx, C4Object *pNewLayer, C4Object *p
 	// set layer object
 	pObj->pLayer = pNewLayer;
 	// set for all contents as well
-	for (C4ObjectLink *pLnk = pObj->Contents.First; pLnk; pLnk = pLnk->Next)
-		if ((pObj = pLnk->Obj) && pObj->Status)
-			pObj->pLayer = pNewLayer;
+	for (const auto obj : pObj->Contents)
+		if (obj->Status)
+			obj->pLayer = pNewLayer;
 	// success
 	return true;
 }

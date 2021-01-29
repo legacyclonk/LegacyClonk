@@ -44,7 +44,7 @@ public:
 	C4ObjResort *ResortProc; // current sheduled user resorts
 
 	bool Add(C4Object *nObj); // add object
-	bool Remove(C4Object *pObj); // clear pointers to object
+	bool Remove(C4Object *pObj) override; // clear pointers to object
 
 	C4ObjectList &ObjectsAt(int ix, int iy); // get object list for map pos
 
@@ -77,13 +77,13 @@ public:
 	void ResortUnsorted(); // resort any objects with unsorted-flag set into lists
 	void ExecuteResorts(); // execute custom resort procs
 
-	void DeleteObjects(); // delete all objects and links
-
 	void ClearDefPointers(C4Def *pDef); // clear all pointers into definition
 	void UpdateDefPointers(C4Def *pDef); // restore any cleared pointers after def reload
 
 	bool ValidateOwners();
 	bool AssignInfo();
+
+	void MoveLinkBefore(const C4ObjectList::iterator &before, const C4ObjectList::iterator &what);
 };
 
 class C4AulFunc;
@@ -96,7 +96,7 @@ public:
 	~C4ObjResort();
 
 	void Execute(); // do the resort!
-	void Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast); // sort list between pFirst and pLast
+	void Sort(C4ObjectList::mutable_iterator pFirst, const C4ObjectList::mutable_iterator &pLast); // sort list between pFirst and pLast
 	void SortObject(); // sort single object within its category
 
 	int Category; // object category mask to be sorted

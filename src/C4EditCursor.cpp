@@ -136,11 +136,11 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 		// Shift always indicates a target outside the current selection
 		else
 		{
-			Target = ((wKeyFlags & MK_SHIFT) && Selection.Last) ? Selection.Last->Obj : nullptr;
+			Target = ((wKeyFlags & MK_SHIFT) && Selection.crbegin() != Selection.crend()) ? *Selection.crbegin() : nullptr;
 			do
 			{
 				Target = Game.FindObject(0, X, Y, 0, 0, OCF_NotContained, nullptr, nullptr, nullptr, nullptr, ANY_OWNER, Target);
-			} while ((wKeyFlags & MK_SHIFT) && Target && Selection.GetLink(Target));
+			} while ((wKeyFlags & MK_SHIFT) && Target && Selection.IsContained(Target));
 		}
 		break;
 
@@ -208,7 +208,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 		else
 		{
 			// Click on unselected: select single
-			if (Target && !Selection.GetLink(Target))
+			if (Target && !Selection.IsContained(Target))
 			{
 				Selection.Clear(); Selection.Add(Target, C4ObjectList::stNone);
 			}
@@ -252,8 +252,8 @@ bool C4EditCursor::RightButtonDown(bool fControl)
 		{
 			// Check whether cursor is on anything in the selection
 			bool fCursorIsOnSelection = false;
-			for (C4ObjectLink *pLnk = Selection.First; pLnk; pLnk = pLnk->Next)
-				if (pLnk->Obj->At(X, Y))
+			for (const auto obj : Selection)
+				if (obj->At(X, Y))
 				{
 					fCursorIsOnSelection = true;
 					break;
@@ -261,7 +261,7 @@ bool C4EditCursor::RightButtonDown(bool fControl)
 			if (!fCursorIsOnSelection)
 			{
 				// Click on unselected
-				if (Target && !Selection.GetLink(Target))
+				if (Target && !Selection.IsContained(Target))
 				{
 					Selection.Clear(); Selection.Add(Target, C4ObjectList::stNone);
 				}
@@ -383,8 +383,8 @@ bool C4EditCursor::Duplicate()
 void C4EditCursor::Draw(C4FacetEx &cgo)
 {
 	// Draw selection marks
-	C4Object *cobj; C4ObjectLink *clnk; C4Facet frame;
-	for (clnk = Selection.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
+	C4Facet frame;
+	for (const auto cobj : Selection)
 	{
 		// target pos (parallax)
 		int32_t cotx = cgo.TargetX, coty = cgo.TargetY; cobj->TargetPos(cotx, coty, cgo);
@@ -451,8 +451,7 @@ void C4EditCursor::MoveSelection(int32_t iXOff, int32_t iYOff)
 void C4EditCursor::FrameSelection()
 {
 	Selection.Clear();
-	C4Object *cobj; C4ObjectLink *clnk;
-	for (clnk = Game.Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
+	for (const auto cobj : Game.Objects)
 		if (cobj->Status) if (cobj->OCF & OCF_NotContained)
 		{
 			if (Inside(cobj->x, (std::min)(X, X2), (std::max)(X, X2)) && Inside(cobj->y, (std::min)(Y, Y2), (std::max)(Y, Y2)))
@@ -477,7 +476,7 @@ void C4EditCursor::Default()
 	hMenu = nullptr;
 #endif
 	Hold = DragFrame = DragLine = false;
-	Selection.Default();
+	Selection.Clear();
 	fSelectionChanged = false;
 }
 
@@ -636,18 +635,16 @@ void C4EditCursor::GrabContents()
 
 void C4EditCursor::UpdateDropTarget(uint16_t wKeyFlags)
 {
-	C4Object *cobj; C4ObjectLink *clnk;
-
 	DropTarget = nullptr;
 
 	if (wKeyFlags & MK_CONTROL)
 		if (Selection.GetObject())
-			for (clnk = Game.Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
+			for (const auto cobj : Game.Objects)
 				if (cobj->Status)
 					if (!cobj->Contained)
 						if (Inside<int32_t>(X - (cobj->x + cobj->Shape.x), 0, cobj->Shape.Wdt - 1))
 							if (Inside<int32_t>(Y - (cobj->y + cobj->Shape.y), 0, cobj->Shape.Hgt - 1))
-								if (!Selection.GetLink(cobj))
+								if (!Selection.IsContained(cobj))
 								{
 									DropTarget = cobj; break;
 								}
@@ -724,9 +721,12 @@ void C4EditCursor::EMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int
 		pObjIDs = new int32_t[iObjCnt];
 		// fill
 		int32_t i = 0;
-		for (C4ObjectLink *pLnk = pObjs->First; pLnk; pLnk = pLnk->Next, i++)
-			if (pLnk->Obj && pLnk->Obj->Status)
-				pObjIDs[i] = pLnk->Obj->Number;
+		for (const auto obj : *pObjs)
+		{
+			if (obj->Status)
+				pObjIDs[i] = obj->Number;
+			++i;
+		}
 	}
 
 	// execute control

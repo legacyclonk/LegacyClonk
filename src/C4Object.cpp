@@ -34,6 +34,7 @@
 #include <C4Player.h>
 #include <C4ObjectMenu.h>
 
+#include <iterator>
 #include <limits>
 #include <utility>
 
@@ -118,7 +119,7 @@ void C4Object::Default()
 	Action.Default();
 	Shape.Default();
 	fOwnVertices = 0;
-	Contents.Default();
+	Contents.Clear();
 	Component.Clear();
 	SolidMask.Default();
 	PictureRect.Default();
@@ -282,16 +283,16 @@ void C4Object::AssignRemoval(bool fExitContents)
 	// count decrease
 	Def->Count--;
 	// Kill contents
-	C4Object *cobj; C4ObjectLink *clnk, *next;
-	for (clnk = Contents.First; clnk && (cobj = clnk->Obj); clnk = next)
+	for (auto it = Contents.cbegin(); it != Contents.cend(); )
 	{
-		next = clnk->Next;
+		const auto obj = *it;
+		++it;
 		if (fExitContents)
-			cobj->Exit(x, y);
+			obj->Exit(x, y);
 		else
 		{
-			Contents.Remove(cobj);
-			cobj->AssignRemoval();
+			Contents.Remove(obj);
+			obj->AssignRemoval();
 		}
 	}
 	// remove from container *after* contents have been removed!
@@ -969,12 +970,17 @@ void C4Object::AutoSellContents()
 {
 	C4Player *pPlr = Game.Players.Get(Base); if (!pPlr) return;
 
-	for (const auto &obj : Contents)
+	for (auto it = Contents.cbegin(); it != Contents.cend(); )
 	{
+		const auto obj = *it;
+		++it;
 		if (obj && obj->Status)
 		{
-			for (const auto &contents : obj->Contents)
+			const auto &contents2 = obj->Contents;
+			for (auto it2 = contents2.cbegin(); it2 != contents2.cend(); )
 			{
+				const auto contents = *it2;
+				++it2;
 				if (contents && contents->Status && contents->Def->BaseAutoSell && pPlr->CanSell(contents))
 				{
 					contents->Exit();
@@ -1217,8 +1223,8 @@ bool C4Object::ChangeDef(C4ID idNew)
 	// Any effect callbacks to this object might need to reinitialize their target functions
 	// This is ugly, because every effect there is must be updated...
 	if (Game.pGlobalEffects) Game.pGlobalEffects->OnObjectChangedDef(this);
-	for (C4ObjectLink *pLnk = Game.Objects.First; pLnk; pLnk = pLnk->Next)
-		if (pLnk->Obj->pEffects) pLnk->Obj->pEffects->OnObjectChangedDef(this);
+	for (const auto obj : Game.Objects)
+		if (obj->pEffects) obj->pEffects->OnObjectChangedDef(this);
 	// Containment (no Entrance)
 	if (pContainer) Enter(pContainer, false);
 	// Done
@@ -2928,6 +2934,12 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 	bool fContainedRightOverride = false; // carlo
 	bool fContentsActivationOverride = false;
 
+	constexpr auto hasGettableContents = [](const C4ObjectList &list) -> bool
+	{
+		const auto end = list.cend();
+		return std::find_if(list.cbegin(), end, [](const auto obj) -> bool { return obj->Def->Category & C4D_Get; }) != end;
+	};
+
 	// Active menu (does not consider owner's active player menu)
 	if (Menu && Menu->IsActive()) return;
 
@@ -2967,7 +2979,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 					Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), true, 0);
 				}
 				// Get
-				else if (Action.Target->Contents.ListIDCount(C4D_Get) && (Action.Target->Def->GrabPutGet & C4D_Grab_Get))
+				else if (hasGettableContents(Action.Target->Contents) && (Action.Target->Def->GrabPutGet & C4D_Grab_Get))
 				{
 					Action.Target->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, FormatString(LoadResStr("IDS_CON_GET"), Action.Target->GetName()).getData(), &ccgo);
 					Action.Target->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), false, Action.Target->Color, Action.Target);
@@ -3014,8 +3026,8 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 		}
 		// Contained put & activate
 		// carlo
-		int32_t nContents = Contained->Contents.ListIDCount(C4D_Get);
-		if (nContents)
+		const bool hasContents = hasGettableContents(Contained->Contents);
+		if (hasContents)
 		{
 			// carlo: Direct get ("Take2")
 			if (!fContainedRightOverride)
@@ -3039,7 +3051,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 			tObj->Def->Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Right, C4FCT_Top), false, tObj->Color, tObj);
 			Game.GraphicsResource.fctHand.Draw(ccgo2 = ccgo.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom), true, 0);
 		}
-		else if (nContents)
+		else if (hasContents)
 		{
 			// Get
 			Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Throw, pRegions, Owner, FormatString(LoadResStr("IDS_CON_ACTIVATEFROM"), Contained->GetName()).getData(), &ccgo);
@@ -3136,7 +3148,7 @@ bool C4Object::AssignInfo()
 	if (Info || !ValidPlr(Owner)) return false;
 	// In crew list?
 	C4Player *pPlr = Game.Players.Get(Owner);
-	if (pPlr->Crew.GetLink(this))
+	if (pPlr->Crew.IsContained(this))
 	{
 		// Register with player
 		if (!Game.Players.Get(Owner)->MakeCrewMember(this, true, false))
@@ -5706,22 +5718,28 @@ bool C4Object::ShiftContents(bool fShiftBack, bool fDoCalls)
 	C4Object *c_obj = Contents.GetObject();
 	if (!c_obj) return false;
 	// get next/previous
-	C4ObjectLink *pLnk = fShiftBack ? (Contents.Last) : (Contents.First->Next);
-	for (;;)
+	const auto end = Contents.cend(), begin = Contents.cbegin();
+	for (auto it = fShiftBack ? std::next(begin) : std::prev(end); ;)
 	{
 		// end reached without success
-		if (!pLnk) return false;
+		if (it == end || it == begin) return false;
 		// check object
-		C4Object *pObj = pLnk->Obj;
-		if (pObj->Status)
-			if (!c_obj->CanConcatPictureWith(pObj))
+		if ((*it)->Status)
+			if (!c_obj->CanConcatPictureWith(*it))
 			{
 				// object different: shift to this
-				DirectComContents(pObj, !!fDoCalls);
+				DirectComContents(*it, !!fDoCalls);
 				return true;
 			}
 		// next/prev item
-		pLnk = fShiftBack ? (pLnk->Prev) : (pLnk->Next);
+		if (fShiftBack)
+		{
+			--it;
+		}
+		else
+		{
+			++it;
+		}
 	}
 	// not reached
 }
@@ -5812,10 +5830,10 @@ bool C4Object::PutAwayUnusedObject(C4Object *pToMakeRoomForObject)
 	else
 	{
 		// is there any unused object to put away?
-		if (!Contents.Last) return false;
+		if (Contents.cbegin() == Contents.cend()) return false;
 		// defaultly, it's the last object in the list
 		// (contents list cannot have invalid status-objects)
-		pUnusedObject = Contents.Last->Obj;
+		pUnusedObject = *Contents.crbegin();
 	}
 	// no object to put away? fail
 	if (!pUnusedObject) return false;
@@ -5964,11 +5982,11 @@ bool C4Object::StatusDeactivate(bool fClearPointers)
 void C4Object::ClearContentsAndContained(bool fDoCalls)
 {
 	// exit contents from container
-	C4Object *cobj; C4ObjectLink *clnk, *next;
-	for (clnk = Contents.First; clnk && (cobj = clnk->Obj); clnk = next)
+	for (auto it = Contents.cbegin(); it != Contents.cend(); )
 	{
-		next = clnk->Next;
-		cobj->Exit(x, y, 0, Fix0, Fix0, Fix0, fDoCalls);
+		const auto obj = *it;
+		++it;
+		obj->Exit(x, y, 0, Fix0, Fix0, Fix0, fDoCalls);
 	}
 	// remove from container *after* contents have been removed!
 	if (Contained) Exit(x, y, 0, Fix0, Fix0, Fix0, fDoCalls);
@@ -6117,11 +6135,10 @@ void C4Object::GrabContents(C4Object *pFrom)
 {
 	// create a temp list of all objects and transfer it
 	// this prevents nasty deadlocks caused by RejectEntrance-scripts
-	C4ObjectList tmpList; tmpList.Copy(pFrom->Contents);
-	C4ObjectLink *cLnk;
-	for (cLnk = tmpList.First; cLnk; cLnk = cLnk->Next)
-		if (cLnk->Obj->Status)
-			cLnk->Obj->Enter(this);
+	C4ObjectList tmpList{pFrom->Contents};
+	for (const auto obj : tmpList)
+		if (obj->Status)
+			obj->Enter(this);
 }
 
 bool C4Object::CanConcatPictureWith(C4Object *pOtherObject)

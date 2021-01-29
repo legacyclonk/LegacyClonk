@@ -28,6 +28,10 @@
 #include <C4Game.h>
 #include <C4Wrappers.h>
 
+#include "StdHelpers.h"
+
+#include <iterator>
+
 C4GameObjects::C4GameObjects()
 {
 	Default();
@@ -110,7 +114,7 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 	}
 
 	if (focf && tocf)
-		for (C4ObjectList::iterator iter = begin(); iter != end() && (obj1 = *iter); ++iter)
+		for (auto iter = safeBegin(); iter != safeEnd() && (obj1 = *iter); ++iter)
 			if (obj1->Status && !obj1->Contained)
 				if (obj1->OCF & focf)
 				{
@@ -148,13 +152,13 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 	focf |= OCF_Alive; tocf |= OCF_HitSpeed2;
 
 	if (focf && tocf)
-		for (C4ObjectList::iterator iter = begin(); iter != end() && (obj1 = *iter); ++iter)
+		for (auto iter = safeBegin(); iter != safeEnd() && (obj1 = *iter); ++iter)
 			if (obj1->Status && !obj1->Contained && (obj1->OCF & focf))
 			{
 				uint32_t Marker = GetNextMarker();
 				C4LSector *pSct;
 				for (C4ObjectList *pLst = obj1->Area.FirstObjects(&pSct); pLst; pLst = obj1->Area.NextObjects(pLst, &pSct))
-					for (C4ObjectList::iterator iter2 = pLst->begin(); iter2 != pLst->end() && (obj2 = *iter2); ++iter2)
+					for (auto iter2 = pLst->safeBegin(); iter2 != pLst->safeEnd() && (obj2 = *iter2); ++iter2)
 						if (obj2->Status && !obj2->Contained && (obj2 != obj1) && (obj2->OCF & tocf))
 							if (Inside<int32_t>(obj2->x - (obj1->x + obj1->Shape.x), 0, obj1->Shape.Wdt - 1))
 								if (Inside<int32_t>(obj2->y - (obj1->y + obj1->Shape.y), 0, obj1->Shape.Hgt - 1))
@@ -207,10 +211,10 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 	}
 
 	if (focf && tocf)
-		for (C4ObjectList::iterator iter = begin(); iter != end() && (obj1 = *iter); ++iter)
+		for (auto iter = safeBegin(); iter != safeEnd() && (obj1 = *iter); ++iter)
 			if (obj1->Status && obj1->Contained && (obj1->OCF & focf))
 			{
-				for (C4ObjectList::iterator iter2 = obj1->Contained->Contents.begin(); iter2 != end() && (obj2 = *iter2); ++iter2)
+				for (auto iter2 = obj1->Contained->Contents.safeBegin(); iter2 != safeEnd() && (obj2 = *iter2); ++iter2)
 					if (obj2->Status && obj2->Contained && (obj2 != obj1) && (obj2->OCF & tocf))
 						if (obj1->pLayer == obj2->pLayer)
 						{
@@ -234,9 +238,8 @@ void C4GameObjects::CrossCheck() // Every Tick1 by ExecObjects
 C4Object *C4GameObjects::AtObject(int ctx, int cty, uint32_t &ocf, C4Object *exclude)
 {
 	uint32_t cocf;
-	C4Object *cObj; C4ObjectLink *clnk;
-
-	for (clnk = ObjectsAt(ctx, cty).First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	for (const auto cObj : ObjectsAt(ctx, cty))
+	{
 		if (!exclude || (cObj != exclude && exclude->pLayer == cObj->pLayer)) if (cObj->Status)
 		{
 			cocf = ocf | OCF_Exclusive;
@@ -248,6 +251,7 @@ C4Object *C4GameObjects::AtObject(int ctx, int cty, uint32_t &ocf, C4Object *exc
 				else return nullptr;
 			}
 		}
+	}
 	return nullptr;
 }
 
@@ -292,32 +296,24 @@ C4ObjectList &C4GameObjects::ObjectsInt()
 
 void C4GameObjects::RemoveSolidMasks()
 {
-	C4ObjectLink *cLnk;
-	for (cLnk = First; cLnk; cLnk = cLnk->Next)
-		if (cLnk->Obj->Status)
-			if (cLnk->Obj->pSolidMaskData)
-				cLnk->Obj->pSolidMaskData->Remove(false, false);
+	for (const auto obj : *this)
+	{
+		if (obj->Status && obj->pSolidMaskData)
+		{
+				obj->pSolidMaskData->Remove(false, false);
+		}
+	}
 }
 
 void C4GameObjects::PutSolidMasks()
 {
-	C4ObjectLink *cLnk;
-	for (cLnk = First; cLnk; cLnk = cLnk->Next)
-		if (cLnk->Obj->Status)
-			cLnk->Obj->UpdateSolidMask(false);
-}
-
-void C4GameObjects::DeleteObjects()
-{
-	// delete links and objects
-	while (First)
+	for (const auto obj : *this)
 	{
-		C4Object *pObj = First->Obj;
-		Remove(pObj);
-		delete pObj;
+		if (obj->Status)
+		{
+			obj->UpdateSolidMask(false);
+		}
 	}
-	// reset mass
-	Mass = 0;
 }
 
 void C4GameObjects::Clear(bool fClearInactive)
@@ -366,38 +362,49 @@ void C4ObjResort::Execute()
 		return;
 	}
 	// get first link to start sorting
-	C4ObjectLink *pLnk = Game.Objects.Last; if (!pLnk) return;
+	auto it = Game.Objects.rbegin();
+	const auto end = Game.Objects.rend();
+	if (it == end) return;
 	// sort all categories given; one by one (sort by category is ensured by C4ObjectList::Add)
 	for (int iCat = 1; iCat < C4D_SortLimit; iCat <<= 1)
+	{
 		if (iCat & Category)
 		{
 			// get first link of this category
-			while (!(pLnk->Obj->Status && (pLnk->Obj->Category & iCat)))
-				if (!(pLnk = pLnk->Prev))
+			while (!((*it)->Status && ((*it)->Category & iCat)))
+			{
+				if (++it == end)
+				{
 					// no more objects to sort: done
 					break;
+				}
+			}
 			// first link found?
-			if (pLnk)
+			if (it != end)
 			{
 				// get last link of this category
-				C4ObjectLink *pNextLnk = pLnk;
-				while (!pLnk->Obj->Status || (pNextLnk->Obj->Category & iCat))
-					if (!(pNextLnk = pNextLnk->Prev))
+				auto nextIt = it;
+				while (!(*nextIt)->Status || ((*nextIt)->Category & iCat))
+				{
+					if (++nextIt == end)
 						// no more objects: end of list reached
 						break;
+				}
 				// get previous link, which is the last in the list of this category
-				C4ObjectLink *pLastLnk;
-				if (pNextLnk) pLastLnk = pNextLnk->Next; else pLastLnk = Game.Objects.First;
+				auto lastIt = nextIt;
+				--lastIt;
 				// get next valid (there must be at least one: pLnk; so this loop should be safe)
-				while (!pLastLnk->Obj->Status) pLastLnk = pLastLnk->Next;
+				while (!(*lastIt)->Status) --lastIt;
 				// now sort this portion of the list
-				Sort(pLastLnk, pLnk);
+				Sort(std::prev(lastIt.base()), std::prev(it.base()));
 				// start searching at end of this list next time
 				// if the end has already been reached: stop here
-				if (!(pLnk = pNextLnk)) return;
+				it = nextIt;
+				if (it == end) return;
 			}
 			// continue with next category
 		}
+	}
 }
 
 void C4ObjResort::SortObject()
@@ -408,15 +415,16 @@ void C4ObjResort::SortObject()
 	C4AulParSet Pars;
 	Pars[1].Set(C4VObj(pSortObj));
 	// first, check forward in list
-	C4ObjectLink *pMoveLink = nullptr;
-	C4ObjectLink *pLnk = Game.Objects.GetLink(pSortObj);
-	C4ObjectLink *pLnkBck = pLnk;
-	C4Object *pObj2; int iResult;
-	if (!pLnk) return;
-	while (pLnk = pLnk->Next)
+	auto pLnk = Game.Objects.GetLink(pSortObj);
+	const auto endLnk = Game.Objects.cend();
+	if (pLnk == endLnk) return;
+	auto pLnkBck = pLnk;
+	auto pMoveLink = endLnk;
+	int iResult;
+	while (++pLnk != endLnk)
 	{
 		// get object
-		pObj2 = pLnk->Obj;
+		const auto pObj2 = *pLnk;
 		if (!pObj2->Status) continue;
 		// does the category still match?
 		if (!(pObj2->Category & pSortObj->Category)) break;
@@ -427,7 +435,7 @@ void C4ObjResort::SortObject()
 		if (iResult < 0) pMoveLink = pLnk;
 	}
 	// check if movement has to be done
-	if (pMoveLink)
+	if (pMoveLink != endLnk)
 	{
 		// move link directly after pMoveLink
 		// FIXME: Inform C4ObjectList that this is a reorder, not a remove+insert
@@ -438,46 +446,50 @@ void C4ObjResort::SortObject()
 	}
 	else
 	{
-		// no movement yet: check backwards in list
-		Pars[0].Set(C4VObj(pSortObj));
-		pLnk = pLnkBck;
-		while (pLnk = pLnk->Prev)
+		const auto begin = Game.Objects.cbegin();
+		auto pMoveLink = pLnk;
+		if (pLnkBck != begin)
 		{
-			// get object
-			pObj2 = pLnk->Obj;
-			if (!pObj2->Status) continue;
-			// does the category still match?
-			if (!(pObj2->Category & pSortObj->Category)) break;
-			// perform the check
-			Pars[1].Set(C4VObj(pObj2));
-			iResult = OrderFunc->Exec(nullptr, Pars).getInt();
-			if (iResult > 0) break;
-			if (iResult < 0) pMoveLink = pLnk;
+			// no movement yet: check backwards in list
+			Pars[0].Set(C4VObj(pSortObj));
+			auto pLnk = pLnkBck;
+			for (--pLnk; ; --pLnk)
+			{
+				// get object
+				const auto pObj2 = *pLnk;
+				if (pObj2->Status)
+				{
+					// does the category still match?
+					if (!(pObj2->Category & pSortObj->Category)) break;
+					// perform the check
+					Pars[1].Set(C4VObj(pObj2));
+					iResult = OrderFunc->Exec(nullptr, Pars).getInt();
+					if (iResult > 0) break;
+					if (iResult < 0) pMoveLink = pLnk;
+				}
+				if (pLnk == begin)
+				{
+					break;
+				}
+			}
 		}
 		// no movement to be done? finish
-		if (!pMoveLink) return;
+		if (pMoveLink == endLnk) return;
 		// move link directly before pMoveLink
-		// move out of current position
-		Game.Objects.RemoveLink(pLnkBck);
-		// put into new position
-		Game.Objects.InsertLinkBefore(pLnkBck, pMoveLink);
+		Game.Objects.MoveLinkBefore(pLnkBck, pMoveLink);
 	}
 	// object has been resorted: resort into area lists, too
 	Game.Objects.UpdatePosResort(pSortObj);
 	// done
 }
 
-void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
+void C4ObjResort::Sort(C4ObjectList::mutable_iterator pFirst, const C4ObjectList::mutable_iterator &pLast)
 {
 #ifdef _DEBUG
 	assert(Game.Objects.Sectors.CheckSort());
 #endif
 	// do a simple insertion-like sort
-	C4ObjectLink *pCurr; // current link to analyse
-	C4ObjectLink *pCurr2; // second (previous) link to analyse
-	C4ObjectLink *pNewFirst; // next link to be first
-
-	C4ObjectLink *pFirstBck = pFirst; // backup of first link
+	const auto pFirstBck = pFirst; // backup of first link
 
 	// pre-build parameters
 	C4AulParSet Pars;
@@ -486,27 +498,26 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 	while (pFirst != pLast)
 	{
 		// start from the very end of the list
-		pCurr = pNewFirst = pLast;
+		auto pCurr = pLast, pNewFirst = pLast;
 		// loop the checks up to the first list item to check
 		while (pCurr != pFirst)
 		{
+			const auto pCurrBck = pCurr;
 			// get second check item
-			pCurr2 = pCurr->Prev;
-			while (!pCurr2->Obj->Status) pCurr2 = pCurr2->Prev;
+			--pCurr;
+			while (!(*pCurr)->Status) --pCurr;
 			// perform the check
-			Pars[0].Set(C4VObj(pCurr->Obj)); Pars[1].Set(C4VObj(pCurr2->Obj));
+			Pars[0].Set(C4VObj(*pCurrBck)); Pars[1].Set(C4VObj(*pCurr));
 			if (OrderFunc->Exec(nullptr, Pars).getInt() < 0)
 			{
 				// so there's something to be reordered: swap the links
 				// FIXME: Inform C4ObjectList about this reorder
-				C4Object *pObj = pCurr->Obj; pCurr->Obj = pCurr2->Obj; pCurr2->Obj = pObj;
+				std::swap(*pCurrBck, *pCurr);
 				// and readd to sector lists
-				pCurr->Obj->Unsorted = pCurr2->Obj->Unsorted = true;
+				(*pCurrBck)->Unsorted = (*pCurr)->Unsorted = true;
 				// grow list section to scan next
-				pNewFirst = pCurr;
+				pNewFirst = pCurrBck;
 			}
-			// advance in list
-			pCurr = pCurr2;
 		}
 		// reduce area to be checked
 		pFirst = pNewFirst;
@@ -515,9 +526,9 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 	assert(Game.Objects.Sectors.CheckSort());
 #endif
 	// resort objects in sector lists
-	for (pCurr = pFirstBck; pCurr != pLast->Next; pCurr = pCurr->Next)
+	for (auto pCurr = pFirstBck; pCurr != std::next(pLast); ++pCurr)
 	{
-		C4Object *pObj = pCurr->Obj;
+		C4Object *pObj = *pCurr;
 		if (pObj->Status && pObj->Unsorted)
 		{
 			pObj->Unsorted = false;
@@ -545,18 +556,18 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 		return 0;
 
 	// Process objects
-	C4ObjectLink *cLnk;
-	C4Object *pObj;
 	bool fObjectNumberCollision = false;
 	int32_t iMaxObjectNumber = 0;
-	for (cLnk = Last; cLnk; cLnk = cLnk->Prev)
+	for (const auto pObj : StdReversed{*this})
 	{
-		C4Object *pObj = cLnk->Obj;
 		// check object number collision with inactive list
 		if (fKeepInactive)
 		{
-			for (C4ObjectLink *clnk = InactiveObjects.First; clnk; clnk = clnk->Next)
-				if (clnk->Obj->Number == pObj->Number) fObjectNumberCollision = true;
+			for (const auto obj : InactiveObjects)
+			{
+				if (obj->Number == pObj->Number) fObjectNumberCollision = true;
+				break;
+			}
 		}
 		// keep track of numbers
 		iMaxObjectNumber = std::max<long>(iMaxObjectNumber, pObj->Number);
@@ -572,8 +583,8 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 	// Denumerate pointers
 	// if object numbers collideded, numbers will be adjusted afterwards
 	// so fake inactive object list empty meanwhile
-	C4ObjectLink *pInFirst;
-	if (fObjectNumberCollision) { pInFirst = InactiveObjects.First; InactiveObjects.First = nullptr; }
+	C4ObjectList inactiveBackup;
+	if (fObjectNumberCollision) { inactiveBackup.Copy(InactiveObjects); InactiveObjects.Clear(); }
 	// denumerate pointers
 	Denumerate();
 	// update object enumeration index now, because calls like UpdateTransferZone might create objects
@@ -581,18 +592,23 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 	// end faking and adjust object numbers
 	if (fObjectNumberCollision)
 	{
-		InactiveObjects.First = pInFirst;
+		InactiveObjects.Copy(inactiveBackup);
 		// simply renumber all inactive objects
-		for (cLnk = InactiveObjects.First; cLnk; cLnk = cLnk->Next)
-			if ((pObj = cLnk->Obj)->Status)
-				pObj->Number = ++Game.ObjectEnumerationIndex;
+		for (const auto obj : InactiveObjects)
+		{
+			if (obj->Status)
+			{
+				obj->Number = ++Game.ObjectEnumerationIndex;
+			}
+		}
 	}
 
 	// special checks:
 	// -contained/contents-consistency
 	// -StaticBack-objects zero speed
-	for (cLnk = First; cLnk; cLnk = cLnk->Next)
-		if ((pObj = cLnk->Obj)->Status)
+	for (const auto pObj : *this)
+	{
+		if (pObj->Status)
 		{
 			// staticback must not have speed
 			if (pObj->Category & C4D_StaticBack)
@@ -601,26 +617,26 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 			}
 			// contained must be in contents list
 			if (pObj->Contained)
-				if (!pObj->Contained->Contents.GetLink(pObj))
+				if (!pObj->Contained->Contents.IsContained(pObj))
 				{
 					DebugLogF("Error in Objects.txt: Container of #%d is #%d, but not found in contents list!", pObj->Number, pObj->Contained->Number);
 					pObj->Contained->Contents.Add(pObj, C4ObjectList::stContents);
 				}
 			// all contents must have contained set; otherwise, remove them!
 			C4Object *pObj2;
-			for (C4ObjectLink *cLnkCont = pObj->Contents.First; cLnkCont; cLnkCont = cLnkCont->Next)
+			for (auto it = pObj->Contents.begin(); it != pObj->Contents.end(); ++it)
 			{
 				// check double links
-				if (pObj->Contents.GetLink(cLnkCont->Obj) != cLnkCont)
+				if (pObj->Contents.GetLink(*it) != it)
 				{
-					DebugLogF("Error in Objects.txt: Double containment of #%d by #%d!", cLnkCont->Obj->Number, pObj->Number);
+					DebugLogF("Error in Objects.txt: Double containment of #%d by #%d!", (*it)->Number, pObj->Number);
 					// this remove-call will only remove the previous (dobuled) link, so cLnkCont should be save
-					pObj->Contents.Remove(cLnkCont->Obj);
+					pObj->Contents.Remove(*it);
 					// contents checked already
 					continue;
 				}
 				// check contents/contained-relation
-				if ((pObj2 = cLnkCont->Obj)->Status)
+				if (const auto pObj2 = *it; pObj2->Status)
 					if (pObj2->Contained != pObj)
 					{
 						DebugLogF("Error in Objects.txt: Object #%d not in container #%d as referenced!", pObj2->Number, pObj->Number);
@@ -628,21 +644,21 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 					}
 			}
 		}
+	}
 	// sort out inactive objects
-	C4ObjectLink *cLnkNext;
-	for (cLnk = First; cLnk; cLnk = cLnkNext)
+	for (auto it = begin(); it != end(); )
 	{
-		cLnkNext = cLnk->Next;
-		if (cLnk->Obj->Status == C4OS_INACTIVE)
+		if ((*it)->Status == C4OS_INACTIVE)
 		{
-			if (cLnk->Prev) cLnk->Prev->Next = cLnkNext; else First = cLnkNext;
-			if (cLnkNext) cLnkNext->Prev = cLnk->Prev; else Last = cLnk->Prev;
-			if (cLnk->Prev = InactiveObjects.Last)
-				InactiveObjects.Last->Next = cLnk;
-			else
-				InactiveObjects.First = cLnk;
-			InactiveObjects.Last = cLnk; cLnk->Next = nullptr;
-			Mass -= pObj->Mass;
+			const auto obj = *it;
+			it = Objects.erase(it);
+			Mass -= obj->Mass;
+
+			InactiveObjects.Add(obj, C4ObjectList::stNone);
+		}
+		else
+		{
+			++it;
 		}
 	}
 
@@ -660,14 +676,14 @@ int C4GameObjects::Load(C4Group &hGroup, bool fKeepInactive)
 	FixObjectOrder();
 
 	// misc updates
-	for (cLnk = First; cLnk; cLnk = cLnk->Next)
-		if ((pObj = cLnk->Obj)->Status)
+	for (const auto obj : *this)
+		if (obj->Status)
 		{
 			// add to plrview
-			pObj->PlrFoWActualize();
+			obj->PlrFoWActualize();
 			// update flipdir (for old objects.txt with no flipdir defined)
 			// assigns Action.DrawDir as well
-			pObj->UpdateFlipDir();
+			obj->UpdateFlipDir();
 		}
 	// Done
 	return ObjectCount();
@@ -770,16 +786,25 @@ bool C4GameObjects::OrderObjectAfter(C4Object *pObj1, C4Object *pObj2)
 void C4GameObjects::FixObjectOrder()
 {
 	// fixes the object order so it matches the global object order sorting constraints
-	C4ObjectLink *pLnk0 = First, *pLnkL = Last;
+	const auto begin = Objects.begin();
+	const auto end = Objects.end();
+	auto pLnk0 = begin, pLnkL = end;
+
+	// empty?
+	if (begin == end)
+	{
+		return;
+	}
+	--pLnkL;
 	while (pLnk0 != pLnkL)
 	{
-		C4ObjectLink *pLnk1stUnsorted = nullptr, *pLnkLastUnsorted = nullptr, *pLnkPrev = nullptr, *pLnk;
+		auto pLnk1stUnsorted = end, pLnkLastUnsorted = end, pLnkPrev = end;
 		C4Object *pLastWarnObj = nullptr;
 		// forward fix
 		uint32_t dwLastCategory = C4D_SortLimit;
-		for (pLnk = pLnk0; pLnk != pLnkL->Next; pLnk = pLnk->Next)
+		for (auto pLnk = pLnk0; pLnk != std::next(pLnkL); ++pLnk)
 		{
-			C4Object *pObj = pLnk->Obj;
+			C4Object *pObj = *pLnk;
 			if (pObj->Unsorted || !pObj->Status) continue;
 			uint32_t dwCategory = pObj->Category & C4D_SortLimit;
 			// must have exactly one SortOrder-bit set
@@ -790,8 +815,8 @@ void C4GameObjects::FixObjectOrder()
 			}
 			else
 			{
-				uint32_t dwCat2 = dwCategory; int i = 0;
-				while (~dwCat2 & 1) { dwCat2 = dwCat2 >> 1; ++i; }
+				uint32_t dwCat2 = dwCategory, i;
+				for (i = 0; ~dwCat2 & 1; ++i) { dwCat2 >>= 1; }
 				if (dwCat2 != 1)
 				{
 					DebugLogF("Objects.txt: Object #%d has invalid sorting category %x!", static_cast<int>(pObj->Number), static_cast<unsigned int>(dwCategory));
@@ -803,45 +828,52 @@ void C4GameObjects::FixObjectOrder()
 			if (dwCategory > dwLastCategory)
 			{
 				// SORT ERROR! (note that pLnkPrev can't be 0)
-				if (pLnkPrev->Obj != pLastWarnObj)
+				if (*pLnkPrev != pLastWarnObj)
 				{
-					DebugLogF("Objects.txt: Wrong object order of #%d-#%d! (down)", static_cast<int>(pObj->Number), static_cast<int>(pLnkPrev->Obj->Number));
-					pLastWarnObj = pLnkPrev->Obj;
+					DebugLogF("Objects.txt: Wrong object order of #%d-#%d! (down)", static_cast<int>(pObj->Number), static_cast<int>((*pLnkPrev)->Number));
+					pLastWarnObj = *pLnkPrev;
 				}
-				pLnk->Obj = pLnkPrev->Obj;
-				pLnkPrev->Obj = pObj;
+				std::swap(*pLnk, *pLnkPrev);
 				pLnkLastUnsorted = pLnkPrev;
 			}
 			else
 				dwLastCategory = dwCategory;
 			pLnkPrev = pLnk;
 		}
-		if (!pLnkLastUnsorted) break; // done
+		if (pLnkLastUnsorted == end) break; // done
 		pLnkL = pLnkLastUnsorted;
 		// backwards fix
 		dwLastCategory = 0;
-		for (pLnk = pLnkL; pLnk != pLnk0->Prev; pLnk = pLnk->Prev)
+		for (auto pLnk = pLnkL; ; --pLnk)
 		{
-			C4Object *pObj = pLnk->Obj;
-			if (pObj->Unsorted || !pObj->Status) continue;
+			C4Object *pObj = *pLnk;
+			if (pObj->Unsorted || !pObj->Status)
+			{
+				if (pLnk == pLnk0)
+				{
+					break;
+				}
+				continue;
+			}
 			uint32_t dwCategory = pObj->Category & C4D_SortLimit;
 			if (dwCategory < dwLastCategory)
 			{
 				// SORT ERROR! (note that pLnkPrev can't be 0)
-				if (pLnkPrev->Obj != pLastWarnObj)
+				if (*pLnkPrev != pLastWarnObj)
 				{
-					DebugLogF("Objects.txt: Wrong object order of #%d-#%d! (up)", static_cast<int>(pObj->Number), static_cast<int>(pLnkPrev->Obj->Number));
-					pLastWarnObj = pLnkPrev->Obj;
+					DebugLogF("Objects.txt: Wrong object order of #%d-#%d! (up)", static_cast<int>(pObj->Number), static_cast<int>((*pLnkPrev)->Number));
+					pLastWarnObj = *pLnkPrev;
 				}
-				pLnk->Obj = pLnkPrev->Obj;
-				pLnkPrev->Obj = pObj;
+				std::swap(*pLnk, *pLnkPrev);
 				pLnk1stUnsorted = pLnkPrev;
 			}
 			else
 				dwLastCategory = dwCategory;
 			pLnkPrev = pLnk;
+
+			if (pLnk == pLnk0) break;
 		}
-		if (!pLnk1stUnsorted) break; // done
+		if (pLnk1stUnsorted == end) break; // done
 		pLnk0 = pLnk1stUnsorted;
 	}
 	// objects fixed!
@@ -863,10 +895,10 @@ void C4GameObjects::UpdateDefPointers(C4Def *pDef)
 
 void C4GameObjects::ResortUnsorted()
 {
-	C4ObjectLink *clnk = First; C4Object *cObj;
-	while (clnk && (cObj = clnk->Obj))
+	for (auto it = begin(); it != end(); )
 	{
-		clnk = clnk->Next;
+		const auto cObj = *it;
+		++it;
 		if (cObj->Unsorted)
 		{
 			// readd to main object list
@@ -899,19 +931,26 @@ void C4GameObjects::ExecuteResorts()
 bool C4GameObjects::ValidateOwners()
 {
 	// validate in sublists
-	bool fSucc = true;
-	if (!C4ObjectList::ValidateOwners()) fSucc = false;
-	if (!InactiveObjects.ValidateOwners()) fSucc = false;
-	return fSucc;
+	C4ObjectList::ValidateOwners();
+	InactiveObjects.ValidateOwners();
+	return true;
 }
 
 bool C4GameObjects::AssignInfo()
 {
 	// assign in sublists
-	bool fSucc = true;
-	if (!C4ObjectList::AssignInfo()) fSucc = false;
-	if (!InactiveObjects.AssignInfo()) fSucc = false;
-	return fSucc;
+	C4ObjectList::AssignInfo();
+	InactiveObjects.AssignInfo();
+	return true;
+}
+
+void C4GameObjects::MoveLinkBefore(const C4ObjectList::iterator &before, const C4ObjectList::iterator &what)
+{
+	Objects.splice(before, Objects, what);
+
+	// trigger callbacks
+	RemoveLink(what);
+	InsertLinkBefore(before, what);
 }
 
 uint32_t C4GameObjects::GetNextMarker()
@@ -921,9 +960,10 @@ uint32_t C4GameObjects::GetNextMarker()
 	// If all markers are exceeded, restart marker at 1 and reset all object markers to zero.
 	if (!marker)
 	{
-		C4Object *cobj; C4ObjectLink *clnk;
-		for (clnk = First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
+		for (const auto cobj : *this)
+		{
 			cobj->Marker = 0;
+		}
 		marker = ++LastUsedMarker;
 	}
 	return marker;

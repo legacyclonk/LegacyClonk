@@ -164,6 +164,8 @@ public:
 	void DefaultRuntimeData();
 	void DrawHostility(C4Facet &cgo, int32_t iIndex);
 	void AdjustCursorCommand();
+	C4Object *GetNextCrew() const;
+	C4Object *GetPrevCrew() const;
 	void CursorRight();
 	void CursorLeft();
 	void UnselectCrew();

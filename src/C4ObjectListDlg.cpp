@@ -23,6 +23,8 @@
 #include <C4Object.h>
 #include <C4Language.h>
 
+#include <algorithm>
+
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtk.h>
 #include <gtk/gtknotebook.h>
@@ -83,6 +85,25 @@ c4_list_get_flags(GtkTreeModel *tree_model)
 	return GtkTreeModelFlags(0);
 }
 
+namespace {
+	void deleteIterListIterator(GtkTreeIter *iter)
+	{
+		delete reinterpret_cast<C4ObjectList::iterator *>(iter->user_data);
+		iter->user_data = nullptr;
+	}
+
+	void setIterListIterator(GtkTreeIter *iter, const C4ObjectList::iterator& it)
+	{
+		deleteIterListIterator(iter);
+		iter->user_data = new C4ObjectList::iterator{it};
+	}
+
+	C4ObjectList::iterator& getIterListIterator(GtkTreeIter *iter)
+	{
+		return *reinterpret_cast<C4ObjectList::iterator *>(iter->user_data);
+	}
+}
+
 // converts 'path' into an iterator and stores that in 'iter'
 static gboolean
 c4_list_get_iter(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreePath *path)
@@ -99,26 +120,28 @@ c4_list_get_iter(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreePath *path)
 
 	iter->stamp = c4_list->stamp;
 
-	C4ObjectLink *pLnk = C4_LIST(tree_model)->data->First;
+	const auto &list = *C4_LIST(tree_model)->data;
 	// Skip Contained Objects in the main list
-	while (pLnk && pLnk->Obj->Contained) pLnk = pLnk->Next;
+	auto it = list.cbegin();
+	const auto end = list.cend();
+	while (it != end && (*it)->Contained) ++it;
 	for (int i = 0; i < depth; ++i)
 	{
-		if (!pLnk)
+		if (it == end)
 			return FALSE;
 		if (indices[i] < 0)
 			return FALSE;
 		for (int j = 0; j < indices[i]; ++j)
 		{
-			pLnk = pLnk->Next;
+			++it;
 			// Skip Contained Objects in the main list
-			while (i == 0 && pLnk && pLnk->Obj->Contained) pLnk = pLnk->Next;
-			if (!pLnk)
+			while (i == 0 && it != end && (*it)->Contained) ++it;
+			if (it == end)
 				return FALSE;
 		}
-		iter->user_data = pLnk;
-		iter->user_data2 = pLnk->Obj->Contained;
-		pLnk = pLnk->Obj->Contents.First;
+		setIterListIterator(iter, it);
+		iter->user_data2 = (*it)->Contained;
+		it = (*it)->Contents.cbegin();
 	}
 
 	return TRUE;
@@ -138,28 +161,40 @@ c4_list_get_path(GtkTreeModel *tree_model, GtkTreeIter *iter)
 
 	C4List *c4_list = C4_LIST(tree_model);
 
-	C4Object *pObj = ((C4ObjectLink *)iter->user_data)->Obj;
+	const auto interestIt = getIterListIterator(iter);
+	C4Object *pObj = *interestIt;
 
 	int i = 0;
-	for (C4ObjectLink *pLnk = ((C4ObjectLink *)iter->user_data)->Prev; pLnk; pLnk = pLnk->Prev)
+	if (interestIt != c4_list->data->cbegin())
 	{
-		// Skip Contained Objects in the main list
-		if (pObj->Contained != pLnk->Obj->Contained) continue;
-		++i;
+		for (auto it = std::prev(interestIt); ; --it)
+		{
+			// Skip Contained Objects in the main list
+			if (pObj->Contained == (*it)->Contained)
+			{
+				++i;
+			}
+
+			if (it == c4_list->data->cbegin())
+			{
+				break;
+			}
+		}
 	}
 	gtk_tree_path_prepend_index(path, i);
 
-	pObj = (C4Object *)iter->user_data2;
+	pObj = reinterpret_cast<C4Object *>(iter->user_data2);
 	while (pObj)
 	{
 		i = 0;
 		C4ObjectList *pList = c4_list->data;
 		if (pObj->Contained)
 			pList = &pObj->Contained->Contents;
-		for (C4ObjectLink *pLnk = pList->First; pLnk && pLnk->Obj != pObj; pLnk = pLnk->Next)
+		for (const auto obj : *pList)
 		{
+			if (obj == pObj) break;
 			// Skip Contained Objects in the main list
-			if (pObj->Contained != pLnk->Obj->Contained) continue;
+			if (pObj->Contained != obj->Contained) continue;
 			++i;
 		}
 		gtk_tree_path_prepend_index(path, i);
@@ -178,19 +213,20 @@ c4_list_iter_next(GtkTreeModel *tree_model, GtkTreeIter *iter)
 	if (iter == nullptr || iter->user_data == nullptr)
 		return FALSE;
 
-	C4ObjectLink *pLnk = (C4ObjectLink *)iter->user_data;
+	const auto list = C4_LIST(tree_model)->data;
 
-	pLnk = pLnk->Next;
+	auto it = getIterListIterator(iter);
+	++it;
 
 	// Skip Contained Objects in the main list
-	if (!(C4Object *)iter->user_data2)
-		while (pLnk && pLnk->Obj->Contained)
-			pLnk = pLnk->Next;
-	if (!pLnk)
+	if (!reinterpret_cast<C4Object *>(iter->user_data2))
+		while (it != list->cend() && (*it)->Contained)
+			++it;
+	if (it == list->cend())
 		return FALSE;
 
-	iter->user_data = pLnk;
-	iter->user_data2 = pLnk->Obj->Contained;
+	setIterListIterator(iter, it);
+	iter->user_data2 = (*it)->Contained;
 
 	return TRUE;
 }
@@ -205,25 +241,20 @@ c4_list_iter_children(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreeIter *
 
 	C4List *c4_list = C4_LIST(tree_model);
 
-	C4ObjectLink *pLnk;
-	if (parent)
+	const auto &list = (parent ? (*getIterListIterator(parent))->Contents : *c4_list->data);
+	auto it = list.cbegin();
+	if (!parent)
 	{
-		C4ObjectList *pList = &((C4ObjectLink *)parent->user_data)->Obj->Contents;
-		pLnk = pList->First;
-	}
-	else
-	{
-		pLnk = c4_list->data->First;
 		// Skip...
-		while (pLnk && pLnk->Obj->Contained) pLnk = pLnk->Next;
+		while (it != list.cend() && (*it)->Contained) ++it;
 	}
-	if (!pLnk)
+	if (it == list.cend())
 		return FALSE;
 
 	/* Set iter to first item in list */
 	iter->stamp = c4_list->stamp;
-	iter->user_data = pLnk;
-	iter->user_data2 = pLnk->Obj->Contained;
+	setIterListIterator(iter, it);
+	iter->user_data2 = (*it)->Contained;
 
 	return TRUE;
 }
@@ -240,8 +271,8 @@ c4_list_iter_has_child(GtkTreeModel *tree_model,
 
 	C4ObjectList *pList = c4_list->data;
 	if (parent)
-		pList = &((C4ObjectLink *)parent->user_data)->Obj->Contents;
-	return pList->First != nullptr;
+		pList = &(*getIterListIterator(parent))->Contents;
+	return pList->cbegin() != pList->cend();
 }
 
 // Counts the children 'parent' has.
@@ -256,23 +287,12 @@ c4_list_iter_n_children(GtkTreeModel *tree_model, GtkTreeIter *parent)
 	int i = 0;
 	if (parent)
 	{
-		C4ObjectList *pList = &((C4ObjectLink *)parent->user_data)->Obj->Contents;
-		C4ObjectLink *pLnk = pList->First;
-		while (pLnk)
-		{
-			++i;
-			pLnk = pLnk->Next;
-		}
+		C4ObjectList &pList = (*getIterListIterator(parent))->Contents;
+		i = std::distance(pList.cbegin(), pList.cend());
 	}
 	else
 	{
-		C4ObjectLink *pLnk = c4_list->data->First;
-		while (pLnk)
-		{
-			if (!pLnk->Obj->Contained)
-				++i;
-			pLnk = pLnk->Next;
-		}
+		i = std::count_if(c4_list->data->cbegin(), c4_list->data->cend(), [](const auto obj){ return !obj->Contained; });
 	}
 	return i;
 }
@@ -286,36 +306,34 @@ c4_list_iter_nth_child(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreeIter 
 
 	C4List *c4_list = C4_LIST(tree_model);
 
-	C4ObjectLink *pLnk;
+	const auto &list = (parent ? (*getIterListIterator(parent))->Contents : *c4_list->data);
+	auto it = list.cbegin();
 	if (parent)
 	{
-		C4ObjectList *pList = &((C4ObjectLink *)parent->user_data)->Obj->Contents;
-		pLnk = pList->First;
 		for (int i = 0; i < n; ++i)
 		{
-			if (!pLnk)
+			if (it == list.cend())
 				return FALSE;
-			pLnk = pLnk->Next;
+			++it;
 		}
 	}
 	else
 	{
-		pLnk = c4_list->data->First;
 		for (int i = 0; i < n; ++i)
 		{
-			if (!pLnk)
+			if (it == list.cend())
 				return FALSE;
-			pLnk = pLnk->Next;
+			++it;
 			// Skip...
-			while (pLnk && pLnk->Obj->Contained) pLnk = pLnk->Next;
+			while (it != list.cend() && (*it)->Contained) ++it;
 		}
 	}
-	if (!pLnk)
+	if (it == list.cend())
 		return FALSE;
 
 	iter->stamp = c4_list->stamp;
-	iter->user_data = pLnk;
-	iter->user_data2 = pLnk->Obj->Contained;
+	setIterListIterator(iter, it);
+	iter->user_data2 = (*it)->Contained;
 
 	return TRUE;
 }
@@ -328,16 +346,13 @@ static gboolean c4_list_iter_for_C4Object(GtkTreeModel *tree_model, GtkTreeIter 
 
 	C4List *c4_list = C4_LIST(tree_model);
 
-	for (C4ObjectLink *pLnk = pList->First; pLnk; pLnk = pLnk->Next)
+	if (const auto it = pList->GetLink(pObj); it != pList->cend())
 	{
-		if (pLnk->Obj == pObj)
-		{
-			iter->stamp = c4_list->stamp;
-			iter->user_data = pLnk;
-			iter->user_data2 = pLnk->Obj->Contained;
+		iter->stamp = c4_list->stamp;
 
-			return TRUE;
-		}
+		setIterListIterator(iter, it);
+		iter->user_data2 = (*it)->Contained;
+		return TRUE;
 	}
 
 	g_return_val_if_reached(FALSE);
@@ -352,7 +367,7 @@ c4_list_iter_parent(GtkTreeModel *tree_model, GtkTreeIter *iter, GtkTreeIter *ch
 
 	C4List *c4_list = C4_LIST(tree_model);
 
-	C4Object *pObj = (C4Object *)child->user_data2;
+	C4Object *pObj = reinterpret_cast<C4Object *>(child->user_data2);
 
 	C4ObjectList *pList = c4_list->data;
 	if (pObj->Contained)
@@ -366,7 +381,7 @@ c4_list_iter_get_C4Object(GtkTreeModel *tree_model, GtkTreeIter *iter)
 	g_return_val_if_fail(C4_IS_LIST(tree_model), nullptr);
 	g_return_val_if_fail(iter != nullptr && iter->user_data != nullptr, nullptr);
 
-	return ((C4ObjectLink *)iter->user_data)->Obj;
+	return *getIterListIterator(iter);
 }
 
 // How many columns does this model have?
@@ -396,7 +411,7 @@ c4_list_get_value(GtkTreeModel *tree_model, GtkTreeIter *iter, gint column, GVal
 	g_return_if_fail(iter != nullptr);
 	g_return_if_fail(column == 0);
 
-	C4Object *pObj = ((C4ObjectLink *)iter->user_data)->Obj;
+	C4Object *pObj = *getIterListIterator(iter);
 	g_return_if_fail(pObj != nullptr);
 
 	g_value_init(value, G_TYPE_POINTER);
@@ -486,15 +501,15 @@ c4_list_get_type(void)
 	return c4_list_type;
 }
 
-void C4ObjectListDlg::OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk)
+void C4ObjectListDlg::OnObjectRemove(C4ObjectList *pList, const C4ObjectList::iterator &it)
 {
 	if (!model) return;
 
 	C4List *c4_list = C4_LIST(model);
-	C4Object *Contained = pLnk->Obj->Contained;
+	C4Object *Contained = (*it)->Contained;
 	GtkTreeIter iter;
 	iter.stamp = c4_list->stamp;
-	iter.user_data = pLnk;
+	setIterListIterator(&iter, it);
 	iter.user_data2 = Contained;
 
 	// While pLnk is not in the list anymore, with pLnk->Prev and Contained a path can still be made
@@ -504,7 +519,7 @@ void C4ObjectListDlg::OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk)
 	gtk_tree_path_free(path);
 
 	// Removed from a now empty container?
-	if (Contained && !Contained->Contents.First)
+	if (Contained && Contained->Contents.cbegin() == Contained->Contents.cend())
 	{
 		printf("Removed from a now empty container\n");
 		GtkTreeIter parent;
@@ -520,14 +535,13 @@ void C4ObjectListDlg::OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk)
 	}
 
 	// Cheat: For the signals it must look as if the object had it's parent removed already
-	pLnk->Obj->Contained = nullptr;
+	(*it)->Contained = nullptr;
 	// if removed from contents, it get's added to main list
 	if (pList != c4_list->data)
 	{
 		printf("Removed from a container\n");
-		GtkTreeIter iter;
 		C4ObjectList *pList = c4_list->data;
-		c4_list_iter_for_C4Object(GTK_TREE_MODEL(model), &iter, pList, pLnk->Obj);
+		c4_list_iter_for_C4Object(GTK_TREE_MODEL(model), &iter, pList, *it);
 
 		GtkTreePath *path = c4_list_get_path(GTK_TREE_MODEL(model), &iter);
 
@@ -536,10 +550,12 @@ void C4ObjectListDlg::OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk)
 	}
 
 	// End-of-cheat
-	pLnk->Obj->Contained = Contained;
+	(*it)->Contained = Contained;
+
+	deleteIterListIterator(&iter);
 }
 
-void C4ObjectListDlg::OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk)
+void C4ObjectListDlg::OnObjectAdded(C4ObjectList *pList, const C4ObjectList::iterator &it)
 {
 	if (!model) return;
 
@@ -552,11 +568,12 @@ void C4ObjectListDlg::OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk)
 		GtkTreePath *path = gtk_tree_path_new();
 		int i = 0;
 		C4ObjectList *pList = c4_list->data;
-		C4Object *pObj = pLnk->Obj;
-		for (C4ObjectLink *pLnk2 = pList->First; pLnk2 && pLnk2->Obj != pObj; pLnk2 = pLnk2->Next)
+		C4Object *pObj = *it;
+		for (const auto obj : *pList)
 		{
+			if (obj == pObj) break;
 			// Skip Contained Objects in the main list
-			if (pLnk2->Obj->Contained) continue;
+			if (obj->Contained) continue;
 			++i;
 		}
 		gtk_tree_path_prepend_index(path, i);
@@ -565,10 +582,12 @@ void C4ObjectListDlg::OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk)
 		gtk_tree_path_free(path);
 	}
 
+	const auto obj = *it;
+
 	GtkTreeIter iter;
 	iter.stamp = c4_list->stamp;
-	iter.user_data = pLnk;
-	iter.user_data2 = pLnk->Obj->Contained;
+	setIterListIterator(&iter, it);
+	iter.user_data2 = obj->Contained;
 
 	GtkTreePath *path = c4_list_get_path(GTK_TREE_MODEL(model), &iter);
 
@@ -576,8 +595,8 @@ void C4ObjectListDlg::OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk)
 	gtk_tree_path_free(path);
 
 	// Inserted into a previously empty container?
-	if (pLnk->Obj->Contained &&
-		pLnk->Obj->Contained->Contents.First == pLnk->Obj->Contained->Contents.Last)
+	if (obj->Contained &&
+		obj->Contained->Contents.cbegin() == std::prev(obj->Contained->Contents.cend()))
 	{
 		printf("Inserted into a previously empty container\n");
 		GtkTreeIter parent;
@@ -588,9 +607,11 @@ void C4ObjectListDlg::OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk)
 		gtk_tree_model_row_has_child_toggled(GTK_TREE_MODEL(model), path, &parent);
 		gtk_tree_path_free(path);
 	}
+
+	deleteIterListIterator(&iter);
 }
 
-void C4ObjectListDlg::OnObjectRename(C4ObjectList *pList, C4ObjectLink *pLnk) {}
+void C4ObjectListDlg::OnObjectRename(C4ObjectList *pList, const C4ObjectList::iterator &it) {}
 
 void C4ObjectListDlg::OnDestroy(GtkWidget *widget, C4ObjectListDlg *dlg)
 {
@@ -607,13 +628,14 @@ void C4ObjectListDlg::OnSelectionChanged(GtkTreeSelection *selection, C4ObjectLi
 	GList *list = gtk_tree_selection_get_selected_rows(selection, nullptr);
 
 	Console.EditCursor.GetSelection().Clear();
+	GtkTreeIter iter;
 	for (GList *i = list; i; i = i->next)
 	{
 		GtkTreePath *path = (GtkTreePath *)i->data;
-		GtkTreeIter iter;
 		c4_list_get_iter(GTK_TREE_MODEL(dlg->model), &iter, path);
-		Console.EditCursor.GetSelection().Add(((C4ObjectLink *)iter.user_data)->Obj, C4ObjectList::stNone);
+		Console.EditCursor.GetSelection().Add(*getIterListIterator(&iter), C4ObjectList::stNone);
 	}
+	deleteIterListIterator(&iter);
 
 	g_list_foreach(list, (GFunc)gtk_tree_path_free, nullptr);
 	g_list_free(list);
@@ -634,16 +656,17 @@ void C4ObjectListDlg::Update(C4ObjectList &rSelection)
 
 	gtk_tree_selection_unselect_all(selection);
 
-	for (C4ObjectLink *pLnk = rSelection.First; pLnk; pLnk = pLnk->Next)
+	GtkTreeIter iter;
+	for (auto it = rSelection.cbegin(); it != rSelection.cend(); ++it)
 	{
-		GtkTreeIter iter;
 		C4List *c4_list = C4_LIST(model);
 		C4ObjectList *pList = c4_list->data;
-		if (pLnk->Obj->Contained)
-			pList = &pLnk->Obj->Contained->Contents;
-		c4_list_iter_for_C4Object(GTK_TREE_MODEL(model), &iter, pList, pLnk->Obj);
+		if ((*it)->Contained)
+			pList = &(*it)->Contained->Contents;
+		c4_list_iter_for_C4Object(GTK_TREE_MODEL(model), &iter, pList, *it);
 		gtk_tree_selection_select_iter(selection, &iter);
 	}
+	deleteIterListIterator(&iter);
 
 	updating_selection = false;
 }
@@ -801,11 +824,11 @@ void C4ObjectListDlg::Open() {}
 
 void C4ObjectListDlg::Update(C4ObjectList &rSelection) {}
 
-void C4ObjectListDlg::OnObjectRemove(C4ObjectList *pList, C4ObjectLink *pLnk) {}
+void C4ObjectListDlg::OnObjectRemove(C4ObjectList *pList, const C4ObjectList::iterator &it) {}
 
-void C4ObjectListDlg::OnObjectAdded(C4ObjectList *pList, C4ObjectLink *pLnk) {}
+void C4ObjectListDlg::OnObjectAdded(C4ObjectList *pList, const C4ObjectList::iterator &it) {}
 
-void C4ObjectListDlg::OnObjectRename(C4ObjectList *pList, C4ObjectLink *pLnk) {}
+void C4ObjectListDlg::OnObjectRename(C4ObjectList *pList, const C4ObjectList::iterator &it) {}
 
 #endif
 

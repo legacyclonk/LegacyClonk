@@ -40,7 +40,6 @@ class C4Facet;
 class C4ObjectInfo;
 class C4Object;
 class C4ObjectList;
-class C4ObjectLink;
 class C4MenuItem;
 class C4Menu;
 class C4Command;

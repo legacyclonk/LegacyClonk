@@ -271,7 +271,7 @@ void C4PropertyDlg::Default()
 #endif
 	Active = false;
 	idSelectedDef = C4ID_None;
-	Selection.Default();
+	Selection.Clear();
 }
 
 void C4PropertyDlg::Clear()

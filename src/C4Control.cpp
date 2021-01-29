@@ -302,8 +302,10 @@ C4ControlPlayerSelect::C4ControlPlayerSelect(int32_t iPlr, const C4ObjectList &O
 {
 	pObjNrs = new int32_t[iObjCnt];
 	int32_t i = 0;
-	for (C4ObjectLink *pLnk = Objs.First; pLnk; pLnk = pLnk->Next)
-		pObjNrs[i++] = pLnk->Obj->Number;
+	for (const auto obj : Objs)
+	{
+		pObjNrs[i++] = obj->Number;
+	}
 	assert(i == iObjCnt);
 }
 
@@ -430,8 +432,8 @@ int32_t C4ControlSyncCheck::GetAllCrewPosX()
 {
 	int32_t cpx = 0;
 	for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next)
-		for (C4ObjectLink *clnk = pPlr->Crew.First; clnk; clnk = clnk->Next)
-			cpx += fixtoi(clnk->Obj->fix_x, 100);
+		for (const auto obj : pPlr->Crew)
+			cpx += fixtoi(obj->fix_x, 100);
 	return cpx;
 }
 

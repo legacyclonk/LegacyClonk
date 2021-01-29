@@ -104,8 +104,7 @@ void C4ObjectMenu::ClearPointers(C4Object *pObj)
 
 C4Object *C4ObjectMenu::GetParentObject()
 {
-	C4Object *cObj; C4ObjectLink *cLnk;
-	for (cLnk = Game.Objects.First; cLnk && (cObj = cLnk->Obj); cLnk = cLnk->Next)
+	for (const auto cObj : Game.Objects)
 		if (cObj->Menu == this)
 			return cObj;
 	return nullptr;
@@ -501,7 +500,6 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 {
 	int32_t iFunction, iResult = 0;
 	C4AulScriptFunc *pFunction, *pFunction2;
-	C4Object *cObj; C4ObjectLink *clnk;
 	const char *strDescText;
 	char szCommand[256 + 1];
 	C4Def *pDef;
@@ -511,7 +509,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 
 	// ActionContext functions of target's action target (for first target only, because otherwise strange stuff can happen with outdated Target2s...)
 	if (pTarget->Action.Act > ActIdle)
-		if (cObj = pTarget->Action.Target)
+		if (const auto cObj = pTarget->Action.Target; cObj)
 			for (iFunction = 0; pFunction = cObj->Def->Script.GetSFunc(iFunction, "ActionContext"); iFunction++)
 				if (!pFunction->OverloadedBy)
 					if (!pFunction->Condition || !!pFunction->Condition->Exec(cObj, {C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget)}))
@@ -548,7 +546,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 		}
 
 	// Script context functions of any objects attached to target (search global list, because attachment objects might be moved just about anywhere...)
-	for (clnk = Game.Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	for (const auto cObj : Game.Objects)
 		if (cObj->Status && cObj->Action.Target == pTarget)
 			if (cObj->Action.Act > ActIdle)
 				if (cObj->Def->ActMap[cObj->Action.Act].Procedure == DFA_ATTACH)
