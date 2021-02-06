@@ -20,6 +20,7 @@
 #pragma once
 
 #include <cassert>
+#include <vector>
 
 // key context classifications
 enum C4KeyScope
