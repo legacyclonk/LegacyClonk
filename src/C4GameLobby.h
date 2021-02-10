@@ -131,6 +131,7 @@ protected:
 	void OnTabOptions(C4GUI::Control *btn);
 	void OnTabScenario(C4GUI::Control *btn);
 	void UpdateRightTab(); // update label and tooltips for sheet change
+	void UpdateRightTabTitle();
 	void OnBtnChat(C4GUI::Control *btn);
 	void OnBtnPreload(C4GUI::Control *);
 
@@ -165,6 +166,7 @@ public:
 	bool IsCountdown();
 	void UpdateFairCrew();
 	void UpdatePassword();
+	void UpdatePlayerCountDisplay();
 	void ClearLog();
 	void ResourceProgress(bool isComplete);
 	void RequestReadyCheck();

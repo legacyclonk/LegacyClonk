@@ -211,7 +211,7 @@ MainDlg::MainDlg(bool fHost)
 	pRightTabLbl = new C4GUI::WoodenLabel("", caRight.GetFromTop(C4GUI::WoodenLabel::GetDefaultHeight(&(C4GUI::GetRes()->TextFont))), C4GUI_CaptionFontClr, &C4GUI::GetRes()->TextFont, ALeft);
 	caRight.ExpandTop(iIndentY4 * 2 + 1); // undo margin, so client list is located directly under label
 	pRightTab = new C4GUI::Tabular(caRight.GetAll(), C4GUI::Tabular::tbNone);
-	C4GUI::Tabular::Sheet *pPlayerSheet = pRightTab->AddSheet(LoadResStr("IDS_DLG_PLAYERS"));
+	C4GUI::Tabular::Sheet *pPlayerSheet = pRightTab->AddSheet(FormatString(LoadResStr("IDS_DLG_PLAYERS"), -1, -1).getData());
 	C4GUI::Tabular::Sheet *pResSheet = pRightTab->AddSheet(LoadResStr("IDS_DLG_RESOURCES"));
 	C4GUI::Tabular::Sheet *pOptionsSheet = pRightTab->AddSheet(LoadResStr("IDS_DLG_OPTIONS"));
 	C4GUI::Tabular::Sheet *pScenarioSheet = pRightTab->AddSheet(LoadResStr("IDS_DLG_SCENARIO"));
@@ -762,6 +762,7 @@ void MainDlg::UpdatePlayerList()
 {
 	// this updates ping label texts and teams
 	if (pPlayerList) pPlayerList->Update();
+	UpdatePlayerCountDisplay();
 }
 
 C4GUI::ContextMenu *MainDlg::OnRightTabContext(C4GUI::Element *pLabel, int32_t iX, int32_t iY)
@@ -892,9 +893,6 @@ void MainDlg::OnTabScenario(C4GUI::Control *btn)
 void MainDlg::UpdateRightTab()
 {
 	if (!pRightTabLbl || !pRightTab || !pRightTab->GetActiveSheet() || !pPlayerList) return;
-	// copy active sheet data to label
-	pRightTabLbl->SetText(pRightTab->GetActiveSheet()->GetTitle());
-	pRightTabLbl->SetToolTip(pRightTab->GetActiveSheet()->GetToolTip());
 
 	// update
 	if (pRightTab->GetActiveSheetIndex() == SheetIdx_PlayerList) UpdatePlayerList();
@@ -909,6 +907,15 @@ void MainDlg::UpdateRightTab()
 	if (btnTeams) btnTeams->SetHighlight(pRightTab->GetActiveSheetIndex() == SheetIdx_PlayerList && pPlayerList->GetMode() == C4PlayerInfoListBox::PILBM_LobbyTeamSort);
 	if (btnOptions) btnOptions->SetHighlight(pRightTab->GetActiveSheetIndex() == SheetIdx_Options);
 	if (btnScenario) btnScenario->SetHighlight(pRightTab->GetActiveSheetIndex() == SheetIdx_Scenario);
+
+	UpdateRightTabTitle();
+}
+
+void MainDlg::UpdateRightTabTitle()
+{
+	// copy active sheet data to label
+	pRightTabLbl->SetText(pRightTab->GetActiveSheet()->GetTitle());
+	pRightTabLbl->SetToolTip(pRightTab->GetActiveSheet()->GetToolTip());
 }
 
 void MainDlg::OnBtnChat(C4GUI::Control *btn)
@@ -959,6 +966,18 @@ void MainDlg::UpdatePassword()
 {
 	// if the password setting has changed, make sure the buttons reflect this change
 	pGameOptionButtons->UpdatePasswordBtn();
+}
+
+void MainDlg::UpdatePlayerCountDisplay()
+{
+	if (pRightTab)
+	{
+		pRightTab->GetSheet(0)->SetTitle(FormatString(LoadResStr("IDS_DLG_PLAYERS"), Game.PlayerInfos.GetActivePlayerCount(true), Game.Parameters.MaxPlayers).getData());
+		if (pRightTab->GetActiveSheetIndex() == SheetIdx_PlayerList)
+		{
+			UpdateRightTabTitle();
+		}
+	}
 }
 
 int32_t MainDlg::ValidatedCountdownTime(int32_t iTimeout)

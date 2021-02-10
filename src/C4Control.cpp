@@ -169,6 +169,11 @@ void C4ControlSet::Execute() const
 		// set it
 		Game.Parameters.MaxPlayers = iData;
 		LogF("MaxPlayer = %" PRId32, Game.Parameters.MaxPlayers);
+
+		if (auto *const lobby = Game.Network.GetLobby(); lobby)
+		{
+			lobby->UpdatePlayerCountDisplay();
+		}
 		break;
 
 	case C4CVT_TeamDistribution:
