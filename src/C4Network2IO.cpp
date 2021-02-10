@@ -64,6 +64,30 @@ C4Network2IO::~C4Network2IO()
 	Clear();
 }
 
+template<typename T, typename std::enable_if_t<std::is_base_of_v<C4NetIO, T>, int> = 0>
+static T *CreateNetIO(const char *const name, T *const io, const int16_t port, C4InteractiveThread &thread)
+{
+	std::unique_ptr<T> netIO{io};
+
+	if (port <= 0)
+	{
+		return nullptr;
+	}
+
+	if (netIO->Init(port))
+	{
+		LogSilentF("Network: %s initialized on port %d", name, port);
+		thread.AddProc(netIO.get());
+		return netIO.release();
+	}
+	else
+	{
+		const char *const error{netIO->GetError()};
+		LogF("Network: could not init %s (%s)", name, error ? error : "");
+		return nullptr;
+	}
+}
+
 bool C4Network2IO::Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscover, int16_t iPortRefServer) // by main thread
 {
 	// Already initialized? Clear first
@@ -81,46 +105,17 @@ bool C4Network2IO::Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscove
 	Thread.SetCallback(Ev_Net_Packet, this);
 
 	// initialize net i/o classes: TCP first
-	if (iPortTCP > 0)
+	pNetIO_TCP = CreateNetIO("TCP I/O", new C4NetIOTCP{}, iPortTCP, Thread);
+	if (pNetIO_TCP)
 	{
-		// create
-		pNetIO_TCP = new C4NetIOTCP();
-		// init
-		if (!pNetIO_TCP->Init(iPortTCP))
-		{
-			LogF("Network: could not init TCP i/o (%s)", pNetIO_TCP->GetError() ? pNetIO_TCP->GetError() : "");
-			delete pNetIO_TCP; pNetIO_TCP = nullptr;
-		}
-		else
-			LogSilentF("Network: TCP initialized on port %d", iPortTCP);
-
-		// add to thread, set callback
-		if (pNetIO_TCP)
-		{
-			Thread.AddProc(pNetIO_TCP);
-			pNetIO_TCP->SetCallback(this);
-		}
+		pNetIO_TCP->SetCallback(this);
 	}
-	// then UDP
-	if (iPortUDP > 0)
-	{
-		// create
-		pNetIO_UDP = new C4NetIOUDP();
-		// init
-		if (!pNetIO_UDP->Init(iPortUDP))
-		{
-			LogF("Network: could not init UDP i/o (%s)", pNetIO_UDP->GetError() ? pNetIO_UDP->GetError() : "");
-			delete pNetIO_UDP; pNetIO_UDP = nullptr;
-		}
-		else
-			LogSilentF("Network: UDP initialized on port %d", iPortUDP);
 
-		// add to thread, set callback
-		if (pNetIO_UDP)
-		{
-			Thread.AddProc(pNetIO_UDP);
-			pNetIO_UDP->SetCallback(this);
-		}
+	// then UDP
+	pNetIO_UDP = CreateNetIO("UDP I/O", new C4NetIOUDP{}, iPortUDP, Thread);
+	if (pNetIO_UDP)
+	{
+		pNetIO_UDP->SetCallback(this);
 	}
 
 	// no protocols?
@@ -136,39 +131,14 @@ bool C4Network2IO::Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscove
 	// discovery last
 	if (iPortDiscover > 0)
 	{
-		// create
 		pNetIODiscover = new C4Network2IODiscover(iPortRefServer);
 		pNetIODiscover->SetDiscoverable(false);
-		// init
-		if (!pNetIODiscover->Init(iPortDiscover))
-		{
-			LogF("Network: could not init discovery (%s)", pNetIODiscover->GetError() ? pNetIODiscover->GetError() : "");
-			delete pNetIODiscover; pNetIODiscover = nullptr;
-		}
-		else
-			LogSilentF("Network: discovery initialized on port %d", iPortDiscover);
-		// add to thread
-		if (pNetIODiscover)
-			Thread.AddProc(pNetIODiscover);
+
+		pNetIODiscover = CreateNetIO("discovery", pNetIODiscover, iPortDiscover, Thread);
 	}
 
 	// plus reference server
-	if (iPortRefServer > 0)
-	{
-		// create
-		pRefServer = new C4Network2RefServer();
-		// init
-		if (!pRefServer->Init(iPortRefServer))
-		{
-			LogF("Network: could not init reference server (%s)", pRefServer->GetError() ? pNetIO_UDP->GetError() : "");
-			delete pRefServer; pRefServer = nullptr;
-		}
-		else
-			LogSilentF("Network: reference server initialized on port %d", iPortRefServer);
-		// add to thread
-		if (pRefServer)
-			Thread.AddProc(pRefServer);
-	}
+	pRefServer = CreateNetIO("reference server", new C4Network2RefServer{}, iPortRefServer, Thread);
 
 	// own timer
 	iLastExecute = timeGetTime();
