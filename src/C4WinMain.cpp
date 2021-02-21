@@ -189,8 +189,9 @@ static void crash_handler(int signo)
 	// Also to the log file
 	if (logfd >= 0)
 		backtrace_symbols_fd(stack, count, logfd);
-	// Bye.
-	_exit(C4XRV_Failure);
+
+	signal(signo, SIG_DFL);
+	raise(signo);
 }
 
 #endif
