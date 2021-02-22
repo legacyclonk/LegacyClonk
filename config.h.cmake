@@ -2,6 +2,7 @@
 #cmakedefine ENABLE_SOUND 1
 #cmakedefine USE_CONSOLE 1
 #cmakedefine USE_FMOD 1
+#cmakedefine USE_LIBNOTIFY 1
 #cmakedefine USE_SDL_MAINLOOP 1
 #cmakedefine USE_SDL_MIXER 1
 #cmakedefine USE_SDL_FOR_GAMEPAD 1

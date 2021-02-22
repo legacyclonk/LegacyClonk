@@ -101,6 +101,8 @@ CMAKE_DEPENDENT_OPTION(USE_WIC "Use WIC instead of libjpeg and libpng" ON
 # WITH_DEVELOPER_MODE
 CMAKE_DEPENDENT_OPTION(WITH_DEVELOPER_MODE "Use GTK for the developer mode" OFF
 	"NOT USE_CONSOLE" OFF)
+# USE_LIBNOTIFY
+CMAKE_DEPENDENT_OPTION(USE_LIBNOTIFY "Use libnotify for desktop notifications" ON "NOT USE_CONSOLE AND NOT WIN32" OFF)
 
 # Use Microsoft CryptoAPI instead of OpenSSL when compiling for Windows
 if (WIN32)
@@ -182,6 +184,11 @@ endif ()
 
 if (USE_CONSOLE AND NOT WIN32)
 	append_filelist(CLONK_SOURCES EngineConsoleNonWin32.txt)
+endif ()
+
+if (USE_LIBNOTIFY)
+	list(APPEND CLONK_SOURCES
+		src/C4ToastLibNotify.cpp src/C4ToastLibNotify.h)
 endif ()
 
 if (USE_CONSOLE)
@@ -300,6 +307,14 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads)
 if (THREADS_FOUND)
 	target_link_libraries(clonk Threads::Threads)
+endif ()
+
+# Link libnotify
+if (USE_LIBNOTIFY)
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(libnotify REQUIRED IMPORTED_TARGET libnotify)
+	target_include_directories(clonk PRIVATE ${libnotify_INCLUDE_DIRS})
+	target_link_libraries(clonk PkgConfig::libnotify)
 endif ()
 
 # Link Windows libraries

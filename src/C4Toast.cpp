@@ -1,7 +1,7 @@
 /*
  * LegacyClonk
  *
- * Copyright (c) 2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2020-2021, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -16,22 +16,28 @@
 #include "C4Log.h"
 #include "C4Toast.h"
 
-#ifdef _WIN32
+#ifdef USE_LIBNOTIFY
+#include "C4ToastLibNotify.h"
+#elif defined(_WIN32)
 #include "C4ToastWinToastLib.h"
 #endif
 
 C4ToastSystem *C4ToastSystem::NewInstance()
 {
-#ifdef _WIN32
 	try
 	{
+#ifdef USE_LIBNOTIFY
+		return new C4ToastSystemLibNotify{};
+#elif defined(_WIN32)
 		return new C4ToastSystemWinToastLib{};
+#else
+		return nullptr;
+#endif
 	}
 	catch (const std::runtime_error &e)
 	{
 		LogSilentF("%s", e.what());
 	}
-#endif
 
 	return nullptr;
 }
@@ -42,7 +48,9 @@ void C4ToastImpl::SetEventHandler(C4ToastEventHandler *const eventHandler)
 }
 
 C4Toast::C4Toast() : impl{
-#ifdef _WIN32
+#ifdef USE_LIBNOTIFY
+						 new C4ToastImplLibNotify{}
+#elif defined(_WIN32)
 						 new C4ToastImplWinToastLib{}
 #else
 						 new C4ToastImpl{}
