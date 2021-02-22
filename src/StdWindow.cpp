@@ -93,6 +93,13 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 	SetFocus(hWindow);
 #endif
 
+	if (!taskBarList)
+	{
+		HRESULT hr = ::CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskBarList));
+
+		if (SUCCEEDED(hr) && FAILED(taskBarList->HrInit())) taskBarList = nullptr;
+	}
+
 	return this;
 }
 
@@ -103,6 +110,7 @@ void CStdWindow::Clear()
 	if (hWindow) DestroyWindow(hWindow);
 	hWindow = nullptr;
 	hRenderWindow = nullptr;
+	taskBarList.Reset();
 }
 
 bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey, bool fHidden)
@@ -177,13 +185,6 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 	}
 
 	ShowWindow(hWindow, SW_SHOW);
-
-	if (!taskBarList)
-	{
-		HRESULT hr = ::CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskBarList));
-
-		if (SUCCEEDED(hr) && FAILED(taskBarList->HrInit())) taskBarList = nullptr;
-	}
 
 	if (taskBarList)
 	{
