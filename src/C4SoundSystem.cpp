@@ -234,8 +234,9 @@ C4Object *C4SoundSystem::Instance::GetObj() const
 
 std::uint32_t C4SoundSystem::Instance::GetPlaybackPosition() const
 {
-	return std::chrono::duration_cast<std::chrono::milliseconds>(
-		std::chrono::steady_clock::now() - startTime).count() % sample.duration;
+	return sample.duration ? std::chrono::duration_cast<std::chrono::milliseconds>(
+								 std::chrono::steady_clock::now() - startTime).count() % sample.duration
+						   : 0;
 }
 
 bool C4SoundSystem::Instance::IsNear(const C4Object &obj2) const
