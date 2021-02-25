@@ -189,17 +189,6 @@ public:
 	int Compare(const void *pCData, size_t iCSize, size_t iAt = 0) const
 	{
 		assert(iAt + iCSize <= getSize());
-
-		const void *const ptr{getPtr(iAt)};
-		if (ptr == nullptr)
-		{
-			return pCData != nullptr ? -1 : 0;
-		}
-		if (pCData == nullptr)
-		{
-			return ptr != nullptr ? 1 : 0;
-		}
-
 		return memcmp(getPtr(iAt), pCData, iCSize);
 	}
 
