@@ -123,14 +123,16 @@ bool C4Network2Client::DoConnectAttempt(C4Network2IO *pIO)
 	// find address to try
 	int32_t iBestAddress = -1;
 	for (int32_t i = 0; i < iAddrCnt; i++)
-		// no connection for this protocol?
-		if ((!pDataConn || Addr[i].GetProtocol() != pDataConn->getProtocol()) &&
-			(!pMsgConn || Addr[i].GetProtocol() != pMsgConn->getProtocol()))
-			// protocol available?
-			if (pIO->getNetIO(Addr[i].GetProtocol()))
-				// new best address?
-				if (iBestAddress < 0 || AddrAttempts[i] < AddrAttempts[iBestAddress])
-					iBestAddress = i;
+		// valid address?
+		if (!Addr[i].GetAddr().IsNullHost())
+			// no connection for this protocol?
+			if ((!pDataConn || Addr[i].GetProtocol() != pDataConn->getProtocol()) &&
+				(!pMsgConn || Addr[i].GetProtocol() != pMsgConn->getProtocol()))
+				// protocol available?
+				if (pIO->getNetIO(Addr[i].GetProtocol()))
+					// new best address?
+					if (iBestAddress < 0 || AddrAttempts[i] < AddrAttempts[iBestAddress])
+						iBestAddress = i;
 	// too many attempts or nothing found?
 	if (iBestAddress < 0 || AddrAttempts[iBestAddress] > C4NetClientConnectAttempts)
 	{
