@@ -1358,7 +1358,7 @@ bool CStdDDraw::Init(CStdApp *pApp)
 
 	this->pApp = pApp;
 
-	DebugLog("Init DX");
+	DebugLog("Init DDraw");
 	DebugLog("  Create DirectDraw...");
 
 	if (!CreateDirectDraw())
