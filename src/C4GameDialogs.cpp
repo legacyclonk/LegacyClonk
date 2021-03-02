@@ -59,7 +59,7 @@ C4AbortGameDialog::C4AbortGameDialog()
 	C4Rect rcBtn = caButtonArea.GetCentered(iButtonCount * C4GUI_DefButton2Wdt + (iButtonCount - 1) * C4GUI_DefButton2HSpace, C4GUI_ButtonHgt);
 	rcBtn.Wdt = C4GUI_DefButton2Wdt;
 
-	auto yesBtn = new C4GUI::CallbackButton<C4AbortGameDialog>(LoadResStr("IDS_DLG_YES"), rcBtn, &C4AbortGameDialog::OnYesBtn, this);
+	auto *const yesBtn = new C4GUI::YesButton{rcBtn};
 	AddElement(yesBtn);
 	rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 
@@ -69,7 +69,7 @@ C4AbortGameDialog::C4AbortGameDialog()
 		rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 	}
 
-	AddElement(new C4GUI::CallbackButton<C4AbortGameDialog>(LoadResStr("IDS_DLG_NO"), rcBtn, &C4AbortGameDialog::OnNoBtn, this));
+	AddElement(new C4GUI::NoButton{rcBtn});
 
 	SetFocus(yesBtn, false);
 	// resize to actually needed size
@@ -118,16 +118,6 @@ void C4AbortGameDialog::OnClosed(bool fOK)
 	{
 		Game.Players.ClearLocalPlayerPressedComs();
 	}
-}
-
-void C4AbortGameDialog::OnYesBtn(C4GUI::Control *)
-{
-	Close(true);
-}
-
-void C4AbortGameDialog::OnNoBtn(C4GUI::Control *)
-{
-	Close(false);
 }
 
 void C4AbortGameDialog::OnRestartBtn(C4GUI::Control *)
