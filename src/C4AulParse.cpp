@@ -2437,6 +2437,7 @@ void C4AulParseState::Parse_Map()
 				case ATT_BOPEN2:
 					Shift();
 					Parse_Expression();
+					SetNoRef();
 					Match(ATT_BCLOSE2);
 					break;
 				default:
