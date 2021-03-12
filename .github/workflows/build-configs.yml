@@ -97,7 +97,7 @@ jobs:
         run: |
           mkdir deps
           cd deps
-          curl -L https://github.com/legacyclonk/deps/releases/download/2020-12-11/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
+          curl -L https://github.com/legacyclonk/deps/releases/download/2021-03-12/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
 
       - name: Configure
         run: |
