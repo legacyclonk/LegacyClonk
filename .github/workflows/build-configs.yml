@@ -36,8 +36,6 @@ jobs:
 
           - arch: x86
             os: macos-10.15
-          - arch: x64
-            os: windows-latest
 
           - os: windows-latest
             windowing: X11
