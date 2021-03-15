@@ -203,40 +203,12 @@ const char *GetFatalError()
 	return sFatalError.getData();
 }
 
-bool LogF(const char *strMessage, ...)
-{
-	va_list args; va_start(args, strMessage);
-	// Compose formatted message
-	StdStrBuf Buf;
-	Buf.FormatV(strMessage, args);
-	// Log
-	return Log(Buf.getData());
-}
-
-bool LogSilentF(const char *strMessage, ...)
-{
-	va_list args; va_start(args, strMessage);
-	// Compose formatted message
-	StdStrBuf Buf;
-	Buf.FormatV(strMessage, args);
-	// Log
-	return LogSilent(Buf.getData());
-}
-
 bool DebugLog(const char *strMessage)
 {
 	if (Game.DebugMode)
 		return Log(strMessage);
 	else
 		return LogSilent(strMessage);
-}
-
-bool DebugLogF(const char *strMessage ...)
-{
-	va_list args; va_start(args, strMessage);
-	StdStrBuf Buf;
-	Buf.FormatV(strMessage, args);
-	return DebugLog(Buf.getData());
 }
 
 size_t GetLogPos()

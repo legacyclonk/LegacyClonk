@@ -604,10 +604,32 @@ public:
 		return true;
 	}
 
-	void Format(const char *szFmt, ...) GNUC_FORMAT_ATTRIBUTE_O;
-	void FormatV(const char *szFmt, va_list args);
-	void AppendFormat(const char *szFmt, ...) GNUC_FORMAT_ATTRIBUTE_O;
-	void AppendFormatV(const char *szFmt, va_list args);
+	template<typename... Args>
+	void Format(const char *format, Args... args)
+	{
+		Clear();
+		AppendFormat(format, args...);
+	}
+
+	template<typename... Args>
+	void AppendFormat(const char *format, Args... args)
+	{
+		if (!IsSafeFormatString(format))
+		{
+			BREAKPOINT_HERE
+			format = "<UNSAFE FORMAT STRING>";
+		}
+
+		const auto start{getLength()};
+		const auto neededBytes{snprintf(nullptr, 0, format, args...)};
+		if (neededBytes == -1)
+		{
+			return;
+		}
+
+		SetSize(start + neededBytes + 1);
+		snprintf(getMPtr(start), neededBytes + 1, format, args...);
+	}
 
 	StdStrBuf copyPart(size_t iStart, size_t inSize) const
 	{
@@ -654,5 +676,10 @@ public:
 };
 
 // Wrappers
-extern StdStrBuf FormatString(const char *szFmt, ...) GNUC_FORMAT_ATTRIBUTE;
-extern StdStrBuf FormatStringV(const char *szFmt, va_list args);
+template<typename... Args>
+extern StdStrBuf FormatString(const char *format, Args... args)
+{
+	StdStrBuf buf;
+	buf.Format(format, args...);
+	return buf;
+}

@@ -20,6 +20,7 @@
 #include <C4Random.h>
 #include <C4Object.h>
 #include <C4Game.h>
+#include <C4Log.h>
 #include <C4Config.h>
 #include <C4Application.h>
 

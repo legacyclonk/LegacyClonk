@@ -1235,16 +1235,6 @@ void InfoDialog::AddLine(const char *szText)
 	pTextWin->AddTextLine(szText, &GetRes()->TextFont, C4GUI_MessageFontClr, false, true);
 }
 
-void InfoDialog::AddLineFmt(const char *szFmtString, ...)
-{
-	// compose formatted line
-	va_list lst; va_start(lst, szFmtString);
-	StdStrBuf buf;
-	buf.FormatV(szFmtString, lst);
-	// add it
-	AddLine(buf.getData());
-}
-
 void InfoDialog::BeginUpdateText()
 {
 	// safety

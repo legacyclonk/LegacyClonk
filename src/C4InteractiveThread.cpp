@@ -167,26 +167,8 @@ bool C4InteractiveThread::ThreadLog(const char *szMessage)
 	return PushEvent(Ev_Log, StdStrBuf{szMessage});
 }
 
-bool C4InteractiveThread::ThreadLogF(const char *szMessage, ...)
-{
-	// format message
-	va_list lst; va_start(lst, szMessage);
-	StdStrBuf Msg = FormatStringV(szMessage, lst);
-	// send to main thread
-	return PushEvent(Ev_Log, Msg);
-}
-
 bool C4InteractiveThread::ThreadLogS(const char *szMessage)
 {
 	// send to main thread
 	return PushEvent(Ev_LogSilent, StdStrBuf{szMessage});
-}
-
-bool C4InteractiveThread::ThreadLogSF(const char *szMessage, ...)
-{
-	// format message
-	va_list lst; va_start(lst, szMessage);
-	StdStrBuf Msg = FormatStringV(szMessage, lst);
-	// send to main thread
-	return PushEvent(Ev_LogSilent, Msg);
 }

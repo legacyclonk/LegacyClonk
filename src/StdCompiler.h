@@ -242,32 +242,42 @@ public:
 	};
 
 	// Throw helpers (might redirect)
-	void excNotFound(const char *szMessage, ...)
+	template<typename... Args>
+	void excNotFound(const char *szMessage, Args... args)
 	{
 		// Throw the appropriate exception
-		va_list args; va_start(args, szMessage);
-		throw NotFoundException(getPosition(), FormatStringV(szMessage, args));
+		throw NotFoundException(getPosition(), FormatString(szMessage, args...));
 	}
 
-	void excEOF(const char *szMessage = "EOF", ...)
+	template<typename... Args>
+	void excEOF(const char *szMessage = "EOF", Args... args)
 	{
 		// Throw the appropriate exception
-		va_list args; va_start(args, szMessage);
-		throw EOFException(getPosition(), FormatStringV(szMessage, args));
+		throw EOFException(getPosition(), FormatString(szMessage, args...));
 	}
 
-	void excCorrupt(const char *szMessage, ...)
+	template<typename... Args>
+	void excCorrupt(const char *szMessage, Args... args)
 	{
 		// Throw the appropriate exception
-		va_list args; va_start(args, szMessage);
-		throw CorruptException(getPosition(), FormatStringV(szMessage, args));
+		throw CorruptException(getPosition(), FormatString(szMessage, args...));
 	}
 
 public:
 	// * Warnings
 	typedef void(*WarnCBT)(void *, const char *, const char *);
 	void setWarnCallback(WarnCBT pnWarnCB, void *pData) { pWarnCB = pnWarnCB; pWarnData = pData; }
-	void Warn(const char *szWarning, ...);
+
+	template<typename... Args>
+	void Warn(const char *szWarning, Args... args)
+	{
+		// Got warning callback?
+		if (!pWarnCB) return;
+		// Format message
+		StdStrBuf Msg; Msg.Format(szWarning, args...);
+		// do callback
+		(*pWarnCB)(pWarnData, getPosition().getData(), Msg.getData());
+	}
 
 private:
 	// Warnings

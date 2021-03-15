@@ -15,6 +15,8 @@
 
 #include "C4AudioSystemSdl.h"
 
+#include "C4Log.h"
+
 #include "Standard.h"
 #include "StdSdlSubSystem.h"
 

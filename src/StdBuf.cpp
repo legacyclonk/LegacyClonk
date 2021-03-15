@@ -102,78 +102,6 @@ void StdBuf::CompileFunc(StdCompiler *pComp, int iType)
 
 // *** StdStringBuf
 
-void StdStrBuf::Format(const char *szFmt, ...)
-{
-	// Create argument list
-	va_list args; va_start(args, szFmt);
-	// Format
-	FormatV(szFmt, args);
-}
-
-void StdStrBuf::FormatV(const char *szFmt, va_list args)
-{
-	// Clear previous contents
-	Clear();
-	// Format
-	AppendFormatV(szFmt, args);
-}
-
-void StdStrBuf::AppendFormat(const char *szFmt, ...)
-{
-	// Create argument list
-	va_list args; va_start(args, szFmt);
-	// Format
-	AppendFormatV(szFmt, args);
-}
-
-void StdStrBuf::AppendFormatV(const char *szFmt, va_list args)
-{
-	if (!IsSafeFormatString(szFmt))
-	{
-		BREAKPOINT_HERE
-		szFmt = "<UNSAFE FORMAT STRING>";
-	}
-
-	// Save append start
-	const auto iStart = getLength();
-#ifdef HAVE_VSCPRINTF
-	// Calculate size, allocate
-	int iLength = vscprintf(szFmt, args);
-	Grow(iLength);
-	// Format
-	char *pPos = getMElem<char>(*this, iSize - iLength - 1);
-	vsprintf(getMPtr(iStart), szFmt, args);
-#else
-	int iBytes;
-#ifdef HAVE_VASPRINTF
-	// Format
-	char *pStr;
-	iBytes = vasprintf(&pStr, szFmt, args);
-	if (iBytes < 0 || !pStr) return;
-	// Append
-	if (isNull())
-		Take(pStr, static_cast<size_t>(iBytes));
-	else
-	{
-		Append(pStr, static_cast<size_t>(iBytes));
-		free(pStr);
-	}
-#else
-	// Save append start
-	do
-	{
-		// Grow
-		Grow(512);
-		// Try output
-		iBytes = vsnprintf(getMPtr(iStart), getLength() - iStart, szFmt, args);
-	} while (iBytes < 0 || static_cast<size_t>(iBytes) >= getLength() - iStart);
-	// Calculate real length, if vsnprintf didn't return anything of value
-#endif
-	// Shrink to fit
-	SetSize(iStart + strlen(getMPtr(iStart)) + 1);
-#endif
-}
-
 void StdStrBuf::CompileFunc(StdCompiler *pComp, int iRawType)
 {
 	if (pComp->isCompiler())
@@ -192,19 +120,6 @@ void StdStrBuf::CompileFunc(StdCompiler *pComp, int iRawType)
 		}
 		pComp->String(data, getLength(), StdCompiler::RawCompileType(iRawType));
 	}
-}
-
-StdStrBuf FormatString(const char *szFmt, ...)
-{
-	va_list args; va_start(args, szFmt);
-	return FormatStringV(szFmt, args);
-}
-
-StdStrBuf FormatStringV(const char *szFmt, va_list args)
-{
-	StdStrBuf Buf;
-	Buf.FormatV(szFmt, args);
-	return Buf;
 }
 
 // replace all occurences of one string with another. Return number of replacements.

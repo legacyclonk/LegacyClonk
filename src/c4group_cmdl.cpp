@@ -60,15 +60,14 @@ C4Config *GetCfg() { return &Config; }
 
 #ifdef _WIN32
 #ifdef _DEBUG
-int dbg_printf(const char *strMessage, ...)
+template<typename... Args>
+int dbg_printf(const char *strMessage, Args... args)
 {
-	va_list args; va_start(args, strMessage);
 	// Compose formatted message
-	StdStrBuf Buf;
-	Buf.FormatV(strMessage, args);
+	const auto output = FormatString(strMessage, args...);
 	// Log
-	OutputDebugString(Buf.getData());
-	return printf(Buf.getData());
+	OutputDebugString(output.getData());
+	return printf(output.getData());
 }
 #define printf dbg_printf
 #endif
@@ -424,14 +423,10 @@ bool Log(const char *msg)
 
 bool LogFatal(const char *msg) { return Log(msg); }
 
-bool LogF(const char *strMessage, ...)
+template<typename... Args>
+bool LogF(const char *strMessage, Args... args)
 {
-	va_list args; va_start(args, strMessage);
-	// Compose formatted message
-	StdStrBuf Buf;
-	Buf.FormatV(strMessage, args);
-	// Log
-	return Log(Buf.getData());
+	return Log(FormatString(strMessage, args...).getData());
 }
 
 void StdCompilerWarnCallback(void *pData, const char *szPosition, const char *szError)

@@ -20,6 +20,7 @@
 #include <C4Include.h>
 #include <C4FileMonitor.h>
 #include <C4Application.h>
+#include <C4Log.h>
 
 #include <StdFile.h>
 

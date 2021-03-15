@@ -21,6 +21,7 @@
 
 #include <Standard.h>
 #include <StdGL.h>
+#include <C4Log.h>
 #include <C4Surface.h>
 #include <StdWindow.h>
 

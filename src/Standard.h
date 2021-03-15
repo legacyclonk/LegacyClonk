@@ -85,8 +85,6 @@ constexpr uint32_t RGB(uint8_t r, uint8_t g, uint8_t b) { return r | (g << 8) | 
 // These functions have to be provided by the application.
 bool Log(const char *szMessage);
 bool LogSilent(const char *szMessage);
-bool LogF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;
-bool LogSilentF(const char *strMessage, ...) GNUC_FORMAT_ATTRIBUTE;
 
 #include <memory.h>
 #include <math.h>
@@ -244,10 +242,8 @@ bool IsSafeFormatString(const char *szFmt);
 
 // secure sprintf
 #define sprintf ssprintf
-template <typename T>
-inline int ssprintf(T &str, const char *fmt, ...) GNUC_FORMAT_ATTRIBUTE_O;
-template <typename T>
-inline int ssprintf(T &str, const char *fmt, ...)
+template <typename T, typename... Args>
+inline int ssprintf(T &str, const char *fmt, Args... args)
 {
 	// Check parameters
 	NoPointer<T>::noPointer();
@@ -258,8 +254,7 @@ inline int ssprintf(T &str, const char *fmt, ...)
 	}
 	const int n{sizeof(str)};
 	// Build string
-	va_list args; va_start(args, fmt);
-	int m = vsnprintf(str, n, fmt, args);
+	int m = snprintf(str, n, fmt, args...);
 	if (m >= n) { m = n - 1; str[m] = 0; }
 	return m;
 }

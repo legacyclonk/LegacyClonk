@@ -886,12 +886,3 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 	// success
 	return true;
 }
-
-void C4UpdatePackage::WriteLog(const char *strMsg, ...)
-{
-	va_list arglist; va_start(arglist, strMsg);
-	char strOutp[1024];
-	vsprintf(strOutp, strMsg, arglist);
-	Log.Write(strOutp, strlen(strOutp));
-	Log.Flush();
-}

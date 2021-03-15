@@ -82,15 +82,10 @@ bool Log(const char *msg)
 	return 1;
 }
 
-bool LogF(const char *strMessage, ...)
+template<typename... Args>
+bool LogF(const char *strMessage, Args... args)
 {
-	va_list args;
-	va_start(args, strMessage);
-	// Compose formatted message
-	StdStrBuf Buf;
-	Buf.FormatV(strMessage, args);
-	// Log
-	return Log(Buf.getData());
+	return Log(FormatString(strMessage, args...).getData());
 }
 
 bool ProcessGroup(const char *FilenamePar)

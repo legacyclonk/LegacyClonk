@@ -18,6 +18,7 @@
 
 #include "C4Include.h"
 #include "C4LangStringTable.h"
+#include "C4Log.h"
 
 struct C4StringTableEntry
 {

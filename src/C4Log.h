@@ -23,8 +23,26 @@
 
 bool OpenLog();
 bool CloseLog();
+
+template<typename... Args>
+bool LogF(const char *strMessage, Args... args)
+{
+	return Log(FormatString(strMessage, args...).getData());
+}
+
+template<typename... Args>
+bool LogSilentF(const char *strMessage, Args... args)
+{
+	return LogSilent(FormatString(strMessage, args...).getData());
+}
+
 bool DebugLog(const char *strMessage);
-bool DebugLogF(const char *strMessage ...) GNUC_FORMAT_ATTRIBUTE;
+
+template<typename... Args>
+bool DebugLogF(const char *strMessage, Args... args)
+{
+	return DebugLog(FormatString(strMessage, args...).getData());
+}
 
 bool LogFatal(const char *szMessage); // log message and store it as a fatal error
 void ResetFatalError();               // clear any fatal error message

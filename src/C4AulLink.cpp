@@ -22,6 +22,7 @@
 
 #include <C4Def.h>
 #include <C4Game.h>
+#include <C4Log.h>
 
 // ResolveAppends and ResolveIncludes must be called both
 // for each script. ResolveAppends has to be called first!

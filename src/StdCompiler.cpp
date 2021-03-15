@@ -26,17 +26,6 @@
 
 // *** StdCompiler
 
-void StdCompiler::Warn(const char *szWarning, ...)
-{
-	// Got warning callback?
-	if (!pWarnCB) return;
-	// Format message
-	va_list args; va_start(args, szWarning);
-	StdStrBuf Msg; Msg.FormatV(szWarning, args);
-	// do callback
-	(*pWarnCB)(pWarnData, getPosition().getData(), Msg.getData());
-}
-
 char StdCompiler::SeparatorToChar(Sep eSep)
 {
 	switch (eSep)

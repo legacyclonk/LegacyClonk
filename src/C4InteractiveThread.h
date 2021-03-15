@@ -90,9 +90,21 @@ public:
 
 	// special events
 	bool ThreadLog(const char *szMessage);
-	bool ThreadLogF(const char *szMessage, ...) GNUC_FORMAT_ATTRIBUTE_O;
 	bool ThreadLogS(const char *szMessage);
-	bool ThreadLogSF(const char *szMessage, ...) GNUC_FORMAT_ATTRIBUTE_O;
+
+	template<typename... Args>
+	bool ThreadLogF(const char *szMessage, Args... args)
+	{
+		// send to main thread
+		return PushEvent(Ev_Log, FormatString(szMessage, args...));
+	}
+
+	template<typename... Args>
+	bool ThreadLogSF(const char *szMessage, Args... args)
+	{
+		// send to main thread
+		return PushEvent(Ev_LogSilent, FormatString(szMessage, args...));
+	}
 
 	// event handlers
 	void SetCallback(C4InteractiveEventType eEvent, Callback *pnNetworkCallback)

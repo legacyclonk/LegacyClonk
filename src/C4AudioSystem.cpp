@@ -17,6 +17,7 @@
 
 #include "BuildConfig.h"
 #include "C4AudioSystemNone.h"
+#include "C4Log.h"
 
 #ifdef USE_FMOD
 #include "C4AudioSystemFmodRuntime.h"

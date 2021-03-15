@@ -66,7 +66,14 @@ protected:
 	bool MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGr, bool *fModified);
 
 	CStdFile Log;
-	void WriteLog(const char *strMsg, ...) GNUC_FORMAT_ATTRIBUTE_O;
+
+	template<typename... Args>
+	void WriteLog(const char *strMsg, Args... args)
+	{
+		const auto output = FormatString(strMsg, args...);
+		Log.Write(output.getData(), output.getLength());
+		Log.Flush();
+	}
 };
 
 bool C4Group_ApplyUpdate(C4Group &hGroup);

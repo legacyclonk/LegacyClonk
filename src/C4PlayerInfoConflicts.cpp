@@ -23,6 +23,7 @@
 #include <C4PlayerInfo.h>
 #include <C4GraphicsSystem.h>
 #include <C4Game.h>
+#include <C4Log.h>
 
 #include <C4Random.h>
 
