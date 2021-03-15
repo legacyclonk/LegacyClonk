@@ -100,32 +100,6 @@ void CStdFont::DestroyFont(CStdVectorFont *pFont)
 	delete pFont;
 }
 
-#elif defined(_WIN32)
-
-class CStdVectorFont
-{
-private:
-	StdStrBuf sFontName;
-
-public:
-	CStdVectorFont(const char *name)
-	{
-		sFontName.Copy(name);
-	}
-
-	const char *GetFontName() { return sFontName.getData(); }
-};
-
-CStdVectorFont *CStdFont::CreateFont(const char *szFaceName)
-{
-	return new CStdVectorFont(szFaceName);
-}
-
-void CStdFont::DestroyFont(CStdVectorFont *pFont)
-{
-	delete pFont;
-}
-
 #else
 
 CStdVectorFont *CStdFont::CreateFont(const StdBuf &Data)
@@ -161,11 +135,7 @@ CStdFont::CStdFont()
 	id = 0;
 	pCustomImages = nullptr;
 	fPrerenderedFont = false;
-#if defined(_WIN32) && !defined(HAVE_FREETYPE)
-	hDC = nullptr;
-	hbmBitmap = nullptr;
-	hFont = nullptr;
-#elif defined(HAVE_FREETYPE)
+#ifdef HAVE_FREETYPE
 	pVectorFont = nullptr;
 #endif
 }
@@ -205,64 +175,8 @@ bool CStdFont::CheckRenderedCharSpace(uint32_t iCharWdt, uint32_t iCharHgt)
 bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
 {
 	int shadowSize = fDoShadow ? static_cast<int>(std::round(scale)) : 0;
-#if defined(_WIN32) && !defined(HAVE_FREETYPE)
 
-	// Win32-API character rendering
-	// safety
-	if (fPrerenderedFont || !sfcCurrent) return false;
-	bool fUnicode = (dwChar >= 256);
-	char str[2] = _T("x");
-	wchar_t wstr[2] = L"x";
-	SIZE size;
-	if (fUnicode)
-	{
-		wstr[0] = dwChar;
-		GetTextExtentPoint32W(hDC, wstr, 1, &size);
-	}
-	else
-	{
-		// set character
-		str[0] = dwChar;
-		// get size
-		GetTextExtentPoint32(hDC, str, 1, &size);
-	}
-	// keep text shadow in mind
-	if (fDoShadow) { size.cx += shadowSize; size.cy += shadowSize; }
-	// adjust line height to max character height
-	if (!fUnicode) iLineHgt = std::max<int>(iLineHgt, size.cy + 1);
-	// print character on empty surface
-	std::fill_n(pBitmapBits, iBitmapSize * iBitmapSize, 0);
-	if (fUnicode)
-		ExtTextOutW(hDC, 0, 0, ETO_OPAQUE, nullptr, wstr, 1, nullptr);
-	else
-		ExtTextOut(hDC, 0, 0, ETO_OPAQUE, nullptr, str, 1, nullptr);
-	// must not overflow surfaces: do some size bounds
-	size.cx = std::min<int>(size.cx, std::min<int>(iSfcSizes, iBitmapSize));
-	size.cy = std::min<int>(size.cy, std::min<int>(iSfcSizes, iBitmapSize));
-	// need to do a line break or new surface?
-	if (!CheckRenderedCharSpace(size.cx, size.cy)) return false;
-	// transfer bitmap data into alpha channel of surface
-	if (!sfcCurrent->Lock()) return false;
-	for (int y = 0; y < size.cy; ++y) for (int x = 0; x < size.cx; ++x)
-	{
-		// get value; determine shadow value by pos moved 1px to upper left
-		uint8_t bAlpha = 255 - (uint8_t)(pBitmapBits[iBitmapSize * y + x] & 0xff);
-		uint8_t bAlphaShadow;
-		if (fDoShadow && x >= shadowSize && y >= shadowSize)
-			bAlphaShadow = 255 - static_cast<uint8_t>(pBitmapBits[iBitmapSize * (y - shadowSize) + x - shadowSize] & 0xff);
-		else
-			bAlphaShadow = 255;
-		// calc pixel value: white char on black shadow (if shadow is desired)
-		uint32_t dwPixVal = bAlphaShadow << 24;
-		BltAlpha(dwPixVal, bAlpha << 24 | 0xffffff);
-		sfcCurrent->SetPixDw(iCurrentSfcX + x, iCurrentSfcY + y, dwPixVal);
-	}
-	sfcCurrent->Unlock();
-	// set texture coordinates
-	pfctTarget->Set(sfcCurrent, iCurrentSfcX, iCurrentSfcY, size.cx, size.cy);
-
-#elif defined(HAVE_FREETYPE)
-
+#ifdef HAVE_FREETYPE
 	// Freetype character rendering
 	FT_Set_Pixel_Sizes(*pVectorFont, dwDefFontHeight, dwDefFontHeight);
 	int32_t iBoldness = dwWeight - 400; // zero is normal; 300 is bold
@@ -419,63 +333,8 @@ void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFo
 		throw std::runtime_error(std::string("Cannot create surface (") + szFontName + ")");
 	}
 
-#if defined(_WIN32) && !defined(HAVE_FREETYPE)
 
-	// drawing using WinGDI
-	iLineHgt = dwHeight;
-	iGfxLineHgt = iLineHgt + fDoShadow; // vertical shadow
-
-	// prepare to create an offscreen bitmap to render into
-	iBitmapSize = DWordAligned(dwDefFontHeight * iFontZoom * 5);
-	BITMAPINFO bmi; bmi.bmiHeader = {};
-	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = iBitmapSize;
-	bmi.bmiHeader.biHeight = -iBitmapSize;
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biCompression = BI_RGB;
-	bmi.bmiHeader.biBitCount = 32;
-
-	// create a rendering DC and a bitmap for the font
-	hDC = CreateCompatibleDC(nullptr);
-	if (!hDC) { Clear(); throw std::runtime_error(std::string("Cannot create DC (") + szFontName + ")"); }
-	hbmBitmap = CreateDIBSection(hDC, &bmi, DIB_RGB_COLORS,
-		(VOID **)&pBitmapBits, nullptr, 0);
-	if (!hbmBitmap) { Clear(); throw std::runtime_error(std::string("Cannot create DIBSection (") + szFontName + ")"); }
-	char bCharset = GetCharsetCode(szCharset);
-	// create a font. try ClearType first...
-	const char *szFontName = VectorFont.GetFontName();
-	const char *szFontName2;
-	if (szFontName && *szFontName) szFontName2 = szFontName; else szFontName2 = "Comic Sans MS";
-	int iFontHeight = dwDefFontHeight * GetDeviceCaps(hDC, LOGPIXELSY) * iFontZoom / 72;
-	hFont = ::CreateFont(iFontHeight, 0, 0, 0, dwFontWeight, FALSE,
-		FALSE, FALSE, bCharset, OUT_DEFAULT_PRECIS,
-		CLIP_DEFAULT_PRECIS, 5,
-		VARIABLE_PITCH, szFontName2);
-
-	// ClearType failed: try antialiased (not guaranteed)
-	if (!hFont) hFont = ::CreateFont(iFontHeight, 0, 0, 0, dwFontWeight, FALSE,
-		FALSE, FALSE, bCharset, OUT_DEFAULT_PRECIS,
-		CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
-		VARIABLE_PITCH, szFontName2);
-
-	if (!hFont)
-	{
-		Clear();
-		throw std::runtime_error(std::string("Cannot create Font (") + szFontName + ")");
-	}
-	SelectObject(hDC, hbmBitmap);
-	SelectObject(hDC, hFont);
-
-	// set text properties
-	SetTextColor(hDC, RGB(255, 255, 255));
-	SetBkColor(hDC, 0x00000000);
-	SetTextAlign(hDC, TA_TOP);
-
-	// line height adjusted when characters are created
-	iLineHgt = 0;
-
-#elif defined(HAVE_FREETYPE)
-
+#ifdef HAVE_FREETYPE
 	// Store vector font - assumed to be held externally!
 	pVectorFont = &VectorFont;
 	// Get size
@@ -666,12 +525,7 @@ void CStdFont::Init(const char *szFontName, C4Surface *psfcFontSfc, int iIndent)
 
 void CStdFont::Clear()
 {
-#if defined(_WIN32) && !defined(HAVE_FREETYPE)
-	// clear Win32API font stuff
-	if (hbmBitmap) { DeleteObject(hbmBitmap); hbmBitmap = nullptr; }
-	if (hDC) { DeleteDC(hDC); hDC = nullptr; }
-	if (hFont) { DeleteObject(hFont); hDC = nullptr; }
-#elif defined(HAVE_FREETYPE)
+#ifdef HAVE_FREETYPE
 	pVectorFont = nullptr;
 #endif
 	// clear font sfcs

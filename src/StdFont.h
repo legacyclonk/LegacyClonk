@@ -89,12 +89,7 @@ protected:
 
 	CustomImages *pCustomImages; // callback class for custom images
 
-#if defined(_WIN32) && !defined(HAVE_FREETYPE)
-	HDC hDC;
-	HBITMAP hbmBitmap;
-	uint32_t *pBitmapBits; int iBitmapSize;
-	HFONT hFont;
-#elif defined(HAVE_FREETYPE)
+#ifdef HAVE_FREETYPE
 	CStdVectorFont *pVectorFont; // class assumed to be held externally!
 #endif
 

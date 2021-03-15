@@ -47,9 +47,6 @@ C4VectorFont::~C4VectorFont()
 	if (*FileName)
 	{
 		// release font
-#if defined(_WIN32) && !defined(HAVE_FREETYPE)
-		RemoveFontResource(FileName);
-#endif
 		if (fIsTempFile) EraseFile(FileName);
 	}
 }
@@ -58,51 +55,7 @@ bool C4VectorFont::Init(C4Group &hGrp, const char *szFilename, C4Config &rCfg)
 {
 	// name by file
 	Name.Copy(GetFilenameOnly(szFilename));
-#if defined(_WIN32) && !defined(HAVE_FREETYPE)
-	// check whether group is directory or packed
-	if (!hGrp.IsPacked())
-	{
-		// it's open: use the file directly
-		SCopy(hGrp.GetFullName().getData(), FileName, _MAX_PATH);
-		AppendBackslash(FileName);
-		SAppend(szFilename, FileName);
-		if (!FileExists(FileName)) { *FileName = 0; return false; }
-		fIsTempFile = false;
-	}
-	else
-	{
-		// it's packed: extract to temp path
-		SCopy(rCfg.AtTempPath(szFilename), FileName, _MAX_PATH);
-		// make sure the filename is not in use, in case multiple instances of the engine are run
-		if (FileExists(FileName))
-		{
-			RemoveExtension(FileName);
-			StdStrBuf sNewFilename;
-			for (int i = 0; i < 1000; ++i)
-			{
-				sNewFilename.Format("%s%x", FileName, (int)rand());
-				if (*GetExtension(szFilename))
-				{
-					sNewFilename.AppendChar('.');
-					sNewFilename.Append(GetExtension(szFilename));
-				}
-				if (!FileExists(sNewFilename.getData())) break;
-			}
-			SCopy(sNewFilename.getData(), FileName, _MAX_PATH);
-		}
-		if (!hGrp.ExtractEntry(szFilename, FileName)) { *FileName = 0; return false; }
-		fIsTempFile = true;
-	}
-	// add the font resource
-	if (!AddFontResource(FileName))
-	{
-		if (fIsTempFile) EraseFile(FileName);
-		*FileName = '\0';
-		return false;
-	}
-#else
 	if (!hGrp.LoadEntry(szFilename, Data)) return false;
-#endif
 	// success
 	return true;
 }
@@ -327,17 +280,6 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 	else
 	{
 		int32_t iDefFontSize; uint32_t dwDefWeight = FW_NORMAL;
-#if defined(_WIN32) && !defined(HAVE_FREETYPE)
-		switch (eType)
-		{
-		case C4FT_Log:       iDefFontSize = 8; break;
-		case C4FT_MainSmall: iDefFontSize = iSize + 1; break;
-		case C4FT_Main:      iDefFontSize = iSize + 4; break;
-		case C4FT_Caption:   iDefFontSize = iSize + 6; dwDefWeight = FW_BOLD; break;
-		case C4FT_Title:     iDefFontSize = iSize * 3; break;
-		default: LogFatal(LoadResStr("IDS_ERR_INITFONTS")); return false; // invalid call
-		}
-#else
 		switch (eType)
 		{
 		case C4FT_Log:       iDefFontSize = iSize * 12 / 14; break;
@@ -347,7 +289,6 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 		case C4FT_Title:     iDefFontSize = iSize * 22 / 14; break;
 		default: LogFatal(LoadResStr("IDS_ERR_INITFONTS")); return false; // invalid call
 		}
-#endif
 		// regular font name: let WinGDI or Freetype draw a font with the given parameters
 		// font size given?
 		if (SCopySegment(szFontString, 1, FontParam, ',', C4MaxName))
