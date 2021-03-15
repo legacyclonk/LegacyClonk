@@ -764,8 +764,14 @@ bool C4Landscape::SetPix(int32_t x, int32_t y, uint8_t npix)
 
 bool C4Landscape::SetPixDw(int32_t x, int32_t y, uint32_t dwPix)
 {
+	if (!Surface32->LockForUpdate({x, y, x + 1, y + 1}))
+	{
+		return false;
+	}
 	// set in surface
-	return Surface32->SetPixDw(x, y, dwPix);
+	const auto ret = Surface32->SetPixDw(x, y, dwPix);
+	Surface32->Unlock();
+	return ret;
 }
 
 bool C4Landscape::_SetPix(int32_t x, int32_t y, uint8_t npix)
@@ -2430,6 +2436,14 @@ uint8_t C4Landscape::GetMapIndex(int32_t iX, int32_t iY)
 
 bool C4Landscape::DoRelights()
 {
+	if (!Relights[0].Wdt) return true;
+
+	if (!Surface32->Lock()) return false;
+	if (AnimationSurface)
+	{
+		AnimationSurface->Lock();
+	}
+
 	for (int32_t i = 0; i < C4LS_MaxRelights; i++)
 	{
 		if (!Relights[i].Wdt)
@@ -2451,6 +2465,10 @@ bool C4Landscape::DoRelights()
 		Relights[i].Default();
 		C4SolidMask::CheckConsistency();
 	}
+
+	Surface32->Unlock();
+	if (AnimationSurface) AnimationSurface->Unlock();
+
 	return true;
 }
 
@@ -2470,11 +2488,12 @@ bool C4Landscape::ApplyLighting(C4Rect To)
 	// everything clipped?
 	if (To.Wdt <= 0 || To.Hgt <= 0) return true;
 
-	if (!Surface32->Lock()) return false;
+	RECT toRect{To.x, To.y, To.x + To.Wdt, To.y + To.Hgt};
+	if (!Surface32->LockForUpdate(toRect)) return false;
 	Surface32->ClearBoxDw(To.x, To.y, To.Wdt, To.Hgt);
 	if (AnimationSurface)
 	{
-		AnimationSurface->Lock();
+		AnimationSurface->LockForUpdate(toRect);
 		AnimationSurface->ClearBoxDw(To.x, To.y, To.Wdt, To.Hgt);
 	}
 	// do lightning

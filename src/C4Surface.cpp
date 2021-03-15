@@ -508,6 +508,49 @@ bool C4Surface::Lock()
 	Locked++; return true;
 }
 
+bool C4Surface::LockForUpdate(const RECT &rtUpdate)
+{
+	// texture present?
+	if (!ppTex) return false;
+
+	++Locked;
+	for (auto y = rtUpdate.top; y <= rtUpdate.bottom; y += iTexSize)
+	{
+		for (auto x = rtUpdate.left; x <= rtUpdate.right; x += iTexSize)
+		{
+			// get pos
+			int tileX = x / iTexSize;
+			int tileY = y / iTexSize;
+			// clip
+			if (tileX < 0 || tileY < 0 || tileX >= iTexX || tileY >= iTexY) return false;
+			// get texture by pos
+			auto texRef = *(ppTex + tileY * iTexX + tileX);
+
+			RECT subRect{x - tileX * iTexSize, y - tileY * iTexSize,
+				rtUpdate.right - tileX * iTexSize, rtUpdate.bottom - tileY * iTexSize};
+
+			if (subRect.right > iTexSize)
+			{
+				x = tileX * iTexSize;
+				subRect.right = iTexSize;
+			}
+
+			if (subRect.bottom > iTexSize)
+			{
+				y = tileY * iTexSize;
+				subRect.bottom = iTexSize;
+			}
+
+			if (!texRef->LockForUpdate(subRect))
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 bool C4Surface::Unlock(bool noUpload)
 {
 	// unlock main sfc
@@ -1078,13 +1121,13 @@ C4TexRef::~C4TexRef()
 	pTexMgr->UnregTex(this);
 }
 
-bool C4TexRef::LockForUpdate(RECT &rtUpdate)
+bool C4TexRef::LockForUpdate(const RECT &rtUpdate)
 {
 	// already locked?
 	if (texLock.pBits)
 	{
-		// fully locked
-		if (LockSize.left == 0 && LockSize.right == iSize && LockSize.top == 0 && LockSize.bottom == iSize)
+		// sufficiently locked?
+		if (LockSize.left <= rtUpdate.left && LockSize.right >= rtUpdate.right && LockSize.top <= rtUpdate.top && LockSize.bottom >= rtUpdate.bottom)
 		{
 			return true;
 		}

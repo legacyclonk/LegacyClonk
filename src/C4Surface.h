@@ -137,6 +137,7 @@ public:
 	void ClearBoxDw(int iX, int iY, int iWdt, int iHgt);
 	bool Unlock(bool noUpload = false);
 	bool Lock();
+	bool LockForUpdate(const RECT &rtUpdate);
 	bool GetTexAt(C4TexRef **ppTexRef, int &rX, int &rY); // get texture and adjust x/y
 	bool GetLockTexAt(C4TexRef **ppTexRef, int &rX, int &rY); // get texture; ensure it's locked and adjust x/y
 	bool SetPix(int iX, int iY, uint8_t byCol); // set 8bit-px
@@ -224,7 +225,7 @@ public:
 	bool Lock(); // lock texture
 	// Lock a part of the rect, discarding the content
 	// Note: Calling Lock afterwards without an Unlock first is undefined
-	bool LockForUpdate(RECT &rtUpdate);
+	bool LockForUpdate(const RECT &rtUpdate);
 	void Unlock(bool noUpload = false); // unlock texture
 	bool ClearRect(RECT &rtClear); // clear rect in texture to transparent
 	bool FillBlack(); // fill complete texture in black
