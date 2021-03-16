@@ -304,7 +304,7 @@ void MakeTempFilename(char *szFilename)
 	do
 	{
 		cnum++;
-		osprintf(fn_ext, "%03d", cnum);
+		snprintf(fn_ext, 4, "%03d", cnum);
 	} while (FileExists(szFilename) && (cnum < 999));
 }
 
@@ -318,7 +318,7 @@ void MakeTempFilename(StdStrBuf *sFilename)
 	do
 	{
 		cnum++;
-		osprintf(fn_ext, "%03d", cnum);
+		snprintf(fn_ext, 4, "%03d", cnum);
 	} while (FileExists(sFilename->getData()) && (cnum < 999));
 }
 

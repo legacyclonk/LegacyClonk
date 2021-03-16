@@ -36,7 +36,7 @@ void GetC4IdText(C4ID id, char *sBuf)
 	// Numerical id
 	if (Inside(static_cast<int>(id), 0, 9999))
 	{
-		osprintf(sBuf, "%04i", static_cast<unsigned int>(id));
+		snprintf(sBuf, 5, "%04i", static_cast<unsigned int>(id));
 	}
 	// Literal id
 	else

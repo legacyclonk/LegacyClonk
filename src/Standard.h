@@ -235,14 +235,6 @@ bool SWildcardMatchEx(const char *szString, const char *szWildcard);
 #include <stdio.h>
 #include <stdarg.h>
 
-// old, insecure sprintf
-inline int osprintf(char *str, const char *fmt, ...) GNUC_FORMAT_ATTRIBUTE_O;
-inline int osprintf(char *str, const char *fmt, ...)
-{
-	va_list args; va_start(args, fmt);
-	return vsprintf(str, fmt, args);
-}
-
 // wrapper to detect "char *"
 template <typename T> struct NoPointer { static void noPointer() {} };
 template <> struct NoPointer<char *> {};
