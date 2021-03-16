@@ -108,6 +108,7 @@ void StdStrBuf::Format(const char *szFmt, ...)
 	va_list args; va_start(args, szFmt);
 	// Format
 	FormatV(szFmt, args);
+	va_end(args);
 }
 
 void StdStrBuf::FormatV(const char *szFmt, va_list args)
@@ -124,6 +125,7 @@ void StdStrBuf::AppendFormat(const char *szFmt, ...)
 	va_list args; va_start(args, szFmt);
 	// Format
 	AppendFormatV(szFmt, args);
+	va_end(args);
 }
 
 void StdStrBuf::AppendFormatV(const char *szFmt, va_list args)
@@ -137,8 +139,11 @@ void StdStrBuf::AppendFormatV(const char *szFmt, va_list args)
 	// Save append start
 	const auto iStart = getLength();
 #ifdef HAVE_VSCPRINTF
+	va_list args2;
+	va_copy(args2, args);
 	// Calculate size, allocate
-	int iLength = vscprintf(szFmt, args);
+	int iLength = vscprintf(szFmt, args2);
+	va_end(args2);
 	Grow(iLength);
 	// Format
 	char *pPos = getMElem<char>(*this, iSize - iLength - 1);
@@ -165,7 +170,10 @@ void StdStrBuf::AppendFormatV(const char *szFmt, va_list args)
 		// Grow
 		Grow(512);
 		// Try output
-		iBytes = vsnprintf(getMPtr(iStart), getLength() - iStart, szFmt, args);
+		va_list args2;
+		va_copy(args2, args);
+		iBytes = vsnprintf(getMPtr(iStart), getLength() - iStart, szFmt, args2);
+		va_end(args2);
 	} while (iBytes < 0 || static_cast<size_t>(iBytes) >= getLength() - iStart);
 	// Calculate real length, if vsnprintf didn't return anything of value
 #endif
@@ -197,7 +205,9 @@ void StdStrBuf::CompileFunc(StdCompiler *pComp, int iRawType)
 StdStrBuf FormatString(const char *szFmt, ...)
 {
 	va_list args; va_start(args, szFmt);
-	return FormatStringV(szFmt, args);
+	StdStrBuf Buf = FormatStringV(szFmt, args);
+	va_end(args);
+	return Buf;
 }
 
 StdStrBuf FormatStringV(const char *szFmt, va_list args)
