@@ -611,6 +611,11 @@ public:
 		AppendFormat(format, args...);
 	}
 
+	void AppendFormat(const char *format)
+	{
+		Append(format);
+	}
+
 	template<typename... Args>
 	void AppendFormat(const char *format, Args... args)
 	{
