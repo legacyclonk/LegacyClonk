@@ -720,7 +720,7 @@ void C4Value::DenumeratePointer()
 	// in range?
 	if (Type != C4V_C4ObjectEnum && !Inside<std::intptr_t>(Data.Raw, C4EnumPointer1, C4EnumPointer2)) return;
 	// get obj id, search object
-	C4ID iObjID = (Data.ID >= C4EnumPointer1 ? Data.ID - static_cast<C4ID>(C4EnumPointer1) : Data.ID);
+	const auto iObjID = (Data.Int >= C4EnumPointer1 ? Data.Int - C4EnumPointer1 : Data.Int);
 	C4Object *pObj = Game.Objects.ObjectPointer(iObjID);
 	if (!pObj)
 		pObj = Game.Objects.InactiveObjects.ObjectPointer(iObjID);
@@ -788,7 +788,9 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 
 
 	case C4V_C4ID:
-		pComp->Value(mkC4IDAdapt(Data.ID));
+		iTmp = static_cast<int32_t>(Data.ID);
+		pComp->Value(iTmp);
+		Data.ID = static_cast<C4ID>(iTmp);
 		break;
 
 	// object: save object number instead
