@@ -298,7 +298,7 @@ protected:
 	bool CheckObjectEnumeration();
 	bool DefinitionFilenamesFromSaveGame();
 	bool LoadScenarioComponents();
-	bool LoadScenarioScripts();
+	void LoadScenarioScripts();
 
 public:
 	bool SaveGameTitle(C4Group &hGroup);
@@ -315,7 +315,7 @@ protected:
 	bool InitNetworkHost();
 	bool InitControl();
 	bool InitScriptEngine();
-	bool LinkScriptEngine();
+	void LinkScriptEngine();
 	bool InitPlayers();
 	bool OpenScenario();
 	bool InitDefs();

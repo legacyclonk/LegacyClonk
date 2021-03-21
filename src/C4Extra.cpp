@@ -48,10 +48,10 @@ bool C4Extra::InitGroup()
 	return true;
 }
 
-bool C4Extra::Init()
+void C4Extra::Init()
 {
 	// no group: OK
-	if (!ExtraGrp.IsOpen()) return true;
+	if (!ExtraGrp.IsOpen()) return;
 	// load from all definitions that are activated
 	// add first definition first, so the priority will be lowest
 	// (according to definition load/overload order)
@@ -63,8 +63,6 @@ bool C4Extra::Init()
 			fAnythingLoaded = true;
 		}
 	}
-	// done, success
-	return true;
 }
 
 bool C4Extra::LoadDef(C4Group &hGroup, const char *szName)

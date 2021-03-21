@@ -161,7 +161,7 @@ public:
 	const char *getLocalName()         const { return pLocal ? getLocalCore().getName() : "???"; }
 	int32_t getLocalID()               const { return pLocal ? getLocalCore().getID() : C4ClientIDUnknown; }
 
-	bool Init(int32_t iLocalClientID = C4ClientIDHost);
+	void Init(int32_t iLocalClientID = C4ClientIDHost);
 	void InitNetwork(class C4Network2ClientList *pNetClients);
 	void ClearNetwork();
 

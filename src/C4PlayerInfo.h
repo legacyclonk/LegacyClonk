@@ -422,7 +422,7 @@ public:
 	void FixIDCounter(); // make sure ID counter is same as largest info
 
 	// game interaction
-	bool InitLocal(); // put locally joining players into list (non-network)
+	void InitLocal(); // put locally joining players into list (non-network)
 	bool LocalJoinUnjoinedPlayersInQueue(); // join all unjoined players to local input queue
 	int32_t GetStartupCount(); // get number of players already joined and to be joined
 	void CreateRestoreInfosForJoinedScriptPlayers(C4PlayerInfoList &rSavegamePlayers); // create matching script player joins for all script playeers in restore info

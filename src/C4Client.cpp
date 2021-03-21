@@ -199,12 +199,11 @@ int32_t C4ClientList::getClientCnt() const
 	return iCnt;
 }
 
-bool C4ClientList::Init(int32_t iLocalClientID)
+void C4ClientList::Init(int32_t iLocalClientID)
 {
 	Clear();
 	// Add local client (activated, not observing)
 	AddLocal(iLocalClientID, true, false);
-	return true;
 }
 
 void C4ClientList::InitNetwork(C4Network2ClientList *pnNetClients)

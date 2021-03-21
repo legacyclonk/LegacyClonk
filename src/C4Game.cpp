@@ -235,7 +235,10 @@ bool C4Game::OpenScenario()
 	// Load parameters (not as network client, because then team info has already been sent by host)
 	if (!Network.isEnabled() || Network.isHost())
 		if (!Parameters.Load(ScenarioFile, &C4S, GameText.GetData(), &ScenarioLangStringTable, DefinitionFilenames))
+		{
+			LogFatal(LoadResStr("IDS_ERR_LOAD_PARAMETERS"));
 			return false;
+		}
 
 	// Title
 	Title.LoadEx(LoadResStr("IDS_CNS_TITLE"), ScenarioFile, C4CFN_Title, Config.General.LanguageEx);
@@ -253,7 +256,7 @@ bool C4Game::OpenScenario()
 	// Compile runtime data
 	if (!CompileRuntimeData(GameText))
 	{
-		LogFatal(LoadResStr("IDS_PRC_FAIL")); return false;
+		LogFatal(LoadResStr("IDS_ERR_LOAD_RUNTIMEDATA")); return false;
 	}
 
 	// If scenario is a directory: Watch for changes
@@ -291,7 +294,7 @@ bool C4Game::PreInit()
 	// System
 	if (!InitSystem())
 	{
-		LogFatal(FormatString("%s(InitSystem)", LoadResStr("IDS_PRC_FAIL")).getData()); return false;
+		return false;
 	}
 
 	// Startup message board
@@ -352,10 +355,7 @@ bool C4Game::Init()
 		{
 			// init extra; needed for loader screen
 			Log(LoadResStr("IDS_PRC_INITEXTRA"));
-			if (!Extra.Init())
-			{
-				LogFatal(LoadResStr("IDS_PRC_ERREXTRA")); return false;
-			}
+			Extra.Init();
 
 			// init loader
 			if (Application.isFullScreen && !GraphicsSystem.InitLoaderScreen(C4S.Head.Loader))
@@ -406,15 +406,12 @@ bool C4Game::Init()
 		// Open scenario
 		if (!OpenScenario())
 		{
-			LogFatal(LoadResStr("IDS_PRC_FAIL")); return false;
+			return false;
 		}
 
 		// init extra; needed for loader screen
 		Log(LoadResStr("IDS_PRC_INITEXTRA"));
-		if (!Extra.Init())
-		{
-			LogFatal(LoadResStr("IDS_PRC_ERREXTRA")); return false;
-		}
+		Extra.Init();
 
 		// init loader
 		if (Application.isFullScreen && !GraphicsSystem.InitLoaderScreen(C4S.Head.Loader))
@@ -444,7 +441,11 @@ bool C4Game::Init()
 	// Network final init
 	if (Network.isEnabled())
 	{
-		if (!Network.FinalInit()) return false;
+		if (!Network.FinalInit())
+		{
+			LogFatal(LoadResStr("IDS_ERR_NETWORKFINALINIT"));
+			return false;
+		}
 	}
 	// non-net may have to synchronize now to keep in sync with replays
 	// also needs to synchronize to update transfer zones
@@ -857,7 +858,10 @@ bool C4Game::InitMaterialTexture()
 		if (fHaveScenMaterials)
 		{
 			if (!Mats.OpenAsChild(&Game.ScenarioFile, C4CFN_Material))
+			{
+				LogFatal(FormatString(LoadResStr("IDS_ERR_SCENARIOMATERIALS"), Mats.GetError()).getData());
 				return false;
+			}
 			// Once only
 			fHaveScenMaterials = false;
 		}
@@ -866,7 +870,10 @@ bool C4Game::InitMaterialTexture()
 			if (matRes == matRes.end()) break;
 			// Find next external material source
 			if (!Mats.Open(matRes->getFile()))
+			{
+				LogFatal(FormatString(LoadResStr("IDS_ERR_EXTERNALMATERIALS"), matRes->getFile(), Mats.GetError()).getData());
 				return false;
+			}
 			++matRes;
 		}
 
@@ -2295,20 +2302,15 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 			pFileMonitor = new C4FileMonitor(FileMonitorCallback);
 
 		CStdLock lock{&Game.PreloadMutex};
-		if (!InitGameFirstPart())
-		{
-			LogFatal("IDS_PRC_FAIL");
-			return false;
-		}
+		if (!InitGameFirstPart()) return false;
 
 		// join local players for regular games
 		// should be done before record/replay is initialized, so the players are stored in PlayerInfos.txt
 		// for local savegame resumes, players are joined into PlayerInfos and later associated in InitPlayers
 		if (!Game.Network.isEnabled())
-			if (!PlayerInfos.InitLocal())
-			{
-				LogFatal(LoadResStr("IDS_PRC_FAIL")); return false;
-			}
+		{
+			PlayerInfos.InitLocal();
+		}
 
 		// for replays, make sure teams are assigned correctly
 		if (C4S.Head.Replay)
@@ -2322,6 +2324,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 			auto group = std::make_unique<C4Group>();
 			if (!group->Open(def.getFile()))
 			{
+				LogFatal(FormatString(LoadResStr("IDS_ERR_OPENRES"), def.getFile(), group->GetError()).getData());
 				return false;
 			}
 
@@ -2333,7 +2336,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		Log(LoadResStr("IDS_PRC_GFXRES"));
 		if (!GraphicsResource.Init(true))
 		{
-			LogFatal(LoadResStr("IDS_PRC_FAIL")); return false;
+			return false;
 		}
 
 		SetInitProgress(10);
@@ -2347,14 +2350,17 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 	if (!InitGameSecondPart(hGroup, section, fLoadSky, false))
 	{
-		LogFatal("IDS_PRC_FAIL");
 		return false;
 	}
 
 	if (!section)
 	{
 		// set up control (inits Record/Replay)
-		if (!InitControl()) return false;
+		if (!InitControl())
+		{
+			LogFatal("IDS_ERR_INITCONTROL");
+			return false;
+		}
 	}
 
 	// Load round results
@@ -2377,7 +2383,11 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	if (!section && pGlobalEffects) pGlobalEffects->DenumeratePointers();
 
 	// Check object enumeration
-	if (!CheckObjectEnumeration()) return false;
+	if (!CheckObjectEnumeration())
+	{
+		LogFatal(LoadResStr("IDS_ERR_CHECKOBJECTENUMERATION"));
+		return false;
+	}
 
 	// Okay; everything in denumerated state from now on
 	PointersDenumerated = true;
@@ -2441,7 +2451,11 @@ bool C4Game::InitGameFirstPart()
 		SetInitProgress(6);
 		char scenario[_MAX_PATH + 1];
 
-		if (!Network.RetrieveScenario(scenario)) return false;
+		if (!Network.RetrieveScenario(scenario))
+		{
+			LogFatal(LoadResStr("IDS_ERR_RETRIEVESCENARIO"));
+			return false;
+		}
 
 		// open new scenario
 		SCopy(scenario, ScenarioFilename, _MAX_PATH);
@@ -2449,7 +2463,11 @@ bool C4Game::InitGameFirstPart()
 		TempScenarioFile = true;
 
 		// get everything else
-		if (!Parameters.GameRes.RetrieveFiles()) return false;
+		if (!Parameters.GameRes.RetrieveFiles())
+		{
+			LogFatal(LoadResStr("IDS_ERR_RETRIEVEFILES"));
+			return false;
+		}
 
 		// Check network game data scenario type (safety)
 		if (!C4S.Head.NetworkGame)
@@ -2463,7 +2481,7 @@ bool C4Game::InitGameFirstPart()
 	// system scripts
 	if (!InitScriptEngine())
 	{
-		LogFatal(LoadResStr("IDS_PRC_FAIL"));
+		LogFatal(LoadResStr("IDS_ERR_INITSCRIPTENGINE"));
 		return false;
 	}
 
@@ -2472,13 +2490,13 @@ bool C4Game::InitGameFirstPart()
 	// Scenario components;
 	if (!LoadScenarioComponents())
 	{
-		LogFatal(LoadResStr("IDS_PRC_FAIL"));
 		return false;
 	}
 
 	// Definitions
 	if (!InitDefs())
 	{
+		LogFatal(LoadResStr("IDS_ERR_INITDEFS"));
 		return false;
 	}
 
@@ -2486,26 +2504,19 @@ bool C4Game::InitGameFirstPart()
 
 	// Scenario scripts (and local System.c4g)
 	// After defs to get overloading priority
-	if (!LoadScenarioScripts())
-	{
-		LogFatal(LoadResStr("IDS_PRC_FAIL"));
-		return false;
-	}
+	LoadScenarioScripts();
 
 	SetInitProgress(56);
 
 	// Link scripts
-	if (!LinkScriptEngine())
-	{
-		return false;
-	}
+	LinkScriptEngine();
 
 	SetInitProgress(57);
 
 	// Materials
 	if (!InitMaterialTexture())
 	{
-		LogFatal(LoadResStr("IDS_PRC_MATERROR")); return false;
+		return false;
 	}
 	SetInitProgress(58);
 
@@ -2669,15 +2680,13 @@ bool C4Game::InitScriptEngine()
 	return true;
 }
 
-bool C4Game::LinkScriptEngine()
+void C4Game::LinkScriptEngine()
 {
 	// Link script engine (resolve includes/appends, generate code)
 	ScriptEngine.Link(&Defs);
 
 	// Set name list for globals
 	ScriptEngine.GlobalNamed.SetNameList(&ScriptEngine.GlobalNamedNames);
-
-	return true;
 }
 
 bool C4Game::InitPlayers()
@@ -3215,7 +3224,7 @@ bool C4Game::LoadScenarioComponents()
 	return true;
 }
 
-bool C4Game::LoadScenarioScripts()
+void C4Game::LoadScenarioScripts()
 {
 	// Script
 	Script.Reg2List(&ScriptEngine, &ScriptEngine);
@@ -3240,7 +3249,6 @@ bool C4Game::LoadScenarioScripts()
 			Game.pFileMonitor->AddDirectory(SysGroup.GetFullName().getData());
 		SysGroup.Close();
 	}
-	return true;
 }
 
 bool C4Game::InitKeyboard()
@@ -3743,8 +3751,7 @@ bool C4Game::InitNetworkFromReference(const C4Network2Reference &Reference)
 	// Log
 	LogF(LoadResStr("IDS_NET_JOINGAMEBY"), pHostData->getName());
 	// Init clients
-	if (!Clients.Init())
-		return false;
+	Clients.Init();
 	// Connect
 	if (Network.InitClient(Reference, false) != C4Network2::IR_Success)
 	{
@@ -3771,7 +3778,7 @@ bool C4Game::InitNetworkHost()
 	// network not active?
 	if (C4S.Head.NetworkGame)
 	{
-		LogFatal(LoadResStr("IDS_NET_NODIRECTSTART")); return Clients.Init();
+		LogFatal(LoadResStr("IDS_NET_NODIRECTSTART")); Clients.Init();
 	}
 	// replay?
 	if (C4S.Head.Replay)
@@ -3779,8 +3786,7 @@ bool C4Game::InitNetworkHost()
 		LogFatal(LoadResStr("IDS_PRC_NONETREPLAY")); return true;
 	}
 	// clear client list
-	if (!Clients.Init())
-		return false;
+	Clients.Init();
 	// init network as host
 	if (!Network.InitHost(fLobby)) return false;
 	// init control

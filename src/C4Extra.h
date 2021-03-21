@@ -29,7 +29,7 @@ public:
 	void Default(); // zero fields
 	void Clear(); // free class members
 
-	bool Init(); // init extra group, using scneario presets
+	void Init(); // init extra group, using scneario presets
 	bool InitGroup(); // open extra group
 
 	C4Group ExtraGrp; // extra.c4g root folder

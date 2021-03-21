@@ -1267,10 +1267,10 @@ bool C4PlayerInfoList::LoadFromGameText(const char *pSource)
 	return true;
 }
 
-bool C4PlayerInfoList::InitLocal()
+void C4PlayerInfoList::InitLocal()
 {
 	// not in replay
-	if (Game.C4S.Head.Replay) return true;
+	if (Game.C4S.Head.Replay) return;
 	// no double init
 	assert(!GetInfoCount());
 	// no network
@@ -1284,8 +1284,6 @@ bool C4PlayerInfoList::InitLocal()
 	// and assign teams
 	if (Game.Teams.IsMultiTeams() && pLocalInfo)
 		AssignTeams(pLocalInfo, true);
-	// done, success
-	return true;
 }
 
 bool C4PlayerInfoList::LocalJoinUnjoinedPlayersInQueue()
