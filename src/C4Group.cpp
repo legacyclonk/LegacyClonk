@@ -23,6 +23,7 @@
 
 #include <C4Components.h>
 #include <C4InputValidation.h>
+#include "C4Log.h"
 
 #ifdef _WIN32
 #include <sys/utime.h>
