@@ -1193,6 +1193,7 @@ IDS_PRC_COUNTDOWN=Das Spiel beginnt in %d Sekunden!
 IDS_PRC_DEFNOTFOUND=Vorgegebene Objektdatei %s nicht vorhanden.
 IDS_PRC_DEFOVERLOAD=   %s (%s) überladen.
 IDS_PRC_DEFSINVC4X=%d der Objekte benötigen eine höhere Engine-Version.
+IDS_PRC_DEFSINVVERSION=WARNUNG: Definition %s hat keine gültige Versionsnummer gesetzt, dies kann unerwünschte Kompatibilitätsmodi hervorrufen!
 IDS_PRC_DEFSLOADED=  %d Definitionen geladen.
 IDS_PRC_DEINIT=Engine heruntergefahren.
 IDS_PRC_DOWNLOADCOMPLETE=Datei %s erfolgreich heruntergeladen.

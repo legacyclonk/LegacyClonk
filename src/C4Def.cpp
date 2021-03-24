@@ -581,14 +581,29 @@ bool C4Def::Load(C4Group &hGroup,
 	// Read DefCore
 	if (fSuccess) fSuccess = C4DefCore::Load(hGroup);
 	// check id
-	if (fSuccess) if (!LooksLikeID(id))
+	if (fSuccess)
 	{
+		if (!LooksLikeID(id))
+		{
 #ifdef C4ENGINE
-		// wie geth ID?????ßßßß
-		if (!Name[0]) Name = GetFilename(hGroup.GetName());
-		LogF(LoadResStr("IDS_ERR_INVALIDID"), Name.getData());
+			// wie geth ID?????ßßßß
+			if (!Name[0]) Name = GetFilename(hGroup.GetName());
+			LogF(LoadResStr("IDS_ERR_INVALIDID"), Name.getData());
 #endif
-		fSuccess = false;
+			fSuccess = false;
+		}
+#ifdef C4ENGINE
+		if (CompareVersion(rC4XVer[0], rC4XVer[1], rC4XVer[2], rC4XVer[3], rC4XVer[4], 4, 0, 0, 0, 0) == -1)
+		{
+			DebugLogF(LoadResStr("IDS_PRC_DEFSINVVERSION"), fSuccess ? FormatString("%s (%s)", Name.getData(), C4IdText(id)).getData() : Name.getData());
+			// assume Clonk Rage 4.9.10.7
+			rC4XVer[0] = 4;
+			rC4XVer[1] = 9;
+			rC4XVer[2] = 10;
+			rC4XVer[3] = 7;
+			rC4XVer[4] = 0;
+		}
+#endif
 	}
 
 #ifdef C4ENGINE
