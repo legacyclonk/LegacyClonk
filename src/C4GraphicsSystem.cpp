@@ -98,7 +98,7 @@ void C4GraphicsSystem::Clear()
 	// clear loader
 	delete pLoaderScreen; pLoaderScreen = nullptr;
 	// Close viewports
-	Viewports.clear();
+	ClearViewports();
 	// No debug stuff
 	DeactivateDebugOutput();
 }
@@ -247,6 +247,15 @@ bool C4GraphicsSystem::CloseViewport(C4Viewport *cvp)
 	return true;
 }
 
+/* Using Viewports.clear() keeps the deleted viewports in the vector, which breaks ViewportWinProc calling GetViewport(HWND)
+ * as it tries to access freed memory.
+*/
+
+void C4GraphicsSystem::ClearViewports()
+{
+	std::exchange(Viewports, {});
+}
+
 #ifdef _WIN32
 C4Viewport *C4GraphicsSystem::GetViewport(HWND hwnd)
 {
@@ -298,7 +307,7 @@ void C4GraphicsSystem::Default()
 {
 	UpperBoard.Default();
 	MessageBoard.Default();
-	Viewports.clear();
+	ClearViewports();
 	InvalidateBg();
 	ViewportArea.Default();
 	ShowVertices = false;

@@ -79,6 +79,7 @@ public:
 	void SetGamma(uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, int32_t iRampIndex); // set gamma ramp
 	void ApplyGamma(); // apply gamma ramp to ddraw
 	bool CloseViewport(C4Viewport *cvp);
+	void ClearViewports();
 #ifdef _WIN32
 	C4Viewport *GetViewport(HWND hwnd);
 	bool RegisterViewportClass(HINSTANCE hInst);
