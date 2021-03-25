@@ -80,7 +80,6 @@ public:
 	void ApplyGamma(); // apply gamma ramp to ddraw
 	bool CloseViewport(C4Viewport *cvp);
 #ifdef _WIN32
-	C4Viewport *GetViewport(HWND hwnd);
 	bool RegisterViewportClass(HINSTANCE hInst);
 #endif
 

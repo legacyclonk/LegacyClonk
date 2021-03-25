@@ -61,13 +61,15 @@ namespace
 
 #ifdef _WIN32
 
+std::vector<C4ViewportWindow::ViewportHandle> C4ViewportWindow::viewportHandles;
+
 #include <shellapi.h>
 
-LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// Determine viewport
 	C4Viewport *cvp;
-	if (!(cvp = Game.GraphicsSystem.GetViewport(hwnd)))
+	if (cvp = GetViewport(hwnd); !cvp)
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 
 	const auto scale = Application.GetScale();
@@ -198,6 +200,21 @@ LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
+C4Viewport *C4ViewportWindow::GetViewport(HWND hwnd)
+{
+	if (const auto it = std::find_if(viewportHandles.cbegin(), viewportHandles.cend(), [hwnd](const auto &handle)
+		{
+			return handle.hwnd == hwnd;
+		}); it != viewportHandles.cend())
+	{
+		return it->viewport;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
 CStdWindow *C4ViewportWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool)
 {
 	const auto scale = Application.GetScale();
@@ -209,7 +226,19 @@ CStdWindow *C4ViewportWindow::Init(CStdApp *pApp, const char *Title, CStdWindow 
 		C4ViewportClassName, Title, C4ViewportWindowStyle,
 		CW_USEDEFAULT, CW_USEDEFAULT, static_cast<int32_t>(ceilf(400 * scale)), static_cast<int32_t>(ceilf(250 * scale)),
 		pParent->hWindow, nullptr, pApp->hInstance, nullptr);
+	viewportHandles.push_back({hWindow, cvp});
 	return hWindow ? this : nullptr;
+}
+
+C4ViewportWindow::~C4ViewportWindow()
+{
+	if (hWindow)
+	{
+		viewportHandles.erase(std::remove_if(viewportHandles.begin(), viewportHandles.end(), [this](const auto &handle)
+			{
+				return handle.hwnd == hWindow;
+			}), viewportHandles.end());
+	}
 }
 
 bool C4Viewport::DropFiles(HANDLE hDrop)

@@ -39,6 +39,7 @@ public:
 	C4Viewport *cvp;
 	C4ViewportWindow(C4Viewport *cvp) : cvp(cvp) {}
 #ifdef _WIN32
+	~C4ViewportWindow();
 	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool);
 #elif defined(WITH_DEVELOPER_MODE)
 	virtual GtkWidget *InitGUI() override;
@@ -66,6 +67,18 @@ public:
 	virtual void HandleMessage(XEvent &) override;
 #endif
 	virtual void Close() override;
+
+#ifdef _WIN32
+	static LRESULT APIENTRY WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+private:
+	static C4Viewport *GetViewport(HWND hwnd);
+	struct ViewportHandle
+	{
+		HWND hwnd;
+		C4Viewport *viewport;
+	};
+	static std::vector<ViewportHandle> viewportHandles;
+#endif
 };
 
 class C4Viewport
@@ -124,9 +137,6 @@ protected:
 	bool ViewPositionByScrollBars();
 	bool ScrollBarsByViewPosition();
 
-#ifdef _WIN32
-	friend LRESULT APIENTRY ViewportWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-#endif
 	friend class C4ViewportWindow;
 };
 

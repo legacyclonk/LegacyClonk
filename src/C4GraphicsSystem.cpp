@@ -59,7 +59,7 @@ bool C4GraphicsSystem::RegisterViewportClass(HINSTANCE hInst)
 	WNDCLASSEX WndClass;
 	WndClass.cbSize = sizeof(WNDCLASSEX);
 	WndClass.style = CS_DBLCLKS | CS_BYTEALIGNCLIENT;
-	WndClass.lpfnWndProc = ViewportWinProc;
+	WndClass.lpfnWndProc = C4ViewportWindow::WinProc;
 	WndClass.cbClsExtra = 0;
 	WndClass.cbWndExtra = 0;
 	WndClass.hInstance = hInst;
@@ -246,20 +246,6 @@ bool C4GraphicsSystem::CloseViewport(C4Viewport *cvp)
 	// Done
 	return true;
 }
-
-#ifdef _WIN32
-C4Viewport *C4GraphicsSystem::GetViewport(HWND hwnd)
-{
-	if (const auto cvp = std::find_if(Viewports.begin(), Viewports.end(), [hwnd](const auto &viewport)
-		{
-			return viewport->pWindow->hWindow == hwnd;
-		}); cvp != Viewports.end())
-	{
-		return cvp->get();
-	}
-	return nullptr;
-}
-#endif
 
 bool C4GraphicsSystem::CreateViewport(int32_t iPlayer, bool fSilent)
 {
