@@ -5528,12 +5528,11 @@ static C4Value FnEffectCall(C4AulContext *ctx, C4Object *pTarget, C4ValueInt iNu
 	return pEffect->DoCall(pTarget, szCallFn, vVal1, vVal2, vVal3, vVal4, vVal5, vVal6, vVal7);
 }
 
-static C4ValueInt FnModulateColor(C4AulContext *cthr, C4ValueInt iClr1, C4ValueInt iClr2)
+static C4ValueInt FnModulateColor(C4AulContext *cthr, std::optional<C4ValueInt> iClr1, C4ValueInt iClr2)
 {
-	uint32_t dwClr1 = iClr1;
-	uint32_t dwClr2 = iClr2;
 	// default color
-	if (!dwClr1) dwClr1 = 0xffffff;
+	uint32_t dwClr1 = iClr1.value_or(0xffffff);
+	uint32_t dwClr2 = iClr2;
 	// get alpha
 	C4ValueInt iA1 = dwClr1 >> 24, iA2 = dwClr2 >> 24;
 	// modulate color values; mod alpha upwards
@@ -5927,7 +5926,7 @@ static void FnStopScriptProfiler(C4AulContext *ctx)
 	C4AulProfiler::StopProfiling();
 }
 
-static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, C4ValueInt iOwner, C4ValueInt iOffX, C4ValueInt iOffY, C4ValueInt dwClr, C4ID idDeco, C4String *sPortrait, C4ValueInt dwFlags, C4ValueInt iHSize)
+static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, C4ValueInt iOwner, C4ValueInt iOffX, C4ValueInt iOffY, std::optional<C4ValueInt> clr, C4ID idDeco, C4String *sPortrait, C4ValueInt dwFlags, C4ValueInt iHSize)
 {
 	// safeties
 	if (!pMsg) return false;
@@ -5954,8 +5953,7 @@ static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, C
 	}
 
 	// message color
-	if (!dwClr) dwClr = 0xffffff;
-	dwClr = InvertRGBAAlpha(dwClr);
+	const auto dwClr = InvertRGBAAlpha(clr.value_or(0xffffff));
 	// message type
 	int32_t iType;
 	if (pObj)
