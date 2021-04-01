@@ -654,10 +654,10 @@ static std::optional<C4ValueInt> FnGetPhysical(C4AulContext *cthr, C4String *szP
 	return {};
 }
 
-static bool FnSetEntrance(C4AulContext *cthr, C4ValueInt e_status, C4Object *pObj)
+static bool FnSetEntrance(C4AulContext *cthr, bool enabled, C4Object *pObj)
 {
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return false;
-	pObj->EntranceStatus = !!e_status;
+	pObj->EntranceStatus = enabled;
 	return true;
 }
 
