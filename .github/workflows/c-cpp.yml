@@ -49,9 +49,12 @@ jobs:
 
       - name: "Configure Platform"
         run: |
-          autobuild/${{ matrix.env }}.sh
-          autobuild/${{ matrix.env }}-${{ matrix.arch }}.sh
           echo "CONFIG_SUFFIX=${{ matrix.env }}-${{ matrix.arch }}" >> $GITHUB_ENV
+          autobuild/${{ matrix.env }}.sh
+
+      - name: "Configure Platform Architecture"
+        run: |
+          autobuild/${{ matrix.env }}-${{ matrix.arch }}.sh
 
       - name: "Linux x86: Setup chroot"
         if: ${{ matrix.env == 'Linux' && matrix.arch == 'x86' }}
