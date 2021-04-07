@@ -22,6 +22,7 @@
 
 #include <C4UpperBoard.h>
 #include <C4Log.h>
+#include "C4Version.h"
 #ifdef C4ENGINE
 #include <C4Application.h>
 #include <C4Network2.h>
@@ -63,6 +64,8 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	// its mkNamingAdapt(field, name, default, fPrefillDefault, fStoreDefault)
 	// where fStoreDefault writes out the value to the config even if it's the same as the default.
 #define s mkStringAdaptM
+	// Version got introduced in 348, so any config without it is assumed to be created by 347
+	pComp->Value(mkNamingAdapt(Version,            "Version",         347));
 	pComp->Value(mkNamingAdapt(s(Name),            "Name",            ""));
 	pComp->Value(mkNamingAdapt(s(Language),        "Language",        "", false, true));
 	pComp->Value(mkNamingAdapt(s(LanguageEx),      "LanguageEx",      "", false, true));
@@ -454,6 +457,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 
 	// Config postinit
 	General.DeterminePaths(forceWorkingDirectory);
+	AdaptToCurrentVersion();
 #ifdef C4ENGINE
 #ifdef HAVE_WINSOCK
 	bool fWinSock = AcquireWinSock();
@@ -804,4 +808,23 @@ void C4Config::ExpandEnvironmentVariables(char *strPath, int iMaxLen)
 		strncpy(rest - SLen("$HOME"), home.getData(), home.getLength());
 	}
 #endif
+}
+
+void C4Config::AdaptToCurrentVersion()
+{
+	switch (General.Version)
+	{
+#ifdef C4ENGINE
+	// Reenable ingame music
+	case 346:
+	case 347:
+		Sound.RXMusic = true;
+		break;
+#endif
+
+	default:
+		break;
+	}
+
+	General.Version = C4XVERBUILD;
 }

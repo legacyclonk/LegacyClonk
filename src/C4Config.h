@@ -45,6 +45,7 @@ class C4ConfigGeneral
 public:
 	enum { ConfigResetSafetyVal = 42 };
 
+	uint32_t Version; // config version number for compatibility changes
 	char Name[CFG_MaxString + 1];
 	char Language[CFG_MaxString + 1]; // entered by user in frontend options (may contain comma separated list or long language descriptions)
 	char LanguageEx[CFG_MaxString + 1]; // full fallback list composed by frontend options (condensed comma separated list)
@@ -318,6 +319,9 @@ public:
 
 protected:
 	void ExpandEnvironmentVariables(char *strPath, int iMaxLen);
+
+private:
+	void AdaptToCurrentVersion();
 };
 
 extern C4Config Config;
