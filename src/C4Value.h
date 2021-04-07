@@ -90,7 +90,7 @@ class C4Value
 public:
 	C4Value() : Type(C4V_Any), NextRef(nullptr), FirstRef(nullptr) { Data.Raw = 0; }
 
-	C4Value(const C4Value &nValue) : Data(nValue.Data), Type(nValue.Type), NextRef(nullptr), FirstRef(nullptr)
+	C4Value(const C4Value &nValue, C4ValueHash *owningMap = nullptr) : Data(nValue.Data), Type(nValue.Type), NextRef(nullptr), FirstRef(nullptr), OwningMap(owningMap)
 	{
 		AddDataRef();
 	}

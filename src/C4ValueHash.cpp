@@ -46,28 +46,27 @@ void C4ValueHash::DenumeratePointers()
 	}
 }
 
-void C4ValueHash::removeKey(const C4Value &key)
-{
-	const auto &value = map[key];
-	emptyValues.push_front(value.value);
-	keyOrder.erase(value.keyOrderIterator);
-	map.erase(key);
-}
-
 void C4ValueHash::removeValue(C4Value *value)
 {
 	bool found = false;
+	auto keyIt = map.end();
 	for (auto it = map.begin(); it != map.end(); )
 	{
-		if (it->second.value == value)
+		if (&it->first == value)
+		{
+			keyIt = it;
+		}
+		else if (it->second.value == value)
 		{
 			keyOrder.erase(it->second.keyOrderIterator);
 			map.erase(it++);
 			found = true;
+			continue;
 		}
-		else ++it;
+		++it;
 	}
 	if (found) emptyValues.push_front(value);
+	if (keyIt != map.end()) map.erase(keyIt);
 }
 
 bool C4ValueHash::contains(const C4Value &key) const
@@ -126,7 +125,7 @@ C4Value &C4ValueHash::operator[](const C4Value &key)
 			emptyValues.pop_front();
 		}
 
-		const auto &inserted = map.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(MapEntry{value, {}})).first;
+		const auto &inserted = map.emplace(std::piecewise_construct, std::forward_as_tuple(key, this), std::forward_as_tuple(MapEntry{value, {}})).first;
 		inserted->second.keyOrderIterator = keyOrder.insert(keyOrder.end(), &inserted->first);
 		return *value;
 	}

@@ -79,7 +79,6 @@ public:
 	Iterator end();
 
 	bool contains(const C4Value &key) const;
-	void removeKey(const C4Value &key);
 	void removeValue(C4Value *value);
 	auto size() const { return map.size(); }
 	void clear();

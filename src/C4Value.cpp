@@ -138,13 +138,13 @@ void C4Value::Set(C4V_Data nData, C4V_Type nType)
 	Data = nData;
 	Type = (nData || nType == C4V_Int || nType == C4V_Bool) ? nType : C4V_Any;
 
-	CheckRemoveFromMap();
-
 	// hold
 	AddDataRef();
 
 	// clean up
 	DelDataRef(oData, oType, oHasBaseContainer ? nullptr : oNextRef, oHasBaseContainer ? oBaseContainer : nullptr);
+
+	CheckRemoveFromMap();
 }
 
 void C4Value::Set0()
@@ -156,15 +156,15 @@ void C4Value::Set0()
 	Data.Raw = 0;
 	Type = C4V_Any;
 
-	CheckRemoveFromMap();
-
 	// clean up (save even if Data was 0 before)
 	DelDataRef(oData, oType, HasBaseContainer ? nullptr : NextRef, HasBaseContainer ? BaseContainer : nullptr);
+
+	CheckRemoveFromMap();
 }
 
 void C4Value::CheckRemoveFromMap()
 {
-	if (Type == C4V_Any && OwningMap)
+	if (Type == C4V_Any && Data.Raw == 0 && OwningMap)
 	{
 		OwningMap->removeValue(this);
 	}
