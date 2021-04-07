@@ -1732,7 +1732,7 @@ void C4Game::Default()
 	pGlobalEffects = nullptr;
 	fResortAnyObject = false;
 	pNetworkStatistics = nullptr;
-	IsMusicEnabled = true;
+	IsMusicEnabled = false;
 	iMusicLevel = 100;
 	PlayList.Clear();
 }
@@ -1866,7 +1866,7 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 		pComp->Value(mkNamingAdapt(PlayList,                                "PlayList",               ""));
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(CurrentScenarioSection), "CurrentScenarioSection", ""));
 		pComp->Value(mkNamingAdapt(fResortAnyObject,                        "ResortAnyObj",           false));
-		pComp->Value(mkNamingAdapt(IsMusicEnabled,                          "MusicEnabled",           true));
+		pComp->Value(mkNamingAdapt(IsMusicEnabled,                          "MusicEnabled",           false));
 		pComp->Value(mkNamingAdapt(iMusicLevel,                             "MusicLevel",             100));
 		pComp->Value(mkNamingAdapt(NextMission,                             "NextMission",            StdStrBuf()));
 		pComp->Value(mkNamingAdapt(NextMissionText,                         "NextMissionText",        StdStrBuf()));
@@ -3259,7 +3259,7 @@ bool C4Game::InitKeyboard()
 	KeyboardInput.Clear();
 
 	// globals
-	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F3),               "MusicToggle",  C4KeyScope(KEYSCOPE_Generic | KEYSCOPE_Gui),    new C4KeyCB  <C4MusicSystem>         (*Application.MusicSystem, &C4MusicSystem::ToggleOnOff)));
+	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F3),               "MusicToggle",  C4KeyScope(KEYSCOPE_Generic | KEYSCOPE_Gui),    new C4KeyCB  <C4Game>                (*this,                    &C4Game::ToggleMusic)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F9),               "Screenshot",   C4KeyScope(KEYSCOPE_Fullscreen | KEYSCOPE_Gui), new C4KeyCBEx<C4GraphicsSystem, bool>(GraphicsSystem, false,    &C4GraphicsSystem::SaveScreenshot)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F9, KEYS_Control), "ScreenshotEx",            KEYSCOPE_Fullscreen,                 new C4KeyCBEx<C4GraphicsSystem, bool>(GraphicsSystem, true,     &C4GraphicsSystem::SaveScreenshot)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(KEY_C, KEYS_Alt),    "ToggleChat",   C4KeyScope(KEYSCOPE_Generic | KEYSCOPE_Gui),    new C4KeyCB  <C4Game>                (*this,                    &C4Game::ToggleChat)));
@@ -4278,6 +4278,12 @@ void C4Game::SetMusicLevel(int32_t iToLvl)
 	// change game music volume; multiplied by config volume for real volume
 	iMusicLevel = BoundBy<int32_t>(iToLvl, 0, 100);
 	Application.MusicSystem->UpdateVolume();
+}
+
+bool C4Game::ToggleMusic()
+{
+	Application.MusicSystem->ToggleOnOff(!IsRunning);
+	return true;
 }
 
 bool C4Game::ToggleChat()

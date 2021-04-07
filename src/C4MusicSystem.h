@@ -45,7 +45,7 @@ public:
 	void PlayScenarioMusic(C4Group &);
 	long SetPlayList(const char *playlist);
 	void Stop(int fadeoutMS = 0);
-	bool ToggleOnOff();
+	bool ToggleOnOff(bool changeConfig = true);
 	void UpdateVolume();
 
 private:

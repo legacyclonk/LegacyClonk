@@ -56,7 +56,7 @@ void C4MusicSystem::Play(const char *const songname, const bool loop)
 	if (!Application.AudioSystem) return;
 
 	// Music disabled by user or scenario?
-	if (!GetCfgMusicEnabled() || (Game.IsRunning && !Game.IsMusicEnabled)) return;
+	if (!((Game.IsRunning && Game.IsMusicEnabled) || (!Game.IsRunning && GetCfgMusicEnabled()))) return;
 
 	const Song *newSong = nullptr;
 
@@ -234,10 +234,18 @@ void C4MusicSystem::Stop(const int fadeoutMS)
 	}
 }
 
-bool C4MusicSystem::ToggleOnOff()
+bool C4MusicSystem::ToggleOnOff(const bool changeConfig)
 {
-	auto &enabled = GetCfgMusicEnabled();
-	enabled = !enabled;
+	bool enabled;
+	if (changeConfig)
+	{
+		enabled = Game.IsMusicEnabled = GetCfgMusicEnabled() = !GetCfgMusicEnabled();
+	}
+	else
+	{
+		enabled = Game.IsMusicEnabled = !Game.IsMusicEnabled;
+	}
+
 	if (enabled)
 	{
 		Play();
@@ -246,6 +254,7 @@ bool C4MusicSystem::ToggleOnOff()
 	{
 		Stop();
 	}
+
 	if (Game.IsRunning)
 	{
 		Game.GraphicsSystem.FlashMessageOnOff(LoadResStr("IDS_CTL_MUSIC"), enabled);
