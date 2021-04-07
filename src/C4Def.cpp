@@ -454,6 +454,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 		{ "Name", HH_Name },
 		{ "Rank", HH_Rank },
 		{ "RankImage", HH_RankImage },
+		{ "Inventory", HH_Inventory },
 		{ "All", HH_All },
 		{ nullptr, 0 }
 	};

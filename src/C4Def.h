@@ -290,7 +290,8 @@ public:
 		HH_Name = 0x4,
 		HH_Rank = 0x8,
 		HH_RankImage = 0x10,
-		HH_All = HH_Portrait | HH_Captain | HH_Name | HH_Rank | HH_RankImage
+		HH_Inventory = 0x20,
+		HH_All = HH_Portrait | HH_Captain | HH_Name | HH_Rank | HH_RankImage | HH_Inventory
 	};
 
 	void Default();
