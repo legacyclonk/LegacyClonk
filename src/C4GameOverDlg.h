@@ -81,7 +81,7 @@ protected:
 	virtual void OnShown() override;
 	virtual void OnClosed(bool fOK) override;
 
-	virtual bool OnEnter() override { if (fIsQuitBtnVisible) OnExitBtn(nullptr); return true; } // enter on non-button: Always quit
+	virtual bool OnEnter() override;
 	virtual bool OnEscape() override { if (fIsQuitBtnVisible) UserClose(false); return true; } // escape ignored if still streaming
 
 	// true for dialogs that should span the whole screen

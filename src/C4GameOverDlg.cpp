@@ -262,7 +262,6 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 	Update();
 	// initial focus on quit button if visible, so space/enter/low gamepad buttons quit
 	fIsQuitBtnVisible = fIsNetDone || !Game.Network.isHost();
-	if (fIsQuitBtnVisible) SetFocus(pBtnExit, false);
 }
 
 C4GameOverDlg::~C4GameOverDlg()
@@ -286,7 +285,6 @@ void C4GameOverDlg::Update()
 		fIsQuitBtnVisible = fBtnsVisible;
 		pBtnExit->SetVisibility(fBtnsVisible);
 		pBtnContinue->SetVisibility(fBtnsVisible);
-		if (fIsQuitBtnVisible) SetFocus(pBtnExit, false);
 	}
 }
 
@@ -315,6 +313,12 @@ void C4GameOverDlg::SetNetResult(const char *szResultString, C4RoundResults::Net
 		// disconnected. Do not show winners/losers
 		for (int32_t i = 0; i < iPlrListCount; ++i) ppPlayerLists[i]->SetMode(C4PlayerInfoListBox::PILBM_EvaluationNoWinners);
 	}
+}
+
+bool C4GameOverDlg::OnEnter()
+{
+	Game.MessageInput.KeyStartTypeIn(C4ChatInputDialog::All);
+	return true;
 }
 
 void C4GameOverDlg::OnExitBtn(C4GUI::Control *btn)
