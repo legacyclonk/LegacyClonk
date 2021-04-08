@@ -100,4 +100,7 @@ public:
 	};
 
 	virtual SoundFile *CreateSoundFile(const void *buf, std::size_t size) = 0;
+
+public:
+	static constexpr auto MaxChannels = 1024;
 };

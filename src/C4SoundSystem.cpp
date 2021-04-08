@@ -208,21 +208,29 @@ bool C4SoundSystem::Instance::Execute(const bool justStarted)
 		return true;
 	}
 
-	// Create/restore channel if necessary
-	const auto createChannel = !channel;
-	if (createChannel)
+	try
 	{
-		channel.reset(Application.AudioSystem->CreateSoundChannel(sample.sample.get(), loop));
-		if (!justStarted)
+		// Create/restore channel if necessary
+		const auto createChannel = !channel;
+		if (createChannel)
 		{
-			if (pos == ~0) pos = GetPlaybackPosition();
-			channel->SetPosition(pos);
+			channel.reset(Application.AudioSystem->CreateSoundChannel(sample.sample.get(), loop));
+			if (!justStarted)
+			{
+				if (pos == ~0) pos = GetPlaybackPosition();
+				channel->SetPosition(pos);
+			}
 		}
-	}
 
-	// Update volume
-	channel->SetVolumeAndPan(vol, pan);
-	if (createChannel) channel->Unpause();
+		// Update volume
+		channel->SetVolumeAndPan(vol, pan);
+		if (createChannel) channel->Unpause();
+	}
+	catch (const std::runtime_error &e)
+	{
+		LogSilent(e.what());
+		return false;
+	}
 
 	return true;
 }

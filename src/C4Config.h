@@ -151,7 +151,6 @@ public:
 
 	void CompileFunc(StdCompiler *pComp);
 };
-#endif
 
 class C4ConfigSound
 {
@@ -167,6 +166,7 @@ public:
 	bool MuteSoundCommand; // whether to mute /sound by default
 	void CompileFunc(StdCompiler *pComp);
 };
+#endif
 
 class C4ConfigNetwork
 {
@@ -280,8 +280,8 @@ public:
 	C4ConfigDeveloper Developer;
 #ifdef C4ENGINE
 	C4ConfigGraphics  Graphics;
-#endif
 	C4ConfigSound     Sound;
+#endif
 	C4ConfigNetwork   Network;
 	C4ConfigLobby     Lobby;
 	C4ConfigIRC       IRC;
@@ -320,8 +320,10 @@ public:
 protected:
 	void ExpandEnvironmentVariables(char *strPath, int iMaxLen);
 
+#ifdef C4ENGINE
 private:
 	void AdaptToCurrentVersion();
+#endif
 };
 
 extern C4Config Config;

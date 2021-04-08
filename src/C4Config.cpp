@@ -179,7 +179,6 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 
 	pComp->Value(mkNamingAdapt(ShowFolderMaps, "ShowFolderMaps", true));
 }
-#endif
 
 void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 {
@@ -190,9 +189,17 @@ void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Verbose,     "Verbose",     false, false, true));
 	pComp->Value(mkNamingAdapt(MusicVolume, "MusicVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(SoundVolume, "SoundVolume", 100, false, true));
-	pComp->Value(mkNamingAdapt(MaxChannels, "MaxChannels", 100, false, true));
+	pComp->Value(mkNamingAdapt(MaxChannels, "MaxChannels", C4AudioSystem::MaxChannels));
+
+	if (pComp->isCompiler())
+	{
+		MaxChannels = std::clamp(MaxChannels, 1, C4AudioSystem::MaxChannels);
+	}
+
 	pComp->Value(mkNamingAdapt(MuteSoundCommand, "MuteSoundCommand", false, false, true));
 }
+
+#endif
 
 void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 {
@@ -457,8 +464,8 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 
 	// Config postinit
 	General.DeterminePaths(forceWorkingDirectory);
-	AdaptToCurrentVersion();
 #ifdef C4ENGINE
+	AdaptToCurrentVersion();
 #ifdef HAVE_WINSOCK
 	bool fWinSock = AcquireWinSock();
 #endif
@@ -780,8 +787,8 @@ void C4Config::CompileFunc(StdCompiler *pComp)
 		pComp->Value(mkNamingAdapt(Gamepads[i], FormatString("Gamepad%d", i).getData()));
 #ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(Graphics,  "Graphics"));
-#endif
 	pComp->Value(mkNamingAdapt(Sound,     "Sound"));
+#endif
 	pComp->Value(mkNamingAdapt(Network,   "Network"));
 	pComp->Value(mkNamingAdapt(Lobby,     "Lobby"));
 	pComp->Value(mkNamingAdapt(IRC,       "IRC"));
@@ -810,17 +817,20 @@ void C4Config::ExpandEnvironmentVariables(char *strPath, int iMaxLen)
 #endif
 }
 
+#ifdef C4ENGINE
 void C4Config::AdaptToCurrentVersion()
 {
 	switch (General.Version)
 	{
-#ifdef C4ENGINE
-	// Reenable ingame music
-	case 346:
 	case 347:
+		// reset max channels
+		Sound.MaxChannels = C4AudioSystem::MaxChannels;
+		[[fallthrough]];
+
+	case 346:
+		// reenable ingame music
 		Sound.RXMusic = true;
 		break;
-#endif
 
 	default:
 		break;
@@ -828,3 +838,4 @@ void C4Config::AdaptToCurrentVersion()
 
 	General.Version = C4XVERBUILD;
 }
+#endif
