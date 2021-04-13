@@ -171,7 +171,9 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	// Determine name of update program
 	StdStrBuf strUpdateProg; strUpdateProg.Copy(C4CFN_UpdateProgram);
 	// Windows: manually append extension because ExtractEntry() cannot properly glob and Extract() doesn't return failure values
-	if (SEqual(C4_OS, "win32")) strUpdateProg += ".exe";
+#ifdef _WIN32
+	strUpdateProg += ".exe";
+#endif
 	// Extract update program (the update should be applied using the new version)
 	C4Group UpdateGroup, SubGroup;
 	char strSubGroup[1024 + 1];
