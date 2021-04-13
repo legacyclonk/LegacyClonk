@@ -1271,7 +1271,7 @@ namespace
 {
 	bool IsJumpType(C4AulBCCType type) noexcept
 	{
-		return type == AB_JUMP || type == AB_JUMPAND || type == AB_JUMPOR || type == AB_CONDN || type == AB_JUMPNIL || type == AB_JUMPNOTNIL;
+		return type == AB_JUMP || type == AB_JUMPAND || type == AB_JUMPOR || type == AB_CONDN || type == AB_JUMPNIL || type == AB_JUMPNOTNIL || type == AB_NilCoalescingIt;
 	}
 }
 
