@@ -179,7 +179,7 @@ public:
 
 	bool operator!() const { return !GetData(); }
 
-	void Set(const C4Value &nValue) { if (this != &nValue) Set(nValue.Data, nValue.Type); }
+	void Set(const C4Value &nValue) { if (!Equals(nValue, C4AulScriptStrict::STRICT3)) Set(nValue.Data, nValue.Type); }
 
 	void SetInt(C4ValueInt i) { C4V_Data d; d.Raw = 0; d.Int = i; Set(d, C4V_Int); }
 
