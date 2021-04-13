@@ -893,6 +893,7 @@ static const char *GetTTName(C4AulBCCType e)
 	case AB_CALLFS:           return "AB_CALLFS";           // failsafe direct call
 	case AB_CALLNS:           return "AB_CALLNS";           // direct object call: namespace operator
 	case AB_STACK:            return "AB_STACK";            // push nulls / pop
+	case AB_NIL:              return "AB_NIL";              // constant: nil
 	case AB_INT:              return "AB_INT";              // constant: int
 	case AB_BOOL:             return "AB_BOOL";             // constant: bool
 	case AB_STRING:           return "AB_STRING";           // constant: string
