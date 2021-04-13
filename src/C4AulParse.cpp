@@ -1870,7 +1870,7 @@ void C4AulParseState::Parse_Function()
 			C4AulBCC *CPos = a->GetCodeByPos(std::max<size_t>(a->GetCodePos(), 1) - 1);
 			if (!CPos || CPos->bccType != AB_RETURN || fJump)
 			{
-				AddBCC(Fn->pOrgScript->Strict >= C4AulScriptStrict::STRICT3 ? AB_NIL : AB_INT);
+				AddBCC(AB_NIL);
 				AddBCC(AB_RETURN);
 			}
 			// and break
@@ -2077,8 +2077,8 @@ void C4AulParseState::Parse_Statement()
 			}
 			else if (TokenType == ATT_SCOLON)
 			{
-				// allow return; without return value (implies 0)
-				AddBCC(AB_INT);
+				// allow return; without return value (implies nil)
+				AddBCC(AB_NIL);
 			}
 			else
 			{
@@ -2358,7 +2358,7 @@ void C4AulParseState::Parse_Array()
 			// [] -> size 0, [*,] -> size 2, [*,*,] -> size 3
 			if (size > 0)
 			{
-				AddBCC(AB_INT);
+				AddBCC(AB_NIL);
 				++size;
 			}
 			fDone = true;
@@ -2367,7 +2367,7 @@ void C4AulParseState::Parse_Array()
 		case ATT_COMMA:
 		{
 			// got no parameter before a ","? then push a 0-constant
-			AddBCC(AB_INT);
+			AddBCC(AB_NIL);
 			Shift();
 			++size;
 			break;
@@ -2841,14 +2841,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 					case C4V_Bool:   AddBCC(AB_BOOL, val._getBool()); break;
 					case C4V_String: AddBCC(AB_STRING, reinterpret_cast<std::intptr_t>(val.GetData().Str)); break;
 					case C4V_C4ID:   AddBCC(AB_C4ID, val._getC4ID()); break;
-					case C4V_Any:
-						// any: allow zero; add it as int
-						if (!val.GetData())
-						{
-							AddBCC(AB_INT, 0);
-							break;
-						}
-						// otherwise: fall through to error
+					case C4V_Any:    AddBCC(AB_NIL); break;
 					default:
 					{
 						throw C4AulParseError(this, FormatString("internal error: constant %s has undefined type %d", Idtf, val.GetType()).getData());
