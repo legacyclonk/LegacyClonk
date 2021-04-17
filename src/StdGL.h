@@ -40,6 +40,99 @@
 
 class CStdWindow;
 
+class CStdGLShader : public CStdShader
+{
+public:
+	using CStdShader::CStdShader;
+
+	void Compile() override;
+	void Clear() override;
+
+	virtual int64_t GetHandle() const override { return shader; }
+
+protected:
+	virtual void PrepareSource();
+
+protected:
+	GLuint shader{GL_NONE};
+};
+
+class CStdGLShaderProgram : public CStdShaderProgram
+{
+private:
+	template<typename T> static constexpr bool isFunctionPointer{std::is_function_v<std::remove_pointer_t<T>>};
+
+public:
+	using CStdShaderProgram::CStdShaderProgram;
+
+	explicit operator bool() const override { return /*glIsProgram(*/shaderProgram/*)*/; }
+
+	void Link() override;
+	void Clear() override;
+
+	void EnsureProgram() override;
+
+	template<typename Func, typename... Args> typename std::enable_if_t<isFunctionPointer<Func>, bool> SetAttribute(std::string_view key, Func function, Args... args)
+	{
+		return SetAttribute(key, &CStdGLShaderProgram::attributeLocations, glGetAttribLocation, function, args...);
+	}
+
+	template<typename Func, typename... Args> typename std::enable_if_t<isFunctionPointer<Func>, bool> SetUniform(std::string_view key, Func function, Args... args)
+	{
+		return SetAttribute(key, &CStdGLShaderProgram::uniformLocations, glGetUniformLocation, function, args...);
+	}
+
+	bool SetUniform(std::string_view key, float value) { return SetUniform(key, glUniform1f, value); }
+
+	void EnterGroup(std::string_view name) { group.assign(name).append("."); }
+	void LeaveGroup() { group.clear(); }
+
+	virtual int64_t GetProgram() const override { return shaderProgram; }
+
+protected:
+	bool AddShaderInt(CStdShader *shader) override;
+	void OnSelect() override;
+	void OnDeselect() override;
+
+	using Locations = std::unordered_map<std::string, GLint>;
+	template<typename MapFunc, typename SetFunc, typename... Args> bool SetAttribute(std::string_view key, Locations CStdGLShaderProgram::*locationPointer, MapFunc mapFunction, SetFunc setFunction, Args... args)
+	{
+		assert(shaderProgram);
+
+		std::string realKey{group};
+		realKey.append(key);
+
+		GLint location;
+		Locations &locations{this->*locationPointer};
+		if (auto it = locations.find(realKey); it != locations.end())
+		{
+			location = it->second;
+			assert(location != -1);
+		}
+		else
+		{
+			location = mapFunction(shaderProgram, realKey.c_str());
+			if (location == -1)
+			{
+				return false;
+			}
+
+			locations.emplace(realKey, location);
+		}
+		setFunction(location, args...);
+
+		return true;
+	}
+
+protected:
+	GLuint shaderProgram{GL_NONE};
+
+	Locations attributeLocations;
+	Locations uniformLocations;
+
+	std::string group;
+};
+
 // one OpenGL context
 class CStdGLCtx
 {
@@ -92,10 +185,9 @@ protected:
 	GLenum sfcFmt; // texture surface format
 	CStdGLCtx MainCtx; // main GL context
 	CStdGLCtx *pCurrCtx; // current context
-	// continously numbered shaders for ATI cards
-	unsigned int shader;
-	// shaders for the ARB extension
-	GLuint shaders[6];
+	CStdGLShaderProgram BlitShader;
+	CStdGLShaderProgram BlitShaderMod2;
+	CStdGLShaderProgram LandscapeShader;
 
 public:
 	// General

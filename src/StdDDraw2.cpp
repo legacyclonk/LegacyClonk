@@ -514,6 +514,79 @@ bool CBltData::ClipBy(float fX, float fY, float fMax)
 	return byNumVertices > 2;
 }
 
+void CStdShader::SetMacro(const std::string &key, const std::string &value)
+{
+	macros[key] = value;
+}
+
+void CStdShader::UnsetMacro(const std::string &key)
+{
+	macros.erase(key);
+}
+
+void CStdShader::SetSource(const std::string &source)
+{
+	this->source = source;
+}
+
+void CStdShader::SetType(Type type)
+{
+	this->type = type;
+}
+
+void CStdShader::Clear()
+{
+	source.clear();
+	macros.clear();
+}
+
+CStdShaderProgram *CStdShaderProgram::currentShaderProgram = nullptr;
+
+bool CStdShaderProgram::AddShader(CStdShader *shader)
+{
+	EnsureProgram();
+	if (std::find(shaders.cbegin(), shaders.cend(), shader) != shaders.cend())
+	{
+		return true;
+	}
+
+	if (AddShaderInt(shader))
+	{
+		shaders.push_back(shader);
+		return true;
+	}
+
+	return false;
+}
+
+void CStdShaderProgram::Clear()
+{
+	shaders.clear();
+}
+
+void CStdShaderProgram::Select()
+{
+	if (currentShaderProgram != this)
+	{
+		OnSelect();
+		currentShaderProgram = this;
+	}
+}
+
+void CStdShaderProgram::Deselect()
+{
+	if (currentShaderProgram)
+	{
+		currentShaderProgram->OnDeselect();
+		currentShaderProgram = nullptr;
+	}
+}
+
+CStdShaderProgram *CStdShaderProgram::GetCurrentShaderProgram()
+{
+	return currentShaderProgram;
+}
+
 void CStdDDraw::Default()
 {
 	RenderTarget = nullptr;
