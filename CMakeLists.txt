@@ -305,6 +305,10 @@ endif ()
 # Link Windows libraries
 if (WIN32)
 	target_link_libraries(clonk dbghelp iphlpapi winmm ws2_32)
+
+	if (USE_SDL_MIXER)
+		target_link_libraries(clonk imm32.lib setupapi.lib version.lib)
+	endif ()
 endif ()
 
 if (APPLE)
