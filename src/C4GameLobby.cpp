@@ -418,6 +418,11 @@ bool MainDlg::IsCountdown()
 	return eCountdownState >= CDS_Countdown;
 }
 
+bool MainDlg::IsLongCountdown() const
+{
+	return eCountdownState >= CDS_LongCountdown;
+}
+
 void MainDlg::OnClosed(bool fOK)
 {
 	// lobby aborted by user: remember not to display error log
@@ -801,7 +806,7 @@ void MainDlg::OnClientReadyStateChange(C4Client *client)
 			if (!clnt->isLobbyReady())
 			{
 				// the client was ready and now isn't? stop the countdown
-				if (client->getID() == clnt->getID() && Game.Network.isHost() && IsCountdown())
+				if (client->getID() == clnt->getID() && Game.Network.isHost() && IsLongCountdown())
 				{
 					Game.Network.AbortLobbyCountdown();
 				}
@@ -811,7 +816,7 @@ void MainDlg::OnClientReadyStateChange(C4Client *client)
 		}
 	}
 
-	if (Game.Network.isHost() && !IsCountdown())
+	if (Game.Network.isHost() && !IsLongCountdown())
 	{
 		Start(Config.Lobby.CountdownTime);
 	}
@@ -1027,7 +1032,7 @@ void MainDlg::ResourceProgress(bool isComplete)
 
 void MainDlg::RequestReadyCheck()
 {
-	if (IsCountdown())
+	if (IsLongCountdown())
 	{
 		Game.Network.AbortLobbyCountdown();
 	}

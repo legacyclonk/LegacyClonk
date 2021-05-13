@@ -164,6 +164,7 @@ public:
 	void OnCountdownPacket(const C4PacketCountdown &Pkt); // called when a countdown packet is received: Update countdown state
 
 	bool IsCountdown();
+	bool IsLongCountdown() const;
 	void UpdateFairCrew();
 	void UpdatePassword();
 	void UpdatePlayerCountDisplay();
