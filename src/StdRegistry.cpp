@@ -151,34 +151,38 @@ bool DeleteRegistryKey(HKEY hKey, const char *szSubKey)
 	return true;
 }
 
+static HKEY ClassKeyForUser(std::string &subKey)
+{
+	subKey = std::string{"Software\\Classes\\"} + subKey;
+	return HKEY_CURRENT_USER;
+}
+
+static bool CreateClassKey(std::string subKey, HKEY &ckey, DWORD &disposition)
+{
+	const HKEY key{ClassKeyForUser(subKey)};
+	return RegCreateKeyEx(key, subKey.c_str(), 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, nullptr, &ckey, &disposition) == ERROR_SUCCESS;
+}
+
 bool SetRegClassesRoot(const char *szSubKey,
 	const char *szValueName,
 	const char *szStringValue)
 {
-	long qerr;
 	HKEY ckey;
 	DWORD disposition;
 
-	// Open the key
-	if ((qerr = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-		szSubKey,
-		0,
-		nullptr,
-		REG_OPTION_NON_VOLATILE,
-		KEY_ALL_ACCESS,
-		nullptr,
-		&ckey,
-		&disposition
-	)) != ERROR_SUCCESS) return false;
+	if (!CreateClassKey(szSubKey, ckey, disposition))
+	{
+		return false;
+	}
 
 	// Set the value
-	if ((qerr = RegSetValueEx(ckey,
+	if (RegSetValueEx(ckey,
 		szValueName,
 		0,
 		REG_SZ,
 		(BYTE *)szStringValue,
 		checked_cast<DWORD>(SLen(szStringValue) + 1)
-	)) != ERROR_SUCCESS)
+	) != ERROR_SUCCESS)
 	{
 		RegCloseKey(ckey); return false;
 	}
@@ -193,30 +197,22 @@ bool SetRegClassesRootString(const char *szSubKey,
 	const char *szValueName,
 	const char *szValue)
 {
-	long qerr;
 	HKEY ckey;
 	DWORD disposition;
 
-	// Open the key
-	if ((qerr = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-		szSubKey,
-		0,
-		nullptr,
-		REG_OPTION_NON_VOLATILE,
-		KEY_ALL_ACCESS,
-		nullptr,
-		&ckey,
-		&disposition
-	)) != ERROR_SUCCESS) return false;
+	if (!CreateClassKey(szSubKey, ckey, disposition))
+	{
+		return false;
+	}
 
 	// Set the value
-	if ((qerr = RegSetValueEx(ckey,
+	if (RegSetValueEx(ckey,
 		szValueName,
 		0,
 		REG_SZ,
 		(BYTE *)szValue,
 		checked_cast<DWORD>(SLen(szValue) + 1)
-	)) != ERROR_SUCCESS)
+	) != ERROR_SUCCESS)
 	{
 		RegCloseKey(ckey); return false;
 	}
@@ -252,9 +248,11 @@ bool SetRegShell(const char *szClassName,
 bool RemoveRegShell(const char *szClassName,
 	const char *szShellName)
 {
-	char strKey[256 + 1];
-	sprintf(strKey, "%s\\Shell\\%s", szClassName, szShellName);
-	if (!DeleteRegistryKey(HKEY_CLASSES_ROOT, strKey)) return false;
+	std::string subKey{szClassName};
+	subKey.append("\\Shell\\").append(szShellName);
+
+	const HKEY key{ClassKeyForUser(subKey)};
+	if (!DeleteRegistryKey(key, subKey.c_str())) return false;
 	return true;
 }
 
