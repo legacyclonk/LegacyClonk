@@ -34,7 +34,7 @@ StdStrBuf sLogFileName;
 
 StdStrBuf sFatalError;
 
-bool OpenLog()
+void OpenLog()
 {
 	// open
 	sLogFileName = C4CFN_Log; int iLog = 2;
@@ -44,12 +44,21 @@ bool OpenLog()
 	while (!(C4LogFile = fopen(sLogFileName.getData(), "wb")))
 #endif
 	{
+		if (errno == EACCES)
+		{
+			throw CStdApp::StartupException{"Cannot create log file (Permission denied).\nPlease ensure that LegacyClonk is allowed to write in its installation directory."};
+		}
+		else if (iLog == 100)
+		{
+			// it is extremely unlikely that someone is running 100 clonk instances at the same time in the same directory
+			throw CStdApp::StartupException{std::string{"Cannot create log file ("} + strerror(errno) + "}"};
+		}
+
 		// try different name
 		sLogFileName.Format(C4CFN_LogEx, iLog++);
 	}
 	// save start time
 	time(&C4LogStartTime);
-	return true;
 }
 
 bool CloseLog()

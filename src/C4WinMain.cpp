@@ -112,9 +112,14 @@ int WINAPI WinMain(HINSTANCE hInst,
 	}
 
 	// Init application
-	if (!Application.Init(hInst, nCmdShow, lpszCmdParam))
+	try
+	{
+		Application.Init(hInst, nCmdShow, lpszCmdParam);
+	}
+	catch (const CStdApp::StartupException &e)
 	{
 		Application.Clear();
+		MessageBox(nullptr, e.what(), STD_PRODUCT, MB_ICONERROR);
 		return C4XRV_Failure;
 	}
 
@@ -243,11 +248,17 @@ int main(int argc, char *argv[])
 #endif
 
 	// Init application
-	if (!Application.Init(argc, argv))
+	try
+	{
+		Application.Init(argc, argv);
+	}
+	catch (const CStdApp::StartupException &e)
 	{
 		Application.Clear();
+		fprintf(stderr, "%s\n", e.what());
 		return C4XRV_Failure;
 	}
+
 	// Execute application
 	Application.Run();
 	// free app stuff

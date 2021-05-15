@@ -121,7 +121,7 @@ CStdApp::~CStdApp()
 
 static Atom ClipboardAtoms[1];
 
-bool CStdApp::Init(int argc, char *argv[])
+void CStdApp::Init(int argc, char *argv[])
 {
 	// Set locale
 	setlocale(LC_ALL, "");
@@ -169,8 +169,7 @@ bool CStdApp::Init(int argc, char *argv[])
 
 	if (!(dpy = XOpenDisplay(nullptr)))
 	{
-		Log("Error opening display.");
-		return false;
+		throw StartupException{"Error opening display."};
 	}
 
 	int xf86vmode_event_base, xf86vmode_error_base;
@@ -209,8 +208,7 @@ bool CStdApp::Init(int argc, char *argv[])
 	// create pipe
 	if (pipe(Priv->Pipe) != 0)
 	{
-		Log("Error creating Pipe");
-		return false;
+		throw StartupException{"Error creating Pipe"};
 	}
 
 #ifdef WITH_GLIB
@@ -219,7 +217,7 @@ bool CStdApp::Init(int argc, char *argv[])
 #endif
 
 	// Custom initialization
-	return DoInit();
+	DoInit();
 }
 
 bool CStdApp::InitTimer() { gettimeofday(&LastExecute, nullptr); return true; }

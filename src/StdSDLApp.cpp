@@ -41,7 +41,7 @@ CStdApp::CStdApp() : Active(false), fQuitMsgReceived(false),
 
 CStdApp::~CStdApp() {}
 
-bool CStdApp::Init(int argc, char *argv[])
+void CStdApp::Init(int argc, char *argv[])
 {
 	// Set locale
 	setlocale(LC_ALL, "");
@@ -71,19 +71,17 @@ bool CStdApp::Init(int argc, char *argv[])
 	}
 	catch (const std::runtime_error &)
 	{
-		Log("Error initializing SDL.");
-		return false;
+		throw StartupException{"Error initializing SDL."};
 	}
 
 	// create pipe
 	if (pipe(this->Pipe) != 0)
 	{
-		Log("Error creating Pipe");
-		return false;
+		throw StartupException{"Error creating Pipe"};
 	}
 
 	// Custom initialization
-	return DoInit();
+	DoInit();
 }
 
 bool CStdApp::InitTimer() { gettimeofday(&LastExecute, 0); return true; }

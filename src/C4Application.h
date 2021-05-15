@@ -120,7 +120,7 @@ protected:
 	enum State { C4AS_None, C4AS_PreInit, C4AS_Startup, C4AS_StartGame, C4AS_Game, C4AS_Quit, } AppState;
 
 protected:
-	virtual bool DoInit() override;
+	virtual void DoInit() override;
 	bool OpenGame();
 	bool PreInit();
 	virtual void OnNetworkEvents() override;

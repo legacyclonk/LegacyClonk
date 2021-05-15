@@ -334,6 +334,13 @@ protected:
 class CStdApp
 {
 public:
+	class StartupException : public std::runtime_error
+	{
+	public:
+		using runtime_error::runtime_error;
+	};
+
+public:
 	CStdApp();
 	virtual ~CStdApp();
 
@@ -391,7 +398,7 @@ public:
 	int iLastExecute, iTimerOffset;
 	HANDLE hTimerEvent, // set periodically by critical timer (C4Engine)
 		hNetworkEvent; // set if a network event occured
-	bool Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine);
+	void Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine);
 	void NextTick(bool fYield) { SetEvent(hTimerEvent); if (fYield) Sleep(0); }
 	bool IsShiftDown() { return GetKeyState(VK_SHIFT) < 0; }
 	bool IsControlDown() { return GetKeyState(VK_CONTROL) < 0; }
@@ -414,7 +421,7 @@ protected:
 	void HandleSDLEvent(SDL_Event &event);
 #endif
 	const char *Location;
-	bool Init(int argc, char *argv[]);
+	void Init(int argc, char *argv[]);
 	bool DoNotDelay;
 	void NextTick(bool fYield);
 	bool IsShiftDown() { return KeyMask & MK_SHIFT; }
@@ -446,7 +453,7 @@ protected:
 	const char *szCmdLine;
 	std::thread::id mainThread{};
 	bool InitTimer();
-	virtual bool DoInit() = 0;
+	virtual void DoInit() = 0;
 	virtual void OnNetworkEvents() = 0;
 
 	// commands from stdin (console only)

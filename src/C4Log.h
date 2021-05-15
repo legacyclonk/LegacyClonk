@@ -21,7 +21,7 @@
 #include <StdBuf.h>
 #include <StdCompiler.h>
 
-bool OpenLog();
+void OpenLog();
 bool CloseLog();
 
 template<typename... Args>

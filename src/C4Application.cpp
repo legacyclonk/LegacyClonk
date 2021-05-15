@@ -71,7 +71,7 @@ C4Application::~C4Application()
 	}
 }
 
-bool C4Application::DoInit()
+void C4Application::DoInit()
 {
 	assert(AppState == C4AS_None);
 	// Config overwrite by parameter
@@ -91,8 +91,7 @@ bool C4Application::DoInit()
 		if (sConfigFilename)
 		{
 			// custom config corrupted: Fail
-			Log("Warning: Custom configuration corrupted - program abort!\n");
-			return false;
+			throw StartupException{"Warning: Custom configuration corrupted - program abort!"};
 		}
 		else
 		{
@@ -111,7 +110,7 @@ bool C4Application::DoInit()
 	C4Group_SetSortList(C4CFN_FLS);
 
 	// Open log
-	if (!OpenLog()) return false;
+	OpenLog();
 
 	// init system group
 	if (!SystemGroup.Open(C4CFN_System))
@@ -119,8 +118,7 @@ bool C4Application::DoInit()
 		// Error opening system group - no LogFatal, because it needs language table.
 		// This will *not* use the FatalErrors stack, but this will cause the game
 		// to instantly halt, anyway.
-		Log("Error opening system group file (System.c4g)!");
-		return false;
+		throw StartupException{"Error opening system group file (System.c4g)!"};
 	}
 
 	// Language override by parameter
@@ -144,7 +142,7 @@ bool C4Application::DoInit()
 	//          because updates will be applied in the console anyway.
 	if (Application.IncomingUpdate)
 		if (C4UpdateDlg::ApplyUpdate(Application.IncomingUpdate.getData(), false, nullptr))
-			return true;
+			return;
 #endif
 
 	// activate
@@ -155,7 +153,7 @@ bool C4Application::DoInit()
 	{
 		if (!(pWindow = FullScreen.Init(this)))
 		{
-			Clear(); return false;
+			Clear(); return;
 		}
 		pWindow->SetSize(static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale()));
 		SetDisplayMode(Config.Graphics.UseDisplayMode);
@@ -172,7 +170,7 @@ bool C4Application::DoInit()
 	{
 		if (!(pWindow = Console.Init(this)))
 		{
-			Clear(); return false;
+			Clear(); return;
 		}
 	}
 
@@ -180,7 +178,7 @@ bool C4Application::DoInit()
 	if (!InitTimer())
 	{
 		LogFatal(LoadResStr("IDS_ERR_TIMER"));
-		Clear(); return false;
+		Clear(); throw StartupException{GetFatalError()};
 	}
 
 	// Engine header message
@@ -189,7 +187,7 @@ bool C4Application::DoInit()
 
 	// Initialize OpenGL
 	DDraw = DDrawInit(this, Config.Graphics.Engine);
-	if (!DDraw) { LogFatal(LoadResStr("IDS_ERR_DDRAW")); Clear(); return false; }
+	if (!DDraw) { LogFatal(LoadResStr("IDS_ERR_DDRAW")); Clear(); throw StartupException{GetFatalError()}; }
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)
 	// Register clonk file classes - notice: this will only work if we have administrator rights
@@ -202,8 +200,6 @@ bool C4Application::DoInit()
 		pGamePadControl = new C4GamePadControl();
 
 	AppState = C4AS_PreInit;
-
-	return true;
 }
 
 bool C4Application::PreInit()

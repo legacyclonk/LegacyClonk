@@ -238,14 +238,14 @@ CStdApp::~CStdApp()
 
 char *LoadResStr(const char *id);
 
-bool CStdApp::Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine)
+void CStdApp::Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine)
 {
 	// Set instance vars
 	hInstance = hInst;
 	this->szCmdLine = szCmdLine;
 	mainThread = std::this_thread::get_id();
 	// Custom initialization
-	return DoInit();
+	DoInit();
 }
 
 void CStdApp::Clear()
