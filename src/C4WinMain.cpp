@@ -25,6 +25,7 @@
 
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtkmain.h>
+#include <gtk/gtkmessagedialog.h>
 #endif
 
 #ifdef WIN32
@@ -256,6 +257,12 @@ int main(int argc, char *argv[])
 	{
 		Application.Clear();
 		fprintf(stderr, "%s\n", e.what());
+
+#ifdef WITH_DEVELOPER_MODE
+		GtkWidget *const dialog{gtk_message_dialog_new(nullptr, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", e.what())};
+		gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
+#endif
 		return C4XRV_Failure;
 	}
 
