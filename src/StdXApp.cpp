@@ -101,7 +101,7 @@ namespace
 		// is the state _before_ the event, but we want to store the
 		// current state.
 		if (sym == XK_Control_L || sym == XK_Control_R) mask ^= MK_CONTROL;
-		if (sym == XK_Shift_L   || sym == XK_Shift_L)   mask ^= MK_SHIFT;
+		if (sym == XK_Shift_L   || sym == XK_Shift_R)   mask ^= MK_SHIFT;
 		if (sym == XK_Alt_L     || sym == XK_Alt_R)     mask ^= (1 << 3);
 		return mask;
 	}
