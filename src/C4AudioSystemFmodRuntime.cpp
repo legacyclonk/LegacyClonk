@@ -28,14 +28,11 @@
 #include <utility>
 #include <variant>
 
-#ifdef _WIN32
 #include <utility>
 
 // order matters
 #include <windows.h>
 #include <libloaderapi.h>
-
-using LibHandle = HMODULE;
 
 #ifndef _WIN64
 #define F_API __stdcall
@@ -66,25 +63,10 @@ static std::string ErrorString()
 		return FormatString("Code: %u (FormatMessage failed with error %u)", errorCode, GetLastError()).getData();
 	}
 }
-#else
-#include <dlfcn.h>
-
-using LibHandle = void *;
-
-#define LoadLibraryA dlopen
-#define GetProcAddress dlsym
-#define FreeLibrary dlclose
-#define F_API
-
-static std::string ErrorString()
-{
-	return dlerror();
-}
-#endif
 
 class Library
 {
-	LibHandle lib;
+	HMODULE lib;
 
 public:
 	Library(const std::string &path);
@@ -121,7 +103,7 @@ protected:
 	{
 		using FuncType = Ret(F_API *)(Args...);
 
-#if defined(_WIN32) && !defined(_WIN64)
+#ifndef _WIN64
 		static constexpr auto ArgsSize = ([]
 		{
 			// rounded up to multiple of 4
@@ -131,7 +113,7 @@ protected:
 
 	public:
 		Func(Library *lib, const std::string &name) :
-#if defined(_WIN32) && !defined(_WIN64)
+#ifndef _WIN64
 			Symbol<FuncType>{lib, "_" + name + "@" + std::to_string(ArgsSize)}
 #else
 			Symbol<FuncType>{lib, name}
@@ -266,10 +248,8 @@ struct FmodRuntime : private Library
 		{
 #ifdef _WIN64
 			"fmod64.dll"
-#elif defined(_WIN32)
-			"fmod.dll"
 #else
-			"fmod.so"
+			"fmod.dll"
 #endif
 		},
 		FSOUND_SetOutput{this, "FSOUND_SetOutput"},

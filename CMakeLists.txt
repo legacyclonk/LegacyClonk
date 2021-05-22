@@ -80,7 +80,7 @@ CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
 # USE_FMOD
 CMAKE_DEPENDENT_OPTION(USE_FMOD "Whether FMod should be tried to be loaded dynamically for sound" OFF
-	"ENABLE_SOUND" OFF)
+	"ENABLE_SOUND AND WIN32" OFF)
 # USE_SDL_MIXER
 CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON
 	"ENABLE_SOUND" OFF)
