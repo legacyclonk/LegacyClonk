@@ -55,7 +55,7 @@ bool SetC4FileClasses(const char *szEnginePath)
 	if (!SetRegFileClass("Clonk4.Weblink", "c4l", "Clonk 4 Weblink", szEnginePath, 11, C4FileClassContentType)) return false;
 	if (!SetRegFileClass("Clonk4.Update", "c4u", "Clonk 4 Update", szEnginePath, 13, C4FileClassContentType)) return false;
 
-	if (!SetProtocol("clonk", "%s %%1 /Fullscreen", szEnginePath)) return false;
+	if (!SetProtocol("clonk", "%s %%1", szEnginePath)) return false;
 
 	char strCommand[2048];
 	// c4u application: send to engine
