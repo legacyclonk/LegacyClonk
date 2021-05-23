@@ -33,7 +33,7 @@
 #elif defined(__APPLE__)
 #define C4_OS "mac"
 #else
-#define C4_OS "unknown";
+#error Unknown platform
 #endif
 
 #ifdef C4ENGINE
