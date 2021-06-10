@@ -871,13 +871,15 @@ bool C4GraphicsSystem::FreeScroll(C4Vec2D vScrollBy)
 	if (Viewports.empty()) return false;
 	const auto &vp = Viewports.front();
 	// move then (old static code crap...)
-	static int32_t vp_vx = 0; static int32_t vp_vy = 0; static int32_t vp_vf = 0;
+	static int32_t vp_vx = 0; static int32_t vp_vy = 0;
 	int32_t dx = vScrollBy.x; int32_t dy = vScrollBy.y;
-	if (Game.FrameCounter - vp_vf < 5)
+	if (!MostRecentScrolling.Elapsed())
 	{
 		dx += vp_vx; dy += vp_vy;
 	}
-	vp_vx = dx; vp_vy = dy; vp_vf = Game.FrameCounter;
+	LogF("Deltas:    %3i, %3i   \nPrevious: %3i, %3i", dx, dy, vp_vx, vp_vy);
+	vp_vx = dx; vp_vy = dy;
 	vp->ViewX += dx; vp->ViewY += dy;
+	MostRecentScrolling.Reset();
 	return true;
 }

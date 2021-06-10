@@ -22,6 +22,7 @@
 #include <C4MessageBoard.h>
 #include <C4UpperBoard.h>
 #include <C4Shape.h>
+#include <C4Cooldown.h>
 
 #include <memory>
 #include <vector>
@@ -50,6 +51,8 @@ public:
 	uint32_t dwGamma[C4MaxGammaRamps * 3]; // gamma ramps
 	bool fSetGamma; // must gamma ramp be reassigned?
 	C4LoaderScreen *pLoaderScreen;
+	//used to determine if arrow keys are held in FreeScroll()
+	C4Cooldown<std::chrono::milliseconds::rep, std::chrono::milliseconds::period> MostRecentScrolling{std::chrono::milliseconds{100}}; 
 	void Default();
 	void Clear();
 	bool StartDrawing();
