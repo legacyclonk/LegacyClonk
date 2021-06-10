@@ -873,12 +873,11 @@ bool C4GraphicsSystem::FreeScroll(C4Vec2D vScrollBy)
 	// move then (old static code crap...)
 	static int32_t vp_vx = 0; static int32_t vp_vy = 0;
 	int32_t dx = vScrollBy.x; int32_t dy = vScrollBy.y;
-	if (!MostRecentScrolling.Elapsed())
+	if (!MostRecentScrolling.TryReset())
 	{
 		dx += vp_vx; dy += vp_vy;
 	}
 	vp_vx = dx; vp_vy = dy;
 	vp->ViewX += dx; vp->ViewY += dy;
-	MostRecentScrolling.Reset();
 	return true;
 }
