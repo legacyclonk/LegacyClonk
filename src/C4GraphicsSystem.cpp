@@ -877,7 +877,6 @@ bool C4GraphicsSystem::FreeScroll(C4Vec2D vScrollBy)
 	{
 		dx += vp_vx; dy += vp_vy;
 	}
-	LogF("Deltas:    %3i, %3i   \nPrevious: %3i, %3i", dx, dy, vp_vx, vp_vy);
 	vp_vx = dx; vp_vy = dy;
 	vp->ViewX += dx; vp->ViewY += dy;
 	MostRecentScrolling.Reset();
