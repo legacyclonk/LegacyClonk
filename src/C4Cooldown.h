@@ -94,4 +94,6 @@ void C4Cooldown<Rep, Period, Clock>::CompileFunc(StdCompiler *comp, DurationType
 	}
 }
 
+template<typename Rep, typename Period> C4Cooldown(std::chrono::duration<Rep, Period>) -> C4Cooldown<Rep, Period>;
+
 using C4CooldownSeconds = C4Cooldown<std::chrono::seconds::rep, std::chrono::seconds::period, std::chrono::steady_clock>;
