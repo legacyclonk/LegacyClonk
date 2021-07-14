@@ -1,0 +1,3 @@
+[submodule "src/WinToast"]
+	path = src/WinToast
+	url = https://github.com/mohabouje/WinToast

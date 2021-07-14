@@ -23,6 +23,7 @@
 #include <C4SoundSystem.h>
 #include <C4Components.h>
 #include <C4InteractiveThread.h>
+#include "C4Toast.h"
 #include <C4Network2IRC.h>
 #include <StdWindow.h>
 
@@ -96,6 +97,7 @@ public:
 	std::unique_ptr<C4AudioSystem> AudioSystem;
 	std::optional<C4MusicSystem> MusicSystem;
 	std::optional<C4SoundSystem> SoundSystem;
+	std::unique_ptr<C4ToastSystem> ToastSystem;
 	C4GamePadControl *pGamePadControl;
 	// Thread for interactive processes (automatically starts as needed)
 	C4InteractiveThread InteractiveThread;

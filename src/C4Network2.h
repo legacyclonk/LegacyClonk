@@ -31,6 +31,10 @@
 #include "C4Control.h"
 #include "C4Gui.h"
 
+#ifndef USE_CONSOLE
+#include "C4Toast.h"
+#endif
+
 // lobby predef - no need to include lobby in header just for the class ptr
 namespace C4GameLobby { class MainDlg; class Countdown; }
 class C4PacketJoinData;
@@ -115,7 +119,7 @@ class C4Network2
 	friend class C4Sec1TimerCallback<C4Network2>;
 
 #ifndef USE_CONSOLE
-	class ReadyCheckDialog : public C4GUI::TimedDialog
+	class ReadyCheckDialog final : public C4GUI::TimedDialog, private C4ToastEventHandler
 	{
 	public:
 		ReadyCheckDialog();
@@ -123,6 +127,18 @@ class C4Network2
 
 	public:
 		void UpdateText() override;
+
+	protected:
+		void OnClosed(bool ok) override;
+		const char *GetID() override { return "ReadyCheckDialog"; }
+
+	private:
+		void Activated() override;
+		void OnAction(std::string_view action) override;
+		void Dismissed() override;
+
+	private:
+		static std::optional<C4Toast> toast;
 	};
 #endif
 

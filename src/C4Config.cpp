@@ -370,6 +370,11 @@ void C4ConfigCooldowns::CompileFunc(StdCompiler *comp)
 	comp->Value(mkNamingAdapt(SoundCommand, "SoundCommand", 5s));
 	comp->Value(mkNamingAdapt(mkParAdapt(ReadyCheck, 5s), "ReadyCheck", 10s));
 }
+
+void C4ConfigToasts::CompileFunc(StdCompiler *comp)
+{
+	comp->Value(mkNamingAdapt(ReadyCheck, "ReadyCheck", true));
+}
 #endif
 
 C4Config::C4Config()
@@ -796,6 +801,7 @@ void C4Config::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Startup,   "Startup"));
 #ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(Cooldowns, "Cooldowns"));
+	pComp->Value(mkNamingAdapt(Toasts,    "Toasts"));
 #endif
 }
 
