@@ -929,9 +929,8 @@ void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
 		C4ST_STARTNEW(ContStat, "C4Viewport::DrawCursorInfo: Contents")
 		ccgo.Set(cgo.Surface, cgo.X + C4SymbolBorder, cgo.Y + cgo.Hgt - C4SymbolBorder - C4SymbolSize, 7 * C4SymbolSize, C4SymbolSize);
 		cursor->Contents.DrawIDList(ccgo, -1, Game.Defs, C4D_All, SetRegions, COM_Contents, false);
+		C4ST_STOP(ContStat)
 	}
-
-	C4ST_STOP(ContStat)
 
 	// Draw energy levels
 	if (cursor->ViewEnergy || Config.Graphics.ShowPlayerHUDAlways)
