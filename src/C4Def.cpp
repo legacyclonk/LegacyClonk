@@ -1190,32 +1190,21 @@ int32_t C4DefList::GetIndex(C4ID id)
 	return -1;
 }
 
-int32_t C4DefList::GetDefCount(uint32_t dwCategory)
+C4Def *C4DefList::GetDef(const std::size_t index, const std::uint32_t category)
 {
-	return std::count_if(Defs.begin(), Defs.end(), [dwCategory](const auto &def)
+	if (category == C4D_All)
 	{
-		return def->Category & dwCategory;
-	});
-}
-
-C4Def *C4DefList::GetDef(int32_t iIndex, uint32_t dwCategory)
-{
-	if (iIndex < 0) return nullptr;
-
-	if (dwCategory == C4D_All && iIndex < Defs.size())
-	{
-		return Defs[iIndex].get();
+		if (index >= Defs.size()) return nullptr;
+		return Defs[index].get();
 	}
-
-	int32_t currentIndex = -1;
-	for (const auto &it : Defs)
+	else
 	{
-		if (it->Category & dwCategory)
-		{
-			if (++currentIndex == iIndex) return it.get();
-		}
+		std::size_t i{0};
+		const auto it = std::find_if(Defs.begin(), Defs.end(), [&](const auto &def) {
+			return (def->Category & category) && i++ == index; });
+		if (it == Defs.end()) return nullptr;
+		return it->get();
 	}
-	return nullptr;
 }
 
 #ifdef C4ENGINE

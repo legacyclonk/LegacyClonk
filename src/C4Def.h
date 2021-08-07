@@ -34,6 +34,8 @@
 
 #include "C4DelegatedIterable.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -402,9 +404,8 @@ public:
 		C4SoundSystem *pSoundSystem = nullptr,
 		bool fOverload = false, int32_t iMinProgress = 0, int32_t iMaxProgress = 0);
 	C4Def *ID2Def(C4ID id);
-	C4Def *GetDef(int32_t Index, uint32_t dwCategory = C4D_All);
+	C4Def *GetDef(std::size_t index, std::uint32_t category = C4D_All);
 	C4Def *GetByPath(const char *szPath);
-	int32_t GetDefCount(uint32_t dwCategory = C4D_All);
 	int32_t GetIndex(C4ID id);
 	int32_t ColorizeByMaterial(C4MaterialMap &rMats, uint8_t bGBM);
 	int32_t CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, int32_t ver4, int32_t ver5);

@@ -52,10 +52,8 @@ bool C4AulScript::ResolveAppends(C4DefList *rDefs)
 		else
 		{
 			// append to all defs
-			for (int i = 0; i < rDefs->GetDefCount(); i++)
+			for (std::size_t i{0}; const auto pDef = rDefs->GetDef(i); ++i)
 			{
-				C4Def *pDef = rDefs->GetDef(i);
-				if (!pDef) break;
 				if (pDef == Def) continue;
 				// append
 				AppendTo(pDef->Script, true);

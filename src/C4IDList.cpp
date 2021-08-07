@@ -203,8 +203,7 @@ void C4IDList::Load(C4DefList &defs, int32_t category)
 {
 	Clear();
 	// add all IDs of def list
-	int32_t count = 0;
-	while (const auto def = defs.GetDef(count++, category))
+	for (std::size_t i{0}; const auto def = defs.GetDef(i, category); ++i)
 	{
 		content.emplace_back(def->id, 0);
 	}
