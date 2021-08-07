@@ -536,7 +536,6 @@ C4PortraitSelDlg::C4PortraitSelDlg(C4FileSel_BaseCB *pSelCallback, bool fSetPict
 	SCopy(Config.AtUserPath(""), path, _MAX_PATH); TruncateBackslash(path);
 	strLocation.Format("%s %s", C4ENGINECAPTION, LoadResStr("IDS_TEXT_USERPATH"));
 	AddLocation(strLocation.getData(), path);
-	SCopy(Config.AtExePath(""), path, _MAX_PATH); TruncateBackslash(path);
 	strLocation.Format("%s %s", C4ENGINECAPTION, LoadResStr("IDS_TEXT_PROGRAMDIRECTORY"));
 	AddCheckedLocation(strLocation.getData(), Config.General.ExePath);
 #ifdef _WIN32
