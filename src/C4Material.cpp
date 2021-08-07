@@ -29,6 +29,8 @@
 #include <C4Physics.h> // For GravAccel
 #endif
 
+#include <utility>
+
 // C4MaterialReaction
 
 #ifdef C4ENGINE
@@ -564,10 +566,7 @@ bool C4MaterialMap::SortEnumeration(int32_t iMat, const char *szMatName)
 	if (cmat == iMat) return true;
 
 	// Move requested mat to indexed position
-	C4Material mswap;
-	mswap = Map[iMat];
-	Map[iMat] = Map[cmat];
-	Map[cmat] = mswap;
+	std::swap(Map[iMat], Map[cmat]);
 
 	return true;
 }
