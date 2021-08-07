@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <zlib.h>
 #include "Standard.h"
 
 #include <stdlib.h>
@@ -365,13 +364,6 @@ public:
 
 	StdBuf &operator=(const StdBuf &Buf2) { Copy(Buf2); return *this; }
 
-	// build a simple hash
-	int GetHash() const
-	{
-		if (isNull()) return 0;
-		return crc32(0, reinterpret_cast<const Bytef *>(getData()), checked_cast<unsigned int>(getSize()));
-	}
-
 	// *** Compiling
 
 	void CompileFunc(class StdCompiler *pComp, int iType = 0);
@@ -660,12 +652,6 @@ public:
 
 	// check if a string consists only of the given chars
 	bool ValidateChars(const char *szInitialChars, const char *szMidChars);
-
-	// build a simple hash
-	int GetHash() const
-	{
-		return StdBuf::GetHash();
-	}
 
 	void EscapeString()
 	{
