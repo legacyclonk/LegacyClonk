@@ -1495,8 +1495,8 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	case C4V_String:
 		// note this breaks if there is '"' in the string.
 		parameter[0] = '"';
-		SCopy(Parameter.getStr()->Data.getData(), parameter + 1, sizeof(command) - 3);
-		SAppendChar('"', command);
+		SCopy(Parameter.getStr()->Data.getData(), parameter + 1, sizeof(parameter) - 3);
+		SAppendChar('"', parameter);
 		break;
 	case C4V_Any:
 		sprintf(parameter, "CastAny(%" PRIdPTR ")", Parameter._getRaw());
