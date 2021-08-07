@@ -1259,7 +1259,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (iResID != pRes->getResID())
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		Application.InteractiveThread.ThreadLogSF(FormatString("C4Network2ResChunk(%d)::AddTo(%s [%d]): Ressource ID mismatch!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID()).getData());
+		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Ressource ID mismatch!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID());
 #endif
 		return false;
 	}
@@ -1268,7 +1268,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (iOffset + Data.getSize() > Core.getFileSize())
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		Application.InteractiveThread.ThreadLogSF(FormatString("C4Network2ResChunk(%d)::AddTo(%s [%d]): Adding %d bytes at offset %d exceeds expected file size of %d!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), (int)Data.getSize(), (int)iOffset, (int)Core.getFileSize()).getData());
+		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Adding %d bytes at offset %d exceeds expected file size of %d!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), (int)Data.getSize(), (int)iOffset, (int)Core.getFileSize());
 #endif
 		return false;
 	}
@@ -1277,7 +1277,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (f == -1)
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		Application.InteractiveThread.ThreadLogSF(FormatString("C4Network2ResChunk(%d)::AddTo(%s [%d]): Open write file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno)).getData());
+		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Open write file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
 #endif
 		return false;
 	}
@@ -1286,7 +1286,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 		if (lseek(f, iOffset, SEEK_SET) != iOffset)
 		{
 #ifdef C4NET2RES_DEBUG_LOG
-			Application.InteractiveThread.ThreadLogSF(FormatString("C4Network2ResChunk(%d)::AddTo(%s [%d]): lseek file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno)).getData());
+			Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): lseek file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
 #endif
 			close(f);
 			return false;
@@ -1295,7 +1295,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (write(f, Data.getData(), Data.getSize()) != int32_t(Data.getSize()))
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		Application.InteractiveThread.ThreadLogSF(FormatString("C4Network2ResChunk(%d)::AddTo(%s [%d]): write error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno)).getData());
+		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): write error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
 #endif
 		close(f);
 		return false;
