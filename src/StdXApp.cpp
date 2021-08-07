@@ -36,8 +36,7 @@
 #include <X11/XKBlib.h>
 
 #include <string>
-#include <sstream>
-#include <map>
+
 #include <sys/select.h>
 #include <sys/time.h>
 #include <time.h>
