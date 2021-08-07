@@ -150,10 +150,9 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	int32_t pid = getpid();
 	if (PID != None) XChangeProperty(pApp->dpy, wnd, PID, XA_CARDINAL, 32, PropModeReplace, reinterpret_cast<const unsigned char *>(&pid), 1);
 	// Title and stuff
+	if (!Title) Title = "";
 	XTextProperty title_property;
-	StdStrBuf tbuf; tbuf.Copy(Title ? Title : "");
-	char *tbufstr = tbuf.getMData();
-	XStringListToTextProperty(&tbufstr, 1, &title_property);
+	XStringListToTextProperty(const_cast<char **>(&Title), 1, &title_property);
 	// State and Icon
 	XWMHints *wm_hint = XAllocWMHints();
 	wm_hint->flags = StateHint | InputHint | IconPixmapHint | IconMaskHint;
@@ -282,9 +281,7 @@ void CStdWindow::SetTitle(const char *Title)
 {
 #ifdef USE_X11
 	XTextProperty title_property;
-	StdStrBuf tbuf(Title, true);
-	char *tbufstr = tbuf.getMData();
-	XStringListToTextProperty(&tbufstr, 1, &title_property);
+	XStringListToTextProperty(const_cast<char **>(&Title), 1, &title_property);
 	XSetWMName(dpy, wnd, &title_property);
 #endif
 }
