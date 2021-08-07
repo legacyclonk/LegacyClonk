@@ -289,8 +289,6 @@ bool C4UpdatePackage::Load(C4Group *pGroup)
 	return true;
 }
 
-// #define UPDATE_DEBUG
-
 bool C4UpdatePackage::Execute(C4Group *pGroup)
 {
 	// search target
@@ -385,13 +383,6 @@ bool C4UpdatePackage::Execute(C4Group *pGroup)
 			return false;
 		if ((!GrpContentsCRC2 || GrpContentsCRC2 != iResContentsChks) && iResChks != GrpChks2)
 		{
-#ifdef UPDATE_DEBUG
-			char *pData; int iSize;
-			CStdFile MyFile; MyFile.Load(strTarget, (uint8_t **)&pData, &iSize, 0, true);
-			MyFile.Create("DiesesDingIstMist.txt", false);
-			MyFile.Write(pData, iSize, false);
-			MyFile.Close();
-#endif
 			return false;
 		}
 	}
@@ -638,18 +629,6 @@ void MemScramble(uint8_t *, int);
 
 bool C4UpdatePackage::MakeUpdate(const char *strFile1, const char *strFile2, const char *strUpdateFile, const char *strName)
 {
-#ifdef UPDATE_DEBUG
-	char *pData; int iSize;
-	CStdFile MyFile; MyFile.Load(strFile2, (uint8_t **)&pData, &iSize, 0, true);
-	MyFile.Create("SoIstRichtig.txt", false);
-	MyFile.Write(pData, iSize, false);
-	MyFile.Close();
-	MemScramble((uint8_t *)pData, iSize);
-	MyFile.Create("UndSoAuch.txt", false);
-	MyFile.Write(pData, iSize, false);
-	MyFile.Close();
-#endif
-
 	// open Log
 	if (!Log.Create("Update.log"))
 		return false;
