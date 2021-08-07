@@ -23,15 +23,10 @@
 #include "C4Game.h"
 #include "C4GameOverDlg.h"
 
+#include <utility>
+
 // ************************************************
 // *** C4Scoreboard
-
-void C4Scoreboard::Entry::SwapWith(Entry *pSwap)
-{
-	Entry swp; swp.Text.Take(Text); swp.iVal = iVal;
-	Text.Take(pSwap->Text); iVal = pSwap->iVal;
-	pSwap->Text.Take(swp.Text); pSwap->iVal = swp.iVal;
-}
 
 void C4Scoreboard::Clear()
 {
@@ -54,7 +49,7 @@ void C4Scoreboard::AddRow(int32_t iInsertBefore)
 	{
 		if (iFromRow == iInsertBefore) ++iRow;
 		for (int32_t iCol = 0; iCol < iCols; ++iCol)
-			pNewEntries[iRow * iCols + iCol].GrabFrom(GetCell(iCol, iFromRow));
+			pNewEntries[iRow * iCols + iCol] = std::move(*GetCell(iCol, iFromRow));
 	}
 	++iRows;
 	delete[] pEntries; pEntries = pNewEntries;
@@ -71,7 +66,7 @@ void C4Scoreboard::AddCol(int32_t iInsertBefore)
 		for (int32_t iCol = 0, iFromCol = 0; iFromCol < iCols; ++iCol, ++iFromCol)
 		{
 			if (iFromCol == iInsertBefore) ++iCol;
-			pNewEntries[iRow * (iCols + 1) + iCol].GrabFrom(GetCell(iFromCol, iRow));
+			pNewEntries[iRow * (iCols + 1) + iCol] = std::move(*GetCell(iFromCol, iRow));
 		}
 	++iCols; // CAUTION: must inc after add, so GetCell won't point into bogus!
 	delete[] pEntries; pEntries = pNewEntries;
@@ -88,7 +83,7 @@ void C4Scoreboard::DelRow(int32_t iDelIndex)
 	{
 		if (iFromRow == iDelIndex) ++iFromRow;
 		for (int32_t iCol = 0; iCol < iCols; ++iCol)
-			pCpy++->GrabFrom(GetCell(iCol, iFromRow));
+			*pCpy++ = std::move(*GetCell(iCol, iFromRow));
 	}
 	--iRows;
 	delete[] pEntries; pEntries = pNewEntries;
@@ -105,7 +100,7 @@ void C4Scoreboard::DelCol(int32_t iDelIndex)
 		for (int32_t iCol = 0, iFromCol = 0; iCol < (iCols - 1); ++iCol, ++iFromCol)
 		{
 			if (iFromCol == iDelIndex) ++iFromCol;
-			pCpy++->GrabFrom(GetCell(iFromCol, iRow));
+			*pCpy++ = std::move(*GetCell(iFromCol, iRow));
 		}
 	--iCols; // CAUTION: must dec after add, so GetCell won't point into bogus!
 	delete[] pEntries; pEntries = pNewEntries;
@@ -115,7 +110,7 @@ void C4Scoreboard::SwapRows(int32_t iRow1, int32_t iRow2)
 {
 	Entry *pXChg1 = pEntries + iRow1 * iCols;
 	Entry *pXChg2 = pEntries + iRow2 * iCols;
-	int32_t i = iCols; while (i--) pXChg1++->SwapWith(pXChg2++);
+	int32_t i = iCols; while (i--) std::swap(*pXChg1++, *pXChg2++);
 }
 
 int32_t C4Scoreboard::GetColByKey(int32_t iKey) const

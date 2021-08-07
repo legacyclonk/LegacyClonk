@@ -31,16 +31,7 @@ private:
 	struct Entry
 	{
 		StdStrBuf Text;
-		int32_t iVal;
-
-		Entry() : Text(), iVal(0) {}
-
-		void GrabFrom(Entry *pFrom) // grab data w/o copy
-		{
-			Text.Take(pFrom->Text); iVal = pFrom->iVal;
-		}
-
-		void SwapWith(Entry *pSwap);
+		int32_t iVal{0};
 	};
 
 private:
