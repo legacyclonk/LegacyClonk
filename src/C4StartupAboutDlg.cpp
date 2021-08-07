@@ -73,7 +73,7 @@ static struct DeveloperList : public PersonList
 			return;
 		}
 
-		for (auto& p : developers)
+		for (auto &p : developers)
 		{
 			textbox->AddTextLine(p.nick ? FormatString("%s <c f7f76f>(%s)</c>", p.name, p.nick).getData() : p.name, &font, C4GUI_MessageFontClr, false, true);
 		}
@@ -84,7 +84,7 @@ static struct DeveloperList : public PersonList
 		const char *opening_tag = with_color ? "<c f7f76f>" : "";
 		const char *closing_tag = with_color ? "</c>" : "";
 		std::stringstream out;
-		for (auto& p : developers)
+		for (auto &p : developers)
 		{
 			out << p.name;
 			if (p.nick)
@@ -180,7 +180,7 @@ libs =
 		const char *closing_tag = with_color ? "</c>" : "";
 		std::stringstream result;
 		bool first = true;
-		for (auto& p : names)
+		for (auto &p : names)
 		{
 			if (!first) result << ", ";
 			first = false;
@@ -212,7 +212,7 @@ libs =
 
 	void WriteTo(C4GUI::TextWindow *textbox, CStdFont &font)
 	{
-		WriteLines([&](std::stringstream& text)
+		WriteLines([&](std::stringstream &text)
 		{
 			textbox->AddTextLine(text.str().c_str(), &font, C4GUI_MessageFontClr, false, true);
 			text.str("");
@@ -221,7 +221,7 @@ libs =
 
 	std::string ToString()
 	{
-		return WriteLines([&](std::stringstream& text)
+		return WriteLines([&](std::stringstream &text)
 		{
 			text << "\n";
 		}, false);

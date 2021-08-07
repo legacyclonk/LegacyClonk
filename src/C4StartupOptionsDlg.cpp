@@ -583,7 +583,7 @@ bool C4StartupOptionsDlg::EditConfig::GetControlSize(int *piWdt, int *piHgt, con
 }
 
 struct {
-	const char* caption;
+	const char *caption;
 	DisplayMode mode;
 } static const DisplayModes[] = {
 	{"IDS_MSG_FULLSCREEN", DisplayMode::Fullscreen},
@@ -800,7 +800,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pDisplayModeCombo->SetDecoration(&(C4Startup::Get()->Graphics.fctContext));
 	pGroupDisplaySettings->AddElement(pDisplayModeCombo);
 
-	for (const auto& mode : DisplayModes)
+	for (const auto &mode : DisplayModes)
 	{
 		if (mode.mode == Config.Graphics.UseDisplayMode)
 		{
@@ -1323,7 +1323,7 @@ bool C4StartupOptionsDlg::OnFontComboSelChange(C4GUI::ComboBox *pForCombo, int32
 
 void C4StartupOptionsDlg::OnDisplayModeComboFill(C4GUI::ComboBox_FillCB *pFiller)
 {
-	for (const auto& mode : DisplayModes)
+	for (const auto &mode : DisplayModes)
 	{
 		pFiller->AddEntry(LoadResStr(mode.caption), static_cast<int>(mode.mode));
 	}

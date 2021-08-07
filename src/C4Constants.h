@@ -234,7 +234,6 @@ const uint8_t COM_Left  = 1,
               COM_CursorToggle_D = COM_CursorToggle | COM_Double,
               COM_CursorRight_D  = COM_CursorRight  | COM_Double;
 
-
 const uint8_t COM_Help       = 35,
               COM_PlayerMenu = 36,
               COM_Chat       = 37;

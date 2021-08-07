@@ -475,7 +475,7 @@ void C4Network2ClientListBox::Update()
 
 namespace
 {
-	C4KeyBinding* registerStrongerEscape(C4GUI::Dialog* dialog)
+	C4KeyBinding *registerStrongerEscape(C4GUI::Dialog *dialog)
 	{
 		C4CustomKey::CodeList keys;
 		keys.push_back(C4KeyCodeEx(K_ESCAPE));

@@ -41,7 +41,7 @@ void C4ValueHash::DenumeratePointers()
 {
 	for (auto [key, value] : *this)
 	{
-		const_cast<C4Value&>(key).DenumeratePointer();
+		const_cast<C4Value &>(key).DenumeratePointer();
 		value.DenumeratePointer();
 	}
 }

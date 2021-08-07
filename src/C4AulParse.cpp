@@ -192,7 +192,6 @@ private:
 
 	void AddBCC(C4AulBCCType eType, std::intptr_t X = 0);
 
-
 	size_t JumpHere(); // Get position for a later jump to next instruction added
 	void SetJumpHere(size_t iJumpOp); // Use the next inserted instruction as jump target for the given jump operation
 	void SetJump(size_t iJumpOp, size_t iWhere);

@@ -286,7 +286,7 @@ public:
 	void Remove();
 	void Clear();
 
-	bool GetClientProgress(int32_t clientID, int32_t& presentChunkCnt, int32_t& chunkCnt);
+	bool GetClientProgress(int32_t clientID, int32_t &presentChunkCnt, int32_t &chunkCnt);
 
 protected:
 	int32_t OpenFileRead(); int32_t OpenFileWrite();

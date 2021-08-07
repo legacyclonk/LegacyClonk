@@ -1197,7 +1197,7 @@ bool C4Network2Res::OptimizeStandalone(bool fSilent)
 	return true;
 }
 
-bool C4Network2Res::GetClientProgress(int32_t clientID, int32_t& presentChunkCnt, int32_t& chunkCnt)
+bool C4Network2Res::GetClientProgress(int32_t clientID, int32_t &presentChunkCnt, int32_t &chunkCnt)
 {
 	// Try to find chunks for client ID
 	ClientChunks *chunks;

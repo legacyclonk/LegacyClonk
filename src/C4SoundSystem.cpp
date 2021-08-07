@@ -127,7 +127,7 @@ void C4SoundSystem::LoadEffects(C4Group &group)
 				// Overload (i.e. remove) existing sample of the same name
 				if (existingSample != samples.cend()) samples.erase(existingSample);
 			}
-			catch(const std::runtime_error &e)
+			catch (const std::runtime_error &e)
 			{
 				LogF("WARNING: Could not load sound effect \"%s/%s\": %s", group.GetFullName().getData(), filename, e.what());
 			}

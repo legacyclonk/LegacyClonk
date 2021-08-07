@@ -905,7 +905,6 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					break;
 				}
 
-
 				if (Container.ConvertTo(C4V_String))
 				{
 					if (!Index.ConvertTo(C4V_Int))

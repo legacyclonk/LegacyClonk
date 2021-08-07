@@ -101,7 +101,7 @@ void C4MainStat::Show()
 		iCnt++;
 
 	// create array
-	C4Stat **StatArray = new C4Stat*[iCnt];
+	C4Stat **StatArray = new C4Stat *[iCnt];
 	bool *bHS = new bool[iCnt];
 
 	// sort it

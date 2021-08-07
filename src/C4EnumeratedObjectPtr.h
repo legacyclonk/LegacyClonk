@@ -43,14 +43,14 @@ public:
 	constexpr Enumerated Number() const noexcept { return number; }
 	constexpr operator C4Object *() const noexcept { return Object(); }
 
-	C4EnumeratedObjectPtr& operator=(const C4EnumeratedObjectPtr &) = default;
-	C4EnumeratedObjectPtr& operator=(C4EnumeratedObjectPtr &&) = default;
-	constexpr C4EnumeratedObjectPtr& operator=(C4Object *obj) noexcept
+	C4EnumeratedObjectPtr &operator=(const C4EnumeratedObjectPtr &) = default;
+	C4EnumeratedObjectPtr &operator=(C4EnumeratedObjectPtr &&) = default;
+	constexpr C4EnumeratedObjectPtr &operator=(C4Object *obj) noexcept
 	{
 		object = obj;
 		return *this;
 	}
-	constexpr C4EnumeratedObjectPtr& operator=(std::nullptr_t) noexcept
+	constexpr C4EnumeratedObjectPtr &operator=(std::nullptr_t) noexcept
 	{
 		Reset();
 		return *this;

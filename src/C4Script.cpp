@@ -63,7 +63,7 @@ inline C4String *String(const char *str)
 	return str ? new C4String((str), &Game.ScriptEngine.Strings) : nullptr;
 }
 
-inline C4String *String(StdStrBuf&& str)
+inline C4String *String(StdStrBuf &&str)
 {
 	return str ? new C4String(std::forward<StdStrBuf>(str), &Game.ScriptEngine.Strings) : nullptr;
 }
@@ -3779,7 +3779,7 @@ static std::optional<C4ValueInt> FnGetLength(C4AulContext *cthr, C4Value pPar)
 	throw C4AulExecError(cthr->Obj, "func \"GetLength\" par 0 cannot be converted to string or array or map");
 }
 
-static C4ValueInt FnGetIndexOf(C4AulContext *cthr, C4Value searchVal, C4ValueArray* pArray)
+static C4ValueInt FnGetIndexOf(C4AulContext *cthr, C4Value searchVal, C4ValueArray *pArray)
 {
 	// find first occurance of first parameter in array
 	// support GetIndexOf(x, 0)
@@ -4188,7 +4188,7 @@ static C4Value FnGetActMapVal(C4AulContext *cthr, C4String *strEntry, C4String *
 
 	if (!pAct) return C4VNull;
 
-	const char* strAction = FnStringPar(action);
+	const char *strAction = FnStringPar(action);
 	C4ValueInt iAct;
 	for (iAct = 0; iAct < pDef->ActNum; iAct++, pAct++)
 		if (SEqual(pAct->Name, strAction))
@@ -5382,7 +5382,7 @@ static bool FnAdjustWalkRotation(C4AulContext *ctx, C4ValueInt iRangeX, C4ValueI
 
 static C4ValueInt FnAddEffect(C4AulContext *ctx, C4String *psEffectName, C4Object *pTarget, C4ValueInt iPrio, C4ValueInt iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, C4Value pvVal1, C4Value pvVal2, C4Value pvVal3, C4Value pvVal4)
 {
-	const char* szEffect = FnStringPar(psEffectName);
+	const char *szEffect = FnStringPar(psEffectName);
 	// safety
 	if (pTarget && !pTarget->Status) return 0;
 	if (!szEffect || !*szEffect || !iPrio) return 0;
@@ -5396,7 +5396,7 @@ static C4ValueInt FnAddEffect(C4AulContext *ctx, C4String *psEffectName, C4Objec
 
 static C4Value FnGetEffect(C4AulContext *ctx, C4String *psEffectName, C4Object *pTarget, C4ValueInt iIndex, C4ValueInt iQueryValue, C4ValueInt iMaxPriority)
 {
-	const char* szEffect = FnStringPar(psEffectName);
+	const char *szEffect = FnStringPar(psEffectName);
 	// get effects
 	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
 	if (!pEffect) return C4VNull;

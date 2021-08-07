@@ -85,7 +85,7 @@ constexpr bool LooksLikeID(const std::string_view str)
 	return true;
 }
 
-constexpr C4ID operator""_id(const char* str, std::size_t n)
+constexpr C4ID operator""_id(const char *str, std::size_t n)
 {
 	using namespace std::string_literals;
 	const std::string_view idStr{str, n};

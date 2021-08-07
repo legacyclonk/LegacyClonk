@@ -534,7 +534,7 @@ public:
 	// Note this references the data.
 	StdStrBuf &operator=(const StdStrBuf &Buf2) { Copy(Buf2);     return *this; }
 
-	template<typename T, typename = std::enable_if_t<std::is_convertible_v<T, const char*>>>
+	template<typename T, typename = std::enable_if_t<std::is_convertible_v<T, const char *>>>
 	StdStrBuf &operator=(T szString)  { Copy(szString); return *this; }
 
 	template<size_t N>

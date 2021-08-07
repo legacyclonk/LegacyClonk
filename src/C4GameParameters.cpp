@@ -87,7 +87,7 @@ void C4GameRes::CompileFunc(StdCompiler *pComp)
 	// Core is needed to decompile something meaningful
 	if (!fCompiler) assert(pResCore);
 	// De-/Compile core
-	pComp->Value(mkPtrAdaptNoNull(const_cast<C4Network2ResCore*&>(pResCore)));
+	pComp->Value(mkPtrAdaptNoNull(const_cast<C4Network2ResCore *&>(pResCore)));
 	// Compile: Set type accordingly
 	if (fCompiler)
 		eType = pResCore->getType();
@@ -172,7 +172,7 @@ C4GameResList &C4GameResList::operator=(const C4GameResList &List)
 {
 	Clear();
 	resList.reserve(List.resList.size());
-	std::transform(List.resList.begin(), List.resList.end(), std::back_inserter(resList), [](const auto& res)
+	std::transform(List.resList.begin(), List.resList.end(), std::back_inserter(resList), [](const auto &res)
 	{
 		return std::make_unique<C4GameRes>(*res);
 	});

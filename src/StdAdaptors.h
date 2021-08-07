@@ -210,8 +210,8 @@ inline StdStringAdapt mkStringAdapt(char *szString, int iMaxLength, StdCompiler:
 // * std::string adaptor
 struct StdStdStringAdapt
 {
-	std::string& string; StdCompiler::RawCompileType eRawType;
-	StdStdStringAdapt(std::string& string, StdCompiler::RawCompileType eRawType = StdCompiler::RCT_Escaped)
+	std::string &string; StdCompiler::RawCompileType eRawType;
+	StdStdStringAdapt(std::string &string, StdCompiler::RawCompileType eRawType = StdCompiler::RCT_Escaped)
 		: string(string), eRawType(eRawType) { }
 	inline void CompileFunc(StdCompiler *pComp) const
 	{
@@ -220,9 +220,9 @@ struct StdStdStringAdapt
 	inline bool operator == (const char *szDefault) const { return string == szDefault; }
 	inline StdStdStringAdapt &operator = (const char *szDefault) { string = szDefault; return *this; }
 };
-inline StdStdStringAdapt mkStringAdapt(std::string& string, StdCompiler::RawCompileType eRawType = StdCompiler::RCT_Escaped)
+inline StdStdStringAdapt mkStringAdapt(std::string &string, StdCompiler::RawCompileType eRawType = StdCompiler::RCT_Escaped)
 { return StdStdStringAdapt(string, eRawType); }
-inline StdStdStringAdapt mkStringAdaptA(std::string& string)
+inline StdStdStringAdapt mkStringAdaptA(std::string &string)
 { return StdStdStringAdapt(string, StdCompiler::RCT_All); }
 
 // * Raw adaptor
@@ -560,7 +560,7 @@ public:
 	void reset(T *ptr_ = nullptr) { delete ptr; ptr = ptr_; }
 	explicit operator bool() const noexcept { return ptr; }
 
-	T& operator*() const noexcept { return *ptr; }
+	T &operator*() const noexcept { return *ptr; }
 };
 
 template <typename T>

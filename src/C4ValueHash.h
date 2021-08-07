@@ -58,8 +58,8 @@ public:
 
 		Iterator &operator++();
 		pair_type &operator*();
-		bool operator==(const Iterator& other);
-		bool operator!=(const Iterator& other);
+		bool operator==(const Iterator &other);
+		bool operator!=(const Iterator &other);
 	};
 
 	C4ValueHash();

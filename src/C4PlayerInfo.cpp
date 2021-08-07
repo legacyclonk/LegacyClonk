@@ -652,7 +652,7 @@ C4PlayerInfoList &C4PlayerInfoList::operator=(const C4PlayerInfoList &rCpy)
 	iLastPlayerID = rCpy.iLastPlayerID;
 	if (rCpy.ppClients)
 	{
-		ppClients = new C4ClientPlayerInfos*[iClientCapacity];
+		ppClients = new C4ClientPlayerInfos *[iClientCapacity];
 		C4ClientPlayerInfos **ppInfo = ppClients, **ppCpy = rCpy.ppClients;
 		int32_t i = iClientCount;
 		while (i--) *ppInfo++ = new C4ClientPlayerInfos(**ppCpy++);

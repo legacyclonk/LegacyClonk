@@ -38,7 +38,7 @@ Read::Read(const std::string &filename)
 	{
 		PrepareInflate();
 	}
-	catch(...)
+	catch (...)
 	{
 		fclose(file);
 		throw;

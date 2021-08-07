@@ -76,7 +76,6 @@ auto C4Cooldown<Rep, Period, Clock>::GetRemainingTime() const noexcept -> Durati
 	}
 }
 
-
 template<typename Rep, typename Period, typename Clock>
 void C4Cooldown<Rep, Period, Clock>::CompileFunc(StdCompiler *comp)
 {

@@ -566,7 +566,7 @@ bool C4Surface::Unlock(bool noUpload)
 		{
 			{
 				// emulated primary locks in OpenGL
-				delete[] static_cast<unsigned char*>(PrimarySurfaceLockBits);
+				delete[] static_cast<unsigned char *>(PrimarySurfaceLockBits);
 				PrimarySurfaceLockBits = nullptr;
 				return true;
 			}
@@ -834,8 +834,6 @@ bool C4Surface::CopyBytes(uint8_t *pImageData)
 	}
 	return true;
 }
-
-
 
 bool C4Surface::LoadAny(C4Group &hGroup, const char *szName, bool fOwnPal, bool fNoErrIfNotFound)
 {

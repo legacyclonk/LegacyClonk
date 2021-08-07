@@ -2228,7 +2228,6 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 	// Set audibility - only for parallax objects, others calculate it on demand
 	if (!eDrawMode && (Category & C4D_Parallax)) SetAudibilityAt(cgo, x, y);
 
-
 	// Output boundary
 	if (!fYStretchObject && !eDrawMode)
 		if (Action.Act > ActIdle && !r && !Def->ActMap[Action.Act].FacetBase && Con <= FullCon)

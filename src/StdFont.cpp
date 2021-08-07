@@ -333,7 +333,6 @@ void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFo
 		throw std::runtime_error(std::string("Cannot create surface (") + szFontName + ")");
 	}
 
-
 #ifdef HAVE_FREETYPE
 	// Store vector font - assumed to be held externally!
 	pVectorFont = &VectorFont;

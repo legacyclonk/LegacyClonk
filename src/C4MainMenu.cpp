@@ -591,7 +591,7 @@ bool C4MainMenu::ActivateDisplay(int32_t iPlayer, int32_t selection)
 		auto modeName = "???";
 		if (Config.Graphics.UpperBoard >= C4UpperBoard::First && Config.Graphics.UpperBoard <= C4UpperBoard::Last)
 		{
-			modeName = LoadResStr(std::map<decltype(Config.Graphics.UpperBoard), const char*>
+			modeName = LoadResStr(std::map<decltype(Config.Graphics.UpperBoard), const char *>
 				{
 					{C4UpperBoard::Full, "IDS_MNU_UPPERBOARD_NORMAL"},
 					{C4UpperBoard::Small, "IDS_MNU_UPPERBOARD_SMALL"},

@@ -54,7 +54,7 @@ void C4Network2Players::Init()
 		if (Game.RestartRestoreInfos.What & C4NetworkRestartInfos::ScriptPlayers)
 		{
 			C4ClientPlayerInfos joinInfo = *rInfoList.GetIndexedInfo(0);
-			for (const auto& [name, player] : Game.RestartRestoreInfos.Players)
+			for (const auto &[name, player] : Game.RestartRestoreInfos.Players)
 			{
 				if (player.type == C4PT_Script)
 				{
@@ -107,7 +107,7 @@ bool C4Network2Players::JoinLocalPlayer(const char *szLocalPlayerFilename, bool 
 
 		if (Game.RestartRestoreInfos.What & C4NetworkRestartInfos::PlayerTeams)
 		{
-			C4PlayerInfo* info;
+			C4PlayerInfo *info;
 			for (int i = 0; info = JoinInfo.GetPlayerInfo(i); ++i)
 			{
 				if (const auto restoreInfo = Game.RestartRestoreInfos.Players.find(info->GetName()); restoreInfo != Game.RestartRestoreInfos.Players.end() && restoreInfo->second.team)

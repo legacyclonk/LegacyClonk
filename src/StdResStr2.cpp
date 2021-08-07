@@ -56,7 +56,7 @@ public:
 		}
 	}
 
-	const char *GetEntry(const std::string& key) const
+	const char *GetEntry(const std::string &key) const
 	{
 		if (const auto it = entries.find(key); it != entries.end())
 		{

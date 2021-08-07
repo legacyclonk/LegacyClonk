@@ -2423,7 +2423,6 @@ protected:
 	// add text to the info window
 	void AddLine(const char *szText);
 
-
 	template<typename... Args>
 	void AddLineFmt(const char *szFmtString, Args... args)
 	{

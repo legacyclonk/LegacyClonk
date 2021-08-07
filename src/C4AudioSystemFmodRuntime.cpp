@@ -94,7 +94,6 @@ protected:
 		operator T() const { return Get(); }
 	};
 
-
 	template <typename T>
 	class Func;
 

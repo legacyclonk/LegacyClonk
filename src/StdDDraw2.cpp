@@ -673,7 +673,6 @@ bool CStdDDraw::Blit(C4Surface *sfcSource, float fx, float fy, float fwdt, float
 		}
 	}
 
-
 	float scaleX = twdt / fwdt;
 	float scaleY = thgt / fhgt;
 	// bound

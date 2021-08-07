@@ -1350,7 +1350,7 @@ bool PreparePeek(C4MCOverlay **ppOvrl, int32_t &iX, int32_t &iY, C4MCOverlay **p
 #define b  pOvrl->Beta
 #define s  pOvrl->Seed
 #define z  C4MC_ZoomRes
-#define z2 (C4MC_ZoomRes*C4MC_ZoomRes)
+#define z2 (C4MC_ZoomRes * C4MC_ZoomRes)
 
 bool AlgoSolid(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 {

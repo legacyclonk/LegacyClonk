@@ -27,7 +27,7 @@ public:
 	{
 		if (referenceCount && elementReferenceCount)
 		{
-			auto newContainer = new T(*static_cast<T*>(this));
+			auto newContainer = new T(*static_cast<T *>(this));
 			++newContainer->referenceCount;
 			return newContainer;
 		}
@@ -48,7 +48,7 @@ public:
 	{
 		if (referenceCount > 1)
 		{
-			auto newContainer = new T(*static_cast<T*>(this));
+			auto newContainer = new T(*static_cast<T *>(this));
 			++newContainer->referenceCount;
 			newContainer->elementReferenceCount = 1;
 			DecRef();

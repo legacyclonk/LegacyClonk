@@ -169,7 +169,7 @@ C4PlayerInfoListBox::PlayerListItem::PlayerListItem(C4PlayerInfoListBox *pForLis
 		if (const auto restoreInfo = Game.RestartRestoreInfos.Players.find(sPlayerName.getData()); restoreInfo != Game.RestartRestoreInfos.Players.end() && restoreInfo->second.team != pInfo->GetTeam())
 		{
 			C4ClientPlayerInfos infoRequest{*Game.PlayerInfos.GetInfoByClientID(idClient)};
-			C4PlayerInfo* info = infoRequest.GetPlayerInfoByID(idPlayer);
+			C4PlayerInfo *info = infoRequest.GetPlayerInfoByID(idPlayer);
 			const auto team = restoreInfo->second.team;
 			Game.Teams.GetGenerateTeamByID(team);
 			info->SetTeam(team);

@@ -2288,7 +2288,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	{
 		RestartRestoreInfos.Clear();
 
-		C4PlayerInfo* info;
+		C4PlayerInfo *info;
 		for (int32_t i = 0; info = PlayerInfos.GetPlayerInfoByIndex(i); ++i)
 		{
 			if (!info->IsRemoved() && !info->IsInvisible())
@@ -2376,7 +2376,6 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		{
 			RoundResults.Init();
 		}
-
 
 	// Denumerate game data pointers
 	if (!section) ScriptEngine.DenumerateVariablePointers();
@@ -3313,7 +3312,6 @@ bool C4Game::InitKeyboard()
 	KeyboardInput.RegisterKey(new C4CustomKey(Keys,                                "ChatOpen",        KEYSCOPE_Generic, new C4KeyCBEx<C4MessageInput, C4ChatInputDialog::Mode>(MessageInput, C4ChatInputDialog::All,    &C4MessageInput::KeyStartTypeIn)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_RETURN, KEYS_Shift),   "ChatOpen2Allies", KEYSCOPE_Generic, new C4KeyCBEx<C4MessageInput, C4ChatInputDialog::Mode>(MessageInput, C4ChatInputDialog::Allies, &C4MessageInput::KeyStartTypeIn)));
 	KeyboardInput.RegisterKey(new C4CustomKey{C4KeyCodeEx{K_RETURN, KEYS_Alt},     "ChatOpen2Say",    KEYSCOPE_Generic, new C4KeyCBEx<C4MessageInput, C4ChatInputDialog::Mode>{MessageInput, C4ChatInputDialog::Say,    &C4MessageInput::KeyStartTypeIn}});
-
 
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_LEFT),   "FreeViewScrollLeft",    KEYSCOPE_FreeView,   new C4KeyCBEx<C4GraphicsSystem, C4Vec2D>(GraphicsSystem, C4Vec2D(-5, 0), &C4GraphicsSystem::FreeScroll)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_RIGHT),  "FreeViewScrollRight",   KEYSCOPE_FreeView,   new C4KeyCBEx<C4GraphicsSystem, C4Vec2D>(GraphicsSystem, C4Vec2D(+5, 0), &C4GraphicsSystem::FreeScroll)));

@@ -579,7 +579,7 @@ void C4AulFuncMap::Add(C4AulFunc *func, bool bAtStart)
 	if (++FuncCnt > Capacity)
 	{
 		int NCapacity = Capacity + CapacityInc;
-		C4AulFunc **NFuncs = new C4AulFunc*[NCapacity];
+		C4AulFunc **NFuncs = new C4AulFunc *[NCapacity];
 		memset(NFuncs, 0, sizeof(C4AulFunc *) * NCapacity);
 		for (int i = 0; i < Capacity; ++i)
 		{

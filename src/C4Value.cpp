@@ -47,7 +47,7 @@ C4Value::~C4Value()
 
 std::optional<StdStrBuf> C4Value::toString() const
 {
-	const C4Value& val = GetRefVal();
+	const C4Value &val = GetRefVal();
 	switch (val.Type)
 	{
 	case C4V_String:
@@ -786,7 +786,6 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 		Data.Int = iTmp;
 		break;
 
-
 	case C4V_C4ID:
 		iTmp = static_cast<int32_t>(Data.ID);
 		pComp->Value(iTmp);
@@ -1029,7 +1028,7 @@ std::size_t std::hash<C4Value>::operator()(C4Value value) const
 
 		case C4V_String:
 		{
-			const auto& str = ref._getStr()->Data;
+			const auto &str = ref._getStr()->Data;
 			hashCombine(hash, std::hash<std::string_view>{}({str.getData(), str.getLength()}));
 			break;
 		}

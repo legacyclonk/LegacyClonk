@@ -38,7 +38,7 @@ struct Player
 	const int32_t team;
 	const uint32_t color;
 
-	Player(const std::string& name, const C4PlayerType type, const uint32_t color, const int32_t team) : name{name}, type{type}, team{team}, color{color} { }
+	Player(const std::string &name, const C4PlayerType type, const uint32_t color, const int32_t team) : name{name}, type{type}, team{team}, color{color} { }
 };
 
 struct Infos
