@@ -872,7 +872,7 @@ int ForEachFile(const char *szDirName, bool(*fnCallback)(const char *))
 	} while (_findnext(fdthnd, &fdt) == 0);
 	_findclose(fdthnd);
 #else
-	if (fHasWildcard) fprintf(stderr, "Warning: ForEachFile with * (%s)", szDirName);
+	if (fHasWildcard) fprintf(stderr, "Warning: ForEachFile with * (%s)\n", szDirName);
 	DIR *d = opendir(szDirName);
 	dirent *ent;
 	while ((ent = readdir(d)))
