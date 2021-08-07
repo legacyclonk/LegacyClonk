@@ -570,23 +570,6 @@ bool C4ObjectInfoCore::Compile(const char *szSource)
 	return ret;
 }
 
-bool C4ObjectInfoCore::Decompile(char **ppOutput, size_t *ipSize)
-{
-	StdStrBuf Buf;
-	if (!DecompileToBuf_Log<StdCompilerINIWrite>(
-		mkNamingAdapt(*this, "ObjectInfo"),
-		&Buf,
-		"ObjectInfo"))
-	{
-		if (ppOutput) *ppOutput = nullptr;
-		if (ipSize) *ipSize = 0;
-		return false;
-	}
-	if (ppOutput) *ppOutput = Buf.GrabPointer();
-	if (ipSize) *ipSize = Buf.getSize();
-	return true;
-}
-
 // Round Info
 
 void C4RoundResult::Default()

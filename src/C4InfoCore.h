@@ -170,7 +170,6 @@ public:
 
 protected:
 	bool Compile(const char *szSource);
-	bool Decompile(char **ppOutput, size_t *ipSize);
 
 	void UpdateCustomRanks(C4DefList *pDefs); // sets NextRankName and NextRankExp
 };
