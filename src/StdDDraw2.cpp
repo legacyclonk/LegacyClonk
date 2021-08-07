@@ -995,8 +995,8 @@ bool CStdDDraw::BlitSurface(C4Surface *sfcSurface, C4Surface *sfcTarget, int tx,
 
 bool CStdDDraw::BlitSurfaceTile(C4Surface *sfcSurface, C4Surface *sfcTarget, int iToX, int iToY, int iToWdt, int iToHgt, int iOffsetX, int iOffsetY, bool fSrcColKey, float scale)
 {
-	iToHgt /= scale;
-	iToWdt /= scale;
+	iToHgt = static_cast<decltype(iToHgt)>(iToHgt / scale);
+	iToWdt = static_cast<decltype(iToWdt)>(iToWdt / scale);
 
 	int iSourceWdt, iSourceHgt, iX, iY, iBlitX, iBlitY, iBlitWdt, iBlitHgt;
 	// Get source surface size
