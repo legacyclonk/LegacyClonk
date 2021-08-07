@@ -1424,7 +1424,6 @@ void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
 
 void C4AulParseState::Parse_Script()
 {
-	int IncludeCount = 0;
 	bool fDone = false;
 	const char *SPos0 = SPos;
 	bool all_ok = true;
@@ -1451,7 +1450,6 @@ void C4AulParseState::Parse_Script()
 				Shift();
 				// add to include list
 				a->Includes.push_front(Id);
-				IncludeCount++;
 			}
 			else if (SEqual(Idtf, C4AUL_Append))
 			{
