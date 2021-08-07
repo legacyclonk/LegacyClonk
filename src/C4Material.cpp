@@ -372,7 +372,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 		const char *szTextureOverlay = nullptr;
 		// newgfx: init pattern
 		if (Map[cnt].sTextureOverlay.getLength())
-			if (Game.TextureMap.GetTexture(Map[cnt].sTextureOverlay.getLength()))
+			if (Game.TextureMap.GetTexture(Map[cnt].sTextureOverlay.getData()))
 			{
 				szTextureOverlay = Map[cnt].sTextureOverlay.getData();
 				// backwards compatibility: if a pattern was specified although the no-pattern flag was set, overwrite that flag
