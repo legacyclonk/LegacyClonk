@@ -99,7 +99,6 @@ void C4DownloadDlg::OnIdle()
 		return;
 	}
 	StdStrBuf sStatus; int32_t iProgress = -1;
-	StdStrBuf sSize("");
 	// download in progress: Update status
 	if (!HTTPClient.isConnected())
 	{
@@ -119,12 +118,6 @@ void C4DownloadDlg::OnIdle()
 		{
 			// file size known: Download in progress
 			sStatus.Ref(LoadResStr("IDS_CTL_DL_PROGRESS"));
-			if (iSize <= 1024)
-				sSize.Format(" (%zu Bytes)", iSize);
-			else if (iSize <= 1024 * 1024)
-				sSize.Format(" (%zu KB)", iSize / 1024);
-			else
-				sSize.Format(" (%zu MB)", iSize / 1024 / 1024);
 			iProgress = static_cast<int32_t>(100 * HTTPClient.getDownloadedSize() / iSize);
 		}
 	}
