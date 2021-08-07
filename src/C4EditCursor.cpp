@@ -170,7 +170,7 @@ bool C4EditCursor::UpdateStatusBar()
 		if (Game.MouseControl.GetCaption())
 		{
 			const std::string caption{Game.MouseControl.GetCaption()};
-			text = caption.substr(0, caption.find('|') - 1).c_str();
+			text = caption.substr(0, caption.find('|')).c_str();
 		}
 		break;
 
