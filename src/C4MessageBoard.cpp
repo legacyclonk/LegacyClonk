@@ -371,11 +371,11 @@ C4Player *C4MessageBoard::GetMessagePlayer(const char *szMessage)
 	if (SEqual2(szMessage, "* "))
 	{
 		message = message.substr(2);
-		return Game.Players.GetByName(message.substr(0, message.find(' ') - 1).c_str());
+		return Game.Players.GetByName(message.substr(0, message.find(' ')).c_str());
 	}
 	if (SCharCount(':', szMessage))
 	{
-		return Game.Players.GetByName(message.substr(0, message.find(':') - 1).c_str());
+		return Game.Players.GetByName(message.substr(0, message.find(':')).c_str());
 	}
 	return nullptr;
 }
