@@ -163,14 +163,14 @@ bool C4TableGraph::DumpToFile(const StdStrBuf &rszFilename, bool fAppend) const
 	{
 		if (!out.Create(rszFilename.getData())) return false;
 		// print header
-		out.WriteString("t\tv\n\r");
+		out.WriteString("t\tv\r\n");
 	}
 	// write out current timeframe
 	int iEndTime = GetEndTime();
 	StdStrBuf buf;
 	for (int iWriteTime = GetStartTime(); iWriteTime < iEndTime; ++iWriteTime)
 	{
-		buf.Format("%d\t%d\n\r", static_cast<int>(iWriteTime), static_cast<int>(GetValue(iWriteTime)));
+		buf.Format("%d\t%d\r\n", static_cast<int>(iWriteTime), static_cast<int>(GetValue(iWriteTime)));
 		out.WriteString(buf.getData());
 	}
 	return true;
