@@ -27,16 +27,7 @@
 #include <C4GroupSet.h>
 
 C4LoaderScreen::C4LoaderScreen() : TitleFont(Game.GraphicsResource.FontTitle), LogFont(Game.GraphicsResource.FontTiny)
-{
-	// zero fields
-	szInfo = nullptr;
-}
-
-C4LoaderScreen::~C4LoaderScreen()
-{
-	// clear fields
-	delete[] szInfo;
-}
+{}
 
 bool C4LoaderScreen::Init(const char *szLoaderSpec)
 {
@@ -98,9 +89,6 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 	// load loader
 	fctBackground.GetFace().SetBackground();
 	if (!fctBackground.Load(*pChosenGrp, ChosenFilename, C4FCT_Full, C4FCT_Full, true)) return false;
-
-	// load info
-	delete[] szInfo; szInfo = nullptr;
 
 	// init fonts
 	if (!Game.GraphicsResource.InitFonts())
