@@ -307,13 +307,8 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Component,               "Components",        C4IDList()));
 	pComp->Value(mkNamingAdapt(SolidMask,               "SolidMask",         TargetRect0));
 	pComp->Value(mkNamingAdapt(TopFace,                 "TopFace",           TargetRect0));
-#ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(PictureRect,             "Picture",           Rect0));
 	pComp->Value(mkNamingAdapt(StdNullAdapt(),          "PictureFE"));
-#else
-	pComp->Value(mkNamingAdapt(PictureRect,             "Picture",           Rect0));
-	pComp->Value(mkNamingAdapt(PictureRectFE,           "PictureFE",         Rect0));
-#endif
 	pComp->Value(mkNamingAdapt(Entrance,                "Entrance",          Rect0));
 	pComp->Value(mkNamingAdapt(Collection,              "Collection",        Rect0));
 	pComp->Value(mkNamingAdapt(CollectionLimit,         "CollectionLimit",   0));
@@ -482,10 +477,6 @@ void C4Def::Default()
 {
 	C4DefCore::Default();
 
-#if !defined(C4ENGINE)
-	Picture = nullptr;
-	Image = nullptr;
-#endif
 	ActNum = 0;
 	ActMap = nullptr;
 	Maker[0] = 0;
@@ -644,41 +635,6 @@ bool C4Def::Load(C4Group &hGroup,
 			return false;
 		}
 
-#endif
-
-#if !defined(C4ENGINE)
-
-	// Override PictureRect if PictureRectFE is given
-	if (PictureRectFE.Wdt > 0)
-		PictureRect = PictureRectFE;
-
-	// Read picture section (this option is currently unused...)
-	if (dwLoadWhat & C4D_Load_Picture)
-		// Load from PNG graphics
-		if (!hGroup.AccessEntry(C4CFN_DefGraphicsPNG)
-			|| !hGroup.ReadPNGSection(&Picture, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt))
-			// Load from BMP graphics
-			if (!hGroup.AccessEntry(C4CFN_DefGraphics)
-				|| !hGroup.ReadDDBSection(&Picture, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt))
-				// None loaded
-				return false;
-
-	// Read picture section for use in image list
-	if (dwLoadWhat & C4D_Load_Image)
-		// Load from PNG title
-		if (!hGroup.AccessEntry(C4CFN_ScenarioTitlePNG)
-			|| !hGroup.ReadPNGSection(&Image, nullptr, -1, -1, -1, -1, 32, 32))
-			// Load from BMP title
-			if (!hGroup.AccessEntry(C4CFN_ScenarioTitle)
-				|| !hGroup.ReadDDBSection(&Image, nullptr, -1, -1, -1, -1, 32, 32, true))
-				// Load from PNG graphics
-				if (!hGroup.AccessEntry(C4CFN_DefGraphicsPNG)
-					|| !hGroup.ReadPNGSection(&Image, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt, 32, 32))
-					// Load from BMP graphics
-					if (!hGroup.AccessEntry(C4CFN_DefGraphics)
-						|| !hGroup.ReadDDBSection(&Image, nullptr, PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt, 32, 32, true))
-						// None loaded
-						return false;
 #endif
 
 #ifdef C4ENGINE

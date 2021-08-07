@@ -470,12 +470,7 @@ bool C4Player::Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny)
 	if (!C4PlayerInfoCore::Save(hGroup))
 		return false;
 	// Save crew
-#ifndef C4ENGINE
-	C4DefList *pDefs = nullptr;
-#else
-	C4DefList *pDefs = &Game.Defs;
-#endif
-	if (!CrewInfoList.Save(hGroup, fSavegame, fStoreTiny, pDefs))
+	if (!CrewInfoList.Save(hGroup, fSavegame, fStoreTiny, &Game.Defs))
 	{
 		hGroup.Close(); return false;
 	}

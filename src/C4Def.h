@@ -194,9 +194,6 @@ public:
 	C4Rect Entrance;
 	C4Rect Collection;
 	C4Rect PictureRect;
-#ifndef C4ENGINE
-	C4Rect PictureRectFE;
-#endif
 	C4TargetRect SolidMask;
 	C4TargetRect TopFace;
 	C4IDList Component;
@@ -312,11 +309,6 @@ public:
 	~C4Def();
 
 public:
-#if defined(_WIN32) && !defined(C4ENGINE)
-	HBITMAP Picture;
-	HBITMAP Image;
-#endif
-
 	int32_t ActNum; C4ActionDef *ActMap;
 	char Maker[C4MaxName + 1];
 	char Filename[_MAX_FNAME + 1];

@@ -262,9 +262,6 @@ public:
 	C4Record(); // creates control file etc
 	~C4Record(); // close file; create demo scen
 	int Index;
-#ifndef C4ENGINE
-	int iLastFrame; // some hack for the ctrlrec-t00l
-#endif
 
 	unsigned int GetStreamingPos() const { return iStreamingPos; }
 	const StdBuf &GetStreamingBuf() const { return StreamingData; }
