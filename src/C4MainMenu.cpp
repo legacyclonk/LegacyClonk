@@ -158,7 +158,6 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				SCopy(LoadResStr(pPlr->Hostility.GetIDCount(pPlayer->Number + 1) ? "IDS_MENU_ATTACKHOSTILE" : "IDS_MENU_ATTACKFRIENDLY"), szFriendly);
 				if (!pPlayer->Hostility.GetIDCount(pPlr->Number + 1)) SCopy(LoadResStr("IDS_MENU_ATTACKNOT"), szNot);
 				sprintf(szInfoCaption, LoadResStr("IDS_MENU_ATTACKINFO"), pPlr->GetName(), szFriendly, szNot);
-				if (iIndex == pPlayer->Number) SCopy(LoadResStr("IDS_MENU_ATTACKSELF"), szInfoCaption);
 				// Add item
 				Add(sMsg.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, szInfoCaption);
 				fctSymbol.Default();

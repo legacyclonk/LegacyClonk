@@ -707,7 +707,6 @@ IDS_MENU_ATTACKFRIENDLY=friendly
 IDS_MENU_ATTACKHOSTILE=hostile 
 IDS_MENU_ATTACKINFO=%s is currently %sand will %sbe attacked.
 IDS_MENU_ATTACKNOT=not 
-IDS_MENU_ATTACKSELF=We don't attack ourselves.
 IDS_MENU_BUY=Buy %s
 IDS_MENU_CLONKNAMES_DESC=Displays clonk names above enemy clonks.
 IDS_MENU_CONSTRUCT=Construction: %s

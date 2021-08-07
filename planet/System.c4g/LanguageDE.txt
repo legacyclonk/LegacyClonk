@@ -707,7 +707,6 @@ IDS_MENU_ATTACKFRIENDLY=freundlich
 IDS_MENU_ATTACKHOSTILE=feindlich 
 IDS_MENU_ATTACKINFO=%s ist uns %sgesinnt und wird zur Zeit von uns %sangegriffen.
 IDS_MENU_ATTACKNOT=nicht 
-IDS_MENU_ATTACKSELF=Wir greifen uns selbst nicht an.
 IDS_MENU_BUY=%s kaufen
 IDS_MENU_CLONKNAMES_DESC=Zeigt Clonk-Namen über gegnerischen Clonks an.
 IDS_MENU_CONSTRUCT=Bauauftrag: %s
