@@ -464,12 +464,6 @@ void C4StartupNetListEntry::SetReference(C4Network2Reference *pRef)
 	}
 	sInfoText[2].Format(LoadResStr("IDS_DESC_VERSION"), pRef->getGameVersion().GetString().getData());
 	sInfoText[3].Format("%s: %s", LoadResStr("IDS_CTL_COMMENT"), pRef->getComment());
-	StdStrBuf sAddress;
-	for (int i = 0; i < pRef->getAddrCnt(); ++i)
-	{
-		if (i) sAddress.Append(", ");
-		sAddress.Append(pRef->getAddr(i).toString());
-	}
 	// password
 	if (pRef->isPasswordNeeded())
 		AddStatusIcon(C4GUI::Ico_Ex_LockedFrontal, LoadResStr("IDS_NET_INFOPASSWORD"));
