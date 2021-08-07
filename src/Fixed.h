@@ -37,7 +37,6 @@
 
 // activate to switch to classic fixed-point math
 #define USE_FIXED 1
-#define inline ALWAYS_INLINE
 
 // note: C4Fixed has to be defined even though it isn't used
 //       any more. It is used to convert old-format fixed values

@@ -35,11 +35,9 @@
 	// Allow checks for correct printf-usage
 	#define GNUC_FORMAT_ATTRIBUTE __attribute__ ((format (printf, 1, 2)))
 	#define GNUC_FORMAT_ATTRIBUTE_O __attribute__ ((format (printf, 2, 3)))
-	#define ALWAYS_INLINE inline __attribute__ ((always_inline))
 #else
 	#define GNUC_FORMAT_ATTRIBUTE
 	#define GNUC_FORMAT_ATTRIBUTE_O
-	#define ALWAYS_INLINE __forceinline
 #endif
 
 #if defined(_DEBUG) && defined(_MSC_VER) && _M_IX86 == 600
