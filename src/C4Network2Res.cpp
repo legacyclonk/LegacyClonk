@@ -429,7 +429,6 @@ bool C4Network2Res::SetByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eTyp
 
 bool C4Network2Res::SetByCore(const C4Network2ResCore &nCore, bool fSilent, const char *szAsFilename, int32_t iRecursion) // by main thread
 {
-	StdStrBuf sFilename;
 	// try open local file
 	const char *szFilename = szAsFilename ? szAsFilename : GetC4Filename(nCore.getFileName());
 	if (SetByFile(szFilename, false, nCore.getType(), nCore.getID(), nCore.getFileName(), fSilent))
@@ -452,8 +451,6 @@ bool C4Network2Res::SetByCore(const C4Network2ResCore &nCore, bool fSilent, cons
 	const char *szFilenameC4 = GetC4Filename(szFilename);
 	if (szFilenameOnly != szFilenameC4)
 	{
-		sFilename.Copy(szFilename, SLen(szFilename) - SLen(szFilenameC4));
-		sFilename.Append(szFilenameOnly);
 		if (SetByCore(nCore, fSilent, szFilenameOnly, Config.Network.MaxResSearchRecursion)) return true;
 	}
 	// if it could still not be set, try within all folders of root (ignoring special folders), and try as file outside the folder
@@ -477,7 +474,7 @@ bool C4Network2Res::SetByCore(const C4Network2ResCore &nCore, bool fSilent, cons
 				if (!szNetPath || !*szNetPath || !ItemIdentical(*i, szNetPath)) // ignore network path
 				{
 					// search for complete name at subpath (e.g. MyFolder\Easy.c4f\Castle.c4s)
-					sFilename.Format("%s%c%s", *i, DirectorySeparator, szFilenameC4);
+					const auto sFilename = FormatString("%s%c%s", *i, DirectorySeparator, szFilenameC4);
 					if (SetByCore(nCore, fSilent, sFilename.getData(), iRecursion + 1))
 						return true;
 				}
