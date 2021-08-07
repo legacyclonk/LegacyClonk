@@ -30,6 +30,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 #include <errno.h>
 
 /* CStdApp */
