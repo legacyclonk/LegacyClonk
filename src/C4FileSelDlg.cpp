@@ -31,7 +31,7 @@
 
 C4FileSelDlg::ListItem::ListItem(const char *szFilename) : C4GUI::Control(C4Rect(0, 0, 0, 0))
 {
-	if (szFilename) sFilename.Copy(szFilename); else sFilename.Clear();
+	if (szFilename) sFilename.Copy(szFilename);
 }
 
 C4FileSelDlg::ListItem::~ListItem() {}
