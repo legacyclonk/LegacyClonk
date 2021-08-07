@@ -487,6 +487,15 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 #endif
 	// Warning against invalid ports
 #ifdef C4ENGINE
+	for (const auto &port : {
+		&Config.Network.PortTCP,
+		&Config.Network.PortUDP,
+		&Config.Network.PortDiscovery,
+		&Config.Network.PortRefServer
+	})
+	{
+		if (*port < 0 || *port > 65535) *port = 0;
+	}
 	if (Config.Network.PortTCP > 0 && Config.Network.PortTCP == Config.Network.PortRefServer)
 	{
 		Log("Warning: Network TCP port and reference server port both set to same value - increasing reference server port!");

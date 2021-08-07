@@ -435,7 +435,7 @@ C4StartupOptionsDlg::NetworkPortConfig::NetworkPortConfig(const C4Rect &rcBounds
 	CStdFont *pUseFont = &(C4Startup::Get()->Graphics.BookFont);
 	SetBounds(rcBounds);
 	C4GUI::ComponentAligner caMain(GetClientRect(), 0, 2, true);
-	bool fEnabled = (*pConfigValue != -1);
+	bool fEnabled = (*pConfigValue != 0);
 	C4GUI::Label *pLbl = new C4GUI::Label(szName, caMain.GetFromTop(pUseFont->GetLineHeight()), ALeft, C4StartupFontClr, pUseFont, false);
 	AddElement(pLbl);
 	C4GUI::ComponentAligner caBottomLine(caMain.GetAll(), 2, 0, false);
@@ -469,7 +469,7 @@ int32_t C4StartupOptionsDlg::NetworkPortConfig::GetPort()
 {
 	// controls to config
 	if (!pEnableCheck->GetChecked())
-		return -1;
+		return 0;
 	else
 		return atoi(pPortEdit->GetText());
 }

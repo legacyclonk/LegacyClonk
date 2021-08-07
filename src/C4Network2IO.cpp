@@ -65,7 +65,7 @@ C4Network2IO::~C4Network2IO()
 }
 
 template<typename T, typename std::enable_if_t<std::is_base_of_v<C4NetIO, T>, int> = 0>
-static T *CreateNetIO(const char *const name, T *const io, const int16_t port, C4InteractiveThread &thread)
+static T *CreateNetIO(const char *const name, T *const io, const std::uint16_t port, C4InteractiveThread &thread)
 {
 	std::unique_ptr<T> netIO{io};
 
@@ -88,7 +88,7 @@ static T *CreateNetIO(const char *const name, T *const io, const int16_t port, C
 	}
 }
 
-bool C4Network2IO::Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscover, int16_t iPortRefServer) // by main thread
+bool C4Network2IO::Init(const std::uint16_t iPortTCP, const std::uint16_t iPortUDP, const std::uint16_t iPortDiscover, const std::uint16_t iPortRefServer) // by main thread
 {
 	// Already initialized? Clear first
 	if (pNetIO_TCP || pNetIO_UDP) Clear();

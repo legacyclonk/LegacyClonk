@@ -259,7 +259,7 @@ private:
 	public:
 		void OnEnabledCheckChange(C4GUI::Element *pCheckBox); // callback when checkbox is ticked
 		void SavePort(); // controls to config
-		int32_t GetPort(); // get port as currently configured by control (or -1 for deactivated)
+		int32_t GetPort(); // get port as currently configured by control (or 0 for deactivated)
 
 		static bool GetControlSize(int *piWdt, int *piHgt);
 	} *pPortCfgTCP, *pPortCfgUDP, *pPortCfgRef, *pPortCfgDsc;

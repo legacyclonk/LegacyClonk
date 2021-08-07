@@ -23,6 +23,7 @@
 #include "C4Client.h"
 #include "C4Network2Address.h"
 
+#include <cstdint>
 #include <set>
 
 class C4Network2; class C4Network2IOConnection;
@@ -132,7 +133,7 @@ public:
 	bool hasAddr(const C4Network2Address &addr) const;
 	void AddAddrFromPuncher(const C4NetIO::addr_t &addr);
 	bool AddAddr(const C4Network2Address &addr, bool fAnnounce);
-	void AddLocalAddrs(int16_t iPortTCP, int16_t iPortUDP);
+	void AddLocalAddrs(std::uint16_t iPortTCP, std::uint16_t iPortUDP);
 
 	void SendAddresses(C4Network2IOConnection *pConn);
 

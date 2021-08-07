@@ -23,6 +23,7 @@
 #include "C4PuncherPacket.h"
 
 #include <atomic>
+#include <cstdint>
 
 class C4Network2IOConnection;
 
@@ -103,7 +104,7 @@ public:
 	bool hasUDP() const { return !!pNetIO_UDP; }
 
 	// initialization
-	bool Init(int16_t iPortTCP, int16_t iPortUDP, int16_t iPortDiscovery = -1, int16_t iPortRefServer = -1); // by main thread
+	bool Init(std::uint16_t iPortTCP, std::uint16_t iPortUDP, std::uint16_t iPortDiscovery = 0, std::uint16_t iPortRefServer = 0); // by main thread
 	void Clear(); // by main thread
 	void SetLocalCCore(const C4ClientCore &CCore); // by main thread
 

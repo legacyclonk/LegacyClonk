@@ -1227,21 +1227,21 @@ bool C4Network2::InitNetIO(bool fNoClientID, bool fHost)
 	// clear
 	NetIO.Clear();
 	// check for port collisions
-	if (Config.Network.PortTCP != -1 && Config.Network.PortTCP == Config.Network.PortRefServer)
+	if (Config.Network.PortTCP != 0 && Config.Network.PortTCP == Config.Network.PortRefServer)
 	{
 		LogSilentF("Network: TCP Port collision, setting defaults");
 		Config.Network.PortTCP = C4NetStdPortTCP;
 		Config.Network.PortRefServer = C4NetStdPortRefServer;
 	}
-	if (Config.Network.PortUDP != -1 && Config.Network.PortUDP == Config.Network.PortDiscovery)
+	if (Config.Network.PortUDP != 0 && Config.Network.PortUDP == Config.Network.PortDiscovery)
 	{
 		LogSilentF("Network: UDP Port collision, setting defaults");
 		Config.Network.PortUDP = C4NetStdPortUDP;
 		Config.Network.PortDiscovery = C4NetStdPortDiscovery;
 	}
 	// discovery: disable for client
-	int16_t iPortDiscovery = fHost ? Config.Network.PortDiscovery : -1;
-	int16_t iPortRefServer = fHost ? Config.Network.PortRefServer : -1;
+	const std::uint16_t iPortDiscovery = fHost ? Config.Network.PortDiscovery : 0;
+	const std::uint16_t iPortRefServer = fHost ? Config.Network.PortRefServer : 0;
 	// init subclass
 	if (!NetIO.Init(Config.Network.PortTCP, Config.Network.PortUDP, iPortDiscovery, iPortRefServer))
 		return false;
@@ -1251,8 +1251,8 @@ bool C4Network2::InitNetIO(bool fNoClientID, bool fHost)
 	NetIO.SetLocalCCore(Core);
 	// safe addresses of local client
 	Clients.GetLocal()->AddLocalAddrs(
-		NetIO.hasTCP() ? Config.Network.PortTCP : -1,
-		NetIO.hasUDP() ? Config.Network.PortUDP : -1);
+		NetIO.hasTCP() ? Config.Network.PortTCP : 0,
+		NetIO.hasUDP() ? Config.Network.PortUDP : 0);
 	// ok
 	return true;
 }
