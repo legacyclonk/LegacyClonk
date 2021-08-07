@@ -25,6 +25,8 @@
 #include <CStdFile.h>
 #include <Bitmap256.h>
 
+#include <utility>
+
 #include "limits.h"
 
 CSurface8::CSurface8()
@@ -252,10 +254,7 @@ struct CPolyEdge // An edge for the polygon drawer
 
 static void fill_edge_structure(CPolyEdge *edge, int *i1, int *i2)
 {
-	if (i2[1] < i1[1]) // Swap
-	{
-		int *t = i1; i1 = i2; i2 = t;
-	}
+	if (i2[1] < i1[1]) std::swap(i1, i2);
 	edge->y = i1[1];
 	edge->bottom = i2[1] - 1;
 	edge->dx = ((i2[0] - i1[0]) << POLYGON_FIX_SHIFT) / (i2[1] - i1[1]);
