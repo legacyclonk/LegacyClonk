@@ -16,13 +16,15 @@
 // wraps zlib's inflate for reading and deflate for writing gzip compressed group files with C4Group magic bytes
 
 #pragma once
+
+#include "Standard.h"
+
 #include <cstdio>
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <string>
 
-#define ZLIB_CONST
 #include <zlib.h>
 
 namespace StdGzCompressedFile

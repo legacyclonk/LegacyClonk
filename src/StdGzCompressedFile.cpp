@@ -14,7 +14,6 @@
  */
 
 #include <StdGzCompressedFile.h>
-#include <Standard.h>
 
 #include <algorithm>
 #include <cerrno>

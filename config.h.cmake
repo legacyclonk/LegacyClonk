@@ -31,3 +31,4 @@
 #cmakedefine _USE_MATH_DEFINES
 
 #define ICONV_CONST
+#define ZLIB_CONST
