@@ -62,6 +62,7 @@
 
 #include <iterator>
 #include <sstream>
+#include <utility>
 
 constexpr unsigned int defaultIngameGameTickDelay = 28;
 
@@ -1915,7 +1916,7 @@ void C4Game::Preload()
 	if (CanPreload())
 	{
 #ifndef USE_CONSOLE
-		const auto context = lpDDraw->CreateContext(Application.pWindow, &Application);
+		std::unique_ptr<CStdGLCtx> context{lpDDraw->CreateContext(Application.pWindow, &Application)};
 		context->Deselect();
 		pGL->GetMainCtx().Select();
 		PreloadThread = std::thread{[](std::unique_ptr<CStdGLCtx> preloadContext)
@@ -1926,7 +1927,7 @@ void C4Game::Preload()
 			preloadContext->Finish();
 			preloadContext->Deselect(true);
 		},
-		std::unique_ptr<CStdGLCtx>{context}};
+		std::move(context)};
 #else
 		PreloadThread = std::thread{[]
 		{
