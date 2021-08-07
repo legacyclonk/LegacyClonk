@@ -21,6 +21,8 @@
 #include "C4EnumeratedObjectPtr.h"
 #include "C4Value.h"
 
+#include <string>
+
 const int32_t C4CMD_None      =  0,
               C4CMD_Follow    =  1,
               C4CMD_MoveTo    =  2,
@@ -87,7 +89,7 @@ public:
 	int32_t UpdateInterval;
 	int32_t Evaluated, PathChecked, Finished;
 	int32_t Failures, Retries, Permit;
-	char *Text;
+	std::string Text;
 	C4Command *Next;
 	int32_t iExec; // 0 = not executing, 1 = executing, 2 = executing, command should delete himself on finish
 	int32_t BaseMode; // 0: subcommand/unmarked base (if failing, base will fail, too); 1: base command; 2: silent base command

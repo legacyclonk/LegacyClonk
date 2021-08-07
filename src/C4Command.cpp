@@ -180,7 +180,7 @@ void C4Command::Default()
 	Failures = 0;
 	Retries = 0;
 	Permit = 0;
-	Text = nullptr;
+	Text.clear();
 	Next = nullptr;
 	iExec = 0;
 	BaseMode = C4CMD_Mode_SilentSub;
@@ -1671,7 +1671,7 @@ void C4Command::Clear()
 	Ty = 0;
 	Target = Target2 = nullptr;
 	UpdateInterval = 0;
-	delete[] Text; Text = nullptr;
+	Text.clear();
 	BaseMode = C4CMD_Mode_SilentSub;
 }
 
@@ -2337,20 +2337,20 @@ void C4Command::Set(int32_t iCommand, C4Object *pObj, C4Object *pTarget, C4Value
 	UpdateInterval = iUpdateInterval;
 	Evaluated = fEvaluated;
 	Retries = iRetries;
-	if (szText && szText[0]) { Text = new char[SLen(szText) + 1]; SCopy(szText, Text); }
+	if (szText) Text = szText;
 	BaseMode = iBaseMode;
 }
 
 void C4Command::Call()
 {
 	// No function name: fail
-	if (!Text || !Text[0]) { Finish(); return; }
+	if (Text.empty()) { Finish(); return; }
 	// No target object: fail
 	if (!Target) { Finish(); return; }
 	// Done: success
 	Finish(true);
 	// Object call
-	Target->Call(Text, {C4VObj(cObj), Tx, C4VInt(Ty), C4VObj(Target2)});
+	Target->Call(Text.c_str(), {C4VObj(cObj), Tx, C4VInt(Ty), C4VObj(Target2)});
 	// Extreme caution notice: the script call might do just about anything
 	// including clearing all commands (including this) i.e. through a call
 	// to SetCommand. Thus, we must not do anything in this command anymore
@@ -2366,7 +2366,7 @@ void C4Command::CompileFunc(StdCompiler *pComp)
 	int32_t iVersion = 0;
 	if (pComp->Separator(StdCompiler::SEP_DOLLAR))
 	{
-		iVersion = 1;
+		iVersion = 2;
 		pComp->Value(mkIntPackAdapt(iVersion));
 		pComp->Separator(StdCompiler::SEP_SEP);
 	}
@@ -2399,17 +2399,8 @@ void C4Command::CompileFunc(StdCompiler *pComp)
 		pComp->Value(mkIntPackAdapt(BaseMode)); pComp->Separator(StdCompiler::SEP_SEP);
 	}
 	// Text
-	StdStrBuf TextBuf;
-	if (pComp->isDecompiler())
-		if (Text) TextBuf.Ref(Text); else TextBuf.Ref("0");
-	pComp->Value(mkParAdapt(TextBuf, StdCompiler::RCT_All));
-	if (pComp->isCompiler())
-		if (TextBuf == "0")
-		{
-			delete Text; Text = nullptr;
-		}
-		else
-			Text = TextBuf.GrabPointer();
+	pComp->Value(Text, StdCompiler::RCT_All);
+	if (iVersion < 2 && Text == "0") Text.clear();
 }
 
 void C4Command::DenumeratePointers()
@@ -2425,11 +2416,10 @@ void C4Command::EnumeratePointers()
 int32_t C4Command::CallFailed()
 {
 	// No function name or no target object: cannot call fail-function
-	if (!Text || !Text[0] || !Target) return 0;
-	// Compose fail-function name
-	char szFunctionFailed[1024 + 1]; sprintf(szFunctionFailed, "~%sFailed", Text);
+	if (Text.empty() || !Target) return 0;
 	// Call failed-function
-	return Target->Call(szFunctionFailed, {C4VObj(cObj), Tx, C4VInt(Ty), C4VObj(Target2)})._getInt();
+	return Target->Call(FormatString("~%sFailed", Text.c_str()).getData(),
+		{C4VObj(cObj), Tx, C4VInt(Ty), C4VObj(Target2)})._getInt();
 	// Extreme caution notice: the script call might do just about anything
 	// including clearing all commands (including this) i.e. through a call
 	// to SetCommand. Thus, we must not do anything in this command anymore
