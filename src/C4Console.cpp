@@ -1015,8 +1015,6 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 	ofn.lpstrFilter = szFilter;
 	ofn.lpstrFile = sFilename;
 	ofn.nMaxFile = iSize;
-	ofn.nFileOffset = GetFilename(sFilename) - sFilename;
-	ofn.nFileExtension = GetExtension(sFilename) - sFilename;
 	ofn.Flags = dwFlags;
 
 	bool fResult;
