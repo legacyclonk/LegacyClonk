@@ -34,6 +34,7 @@
 #include <C4Player.h>
 #include <C4ObjectMenu.h>
 
+#include <cstring>
 #include <limits>
 #include <utility>
 
@@ -161,7 +162,6 @@ bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
 	LastEnergyLossCausePlayer = NO_OWNER;
 	Info = pInfo;
 	Def = pDef;
-	if (Info) Name = pInfo->Name; else Name.Ref(pDef->Name);
 	Category = Def->Category;
 	Def->Count++;
 	if (pCreator) pLayer = pCreator->pLayer;
@@ -1189,8 +1189,6 @@ bool C4Object::ChangeDef(C4ID idNew)
 	if (pSolidMaskData) pSolidMaskData->Remove(true, false);
 	delete pSolidMaskData; pSolidMaskData = nullptr;
 	Def->Count--;
-	// change the name to the name of the new def, if the name of the old def was in use before
-	if (Name.getData() == Def->Name.getData()) Name.Ref(pDef->Name);
 	// Def change
 	Def = pDef;
 	id = pDef->id;
@@ -2069,15 +2067,17 @@ FIXED C4Object::GetSpeed()
 
 const char *C4Object::GetName()
 {
-	return Name.getData();
+	if (!CustomName.empty()) return CustomName.c_str();
+	if (Info) return Info->Name;
+	return Def->Name.getData();
 }
 
 void C4Object::SetName(const char *NewName)
 {
 	if (!NewName)
-		if (Info) Name = Info->Name; else Name.Ref(Def->Name);
+		CustomName.clear();
 	else
-		Name.Copy(NewName);
+		CustomName = NewName;
 }
 
 int32_t C4Object::GetValue(C4Object *pInBase, int32_t iForPlayer)
@@ -2715,13 +2715,12 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 	// (Info may overwrite later, see C4Player::MakeCrewMember)
 	if (pComp->isCompiler())
 	{
-		pComp->Value(mkNamingAdapt(Name, "Name", StdStrBuf{}));
-		if (!Name) Name.Ref(Def->Name);
+		pComp->Value(mkNamingAdapt(CustomName, "Name", std::string{}));
 	}
-	else if (!Name.isRef())
+	else if (!CustomName.empty())
 		// Write the name only if the object has an individual name
 		// 2do: And what about binary compilers?
-		pComp->Value(mkNamingAdapt(Name, "Name"));
+		pComp->Value(mkNamingAdapt(CustomName, "Name"));
 
 	pComp->Value(mkNamingAdapt(Number,                                  "Number",             -1));
 	pComp->Value(mkNamingAdapt(Status,                                  "Status",             1));
@@ -3173,11 +3172,7 @@ bool C4Object::AssignPlrViewRange()
 
 void C4Object::ClearInfo(C4ObjectInfo *pInfo)
 {
-	if (Info == pInfo)
-	{
-		if (Info) if (Name.getData() == Info->Name) Name.Ref(Def->Name);
-		Info = nullptr;
-	}
+	if (Info == pInfo) Info = nullptr;
 }
 
 void C4Object::Clear()
@@ -5684,8 +5679,6 @@ bool C4Object::GrabInfo(C4Object *pFrom)
 	Game.Players.ClearPointers(this);
 	// set info
 	Info = pFrom->Info; pFrom->ClearInfo(pFrom->Info);
-	// set name
-	if (Name.isRef()) Name = Info->Name;
 	// retire from old crew
 	Info->Retire();
 	// set death status
@@ -6147,7 +6140,7 @@ bool C4Object::CanConcatPictureWith(C4Object *pOtherObject)
 	if (!(allow_picture_stack & APS_Name))
 	{
 		// check name, so zagabar's sandwiches don't stack
-		if (Name.getData() != pOtherObject->Name.getData()) if (Name != pOtherObject->Name) return false;
+		if (GetName() != pOtherObject->GetName() && std::strcmp(GetName(), pOtherObject->GetName()) != 0) return false;
 	}
 	if (!(allow_picture_stack & APS_Overlay))
 	{

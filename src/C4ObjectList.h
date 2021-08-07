@@ -98,8 +98,6 @@ public:
 	void UpdateTransferZones();
 	void SetOCF();
 	void ClearInfo(C4ObjectInfo *pInfo);
-	void ClearDefPointers(C4Def *pDef); // clear all pointers into definition
-	void UpdateDefPointers(C4Def *pDef); // restore any cleared pointers after def reload
 
 	bool Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted = nullptr);
 	bool Remove(C4Object *pObj);

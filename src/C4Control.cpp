@@ -1101,7 +1101,7 @@ void C4ControlMessage::Execute() const
 		if (!pViewObject) break;
 		if (Game.C4S.Head.Film == C4SFilm_Cinematic)
 		{
-			StdStrBuf sMessage; sMessage.Format("<%s> %s", pPlr->Cursor ? pPlr->Cursor->Name.getData() : pPlr->GetName(), szMessage);
+			StdStrBuf sMessage; sMessage.Format("<%s> %s", pPlr->Cursor ? pPlr->Cursor->GetName() : pPlr->GetName(), szMessage);
 			uint32_t dwClr = pPlr->Cursor ? pPlr->Cursor->Color : pPlr->ColorDw;
 			if (!dwClr) dwClr = 0xff;
 			GameMsgObjectDw(sMessage.getData(), pViewObject, dwClr | 0xff000000);

@@ -79,9 +79,6 @@ public:
 
 	void DeleteObjects(); // delete all objects and links
 
-	void ClearDefPointers(C4Def *pDef); // clear all pointers into definition
-	void UpdateDefPointers(C4Def *pDef); // restore any cleared pointers after def reload
-
 	bool ValidateOwners();
 	bool AssignInfo();
 };

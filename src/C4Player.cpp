@@ -1184,7 +1184,6 @@ bool C4Player::MakeCrewMember(C4Object *pObj, bool fForceInfo, bool fDoCalls)
 
 		// Set object info
 		pObj->Info = cInf;
-		if (pObj->Name.isRef()) pObj->Name = cInf->Name;
 	}
 
 	// Add to crew

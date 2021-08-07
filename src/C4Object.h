@@ -32,6 +32,7 @@
 #include "C4ValueList.h"
 
 #include <array>
+#include <string>
 
 /* Object status */
 
@@ -118,7 +119,6 @@ public:
 	~C4Object();
 	int32_t Number; // int32_t, for sync safety on all machines
 	C4ID id;
-	StdStrBuf Name;
 	int32_t Status; // NoSave //
 	int32_t RemovalDelay; // NoSave //
 	int32_t Owner;
@@ -199,6 +199,7 @@ public:
 	class C4GraphicsOverlay *pGfxOverlay; // singly linked list of overlay graphics
 
 protected:
+	std::string CustomName;
 	bool OnFire;
 	int32_t Con;
 	bool Alive;

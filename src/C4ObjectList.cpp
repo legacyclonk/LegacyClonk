@@ -607,28 +607,6 @@ void C4ObjectList::ClearInfo(C4ObjectInfo *pInfo)
 			cLnk->Obj->ClearInfo(pInfo);
 }
 
-void C4ObjectList::ClearDefPointers(C4Def *pDef)
-{
-	// clear all pointers into definition
-	C4ObjectLink *cLnk;
-	for (cLnk = First; cLnk; cLnk = cLnk->Next)
-		if (cLnk->Obj->Def == pDef)
-		{
-			cLnk->Obj->Name.Clear();
-		}
-}
-
-void C4ObjectList::UpdateDefPointers(C4Def *pDef)
-{
-	// restore any cleared pointers after def reload
-	C4ObjectLink *cLnk;
-	for (cLnk = First; cLnk; cLnk = cLnk->Next)
-		if (cLnk->Obj->Def == pDef)
-		{
-			cLnk->Obj->SetName(nullptr);
-		}
-}
-
 void C4ObjectList::RemoveLink(C4ObjectLink *pLnk)
 {
 	if (pLnk->Prev) pLnk->Prev->Next = pLnk->Next; else First = pLnk->Next;
