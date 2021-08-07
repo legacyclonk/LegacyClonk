@@ -301,8 +301,7 @@ bool StoreWindowPosition(HWND hwnd,
 
 bool RestoreWindowPosition(HWND hwnd,
 	const char *szWindowName,
-	const char *szSubKey,
-	bool fHidden)
+	const char *szSubKey)
 {
 	char regstr[100], buffer2[5];
 	int x, y, wdt, hgt;
@@ -326,9 +325,6 @@ bool RestoreWindowPosition(HWND hwnd,
 	// Move window
 	if (!MoveWindow(hwnd, x, y, wdt, hgt, TRUE))
 		return false;
-	// Hide window
-	if (fHidden)
-		return ShowWindow(hwnd, SW_HIDE);
 	// Show window
 	return ShowWindow(hwnd, SW_NORMAL);
 }

@@ -57,8 +57,7 @@ bool StoreWindowPosition(HWND hwnd,
 
 bool RestoreWindowPosition(HWND hwnd,
 	const char *szWindowName,
-	const char *szSubKey,
-	bool fHidden = false);
+	const char *szSubKey);
 
 // config writer
 class StdCompilerConfigWrite : public StdCompiler

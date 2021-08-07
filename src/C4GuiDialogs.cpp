@@ -192,7 +192,7 @@ CStdWindow *DialogWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPa
 	{
 		// update pos
 		if (szID && *szID)
-			RestoreWindowPosition(hWindow, FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"), false);
+			RestoreWindowPosition(hWindow, FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"));
 		// and show
 		::ShowWindow(hWindow, SW_SHOW);
 	}
@@ -286,7 +286,7 @@ CStdWindow *DialogWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPa
 	{
 		// update pos
 		if (szID && *szID)
-			RestorePosition(FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"), false);
+			RestorePosition(FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"));
 		else
 			SetSize(rcBounds.Wdt, rcBounds.Hgt);
 		return this;

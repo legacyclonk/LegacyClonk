@@ -245,7 +245,7 @@ bool CStdWindow::FindInfo()
 }
 #endif // USE_X11
 
-bool CStdWindow::RestorePosition(const char *, const char *, bool)
+bool CStdWindow::RestorePosition(const char *, const char *)
 {
 	// The Windowmanager is responsible for window placement.
 	return true;

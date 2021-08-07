@@ -113,9 +113,9 @@ void CStdWindow::Clear()
 	taskBarList.Reset();
 }
 
-bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey, bool fHidden)
+bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey)
 {
-	if (!RestoreWindowPosition(hWindow, szWindowName, szSubKey, fHidden))
+	if (!RestoreWindowPosition(hWindow, szWindowName, szSubKey))
 		ShowWindow(hWindow, SW_SHOWNORMAL);
 	return true;
 }

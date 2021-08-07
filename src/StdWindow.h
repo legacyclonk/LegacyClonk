@@ -260,7 +260,7 @@ public:
 #ifndef _WIN32
 	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent = nullptr, bool HideCursor = true);
 #endif
-	bool RestorePosition(const char *szWindowName, const char *szSubKey, bool fHidden = false);
+	bool RestorePosition(const char *szWindowName, const char *szSubKey);
 	bool GetSize(RECT *pRect);
 	void SetSize(unsigned int cx, unsigned int cy); // resize
 	void SetTitle(const char *Title);
