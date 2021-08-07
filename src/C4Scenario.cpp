@@ -441,23 +441,6 @@ bool C4Scenario::Compile(const char *szSource, bool fLoadSection)
 	return CompileFromBuf_LogWarn<StdCompilerINIRead>(mkParAdapt(*this, fLoadSection), StdStrBuf::MakeRef(szSource), C4CFN_ScenarioCore);
 }
 
-bool C4Scenario::Decompile(char **ppOutput, int32_t *ipSize, bool fSaveSection)
-{
-	try
-	{
-		// Decompile
-		StdStrBuf Buf = DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, fSaveSection));
-		// Return
-		*ppOutput = Buf.GrabPointer();
-		*ipSize = Buf.getSize();
-	}
-	catch (const StdCompiler::Exception &)
-	{
-		return false;
-	}
-	return true;
-}
-
 void C4Scenario::Clear() {}
 
 void C4Scenario::SetExactLandscape()

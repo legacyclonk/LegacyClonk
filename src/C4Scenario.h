@@ -319,7 +319,6 @@ public:
 
 protected:
 	bool Compile(const char *szSource, bool fLoadSection = false);
-	bool Decompile(char **ppOutput, int32_t *ipSize, bool fSaveSection = false);
 };
 
 class C4ScenarioSection;
