@@ -235,11 +235,23 @@ bool C4Game::OpenScenario()
 
 	// Load parameters (not as network client, because then team info has already been sent by host)
 	if (!Network.isEnabled() || Network.isHost())
+	{
 		if (!Parameters.Load(ScenarioFile, &C4S, GameText.GetData(), &ScenarioLangStringTable, DefinitionFilenames))
 		{
 			LogFatal(LoadResStr("IDS_ERR_LOAD_PARAMETERS"));
 			return false;
 		}
+
+		if (C4S.Head.SaveGame)
+		{
+			// make sure that at least all players from the savegame can join
+			const auto restoreCount = Parameters.RestorePlayerInfos.GetPlayerCount();
+			if (Parameters.MaxPlayers < restoreCount)
+			{
+				Parameters.MaxPlayers = restoreCount;
+			}
+		}
+	}
 
 	// Title
 	Title.LoadEx(LoadResStr("IDS_CNS_TITLE"), ScenarioFile, C4CFN_Title, Config.General.LanguageEx);
