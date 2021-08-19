@@ -56,7 +56,7 @@ void C4MusicSystem::Play(const char *const songname, const bool loop)
 	if (!Application.AudioSystem) return;
 
 	// Music disabled by user or scenario?
-	if (!((Game.IsRunning && Game.IsMusicEnabled) || (!Game.IsRunning && GetCfgMusicEnabled()))) return;
+	if (!(Game.IsMusicEnabled || (!Game.IsRunning && GetCfgMusicEnabled()))) return;
 
 	const Song *newSong = nullptr;
 
@@ -163,8 +163,16 @@ void C4MusicSystem::PlayScenarioMusic(C4Group &group)
 		LogF(LoadResStr("IDS_PRC_LOCALMUSIC"), Config.AtExeRelativePath(musicDir.c_str()));
 	}
 
-	SetPlayList(nullptr);
-	Play();
+	if (Config.Sound.RXMusic)
+	{
+		Game.IsMusicEnabled = true;
+	}
+
+	if (Game.IsMusicEnabled)
+	{
+		SetPlayList(nullptr);
+		Play();
+	}
 }
 
 long C4MusicSystem::SetPlayList(const char *const playlist)
@@ -239,11 +247,16 @@ bool C4MusicSystem::ToggleOnOff(const bool changeConfig)
 	bool enabled;
 	if (changeConfig)
 	{
-		enabled = Game.IsMusicEnabled = GetCfgMusicEnabled() = !GetCfgMusicEnabled();
+		enabled = GetCfgMusicEnabled() = !GetCfgMusicEnabled();
 	}
 	else
 	{
-		enabled = Game.IsMusicEnabled = !Game.IsMusicEnabled;
+		enabled = !Application.AudioSystem->IsMusicPlaying();
+	}
+
+	if (Game.IsRunning)
+	{
+		Game.IsMusicEnabled = enabled;
 	}
 
 	if (enabled)
