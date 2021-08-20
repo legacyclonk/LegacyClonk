@@ -37,7 +37,7 @@ void C4GameOptionsList::Option::InitOption(C4GameOptionsList *pForDlg)
 
 // C4GameOptionsList::OptionDropdown
 
-C4GameOptionsList::OptionDropdown::OptionDropdown(class C4GameOptionsList *pForDlg, const char *szCaption, bool fReadOnly)
+C4GameOptionsList::OptionDropdown::OptionDropdown(C4GameOptionsList *pForDlg, const char *szCaption, bool fReadOnly)
 	: Option(pForDlg)
 {
 	CStdFont &rUseFont = C4GUI::GetRes()->TextFont;
@@ -74,7 +74,7 @@ C4GameOptionsList::OptionDropdown::OptionDropdown(class C4GameOptionsList *pForD
 // C4GameOptionsList::OptionControlMode
 
 // Unfortunately, the control mode cannot be changed in the lobby
-C4GameOptionsList::OptionControlMode::OptionControlMode(class C4GameOptionsList *pForDlg)
+C4GameOptionsList::OptionControlMode::OptionControlMode(C4GameOptionsList *pForDlg)
 	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_TEXT_CONTROLMODE"), !Game.Control.isCtrlHost() || !Game.Control.isNetwork() || !Game.Control.Network.IsEnabled() || !pForDlg->IsRuntime())
 {
 	SetToolTip(LoadResStr("IDS_DESC_CHANGESTHEWAYCONTROLDATAI"));
@@ -120,7 +120,7 @@ void C4GameOptionsList::OptionControlMode::Update()
 
 // C4GameOptionsList::OptionControlRate
 
-C4GameOptionsList::OptionControlRate::OptionControlRate(class C4GameOptionsList *pForDlg)
+C4GameOptionsList::OptionControlRate::OptionControlRate(C4GameOptionsList *pForDlg)
 	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_CTL_CONTROLRATE"), !Game.Control.isCtrlHost())
 {
 	SetToolTip(LoadResStr("IDS_CTL_CONTROLRATE_DESC"));
@@ -148,7 +148,7 @@ void C4GameOptionsList::OptionControlRate::Update()
 
 // C4GameOptionsList::OptionRuntimeJoin
 
-C4GameOptionsList::OptionRuntimeJoin::OptionRuntimeJoin(class C4GameOptionsList *pForDlg)
+C4GameOptionsList::OptionRuntimeJoin::OptionRuntimeJoin(C4GameOptionsList *pForDlg)
 	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_NET_RUNTIMEJOIN"), !Game.Network.isHost())
 {
 	SetToolTip(LoadResStr("IDS_NET_RUNTIMEJOIN_DESC"));
@@ -180,7 +180,7 @@ void C4GameOptionsList::OptionRuntimeJoin::Update()
 
 // C4GameOptionsList::OptionTeamDist
 
-C4GameOptionsList::OptionTeamDist::OptionTeamDist(class C4GameOptionsList *pForDlg)
+C4GameOptionsList::OptionTeamDist::OptionTeamDist(C4GameOptionsList *pForDlg)
 	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_MSG_TEAMDIST"), !Game.Control.isCtrlHost())
 {
 	SetToolTip(LoadResStr("IDS_MSG_TEAMDIST_DESC"));
@@ -205,7 +205,7 @@ void C4GameOptionsList::OptionTeamDist::Update()
 
 // C4GameOptionsList::OptionTeamColors
 
-C4GameOptionsList::OptionTeamColors::OptionTeamColors(class C4GameOptionsList *pForDlg)
+C4GameOptionsList::OptionTeamColors::OptionTeamColors(C4GameOptionsList *pForDlg)
 	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_MSG_TEAMCOLORS"), !Game.Control.isCtrlHost())
 {
 	SetToolTip(LoadResStr("IDS_MSG_TEAMCOLORS_DESC"));

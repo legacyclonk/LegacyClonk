@@ -21,8 +21,6 @@
 
 #include "C4Gui.h"
 
-class C4GameOptionsList;
-
 // options dialog: created as listbox inside another dialog
 // used to configure some standard runtime options, as well as custom game options
 class C4GameOptionsList : public C4GUI::ListBox
@@ -46,7 +44,7 @@ private:
 		}
 
 	public:
-		Option(class C4GameOptionsList *pForDlg); // adds to list
+		Option(C4GameOptionsList *pForDlg); // adds to list
 		void InitOption(C4GameOptionsList *pForDlg); // add to list and do initial update
 
 		virtual void Update() {} // update data
@@ -58,7 +56,7 @@ private:
 	class OptionDropdown : public Option
 	{
 	public:
-		OptionDropdown(class C4GameOptionsList *pForDlg, const char *szCaption, bool fReadOnly);
+		OptionDropdown(C4GameOptionsList *pForDlg, const char *szCaption, bool fReadOnly);
 
 	protected:
 		C4GUI::Label *pCaption;
@@ -83,7 +81,7 @@ private:
 	class OptionControlMode : public OptionDropdown
 	{
 	public:
-		OptionControlMode(class C4GameOptionsList *pForDlg);
+		OptionControlMode(C4GameOptionsList *pForDlg);
 
 	protected:
 		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller) override;
@@ -96,7 +94,7 @@ private:
 	class OptionControlRate : public OptionDropdown
 	{
 	public:
-		OptionControlRate(class C4GameOptionsList *pForDlg);
+		OptionControlRate(C4GameOptionsList *pForDlg);
 
 	protected:
 		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller) override;
@@ -109,7 +107,7 @@ private:
 	class OptionTeamDist : public OptionDropdown
 	{
 	public:
-		OptionTeamDist(class C4GameOptionsList *pForDlg);
+		OptionTeamDist(C4GameOptionsList *pForDlg);
 
 	protected:
 		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller) override;
@@ -122,7 +120,7 @@ private:
 	class OptionTeamColors : public OptionDropdown
 	{
 	public:
-		OptionTeamColors(class C4GameOptionsList *pForDlg);
+		OptionTeamColors(C4GameOptionsList *pForDlg);
 
 	protected:
 		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller) override;
@@ -135,7 +133,7 @@ private:
 	class OptionRuntimeJoin : public OptionDropdown
 	{
 	public:
-		OptionRuntimeJoin(class C4GameOptionsList *pForDlg);
+		OptionRuntimeJoin(C4GameOptionsList *pForDlg);
 
 	protected:
 		virtual void DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller) override;
