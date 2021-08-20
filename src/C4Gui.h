@@ -1881,7 +1881,7 @@ public:
 	virtual bool OnComboSelChange(ComboBox *pForCombo, int32_t idNewSelection) = 0;
 
 	// to be used in fill-callback only (crash otherwise!)
-	void AddEntry(const char *szText, int32_t id);
+	void AddEntry(const char *szText, int32_t id, const char *desc = nullptr);
 	bool FindEntry(const char *szText);
 	void ClearEntries();
 };

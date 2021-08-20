@@ -281,6 +281,7 @@ void C4TeamList::Clear()
 	fAutoGenerateTeams = false;
 	iMaxScriptPlayers = 0;
 	sScriptPlayerNames.Clear();
+	randomTeamCount = 0;
 }
 
 C4TeamList &C4TeamList::operator=(const C4TeamList &rCopy)
@@ -299,6 +300,7 @@ C4TeamList &C4TeamList::operator=(const C4TeamList &rCopy)
 	fTeamColors = rCopy.fTeamColors;
 	fAutoGenerateTeams = rCopy.fAutoGenerateTeams;
 	sScriptPlayerNames.Copy(rCopy.sScriptPlayerNames);
+	randomTeamCount = rCopy.randomTeamCount;
 	return *this;
 }
 
@@ -391,6 +393,12 @@ bool C4TeamList::GenerateDefaultTeams(int32_t iUpToID)
 	return true;
 }
 
+int32_t C4TeamList::GetGenerateTeamCount() const
+{
+	// default is 2, only used for random teams
+	return randomTeamCount > 1 ? randomTeamCount : 2;
+}
+
 C4Team *C4TeamList::GetTeamByID(int32_t iID) const
 {
 	C4Team **ppCheck = ppList; int32_t iCnt = iTeamCount;
@@ -435,10 +443,10 @@ int32_t C4TeamList::GetLargestTeamID() const
 	return iLargest;
 }
 
-C4Team *C4TeamList::GetRandomSmallestTeam() const
+C4Team *C4TeamList::GetRandomSmallestTeam(bool limitRandomTeamCount) const
 {
 	C4Team *pLowestTeam = nullptr; int iLowestTeamCount = 0;
-	C4Team **ppCheck = ppList; int32_t iCnt = iTeamCount;
+	C4Team **ppCheck = ppList; int32_t iCnt = limitRandomTeamCount && randomTeamCount > 1 ? randomTeamCount : iTeamCount;
 	for (; iCnt--; ++ppCheck)
 	{
 		if ((*ppCheck)->IsFull()) continue; // do not join into full teams
@@ -499,7 +507,7 @@ bool C4TeamList::RecheckPlayerInfoTeams(C4PlayerInfo &rNewJoin, bool fByHost)
 	if (!fHasOrWillHaveLobby && (!fIsTeamNeeded || fCanPickTeamAtRuntime)) return false;
 	// get least-used team
 	C4Team *pAssignTeam = nullptr;
-	C4Team *pLowestTeam = GetRandomSmallestTeam();
+	C4Team *pLowestTeam = GetRandomSmallestTeam(IsRandomTeam());
 	// melee mode
 	if (IsAutoGenerateTeams() && !IsRandomTeam())
 	{
@@ -567,6 +575,7 @@ void C4TeamList::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(fTeamColors,        "TeamColors",        false));
 	pComp->Value(mkNamingAdapt(iMaxScriptPlayers,  "MaxScriptPlayers",  0));
 	pComp->Value(mkNamingAdapt(sScriptPlayerNames, "ScriptPlayerNames", StdStrBuf()));
+	pComp->Value(mkNamingAdapt(randomTeamCount, "RandomTeamCount", 0));
 
 	int32_t iOldTeamCount = iTeamCount;
 	pComp->Value(mkNamingCountAdapt(iTeamCount, "Team"));
@@ -681,8 +690,8 @@ void C4TeamList::RecheckTeams()
 	if (!IsRandomTeam()) return;
 	// host decides random teams
 	if (!Game.Control.isCtrlHost()) return;
-	// random teams in auto generate mode? Make sure there are exactly two teams
-	if (IsAutoGenerateTeams() && GetTeamCount() != 2)
+	// random teams in auto generate mode? Make sure there are as many as set up
+	if (IsAutoGenerateTeams() && GetTeamCount() != GetGenerateTeamCount())
 	{
 		ReassignAllTeams();
 		return;
@@ -690,11 +699,11 @@ void C4TeamList::RecheckTeams()
 	// redistribute players of largest team that has relocatable players left towards smaller teams
 	for (;;)
 	{
-		C4Team *pLowestTeam = GetRandomSmallestTeam();
+		C4Team *pLowestTeam = GetRandomSmallestTeam(true);
 		if (!pLowestTeam) break; // no teams: Nothing to re-distribute.
 		// get largest team that has relocateable players
 		C4Team *pLargestTeam = nullptr;
-		C4Team **ppCheck = ppList; int32_t iCnt = iTeamCount;
+		C4Team **ppCheck = ppList; int32_t iCnt = randomTeamCount > 1 ? randomTeamCount : iTeamCount;
 		for (; iCnt--; ++ppCheck) if (!pLargestTeam || pLargestTeam->GetPlayerCount() > (*ppCheck)->GetPlayerCount())
 			if ((*ppCheck)->GetFirstUnjoinedPlayerID())
 				pLargestTeam = *ppCheck;
@@ -740,12 +749,12 @@ void C4TeamList::ReassignAllTeams()
 	}
 	// clear players from team lists
 	RecheckPlayers();
-	// in random autogenerate mode, there must be exactly two teams
+	const auto generateTeamCount = GetGenerateTeamCount();
 	if (IsRandomTeam())
-		if (IsAutoGenerateTeams() && GetTeamCount() != 2)
+		if (IsAutoGenerateTeams() && GetTeamCount() != generateTeamCount)
 		{
 			ClearTeams();
-			GenerateDefaultTeams(2);
+			GenerateDefaultTeams(generateTeamCount);
 		}
 	// reassign them
 	idStart = -1;
@@ -845,6 +854,15 @@ void C4TeamList::SetTeamColors(bool fEnabled)
 	{
 		// sends color updates to all clients
 		Game.Network.Players.SendUpdatedPlayers();
+	}
+}
+
+void C4TeamList::SetRandomTeamCount(int32_t count)
+{
+	randomTeamCount = count;
+	if (IsRandomTeam())
+	{
+		ReassignAllTeams();
 	}
 }
 

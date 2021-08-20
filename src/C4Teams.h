@@ -134,6 +134,7 @@ private:
 	TeamDist eTeamDist;
 	int32_t iMaxScriptPlayers; // maximum number of script players to be added in the lobby
 	StdStrBuf sScriptPlayerNames; // default script player names
+	int32_t randomTeamCount; // count of teams used when generating random teams; unlimited if less than 2
 
 public:
 	C4TeamList() : ppList(nullptr), iTeamCount(0), iTeamCapacity(0), iLastTeamID(0), fAllowHostilityChange(true), fAllowTeamSwitch(false),
@@ -151,6 +152,7 @@ private:
 	void AddTeam(C4Team *pNewTeam); // add a team; grow list if necessary
 	void ClearTeams(); // delete all teams
 	bool GenerateDefaultTeams(int32_t iUpToID); // generate Team 1, Team 2, etc.
+	int32_t GetGenerateTeamCount() const;
 
 public:
 	C4Team *GetTeamByID(int32_t iID) const; // get team by ID
@@ -158,8 +160,9 @@ public:
 	C4Team *GetTeamByIndex(int32_t iIndex) const; // get team by list index, to enumerate all teams
 	C4Team *GetTeamByPlayerID(int32_t iID) const; // get team by player ID (not number!)
 	int32_t GetLargestTeamID() const;
-	C4Team *GetRandomSmallestTeam() const; // get team with least amount of players in it
+	C4Team *GetRandomSmallestTeam(bool limitRandomTeamCount = false) const; // get team with least amount of players in it
 	int32_t GetTeamCount() const { return iTeamCount; }
+	int32_t GetRandomTeamCount() const { return randomTeamCount; }
 
 	C4Team *CreateTeam(const char *szName); // create a custom team
 
@@ -216,4 +219,5 @@ public:
 	void SetTeamDistribution(TeamDist eToVal);
 	void SendSetTeamColors(bool fEnabled);
 	void SetTeamColors(bool fEnabled);
+	void SetRandomTeamCount(int32_t count);
 };

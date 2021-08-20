@@ -181,7 +181,7 @@ void C4GameOptionsList::OptionRuntimeJoin::Update()
 // C4GameOptionsList::OptionTeamDist
 
 C4GameOptionsList::OptionTeamDist::OptionTeamDist(C4GameOptionsList *pForDlg)
-	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_MSG_TEAMDIST"), !Game.Control.isCtrlHost())
+	: C4GameOptionsList::OptionDropdown(pForDlg, LoadResStr("IDS_MSG_TEAMDIST"), !Game.Control.isCtrlHost()), optionsList{pForDlg}
 {
 	SetToolTip(LoadResStr("IDS_MSG_TEAMDIST_DESC"));
 }
@@ -195,6 +195,7 @@ void C4GameOptionsList::OptionTeamDist::DoDropdownSelChange(int32_t idNewSelecti
 {
 	// adjust team distribution
 	Game.Teams.SendSetTeamDist(C4TeamList::TeamDist(idNewSelection));
+	optionsList->Update();
 }
 
 void C4GameOptionsList::OptionTeamDist::Update()
@@ -228,6 +229,32 @@ void C4GameOptionsList::OptionTeamColors::Update()
 	pDropdownList->SetText(Game.Teams.IsTeamColors() ? LoadResStr("IDS_MSG_ENABLED") : LoadResStr("IDS_MSG_DISABLED"));
 }
 
+C4GameOptionsList::OptionRandomTeamCount::OptionRandomTeamCount(C4GameOptionsList *forDlg)
+	: OptionDropdown(forDlg, LoadResStr("IDS_MSG_RANDOMTEAMCOUNT"), !Game.Network.isHost())
+{
+	SetToolTip(LoadResStr("IDS_MSG_RANDOMTEAMCOUNT_DESC"));
+}
+
+void C4GameOptionsList::OptionRandomTeamCount::DoDropdownFill(C4GUI::ComboBox_FillCB *filler)
+{
+	filler->AddEntry(LoadResStr("IDS_MSG_TEAMCOUNT_AUTO"), 0, LoadResStr("IDS_MSG_TEAMCOUNT_AUTO_DESC"));
+	for (int32_t i = 2, max = Game.Teams.IsAutoGenerateTeams() ? Game.PlayerInfos.GetActivePlayerCount(true) : Game.Teams.GetTeamCount(); i <= max; ++i)
+	{
+		filler->AddEntry(std::to_string(i).c_str(), i);
+	}
+}
+
+void C4GameOptionsList::OptionRandomTeamCount::DoDropdownSelChange(int32_t newSelection)
+{
+	Game.Teams.SetRandomTeamCount(newSelection);
+}
+
+void C4GameOptionsList::OptionRandomTeamCount::Update()
+{
+	const auto count = Game.Teams.GetRandomTeamCount();
+	pDropdownList->SetText(count > 1 ? std::to_string(count).c_str() : LoadResStr("IDS_MSG_TEAMCOUNT_AUTO"));
+}
+
 // C4GameOptionsList
 
 C4GameOptionsList::C4GameOptionsList(const C4Rect &rcBounds, bool fActive, bool fRuntime)
@@ -253,6 +280,19 @@ void C4GameOptionsList::InitOptions()
 
 void C4GameOptionsList::Update()
 {
+	const auto haveRandomTeamCount = !IsRuntime() && Game.Teams.HasTeamDistOptions() && Game.Network.isHost() && Game.Teams.IsRandomTeam();
+	if (haveRandomTeamCount != (randomTeamCount != nullptr))
+	{
+		if (!randomTeamCount)
+		{
+			randomTeamCount = new OptionRandomTeamCount{this};
+		}
+		else
+		{
+			delete randomTeamCount;
+			randomTeamCount = nullptr;
+		}
+	}
 	// update all option items
 	for (Option *pItem = static_cast<Option *>(pClientWindow->GetFirst()); pItem; pItem = pItem->GetNext())
 		pItem->Update();
