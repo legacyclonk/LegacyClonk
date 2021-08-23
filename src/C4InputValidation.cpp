@@ -95,6 +95,16 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 
 	case VAL_NameNoEmpty:
 	case VAL_NameAllowEmpty:
+		// excess '{' will break the team chat, remove
+		{
+			std::string str{rsString.getData()};
+			if (const auto it = std::remove(str.begin(), str.end(), '{'); it != str.end())
+			{
+				fValid = false;
+				str.erase(it, str.end());
+				rsString.Copy(str.c_str());
+			}
+		}
 		// no markup
 		if (CMarkup::StripMarkup(&rsString)) { fValid = false; }
 		// trim spaces
