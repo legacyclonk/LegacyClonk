@@ -704,7 +704,7 @@ void C4TeamList::RecheckTeams()
 		// get largest team that has relocateable players
 		C4Team *pLargestTeam = nullptr;
 		C4Team **ppCheck = ppList; int32_t iCnt = randomTeamCount > 1 ? randomTeamCount : iTeamCount;
-		for (; iCnt--; ++ppCheck) if (!pLargestTeam || pLargestTeam->GetPlayerCount() > (*ppCheck)->GetPlayerCount())
+		for (; iCnt--; ++ppCheck) if (!pLargestTeam || (*ppCheck)->GetPlayerCount() > pLargestTeam->GetPlayerCount())
 			if ((*ppCheck)->GetFirstUnjoinedPlayerID())
 				pLargestTeam = *ppCheck;
 		// no team can redistribute?
