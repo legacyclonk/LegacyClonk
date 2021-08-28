@@ -78,15 +78,16 @@ int WINAPI WinMain(HINSTANCE hInst,
 		return true;
 	};
 
+	constexpr char Parameter[]{"/allocconsole"};
+
 #ifndef USE_CONSOLE
 #ifdef _DEBUG
 	allocConsole();
 #else
-#define PAR "/allocconsole"
-	char parameter[sizeof(PAR)];
-	for (int32_t par = 0; SGetParameter(lpszCmdParam, par, parameter, sizeof(PAR) - 1); ++par)
+	char parameter[sizeof(Parameter)];
+	for (int32_t par = 0; SGetParameter(lpszCmdParam, par, parameter, sizeof(Parameter) - 1); ++par)
 	{
-		if (SEqual2NoCase(parameter, PAR))
+		if (SEqual2NoCase(parameter, Parameter))
 		{
 			if (!allocConsole())
 			{
@@ -97,7 +98,6 @@ int WINAPI WinMain(HINSTANCE hInst,
 			break;
 		}
 	}
-#undef PAR
 #endif
 #endif
 
