@@ -27,15 +27,15 @@ static int CallMultiByteToWideChar(
 	const LPCCH lpMultiByteStr, const int cbMultiByte,
 	const LPWSTR lpWideCharStr, const int cchWideChar)
 {
-	const int result = MultiByteToWideChar(CP_ACP, 0,
+	const auto result = MultiByteToWideChar(CP_ACP, 0,
 		lpMultiByteStr, cbMultiByte,
 		lpWideCharStr, cchWideChar);
 
 	if (result == 0)
 	{
-		const DWORD errorNumber = GetLastError();
-		throw std::runtime_error(std::string() +
-			"MultiByteToWideChar failed (error " + std::to_string(errorNumber) + ")");
+		const DWORD errorNumber{GetLastError()};
+		throw std::runtime_error{std::string() +
+			"MultiByteToWideChar failed (error " + std::to_string(errorNumber) + ")"};
 	}
 
 	return result;
@@ -46,15 +46,15 @@ static int CallWideCharToMultiByte(
 	const LPCWSTR lpWideCharStr, const int cchWideChar,
 	const LPCH lpMultiByteStr, const int cbMultiByte)
 {
-	const int result = WideCharToMultiByte(CP_ACP, 0,
+	const auto result = WideCharToMultiByte(CP_ACP, 0,
 		lpWideCharStr, cchWideChar,
 		lpMultiByteStr, cbMultiByte,
 		nullptr, nullptr);
 
 	if (result == 0)
 	{
-		const DWORD errorNumber = GetLastError();
-		throw std::runtime_error(std::string() +
+		const DWORD errorNumber{GetLastError()};
+		throw std::runtime_error(std::string{} +
 			"WideCharToMultiByte failed (error " + std::to_string(errorNumber) + ")");
 	}
 
@@ -64,49 +64,49 @@ static int CallWideCharToMultiByte(
 std::wstring StdStringEncodingConverter::WinAcpToUtf16(const LPCCH first, const LPCCH last) const
 {
 	// Get length of source string
-	const int sourceLen = (last ? last - first : lstrlenA(first));
+	const auto sourceLen = (last ? last - first : lstrlenA(first));
 	// Don't use MultiByteToWideChar if source string is empty
-	if (sourceLen == 0) return std::wstring();
+	if (sourceLen == 0) return {};
 
 	// Get length of converted string and create array for it
-	const int convertedLen = CallMultiByteToWideChar(first, sourceLen, nullptr, 0);
-	const std::unique_ptr<wchar_t[]> converted(new wchar_t[convertedLen]);
+	const auto convertedLen = CallMultiByteToWideChar(first, sourceLen, nullptr, 0);
+	const auto converted = std::make_unique<wchar_t[]>(convertedLen);
 
 	// Convert
-	const int resultMBTWC = CallMultiByteToWideChar(
+	const auto resultMBTWC = CallMultiByteToWideChar(
 		first, sourceLen, converted.get(), convertedLen);
 	if (resultMBTWC != convertedLen)
 	{
-		throw std::runtime_error(std::string() +
+		throw std::runtime_error(std::string{} +
 			"MultiByteToWideChar returned " + std::to_string(resultMBTWC) +
 			" when it was expected to return " + std::to_string(convertedLen));
 	}
 
 	// Create wstring from array
-	return std::wstring(converted.get(), convertedLen);
+	return std::wstring{converted.get(), static_cast<std::size_t>(convertedLen)};
 }
 
 std::string StdStringEncodingConverter::Utf16ToWinAcp(LPCWCH first, LPCWCH last) const
 {
 	// Get length of source string
-	const int sourceLen = (last ? last - first : lstrlenW(first));
+	const auto sourceLen = (last ? last - first : lstrlenW(first));
 	// Don't use MultiByteToWideChar if source string is empty
-	if (sourceLen == 0) return std::string{};
+	if (sourceLen == 0) return {};
 
 	// Get length of converted string and create array for it
-	const int convertedLen = CallWideCharToMultiByte(first, sourceLen, nullptr, 0);
-	const std::unique_ptr<char[]> converted(new char[convertedLen]);
+	const auto convertedLen = CallWideCharToMultiByte(first, sourceLen, nullptr, 0);
+	const auto converted = std::make_unique<char[]>(convertedLen);
 
 	// Convert
-	const int resultMBTWC = CallWideCharToMultiByte(
+	const auto resultWCTMB = CallWideCharToMultiByte(
 			first, sourceLen, converted.get(), convertedLen);
-	if (resultMBTWC != convertedLen)
+	if (resultWCTMB != convertedLen)
 	{
-		throw std::runtime_error(std::string() +
-			"WideCharToMultiByte returned " + std::to_string(resultMBTWC) +
+		throw std::runtime_error(std::string{} +
+			"WideCharToMultiByte returned " + std::to_string(resultWCTMB) +
 			" when it was expected to return " + std::to_string(convertedLen));
 	}
 
 	// Create wstring from array
-	return std::string(converted.get(), convertedLen);
+	return std::string{converted.get(), static_cast<std::size_t>(convertedLen)};
 }

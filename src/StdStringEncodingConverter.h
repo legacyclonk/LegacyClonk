@@ -18,6 +18,7 @@
 #ifdef WIN32
 
 #include "C4Windows.h"
+
 #include <string>
 
 class StdStringEncodingConverter
