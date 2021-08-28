@@ -112,6 +112,9 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 #else
 	pComp->Value(mkNamingAdapt(Preloading,           "Preloading",           true));
 #endif
+#if defined(_WIN32) && !defined(USE_CONSOLE)
+	pComp->Value(mkNamingAdapt(DefaultShellCommand,  "DefaultShellCommand",  "Open"));
+#endif
 }
 
 void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)

@@ -48,7 +48,6 @@ src/C4Facet.cpp
 src/C4Facet.h
 src/C4FacetEx.cpp
 src/C4FacetEx.h
-src/C4FileClasses.h
 src/C4FileMonitor.cpp
 src/C4FileMonitor.h
 src/C4FileSelDlg.cpp

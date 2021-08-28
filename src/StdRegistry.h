@@ -23,33 +23,23 @@
 #include "C4Windows.h"
 #include "StdCompiler.h"
 
+#include <string_view>
+
 bool GetRegistryDWord(HKEY hKey, const char *szSubKey,
 	const char *szValueName, DWORD *lpdwValue);
 
 bool GetRegistryString(const char *szSubKey, const char *szValueName, char *sValue, DWORD dwValSize);
 bool SetRegistryString(const char *szSubKey, const char *szValueName, const char *szValue);
 
-bool DeleteRegistryKey(HKEY hKey, const char *szSubKey);
+bool DeleteRegistryKey(HKEY hKey, std::wstring_view subKey);
 
-bool SetRegClassesRoot(const char *szSubKey,
-	const char *szValueName,
-	const char *szStringValue);
+bool SetRegClassesRoot(std::wstring_view subKey, std::wstring_view valueName, std::wstring_view value);
 
-bool SetRegShell(const char *szClassName,
-	const char *szShellName,
-	const char *szShellCaption,
-	const char *szCommand,
-	bool fMakeDefault = false);
+bool SetRegShell(std::wstring_view className, std::wstring_view shellName, std::wstring_view shellCaption, std::wstring_view command, bool makeDefault = false);
 
-bool RemoveRegShell(const char *szClassName,
-	const char *szShellName);
+bool RemoveRegShell(std::wstring_view className, std::wstring_view shellName);
 
-bool SetRegFileClass(const char *szClassRoot,
-	const char *szExtension,
-	const char *szClassName,
-	const char *szIconPath, int iIconNum,
-	const char *szContentType);
-
+bool SetRegFileClass(std::wstring_view classRoot, std::wstring extension, std::wstring_view className, std::wstring_view iconPath, int iconNum, std::wstring_view contentType);
 bool StoreWindowPosition(HWND hwnd,
 	const char *szWindowName,
 	const char *szSubKey,

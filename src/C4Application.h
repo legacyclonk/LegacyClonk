@@ -140,6 +140,12 @@ public:
 	void QuitGame(); // quit game only, but restart application if in fullscreen startup menu mode
 	void Activate(); // activate app to gain full focus in OS
 	void SetNextMission(const char *szMissionFilename);
+
+#if defined(_WIN32) && !defined(USE_CONSOLE)
+private:
+	bool SetFileClasses();
+#endif
+
 };
 
 extern C4Application Application;

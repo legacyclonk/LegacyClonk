@@ -39,6 +39,8 @@
 #include <C4Version.h>
 #include <C4Update.h>
 
+#include <array>
+
 #include <shellapi.h>
 #include <conio.h>
 
@@ -357,32 +359,31 @@ bool ProcessGroup(const char *szFilename)
 	return true;
 }
 
+constexpr std::array ShellClasses{L"Clonk4.Definition", L"Clonk4.Folder", L"Clonk4.Group", L"Clonk4.Player", L"Clonk4.Scenario", L"Clonk4.Update", L"Clonk4.Weblink", L"Clonk4.Object"};
+
 int RegisterShellExtensions()
 {
 #ifdef _WIN32
-	char strModule[2048];
-	char strCommand[2048];
-	char strClass[128];
-	GetModuleFileName(nullptr, strModule, 2048);
+	wchar_t module[_MAX_PATH + 1];
+	GetModuleFileNameW(nullptr, module, _MAX_PATH);
+
 	// Groups
-	const char *strClasses = "Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink;Clonk4.Object";
-	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
+	const auto command = std::wstring{L"\""} + module + L"\" \"%1\" \"";
+	const std::wstring unpackCommand{command + L"-u\""};
+	const std::wstring explodeCommand{command + L"-x\""};
+
+	for (const auto &shellClass : ShellClasses)
 	{
 		// Unpack
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-u\"", strModule);
-		if (!SetRegShell(strClass, "MakeFolder", "C4Group Unpack", strCommand)) return 0;
+		if (!SetRegShell(shellClass, L"MakeFolder", L"C4Group Unpack", unpackCommand)) return 0;
+
 		// Explode
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-x\"", strModule);
-		if (!SetRegShell(strClass, "ExplodeFolder", "C4Group Explode", strCommand)) return 0;
+		if (!SetRegShell(shellClass, L"ExplodeFolder", L"C4Group Explode", explodeCommand)) return 0;
 	}
-	// Directories
-	const char *strClasses2 = "Directory";
-	for (int i = 0; SCopySegment(strClasses2, i, strClass); i++)
-	{
-		// Pack
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-p\"", strModule);
-		if (!SetRegShell(strClass, "MakeGroupFile", "C4Group Pack", strCommand)) return 0;
-	}
+
+	// Directories: Pack
+	const std::wstring packCommand{command + L"-p\""};
+	if (!SetRegShell(L"Directory", L"MakeGroupFile", L"C4GroupPack", packCommand)) return 0;
 	// Done
 #endif
 	return 1;
@@ -391,25 +392,18 @@ int RegisterShellExtensions()
 int UnregisterShellExtensions()
 {
 #ifdef _WIN32
-	char strModule[2048];
-	char strClass[128];
-	GetModuleFileName(nullptr, strModule, 2048);
 	// Groups
-	const char *strClasses = "Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink";
-	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
+	for (const auto &shellClass : ShellClasses)
 	{
 		// Unpack
-		if (!RemoveRegShell(strClass, "MakeFolder")) return 0;
+		if (!RemoveRegShell(shellClass, L"MakeFolder")) return 0;
 		// Explode
-		if (!RemoveRegShell(strClass, "ExplodeFolder")) return 0;
+		if (!RemoveRegShell(shellClass, L"ExplodeFolder")) return 0;
 	}
-	// Directories
-	const char *strClasses2 = "Directory";
-	for (int i = 0; SCopySegment(strClasses2, i, strClass); i++)
-	{
-		// Pack
-		if (!RemoveRegShell(strClass, "MakeGroupFile")) return 0;
-	}
+
+	// Directories: Pack
+	if (!RemoveRegShell(L"Directory", L"MakeGroupFile")) return 0;
+
 	// Done
 #endif
 	return 1;

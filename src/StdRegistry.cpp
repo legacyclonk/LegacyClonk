@@ -132,56 +132,65 @@ bool SetRegistryString(const char *szSubKey,
 	return true;
 }
 
-bool DeleteRegistryKey(HKEY hKey, const char *szSubKey)
+bool DeleteRegistryKey(HKEY hKey, std::wstring_view subKey)
 {
 	HKEY ckey;
 	// Open the key
-	if (RegOpenKeyEx(hKey, szSubKey, 0, KEY_ALL_ACCESS, &ckey) != ERROR_SUCCESS) return false;
+	if (RegOpenKeyExW(hKey, subKey.data(), 0, KEY_ALL_ACCESS, &ckey) != ERROR_SUCCESS) return false;
+
 	// Delete all subkeys
-	char strChild[1024 + 1];
-	while (RegEnumKey(ckey, 0, strChild, 1024) == ERROR_SUCCESS)
-		if (!DeleteRegistryKey(ckey, strChild))
+	std::wstring child;
+	DWORD maxSize;
+	if (RegQueryInfoKeyW(ckey, nullptr, nullptr, nullptr, nullptr, &maxSize, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr) != ERROR_SUCCESS) return false;
+	child.resize(maxSize + 1);
+
+	while (RegEnumKeyW(ckey, 0, child.data(), maxSize) == ERROR_SUCCESS)
+	{
+		if (!DeleteRegistryKey(ckey, child))
+		{
 			return false;
+		}
+	}
+
 	// Close the key
 	RegCloseKey(ckey);
 
 	// Delete the key
-	if (RegDeleteKey(hKey, szSubKey) != ERROR_SUCCESS) return false;
+	if (RegDeleteKeyW(hKey, subKey.data()) != ERROR_SUCCESS) return false;
+
 	// Success
 	return true;
 }
 
-static HKEY ClassKeyForUser(std::string &subKey)
+static HKEY ClassKeyForUser(std::wstring &subKey)
 {
-	subKey = std::string{"Software\\Classes\\"} + subKey;
+	subKey = std::wstring{L"Software\\Classes\\"} + subKey;
 	return HKEY_CURRENT_USER;
 }
 
-static bool CreateClassKey(std::string subKey, HKEY &ckey, DWORD &disposition)
+static bool CreateClassKey(std::wstring subKey, HKEY &ckey, DWORD &disposition)
 {
 	const HKEY key{ClassKeyForUser(subKey)};
-	return RegCreateKeyEx(key, subKey.c_str(), 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, nullptr, &ckey, &disposition) == ERROR_SUCCESS;
+	return RegCreateKeyExW(key, subKey.c_str(), 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, nullptr, &ckey, &disposition) == ERROR_SUCCESS;
 }
 
-bool SetRegClassesRoot(const char *szSubKey,
-	const char *szValueName,
-	const char *szStringValue)
+bool SetRegClassesRoot(std::wstring_view subKey, std::wstring_view valueName, std::wstring_view value)
 {
 	HKEY ckey;
 	DWORD disposition;
 
-	if (!CreateClassKey(szSubKey, ckey, disposition))
+	if (!CreateClassKey(subKey.data(), ckey, disposition))
 	{
 		return false;
 	}
 
 	// Set the value
-	if (RegSetValueEx(ckey,
-		szValueName,
+	if (RegSetValueExW(ckey,
+		valueName.data(),
 		0,
 		REG_SZ,
-		(BYTE *)szStringValue,
-		checked_cast<DWORD>(SLen(szStringValue) + 1)
+		reinterpret_cast<const BYTE *const>(value.data()),
+		checked_cast<DWORD>((value.size() + 1) * sizeof(wchar_t))
 	) != ERROR_SUCCESS)
 	{
 		RegCloseKey(ckey); return false;
@@ -193,89 +202,56 @@ bool SetRegClassesRoot(const char *szSubKey,
 	return true;
 }
 
-bool SetRegClassesRootString(const char *szSubKey,
-	const char *szValueName,
-	const char *szValue)
+bool SetRegShell(std::wstring_view className, std::wstring_view shellName, std::wstring_view shellCaption, std::wstring_view command, bool makeDefault)
 {
-	HKEY ckey;
-	DWORD disposition;
+	std::wstring keyName{className.data()};
+	keyName.append(L"\\Shell");
 
-	if (!CreateClassKey(szSubKey, ckey, disposition))
-	{
-		return false;
-	}
-
-	// Set the value
-	if (RegSetValueEx(ckey,
-		szValueName,
-		0,
-		REG_SZ,
-		(BYTE *)szValue,
-		checked_cast<DWORD>(SLen(szValue) + 1)
-	) != ERROR_SUCCESS)
-	{
-		RegCloseKey(ckey); return false;
-	}
-
-	// Close the key
-	RegCloseKey(ckey);
-
-	return true;
-}
-
-bool SetRegShell(const char *szClassName,
-	const char *szShellName,
-	const char *szShellCaption,
-	const char *szCommand,
-	bool fMakeDefault)
-{
-	char szKeyName[256 + 1];
 	// Set shell caption
-	sprintf(szKeyName, "%s\\Shell\\%s", szClassName, szShellName);
-	if (!SetRegClassesRoot(szKeyName, nullptr, szShellCaption)) return false;
+	std::wstring path{keyName + L"\\" + shellName.data()};
+	if (!SetRegClassesRoot(path, L"", shellCaption)) return false;
+
 	// Set shell command
-	sprintf(szKeyName, "%s\\Shell\\%s\\Command", szClassName, szShellName);
-	if (!SetRegClassesRoot(szKeyName, nullptr, szCommand)) return false;
+	path.append(L"\\Command");
+	if (!SetRegClassesRoot(path, L"", command)) return false;
+
 	// Set as default command
-	if (fMakeDefault)
+	if (makeDefault)
 	{
-		sprintf(szKeyName, "%s\\Shell", szClassName);
-		if (!SetRegClassesRoot(szKeyName, nullptr, szShellName)) return false;
+		if (!SetRegClassesRoot(keyName, L"", shellName)) return false;
 	}
 	return true;
 }
 
-bool RemoveRegShell(const char *szClassName,
-	const char *szShellName)
+bool RemoveRegShell(std::wstring_view className, std::wstring_view shellName)
 {
-	std::string subKey{szClassName};
-	subKey.append("\\Shell\\").append(szShellName);
+	std::wstring subKey{className};
+	subKey.append(L"\\Shell\\").append(shellName);
 
 	const HKEY key{ClassKeyForUser(subKey)};
 	if (!DeleteRegistryKey(key, subKey.c_str())) return false;
 	return true;
 }
 
-bool SetRegFileClass(const char *szClassRoot,
-	const char *szExtension,
-	const char *szClassName,
-	const char *szIconPath, int iIconNum,
-	const char *szContentType)
+bool SetRegFileClass(std::wstring_view classRoot, std::wstring extension, std::wstring_view className, std::wstring_view iconPath, int iconNum, std::wstring_view contentType)
 {
-	char keyname[100];
-	char iconpath[512];
 	// Create root class entry
-	if (!SetRegClassesRoot(szClassRoot, nullptr, szClassName)) return false;
+	if (!SetRegClassesRoot(classRoot, L"", className)) return false;
+
 	// Set root class icon
-	sprintf(keyname, "%s\\DefaultIcon", szClassRoot);
-	sprintf(iconpath, "%s,%d", szIconPath, iIconNum);
-	if (!SetRegClassesRoot(keyname, nullptr, iconpath)) return false;
+	if (!SetRegClassesRoot(std::wstring{classRoot} + L"\\DefaultIcon", L"", std::wstring{iconPath.data()} + L',' + std::to_wstring(iconNum))) return false;
+
+	const std::wstring extensionPath{L'.'};
 	// Set extension map entry
-	sprintf(keyname, ".%s", szExtension);
-	if (!SetRegClassesRoot(keyname, nullptr, szClassRoot)) return false;
+	extension = L'.' + extension;
+	if (!SetRegClassesRoot(extension, L"", classRoot)) return false;
+
 	// Set extension content type
-	sprintf(keyname, ".%s", szExtension);
-	if (!SetRegClassesRootString(keyname, "Content Type", szContentType)) return false;
+	if (!SetRegClassesRoot(extension, L"Content Type", contentType)) return false;
+
+	// Set ProgID
+	if (!SetRegClassesRoot(extension + L"\\OpenWithProgIds", classRoot, L"")) return false;
+
 	// Success
 	return true;
 }

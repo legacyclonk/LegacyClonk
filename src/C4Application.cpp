@@ -18,22 +18,21 @@
 
 #include <C4Include.h>
 #include <C4Application.h>
-#include <C4Version.h>
-#ifdef _WIN32
-#include <StdRegistry.h>
-#include <C4UpdateDlg.h>
-#endif
-
-#include <C4FileClasses.h>
-#include <C4FullScreen.h>
-#include <C4Language.h>
 #include <C4Console.h>
-#include <C4Startup.h>
-#include <C4Log.h>
-#include <C4GamePadCon.h>
+#include <C4FullScreen.h>
 #include <C4GameLobby.h>
+#include <C4GamePadCon.h>
+#include <C4Language.h>
+#include <C4Log.h>
+#include <C4Startup.h>
+#include <C4Version.h>
 
-#include <StdRegistry.h> // For DDraw emulation warning
+#ifdef _WIN32
+#include <C4UpdateDlg.h>
+
+#include "StdStringEncodingConverter.h"
+#include <StdRegistry.h>
+#endif
 
 #include <cassert>
 #include <stdexcept>
@@ -191,8 +190,7 @@ void C4Application::DoInit()
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)
 	// Register clonk file classes - notice: this will only work if we have administrator rights
-	char szModule[_MAX_PATH + 1]; GetModuleFileName(nullptr, szModule, _MAX_PATH);
-	SetC4FileClasses(szModule);
+	SetFileClasses();
 #endif
 
 	// Initialize gamepad
@@ -644,3 +642,115 @@ void C4Application::SetNextMission(const char *szMissionFilename)
 	else
 		NextMission.Clear();
 }
+
+#if defined(_WIN32) && !defined(USE_CONSOLE)
+namespace
+{
+	constexpr auto C4FileClassContentType = L"application/vnd.clonk.c4group";
+
+	bool SetProtocol(std::wstring_view protocol, std::wstring_view command, std::wstring_view module)
+	{
+		if (!SetRegClassesRoot(protocol, L"", L"URL: Protocol")) return false;
+		if (!SetRegClassesRoot(protocol, L"URL Protocol", L"")) return false;
+
+		if (!SetRegClassesRoot(std::wstring{command} + L"\\shell\\open\\command", L"", std::wstring{command} + module.data())) return false;
+
+		if (!SetRegClassesRoot(std::wstring{protocol} + L"\\DefaultIcon", L"", std::wstring{module} + L",1")) return false;
+
+		return true;
+	}
+
+	std::wstring Escape(std::wstring_view str)
+	{
+		std::wstring result;
+		result.reserve(str.size());
+
+		for (const auto &c : str)
+		{
+			if (c == L'"')
+			{
+				result += L'\\';
+			}
+
+			result += c;
+		}
+
+		return result;
+	}
+
+	template<typename... Args>
+	std::wstring WithCommands(std::wstring_view enginePath, Args... args)
+	{
+		std::wstring result{L"\""};
+		result.append(Escape(enginePath));
+		result.append(L"\"");
+
+		(result.append(L"\"").append(args).append(L"\""), ...);
+		result.append(L" \"%1\"");
+		return result;
+	}
+
+	struct ShellCommand
+	{
+		std::wstring_view Name;
+		std::wstring Label;
+		std::wstring Command;
+
+		bool Apply(const bool makeDefault = false) const
+		{
+			return SetRegShell(L"Clonk4.Scenario", Name.data(), Label.data(), Command.c_str(), makeDefault);
+		}
+	};
+
+	static std::wstring LoadResStrW(const char *const name)
+	{
+		return StdStringEncodingConverter{}.WinAcpToUtf16(LoadResStrNoAmp(name));
+	}
+}
+
+bool C4Application::SetFileClasses()
+{
+	std::array<wchar_t, _MAX_PATH + 1> enginePathBuffer;
+	GetModuleFileNameW(nullptr, enginePathBuffer.data(), _MAX_PATH);
+
+	std::wstring enginePath{enginePathBuffer.data()};
+	std::wstring defaultShellCommand{StdStringEncodingConverter{}.WinAcpToUtf16(Config.General.DefaultShellCommand.c_str())};
+
+	if (!SetRegFileClass(L"Clonk4.Scenario", L"c4s", L"Clonk 4 Scenario", enginePath, 1, C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Group", L"c4g", L"Clonk 4 Group", enginePath, 2, C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Folder", L"c4f", L"Clonk 4 Folder", enginePath, 3, C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Player", L"c4p", L"Clonk 4 Player", enginePath, 4, C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Definition", L"c4d", L"Clonk 4 Object Definition", enginePath, 6, C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Object", L"c4i", L"Clonk 4 Object Info", enginePath, 7, C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Material", L"c4m", L"Clonk 4 Material", enginePath, 8, L"text/plain")) return false;
+	if (!SetRegFileClass(L"Clonk4.Binary", L"c4b", L"Clonk 4 Binary", enginePath, 9, L"application/octet-stream")) return false;
+	if (!SetRegFileClass(L"Clonk4.Video", L"c4v", L"Clonk 4 Video", enginePath, 10, L"video/avi")) return false;
+	if (!SetRegFileClass(L"Clonk4.Weblink", L"c4l", L"Clonk 4 Weblink", enginePath, 11, C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Update", L"c4u", L"Clonk 4 Update", enginePath, 13, C4FileClassContentType)) return false;
+
+	if (!SetProtocol(L"clonk", L"%s %1", enginePath)) return false;
+
+	// c4u application: send to engine
+	if (!SetRegShell(L"Clonk4.Update", L"Update", L"Update", WithCommands(enginePath), true)) return false;
+
+	const std::array<ShellCommand, 3> shellCommands
+	{{
+		{L"Open", LoadResStrW("IDS_DLG_STARTGAME"), WithCommands(enginePath)},
+		{L"OpenConsole", LoadResStrW("IDS_SHELL_OPENCONSOLE"), WithCommands(enginePath, L"/console")},
+		{L"OpenLobby", LoadResStrW("IDS_DLG_NETSTART"), WithCommands(enginePath, L"/network", L"/lobby")}
+	}};
+
+	for (const auto &command : shellCommands)
+	{
+		if (!command.Apply(command.Name == defaultShellCommand))
+		{
+			return false;
+		}
+	}
+
+	// kill old App Paths registration
+	DeleteRegistryKey(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Clonk.exe");
+
+	return true;
+}
+#endif

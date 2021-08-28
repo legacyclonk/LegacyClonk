@@ -85,6 +85,10 @@ public:
 	bool ShowLogTimestamps;
 	bool Preloading;
 
+#if defined(_WIN32) && !defined(USE_CONSOLE)
+	std::string DefaultShellCommand;
+#endif
+
 public:
 	static int GetLanguageSequence(const char *strSource, char *strTarget);
 	void DefaultLanguage();
