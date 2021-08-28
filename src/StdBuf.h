@@ -611,6 +611,8 @@ public:
 	template<typename... Args>
 	void AppendFormat(const char *format, Args... args)
 	{
+		static_assert(std::conjunction_v<std::is_trivial<Args>...>, "Cannot pass arguments of non-trivial types");
+
 		if (!IsSafeFormatString(format))
 		{
 			BREAKPOINT_HERE

@@ -533,11 +533,11 @@ void C4Object::SetOCF()
 #ifdef _DEBUG
 	if (Contained && !Game.Objects.ObjectNumber(Contained))
 	{
-		LogF("Warning: contained in wild object %p!", Contained);
+		LogF("Warning: contained in wild object %p!", Contained.Object());
 	}
 	else if (Contained && !Contained->Status)
 	{
-		LogF("Warning: contained in deleted object %p (%s)!", Contained, Contained->GetName());
+		LogF("Warning: contained in deleted object %p (%s)!", Contained.Object(), Contained->GetName());
 	}
 #endif
 	if (Contained)
@@ -675,11 +675,11 @@ void C4Object::UpdateOCF()
 #ifdef _DEBUG
 	if (Contained && !Game.Objects.ObjectNumber(Contained))
 	{
-		LogF("Warning: contained in wild object %p!", Contained);
+		LogF("Warning: contained in wild object %p!", Contained.Object());
 	}
 	else if (Contained && !Contained->Status)
 	{
-		LogF("Warning: contained in deleted object %p (%s)!", Contained, Contained->GetName());
+		LogF("Warning: contained in deleted object %p (%s)!", Contained.Object(), Contained->GetName());
 	}
 #endif
 	if (Contained)
