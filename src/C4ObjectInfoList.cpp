@@ -55,27 +55,32 @@ void C4ObjectInfoList::Clear()
 
 int32_t C4ObjectInfoList::Load(C4Group &hGroup, bool fLoadPortraits)
 {
-	C4ObjectInfo *ninf;
+	std::unique_ptr<C4ObjectInfo> info;
 	int32_t infn = 0;
 	char entryname[256 + 1];
 
 	// Search all c4i files
 	hGroup.ResetSearch();
 	while (hGroup.FindNextEntry(C4CFN_ObjectInfoFiles, entryname))
-		if (ninf = new C4ObjectInfo)
-			if (ninf->Load(hGroup, entryname, fLoadPortraits)) { Add(ninf); infn++; }
-			else delete ninf;
+	{
+		info.reset(new C4ObjectInfo);
+		if (info->Load(hGroup, entryname, fLoadPortraits))
+		{
+			Add(info.release());
+			++infn;
+		}
 
-			// Search subfolders
-			hGroup.ResetSearch();
-			while (hGroup.FindNextEntry("*", entryname))
-			{
-				C4Group ItemGroup;
-				if (ItemGroup.OpenAsChild(&hGroup, entryname))
-					Load(ItemGroup, fLoadPortraits);
-			}
+		// Search subfolders
+		hGroup.ResetSearch();
+		while (hGroup.FindNextEntry("*", entryname))
+		{
+			C4Group ItemGroup;
+			if (ItemGroup.OpenAsChild(&hGroup, entryname))
+				Load(ItemGroup, fLoadPortraits);
+		}
+	}
 
-			return infn;
+	return infn;
 }
 
 bool C4ObjectInfoList::Add(C4ObjectInfo *pInfo)
@@ -139,33 +144,45 @@ C4ObjectInfo *C4ObjectInfoList::GetIdle(C4ID c_id, C4DefList &rDefs)
 
 C4ObjectInfo *C4ObjectInfoList::New(C4ID n_id, C4DefList *pDefs, const char *cpNames)
 {
-	C4ObjectInfo *pInfo;
 	// Create new info object
-	if (!(pInfo = new C4ObjectInfo)) return nullptr;
+	auto info = std::make_unique<C4ObjectInfo>();
+
 	// Default type clonk if none specified
 	if (n_id == C4ID_None) n_id = C4ID_Clonk;
+
 	// Check type valid and def available
-	C4Def *pDef = nullptr;
-	if (!pDefs || !(pDef = pDefs->ID2Def(n_id)))
+	C4Def *def{nullptr};
+	if (!pDefs || !(def = pDefs->ID2Def(n_id)))
 	{
-		delete pInfo; return nullptr;
+		return nullptr;
 	}
+
 	// Override name source by definition
-	if (pDef->pClonkNames)
-		cpNames = pDef->pClonkNames->GetData();
+	if (def->pClonkNames)
+	{
+		cpNames = def->pClonkNames->GetData();
+	}
+
 	// Default by type
-	static_cast<C4ObjectInfoCore *>(pInfo)->Default(n_id, pDefs, cpNames);
+	static_cast<C4ObjectInfoCore *>(info.get())->Default(n_id, pDefs, cpNames);
+
 	// Set birthday
-	pInfo->Birthday = static_cast<int32_t>(time(nullptr));
+	info->Birthday = static_cast<int32_t>(time(nullptr));
+
 	// Make valid names
-	MakeValidName(pInfo->Name);
+	MakeValidName(info->Name);
+
 	// Add new portrait (permanently w/o copying file)
 	if (Config.Graphics.AddNewCrewPortraits)
-		pInfo->SetRandomPortrait(0, true, false);
+	{
+		info->SetRandomPortrait(0, true, false);
+	}
+
 	// Add
-	Add(pInfo);
+	Add(info.get());
 	++iNumCreated;
-	return pInfo;
+
+	return info.release();
 }
 
 void C4ObjectInfoList::Evaluate()

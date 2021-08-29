@@ -601,10 +601,6 @@ void C4ToolsDlg::UpdatePreview()
 	if (!hbox) return;
 #endif
 
-	C4Surface *sfcPreview;
-
-	int32_t iPrvWdt, iPrvHgt;
-
 	RECT rect;
 #ifdef _WIN32
 	GetClientRect(GetDlgItem(hDialog, IDC_PREVIEW), &rect);
@@ -616,14 +612,13 @@ void C4ToolsDlg::UpdatePreview()
 	rect.right = 64;
 #endif
 
-	iPrvWdt = rect.right - rect.left;
-	iPrvHgt = rect.bottom - rect.top;
-
-	if (!(sfcPreview = new C4Surface(iPrvWdt, iPrvHgt))) return;
+	const int32_t previewWidth{rect.right - rect.left};
+	const int32_t previewHeight{rect.bottom - rect.top};
+	const auto surfacePreview = std::make_unique<C4Surface>(previewWidth, previewHeight);
 
 	// fill bg
 #ifdef _WIN32
-	Application.DDraw->DrawBox(sfcPreview, 0, 0, iPrvWdt - 1, iPrvHgt - 1, CGray4);
+	Application.DDraw->DrawBox(surfacePreview.get(), 0, 0, previewWidth - 1, previewHeight - 1, CGray4);
 #endif
 	uint8_t bCol = 0;
 	CPattern Pattern1;
@@ -663,12 +658,12 @@ void C4ToolsDlg::UpdatePreview()
 #elif defined(WITH_DEVELOPER_MODE)
 	if (GTK_WIDGET_SENSITIVE(preview))
 #endif
-		Application.DDraw->DrawPatternedCircle(sfcPreview,
-			iPrvWdt / 2, iPrvHgt / 2,
+		Application.DDraw->DrawPatternedCircle(surfacePreview.get(),
+			previewWidth / 2, previewHeight / 2,
 			Grade,
 			bCol, Pattern1, Pattern2, *Game.Landscape.GetPal());
 
-	Application.DDraw->AttachPrimaryPalette(sfcPreview);
+	Application.DDraw->AttachPrimaryPalette(surfacePreview.get());
 
 #ifdef _WIN32
 #ifndef USE_CONSOLE
@@ -676,7 +671,7 @@ void C4ToolsDlg::UpdatePreview()
 	{
 		if (pGLCtx->Select())
 		{
-			pGL->Blit(sfcPreview, 0, 0, (float)iPrvWdt, (float)iPrvHgt, pGL->lpPrimary, rect.left, rect.top, iPrvWdt, iPrvHgt);
+			pGL->Blit(surfacePreview.get(), 0, 0, static_cast<float>(previewWidth), static_cast<float>(previewHeight), pGL->lpPrimary, rect.left, rect.top, previewWidth, previewHeight);
 			pGL->PageFlip(nullptr, nullptr, nullptr);
 			pGL->GetMainCtx().Select();
 		}
@@ -686,21 +681,20 @@ void C4ToolsDlg::UpdatePreview()
 	// TODO: Can we optimize this?
 	GdkPixbuf *pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, 64, 64);
 	guchar *data = gdk_pixbuf_get_pixels(pixbuf);
-	sfcPreview->Lock();
+	surfacePreview->Lock();
 	for (int x = 0; x < 64; ++x) for (int y = 0; y < 64; ++y)
 	{
-		uint32_t dw = sfcPreview->GetPixDw(x, y, true);
+		uint32_t dw = surfacePreview->GetPixDw(x, y, true);
 		*data = (dw >> 16) & 0xff; ++data;
 		*data = (dw >> 8) & 0xff; ++data;
 		*data = (dw) & 0xff; ++data;
 		*data = 0xff - ((dw >> 24) & 0xff); ++data;
 	}
 
-	sfcPreview->Unlock();
+	surfacePreview->Unlock();
 	gtk_image_set_from_pixbuf(GTK_IMAGE(preview), pixbuf);
 	g_object_unref(pixbuf);
 #endif
-	delete sfcPreview;
 }
 
 void C4ToolsDlg::InitGradeCtrl()

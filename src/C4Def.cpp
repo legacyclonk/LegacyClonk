@@ -949,7 +949,6 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 	bool fSearchMessage, int32_t iMinProgress, int32_t iMaxProgress, bool fLoadSysGroups)
 {
 	int32_t iResult = 0;
-	C4Def *nDef;
 	char szEntryname[_MAX_FNAME + 1];
 	C4Group hChild;
 	bool fPrimaryDef = false;
@@ -969,16 +968,17 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 	if (fThisSearchMessage) { LogF("%s...", GetFilename(hGroup.GetName())); }
 #endif
 
+	auto def = std::make_unique<C4Def>();
 	// Load primary definition
-	if (nDef = new C4Def)
-		if (nDef->Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem) && Add(nDef, fOverload))
-		{
-			iResult++; fPrimaryDef = true;
-		}
-		else
-		{
-			delete nDef;
-		}
+	if (def->Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem) && Add(def.get(), fOverload))
+	{
+		iResult++; fPrimaryDef = true;
+		def.release();
+	}
+	else
+	{
+		def.reset();
+	}
 
 	// Load sub definitions
 	int i = 0;

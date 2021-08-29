@@ -107,7 +107,6 @@ int C4ObjectList::ListIDCount(int32_t dwCategory)
 
 bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 {
-	C4ObjectLink *nLnk;
 	if (!nObj || !nObj->Def || !nObj->Status) return false;
 
 #ifdef _DEBUG
@@ -126,9 +125,9 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 	assert(pLstSorted != this);
 
 	// Allocate new link
-	if (!(nLnk = new C4ObjectLink)) return false;
+	auto newLink = std::make_unique<C4ObjectLink>();
 	// Set link
-	nLnk->Obj = nObj;
+	newLink->Obj = nObj;
 
 	// Search insert position (default: end of list)
 	C4ObjectLink *cLnk = nullptr, *cPrev = Last;
@@ -217,7 +216,8 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 	assert(!cLnk || cLnk->Prev == cPrev);
 
 	// Insert new link after predecessor
-	InsertLink(nLnk, cPrev);
+	InsertLink(newLink.get(), cPrev);
+	newLink.release();
 
 #ifdef _DEBUG
 	// Debug: Check sort

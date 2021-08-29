@@ -142,23 +142,21 @@ bool C4TextureMap::AddEntry(uint8_t byIndex, const char *szMaterial, const char 
 
 bool C4TextureMap::AddTexture(const char *szTexture, C4Surface *sfcSurface)
 {
-	C4Texture *pTexture;
-	if (!(pTexture = new C4Texture)) return false;
-	SCopy(szTexture, pTexture->Name, C4M_MaxName);
-	pTexture->Surface32 = sfcSurface;
-	pTexture->Next = FirstTexture;
-	FirstTexture = pTexture;
+	auto texture = std::make_unique<C4Texture>();
+	SCopy(szTexture, texture->Name, C4M_MaxName);
+	texture->Surface32 = sfcSurface;
+	texture->Next = FirstTexture;
+	FirstTexture = texture.release();
 	return true;
 }
 
 bool C4TextureMap::AddTexture(const char *szTexture, CSurface8 *sfcSurface)
 {
-	C4Texture *pTexture;
-	if (!(pTexture = new C4Texture)) return false;
-	SCopy(szTexture, pTexture->Name, C4M_MaxName);
-	pTexture->Surface8 = sfcSurface;
-	pTexture->Next = FirstTexture;
-	FirstTexture = pTexture;
+	auto texture = std::make_unique<C4Texture>();
+	SCopy(szTexture, texture->Name, C4M_MaxName);
+	texture->Surface8 = sfcSurface;
+	texture->Next = FirstTexture;
+	FirstTexture = texture.release();
 	return true;
 }
 

@@ -509,21 +509,20 @@ bool C4Landscape::MapToLandscape(CSurface8 *sfcMap, int32_t iMapX, int32_t iMapY
 
 CSurface8 *C4Landscape::CreateMap()
 {
-	CSurface8 *sfcMap;
-	int32_t iWidth = 0, iHeight = 0;
+	int32_t width{0};
+	int32_t height{0};
 
 	// Create map surface
-	Game.C4S.Landscape.GetMapSize(iWidth, iHeight, Game.Parameters.StartupPlayerCount);
-	if (!(sfcMap = new CSurface8(iWidth, iHeight)))
-		return nullptr;
+	Game.C4S.Landscape.GetMapSize(width, height, Game.Parameters.StartupPlayerCount);
+	auto surfaceMap = std::make_unique<CSurface8>(width, height);
 
 	// Fill sfcMap
 	C4MapCreator MapCreator;
-	MapCreator.Create(sfcMap,
+	MapCreator.Create(surfaceMap.get(),
 		Game.C4S.Landscape, Game.TextureMap,
 		true, Game.Parameters.StartupPlayerCount);
 
-	return sfcMap;
+	return surfaceMap.release();
 }
 
 CSurface8 *C4Landscape::CreateMapS2(C4Group &ScenFile)

@@ -627,18 +627,17 @@ bool C4PathFinder::AddRay(int32_t iFromX, int32_t iFromY, int32_t iToX, int32_t 
 	// Max depth
 	if (iDepth >= C4PF_MaxDepth * Level) return false;
 	// Allocate and set new ray
-	C4PathFinderRay *pRay;
-	if (!(pRay = new C4PathFinderRay)) return false;
-	pRay->X = iFromX; pRay->Y = iFromY;
-	pRay->X2 = iFromX; pRay->Y2 = iFromY;
-	pRay->TargetX = iToX; pRay->TargetY = iToY;
-	pRay->Depth = iDepth;
-	pRay->Direction = iDirection;
-	pRay->From = pFrom;
-	pRay->pPathFinder = this;
-	pRay->Next = FirstRay;
-	pRay->UseZone = pUseZone;
-	FirstRay = pRay;
+	auto ray = std::make_unique<C4PathFinderRay>();
+	ray->X = iFromX; ray->Y = iFromY;
+	ray->X2 = iFromX; ray->Y2 = iFromY;
+	ray->TargetX = iToX; ray->TargetY = iToY;
+	ray->Depth = iDepth;
+	ray->Direction = iDirection;
+	ray->From = pFrom;
+	ray->pPathFinder = this;
+	ray->Next = FirstRay;
+	ray->UseZone = pUseZone;
+	FirstRay = ray.release();
 	return true;
 }
 
@@ -647,20 +646,19 @@ bool C4PathFinder::SplitRay(C4PathFinderRay *pRay, int32_t iAtX, int32_t iAtY)
 	// Max depth
 	if (pRay->Depth >= C4PF_MaxDepth * Level) return false;
 	// Allocate and set new ray
-	C4PathFinderRay *pNewRay;
-	if (!(pNewRay = new C4PathFinderRay)) return false;
-	pNewRay->Status = C4PF_Ray_Still;
-	pNewRay->X = pRay->X; pNewRay->Y = pRay->Y;
-	pNewRay->X2 = iAtX; pNewRay->Y2 = iAtY;
-	pNewRay->TargetX = pRay->TargetX; pNewRay->TargetY = pRay->TargetY;
-	pNewRay->Depth = pRay->Depth;
-	pNewRay->Direction = pRay->Direction;
-	pNewRay->From = pRay->From;
-	pNewRay->pPathFinder = this;
-	pNewRay->Next = FirstRay;
-	FirstRay = pNewRay;
+	auto newRay = std::make_unique<C4PathFinderRay>();
+	newRay->Status = C4PF_Ray_Still;
+	newRay->X = pRay->X; newRay->Y = pRay->Y;
+	newRay->X2 = iAtX; newRay->Y2 = iAtY;
+	newRay->TargetX = pRay->TargetX; newRay->TargetY = pRay->TargetY;
+	newRay->Depth = pRay->Depth;
+	newRay->Direction = pRay->Direction;
+	newRay->From = pRay->From;
+	newRay->pPathFinder = this;
+	newRay->Next = FirstRay;
+	FirstRay = newRay.get();
 	// Adjust split ray
-	pRay->From = pNewRay;
+	pRay->From = newRay.release();
 	pRay->X = iAtX; pRay->Y = iAtY;
 	return true;
 }

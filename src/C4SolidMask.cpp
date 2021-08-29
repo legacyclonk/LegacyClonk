@@ -399,7 +399,7 @@ C4SolidMask::C4SolidMask(C4Object *pForObject) : pForObject(pForObject)
 	else First = this;
 	// copy solid mask from bitmap
 	int iNeededBufSize = pForObject->SolidMask.Wdt * pForObject->SolidMask.Hgt;
-	if (!(pSolidMask = new uint8_t[iNeededBufSize])) return;
+	pSolidMask = new uint8_t[iNeededBufSize];
 	C4Surface *sfcBitmap = pForObject->GetGraphics()->GetBitmap();
 	if (!sfcBitmap->Lock()) return;
 
@@ -413,7 +413,7 @@ C4SolidMask::C4SolidMask(C4Object *pForObject) : pForObject(pForObject)
 	// create mat buff to store the material replaced by the solid mask
 	// the upper left corner is here the [objpos]+rot([shapexy]+[targetxy]+[realWH]/2)-maxWH/2
 	MatBuffPitch = static_cast<int>(sqrt(double(pForObject->SolidMask.Wdt * pForObject->SolidMask.Wdt + pForObject->SolidMask.Hgt * pForObject->SolidMask.Hgt))) + 1;
-	if (!(pSolidMaskMatBuff = new uint8_t[MatBuffPitch * MatBuffPitch]{})) return;
+	pSolidMaskMatBuff = new uint8_t[MatBuffPitch * MatBuffPitch]{};
 	sfcBitmap->Unlock(true);
 }
 

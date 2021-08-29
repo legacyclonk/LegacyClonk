@@ -1076,26 +1076,35 @@ C4Object *C4Game::NewObject(C4Def *pDef, C4Object *pCreator,
 	AddDbgRec(RCT_CrObj, &rc, sizeof(rc));
 #endif
 	// Create object
-	C4Object *pObj;
-	if (!(pObj = new C4Object)) return nullptr;
+	auto obj = std::make_unique<C4Object>();
+	C4Object *const objPtr{obj.get()};
+
 	// Initialize object
-	pObj->Init(pDef, pCreator, iOwner, pInfo, iX, iY, iR, xdir, ydir, rdir, iController);
+	obj->Init(pDef, pCreator, iOwner, pInfo, iX, iY, iR, xdir, ydir, rdir, iController);
 	// Enumerate object
-	pObj->Number = ++ObjectEnumerationIndex;
+	obj->Number = ++ObjectEnumerationIndex;
 	// Add to object list
-	if (!Objects.Add(pObj)) { delete pObj; return nullptr; }
+	if (Objects.Add(obj.get()))
+	{
+		obj.release();
+	}
+	else
+	{
+		return nullptr;
+	}
+
 	// ---- From now on, object is ready to be used in scripts!
 	// Construction callback
 	C4AulParSet pars(C4VObj(pCreator));
-	pObj->Call(PSF_Construction, pars);
+	objPtr->Call(PSF_Construction, pars);
 	// AssignRemoval called? (Con 0)
-	if (!pObj->Status) { return nullptr; }
+	if (!objPtr->Status) { return nullptr; }
 	// Do initial con
-	pObj->DoCon(iCon, true);
+	objPtr->DoCon(iCon, true);
 	// AssignRemoval called? (Con 0)
-	if (!pObj->Status) { return nullptr; }
+	if (!objPtr->Status) { return nullptr; }
 	// Success
-	return pObj;
+	return objPtr;
 }
 
 void C4Game::DeleteObjects(bool fDeleteInactive)
@@ -2034,20 +2043,25 @@ bool C4Game::SaveGameTitle(C4Group &hGroup)
 	// Fullscreen screenshot
 	else if (Application.isFullScreen && Application.Active)
 	{
-		C4Surface *sfcPic; int32_t iSfcWdt = 200, iSfcHgt = 150;
-		if (!(sfcPic = new C4Surface(iSfcWdt, iSfcHgt))) return false;
+		constexpr int32_t surfaceWidth{200};
+		constexpr int32_t surfaceHeight{150};
+
+		const auto surface = std::make_unique<C4Surface>(surfaceWidth, surfaceHeight);
 
 		// Fullscreen
 		Application.DDraw->Blit(Application.DDraw->lpBack,
 			0.0f, 0.0f, float(Application.DDraw->lpBack->Wdt), float(Application.DDraw->lpBack->Hgt),
-			sfcPic, 0, 0, iSfcWdt, iSfcHgt);
+			surface.get(), 0, 0, surfaceWidth, surfaceHeight);
 
-		bool fOkay = true;
-		const char *szDestFn;
-		fOkay = sfcPic->SavePNG(Config.AtTempPath(C4CFN_TempTitle), false, true, false);
-		szDestFn = C4CFN_ScenarioTitlePNG;
-		delete sfcPic; if (!fOkay) return false;
-		if (!hGroup.Move(Config.AtTempPath(C4CFN_TempTitle), szDestFn)) return false;
+		if (!surface->SavePNG(Config.AtTempPath(C4CFN_TempTitle), false, true, false))
+		{
+			return false;
+		}
+
+		if (!hGroup.Move(Config.AtTempPath(C4CFN_TempTitle), C4CFN_ScenarioTitlePNG))
+		{
+			return false;
+		}
 	}
 
 	return true;

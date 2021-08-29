@@ -182,7 +182,7 @@ C4PXS *C4PXSSystem::New()
 		// Create new chunk if necessary
 		if (!Chunk[cnt])
 		{
-			if (!(Chunk[cnt] = new C4PXS[PXSChunkSize])) return nullptr;
+			Chunk[cnt] = new C4PXS[PXSChunkSize];
 			iChunkPXS[cnt] = 0;
 		}
 		// Check this chunk for space
@@ -380,7 +380,7 @@ bool C4PXSSystem::Load(C4Group &hGroup)
 	if (iChunkNum > PXSMaxChunk) return false;
 	for (uint32_t cnt = 0; cnt < iChunkNum; cnt++)
 	{
-		if (!(Chunk[cnt] = new C4PXS[PXSChunkSize])) return false;
+		Chunk[cnt] = new C4PXS[PXSChunkSize];
 		if (!hGroup.Read(Chunk[cnt], iChunkSize)) return false;
 		// count the PXS, Peter!
 		// convert num format, if neccessary

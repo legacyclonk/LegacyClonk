@@ -684,15 +684,15 @@ bool C4Group::Open(const char *szGroupName, bool fCreate)
 	} while (!FileExists(szRealGroup));
 
 	// Open mother and child in exclusive mode
-	C4Group *pMother;
-	if (!(pMother = new C4Group))
-		return Error("Open: mem");
-	pMother->SetStdOutput(StdOutput);
-	if (!pMother->Open(szRealGroup))
+	auto *const mother = new C4Group;
+	mother->SetStdOutput(StdOutput);
+
+	if (!mother->Open(szRealGroup))
 	{
 		Clear(); return Error("Open: Cannot open mother");
 	}
-	if (!OpenAsChild(pMother, szGroupNameN + SLen(szRealGroup) + 1, true))
+
+	if (!OpenAsChild(mother, szGroupNameN + SLen(szRealGroup) + 1, true))
 	{
 		Clear(); return Error("Open:: Cannot open as child");
 	}
@@ -831,7 +831,8 @@ bool C4Group::AddEntry(int status,
 	if (centry) { centry->Status = C4GRES_Deleted; Head.Entries--; }
 
 	// Allocate memory for new entry
-	if (!(nentry = new C4GroupEntry)) return false; // ...theoretically, delete Hold buffer here
+	nentry = new C4GroupEntry;
+	// if (!(nentry = new C4GroupEntry)) return false; ...theoretically, delete Hold buffer here - why?
 
 	// Find end of list
 	for (lentry = FirstEntry; lentry && lentry->Next; lentry = lentry->Next);
@@ -2194,7 +2195,8 @@ bool C4Group::LoadEntry(const char *szEntryName, char **lpbpBuf, size_t *ipSize,
 	// Access entry, allocate buffer, read data
 	(*lpbpBuf) = nullptr; if (ipSize) *ipSize = 0;
 	if (!AccessEntry(szEntryName, &size)) return Error("LoadEntry: Not found");
-	if (!((*lpbpBuf) = new char[size + iAppendZeros])) return Error("LoadEntry: Insufficient memory");
+
+	*lpbpBuf = new char[size + iAppendZeros];
 	if (!Read(*lpbpBuf, size))
 	{
 		delete[] (*lpbpBuf); *lpbpBuf = nullptr;
