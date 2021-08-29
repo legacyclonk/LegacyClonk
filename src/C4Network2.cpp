@@ -1036,11 +1036,11 @@ C4NetpuncherID::value &C4Network2::getNetpuncherGameID(const C4NetIO::HostAddres
 	{
 	case C4NetIO::HostAddress::IPv4: return NetpuncherGameID.v4;
 	case C4NetIO::HostAddress::IPv6: return NetpuncherGameID.v6;
-	default:
-		assert(!"Unexpected address family");
-		// We need to return a valid reference to satisfy the compiler, even though the code here is unreachable.
-		return NetpuncherGameID.v4;
+	case C4NetIO::HostAddress::UnknownFamily: ; // fallthrough
 	}
+	assert(!"Unexpected address family");
+	// We need to return a valid reference to satisfy the compiler, even though the code here is unreachable.
+	return NetpuncherGameID.v4;
 }
 
 void C4Network2::OnPuncherConnect(const C4NetIO::addr_t addr)

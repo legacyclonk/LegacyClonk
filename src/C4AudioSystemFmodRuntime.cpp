@@ -334,9 +334,8 @@ struct FmodRuntime : private Library
 			case FMOD_ERR_CHANNEL_ALLOC:	return "Failed to allocate a new channel";
 			case FMOD_ERR_RECORD:			return "Recording not supported on this device";
 			case FMOD_ERR_MEDIAPLAYER:		return "Required Mediaplayer codec is not installed";
-
-			default :						return "Unknown error";
 		};
+		return "Unknown error";
 	}
 };
 

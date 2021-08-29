@@ -317,8 +317,10 @@ bool C4TeamList::CanLocalChooseTeam() const
 	case TEAMDIST_Random:
 	case TEAMDIST_RandomInv:
 		return false;
-	default: assert(false); return false;
 	}
+
+	assert(false);
+	return false;
 }
 
 bool C4TeamList::CanLocalChooseTeam(int32_t idPlayer) const
@@ -776,8 +778,8 @@ StdStrBuf C4TeamList::GetTeamDistName(TeamDist eTeamDist) const
 	case TEAMDIST_None:      return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_NONE"),   true));
 	case TEAMDIST_Random:    return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_RND"),    true));
 	case TEAMDIST_RandomInv: return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_RNDINV"), true));
-	default: return (FormatString("TEAMDIST_undefined(%d)", static_cast<int>(eTeamDist)));
 	}
+	return (FormatString("TEAMDIST_undefined(%d)", static_cast<int>(eTeamDist)));
 }
 
 void C4TeamList::FillTeamDistOptions(C4GUI::ComboBox_FillCB *pFiller) const

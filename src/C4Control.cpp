@@ -1274,8 +1274,12 @@ StdStrBuf C4ControlVote::getDesc() const
 		else
 			Action.Ref(LoadResStr("IDS_TEXT_UNPAUSETHEGAME"));
 		break;
-	default:
-		Action = "perform some mysterious action"; break;
+	case VT_None:
+		; // fallthrough
+	}
+	if (!Action)
+	{
+		Action = "perform some mysterious action";
 	}
 	return Action;
 }

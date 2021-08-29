@@ -77,7 +77,7 @@ C4ChatInputDialog::C4ChatInputDialog(bool fObjInput, C4Object *pScriptTarget, bo
 		pEdit->InsertText("\"", true);
 		break;
 
-	default:
+	case All:
 		break;
 	}
 }

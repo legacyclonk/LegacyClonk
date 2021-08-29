@@ -372,9 +372,10 @@ const char *GetC4VName(const C4V_Type Type)
 		return "map";
 	case C4V_pC4Value:
 		return "&";
-	default:
-		return "!Fehler!";
+	case C4V_C4ObjectEnum:
+		; // fallthrough
 	}
+	return "!Fehler!";
 }
 
 char GetC4VID(const C4V_Type Type)
@@ -784,13 +785,13 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 		iTmp = Data.Int;
 		pComp->Value(iTmp);
 		Data.Int = iTmp;
-		break;
+		return;
 
 	case C4V_C4ID:
 		iTmp = static_cast<int32_t>(Data.ID);
 		pComp->Value(iTmp);
 		Data.ID = static_cast<C4ID>(iTmp);
-		break;
+		return;
 
 	// object: save object number instead
 	case C4V_C4Object:
@@ -809,7 +810,7 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 			Type = C4V_C4ObjectEnum;
 			Data.Int = iTmp; // must be denumerated later
 		}
-		break;
+		return;
 
 	// string: save string number
 #ifdef C4ENGINE
@@ -828,30 +829,29 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 			else
 				Type = C4V_Any;
 		}
-		break;
+		return;
 
 	case C4V_Array:
 		pComp->Separator(StdCompiler::SEP_START2);
 		pComp->Value(mkPtrAdapt(Data.Array, false));
 		if (fCompiler) Data.Container = Data.Array->IncRef();
 		pComp->Separator(StdCompiler::SEP_END2);
-		break;
+		return;
 
 	case C4V_Map:
 		pComp->Separator(StdCompiler::SEP_START2);
 		pComp->Value(mkPtrAdapt(Data.Map, false));
 		if (fCompiler) Data.Container = Data.Map->IncRef();
 		pComp->Separator(StdCompiler::SEP_END2);
-		break;
+		return;
 
 	// shouldn't happen
 	case C4V_pC4Value:
+		; // fallthrough
 #endif // C4ENGINE
-
-	default:
-		assert(false);
-		break;
 	}
+
+	assert(false);
 }
 
 bool C4Value::Equals(const C4Value &other, C4AulScriptStrict strict) const
@@ -881,9 +881,11 @@ bool C4Value::Equals(const C4Value &other, C4AulScriptStrict strict) const
 					return *Data.Array == *other.Data.Array;
 				case C4V_Map:
 					return *Data.Map == *other.Data.Map;
-				default:
-					return false;
+				case C4V_pC4Value:
+				case C4V_C4ObjectEnum:
+					; // fallthrough
 			}
+			return false;
 	}
 	return false;
 }

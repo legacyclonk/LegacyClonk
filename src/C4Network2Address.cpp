@@ -52,8 +52,9 @@ StdStrBuf C4Network2Address::toString() const
 	{
 	case P_UDP: return FormatString("UDP:%s", addr.ToString().getData());
 	case P_TCP: return FormatString("TCP:%s", addr.ToString().getData());
-	default:    return StdStrBuf("INVALID");
+	case P_NONE: ; // fallthrough
 	}
+	return StdStrBuf("INVALID");
 }
 
 bool C4Network2Address::operator==(const C4Network2Address &addr2) const

@@ -656,8 +656,9 @@ StdStrBuf C4NetIO::EndpointAddress::ToString(const int flags) const
 	{
 	case IPv4: return FormatString("%s:%d", HostAddress::ToString(flags).getData(), GetPort());
 	case IPv6: return FormatString("[%s]:%d", HostAddress::ToString(flags).getData(), GetPort());
-	default: assert(!"Shouldn't reach this");
+	case UnknownFamily: ; // fallthrough
 	}
+	assert(!"Shouldn't reach this");
 	return {};
 }
 

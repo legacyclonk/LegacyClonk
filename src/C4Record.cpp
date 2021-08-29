@@ -922,8 +922,9 @@ const char *GetRecordChunkTypeName(C4RecordChunkType eType)
 
 	case RCT_Custom: return "Custom"; // varies
 
-	case RCT_Undefined: default: return "Undefined";
+	case RCT_Undefined: ; // fallthrough
 	};
+	return "Undefined";
 }
 
 StdStrBuf GetDbgRecPktData(C4RecordChunkType eType, const StdBuf &RawData)

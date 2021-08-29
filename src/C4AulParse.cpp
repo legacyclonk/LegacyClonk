@@ -912,9 +912,8 @@ static const char *GetTTName(C4AulBCCType e)
 	case AB_ERR:              return "AB_ERR";              // parse error at this position
 	case AB_EOFN:             return "AB_EOFN";             // end of function
 	case AB_EOF:              return "AB_EOF";
-
-	default: return "?";
 	}
+	return "?";
 }
 
 void C4AulScript::AddBCC(C4AulBCCType eType, std::intptr_t X, const char *SPos)
@@ -1371,8 +1370,8 @@ const char *C4AulParseState::GetTokenName(C4AulTokenType TokenType)
 	case ATT_QMARK:    return "'?'";
 	case ATT_OPERATOR: return "operator";
 	case ATT_EOF:      return "end of file";
-	default:           return "unrecognized token";
 	}
+	return "unrecognized token";
 }
 
 void C4AulParseState::Shift(HoldStringsPolicy HoldStrings, bool bOperator)
