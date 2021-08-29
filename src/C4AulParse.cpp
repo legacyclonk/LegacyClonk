@@ -1362,6 +1362,7 @@ const char *C4AulParseState::GetTokenName(C4AulTokenType TokenType)
 	case ATT_BLCLOSE:  return "'}'";
 	case ATT_SEP:      return "'|'";
 	case ATT_CALL:     return "'->'";
+	case ATT_GLOBALCALL: return "'global->'";
 	case ATT_STAR:     return "'*'";
 	case ATT_AMP:      return "'&'";
 	case ATT_TILDE:    return "'~'";
@@ -1934,6 +1935,7 @@ void C4AulParseState::Parse_Statement()
 	case ATT_BOOL:  // constant in cInt
 	case ATT_STRING: // reference in cInt
 	case ATT_C4ID: // converted ID in cInt
+	case ATT_GLOBALCALL:
 	{
 		Parse_Expression();
 		SetNoRef();
@@ -3025,7 +3027,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 				switch (TokenType)
 				{
 				case ATT_IDTF: case ATT_NIL: case ATT_INT: case ATT_BOOL: case ATT_STRING: case ATT_C4ID:
-				case ATT_OPERATOR: case ATT_BOPEN: case ATT_BOPEN2: case ATT_BLOPEN:
+				case ATT_OPERATOR: case ATT_BOPEN: case ATT_BOPEN2: case ATT_BLOPEN: case ATT_GLOBALCALL:
 					Parse_Expression(C4ScriptOpMap[OpID].Priority);
 					// If the operator does not modify the second argument, no reference is necessary
 					if (C4ScriptOpMap[OpID].Type2 != C4V_pC4Value)
