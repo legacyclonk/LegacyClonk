@@ -23,6 +23,11 @@
 
 #include <stdio.h>
 
+std::wstring CreateIconPath(std::wstring_view path, int index)
+{
+	return std::wstring{path.data()} + L',' + std::to_wstring(index);
+}
+
 bool GetRegistryDWord(HKEY hKey, const char *szSubKey, const char *szValueName, DWORD *lpdwValue)
 {
 	long qerr;
@@ -202,7 +207,7 @@ bool SetRegClassesRoot(std::wstring_view subKey, std::wstring_view valueName, st
 	return true;
 }
 
-bool SetRegShell(std::wstring_view className, std::wstring_view shellName, std::wstring_view shellCaption, std::wstring_view command, bool makeDefault)
+bool SetRegShell(std::wstring_view className, std::wstring_view shellName, std::wstring_view shellCaption, std::wstring_view command, std::optional<std::wstring> iconPath, bool makeDefault)
 {
 	std::wstring keyName{className.data()};
 	keyName.append(L"\\Shell");
@@ -212,8 +217,10 @@ bool SetRegShell(std::wstring_view className, std::wstring_view shellName, std::
 	if (!SetRegClassesRoot(path, L"", shellCaption)) return false;
 
 	// Set shell command
-	path.append(L"\\Command");
-	if (!SetRegClassesRoot(path, L"", command)) return false;
+	if (!SetRegClassesRoot(path + L"\\Command", L"", command)) return false;
+
+	// Set shell icon
+	if (iconPath && !SetRegClassesRoot(path, L"Icon", *iconPath)) return false;
 
 	// Set as default command
 	if (makeDefault)
@@ -233,13 +240,13 @@ bool RemoveRegShell(std::wstring_view className, std::wstring_view shellName)
 	return true;
 }
 
-bool SetRegFileClass(std::wstring_view classRoot, std::wstring extension, std::wstring_view className, std::wstring_view iconPath, int iconNum, std::wstring_view contentType)
+bool SetRegFileClass(std::wstring_view classRoot, std::wstring extension, std::wstring_view className, std::wstring iconPath, std::wstring_view contentType)
 {
 	// Create root class entry
 	if (!SetRegClassesRoot(classRoot, L"", className)) return false;
 
 	// Set root class icon
-	if (!SetRegClassesRoot(std::wstring{classRoot} + L"\\DefaultIcon", L"", std::wstring{iconPath.data()} + L',' + std::to_wstring(iconNum))) return false;
+	if (!SetRegClassesRoot(std::wstring{classRoot.data()} + L"\\DefaultIcon", L"", iconPath)) return false;
 
 	const std::wstring extensionPath{L'.'};
 	// Set extension map entry

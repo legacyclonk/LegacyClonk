@@ -679,13 +679,22 @@ namespace
 	}
 
 	template<typename... Args>
+	std::wstring WithArguments(Args... args)
+	{
+		std::wstring result;
+		(result.append(L"\"").append(args).append(L"\""), ...);
+		return result;
+	}
+
+	template<typename... Args>
 	std::wstring WithCommands(std::wstring_view enginePath, Args... args)
 	{
 		std::wstring result{L"\""};
 		result.append(Escape(enginePath));
 		result.append(L"\"");
 
-		(result.append(L"\"").append(args).append(L"\""), ...);
+		result.append(WithArguments(args...));
+
 		result.append(L" \"%1\"");
 		return result;
 	}
@@ -694,11 +703,12 @@ namespace
 	{
 		std::wstring_view Name;
 		std::wstring Label;
-		std::wstring Command;
+		std::wstring Arguments;
+		std::wstring IconPath;
 
-		bool Apply(const bool makeDefault = false) const
+		bool Apply(std::wstring_view enginePath, const bool makeDefault = false) const
 		{
-			return SetRegShell(L"Clonk4.Scenario", Name.data(), Label.data(), Command.c_str(), makeDefault);
+			return SetRegShell(L"Clonk4.Scenario", Name.data(), Label.data(), WithCommands(enginePath, Arguments).c_str(), IconPath, makeDefault);
 		}
 	};
 
@@ -715,34 +725,35 @@ bool C4Application::SetFileClasses()
 
 	std::wstring enginePath{enginePathBuffer.data()};
 	std::wstring defaultShellCommand{StdStringEncodingConverter{}.WinAcpToUtf16(Config.General.DefaultShellCommand.c_str())};
+	const std::wstring scenarioIconPath{CreateIconPath(enginePath, 1)};
 
-	if (!SetRegFileClass(L"Clonk4.Scenario", L"c4s", L"Clonk 4 Scenario", enginePath, 1, C4FileClassContentType)) return false;
-	if (!SetRegFileClass(L"Clonk4.Group", L"c4g", L"Clonk 4 Group", enginePath, 2, C4FileClassContentType)) return false;
-	if (!SetRegFileClass(L"Clonk4.Folder", L"c4f", L"Clonk 4 Folder", enginePath, 3, C4FileClassContentType)) return false;
-	if (!SetRegFileClass(L"Clonk4.Player", L"c4p", L"Clonk 4 Player", enginePath, 4, C4FileClassContentType)) return false;
-	if (!SetRegFileClass(L"Clonk4.Definition", L"c4d", L"Clonk 4 Object Definition", enginePath, 6, C4FileClassContentType)) return false;
-	if (!SetRegFileClass(L"Clonk4.Object", L"c4i", L"Clonk 4 Object Info", enginePath, 7, C4FileClassContentType)) return false;
-	if (!SetRegFileClass(L"Clonk4.Material", L"c4m", L"Clonk 4 Material", enginePath, 8, L"text/plain")) return false;
-	if (!SetRegFileClass(L"Clonk4.Binary", L"c4b", L"Clonk 4 Binary", enginePath, 9, L"application/octet-stream")) return false;
-	if (!SetRegFileClass(L"Clonk4.Video", L"c4v", L"Clonk 4 Video", enginePath, 10, L"video/avi")) return false;
-	if (!SetRegFileClass(L"Clonk4.Weblink", L"c4l", L"Clonk 4 Weblink", enginePath, 11, C4FileClassContentType)) return false;
-	if (!SetRegFileClass(L"Clonk4.Update", L"c4u", L"Clonk 4 Update", enginePath, 13, C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Scenario", L"c4s", L"Clonk 4 Scenario", scenarioIconPath, C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Group", L"c4g", L"Clonk 4 Group", CreateIconPath(enginePath, 2), C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Folder", L"c4f", L"Clonk 4 Folder", CreateIconPath(enginePath, 3), C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Player", L"c4p", L"Clonk 4 Player", CreateIconPath(enginePath, 4), C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Definition", L"c4d", L"Clonk 4 Object Definition", CreateIconPath(enginePath, 6), C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Object", L"c4i", L"Clonk 4 Object Info", CreateIconPath(enginePath, 7), C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Material", L"c4m", L"Clonk 4 Material", CreateIconPath(enginePath, 8), L"text/plain")) return false;
+	if (!SetRegFileClass(L"Clonk4.Binary", L"c4b", L"Clonk 4 Binary", CreateIconPath(enginePath, 9), L"application/octet-stream")) return false;
+	if (!SetRegFileClass(L"Clonk4.Video", L"c4v", L"Clonk 4 Video", CreateIconPath(enginePath, 10), L"video/avi")) return false;
+	if (!SetRegFileClass(L"Clonk4.Weblink", L"c4l", L"Clonk 4 Weblink", CreateIconPath(enginePath, 11), C4FileClassContentType)) return false;
+	if (!SetRegFileClass(L"Clonk4.Update", L"c4u", L"Clonk 4 Update", CreateIconPath(enginePath, 13), C4FileClassContentType)) return false;
 
 	if (!SetProtocol(L"clonk", L"%s %1", enginePath)) return false;
 
 	// c4u application: send to engine
-	if (!SetRegShell(L"Clonk4.Update", L"Update", L"Update", WithCommands(enginePath), true)) return false;
+	if (!SetRegShell(L"Clonk4.Update", L"Update", L"Update", WithCommands(enginePath), CreateIconPath(enginePath, 13), true)) return false;
 
 	const std::array<ShellCommand, 3> shellCommands
 	{{
-		{L"Open", LoadResStrW("IDS_DLG_STARTGAME"), WithCommands(enginePath)},
-		{L"OpenConsole", LoadResStrW("IDS_SHELL_OPENCONSOLE"), WithCommands(enginePath, L"/console")},
-		{L"OpenLobby", LoadResStrW("IDS_DLG_NETSTART"), WithCommands(enginePath, L"/network", L"/lobby")}
+		{L"Open", LoadResStrW("IDS_DLG_STARTGAME"), L"", scenarioIconPath},
+		{L"OpenConsole", LoadResStrW("IDS_SHELL_OPENCONSOLE"), WithArguments(L"/console", L"/network"), scenarioIconPath},
+		{L"OpenLobby", LoadResStrW("IDS_DLG_NETSTART"), WithArguments(L"/lobby", L"/network"), scenarioIconPath}
 	}};
 
 	for (const auto &command : shellCommands)
 	{
-		if (!command.Apply(command.Name == defaultShellCommand))
+		if (!command.Apply(enginePath, command.Name == defaultShellCommand))
 		{
 			return false;
 		}

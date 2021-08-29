@@ -23,7 +23,10 @@
 #include "C4Windows.h"
 #include "StdCompiler.h"
 
+#include <optional>
 #include <string_view>
+
+std::wstring CreateIconPath(std::wstring_view path, int index);
 
 bool GetRegistryDWord(HKEY hKey, const char *szSubKey,
 	const char *szValueName, DWORD *lpdwValue);
@@ -35,11 +38,11 @@ bool DeleteRegistryKey(HKEY hKey, std::wstring_view subKey);
 
 bool SetRegClassesRoot(std::wstring_view subKey, std::wstring_view valueName, std::wstring_view value);
 
-bool SetRegShell(std::wstring_view className, std::wstring_view shellName, std::wstring_view shellCaption, std::wstring_view command, bool makeDefault = false);
+bool SetRegShell(std::wstring_view className, std::wstring_view shellName, std::wstring_view shellCaption, std::wstring_view command, std::optional<std::wstring> iconPath = {}, bool makeDefault = false);
 
 bool RemoveRegShell(std::wstring_view className, std::wstring_view shellName);
 
-bool SetRegFileClass(std::wstring_view classRoot, std::wstring extension, std::wstring_view className, std::wstring_view iconPath, int iconNum, std::wstring_view contentType);
+bool SetRegFileClass(std::wstring_view classRoot, std::wstring extension, std::wstring_view className, std::wstring iconPath, std::wstring_view contentType);
 bool StoreWindowPosition(HWND hwnd,
 	const char *szWindowName,
 	const char *szSubKey,
