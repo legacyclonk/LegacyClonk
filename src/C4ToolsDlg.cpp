@@ -612,8 +612,8 @@ void C4ToolsDlg::UpdatePreview()
 	rect.right = 64;
 #endif
 
-	const int32_t previewWidth{rect.right - rect.left};
-	const int32_t previewHeight{rect.bottom - rect.top};
+	const auto previewWidth = static_cast<std::int32_t>(rect.right - rect.left);
+	const auto previewHeight = static_cast<std::int32_t>(rect.bottom - rect.top);
 	const auto surfacePreview = std::make_unique<C4Surface>(previewWidth, previewHeight);
 
 	// fill bg
