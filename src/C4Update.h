@@ -43,19 +43,23 @@ public:
 	bool Save(C4Group &hGroup);
 };
 
-#define C4UPD_CHK_OK              0
-#define C4UPD_CHK_NO_SOURCE       1
-#define C4UPD_CHK_BAD_SOURCE      2
-#define C4UPD_CHK_ALREADY_UPDATED 3
-#define C4UPD_CHK_BAD_VERSION     4
 
 class C4UpdatePackage : public C4UpdatePackageCore
 {
 public:
+	enum class CheckResult
+	{
+		Ok,
+		NoSource,
+		BadSource,
+		AlreadyUpdated,
+		BadVersion
+	};
+
 	bool Load(C4Group *pGroup);
 	bool Execute(C4Group *pGroup);
 	static bool Optimize(C4Group *pGrpFrom, const char *strTarget);
-	int Check(C4Group *pGroup);
+	CheckResult Check(C4Group *pGroup);
 	bool MakeUpdate(const char *strFile1, const char *strFile2, const char *strUpdateFile, const char *strName = nullptr);
 
 protected:

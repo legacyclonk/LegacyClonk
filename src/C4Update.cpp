@@ -50,27 +50,27 @@ bool C4Group_ApplyUpdate(C4Group &hGroup)
 		if (Upd.Load(&hGroup))
 		{
 			// Do update check first (ensure packet has everything it needs in order to perfom the update)
-			int iRes = Upd.Check(&hGroup);
-			switch (iRes)
+			const auto result = Upd.Check(&hGroup);
+			switch (result)
 			{
 			// Bad version - checks against version of the applying executable (major version must match, minor version must be equal or higher)
-			case C4UPD_CHK_BAD_VERSION:
+			case C4UpdatePackage::CheckResult::BadVersion:
 				fprintf(stderr, "This update %s can only be applied using version %d.%d.%d.%d or higher.\n", Upd.Name, Upd.RequireVersion[0], Upd.RequireVersion[1], Upd.RequireVersion[2], Upd.RequireVersion[3]);
 				return false;
 			// Target not found: keep going
-			case C4UPD_CHK_NO_SOURCE:
+			case C4UpdatePackage::CheckResult::NoSource:
 				fprintf(stderr, "Target %s for update %s not found. Ignoring.\n", Upd.DestPath, Upd.Name);
 				return true;
 			// Target mismatch: abort updating
-			case C4UPD_CHK_BAD_SOURCE:
+			case C4UpdatePackage::CheckResult::BadSource:
 				fprintf(stderr, "Target %s incorrect version for update %s. Ignoring.\n", Upd.DestPath, Upd.Name);
 				return true;
 			// Target already updated: keep going
-			case C4UPD_CHK_ALREADY_UPDATED:
+			case C4UpdatePackage::CheckResult::AlreadyUpdated:
 				fprintf(stderr, "Target %s already up-to-date at %s.\n", Upd.DestPath, Upd.Name);
 				return true;
 			// Ok to perform update
-			case C4UPD_CHK_OK:
+			case C4UpdatePackage::CheckResult::Ok:
 				printf("Updating %s to %s... ", Upd.DestPath, Upd.Name);
 				// Make sure the user sees the message while the work is in progress
 				fflush(stdout);
@@ -85,11 +85,9 @@ bool C4Group_ApplyUpdate(C4Group &hGroup)
 					printf("Failed\n");
 					return false;
 				}
-			// Unknown return value from update
-			default:
-				fprintf(stderr, "Unknown error while updating.\n");
-				return false;
 			}
+			fprintf(stderr, "Unknown error while updating.\n");
+			return false;
 		}
 
 	// Process binary update group (AutoUpdate.txt found, additional binary files found)
@@ -422,35 +420,35 @@ bool C4UpdatePackage::Optimize(C4Group *pGroup, const char *strTarget)
 	return true;
 }
 
-int C4UpdatePackage::Check(C4Group *pGroup)
+C4UpdatePackage::CheckResult C4UpdatePackage::Check(C4Group *pGroup)
 {
 	// Version requirement is set
 	if (RequireVersion[0])
 	{
 		// Engine and game version must match (rest ignored)
 		if ((C4XVER1 != RequireVersion[0]) || (C4XVER2 != RequireVersion[1]))
-			return C4UPD_CHK_BAD_VERSION;
+			return CheckResult::BadSource;
 	}
 
 	// only group updates have any special needs
-	if (!GrpUpdate) return C4UPD_CHK_OK;
+	if (!GrpUpdate) return CheckResult::Ok;
 
 	// check source file
 	C4Group TargetGrp;
 	if (!TargetGrp.Open(DestPath))
-		return C4UPD_CHK_NO_SOURCE;
+		return CheckResult::NoSource;
 	if (!TargetGrp.IsPacked())
-		return C4UPD_CHK_BAD_SOURCE;
+		return CheckResult::BadSource;
 	TargetGrp.Close();
 
 	// check source crc
 	uint32_t iCRC32, iContentsCRC32;
 	if (!C4Group_GetFileContentsCRC(DestPath, &iContentsCRC32))
-		return C4UPD_CHK_BAD_SOURCE;
+		return CheckResult::BadSource;
 
 	if (GrpContentsCRC2 && GrpContentsCRC2 == iContentsCRC32)
 		// so there's nothing to do
-		return C4UPD_CHK_ALREADY_UPDATED;
+		return CheckResult::AlreadyUpdated;
 
 	int i = 0;
 	for (; i < UpGrpCnt; i++)
@@ -460,22 +458,22 @@ int C4UpdatePackage::Check(C4Group *pGroup)
 	if (i >= UpGrpCnt)
 	{
 		if (!C4Group_GetFileCRC(DestPath, &iCRC32))
-			return C4UPD_CHK_BAD_SOURCE;
+			return CheckResult::BadSource;
 		// equal to destination group?
 		if (iCRC32 == GrpChks2)
 			// so there's nothing to do
-			return C4UPD_CHK_ALREADY_UPDATED;
+			return CheckResult::AlreadyUpdated;
 		// check if it's one of our registered sources
 		int i = 0;
 		for (; i < UpGrpCnt; i++)
 			if (iCRC32 == GrpChks1[i])
 				break;
 		if (i >= UpGrpCnt)
-			return C4UPD_CHK_BAD_SOURCE;
+			return CheckResult::BadSource;
 	}
 
 	// ok
-	return C4UPD_CHK_OK;
+	return CheckResult::Ok;
 }
 
 bool C4UpdatePackage::DoUpdate(C4Group *pGrpFrom, C4GroupEx *pGrpTo, const char *strFileName)
