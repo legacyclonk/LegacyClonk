@@ -533,8 +533,11 @@ void C4Game::Clear()
 	}
 
 	delete pFileMonitor; pFileMonitor = nullptr;
-	// fade out music
-	Application.MusicSystem->Stop(2000);
+	if (Application.MusicSystem)
+	{
+		// fade out music
+		Application.MusicSystem->Stop(2000);
+	}
 	// game no longer running
 	IsRunning = false;
 	PointersDenumerated = false;
@@ -601,7 +604,12 @@ void C4Game::Clear()
 	CloseScenario();
 	GroupSet.Clear();
 	KeyboardInput.Clear();
-	SetMusicLevel(100);
+
+	if (Application.MusicSystem)
+	{
+		SetMusicLevel(100);
+	}
+
 	PlayList.Clear();
 
 	// global fullscreen class is not cleared, because it holds the carrier window
