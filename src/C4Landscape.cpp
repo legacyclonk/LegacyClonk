@@ -509,8 +509,8 @@ bool C4Landscape::MapToLandscape(CSurface8 *sfcMap, int32_t iMapX, int32_t iMapY
 
 CSurface8 *C4Landscape::CreateMap()
 {
-	int32_t width{0};
-	int32_t height{0};
+	std::int32_t width{0};
+	std::int32_t height{0};
 
 	// Create map surface
 	Game.C4S.Landscape.GetMapSize(width, height, Game.Parameters.StartupPlayerCount);

@@ -2043,8 +2043,8 @@ bool C4Game::SaveGameTitle(C4Group &hGroup)
 	// Fullscreen screenshot
 	else if (Application.isFullScreen && Application.Active)
 	{
-		constexpr int32_t surfaceWidth{200};
-		constexpr int32_t surfaceHeight{150};
+		constexpr std::int32_t surfaceWidth{200};
+		constexpr std::int32_t surfaceHeight{150};
 
 		const auto surface = std::make_unique<C4Surface>(surfaceWidth, surfaceHeight);
 
