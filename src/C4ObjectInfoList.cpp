@@ -55,7 +55,6 @@ void C4ObjectInfoList::Clear()
 
 int32_t C4ObjectInfoList::Load(C4Group &hGroup, bool fLoadPortraits)
 {
-	std::unique_ptr<C4ObjectInfo> info;
 	int32_t infn = 0;
 	char entryname[256 + 1];
 
@@ -63,7 +62,7 @@ int32_t C4ObjectInfoList::Load(C4Group &hGroup, bool fLoadPortraits)
 	hGroup.ResetSearch();
 	while (hGroup.FindNextEntry(C4CFN_ObjectInfoFiles, entryname))
 	{
-		info.reset(new C4ObjectInfo);
+		auto info = std::make_unique<C4ObjectInfo>();
 		if (info->Load(hGroup, entryname, fLoadPortraits))
 		{
 			Add(info.release());
