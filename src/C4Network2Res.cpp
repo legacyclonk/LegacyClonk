@@ -325,8 +325,9 @@ void C4Network2ResChunkData::CompileFunc(StdCompiler *pComp)
 	// Data
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iChunkCnt),      "ChunkCnt",      0));
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iChunkRangeCnt), "ChunkRangeCnt", 0));
+	const auto name = pComp->Name("Ranges");
 	// Ranges
-	if (!pComp->Name("Ranges"))
+	if (!name)
 		pComp->excCorrupt("ResChunk ranges expected!");
 	ChunkRange *pRange = nullptr;
 	for (int32_t i = 0; i < iChunkRangeCnt; i++)
@@ -346,7 +347,6 @@ void C4Network2ResChunkData::CompileFunc(StdCompiler *pComp)
 	// Terminate list
 	if (fCompiler)
 		(pRange ? pRange->Next : pChunkRanges) = nullptr;
-	pComp->NameEnd();
 }
 
 // *** C4Network2Res

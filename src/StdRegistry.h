@@ -69,9 +69,8 @@ public:
 	virtual bool hasNaming() override { return true; }
 
 	// Naming
-	virtual bool Name(const char *szName) override;
+	virtual NameGuard Name(const char *szName) override;
 	virtual void NameEnd(bool fBreak = false) override;
-	virtual bool FollowName(const char *szName) override;
 	virtual bool Default(const char *szName) override;
 
 	// Separators
@@ -127,9 +126,8 @@ public:
 	virtual bool hasNaming() override { return true; }
 
 	// Naming
-	virtual bool Name(const char *szName) override;
+	virtual NameGuard Name(const char *szName) override;
 	virtual void NameEnd(bool fBreak = false) override;
-	virtual bool FollowName(const char *szName) override;
 
 	// Separators
 	virtual bool Separator(Sep eSep) override;

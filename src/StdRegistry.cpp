@@ -346,7 +346,7 @@ StdCompilerConfigWrite::~StdCompilerConfigWrite()
 	delete pKey;
 }
 
-bool StdCompilerConfigWrite::Name(const char *szName)
+StdCompiler::NameGuard StdCompilerConfigWrite::Name(const char *szName)
 {
 	// Open parent key (if not already done so)
 	CreateKey();
@@ -357,7 +357,7 @@ bool StdCompilerConfigWrite::Name(const char *szName)
 	pnKey->Parent = pKey;
 	pKey = pnKey;
 	iDepth++;
-	return true;
+	return {this, true};
 }
 
 void StdCompilerConfigWrite::NameEnd(bool fBreak)
@@ -371,11 +371,6 @@ void StdCompilerConfigWrite::NameEnd(bool fBreak)
 	pKey = poKey->Parent;
 	delete poKey;
 	iDepth--;
-}
-
-bool StdCompilerConfigWrite::FollowName(const char *szName)
-{
-	NameEnd(); return Name(szName);
 }
 
 bool StdCompilerConfigWrite::Default(const char *szName)
@@ -532,7 +527,7 @@ StdCompilerConfigRead::~StdCompilerConfigRead()
 	delete pKey;
 }
 
-bool StdCompilerConfigRead::Name(const char *szName)
+StdCompiler::NameGuard StdCompilerConfigRead::Name(const char *szName)
 {
 	bool fFound = true;
 	// Try to open registry key
@@ -556,7 +551,7 @@ bool StdCompilerConfigRead::Name(const char *szName)
 	pnKey->Type = dwType;
 	pKey = pnKey;
 	iDepth++;
-	return fFound;
+	return {this, fFound};
 }
 
 void StdCompilerConfigRead::NameEnd(bool fBreak)
@@ -570,11 +565,6 @@ void StdCompilerConfigRead::NameEnd(bool fBreak)
 	pKey = poKey->Parent;
 	delete poKey;
 	iDepth--;
-}
-
-bool StdCompilerConfigRead::FollowName(const char *szName)
-{
-	NameEnd(); return Name(szName);
 }
 
 bool StdCompilerConfigRead::Separator(Sep eSep)
