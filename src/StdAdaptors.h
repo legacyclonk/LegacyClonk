@@ -23,6 +23,7 @@
 #include <chrono>
 #include <limits>
 #include <memory>
+#include <optional>
 
 // * Wrappers for C4Compiler-types
 
@@ -74,17 +75,16 @@ struct StdNamingAdapt
 
 	inline void CompileFunc(StdCompiler *pComp) const
 	{
-		pComp->Name(szName);
+		auto name = pComp->Name(szName);
 		try
 		{
 			pComp->Value(rValue);
 		}
 		catch (const StdCompiler::Exception &)
 		{
-			pComp->NameEnd(true);
+			name.Abort();
 			throw;
 		}
-		pComp->NameEnd();
 	}
 
 	template <class D> inline bool operator==(const D &nValue) const { return rValue == nValue; }
@@ -110,10 +110,11 @@ struct StdNamingDefaultAdapt
 		{
 			if (pComp->Default(szName)) return;
 		}
+		auto name = pComp->Name(szName);
 		try
 		{
 			// Search named section, set default if not found
-			if (pComp->Name(szName))
+			if (name)
 			{
 				if (fPrefillDefault && pComp->isCompiler()) rValue = rDefault; // default prefill if desired
 				pComp->Value(mkDefaultAdapt(rValue, rDefault));
@@ -123,11 +124,9 @@ struct StdNamingDefaultAdapt
 		}
 		catch (const StdCompiler::Exception &)
 		{
-			pComp->NameEnd(true);
+			name.Abort();
 			throw;
 		}
-		// End section
-		pComp->NameEnd();
 	}
 };
 
@@ -502,6 +501,7 @@ struct StdPtrAdapt
 	{
 		bool fCompiler = pComp->isCompiler(),
 			fNaming = pComp->hasNaming();
+		std::optional<StdCompiler::NameGuard> name;
 		// Compiling? Clear object before
 		if (fCompiler) { rpObj.reset(); }
 		// Null checks - different with naming support.
@@ -510,8 +510,9 @@ struct StdPtrAdapt
 			{
 				// Null check: just omit when writing
 				if (!fCompiler && !rpObj) return;
+				name.emplace(pComp->Name(szNaming));
 				// Set up naming
-				if (!pComp->Name(szNaming)) { assert(fCompiler); pComp->NameEnd(); return; }
+				if (!*name) { assert(fCompiler); return; }
 			}
 			else
 			{
@@ -531,8 +532,6 @@ struct StdPtrAdapt
 		}
 		else
 			pComp->Value(mkDecompileAdapt(*rpObj));
-		// Close naming
-		if (fAllowNull && fNaming) pComp->NameEnd();
 	}
 
 	// Operators for default checking/setting

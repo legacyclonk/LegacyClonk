@@ -24,8 +24,48 @@
 #include <algorithm>
 #include <cinttypes>
 #include <cstring>
+#include <utility>
+
+StdCompiler::NameGuard::NameGuard(NameGuard &&other) noexcept
+	: compiler{std::exchange(other.compiler, nullptr)}, foundName{other.foundName} {}
+
+StdCompiler::NameGuard &StdCompiler::NameGuard::operator=(NameGuard &&other) noexcept
+{
+	compiler = std::exchange(other.compiler, nullptr);
+	foundName = other.foundName;
+	return *this;
+}
+
+StdCompiler::NameGuard::~NameGuard()
+{
+	End();
+}
+
+void StdCompiler::NameGuard::End()
+{
+	if (compiler)
+	{
+		compiler->NameEnd();
+		compiler = nullptr;
+	}
+}
+
+void StdCompiler::NameGuard::Abort()
+{
+	if (compiler)
+	{
+		compiler->NameEnd(true);
+		compiler = nullptr;
+	}
+}
+
+void StdCompiler::NameGuard::Disarm() noexcept
+{
+	compiler = nullptr;
+}
 
 // *** StdCompiler
+
 
 char StdCompiler::SeparatorToChar(Sep eSep)
 {
@@ -203,7 +243,7 @@ void StdCompilerBinRead::Begin()
 
 // *** StdCompilerINIWrite
 
-bool StdCompilerINIWrite::Name(const char *szName)
+StdCompiler::NameGuard StdCompilerINIWrite::Name(const char *szName)
 {
 	// Sub-Namesections exist, so it's a section. Write name if not already done so.
 	if (fPutName) PutName(true);
@@ -215,7 +255,7 @@ bool StdCompilerINIWrite::Name(const char *szName)
 	iDepth++;
 	// Done
 	fPutName = true; fInSection = false;
-	return true;
+	return {this, true};
 }
 
 void StdCompilerINIWrite::NameEnd(bool fBreak)
@@ -453,23 +493,23 @@ StdCompilerINIRead::~StdCompilerINIRead()
 }
 
 // Naming
-bool StdCompilerINIRead::Name(const char *szName)
+StdCompiler::NameGuard StdCompilerINIRead::Name(const char *szName)
 {
 	// Increase depth
 	iDepth++;
 	// Parent category virtual?
 	if (iDepth - 1 > iRealDepth)
-		return false;
+		return {this, false};
 	// Name must be alphanumerical and non-empty (force it)
 	if (!isalpha(static_cast<unsigned char>(*szName)))
 	{
-		assert(false); return false;
+		assert(false); return {this, false};
 	}
 	for (const char *p = szName + 1; *p; p++)
 		// C4Update needs Name**...
 		if (!isalnum(static_cast<unsigned char>(*p)) && *p != ' ' && *p != '_' && *p != '*')
 		{
-			assert(false); return false;
+			assert(false); return {this, false};
 		}
 	// Search name
 	NameNode *pNode;
@@ -480,14 +520,14 @@ bool StdCompilerINIRead::Name(const char *szName)
 	if (!pNode)
 	{
 		NotFoundName = szName;
-		return false;
+		return {this, false};
 	}
 	// Save tree position, indicate success
 	pName = pNode;
 	pPos = pName->Pos;
 	pReenter = nullptr;
 	iRealDepth++;
-	return true;
+	return {this, true};
 }
 
 void StdCompilerINIRead::NameEnd(bool fBreak)
@@ -537,7 +577,7 @@ bool StdCompilerINIRead::FollowName(const char *szName)
 	// End current naming
 	NameEnd();
 	// Start new one
-	Name(szName);
+	Name(szName).Disarm();
 	// Done
 	return true;
 }
@@ -553,7 +593,9 @@ bool StdCompilerINIRead::Separator(Sep eSep)
 		StdStrBuf CurrName;
 		CurrName.Take(pName->Name);
 		NameEnd();
-		return Name(CurrName.getData());
+		auto guard = Name(CurrName.getData());
+		guard.Disarm();
+		return static_cast<bool>(guard);
 	}
 	// Position saved back from separator mismatch?
 	if (pReenter) { pPos = pReenter; pReenter = nullptr; }

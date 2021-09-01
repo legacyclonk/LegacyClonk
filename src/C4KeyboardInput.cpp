@@ -758,7 +758,7 @@ void C4KeyboardInput::CompileFunc(StdCompiler *pComp)
 {
 	// compile all keys that are already defined
 	// no definition of new keys with current compiler...
-	pComp->Name("Keys");
+	auto name = pComp->Name("Keys");
 	try
 	{
 		for (KeyNameMap::const_iterator i = KeysByName.begin(); i != KeysByName.end(); ++i)
@@ -776,10 +776,9 @@ void C4KeyboardInput::CompileFunc(StdCompiler *pComp)
 	}
 	catch (const StdCompiler::Exception &)
 	{
-		pComp->NameEnd(true);
+		name.Abort();
 		throw;
 	}
-	pComp->NameEnd();
 }
 
 bool C4KeyboardInput::LoadCustomConfig()

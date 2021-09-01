@@ -146,29 +146,31 @@ bool C4PlayerInfoCore::Save(C4Group &hGroup)
 
 void C4PlayerInfoCore::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Name("Player");
-	pComp->Value(mkNamingAdapt(toC4CStr(PrefName), "Name",             "Neuling"));
-	pComp->Value(mkNamingAdapt(toC4CStr(Comment),  "Comment",          ""));
-	pComp->Value(mkNamingAdapt(Rank,               "Rank",             0));
-	pComp->Value(mkNamingAdapt(toC4CStr(RankName), "RankName",         LoadResStr("IDS_MSG_RANK")));
-	pComp->Value(mkNamingAdapt(Score,              "Score",            0));
-	pComp->Value(mkNamingAdapt(Rounds,             "Rounds",           0));
-	pComp->Value(mkNamingAdapt(RoundsWon,          "RoundsWon",        0));
-	pComp->Value(mkNamingAdapt(RoundsLost,         "RoundsLost",       0));
-	pComp->Value(mkNamingAdapt(TotalPlayingTime,   "TotalPlayingTime", 0));
-	pComp->Value(mkNamingAdapt(ExtraData,          "ExtraData",        C4ValueMapData()));
-	pComp->NameEnd();
+	{
+		const auto name = pComp->Name("Player");
+		pComp->Value(mkNamingAdapt(toC4CStr(PrefName), "Name",             "Neuling"));
+		pComp->Value(mkNamingAdapt(toC4CStr(Comment),  "Comment",          ""));
+		pComp->Value(mkNamingAdapt(Rank,               "Rank",             0));
+		pComp->Value(mkNamingAdapt(toC4CStr(RankName), "RankName",         LoadResStr("IDS_MSG_RANK")));
+		pComp->Value(mkNamingAdapt(Score,              "Score",            0));
+		pComp->Value(mkNamingAdapt(Rounds,             "Rounds",           0));
+		pComp->Value(mkNamingAdapt(RoundsWon,          "RoundsWon",        0));
+		pComp->Value(mkNamingAdapt(RoundsLost,         "RoundsLost",       0));
+		pComp->Value(mkNamingAdapt(TotalPlayingTime,   "TotalPlayingTime", 0));
+		pComp->Value(mkNamingAdapt(ExtraData,          "ExtraData",        C4ValueMapData()));
+	}
 
-	pComp->Name("Preferences");
-	pComp->Value(mkNamingAdapt(PrefColor,           "Color",            0));
-	pComp->Value(mkNamingAdapt(PrefColorDw,         "ColorDw",          0xffu));
-	pComp->Value(mkNamingAdapt(PrefColor2Dw,        "AlternateColorDw", 0u));
-	pComp->Value(mkNamingAdapt(PrefControl,         "Control",          C4P_Control_Keyboard2));
-	pComp->Value(mkNamingAdapt(PrefControlStyle,    "AutoStopControl",  0));
-	pComp->Value(mkNamingAdapt(PrefAutoContextMenu, "AutoContextMenu",  -1)); // compiling default is -1 (if this is detected, AutoContextMenus will be defaulted by control style)
-	pComp->Value(mkNamingAdapt(PrefPosition,        "Position",         0));
-	pComp->Value(mkNamingAdapt(PrefMouse,           "Mouse",            1));
-	pComp->NameEnd();
+	{
+		const auto name = pComp->Name("Preferences");
+		pComp->Value(mkNamingAdapt(PrefColor,           "Color",            0));
+		pComp->Value(mkNamingAdapt(PrefColorDw,         "ColorDw",          0xffu));
+		pComp->Value(mkNamingAdapt(PrefColor2Dw,        "AlternateColorDw", 0u));
+		pComp->Value(mkNamingAdapt(PrefControl,         "Control",          C4P_Control_Keyboard2));
+		pComp->Value(mkNamingAdapt(PrefControlStyle,    "AutoStopControl",  0));
+		pComp->Value(mkNamingAdapt(PrefAutoContextMenu, "AutoContextMenu",  -1)); // compiling default is -1 (if this is detected, AutoContextMenus will be defaulted by control style)
+		pComp->Value(mkNamingAdapt(PrefPosition,        "Position",         0));
+		pComp->Value(mkNamingAdapt(PrefMouse,           "Mouse",            1));
+	}
 
 	pComp->Value(mkNamingAdapt(LastRound, "LastRound"));
 }

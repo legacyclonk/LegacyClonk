@@ -271,19 +271,10 @@ public:
 			while (pInfo = rPlayerInfos.GetPlayerInfo(i++))
 				if (pInfo->IsJoined() && !pInfo->IsRemoved())
 				{
-					pComp->Name("Player");
-					try
-					{
-						pComp->Value(mkNamingAdapt(mkDecompileAdapt(pInfo->GetID()), "ID"));
-						StdStrBuf sFBID;
-						if (rFBIDList.FindFBIDByAccount(pInfo->getLeagueAccount(), &sFBID)) pComp->Value(mkNamingAdapt(mkParAdapt(sFBID, StdCompiler::RCT_IdtfAllowEmpty), "FBID"));
-					}
-					catch (const StdCompiler::Exception &)
-					{
-						pComp->NameEnd();
-						throw;
-					}
-					pComp->NameEnd();
+					const auto name = pComp->Name("Player");
+					pComp->Value(mkNamingAdapt(mkDecompileAdapt(pInfo->GetID()), "ID"));
+					StdStrBuf sFBID;
+					if (rFBIDList.FindFBIDByAccount(pInfo->getLeagueAccount(), &sFBID)) pComp->Value(mkNamingAdapt(mkParAdapt(sFBID, StdCompiler::RCT_IdtfAllowEmpty), "FBID"));
 				}
 		}
 	}

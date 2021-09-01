@@ -41,6 +41,32 @@
 class StdCompiler
 {
 public:
+	class [[nodiscard]] NameGuard
+	{
+	public:
+		constexpr NameGuard(StdCompiler *compiler, bool foundName) noexcept
+			: compiler{compiler}, foundName{foundName} {}
+		~NameGuard();
+
+		NameGuard(const NameGuard &other) = delete;
+		NameGuard(NameGuard &&other) noexcept;
+
+		NameGuard &operator=(const NameGuard &other) = delete;
+		NameGuard &operator=(NameGuard &&other) noexcept;
+
+		void End();
+		void Abort();
+
+		explicit constexpr operator bool() const noexcept { return foundName; }
+
+		void Disarm() noexcept;
+
+	private:
+
+		StdCompiler *compiler;
+		bool foundName;
+	};
+
 	StdCompiler() : pWarnCB(nullptr) {}
 
 	// *** Overridables (Interface)
@@ -73,13 +99,19 @@ public:
 	// all value compiling functions will fail, though.
 	// Set the NameEnd parameter to true if you are stopping to parse the structure
 	// for whatever reason (suppress warning messages).
-	virtual bool Name(const char *szName) { return true; }
+	virtual NameGuard Name(const char *szName) { return {this, true}; }
 	virtual void NameEnd(bool fBreak = false) {}
 
 	// Special: A naming that follows to the currently active naming (on the same level).
 	// Note this will end the current naming, so no additional NameEnd() is needed.
 	// Only used to maintain backwards compatibility, should not be used in new code.
-	virtual bool FollowName(const char *szName) { NameEnd(); return Name(szName); }
+	virtual bool FollowName(const char *szName)
+	{
+		NameEnd();
+		auto name = Name(szName);
+		name.Disarm();
+		return static_cast<bool>(name);
+	}
 
 	// Called when a named value omitted because of defaulting (compiler only)
 	// Returns whether the value has been handled
@@ -366,7 +398,7 @@ public:
 	virtual bool hasNaming() override { return true; }
 
 	// Naming
-	virtual bool Name(const char *szName) override { return false; }
+	virtual NameGuard Name(const char *szName) override { return {this, false}; }
 	virtual int NameCount(const char *szName = nullptr) override { return 0; }
 
 	// Data readers
@@ -513,7 +545,7 @@ public:
 	virtual bool hasNaming() override { return true; }
 
 	// Naming
-	virtual bool Name(const char *szName) override;
+	virtual NameGuard Name(const char *szName) override;
 	virtual void NameEnd(bool fBreak = false) override;
 
 	// Separators
@@ -580,7 +612,7 @@ public:
 	virtual bool hasNaming() override { return true; }
 
 	// Naming
-	virtual bool Name(const char *szName) override;
+	virtual NameGuard Name(const char *szName) override;
 	virtual void NameEnd(bool fBreak = false) override;
 	virtual bool FollowName(const char *szName) override;
 

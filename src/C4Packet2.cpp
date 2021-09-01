@@ -197,7 +197,8 @@ void C4IDPacket::CompileFunc(StdCompiler *pComp)
 	// Compiling or Decompiling?
 	if (pComp->isCompiler())
 	{
-		if (!pComp->Name(getPktName()))
+		const auto name = pComp->Name(getPktName());
+		if (!name)
 		{
 			pComp->excCorrupt("C4IDPacket: Data value needed! Packet data missing!"); return;
 		}
@@ -213,7 +214,6 @@ void C4IDPacket::CompileFunc(StdCompiler *pComp)
 			}
 		if (!pPkt)
 			pComp->excCorrupt("C4IDPacket: could not unpack packet id %02x!", eID);
-		pComp->NameEnd();
 	}
 	else if (eID != PID_None)
 		// Just write
@@ -301,26 +301,26 @@ void C4PacketList::CompileFunc(StdCompiler *pComp)
 	if (pComp->isCompiler())
 	{
 		// Read until no further sections available
-		while (pComp->Name("IDPacket"))
+		for (;;)
 		{
+			const auto name = pComp->Name("IDPacket");
+			if (!name)
+			{
+				break;
+			}
 			// Read the packet
-			C4IDPacket *pPkt = new C4IDPacket();
-			try
-			{
-				pComp->Value(*pPkt);
-				pComp->NameEnd();
-			}
-			catch (...)
-			{
-				delete pPkt;
-				throw;
-			}
+			auto pkt = std::make_unique<C4IDPacket>();
+			pComp->Value(*pkt);
+
 			// Terminator?
-			if (!pPkt->getPkt()) { delete pPkt; break; }
+			if (!pkt->getPkt())
+			{
+				break;
+			}
 			// Add to list
-			Add(pPkt);
+			Add(pkt.get());
+			pkt.release();
 		}
-		pComp->NameEnd();
 	}
 	else
 	{

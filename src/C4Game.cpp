@@ -1878,7 +1878,7 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 {
 	if (!comp.fScenarioSection && comp.fExact)
 	{
-		pComp->Name("Game");
+		const auto name = pComp->Name("Game");
 		pComp->Value(mkNamingAdapt(Time,                                    "Time",                   0));
 		pComp->Value(mkNamingAdapt(FrameCounter,                            "Frame",                  0));
 		pComp->Value(mkNamingAdapt(Control.ControlTick,                     "ControlTick",            0));
@@ -1902,7 +1902,6 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 		pComp->Value(mkNamingAdapt(NextMissionText,                         "NextMissionText",        StdStrBuf()));
 		pComp->Value(mkNamingAdapt(NextMissionDesc,                         "NextMissionDesc",        StdStrBuf()));
 		pComp->Value(mkNamingAdapt(mkSTLMapAdapt(MessageInput.Commands),    "MessageBoardCommands",   std::unordered_map<std::string, C4MessageBoardCommand>{}));
-		pComp->NameEnd();
 	}
 
 	pComp->Value(mkNamingAdapt(mkInsertAdapt(Script, ScriptEngine), "Script"));
