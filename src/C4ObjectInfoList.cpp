@@ -68,15 +68,15 @@ int32_t C4ObjectInfoList::Load(C4Group &hGroup, bool fLoadPortraits)
 			Add(info.release());
 			++infn;
 		}
+	}
 
-		// Search subfolders
-		hGroup.ResetSearch();
-		while (hGroup.FindNextEntry("*", entryname))
-		{
-			C4Group ItemGroup;
-			if (ItemGroup.OpenAsChild(&hGroup, entryname))
-				Load(ItemGroup, fLoadPortraits);
-		}
+	// Search subfolders
+	hGroup.ResetSearch();
+	while (hGroup.FindNextEntry("*", entryname))
+	{
+		C4Group ItemGroup;
+		if (ItemGroup.OpenAsChild(&hGroup, entryname))
+			Load(ItemGroup, fLoadPortraits);
 	}
 
 	return infn;
