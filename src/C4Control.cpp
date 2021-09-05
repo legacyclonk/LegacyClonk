@@ -1071,7 +1071,7 @@ void C4ControlMessage::Execute() const
 		if (pPlr)
 		{
 			if (pPlr->AtClient != iByClient) break;
-			log = FormatString((eType == C4CMT_Normal ? (Config.General.UseWhiteIngameChat ? "<c %x><<i></i>%s></c> %s" : "<c %x><<i></i>%s> %s") : (Config.General.UseWhiteIngameChat ? "<c %x> * %s</c> %s" : "<c %x> * %s %s")),
+			log = FormatString((eType == C4CMT_Normal ? (Config.General.UseWhiteIngameChat ? "<c %x><%s></c> %s" : "<c %x><%s> %s") : (Config.General.UseWhiteIngameChat ? "<c %x> * %s</c> %s" : "<c %x> * %s %s")),
 				pPlr->ColorDw, pPlr->GetName(), szMessage);
 		}
 		else
