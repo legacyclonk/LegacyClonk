@@ -284,6 +284,7 @@ void C4Application::Clear()
 	SoundSystem.reset();
 	MusicSystem.reset();
 	AudioSystem.reset();
+	ToastSystem.reset();
 	// Clear direct draw (late, because it's needed for e.g. Log)
 	delete DDraw; DDraw = nullptr;
 	// Close window
