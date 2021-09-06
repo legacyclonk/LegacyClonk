@@ -67,14 +67,14 @@ public:
 	static void ShowToast(std::string_view title, std::string_view text, C4ToastEventHandler *const eventHandler = nullptr, std::uint32_t expiration = 0, std::initializer_list<std::string_view> actions = {});
 
 public:
-	virtual void AddAction(std::string_view action) { return impl->AddAction(action); }
-	virtual void SetEventHandler(C4ToastEventHandler *const eventHandler) { return impl->SetEventHandler(eventHandler); }
-	virtual void SetExpiration(std::uint32_t expiration) { return impl->SetExpiration(expiration); }
-	virtual void SetText(std::string_view text) { return impl->SetText(text); }
-	virtual void SetTitle(std::string_view title) { return impl->SetTitle(title); }
+	void AddAction(std::string_view action) { return impl->AddAction(action); }
+	void SetEventHandler(C4ToastEventHandler *const eventHandler) { return impl->SetEventHandler(eventHandler); }
+	void SetExpiration(std::uint32_t expiration) { return impl->SetExpiration(expiration); }
+	void SetText(std::string_view text) { return impl->SetText(text); }
+	void SetTitle(std::string_view title) { return impl->SetTitle(title); }
 
-	virtual void Show() { return impl->Show(); }
-	virtual void Hide() { return impl->Hide(); }
+	void Show() { return impl->Show(); }
+	void Hide() { return impl->Hide(); }
 
 private:
 	const std::unique_ptr<C4ToastImpl> impl;
