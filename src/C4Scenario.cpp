@@ -554,17 +554,10 @@ bool C4SGame::IsMelee()
 const char *C4ScenSect_Main = "main";
 
 C4ScenarioSection::C4ScenarioSection(char *szName)
+	: Name{(szName && !SEqualNoCase(szName, C4ScenSect_Main) && *szName)
+		? szName : C4ScenSect_Main}
 {
-	// copy name
-	if (szName && !SEqualNoCase(szName, C4ScenSect_Main) && *szName)
-	{
-		this->szName = new char[strlen(szName) + 1];
-		SCopy(szName, this->szName);
-	}
-	else
-		this->szName = const_cast<char *>(C4ScenSect_Main);
 	// zero fields
-	szTempFilename = szFilename = nullptr;
 	fModified = false;
 	// link into main list
 	pNext = Game.pScenarioSections;
@@ -582,21 +575,15 @@ C4ScenarioSection::~C4ScenarioSection()
 		delete pDel;
 	}
 	// del temp file
-	if (szTempFilename) EraseItem(szTempFilename);
-	delete szTempFilename;
-	// del filename if assigned
-	delete szFilename;
-	// del name if owned
-	if (szName != C4ScenSect_Main) delete szName;
+	if (!TempFilename.empty()) EraseItem(TempFilename.c_str());
 }
 
 bool C4ScenarioSection::ScenarioLoad(char *szFilename)
 {
 	// safety
-	if (this->szFilename || !szFilename) return false;
+	if (!Filename.empty()) return false;
 	// store name
-	this->szFilename = new char[strlen(szFilename) + 1];
-	SCopy(szFilename, this->szFilename, _MAX_FNAME);
+	Filename = szFilename;
 	// extract if it's not an open folder
 	if (Game.ScenarioFile.IsPacked()) if (!EnsureTempStore(true, true)) return false;
 	// donce, success
@@ -606,11 +593,11 @@ bool C4ScenarioSection::ScenarioLoad(char *szFilename)
 C4Group *C4ScenarioSection::GetGroupfile(C4Group &rGrp)
 {
 	// check temp filename
-	if (szTempFilename) if (rGrp.Open(szTempFilename)) return &rGrp; else return nullptr;
+	if (!TempFilename.empty()) if (rGrp.Open(TempFilename.c_str())) return &rGrp; else return nullptr;
 	// check filename within scenario
-	if (szFilename) if (rGrp.OpenAsChild(&Game.ScenarioFile, szFilename)) return &rGrp; else return nullptr;
+	if (!Filename.empty()) if (rGrp.OpenAsChild(&Game.ScenarioFile, Filename.c_str())) return &rGrp; else return nullptr;
 	// unmodified main section: return main group
-	if (SEqualNoCase(szName, C4ScenSect_Main)) return &Game.ScenarioFile;
+	if (SEqualNoCase(Name.c_str(), C4ScenSect_Main)) return &Game.ScenarioFile;
 	// failure
 	return nullptr;
 }
@@ -618,34 +605,34 @@ C4Group *C4ScenarioSection::GetGroupfile(C4Group &rGrp)
 bool C4ScenarioSection::EnsureTempStore(bool fExtractLandscape, bool fExtractObjects)
 {
 	// if it's temp store already, don't do anything
-	if (szTempFilename) return true;
+	if (!TempFilename.empty()) return true;
 	// make temp filename
-	char *szTmp = const_cast<char *>(Config.AtTempPath(szFilename ? GetFilename(szFilename) : szName));
-	MakeTempFilename(szTmp);
+	std::string tmp{Config.AtTempPath(!Filename.empty() ? Filename.c_str() : Name.c_str())};
+	MakeTempFilename(tmp.data());
 	// main section: extract section files from main scenario group (create group as open dir)
-	if (!szFilename)
+	if (Filename.empty())
 	{
-		if (!CreateDirectory(szTmp, nullptr)) return false;
+		if (!CreateDirectory(tmp.c_str(), nullptr)) return false;
 		C4Group hGroup;
-		if (!hGroup.Open(szTmp, true)) { EraseItem(szTmp); return false; }
+		if (!hGroup.Open(tmp.c_str(), true)) { EraseItem(tmp.c_str()); return false; }
 		// extract all desired section files
 		Game.ScenarioFile.ResetSearch();
 		char fn[_MAX_FNAME + 1]; *fn = 0;
 		while (Game.ScenarioFile.FindNextEntry(C4FLS_Section, fn))
 			if (fExtractLandscape || !WildcardMatch(C4FLS_SectionLandscape, fn))
 				if (fExtractObjects || !WildcardMatch(C4FLS_SectionObjects, fn))
-					Game.ScenarioFile.ExtractEntry(fn, szTmp);
+					Game.ScenarioFile.ExtractEntry(fn, tmp.c_str());
 		hGroup.Close();
 	}
 	else
 	{
 		// subsection: simply extract section from main group
-		if (!Game.ScenarioFile.ExtractEntry(szFilename, szTmp)) return false;
+		if (!Game.ScenarioFile.ExtractEntry(Filename.c_str(), tmp.c_str())) return false;
 		// delete undesired landscape/object files
 		if (!fExtractLandscape || !fExtractObjects)
 		{
 			C4Group hGroup;
-			if (hGroup.Open(szFilename))
+			if (hGroup.Open(Filename.c_str()))
 			{
 				if (!fExtractLandscape) hGroup.Delete(C4FLS_SectionLandscape);
 				if (!fExtractObjects) hGroup.Delete(C4FLS_SectionObjects);
@@ -653,10 +640,19 @@ bool C4ScenarioSection::EnsureTempStore(bool fExtractLandscape, bool fExtractObj
 		}
 	}
 	// copy temp filename
-	szTempFilename = new char[strlen(szTmp) + 1];
-	SCopy(szTmp, szTempFilename, _MAX_PATH);
+	TempFilename = tmp;
 	// done, success
 	return true;
+}
+
+const char *C4ScenarioSection::GetName() const
+{
+	return Name.c_str();
+}
+
+const char *C4ScenarioSection::GetTempFilename() const
+{
+	return TempFilename.c_str();
 }
 
 #endif // C4ENGINE

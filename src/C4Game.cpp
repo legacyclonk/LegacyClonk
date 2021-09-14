@@ -2428,7 +2428,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 	for (const auto &def : Defs)
 	{
-		def->Script.Call(PSF_InitializeDef, {section ? C4VString(section->szName) : C4VNull});
+		def->Script.Call(PSF_InitializeDef, {section ? C4VString(section->GetName()) : C4VNull});
 	}
 
 	// Environment
@@ -4029,7 +4029,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 
 	// find section to load
 	C4ScenarioSection *pLoadSect = pScenarioSections;
-	while (pLoadSect) if (SEqualNoCase(pLoadSect->szName, szSection)) break; else pLoadSect = pLoadSect->pNext;
+	while (pLoadSect) if (SEqualNoCase(pLoadSect->GetName(), szSection)) break; else pLoadSect = pLoadSect->pNext;
 	if (!pLoadSect)
 	{
 		DebugLogF("LoadScenarioSection: scenario section %s not found!", szSection);
@@ -4042,7 +4042,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 		// ensure that the section file does point to temp store
 		if (!pCurrentScenarioSection->EnsureTempStore(!(dwFlags & C4S_SAVE_LANDSCAPE), !(dwFlags & C4S_SAVE_OBJECTS)))
 		{
-			DebugLogF("LoadScenarioSection(%s): could not extract section files of current section %s", szSection, pCurrentScenarioSection->szName);
+			DebugLogF("LoadScenarioSection(%s): could not extract section files of current section %s", szSection, pCurrentScenarioSection->GetName());
 			return false;
 		}
 		// open current group
@@ -4155,7 +4155,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	}
 	// set new current section
 	pCurrentScenarioSection = pLoadSect;
-	SCopy(pCurrentScenarioSection->szName, CurrentScenarioSection);
+	SCopy(pCurrentScenarioSection->GetName(), CurrentScenarioSection);
 	// resize viewports
 	GraphicsSystem.RecalculateViewports();
 	// done, success

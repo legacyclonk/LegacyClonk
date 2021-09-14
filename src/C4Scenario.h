@@ -24,6 +24,8 @@
 #include <C4Components.h>
 #endif
 
+#include <string>
+
 class C4SVal
 {
 public:
@@ -335,9 +337,6 @@ public:
 	~C4ScenarioSection();
 
 public:
-	char *szName; // section name
-	char *szTempFilename; // filename of data file if in temp dir
-	char *szFilename; // filename of section in scenario file
 	bool fModified; // if set, the file is temp and contains runtime landscape and/or object data
 
 	C4ScenarioSection *pNext; // next member of linked list
@@ -346,6 +345,13 @@ public:
 	bool ScenarioLoad(char *szFilename); // called when scenario is loaded: extract to temp store
 	C4Group *GetGroupfile(C4Group &rGrp); // get group at section file (returns temp group, scenario subgroup or scenario group itself)
 	bool EnsureTempStore(bool fExtractLandscape, bool fExtractObjects); // make sure that a temp file is created, and nothing is modified within the main scenario file
+	const char *GetName() const;
+	const char *GetTempFilename() const;
+
+private:
+	std::string Name; // section name
+	std::string TempFilename; // filename of data file if in temp dir
+	std::string Filename; // filename of section in scenario file
 };
 
 #endif // C4ENGINE
