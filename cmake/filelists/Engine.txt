@@ -122,6 +122,8 @@ src/C4GuiTabular.cpp
 src/C4GuiTabular.h
 src/C4HTTPClient.cpp
 src/C4HTTPClient.h
+src/C4HudBars.cpp
+src/C4HudBars.h
 src/C4IDList.cpp
 src/C4IDList.h
 src/C4Id.cpp

@@ -20,6 +20,7 @@
 
 #include "C4Command.h"
 #include "C4Effects.h"
+#include "C4HudBars.h"
 #include "C4EnumeratedObjectPtr.h"
 #include "C4Facet.h"
 #include "C4Id.h"
@@ -200,6 +201,8 @@ public:
 
 	class C4GraphicsOverlay *pGfxOverlay; // singly linked list of overlay graphics
 
+	std::shared_ptr<C4HudBars> hudBars;
+
 protected:
 	std::string CustomName;
 	bool OnFire;
@@ -256,9 +259,12 @@ public:
 		int32_t nx, int32_t ny, int32_t nr,
 		C4Fixed nxdir, C4Fixed nydir, C4Fixed nrdir, int32_t iController);
 	void CompileFunc(StdCompiler *pComp);
-	void DrawEnergy(C4Facet &cgo);
-	void DrawMagicEnergy(C4Facet &cgo);
-	void DrawBreath(C4Facet &cgo);
+
+	bool DefineHudBars(C4AulContext *cthr, C4ValueHash *graphics, C4ValueArray *definition);
+	void SetHudBarValue(C4AulContext *cthr, const char *name, int32_t value, int32_t max = 0);
+	void SetHudBarVisibility(C4AulContext *cthr, const char *name, bool fVisible);
+	void DrawHudBars(C4Facet &cgo);
+
 	void DrawLine(C4FacetEx &cgo);
 	void DrawCommands(C4Facet &cgo, C4Facet &cgo2, C4RegionList *pRegions);
 	void DrawCommand(C4Facet &cgoBar, int32_t iAlign, const char *szFunctionFormat,

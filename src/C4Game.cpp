@@ -26,6 +26,7 @@
 #include <C4GameSave.h>
 #include <C4Record.h>
 #include <C4Application.h>
+#include <C4HudBars.h>
 #include <C4Object.h>
 #include <C4ObjectInfo.h>
 #include <C4Random.h>

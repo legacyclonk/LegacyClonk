@@ -331,7 +331,7 @@ void C4Facet::DrawXT(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt,
 		true, pTransform, noScalingCorrection);
 }
 
-void C4Facet::DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &gfx, int32_t bar_idx)
+void C4Facet::DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &gfx, int32_t bar_idx, float scale)
 {
 	// draw energy level using graphics
 	if (!lpDDraw || !gfx.Surface) return;
@@ -383,7 +383,7 @@ void C4Facet::DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &g
 		// draw it; partially if necessary
 		gfx_draw.Y = gfx.Y + vidx * h + dy;
 		gfx_draw.Hgt = dh;
-		gfx_draw.Draw(Surface, X, Y + iY, bar_idx + bar_idx + !filled);
+		gfx_draw.Draw(Surface, X, Y + iY, bar_idx + bar_idx + !filled, 0, scale);
 		iY += dh;
 	}
 }

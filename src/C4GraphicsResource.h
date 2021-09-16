@@ -74,7 +74,6 @@ public:
 	C4FacetExID fctHand;
 	C4FacetExID fctGamepad;
 	C4FacetExID fctBuild;
-	C4FacetExID fctEnergyBars;
 	C4Facet fctCursor;
 	C4Facet fctDropTarget;
 	C4Facet fctInsideSymbol;
@@ -109,8 +108,8 @@ public:
 
 	bool ReloadResolutionDependentFiles(); // reload any files that depend on the current resolution
 
-protected:
 	bool LoadFile(C4FacetExID &fct, const char *szName, C4GroupSet &rGfxSet, int32_t iWdt = C4FCT_Full, int32_t iHgt = C4FCT_Full, bool fNoWarnIfNotFound = false);
+protected:
 	bool LoadFile(C4Surface &sfc, const char *szName, C4GroupSet &rGfxSet, int32_t &ridCurrSfc);
 	bool LoadCursorGfx();
 	void ApplyCursorGfx();

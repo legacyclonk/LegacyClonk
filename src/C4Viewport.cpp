@@ -923,24 +923,12 @@ void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)
 		{
 			int32_t cx = C4SymbolBorder;
 			C4ST_STARTNEW(EnStat, "C4Viewport::DrawCursorInfo: Energy")
-			int32_t bar_wdt = Game.GraphicsResource.fctEnergyBars.Wdt;
 			int32_t iYOff = Config.Graphics.ShowPortraits ? 10 : 0;
-			// Energy
-			ccgo.Set(cgo.Surface, cgo.X + cx, cgo.Y + C4SymbolSize + 2 * C4SymbolBorder + iYOff, bar_wdt, cgo.Hgt - 3 * C4SymbolBorder - 2 * C4SymbolSize - iYOff);
-			if (!(cursor->Def->HideHUDBars & C4DefCore::HB_Energy))
-			{
-				cursor->DrawEnergy(ccgo); ccgo.X += bar_wdt + 1;
-			}
-			// Magic energy
-			if (cursor->MagicEnergy && !(cursor->Def->HideHUDBars & C4DefCore::HB_MagicEnergy))
-			{
-				cursor->DrawMagicEnergy(ccgo); ccgo.X += bar_wdt + 1;
-			}
-			// Breath
-			if (cursor->Breath && (cursor->Breath < cursor->GetPhysical()->Breath) && !(cursor->Def->HideHUDBars & C4DefCore::HB_Breath))
-			{
-				cursor->DrawBreath(ccgo); ccgo.X += bar_wdt + 1;
-			}
+
+			ccgo.Set(cgo.Surface, cgo.X + cx, cgo.Y + C4SymbolSize + 2 * C4SymbolBorder + iYOff, 0, cgo.Hgt - 3 * C4SymbolBorder - 2 * C4SymbolSize - iYOff);
+
+			cursor->DrawHudBars(ccgo);
+
 			C4ST_STOP(EnStat)
 		}
 

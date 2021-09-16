@@ -24,6 +24,7 @@
 #include <C4Version.h>
 
 #include <C4Application.h>
+#include <C4HudBars.h>
 #include <C4Object.h>
 #include <C4ObjectInfo.h>
 #include <C4ObjectCom.h>
@@ -1757,6 +1758,29 @@ static bool FnSetMenuTextProgress(C4AulContext *cthr, C4ValueInt iNewProgress, C
 {
 	if (!pMenuObj || !pMenuObj->Menu) return false;
 	return pMenuObj->Menu->SetTextProgress(iNewProgress, false);
+}
+
+// Custom Energy Bars
+
+static bool FnDefineHudBars(C4AulContext *cthr, C4ValueHash *graphics, C4ValueArray *bars)
+{
+	const auto obj = cthr->Obj;
+	if (!obj) return false;
+	return obj->DefineHudBars(cthr, graphics, bars);
+}
+
+static void FnSetHudBarValue(C4AulContext *cthr, C4String *name, C4ValueInt newValue, C4ValueInt newMax)
+{
+	const auto obj = cthr->Obj;
+	if (!obj) return;
+	obj->SetHudBarValue(cthr, FnStringPar(name), newValue, newMax);
+}
+
+static void FnSetHudBarVisibility(C4AulContext *cthr, C4String *name, bool visible)
+{
+	const auto obj = cthr->Obj;
+	if (!obj) return;
+	obj->SetHudBarVisibility(cthr, FnStringPar(name), visible);
 }
 
 // Check / Status
@@ -6358,6 +6382,15 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 	{ "C4MN_Add_ForceCount",  C4V_Int, C4MN_Add_ForceCount },
 	{ "C4MN_Add_ForceNoDesc", C4V_Int, C4MN_Add_ForceNoDesc },
 
+	{ "EBP_None",        C4V_Int, C4HudBarDef::EBP_None },
+	{ "EBP_Energy",      C4V_Int, C4HudBarDef::EBP_Energy },
+	{ "EBP_Magic",       C4V_Int, C4HudBarDef::EBP_Magic },
+	{ "EBP_Breath",      C4V_Int, C4HudBarDef::EBP_Breath },
+	{ "EBH_Never",       C4V_Int, C4HudBarDef::EBH_Never },
+	{ "EBH_Empty",       C4V_Int, C4HudBarDef::EBH_Empty },
+	{ "EBH_Full",        C4V_Int, C4HudBarDef::EBH_Full },
+	{ "EBH_HideHUDBars", C4V_Int, C4HudBarDef::EBH_HideHUDBars },
+
 	{ "FX_OK",                  C4V_Int, C4Fx_OK }, // generic standard behaviour for all effect callbacks
 	{ "FX_Effect_Deny",         C4V_Int, C4Fx_Effect_Deny }, // delete effect
 	{ "FX_Effect_Annul",        C4V_Int, C4Fx_Effect_Annul }, // delete effect, because it has annulled a countereffect
@@ -6879,6 +6912,9 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SelectMenuItem",                  FnSelectMenuItem);
 	AddFunc(pEngine, "SetMenuDecoration",               FnSetMenuDecoration);
 	AddFunc(pEngine, "SetMenuTextProgress",             FnSetMenuTextProgress);
+	AddFunc(pEngine, "DefineHudBars",                   FnDefineHudBars);
+	AddFunc(pEngine, "SetHudBarValue",                  FnSetHudBarValue);
+	AddFunc(pEngine, "SetHudBarVisibility",             FnSetHudBarVisibility);
 	AddFunc(pEngine, "SetSeason",                       FnSetSeason);
 	AddFunc(pEngine, "GetSeason",                       FnGetSeason);
 	AddFunc(pEngine, "SetClimate",                      FnSetClimate);
