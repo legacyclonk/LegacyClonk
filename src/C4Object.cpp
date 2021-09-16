@@ -17,6 +17,7 @@
 /* That which fills the world with life */
 
 #include <C4Include.h>
+#include <C4HudBars.h>
 #include <C4Object.h>
 #include <C4Version.h>
 
@@ -25,6 +26,8 @@
 #include <C4ObjectCom.h>
 #include <C4Command.h>
 #include <C4Viewport.h>
+#include <C4Value.h>
+#include <C4ValueHash.h>
 #ifdef DEBUGREC
 #include <C4Record.h>
 #endif
@@ -145,6 +148,7 @@ void C4Object::Default()
 	FirstRef = nullptr;
 	pGfxOverlay = nullptr;
 	iLastAttachMovementFrame = -1;
+	hudBars = nullptr;
 }
 
 bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
@@ -215,6 +219,9 @@ bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
 
 	// local named vars
 	LocalNamed.SetNameList(&pDef->Script.LocalNamed);
+
+	// default hud bars
+	hudBars = Game.HudBars.DefaultBars();
 
 	// finished initializing
 	Initializing = false;
@@ -2681,20 +2688,37 @@ void C4Object::DrawLine(C4FacetEx &cgo)
 	FinishedDrawing();
 }
 
-void C4Object::DrawEnergy(C4Facet &cgo)
+bool C4Object::DefineHudBars(C4AulContext *cthr, C4ValueHash *graphics, C4ValueArray *definition)
 {
-	cgo.DrawEnergyLevelEx(Energy, GetPhysical()->Energy, Game.GraphicsResource.fctEnergyBars, 0);
+	// If null pointer is given restore default hud bars
+	if (!graphics || !definition)
+	{
+		hudBars = Game.HudBars.DefaultBars();
+		return true;
+	}
+
+	auto bars = Game.HudBars.DefineHudBars(cthr, *graphics, *definition);
+	if (bars != nullptr)
+	{
+		hudBars = bars;
+		return true;
+	}
+	return false;
 }
 
-void C4Object::DrawMagicEnergy(C4Facet &cgo)
+void C4Object::SetHudBarValue(C4AulContext *cthr, const char *name, int32_t value, int32_t max)
 {
-	// draw in units of MagicPhysicalFactor, so you can get a full magic energy bar by script even if partial magic energy training is not fulfilled
-	cgo.DrawEnergyLevelEx(MagicEnergy / MagicPhysicalFactor, GetPhysical()->Magic / MagicPhysicalFactor, Game.GraphicsResource.fctEnergyBars, 1);
+	hudBars->SetHudBarValue(cthr, name, value, max);
 }
 
-void C4Object::DrawBreath(C4Facet &cgo)
+void C4Object::SetHudBarVisibility(C4AulContext *cthr, const char *name, bool visible)
 {
-	cgo.DrawEnergyLevelEx(Breath, GetPhysical()->Breath, Game.GraphicsResource.fctEnergyBars, 2);
+	hudBars->SetHudBarVisibility(cthr, name, visible);
+}
+
+void C4Object::DrawHudBars(C4Facet &cgo)
+{
+	hudBars->DrawHudBars(cgo, *this);
 }
 
 void C4Object::CompileFunc(StdCompiler *pComp)
@@ -2788,6 +2812,8 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingPtrAdapt(pDrawTransform,                       "DrawTransform"));
 	pComp->Value(mkNamingPtrAdapt(pEffects,                             "Effects"));
 	pComp->Value(mkNamingAdapt(C4GraphicsOverlayListAdapt(pGfxOverlay), "GfxOverlay",         nullptr));
+	pComp->Value(mkNamingAdapt(C4HudBarsAdapt(hudBars), "HudBars", Game.HudBars.DefaultBars()));
+
 
 	if (PhysicalTemporary)
 	{

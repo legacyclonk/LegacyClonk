@@ -21,6 +21,8 @@
 #include <C4ValueList.h>
 #include <C4ValueHash.h>
 
+#include "StdHelpers.h"
+
 #include <cinttypes>
 #include <functional>
 #include <string_view>
@@ -956,49 +958,6 @@ bool C4Value::operator!=(const C4Value &Value2) const
 	return !(*this == Value2);
 }
 
-namespace
-{
-	// based on boost container_hash's hashCombine
-	constexpr void hashCombine(std::size_t &hash, std::size_t nextHash)
-	{
-		if constexpr (sizeof(std::size_t) == 4)
-		{
-#define rotateLeft32(x, r) (x << r) | (x >> (32 - r))
-			constexpr std::size_t c1 = 0xcc9e2d51;
-			constexpr std::size_t c2 = 0x1b873593;
-
-			nextHash *= c1;
-			nextHash = rotateLeft32(nextHash, 15);
-			nextHash *= c2;
-
-			hash ^= nextHash;
-			hash = rotateLeft32(hash, 13);
-			hash = hash * 5 + 0xe6546b64;
-#undef rotateLeft32
-		}
-		else if constexpr (sizeof(std::size_t) == 8)
-		{
-			constexpr std::size_t m = 0xc6a4a7935bd1e995;
-			constexpr int r = 47;
-
-			nextHash *= m;
-			nextHash ^= nextHash >> r;
-			nextHash *= m;
-
-			hash ^= nextHash;
-			hash *= m;
-
-			// Completely arbitrary number, to prevent 0's
-			// from hashing to 0.
-			hash += 0xe6546b64;
-		}
-		else
-		{
-			hash ^= nextHash + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-		}
-	}
-}
-
 std::size_t std::hash<C4Value>::operator()(C4Value value) const
 {
 	C4Value &ref = value.GetRefVal();
@@ -1007,7 +966,7 @@ std::size_t std::hash<C4Value>::operator()(C4Value value) const
 	if (ref.GetType() == C4V_C4ObjectEnum)
 	{
 		hash = std::hash<C4V_Type>{}(C4V_C4Object);
-		hashCombine(hash, std::hash<C4ValueInt>{}(ref._getInt()));
+		HashCombine(hash, std::hash<C4ValueInt>{}(ref._getInt()));
 		return hash;
 	}
 
@@ -1017,21 +976,21 @@ std::size_t std::hash<C4Value>::operator()(C4Value value) const
 			break;
 
 		case C4V_Int: case C4V_C4ID:
-			hashCombine(hash, std::hash<C4ValueInt>{}(ref._getInt()));
+			HashCombine(hash, std::hash<C4ValueInt>{}(ref._getInt()));
 			break;
 
 		case C4V_Bool:
-			hashCombine(hash, std::hash<bool>{}(ref._getBool()));
+			HashCombine(hash, std::hash<bool>{}(ref._getBool()));
 			break;
 
 		case C4V_C4Object:
-			hashCombine(hash, std::hash<int32_t>{}(ref._getObj()->Number));
+			HashCombine(hash, std::hash<int32_t>{}(ref._getObj()->Number));
 			break;
 
 		case C4V_String:
 		{
 			const auto &str = ref._getStr()->Data;
-			hashCombine(hash, std::hash<std::string_view>{}({str.getData(), str.getLength()}));
+			HashCombine(hash, std::hash<std::string_view>{}({str.getData(), str.getLength()}));
 			break;
 		}
 		case C4V_Array:
@@ -1039,7 +998,7 @@ std::size_t std::hash<C4Value>::operator()(C4Value value) const
 			const auto &array = *ref._getArray();
 			for (size_t i = 0; i < array.GetSize(); ++i)
 			{
-				hashCombine(hash, (*this)(array.GetItem(i)));
+				HashCombine(hash, (*this)(array.GetItem(i)));
 			}
 			break;
 		}
@@ -1050,12 +1009,12 @@ std::size_t std::hash<C4Value>::operator()(C4Value value) const
 			for (const auto &it : map)
 			{
 				std::size_t itemHash = (*this)(it.first);
-				hashCombine(itemHash, (*this)(it.second));
+				HashCombine(itemHash, (*this)(it.second));
 
 				// order mustn't matter
 				contentHash ^= itemHash;
 			}
-			hashCombine(hash, contentHash);
+			HashCombine(hash, contentHash);
 			break;
 		}
 		default:

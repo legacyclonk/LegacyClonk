@@ -68,7 +68,6 @@ void C4GraphicsResource::Default()
 	fctHand.Default();
 	fctGamepad.Default();
 	fctBuild.Default();
-	fctEnergyBars.Default();
 
 	std::fill(GamePalette, std::end(GamePalette), 0);
 	std::fill(AlphaPalette, std::end(AlphaPalette), 0);
@@ -129,7 +128,6 @@ void C4GraphicsResource::Clear()
 	fctHand.Clear();
 	fctGamepad.Clear();
 	fctBuild.Clear();
-	fctEnergyBars.Clear();
 
 	// unhook deflist from font
 	FontRegular.SetCustomImages(nullptr);
@@ -227,17 +225,8 @@ bool C4GraphicsResource::Init(bool fInitGUI)
 	if (!LoadFile(fctHand,            "Hand",         Files, C4FCT_Height))         return false;
 	if (!LoadFile(fctGamepad,         "Gamepad",      Files, 80))                   return false;
 	if (!LoadFile(fctBuild,           "Build",        Files))                       return false;
-	if (!LoadFile(fctEnergyBars,      "EnergyBars",   Files))                       return false;
 	if (!LoadFile(sfcLiquidAnimation, "Liquid",       Files, idSfcLiquidAnimation)) return false;
 	if (!ReloadResolutionDependentFiles()) return false;
-	// life bar facets
-	if (fctEnergyBars.Surface)
-	{
-		int32_t bar_wdt = fctEnergyBars.Surface->Wdt / 6;
-		int32_t bar_hgt = fctEnergyBars.Surface->Hgt / 3;
-		if (!bar_wdt || !bar_hgt) { LogFatal("EnergyBars.png invalid or too small!"); return false; }
-		fctEnergyBars.Set(fctEnergyBars.Surface, 0, 0, bar_wdt, bar_hgt);
-	}
 
 	// create ColorByOwner overlay surfaces
 	if (fctCrew.idSourceGroup != fctCrewClr.idSourceGroup)

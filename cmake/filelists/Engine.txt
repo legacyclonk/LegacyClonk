@@ -107,6 +107,8 @@ src/C4GuiLabels.cpp
 src/C4GuiListBox.cpp
 src/C4GuiMenu.cpp
 src/C4GuiTabular.cpp
+src/C4HudBars.cpp
+src/C4HudBars.h
 src/C4IDList.cpp
 src/C4IDList.h
 src/C4Id.cpp

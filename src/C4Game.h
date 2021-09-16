@@ -29,6 +29,7 @@
 #include <C4MouseControl.h>
 #include <C4MessageInput.h>
 #include <C4Weather.h>
+#include <C4HudBars.h>
 #include <C4Material.h>
 #include <C4GameObjects.h>
 #include <C4Landscape.h>
@@ -179,6 +180,8 @@ public:
 	bool fQuitWithError; // if set, game shut down irregularly
 	bool IsMusicEnabled;
 	int32_t iMusicLevel; // scenario-defined music level
+	C4HudBarsUniquifier HudBars;
+
 	// current play list
 	StdStrBuf PlayList;
 	bool DebugMode;
