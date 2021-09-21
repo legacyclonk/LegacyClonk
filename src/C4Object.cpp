@@ -282,10 +282,9 @@ void C4Object::AssignRemoval(bool fExitContents)
 	// count decrease
 	Def->Count--;
 	// Kill contents
-	C4Object *cobj; C4ObjectLink *clnk, *next;
-	for (clnk = Contents.First; clnk && (cobj = clnk->Obj); clnk = next)
+	C4Object *cobj; C4ObjectLink *clnk;
+	while ((clnk = Contents.First) && (cobj = clnk->Obj))
 	{
-		next = clnk->Next;
 		if (fExitContents)
 			cobj->Exit(x, y);
 		else
