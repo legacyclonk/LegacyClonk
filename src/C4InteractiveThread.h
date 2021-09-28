@@ -23,6 +23,8 @@
 #include <array>
 #include <queue>
 
+#define C4INTERACTIVETHREAD_DEBUG_BAD_ANY_CAST
+
 // Event types
 enum C4InteractiveEventType
 {
@@ -73,6 +75,11 @@ private:
 #ifdef _DEBUG
 		decltype(timeGetTime()) Time;
 #endif
+#ifdef C4INTERACTIVETHREAD_DEBUG_BAD_ANY_CAST
+		std::string File;
+		std::string Function;
+		std::uint_least32_t Line;
+#endif
 	};
 
 	std::queue<Event> events;
@@ -88,7 +95,11 @@ public:
 	void RemoveProc(StdSchedulerProc *pProc);
 
 	// event queue
+#ifdef C4INTERACTIVETHREAD_DEBUG_BAD_ANY_CAST
+	bool PushEvent(C4InteractiveEventType eventType, const std::any &data, const char *file = __builtin_FILE(), const char *function = __builtin_FUNCTION(), std::uint_least32_t line = __builtin_LINE());
+#else
 	bool PushEvent(C4InteractiveEventType eventType, const std::any &data);
+#endif
 	void ProcessEvents(); // by main thread
 
 	// special events

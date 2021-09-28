@@ -69,16 +69,27 @@ void C4InteractiveThread::RemoveProc(StdSchedulerProc *pProc)
 	Scheduler.Remove(pProc);
 }
 
+#ifdef C4INTERACTIVETHREAD_DEBUG_BAD_ANY_CAST
+bool C4InteractiveThread::PushEvent(C4InteractiveEventType eventType, const std::any &data, const char *const file, const char *const function, const std::uint_least32_t line)
+#else
 bool C4InteractiveThread::PushEvent(C4InteractiveEventType eventType, const std::any &data)
+#endif
 {
 	CStdLock PushLock(&EventPushCSec);
 	if (destroyed) return false;
 
+	events.push(Event{
+					eventType,
+					data,
 #ifdef _DEBUG
-	events.push(Event{eventType, data, timeGetTime()});
-#else
-	events.push(Event{eventType, data});
+					timeGetTime(),
 #endif
+#ifdef C4INTERACTIVETHREAD_DEBUG_BAD_ANY_CAST
+					file,
+					function,
+					line,
+#endif
+				});
 
 	PushLock.Clear();
 #ifdef _WIN32
