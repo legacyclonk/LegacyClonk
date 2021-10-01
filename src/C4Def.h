@@ -276,14 +276,16 @@ public:
 	bool BaseAutoSell; // if set, the object will automatically be sold in a base if the corresponding base functionality is enabled
 
 public:
-	enum HideBar : int32_t {
+	enum HideBar
+	{
 		HB_Energy = 0x1,
 		HB_MagicEnergy = 0x2,
 		HB_Breath = 0x4,
 		HB_All = HB_Energy | HB_MagicEnergy | HB_Breath
 	};
 
-	enum HideHud : int32_t {
+	enum HideHud
+	{
 		HH_Portrait = 0x1,
 		HH_Captain = 0x2,
 		HH_Name = 0x4,
