@@ -18,16 +18,14 @@
 
 #include <C4Include.h>
 #include <C4ComponentHost.h>
+#include "C4Config.h"
 #include <C4Application.h>
 #include <C4Language.h>
 #include <StdRegistry.h>
 
 C4ComponentHost *pCmpHost = nullptr;
 
-extern C4Config *pConfig; // Some cheap temporary hack to get to config in Engine + Frontend...
-// This is so good - we can use it everywear!!!!
-
-#if defined(C4ENGINE) && defined(_WIN32)
+#ifdef _WIN32
 
 BOOL CALLBACK ComponentDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
@@ -134,7 +132,7 @@ bool C4ComponentHost::Load(const char *szName,
 			sprintf(strEntryWithLanguage, strEntry, strCode);
 			if (hGroup.LoadEntryString(strEntryWithLanguage, Data))
 			{
-				if (pConfig->General.fUTF8) Data.EnsureUnicode();
+				if (Config.General.fUTF8) Data.EnsureUnicode();
 				// Store actual filename
 				hGroup.FindEntry(strEntryWithLanguage, Filename);
 				CopyFilePathFromGroup(hGroup);
@@ -174,7 +172,7 @@ bool C4ComponentHost::Load(const char *szName,
 			sprintf(strEntryWithLanguage, strEntry, strCode);
 			if (hGroupSet.LoadEntryString(strEntryWithLanguage, Data))
 			{
-				if (pConfig->General.fUTF8) Data.EnsureUnicode();
+				if (Config.General.fUTF8) Data.EnsureUnicode();
 				// Store actual filename
 				C4Group *pGroup = hGroupSet.FindEntry(strEntryWithLanguage);
 				pGroup->FindEntry(strEntryWithLanguage, Filename);
@@ -203,7 +201,7 @@ bool C4ComponentHost::LoadEx(const char *szName,
 	// alternative groups for cross-loading from a language pack
 	C4GroupSet hGroups;
 	hGroups.RegisterGroup(hGroup, false, 1000, C4GSCnt_Component); // Provided group gets highest priority
-	hGroups.RegisterGroups(Languages.GetPackGroups(pConfig->AtExeRelativePath(hGroup.GetFullName().getData())), C4GSCnt_Language);
+	hGroups.RegisterGroups(Languages.GetPackGroups(Config.AtExeRelativePath(hGroup.GetFullName().getData())), C4GSCnt_Language);
 	// Load from group set
 	return Load(szName, hGroups, szFilename, szLanguage);
 }
@@ -276,7 +274,7 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 // Construct full path
 void C4ComponentHost::CopyFilePathFromGroup(const C4Group &hGroup)
 {
-	SCopy(pConfig->AtExeRelativePath(hGroup.GetFullName().getData()), FilePath, _MAX_PATH - 1);
+	SCopy(Config.AtExeRelativePath(hGroup.GetFullName().getData()), FilePath, _MAX_PATH - 1);
 	SAppendChar(DirectorySeparator, FilePath);
 	SAppend(Filename, FilePath, _MAX_PATH);
 }

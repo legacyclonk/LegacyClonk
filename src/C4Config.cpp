@@ -56,8 +56,6 @@ bool isGermanSystem()
 	return false;
 }
 
-C4Config *pConfig;
-
 void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 {
 	// For those without the ability to intuitively guess what the falses and trues mean:
@@ -374,14 +372,12 @@ void C4ConfigCooldowns::CompileFunc(StdCompiler *comp)
 
 C4Config::C4Config()
 {
-	pConfig = this;
 	Default();
 }
 
 C4Config::~C4Config()
 {
 	fConfigLoaded = false;
-	pConfig = nullptr;
 }
 
 void C4Config::Default()
