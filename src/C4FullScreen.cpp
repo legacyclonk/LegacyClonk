@@ -77,12 +77,6 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 				return 0;
 		return false;
 	}
-	case WM_USER_LOG:
-		if (SEqual2((const char *)lParam, "IDS_"))
-			Log(LoadResStr((const char *)lParam));
-		else
-			Log((const char *)lParam);
-		return false;
 	case WM_LBUTTONDOWN:
 		Game.GraphicsSystem.MouseMove(C4MC_Button_LeftDown, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), wParam, nullptr);
 		break;

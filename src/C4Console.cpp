@@ -261,13 +261,6 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		}
 		return FALSE;
 
-	case WM_USER_LOG:
-		if (SEqual2((const char *)lParam, "IDS_"))
-			Log(LoadResStr((const char *)lParam));
-		else
-			Log((const char *)lParam);
-		return FALSE;
-
 	case WM_COPYDATA:
 		COPYDATASTRUCT *pcds = reinterpret_cast<COPYDATASTRUCT *>(lParam);
 		if (pcds->dwData == WM_USER_RELOADFILE)
