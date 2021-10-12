@@ -672,7 +672,7 @@ bool C4FindObjectFunc::Check(C4Object *pObj)
 	C4AulFunc *pCallFunc = pFunc->FindSameNameFunc(pObj->Def);
 	if (!pCallFunc) return false;
 	// Call
-	return !!pCallFunc->Exec(pObj, Pars);
+	return static_cast<bool>(pCallFunc->Exec(pObj, Pars));
 }
 
 bool C4FindObjectFunc::IsImpossible()

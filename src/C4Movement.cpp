@@ -113,7 +113,7 @@ bool C4Object::Contact(int32_t iCNAT)
 {
 	if (Def->ContactFunctionCalls)
 	{
-		return !!Call(FormatString(PSF_Contact, CNATName(iCNAT)).getData());
+		return static_cast<bool>(Call(FormatString(PSF_Contact, CNATName(iCNAT)).getData()));
 	}
 	return false;
 }

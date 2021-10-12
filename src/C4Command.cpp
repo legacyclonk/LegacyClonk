@@ -1082,7 +1082,7 @@ bool C4Command::GetTryEnter()
 	// No minimum con knowledge vehicles/items: fail
 	if (Target->Contained && CheckMinimumCon(Target)) { /* fail??! */ return false; }
 	// Target contained and container has RejectContents: fail
-	if (Target->Contained && !!Target->Contained->Call(PSF_RejectContents)) { Finish(); return false; }
+	if (Target->Contained && Target->Contained->Call(PSF_RejectContents)) { Finish(); return false; }
 	// Collection limit: drop other object
 	// return after drop, so multiple objects may be dropped
 	if (cObj->Def->CollectionLimit && (cObj->Contents.ObjectCount() >= cObj->Def->CollectionLimit))
@@ -2175,7 +2175,7 @@ void C4Command::Fail(const char *szFailMessage)
 			// Needed components
 			if (!Target) break;
 			// BuildNeedsMaterial call to builder script...
-			if (!!cObj->Call(PSF_BuildNeedsMaterial, {
+			if (cObj->Call(PSF_BuildNeedsMaterial, {
 				C4VID(Target->Component.GetID(0)), C4VInt(Target->Component.GetCount(0))})) // WTF? This is passing current components. Not needed ones!
 				break; // no message
 			if (szFailMessage) break;

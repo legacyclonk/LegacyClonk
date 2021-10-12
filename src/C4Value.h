@@ -177,7 +177,9 @@ public:
 	// Template versions
 	template <typename T> inline T Get() { return C4ValueConv<T>::FromC4V(*this); }
 
-	bool operator!() const { return !GetData(); }
+	// only false for C4Script values nil, 0, false and NONE
+	// this is the same as bool conversion in C4Script
+	explicit operator bool() const { return static_cast<bool>(GetRefVal().GetData()); }
 
 	void Set(const C4Value &nValue) { if (!Equals(nValue, C4AulScriptStrict::STRICT3)) Set(nValue.Data, nValue.Type); }
 

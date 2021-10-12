@@ -197,7 +197,7 @@ bool C4Weather::LaunchEarthquake(int32_t iX, int32_t iY)
 {
 	C4Object *pObj;
 	if (pObj = Game.CreateObject(C4Id("FXQ1"), nullptr, NO_OWNER, iX, iY))
-		if (!!pObj->Call(PSF_Activate))
+		if (pObj->Call(PSF_Activate))
 			return true;
 	return false;
 }
@@ -207,7 +207,7 @@ bool C4Weather::LaunchCloud(int32_t iX, int32_t iY, int32_t iWidth, int32_t iStr
 	if (Game.Material.Get(szPrecipitation) == MNone) return false;
 	C4Object *pObj;
 	if (pObj = Game.CreateObject(C4Id("FXP1"), nullptr, NO_OWNER, iX, iY))
-		if (!!pObj->Call(PSF_Activate, {C4VInt(Game.Material.Get(szPrecipitation)),
+		if (pObj->Call(PSF_Activate, {C4VInt(Game.Material.Get(szPrecipitation)),
 			C4VInt(iWidth),
 			C4VInt(iStrength)}))
 			return true;

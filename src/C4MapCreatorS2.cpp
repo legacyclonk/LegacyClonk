@@ -1462,7 +1462,7 @@ bool AlgoScript(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 	// catch error (damn insecure C4Aul)
 	try
 	{
-		return !!pFunc->Exec(nullptr, Pars);
+		return static_cast<bool>(pFunc->Exec(nullptr, Pars));
 	}
 	catch (const C4AulError &)
 	{

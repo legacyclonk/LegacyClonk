@@ -61,7 +61,7 @@ void C4AulScriptContext::dump(StdStrBuf Dump)
 		int iNullPars = 0;
 		for (int i = 0; i < C4AUL_MAX_Par; i++)
 			if (Pars + i < Vars)
-				if (!Pars[i])
+				if (!Pars[i].GetData()) // GetData() here because also references should be treated as non-null
 					iNullPars++;
 				else
 				{
@@ -994,7 +994,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				break;
 
 			case AB_JUMPOR:
-				if (!!pCurVal[0])
+				if (pCurVal[0])
 				{
 					fJump = true;
 					pCPos += pCPos->bccX;

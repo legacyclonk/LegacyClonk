@@ -240,7 +240,7 @@ bool C4GameScriptHost::Execute()
 	if (Go && !Tick10)
 	{
 		sprintf(buffer, PSF_Script, Counter++);
-		return !!Call(buffer);
+		return static_cast<bool>(Call(buffer));
 	}
 #endif
 	return false;
@@ -256,7 +256,7 @@ C4Value C4GameScriptHost::GRBroadcast(const char *szFunction, const C4AulParSet 
 			{
 				C4Value vResult(pObj->Call(szFunction, pPars, fPassError));
 				// rejection tests abort on first nonzero result
-				if (fRejectTest) if (!!vResult) return vResult;
+				if (fRejectTest) if (vResult) return vResult;
 			}
 	// scenario script call
 	return Call(szFunction, pPars, fPassError);

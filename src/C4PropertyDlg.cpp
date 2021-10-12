@@ -206,7 +206,7 @@ bool C4PropertyDlg::Update()
 		// Locals
 		int cnt; bool fFirstLocal = true;
 		for (cnt = 0; cnt < cobj->Local.GetSize(); cnt++)
-			if (!!cobj->Local[cnt])
+			if (cobj->Local[cnt])
 			{
 				// Header
 				if (fFirstLocal) { Output.Append(LineFeed); Output.Append(LoadResStr("IDS_CNS_LOCALS")); fFirstLocal = false; }

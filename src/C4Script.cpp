@@ -2496,7 +2496,7 @@ static bool FnSetHostility(C4AulContext *cthr, C4ValueInt iPlr, C4ValueInt iPlr2
 	// do rejection test first
 	if (!fNoCalls)
 	{
-		if (!!Game.Script.GRBroadcast(PSF_RejectHostilityChange, {C4VInt(iPlr), C4VInt(iPlr2), C4VBool(fHostile)}, true, true))
+		if (Game.Script.GRBroadcast(PSF_RejectHostilityChange, {C4VInt(iPlr), C4VInt(iPlr2), C4VBool(fHostile)}, true, true))
 			return false;
 	}
 	// OK; set hostility
@@ -3571,7 +3571,7 @@ static bool FnOnMessageBoardAnswer(C4AulContext *cthr, C4Object *pObj, C4ValueIn
 	C4ScriptHost *scr;
 	if (pObj) scr = &pObj->Def->Script; else scr = &Game.Script;
 	// exec func
-	return !!scr->ObjectCall(nullptr, pObj, PSF_InputCallback, {C4VString(FnStringPar(szAnswerString)), C4VInt(iForPlr)});
+	return static_cast<bool>(scr->ObjectCall(nullptr, pObj, PSF_InputCallback, {C4VString(FnStringPar(szAnswerString)), C4VInt(iForPlr)}));
 }
 
 static C4ValueInt FnScriptCounter(C4AulContext *cthr)
@@ -5677,7 +5677,7 @@ static bool FnSetPlayerTeam(C4AulContext *cthr, C4ValueInt iPlayer, C4ValueInt i
 	// ask script if it's allowed
 	if (!fNoCalls)
 	{
-		if (!!Game.Script.GRBroadcast(PSF_RejectTeamSwitch, {C4VInt(iPlayer), C4VInt(idNewTeam)}, true, true))
+		if (Game.Script.GRBroadcast(PSF_RejectTeamSwitch, {C4VInt(iPlayer), C4VInt(idNewTeam)}, true, true))
 			return false;
 	}
 	// exit previous team

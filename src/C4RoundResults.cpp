@@ -293,10 +293,10 @@ void C4RoundResults::EvaluateGoals(C4IDList &GoalList, C4IDList &FulfilledGoalLi
 		{
 			if (fRivalvry)
 			{
-				fFulfilled = !!pObj->Call(PSF_IsFulfilledforPlr, {C4VInt(iPlayerNumber)});
+				fFulfilled = static_cast<bool>(pObj->Call(PSF_IsFulfilledforPlr, {C4VInt(iPlayerNumber)}));
 			}
 			else
-				fFulfilled = !!pObj->Call(PSF_IsFulfilled);
+				fFulfilled = static_cast<bool>(pObj->Call(PSF_IsFulfilled));
 		}
 		GoalList.SetIDCount(idGoal, cnt, true);
 		if (fFulfilled) FulfilledGoalList.SetIDCount(idGoal, 1, true);

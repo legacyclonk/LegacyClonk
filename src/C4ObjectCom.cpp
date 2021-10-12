@@ -49,7 +49,7 @@ bool ObjectActionJump(C4Object *cObj, FIXED xdir, FIXED ydir, bool fByCom)
 {
 	// scripted jump?
 	assert(cObj);
-	if (!!cObj->Call(PSF_OnActionJump, {C4VInt(fixtoi(xdir, 100)), C4VInt(fixtoi(ydir, 100)), C4VBool(fByCom)})) return true;
+	if (cObj->Call(PSF_OnActionJump, {C4VInt(fixtoi(xdir, 100)), C4VInt(fixtoi(ydir, 100)), C4VBool(fByCom)})) return true;
 	// hardcoded jump by action
 	if (!cObj->SetActionByName("Jump")) return false;
 	cObj->xdir = xdir; cObj->ydir = ydir;
@@ -536,7 +536,7 @@ void ObjectComDigDouble(C4Object *cObj) // "Activation" by DFA_WALK, DFA_DIG, DF
 
 	// Contents activation (first contents object only)
 	if (cObj->Contents.GetObject())
-		if (!!cObj->Contents.GetObject()->Call(PSF_Activate, {C4VObj(cObj)}))
+		if (cObj->Contents.GetObject()->Call(PSF_Activate, {C4VObj(cObj)}))
 			return;
 
 	// Linekit: Line construction (move to linekit script...)
@@ -567,7 +567,7 @@ void ObjectComDigDouble(C4Object *cObj) // "Activation" by DFA_WALK, DFA_DIG, DF
 						return;
 
 	// Own activation call
-	if (!!cObj->Call(PSF_Activate, {C4VObj(cObj)})) return;
+	if (cObj->Call(PSF_Activate, {C4VObj(cObj)})) return;
 }
 
 bool ObjectComDownDouble(C4Object *cObj) // by DFA_WALK
@@ -739,7 +739,7 @@ bool ObjectComPunch(C4Object *cObj, C4Object *pTarget, int32_t punch)
 		if (pTarget->GetPhysical()->Fight)
 			punch = BoundBy<int32_t>(5 * cObj->GetPhysical()->Fight / pTarget->GetPhysical()->Fight, 0, 10);
 	if (!punch) return true;
-	bool fBlowStopped = !!pTarget->Call(PSF_QueryCatchBlow, {C4VObj(cObj)});
+	bool fBlowStopped = static_cast<bool>(pTarget->Call(PSF_QueryCatchBlow, {C4VObj(cObj)}));
 	if (fBlowStopped && punch > 1) punch = punch / 2; // half damage for caught blow, so shield+armor help in fistfight and vs monsters
 	pTarget->DoEnergy(-punch, false, C4FxCall_EngGetPunched, cObj->Controller);
 	int32_t tdir = +1; if (cObj->Action.Dir == DIR_Left) tdir = -1;
