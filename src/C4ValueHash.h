@@ -35,7 +35,12 @@ private:
 		std::list<const C4Value *>::iterator keyOrderIterator;
 	};
 
-	std::unordered_map<key_type, MapEntry> map;
+	struct KeyEqual
+	{
+		bool operator()(const C4Value &lhs, const C4Value &rhs) const noexcept { return lhs.Equals(rhs, C4AulScriptStrict::MAXSTRICT); }
+	};
+
+	std::unordered_map<key_type, MapEntry, std::hash<key_type>, KeyEqual> map;
 	std::forward_list<C4Value *> emptyValues;
 
 	// we need a defined order for network sync
