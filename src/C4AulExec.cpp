@@ -61,7 +61,7 @@ void C4AulScriptContext::dump(StdStrBuf Dump)
 		int iNullPars = 0;
 		for (int i = 0; i < C4AUL_MAX_Par; i++)
 			if (Pars + i < Vars)
-				if (!Pars[i].GetData()) // GetData() here because also references should be treated as non-null
+				if (!Pars[i].IsRef() && Pars[i].GetType() == C4V_Any)
 					iNullPars++;
 				else
 				{
@@ -70,7 +70,7 @@ void C4AulScriptContext::dump(StdStrBuf Dump)
 					// Insert missing null parameters
 					while (iNullPars > 0)
 					{
-						Dump.Append("0,");
+						Dump.Append("nil,");
 						iNullPars--;
 					}
 					// Insert parameter
