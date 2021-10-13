@@ -1,0 +1,5 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+[Language*.txt]
+trim_trailing_whitespace = false
+insert_final_newline = true
