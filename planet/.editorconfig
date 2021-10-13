@@ -1,5 +1,8 @@
 # EditorConfig is awesome: https://EditorConfig.org
 
-[Language*.txt]
+[System.c4g/Language*.txt]
 trim_trailing_whitespace = false
 insert_final_newline = true
+
+[System.c4g/{*.txt,*.c,COPYING}]
+end_of_line = crlf
