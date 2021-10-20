@@ -968,12 +968,16 @@ void C4Object::AutoSellContents()
 {
 	C4Player *pPlr = Game.Players.Get(Base); if (!pPlr) return;
 
-	for (const auto &obj : Contents)
+	for (auto outerIt = std::begin(Contents); outerIt != std::end(Contents); )
 	{
+		const auto &obj = *outerIt;
+		++outerIt;
 		if (obj && obj->Status)
 		{
-			for (const auto &contents : obj->Contents)
+			for (auto innerIt = std::begin(obj->Contents); innerIt != std::end(obj->Contents); )
 			{
+				const auto &contents = *innerIt;
+				++innerIt;
 				if (contents && contents->Status && contents->Def->BaseAutoSell && pPlr->CanSell(contents))
 				{
 					contents->Exit();
