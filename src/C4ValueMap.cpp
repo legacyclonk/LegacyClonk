@@ -74,7 +74,7 @@ void C4ValueMapData::SetNameList(C4ValueMapNames *pnNames)
 		pnNames->Register(this);
 
 		// call OnNameListChanged to copy data and realloc data array
-		OnNameListChanged(const_cast<const char **>(pOldNames), iOldSize);
+		OnNameListChanged(pOldNames, iOldSize);
 
 		// delete old names list, if it is temporary
 		if (bTempNameList)
@@ -160,7 +160,7 @@ void C4ValueMapData::ReAllocList()
 	// ok...
 }
 
-void C4ValueMapData::OnNameListChanged(const char **pOldNames, int32_t iOldSize)
+void C4ValueMapData::OnNameListChanged(const char *const *pOldNames, int32_t iOldSize)
 {
 	if (!pNames)
 	{
@@ -284,7 +284,7 @@ void C4ValueMapData::CompileFunc(StdCompiler *pComp)
 		C4ValueMapNames *pOldNames = pNames;
 		// Set
 		CreateTempNameList();
-		pNames->SetNameArray(const_cast<const char **>(ppNames), iValueCnt);
+		pNames->SetNameArray(ppNames, iValueCnt);
 		for (int32_t i = 0; i < iValueCnt; i++) free(ppNames[i]);
 		delete[] ppNames; delete[] pData;
 		pData = pValues;
@@ -300,7 +300,7 @@ C4ValueMapNames::C4ValueMapNames()
 
 C4ValueMapNames &C4ValueMapNames::operator=(C4ValueMapNames &NamesToCopy)
 {
-	ChangeNameList(const_cast<const char **>(NamesToCopy.pNames), NamesToCopy.pExtra, NamesToCopy.iSize);
+	ChangeNameList(NamesToCopy.pNames, NamesToCopy.pExtra, NamesToCopy.iSize);
 	return *this;
 }
 
@@ -355,7 +355,7 @@ void C4ValueMapNames::UnRegister(C4ValueMapData *pData)
 	pData->pNames = nullptr;
 }
 
-void C4ValueMapNames::ChangeNameList(const char **pnNames, int32_t *pnExtra, int32_t nSize)
+void C4ValueMapNames::ChangeNameList(const char *const *pnNames, int32_t *pnExtra, int32_t nSize)
 {
 	// safe old name list
 	char **pOldNames = pNames;
@@ -384,7 +384,7 @@ void C4ValueMapNames::ChangeNameList(const char **pnNames, int32_t *pnExtra, int
 	C4ValueMapData *pAktData = pFirst;
 	while (pAktData)
 	{
-		pAktData->OnNameListChanged(const_cast<const char **>(pOldNames), iOldSize);
+		pAktData->OnNameListChanged(pOldNames, iOldSize);
 		pAktData = pAktData->pNext;
 	}
 
@@ -397,7 +397,7 @@ void C4ValueMapNames::ChangeNameList(const char **pnNames, int32_t *pnExtra, int
 	// ok.
 }
 
-void C4ValueMapNames::SetNameArray(const char **pnNames, int32_t nSize)
+void C4ValueMapNames::SetNameArray(const char *const *pnNames, int32_t nSize)
 {
 	// simply pass it through...
 	ChangeNameList(pnNames, nullptr, nSize);

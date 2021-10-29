@@ -78,7 +78,7 @@ private:
 
 	// called by names list to tell us that the name list
 	// was changed and from SetNameList (the data list has to be rordered...)
-	void OnNameListChanged(const char **pOldNames, int32_t iOldSize);
+	void OnNameListChanged(const char *const *pOldNames, int32_t iOldSize);
 
 	// (Re)Allocs data list
 	// old data will be deleted!
@@ -108,7 +108,7 @@ public:
 	int32_t iSize;
 
 	// set name array
-	void SetNameArray(const char **pnNames, int32_t nSize);
+	void SetNameArray(const char *const *pnNames, int32_t nSize);
 
 	// add a name; return index of added element (or index of current if it's already in the list)
 	int32_t AddName(const char *pnName, int32_t iExtra = 0);
@@ -128,5 +128,5 @@ private:
 	void UnRegister(C4ValueMapData *pData);
 
 	// changes the name list
-	void ChangeNameList(const char **pnNames, int32_t *pnExtra, int32_t nSize);
+	void ChangeNameList(const char *const *pnNames, int32_t *pnExtra, int32_t nSize);
 };
