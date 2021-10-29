@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <string>
+#include <string_view>
 #include <utility>
 
 // Provides an interface of generalized compiling/decompiling
@@ -287,6 +288,11 @@ private:
 protected:
 	// Standard separator character
 	static char SeparatorToChar(Sep eSep);
+
+public:
+	// according to RawCompileType::RCT_Idtf; only allows alphanumerics, '_' and '-'
+	static bool IsIdentifierChar(char c) noexcept;
+	static bool IsIdentifier(std::string_view str);
 };
 
 // Standard compile funcs

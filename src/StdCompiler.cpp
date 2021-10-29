@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <algorithm>
 #include <cinttypes>
 #include <cstring>
 
@@ -45,6 +46,16 @@ char StdCompiler::SeparatorToChar(Sep eSep)
 	}
 	assert(false);
 	return ' ';
+}
+
+bool StdCompiler::IsIdentifierChar(char c) noexcept
+{
+	return std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '-';
+}
+
+bool StdCompiler::IsIdentifier(std::string_view str)
+{
+	return std::all_of(begin(str), end(str), StdCompiler::IsIdentifierChar);
 }
 
 // *** StdCompilerBinWrite
@@ -924,7 +935,7 @@ bool StdCompilerINIRead::TestStringEnd(RawCompileType eType)
 	case RCT_Escaped: return *pPos == '"' || !*pPos || *pPos == '\n' || *pPos == '\r';
 	case RCT_All: return !*pPos || *pPos == '\n' || *pPos == '\r';
 	// '-' is needed for Layers in Scenario.txt (C4NameList) and other Material-Texture combinations
-	case RCT_Idtf: case RCT_IdtfAllowEmpty: case RCT_ID: return !isalnum(static_cast<unsigned char>(*pPos)) && *pPos != '_' && *pPos != '-';
+	case RCT_Idtf: case RCT_IdtfAllowEmpty: case RCT_ID: return !IsIdentifierChar(*pPos);
 	}
 	// unreachable
 	return true;

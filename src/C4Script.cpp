@@ -4647,6 +4647,16 @@ static std::optional<C4ValueInt> FnGetSystemTime(C4AulContext *cthr, C4ValueInt 
 static C4Value FnSetPlrExtraData(C4AulContext *cthr, C4ValueInt iPlayer, C4String *DataName, C4Value Data)
 {
 	const char *strDataName = FnStringPar(DataName);
+
+	if (!strDataName || !strDataName[0]) return C4VNull;
+	if (!StdCompiler::IsIdentifier(strDataName))
+	{
+		StdStrBuf name{strDataName};
+		name.EscapeString();
+		DebugLogF("WARNING: SetPlrExtraData: Ignoring invalid data name \"%s\"! Only alphanumerics, _ and - are allowed.", name.getData());
+		return C4VNull;
+	}
+
 	// valid player? (for great nullpointer prevention)
 	if (!ValidPlr(iPlayer)) return C4VNull;
 	// do not allow data type C4V_String or C4V_C4Object
