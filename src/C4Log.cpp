@@ -46,7 +46,10 @@ void OpenLog()
 	{
 		if (errno == EACCES)
 		{
-			throw CStdApp::StartupException{"Cannot create log file (Permission denied).\nPlease ensure that LegacyClonk is allowed to write in its installation directory."};
+#ifdef _WIN32
+			if (GetLastError() != ERROR_SHARING_VIOLATION)
+#endif
+				throw CStdApp::StartupException{"Cannot create log file (Permission denied).\nPlease ensure that LegacyClonk is allowed to write in its installation directory."};
 		}
 		else if (iLog == 100)
 		{
