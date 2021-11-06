@@ -54,7 +54,7 @@ void OpenLog()
 		else if (iLog == 100)
 		{
 			// it is extremely unlikely that someone is running 100 clonk instances at the same time in the same directory
-			throw CStdApp::StartupException{std::string{"Cannot create log file ("} + strerror(errno) + "}"};
+			throw CStdApp::StartupException{std::string{"Cannot create log file ("} + strerror(errno) + ")"};
 		}
 
 		// try different name
