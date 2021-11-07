@@ -14,6 +14,8 @@
  */
 
 #include "C4ToastLibNotify.h"
+
+#include "C4Log.h"
 #include "C4Version.h"
 
 #include "StdBuf.h"
