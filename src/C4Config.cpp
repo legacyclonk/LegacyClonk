@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -86,13 +86,14 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 #ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(s(MissionAccess), "MissionAccess", "", false, true));
 #endif
-	pComp->Value(mkNamingAdapt(FPS,              "FPS",              false,         false, true));
-	pComp->Value(mkNamingAdapt(Record,           "Record",           false,         false, true));
-	pComp->Value(mkNamingAdapt(ScreenshotFolder, "ScreenshotFolder", "Screenshots", false, true));
-	pComp->Value(mkNamingAdapt(FairCrew,         "NoCrew",           false,         false, true));
-	pComp->Value(mkNamingAdapt(FairCrewStrength, "DefCrewStrength",  1000,          false, true));
-	pComp->Value(mkNamingAdapt(ScrollSmooth,     "ScrollSmooth",     4));
-	pComp->Value(mkNamingAdapt(AlwaysDebug,      "DebugMode",        false,         false, true));
+	pComp->Value(mkNamingAdapt(FPS,                     "FPS",                     false,         false, true));
+	pComp->Value(mkNamingAdapt(Record,                  "Record",                  false,         false, true));
+	pComp->Value(mkNamingAdapt(ScreenshotFolder,        "ScreenshotFolder",        "Screenshots", false, true));
+	pComp->Value(mkNamingAdapt(FairCrew,                "NoCrew",                  false,         false, true));
+	pComp->Value(mkNamingAdapt(FairCrewStrength,        "DefCrewStrength",         1000,          false, true));
+	pComp->Value(mkNamingAdapt(ScrollSmooth,            "ScrollSmooth",            4));
+	pComp->Value(mkNamingAdapt(AlwaysDebug,             "DebugMode",               false,         false, true));
+	pComp->Value(mkNamingAdapt(AllowScriptingInReplays, "AllowScriptingInReplays", false));
 #ifdef _WIN32
 	pComp->Value(mkNamingAdapt(MMTimer, "MMTimer", true));
 #endif
