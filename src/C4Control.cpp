@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2019, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -254,10 +254,19 @@ void C4ControlSet::CompileFunc(StdCompiler *pComp)
 
 void C4ControlScript::Execute() const
 {
-	const char *szScript = Script.getData();
-	// user script: forbidden in league mode, from anyone in debug mode, otherwise from host only
-	if (Game.Parameters.isLeague() || (iByClient != C4ClientIDHost) && !Console.Active)
+	if (Game.Control.isReplay())
+	{
+		if (!Config.General.AllowScriptingInReplays)
+		{
+			return;
+		}
+	}
+	else if (Game.Parameters.isLeague() || (iByClient != C4ClientIDHost && !Console.Active))
+	{
 		return;
+	}
+
+	const char *szScript = Script.getData();
 	// execute
 	C4Object *pObj = nullptr;
 	C4AulScript *pScript;
