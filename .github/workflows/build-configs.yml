@@ -101,6 +101,7 @@ jobs:
           mkdir deps
           cd deps
           curl -L https://github.com/legacyclonk/deps/releases/download/2021-11-07/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
+          ./fix_paths.sh
 
       - name: Configure
         run: |
