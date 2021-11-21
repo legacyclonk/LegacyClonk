@@ -832,16 +832,17 @@ bool C4MaterialMap::mrfScript(C4MaterialReaction *pReaction, int32_t &iX, int32_
 	// OK - let's call it!
 	//               0           1           2                3                4                                    5                                    6                7               8
 	int32_t iXDir1, iYDir1, iXDir2, iYDir2;
-	C4AulParSet pars(C4VInt(iX), C4VInt(iY), C4VInt(iLSPosX), C4VInt(iLSPosY), C4VInt(iXDir1 = fixtoi(fXDir, 100)), C4VInt(iYDir1 = fixtoi(fYDir, 100)), C4VInt(iPxsMat), C4VInt(iLsMat), C4VInt(evEvent));
+	auto parX = C4VInt(iX), parY = C4VInt(iY), parXDir = C4VInt(iXDir1 = fixtoi(fXDir, 100)), parYDir = C4VInt(iYDir1 = fixtoi(fYDir, 100)), parPxsMat = C4VInt(iPxsMat);
+	const C4AulParSet pars{parX.GetRef(), parY.GetRef(), C4VInt(iLSPosX), C4VInt(iLSPosY), parXDir.GetRef(), parYDir.GetRef(), parPxsMat.GetRef(), C4VInt(iLsMat), C4VInt(evEvent)};
 	if (pReaction->pScriptFunc->Exec(nullptr, pars, false))
 	{
 		// PXS shall be killed!
 		return true;
 	}
 	// PXS shall exist further: write back parameters
-	iPxsMat = pars[6].getInt();
-	int32_t iX2 = pars[0].getInt(), iY2 = pars[1].getInt();
-	iXDir2 = pars[4].getInt(); iYDir2 = pars[5].getInt();
+	iPxsMat = parPxsMat.getInt();
+	int32_t iX2 = parX.getInt(), iY2 = parY.getInt();
+	iXDir2 = parXDir.getInt(); iYDir2 = parYDir.getInt();
 	if (iX != iX2 || iY != iY2 || iXDir1 != iXDir2 || iYDir1 != iYDir2)
 	{
 		// changes to pos/speed detected
