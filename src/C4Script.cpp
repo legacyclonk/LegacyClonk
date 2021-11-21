@@ -3571,7 +3571,7 @@ static bool FnOnMessageBoardAnswer(C4AulContext *cthr, C4Object *pObj, C4ValueIn
 	C4ScriptHost *scr;
 	if (pObj) scr = &pObj->Def->Script; else scr = &Game.Script;
 	// exec func
-	return static_cast<bool>(scr->ObjectCall(nullptr, pObj, PSF_InputCallback, {C4VString(FnStringPar(szAnswerString)), C4VInt(iForPlr)}));
+	return static_cast<bool>(scr->ObjectCall(nullptr, pObj, PSF_InputCallback, {C4VString(FnStringPar(szAnswerString)), C4VInt(iForPlr)}, true));
 }
 
 static C4ValueInt FnScriptCounter(C4AulContext *cthr)
@@ -5081,8 +5081,8 @@ static bool FnFightWith(C4AulContext *ctx, C4Object *pTarget, C4Object *pClonk)
 	// check OCF
 	if (~(pTarget->OCF & pClonk->OCF) & OCF_FightReady) return false;
 	// RejectFight callback
-	if (pTarget->Call(PSF_RejectFight, {C4VObj(pTarget)}).getBool()) return false;
-	if (pClonk->Call(PSF_RejectFight, {C4VObj(pClonk)}).getBool()) return false;
+	if (pTarget->Call(PSF_RejectFight, {C4VObj(pTarget)}, true).getBool()) return false;
+	if (pClonk->Call(PSF_RejectFight, {C4VObj(pClonk)}, true).getBool()) return false;
 	// begin fighting
 	ObjectActionFight(pClonk, pTarget);
 	ObjectActionFight(pTarget, pClonk);

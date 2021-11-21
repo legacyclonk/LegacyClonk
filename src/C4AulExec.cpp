@@ -1328,6 +1328,55 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 	return C4VNull;
 }
 
+static void CheckConvertFunctionParameters(C4Object *const ctxObject, C4AulFunc *const pFunc, C4Value *pPars, const bool convertToAnyEagerly, const bool convertNilToIntBool)
+{
+	// Convert parameters (typecheck)
+	const auto pTypes = pFunc->GetParType();
+	for (int i = 0; i < pFunc->GetParCount(); i++)
+	{
+		if (convertToAnyEagerly && pTypes[i] != C4V_pC4Value && !pPars[i])
+		{
+			pPars[i].Set0();
+		}
+		if (!pPars[i].ConvertTo(pTypes[i]))
+			throw C4AulExecError(ctxObject,
+				FormatString("call to \"%s\" parameter %d: got \"%s\", but expected \"%s\"!",
+					pFunc->Name, i + 1, pPars[i].GetTypeName(), GetC4VName(pTypes[i])
+				).getData());
+
+		if (convertNilToIntBool && pPars[i].GetType() == C4V_Any)
+		{
+			if (pTypes[i] == C4V_Int)
+			{
+				pPars[i].SetInt(0);
+			}
+			else if (pTypes[i] == C4V_Bool)
+			{
+				pPars[i].SetBool(false);
+			}
+		}
+	}
+}
+
+static bool TryCheckConvertFunctionParameters(C4Object *const ctxObject, C4AulFunc *const pFunc, C4Value *pPars, const bool convertToAnyEagerly, const bool convertNilToIntBool, bool passErrors)
+{
+	try
+	{
+		CheckConvertFunctionParameters(ctxObject, pFunc, pPars, convertToAnyEagerly, convertNilToIntBool);
+		return true;
+	}
+	catch (const C4AulError &e)
+	{
+		// Pass?
+		if (passErrors)
+			throw;
+		// Show
+		e.show();
+		DebugLogF(" by: internal call to %s", pFunc->Name);
+		return false;
+	}
+}
+
 C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4Object *pObj, C4Def *pDef, bool globalContext)
 {
 	// No object given? Use current context
@@ -1350,32 +1399,7 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 
 	const bool convertNilToIntBool = convertToAnyEagerly && pSFunc && pSFunc->pOrgScript->Strict >= C4AulScriptStrict::STRICT3;
 
-	// Convert parameters (typecheck)
-	const auto pTypes = pFunc->GetParType();
-	for (int i = 0; i < pFunc->GetParCount(); i++)
-	{
-		if (convertToAnyEagerly && pTypes[i] != C4V_pC4Value && !pPars[i])
-		{
-			pPars[i].Set0();
-		}
-		if (!pPars[i].ConvertTo(pTypes[i]))
-			throw C4AulExecError(pCurCtx->Obj,
-				FormatString("call to \"%s\" parameter %d: got \"%s\", but expected \"%s\"!",
-					pFunc->Name, i + 1, pPars[i].GetTypeName(), GetC4VName(pTypes[i])
-				).getData());
-
-		if (convertNilToIntBool && pPars[i].GetType() == C4V_Any)
-		{
-			if (pTypes[i] == C4V_Int)
-			{
-				pPars[i].SetInt(0);
-			}
-			else if (pTypes[i] == C4V_Bool)
-			{
-				pPars[i].SetBool(false);
-			}
-		}
-	}
+	CheckConvertFunctionParameters(pCurCtx->Obj, pFunc, pPars, convertToAnyEagerly, convertNilToIntBool);
 
 	if (pSFunc)
 	{
@@ -1550,8 +1574,14 @@ C4Value C4AulFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErro
 	ctx.Obj = pObj;
 	ctx.Def = pObj ? pObj->Def : nullptr;
 	ctx.Caller = nullptr;
-	// execute
-	return Exec(&ctx, pPars.Par, fPassErrors);
+
+	auto pars = pPars;
+	if (TryCheckConvertFunctionParameters(pObj, this, pars.Par, false, false, fPassErrors))
+	{
+		// execute
+		return Exec(&ctx, pars.Par, fPassErrors);
+	}
+	return C4VNull;
 }
 
 C4Value C4AulScriptFunc::Exec(C4AulContext *pCtx, const C4Value pPars[], bool fPassErrors)
@@ -1578,8 +1608,13 @@ C4Value C4AulScriptFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPa
 	// handle easiest case first
 	if (Owner->State != ASS_PARSED) return C4VNull;
 
-	// execute
-	return AulExec.Exec(this, pObj, pPars.Par, fPassErrors);
+	auto pars = pPars;
+	if (TryCheckConvertFunctionParameters(pObj, this, pars.Par, false, false, fPassErrors))
+	{
+		// execute
+		return AulExec.Exec(this, pObj, pars.Par, fPassErrors);
+	}
+	return C4VNull;
 
 #else
 
