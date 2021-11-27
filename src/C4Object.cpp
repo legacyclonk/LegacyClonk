@@ -6088,8 +6088,7 @@ StdStrBuf C4Object::GetInfoString()
 	// go through all effects and add their desc
 	for (C4Effect *pEff = pEffects; pEff; pEff = pEff->pNext)
 	{
-		C4Value par[7];
-		C4Value vInfo = pEff->DoCall(this, PSFS_FxInfo, par[0], par[1], par[2], par[3], par[4], par[5], par[6]);
+		C4Value vInfo = pEff->DoCall(this, PSFS_FxInfo);
 		if (!vInfo) continue;
 		// debug: warn for wrong return types
 		if (vInfo.GetType() != C4V_String)

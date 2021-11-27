@@ -54,7 +54,7 @@ C4AulScript *C4Effect::GetCallbackScript()
 	return pSrcScript;
 }
 
-C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, C4Value &rVal1, C4Value &rVal2, C4Value &rVal3, C4Value &rVal4, bool fDoCalls, int32_t &riStoredAsNumber, bool passErrors)
+C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, const C4Value &rVal1, const C4Value &rVal2, const C4Value &rVal3, const C4Value &rVal4, bool fDoCalls, int32_t &riStoredAsNumber, bool passErrors)
 	: EffectVars(0)
 {
 	C4Effect *pPrev, *pCheck;
@@ -266,7 +266,7 @@ int32_t C4Effect::GetCount(const char *szMask, int32_t iMaxPriority)
 	return iCnt;
 }
 
-int32_t C4Effect::Check(C4Object *pForObj, const char *szCheckEffect, int32_t iPrio, int32_t iTimer, C4Value &rVal1, C4Value &rVal2, C4Value &rVal3, C4Value &rVal4, bool passErrors)
+int32_t C4Effect::Check(C4Object *pForObj, const char *szCheckEffect, int32_t iPrio, int32_t iTimer, const C4Value &rVal1, const C4Value &rVal2, const C4Value &rVal3, const C4Value &rVal4, bool passErrors)
 {
 	// priority=1: always OK; no callbacks
 	if (iPrio == 1) return 0;
@@ -295,8 +295,8 @@ int32_t C4Effect::Check(C4Object *pForObj, const char *szCheckEffect, int32_t iP
 		// do temp remove calls if desired
 		if (pAddToEffect->pNext && fDoTempCallsForAdd)
 			pAddToEffect->TempRemoveUpperEffects(pForObj, false, &pLastRemovedEffect);
-		C4Value Par1 = C4VString(szCheckEffect), Par2 = C4VInt(iTimer), Par8;
-		int32_t iResult = pAddToEffect->DoCall(pForObj, PSFS_FxAdd, Par1, Par2, rVal1, rVal2, rVal3, rVal4, Par8).getInt();
+		C4Value Par1 = C4VString(szCheckEffect), Par2 = C4VInt(iTimer);
+		int32_t iResult = pAddToEffect->DoCall(pForObj, PSFS_FxAdd, Par1, Par2, rVal1, rVal2, rVal3, rVal4).getInt();
 		// do temp readd calls if desired
 		if (pAddToEffect->pNext && fDoTempCallsForAdd)
 			pAddToEffect->TempReaddUpperEffects(pForObj, pLastRemovedEffect);
@@ -413,7 +413,7 @@ void C4Effect::DoDamage(C4Object *pObj, int32_t &riDamage, int32_t iDamageType, 
 	} while ((pEff = pEff->pNext) && riDamage);
 }
 
-C4Value C4Effect::DoCall(C4Object *pObj, const char *szFn, C4Value &rVal1, C4Value &rVal2, C4Value &rVal3, C4Value &rVal4, C4Value &rVal5, C4Value &rVal6, C4Value &rVal7, bool passErrors)
+C4Value C4Effect::DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1, const C4Value &rVal2, const C4Value &rVal3, const C4Value &rVal4, const C4Value &rVal5, const C4Value &rVal6, const C4Value &rVal7, bool passErrors)
 {
 	// def script or global only?
 	C4AulScript *pSrcScript; C4Def *pDef;
