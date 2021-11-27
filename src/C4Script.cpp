@@ -5408,7 +5408,7 @@ static C4ValueInt FnAddEffect(C4AulContext *ctx, C4String *psEffectName, C4Objec
 	if (!szEffect || !*szEffect || !iPrio) return 0;
 	// create effect
 	int32_t iEffectNumber;
-	new C4Effect(pTarget, szEffect, iPrio, iTimerIntervall, pCmdTarget, idCmdTarget, pvVal1, pvVal2, pvVal3, pvVal4, true, iEffectNumber);
+	new C4Effect(pTarget, szEffect, iPrio, iTimerIntervall, pCmdTarget, idCmdTarget, pvVal1, pvVal2, pvVal3, pvVal4, true, iEffectNumber, true);
 	// return assigned effect number - may be 0 if he effect has been denied by another effect
 	// may also be the number of another effect
 	return iEffectNumber;
@@ -5507,7 +5507,7 @@ static std::optional<C4ValueInt> FnCheckEffect(C4AulContext *ctx, C4String *psEf
 	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
 	if (!pEffect) return {};
 	// let them check
-	return {pEffect->Check(pTarget, szEffect, iPrio, iTimerIntervall, pvVal1, pvVal2, pvVal3, pvVal4)};
+	return {pEffect->Check(pTarget, szEffect, iPrio, iTimerIntervall, pvVal1, pvVal2, pvVal3, pvVal4, true)};
 }
 
 static C4ValueInt FnGetEffectCount(C4AulContext *ctx, C4String *psEffectName, C4Object *pTarget, C4ValueInt iMaxPriority)
@@ -5545,7 +5545,7 @@ static C4Value FnEffectCall(C4AulContext *ctx, C4Object *pTarget, C4ValueInt iNu
 	if (!pEffect) return C4VNull;
 	if (!(pEffect = pEffect->Get(iNumber, true))) return C4VNull;
 	// do call
-	return pEffect->DoCall(pTarget, szCallFn, vVal1, vVal2, vVal3, vVal4, vVal5, vVal6, vVal7);
+	return pEffect->DoCall(pTarget, szCallFn, vVal1, vVal2, vVal3, vVal4, vVal5, vVal6, vVal7, true);
 }
 
 static C4ValueInt FnModulateColor(C4AulContext *cthr, std::optional<C4ValueInt> iClr1, C4ValueInt iClr2)
