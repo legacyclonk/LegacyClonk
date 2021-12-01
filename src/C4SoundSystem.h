@@ -47,6 +47,7 @@ public:
 	C4SoundSystem(C4SoundSystem &&) = delete;
 	~C4SoundSystem() = default;
 	C4SoundSystem &operator=(const C4SoundSystem &) = delete;
+	C4SoundSystem &operator=(C4SoundSystem &&) = delete;
 
 	// Detaches the specified object from all sound instances.
 	void ClearPointers(const C4Object *obj);
@@ -71,6 +72,7 @@ private:
 		Sample(Sample &&) = delete;
 		~Sample() = default;
 		Sample &operator=(const Sample &) = delete;
+		Sample &operator=(Sample &&) = delete;
 
 		void Execute();
 	};
@@ -88,6 +90,7 @@ private:
 			ObjPos(ObjPos &&) = delete;
 			~ObjPos() = default;
 			ObjPos &operator=(const ObjPos &) = delete;
+			ObjPos &operator=(ObjPos &&) = delete;
 		};
 
 		Instance(Sample &sample, bool loop, std::int32_t volume,
@@ -99,6 +102,7 @@ private:
 		Instance(Instance &&) = delete;
 		~Instance() = default;
 		Instance &operator=(const Instance &) = delete;
+		Instance &operator=(Instance &&) = delete;
 
 		Sample &sample;
 		std::unique_ptr<C4AudioSystem::SoundChannel> channel;
