@@ -109,24 +109,39 @@ template<typename To, typename From>
 To checked_cast(From from)
 {
 	static_assert(std::is_integral_v<To> && std::is_integral_v<From>, "Only implemented for integral types");
-	if constexpr (!(sizeof(To) < sizeof(From) || std::is_unsigned_v<To> != std::is_unsigned_v<From>))
+
+	if constexpr (std::is_signed_v<From>)
 	{
-		if constexpr (std::is_signed_v<From>)
+		if constexpr (std::is_unsigned_v<To>)
 		{
-			if constexpr (std::is_unsigned_v<To>)
+			if (from < 0)
 			{
-				if (from < 0)
-				{
-					throw std::runtime_error{"Conversion of negative value to unsigned type requested"};
-				}
+				throw std::runtime_error{"Conversion of negative value to unsigned type requested"};
 			}
-			else if (from < std::numeric_limits<To>::min())
+		}
+		else if constexpr (std::numeric_limits<From>::min() < std::numeric_limits<To>::min())
+		{
+			if (from < std::numeric_limits<To>::min())
 			{
 				throw std::runtime_error{"Conversion of value requested that is smaller than the target-type minimum"};
 			}
 		}
+	}
 
-		if (from > std::numeric_limits<To>::max())
+	if constexpr (std::numeric_limits<From>::max() > std::numeric_limits<To>::max())
+	{
+		const auto signMatchedFrom = ([](From from) {
+			if constexpr (std::is_unsigned_v<To>)
+			{
+				// we know from above that from is non-negative, so the unsigned cast is safe
+				return static_cast<std::make_unsigned_t<From>>(from);
+			}
+			else
+			{
+				return from;
+			}
+		})(from);
+		if (signMatchedFrom > std::numeric_limits<To>::max())
 		{
 			throw std::runtime_error{"Conversion of value requested that is bigger than the target-type maximum"};
 		}
