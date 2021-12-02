@@ -182,12 +182,12 @@ C4ValueHash::Iterator::pair_type &C4ValueHash::Iterator::operator*()
 	return *current;
 }
 
-bool C4ValueHash::Iterator::operator==(const C4ValueHash::Iterator &other)
+bool C4ValueHash::Iterator::operator==(const C4ValueHash::Iterator &other) const
 {
 	return it == other.it;
 }
 
-bool C4ValueHash::Iterator::operator!=(const C4ValueHash::Iterator &other)
+bool C4ValueHash::Iterator::operator!=(const C4ValueHash::Iterator &other) const
 {
 	return it != other.it;
 }
