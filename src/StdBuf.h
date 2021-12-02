@@ -24,6 +24,7 @@
 #include <assert.h>
 #include <stdarg.h>
 
+#include <concepts>
 #include <utility>
 #include <type_traits>
 
@@ -526,7 +527,7 @@ public:
 	// Note this references the data.
 	StdStrBuf &operator=(const StdStrBuf &Buf2) { Copy(Buf2);     return *this; }
 
-	template<typename T, typename = std::enable_if_t<std::is_convertible_v<T, const char *>>>
+	template<std::convertible_to<const char *> T>
 	StdStrBuf &operator=(T szString)  { Copy(szString); return *this; }
 
 	template<size_t N>

@@ -19,6 +19,7 @@
 #include "C4Id.h"
 #include "C4AulScriptStrict.h"
 
+#include <concepts>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -85,6 +86,8 @@ struct C4VCnvFn
 
 template <typename T> struct C4ValueConv;
 
+template<typename T> concept C4ValueInteger = !std::same_as<T, C4ID>;
+
 class C4Value
 {
 public:
@@ -100,7 +103,7 @@ public:
 		AddDataRef();
 	}
 
-	template<typename T, typename std::enable_if_t<!std::is_same_v<T, C4ID>, int> = 0>
+	template<typename T> requires (!std::same_as<T, C4ID>)
 	explicit C4Value(T nData, C4V_Type nType) : Type(nData || nType == C4V_Int || nType == C4V_Bool ? nType : C4V_Any), NextRef(nullptr), FirstRef(nullptr)
 	{
 		Data.Raw = 0;

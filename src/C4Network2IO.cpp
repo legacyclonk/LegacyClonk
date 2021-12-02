@@ -32,6 +32,7 @@
 #endif
 
 #include <cassert>
+#include <concepts>
 
 // internal structures
 struct C4Network2IO::NetEvPacketData
@@ -64,7 +65,7 @@ C4Network2IO::~C4Network2IO()
 	Clear();
 }
 
-template<typename T, typename std::enable_if_t<std::is_base_of_v<C4NetIO, T>, int> = 0>
+template<std::derived_from<C4NetIO> T>
 static T *CreateNetIO(const char *const name, T *const io, const std::uint16_t port, C4InteractiveThread &thread)
 {
 	std::unique_ptr<T> netIO{io};

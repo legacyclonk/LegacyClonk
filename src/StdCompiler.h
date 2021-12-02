@@ -20,6 +20,7 @@
 #include "StdBuf.h"
 
 #include <assert.h>
+#include <concepts>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -682,7 +683,7 @@ protected:
 		return iNum;
 	}
 
-	template<typename T> std::enable_if_t<std::is_unsigned_v<T>, T> ReadUNum();
+	template<std::unsigned_integral T> T ReadUNum();
 	size_t GetStringLength(RawCompileType eTyped);
 	StdBuf ReadString(size_t iLength, RawCompileType eTyped, bool fAppendNull = true);
 	bool TestStringEnd(RawCompileType eType);
