@@ -88,6 +88,7 @@ bool LogSilent(const char *szMessage);
 #include <math.h>
 
 #include <algorithm>
+#include <concepts>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
@@ -105,11 +106,9 @@ template <class T> inline T BoundBy(T bval, T lbound, T rbound) { return bval < 
 template <class T> inline int Sign(T val) { return val < 0 ? -1 : val > 0 ? 1 : 0; }
 template <class T> inline void Toggle(T &v) { v = !v; }
 
-template<typename To, typename From>
+template<std::integral To, std::integral From>
 To checked_cast(From from)
 {
-	static_assert(std::is_integral_v<To> && std::is_integral_v<From>, "Only implemented for integral types");
-
 	if constexpr (std::is_signed_v<From>)
 	{
 		if constexpr (std::is_unsigned_v<To>)
