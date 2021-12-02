@@ -60,7 +60,7 @@ public:
 	int32_t ScanX, ScanSpeed; // SyncClearance-NoSave //
 	int32_t LeftOpen, RightOpen;
 	bool TopOpen, BottomOpen;
-	FIXED Gravity;
+	C4Fixed Gravity;
 	uint32_t Modulation; // landscape blit modulation; 0 means normal
 	int32_t MapSeed; // random seed for MapToLandscape
 	bool ShadeMaterials; // shade materials
@@ -255,7 +255,7 @@ bool FindLiquid(int32_t &rx, int32_t &ry, int32_t width, int32_t height);
 bool FindSurfaceLiquid(int32_t &rx, int32_t &ry, int32_t width, int32_t height);
 bool FindLevelGround(int32_t &rx, int32_t &ry, int32_t width, int32_t hrange);
 bool FindConSiteSpot(int32_t &rx, int32_t &ry, int32_t wdt, int32_t hgt, uint32_t category, int32_t hrange = -1);
-bool FindThrowingPosition(int32_t iTx, int32_t iTy, FIXED fXDir, FIXED fYDir, int32_t iHeight, int32_t &rX, int32_t &rY);
+bool FindThrowingPosition(int32_t iTx, int32_t iTy, C4Fixed fXDir, C4Fixed fYDir, int32_t iHeight, int32_t &rX, int32_t &rY);
 bool PathFree(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t *ix = nullptr, int32_t *iy = nullptr);
 bool PathFreeIgnoreVehicle(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t *ix = nullptr, int32_t *iy = nullptr);
 bool FindClosestFree(int32_t &rX, int32_t &rY, int32_t iAngle1, int32_t iAngle2, int32_t iExcludeAngle1, int32_t iExcludeAngle2);

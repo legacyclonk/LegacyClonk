@@ -24,8 +24,8 @@ const int CornerRange = AttachRange + 2;
 
 #define GravAccel (Game.Landscape.Gravity)
 
-extern const FIXED FloatAccel;
-extern const FIXED HitSpeed1, HitSpeed2, HitSpeed3, HitSpeed4;
-extern const FIXED WalkAccel, SwimAccel;
-extern const FIXED FloatFriction;
-extern const FIXED RotateAccel;
+extern const C4Fixed FloatAccel;
+extern const C4Fixed HitSpeed1, HitSpeed2, HitSpeed3, HitSpeed4;
+extern const C4Fixed WalkAccel, SwimAccel;
+extern const C4Fixed FloatFriction;
+extern const C4Fixed RotateAccel;

@@ -28,7 +28,7 @@ class C4PXS
 
 protected:
 	int32_t Mat;
-	FIXED x, y, xdir, ydir;
+	C4Fixed x, y, xdir, ydir;
 
 protected:
 	void Execute();
@@ -59,7 +59,7 @@ public:
 	void Synchronize();
 	void SyncClearance();
 	void Cast(int32_t mat, int32_t num, int32_t tx, int32_t ty, int32_t level);
-	bool Create(int32_t mat, FIXED ix, FIXED iy, FIXED ixdir = Fix0, FIXED iydir = Fix0);
+	bool Create(int32_t mat, C4Fixed ix, C4Fixed iy, C4Fixed ixdir = Fix0, C4Fixed iydir = Fix0);
 	bool Load(C4Group &hGroup);
 	bool Save(C4Group &hGroup);
 

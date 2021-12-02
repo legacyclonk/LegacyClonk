@@ -840,7 +840,7 @@ void C4MouseControl::DragMoving()
 				Cursor = C4MC_Cursor_Drop; return;
 			}
 			// Throwing physical
-			FIXED fixThrow = ValByPhysical(400, 50000);
+			C4Fixed fixThrow = ValByPhysical(400, 50000);
 			if (pPlayer->Cursor) fixThrow = ValByPhysical(400, pPlayer->Cursor->GetPhysical()->Throw);
 			// Preferred throwing direction
 			int32_t iDir = +1; if (pPlayer->Cursor) if (pPlayer->Cursor->x > X) iDir = -1;

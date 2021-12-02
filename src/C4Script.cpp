@@ -5263,7 +5263,7 @@ static bool FnSetObjDrawTransform2(C4AulContext *ctx, C4ValueInt iA, C4ValueInt 
 	return true;
 }
 
-bool SimFlight(FIXED &x, FIXED &y, FIXED &xdir, FIXED &ydir, int32_t iDensityMin, int32_t iDensityMax, int32_t iIter);
+bool SimFlight(C4Fixed &x, C4Fixed &y, C4Fixed &xdir, C4Fixed &ydir, int32_t iDensityMin, int32_t iDensityMax, int32_t iIter);
 
 static std::optional<bool> FnSimFlight(C4AulContext *ctx, C4Value *pvrX, C4Value *pvrY, C4Value *pvrXDir, C4Value *pvrYDir, std::optional<C4ValueInt> oiDensityMin, std::optional<C4ValueInt> oiDensityMax, std::optional<C4ValueInt> oiIter, std::optional<C4ValueInt> oiPrec)
 {
@@ -5275,8 +5275,8 @@ static std::optional<bool> FnSimFlight(C4AulContext *ctx, C4Value *pvrX, C4Value
 	int iIter = oiIter.value_or(-1);
 	int iPrec = oiPrec.value_or(10);
 
-	// convert to FIXED
-	FIXED x = itofix(pvrX->getInt()), y = itofix(pvrY->getInt()),
+	// convert to C4Fixed
+	C4Fixed x = itofix(pvrX->getInt()), y = itofix(pvrY->getInt()),
 	xdir = itofix(pvrXDir->getInt(), iPrec), ydir = itofix(pvrYDir->getInt(), iPrec);
 
 	// simulate

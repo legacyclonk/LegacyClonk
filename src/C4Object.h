@@ -144,8 +144,8 @@ public:
 	C4ValueList Local;
 	C4ValueMapData LocalNamed;
 	int32_t PlrViewRange;
-	FIXED fix_x, fix_y, fix_r; // SyncClearance-Fix //
-	FIXED xdir, ydir, rdir;
+	C4Fixed fix_x, fix_y, fix_r; // SyncClearance-Fix //
+	C4Fixed xdir, ydir, rdir;
 	int32_t iLastAttachMovementFrame; // last frame in which Attach-movement by a SolidMask was done
 	bool Mobile;
 	bool Select;
@@ -252,7 +252,7 @@ public:
 	bool Init(C4Def *ndef, C4Object *pCreator,
 		int32_t owner, C4ObjectInfo *info,
 		int32_t nx, int32_t ny, int32_t nr,
-		FIXED nxdir, FIXED nydir, FIXED nrdir, int32_t iController);
+		C4Fixed nxdir, C4Fixed nydir, C4Fixed nrdir, int32_t iController);
 	void CompileFunc(StdCompiler *pComp);
 	void DrawEnergy(C4Facet &cgo);
 	void DrawMagicEnergy(C4Facet &cgo);
@@ -309,7 +309,7 @@ public:
 	void SetCategory(int32_t Category) { this->Category = Category; Resort(); SetOCF(); }
 	int32_t GetProcedure();
 	bool Enter(C4Object *pTarget, bool fCalls = true, bool fCopyMotion = true, bool *pfRejectCollect = nullptr);
-	bool Exit(int32_t iX = 0, int32_t iY = 0, int32_t iR = 0, FIXED iXDir = Fix0, FIXED iYDir = Fix0, FIXED iRDir = Fix0, bool fCalls = true);
+	bool Exit(int32_t iX = 0, int32_t iY = 0, int32_t iR = 0, C4Fixed iXDir = Fix0, C4Fixed iYDir = Fix0, C4Fixed iRDir = Fix0, bool fCalls = true);
 	void CopyMotion(C4Object *from);
 	void ForcePosition(int32_t tx, int32_t ty);
 	void MovePosition(int32_t dx, int32_t dy);
@@ -329,9 +329,9 @@ public:
 	void Blast(int32_t iLevel, int32_t iCausedBy);
 	bool Build(int32_t iLevel, C4Object *pBuilder);
 	bool Chop(C4Object *pByObject);
-	bool Push(FIXED txdir, FIXED dforce, bool fStraighten);
-	bool Lift(FIXED tydir, FIXED dforce);
-	void Fling(FIXED txdir, FIXED tydir, bool fAddSpeed, int32_t byPlayer); // set/add given speed to current, setting jump/tumble-actions. also sets controller for kill tracing.
+	bool Push(C4Fixed txdir, C4Fixed dforce, bool fStraighten);
+	bool Lift(C4Fixed tydir, C4Fixed dforce);
+	void Fling(C4Fixed txdir, C4Fixed tydir, bool fAddSpeed, int32_t byPlayer); // set/add given speed to current, setting jump/tumble-actions. also sets controller for kill tracing.
 	C4Object *CreateContents(C4ID n_id);
 	bool CreateContentsByList(C4IDList &idlist);
 	uint8_t GetArea(int32_t &aX, int32_t &aY, int32_t &aWdt, int32_t &aHgt);
@@ -341,7 +341,7 @@ public:
 	inline int32_t Width() { return Shape.Wdt; } // width of shape
 	inline int32_t Height() { return Shape.Hgt + addtop(); } // height of shape (+build-top)
 	uint8_t GetEntranceArea(int32_t &aX, int32_t &aY, int32_t &aWdt, int32_t &aHgt);
-	FIXED GetSpeed();
+	C4Fixed GetSpeed();
 	C4PhysicalInfo *GetPhysical(bool fPermanent = false);
 	bool TrainPhysical(C4PhysicalInfo::Offset mpiOffset, int32_t iTrainBy, int32_t iMaxTrain);
 	const char *GetName();

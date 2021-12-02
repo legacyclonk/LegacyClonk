@@ -458,18 +458,18 @@ bool C4MCOverlay::CheckMask(int32_t iX, int32_t iY)
 	rc.x = iX; rc.y = iY; rc.Rotate = Rotate; rc.Turbulence = Turbulence;
 	AddDbgRec(RCT_MCT1, &rc, sizeof(rc));
 #endif
-	FIXED dX = itofix(iX); FIXED dY = itofix(iY);
+	C4Fixed dX = itofix(iX); C4Fixed dY = itofix(iY);
 	// apply turbulence
 	if (Turbulence)
 	{
-		const FIXED Rad2Grad = itofix(3754936, 65536);
+		const C4Fixed Rad2Grad = itofix(3754936, 65536);
 		int32_t j = 3;
 		for (int32_t i = 10; i <= Turbulence; i *= 10)
 		{
 			int32_t Seed2; Seed2 = Seed;
 			for (int32_t l = 0; l <= Lambda; ++l)
 			{
-				for (FIXED d = itofix(2); d < 6; d += FIXED10(15))
+				for (C4Fixed d = itofix(2); d < 6; d += FIXED10(15))
 				{
 					dX += Sin(((dX / 7 + itofix(Seed2) / ZoomX + dY) / j + d) * Rad2Grad) * j / 2;
 					dY += Cos(((dY / 7 + itofix(Seed2) / ZoomY + dX) / j - d) * Rad2Grad) * j / 2;
@@ -482,7 +482,7 @@ bool C4MCOverlay::CheckMask(int32_t iX, int32_t iY)
 	// apply rotation
 	if (Rotate)
 	{
-		FIXED dXo(dX), dYo(dY);
+		C4Fixed dXo(dX), dYo(dY);
 		dX = dXo * Cos(itofix(Rotate)) - dYo * Sin(itofix(Rotate));
 		dY = dYo * Cos(itofix(Rotate)) + dXo * Sin(itofix(Rotate));
 	}

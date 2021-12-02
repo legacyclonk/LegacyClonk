@@ -55,8 +55,8 @@ protected:
 
 public:
 	class C4Surface *Surface;
-	FIXED xdir, ydir; // sky movement speed
-	FIXED x, y; // sky movement pos
+	C4Fixed xdir, ydir; // sky movement speed
+	C4Fixed x, y; // sky movement pos
 	int32_t ParX, ParY; // parallax movement in xdir/ydir
 	uint32_t FadeClr1, FadeClr2;
 	int32_t ParallaxMode; // sky scrolling mode

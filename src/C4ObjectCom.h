@@ -42,10 +42,10 @@ bool PlayerObjectCommand(int32_t plr, int32_t cmdf, C4Object *pTarget = nullptr,
 
 bool ObjectActionWalk(C4Object *cObj);
 bool ObjectActionStand(C4Object *cObj);
-bool ObjectActionJump(C4Object *cObj, FIXED xdir, FIXED ydir, bool fByCom);
-bool ObjectActionDive(C4Object *cObj, FIXED xdir, FIXED ydir);
-bool ObjectActionTumble(C4Object *cObj, int32_t dir, FIXED xdir, FIXED ydir);
-bool ObjectActionGetPunched(C4Object *cObj, FIXED xdir, FIXED ydir);
+bool ObjectActionJump(C4Object *cObj, C4Fixed xdir, C4Fixed ydir, bool fByCom);
+bool ObjectActionDive(C4Object *cObj, C4Fixed xdir, C4Fixed ydir);
+bool ObjectActionTumble(C4Object *cObj, int32_t dir, C4Fixed xdir, C4Fixed ydir);
+bool ObjectActionGetPunched(C4Object *cObj, C4Fixed xdir, C4Fixed ydir);
 bool ObjectActionKneel(C4Object *cObj);
 bool ObjectActionFlat(C4Object *cObj, int32_t dir);
 bool ObjectActionScale(C4Object *cObj, int32_t dir);

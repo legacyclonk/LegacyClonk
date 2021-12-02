@@ -108,7 +108,7 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 	else
 	{
 		// calc matrix for given rotation
-		FIXED Ma1 = Cos(itofix(-MaskPutRotation)), Ma2 = -Sin(itofix(-MaskPutRotation)),
+		C4Fixed Ma1 = Cos(itofix(-MaskPutRotation)), Ma2 = -Sin(itofix(-MaskPutRotation)),
 			Mb1 = Sin(itofix(-MaskPutRotation)), Mb2 = Cos(itofix(-MaskPutRotation));
 		// get upper-left corner of landscape copy rect
 		int centerx = pForObject->Def->Shape.x + pForObject->SolidMask.tx + pForObject->SolidMask.Wdt / 2;
@@ -128,19 +128,19 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 			MaskPutRect.Hgt = std::min<int32_t>(ystart + MatBuffPitch, GBackHgt) - MaskPutRect.y;
 		}
 		// go through clipping rect
-		const FIXED y0 = itofix(pClipRect->ty - MatBuffPitch / 2);
-		const FIXED x0 = itofix(pClipRect->tx - MatBuffPitch / 2);
+		const C4Fixed y0 = itofix(pClipRect->ty - MatBuffPitch / 2);
+		const C4Fixed x0 = itofix(pClipRect->tx - MatBuffPitch / 2);
 		iTy = pClipRect->y;
 		int w = pForObject->SolidMask.Wdt;
 		int h = pForObject->SolidMask.Hgt;
-		FIXED ya = y0 * Ma2;
-		FIXED yb = y0 * Mb2;
+		C4Fixed ya = y0 * Ma2;
+		C4Fixed yb = y0 * Mb2;
 		for (ycnt = 0; ycnt < pClipRect->Hgt; ycnt++)
 		{
 			iTx = pClipRect->x;
 			int i = (ycnt + pClipRect->ty) * MatBuffPitch + pClipRect->tx;
-			FIXED xa = x0 * Ma1;
-			FIXED xb = x0 * Mb1;
+			C4Fixed xa = x0 * Ma1;
+			C4Fixed xb = x0 * Mb1;
 			for (xcnt = 0; xcnt < pClipRect->Wdt; xcnt++)
 			{
 				// calc position in solidmask buffer

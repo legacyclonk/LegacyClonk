@@ -90,7 +90,7 @@ public:
 	C4Viewport();
 	~C4Viewport();
 	C4RegionList Regions;
-	FIXED dViewX, dViewY;
+	C4Fixed dViewX, dViewY;
 	int32_t ViewX, ViewY, ViewWdt, ViewHgt;
 	int32_t BorderLeft, BorderTop, BorderRight, BorderBottom;
 	int32_t ViewOffsX, ViewOffsY;

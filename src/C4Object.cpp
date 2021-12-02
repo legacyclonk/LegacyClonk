@@ -150,7 +150,7 @@ void C4Object::Default()
 bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
 	int32_t iOwner, C4ObjectInfo *pInfo,
 	int32_t nx, int32_t ny, int32_t nr,
-	FIXED nxdir, FIXED nydir, FIXED nrdir, int32_t iController)
+	C4Fixed nxdir, C4Fixed nydir, C4Fixed nrdir, int32_t iController)
 {
 	// currently initializing
 	Initializing = true;
@@ -528,7 +528,7 @@ void C4Object::SetOCF()
 	uint32_t dwOCFOld = OCF;
 #endif
 	// Update the object character flag according to the object's current situation
-	FIXED cspeed = GetSpeed();
+	C4Fixed cspeed = GetSpeed();
 #ifdef _DEBUG
 	if (Contained && !Game.Objects.ObjectNumber(Contained))
 	{
@@ -670,7 +670,7 @@ void C4Object::UpdateOCF()
 	uint32_t dwOCFOld = OCF;
 #endif
 	// Update the object character flag according to the object's current situation
-	FIXED cspeed = GetSpeed();
+	C4Fixed cspeed = GetSpeed();
 #ifdef _DEBUG
 	if (Contained && !Game.Objects.ObjectNumber(Contained))
 	{
@@ -1501,7 +1501,7 @@ void C4Object::DoExperience(int32_t change)
 			Promote(Info->Rank + 1, false);
 }
 
-bool C4Object::Exit(int32_t iX, int32_t iY, int32_t iR, FIXED iXDir, FIXED iYDir, FIXED iRDir, bool fCalls)
+bool C4Object::Exit(int32_t iX, int32_t iY, int32_t iR, C4Fixed iXDir, C4Fixed iYDir, C4Fixed iRDir, bool fCalls)
 {
 	// 1. Exit the current container.
 	// 2. Update Contents of container object and set Contained to nullptr.
@@ -1608,7 +1608,7 @@ bool C4Object::Enter(C4Object *pTarget, bool fCalls, bool fCopyMotion, bool *pfR
 	return true;
 }
 
-void C4Object::Fling(FIXED txdir, FIXED tydir, bool fAddSpeed, int32_t iCausedBy)
+void C4Object::Fling(C4Fixed txdir, C4Fixed tydir, bool fAddSpeed, int32_t iCausedBy)
 {
 	// trace indirect killers
 	if (OCF & OCF_Alive) UpdatLastEnergyLossCause(iCausedBy); else if (!Contained) Controller = iCausedBy;
@@ -1754,7 +1754,7 @@ bool C4Object::Chop(C4Object *pByObject)
 	return true;
 }
 
-bool C4Object::Push(FIXED txdir, FIXED dforce, bool fStraighten)
+bool C4Object::Push(C4Fixed txdir, C4Fixed dforce, bool fStraighten)
 {
 	// Valid check
 	if (!Status || !Def || Contained || !(OCF & OCF_Grab)) return false;
@@ -1806,7 +1806,7 @@ bool C4Object::Push(FIXED txdir, FIXED dforce, bool fStraighten)
 	return true;
 }
 
-bool C4Object::Lift(FIXED tydir, FIXED dforce)
+bool C4Object::Lift(C4Fixed tydir, C4Fixed dforce)
 {
 	// Valid check
 	if (!Status || !Def || Contained) return false;
@@ -2060,9 +2060,9 @@ uint8_t C4Object::GetEntranceArea(int32_t &aX, int32_t &aY, int32_t &aWdt, int32
 	return 1;
 }
 
-FIXED C4Object::GetSpeed()
+C4Fixed C4Object::GetSpeed()
 {
-	FIXED cobjspd = Fix0;
+	C4Fixed cobjspd = Fix0;
 	if (xdir < 0) cobjspd -= xdir; else cobjspd += xdir;
 	if (ydir < 0) cobjspd -= ydir; else cobjspd += ydir;
 	return cobjspd;
@@ -4278,7 +4278,7 @@ bool ContactVtxCNAT(C4Object *cobj, uint8_t cnat_dir);
 void C4Object::ContactAction()
 {
 	// Take certain action on contact. Evaluate t_contact-CNAT and Procedure.
-	FIXED last_xdir;
+	C4Fixed last_xdir;
 
 	int32_t iDir;
 	C4PhysicalInfo *pPhysical = GetPhysical();
@@ -4528,7 +4528,7 @@ void C4Object::ContactAction()
 	}
 }
 
-void Towards(FIXED &val, FIXED target, FIXED step)
+void Towards(C4Fixed &val, C4Fixed target, C4Fixed step)
 {
 	if (val == target) return;
 	if (Abs(val - target) <= step) { val = target; return; }
@@ -4657,8 +4657,8 @@ void C4Object::ExecAction()
 {
 	Action.t_attach = CNAT_None;
 	uint32_t ocf;
-	FIXED iTXDir;
-	FIXED lftspeed, tydir;
+	C4Fixed iTXDir;
+	C4Fixed lftspeed, tydir;
 	int32_t iTargetX;
 	int32_t iPushRange, iPushDistance;
 
@@ -4690,8 +4690,8 @@ void C4Object::ExecAction()
 	// Determine ActDef & Physical Info
 	C4ActionDef *pAction = &(Def->ActMap[Action.Act]);
 	C4PhysicalInfo *pPhysical = GetPhysical();
-	FIXED lLimit;
-	FIXED fWalk, fMove;
+	C4Fixed lLimit;
+	C4Fixed fWalk, fMove;
 	int32_t smpx, smpy;
 
 	// Energy usage

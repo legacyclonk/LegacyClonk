@@ -220,8 +220,6 @@ public:
 	}
 };
 
-#define FIXED C4Fixed
-
 // conversion
 inline float fixtof(const C4Fixed &x)             { return x.to_float(); }
 inline C4Fixed ftofix(float x)                    { return C4Fixed(x); }
@@ -231,26 +229,26 @@ inline C4Fixed itofix(int32_t x)                  { return C4Fixed(x); }
 inline C4Fixed itofix(int32_t x, int32_t prec)    { return C4Fixed(x, prec); }
 
 // additional functions
-inline FIXED Sin(const FIXED &fAngle) { return fAngle.sin_deg(); }
-inline FIXED Cos(const FIXED &fAngle) { return fAngle.cos_deg(); }
-inline FIXED FIXED100(int x)          { return itofix(x, 100); }
-inline FIXED FIXED256(int x)          { C4Fixed r; r.val = x * FIXED_FPF / 256; return r; }
-inline FIXED FIXED10(int x)           { return itofix(x, 10); }
+inline C4Fixed Sin(const C4Fixed &fAngle) { return fAngle.sin_deg(); }
+inline C4Fixed Cos(const C4Fixed &fAngle) { return fAngle.cos_deg(); }
+inline C4Fixed FIXED100(int x)          { return itofix(x, 100); }
+inline C4Fixed FIXED256(int x)          { C4Fixed r; r.val = x * FIXED_FPF / 256; return r; }
+inline C4Fixed FIXED10(int x)           { return itofix(x, 10); }
 
 // define 0
-const FIXED Fix0 = itofix(0);
+const C4Fixed Fix0 = itofix(0);
 
 // conversion...
 // note: keep out! really dirty casts!
-inline void FLOAT_TO_FIXED(FIXED *pVal)
+inline void FLOAT_TO_FIXED(C4Fixed *pVal)
 {
 	*pVal = ftofix(*reinterpret_cast<float *>(pVal));
 }
 
 #undef inline
 
-// CompileFunc for FIXED
-inline void CompileFunc(FIXED &rValue, StdCompiler *pComp)
+// CompileFunc for C4Fixed
+inline void CompileFunc(C4Fixed &rValue, StdCompiler *pComp)
 {
 	char cFormat = 'F';
 	try

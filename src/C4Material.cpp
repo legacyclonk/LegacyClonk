@@ -580,7 +580,7 @@ void C4MaterialMap::Default()
 
 #ifdef C4ENGINE
 
-bool mrfInsertCheck(int32_t &iX, int32_t &iY, FIXED &fXDir, FIXED &fYDir, int32_t &iPxsMat, int32_t iLsMat, bool *pfPosChanged)
+bool mrfInsertCheck(int32_t &iX, int32_t &iY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, bool *pfPosChanged)
 {
 	// always manipulating pos/speed here
 	if (pfPosChanged) *pfPosChanged = true;
@@ -625,7 +625,7 @@ bool mrfInsertCheck(int32_t &iX, int32_t &iY, FIXED &fXDir, FIXED &fYDir, int32_
 	return true;
 }
 
-bool mrfUserCheck(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, FIXED &fXDir, FIXED &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool mrfUserCheck(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
 	// check execution mask
 	if ((1 << evEvent) & ~pReaction->iExecMask) return false;
@@ -637,7 +637,7 @@ bool mrfUserCheck(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32
 	return true;
 }
 
-bool C4MaterialMap::mrfConvert(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, FIXED &fXDir, FIXED &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfConvert(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
 	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
 	switch (evEvent)
@@ -674,7 +674,7 @@ bool C4MaterialMap::mrfConvert(C4MaterialReaction *pReaction, int32_t &iX, int32
 	return false;
 }
 
-bool C4MaterialMap::mrfPoof(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, FIXED &fXDir, FIXED &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfPoof(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
 	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
 	switch (evEvent)
@@ -702,7 +702,7 @@ bool C4MaterialMap::mrfPoof(C4MaterialReaction *pReaction, int32_t &iX, int32_t 
 	return false;
 }
 
-bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, FIXED &fXDir, FIXED &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
 	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
 	switch (evEvent)
@@ -758,7 +758,7 @@ bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, int32_t &iX, int32
 	return false;
 }
 
-bool C4MaterialMap::mrfIncinerate(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, FIXED &fXDir, FIXED &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfIncinerate(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
 	// not available as user reaction
 	assert(!pReaction->fUserDefined);
@@ -784,7 +784,7 @@ bool C4MaterialMap::mrfIncinerate(C4MaterialReaction *pReaction, int32_t &iX, in
 	return false;
 }
 
-bool C4MaterialMap::mrfInsert(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, FIXED &fXDir, FIXED &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfInsert(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
 	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
 	switch (evEvent)
@@ -811,7 +811,7 @@ bool C4MaterialMap::mrfInsert(C4MaterialReaction *pReaction, int32_t &iX, int32_
 	return false;
 }
 
-bool C4MaterialMap::mrfScript(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, FIXED &fXDir, FIXED &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfScript(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
 	// do generic checks for user-defined reactions
 	if (!mrfUserCheck(pReaction, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged))

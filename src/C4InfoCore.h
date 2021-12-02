@@ -223,7 +223,7 @@ public:
 	void CompileFunc(StdCompiler *pComp);
 };
 
-inline FIXED ValByPhysical(int32_t iPercent, int32_t iPhysical) // get percentage of max physical value
+inline C4Fixed ValByPhysical(int32_t iPercent, int32_t iPhysical) // get percentage of max physical value
 {
 	return itofix(iPhysical * (iPercent / 5), C4MaxPhysical * 20);
 }

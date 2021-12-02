@@ -25,31 +25,31 @@
 
 /* Some physical constants */
 
-const FIXED FRedirect = FIXED100(50);
-const FIXED FFriction = FIXED100(30);
-const FIXED FixFullCircle = itofix(360), FixHalfCircle = FixFullCircle / 2;
-const FIXED FloatFriction = FIXED100(2);
-const FIXED RotateAccel = FIXED100(20);
-const FIXED FloatAccel = FIXED100(10);
-const FIXED WalkAccel = FIXED100(50), SwimAccel = FIXED100(20);
-const FIXED HitSpeed1 = FIXED100(150); // Hit Event
-const FIXED HitSpeed2 = itofix(2); // Cross Check Hit
-const FIXED HitSpeed3 = itofix(6); // Scale disable, kneel
-const FIXED HitSpeed4 = itofix(8); // Flat
+const C4Fixed FRedirect = FIXED100(50);
+const C4Fixed FFriction = FIXED100(30);
+const C4Fixed FixFullCircle = itofix(360), FixHalfCircle = FixFullCircle / 2;
+const C4Fixed FloatFriction = FIXED100(2);
+const C4Fixed RotateAccel = FIXED100(20);
+const C4Fixed FloatAccel = FIXED100(10);
+const C4Fixed WalkAccel = FIXED100(50), SwimAccel = FIXED100(20);
+const C4Fixed HitSpeed1 = FIXED100(150); // Hit Event
+const C4Fixed HitSpeed2 = itofix(2); // Cross Check Hit
+const C4Fixed HitSpeed3 = itofix(6); // Scale disable, kneel
+const C4Fixed HitSpeed4 = itofix(8); // Flat
 
 /* Some helper functions */
 
-void RedirectForce(FIXED &from, FIXED &to, int32_t tdir)
+void RedirectForce(C4Fixed &from, C4Fixed &to, int32_t tdir)
 {
-	FIXED fred;
+	C4Fixed fred;
 	fred = (std::min)(Abs(from), FRedirect);
 	from -= fred * Sign(from);
 	to += fred * tdir;
 }
 
-void ApplyFriction(FIXED &tval, int32_t percent)
+void ApplyFriction(C4Fixed &tval, int32_t percent)
 {
-	FIXED ffric = FFriction * percent / 100;
+	C4Fixed ffric = FFriction * percent / 100;
 	if (tval > +ffric) { tval -= ffric; return; }
 	if (tval < -ffric) { tval += ffric; return; }
 	tval = 0;
@@ -229,7 +229,7 @@ void C4Object::DoMovement()
 	int32_t ix0 = x; int32_t iy0 = y;
 
 	// store previous movement and ocf
-	FIXED oldxdir(xdir), oldydir(ydir);
+	C4Fixed oldxdir(xdir), oldydir(ydir);
 	uint32_t old_ocf = OCF;
 
 	if (!Action.t_attach) // Unattached movement
@@ -596,7 +596,7 @@ bool C4Object::ExecMovement() // Every Tick1 by Execute
 	return true;
 }
 
-bool SimFlight(FIXED &x, FIXED &y, FIXED &xdir, FIXED &ydir, int32_t iDensityMin, int32_t iDensityMax, int32_t iIter)
+bool SimFlight(C4Fixed &x, C4Fixed &y, C4Fixed &xdir, C4Fixed &ydir, int32_t iDensityMin, int32_t iDensityMax, int32_t iIter)
 {
 	bool fBreak = false;
 	int32_t ctcox, ctcoy, cx, cy;
@@ -630,7 +630,7 @@ bool SimFlight(FIXED &x, FIXED &y, FIXED &xdir, FIXED &ydir, int32_t iDensityMin
 	return true;
 }
 
-bool SimFlightHitsLiquid(FIXED fcx, FIXED fcy, FIXED xdir, FIXED ydir)
+bool SimFlightHitsLiquid(C4Fixed fcx, C4Fixed fcy, C4Fixed xdir, C4Fixed ydir)
 {
 	// Start in water?
 	if (DensityLiquid(GBackDensity(fixtoi(fcx), fixtoi(fcy))))

@@ -23,7 +23,7 @@
 #include <C4Random.h>
 #include <C4Wrappers.h>
 
-static const FIXED WindDrift_Factor = itofix(1, 800);
+static const C4Fixed WindDrift_Factor = itofix(1, 800);
 
 void C4PXS::Execute()
 {
@@ -65,8 +65,8 @@ void C4PXS::Execute()
 	{
 		// Air speed: Wind plus some random
 		int32_t iWind = GBackWind(iX, iY);
-		FIXED txdir = itofix(iWind, 15) + FIXED256(Random(1200) - 600);
-		FIXED tydir = FIXED256(Random(1200) - 600);
+		C4Fixed txdir = itofix(iWind, 15) + FIXED256(Random(1200) - 600);
+		C4Fixed tydir = FIXED256(Random(1200) - 600);
 
 		// Air friction, based on WindDrift. MaxSpeed is ignored.
 		int32_t iWindDrift = (std::max)(Game.Material.Map[Mat].WindDrift - 20, 0);
@@ -74,8 +74,8 @@ void C4PXS::Execute()
 		ydir += ((tydir - ydir) * iWindDrift) * WindDrift_Factor;
 	}
 
-	FIXED ctcox = x + xdir;
-	FIXED ctcoy = y + ydir;
+	C4Fixed ctcox = x + xdir;
+	C4Fixed ctcoy = y + ydir;
 
 	int32_t iToX = fixtoi(ctcox), iToY = fixtoi(ctcoy);
 
@@ -198,7 +198,7 @@ C4PXS *C4PXSSystem::New()
 	return nullptr;
 }
 
-bool C4PXSSystem::Create(int32_t mat, FIXED ix, FIXED iy, FIXED ixdir, FIXED iydir)
+bool C4PXSSystem::Create(int32_t mat, C4Fixed ix, C4Fixed iy, C4Fixed ixdir, C4Fixed iydir)
 {
 	C4PXS *pxp;
 	if (!MatValid(mat)) return false;
@@ -361,7 +361,7 @@ bool C4PXSSystem::Load(C4Group &hGroup)
 	if (!hGroup.AccessEntry(C4CFN_PXS, &iBinSize)) return false;
 	// clear previous
 	Clear();
-	// using FIXED or float?
+	// using C4Fixed or float?
 	int32_t iNumForm = 1;
 	if (iBinSize % iChunkSize == 4)
 	{
