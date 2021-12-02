@@ -334,11 +334,7 @@ bool C4PXSSystem::Save(C4Group &hGroup)
 	CStdFile hTempFile;
 	if (!hTempFile.Create(Config.AtTempPath(C4CFN_TempPXS)))
 		return false;
-#ifdef USE_FIXED
 	int32_t iNumFormat = 1;
-#else
-	int32_t iNumFormat = 2;
-#endif
 	if (!hTempFile.Write(&iNumFormat, sizeof(iNumFormat)))
 		return false;
 	for (cnt = 0; cnt < PXSMaxChunk; cnt++)
@@ -390,11 +386,7 @@ bool C4PXSSystem::Load(C4Group &hGroup)
 			{
 				++iChunkPXS[cnt];
 				// convert number format
-#ifdef USE_FIXED
 				if (iNumForm == 2) { FLOAT_TO_FIXED(&pxp->x); FLOAT_TO_FIXED(&pxp->y); FLOAT_TO_FIXED(&pxp->xdir); FLOAT_TO_FIXED(&pxp->ydir); }
-#else
-				if (iNumForm == 1) { FIXED_TO_FLOAT(&pxp->x); FIXED_TO_FLOAT(&pxp->y); FIXED_TO_FLOAT(&pxp->xdir); FIXED_TO_FLOAT(&pxp->ydir); }
-#endif
 			}
 	}
 	return true;

@@ -35,16 +35,7 @@
 #include "StdCompiler.h"
 #include "StdAdaptors.h"
 
-// activate to switch to classic fixed-point math
-#define USE_FIXED 1
-
-// note: C4Fixed has to be defined even though it isn't used
-//       any more. It is used to convert old-format fixed values
-//       to the new-format float ones.
-
-#ifdef USE_FIXED
 extern long SineTable[9001]; // external table of sine values
-#endif
 
 // fixpoint shift (check 64 bit emulation before changing!)
 constexpr int32_t FIXED_SHIFT{16};
@@ -53,16 +44,13 @@ constexpr int32_t FIXED_FPF{1 << FIXED_SHIFT};
 
 class C4Fixed
 {
-#ifdef USE_FIXED
 	friend int fixtoi(const C4Fixed &x);
 	friend int fixtoi(const C4Fixed &x, int32_t prec);
 	friend C4Fixed itofix(int32_t x);
 	friend C4Fixed itofix(int32_t x, int32_t prec);
 	friend float fixtof(const C4Fixed &x);
 	friend C4Fixed ftofix(float x);
-#else
-	friend void FIXED_TO_FLOAT(float *pVal);
-#endif
+
 	friend inline void CompileFunc(C4Fixed &rValue, StdCompiler *pComp);
 
 public:
@@ -199,8 +187,6 @@ public:
 	inline bool operator>=(int32_t iVal2) const { return operator>=(C4Fixed(iVal2)); }
 	inline bool operator!=(int32_t iVal2) const { return operator!=(C4Fixed(iVal2)); }
 
-#ifdef USE_FIXED
-
 	C4Fixed sin_deg() const
 	{
 		// adjust angle
@@ -232,11 +218,7 @@ public:
 		}
 		return fr;
 	}
-
-#endif
 };
-
-#ifdef USE_FIXED
 
 #define FIXED C4Fixed
 
@@ -255,72 +237,22 @@ inline FIXED FIXED100(int x)          { return itofix(x, 100); }
 inline FIXED FIXED256(int x)          { C4Fixed r; r.val = x * FIXED_FPF / 256; return r; }
 inline FIXED FIXED10(int x)           { return itofix(x, 10); }
 
-#else
-
-#define FIXED float
-
-// fixtoi: use asm fistp, round up
-inline int fixtoi(FIXED x)
-{
-	int e;
-#ifdef _MSC_VER
-	float y = x;
-	_asm
-	{
-		or y, 1;
-		fld y;
-		fistp e;
-	}
-#else
-	asm("or $1, %0" : "+rom"(x));
-	asm("fistp%z0 %0" : "=om"(e) : "t"(x) : "st");
-#endif
-	return e;
-}
-
-// conversion
-inline int fixtoi(const FIXED &x, int32_t prec) { return fixtoi(x * prec); }
-inline FIXED itofix(int x)                      { return static_cast<FIXED>(x); }
-inline FIXED itofix(int x, int prec)            { return static_cast<FIXED>(x) / prec; }
-inline float fixtof(const FIXED &x)             { return x; }
-inline FIXED ftofix(float x)                    { return x; }
-
-// additional functions
-inline FIXED Sin(FIXED x)    { return float(sin(x * 3.141592f / 180)); }
-inline FIXED Cos(FIXED x)    { return float(cos(x * 3.141592f / 180)); }
-inline FIXED FIXED100(int x) { return float(x) / 100; }
-inline FIXED FIXED256(int x) { return float(x) / 256; }
-inline FIXED FIXED10(int x)  { return float(x) / 10; }
-
-#endif
-
 // define 0
 const FIXED Fix0 = itofix(0);
 
 // conversion...
 // note: keep out! really dirty casts!
-#ifdef USE_FIXED
 inline void FLOAT_TO_FIXED(FIXED *pVal)
 {
 	*pVal = ftofix(*reinterpret_cast<float *>(pVal));
 }
-#else
-inline void FIXED_TO_FLOAT(FIXED *pVal)
-{
-	*pVal = reinterpret_cast<C4Fixed *>(pVal)->to_float();
-}
-#endif
 
 #undef inline
 
 // CompileFunc for FIXED
 inline void CompileFunc(FIXED &rValue, StdCompiler *pComp)
 {
-#ifdef USE_FIXED
 	char cFormat = 'F';
-#else
-	char cFormat = 'f';
-#endif
 	try
 	{
 		// Read/write type
@@ -334,11 +266,6 @@ inline void CompileFunc(FIXED &rValue, StdCompiler *pComp)
 	// Read value (as int32_t)
 	pComp->Value(mkCastAdapt<int32_t>(rValue));
 	// convert, if neccessary
-#ifdef USE_FIXED
 	if (cFormat == 'f')
 		FLOAT_TO_FIXED(&rValue);
-#else
-	if (cFormat == 'F')
-		FIXED_TO_FLOAT(&rValue);
-#endif
 }

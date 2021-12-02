@@ -20,8 +20,6 @@
 #include <Standard.h>
 #include <Fixed.h>
 
-#ifdef USE_FIXED
-
 // static table with sinus values from 0.00 degree to 90.00 degree inclusively
 long SineTable[9001] =
 {
@@ -9027,4 +9025,3 @@ long SineTable[9001] =
 	65535,
 	65536
 };
-#endif // USE_FIXED
