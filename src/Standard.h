@@ -239,29 +239,23 @@ bool SWildcardMatchEx(const char *szString, const char *szWildcard);
 #include <stdio.h>
 #include <stdarg.h>
 
-// wrapper to detect "char *"
-template <typename T> struct NoPointer { static void noPointer() {} };
-template <> struct NoPointer<char *> {};
-
 // format string security
 bool IsSafeFormatString(const char *szFmt);
 
 // secure sprintf
 #define sprintf ssprintf
-template <typename T, typename... Args>
-inline int ssprintf(T &str, const char *fmt, Args... args)
+template <std::size_t N, typename... Args>
+inline int ssprintf(char (&str)[N], const char *fmt, Args... args)
 {
 	// Check parameters
-	NoPointer<T>::noPointer();
 	if (!IsSafeFormatString(fmt))
 	{
 		BREAKPOINT_HERE
 			fmt = "<UNSAFE FORMAT STRING>";
 	}
-	const int n{sizeof(str)};
 	// Build string
-	int m = snprintf(str, n, fmt, args...);
-	if (m >= n) { m = n - 1; str[m] = 0; }
+	int m = snprintf(str, N, fmt, args...);
+	if (m >= N) { m = N - 1; str[m] = 0; }
 	return m;
 }
 
