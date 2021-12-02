@@ -127,20 +127,41 @@ void C4Object::DoMotion(int32_t mx, int32_t my)
 
 void C4Object::TargetBounds(int32_t &ctco, int32_t limit_low, int32_t limit_hi, int32_t cnat_low, int32_t cnat_hi)
 {
-	switch (ForceLimits(ctco, limit_low, limit_hi))
+	if (ctco < limit_low)
 	{
-	case -1:
+		ctco = limit_low;
+
 		// stop
-		if (cnat_low == CNAT_Left) xdir = 0; else ydir = 0;
+		if (cnat_low == CNAT_Left)
+		{
+			xdir = 0;
+		}
+		else
+		{
+			ydir = 0;
+		}
+
+
 		// do calls
 		Contact(cnat_low);
-		break;
-	case +1:
+	}
+	if (ctco > limit_hi)
+	{
+		ctco = limit_hi;
+
 		// stop
-		if (cnat_hi == CNAT_Right) xdir = 0; else ydir = 0;
+		if (cnat_hi == CNAT_Right)
+		{
+			xdir = 0;
+		}
+		else
+		{
+			ydir = 0;
+		}
+
+
 		// do calls
 		Contact(cnat_hi);
-		break;
 	}
 }
 

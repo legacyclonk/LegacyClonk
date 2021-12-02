@@ -156,13 +156,6 @@ inline int DWordAligned(int val)
 	return val;
 }
 
-inline int32_t ForceLimits(int32_t &rVal, int32_t iLow, int32_t iHi)
-{
-	if (rVal < iLow) { rVal = iLow; return -1; }
-	if (rVal > iHi)  { rVal = iHi;  return +1; }
-	return 0;
-}
-
 int32_t Distance(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2);
 int Angle(int iX1, int iY1, int iX2, int iY2);
 int Pow(int base, int exponent);
