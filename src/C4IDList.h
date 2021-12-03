@@ -64,7 +64,7 @@ public:
 	C4ID GetID(C4DefList &rDefs, int32_t dwCategory, int32_t index, int32_t *ipCount = nullptr) const;
 	int32_t GetNumberOfIDs(C4DefList &rDefs, int32_t dwCategory) const;
 	// Aux
-	bool ConsolidateValids(C4DefList &rDefs, int32_t dwCategory = 0);
+	void ConsolidateValids(C4DefList &rDefs, int32_t dwCategory = 0);
 	void SortByValue(C4DefList &rDefs);
 	// Item operation
 	bool DeleteItem(size_t iIndex);
