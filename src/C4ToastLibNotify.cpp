@@ -15,6 +15,7 @@
 
 #include "C4ToastLibNotify.h"
 
+#include "C4Language.h"
 #include "C4Log.h"
 #include "C4Version.h"
 
@@ -51,7 +52,7 @@ void C4ToastImplLibNotify::AddAction(std::string_view action)
 	notify_notification_add_action(
 				notification,
 				FormatString("action-%lu", index).getData(),
-				action.data(),
+				C4Language::IconvUtf8(action.data()).getData(),
 				&C4ToastImplLibNotify::OnAction,
 				new UserData{this, index},
 				operator delete);
@@ -75,7 +76,7 @@ void C4ToastImplLibNotify::SetTitle(std::string_view title)
 void C4ToastImplLibNotify::Show()
 {
 	signalClose = g_signal_connect(notification, "closed", G_CALLBACK(&C4ToastImplLibNotify::Dismissed), this);
-	notify_notification_update(notification, title.c_str(), text.c_str(), nullptr);
+	notify_notification_update(notification, C4Language::IconvUtf8(title.c_str()).getData(), C4Language::IconvUtf8(text.c_str()).getData(), nullptr);
 
 	if (GError *error{nullptr}; !notify_notification_show(notification, &error) && eventHandler)
 	{
