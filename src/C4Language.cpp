@@ -210,6 +210,12 @@ StdStrBuf C4Language::IconvClonk(const char *string)
 	return StdStrBuf(string, true);
 }
 
+StdStrBuf C4Language::IconvUtf8(const char *string)
+{
+	// Just copy through
+	return StdStrBuf(string, true);
+}
+
 #endif
 
 int C4Language::GetInfoCount()

@@ -32,6 +32,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 #include <errno.h>
 
 #ifdef HAVE_LIBREADLINE
@@ -66,7 +67,7 @@ CStdApp::~CStdApp()
 	delete Priv;
 }
 
-bool CStdApp::Init(int argc, char *argv[])
+void CStdApp::Init(int argc, char *argv[])
 {
 	// Set locale
 	setlocale(LC_ALL, "");
@@ -103,11 +104,11 @@ bool CStdApp::Init(int argc, char *argv[])
 	if (pipe(Priv->Pipe) != 0)
 	{
 		Log("Error creating Pipe");
-		return false;
+		return;
 	}
 
 	// Custom initialization
-	return DoInit();
+	DoInit();
 }
 
 bool CStdApp::InitTimer() { gettimeofday(&LastExecute, 0); return true; }

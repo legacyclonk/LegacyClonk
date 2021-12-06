@@ -245,6 +245,12 @@ bool C4Application::PreInit()
 	// Sound
 	SoundSystem.emplace();
 
+	// Toasts
+	if (!ToastSystem)
+	{
+		ToastSystem.reset(C4ToastSystem::NewInstance());
+	}
+
 	Game.SetInitProgress(fDoUseStartupDialog ? 30.0f : 3.0f);
 
 	AppState = fDoUseStartupDialog ? C4AS_Startup : C4AS_StartGame;
@@ -278,6 +284,7 @@ void C4Application::Clear()
 	SoundSystem.reset();
 	MusicSystem.reset();
 	AudioSystem.reset();
+	ToastSystem.reset();
 	// Clear direct draw (late, because it's needed for e.g. Log)
 	delete DDraw; DDraw = nullptr;
 	// Close window
