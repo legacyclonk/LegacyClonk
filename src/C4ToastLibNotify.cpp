@@ -82,7 +82,7 @@ void C4ToastImplLibNotify::Show()
 	{
 		if (error)
 		{
-			LogF("C4ToastImplLibNotify: Failed to show notification: %s", error->message);
+			LogF("C4ToastImplLibNotify: Failed to show notification: %s", C4Language::IconvClonk(error->message).getData());
 		}
 		eventHandler->Failed();
 	}
