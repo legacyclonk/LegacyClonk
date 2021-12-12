@@ -23,6 +23,8 @@ SCRIPT_DIR="$(realpath $(dirname $0))"
 
 TARGET_DIR="$(realpath .)"
 
+curl -L -O "https://github.com/legacyclonk/content/releases/download/v$OBJVERSION/lc_${OBJVERSION//./}.c4u"
+
 function win32() {
 	"$C4GROUP" "$2" -et c4group.exe "$1"
 }
