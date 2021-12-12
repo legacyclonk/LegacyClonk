@@ -4705,6 +4705,16 @@ static C4Value FnSetCrewExtraData(C4AulContext *cthr, C4Object *pCrew, C4String 
 {
 	if (!pCrew) pCrew = cthr->Obj;
 	const char *strDataName = FnStringPar(dataName);
+
+	if (!strDataName || !strDataName[0]) return C4VNull;
+	if (!StdCompiler::IsIdentifier(strDataName))
+	{
+		StdStrBuf name{strDataName};
+		name.EscapeString();
+		DebugLogF("WARNING: SetCrewExtraData: Ignoring invalid data name \"%s\"! Only alphanumerics, _ and - are allowed.", name.getData());
+		return C4VNull;
+	}
+
 	// valid crew with info? (for great nullpointer prevention)
 	if (!pCrew || !pCrew->Info) return C4VNull;
 	// do not allow data type C4V_String or C4V_C4Object
