@@ -27,6 +27,10 @@ function win32() {
 	"$C4GROUP" "$2" -et c4group.exe "$1"
 }
 
+function win64() {
+	win32 "$@"
+}
+
 function linux() {
 	"$C4GROUP" "$2" -et c4group "$1"
 }
@@ -35,7 +39,11 @@ function linux64() {
 	linux "$@"
 }
 
-for PLATFORM in "win32" "linux" "linux64"; do
+function mac() {
+	linux "$@"
+}
+
+for PLATFORM in "win32" "win64" "linux" "linux64" "mac"; do
 	if [ -d "$TARGET_DIR/$PLATFORM" ]; then
 		rm -r "$TARGET_DIR/$PLATFORM"
 	fi

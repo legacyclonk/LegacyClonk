@@ -34,6 +34,10 @@ if [ -z "$GET_win32" ]; then
 	GET_win32="curl -L -o /tmp/LegacyClonk.zip https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-Windows-x86.zip && unzip /tmp/LegacyClonk.zip && rm /tmp/LegacyClonk.zip"
 fi
 
+if [ -z "$GET_win64" ]; then
+	GET_win64="curl -L -o /tmp/LegacyClonk.zip https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-Windows-x64.zip && unzip /tmp/LegacyClonk.zip && rm /tmp/LegacyClonk.zip"
+fi
+
 if [ -z "$GET_linux" ]; then
 	GET_linux="curl -L https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-Linux-x86.tar.gz | tar xz"
 fi
@@ -43,12 +47,13 @@ if [ -z "$GET_linux64" ]; then
 fi
 
 if [ -z "$GET_mac" ]; then
-	GET_mac="curl -L -o /tmp/LegacyClonk.zip https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-Mac-x64.zip | unzip /tmp/LegacyClonk.zip && rm /tmp/LegacyClonk.zip"
+	GET_mac="curl -L -o /tmp/LegacyClonk.zip https://github.com/legacyclonk/LegacyClonk/releases/download/$TAG/LegacyClonk-Mac-x64.zip && unzip /tmp/LegacyClonk.zip && rm /tmp/LegacyClonk.zip"
 fi
 
 function win32() {
 	mv clonk.exe "$1/Clonk.exe"
 	mv clonk.pdb "$1/Clonk.pdb"
+	mv *.pdb *.exe "$1"
 }
 
 function linux() {
@@ -59,6 +64,15 @@ function linux64() {
 	linux "$@"
 }
 
+function win64() {
+	win32 "$@"
+}
+
+function mac() {
+	mv c4group "$1"
+	mv clonk.app "$1/Clonk.app"
+}
+
 AUTOUPDATEFILE=$(cat <<EOF
 Update
 Name=$OBJVERSION
@@ -66,7 +80,7 @@ RequireVersion=$OLDOBJVERSION
 EOF
 )
 
-for PLATFORM in "win32" "linux" "linux64"; do
+for PLATFORM in "win32" "win64" "linux" "linux64" "mac"; do
 	if [ -d "$TARGET_DIR/$PLATFORM" ]; then
 		rm -r "$TARGET_DIR/$PLATFORM"
 	fi
