@@ -416,9 +416,19 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 			{
 				// single material target
 				if (pReact->fInverseSpec)
-					for (int32_t cnt2 = -1; cnt2 < Num; cnt2++) if (cnt2 != tmat) SetMatReaction(cnt, cnt2, pReact);
-					else
-						SetMatReaction(cnt, tmat, pReact);
+				{
+					for (int32_t cnt2 = -1; cnt2 < Num; cnt2++)
+					{
+						if (cnt2 != tmat)
+						{
+							SetMatReaction(cnt, cnt2, pReact);
+						}
+					}
+				}
+				else
+				{
+					SetMatReaction(cnt, tmat, pReact);
+				}
 			}
 			else if (SEqualNoCase(pReact->TargetSpec.getData(), "All"))
 			{
