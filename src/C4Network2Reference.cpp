@@ -484,11 +484,24 @@ bool C4Network2HTTPClient::Query(const StdBuf &Data, bool fBinary)
 	// Compose query
 	Request.Take(Header.GrabPointer(), Header.getLength());
 	Request.Append(Data);
+
+	bool enableFallback{!ServerAddrFallback.IsNull()};
 	// Start connecting
 	if (!Connect(ServerAddr))
-		return false;
+	{
+		if (!enableFallback)
+		{
+			return false;
+		}
 
-	if (!ServerAddrFallback.IsNull())
+		std::swap(ServerAddr, ServerAddrFallback);
+		enableFallback = false;
+		if (!Connect(ServerAddr))
+		{
+			return false;
+		}
+	}
+	if (enableFallback)
 	{
 		HappyEyeballsTimeout = C4TimeMilliseconds::Now() + C4Network2HTTPHappyEyeballsTimeout;
 	}
