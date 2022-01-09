@@ -20,6 +20,7 @@
 #include "StdSync.h"
 
 #include <any>
+#include <functional>
 
 // Event types
 enum C4InteractiveEventType
@@ -40,7 +41,9 @@ enum C4InteractiveEventType
 	Ev_Net_Disconn,
 	Ev_Net_Packet,
 
-	Ev_Last = Ev_Net_Packet,
+	Ev_ExecuteInMainThread,
+
+	Ev_Last = Ev_ExecuteInMainThread,
 };
 
 // Collects StdSchedulerProc objects and executes them in a separate thread
@@ -104,6 +107,12 @@ public:
 	{
 		// send to main thread
 		return PushEvent(Ev_LogSilent, FormatString(szMessage, args...));
+	}
+
+	bool ExecuteInMainThread(std::function<void()> function)
+	{
+		// send to main thread
+		return PushEvent(Ev_ExecuteInMainThread, std::move(function));
 	}
 
 	// event handlers
