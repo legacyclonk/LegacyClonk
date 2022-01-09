@@ -156,6 +156,11 @@ void C4InteractiveThread::ProcessEvents() // by main thread
 		}
 		break;
 
+		// Execute in main thread
+		case Ev_ExecuteInMainThread:
+			std::any_cast<const std::function<void()> &>(eventData)();
+			break;
+
 		// Other events: check for a registered handler
 		default:
 			if (eEventType >= Ev_None && eEventType <= Ev_Last)
