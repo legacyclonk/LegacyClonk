@@ -293,8 +293,7 @@ MainDlg::MainDlg(bool fHost)
 	AddElement(checkReady);
 
 	// set initial button state
-	ResourceProgress(false);
-	pResList->Activate();
+	UpdatePreloadingGUIState(false);
 
 	// set initial focus
 	SetFocus(pEdt, false);
@@ -761,6 +760,7 @@ void MainDlg::OnError(const char *szErrMsg)
 void MainDlg::OnSec1Timer()
 {
 	UpdatePlayerList();
+	UpdateResourceProgress();
 }
 
 void MainDlg::UpdatePlayerList()
@@ -768,6 +768,55 @@ void MainDlg::UpdatePlayerList()
 	// this updates ping label texts and teams
 	if (pPlayerList) pPlayerList->Update();
 	UpdatePlayerCountDisplay();
+}
+
+void MainDlg::UpdateResourceProgress()
+{
+	bool isComplete{true};
+	std::int32_t resID{-1};
+	for (C4Network2Res *res; (res = Game.Network.ResList.getRefNextRes(resID)); ++resID)
+	{
+		resID = res->getResID();
+		if (res->getType() != NRT_Player)
+		{
+			isComplete &= res->isComplete();
+		}
+	}
+
+	if (resourcesLoaded != isComplete)
+	{
+		resourcesLoaded = isComplete;
+		UpdatePreloadingGUIState(isComplete);
+	}
+}
+
+void MainDlg::UpdatePreloadingGUIState(const bool isComplete)
+{
+	assert(checkReady);
+	checkReady->SetEnabled(isComplete);
+
+	if (btnPreload)
+	{
+		bool active{isComplete && Game.CanPreload()};
+		btnPreload->SetEnabled(active);
+		btnPreload->SetVisibility(active);
+	}
+
+	if (isComplete)
+	{
+		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READY"));
+		checkReady->SetCaption(LoadResStr("IDS_DLG_READY"));
+
+		if (Config.General.Preloading)
+		{
+			Game.Preload();
+		}
+	}
+	else
+	{
+		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READYNOTAVAILABLE"));
+		checkReady->SetCaption(LoadResStr("IDS_DLG_STILLLOADING"));
+	}
 }
 
 C4GUI::ContextMenu *MainDlg::OnRightTabContext(C4GUI::Element *pLabel, int32_t iX, int32_t iY)
@@ -901,9 +950,7 @@ void MainDlg::UpdateRightTab()
 
 	// update
 	if (pRightTab->GetActiveSheetIndex() == SheetIdx_PlayerList) UpdatePlayerList();
-
-	// no checks for C4Network2ResDlg - needs to stay active for preloading to work
-
+	if (pRightTab->GetActiveSheetIndex() == SheetIdx_Res) pResList->Activate(); else pResList->Deactivate();
 	if (pRightTab->GetActiveSheetIndex() == SheetIdx_Options) pOptionsList->Activate(); else pOptionsList->Deactivate();
 	if (pRightTab->GetActiveSheetIndex() == SheetIdx_Scenario) pScenarioInfo->Activate(); else pScenarioInfo->Deactivate();
 	// update selection buttons
@@ -997,37 +1044,6 @@ int32_t MainDlg::ValidatedCountdownTime(int32_t iTimeout)
 void MainDlg::ClearLog()
 {
 	pChatBox->ClearText(true);
-}
-
-void MainDlg::ResourceProgress(bool isComplete)
-{
-	resourcesLoaded = isComplete;
-
-	assert(checkReady);
-	checkReady->SetEnabled(isComplete);
-
-	if (btnPreload)
-	{
-		bool active{isComplete && Game.CanPreload()};
-		btnPreload->SetEnabled(active);
-		btnPreload->SetVisibility(active);
-	}
-
-	if (isComplete)
-	{
-		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READY"));
-		checkReady->SetCaption(LoadResStr("IDS_DLG_READY"));
-
-		if (Config.General.Preloading)
-		{
-			Game.Preload();
-		}
-	}
-	else
-	{
-		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READYNOTAVAILABLE"));
-		checkReady->SetCaption(LoadResStr("IDS_DLG_STILLLOADING"));
-	}
 }
 
 void MainDlg::RequestReadyCheck()

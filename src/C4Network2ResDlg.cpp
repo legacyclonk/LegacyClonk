@@ -186,7 +186,6 @@ void C4Network2ResDlg::Update()
 	// check through own resources and current res list
 	ListItem *pItem = static_cast<ListItem *>(pClientWindow->GetFirst()), *pNext;
 	C4Network2Res *pRes; int iResID = -1;
-	bool isComplete = true;
 	while (pRes = Game.Network.ResList.getRefNextRes(++iResID))
 	{
 		iResID = pRes->getResID();
@@ -205,16 +204,6 @@ void C4Network2ResDlg::Update()
 		else
 			// not present: insert (or add if pItem=nullptr)
 			InsertElement(new ListItem(this, pRes), pItem);
-		if (pRes->getType() != NRT_Player)
-		{
-			isComplete = isComplete && pRes->isComplete();
-		}
-	}
-
-	// check for lobby != nullptr because it is nullptr at the first call as it gets called from C4GameLobby::MainDlg's constructor
-	if (isComplete != loadingCompleted && Game.Network.GetLobby())
-	{
-		Game.Network.GetLobby()->ResourceProgress(loadingCompleted = isComplete);
 	}
 
 	// del trailing items

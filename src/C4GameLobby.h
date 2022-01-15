@@ -143,6 +143,8 @@ private:
 	int32_t ValidatedCountdownTime(int32_t iTimeout); // correct invalid timeout settings
 
 	void UpdatePlayerList();
+	void UpdateResourceProgress();
+	void UpdatePreloadingGUIState(bool isComplete);
 
 public:
 	MainDlg(bool fHost);
@@ -169,13 +171,11 @@ public:
 	void UpdatePassword();
 	void UpdatePlayerCountDisplay();
 	void ClearLog();
-	void ResourceProgress(bool isComplete);
 	void RequestReadyCheck();
 	void CheckReady(bool check);
 	bool CanBeReady() const { return resourcesLoaded; }
 
 	friend class C4Sec1TimerCallback<MainDlg>;
-	friend class ::C4Network2ResDlg;
 };
 
 // helper

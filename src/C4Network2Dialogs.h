@@ -76,7 +76,6 @@ private:
 
 private:
 	C4Sec1TimerCallback<C4Network2ResDlg> *pSec1Timer; // engine timer hook for updates
-	bool loadingCompleted{false};
 
 public:
 	C4Network2ResDlg(const C4Rect &rcBounds, bool fActive);
