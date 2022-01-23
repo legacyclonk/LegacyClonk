@@ -228,6 +228,7 @@ protected:
 	bool fBroadcastTarget; // broadcast target?
 	time_t iTimestamp; // timestamp of last status change
 	int iPingTime; // ping
+	int iAveragePingTime;
 	unsigned long iLastPing; // if > iLastPong, it's the first ping that hasn't been answered yet
 	unsigned long iLastPong; // last pong received
 	C4ClientCore CCore; // client core (>= CS_HalfAccepted)
@@ -266,6 +267,7 @@ public:
 	int                    getClientID()    const { return CCore.getID(); }
 	bool                   isHost()         const { return CCore.isHost(); }
 	int                    getPingTime()    const { return iPingTime; }
+	int                    getAveragePingTime() const;
 	int                    getLag()         const;
 	int                    getPacketLoss()  const { return iPacketLoss; }
 	const char            *getPassword()    const { return Password.getData(); }

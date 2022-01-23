@@ -25,6 +25,7 @@
 
 #include <cstdint>
 #include <set>
+#include <vector>
 
 class C4Network2; class C4Network2IOConnection;
 
@@ -54,14 +55,22 @@ public:
 	~C4Network2Client();
 
 protected:
+	struct ClientAddress
+	{
+		C4Network2Address Addr;
+		C4Network2IOConnection *Connection{nullptr};
+		int32_t ConnectionAttempts{0};
+
+		ClientAddress(const C4Network2Address &addr, C4Network2IOConnection *connection = nullptr) noexcept : Addr{addr}, Connection{connection} {}
+	};
+
 	// client data
 	C4Client *pClient;
 
+	std::vector<ClientAddress> Addresses;
 	// addresses
-	C4Network2Address Addr[C4ClientMaxAddr];
-	int32_t AddrAttempts[C4ClientMaxAddr];
-	int32_t iAddrCnt;
 	C4NetIO::addr_t IPv6AddrFromPuncher;
+	int resyncCountdown{};
 
 	// Interface ids
 	std::set<int> InterfaceIDs;
@@ -94,8 +103,9 @@ public:
 	bool                isActivated() const { return getCore().isActivated(); }
 	bool                isObserver()  const { return getCore().isObserver(); }
 
-	int32_t                  getAddrCnt()       const { return iAddrCnt; }
-	const C4Network2Address &getAddr(int32_t i) const { return Addr[i]; }
+	int32_t                  getAddrCnt()       const { return static_cast<int32_t>(Addresses.size()); }
+	const C4Network2Address &getAddr(int32_t i) const { return Addresses[i].Addr; }
+	C4Network2IOConnection *getConnection(int32_t i) const { return Addresses[i].Connection; }
 
 	const std::set<int> &getInterfaceIDs() const { return InterfaceIDs; }
 
@@ -128,11 +138,13 @@ public:
 
 	bool DoConnectAttempt(class C4Network2IO *pIO);
 	bool DoTCPSimultaneousOpen(class C4Network2IO *pIO, const C4Network2Address &addr);
+	void CheckConnectionQuality();
 
 	// addresses
 	bool hasAddr(const C4Network2Address &addr) const;
 	void AddAddrFromPuncher(const C4NetIO::addr_t &addr);
-	bool AddAddr(const C4Network2Address &addr, bool fAnnounce);
+	bool AddAddr(const C4Network2Address &addr, bool fAnnounce, bool inFront = false, C4Network2IOConnection *connection = nullptr);
+	void AddConnection(C4Network2IOConnection *connection);
 	void AddLocalAddrs(std::uint16_t iPortTCP, std::uint16_t iPortUDP);
 
 	void SendAddresses(C4Network2IOConnection *pConn);
@@ -183,6 +195,7 @@ public:
 
 	// connecting
 	void DoConnectAttempts();
+	void CheckConnectionQuality();
 
 	// ready-ness
 	void ResetReady();

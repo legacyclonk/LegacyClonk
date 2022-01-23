@@ -703,6 +703,7 @@ bool C4Network2::RetrieveScenario(char *szScenario)
 void C4Network2::OnSec1Timer()
 {
 	Execute();
+	Clients.CheckConnectionQuality();
 }
 
 void C4Network2::Execute()
@@ -1512,6 +1513,7 @@ void C4Network2::HandleConnRe(const C4PacketConnRe &Pkt, C4Network2IOConnection 
 		C4Network2Address Addr(pConn->getConnectAddr(), pConn->getProtocol());
 		pClient->AddAddr(Addr, Status.getState() != GS_Init);
 	}
+	pClient->AddConnection(pConn);
 
 	// handle
 	OnConnect(pClient, pConn, Pkt.getMsg(), fFirstConnection);

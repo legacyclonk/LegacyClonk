@@ -1234,7 +1234,7 @@ C4Network2IOConnection::C4Network2IOConnection()
 	fAutoAccept(false),
 	fBroadcastTarget(false),
 	iTimestamp(0),
-	iPingTime(-1),
+	iPingTime(-1), iAveragePingTime(0),
 	iLastPing(~0), iLastPong(~0),
 	iOutPacketCounter(0), iInPacketCounter(0),
 	pPacketLog(nullptr),
@@ -1250,6 +1250,12 @@ C4Network2IOConnection::~C4Network2IOConnection()
 	if (pNetClass && !isClosed()) Close();
 	// clear the packet log
 	ClearPacketLog();
+}
+
+int C4Network2IOConnection::getAveragePingTime() const
+{
+	// make sure that a current lag spike increases the average ping while it has not been incorporated yet
+	return (iAveragePingTime * 3 + getLag()) / 4;
 }
 
 int C4Network2IOConnection::getLag() const
@@ -1308,6 +1314,7 @@ void C4Network2IOConnection::SetPingTime(int inPingTime)
 {
 	// save it
 	iPingTime = inPingTime;
+	iAveragePingTime = (iAveragePingTime * 149 + inPingTime) / 150;
 	// pong received - save timestamp
 	iLastPong = timeGetTime();
 }

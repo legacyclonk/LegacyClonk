@@ -25,14 +25,15 @@
 #include <C4Network2Stats.h>
 #include <C4GameLobby.h> // fullscreen network lobby
 
+#include <algorithm>
 #include <chrono>
 #include <thread>
+#include <utility>
 
 // *** C4Network2Client
 
 C4Network2Client::C4Network2Client(C4Client *pClient)
 	: pClient(pClient),
-	iAddrCnt(0),
 	eStatus(NCS_Ready),
 	iLastActivity(0),
 	pMsgConn(nullptr), pDataConn(nullptr),
@@ -47,9 +48,18 @@ C4Network2Client::~C4Network2Client()
 	if (pClient) pClient->UnlinkNetClient();
 }
 
+namespace
+{
+	template<typename Addrs, typename Property, typename Value>
+	auto getClientAddress(Addrs &&addresses, Property property, Value &&value)
+	{
+		return std::find_if(addresses.begin(), addresses.end(), [property, value](const auto &ownAddr) { return ownAddr.*property == value; });
+	}
+}
+
 bool C4Network2Client::hasConn(C4Network2IOConnection *pConn)
 {
-	return pMsgConn == pConn || pDataConn == pConn;
+	return getClientAddress(Addresses, &ClientAddress::Connection, pConn) != Addresses.end();
 }
 
 void C4Network2Client::SetMsgConn(C4Network2IOConnection *pConn)
@@ -88,64 +98,72 @@ void C4Network2Client::RemoveConn(C4Network2IOConnection *pConn)
 	}
 	if (pMsgConn && !pDataConn) SetDataConn(pMsgConn);
 	if (!pMsgConn && pDataConn) SetMsgConn(pDataConn);
+
+	if (const auto addr = getClientAddress(Addresses, &ClientAddress::Connection, pConn); addr != Addresses.end())
+	{
+		addr->Connection = nullptr;
+	}
 }
 
 void C4Network2Client::CloseConns(const char *szMsg)
 {
 	C4PacketConnRe Pkt(false, false, szMsg);
-	C4Network2IOConnection *pConn;
-	while (pConn = pMsgConn)
+	for (const auto &addr : Addresses)
 	{
+		const auto conn = addr.Connection;
+		if (!conn) continue;
 		// send packet, close
-		if (pConn->isOpen())
+		if (conn->isOpen())
 		{
-			pConn->Send(MkC4NetIOPacket(PID_ConnRe, Pkt));
-			pConn->Close();
+			conn->Send(MkC4NetIOPacket(PID_ConnRe, Pkt));
+			conn->Close();
 		}
 		// remove
-		RemoveConn(pConn);
+		RemoveConn(conn);
 	}
 }
 
 bool C4Network2Client::SendMsg(C4NetIOPacket rPkt) const
 {
-	return getMsgConn() && getMsgConn()->Send(rPkt);
+	const auto msgConn = getMsgConn();
+	return msgConn && msgConn->Send(rPkt);
 }
 
 bool C4Network2Client::DoConnectAttempt(C4Network2IO *pIO)
 {
 	// local?
 	if (isLocal()) { iNextConnAttempt = 0; return true; }
-	// msg and data connected? Nothing to do
-	if (getMsgConn() != getDataConn()) { iNextConnAttempt = time(nullptr) + 10; return true; }
 	// too early?
 	if (iNextConnAttempt && iNextConnAttempt > time(nullptr)) return true;
 	// find address to try
 	int32_t iBestAddress = -1;
-	for (int32_t i = 0; i < iAddrCnt; i++)
-		// valid address?
-		if (!Addr[i].GetAddr().IsNullHost())
-			// no connection for this protocol?
-			if ((!pDataConn || Addr[i].GetProtocol() != pDataConn->getProtocol()) &&
-				(!pMsgConn || Addr[i].GetProtocol() != pMsgConn->getProtocol()))
-				// protocol available?
-				if (pIO->getNetIO(Addr[i].GetProtocol()))
-					// new best address?
-					if (iBestAddress < 0 || AddrAttempts[i] < AddrAttempts[iBestAddress])
-						iBestAddress = i;
+	int32_t i = 0;
+	for (const auto &addr : Addresses)
+	{
+		if (!addr.Addr.GetAddr().IsNullHost() && !addr.Connection && pIO->getNetIO(addr.Addr.GetProtocol()))
+		{
+			if (iBestAddress < 0 || addr.ConnectionAttempts < Addresses[iBestAddress].ConnectionAttempts)
+			{
+				iBestAddress = i;
+			}
+		}
+		++i;
+	}
 	// too many attempts or nothing found?
-	if (iBestAddress < 0 || AddrAttempts[iBestAddress] > C4NetClientConnectAttempts)
+	if (iBestAddress < 0 || Addresses[iBestAddress].ConnectionAttempts > C4NetClientConnectAttempts)
 	{
 		iNextConnAttempt = time(nullptr) + 10; return true;
 	}
 	// save attempt
-	AddrAttempts[iBestAddress]++; iNextConnAttempt = time(nullptr) + C4NetClientConnectInterval;
-	auto addr = Addr[iBestAddress].GetAddr();
+	++Addresses[iBestAddress].ConnectionAttempts;
+	iNextConnAttempt = time(nullptr) + C4NetClientConnectInterval;
+	auto addr = Addresses[iBestAddress].Addr.GetAddr();
+	const auto addrProtocol = Addresses[iBestAddress].Addr.GetProtocol();
 
 	// Try TCP simultaneous open if the stars align right
 	if (addr.GetFamily() == C4NetIO::addr_t::IPv6 && // Address needs to be IPv6...
 		!addr.IsLocal() && !addr.IsPrivate() &&      // ...global unicast...
-		Addr[iBestAddress].GetProtocol() == P_TCP && // ...TCP,
+		addrProtocol == P_TCP && // ...TCP,
 		!tcpSimOpenSocket &&                         // there is no previous request,
 		pParent->GetLocal()->getID() < getID())      // and make sure that only one client per pair initiates a request.
 	{
@@ -159,7 +177,7 @@ bool C4Network2Client::DoConnectAttempt(C4Network2IO *pIO)
 	{
 		addr.SetScopeId(id);
 		LogSilentF("Network: connecting client %s on %s...", getName(), addr.ToString().getData());
-		if (pIO->Connect(addr, Addr[iBestAddress].GetProtocol(), pClient->getCore()))
+		if (pIO->Connect(addr, addrProtocol, pClient->getCore()))
 			return true;
 	}
 	return false;
@@ -209,45 +227,104 @@ bool C4Network2Client::DoTCPSimultaneousOpen(C4Network2IO *const pIO, const C4Ne
 	}
 }
 
+void C4Network2Client::CheckConnectionQuality()
+{
+	// TODO: Implement fallback from client-client-connection to host-tunneling in decentral-mode if the client-client connection sucks, but the client-host-connections are fine
+	const auto connectionDataForConnectionType = [this](C4Network2IOConnection *connForType)
+	{
+		if (connForType->getNetClass() == Game.Network.NetIO.MsgIO())
+		{
+			return std::pair{getMsgConn(), &C4Network2Client::SetMsgConn};
+		}
+		else
+		{
+			return std::pair{getDataConn(), &C4Network2Client::SetDataConn};
+		}
+	};
+
+	const auto checkReplaceConn = [this](C4Network2IOConnection *checkConn, C4Network2IOConnection *newConn, auto setConn)
+	{
+		const auto curPing = checkConn->getAveragePingTime();
+		const auto newPing = newConn->getAveragePingTime();
+		if (newPing * 3 < curPing * 2)
+		{
+			(this->*setConn)(newConn);
+
+			// work around stuck network game issue
+			// TODO: somehow it is probably also necessary for client-client-connections in decentral mode, but Network.Sync is host only
+			if (Game.Network.isHost())
+			{
+				resyncCountdown = 20;
+			}
+		}
+	};
+
+	for (const auto &addr : Addresses)
+	{
+		const auto conn = addr.Connection;
+		if (!conn) continue;
+
+		const auto [curConn, setConn] = connectionDataForConnectionType(conn);
+		checkReplaceConn(curConn, conn, setConn);
+	}
+
+	const auto msgConn = getMsgConn();
+	const auto dataConn = getDataConn();
+	if (msgConn != dataConn)
+	{
+		checkReplaceConn(msgConn, dataConn, &C4Network2Client::SetMsgConn);
+	}
+
+	if (resyncCountdown > 0)
+	{
+		--resyncCountdown;
+		if ((resyncCountdown % 2) == 0 && !Game.Control.Network.ClientReady(getID(), Game.Control.ControlTick))
+		{
+			Game.Network.Sync();
+		}
+	}
+}
+
 bool C4Network2Client::hasAddr(const C4Network2Address &addr) const
 {
 	// Note that the host only knows its own address as 0.0.0.0, so if the real address is being added, that can't be sorted out.
-	for (int32_t i = 0; i < iAddrCnt; i++)
-		if (Addr[i] == addr)
-			return true;
-	return false;
+	return getClientAddress(Addresses, &ClientAddress::Addr, addr) != Addresses.end();
 }
 
 void C4Network2Client::AddAddrFromPuncher(const C4NetIO::addr_t &addr)
 {
-	AddAddr(C4Network2Address{addr, P_UDP}, true);
+	AddAddr(C4Network2Address{addr, P_UDP}, true, true);
 	// If the outside port matches the inside port, there is no port translation and the
 	// TCP address will probably work as well.
 	if (addr.GetPort() != Config.Network.PortUDP)
 	{
 		auto udpAddr = addr;
 		udpAddr.SetPort(Config.Network.PortUDP);
-		AddAddr(C4Network2Address{udpAddr, P_UDP}, true);
+		AddAddr(C4Network2Address{udpAddr, P_UDP}, true, true);
 	}
 	if (Config.Network.PortTCP > 0)
 	{
 		auto tcpAddr = addr;
 		tcpAddr.SetPort(Config.Network.PortTCP);
-		AddAddr(C4Network2Address{tcpAddr, P_TCP}, true);
+		AddAddr(C4Network2Address{tcpAddr, P_TCP}, true, true);
 	}
 	// Save IPv6 address for TCP simultaneous connect.
 	if (addr.GetFamily() == C4NetIO::addr_t::IPv6)
 		IPv6AddrFromPuncher = addr;
 }
 
-bool C4Network2Client::AddAddr(const C4Network2Address &addr, bool fAnnounce)
+bool C4Network2Client::AddAddr(const C4Network2Address &addr, bool fAnnounce, bool inFront, C4Network2IOConnection *connection)
 {
-	// checks
-	if (iAddrCnt + 1 >= C4ClientMaxAddr) return false;
 	if (hasAddr(addr)) return true;
-	// add
-	Addr[iAddrCnt] = addr; AddrAttempts[iAddrCnt] = 0;
-	iAddrCnt++;
+
+	if (inFront)
+	{
+		Addresses.emplace(Addresses.begin(), addr, connection);
+	}
+	else
+	{
+		Addresses.emplace_back(addr, connection);
+	}
 	// attempt to use this one
 	if (!iNextConnAttempt) iNextConnAttempt = time(nullptr);
 	// announce
@@ -256,6 +333,18 @@ bool C4Network2Client::AddAddr(const C4Network2Address &addr, bool fAnnounce)
 			return false;
 	// done
 	return true;
+}
+
+void C4Network2Client::AddConnection(C4Network2IOConnection *connection)
+{
+	assert(connection);
+	const C4Network2Address connAddr{connection->getPeerAddr(), connection->getProtocol()};
+	if (const auto addr = getClientAddress(Addresses, &ClientAddress::Addr, connAddr); addr != Addresses.end())
+	{
+		addr->Connection = connection;
+		return;
+	}
+	AddAddr(connAddr, true, false, connection);
 }
 
 void C4Network2Client::AddLocalAddrs(const std::uint16_t iPortTCP, const std::uint16_t iPortUDP)
@@ -299,14 +388,15 @@ void C4Network2Client::AddLocalAddrs(const std::uint16_t iPortTCP, const std::ui
 void C4Network2Client::SendAddresses(C4Network2IOConnection *pConn)
 {
 	// send all addresses
-	for (int32_t i = 0; i < iAddrCnt; i++)
+	for (const auto &clientAddr : Addresses)
 	{
-		if (Addr[i].GetAddr().GetScopeId() &&
-			(!pConn || pConn->getPeerAddr().GetScopeId() != Addr[i].GetAddr().GetScopeId()))
+		auto addr = clientAddr.Addr;
+		if (addr.GetAddr().GetScopeId() &&
+			(!pConn || pConn->getPeerAddr().GetScopeId() != addr.GetAddr().GetScopeId()))
 		{
 			continue;
 		}
-		C4Network2Address addr{Addr[i]};
+
 		addr.GetAddr().SetScopeId(0);
 		const C4NetIOPacket Pkt{MkC4NetIOPacket(PID_Addr, C4PacketAddr{getID(), addr})};
 		if (pConn)
@@ -604,6 +694,17 @@ void C4Network2ClientList::DoConnectAttempts()
 		if (!pClient->isLocal() && !pClient->isRemoved() && pClient->getNextConnAttempt() && pClient->getNextConnAttempt() <= t)
 			// attempt connect
 			pClient->DoConnectAttempt(pIO);
+}
+
+void C4Network2ClientList::CheckConnectionQuality()
+{
+	for (C4Network2Client *client = pFirst; client; client = client->getNext())
+	{
+		if (!client->isLocal() && !client->isRemoved())
+		{
+			client->CheckConnectionQuality();
+		}
+	}
 }
 
 void C4Network2ClientList::ResetReady()

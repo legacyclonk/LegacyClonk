@@ -81,7 +81,7 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 
 	// Addresses
 	C4Network2Client *pLocalNetClient = pGame->Clients.getLocal()->getNetClient();
-	iAddrCnt = pLocalNetClient->getAddrCnt();
+	iAddrCnt = std::min(pLocalNetClient->getAddrCnt(), C4ClientMaxAddr);
 	for (i = 0; i < iAddrCnt; i++)
 		Addrs[i] = pLocalNetClient->getAddr(i);
 }

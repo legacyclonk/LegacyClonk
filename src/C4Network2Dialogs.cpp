@@ -96,6 +96,18 @@ void C4Network2ClientDlg::UpdateText()
 						Game.Network.NetIO.getNetIOName(pNetClient->getDataConn()->getNetClass()),
 						pNetClient->getDataConn()->getPeerAddr().ToString().getData(),
 						pNetClient->getDataConn()->getPingTime());
+
+				for (int i = 0; i < iCnt; ++i)
+				{
+					const auto conn = pNetClient->getConnection(i);
+					if (conn && conn != pNetClient->getMsgConn() && conn != pNetClient->getDataConn())
+					{
+						AddLineFmt("  Backup: %s (%s, %d ms)",
+							Game.Network.NetIO.getNetIOName(conn->getNetClass()),
+							conn->getPeerAddr().ToString().getData(),
+							conn->getPingTime());
+					}
+				}
 			}
 			else
 				AddLine(LoadResStr("IDS_NET_CLIENT_INFO_NOCONNECTIONS"));
@@ -347,6 +359,10 @@ C4Network2IOConnection *C4Network2ClientListBox::ConnectionListItem::GetConnecti
 	if (!pNetClient) return nullptr;
 	if (iConnID == 0) return pNetClient->getDataConn();
 	if (iConnID == 1) return pNetClient->getMsgConn();
+	if (iConnID >= 10)
+	{
+		return pNetClient->getConnection(iConnID - 10);
+	}
 	return nullptr;
 }
 
@@ -362,23 +378,27 @@ void C4Network2ClientListBox::ConnectionListItem::Update()
 	}
 	// update connection ping
 	int iPing = pConn->getLag();
-	pPing->SetText((std::to_string(iPing) + " ms").c_str());
+	pPing->SetText((std::to_string(iPing) + " / ~" + std::to_string(pConn->getAveragePingTime()) + " ms").c_str());
+
+	const bool isBackup = iConnID >= 10;
 	// update description
 	// get connection usage
 	const char *szConnType;
 	C4Network2Client *pNetClient = Game.Network.Clients.GetClientByID(iClientID);
 	if (pNetClient->getDataConn() == pNetClient->getMsgConn())
 		szConnType = "Data/Msg";
-	else if (iConnID)
+	else if (iConnID == 1)
 		szConnType = "Msg";
-	else
+	else if (iConnID == 0)
 		szConnType = "Data";
+	else
+		szConnType = "Backup";
 	// display info
-	pDesc->SetText(FormatString("%s: %s (%s l%d)",
+	pDesc->SetText(FormatString("%s%s: %s (%s l%d)%s",  isBackup ? "<c 888888>" : "",
 		szConnType,
 		Game.Network.NetIO.getNetIOName(pConn->getNetClass()),
 		pConn->getPeerAddr().ToString().getData(),
-		pConn->getPacketLoss()).getData());
+		pConn->getPacketLoss(), isBackup ? "</c>" : "").getData());
 }
 
 void C4Network2ClientListBox::ConnectionListItem::OnButtonDisconnect(C4GUI::Control *pButton)
@@ -460,6 +480,33 @@ void C4Network2ClientListBox::Update()
 			{
 				// new connection: create it
 				InsertElement(new ConnectionListItem(this, pClient->getID(), i), pItem);
+			}
+		}
+
+		for (int i = 0; i < pNetClient->getAddrCnt(); ++i)
+		{
+			const auto conn = pNetClient->getConnection(i);
+			if (!conn || conn == pNetClient->getMsgConn() || conn == pNetClient->getDataConn())
+			{
+				continue;
+			}
+			const auto id = i + 10;
+			// del leading items
+			while (pItem && ((pItem->GetClientID() < pClient->getID()) || ((pItem->GetClientID() == pClient->getID()) && (pItem->GetConnectionID() < id))))
+			{
+				pNext = static_cast<ListItem *>(pItem->GetNext());
+				delete pItem; pItem = pNext;
+			}
+			// update connection item
+			if (pItem && pItem->GetClientID() == pClient->getID() && pItem->GetConnectionID() == id)
+			{
+				pItem->Update();
+				pItem = static_cast<ListItem *>(pItem->GetNext());
+			}
+			else
+			{
+				// new connection: create it
+				InsertElement(new ConnectionListItem(this, pClient->getID(), id), pItem);
 			}
 		}
 	}
