@@ -276,41 +276,30 @@ static void SortAddresses(std::vector<C4Network2Address> &addrs)
 
 	const auto rank = [&](const C4Network2Address &Addr)
 	{
-		// Rank addresses. For IPv6-enabled clients, try public IPv6 addresses first, then IPv4,
-		// then link-local IPv6. For IPv4-only clients, skip IPv6.
-		int rank = 0;
 		const auto &addr = Addr.GetAddr();
-		switch (addr.GetFamily())
+		if (addr.IsLocal())
 		{
-		case C4NetIO::HostAddress::IPv6:
-			if (addr.IsLocal())
-			{
-				rank = 100;
-			}
-			else if (addr.IsPrivate())
-			{
-				rank = 150;
-			}
-			else if (haveIPv6)
-			{
-				// TODO: Rank public IPv6 addresses by longest matching prefix with local addresses.
-				rank = 300;
-			}
-			break;
-		case C4NetIO::HostAddress::IPv4:
-			if (addr.IsPrivate())
-			{
-				rank = 150;
-			}
-			else
-			{
-				rank = 200;
-			}
-			break;
-		default:
-			assert(!"Unexpected address family");
+			return 100;
 		}
-		return rank;
+		else if (addr.IsPrivate())
+		{
+			return 150;
+		}
+		else
+		{
+			switch (addr.GetFamily())
+			{
+				case C4NetIO::HostAddress::IPv6:
+					return haveIPv6 ? 300 : 0;
+				case C4NetIO::HostAddress::IPv4:
+					return 200;
+				case C4NetIO::HostAddress::UnknownFamily:
+					; // fallthrough
+			}
+
+			assert(!"Unexpected address family");
+			return 0;
+		}
 	};
 
 	// Sort by decreasing rank. Use stable sort to allow the host to prioritize addresses within a family.
