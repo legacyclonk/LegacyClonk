@@ -1346,6 +1346,7 @@ void C4Network2::HandleConn(const C4PacketConn &Pkt, C4Network2IOConnection *pCo
 		if (pClient)
 			if (CheckConn(NewCCore, pConn, pClient, szReply))
 			{
+				pConn->SetCCore(Pkt.getCCore());
 				// accept
 				if (!szReply) szReply = "connection accepted";
 				fOK = true;
