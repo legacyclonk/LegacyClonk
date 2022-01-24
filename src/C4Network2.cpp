@@ -266,46 +266,6 @@ bool C4Network2::InitHost(bool fLobby)
 	return true;
 }
 
-// Orders connection addresses to optimize joining.
-static void SortAddresses(std::vector<C4Network2Address> &addrs)
-{
-	// TODO: Maybe use addresses from local client to avoid the extra system calls.
-	const auto &localAddrs = C4NetIO::GetLocalAddresses();
-	const bool haveIPv6{std::any_of(localAddrs.cbegin(), localAddrs.cend(), [](const auto &addr) { return
-		addr.GetFamily() == C4NetIO::HostAddress::IPv6 && !addr.IsLocal() && !addr.IsPrivate(); })};
-
-	const auto rank = [&](const C4Network2Address &Addr)
-	{
-		const auto &addr = Addr.GetAddr();
-		if (addr.IsLocal())
-		{
-			return 100;
-		}
-		else if (addr.IsPrivate())
-		{
-			return 150;
-		}
-		else
-		{
-			switch (addr.GetFamily())
-			{
-				case C4NetIO::HostAddress::IPv6:
-					return haveIPv6 ? 300 : 0;
-				case C4NetIO::HostAddress::IPv4:
-					return 200;
-				case C4NetIO::HostAddress::UnknownFamily:
-					; // fallthrough
-			}
-
-			assert(!"Unexpected address family");
-			return 0;
-		}
-	};
-
-	// Sort by decreasing rank. Use stable sort to allow the host to prioritize addresses within a family.
-	std::stable_sort(addrs.begin(), addrs.end(), [&](const auto &a, const auto &b) { return rank(a) > rank(b); });
-}
-
 C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bool fObserver)
 {
 	if (isEnabled()) Clear();
@@ -324,7 +284,7 @@ C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bo
 	{
 		addr.GetAddr().SetScopeId(scopeId);
 	}
-	SortAddresses(addrs);
+	C4NetIO::SortAddresses(addrs);
 
 	for (;;)
 	{
