@@ -53,6 +53,8 @@
 
 #include <cstring>
 
+class C4Network2Address;
+
 // net i/o base class
 class C4NetIO : public StdSchedulerProc
 {
@@ -209,7 +211,8 @@ public:
 
 	using addr_t = EndpointAddress;
 
-	static std::vector<HostAddress> GetLocalAddresses();
+	static std::vector<HostAddress> GetLocalAddresses(bool unsorted = false);
+	static void SortAddresses(std::vector<C4Network2Address> &addresses);
 
 	// callback class
 	class CBClass

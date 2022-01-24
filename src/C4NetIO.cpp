@@ -20,6 +20,7 @@
 
 #include "C4Constants.h"
 #include "C4Config.h"
+#include "C4Network2Address.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -65,7 +66,10 @@
 #define IPV6_ADDR_SITELOCAL 0x0040U
 #endif
 
+#include <algorithm>
 #include <cinttypes>
+#include <functional>
+#include <utility>
 
 // constants definition
 const int C4NetIO::TO_INF = -1;
@@ -679,7 +683,59 @@ void C4NetIO::EndpointAddress::CompileFunc(StdCompiler *const comp)
 	}
 }
 
-std::vector<C4NetIO::HostAddress> C4NetIO::GetLocalAddresses()
+namespace
+{
+	bool ContainsGlobalIpv6(const std::vector<C4NetIO::HostAddress> &addresses)
+	{
+		return std::any_of(addresses.cbegin(), addresses.cend(), [](const auto &addr)
+		{
+			return addr.GetFamily() == C4NetIO::HostAddress::IPv6
+				&& !addr.IsLocal()
+				&& !addr.IsPrivate();
+		});
+	}
+
+	// TODO: use the one from C++20 when we can
+	template<typename T>
+	decltype(auto) identity(T &&val) { return std::forward<T>(val); }
+
+	template<typename Address, typename GetAddr = decltype(identity<const Address &>)>
+	void SortAddresses(std::vector<Address> &addrs, bool haveIPv6, GetAddr &&getAddr = identity)
+	{
+		const auto rank = [haveIPv6, getAddr](const Address &Addr)
+		{
+			const auto &addr = getAddr(Addr);
+			if (addr.IsLocal())
+			{
+				return 100;
+			}
+			else if (addr.IsPrivate())
+			{
+				return 150;
+			}
+			else
+			{
+				switch (addr.GetFamily())
+				{
+					case C4NetIO::HostAddress::IPv6:
+						return haveIPv6 ? 300 : 0;
+					case C4NetIO::HostAddress::IPv4:
+						return 200;
+					case C4NetIO::HostAddress::UnknownFamily:
+						; // fallthrough
+				}
+
+				assert(!"Unexpected address family");
+				return 0;
+			}
+		};
+
+		// Sort by decreasing rank. Use stable sort to allow the host to prioritize addresses within a family.
+		std::stable_sort(addrs.begin(), addrs.end(), [&rank](const auto &a, const auto &b) { return rank(a) > rank(b); });
+	}
+}
+
+std::vector<C4NetIO::HostAddress> C4NetIO::GetLocalAddresses(bool unsorted)
 {
 	std::vector<HostAddress> result;
 
@@ -775,7 +831,19 @@ std::vector<C4NetIO::HostAddress> C4NetIO::GetLocalAddresses()
 	}
 #endif
 
+	if (!unsorted)
+	{
+		::SortAddresses(result, ContainsGlobalIpv6(result));
+	}
+
 	return result;
+}
+
+// Orders connection addresses to optimize joining.
+void C4NetIO::SortAddresses(std::vector<C4Network2Address> &addrs)
+{
+	// TODO: Maybe use addresses from local client to avoid the extra system calls.
+	return ::SortAddresses(addrs, ContainsGlobalIpv6(C4NetIO::GetLocalAddresses(true)), std::mem_fn(static_cast<const addr_t &(C4Network2Address::*)() const>(&C4Network2Address::GetAddr)));
 }
 
 // *** C4NetIO
