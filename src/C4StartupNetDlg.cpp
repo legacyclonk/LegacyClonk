@@ -572,13 +572,17 @@ bool C4StartupNetListEntry::IsSameAddress(const C4Network2Reference *pRef2)
 {
 	// not if ref has not been retrieved yet
 	if (!pRef) return false;
-	// check all of our addresses
-	for (int i = 0; i < pRef->getAddrCnt(); i++)
-		// against all of the other ref's addresses
-		for (int j = 0; j < pRef2->getAddrCnt(); j++)
-			// at least one match!
-			if (pRef->getAddr(i) == pRef2->getAddr(j))
+	// check for at least one matching address
+	for (const auto &ownAddr : pRef->getAddresses())
+	{
+		for (const auto &otherAddr : pRef2->getAddresses())
+		{
+			if (ownAddr == otherAddr)
+			{
 				return true;
+			}
+		}
+	}
 	// no match
 	return false;
 }

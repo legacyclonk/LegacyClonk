@@ -23,13 +23,12 @@
 #include "C4Client.h"
 #include "C4Network2Address.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <set>
+#include <vector>
 
 class C4Network2; class C4Network2IOConnection;
-
-// maximum address count that is saved for one client
-const int32_t C4ClientMaxAddr{40};
 
 // retry count and interval for connecting a client
 const int32_t C4NetClientConnectAttempts = 3,
@@ -54,13 +53,19 @@ public:
 	~C4Network2Client();
 
 protected:
+	struct ClientAddress
+	{
+		C4Network2Address Addr;
+		int32_t ConnectionAttempts{0};
+
+		ClientAddress(const C4Network2Address &addr) noexcept : Addr{addr} {}
+	};
+
 	// client data
 	C4Client *pClient;
 
+	std::vector<ClientAddress> Addresses;
 	// addresses
-	C4Network2Address Addr[C4ClientMaxAddr];
-	int32_t AddrAttempts[C4ClientMaxAddr];
-	int32_t iAddrCnt;
 	C4NetIO::addr_t IPv6AddrFromPuncher;
 
 	// Interface ids
@@ -94,8 +99,9 @@ public:
 	bool                isActivated() const { return getCore().isActivated(); }
 	bool                isObserver()  const { return getCore().isObserver(); }
 
-	int32_t                  getAddrCnt()       const { return iAddrCnt; }
-	const C4Network2Address &getAddr(int32_t i) const { return Addr[i]; }
+	const std::vector<ClientAddress> &getAddresses() const { return Addresses; }
+	std::size_t getAddrCnt() const { return Addresses.size(); }
+	const C4Network2Address &getAddr(std::size_t i) const { return Addresses[i].Addr; }
 
 	const std::set<int> &getInterfaceIDs() const { return InterfaceIDs; }
 
@@ -132,7 +138,7 @@ public:
 	// addresses
 	bool hasAddr(const C4Network2Address &addr) const;
 	void AddAddrFromPuncher(const C4NetIO::addr_t &addr);
-	bool AddAddr(const C4Network2Address &addr, bool fAnnounce);
+	bool AddAddr(const C4Network2Address &addr, bool fAnnounce, bool inFront = false);
 	void AddLocalAddrs(std::uint16_t iPortTCP, std::uint16_t iPortUDP);
 
 	void SendAddresses(C4Network2IOConnection *pConn);
