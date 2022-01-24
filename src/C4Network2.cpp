@@ -282,12 +282,11 @@ C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bo
 	StdStrBuf Password;
 
 	// Copy addresses
-	std::vector<C4Network2Address> addrs;
-	for (int i = 0; i < Ref.getAddrCnt(); ++i)
+	auto addrs{Ref.getAddresses()};
+	const auto scopeId = Ref.GetSourceAddress().GetScopeId();
+	for (auto &addr : addrs)
 	{
-		auto a = Ref.getAddr(i);
-		a.GetAddr().SetScopeId(Ref.GetSourceAddress().GetScopeId());
-		addrs.push_back(std::move(a));
+		addr.GetAddr().SetScopeId(scopeId);
 	}
 	C4NetIO::SortAddresses(addrs);
 

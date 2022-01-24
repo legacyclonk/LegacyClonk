@@ -29,18 +29,18 @@
 C4Network2Reference::C4Network2Reference()
 	: Icon(0), Time(0), Frame(0), StartTime(0), LeaguePerformance(0),
 	JoinAllowed(true), ObservingAllowed(true), PasswordNeeded(false), OfficialServer(false),
-	iAddrCnt(0), NetpuncherGameID{} {}
+	NetpuncherGameID{} {}
 
 C4Network2Reference::~C4Network2Reference() {}
 
 void C4Network2Reference::SetSourceAddress(const C4NetIO::EndpointAddress &ip)
 {
 	source = ip;
-	for (int i = 0; i < iAddrCnt; i++)
+	for (auto &addr : Addrs)
 	{
-		if (Addrs[i].GetAddr().IsNullHost())
+		if (addr.GetAddr().IsNullHost())
 		{
-			Addrs[i].GetAddr().SetHost(ip);
+			addr.GetAddr().SetHost(ip);
 		}
 	}
 }
@@ -80,10 +80,10 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 	Game.Set();
 
 	// Addresses
-	C4Network2Client *pLocalNetClient = pGame->Clients.getLocal()->getNetClient();
-	iAddrCnt = std::min(pLocalNetClient->getAddrCnt(), C4ClientMaxAddr);
-	for (i = 0; i < iAddrCnt; i++)
-		Addrs[i] = pLocalNetClient->getAddr(i);
+	for (const auto &addr : pGame->Clients.getLocal()->getNetClient()->getAddresses())
+	{
+		Addrs.emplace_back(addr.Addr);
+	}
 }
 #endif
 
@@ -102,9 +102,7 @@ void C4Network2Reference::CompileFunc(StdCompiler *pComp)
 	// Ignore RegJoinOnly
 	bool RegJoinOnly = false;
 	pComp->Value(mkNamingAdapt(RegJoinOnly,                                        "RegJoinOnly",       false));
-	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iAddrCnt),                           "AddressCount",      0));
-	iAddrCnt = std::min<uint8_t>(C4ClientMaxAddr, iAddrCnt);
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(Addrs, iAddrCnt, C4Network2Address()), "Address"));
+	pComp->Value(mkNamingAdapt(mkSTLContainerAdapt(Addrs), "Address"));
 	pComp->Value(mkNamingAdapt(Game.sEngineName,                                   "Game",              "None"));
 	pComp->Value(mkNamingAdapt(mkArrayAdaptDM(Game.iVer, 0),                       "Version"));
 	pComp->Value(mkNamingAdapt(Game.iBuild,                                        "Build",             -1));

@@ -30,9 +30,6 @@
 
 class C4Network2; class C4Network2IOConnection;
 
-// maximum address count that is saved for one client
-const int32_t C4ClientMaxAddr{40};
-
 // retry count and interval for connecting a client
 const int32_t C4NetClientConnectAttempts = 3,
               C4NetClientConnectInterval = 6; // s

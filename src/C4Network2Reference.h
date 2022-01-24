@@ -30,6 +30,8 @@
 #include "C4InputValidation.h"
 #include "C4TimeMilliseconds.h"
 
+#include <vector>
+
 const int C4Network2HTTPQueryTimeout = 20; // (s)
 constexpr uint32_t C4Network2HTTPHappyEyeballsTimeout = 300; // (ms)
 
@@ -63,14 +65,11 @@ private:
 	C4GameVersion Game;
 
 	// Network addresses
-	uint8_t iAddrCnt;
-	C4Network2Address Addrs[C4ClientMaxAddr];
+	std::vector<C4Network2Address> Addrs;
 	C4NetIO::EndpointAddress source;
 
 public:
-	const C4Network2Address &getAddr(int i) const { return Addrs[i]; }
-	C4Network2Address &getAddr(const int i) { return Addrs[i]; }
-	int getAddrCnt() const { return iAddrCnt; }
+	const std::vector<C4Network2Address> &getAddresses() const { return Addrs; }
 	const char *getTitle() const { return Parameters.ScenarioTitle.getData(); }
 	int32_t getIcon() const { return Icon; }
 	C4Network2Status getGameStatus() const { return GameStatus; }
