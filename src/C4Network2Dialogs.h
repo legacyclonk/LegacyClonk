@@ -24,6 +24,7 @@
 #include "C4Scenario.h"
 #include "C4Network2Res.h"
 
+#include <cstddef>
 #include <memory>
 
 // dialog showing info about a connected client
@@ -109,7 +110,7 @@ private:
 
 		virtual void Update() = 0;
 		int32_t GetClientID() const { return iClientID; }
-		virtual int32_t GetConnectionID() const { return -1; }
+		virtual std::size_t GetConnectionID() const { return 0; }
 	};
 
 	class ClientListItem : public ListItem
@@ -143,18 +144,18 @@ private:
 	class ConnectionListItem : public ListItem
 	{
 	private:
-		int32_t iConnID; // connection ID
+		std::size_t iConnID; // connection ID
 		// subcomponents
 		C4GUI::Label *pDesc;       // connection description
 		C4GUI::Label *pPing;       // connection ping
 		C4GUI::IconButton *pDisconnectBtn; // buttons to restore/destroy connection
 
 	public:
-		ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, int32_t iConnectionID);
+		ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, std::size_t iConnectionID);
 
 		virtual void Update() override; // update data
 		C4Network2IOConnection *GetConnection() const; // get connection by connection ID
-		virtual int32_t GetConnectionID() const override { return iConnID; }
+		virtual std::size_t GetConnectionID() const override { return iConnID; }
 
 		void OnButtonMute(C4GUI::Control *pButton);
 		void OnButtonDisconnect(C4GUI::Control *pButton);

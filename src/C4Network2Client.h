@@ -23,6 +23,7 @@
 #include "C4Client.h"
 #include "C4Network2Address.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <set>
 #include <vector>
@@ -103,9 +104,10 @@ public:
 	bool                isActivated() const { return getCore().isActivated(); }
 	bool                isObserver()  const { return getCore().isObserver(); }
 
-	int32_t                  getAddrCnt()       const { return static_cast<int32_t>(Addresses.size()); }
-	const C4Network2Address &getAddr(int32_t i) const { return Addresses[i].Addr; }
-	C4Network2IOConnection *getConnection(int32_t i) const { return Addresses[i].Connection; }
+	const std::vector<ClientAddress> &getAddresses() const { return Addresses; }
+	std::size_t getAddrCnt() const { return Addresses.size(); }
+	const C4Network2Address &getAddr(std::size_t i) const { return Addresses[i].Addr; }
+	C4Network2IOConnection *getConnection(std::size_t i) const { return Addresses[i].Connection; }
 
 	const std::set<int> &getInterfaceIDs() const { return InterfaceIDs; }
 

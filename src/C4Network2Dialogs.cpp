@@ -314,7 +314,7 @@ const StdStrBuf C4Network2ClientListBox::ClientListItem::GetNameLabel() const
 
 // C4Network2ClientListBox::ConnectionListItem
 
-C4Network2ClientListBox::ConnectionListItem::ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, int32_t iConnectionID)
+C4Network2ClientListBox::ConnectionListItem::ConnectionListItem(class C4Network2ClientListBox *pForDlg, int32_t iClientID, std::size_t iConnectionID)
 	: ListItem(pForDlg, iClientID), iConnID(iConnectionID), pDesc(nullptr), pPing(nullptr), pDisconnectBtn(nullptr)
 {
 	// get size
@@ -458,7 +458,7 @@ void C4Network2ClientListBox::Update()
 		C4Network2Client *pNetClient = pClient->getNetClient();
 		if (!pNetClient) continue; // local client does not have connections
 		C4Network2IOConnection *pLastConn = nullptr;
-		for (int i = 0; i < 2; ++i)
+		for (std::size_t i = 0; i < 2; ++i)
 		{
 			C4Network2IOConnection *pConn = i ? pNetClient->getMsgConn() : pNetClient->getDataConn();
 			if (!pConn) continue;
@@ -483,7 +483,7 @@ void C4Network2ClientListBox::Update()
 			}
 		}
 
-		for (int i = 0; i < pNetClient->getAddrCnt(); ++i)
+		for (std::size_t i = 0; i < pNetClient->getAddrCnt(); ++i)
 		{
 			const auto conn = pNetClient->getConnection(i);
 			if (!conn || conn == pNetClient->getMsgConn() || conn == pNetClient->getDataConn())
