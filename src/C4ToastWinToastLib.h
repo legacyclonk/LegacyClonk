@@ -47,6 +47,6 @@ public:
 private:
 	WinToastLib::WinToastTemplate toastTemplate{WinToastLib::WinToastTemplate::Text02};
 	std::vector<std::string> actions;
-	int64_t id{0};
+	int64_t id{-1};
 	std::shared_ptr<C4ToastEventHandler> eventHandlerGuard;
 };

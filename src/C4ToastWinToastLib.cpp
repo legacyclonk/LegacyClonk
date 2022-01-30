@@ -131,14 +131,19 @@ namespace
 void C4ToastImplWinToastLib::Show()
 {
 	Hide();
-	id = std::max(WinToast::instance()->showToast(toastTemplate, new C4WinToastEventHandler{eventHandlerGuard, actions}), 0LL);
+	WinToastLib::WinToast::WinToastError error;
+	id = WinToast::instance()->showToast(toastTemplate, new C4WinToastEventHandler{eventHandlerGuard, actions}, &error);
+	if (id == -1)
+	{
+		LogF("C4ToastImplWinToastLib: Failed to show toast: %s", StdStringEncodingConverter{}.Utf16ToWinAcp(WinToastLib::WinToast::strerror(error).c_str()).c_str());
+	}
 }
 
 void C4ToastImplWinToastLib::Hide()
 {
-	if (id)
+	if (id != -1)
 	{
 		WinToast::instance()->hideToast(id);
-		id = 0;
+		id = -1;
 	}
 }
