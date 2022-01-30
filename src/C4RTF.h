@@ -96,4 +96,7 @@ public:
 	}
 
 	StdStrBuf GetPlainText(); // convert to plain text
+
 };
+
+std::string RtfEscape(std::string_view plainText);

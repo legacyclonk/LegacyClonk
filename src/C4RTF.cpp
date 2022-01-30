@@ -20,6 +20,8 @@
 #include "C4Include.h"
 #include "C4RTF.h"
 
+#include <algorithm>
+
 extern C4RTFFile::KeywordTableEntry RTFKeywordTable[];
 
 C4RTFFile::C4RTFFile() : pState(nullptr) {}
@@ -358,3 +360,29 @@ C4RTFFile::KeywordTableEntry RTFKeywordTable[] =
 	{ "\\",         0,          false,     kwdChars,   "\\", 0 },
 	{ nullptr, 0, false, kwdChars, nullptr, 0 }
 };
+
+std::string RtfEscape(std::string_view plainText)
+{
+	static constexpr std::string_view needEscapeChars{"\\{}"};
+	constexpr auto needsEscape = [](char c) constexpr noexcept
+	{
+		return needEscapeChars.find(c) != std::string_view::npos;
+	};
+	std::string result;
+	result.reserve(plainText.size() + std::count_if(plainText.begin(), plainText.end(), needsEscape));
+
+	for (std::size_t last = 0; last < plainText.size(); )
+	{
+		const auto next = plainText.find_first_of(needEscapeChars, last);
+		result.append(plainText.substr(last, next - last));
+		last = next;
+		if (next != std::string_view::npos)
+		{
+			result.push_back('\\');
+			result.push_back(plainText[next]);
+			++last;
+		}
+	}
+
+	return result;
+}

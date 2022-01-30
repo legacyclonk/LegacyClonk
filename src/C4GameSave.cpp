@@ -26,6 +26,9 @@
 #include <C4Console.h>
 #include <C4Log.h>
 #include <C4Player.h>
+#include <C4RTF.h>
+
+#include <utility>
 
 // *** C4GameSave main class
 
@@ -257,6 +260,15 @@ bool C4GameSave::SaveRuntimeData()
 	return true;
 }
 
+namespace
+{
+	template<typename... Args>
+	std::string FormatEscape(const char* fmt, Args &&... args)
+	{
+		return RtfEscape(FormatString(fmt, std::forward<Args>(args)...).getData());
+	}
+}
+
 bool C4GameSave::SaveDesc(C4Group &hToGroup)
 {
 	// Unfortunately, there's no way to prealloc the buffer in an appropriate size
@@ -270,7 +282,7 @@ bool C4GameSave::SaveDesc(C4Group &hToGroup)
 	StdStrBuf title{Game.Parameters.ScenarioTitle};
 	CMarkup::StripMarkup(&title);
 
-	sBuffer.AppendFormat("\\uc1\\pard\\ulnone\\b\\f0\\fs20 %s\\par", title.getData());
+	sBuffer.AppendFormat("\\uc1\\pard\\ulnone\\b\\f0\\fs20 %s\\par", RtfEscape(title.getData()).c_str());
 	sBuffer.Append(LineFeed "\\b0\\fs16\\par" LineFeed);
 
 	// OK; each specializations has its own desc format
@@ -300,12 +312,12 @@ void C4GameSave::WriteDescDate(StdStrBuf &sBuf, bool fRecord)
 	time_t tTime; time(&tTime);
 	struct tm *pLocalTime;
 	pLocalTime = localtime(&tTime);
-	sBuf.AppendFormat(LoadResStr(fRecord ? "IDS_DESC_DATEREC" : (Game.Network.isEnabled() ? "IDS_DESC_DATENET" : "IDS_DESC_DATE")),
+	sBuf.Append(FormatEscape(LoadResStr(fRecord ? "IDS_DESC_DATEREC" : (Game.Network.isEnabled() ? "IDS_DESC_DATENET" : "IDS_DESC_DATE")),
 		pLocalTime->tm_mday,
 		pLocalTime->tm_mon + 1,
 		pLocalTime->tm_year + 1900,
 		pLocalTime->tm_hour,
-		pLocalTime->tm_min);
+		pLocalTime->tm_min).c_str());
 	WriteDescLineFeed(sBuf);
 }
 
@@ -314,8 +326,8 @@ void C4GameSave::WriteDescGameTime(StdStrBuf &sBuf)
 	// Write game duration
 	if (Game.Time)
 	{
-		sBuf.AppendFormat(LoadResStr("IDS_DESC_DURATION"),
-			Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60);
+		sBuf.Append(FormatEscape(LoadResStr("IDS_DESC_DURATION"),
+			Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60).c_str());
 		WriteDescLineFeed(sBuf);
 	}
 }
@@ -323,7 +335,7 @@ void C4GameSave::WriteDescGameTime(StdStrBuf &sBuf)
 void C4GameSave::WriteDescEngine(StdStrBuf &sBuf)
 {
 	char ver[5]; sprintf(ver, "%03d", static_cast<int>(C4XVERBUILD));
-	sBuf.AppendFormat(LoadResStr("IDS_DESC_VERSION"), ver);
+	sBuf.Append(FormatEscape(LoadResStr("IDS_DESC_VERSION"), ver).c_str());
 	WriteDescLineFeed(sBuf);
 }
 
@@ -331,7 +343,7 @@ void C4GameSave::WriteDescLeague(StdStrBuf &sBuf, bool fLeague, const char *strL
 {
 	if (fLeague)
 	{
-		sBuf.AppendFormat(LoadResStr("IDS_PRC_LEAGUE"), strLeagueName);
+		sBuf.Append(FormatEscape(LoadResStr("IDS_PRC_LEAGUE"), strLeagueName).c_str());
 		WriteDescLineFeed(sBuf);
 	}
 }
@@ -342,7 +354,7 @@ void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 	if (Game.DefinitionFilenames.size())
 	{
 		// Desc
-		sBuf.Append(LoadResStr("IDS_DESC_DEFSPECS"));
+		sBuf.Append(RtfEscape(LoadResStr("IDS_DESC_DEFSPECS")).c_str());
 		// Get definition modules
 		int32_t i = 0;
 		for (const auto &def : Game.DefinitionFilenames)
@@ -355,7 +367,7 @@ void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 			// Append comma
 			if (i++ > 0) sBuf.Append(", ");
 			// Apend to desc
-			sBuf.Append(sDefFilename);
+			sBuf.Append(RtfEscape(sDefFilename.getData()).c_str());
 		}
 		// End of line
 		WriteDescLineFeed(sBuf);
@@ -365,7 +377,7 @@ void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 void C4GameSave::WriteDescNetworkClients(StdStrBuf &sBuf)
 {
 	// Desc
-	sBuf.Append(LoadResStr("IDS_DESC_CLIENTS"));
+	sBuf.Append(RtfEscape(LoadResStr("IDS_DESC_CLIENTS")).c_str());
 	// Client names
 	bool comma{false};
 	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(nullptr); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
@@ -375,7 +387,7 @@ void C4GameSave::WriteDescNetworkClients(StdStrBuf &sBuf)
 			sBuf.Append(", ");
 		}
 
-		sBuf.Append(pClient->getName());
+		sBuf.Append(RtfEscape(pClient->getName()).c_str());
 		comma = true;
 	}
 	// End of line
@@ -405,9 +417,9 @@ void C4GameSave::WriteDescPlayers(StdStrBuf &sBuf, bool fByTeam, int32_t idTeam)
 			else if (fByTeam && idTeam)
 			{
 				C4Team *pTeam = Game.Teams.GetTeamByID(idTeam);
-				if (pTeam) sBuf.AppendFormat("%s: ", pTeam->GetName());
+				if (pTeam) sBuf.Append(FormatEscape("%s: ", pTeam->GetName()).c_str());
 			}
-			sBuf.Append(pPlr->GetName());
+			sBuf.Append(RtfEscape(pPlr->GetName()).c_str());
 			fAnyPlrWritten = true;
 		}
 	if (fAnyPlrWritten) WriteDescLineFeed(sBuf);
@@ -418,7 +430,7 @@ void C4GameSave::WriteDescPlayers(StdStrBuf &sBuf)
 	// New style using Game.PlayerInfos
 	if (Game.PlayerInfos.GetPlayerCount())
 	{
-		sBuf.Append(LoadResStr("IDS_DESC_PLRS"));
+		sBuf.Append(RtfEscape(LoadResStr("IDS_DESC_PLRS")).c_str());
 		if (Game.Teams.IsMultiTeams() && !Game.Teams.IsAutoGenerateTeams())
 		{
 			// Teams defined: Print players sorted by teams
