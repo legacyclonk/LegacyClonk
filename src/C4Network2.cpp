@@ -184,10 +184,6 @@ void C4Network2::ReadyCheckDialog::OnAction(std::string_view action)
 	Close(action == LoadResStrNoAmp("IDS_DLG_YES"));
 }
 
-void C4Network2::ReadyCheckDialog::Dismissed()
-{
-	Close(false);
-}
 #endif
 
 C4Network2::C4Network2()

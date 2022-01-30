@@ -137,7 +137,6 @@ class C4Network2
 	private:
 		void Activated() override;
 		void OnAction(std::string_view action) override;
-		void Dismissed() override;
 
 	private:
 		static std::optional<C4Toast> toast;
