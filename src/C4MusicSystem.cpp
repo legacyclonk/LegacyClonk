@@ -168,9 +168,9 @@ void C4MusicSystem::PlayScenarioMusic(C4Group &group)
 		Game.IsMusicEnabled = true;
 	}
 
+	SetPlayList(nullptr);
 	if (Game.IsMusicEnabled)
 	{
-		SetPlayList(nullptr);
 		Play();
 	}
 }
