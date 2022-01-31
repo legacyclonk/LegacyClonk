@@ -246,10 +246,11 @@ void C4Network2Players::HandlePlayerInfoUpdRequest(const class C4ClientPlayerInf
 	if (pLobby) pLobby->OnPlayersChange();
 }
 
-void C4Network2Players::HandlePlayerInfo(const class C4ClientPlayerInfos &rInfoPacket)
+void C4Network2Players::HandlePlayerInfo(const class C4ClientPlayerInfos &rInfoPacket, bool localOrigin)
 {
 	// network only
 	assert(Game.Network.isEnabled());
+	const auto updatedId = rInfoPacket.GetClientID();
 	// copy client player infos out of packet to be used in local list
 	C4ClientPlayerInfos *pClientInfo = new C4ClientPlayerInfos(rInfoPacket);
 	// add client info to local player info list - eventually deleting pClientInfo and
@@ -273,7 +274,14 @@ void C4Network2Players::HandlePlayerInfo(const class C4ClientPlayerInfos &rInfoP
 		}
 	}
 	// adding the player may have invalidated other players (through team settings). Send them.
-	SendUpdatedPlayers();
+	if (localOrigin)
+	{
+		SendUpdatedPlayers();
+	}
+	else
+	{
+		rInfoList.GetInfoByClientID(updatedId)->ResetUpdated();
+	}
 	// lobby: update players
 	C4GameLobby::MainDlg *pLobby = Game.Network.GetLobby();
 	if (pLobby) pLobby->OnPlayersChange();

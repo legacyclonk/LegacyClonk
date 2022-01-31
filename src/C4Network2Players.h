@@ -71,7 +71,7 @@ public:
 	void RequestPlayerInfoUpdate(const class C4ClientPlayerInfos &rRequest);
 
 	// player info packet received; handle it (CID_PlayerInfo, host and clients)
-	void HandlePlayerInfo(const class C4ClientPlayerInfos &rInfoPacket);
+	void HandlePlayerInfo(const class C4ClientPlayerInfos &rInfoPacket, bool localOrigin);
 
 	// player join request received; handle it (PID_PlayerInfoUpdReq, host only)
 	// adjusts the player data (colors, etc.), and creates update packets/controls

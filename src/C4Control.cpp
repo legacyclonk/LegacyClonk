@@ -1214,7 +1214,7 @@ void C4ControlPlayerInfo::Execute() const
 	}
 	else
 		// network:
-		Game.Network.Players.HandlePlayerInfo(PlrInfo);
+		Game.Network.Players.HandlePlayerInfo(PlrInfo, iByClient == Game.Clients.getLocalID());
 }
 
 void C4ControlPlayerInfo::CompileFunc(StdCompiler *pComp)
