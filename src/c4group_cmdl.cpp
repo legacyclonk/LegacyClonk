@@ -185,6 +185,7 @@ bool ProcessGroup(const char *szFilename)
 						else
 						{
 							hGroup.Sort(argv[iArg + 1]); iArg++;
+							hGroup.Save(true);
 						}
 						break;
 					// Rename

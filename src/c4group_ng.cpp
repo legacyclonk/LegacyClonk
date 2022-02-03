@@ -230,6 +230,7 @@ bool ProcessGroup(const char *FilenamePar)
 						else
 						{
 							hGroup.Sort(argv[iArg + 1]);
+							hGroup.Save(true);
 							iArg++;
 						}
 						break;
