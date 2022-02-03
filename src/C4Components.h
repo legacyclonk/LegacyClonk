@@ -144,7 +144,7 @@
 #define C4FLS_Def              "Particle.txt|DefCore.txt|Graphics.bmp|Graphics.png|Overlay.png|Graphics*.png|Overlay*.png|Portrait*.png|Portrait*.bmp|ActMap.txt|Script.c|Script*.c|C4Script.c|StringTbl*.txt|Names*.txt|Title*.txt|ClonkNames.txt|Rank.txt|Rank.bmp|Rank.png|Desc*.txt|Overlay.png|Title.bmp|Title.png|Icon.bmp|Author.txt|Version.txt|*.wav|*.c4d"
 #define C4FLS_Player           "Player.txt|Portrait.png|Portrait.bmp|*.c4i"
 #define C4FLS_Object           "ObjectInfo.txt|Portrait.png|Portrait.bmp"
-#define C4FLS_Folder           "Folder.txt|Title*.txt|Info.txt|Desc*.rtf|Title.png|Title.bmp|Icon.png|Icon.bmp|Author.txt|Version.txt|*.c4s|Loader*.bmp|Loader*.png|Loader*.jpeg|Loader*.jpg|FolderMap.txt|FolderMap.png"
+#define C4FLS_Folder           "Folder.txt|Title*.txt|Info.txt|Desc*.rtf|Title.png|Title.bmp|Icon.png|Icon.bmp|Author.txt|Version.txt|*.c4s|*.c4f|Loader*.bmp|Loader*.png|Loader*.jpeg|Loader*.jpg|FolderMap.txt|FolderMap.png|*.png"
 #define C4FLS_Material         "TexMap.txt|*.bmp|*.png|*.c4m"
 #define C4FLS_Graphics         "Loader*.bmp|Loader*.png|Loader*.jpeg|Loader*.jpg|FontEndeavour12.png|FontEndeavour24.png|FontEndeavour16.png|FontEndeavour10.png|Font*.png" \
 	"|*.pal|Control.png|Fire.png|Background.png|Flag.png|Crew.png|Score.png|Wealth.png|Player.png|Rank.png|Entry.png|Captain.png|Cursor.png|CursorSmall.png|CursorMedium.png|CursorLarge.png|CursorXLarge.png|CursorXXLarge.png|CursorXXXLarge.png|CursorXXXXLarge.png|CursorXXXXXLarge.png|SelectMark.png|MenuSymbol.png|Menu.png|Logo.png|Construction.png|Energy.png|Magic.png|Options.png|UpperBoard.png|Arrow.png|Exit.png|Hand.png|Gamepad.png|Build.png|EnergyBars.png|Liquid.png" \
