@@ -105,7 +105,12 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(UseWhiteIngameChat,   "UseWhiteIngameChat",   false, false, true));
 	pComp->Value(mkNamingAdapt(UseWhiteLobbyChat,    "UseWhiteLobbyChat",    false, false, true));
 	pComp->Value(mkNamingAdapt(ShowLogTimestamps,    "ShowLogTimestamps",    false, false, true));
+
+#ifdef __APPLE__
+	pComp->Value(mkNamingAdapt(Preloading,           "Preloading",           false));
+#else
 	pComp->Value(mkNamingAdapt(Preloading,           "Preloading",           true));
+#endif
 }
 
 void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)
@@ -832,6 +837,13 @@ void C4Config::AdaptToCurrentVersion()
 {
 	switch (General.Version)
 	{
+#ifdef __APPLE__
+	case 349:
+		// Mac: set Preloading to false due to it being crash-prone
+		General.Preloading = false;
+		break;
+#endif
+
 	case 347:
 		// reset max channels
 		Sound.MaxChannels = C4AudioSystem::MaxChannels;
