@@ -1581,7 +1581,7 @@ void C4AulParseState::Parse_FuncHead()
 			if (a->Engine->GlobalNamedNames.GetItemNr(Idtf) != -1)
 				throw C4AulParseError(this, "function definition: name already in use (global variable)");
 			if (a->Engine->GlobalConstNames.GetItemNr(Idtf) != -1)
-				Strict2Error("function definition: name already in use (global variable)", nullptr);
+				Strict2Error("function definition: name already in use (global variable)");
 		}
 		// create script fn
 		if (Acc == AA_GLOBAL)
@@ -1682,7 +1682,7 @@ void C4AulParseState::Parse_FuncHead()
 		if (TokenType != ATT_BLOPEN)
 		{
 			// warn
-			Strict2Error("'func': expecting opening block ('{') after func declaration", nullptr);
+			Strict2Error("'func': expecting opening block ('{') after func declaration");
 			// not really new syntax (a sort of legacy mode)
 			Fn->bNewFormat = false;
 		}
@@ -2736,7 +2736,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 		else if (SEqual(Idtf, C4AUL_Return))
 		{
 			// return: treat as regular function with special byte code
-			Strict2Error("return used as a parameter", nullptr);
+			Strict2Error("return used as a parameter");
 			Shift();
 			Parse_Params(1, nullptr);
 			AddBCC(AB_RETURN);
@@ -3023,7 +3023,7 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 				default:
 					// Stuff like foo(42+,1) used to silently work
 					Strict2Error(FormatString("Operator %s: Second expression expected, but %s found",
-						C4ScriptOpMap[OpID].Identifier, GetTokenName(TokenType)).getData(), nullptr);
+						C4ScriptOpMap[OpID].Identifier, GetTokenName(TokenType)).getData());
 					AddBCC(AB_INT, 0);
 					break;
 				}
