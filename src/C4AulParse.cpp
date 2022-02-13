@@ -182,7 +182,8 @@ public:
 	const char *GetTokenName(C4AulTokenType TokenType);
 
 	void Warn(const char *pMsg, const char *pIdtf = nullptr);
-	void Strict2Error(const char *pMsg, const char *pIdtf = nullptr);
+	void StrictError(const char *message, C4AulScriptStrict errorSince, const char *identifier = nullptr);
+	void Strict2Error(const char *message, const char *identifier = nullptr);
 
 	void SetNoRef(); // Switches the bytecode to generate a value instead of a reference
 
@@ -236,12 +237,18 @@ void C4AulParseState::Warn(const char *pMsg, const char *pIdtf)
 	++Game.ScriptEngine.warnCnt;
 }
 
-void C4AulParseState::Strict2Error(const char *pMsg, const char *pIdtf)
+void C4AulParseState::StrictError(const char *message, C4AulScriptStrict errorSince, const char *identifier)
 {
-	if (Fn ? (Fn->pOrgScript->Strict < C4AulScriptStrict::STRICT2) : (a->Strict < C4AulScriptStrict::STRICT2))
-		Warn(pMsg, pIdtf);
+	const auto strictness = Fn ? Fn->pOrgScript->Strict : a->Strict;
+	if (strictness < errorSince)
+		Warn(message, identifier);
 	else
-		throw C4AulParseError(this, pMsg, pIdtf);
+		throw C4AulParseError(this, message, identifier);
+}
+
+void C4AulParseState::Strict2Error(const char *message, const char *identifier)
+{
+	return StrictError(message, C4AulScriptStrict::STRICT2, identifier);
 }
 
 C4AulParseError::C4AulParseError(const char* message, const char *identifier, bool warn)
@@ -769,7 +776,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 			}
 			// check: enough buffer space?
 			if (pStrPos - StrBuff >= C4AUL_MAX_String)
-				Warn("string too long", nullptr);
+				StrictError("string too long", C4AulScriptStrict::STRICT3);
 			else
 			{
 				if (C == '\\') // escape
