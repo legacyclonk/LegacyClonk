@@ -20,6 +20,12 @@ jobs:
           cache: 'npm'
           cache-dependency-path: .github/workflows/C4ScriptDocAnalyzer/package-lock.json
       - run: npm install
+      - name: Build function list
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends xsltproc python-libxml2 gettext -y
+          git clone https://github.com/legacyclonk/lcdocs --depth 1
+          make -C lcdocs -j$(nproc)
+          cp lcdocs/Functions.txt .github/workflows/C4ScriptDocAnalyzer/lcdocs_functions.txt
       - name: Run analyze script
         id: analyze
         run: node .github/workflows/C4ScriptDocAnalyzer/index.js
