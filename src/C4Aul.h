@@ -72,6 +72,8 @@ public:
 // parse error
 class C4AulParseError : public C4AulError
 {
+	C4AulParseError(const char *message, const char *identifier, bool warn);
+
 public:
 	C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf = nullptr, bool Warn = false);
 	C4AulParseError(class C4AulParseState *state, const char *pMsg, const char *pIdtf = nullptr, bool Warn = false);

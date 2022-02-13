@@ -219,12 +219,7 @@ private:
 
 void C4AulScript::Warn(const char *pMsg, const char *pIdtf)
 {
-	// display error
-
-	C4AulParseError warning(this, pMsg, pIdtf, true);
-	// display it
-	warning.show();
-	// count warnings
+	C4AulParseError{this, pMsg, pIdtf, true}.show();
 	++Game.ScriptEngine.warnCnt;
 }
 
@@ -233,14 +228,11 @@ void C4AulParseState::Warn(const char *pMsg, const char *pIdtf)
 	// do not show errors for System.c4g scripts that appear to be pure #appendto scripts
 	if (Fn && !Fn->Owner->Def && !Fn->Owner->Appends.empty()) return;
 
-	// display error
-
-	C4AulParseError warning(this, pMsg, pIdtf, true);
-	// display it
-	warning.show();
+	C4AulParseError{this, pMsg, pIdtf, true}.show();
 	if (Fn && Fn->pOrgScript != a)
+	{
 		DebugLogF("  (as #appendto/#include to %s)", Fn->Owner->ScriptName.getData());
-	// count warnings
+	}
 	++Game.ScriptEngine.warnCnt;
 }
 
@@ -252,14 +244,14 @@ void C4AulParseState::Strict2Error(const char *pMsg, const char *pIdtf)
 		throw C4AulParseError(this, pMsg, pIdtf);
 }
 
-C4AulParseError::C4AulParseError(C4AulParseState *state, const char *pMsg, const char *pIdtf, bool Warn)
-	: C4AulError()
+C4AulParseError::C4AulParseError(const char* message, const char *identifier, bool warn)
 {
-	// compose error string
-	sMessage.Format("%s: %s%s",
-		Warn ? "WARNING" : "ERROR",
-		pMsg,
-		pIdtf ? pIdtf : "");
+	sMessage.Format("%s: %s%s", warn ? "WARNING" : "ERROR", message, identifier ? identifier : "");
+}
+
+C4AulParseError::C4AulParseError(C4AulParseState *state, const char *pMsg, const char *pIdtf, bool Warn)
+	: C4AulParseError{pMsg, pIdtf, Warn}
+{
 	if (state->Fn && *(state->Fn->Name))
 	{
 		// Show function name
@@ -285,12 +277,8 @@ C4AulParseError::C4AulParseError(C4AulParseState *state, const char *pMsg, const
 }
 
 C4AulParseError::C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf, bool Warn)
+	: C4AulParseError{pMsg, pIdtf, Warn}
 {
-	// compose error string
-	sMessage.Format("%s: %s%s",
-		Warn ? "WARNING" : "ERROR",
-		pMsg,
-		pIdtf ? pIdtf : "");
 	if (pScript)
 	{
 		// Script name
