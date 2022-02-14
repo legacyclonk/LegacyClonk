@@ -70,10 +70,31 @@ const undocumentedConstants = findUndocumented([c4ScriptConstants], lcdocsFuncti
 console.log(`\nThe following C4Script functions and constants are documented in the current lcdocs master but not defined in the engine:\n`);
 const undefinedFunctions = findUndefined(engineFunctions.concat([c4ScriptConstants]), lcdocsFunctions, '()');
 
-console.log(`\nThere are\n * ${c4ScriptFunctions.length} defined functions in C4Script.cpp,\n * ${c4ScriptConstants.length} defined constants in C4Script.cpp,\n * ${cFunctions.flat().length} defined functions in System.c4g and\n * ${lcdocsFunctions.length} documented functions and constants in lcdocs.\n`);
-console.log(`Exiting with ${undocumentedFunctions} undocumented functions, ${undocumentedConstants} undocumented constants and ${undefinedFunctions} undefined functions or constants.`);
+let colorUndocumentedFunc = '\x1b[42m';
+let colorUndocumentedConst = '\x1b[42m';
+let colorUndefinedFunc = '\x1b[42m';
+if (undocumentedFunctions !== 0) colorUndocumentedFunc = '\x1b[41m';
+if (undocumentedConstants !== 0) colorUndocumentedConst = '\x1b[41m';
+if (undefinedFunctions !== 0) colorUndefinedFunc = '\x1b[43m';
+console.log(`\n * ${colorUndocumentedFunc}${undocumentedFunctions} functions are undocumented.\x1b[0m`);
+console.log(` * ${colorUndocumentedConst}${undocumentedConstants} constants are undocumented.\x1b[0m`);
+console.log(` * ${colorUndefinedFunc}${undefinedFunctions} functions or constants are documented but undefined in the engine.\x1b[0m`);
+console.log(`\nStatistics: There are
+ * ${c4ScriptFunctions.length} defined functions in C4Script.cpp,
+ * ${c4ScriptConstants.length} defined constants in C4Script.cpp,
+ * ${cFunctions.flat().length} defined functions in System.c4g and
+ * ${lcdocsFunctions.length} documented functions and constants in current lcdocs master.\n`);
 
-
+const sumEntities = c4ScriptFunctions.length + c4ScriptConstants.length + cFunctions.flat().length;
+const sumProcessed = lcdocsFunctions.length - undefinedFunctions + undocumentedFunctions + undocumentedConstants;
+if (sumEntities === sumProcessed) {
+    console.log(`All entities processed, exiting.`);
+    process.exit();
+} else {
+    console.log(`\x1b[41mERROR: The sum of functions and constants is ${sumEntities} but ${sumProcessed} where processed.
+    Make sure that the set of parsed functions is distinct!\x1b[0m`);
+    process.exit(2)
+}
 
 function readAndFilterFile(filepath, captures) {
     console.log(`Loading ${filepath.replace(/^.*[\\\/]/, '')}`);
