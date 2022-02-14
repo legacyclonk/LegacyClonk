@@ -7,7 +7,7 @@ const fs = require('fs');
 // Return=bool
 // Parameter=object pObj, int iPlr
 // DescDE=aufgerufene Eingabezeile.
-const lcdocsFunctions = filterFile('.github/workflows/C4ScriptDocAnalyzer/lcdocs_functions.txt', [
+const lcdocsFunctions = readAndFilterFile('.github/workflows/C4ScriptDocAnalyzer/lcdocs_functions.txt', [
     {
         regex: /^Name=(\w*)/gm,
         captureGroup: 1,
@@ -16,7 +16,7 @@ const lcdocsFunctions = filterFile('.github/workflows/C4ScriptDocAnalyzer/lcdocs
 console.log(`Loaded generated file with C4Script functions documented in the current lcdocs master https://github.com/legacyclonk/lcdocs`);
 
 // The following array will contain all C4Script functions defined in C4Script.cpp.
-const c4ScriptFunctions = filterFile('./src/C4Script.cpp', [
+const c4ScriptFunctions = readAndFilterFile('./src/C4Script.cpp', [
     {
         regex: /AddFunc\(pEngine, +"(\w+)", +Fn\w+(, +(false|true))?\);/gm,
         captureGroup: 1,
@@ -28,7 +28,7 @@ const c4ScriptFunctions = filterFile('./src/C4Script.cpp', [
 ]);
 console.log(`Loaded C4Script.cpp functions`);
 
-const c4ScriptConstants = filterFile('./src/C4Script.cpp', [
+const c4ScriptConstants = readAndFilterFile('./src/C4Script.cpp', [
     {
         regex: /^\t{\s?"(\w+)",\s*\w+,\s*[\w<>():]+\s*}(,|\r?\n};)(\s*\/\/(\s*[\w()/-;,]+)+)?/gm,
         captureGroup: 1,
@@ -46,12 +46,13 @@ const systemC4gFileNames = fs.readdirSync(systemC4gDirectory, {
 });
 const cFileNames = systemC4gFileNames.filter(__filename => __filename.endsWith('.c'));
 const cFunctions = cFileNames.map(
-    __filename => filterFile(systemC4gDirectory.concat(__filename),[
+    __filename => removeOverloadingFunctions(
+        readAndFilterFile(systemC4gDirectory.concat(__filename),[
     {
-        regex: /(?<!\/\/\W?internal\r?\n)global func (\w*)\(/gm,
+        regex: /(?<!\/\/\s?internal\r?\n)global func (\w*)\s?\(/gm,
         captureGroup: 1,
     }
-    ])
+    ]), c4ScriptFunctions)
 );
 console.log(`Loaded helper files from System.c4g`);
 
@@ -73,7 +74,8 @@ console.log(`\nThere are\n * ${c4ScriptFunctions.length} defined functions in C4
 console.log(`Exiting with ${undocumentedFunctions} undocumented functions, ${undocumentedConstants} undocumented constants and ${undefinedFunctions} undefined functions or constants.`);
 
 
-function filterFile(filepath, captures) {
+
+function readAndFilterFile(filepath, captures) {
     console.log(`Loading ${filepath.replace(/^.*[\\\/]/, '')}`);
 
     const file = fs.readFileSync(filepath).toString();
@@ -87,7 +89,6 @@ function filterFile(filepath, captures) {
 
     return functions;
 }
-
 
 // Abstract function to find functions and constants separated. entitySuffix can be "()" when used with function names.
 function findUndocumented(engineEntities, lcdocsEntities, entitySuffix) {
@@ -114,4 +115,15 @@ function findUndefined(engineEntities, lcdocsEntities, entitySuffix) {
         }
     });
     return undefinedEntities;
+}
+
+// ".c"-files can contain functions or constants that overload C4Script.cpp. This function removes duplicates in an array.
+function removeOverloadingFunctions(array, c4ScriptCppEntities) {
+    let uniqueArray = [];
+    array.forEach((element) => {
+        if (!c4ScriptCppEntities.includes(element)) {
+            uniqueArray.push(element);
+        }
+    });
+    return uniqueArray;
 }
