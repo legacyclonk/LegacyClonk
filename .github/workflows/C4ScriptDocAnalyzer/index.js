@@ -70,12 +70,12 @@ const undocumentedConstants = findUndocumented([c4ScriptConstants], lcdocsFuncti
 console.log(`\nThe following C4Script functions and constants are documented in the current lcdocs master but not defined in the engine:\n`);
 const undefinedFunctions = findUndefined(engineFunctions.concat([c4ScriptConstants]), lcdocsFunctions, '()');
 
-let colorUndocumentedFunc = '\x1b[42m';
-let colorUndocumentedConst = '\x1b[42m';
-let colorUndefinedFunc = '\x1b[42m';
-if (undocumentedFunctions !== 0) colorUndocumentedFunc = '\x1b[41m';
-if (undocumentedConstants !== 0) colorUndocumentedConst = '\x1b[41m';
-if (undefinedFunctions !== 0) colorUndefinedFunc = '\x1b[43m';
+let colorUndocumentedFunc = '\x1b[42m\x1b[30m';
+let colorUndocumentedConst = '\x1b[42m\x1b[30m';
+let colorUndefinedFunc = '\x1b[42m\x1b[30m';
+if (undocumentedFunctions !== 0) colorUndocumentedFunc = '\x1b[41m\x1b[30m';
+if (undocumentedConstants !== 0) colorUndocumentedConst = '\x1b[41m\x1b[30m';
+if (undefinedFunctions !== 0) colorUndefinedFunc = '\x1b[43m\x1b[30m';
 console.log(`\n * ${colorUndocumentedFunc}${undocumentedFunctions} functions are undocumented.\x1b[0m`);
 console.log(` * ${colorUndocumentedConst}${undocumentedConstants} constants are undocumented.\x1b[0m`);
 console.log(` * ${colorUndefinedFunc}${undefinedFunctions} functions or constants are documented but undefined in the engine.\x1b[0m`);
@@ -91,7 +91,7 @@ if (sumEntities === sumProcessed) {
     console.log(`All entities processed, exiting.`);
     process.exit();
 } else {
-    console.log(`\x1b[41mERROR: The sum of functions and constants is ${sumEntities} but ${sumProcessed} where processed.
+    console.log(`\x1b[41m\x1b[30mERROR: The sum of functions and constants is ${sumEntities} but ${sumProcessed} where processed.
     Make sure that the set of parsed functions is distinct!\x1b[0m`);
     process.exit(2)
 }
