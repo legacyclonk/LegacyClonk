@@ -214,6 +214,22 @@ uint32_t StringBitEval(const char *str)
 	return rval;
 }
 
+static inline void MakePositionRelative(C4Object *relativeToObj, C4ValueInt &x, C4ValueInt &y)
+{
+	assert(relativeToObj);
+
+	x += relativeToObj->x;
+	y += relativeToObj->y;
+}
+
+static inline void MakePositionRelative(C4AulContext *ctx, C4ValueInt &x, C4ValueInt &y, bool extraCondition = true)
+{
+	if (const auto obj = ctx->Obj; obj && extraCondition)
+	{
+		MakePositionRelative(obj, x, y);
+	}
+}
+
 // C4Script Functions
 
 static C4Object *Fn_this(C4AulContext *cthr)
@@ -252,11 +268,7 @@ static bool FnIncinerate(C4AulContext *cthr, C4Object *pObj)
 
 static bool FnIncinerateLandscape(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY)
 {
-	if (cthr->Obj)
-	{
-		iX += cthr->Obj->x;
-		iY += cthr->Obj->y;
-	}
+	MakePositionRelative(cthr, iX, iY);
 	return Game.Landscape.Incinerate(iX, iY);
 }
 
@@ -373,11 +385,7 @@ static bool FnExit(C4AulContext *cthr, C4Object *pObj, C4ValueInt tx, C4ValueInt
 {
 	if (!pObj) pObj = cthr->Obj;
 	if (!pObj) return false;
-	if (cthr->Obj)
-	{
-		tx += cthr->Obj->x;
-		ty += cthr->Obj->y;
-	}
+	MakePositionRelative(cthr, tx, ty);
 	if (tr == -1) tr = Random(360);
 	ObjectComCancelAttach(pObj);
 	return pObj->Exit(tx,
@@ -1892,18 +1900,18 @@ static std::optional<bool> FnComponentAll(C4AulContext *cthr, C4Object *pObj, C4
 static C4Object *FnCreateObject(C4AulContext *cthr,
 	C4ID id, C4ValueInt iXOffset, C4ValueInt iYOffset, C4ValueInt iOwner)
 {
-	if (cthr->Obj) // Local object calls override
+	const auto obj = cthr->Obj;
+	if (obj) // Local object calls override
 	{
-		iXOffset += cthr->Obj->x;
-		iYOffset += cthr->Obj->y;
+		MakePositionRelative(obj, iXOffset, iYOffset);
 		if (!cthr->Caller || cthr->Caller->Func->Owner->Strict == C4AulScriptStrict::NONSTRICT)
-			iOwner = cthr->Obj->Owner;
+			iOwner = obj->Owner;
 	}
 
-	C4Object *pNewObj = Game.CreateObject(id, cthr->Obj, iOwner, iXOffset, iYOffset);
+	C4Object *pNewObj = Game.CreateObject(id, obj, iOwner, iXOffset, iYOffset);
 
 	// Set initial controller to creating controller, so more complicated cause-effect-chains can be traced back to the causing player
-	if (pNewObj && cthr->Obj && cthr->Obj->Controller > NO_OWNER) pNewObj->Controller = cthr->Obj->Controller;
+	if (pNewObj && obj && obj->Controller > NO_OWNER) pNewObj->Controller = obj->Controller;
 
 	return pNewObj;
 }
@@ -1913,24 +1921,24 @@ static C4Object *FnCreateConstruction(C4AulContext *cthr,
 	C4ValueInt iCompletion, bool fTerrain, bool fCheckSite)
 {
 	// Local object calls override position offset, owner
-	if (cthr->Obj)
+	const auto obj = cthr->Obj;
+	if (obj)
 	{
-		iXOffset += cthr->Obj->x;
-		iYOffset += cthr->Obj->y;
+		MakePositionRelative(obj, iXOffset, iYOffset);
 		if (!cthr->Caller || cthr->Caller->Func->Owner->Strict == C4AulScriptStrict::NONSTRICT)
-			iOwner = cthr->Obj->Owner;
+			iOwner = obj->Owner;
 	}
 
 	// Check site
 	if (fCheckSite)
-		if (!ConstructionCheck(id, iXOffset, iYOffset, cthr->Obj))
+		if (!ConstructionCheck(id, iXOffset, iYOffset, obj))
 			return nullptr;
 
 	// Create site object
-	C4Object *pNewObj = Game.CreateObjectConstruction(id, cthr->Obj, iOwner, iXOffset, iYOffset, iCompletion * FullCon / 100, fTerrain);
+	C4Object *pNewObj = Game.CreateObjectConstruction(id, obj, iOwner, iXOffset, iYOffset, iCompletion * FullCon / 100, fTerrain);
 
 	// Set initial controller to creating controller, so more complicated cause-effect-chains can be traced back to the causing player
-	if (pNewObj && cthr->Obj && cthr->Obj->Controller > NO_OWNER) pNewObj->Controller = cthr->Obj->Controller;
+	if (pNewObj && obj && obj->Controller > NO_OWNER) pNewObj->Controller = obj->Controller;
 
 	return pNewObj;
 }
@@ -2085,12 +2093,7 @@ static C4Value FnFindObjects(C4AulContext *cthr, const C4Value *pPars)
 
 static C4ValueInt FnObjectCount(C4AulContext *cthr, C4ID id, C4ValueInt x, C4ValueInt y, C4ValueInt wdt, C4ValueInt hgt, C4ValueInt dwOCF, C4String *szAction, C4Object *pActionTarget, C4Value vContainer, C4ValueInt iOwner)
 {
-	// Local call adjust coordinates
-	if (cthr->Obj && (x || y || wdt || hgt)) // if not default full range
-	{
-		x += cthr->Obj->x;
-		y += cthr->Obj->y;
-	}
+	MakePositionRelative(cthr, x, y, (x || y || wdt || hgt));
 	// Adjust default ocf
 	if (dwOCF == 0) dwOCF = OCF_All;
 	// Adjust default owner
@@ -2111,12 +2114,7 @@ static C4ValueInt FnObjectCount(C4AulContext *cthr, C4ID id, C4ValueInt x, C4Val
 
 static C4Object *FnFindObject(C4AulContext *cthr, C4ID id, C4ValueInt x, C4ValueInt y, C4ValueInt wdt, C4ValueInt hgt, C4ValueInt dwOCF, C4String *szAction, C4Object *pActionTarget, C4Value vContainer, C4Object *pFindNext)
 {
-	// Local call adjust coordinates
-	if (cthr->Obj)
-		if (x || y || wdt || hgt) // if not default full range
-		{
-			x += cthr->Obj->x; y += cthr->Obj->y;
-		}
+	MakePositionRelative(cthr, x, y, (x || y || wdt || hgt));
 	// Adjust default ocf
 	if (dwOCF == 0) dwOCF = OCF_All;
 	// NO_CONTAINER/ANY_CONTAINER
@@ -2144,12 +2142,7 @@ static C4Object *FnFindObjectOwner(C4AulContext *cthr,
 {
 	// invalid owner?
 	if (!ValidPlr(iOwner) && iOwner != NO_OWNER) return nullptr;
-	// Local call adjust coordinates
-	if (cthr->Obj)
-		if (x || y || wdt || hgt) // if not default full range
-		{
-			x += cthr->Obj->x; y += cthr->Obj->y;
-		}
+	MakePositionRelative(cthr, x, y, (x || y || wdt || hgt));
 	// Adjust default ocf
 	if (dwOCF == 0) dwOCF = OCF_All;
 	// Find object
@@ -2177,7 +2170,7 @@ static bool FnGrabObjectInfo(C4AulContext *cthr, C4Object *pFrom, C4Object *pTo)
 
 static bool FnFlameConsumeMaterial(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
-	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
+	MakePositionRelative(cthr, x, y);
 	C4ValueInt mat = GBackMat(x, y);
 	if (!MatValid(mat)) return false;
 	if (!Game.Material.Map[mat].Inflammable) return false;
@@ -2187,26 +2180,26 @@ static bool FnFlameConsumeMaterial(C4AulContext *cthr, C4ValueInt x, C4ValueInt 
 
 static void FnSmoke(C4AulContext *cthr, C4ValueInt tx, C4ValueInt ty, C4ValueInt level, C4ValueInt dwClr)
 {
-	if (cthr->Obj) { tx += cthr->Obj->x; ty += cthr->Obj->y; }
+	MakePositionRelative(cthr, tx, ty);
 	Smoke(tx, ty, level, dwClr);
 }
 
 static void FnBubble(C4AulContext *cthr, C4ValueInt tx, C4ValueInt ty)
 {
-	if (cthr->Obj) { tx += cthr->Obj->x; ty += cthr->Obj->y; }
+	MakePositionRelative(cthr, tx, ty);
 	BubbleOut(tx, ty);
 }
 
 static C4ValueInt FnExtractLiquid(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
-	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
+	MakePositionRelative(cthr, x, y);
 	if (!GBackLiquid(x, y)) return MNone;
 	return Game.Landscape.ExtractMaterial(x, y);
 }
 
 static bool FnInsertMaterial(C4AulContext *cthr, C4ValueInt mat, C4ValueInt x, C4ValueInt y, C4ValueInt vx, C4ValueInt vy)
 {
-	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
+	MakePositionRelative(cthr, x, y);
 	return !!Game.Landscape.InsertMaterial(mat, x, y, vx, vy);
 }
 
@@ -2221,7 +2214,7 @@ static C4ValueInt FnGetMaterialCount(C4AulContext *cthr, C4ValueInt iMaterial, b
 
 static C4ValueInt FnGetMaterial(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
-	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
+	MakePositionRelative(cthr, x, y);
 	return GBackMat(x, y);
 }
 
@@ -2239,31 +2232,31 @@ static C4String *FnGetTexture(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 
 static bool FnGBackSolid(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
-	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
+	MakePositionRelative(cthr, x, y);
 	return GBackSolid(x, y);
 }
 
 static bool FnGBackSemiSolid(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
-	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
+	MakePositionRelative(cthr, x, y);
 	return GBackSemiSolid(x, y);
 }
 
 static bool FnGBackLiquid(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
-	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
+	MakePositionRelative(cthr, x, y);
 	return GBackLiquid(x, y);
 }
 
 static bool FnGBackSky(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
-	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
+	MakePositionRelative(cthr, x, y);
 	return !GBackIFT(x, y);
 }
 
 static C4ValueInt FnExtractMaterialAmount(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, C4ValueInt mat, C4ValueInt amount)
 {
-	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
+	MakePositionRelative(cthr, x, y);
 	C4ValueInt extracted = 0; for (; extracted < amount; extracted++)
 	{
 		if (GBackMat(x, y) != mat) return extracted;
@@ -2290,11 +2283,13 @@ static bool FnBlastObject(C4AulContext *cthr, C4ValueInt iLevel, C4Object *pObj,
 static void FnBlastFree(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4ValueInt iLevel, C4ValueInt iCausedByPlusOne)
 {
 	C4ValueInt iCausedBy = iCausedByPlusOne - 1;
-	if (!iCausedByPlusOne && cthr->Obj)
+	if (!iCausedByPlusOne)
 	{
-		iCausedBy = cthr->Obj->Controller;
-		iX += cthr->Obj->x;
-		iY += cthr->Obj->y;
+		if (const auto obj = cthr->Obj; obj)
+		{
+			iCausedBy = obj->Controller;
+			MakePositionRelative(obj, iX, iY);
+		}
 	}
 	C4ValueInt grade = BoundBy<C4ValueInt>((iLevel / 10) - 1, 1, 3);
 	Game.Landscape.BlastFree(iX, iY, iLevel, grade, iCausedBy);
@@ -2475,13 +2470,13 @@ static void FnScriptGo(C4AulContext *cthr, bool go)
 
 static void FnCastPXS(C4AulContext *cthr, C4String *mat_name, C4ValueInt amt, C4ValueInt level, C4ValueInt tx, C4ValueInt ty)
 {
-	if (cthr->Obj) { tx += cthr->Obj->x; ty += cthr->Obj->y; }
+	MakePositionRelative(cthr, tx, ty);
 	Game.PXS.Cast(Game.Material.Get(FnStringPar(mat_name)), amt, tx, ty, level);
 }
 
 static void FnCastObjects(C4AulContext *cthr, C4ID id, C4ValueInt amt, C4ValueInt level, C4ValueInt tx, C4ValueInt ty)
 {
-	if (cthr->Obj) { tx += cthr->Obj->x; ty += cthr->Obj->y; }
+	MakePositionRelative(cthr, tx, ty);
 	Game.CastObjects(id, cthr->Obj, amt, level, tx, ty, cthr->Obj ? cthr->Obj->Owner : NO_OWNER, cthr->Obj ? cthr->Obj->Controller : NO_OWNER);
 }
 
@@ -2492,8 +2487,7 @@ static C4ValueInt FnMaterial(C4AulContext *cthr, C4String *mat_name)
 
 C4Object *FnPlaceVegetation(C4AulContext *cthr, C4ID id, C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt iHgt, C4ValueInt iGrowth)
 {
-	// Local call: relative coordinates
-	if (cthr->Obj) { iX += cthr->Obj->x; iY += cthr->Obj->y; }
+	MakePositionRelative(cthr, iX, iY);
 	// Place vegetation
 	return Game.PlaceVegetation(id, iX, iY, iWdt, iHgt, iGrowth);
 }
@@ -3002,8 +2996,7 @@ static C4ValueInt FnGetWind(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, bool
 {
 	// global wind
 	if (fGlobal) return Game.Weather.Wind;
-	// local wind
-	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
+	MakePositionRelative(cthr, x, y);
 	return Game.Weather.GetWind(x, y);
 }
 
@@ -3151,7 +3144,7 @@ static bool FnPathFree2(C4AulContext *cthr, C4Value *X1, C4Value *Y1, C4ValueInt
 static C4ValueInt FnSetTransferZone(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt iHgt, C4Object *pObj)
 {
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return false;
-	iX += pObj->x; iY += pObj->y;
+	MakePositionRelative(pObj, iX, iY);
 	return Game.TransferZones.Set(iX, iY, iWdt, iHgt, pObj);
 }
 
@@ -4863,12 +4856,7 @@ static bool FnCreateParticle(C4AulContext *cthr, C4String *szName, C4ValueInt iX
 {
 	// safety
 	if (pObj && !pObj->Status) return false;
-	// local offset
-	if (cthr->Obj)
-	{
-		iX += cthr->Obj->x;
-		iY += cthr->Obj->y;
-	}
+	MakePositionRelative(cthr, iX, iY);
 	// get particle
 	C4ParticleDef *pDef = Game.Particles.GetDef(FnStringPar(szName));
 	if (!pDef) return false;
@@ -4882,12 +4870,7 @@ static bool FnCastAParticles(C4AulContext *cthr, C4String *szName, C4ValueInt iA
 {
 	// safety
 	if (pObj && !pObj->Status) return false;
-	// local offset
-	if (cthr->Obj)
-	{
-		iX += cthr->Obj->x;
-		iY += cthr->Obj->y;
-	}
+	MakePositionRelative(cthr, iX, iY);
 	// get particle
 	C4ParticleDef *pDef = Game.Particles.GetDef(FnStringPar(szName));
 	if (!pDef) return false;
@@ -5080,8 +5063,7 @@ static void FnRemoveUnusedTexMapEntries(C4AulContext *ctx)
 
 static void FnSetLandscapePixel(C4AulContext *ctx, C4ValueInt iX, C4ValueInt iY, C4ValueInt dwValue)
 {
-	// local call
-	if (ctx->Obj) { iX += ctx->Obj->x; iY += ctx->Obj->y; }
+	MakePositionRelative(ctx, iX, iY);
 	// set pixel in 32bit-sfc only
 	Game.Landscape.SetPixDw(iX, iY, dwValue);
 }
