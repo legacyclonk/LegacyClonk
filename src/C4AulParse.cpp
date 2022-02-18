@@ -2912,6 +2912,11 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 				(a->CPos - 1)->bccX = -(a->CPos - 1)->bccX;
 				break;
 			}
+
+		if (C4ScriptOpMap[OpID].Type1 != C4V_pC4Value)
+		{
+			SetNoRef();
+		}
 		// write byte code
 		AddBCC(C4ScriptOpMap[OpID].Code, OpID);
 		break;
