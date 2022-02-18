@@ -221,7 +221,7 @@ static C4Object *Fn_this(C4AulContext *cthr)
 	return cthr->Obj;
 }
 
-static int Fn_goto(C4AulContext *cthr, int iCounter)
+static C4ValueInt Fn_goto(C4AulContext *cthr, C4ValueInt iCounter)
 {
 	Game.Script.Counter = iCounter;
 	return iCounter;
@@ -234,7 +234,7 @@ static bool FnChangeDef(C4AulContext *cthr, C4ID to_id, C4Object *pObj)
 	return pObj->ChangeDef(to_id);
 }
 
-static bool FnExplode(C4AulContext *cthr, int iLevel, C4Object *pObj, C4ID idEffect, C4String *szEffect)
+static bool FnExplode(C4AulContext *cthr, C4ValueInt iLevel, C4Object *pObj, C4ID idEffect, C4String *szEffect)
 {
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return false;
 	pObj->Explode(iLevel, idEffect, FnStringPar(szEffect));
@@ -250,7 +250,7 @@ static bool FnIncinerate(C4AulContext *cthr, C4Object *pObj)
 	return pObj->Incinerate(iCausedBy);
 }
 
-static bool FnIncinerateLandscape(C4AulContext *cthr, int iX, int iY)
+static bool FnIncinerateLandscape(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY)
 {
 	if (cthr->Obj)
 	{
@@ -268,7 +268,7 @@ static bool FnExtinguish(C4AulContext *cthr, C4Object *pObj)
 	return pObj->Extinguish(0);
 }
 
-static bool FnSetSolidMask(C4AulContext *cthr, int iX, int iY, int iWdt, int iHgt, int iTX, int iTY, C4Object *pObj)
+static bool FnSetSolidMask(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt iHgt, C4ValueInt iTX, C4ValueInt iTY, C4Object *pObj)
 {
 	if (!pObj) pObj = cthr->Obj;
 	if (!pObj) return false;
@@ -276,7 +276,7 @@ static bool FnSetSolidMask(C4AulContext *cthr, int iX, int iY, int iWdt, int iHg
 	return true;
 }
 
-static void FnSetGravity(C4AulContext *cthr, int iGravity)
+static void FnSetGravity(C4AulContext *cthr, C4ValueInt iGravity)
 {
 	Game.Landscape.Gravity = itofix(BoundBy<C4ValueInt>(iGravity, -300, 300)) / 500;
 }
@@ -313,7 +313,7 @@ static bool FnGrabContents(C4AulContext *cthr, C4Object *from, C4Object *pTo)
 	return true;
 }
 
-static bool FnPunch(C4AulContext *cthr, C4Object *target, int punch)
+static bool FnPunch(C4AulContext *cthr, C4Object *target, C4ValueInt punch)
 {
 	if (!cthr->Obj) return false;
 	return ObjectComPunch(cthr->Obj, target, punch);
@@ -332,7 +332,7 @@ static bool FnKill(C4AulContext *cthr, C4Object *pObj, bool fForced)
 	return true;
 }
 
-static bool FnFling(C4AulContext *cthr, C4Object *pObj, int iXDir, int iYDir, int iPrec, bool fAddSpeed)
+static bool FnFling(C4AulContext *cthr, C4Object *pObj, C4ValueInt iXDir, C4ValueInt iYDir, C4ValueInt iPrec, bool fAddSpeed)
 {
 	if (!pObj) return false;
 	if (!iPrec) iPrec = 1;
@@ -357,7 +357,7 @@ static bool FnEnter(C4AulContext *cthr, C4Object *pTarget, C4Object *pObj)
 	return pObj->Enter(pTarget);
 }
 
-static bool FnExit(C4AulContext *cthr, C4Object *pObj, int tx, int ty, int tr, int txdir, int tydir, int trdir)
+static bool FnExit(C4AulContext *cthr, C4Object *pObj, C4ValueInt tx, C4ValueInt ty, C4ValueInt tr, C4ValueInt txdir, C4ValueInt tydir, C4ValueInt trdir)
 {
 	if (!pObj) pObj = cthr->Obj;
 	if (!pObj) return false;
@@ -454,7 +454,7 @@ static bool FnSetPosition(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4Ob
 
 	if (fCheckBounds)
 	{
-		// BoundsCheck takes ref to int and not to C4ValueInt
+		// BoundsCheck takes ref to int32_t and not to C4ValueInt
 		int32_t i_x = iX, i_y = iY;
 		pObj->BoundsCheck(i_x, i_y);
 		iX = i_x; iY = i_y;
@@ -826,7 +826,7 @@ static bool FnExecuteCommand(C4AulContext *cthr, C4Object *pObj)
 	return !!pObj->ExecuteCommand();
 }
 
-static bool FnSetCommand(C4AulContext *cthr, C4Object *pObj, C4String *szCommand, C4Object *pTarget, C4Value Tx, int iTy, C4Object *pTarget2, C4Value data, int iRetries)
+static bool FnSetCommand(C4AulContext *cthr, C4Object *pObj, C4String *szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4Value data, C4ValueInt iRetries)
 {
 	// Object
 	if (!pObj) pObj = cthr->Obj;
@@ -856,7 +856,7 @@ static bool FnSetCommand(C4AulContext *cthr, C4Object *pObj, C4String *szCommand
 	return true;
 }
 
-static bool FnAddCommand(C4AulContext *cthr, C4Object *pObj, C4String *szCommand, C4Object *pTarget, C4Value Tx, int iTy, C4Object *pTarget2, int iUpdateInterval, C4Value data, int iRetries, int iBaseMode)
+static bool FnAddCommand(C4AulContext *cthr, C4Object *pObj, C4String *szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4ValueInt iUpdateInterval, C4Value data, C4ValueInt iRetries, C4ValueInt iBaseMode)
 {
 	// Object
 	if (!pObj) pObj = cthr->Obj;
@@ -880,7 +880,7 @@ static bool FnAddCommand(C4AulContext *cthr, C4Object *pObj, C4String *szCommand
 	return pObj->AddCommand(iCommand, pTarget, Tx, iTy, iUpdateInterval, pTarget2, true, iData, false, iRetries, szText, iBaseMode);
 }
 
-static bool FnAppendCommand(C4AulContext *cthr, C4Object *pObj, C4String *szCommand, C4Object *pTarget, C4Value Tx, int iTy, C4Object *pTarget2, int iUpdateInterval, C4Value Data, int iRetries, int iBaseMode)
+static bool FnAppendCommand(C4AulContext *cthr, C4Object *pObj, C4String *szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4ValueInt iUpdateInterval, C4Value Data, C4ValueInt iRetries, C4ValueInt iBaseMode)
 {
 	// Object
 	if (!pObj) pObj = cthr->Obj;
@@ -904,7 +904,7 @@ static bool FnAppendCommand(C4AulContext *cthr, C4Object *pObj, C4String *szComm
 	return pObj->AddCommand(iCommand, pTarget, Tx, iTy, iUpdateInterval, pTarget2, true, iData, true, iRetries, szText, iBaseMode);
 }
 
-static C4Value FnGetCommand(C4AulContext *cthr, C4Object *pObj, int iElement, int iCommandNum)
+static C4Value FnGetCommand(C4AulContext *cthr, C4Object *pObj, C4ValueInt iElement, C4ValueInt iCommandNum)
 {
 	if (!pObj) pObj = cthr->Obj;
 	if (!pObj) return C4VNull;
@@ -946,7 +946,7 @@ static bool FnFinishCommand(C4AulContext *cthr, C4Object *pObj, bool fSuccess, C
 	return true;
 }
 
-static bool FnPlayerObjectCommand(C4AulContext *cthr, int iPlr, C4String *szCommand, C4Object *pTarget, C4Value Tx, int iTy, C4Object *pTarget2, C4Value data)
+static bool FnPlayerObjectCommand(C4AulContext *cthr, C4ValueInt iPlr, C4String *szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4Value data)
 {
 	// Player
 	if (!ValidPlr(iPlr) || !szCommand) return false;
@@ -1195,7 +1195,7 @@ static std::optional<C4ValueInt> FnGetVertexNum(C4AulContext *cthr, C4Object *pO
 	return {pObj->Shape.VtxNum};
 }
 
-static const int VTX_X = 0, // vertex data indices
+static const C4ValueInt VTX_X = 0, // vertex data indices
                  VTX_Y = 1,
                  VTX_CNAT = 2,
                  VTX_Friction = 3,
@@ -1445,7 +1445,7 @@ static bool FnCreateMenu(C4AulContext *cthr, C4ID iSymbol, C4Object *pMenuObj, C
 	return true;
 }
 
-const int C4MN_Add_ImgRank     = 1,
+const C4ValueInt C4MN_Add_ImgRank     = 1,
           C4MN_Add_ImgIndexed  = 2,
           C4MN_Add_ImgObjRank  = 3,
           C4MN_Add_ImgObject   = 4,
@@ -1457,7 +1457,7 @@ const int C4MN_Add_ImgRank     = 1,
           C4MN_Add_ForceCount  = 256,
           C4MN_Add_ForceNoDesc = 512;
 
-static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szCommand, C4ID idItem, C4Object *pMenuObj, int iCount, C4Value Parameter, C4String *szInfoCaption, int iExtra, C4Value XPar, C4Value XPar2)
+static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szCommand, C4ID idItem, C4Object *pMenuObj, C4ValueInt iCount, C4Value Parameter, C4String *szInfoCaption, C4ValueInt iExtra, C4Value XPar, C4Value XPar2)
 {
 	if (!pMenuObj) pMenuObj = cthr->Obj;
 	if (!pMenuObj) return false;
@@ -1471,7 +1471,7 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	char infocaption[C4MaxTitle + 1];
 
 	// get needed symbol size
-	int iSymbolSize = pMenuObj->Menu->GetSymbolSize();
+	const auto iSymbolSize = pMenuObj->Menu->GetSymbolSize();
 
 	// Check specified def
 	C4Def *pDef = C4Id2Def(idItem);
@@ -2074,7 +2074,7 @@ static C4Value FnFindObjects(C4AulContext *cthr, const C4Value *pPars)
 	return C4VArray(pResult);
 }
 
-static int FnObjectCount(C4AulContext *cthr, C4ID id, int x, int y, int wdt, int hgt, int dwOCF, C4String *szAction, C4Object *pActionTarget, C4Value vContainer, int iOwner)
+static C4ValueInt FnObjectCount(C4AulContext *cthr, C4ID id, C4ValueInt x, C4ValueInt y, C4ValueInt wdt, C4ValueInt hgt, C4ValueInt dwOCF, C4String *szAction, C4Object *pActionTarget, C4Value vContainer, C4ValueInt iOwner)
 {
 	// Local call adjust coordinates
 	if (cthr->Obj && (x || y || wdt || hgt)) // if not default full range
@@ -2100,7 +2100,7 @@ static int FnObjectCount(C4AulContext *cthr, C4ID id, int x, int y, int wdt, int
 		iOwner);
 }
 
-static C4Object *FnFindObject(C4AulContext *cthr, C4ID id, int x, int y, int wdt, int hgt, int dwOCF, C4String *szAction, C4Object *pActionTarget, C4Value vContainer, C4Object *pFindNext)
+static C4Object *FnFindObject(C4AulContext *cthr, C4ID id, C4ValueInt x, C4ValueInt y, C4ValueInt wdt, C4ValueInt hgt, C4ValueInt dwOCF, C4String *szAction, C4Object *pActionTarget, C4Value vContainer, C4Object *pFindNext)
 {
 	// Local call adjust coordinates
 	if (cthr->Obj)
@@ -2280,14 +2280,14 @@ static bool FnBlastObject(C4AulContext *cthr, C4ValueInt iLevel, C4Object *pObj,
 
 static void FnBlastFree(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4ValueInt iLevel, C4ValueInt iCausedByPlusOne)
 {
-	int32_t iCausedBy = iCausedByPlusOne - 1;
+	C4ValueInt iCausedBy = iCausedByPlusOne - 1;
 	if (!iCausedByPlusOne && cthr->Obj)
 	{
 		iCausedBy = cthr->Obj->Controller;
 		iX += cthr->Obj->x;
 		iY += cthr->Obj->y;
 	}
-	int grade = BoundBy<int>((iLevel / 10) - 1, 1, 3);
+	C4ValueInt grade = BoundBy<C4ValueInt>((iLevel / 10) - 1, 1, 3);
 	Game.Landscape.BlastFree(iX, iY, iLevel, grade, iCausedBy);
 }
 
@@ -2389,7 +2389,7 @@ static C4ID FnC4Id(C4AulContext *cthr, C4String *szID)
 	return C4Id(FnStringPar(szID));
 }
 
-static bool FnPlayerMessage(C4AulContext *cthr, int iPlayer, C4String *szMessage, C4Object *pObj, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6)
+static bool FnPlayerMessage(C4AulContext *cthr, C4ValueInt iPlayer, C4String *szMessage, C4Object *pObj, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6)
 {
 	char buf[MaxFnStringParLen + 1];
 	if (!szMessage) return false;
@@ -2439,7 +2439,7 @@ static bool FnAddMessage(C4AulContext *cthr, C4String *szMessage, C4Object *pObj
 	return true;
 }
 
-static bool FnPlrMessage(C4AulContext *cthr, C4String *szMessage, int iPlr, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7)
+static bool FnPlrMessage(C4AulContext *cthr, C4String *szMessage, C4ValueInt iPlr, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7)
 {
 	char buf[MaxFnStringParLen + 1];
 	if (!szMessage) return false;
@@ -4350,7 +4350,7 @@ static std::optional<C4ValueInt> FnGetChar(C4AulContext *cthr, C4String *pString
 	const char *szText = FnStringPar(pString);
 	if (!szText) return {};
 	// loop and check for end of string
-	for (int i = 0; i < iIndex; i++, szText++)
+	for (C4ValueInt i = 0; i < iIndex; i++, szText++)
 		if (!*szText) return 0;
 	// return indiced character value
 	return static_cast<unsigned char>(*szText);
@@ -5298,10 +5298,10 @@ static std::optional<bool> FnSimFlight(C4AulContext *ctx, C4Value *pvrX, C4Value
 	// check and copy parameters
 	if (!pvrX || !pvrY || !pvrXDir || !pvrYDir) return {};
 
-	int iDensityMin = oiDensityMin.value_or(C4M_Solid);
-	int iDensityMax = oiDensityMax.value_or(100);
-	int iIter = oiIter.value_or(-1);
-	int iPrec = oiPrec.value_or(10);
+	C4ValueInt iDensityMin = oiDensityMin.value_or(C4M_Solid);
+	C4ValueInt iDensityMax = oiDensityMax.value_or(100);
+	C4ValueInt iIter = oiIter.value_or(-1);
+	C4ValueInt iPrec = oiPrec.value_or(10);
 
 	// convert to C4Fixed
 	C4Fixed x = itofix(pvrX->getInt()), y = itofix(pvrY->getInt()),
@@ -5604,7 +5604,7 @@ static std::optional<C4ValueInt> FnGetContact(C4AulContext *ctx, C4Object *pObj,
 	if (iVertex == -1)
 	{
 		C4ValueInt iResult = 0;
-		for (int i = 0; i < pObj->Shape.VtxNum; ++i)
+		for (int32_t i = 0; i < pObj->Shape.VtxNum; ++i)
 			iResult |= pObj->Shape.GetVertexContact(i, dwCheck, pObj->x, pObj->y);
 		return iResult;
 	}
@@ -6300,7 +6300,7 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 	{ "OCF_PowerConsumer",    C4V_Int, OCF_PowerConsumer },
 	{ "OCF_PowerSupply",      C4V_Int, OCF_PowerSupply },
 	{ "OCF_Container",        C4V_Int, OCF_Container },
-	{ "OCF_Alive",            C4V_Int, static_cast<int>(OCF_Alive) },
+	{ "OCF_Alive",            C4V_Int, static_cast<C4ValueInt>(OCF_Alive) },
 
 	{ "VIS_All",         C4V_Int, VIS_All },
 	{ "VIS_None",        C4V_Int, VIS_None },
