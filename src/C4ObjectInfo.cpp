@@ -361,14 +361,17 @@ void C4ObjectInfo::Draw(C4Facet &cgo, bool fShowPortrait, bool fCaptain, C4Objec
 	}
 
 	std::string nameAndRank;
-	if (!(hideElements & C4DefCore::HH_Name))
-	{
-		nameAndRank += pOfObj->GetName();
-	}
 	if (Rank > 0 && !(hideElements & C4DefCore::HH_Rank))
 	{
-		nameAndRank += '|';
 		nameAndRank += sRankName.getData();
+	}
+	if (!(hideElements & C4DefCore::HH_Name))
+	{
+		if (!nameAndRank.empty())
+		{
+			nameAndRank += '|';
+		}
+		nameAndRank += pOfObj->GetName();
 	}
 	// Rank & Name
 	if (!nameAndRank.empty())
