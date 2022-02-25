@@ -1379,7 +1379,7 @@ static bool CheckConvertFunctionParameters(C4Object *const ctxObject, C4AulFunc 
 			}
 		}
 	}
-	return ok;
+	return ok || onlyWarn;
 }
 
 static bool TryCheckConvertFunctionParameters(C4Object *const ctxObject, C4AulFunc *const pFunc, C4Value *pPars, const bool convertToAnyEagerly, const bool convertNilToIntBool, bool passErrors, bool onlyWarn)
