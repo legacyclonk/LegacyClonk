@@ -137,7 +137,7 @@ C4Value C4ScriptHost::FunctionCall(C4Object *pCaller, const char *szFunction, C4
 	C4AulScriptFunc *pFn;
 	if (!(pFn = GetSFunc(szFunction, Acc))) return C4VNull;
 	// Call code
-	return pFn->Exec(pObj, Pars, fPassError);
+	return pFn->Exec(pObj, Pars, fPassError, true);
 
 #else
 
