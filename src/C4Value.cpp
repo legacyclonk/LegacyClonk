@@ -884,7 +884,8 @@ bool C4Value::Equals(const C4Value &other, C4AulScriptStrict strict) const
 					return *Data.Map == *other.Data.Map;
 				case C4V_pC4Value:
 				case C4V_C4ObjectEnum:
-					; // fallthrough
+					assert(!"Comparison between variables of types which should never be compared!");
+					// fallthrough
 			}
 			return false;
 	}
