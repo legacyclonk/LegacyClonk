@@ -874,7 +874,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				C4ValueHash *map = new C4ValueHash;
 				for (int i = 0; i < pCPos->bccX; ++i)
 				{
-					(*map)[pCurVal[2 * (i - pCPos->bccX) + 1]] = pCurVal[2 * (i - pCPos->bccX) + 2];
+					(*map)[pCurVal[2 * (i - pCPos->bccX) + 1].GetRefVal()] = pCurVal[2 * (i - pCPos->bccX) + 2].GetRefVal();
 				}
 
 				if (pCPos->bccX > 0)
