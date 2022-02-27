@@ -3410,7 +3410,7 @@ static C4Value FnObjectCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, Pars, true);
+	return f->Exec(pObj, Pars, true, true);
 }
 
 static C4Value FnDefinitionCall(C4AulContext *cthr,
