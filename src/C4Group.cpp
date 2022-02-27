@@ -1224,7 +1224,8 @@ bool C4Group::SetFilePtr(size_t iOffset)
 		return Error("SetFilePtr not implemented for Folders");
 
 	// ensure mother is at correct pos
-	if (Mother) Mother->EnsureChildFilePtr(this);
+	if (Mother && !Mother->EnsureChildFilePtr(this))
+		return false;
 
 	// Rewind if necessary
 	if (FilePtr > iOffset)
@@ -2364,6 +2365,8 @@ bool C4Group::EnsureChildFilePtr(C4Group *pChild)
 	// group file
 	if (Status == GRPF_File)
 	{
+		if (Mother && !Mother->EnsureChildFilePtr(this))
+			return false;
 		// check if FilePtr has to be moved
 		if (FilePtr != pChild->MotherOffset + pChild->EntryOffset + pChild->FilePtr)
 			// move it to the position the child thinks it is
