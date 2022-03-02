@@ -2406,6 +2406,7 @@ void C4Command::CompileFunc(StdCompiler *pComp)
 void C4Command::DenumeratePointers()
 {
 	DenumerateObjectPtrs(Target, Target2);
+	Tx.DenumeratePointer();
 }
 
 void C4Command::EnumeratePointers()
