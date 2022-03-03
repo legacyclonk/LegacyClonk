@@ -54,7 +54,7 @@ public:
 		using iterator_type = decltype(keyOrder.begin());
 		iterator_type it, end;
 		C4ValueHash *map;
-		std::unique_ptr<pair_type> current;
+		std::optional<pair_type> current;
 
 		void update();
 

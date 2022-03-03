@@ -162,7 +162,7 @@ void C4ValueHash::Iterator::update()
 {
 	if (it != end)
 	{
-		current = std::make_unique<pair_type>(**it, (*map)[**it]);
+		current.emplace(**it, (*map)[**it]);
 	}
 	else
 	{
