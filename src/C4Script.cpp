@@ -63,6 +63,18 @@ namespace {
 		constexpr C4Object *operator->() const noexcept { return obj; }
 		constexpr operator C4Object *() const noexcept { return obj; }
 	};
+
+	// Simple wrapper for integral types, which is used to automatically fill in a default value instead of nil or T{} if alsoForZero = true
+	template<typename T, T defaultValue, bool alsoForZero = false>
+	class Default
+	{
+		T value;
+
+	public:
+		constexpr Default(T value) noexcept : value{value} {}
+		constexpr operator T &() noexcept { return value; }
+		constexpr T &operator*() noexcept { return value; }
+	};
 }
 
 
@@ -355,10 +367,9 @@ static bool FnKill(C4AulContext *cthr, C4ObjectOrThis pObj, bool fForced)
 	return true;
 }
 
-static bool FnFling(C4AulContext *cthr, C4Object *pObj, C4ValueInt iXDir, C4ValueInt iYDir, C4ValueInt iPrec, bool fAddSpeed)
+static bool FnFling(C4AulContext *cthr, C4Object *pObj, C4ValueInt iXDir, C4ValueInt iYDir, Default<C4ValueInt, 1, true> iPrec, bool fAddSpeed)
 {
 	if (!pObj) return false;
-	if (!iPrec) iPrec = 1;
 	pObj->Fling(itofix(iXDir, iPrec), itofix(iYDir, iPrec), fAddSpeed, cthr->Obj ? cthr->Obj->Controller : NO_OWNER);
 	// unstick from ground, because Fling command may be issued in an Action-callback,
 	// where attach-values have already been determined for that frame
@@ -492,10 +503,9 @@ static C4ValueInt FnGetCon(C4AulContext *cthr, C4ObjectOrThis pObj) // in percen
 	return 100 * pObj->GetCon() / FullCon;
 }
 
-static bool FnDoEnergy(C4AulContext *cthr, C4ValueInt iChange, C4ObjectOrThis pObj, bool fExact, C4ValueInt iEngType, C4ValueInt iCausedByPlusOne)
+static bool FnDoEnergy(C4AulContext *cthr, C4ValueInt iChange, C4ObjectOrThis pObj, bool fExact, Default<C4ValueInt, C4FxCall_EngScript, true> iEngType, C4ValueInt iCausedByPlusOne)
 {
 	if (!pObj) return false;
-	if (!iEngType) iEngType = C4FxCall_EngScript;
 	C4ValueInt iCausedBy = iCausedByPlusOne - 1; if (!iCausedByPlusOne && cthr->Obj) iCausedBy = cthr->Obj->Controller;
 	pObj->DoEnergy(iChange, !!fExact, iEngType, iCausedBy);
 	return true;
@@ -508,11 +518,10 @@ static bool FnDoBreath(C4AulContext *cthr, C4ValueInt iChange, C4ObjectOrThis pO
 	return true;
 }
 
-static bool FnDoDamage(C4AulContext *cthr, C4ValueInt iChange, C4ObjectOrThis pObj, C4ValueInt iDmgType, C4ValueInt iCausedByPlusOne)
+static bool FnDoDamage(C4AulContext *cthr, C4ValueInt iChange, C4ObjectOrThis pObj, Default<C4ValueInt, C4FxCall_DmgScript, true> iDmgType, C4ValueInt iCausedByPlusOne)
 {
 	if (!pObj) return false;
 	C4ValueInt iCausedBy = iCausedByPlusOne - 1; if (!iCausedByPlusOne && cthr->Obj) iCausedBy = cthr->Obj->Controller;
-	if (!iDmgType) iDmgType = C4FxCall_DmgScript;
 	pObj->DoDamage(iChange, iCausedBy, iDmgType);
 	return true;
 }
@@ -697,12 +706,10 @@ static bool FnSetEntrance(C4AulContext *cthr, bool enabled, C4ObjectOrThis pObj)
 	return true;
 }
 
-static bool FnSetXDir(C4AulContext *cthr, C4ValueInt nxdir, C4ObjectOrThis pObj, C4ValueInt iPrec)
+static bool FnSetXDir(C4AulContext *cthr, C4ValueInt nxdir, C4ObjectOrThis pObj, Default<C4ValueInt, 10, true> iPrec)
 {
 	// safety
 	if (!pObj) return false;
-	// precision (default 10.0)
-	if (!iPrec) iPrec = 10;
 	// update xdir
 	pObj->xdir = itofix(nxdir, iPrec);
 	pObj->Mobile = 1;
@@ -710,12 +717,10 @@ static bool FnSetXDir(C4AulContext *cthr, C4ValueInt nxdir, C4ObjectOrThis pObj,
 	return true;
 }
 
-static bool FnSetRDir(C4AulContext *cthr, C4ValueInt nrdir, C4ObjectOrThis pObj, C4ValueInt iPrec)
+static bool FnSetRDir(C4AulContext *cthr, C4ValueInt nrdir, C4ObjectOrThis pObj, Default<C4ValueInt, 10, true> iPrec)
 {
 	// safety
 	if (!pObj) return false;
-	// precision (default 10.0)
-	if (!iPrec) iPrec = 10;
 	// update rdir
 	pObj->rdir = itofix(nrdir, iPrec);
 	pObj->Mobile = 1;
@@ -723,12 +728,10 @@ static bool FnSetRDir(C4AulContext *cthr, C4ValueInt nrdir, C4ObjectOrThis pObj,
 	return true;
 }
 
-static bool FnSetYDir(C4AulContext *cthr, C4ValueInt nydir, C4ObjectOrThis pObj, C4ValueInt iPrec)
+static bool FnSetYDir(C4AulContext *cthr, C4ValueInt nydir, C4ObjectOrThis pObj, Default<C4ValueInt, 10, true> iPrec)
 {
 	// safety
 	if (!pObj) return false;
-	// precision (default 10.0)
-	if (!iPrec) iPrec = 10;
 	// update ydir
 	pObj->ydir = itofix(nydir, iPrec);
 	pObj->Mobile = 1;
@@ -1155,24 +1158,21 @@ static std::optional<C4ValueInt> FnGetMass(C4AulContext *cthr, C4ObjectOrThis pO
 	return {pObj->Mass};
 }
 
-static std::optional<C4ValueInt> FnGetRDir(C4AulContext *cthr, C4ObjectOrThis pObj, C4ValueInt iPrec)
+static std::optional<C4ValueInt> FnGetRDir(C4AulContext *cthr, C4ObjectOrThis pObj, Default<C4ValueInt, 10, true> iPrec)
 {
 	if (!pObj) return {};
-	if (!iPrec) iPrec = 10;
 	return {fixtoi(pObj->rdir, iPrec)};
 }
 
-static std::optional<C4ValueInt> FnGetXDir(C4AulContext *cthr, C4ObjectOrThis pObj, C4ValueInt iPrec)
+static std::optional<C4ValueInt> FnGetXDir(C4AulContext *cthr, C4ObjectOrThis pObj, Default<C4ValueInt, 10, true> iPrec)
 {
 	if (!pObj) return {};
-	if (!iPrec) iPrec = 10;
 	return {fixtoi(pObj->xdir, iPrec)};
 }
 
-static std::optional<C4ValueInt> FnGetYDir(C4AulContext *cthr, C4ObjectOrThis pObj, C4ValueInt iPrec)
+static std::optional<C4ValueInt> FnGetYDir(C4AulContext *cthr, C4ObjectOrThis pObj, Default<C4ValueInt, 10, true> iPrec)
 {
 	if (!pObj) return {};
-	if (!iPrec) iPrec = 10;
 	return {fixtoi(pObj->ydir, iPrec)};
 }
 
@@ -1933,12 +1933,10 @@ static C4Object *FnCreateConstruction(C4AulContext *cthr,
 	return pNewObj;
 }
 
-static C4Object *FnCreateContents(C4AulContext *cthr, C4ID c_id, C4ObjectOrThis pObj, C4ValueInt iCount)
+static C4Object *FnCreateContents(C4AulContext *cthr, C4ID c_id, C4ObjectOrThis pObj, Default<C4ValueInt, 1, true> iCount)
 {
 	// safety
 	if (!pObj) return nullptr;
-	// default amount parameter
-	if (!iCount) ++iCount;
 	// create objects
 	C4Object *pNewObj = nullptr;
 	while (iCount-- > 0) pNewObj = pObj->CreateContents(c_id);
@@ -2285,7 +2283,7 @@ static void FnBlastFree(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4Valu
 	Game.Landscape.BlastFree(iX, iY, iLevel, grade, iCausedBy);
 }
 
-static bool FnSound(C4AulContext *cthr, C4String *szSound, bool fGlobal, C4Object *pObj, C4ValueInt iLevel, C4ValueInt iAtPlayer, C4ValueInt iLoop, bool fMultiple, C4ValueInt iCustomFalloffDistance)
+static bool FnSound(C4AulContext *cthr, C4String *szSound, bool fGlobal, C4Object *pObj, Default<C4ValueInt, 100, true> iLevel, C4ValueInt iAtPlayer, C4ValueInt iLoop, bool fMultiple, C4ValueInt iCustomFalloffDistance)
 {
 	// play here?
 	if (iAtPlayer)
@@ -2301,7 +2299,7 @@ static bool FnSound(C4AulContext *cthr, C4String *szSound, bool fGlobal, C4Objec
 	// even less than nothing?
 	if (iLevel < 0) return true;
 	// default sound level
-	if (!iLevel || iLevel > 100)
+	if (iLevel > 100)
 		iLevel = 100;
 	// target object
 	if (fGlobal) pObj = nullptr; else if (!pObj) pObj = cthr->Obj;
@@ -2655,11 +2653,9 @@ static C4Value FnGetPlrKnowledge(C4AulContext *cthr, C4ValueInt iPlr, C4ID id, C
 	return C4VID(Game.Players.Get(iPlr)->Knowledge.GetID(Game.Defs, dwCategory, iIndex));
 }
 
-static C4ID FnGetDefinition(C4AulContext *cthr, C4ValueInt iIndex, C4ValueInt dwCategory)
+static C4ID FnGetDefinition(C4AulContext *cthr, C4ValueInt iIndex, Default<C4ValueInt, C4D_All, true> dwCategory)
 {
 	C4Def *pDef;
-	// Default: all categories
-	if (!dwCategory) dwCategory = C4D_All;
 	// Get def
 	if (!(pDef = Game.Defs.GetDef(iIndex, dwCategory))) return C4ID_None;
 	// Return id
@@ -3209,18 +3205,16 @@ static C4ValueInt FnPow(C4AulContext *cthr, C4ValueInt iVal1, C4ValueInt iVal2)
 	return Pow(iVal1, iVal2);
 }
 
-static C4ValueInt FnSin(C4AulContext *cthr, C4ValueInt iAngle, C4ValueInt iRadius, C4ValueInt iPrec)
+static C4ValueInt FnSin(C4AulContext *cthr, C4ValueInt iAngle, C4ValueInt iRadius, Default<C4ValueInt, 1, true> iPrec)
 {
-	if (!iPrec) iPrec = 1;
 	// Precalculate the modulo operation so the C4Fixed argument to Sin does not overflow
 	iAngle %= 360 * iPrec;
 	// Let itofix and fixtoi handle the division and multiplication because that can handle higher ranges
 	return fixtoi(Sin(itofix(iAngle, iPrec)), iRadius);
 }
 
-static C4ValueInt FnCos(C4AulContext *cthr, C4ValueInt iAngle, C4ValueInt iRadius, C4ValueInt iPrec)
+static C4ValueInt FnCos(C4AulContext *cthr, C4ValueInt iAngle, C4ValueInt iRadius, Default<C4ValueInt, 1, true> iPrec)
 {
-	if (!iPrec) iPrec = 1;
 	iAngle %= 360 * iPrec;
 	return fixtoi(Cos(itofix(iAngle, iPrec)), iRadius);
 }
@@ -3234,12 +3228,9 @@ static C4ValueInt FnSqrt(C4AulContext *cthr, C4ValueInt iValue)
 	return iSqrt;
 }
 
-static C4ValueInt FnAngle(C4AulContext *cthr, C4ValueInt iX1, C4ValueInt iY1, C4ValueInt iX2, C4ValueInt iY2, C4ValueInt iPrec)
+static C4ValueInt FnAngle(C4AulContext *cthr, C4ValueInt iX1, C4ValueInt iY1, C4ValueInt iX2, C4ValueInt iY2, Default<C4ValueInt, 1, true> iPrec)
 {
 	C4ValueInt iAngle;
-
-	// Standard prec
-	if (!iPrec) iPrec = 1;
 
 	C4ValueInt dx = iX2 - iX1, dy = iY2 - iY1;
 	if (!dx) if (dy > 0) return 180 * iPrec; else return 0;
@@ -4281,13 +4272,11 @@ static C4ValueInt FnGetMenuSelection(C4AulContext *cthr, C4ObjectOrThis pObj)
 	return pObj->Menu->GetSelection();
 }
 
-static bool FnResortObjects(C4AulContext *cthr, C4String *szFunc, C4ValueInt Category)
+static bool FnResortObjects(C4AulContext *cthr, C4String *szFunc, Default<C4ValueInt, C4D_SortLimit, true> Category)
 {
 	// safety
 	if (!szFunc) return false;
 	if (!cthr->Caller) return false;
-	// default category
-	if (!Category) Category = C4D_SortLimit;
 	// get function
 	C4AulFunc *pFn = cthr->Caller->Func->GetLocalSFunc(FnStringPar(szFunc));
 	if (!pFn)
@@ -5167,15 +5156,14 @@ static bool FnAddMsgBoardCmd(C4AulContext *ctx, C4String *pstrCommand, C4String 
 	return true;
 }
 
-static bool FnSetGameSpeed(C4AulContext *ctx, C4ValueInt iSpeed)
+static bool FnSetGameSpeed(C4AulContext *ctx, Default<C4ValueInt, 38, true> iSpeed)
 {
 	// league games: disable direct exec (like /speed)
 	if (Game.Parameters.isLeague())
 		if (!ctx->Caller || ctx->Caller->TemporaryScript)
 			return false;
 	// safety
-	if (iSpeed) if (!Inside<C4ValueInt>(iSpeed, 0, 1000)) return false;
-	if (!iSpeed) iSpeed = 38;
+	if (!Inside<C4ValueInt>(iSpeed, 1, 1000)) return false;
 	// set speed, restart timer
 	Application.SetGameTickDelay(1000 / iSpeed);
 	return true;
@@ -5257,15 +5245,10 @@ static bool FnSetObjDrawTransform2(C4AulContext *ctx, C4ValueInt iA, C4ValueInt 
 
 bool SimFlight(C4Fixed &x, C4Fixed &y, C4Fixed &xdir, C4Fixed &ydir, int32_t iDensityMin, int32_t iDensityMax, int32_t iIter);
 
-static std::optional<bool> FnSimFlight(C4AulContext *ctx, C4Value *pvrX, C4Value *pvrY, C4Value *pvrXDir, C4Value *pvrYDir, std::optional<C4ValueInt> oiDensityMin, std::optional<C4ValueInt> oiDensityMax, std::optional<C4ValueInt> oiIter, std::optional<C4ValueInt> oiPrec)
+static std::optional<bool> FnSimFlight(C4AulContext *ctx, C4Value *pvrX, C4Value *pvrY, C4Value *pvrXDir, C4Value *pvrYDir, Default<C4ValueInt, C4M_Solid> iDensityMin, Default<C4ValueInt, 100> iDensityMax, Default<C4ValueInt, -1> iIter, Default<C4ValueInt, 10> iPrec)
 {
 	// check and copy parameters
 	if (!pvrX || !pvrY || !pvrXDir || !pvrYDir) return {};
-
-	C4ValueInt iDensityMin = oiDensityMin.value_or(C4M_Solid);
-	C4ValueInt iDensityMax = oiDensityMax.value_or(100);
-	C4ValueInt iIter = oiIter.value_or(-1);
-	C4ValueInt iPrec = oiPrec.value_or(10);
 
 	// convert to C4Fixed
 	C4Fixed x = itofix(pvrX->getInt()), y = itofix(pvrY->getInt()),
@@ -5540,10 +5523,10 @@ static C4Value FnEffectCall(C4AulContext *ctx, C4Object *pTarget, C4ValueInt iNu
 	return pEffect->DoCall(pTarget, szCallFn, vVal1, vVal2, vVal3, vVal4, vVal5, vVal6, vVal7, true, !ctx->CalledWithStrictNil());
 }
 
-static C4ValueInt FnModulateColor(C4AulContext *cthr, std::optional<C4ValueInt> iClr1, C4ValueInt iClr2)
+static C4ValueInt FnModulateColor(C4AulContext *cthr, Default<C4ValueInt, 0xffffff> iClr1, C4ValueInt iClr2)
 {
 	// default color
-	uint32_t dwClr1 = iClr1.value_or(0xffffff);
+	uint32_t dwClr1 = iClr1;
 	uint32_t dwClr2 = iClr2;
 	// get alpha
 	C4ValueInt iA1 = dwClr1 >> 24, iA2 = dwClr2 >> 24;
@@ -5938,7 +5921,7 @@ static void FnStopScriptProfiler(C4AulContext *ctx)
 	C4AulProfiler::StopProfiling();
 }
 
-static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, C4ValueInt iOwner, C4ValueInt iOffX, C4ValueInt iOffY, std::optional<C4ValueInt> clr, C4ID idDeco, C4String *sPortrait, C4ValueInt dwFlags, C4ValueInt iHSize)
+static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, C4ValueInt iOwner, C4ValueInt iOffX, C4ValueInt iOffY, Default<C4ValueInt, 0xffffff> clr, C4ID idDeco, C4String *sPortrait, C4ValueInt dwFlags, C4ValueInt iHSize)
 {
 	// safeties
 	if (!pMsg) return false;
@@ -5965,7 +5948,7 @@ static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, C
 	}
 
 	// message color
-	const auto dwClr = InvertRGBAAlpha(clr.value_or(0xffffff));
+	const auto dwClr = InvertRGBAAlpha(clr);
 	// message type
 	int32_t iType;
 	if (pObj)
@@ -6079,6 +6062,33 @@ struct ArgumentConverter<C4ObjectOrThis>
 	{
 		const auto obj = value._getObj();
 		return obj ? obj : context->Obj;
+	}
+};
+
+template<typename T, T defaultVal>
+struct ArgumentConverter<Default<T, defaultVal, false>>
+{
+	static constexpr inline C4V_Type Type = ArgumentConverter<T>::Type;
+	static Default<T, defaultVal, false> Convert(C4AulContext *context, const C4Value& value)
+	{
+		if (value.GetType() != C4V_Any)
+		{
+			return ArgumentConverter<T>::Convert(context, value);
+		}
+		else
+		{
+			return defaultVal;
+		}
+	}
+};
+
+template<typename T, T defaultVal>
+struct ArgumentConverter<Default<T, defaultVal, true>> : ArgumentConverter<Default<T, defaultVal, false>>
+{
+	static Default<T, defaultVal, true> Convert(C4AulContext *context, const C4Value& value)
+	{
+		const T result{ArgumentConverter<Default<T, defaultVal, false>>::Convert(context, value)};
+		return (result != T{} ? result : defaultVal);
 	}
 };
 
