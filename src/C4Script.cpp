@@ -5080,9 +5080,6 @@ bool SimFlight(C4Fixed &x, C4Fixed &y, C4Fixed &xdir, C4Fixed &ydir, int32_t iDe
 
 static std::optional<bool> FnSimFlight(C4AulContext *ctx, C4Value * pvrX, C4Value * pvrY, C4Value * pvrXDir, C4Value * pvrYDir, Default<C4ValueInt, C4M_Solid> iDensityMin, Default<C4ValueInt, 100> iDensityMax, Default<C4ValueInt, -1> iIter, Default<C4ValueInt, 10> iPrec)
 {
-	// check and copy parameters
-	if (!pvrX || !pvrY || !pvrXDir || !pvrYDir) return {};
-
 	// convert to C4Fixed
 	C4Fixed x = itofix(pvrX->getInt()), y = itofix(pvrY->getInt()),
 	xdir = itofix(pvrXDir->getInt(), iPrec), ydir = itofix(pvrYDir->getInt(), iPrec);
@@ -5910,7 +5907,8 @@ struct ArgumentConverter<Default<T, defaultVal, true>> : ArgumentConverter<Defau
 };
 
 template<typename T, auto failVal>
-struct ArgumentConverter<Required<T, failVal>> {
+struct ArgumentConverter<Required<T, failVal>>
+{
 	static constexpr inline C4V_Type Type = ArgumentConverter<T>::Type;
 	static Required<T, failVal> Convert(C4AulContext *context, const C4Value& value)
 	{
@@ -5919,12 +5917,14 @@ struct ArgumentConverter<Required<T, failVal>> {
 };
 
 template<typename T>
-struct Condition {
+struct Condition
+{
 	static constexpr inline bool HasCondition = false;
 };
 
 template<typename T, auto failVal>
-struct Condition<Required<T, failVal>> {
+struct Condition<Required<T, failVal>>
+{
 	static constexpr inline bool HasCondition = true;
 	static constexpr inline auto FailValue = failVal;
 	using FailType = decltype(failVal);
@@ -5936,7 +5936,8 @@ struct Condition<Required<T, failVal>> {
 };
 
 template<auto failVal>
-struct Condition<Required<C4ObjectOrThis, failVal>> {
+struct Condition<Required<C4ObjectOrThis, failVal>>
+{
 	static constexpr inline bool HasCondition = true;
 	static constexpr inline auto FailValue = failVal;
 	using FailType = decltype(failVal);
