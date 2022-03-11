@@ -124,6 +124,8 @@ public:
 	const char *GetCommand() const { return Command; }
 
 	void ClearObject() { Object = nullptr; }
+
+	friend class C4DefGraphicsPtrBackup;
 };
 
 class C4Menu : public C4GUI::Dialog

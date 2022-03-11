@@ -101,6 +101,7 @@ class C4DefGraphicsPtrBackup
 {
 protected:
 	C4DefGraphics *pGraphicsPtr; // dead graphics ptr
+	C4Surface *BitmapPtr; // dead bitmap ptr
 	C4Def *pDef; // definition of dead graphics
 	char Name[C4MaxName + 1]; // name of graphics
 	C4DefGraphicsPtrBackup *pNext; // next member of linked list

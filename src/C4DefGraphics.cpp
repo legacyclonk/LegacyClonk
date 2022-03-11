@@ -326,6 +326,7 @@ C4DefGraphicsPtrBackup::C4DefGraphicsPtrBackup(C4DefGraphics *pSourceGraphics)
 {
 	// assign graphics + def
 	pGraphicsPtr = pSourceGraphics;
+	BitmapPtr = pSourceGraphics->Bitmap;
 	pDef = pSourceGraphics->pDef;
 	// assign name
 	const char *szName = pGraphicsPtr->GetName();
@@ -351,6 +352,7 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 	// only if graphics are assigned
 	if (pGraphicsPtr)
 	{
+		const auto newSameGraphics = pNewGraphics->Get(Name);
 		// check all objects
 		C4Object *pObj;
 		for (C4ObjectLink *pLnk = Game.Objects.First; pLnk; pLnk = pLnk->Next)
@@ -374,26 +376,47 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 					{
 						if (pGfxOverlay->GetGfx() == pGraphicsPtr)
 						{
-							const auto newOverlayGraphics = pNewGraphics->Get(Name);
-							if (!newOverlayGraphics)
+							if (!newSameGraphics)
 							{
 								// then remove this overlay and redo the loop, because iterator has become invalid
 								pObj->RemoveGraphicsOverlay(pGfxOverlay->GetID());
 								break;
 							}
 
-							pGfxOverlay->UpdateSourceGraphics(newOverlayGraphics);
+							pGfxOverlay->UpdateSourceGraphics(newSameGraphics);
 						}
 					}
 					// looped through w/o removal?
 					if (!pGfxOverlay) break;
 				}
-				// update menu frame decorations - may do multiple updates to the same deco if multiple menus share it...
-				C4GUI::FrameDecoration *pDeco;
-				if (pDef && pObj->Menu && (pDeco = pObj->Menu->GetFrameDecoration()))
-					if (pDeco->idSourceDef == pDef->id)
+				if (pDef && pObj->Menu)
+				{
+					// update menu frame decorations - may do multiple updates to the same deco if multiple menus share it...
+					if (C4GUI::FrameDecoration *pDeco = pObj->Menu->GetFrameDecoration(); pDeco && pDeco->idSourceDef == pDef->id)
+					{
 						if (!pDeco->UpdateGfx())
+						{
 							pObj->Menu->SetFrameDeco(nullptr);
+						}
+					}
+
+					// update menu item icons
+					for (std::int32_t count = pObj->Menu->GetItemCount(), i = 0; i < count; ++i)
+					{
+						const auto item = pObj->Menu->GetItem(i);
+						if (item->Symbol.Surface == BitmapPtr)
+						{
+							if (newSameGraphics)
+							{
+								item->Symbol.Surface = newSameGraphics->Bitmap;
+							}
+							else
+							{
+								item->Symbol.Clear();
+							}
+						}
+					}
+				}
 			}
 		// check all object infos for portraits
 		for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next)
