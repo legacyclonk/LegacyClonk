@@ -61,13 +61,12 @@ class C4FacetExSurface : public C4FacetEx
 private:
 	C4Surface Face;
 
-private:
-	C4FacetExSurface(const C4FacetExSurface &rCpy); // NO copy!
-	C4FacetExSurface &operator=(const C4FacetExSurface &rCpy); // NO copy assignment!
-
 public:
 	C4FacetExSurface() { Default(); }
 	~C4FacetExSurface() { Clear(); }
+
+	C4FacetExSurface(const C4FacetExSurface &rCpy) = delete;
+	C4FacetExSurface &operator=(const C4FacetExSurface &rCpy) = delete;
 
 	void Default() { Face.Default(); C4FacetEx::Default(); }
 	void Clear() { Face.Clear(); C4FacetEx::Clear(); }
