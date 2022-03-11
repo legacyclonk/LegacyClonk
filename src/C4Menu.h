@@ -173,7 +173,7 @@ public:
 	int32_t GetItemCount();
 	int32_t GetSelection();
 	bool IsContextMenu() { return Style == C4MN_Style_Context; }
-	int GetSymbolSize() { return (Style == C4MN_Style_Dialog) ? 64 : C4SymbolSize; }
+	int GetSymbolSize();
 	int32_t GetItemHeight() { return ItemHeight; }
 	C4MenuItem *GetSelectedItem();
 	C4MenuItem *GetItem(int32_t iIndex);

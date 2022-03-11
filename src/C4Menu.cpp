@@ -611,6 +611,11 @@ int32_t C4Menu::GetSelection()
 	return Selection;
 }
 
+int C4Menu::GetSymbolSize()
+{
+	return static_cast<float>((Style == C4MN_Style_Dialog) ? 64 : C4SymbolSize) * Application.GetScale();
+}
+
 bool C4Menu::SetPosition(int32_t iPosition)
 {
 	if (!IsActive()) return false;
