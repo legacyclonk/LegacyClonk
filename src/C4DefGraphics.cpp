@@ -371,12 +371,20 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 				{
 					C4GraphicsOverlay *pGfxOverlay;
 					for (pGfxOverlay = pObj->pGfxOverlay; pGfxOverlay; pGfxOverlay = pGfxOverlay->GetNext())
+					{
 						if (pGfxOverlay->GetGfx() == pGraphicsPtr)
 						{
-							// then remove this overlay and redo the loop, because iterator has become invalid
-							pObj->RemoveGraphicsOverlay(pGfxOverlay->GetID());
-							break;
+							const auto newOverlayGraphics = pNewGraphics->Get(Name);
+							if (!newOverlayGraphics)
+							{
+								// then remove this overlay and redo the loop, because iterator has become invalid
+								pObj->RemoveGraphicsOverlay(pGfxOverlay->GetID());
+								break;
+							}
+
+							pGfxOverlay->UpdateSourceGraphics(newOverlayGraphics);
 						}
+					}
 					// looped through w/o removal?
 					if (!pGfxOverlay) break;
 				}
@@ -635,6 +643,12 @@ void C4GraphicsOverlay::UpdateFacet()
 		// nothing to do
 		break;
 	}
+}
+
+void C4GraphicsOverlay::UpdateSourceGraphics(C4DefGraphics *newSource)
+{
+	pSourceGfx = newSource;
+	UpdateFacet();
 }
 
 void C4GraphicsOverlay::Set(Mode aMode, C4DefGraphics *pGfx, const char *szAction, uint32_t dwBMode, C4Object *pOvrlObj)

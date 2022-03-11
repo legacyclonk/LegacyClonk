@@ -262,6 +262,8 @@ public:
 
 	uint32_t GetBlitMode() const { return dwBlitMode; }
 	void SetBlitMode(uint32_t dwToMode) { dwBlitMode = dwToMode; }
+
+	void UpdateSourceGraphics(C4DefGraphics *newSource); // for ReloadDef
 };
 
 // Helper to compile lists of C4GraphicsOverlay
