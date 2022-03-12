@@ -1440,6 +1440,11 @@ void C4Def::ResetIncludeDependencies()
 #endif
 }
 
+void C4Def::Picture2Facet(C4FacetExSurface &cgo)
+{
+	cgo.Set(Graphics.GetBitmap(), PictureRect.x, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt);
+}
+
 // C4DefList
 
 bool C4DefList::GetFontImage(const char *szImageTag, CFacet &rOutImgFacet)

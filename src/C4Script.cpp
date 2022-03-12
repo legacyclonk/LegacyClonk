@@ -1676,8 +1676,7 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 		// default: by def, if it is not specifically NONE
 		if (idItem != C4Id("NONE"))
 		{
-			fctSymbol.Create(iSymbolSize, iSymbolSize);
-			pDef->Draw(fctSymbol);
+			pDef->Picture2Facet(fctSymbol);
 		}
 		else
 		{

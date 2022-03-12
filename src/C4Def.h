@@ -380,6 +380,8 @@ public:
 
 	void IncludeDefinition(C4Def *pIncludeDef); // inherit components from other definition
 	void ResetIncludeDependencies(); // resets all pointers into foreign definitions caused by include chains
+
+	void Picture2Facet(C4FacetExSurface &cgo);
 };
 
 class C4DefList : public C4DelegatedIterable<C4DefList>
