@@ -146,6 +146,7 @@ public:
 	bool Maximized;
 	int PositionX;
 	int PositionY;
+	uint32_t PixelFormatFlags;
 #endif
 	bool ShowFolderMaps; // if true, folder maps are shown
 
