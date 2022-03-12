@@ -326,7 +326,7 @@ C4DefGraphicsPtrBackup::C4DefGraphicsPtrBackup(C4DefGraphics *pSourceGraphics)
 {
 	// assign graphics + def
 	pGraphicsPtr = pSourceGraphics;
-	BitmapPtr = pSourceGraphics->Bitmap;
+	BitmapPtr = pSourceGraphics->GetBitmap();
 	pDef = pSourceGraphics->pDef;
 	// assign name
 	const char *szName = pGraphicsPtr->GetName();
@@ -408,7 +408,7 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 						{
 							if (newSameGraphics)
 							{
-								item->Symbol.Surface = newSameGraphics->Bitmap;
+ 								item->Symbol.Surface = pDef->Graphics.GetBitmap();
 							}
 							else
 							{
