@@ -1587,9 +1587,8 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 		break;
 	}
 	case C4MN_Add_ImgIndexed:
-		// draw indexed facet
-		fctSymbol.Create(iSymbolSize, iSymbolSize);
-		pDef->Draw(fctSymbol, false, 0, nullptr, XPar.getInt());
+		// use indexed facet
+		pDef->Picture2Facet(fctSymbol, XPar.getInt());
 		break;
 	case C4MN_Add_ImgObjRank:
 	{
