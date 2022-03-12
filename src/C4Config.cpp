@@ -179,7 +179,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Maximized,   "Maximized",   false, false, true));
 	pComp->Value(mkNamingAdapt(PositionX,   "PositionX",   0,     false, true));
 	pComp->Value(mkNamingAdapt(PositionY,   "PositionY",   0,     false, true));
-	pComp->Value(mkNamingAdapt(PixelFormatFlags, "PixelFormatFlags", PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW, false, true));
+	pComp->Value(mkNamingAdapt(PixelFormatFlags, "PixelFormatFlags", PFD_SWAP_COPY | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW, false, true));
 #endif
 
 	pComp->Value(mkNamingAdapt(ShowFolderMaps, "ShowFolderMaps", true));
