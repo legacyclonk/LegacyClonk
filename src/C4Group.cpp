@@ -841,7 +841,7 @@ bool C4Group::AddEntry(int status,
 	if (entryname) SCopy(entryname, nentry->FileName, _MAX_FNAME);
 	else SCopy(GetFilename(fname), nentry->FileName, _MAX_FNAME);
 	nentry->Size = checked_cast<int32_t>(size);
-	nentry->Time = checked_cast<uint32_t>(time + C4Group_AssumeTimeOffset);
+	nentry->Time = static_cast<uint32_t>(time + C4Group_AssumeTimeOffset);
 	nentry->ChildGroup = childgroup;
 	nentry->Offset = 0;
 	nentry->HasCRC = cCRC;
