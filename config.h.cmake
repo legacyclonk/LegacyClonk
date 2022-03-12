@@ -8,6 +8,7 @@
 #cmakedefine USE_SDL_FOR_GAMEPAD 1
 #cmakedefine USE_STAT 1
 #cmakedefine USE_X11 1
+#cmakedefine USE_WINTOAST 1
 #cmakedefine WITH_DEVELOPER_MODE 1
 #cmakedefine WITH_GLIB 1
 

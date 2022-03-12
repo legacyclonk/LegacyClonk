@@ -103,6 +103,8 @@ CMAKE_DEPENDENT_OPTION(WITH_DEVELOPER_MODE "Use GTK for the developer mode" OFF
 	"NOT USE_CONSOLE" OFF)
 # USE_LIBNOTIFY
 CMAKE_DEPENDENT_OPTION(USE_LIBNOTIFY "Use libnotify for desktop notifications" ON "WITH_DEVELOPER_MODE AND NOT USE_CONSOLE AND NOT WIN32" OFF)
+# USE_WINTOAST
+CMAKE_DEPENDENT_OPTION(USE_WINTOAST "Use WinToast for desktop notifications" ON "NOT USE_CONSOLE AND WIN32" OFF)
 
 # Use Microsoft CryptoAPI instead of OpenSSL when compiling for Windows
 if (WIN32)
@@ -189,6 +191,12 @@ endif ()
 if (USE_LIBNOTIFY)
 	list(APPEND CLONK_SOURCES
 		src/C4ToastLibNotify.cpp src/C4ToastLibNotify.h)
+endif ()
+
+if (USE_WINTOAST)
+	list(APPEND CLONK_SOURCES
+		src/C4ToastWinToastLib.cpp src/C4ToastWinToastLib.h
+		src/WinToast/src/wintoastlib.cpp src/WinToast/src/wintoastlib.h)
 endif ()
 
 if (USE_CONSOLE)
@@ -317,9 +325,12 @@ if (USE_LIBNOTIFY)
 	target_link_libraries(clonk PkgConfig::libnotify)
 endif ()
 
+if (USE_WINTOAST)
+	target_include_directories(clonk PRIVATE src/WinToast/src)
+endif ()
+
 # Link Windows libraries
 if (WIN32)
-	target_include_directories(clonk PRIVATE src/WinToast/src)
 	target_link_libraries(clonk dbghelp iphlpapi winmm ws2_32)
 
 	if (USE_SDL_MIXER)

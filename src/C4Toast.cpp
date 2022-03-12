@@ -18,7 +18,7 @@
 
 #ifdef USE_LIBNOTIFY
 #include "C4ToastLibNotify.h"
-#elif defined(_WIN32)
+#elif defined(USE_WINTOAST)
 #include "C4ToastWinToastLib.h"
 #endif
 
@@ -28,7 +28,7 @@ C4ToastSystem *C4ToastSystem::NewInstance()
 	{
 #ifdef USE_LIBNOTIFY
 		return new C4ToastSystemLibNotify{};
-#elif defined(_WIN32)
+#elif defined(USE_WINTOAST)
 		return new C4ToastSystemWinToastLib{};
 #else
 		return nullptr;
@@ -50,7 +50,7 @@ void C4ToastImpl::SetEventHandler(C4ToastEventHandler *const eventHandler)
 C4Toast::C4Toast() : impl{
 #ifdef USE_LIBNOTIFY
 						 new C4ToastImplLibNotify{}
-#elif defined(_WIN32)
+#elif defined(USE_WINTOAST)
 						 new C4ToastImplWinToastLib{}
 #else
 						 new C4ToastImpl{}
