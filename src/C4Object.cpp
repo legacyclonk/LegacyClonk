@@ -1987,8 +1987,11 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		Menu->SetAlignment(C4MN_Align_Free);
 		C4Viewport *pViewport = Game.GraphicsSystem.GetViewport(Owner); // Hackhackhack!!!
 		if (pViewport) Menu->SetLocation(pTarget->x + pTarget->Shape.x + pTarget->Shape.Wdt + 10 - pViewport->ViewX, pTarget->y + pTarget->Shape.y - pViewport->ViewY);
+
+		const auto pictureSize = Application.GetScale() * C4PictureSize;
+
 		// Add info item
-		fctSymbol.Create(C4PictureSize, C4PictureSize); pTarget->Def->Draw(fctSymbol, false, pTarget->Color, pTarget);
+		fctSymbol.Create(pictureSize, pictureSize); pTarget->Def->Draw(fctSymbol, false, pTarget->Color, pTarget);
 		Menu->Add(pTarget->GetName(), fctSymbol, "", C4MN_Item_NoCount, nullptr, pTarget->GetInfoString().getData());
 		fctSymbol.Default();
 		// Success

@@ -120,6 +120,8 @@ void C4ObjectMenu::SetRefillObject(C4Object *pObj)
 
 bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 {
+	const auto symbolSize = GetSymbolSize();
+
 	// Variables
 	C4FacetExSurface fctSymbol;
 	C4Object *pObj;
@@ -157,7 +159,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				// Caption
 				sprintf(szCaption, LoadResStr("IDS_MENU_ACTIVATE"), pObj->GetName());
 				// Picture
-				fctSymbol.Set(fctSymbol.Surface, 0, 0, C4SymbolSize, C4SymbolSize);
+				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
 				// Commands
 				sprintf(szCommand, "SetCommand(this,\"Activate\",Object(%d))&&ExecuteCommand()", pObj->Number);
@@ -226,7 +228,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				// Caption
 				sprintf(szCaption, LoadResStr("IDS_MENU_SELL"), pObj->GetName());
 				// Picture
-				fctSymbol.Set(fctSymbol.Surface, 0, 0, C4SymbolSize, C4SymbolSize);
+				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
 				// Commands
 				sprintf(szCommand, "AppendCommand(this,\"Sell\",Object(%d),%d,0,Object(%d),0,%s)&&ExecuteCommand()", pTarget->Number, 1, pObj->Number, C4IdText(pDef->id));
@@ -274,7 +276,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				// Caption
 				sprintf(szCaption, LoadResStr(fGet ? "IDS_MENU_GET" : "IDS_MENU_ACTIVATE"), pObj->GetName());
 				// Picture
-				fctSymbol.Set(fctSymbol.Surface, 0, 0, C4SymbolSize, C4SymbolSize);
+				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
 				// Primary command: get/activate single object
 				sprintf(szCommand, "SetCommand(this, \"%s\", Object(%d)) && ExecuteCommand()", fGet ? "Get" : "Activate", pObj->Number);
@@ -312,7 +314,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					if ((Object->Contents.ObjectCount() > 1) || (Game.Players.Get(Object->Owner)->GetSelectedCrewCount() > 1))
 						sprintf(szCommand2, "PlayerObjectCommand(%d, \"Put\", Object(%d), 1000, 0) && ExecuteCommand()", Object->Owner, pTarget->Number); // Workaround: specifying a really high put count here; will be adjusted later by C4Menu::ObjectCommand...
 					// Create symbol
-					fctSymbol.Create(C4SymbolSize, C4SymbolSize);
+					fctSymbol.Create(symbolSize, symbolSize);
 					fctTarget = fctSymbol.GetFraction(85, 85, C4FCT_Right, C4FCT_Top);
 					Object->Contents.GetObject(0)->DrawPicture(fctTarget);
 					fctTarget = fctSymbol.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom);
@@ -333,7 +335,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				|| (ValidPlr(pTarget->Owner) && !Hostile(pTarget->Owner, Object->Owner)))
 			{
 				sprintf(szCommand, "SetCommand(this,\"Get\",Object(%d),0,0,,2)&&ExecuteCommand()", pTarget->Number);
-				fctSymbol.Create(C4SymbolSize, C4SymbolSize); pTarget->DrawPicture(fctSymbol);
+				fctSymbol.Create(symbolSize, symbolSize); pTarget->DrawPicture(fctSymbol);
 				Add(LoadResStr("IDS_CON_CONTENTS"), fctSymbol, szCommand);
 				fctSymbol.Default();
 			}
@@ -346,7 +348,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy)
 			{
 				sprintf(szCommand, "SetCommand(this,\"Buy\",Object(%d))&&ExecuteCommand()", pTarget->Number);
-				fctSymbol.Create(C4SymbolSize, C4SymbolSize); DrawMenuSymbol(C4MN_Buy, fctSymbol, pTarget->Base, pTarget);
+				fctSymbol.Create(symbolSize, symbolSize); DrawMenuSymbol(C4MN_Buy, fctSymbol, pTarget->Base, pTarget);
 				Add(LoadResStr("IDS_CON_BUY"), fctSymbol, szCommand);
 				fctSymbol.Default();
 			}
@@ -354,7 +356,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell)
 			{
 				sprintf(szCommand, "SetCommand(this,\"Sell\",Object(%d))&&ExecuteCommand()", pTarget->Number);
-				fctSymbol.Create(C4SymbolSize, C4SymbolSize); DrawMenuSymbol(C4MN_Sell, fctSymbol, pTarget->Base, pTarget);
+				fctSymbol.Create(symbolSize, symbolSize); DrawMenuSymbol(C4MN_Sell, fctSymbol, pTarget->Base, pTarget);
 				Add(LoadResStr("IDS_CON_SELL"), fctSymbol, szCommand);
 				fctSymbol.Default();
 			}
@@ -367,7 +369,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 		if (pTarget->OCF & OCF_Construct && Object->r == 0 && (Game.Rules & C4RULE_ConstructionNeedsMaterial))
 		{
 			sprintf(szCommand, "PlayerMessage(GetOwner(), Object(%d)->GetNeededMatStr(), Object(%d))", pTarget->Number, pTarget->Number);
-			fctSymbol.Create(16, 16); GfxR->fctConstruction.Draw(fctSymbol, true);
+			fctSymbol.Create(symbolSize, symbolSize); GfxR->fctConstruction.Draw(fctSymbol, true);
 			Add(LoadResStr("IDS_CON_BUILDINFO"), fctSymbol, szCommand);
 			fctSymbol.Default();
 		}
@@ -376,7 +378,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 		if (pTarget->Def->GetDesc() && *pTarget->Def->GetDesc())
 		{
 			// Symbol
-			fctSymbol.Create(16, 16);
+			fctSymbol.Create(symbolSize, symbolSize);
 			fctTarget = fctSymbol.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom);
 			pTarget->DrawPicture(fctTarget);
 			C4Facet fctTarget = fctSymbol.GetFraction(85, 85, C4FCT_Right, C4FCT_Top);
@@ -393,7 +395,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			if (pTarget == Object->Contained)
 			{
 				sprintf(szCommand, "PlayerObjectCommand(GetOwner(), \"Exit\") && ExecuteCommand()"); // Exit all selected clonks...
-				fctSymbol.Create(C4SymbolSize, C4SymbolSize);
+				fctSymbol.Create(symbolSize, symbolSize);
 				Game.GraphicsResource.fctExit.Draw(fctSymbol);
 				Add(LoadResStr("IDS_COMM_EXIT"), fctSymbol, szCommand);
 				fctSymbol.Default();
@@ -499,6 +501,8 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 
 int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 {
+	const auto symbolSize = GetSymbolSize();
+
 	int32_t iFunction, iResult = 0;
 	C4AulScriptFunc *pFunction, *pFunction2;
 	C4Object *cObj; C4ObjectLink *clnk;

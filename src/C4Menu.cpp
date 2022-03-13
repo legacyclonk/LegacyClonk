@@ -139,7 +139,7 @@ int32_t C4MenuItem::GetSymbolWidth(int32_t iForHeight)
 		return (std::max)(Symbol.Wdt * iForHeight / std::max<int32_t>(Symbol.Hgt, 1), iForHeight);
 	// Info menus
 	if (iStyle == C4MN_Style_Info && Symbol.Surface && Symbol.Wdt)
-		return Symbol.Wdt;
+		return std::min(Symbol.Wdt, C4PictureSize);
 	// no symbol
 	return 0;
 }

@@ -710,9 +710,11 @@ bool C4MainMenu::ActivateMain(int32_t iPlayer)
 
 bool C4MainMenu::ActivateHostility(int32_t iPlayer)
 {
+	const auto symbolSize = GetSymbolSize();
+
 	// Init menu
 	C4FacetExSurface fctSymbol;
-	fctSymbol.Create(C4SymbolSize, C4SymbolSize);
+	fctSymbol.Create(symbolSize, symbolSize);
 	GfxR->fctMenu.GetPhase(7).Draw(fctSymbol);
 	Init(fctSymbol, LoadResStr("IDS_MENU_CPATTACK"), iPlayer, C4MN_Extra_None, 0, C4MN_Hostility);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
