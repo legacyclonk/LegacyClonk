@@ -1588,7 +1588,7 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	}
 	case C4MN_Add_ImgIndexed:
 		// use indexed facet
-		pDef->Picture2Facet(fctSymbol, XPar.getInt());
+		pDef->Picture2Facet(fctSymbol, 0, XPar.getInt());
 		break;
 	case C4MN_Add_ImgObjRank:
 	{
@@ -1666,9 +1666,8 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	break;
 
 	case C4MN_Add_ImgColor:
-		// draw colored def facet
-		fctSymbol.Create(iSymbolSize, iSymbolSize);
-		pDef->Draw(fctSymbol, false, XPar.getInt());
+		// set colored def facet
+		pDef->Picture2Facet(fctSymbol, XPar.getInt());
 		break;
 
 	default:

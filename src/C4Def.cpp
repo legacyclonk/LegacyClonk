@@ -1440,9 +1440,9 @@ void C4Def::ResetIncludeDependencies()
 #endif
 }
 
-void C4Def::Picture2Facet(C4FacetExSurface &cgo, int32_t xPhase)
+void C4Def::Picture2Facet(C4FacetExSurface &cgo, uint32_t color, int32_t xPhase)
 {
-	cgo.Set(Graphics.GetBitmap(), PictureRect.x + xPhase * PictureRect.Wdt, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt);
+	cgo.Set(Graphics.GetBitmap(color), PictureRect.x + xPhase * PictureRect.Wdt, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt);
 }
 
 // C4DefList

@@ -381,7 +381,7 @@ public:
 	void IncludeDefinition(C4Def *pIncludeDef); // inherit components from other definition
 	void ResetIncludeDependencies(); // resets all pointers into foreign definitions caused by include chains
 
-	void Picture2Facet(C4FacetExSurface &cgo, int32_t xPhase = 0);
+	void Picture2Facet(C4FacetExSurface &cgo, uint32_t color = 0, int32_t xPhase = 0);
 };
 
 class C4DefList : public C4DelegatedIterable<C4DefList>
