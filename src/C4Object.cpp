@@ -1964,7 +1964,7 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 			// Caption
 			sprintf(szCaption, LoadResStr("IDS_MENU_CONSTRUCT"), pDef->GetName());
 			// Picture
-			fctSymbol.Set(pDef->Graphics.GetBitmap(), pDef->PictureRect.x, pDef->PictureRect.y, pDef->PictureRect.Wdt, pDef->PictureRect.Hgt);
+			pDef->Picture2Facet(fctSymbol);
 			// Command
 			sprintf(szCommand, "SetCommand(this,\"Construct\",,0,0,,%s)", C4IdText(pDef->id));
 			// Add menu item

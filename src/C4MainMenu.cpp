@@ -56,6 +56,8 @@ bool C4MainMenu::InitRefSym(const C4FacetEx &fctSymbol, const char *szEmpty, int
 
 bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 {
+	const auto symbolSize = GetSymbolSize();
+
 	// league or replay game
 	if (Game.Parameters.isLeague() || Game.C4S.Head.Replay) return false;
 	// Max player limit
@@ -93,7 +95,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			// No custom portrait: use default player image
 			if (!fctPortrait.Surface)
 			{
-				fctPortrait.Create(C4SymbolSize, C4SymbolSize);
+				fctPortrait.Create(symbolSize, symbolSize);
 				GfxR->fctPlayerClr.DrawClr(fctPortrait, true, 0xff);
 			}
 			// Create color overlay for portrait
@@ -101,7 +103,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			fctPortraitClr.CreateClrByOwner(fctPortrait.Surface);
 			// Create menu symbol from colored portrait
 			C4FacetExSurface fctSymbol;
-			fctSymbol.Create(C4SymbolSize, C4SymbolSize);
+			fctSymbol.Create(symbolSize, symbolSize);
 			fctPortraitClr.DrawClr(fctSymbol, true, C4P.PrefColorDw);
 			// Add menu item
 			Add(sItemText.getData(), fctSymbol, szCommand);
@@ -119,6 +121,8 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 
 bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 {
+	const auto symbolSize = GetSymbolSize();
+
 	// Variables
 	C4FacetExSurface fctSymbol;
 	C4Player *pPlayer;
@@ -142,7 +146,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 			if (pPlr != pPlayer) if (!pPlr->IsInvisible())
 			{
 				// Symbol
-				fctSymbol.Create(C4SymbolSize, C4SymbolSize);
+				fctSymbol.Create(symbolSize, symbolSize);
 				pPlayer->DrawHostility(fctSymbol, iIndex);
 				// Message
 				StdStrBuf sMsg;
@@ -194,7 +198,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				break;
 			}
 			// create team symbol: Icon spec if specified; otherwise flag for empty and crew for nonempty team
-			fctSymbol.Create(C4SymbolSize, C4SymbolSize);
+			fctSymbol.Create(symbolSize, symbolSize);
 			const char *szIconSpec = pTeam ? pTeam->GetIconSpec() : nullptr;
 			bool fHasIcon = false;
 			if (szIconSpec && *szIconSpec)
@@ -243,7 +247,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 			if (!pPlr->IsInvisible())
 			{
 				// Symbol
-				fctSymbol.Create(C4SymbolSize, C4SymbolSize);
+				fctSymbol.Create(symbolSize, symbolSize);
 				Game.GraphicsResource.fctPlayerClr.DrawClr(fctSymbol, true, pPlr->ColorDw);
 				// Message
 				StdStrBuf sMsg;
@@ -326,6 +330,8 @@ void C4MainMenu::OnClosed(bool ok)
 
 bool C4MainMenu::ActivateGoals(int32_t iPlayer, bool fDoActivate)
 {
+	const auto symbolSize = GetSymbolSize();
+
 	C4FacetExSurface fctSymbol;
 	C4FacetEx fctGF; // goal fulfilled facet
 
@@ -334,8 +340,11 @@ bool C4MainMenu::ActivateGoals(int32_t iPlayer, bool fDoActivate)
 		// Menu symbol/init
 		InitRefSym(GfxR->fctMenu.GetPhase(4), LoadResStr("IDS_MENU_CPGOALS"), iPlayer);
 		SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
+		const auto scale = Application.GetScale();
+		const auto starWidth = Game.GraphicsResource.fctCaptain.Wdt * scale;
+		const auto starHeight = Game.GraphicsResource.fctCaptain.Hgt * scale;
 		SetPermanent(false);
-		fctGF.Set(nullptr, C4SymbolSize - Game.GraphicsResource.fctCaptain.Wdt - 2, 2, Game.GraphicsResource.fctCaptain.Wdt, Game.GraphicsResource.fctCaptain.Hgt);
+		fctGF.Set(nullptr, symbolSize - starWidth - 2 * scale, 2 * scale, starWidth, starHeight);
 	}
 	// determine if the goals are fulfilled - do the calls even if the menu is not to be opened to ensure synchronization
 	C4IDList GoalList, FulfilledGoalList;
@@ -349,7 +358,7 @@ bool C4MainMenu::ActivateGoals(int32_t iPlayer, bool fDoActivate)
 			if (idGoal = GoalList.GetID(i, &cnt))
 				if (pDef = C4Id2Def(idGoal))
 				{
-					fctSymbol.Create(C4SymbolSize, C4SymbolSize);
+					fctSymbol.Create(symbolSize, symbolSize);
 					// 2do: If an object instance is known, draw the object instead?
 					// this would allow us to do dynamic pictures and overlays; e.g. draw the actual, required settlement score
 					// for settlement score goals
@@ -372,6 +381,8 @@ bool C4MainMenu::ActivateGoals(int32_t iPlayer, bool fDoActivate)
 
 bool C4MainMenu::ActivateRules(int32_t iPlayer)
 {
+	const auto symbolSize = GetSymbolSize();
+
 	// Menu symbol/init
 	char Command[256];
 	C4FacetExSurface fctSymbol;
@@ -383,7 +394,7 @@ bool C4MainMenu::ActivateRules(int32_t iPlayer)
 	for (cnt = 0; idGoal = Game.Objects.ObjectsInt().GetListID(C4D_Rule, cnt); cnt++)
 		if (pDef = C4Id2Def(idGoal))
 		{
-			fctSymbol.Create(C4SymbolSize, C4SymbolSize); pDef->Draw(fctSymbol);
+			fctSymbol.Create(symbolSize, symbolSize); pDef->Draw(fctSymbol);
 			sprintf(Command, "Player:Rule:%s", C4IdText(idGoal));
 			Add(pDef->GetName(), fctSymbol, Command, C4MN_Item_NoCount, nullptr, pDef->GetDesc());
 		}
@@ -512,13 +523,15 @@ bool C4MainMenu::ActivateHost(int32_t iPlayer)
 
 bool C4MainMenu::ActivateClient(int32_t iPlayer)
 {
+	const auto symbolSize = GetSymbolSize();
+
 	// Menu symbol/init
 	C4FacetExSurface fctSymbol;
 	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Disconnect), LoadResStr("IDS_MENU_DISCONNECTFROMSERVER"), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
-	fctSymbol.Create(C4SymbolSize, C4SymbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 3, 0);
+	fctSymbol.Create(symbolSize, symbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 3, 0);
 	Add(LoadResStr("IDS_BTN_YES"), fctSymbol, "Part");
-	fctSymbol.Create(C4SymbolSize, C4SymbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 1, 0);
+	fctSymbol.Create(symbolSize, symbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 1, 0);
 	Add(LoadResStr("IDS_BTN_NO"), fctSymbol, "");
 	SetCloseCommand("ActivateMenu:Main");
 	return true;
@@ -526,12 +539,14 @@ bool C4MainMenu::ActivateClient(int32_t iPlayer)
 
 bool C4MainMenu::ActivateSurrender(int32_t iPlayer)
 {
+	const auto symbolSize = GetSymbolSize();
+
 	C4FacetExSurface fctSymbol;
 	InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Surrender), LoadResStr("IDS_MENU_SURRENDER"), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
-	fctSymbol.Create(C4SymbolSize, C4SymbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 3, 0);
+	fctSymbol.Create(symbolSize, symbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 3, 0);
 	Add(LoadResStr("IDS_BTN_YES"), fctSymbol, "Surrender");
-	fctSymbol.Create(C4SymbolSize, C4SymbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 1, 0);
+	fctSymbol.Create(symbolSize, symbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 1, 0);
 	Add(LoadResStr("IDS_BTN_NO"), fctSymbol, "");
 	SetCloseCommand("ActivateMenu:Main");
 	return true;
@@ -621,11 +636,13 @@ bool C4MainMenu::ActivateDisplay(int32_t iPlayer, int32_t selection)
 
 bool C4MainMenu::ActivateMain(int32_t iPlayer)
 {
+	const auto symbolSize = GetSymbolSize();
+
 	// Determine player
 	C4Player *pPlr = Game.Players.Get(iPlayer);
 	// Menu symbol/init
 	C4FacetExSurface fctSymbol;
-	fctSymbol.Create(C4SymbolSize, C4SymbolSize);
+	fctSymbol.Create(symbolSize, symbolSize);
 	GfxR->fctOKCancel.Draw(fctSymbol, true, 1, 1);
 	Init(fctSymbol, LoadResStr(pPlr ? "IDS_MENU_CPMAIN" : "IDS_MENU_OBSERVER"), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);

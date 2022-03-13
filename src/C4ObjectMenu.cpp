@@ -518,7 +518,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						if (!fCountOnly)
 						{
 							sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this,Object(%d))", cObj->Number, pFunction->Name, pTarget->Number);
-							fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, false, 0, nullptr, pFunction->iImagePhase);
+							if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 							Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 							iResult++;
 						}
@@ -538,7 +538,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 							if (!fCountOnly)
 							{
 								sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",Object(%d),%d,Object(%d),%s)", pEff->pCommandTarget->Number, pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
-								fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, false, 0, nullptr, pFunction->iImagePhase);
+								if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 								Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 								fctSymbol.Default();
 								iResult++;
@@ -558,7 +558,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 								if (!fCountOnly)
 								{
 									sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this,Object(%d))", cObj->Number, pFunction->Name, pTarget->Number);
-									fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, false, 0, nullptr, pFunction->iImagePhase);
+									if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 									Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 									fctSymbol.Default();
 									iResult++;
@@ -596,9 +596,15 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						// Command
 						sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this)", pTarget->Number, pFunction->Name);
 						// Symbol
-						fctSymbol.Create(16, 16);
-						if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, false, 0, nullptr, pFunction->iImagePhase);
-						else pTarget->DrawPicture(fctSymbol);
+						if (pDef = C4Id2Def(pFunction->idImage))
+						{
+							pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
+						}
+						else
+						{
+							fctSymbol.Create(symbolSize, symbolSize);
+							pTarget->DrawPicture(fctSymbol);
+						}
 						// Add menu item
 						Add(strDescText, fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 						// Preserve symbol
@@ -614,7 +620,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						if (!fCountOnly)
 						{
 							sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this)", pTarget->Number, pFunction->Name);
-							fctSymbol.Create(16, 16); if (pDef = C4Id2Def(pFunction->idImage)) pDef->Draw(fctSymbol, false, 0, nullptr, pFunction->iImagePhase);
+							if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 							Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 							fctSymbol.Default();
 							iResult++;
@@ -642,7 +648,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 				else if (!fCountOnly)
 				{
 					sprintf(szCommand, "SetCommand(this,\"Context\",,0,0,this)&&ExecuteCommand()");
-					fctSymbol.Create(16, 16); Object->Def->Draw(fctSymbol, false, Object->Color);
+					Object->Def->Picture2Facet(fctSymbol, Object->Color);
 					Add(Object->Def->GetName(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CONTEXTSUBCLONKDESC"));
 					fctSymbol.Default();
 					iResult++;
