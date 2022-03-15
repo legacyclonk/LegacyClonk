@@ -45,7 +45,8 @@ public:
 		EBP_Energy = 1,
 		EBP_Magic = 2,
 		EBP_Breath = 3,
-		EBP_All = EBP_Energy | EBP_Magic | EBP_Breath
+		EBP_First = EBP_None,
+		EBP_Last = EBP_Breath
 	};
 
 	enum Hide

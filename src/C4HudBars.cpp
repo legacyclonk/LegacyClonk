@@ -610,7 +610,7 @@ void C4HudBarsUniquifier::ProcessHudBar(std::int32_t &valueIndex, const C4HudBar
 
 	C4Value physical{bar[C4VString("physical")]};
 	auto _physical = static_cast<C4HudBarDef::Physical>(physical.getInt());
-	if (_physical & ~C4HudBarDef::EBP_All) error("physical", physical);
+	if (C4HudBarDef::EBP_First <= _physical && _physical <= C4HudBarDef::EBP_Last) error("physical", physical);
 
 	C4Value hide{bar[C4VString("hide")]};
 	auto _hide = C4HudBarDef::EBH_Empty;
