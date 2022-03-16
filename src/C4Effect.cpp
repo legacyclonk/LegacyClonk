@@ -413,7 +413,7 @@ void C4Effect::DoDamage(C4Object *pObj, int32_t &riDamage, int32_t iDamageType, 
 	} while ((pEff = pEff->pNext) && riDamage);
 }
 
-C4Value C4Effect::DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1, const C4Value &rVal2, const C4Value &rVal3, const C4Value &rVal4, const C4Value &rVal5, const C4Value &rVal6, const C4Value &rVal7, bool passErrors)
+C4Value C4Effect::DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1, const C4Value &rVal2, const C4Value &rVal3, const C4Value &rVal4, const C4Value &rVal5, const C4Value &rVal6, const C4Value &rVal7, bool passErrors, bool convertNilToIntBool)
 {
 	// def script or global only?
 	C4AulScript *pSrcScript; C4Def *pDef;
@@ -433,7 +433,7 @@ C4Value C4Effect::DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1,
 	// call it
 	C4AulFunc *pFn = pSrcScript->GetFuncRecursive(fn);
 	if (!pFn) return C4Value();
-	return pFn->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), rVal1, rVal2, rVal3, rVal4, rVal5, rVal6, rVal7}, passErrors, true);
+	return pFn->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), rVal1, rVal2, rVal3, rVal4, rVal5, rVal6, rVal7}, passErrors, true, convertNilToIntBool);
 }
 
 void C4Effect::OnObjectChangedDef(C4Object *pObj)

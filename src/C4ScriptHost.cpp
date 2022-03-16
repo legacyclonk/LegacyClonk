@@ -125,7 +125,7 @@ void C4ScriptHost::GetControlMethodMask(const char *szFunctionFormat, int32_t &f
 #endif
 }
 
-C4Value C4ScriptHost::FunctionCall(C4Object *pCaller, const char *szFunction, C4Object *pObj, const C4AulParSet &Pars, bool fPrivateCall, bool fPassError)
+C4Value C4ScriptHost::FunctionCall(C4Object *pCaller, const char *szFunction, C4Object *pObj, const C4AulParSet &Pars, bool fPrivateCall, bool fPassError, bool convertNilToIntBool)
 {
 #ifdef C4ENGINE
 
@@ -137,7 +137,7 @@ C4Value C4ScriptHost::FunctionCall(C4Object *pCaller, const char *szFunction, C4
 	C4AulScriptFunc *pFn;
 	if (!(pFn = GetSFunc(szFunction, Acc))) return C4VNull;
 	// Call code
-	return pFn->Exec(pObj, Pars, fPassError, true);
+	return pFn->Exec(pObj, Pars, fPassError, true, convertNilToIntBool);
 
 #else
 
@@ -246,7 +246,7 @@ bool C4GameScriptHost::Execute()
 	return false;
 }
 
-C4Value C4GameScriptHost::GRBroadcast(const char *szFunction, const C4AulParSet &pPars, bool fPassError, bool fRejectTest)
+C4Value C4GameScriptHost::GRBroadcast(const char *szFunction, const C4AulParSet &pPars, bool fPassError, bool fRejectTest, bool convertNilToIntBool)
 {
 	// call objects first - scenario script might overwrite hostility, etc...
 	C4Object *pObj;
@@ -254,12 +254,12 @@ C4Value C4GameScriptHost::GRBroadcast(const char *szFunction, const C4AulParSet 
 		if (pObj->Category & (C4D_Goal | C4D_Rule | C4D_Environment))
 			if (pObj->Status)
 			{
-				C4Value vResult(pObj->Call(szFunction, pPars, fPassError));
+				C4Value vResult(pObj->Call(szFunction, pPars, fPassError, convertNilToIntBool));
 				// rejection tests abort on first nonzero result
 				if (fRejectTest) if (vResult) return vResult;
 			}
 	// scenario script call
-	return Call(szFunction, pPars, fPassError);
+	return Call(szFunction, pPars, fPassError, convertNilToIntBool);
 }
 
 void C4GameScriptHost::CompileFunc(StdCompiler *pComp)

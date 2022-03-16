@@ -117,7 +117,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			case 'v':
 			{
 				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
-				if (!Par[cPar]->_getRaw() && cthr->Caller && cthr->Caller->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3)
+				if (!Par[cPar]->_getRaw() && !cthr->CalledWithStrictNil())
 				{
 					StringBuf.Append("0");
 				}
@@ -3390,7 +3390,7 @@ static C4Value FnCall(C4AulContext *cthr, C4String *szFunction,
 	if (!szFunction || !cthr->Obj) return C4VNull;
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);
-	return cthr->Obj->Call(FnStringPar(szFunction), Pars, true);
+	return cthr->Obj->Call(FnStringPar(szFunction), Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnObjectCall(C4AulContext *cthr,
@@ -3407,7 +3407,7 @@ static C4Value FnObjectCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, Pars, true, true);
+	return f->Exec(pObj, Pars, true, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnDefinitionCall(C4AulContext *cthr,
@@ -3425,7 +3425,7 @@ static C4Value FnDefinitionCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// Call
-	return pDef->Script.Call(szFunc2, Pars, true);
+	return pDef->Script.Call(szFunc2, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnGameCall(C4AulContext *cthr,
@@ -3440,7 +3440,7 @@ static C4Value FnGameCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);
 	// Call
-	return Game.Script.Call(szFunc2, Pars, true);
+	return Game.Script.Call(szFunc2, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnGameCallEx(C4AulContext *cthr,
@@ -3455,7 +3455,7 @@ static C4Value FnGameCallEx(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);
 	// Call
-	return Game.Script.GRBroadcast(szFunc2, Pars, true);
+	return Game.Script.GRBroadcast(szFunc2, Pars, true, false, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnProtectedCall(C4AulContext *cthr,
@@ -3472,7 +3472,7 @@ static C4Value FnProtectedCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, Pars, true);
+	return f->Exec(pObj, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnPrivateCall(C4AulContext *cthr,
@@ -3489,7 +3489,7 @@ static C4Value FnPrivateCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, Pars, true);
+	return f->Exec(pObj, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Object *FnEditCursor(C4AulContext *cth)
@@ -3752,7 +3752,7 @@ static bool FnIsRef(C4AulContext *cthr, C4Value Value)
 
 static C4ValueInt FnGetType(C4AulContext *cthr, C4Value Value)
 {
-	if (!Value._getBool() && cthr->Caller && cthr->Caller->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3) return C4V_Any;
+	if (!Value._getBool() && cthr->Caller && !cthr->CalledWithStrictNil()) return C4V_Any;
 	return Value.GetType();
 }
 
@@ -5542,7 +5542,7 @@ static C4Value FnEffectCall(C4AulContext *ctx, C4Object *pTarget, C4ValueInt iNu
 	if (!pEffect) return C4VNull;
 	if (!(pEffect = pEffect->Get(iNumber, true))) return C4VNull;
 	// do call
-	return pEffect->DoCall(pTarget, szCallFn, vVal1, vVal2, vVal3, vVal4, vVal5, vVal6, vVal7, true);
+	return pEffect->DoCall(pTarget, szCallFn, vVal1, vVal2, vVal3, vVal4, vVal5, vVal6, vVal7, true, !ctx->CalledWithStrictNil());
 }
 
 static C4ValueInt FnModulateColor(C4AulContext *cthr, std::optional<C4ValueInt> iClr1, C4ValueInt iClr2)

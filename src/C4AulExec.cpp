@@ -46,6 +46,11 @@ void C4AulExecError::show() const
 #endif
 }
 
+bool C4AulContext::CalledWithStrictNil() const noexcept
+{
+	return Caller && Caller->Func->HasStrictNil();
+}
+
 const int MAX_CONTEXT_STACK = 512;
 const int MAX_VALUE_STACK = 1024;
 
@@ -1418,9 +1423,9 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 	// Script function?
 	C4AulScriptFunc *pSFunc = pFunc->SFunc();
 
-	const bool convertToAnyEagerly = pCurCtx->Func->pOrgScript->Strict < C4AulScriptStrict::STRICT3;
+	const bool convertToAnyEagerly = !pCurCtx->Func->HasStrictNil();
 
-	const bool convertNilToIntBool = convertToAnyEagerly && pSFunc && pSFunc->pOrgScript->Strict >= C4AulScriptStrict::STRICT3;
+	const bool convertNilToIntBool = convertToAnyEagerly && pSFunc && pSFunc->HasStrictNil();
 
 	CheckConvertFunctionParameters(pCurCtx->Obj, pFunc, pPars, convertToAnyEagerly, convertNilToIntBool);
 
@@ -1590,7 +1595,7 @@ void C4AulProfiler::Show()
 	// done!
 }
 
-C4Value C4AulFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors, bool nonStrict3WarnConversionOnly)
+C4Value C4AulFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors, bool nonStrict3WarnConversionOnly, bool convertNilToIntBool)
 {
 	// construct a dummy caller context
 	C4AulContext ctx;
@@ -1599,8 +1604,9 @@ C4Value C4AulFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErro
 	ctx.Caller = nullptr;
 
 	const auto sFunc = SFunc();
+	const auto hasStrictNil = sFunc && sFunc->HasStrictNil();
 	auto pars = pPars;
-	if (TryCheckConvertFunctionParameters(pObj, this, pars.Par, false, false, fPassErrors, nonStrict3WarnConversionOnly && sFunc && sFunc->pOrgScript->Strict < C4AulScriptStrict::STRICT3))
+	if (TryCheckConvertFunctionParameters(pObj, this, pars.Par, !hasStrictNil, hasStrictNil && convertNilToIntBool, fPassErrors, nonStrict3WarnConversionOnly && !hasStrictNil))
 	{
 		// execute
 		return Exec(&ctx, pars.Par, fPassErrors);
@@ -1625,15 +1631,16 @@ C4Value C4AulScriptFunc::Exec(C4AulContext *pCtx, const C4Value pPars[], bool fP
 #endif
 }
 
-C4Value C4AulScriptFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors, bool nonStrict3WarnConversionOnly)
+C4Value C4AulScriptFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors, bool nonStrict3WarnConversionOnly, bool convertNilToIntBool)
 {
 #ifdef C4ENGINE
 
 	// handle easiest case first
 	if (Owner->State != ASS_PARSED) return C4VNull;
 
+	const auto isAtLeastStrict3 = HasStrictNil();
 	auto pars = pPars;
-	if (TryCheckConvertFunctionParameters(pObj, this, pars.Par, false, false, fPassErrors, nonStrict3WarnConversionOnly && pOrgScript->Strict < C4AulScriptStrict::STRICT3))
+	if (TryCheckConvertFunctionParameters(pObj, this, pars.Par, !isAtLeastStrict3, isAtLeastStrict3 && convertNilToIntBool, fPassErrors, nonStrict3WarnConversionOnly && !isAtLeastStrict3))
 	{
 		// execute
 		return AulExec.Exec(this, pObj, pars.Par, fPassErrors);
@@ -1645,6 +1652,11 @@ C4Value C4AulScriptFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPa
 	return C4AulNull;
 
 #endif
+}
+
+bool C4AulScriptFunc::HasStrictNil() const noexcept
+{
+	return pOrgScript->Strict >= C4AulScriptStrict::STRICT3;
 }
 
 C4Value C4AulScript::DirectExec(C4Object *pObj, const char *szScript, const char *szContext, bool fPassErrors, C4AulScriptStrict Strict)

@@ -251,6 +251,8 @@ struct C4AulContext
 	C4Object *Obj;
 	C4Def *Def;
 	struct C4AulScriptContext *Caller;
+
+	bool CalledWithStrictNil() const noexcept;
 };
 
 // execution context
@@ -301,7 +303,7 @@ public:
 	virtual const C4V_Type *GetParType() { return nullptr; }
 	virtual C4V_Type GetRetType() { return C4V_Any; }
 	virtual C4Value Exec(C4AulContext *pCallerCtx, const C4Value pPars[], bool fPassErrors = false) { return C4Value(); } // execute func (script call)
-	virtual C4Value Exec(C4Object *pObj = nullptr, const C4AulParSet &pPars = C4AulParSet{}, bool fPassErrors = false, bool nonStrict3WarnConversionOnly = false); // execute func (engine call)
+	virtual C4Value Exec(C4Object *pObj = nullptr, const C4AulParSet &pPars = C4AulParSet{}, bool fPassErrors = false, bool nonStrict3WarnConversionOnly = false, bool convertNilToIntBool = true); // execute func (engine call)
 	virtual void UnLink() { OverloadedBy = NextSNFunc = nullptr; }
 
 	C4AulFunc *GetLocalSFunc(const char *szIdtf); // find script function in own scope
@@ -353,13 +355,15 @@ public:
 	virtual const C4V_Type *GetParType() override { return ParType; }
 	virtual C4V_Type GetRetType() override { return bReturnRef ? C4V_pC4Value : C4V_Any; }
 	virtual C4Value Exec(C4AulContext *pCallerCtx, const C4Value pPars[], bool fPassErrors = false) override; // execute func (script call, should not happen)
-	virtual C4Value Exec(C4Object *pObj = nullptr, const C4AulParSet &pPars = C4AulParSet{}, bool fPassErrors = false, bool nonStrict3WarnConversionOnly = false) override; // execute func (engine call)
+	virtual C4Value Exec(C4Object *pObj = nullptr, const C4AulParSet &pPars = C4AulParSet{}, bool fPassErrors = false, bool nonStrict3WarnConversionOnly = false, bool convertNilToIntBool = true) override; // execute func (engine call)
 
 	void CopyBody(C4AulScriptFunc &FromFunc); // copy script/code, etc from given func
 
 	StdStrBuf GetFullName(); // get a fully classified name (C4ID::Name) for debug output
 
 	time_t tProfileTime; // internally set by profiler
+
+	bool HasStrictNil() const noexcept;
 
 	friend class C4AulScript;
 };

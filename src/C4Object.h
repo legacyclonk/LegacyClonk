@@ -235,7 +235,7 @@ public:
 	bool MenuCommand(const char *szCommand);
 
 	bool CallControl(C4Player *pPlr, uint8_t byCom, const C4AulParSet &pPars = C4AulParSet{});
-	C4Value Call(const char *szFunctionCall, const C4AulParSet &pPars = C4AulParSet{}, bool fPassError = false);
+	C4Value Call(const char *szFunctionCall, const C4AulParSet &pPars = C4AulParSet{}, bool fPassError = false, bool convertNilToIntBool = true);
 
 	bool ContainedControl(uint8_t byCom);
 

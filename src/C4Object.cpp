@@ -2192,10 +2192,10 @@ void C4Object::ClearPointers(C4Object *pObj)
 	}
 }
 
-C4Value C4Object::Call(const char *szFunctionCall, const C4AulParSet &pPars, bool fPassError)
+C4Value C4Object::Call(const char *szFunctionCall, const C4AulParSet &pPars, bool fPassError, bool convertNilToIntBool)
 {
 	if (!Status || !Def || !szFunctionCall[0]) return C4VNull;
-	return Def->Script.ObjectCall(this, this, szFunctionCall, pPars, fPassError);
+	return Def->Script.ObjectCall(this, this, szFunctionCall, pPars, fPassError, convertNilToIntBool);
 }
 
 bool C4Object::SetPhase(int32_t iPhase)

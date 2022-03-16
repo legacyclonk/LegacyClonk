@@ -122,7 +122,7 @@ public:
 	void ClearAll(C4Object *pObj, int32_t iClearFlag); // kill all effects doing removal calls w/o reagard of inactive effects
 	void DoDamage(C4Object *pObj, int32_t &riDamage, int32_t iDamageType, int32_t iCausePlr); // ask all effects for damage
 
-	C4Value DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1 = C4VNull, const C4Value &rVal2 = C4VNull, const C4Value &rVal3 = C4VNull, const C4Value &rVal4 = C4VNull, const C4Value &rVal5 = C4VNull, const C4Value &rVal6 = C4VNull, const C4Value &rVal7 = C4VNull, bool passErrors = false); // custom call
+	C4Value DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1 = C4VNull, const C4Value &rVal2 = C4VNull, const C4Value &rVal3 = C4VNull, const C4Value &rVal4 = C4VNull, const C4Value &rVal5 = C4VNull, const C4Value &rVal6 = C4VNull, const C4Value &rVal7 = C4VNull, bool passErrors = false, bool convertNilToIntBool = true); // custom call
 
 	void ReAssignCallbackFunctions()
 	{
