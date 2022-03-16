@@ -607,27 +607,27 @@ bool C4ScenarioSection::EnsureTempStore(bool fExtractLandscape, bool fExtractObj
 	// if it's temp store already, don't do anything
 	if (!TempFilename.empty()) return true;
 	// make temp filename
-	std::string tmp{Config.AtTempPath(!Filename.empty() ? Filename.c_str() : Name.c_str())};
-	MakeTempFilename(tmp.data());
+	StdStrBuf tmp{Config.AtTempPath(!Filename.empty() ? Filename.c_str() : Name.c_str())};
+	MakeTempFilename(&tmp);
 	// main section: extract section files from main scenario group (create group as open dir)
 	if (Filename.empty())
 	{
-		if (!CreateDirectory(tmp.c_str(), nullptr)) return false;
+		if (!CreateDirectory(tmp.getData(), nullptr)) return false;
 		C4Group hGroup;
-		if (!hGroup.Open(tmp.c_str(), true)) { EraseItem(tmp.c_str()); return false; }
+		if (!hGroup.Open(tmp.getData(), true)) { EraseItem(tmp.getData()); return false; }
 		// extract all desired section files
 		Game.ScenarioFile.ResetSearch();
 		char fn[_MAX_FNAME + 1]; *fn = 0;
 		while (Game.ScenarioFile.FindNextEntry(C4FLS_Section, fn))
 			if (fExtractLandscape || !WildcardMatch(C4FLS_SectionLandscape, fn))
 				if (fExtractObjects || !WildcardMatch(C4FLS_SectionObjects, fn))
-					Game.ScenarioFile.ExtractEntry(fn, tmp.c_str());
+					Game.ScenarioFile.ExtractEntry(fn, tmp.getData());
 		hGroup.Close();
 	}
 	else
 	{
 		// subsection: simply extract section from main group
-		if (!Game.ScenarioFile.ExtractEntry(Filename.c_str(), tmp.c_str())) return false;
+		if (!Game.ScenarioFile.ExtractEntry(Filename.c_str(), tmp.getData())) return false;
 		// delete undesired landscape/object files
 		if (!fExtractLandscape || !fExtractObjects)
 		{
@@ -640,7 +640,7 @@ bool C4ScenarioSection::EnsureTempStore(bool fExtractLandscape, bool fExtractObj
 		}
 	}
 	// copy temp filename
-	TempFilename = tmp;
+	TempFilename = tmp.getData();
 	// done, success
 	return true;
 }
