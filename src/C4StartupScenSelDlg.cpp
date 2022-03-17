@@ -1316,7 +1316,8 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 	pScenSelStyleTabular->SetDrawDecoration(false);
 	AddElement(pScenSelStyleTabular);
 	C4GUI::Tabular::Sheet *pSheetBook = pScenSelStyleTabular->AddSheet(nullptr);
-	C4GUI::Tabular::Sheet *pSheetMap = pScenSelStyleTabular->AddSheet(nullptr);
+	// map sheet; later queried via GetSheet(ShowStyle_Map)
+	pScenSelStyleTabular->AddSheet(nullptr);
 
 	// scenario selection list
 	CStdFont &rScenSelCaptionFont = C4Startup::Get()->Graphics.BookFontTitle;
