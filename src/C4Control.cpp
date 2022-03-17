@@ -675,8 +675,11 @@ C4ControlJoinPlayer::C4ControlJoinPlayer(const char *szFilename, int32_t iAtClie
 	// load from file if filename is given - which may not be the case for script players
 	if (szFilename)
 	{
-		bool fSuccess = PlrData.LoadFromFile(szFilename);
-		assert(fSuccess);
+		if (!PlrData.LoadFromFile(szFilename))
+		{
+			LogF("WARNING: Failed loading player data from file %s", szFilename);
+			assert(!"PlrData.LoadFromFile failed");
+		}
 	}
 }
 
