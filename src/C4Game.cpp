@@ -87,7 +87,7 @@ bool C4Game::InitDefs()
 	int32_t iDefs = 0;
 	Log(LoadResStr("IDS_PRC_INITDEFS"));
 	int iDefResCount = 0;
-	for (const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
+	for ([[maybe_unused]] const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
 		++iDefResCount;
 	int i = 0;
 	// Load specified defs

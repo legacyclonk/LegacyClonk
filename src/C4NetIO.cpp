@@ -3638,7 +3638,7 @@ void C4NetIOUDP::Peer::CheckCompleteIPackets()
 		// advance packet counter
 		iIPacketCounter = pPkt->GetNr() + pPkt->FragmentCnt();
 		// remove packet from queue
-		int iNr = pPkt->GetNr();
+		[[maybe_unused]] int iNr = pPkt->GetNr();
 		IPackets.DeletePacket(pPkt);
 		assert(!IPackets.GetPacketFrgm(iNr));
 	}
@@ -3652,7 +3652,7 @@ void C4NetIOUDP::Peer::CheckCompleteIPackets()
 		// advance packet counter
 		iIMCPacketCounter = pPkt->GetNr() + pPkt->FragmentCnt();
 		// remove packet from queue
-		int iNr = pPkt->GetNr();
+		[[maybe_unused]] int iNr = pPkt->GetNr();
 		IMCPackets.DeletePacket(pPkt);
 		assert(!IMCPackets.GetPacketFrgm(iNr));
 	}
