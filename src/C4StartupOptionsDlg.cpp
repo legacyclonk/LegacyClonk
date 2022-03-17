@@ -133,7 +133,6 @@ bool C4StartupOptionsDlg::ScaleEdit::CharIn(const char *c)
 
 C4GUI::Edit::InputResult C4StartupOptionsDlg::ScaleEdit::OnFinishInput(bool fPasting, bool fPastingMore)
 {
-	char *endPtr = nullptr;
 	int val = toUl(GetText(), 0);
 	if (!Inside(val, minScale, maxScale)) SetText(FormatString("%d", pDlg->iNewScale).getData(), true);
 	else

@@ -354,7 +354,7 @@ void C4Facet::DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &g
 #ifdef C4ENGINE
 	// draw energy level using graphics
 	if (!lpDDraw || !gfx.Surface) return;
-	int32_t y0 = Y, x0 = X, h = gfx.Hgt;
+	int32_t h = gfx.Hgt;
 	int32_t yBar = Hgt - BoundBy<int32_t>(iLevel, 0, iRange) * Hgt / std::max<int32_t>(iRange, 1);
 	int32_t iY = 0, vidx = 0;
 	C4Facet gfx_draw = gfx;

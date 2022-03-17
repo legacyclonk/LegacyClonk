@@ -1242,7 +1242,6 @@ void C4Viewport::AdjustPosition()
 
 void C4Viewport::CenterPosition()
 {
-	int32_t ViewportScrollBorder = Application.isFullScreen ? C4ViewportScrollBorder : 0;
 	// center viewport position on map
 	// set center position
 	ViewX = (GBackWdt - ViewWdt) / 2;
@@ -1253,7 +1252,6 @@ void C4Viewport::CenterPosition()
 
 void C4Viewport::UpdateViewPosition()
 {
-	int32_t ViewportScrollBorder = Application.isFullScreen ? C4ViewportScrollBorder : 0;
 	// no-owner viewports should not scroll outside viewing area
 	if (fIsNoOwnerViewport)
 	{
@@ -1505,7 +1503,6 @@ void C4Viewport::DrawPlayerStartup(C4FacetEx &cgo)
 void C4Viewport::SetOutputSize(int32_t iDrawX, int32_t iDrawY, int32_t iOutX, int32_t iOutY, int32_t iOutWdt, int32_t iOutHgt)
 {
 	// update view position: Remain centered at previous position
-	int32_t ViewportScrollBorder = Application.isFullScreen ? C4ViewportScrollBorder : 0;
 	ViewX += (ViewWdt - iOutWdt) / 2;
 	ViewY += (ViewHgt - iOutHgt) / 2;
 	// update output parameters

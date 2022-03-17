@@ -310,8 +310,6 @@ void CStdGL::BlitLandscape(C4Surface *const sfcSource, C4Surface *const sfcSourc
 	assert(!(dwBlitMode & C4GFXBLIT_MOD2));
 	// bound
 	if (ClipAll) return;
-	// check exact
-	bool fExact = true;
 	// inside screen?
 	if (wdt <= 0 || hgt <= 0) return;
 	// prepare rendering to surface
@@ -319,7 +317,6 @@ void CStdGL::BlitLandscape(C4Surface *const sfcSource, C4Surface *const sfcSourc
 	// texture present?
 	if (!sfcSource->ppTex) return;
 	// blit with basesfc?
-	bool fBaseSfc = false;
 	// get involved texture offsets
 	int iTexSize = sfcSource->iTexSize;
 	const int iTexX = (std::max)(fx / iTexSize, 0);

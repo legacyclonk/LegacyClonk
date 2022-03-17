@@ -123,7 +123,7 @@ void C4SoundSystem::LoadEffects(C4Group &group)
 			if (!group.LoadEntry(filename, buf)) continue;
 			try
 			{
-				const auto &newSample = samples.emplace_back(filename, buf.getData(), buf.getSize());
+				samples.emplace_back(filename, buf.getData(), buf.getSize());
 				// Overload (i.e. remove) existing sample of the same name
 				if (existingSample != samples.cend()) samples.erase(existingSample);
 			}
