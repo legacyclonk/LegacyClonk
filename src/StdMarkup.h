@@ -96,6 +96,7 @@ public:
 	}
 
 	StdStrBuf ToMarkup();
+	StdStrBuf ToCloseMarkup();
 
 	bool Clean() { return !pTags; } // empty?
 

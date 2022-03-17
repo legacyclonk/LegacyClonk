@@ -126,6 +126,13 @@ StdStrBuf CMarkup::ToMarkup()
 	return result;
 }
 
+StdStrBuf CMarkup::ToCloseMarkup()
+{
+	StdStrBuf result;
+	for (CMarkupTag *pTag = pLast; pTag; pTag = pTag->pPrev) result.AppendFormat("</%s>", pTag->TagName());
+	return result;
+}
+
 bool CMarkup::StripMarkup(char *szText)
 {
 	// skip any tags and inline-images

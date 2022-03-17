@@ -737,7 +737,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 				if (fCheckMarkup)
 				{
 					tempPart.Copy(pOut->getMPtr(iLastBreakOutLen));
-					pOut->SetLength(iLastBreakOutLen);
+					pOut->SetLength(iLastBreakOutLen - 1);
 				}
 			}
 			else
@@ -747,7 +747,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 				if (fCheckMarkup)
 				{
 					tempPart.Copy(pOut->getMPtr(iLastBreakOutLen) + 1);
-					pOut->SetLength(iLastBreakOutLen + 1);
+					pOut->SetLength(iLastBreakOutLen);
 				}
 			}
 			if (fCheckMarkup)
@@ -761,7 +761,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 					while (*lastLine == '<' && markup.Read(&lastLine));
 					if (*lastLine) ++lastLine;
 				}
-				(*pOut) += markup.ToMarkup() + tempPart;
+				(*pOut) += markup.ToCloseMarkup() + "\n" + markup.ToMarkup() + tempPart;
 			}
 			// calc next line usage
 			iX -= iXBreak;
