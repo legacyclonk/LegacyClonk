@@ -1431,6 +1431,7 @@ const int C4MN_Add_ImgRank     = 1,
           C4MN_Add_ImgObject   = 4,
           C4MN_Add_ImgTextSpec = 5,
           C4MN_Add_ImgColor    = 6,
+          C4MN_Add_ImgIndexedColor = 7,
           C4MN_Add_MaxImage    = 127, // mask for param which decides what to draw as the menu symbol
           C4MN_Add_PassValue   = 128,
           C4MN_Add_ForceCount  = 256,
@@ -1668,6 +1669,14 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	case C4MN_Add_ImgColor:
 		// set colored def facet
 		pDef->Picture2Facet(fctSymbol, XPar.getInt());
+		break;
+
+	case C4MN_Add_ImgIndexedColor:
+		if (iExtra & C4MN_Add_PassValue)
+		{
+			throw C4AulExecError{cthr->Obj, "AddMenuItem: C4MN_Add_ImgIndexedColor can not be used together with C4MN_Add_PassValue!"};
+		}
+		pDef->Picture2Facet(fctSymbol, XPar2.getInt(), XPar.getInt());
 		break;
 
 	default:
@@ -6309,6 +6318,7 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 	{ "C4MN_Add_ImgObject",   C4V_Int, C4MN_Add_ImgObject },
 	{ "C4MN_Add_ImgTextSpec", C4V_Int, C4MN_Add_ImgTextSpec },
 	{ "C4MN_Add_ImgColor",    C4V_Int, C4MN_Add_ImgColor },
+	{ "C4MN_Add_ImgIndexedColor",    C4V_Int, C4MN_Add_ImgIndexedColor },
 	{ "C4MN_Add_PassValue",   C4V_Int, C4MN_Add_PassValue },
 	{ "C4MN_Add_ForceCount",  C4V_Int, C4MN_Add_ForceCount },
 	{ "C4MN_Add_ForceNoDesc", C4V_Int, C4MN_Add_ForceNoDesc },
