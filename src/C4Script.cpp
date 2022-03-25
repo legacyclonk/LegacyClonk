@@ -1796,17 +1796,20 @@ static bool FnComponentAll(C4AulContext *cthr, Required<C4Object *> pObj, C4ID c
 }
 
 static C4Object *FnCreateObject(C4AulContext *cthr,
-	C4ID id, C4ValueInt iXOffset, C4ValueInt iYOffset, C4ValueInt iOwner)
+	C4ID id, C4ValueInt iXOffset, C4ValueInt iYOffset, std::optional<C4ValueInt> iOwner)
 {
 	const auto obj = cthr->Obj;
+	const auto strictness = cthr->Caller ? cthr->Caller->Func->pOrgScript->Strict : C4AulScriptStrict::NONSTRICT;
+	const auto fallbackOwner = (strictness >= C4AulScriptStrict::STRICT3 ? (obj ? obj->Owner : NO_OWNER) : 0);
+	auto owner = iOwner.value_or(fallbackOwner);
 	if (obj) // Local object calls override
 	{
 		MakePositionRelative(obj, iXOffset, iYOffset);
-		if (!cthr->Caller || cthr->Caller->Func->Owner->Strict == C4AulScriptStrict::NONSTRICT)
-			iOwner = obj->Owner;
+		if (strictness == C4AulScriptStrict::NONSTRICT)
+			owner = obj->Owner;
 	}
 
-	C4Object *pNewObj = Game.CreateObject(id, obj, iOwner, iXOffset, iYOffset);
+	C4Object *pNewObj = Game.CreateObject(id, obj, owner, iXOffset, iYOffset);
 
 	// Set initial controller to creating controller, so more complicated cause-effect-chains can be traced back to the causing player
 	if (pNewObj && obj && obj->Controller > NO_OWNER) pNewObj->Controller = obj->Controller;
