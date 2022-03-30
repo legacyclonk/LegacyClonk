@@ -846,8 +846,13 @@ void C4GraphicsOverlay::DrawPicture(C4Facet &cgo, C4Object *pForObj)
 		Application.DDraw->SetBlitMode(dwBlitMode);
 		if (dwClrModulation != 0xffffff) Application.DDraw->ActivateBlitModulation(dwClrModulation);
 	}
+	// the translation has to be adjusted, because positioning on the picture assumes that cgo is quadratic with side length C4SymbolSize
+	C4DrawTransform adjustedTransform{Transform, 0, 0};
+	float scaleFactor = static_cast<float>(cgo.Wdt) / float{C4SymbolSize};
+	adjustedTransform.mat[2] *= scaleFactor;
+	adjustedTransform.mat[5] *= scaleFactor;
 	// draw at given rect
-	fctBlit.DrawT(cgo, true, iPhase, 0, &C4DrawTransform(Transform, cgo.X + float(cgo.Wdt) / 2, cgo.Y + float(cgo.Hgt) / 2), pSourceGfx->pDef->Scale);
+	fctBlit.DrawT(cgo, true, iPhase, 0, &C4DrawTransform(adjustedTransform, cgo.X + float(cgo.Wdt) / 2, cgo.Y + float(cgo.Hgt) / 2), pSourceGfx->pDef->Scale);
 	// cleanup
 	if (dwBlitMode == C4GFXBLIT_PARENT)
 	{
