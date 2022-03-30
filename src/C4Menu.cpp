@@ -136,7 +136,7 @@ int32_t C4MenuItem::GetSymbolWidth(int32_t iForHeight)
 {
 	// Context or dialog menus
 	if (iStyle == C4MN_Style_Context || (iStyle == C4MN_Style_Dialog && Symbol.Surface))
-		return (std::max)(Symbol.Wdt * iForHeight / std::max<int32_t>(Symbol.Hgt, 1), iForHeight);
+		return iForHeight;
 	// Info menus
 	if (iStyle == C4MN_Style_Info && Symbol.Surface && Symbol.Wdt)
 		return std::min(Symbol.Wdt, C4PictureSize);
