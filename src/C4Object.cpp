@@ -3310,7 +3310,8 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 
 	// Wether this is a KeyRelease-event
 	bool IsRelease = Inside(byCom, COM_ReleaseFirst, COM_ReleaseLast);
-	bool isCursor = Inside<int>((IsRelease ? byCom - 16 : byCom & ~(COM_Single | COM_Double)), COM_CursorFirst, COM_CursorLast);
+	const auto plainCom = (IsRelease ? (byCom - 16) : (byCom & ~(COM_Single | COM_Double)));
+	bool isCursor = Inside<int>(plainCom, COM_CursorFirst, COM_CursorLast);
 
 	// we only want the script callbacks for cursor controls
 	if (isCursor)
@@ -3323,7 +3324,7 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 	}
 
 	// COM_Special and COM_Contents specifically bypass the menu and always go to the object
-	bool fBypassMenu = ((byCom == COM_Special) || (byCom == COM_Contents));
+	bool fBypassMenu = ((plainCom == COM_Special) || (byCom == COM_Contents));
 
 	// Menu control
 	if (!fBypassMenu)
@@ -3347,9 +3348,9 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 		return;
 	}
 
-	// Contained control (except specials - hey, doesn't catch singles or doubles)
+	// Contained control (except specials)
 	if (Contained)
-		if (byCom != COM_Special && byCom != COM_Special2 && byCom != COM_WheelUp && byCom != COM_WheelDown)
+		if (plainCom != COM_Special && plainCom != COM_Special2 && byCom != COM_WheelUp && byCom != COM_WheelDown)
 		{
 			Contained->Controller = Controller; ContainedControl(byCom); return;
 		}
