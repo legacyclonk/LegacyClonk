@@ -3240,7 +3240,7 @@ bool C4Object::ContainedControl(uint8_t byCom)
 	case COM_Down:
 		PlayerObjectCommand(Owner, C4CMD_Exit);
 		break;
-	case COM_Throw:
+	case COM_Throw: case COM_Throw_D:
 		PlayerObjectCommand(Owner, C4CMD_Throw);
 		break;
 	case COM_Up:
