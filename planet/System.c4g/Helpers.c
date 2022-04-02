@@ -173,3 +173,10 @@ global func ClearScheduleCall(object pObj, string strFunction)
         // Effekt löschen
         RemoveEffect(0, pObj, iEffect);
 }
+
+// parameters same as for SetAction
+global func SetActionKeepPhase(...)
+{
+  var phase = GetPhase();
+  return SetAction(...) && SetPhase(phase);
+}
