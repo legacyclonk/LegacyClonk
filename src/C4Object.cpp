@@ -3513,7 +3513,7 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 			break;
 		case COM_Down: ObjectComMovement(this, COMD_Stop); break;
 		case COM_Down_D: ObjectComUnGrab(this); break;
-		case COM_Throw: PlayerObjectCommand(Owner, C4CMD_Throw); break;
+		case COM_Throw: case COM_Throw_D: PlayerObjectCommand(Owner, C4CMD_Throw); break;
 		}
 		// Action target call control late for old objects
 		if (!fGrabControlOverload)
