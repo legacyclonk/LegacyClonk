@@ -4158,6 +4158,12 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	SCopy(pCurrentScenarioSection->GetName(), CurrentScenarioSection);
 	// resize viewports
 	GraphicsSystem.RecalculateViewports();
+
+	for (auto plr = Players.First; plr; plr = plr->Next)
+	{
+		plr->ApplyForcedControl();
+	}
+
 	// done, success
 	return true;
 }

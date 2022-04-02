@@ -183,6 +183,8 @@ void C4SHead::CompileFunc(StdCompiler *pComp, bool fSection)
 	}
 	pComp->Value(mkNamingAdapt(NoInitialize, "NoInitialize", 0));
 	pComp->Value(mkNamingAdapt(RandomSeed,   "RandomSeed",   0));
+	pComp->Value(mkNamingAdapt(ForcedAutoContextMenu, "ForcedAutoContextMenu", -1));
+	pComp->Value(mkNamingAdapt(ForcedControlStyle,    "ForcedAutoStopControl", -1));
 	if (!fSection)
 	{
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(Engine),        "Engine",                ""));
@@ -192,8 +194,6 @@ void C4SHead::CompileFunc(StdCompiler *pComp, bool fSection)
 		pComp->Value(mkNamingAdapt(ForcedGfxMode,                  "ForcedGfxMode",         0));
 		pComp->Value(mkNamingAdapt(ForcedFairCrew,                 "ForcedNoCrew",          0));
 		pComp->Value(mkNamingAdapt(FairCrewStrength,               "DefCrewStrength",       0));
-		pComp->Value(mkNamingAdapt(ForcedAutoContextMenu,          "ForcedAutoContextMenu", -1));
-		pComp->Value(mkNamingAdapt(ForcedControlStyle,             "ForcedAutoStopControl", -1));
 		pComp->Value(mkNamingAdapt(mkStrValAdapt(mkParAdapt(Origin, StdCompiler::RCT_All), C4InVal::VAL_SubPathFilename), "Origin", StdStrBuf()));
 		// windows needs backslashes in Origin; other systems use forward slashes
 		if (pComp->isCompiler()) Origin.ReplaceChar(AltDirectorySeparator, DirectorySeparator);

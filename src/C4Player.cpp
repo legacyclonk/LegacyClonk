@@ -1892,9 +1892,7 @@ void C4Player::InitControl()
 	}
 	// Set control
 	Control = iControl;
-	// Cotrol style
-	if (Game.C4S.Head.ForcedControlStyle > -1) ControlStyle = Game.C4S.Head.ForcedControlStyle; else ControlStyle = PrefControlStyle;
-	if (Game.C4S.Head.ForcedAutoContextMenu > -1) AutoContextMenu = Game.C4S.Head.ForcedAutoContextMenu; else AutoContextMenu = PrefAutoContextMenu;
+	ApplyForcedControl();
 	// init gamepad
 	delete pGamepad; pGamepad = nullptr;
 	if (Inside<int32_t>(Control, C4P_Control_GamePad1, C4P_Control_GamePadMax))
@@ -2364,4 +2362,10 @@ void C4Player::SyncHomebaseMaterialFromTeam()
 			HomeBaseMaterial = pTeamCaptain->HomeBaseMaterial;
 		}
 	}
+}
+
+void C4Player::ApplyForcedControl()
+{
+	ControlStyle = ((Game.C4S.Head.ForcedControlStyle > -1) ? Game.C4S.Head.ForcedControlStyle : PrefControlStyle);
+	AutoContextMenu = ((Game.C4S.Head.ForcedAutoContextMenu > -1) ? Game.C4S.Head.ForcedAutoContextMenu : PrefAutoContextMenu);
 }

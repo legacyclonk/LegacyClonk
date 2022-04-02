@@ -258,4 +258,6 @@ public:
 
 	// when the player changes team, his color changes. Relfect this in player objects
 	void SetPlayerColor(uint32_t dwNewClr);
+
+	void ApplyForcedControl();
 };
