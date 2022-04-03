@@ -2366,6 +2366,25 @@ void C4Player::SyncHomebaseMaterialFromTeam()
 
 void C4Player::ApplyForcedControl()
 {
+	const auto oldControl = ControlStyle;
+
 	ControlStyle = ((Game.C4S.Head.ForcedControlStyle > -1) ? Game.C4S.Head.ForcedControlStyle : PrefControlStyle);
 	AutoContextMenu = ((Game.C4S.Head.ForcedAutoContextMenu > -1) ? Game.C4S.Head.ForcedAutoContextMenu : PrefAutoContextMenu);
+
+	if (oldControl != ControlStyle)
+	{
+		LastCom = COM_None;
+		PressedComs = 0;
+		if (ControlStyle) // AutoStopControl
+		{
+			for (auto objLink = Game.Objects.InactiveObjects.First; objLink; objLink = objLink->Next)
+			{
+				const auto obj = objLink->Obj;
+				if (obj->Def->CrewMember && obj->Owner == Number)
+				{
+					obj->Action.ComDir = COMD_None;
+				}
+			}
+		}
+	}
 }
