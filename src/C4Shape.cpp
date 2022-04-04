@@ -674,12 +674,12 @@ void C4Shape::CompileFunc(StdCompiler *pComp, bool fRuntime)
 	// (see C4Object::CompileFunc and C4DefCore::CompileFunc)
 	pComp->Value(mkNamingAdapt(Wdt,                    "Width",          0));
 	pComp->Value(mkNamingAdapt(Hgt,                    "Height",         0));
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(&x, 2, 0), "Offset"));
+	pComp->Value(mkNamingAdapt(mkArrayAdaptS(&x, 2, 0), "Offset"));
 	pComp->Value(mkNamingAdapt(VtxNum,                 "Vertices",       0));
-	pComp->Value(mkNamingAdapt(toC4CArr(VtxX),         "VertexX"));
-	pComp->Value(mkNamingAdapt(toC4CArr(VtxY),         "VertexY"));
-	pComp->Value(mkNamingAdapt(toC4CArr(VtxCNAT),      "VertexCNAT"));
-	pComp->Value(mkNamingAdapt(toC4CArr(VtxFriction),  "VertexFriction"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(VtxX, 0),  "VertexX"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(VtxY, 0), "VertexY"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(VtxCNAT, 0), "VertexCNAT"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(VtxFriction, 0), "VertexFriction"));
 	pComp->Value(mkNamingAdapt(ContactDensity,         "ContactDensity", C4M_Solid));
 	pComp->Value(mkNamingAdapt(FireTop,                "FireTop",        0));
 	if (fRuntime)

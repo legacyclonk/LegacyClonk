@@ -306,5 +306,5 @@ void C4Weather::CompileFunc(StdCompiler *pComp)
 		dwGammaDefaults[i * 3 + 1] = 0x808080;
 		dwGammaDefaults[i * 3 + 2] = 0xffffff;
 	}
-	pComp->Value(mkNamingAdapt(mkArrayAdaptM(Game.GraphicsSystem.dwGamma), "Gamma", dwGammaDefaults));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(Game.GraphicsSystem.dwGamma), "Gamma", dwGammaDefaults));
 }

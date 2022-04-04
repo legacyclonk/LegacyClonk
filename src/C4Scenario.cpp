@@ -168,7 +168,7 @@ void C4SHead::CompileFunc(StdCompiler *pComp, bool fSection)
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(Title),    "Title",           "Default Title"));
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(Loader),   "Loader",          ""));
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(Font),     "Font",            ""));
-		pComp->Value(mkNamingAdapt(mkArrayAdaptDM(C4XVer, 0), "Version"));
+		pComp->Value(mkNamingAdapt(mkArrayAdapt(C4XVer, 0),   "Version"));
 		pComp->Value(mkNamingAdapt(Difficulty,                "Difficulty",      0));
 		// Ignore EnableUnregisteredAccess
 		int32_t EnableUnregisteredAccess = false;
@@ -275,7 +275,7 @@ void C4SPlrStart::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkC4IDAdapt(NativeCrew), "StandardCrew",       C4ID_None));
 	pComp->Value(mkNamingAdapt(Crew,                    "Clonks",             C4SVal(1, 0, 1, 10),  true));
 	pComp->Value(mkNamingAdapt(Wealth,                  "Wealth",             C4SVal(0, 0, 0, 250), true));
-	pComp->Value(mkNamingAdapt(mkArrayAdaptDM(Position, -1),                  "Position"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(Position, -1), "Position"));
 	pComp->Value(mkNamingAdapt(EnforcePosition,         "EnforcePosition",    0));
 	pComp->Value(mkNamingAdapt(ReadyCrew,               "Crew",               C4IDList()));
 	pComp->Value(mkNamingAdapt(ReadyBase,               "Buildings",          C4IDList()));
@@ -338,7 +338,7 @@ void C4SLandscape::CompileFunc(StdCompiler *pComp, bool newScenario)
 	pComp->Value(mkNamingAdapt(InEarth,                   "InEarth",           C4IDList()));
 	pComp->Value(mkNamingAdapt(InEarthLevel,              "InEarthLevel",      C4SVal(50, 0, 0, 100), true));
 	pComp->Value(mkNamingAdapt(mkStringAdaptMA(SkyDef),   "Sky",               ""));
-	pComp->Value(mkNamingAdapt(mkArrayAdaptDM(SkyDefFade, 0),                  "SkyFade"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(SkyDefFade, 0), "SkyFade"));
 	pComp->Value(mkNamingAdapt(NoSky,                     "NoSky",             false));
 	pComp->Value(mkNamingAdapt(BottomOpen,                "BottomOpen",        false));
 	pComp->Value(mkNamingAdapt(TopOpen,                   "TopOpen",           true));

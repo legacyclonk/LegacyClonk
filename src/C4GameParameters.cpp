@@ -292,7 +292,7 @@ void C4GameResList::CompileFunc(StdCompiler *pComp)
 	// Compile list
 	pComp->Value(
 		mkNamingAdapt(
-			mkArrayAdapt(resList.data(), resCount),
+			mkArrayAdaptS(resList.data(), resCount),
 			"Resource"));
 }
 

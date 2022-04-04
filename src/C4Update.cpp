@@ -219,14 +219,14 @@ C4UpdatePackageCore::C4UpdatePackageCore() :
 
 void C4UpdatePackageCore::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(toC4CArr(RequireVersion), "RequireVersion"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(RequireVersion, 0), "RequireVersion"));
 	pComp->Value(mkNamingAdapt(toC4CStr(Name),           "Name",        ""));
 	pComp->Value(mkNamingAdapt(toC4CStr(DestPath),       "DestPath",    ""));
 	pComp->Value(mkNamingAdapt(GrpUpdate,                "GrpUpdate",   0));
 	pComp->Value(mkNamingAdapt(UpGrpCnt,                 "TargetCount", 0));
-	pComp->Value(mkNamingAdapt(toC4CArrU(GrpChks1),      "GrpChks1"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(GrpChks1, 0u), "GrpChks1"));
 	pComp->Value(mkNamingAdapt(GrpChks2,                 "GrpChks2",    0u));
-	pComp->Value(mkNamingAdapt(toC4CArrU(GrpContentsCRC1),      "GrpContentsCRC1"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(GrpContentsCRC1, 0u), "GrpContentsCRC1"));
 	pComp->Value(mkNamingAdapt(GrpContentsCRC2,                 "GrpContentsCRC2",    0u));
 }
 

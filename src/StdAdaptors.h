@@ -30,10 +30,6 @@
 #define toC4CStr(szString) mkStringAdaptMA(szString)
 #define toC4CStrBuf(rBuf) mkParAdapt(rBuf, StdCompiler::RCT_All)
 
-// Integer-array with default 0, automatic size deduction
-#define toC4CArr(rArr) mkArrayAdaptDM(rArr, 0)
-#define toC4CArrU(rArr) mkArrayAdaptDM(rArr, 0u)
-
 // * Null Adaptor
 // Doesn't compile anything
 struct StdNullAdapt
@@ -352,12 +348,16 @@ struct StdArrayAdapt
 };
 
 template <class T>
-inline StdArrayAdapt<T> mkArrayAdapt(T *pArray, int iSize) { return StdArrayAdapt<T>(pArray, iSize); }
+inline StdArrayAdapt<T> mkArrayAdaptS(T *array, std::size_t size) { return StdArrayAdapt<T>(array, size); }
 
-#define mkArrayAdaptM(A) mkArrayAdapt(A, sizeof(A) / sizeof(*(A)))
+template <class T, std::size_t N>
+inline StdArrayAdapt<T> mkArrayAdapt(T (&array)[N]) { return StdArrayAdapt<T>(array, N); }
 
 template <class T, class M>
-inline StdArrayAdapt<T, M> mkArrayAdaptMap(T *pArray, int iSize, M map) { return StdArrayAdapt<T, M>(pArray, iSize, map); }
+inline StdArrayAdapt<T, M> mkArrayAdaptMapS(T *array, std::size_t size, M map) { return StdArrayAdapt<T, M>(array, size, map); }
+
+template <class T, class M, std::size_t N>
+inline StdArrayAdapt<T, M> mkArrayAdaptMap(T (&array)[N], M map) { return mkArrayAdaptMapS<T, M>(array, N, map); }
 
 // * Array Adaptor (defaulting)
 // Stores a separated list, sets defaults if a value or separator is missing.
@@ -409,12 +409,16 @@ struct StdArrayDefaultAdapt
 };
 
 template <class T, class D>
-inline StdArrayDefaultAdapt<T, D> mkArrayAdapt(T *pArray, size_t iSize, const D &rDefault) { return StdArrayDefaultAdapt<T, D>(pArray, iSize, rDefault); }
+inline StdArrayDefaultAdapt<T, D> mkArrayAdaptS(T *array, std::size_t size, const D &default_) { return StdArrayDefaultAdapt<T, D>(array, size, default_); }
 
-#define mkArrayAdaptDM(A, D) mkArrayAdapt(A, sizeof(A) / sizeof(*(A)), D)
+template <class T, class D, std::size_t N>
+inline StdArrayDefaultAdapt<T, D> mkArrayAdapt(T (&array)[N], const D &default_) { return mkArrayAdaptS<T, D>(array, N, default_); }
 
 template <class T, class D, class M>
-inline StdArrayDefaultAdapt<T, D, M> mkArrayAdaptMap(T *pArray, size_t iSize, const D &rDefault, M map) { return StdArrayDefaultAdapt<T, D, M>(pArray, iSize, rDefault, map); }
+inline StdArrayDefaultAdapt<T, D, M> mkArrayAdaptMapS(T *array, std::size_t size, const D &default_, M map) { return StdArrayDefaultAdapt<T, D, M>(array, size, default_, map); }
+
+template <class T, class D, class M, std::size_t N>
+inline StdArrayDefaultAdapt<T, D, M> mkArrayAdaptMap(T (&array)[N], const D &default_, M map) { return mkArrayAdaptMapS<T, D, M>(array, N, default_, map); }
 
 // * Insertion Adaptor
 // Compile a value before / after another

@@ -185,7 +185,7 @@ void C4ValueList::CompileFunc(class StdCompiler *pComp)
 		// First variable was misinterpreted as size
 		pData[0] = C4Value{C4V_Data{inSize}, C4V_Any};
 		// Read remaining data
-		pComp->Value(mkArrayAdapt(pData + 1, C4MaxVariable - 1, C4Value()));
+		pComp->Value(mkArrayAdaptS(pData + 1, C4MaxVariable - 1, C4Value()));
 	}
 	else
 	{
@@ -194,11 +194,11 @@ void C4ValueList::CompileFunc(class StdCompiler *pComp)
 			// Allocate
 			this->SetSize(inSize);
 			// Values
-			pComp->Value(mkArrayAdapt(pData, iSize, C4Value()));
+			pComp->Value(mkArrayAdaptS(pData, iSize, C4Value()));
 		}
 		else
 		{
-			pComp->Value(mkArrayAdapt(pData, iSize));
+			pComp->Value(mkArrayAdaptS(pData, iSize));
 		}
 	}
 }

@@ -182,9 +182,9 @@ void C4MaterialCore::CompileFunc(StdCompiler *pComp)
 	if (pComp->isCompiler()) Clear();
 	pComp->Name("Material");
 	pComp->Value(mkNamingAdapt(toC4CStr(Name),                                                   "Name",                ""));
-	pComp->Value(mkNamingAdapt(toC4CArrU(Color),                                                 "Color"));
-	pComp->Value(mkNamingAdapt(toC4CArrU(Color),                                                 "ColorX",              Color));
-	pComp->Value(mkNamingAdapt(toC4CArrU(Alpha),                                                 "Alpha"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(Color, 0u),                                                 "Color"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(Color, 0u),                                                 "ColorX",              Color));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(Alpha, 0u),                                                 "Alpha"));
 	pComp->Value(mkNamingAdapt(ColorAnimation,                                                   "ColorAnimation",      0));
 	pComp->Value(mkNamingAdapt(MapChunkType,                                                     "Shape",               0));
 	pComp->Value(mkNamingAdapt(Density,                                                          "Density",             0));

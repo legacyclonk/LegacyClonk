@@ -206,7 +206,7 @@ void C4LSectors::Dump()
 {
 	LogSilent(DecompileToBuf<StdCompilerINIWrite>(
 		mkNamingAdapt(
-			mkArrayAdapt(Sectors, Size),
+			mkArrayAdaptS(Sectors, Size),
 			"Sector")).getData());
 }
 

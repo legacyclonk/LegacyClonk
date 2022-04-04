@@ -56,7 +56,7 @@ struct C4GameVersion
 		}
 		else if (pComp->isCompiler())
 			sEngineName = "";
-		pComp->Value(mkArrayAdapt(iVer, 4, 0));
+		pComp->Value(mkArrayAdapt(iVer, 0));
 		pComp->Separator();
 		pComp->Value(mkDefaultAdapt(iBuild, 0));
 	}

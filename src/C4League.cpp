@@ -179,11 +179,11 @@ void C4LeagueResponseHeadAuthCheck::CompileFunc(StdCompiler *pComp)
 	C4LeagueResponseHead::CompileFunc(pComp);
 
 	// Leagues, Scores, Ranks
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(Leagues,      C4NetMaxLeagues, ""), "League"));
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(Scores,       C4NetMaxLeagues, 0),  "Score"));
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(Ranks,        C4NetMaxLeagues, 0),  "Rank"));
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(RankSymbols,  C4NetMaxLeagues, 0),  "RankSymbol"));
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(ProgressData, C4NetMaxLeagues, ""), "ProgressData"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(Leagues, ""), "League"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(Scores,  0),  "Score"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(Ranks,   0),  "Rank"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(RankSymbols, 0),  "RankSymbol"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(ProgressData, ""), "ProgressData"));
 
 	// Clan tag
 	pComp->Value(mkNamingAdapt(mkParAdapt(ClanTag, StdCompiler::RCT_All), "ClanTag", ""));

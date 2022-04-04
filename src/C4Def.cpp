@@ -254,7 +254,7 @@ bool C4DefCore::Compile(const char *szSource, const char *szName)
 void C4DefCore::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(mkC4IDAdapt(id),               "id",         C4ID_None));
-	pComp->Value(mkNamingAdapt(toC4CArr(rC4XVer),             "Version"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(rC4XVer, 0),      "Version"));
 	pComp->Value(mkNamingAdapt(toC4CStrBuf(Name),             "Name",       "Undefined"));
 	pComp->Value(mkNamingAdapt(mkParAdapt(RequireDef, false), "RequireDef", C4IDList()));
 
@@ -790,7 +790,7 @@ bool C4Def::LoadActMap(C4Group &hGroup)
 			return false;
 		// Compile
 		if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
-			mkNamingAdapt(mkArrayAdapt(ActMap, actnum), "Action"),
+			mkNamingAdapt(mkArrayAdaptS(ActMap, actnum), "Action"),
 			Data,
 			(hGroup.GetFullName() + DirSep C4CFN_DefActMap).getData()))
 			return false;

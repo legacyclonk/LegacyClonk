@@ -104,9 +104,9 @@ void C4Network2Reference::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(RegJoinOnly,                                        "RegJoinOnly",       false));
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iAddrCnt),                           "AddressCount",      0));
 	iAddrCnt = std::min<uint8_t>(C4ClientMaxAddr, iAddrCnt);
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(Addrs, iAddrCnt, C4Network2Address()), "Address"));
+	pComp->Value(mkNamingAdapt(mkArrayAdaptS(Addrs, iAddrCnt, C4Network2Address()), "Address"));
 	pComp->Value(mkNamingAdapt(Game.sEngineName,                                   "Game",              "None"));
-	pComp->Value(mkNamingAdapt(mkArrayAdaptDM(Game.iVer, 0),                       "Version"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(Game.iVer, 0),                         "Version"));
 	pComp->Value(mkNamingAdapt(Game.iBuild,                                        "Build",             -1));
 	pComp->Value(mkNamingAdapt(OfficialServer,                                     "OfficialServer",    false));
 
@@ -633,7 +633,7 @@ bool C4Network2RefClient::GetReferences(C4Network2Reference ** &rpReferences, in
 		for (int i = 0; i < rRefCount; i++)
 			rpReferences[i] = nullptr;
 		// Get references
-		Comp.Value(mkNamingAdapt(mkArrayAdaptMap(rpReferences, rRefCount, mkPtrAdaptNoNull<C4Network2Reference>), "Reference"));
+		Comp.Value(mkNamingAdapt(mkArrayAdaptMapS(rpReferences, rRefCount, mkPtrAdaptNoNull<C4Network2Reference>), "Reference"));
 		mkPtrAdaptNoNull<C4Network2Reference>(*rpReferences);
 		// Done
 		Comp.End();

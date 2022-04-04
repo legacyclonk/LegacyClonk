@@ -625,7 +625,7 @@ void C4ClientPlayerInfos::CompileFunc(StdCompiler *pComp)
 		std::fill_n(ppPlayers, iPlayerCount, nullptr);
 	}
 	// Compile
-	pComp->Value(mkNamingAdapt(mkArrayAdaptMap(ppPlayers, iPlayerCount, mkPtrAdaptNoNull<C4PlayerInfo>), "Player"));
+	pComp->Value(mkNamingAdapt(mkArrayAdaptMapS(ppPlayers, iPlayerCount, mkPtrAdaptNoNull<C4PlayerInfo>), "Player"));
 	// Force specialization
 	mkPtrAdaptNoNull<C4PlayerInfo>(*ppPlayers);
 }
@@ -1754,7 +1754,7 @@ void C4PlayerInfoList::CompileFunc(StdCompiler *pComp)
 	// client packets
 	pComp->Value(
 		mkNamingAdapt(
-			mkArrayAdaptMap(ppClients, iClientCount, mkPtrAdaptNoNull<C4ClientPlayerInfos>),
+			mkArrayAdaptMapS(ppClients, iClientCount, mkPtrAdaptNoNull<C4ClientPlayerInfos>),
 			"Client"));
 	// force compiler to specialize
 	mkPtrAdaptNoNull<C4ClientPlayerInfos>(*ppClients);

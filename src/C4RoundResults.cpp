@@ -159,7 +159,7 @@ void C4RoundResultsPlayers::CompileFunc(StdCompiler *pComp)
 		std::fill_n(ppPlayers, iPlayerCount, nullptr);
 	}
 	// Compile
-	pComp->Value(mkNamingAdapt(mkArrayAdaptMap(ppPlayers, iPlayerCount, mkPtrAdaptNoNull<C4RoundResultsPlayer>), "Player"));
+	pComp->Value(mkNamingAdapt(mkArrayAdaptMapS(ppPlayers, iPlayerCount, mkPtrAdaptNoNull<C4RoundResultsPlayer>), "Player"));
 	// Force specialization
 	mkPtrAdaptNoNull<C4RoundResultsPlayer>(*ppPlayers);
 }

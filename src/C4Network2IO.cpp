@@ -1639,7 +1639,7 @@ void C4PacketFwd::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(fNegativeList,                                                  "Negative",  false));
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iClientCnt),                                     "ClientCnt", 0));
-	pComp->Value(mkNamingAdapt(mkArrayAdaptMap(iClients, iClientCnt, mkIntPackAdapt<int32_t>), "Clients",   -1));
+	pComp->Value(mkNamingAdapt(mkArrayAdaptMapS(iClients, iClientCnt, mkIntPackAdapt<int32_t>), "Clients",   -1));
 	pComp->Value(mkNamingAdapt(Data,                                                           "Data"));
 }
 
@@ -1716,7 +1716,7 @@ bool C4PacketResDiscover::AddDisID(int32_t iID)
 void C4PacketResDiscover::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iDisIDCnt),        "DiscoverCnt",  0));
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(iDisIDs, iDisIDCnt), "Discovers",   -1));
+	pComp->Value(mkNamingAdapt(mkArrayAdaptS(iDisIDs, iDisIDCnt), "Discovers",   -1));
 }
 
 // *** C4PacketResRequest

@@ -496,7 +496,7 @@ protected:
 //       mkNamingAdapt(v2, "Val2", 0) +
 //       mkNamingAdapt(v3, "Val3", 0),
 //     "Sect1a") +
-//     mkNamingAdapt(mkArrayAdapt(v4, 3, 0), "Val4", 0),
+//     mkNamingAdapt(mkArrayAdapt(v4, 0), "Val4", 0),
 //   "Sect1")
 // )
 

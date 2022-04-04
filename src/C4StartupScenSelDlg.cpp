@@ -210,7 +210,7 @@ void C4MapFolderData::CompileFunc(StdCompiler *pComp)
 	if (iScenCount)
 	{
 		mkPtrAdaptNoNull(*ppScenList);
-		pComp->Value(mkNamingAdapt(mkArrayAdaptMap(ppScenList, iScenCount, mkPtrAdaptNoNull<Scenario>), "Scenario"));
+		pComp->Value(mkNamingAdapt(mkArrayAdaptMapS(ppScenList, iScenCount, mkPtrAdaptNoNull<Scenario>), "Scenario"));
 	}
 	// compile access gfx list
 	int32_t iOldAccesGfxCount = iAccessGfxCount;
@@ -229,7 +229,7 @@ void C4MapFolderData::CompileFunc(StdCompiler *pComp)
 	if (iAccessGfxCount)
 	{
 		mkPtrAdaptNoNull(*ppAccessGfxList);
-		pComp->Value(mkNamingAdapt(mkArrayAdaptMap(ppAccessGfxList, iAccessGfxCount, mkPtrAdaptNoNull<AccessGfx>), "AccessGfx"));
+		pComp->Value(mkNamingAdapt(mkArrayAdaptMapS(ppAccessGfxList, iAccessGfxCount, mkPtrAdaptNoNull<AccessGfx>), "AccessGfx"));
 	}
 }
 

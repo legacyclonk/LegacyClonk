@@ -51,7 +51,7 @@ void C4ParticleDefCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(VertexY,                          "VertexY",      0));
 	pComp->Value(mkNamingAdapt(Additive,                         "Additive",     0));
 	pComp->Value(mkNamingAdapt(AlphaFade,                        "AlphaFade",    0));
-	pComp->Value(mkNamingAdapt(mkArrayAdaptDM(Parallaxity, 100), "Parallaxity"));
+	pComp->Value(mkNamingAdapt(mkArrayAdapt(Parallaxity, 100),   "Parallaxity"));
 	pComp->Value(mkNamingAdapt(Attach,                           "Attach",       0));
 }
 

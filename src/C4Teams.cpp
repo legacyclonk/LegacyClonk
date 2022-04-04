@@ -143,7 +143,7 @@ void C4Team::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(iPlrStartIndex,        "PlrStartIndex", 0));
 	pComp->Value(mkNamingAdapt(iPlayerCount,          "PlayerCount",   0));
 	if (pComp->isCompiler()) { delete[] piPlayers; piPlayers = new int32_t[iPlayerCapacity = iPlayerCount]{}; }
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(piPlayers, iPlayerCount, -1), "Players"));
+	pComp->Value(mkNamingAdapt(mkArrayAdaptS(piPlayers, iPlayerCount, -1), "Players"));
 	pComp->Value(mkNamingAdapt(dwClr,                 "Color",         0u));
 	pComp->Value(mkNamingAdapt(sIconSpec,             "IconSpec",      StdStrBuf()));
 	pComp->Value(mkNamingAdapt(iMaxPlayer,            "MaxPlayer",     0));
@@ -600,7 +600,7 @@ void C4TeamList::CompileFunc(StdCompiler *pComp)
 		mkPtrAdaptNoNull(*ppList);
 		// Save team list, using map-function.
 		pComp->Value(mkNamingAdapt(
-			mkArrayAdaptMap(ppList, iTeamCount, mkPtrAdaptNoNull<C4Team>),
+			mkArrayAdaptMapS(ppList, iTeamCount, mkPtrAdaptNoNull<C4Team>),
 			"Team"));
 	}
 
