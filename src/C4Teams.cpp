@@ -562,15 +562,7 @@ void C4TeamList::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(fAutoGenerateTeams,    "AutoGenerateTeams",    false));
 	pComp->Value(mkNamingAdapt(iLastTeamID,           "LastTeamID",           0));
 
-	StdEnumEntry<TeamDist> TeamDistEntries[] =
-	{
-		{ "Free",      TEAMDIST_Free },
-		{ "Host",      TEAMDIST_Host },
-		{ "None",      TEAMDIST_None },
-		{ "Random",    TEAMDIST_Random },
-		{ "RandomInv", TEAMDIST_RandomInv },
-	};
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<uint8_t>(eTeamDist, TeamDistEntries), "TeamDistribution", TEAMDIST_Free));
+	pComp->Value(mkNamingAdapt(mkEnumAdapt(eTeamDist), "TeamDistribution", TEAMDIST_Free));
 
 	pComp->Value(mkNamingAdapt(fTeamColors,        "TeamColors",        false));
 	pComp->Value(mkNamingAdapt(iMaxScriptPlayers,  "MaxScriptPlayers",  0));

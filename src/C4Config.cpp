@@ -23,6 +23,7 @@
 #include <C4Application.h>
 #include "C4GameControl.h"
 #include <C4Log.h>
+#include <C4EnumInfo.h>
 #include <C4Network2.h>
 #include "C4Network2IO.h"
 #include "C4Network2Reference.h"
@@ -42,6 +43,19 @@
 #endif
 
 #include <format>
+#ifdef C4ENGINE
+// put this here, because X11 includes break C4EnumAdaptPrefixMode due to #define None when it is in StdWindow.h
+
+template<>
+struct C4EnumInfo<DisplayMode>
+{
+	static inline constexpr auto data = mkEnumInfo<DisplayMode>("",
+		{
+			{DisplayMode::Fullscreen, "Fullscreen"},
+			{DisplayMode::Window, "Window"}
+		});
+};
+#endif
 
 bool isGermanSystem()
 {
@@ -118,18 +132,24 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 
 #ifdef C4ENGINE
 
+template<>
+struct C4EnumInfo<C4AulScriptStrict>
+{
+	static inline constexpr auto data = mkEnumInfo<C4AulScriptStrict>("",
+		{
+			{C4AulScriptStrict::NONSTRICT, "NonStrict"},
+			{C4AulScriptStrict::STRICT1, "Strict1"},
+			{C4AulScriptStrict::STRICT2, "Strict2"},
+			{C4AulScriptStrict::STRICT3, "Strict3"},
+			{C4ConfigDeveloper::ConsoleScriptStrictnessWrapper::MaxStrictSentinel, "MaxStrict"}
+		}
+	);
+};
+
+
 void C4ConfigDeveloper::ConsoleScriptStrictnessWrapper::CompileFunc(StdCompiler *const comp)
 {
-	StdEnumEntry<C4AulScriptStrict> ConsoleScriptStrictnessValues[] =
-	{
-		{"NonStrict", C4AulScriptStrict::NONSTRICT},
-		{"Strict1", C4AulScriptStrict::STRICT1},
-		{"Strict2", C4AulScriptStrict::STRICT2},
-		{"Strict3", C4AulScriptStrict::STRICT3},
-		{"MaxStrict", MaxStrictSentinel}
-	};
-
-	comp->Value(mkEnumAdaptT<C4AulScriptStrict>(Strictness, ConsoleScriptStrictnessValues));
+	comp->Value(mkEnumAdapt(Strictness));
 
 	if (comp->isCompiler() && Strictness != MaxStrictSentinel)
 	{
@@ -160,14 +180,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(SmokeLevel,           "SmokeLevel",           200,   false, true));
 	pComp->Value(mkNamingAdapt(VerboseObjectLoading, "VerboseObjectLoading", 0,     false, true));
 
-	StdEnumEntry<int32_t> UpperBoardDisplayModes[] =
-	{
-		{"Hide", C4UpperBoard::Hide},
-		{"Full", C4UpperBoard::Full},
-		{"Small", C4UpperBoard::Small},
-		{"Mini", C4UpperBoard::Mini}
-	};
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<int32_t>(UpperBoard, UpperBoardDisplayModes), "UpperBoard", C4UpperBoard::Full, false, true));
+	pComp->Value(mkNamingAdapt(mkEnumAdapt<C4UpperBoard::DisplayMode>(UpperBoard), "UpperBoard", C4UpperBoard::Full, false, true));
 
 	pComp->Value(mkNamingAdapt(ShowClock,            "ShowClock",            false, false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewNames,        "ShowCrewNames",        true,  false, true));
@@ -194,13 +207,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Shader,               "Shader",               false, false, true));
 	pComp->Value(mkNamingAdapt(AutoFrameSkip,        "AutoFrameSkip",        true,  false, true));
 	pComp->Value(mkNamingAdapt(CacheTexturesInRAM,   "CacheTexturesInRAM",   100));
-
-	StdEnumEntry<DisplayMode> DisplayModes[] =
-	{
-		{"Fullscreen", DisplayMode::Fullscreen},
-		{"Window", DisplayMode::Window}
-	};
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<int>(UseDisplayMode, DisplayModes), "DisplayMode", DisplayMode::Fullscreen, false, true));
+	pComp->Value(mkNamingAdapt(mkEnumAdapt(UseDisplayMode), "DisplayMode", DisplayMode::Fullscreen, false, true));
 
 #ifdef _WIN32
 	pComp->Value(mkNamingAdapt(Maximized,   "Maximized",   false, false, true));

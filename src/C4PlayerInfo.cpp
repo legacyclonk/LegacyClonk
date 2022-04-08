@@ -181,35 +181,11 @@ void C4PlayerInfo::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(sForcedName, "ForcedName", ""));
 	pComp->Value(mkNamingAdapt(szFilename,  "Filename",   ""));
 
-	// Flags
-	const StdBitfieldEntry<uint16_t> Entries[] =
-	{
-		{ "Joined",             PIF_Joined },
-		{ "Removed",            PIF_Removed },
-		{ "HasResource",        PIF_HasRes },
-		{ "JoinIssued",         PIF_JoinIssued },
-		{ "SavegameJoin",       PIF_JoinedForSavegameOnly },
-		{ "Disconnected",       PIF_Disconnected },
-		{ "VotedOut",           PIF_VotedOut },
-		{ "Won",                PIF_Won },
-		{ "AttributesFixed",    PIF_AttributesFixed },
-		{ "NoScenarioInit",     PIF_NoScenarioInit },
-		{ "NoEliminationCheck", PIF_NoEliminationCheck },
-		{ "Invisible",          PIF_Invisible },
-		{ nullptr, 0 },
-	};
-	uint16_t dwSyncFlags = dwFlags & PIF_SyncFlags; // do not store local flags!
-	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(dwSyncFlags, Entries), "Flags", 0u));
+	std::underlying_type_t<Flags> dwSyncFlags = dwFlags & PIF_SyncFlags; // do not store local flags!
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<Flags>(dwSyncFlags), "Flags", 0u));
 	if (pComp->isCompiler()) dwFlags = dwSyncFlags;
 	pComp->Value(mkNamingAdapt(iID, "ID", 0));
-
-	// type
-	StdEnumEntry<C4PlayerType> PlayerTypes[] =
-	{
-		{ "User",   C4PT_User },
-		{ "Script", C4PT_Script },
-	};
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<uint8_t>(eType, PlayerTypes), "Type", C4PT_User));
+	pComp->Value(mkNamingAdapt(mkEnumAdapt(eType), "Type", C4PT_User));
 
 	// safety: Do not allow invisible regular players
 	if (pComp->isCompiler())
@@ -604,16 +580,7 @@ void C4ClientPlayerInfos::CompileFunc(StdCompiler *pComp)
 	if (fCompiler) Clear();
 	pComp->Value(mkNamingAdapt(iClientID, "ID", C4ClientIDUnknown));
 
-	// Flags
-	StdBitfieldEntry<uint32_t> Entries[] =
-	{
-		{ "AddPlayers", CIF_AddPlayers },
-		{ "Updated",    CIF_Updated },
-		{ "Initial",    CIF_Initial },
-
-		{ nullptr, 0 }
-	};
-	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(dwFlags, Entries), "Flags", 0u));
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<Flags>(dwFlags), "Flags", 0u));
 
 	pComp->Value(mkNamingCountAdapt<int32_t>(iPlayerCount, "Player"));
 	if (iPlayerCount < 0 || iPlayerCount > C4MaxPlayer)

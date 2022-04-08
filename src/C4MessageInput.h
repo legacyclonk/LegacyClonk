@@ -21,6 +21,7 @@
 
 #include "C4Constants.h"
 #include "C4EnumeratedObjectPtr.h"
+#include "C4EnumInfo.h"
 #include "C4Gui.h"
 #include "C4GuiDialogs.h"
 #include "C4KeyboardInput.h"
@@ -116,6 +117,19 @@ public:
 	C4MessageBoardCommand(const std::string &script, Restriction restriction) : script(script), restriction(restriction) {}
 	void CompileFunc(StdCompiler *pComp);
 	bool operator==(const C4MessageBoardCommand &other) const;
+};
+
+template<>
+struct C4EnumInfo<C4MessageBoardCommand::Restriction>
+{
+	using E = C4MessageBoardCommand::Restriction;
+	static inline constexpr auto data = mkEnumInfo<E>("C4MSGCMDR_",
+		{
+			{ E::C4MSGCMDR_Escaped, "Escaped" },
+			{ E::C4MSGCMDR_Plain, "Plain" },
+			{ E::C4MSGCMDR_Identifier, "Identifier" }
+		}
+	);
 };
 
 class C4MessageInput

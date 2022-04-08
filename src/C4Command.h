@@ -24,7 +24,7 @@
 
 #include <string>
 
-const int32_t C4CMD_None      =  0,
+constexpr std::uint8_t C4CMD_None      =  0,
               C4CMD_Follow    =  1,
               C4CMD_MoveTo    =  2,
               C4CMD_Enter     =  3,
@@ -56,22 +56,49 @@ const int32_t C4CMD_None      =  0,
               C4CMD_Take      = 29, // carlo
               C4CMD_Take2     = 30; // carlo
 
-const int32_t C4CMD_First = C4CMD_Follow,
+constexpr std::uint8_t C4CMD_First = C4CMD_Follow,
               C4CMD_Last  = C4CMD_Take2; // carlo
 
-const int32_t C4CMD_Mode_SilentSub  = 0, // subcommand; failure will cause base to fail (no message in case of failure)
+constexpr std::int32_t C4CMD_Mode_SilentSub  = 0, // subcommand; failure will cause base to fail (no message in case of failure)
               C4CMD_Mode_Base       = 1, // regular base command
               C4CMD_Mode_SilentBase = 2, // silent base command (no message in case of failure)
               C4CMD_Mode_Sub        = 3; // subcommand; failure will cause base to fail
 
 // MoveTo and Enter command options: Include push target
-const int32_t C4CMD_MoveTo_NoPosAdjust = 1,
+constexpr std::int32_t C4CMD_MoveTo_NoPosAdjust = 1,
               C4CMD_MoveTo_PushTarget  = 2;
 
-const int32_t C4CMD_Enter_PushTarget = 2;
+constexpr std::int32_t C4CMD_Enter_PushTarget = 2;
 
-const char *CommandName(int32_t iCommand);
-C4ResStrTableKey CommandNameID(int32_t iCommand);
+constexpr const char *CommandName(int32_t iCommand) noexcept
+{
+	if (!Inside<int32_t>(iCommand, C4CMD_First, C4CMD_Last)) return "None";
+
+	constexpr const char *szCommandName[] =
+	{
+		"None", "Follow", "MoveTo", "Enter", "Exit", "Grab", "Build", "Throw", "Chop",
+		"UnGrab", "Jump", "Wait", "Get", "Put", "Drop", "Dig", "Activate", "PushTo",
+		"Construct", "Transfer", "Attack", "Context", "Buy", "Sell", "Acquire",
+		"Energy", "Retry", "Home", "Call", "Take", "Take2"
+	};
+
+	return szCommandName[iCommand];
+}
+
+inline constexpr auto C4CMD_EnumInfo = mkEnumInfo<std::uint8_t>("C4CMD_",
+	[]()
+	{
+		struct Values {
+			C4EnumValue<std::uint8_t> values[C4CMD_Last + 1];
+		} values;
+		for (std::uint8_t cmd = 0; cmd <= C4CMD_Last; ++cmd)
+		{
+			values.values[cmd] = {cmd, CommandName(cmd)};
+		}
+		return values;
+	}().values
+);
+
 int32_t CommandByName(const char *szCommand);
 
 class C4Command
@@ -82,7 +109,7 @@ public:
 
 public:
 	C4Object *cObj;
-	int32_t Command;
+	std::uint8_t Command;
 	C4Value Tx;
 	int32_t Ty;
 	C4EnumeratedObjectPtr Target, Target2;

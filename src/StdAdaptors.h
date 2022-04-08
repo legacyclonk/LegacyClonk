@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "C4EnumInfo.h"
 #include "Standard.h"
 #include "StdCompiler.h"
 
@@ -25,6 +26,7 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <type_traits>
 
 // * Wrappers for C4Compiler-types
 
@@ -815,183 +817,201 @@ struct StdIntPackAdapt
 template <class T>
 StdIntPackAdapt<T> mkIntPackAdapt(T &rVal) { return StdIntPackAdapt<T>(rVal); }
 
-template <class T>
-struct StdEnumEntry
+namespace detail
 {
-	const char *Name;
-	T Val;
+	template<class T>
+	using underlying_or_same = typename std::conditional_t<std::is_enum_v<T>, std::underlying_type<T>, std::type_identity<T>>::type;
+}
+
+// whether named enum values can or must have the prefix
+enum class C4EnumAdaptPrefixMode
+{
+	None = 0x1,
+	Force = 0x2,
+	Allow = None | Force
 };
+
+template <>
+struct C4BitfieldOperators<C4EnumAdaptPrefixMode> : std::true_type {};
 
 // Enumeration: For text compilers, write a given name for a value.
 // For everything else, just write an integer of given type.
-template <class T, class int_t = int32_t, size_t N = std::numeric_limits<size_t>::max()>
-struct StdEnumAdapt
+template <class T, class Enum, std::size_t N = C4EnumInfo<Enum>::data.values.size()>
+class C4EnumAdaptWithInfo
 {
-	typedef StdEnumEntry<T> Entry;
+	static_assert(sizeof(T) >= sizeof(Enum), "The storage type size must be at least as big as the enum type");
+	using Info = C4EnumInfoData<Enum, N>;
+	using Underlying = std::common_type_t<detail::underlying_or_same<Enum>, detail::underlying_or_same<T>>;
 
-	StdEnumAdapt(T &rVal, const Entry *pNames) : rVal(rVal), pNames(pNames) { assert(pNames); }
-	T &rVal; const Entry *pNames;
+public:
+	constexpr C4EnumAdaptWithInfo(T &val, C4EnumAdaptPrefixMode prefixMode, const Info &info = C4EnumInfo<Enum>::data) noexcept : val{val}, info{info}, prefixMode{prefixMode} {}
 
 	void CompileFunc(StdCompiler *pComp) const
 	{
 		// Write as int
 		if (!pComp->isVerbose())
 		{
-			pComp->Value(mkIntAdaptT<int_t>(rVal));
+			CompileAsInt(pComp);
 			return;
 		}
 		// writing?
 		if (!pComp->isCompiler())
 		{
-			// Find value
-			const Entry *pName = pNames;
-			size_t i = 0;
-			for (; i < N && pName->Name; ++pName, ++i)
-				if (pName->Val == rVal)
+			for (const auto infoVal : info.scopedValues(C4EnumValueScope::Serialization))
+			{
+				if (infoVal.value == val)
 				{
-					// Put name
-					pComp->String(pName->Name, strlen(pName->Name), StdCompiler::RCT_Idtf);
-					break;
+					if (prefixMode == C4EnumAdaptPrefixMode::Force)
+					{
+						std::string name{info.prefix};
+						name.append(infoVal.name);
+						pComp->String(name, StdCompiler::RCT_Idtf);
+					}
+					else
+					{
+						pComp->String(infoVal.name.data(), infoVal.name.size(), StdCompiler::RCT_Idtf);
+					}
+					return;
 				}
+			}
 			// No name found?
-			if (i >= N || !pName->Name)
-				// Put value as integer
-				pComp->Value(mkIntAdaptT<int_t>(rVal));
+			CompileAsInt(pComp);
 		}
 		// reading?
 		else
 		{
-			int_t val{};
-			// Try to read as number
 			try
 			{
-				pComp->Value(val);
-				rVal = T(val);
+				CompileAsInt(pComp);
 			}
 			catch (const StdCompiler::NotFoundException &)
 			{
 				// Try to read as string
-				StdStrBuf Name;
-				pComp->Value(mkParAdapt(Name, StdCompiler::RCT_Idtf));
-				// Search in name list
-				const Entry *pName = pNames;
-				size_t i = 0;
-				for (; i < N && pName->Name; ++pName, ++i)
-					if (Name == pName->Name)
+				std::string name;
+				pComp->String(name, StdCompiler::RCT_Idtf);
+				const std::string_view nameView{name};
+				for (const auto infoVal : info.values)
+				{
+					if (((prefixMode & C4EnumAdaptPrefixMode::None) != C4EnumAdaptPrefixMode{} && infoVal.name == name)
+						|| ((prefixMode & C4EnumAdaptPrefixMode::Force) != C4EnumAdaptPrefixMode{} &&
+							nameView.starts_with(info.prefix) && nameView.substr(info.prefix.size()) == infoVal.name))
 					{
-						rVal = pName->Val;
-						break;
+						val = infoVal.value;
+						return;
 					}
-				// Not found? Warn
-				if (i >= N || !pName->Name)
-					pComp->Warn("Unknown bit name: {}", Name.getData());
+				}
+				pComp->Warn("Unknown value name: %s", name.c_str());
 			}
 		}
 	}
 
-	template <class D> inline bool operator==(const D &nValue) const { return rVal == nValue; }
-	template <class D> inline auto &operator=(const D &nValue) { rVal = nValue; return *this; }
+	template <class D> inline bool operator==(const D &nValue) const { return val == nValue; }
+	template <class D> inline auto &operator=(const D &nValue) { val = nValue; return *this; }
+
+private:
+	void CompileAsInt(StdCompiler *pComp) const
+	{
+		auto underlying = static_cast<Underlying>(val);
+		pComp->Value(underlying);
+		val = static_cast<T>(underlying);
+	}
+
+	T &val;
+	const Info &info;
+	C4EnumAdaptPrefixMode prefixMode;
 };
 
-template <class int_t, class T, size_t N>
-auto mkEnumAdaptT(T &rVal, const StdEnumEntry<T> (&pNames)[N]) { return StdEnumAdapt<T, int_t, N>(rVal, pNames); }
+template <class Enum, class T, std::size_t N = C4EnumInfo<Enum>::data.values.size()>
+auto mkEnumAdapt(T &val, C4EnumAdaptPrefixMode prefixMode = C4EnumAdaptPrefixMode::None, const C4EnumInfoData<Enum, N> &info = C4EnumInfo<Enum>::data) { return C4EnumAdaptWithInfo<T, Enum, N>{val, prefixMode, info}; }
 
-template <class T>
-struct StdBitfieldEntry
-{
-	const char *Name;
-	T Val;
-};
+
+template <class Enum, std::size_t N = C4EnumInfo<Enum>::data.values.size()> requires std::is_enum_v<Enum>
+auto mkEnumAdapt(Enum &val, C4EnumAdaptPrefixMode prefixMode = C4EnumAdaptPrefixMode::None, const C4EnumInfoData<Enum, N> &info = C4EnumInfo<Enum>::data) { return C4EnumAdaptWithInfo<Enum, Enum, N>{val, prefixMode, info}; }
 
 // Convert a bitfield into/from something like "foo | bar | baz", where "foo", "bar" and "baz" are given constants.
-template <class T, size_t N>
-struct StdBitfieldAdapt
+template <class T, class Enum, std::size_t N = C4EnumInfo<Enum>::data.values.size()>
+class C4BitfieldAdaptWithInfo
 {
-	typedef StdBitfieldEntry<T> Entry;
+	using Info = C4BitfieldInfoData<Enum, N>;
+	using Underlying = std::common_type_t<detail::underlying_or_same<Enum>, detail::underlying_or_same<T>>;
 
-	StdBitfieldAdapt(T &rVal, const Entry *pNames) : rVal(rVal), pNames(pNames) { assert(pNames); }
-	T &rVal; const Entry *pNames;
+public:
+	constexpr C4BitfieldAdaptWithInfo(T &val, C4EnumAdaptPrefixMode prefixMode, const Info &info = C4EnumInfo<Enum>::data) noexcept : val{val}, info{info}, prefixMode{prefixMode} {}
 
 	void CompileFunc(StdCompiler *pComp) const
 	{
-		// simply write for non-verbose compilers
 		if (!pComp->isVerbose())
 		{
-			pComp->Value(rVal);
+			pComp->Value(mkEnumAdapt(val, prefixMode, info));
 			return;
 		}
-		// writing?
-		if (!pComp->isCompiler())
+
+		Underlying tmp;
+		C4EnumAdaptWithInfo<Underlying, Enum, N> enumAdapt{tmp, prefixMode, info};
+
+		if (pComp->isCompiler())
 		{
-			T val = rVal;
-			// Write until value is comsumed
-			bool fFirst = true;
-			size_t i = 0;
-			for (const Entry *pName = pNames; val && i < N && pName->Name; ++pName, ++i)
-				if ((pName->Val & val) == pName->Val)
-				{
-					// Put "|"
-					if (!fFirst) pComp->Separator(StdCompiler::SEP_VLINE);
-					// Put name
-					pComp->String(pName->Name, strlen(pName->Name), StdCompiler::RCT_Idtf);
-					fFirst = false;
-					// Remove bits
-					val &= ~pName->Val;
-				}
-			// Anything left is written as number
-			if (val)
-			{
-				// Put "|"
-				if (!fFirst) pComp->Separator(StdCompiler::SEP_VLINE);
-				// Put value
-				pComp->Value(val);
-			}
-		}
-		// reading?
-		else
-		{
-			T val = 0;
-			// Read
+			Underlying uVal{0};
 			do
 			{
-				// Try to read as number
-				try
+				pComp->Value(enumAdapt);
+				uVal |= tmp;
+			}
+			while (pComp->Separator(StdCompiler::SEP_VLINE));
+
+			val = static_cast<Enum>(uVal);
+		}
+		else
+		{
+			auto uVal = static_cast<Underlying>(val);
+			bool first{true};
+
+			for (const auto infoVal : info.scopedValues(C4EnumValueScope::Serialization))
+			{
+				tmp = static_cast<Underlying>(infoVal.value);
+				// don’t write the zero-value if other bits are set
+				if (val != 0 && tmp == 0)
 				{
-					T tmp;
-					pComp->Value(tmp);
-					val |= tmp;
+					continue;
 				}
-				catch (const StdCompiler::NotFoundException &)
+				if ((uVal & tmp) == tmp)
 				{
-					// Try to read as string
-					StdStrBuf Name;
-					pComp->Value(mkParAdapt(Name, StdCompiler::RCT_Idtf));
-					// Search in name list
-					const Entry *pName = pNames;
-					size_t i = 0;
-					for (; i < N && pName->Name; ++pName, ++i)
-						if (Name == pName->Name)
-						{
-							val |= pName->Val;
-							break;
-						}
-					// Not found? Warn
-					if (i >= N || !pName->Name)
-						pComp->Warn("Unknown bit name: {}", Name.getData());
+					if (!first)
+					{
+						pComp->Separator(StdCompiler::SEP_VLINE);
+					}
+					first = false;
+					pComp->Value(enumAdapt);
+					uVal &= ~tmp;
 				}
-				// Expect separation
-			} while (pComp->Separator(StdCompiler::SEP_VLINE));
-			// Write value back
-			rVal = val;
+			}
+
+			// Anything left is written as number
+			if (uVal != 0)
+			{
+				if (!first)
+				{
+					pComp->Separator(StdCompiler::SEP_VLINE);
+				}
+				pComp->Value(uVal);
+			}
 		}
 	}
 
-	template <class D> inline bool operator==(const D &nValue) const { return rVal == nValue; }
-	template <class D> inline auto &operator=(const D &nValue) { rVal = nValue; return *this; }
+	template <class D> inline bool operator==(const D &nValue) const { return val == nValue; }
+	template <class D> inline auto &operator=(const D &nValue) { val = nValue; return *this; }
+
+private:
+	T &val;
+	const Info &info;
+	C4EnumAdaptPrefixMode prefixMode;
 };
 
-template <class T, size_t N>
-auto mkBitfieldAdapt(T &rVal, const StdBitfieldEntry<T> (&pNames)[N]) { return StdBitfieldAdapt<T, N>(rVal, pNames); }
+template <class Enum, size_t N = C4EnumInfo<Enum>::data.values.size()> requires std::is_enum_v<Enum>
+auto mkBitfieldAdapt(Enum &val, C4EnumAdaptPrefixMode prefixMode = C4EnumAdaptPrefixMode::None, const C4BitfieldInfoData<Enum, N> &info = C4EnumInfo<Enum>::data) { return C4BitfieldAdaptWithInfo<Enum, Enum, N>{val, prefixMode, info}; }
+
+template <class Enum, class T, size_t N = C4EnumInfo<Enum>::data.values.size()>
+auto mkBitfieldAdapt(T &val, C4EnumAdaptPrefixMode prefixMode = C4EnumAdaptPrefixMode::None, const C4BitfieldInfoData<Enum, N> &info = C4EnumInfo<Enum>::data) { return C4BitfieldAdaptWithInfo<T, Enum, N>{val, prefixMode, info}; }
 
 // * Name count adapter
 // For compilers without name support, this just compiles the given value. Otherwise, the count

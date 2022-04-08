@@ -35,23 +35,6 @@ const int32_t JumpAngle = 35, JumpLowAngle = 80, JumpAngleRange = 10, JumpHighAn
 const int32_t FlightAngleRange = 60;
 const int32_t LetGoHangleAngle = 110;
 
-StdEnumAdapt<int32_t>::Entry EnumAdaptCommandEntries[C4CMD_Last - C4CMD_First + 2];
-
-const char *CommandName(int32_t iCommand)
-{
-	static const char *szCommandName[] =
-	{
-		"None", "Follow", "MoveTo", "Enter", "Exit", "Grab", "Build", "Throw", "Chop",
-		"UnGrab", "Jump", "Wait", "Get", "Put", "Drop", "Dig", "Activate", "PushTo",
-		"Construct", "Transfer", "Attack", "Context", "Buy", "Sell", "Acquire",
-		"Energy", "Retry", "Home", "Call", "Take", "Take2"
-	};
-
-	if (!Inside<int32_t>(iCommand, C4CMD_First, C4CMD_Last)) return "None";
-
-	return szCommandName[iCommand];
-}
-
 const char *LoadCommandNameResStr(const std::int32_t command)
 {
 	static constexpr C4ResStrTableKeyFormat<> CommandNameIds[]
@@ -69,19 +52,6 @@ const char *LoadCommandNameResStr(const std::int32_t command)
 
 	return LoadResStr(CommandNameIds[command]);
 }
-
-bool InitEnumAdaptCommandEntries()
-{
-	for (int32_t i = C4CMD_First; i <= C4CMD_Last; i++)
-	{
-		EnumAdaptCommandEntries[i - C4CMD_First].Name = CommandName(i);
-		EnumAdaptCommandEntries[i - C4CMD_First].Val = i;
-	}
-	EnumAdaptCommandEntries[C4CMD_Last - C4CMD_First + 1].Name = nullptr;
-	return true;
-}
-
-const bool InitEnumAdaptCommandEntriesDummy = InitEnumAdaptCommandEntries();
 
 int32_t CommandByName(const char *szCommand)
 {
@@ -2384,7 +2354,7 @@ void C4Command::CompileFunc(StdCompiler *pComp)
 	else
 		pComp->NoSeparator();
 	// Command name
-	pComp->Value(mkEnumAdaptT<uint8_t>(Command, EnumAdaptCommandEntries));
+	pComp->Value(mkEnumAdapt(Command, C4EnumAdaptPrefixMode::None, C4CMD_EnumInfo));
 	pComp->Separator(StdCompiler::SEP_SEP);
 	// Target X/Y
 	pComp->Value(Tx); pComp->Separator(StdCompiler::SEP_SEP);

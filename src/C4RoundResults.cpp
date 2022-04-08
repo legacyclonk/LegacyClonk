@@ -40,13 +40,7 @@ void C4RoundResultsPlayer::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(iLeagueRankNew,       "Rank",                0)); // name used in league reply!
 	pComp->Value(mkNamingAdapt(iLeagueRankSymbolNew, "RankSymbol",          0)); // name used in league reply!
 	pComp->Value(mkNamingAdapt(sLeagueProgressData,  "LeagueProgressData", StdStrBuf()));
-	StdEnumEntry<LeagueStatus> LeagueStatusEntries[] =
-	{
-		{ "",     RRPLS_Unknown },
-		{ "Lost", RRPLS_Lost },
-		{ "Won",  RRPLS_Won },
-	};
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<uint8_t>(eLeagueStatus, LeagueStatusEntries), "Status", RRPLS_Unknown)); // name used in league reply!
+	pComp->Value(mkNamingAdapt(mkEnumAdapt(eLeagueStatus), "Status", RRPLS_Unknown)); // name used in league reply!
 }
 
 void C4RoundResultsPlayer::EvaluatePlayer(C4Player *pPlr)
@@ -267,14 +261,7 @@ void C4RoundResults::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(iLeaguePerformance,       "LeaguePerformance",       0));
 	pComp->Value(mkNamingAdapt(Players,                  "PlayerInfos",             C4RoundResultsPlayers()));
 	pComp->Value(mkNamingAdapt(sNetResult,               "NetResult",               StdStrBuf()));
-	StdEnumEntry<NetResult> NetResultEntries[] =
-	{
-		{ "",            NR_None },
-		{ "LeagueOK",    NR_LeagueOK },
-		{ "LeagueError", NR_LeagueError },
-		{ "NetError",    NR_NetError },
-	};
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<uint8_t>(eNetResult, NetResultEntries), "NetResult", NR_None));
+	pComp->Value(mkNamingAdapt(mkEnumAdapt(eNetResult), "NetResult", NR_None));
 }
 
 void C4RoundResults::EvaluateGoals(C4IDList &GoalList, C4IDList &FulfilledGoalList, int32_t iPlayerNumber)

@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "C4EnumInfo.h"
 #include "StdBuf.h"
 
 #include <cstddef>
@@ -186,9 +187,20 @@ public:
 	friend class EndpointAddressPtr;
 };
 
-enum C4Network2IOProtocol
+enum C4Network2IOProtocol : std::int8_t
 {
 	P_UDP, P_TCP, P_NONE = -1
+};
+
+template<>
+struct C4EnumInfo<C4Network2IOProtocol>
+{
+	static inline constexpr auto data = mkEnumInfo<C4Network2IOProtocol>("P_",
+		{
+			{ P_UDP, "UDP" },
+			{ P_TCP, "TCP" }
+		}
+	);
 };
 
 class C4Network2Address

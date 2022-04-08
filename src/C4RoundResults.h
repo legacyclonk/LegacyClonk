@@ -26,6 +26,7 @@
 
 #include "C4Constants.h"
 #include "C4Components.h"
+#include "C4EnumInfo.h"
 #include "C4ForwardDeclarations.h"
 #include "C4IDList.h"
 #include "C4PacketBase.h"
@@ -56,12 +57,12 @@ private:
 	int32_t iLeaguePerformance;   // script-set performance value, effect league-dependent
 	StdStrBuf sLeagueProgressData; // scenario-specific data to store more proigress info (which levels were done, etc.)
 
-	enum LeagueStatus
+public:
+	enum LeagueStatus : std::uint8_t
 	{
 		RRPLS_Unknown = 0, RRPLS_Lost, RRPLS_Won
 	} eLeagueStatus; // whether player lost or won
 
-public:
 	C4RoundResultsPlayer() : id(0), iTotalPlayingTime(0), iScoreOld(-1), iScoreNew(-1), iLeagueScoreNew(-1), iLeagueScoreGain(0), iLeagueRankNew(0), iLeagueRankSymbolNew(0), iLeaguePerformance(0), sLeagueProgressData(), eLeagueStatus(RRPLS_Unknown) {}
 	C4RoundResultsPlayer(const C4RoundResultsPlayer &cpy) { *this = cpy; }
 
@@ -89,6 +90,19 @@ public:
 
 	bool operator==(const C4RoundResultsPlayer &cmp) const;
 	C4RoundResultsPlayer &operator=(const C4RoundResultsPlayer &cpy);
+};
+
+template<>
+struct C4EnumInfo<C4RoundResultsPlayer::LeagueStatus>
+{
+	using E = C4RoundResultsPlayer::LeagueStatus;
+	static inline constexpr auto data = mkEnumInfo<E>("RRPLS_",
+		{
+			{ E::RRPLS_Unknown, "" },
+			{ E::RRPLS_Lost,    "Lost" },
+			{ E::RRPLS_Won,     "Won" }
+		}
+	);
 };
 
 // player list in round results (std::vector<C4RoundResultsPlayer>...)
@@ -126,7 +140,7 @@ public:
 class C4RoundResults
 {
 public:
-	enum NetResult
+	enum NetResult : std::uint8_t
 	{
 		NR_None = 0,    // undefined
 		NR_LeagueOK,    // league evaluated
@@ -204,6 +218,20 @@ public:
 
 	const C4IDList &GetGoals() const { return Goals; }
 	const C4IDList &GetFulfilledGoals() const { return FulfilledGoals; }
+};
+
+template<>
+struct C4EnumInfo<C4RoundResults::NetResult>
+{
+	using E = C4RoundResults::NetResult;
+	static inline constexpr auto data = mkEnumInfo<E>("NR_",
+		{
+			{ E::NR_None,        "" },
+			{ E::NR_LeagueOK,    "LeagueOK" },
+			{ E::NR_LeagueError, "LeagueError" },
+			{ E::NR_NetError,    "NetError" }
+		}
+	);
 };
 
 // * PID_LeagueRoundResults

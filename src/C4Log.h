@@ -366,18 +366,22 @@ void LogFatal(const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Ar
 // Used to print a backtrace after a crash
 int GetLogFD();
 
+template<>
+struct C4EnumInfo<spdlog::level::level_enum>
+{
+	static inline constexpr auto data = mkEnumInfo<spdlog::level::level_enum>("",
+	{
+		{spdlog::level::trace, "trace"},
+		{spdlog::level::debug, "debug"},
+		{spdlog::level::info, "info"},
+		{spdlog::level::warn, "warn"},
+		{spdlog::level::err, "error"},
+		{spdlog::level::critical, "critical"},
+		{spdlog::level::off, "off"}
+	});
+};
+
 inline void CompileFunc(spdlog::level::level_enum &level, StdCompiler *const comp)
 {
-	constexpr StdEnumEntry<spdlog::level::level_enum> Values[]
-	{
-		{"trace", spdlog::level::trace},
-		{"debug", spdlog::level::debug},
-		{"info", spdlog::level::info},
-		{"warn", spdlog::level::warn},
-		{"error", spdlog::level::err},
-		{"critical", spdlog::level::critical},
-		{"off", spdlog::level::off},
-	};
-
-	comp->Value(mkEnumAdaptT<std::int32_t>(level, Values));
+	comp->Value(mkEnumAdapt(level));
 }

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "C4Constants.h"
+#include "C4EnumInfo.h"
 #include "C4ForwardDeclarations.h"
 #include "StdBuf.h"
 
@@ -113,7 +114,7 @@ public:
 	};
 
 	// team distribution configuration
-	enum TeamDist
+	enum TeamDist : std::uint8_t
 	{
 		TEAMDIST_First = 0,
 		TEAMDIST_Free = 0, // anyone can choose teams
@@ -226,4 +227,19 @@ public:
 	void SendSetTeamColors(bool fEnabled);
 	void SetTeamColors(bool fEnabled);
 	void SetRandomTeamCount(int32_t count);
+};
+
+template<>
+struct C4EnumInfo<C4TeamList::TeamDist>
+{
+	using E = C4TeamList::TeamDist;
+	static inline constexpr auto data = mkEnumInfo<E>("TEAMDIST_",
+		{
+			{ E::TEAMDIST_Free,      "Free" },
+			{ E::TEAMDIST_Host,      "Host" },
+			{ E::TEAMDIST_None,      "None" },
+			{ E::TEAMDIST_Random,    "Random" },
+			{ E::TEAMDIST_RandomInv, "RandomInv" }
+		}
+	);
 };

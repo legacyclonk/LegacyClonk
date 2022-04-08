@@ -20,6 +20,7 @@
 #pragma once
 
 #include <C4EnumeratedObjectPtr.h>
+#include <C4EnumInfo.h>
 #include <C4FacetEx.h>
 #include "C4ForwardDeclarations.h"
 #include <C4Material.h>
@@ -259,6 +260,23 @@ public:
 	void SetBlitMode(uint32_t dwToMode) { dwBlitMode = dwToMode; }
 
 	void UpdateSourceGraphics(C4DefGraphics *newSource); // for ReloadDef
+};
+
+template<>
+struct C4EnumInfo<C4GraphicsOverlay::Mode>
+{
+	using E = C4GraphicsOverlay::Mode;
+	static inline constexpr auto data = mkEnumInfo<E>("GFXOV_MODE_",
+		{
+			{ E::MODE_None,          "None"          },
+			{ E::MODE_Base,          "Base"          },
+			{ E::MODE_Action,        "Action"        },
+			{ E::MODE_Picture,       "Picture"       },
+			{ E::MODE_IngamePicture, "IngamePicture" },
+			{ E::MODE_Object,        "Object"        },
+			{ E::MODE_ExtraGraphics, "ExtraGraphics" }
+		}
+	);
 };
 
 // Helper to compile lists of C4GraphicsOverlay

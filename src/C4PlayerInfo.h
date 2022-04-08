@@ -33,6 +33,7 @@
 
 #pragma once
 
+#include "C4EnumInfo.h"
 #include "C4ForwardDeclarations.h"
 #include "C4Id.h"
 #include "C4PacketBase.h"
@@ -50,7 +51,7 @@ class C4PlayerInfo
 {
 public:
 	// player flags
-	enum Flags
+	enum Flags : std::uint16_t
 	{
 		PIF_Joined                = 1 <<  0, // player has joined the game
 		PIF_Removed               = 1 <<  2, // player has been removed
@@ -79,7 +80,7 @@ public:
 	enum AttributeLevel { PLRAL_Current, PLRAL_Original, PLRAL_Alternate };
 
 private:
-	uint32_t dwFlags; // bitmask of C4PlayerInfoFlags-constants
+	std::underlying_type_t<Flags> dwFlags; // bitmask of C4PlayerInfoFlags-constants
 	C4PlayerType eType; // user or script player
 
 	ValidatedStdStrBuf<C4InVal::VAL_NameNoEmpty> sName; // player name
@@ -239,6 +240,28 @@ public:
 	bool LoadBigIcon(C4FacetExSurface &fctTarget); // load BigIcon.png of player into target facet; return false if no bigicon present or player file not yet loaded
 };
 
+template<>
+struct C4EnumInfo<C4PlayerInfo::Flags>
+{
+	using E = C4PlayerInfo::Flags;
+	static inline constexpr auto data = mkBitfieldInfo<E>("PIF_",
+		{
+			{ E::PIF_Joined,                "Joined" },
+			{ E::PIF_Removed,               "Removed" },
+			{ E::PIF_HasRes,                "HasResource" },
+			{ E::PIF_JoinIssued,            "JoinIssued" },
+			{ E::PIF_JoinedForSavegameOnly, "SavegameJoin" },
+			{ E::PIF_Disconnected,          "Disconnected" },
+			{ E::PIF_VotedOut,              "VotedOut" },
+			{ E::PIF_Won,                   "Won" },
+			{ E::PIF_AttributesFixed,       "AttributesFixed" },
+			{ E::PIF_NoScenarioInit,        "NoScenarioInit" },
+			{ E::PIF_NoEliminationCheck,    "NoEliminationCheck" },
+			{ E::PIF_Invisible,             "Invisible" }
+		}
+	);
+};
+
 // player infos for one client
 // merely a list of player infos
 class C4ClientPlayerInfos
@@ -251,7 +274,9 @@ private:
 	void GrowList(size_t iByVal); // increase list capacity
 
 	int32_t iClientID; // ID of client described by this packet
+	uint32_t dwFlags; // bit mask of the flags
 
+public:
 	// flags for this packet
 	enum Flags
 	{
@@ -259,9 +284,7 @@ private:
 		CIF_Updated    = 1 << 1, // set temporarily if changed and not transmissioned to clients (valid for host only)
 		CIF_Initial    = 1 << 2, // set for first-time player info packets
 	};
-	uint32_t dwFlags; // bit mask of the above flags
 
-public:
 	C4ClientPlayerInfos(const char *szJoinFilenames = nullptr, bool fAdd = false, C4PlayerInfo *pAddInfo = nullptr); // sets local data (or makes an add-player-packet if filename is given) if par is true
 	C4ClientPlayerInfos(const C4ClientPlayerInfos &rCopy);
 	~C4ClientPlayerInfos() { Clear(); }
@@ -297,6 +320,19 @@ public:
 
 	// pack/unpack functions
 	void CompileFunc(StdCompiler *pComp);
+};
+
+template<>
+struct C4EnumInfo<C4ClientPlayerInfos::Flags>
+{
+	using E = C4ClientPlayerInfos::Flags;
+	static inline constexpr auto data = mkBitfieldInfo<E>("CIF_",
+		{
+			{ E::CIF_AddPlayers, "AddPlayers" },
+			{ E::CIF_Updated,    "Updated" },
+			{ E::CIF_Initial,    "Initial" }
+		}
+	);
 };
 
 // * PID_PlayerInfoUpdRequest

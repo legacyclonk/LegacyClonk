@@ -107,15 +107,7 @@ void C4Network2Status::CompileFunc(StdCompiler *pComp)
 
 void C4Network2Status::CompileFunc(StdCompiler *pComp, bool fReference)
 {
-	StdEnumEntry<C4NetGameState> GameStates[] =
-	{
-		{ "None",    GS_None },
-		{ "Init",    GS_Init },
-		{ "Lobby",   GS_Lobby },
-		{ "Paused",  GS_Pause },
-		{ "Running", GS_Go },
-	};
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<uint8_t>(eState, GameStates), "State",    GS_None));
+	pComp->Value(mkNamingAdapt(mkEnumAdapt(eState), "State",    GS_None));
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iCtrlMode),                 "CtrlMode", -1));
 
 	if (!fReference)

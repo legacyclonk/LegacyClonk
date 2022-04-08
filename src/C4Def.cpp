@@ -73,22 +73,7 @@ void C4ActionDef::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Directions,              "Directions", 1));
 	pComp->Value(mkNamingAdapt(FlipDir,                 "FlipDir",    0));
 	pComp->Value(mkNamingAdapt(Length,                  "Length",     1));
-
-	StdBitfieldEntry<int32_t> CNATs[] =
-	{
-		{ "CNAT_None",        CNAT_None },
-		{ "CNAT_Left",        CNAT_Left },
-		{ "CNAT_Right",       CNAT_Right },
-		{ "CNAT_Top",         CNAT_Top },
-		{ "CNAT_Bottom",      CNAT_Bottom },
-		{ "CNAT_Center",      CNAT_Center },
-		{ "CNAT_MultiAttach", CNAT_MultiAttach },
-		{ "CNAT_NoCollision", CNAT_NoCollision },
-
-		{ nullptr, 0 }
-	};
-
-	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(Attach, CNATs),
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(Attach, C4EnumAdaptPrefixMode::Force, CNAT_EnumInfo),
 		"Attach", 0));
 
 	pComp->Value(mkNamingAdapt(Delay,                    "Delay",              0));
@@ -254,44 +239,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(rC4XVer, 0),      "Version"));
 	pComp->Value(mkNamingAdapt(toC4CStrBuf(Name),             "Name",       "Undefined"));
 	pComp->Value(mkNamingAdapt(mkParAdapt(RequireDef, false), "RequireDef", C4IDList()));
-
-	const StdBitfieldEntry<int32_t> Categories[] =
-	{
-		{ "C4D_StaticBack", C4D_StaticBack },
-		{ "C4D_Structure",  C4D_Structure },
-		{ "C4D_Vehicle",    C4D_Vehicle },
-		{ "C4D_Living",     C4D_Living },
-		{ "C4D_Object",     C4D_Object },
-
-		{ "C4D_Goal",             C4D_Goal },
-		{ "C4D_Environment",      C4D_Environment },
-		{ "C4D_SelectBuilding",   C4D_SelectBuilding },
-		{ "C4D_SelectVehicle",    C4D_SelectVehicle },
-		{ "C4D_SelectMaterial",   C4D_SelectMaterial },
-		{ "C4D_SelectKnowledge",  C4D_SelectKnowledge },
-		{ "C4D_SelectHomebase",   C4D_SelectHomebase },
-		{ "C4D_SelectAnimal",     C4D_SelectAnimal },
-		{ "C4D_SelectNest",       C4D_SelectNest },
-		{ "C4D_SelectInEarth",    C4D_SelectInEarth },
-		{ "C4D_SelectVegetation", C4D_SelectVegetation },
-
-		{ "C4D_TradeLiving", C4D_TradeLiving },
-		{ "C4D_Magic",       C4D_Magic },
-		{ "C4D_CrewMember",  C4D_CrewMember },
-
-		{ "C4D_Rule", C4D_Rule },
-
-		{ "C4D_Background",  C4D_Background },
-		{ "C4D_Parallax",    C4D_Parallax },
-		{ "C4D_MouseSelect", C4D_MouseSelect },
-		{ "C4D_Foreground",  C4D_Foreground },
-		{ "C4D_MouseIgnore", C4D_MouseIgnore },
-		{ "C4D_IgnoreFoW",   C4D_IgnoreFoW },
-
-		{ nullptr, 0 }
-	};
-
-	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(Category, Categories),
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(Category, C4EnumAdaptPrefixMode::Force, C4D_Category_EnumInfo),
 		"Category", 0));
 
 	pComp->Value(mkNamingAdapt(MaxUserSelect,           "MaxUserSelect",     0));
@@ -316,38 +264,9 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkC4IDAdapt(BurnTurnTo), "BurnTo",            C4ID_None));
 	pComp->Value(mkNamingAdapt(CanBeBase,               "Base",              0));
 
-	const StdBitfieldEntry<int32_t> LineTypes[] =
-	{
-		{ "C4D_LinePower",     C4D_Line_Power },
-		{ "C4D_LineSource",    C4D_Line_Source },
-		{ "C4D_LineDrain",     C4D_Line_Drain },
-		{ "C4D_LineLightning", C4D_Line_Lightning },
-		{ "C4D_LineVolcano",   C4D_Line_Volcano },
-		{ "C4D_LineRope",      C4D_Line_Rope },
-		{ "C4D_LineColored",   C4D_Line_Colored },
-		{ "C4D_LineVertex",    C4D_Line_Vertex },
+	pComp->Value(mkNamingAdapt(mkEnumAdapt(Line, C4EnumAdaptPrefixMode::Force, C4D_Line_EnumInfo), "Line", 0));
 
-		{ nullptr, 0 }
-	};
-
-	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(Line, LineTypes), "Line", 0));
-
-	const StdBitfieldEntry<int32_t> LineConnectTypes[] =
-	{
-		{ "C4D_PowerInput",     C4D_Power_Input },
-		{ "C4D_PowerOutput",    C4D_Power_Output },
-		{ "C4D_LiquidInput",    C4D_Liquid_Input },
-		{ "C4D_LiquidOutput",   C4D_Liquid_Output },
-		{ "C4D_PowerGenerator", C4D_Power_Generator },
-		{ "C4D_PowerConsumer",  C4D_Power_Consumer },
-		{ "C4D_LiquidPump",     C4D_Liquid_Pump },
-		{ "C4D_ConnectRope",    C4D_Connect_Rope },
-		{ "C4D_EnergyHolder",   C4D_EnergyHolder },
-
-		{ nullptr, 0 }
-	};
-
-	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(LineConnect, LineConnectTypes),
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(LineConnect, C4EnumAdaptPrefixMode::Force, C4D_LineConnect_EnumInfo),
 		"LineConnect", 0));
 
 	pComp->Value(mkNamingAdapt(LineIntersect,            "LineIntersect",  0));
@@ -361,15 +280,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkC4IDAdapt(BuildTurnTo), "ConstructTo",    0));
 	pComp->Value(mkNamingAdapt(Grab,                     "Grab",           0));
 
-	const StdBitfieldEntry<int32_t> GrabPutGetTypes[] =
-	{
-		{ "C4D_GrabGet", C4D_Grab_Get },
-		{ "C4D_GrabPut", C4D_Grab_Put },
-
-		{ nullptr, 0 }
-	};
-
-	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(GrabPutGet, GrabPutGetTypes),
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt(GrabPutGet, C4EnumAdaptPrefixMode::Force, C4D_Grab_EnumInfo),
 		"GrabPutGet", 0));
 
 	pComp->Value(mkNamingAdapt(Carryable,                 "Collectible",        0));
@@ -415,43 +326,12 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(NoTransferZones,           "NoTransferZones",    0));
 	pComp->Value(mkNamingAdapt(AutoContextMenu,           "AutoContextMenu",    0));
 	pComp->Value(mkNamingAdapt(NeededGfxMode,             "NeededGfxMode",      0));
-
-	const StdBitfieldEntry<int32_t> AllowPictureStackModes[] =
-	{
-		{ "APS_Color",    APS_Color },
-		{ "APS_Graphics", APS_Graphics },
-		{ "APS_Name",     APS_Name },
-		{ "APS_Overlay",  APS_Overlay },
-		{ nullptr,        0 }
-	};
-
-	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(AllowPictureStack, AllowPictureStackModes),
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<C4AllowPictureStack>(AllowPictureStack, C4EnumAdaptPrefixMode::Force),
 		"AllowPictureStack", 0));
 
-	const StdBitfieldEntry<int32_t> HideBarValues[] =
-	{
-		{ "Energy", HB_Energy },
-		{ "MagicEnergy", HB_MagicEnergy },
-		{ "Breath", HB_Breath },
-		{ "All", HB_All },
-		{ nullptr, 0 }
-	};
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<C4DefCore::HideBar>(HideHUDBars), "HideHUDBars", 0));
 
-	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(HideHUDBars, HideBarValues), "HideHUDBars", 0));
-
-	const StdBitfieldEntry<int32_t> HideHUDValues[] =
-	{
-		{ "Portrait", HH_Portrait },
-		{ "Captain", HH_Captain },
-		{ "Name", HH_Name },
-		{ "Rank", HH_Rank },
-		{ "RankImage", HH_RankImage },
-		{ "Inventory", HH_Inventory },
-		{ "All", HH_All },
-		{ nullptr, 0 }
-	};
-
-	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<int32_t>(HideHUDElements, HideHUDValues), "HideHUDElements", 0));
+	pComp->Value(mkNamingAdapt(mkBitfieldAdapt<C4DefCore::HideHud>(HideHUDElements), "HideHUDElements", 0));
 
 	pComp->Value(mkNamingAdapt(Scale, "Scale", 100));
 	pComp->Value(mkNamingAdapt(BaseAutoSell, "BaseAutoSell", id == C4ID_Gold)); // do not brick third-party GOLD objects which don't have that flag

@@ -30,6 +30,7 @@
 #include "C4LangStringTable.h"
 
 #include "C4DelegatedIterable.h"
+#include "C4EnumInfo.h"
 
 #include "StdFont.h"
 
@@ -77,6 +78,42 @@ const int32_t C4D_None                   = 0,
 
               C4D_BackgroundOrForeground = (C4D_Background | C4D_Foreground);
 
+inline constexpr auto C4D_Category_EnumInfo = mkBitfieldInfo<int32_t>("C4D_",
+	{
+		{ C4D_All,        "All", C4EnumValueScope::Script },
+		{ C4D_StaticBack, "StaticBack" },
+		{ C4D_Structure,  "Structure" },
+		{ C4D_Vehicle,    "Vehicle" },
+		{ C4D_Living,     "Living" },
+		{ C4D_Object,     "Object" },
+
+		{ C4D_Goal,             "Goal" },
+		{ C4D_Environment,      "Environment" },
+		{ C4D_SelectBuilding,   "SelectBuilding", C4EnumValueScope::Serialization },
+		{ C4D_SelectVehicle,    "SelectVehicle", C4EnumValueScope::Serialization },
+		{ C4D_SelectMaterial,   "SelectMaterial", C4EnumValueScope::Serialization },
+		{ C4D_SelectKnowledge,  "SelectKnowledge", "Knowledge" },
+		{ C4D_SelectHomebase,   "SelectHomebase", C4EnumValueScope::Serialization },
+		{ C4D_SelectAnimal,     "SelectAnimal", C4EnumValueScope::Serialization },
+		{ C4D_SelectNest,       "SelectNest", C4EnumValueScope::Serialization },
+		{ C4D_SelectInEarth,    "SelectInEarth", C4EnumValueScope::Serialization },
+		{ C4D_SelectVegetation, "SelectVegetation", C4EnumValueScope::Serialization },
+
+		{ C4D_TradeLiving, "TradeLiving", C4EnumValueScope::Serialization },
+		{ C4D_Magic,       "Magic" },
+		{ C4D_CrewMember, "CrewMember", C4EnumValueScope::Serialization },
+
+		{ C4D_Rule, "Rule" },
+
+		{ C4D_Background,  "Background" },
+		{ C4D_Parallax,    "Parallax" },
+		{ C4D_MouseSelect, "MouseSelect" },
+		{ C4D_Foreground,  "Foreground" },
+		{ C4D_MouseIgnore, "MouseIgnore" },
+		{ C4D_IgnoreFoW,   "IgnoreFoW" },
+	}
+);
+
 const int32_t C4D_Grab_Put = 1,
               C4D_Grab_Get = 2,
 
@@ -107,6 +144,40 @@ const int32_t C4D_Grab_Put = 1,
               C4D_Place_Surface = 0,
               C4D_Place_Liquid  = 1,
               C4D_Place_Air     = 2;
+
+inline constexpr auto C4D_Line_EnumInfo = mkEnumInfo<int32_t>("C4D_Line",
+	{
+		{ C4D_Line_Power,     "Power" },
+		{ C4D_Line_Source,    "Source" },
+		{ C4D_Line_Drain,     "Drain" },
+		{ C4D_Line_Lightning, "Lightning" },
+		{ C4D_Line_Volcano,   "Volcano" },
+		{ C4D_Line_Rope,      "Rope" },
+		{ C4D_Line_Colored,   "Colored" },
+		{ C4D_Line_Vertex,    "Vertex" }
+	}
+);
+
+inline constexpr auto C4D_LineConnect_EnumInfo = mkBitfieldInfo<int32_t>("C4D_",
+	{
+		{ C4D_Power_Input,     "PowerInput" },
+		{ C4D_Power_Output,    "PowerOutput" },
+		{ C4D_Liquid_Input,    "LiquidInput" },
+		{ C4D_Liquid_Output,   "LiquidOutput" },
+		{ C4D_Power_Generator, "PowerGenerator" },
+		{ C4D_Power_Consumer,  "PowerConsumer" },
+		{ C4D_Liquid_Pump,     "LiquidPump" },
+		{ C4D_Connect_Rope,    "ConnectRope", C4EnumValueScope::Serialization },
+		{ C4D_EnergyHolder,    "EnergyHolder" }
+	}
+);
+
+inline constexpr auto C4D_Grab_EnumInfo = mkBitfieldInfo<int32_t>("C4D_Grab",
+	{
+		{ C4D_Grab_Get, "Get" },
+		{ C4D_Grab_Put, "Put" }
+	}
+);
 
 const int32_t C4D_VehicleControl_None    = 0,
               C4D_VehicleControl_Outside = 1,
@@ -301,6 +372,37 @@ public:
 
 protected:
 	bool Compile(const char *szSource, const char *szName);
+};
+
+template<>
+struct C4EnumInfo<C4DefCore::HideBar>
+{
+	using E = C4DefCore::HideBar;
+	static inline constexpr auto data = mkBitfieldInfo<E>("HB_",
+		{
+			{ E::HB_All, "All" },
+			{ E::HB_Energy, "Energy" },
+			{ E::HB_MagicEnergy, "MagicEnergy" },
+			{ E::HB_Breath, "Breath" }
+		}
+	);
+};
+
+template<>
+struct C4EnumInfo<C4DefCore::HideHud>
+{
+	using E = C4DefCore::HideHud;
+	static inline constexpr auto data = mkBitfieldInfo<E>("HH_",
+		{
+			{ E::HH_All, "All" },
+			{ E::HH_Portrait, "Portrait" },
+			{ E::HH_Captain, "Captain" },
+			{ E::HH_Name, "Name" },
+			{ E::HH_Rank, "Rank" },
+			{ E::HH_RankImage, "RankImage" },
+			{ E::HH_Inventory, "Inventory" }
+		}
+	);
 };
 
 class C4Def : public C4DefCore

@@ -30,20 +30,7 @@
 
 void C4LeagueRequestHead::CompileFunc(StdCompiler *pComp)
 {
-	StdEnumEntry<C4LeagueAction> Actions[] =
-	{
-		{ "Start",  C4LA_Start },
-		{ "Update", C4LA_Update },
-		{ "End",    C4LA_End },
-		{ "Join",   C4LA_PlrAuthCheck },
-
-		{ "",     C4LA_RefQuery },
-		{ "Auth", C4LA_PlrAuth },
-
-		{ "ReportDisconnect", C4LA_ReportDisconnect },
-	};
-
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<uint8_t>(eAction, Actions),               "Action",   C4LA_RefQuery));
+	pComp->Value(mkNamingAdapt(mkEnumAdapt(eAction),         "Action",   C4LA_RefQuery));
 	pComp->Value(mkNamingAdapt(mkParAdapt(CSID, StdCompiler::RCT_IdtfAllowEmpty),     "CSID",     ""));
 	pComp->Value(mkNamingAdapt(mkParAdapt(AUID, StdCompiler::RCT_IdtfAllowEmpty),     "AUID",     ""));
 	pComp->Value(mkNamingAdapt(mkParAdapt(Checksum, StdCompiler::RCT_IdtfAllowEmpty), "Checksum", ""));
@@ -77,14 +64,7 @@ void C4LeagueReportDisconnectHead::CompileFunc(StdCompiler *pComp)
 {
 	// inherited fields
 	C4LeagueRequestHead::CompileFunc(pComp);
-	// reason
-	StdEnumEntry<C4LeagueDisconnectReason> Reasons[] =
-	{
-		{ "",                 C4LDR_Unknown },
-		{ "ConnectionFailed", C4LDR_ConnectionFailed },
-		{ "Desync",           C4LDR_Desync },
-	};
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<uint8_t>(eReason, Reasons), "Reason", C4LDR_Unknown));
+	pComp->Value(mkNamingAdapt(mkEnumAdapt(eReason), "Reason", C4LDR_Unknown));
 }
 
 // *** C4LeagueRequestHeadEnd

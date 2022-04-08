@@ -772,14 +772,7 @@ void C4MessageBoardCommand::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(script);
 	pComp->Separator(StdCompiler::SEP_SEP);
-
-	constexpr StdEnumEntry<Restriction> restrictions[] =
-	{
-		{"Escaped", C4MSGCMDR_Escaped},
-		{"Plain", C4MSGCMDR_Plain},
-		{"Identifier", C4MSGCMDR_Identifier}
-	};
-	pComp->Value(mkEnumAdaptT<int>(restriction, restrictions));
+	pComp->Value(mkEnumAdapt(restriction));
 }
 
 bool C4MessageBoardCommand::operator==(const C4MessageBoardCommand &other) const

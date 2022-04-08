@@ -494,12 +494,7 @@ void C4Network2Address::CompileFunc(StdCompiler *const comp)
 		addr.Clear();
 	}
 
-	// Write protocol
-	const StdEnumEntry<C4Network2IOProtocol> Protocols[]{
-		{ "UDP",   P_UDP },
-		{ "TCP",   P_TCP }
-	};
-	comp->Value(mkEnumAdaptT<std::uint8_t>(protocol, Protocols));
+	comp->Value(mkEnumAdapt(protocol));
 	comp->Separator(StdCompiler::SEP_PART2); // ':'
 
 	comp->Value(mkDefaultAdapt(addr, C4Network2EndpointAddress{}));

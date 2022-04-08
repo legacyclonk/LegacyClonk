@@ -17,6 +17,8 @@
 
 #include <cstdint>
 
+#include "C4EnumInfo.h"
+
 enum class C4AulScriptStrict : std::uint8_t
 {
 	NONSTRICT = 0,

@@ -3885,7 +3885,7 @@ bool C4Object::AddCommand(int32_t iCommand, C4Object *pTarget, C4Value iTx, int3
 	for (pCom = Command, iCommands = 0; pCom; pCom = pCom->Next, iCommands++);
 	if (iCommands >= MaxCommandStack) return false;
 	// Valid command safety
-	if (!Inside(iCommand, C4CMD_First, C4CMD_Last)) return false;
+	if (!Inside<int32_t>(iCommand, C4CMD_First, C4CMD_Last)) return false;
 	// Allocate and set new command
 	pCom = new C4Command;
 	pCom->Set(iCommand, this, pTarget, iTx, iTy, pTarget2, iData,

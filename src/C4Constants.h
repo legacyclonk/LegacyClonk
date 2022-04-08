@@ -20,6 +20,8 @@
 
 #include <cstdint>
 
+#include "C4EnumInfo.h"
+
 // Main
 
 const int C4MaxNameList = 10,
@@ -136,6 +138,45 @@ const uint32_t OCF_None             = 0,
                OCF_Container        = 1 << 30,
                OCF_Alive            = 1 << 31;
 
+inline constexpr auto OCF_EnumInfo = mkBitfieldInfo<uint32_t>("OCF_",
+	{
+		{ OCF_None            , "None",            C4EnumValueScope::Serialization },
+		{ OCF_All             , "All",             C4EnumValueScope::Serialization },
+		{ OCF_Normal          , "Normal",          C4EnumValueScope::Serialization },
+		{ OCF_Construct       , "Construct",       },
+		{ OCF_Grab            , "Grab"             },
+		{ OCF_Carryable       , "Collectible"      },
+		{ OCF_OnFire          , "OnFire"           },
+		{ OCF_HitSpeed1       , "HitSpeed1"        },
+		{ OCF_FullCon         , "FullCon",         "Fullcon" },
+		{ OCF_Inflammable     , "Inflammable"      },
+		{ OCF_Chop            , "Chop"             },
+		{ OCF_Rotate          , "Rotate"           },
+		{ OCF_Exclusive       , "Exclusive"        },
+		{ OCF_Entrance        , "Entrance"         },
+		{ OCF_HitSpeed2       , "HitSpeed2"        },
+		{ OCF_HitSpeed3       , "HitSpeed3"        },
+		{ OCF_Collection      , "Collection"       },
+		{ OCF_Living          , "Living"           },
+		{ OCF_HitSpeed4       , "HitSpeed4"        },
+		{ OCF_FightReady      , "FightReady"       },
+		{ OCF_LineConstruct   , "LineConstruct"    },
+		{ OCF_Prey            , "Prey"             },
+		{ OCF_AttractLightning, "AttractLightning" },
+		{ OCF_NotContained    , "NotContained"     },
+		{ OCF_CrewMember      , "CrewMember"       },
+		{ OCF_Edible          , "Edible"           },
+		{ OCF_InLiquid        , "InLiquid"         },
+		{ OCF_InSolid         , "InSolid"          },
+		{ OCF_InFree          , "InFree"           },
+		{ OCF_Available       , "Available"        },
+		{ OCF_PowerConsumer   , "PowerConsumer"    },
+		{ OCF_PowerSupply     , "PowerSupply"      },
+		{ OCF_Container       , "Container"        },
+		{ OCF_Alive           , "Alive"            }
+	}
+);
+
 // Contact / Attachment
 
 const uint8_t // Directional
@@ -149,7 +190,22 @@ const uint8_t // Directional
 	CNAT_MultiAttach = 32, // new attachment behaviour; see C4Shape::Attach
 	CNAT_NoCollision = 64; // turn off collision for this vertex
 
+
 const uint8_t CNAT_Flags = CNAT_MultiAttach | CNAT_NoCollision; // all attchment flags that can be combined with regular attachment
+
+inline constexpr auto CNAT_EnumInfo = mkBitfieldInfo<uint8_t>("CNAT_",
+	{
+		{ CNAT_None,   "None" },
+		{ CNAT_Left,   "Left" } ,
+		{ CNAT_Right,  "Right" },
+		{ CNAT_Top,    "Top" },
+		{ CNAT_Bottom, "Bottom" },
+		{ CNAT_Center, "Center" },
+
+		{ CNAT_MultiAttach, "MultiAttach" },
+		{ CNAT_NoCollision, "NoCollision" }
+	}
+);
 
 // Keyboard Input Controls
 
@@ -167,6 +223,23 @@ const int CON_CursorLeft = 0,
           CON_Menu = 9,
           CON_Special = 10,
           CON_Special2 = 11;
+
+inline constexpr auto CON_EnumInfo = mkEnumInfo<int>("CON_",
+	{
+		{ CON_CursorLeft  , "CursorLeft"   },
+		{ CON_CursorToggle, "CursorToggle" },
+		{ CON_CursorRight , "CursorRight"  },
+		{ CON_Throw       , "Throw"        },
+		{ CON_Up          , "Up"           },
+		{ CON_Dig         , "Dig"          },
+		{ CON_Left        , "Left"         },
+		{ CON_Down        , "Down"         },
+		{ CON_Right       , "Right"        },
+		{ CON_Menu        , "Menu"         },
+		{ CON_Special     , "Special"      },
+		{ CON_Special2    , "Special2"     }
+	}
+);
 
 // Control Commands
 
@@ -280,22 +353,58 @@ const int BASE_RegenerateEnergyPrice = 5,
           BASEFUNC_RejectEntrance   = 1 << 4,
           BASEFUNC_Extinguish       = 1 << 5;
 
+inline constexpr auto BASEFUNC_EnumInfo = mkBitfieldInfo<int>("BASEFUNC_",
+	{
+		{ BASEFUNC_Default         , "Default"          },
+		{ BASEFUNC_AutoSellContents, "AutoSellContents" },
+		{ BASEFUNC_RegenerateEnergy, "RegenerateEnergy" },
+		{ BASEFUNC_Buy             , "Buy"              },
+		{ BASEFUNC_Sell            , "Sell"             },
+		{ BASEFUNC_RejectEntrance  , "RejectEntrance"   },
+		{ BASEFUNC_Extinguish      , "Extinguish"       }
+	}
+);
+
 // League (escape those damn circular includes)
 
-enum C4LeagueDisconnectReason
+enum C4LeagueDisconnectReason : std::uint8_t
 {
 	C4LDR_Unknown,
 	C4LDR_ConnectionFailed,
 	C4LDR_Desync,
 };
 
+template<>
+struct C4EnumInfo<C4LeagueDisconnectReason>
+{
+	static inline constexpr auto data = mkEnumInfo<C4LeagueDisconnectReason>("C4LDR_",
+		{
+			{ C4LDR_Unknown,          "" },
+			{ C4LDR_ConnectionFailed, "ConnectionFailed" },
+			{ C4LDR_Desync,           "Desync" }
+		}
+	);
+};
+
 // Player (included by C4PlayerInfo and C4Player)
 
-enum C4PlayerType
+enum C4PlayerType : std::uint8_t
 {
 	C4PT_None = 0,
 	C4PT_User = 1,   // Normal player
 	C4PT_Script = 2, // AI players, etc.
+};
+
+template<>
+struct C4EnumInfo<C4PlayerType>
+{
+	static inline constexpr auto data = mkEnumInfo<C4PlayerType>("C4PT_",
+		{
+			{ C4PT_None,   "None", C4EnumValueScope::None },
+			{ C4PT_User,   "User" },
+			{ C4PT_Script, "Script" }
+		}
+	);
 };
 
 // AllowPictureStack (DefCore value)
@@ -306,4 +415,17 @@ enum C4AllowPictureStack
 	APS_Graphics = 1 << 1,
 	APS_Name     = 1 << 2,
 	APS_Overlay  = 1 << 3,
+};
+
+template<>
+struct C4EnumInfo<C4AllowPictureStack>
+{
+		static inline constexpr auto data = mkBitfieldInfo<C4AllowPictureStack>("APS_",
+		{
+			{ APS_Color   , "Color"    },
+			{ APS_Graphics, "Graphics" },
+			{ APS_Name    , "Name"     },
+			{ APS_Overlay , "Overlay"  }
+		}
+	);
 };
