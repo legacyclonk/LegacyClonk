@@ -20,6 +20,7 @@
 #include "C4NetIO.h"
 
 #include "C4Application.h"
+#include "C4EnumInfo.h"
 #include "C4Network2Client.h"
 #include "C4Network2Res.h"
 #include "C4Network2IO.h"
@@ -75,13 +76,27 @@ const int C4NetStreamingMinBlockSize = 10 * 1024;
 const int C4NetStreamingMaxBlockSize = 20 * 1024;
 const int C4NetStreamingInterval = 30; // (s)
 
-enum C4NetGameState
+enum C4NetGameState : std::uint8_t
 {
 	GS_None,  // network not active
 	GS_Init,  // connecting to host, waiting for join data
 	GS_Lobby, // lobby mode
 	GS_Pause, // game paused
 	GS_Go,    // game running
+};
+
+template<>
+struct C4EnumInfo<C4NetGameState>
+{
+	static inline constexpr auto data = mkEnumInfo<C4NetGameState>("GS_",
+		{
+			{ GS_None,  "None" },
+			{ GS_Init,  "Init" },
+			{ GS_Lobby, "Lobby" },
+			{ GS_Pause, "Paused" },
+			{ GS_Go,    "Running" }
+		}
+	);
 };
 
 class C4Network2Status : public C4PacketBase

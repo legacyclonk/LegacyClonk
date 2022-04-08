@@ -503,7 +503,7 @@ void C4Shape::CompileFunc(StdCompiler *pComp, bool fRuntime)
 	pComp->Value(mkNamingAdapt(VtxNum,                 "Vertices",       0));
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(VtxX, 0),  "VertexX"));
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(VtxY, 0), "VertexY"));
-	pComp->Value(mkNamingAdapt(mkArrayAdapt(VtxCNAT, 0), "VertexCNAT"));
+	pComp->Value(mkNamingAdapt(mkArrayAdaptMap(VtxCNAT, 0, [](int32_t &val){ return mkBitfieldAdapt(val, C4EnumAdaptPrefixMode::None, CNAT_EnumInfo); }), "VertexCNAT"));
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(VtxFriction, 0), "VertexFriction"));
 	pComp->Value(mkNamingAdapt(ContactDensity,         "ContactDensity", C4M_Solid));
 	pComp->Value(mkNamingAdapt(FireTop,                "FireTop",        0));

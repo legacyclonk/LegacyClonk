@@ -23,6 +23,7 @@
 #include "C4Version.h"
 #ifdef C4ENGINE
 #include <C4Application.h>
+#include <C4EnumInfo.h>
 #include <C4Network2.h>
 #include <C4Language.h>
 #include <StdResStr2.h>
@@ -34,6 +35,20 @@
 #include "StdRegistry.h"
 #elif defined(__linux__)
 #include <clocale>
+#endif
+
+#ifdef C4ENGINE
+// put this here, because X11 includes break C4EnumAdaptPrefixMode due to #define None when it is in StdWindow.h
+
+template<>
+struct C4EnumInfo<DisplayMode>
+{
+	static inline constexpr auto data = mkEnumInfo<DisplayMode>("",
+		{
+			{DisplayMode::Fullscreen, "Fullscreen"},
+			{DisplayMode::Window, "Window"}
+		});
+};
 #endif
 
 bool isGermanSystem()
@@ -131,14 +146,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(SmokeLevel,           "SmokeLevel",           200,   false, true));
 	pComp->Value(mkNamingAdapt(VerboseObjectLoading, "VerboseObjectLoading", 0,     false, true));
 
-	StdEnumEntry<int32_t> UpperBoardDisplayModes[] =
-	{
-		{"Hide", C4UpperBoard::Hide},
-		{"Full", C4UpperBoard::Full},
-		{"Small", C4UpperBoard::Small},
-		{"Mini", C4UpperBoard::Mini}
-	};
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<int32_t>(UpperBoard, UpperBoardDisplayModes), "UpperBoard", C4UpperBoard::Full, false, true));
+	pComp->Value(mkNamingAdapt(mkEnumAdapt<C4UpperBoard::DisplayMode>(UpperBoard), "UpperBoard", C4UpperBoard::Full, false, true));
 
 	pComp->Value(mkNamingAdapt(ShowClock,            "ShowClock",            false, false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewNames,        "ShowCrewNames",        true,  false, true));
@@ -165,13 +173,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Shader,               "Shader",               false, false, true));
 	pComp->Value(mkNamingAdapt(AutoFrameSkip,        "AutoFrameSkip",        true,  false, true));
 	pComp->Value(mkNamingAdapt(CacheTexturesInRAM,   "CacheTexturesInRAM",   100));
-
-	StdEnumEntry<DisplayMode> DisplayModes[] =
-	{
-		{"Fullscreen", DisplayMode::Fullscreen},
-		{"Window", DisplayMode::Window}
-	};
-	pComp->Value(mkNamingAdapt(mkEnumAdaptT<int>(UseDisplayMode, DisplayModes), "DisplayMode", DisplayMode::Fullscreen, false, true));
+	pComp->Value(mkNamingAdapt(mkEnumAdapt(UseDisplayMode), "DisplayMode", DisplayMode::Fullscreen, false, true));
 
 #ifdef _WIN32
 	pComp->Value(mkNamingAdapt(Maximized,   "Maximized",   false, false, true));
