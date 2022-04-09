@@ -76,7 +76,7 @@ bool DirectoryExists(const char *szFileName);
 bool FileExists(const char *szFileName);
 size_t FileSize(const char *fname);
 size_t FileSize(int fdes);
-int FileTime(const char *fname);
+time_t FileTime(const char *fname);
 bool EraseFile(const char *szFileName);
 bool RenameFile(const char *szFileName, const char *szNewFileName);
 bool MakeOriginalFilename(char *szFilename);

@@ -418,7 +418,7 @@ size_t FileSize(int fdes)
 	return stStats.st_size;
 }
 
-int FileTime(const char *szFilename)
+time_t FileTime(const char *szFilename)
 {
 	struct stat stStats;
 	if (stat(szFilename, &stStats) != 0) return 0;
