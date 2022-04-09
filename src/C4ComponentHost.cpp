@@ -27,7 +27,7 @@ C4ComponentHost *pCmpHost = nullptr;
 
 #ifdef _WIN32
 
-BOOL CALLBACK ComponentDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ComponentDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	if (!pCmpHost) return FALSE;
 
@@ -294,7 +294,7 @@ void C4ComponentHost::Open()
 	DialogBox(Application.hInstance,
 		MAKEINTRESOURCE(IDD_COMPONENT),
 		Application.pWindow->hWindow,
-		(DLGPROC)ComponentDlgProc);
+		ComponentDlgProc);
 #endif
 
 	pCmpHost = nullptr;

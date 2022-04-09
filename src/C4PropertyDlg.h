@@ -40,7 +40,7 @@ public:
 	bool Active;
 #ifdef _WIN32
 	HWND hDialog;
-	friend BOOL CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
+	friend INT_PTR CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 #elif defined(WITH_DEVELOPER_MODE)
 	GtkWidget *vbox;
 	GtkWidget *textview;

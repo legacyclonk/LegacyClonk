@@ -103,7 +103,7 @@ namespace
 
 #include <commctrl.h>
 
-BOOL CALLBACK ToolsDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ToolsDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	int32_t iValue;
 	switch (Msg)
@@ -262,7 +262,7 @@ bool C4ToolsDlg::Open()
 	hDialog = CreateDialog(Application.hInstance,
 		MAKEINTRESOURCE(IDD_TOOLS),
 		Console.hWindow,
-		(DLGPROC)ToolsDlgProc);
+		ToolsDlgProc);
 	if (!hDialog) return false;
 	// Set text
 	SetWindowText(hDialog, LoadResStr("IDS_DLG_TOOLS"));

@@ -39,7 +39,7 @@
 #endif
 
 #ifdef _WIN32
-BOOL CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (Msg)
 	{
@@ -103,7 +103,7 @@ bool C4PropertyDlg::Open()
 	hDialog = CreateDialog(Application.hInstance,
 		MAKEINTRESOURCE(IDD_PROPERTIES),
 		Console.hWindow,
-		(DLGPROC)PropertyDlgProc);
+		PropertyDlgProc);
 	if (!hDialog) return false;
 	// Set text
 	SetWindowText(hDialog, LoadResStr("IDS_DLG_PROPERTIES"));
