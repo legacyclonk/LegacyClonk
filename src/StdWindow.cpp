@@ -50,7 +50,7 @@ bool CStdWindow::RegisterWindowClass(HINSTANCE hInst)
 	WndClass.cbWndExtra = 0;
 	WndClass.hInstance = hInst;
 	WndClass.hCursor = nullptr;
-	WndClass.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
+	WndClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND);
 	WndClass.lpszMenuName = nullptr;
 	WndClass.lpszClassName = C4FullScreenClassName;
 	WndClass.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
@@ -379,7 +379,8 @@ bool CStdApp::SetCriticalTimer()
 		// Set critical timer
 		if (!(idCriticalTimer = timeSetEvent(
 			uCriticalTimerDelay, uCriticalTimerResolution,
-			(LPTIMECALLBACK)hTimerEvent, 0, TIME_PERIODIC | TIME_CALLBACK_EVENT_SET)))
+			reinterpret_cast<LPTIMECALLBACK>(hTimerEvent),
+			0, TIME_PERIODIC | TIME_CALLBACK_EVENT_SET)))
 		{
 			return false;
 		}
