@@ -478,10 +478,10 @@ void C4ToolsDlg::InitMaterialCtrls()
 {
 	// Materials
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, (LPARAM)C4TLS_MatSky);
+	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(C4TLS_MatSky));
 	for (int32_t cnt = 0; cnt < Game.Material.Num; cnt++)
-		SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, (LPARAM)Game.Material.Map[cnt].Name);
-	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, (LPARAM)Material);
+		SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(Game.Material.Map[cnt].Name));
+	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(Material));
 #elif defined(WITH_DEVELOPER_MODE)
 	GtkListStore *list = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(materials)));
 
@@ -504,7 +504,7 @@ void C4ToolsDlg::UpdateTextures()
 {
 	// Refill dlg
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_RESETCONTENT, 0, (LPARAM)0);
+	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_RESETCONTENT, 0, 0);
 #elif defined(WITH_DEVELOPER_MODE)
 	GtkListStore *list = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(textures)));
 	gtk_list_store_clear(list);
@@ -518,7 +518,7 @@ void C4ToolsDlg::UpdateTextures()
 			{
 				fAnyEntry = true;
 #ifdef _WIN32
-				SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, (LPARAM)szTexture);
+				SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(szTexture));
 #elif defined(WITH_DEVELOPER_MODE)
 				gtk_combo_box_prepend_text(GTK_COMBO_BOX(textures), szTexture);
 #endif
@@ -528,7 +528,7 @@ void C4ToolsDlg::UpdateTextures()
 	if (fAnyEntry)
 	{
 #ifdef _WIN32
-		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, (LPARAM)"-------");
+		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>("-------"));
 #elif defined(WITH_DEVELOPER_MODE)
 		gtk_combo_box_prepend_text(GTK_COMBO_BOX(textures), "-------");
 #endif
@@ -541,7 +541,7 @@ void C4ToolsDlg::UpdateTextures()
 		if (Game.TextureMap.GetIndex(Material, szTexture, false) || Game.Landscape.Mode == C4LSC_Exact)
 		{
 #ifdef _WIN32
-			SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, (LPARAM)szTexture);
+			SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(szTexture));
 #elif defined(WITH_DEVELOPER_MODE)
 			gtk_combo_box_prepend_text(GTK_COMBO_BOX(textures), szTexture);
 #endif
@@ -549,7 +549,7 @@ void C4ToolsDlg::UpdateTextures()
 	}
 	// reselect current
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, (LPARAM)Texture);
+	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(Texture));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(textures, handlerTextures);
 	SelectComboBoxText(GTK_COMBO_BOX(textures), Texture);
@@ -573,7 +573,7 @@ void C4ToolsDlg::SetTexture(const char *szTexture)
 	{
 		// ensure correct texture is in dlg
 #ifdef _WIN32
-		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, (LPARAM)Texture);
+		SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(Texture));
 #elif defined(WITH_DEVELOPER_MODE)
 		g_signal_handler_block(textures, handlerTextures);
 		SelectComboBoxText(GTK_COMBO_BOX(textures), Texture);
@@ -702,11 +702,11 @@ void C4ToolsDlg::InitGradeCtrl()
 #ifdef _WIN32
 	if (!hDialog) return;
 	HWND hwndTrack = GetDlgItem(hDialog, IDC_SLIDERGRADE);
-	SendMessage(hwndTrack, TBM_SETPAGESIZE, 0, (LPARAM)5);
-	SendMessage(hwndTrack, TBM_SETLINESIZE, 0, (LPARAM)1);
-	SendMessage(hwndTrack, TBM_SETRANGE, (WPARAM)FALSE,
-		(LPARAM)MAKELONG(C4TLS_GradeMin, C4TLS_GradeMax));
-	SendMessage(hwndTrack, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)C4TLS_GradeMax - Grade);
+	SendMessage(hwndTrack, TBM_SETPAGESIZE, 0, 5);
+	SendMessage(hwndTrack, TBM_SETLINESIZE, 0, 1);
+	SendMessage(hwndTrack, TBM_SETRANGE, FALSE,
+		MAKELONG(C4TLS_GradeMin, C4TLS_GradeMax));
+	SendMessage(hwndTrack, TBM_SETPOS, TRUE, C4TLS_GradeMax - Grade);
 	UpdateWindow(hwndTrack);
 #elif defined(WITH_DEVELOPER_MODE)
 	if (!hbox) return;
@@ -859,16 +859,16 @@ void C4ToolsDlg::EnableControls()
 	int32_t iLandscapeMode = Game.Landscape.Mode;
 #ifdef _WIN32
 	// Set bitmap buttons
-	SendDlgItemMessage(hDialog, IDC_BUTTONBRUSH,       BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)((iLandscapeMode >= C4LSC_Static) ? hbmBrush  : hbmBrush2));
-	SendDlgItemMessage(hDialog, IDC_BUTTONLINE,        BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)((iLandscapeMode >= C4LSC_Static) ? hbmLine   : hbmLine2));
-	SendDlgItemMessage(hDialog, IDC_BUTTONRECT,        BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)((iLandscapeMode >= C4LSC_Static) ? hbmRect   : hbmRect2));
-	SendDlgItemMessage(hDialog, IDC_BUTTONFILL,        BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)((iLandscapeMode >= C4LSC_Exact)  ? hbmFill   : hbmFill2));
-	SendDlgItemMessage(hDialog, IDC_BUTTONPICKER,      BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)((iLandscapeMode >= C4LSC_Static) ? hbmPicker : hbmPicker2));
-	SendDlgItemMessage(hDialog, IDC_BUTTONIFT,         BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hbmIFT);
-	SendDlgItemMessage(hDialog, IDC_BUTTONNOIFT,       BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hbmNoIFT);
-	SendDlgItemMessage(hDialog, IDC_BUTTONMODEDYNAMIC, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hbmDynamic);
-	SendDlgItemMessage(hDialog, IDC_BUTTONMODESTATIC,  BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hbmStatic);
-	SendDlgItemMessage(hDialog, IDC_BUTTONMODEEXACT,   BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hbmExact);
+	SendDlgItemMessage(hDialog, IDC_BUTTONBRUSH,       BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((iLandscapeMode >= C4LSC_Static) ? hbmBrush  : hbmBrush2));
+	SendDlgItemMessage(hDialog, IDC_BUTTONLINE,        BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((iLandscapeMode >= C4LSC_Static) ? hbmLine   : hbmLine2));
+	SendDlgItemMessage(hDialog, IDC_BUTTONRECT,        BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((iLandscapeMode >= C4LSC_Static) ? hbmRect   : hbmRect2));
+	SendDlgItemMessage(hDialog, IDC_BUTTONFILL,        BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((iLandscapeMode >= C4LSC_Exact)  ? hbmFill   : hbmFill2));
+	SendDlgItemMessage(hDialog, IDC_BUTTONPICKER,      BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((iLandscapeMode >= C4LSC_Static) ? hbmPicker : hbmPicker2));
+	SendDlgItemMessage(hDialog, IDC_BUTTONIFT,         BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>(hbmIFT));
+	SendDlgItemMessage(hDialog, IDC_BUTTONNOIFT,       BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>(hbmNoIFT));
+	SendDlgItemMessage(hDialog, IDC_BUTTONMODEDYNAMIC, BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>(hbmDynamic));
+	SendDlgItemMessage(hDialog, IDC_BUTTONMODESTATIC,  BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>(hbmStatic));
+	SendDlgItemMessage(hDialog, IDC_BUTTONMODEEXACT,   BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>(hbmExact));
 	// Enable drawing controls
 	EnableWindow(GetDlgItem(hDialog, IDC_BUTTONBRUSH),    (iLandscapeMode >= C4LSC_Static));
 	EnableWindow(GetDlgItem(hDialog, IDC_BUTTONLINE),     (iLandscapeMode >= C4LSC_Static));
@@ -903,21 +903,21 @@ void C4ToolsDlg::EnableControls()
 void C4ToolsDlg::LoadBitmaps()
 {
 	HINSTANCE hInst = Application.hInstance;
-	if (!hbmBrush)   hbmBrush =   (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BRUSH));
-	if (!hbmLine)    hbmLine =    (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_LINE));
-	if (!hbmRect)    hbmRect =    (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_RECT));
-	if (!hbmFill)    hbmFill =    (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_FILL));
-	if (!hbmPicker)  hbmPicker =  (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_PICKER));
-	if (!hbmBrush2)  hbmBrush2 =  (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BRUSH2));
-	if (!hbmLine2)   hbmLine2 =   (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_LINE2));
-	if (!hbmRect2)   hbmRect2 =   (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_RECT2));
-	if (!hbmFill2)   hbmFill2 =   (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_FILL2));
-	if (!hbmPicker2) hbmPicker2 = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_PICKER2));
-	if (!hbmIFT)     hbmIFT =     (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_IFT));
-	if (!hbmNoIFT)   hbmNoIFT =   (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_NOIFT));
-	if (!hbmDynamic) hbmDynamic = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DYNAMIC));
-	if (!hbmStatic)  hbmStatic =  (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_STATIC));
-	if (!hbmExact)   hbmExact =   (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_EXACT));
+	if (!hbmBrush)   hbmBrush =   LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BRUSH));
+	if (!hbmLine)    hbmLine =    LoadBitmap(hInst, MAKEINTRESOURCE(IDB_LINE));
+	if (!hbmRect)    hbmRect =    LoadBitmap(hInst, MAKEINTRESOURCE(IDB_RECT));
+	if (!hbmFill)    hbmFill =    LoadBitmap(hInst, MAKEINTRESOURCE(IDB_FILL));
+	if (!hbmPicker)  hbmPicker =  LoadBitmap(hInst, MAKEINTRESOURCE(IDB_PICKER));
+	if (!hbmBrush2)  hbmBrush2 =  LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BRUSH2));
+	if (!hbmLine2)   hbmLine2 =   LoadBitmap(hInst, MAKEINTRESOURCE(IDB_LINE2));
+	if (!hbmRect2)   hbmRect2 =   LoadBitmap(hInst, MAKEINTRESOURCE(IDB_RECT2));
+	if (!hbmFill2)   hbmFill2 =   LoadBitmap(hInst, MAKEINTRESOURCE(IDB_FILL2));
+	if (!hbmPicker2) hbmPicker2 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_PICKER2));
+	if (!hbmIFT)     hbmIFT =     LoadBitmap(hInst, MAKEINTRESOURCE(IDB_IFT));
+	if (!hbmNoIFT)   hbmNoIFT =   LoadBitmap(hInst, MAKEINTRESOURCE(IDB_NOIFT));
+	if (!hbmDynamic) hbmDynamic = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DYNAMIC));
+	if (!hbmStatic)  hbmStatic =  LoadBitmap(hInst, MAKEINTRESOURCE(IDB_STATIC));
+	if (!hbmExact)   hbmExact =   LoadBitmap(hInst, MAKEINTRESOURCE(IDB_EXACT));
 }
 #endif
 
@@ -944,7 +944,7 @@ void C4ToolsDlg::AssertValidTexture()
 bool C4ToolsDlg::SelectTexture(const char *szTexture)
 {
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, (LPARAM)szTexture);
+	SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(szTexture));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(textures, handlerTextures);
 	SelectComboBoxText(GTK_COMBO_BOX(textures), szTexture);
@@ -957,7 +957,7 @@ bool C4ToolsDlg::SelectTexture(const char *szTexture)
 bool C4ToolsDlg::SelectMaterial(const char *szMaterial)
 {
 #ifdef _WIN32
-	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, (LPARAM)szMaterial);
+	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(szMaterial));
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(materials, handlerMaterials);
 	SelectComboBoxText(GTK_COMBO_BOX(materials), szMaterial);

@@ -188,7 +188,7 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		return TRUE;
 
 	case WM_INITDIALOG:
-		SendMessage(hDlg, DM_SETDEFID, (WPARAM)IDOK, (LPARAM)0);
+		SendMessage(hDlg, DM_SETDEFID, IDOK, 0);
 		Console.UpdateMenuText(GetMenu(hDlg));
 		return TRUE;
 
@@ -327,8 +327,8 @@ CStdWindow *C4Console::Init(CStdApp *pApp)
 	// Restore window position
 	RestoreWindowPosition(hWindow, "Main", Config.GetSubkeyPath("Console"));
 	// Set icon
-	SendMessage(hWindow, WM_SETICON, ICON_BIG,   (LPARAM)LoadIcon(pApp->hInstance, MAKEINTRESOURCE(IDI_00_C4X)));
-	SendMessage(hWindow, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(pApp->hInstance, MAKEINTRESOURCE(IDI_00_C4X)));
+	SendMessage(hWindow, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(LoadIcon(pApp->hInstance, MAKEINTRESOURCE(IDI_00_C4X))));
+	SendMessage(hWindow, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIcon(pApp->hInstance, MAKEINTRESOURCE(IDI_00_C4X))));
 	// Set text
 	SetCaption(LoadResStr("IDS_CNS_CONSOLE"));
 	// Load bitmaps
@@ -616,8 +616,8 @@ bool C4Console::Out(const char *szText)
 	if (strlen(buffer) > 60000) buffer2 = buffer + strlen(buffer) - 60000; else buffer2 = buffer; // max log length: Otherwise, discard beginning
 	SetDlgItemText(hWindow, IDC_EDITOUTPUT, buffer2);
 	delete[] buffer;
-	const auto lines = SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_GETLINECOUNT, (WPARAM)0, (LPARAM)0);
-	SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_LINESCROLL, (WPARAM)0, (LPARAM)lines);
+	const auto lines = SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_GETLINECOUNT, 0, 0);
+	SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_LINESCROLL, 0, static_cast<LPARAM>(lines));
 	UpdateWindow(hWindow);
 #elif WITH_DEVELOPER_MODE
 	// Append text to log
@@ -643,7 +643,7 @@ bool C4Console::ClearLog()
 {
 #ifdef _WIN32
 	SetDlgItemText(hWindow, IDC_EDITOUTPUT, "");
-	SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_LINESCROLL, (WPARAM)0, 0);
+	SendDlgItemMessage(hWindow, IDC_EDITOUTPUT, EM_LINESCROLL, 0, 0);
 	UpdateWindow(hWindow);
 #elif WITH_DEVELOPER_MODE
 	gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(txtLog)), "", 0);
@@ -863,11 +863,11 @@ void C4Console::EnableControls(bool fEnable)
 
 #ifdef _WIN32
 	// Set button images (edit modes & halt controls)
-	SendDlgItemMessage(hWindow, IDC_BUTTONMODEPLAY, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)(fEnable ? hbmMouse : hbmMouse2));
-	SendDlgItemMessage(hWindow, IDC_BUTTONMODEEDIT, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)((fEnable && Editing) ? hbmCursor : hbmCursor2));
-	SendDlgItemMessage(hWindow, IDC_BUTTONMODEDRAW, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)((fEnable && Editing) ? hbmBrush : hbmBrush2));
-	SendDlgItemMessage(hWindow, IDC_BUTTONPLAY, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)(Game.Network.isLobbyActive() || fEnable ? hbmPlay : hbmPlay2));
-	SendDlgItemMessage(hWindow, IDC_BUTTONHALT, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)(Game.Network.isLobbyActive() || fEnable ? hbmHalt : hbmHalt2));
+	SendDlgItemMessage(hWindow, IDC_BUTTONMODEPLAY, BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>(fEnable ? hbmMouse : hbmMouse2));
+	SendDlgItemMessage(hWindow, IDC_BUTTONMODEEDIT, BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((fEnable && Editing) ? hbmCursor : hbmCursor2));
+	SendDlgItemMessage(hWindow, IDC_BUTTONMODEDRAW, BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((fEnable && Editing) ? hbmBrush : hbmBrush2));
+	SendDlgItemMessage(hWindow, IDC_BUTTONPLAY, BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>(Game.Network.isLobbyActive() || fEnable ? hbmPlay : hbmPlay2));
+	SendDlgItemMessage(hWindow, IDC_BUTTONHALT, BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>(Game.Network.isLobbyActive() || fEnable ? hbmHalt : hbmHalt2));
 
 	// OK
 	EnableWindow(GetDlgItem(hWindow, IDOK), fEnable);
@@ -1272,7 +1272,7 @@ bool C4Console::AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool 
 	minfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA | MIIM_STATE;
 	minfo.fType = MFT_STRING;
 	minfo.wID = dwID;
-	minfo.dwTypeData = (char *)szString;
+	minfo.dwTypeData = const_cast<char *>(szString);
 	minfo.cch = SLen(szString);
 	if (!fEnabled) minfo.fState |= MFS_GRAYED;
 	return InsertMenuItem(hMenu, 0, FALSE, &minfo);
@@ -1370,7 +1370,7 @@ void C4Console::UpdateInputCtrl()
 	// Add scenario script functions
 #ifdef _WIN32
 	if (pRef = Game.Script.GetSFunc(0))
-		SendMessage(hCombo, CB_INSERTSTRING, 0, (LPARAM)"----------");
+		SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>("----------"));
 #endif
 	for (cnt = 0; pRef = Game.Script.GetSFunc(cnt); cnt++)
 	{

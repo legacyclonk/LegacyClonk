@@ -52,7 +52,7 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 		break;
 
 	case WM_INITDIALOG:
-		SendMessage(hDlg, DM_SETDEFID, (WPARAM)IDOK, (LPARAM)0);
+		SendMessage(hDlg, DM_SETDEFID, IDOK, 0);
 		return TRUE;
 
 	case WM_COMMAND:
@@ -348,7 +348,7 @@ void C4PropertyDlg::UpdateInputCtrl(C4Object *pObj)
 			{
 #ifdef _WIN32
 				// Insert divider if necessary
-				if (!fDivider) { SendMessage(hCombo, CB_INSERTSTRING, 0, (LPARAM)"----------"); fDivider = true; }
+				if (!fDivider) { SendMessage(hCombo, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>("----------")); fDivider = true; }
 #endif
 				// Add function
 #ifdef _WIN32
