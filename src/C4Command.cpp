@@ -692,11 +692,12 @@ void C4Command::Grab()
 		// Scaling or hangling: let go
 		if ((cObj->GetProcedure() == DFA_SCALE) || (cObj->GetProcedure() == DFA_HANGLE))
 			ObjectComLetGo(cObj, (cObj->Action.Dir == DIR_Left) ? +1 : -1);
-        if(!Target->Call(PSF_RejectGrabbed,{C4VObj(cObj)}).getBool()){
-            // Grab
-            cObj->Action.ComDir = COMD_Stop;
-            ObjectComGrab(cObj, Target);
-        }
+		if (!Target->Call(PSF_RejectGrabbed,{C4VObj(cObj)}).getBool())
+		{
+		    // Grab
+		    cObj->Action.ComDir = COMD_Stop;
+		    ObjectComGrab(cObj, Target);
+		}
 	}
 	// Else, move to object
 	else
