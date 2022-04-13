@@ -1738,15 +1738,15 @@ static C4Object *FnContained(C4AulContext *cthr, C4Object *pObj)
 	return pObj->Contained;
 }
 
-static C4Object *FnContents(C4AulContext *cthr, C4ValueInt index, C4Object *pObj)
+static C4Object *FnContents(C4AulContext *cthr, C4ValueInt index, C4Object *pObj, bool returnAttached)
 {
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return nullptr;
 	// Special: objects attaching to another object
-	//          cannot be accessed by FnContents
+	//          cannot be accessed by FnContents, unless returnAttached is true
 	C4Object *cobj;
 	while (cobj = pObj->Contents.GetObject(index))
 	{
-		if (cobj->GetProcedure() != DFA_ATTACH) return cobj;
+		if (cobj->GetProcedure() != DFA_ATTACH || returnAttached) return cobj;
 		index++;
 	}
 	return nullptr;
