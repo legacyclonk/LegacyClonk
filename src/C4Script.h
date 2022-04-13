@@ -50,6 +50,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 #define PSF_Hit3                   "~Hit3"
 #define PSF_Grab                   "~Grab"
 #define PSF_Grabbed                "~Grabbed"
+#define PSF_RejectGrabbed          "~RejectGrabbed" //pByObject
 #define PSF_Get                    "~Get"
 #define PSF_Put                    "~Put"
 #define PSF_Collection             "~Collection" // pObject, fPut
