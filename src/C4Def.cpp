@@ -1049,27 +1049,6 @@ int32_t C4DefList::Load(const char *szSearch,
 		return iResult;
 	}
 
-	// Wildcard items
-	if (SCharCount('*', szSearch))
-	{
-#ifdef _WIN32
-		struct _finddata_t fdt; intptr_t fdthnd;
-		if ((fdthnd = _findfirst(szSearch, &fdt)) < 0) return false;
-		do
-		{
-			iResult += Load(fdt.name, dwLoadWhat, szLanguage, pSoundSystem, fOverload);
-		} while (_findnext(fdthnd, &fdt) == 0);
-		_findclose(fdthnd);
-#ifdef C4ENGINE
-		// progress
-		if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress));
-#endif
-#else
-		fputs("FIXME: C4DefList::Load\n", stderr);
-#endif
-		return iResult;
-	}
-
 	// File specified with creation (currently not used)
 	char szCreation[25 + 1];
 	int32_t iCreation = 0;
