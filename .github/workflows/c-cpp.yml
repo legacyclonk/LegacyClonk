@@ -37,7 +37,7 @@ jobs:
           - os: ubuntu-18.04
             arch: x86
             env: Linux
-          - os: macos-10.15
+          - os: macos-12
             arch: x64
             env: Mac
     runs-on: ${{ matrix.os }}
