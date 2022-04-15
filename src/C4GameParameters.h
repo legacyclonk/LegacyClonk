@@ -79,6 +79,13 @@ public:
 		InternalIterator it;
 
 	public:
+		using iterator_category = std::input_iterator_tag;
+		using value_type = C4GameRes;
+		using pointer = value_type *;
+		using reference = value_type &;
+		using difference_type = std::ptrdiff_t;
+
+	public:
 		ResTypeIterator(C4Network2ResType type, const std::vector<std::unique_ptr<C4GameRes>> &resList);
 
 		ResTypeIterator &operator++();
