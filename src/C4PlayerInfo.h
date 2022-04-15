@@ -234,7 +234,7 @@ public:
 	void SetDisconnected() { dwFlags |= PIF_Disconnected; }
 	void SetWinner() { dwFlags |= PIF_Won; }
 
-	bool LoadBigIcon(C4FacetExSurface &fctTarget); // load BigIcon.png of player into target facet; return false if no bigicon present or player file not yet loaded
+	bool LoadBigIcon(class C4FacetExSurface &fctTarget); // load BigIcon.png of player into target facet; return false if no bigicon present or player file not yet loaded
 };
 
 // player infos for one client

@@ -19,15 +19,21 @@
 #pragma once
 
 #include <C4AudioSystem.h>
-#include <C4Object.h>
+#include "StdBuf.h"
 
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <list>
+#include <map>
+#include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <variant>
+
+class C4Group;
+class C4Object;
 
 bool IsSoundPlaying(const char *name, const C4Object *obj);
 void SoundLevel(const char *name, C4Object *obj, std::int32_t iLevel);
@@ -38,6 +44,24 @@ void StopSoundEffect(const char *name, const C4Object *obj);
 
 class C4SoundSystem
 {
+public:
+	struct SampleData
+	{
+		std::string GroupName;
+		std::string FileName;
+		StdBuf Data;
+	};
+
+	struct CaseInsensitiveLess
+	{
+		bool operator()(const std::string &a, const std::string &b) const
+		{
+			return stricmp(a.c_str(), b.c_str()) < 0;
+		}
+	};
+
+	using SampleDataType = std::map<std::string, SampleData, CaseInsensitiveLess>;
+
 public:
 	static constexpr std::int32_t AudibilityRadius = 700;
 	static constexpr std::int32_t NearSoundRadius = 50;
@@ -53,7 +77,9 @@ public:
 	void ClearPointers(const C4Object *obj);
 	void Execute();
 	// Load sounds from the specified folder
-	void LoadEffects(C4Group &group);
+	void LoadEffects(C4Group &group, SampleDataType &data);
+	void InstantiateEffects(SampleDataType &&data);
+	void LoadAndInstantiateEffects(C4Group &group);
 	// Call whenever the user wants to toggle sound playback
 	bool ToggleOnOff();
 
@@ -62,17 +88,16 @@ private:
 
 	struct Sample
 	{
-		const std::string name;
-		const std::unique_ptr<C4AudioSystem::SoundFile> sample;
-		const std::uint32_t duration;
+		std::unique_ptr<C4AudioSystem::SoundFile> sample;
+		std::uint32_t duration;
 		std::list<Instance> instances;
 
-		Sample(const char *const name, const void *const buf, const std::size_t size);
+		Sample(const void *const buf, const std::size_t size);
 		Sample(const Sample &) = delete;
-		Sample(Sample &&) = delete;
+		Sample(Sample &&) = default;
 		~Sample() = default;
 		Sample &operator=(const Sample &) = delete;
-		Sample &operator=(Sample &&) = delete;
+		Sample &operator=(Sample &&) = default;
 
 		void Execute();
 	};
@@ -85,7 +110,7 @@ private:
 			const int32_t y;
 
 			ObjPos() = delete;
-			ObjPos(const C4Object &obj) : x{obj.x}, y{obj.y} {}
+			ObjPos(const C4Object &obj);
 			ObjPos(const ObjPos &) = delete;
 			ObjPos(ObjPos &&) = delete;
 			~ObjPos() = default;
@@ -123,7 +148,30 @@ private:
 	};
 
 	static constexpr std::int32_t MaxSoundInstances = 20;
-	std::list<Sample> samples;
+
+	/*struct SampleLess : private CaseInsensitiveLess
+	{
+		using is_transparent = std::true_type;
+
+		using CaseInsensitiveLess::operator();
+
+		bool operator()(const Sample &a, const Sample &b) const
+		{
+			return operator()(a.name, b.name);
+		}
+
+		bool operator()(const std::string &a, const Sample &b) const
+		{
+			return operator()(a, b.name);
+		}
+
+		bool operator()(const Sample &a, const std::string &b) const
+		{
+			return operator()(a.name, b);
+		}
+	};*/
+
+	std::map<std::string, Sample, CaseInsensitiveLess> samples;
 
 	// Returns a sound instance that matches the specified name and object.
 	std::optional<decltype(Sample::instances)::iterator> FindInst(

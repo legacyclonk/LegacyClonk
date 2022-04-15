@@ -23,6 +23,9 @@
 
 #include <vector>
 
+class C4DefList;
+class C4Facet;
+
 class C4IDList : public C4DelegatedIterable<C4IDList>
 {
 public:

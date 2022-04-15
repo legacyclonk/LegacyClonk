@@ -78,7 +78,7 @@ C4SoundSystem::C4SoundSystem()
 	C4Group soundFolder;
 	if (soundFolder.Open(Config.AtExePath(C4CFN_Sound)))
 	{
-		LoadEffects(soundFolder);
+		LoadAndInstantiateEffects(soundFolder);
 	}
 	else
 	{
@@ -90,7 +90,7 @@ void C4SoundSystem::ClearPointers(const C4Object *const obj)
 {
 	for (auto &sample : samples)
 	{
-		sample.instances.remove_if(
+		sample.second.instances.remove_if(
 			[&](auto &inst) { return obj == inst.GetObj() && !inst.DetachObj(); });
 	}
 }
@@ -99,13 +99,53 @@ void C4SoundSystem::Execute()
 {
 	for (auto &sample : samples)
 	{
-		sample.Execute();
+		sample.second.Execute();
 	}
 }
 
-void C4SoundSystem::LoadEffects(C4Group &group)
+void C4SoundSystem::LoadEffects(C4Group &group, SampleDataType &data)
 {
 	if (!Application.AudioSystem) return;
+
+	const StdStrBuf fullName{group.GetFullName()};
+
+	// Process segmented list of file types
+	for (const auto fileType : { "*.wav", "*.ogg" })
+	{
+		char filename[_MAX_FNAME + 1];
+		// Search all sound files in group
+		group.ResetSearch();
+		while (group.FindNextEntry(fileType, filename))
+		{
+			// Load sample
+			StdBuf buf;
+			if (!group.LoadEntry(filename, buf)) continue;
+			data.insert_or_assign(filename, SampleData{fullName.getData(), filename, buf});
+		}
+	}
+}
+
+void C4SoundSystem::InstantiateEffects(SampleDataType &&data)
+{
+	if (!Application.AudioSystem) return;
+	for (auto &&[name, sampleData] : data)
+	{
+		try
+		{
+			samples.insert_or_assign(sampleData.FileName.c_str(), Sample{sampleData.Data.getData(), sampleData.Data.getSize()});
+		}
+		catch (const std::runtime_error &e)
+		{
+			LogF("WARNING: Could not load sound effect \"%s/%s\": %s", sampleData.GroupName.c_str(), sampleData.FileName.c_str(), e.what());
+		}
+	}
+}
+
+void C4SoundSystem::LoadAndInstantiateEffects(C4Group &group)
+{
+	if (!Application.AudioSystem) return;
+
+	const StdStrBuf fullName{group.GetFullName()};
 
 	// Process segmented list of file types
 	for (const auto fileType : { "*.wav", "*.ogg", "*.mp3" })
@@ -115,17 +155,12 @@ void C4SoundSystem::LoadEffects(C4Group &group)
 		group.ResetSearch();
 		while (group.FindNextEntry(fileType, filename))
 		{
-			// Try to find existing sample of the same name
-			const auto existingSample = std::find_if(samples.cbegin(), samples.cend(),
-				[&](const auto &sample) { return SEqualNoCase(filename, sample.name.c_str()); });
 			// Load sample
 			StdBuf buf;
 			if (!group.LoadEntry(filename, buf)) continue;
 			try
 			{
-				samples.emplace_back(filename, buf.getData(), buf.getSize());
-				// Overload (i.e. remove) existing sample of the same name
-				if (existingSample != samples.cend()) samples.erase(existingSample);
+				samples.insert_or_assign(filename, Sample{buf.getData(), buf.getSize()});
 			}
 			catch (const std::runtime_error &e)
 			{
@@ -141,14 +176,17 @@ bool C4SoundSystem::ToggleOnOff()
 	return enabled = !enabled;
 }
 
-C4SoundSystem::Sample::Sample(const char *const name, const void *const buf, const std::size_t size)
-	: name{name}, sample{Application.AudioSystem->CreateSoundFile(buf, size)}, duration{sample->GetDuration()} {}
+C4SoundSystem::Sample::Sample(const void *const buf, const std::size_t size)
+	: sample{Application.AudioSystem->CreateSoundFile(buf, size)}, duration{sample->GetDuration()} {}
 
 void C4SoundSystem::Sample::Execute()
 {
 	// Execute each instance and remove it if necessary
 	instances.remove_if([](auto &inst) { return !inst.Execute(); });
 }
+
+C4SoundSystem::Instance::ObjPos::ObjPos(const C4Object &obj)
+ : x{obj.x}, y{obj.y} {}
 
 bool C4SoundSystem::Instance::DetachObj()
 {
@@ -272,10 +310,10 @@ auto C4SoundSystem::FindInst(const char *wildcard, const C4Object *const obj) ->
 	const auto wildcardStr = PrepareFilename(wildcard);
 	wildcard = wildcardStr.c_str();
 
-	for (auto &sample : samples)
+	for (auto &[name, sample] : samples)
 	{
 		// Skip samples whose names do not match the wildcard
-		if (!WildcardMatch(wildcard, sample.name.c_str())) continue;
+		if (!WildcardMatch(wildcard, name.c_str())) continue;
 		// Try to find an instance that is bound to obj
 		auto it = std::find_if(sample.instances.begin(), sample.instances.end(),
 			[&](const auto &inst) { return inst.GetObj() == obj; });
@@ -310,21 +348,20 @@ auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
 	// Search for matching file if name contains no wildcard
 	if (filenameStr.find('?') == std::string::npos)
 	{
+		const auto it = samples.find(filenameStr);
 		const auto end = samples.end();
-		const auto it = std::find_if(samples.begin(), end,
-			[&](const auto &sample) { return SEqualNoCase(filename, sample.name.c_str()); });
 		// File not found
 		if (it == end) return nullptr;
 		// Success: Found the file
-		sample = &*it;
+		sample = &it->second;
 	}
 	// Randomly select any matching file if name contains wildcard
 	else
 	{
 		std::vector<Sample *> matches;
-		for (auto &sample : samples)
+		for (auto &[name, sample] : samples)
 		{
-			if (WildcardMatch(filename, sample.name.c_str()))
+			if (WildcardMatch(filename, name.c_str()))
 			{
 				matches.push_back(&sample);
 			}

@@ -32,9 +32,13 @@
 #include <C4Wrappers.h>
 #include <C4Object.h>
 #include "C4Network2Res.h"
+#include "StdGL.h"
 #endif
 
 #include <algorithm>
+#include <iterator>
+#include <numeric>
+#include <queue>
 
 // Default Action Procedures
 
@@ -530,7 +534,7 @@ void C4Def::Clear()
 bool C4Def::Load(C4Group &hGroup,
 	uint32_t dwLoadWhat,
 	const char *szLanguage,
-	C4SoundSystem *pSoundSystem)
+	C4SoundSystem *pSoundSystem, C4SoundSystem::SampleDataType *samples, bool preparseScript)
 {
 	bool fSuccess = true;
 
@@ -611,8 +615,19 @@ bool C4Def::Load(C4Group &hGroup,
 #ifdef C4ENGINE
 		// Read sounds even if not a valid def (for pure c4d sound folders)
 		if (dwLoadWhat & C4D_Load_Sounds)
+		{
 			if (pSoundSystem)
-				pSoundSystem->LoadEffects(hGroup);
+			{
+				if (samples)
+				{
+					pSoundSystem->LoadEffects(hGroup, *samples);
+				}
+				else
+				{
+					pSoundSystem->LoadAndInstantiateEffects(hGroup);
+				}
+			}
+		}
 #endif
 
 		return false;
@@ -655,7 +670,7 @@ bool C4Def::Load(C4Group &hGroup,
 		Script.Reg2List(&Game.ScriptEngine, &Game.ScriptEngine);
 		// Load script - loads string table as well, because that must be done after script load
 		// for downwards compatibility with packing order
-		Script.Load("Script", hGroup, C4CFN_Script, szLanguage, this, &StringTable, true);
+		Script.Load("Script", hGroup, C4CFN_Script, szLanguage, this, &StringTable, true, preparseScript);
 	}
 #endif
 
@@ -750,8 +765,19 @@ bool C4Def::Load(C4Group &hGroup,
 
 	// Read sounds
 	if (dwLoadWhat & C4D_Load_Sounds)
+	{
 		if (pSoundSystem)
-			pSoundSystem->LoadEffects(hGroup);
+		{
+			if (samples)
+			{
+				pSoundSystem->LoadEffects(hGroup, *samples);
+			}
+			else
+			{
+				pSoundSystem->LoadAndInstantiateEffects(hGroup);
+			}
+		}
+	}
 
 	// Post-load settings
 	Scale = C4DefCore::Scale / 100.0f;
@@ -1069,6 +1095,84 @@ int32_t C4DefList::Load(const char *szSearch,
 #endif
 
 	return iResult;
+}
+
+std::optional<std::size_t> C4DefList::LoadParallel(const std::vector<std::string> &search, const std::uint32_t loadWhat, const char *const language, C4SoundSystem &soundSystem, const bool overload, const bool loadSysGroups)
+{
+	std::vector<LoadData> loadData{search.size()};
+#ifndef USE_CONSOLE
+	std::deque<std::unique_ptr<CStdGLCtx>> contexts;
+#endif
+
+	for (std::size_t i{0}; i < search.size(); ++i)
+	{
+		loadData[i].MainGroup = std::make_shared<C4Group>();
+		if (!loadData[i].MainGroup->Open(search[i].c_str()))
+		{
+			LogFatal(FormatString(LoadResStr("IDS_PRC_DEFNOTFOUND"), search[i].c_str()).getData());
+			return {};
+		}
+		loadData[i].Search = search[i];
+	}
+
+#ifndef USE_CONSOLE
+	std::transform(std::begin(loadData), std::end(loadData), std::back_inserter(contexts), [&](LoadData &loadData)
+	{
+		return std::unique_ptr<CStdGLCtx>{lpDDraw->CreateContext(Application.pWindow, &Application)};
+	});
+#endif
+
+	std::for_each(std::begin(loadData), std::end(loadData), [&, this](LoadData &loadData)
+	{
+#ifndef USE_CONSOLE
+		std::unique_ptr<CStdGLCtx> context{std::move(contexts.front())};
+		contexts.pop_front();
+		context->Deselect(true);
+
+		loadData.Thread = std::thread{[&, this](std::unique_ptr<CStdGLCtx> context)
+		{
+			context->Select(false, true);
+			Load(loadData, loadWhat, loadData.MainGroup, language, soundSystem, loadSysGroups);
+			context->Finish();
+			context->Deselect(true);
+		},
+		std::move(context)};
+#else
+		loadData.Thread = std::thread{[&, this]
+		{
+			Load(loadData, loadWhat, loadData.MainGroup, language, loadSysGroups);
+		}};
+#endif
+	});
+
+#ifndef USE_CONSOLE
+	pGL->GetMainCtx().Select();
+#endif
+
+	return std::accumulate(std::begin(loadData), std::end(loadData), std::size_t{0}, [&](const std::size_t previousCount, LoadData &loadData)
+	{
+		loadData.Thread.join();
+
+		soundSystem.InstantiateEffects(std::move(loadData.SoundSamples));
+
+		std::for_each(std::begin(loadData.ScriptHosts), std::end(loadData.ScriptHosts), [](C4ScriptHost *const host)
+		{
+			host->Preparse();
+		});
+
+		return previousCount + static_cast<std::size_t>(std::count_if(std::begin(loadData.Defs), std::end(loadData.Defs), [&, this](auto &def)
+		{
+			if (Add(def.get(), overload))
+			{
+				def.release();
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}));
+	});
 }
 
 bool C4DefList::Add(C4Def *pDef, bool fOverload)
@@ -1474,4 +1578,58 @@ std::vector<std::unique_ptr<C4Def>>::iterator C4DefList::FindDefByID(C4ID id)
 	{
 		return def->id == id;
 	});
+}
+
+void C4DefList::Load(LoadData &loadData, const std::uint32_t loadWhat, std::shared_ptr<C4Group> &group, const char *language, C4SoundSystem &soundSystem, const bool loadSysGroups)
+{
+	std::array<char, _MAX_FNAME + 1> entryName;
+	bool primaryDef{false};
+
+	auto def = std::make_unique<C4Def>();
+	// Load primary definition
+	if (def->Load(*group.get(), loadWhat, language, &soundSystem, &loadData.SoundSamples, false))
+	{
+		loadData.ScriptHosts.emplace_back(&def->Script);
+		loadData.Defs.emplace_back(std::move(def));
+		primaryDef = true;
+	}
+
+	// Load sub definitions
+	group->ResetSearch();
+	while (group->FindNextEntry(C4CFN_DefFiles, entryName.data()))
+	{
+		auto child = std::make_shared<C4Group>();
+		if (child->OpenAsChild(group.get(), entryName.data()))
+		{
+			Load(loadData, loadWhat, child, language, soundSystem, loadSysGroups);
+		}
+	}
+
+	// load additional system scripts for def groups only
+	if (!primaryDef && loadSysGroups)
+	{
+		C4Group SysGroup;
+		if (SysGroup.OpenAsChild(group.get(), C4CFN_System))
+		{
+			C4LangStringTable SysGroupString;
+			SysGroupString.LoadEx("StringTbl", SysGroup, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
+			// load all scripts in there
+			std::array<char, _MAX_FNAME + 1> entryName;
+			entryName[0] = '\0';
+			SysGroup.ResetSearch();
+			while (SysGroup.FindNextEntry(C4CFN_ScriptFiles, entryName.data(), nullptr, nullptr, !!entryName[0]))
+			{
+				// host will be destroyed by script engine, so drop the references
+				C4ScriptHost *scr = new C4ScriptHost();
+				scr->Reg2List(&Game.ScriptEngine, &Game.ScriptEngine);
+				scr->Load(nullptr, SysGroup, entryName.data(), Config.General.LanguageEx, nullptr, &SysGroupString, false, false);
+				loadData.ScriptHosts.emplace_back(scr);
+			}
+			// if it's a physical group: watch out for changes
+			if (!SysGroup.IsPacked() && Game.pFileMonitor)
+			{
+				Game.pFileMonitor->AddDirectory(SysGroup.GetFullName().getData());
+			}
+		}
+	}
 }

@@ -98,7 +98,7 @@ public:
 	std::optional<C4MusicSystem> MusicSystem;
 	std::optional<C4SoundSystem> SoundSystem;
 	std::unique_ptr<C4ToastSystem> ToastSystem;
-	C4GamePadControl *pGamePadControl;
+	class C4GamePadControl *pGamePadControl;
 	// Thread for interactive processes (automatically starts as needed)
 	C4InteractiveThread InteractiveThread;
 	// IRC client for global chat

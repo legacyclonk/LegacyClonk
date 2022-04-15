@@ -23,6 +23,7 @@
 #include <C4Random.h>
 #include <C4Components.h>
 #include <C4Game.h>
+#include "C4Object.h"
 #include <C4Config.h>
 #include <C4Application.h>
 #include <C4RankSystem.h>

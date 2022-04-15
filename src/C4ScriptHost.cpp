@@ -44,7 +44,7 @@ void C4ScriptHost::Clear()
 }
 
 bool C4ScriptHost::Load(const char *szName, C4Group &hGroup, const char *szFilename,
-	const char *szLanguage, C4Def *pDef, class C4LangStringTable *pLocalTable, bool fLoadTable)
+	const char *szLanguage, C4Def *pDef, class C4LangStringTable *pLocalTable, bool fLoadTable, bool preparse)
 {
 	// Set definition and id
 	Def = pDef; idDef = Def ? Def->id : 0;
@@ -57,9 +57,13 @@ bool C4ScriptHost::Load(const char *szName, C4Group &hGroup, const char *szFilen
 		pStringTable->LoadEx("StringTbl", hGroup, C4CFN_ScriptStringTbl, szLanguage);
 	// set name
 	ScriptName.Format("%s" DirSep "%s", hGroup.GetFullName().getData(), Filename);
-	// preparse script
 #ifdef C4ENGINE
 	MakeScript();
+	if (preparse)
+	{
+		// preparse script
+		Preparse();
+	}
 #endif
 	// Success
 	return fSuccess;
@@ -79,9 +83,6 @@ void C4ScriptHost::MakeScript()
 	{
 		Script.Ref(Data);
 	}
-
-	// preparse script
-	Preparse();
 }
 
 void C4ScriptHost::Close()

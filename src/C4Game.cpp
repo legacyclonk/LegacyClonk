@@ -89,17 +89,21 @@ bool C4Game::InitDefs()
 	int iDefResCount = 0;
 	for ([[maybe_unused]] const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
 		++iDefResCount;
-	int i = 0;
 	// Load specified defs
-	for (const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
+	auto iterator = Parameters.GameRes.iterRes(NRT_Definitions);
+	std::vector<std::string> defs;
+	std::transform(std::begin(iterator), std::end(iterator), std::back_inserter(defs), [](const auto &def)
 	{
-		int iMinProgress = 10 + (25 * i) / iDefResCount;
-		int iMaxProgress = 10 + (25 * (i + 1)) / iDefResCount;
-		++i;
-		iDefs += Defs.Load(def.getFile(), C4D_Load_RX, Config.General.LanguageEx, &*Application.SoundSystem, true, iMinProgress, iMaxProgress);
+		return def.getFile();
+	});
 
-		// Def load failure
-		if (Defs.LoadFailure) return false;
+	if (const auto result{Defs.LoadParallel(defs, C4D_Load_RX, Config.General.LanguageEx, *Application.SoundSystem, true, true)}; !result)
+	{
+		return false;
+	}
+	else
+	{
+		iDefs += *result;
 	}
 
 	// Load for scenario file - ignore sys group here, because it has been loaded already

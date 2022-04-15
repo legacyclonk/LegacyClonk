@@ -27,7 +27,9 @@
 #include <C4ComponentHost.h>
 
 #ifdef C4ENGINE
+#include "C4Group.h"
 #include <C4ScriptHost.h>
+#include "C4SoundSystem.h"
 #include <C4DefGraphics.h>
 #include "C4LangStringTable.h"
 #endif
@@ -37,6 +39,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <thread>
 #include <vector>
 
 const int32_t C4D_None                   = 0,
@@ -351,7 +354,7 @@ public:
 	void Default();
 	bool Load(C4Group &hGroup,
 		uint32_t dwLoadWhat, const char *szLanguage,
-		class C4SoundSystem *pSoundSystem = nullptr);
+		class C4SoundSystem *pSoundSystem = nullptr, C4SoundSystem::SampleDataType *samples = nullptr, bool preparseScript = true);
 	void Draw(C4Facet &cgo, bool fSelected = false, uint32_t iColor = 0, C4Object *pObj = nullptr, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
 
 #ifdef C4ENGINE
@@ -389,6 +392,17 @@ class C4DefList : public C4DelegatedIterable<C4DefList>
 	, public CStdFont::CustomImages
 #endif
 {
+private:
+	struct LoadData
+	{
+		std::string_view Search;
+		std::thread Thread;
+		std::shared_ptr<C4Group> MainGroup;
+		std::vector<std::unique_ptr<C4Def>> Defs;
+		C4SoundSystem::SampleDataType SoundSamples;
+		std::vector<C4ScriptHost *> ScriptHosts;
+	};
+
 public:
 	C4DefList();
 	virtual ~C4DefList();
@@ -407,6 +421,7 @@ public:
 		uint32_t dwLoadWhat, const char *szLanguage,
 		C4SoundSystem *pSoundSystem = nullptr,
 		bool fOverload = false, int32_t iMinProgress = 0, int32_t iMaxProgress = 0);
+	std::optional<std::size_t> LoadParallel(const std::vector<std::string> &search, std::uint32_t loadWhat, const char *language, C4SoundSystem &soundSystem, bool overload = false, bool loadSysGroups = true);
 	C4Def *ID2Def(C4ID id);
 	C4Def *GetDef(std::size_t index, std::uint32_t category = C4D_All);
 	C4Def *GetByPath(const char *szPath);
@@ -430,6 +445,7 @@ public:
 
 private:
 	std::vector<std::unique_ptr<C4Def>>::iterator FindDefByID(C4ID id);
+	void Load(LoadData &loadData, std::uint32_t loadWhat, std::shared_ptr<C4Group> &group, const char *language, C4SoundSystem &soundSystem, bool loadSysGroups); // in separate thread
 
 	std::vector<std::unique_ptr<C4Def>> Defs;
 	bool Sorted;

@@ -147,7 +147,7 @@ class C4ControlPlayerSelect : public C4ControlPacket // sync
 public:
 	C4ControlPlayerSelect()
 		: iPlr(-1), iObjCnt(0), pObjNrs(nullptr) {}
-	C4ControlPlayerSelect(int32_t iPlr, const C4ObjectList &Objs);
+	C4ControlPlayerSelect(int32_t iPlr, const class C4ObjectList &Objs);
 	~C4ControlPlayerSelect() { delete[] pObjNrs; }
 
 protected:
