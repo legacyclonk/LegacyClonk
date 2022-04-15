@@ -494,7 +494,7 @@ void C4SDefinitions::CompileFunc(StdCompiler *pComp)
 
 			if (!def.empty())
 			{
-				Definitions.push_back(def);
+				Definitions.push_back(def.substr(0, def.find('(')));
 			}
 		}
 	}

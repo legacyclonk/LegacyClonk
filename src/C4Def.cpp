@@ -1049,20 +1049,6 @@ int32_t C4DefList::Load(const char *szSearch,
 		return iResult;
 	}
 
-	// File specified with creation (currently not used)
-	char szCreation[25 + 1];
-	int32_t iCreation = 0;
-	if (SCopyEnclosed(szSearch, '(', ')', szCreation, 25))
-	{
-		// Scan creation
-		SClearFrontBack(szCreation);
-		sscanf(szCreation, "%i", &iCreation);
-		// Extract filename
-		SCopyUntil(szSearch, szSegment, '(', _MAX_PATH);
-		SClearFrontBack(szSegment);
-		szSearch = szSegment;
-	}
-
 	// Load from specified file
 	C4Group hGroup;
 	if (!hGroup.Open(szSearch))
