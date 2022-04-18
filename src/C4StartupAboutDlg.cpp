@@ -114,7 +114,8 @@ code =
 	{"Dominik Bayerl", "Kanibal"},
 	{"George Tokmaji", "Fulgen"},
 	{"Martin Plicht", "Mortimer"},
-	{"Matthias Brehmer", "Bratkartoffl"}
+	{"Matthias Brehmer", "Bratkartoffl"},
+	{"Tim Kuhrt", "TLK"}
 },
 scripting =
 {

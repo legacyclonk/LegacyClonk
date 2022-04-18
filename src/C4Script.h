@@ -2,7 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -50,6 +50,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 #define PSF_Hit3                   "~Hit3"
 #define PSF_Grab                   "~Grab"
 #define PSF_Grabbed                "~Grabbed"
+#define PSF_RejectGrabbed          "~RejectGrabbed" //pByObject
 #define PSF_Get                    "~Get"
 #define PSF_Put                    "~Put"
 #define PSF_Collection             "~Collection" // pObject, fPut
