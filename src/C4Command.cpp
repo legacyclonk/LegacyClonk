@@ -698,6 +698,15 @@ void C4Command::Grab()
 			cObj->Action.ComDir = COMD_Stop;
 			ObjectComGrab(cObj, Target);
 		}
+		else
+		{
+			// we don’t want any failure message if this is a direct command
+			if (!GetBaseCommand())
+			{
+				BaseMode = C4CMD_Mode_SilentBase;
+			}
+			Finish(false);
+		}
 	}
 	// Else, move to object
 	else
@@ -2130,8 +2139,7 @@ void C4Command::Acquire()
 void C4Command::Fail(const char *szFailMessage)
 {
 	// Check for base command (next unfinished)
-	C4Command *pBase;
-	for (pBase = Next; pBase; pBase = pBase->Next) if (!pBase->Finished) break;
+	C4Command *pBase = GetBaseCommand();
 
 	bool ExecFail = false;
 	switch (BaseMode)
@@ -2485,4 +2493,16 @@ int32_t C4Command::GetExpGain()
 	}
 	// unknown command
 	return 0;
+}
+
+C4Command *C4Command::GetBaseCommand() const
+{
+	for (auto command = Next; command; command = command->Next)
+	{
+		if (!command->Finished)
+		{
+			return command;
+		}
+	}
+	return nullptr;
 }
