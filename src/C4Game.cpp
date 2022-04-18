@@ -3,7 +3,7 @@
  *
  * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
  * Copyright (c) 2016, The OpenClonk Team and contributors
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2022, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.

@@ -1,7 +1,7 @@
 /*
  * LegacyClonk
  *
- * Copyright (c) 2020-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2020-2022, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
