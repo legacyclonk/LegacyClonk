@@ -3240,7 +3240,14 @@ bool C4Object::ContainedControl(uint8_t byCom)
 	case COM_Down:
 		PlayerObjectCommand(Owner, C4CMD_Exit);
 		break;
-	case COM_Throw: case COM_Throw_D:
+	case COM_Throw_D:
+		// avoid breaking objects with non-default behavior on ContainedThrow
+		if (Contained->Def->Script.GetSFunc(FormatString(PSF_ContainedControl, ComName(COM_Throw)).getData()))
+		{
+			break;
+		}
+		[[fallthrough]];
+	case COM_Throw:
 		PlayerObjectCommand(Owner, C4CMD_Throw);
 		break;
 	case COM_Up:
@@ -3513,7 +3520,16 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 			break;
 		case COM_Down: ObjectComMovement(this, COMD_Stop); break;
 		case COM_Down_D: ObjectComUnGrab(this); break;
-		case COM_Throw: case COM_Throw_D: PlayerObjectCommand(Owner, C4CMD_Throw); break;
+		case COM_Throw_D:
+			// avoid breaking objects with non-default behavior on ControlThrow
+			if (!fGrabControlOverload || !Action.Target || Action.Target->Def->Script.GetSFunc(FormatString(PSF_Control, ComName(COM_Throw)).getData()))
+			{
+				break;
+			}
+			[[fallthrough]];
+		case COM_Throw:
+			PlayerObjectCommand(Owner, C4CMD_Throw);
+			break;
 		}
 		// Action target call control late for old objects
 		if (!fGrabControlOverload)
