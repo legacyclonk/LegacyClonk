@@ -105,33 +105,33 @@ jobs:
           curl -L https://github.com/legacyclonk/deps/releases/download/2022-05-08/lc_deps-$CONFIG_SUFFIX.tar.gz | tar -xz
           ./fix_paths.sh
 
-      - name: Configure
-        run: |
-          $CHROOT cmake -B build . $CMAKE_CONFIGURE_ARGS
-
       - name: "Configuration setup: No Sound"
         if: ${{ matrix.sound == 'OFF' }}
-        run: $CHROOT cmake -B build -DENABLE_SOUND=Off
+        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DENABLE_SOUND=Off" >> $GITHUB_ENV
 
       - name: "Configuration setup: SDL_mixer"
         if: ${{ matrix.sound == 'SDL_mixer' }}
-        run: $CHROOT cmake -B build -DUSE_SDL_MIXER=On
+        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DUSE_SDL_MIXER=On" >> $GITHUB_ENV
 
       - name: "Configuration setup: Console"
         if: ${{ matrix.windowing == 'Console' }}
-        run: $CHROOT cmake -B build -DUSE_CONSOLE=On
+        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DUSE_CONSOLE=On" >> $GITHUB_ENV
 
       - name: "Configuration setup: GTK"
         if: ${{ matrix.windowing == 'GTK' }}
-        run: $CHROOT cmake -B build -DWITH_DEVELOPER_MODE=On
+        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DWITH_DEVELOPER_MODE=On" >> $GITHUB_ENV
 
       - name: "Configuration setup: SDL"
         if: ${{ matrix.windowing == 'SDL' }}
-        run: $CHROOT cmake -B build -DUSE_SDL_MAINLOOP=On -DWITH_DEVELOPER_MODE=Off
+        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DUSE_SDL_MAINLOOP=On -DWITH_DEVELOPER_MODE=Off" >> $GITHUB_ENV
 
       - name: "Configuration setup: X11"
         if: ${{ matrix.windowing == 'X11' }}
-        run: $CHROOT cmake -B build -DWITH_DEVELOPER_MODE=Off
+        run: echo "CONFIG_ARGS=$CONFIG_ARGS -DWITH_DEVELOPER_MODE=Off" >> $GITHUB_ENV
+
+      - name: Configure
+        run: |
+          $CHROOT cmake -B build . $CMAKE_CONFIGURE_ARGS $CONFIG_ARGS
 
       - name: Build
         run: |
