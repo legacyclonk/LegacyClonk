@@ -23,6 +23,7 @@
 #include <C4Log.h>
 #include <C4Config.h>
 #include <C4Application.h>
+#include "Standard.h"
 
 #include <algorithm>
 #include <iterator>
@@ -90,7 +91,7 @@ void C4SoundSystem::ClearPointers(const C4Object *const obj)
 {
 	for (auto &sample : samples)
 	{
-		sample.instances.remove_if(
+		sample.second.instances.remove_if(
 			[&](auto &inst) { return obj == inst.GetObj() && !inst.DetachObj(); });
 	}
 }
@@ -99,7 +100,7 @@ void C4SoundSystem::Execute()
 {
 	for (auto &sample : samples)
 	{
-		sample.Execute();
+		sample.second.Execute();
 	}
 }
 
@@ -115,17 +116,12 @@ void C4SoundSystem::LoadEffects(C4Group &group)
 		group.ResetSearch();
 		while (group.FindNextEntry(fileType, filename))
 		{
-			// Try to find existing sample of the same name
-			const auto existingSample = std::find_if(samples.cbegin(), samples.cend(),
-				[&](const auto &sample) { return SEqualNoCase(filename, sample.name.c_str()); });
 			// Load sample
 			StdBuf buf;
 			if (!group.LoadEntry(filename, buf)) continue;
 			try
 			{
-				samples.emplace_back(filename, buf.getData(), buf.getSize());
-				// Overload (i.e. remove) existing sample of the same name
-				if (existingSample != samples.cend()) samples.erase(existingSample);
+				samples.insert_or_assign(filename, Sample{buf.getData(), buf.getSize()});
 			}
 			catch (const std::runtime_error &e)
 			{
@@ -141,8 +137,8 @@ bool C4SoundSystem::ToggleOnOff()
 	return enabled = !enabled;
 }
 
-C4SoundSystem::Sample::Sample(const char *const name, const void *const buf, const std::size_t size)
-	: name{name}, sample{Application.AudioSystem->CreateSoundFile(buf, size)}, duration{sample->GetDuration()} {}
+C4SoundSystem::Sample::Sample(const void *const buf, const std::size_t size)
+	: sample{Application.AudioSystem->CreateSoundFile(buf, size)}, duration{sample->GetDuration()} {}
 
 void C4SoundSystem::Sample::Execute()
 {
@@ -266,16 +262,21 @@ bool C4SoundSystem::Instance::IsNear(const C4Object &obj2) const
 	return false;
 }
 
+bool C4SoundSystem::CaseInsensitiveLess::operator()(const std::string &first, const std::string &second) const
+{
+	return stricmp(first.c_str(), second.c_str()) < 0;
+}
+
 auto C4SoundSystem::FindInst(const char *wildcard, const C4Object *const obj) ->
 	std::optional<decltype(Sample::instances)::iterator>
 {
 	const auto wildcardStr = PrepareFilename(wildcard);
 	wildcard = wildcardStr.c_str();
 
-	for (auto &sample : samples)
+	for (auto &[name, sample] : samples)
 	{
 		// Skip samples whose names do not match the wildcard
-		if (!WildcardMatch(wildcard, sample.name.c_str())) continue;
+		if (!WildcardMatch(wildcard, name.c_str())) continue;
 		// Try to find an instance that is bound to obj
 		auto it = std::find_if(sample.instances.begin(), sample.instances.end(),
 			[&](const auto &inst) { return inst.GetObj() == obj; });
@@ -310,21 +311,19 @@ auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
 	// Search for matching file if name contains no wildcard
 	if (filenameStr.find('?') == std::string::npos)
 	{
-		const auto end = samples.end();
-		const auto it = std::find_if(samples.begin(), end,
-			[&](const auto &sample) { return SEqualNoCase(filename, sample.name.c_str()); });
+		const auto it = samples.find(filename);
 		// File not found
-		if (it == end) return nullptr;
+		if (it == samples.end()) return nullptr;
 		// Success: Found the file
-		sample = &*it;
+		sample = &it->second;
 	}
 	// Randomly select any matching file if name contains wildcard
 	else
 	{
 		std::vector<Sample *> matches;
-		for (auto &sample : samples)
+		for (auto &[name, sample] : samples)
 		{
-			if (WildcardMatch(filename, sample.name.c_str()))
+			if (WildcardMatch(filename, name.c_str()))
 			{
 				matches.push_back(&sample);
 			}

@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <list>
+#include <map>
 #include <optional>
 #include <string>
 #include <variant>
@@ -62,17 +63,16 @@ private:
 
 	struct Sample
 	{
-		const std::string name;
-		const std::unique_ptr<C4AudioSystem::SoundFile> sample;
-		const std::uint32_t duration;
+		std::unique_ptr<C4AudioSystem::SoundFile> sample;
+		std::uint32_t duration;
 		std::list<Instance> instances;
 
-		Sample(const char *const name, const void *const buf, const std::size_t size);
+		Sample(const void *const buf, const std::size_t size);
 		Sample(const Sample &) = delete;
-		Sample(Sample &&) = delete;
+		Sample(Sample &&) = default;
 		~Sample() = default;
 		Sample &operator=(const Sample &) = delete;
-		Sample &operator=(Sample &&) = delete;
+		Sample &operator=(Sample &&) = default;
 
 		void Execute();
 	};
@@ -123,7 +123,13 @@ private:
 	};
 
 	static constexpr std::int32_t MaxSoundInstances = 20;
-	std::list<Sample> samples;
+
+	struct CaseInsensitiveLess
+	{
+		bool operator()(const std::string &first, const std::string &second) const;
+	};
+
+	std::map<std::string, Sample, CaseInsensitiveLess> samples;
 
 	// Returns a sound instance that matches the specified name and object.
 	std::optional<decltype(Sample::instances)::iterator> FindInst(
