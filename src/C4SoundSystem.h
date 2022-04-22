@@ -65,7 +65,6 @@ private:
 	{
 		std::unique_ptr<C4AudioSystem::SoundFile> sample;
 		std::uint32_t duration;
-		std::list<Instance> instances;
 
 		Sample(const void *const buf, const std::size_t size);
 		Sample(const Sample &) = delete;
@@ -73,8 +72,6 @@ private:
 		~Sample() = default;
 		Sample &operator=(const Sample &) = delete;
 		Sample &operator=(Sample &&) = default;
-
-		void Execute();
 	};
 
 	struct Instance
@@ -93,9 +90,9 @@ private:
 			ObjPos &operator=(ObjPos &&) = delete;
 		};
 
-		Instance(Sample &sample, bool loop, std::int32_t volume,
+		Instance(std::string_view name, std::vector<std::reference_wrapper<Sample>> &&samples, bool loop, std::int32_t volume,
 			C4Object *obj, std::int32_t falloffDistance)
-			: sample{sample}, loop{loop}, volume{volume},
+			: name{name}, samples{std::move(samples)}, currentSample{NextSample()}, loop{loop}, volume{volume},
 			obj{obj}, falloffDistance{falloffDistance},
 			startTime{std::chrono::steady_clock::now()} {}
 		Instance(const Instance &) = delete;
@@ -104,7 +101,9 @@ private:
 		Instance &operator=(const Instance &) = delete;
 		Instance &operator=(Instance &&) = delete;
 
-		Sample &sample;
+		std::string name;
+		std::vector<std::reference_wrapper<Sample>> samples;
+		decltype(samples)::iterator currentSample;
 		std::unique_ptr<C4AudioSystem::SoundChannel> channel;
 		const bool loop;
 		std::int32_t volume, pan{0};
@@ -120,6 +119,7 @@ private:
 		// Estimates playback position (milliseconds)
 		std::uint32_t GetPlaybackPosition() const;
 		bool IsNear(const C4Object &obj) const;
+		decltype(samples)::iterator NextSample();
 	};
 
 	static constexpr std::int32_t MaxSoundInstances = 20;
@@ -130,9 +130,10 @@ private:
 	};
 
 	std::map<std::string, Sample, CaseInsensitiveLess> samples;
+	std::list<Instance> instances;
 
 	// Returns a sound instance that matches the specified name and object.
-	std::optional<decltype(Sample::instances)::iterator> FindInst(
+	std::optional<std::list<Instance>::iterator> FindInst(
 		const char *wildcard, const C4Object *obj);
 	// Returns a reference to the "sound enabled" config entry of the current game mode
 	static bool &GetCfgSoundEnabled();
@@ -140,6 +141,7 @@ private:
 		std::int32_t &volume, std::int32_t &pan);
 	Instance *NewInstance(const char *filename, bool loop,
 		std::int32_t volume, std::int32_t pan, C4Object *obj, std::int32_t falloffDistance);
+	void StopSoundEffect(const char *wildcard, const C4Object *obj);
 	// Adds default file extension if missing and replaces "*" with "?"
 	static std::string PrepareFilename(const char *filename);
 

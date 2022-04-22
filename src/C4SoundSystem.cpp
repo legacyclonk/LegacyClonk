@@ -67,10 +67,7 @@ void StartSoundEffectAt(const char *const name, const std::int32_t x, const std:
 
 void StopSoundEffect(const char *const name, const C4Object *const obj)
 {
-	if (const auto it = Application.SoundSystem->FindInst(name, obj))
-	{
-		(**it).sample.instances.erase(*it);
-	}
+	Application.SoundSystem->StopSoundEffect(name, obj);
 }
 
 C4SoundSystem::C4SoundSystem()
@@ -89,19 +86,12 @@ C4SoundSystem::C4SoundSystem()
 
 void C4SoundSystem::ClearPointers(const C4Object *const obj)
 {
-	for (auto &sample : samples)
-	{
-		sample.second.instances.remove_if(
-			[&](auto &inst) { return obj == inst.GetObj() && !inst.DetachObj(); });
-	}
+	instances.remove_if([&](auto &inst) { return obj == inst.GetObj() && !inst.DetachObj(); });
 }
 
 void C4SoundSystem::Execute()
 {
-	for (auto &sample : samples)
-	{
-		sample.second.Execute();
-	}
+	instances.remove_if([](auto &inst) { return !inst.Execute(); });
 }
 
 void C4SoundSystem::LoadEffects(C4Group &group)
@@ -140,12 +130,6 @@ bool C4SoundSystem::ToggleOnOff()
 C4SoundSystem::Sample::Sample(const void *const buf, const std::size_t size)
 	: sample{Application.AudioSystem->CreateSoundFile(buf, size)}, duration{sample->GetDuration()} {}
 
-void C4SoundSystem::Sample::Execute()
-{
-	// Execute each instance and remove it if necessary
-	instances.remove_if([](auto &inst) { return !inst.Execute(); });
-}
-
 bool C4SoundSystem::Instance::DetachObj()
 {
 	// Stop if looping (would most likely loop forever)
@@ -166,14 +150,25 @@ bool C4SoundSystem::Instance::Execute(const bool justStarted)
 	if (obj && !obj->Status && !DetachObj()) return false;
 
 	// Remove instances that have stopped
-	if (channel && !channel->IsPlaying()) return false;
+	if (channel && !channel->IsPlaying())
+	{
+		if (loop && samples.size() > 1)
+		{
+			channel.reset();
+			currentSample = NextSample();
+		}
+		else
+		{
+			return false;
+		}
+	}
 
 	// Remove non-looping, inaudible sounds if half the time is up
 	std::uint32_t pos = ~0;
 	if (!loop && !channel && !justStarted)
 	{
 		pos = GetPlaybackPosition();
-		if (pos > sample.duration / 2) return false;
+		if (pos > currentSample->get().duration / 2) return false;
 	}
 
 	// Muted: No need to calculate new volume
@@ -210,7 +205,7 @@ bool C4SoundSystem::Instance::Execute(const bool justStarted)
 		const auto createChannel = !channel;
 		if (createChannel)
 		{
-			channel.reset(Application.AudioSystem->CreateSoundChannel(sample.sample.get(), loop));
+			channel.reset(Application.AudioSystem->CreateSoundChannel(currentSample->get().sample.get(), loop && samples.size() == 1));
 			if (!justStarted)
 			{
 				if (pos == ~0) pos = GetPlaybackPosition();
@@ -239,8 +234,8 @@ C4Object *C4SoundSystem::Instance::GetObj() const
 
 std::uint32_t C4SoundSystem::Instance::GetPlaybackPosition() const
 {
-	return sample.duration ? std::chrono::duration_cast<std::chrono::milliseconds>(
-								 std::chrono::steady_clock::now() - startTime).count() % sample.duration
+	return currentSample->get().duration ? std::chrono::duration_cast<std::chrono::milliseconds>(
+								 std::chrono::steady_clock::now() - startTime).count() % currentSample->get().duration
 						   : 0;
 }
 
@@ -262,29 +257,32 @@ bool C4SoundSystem::Instance::IsNear(const C4Object &obj2) const
 	return false;
 }
 
+auto C4SoundSystem::Instance::NextSample() -> decltype(samples)::iterator
+{
+	return std::begin(samples) + SafeRandom(samples.size());
+}
+
 bool C4SoundSystem::CaseInsensitiveLess::operator()(const std::string &first, const std::string &second) const
 {
 	return stricmp(first.c_str(), second.c_str()) < 0;
 }
 
-auto C4SoundSystem::FindInst(const char *wildcard, const C4Object *const obj) ->
-	std::optional<decltype(Sample::instances)::iterator>
+std::optional<std::list<C4SoundSystem::Instance>::iterator> C4SoundSystem::FindInst(const char *wildcard, const C4Object *const obj)
 {
 	const auto wildcardStr = PrepareFilename(wildcard);
 	wildcard = wildcardStr.c_str();
 
-	for (auto &[name, sample] : samples)
+	const auto it = std::find_if(instances.begin(), instances.end(), [obj, wildcard](const auto &inst)
 	{
-		// Skip samples whose names do not match the wildcard
-		if (!WildcardMatch(wildcard, name.c_str())) continue;
-		// Try to find an instance that is bound to obj
-		auto it = std::find_if(sample.instances.begin(), sample.instances.end(),
-			[&](const auto &inst) { return inst.GetObj() == obj; });
-		if (it != sample.instances.end()) return it;
+		return inst.GetObj() == obj && WildcardMatch(inst.name.c_str(), wildcard);
+	});
+
+	if (it != instances.end())
+	{
+		return it;
 	}
 
-	// Not found
-	return {};
+	return std::nullopt;
 }
 
 bool &C4SoundSystem::GetCfgSoundEnabled()
@@ -307,7 +305,8 @@ auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
 	const auto filenameStr = PrepareFilename(filename);
 	filename = filenameStr.c_str();
 
-	Sample *sample;
+	std::vector<std::reference_wrapper<Sample>> matchingSamples;
+
 	// Search for matching file if name contains no wildcard
 	if (filenameStr.find('?') == std::string::npos)
 	{
@@ -315,45 +314,60 @@ auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
 		// File not found
 		if (it == samples.end()) return nullptr;
 		// Success: Found the file
-		sample = &it->second;
+		matchingSamples = {it->second};
 	}
 	// Randomly select any matching file if name contains wildcard
 	else
 	{
-		std::vector<Sample *> matches;
 		for (auto &[name, sample] : samples)
 		{
 			if (WildcardMatch(filename, name.c_str()))
 			{
-				matches.push_back(&sample);
+				matchingSamples.push_back(sample);
 			}
 		}
 		// File not found
-		if (matches.empty()) return nullptr;
-		// Success: Randomly select any of the matching files
-		sample = matches[SafeRandom(matches.size())];
+		if (matchingSamples.empty()) return nullptr;
 	}
 
 	// Too many instances?
-	if (!loop && sample->instances.size() >= MaxSoundInstances) return nullptr;
+	std::unordered_map<Sample *, std::size_t> counter;
 
-	// Already playing near?
-	const auto nearIt = obj ?
-		std::find_if(sample->instances.cbegin(), sample->instances.cend(),
-			[&](const auto &inst) { return inst.IsNear(*obj); }) :
-		std::find_if(sample->instances.cbegin(), sample->instances.cend(),
-			[](const auto &inst) { return !inst.GetObj(); });
-	if (nearIt != sample->instances.cend()) return nullptr;
+	for (auto &instance : instances)
+	{
+		for (auto &sample : instance.samples)
+		{
+			if (++counter[&sample.get()] > MaxSoundInstances)
+			{
+				return nullptr;
+			}
 
+			if (std::find_if(matchingSamples.begin(), matchingSamples.end(), [&sample](const auto &matchingSample)
+			{
+				return &sample.get() == &matchingSample.get();
+			}) != matchingSamples.end() && (obj ? instance.IsNear(*obj) : !instance.GetObj()))
+			{
+				return nullptr;
+			}
+		}
+	}
 	// Create instance
-	auto &inst = sample->instances.emplace_back(*sample, loop, volume, obj, falloffDistance);
+	auto &inst = instances.emplace_back(filename, std::move(matchingSamples), loop, volume, obj, falloffDistance);
 	if (!inst.Execute(true))
 	{
-		sample->instances.pop_back();
+		instances.pop_back();
 		return nullptr;
 	}
 
 	return &inst;
+}
+
+void C4SoundSystem::StopSoundEffect(const char *wildcard, const C4Object *obj)
+{
+	instances.remove_if([obj, wildcard](const auto &inst)
+	{
+		return inst.GetObj() == obj && WildcardMatch(inst.name.c_str(), wildcard);
+	});
 }
 
 std::string C4SoundSystem::PrepareFilename(const char *const filename)
