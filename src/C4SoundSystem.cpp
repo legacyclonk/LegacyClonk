@@ -337,17 +337,28 @@ auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
 	{
 		for (auto &sample : instance.samples)
 		{
-			if (++counter[&sample.get()] > MaxSoundInstances)
+			for (auto &matchingSample : matchingSamples)
 			{
-				return nullptr;
-			}
+				if (&sample.get() == &matchingSample.get())
+				{
+					if (++counter[&sample.get()] > MaxSoundInstances)
+					{
+						return nullptr;
+					}
 
-			if (std::find_if(matchingSamples.begin(), matchingSamples.end(), [&sample](const auto &matchingSample)
-			{
-				return &sample.get() == &matchingSample.get();
-			}) != matchingSamples.end() && (obj ? instance.IsNear(*obj) : !instance.GetObj()))
-			{
-				return nullptr;
+					if (obj)
+					{
+						if (instance.IsNear(*obj))
+						{
+							return nullptr;
+						}
+
+					}
+					else if (!instance.GetObj())
+					{
+						return nullptr;
+					}
+				}
 			}
 		}
 	}
