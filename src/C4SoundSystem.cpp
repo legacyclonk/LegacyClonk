@@ -155,12 +155,21 @@ bool C4SoundSystem::Instance::Execute(const bool justStarted)
 		if (loop && samples.size() > 1)
 		{
 			channel.reset();
-			currentSample = NextSample();
+			// No currently valid sample? Keep instance around
+			if (!SelectNextSample())
+			{
+				return true;
+			}
 		}
 		else
 		{
 			return false;
 		}
+	}
+
+	if (currentSample == samples.end() && !SelectNextSample())
+	{
+		return true;
 	}
 
 	// Remove non-looping, inaudible sounds if half the time is up
@@ -257,9 +266,10 @@ bool C4SoundSystem::Instance::IsNear(const C4Object &obj2) const
 	return false;
 }
 
-auto C4SoundSystem::Instance::NextSample() -> decltype(samples)::iterator
+bool C4SoundSystem::Instance::SelectNextSample()
 {
-	return std::begin(samples) + SafeRandom(samples.size());
+	currentSample = Application.SoundSystem->GetNextMatchingSample(*this);
+	return currentSample != samples.cend();
 }
 
 bool C4SoundSystem::CaseInsensitiveLess::operator()(const std::string &first, const std::string &second) const
@@ -330,38 +340,6 @@ auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
 		if (matchingSamples.empty()) return nullptr;
 	}
 
-	// Too many instances?
-	std::unordered_map<Sample *, std::size_t> counter;
-
-	for (auto &instance : instances)
-	{
-		for (auto &sample : instance.samples)
-		{
-			for (auto &matchingSample : matchingSamples)
-			{
-				if (&sample.get() == &matchingSample.get())
-				{
-					if (++counter[&sample.get()] > MaxSoundInstances)
-					{
-						return nullptr;
-					}
-
-					if (obj)
-					{
-						if (instance.IsNear(*obj))
-						{
-							return nullptr;
-						}
-
-					}
-					else if (!instance.GetObj())
-					{
-						return nullptr;
-					}
-				}
-			}
-		}
-	}
 	// Create instance
 	auto &inst = instances.emplace_back(filename, std::move(matchingSamples), loop, volume, obj, falloffDistance);
 	if (!inst.Execute(true))
@@ -379,6 +357,53 @@ void C4SoundSystem::StopSoundEffect(const char *wildcard, const C4Object *obj)
 	{
 		return inst.GetObj() == obj && WildcardMatch(inst.name.c_str(), wildcard);
 	});
+}
+
+auto C4SoundSystem::GetNextMatchingSample(Instance &instance) -> decltype(instance.samples)::iterator
+{
+	std::set<decltype(instance.samples)::iterator> checked;
+
+	do
+	{
+		const auto it = std::begin(instance.samples) + SafeRandom(instance.samples.size());
+		checked.insert(it);
+
+		std::unordered_map<Sample *, std::size_t> counter;
+
+		for (auto &instanceToCheck : instances)
+		{
+			if (&instanceToCheck == &instance)
+			{
+				continue;
+			}
+
+			for (auto &instanceSample : instance.samples)
+			{
+				if (&instanceSample.get() == &it->get())
+				{
+					if (++counter[&instanceSample.get()] <= MaxSoundInstances)
+					{
+						if (instance.GetObj())
+						{
+							if (!instanceToCheck.IsNear(*instance.GetObj()))
+							{
+								return it;
+							}
+
+						}
+						else if (instanceToCheck.GetObj())
+						{
+							return it;
+						}
+					}
+				}
+			}
+		}
+	}
+	while (checked.size() < instance.samples.size());
+
+	// Nothing found
+	return instance.samples.end();
 }
 
 std::string C4SoundSystem::PrepareFilename(const char *const filename)

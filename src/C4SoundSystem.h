@@ -92,7 +92,7 @@ private:
 
 		Instance(std::string_view name, std::vector<std::reference_wrapper<Sample>> &&samples, bool loop, std::int32_t volume,
 			C4Object *obj, std::int32_t falloffDistance)
-			: name{name}, samples{std::move(samples)}, currentSample{NextSample()}, loop{loop}, volume{volume},
+			: name{name}, samples{std::move(samples)}, currentSample{this->samples.end()}, loop{loop}, volume{volume},
 			obj{obj}, falloffDistance{falloffDistance},
 			startTime{std::chrono::steady_clock::now()} {}
 		Instance(const Instance &) = delete;
@@ -119,7 +119,7 @@ private:
 		// Estimates playback position (milliseconds)
 		std::uint32_t GetPlaybackPosition() const;
 		bool IsNear(const C4Object &obj) const;
-		decltype(samples)::iterator NextSample();
+		bool SelectNextSample();
 	};
 
 	static constexpr std::int32_t MaxSoundInstances = 20;
@@ -142,6 +142,7 @@ private:
 	Instance *NewInstance(const char *filename, bool loop,
 		std::int32_t volume, std::int32_t pan, C4Object *obj, std::int32_t falloffDistance);
 	void StopSoundEffect(const char *wildcard, const C4Object *obj);
+	auto GetNextMatchingSample(Instance &instance) -> decltype(instance.samples)::iterator;
 	// Adds default file extension if missing and replaces "*" with "?"
 	static std::string PrepareFilename(const char *filename);
 
