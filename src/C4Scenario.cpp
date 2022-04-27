@@ -30,6 +30,9 @@
 
 #include <iterator>
 
+int32_t C4SHead::MainForcedAutoContextMenu{-1};
+int32_t C4SHead::MainForcedControlStyle{-1};
+
 // C4SVal
 
 C4SVal::C4SVal(int32_t std, int32_t rnd, int32_t min, int32_t max)
@@ -183,10 +186,12 @@ void C4SHead::CompileFunc(StdCompiler *pComp, bool fSection)
 	}
 	pComp->Value(mkNamingAdapt(NoInitialize, "NoInitialize", 0));
 	pComp->Value(mkNamingAdapt(RandomSeed,   "RandomSeed",   0));
-	pComp->Value(mkNamingAdapt(ForcedAutoContextMenu, "ForcedAutoContextMenu", -1));
-	pComp->Value(mkNamingAdapt(ForcedControlStyle,    "ForcedAutoStopControl", -1));
+	pComp->Value(mkNamingAdapt(ForcedAutoContextMenu, "ForcedAutoContextMenu", fSection ? MainForcedAutoContextMenu : -1));
+	pComp->Value(mkNamingAdapt(ForcedControlStyle,    "ForcedAutoStopControl", fSection ? MainForcedControlStyle : -1));
 	if (!fSection)
 	{
+		MainForcedAutoContextMenu = ForcedAutoContextMenu;
+		MainForcedControlStyle = ForcedControlStyle;
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(Engine),        "Engine",                ""));
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(MissionAccess), "MissionAccess",         ""));
 		pComp->Value(mkNamingAdapt(NetworkGame,                    "NetworkGame",           false));

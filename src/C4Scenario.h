@@ -99,6 +99,10 @@ public:
 	C4SHead();
 	void Default();
 	void CompileFunc(StdCompiler *pComp, bool fSection);
+
+private:
+	static int32_t MainForcedAutoContextMenu;
+	static int32_t MainForcedControlStyle;
 };
 
 const int32_t C4S_MaxDefinitions = 10;
