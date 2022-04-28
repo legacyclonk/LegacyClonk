@@ -429,7 +429,9 @@ void CStdGL::PerformBlt(CBltData &rBltData, C4TexRef *const pTex,
 	// set texture+modes
 	glShadeModel((fUseClrModMap && fModClr && !Config.Graphics.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
 	glBindTexture(GL_TEXTURE_2D, pTex->texName);
-	if (pApp->GetScale() != 1.f || (!fExact && !Config.Graphics.PointFiltering))
+
+	const auto enableTextureFiltering = (pApp->GetScale() != 1.f || (!fExact && !Config.Graphics.PointFiltering));
+	if (enableTextureFiltering)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -474,7 +476,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, C4TexRef *const pTex,
 		CStdShaderProgram::Deselect();
 	}
 
-	if (pApp->GetScale() != 1.f || (!fExact && !Config.Graphics.PointFiltering))
+	if (enableTextureFiltering)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
