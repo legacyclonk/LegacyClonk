@@ -301,14 +301,14 @@ struct _IdFuncClass
 template <class T, class M = _IdFuncClass<T>>
 struct StdArrayAdapt
 {
-	StdArrayAdapt(T *pArray, int iSize, M map = M())
-		: pArray(pArray), iSize(iSize), map(map) {}
+	StdArrayAdapt(T *pArray, std::size_t size, M map = M())
+		: pArray(pArray), size(size), map(map) {}
 
-	T *pArray; int iSize; M map;
+	T *pArray; std::size_t size; M map;
 
 	inline void CompileFunc(StdCompiler *pComp) const
 	{
-		for (int i = 0; i < iSize; i++)
+		for (std::size_t i{0}; i < size; i++)
 		{
 			if (i) pComp->Separator(StdCompiler::SEP_SEP);
 			pComp->Value(map(pArray[i]));
@@ -318,7 +318,7 @@ struct StdArrayAdapt
 	// Operators for default checking/setting
 	inline bool operator==(const T &rDefault) const
 	{
-		for (int i = 0; i < iSize; i++)
+		for (std::size_t i{0}; i < size; i++)
 			if (pArray[i] != rDefault)
 				return false;
 		return true;
@@ -326,14 +326,14 @@ struct StdArrayAdapt
 
 	inline StdArrayAdapt &operator=(const T &rDefault)
 	{
-		for (int i = 0; i < iSize; i++)
+		for (std::size_t i{0}; i < size; i++)
 			pArray[i] = rDefault;
 		return *this;
 	}
 
 	inline bool operator==(const T *pDefaults) const
 	{
-		for (int i = 0; i < iSize; i++)
+		for (std::size_t i{0}; i < size; i++)
 			if (pArray[i] != pDefaults[i])
 				return false;
 		return true;
@@ -341,7 +341,7 @@ struct StdArrayAdapt
 
 	inline StdArrayAdapt &operator=(const T *pDefaults)
 	{
-		for (int i = 0; i < iSize; i++)
+		for (std::size_t i{0}; i < size; i++)
 			pArray[i] = pDefaults[i];
 		return *this;
 	}
