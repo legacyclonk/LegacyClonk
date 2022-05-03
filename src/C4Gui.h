@@ -628,7 +628,6 @@ public:
 };
 
 // icon indices
-enum { Ico_Extended = 0x100, }; // icon index offset for extended icons
 enum Icons
 {
 	Ico_Empty = -2, // for context menus only
@@ -688,6 +687,8 @@ enum Icons
 	Ico_View = 50,
 	// 51?
 	Ico_NoSound = 52,
+
+	Ico_Extended = 0x100, // icon index offset for extended icons
 
 	Ico_Ex_RecordOff      = Ico_Extended + 0,
 	Ico_Ex_RecordOn       = Ico_Extended + 1,
