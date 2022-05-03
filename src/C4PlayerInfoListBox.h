@@ -76,7 +76,7 @@ private:
 			ID() : idType(PLI_NONE), id(0) {}
 			ID(IDType eType, int32_t id) : idType(eType), id(id) {}
 
-			inline bool operator==(const ID &r2)
+			inline bool operator==(const ID &r2) const
 			{
 				return idType == r2.idType && id == r2.id;
 			}

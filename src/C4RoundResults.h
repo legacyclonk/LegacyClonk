@@ -86,7 +86,7 @@ public:
 	void AddCustomEvaluationString(const char *szCustomString);
 	void SetLeaguePerformance(int32_t iNewPerf) { iLeaguePerformance = iNewPerf; }
 
-	bool operator==(const C4RoundResultsPlayer &cmp);
+	bool operator==(const C4RoundResultsPlayer &cmp) const;
 	C4RoundResultsPlayer &operator=(const C4RoundResultsPlayer &cpy);
 };
 
@@ -118,7 +118,7 @@ public:
 	void Add(C4RoundResultsPlayer *pNewPlayer);
 	C4RoundResultsPlayer *GetCreateByID(int32_t id);
 
-	bool operator==(const C4RoundResultsPlayers &cmp);
+	bool operator==(const C4RoundResultsPlayers &cmp) const;
 	C4RoundResultsPlayers &operator=(const C4RoundResultsPlayers &cpy);
 };
 

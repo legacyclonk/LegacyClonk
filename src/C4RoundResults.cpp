@@ -97,7 +97,7 @@ void C4RoundResultsPlayer::AddCustomEvaluationString(const char *szCustomString)
 	sCustomEvaluationStrings.Append(szCustomString);
 }
 
-bool C4RoundResultsPlayer::operator==(const C4RoundResultsPlayer &cmp)
+bool C4RoundResultsPlayer::operator==(const C4RoundResultsPlayer &cmp) const
 {
 	// cmp all xcept icon
 	if (id                       != cmp.id)                       return false;
@@ -216,7 +216,7 @@ C4RoundResultsPlayer *C4RoundResultsPlayers::GetCreateByID(int32_t id)
 	return pPlr;
 }
 
-bool C4RoundResultsPlayers::operator==(const C4RoundResultsPlayers &cmp)
+bool C4RoundResultsPlayers::operator==(const C4RoundResultsPlayers &cmp) const
 {
 	if (iPlayerCount != cmp.iPlayerCount) return false;
 	for (int32_t i = 0; i < iPlayerCount; ++i)
