@@ -43,6 +43,9 @@ public:
 
 class C4ToastImpl
 {
+public:
+	virtual ~C4ToastImpl() = default;
+
 protected:
 	virtual void AddAction(std::string_view action) { (void) action; }
 	virtual void SetEventHandler(C4ToastEventHandler *const eventHandler);
