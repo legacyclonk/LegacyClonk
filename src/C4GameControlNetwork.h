@@ -23,6 +23,8 @@
 #include "C4PacketBase.h"
 #include "C4Network2.h"
 
+#include <atomic>
+
 // constants
 const int32_t C4ControlBacklog = 100, // (ctrl ticks)
               C4ClientIDAll = C4ClientIDUnknown,
@@ -69,7 +71,7 @@ protected:
 	int32_t iTargetFPS; // used for PreSend-colculation
 
 	// control send / recv status
-	volatile int32_t iControlSent, iControlReady;
+	std::atomic<std::int32_t> iControlSent, iControlReady;
 
 	// control list
 	C4GameControlPacket *pCtrlStack;
