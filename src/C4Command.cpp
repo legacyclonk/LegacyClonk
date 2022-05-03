@@ -203,7 +203,7 @@ static bool ObjectAddWaypoint(int32_t iX, int32_t iY, intptr_t iTransferTarget, 
 	if (cObj->Command && (cObj->Command->Command == C4CMD_Transfer)) iUpdate = 0;
 	// Add waypoint
 	assert(cObj->Command);
-	if (!cObj->AddCommand(C4CMD_MoveTo, nullptr, iX, iY, 25, nullptr, false, cObj->Command->Data)) return false;
+	if (!cObj->AddCommand(C4CMD_MoveTo, nullptr, iX, iY, iUpdate, nullptr, false, cObj->Command->Data)) return false;
 
 	return true;
 }
