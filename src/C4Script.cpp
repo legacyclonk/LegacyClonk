@@ -51,6 +51,27 @@
 
 // Some Support Functions
 
+static void Warn(C4Object *const obj, const char *const message)
+{
+	C4AulExecError{obj, message}.show();
+}
+
+template<typename... Args>
+static void StrictError(C4AulContext *const context, C4AulScriptStrict errorSince, const char *const message, Args... args)
+{
+	const auto strictness = context->Caller ? context->Caller->Func->Owner->Strict : C4AulScriptStrict::NONSTRICT;
+
+	const StdStrBuf result{FormatString(message, std::forward<Args>(args)...)};
+	if (strictness < errorSince)
+	{
+		Warn(context->Obj, result.getData());
+	}
+	else
+	{
+		throw C4AulExecError{context->Obj, result.getData()};
+	}
+}
+
 const C4ValueInt MaxFnStringParLen = 500;
 
 inline const static char *FnStringPar(C4String *pString)
@@ -924,7 +945,7 @@ static bool FnFinishCommand(C4AulContext *cthr, C4Object *pObj, bool fSuccess, C
 	return true;
 }
 
-static bool FnPlayerObjectCommand(C4AulContext *cthr, int iPlr, C4String *szCommand, C4Object *pTarget, C4Value Tx, int iTy, C4Object *pTarget2, C4Value data, int iRetries)
+static bool FnPlayerObjectCommand(C4AulContext *cthr, int iPlr, C4String *szCommand, C4Object *pTarget, C4Value Tx, int iTy, C4Object *pTarget2, C4Value data)
 {
 	// Player
 	if (!ValidPlr(iPlr) || !szCommand) return false;
@@ -932,18 +953,16 @@ static bool FnPlayerObjectCommand(C4AulContext *cthr, int iPlr, C4String *szComm
 	// Command
 	C4ValueInt iCommand = CommandByName(FnStringPar(szCommand));
 	if (!iCommand) return false;
-	// Special: convert iData to szText
-	const char *szText = nullptr;
-	int32_t iData = 0, iTx;
+
+	std::int32_t iData{0};
+	const std::int32_t iTx{Tx.getInt()};
 	if (iCommand == C4CMD_Call)
 	{
-		szText = FnStringPar(data.getStr());
-		iTx = Tx.getInt();
+		StrictError(cthr, C4AulScriptStrict::STRICT3, "PlayerObjectCommand: Command \"Call\" not supported");
 	}
 	else
 	{
 		iData = data.getIntOrID();
-		iTx = Tx.getInt();
 	}
 	// Set
 	pPlr->ObjectCommand(iCommand, pTarget, iTx, iTy, pTarget2, iData, C4P_Command_Set);
