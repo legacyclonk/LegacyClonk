@@ -436,7 +436,7 @@ bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32)
 	}
 	// open file
 	CStdFile File;
-	if (!File.Open(szFilename))
+	if (!File.Open(szPath))
 		return false;
 	// calculcate CRC
 	uint32_t iCRC32 = 0;
@@ -454,6 +454,11 @@ bool C4Group_GetFileCRC(const char *szFilename, uint32_t *pCRC32)
 	File.Close();
 	// okay
 	*pCRC32 = iCRC32;
+
+	if (fTemporary)
+	{
+		EraseFile(szPath);
+	}
 	return true;
 }
 
@@ -487,7 +492,7 @@ bool C4Group_GetFileSHA1(const char *szFilename, uint8_t *pSHA1)
 	}
 	// open file
 	CStdFile File;
-	if (!File.Open(szFilename))
+	if (!File.Open(szPath))
 		return false;
 	// calculcate CRC
 	StdSha1 sha1;
@@ -503,6 +508,12 @@ bool C4Group_GetFileSHA1(const char *szFilename, uint8_t *pSHA1)
 	}
 	// close file
 	File.Close();
+
+	if (fTemporary)
+	{
+		EraseFile(szPath);
+	}
+
 	// finish calculation
 	sha1.GetHash(pSHA1);
 	return true;
