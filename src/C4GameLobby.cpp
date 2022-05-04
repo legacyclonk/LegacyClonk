@@ -144,7 +144,7 @@ MainDlg::MainDlg(bool fHost)
 	// indents / sizes
 	int32_t iDefBtnHeight = 32;
 	int32_t iIndentX1, iIndentX2, iIndentX3;
-	int32_t iIndentY1, iIndentY2, iIndentY3, iIndentY4, iButtonAreaHgt;
+	int32_t iIndentY1, iIndentY2, iIndentY3, iIndentY4;
 	int32_t iClientListWdt;
 	if (GetClientRect().Wdt > 500)
 	{
@@ -169,7 +169,6 @@ MainDlg::MainDlg(bool fHost)
 		iIndentY2 = 20;    // status bar offset
 		iIndentY3 = 8;     // center area (chat)
 		iIndentY4 = 8;     // client/player list
-		iButtonAreaHgt = C4GUI_IconExHgt;
 	}
 	else
 	{
@@ -178,7 +177,6 @@ MainDlg::MainDlg(bool fHost)
 		iIndentY2 = 2;     // status bar offset
 		iIndentY3 = 1;     // center area (chat)
 		iIndentY4 = 1;     // client/player list
-		iButtonAreaHgt = iDefBtnHeight;
 	}
 	// set subtitle ToolTip
 	if (pSubTitle)
