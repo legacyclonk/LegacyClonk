@@ -2811,8 +2811,8 @@ bool C4NetIOUDP::Broadcast(const C4NetIOPacket &rPacket) // (mt-safe)
 	// send to all clients connected via du, too
 	for (pPeer = pPeerList; pPeer; pPeer = pPeer->Next)
 		if (pPeer->Open() && !pPeer->MultiCast() && pPeer->doBroadcast())
-			pPeer->Send(rPacket);
-	return true;
+			fSuccess &= pPeer->Send(rPacket);
+	return fSuccess;
 }
 
 bool C4NetIOUDP::SetBroadcast(const addr_t &addr, bool fSet) // (mt-safe)
