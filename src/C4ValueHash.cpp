@@ -48,6 +48,11 @@ void C4ValueHash::DenumeratePointers()
 
 void C4ValueHash::removeValue(C4Value *value)
 {
+	const auto erase = [this](const auto& it)
+	{
+		keyOrder.erase(it->second.keyOrderIterator);
+		map.erase(it);
+	};
 	bool found = false;
 	auto keyIt = map.end();
 	for (auto it = map.begin(); it != map.end(); )
@@ -55,18 +60,18 @@ void C4ValueHash::removeValue(C4Value *value)
 		if (&it->first == value)
 		{
 			keyIt = it;
+			emptyValues.push_front(it->second.value);
 		}
 		else if (it->second.value == value)
 		{
-			keyOrder.erase(it->second.keyOrderIterator);
-			map.erase(it++);
+			erase(it++);
 			found = true;
 			continue;
 		}
 		++it;
 	}
 	if (found) emptyValues.push_front(value);
-	if (keyIt != map.end()) map.erase(keyIt);
+	if (keyIt != map.end()) erase(keyIt);
 }
 
 bool C4ValueHash::contains(const C4Value &key) const
