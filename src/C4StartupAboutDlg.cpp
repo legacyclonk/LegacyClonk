@@ -276,28 +276,28 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"
 	AddElement(btnAdvance = new C4GUI::CallbackButton<C4StartupAboutDlg>(LoadResStr("IDS_BTN_LICENSES"),
 		caButtons.GetGridCell(3,4,0,1,iButtonWidth,C4GUI_ButtonHgt,true), &C4StartupAboutDlg::OnAdvanceButton));
 
-	using ElementVector = std::vector<std::pair<C4GUI::TextWindow *, C4GUI::Label *>>;
+	using ElementVector = decltype(aboutPages)::value_type;
 	ElementVector page1;
 
 	C4GUI::ComponentAligner caDevelopers(caMain.GetAll(), 0,0, false);
 
 	C4GUI::ComponentAligner caDevelopersCol1(caDevelopers.GetFromLeft(caMain.GetWidth()*1/3), 0, 0, false);
-	page1.emplace_back(DrawPersonList(gameDesign, "Game Design", caDevelopersCol1.GetFromTop(caDevelopersCol1.GetHeight()*1/5)));
-	page1.emplace_back(DrawPersonList(code, "Engine and Tools", caDevelopersCol1.GetAll()));
+	DrawPersonList(page1, gameDesign, "Game Design", caDevelopersCol1.GetFromTop(caDevelopersCol1.GetHeight()*1/5));
+	DrawPersonList(page1, code, "Engine and Tools", caDevelopersCol1.GetAll());
 
 	C4GUI::ComponentAligner caDevelopersCol2(caDevelopers.GetFromLeft(caMain.GetWidth()*1/3), 0,0, false);
-	page1.emplace_back(DrawPersonList(scripting, "Scripting", caDevelopersCol2.GetFromTop(caDevelopersCol2.GetHeight()*2/3)));
-	page1.emplace_back(DrawPersonList(additionalArt, "Additional Art", caDevelopersCol2.GetAll()));
+	DrawPersonList(page1, scripting, "Scripting", caDevelopersCol2.GetFromTop(caDevelopersCol2.GetHeight()*2/3));
+	DrawPersonList(page1, additionalArt, "Additional Art", caDevelopersCol2.GetAll());
 
 	C4GUI::ComponentAligner caDevelopersCol3(caDevelopers.GetFromLeft(caMain.GetWidth()*1/3), 0,0, false);
-	page1.emplace_back(DrawPersonList(music, "Music", caDevelopersCol3.GetFromTop(caDevelopersCol3.GetHeight()*1/3)));
-	page1.emplace_back(DrawPersonList(voice, "Voice", caDevelopersCol3.GetFromTop(caDevelopersCol3.GetHeight()*3/10)));
-	page1.emplace_back(DrawPersonList(web, "Web", caDevelopersCol3.GetAll()));
+	DrawPersonList(page1, music, "Music", caDevelopersCol3.GetFromTop(caDevelopersCol3.GetHeight()*1/3));
+	DrawPersonList(page1, voice, "Voice", caDevelopersCol3.GetFromTop(caDevelopersCol3.GetHeight()*3/10));
+	DrawPersonList(page1, web, "Web", caDevelopersCol3.GetAll());
 
 	ElementVector page2;
 
 	C4GUI::ComponentAligner caLicenses(caMain.GetAll(), 0,0, false);
-	page2.emplace_back(DrawPersonList(libs, "Libraries", caLicenses.GetFromLeft(caLicenses.GetWidth() / 4)));
+	DrawPersonList(page2, libs, "Libraries", caLicenses.GetFromLeft(caLicenses.GetWidth() / 4));
 
 	C4Rect rect1, rect2;
 	if (Config.Graphics.ResX >= 1280)
@@ -312,25 +312,28 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"
 		rect2 = licenseTexts.GetAll();
 	}
 
-	page2.emplace_back(CreateTextWindowWithText(rect1, COPYING, "COPYING"));
-	page2.emplace_back(CreateTextWindowWithText(rect2, TRADEMARK, "TRADEMARK"));
+	CreateTextWindowWithText(page2, rect1, COPYING, "COPYING");
+	CreateTextWindowWithText(page2, rect2, TRADEMARK, "TRADEMARK");
 
 	aboutPages.emplace_back(page1);
 	aboutPages.emplace_back(page2);
-	SwitchPage(0);
+
+	for (uint32_t page = 1; page < aboutPages.size(); ++page)
+	{
+		SetPageVisibility(page, false);
+	}
 }
 
 C4StartupAboutDlg::~C4StartupAboutDlg() = default;
 
-std::pair<C4GUI::TextWindow *, C4GUI::Label *> C4StartupAboutDlg::CreateTextWindowWithText(C4Rect &rect, const std::string &text, const std::string &title)
+void C4StartupAboutDlg::CreateTextWindowWithText(std::vector<C4GUI::Element *> &page, C4Rect &rect, const std::string &text, const std::string &title)
 {
 	CStdFont &rUseFont = C4GUI::GetRes()->TextFont;
 	CStdFont &captionFont = C4GUI::GetRes()->TitleFont;
-	C4GUI::Label *label = nullptr;
 	if (!title.empty())
 	{
 		int height = captionFont.GetLineHeight();
-		label = DrawCaption(rect, title.c_str());
+		page.push_back(DrawCaption(rect, title.c_str()));
 		rect.y += height; rect.Hgt -= height;
 	}
 
@@ -344,13 +347,12 @@ std::pair<C4GUI::TextWindow *, C4GUI::Label *> C4StartupAboutDlg::CreateTextWind
 		textbox->AddTextLine(line.c_str(), &rUseFont, C4GUI_MessageFontClr, false, true);
 	}
 	textbox->UpdateHeight();
-
-	return {textbox, label};
+	page.push_back(textbox);
 }
 
-std::pair<C4GUI::TextWindow *, C4GUI::Label *> C4StartupAboutDlg::DrawPersonList(PersonList &persons, const char *title, C4Rect &rect, uint8_t flags)
+void C4StartupAboutDlg::DrawPersonList(std::vector<C4GUI::Element *> &page, PersonList &persons, const char *title, C4Rect &rect, uint8_t flags)
 {
-	return CreateTextWindowWithText(rect, persons.ToString(!(flags & PERSONLIST_NONEWLINE), true), flags & PERSONLIST_NOCAPTION ? "" : title);
+	CreateTextWindowWithText(page, rect, persons.ToString(!(flags & PERSONLIST_NONEWLINE), true), flags & PERSONLIST_NOCAPTION ? "" : title);
 }
 
 C4GUI::Label *C4StartupAboutDlg::DrawCaption(C4Rect &rect, const char *text)
@@ -373,20 +375,18 @@ void C4StartupAboutDlg::DrawElement(C4FacetEx &cgo)
 
 void C4StartupAboutDlg::SwitchPage(uint32_t number)
 {
+	SetPageVisibility(currentPage, false);
 	currentPage = number;
-	for (size_t i = 0; i < aboutPages.size(); ++i) // index is needed
-	{
-		for (auto &p : aboutPages[i])
-		{
-			if (p.first)
-				p.first->SetVisibility(currentPage == i);
-
-			if (p.second)
-				p.second->SetVisibility(currentPage == i);
-		}
-	}
-
+	SetPageVisibility(currentPage, true);
 	btnAdvance->SetVisibility(currentPage != aboutPages.size() - 1);
+}
+
+void C4StartupAboutDlg::SetPageVisibility(uint32_t number, bool visible)
+{
+	for (auto *element : aboutPages[number])
+	{
+		element->SetVisibility(visible);
+	}
 }
 
 void C4StartupAboutDlg::OnUpdateBtn(C4GUI::Control *btn)

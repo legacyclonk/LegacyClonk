@@ -35,18 +35,19 @@ protected:
 	void DrawElement(C4FacetEx &cgo) override;
 	bool KeyBack() { DoBack(); return true; }
 	void OnBackBtn(C4GUI::Control *btn) { currentPage ? SwitchPage(currentPage - 1) : DoBack();}
-	void OnAdvanceButton(C4GUI::Control *btn) { SwitchPage(1); }
+	void OnAdvanceButton(C4GUI::Control *btn) { SwitchPage(currentPage + 1); }
 	void OnUpdateBtn(C4GUI::Control *btn);
 
 private:
 	uint32_t currentPage = 0;
 	C4GUI::CallbackButton<C4StartupAboutDlg> *btnAdvance;
-	std::vector<std::vector<std::pair<C4GUI::TextWindow *, C4GUI::Label *>>> aboutPages;
+	std::vector<std::vector<C4GUI::Element *>> aboutPages;
 
-	std::pair<C4GUI::TextWindow *, C4GUI::Label *> CreateTextWindowWithText(C4Rect &rect, const std::string &text, const std::string &title = "");
-	std::pair<C4GUI::TextWindow *, C4GUI::Label *> DrawPersonList(struct PersonList &, const char *title, C4Rect &rect, uint8_t flags = 0);
+	void CreateTextWindowWithText(std::vector<C4GUI::Element *> &page, C4Rect &rect, const std::string &text, const std::string &title = "");
+	void DrawPersonList(std::vector<C4GUI::Element *> &page, struct PersonList &, const char *title, C4Rect &rect, uint8_t flags = 0);
 	C4GUI::Label *DrawCaption(C4Rect &, const char *);
 	void SwitchPage(uint32_t number);
+	void SetPageVisibility(uint32_t number, bool visible);
 public:
 
 	void DoBack(); // back to main menu
