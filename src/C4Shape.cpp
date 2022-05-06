@@ -51,6 +51,15 @@ void C4Rect::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkDefaultAdapt(Hgt, 0));
 }
 
+C4Rect C4Rect::Scaled(float scale) const noexcept
+{
+	const auto scaled = [scale](int32_t val)
+	{
+		return static_cast<int32_t>(static_cast<float>(val) * scale);
+	};
+	return {scaled(x), scaled(y), scaled(Wdt), scaled(Hgt)};
+}
+
 void C4TargetRect::Default()
 {
 	C4Rect::Default();

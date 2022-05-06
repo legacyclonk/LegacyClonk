@@ -3095,8 +3095,8 @@ void C4Object::Picture2Facet(C4FacetExSurface &cgo)
 	// set picture rect to facet
 	C4Rect fctPicRect = PictureRect;
 	if (!fctPicRect.Wdt) fctPicRect = Def->PictureRect;
-	C4Facet fctPicture;
-	fctPicture.Set(GetGraphics()->GetBitmap(Color), fctPicRect.x, fctPicRect.y, fctPicRect.Wdt, fctPicRect.Hgt);
+	const auto scaledRect = fctPicRect.Scaled(Def->Scale);
+	C4Facet fctPicture{GetGraphics()->GetBitmap(Color), scaledRect.x, scaledRect.y, scaledRect.Wdt, scaledRect.Hgt};
 
 	// use direct facet w/o own data if possible
 	if (!ColorMod && BlitMode == C4GFXBLIT_NORMAL && !pGfxOverlay)

@@ -1442,7 +1442,8 @@ void C4Def::ResetIncludeDependencies()
 
 void C4Def::Picture2Facet(C4FacetExSurface &cgo, uint32_t color, int32_t xPhase)
 {
-	cgo.Set(Graphics.GetBitmap(color), PictureRect.x + xPhase * PictureRect.Wdt, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt);
+	const auto scaledRect = C4Rect{PictureRect.x + xPhase * PictureRect.Wdt, PictureRect.y, PictureRect.Wdt, PictureRect.Hgt}.Scaled(Scale);
+	cgo.Set(Graphics.GetBitmap(color), scaledRect.x, scaledRect.y, scaledRect.Wdt, scaledRect.Hgt);
 }
 
 // C4DefList

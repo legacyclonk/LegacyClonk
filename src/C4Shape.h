@@ -84,6 +84,8 @@ public:
 		Hgt = static_cast<int32_t>(ceilf(rcfOuter.bottom) - floorf(rcfOuter.top));
 	}
 
+	C4Rect Scaled(float scale) const noexcept;
+
 	void CompileFunc(StdCompiler *pComp);
 };
 
