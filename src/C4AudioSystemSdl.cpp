@@ -69,7 +69,7 @@ public:
 		friend class C4AudioSystemSdl;
 	};
 
-	MusicFile *CreateMusicFile(const void *buf, std::size_t size) override { return new MusicFileSdl{buf, size}; }
+	MusicFile *CreateMusicFile(const void *buf, std::size_t size) override;
 
 	class SoundFileSdl;
 
@@ -139,6 +139,26 @@ void C4AudioSystemSdl::ThrowIfFailed(const char *const funcName, const bool fail
 		throw std::runtime_error(std::string{"SDL_mixer: "} +
 			funcName + " failed: " + Mix_GetError());
 	}
+}
+
+C4AudioSystem::MusicFile *C4AudioSystemSdl::CreateMusicFile(const void *buf, std::size_t size)
+{
+	// SDL_mixer cannot load RIFF MIDIs directly. Find the chunk manually.
+	const auto *bufPtr = reinterpret_cast<const char *>(buf);
+	if (size > 24 && std::memcmp(bufPtr, "RIFF", 4) == 0 && std::memcmp(bufPtr + 8, "RMIDdata", 8) == 0)
+	{
+		std::uint32_t chunkSize;
+		std::memcpy(&chunkSize, bufPtr + 16, sizeof(chunkSize));
+
+		bufPtr += 20;
+		size = chunkSize;
+		if (std::memcmp(bufPtr, "MThd", 4) != 0)
+		{
+			throw std::runtime_error{"Corrupted RIFF MIDI"};
+		}
+	}
+
+	return new MusicFileSdl{bufPtr, size};
 }
 
 void C4AudioSystemSdl::FadeOutMusic(const std::int32_t ms)
