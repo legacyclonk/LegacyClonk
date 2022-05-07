@@ -868,6 +868,8 @@ bool C4Value::Equals(const C4Value &other, C4AulScriptStrict strict) const
 			{
 				case C4V_Any:
 					return true;
+				// object enum is needed for deserialization of C4ValueHash with objects as keys!
+				case C4V_C4ObjectEnum:
 				case C4V_Int:
 					return Data.Int == other.Data.Int;
 				case C4V_C4Object:
@@ -883,7 +885,6 @@ bool C4Value::Equals(const C4Value &other, C4AulScriptStrict strict) const
 				case C4V_Map:
 					return *Data.Map == *other.Data.Map;
 				case C4V_pC4Value:
-				case C4V_C4ObjectEnum:
 					assert(!"Comparison between variables of types which should never be compared!");
 					// fallthrough
 			}
