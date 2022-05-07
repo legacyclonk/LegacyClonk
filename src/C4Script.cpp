@@ -5078,6 +5078,8 @@ static bool FnSetObjectOrder(C4AulContext *ctx, C4Object *pObjBeforeOrAfter, C4O
 	// local call/safety
 	if (!pSortObj) pSortObj = ctx->Obj; if (!pSortObj) return false;
 	if (!pObjBeforeOrAfter) return false;
+	// don’t sort an object before or after itself, it messes up the object list and causes infinite loops
+	if (pObjBeforeOrAfter == pSortObj) return false;
 	// note that no category check is done, so this call might corrupt the main list!
 	// the scripter must be wise enough not to call it for objects with different categories
 	// create object resort
