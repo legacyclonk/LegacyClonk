@@ -27,6 +27,7 @@
 #include <string>
 #include <memory>
 #include <optional>
+#include <string_view>
 
 #include <SDL_mixer.h>
 
@@ -145,21 +146,30 @@ void C4AudioSystemSdl::ThrowIfFailed(const char *const funcName, const bool fail
 C4AudioSystem::MusicFile *C4AudioSystemSdl::CreateMusicFile(const void *buf, std::size_t size)
 {
 	// SDL_mixer cannot load RIFF MIDIs directly. Find the chunk manually.
-	const auto *bufPtr = reinterpret_cast<const char *>(buf);
-	if (size > 24 && std::memcmp(bufPtr, "RIFF", 4) == 0 && std::memcmp(bufPtr + 8, "RMIDdata", 8) == 0)
-	{
-		std::uint32_t chunkSize;
-		std::memcpy(&chunkSize, bufPtr + 16, sizeof(chunkSize));
+	static constexpr std::string_view riffHeader{"RIFF"};
+	static constexpr std::string_view rmidHeader{"RMIDdata"};
+	static constexpr std::string_view midiHeader{"MThd"};
+	static constexpr std::size_t riffSizeSize{4};
+	using RiffChunkSizeType = std::uint32_t;
+	static constexpr std::size_t riffChunkSizeSize{sizeof(RiffChunkSizeType)};
 
-		bufPtr += 20;
-		size = chunkSize;
-		if (std::memcmp(bufPtr, "MThd", 4) != 0)
+	std::string_view data{reinterpret_cast<const char *>(buf), size};
+	if (size > (riffHeader.size() + riffSizeSize + rmidHeader.size() + riffChunkSizeSize + midiHeader.size())
+		&& data.starts_with(riffHeader)
+		&& data.substr(riffHeader.size() + riffSizeSize).starts_with(rmidHeader))
+	{
+		data.remove_prefix(riffHeader.size() + riffSizeSize + rmidHeader.size());
+		RiffChunkSizeType chunkSize;
+		std::memcpy(&chunkSize, data.data(), riffChunkSizeSize);
+		data.remove_prefix(riffChunkSizeSize);
+		if (!data.starts_with(midiHeader) || chunkSize > data.size())
 		{
 			throw std::runtime_error{"Corrupted RIFF MIDI"};
 		}
+		data = data.substr(0, chunkSize);
 	}
 
-	return new MusicFileSdl{bufPtr, size};
+	return new MusicFileSdl{data.data(), data.size()};
 }
 
 void C4AudioSystemSdl::FadeOutMusic(const std::int32_t ms)
