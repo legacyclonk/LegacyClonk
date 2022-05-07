@@ -24,19 +24,9 @@
 #include "C4GraphicsResource.h"
 #include "C4UpdateDlg.h"
 
-#include <fstream>
+#include <initializer_list>
 #include <sstream>
-
-namespace
-{
-	constexpr auto COPYING =
-		#include "generated/COPYING.h"
-	;
-
-	constexpr auto TRADEMARK =
-		#include "generated/TRADEMARK.h"
-	;
-}
+#include <utility>
 
 enum {
 	PERSONLIST_NOCAPTION = 1 << 0,
@@ -54,10 +44,6 @@ struct PersonList
 	virtual std::string ToString(bool newline = true, bool with_color = false) = 0;
 	virtual ~PersonList() { }
 };
-
-namespace {
-	constexpr auto SEE_LGPL = "See LGPL.txt";
-}
 
 static struct DeveloperList : public PersonList
 {
@@ -156,19 +142,6 @@ web =
 	{"Lukas Werling", "Luchs"},
 	{"Florian Graier", "Nachtfalter"},
 	{"Benedict Etzel", "B_E"}
-},
-libs =
-{
-	{"zlib", "Jean-Loup Gailly, Mark Adler"},
-	{"libpng", "Glenn Randers-Pehrson"},
-	{"jpeglib", "Independent JPEG Group"},
-	{"fmod", "Firelight Multimedia"},
-	{"freetype", "The FreeType Project"},
-	{"Allegro", "Shawn Hargreaves"},
-	{"OpenSSL", "See OpenSSL.txt"},
-	{"GTK+", SEE_LGPL},
-	{"SDL", SEE_LGPL},
-	{"SDL_mixer", SEE_LGPL}
 };
 
 template<int32_t left, int32_t top, int32_t right, int32_t bottom>
@@ -184,6 +157,91 @@ public:
 	virtual int32_t GetMarginRight() override  { return right; }
 	virtual int32_t GetMarginBottom() override { return bottom; }
 };
+
+namespace
+{
+	void AddTextWindowLines(C4GUI::TextWindow *textbox, const std::string &text)
+	{
+		CStdFont &rUseFont = C4GUI::GetRes()->TextFont;
+		std::stringstream str{text};
+		for (std::string line; std::getline(str, line, '\n'); )
+		{
+			textbox->AddTextLine(line.c_str(), &rUseFont, C4GUI_MessageFontClr, false, true);
+		}
+		textbox->UpdateHeight();
+	}
+
+	struct License
+	{
+		std::string title;
+		std::string licenseTitle;
+		std::string text;
+	};
+
+	std::vector<License> licenses
+	{
+		#include "generated/licenses.h"
+	};
+
+	class LicenseWindow : public C4GUI::Window
+	{
+	public:
+		LicenseWindow(const C4Rect &bounds, const std::vector<License> &licenses)
+		{
+			SetBounds(bounds);
+			C4GUI::ComponentAligner aligner{GetClientRect(), 0, 10};
+			tabList = new C4GUI::ListBox{aligner.GetFromLeft(aligner.GetWidth() / 5)};
+			tabList->SetSelectionChangeCallbackFn(new C4GUI::CallbackHandler<LicenseWindow>{this, &LicenseWindow::ChangeTab});
+			AddElement(tabList);
+
+			textWindow = new C4GUI::TextWindow{aligner.GetAll(), 0, 0, 0, 1000, 50000, ""};
+			AddElement(textWindow);
+
+			for (const auto &license : licenses)
+			{
+				tabList->AddElement(new LicenseTab{license.title, license.licenseTitle, license.text});
+			}
+			tabList->SelectFirstEntry(false);
+		}
+
+	private:
+		void ChangeTab(C4GUI::Element *element)
+		{
+			if (!element) return;
+
+			const auto *const tab = static_cast<LicenseTab*>(element);
+			std::string title{tab->GetTitle()};
+			const auto &licenseTitle = tab->GetLicenseTitle();
+			if (!licenseTitle.empty())
+			{
+				title += " (";
+				title += licenseTitle;
+				title += ")";
+			}
+			textWindow->ClearText(false);
+			textWindow->AddTextLine(title.c_str(), &C4GUI::GetRes()->TitleFont, C4GUI_Caption2FontClr, false, false);
+			AddTextWindowLines(textWindow, tab->GetLicenseText());
+		}
+
+		C4GUI::ListBox *tabList;
+		C4GUI::TextWindow *textWindow;
+
+		class LicenseTab : public C4GUI::Label
+		{
+		public:
+			LicenseTab(std::string title, std::string licenseTitle, std::string licenseText)
+			: C4GUI::Label{title.c_str(), 0, 0}, title{std::move(title)}, licenseTitle{std::move(licenseTitle)}, licenseText{std::move(licenseText)} {}
+			const std::string &GetTitle() const noexcept { return title; }
+			const std::string &GetLicenseTitle() const noexcept { return licenseTitle; }
+			const std::string &GetLicenseText() const noexcept { return licenseText; }
+
+		private:
+			std::string title;
+			std::string licenseTitle;
+			std::string licenseText;
+		};
+	};
+}
 
 // ------------------------------------------------
 // --- C4StartupAboutDlg
@@ -229,29 +287,11 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"
 	DrawPersonList(page1, voice, "Voice", caDevelopersCol3.GetFromTop(caDevelopersCol3.GetHeight()*3/10));
 	DrawPersonList(page1, web, "Web", caDevelopersCol3.GetAll());
 
-	ElementVector page2;
+	aboutPages.emplace_back(std::move(page1));
 
-	C4GUI::ComponentAligner caLicenses(caMain.GetAll(), 0,0, false);
-	DrawPersonList(page2, libs, "Libraries", caLicenses.GetFromLeft(caLicenses.GetWidth() / 4));
-
-	C4Rect rect1, rect2;
-	if (Config.Graphics.ResX >= 1280)
-	{
-		rect1 = caLicenses.GetFromLeft(caLicenses.GetWidth() / 2);
-		rect2 = caLicenses.GetAll();
-	}
-	else
-	{
-		C4GUI::ComponentAligner licenseTexts(caLicenses.GetAll(), 0, 0, false);
-		rect1 = licenseTexts.GetFromTop(licenseTexts.GetHeight() / 2);
-		rect2 = licenseTexts.GetAll();
-	}
-
-	CreateTextWindowWithText(page2, rect1, COPYING, "COPYING");
-	CreateTextWindowWithText(page2, rect2, TRADEMARK, "TRADEMARK");
-
-	aboutPages.emplace_back(page1);
-	aboutPages.emplace_back(page2);
+	auto licenseWindow = new LicenseWindow{caMain.GetAll(), licenses};
+	AddElement(licenseWindow);
+	aboutPages.push_back({licenseWindow});
 
 	for (uint32_t page = 1; page < aboutPages.size(); ++page)
 	{
@@ -259,11 +299,13 @@ C4StartupAboutDlg::C4StartupAboutDlg() : C4StartupDlg(LoadResStr("IDS_DLG_ABOUT"
 	}
 }
 
-C4StartupAboutDlg::~C4StartupAboutDlg() = default;
+void C4StartupAboutDlg::AddLicense(std::string title, std::string licenseTitle, std::string licenseText)
+{
+	licenses.push_back({std::move(title), std::move(licenseTitle), std::move(licenseText)});
+}
 
 void C4StartupAboutDlg::CreateTextWindowWithText(std::vector<C4GUI::Element *> &page, C4Rect &rect, const std::string &text, const std::string &title)
 {
-	CStdFont &rUseFont = C4GUI::GetRes()->TextFont;
 	CStdFont &captionFont = C4GUI::GetRes()->TitleFont;
 	if (!title.empty())
 	{
@@ -276,12 +318,7 @@ void C4StartupAboutDlg::CreateTextWindowWithText(std::vector<C4GUI::Element *> &
 	AddElement(textbox);
 	textbox->SetDecoration(false, false, nullptr, true);
 
-	std::stringstream str{text};
-	for (std::string line; std::getline(str, line, '\n'); )
-	{
-		textbox->AddTextLine(line.c_str(), &rUseFont, C4GUI_MessageFontClr, false, true);
-	}
-	textbox->UpdateHeight();
+	AddTextWindowLines(textbox, text);
 	page.push_back(textbox);
 }
 

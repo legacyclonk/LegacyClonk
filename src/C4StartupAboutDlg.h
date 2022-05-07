@@ -20,6 +20,7 @@
 #pragma once
 
 #include "C4Startup.h"
+#include <string>
 #include <vector>
 
 // startup dialog: credits
@@ -27,7 +28,8 @@ class C4StartupAboutDlg : public C4StartupDlg
 {
 public:
 	C4StartupAboutDlg();
-	~C4StartupAboutDlg() override;
+
+	static void AddLicense(std::string title, std::string licenseTitle, std::string licenseText);
 
 protected:
 	bool OnEnter() override { DoBack(); return true; }

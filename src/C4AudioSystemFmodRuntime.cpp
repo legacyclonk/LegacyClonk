@@ -16,6 +16,7 @@
 #include "C4AudioSystemFmodRuntime.h"
 
 #include "C4Application.h"
+#include "C4StartupAboutDlg.h"
 
 #include "StdHelpers.h"
 
@@ -430,6 +431,8 @@ C4AudioSystemFmodRuntime::C4AudioSystemFmodRuntime(int maxChannels)
 	{
 		throw std::runtime_error{std::string{"FMod: "} + FMOD_ErrorString(FSOUND_GetError())};
 	}
+
+	C4StartupAboutDlg::AddLicense("FMOD", "", "FMOD Sound System, copyright \xa9 Firelight Technologies Pty, Ltd., 1994-2005.");
 }
 
 C4AudioSystemFmodRuntime::~C4AudioSystemFmodRuntime()

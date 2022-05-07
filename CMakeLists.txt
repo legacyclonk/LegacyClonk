@@ -128,20 +128,47 @@ endfunction()
 # Makes a text file includable
 # https://stackoverflow.com/a/47801116
 
-function(make_includable input_file output_file)
-	file(READ ${input_file} content)
-	set(delim "for_c++_include")
-	set(content "R\"${delim}(\n${content})${delim}\"")
-	file(WRITE ${output_file} "${content}")
+function(make_includable INPUT_FILE OUTPUT_VAR)
+	set(DELIM "for_c++_include")
+	set(CHUNK_SIZE 2048)
+
+	file(READ "${INPUT_FILE}" CONTENT)
+	set(RESULT "")
+
+	string(LENGTH "${CONTENT}" LENGTH)
+	foreach (BEGIN RANGE 0 ${LENGTH} ${CHUNK_SIZE})
+		string(SUBSTRING "${CONTENT}" ${BEGIN} ${CHUNK_SIZE} PART)
+		set(PART "R\"${DELIM}(${PART})${DELIM}\" ")
+		string(APPEND RESULT "${PART}")
+	endforeach ()
+
+	set(${OUTPUT_VAR} "${RESULT}" PARENT_SCOPE)
 endfunction()
 
 # Add engine target
 
 append_filelist(CLONK_SOURCES Engine.txt)
 
+set(LICENSES
+	"COPYING@LegacyClonk@ISC"
+	"TRADEMARK@Clonk Trademark")
+
+include(deps/licenses.cmake OPTIONAL)
+
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/generated")
-make_includable(COPYING "${CMAKE_CURRENT_BINARY_DIR}/generated/COPYING.h")
-make_includable(TRADEMARK "${CMAKE_CURRENT_BINARY_DIR}/generated/TRADEMARK.h")
+set(LICENSES_TEXT "")
+set(FIRST TRUE)
+foreach (LICENSE IN LISTS LICENSES)
+	if (NOT ${FIRST})
+		string(APPEND LICENSES_TEXT ",\n")
+	endif ()
+	set(FIRST FALSE)
+
+	string(REGEX MATCH "^([^@]+)@([^@]+)(@([^@]+))?$" PARTS "${LICENSE}")
+	make_includable("${CMAKE_MATCH_1}" THIS_LICENSE_TEXT)
+	string(APPEND LICENSES_TEXT "{\"${CMAKE_MATCH_2}\", R\"(${CMAKE_MATCH_4})\", ${THIS_LICENSE_TEXT}}")
+endforeach ()
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generated/licenses.h" "${LICENSES_TEXT}")
 
 if (ENABLE_SOUND)
 	if (USE_FMOD)
