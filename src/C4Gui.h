@@ -2701,7 +2701,7 @@ private:
 	typename DlgCallback<CBClass>::ContextClickFunc pCallbackFn; // callback function
 
 public:
-	CBMenuHandler<CBClass>(CBClass *pCBTarget, typename DlgCallback<CBClass>::ContextClickFunc pCallbackFn, int32_t iaExtra = 0)
+	CBMenuHandler(CBClass *pCBTarget, typename DlgCallback<CBClass>::ContextClickFunc pCallbackFn, int32_t iaExtra = 0)
 		: MenuHandler(), pCBTarget(pCBTarget), pCallbackFn(pCallbackFn) {}
 
 	virtual void OnOK(Element *pTargetElement) override
@@ -2721,9 +2721,9 @@ private:
 	TEx Extra; // extra data
 
 public:
-	CBMenuHandlerEx<CBClass, TEx>(CBClass *pCBTarget, typename DlgCallbackEx<CBClass, const TEx &>::ContextClickFunc pCallbackFn, TEx aExtra)
+	CBMenuHandlerEx(CBClass *pCBTarget, typename DlgCallbackEx<CBClass, const TEx &>::ContextClickFunc pCallbackFn, TEx aExtra)
 		: MenuHandler(), pCBTarget(pCBTarget), pCallbackFn(pCallbackFn), Extra(aExtra) {}
-	CBMenuHandlerEx<CBClass, TEx>(CBClass *pCBTarget, typename DlgCallbackEx<CBClass, const TEx &>::ContextClickFunc pCallbackFn)
+	CBMenuHandlerEx(CBClass *pCBTarget, typename DlgCallbackEx<CBClass, const TEx &>::ContextClickFunc pCallbackFn)
 		: MenuHandler(), pCBTarget(pCBTarget), pCallbackFn(pCallbackFn), Extra() {}
 
 	void SetExtra(const TEx &e) { Extra = e; }
@@ -2744,7 +2744,7 @@ private:
 	typename DlgCallback<CBClass>::ContextFunc pCallbackFn; // callback function
 
 public:
-	CBContextHandler<CBClass>(CBClass *pCBTarget, typename DlgCallback<CBClass>::ContextFunc pCallbackFn)
+	CBContextHandler(CBClass *pCBTarget, typename DlgCallback<CBClass>::ContextFunc pCallbackFn)
 		: ContextHandler(), pCBTarget(pCBTarget), pCallbackFn(pCallbackFn) {}
 
 		virtual bool OnContext(Element *pOnElement, int32_t iX, int32_t iY) override
