@@ -129,18 +129,7 @@ To checked_cast(From from)
 
 	if constexpr (std::numeric_limits<From>::max() > std::numeric_limits<To>::max())
 	{
-		const auto signMatchedFrom = ([](From from) {
-			if constexpr (std::is_unsigned_v<To>)
-			{
-				// we know from above that from is non-negative, so the unsigned cast is safe
-				return static_cast<std::make_unsigned_t<From>>(from);
-			}
-			else
-			{
-				return from;
-			}
-		})(from);
-		if (signMatchedFrom > std::numeric_limits<To>::max())
+		if (std::cmp_greater(from, std::numeric_limits<To>::max()))
 		{
 			throw std::runtime_error{"Conversion of value requested that is bigger than the target-type maximum"};
 		}
