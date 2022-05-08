@@ -126,7 +126,7 @@
 #define C4CFN_PlayerFiles     "*.c4p"
 #define C4CFN_MaterialFiles   "*.c4m"
 #define C4CFN_ObjectInfoFiles "*.c4i"
-#define C4CFN_SoundFiles      "*.wav|*.ogg"
+#define C4CFN_SoundFiles      "*.wav|*.ogg|*.mp3"
 #define C4CFN_PNGFiles        "*.png"
 #define C4CFN_BitmapFiles     "*.bmp"
 #define C4CFN_ScenarioFiles   "*.c4s"

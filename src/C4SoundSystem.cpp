@@ -108,7 +108,7 @@ void C4SoundSystem::LoadEffects(C4Group &group)
 	if (!Application.AudioSystem) return;
 
 	// Process segmented list of file types
-	for (const auto fileType : { "*.wav", "*.ogg" })
+	for (const auto fileType : { "*.wav", "*.ogg", "*.mp3" })
 	{
 		char filename[_MAX_FNAME + 1];
 		// Search all sound files in group
