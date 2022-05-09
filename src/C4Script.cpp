@@ -41,6 +41,7 @@
 
 #include <array>
 #include <cinttypes>
+#include <concepts>
 #include <numbers>
 #include <optional>
 #include <type_traits>
@@ -3117,18 +3118,13 @@ static C4ValueInt FnPow(C4AulContext *cthr, C4ValueInt iVal1, C4ValueInt iVal2)
 	return Pow(iVal1, iVal2);
 }
 
-static C4ValueInt FnSin(C4AulContext *cthr, C4ValueInt iAngle, C4ValueInt iRadius, Default<C4ValueInt, 1, true> iPrec)
+template<C4Fixed Function(const C4Fixed &)>
+static C4ValueInt FnCircle(C4AulContext *const context, C4ValueInt angle, const C4ValueInt radius, Default<C4ValueInt, 1, true> precision)
 {
-	// Precalculate the modulo operation so the C4Fixed argument to Sin does not overflow
-	iAngle %= 360 * iPrec;
+	// Precalculate the modulo operation so the C4Fixed argument does not overflow
+	angle %= 360 * precision;
 	// Let itofix and fixtoi handle the division and multiplication because that can handle higher ranges
-	return fixtoi(Sin(itofix(iAngle, iPrec)), iRadius);
-}
-
-static C4ValueInt FnCos(C4AulContext *cthr, C4ValueInt iAngle, C4ValueInt iRadius, Default<C4ValueInt, 1, true> iPrec)
-{
-	iAngle %= 360 * iPrec;
-	return fixtoi(Cos(itofix(iAngle, iPrec)), iRadius);
+	return fixtoi(Function(itofix(angle, precision)), radius);
 }
 
 static C4ValueInt FnSqrt(C4AulContext *cthr, C4ValueInt iValue)
@@ -3164,28 +3160,14 @@ static C4ValueInt FnAngle(C4AulContext *cthr, C4ValueInt iX1, C4ValueInt iY1, C4
 	return iAngle;
 }
 
-static C4ValueInt FnArcSin(C4AulContext *cthr, C4ValueInt iVal, C4ValueInt iRadius)
+template<double Function(double)>
+static C4ValueInt FnArcus(C4AulContext *const ctx, const C4ValueInt value, const RequiredNonZero<C4ValueInt, 0> radius)
 {
-	// safety
-	if (!iRadius) return 0;
-	if (iVal > iRadius) return 0;
-	// calc arcsin
-	double f1 = iVal;
-	f1 = asin(f1 / iRadius) * 180.0 * std::numbers::inv_pi;
-	// return rounded angle
-	return static_cast<C4ValueInt>(floor(f1 + 0.5));
-}
+	if (value > radius) return 0;
 
-static C4ValueInt FnArcCos(C4AulContext *cthr, C4ValueInt iVal, C4ValueInt iRadius)
-{
-	// safety
-	if (!iRadius) return 0;
-	if (iVal > iRadius) return 0;
-	// calc arccos
-	double f1 = iVal;
-	f1 = acos(f1 / iRadius) * 180.0 * std::numbers::inv_pi;
+	const double result{Function(static_cast<double>(value) / *radius) * 180.0 * std::numbers::inv_pi};
 	// return rounded angle
-	return static_cast<C4ValueInt>(floor(f1 + 0.5));
+	return static_cast<C4ValueInt>(std::floor(result + 0.5));
 }
 
 static C4ValueInt FnMin(C4AulContext *cthr, C4ValueInt iVal1, C4ValueInt iVal2)
@@ -6551,11 +6533,11 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "Div",                             FnDiv,                             false);
 	AddFunc(pEngine, "Mod",                             FnMod,                             false);
 	AddFunc(pEngine, "Pow",                             FnPow,                             false);
-	AddFunc(pEngine, "Sin",                             FnSin);
-	AddFunc(pEngine, "Cos",                             FnCos);
+	AddFunc(pEngine, "Sin",                             FnCircle<Sin>);
+	AddFunc(pEngine, "Cos",                             FnCircle<Cos>);
 	AddFunc(pEngine, "Sqrt",                            FnSqrt);
-	AddFunc(pEngine, "ArcSin",                          FnArcSin);
-	AddFunc(pEngine, "ArcCos",                          FnArcCos);
+	AddFunc(pEngine, "ArcSin",                          FnArcus<std::asin>);
+	AddFunc(pEngine, "ArcCos",                          FnArcus<std::acos>);
 	AddFunc(pEngine, "LessThan",                        FnLessThan,                        false);
 	AddFunc(pEngine, "GreaterThan",                     FnGreaterThan,                     false);
 	AddFunc(pEngine, "BoundBy",                         FnBoundBy);
