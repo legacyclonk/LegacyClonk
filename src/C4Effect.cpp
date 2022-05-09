@@ -25,6 +25,8 @@
 #include <C4Game.h>
 #include <C4Wrappers.h>
 
+#include <numbers>
+
 void C4Effect::AssignCallbackFunctions()
 {
 	C4AulScript *pSrcScript = GetCallbackScript();
@@ -684,8 +686,8 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	float fRot[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 	if (pObj->r && pObj->Def->Rotateable)
 	{
-		fRot[0] =  cosf(static_cast<float>(pObj->r * M_PI / 180.0));
-		fRot[1] = -sinf(static_cast<float>(pObj->r * M_PI / 180.0));
+		fRot[0] =  cosf(static_cast<float>(pObj->r * std::numbers::pi_v<float> / 180.0));
+		fRot[1] = -sinf(static_cast<float>(pObj->r * std::numbers::pi_v<float> / 180.0));
 		fRot[2] = -fRot[1];
 		fRot[3] = fRot[0];
 		// rotated objects usually better burn from the center

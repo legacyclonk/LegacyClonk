@@ -34,6 +34,7 @@
 #include <cassert>
 #include <cctype>
 #include <cstring>
+#include <numbers>
 
 // Basics
 
@@ -50,7 +51,7 @@ int32_t Distance(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2)
 
 int Angle(int iX1, int iY1, int iX2, int iY2)
 {
-	int iAngle = static_cast<int>(180.0 * atan2f(float(Abs(iY1 - iY2)), float(Abs(iX1 - iX2))) / M_PI);
+	int iAngle = static_cast<int>(180.0 * atan2f(float(Abs(iY1 - iY2)), float(Abs(iX1 - iX2))) * std::numbers::inv_pi_v<float>);
 	if (iX2 > iX1)
 	{
 		if (iY2 < iY1) iAngle = 90 - iAngle; else iAngle = 90 + iAngle;

@@ -25,6 +25,8 @@
 
 #include <Bitmap256.h>
 
+#include <numbers>
+
 C4MapCreator::C4MapCreator()
 {
 	Reset();
@@ -72,7 +74,7 @@ void C4MapCreator::Create(CSurface8 *sfcMap,
 	C4SLandscape &rLScape, C4TextureMap &rTexMap,
 	bool fLayers, int32_t iPlayerNum)
 {
-	double fullperiod = 20.0 * M_PI;
+	double fullperiod = 20.0 * std::numbers::pi;
 	uint8_t ccol;
 	int32_t cx, cy;
 
@@ -113,7 +115,7 @@ void C4MapCreator::Create(CSurface8 *sfcMap,
 
 		cy_natural = rnd_cy * natural / 100.0;
 		cy_curve = sin(fullperiod * period / 100.0 * cx / static_cast<double>(MapWdt) +
-			2.0 * M_PI * phase / 100.0) * amplitude / 100.0;
+			2.0 * std::numbers::pi * phase / 100.0) * amplitude / 100.0;
 
 		cy = level0 + BoundBy(static_cast<int32_t>(maxrange * (cy_curve + cy_natural)),
 			-maxrange, +maxrange);

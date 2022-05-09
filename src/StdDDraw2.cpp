@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <cmath>
+#include <numbers>
 
 // Global access pointer
 CStdDDraw *lpDDraw = nullptr;
@@ -914,7 +915,7 @@ bool CStdDDraw::BlitRotate(C4Surface *sfcSource, int fx, int fy, int fwdt, int f
 
 	default:
 		// Calculate rotation matrix
-		dang = M_PI * iAngle / 18000.0;
+		dang = std::numbers::pi * iAngle / 18000.0;
 		mtx[0] = cos(dang); mtx[1] = -sin(dang);
 		mtx[2] = sin(dang); mtx[3] = cos(dang);
 		// Blit source rect
