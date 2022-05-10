@@ -25,6 +25,7 @@
 
 #ifdef _WIN32
 #include "C4Windows.h"
+#include <numbers>
 #include <windowsx.h>
 
 static uint32_t POV2Position(DWORD dwPOV, bool fVertical)
@@ -37,7 +38,7 @@ static uint32_t POV2Position(DWORD dwPOV, bool fVertical)
 	// Angle: convert to linear value -100 to +100
 	else
 	{
-		const auto angleRad = dwPOV * M_PI / (180.0 * 100);
+		const auto angleRad = dwPOV * std::numbers::pi / (180.0 * 100);
 		dAxis = (fVertical ? -cos(angleRad) : sin(angleRad)) * 100.0;
 	}
 	// Gamepad configuration wants unsigned and gets 0 to 200
