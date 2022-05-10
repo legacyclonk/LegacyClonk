@@ -5888,6 +5888,7 @@ template<typename T>
 struct Condition
 {
 	static constexpr inline bool HasCondition = false;
+	using FailType = bool; // for MSVC?
 };
 
 template<typename T, auto failVal>
