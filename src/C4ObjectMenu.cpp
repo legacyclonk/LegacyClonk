@@ -129,7 +129,6 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 	int32_t cnt, iCount;
 	C4Def *pDef;
 	C4Player *pPlayer;
-	C4IDList ListItems;
 	C4Object *pTarget;
 	C4Facet fctTarget;
 
