@@ -3691,6 +3691,13 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 			}
 			break;
 		case COM_Down_D:  ObjectComUnGrab(this); break;
+		case COM_Throw_D:
+			// avoid breaking objects with non-default behavior on ControlThrow
+			if (!fGrabControlOverload || !Action.Target || Action.Target->Def->Script.GetSFunc(FormatString(PSF_Control, ComName(COM_Throw)).getData()))
+			{
+				break;
+			}
+			[[fallthrough]];
 		case COM_Throw:   PlayerObjectCommand(Owner, C4CMD_Drop); break;
 		default:
 			AutoStopUpdateComDir();
