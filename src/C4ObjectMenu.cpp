@@ -132,6 +132,22 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 	C4Object *pTarget;
 	C4Facet fctTarget;
 
+	const auto selectedItem = GetSelectedItem();
+	const auto checkIDSelection = [selectedID = selectedItem ? selectedItem->GetC4ID() : C4ID_None, this]
+	{
+		if (selectedID == C4ID_None) return;
+
+		for (std::int32_t i = 0; i < GetItemCount(); ++i)
+		{
+			const auto item = GetItem(i);
+			if (item && item->GetC4ID() == selectedID)
+			{
+				Selection = i;
+				return;
+			}
+		}
+	};
+
 	// Refill
 	switch (Identification)
 	{
@@ -168,6 +184,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				// facet taken over (arrg!)
 				fctSymbol.Default();
 			}
+			checkIDSelection();
 		}
 		break;
 
@@ -238,6 +255,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				Add(szCaption, fctSymbol, szCommand, iCount, nullptr, pDef->GetDesc(), pDef->id, szCommand2, true, iSellValue);
 				fctSymbol.Default();
 			}
+			checkIDSelection();
 		}
 		// Success
 		break;
@@ -288,6 +306,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				fctSymbol.Default();
 			}
 		}
+		checkIDSelection();
 		break;
 
 	case C4MN_Context:
