@@ -2011,7 +2011,7 @@ void C4Command::Buy()
 	C4Def *pDef = C4Id2Def(Data);
 	if (!pDef) { Finish(); return; }
 	// Material not available for purchase at base: fail
-	if (!Game.Players.Get(Target->Base)->HomeBaseMaterial.GetIDCount(Data))
+	if (Game.Players.Get(Target->Base)->HomeBaseMaterial.GetIDCount(Data) <= 0)
 	{
 		Finish(false, FormatString(LoadResStr("IDS_PLR_NOTAVAIL"), pDef->GetName()).getData());
 		return;
