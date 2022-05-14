@@ -3248,7 +3248,7 @@ bool C4Object::ContainedControl(uint8_t byCom)
 		}
 		[[fallthrough]];
 	case COM_Throw:
-		PlayerObjectCommand(Owner, C4CMD_Throw);
+		PlayerObjectCommand(Owner, C4CMD_Throw) && ExecuteCommand();
 		break;
 	case COM_Up:
 		if (ValidPlr(Contained->Base))
