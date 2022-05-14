@@ -696,7 +696,10 @@ void C4Command::Grab()
 		{
 			// Grab
 			cObj->Action.ComDir = COMD_Stop;
-			ObjectComGrab(cObj, Target);
+			if (ObjectComGrab(cObj, Target))
+			{
+				Finish(true);
+			}
 		}
 		else
 		{
@@ -1151,18 +1154,26 @@ void C4Command::Get()
 		Finish(); return;
 	}
 
-	// Target collected
-	if (Target->Contained == cObj)
+	const auto successOrNext = [this]
 	{
 		// Get-count specified: decrease count and continue with next object
 		if (Tx._getInt() > 1)
 		{
-			Target = nullptr; Tx--; return;
+			Target = nullptr; Tx--; return true;
 		}
-	// We're done
+		// We're done
 		else
 		{
-			cObj->Action.ComDir = COMD_Stop; Finish(true); return;
+			cObj->Action.ComDir = COMD_Stop; Finish(true); return true;
+		}
+		return false;
+	};
+	// Target collected
+	if (Target->Contained == cObj)
+	{
+		if (successOrNext())
+		{
+			return;
 		}
 	}
 
@@ -1213,7 +1224,10 @@ void C4Command::Get()
 		// In same container: grab target
 		if (cObj->Contained == Target->Contained)
 		{
-			GetTryEnter();
+			if (GetTryEnter())
+			{
+				successOrNext();
+			}
 			// Done
 			return;
 		}
@@ -1230,7 +1244,10 @@ void C4Command::Get()
 			// Grabbing target container
 			if ((cObj->GetProcedure() == DFA_PUSH) && (cObj->Action.Target == Target->Contained))
 			{
-				GetTryEnter();
+				if (GetTryEnter())
+				{
+					successOrNext();
+				}
 				// Done
 				return;
 			}
@@ -1265,7 +1282,11 @@ void C4Command::Get()
 			// stop here
 			cObj->Action.ComDir = COMD_Stop;
 			// try getting the object
-			if (GetTryEnter()) return;
+			if (GetTryEnter())
+			{
+				successOrNext();
+				return;
+			}
 		}
 
 		// Target not in range
@@ -1406,18 +1427,26 @@ void C4Command::Put() // Notice: Put command is currently using Ty as an interna
 			Finish(true); return;
 		}
 
-	// Thing is in target
-	if (Target2->Contained == Target)
+	const auto successOrNext = [this]
 	{
 		// Put-count specified: decrease count and continue with next object
 		if (Tx._getInt() > 1)
 		{
-			Target2 = nullptr; Tx--; return;
+			Target2 = nullptr; Tx--; return true;
 		}
-	// We're done
+		// We're done
 		else
 		{
-			Finish(true); return;
+			Finish(true); return true;
+		}
+		return false;
+	};
+	// Thing is in target
+	if (Target2->Contained == Target)
+	{
+		if (successOrNext())
+		{
+			return;
 		}
 	}
 
@@ -1456,7 +1485,13 @@ void C4Command::Put() // Notice: Put command is currently using Ty as an interna
 	{
 		// Try to put
 		if (!ObjectComPut(cObj, Target, Target2))
+		{
 			Finish(); // Putting failed
+		}
+		else
+		{
+			successOrNext();
+		}
 		return;
 	}
 
