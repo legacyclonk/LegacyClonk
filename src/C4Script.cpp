@@ -75,7 +75,7 @@ static void StrictError(C4AulContext *const context, C4AulScriptStrict errorSinc
 
 const C4ValueInt MaxFnStringParLen = 500;
 
-inline const static char *FnStringPar(C4String *pString)
+inline const static char *FnStringPar(const C4String *const pString)
 {
 	return pString ? pString->Data.getData() : "";
 }
