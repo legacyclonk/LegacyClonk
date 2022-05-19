@@ -471,7 +471,7 @@ bool CStdApp::Copy(std::string_view text, bool fClipboard)
 
 	// lock the handle and copy the text to the buffer.
 	std::lock_guard guard{handle};
-	memcpy(handle.data, text.data(), text.size());
+	if (!text.empty()) memcpy(handle.data, text.data(), text.size());
 	handle.data[text.size()] = '\0';
 
 	// place the handle on the clipboard.
