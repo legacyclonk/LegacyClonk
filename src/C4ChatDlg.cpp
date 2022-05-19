@@ -520,8 +520,6 @@ void C4ChatControl::OnConnectBtn(C4GUI::Control *btn)
 		GetDlg()->SetFocus(pEdtLoginChannel, false);
 		return;
 	}
-	if (!sPass.getLength()) sPass.Clear();
-	if (!sChannel.getLength()) sChannel.Clear();
 	// store back config values
 	SCopy(sNick.getData(), Config.IRC.Nick, CFG_MaxString);
 	SCopy(sRealName.getData(), Config.IRC.RealName, CFG_MaxString);
