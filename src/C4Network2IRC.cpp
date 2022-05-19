@@ -693,10 +693,11 @@ void C4Network2IRCClient::OnMessage(bool fNotice, const char *szSender, const ch
 			StdStrBuf CTCP; CTCP.Copy(pMsg, pEnd - pMsg);
 			StdStrBuf Tag; Tag.CopyUntil(CTCP.getData(), ' ');
 			const char *szData = SSearch(CTCP.getData(), " ");
+			if (!szData) szData = "";
 			StdStrBuf Sender; Sender.CopyUntil(szSender, '!');
 			// Process
 			if (SEqualNoCase(Tag.getData(), "ACTION"))
-				PushMessage(MSG_Action, szSender, szTarget, szData ? szData : "");
+				PushMessage(MSG_Action, szSender, szTarget, szData);
 			if (SEqualNoCase(Tag.getData(), "VERSION") && !fNotice)
 				Send("NOTICE", FormatString("%s :%cVERSION " C4ENGINECAPTION ":" C4VERSION ":" C4_OS "%c",
 					Sender.getData(), X_DELIM, X_DELIM).getData());
