@@ -17,6 +17,7 @@
 
 #include "C4Application.h"
 #include "C4StartupAboutDlg.h"
+#include "C4Windows.h"
 
 #include "StdHelpers.h"
 
@@ -31,8 +32,7 @@
 
 #include <utility>
 
-// order matters
-#include <windows.h>
+// Must be included after Windows.h
 #include <libloaderapi.h>
 
 #ifndef _WIN64
