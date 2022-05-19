@@ -80,7 +80,7 @@ public:
 	C4ParticleDefCore();
 	void CompileFunc(StdCompiler *pComp);
 
-	bool Compile(char *szSource, const char *szName); // compile from def file
+	bool Compile(const char *szSource, const char *szName); // compile from def file
 };
 
 // one particle definition

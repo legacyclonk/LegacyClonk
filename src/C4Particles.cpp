@@ -73,7 +73,7 @@ C4ParticleDefCore::C4ParticleDefCore() :
 	Parallaxity[0] = Parallaxity[1] = 100;
 }
 
-bool C4ParticleDefCore::Compile(char *szSource, const char *szName)
+bool C4ParticleDefCore::Compile(const char *szSource, const char *szName)
 {
 	return CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(*this, "Particle"),
 		StdStrBuf::MakeRef(szSource), szName);
