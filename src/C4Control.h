@@ -23,6 +23,8 @@
 #include "C4PlayerInfo.h"
 #include "C4Client.h"
 
+#include <string>
+
 class C4Record;
 
 // *** control base classes

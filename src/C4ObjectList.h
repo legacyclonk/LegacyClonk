@@ -23,6 +23,7 @@
 
 #include "C4Id.h"
 #include "C4Def.h"
+#include "C4ObjectInfo.h"
 #include "C4Region.h"
 
 class C4Object;

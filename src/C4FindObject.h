@@ -17,6 +17,7 @@
 #pragma once
 
 #include "C4Id.h"
+#include "C4Sector.h"
 #include "C4Shape.h"
 #include "C4Value.h"
 #include "C4Aul.h"

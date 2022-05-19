@@ -19,6 +19,7 @@
 #pragma once
 
 #include "C4ObjectList.h"
+#include "C4Player.h"
 #include "C4Region.h"
 
 const int32_t C4MC_Button_None = 0,

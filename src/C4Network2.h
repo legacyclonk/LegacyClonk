@@ -36,6 +36,7 @@
 #endif
 
 #include <cstdint>
+#include <optional>
 
 // lobby predef - no need to include lobby in header just for the class ptr
 namespace C4GameLobby { class MainDlg; class Countdown; }

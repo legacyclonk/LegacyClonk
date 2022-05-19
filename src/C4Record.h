@@ -23,6 +23,7 @@ class C4Record;
 
 #include "C4Group.h"
 #include "C4Control.h"
+#include "CStdFile.h"
 
 #ifdef DEBUGREC
 extern int DoNoDebugRec; // debugrec disable counter in C4Record.cpp
