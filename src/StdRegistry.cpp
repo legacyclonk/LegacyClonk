@@ -483,7 +483,7 @@ void StdCompilerConfigWrite::CreateKey(HKEY hParent)
 		0, nullptr, REG_OPTION_NON_VOLATILE,
 		KEY_WRITE, nullptr,
 		&pKey->Handle, nullptr) != ERROR_SUCCESS)
-		excCorrupt(0, FormatString("Could not create key %s!", pKey->Name.getData()).getData());
+		excCorrupt("Could not create key %s!", pKey->Name.getData());
 }
 
 template<typename T>
@@ -496,7 +496,7 @@ void StdCompilerConfigWrite::WriteInteger(T value)
 	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
 		0, type, reinterpret_cast<const BYTE *>(&value),
 		sizeof(value)) != ERROR_SUCCESS)
-		excCorrupt(0, FormatString("Could not write key %s!", pKey->Name.getData()).getData());
+		excCorrupt("Could not write key %s!", pKey->Name.getData());
 }
 
 void StdCompilerConfigWrite::WriteDWord(uint32_t iVal)
@@ -510,7 +510,7 @@ void StdCompilerConfigWrite::WriteString(const char *szString)
 	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
 		0, REG_SZ, reinterpret_cast<const BYTE *>(szString),
 		checked_cast<DWORD>(strlen(szString) + 1)) != ERROR_SUCCESS)
-		excCorrupt(0, FormatString("Could not write key %s!", pKey->Name.getData()).getData());
+		excCorrupt("Could not write key %s!", pKey->Name.getData());
 }
 
 // *** StdCompilerConfigRead
@@ -581,7 +581,7 @@ bool StdCompilerConfigRead::FollowName(const char *szName)
 
 bool StdCompilerConfigRead::Separator(Sep eSep)
 {
-	excCorrupt(0, "Separators not supported by registry compiler!");
+	excCorrupt("Separators not supported by registry compiler!");
 	return false;
 }
 
