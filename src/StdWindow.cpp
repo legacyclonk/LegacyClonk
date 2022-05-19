@@ -236,8 +236,6 @@ CStdApp::~CStdApp()
 	CloseHandle(hTimerEvent); CloseHandle(hNetworkEvent);
 }
 
-char *LoadResStr(const char *id);
-
 void CStdApp::Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine)
 {
 	// Set instance vars
