@@ -573,7 +573,7 @@ bool CStdApp::Copy(std::string_view text, bool fClipboard)
 	XSetSelectionOwner(dpy, fClipboard ? ClipboardAtoms[0] : XA_PRIMARY, pWindow->wnd, Priv->LastEventTime);
 	Window owner = XGetSelectionOwner(dpy, fClipboard ? ClipboardAtoms[0] : XA_PRIMARY);
 	if (owner != pWindow->wnd) return false;
-	d.Text.assign(text.data());
+	d.Text = text;
 	return true;
 }
 
