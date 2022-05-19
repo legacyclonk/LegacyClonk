@@ -734,7 +734,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 		excNotFound("Could not read value %s!", pKey->Name.getData()); return StdStrBuf();
 	}
 	// Allocate string
-	StdStrBuf Result; Result.SetLength(iSize - 1);
+	StdStrBuf Result; Result.SetLength(iSize);
 	// Read
 	if (RegQueryValueEx(pKey->Parent->Handle, pKey->Name.getData(),
 		0, nullptr,
@@ -743,11 +743,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 	{
 		excNotFound("Could not read value %s!", pKey->Name.getData()); return StdStrBuf();
 	}
-	// Check size
-	if (strlen(Result.getData()) + 1 != iSize)
-	{
-		excCorrupt("Wrong size of a string!"); return StdStrBuf();
-	}
+	Result.SetLength(strlen(Result.getData()));
 	return Result;
 }
 
