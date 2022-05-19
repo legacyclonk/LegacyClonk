@@ -239,7 +239,7 @@ void CStdApp::HandleSDLEvent(SDL_Event &event)
 
 bool CStdApp::Copy(std::string_view text, bool)
 {
-	return !SDL_SetClipboardText(text.data());
+	return !SDL_SetClipboardText(std::string{text}.c_str());
 }
 
 std::string CStdApp::Paste(bool)
