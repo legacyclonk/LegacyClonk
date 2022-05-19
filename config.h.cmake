@@ -1,3 +1,5 @@
+#pragma once
+
 #cmakedefine DEBUGREC 1
 #cmakedefine ENABLE_SOUND 1
 #cmakedefine USE_CONSOLE 1
