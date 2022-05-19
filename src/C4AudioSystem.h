@@ -53,7 +53,6 @@ public:
 		MusicFile() = default;
 
 	public:
-		//MusicFile(const void *buf, std::size_t size);
 		MusicFile(const MusicFile &) = delete;
 		MusicFile(MusicFile &&) = default;
 		virtual ~MusicFile() = default;
@@ -68,8 +67,7 @@ public:
 		SoundChannel() = default;
 
 	public:
-		/*// Plays sound file. If supported by audio library, playback starts paused.
-		SoundChannel(const SoundFile &sound, bool loop);*/
+		// Plays sound file. If supported by audio library, playback starts paused.
 		SoundChannel(const SoundChannel &) = delete;
 		SoundChannel(SoundChannel &&) = delete;
 		virtual ~SoundChannel() = default;
