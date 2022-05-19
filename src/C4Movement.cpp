@@ -141,7 +141,6 @@ void C4Object::TargetBounds(int32_t &ctco, int32_t limit_low, int32_t limit_hi, 
 			ydir = 0;
 		}
 
-
 		// do calls
 		Contact(cnat_low);
 	}
@@ -158,7 +157,6 @@ void C4Object::TargetBounds(int32_t &ctco, int32_t limit_low, int32_t limit_hi, 
 		{
 			ydir = 0;
 		}
-
 
 		// do calls
 		Contact(cnat_hi);

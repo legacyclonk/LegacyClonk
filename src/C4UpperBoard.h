@@ -23,7 +23,8 @@ class C4UpperBoard
 	friend class C4GraphicsSystem;
 
 public:
-	enum DisplayMode : int32_t {
+	enum DisplayMode : int32_t
+	{
 		Hide = 0,
 		Full = 1,
 		Small = 2,

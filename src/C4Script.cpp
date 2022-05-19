@@ -6178,7 +6178,8 @@ public:
 };
 
 template<std::size_t ParCount, C4V_Type RetType>
-class C4AulEngineFuncParArray : public C4AulEngineFuncHelper<ParCount> {
+class C4AulEngineFuncParArray : public C4AulEngineFuncHelper<ParCount>
+{
 	using Func = C4Value(&)(C4AulContext *context, const C4Value *pars);
 	Func func;
 

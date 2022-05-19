@@ -43,7 +43,6 @@ public:
 	bool Save(C4Group &hGroup);
 };
 
-
 class C4UpdatePackage : public C4UpdatePackageCore
 {
 public:

@@ -91,7 +91,8 @@ void C4StartupOptionsDlg::ResChangeConfirmDlg::UpdateText()
 
 // C4StartupOptionsDlg::ScaleEdit
 
-namespace {
+namespace
+{
 	unsigned long toUl(const char *str, unsigned long onFail)
 	{
 		char *endPtr = nullptr;
@@ -581,10 +582,12 @@ bool C4StartupOptionsDlg::EditConfig::GetControlSize(int *piWdt, int *piHgt, con
 	return BaseEdit::GetControlSize(piWdt, piHgt, szForText, pUseFont, fMultiline);
 }
 
-struct {
+struct
+{
 	const char *caption;
 	DisplayMode mode;
-} static const DisplayModes[] = {
+} static const DisplayModes[] =
+{
 	{"IDS_MSG_FULLSCREEN", DisplayMode::Fullscreen},
 	{"IDS_MSG_WINDOW", DisplayMode::Window}
 };

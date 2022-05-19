@@ -408,7 +408,7 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 						{
 							if (newSameGraphics)
 							{
- 								item->Symbol.Surface = pDef->Graphics.GetBitmap();
+								item->Symbol.Surface = pDef->Graphics.GetBitmap();
 							}
 							else
 							{

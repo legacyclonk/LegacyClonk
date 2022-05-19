@@ -84,7 +84,7 @@ void ClearResStrTable()
 bool IsResStrTableLoaded() { return Table.has_value(); }
 
 static std::string result;
-static const char *GetResStr(const char *id, const std::optional<ResTable>& Table)
+static const char *GetResStr(const char *id, const std::optional<ResTable> &Table)
 {
 	if (!Table.has_value()) return "Language string table not loaded.";
 	const char *r = Table->GetEntry(id);

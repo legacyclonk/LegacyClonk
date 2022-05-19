@@ -26,7 +26,8 @@
 
 #include <stdexcept>
 
-namespace {
+namespace
+{
 	void ThrowIfFailed(const char *const funcName, const bool failed)
 	{
 		if (failed)

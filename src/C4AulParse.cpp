@@ -251,7 +251,7 @@ void C4AulParseState::Strict2Error(const char *message, const char *identifier)
 	return StrictError(message, C4AulScriptStrict::STRICT2, identifier);
 }
 
-C4AulParseError::C4AulParseError(const char* message, const char *identifier, bool warn)
+C4AulParseError::C4AulParseError(const char *message, const char *identifier, bool warn)
 {
 	sMessage.Format("%s: %s%s", warn ? "WARNING" : "ERROR", message, identifier ? identifier : "");
 }

@@ -298,7 +298,8 @@ bool C4GraphicsResource::LoadCursorGfx()
 	// old-style cursor file overloads new-stye, because old scenarios might want to have their own cursors
 	if (!LoadFile(fctMouseCursor, "Cursor", Files, C4FCT_Height, C4FCT_Full, true))
 	{
-		struct CursorSize {
+		struct CursorSize
+		{
 			const char *filename;
 			std::size_t facetIndex;
 		};

@@ -61,7 +61,8 @@ private:
 	C4GUI::Button *pBtnExit, *pBtnContinue, *pBtnRestart, *pBtnNextMission;
 	bool fIsNetDone; // set if league is evaluated and round results arrived
 	bool fIsQuitBtnVisible; // quit button available? set if not host or when fIsNetDone
-	enum NextMissionMode {
+	enum NextMissionMode
+	{
 		None,
 		Restart,
 		NextMission

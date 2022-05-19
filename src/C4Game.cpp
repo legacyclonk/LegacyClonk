@@ -1093,7 +1093,7 @@ C4Object *C4Game::NewObject(C4Def *pDef, C4Object *pCreator,
 		return nullptr;
 	}
 
-	// ---- From now on, object is ready to be used in scripts!
+	// From now on, object is ready to be used in scripts!
 	// Construction callback
 	C4AulParSet pars(C4VObj(pCreator));
 	objPtr->Call(PSF_Construction, pars);

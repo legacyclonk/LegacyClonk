@@ -239,7 +239,8 @@ typedef union _XEvent XEvent;
 typedef struct _XDisplay Display;
 #endif
 
-enum class DisplayMode {
+enum class DisplayMode
+{
 	Fullscreen,
 	Window
 };

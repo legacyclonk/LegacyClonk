@@ -48,7 +48,7 @@ void C4ValueHash::DenumeratePointers()
 
 void C4ValueHash::removeValue(C4Value *value)
 {
-	const auto erase = [this](const auto& it)
+	const auto erase = [this](const auto &it)
 	{
 		keyOrder.erase(it->second.keyOrderIterator);
 		map.erase(it);
