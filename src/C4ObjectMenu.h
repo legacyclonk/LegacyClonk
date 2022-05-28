@@ -48,6 +48,7 @@ class C4ObjectMenu : public C4Menu
 {
 public:
 	C4ObjectMenu();
+	~C4ObjectMenu();
 
 	virtual void Default() override;
 
@@ -57,6 +58,7 @@ protected:
 	C4Object *Object;
 	C4Object *ParentObject;
 	C4Object *RefillObject;
+	C4Object **ClearObjectPtr{nullptr};
 	int32_t RefillObjectContentsCount;
 	CallbackType eCallbackType;
 	bool UserMenu; // set for script created menus; user menus do CloseQuery and MenuSelection callbacks

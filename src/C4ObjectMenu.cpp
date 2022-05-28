@@ -35,6 +35,14 @@ C4ObjectMenu::C4ObjectMenu() : C4Menu()
 	Default();
 }
 
+C4ObjectMenu::~C4ObjectMenu()
+{
+	if (ClearObjectPtr)
+	{
+		*ClearObjectPtr = nullptr;
+	}
+}
+
 void C4ObjectMenu::Default()
 {
 	C4Menu::Default();
@@ -99,6 +107,7 @@ void C4ObjectMenu::ClearPointers(C4Object *pObj)
 	if (Object == pObj) { Object = nullptr; }
 	if (ParentObject == pObj) ParentObject = nullptr; // Reason for menu close anyway.
 	if (RefillObject == pObj) RefillObject = nullptr;
+	if (ClearObjectPtr && *ClearObjectPtr == pObj) *ClearObjectPtr = nullptr;
 	C4Menu::ClearPointers(pObj);
 }
 
@@ -498,6 +507,10 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 	bool l_Permanent = !!Permanent;
 	C4Object *l_Object = Object;
 	int32_t l_LastSelection = LastSelection;
+	if (l_Object)
+	{
+		ClearObjectPtr = &l_Object;
+	}
 
 	switch (eCallbackType)
 	{
@@ -517,6 +530,11 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 	}
 
 	if ((!l_Permanent || fIsCloseCommand) && l_Object) l_Object->AutoContextMenu(l_LastSelection);
+
+	if (l_Object)
+	{
+		ClearObjectPtr = nullptr;
+	}
 
 	return true;
 }

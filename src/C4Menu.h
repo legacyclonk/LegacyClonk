@@ -134,7 +134,7 @@ class C4Menu : public C4GUI::Dialog
 
 public:
 	C4Menu();
-	~C4Menu() { Clear(); }
+	virtual ~C4Menu() { Clear(); }
 
 	void Clear();
 	virtual void Default();
