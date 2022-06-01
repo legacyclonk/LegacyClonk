@@ -335,7 +335,7 @@ protected:
 
 	void DebugLog(const char *szMsg)
 	{
-#ifdef _DEBUG
+#ifndef NDEBUG
 #ifdef C4ENGINE
 		Log(szMsg);
 #endif

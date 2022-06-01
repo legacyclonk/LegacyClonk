@@ -63,13 +63,13 @@ const char *C4CFN_FLS[] =
 	nullptr, nullptr
 };
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 char *szCurrAccessedEntry = nullptr;
 int iC4GroupRewindFilePtrNoWarn = 0;
 #endif
 
 #ifdef C4ENGINE
-#ifdef _DEBUG
+#ifndef NDEBUG
 //#define C4GROUP_DUMP_ACCESS
 #endif
 #endif
@@ -1312,7 +1312,7 @@ bool C4Group::AdvanceFilePtr(size_t iOffset, C4Group *pByChild)
 
 bool C4Group::RewindFilePtr()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 #ifdef C4ENGINE
 	if (szCurrAccessedEntry && !iC4GroupRewindFilePtrNoWarn)
 	{
@@ -1902,11 +1902,11 @@ bool C4Group::AccessEntry(const char *szWildCard,
 	char fname[_MAX_FNAME + 1];
 	if (!FindEntry(szWildCard, fname, &iCurrFileSize, fChild))
 		return false;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	szCurrAccessedEntry = fname;
 #endif
 	bool fResult = SetFilePtr2Entry(fname);
-#ifdef _DEBUG
+#ifndef NDEBUG
 	szCurrAccessedEntry = nullptr;
 #endif
 	if (!fResult) return false;
@@ -1921,11 +1921,11 @@ bool C4Group::AccessNextEntry(const char *szWildCard,
 {
 	char fname[_MAX_FNAME + 1];
 	if (!FindNextEntry(szWildCard, fname, &iCurrFileSize, fChild)) return false;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	szCurrAccessedEntry = fname;
 #endif
 	bool fResult = SetFilePtr2Entry(fname);
-#ifdef _DEBUG
+#ifndef NDEBUG
 	szCurrAccessedEntry = nullptr;
 #endif
 	if (!fResult) return false;
@@ -2554,7 +2554,7 @@ bool C4Group::OpenMother()
 	return true;
 }
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 void C4Group::PrintInternals(const char *szIndent)
 {
 	if (!szIndent) szIndent = "";

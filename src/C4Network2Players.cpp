@@ -178,7 +178,7 @@ void C4Network2Players::HandlePlayerInfoUpdRequest(const class C4ClientPlayerInf
 					if (pExistingClientInfo->GetPlayerInfoByRes(pRes->getResID()))
 					{
 						// double join: simply deny without message
-#ifdef _DEBUG
+#ifndef NDEBUG
 						Log("Network: Duplicate player join rejected!");
 #endif
 						OwnInfoPacket.RemoveIndexedInfo(iCnt);
@@ -187,7 +187,7 @@ void C4Network2Players::HandlePlayerInfoUpdRequest(const class C4ClientPlayerInf
 		if (!OwnInfoPacket.GetPlayerCount())
 		{
 			// player join request without players: probably all removed because doubled
-#ifdef _DEBUG
+#ifndef NDEBUG
 			Log("Network: Empty player join request ignored!");
 #endif
 			return;

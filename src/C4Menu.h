@@ -204,7 +204,7 @@ public:
 	bool TryClose(bool fOK, bool fControl);
 	void SetCloseCommand(const char *strCommand);
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	void AssertSurfaceNotUsed(C4Surface *sfc);
 #endif
 

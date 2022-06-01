@@ -59,7 +59,7 @@ C4Config Config;
 C4Config *GetCfg() { return &Config; }
 
 #ifdef _WIN32
-#ifdef _DEBUG
+#ifndef NDEBUG
 template<typename... Args>
 int dbg_printf(const char *strMessage, Args... args)
 {
@@ -285,7 +285,7 @@ bool ProcessGroup(const char *szFilename)
 							iArg++;
 						}
 						break;
-#ifdef _DEBUG
+#ifndef NDEBUG
 					// Print internals
 					case 'q':
 						hGroup.PrintInternals();

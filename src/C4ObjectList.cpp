@@ -109,7 +109,7 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 {
 	if (!nObj || !nObj->Def || !nObj->Status) return false;
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	if (eSort == stMain)
 	{
 		CheckCategorySort();
@@ -184,7 +184,7 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 			// As cPrev is the last link in front of the first position where the object could be inserted,
 			// the object should be after this point in the master list (given it's consistent).
 			// If we're about to insert the object at the end of the list, there is obviously nothing to do.
-#ifndef _DEBUG
+#ifdef NDEBUG
 			if (cLnk)
 			{
 #endif
@@ -198,7 +198,7 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 						// So cLnk->Obj is actually in front of nObj. Update insert position
 						cPrev = cLnk;
 						cLnk = cLnk->Next;
-#ifndef _DEBUG
+#ifdef NDEBUG
 						// At end of list?
 						if (!cLnk) break;
 #endif
@@ -206,7 +206,7 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 
 				// No position found? This shouldn't happen with a consistent main list.
 				assert(cLnk2);
-#ifndef _DEBUG
+#ifdef NDEBUG
 			}
 #endif
 		}
@@ -219,7 +219,7 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 	InsertLink(newLink.get(), cPrev);
 	newLink.release();
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// Debug: Check sort
 	if (eSort == stMain)
 	{
@@ -259,7 +259,7 @@ bool C4ObjectList::Remove(C4Object *pObj)
 	// Remove mass
 	Mass -= pObj->Mass; if (Mass < 0) Mass = 0;
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	if (GetLink(pObj)) BREAKPOINT_HERE;
 #endif
 

@@ -87,7 +87,7 @@ void C4Value::AddDataRef()
 	case C4V_String: Data.Str->IncRef(); break;
 	case C4V_C4Object:
 		Data.Obj->AddRef(this);
-#ifdef _DEBUG
+#ifndef NDEBUG
 		// check if the object actually exists
 		if (!Game.Objects.ObjectNumber(Data.Obj))
 		{

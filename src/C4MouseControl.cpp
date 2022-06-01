@@ -168,7 +168,7 @@ bool C4MouseControl::IsViewport(C4Viewport *pViewport)
 
 void C4MouseControl::UpdateClip()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// never in debug
 	return;
 #endif

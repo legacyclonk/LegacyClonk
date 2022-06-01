@@ -105,7 +105,7 @@ protected:
 	{
 		const void *pData;
 		void *pMData;
-#if defined(_DEBUG)
+#ifndef NDEBUG
 		char *szString; // for debugger preview
 #endif
 	};

@@ -1281,7 +1281,7 @@ void C4Menu::ClearPointers(C4Object *pObj)
 			pItem->ClearObject();
 }
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 void C4Menu::AssertSurfaceNotUsed(C4Surface *sfc)
 {
 	C4MenuItem *pItem;

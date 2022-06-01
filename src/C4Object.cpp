@@ -226,7 +226,7 @@ C4Object::~C4Object()
 {
 	Clear();
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// debug: mustn't be listed in any list now
 	assert(!Game.Objects.ObjectNumber(this));
 	assert(!Game.Objects.InactiveObjects.ObjectNumber(this));
@@ -529,7 +529,7 @@ void C4Object::SetOCF()
 #endif
 	// Update the object character flag according to the object's current situation
 	C4Fixed cspeed = GetSpeed();
-#ifdef _DEBUG
+#ifndef NDEBUG
 	if (Contained && !Game.Objects.ObjectNumber(Contained))
 	{
 		LogF("Warning: contained in wild object %p!", Contained.Object());
@@ -671,7 +671,7 @@ void C4Object::UpdateOCF()
 #endif
 	// Update the object character flag according to the object's current situation
 	C4Fixed cspeed = GetSpeed();
-#ifdef _DEBUG
+#ifndef NDEBUG
 	if (Contained && !Game.Objects.ObjectNumber(Contained))
 	{
 		LogF("Warning: contained in wild object %p!", Contained.Object());
@@ -753,7 +753,7 @@ void C4Object::UpdateOCF()
 	C4RCOCF rc = { dwOCFOld, OCF, true };
 	AddDbgRec(RCT_OCF, &rc, sizeof(rc));
 #endif
-#ifdef _DEBUG
+#ifndef NDEBUG
 	DEBUGREC_OFF
 		uint32_t updateOCF = OCF;
 	SetOCF();

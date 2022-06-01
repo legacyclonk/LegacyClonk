@@ -40,10 +40,10 @@
 	#define GNUC_FORMAT_ATTRIBUTE_O
 #endif
 
-#if defined(_DEBUG) && defined(_MSC_VER) && _M_IX86 == 600
+#if !defined(NDEBUG) && defined(_MSC_VER) && _M_IX86 == 600
 	// use inline assembler to invoke the "breakpoint exception"
 	#define BREAKPOINT_HERE _asm int 3
-#elif defined(_DEBUG) && defined(HAVE_SIGNAL_H)
+#elif !defined(NDEBUG) && defined(HAVE_SIGNAL_H)
 	#include <signal.h>
 	#if defined(SIGTRAP)
 		#define BREAKPOINT_HERE raise(SIGTRAP);

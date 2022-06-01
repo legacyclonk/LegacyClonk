@@ -185,7 +185,7 @@ public:
 	int ClipX, ClipY, ClipX2, ClipY2;
 	bool fIsRenderTarget; // set for surfaces to be used as offscreen render targets
 	bool fIsBackground; // background surfaces fill unused pixels with black, rather than transparency - must be set prior to loading
-#ifdef _DEBUG
+#ifndef NDEBUG
 	int *dbg_idx;
 #endif
 #ifndef USE_CONSOLE

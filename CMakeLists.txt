@@ -393,13 +393,6 @@ endif ()
 find_package(ZLIB REQUIRED)
 target_link_libraries(standard ZLIB::ZLIB)
 
-# Define _DEBUG or NDEBUG depending on project configuration (Already defined by MSVC)
-if (NOT MSVC)
-	set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
-		$<$<CONFIG:Debug>:_DEBUG>
-		$<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
-endif ()
-
 # Create config.h and make sure it will be used and found
 target_compile_definitions(clonk PRIVATE HAVE_CONFIG_H)
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)

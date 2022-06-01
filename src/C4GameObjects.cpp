@@ -469,7 +469,7 @@ void C4ObjResort::SortObject()
 
 void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(Game.Objects.Sectors.CheckSort());
 #endif
 	// do a simple insertion-like sort
@@ -511,7 +511,7 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 		// reduce area to be checked
 		pFirst = pNewFirst;
 	}
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(Game.Objects.Sectors.CheckSort());
 #endif
 	// resort objects in sector lists
@@ -524,7 +524,7 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 			Game.Objects.UpdatePosResort(pObj);
 		}
 	}
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(Game.Objects.Sectors.CheckSort());
 #endif
 }

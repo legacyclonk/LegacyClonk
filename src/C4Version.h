@@ -34,7 +34,7 @@
 /* These values are now controlled by the file source/version - DO NOT MODIFY DIRECTLY */
 
 // Build Options
-#ifdef _DEBUG
+#ifndef NDEBUG
 #define C4BUILDDEBUG " DEBUG"
 #else
 #define C4BUILDDEBUG

@@ -77,7 +77,7 @@ bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, const std::an
 	Event *pEvent = new Event;
 	pEvent->Type = eEvent;
 	pEvent->Data = data;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	pEvent->Time = timeGetTime();
 #endif
 	pEvent->Next = nullptr;
@@ -98,7 +98,7 @@ bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, const std::an
 #endif
 }
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 double AvgNetEvDelay = 0;
 #endif
 
@@ -114,7 +114,7 @@ bool C4InteractiveThread::PopEvent(C4InteractiveEventType *pEventType, std::any 
 		*pEventType = pEvent->Type;
 	if (data)
 		*data = pEvent->Data;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	if (Game.IsRunning)
 		AvgNetEvDelay += ((timeGetTime() - pEvent->Time) - AvgNetEvDelay) / 100;
 #endif

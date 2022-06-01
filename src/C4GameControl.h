@@ -48,7 +48,7 @@ enum C4ControlDeliveryType
 
 #include "C4GameControlNetwork.h"
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 const int32_t C4SyncCheckRate = 1,
 #else
 const int32_t C4SyncCheckRate = 100,

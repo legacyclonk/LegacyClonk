@@ -1495,14 +1495,14 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 		}
 #endif
 		// Execute
-#ifdef _DEBUG
+#ifndef NDEBUG
 		C4AulScriptContext *pCtx = pCurCtx;
 #endif
 		if (pReturn > pCurVal)
 			PushValue(pFunc->Exec(&CallCtx, pPars, true));
 		else
 			pReturn->Set(pFunc->Exec(&CallCtx, pPars, true));
-#ifdef _DEBUG
+#ifndef NDEBUG
 		assert(pCtx == pCurCtx);
 #endif
 

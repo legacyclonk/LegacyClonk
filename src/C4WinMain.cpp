@@ -81,7 +81,7 @@ int WINAPI WinMain(HINSTANCE hInst,
 	constexpr char Parameter[]{"/allocconsole"};
 
 #ifndef USE_CONSOLE
-#ifdef _DEBUG
+#ifndef NDEBUG
 	allocConsole();
 #else
 	char parameter[sizeof(Parameter)];

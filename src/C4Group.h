@@ -43,7 +43,7 @@
 //
 // Maybe some day, someone will write a C4Group-implementation that is probably capable of
 // random access...
-#ifdef _DEBUG
+#ifndef NDEBUG
 extern int iC4GroupRewindFilePtrNoWarn;
 #define C4GRP_DISABLE_REWINDWARN ++iC4GroupRewindFilePtrNoWarn;
 #define C4GRP_ENABLE_REWINDWARN --iC4GroupRewindFilePtrNoWarn;
@@ -249,7 +249,7 @@ public:
 	inline bool IsPacked() { return Status == GRPF_File; }
 	inline bool HasPackedMother() { if (!Mother) return false; return Mother->IsPacked(); }
 	inline bool SetNoSort(bool fNoSort) { NoSort = fNoSort; return true; }
-#ifdef _DEBUG
+#ifndef NDEBUG
 	void PrintInternals(const char *szIndent = nullptr);
 #endif
 

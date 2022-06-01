@@ -266,7 +266,7 @@ C4AulFunc *C4AulScript::GetOverloadedFunc(C4AulFunc *ByFunc)
 		if (SEqual(ByFunc->Name, f->Name)) break;
 		f = f->Prev;
 	}
-#ifdef _DEBUG
+#ifndef NDEBUG
 	C4AulFunc *f2 = Engine ? Engine->GetFunc(ByFunc->Name, this, ByFunc) : nullptr;
 	assert(f == f2);
 #endif

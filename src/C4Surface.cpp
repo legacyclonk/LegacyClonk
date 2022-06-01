@@ -66,7 +66,7 @@ void C4Surface::Default()
 	iTexSize = iTexX = iTexY = 0;
 	fIsRenderTarget = false;
 	fIsBackground = false;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	dbg_idx = nullptr;
 #endif
 }
@@ -78,7 +78,7 @@ void C4Surface::MoveFrom(C4Surface *psfcFrom)
 	// safety
 	if (!psfcFrom) return;
 	// grab data from other sfc
-#ifdef _DEBUG
+#ifndef NDEBUG
 	dbg_idx = psfcFrom->dbg_idx;
 #endif
 	Wdt = psfcFrom->Wdt; Hgt = psfcFrom->Hgt;
@@ -109,7 +109,7 @@ void C4Surface::Clear()
 	// release surface
 	FreeTextures();
 	ppTex = nullptr;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	delete dbg_idx;
 	dbg_idx = nullptr;
 #endif
@@ -201,7 +201,7 @@ bool C4Surface::CreateTextures()
 		}
 		if (fIsBackground && ppCTex)(*ppCTex)->FillBlack();
 	}
-#ifdef _DEBUG
+#ifndef NDEBUG
 	static int dbg_counter = 0;
 	dbg_idx = new int;
 	*dbg_idx = dbg_counter++;

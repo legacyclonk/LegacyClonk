@@ -140,7 +140,7 @@ bool LogSilent(const char *szMessage, bool fConsole)
 		// Write to console
 		if (fConsole || Game.Verbose)
 		{
-#if defined(_DEBUG) && defined(_WIN32)
+#if !defined(NDEBUG) && defined(_WIN32)
 			// debug: output to VC console
 			OutputDebugString(Line.getData());
 #endif

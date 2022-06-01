@@ -68,7 +68,7 @@ private:
 	{
 		C4InteractiveEventType Type;
 		std::any Data;
-#ifdef _DEBUG
+#ifndef NDEBUG
 		int Time;
 #endif
 		Event *Next;

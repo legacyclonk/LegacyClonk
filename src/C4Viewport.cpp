@@ -477,7 +477,7 @@ gboolean C4ViewportWindow::OnKeyPressStatic(GtkWidget *widget, GdkEventKey *even
 {
 	if (event->keyval == GDK_Scroll_Lock)
 		static_cast<C4ViewportWindow *>(user_data)->cvp->TogglePlayerLock();
-#ifdef _DEBUG
+#ifndef NDEBUG
 	switch (event->keyval)
 	{
 	case GDK_1: DDrawCfg.fBlitOff   -= 0.05; printf("%f\n", DDrawCfg.fBlitOff);   break;

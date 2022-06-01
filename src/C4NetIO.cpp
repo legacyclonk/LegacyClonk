@@ -1651,7 +1651,7 @@ bool C4NetIOTCP::Listen(uint16_t inListenPort)
 		return false;
 
 	// To be able to reuse the port after close
-#if !defined(_DEBUG) && !defined(_WIN32)
+#if defined(NDEBUG) && !defined(_WIN32)
 	int reuseaddr = 1;
 	setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&reuseaddr), sizeof(reuseaddr));
 #endif
@@ -3229,7 +3229,7 @@ bool C4NetIOUDP::PacketList::AddPacket(Packet *pPacket)
 bool C4NetIOUDP::PacketList::DeletePacket(Packet *pPacket)
 {
 	CStdLock ListLock(&ListCSec);
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// check: this list?
 	Packet *pPos = pPacket;
 	while (pPos && pPos != pFront) pPos = pPos->Prev;

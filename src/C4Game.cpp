@@ -3191,7 +3191,7 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 		// network game comment
 		if (SEqual2NoCase(szParameter, "/comment:"))
 			Config.Network.Comment.CopyValidated(szParameter + 9);
-#ifdef _DEBUG
+#ifndef NDEBUG
 		// debug configs
 		if (SEqualNoCase(szParameter, "/host"))
 		{
