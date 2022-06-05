@@ -1563,6 +1563,7 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 			LogF("Could not load 32 bit landscape surface from PNG file: %s", e.what());
 		}
 		if (locked) Surface32->Unlock();
+		UpdateAnimationSurface({0, 0, Width, Height});
 	}
 	// no PNG: convert old-style landscapes
 	else if (!Game.C4S.Landscape.NewStyleLandscape)
@@ -2490,11 +2491,6 @@ bool C4Landscape::ApplyLighting(C4Rect To)
 	RECT toRect{To.x, To.y, To.x + To.Wdt, To.y + To.Hgt};
 	if (!Surface32->LockForUpdate(toRect)) return false;
 	Surface32->ClearBoxDw(To.x, To.y, To.Wdt, To.Hgt);
-	if (AnimationSurface)
-	{
-		AnimationSurface->LockForUpdate(toRect);
-		AnimationSurface->ClearBoxDw(To.x, To.y, To.Wdt, To.Hgt);
-	}
 	// do lightning
 	for (int32_t iX = To.x; iX < To.x + To.Wdt; ++iX)
 	{
@@ -2554,12 +2550,31 @@ bool C4Landscape::ApplyLighting(C4Rect To)
 			}
 
 			Surface32->SetPixDw(iX, iY, dwBackClr);
-			if (AnimationSurface) AnimationSurface->SetPixDw(iX, iY, DensityLiquid(Pix2Dens[pix]) ? 255 << 24 : 0);
 		}
 	}
 	Surface32->Unlock();
-	if (AnimationSurface) AnimationSurface->Unlock();
-	// done
+
+	return UpdateAnimationSurface(To);
+}
+
+bool C4Landscape::UpdateAnimationSurface(C4Rect To)
+{
+	if (!AnimationSurface) return true;
+
+	const RECT toRect{To.x, To.y, To.x + To.Wdt, To.y + To.Hgt};
+	if (!AnimationSurface->LockForUpdate(toRect)) return false;
+
+	AnimationSurface->ClearBoxDw(To.x, To.y, To.Wdt, To.Hgt);
+
+	for (int32_t iX = To.x; iX < To.x + To.Wdt; ++iX)
+	{
+		for (int32_t iY = To.y; iY < To.y + To.Hgt; ++iY)
+		{
+			AnimationSurface->SetPixDw(iX, iY, DensityLiquid(Pix2Dens[_GetPix(iX, iY)]) ? 255 << 24 : 0);
+		}
+	}
+
+	AnimationSurface->Unlock();
 	return true;
 }
 
