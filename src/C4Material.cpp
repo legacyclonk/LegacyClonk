@@ -135,7 +135,6 @@ void C4MaterialCore::Clear()
 	BelowTempConvertDir = 0;
 	AboveTempConvert = 0;
 	AboveTempConvertDir = 0;
-	ColorAnimation = 0;
 	TempConvStrength = 0;
 	MinHeightCount = 0;
 	SplashRate = 10;
@@ -185,7 +184,7 @@ void C4MaterialCore::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(Color, 0u),                                                 "Color"));
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(Color, 0u),                                                 "ColorX",              Color));
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(Alpha, 0u),                                                 "Alpha"));
-	pComp->Value(mkNamingAdapt(ColorAnimation,                                                   "ColorAnimation",      0));
+	pComp->Value(mkNamingAdapt(StdNullAdapt{},                                                   "ColorAnimation"));
 	pComp->Value(mkNamingAdapt(MapChunkType,                                                     "Shape",               0));
 	pComp->Value(mkNamingAdapt(Density,                                                          "Density",             0));
 	pComp->Value(mkNamingAdapt(Friction,                                                         "Friction",            0));
