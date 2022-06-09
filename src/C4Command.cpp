@@ -107,9 +107,15 @@ void AdjustMoveToTarget(int32_t &rX, int32_t &rY, bool fFreeMove, int32_t iShape
 			if (iY < GBackHgt) rY = iY;
 		}
 		// Vertical shape offset above solid
-		if (GBackSolid(rX, rY + 1) || GBackSolid(rX, rY + 5))
-			if (!GBackSemiSolid(rX, rY - iShapeHgt / 2))
-				rY -= iShapeHgt / 2;
+		for (int32_t offset = 1; offset <= 5; ++offset)
+		{
+			if (GBackSolid(rX, rY + offset))
+			{
+				if (!GBackSemiSolid(rX, rY - iShapeHgt / 2))
+					rY -= iShapeHgt / 2;
+				break;
+			}
+		}
 	}
 }
 
