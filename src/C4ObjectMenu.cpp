@@ -136,6 +136,10 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 	const auto checkIDSelection = [selectedID = selectedItem ? selectedItem->GetC4ID() : C4ID_None, this]
 	{
 		if (selectedID == C4ID_None) return;
+		if (const auto newSelectedItem = GetSelectedItem(); newSelectedItem && newSelectedItem->GetC4ID() == selectedID)
+		{
+			return;
+		}
 
 		for (std::int32_t i = 0; i < GetItemCount(); ++i)
 		{
