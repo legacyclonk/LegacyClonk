@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "C4MouseControl.h"
 #include <C4Region.h>
 
 #include <StdWindow.h>
@@ -67,6 +68,7 @@ public:
 	virtual void HandleMessage(XEvent &) override;
 #endif
 	virtual void Close() override;
+	void DrawImGui();
 
 #ifdef _WIN32
 	static LRESULT APIENTRY WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -95,6 +97,7 @@ public:
 	int32_t BorderLeft, BorderTop, BorderRight, BorderBottom;
 	int32_t ViewOffsX, ViewOffsY;
 	int32_t DrawX, DrawY;
+	C4MouseControl MouseControl;
 	bool fIsNoOwnerViewport; // this viewport is found for searches of NO_OWNER-viewports; even if it has a player assigned (for network obs)
 	void Default();
 	void Clear();

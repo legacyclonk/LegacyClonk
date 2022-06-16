@@ -90,10 +90,6 @@ void C4ScriptHost::Close()
 	C4ComponentHost::Close();
 	// Make executable script
 	MakeScript();
-	// Update console
-#ifdef C4ENGINE
-	Console.UpdateInputCtrl();
-#endif
 }
 
 int32_t C4ScriptHost::GetControlMethod(int32_t com, int32_t first, int32_t second)

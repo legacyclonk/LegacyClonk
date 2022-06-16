@@ -113,8 +113,6 @@ bool C4GraphicsSystem::SetPalette()
 extern int32_t iLastControlSize, iPacketDelay;
 extern int32_t ControlQueueSize, ControlQueueDataSize;
 
-int32_t ScreenTick = 0, ScreenRate = 1;
-
 bool C4GraphicsSystem::StartDrawing()
 {
 	// only if ddraw is ready
@@ -169,19 +167,10 @@ void C4GraphicsSystem::Execute()
 		return;
 	}
 
-	// Fixed screen rate in old network
-	ScreenRate = 1;
-
 	// Background redraw
 	if (Application.isFullScreen)
 		if (iRedrawBackground)
 			DrawFullscreenBackground();
-
-	// Screen rate skip frame draw
-	ScreenTick++; if (ScreenTick >= ScreenRate) ScreenTick = 0;
-
-	// Reset object audibility
-	Game.Objects.ResetAudibility();
 
 	// some hack to ensure the mouse is drawn after a dialog close and before any
 	// movement messages
@@ -212,9 +201,6 @@ void C4GraphicsSystem::Execute()
 		Game.pGUI->Render(false);
 	}
 
-	// Palette update
-	if (fSetPalette) { SetPalette(); fSetPalette = false; }
-
 	// gamma update
 	if (fSetGamma)
 	{
@@ -224,6 +210,34 @@ void C4GraphicsSystem::Execute()
 
 	// done
 	FinishDrawing();
+}
+
+void C4GraphicsSystem::DrawViewport(C4Viewport *const viewport)
+{
+	assert(viewport->pWindow);
+	if (!StartDrawing()) return;
+
+	// some hack to ensure the mouse is drawn after a dialog close and before any
+	// movement messages
+	if (Game.pGUI && !C4GUI::IsActive())
+	{
+		SetMouseInGUI(false, false);
+	}
+
+	viewport->Execute();
+
+	// InGame-GUI
+	if (Game.pGUI && C4GUI::IsActive())
+	{
+		Game.pGUI->Render(false);
+	}
+
+	// gamma update
+	if (fSetGamma)
+	{
+		ApplyGamma();
+		fSetGamma = false;
+	}
 }
 
 bool C4GraphicsSystem::CloseViewport(C4Viewport *cvp)
@@ -297,7 +311,6 @@ void C4GraphicsSystem::Default()
 	ShowHelp = false;
 	FlashMessageText[0] = 0;
 	FlashMessageTime = 0; FlashMessageX = FlashMessageY = 0;
-	fSetPalette = false;
 	for (int32_t iRamp = 0; iRamp < 3 * C4MaxGammaRamps; iRamp += 3)
 	{
 		dwGamma[iRamp + 0] = 0; dwGamma[iRamp + 1] = 0x808080; dwGamma[iRamp + 2] = 0xffffff;

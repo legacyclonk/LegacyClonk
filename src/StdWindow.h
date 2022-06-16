@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "C4ImGui.h"
 #include <Standard.h>
 #include <StdBuf.h>
 
@@ -30,6 +31,7 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 
 #endif
 
+#include <optional>
 #include <thread>
 #include <stdexcept>
 
@@ -270,7 +272,10 @@ public:
 	void SetProgress(uint32_t progress); // progress 100 disables the progress bar
 
 protected:
+	void InitImGui();
 	virtual void Sec1Timer() {}
+
+	std::optional<C4ImGui> ImGui;
 
 #ifdef _WIN32
 
@@ -283,11 +288,8 @@ public:
 
 protected:
 	bool RegisterWindowClass(HINSTANCE hInst);
-	virtual bool Win32DialogMessageHandling(MSG *msg) { return false; };
 
 private:
-	DWORD style = WS_OVERLAPPEDWINDOW;
-	DWORD styleEx = 0;
 	Microsoft::WRL::ComPtr<ITaskbarList3> taskBarList = nullptr;
 
 	struct ComUnInit

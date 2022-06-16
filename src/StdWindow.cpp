@@ -70,7 +70,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 		0,
 		C4FullScreenClassName,
 		STD_PRODUCT,
-		style,
+		WS_OVERLAPPED,
 		CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
 		nullptr, nullptr, pApp->hInstance, nullptr);
 
@@ -101,6 +101,11 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 	}
 
 	return this;
+}
+
+void CStdWindow::InitImGui()
+{
+	ImGui.emplace(hWindow);
 }
 
 void CStdWindow::Clear()
@@ -159,8 +164,9 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 {
 	const auto fullscreen = mode == DisplayMode::Fullscreen;
 
-	auto newStyle = style;
-	auto newStyleEx = styleEx;
+	auto newStyle = GetWindowLong(hWindow, GWL_STYLE);
+
+	auto newStyleEx = GetWindowLong(hWindow, GWL_EXSTYLE);
 	if (fullscreen)
 	{
 		newStyle &= ~(WS_CAPTION | WS_THICKFRAME);
@@ -337,11 +343,9 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 				fQuitMsgReceived = true;
 				return HR_Failure;
 			}
-			// Dialog message transfer
-			if (!pWindow->Win32DialogMessageHandling(&msg))
-			{
-				TranslateMessage(&msg); DispatchMessage(&msg);
-			}
+
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 		}
 		return HR_Message;
 	default: // error

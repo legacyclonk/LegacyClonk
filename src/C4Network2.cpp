@@ -448,8 +448,6 @@ bool C4Network2::DoLobby()
 
 	if (!fFullscreenLobby)
 	{
-		// console lobby - update console
-		if (Console.Active) Console.UpdateMenus();
 		// init lobby countdown if specified
 		if (Game.iLobbyTimeout) StartLobbyCountdown(Game.iLobbyTimeout);
 		// do console lobby

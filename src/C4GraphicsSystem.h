@@ -47,7 +47,6 @@ public:
 	bool ShowPathfinder;
 	bool ShowNetstatus;
 	bool ShowSolidMask;
-	bool fSetPalette;
 	uint32_t dwGamma[C4MaxGammaRamps * 3]; // gamma ramps
 	bool fSetGamma; // must gamma ramp be reassigned?
 	C4LoaderScreen *pLoaderScreen;
@@ -58,6 +57,7 @@ public:
 	bool StartDrawing();
 	void FinishDrawing();
 	void Execute();
+	void DrawViewport(C4Viewport *viewport);
 	void FlashMessage(const char *szMessage);
 	void FlashMessageOnOff(const char *strWhat, bool fOn);
 	void DeactivateDebugOutput();

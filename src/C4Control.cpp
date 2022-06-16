@@ -545,8 +545,6 @@ void C4ControlClientJoin::Execute() const
 	// lobby callback
 	C4GameLobby::MainDlg *pLobby = Game.Network.GetLobby();
 	if (pLobby) pLobby->OnClientJoin(pClient);
-	// console callback
-	if (Console.Active) Console.UpdateMenus();
 }
 
 void C4ControlClientJoin::CompileFunc(StdCompiler *pComp)
@@ -648,8 +646,6 @@ void C4ControlClientRemove::Execute() const
 	if (pLobby && Game.pGUI) pLobby->OnClientPart(pClient);
 	// player list callback
 	Game.Network.Players.OnClientPart(pClient);
-	// console callback
-	if (Console.Active) Console.UpdateMenus();
 
 	// delete
 	delete pClient;

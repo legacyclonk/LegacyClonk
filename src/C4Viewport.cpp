@@ -72,6 +72,11 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 	if (cvp = GetViewport(hwnd); !cvp)
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 
+	if (cvp->pWindow->ImGui && cvp->pWindow->ImGui->HandleMessage(hwnd, uMsg, wParam, lParam))
+	{
+		return 0;
+	}
+
 	const auto scale = Application.GetScale();
 
 	// Process message
@@ -121,7 +126,7 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 		break;
 
 	case WM_PAINT:
-		Game.GraphicsSystem.Execute();
+		Game.GraphicsSystem.DrawViewport(cvp);
 		break;
 
 	case WM_HSCROLL:
@@ -152,7 +157,7 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 	}
 
 	// Viewport mouse control
-	if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (uMsg)
 		{
@@ -227,7 +232,13 @@ CStdWindow *C4ViewportWindow::Init(CStdApp *pApp, const char *Title, CStdWindow 
 		CW_USEDEFAULT, CW_USEDEFAULT, static_cast<int32_t>(ceilf(400 * scale)), static_cast<int32_t>(ceilf(250 * scale)),
 		pParent->hWindow, nullptr, pApp->hInstance, nullptr);
 	viewportHandles.push_back({hWindow, cvp});
-	return hWindow ? this : nullptr;
+	if (hWindow)
+	{
+		InitImGui();
+		return this;
+	}
+
+	return nullptr;
 }
 
 C4ViewportWindow::~C4ViewportWindow()
@@ -502,7 +513,7 @@ gboolean C4ViewportWindow::OnScrollStatic(GtkWidget *widget, GdkEventScroll *eve
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (event->direction)
 		{
@@ -525,7 +536,7 @@ gboolean C4ViewportWindow::OnButtonPressStatic(GtkWidget *widget, GdkEventButton
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (event->button)
 		{
@@ -566,7 +577,7 @@ gboolean C4ViewportWindow::OnButtonReleaseStatic(GtkWidget *widget, GdkEventButt
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		switch (event->button)
 		{
@@ -604,7 +615,7 @@ gboolean C4ViewportWindow::OnMotionNotifyStatic(GtkWidget *widget, GdkEventMotio
 {
 	C4ViewportWindow *window = static_cast<C4ViewportWindow *>(user_data);
 
-	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+	if (Game.MouseControl.IsViewport(window->cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 	{
 		Game.GraphicsSystem.MouseMove(C4MC_Button_None, static_cast<int32_t>(event->x), static_cast<int32_t>(event->y), event->state, window->cvp);
 	}
@@ -676,7 +687,7 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 	case ButtonPress:
 	{
 		static int last_left_click, last_right_click;
-		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 		{
 			switch (e.xbutton.button)
 			{
@@ -739,7 +750,7 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 	}
 	break;
 	case ButtonRelease:
-		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 		{
 			switch (e.xbutton.button)
 			{
@@ -770,7 +781,7 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 		}
 		break;
 	case MotionNotify:
-		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == C4CNS_ModePlay))
+		if (Game.MouseControl.IsViewport(cvp) && (Console.EditCursor.GetMode() == ConsoleMode::Play))
 		{
 			Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.xbutton.x, e.xbutton.y, e.xbutton.state, cvp);
 		}
@@ -794,6 +805,16 @@ void C4ViewportWindow::HandleMessage(XEvent &e)
 void C4ViewportWindow::Close()
 {
 	Game.GraphicsSystem.CloseViewport(cvp);
+}
+
+void C4ViewportWindow::DrawImGui()
+{
+	ImGui->NewFrame();
+
+	Console.PropertyDlg.Draw();
+	Console.ToolsDlg.Draw();
+
+	ImGui->Render();
 }
 
 bool C4Viewport::UpdateOutputSize()
@@ -1032,7 +1053,7 @@ void C4Viewport::DrawMenu(C4FacetEx &cgo)
 	cgo.TargetX = iOldTx; cgo.TargetY = iOldTy;
 }
 
-extern int32_t iLastControlSize, iPacketDelay, ScreenRate;
+extern int32_t iLastControlSize, iPacketDelay;
 extern int32_t ControlQueueSize, ControlQueueDataSize;
 
 void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
@@ -1119,8 +1140,6 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	// Draw overlay
 	C4ST_STARTNEW(OvrStat, "C4Viewport::Draw: Overlay")
 
-	if (!Application.isFullScreen) Console.EditCursor.Draw(cgo);
-
 	if (fDrawOverlay) DrawOverlay(cgo);
 
 	// Netstats
@@ -1128,6 +1147,11 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 		Game.Network.DrawStatus(cgo);
 
 	C4ST_STOP(OvrStat)
+
+	if (fDrawOverlay && !Application.isFullScreen)
+	{
+		pWindow->DrawImGui();
+	}
 
 	// Remove clippers
 	if (fDrawOverlay) Application.DDraw->NoPrimaryClipper();

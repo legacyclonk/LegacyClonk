@@ -263,8 +263,6 @@ bool C4PlayerList::Remove(C4Player *pPlr, bool fDisconnect, bool fNoCalls)
 	// Validate object owners
 	Game.Objects.ValidateOwners();
 
-	// Update console
-	Console.UpdateMenus();
 	return true;
 }
 

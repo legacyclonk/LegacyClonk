@@ -189,6 +189,11 @@ void C4Application::DoInit()
 	DDraw = DDrawInit(this, Config.Graphics.Engine);
 	if (!DDraw) { LogFatal(LoadResStr("IDS_ERR_DDRAW")); Clear(); throw StartupException{GetFatalError()}; }
 
+	if (!isFullScreen)
+	{
+		Console.InitGUI();
+	}
+
 #if defined(_WIN32) && !defined(USE_CONSOLE)
 	// Register clonk file classes - notice: this will only work if we have administrator rights
 	char szModule[_MAX_PATH + 1]; GetModuleFileName(nullptr, szModule, _MAX_PATH);
@@ -432,6 +437,9 @@ void C4Application::Execute()
 			// Console mode
 			else
 				Console.Execute();
+
+			// Reset object audibility
+			Game.Objects.ResetAudibility();
 			// Automatic frame skip if graphics are slowing down the game (skip max. every 2nd frame)
 			Game.DoSkipFrame = Game.Parameters.AutoFrameSkip && ((iPreGfxTime + iGameTickDelay) < timeGetTime());
 		}

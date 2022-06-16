@@ -226,10 +226,40 @@ if (USE_WINTOAST)
 		src/WinToast/src/wintoastlib.cpp src/WinToast/src/wintoastlib.h)
 endif ()
 
+if (NOT USE_CONSOLE)
+	set(IMGUI_SOURCES
+		imgui.cpp
+		imgui.h
+		imgui_demo.cpp
+		imgui_draw.cpp
+		imgui_internal.h
+		imgui_tables.cpp
+		imgui_widgets.cpp
+		imstb_rectpack.h
+		imstb_textedit.h
+		imstb_truetype.h
+		backends/imgui_impl_opengl2.cpp
+		backends/imgui_impl_opengl2.h
+	)
+
+    if (USE_SDL_MAINLOOP)
+		list(APPEND IMGUI_SOURCES backends/imgui_impl_sdl.cpp backends/imgui_impl_sdl.h)
+	elseif (WIN32)
+		list(APPEND IMGUI_SOURCES backends/imgui_impl_win32.cpp backends/imgui_impl_win32.h)
+	endif ()
+
+	list(TRANSFORM IMGUI_SOURCES PREPEND src/imgui/)
+
+	add_library(imgui OBJECT ${IMGUI_SOURCES})
+	target_include_directories(imgui PUBLIC src/imgui)
+
+endif ()
+
 if (USE_CONSOLE)
 	add_executable(clonk                     ${CLONK_SOURCES})
 else ()
 	add_executable(clonk WIN32 MACOSX_BUNDLE ${CLONK_SOURCES})
+	target_link_libraries(clonk imgui)
 endif ()
 target_compile_definitions(clonk PRIVATE C4ENGINE)
 
