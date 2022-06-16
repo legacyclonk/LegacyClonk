@@ -149,8 +149,13 @@ void C4InteractiveThread::ProcessEvents() // by main thread
 				assert(!"Unhandled switch case");
 				break;
 			}
+
+			break;
 		}
-		break;
+
+		case Ev_MainThread:
+			std::any_cast<MainThreadCallback>(eventData)();
+			break;
 
 		// Other events: check for a registered handler
 		default:

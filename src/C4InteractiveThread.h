@@ -20,6 +20,7 @@
 #include "StdSync.h"
 
 #include <any>
+#include <functional>
 
 // Event types
 enum C4InteractiveEventType
@@ -40,6 +41,8 @@ enum C4InteractiveEventType
 	Ev_Net_Disconn,
 	Ev_Net_Packet,
 
+	Ev_MainThread,
+
 	Ev_Last = Ev_Net_Packet,
 };
 
@@ -58,6 +61,8 @@ public:
 		virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) = 0;
 		virtual ~Callback() {}
 	};
+
+	using MainThreadCallback = std::function<void()>;
 
 private:
 	// the thread itself
@@ -115,6 +120,11 @@ public:
 	void ClearCallback(C4InteractiveEventType eEvent, Callback *pnNetworkCallback)
 	{
 		if (pCallbacks[eEvent] == pnNetworkCallback) pCallbacks[eEvent] = nullptr;
+	}
+
+	bool ExecuteInMainThread(MainThreadCallback callback)
+	{
+		return PushEvent(Ev_MainThread, std::move(callback));
 	}
 
 private:
