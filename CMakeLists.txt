@@ -106,9 +106,18 @@ CMAKE_DEPENDENT_OPTION(USE_LIBNOTIFY "Use libnotify for desktop notifications" O
 # USE_WINTOAST
 CMAKE_DEPENDENT_OPTION(USE_WINTOAST "Use WinToast for desktop notifications" ON "NOT USE_CONSOLE AND WIN32" OFF)
 
-# Use Microsoft CryptoAPI instead of OpenSSL when compiling for Windows
 if (WIN32)
+	# Use Microsoft CryptoAPI instead of OpenSSL when compiling for Windows
 	set(USE_MSCAPI ON)
+
+	# Use LargeAddressAware on x86
+	if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+		if (MSVC)
+			add_link_options(/LARGEADDRESSAWARE)
+		else ()
+			add_link_options(--large-address-aware)
+		endif ()
+	endif ()
 endif ()
 
 # Disable some Visual C++ warnings
