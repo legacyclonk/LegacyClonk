@@ -463,7 +463,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 	{
 		// Configuration file syntax error?
 #ifdef C4ENGINE
-		LogF("Error loading configuration: %s"/*restbl not yet loaded*/, e.Msg.getData());
+		LogF("Error loading configuration: %s"/*restbl not yet loaded*/, e.what());
 #endif
 		return false;
 	}
@@ -559,7 +559,7 @@ bool C4Config::Save()
 	catch ([[maybe_unused]] const StdCompiler::Exception &e)
 	{
 #ifdef C4ENGINE
-		LogF(LoadResStr("IDS_ERR_CONFSAVE"), e.Msg.getData());
+		LogF(LoadResStr("IDS_ERR_CONFSAVE"), e.what());
 #endif
 		return false;
 	}

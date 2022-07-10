@@ -400,7 +400,7 @@ bool C4Network2VersionInfoClient::GetVersion(C4GameVersion *piVerOut)
 	}
 	catch (const StdCompiler::Exception &e)
 	{
-		SetError(e.Msg.getData());
+		SetError(e.what());
 		return false;
 	}
 	// validate version
@@ -426,7 +426,7 @@ bool C4Network2VersionInfoClient::GetRedirect(StdStrBuf &rRedirect)
 	}
 	catch (const StdCompiler::Exception &e)
 	{
-		SetError(e.Msg.getData());
+		SetError(e.what());
 		return false;
 	}
 	// did we get something?

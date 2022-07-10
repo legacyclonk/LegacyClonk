@@ -535,13 +535,13 @@ bool C4Playback::ReadBinary(const StdBuf &Buf)
 				iFrame -= pHead->iFrm;
 				break;
 			}
-			LogF("Record: Binary unpack error: %s", e.Msg.getData());
+			LogF("Record: Binary unpack error: %s", e.what());
 			c.Delete();
 			return false;
 		}
 		catch (const StdCompiler::Exception &e)
 		{
-			LogF("Record: Binary unpack error: %s", e.Msg.getData());
+			LogF("Record: Binary unpack error: %s", e.what());
 			c.Delete();
 			return false;
 		}
@@ -649,7 +649,7 @@ StdBuf C4Playback::ReWriteBinary()
 		}
 		catch (const StdCompiler::Exception &e)
 		{
-			LogF("Record: Binary unpack error: %s", e.Msg.getData());
+			LogF("Record: Binary unpack error: %s", e.what());
 			return StdBuf();
 		}
 		// Grow output

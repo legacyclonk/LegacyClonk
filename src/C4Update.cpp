@@ -281,7 +281,7 @@ bool C4UpdatePackage::Load(C4Group *pGroup)
 	catch (const StdCompiler::Exception &e)
 	{
 		StdStrBuf Name = pGroup->GetFullName() + DirSep + C4CFN_UpdateCore;
-		WriteLog("ERROR: %s (in %s)", e.Msg.getData(), Name.getData());
+		WriteLog("ERROR: %s (in %s)", e.what(), Name.getData());
 		return false;
 	}
 	return true;

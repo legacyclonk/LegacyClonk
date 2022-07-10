@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <concepts>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -209,17 +210,17 @@ protected:
 
 public:
 	// Compiler exception - thrown when something is wrong with the data to compile
-	struct Exception
+	class Exception : public std::runtime_error
 	{
-		StdStrBuf Pos;
-		StdStrBuf Msg;
-
 	protected:
-		Exception(StdStrBuf &&Pos, StdStrBuf &&Msg) : Pos(std::forward<StdStrBuf>(Pos)), Msg(std::forward<StdStrBuf>(Msg)) {}
+		Exception(StdStrBuf &&Pos, StdStrBuf &&Msg) : runtime_error{Msg.getData()}, Pos(std::forward<StdStrBuf>(Pos)) {}
 
 	private:
 		// do not copy
 		Exception(const Exception &Exc) = delete;
+
+	public:
+		StdStrBuf Pos;
 	};
 
 	class NotFoundException : public Exception

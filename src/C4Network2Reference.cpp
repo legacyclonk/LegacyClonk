@@ -638,7 +638,7 @@ bool C4Network2RefClient::GetReferences(C4Network2Reference ** &rpReferences, in
 	}
 	catch (const StdCompiler::Exception &e)
 	{
-		SetError(e.Msg.getData());
+		SetError(e.what());
 		return false;
 	}
 	// Set source ip
