@@ -78,12 +78,12 @@ int WINAPI WinMain(HINSTANCE hInst,
 		return true;
 	};
 
-	constexpr char Parameter[]{"/allocconsole"};
-
 #ifndef USE_CONSOLE
 #ifndef NDEBUG
 	allocConsole();
 #else
+	constexpr char Parameter[]{"/allocconsole"};
+
 	char parameter[sizeof(Parameter)];
 	for (int32_t par = 0; SGetParameter(lpszCmdParam, par, parameter, sizeof(Parameter) - 1); ++par)
 	{
