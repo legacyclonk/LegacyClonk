@@ -685,7 +685,7 @@ enum Icons
 	Ico_Star = 48,
 	Ico_Disconnect = 49,
 	Ico_View = 50,
-	// 51?
+	Ico_RegJoinOnly = 51,
 	Ico_NoSound = 52,
 
 	Ico_Extended = 0x100, // icon index offset for extended icons
