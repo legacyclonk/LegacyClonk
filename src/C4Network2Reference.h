@@ -55,7 +55,6 @@ private:
 	int32_t LeaguePerformance; // custom settlement league performance if scenario doesn't use elapsed frames
 	ValidatedStdStrBuf<C4InVal::VAL_Comment> Comment;
 	bool JoinAllowed;
-	bool ObservingAllowed;
 	bool PasswordNeeded;
 	bool OfficialServer;
 	C4NetpuncherID NetpuncherGameID;

@@ -169,7 +169,7 @@ protected:
 	bool fHost;
 
 	// options
-	bool fAllowJoin, fAllowObserve;
+	bool fAllowJoin;
 
 	// join resource
 	C4Network2ResCore ResDynamic;
@@ -257,7 +257,6 @@ public:
 	bool isFrozen()      const;
 
 	bool isJoinAllowed()      const { return fAllowJoin; }
-	bool isObservingAllowed() const { return fAllowObserve; }
 
 	class C4GameLobby::MainDlg *GetLobby() const { return pLobby; } // lobby publication
 	const char *GetPassword()              const { return sPassword.getData(); } // Oh noez, now the password is public!

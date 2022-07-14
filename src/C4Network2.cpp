@@ -1386,12 +1386,10 @@ bool C4Network2::Join(C4ClientCore &CCore, C4Network2IOConnection *pConn, const 
 	if (!pConn) return false;
 	// security
 	if (!isHost()) { szReply = "not host"; return false; }
-	if (!fAllowJoin && !fAllowObserve) { szReply = "join denied"; return false; }
+	if (!fAllowJoin) { szReply = "join denied"; return false; }
 	if (CCore.getID() != C4ClientIDUnknown) { szReply = "join with set id not allowed"; return false; }
 	// find free client id
 	CCore.SetID(iNextClientID++);
-	// observer?
-	if (!fAllowJoin) CCore.SetObserver(true);
 	// deactivate - client will have to ask for activation.
 	CCore.SetActivated(false);
 	// Name already in use? Find unused one

@@ -28,7 +28,7 @@
 
 C4Network2Reference::C4Network2Reference()
 	: Icon(0), Time(0), Frame(0), StartTime(0), LeaguePerformance(0),
-	JoinAllowed(true), ObservingAllowed(true), PasswordNeeded(false), OfficialServer(false),
+	JoinAllowed(true), PasswordNeeded(false), OfficialServer(false),
 	NetpuncherGameID{} {}
 
 C4Network2Reference::~C4Network2Reference() {}
@@ -73,7 +73,6 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 	LeaguePerformance = pGame->RoundResults.GetLeaguePerformance();
 	Comment = Config.Network.Comment;
 	JoinAllowed = pGame->Network.isJoinAllowed();
-	ObservingAllowed = pGame->Network.isObservingAllowed();
 	PasswordNeeded = pGame->Network.isPassworded();
 	NetpuncherGameID = pGame->Network.getNetpuncherGameID();
 	NetpuncherAddr = pGame->Network.getNetpuncherAddr();
@@ -97,7 +96,6 @@ void C4Network2Reference::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(LeaguePerformance,                                  "LeaguePerformance", 0));
 	pComp->Value(mkNamingAdapt(Comment,                                            "Comment",           ""));
 	pComp->Value(mkNamingAdapt(JoinAllowed,                                        "JoinAllowed",       true));
-	pComp->Value(mkNamingAdapt(ObservingAllowed,                                   "ObservingAllowed",  true));
 	pComp->Value(mkNamingAdapt(PasswordNeeded,                                     "PasswordNeeded",    false));
 	// Ignore RegJoinOnly
 	bool RegJoinOnly = false;
