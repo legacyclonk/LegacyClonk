@@ -97,9 +97,6 @@ void C4Network2Reference::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Comment,                                            "Comment",           ""));
 	pComp->Value(mkNamingAdapt(JoinAllowed,                                        "JoinAllowed",       true));
 	pComp->Value(mkNamingAdapt(PasswordNeeded,                                     "PasswordNeeded",    false));
-	// Ignore RegJoinOnly
-	bool RegJoinOnly = false;
-	pComp->Value(mkNamingAdapt(RegJoinOnly,                                        "RegJoinOnly",       false));
 	pComp->Value(mkNamingAdapt(mkSTLContainerAdapt(Addrs), "Address"));
 	pComp->Value(mkNamingAdapt(Game.sEngineName,                                   "Game",              "None"));
 	pComp->Value(mkNamingAdapt(mkArrayAdapt(Game.iVer, 0),                         "Version"));
