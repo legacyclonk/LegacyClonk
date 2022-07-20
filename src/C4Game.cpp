@@ -322,7 +322,7 @@ bool C4Game::PreInit()
 
 	// gfx resource file preinit (global files only)
 	Log(LoadResStr("IDS_PRC_GFXRES"));
-	if (!GraphicsResource.Init(true))
+	if (!GraphicsResource.Init())
 		// Error was already logged
 		return false;
 
@@ -2371,7 +2371,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 			// Graphics and fonts (may reinit main font, too)
 			// Call it here for overloads by C4GroupSet (definitions, Extra.c4g, scenario, folders etc.)
 			Log(LoadResStr("IDS_PRC_GFXRES"));
-			if (!GraphicsResource.Init(true))
+			if (!GraphicsResource.Init())
 			{
 				return false;
 			}

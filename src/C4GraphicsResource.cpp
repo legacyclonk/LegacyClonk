@@ -167,7 +167,7 @@ bool C4GraphicsResource::InitFonts()
 	return true;
 }
 
-bool C4GraphicsResource::Init(bool fInitGUI)
+bool C4GraphicsResource::Init()
 {
 	// Init fonts (double init will never if groups didnt change)
 	if (!InitFonts())
@@ -273,13 +273,10 @@ bool C4GraphicsResource::Init(bool fInitGUI)
 	int32_t Q; fctRank.GetPhaseNum(iNumRanks, Q);
 	if (!iNumRanks) iNumRanks = 1;
 
-	// load GUI files, if desired
-	if (fInitGUI)
-	{
-		C4GUI::Resource *pRes = C4GUI::GetRes();
-		if (!pRes) pRes = new C4GUI::Resource(FontCaption, FontTitle, FontRegular, FontTiny, FontTooltip);
-		if (!pRes->Load(Files)) { delete pRes; return false; }
-	}
+	// load GUI files
+	C4GUI::Resource *pRes = C4GUI::GetRes();
+	if (!pRes) pRes = new C4GUI::Resource(FontCaption, FontTitle, FontRegular, FontTiny, FontTooltip);
+	if (!pRes->Load(Files)) { delete pRes; return false; }
 
 	// CloseFiles() must not be called now:
 	// The sky still needs to be loaded from the global graphics
