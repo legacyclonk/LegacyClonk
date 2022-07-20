@@ -119,17 +119,18 @@ class C4GroupSet;
 
 class C4Surface
 {
-private:
-	C4Surface(const C4Surface &rCpy); // do NOT copy
-	C4Surface &operator=(const C4Surface &rCpy); // do NOT copy
-
 public:
 	C4Surface();
 	~C4Surface();
 	C4Surface(std::int32_t width, std::int32_t height);
 
+	C4Surface(const C4Surface &other) = delete;
+	C4Surface &operator=(const C4Surface &other) = delete;
+
+	C4Surface(C4Surface &&other);
+	C4Surface &operator=(C4Surface &&other);
+
 public:
-	void MoveFrom(C4Surface *psfcFrom); // grab data from other surface - invalidates other surface
 	bool IsRenderTarget(); // surface can be used as a render target?
 
 	void SetBackground() { fIsBackground = true; }

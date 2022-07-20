@@ -53,6 +53,42 @@ C4Surface::~C4Surface()
 	Clear();
 }
 
+C4Surface::C4Surface(C4Surface &&other) : C4Surface{}
+{
+	*this = std::move(other);
+}
+
+C4Surface &C4Surface::operator=(C4Surface &&other)
+{
+	using std::swap;
+
+#ifndef NDEBUG
+	swap(dbg_idx, other.dbg_idx);
+#endif
+	swap(Wdt, other.Wdt);
+	swap(Hgt, other.Hgt);
+	swap(PrimarySurfaceLockPitch, other.PrimarySurfaceLockPitch);
+	swap(PrimarySurfaceLockBits, other.PrimarySurfaceLockBits);
+	swap(ClipX, other.ClipX);
+	swap(ClipY, other.ClipY);
+	swap(ClipX2, other.ClipX2);
+	swap(ClipY2, other.ClipY2);
+	swap(Locked, other.Locked);
+	swap(fPrimary, other.fPrimary);
+	swap(ppTex, other.ppTex);
+	swap(pMainSfc, other.pMainSfc);
+	swap(ClrByOwnerClr, other.ClrByOwnerClr);
+	swap(iTexSize, other.iTexSize);
+	swap(iTexX, other.iTexX);
+	swap(iTexY, other.iTexY);
+#ifndef USE_CONSOLE
+	swap(Format, other.Format);
+#endif
+	swap(fIsBackground, other.fIsBackground);
+
+	return *this;
+}
+
 void C4Surface::Default()
 {
 	Wdt = Hgt = 0;
@@ -69,37 +105,6 @@ void C4Surface::Default()
 #ifndef NDEBUG
 	dbg_idx = nullptr;
 #endif
-}
-
-void C4Surface::MoveFrom(C4Surface *psfcFrom)
-{
-	// clear own
-	Clear();
-	// safety
-	if (!psfcFrom) return;
-	// grab data from other sfc
-#ifndef NDEBUG
-	dbg_idx = psfcFrom->dbg_idx;
-#endif
-	Wdt = psfcFrom->Wdt; Hgt = psfcFrom->Hgt;
-	PrimarySurfaceLockPitch = psfcFrom->PrimarySurfaceLockPitch;
-	PrimarySurfaceLockBits = psfcFrom->PrimarySurfaceLockBits;
-	psfcFrom->PrimarySurfaceLockBits = nullptr;
-	ClipX = psfcFrom->ClipX; ClipY = psfcFrom->ClipY;
-	ClipX2 = psfcFrom->ClipX2; ClipY2 = psfcFrom->ClipY2;
-	Locked = psfcFrom->Locked;
-	fPrimary = psfcFrom->fPrimary; // shouldn't be true!
-	ppTex = psfcFrom->ppTex;
-	pMainSfc = psfcFrom->pMainSfc;
-	ClrByOwnerClr = psfcFrom->ClrByOwnerClr;
-	iTexSize = psfcFrom->iTexSize;
-	iTexX = psfcFrom->iTexX; iTexY = psfcFrom->iTexY;
-#ifndef USE_CONSOLE
-	Format = psfcFrom->Format;
-#endif
-	fIsBackground = psfcFrom->fIsBackground;
-	// default other sfc
-	psfcFrom->Default();
 }
 
 void C4Surface::Clear()

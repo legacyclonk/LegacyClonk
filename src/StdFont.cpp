@@ -449,7 +449,7 @@ void CStdFont::Init(const char *szFontName, C4Surface *psfcFontSfc, int iIndent)
 	// grab surface
 	iSfcSizes = 0;
 	if (!AddSurface()) { Clear(); throw std::runtime_error(std::string("Error creating surface for ") + szFontName); }
-	sfcCurrent->MoveFrom(psfcFontSfc);
+	*sfcCurrent = std::move(*psfcFontSfc);
 	// extract character positions from image data
 	if (!sfcCurrent->Hgt || !sfcCurrent->Lock())
 	{

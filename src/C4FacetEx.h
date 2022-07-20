@@ -89,7 +89,7 @@ public:
 	void GrabFrom(C4FacetExSurface &rSource)
 	{
 		Clear(); Default();
-		Face.MoveFrom(&rSource.Face);
+		Face = std::move(rSource.Face);
 		Set(rSource.Surface == &rSource.Face ? &Face : rSource.Surface, rSource.X, rSource.Y, rSource.Wdt, rSource.Hgt, rSource.TargetX, rSource.TargetY);
 		rSource.Default();
 	}
