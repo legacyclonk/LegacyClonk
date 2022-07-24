@@ -479,6 +479,16 @@ LONG WINAPI GenerateDump(EXCEPTION_POINTERS *pExceptionPointers)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
+LONG HandleHeapCorruption(PEXCEPTION_POINTERS exceptionPointers)
+{
+	if (exceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
+	{
+		return GenerateDump(exceptionPointers);
+	}
+
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
 #ifndef NDEBUG
 namespace
 {
@@ -657,6 +667,7 @@ void InstallCrashHandler()
 	FreeLibrary(kernel32);
 
 	SetUnhandledExceptionFilter(GenerateDump);
+	AddVectoredExceptionHandler(1, HandleHeapCorruption);
 
 #ifndef NDEBUG
 	// Hook _wassert/_assert, unless we're running under a debugger
