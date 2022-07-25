@@ -479,7 +479,7 @@ LONG WINAPI GenerateDump(EXCEPTION_POINTERS *pExceptionPointers)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
-LONG HandleHeapCorruption(PEXCEPTION_POINTERS exceptionPointers)
+static LONG WINAPI HandleHeapCorruption(PEXCEPTION_POINTERS exceptionPointers)
 {
 	if (exceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
 	{
