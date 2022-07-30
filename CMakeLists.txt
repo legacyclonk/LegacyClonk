@@ -95,6 +95,8 @@ CMAKE_DEPENDENT_OPTION(WITH_DEVELOPER_MODE "Use GTK for the developer mode" OFF
 	"NOT USE_CONSOLE" OFF)
 # USE_LIBNOTIFY
 CMAKE_DEPENDENT_OPTION(USE_LIBNOTIFY "Use libnotify for desktop notifications" ON "WITH_DEVELOPER_MODE AND NOT USE_CONSOLE AND NOT WIN32" OFF)
+# USE_MINIUPNPC
+option(USE_MINIUPNPC "Use miniupnpc for UPnP support" ON)
 # USE_WINDOWS_RUNTIME
 CMAKE_DEPENDENT_OPTION(USE_WINDOWS_RUNTIME "Use Windows Runtime features" ON "WIN32" OFF)
 
@@ -240,6 +242,10 @@ endif ()
 if (USE_LIBNOTIFY)
 	list(APPEND CLONK_SOURCES
 		src/C4ToastLibNotify.cpp src/C4ToastLibNotify.h)
+endif ()
+
+if (USE_MINIUPNPC)
+	list(APPEND CLONK_SOURCES src/C4Network2UPnPMiniUPnPc.cpp)
 endif ()
 
 if (USE_WINDOWS_RUNTIME)
@@ -428,6 +434,12 @@ if (USE_LIBNOTIFY)
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(libnotify REQUIRED IMPORTED_TARGET libnotify)
 	target_link_libraries(clonk PkgConfig::libnotify)
+endif ()
+
+# Link miniupnpc
+if (USE_MINIUPNPC)
+	find_package(miniupnpc CONFIG REQUIRED)
+	target_link_libraries(clonk miniupnpc::miniupnpc)
 endif ()
 
 # Link Windows libraries
