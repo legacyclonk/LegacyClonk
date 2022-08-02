@@ -22,11 +22,6 @@
 #include <C4Log.h>
 #include <C4Config.h>
 
-#ifdef C4ENGINE
-// FIXME: One should not have to include C4Game.h for pGUI
-#include <C4Game.h>
-#endif
-
 namespace C4InVal
 {
 

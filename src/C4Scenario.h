@@ -329,8 +329,6 @@ protected:
 
 class C4ScenarioSection;
 
-#ifdef C4ENGINE
-
 extern const char *C4ScenSect_Main;
 
 // ref to one scenario section
@@ -357,5 +355,3 @@ private:
 	std::string TempFilename; // filename of data file if in temp dir
 	std::string Filename; // filename of section in scenario file
 };
-
-#endif // C4ENGINE

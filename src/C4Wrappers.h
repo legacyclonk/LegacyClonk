@@ -18,8 +18,6 @@
 
 #pragma once
 
-#ifdef C4ENGINE
-
 #include <C4Id.h>
 #include <C4Game.h>
 #include <C4Landscape.h>
@@ -233,5 +231,3 @@ bool DecompileToBuf_Log(StructT &&TargetStruct, typename CompT::OutT *pOut, cons
 		return false;
 	}
 }
-
-#endif // C4ENGINE

@@ -23,8 +23,6 @@
 #include <C4Shape.h>
 #include <C4Group.h>
 
-#ifdef C4ENGINE
-
 void C4FacetEx::Set(C4Surface *nsfc, int nx, int ny, int nwdt, int nhgt, int ntx, int nty)
 {
 	C4Facet::Set(nsfc, nx, ny, nwdt, nhgt);
@@ -72,13 +70,8 @@ void C4FacetEx::DrawBolt(int iX1, int iY1, int iX2, int iY2, uint8_t bCol, uint8
 	// Draw bolt
 	int pvtx[2 * 4];
 	pvtx[0] = iX1; pvtx[1] = iY1; pvtx[2] = iX2; pvtx[3] = iY2;
-#ifdef C4ENGINE
 	pvtx[4] = iX2 + SafeRandom(DrawBoltR1) - DrawBoltR2; pvtx[5] = iY2 + SafeRandom(DrawBoltR1) - DrawBoltR2;
 	pvtx[6] = iX1 + SafeRandom(DrawBoltR1) - DrawBoltR2; pvtx[7] = iY1 + SafeRandom(DrawBoltR1) - DrawBoltR2;
-#else
-	pvtx[4] = iX2 + X % 3 - 1; pvtx[5] = iY2 + X % 3 - 1;
-	pvtx[6] = iX1 + Y % 3 - 1; pvtx[7] = iY1 + Y % 3 - 1;
-#endif
 	// Draw in surface
 	uint32_t dwClr1 = lpDDraw->Pal.GetClr(bCol), dwClr2;
 	uint32_t dwClr3 = lpDDraw->Pal.GetClr(bCol2), dwClr4;
@@ -218,5 +211,3 @@ void C4FacetExSurface::Grayscale(int32_t iOffset)
 	if (!lpDDraw || !Surface || !Wdt || !Hgt) return;
 	lpDDraw->Grayscale(Surface, iOffset);
 }
-
-#endif // C4ENGINE

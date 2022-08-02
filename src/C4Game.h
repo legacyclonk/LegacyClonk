@@ -18,8 +18,6 @@
 
 #pragma once
 
-#ifdef C4ENGINE
-
 #include <C4Def.h>
 #include <C4Texture.h>
 #include <C4RankSystem.h>
@@ -376,5 +374,3 @@ inline StdStrBuf GetKeyboardInputName(const char *szKeyName, bool fShort = false
 {
 	return Game.KeyboardInput.GetKeyCodeNameByKeyName(szKeyName, fShort, iIndex);
 }
-
-#endif // C4ENGINE

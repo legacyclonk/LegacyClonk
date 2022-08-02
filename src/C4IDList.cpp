@@ -139,7 +139,6 @@ void C4IDList::IncreaseIDCount(C4ID id, bool addNewID, int32_t increaseBy, bool 
 }
 
 // Access by category-sorted index
-#ifdef C4ENGINE
 
 C4ID C4IDList::GetID(C4DefList &defs, int32_t category, int32_t index, int32_t *ipCount) const
 {
@@ -172,8 +171,6 @@ int32_t C4IDList::GetNumberOfIDs(C4DefList &defs, int32_t category) const
 		return false;
 	});
 }
-
-#endif
 
 // Removes all empty id gaps from the list.
 

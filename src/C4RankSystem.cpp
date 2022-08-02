@@ -257,7 +257,6 @@ void C4RankSystem::Default()
 	iRankExtNum = 0;
 }
 
-#ifdef C4ENGINE
 bool C4RankSystem::DrawRankSymbol(C4FacetExSurface *fctSymbol, int32_t iRank, C4FacetEx *pfctRankSymbols, int32_t iRankSymbolCount, bool fOwnSurface, int32_t iXOff, C4Facet *cgoDrawDirect)
 {
 	// safety
@@ -319,5 +318,3 @@ bool C4RankSystem::DrawRankSymbol(C4FacetExSurface *fctSymbol, int32_t iRank, C4
 	}
 	return false;
 }
-
-#endif

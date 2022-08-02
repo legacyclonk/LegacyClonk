@@ -359,9 +359,7 @@ public:
 	C4MCMap *GetMap(const char *szMapName); // get map by name
 
 public:
-#ifdef C4ENGINE
 	CSurface8 *Render(const char *szMapName); // create map surface
-#endif
 
 protected:
 	C4SLandscape  *Landscape; // landsape presets

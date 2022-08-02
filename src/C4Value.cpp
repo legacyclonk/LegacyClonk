@@ -26,10 +26,8 @@
 #include <string_view>
 
 #include <C4Game.h>
-#ifdef C4ENGINE
 #include <C4Object.h>
 #include <C4Log.h>
-#endif
 
 const C4Value C4VNull{};
 const C4Value C4VTrue{C4VBool(true)};
@@ -82,7 +80,6 @@ void C4Value::AddDataRef()
 	{
 	case C4V_pC4Value: Data.Ref->AddRef(this); break;
 	case C4V_Any: if (Data) { GuessType(); } break;
-#ifdef C4ENGINE
 	case C4V_Array: case C4V_Map: Data.Container = Data.Container->IncRef(); break;
 	case C4V_String: Data.Str->IncRef(); break;
 	case C4V_C4Object:
@@ -99,7 +96,6 @@ void C4Value::AddDataRef()
 		}
 #endif
 		break;
-#endif
 	default: break;
 	}
 }
@@ -114,11 +110,9 @@ void C4Value::DelDataRef(C4V_Data Data, C4V_Type Type, C4Value *pNextRef, C4Valu
 		HasBaseContainer = false;
 		Data.Ref->DelRef(this, pNextRef, pBaseContainer);
 		break;
-#ifdef C4ENGINE
 	case C4V_C4Object: Data.Obj->DelRef(this, pNextRef); break;
 	case C4V_Array: case C4V_Map: Data.Container->DecRef(); break;
 	case C4V_String: Data.Str->DecRef(); break;
-#endif
 	default: break;
 	}
 }
@@ -187,8 +181,6 @@ void C4Value::Move(C4Value *nValue)
 	Set0();
 }
 
-#ifdef C4ENGINE
-
 void C4Value::GetContainerElement(C4Value *index, C4Value &target, C4AulContext *pctx, bool noref)
 {
 	try
@@ -254,8 +246,6 @@ void C4Value::SetArrayLength(int32_t size, C4AulContext *cthr)
 	Ref.Data.Array = Ref.Data.Array->SetLength(size);
 }
 
-#endif
-
 const C4Value &C4Value::GetRefVal() const
 {
 	const C4Value *pVal = this;
@@ -299,12 +289,10 @@ void C4Value::DelRef(const C4Value *pRef, C4Value *pNextRef, C4ValueContainer *p
 		}
 	}
 	// Was pRef the last ref to an array element?
-#ifdef C4ENGINE
 	if (pBaseContainer && !FirstRef)
 	{
 		pBaseContainer->DecElementRef();
 	}
-#endif
 }
 
 C4V_Type C4Value::GuessType()
@@ -318,7 +306,6 @@ C4V_Type C4Value::GuessType()
 	if (LooksLikeID(Data.ID) && Data.ID >= 10000)
 		return Type = C4V_C4ID;
 
-#ifdef C4ENGINE
 	// object?
 	if (Game.Objects.ObjectNumber(Data.Obj))
 	{
@@ -337,7 +324,6 @@ C4V_Type C4Value::GuessType()
 		AddDataRef();
 		return Type;
 	}
-#endif
 
 	// must be int now
 	return Type = C4V_Int;
@@ -634,7 +620,6 @@ StdStrBuf C4Value::GetDataString() const
 		return StdStrBuf::MakeRef(Data ? "true" : "false");
 	case C4V_C4ID:
 		return StdStrBuf(C4IdText(Data.ID));
-#ifdef C4ENGINE
 	case C4V_C4Object:
 	{
 		// obj exists?
@@ -679,7 +664,6 @@ StdStrBuf C4Value::GetDataString() const
 		DataString.Append(" }");
 		return DataString;
 	}
-#endif // C4ENGINE
 	default:
 		return StdStrBuf("-unknown type- ");
 	}
@@ -687,29 +671,20 @@ StdStrBuf C4Value::GetDataString() const
 
 C4Value C4VString(const char *strString)
 {
-#ifdef C4ENGINE
 	// safety
 	if (!strString) return C4Value();
 	return C4Value(new C4String(strString, &Game.ScriptEngine.Strings));
-#else
-	return C4Value();
-#endif
 }
 
 C4Value C4VString(StdStrBuf &&Str)
 {
-#ifdef C4ENGINE
 	// safety
 	if (Str.isNull()) return C4Value();
 	return C4Value(new C4String(std::forward<StdStrBuf>(Str), &Game.ScriptEngine.Strings));
-#else
-	return C4Value();
-#endif
 }
 
 void C4Value::DenumeratePointer()
 {
-#ifdef C4ENGINE
 	// array?
 	if (Type == C4V_Array || Type == C4V_Map)
 	{
@@ -739,7 +714,6 @@ void C4Value::DenumeratePointer()
 		else
 			Set0();
 	}
-#endif
 }
 
 void C4Value::CompileFunc(StdCompiler *pComp)
@@ -795,12 +769,8 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 
 	// object: save object number instead
 	case C4V_C4Object:
-#ifdef C4ENGINE
 		if (!fCompiler)
 			iTmp = Game.Objects.ObjectNumber(getObj());
-#else
-		if (!fCompiler) iTmp = 0;
-#endif
 	case C4V_C4ObjectEnum:
 		if (!fCompiler) if (Type == C4V_C4ObjectEnum)
 			iTmp = Data.Int;
@@ -813,7 +783,6 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 		return;
 
 	// string: save string number
-#ifdef C4ENGINE
 	case C4V_String:
 		if (!fCompiler) iTmp = getStr()->iEnumID;
 		pComp->Value(iTmp);
@@ -848,7 +817,6 @@ void C4Value::CompileFunc(StdCompiler *pComp)
 	// shouldn't happen
 	case C4V_pC4Value:
 		; // fallthrough
-#endif // C4ENGINE
 	}
 
 	assert(false);

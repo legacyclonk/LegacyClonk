@@ -16,9 +16,7 @@
  */
 
 #include "C4Include.h"
-#ifdef C4ENGINE
 #include "C4Game.h"
-#endif
 #include "C4Version.h"
 #include "C4Network2Reference.h"
 
@@ -45,7 +43,6 @@ void C4Network2Reference::SetSourceAddress(const C4NetIO::EndpointAddress &ip)
 	}
 }
 
-#ifdef C4ENGINE
 void C4Network2Reference::InitLocal(C4Game *pGame)
 {
 	// Copy all game parameters
@@ -84,7 +81,6 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 		Addrs.emplace_back(addr.Addr);
 	}
 }
-#endif
 
 void C4Network2Reference::CompileFunc(StdCompiler *pComp)
 {

@@ -23,10 +23,7 @@
 #include <C4Random.h>
 #include <C4Group.h>
 #include <C4Game.h>
-
-#ifdef C4ENGINE
 #include <C4Wrappers.h>
-#endif
 
 #include <iterator>
 
@@ -552,8 +549,6 @@ bool C4SGame::IsMelee()
 	return (Goals.GetIDCount(C4Id("MELE")) || Goals.GetIDCount(C4Id("MEL2")));
 }
 
-#ifdef C4ENGINE
-
 // scenario sections
 
 const char *C4ScenSect_Main = "main";
@@ -659,5 +654,3 @@ const char *C4ScenarioSection::GetTempFilename() const
 {
 	return TempFilename.c_str();
 }
-
-#endif // C4ENGINE

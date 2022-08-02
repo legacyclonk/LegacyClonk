@@ -23,9 +23,7 @@
 #include <C4RankSystem.h>
 #include <C4Group.h>
 #include <C4Components.h>
-#ifdef C4ENGINE
 #include <C4Wrappers.h>
-#endif
 
 #include <C4Random.h>
 
@@ -122,9 +120,7 @@ bool C4PlayerInfoCore::Load(C4Group &hGroup)
 		PrefColorDw &= 0xffffff;
 		PrefColor2Dw &= 0xffffff;
 		// Validate name
-#ifdef C4ENGINE
 		CMarkup::StripMarkup(PrefName);
-#endif
 		// Success
 		return true;
 	}
@@ -203,7 +199,6 @@ struct C4PhysInfoNameMap_t { const char *szName; C4PhysicalInfo::Offset off; } C
 
 void C4PhysicalInfo::PromotionUpdate(int32_t iRank, bool fUpdateTrainablePhysicals, C4Def *pTrainDef)
 {
-#ifdef C4ENGINE
 	if (iRank >= 0) { CanDig = 1; CanChop = 1; CanConstruct = 1; }
 	if (iRank >= 0) { CanScale = 1; }
 	if (iRank >= 0) { CanHangle = 1; }
@@ -227,7 +222,6 @@ void C4PhysicalInfo::PromotionUpdate(int32_t iRank, bool fUpdateTrainablePhysica
 			}
 		}
 	}
-#endif
 }
 
 C4PhysicalInfo::C4PhysicalInfo()
@@ -301,9 +295,8 @@ bool C4PhysicalInfo::operator==(const C4PhysicalInfo &cmp) const
 void C4TempPhysicalInfo::CompileFunc(StdCompiler *pComp)
 {
 	C4PhysicalInfo::CompileFunc(pComp);
-#ifdef C4ENGINE
+
 	pComp->Value(mkNamingAdapt(mkSTLContainerAdapt(Changes), "Changes", std::vector<C4PhysicalChange>()));
-#endif
 }
 
 void C4TempPhysicalInfo::Train(Offset mpiOffset, int32_t iTrainBy, int32_t iMaxTrain)
@@ -311,16 +304,13 @@ void C4TempPhysicalInfo::Train(Offset mpiOffset, int32_t iTrainBy, int32_t iMaxT
 	// train own value
 	C4PhysicalInfo::Train(mpiOffset, iTrainBy, iMaxTrain);
 	// train all temp values
-#ifdef C4ENGINE
 	for (std::vector<C4PhysicalChange>::iterator i = Changes.begin(); i != Changes.end(); ++i)
 		if (i->mpiOffset == mpiOffset)
 			TrainValue(&(i->PrevVal), iTrainBy, iMaxTrain);
-#endif
 }
 
 bool C4TempPhysicalInfo::HasChanges(C4PhysicalInfo *pRefPhysical)
 {
-#ifdef C4ENGINE
 	// always return true if there are temp changes
 	if (!Changes.empty()) return true;
 	// also return true if any value deviates from the reference
@@ -328,7 +318,7 @@ bool C4TempPhysicalInfo::HasChanges(C4PhysicalInfo *pRefPhysical)
 	{
 		if (!(*pRefPhysical == *this)) return true;
 	}
-#endif
+
 	// no change known
 	return false;
 }
@@ -336,14 +326,11 @@ bool C4TempPhysicalInfo::HasChanges(C4PhysicalInfo *pRefPhysical)
 void C4TempPhysicalInfo::RegisterChange(C4PhysicalInfo::Offset mpiOffset)
 {
 	// append physical change to list
-#ifdef C4ENGINE
 	Changes.push_back(C4PhysicalChange(this->*mpiOffset, mpiOffset));
-#endif
 }
 
 bool C4TempPhysicalInfo::ResetPhysical(C4PhysicalInfo::Offset mpiOffset)
 {
-#ifdef C4ENGINE
 	// search last matching physical check (should always be last if well scripted)
 	for (std::vector<C4PhysicalChange>::reverse_iterator i = Changes.rbegin(); i != Changes.rend(); ++i)
 		if ((*i).mpiOffset == mpiOffset)
@@ -352,7 +339,7 @@ bool C4TempPhysicalInfo::ResetPhysical(C4PhysicalInfo::Offset mpiOffset)
 			Changes.erase((i + 1).base());
 			return true;
 		}
-#endif
+
 	return false;
 }
 
@@ -421,9 +408,7 @@ void C4ObjectInfoCore::Default(C4ID n_id,
 		if (!Name[0]) SCopy("Clonk", Name, C4MaxName);
 	}
 
-#ifdef C4ENGINE
 	if (pDefs) UpdateCustomRanks(pDefs);
-#endif
 
 	// Physical
 	Physical.Default();
@@ -442,7 +427,6 @@ void C4ObjectInfoCore::Promote(int32_t iRank, C4RankSystem &rRanks, bool fForceR
 	if (sNewRank) sRankName.Copy(sNewRank);
 }
 
-#ifdef C4ENGINE
 void C4ObjectInfoCore::UpdateCustomRanks(C4DefList *pDefs)
 {
 	assert(pDefs);
@@ -473,7 +457,6 @@ void C4ObjectInfoCore::UpdateCustomRanks(C4DefList *pDefs)
 		NextRankExp = 0;
 	}
 }
-#endif
 
 bool C4ObjectInfoCore::GetNextRankInfo(C4RankSystem &rDefaultRanks, int32_t *piNextRankExp, StdStrBuf *psNextRankName)
 {
@@ -512,10 +495,9 @@ bool C4ObjectInfoCore::Load(C4Group &hGroup)
 
 bool C4ObjectInfoCore::Save(C4Group &hGroup, C4DefList *pDefs)
 {
-#ifdef C4ENGINE
 	// rank overload by def: Update any NextRank-stuff
 	if (pDefs) UpdateCustomRanks(pDefs);
-#endif
+
 	StdStrBuf Buf;
 	try
 	{

@@ -156,8 +156,6 @@ size_t C4FontLoader::LoadDefs(C4Group &hGroup, C4Config &rCfg)
 	return NewFontDefs.size();
 }
 
-#ifdef C4ENGINE
-
 bool C4FontLoader::InitFont(CStdFont &rFont, C4VectorFont *pFont, int32_t iSize, uint32_t dwWeight, bool fDoShadow)
 {
 	if (!pFont->pFont)
@@ -349,5 +347,3 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 	// done, success
 	return true;
 }
-
-#endif // C4ENGINE

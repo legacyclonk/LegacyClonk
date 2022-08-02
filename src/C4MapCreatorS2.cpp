@@ -21,14 +21,8 @@
 #include <C4MapCreatorS2.h>
 #include <C4Random.h>
 
-#ifdef C4ENGINE
 #include <C4Game.h>
 #include <C4Wrappers.h>
-#else
-#include <C4Aul.h>
-#include <C4Material.h>
-#include <C4Texture.h>
-#endif
 
 #include <cassert>
 
@@ -372,12 +366,10 @@ bool C4MCOverlay::SetField(C4MCParser *pParser, const char *szField, const char 
 			case C4MCV_ScriptFunc:
 			{
 				// get script func of main script
-#ifdef C4ENGINE
 				C4AulFunc *pSFunc = Game.Script.GetSFunc(StrPar, AA_PROTECTED);
 				if (!pSFunc) throw C4MCParserErr(pParser, C4MCErr_SFuncNotFound, StrPar);
 				// add to main
 				this->*(pAttr->scriptFunc) = new C4MCCallbackArray(pSFunc, MapCreator);
-#endif
 				break;
 			}
 			case C4MCV_None:
@@ -783,7 +775,6 @@ C4MCMap *C4MapCreatorS2::GetMap(const char *szMapName)
 	return pMap;
 }
 
-#ifdef C4ENGINE
 CSurface8 *C4MapCreatorS2::Render(const char *szMapName)
 {
 	// get map
@@ -804,7 +795,6 @@ CSurface8 *C4MapCreatorS2::Render(const char *szMapName)
 	// success
 	return sfc;
 }
-#endif
 
 C4MCParserErr::C4MCParserErr(C4MCParser *pParser, const char *szMsg)
 {
@@ -822,12 +812,8 @@ C4MCParserErr::C4MCParserErr(C4MCParser *pParser, const char *szMsg, const char 
 
 void C4MCParserErr::show() const
 {
-#ifdef C4ENGINE
 	// log error
 	Log(Msg);
-#else
-	MessageBox(nullptr, Msg, "Landscape Generator", MB_OK);
-#endif
 }
 
 // parser
@@ -1452,7 +1438,6 @@ bool AlgoGradient(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 
 bool AlgoScript(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 {
-#ifdef C4ENGINE
 	// get script function
 	C4AulFunc *pFunc = Game.Script.GetSFunc((std::string{"ScriptAlgo"} + pOvrl->Name).c_str());
 	// failsafe
@@ -1466,10 +1451,8 @@ bool AlgoScript(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 	}
 	catch (const C4AulError &)
 	{
-		// do nothing
+		return false;
 	}
-#endif
-	return false;
 }
 
 bool AlgoRndAll(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)

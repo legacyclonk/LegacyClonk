@@ -17,12 +17,8 @@
 
 #pragma once
 
-#ifdef C4ENGINE
 #include "C4Network2.h"
 #include "C4Network2Client.h"
-#else
-#include "C4NetIO.h"
-#endif
 
 #include "C4GameParameters.h"
 #include "C4Version.h"

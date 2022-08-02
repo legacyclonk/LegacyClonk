@@ -436,9 +436,7 @@ bool C4Player::Save()
 		// For non-local players, we can actually use the loaded definition
 		// list to strip out all non-existent definitions. This is only valid
 		// because we know the file to be temporary.
-#ifdef C4ENGINE
 		CrewInfoList.Strip(Game.Defs);
-#endif
 	}
 	// Open group
 	if (!hGroup.Open(szPath, true))
@@ -2074,7 +2072,6 @@ void C4Player::EvaluateLeague(bool fDisconnected, bool fWon)
 
 bool C4Player::LocalSync()
 {
-#ifdef C4ENGINE
 	// local sync not necessary for script players
 	if (GetType() == C4PT_Script) return true;
 	// evaluate total playing time
@@ -2090,17 +2087,15 @@ bool C4Player::LocalSync()
 	// save player
 	if (!Save())
 		return false;
-#endif
+
 	// done, success
 	return true;
 }
 
-#ifdef C4ENGINE
 C4PlayerInfo *C4Player::GetInfo()
 {
 	return Game.PlayerInfos.GetPlayerInfoByID(ID);
 }
-#endif
 
 bool C4Player::SetObjectCrewStatus(C4Object *pCrew, bool fNewStatus)
 {

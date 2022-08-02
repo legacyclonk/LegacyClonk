@@ -238,9 +238,7 @@ public:
 	void ClearGraphs();
 	void CountControl(ControlType eType, int32_t iID, int32_t iCntAdd = 1);
 
-#ifdef C4ENGINE
 	class C4PlayerInfo *GetInfo(); // search info by ID
-#endif
 
 private:
 	// messageboard-calls for this player

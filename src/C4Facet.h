@@ -42,7 +42,6 @@ struct C4Vec2D
 	C4Vec2D(int32_t x = 0, int32_t y = 0) : x(x), y(y) {}
 };
 
-#ifdef C4ENGINE
 class C4DrawTransform : public CBltTransform
 {
 public:
@@ -112,7 +111,6 @@ public:
 	int32_t GetXOffset() const { return static_cast<int32_t>(mat[2]); }
 	int32_t GetYOffset() const { return static_cast<int32_t>(mat[5]); }
 };
-#endif // C4ENGINE
 
 class C4Facet
 {
@@ -136,11 +134,9 @@ public:
 	void DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t iAlign = C4FCT_Center, int32_t *piUsedWidth = nullptr);
 	void Draw(C4Facet &cgo, bool fAspect = true, int32_t iPhaseX = 0, int32_t iPhaseY = 0, bool fTransparent = true, float scale = 1.0f);
 	void DrawFullScreen(C4Facet &cgo);
-#ifdef C4ENGINE
 	void DrawT(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection = false, float scale = 1.0f); // draw with transformation (if pTransform is assigned)
 	void DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection = false, float scale = 1.0f);
 	void DrawXT(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection = false, float scale = 1.0f);
-#endif // C4ENGINE
 	void DrawClr(C4Facet &cgo, bool fAspect = true, uint32_t dwClr = 0); // set surface color and draw
 	void DrawValue2Clr(C4Facet &cgo, int32_t iValue1, int32_t iValue2, uint32_t dwClr); // set surface color and draw
 	void DrawXR(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX = 0, int32_t iPhaseY = 0, int32_t r = 0); // draw rotated

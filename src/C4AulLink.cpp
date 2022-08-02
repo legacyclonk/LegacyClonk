@@ -257,8 +257,6 @@ bool C4AulScript::ReloadScript(const char *szPath)
 
 void C4AulScriptEngine::Link(C4DefList *rDefs)
 {
-#ifdef C4ENGINE
-
 	try
 	{
 		// resolve appends
@@ -310,8 +308,6 @@ void C4AulScriptEngine::Link(C4DefList *rDefs)
 		// error??! show it!
 		err.show();
 	}
-
-#endif
 }
 
 void C4AulScriptEngine::ReLink(C4DefList *rDefs)

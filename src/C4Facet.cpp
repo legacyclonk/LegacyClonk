@@ -50,17 +50,13 @@ C4Facet C4Facet::GetSection(int32_t iSection)
 
 void C4Facet::Draw(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, const float scale)
 {
-#ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 
 	lpDDraw->Blit(Surface,
 		float(X + Wdt * iPhaseX) * scale, float(Y + Hgt * iPhaseY) * scale, float(Wdt) * scale, float(Hgt) * scale,
 		sfcTarget,
 		iX, iY, Wdt, Hgt, true);
-#endif
 }
-
-#ifdef C4ENGINE
 
 void C4Facet::DrawT(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection, const float scale)
 {
@@ -101,11 +97,8 @@ void C4Facet::DrawT(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY
 		true, pTransform, noScalingCorrection);
 }
 
-#endif // C4ENGINE
-
 void C4Facet::Draw(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY, bool fTransparent, const float scale)
 {
-#ifdef C4ENGINE
 	// Valid parameter check
 	if (!lpDDraw || !Surface || !cgo.Surface || !Wdt || !Hgt) return;
 	// Drawing area
@@ -132,12 +125,10 @@ void C4Facet::Draw(C4Facet &cgo, bool fAspect, int32_t iPhaseX, int32_t iPhaseY,
 		ccgo.Surface,
 		ccgo.X, ccgo.Y, ccgo.Wdt, ccgo.Hgt,
 		fTransparent);
-#endif
 }
 
 void C4Facet::DrawFullScreen(C4Facet &cgo)
 {
-#ifdef C4ENGINE
 	// stretched fullscreen blit: make sure right and lower side are cleared, because this may be missed due to stretching
 	if (cgo.Wdt > Wdt + 2 || cgo.Hgt > Wdt + 2)
 	{
@@ -146,7 +137,6 @@ void C4Facet::DrawFullScreen(C4Facet &cgo)
 	}
 	// normal blit OK
 	Draw(cgo, false);
-#endif
 }
 
 void C4Facet::DrawClr(C4Facet &cgo, bool fAspect, uint32_t dwClr)
@@ -168,7 +158,6 @@ void C4Facet::DrawValue2Clr(C4Facet &cgo, int32_t iValue1, int32_t iValue2, uint
 
 void C4Facet::DrawXR(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iSectionX, int32_t iSectionY, int32_t r)
 {
-#ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 	CBltTransform rot;
 	rot.SetRotate(r, (iX + iX + iWdt) / 2.f, (iY + iY + iHgt) / 2.f);
@@ -177,12 +166,10 @@ void C4Facet::DrawXR(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt,
 		sfcTarget,
 		iX, iY, iWdt, iHgt,
 		true, &rot);
-#endif
 }
 
 void C4Facet::DrawClrMod(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iPhaseX, int32_t iPhaseY, uint32_t dwModClr)
 {
-#ifdef C4ENGINE
 	// set color
 	if (!lpDDraw) return;
 	lpDDraw->ActivateBlitModulation(dwModClr);
@@ -190,7 +177,6 @@ void C4Facet::DrawClrMod(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t i
 	Draw(sfcTarget, iX, iY, iPhaseX, iPhaseY);
 	// reset color
 	lpDDraw->DeactivateBlitModulation();
-#endif
 }
 
 C4Facet C4Facet::TruncateSection(int32_t iAlign)
@@ -253,7 +239,6 @@ C4Facet C4Facet::Truncate(int32_t iAlign, int32_t iSize)
 
 void C4Facet::DrawValue(C4Facet &cgo, int32_t iValue, int32_t iSectionX, int32_t iSectionY, int32_t iAlign)
 {
-#ifdef C4ENGINE
 	if (!lpDDraw) return;
 	char ostr[25]; sprintf(ostr, "%i", iValue);
 	switch (iAlign)
@@ -274,12 +259,10 @@ void C4Facet::DrawValue(C4Facet &cgo, int32_t iValue, int32_t iSectionX, int32_t
 		break;
 	}
 	}
-#endif
 }
 
 void C4Facet::DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t iSectionX, int32_t iSectionY, int32_t iAlign, int32_t *piUsedWidth)
 {
-#ifdef C4ENGINE
 	if (!lpDDraw) return;
 	char ostr[25]; sprintf(ostr, "%i/%i", iValue1, iValue2);
 	switch (iAlign)
@@ -302,24 +285,20 @@ void C4Facet::DrawValue2(C4Facet &cgo, int32_t iValue1, int32_t iValue2, int32_t
 	}
 	break;
 	}
-#endif
 }
 
 void C4Facet::DrawX(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iSectionX, int32_t iSectionY, const float scale) const
 {
-#ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
 	lpDDraw->Blit(Surface,
 		float(X + Wdt * iSectionX) * scale, float(Y + Hgt * iSectionY) * scale, float(Wdt) * scale, float(Hgt) * scale,
 		sfcTarget,
 		iX, iY, iWdt, iHgt,
 		true);
-#endif
 }
 
 void C4Facet::DrawXFloat(C4Surface *sfcTarget, float fX, float fY, float fWdt, float fHgt) const
 {
-#ifdef C4ENGINE
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt || fWdt <= 0 || fHgt <= 0) return;
 	// Since only source coordinates are available as floats for blitting, go inwards into this facet to match blit
 	// for closest integer target coordinates
@@ -334,10 +313,8 @@ void C4Facet::DrawXFloat(C4Surface *sfcTarget, float fX, float fY, float fWdt, f
 		true);
 	zx = (iX2 - iX) / (float(Wdt) - ox - oxs);
 	zy = (iY2 - iY) / (float(Hgt) - oy - oys);
-#endif
 }
 
-#ifdef C4ENGINE
 void C4Facet::DrawXT(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iPhaseX, int32_t iPhaseY, C4DrawTransform *pTransform, bool noScalingCorrection, const float scale)
 {
 	if (!lpDDraw || !Surface || !sfcTarget || !Wdt || !Hgt) return;
@@ -347,11 +324,9 @@ void C4Facet::DrawXT(C4Surface *sfcTarget, int32_t iX, int32_t iY, int32_t iWdt,
 		iX, iY, iWdt, iHgt,
 		true, pTransform, noScalingCorrection);
 }
-#endif // C4ENGINE
 
 void C4Facet::DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &gfx, int32_t bar_idx)
 {
-#ifdef C4ENGINE
 	// draw energy level using graphics
 	if (!lpDDraw || !gfx.Surface) return;
 	int32_t h = gfx.Hgt;
@@ -405,25 +380,18 @@ void C4Facet::DrawEnergyLevelEx(int32_t iLevel, int32_t iRange, const C4Facet &g
 		gfx_draw.Draw(Surface, X, Y + iY, bar_idx + bar_idx + !filled);
 		iY += dh;
 	}
-#endif
 }
 
 bool C4Facet::GetPhaseNum(int32_t &rX, int32_t &rY)
 {
-#ifdef C4ENGINE
 	// safety
 	if (!Surface) return false;
 	// newgfx: use locally stored size
 	rX = Surface->Wdt / Wdt; rY = Surface->Hgt / Hgt;
 	// success
 	return true;
-#else
-	// no surface sizes in frontend...sorry
-	return false;
-#endif
 }
 
-#ifdef C4ENGINE
 void C4DrawTransform::CompileFunc(StdCompiler *pComp)
 {
 	bool fCompiler = pComp->isCompiler();
@@ -481,8 +449,6 @@ void C4DrawTransform::SetTransformAt(C4DrawTransform &r, float iOffX, float iOff
 		D, E, r.mat[5] - D       * iOffX - E       * iOffY + r.mat[8] * iOffY,
 		r.mat[6], r.mat[7], r.mat[8] - r.mat[6] * iOffX - r.mat[7] * iOffY);
 }
-
-#endif
 
 C4Facet C4Facet::GetFraction(int32_t percentWdt, int32_t percentHgt, int32_t alignX, int32_t alignY)
 {

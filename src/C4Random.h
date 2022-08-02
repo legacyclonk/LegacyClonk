@@ -24,7 +24,6 @@
 
 extern int RandomCount;
 extern unsigned int RandomHold;
-#ifdef C4ENGINE
 
 inline void FixedRandom(uint32_t dwSeed)
 {
@@ -64,8 +63,6 @@ inline unsigned int SeededRandom(unsigned int iSeed, unsigned int iRange)
 	iSeed = iSeed * 214013L + 2531011L;
 	return (iSeed >> 16) % iRange;
 }
-
-#endif
 
 inline int SafeRandom(int range)
 {

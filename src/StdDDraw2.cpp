@@ -945,23 +945,12 @@ bool CStdDDraw::BlitRotate(C4Surface *sfcSource, int fx, int fy, int fwdt, int f
 	return true;
 }
 
-#ifdef C4ENGINE
 
 bool CStdDDraw::Error(const char *szMsg)
 {
 	sLastError.Copy(szMsg);
 	Log(szMsg); return false;
 }
-
-#else
-
-bool CStdDDraw::Error(const char *szMsg)
-{
-	sLastError.Copy(szMsg);
-	return false;
-}
-
-#endif
 
 bool CStdDDraw::CreatePrimaryClipper()
 {
@@ -1099,9 +1088,7 @@ bool CStdDDraw::StringOut(const char *szText, C4Surface *sfcDest, int iTx, int i
 	}
 	if (!fDoMarkup) iFlags |= STDFONT_NOMARKUP;
 	// draw text
-#ifdef C4ENGINE
 	pFont->DrawText(sfcDest, iTx, iTy, dwFCol, szText, iFlags, Markup, fZoom);
-#endif
 	// done, success
 	return true;
 }

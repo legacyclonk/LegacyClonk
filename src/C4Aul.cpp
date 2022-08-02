@@ -29,11 +29,9 @@ C4AulError::C4AulError() {}
 
 void C4AulError::show() const
 {
-#ifdef C4ENGINE
 	// simply log error message
 	if (sMessage)
 		DebugLog(sMessage.getData());
-#endif
 }
 
 C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :

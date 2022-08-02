@@ -24,17 +24,12 @@
 #include <C4Game.h>
 #include <C4Random.h>
 #include <C4ToolsDlg.h> // For C4TLS_MatSky...
-#ifdef C4ENGINE
 #include <C4Wrappers.h>
 #include <C4Physics.h> // For GravAccel
-#endif
 
 #include <utility>
 
 // C4MaterialReaction
-
-#ifdef C4ENGINE
-
 struct ReactionFuncMapEntry { const char *szRFName; C4MaterialReactionFunc pFunc; };
 
 const ReactionFuncMapEntry ReactionFuncMap[] =
@@ -47,11 +42,8 @@ const ReactionFuncMapEntry ReactionFuncMap[] =
 	{ nullptr, &C4MaterialReaction::NoReaction }
 };
 
-#endif
-
 void C4MaterialReaction::CompileFunc(StdCompiler *pComp)
 {
-#ifdef C4ENGINE
 	if (pComp->isCompiler()) pScriptFunc = nullptr;
 	// compile reaction func ptr
 	StdStrBuf sReactionFuncName;
@@ -60,7 +52,7 @@ void C4MaterialReaction::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(sReactionFuncName, "Type", StdStrBuf()));
 	i = 0; while (ReactionFuncMap[i].szRFName && !SEqual(ReactionFuncMap[i].szRFName, sReactionFuncName.getData())) ++i;
 	pFunc = ReactionFuncMap[i].pFunc;
-#endif
+
 	// compile the rest
 	pComp->Value(mkNamingAdapt(TargetSpec,      "TargetSpec",    StdStrBuf()));
 	pComp->Value(mkNamingAdapt(ScriptFunc,      "ScriptFunc",    StdStrBuf()));
@@ -73,7 +65,6 @@ void C4MaterialReaction::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(iCorrosionRate,  "CorrosionRate", 100));
 }
 
-#ifdef C4ENGINE
 void C4MaterialReaction::ResolveScriptFuncs(const char *szMatName)
 {
 	// get script func for script-defined behaviour
@@ -82,7 +73,6 @@ void C4MaterialReaction::ResolveScriptFuncs(const char *szMatName)
 	else
 		pScriptFunc = nullptr;
 }
-#endif
 
 // C4MaterialCore
 
@@ -150,7 +140,6 @@ bool C4MaterialCore::Load(C4Group &hGroup,
 	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(*this, Source, Name.getData()))
 		return false;
 	// adjust placement, if not specified
-#ifdef C4ENGINE
 	if (!Placement)
 	{
 		if (DensitySolid(Density))
@@ -164,7 +153,6 @@ bool C4MaterialCore::Load(C4Group &hGroup,
 			Placement = 10;
 		else Placement = 5;
 	}
-#endif
 	return true;
 }
 
@@ -242,31 +230,18 @@ C4Material::C4Material()
 	AboveTempConvertTo = 0;
 }
 
-#ifdef C4ENGINE
 void C4Material::UpdateScriptPointers()
 {
 	for (uint32_t i = 0; i < CustomReactionList.size(); ++i)
 		CustomReactionList[i].ResolveScriptFuncs(Name);
 }
-#endif
 
 // C4MaterialMap
-
-#ifdef C4ENGINE
 
 C4MaterialMap::C4MaterialMap() : DefReactConvert(&mrfConvert), DefReactPoof(&mrfPoof), DefReactCorrode(&mrfCorrode), DefReactIncinerate(&mrfIncinerate), DefReactInsert(&mrfInsert)
 {
 	Default();
 }
-
-#else
-
-C4MaterialMap::C4MaterialMap()
-{
-	Default();
-}
-
-#endif
 
 C4MaterialMap::~C4MaterialMap()
 {
@@ -326,8 +301,6 @@ int32_t C4MaterialMap::Get(const char *szMaterial)
 			return cnt;
 	return MNone;
 }
-
-#ifdef C4ENGINE
 
 void C4MaterialMap::CrossMapMaterials() // Called after load
 {
@@ -506,8 +479,6 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 	}
 }
 
-#endif
-
 void C4MaterialMap::SetMatReaction(int32_t iPXSMat, int32_t iLSMat, C4MaterialReaction *pReact)
 {
 	// evaluate reaction swap
@@ -586,8 +557,6 @@ void C4MaterialMap::Default()
 	Map = nullptr;
 	ppReactionMap = nullptr;
 }
-
-#ifdef C4ENGINE
 
 bool mrfInsertCheck(int32_t &iX, int32_t &iY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, bool *pfPosChanged)
 {
@@ -859,5 +828,3 @@ void C4MaterialMap::UpdateScriptPointers()
 	// update in all materials
 	for (int32_t i = 0; i < Num; ++i) Map[i].UpdateScriptPointers();
 }
-
-#endif

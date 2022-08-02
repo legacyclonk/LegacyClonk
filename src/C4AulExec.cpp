@@ -34,7 +34,6 @@ C4AulExecError::C4AulExecError(C4Object *pObj, const char *szError) : cObj(pObj)
 
 void C4AulExecError::show() const
 {
-#ifdef C4ENGINE
 	// log
 	C4AulError::show();
 	// debug mode object message
@@ -43,7 +42,6 @@ void C4AulExecError::show() const
 			Game.Messages.New(C4GM_Target, sMessage, cObj, NO_OWNER);
 		else
 			Game.Messages.New(C4GM_Global, sMessage, nullptr, ANY_OWNER);
-#endif
 }
 
 bool C4AulContext::CalledWithStrictNil() const noexcept
@@ -1616,25 +1614,15 @@ C4Value C4AulFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErro
 
 C4Value C4AulScriptFunc::Exec(C4AulContext *pCtx, const C4Value pPars[], bool fPassErrors)
 {
-#ifdef C4ENGINE
-
 	// handle easiest case first
 	if (Owner->State != ASS_PARSED) return C4VNull;
 
 	// execute
 	return AulExec.Exec(this, pCtx->Obj, pPars, fPassErrors);
-
-#else
-
-	return C4AulNull;
-
-#endif
 }
 
 C4Value C4AulScriptFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors, bool nonStrict3WarnConversionOnly, bool convertNilToIntBool)
 {
-#ifdef C4ENGINE
-
 	// handle easiest case first
 	if (Owner->State != ASS_PARSED) return C4VNull;
 
@@ -1646,12 +1634,6 @@ C4Value C4AulScriptFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPa
 		return AulExec.Exec(this, pObj, pars.Par, fPassErrors);
 	}
 	return C4VNull;
-
-#else
-
-	return C4AulNull;
-
-#endif
 }
 
 bool C4AulScriptFunc::HasStrictNil() const noexcept

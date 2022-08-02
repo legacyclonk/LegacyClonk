@@ -21,13 +21,13 @@
 #include <C4Include.h>
 #include <C4GroupSet.h>
 
-#ifdef C4ENGINE
+#ifndef USE_CONSOLE
 #include <C4Game.h>
-#include <C4Log.h>
 #else
-#include <C4Group.h>
-#include <C4Components.h>
+#include "C4Group.h"
 #endif
+
+#include <C4Log.h>
 
 C4GroupSetNode::C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, C4Group &rGroup, bool fGrpOwned, int32_t id)
 {
@@ -98,13 +98,13 @@ bool C4GroupSet::RegisterGroup(C4Group &rGroup, bool fOwnGrp, int32_t Priority, 
 	pNewNode->Priority = Priority;
 	pNewNode->Contents = Contents;
 
-#if defined(C4ENGINE) && !defined(USE_CONSOLE)
+#ifndef USE_CONSOLE
 	// always add fonts directly
 	if (Contents & C4GSCnt_FontDefs)
 		Game.FontLoader.LoadDefs(rGroup, Config);
-	// success
 #endif
 
+	// success
 	return true;
 }
 
@@ -234,7 +234,6 @@ C4Group *C4GroupSet::GetGroup(int32_t iIndex)
 	return nullptr;
 }
 
-#ifdef C4ENGINE
 C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 {
 	// the scenario filename may be a scenario or directly a group folder
@@ -317,4 +316,3 @@ C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 	}
 	return pParentGroup;
 }
-#endif

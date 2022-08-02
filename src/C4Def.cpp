@@ -27,12 +27,9 @@
 #include <C4Components.h>
 #include <C4Config.h>
 #include <C4ValueList.h>
-
-#ifdef C4ENGINE
 #include <C4Wrappers.h>
 #include <C4Object.h>
 #include "C4Network2Res.h"
-#endif
 
 #include <algorithm>
 
@@ -224,7 +221,6 @@ bool C4DefCore::Load(C4Group &hGroup)
 			PictureRect.Set(0, 0, Shape.Wdt, Shape.Hgt);
 
 		// Check category
-#ifdef C4ENGINE
 		if (!(Category & C4D_SortLimit))
 		{
 			// special: Allow this for spells
@@ -239,7 +235,6 @@ bool C4DefCore::Load(C4Group &hGroup)
 			DebugLogF("WARNING: Def %s (%s) at %s has invalid mass!", GetName(), C4IdText(id), hGroup.GetFullName().getData());
 			Mass = 0;
 		}
-#endif
 
 		return true;
 	}
@@ -467,9 +462,7 @@ void C4DefCore::CompileFunc(StdCompiler *pComp)
 
 C4Def::C4Def()
 {
-#ifdef C4ENGINE
 	Graphics.pDef = this;
-#endif
 	Default();
 }
 
@@ -484,7 +477,6 @@ void C4Def::Default()
 	Creation = 0;
 	Count = 0;
 	TimerCall = nullptr;
-#ifdef C4ENGINE
 	MainFace.Set(nullptr, 0, 0, 0, 0);
 	Script.Default();
 	StringTable.Default();
@@ -497,7 +489,6 @@ void C4Def::Default()
 	Portraits = nullptr;
 	pFairCrewPhysical = nullptr;
 	Scale = 1.0f;
-#endif
 }
 
 C4Def::~C4Def()
@@ -507,7 +498,6 @@ C4Def::~C4Def()
 
 void C4Def::Clear()
 {
-#ifdef C4ENGINE
 	Graphics.Clear();
 
 	Script.Clear();
@@ -521,7 +511,6 @@ void C4Def::Clear()
 	PortraitCount = 0;
 	Portraits = nullptr;
 	Scale = 1.0f;
-#endif
 
 	delete[] ActMap; ActMap = nullptr;
 	Desc.Clear();
@@ -533,19 +522,15 @@ bool C4Def::Load(C4Group &hGroup,
 	C4SoundSystem *pSoundSystem)
 {
 	bool fSuccess = true;
-
-#ifdef C4ENGINE
 	bool AddFileMonitoring = false;
 	if (Game.pFileMonitor && !SEqual(hGroup.GetFullName().getData(), Filename) && !hGroup.IsPacked())
 		AddFileMonitoring = true;
-#endif
 
 	// Store filename, maker, creation
 	SCopy(hGroup.GetFullName().getData(), Filename);
 	SCopy(hGroup.GetMaker(), Maker, C4MaxName);
 	Creation = hGroup.GetCreation();
 
-#ifdef C4ENGINE
 	// Verbose log filename
 	if (Config.Graphics.VerboseObjectLoading >= 3)
 		Log(hGroup.GetFullName().getData());
@@ -568,8 +553,6 @@ bool C4Def::Load(C4Group &hGroup,
 		// done
 	}
 
-#endif
-
 	// Read DefCore
 	if (fSuccess) fSuccess = C4DefCore::Load(hGroup);
 	// check id
@@ -577,14 +560,13 @@ bool C4Def::Load(C4Group &hGroup,
 	{
 		if (!LooksLikeID(id))
 		{
-#ifdef C4ENGINE
 			// wie geth ID?????ßßßß
 			if (!Name[0]) Name = GetFilename(hGroup.GetName());
 			LogF(LoadResStr("IDS_ERR_INVALIDID"), Name.getData());
-#endif
+
 			fSuccess = false;
 		}
-#ifdef C4ENGINE
+
 		if (CompareVersion(rC4XVer[0], rC4XVer[1], rC4XVer[2], rC4XVer[3], rC4XVer[4], 4, 0, 0, 0, 0) == -1)
 		{
 			DebugLogF(LoadResStr("IDS_PRC_DEFSINVVERSION"), fSuccess ? FormatString("%s (%s)", Name.getData(), C4IdText(id)).getData() : Name.getData());
@@ -595,30 +577,24 @@ bool C4Def::Load(C4Group &hGroup,
 			rC4XVer[3] = 7;
 			rC4XVer[4] = 0;
 		}
-#endif
 	}
 
-#ifdef C4ENGINE
 	// skip def: don't even read sounds!
 	if (fSuccess && Game.C4S.Definitions.SkipDefs.GetIDCount(id, 1)) return false;
 
 	// OldGfx is no longer supported
 	if (NeededGfxMode == C4DGFXMODE_OLDGFX) return false;
-#endif
 
 	if (!fSuccess)
 	{
-#ifdef C4ENGINE
 		// Read sounds even if not a valid def (for pure c4d sound folders)
 		if (dwLoadWhat & C4D_Load_Sounds)
 			if (pSoundSystem)
 				pSoundSystem->LoadEffects(hGroup);
-#endif
 
 		return false;
 	}
 
-#ifdef C4ENGINE
 	// Read surface bitmap
 	if (dwLoadWhat & C4D_Load_Bitmap)
 		if (!Graphics.LoadAllGraphics(hGroup, !!ColorByOwner))
@@ -635,9 +611,6 @@ bool C4Def::Load(C4Group &hGroup,
 			return false;
 		}
 
-#endif
-
-#ifdef C4ENGINE
 	// Read ActMap
 	if (dwLoadWhat & C4D_Load_ActMap)
 		if (!LoadActMap(hGroup))
@@ -645,9 +618,7 @@ bool C4Def::Load(C4Group &hGroup,
 			DebugLogF("  Error loading ActMap of %s (%s)", hGroup.GetFullName().getData(), C4IdText(id));
 			return false;
 		}
-#endif
 
-#ifdef C4ENGINE
 	// Read script
 	if (dwLoadWhat & C4D_Load_Script)
 	{
@@ -657,7 +628,6 @@ bool C4Def::Load(C4Group &hGroup,
 		// for downwards compatibility with packing order
 		Script.Load("Script", hGroup, C4CFN_Script, szLanguage, this, &StringTable, true);
 	}
-#endif
 
 	// Read name
 	C4ComponentHost DefNames;
@@ -665,7 +635,6 @@ bool C4Def::Load(C4Group &hGroup,
 		DefNames.GetLanguageString(szLanguage, Name);
 	DefNames.Close();
 
-#ifdef C4ENGINE
 	// read clonknames
 	if (dwLoadWhat & C4D_Load_ClonkNames)
 	{
@@ -737,16 +706,12 @@ bool C4Def::Load(C4Group &hGroup,
 		}
 	}
 
-#endif
-
 	// Read desc
 	if (dwLoadWhat & C4D_Load_Desc)
 	{
 		Desc.LoadEx("Desc", hGroup, C4CFN_DefDesc, szLanguage);
 		Desc.TrimSpaces();
 	}
-
-#ifdef C4ENGINE
 
 	// Read sounds
 	if (dwLoadWhat & C4D_Load_Sounds)
@@ -771,8 +736,6 @@ bool C4Def::Load(C4Group &hGroup,
 		// warn in debug mode
 		DebugLogF("invalid TopFace in %s(%s)", Name.getData(), C4IdText(id));
 	}
-
-#endif
 
 	return true;
 }
@@ -834,22 +797,18 @@ void C4Def::CrossMapActMap()
 
 bool C4Def::ColorizeByMaterial(C4MaterialMap &rMats, uint8_t bGBM)
 {
-#ifdef C4ENGINE
 	if (ColorByMaterial[0])
 	{
 		int32_t mat = rMats.Get(ColorByMaterial);
 		if (mat == MNone) { LogF("C4Def::ColorizeByMaterial: mat %s not defined", ColorByMaterial); return false; }
 		if (!Graphics.ColorizeByMaterial(mat, rMats, bGBM)) return false;
 	}
-#endif
 	// success
 	return true;
 }
 
 void C4Def::Draw(C4Facet &cgo, bool fSelected, uint32_t iColor, C4Object *pObj, int32_t iPhaseX, int32_t iPhaseY)
 {
-#ifdef C4ENGINE
-
 	// default: def picture rect
 	C4Rect fctPicRect = PictureRect;
 	C4Facet fctPicture;
@@ -872,10 +831,8 @@ void C4Def::Draw(C4Facet &cgo, bool fSelected, uint32_t iColor, C4Object *pObj, 
 		for (C4GraphicsOverlay *pGfxOvrl = pObj->pGfxOverlay; pGfxOvrl; pGfxOvrl = pGfxOvrl->GetNext())
 			if (pGfxOvrl->IsPicture())
 				pGfxOvrl->DrawPicture(cgo, pObj);
-#endif
 }
 
-#ifdef C4ENGINE
 int32_t C4Def::GetValue(C4Object *pInBase, int32_t iBuyPlayer)
 {
 	// CalcDefValue defined?
@@ -928,8 +885,6 @@ void C4Def::Synchronize()
 	ClearFairCrewPhysicals();
 }
 
-#endif
-
 // C4DefList
 
 C4DefList::C4DefList()
@@ -964,9 +919,7 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 			fSearchMessage = false;
 		}
 
-#ifdef C4ENGINE // Message
 	if (fThisSearchMessage) { LogF("%s...", GetFilename(hGroup.GetName())); }
-#endif
 
 	auto def = std::make_unique<C4Def>();
 	// Load primary definition
@@ -995,7 +948,6 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 		}
 
 	// load additional system scripts for def groups only
-#ifdef C4ENGINE
 	C4Group SysGroup;
 	char fn[_MAX_FNAME + 1] = { 0 };
 	if (!fPrimaryDef && fLoadSysGroups) if (SysGroup.OpenAsChild(&hGroup, C4CFN_System))
@@ -1016,14 +968,11 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 			Game.pFileMonitor->AddDirectory(SysGroup.GetFullName().getData());
 		SysGroup.Close();
 	}
-#endif
 
-#ifdef C4ENGINE // Message
 	if (fThisSearchMessage) { LogF(LoadResStr("IDS_PRC_DEFSLOADED"), iResult); }
 
 	// progress (could go down one level of recursion...)
 	if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress));
-#endif
 
 	return iResult;
 }
@@ -1060,10 +1009,8 @@ int32_t C4DefList::Load(const char *szSearch,
 			iResult += Load(fdt.name, dwLoadWhat, szLanguage, pSoundSystem, fOverload);
 		} while (_findnext(fdthnd, &fdt) == 0);
 		_findclose(fdthnd);
-#ifdef C4ENGINE
 		// progress
 		if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress));
-#endif
 #else
 		fputs("FIXME: C4DefList::Load\n", stderr);
 #endif
@@ -1089,19 +1036,15 @@ int32_t C4DefList::Load(const char *szSearch,
 	if (!hGroup.Open(szSearch))
 	{
 		// Specified file not found (failure)
-#ifdef C4ENGINE
 		LogFatal(FormatString(LoadResStr("IDS_PRC_DEFNOTFOUND"), szSearch).getData());
-#endif
 		LoadFailure = true;
 		return iResult;
 	}
 	iResult += Load(hGroup, dwLoadWhat, szLanguage, pSoundSystem, fOverload, true, iMinProgress, iMaxProgress);
 	hGroup.Close();
 
-#ifdef C4ENGINE
 	// progress (could go down one level of recursion...)
 	if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress));
-#endif
 
 	return iResult;
 }
@@ -1115,7 +1058,6 @@ bool C4DefList::Add(C4Def *pDef, bool fOverload)
 	const auto hasOld = (old != Defs.end());
 	if (hasOld && !fOverload) return false;
 
-#ifdef C4ENGINE
 	// Log overloaded def
 	if (Config.Graphics.VerboseObjectLoading >= 1)
 		if (hasOld)
@@ -1127,7 +1069,6 @@ bool C4DefList::Add(C4Def *pDef, bool fOverload)
 				LogF("     Overload by %s", pDef->Filename);
 			}
 		}
-#endif
 
 	if (hasOld)
 	{
@@ -1207,7 +1148,6 @@ C4Def *C4DefList::GetDef(const std::size_t index, const std::uint32_t category)
 	}
 }
 
-#ifdef C4ENGINE
 C4Def *C4DefList::GetByPath(const char *szPath)
 {
 	if (const auto it = std::find_if(Defs.begin(), Defs.end(), [szPath](const auto &def)
@@ -1224,7 +1164,6 @@ C4Def *C4DefList::GetByPath(const char *szPath)
 	}
 	return nullptr;
 }
-#endif
 
 int32_t C4DefList::CheckEngineVersion(int32_t ver1, int32_t ver2, int32_t ver3, int32_t ver4, int32_t ver5)
 {
@@ -1281,11 +1220,9 @@ bool C4DefList::Reload(C4Def *pDef, uint32_t dwLoadWhat, const char *szLanguage,
 {
 	// Safety
 	if (!pDef) return false;
-#ifdef C4ENGINE
 	// backup graphics names and pointers
 	// GfxBackup-dtor will ensure that upon loading-failure all graphics are reset to default
 	C4DefGraphicsPtrBackup GfxBackup(&pDef->Graphics);
-#endif
 	// Clear def
 	pDef->Clear(); // Assume filename is being kept
 	// Reload def
@@ -1295,21 +1232,16 @@ bool C4DefList::Reload(C4Def *pDef, uint32_t dwLoadWhat, const char *szLanguage,
 	hGroup.Close();
 	// rebuild quick access table
 	SortByID();
-#ifdef C4ENGINE
 	// update script engine - this will also do include callbacks
 	Game.ScriptEngine.ReLink(this);
-#endif
-#ifdef C4ENGINE
 	// restore graphics
 	GfxBackup.AssignUpdate(&pDef->Graphics);
-#endif
 	// Success
 	return true;
 }
 
 bool C4Def::LoadPortraits(C4Group &hGroup)
 {
-#ifdef C4ENGINE
 	// reset any previous portraits
 	Portraits = nullptr; PortraitCount = 0;
 	// search for portraits within def graphics
@@ -1321,20 +1253,18 @@ bool C4Def::LoadPortraits(C4Group &hGroup)
 			// count
 			++PortraitCount;
 		}
-#endif
 	return true;
 }
 
 C4ValueArray *C4Def::GetCustomComponents(C4Value *pvArrayHolder, C4Object *pBuilder, C4Object *pObjInstance)
 {
 	// return custom components array if script function is defined and returns an array
-#ifdef C4ENGINE
 	if (Script.SFn_CustomComponents)
 	{
 		*pvArrayHolder = Script.SFn_CustomComponents->Exec(pObjInstance, {C4VObj(pBuilder)});
 		return pvArrayHolder->getArray();
 	}
-#endif
+
 	return nullptr;
 }
 
@@ -1410,34 +1340,28 @@ void C4Def::GetComponents(C4IDList *pOutList, C4Object *pObjInstance, C4Object *
 	}
 	else
 	{
-#ifdef C4ENGINE
 		// no valid script overload: Assume object or definition components
 		if (pObjInstance)
 			*pOutList = pObjInstance->Component;
 		else
 			*pOutList = Component;
-#endif
 	}
 }
 
 void C4Def::IncludeDefinition(C4Def *pIncludeDef)
 {
-#ifdef C4ENGINE
 	// inherited rank infos and clonk names, if this definition doesn't have its own
 	if (!fClonkNamesOwned) pClonkNames = pIncludeDef->pClonkNames;
 	if (!fRankNamesOwned) pRankNames = pIncludeDef->pRankNames;
 	if (!fRankSymbolsOwned) { pRankSymbols = pIncludeDef->pRankSymbols; iNumRankSymbols = pIncludeDef->iNumRankSymbols; }
-#endif
 }
 
 void C4Def::ResetIncludeDependencies()
 {
-#ifdef C4ENGINE
 	// clear all pointers into foreign defs
 	if (!fClonkNamesOwned) pClonkNames = nullptr;
 	if (!fRankNamesOwned) pRankNames = nullptr;
 	if (!fRankSymbolsOwned) { pRankSymbols = nullptr; iNumRankSymbols = 0; }
-#endif
 }
 
 void C4Def::Picture2Facet(C4FacetExSurface &cgo, uint32_t color, int32_t xPhase)
@@ -1450,13 +1374,12 @@ void C4Def::Picture2Facet(C4FacetExSurface &cgo, uint32_t color, int32_t xPhase)
 
 bool C4DefList::GetFontImage(const char *szImageTag, CFacet &rOutImgFacet)
 {
-#ifdef C4ENGINE
 	// extended: images by game
 	C4FacetExSurface fctOut;
 	if (!Game.DrawTextSpecImage(fctOut, szImageTag)) return false;
 	if (fctOut.Surface == &fctOut.GetFace()) return false; // cannot use facets that are drawn on the fly right now...
 	rOutImgFacet.Set(fctOut.Surface, fctOut.X, fctOut.Y, fctOut.Wdt, fctOut.Hgt);
-#endif
+
 	// done, found
 	return true;
 }
@@ -1476,13 +1399,11 @@ void C4DefList::SortByID()
 	Sorted = true;
 }
 
-#ifdef C4ENGINE
 void C4DefList::Synchronize()
 {
 	for (const auto &it : Defs)
 		it->Synchronize();
 }
-#endif
 
 void C4DefList::ResetIncludeDependencies()
 {

@@ -27,9 +27,7 @@
 #include <C4Components.h>
 #include <C4Log.h>
 #include <C4Config.h>
-#ifdef C4ENGINE
 #include <C4Game.h>
-#endif
 
 #ifdef HAVE_ICONV
 #ifdef HAVE_LANGINFO_H
@@ -239,7 +237,6 @@ C4GroupSet &C4Language::GetPackGroups(const char *strRelativePath)
 	// Store wanted target location
 	SCopy(strRelativePath, strTargetLocation, _MAX_PATH);
 
-#ifdef C4ENGINE
 	// Adjust location by scenario origin
 	if (Game.C4S.Head.Origin.getLength() && SEqualNoCase(GetExtension(Game.C4S.Head.Origin.getData()), "c4s"))
 	{
@@ -259,7 +256,6 @@ C4GroupSet &C4Language::GetPackGroups(const char *strRelativePath)
 			}
 		}
 	}
-#endif
 
 	// Target location has not changed: return last list of pack groups
 	if (SEqualNoCase(strTargetLocation, PackGroupLocation))
@@ -445,9 +441,8 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 	// Close group
 	hGroup.Close();
 	// Set the internal charset
-#ifdef C4ENGINE
 	SCopy(LoadResStr("IDS_LANG_CHARSET"), Config.General.LanguageCharset);
-#endif
+
 #ifdef HAVE_ICONV
 #ifdef HAVE_LANGINFO_H
 	const char *const to_set = nl_langinfo(CODESET);

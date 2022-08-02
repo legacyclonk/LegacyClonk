@@ -25,12 +25,9 @@
 #include <C4Facet.h>
 #include <C4Surface.h>
 #include <C4ComponentHost.h>
-
-#ifdef C4ENGINE
 #include <C4ScriptHost.h>
 #include <C4DefGraphics.h>
 #include "C4LangStringTable.h"
-#endif
 
 #include "C4DelegatedIterable.h"
 
@@ -320,10 +317,6 @@ public:
 	int32_t Count; // number of instanciations
 	C4AulScriptFunc *TimerCall;
 	C4ComponentHost Desc;
-
-#ifdef C4ENGINE
-	// Currently cannot have script host in frontend because that
-	// would need C4Script, C4AulScript, and all that as well...
 	C4DefScriptHost Script;
 	C4LangStringTable StringTable;
 
@@ -344,7 +337,6 @@ protected:
 	C4PhysicalInfo *pFairCrewPhysical;
 
 	C4Facet MainFace;
-#endif
 
 public:
 	void Clear();
@@ -353,14 +345,11 @@ public:
 		uint32_t dwLoadWhat, const char *szLanguage,
 		class C4SoundSystem *pSoundSystem = nullptr);
 	void Draw(C4Facet &cgo, bool fSelected = false, uint32_t iColor = 0, C4Object *pObj = nullptr, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
-
-#ifdef C4ENGINE
 	inline C4Facet &GetMainFace(C4DefGraphics *pGraphics, uint32_t dwClr = 0) { MainFace.Surface = pGraphics->GetBitmap(dwClr); return MainFace; }
 	int32_t GetValue(C4Object *pInBase, int32_t iBuyPlayer); // get value of def; calling script functions if defined
 	C4PhysicalInfo *GetFairCrewPhysicals(); // get fair crew physicals at current fair crew strength
 	void ClearFairCrewPhysicals(); // remove cached fair crew physicals, will be created fresh on demand
 	void Synchronize();
-#endif
 	const char *GetDesc() { return Desc.GetData(); }
 
 protected:
@@ -384,10 +373,7 @@ public:
 	void Picture2Facet(C4FacetExSurface &cgo, uint32_t color = 0, int32_t xPhase = 0);
 };
 
-class C4DefList : public C4DelegatedIterable<C4DefList>
-#ifdef C4ENGINE
-	, public CStdFont::CustomImages
-#endif
+class C4DefList : public C4DelegatedIterable<C4DefList>, public CStdFont::CustomImages
 {
 public:
 	C4DefList();
@@ -421,9 +407,7 @@ public:
 	bool Add(C4Def *ndef, bool fOverload);
 	void ResetIncludeDependencies(); // resets all pointers into foreign definitions caused by include chains
 	void SortByID();
-#ifdef C4ENGINE
 	void Synchronize();
-#endif
 
 	// callback from font renderer: get ID image
 	virtual bool GetFontImage(const char *szImageTag, CFacet &rOutImgFacet) override;

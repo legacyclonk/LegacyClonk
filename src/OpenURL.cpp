@@ -16,8 +16,6 @@
 
 #include <Standard.h>
 
-#ifdef C4ENGINE
-
 #ifdef WITH_GLIB
 #include <glib.h>
 #endif
@@ -66,5 +64,3 @@ bool OpenURL(const char *szURL)
 	// operating system not supported, or all opening method(s) failed
 	return false;
 }
-
-#endif

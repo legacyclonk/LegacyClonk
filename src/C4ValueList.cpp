@@ -103,11 +103,7 @@ C4Value &C4ValueList::GetItem(int32_t iElem)
 	if (iElem >= iSize && iElem < MaxSize) this->SetSize(iElem + 1);
 	// out-of-memory? This might not be catched, but it's better than a segfault
 	if (iElem >= iSize)
-#ifdef C4ENGINE
 		throw C4AulExecError(nullptr, "out of memory");
-#else
-		return pData[0]; // must return something here...
-#endif
 	// return
 	return pData[iElem];
 }

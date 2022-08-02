@@ -332,8 +332,6 @@ bool C4Shape::Attach(int32_t &cx, int32_t &cy, uint8_t cnat_pos)
 
 	bool fAttached = false;
 
-#ifdef C4ENGINE
-
 	int32_t vtx, xcnt, ycnt, xcrng, ycrng, xcd, ycd;
 	int32_t motion_x = 0; uint8_t cpix;
 
@@ -432,15 +430,11 @@ bool C4Shape::Attach(int32_t &cx, int32_t &cy, uint8_t cnat_pos)
 	// both attachments: apply motion done by SolidMasks
 	if (motion_x) cx += BoundBy<int32_t>(motion_x, -1, 1);
 
-#endif
-
 	return fAttached;
 }
 
 bool C4Shape::LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int32_t oldx, int32_t oldy)
 {
-#ifdef C4ENGINE
-
 	if (VtxNum < 2) return false;
 
 	// No modification
@@ -495,7 +489,6 @@ bool C4Shape::LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int3
 		VtxX[cvtx] = tx; VtxY[cvtx] = ty;
 		return true;
 	}
-#endif
 
 	return false;
 }
@@ -529,14 +522,10 @@ bool C4Shape::CheckContact(int32_t cx, int32_t cy)
 	// Check all vertices at given object position.
 	// Return true on any contact.
 
-#ifdef C4ENGINE
-
 	for (int32_t cvtx = 0; cvtx < VtxNum; cvtx++)
 		if (!(VtxCNAT[cvtx] & CNAT_NoCollision))
 			if (GBackDensity(cx + VtxX[cvtx], cy + VtxY[cvtx]) >= ContactDensity)
 				return true;
-
-#endif
 
 	return false;
 }
@@ -547,8 +536,6 @@ bool C4Shape::ContactCheck(int32_t cx, int32_t cy)
 	// Set ContactCNAT and ContactCount.
 	// Set VtxContactCNAT and VtxContactMat.
 	// Return true on any contact.
-
-#ifdef C4ENGINE
 
 	ContactCNAT = CNAT_None;
 	ContactCount = 0;
@@ -578,8 +565,6 @@ bool C4Shape::ContactCheck(int32_t cx, int32_t cy)
 					VtxContactCNAT[cvtx] |= CNAT_Right;
 			}
 		}
-
-#endif
 
 	return ContactCount;
 }
@@ -635,12 +620,8 @@ C4DensityProvider DefaultDensityProvider;
 
 int32_t C4DensityProvider::GetDensity(int32_t x, int32_t y) const
 {
-#ifdef C4ENGINE
 	// default density provider checks the landscape
 	return GBackDensity(x, y);
-#else
-	return 0;
-#endif
 }
 
 int32_t C4Shape::GetVertexContact(int32_t iVtx, uint32_t dwCheckMask, int32_t tx, int32_t ty, const C4DensityProvider &rDensityProvider)
@@ -650,7 +631,6 @@ int32_t C4Shape::GetVertexContact(int32_t iVtx, uint32_t dwCheckMask, int32_t tx
 	// check vertex positions (vtx num not range-checked!)
 	tx += VtxX[iVtx]; ty += VtxY[iVtx];
 	int32_t iContact = 0;
-#ifdef C4ENGINE
 	// check all directions for solid mat
 	if (~VtxCNAT[iVtx] & CNAT_NoCollision)
 	{
@@ -660,7 +640,6 @@ int32_t C4Shape::GetVertexContact(int32_t iVtx, uint32_t dwCheckMask, int32_t tx
 		if (dwCheckMask & CNAT_Top)    if (rDensityProvider.GetDensity(tx, ty - 1) >= ContactDensity) iContact |= CNAT_Top;
 		if (dwCheckMask & CNAT_Bottom) if (rDensityProvider.GetDensity(tx, ty + 1) >= ContactDensity) iContact |= CNAT_Bottom;
 	}
-#endif
 	// return resulting bitmask
 	return iContact;
 }
@@ -700,8 +679,6 @@ void C4Shape::CompileFunc(StdCompiler *pComp, bool fRuntime)
 }
 
 // C4RectList
-
-#ifdef C4ENGINE
 
 void C4RectList::ClipByRect(const C4Rect &rClip)
 {
@@ -789,5 +766,3 @@ void C4RectList::ClipByRect(const C4Rect &rClip)
 		}
 	}
 }
-
-#endif

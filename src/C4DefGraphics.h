@@ -178,10 +178,8 @@ protected:
 	C4FacetEx fctBlit; // current blit data
 	uint32_t dwBlitMode; // extra parameters for additive blits, etc.
 	uint32_t dwClrModulation; // colormod for this overlay
-#ifdef C4ENGINE
 	C4EnumeratedObjectPtr pOverlayObj; // object to be drawn as overlay in MODE_Object
 	C4DrawTransform Transform; // drawing transformation: Rotation, zoom, etc.
-#endif
 	int32_t iPhase; // action face for MODE_Action
 	bool fZoomToShape; // if true, overlay will be zoomed to match the target object shape
 
@@ -194,10 +192,7 @@ protected:
 
 public:
 	C4GraphicsOverlay() : eMode(MODE_None), pSourceGfx(nullptr), fctBlit(), dwBlitMode(0), dwClrModulation(0xffffff),
-#ifdef C4ENGINE
-		Transform(+1),
-#endif
-		iPhase(0), fZoomToShape(false), iID(0), pNext(nullptr)
+		Transform(+1), iPhase(0), fZoomToShape(false), iID(0), pNext(nullptr)
 	{
 		*Action = 0;
 	}
@@ -242,10 +237,8 @@ public:
 
 	bool IsValid(const C4Object *pForObj) const;
 
-#ifdef C4ENGINE
 	C4DrawTransform *GetTransform() { return &Transform; }
 	C4Object *GetOverlayObject() const { return pOverlayObj; }
-#endif
 	int32_t GetID() const { return iID; }
 	void SetID(int32_t aID) { iID = aID; }
 	C4GraphicsOverlay *GetNext() const { return pNext; }

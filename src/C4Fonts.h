@@ -83,10 +83,8 @@ public:
 	size_t LoadDefs(C4Group &hGroup, C4Config &rCfg); // load font definitions from group file; return number of loaded font defs
 	void AddVectorFont(C4VectorFont *pAddFont); // adds a new font to the list
 
-#ifdef C4ENGINE
 	bool InitFont(CStdFont &rFont, C4VectorFont *pFont, int32_t iSize, uint32_t dwWeight, bool fDoShadow);
 	// init a font class of the given type
 	// iSize is always the size of the normal font, which is adjusted for larger (title) and smaller (log) font types
 	bool InitFont(CStdFont &rFont, const char *szFontName, FontType eType, int32_t iSize, C4GroupSet *pGfxGroups, bool fDoShadow = true);
-#endif
 };
