@@ -42,11 +42,15 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 	if (!rsString.getLength())
 	{
 		// empty if not allowed?
+#ifdef C4ENGINE
 		if (eOption != VAL_NameAllowEmpty && eOption != VAL_NameExAllowEmpty && eOption != VAL_Comment)
 		{
+#endif
 			rsString.Copy("empty");
 			fValid = false;
+#ifdef C4ENGINE
 		}
+#endif
 	}
 	switch (eOption)
 	{
@@ -88,6 +92,7 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 		}
 		break;
 
+#ifdef C4ENGINE
 	case VAL_NameNoEmpty:
 	case VAL_NameAllowEmpty:
 		// excess '{' will break the team chat, remove
@@ -149,6 +154,7 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 	case VAL_Comment: // comment - just limit length
 		if (rsString.getLength() > C4MaxComment) { fValid = false; rsString.SetLength(C4MaxComment); }
 		break;
+#endif
 
 	default:
 		assert(!"not yet implemented");
@@ -162,6 +168,7 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 		case VAL_Filename:         szOption = "filename";         break;
 		case VAL_SubPathFilename:  szOption = "(sub-)filename";   break;
 		case VAL_FullPath:         szOption = "free filename";    break;
+#ifdef C4ENGINE
 		case VAL_NameNoEmpty:      szOption = "strict name";      break;
 		case VAL_NameExNoEmpty:    szOption = "name";             break;
 		case VAL_NameAllowEmpty:   szOption = "strict name*";     break;
@@ -170,6 +177,7 @@ bool ValidateString(StdStrBuf &rsString, ValidationOption eOption)
 		case VAL_IRCPass:          szOption = "IRC password";     break;
 		case VAL_IRCChannel:       szOption = "IRC channel";      break;
 		case VAL_Comment:          szOption = "Comment";          break;
+#endif
 		}
 	}
 	return !fValid;

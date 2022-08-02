@@ -114,12 +114,13 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 #endif
 }
 
+#ifdef C4ENGINE
+
 void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(AutoFileReload, "AutoFileReload", true, false, true));
 }
 
-#ifdef C4ENGINE
 void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(ResX,                 "ResolutionX",          800,   false, true));
@@ -203,8 +204,6 @@ void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(MuteSoundCommand, "MuteSoundCommand", false, false, true));
 }
 
-#endif
-
 void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(ControlRate,           "ControlRate",           2,         false, true));
@@ -212,12 +211,12 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(NoRuntimeJoin,         "NoRuntimeJoin",         true,      false, true));
 	pComp->Value(mkNamingAdapt(MaxResSearchRecursion, "MaxResSearchRecursion", 1,         false, true));
 	pComp->Value(mkNamingAdapt(Comment,               "Comment",               "",        false, true));
-#ifdef C4ENGINE
+
 	pComp->Value(mkNamingAdapt(PortTCP,       "PortTCP",       C4NetStdPortTCP,       false, true));
 	pComp->Value(mkNamingAdapt(PortUDP,       "PortUDP",       C4NetStdPortUDP,       false, true));
 	pComp->Value(mkNamingAdapt(PortDiscovery, "PortDiscovery", C4NetStdPortDiscovery, false, true));
 	pComp->Value(mkNamingAdapt(PortRefServer, "PortRefServer", C4NetStdPortRefServer, false, true));
-#endif
+
 	pComp->Value(mkNamingAdapt(ControlMode,        "ControlMode",        0,              false, true));
 	pComp->Value(mkNamingAdapt(LocalName,          "LocalName",          "Unknown",      false, true));
 	pComp->Value(mkNamingAdapt(Nick,               "Nick",               "",             false, true));
@@ -365,7 +364,6 @@ void C4ConfigControls::CompileFunc(StdCompiler *pComp, bool fKeysOnly)
 #endif // USE_CONSOLE
 }
 
-#ifdef C4ENGINE
 void C4ConfigCooldowns::CompileFunc(StdCompiler *comp)
 {
 	using namespace std::chrono_literals;
@@ -646,12 +644,16 @@ const char *C4Config::AtTempPath(const char *szFilename)
 	return AtPathFilename;
 }
 
+#ifdef C4ENGINE
+
 const char *C4Config::AtNetworkPath(const char *szFilename)
 {
 	SCopy(Network.WorkPath, AtPathFilename, _MAX_PATH);
 	SAppend(szFilename, AtPathFilename, _MAX_PATH);
 	return AtPathFilename;
 }
+
+#endif
 
 const char *C4Config::AtScreenshotPath(const char *szFilename)
 {
@@ -690,8 +692,6 @@ bool C4ConfigGeneral::CreateSaveFolder(const char *strDirectory, const char *str
 	return true;
 }
 
-#endif
-
 const char *C4ConfigNetwork::GetLeagueServerAddress()
 {
 	// Alternate (GUI configurable) league server
@@ -706,6 +706,8 @@ void C4ConfigControls::ResetKeys()
 {
 	StdCompilerNull Comp; Comp.Compile(mkParAdapt(*this, true));
 }
+
+#endif
 
 const char *C4Config::AtExeRelativePath(const char *szFilename)
 {
@@ -784,6 +786,8 @@ int C4ConfigGeneral::GetLanguageSequence(const char *strSource, char *strTarget)
 	return iCount;
 }
 
+#ifdef C4ENGINE
+
 void C4ConfigStartup::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(HideMsgMMTimerChange,     "HideMsgMMTimerChange",     false));
@@ -796,22 +800,22 @@ void C4ConfigStartup::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(LastPortraitFolderIdx,    "LastPortraitFolderIdx",    0));
 }
 
+#endif
+
 void C4Config::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(General,   "General"));
+#ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(Controls,  "Controls"));
 	for (int i = 0; i < C4ConfigMaxGamepads; ++i)
 		pComp->Value(mkNamingAdapt(Gamepads[i], FormatString("Gamepad%d", i).getData()));
-#ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(Graphics,  "Graphics"));
 	pComp->Value(mkNamingAdapt(Sound,     "Sound"));
-#endif
 	pComp->Value(mkNamingAdapt(Network,   "Network"));
 	pComp->Value(mkNamingAdapt(Lobby,     "Lobby"));
 	pComp->Value(mkNamingAdapt(IRC,       "IRC"));
 	pComp->Value(mkNamingAdapt(Developer, "Developer"));
 	pComp->Value(mkNamingAdapt(Startup,   "Startup"));
-#ifdef C4ENGINE
 	pComp->Value(mkNamingAdapt(Cooldowns, "Cooldowns"));
 	pComp->Value(mkNamingAdapt(Toasts,    "Toasts"));
 #endif

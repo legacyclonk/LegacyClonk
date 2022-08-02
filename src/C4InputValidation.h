@@ -32,6 +32,7 @@ namespace C4InVal
 		VAL_Filename,         // regular filenames only (Sven2.c4p)
 		VAL_SubPathFilename,  // filenames and optional subpath (Spieler\Sven2.c4p)
 		VAL_FullPath,         // full filename paths (C:\Clonk\Sven2.c4p; ..\..\..\..\AutoExec.bat)
+#ifdef C4ENGINE
 		VAL_NameAllowEmpty,   // stuff like player names (Sven2). No markup. Max. C4MaxName characters. Spaces trimmed.
 		VAL_NameNoEmpty,      // same as above, but empty string not allowed
 		VAL_NameExAllowEmpty, // stuff like Clonk names (Joki the {{WIPF}}). Markup allowed. Max. C4MaxLongName characters. Spaces trimmed.
@@ -40,6 +41,7 @@ namespace C4InVal
 		VAL_IRCPass,          // password for IRC
 		VAL_IRCChannel,       // IRC channel name
 		VAL_Comment,          // comment - just a length limit
+#endif
 	};
 
 	// input validation functions: Validate input by changing it to an allowed value if possible

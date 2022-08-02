@@ -93,6 +93,8 @@ public:
 	void CompileFunc(StdCompiler *pComp);
 };
 
+#ifdef C4ENGINE
+
 class C4ConfigDeveloper
 {
 public:
@@ -100,7 +102,6 @@ public:
 	void CompileFunc(StdCompiler *pComp);
 };
 
-#ifdef C4ENGINE
 class C4ConfigGraphics
 {
 public:
@@ -167,7 +168,6 @@ public:
 	bool MuteSoundCommand; // whether to mute /sound by default
 	void CompileFunc(StdCompiler *pComp);
 };
-#endif
 
 class C4ConfigNetwork
 {
@@ -260,7 +260,6 @@ public:
 	void ResetKeys(); // reset all keys to default
 };
 
-#ifdef C4ENGINE
 class C4ConfigCooldowns
 {
 public:
@@ -286,18 +285,16 @@ public:
 
 public:
 	C4ConfigGeneral   General;
-	C4ConfigDeveloper Developer;
 #ifdef C4ENGINE
+	C4ConfigDeveloper Developer;
 	C4ConfigGraphics  Graphics;
 	C4ConfigSound     Sound;
-#endif
 	C4ConfigNetwork   Network;
 	C4ConfigLobby     Lobby;
 	C4ConfigIRC       IRC;
 	C4ConfigGamepad   Gamepads[C4ConfigMaxGamepads];
 	C4ConfigControls  Controls;
 	C4ConfigStartup   Startup;
-#ifdef C4ENGINE
 	C4ConfigCooldowns Cooldowns;
 	C4ConfigToasts    Toasts;
 #endif
@@ -312,7 +309,9 @@ public:
 	bool Init();
 	const char *AtExePath(const char *szFilename);
 	const char *AtTempPath(const char *szFilename);
+#ifdef C4ENGINE
 	const char *AtNetworkPath(const char *szFilename);
+#endif
 	const char *AtExeRelativePath(const char *szFilename);
 	const char *AtScreenshotPath(const char *szFilename);
 	const char *AtUserPath(const char *szFilename); // this one will expand environment variables on-the-fly
