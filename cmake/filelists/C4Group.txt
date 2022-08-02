@@ -6,3 +6,4 @@ src/C4InputValidation.h
 src/C4Update.cpp
 src/C4Update.h
 src/C4Version.h
+src/c4group_ng.cpp
