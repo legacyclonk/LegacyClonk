@@ -600,9 +600,7 @@ int main(int argc, char *argv[])
 	// Display current working directory
 	if (!fQuiet)
 	{
-		char strWorkingDirectory[_MAX_PATH + 1] = "";
-		GetCurrentDirectory(_MAX_PATH, strWorkingDirectory);
-		printf("Location: %s\n", strWorkingDirectory);
+		printf("Location: %s\n", GetWorkingDirectory());
 	}
 
 	// Store command line parameters
