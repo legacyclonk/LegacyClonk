@@ -38,6 +38,14 @@
 #include <C4Version.h>
 #include <C4Update.h>
 #include <C4Config.h>
+#include "StdRegistry.h"
+
+#ifdef _WIN32
+#include <shellapi.h>
+#include <conio.h>
+
+#define getch _getch
+#else
 
 // from http://cboard.cprogramming.com/archive/index.php/t-27714.html
 #include <stdio.h>
@@ -55,6 +63,10 @@ int mygetch()
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 	return ch;
 }
+
+#define getch mygetch
+
+#endif
 
 int globalArgC;
 char **globalArgV;
@@ -249,6 +261,7 @@ bool ProcessGroup(const char *FilenamePar)
 						break;
 					// View
 					case 'l':
+					case 'v':
 						hGroup.SetStdOutput(true);
 						if ((iArg + 1 >= argc) || (argv[iArg + 1][0] == '-'))
 						{
@@ -371,6 +384,43 @@ bool ProcessGroup(const char *FilenamePar)
 						hGroup.PrintInternals();
 						break;
 #endif
+
+#ifdef _WIN32
+					// Wait
+					case 'w':
+						if (iArg + 1 >= argc || argv[iArg + 1][0] == '-')
+						{
+							printf("Missing argument for wait command");
+						}
+						else
+						{
+							int milliseconds{0};
+							sscanf(argv[iArg + 1], "%d", &milliseconds);
+
+							if (milliseconds > 0)
+							{
+								// Wait for specified time
+								printf("Waiting...\n");
+								Sleep(milliseconds);
+							}
+							else
+							{
+								// Wait for specified process to end
+								printf("Waiting for %s to end", argv[iArg + 1]);
+
+								for (std::size_t i{0}; i < 5 && FindWindow(nullptr, argv[iArg + 1]); ++i)
+								{
+									Sleep(1000);
+									printf(".");
+								}
+
+								printf("\n");
+							}
+
+							++iArg;
+						}
+						break;
+#endif
 					// Undefined
 					default:
 						fprintf(stderr, "Unknown command: %s\n", argv[iArg]);
@@ -418,27 +468,23 @@ int RegisterShellExtensions()
 	char strClass[128];
 	GetModuleFileName(nullptr, strModule, 2048);
 	// Groups
-	const char *strClasses =
-		"Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink";
+	const char *strClasses = "Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink;Clonk4.Object";
 	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
 	{
 		// Unpack
 		sprintf(strCommand, "\"%s\" \"%%1\" \"-u\"", strModule);
-		if (!SetRegShell(strClass, "MakeFolder", "C4Group Unpack", strCommand))
-			return 0;
+		if (!SetRegShell(strClass, "MakeFolder", "C4Group Unpack", strCommand)) return 0;
 		// Explode
 		sprintf(strCommand, "\"%s\" \"%%1\" \"-x\"", strModule);
-		if (!SetRegShell(strClass, "ExplodeFolder", "C4Group Explode", strCommand))
-			return 0;
+		if (!SetRegShell(strClass, "ExplodeFolder", "C4Group Explode", strCommand)) return 0;
 	}
 	// Directories
 	const char *strClasses2 = "Directory";
-	for (i = 0; SCopySegment(strClasses2, i, strClass); i++)
+	for (int i = 0; SCopySegment(strClasses2, i, strClass); i++)
 	{
 		// Pack
 		sprintf(strCommand, "\"%s\" \"%%1\" \"-p\"", strModule);
-		if (!SetRegShell(strClass, "MakeGroupFile", "C4Group Pack", strCommand))
-			return 0;
+		if (!SetRegShell(strClass, "MakeGroupFile", "C4Group Pack", strCommand)) return 0;
 	}
 	// Done
 #endif
@@ -452,24 +498,20 @@ int UnregisterShellExtensions()
 	char strClass[128];
 	GetModuleFileName(nullptr, strModule, 2048);
 	// Groups
-	const char *strClasses =
-		"Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink";
+	const char *strClasses = "Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink";
 	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
 	{
 		// Unpack
-		if (!RemoveRegShell(strClass, "MakeFolder"))
-			return 0;
+		if (!RemoveRegShell(strClass, "MakeFolder")) return 0;
 		// Explode
-		if (!RemoveRegShell(strClass, "ExplodeFolder"))
-			return 0;
+		if (!RemoveRegShell(strClass, "ExplodeFolder")) return 0;
 	}
 	// Directories
 	const char *strClasses2 = "Directory";
-	for (i = 0; SCopySegment(strClasses2, i, strClass); i++)
+	for (int i = 0; SCopySegment(strClasses2, i, strClass); i++)
 	{
 		// Pack
-		if (!RemoveRegShell(strClass, "MakeGroupFile"))
-			return 0;
+		if (!RemoveRegShell(strClass, "MakeGroupFile")) return 0;
 	}
 	// Done
 #endif
@@ -478,18 +520,28 @@ int UnregisterShellExtensions()
 
 int main(int argc, char *argv[])
 {
+#ifndef _WIN32
 	// Always line buffer mode, even if the output is not sent to a terminal
 	setvbuf(stdout, nullptr, _IOLBF, 0);
+#endif
 	// Scan options
 	int iFirstGroup = 0;
 	for (int i = 1; i < argc; ++i)
 	{
 		// Option encountered
+#ifdef _WIN32
+		if (argv[i][0] == '/' || argv[i][0] == '-')
+#else
 		if (argv[i][0] == '-')
+#endif
 		{
 			switch (argv[i][1])
 			{
 			// Quiet mode
+			case 'q':
+				fQuiet = true;
+				break;
+			// Verbose mode
 			case 'v':
 				fQuiet = false;
 				break;
@@ -538,6 +590,14 @@ int main(int argc, char *argv[])
 	C4Group_SetTempPath(Config.General.TempPath);
 	C4Group_SetSortList(C4CFN_FLS);
 
+	// Display current working directory
+	if (!fQuiet)
+	{
+		char strWorkingDirectory[_MAX_PATH + 1] = "";
+		GetCurrentDirectory(_MAX_PATH, strWorkingDirectory);
+		printf("Location: %s\n", strWorkingDirectory);
+	}
+
 	// Store command line parameters
 	globalArgC = argc;
 	globalArgV = argv;
@@ -560,11 +620,11 @@ int main(int argc, char *argv[])
 	{
 #ifdef _WIN32
 		// Wildcard in filename: use file search
-		if (SCharCount('*', argv[1]))
-			ForEachFile(argv[1], &ProcessGroup);
+		if (SCharCount('*', argv[iFirstGroup]))
+			ForEachFile(argv[iFirstGroup], &ProcessGroup);
 		// Only one file
 		else
-			ProcessGroup(argv[1]);
+			ProcessGroup(argv[iFirstGroup]);
 #else
 		for (int i = iFirstGroup; i < argc && argv[i][0] != '-'; ++i)
 			ProcessGroup(argv[i]);
@@ -576,11 +636,11 @@ int main(int argc, char *argv[])
 		printf("\n");
 		printf("Usage:    c4group [options] group(s) command(s)\n\n");
 		printf("Commands: -a[s] Add [as]  -m Move  -e[t] Extract [to]\n");
-		printf("          -l List  -d Delete  -r Rename  -s Sort\n");
+		printf("          -v View  -l List  -d Delete  -r Rename  -s Sort\n");
 		printf("          -p Pack  -u Unpack  -x Explode\n");
 		printf("          -k Print maker\n");
 		printf("          -g [source] [target] [title] Make update\n");
-		printf("          -y Apply update\n");
+		printf("          -y[d] Apply update [and delete group file]\n");
 		printf("\n");
 		printf("Options:  -v Verbose -r Recursive -p Prompt at end\n");
 		printf("          -i Register shell -u Unregister shell\n");
@@ -601,13 +661,22 @@ int main(int argc, char *argv[])
 	if (fPromptAtEnd)
 	{
 		printf("\nDone. Press any key to continue.\n");
-		mygetch();
+		getch();
 	}
 
 	// Execute when done
 	if (strExecuteAtEnd[0])
 	{
 		printf("Executing: %s\n", strExecuteAtEnd);
+
+#ifdef _WIN32
+		STARTUPINFO startInfo{};
+		startInfo.cb = sizeof(startInfo);
+
+		PROCESS_INFORMATION procInfo;
+
+		CreateProcess(strExecuteAtEnd, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, &startInfo, &procInfo);
+#else
 		switch (fork())
 		{
 		// Error
@@ -622,6 +691,7 @@ int main(int argc, char *argv[])
 		default:
 			break;
 		}
+#endif
 	}
 
 	// Done
