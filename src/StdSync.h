@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include "C4Windows.h"
+
+#include <array>
 #include <limits>
 #include <mutex>
 #include <chrono>
@@ -39,46 +42,34 @@ public:
 class CStdEvent
 {
 public:
-	static constexpr auto Infinite = std::numeric_limits<unsigned int>::max();
-
-	CStdEvent(bool fManualReset) : fManualReset{fManualReset} {}
-
-protected:
-	std::mutex mutex;
-	std::condition_variable cv;
-	bool fManualReset;
-	bool fSet{false};
+	static constexpr auto Infinite = std::numeric_limits<std::uint32_t>::max();
 
 public:
-	void Set()
-	{
-		const std::lock_guard lock{mutex};
-		fSet = true;
-		cv.notify_all();
-	}
+	CStdEvent(bool initialState = false, bool manualReset = true);
+	~CStdEvent();
 
-	void Reset()
-	{
-		const std::lock_guard lock{mutex};
-		fSet = false;
-	}
+public:
+	void Set();
+	void Reset();
+	bool WaitFor(std::uint32_t milliseconds);
 
-	bool WaitFor(unsigned int iMillis)
-	{
-		std::unique_lock lock{mutex};
-		const auto predicate = [this]{ return fSet; };
-		if (iMillis == Infinite)
-		{
-			cv.wait(lock, predicate);
-		}
-		else
-		{
-			cv.wait_for(lock, std::chrono::milliseconds{iMillis}, predicate);
-		}
-		// Reset flag, release mutex, done.
-		if (!fManualReset) fSet = false;
-		return true;
-	}
+#ifdef _WIN32
+	HANDLE GetEvent() const { return event; }
+#else
+	std::array<int, 2> GetFDs() const { return {fd[0], fd[1]}; }
+
+private:
+	void Read();
+
+#endif
+
+private:
+#ifdef _WIN32
+	HANDLE event;
+#else
+	int fd[2]; // Not std::array in order to allow objects to be safely memcpy'd
+	bool manualReset;
+#endif
 };
 
 class CStdLock

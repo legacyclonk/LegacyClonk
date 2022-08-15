@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Standard.h"
+#include "StdSync.h"
 
 // Events are Windows-specific
 #ifndef _WIN32
@@ -68,11 +69,7 @@ private:
 	int iProcCnt, iProcCapacity;
 
 	// Unblocker
-#ifdef _WIN32
-	HANDLE hUnblocker;
-#else
-	int Unblocker[2];
-#endif
+	CStdEvent unblocker;
 
 	// Dummy lists (preserved to reduce allocs)
 #ifdef _WIN32
