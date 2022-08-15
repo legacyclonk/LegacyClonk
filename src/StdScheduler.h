@@ -121,7 +121,4 @@ public:
 
 	bool Start();
 	void Stop();
-
-private:
-	unsigned int ThreadFunc();
 };
