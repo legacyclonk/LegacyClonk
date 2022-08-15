@@ -27,7 +27,7 @@
 #include "C4Viewport.h"
 #include "C4GameOptions.h"
 
-#ifndef HAVE_WINSOCK
+#ifndef _WIN32
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

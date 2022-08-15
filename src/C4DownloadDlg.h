@@ -34,7 +34,7 @@ private:
 	C4GUI::ProgressBar *pProgressBar;
 	C4GUI::CancelButton *pCancelBtn;
 	const char *szError;
-#ifdef HAVE_WINSOCK
+#ifdef _WIN32
 	bool fWinSock;
 #endif
 

@@ -470,7 +470,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 	General.DeterminePaths(forceWorkingDirectory);
 #ifdef C4ENGINE
 	AdaptToCurrentVersion();
-#ifdef HAVE_WINSOCK
+#ifdef _WIN32
 	bool fWinSock = AcquireWinSock();
 #endif
 	if (SEqual(Network.LocalName.getData(), "Unknown"))
@@ -479,7 +479,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 		gethostname(LocalName, 25);
 		if (*LocalName) Network.LocalName.Copy(LocalName);
 	}
-#ifdef HAVE_WINSOCK
+#ifdef _WIN32
 	if (fWinSock) ReleaseWinSock();
 #endif
 #endif

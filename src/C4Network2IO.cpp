@@ -25,7 +25,7 @@
 #include <C4Log.h>
 #include <C4Game.h>
 
-#ifndef HAVE_WINSOCK
+#ifndef _WIN32
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

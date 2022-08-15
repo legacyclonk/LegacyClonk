@@ -99,7 +99,7 @@ namespace
 
 // *** helpers
 
-#ifdef HAVE_WINSOCK
+#ifdef _WIN32
 
 #ifndef WINSOCK_VERSION
 #define WINSOCK_VERSION 0x22
@@ -249,7 +249,7 @@ void ResetSocketError()
 	errno = 0;
 }
 
-#endif // HAVE_WINSOCK
+#endif
 
 // *** C4NetIO::HostAddress
 void C4NetIO::HostAddress::Clear()
@@ -735,7 +735,7 @@ std::vector<C4NetIO::HostAddress> C4NetIO::GetLocalAddresses(bool unsorted)
 {
 	std::vector<HostAddress> result;
 
-#ifdef HAVE_WINSOCK
+#ifdef _WIN32
 	std::vector<IP_ADAPTER_ADDRESSES> addresses{32};
 	for (int i = 0; i < 10; ++i)
 	{
@@ -931,16 +931,14 @@ bool C4NetIOTCP::Init(uint16_t iPort)
 	// already init? close first
 	if (fInit) Close();
 
-#ifdef HAVE_WINSOCK
+#ifdef _WIN32
 	// init winsock
 	if (!AcquireWinSock())
 	{
 		SetError("could not start winsock");
 		return false;
 	}
-#endif
 
-#ifdef _WIN32
 	// create event
 	if ((Event = WSACreateEvent()) == WSA_INVALID_EVENT)
 	{
@@ -1004,15 +1002,13 @@ bool C4NetIOTCP::Close()
 		WSACloseEvent(Event);
 		Event = nullptr;
 	}
+
+	// release winsock
+	ReleaseWinSock();
 #else
 	// close pipe
 	close(Pipe[0]);
 	close(Pipe[1]);
-#endif
-
-#ifdef HAVE_WINSOCK
-	// release winsock
-	ReleaseWinSock();
 #endif
 
 	// ok
@@ -1538,7 +1534,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 		// get peer address
 		if (::getpeername(nsock, &addr, &addrSize) == SOCKET_ERROR)
 		{
-#ifndef HAVE_WINSOCK
+#ifndef _WIN32
 			// getpeername behaves strangely on exotic platforms. Just ignore it.
 			if (errno != ENOTCONN)
 			{
@@ -1546,7 +1542,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 				// set error
 				SetError("could not get peer address for connected socket", true);
 				return nullptr;
-#ifndef HAVE_WINSOCK
+#ifndef _WIN32
 			}
 #endif
 		}
@@ -1978,7 +1974,7 @@ bool C4NetIOSimpleUDP::Init(uint16_t inPort)
 	// already initialized? close first
 	if (fInit) Close();
 
-#ifdef HAVE_WINSOCK
+#ifdef _WIN32
 	// init winsock
 	if (!AcquireWinSock())
 	{
@@ -2140,15 +2136,13 @@ bool C4NetIOSimpleUDP::Close()
 		WSACloseEvent(hEvent);
 		hEvent = nullptr;
 	}
+
+	// release winsock
+	ReleaseWinSock();
 #else
 	// close pipes
 	close(Pipe[0]);
 	close(Pipe[1]);
-#endif
-
-#ifdef HAVE_WINSOCK
-	// release winsock
-	ReleaseWinSock();
 #endif
 
 	// ok

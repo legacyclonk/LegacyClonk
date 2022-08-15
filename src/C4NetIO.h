@@ -31,8 +31,6 @@
 #ifdef _WIN32
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
-	// Events are Windows-specific
-	#define HAVE_WINSOCK
 #else
 	#define SOCKET int
 	#define INVALID_SOCKET (-1)
@@ -949,7 +947,7 @@ private:
 	void OnAddAddress(const addr_t &FromAddr, const AddAddrPacket &Packet);
 };
 
-#ifdef HAVE_WINSOCK
+#ifdef _WIN32
 bool AcquireWinSock();
 void ReleaseWinSock();
 #endif

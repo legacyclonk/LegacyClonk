@@ -34,8 +34,7 @@
 
 #ifdef _WIN32
 #include <direct.h>
-#endif
-#ifndef HAVE_WINSOCK
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

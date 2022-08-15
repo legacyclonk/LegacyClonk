@@ -22,7 +22,7 @@
 #include <C4Game.h>
 #include <C4Log.h>
 
-#ifndef HAVE_WINSOCK
+#ifndef _WIN32
 #include <netdb.h>
 #include <sys/socket.h> /* for AF_INET */
 #endif
