@@ -914,7 +914,7 @@ void C4NetIOPacket::Clear()
 C4NetIOTCP::C4NetIOTCP()
 	: pPeerList(nullptr), fInit(false),
 	pConnectWaits(nullptr),
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	Event(nullptr),
 #endif
 	PeerListCSec(this),
@@ -940,7 +940,7 @@ bool C4NetIOTCP::Init(uint16_t iPort)
 	}
 #endif
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	// create event
 	if ((Event = WSACreateEvent()) == WSA_INVALID_EVENT)
 	{
@@ -997,7 +997,7 @@ bool C4NetIOTCP::Close()
 		lsock = INVALID_SOCKET;
 	}
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	// close event
 	if (Event != nullptr)
 	{
@@ -1030,7 +1030,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 	// security
 	if (!fInit) return false;
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	// wait for something to happen
 	if (WaitForSingleObject(Event, iMaxTime == C4NetIO::TO_INF ? INFINITE : iMaxTime) == WAIT_TIMEOUT)
 		// timeout -> nothing happened
@@ -1077,7 +1077,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 	// first: the listen socket
 	if (lsock != INVALID_SOCKET)
 	{
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 		// get event list
 		if (::WSAEnumNetworkEvents(lsock, nullptr, &wsaEvents) == SOCKET_ERROR)
 			return false;
@@ -1092,7 +1092,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 				return false;
 		// (note: what happens if there are more connections waiting?)
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 		// closed?
 		if (wsaEvents.lNetworkEvents & FD_CLOSE)
 			// try to recreate the listen socket
@@ -1109,7 +1109,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 		// not closed?
 		if (pWait->sock != INVALID_SOCKET)
 		{
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 			// get event list
 			if (::WSAEnumNetworkEvents(pWait->sock, nullptr, &wsaEvents) == SOCKET_ERROR)
 				return false;
@@ -1123,7 +1123,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 				// remove from list
 				SOCKET sock = pWait->sock; pWait->sock = INVALID_SOCKET;
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 				// error?
 				if (wsaEvents.iErrorCode[FD_CONNECT_BIT])
 				{
@@ -1160,7 +1160,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 		{
 			SOCKET sock = pPeer->GetSocket();
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 			// get event list
 			if (::WSAEnumNetworkEvents(sock, nullptr, &wsaEvents) == SOCKET_ERROR)
 				return false;
@@ -1216,7 +1216,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 					pPeer->OnRecv(iBytesRead);
 				}
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 			// socket has become writeable?
 			if (wsaEvents.lNetworkEvents & FD_WRITE)
 #else
@@ -1226,7 +1226,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 				// send remaining data
 				pPeer->Send();
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 			// socket was closed?
 			if (wsaEvents.lNetworkEvents & FD_CLOSE)
 			{
@@ -1314,7 +1314,7 @@ bool C4NetIOTCP::Connect(const C4NetIO::addr_t &addr) // (mt-safe)
 
 bool C4NetIOTCP::Connect(const C4NetIO::addr_t &addr, const SOCKET nsock) // (mt-safe)
 {
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	// set event
 	if (::WSAEventSelect(nsock, Event, FD_CONNECT) == SOCKET_ERROR)
 	{
@@ -1326,17 +1326,6 @@ bool C4NetIOTCP::Connect(const C4NetIO::addr_t &addr, const SOCKET nsock) // (mt
 
 	// add to list
 	AddConnectWait(nsock, addr);
-
-#elif defined(HAVE_WINSOCK)
-	// disable blocking
-	unsigned long iBlock = 1;
-	if (::ioctlsocket(nsock, FIONBIO, &iBlock) == SOCKET_ERROR)
-	{
-		// set error
-		SetError("connect failed: could not disable blocking", true);
-		close(nsock);
-		return false;
-	}
 #else
 	// disable blocking
 	if (::fcntl(nsock, F_SETFL, fcntl(nsock, F_GETFL) | O_NONBLOCK) == SOCKET_ERROR)
@@ -1359,7 +1348,7 @@ bool C4NetIOTCP::Connect(const C4NetIO::addr_t &addr, const SOCKET nsock) // (mt
 		}
 	}
 
-#ifndef STDSCHEDULER_USE_EVENTS
+#ifndef _WIN32
 	// add to list
 	AddConnectWait(nsock, addr);
 #endif
@@ -1434,7 +1423,7 @@ bool C4NetIOTCP::Broadcast(const C4NetIOPacket &rPacket) // (mt-safe)
 
 void C4NetIOTCP::UnBlock() // (mt-safe)
 {
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	// unblock WaitForSingleObject in C4NetIOTCP::Execute manually
 	// by setting the Event
 	WSASetEvent(Event);
@@ -1446,7 +1435,7 @@ void C4NetIOTCP::UnBlock() // (mt-safe)
 #endif
 }
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 
 HANDLE C4NetIOTCP::GetEvent() // (mt-safe)
 {
@@ -1576,7 +1565,7 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 	int iNoDelay = 1;
 	::setsockopt(nsock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&iNoDelay), sizeof(iNoDelay));
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	// set event
 	if (::WSAEventSelect(nsock, Event, FD_READ | FD_WRITE | FD_CLOSE) == SOCKET_ERROR)
 	{
@@ -1584,16 +1573,6 @@ C4NetIOTCP::Peer *C4NetIOTCP::Accept(SOCKET nsock, const addr_t &ConnectAddr) //
 		SetError("connection accept failed: could not set event", true);
 		closesocket(nsock);
 		return nullptr;
-	}
-#elif defined(HAVE_WINSOCK)
-	// disable blocking
-	unsigned long iBlock = 1;
-	if (::ioctlsocket(nsock, FIONBIO, &iBlock) == SOCKET_ERROR)
-	{
-		// set error
-		SetError("connect failed: could not disable blocking", true);
-		close(nsock);
-		return false;
 	}
 #else
 	// disable blocking
@@ -1664,7 +1643,7 @@ bool C4NetIOTCP::Listen(uint16_t inListenPort)
 		return false;
 	}
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	// set event callback
 	if (::WSAEventSelect(lsock, Event, FD_ACCEPT | FD_CLOSE) == SOCKET_ERROR)
 	{
@@ -1754,7 +1733,7 @@ void C4NetIOTCP::AddConnectWait(SOCKET sock, const addr_t &addr) // (mt-safe)
 	pnWait->sock = sock; pnWait->addr = addr;
 	pnWait->Next = pConnectWaits;
 	pConnectWaits = pnWait;
-#ifndef STDSCHEDULER_USE_EVENTS
+#ifndef _WIN32
 	// unblock, so new FD can be realized
 	UnBlock();
 #endif
@@ -1883,7 +1862,7 @@ bool C4NetIOTCP::Peer::Send() // (mt-safe)
 		// Shrink buffer
 		OBuf.Move(iBytesSent, OBuf.getSize() - iBytesSent);
 		OBuf.Shrink(iBytesSent);
-#ifndef STDSCHEDULER_USE_EVENTS
+#ifndef _WIN32
 		// Unblock parent so the FD-list can be refreshed
 		pParent->UnBlock();
 #endif
@@ -1981,7 +1960,7 @@ void C4NetIOTCP::Peer::ClearStatistics() // (mt-safe)
 
 C4NetIOSimpleUDP::C4NetIOSimpleUDP()
 	: fInit(false), fMultiCast(false), iPort(~0), sock(INVALID_SOCKET), fAllowReUse(false)
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	, hEvent(nullptr)
 #endif
 {}
@@ -2037,7 +2016,7 @@ bool C4NetIOSimpleUDP::Init(uint16_t inPort)
 		return false;
 	}
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 
 	// create event
 	if ((hEvent = WSACreateEvent()) == WSA_INVALID_EVENT)
@@ -2154,7 +2133,7 @@ bool C4NetIOSimpleUDP::Close()
 		sock = INVALID_SOCKET;
 	}
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	// close event
 	if (hEvent != nullptr)
 	{
@@ -2295,7 +2274,7 @@ bool C4NetIOSimpleUDP::Broadcast(const C4NetIOPacket &rPacket)
 	return C4NetIOSimpleUDP::Send(C4NetIOPacket(rPacket.getRef(), MCAddr));
 }
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 
 void C4NetIOSimpleUDP::UnBlock() // (mt-safe)
 {
@@ -2334,7 +2313,7 @@ enum C4NetIOSimpleUDP::WaitResult C4NetIOSimpleUDP::WaitForSocket(int iTimeout)
 	return WR_Cancelled;
 }
 
-#else // STDSCHEDULER_USE_EVENTS
+#else
 
 void C4NetIOSimpleUDP::UnBlock() // (mt-safe)
 {
@@ -2383,7 +2362,7 @@ enum C4NetIOSimpleUDP::WaitResult C4NetIOSimpleUDP::WaitForSocket(int iTimeout)
 	return FD_ISSET(sock, &fds[0]) ? WR_Readable : WR_Cancelled;
 }
 
-#endif // STDSCHEDULER_USE_EVENTS
+#endif
 
 int C4NetIOSimpleUDP::GetTimeout()
 {

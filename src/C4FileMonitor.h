@@ -38,7 +38,7 @@ public:
 	virtual bool Execute(int iTimeout = -1) override;
 
 	// Signal for calling Execute()
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	virtual HANDLE GetEvent() override;
 #else
 	virtual void GetFDs(fd_set *pFDs, int *pMaxFD) override;

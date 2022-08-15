@@ -42,7 +42,7 @@
 
 // *** StdSchedulerProc
 
-#ifndef STDSCHEDULER_USE_EVENTS
+#ifndef _WIN32
 static bool FD_INTERSECTS(int n, fd_set *a, fd_set *b)
 {
 	for (int i = 0; i < n; ++i)
@@ -57,7 +57,7 @@ static bool FD_INTERSECTS(int n, fd_set *a, fd_set *b)
 StdScheduler::StdScheduler()
 	: ppProcs(nullptr), iProcCnt(0), iProcCapacity(0)
 {
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	hUnblocker = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	pEventHandles = nullptr;
 	ppEventProcs = nullptr;
@@ -84,7 +84,7 @@ int StdScheduler::getProc(StdSchedulerProc *pProc)
 void StdScheduler::Clear()
 {
 	delete[] ppProcs; ppProcs = nullptr;
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	delete[] pEventHandles; pEventHandles = nullptr;
 	delete[] ppEventProcs; ppEventProcs = nullptr;
 #endif
@@ -126,7 +126,7 @@ bool StdScheduler::Execute(int iTimeout)
 			if (iTimeout == -1 || iTimeout > iProcTimeout)
 				iTimeout = iProcTimeout;
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 
 	// Collect event handles
 	int iEventCnt = 0; HANDLE hEvent;
@@ -232,7 +232,7 @@ bool StdScheduler::Execute(int iTimeout)
 
 void StdScheduler::UnBlock()
 {
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	SetEvent(hUnblocker);
 #else
 	char c = 42;
@@ -250,7 +250,7 @@ void StdScheduler::Enlarge(int iBy)
 		ppnProcs[i] = ppProcs[i];
 	delete[] ppProcs;
 	ppProcs = ppnProcs;
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	// Allocate dummy arrays (one handle neede for unlocker!)
 	delete[] pEventHandles; pEventHandles = new HANDLE            [iProcCapacity + 1];
 	delete[] ppEventProcs;  ppEventProcs  = new StdSchedulerProc *[iProcCapacity];

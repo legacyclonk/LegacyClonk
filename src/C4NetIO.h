@@ -367,7 +367,7 @@ public:
 	virtual bool SetBroadcast(const addr_t &addr, bool fSet = true) override;
 
 	virtual void UnBlock();
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	virtual HANDLE GetEvent() override;
 #else
 	virtual void GetFDs(fd_set *pSet, int *pMaxFD) override;
@@ -477,7 +477,7 @@ protected:
 	uint16_t iListenPort;
 	SOCKET lsock{INVALID_SOCKET};
 
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	// event indicating network activity
 	HANDLE Event;
 #else
@@ -530,7 +530,7 @@ public:
 	virtual bool Broadcast(const C4NetIOPacket &rPacket) override;
 
 	virtual void UnBlock();
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	virtual HANDLE GetEvent() override;
 #else
 	virtual void GetFDs(fd_set *pSet, int *pMaxFD) override;
@@ -560,7 +560,7 @@ private:
 
 	// the socket and the associated event
 	SOCKET sock{INVALID_SOCKET};
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	HANDLE hEvent;
 #else
 	int Pipe[2];

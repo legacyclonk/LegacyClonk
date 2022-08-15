@@ -322,7 +322,7 @@ void C4FileMonitor::OnThreadEvent(C4InteractiveEventType eEvent, const std::any 
 void C4FileMonitor::AddDirectory(const char *szDir) {}
 
 // Signal for calling Execute()
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 HANDLE C4FileMonitor::GetEvent() { return 0; }
 #else
 void C4FileMonitor::GetFDs(fd_set *pFDs, int *pMaxFD) {}

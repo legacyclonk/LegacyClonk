@@ -21,12 +21,7 @@
 #include "Standard.h"
 
 // Events are Windows-specific
-#ifdef _WIN32
-	#define STDSCHEDULER_USE_EVENTS
-	#ifndef STDSCHEDULER_USE_EVENTS
-		#include <winsock2.h>
-	#endif
-#else
+#ifndef _WIN32
 	#include <sys/select.h>
 #endif
 
@@ -49,7 +44,7 @@ public:
 	virtual bool Execute(int iTimeout = -1) = 0;
 
 	// Signal for calling Execute()
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	virtual HANDLE GetEvent() { return 0; }
 #else
 	virtual void GetFDs(fd_set *pFDs, int *pMaxFD) {}
@@ -73,14 +68,14 @@ private:
 	int iProcCnt, iProcCapacity;
 
 	// Unblocker
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	HANDLE hUnblocker;
 #else
 	int Unblocker[2];
 #endif
 
 	// Dummy lists (preserved to reduce allocs)
-#ifdef STDSCHEDULER_USE_EVENTS
+#ifdef _WIN32
 	HANDLE *pEventHandles;
 	StdSchedulerProc **ppEventProcs;
 #endif
