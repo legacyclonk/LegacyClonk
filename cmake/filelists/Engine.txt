@@ -335,5 +335,6 @@ src/StdScheduler.cpp
 src/StdScheduler.h
 src/StdSurface8.cpp
 src/StdSurface8.h
+src/StdSync.cpp
 src/StdSync.h
 src/StdWindow.h

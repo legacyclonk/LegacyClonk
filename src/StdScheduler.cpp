@@ -53,15 +53,6 @@ static bool FD_INTERSECTS(int n, fd_set *a, fd_set *b)
 StdScheduler::StdScheduler()
 	: ppProcs(nullptr), iProcCnt(0), iProcCapacity(0)
 {
-#ifdef _WIN32
-	hUnblocker = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-	pEventHandles = nullptr;
-	ppEventProcs = nullptr;
-#else
-	pipe(Unblocker);
-	// Experimental castration of the unblocker.
-	fcntl(Unblocker[0], F_SETFL, fcntl(Unblocker[0], F_GETFL) | O_NONBLOCK);
-#endif
 }
 
 StdScheduler::~StdScheduler()
@@ -135,7 +126,7 @@ bool StdScheduler::Execute(int iTimeout)
 		}
 
 	// Add Unblocker
-	pEventHandles[iEventCnt++] = hUnblocker;
+	pEventHandles[iEventCnt++] = unblocker.GetEvent();
 
 	// Wait for something to happen
 	DWORD ret = WaitForMultipleObjects(iEventCnt, pEventHandles, FALSE, iTimeout < 0 ? INFINITE : iTimeout);
@@ -159,31 +150,33 @@ bool StdScheduler::Execute(int iTimeout)
 #else
 
 	// Initialize file descriptor sets
-	fd_set fds[2]; int iMaxFDs = Unblocker[0];
+	fd_set fds[2];
+	const auto unblockerFD = unblocker.GetFDs()[0];
+	int maxFDs{unblockerFD};
+
 	FD_ZERO(&fds[0]); FD_ZERO(&fds[1]);
 
 	// Add Unblocker
-	FD_SET(Unblocker[0], &fds[0]);
+	FD_SET(unblockerFD, &fds[0]);
 
 	// Collect file descriptors
 	for (i = 0; i < iProcCnt; i++)
-		ppProcs[i]->GetFDs(fds, &iMaxFDs);
+		ppProcs[i]->GetFDs(fds, &maxFDs);
 
 	// Build timeout structure
 	timeval to = { iTimeout / 1000, (iTimeout % 1000) * 1000 };
 
 	// Wait for something to happen
-	int cnt = select(iMaxFDs + 1, &fds[0], &fds[1], nullptr, iTimeout < 0 ? nullptr : &to);
+	const int cnt{select(maxFDs + 1, &fds[0], &fds[1], nullptr, iTimeout < 0 ? nullptr : &to)};
 
 	bool fSuccess = true;
 
 	if (cnt > 0)
 	{
 		// Unblocker? Flush
-		if (FD_ISSET(Unblocker[0], &fds[0]))
+		if (FD_ISSET(unblockerFD, &fds[0]))
 		{
-			char c;
-			read(Unblocker[0], &c, 1);
+			unblocker.Reset();
 		}
 
 		// Which process?
@@ -228,12 +221,7 @@ bool StdScheduler::Execute(int iTimeout)
 
 void StdScheduler::UnBlock()
 {
-#ifdef _WIN32
-	SetEvent(hUnblocker);
-#else
-	char c = 42;
-	write(Unblocker[1], &c, 1);
-#endif
+	unblocker.Set();
 }
 
 void StdScheduler::Enlarge(int iBy)
