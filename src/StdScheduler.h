@@ -69,7 +69,7 @@ private:
 	std::unordered_set<StdSchedulerProc *> procs;
 
 	// Unblocker
-	CStdEvent unblocker;
+	mutable CStdEvent unblocker;
 
 	// Dummy lists (preserved to reduce allocs)
 #ifdef _WIN32
@@ -77,19 +77,21 @@ private:
 	std::vector<StdSchedulerProc *> eventProcs;
 #endif
 
+	mutable std::mutex procMutex;
+
 public:
-	std::size_t getProcCnt() const { return procs.size(); }
+	std::size_t getProcCnt() const;
 
 	void Clear();
 	void Add(StdSchedulerProc *proc);
 	void Remove(StdSchedulerProc *proc);
 
 	bool Execute(int iTimeout = -1);
-	void UnBlock();
 
 protected:
 	// overridable
 	virtual void OnError(StdSchedulerProc *pProc) {}
+	void UnBlock() const;
 };
 
 // A simple process scheduler thread
