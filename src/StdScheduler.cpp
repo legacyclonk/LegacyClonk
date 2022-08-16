@@ -50,15 +50,6 @@ static bool FD_INTERSECTS(int n, fd_set *a, fd_set *b)
 
 // *** StdScheduler
 
-StdScheduler::StdScheduler()
-{
-}
-
-StdScheduler::~StdScheduler()
-{
-	Clear();
-}
-
 std::size_t StdScheduler::getProcCnt() const
 {
 	UnBlock();
@@ -230,20 +221,10 @@ void StdScheduler::UnBlock() const
 
 // *** StdSchedulerThread
 
-StdSchedulerThread::StdSchedulerThread()
-	: fThread(false) {}
-
 StdSchedulerThread::~StdSchedulerThread()
-{
-	Clear();
-}
-
-void StdSchedulerThread::Clear()
 {
 	// Stop thread
 	if (fThread) Stop();
-	// Clear scheduler
-	StdScheduler::Clear();
 }
 
 void StdSchedulerThread::Add(StdSchedulerProc *pProc)

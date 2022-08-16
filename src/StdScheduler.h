@@ -61,8 +61,8 @@ public:
 class StdScheduler
 {
 public:
-	StdScheduler();
-	virtual ~StdScheduler();
+	StdScheduler() = default;
+	virtual ~StdScheduler() = default;
 
 private:
 	// Process list
@@ -98,14 +98,14 @@ protected:
 class StdSchedulerThread : public StdScheduler
 {
 public:
-	StdSchedulerThread();
+	StdSchedulerThread() = default;
 	virtual ~StdSchedulerThread();
 
 private:
 	// thread control
 	bool fRunThreadRun;
 
-	bool fThread;
+	bool fThread{false};
 	std::thread thread;
 
 public:
