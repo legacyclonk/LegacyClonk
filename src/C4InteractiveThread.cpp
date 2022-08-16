@@ -59,14 +59,12 @@ bool C4InteractiveThread::AddProc(StdSchedulerProc *pProc)
 
 void C4InteractiveThread::RemoveProc(StdSchedulerProc *pProc)
 {
-	// Process not in list?
-	if (!Scheduler.hasProc(pProc))
-		return;
-	// Last proc to be removed?
-	if (Scheduler.getProcCnt() == 1)
-		Scheduler.Stop();
-	// Remove
 	Scheduler.Remove(pProc);
+	// Last proc to be removed?
+	if (Scheduler.getProcCnt() == 0)
+	{
+		Scheduler.Stop();
+	}
 }
 
 bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, const std::any &data)
