@@ -1372,7 +1372,7 @@ void C4Def::Picture2Facet(C4FacetExSurface &cgo, uint32_t color, int32_t xPhase)
 
 // C4DefList
 
-bool C4DefList::GetFontImage(const char *szImageTag, CFacet &rOutImgFacet)
+bool C4DefList::GetFontImage(const char *szImageTag, C4Facet &rOutImgFacet)
 {
 	// extended: images by game
 	C4FacetExSurface fctOut;

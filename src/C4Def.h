@@ -31,6 +31,8 @@
 
 #include "C4DelegatedIterable.h"
 
+#include "StdFont.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -410,7 +412,7 @@ public:
 	void Synchronize();
 
 	// callback from font renderer: get ID image
-	virtual bool GetFontImage(const char *szImageTag, CFacet &rOutImgFacet) override;
+	virtual bool GetFontImage(const char *szImageTag, C4Facet &rOutImgFacet) override;
 
 private:
 	std::vector<std::unique_ptr<C4Def>>::iterator FindDefByID(C4ID id);

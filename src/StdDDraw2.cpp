@@ -18,7 +18,6 @@
 /* NewGfx interfaces */
 
 #include <Standard.h>
-#include <StdFacet.h>
 #include <StdDDraw2.h>
 #include <StdGL.h>
 #include <StdNoGfx.h>

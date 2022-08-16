@@ -21,7 +21,6 @@
 
 #include <C4Surface.h>
 #include <StdSurface8.h>
-#include <StdFont.h>
 #include <StdBuf.h>
 
 #include <unordered_map>
@@ -35,6 +34,8 @@ struct CStdPalette;
 class CStdGLCtx;
 class CStdApp;
 class CStdWindow;
+class CStdFont;
+class CMarkup;
 
 // engines
 #define GFXENGN_OPENGL   0

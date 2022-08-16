@@ -33,6 +33,7 @@
 #include "C4LogBuf.h"
 #include "C4Shape.h"
 
+#include "StdFont.h"
 #include "StdResStr2.h"
 #include "StdWindow.h"
 

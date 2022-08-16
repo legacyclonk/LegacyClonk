@@ -19,9 +19,10 @@
 
 #pragma once
 
+#include "C4Facet.h"
+
 #include <Standard.h>
 #include <StdMarkup.h>
-#include <StdFacet.h>
 #include <StdBuf.h>
 #include <stdio.h>
 #include <map>
@@ -40,7 +41,6 @@
 #endif
 
 class CMarkup;
-class CFacet;
 class CStdVectorFont;
 
 class CStdFont
@@ -50,7 +50,7 @@ public:
 	class CustomImages
 	{
 	protected:
-		virtual bool GetFontImage(const char *szImageTag, CFacet &rOutImgFacet) = 0;
+		virtual bool GetFontImage(const char *szImageTag, C4Facet &rOutImgFacet) = 0;
 
 		friend class CStdFont;
 
@@ -84,8 +84,8 @@ protected:
 	uint32_t dwWeight; // font weight (usually FW_NORMAL or FW_BOLD)
 	bool fDoShadow; // if the font is shadowed
 
-	CFacet fctAsciiTexCoords[256 - ' ']; // texture coordinates of ASCII letters
-	std::map<uint32_t, CFacet> fctUnicodeMap; // texture coordinates of Unicode letters
+	C4Facet fctAsciiTexCoords[256 - ' ']; // texture coordinates of ASCII letters
+	std::map<uint32_t, C4Facet> fctUnicodeMap; // texture coordinates of Unicode letters
 
 	CustomImages *pCustomImages; // callback class for custom images
 
@@ -95,7 +95,7 @@ protected:
 
 	bool AddSurface();
 	bool CheckRenderedCharSpace(uint32_t iCharWdt, uint32_t iCharHgt);
-	bool AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget);
+	bool AddRenderedChar(uint32_t dwChar, C4Facet *pfctTarget);
 
 	// get a character at the current string pos and advance pos by that character
 	inline uint32_t GetNextCharacter(const char **pszString)
@@ -107,12 +107,12 @@ protected:
 
 	uint32_t GetNextUTF8Character(const char **pszString);
 
-	CFacet &GetCharacterFacet(uint32_t c)
+	C4Facet &GetCharacterFacet(uint32_t c)
 	{
 		if (!fUTF8 || c < 128) return fctAsciiTexCoords[c - ' ']; else return GetUnicodeCharacterFacet(c);
 	}
 
-	CFacet &GetUnicodeCharacterFacet(uint32_t c);
+	C4Facet &GetUnicodeCharacterFacet(uint32_t c);
 	int iLineHgt; // height of one line of font (in pixels)
 	float scale = 1.f;
 

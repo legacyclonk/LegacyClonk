@@ -317,7 +317,6 @@ src/StdBitmap.h
 src/StdColors.h
 src/StdDDraw2.cpp
 src/StdDDraw2.h
-src/StdFacet.h
 src/StdFont.cpp
 src/StdFont.h
 src/StdGL.cpp

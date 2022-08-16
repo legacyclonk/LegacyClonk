@@ -76,7 +76,6 @@
 #include <StdConfig.h>
 #include <StdCompiler.h>
 #include <StdDDraw2.h>
-#include <StdFacet.h>
 #include <StdFile.h>
 #include <StdFont.h>
 #include <StdMarkup.h>

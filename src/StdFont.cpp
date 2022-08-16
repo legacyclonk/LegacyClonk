@@ -20,6 +20,7 @@
 
 #include <Standard.h>
 #include <StdBuf.h>
+#include "StdFont.h"
 #include <StdDDraw2.h>
 #include <C4Surface.h>
 #include <StdMarkup.h>
@@ -172,7 +173,7 @@ bool CStdFont::CheckRenderedCharSpace(uint32_t iCharWdt, uint32_t iCharHgt)
 	return true;
 }
 
-bool CStdFont::AddRenderedChar(uint32_t dwChar, CFacet *pfctTarget)
+bool CStdFont::AddRenderedChar(uint32_t dwChar, C4Facet *pfctTarget)
 {
 	int shadowSize = fDoShadow ? static_cast<int>(std::round(scale)) : 0;
 
@@ -296,10 +297,10 @@ uint32_t CStdFont::GetNextUTF8Character(const char **pszString)
 	return dwResult;
 }
 
-CFacet &CStdFont::GetUnicodeCharacterFacet(uint32_t c)
+C4Facet &CStdFont::GetUnicodeCharacterFacet(uint32_t c)
 {
 	// find/add facet in map
-	CFacet &rFacet = fctUnicodeMap[c];
+	C4Facet &rFacet = fctUnicodeMap[c];
 	// create character on the fly if necessary and possible
 	if (!rFacet.Surface && !fPrerenderedFont) AddRenderedChar(c, &rFacet);
 	// rendering might have failed, in which case rFacet remains empty. Should be OK; char won't be printed then
@@ -536,7 +537,7 @@ void CStdFont::Clear()
 	}
 	sfcCurrent = nullptr;
 	iNumFontSfcs = 0;
-	for (int c = ' '; c < 256; ++c) fctAsciiTexCoords[c - ' '].Clear();
+	for (int c = ' '; c < 256; ++c) fctAsciiTexCoords[c - ' '].Default();
 	fctUnicodeMap.clear();
 	// set default values
 	dwDefFontHeight = iLineHgt = 10;
@@ -588,7 +589,7 @@ bool CStdFont::GetTextExtent(const char *szText, int32_t &rsx, int32_t &rsy, boo
 		{
 			char imgbuf[101];
 			SCopy(szText + 1, imgbuf, (std::min)(iImgLgt, 100));
-			CFacet fct;
+			C4Facet fct;
 			// image renderer initialized?
 			if (pCustomImages)
 				// try to get an image then
@@ -660,7 +661,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 			{
 				char imgbuf[101];
 				SCopy(szPos + 1, imgbuf, (std::min)(iImgLgt, 100));
-				CFacet fct;
+				C4Facet fct;
 				// image renderer initialized?
 				if (pCustomImages)
 					// try to get an image then
@@ -827,7 +828,7 @@ void CStdFont::DrawText(C4Surface *sfcDest, int iX, int iY, uint32_t dwColor, co
 	if (!Markup.Clean()) pbt = &bt;
 	// output text
 	uint32_t c;
-	CFacet fctFromBlt; // source facet
+	C4Facet fctFromBlt; // source facet
 	while (c = GetNextCharacter(&szText))
 	{
 		// ignore system characters
