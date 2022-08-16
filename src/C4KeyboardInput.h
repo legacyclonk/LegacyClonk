@@ -20,6 +20,7 @@
 #pragma once
 
 #include <cassert>
+#include <map>
 #include <vector>
 
 // key context classifications
