@@ -51,7 +51,6 @@ static bool FD_INTERSECTS(int n, fd_set *a, fd_set *b)
 // *** StdScheduler
 
 StdScheduler::StdScheduler()
-	: ppProcs(nullptr), iProcCnt(0), iProcCapacity(0)
 {
 }
 
@@ -59,92 +58,78 @@ StdScheduler::~StdScheduler()
 {
 	Clear();
 }
-
-int StdScheduler::getProc(StdSchedulerProc *pProc)
-{
-	for (int i = 0; i < iProcCnt; i++)
-		if (ppProcs[i] == pProc)
-			return i;
-	return -1;
-}
-
 void StdScheduler::Clear()
 {
-	delete[] ppProcs; ppProcs = nullptr;
+	procs.clear();
 #ifdef _WIN32
-	delete[] pEventHandles; pEventHandles = nullptr;
-	delete[] ppEventProcs; ppEventProcs = nullptr;
+	eventHandles.clear();
+	eventProcs.clear();
 #endif
-	iProcCnt = iProcCapacity = 0;
 }
 
-void StdScheduler::Add(StdSchedulerProc *pProc)
+void StdScheduler::Add(StdSchedulerProc *const proc)
 {
-	// Alrady in list?
-	if (hasProc(pProc)) return;
-	// Enlarge
-	if (iProcCnt >= iProcCapacity) Enlarge(1);
-	// Add
-	ppProcs[iProcCnt] = pProc;
-	iProcCnt++;
+	procs.insert(proc);
 }
 
-void StdScheduler::Remove(StdSchedulerProc *pProc)
+void StdScheduler::Remove(StdSchedulerProc *const proc)
 {
-	// Search
-	int iPos = getProc(pProc);
-	// Not found?
-	if (iPos >= iProcCnt) return;
-	// Remove
-	for (int i = iPos + 1; i < iProcCnt; i++)
-		ppProcs[i - 1] = ppProcs[i];
-	iProcCnt--;
+	procs.erase(proc);
 }
 
 bool StdScheduler::Execute(int iTimeout)
 {
 	// Needs at least one process to work properly
-	if (!iProcCnt) return false;
+	if (!procs.size()) return false;
 
 	// Get timeout
-	int i; int iProcTimeout;
-	for (i = 0; i < iProcCnt; i++)
-		if ((iProcTimeout = ppProcs[i]->GetTimeout()) >= 0)
-			if (iTimeout == -1 || iTimeout > iProcTimeout)
-				iTimeout = iProcTimeout;
+	for (auto *const proc : procs)
+	{
+		if (const int procTimeout{proc->GetTimeout()}; procTimeout >= 0)
+		{
+			if (iTimeout == -1 || iTimeout > procTimeout)
+			{
+				iTimeout = procTimeout;
+			}
+		}
+	}
 
 #ifdef _WIN32
+	eventHandles.clear();
+	eventProcs.clear();
 
 	// Collect event handles
-	int iEventCnt = 0; HANDLE hEvent;
-	for (i = 0; i < iProcCnt; i++)
-		if (hEvent = ppProcs[i]->GetEvent())
+	for (auto *const proc : procs)
+	{
+		if (const HANDLE event{proc->GetEvent()}; event)
 		{
-			pEventHandles[iEventCnt] = hEvent;
-			ppEventProcs[iEventCnt] = ppProcs[i];
-			iEventCnt++;
+			eventHandles.emplace_back(event);
+			eventProcs.emplace_back(proc);
 		}
+	}
 
 	// Add Unblocker
-	pEventHandles[iEventCnt++] = unblocker.GetEvent();
+	eventHandles.emplace_back(unblocker.GetEvent());
 
 	// Wait for something to happen
-	DWORD ret = WaitForMultipleObjects(iEventCnt, pEventHandles, FALSE, iTimeout < 0 ? INFINITE : iTimeout);
+	const DWORD ret{WaitForMultipleObjects(eventHandles.size(), eventHandles.data(), false, iTimeout < 0 ? INFINITE : iTimeout)};
 
-	bool fSuccess = true;
+	bool success{false};
 
 	if (ret != WAIT_TIMEOUT)
 	{
 		// Which event?
-		int iEventNr = ret - WAIT_OBJECT_0;
+		const auto eventNumber = ret - WAIT_OBJECT_0;
 
 		// Execute the signaled proces
-		if (iEventNr < iEventCnt - 1)
-			if (!ppEventProcs[iEventNr]->Execute())
+		if (eventNumber < eventHandles.size() - 1)
+		{
+			if (!eventProcs[eventNumber]->Execute())
 			{
-				OnError(ppEventProcs[iEventNr]);
-				fSuccess = false;
+				OnError(eventProcs[eventNumber]);
+				success = false;
 			}
+		}
 	}
 
 #else
@@ -160,16 +145,18 @@ bool StdScheduler::Execute(int iTimeout)
 	FD_SET(unblockerFD, &fds[0]);
 
 	// Collect file descriptors
-	for (i = 0; i < iProcCnt; i++)
-		ppProcs[i]->GetFDs(fds, &maxFDs);
+	for (auto *const proc : procs)
+	{
+		proc->GetFDs(fds, &maxFDs);
+	}
 
 	// Build timeout structure
-	timeval to = { iTimeout / 1000, (iTimeout % 1000) * 1000 };
+	timeval to { iTimeout / 1000, (iTimeout % 1000) * 1000 };
 
 	// Wait for something to happen
 	const int cnt{select(maxFDs + 1, &fds[0], &fds[1], nullptr, iTimeout < 0 ? nullptr : &to)};
 
-	bool fSuccess = true;
+	bool success{true};
 
 	if (cnt > 0)
 	{
@@ -181,21 +168,21 @@ bool StdScheduler::Execute(int iTimeout)
 
 		// Which process?
 		fd_set test_fds[2];
-		for (i = 0; i < iProcCnt; i++)
+		for (auto *const proc : procs)
 		{
 			// Get FDs for this process alone
 			int test_iMaxFDs = 0;
 			FD_ZERO(&test_fds[0]); FD_ZERO(&test_fds[1]);
-			ppProcs[i]->GetFDs(test_fds, &test_iMaxFDs);
+			proc->GetFDs(test_fds, &test_iMaxFDs);
 
 			// Check intersection
 			if (FD_INTERSECTS(test_iMaxFDs + 1, &test_fds[0], &fds[0]) ||
 				FD_INTERSECTS(test_iMaxFDs + 1, &test_fds[1], &fds[1]))
 			{
-				if (!ppProcs[i]->Execute(0))
+				if (!proc->Execute(0))
 				{
-					OnError(ppProcs[i]);
-					fSuccess = false;
+					OnError(proc);
+					success = false;
 				}
 			}
 		}
@@ -207,38 +194,24 @@ bool StdScheduler::Execute(int iTimeout)
 
 #endif
 
-	// Execute all processes with timeout
-	for (i = 0; i < iProcCnt; i++)
-		if (ppProcs[i]->GetTimeout() == 0)
-			if (!ppProcs[i]->Execute())
+	for (auto *const proc : procs)
+	{
+		if (proc->GetTimeout() == 0)
+		{
+			if (!proc->Execute())
 			{
-				OnError(ppProcs[i]);
-				fSuccess = false;
+				OnError(proc);
+				success = false;
 			}
+		}
+	}
 
-	return fSuccess;
+	return success;
 }
 
 void StdScheduler::UnBlock()
 {
 	unblocker.Set();
-}
-
-void StdScheduler::Enlarge(int iBy)
-{
-	iProcCapacity += iBy;
-	// Realloc
-	StdSchedulerProc **ppnProcs = new StdSchedulerProc *[iProcCapacity];
-	// Set data
-	for (int i = 0; i < iProcCnt; i++)
-		ppnProcs[i] = ppProcs[i];
-	delete[] ppProcs;
-	ppProcs = ppnProcs;
-#ifdef _WIN32
-	// Allocate dummy arrays (one handle neede for unlocker!)
-	delete[] pEventHandles; pEventHandles = new HANDLE            [iProcCapacity + 1];
-	delete[] ppEventProcs;  ppEventProcs  = new StdSchedulerProc *[iProcCapacity];
-#endif
 }
 
 // *** StdSchedulerThread

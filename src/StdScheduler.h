@@ -27,6 +27,7 @@
 #endif
 
 #include <thread>
+#include <unordered_set>
 
 // helper
 inline int MaxTimeout(int iTimeout1, int iTimeout2)
@@ -65,26 +66,23 @@ public:
 
 private:
 	// Process list
-	StdSchedulerProc **ppProcs;
-	int iProcCnt, iProcCapacity;
+	std::unordered_set<StdSchedulerProc *> procs;
 
 	// Unblocker
 	CStdEvent unblocker;
 
 	// Dummy lists (preserved to reduce allocs)
 #ifdef _WIN32
-	HANDLE *pEventHandles;
-	StdSchedulerProc **ppEventProcs;
+	std::vector<HANDLE> eventHandles;
+	std::vector<StdSchedulerProc *> eventProcs;
 #endif
 
 public:
-	int getProcCnt() const { return iProcCnt; }
-	int getProc(StdSchedulerProc *pProc);
-	bool hasProc(StdSchedulerProc *pProc) { return getProc(pProc) >= 0; }
+	std::size_t getProcCnt() const { return procs.size(); }
 
 	void Clear();
-	void Add(StdSchedulerProc *pProc);
-	void Remove(StdSchedulerProc *pProc);
+	void Add(StdSchedulerProc *proc);
+	void Remove(StdSchedulerProc *proc);
 
 	bool Execute(int iTimeout = -1);
 	void UnBlock();
@@ -92,9 +90,6 @@ public:
 protected:
 	// overridable
 	virtual void OnError(StdSchedulerProc *pProc) {}
-
-private:
-	void Enlarge(int iBy);
 };
 
 // A simple process scheduler thread
