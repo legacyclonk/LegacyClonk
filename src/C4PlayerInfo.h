@@ -200,7 +200,7 @@ public:
 	StdStrBuf GetLobbyName() const; // return player name including clan/team tag if known; fallback to regular player name
 	const char *GetFilename() const { return szFilename.getData(); } // get filename for local games
 	const char *GetLocalJoinFilename() const; // get name of file to join the player from
-	C4Network2Res *GetRes() const { return pRes; } // get player ressource for network games
+	C4Network2Res *GetRes() const { return pRes.get(); } // get player ressource for network games
 	bool IsRemoved() const { return !!(dwFlags & PIF_Removed); }
 	bool HasJoined() const { return !!(dwFlags & PIF_Joined); } // return whether player has joined
 	bool IsJoined() const { return HasJoined() && !(dwFlags & PIF_Removed); } // return whether player is currently in the game

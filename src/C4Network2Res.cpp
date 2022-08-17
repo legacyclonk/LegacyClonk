@@ -354,7 +354,7 @@ void C4Network2ResChunkData::CompileFunc(StdCompiler *pComp)
 C4Network2Res::C4Network2Res(C4Network2ResList *pnParent)
 	: fDirty(false),
 	fTempFile(false), fStandaloneFailed(false),
-	iRefCnt(0), fRemoved(false),
+	fRemoved(false),
 	iLastReqTime(0),
 	fLoading(false),
 	pCChunks(nullptr), iDiscoverStartTime(0), pLoads(nullptr), iLoadCnt(0),
@@ -761,18 +761,17 @@ C4Network2Res::Ref C4Network2Res::Derive()
 	// (note: should remove temp file if something fails after this point)
 
 	// create new ressource
-	C4Network2Res::Ref pDRes = new C4Network2Res(pParent);
-	if (!pDRes) return nullptr;
+	auto resource = std::make_shared<C4Network2Res>(pParent);
 
 	// initialize
-	if (!pDRes->SetDerived(Core.getFileName(), szOrgFile, fOrgTempFile, getType(), getResID()))
+	if (!resource->SetDerived(Core.getFileName(), szOrgFile, fOrgTempFile, getType(), getResID()))
 		return nullptr;
 
 	// add to list
-	pParent->Add(pDRes);
+	pParent->Add(resource);
 
 	// return new ressource
-	return pDRes;
+	return resource;
 }
 
 bool C4Network2Res::FinishDerive() // by main thread
@@ -862,16 +861,6 @@ bool C4Network2Res::SendChunk(uint32_t iChunk, int32_t iToClient)
 	bool fSuccess = pConn->Send(MkC4NetIOPacket(PID_NetResData, ResChunk));
 	pConn->DelRef();
 	return fSuccess;
-}
-
-void C4Network2Res::AddRef()
-{
-	++iRefCnt;
-}
-
-void C4Network2Res::DelRef()
-{
-	if (--iRefCnt == 0) delete this;
 }
 
 void C4Network2Res::OnDiscover(C4Network2IOConnection *pBy)
@@ -1289,7 +1278,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (f == -1)
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		logger->trace("C4Network2ResChunk({})::AddTo({} [{}]): Open write file error: {}!", iResID, Core.getFileName(), pRes->getResID(), strerror(errno));
+		logger->trace("C4Network2ResChunk({})::AddTo({} [{}]): Open write file error: {}!", iResID, Core.getFileName(), pRes->getResID(), std::strerror(errno));
 #endif
 		return false;
 	}
@@ -1332,7 +1321,6 @@ void C4Network2ResChunk::CompileFunc(StdCompiler *pComp)
 C4Network2ResList::C4Network2ResList()
 	: iClientID(-1),
 	iNextResID((-1) << 16),
-	pFirst(nullptr),
 	ResListCSec(this),
 	iLastDiscover(0), iLastStatus(0),
 	pIO(nullptr) {}
@@ -1368,9 +1356,13 @@ void C4Network2ResList::SetLocalID(int32_t inClientID)
 	iNextResID += iIDDiff;
 	// change ressource ids
 	CStdLock ResListLock(&ResListCSec);
-	for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
-		if (pRes->getResClient() == iOldClientID)
-			pRes->ChangeID(pRes->getResID() + iIDDiff);
+	for (const auto &resource : resources)
+	{
+		if (resource->getResClient() == iOldClientID)
+		{
+			resource->ChangeID(resource->getResID() + iIDDiff);
+		}
+	}
 }
 
 int32_t C4Network2ResList::nextResID() // by main thread
@@ -1388,112 +1380,139 @@ int32_t C4Network2ResList::nextResID() // by main thread
 C4Network2Res *C4Network2ResList::getRes(int32_t iResID)
 {
 	CStdShareLock ResListLock(&ResListCSec);
-	for (C4Network2Res *pCur = pFirst; pCur; pCur = pCur->pNext)
-		if (pCur->getResID() == iResID)
-			return pCur;
+	for (const auto &resource : resources)
+	{
+		if (resource->getResID() == iResID)
+		{
+			return resource.get();
+		}
+	}
+
 	return nullptr;
 }
 
 C4Network2Res *C4Network2ResList::getRes(const char *szFile, bool fLocalOnly)
 {
 	CStdShareLock ResListLock(&ResListCSec);
-	for (C4Network2Res *pCur = pFirst; pCur; pCur = pCur->pNext)
-		if (!pCur->isAnonymous())
-			if (SEqual(pCur->getFile(), szFile))
-				if (!fLocalOnly || pCur->getResClient() == iClientID)
-					return pCur;
+	for (const auto &resource : resources)
+	{
+		if (!resource->isAnonymous() && SEqual(resource->getFile(), szFile) && (!fLocalOnly || resource->getResClient() == iClientID))
+		{
+			return resource.get();
+		}
+	}
+
 	return nullptr;
 }
 
 C4Network2Res::Ref C4Network2ResList::getRefRes(int32_t iResID)
 {
 	CStdShareLock ResListLock(&ResListCSec);
-	return getRes(iResID);
+	if (auto *const res = getRes(iResID); res)
+	{
+		return res->shared_from_this();
+	}
+
+	return {};
 }
 
 C4Network2Res::Ref C4Network2ResList::getRefRes(const char *szFile, bool fLocalOnly)
 {
 	CStdShareLock ResListLock(&ResListCSec);
-	return getRes(szFile, fLocalOnly);
+	if (auto *const res = getRes(szFile, fLocalOnly); res)
+	{
+		return res->shared_from_this();
+	}
+
+	return {};
 }
 
 C4Network2Res::Ref C4Network2ResList::getRefNextRes(int32_t iResID)
 {
 	CStdShareLock ResListLock(&ResListCSec);
-	C4Network2Res *pRes = nullptr;
-	for (C4Network2Res *pCur = pFirst; pCur; pCur = pCur->pNext)
-		if (!pCur->isRemoved() && pCur->getResID() >= iResID)
-			if (!pRes || pRes->getResID() > pCur->getResID())
-				pRes = pCur;
-	return pRes;
+	C4Network2Res *res{nullptr};
+	for (const auto &resource : resources)
+	{
+		if (!resource->isRemoved() && resource->getResID() >= iResID && (!res || res->getResID() >= resource->getResID()))
+		{
+			res = resource.get();
+		}
+	}
+
+	if (res)
+	{
+		return res->shared_from_this();
+	}
+
+	return {};
 }
 
-void C4Network2ResList::Add(C4Network2Res *pRes)
+void C4Network2ResList::Add(C4Network2Res::Ref res)
 {
 	// get locks
 	CStdShareLock ResListLock(&ResListCSec);
 	CStdLock ResListAddLock(&ResListAddCSec);
-	// reference
-	pRes->AddRef();
-	// add
-	pRes->pNext = pFirst;
-	pFirst = pRes;
+
+	resources.emplace_back(std::move(res));
 }
 
 C4Network2Res::Ref C4Network2ResList::AddByFile(const char *strFilePath, bool fTemp, C4Network2ResType eType, int32_t iResID, const char *szResName, bool fAllowUnloadable)
 {
 	// already in list?
-	if (C4Network2Res::Ref pRes = getRefRes(strFilePath); pRes)
-	{
-		return pRes;
-	}
+	C4Network2Res::Ref res{getRefRes(strFilePath)};
+	if (res) return res;
 
 	// get ressource ID
 	if (iResID < 0) iResID = nextResID();
-	if (iResID < 0) { logger->error("AddByFile: no more ressource IDs available!"); return nullptr; }
+	if (iResID < 0) { logger->error("AddByFile: no more ressource IDs available!"); return {}; }
+
 	// create new
-	auto res = std::make_unique<C4Network2Res>(this);
+	res = std::make_shared<C4Network2Res>(this);
+
 	// initialize
-	if (!res->SetByFile(strFilePath, fTemp, eType, iResID, szResName)) { return nullptr; }
+	if (!res->SetByFile(strFilePath, fTemp, eType, iResID, szResName)) { return {}; }
+
 	// create standalone for non-system files
 	// system files shouldn't create a standalone; they should never be marked loadable!
-	if (eType != NRT_System)
-		if (!res->GetStandalone(nullptr, 0, true, fAllowUnloadable))
-			if (!fAllowUnloadable)
-			{
-				return nullptr;
-			}
+	if (eType != NRT_System && !res->GetStandalone(nullptr, 0, true, fAllowUnloadable) && !fAllowUnloadable)
+	{
+		return {};
+	}
 
 	// add to list
-	const auto resPtr = res.release();
-	Add(resPtr);
-	return resPtr;
+	Add(res);
+	return res;
 }
 
 C4Network2Res::Ref C4Network2ResList::AddByCore(const C4Network2ResCore &Core, bool fLoad) // by main thread
 {
 	// already in list?
-	C4Network2Res::Ref pRes = getRefRes(Core.getID());
-	if (pRes) return pRes;
+	C4Network2Res::Ref res{getRefRes(Core.getID())};
+	if (res) return res;
 #ifdef C4NET2RES_LOAD_ALL
 	// load without check (if possible)
 	if (Core.isLoadable()) return AddLoad(Core);
 #endif
 	// create new
-	pRes = new C4Network2Res(this);
+	res = std::make_shared<C4Network2Res>(this);
+
 	// try set by core
-	if (!pRes->SetByCore(Core, true))
+	if (!res->SetByCore(Core, true))
 	{
-		pRes.Clear();
 		// try load (if specified)
-		return fLoad ? AddLoad(Core) : nullptr;
+		if (fLoad)
+		{
+			return AddLoad(Core);
+		}
+
+		return {};
 	}
+
 	// log
-	logger->info("Found identical {}. Not loading.", pRes->getCore().getFileName());
-	// add to list
-	Add(pRes);
-	// ok
-	return pRes;
+	logger->info("Found identical {}. Not loading.", res->getCore().getFileName());
+
+	Add(res);
+	return res;
 }
 
 C4Network2Res::Ref C4Network2ResList::AddLoad(const C4Network2ResCore &Core) // by main thread
@@ -1503,35 +1522,40 @@ C4Network2Res::Ref C4Network2ResList::AddLoad(const C4Network2ResCore &Core) // 
 	{
 		// show error msg
 		logger->error("Cannot load {} (marked unloadable)", Core.getFileName());
-		return nullptr;
+		return {};
 	}
 	// create new
-	C4Network2Res::Ref pRes = new C4Network2Res(this);
+	const auto res = std::make_shared<C4Network2Res>(this);
 	// initialize
-	pRes->SetLoad(Core);
+	res->SetLoad(Core);
 	// log
 	logger->info("loading {}...", Core.getFileName());
 	// add to list
-	Add(pRes);
-	return pRes;
+	Add(res);
+	return res;
 }
 
 void C4Network2ResList::RemoveAtClient(int32_t iClientID) // by main thread
 {
 	CStdShareLock ResListLock(&ResListCSec);
-	for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
-		if (pRes->getResClient() == iClientID)
-			pRes->Remove();
+	for (const auto &resource : resources)
+	{
+		if (resource->getResClient() == iClientID)
+		{
+			resource->Remove();
+		}
+	}
 }
 
 void C4Network2ResList::Clear()
 {
 	CStdShareLock ResListLock(&ResListCSec);
-	for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
+	for (const auto &resource : resources)
 	{
-		pRes->Remove();
-		pRes->iLastReqTime = 0;
+		resource->Remove();
+		resource->iLastReqTime = 0;
 	}
+
 	iClientID = C4ClientIDUnknown;
 	iLastDiscover = iLastStatus = 0;
 	logger.reset();
@@ -1560,11 +1584,14 @@ void C4Network2ResList::HandlePacket(char cStatus, const C4PacketBase *pPacket, 
 		GETPKT(C4PacketResDiscover, Pkt);
 		// search matching ressources
 		CStdShareLock ResListLock(&ResListCSec);
-		for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
-			if (Pkt.isIDPresent(pRes->getResID()))
-				// must be binary compatible
-				if (pRes->IsBinaryCompatible())
-					pRes->OnDiscover(pConn);
+		for (const auto &resource : resources)
+		{
+			// must be binary compatible
+			if (Pkt.isIDPresent(resource->getResID()) && resource->IsBinaryCompatible())
+			{
+				resource->OnDiscover(pConn);
+			}
+		}
 	}
 	break;
 
@@ -1587,9 +1614,13 @@ void C4Network2ResList::HandlePacket(char cStatus, const C4PacketBase *pPacket, 
 		if (Core.getDerID() < 0) break;
 		// Check if there is a anonymous derived ressource with matching parent.
 		CStdShareLock ResListLock(&ResListCSec);
-		for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
-			if (pRes->isAnonymous() && pRes->getCore().getDerID() == Core.getDerID())
-				pRes->FinishDerive(Core);
+		for (const auto &resource : resources)
+		{
+			if (resource->isAnonymous() && resource->getCore().getDerID() == Core.getDerID())
+			{
+				resource->FinishDerive(Core);
+			}
+		}
 	}
 	break;
 
@@ -1623,18 +1654,26 @@ void C4Network2ResList::OnTimer()
 	CStdShareLock ResListLock(&ResListCSec);
 	C4Network2Res *pRes;
 	// do loads, check timeouts
-	for (pRes = pFirst; pRes; pRes = pRes->pNext)
-		if (pRes->isLoading() && !pRes->isRemoved())
-			if (!pRes->DoLoad())
-				pRes->Remove();
+	for (const auto &resource : resources)
+	{
+		if (resource->isLoading() && !resource->isRemoved() && !resource->DoLoad())
+		{
+			resource->Remove();
+		}
+	}
+
 	// discovery time?
 	if (!iLastDiscover || difftime(time(nullptr), iLastDiscover) >= C4NetResDiscoverInterval)
 	{
 		// needed?
 		bool fSendDiscover = false;
-		for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
-			if (!pRes->isRemoved())
-				fSendDiscover |= pRes->NeedsDiscover();
+		for (const auto &resource : resources)
+		{
+			if (!resource->isRemoved())
+			{
+				fSendDiscover |= resource->NeedsDiscover();
+			}
+		}
 		// send
 		if (fSendDiscover)
 			SendDiscover();
@@ -1644,9 +1683,14 @@ void C4Network2ResList::OnTimer()
 	{
 		// any?
 		bool fStatusUpdates = false;
-		for (pRes = pFirst; pRes; pRes = pRes->pNext)
-			if (pRes->isDirty() && !pRes->isRemoved())
-				fStatusUpdates |= pRes->SendStatus();
+		for (const auto &resource : resources)
+		{
+			if (resource->isDirty() && !resource->isRemoved())
+			{
+				fStatusUpdates |= resource->SendStatus();
+			}
+		}
+
 		// set time accordingly
 		iLastStatus = fStatusUpdates ? time(nullptr) : 0;
 	}
@@ -1657,20 +1701,10 @@ void C4Network2ResList::OnShareFree(CStdCSecEx *pCSec)
 	if (pCSec == &ResListCSec)
 	{
 		// remove entries
-		for (C4Network2Res *pRes = pFirst, *pNext, *pPrev = nullptr; pRes; pRes = pNext)
+		resources.remove_if([](const auto &resource)
 		{
-			pNext = pRes->pNext;
-			if (pRes->isRemoved() && (!pRes->getLastReqTime() || difftime(time(nullptr), pRes->getLastReqTime()) > C4NetResDeleteTime))
-			{
-				// unlink
-				(pPrev ? pPrev->pNext : pFirst) = pNext;
-				// remove
-				pRes->pNext = nullptr;
-				pRes->DelRef();
-			}
-			else
-				pPrev = pRes;
-		}
+			return resource->isRemoved() && (!resource->getLastReqTime() || difftime(time(nullptr), resource->getLastReqTime()) > C4NetResDeleteTime);
+		});
 	}
 }
 
@@ -1680,9 +1714,13 @@ bool C4Network2ResList::SendDiscover(C4Network2IOConnection *pTo) // by both
 	C4PacketResDiscover Pkt;
 	// add special retrieves
 	CStdShareLock ResListLock(&ResListCSec);
-	for (C4Network2Res *pRes = pFirst; pRes; pRes = pRes->pNext)
-		if (!pRes->isRemoved())
-			Pkt.AddDisID(pRes->getResID());
+	for (const auto &resource : resources)
+	{
+		if (!resource->isRemoved())
+		{
+			Pkt.AddDisID(resource->getResID());
+		}
+	}
 	ResListLock.Clear();
 	// empty?
 	if (!Pkt.getDisIDCnt()) return false;
@@ -1796,12 +1834,13 @@ int32_t C4Network2ResList::GetClientProgress(int32_t clientID)
 {
 	int32_t sumPresentChunkCnt = 0, sumChunkCnt = 0;
 	CStdLock ResListLock(&ResListCSec);
-	for (C4Network2Res *res = pFirst; res; res = res->pNext)
+	for (const auto &resource : resources)
 	{
 		int32_t presentChunkCnt, chunkCnt;
-		if (res->isRemoved() || !res->GetClientProgress(clientID, presentChunkCnt, chunkCnt)) continue;
+		if (resource->isRemoved() || !resource->GetClientProgress(clientID, presentChunkCnt, chunkCnt)) continue;
 		sumPresentChunkCnt += presentChunkCnt;
 		sumChunkCnt += chunkCnt;
 	}
+
 	return sumChunkCnt == 0 ? 100 : sumPresentChunkCnt * 100 / sumChunkCnt;
 }
