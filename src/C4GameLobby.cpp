@@ -68,15 +68,15 @@ ScenDesc::ScenDesc(const C4Rect &rcBounds, bool fActive) : C4GUI::Window(), fDes
 void ScenDesc::Update()
 {
 	// scenario present?
-	C4Network2Res *pRes = Game.Parameters.Scenario.getNetRes();
-	if (!pRes) return; // something's wrong
+	const C4Network2Res::Ref res{Game.Parameters.Scenario.getNetRes()};
+	if (!res) return; // something's wrong
 	CStdFont &rTitleFont = C4GUI::GetRes()->CaptionFont;
 	CStdFont &rTextFont = C4GUI::GetRes()->TextFont;
 	pDescBox->ClearText(false);
-	if (pRes->isComplete())
+	if (res->isComplete())
 	{
 		C4Group ScenarioFile;
-		if (!ScenarioFile.Open(pRes->getFile()))
+		if (!ScenarioFile.Open(res->getFile()))
 		{
 			pDescBox->AddTextLine("scenario file load error", &rTextFont, C4GUI_MessageFontClr, false, true);
 		}
@@ -103,7 +103,7 @@ void ScenDesc::Update()
 	}
 	else
 	{
-		pDescBox->AddTextLine(FormatString(LoadResStr("IDS_MSG_SCENARIODESC_LOADING"), static_cast<int>(pRes->getPresentPercent())).getData(),
+		pDescBox->AddTextLine(FormatString(LoadResStr("IDS_MSG_SCENARIODESC_LOADING"), static_cast<int>(res->getPresentPercent())).getData(),
 			&rTextFont, C4GUI_MessageFontClr, false, true);
 	}
 	pDescBox->UpdateHeight();

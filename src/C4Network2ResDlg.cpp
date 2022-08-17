@@ -186,10 +186,10 @@ void C4Network2ResDlg::Update()
 {
 	// check through own resources and current res list
 	ListItem *pItem = static_cast<ListItem *>(pClientWindow->GetFirst()), *pNext;
-	C4Network2Res *pRes; int iResID = -1;
-	while (pRes = Game.Network.ResList.getRefNextRes(++iResID))
+	C4Network2Res::Ref res; int iResID = -1;
+	while (res = Game.Network.ResList.getRefNextRes(++iResID))
 	{
-		iResID = pRes->getResID();
+		iResID = res->getResID();
 		// resource checking: deleted ressource(s) present?
 		while (pItem && (pItem->GetResID() < iResID))
 		{
@@ -199,12 +199,12 @@ void C4Network2ResDlg::Update()
 		// same resource present for update?
 		if (pItem && pItem->GetResID() == iResID)
 		{
-			pItem->Update(pRes);
+			pItem->Update(res.get());
 			pItem = static_cast<ListItem *>(pItem->GetNext());
 		}
 		else
 			// not present: insert (or add if pItem=nullptr)
-			InsertElement(new ListItem(this, pRes), pItem);
+			InsertElement(new ListItem(this, res.get()), pItem);
 	}
 
 	// del trailing items
