@@ -772,7 +772,7 @@ void MainDlg::UpdateResourceProgress()
 {
 	bool isComplete{true};
 	std::int32_t resID{-1};
-	for (C4Network2Res *res; (res = Game.Network.ResList.getRefNextRes(resID)); ++resID)
+	for (C4Network2Res::Ref res; (res = Game.Network.ResList.getRefNextRes(resID)); ++resID)
 	{
 		resID = res->getResID();
 		if (res->getType() != NRT_Player)
