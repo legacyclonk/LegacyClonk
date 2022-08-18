@@ -17,6 +17,8 @@
 
 /* OpenGL implementation of NewGfx */
 
+#include "C4Config.h"
+
 #include <Standard.h>
 #include <StdGL.h>
 #include "C4Config.h"
@@ -396,7 +398,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, C4TexRef *const pTex,
 	// modulated blit
 	else if (fModClr)
 	{
-		if (fMod2 || ((dwModClr >> 24 || dwModMask) && !DDrawCfg.NoAlphaAdd))
+		if (fMod2 || ((dwModClr >> 24 || dwModMask) && !Config.Graphics.NoAlphaAdd))
 		{
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB,      fMod2 ? GL_ADD_SIGNED : GL_MODULATE);
@@ -425,9 +427,9 @@ void CStdGL::PerformBlt(CBltData &rBltData, C4TexRef *const pTex,
 		glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE, 1.0f);
 	}
 	// set texture+modes
-	glShadeModel((fUseClrModMap && fModClr && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
+	glShadeModel((fUseClrModMap && fModClr && !Config.Graphics.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
 	glBindTexture(GL_TEXTURE_2D, pTex->texName);
-	if (pApp->GetScale() != 1.f || (!fExact && !DDrawCfg.PointFiltering))
+	if (pApp->GetScale() != 1.f || (!fExact && !Config.Graphics.PointFiltering))
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -472,7 +474,7 @@ void CStdGL::PerformBlt(CBltData &rBltData, C4TexRef *const pTex,
 		CStdShaderProgram::Deselect();
 	}
 
-	if (pApp->GetScale() != 1.f || (!fExact && !DDrawCfg.PointFiltering))
+	if (pApp->GetScale() != 1.f || (!fExact && !Config.Graphics.PointFiltering))
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -538,7 +540,7 @@ void CStdGL::BlitLandscape(C4Surface *const sfcSource, C4Surface *const sfcSourc
 	// texture environment
 	else
 	{
-		if (DDrawCfg.NoAlphaAdd)
+		if (Config.Graphics.NoAlphaAdd)
 		{
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 			glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE,        1.0f);
@@ -562,7 +564,7 @@ void CStdGL::BlitLandscape(C4Surface *const sfcSource, C4Surface *const sfcSourc
 		}
 	}
 	// set texture+modes
-	glShadeModel((fUseClrModMap && !DDrawCfg.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
+	glShadeModel((fUseClrModMap && !Config.Graphics.NoBoxFades) ? GL_SMOOTH : GL_FLAT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glMatrixMode(GL_TEXTURE);
@@ -651,18 +653,18 @@ void CStdGL::BlitLandscape(C4Surface *const sfcSource, C4Surface *const sfcSourc
 					for (int i = 0; i < 4; ++i)
 					{
 						glColorDw(fdwModClr[i] | dwModMask);
-						glTexCoord2f((tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
-							(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
+						glTexCoord2f((tcx[i] + texIndent) / iTexSize,
+							(tcy[i] + texIndent) / iTexSize);
 						if (sfcSource2)
 						{
 							glMultiTexCoord2f(GL_TEXTURE1_ARB,
-								(tcx[i] + DDrawCfg.fTexIndent) / iTexSize,
-								(tcy[i] + DDrawCfg.fTexIndent) / iTexSize);
+								(tcx[i] + texIndent) / iTexSize,
+								(tcy[i] + texIndent) / iTexSize);
 							glMultiTexCoord2f(GL_TEXTURE2_ARB,
-								(tcx[i] + DDrawCfg.fTexIndent) / sfcLiquidAnimation->iTexSize,
-								(tcy[i] + DDrawCfg.fTexIndent) / sfcLiquidAnimation->iTexSize);
+								(tcx[i] + texIndent) / sfcLiquidAnimation->iTexSize,
+								(tcy[i] + texIndent) / sfcLiquidAnimation->iTexSize);
 						}
-						glVertex2f(ftx[i] + DDrawCfg.fBlitOff, fty[i] + DDrawCfg.fBlitOff);
+						glVertex2f(ftx[i] + blitOffset, fty[i] + blitOffset);
 					}
 
 					glEnd();
@@ -766,7 +768,7 @@ void CStdGL::DrawQuadDw(C4Surface *const sfcTarget, int *const ipVtx,
 		ModulateClr(dwClr4, pClrModMap->GetModAt(ipVtx[6], ipVtx[7]));
 	}
 	// no clr fading supported
-	if (DDrawCfg.NoBoxFades)
+	if (Config.Graphics.NoBoxFades)
 	{
 		NormalizeColors(dwClr1, dwClr2, dwClr3, dwClr4);
 		glShadeModel(GL_FLAT);
@@ -778,10 +780,10 @@ void CStdGL::DrawQuadDw(C4Surface *const sfcTarget, int *const ipVtx,
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, iAdditive ? GL_ONE : GL_SRC_ALPHA);
 	// draw two triangles
 	glBegin(GL_POLYGON);
-	glColorDw(dwClr1); glVertex2f(ipVtx[0] + DDrawCfg.fBlitOff, ipVtx[1] + DDrawCfg.fBlitOff);
-	glColorDw(dwClr2); glVertex2f(ipVtx[2] + DDrawCfg.fBlitOff, ipVtx[3] + DDrawCfg.fBlitOff);
-	glColorDw(dwClr3); glVertex2f(ipVtx[4] + DDrawCfg.fBlitOff, ipVtx[5] + DDrawCfg.fBlitOff);
-	glColorDw(dwClr4); glVertex2f(ipVtx[6] + DDrawCfg.fBlitOff, ipVtx[7] + DDrawCfg.fBlitOff);
+	glColorDw(dwClr1); glVertex2f(ipVtx[0] + blitOffset, ipVtx[1] + blitOffset);
+	glColorDw(dwClr2); glVertex2f(ipVtx[2] + blitOffset, ipVtx[3] + blitOffset);
+	glColorDw(dwClr3); glVertex2f(ipVtx[4] + blitOffset, ipVtx[5] + blitOffset);
+	glColorDw(dwClr4); glVertex2f(ipVtx[6] + blitOffset, ipVtx[7] + blitOffset);
 	glEnd();
 	glShadeModel(GL_FLAT);
 }
@@ -863,7 +865,10 @@ bool CStdGL::RestoreDeviceObjects()
 	// reset blit states
 	dwBlitMode = 0;
 
-	if (DDrawCfg.Shader && !BlitShader)
+	blitOffset = static_cast<float>(blitOffset / 100);
+	texIndent = static_cast<float>(texIndent / 1000);
+
+	if (Config.Graphics.Shader && !BlitShader)
 	{
 		try
 		{
@@ -967,8 +972,8 @@ bool CStdGL::RestoreDeviceObjects()
 			for (auto *const shader : {&BlitShader, &BlitShaderMod2, &LandscapeShader})
 			{
 				shader->Select();
-				shader->SetUniform("texIndent", DDrawCfg.fTexIndent);
-				shader->SetUniform("blitOffset", DDrawCfg.fBlitOff);
+				shader->SetUniform("texIndent", texIndent);
+				shader->SetUniform("blitOffset", blitOffset);
 				shader->SetUniform("textureSampler", glUniform1i, 0);
 
 				if (shader == &LandscapeShader)

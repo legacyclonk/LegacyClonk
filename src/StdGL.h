@@ -188,6 +188,8 @@ protected:
 	CStdGLShaderProgram BlitShader;
 	CStdGLShaderProgram BlitShaderMod2;
 	CStdGLShaderProgram LandscapeShader;
+	float texIndent;
+	float blitOffset;
 
 public:
 	// General

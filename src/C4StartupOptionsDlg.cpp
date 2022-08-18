@@ -884,11 +884,11 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheckGfxDisableGamma->SetToolTip(LoadResStr("IDS_MSG_DISABLEGAMMA_DESC"));
 	pGroupTrouble->AddElement(pCheckGfxDisableGamma);
 	// texture indent
-	pEdtGfxTexIndent = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 0, 3, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_TEXINDENT"), nullptr, &iGfxTexIndent, false);
+	pEdtGfxTexIndent = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 0, 3, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_TEXINDENT"), nullptr, &Config.Graphics.TexIndent, false);
 	pEdtGfxTexIndent->SetToolTip(LoadResStr("IDS_MSG_TEXINDENT_DESC"));
 	pGroupTrouble->AddElement(pEdtGfxTexIndent);
 	// blit offset
-	pEdtGfxBlitOff = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 1, 3, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_BLITOFFSET"), nullptr, &iGfxBlitOff, false);
+	pEdtGfxBlitOff = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 1, 3, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_BLITOFFSET"), nullptr, &Config.Graphics.BlitOffset, false);
 	pEdtGfxBlitOff->SetToolTip(LoadResStr("IDS_MSG_BLITOFFSET_DESC"));
 	pGroupTrouble->AddElement(pEdtGfxBlitOff);
 
@@ -1353,17 +1353,12 @@ void C4StartupOptionsDlg::RecreateDialog(bool fFade)
 void C4StartupOptionsDlg::LoadGfxTroubleshoot()
 {
 	// config to controls
-	// get config values for this config
-	uint32_t dwGfxCfg = Config.Graphics.NewGfxCfg;
-	iGfxTexIndent = Config.Graphics.TexIndent;
-	iGfxBlitOff = Config.Graphics.BlitOffset;
-	// set it in controls
-	pCheckGfxNoAlphaAdd->SetChecked(!!(dwGfxCfg & C4GFXCFG_NO_ALPHA_ADD));
-	pCheckGfxPointFilter->SetChecked(!!(dwGfxCfg & C4GFXCFG_POINT_FILTERING));
-	pCheckGfxNoAddBlit->SetChecked(!!(dwGfxCfg & C4GFXCFG_NOADDITIVEBLTS));
-	pCheckGfxNoBoxFades->SetChecked(!!(dwGfxCfg & C4GFXCFG_NOBOXFADES));
-	pEdtGfxTexIndent->SetIntVal(iGfxTexIndent);
-	pEdtGfxBlitOff->SetIntVal(iGfxBlitOff);
+	pCheckGfxNoAlphaAdd->SetChecked(Config.Graphics.NoAlphaAdd);
+	pCheckGfxPointFilter->SetChecked(Config.Graphics.PointFiltering);
+	pCheckGfxNoBoxFades->SetChecked(Config.Graphics.NoBoxFades);
+	pCheckGfxNoAddBlit->SetChecked(!(Config.Graphics.AllowedBlitModes & C4GFXBLIT_ADDITIVE));
+	pEdtGfxTexIndent->SetIntVal(Config.Graphics.TexIndent);
+	pEdtGfxBlitOff->SetIntVal(Config.Graphics.BlitOffset);
 	// title of troubleshooting-box by config set
 	pGroupTrouble->SetTitle(LoadResStrNoAmp("IDS_CTL_TROUBLE"));
 }
@@ -1372,19 +1367,22 @@ void C4StartupOptionsDlg::SaveGfxTroubleshoot()
 {
 	// copntrols to config
 	// get it from controls
-	uint32_t dwGfxCfg = 0u;
-	if (pCheckGfxNoAlphaAdd->GetChecked()) dwGfxCfg |= C4GFXCFG_NO_ALPHA_ADD;
-	if (pCheckGfxPointFilter->GetChecked()) dwGfxCfg |= C4GFXCFG_POINT_FILTERING;
-	if (pCheckGfxNoAddBlit->GetChecked()) dwGfxCfg |= C4GFXCFG_NOADDITIVEBLTS;
-	if (pCheckGfxNoBoxFades->GetChecked()) dwGfxCfg |= C4GFXCFG_NOBOXFADES;
 	pEdtGfxTexIndent->Save2Config();
 	pEdtGfxBlitOff->Save2Config();
 	// set config values into this set
-	Config.Graphics.NewGfxCfg = dwGfxCfg;
-	Config.Graphics.TexIndent = iGfxTexIndent;
-	Config.Graphics.BlitOffset = iGfxBlitOff;
-	// and apply them directly
-	DDrawCfg.Set(dwGfxCfg, static_cast<float>(iGfxTexIndent) / 1000.0f, static_cast<float>(iGfxBlitOff) / 100.0f);
+	Config.Graphics.NoAlphaAdd = pCheckGfxNoAlphaAdd->GetChecked();
+	Config.Graphics.PointFiltering = pCheckGfxPointFilter->GetChecked();
+	Config.Graphics.NoBoxFades = pCheckGfxNoBoxFades->GetChecked();
+
+	if (pCheckGfxNoAddBlit->GetChecked())
+	{
+		Config.Graphics.AllowedBlitModes &= ~C4GFXBLIT_ADDITIVE;
+	}
+	else
+	{
+		Config.Graphics.AllowedBlitModes |= C4GFXBLIT_ADDITIVE;
+	}
+
 	lpDDraw->InvalidateDeviceObjects();
 	lpDDraw->RestoreDeviceObjects();
 }

@@ -17,6 +17,8 @@
 
 /* NewGfx interfaces */
 
+#include "C4Config.h"
+
 #include <Standard.h>
 #include <StdDDraw2.h>
 #include <StdGL.h>
@@ -782,8 +784,8 @@ bool CStdDDraw::Blit(C4Surface *sfcSource, float fx, float fy, float fwdt, float
 	int iTexX2 = (std::min)(static_cast<int>(fx + fwdt - 1) / iTexSize + 1, sfcSource->iTexX);
 	int iTexY2 = (std::min)(static_cast<int>(fy + fhgt - 1) / iTexSize + 1, sfcSource->iTexY);
 	// calc stretch regarding texture size and indent
-	float scaleX2 = scaleX * (iTexSize + DDrawCfg.fTexIndent * 2);
-	float scaleY2 = scaleY * (iTexSize + DDrawCfg.fTexIndent * 2);
+	float scaleX2 = scaleX * (iTexSize + Config.Graphics.TexIndent * 2);
+	float scaleY2 = scaleY * (iTexSize + Config.Graphics.TexIndent * 2);
 	// blit from all these textures
 	SetTexture();
 
@@ -805,8 +807,8 @@ bool CStdDDraw::Blit(C4Surface *sfcSource, float fx, float fy, float fwdt, float
 			if (iTexSize != pTex->iSize)
 			{
 				iTexSize = pTex->iSize;
-				scaleX2 = scaleX * (iTexSize + DDrawCfg.fTexIndent * 2);
-				scaleY2 = scaleY * (iTexSize + DDrawCfg.fTexIndent * 2);
+				scaleX2 = scaleX * (iTexSize + Config.Graphics.TexIndent * 2);
+				scaleY2 = scaleY * (iTexSize + Config.Graphics.TexIndent * 2);
 			}
 			int maxXChunk = std::min<int>(static_cast<int>((fx + fwdt - iBlitX - 1) / chunkSize + 1), iTexSize / chunkSize);
 			int maxYChunk = std::min<int>(static_cast<int>((fy + fhgt - iBlitY - 1) / chunkSize + 1), iTexSize / chunkSize);
@@ -834,16 +836,16 @@ bool CStdDDraw::Blit(C4Surface *sfcSource, float fx, float fy, float fwdt, float
 					// - finally, move in texture - this must be done last, so no stupid zoom is applied...
 					// Set resulting matrix directly
 					BltData.TexPos.SetMoveScale(
-						(fTexBlt.left + DDrawCfg.fTexIndent) / iTexSize - (tTexBlt.left + DDrawCfg.fBlitOff) / scaleX2,
-						(fTexBlt.top  + DDrawCfg.fTexIndent) / iTexSize - (tTexBlt.top  + DDrawCfg.fBlitOff) / scaleY2,
+						(fTexBlt.left + Config.Graphics.TexIndent) / iTexSize - (tTexBlt.left + Config.Graphics.BlitOffset) / scaleX2,
+						(fTexBlt.top  + Config.Graphics.TexIndent) / iTexSize - (tTexBlt.top  + Config.Graphics.BlitOffset) / scaleY2,
 						1 / scaleX2,
 						1 / scaleY2);
 					// set up blit data as rect
 					BltData.byNumVertices = 4;
-					BltData.vtVtx[0].ftx = tTexBlt.left  + DDrawCfg.fBlitOff; BltData.vtVtx[0].fty = tTexBlt.top    + DDrawCfg.fBlitOff;
-					BltData.vtVtx[1].ftx = tTexBlt.right + DDrawCfg.fBlitOff; BltData.vtVtx[1].fty = tTexBlt.top    + DDrawCfg.fBlitOff;
-					BltData.vtVtx[2].ftx = tTexBlt.right + DDrawCfg.fBlitOff; BltData.vtVtx[2].fty = tTexBlt.bottom + DDrawCfg.fBlitOff;
-					BltData.vtVtx[3].ftx = tTexBlt.left  + DDrawCfg.fBlitOff; BltData.vtVtx[3].fty = tTexBlt.bottom + DDrawCfg.fBlitOff;
+					BltData.vtVtx[0].ftx = tTexBlt.left  + Config.Graphics.BlitOffset; BltData.vtVtx[0].fty = tTexBlt.top    + Config.Graphics.BlitOffset;
+					BltData.vtVtx[1].ftx = tTexBlt.right + Config.Graphics.BlitOffset; BltData.vtVtx[1].fty = tTexBlt.top    + Config.Graphics.BlitOffset;
+					BltData.vtVtx[2].ftx = tTexBlt.right + Config.Graphics.BlitOffset; BltData.vtVtx[2].fty = tTexBlt.bottom + Config.Graphics.BlitOffset;
+					BltData.vtVtx[3].ftx = tTexBlt.left  + Config.Graphics.BlitOffset; BltData.vtVtx[3].fty = tTexBlt.bottom + Config.Graphics.BlitOffset;
 
 					C4TexRef *pBaseTex = pTex;
 					// is there a base-surface to be blitted first?
@@ -1388,6 +1390,11 @@ uint32_t CStdDDraw::ApplyGammaTo(uint32_t dwClr)
 	return Gamma.ApplyTo(dwClr);
 }
 
+void CStdDDraw::SetBlitMode(uint32_t dwBlitMode)
+{
+	this->dwBlitMode = dwBlitMode & Config.Graphics.AllowedBlitModes;
+}
+
 CStdDDraw *DDrawInit(CStdApp *pApp, int Engine)
 {
 	// create engine
@@ -1412,9 +1419,6 @@ CStdDDraw *DDrawInit(CStdApp *pApp, int Engine)
 
 bool CStdDDraw::Init(CStdApp *pApp)
 {
-	// set cfg again, as engine has been decided
-	DDrawCfg.Set(DDrawCfg.Cfg, DDrawCfg.fTexIndent, DDrawCfg.fBlitOff);
-
 	this->pApp = pApp;
 
 	DebugLog("Init DDraw");
