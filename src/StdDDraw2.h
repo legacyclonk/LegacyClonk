@@ -23,6 +23,7 @@
 #include <StdSurface8.h>
 #include <StdBuf.h>
 
+#include <array>
 #include <unordered_map>
 #include <vector>
 
@@ -147,11 +148,10 @@ struct CBltVertex
 	uint32_t dwModClr; // color modulation
 };
 
-// blit bounds polygon - note that blitting procedures are not designed for inner angles (>pi)
+// blit data
 struct CBltData
 {
-	uint8_t byNumVertices;  // number of valid vertices
-	CBltVertex vtVtx[8]; // vertices for polygon - up to eight vertices may be needed
+	std::array<CBltVertex, 4> vtVtx; // vertices for polygon
 	CBltTransform TexPos; // texture mapping matrix
 	CBltTransform *pTransform; // Vertex transformation
 };

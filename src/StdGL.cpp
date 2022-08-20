@@ -357,26 +357,28 @@ void CStdGL::PerformBlt(CBltData &rBltData, C4TexRef *const pTex,
 	if (fUseClrModMap && dwModClr)
 	{
 		fAnyModNotBlack = false;
-		for (int i = 0; i < rBltData.byNumVertices; ++i)
+		for (auto &vertex : rBltData.vtVtx)
 		{
-			float x = rBltData.vtVtx[i].ftx;
-			float y = rBltData.vtVtx[i].fty;
+			float x{vertex.ftx};
+			float y{vertex.fty};
 			if (rBltData.pTransform)
 			{
 				rBltData.pTransform->TransformPoint(x, y);
 			}
-			rBltData.vtVtx[i].dwModClr = pClrModMap->GetModAt(static_cast<int>(x), static_cast<int>(y));
-			if (rBltData.vtVtx[i].dwModClr >> 24) dwModMask = 0xff000000;
-			ModulateClr(rBltData.vtVtx[i].dwModClr, dwModClr);
-			if (rBltData.vtVtx[i].dwModClr) fAnyModNotBlack = true;
-			if (rBltData.vtVtx[i].dwModClr != 0xffffff) fModClr = true;
+			vertex.dwModClr = pClrModMap->GetModAt(static_cast<int>(x), static_cast<int>(y));
+			if (vertex.dwModClr >> 24) dwModMask = 0xff000000;
+			ModulateClr(vertex.dwModClr, dwModClr);
+			if (vertex.dwModClr) fAnyModNotBlack = true;
+			if (vertex.dwModClr != 0xffffff) fModClr = true;
 		}
 	}
 	else
 	{
 		fAnyModNotBlack = !!dwModClr;
-		for (int i = 0; i < rBltData.byNumVertices; ++i)
-			rBltData.vtVtx[i].dwModClr = dwModClr;
+		for (auto &vertex : rBltData.vtVtx)
+		{
+			vertex.dwModClr = dwModClr;
+		}
 		if (dwModClr != 0xffffff) fModClr = true;
 	}
 	// reset MOD2 for completely black modulations
@@ -462,12 +464,11 @@ void CStdGL::PerformBlt(CBltData &rBltData, C4TexRef *const pTex,
 
 	// draw polygon
 	glBegin(GL_POLYGON);
-	for (int i = 0; i < rBltData.byNumVertices; ++i)
+	for (const auto vertex : rBltData.vtVtx)
 	{
-		const auto &vtx = rBltData.vtVtx[i];
-		if (fModClr) glColorDw(vtx.dwModClr | dwModMask);
-		glTexCoord2f(vtx.ftx, vtx.fty);
-		glVertex2f(vtx.ftx, vtx.fty);
+		if (fModClr) glColorDw(vertex.dwModClr | dwModMask);
+		glTexCoord2f(vertex.ftx, vertex.fty);
+		glVertex2f(vertex.ftx, vertex.fty);
 	}
 	glEnd();
 	glLoadIdentity();
