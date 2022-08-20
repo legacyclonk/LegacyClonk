@@ -200,7 +200,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 	if (!MainCtx.hDC || (!Active && !fForce)) return false;
 	if (!SetDeviceGammaRamp(MainCtx.hDC, ramp.red))
 	{
-		int i = ::GetLastError();
+		LogSilentF("Error setting gamma ramp: %x", ::GetLastError());
 	}
 	return true;
 }
