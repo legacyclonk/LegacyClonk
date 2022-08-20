@@ -239,7 +239,7 @@ Write::Write(const std::string &filename)
 	gzStream.next_out = buffer.get();
 	gzStream.avail_out = ChunkSize;
 
-	if (const auto ret = deflateInit2(&gzStream, 9, Z_DEFLATED, 15 + 16, 9, Z_DEFAULT_STRATEGY); ret != Z_OK)
+	if (const auto ret = deflateInit2(&gzStream, 9, Z_DEFLATED, 15 + 16, CompressionLevel, Z_DEFAULT_STRATEGY); ret != Z_OK)
 	{
 		fclose(file);
 		throw Exception(std::string{"deflateInit2 failed: "} + zError(ret));
