@@ -579,7 +579,7 @@ bool C4Network2HTTPClient::SetServer(const std::string_view serverAddress, const
 {
 	try
 	{
-		SetServer2(url, defaultPort);
+		SetServer2(serverAddress, defaultPort);
 		return true;
 	}
 	catch (const std::runtime_error &e)
