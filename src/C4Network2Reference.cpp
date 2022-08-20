@@ -609,20 +609,23 @@ void C4Network2HTTPClient::SetServer2(const std::string_view serverAddress, cons
 	UniqueCurlCharPtr hostPtr{host, curl_free};
 
 	// Use default port if URL has no port part
-	char *port;
-	const auto errGetPort = curl_url_get(url.get(), CURLUPART_PORT, &port, 0);
-	curl_free(port);
-	if (errGetPort == CURLUE_NO_PORT)
+	if (defaultPort > 0)
 	{
-		if (curl_url_set(url.get(), CURLUPART_PORT,
-			std::to_string(defaultPort).c_str(), 0) != CURLUE_OK)
+		char *port;
+		const auto errGetPort = curl_url_get(url.get(), CURLUPART_PORT, &port, 0);
+		curl_free(port);
+		if (errGetPort == CURLUE_NO_PORT)
 		{
-			throw std::runtime_error{"curl_url_set PORT failed"};
+			if (curl_url_set(url.get(), CURLUPART_PORT,
+				std::to_string(defaultPort).c_str(), 0) != CURLUE_OK)
+			{
+				throw std::runtime_error{"curl_url_set PORT failed"};
+			}
 		}
-	}
-	else if (errGetPort != CURLUE_OK)
-	{
-		throw std::runtime_error{"curl_url_get PORT failed"};
+		else if (errGetPort != CURLUE_OK)
+		{
+			throw std::runtime_error{"curl_url_get PORT failed"};
+		}
 	}
 
 	// Convert CURLU back to string
