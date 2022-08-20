@@ -154,10 +154,6 @@ struct CBltData
 	CBltVertex vtVtx[8]; // vertices for polygon - up to eight vertices may be needed
 	CBltTransform TexPos; // texture mapping matrix
 	CBltTransform *pTransform; // Vertex transformation
-
-	// clip poly, so that for any point (x,y) is: (fX*x + fY*y <= fMax)
-	// assumes a valid poly!
-	bool ClipBy(float fX, float fY, float fMax);
 };
 
 // gamma ramp control
