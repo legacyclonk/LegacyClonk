@@ -462,8 +462,10 @@ void CStdGL::PerformBlt(CBltData &rBltData, C4TexRef *const pTex,
 		glLoadIdentity();
 	}
 
-	// draw polygon
-	glBegin(GL_POLYGON);
+	// draw triangle strip
+	std::swap(rBltData.vtVtx[3], rBltData.vtVtx[2]);
+
+	glBegin(GL_TRIANGLE_STRIP);
 	for (const auto vertex : rBltData.vtVtx)
 	{
 		if (fModClr) glColorDw(vertex.dwModClr | dwModMask);
@@ -610,8 +612,8 @@ void CStdGL::BlitLandscape(C4Surface *const sfcSource, C4Surface *const sfcSourc
 				{
 					int xOffset = xChunk * chunkSize;
 					int yOffset = yChunk * chunkSize;
-					// draw polygon
-					glBegin(GL_POLYGON);
+					// draw triangle strip
+					glBegin(GL_TRIANGLE_STRIP);
 					// get new texture source bounds
 					FLOAT_RECT fTexBlt;
 					// get new dest bounds
@@ -629,13 +631,13 @@ void CStdGL::BlitLandscape(C4Surface *const sfcSource, C4Surface *const sfcSourc
 					float ftx[4]; float fty[4]; // blit positions
 					ftx[0] = tTexBlt.left;  fty[0] = tTexBlt.top;
 					ftx[1] = tTexBlt.right; fty[1] = tTexBlt.top;
-					ftx[2] = tTexBlt.right; fty[2] = tTexBlt.bottom;
-					ftx[3] = tTexBlt.left;  fty[3] = tTexBlt.bottom;
+					ftx[2] = tTexBlt.left;  fty[2] = tTexBlt.bottom;
+					ftx[3] = tTexBlt.right; fty[3] = tTexBlt.bottom;
 					float tcx[4]; float tcy[4]; // blit positions
 					tcx[0] = fTexBlt.left;  tcy[0] = fTexBlt.top;
 					tcx[1] = fTexBlt.right; tcy[1] = fTexBlt.top;
-					tcx[2] = fTexBlt.right; tcy[2] = fTexBlt.bottom;
-					tcx[3] = fTexBlt.left;  tcy[3] = fTexBlt.bottom;
+					tcx[2] = fTexBlt.left;  tcy[2] = fTexBlt.bottom;
+					tcx[3] = fTexBlt.right; tcy[3] = fTexBlt.bottom;
 
 					uint32_t fdwModClr[4]; // color modulation
 					// global modulation map
@@ -782,11 +784,11 @@ void CStdGL::DrawQuadDw(C4Surface *const sfcTarget, int *const ipVtx,
 	const int iAdditive = dwBlitMode & C4GFXBLIT_ADDITIVE;
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, iAdditive ? GL_ONE : GL_SRC_ALPHA);
 	// draw two triangles
-	glBegin(GL_POLYGON);
+	glBegin(GL_TRIANGLE_STRIP);
 	glColorDw(dwClr1); glVertex2f(ipVtx[0] + blitOffset, ipVtx[1] + blitOffset);
 	glColorDw(dwClr2); glVertex2f(ipVtx[2] + blitOffset, ipVtx[3] + blitOffset);
-	glColorDw(dwClr3); glVertex2f(ipVtx[4] + blitOffset, ipVtx[5] + blitOffset);
 	glColorDw(dwClr4); glVertex2f(ipVtx[6] + blitOffset, ipVtx[7] + blitOffset);
+	glColorDw(dwClr3); glVertex2f(ipVtx[4] + blitOffset, ipVtx[5] + blitOffset);
 	glEnd();
 	glShadeModel(GL_FLAT);
 }
