@@ -210,6 +210,7 @@ global func HSL2RGB(hsl) {
     return(RGB(red, green, blue));
 }
 
+// internal
 global func Hue_2_RGB(var1, var2, hue) {
      if(hue<0) hue+=255;
    if(hue>255) hue-=255;

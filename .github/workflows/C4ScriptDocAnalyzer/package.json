@@ -1,0 +1,11 @@
+{
+  "name": "c4script-doc-analyzer",
+  "version": "1.0.0",
+  "description": "Comparing C4Script functions with a local file of functions documented in the docs.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Christopher Graulich",
+  "license": "CC-BY-SA-4.0"
+}
