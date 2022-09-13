@@ -616,7 +616,7 @@ public:
 
 		if (!IsSafeFormatString(format))
 		{
-			BREAKPOINT_HERE
+			BREAKPOINT_HERE;
 			format = "<UNSAFE FORMAT STRING>";
 		}
 

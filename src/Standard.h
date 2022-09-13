@@ -40,18 +40,17 @@
 	#define GNUC_FORMAT_ATTRIBUTE_O
 #endif
 
-#if !defined(NDEBUG) && defined(_MSC_VER) && _M_IX86 == 600
-	// use inline assembler to invoke the "breakpoint exception"
-	#define BREAKPOINT_HERE _asm int 3
-#elif !defined(NDEBUG) && defined(HAVE_SIGNAL_H)
-	#include <signal.h>
-	#if defined(SIGTRAP)
-		#define BREAKPOINT_HERE raise(SIGTRAP);
-	#else
-		#define BREAKPOINT_HERE
-	#endif
+#ifdef NDEBUG
+#define BREAKPOINT_HERE
+#elif __has_builtin(__builtin_debugtrap)
+#define BREAKPOINT_HERE __builtin_debugtrap()
+#elif defined(_MSC_VER)
+#define BREAKPOINT_HERE __debugbreak()
+#elif defined(HAVE_SIGNAL_H)
+#include <signal.h>
+#define BREAKPOINT_HERE raise(SIGTRAP)
 #else
-	#define BREAKPOINT_HERE
+#define BREAKPOINT_HERE
 #endif
 
 #include <string.h>
@@ -238,8 +237,8 @@ inline int ssprintf(char (&str)[N], const char *fmt, Args... args)
 	// Check parameters
 	if (!IsSafeFormatString(fmt))
 	{
-		BREAKPOINT_HERE
-			fmt = "<UNSAFE FORMAT STRING>";
+		BREAKPOINT_HERE;
+		fmt = "<UNSAFE FORMAT STRING>";
 	}
 	// Build string
 	int m = snprintf(str, N, fmt, args...);
