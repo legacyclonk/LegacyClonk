@@ -31,15 +31,6 @@
 // Integer dataypes
 #include <stdint.h>
 
-#ifdef __GNUC__
-	// Allow checks for correct printf-usage
-	#define GNUC_FORMAT_ATTRIBUTE __attribute__ ((format (printf, 1, 2)))
-	#define GNUC_FORMAT_ATTRIBUTE_O __attribute__ ((format (printf, 2, 3)))
-#else
-	#define GNUC_FORMAT_ATTRIBUTE
-	#define GNUC_FORMAT_ATTRIBUTE_O
-#endif
-
 #ifdef NDEBUG
 #define BREAKPOINT_HERE
 #elif __has_builtin(__builtin_debugtrap)
