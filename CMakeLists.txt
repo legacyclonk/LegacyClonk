@@ -282,8 +282,7 @@ target_link_libraries(clonk standard)
 # Link Freetype
 if (NOT USE_CONSOLE)
 	find_package(Freetype REQUIRED)
-	target_include_directories(clonk PRIVATE ${FREETYPE_INCLUDE_DIRS})
-	target_link_libraries(clonk ${FREETYPE_LIBRARIES})
+	target_link_libraries(clonk Freetype::Freetype)
 	set(HAVE_FREETYPE ${FREETYPE_FOUND})
 endif ()
 
@@ -291,8 +290,7 @@ endif ()
 if (WITH_DEVELOPER_MODE)
 	set(WITH_GLIB 1)
 	find_package(GTK2 2.4 REQUIRED gtk)
-	target_include_directories(clonk PRIVATE ${GTK2_INCLUDE_DIRS})
-	target_link_libraries(clonk ${GTK2_LIBRARIES})
+	target_link_libraries(clonk GTK2::gtk)
 endif ()
 
 # Link iconv
@@ -303,8 +301,7 @@ endif ()
 # Link libjpeg
 if (NOT USE_WIC)
 	find_package(JPEG REQUIRED)
-	target_include_directories(clonk PRIVATE ${JPEG_INCLUDE_DIR})
-	target_link_libraries(clonk ${JPEG_LIBRARIES})
+	target_link_libraries(clonk JPEG::JPEG)
 endif ()
 
 # Link OpenGL and GLEW
@@ -329,15 +326,13 @@ if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
 	if (SDL2_FOUND AND USE_SDL_MAINLOOP)
 		set(USE_SDL_FOR_GAMEPAD ON)
 	endif ()
-	target_include_directories(clonk PRIVATE ${SDL2_INCLUDE_DIRS})
-	target_link_libraries(clonk ${SDL2_LIBRARIES})
+	target_link_libraries(clonk SDL2::SDL2)
 endif ()
 
 # Link SDL2_mixer
 if (USE_SDL_MIXER)
-	find_package(SDL2Mixer REQUIRED)
-	target_include_directories(clonk PRIVATE ${SDL2Mixer_INCLUDE_DIRS})
-	target_link_libraries(clonk ${SDL2Mixer_LIBRARIES})
+	find_package(SDL2_mixer REQUIRED)
+	target_link_libraries(clonk SDL2_mixer::SDL2_mixer)
 endif ()
 
 # Link Windows Imaging Component
@@ -356,7 +351,6 @@ endif ()
 if (USE_LIBNOTIFY)
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(libnotify REQUIRED IMPORTED_TARGET libnotify)
-	target_include_directories(clonk PRIVATE ${libnotify_INCLUDE_DIRS})
 	target_link_libraries(clonk PkgConfig::libnotify)
 endif ()
 
