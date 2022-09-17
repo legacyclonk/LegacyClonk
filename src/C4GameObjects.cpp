@@ -276,11 +276,14 @@ C4Object *C4GameObjects::ObjectPointer(int32_t iNumber)
 	return InactiveObjects.ObjectPointer(iNumber);
 }
 
-long C4GameObjects::ObjectNumber(C4Object *pObj)
+std::int32_t C4GameObjects::ObjectNumber(C4Object *pObj)
 {
 	// search own list
-	long iNum = C4ObjectList::ObjectNumber(pObj);
-	if (iNum) return iNum;
+	if (const std::int32_t number{C4ObjectList::ObjectNumber(pObj)}; number)
+	{
+		return number;
+	}
+
 	// search deactivated
 	return InactiveObjects.ObjectNumber(pObj);
 }

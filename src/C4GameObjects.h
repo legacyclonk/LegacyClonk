@@ -55,7 +55,7 @@ public:
 
 	C4Object *FindInternal(C4ID id); // find object in first sector
 	virtual C4Object *ObjectPointer(int32_t iNumber) override; // object pointer by number
-	long ObjectNumber(C4Object *pObj); // object number by pointer
+	std::int32_t ObjectNumber(C4Object *pObj); // object number by pointer
 
 	C4ObjectList &ObjectsInt(); // return object list containing system objects
 
