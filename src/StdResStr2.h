@@ -27,7 +27,7 @@ public:
 	StdResTable(std::string_view table);
 
 public:
-	const char *GetResStr(const char *id);
+	const char *GetResStr(std::string_view id);
 
 private:
 	struct Hash : std::hash<std::string_view>

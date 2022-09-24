@@ -53,15 +53,16 @@ StdResTable::StdResTable(std::string_view table)
 
 static std::string result;
 
-const char *StdResTable::GetResStr(const char *const id)
+const char *StdResTable::GetResStr(const std::string_view id)
 {
-	const std::string_view key{id};
-	if (const auto it = entries.find(key); it != entries.end())
+	if (const auto it = entries.find(id); it != entries.end())
 	{
 		return it->second.c_str();
 	}
 
-	result = std::string{"[Undefined:"} + id + ']';
+	result = "[Undefined:";
+	result.append(id);
+	result += ']';
 	return result.c_str();
 }
 
