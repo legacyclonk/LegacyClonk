@@ -45,12 +45,12 @@ constexpr int32_t FIXED_FPF{1 << FIXED_SHIFT};
 
 class C4Fixed
 {
-	friend int fixtoi(const C4Fixed &x);
-	friend int fixtoi(const C4Fixed &x, int32_t prec);
-	friend C4Fixed itofix(int32_t x);
-	friend C4Fixed itofix(int32_t x, int32_t prec);
-	friend float fixtof(const C4Fixed &x);
-	friend C4Fixed ftofix(float x);
+	friend constexpr int fixtoi(const C4Fixed &x);
+	friend constexpr int fixtoi(const C4Fixed &x, int32_t prec);
+	friend constexpr C4Fixed itofix(int32_t x);
+	friend constexpr C4Fixed itofix(int32_t x, int32_t prec);
+	friend constexpr float fixtof(const C4Fixed &x);
+	friend constexpr C4Fixed ftofix(float x);
 
 	friend inline void CompileFunc(C4Fixed &rValue, StdCompiler *pComp);
 
@@ -58,9 +58,9 @@ public:
 	int32_t val; // internal value
 
 public:
-	inline C4Fixed() {}
-	inline C4Fixed(const C4Fixed &rCpy) : val(rCpy.val) {}
-	inline C4Fixed &operator=(const C4Fixed &other)
+	constexpr C4Fixed() {}
+	constexpr C4Fixed(const C4Fixed &rCpy) : val(rCpy.val) {}
+	constexpr C4Fixed &operator=(const C4Fixed &other)
 	{
 		val = other.val;
 		return *this;
@@ -70,18 +70,18 @@ public:
 	// in order to be backward compatible, so everything is private.
 
 private:
-	explicit inline C4Fixed(int32_t iVal)
+	explicit constexpr C4Fixed(int32_t iVal)
 		: val(iVal * FIXED_FPF) {}
-	explicit inline C4Fixed(int32_t iVal, int32_t iPrec)
+	explicit constexpr C4Fixed(int32_t iVal, int32_t iPrec)
 		: val(iPrec < FIXED_FPF
 			? iVal * (FIXED_FPF / iPrec) + (iVal * (FIXED_FPF % iPrec)) / iPrec
 			: int32_t(int64_t(iVal) * FIXED_FPF / iPrec)
 		) {}
-	explicit inline C4Fixed(float fVal)
+	explicit constexpr C4Fixed(float fVal)
 		: val(static_cast<int32_t>(fVal * float(FIXED_FPF))) {}
 
 	// round to int
-	int32_t to_int() const
+	constexpr int32_t to_int() const
 	{
 		int32_t r = val;
 		// be carefull not to overflow
@@ -94,7 +94,7 @@ private:
 		return r;
 	}
 
-	int32_t to_int(int32_t prec) const
+	constexpr int32_t to_int(int32_t prec) const
 	{
 		int64_t r = val;
 		r *= prec;
@@ -105,86 +105,85 @@ private:
 	}
 
 	// convert to floating point value
-	float to_float() const
+	constexpr float to_float() const
 	{
 		return float(val) / float(FIXED_FPF);
 	}
 
 public:
 	// set integer (allowed for historic reasons)
-	inline C4Fixed &operator=(int32_t x) { return *this = C4Fixed(x); }
+	constexpr C4Fixed &operator=(int32_t x) { return *this = C4Fixed(x); }
 
 	// test value
-	inline operator bool() const { return !!val; }
-	inline bool operator!() const { return !val; }
+	constexpr operator bool() const { return !!val; }
+	constexpr bool operator!() const { return !val; }
 
 	// arithmetic operations
-	inline C4Fixed &operator+=(const C4Fixed &fVal2)
+	constexpr C4Fixed &operator+=(const C4Fixed &fVal2)
 	{
 		val += fVal2.val;
 		return *this;
 	}
 
-	inline C4Fixed &operator-=(const C4Fixed &fVal2)
+	constexpr C4Fixed &operator-=(const C4Fixed &fVal2)
 	{
 		val -= fVal2.val;
 		return *this;
 	}
 
-	inline C4Fixed &operator*=(const C4Fixed &fVal2)
+	constexpr C4Fixed &operator*=(const C4Fixed &fVal2)
 	{
 		val = int32_t((int64_t(val) * fVal2.val) / FIXED_FPF);
 		return *this;
 	}
 
-	inline C4Fixed &operator*=(int32_t iVal2)
+	constexpr C4Fixed &operator*=(int32_t iVal2)
 	{
 		val *= iVal2;
 		return *this;
 	}
 
-	inline C4Fixed &operator/=(const C4Fixed &fVal2)
+	constexpr C4Fixed &operator/=(const C4Fixed &fVal2)
 	{
 		val = int32_t((int64_t(val) * FIXED_FPF) / fVal2.val);
 		return *this;
 	}
 
-	inline C4Fixed &operator/=(int32_t iVal2)
+	constexpr C4Fixed &operator/=(int32_t iVal2)
 	{
 		val /= iVal2;
 		return *this;
 	}
 
-	inline C4Fixed operator-() const
+	constexpr C4Fixed operator-() const
 	{
 		C4Fixed fr; fr.val = -val; return fr;
 	}
 
-	inline C4Fixed operator+() const
+	constexpr C4Fixed operator+() const
 	{
 		return *this;
 	}
 
-	inline bool operator== (const C4Fixed &fVal2) const { return val == fVal2.val; }
-	inline std::strong_ordering operator<=>(const C4Fixed &value) const { return val <=> value.val; }
+	constexpr bool operator== (const C4Fixed &fVal2) const { return val == fVal2.val; }
+	constexpr std::strong_ordering operator<=>(const C4Fixed &value) const { return val <=> value.val; }
 
 	// and wrappers
-	inline C4Fixed &operator+=(int32_t iVal2) { return operator += (C4Fixed(iVal2)); }
-	inline C4Fixed &operator-=(int32_t iVal2) { return operator -= (C4Fixed(iVal2)); }
+	constexpr C4Fixed &operator+=(int32_t iVal2) { return operator += (C4Fixed(iVal2)); }
+	constexpr C4Fixed &operator-=(int32_t iVal2) { return operator -= (C4Fixed(iVal2)); }
 
-	inline C4Fixed operator+(const C4Fixed &fVal2) const { return C4Fixed(*this) += fVal2; }
-	inline C4Fixed operator-(const C4Fixed &fVal2) const { return C4Fixed(*this) -= fVal2; }
-	inline C4Fixed operator*(const C4Fixed &fVal2) const { return C4Fixed(*this) *= fVal2; }
-	inline C4Fixed operator/(const C4Fixed &fVal2) const { return C4Fixed(*this) /= fVal2; }
+	constexpr C4Fixed operator+(const C4Fixed &fVal2) const { return C4Fixed(*this) += fVal2; }
+	constexpr C4Fixed operator-(const C4Fixed &fVal2) const { return C4Fixed(*this) -= fVal2; }
+	constexpr C4Fixed operator*(const C4Fixed &fVal2) const { return C4Fixed(*this) *= fVal2; }
+	constexpr C4Fixed operator/(const C4Fixed &fVal2) const { return C4Fixed(*this) /= fVal2; }
 
-	inline C4Fixed operator+(int32_t iVal2) const { return C4Fixed(*this) += iVal2; }
-	inline C4Fixed operator-(int32_t iVal2) const { return C4Fixed(*this) -= iVal2; }
-	inline C4Fixed operator*(int32_t iVal2) const { return C4Fixed(*this) *= iVal2; }
-	inline C4Fixed operator/(int32_t iVal2) const { return C4Fixed(*this) /= iVal2; }
+	constexpr C4Fixed operator+(int32_t iVal2) const { return C4Fixed(*this) += iVal2; }
+	constexpr C4Fixed operator-(int32_t iVal2) const { return C4Fixed(*this) -= iVal2; }
+	constexpr C4Fixed operator*(int32_t iVal2) const { return C4Fixed(*this) *= iVal2; }
+	constexpr C4Fixed operator/(int32_t iVal2) const { return C4Fixed(*this) /= iVal2; }
 
-	inline bool operator==(int32_t iVal2) const { return operator==(C4Fixed(iVal2)); }
-	inline std::strong_ordering operator<=>(const std::int32_t value) const { return *this <=> C4Fixed{value}; }
-
+	constexpr bool operator==(int32_t iVal2) const { return operator==(C4Fixed(iVal2)); }
+	constexpr std::strong_ordering operator<=>(const std::int32_t value) const { return *this <=> C4Fixed{value}; }
 
 	C4Fixed sin_deg() const
 	{
@@ -220,22 +219,22 @@ public:
 };
 
 // conversion
-inline float fixtof(const C4Fixed &x)             { return x.to_float(); }
-inline C4Fixed ftofix(float x)                    { return C4Fixed(x); }
-inline int fixtoi(const C4Fixed &x)               { return x.to_int(); }
-inline int fixtoi(const C4Fixed &x, int32_t prec) { return x.to_int(prec); }
-inline C4Fixed itofix(int32_t x)                  { return C4Fixed(x); }
-inline C4Fixed itofix(int32_t x, int32_t prec)    { return C4Fixed(x, prec); }
+constexpr float fixtof(const C4Fixed &x)             { return x.to_float(); }
+constexpr C4Fixed ftofix(float x)                    { return C4Fixed(x); }
+constexpr int fixtoi(const C4Fixed &x)               { return x.to_int(); }
+constexpr int fixtoi(const C4Fixed &x, int32_t prec) { return x.to_int(prec); }
+constexpr C4Fixed itofix(int32_t x)                  { return C4Fixed(x); }
+constexpr C4Fixed itofix(int32_t x, int32_t prec)    { return C4Fixed(x, prec); }
 
 // additional functions
 inline C4Fixed Sin(const C4Fixed &fAngle) { return fAngle.sin_deg(); }
 inline C4Fixed Cos(const C4Fixed &fAngle) { return fAngle.cos_deg(); }
-inline C4Fixed FIXED100(int x)          { return itofix(x, 100); }
-inline C4Fixed FIXED256(int x)          { C4Fixed r; r.val = x * FIXED_FPF / 256; return r; }
-inline C4Fixed FIXED10(int x)           { return itofix(x, 10); }
+constexpr C4Fixed FIXED100(int x)          { return itofix(x, 100); }
+constexpr C4Fixed FIXED256(int x)          { C4Fixed r; r.val = x * FIXED_FPF / 256; return r; }
+constexpr C4Fixed FIXED10(int x)           { return itofix(x, 10); }
 
 // define 0
-const C4Fixed Fix0 = itofix(0);
+inline constexpr C4Fixed Fix0 = itofix(0);
 
 // conversion...
 // note: keep out! really dirty casts!
