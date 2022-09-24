@@ -329,22 +329,24 @@ void C4Language::LoadInfos(C4Group &hGroup)
 			// Load language string table
 			if (hGroup.LoadEntry(strEntry, &strTable, nullptr, 1))
 			{
+				StdResTable table{strTable};
+				delete[] strTable;
+
 				// New language info
 				C4LanguageInfo info;
 				// Get language code by entry name
 				SCopy(GetFilenameOnly(strEntry) + SLen(GetFilenameOnly(strEntry)) - 2, info.Code, 2);
 				SCapitalize(info.Code);
 				// Get language name, info, fallback from table
-				SCopy(GetResStr("IDS_LANG_NAME", strTable), info.Name, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_INFO", strTable), info.Info, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_FALLBACK", strTable), info.Fallback, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_CHARSET", strTable), info.Charset, C4MaxLanguageInfo);
+				SCopy(table.GetResStr("IDS_LANG_NAME"), info.Name, C4MaxLanguageInfo);
+				SCopy(table.GetResStr("IDS_LANG_INFO"), info.Info, C4MaxLanguageInfo);
+				SCopy(table.GetResStr("IDS_LANG_FALLBACK"), info.Fallback, C4MaxLanguageInfo);
+				SCopy(table.GetResStr("IDS_LANG_CHARSET"), info.Charset, C4MaxLanguageInfo);
 				// Safety: pipe character is not allowed in any language info string
 				SReplaceChar(info.Name, '|', ' ');
 				SReplaceChar(info.Info, '|', ' ');
 				SReplaceChar(info.Fallback, '|', ' ');
-				// Delete table
-				delete[] strTable;
+
 				// Add info to list
 				Infos.emplace_back(std::move(info));
 			}

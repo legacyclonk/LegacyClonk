@@ -18,9 +18,28 @@
 
 #pragma once
 
+#include <string_view>
+#include <unordered_map>
+
+class StdResTable
+{
+public:
+	StdResTable(std::string_view table);
+
+public:
+	const char *GetResStr(const char *id);
+
+private:
+	struct Hash : std::hash<std::string_view>
+	{
+		using is_transparent = int;
+	};
+
+	std::unordered_map<std::string, std::string, Hash, std::equal_to<void>> entries;
+};
+
 const char *LoadResStr(const char *id);
 const char *LoadResStrNoAmp(const char *id);
-const char *GetResStr(const char *id, const char *strTable);
 
 void SetResStrTable(const char *pTable);
 void ClearResStrTable();

@@ -19,57 +19,53 @@
 
 #include <iostream>
 #include <optional>
-#include <string_view>
-#include <unordered_map>
 
-class ResTable
+StdResTable::StdResTable(std::string_view table)
 {
-public:
-	ResTable(std::string_view table)
+	for (auto pos = table.find_first_of('='); pos != std::string_view::npos; pos = table.find_first_of('='))
 	{
-		for (auto pos = table.find_first_of('='); pos != std::string_view::npos; pos = table.find_first_of('='))
+		const auto key = table.substr(0, pos);
+		table.remove_prefix(pos + 1);
+
+		const auto endPos = table.find_first_not_of("\r\n", table.find_first_of("\r\n"));
+		auto value = table.substr(0, endPos);
+		table.remove_prefix(value.size());
+		value = value.substr(0, value.find_last_not_of("\r\n") + 1);
+
+		const auto [it, inserted] = entries.emplace(key, value);
+		if (!inserted)
 		{
-			const auto key = table.substr(0, pos);
-			table.remove_prefix(pos + 1);
-
-			const auto endPos = table.find_first_not_of("\r\n", table.find_first_of("\r\n"));
-			auto value = table.substr(0, endPos);
-			table.remove_prefix(value.size());
-			value = value.substr(0, value.find_last_not_of("\r\n") + 1);
-
-			const auto [it, inserted] = entries.emplace(key, value);
-			if (!inserted)
+			std::cerr << "LanguageXX entry \"" << key << "\" not inserted (duplicate?)\n";
+		}
+		else
+		{
+			std::string &valueStr = it->second;
+			for (auto backslashPos = valueStr.find_first_of('\\'); backslashPos < valueStr.size() - 1; backslashPos = valueStr.find_first_of('\\', backslashPos + 1))
 			{
-				std::cerr << "LanguageXX entry \"" << key << "\" not inserted (duplicate?)\n";
-			}
-			else
-			{
-				std::string &valueStr = it->second;
-				for (auto backslashPos = valueStr.find_first_of('\\'); backslashPos < valueStr.size() - 1; backslashPos = valueStr.find_first_of('\\', backslashPos + 1))
+				if (valueStr[backslashPos + 1] == 'n')
 				{
-					if (valueStr[backslashPos + 1] == 'n')
-					{
-						valueStr.replace(backslashPos, 2, "\r\n");
-					}
+					valueStr.replace(backslashPos, 2, "\r\n");
 				}
 			}
 		}
 	}
+}
 
-	const char *GetEntry(const std::string &key) const
+static std::string result;
+
+const char *StdResTable::GetResStr(const char *const id)
+{
+	const std::string_view key{id};
+	if (const auto it = entries.find(key); it != entries.end())
 	{
-		if (const auto it = entries.find(key); it != entries.end())
-		{
-			return it->second.c_str();
-		}
-		return nullptr;
+		return it->second.c_str();
 	}
 
-private:
-	std::unordered_map<std::string, std::string> entries;
-};
+	result = std::string{"[Undefined:"} + id + ']';
+	return result.c_str();
+}
 
-static std::optional<ResTable> Table;
+static std::optional<StdResTable> Table;
 
 void SetResStrTable(const char *pTable)
 {
@@ -83,35 +79,14 @@ void ClearResStrTable()
 
 bool IsResStrTableLoaded() { return Table.has_value(); }
 
-static std::string result;
-static const char *GetResStr(const char *id, const std::optional<ResTable> &Table)
-{
-	if (!Table.has_value()) return "Language string table not loaded.";
-	const char *r = Table->GetEntry(id);
-	if (!r)
-	{
-		result = "[Undefined:";
-		result += id;
-		result += ']';
-		return result.c_str();
-	}
-	return r;
-}
-
 const char *LoadResStr(const char *id)
 {
-	return GetResStr(id, Table);
+	return Table ? Table->GetResStr(id) : "Language string table not loaded.";
 }
 
 const char *LoadResStrNoAmp(const char *id)
 {
 	result = LoadResStr(id);
 	result.erase(std::remove(result.begin(), result.end(), '&'), result.end());
-	return result.c_str();
-}
-
-const char *GetResStr(const char *id, const char *strTable)
-{
-	result = GetResStr(id, {ResTable{strTable}});
 	return result.c_str();
 }
