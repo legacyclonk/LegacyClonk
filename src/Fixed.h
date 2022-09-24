@@ -59,6 +59,11 @@ public:
 public:
 	inline C4Fixed() {}
 	inline C4Fixed(const C4Fixed &rCpy) : val(rCpy.val) {}
+	inline C4Fixed &operator=(const C4Fixed &other)
+	{
+		val = other.val;
+		return *this;
+	}
 
 	// Conversion must be done by the conversion routines itofix, fixtoi, ftofix and fixtof
 	// in order to be backward compatible, so everything is private.
