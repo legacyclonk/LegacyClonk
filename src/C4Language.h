@@ -18,9 +18,12 @@
 
 #pragma once
 
+#include "C4DelegatedIterable.h"
 #include <C4Group.h>
 #include <C4GroupSet.h>
 #include <StdResStr2.h>
+
+#include <vector>
 
 #ifdef HAVE_ICONV
 #include <iconv.h>
@@ -45,7 +48,7 @@ protected:
 	C4LanguageInfo *Next;
 };
 
-class C4Language
+class C4Language : public C4DelegatedIterable<C4Language>
 {
 public:
 	C4Language();
@@ -55,8 +58,11 @@ protected:
 	C4Group PackDirectory;
 	C4GroupSet Packs;
 	C4GroupSet PackGroups;
-	C4LanguageInfo *Infos;
+	std::vector<C4LanguageInfo> Infos;
 	char PackGroupLocation[_MAX_FNAME + 1];
+
+public:
+	using Iterable = ConstIterableMember<&C4Language::Infos>;
 
 public:
 	void ClearLanguage();
@@ -66,9 +72,7 @@ public:
 	// Handling of external language packs
 	C4GroupSet &GetPackGroups(const char *strRelativePath);
 	// Handling of language info loaded from string tables
-	int GetInfoCount();
-	C4LanguageInfo *GetInfo(int iIndex);
-	C4LanguageInfo *FindInfo(const char *strCode);
+	const C4LanguageInfo *FindInfo(const char *code);
 	// Loading of actual resource string table
 	bool LoadLanguage(const char *strLanguages);
 	// Encoding conversion functions

@@ -1214,11 +1214,11 @@ void C4StartupOptionsDlg::DoBack()
 void C4StartupOptionsDlg::UpdateLanguage()
 {
 	// find currently specified language in language list and display its info
-	C4LanguageInfo *pNfo = Languages.FindInfo(Config.General.Language);
-	if (pNfo)
+	const C4LanguageInfo *const info{Languages.FindInfo(Config.General.Language)};
+	if (info)
 	{
-		pLangCombo->SetText(FormatString("%s - %s", pNfo->Code, pNfo->Name).getData());
-		pLangInfoLabel->SetText(pNfo->Info);
+		pLangCombo->SetText(FormatString("%s - %s", info->Code, info->Name).getData());
+		pLangInfoLabel->SetText(info->Info);
 	}
 	else
 	{
@@ -1228,11 +1228,11 @@ void C4StartupOptionsDlg::UpdateLanguage()
 	}
 	// update language fallbacks
 	char *szLang = Config.General.LanguageEx;
-	SCopy(pNfo->Code, szLang);
-	if (*(pNfo->Fallback))
+	SCopy(info->Code, szLang);
+	if (*(info->Fallback))
 	{
 		SAppend(",", szLang);
-		Config.General.GetLanguageSequence(pNfo->Fallback, szLang + SLen(szLang));
+		Config.General.GetLanguageSequence(info->Fallback, szLang + SLen(szLang));
 	}
 	// internal fallbacks
 	if (!SSearch(Config.General.LanguageEx, "US"))
@@ -1250,10 +1250,10 @@ void C4StartupOptionsDlg::UpdateLanguage()
 void C4StartupOptionsDlg::OnLangComboFill(C4GUI::ComboBox_FillCB *pFiller)
 {
 	// fill with all possible languages
-	C4LanguageInfo *pNfo;
-	for (int i = 0; i < Languages.GetInfoCount(); ++i)
-		if (pNfo = Languages.GetInfo(i))
-			pFiller->AddEntry(FormatString("%s - %s", pNfo->Code, pNfo->Name).getData(), static_cast<unsigned char>(pNfo->Code[0]) + (static_cast<unsigned char>(pNfo->Code[1]) << 8));
+	for (const auto &info : Languages)
+	{
+		pFiller->AddEntry(FormatString("%s - %s", info.Code, info.Name).getData(), static_cast<unsigned char>(info.Code[0]) + (static_cast<unsigned char>(info.Code[1]) << 8));
+	}
 }
 
 bool C4StartupOptionsDlg::OnLangComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection)

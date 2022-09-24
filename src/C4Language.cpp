@@ -43,7 +43,6 @@ C4Language Languages;
 
 C4Language::C4Language()
 {
-	Infos = nullptr;
 	PackGroupLocation[0] = 0;
 }
 
@@ -101,14 +100,8 @@ void C4Language::Clear()
 	// Close pack directory
 	PackDirectory.Close();
 	// Clear infos
-	C4LanguageInfo *pNext;
-	while (Infos)
-	{
-		pNext = Infos->Next;
-		delete Infos;
-		Infos = pNext;
-	}
-	Infos = nullptr;
+	Infos.clear();
+
 #ifdef HAVE_ICONV
 	if (local_to_host != iconv_t(-1))
 	{
@@ -215,14 +208,6 @@ StdStrBuf C4Language::IconvUtf8(const char *string)
 }
 
 #endif
-
-int C4Language::GetInfoCount()
-{
-	int iCount = 0;
-	for (C4LanguageInfo *pInfo = Infos; pInfo; pInfo = pInfo->Next)
-		iCount++;
-	return iCount;
-}
 
 // Returns a set of groups at the specified relative path within all open language packs.
 
@@ -341,42 +326,36 @@ void C4Language::LoadInfos(C4Group &hGroup)
 			if (hGroup.LoadEntry(strEntry, &strTable, nullptr, 1))
 			{
 				// New language info
-				C4LanguageInfo *pInfo = new C4LanguageInfo;
+				C4LanguageInfo info;
 				// Get language code by entry name
-				SCopy(GetFilenameOnly(strEntry) + SLen(GetFilenameOnly(strEntry)) - 2, pInfo->Code, 2);
-				SCapitalize(pInfo->Code);
+				SCopy(GetFilenameOnly(strEntry) + SLen(GetFilenameOnly(strEntry)) - 2, info.Code, 2);
+				SCapitalize(info.Code);
 				// Get language name, info, fallback from table
-				SCopy(GetResStr("IDS_LANG_NAME", strTable), pInfo->Name, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_INFO", strTable), pInfo->Info, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_FALLBACK", strTable), pInfo->Fallback, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_CHARSET", strTable), pInfo->Charset, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_NAME", strTable), info.Name, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_INFO", strTable), info.Info, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_FALLBACK", strTable), info.Fallback, C4MaxLanguageInfo);
+				SCopy(GetResStr("IDS_LANG_CHARSET", strTable), info.Charset, C4MaxLanguageInfo);
 				// Safety: pipe character is not allowed in any language info string
-				SReplaceChar(pInfo->Name, '|', ' ');
-				SReplaceChar(pInfo->Info, '|', ' ');
-				SReplaceChar(pInfo->Fallback, '|', ' ');
+				SReplaceChar(info.Name, '|', ' ');
+				SReplaceChar(info.Info, '|', ' ');
+				SReplaceChar(info.Fallback, '|', ' ');
 				// Delete table
 				delete[] strTable;
 				// Add info to list
-				pInfo->Next = Infos;
-				Infos = pInfo;
+				Infos.emplace_back(std::move(info));
 			}
 }
 
-C4LanguageInfo *C4Language::GetInfo(int iIndex)
+const C4LanguageInfo *C4Language::FindInfo(const char *const code)
 {
-	for (C4LanguageInfo *pInfo = Infos; pInfo; pInfo = pInfo->Next)
-		if (iIndex <= 0)
-			return pInfo;
-		else
-			iIndex--;
-	return nullptr;
-}
+	if (const auto it = std::find_if(begin(), end(), [code](auto &info)
+	{
+		return SEqualNoCase(info.Code, code, 2);
+	}); it != end())
+	{
+		return &*it;
+	}
 
-C4LanguageInfo *C4Language::FindInfo(const char *strCode)
-{
-	for (C4LanguageInfo *pInfo = Infos; pInfo; pInfo = pInfo->Next)
-		if (SEqualNoCase(pInfo->Code, strCode, 2))
-			return pInfo;
 	return nullptr;
 }
 
