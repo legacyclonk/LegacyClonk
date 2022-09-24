@@ -1082,29 +1082,14 @@ C4TexRef::C4TexRef(int iSize, bool fSingle) : LockCount{0}
 	// create texture: check ddraw
 	if (!lpDDraw) return;
 	if (!lpDDraw->DeviceReady()) return;
-	// create it!
-#ifndef USE_CONSOLE
-	if (pGL)
-	{
-		// OpenGL
-		// create mem array for texture creation
-		texLock.pBits = new unsigned char[iSize * iSize * 4];
-		texLock.Pitch = iSize * 4;
-		memset(texLock.pBits, 0xff, texLock.Pitch * iSize);
-		// turn mem array into texture
-		Unlock();
-	}
-	else
-#endif
-		if (lpDDraw)
-		{
-			texLock.pBits = new unsigned char[iSize * iSize * 4];
-			texLock.Pitch = iSize * 4;
-			memset(texLock.pBits, 0xff, texLock.Pitch * iSize);
-			// Always locked
-			LockSize.left = LockSize.top = 0;
-			LockSize.right = LockSize.bottom = iSize;
-		}
+
+	// create mem array for texture creation
+	texLock.pBits = new unsigned char[iSize * iSize * 4];
+	texLock.Pitch = iSize * 4;
+	memset(texLock.pBits, 0xff, texLock.Pitch * iSize);
+	// Always locked
+	LockSize.left = LockSize.top = 0;
+	LockSize.right = LockSize.bottom = iSize;
 }
 
 C4TexRef::~C4TexRef()
