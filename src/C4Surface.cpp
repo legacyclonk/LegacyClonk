@@ -1083,6 +1083,23 @@ C4TexRef::C4TexRef(int iSize, bool fSingle) : LockCount{0}
 	if (!lpDDraw) return;
 	if (!lpDDraw->DeviceReady()) return;
 
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glGenTextures(1, &texName);
+
+	if (!texName)
+	{
+		throw std::runtime_error{"Could not create texture"};
+	}
+
+	glBindTexture(GL_TEXTURE_2D, texName);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	// Default, changed in PerformBlt if necessary
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, iSize, iSize, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, nullptr);
+
 	// create mem array for texture creation
 	texLock.pBits = new unsigned char[iSize * iSize * 4];
 	texLock.Pitch = iSize * 4;
@@ -1097,9 +1114,9 @@ C4TexRef::~C4TexRef()
 	fIntLock = false;
 	// free texture
 #ifndef USE_CONSOLE
-	if (pGL)
+	if (pGL && pGL->pCurrCtx)
 	{
-		if (texName && pGL->pCurrCtx) glDeleteTextures(1, &texName);
+		glDeleteTextures(1, &texName);
 	}
 #endif
 	if (lpDDraw) delete[] texLock.pBits; texLock.pBits = nullptr;
@@ -1127,15 +1144,12 @@ bool C4TexRef::LockForUpdate(const RECT &rtUpdate)
 #ifndef USE_CONSOLE
 	if (pGL)
 	{
-		if (texName)
-		{
-			// prepare texture data
-			texLock.pBits = new unsigned char[
-				(rtUpdate.right - rtUpdate.left) * (rtUpdate.bottom - rtUpdate.top) * 4];
-			texLock.Pitch = (rtUpdate.right - rtUpdate.left) * 4;
-			LockSize = rtUpdate;
-			return true;
-		}
+		// prepare texture data
+		texLock.pBits = new unsigned char[
+			(rtUpdate.right - rtUpdate.left) * (rtUpdate.bottom - rtUpdate.top) * 4];
+		texLock.Pitch = (rtUpdate.right - rtUpdate.left) * 4;
+		LockSize = rtUpdate;
+		return true;
 	}
 	else
 #endif
@@ -1156,18 +1170,15 @@ bool C4TexRef::Lock()
 #ifndef USE_CONSOLE
 	if (pGL)
 	{
-		if (texName)
-		{
-			// select context, if not already done
-			if (!pGL->pCurrCtx) if (!pGL->MainCtx.Select()) return false;
-			// get texture
-			texLock.pBits = new unsigned char[iSize * iSize * 4];
-			texLock.Pitch = iSize * 4;
-			glBindTexture(GL_TEXTURE_2D, texName);
-			glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
-			++LockCount;
-			return true;
-		}
+		// select context, if not already done
+		if (!pGL->pCurrCtx) if (!pGL->MainCtx.Select()) return false;
+		// get texture
+		texLock.pBits = new unsigned char[iSize * iSize * 4];
+		texLock.Pitch = iSize * 4;
+		glBindTexture(GL_TEXTURE_2D, texName);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
+		++LockCount;
+		return true;
 	}
 	else
 #endif
@@ -1190,26 +1201,10 @@ void C4TexRef::Unlock([[maybe_unused]] bool noUpload)
 			// select context, if not already done
 			if (!pGL->pCurrCtx) if (!pGL->MainCtx.Select()) return;
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			if (!texName)
-			{
-				// create a new texture
-				glGenTextures(1, &texName);
-				glBindTexture(GL_TEXTURE_2D, texName);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				// Default, changed in PerformBlt if necessary
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexImage2D(GL_TEXTURE_2D, 0, 4, iSize, iSize, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
-			}
-			else
-			{
-				// reuse the existing texture
-				glBindTexture(GL_TEXTURE_2D, texName);
-				glTexSubImage2D(GL_TEXTURE_2D, 0,
-					LockSize.left, LockSize.top, LockSize.right - LockSize.left, LockSize.bottom - LockSize.top,
-					GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
-			}
+			glBindTexture(GL_TEXTURE_2D, texName);
+			glTexSubImage2D(GL_TEXTURE_2D, 0,
+				LockSize.left, LockSize.top, LockSize.right - LockSize.left, LockSize.bottom - LockSize.top,
+				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
 		}
 		if (!noUpload || Config.Graphics.CacheTexturesInRAM == -1 || LockCount < Config.Graphics.CacheTexturesInRAM)
 		{
