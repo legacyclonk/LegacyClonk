@@ -361,15 +361,19 @@ bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &
 	// Success
 	return true;
 #elif WITH_DEVELOPER_MODE
+	if (!C4ConsoleBase::Init(app, title, bounds, parent))
+	{
+		return false;
+	}
+
 	cursorWait = gdk_cursor_new(GDK_WATCH);
 	cursorDefault = gdk_cursor_new(GDK_ARROW);
 
 	// Calls InitGUI
-	CStdWindow *retval = C4ConsoleBase::Init(pApp, LoadResStr("IDS_CNS_CONSOLE"), nullptr, false);
 	UpdateHaltCtrls(true);
 	EnableControls(fGameOpen);
 	ClearViewportMenu();
-	return retval;
+	return true;
 #else
 	return C4ConsoleBase::Init(app, LoadResStr("IDS_CNS_CONSOLE"), bounds);
 #endif // WITH_DEVELOPER_MODE / _WIN32
