@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "C4Rect.h"
 #include <Standard.h>
 
 #include "C4Rect.h"
@@ -254,7 +255,7 @@ class CStdWindow
 {
 public:
 	CStdWindow() = default;
-	virtual ~CStdWindow() = default;
+	virtual ~CStdWindow();
 	bool Active{false};
 	virtual void Clear();
 	// Only when the wm requests a close
@@ -262,10 +263,14 @@ public:
 	virtual void Close() = 0;
 	// Keypress(es) translated to a char
 	virtual void CharIn(const char *c) {}
-	virtual bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr);
+	virtual bool Init(CStdApp *app, const char *title, const C4Rect &bounds = DefaultBounds, CStdWindow *parent = nullptr);
 	void RestorePosition();
 	bool GetSize(C4Rect &rect);
-	virtual void SetSize(unsigned int cx, unsigned int cy); // resize
+
+#ifdef _WIN32
+	virtual
+#endif
+	void SetSize(unsigned int cx, unsigned int cy); // resiz
 	void SetTitle(const char *Title);
 	void FlashWindow();
 	void SetDisplayMode(DisplayMode mode);
@@ -277,7 +282,7 @@ protected:
 #ifdef _WIN32
 
 public:
-	static constexpr auto UseDefaultPosition = CW_USEDEFAULT;
+	static constexpr C4Rect DefaultBounds{CW_USEDEFAULT, CW_USEDEFAULT, 0, 0};
 
 	HWND hWindow{nullptr};
 	void Maximize();
@@ -314,6 +319,9 @@ protected:
 	void *Info;
 
 #elif defined(USE_SDL_MAINLOOP)
+public:
+	static constexpr C4Rect DefaultBounds{0, 0, 100, 100};
+
 public:
 	float GetInputScale();
 

@@ -145,11 +145,6 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 void C4FullScreen::CharIn(const char *c) { Game.pGUI->CharIn(c); }
 
-bool C4FullScreen::Init(CStdApp *const app)
-{
-	return Init(app, STD_PRODUCT, {CW_USEDEFAULT, CW_USEDEFAULT, 0, 0}, nullptr);
-}
-
 bool C4FullScreen::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
 	if (!CStdWindow::Init(app, title, bounds, parent))
@@ -478,6 +473,11 @@ C4FullScreen::C4FullScreen()
 C4FullScreen::~C4FullScreen()
 {
 	delete pMenu;
+}
+
+bool C4FullScreen::Init(CStdApp *const app)
+{
+	return CStdWindow::Init(app, STD_PRODUCT);
 }
 
 void C4FullScreen::Close()

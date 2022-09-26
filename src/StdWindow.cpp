@@ -34,7 +34,10 @@
 
 #include "res/engine_resource.h"
 
-LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+CStdWindow::~CStdWindow()
+{
+	CStdWindow::Clear();
+}
 
 bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {

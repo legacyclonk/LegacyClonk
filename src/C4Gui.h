@@ -2016,10 +2016,11 @@ private:
 #endif
 public:
 	DialogWindow(Dialog &dialog) : dialog{dialog} {}
-	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr) override;
 	virtual void Close() override;
 
 #ifdef _WIN32
+	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr) override;
+
 	std::pair<DWORD, DWORD> GetWindowStyle() const override { return {WindowStyle, 0}; }
 	ATOM RegisterWindowClass(HINSTANCE instance) const override;
 	bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const override;
@@ -2027,7 +2028,10 @@ public:
 
 private:
 	Dialog &dialog;
+
+#ifdef _WIN32
 	friend LRESULT APIENTRY DialogWinProc(HWND, UINT, WPARAM, LPARAM);
+#endif
 };
 
 // information on how to draw dialog borders and face

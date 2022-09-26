@@ -301,7 +301,7 @@ void C4Console::HandleMessage(XEvent &e)
 
 bool C4Console::Init(CStdApp *const app)
 {
-	return Init(app, LoadResStr("IDS_CNS_CONSOLE"), {}, nullptr);
+	return Init(app, LoadResStr("IDS_CNS_CONSOLE"));
 }
 
 bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
@@ -371,7 +371,7 @@ bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &
 	ClearViewportMenu();
 	return retval;
 #else
-	return C4ConsoleBase::Init(pApp, LoadResStr("IDS_CNS_CONSOLE"), nullptr, false);
+	return C4ConsoleBase::Init(app, LoadResStr("IDS_CNS_CONSOLE"), bounds);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 

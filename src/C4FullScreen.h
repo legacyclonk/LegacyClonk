@@ -41,12 +41,12 @@ public:
 	// User requests close
 	virtual void Close() override;
 	virtual void CharIn(const char *c) override;
+	bool Init(CStdApp *app);
 #ifdef USE_X11
 	virtual void HandleMessage(XEvent &e) override;
 #elif USE_SDL_MAINLOOP
 	virtual void HandleMessage(SDL_Event &e) override;
 #elif defined(_WIN32)
-	bool Init(CStdApp *app);
 	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr) override;
 	void Clear() override;
 	void SetSize(unsigned int cx, unsigned int cy) override;

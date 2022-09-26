@@ -262,22 +262,6 @@ bool DialogWindow::GetPositionData(std::string &id, std::string &subKey, bool &s
 	return true;
 }
 
-#else
-
-CStdWindow *DialogWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, const C4Rect &rcBounds, const char *szID)
-{
-	if (CStdWindow::Init(pApp, Title, pParent, false))
-	{
-		// update pos
-		if (szID && *szID)
-			RestorePosition(FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"));
-		else
-			SetSize(rcBounds.Wdt, rcBounds.Hgt);
-		return this;
-	}
-	return nullptr;
-}
-
 #endif // _WIN32
 
 void DialogWindow::Close()
