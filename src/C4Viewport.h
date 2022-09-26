@@ -70,6 +70,7 @@ public:
 	GtkWidget *v_scrollbar;
 	GtkWidget *drawing_area;
 #elif defined(USE_X11) && !defined(WITH_DEVELOPER_MODE)
+	bool HideCursor() const override { return true; }
 	virtual void HandleMessage(XEvent &) override;
 #endif
 	virtual void Close() override;

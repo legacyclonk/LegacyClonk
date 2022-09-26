@@ -305,18 +305,22 @@ private:
 
 #elif defined(USE_X11)
 
+public:
+	static constexpr C4Rect DefaultBounds{0, 0, 640, 480};
+
 protected:
 	bool FindInfo();
+	virtual bool HideCursor() const { return false; }
 
-	unsigned long wnd;
-	unsigned long renderwnd;
-	Display *dpy;
+	unsigned long wnd{0};
+	unsigned long renderwnd{0};
+	Display *dpy{nullptr};
 	virtual void HandleMessage(XEvent &);
 	// The currently set window hints
-	void *Hints;
-	bool HasFocus; // To clear urgency hint
+	void *Hints{nullptr};
+	bool HasFocus{false}; // To clear urgency hint
 	// The XVisualInfo the window was created with
-	void *Info;
+	void *Info{nullptr};
 
 #elif defined(USE_SDL_MAINLOOP)
 public:
