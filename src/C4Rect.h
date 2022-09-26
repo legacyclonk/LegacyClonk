@@ -68,12 +68,12 @@ public:
 	int32_t GetMiddleY() { return y + Hgt / 2; }
 	int32_t GetBottom() { return y + Hgt; }
 
-	C4Rect(int32_t tx, int32_t ty, int32_t twdt, int32_t thgt)
+	constexpr C4Rect(int32_t tx, int32_t ty, int32_t twdt, int32_t thgt)
 	{
 		x = tx; y = ty; Wdt = twdt; Hgt = thgt;
 	}
 
-	C4Rect() {} // default ctor; doesn't initialize
+	constexpr C4Rect() = default; // default ctor; doesn't initialize
 
 	C4Rect Scaled(float scale) const noexcept;
 

@@ -49,32 +49,20 @@
 
 /* CStdWindow */
 
-CStdWindow::CStdWindow() :
-	Active(false)
-#ifdef USE_X11
-	, wnd(0), renderwnd(0), dpy(nullptr), Info(nullptr), Hints(nullptr), HasFocus(false)
-#endif
-{}
-
 CStdWindow::~CStdWindow()
 {
 	Clear();
 }
 
-CStdWindow *CStdWindow::Init(CStdApp *pApp)
-{
-	return Init(pApp, STD_PRODUCT);
-}
-
-CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool HideCursor)
+bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
 #ifndef USE_X11
-	return this;
+	return true;
 #else
 	Active = true;
-	dpy = pApp->dpy;
+	dpy = app->dpy;
 
-	if (!FindInfo()) return nullptr;
+	if (!FindInfo()) return false;
 
 	// Various properties
 	XSetWindowAttributes attr;
@@ -92,7 +80,8 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	attr.colormap = XCreateColormap(dpy, DefaultRootWindow(dpy), static_cast<XVisualInfo *>(Info)->visual, AllocNone);
 	unsigned long attrmask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 	Pixmap bitmap;
-	if (HideCursor)
+	const bool hideCursor{HideCursor()};
+	if (hideCursor)
 	{
 		// Hide the mouse cursor
 		// We do not care what color the invisible cursor has
@@ -105,7 +94,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	wnd = XCreateWindow(dpy, DefaultRootWindow(dpy),
 		0, 0, 640, 480, 0, static_cast<XVisualInfo *>(Info)->depth, InputOutput, static_cast<XVisualInfo *>(Info)->visual,
 		attrmask, &attr);
-	if (HideCursor)
+	if (hideCursor)
 	{
 		XFreeCursor(dpy, attr.cursor);
 		XFreePixmap(dpy, bitmap);
@@ -113,32 +102,32 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	if (!wnd)
 	{
 		Log("Error creating window.");
-		return nullptr;
+		return false;
 	}
 	// Update the XWindow->CStdWindow-Map
 	CStdAppPrivate::SetWindow(wnd, this);
-	if (!pApp->Priv->xic && pApp->Priv->xim)
+	if (!app->Priv->xic && app->Priv->xim)
 	{
-		pApp->Priv->xic = XCreateIC(pApp->Priv->xim,
+		app->Priv->xic = XCreateIC(app->Priv->xim,
 			XNClientWindow, wnd,
 			XNFocusWindow, wnd,
 			XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
 			XNResourceName, STD_PRODUCT,
 			XNResourceClass, STD_PRODUCT,
 			nullptr);
-		if (!pApp->Priv->xic)
+		if (!app->Priv->xic)
 		{
 			Log("Failed to create input context.");
-			XCloseIM(pApp->Priv->xim);
-			pApp->Priv->xim = nullptr;
+			XCloseIM(app->Priv->xim);
+			app->Priv->xim = nullptr;
 		}
 		else
 		{
 			long ic_event_mask;
-			if (XGetICValues(pApp->Priv->xic, XNFilterEvents, &ic_event_mask, nullptr) == nullptr)
+			if (XGetICValues(app->Priv->xic, XNFilterEvents, &ic_event_mask, nullptr) == nullptr)
 				attr.event_mask |= ic_event_mask;
 			XSelectInput(dpy, wnd, attr.event_mask);
-			XSetICFocus(pApp->Priv->xic);
+			XSetICFocus(app->Priv->xic);
 		}
 	}
 	// We want notification of closerequests and be killed if we hang
@@ -147,13 +136,12 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	XInternAtoms(dpy, const_cast<char **>(WMProtocolnames), 2, false, WMProtocols);
 	XSetWMProtocols(dpy, wnd, WMProtocols, 2);
 	// Let the window manager know our pid so it can kill us
-	Atom PID = XInternAtom(pApp->dpy, "_NET_WM_PID", false);
+	Atom PID = XInternAtom(app->dpy, "_NET_WM_PID", false);
 	int32_t pid = getpid();
-	if (PID != None) XChangeProperty(pApp->dpy, wnd, PID, XA_CARDINAL, 32, PropModeReplace, reinterpret_cast<const unsigned char *>(&pid), 1);
+	if (PID != None) XChangeProperty(app->dpy, wnd, PID, XA_CARDINAL, 32, PropModeReplace, reinterpret_cast<const unsigned char *>(&pid), 1);
 	// Title and stuff
-	if (!Title) Title = "";
 	XTextProperty title_property;
-	XStringListToTextProperty(const_cast<char **>(&Title), 1, &title_property);
+	XStringListToTextProperty(const_cast<char **>(&title), 1, &title_property);
 	// State and Icon
 	XWMHints *wm_hint = XAllocWMHints();
 	wm_hint->flags = StateHint | InputHint | IconPixmapHint | IconMaskHint;
@@ -165,9 +153,9 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	XClassHint *class_hint = XAllocClassHint();
 	class_hint->res_name = const_cast<char *>(STD_PRODUCT);
 	class_hint->res_class = const_cast<char *>(STD_PRODUCT);
-	XSetWMProperties(dpy, wnd, &title_property, &title_property, pApp->Priv->argv, pApp->Priv->argc, nullptr, wm_hint, class_hint);
+	XSetWMProperties(dpy, wnd, &title_property, &title_property, app->Priv->argv, app->Priv->argc, nullptr, wm_hint, class_hint);
 	// Set "parent". Clonk does not use "real" parent windows, but multiple toplevel windows.
-	if (pParent) XSetTransientForHint(dpy, wnd, pParent->wnd);
+	if (parent) XSetTransientForHint(dpy, wnd, parent->wnd);
 	// Show window
 	XMapWindow(dpy, wnd);
 	// Clean up
@@ -178,7 +166,7 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pPare
 	// Render into whole window
 	renderwnd = wnd;
 
-	return this;
+	return true;
 #endif // USE_X11
 }
 
@@ -245,13 +233,7 @@ bool CStdWindow::FindInfo()
 }
 #endif // USE_X11
 
-bool CStdWindow::RestorePosition(const char *, const char *)
-{
-	// The Windowmanager is responsible for window placement.
-	return true;
-}
-
-bool CStdWindow::GetRect(C4Rect &rect)
+bool CStdWindow::GetSize(C4Rect &rect)
 {
 #ifdef USE_X11
 	Window winDummy;

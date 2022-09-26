@@ -173,69 +173,41 @@ void FrameDecoration::Draw(C4FacetEx &cgo, C4Rect &rcBounds)
 
 #ifdef _WIN32
 
-CStdWindow *DialogWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, const C4Rect &rcBounds, const char *szID)
+bool DialogWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
-	Active = true;
 	// calculate required size
-	RECT rtSize;
-	rtSize.left = 0;
-	rtSize.top = 0;
-	rtSize.right = rcBounds.Wdt;
-	rtSize.bottom = rcBounds.Hgt;
-	if (!::AdjustWindowRectEx(&rtSize, ConsoleDlgWindowStyle, false, 0)) return nullptr;
-	// create it!
-	if (!Title || !*Title) Title = "???";
-	hWindow = ::CreateWindowEx(
-		0,
-		ConsoleDlgClassName, Title,
-		ConsoleDlgWindowStyle,
-		CW_USEDEFAULT, CW_USEDEFAULT, rtSize.right - rtSize.left, rtSize.bottom - rtSize.top,
-		pParent->hWindow, nullptr, pApp->hInstance, nullptr);
-	if (hWindow)
+	RECT size{0, 0, bounds.Wdt, bounds.Hgt};
+	if (!AdjustWindowRectEx(&size, WindowStyle, false, 0))
 	{
-		// update pos
-		if (szID && *szID)
-			RestoreWindowPosition(hWindow, FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"));
-		// and show
-		::ShowWindow(hWindow, SW_SHOW);
+		return false;
 	}
-	return hWindow ? this : nullptr;
+
+	return CStdWindow::Init(app, title, {bounds.x, bounds.y, size.right - size.left, size.bottom - size.top}, parent);
 }
 
 // Dialog
 
 LRESULT APIENTRY DialogWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	// Determine dialog
-	Dialog *pDlg = Game.pGUI ? Game.pGUI->GetDialog(hwnd) : nullptr;
-	if (!pDlg) return DefWindowProc(hwnd, uMsg, wParam, lParam);
-
+	Dialog *const dialog{&reinterpret_cast<DialogWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->dialog};
 	// Process message
 	switch (uMsg)
 	{
 	case WM_KEYDOWN:
-		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), pDlg)) return 0;
+		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), dialog)) return 0;
 		break;
 
 	case WM_KEYUP:
-		if (Game.DoKeyboardInput(wParam, KEYEV_Up, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), false, pDlg)) return 0;
+		if (Game.DoKeyboardInput(wParam, KEYEV_Up, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), false, dialog)) return 0;
 		break;
 
 	case WM_SYSKEYDOWN:
 		if (wParam == 18) break;
-		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), pDlg)) return 0;
+		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), dialog)) return 0;
 		break;
 
-	case WM_DESTROY:
-	{
-		const char *szID = pDlg->GetID();
-		if (szID && *szID)
-			StoreWindowPosition(hwnd, FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"), false);
-	}
-	break;
-
 	case WM_CLOSE:
-		pDlg->Close(false);
+		dialog->Close(false);
 		break;
 
 	case WM_PAINT:
@@ -243,58 +215,49 @@ LRESULT APIENTRY DialogWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		break;
 		return 0;
 
-	case WM_LBUTTONDOWN:   Game.pGUI->MouseInput(C4MC_Button_LeftDown,    LOWORD(lParam), HIWORD(lParam), wParam, pDlg, nullptr); break;
-	case WM_LBUTTONUP:     Game.pGUI->MouseInput(C4MC_Button_LeftUp,      LOWORD(lParam), HIWORD(lParam), wParam, pDlg, nullptr); break;
-	case WM_RBUTTONDOWN:   Game.pGUI->MouseInput(C4MC_Button_RightDown,   LOWORD(lParam), HIWORD(lParam), wParam, pDlg, nullptr); break;
-	case WM_RBUTTONUP:     Game.pGUI->MouseInput(C4MC_Button_RightUp,     LOWORD(lParam), HIWORD(lParam), wParam, pDlg, nullptr); break;
-	case WM_LBUTTONDBLCLK: Game.pGUI->MouseInput(C4MC_Button_LeftDouble,  LOWORD(lParam), HIWORD(lParam), wParam, pDlg, nullptr); break;
-	case WM_RBUTTONDBLCLK: Game.pGUI->MouseInput(C4MC_Button_RightDouble, LOWORD(lParam), HIWORD(lParam), wParam, pDlg, nullptr); break;
+	case WM_LBUTTONDOWN:   Game.pGUI->MouseInput(C4MC_Button_LeftDown,    LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+	case WM_LBUTTONUP:     Game.pGUI->MouseInput(C4MC_Button_LeftUp,      LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+	case WM_RBUTTONDOWN:   Game.pGUI->MouseInput(C4MC_Button_RightDown,   LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+	case WM_RBUTTONUP:     Game.pGUI->MouseInput(C4MC_Button_RightUp,     LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+	case WM_LBUTTONDBLCLK: Game.pGUI->MouseInput(C4MC_Button_LeftDouble,  LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+	case WM_RBUTTONDBLCLK: Game.pGUI->MouseInput(C4MC_Button_RightDouble, LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
 
 	case WM_MOUSEMOVE:
-		Game.pGUI->MouseInput(C4MC_Button_None, LOWORD(lParam), HIWORD(lParam), wParam, pDlg, nullptr);
+		Game.pGUI->MouseInput(C4MC_Button_None, LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr);
 		break;
 
 	case WM_MOUSEWHEEL:
-		Game.pGUI->MouseInput(C4MC_Button_Wheel, LOWORD(lParam), HIWORD(lParam), wParam, pDlg, nullptr);
+		Game.pGUI->MouseInput(C4MC_Button_Wheel, LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr);
 		break;
 	}
 
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	return CStdWindow::DefaultWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-bool Dialog::RegisterWindowClass(HINSTANCE hInst)
+WNDCLASSEX DialogWindow::GetWindowClass(const HINSTANCE instance) const
 {
-	// register landscape viewport class
-	WNDCLASSEX WndClass;
-	WndClass.cbSize = sizeof(WNDCLASSEX);
-	WndClass.style = CS_DBLCLKS | CS_BYTEALIGNCLIENT;
-	WndClass.lpfnWndProc = DialogWinProc;
-	WndClass.cbClsExtra = 0;
-	WndClass.cbWndExtra = 0;
-	WndClass.hInstance = hInst;
-	WndClass.hCursor = LoadCursor(nullptr, IDC_ARROW); // - always use normal hw cursor
-	WndClass.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
-	WndClass.lpszMenuName = nullptr;
-	WndClass.lpszClassName = ConsoleDlgClassName;
-	WndClass.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
-	WndClass.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
-	return !!RegisterClassEx(&WndClass);
+	return {
+		.cbSize = sizeof(WNDCLASSEX),
+		.style = CS_DBLCLKS | CS_BYTEALIGNCLIENT,
+		.lpfnWndProc = &DialogWinProc,
+		.cbClsExtra = 0,
+		.cbWndExtra = 0,
+		.hInstance = instance,
+		.hIcon = LoadIcon(instance, MAKEINTRESOURCE(IDI_00_C4X)),
+		.hCursor = LoadCursor(nullptr, IDC_ARROW),
+		.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND),
+		.lpszMenuName = nullptr,
+		.lpszClassName = "C4GUIdlg", // keep for backwards compatibility
+		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_00_C4X))
+	};
 }
 
-#else
-
-CStdWindow *DialogWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, const C4Rect &rcBounds, const char *szID)
+bool DialogWindow::GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const
 {
-	if (CStdWindow::Init(pApp, Title, pParent, false))
-	{
-		// update pos
-		if (szID && *szID)
-			RestorePosition(FormatString("ConsoleGUI_%s", szID).getData(), Config.GetSubkeyPath("Console"));
-		else
-			SetSize(rcBounds.Wdt, rcBounds.Hgt);
-		return this;
-	}
-	return nullptr;
+	id = std::string{"ConsoleGUI_"} + dialog.GetID();
+	subKey = Config.GetSubkeyPath("Console");
+	storeSize = true;
+	return true;
 }
 
 #endif // _WIN32
@@ -309,8 +272,8 @@ bool Dialog::CreateConsoleWindow()
 	// already created?
 	if (pWindow) return true;
 	// create it!
-	pWindow = new DialogWindow();
-	if (!pWindow->Init(&Application, TitleString.getData(), &Console, rcBounds, GetID()))
+	pWindow = new DialogWindow(*this);
+	if (!pWindow->Init(&Application, TitleString.isNull() ? "???" : TitleString.getData(), rcBounds, &Console))
 	{
 		delete pWindow;
 		pWindow = nullptr;

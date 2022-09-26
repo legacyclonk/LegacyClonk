@@ -61,7 +61,8 @@ public:
 	void Default();
 	virtual void Clear() override;
 	virtual void Close() override;
-	virtual CStdWindow *Init(CStdApp *app) override;
+	bool Init(CStdApp *app);
+	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds = CStdWindow::DefaultBounds, CStdWindow *parent = nullptr) override;
 	void Execute();
 	void ClearPointers(C4Object *pObj);
 	bool Message(const char *szMessage, bool fQuery = false);
@@ -132,6 +133,10 @@ protected:
 	{
 		return (hWindow && IsDialogMessage(hWindow, msg)) || (PropertyDlg.hDialog && IsDialogMessage(PropertyDlg.hDialog, msg));
 	};
+
+	WNDCLASSEX GetWindowClass(const HINSTANCE instance) const override { return {}; }
+
+	bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const override;
 
 	HBITMAP hbmMouse;
 	HBITMAP hbmMouse2;

@@ -18,78 +18,45 @@
 /* A wrapper class to OS dependent event and window interfaces, WIN32 version */
 
 #include <Standard.h>
+#include "StdApp.h"
 #include <StdRegistry.h>
 #ifndef USE_CONSOLE
 #include <StdGL.h>
 #endif
 #include <StdWindow.h>
-#include <mmsystem.h>
-#include <stdio.h>
-#include <io.h>
-#include <ctype.h>
-#include <conio.h>
 
 #include <mutex>
 #include <stdexcept>
 
-#include "res/engine_resource.h"
-
-#define C4FullScreenClassName "C4FullScreen"
-LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-CStdWindow::CStdWindow() : Active(false), hWindow(nullptr), hRenderWindow(nullptr) {}
-CStdWindow::~CStdWindow() {}
-
-bool CStdWindow::RegisterWindowClass(HINSTANCE hInst)
+CStdWindow::~CStdWindow()
 {
-	WNDCLASSEX WndClass;
-	WndClass.cbSize = sizeof(WNDCLASSEX);
-	WndClass.style = CS_DBLCLKS;
-	WndClass.lpfnWndProc = FullScreenWinProc;
-	WndClass.cbClsExtra = 0;
-	WndClass.cbWndExtra = 0;
-	WndClass.hInstance = hInst;
-	WndClass.hCursor = nullptr;
-	WndClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND);
-	WndClass.lpszMenuName = nullptr;
-	WndClass.lpszClassName = C4FullScreenClassName;
-	WndClass.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
-	WndClass.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
-	return RegisterClassEx(&WndClass);
+	CStdWindow::Clear();
 }
 
-CStdWindow *CStdWindow::Init(CStdApp *pApp)
+bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
-	Active = true;
-
-	// Register window class
-	if (!RegisterWindowClass(pApp->hInstance)) return nullptr;
+	const WNDCLASSEX windowClass{GetWindowClass(app->hInstance)};
+	RegisterClassEx(&windowClass);
 
 	// Create window
+	const auto [style, exStyle] = GetWindowStyle();
 	hWindow = CreateWindowEx(
-		0,
-		C4FullScreenClassName,
+		exStyle,
+		windowClass.lpszClassName,
 		STD_PRODUCT,
 		style,
-		CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
-		nullptr, nullptr, pApp->hInstance, nullptr);
+		bounds.x, bounds.y, bounds.Wdt, bounds.Hgt,
+		nullptr, nullptr, app->hInstance, this);
 
-	RECT rect;
-	GetClientRect(hWindow, &rect);
-
-	hRenderWindow = CreateWindowEx(
-		0,
-		"STATIC",
-		nullptr,
-		WS_CHILD,
-		0, 0, rect.right - rect.left, rect.bottom - rect.top,
-		hWindow, nullptr, pApp->hInstance, nullptr);
-
-	ShowWindow(hRenderWindow, SW_SHOW);
+	SetLastError(0);
+	if (!SetWindowLongPtr(hWindow, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this)) && GetLastError())
+	{
+		DestroyWindow(hWindow);
+		return false;
+	}
 
 #ifndef USE_CONSOLE
-	// Show & focus
-	ShowWindow(hWindow, SW_SHOWNORMAL);
+	RestorePosition();
 	SetFocus(hWindow);
 #endif
 
@@ -102,24 +69,42 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 		}
 	}
 
-	return this;
+	Active = true;
+	return true;
+}
+
+void CStdWindow::StorePosition()
+{
+	std::string id;
+	std::string subKey;
+	bool storeSize{false};
+	if (GetPositionData(id, subKey, storeSize))
+	{
+		StoreWindowPosition(hWindow, id.c_str(), subKey.c_str(), storeSize);
+	}
+}
+
+void CStdWindow::RestorePosition()
+{
+	std::string id;
+	std::string subKey;
+	bool storeSize{false};
+	if (GetPositionData(id, subKey, storeSize))
+	{
+		RestoreWindowPosition(hWindow, id.c_str(), subKey.c_str());
+	}
+	else
+	{
+		ShowWindow(hWindow, SW_SHOWNORMAL);
+	}
 }
 
 void CStdWindow::Clear()
 {
 	// Destroy window
-	if (hRenderWindow) DestroyWindow(hRenderWindow);
 	if (hWindow) DestroyWindow(hWindow);
 	hWindow = nullptr;
-	hRenderWindow = nullptr;
 	taskBarList = nullptr;
-}
-
-bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey)
-{
-	if (!RestoreWindowPosition(hWindow, szWindowName, szSubKey))
-		ShowWindow(hWindow, SW_SHOWNORMAL);
-	return true;
 }
 
 void CStdWindow::SetTitle(const char *szToTitle)
@@ -127,7 +112,7 @@ void CStdWindow::SetTitle(const char *szToTitle)
 	if (hWindow) SetWindowText(hWindow, szToTitle ? szToTitle : "");
 }
 
-bool CStdWindow::GetRect(C4Rect &rect)
+bool CStdWindow::GetSize(C4Rect &rect)
 {
 	RECT clientRect;
 	if (!hWindow || !GetClientRect(hWindow, &clientRect)) return false;
@@ -147,12 +132,6 @@ void CStdWindow::SetSize(unsigned int cx, unsigned int cy)
 	cx = rect.right - rect.left;
 	cy = rect.bottom - rect.top;
 	SetWindowPos(hWindow, nullptr, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
-
-	if (hRenderWindow)
-	{
-		// Also resize child window
-		SetWindowPos(hRenderWindow, nullptr, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
-	}
 }
 
 void CStdWindow::FlashWindow()
@@ -166,8 +145,8 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 {
 	const auto fullscreen = mode == DisplayMode::Fullscreen;
 
-	auto newStyle = style;
-	auto newStyleEx = styleEx;
+	auto newStyle = GetWindowLong(hWindow, GWL_STYLE);
+	auto newStyleEx = GetWindowLong(hWindow, GWL_EXSTYLE);
 	if (fullscreen)
 	{
 		newStyle &= ~(WS_CAPTION | WS_THICKFRAME);
@@ -225,304 +204,18 @@ void CStdWindow::SetPosition(int x, int y)
 	SetWindowPos(hWindow, nullptr, x, y, 0, 0, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
 }
 
-/* CStdApp */
-
-CStdApp::CStdApp() : Active(false), hInstance(nullptr), fQuitMsgReceived(false),
-	hTimerEvent(CreateEvent(nullptr, TRUE, FALSE, nullptr)),
-	hNetworkEvent(CreateEvent(nullptr, TRUE, FALSE, nullptr)),
-	idCriticalTimer(0),
-	uCriticalTimerDelay(28),
-	uCriticalTimerResolution(5),
-	fTimePeriod(false),
-	iLastExecute(0),
-	iTimerOffset(0) {}
-
-CStdApp::~CStdApp()
+LRESULT CStdWindow::DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	// Close events
-	CloseHandle(hTimerEvent); CloseHandle(hNetworkEvent);
-}
-
-void CStdApp::Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine)
-{
-	// Set instance vars
-	hInstance = hInst;
-	this->szCmdLine = szCmdLine;
-	mainThread = std::this_thread::get_id();
-	// Custom initialization
-	DoInit();
-}
-
-void CStdApp::Clear()
-{
-	// Close timers
-	CloseCriticalTimer();
-}
-
-void CStdApp::Run()
-{
-	// Main message loop
-	while (true)
-		if (HandleMessage(INFINITE, true) == HR_Failure) return;
-}
-
-void CStdApp::Quit()
-{
-	PostQuitMessage(0);
-}
-
-C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer)
-{
-	MSG msg;
-	int iEvents = 0;
-	HANDLE Events[3] = { hNetworkEvent, hTimerEvent };
-
-	// quit check for nested HandleMessage-calls
-	if (fQuitMsgReceived) return HR_Failure;
-
-	// Calculate timing (emulate it sleepy - gosu-style [pssst]).
-	unsigned int iMSecs;
-	if (fCheckTimer && !MMTimer)
+	switch (uMsg)
 	{
-		iMSecs = std::max<int>(0, iLastExecute + GetDelay() + iTimerOffset - timeGetTime());
-		if (iTimeout != INFINITE && iTimeout < iMSecs) iMSecs = iTimeout;
+	case WM_DESTROY:
+	{
+		reinterpret_cast<CStdWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->StorePosition();
+		return 0;
 	}
-	else
-	{
-		iMSecs = iTimeout;
+	default:
+		break;
 	}
 
-#ifdef USE_CONSOLE
-	// Console input
-	if (!ReadStdInCommand())
-		return HR_Failure;
-#endif
-
-	// Check network event
-	Events[iEvents++] = hNetworkEvent;
-	// Check timer
-	if (fCheckTimer)
-		Events[iEvents++] = hTimerEvent;
-
-	// Wait for something to happen
-	switch (MsgWaitForMultipleObjects(iEvents, Events, false, iMSecs, QS_ALLEVENTS))
-	{
-	case WAIT_OBJECT_0: // network event
-		// reset event
-		ResetEvent(hNetworkEvent);
-		// call network class to handle it
-		OnNetworkEvents();
-		return HR_Message;
-	case WAIT_TIMEOUT: // timeout
-		// Timeout not changed? Real timeout
-		if (MMTimer || iMSecs == iTimeout)
-		{
-			return HR_Timeout;
-		}
-		// Try to make some adjustments. Still only as exact as timeGetTime().
-		if (iLastExecute + GetDelay() > timeGetTime()) iTimerOffset++;
-		if (iLastExecute + GetDelay() < timeGetTime()) iTimerOffset--;
-		// fallthru
-	case WAIT_OBJECT_0 + 1: // timer event / message
-		if (fCheckTimer)
-		{
-			// reset event
-			ResetEvent(hTimerEvent);
-			// execute
-			Execute();
-			// return it
-			return HR_Timer;
-		}
-		// fallthru
-	case WAIT_OBJECT_0 + 2: // message
-		// Peek messages
-		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-		{
-			// quit?
-			if (msg.message == WM_QUIT)
-			{
-				fQuitMsgReceived = true;
-				return HR_Failure;
-			}
-			// Dialog message transfer
-			if (!pWindow->Win32DialogMessageHandling(&msg))
-			{
-				TranslateMessage(&msg); DispatchMessage(&msg);
-			}
-		}
-		return HR_Message;
-	default: // error
-		return HR_Failure;
-	}
-}
-
-void CStdApp::Execute()
-{
-	// Timer emulation
-	if (!MMTimer)
-		iLastExecute = timeGetTime();
-}
-
-bool CStdApp::InitTimer()
-{
-	// Init game timers
-	if (!SetCriticalTimer() || !SetTimer(pWindow->hWindow, SEC1_TIMER, SEC1_MSEC, nullptr)) return false;
-	return true;
-}
-
-bool CStdApp::SetCriticalTimer()
-{
-	// Get resolution caps
-	TIMECAPS tc;
-	if (timeGetDevCaps(&tc, sizeof(tc)) != TIMERR_NOERROR)
-		return false;
-	// Establish minimum resolution
-	uCriticalTimerResolution = BoundBy(uCriticalTimerResolution, tc.wPeriodMin, tc.wPeriodMax);
-	if (timeBeginPeriod(uCriticalTimerResolution) != TIMERR_NOERROR)
-		return false;
-	fTimePeriod = true;
-	if (MMTimer)
-	{
-		// Set critical timer
-		if (!(idCriticalTimer = timeSetEvent(
-			uCriticalTimerDelay, uCriticalTimerResolution,
-			reinterpret_cast<LPTIMECALLBACK>(hTimerEvent),
-			0, TIME_PERIODIC | TIME_CALLBACK_EVENT_SET)))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-void CStdApp::CloseCriticalTimer()
-{
-	if (idCriticalTimer)
-	{
-		timeKillEvent(idCriticalTimer);
-		idCriticalTimer = 0;
-	}
-	if (fTimePeriod)
-	{
-		timeEndPeriod(uCriticalTimerResolution);
-		fTimePeriod = false;
-	}
-}
-
-void CStdApp::ResetTimer(unsigned int uDelay)
-{
-	uCriticalTimerDelay = uDelay;
-	CloseCriticalTimer();
-	SetCriticalTimer();
-}
-
-namespace
-{
-	struct ClipboardCleanup
-	{
-		~ClipboardCleanup() { CloseClipboard(); }
-	};
-
-	struct GlobalLockHandle
-	{
-		explicit GlobalLockHandle(HGLOBAL handle) : handle{handle} {}
-
-		void lock()
-		{
-			data = reinterpret_cast<decltype(data)>(GlobalLock(handle));
-		}
-
-		void unlock()
-		{
-			GlobalUnlock(handle);
-			data = nullptr;
-		}
-
-		bool try_lock()
-		{
-			if (!data)
-			{
-				lock();
-				return true;
-			}
-
-			return false;
-		}
-
-		HGLOBAL handle;
-		char *data{nullptr};
-	};
-}
-
-bool CStdApp::Copy(std::string_view text, bool fClipboard)
-{
-	if (!fClipboard)
-	{
-		throw std::runtime_error{"No primary selection on Windows"};
-	}
-
-	// gain clipboard ownership
-	if (!OpenClipboard(GetWindowHandle())) return false;
-	const ClipboardCleanup cleanup;
-
-	// must empty the global clipboard, so the application clipboard equals the Windows clipboard
-	EmptyClipboard();
-
-	// allocate a global memory object for the text.
-	GlobalLockHandle handle{GlobalAlloc(GMEM_MOVEABLE, text.size() + 1)};
-	if (!handle.handle)
-	{
-		return false;
-	}
-
-	// lock the handle and copy the text to the buffer.
-	std::lock_guard guard{handle};
-	if (!text.empty()) memcpy(handle.data, text.data(), text.size());
-	handle.data[text.size()] = '\0';
-
-	// place the handle on the clipboard.
-	return SetClipboardData(CF_TEXT, handle.data);
-}
-
-std::string CStdApp::Paste(bool fClipboard)
-{
-	if (!fClipboard)
-	{
-		throw std::runtime_error{"No primary selection on Windows"};
-	}
-
-	if (!IsClipboardFormatAvailable(CF_TEXT) || !OpenClipboard(GetWindowHandle())) return "";
-
-	const ClipboardCleanup cleanup;
-
-	// get text from clipboard
-	if (GlobalLockHandle handle{GetClipboardData(CF_TEXT)}; handle.handle)
-	{
-		std::lock_guard guard{handle};
-		if (handle.data)
-		{
-			return handle.data;
-		}
-	}
-
-	return "";
-}
-
-bool CStdApp::ReadStdInCommand()
-{
-	while (_kbhit())
-	{
-		// Surely not the most efficient way to do it, but we won't have to read much data anyway.
-		char c = getch();
-		if (c == '\r')
-		{
-			if (!CmdBuf.isNull())
-			{
-				OnCommand(CmdBuf.getData()); CmdBuf.Clear();
-			}
-		}
-		else if (isprint((unsigned char)c))
-			CmdBuf.AppendChar(c);
-	}
-	return true;
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }

@@ -31,6 +31,8 @@
 #include <C4GameOverDlg.h>
 
 #ifdef _WIN32
+#include "res/engine_resource.h"
+
 #include <windowsx.h>
 
 LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -116,8 +118,11 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 		if (width != 0 && height != 0)
 		{
-			// this might be called from C4Window::Init in which case Application.pWindow is not yet set
-			if (Application.pWindow) ::SetWindowPos(Application.pWindow->hRenderWindow, nullptr, 0, 0, width, height, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
+			const auto &window = *reinterpret_cast<C4FullScreen *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+			if (window.GetRenderWindow())
+			{
+				::SetWindowPos(window.GetRenderWindow(), nullptr, 0, 0, width, height, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
+			}
 
 			Application.SetResolution(width, height);
 		}
@@ -136,10 +141,73 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 		}
 		return 0;
 	}
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+
+	return CStdWindow::DefaultWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
 void C4FullScreen::CharIn(const char *c) { Game.pGUI->CharIn(c); }
+
+bool C4FullScreen::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
+{
+	if (!CStdWindow::Init(app, title, bounds, parent))
+	{
+		return false;
+	}
+
+	RECT rect;
+	GetClientRect(hWindow, &rect);
+
+	hRenderWindow = CreateWindowEx(
+		0,
+		"STATIC",
+		nullptr,
+		WS_CHILD,
+		0, 0, rect.right - rect.left, rect.bottom - rect.top,
+		hWindow, nullptr, app->hInstance, nullptr);
+
+	ShowWindow(hRenderWindow, SW_SHOW);
+	return true;
+}
+
+void C4FullScreen::Clear()
+{
+	if (hRenderWindow)
+	{
+		DestroyWindow(hRenderWindow);
+		hRenderWindow = nullptr;
+	}
+
+	CStdWindow::Clear();
+}
+
+void C4FullScreen::SetSize(const unsigned int cx, const unsigned int cy)
+{
+	CStdWindow::SetSize(cx, cy);
+
+	if (hRenderWindow)
+	{
+		// Also resize child window
+		SetWindowPos(hRenderWindow, nullptr, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
+	}
+}
+
+WNDCLASSEX C4FullScreen::GetWindowClass(const HINSTANCE instance) const
+{
+	return {
+		.cbSize = sizeof(WNDCLASSEX),
+		.style = CS_DBLCLKS,
+		.lpfnWndProc = &FullScreenWinProc,
+		.cbClsExtra = 0,
+		.cbWndExtra = 0,
+		.hInstance = instance,
+		.hIcon = LoadIcon(instance, MAKEINTRESOURCE(IDI_00_C4X)),
+		.hCursor = nullptr,
+		.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND),
+		.lpszMenuName = nullptr,
+		.lpszClassName = "C4FullScreen",
+		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_00_C4X))
+	};
+}
 
 #elif defined(USE_X11)
 
@@ -405,6 +473,11 @@ C4FullScreen::C4FullScreen()
 C4FullScreen::~C4FullScreen()
 {
 	delete pMenu;
+}
+
+bool C4FullScreen::Init(CStdApp *const app)
+{
+	return CStdWindow::Init(app, STD_PRODUCT);
 }
 
 void C4FullScreen::Close()

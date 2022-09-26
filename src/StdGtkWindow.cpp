@@ -27,20 +27,16 @@
 
 /* CStdGtkWindow */
 
-CStdGtkWindow::CStdGtkWindow() :
-	CStdWindow(), window(nullptr) {}
-
 CStdGtkWindow::~CStdGtkWindow()
 {
 	Clear();
 }
 
-CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool HideCursor)
+bool CStdGtkWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
-	Active = true;
-	dpy = pApp->dpy;
+	dpy = app->dpy;
 
-	if (!FindInfo()) return 0;
+	if (!FindInfo()) return false;
 
 	assert(!window);
 
@@ -50,8 +46,8 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 	gtk_window_set_wmclass(GTK_WINDOW(window), STD_PRODUCT, STD_PRODUCT);
 
 	handlerDestroy = g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(OnDestroyStatic), this);
-	g_signal_connect(G_OBJECT(window), "key-press-event",   G_CALLBACK(OnUpdateKeyMask), pApp);
-	g_signal_connect(G_OBJECT(window), "key-release-event", G_CALLBACK(OnUpdateKeyMask), pApp);
+	g_signal_connect(G_OBJECT(window), "key-press-event",   G_CALLBACK(OnUpdateKeyMask), app);
+	g_signal_connect(G_OBJECT(window), "key-release-event", G_CALLBACK(OnUpdateKeyMask), app);
 
 	GtkWidget *render_widget = InitGUI();
 
@@ -63,7 +59,7 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 	gtk_window_set_icon(GTK_WINDOW(window), icon);
 	g_object_unref(icon);
 
-	gtk_window_set_title(GTK_WINDOW(window), Title);
+	gtk_window_set_title(GTK_WINDOW(window), title);
 
 	// Wait until window is mapped to get the window's XID
 	gtk_widget_show_now(window);
@@ -79,9 +75,9 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 	else
 		renderwnd = GDK_WINDOW_XWINDOW(render_widget->window);
 
-	if (pParent) XSetTransientForHint(dpy, wnd, pParent->wnd);
+	if (parent) XSetTransientForHint(dpy, wnd, parent->wnd);
 
-	if (HideCursor)
+	if (HideCursor())
 	{
 		gdk_window_set_cursor(window->window, nullptr);
 	}
@@ -90,7 +86,8 @@ CStdWindow *CStdGtkWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pP
 	// this avoids an async X error.
 	gdk_flush();
 
-	return this;
+	Active = true;
+	return true;
 }
 
 void CStdGtkWindow::Clear()

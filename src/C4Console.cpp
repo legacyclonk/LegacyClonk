@@ -182,7 +182,7 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		return TRUE;
 
 	case WM_DESTROY:
-		StoreWindowPosition(hDlg, "Main", Config.GetSubkeyPath("Console"), false);
+		Console.StorePosition();
 		Application.Quit();
 		return TRUE;
 
@@ -300,7 +300,12 @@ void C4Console::HandleMessage(XEvent &e)
 
 #endif // _WIN32/USE_X11
 
-CStdWindow *C4Console::Init(CStdApp *pApp)
+bool C4Console::Init(CStdApp *const app)
+{
+	return Init(app, LoadResStr("IDS_CNS_CONSOLE"));
+}
+
+bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
 	// Active
 	Active = true;
@@ -308,7 +313,7 @@ CStdWindow *C4Console::Init(CStdApp *pApp)
 	Editing = true;
 	// Create dialog window
 #ifdef _WIN32
-	hWindow = CreateDialog(pApp->hInstance, MAKEINTRESOURCE(IDD_CONSOLE), nullptr, ConsoleDlgProc);
+	hWindow = CreateDialog(app->hInstance, MAKEINTRESOURCE(IDD_CONSOLE), nullptr, ConsoleDlgProc);
 	if (!hWindow)
 	{
 		char *lpMsgBuf;
@@ -325,26 +330,26 @@ CStdWindow *C4Console::Init(CStdApp *pApp)
 		LogF("Error creating dialog window: %s", lpMsgBuf);
 		// Free the buffer.
 		LocalFree(lpMsgBuf);
-		return nullptr;
+		return false;
 	}
 	// Restore window position
-	RestoreWindowPosition(hWindow, "Main", Config.GetSubkeyPath("Console"));
+	RestorePosition();
 	// Set icon
-	SendMessage(hWindow, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(LoadIcon(pApp->hInstance, MAKEINTRESOURCE(IDI_00_C4X))));
-	SendMessage(hWindow, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIcon(pApp->hInstance, MAKEINTRESOURCE(IDI_00_C4X))));
+	SendMessage(hWindow, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(LoadIcon(app->hInstance, MAKEINTRESOURCE(IDI_00_C4X))));
+	SendMessage(hWindow, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIcon(app->hInstance, MAKEINTRESOURCE(IDI_00_C4X))));
 	// Set text
-	SetCaption(LoadResStr("IDS_CNS_CONSOLE"));
+	SetCaption(title);
 	// Load bitmaps
-	hbmMouse   = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_MOUSE));
-	hbmMouse2  = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_MOUSE2));
-	hbmCursor  = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_CURSOR));
-	hbmCursor2 = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_CURSOR2));
-	hbmBrush   = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_BRUSH));
-	hbmBrush2  = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_BRUSH2));
-	hbmPlay    = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_PLAY));
-	hbmPlay2   = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_PLAY2));
-	hbmHalt    = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_HALT));
-	hbmHalt2   = (HBITMAP)LoadBitmap(pApp->hInstance, MAKEINTRESOURCE(IDB_HALT2));
+	hbmMouse   = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_MOUSE));
+	hbmMouse2  = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_MOUSE2));
+	hbmCursor  = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_CURSOR));
+	hbmCursor2 = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_CURSOR2));
+	hbmBrush   = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_BRUSH));
+	hbmBrush2  = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_BRUSH2));
+	hbmPlay    = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_PLAY));
+	hbmPlay2   = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_PLAY2));
+	hbmHalt    = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_HALT));
+	hbmHalt2   = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_HALT2));
 	// Enable controls
 	UpdateHaltCtrls(true);
 	EnableControls(fGameOpen);
@@ -355,19 +360,23 @@ CStdWindow *C4Console::Init(CStdApp *pApp)
 	SetFocus(hWindow);
 	ShowCursor(TRUE);
 	// Success
-	return this;
+	return true;
 #elif WITH_DEVELOPER_MODE
+	if (!C4ConsoleBase::Init(app, title, bounds, parent))
+	{
+		return false;
+	}
+
 	cursorWait = gdk_cursor_new(GDK_WATCH);
 	cursorDefault = gdk_cursor_new(GDK_ARROW);
 
 	// Calls InitGUI
-	CStdWindow *retval = C4ConsoleBase::Init(pApp, LoadResStr("IDS_CNS_CONSOLE"), nullptr, false);
 	UpdateHaltCtrls(true);
 	EnableControls(fGameOpen);
 	ClearViewportMenu();
-	return retval;
+	return true;
 #else
-	return C4ConsoleBase::Init(pApp, LoadResStr("IDS_CNS_CONSOLE"), nullptr, false);
+	return C4ConsoleBase::Init(app, LoadResStr("IDS_CNS_CONSOLE"), bounds);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 
@@ -1274,6 +1283,14 @@ bool C4Console::AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool 
 	minfo.cch = SLen(szString);
 	if (!fEnabled) minfo.fState |= MFS_GRAYED;
 	return InsertMenuItem(hMenu, 0, FALSE, &minfo);
+}
+
+bool C4Console::GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const
+{
+	id = "Main";
+	subKey = Config.GetSubkeyPath("Console");
+	storeSize = false;
+	return true;
 }
 #endif // _WIN32
 

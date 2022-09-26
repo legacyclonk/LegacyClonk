@@ -20,6 +20,7 @@
 /* OpenGL implementation of NewGfx, the context */
 
 #include <Standard.h>
+#include "StdApp.h"
 #include <StdGL.h>
 #include <C4Log.h>
 #include "C4Rect.h"
@@ -463,7 +464,7 @@ bool CStdGLCtx::UpdateSize()
 	if (!pWindow) return false;
 	// get size
 	C4Rect rc;
-	if (!pWindow->GetRect(rc)) return false;
+	if (!pWindow->GetSize(rc)) return false;
 	const auto scale = pGL->pApp->GetScale();
 	int width = static_cast<int32_t>(ceilf(rc.Wdt / scale)), height = static_cast<int32_t>(ceilf(rc.Hgt / scale));
 	// assign if different

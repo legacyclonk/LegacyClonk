@@ -82,13 +82,9 @@ public:
 	void SetGamma(uint32_t dwClr1, uint32_t dwClr2, uint32_t dwClr3, int32_t iRampIndex); // set gamma ramp
 	void ApplyGamma(); // apply gamma ramp to ddraw
 	bool CloseViewport(C4Viewport *cvp);
-#ifdef _WIN32
-	bool RegisterViewportClass(HINSTANCE hInst);
-#endif
 
 protected:
 	std::vector<std::unique_ptr<C4Viewport>> Viewports;
-	bool fViewportClassRegistered;
 	C4Facet ViewportArea;
 	C4RectList BackgroundAreas; // rectangles covering background without viewports in fullscreen
 	char FlashMessageText[C4MaxTitle + 1];

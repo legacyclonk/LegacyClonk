@@ -23,6 +23,7 @@
 #include <C4Surface.h>
 
 #include <Bitmap256.h>
+#include "StdApp.h"
 #include <StdBitmap.h>
 #include <StdGL.h>
 #include <StdJpeg.h>

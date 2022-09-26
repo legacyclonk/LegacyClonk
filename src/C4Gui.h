@@ -2010,9 +2010,28 @@ public:
 // EM window class
 class DialogWindow : public CStdWindow
 {
+#ifdef _WIN32
+private:
+	static constexpr auto WindowStyle = WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
+#endif
 public:
-	CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, const C4Rect &rcBounds, const char *szID);
+	DialogWindow(Dialog &dialog) : dialog{dialog} {}
 	virtual void Close() override;
+
+#ifdef _WIN32
+	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr) override;
+
+	std::pair<DWORD, DWORD> GetWindowStyle() const override { return {WindowStyle, 0}; }
+	WNDCLASSEX GetWindowClass(HINSTANCE instance) const override;
+	bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const override;
+#endif
+
+private:
+	Dialog &dialog;
+
+#ifdef _WIN32
+	friend LRESULT APIENTRY DialogWinProc(HWND, UINT, WPARAM, LPARAM);
+#endif
 };
 
 // information on how to draw dialog borders and face
@@ -2191,10 +2210,6 @@ public:
 	{
 		return pContextHandler;
 	}
-
-#ifdef _WIN32
-	static bool RegisterWindowClass(HINSTANCE hInst); // registers WNDCLASS for console mode dialogs
-#endif
 
 	friend class Screen;
 };
@@ -2675,9 +2690,6 @@ public:
 
 	void CloseAllDialogs(bool fWithOK); // close all dialogs on the screen; top dlgs first
 	void SetPreferredDlgRect(const C4Rect &rtNewPref) { PreferredDlgRect = rtNewPref; }
-#ifdef _WIN32
-	Dialog *GetDialog(HWND hWindow); // get console dialog
-#endif
 	void DoContext(ContextMenu *pNewCtx, Element *pAtElement, int32_t iX, int32_t iY); // open context menu (closes any other contextmenu)
 	void AbortContext(bool fByUser) { if (pContext) pContext->Abort(fByUser); } // close context menu
 	int32_t GetContextMenuIndex() { return pContext ? pContext->GetMenuIndex() : 0; } // get current context-menu (lowest level)

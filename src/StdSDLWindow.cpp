@@ -17,6 +17,7 @@
 
 /* A wrapper class to OS dependent event and window interfaces, SDL version */
 
+#include "C4Shape.h"
 #include <Standard.h>
 #include <StdWindow.h>
 #include <StdGL.h>
@@ -40,9 +41,6 @@ namespace
 
 /* CStdWindow */
 
-CStdWindow::CStdWindow() :
-	Active{false}, sdlWindow{} {}
-
 CStdWindow::~CStdWindow()
 {
 	Clear();
@@ -50,36 +48,28 @@ CStdWindow::~CStdWindow()
 
 // Only set title.
 // FIXME: Read from application bundle on the Mac.
-
-CStdWindow *CStdWindow::Init(CStdApp *pApp)
-{
-	return Init(pApp, STD_PRODUCT);
-}
-
-CStdWindow *CStdWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool HideCursor)
+bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
 	Active = true;
-	SetTitle(Title);
+	SetTitle(title);
 
-	width = 100;
-	height = 100;
+	width = bounds.Wdt;
+	height = bounds.Hgt;
 	displayMode = DisplayMode::Window;
-	app = pApp;
+	this->app = app;
 
-	sdlWindow = SDL_CreateWindow(Title, 0, 0, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	sdlWindow = SDL_CreateWindow(title, bounds.x, bounds.y, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 	ThrowIfFailed("SDL_CreateWindow", !sdlWindow);
 
-	return this;
+	return true;
 }
 
 void CStdWindow::Clear() {}
 
-bool CStdWindow::RestorePosition(const char *, const char *) { return true; }
-
 // Window size is automatically managed by CStdApp's display mode management.
 // Just remember the size for others to query.
 
-bool CStdWindow::GetRect(C4Rect &rect)
+bool CStdWindow::GetSize(C4Rect &rect)
 {
 	SDL_GL_GetDrawableSize(sdlWindow, &width, &height);
 	rect = {0, 0, width, height};

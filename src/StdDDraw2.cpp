@@ -20,6 +20,7 @@
 #include "C4Config.h"
 
 #include <Standard.h>
+#include "StdApp.h"
 #include <StdDDraw2.h>
 #include <StdGL.h>
 #include <StdNoGfx.h>
