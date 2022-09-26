@@ -85,7 +85,6 @@ public:
 
 protected:
 	std::vector<std::unique_ptr<C4Viewport>> Viewports;
-	bool fViewportClassRegistered;
 	C4Facet ViewportArea;
 	C4RectList BackgroundAreas; // rectangles covering background without viewports in fullscreen
 	char FlashMessageText[C4MaxTitle + 1];

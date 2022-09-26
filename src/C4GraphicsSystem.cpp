@@ -43,7 +43,6 @@
 
 C4GraphicsSystem::C4GraphicsSystem()
 {
-	fViewportClassRegistered = false;
 	Default();
 }
 
