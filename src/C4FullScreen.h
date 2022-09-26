@@ -45,7 +45,21 @@ public:
 	virtual void HandleMessage(XEvent &e) override;
 #elif USE_SDL_MAINLOOP
 	virtual void HandleMessage(SDL_Event &e) override;
+#elif defined(_WIN32)
+	bool Init(CStdApp *app);
+	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr) override;
+	void Clear() override;
+	void SetSize(unsigned int cx, unsigned int cy) override;
+	HWND GetRenderWindow() const override { return hRenderWindow; }
+
+protected:
+	ATOM RegisterWindowClass(HINSTANCE instance) const override;
+
+private:
+	HWND hRenderWindow{nullptr};
 #endif
+
+private:
 };
 
 extern C4FullScreen FullScreen;

@@ -34,62 +34,36 @@
 
 #include "res/engine_resource.h"
 
-#define C4FullScreenClassName "C4FullScreen"
 LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-CStdWindow::CStdWindow() : Active(false), hWindow(nullptr), hRenderWindow(nullptr) {}
-CStdWindow::~CStdWindow() {}
-
-bool CStdWindow::RegisterWindowClass(HINSTANCE hInst)
+bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
-	WNDCLASSEX WndClass;
-	WndClass.cbSize = sizeof(WNDCLASSEX);
-	WndClass.style = CS_DBLCLKS;
-	WndClass.lpfnWndProc = FullScreenWinProc;
-	WndClass.cbClsExtra = 0;
-	WndClass.cbWndExtra = 0;
-	WndClass.hInstance = hInst;
-	WndClass.hCursor = nullptr;
-	WndClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND);
-	WndClass.lpszMenuName = nullptr;
-	WndClass.lpszClassName = C4FullScreenClassName;
-	WndClass.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
-	WndClass.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_00_C4X));
-	return RegisterClassEx(&WndClass);
-}
-
-CStdWindow *CStdWindow::Init(CStdApp *pApp)
-{
-	Active = true;
-
 	// Register window class
-	if (!RegisterWindowClass(pApp->hInstance)) return nullptr;
+	const ATOM windowClass{RegisterWindowClass(app->hInstance)};
+	if (!windowClass)
+	{
+		return false;
+	}
 
 	// Create window
+	const auto [style, exStyle] = GetWindowStyle();
 	hWindow = CreateWindowEx(
-		0,
-		C4FullScreenClassName,
+		exStyle,
+		MAKEINTATOM(windowClass),
 		STD_PRODUCT,
 		style,
-		CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
-		nullptr, nullptr, pApp->hInstance, nullptr);
+		bounds.x, bounds.y, bounds.Wdt, bounds.Hgt,
+		nullptr, nullptr, app->hInstance, this);
 
-	RECT rect;
-	GetClientRect(hWindow, &rect);
-
-	hRenderWindow = CreateWindowEx(
-		0,
-		"STATIC",
-		nullptr,
-		WS_CHILD,
-		0, 0, rect.right - rect.left, rect.bottom - rect.top,
-		hWindow, nullptr, pApp->hInstance, nullptr);
-
-	ShowWindow(hRenderWindow, SW_SHOW);
+	SetLastError(0);
+	if (!SetWindowLongPtr(hWindow, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this)) && GetLastError())
+	{
+		DestroyWindow(hWindow);
+		return false;
+	}
 
 #ifndef USE_CONSOLE
-	// Show & focus
-	ShowWindow(hWindow, SW_SHOWNORMAL);
+	RestorePosition();
 	SetFocus(hWindow);
 #endif
 
@@ -102,24 +76,31 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 		}
 	}
 
-	return this;
+	Active = true;
+	return true;
+}
+
+void CStdWindow::RestorePosition()
+{
+	std::string id;
+	std::string subKey;
+	bool storeSize{false};
+	if (GetPositionData(id, subKey, storeSize))
+	{
+		RestoreWindowPosition(hWindow, id.c_str(), subKey.c_str());
+	}
+	else
+	{
+		ShowWindow(hWindow, SW_SHOWNORMAL);
+	}
 }
 
 void CStdWindow::Clear()
 {
 	// Destroy window
-	if (hRenderWindow) DestroyWindow(hRenderWindow);
 	if (hWindow) DestroyWindow(hWindow);
 	hWindow = nullptr;
-	hRenderWindow = nullptr;
 	taskBarList = nullptr;
-}
-
-bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey)
-{
-	if (!RestoreWindowPosition(hWindow, szWindowName, szSubKey))
-		ShowWindow(hWindow, SW_SHOWNORMAL);
-	return true;
 }
 
 void CStdWindow::SetTitle(const char *szToTitle)
@@ -127,7 +108,7 @@ void CStdWindow::SetTitle(const char *szToTitle)
 	if (hWindow) SetWindowText(hWindow, szToTitle ? szToTitle : "");
 }
 
-bool CStdWindow::GetRect(C4Rect &rect)
+bool CStdWindow::GetSize(C4Rect &rect)
 {
 	RECT clientRect;
 	if (!hWindow || !GetClientRect(hWindow, &clientRect)) return false;
@@ -147,12 +128,6 @@ void CStdWindow::SetSize(unsigned int cx, unsigned int cy)
 	cx = rect.right - rect.left;
 	cy = rect.bottom - rect.top;
 	SetWindowPos(hWindow, nullptr, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
-
-	if (hRenderWindow)
-	{
-		// Also resize child window
-		SetWindowPos(hRenderWindow, nullptr, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOREDRAW | SWP_NOZORDER);
-	}
 }
 
 void CStdWindow::FlashWindow()
@@ -166,8 +141,8 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 {
 	const auto fullscreen = mode == DisplayMode::Fullscreen;
 
-	auto newStyle = style;
-	auto newStyleEx = styleEx;
+	auto newStyle = GetWindowLong(hWindow, GWL_STYLE);
+	auto newStyleEx = GetWindowLong(hWindow, GWL_EXSTYLE);
 	if (fullscreen)
 	{
 		newStyle &= ~(WS_CAPTION | WS_THICKFRAME);
@@ -223,6 +198,31 @@ void CStdWindow::Maximize()
 void CStdWindow::SetPosition(int x, int y)
 {
 	SetWindowPos(hWindow, nullptr, x, y, 0, 0, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
+}
+
+LRESULT CStdWindow::DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	const auto &window = *reinterpret_cast<CStdWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+	switch (uMsg)
+	{
+	case WM_DESTROY:
+	{
+		std::string id;
+		std::string subKey;
+		bool storeSize{false};
+		if (window.GetPositionData(id, subKey, storeSize))
+		{
+			StoreWindowPosition(hwnd, id.c_str(), subKey.c_str(), storeSize);
+		}
+
+		return 0;
+	}
+	default:
+		break;
+	}
+
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
 /* CStdApp */

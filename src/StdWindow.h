@@ -34,6 +34,7 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 
 #endif
 
+#include <tuple>
 #include <thread>
 #include <stdexcept>
 
@@ -252,22 +253,19 @@ enum class DisplayMode
 class CStdWindow
 {
 public:
-	CStdWindow();
-	virtual ~CStdWindow();
-	bool Active;
+	CStdWindow() = default;
+	virtual ~CStdWindow() = default;
+	bool Active{false};
 	virtual void Clear();
 	// Only when the wm requests a close
 	// For example, when the user clicks the little x in the corner or uses Alt-F4
 	virtual void Close() = 0;
 	// Keypress(es) translated to a char
 	virtual void CharIn(const char *c) {}
-	virtual CStdWindow *Init(CStdApp *pApp);
-#ifndef _WIN32
-	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent = nullptr, bool HideCursor = true);
-#endif
-	bool RestorePosition(const char *szWindowName, const char *szSubKey);
-	bool GetRect(C4Rect &rect);
-	void SetSize(unsigned int cx, unsigned int cy); // resize
+	virtual bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr);
+	void RestorePosition();
+	bool GetSize(C4Rect &rect);
+	virtual void SetSize(unsigned int cx, unsigned int cy); // resize
 	void SetTitle(const char *Title);
 	void FlashWindow();
 	void SetDisplayMode(DisplayMode mode);
@@ -279,15 +277,20 @@ protected:
 #ifdef _WIN32
 
 public:
-	HWND hWindow;
-	HWND hRenderWindow;
+	static constexpr auto UseDefaultPosition = CW_USEDEFAULT;
+
+	HWND hWindow{nullptr};
 	void Maximize();
 	void SetPosition(int x, int y);
-	HWND GetRenderWindow() { return hRenderWindow ? hRenderWindow : hWindow; }
+	virtual HWND GetRenderWindow() const { return hWindow; }
+
+	static LRESULT DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
-	bool RegisterWindowClass(HINSTANCE hInst);
+	virtual ATOM RegisterWindowClass(HINSTANCE instance) const = 0;
 	virtual bool Win32DialogMessageHandling(MSG *msg) { return false; };
+	virtual bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const { return {}; }
+	virtual std::pair<DWORD, DWORD> GetWindowStyle() const { return {WS_OVERLAPPEDWINDOW, 0}; }
 
 private:
 	C4Com com{winrt::apartment_type::multi_threaded};

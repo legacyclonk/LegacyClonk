@@ -153,10 +153,11 @@ void C4Application::DoInit()
 	// Init carrier window
 	if (isFullScreen)
 	{
-		if (!(pWindow = FullScreen.Init(this)))
+		if (!FullScreen.Init(this))
 		{
 			Clear(); return;
 		}
+		pWindow = &FullScreen;
 		pWindow->SetSize(static_cast<int32_t>(Config.Graphics.ResX * GetScale()), static_cast<int32_t>(Config.Graphics.ResY * GetScale()));
 		SetDisplayMode(Config.Graphics.UseDisplayMode);
 
@@ -170,10 +171,12 @@ void C4Application::DoInit()
 	}
 	else
 	{
-		if (!(pWindow = Console.Init(this)))
+		if (!Console.Init(this))
 		{
 			Clear(); return;
 		}
+
+		pWindow = &Console;
 	}
 
 	// init timers (needs window)

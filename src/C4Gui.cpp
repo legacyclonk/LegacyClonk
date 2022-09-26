@@ -649,19 +649,6 @@ void Screen::CloseAllDialogs(bool fWithOK)
 	while (pActiveDlg) pActiveDlg->Close(fWithOK);
 }
 
-#ifdef _WIN32
-Dialog *Screen::GetDialog(HWND hWindow)
-{
-	// get dialog with matching handle
-	Dialog *pDlg;
-	for (Element *pEl = pLast; pEl; pEl = pEl->GetPrev())
-		if (pDlg = pEl->GetDlg())
-			if (pDlg->pWindow && pDlg->pWindow->hWindow == hWindow)
-				return pDlg;
-	return nullptr;
-}
-#endif
-
 void Screen::Render(bool fDoBG)
 {
 	// get output cgo

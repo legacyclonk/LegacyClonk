@@ -62,16 +62,12 @@ namespace
 
 #ifdef _WIN32
 
-std::vector<C4ViewportWindow::ViewportHandle> C4ViewportWindow::viewportHandles;
-
 #include <shellapi.h>
 
 LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// Determine viewport
-	C4Viewport *cvp;
-	if (cvp = GetViewport(hwnd); !cvp)
-		return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	C4Viewport *const cvp{reinterpret_cast<C4ViewportWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->cvp};
 
 	const auto scale = Application.GetScale();
 
@@ -99,10 +95,6 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 	case WM_SYSKEYDOWN:
 		if (wParam == 18) break;
 		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), nullptr)) return 0;
-		break;
-
-	case WM_DESTROY:
-		StoreWindowPosition(hwnd, FormatString("Viewport%i", cvp->Player + 1).getData(), Config.GetSubkeyPath("Console"));
 		break;
 
 	case WM_CLOSE:
@@ -198,48 +190,35 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 		}
 	}
 
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	return CStdWindow::DefaultWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-C4Viewport *C4ViewportWindow::GetViewport(HWND hwnd)
+ATOM C4ViewportWindow::RegisterWindowClass(const HINSTANCE instance) const
 {
-	if (const auto it = std::find_if(viewportHandles.cbegin(), viewportHandles.cend(), [hwnd](const auto &handle)
-		{
-			return handle.hwnd == hwnd;
-		}); it != viewportHandles.cend())
-	{
-		return it->viewport;
-	}
-	else
-	{
-		return nullptr;
-	}
+	const WNDCLASSEX windowClass{
+		.cbSize = sizeof(WNDCLASSEX),
+		.style = CS_DBLCLKS | CS_BYTEALIGNCLIENT,
+		.lpfnWndProc = &C4ViewportWindow::WinProc,
+		.cbClsExtra = 0,
+		.cbWndExtra = 0,
+		.hInstance = instance,
+		.hIcon = LoadIcon(instance, MAKEINTRESOURCE(IDI_01_C4S)),
+		.hCursor = LoadCursor(nullptr, IDC_ARROW),
+		.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND),
+		.lpszMenuName = nullptr,
+		.lpszClassName = "C4FullScreen",
+		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_01_C4S))
+	};
+
+	return RegisterClassEx(&windowClass);
 }
 
-CStdWindow *C4ViewportWindow::Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool)
+bool C4ViewportWindow::GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const
 {
-	const auto scale = Application.GetScale();
-
-	Active = true;
-	// Create window
-	hWindow = CreateWindowEx(
-		WS_EX_ACCEPTFILES,
-		C4ViewportClassName, Title, C4ViewportWindowStyle,
-		CW_USEDEFAULT, CW_USEDEFAULT, static_cast<int32_t>(ceilf(400 * scale)), static_cast<int32_t>(ceilf(250 * scale)),
-		pParent->hWindow, nullptr, pApp->hInstance, nullptr);
-	viewportHandles.push_back({hWindow, cvp});
-	return hWindow ? this : nullptr;
-}
-
-C4ViewportWindow::~C4ViewportWindow()
-{
-	if (hWindow)
-	{
-		viewportHandles.erase(std::remove_if(viewportHandles.begin(), viewportHandles.end(), [this](const auto &handle)
-			{
-				return handle.hwnd == hWindow;
-			}), viewportHandles.end());
-	}
+	id = std::string{"Viewport"} + std::to_string(cvp->Player + 1);
+	subKey = Config.GetSubkeyPath("Console");
+	storeSize = false;
+	return true;
 }
 
 bool C4Viewport::DropFiles(HANDLE hDrop)
@@ -273,7 +252,7 @@ bool C4Viewport::TogglePlayerLock()
 	if (PlayerLock)
 	{
 		PlayerLock = false;
-		SetWindowLong(pWindow->hWindow, GWL_STYLE, C4ViewportWindowStyle | WS_HSCROLL | WS_VSCROLL);
+		SetWindowLong(pWindow->hWindow, GWL_STYLE, GetWindowLong(pWindow->hWindow, GWL_STYLE) | WS_HSCROLL | WS_VSCROLL);
 		UpdateWindowLayout(pWindow->hWindow);
 		ScrollBarsByViewPosition();
 	}
@@ -281,7 +260,7 @@ bool C4Viewport::TogglePlayerLock()
 	else if (ValidPlr(Player))
 	{
 		PlayerLock = true;
-		SetWindowLong(pWindow->hWindow, GWL_STYLE, C4ViewportWindowStyle);
+		SetWindowLong(pWindow->hWindow, GWL_STYLE, GetWindowLong(pWindow->hWindow, GWL_STYLE) & ~(WS_HSCROLL | WS_VSCROLL));
 		UpdateWindowLayout(pWindow->hWindow);
 	}
 	return true;
@@ -1362,10 +1341,10 @@ bool C4Viewport::Init(CStdWindow *pParent, CStdApp *pApp, int32_t iPlayer)
 	fIsNoOwnerViewport = (Player == NO_OWNER);
 	// Create window
 	pWindow = new C4ViewportWindow(this);
-	if (!pWindow->Init(pApp, (Player == NO_OWNER) ? LoadResStr("IDS_CNS_VIEWPORT") : Game.Players.Get(Player)->GetName(), pParent, false))
+	const auto scale = Application.GetScale();
+	const C4Rect bounds{CStdWindow::DefaultBounds.x, CStdWindow::DefaultBounds.y, static_cast<int32_t>(ceilf(400 * scale)), static_cast<int32_t>(ceilf(250 * scale))};
+	if (!pWindow->Init(pApp, (Player == NO_OWNER) ? LoadResStr("IDS_CNS_VIEWPORT") : Game.Players.Get(Player)->GetName(), bounds, pParent))
 		return false;
-	// Position and size
-	pWindow->RestorePosition(FormatString("Viewport%i", Player + 1).getData(), Config.GetSubkeyPath("Console"));
 	// Updates
 	UpdateOutputSize();
 	// Disable player lock on unowned viewports

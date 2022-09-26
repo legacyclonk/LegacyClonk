@@ -36,12 +36,17 @@ class C4Viewport;
 
 class C4ViewportWindow : public C4ViewportBase
 {
+#ifdef _WIN32
+public:
+	static constexpr auto WindowStyle = WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
+#endif
 public:
 	C4Viewport *cvp;
 	C4ViewportWindow(C4Viewport *cvp) : cvp(cvp) {}
 #ifdef _WIN32
-	~C4ViewportWindow();
-	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent, bool);
+	std::pair<DWORD, DWORD> GetWindowStyle() const override { return {WindowStyle, WS_EX_ACCEPTFILES}; }
+	ATOM RegisterWindowClass(HINSTANCE instance) const override;
+	bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const override;
 #elif defined(WITH_DEVELOPER_MODE)
 	virtual GtkWidget *InitGUI() override;
 
@@ -71,14 +76,6 @@ public:
 
 #ifdef _WIN32
 	static LRESULT APIENTRY WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-private:
-	static C4Viewport *GetViewport(HWND hwnd);
-	struct ViewportHandle
-	{
-		HWND hwnd;
-		C4Viewport *viewport;
-	};
-	static std::vector<ViewportHandle> viewportHandles;
 #endif
 };
 
@@ -140,6 +137,3 @@ protected:
 
 	friend class C4ViewportWindow;
 };
-
-#define C4ViewportClassName "C4Viewport"
-#define C4ViewportWindowStyle (WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX)
