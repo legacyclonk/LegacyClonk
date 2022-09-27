@@ -313,6 +313,7 @@ src/C4Wrappers.h
 src/Fixed.cpp
 src/Fixed.h
 src/OpenURL.cpp
+src/StdApp.h
 src/StdBitmap.cpp
 src/StdBitmap.h
 src/StdColors.h

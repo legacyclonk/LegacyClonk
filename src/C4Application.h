@@ -25,6 +25,7 @@
 #include <C4InteractiveThread.h>
 #include "C4Toast.h"
 #include <C4Network2IRC.h>
+#include "StdApp.h"
 #include <StdWindow.h>
 
 #include <optional>

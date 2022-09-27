@@ -20,6 +20,7 @@
 /* OpenGL implementation of NewGfx, the context */
 
 #include <Standard.h>
+#include "StdApp.h"
 #include <StdGL.h>
 #include <C4Log.h>
 #include "C4Rect.h"
