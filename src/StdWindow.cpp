@@ -205,8 +205,6 @@ void CStdWindow::SetPosition(int x, int y)
 
 LRESULT CStdWindow::DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	const auto &window = *reinterpret_cast<CStdWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-
 	switch (uMsg)
 	{
 	case WM_DESTROY:
@@ -214,7 +212,7 @@ LRESULT CStdWindow::DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 		std::string id;
 		std::string subKey;
 		bool storeSize{false};
-		if (window.GetPositionData(id, subKey, storeSize))
+		if (auto *const window = reinterpret_cast<CStdWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA)); window->GetPositionData(id, subKey, storeSize))
 		{
 			StoreWindowPosition(hwnd, id.c_str(), subKey.c_str(), storeSize);
 		}

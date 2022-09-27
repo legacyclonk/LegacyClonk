@@ -67,7 +67,13 @@ namespace
 LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// Determine viewport
-	C4Viewport *const cvp{reinterpret_cast<C4ViewportWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->cvp};
+	auto *const window = reinterpret_cast<C4ViewportWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	if (!window)
+	{
+		return CStdWindow::DefaultWindowProc(hwnd, uMsg, wParam, lParam);
+	}
+
+	C4Viewport *const cvp{window->cvp};
 
 	const auto scale = Application.GetScale();
 
