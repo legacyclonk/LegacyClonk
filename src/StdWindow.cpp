@@ -83,6 +83,17 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	return true;
 }
 
+void CStdWindow::StorePosition()
+{
+	std::string id;
+	std::string subKey;
+	bool storeSize{false};
+	if (GetPositionData(id, subKey, storeSize))
+	{
+		StoreWindowPosition(hWindow, id.c_str(), subKey.c_str(), storeSize);
+	}
+}
+
 void CStdWindow::RestorePosition()
 {
 	std::string id;
@@ -209,14 +220,7 @@ LRESULT CStdWindow::DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	{
 	case WM_DESTROY:
 	{
-		std::string id;
-		std::string subKey;
-		bool storeSize{false};
-		if (auto *const window = reinterpret_cast<CStdWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA)); window->GetPositionData(id, subKey, storeSize))
-		{
-			StoreWindowPosition(hwnd, id.c_str(), subKey.c_str(), storeSize);
-		}
-
+		reinterpret_cast<CStdWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->StorePosition();
 		return 0;
 	}
 	default:

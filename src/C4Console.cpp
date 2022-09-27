@@ -181,9 +181,10 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		if (wParam == SEC1_TIMER) { Console.Sec1Timer(); }
 		return TRUE;
 
-	case WM_NCDESTROY:
+	case WM_DESTROY:
+		Console.StorePosition();
 		Application.Quit();
-		break;
+		return TRUE;
 
 	case WM_CLOSE:
 		Console.Close();
@@ -276,7 +277,7 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		return FALSE;
 	}
 
-	return CStdWindow::DefaultWindowProc(hDlg, Msg, wParam, lParam);
+	return FALSE;
 }
 
 #elif defined(USE_X11) && !WITH_DEVELOPER_MODE

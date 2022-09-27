@@ -264,6 +264,7 @@ public:
 	// Keypress(es) translated to a char
 	virtual void CharIn(const char *c) {}
 	virtual bool Init(CStdApp *app, const char *title, const C4Rect &bounds = DefaultBounds, CStdWindow *parent = nullptr);
+	void StorePosition();
 	void RestorePosition();
 	bool GetSize(C4Rect &rect);
 
