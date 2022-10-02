@@ -27,14 +27,14 @@ jobs:
           - os: windows-latest
             arch: x64
             env: Windows
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             arch: x64
             env: Linux
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             arch: x64
             env: Linux
             config: Debugrec
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             arch: x86
             env: Linux
           - os: macos-12
