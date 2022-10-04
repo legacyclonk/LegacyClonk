@@ -31,27 +31,7 @@
 // Integer dataypes
 #include <stdint.h>
 
-#if defined(NDEBUG)
-
-#define BREAKPOINT_HERE
-
-#elif defined(_WIN32)
-
-#include <intrin.h>
-
-#define BREAKPOINT_HERE __debugbreak()
-
-#elif __has_builtin(__builtin_debugtrap)
-
-#define BREAKPOINT_HERE __builtin_debugtrap()
-
-#else
-
-#include <csignal>
-
-#define BREAKPOINT_HERE std::raise(SIGTRAP)
-
-#endif
+#include "C4Breakpoint.h"
 
 #include <string.h>
 #include <string>
