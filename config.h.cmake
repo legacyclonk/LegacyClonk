@@ -22,7 +22,6 @@
 #cmakedefine HAVE_LANGINFO_H 1
 #cmakedefine HAVE_LOCALE_H 1
 #cmakedefine HAVE_SHARE_H 1
-#cmakedefine HAVE_SIGNAL_H 1
 #cmakedefine HAVE_STDINT_H 1
 #cmakedefine HAVE_SYS_INOTIFY_H 1
 #cmakedefine HAVE_SYS_SOCKET_H 1
