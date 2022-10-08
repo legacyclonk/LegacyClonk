@@ -298,6 +298,8 @@ protected:
 	uint32_t dwBlitMode; // extra flags for blit
 	CClrModAddMap *pClrModMap; // map to be used for global color modulation (invalid if !fUseClrModMap)
 	bool fUseClrModMap; // if set, pClrModMap will be checked for color modulations
+	float texIndent;
+	float blitOffset;
 
 public:
 	// General
