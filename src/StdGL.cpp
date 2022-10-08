@@ -462,9 +462,6 @@ void CStdGL::PerformBlt(CBltData &rBltData, C4TexRef *const pTex,
 		glLoadIdentity();
 	}
 
-	// draw triangle strip
-	std::swap(rBltData.vtVtx[3], rBltData.vtVtx[2]);
-
 	glBegin(GL_TRIANGLE_STRIP);
 	for (const auto vertex : rBltData.vtVtx)
 	{

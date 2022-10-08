@@ -755,8 +755,8 @@ bool CStdDDraw::Blit(C4Surface *sfcSource, float fx, float fy, float fwdt, float
 					// set up blit data as rect
 					BltData.vtVtx[0].ftx = tTexBlt.left  + Config.Graphics.BlitOffset; BltData.vtVtx[0].fty = tTexBlt.top    + Config.Graphics.BlitOffset;
 					BltData.vtVtx[1].ftx = tTexBlt.right + Config.Graphics.BlitOffset; BltData.vtVtx[1].fty = tTexBlt.top    + Config.Graphics.BlitOffset;
-					BltData.vtVtx[2].ftx = tTexBlt.right + Config.Graphics.BlitOffset; BltData.vtVtx[2].fty = tTexBlt.bottom + Config.Graphics.BlitOffset;
-					BltData.vtVtx[3].ftx = tTexBlt.left  + Config.Graphics.BlitOffset; BltData.vtVtx[3].fty = tTexBlt.bottom + Config.Graphics.BlitOffset;
+					BltData.vtVtx[2].ftx = tTexBlt.left  + Config.Graphics.BlitOffset; BltData.vtVtx[2].fty = tTexBlt.bottom + Config.Graphics.BlitOffset;
+					BltData.vtVtx[3].ftx = tTexBlt.right + Config.Graphics.BlitOffset; BltData.vtVtx[3].fty = tTexBlt.bottom + Config.Graphics.BlitOffset;
 
 					C4TexRef *pBaseTex = pTex;
 					// is there a base-surface to be blitted first?
