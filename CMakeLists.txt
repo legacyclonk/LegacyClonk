@@ -376,6 +376,8 @@ target_link_libraries(standard ZLIB::ZLIB)
 # Define macros
 target_compile_definitions(standard PUBLIC
 	ICONV_CONST=
+	# A standard product name for this project which is used in window registration etc.
+	STD_PRODUCT="LegacyClonk"
 	ZLIB_CONST=1
 )
 
