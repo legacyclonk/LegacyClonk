@@ -39,8 +39,8 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
+#ifdef __linux__
+#include <clocale>
 #endif
 
 bool isGermanSystem()
@@ -50,8 +50,8 @@ bool isGermanSystem()
 #elif defined(__APPLE__) and defined(C4ENGINE)
 	extern bool isGerman();
 	if (isGerman()) return true;
-#elif defined(HAVE_LOCALE_H)
-	if (strstr(setlocale(LC_MESSAGES, nullptr), "de")) return true;
+#elif defined(__linux__)
+	if (strstr(std::setlocale(LC_MESSAGES, nullptr), "de")) return true;
 #endif
 	return false;
 }
