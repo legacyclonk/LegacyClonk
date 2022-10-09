@@ -25,7 +25,11 @@
 
 #include <algorithm>
 #include <cstring>
+#include <initializer_list>
 #include <utility>
+
+static constexpr std::initializer_list<const char *> MusicFileExtensions{
+	"it", "mid", "mod", "mp3", "ogg", "s3m", "xm"};
 
 // helper
 const char *SGetRelativePath(const char *strPath);

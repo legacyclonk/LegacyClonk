@@ -22,7 +22,6 @@
 #include <C4Group.h>
 
 #include <cstdint>
-#include <initializer_list>
 #include <list>
 #include <memory>
 #include <optional>
@@ -61,8 +60,6 @@ private:
 		Song &operator=(const Song &) = delete;
 		~Song() = default;
 	};
-
-	static constexpr std::initializer_list<const char *> MusicFileExtensions{ "it", "mid", "mod", "mp3", "ogg", "s3m", "xm" };
 
 	std::list<Song> songs;
 	const Song *mostRecentlyPlayed{};
