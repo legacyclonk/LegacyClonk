@@ -15,7 +15,6 @@
 
 #include "C4AudioSystem.h"
 
-#include "BuildConfig.h"
 #include "C4AudioSystemNone.h"
 #include "C4Log.h"
 

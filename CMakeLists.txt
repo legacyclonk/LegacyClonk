@@ -48,11 +48,6 @@ list(APPEND CMAKE_PREFIX_PATH ${EXTRA_DEPS_DIR})
 # Add cmake directory to module path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-# Check which header files and functions are present
-
-CHECK_INCLUDE_FILE_CXX(stdint.h           HAVE_STDINT_H)
-CHECK_CXX_SYMBOL_EXISTS(vasprintf stdio.h HAVE_VASPRINTF)
-
 # Define options
 
 option(DEBUGREC "Write additional debug control to records" OFF)
@@ -162,6 +157,7 @@ foreach (LICENSE IN LISTS LICENSES)
 	string(APPEND LICENSES_TEXT "{\"${CMAKE_MATCH_2}\", R\"(${CMAKE_MATCH_4})\", ${THIS_LICENSE_TEXT}}")
 endforeach ()
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generated/licenses.h" "${LICENSES_TEXT}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 if (ENABLE_SOUND)
 	if (USE_FMOD)
@@ -220,7 +216,8 @@ if (USE_WINTOAST)
 endif ()
 
 if (USE_CONSOLE)
-	add_executable(clonk                     ${CLONK_SOURCES})
+	add_executable(clonk ${CLONK_SOURCES})
+	target_compile_definitions(clonk PRIVATE USE_CONSOLE=1)
 else ()
 	add_executable(clonk WIN32 MACOSX_BUNDLE ${CLONK_SOURCES})
 endif ()
@@ -250,7 +247,7 @@ else ()
 endif ()
 
 add_library(standard STATIC ${LIBSTANDARD_SOURCES})
-target_compile_definitions(standard PRIVATE C4ENGINE HAVE_CONFIG_H)
+target_compile_definitions(standard PRIVATE C4ENGINE)
 
 # Link OpenSSL crypto library
 if (NOT USE_MSCAPI)
@@ -376,10 +373,33 @@ endif ()
 find_package(ZLIB REQUIRED)
 target_link_libraries(standard ZLIB::ZLIB)
 
-# Create config.h and make sure it will be used and found
-target_compile_definitions(clonk PRIVATE HAVE_CONFIG_H)
-configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+# Define macros
+target_compile_definitions(standard PUBLIC
+	ICONV_CONST=
+	ZLIB_CONST=1
+)
+
+# Define macros if their variable is set
+foreach(MACRO_VAR
+	DEBUGREC
+	ENABLE_SOUND
+	HAVE_FREETYPE
+	HAVE_ICONV
+	USE_FMOD
+	USE_LIBNOTIFY
+	USE_SDL_FOR_GAMEPAD
+	USE_SDL_MAINLOOP
+	USE_SDL_MIXER
+	USE_STAT
+	USE_WINTOAST
+	USE_X11
+	WITH_DEVELOPER_MODE
+	WITH_GLIB
+)
+	if (${MACRO_VAR})
+		target_compile_definitions(standard PUBLIC ${MACRO_VAR}=1)
+	endif ()
+endforeach()
 
 if (APPLE AND NOT USE_CONSOLE)
 	set(BUNDLE_RESOURCES

@@ -1,4 +1,3 @@
-src/BuildConfig.h
 src/C4Breakpoint.h
 src/C4ForwardDeclarations.h
 src/CStdFile.cpp

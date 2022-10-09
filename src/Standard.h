@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "BuildConfig.h"
-
 // A standard product name for this project which is used in window registration etc.
 #define STD_PRODUCT "LegacyClonk"
 

@@ -16,8 +16,6 @@
 
 /* Game configuration as stored in registry */
 
-#include "BuildConfig.h"
-
 #include <C4Config.h>
 
 #include <C4UpperBoard.h>

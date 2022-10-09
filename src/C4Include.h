@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "BuildConfig.h"
-
 #ifdef _WIN64
 #define C4_OS "win64"
 #elif defined(_WIN32)
@@ -37,15 +35,6 @@
 #endif
 
 #ifdef C4ENGINE
-
-#ifndef HAVE_CONFIG_H
-// different debugrec options
-//#define DEBUGREC
-
-// define directive STAT here to activate statistics
-#undef STAT
-
-#endif // HAVE_CONFIG_H
 
 #ifdef DEBUGREC
 #define DEBUGREC_SCRIPT
