@@ -28,7 +28,7 @@
 
 #endif
 
-#ifdef HAVE_UNISTD_H
+#ifndef _WIN32
 // For pipe()
 #include <unistd.h>
 #endif

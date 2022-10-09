@@ -26,7 +26,7 @@
 #ifdef _WIN32
 #include <direct.h>
 #endif
-#ifdef HAVE_UNISTD_H
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 #include <errno.h>
