@@ -731,32 +731,30 @@ bool CStdDDraw::Blit(C4Surface *sfcSource, float fx, float fy, float fwdt, float
 					int xOffset = xChunk * chunkSize;
 					int yOffset = yChunk * chunkSize;
 					// get new texture source bounds
-					FLOAT_RECT fTexBlt;
-					fTexBlt.left   = std::max<float>(static_cast<float>(xOffset), fx - iBlitX);
-					fTexBlt.top    = std::max<float>(static_cast<float>(yOffset), fy - iBlitY);
-					fTexBlt.right  = std::min<float>(static_cast<float>(xOffset + chunkSize), fx + fwdt - iBlitX);
-					fTexBlt.bottom = std::min<float>(static_cast<float>(yOffset + chunkSize), fy + fhgt - iBlitY);
+					const auto fTexBltLeft   = std::max<float>(static_cast<float>(xOffset), fx - iBlitX);
+					const auto fTexBltTop    = std::max<float>(static_cast<float>(yOffset), fy - iBlitY);
+					const auto fTexBltRight  = std::min<float>(static_cast<float>(xOffset + chunkSize), fx + fwdt - iBlitX);
+					const auto fTexBltBottom = std::min<float>(static_cast<float>(yOffset + chunkSize), fy + fhgt - iBlitY);
 					// get new dest bounds
-					FLOAT_RECT tTexBlt;
-					tTexBlt.left   = (fTexBlt.left - fx + iBlitX) * scaleX + tx;
-					tTexBlt.top    = (fTexBlt.top - fy + iBlitY) * scaleY + ty;
-					tTexBlt.right  = (fTexBlt.right - fx + iBlitX) * scaleX + tx;
-					tTexBlt.bottom = (fTexBlt.bottom - fy+ iBlitY) * scaleY + ty;
+					const float tTexBltLeft  {(fTexBltLeft   - fx + iBlitX) * scaleX + tx};
+					const float tTexBltTop   {(fTexBltTop    - fy + iBlitY) * scaleY + ty};
+					const float tTexBltRight {(fTexBltRight  - fx + iBlitX) * scaleX + tx};
+					const float tTexBltBottom{(fTexBltBottom - fy + iBlitY) * scaleY + ty};
 					// prepare blit data texture matrix
 					// - translate back to texture 0/0 regarding indent and blit offset
 					// - apply back scaling and texture-indent - simply scale matrix down
 					// - finally, move in texture - this must be done last, so no stupid zoom is applied...
 					// Set resulting matrix directly
 					BltData.TexPos.SetMoveScale(
-						(fTexBlt.left + texIndent) / iTexSize - (tTexBlt.left + blitOffset) / scaleX2,
-						(fTexBlt.top  + texIndent) / iTexSize - (tTexBlt.top  + blitOffset) / scaleY2,
+						(fTexBltLeft + texIndent) / iTexSize - (tTexBltLeft + blitOffset) / scaleX2,
+						(fTexBltTop  + texIndent) / iTexSize - (tTexBltTop  + blitOffset) / scaleY2,
 						1 / scaleX2,
 						1 / scaleY2);
 					// set up blit data as rect
-					BltData.vtVtx[0].ftx = tTexBlt.left  + blitOffset; BltData.vtVtx[0].fty = tTexBlt.top    + blitOffset;
-					BltData.vtVtx[1].ftx = tTexBlt.right + blitOffset; BltData.vtVtx[1].fty = tTexBlt.top    + blitOffset;
-					BltData.vtVtx[2].ftx = tTexBlt.left  + blitOffset; BltData.vtVtx[2].fty = tTexBlt.bottom + blitOffset;
-					BltData.vtVtx[3].ftx = tTexBlt.right + blitOffset; BltData.vtVtx[3].fty = tTexBlt.bottom + blitOffset;
+					BltData.vtVtx[0].ftx = tTexBltLeft  + blitOffset; BltData.vtVtx[0].fty = tTexBltTop    + blitOffset;
+					BltData.vtVtx[1].ftx = tTexBltRight + blitOffset; BltData.vtVtx[1].fty = tTexBltTop    + blitOffset;
+					BltData.vtVtx[2].ftx = tTexBltLeft  + blitOffset; BltData.vtVtx[2].fty = tTexBltBottom + blitOffset;
+					BltData.vtVtx[3].ftx = tTexBltRight + blitOffset; BltData.vtVtx[3].fty = tTexBltBottom + blitOffset;
 
 					C4TexRef *pBaseTex = pTex;
 					// is there a base-surface to be blitted first?
