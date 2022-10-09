@@ -28,6 +28,11 @@
 #include <gtk/gtkmessagedialog.h>
 #endif
 
+// debug memory management
+#if !defined(NODEBUGMEM) && defined(_MSC_VER)
+#include <crtdbg.h>
+#endif
+
 #ifdef WIN32
 #include <objbase.h>
 #endif

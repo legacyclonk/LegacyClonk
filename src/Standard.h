@@ -23,11 +23,6 @@
 // A standard product name for this project which is used in window registration etc.
 #define STD_PRODUCT "LegacyClonk"
 
-// debug memory management
-#if !defined(NODEBUGMEM) && defined(_MSC_VER)
-#include <crtdbg.h>
-#endif
-
 // Integer dataypes
 #include <stdint.h>
 

@@ -28,11 +28,6 @@
 #include <utility>
 #include <type_traits>
 
-// debug memory management
-#if defined(_MSC_VER)
-#include <crtdbg.h>
-#endif
-
 // Base buffer class. Either references or holds data.
 class StdBuf
 {
