@@ -239,6 +239,7 @@ if (USE_CONSOLE)
 else ()
 	add_executable(clonk WIN32 MACOSX_BUNDLE ${CLONK_SOURCES})
 endif ()
+target_link_libraries(clonk standard)
 target_compile_definitions(clonk PRIVATE C4ENGINE)
 
 # Add c4group target
@@ -274,8 +275,6 @@ if (NOT USE_MSCAPI)
 	endif ()
 	target_link_libraries(standard OpenSSL::Crypto)
 endif ()
-
-target_link_libraries(clonk standard)
 
 # Link libraries
 
