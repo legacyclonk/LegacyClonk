@@ -249,6 +249,21 @@ endif ()
 add_library(standard STATIC ${LIBSTANDARD_SOURCES})
 target_compile_definitions(standard PRIVATE C4ENGINE)
 
+# Set C4_OS macro
+if (APPLE)
+	set(C4_OS "mac")
+elseif (UNIX AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+	set(C4_OS "linux")
+elseif (UNIX AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(C4_OS "linux64")
+elseif (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+	set(C4_OS "win32")
+elseif (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(C4_OS "win64")
+else ()
+	message(FATAL_ERROR "Unknown platform")
+endif ()
+
 # Link OpenSSL crypto library
 if (NOT USE_MSCAPI)
 	find_package(OpenSSL)
@@ -375,6 +390,7 @@ target_link_libraries(standard ZLIB::ZLIB)
 
 # Define macros
 target_compile_definitions(standard PUBLIC
+	C4_OS="${C4_OS}"
 	ICONV_CONST=
 	# A standard product name for this project which is used in window registration etc.
 	STD_PRODUCT="LegacyClonk"

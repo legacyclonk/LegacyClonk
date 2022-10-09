@@ -18,22 +18,6 @@
 
 #pragma once
 
-#ifdef _WIN64
-#define C4_OS "win64"
-#elif defined(_WIN32)
-#define C4_OS "win32"
-#elif defined(__linux__)
-#ifdef __x86_64
-#define C4_OS "linux64"
-#else
-#define C4_OS "linux"
-#endif
-#elif defined(__APPLE__)
-#define C4_OS "mac"
-#else
-#error Unknown platform
-#endif
-
 #ifdef C4ENGINE
 
 #ifdef DEBUGREC
