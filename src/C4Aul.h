@@ -229,7 +229,7 @@ struct C4ScriptOpDef
 	const char *Identifier;
 	C4AulBCCType Code;
 	bool Postfix;
-	bool RightAssociative; // right oder left-associative?
+	bool RightAssociative; // right or left-associative?
 	bool NoSecondStatement; // no second statement expected (++/-- postfix)
 	C4V_Type RetType; // type returned. ignored by C4V
 	C4V_Type Type1;
@@ -340,7 +340,7 @@ public:
 	C4V_Type ParType[C4AUL_MAX_Par]; // parameter types
 	bool bNewFormat; // new func format? [ func xyz(par abc) { ... } ]
 	bool bReturnRef; // return reference
-	C4AulScript *pOrgScript; // the orginal script (!= Owner if included or appended)
+	C4AulScript *pOrgScript; // the original script (!= Owner if included or appended)
 
 	C4AulScriptFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd = true) : C4AulFunc(pOwner, pName, bAtEnd),
 		idImage(C4ID_None), iImagePhase(0), Condition(nullptr), ControlMethod(C4AUL_ControlMethod_All), OwnerOverloaded(nullptr),
@@ -466,10 +466,10 @@ protected:
 	C4AulFunc *GetFunc(const char *pIdtf); // get local function by name
 
 	void AddBCC(C4AulBCCType eType, std::intptr_t = 0, const char *SPos = nullptr); // add byte code chunk and advance
-	bool Preparse(); // preparse script; return if successfull
+	bool Preparse(); // preparse script; return if successful
 	void ParseFn(C4AulScriptFunc *Fn, bool fExprOnly = false); // parse single script function
 
-	bool Parse(); // parse preparsed script; return if successfull
+	bool Parse(); // parse preparsed script; return if successful
 	void ParseDescs(); // parse function descs
 
 	bool ResolveIncludes(C4DefList *rDefs); // resolve includes

@@ -187,12 +187,12 @@ StdStrBuf StdCompilerBinRead::getPosition() const
 template <class T>
 inline void StdCompilerBinRead::ReadValue(T &rValue)
 {
-	// Pufferüberhang prüfen
+	// Don't read beyond end of buffer
 	if (iPos + sizeof(T) > Buf.getSize())
 	{
 		excEOF(); return;
 	}
-	// Kopieren
+	// Copy
 	rValue = *Buf.getPtr<T>(iPos);
 	iPos += sizeof(T);
 }

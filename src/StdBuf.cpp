@@ -213,7 +213,7 @@ bool StdStrBuf::GetSection(size_t idx, StdStrBuf *psOutSection, char cSeparator)
 	assert(psOutSection);
 	psOutSection->Clear();
 	const char *szStr = getData(), *szSepPos;
-	if (!szStr) return false; // invaid argument
+	if (!szStr) return false; // invalid argument
 	while ((szSepPos = strchr(szStr, cSeparator)) && idx) { szStr = szSepPos + 1; --idx; }
 	if (idx) return false; // indexed section not found
 	// fill output buffer with section, if not empty
