@@ -11,16 +11,16 @@
 # To redistribute this file separately, substitute the full license texts
 # for the above references.
 
-cmake_minimum_required(VERSION 3.9)
-cmake_policy(SET CMP0042 NEW) # enable MACOSX_RPATH by default
+cmake_minimum_required(VERSION 3.16)
 
-if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")
-	cmake_policy(SET CMP0074 NEW) # enable <PackageName>_ROOT for find_package
-endif ()
+# Enable MACOSX_RPATH by default
+cmake_policy(SET CMP0042 NEW)
 
-if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.11.0")
-	cmake_policy(SET CMP0072 NEW) # prefer GLVND OpenGL libraries
-endif ()
+# Prefer GLVND OpenGL libraries
+cmake_policy(SET CMP0072 NEW)
+
+# Enable <PackageName>_ROOT for find_package
+cmake_policy(SET CMP0074 NEW)
 
 if (WIN32)
 	set(CMAKE_SYSTEM_VERSION 6.1) # Windows 7
