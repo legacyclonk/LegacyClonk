@@ -14,17 +14,8 @@
  * for the above references.
  */
 
-/* All kinds of valuable helpers */
-
 #pragma once
 
-#include "C4Breakpoint.h"
-#include "C4Chrono.h"
-#include "C4Math.h"
-#include "C4Strings.h"
-#include "StdColors.h"
-#include "StdFile.h"
-#include "StdHelpers.h"
-#include "StdLog.h"
-
-#include <algorithm>
+// These functions have to be provided by the application.
+bool Log(const char *szMessage);
+bool LogSilent(const char *szMessage);
