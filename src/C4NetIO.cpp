@@ -101,10 +101,6 @@ namespace
 
 #ifdef _WIN32
 
-#ifndef WINSOCK_VERSION
-#define WINSOCK_VERSION 0x22
-#endif
-
 const char *GetSocketErrorMsg(int iError)
 {
 	switch (iError)
@@ -197,7 +193,7 @@ bool AcquireWinSock()
 	{
 		// initialize winsock
 		WSADATA data;
-		int res = WSAStartup(WINSOCK_VERSION, &data);
+		int res = WSAStartup(0x202, &data);
 		// success? count
 		if (!res)
 			iWSockUseCounter++;
