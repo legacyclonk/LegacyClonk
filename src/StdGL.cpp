@@ -28,6 +28,8 @@
 
 #ifndef USE_CONSOLE
 
+#include <array>
+
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
@@ -609,30 +611,23 @@ void CStdGL::BlitLandscape(C4Surface *const sfcSource, C4Surface *const sfcSourc
 					int yOffset = yChunk * chunkSize;
 					// draw triangle strip
 					glBegin(GL_TRIANGLE_STRIP);
-					// get new texture source bounds
-					FLOAT_RECT fTexBlt;
-					// get new dest bounds
-					FLOAT_RECT tTexBlt;
-					// set up blit data as rect
-					fTexBlt.left = static_cast<float>(std::max(xOffset, fx - iBlitX));
-					fTexBlt.top  = static_cast<float>(std::max(yOffset, fy - iBlitY));
-					fTexBlt.right  = static_cast<float>(std::min(fx + wdt - iBlitX, xOffset + chunkSize));
-					fTexBlt.bottom = static_cast<float>(std::min(fy + hgt - iBlitY, yOffset + chunkSize));
+					// Get new texture source bounds
+					const auto fTexBltLeft = static_cast<float>(std::max(xOffset, fx - iBlitX));
+					const auto fTexBltTop  = static_cast<float>(std::max(yOffset, fy - iBlitY));
+					const auto fTexBltRight  = static_cast<float>(std::min(fx + wdt - iBlitX, xOffset + chunkSize));
+					const auto fTexBltBottom = static_cast<float>(std::min(fy + hgt - iBlitY, yOffset + chunkSize));
+					// Get new dest bounds
+					const float tTexBltLeft  {fTexBltLeft   + iBlitX - fx + tx};
+					const float tTexBltTop   {fTexBltTop    + iBlitY - fy + ty};
+					const float tTexBltRight {fTexBltRight  + iBlitX - fx + tx};
+					const float tTexBltBottom{fTexBltBottom + iBlitY - fy + ty};
 
-					tTexBlt.left = fTexBlt.left + iBlitX - fx + tx;
-					tTexBlt.top  = fTexBlt.top + iBlitY - fy + ty;
-					tTexBlt.right  = fTexBlt.right + iBlitX - fx + tx;
-					tTexBlt.bottom = fTexBlt.bottom + iBlitY - fy + ty;
-					float ftx[4]; float fty[4]; // blit positions
-					ftx[0] = tTexBlt.left;  fty[0] = tTexBlt.top;
-					ftx[1] = tTexBlt.right; fty[1] = tTexBlt.top;
-					ftx[2] = tTexBlt.left;  fty[2] = tTexBlt.bottom;
-					ftx[3] = tTexBlt.right; fty[3] = tTexBlt.bottom;
-					float tcx[4]; float tcy[4]; // blit positions
-					tcx[0] = fTexBlt.left;  tcy[0] = fTexBlt.top;
-					tcx[1] = fTexBlt.right; tcy[1] = fTexBlt.top;
-					tcx[2] = fTexBlt.left;  tcy[2] = fTexBlt.bottom;
-					tcx[3] = fTexBlt.right; tcy[3] = fTexBlt.bottom;
+					// Get blit positions
+					const std::array<float, 4>
+						ftx{tTexBltLeft, tTexBltRight, tTexBltLeft  , tTexBltRight },
+						fty{tTexBltTop , tTexBltTop  , tTexBltBottom, tTexBltBottom},
+						tcx{fTexBltLeft, fTexBltRight, fTexBltLeft  , fTexBltRight },
+						tcy{fTexBltTop , fTexBltTop  , fTexBltBottom, fTexBltBottom};
 
 					uint32_t fdwModClr[4]; // color modulation
 					// global modulation map
