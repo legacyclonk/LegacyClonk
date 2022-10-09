@@ -672,7 +672,7 @@ void C4ToolsDlg::UpdatePreview()
 		if (pGLCtx->Select())
 		{
 			pGL->Blit(surfacePreview.get(), 0, 0, static_cast<float>(previewWidth), static_cast<float>(previewHeight), pGL->lpPrimary, rect.left, rect.top, previewWidth, previewHeight);
-			pGL->PageFlip(nullptr, nullptr, nullptr);
+			pGL->PageFlip();
 			pGL->GetMainCtx().Select();
 		}
 	}

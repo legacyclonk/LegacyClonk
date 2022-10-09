@@ -280,16 +280,14 @@ void CStdGL::Clear()
 #endif
 }
 
-bool CStdGL::PageFlip(RECT *, RECT *, CStdWindow *)
+void CStdGL::PageFlip()
 {
 	// call from gfx thread only!
-	if (!pApp || !pApp->AssertMainThread()) return false;
+	if (!pApp || !pApp->AssertMainThread()) return;
 	// safety
-	if (!pCurrCtx) return false;
+	if (!pCurrCtx) return;
 	// end the scene and present it
-	if (!pCurrCtx->PageFlip()) return false;
-	// success!
-	return true;
+	pCurrCtx->PageFlip();
 }
 
 void CStdGL::FillBG(const uint32_t dwClr)

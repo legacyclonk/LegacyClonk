@@ -179,7 +179,7 @@ class CStdGL : public CStdDDraw
 public:
 	CStdGL();
 	~CStdGL();
-	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) override;
+	void PageFlip() override;
 
 protected:
 	GLenum sfcFmt; // texture surface format

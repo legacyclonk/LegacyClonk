@@ -310,7 +310,7 @@ public:
 #ifdef _WIN32
 	virtual CStdGLCtx *CreateContext(HWND, CStdApp *) { return nullptr; }
 #endif
-	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) = 0;
+	virtual void PageFlip() = 0;
 	virtual int GetEngine() = 0; // get indexed engine
 	virtual bool OnResolutionChanged() = 0; // reinit window for new resolution
 	const char *GetLastError() { return sLastError.getData(); }

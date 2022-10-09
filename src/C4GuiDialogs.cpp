@@ -525,13 +525,7 @@ void Dialog::Draw(C4FacetEx &cgo)
 	// reset blit modulation
 	if (iFade < 100) lpDDraw->DeactivateBlitModulation();
 	// blit output to own window
-	if (pWindow)
-	{
-		RECT rtSrc, rtDst;
-		rtSrc.left = rcBounds.x; rtSrc.top = rcBounds.y; rtSrc.right = rcBounds.x + rcBounds.Wdt; rtSrc.bottom = rcBounds.y + rcBounds.Hgt;
-		rtDst.left = 0;          rtDst.top = 0;          rtDst.right = rcBounds.Wdt;              rtDst.bottom = rcBounds.Hgt;
-		Application.DDraw->PageFlip(&rtSrc, &rtDst, pWindow);
-	}
+	if (pWindow) Application.DDraw->PageFlip();
 #ifndef USE_CONSOLE
 	// switch back to original context
 	if (pCtx) pGL->GetMainCtx().Select();

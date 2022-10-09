@@ -1135,13 +1135,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 
 void C4Viewport::BlitOutput()
 {
-	if (pWindow)
-	{
-		RECT rtSrc, rtDst;
-		rtSrc.left = DrawX; rtSrc.top = DrawY; rtSrc.right = DrawX + ViewWdt; rtSrc.bottom = DrawY + ViewHgt;
-		rtDst.left = OutX;  rtDst.top = OutY;  rtDst.right = OutX  + ViewWdt; rtDst.bottom = OutY  + ViewHgt;
-		Application.DDraw->PageFlip(&rtSrc, &rtDst, pWindow);
-	}
+	if (pWindow) Application.DDraw->PageFlip();
 }
 
 void C4Viewport::Execute()

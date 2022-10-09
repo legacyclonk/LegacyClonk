@@ -28,7 +28,7 @@ public:
 	virtual bool CreateDirectDraw() override;
 
 public:
-	virtual bool PageFlip(RECT *pSrcRt = nullptr, RECT *pDstRt = nullptr, CStdWindow *pWindow = nullptr) override { return true; }
+	void PageFlip() override {}
 	virtual int GetEngine() override { return GFXENGN_NOGFX; }
 	virtual bool UpdateClipper() override { return true; }
 	virtual bool OnResolutionChanged() override { return true; }
