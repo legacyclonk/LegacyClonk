@@ -21,9 +21,6 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#ifdef HAVE_IO_H
-#include <io.h>
-#endif
 #ifdef HAVE_SHARE_H
 #include <share.h>
 #endif

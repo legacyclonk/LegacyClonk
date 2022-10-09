@@ -16,7 +16,6 @@
 
 #cmakedefine HAVE_FREETYPE 1
 #cmakedefine HAVE_ICONV 1
-#cmakedefine HAVE_IO_H 1
 #cmakedefine HAVE_LANGINFO_H 1
 #cmakedefine HAVE_LOCALE_H 1
 #cmakedefine HAVE_SHARE_H 1

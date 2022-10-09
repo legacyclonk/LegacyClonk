@@ -18,9 +18,6 @@
 
 #pragma once
 
-#ifdef HAVE_IO_H
-#include <io.h>
-#endif
 #include <CStdFile.h>
 #include <StdBuf.h>
 #include <StdCompiler.h>

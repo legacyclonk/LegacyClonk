@@ -23,9 +23,6 @@
 #include <StdBuf.h>
 
 #include <stdio.h>
-#ifdef HAVE_IO_H
-#include <io.h>
-#endif
 #ifdef _WIN32
 #include <direct.h>
 #endif
