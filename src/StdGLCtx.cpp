@@ -208,6 +208,8 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 
 #elif defined(USE_X11)
 
+#include <GL/glx.h>
+#include <X11/Xlib.h>
 #include <X11/extensions/xf86vmode.h>
 
 CStdGLCtx::CStdGLCtx() : pWindow(nullptr), ctx(nullptr), cx(0), cy(0) {}

@@ -651,11 +651,6 @@ bool C4Console::ClearLog()
 	return true;
 }
 
-// Someone defines Status as int....
-#ifdef Status
-#undef Status
-#endif
-
 void C4Console::DoPlay()
 {
 	Game.Unpause();

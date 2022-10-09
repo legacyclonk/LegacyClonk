@@ -23,14 +23,6 @@
 
 #include <GL/glew.h>
 
-#ifdef USE_X11
-// Xmd.h typedefs bool to CARD8, but we want int
-#define bool _BOOL
-#include <X11/Xmd.h>
-#undef bool
-#include <GL/glx.h>
-#endif
-
 #if defined(__APPLE__)
 #include <OpenGL/glu.h>
 #else
@@ -163,6 +155,7 @@ protected:
 	HWND hWindow; // used if pWindow==nullptr
 	HDC hDC; // device context handle
 #elif defined(USE_X11)
+	typedef struct __GLXcontextRec *GLXContext;
 	GLXContext ctx;
 #elif defined(USE_SDL_MAINLOOP)
 	/*SDL_GLContext*/ void *ctx;

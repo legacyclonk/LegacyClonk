@@ -52,14 +52,6 @@
 #include <StdFile.h>
 #include <StdGL.h>
 
-#ifdef Status
-#undef Status
-#endif
-
-#ifdef None
-#undef None
-#endif
-
 #include <iterator>
 #include <sstream>
 #include <utility>
