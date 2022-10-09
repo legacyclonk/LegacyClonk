@@ -37,6 +37,9 @@
 #include "StdResStr2.h"
 #include "StdWindow.h"
 
+#include <cmath>
+#include <cstdint>
+
 class C4GroupSet;
 class C4Viewport;
 
@@ -213,6 +216,23 @@ bool ExpandHotkeyMarkup(StdStrBuf &sText, char &rcHotkey);
 
 // make color readable on black: max alpha to 0x1f, max color hues
 uint32_t MakeColorReadableOnBlack(uint32_t &rdwClr);
+
+struct FLOAT_RECT
+{
+	float left, right, top, bottom;
+
+	// Surround floating point rectangle
+	operator C4Rect() const
+	{
+		return
+		{
+			static_cast<std::int32_t>(left),
+			static_cast<std::int32_t>(top),
+			static_cast<std::int32_t>(ceilf(right)  - floorf(left)),
+			static_cast<std::int32_t>(ceilf(bottom) - floorf(top))
+		};
+	}
+};
 
 // menu handler: generic context menu callback
 class MenuHandler

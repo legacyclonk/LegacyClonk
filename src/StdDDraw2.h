@@ -268,9 +268,6 @@ protected:
 	static CStdShaderProgram *currentShaderProgram;
 };
 
-// helper struct
-struct FLOAT_RECT { float left, right, top, bottom; };
-
 // direct draw encapsulation
 class CStdDDraw
 {

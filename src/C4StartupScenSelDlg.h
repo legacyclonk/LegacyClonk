@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "C4Gui.h"
 #include "C4Startup.h"
 #include "C4Scenario.h"
 #include "C4Folder.h"
@@ -251,7 +252,7 @@ private:
 		bool fImgDump; // developer help: Dump background image part
 
 		C4Rect rcOverlayPos;
-		FLOAT_RECT rcfOverlayPos;
+		C4GUI::FLOAT_RECT rcfOverlayPos;
 
 		// set during initialization
 		C4FacetExSurface fctBase, fctOverlay;
@@ -267,7 +268,7 @@ private:
 		StdStrBuf sPassword;
 		StdStrBuf sOverlayImage;
 		C4Rect rcOverlayPos;
-		FLOAT_RECT rcfOverlayPos;
+		C4GUI::FLOAT_RECT rcfOverlayPos;
 
 		// set during initialization
 		C4FacetExSurface fctOverlay;
@@ -279,10 +280,10 @@ private:
 	class MapPic : public C4GUI::Picture
 	{
 	private:
-		FLOAT_RECT rcfBounds; // drawing bounds
+		C4GUI::FLOAT_RECT rcfBounds; // drawing bounds
 
 	public:
-		MapPic(const FLOAT_RECT &rcfBounds, const C4Facet &rfct);
+		MapPic(const C4GUI::FLOAT_RECT &rcfBounds, const C4Facet &rfct);
 
 	protected:
 		virtual void MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam) override; // input: mouse movement or buttons - deselect everything if clicked
@@ -290,7 +291,7 @@ private:
 	};
 
 private:
-	C4FacetExSurface fctBackgroundPicture; FLOAT_RECT rcfBG;
+	C4FacetExSurface fctBackgroundPicture; C4GUI::FLOAT_RECT rcfBG;
 	bool fCoordinatesAdjusted;
 	C4Rect rcScenInfoArea; // area in which scenario info is displayed
 	class C4ScenarioListLoader::Folder *pScenarioFolder;
@@ -308,7 +309,7 @@ public:
 	~C4MapFolderData() { Clear(); }
 
 private:
-	void ConvertFacet2ScreenCoord(const C4Rect &rc, FLOAT_RECT *pfrc, float fBGZoomX, float fBGZoomY, int iOffX, int iOffY);
+	void ConvertFacet2ScreenCoord(const C4Rect &rc, C4GUI::FLOAT_RECT *pfrc, float fBGZoomX, float fBGZoomY, int iOffX, int iOffY);
 	void ConvertFacet2ScreenCoord(int32_t *piValue, float fBGZoom, int iOff);
 	void ConvertFacet2ScreenCoord(C4Rect &rcMapArea, bool fAspect); // adjust coordinates of loaded facets so they match given area
 

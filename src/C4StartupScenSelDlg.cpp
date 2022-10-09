@@ -63,7 +63,7 @@ void C4MapFolderData::AccessGfx::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(rcOverlayPos,  "Area",         C4Rect()));
 }
 
-C4MapFolderData::MapPic::MapPic(const FLOAT_RECT &rcfBounds, const C4Facet &rfct) : C4GUI::Picture(C4Rect(rcfBounds), false), rcfBounds(rcfBounds)
+C4MapFolderData::MapPic::MapPic(const C4GUI::FLOAT_RECT &rcfBounds, const C4Facet &rfct) : C4GUI::Picture(C4Rect(rcfBounds), false), rcfBounds(rcfBounds)
 {
 	SetFacet(rfct);
 	SetToolTip(LoadResStr("IDS_MSG_MAP_DESC"));
@@ -233,7 +233,7 @@ void C4MapFolderData::CompileFunc(StdCompiler *pComp)
 	}
 }
 
-void C4MapFolderData::ConvertFacet2ScreenCoord(const C4Rect &rc, FLOAT_RECT *pfrc, float fBGZoomX, float fBGZoomY, int iOffX, int iOffY)
+void C4MapFolderData::ConvertFacet2ScreenCoord(const C4Rect &rc, C4GUI::FLOAT_RECT *pfrc, float fBGZoomX, float fBGZoomY, int iOffX, int iOffY)
 {
 	pfrc->left = (fBGZoomX * rc.x) + iOffX;
 	pfrc->top = (fBGZoomY * rc.y) + iOffY;
@@ -279,7 +279,7 @@ void C4MapFolderData::ConvertFacet2ScreenCoord(C4Rect &rcMapArea, bool fAspect)
 	if (!rcScenInfoArea.Wdt)
 		rcScenInfoArea.Set(static_cast<int32_t>(fctBackgroundPicture.Wdt * 2 / 3), static_cast<int32_t>(fctBackgroundPicture.Hgt / 16), static_cast<int32_t>(fctBackgroundPicture.Wdt / 3), static_cast<int32_t>(fctBackgroundPicture.Hgt * 7 / 8));
 	// assume all facet coordinates are referring to background image zoom; convert them to screen coordinates by applying zoom and offset
-	FLOAT_RECT rcfScenInfoArea;
+	C4GUI::FLOAT_RECT rcfScenInfoArea;
 	ConvertFacet2ScreenCoord(rcScenInfoArea, &rcfScenInfoArea, fBGZoomX, fBGZoomY, iOffX, iOffY);
 	rcScenInfoArea.x = static_cast<int32_t>(rcfScenInfoArea.left); rcScenInfoArea.y = static_cast<int32_t>(rcfScenInfoArea.top);
 	rcScenInfoArea.Wdt = static_cast<int32_t>(rcfScenInfoArea.right - rcfScenInfoArea.left);

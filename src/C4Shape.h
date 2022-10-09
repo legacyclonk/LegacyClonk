@@ -78,13 +78,6 @@ public:
 
 	C4Rect() {} // default ctor; doesn't initialize
 
-	C4Rect(const FLOAT_RECT &rcfOuter) // set to surround floating point rectangle
-	{
-		x = static_cast<int32_t>(rcfOuter.left); y = static_cast<int32_t>(rcfOuter.top);
-		Wdt = static_cast<int32_t>(ceilf(rcfOuter.right) - floorf(rcfOuter.left));
-		Hgt = static_cast<int32_t>(ceilf(rcfOuter.bottom) - floorf(rcfOuter.top));
-	}
-
 	C4Rect Scaled(float scale) const noexcept;
 
 	void CompileFunc(StdCompiler *pComp);
