@@ -30,6 +30,7 @@
 #include <StdPNG.h>
 #include <StdDDraw2.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
@@ -516,39 +517,41 @@ bool C4Surface::LockForUpdate(const RECT &rtUpdate)
 	// texture present?
 	if (!ppTex) return false;
 
-	++Locked;
-	for (auto y = rtUpdate.top; y <= rtUpdate.bottom; y += iTexSize)
+	// clip
+	if (rtUpdate.left < 0 || rtUpdate.top < 0 ||
+		rtUpdate.right > iTexX * iTexSize || rtUpdate.bottom > iTexY * iTexSize)
 	{
-		for (auto x = rtUpdate.left; x <= rtUpdate.right; x += iTexSize)
+		return false;
+	}
+
+	++Locked;
+	for (auto tileY = rtUpdate.top / iTexSize; ; ++tileY)
+	{
+		const auto tileTop = tileY * iTexSize;
+		RECT subRect;
+		subRect.top = std::max<decltype(subRect.top)>(rtUpdate.top - tileTop, 0);
+		subRect.bottom = std::min<decltype(subRect.bottom)>(rtUpdate.bottom - tileTop, iTexSize);
+		for (auto tileX = rtUpdate.left / iTexSize; ; ++tileX)
 		{
-			// get pos
-			int tileX = x / iTexSize;
-			int tileY = y / iTexSize;
-			// clip
-			if (tileX < 0 || tileY < 0 || tileX >= iTexX || tileY >= iTexY) return false;
 			// get texture by pos
-			auto texRef = *(ppTex + tileY * iTexX + tileX);
+			auto &texRef = *ppTex[tileY * iTexX + tileX];
 
-			RECT subRect{x - tileX * iTexSize, y - tileY * iTexSize,
-				rtUpdate.right - tileX * iTexSize, rtUpdate.bottom - tileY * iTexSize};
+			const auto tileLeft = tileX * iTexSize;
+			subRect.left = std::max<decltype(subRect.left)>(rtUpdate.left - tileLeft, 0);
+			subRect.right = std::min<decltype(subRect.right)>(rtUpdate.right - tileLeft, iTexSize);
 
-			if (subRect.right > iTexSize)
+			if (!texRef.LockForUpdate(subRect))
 			{
-				x = tileX * iTexSize;
-				subRect.right = iTexSize;
-			}
-
-			if (subRect.bottom > iTexSize)
-			{
-				y = tileY * iTexSize;
-				subRect.bottom = iTexSize;
-			}
-
-			if (!texRef->LockForUpdate(subRect))
-			{
+				Unlock();
 				return false;
 			}
+
+			if (tileLeft + iTexSize >= rtUpdate.right)
+				break;
 		}
+
+		if (tileTop + iTexSize >= rtUpdate.bottom)
+			break;
 	}
 
 	return true;
