@@ -18,9 +18,11 @@
 
 #pragma once
 
-#include "C4FacetEx.h"
 #include "C4Constants.h"
+#include "C4ForwardDeclarations.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <vector>
 
 #define C4D_VertexCpyPos (C4D_MaxVertex/2)
