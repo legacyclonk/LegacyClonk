@@ -27,10 +27,6 @@
 #include <C4Log.h>
 #include "C4ChatDlg.h"
 
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-
 #include <cassert>
 
 // C4StartupNetListEntry

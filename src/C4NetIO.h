@@ -35,14 +35,11 @@
 	#define SOCKET int
 	#define INVALID_SOCKET (-1)
 	#include <arpa/inet.h>
+	#include <sys/socket.h>
 #endif
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#endif
-
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
 #endif
 
 #ifndef SOCK_CLOEXEC
