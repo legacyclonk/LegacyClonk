@@ -13,6 +13,8 @@
  * for the above references.
  */
 
+#pragma once
+
 template<typename... T>
 class StdOverloadedCallable : public T...
 {
