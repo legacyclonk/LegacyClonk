@@ -1,3 +1,5 @@
+src/Bitmap256.cpp
+src/Bitmap256.h
 src/C4Action.cpp
 src/C4Application.cpp
 src/C4Application.h
@@ -14,7 +16,6 @@ src/C4ChatDlg.cpp
 src/C4ChatDlg.h
 src/C4Client.cpp
 src/C4Client.h
-src/C4Cooldown.h
 src/C4Command.cpp
 src/C4Command.h
 src/C4ComponentHost.cpp
@@ -27,6 +28,7 @@ src/C4Console.h
 src/C4Constants.h
 src/C4Control.cpp
 src/C4Control.h
+src/C4Cooldown.h
 src/C4Def.cpp
 src/C4Def.h
 src/C4DefGraphics.cpp
@@ -40,8 +42,8 @@ src/C4EditCursor.cpp
 src/C4EditCursor.h
 src/C4Effect.cpp
 src/C4Effects.h
-src/C4EnumeratedObjectPtr.h
 src/C4EnumeratedObjectPtr.cpp
+src/C4EnumeratedObjectPtr.h
 src/C4Extra.cpp
 src/C4Extra.h
 src/C4Facet.cpp
@@ -271,14 +273,14 @@ src/C4Surface.cpp
 src/C4Surface.h
 src/C4SurfaceFile.cpp
 src/C4SurfaceFile.h
-src/C4Toast.cpp
-src/C4Toast.h
 src/C4Teams.cpp
 src/C4Teams.h
 src/C4Texture.cpp
 src/C4Texture.h
 src/C4TimeMilliseconds.cpp
 src/C4TimeMilliseconds.h
+src/C4Toast.cpp
+src/C4Toast.h
 src/C4ToolsDlg.cpp
 src/C4ToolsDlg.h
 src/C4TransferZone.cpp
@@ -306,9 +308,6 @@ src/C4Weather.h
 src/C4WinMain.cpp
 src/C4Wrappers.cpp
 src/C4Wrappers.h
-
-src/Bitmap256.cpp
-src/Bitmap256.h
 src/Fixed.cpp
 src/Fixed.h
 src/OpenURL.cpp
