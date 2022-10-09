@@ -1,4 +1,6 @@
 src/C4Breakpoint.h
+src/C4Chrono.cpp
+src/C4Chrono.h
 src/C4ForwardDeclarations.h
 src/CStdFile.cpp
 src/CStdFile.h

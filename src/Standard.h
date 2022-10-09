@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "C4Breakpoint.h"
+#include "C4Chrono.h"
 
 #include <string.h>
 #include <string>
@@ -29,10 +30,6 @@
 #ifdef _WIN32
 #include "C4Windows.h"
 #else
-
-#define INFINITE 0xFFFFFFFF
-
-unsigned long timeGetTime(void);
 
 inline int stricmp(const char *s1, const char *s2)
 {
@@ -206,5 +203,3 @@ inline int ssprintf(char (&str)[N], const char *fmt, Args... args)
 	if (m >= N) { m = N - 1; str[m] = 0; }
 	return m;
 }
-
-const char *GetCurrentTimeStamp(bool enableMarkupColor = true);

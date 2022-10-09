@@ -28,9 +28,6 @@
 #include <ctype.h>
 #endif
 
-#include <time.h>
-
-#include <sys/timeb.h>
 #include <cassert>
 #include <cctype>
 #include <cstring>
@@ -694,33 +691,4 @@ bool IsSafeFormatString(const char *szFmt)
 			}
 		}
 	return true;
-}
-
-/* Some part of the Winapi */
-
-#ifndef _WIN32
-
-#include <sys/time.h>
-
-unsigned long timeGetTime(void)
-{
-	static time_t sec_offset;
-	timeval tv;
-	gettimeofday(&tv, nullptr);
-	if (!sec_offset) sec_offset = tv.tv_sec;
-	return (tv.tv_sec - sec_offset) * 1000 + tv.tv_usec / 1000;
-}
-
-#endif
-
-const char *GetCurrentTimeStamp(bool enableMarkupColor)
-{
-	static char buf[25];
-
-	time_t timenow;
-	time(&timenow);
-
-	strftime(buf, sizeof(buf), enableMarkupColor ? "<c 909090>[%H:%M:%S]</c>" : "[%H:%M:%S]", localtime(&timenow));
-
-	return buf;
 }
