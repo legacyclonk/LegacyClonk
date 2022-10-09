@@ -34,10 +34,6 @@
 #ifdef _WIN32
 #include "C4Windows.h"
 #else
-typedef struct
-{
-	long left; long top; long right; long bottom;
-} RECT;
 
 #define INFINITE 0xFFFFFFFF
 

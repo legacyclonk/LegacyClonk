@@ -595,25 +595,23 @@ bool C4ToolsDlg::SetIFT(bool fIFT)
 
 void C4ToolsDlg::UpdatePreview()
 {
+	// TODO: Set size request for image to read size from image's size request?
+	std::int32_t left{0}, top{0}, previewWidth{64}, previewHeight{64};
+
 #ifdef _WIN32
 	if (!hDialog) return;
+	const auto previewHandle = GetDlgItem(hDialog, IDC_PREVIEW);
+	if (!previewHandle) return;
+	RECT clientRect;
+	if (!GetClientRect(previewHandle, &clientRect)) return;
+	left = clientRect.left;
+	top = clientRect.top;
+	previewWidth = clientRect.right - clientRect.left;
+	previewHeight = clientRect.bottom - clientRect.top;
 #elif defined(WITH_DEVELOPER_MODE)
 	if (!hbox) return;
 #endif
 
-	RECT rect;
-#ifdef _WIN32
-	GetClientRect(GetDlgItem(hDialog, IDC_PREVIEW), &rect);
-#else
-	/* TODO: Set size request for image to read size from image's size request? */
-	rect.left = 0;
-	rect.top = 0;
-	rect.bottom = 64;
-	rect.right = 64;
-#endif
-
-	const auto previewWidth = static_cast<std::int32_t>(rect.right - rect.left);
-	const auto previewHeight = static_cast<std::int32_t>(rect.bottom - rect.top);
 	const auto surfacePreview = std::make_unique<C4Surface>(previewWidth, previewHeight);
 
 	// fill bg
@@ -671,7 +669,7 @@ void C4ToolsDlg::UpdatePreview()
 	{
 		if (pGLCtx->Select())
 		{
-			pGL->Blit(surfacePreview.get(), 0, 0, static_cast<float>(previewWidth), static_cast<float>(previewHeight), pGL->lpPrimary, rect.left, rect.top, previewWidth, previewHeight);
+			pGL->Blit(surfacePreview.get(), 0, 0, static_cast<float>(previewWidth), static_cast<float>(previewHeight), pGL->lpPrimary, left, top, previewWidth, previewHeight);
 			pGL->PageFlip();
 			pGL->GetMainCtx().Select();
 		}

@@ -22,6 +22,7 @@
 #include <Standard.h>
 #include <StdGL.h>
 #include <C4Log.h>
+#include "C4Rect.h"
 #include <C4Surface.h>
 #include <StdWindow.h>
 
@@ -459,10 +460,10 @@ bool CStdGLCtx::UpdateSize()
 	// safety
 	if (!pWindow) return false;
 	// get size
-	RECT rc;
-	pWindow->GetSize(&rc);
+	C4Rect rc;
+	if (!pWindow->GetRect(rc)) return false;
 	const auto scale = pGL->pApp->GetScale();
-	int width = static_cast<int32_t>(ceilf((rc.right - rc.left) / scale)), height = static_cast<int32_t>(ceilf((rc.bottom - rc.top) / scale));
+	int width = static_cast<int32_t>(ceilf(rc.Wdt / scale)), height = static_cast<int32_t>(ceilf(rc.Hgt / scale));
 	// assign if different
 	if (cx != width || cy != height)
 	{

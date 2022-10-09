@@ -512,33 +512,34 @@ bool C4Surface::Lock()
 	Locked++; return true;
 }
 
-bool C4Surface::LockForUpdate(const RECT &rtUpdate)
+bool C4Surface::LockForUpdate(const C4Rect rect)
 {
 	// texture present?
 	if (!ppTex) return false;
 
 	// clip
-	if (rtUpdate.left < 0 || rtUpdate.top < 0 ||
-		rtUpdate.right > iTexX * iTexSize || rtUpdate.bottom > iTexY * iTexSize)
+	const auto right = rect.x + rect.Wdt;
+	const auto bottom = rect.y + rect.Hgt;
+	if (rect.x < 0 || rect.y < 0 || right > iTexX * iTexSize || bottom > iTexY * iTexSize)
 	{
 		return false;
 	}
 
 	++Locked;
-	for (auto tileY = rtUpdate.top / iTexSize; ; ++tileY)
+	for (auto tileY = rect.y / iTexSize; ; ++tileY)
 	{
 		const auto tileTop = tileY * iTexSize;
-		RECT subRect;
-		subRect.top = std::max<decltype(subRect.top)>(rtUpdate.top - tileTop, 0);
-		subRect.bottom = std::min<decltype(subRect.bottom)>(rtUpdate.bottom - tileTop, iTexSize);
-		for (auto tileX = rtUpdate.left / iTexSize; ; ++tileX)
+		C4Rect subRect;
+		subRect.y = std::max<decltype(subRect.y)>(rect.y - tileTop, 0);
+		subRect.Hgt = std::min<decltype(subRect.Hgt)>(bottom - tileTop, iTexSize) - subRect.y;
+		for (auto tileX = rect.x / iTexSize; ; ++tileX)
 		{
 			// get texture by pos
 			auto &texRef = *ppTex[tileY * iTexX + tileX];
 
 			const auto tileLeft = tileX * iTexSize;
-			subRect.left = std::max<decltype(subRect.left)>(rtUpdate.left - tileLeft, 0);
-			subRect.right = std::min<decltype(subRect.right)>(rtUpdate.right - tileLeft, iTexSize);
+			subRect.x = std::max<decltype(subRect.x)>(rect.x - tileLeft, 0);
+			subRect.Wdt = std::min<decltype(subRect.Wdt)>(right - tileLeft, iTexSize) - subRect.x;
 
 			if (!texRef.LockForUpdate(subRect))
 			{
@@ -546,11 +547,11 @@ bool C4Surface::LockForUpdate(const RECT &rtUpdate)
 				return false;
 			}
 
-			if (tileLeft + iTexSize >= rtUpdate.right)
+			if (tileLeft + iTexSize >= right)
 				break;
 		}
 
-		if (tileTop + iTexSize >= rtUpdate.bottom)
+		if (tileTop + iTexSize >= bottom)
 			break;
 	}
 
@@ -614,8 +615,8 @@ bool C4Surface::GetLockTexAt(C4TexRef **ppTexRef, int &rX, int &rY)
 	if ((*ppTexRef)->texLock.pBits)
 	{
 		// But not for the requested pixel
-		RECT &r = (*ppTexRef)->LockSize;
-		if (r.left > rX || r.top > rY || r.right < rX || r.bottom < rY)
+		const auto &r = (*ppTexRef)->LockSize;
+		if (r.x > rX || r.y > rY || r.x + r.Wdt < rX || r.y + r.Hgt < rY)
 			// Unlock, then relock the whole thing
 			(*ppTexRef)->Unlock();
 		else return true;
@@ -791,11 +792,11 @@ void C4Surface::ClearBoxDw(int iX, int iY, int iWdt, int iHgt)
 			int iBlitX = iTexSize * x;
 			int iBlitY = iTexSize * y;
 			// get clearing bounds in texture
-			RECT rtClear;
-			rtClear.left = (std::max)(iX - iBlitX, 0);
-			rtClear.top = (std::max)(iY - iBlitY, 0);
-			rtClear.right = (std::min)(iX + iWdt - iBlitX, iTexSize);
-			rtClear.bottom = (std::min)(iY + iHgt - iBlitY, iTexSize);
+			C4Rect rtClear;
+			rtClear.x = std::max(iX - iBlitX, 0);
+			rtClear.y = std::max(iY - iBlitY, 0);
+			rtClear.Wdt = std::min(iX + iWdt - iBlitX, iTexSize) - rtClear.x;
+			rtClear.Hgt = std::min(iY + iHgt - iBlitY, iTexSize) - rtClear.y;
 			// is there a base-surface to be cleared first?
 			if (fBaseSfc)
 			{
@@ -1110,8 +1111,7 @@ C4TexRef::C4TexRef(int iSize, bool fSingle) : LockCount{0}
 	texLock.Pitch = iSize * 4;
 	memset(texLock.pBits, 0xff, texLock.Pitch * iSize);
 	// Always locked
-	LockSize.left = LockSize.top = 0;
-	LockSize.right = LockSize.bottom = iSize;
+	LockSize = {0, 0, iSize, iSize};
 }
 
 C4TexRef::~C4TexRef()
@@ -1129,13 +1129,16 @@ C4TexRef::~C4TexRef()
 	pTexMgr->UnregTex(this);
 }
 
-bool C4TexRef::LockForUpdate(const RECT &rtUpdate)
+bool C4TexRef::LockForUpdate(const C4Rect rect)
 {
 	// already locked?
 	if (texLock.pBits)
 	{
 		// sufficiently locked?
-		if (LockSize.left <= rtUpdate.left && LockSize.right >= rtUpdate.right && LockSize.top <= rtUpdate.top && LockSize.bottom >= rtUpdate.bottom)
+		if (
+			LockSize.x <= rect.x && LockSize.x + LockSize.Wdt >= rect.x + rect.Wdt &&
+			LockSize.y <= rect.y && LockSize.y + LockSize.Hgt >= rect.y + rect.Hgt
+		)
 		{
 			return true;
 		}
@@ -1150,10 +1153,9 @@ bool C4TexRef::LockForUpdate(const RECT &rtUpdate)
 	if (pGL)
 	{
 		// prepare texture data
-		texLock.pBits = new unsigned char[
-			(rtUpdate.right - rtUpdate.left) * (rtUpdate.bottom - rtUpdate.top) * 4];
-		texLock.Pitch = (rtUpdate.right - rtUpdate.left) * 4;
-		LockSize = rtUpdate;
+		texLock.pBits = new unsigned char[rect.Wdt * rect.Hgt * 4];
+		texLock.Pitch = rect.Wdt * 4;
+		LockSize = rect;
 		return true;
 	}
 	else
@@ -1169,8 +1171,7 @@ bool C4TexRef::Lock()
 {
 	// already locked?
 	if (texLock.pBits) return true;
-	LockSize.right = LockSize.bottom = iSize;
-	LockSize.top = LockSize.left = 0;
+	LockSize = {0, 0, iSize, iSize};
 	// lock
 #ifndef USE_CONSOLE
 	if (pGL)
@@ -1208,7 +1209,7 @@ void C4TexRef::Unlock([[maybe_unused]] bool noUpload)
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			glBindTexture(GL_TEXTURE_2D, texName);
 			glTexSubImage2D(GL_TEXTURE_2D, 0,
-				LockSize.left, LockSize.top, LockSize.right - LockSize.left, LockSize.bottom - LockSize.top,
+				LockSize.x, LockSize.y, LockSize.Wdt, LockSize.Hgt,
 				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texLock.pBits);
 		}
 		if (!noUpload || Config.Graphics.CacheTexturesInRAM == -1 || LockCount < Config.Graphics.CacheTexturesInRAM)
@@ -1224,14 +1225,14 @@ void C4TexRef::Unlock([[maybe_unused]] bool noUpload)
 	}
 }
 
-bool C4TexRef::ClearRect(RECT &rtClear)
+bool C4TexRef::ClearRect(const C4Rect rect)
 {
 	// ensure locked
-	if (!LockForUpdate(rtClear)) return false;
+	if (!LockForUpdate(rect)) return false;
 	// clear pixels
-	for (int y = rtClear.top; y < rtClear.bottom; ++y)
+	for (int y = rect.y; y < rect.y + rect.Hgt; ++y)
 	{
-		for (int x = rtClear.left; x < rtClear.right; ++x)
+		for (int x = rect.x; x < rect.x + rect.Wdt; ++x)
 			SetPix(x, y, 0xff000000);
 	}
 	// success

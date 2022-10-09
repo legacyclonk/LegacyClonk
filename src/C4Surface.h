@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "C4Rect.h"
 #include "Standard.h"
 #include "StdColors.h"
 
@@ -86,7 +87,7 @@ public:
 	void ClearBoxDw(int iX, int iY, int iWdt, int iHgt);
 	bool Unlock(bool noUpload = false);
 	bool Lock();
-	bool LockForUpdate(const RECT &rtUpdate);
+	bool LockForUpdate(C4Rect rect);
 	bool GetTexAt(C4TexRef **ppTexRef, int &rX, int &rY); // get texture and adjust x/y
 	bool GetLockTexAt(C4TexRef **ppTexRef, int &rX, int &rY); // get texture; ensure it's locked and adjust x/y
 	bool SetPix(int iX, int iY, uint8_t byCol); // set 8bit-px
@@ -167,21 +168,21 @@ public:
 #endif
 	int iSize;
 	bool fIntLock; // if set, texref is locked internally only
-	RECT LockSize;
+	C4Rect LockSize;
 
 	C4TexRef(int iSize, bool fAsRenderTarget); // create texture with given size
 	~C4TexRef(); // release texture
 	bool Lock(); // lock texture
 	// Lock a part of the rect, discarding the content
 	// Note: Calling Lock afterwards without an Unlock first is undefined
-	bool LockForUpdate(const RECT &rtUpdate);
+	bool LockForUpdate(C4Rect rect);
 	void Unlock(bool noUpload = false); // unlock texture
-	bool ClearRect(RECT &rtClear); // clear rect in texture to transparent
+	bool ClearRect(C4Rect rect); // clear rect in texture to transparent
 	bool FillBlack(); // fill complete texture in black
 
 	void SetPix(int iX, int iY, uint32_t v)
 	{
-		*reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(texLock.pBits) + (iY - LockSize.top) * texLock.Pitch + (iX - LockSize.left) * 4) = v;
+		*reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(texLock.pBits) + (iY - LockSize.y) * texLock.Pitch + (iX - LockSize.x) * 4) = v;
 	}
 
 private:

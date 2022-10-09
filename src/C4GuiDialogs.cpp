@@ -458,15 +458,16 @@ void Dialog::UpdateSize()
 	// update assigned window
 	if (pWindow)
 	{
-		RECT rtSize;
-		rtSize.left = 0;
-		rtSize.top = 0;
-		rtSize.right = rcBounds.Wdt;
-		rtSize.bottom = rcBounds.Hgt;
+		auto wdt = rcBounds.Wdt, hgt = rcBounds.Hgt;
 #ifdef _WIN32
-		if (::AdjustWindowRectEx(&rtSize, ConsoleDlgWindowStyle, false, 0))
-#endif // _WIN32
-			pWindow->SetSize(rtSize.right - rtSize.left, rtSize.bottom - rtSize.top);
+		RECT rect{0, 0, wdt, hgt};
+		if (::AdjustWindowRectEx(&rect, ConsoleDlgWindowStyle, false, 0))
+		{
+			wdt = rect.right - rect.left;
+			hgt = rect.bottom - rect.top;
+		}
+#endif
+		pWindow->SetSize(wdt, hgt);
 	}
 }
 

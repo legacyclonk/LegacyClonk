@@ -20,6 +20,8 @@
 #pragma once
 
 #include <Standard.h>
+
+#include "C4Rect.h"
 #include <StdBuf.h>
 
 #ifdef _WIN32
@@ -262,7 +264,7 @@ public:
 	virtual CStdWindow *Init(CStdApp *pApp, const char *Title, CStdWindow *pParent = nullptr, bool HideCursor = true);
 #endif
 	bool RestorePosition(const char *szWindowName, const char *szSubKey);
-	bool GetSize(RECT *pRect);
+	bool GetRect(C4Rect &rect);
 	void SetSize(unsigned int cx, unsigned int cy); // resize
 	void SetTitle(const char *Title);
 	void FlashWindow();

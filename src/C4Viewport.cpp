@@ -800,19 +800,19 @@ bool C4Viewport::UpdateOutputSize()
 {
 	if (!pWindow) return false;
 	// Output size
-	RECT rect;
+	C4Rect rect;
 #ifdef WITH_DEVELOPER_MODE
 	// Use only size of drawing area without scrollbars
-	rect.left = pWindow->drawing_area->allocation.x;
-	rect.top = pWindow->drawing_area->allocation.y;
-	rect.right = rect.left + pWindow->drawing_area->allocation.width;
-	rect.bottom = rect.top + pWindow->drawing_area->allocation.height;
+	rect.x = pWindow->drawing_area->allocation.x;
+	rect.y = pWindow->drawing_area->allocation.y;
+	rect.Wdt = pWindow->drawing_area->allocation.width;
+	rect.Hgt = pWindow->drawing_area->allocation.height;
 #else
-	if (!pWindow->GetSize(&rect)) return false;
+	if (!pWindow->GetRect(rect)) return false;
 #endif
-	OutX = rect.left; OutY = rect.top;
+	OutX = rect.x; OutY = rect.y;
 	const auto scale = Application.GetScale();
-	ViewWdt = static_cast<int32_t>(ceilf((rect.right - rect.left) / scale)); ViewHgt = static_cast<int32_t>(ceilf((rect.bottom - rect.top) / scale));
+	ViewWdt = static_cast<int32_t>(ceilf(rect.Wdt / scale)); ViewHgt = static_cast<int32_t>(ceilf(rect.Hgt / scale));
 	// Scroll bars
 	ScrollBarsByViewPosition();
 	// Reset menus

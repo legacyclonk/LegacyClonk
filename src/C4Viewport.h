@@ -18,11 +18,10 @@
 
 #pragma once
 
+#include "C4Rect.h"
 #include <C4Region.h>
 
 #include <StdWindow.h>
-
-#include <C4Shape.h>
 
 #ifdef WITH_DEVELOPER_MODE
 #include <StdGtkWindow.h>

@@ -250,7 +250,7 @@ bool CStdWindow::RestorePosition(const char *, const char *)
 	return true;
 }
 
-bool CStdWindow::GetSize(RECT *pRect)
+bool CStdWindow::GetRect(C4Rect &rect)
 {
 #ifdef USE_X11
 	Window winDummy;
@@ -260,12 +260,12 @@ bool CStdWindow::GetSize(RECT *pRect)
 	unsigned int depth;
 	XGetGeometry(dpy, wnd, &winDummy, &x, &y,
 		&width, &height, &borderDummy, &depth);
-	pRect->right = width + x;
-	pRect->bottom = height + y;
-	pRect->top = y;
-	pRect->left = x;
+	rect.x = x;
+	rect.y = y;
+	rect.Wdt = width;
+	rect.Hgt = height;
 #else
-	pRect->left = pRect->right = pRect->top = pRect->bottom = 0;
+	rect = {0, 0, 0, 0};
 #endif
 	return true;
 }

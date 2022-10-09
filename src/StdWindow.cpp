@@ -125,9 +125,14 @@ void CStdWindow::SetTitle(const char *szToTitle)
 	if (hWindow) SetWindowText(hWindow, szToTitle ? szToTitle : "");
 }
 
-bool CStdWindow::GetSize(RECT *pRect)
+bool CStdWindow::GetRect(C4Rect &rect)
 {
-	if (!(hWindow && GetClientRect(hWindow, pRect))) return false;
+	RECT clientRect;
+	if (!hWindow || !GetClientRect(hWindow, &clientRect)) return false;
+	rect.x = clientRect.left;
+	rect.y = clientRect.top;
+	rect.Wdt = clientRect.right - clientRect.left;
+	rect.Hgt = clientRect.bottom - clientRect.top;
 	return true;
 }
 

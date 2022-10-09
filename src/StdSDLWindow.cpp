@@ -79,13 +79,10 @@ bool CStdWindow::RestorePosition(const char *, const char *) { return true; }
 // Window size is automatically managed by CStdApp's display mode management.
 // Just remember the size for others to query.
 
-bool CStdWindow::GetSize(RECT *pRect)
+bool CStdWindow::GetRect(C4Rect &rect)
 {
 	SDL_GL_GetDrawableSize(sdlWindow, &width, &height);
-
-	pRect->left = pRect->top = 0;
-	pRect->right = width;
-	pRect->bottom = height;
+	rect = {0, 0, width, height};
 	return true;
 }
 
