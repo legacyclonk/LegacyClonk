@@ -16,7 +16,6 @@
 
 #cmakedefine HAVE_FREETYPE 1
 #cmakedefine HAVE_ICONV 1
-#cmakedefine HAVE_SHARE_H 1
 #cmakedefine HAVE_STDINT_H 1
 #cmakedefine HAVE_SYS_SOCKET_H 1
 #cmakedefine HAVE_SYS_STAT_H 1

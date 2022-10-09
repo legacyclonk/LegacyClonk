@@ -50,7 +50,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 # Check which header files and functions are present
 
-CHECK_INCLUDE_FILE_CXX(share.h            HAVE_SHARE_H)
 CHECK_INCLUDE_FILE_CXX(stdint.h           HAVE_STDINT_H)
 CHECK_INCLUDE_FILE_CXX(sys/socket.h       HAVE_SYS_SOCKET_H)
 CHECK_INCLUDE_FILE_CXX(sys/stat.h         HAVE_SYS_STAT_H)

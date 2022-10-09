@@ -21,10 +21,6 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#ifdef HAVE_SHARE_H
-#include <share.h>
-#endif
-
 #ifdef _WIN32
 
 #include <process.h>

@@ -24,7 +24,7 @@
 #include <C4LogBuf.h>
 #include <C4Language.h>
 
-#if defined(HAVE_SHARE_H) || defined(_WIN32)
+#ifdef _WIN32
 #include <share.h>
 #endif
 
