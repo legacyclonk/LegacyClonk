@@ -129,6 +129,7 @@ void StdCompilerBinRead::Byte(int8_t &rByte) { ReadValue(rByte); }
 void StdCompilerBinRead::Byte(uint8_t &rByte) { ReadValue(rByte); }
 void StdCompilerBinRead::Boolean(bool &rBool) { ReadValue(rBool); }
 void StdCompilerBinRead::Character(char &rChar) { ReadValue(rChar); }
+
 void StdCompilerBinRead::String(char *szString, size_t iMaxLength, RawCompileType eType)
 {
 	// At least one byte data needed

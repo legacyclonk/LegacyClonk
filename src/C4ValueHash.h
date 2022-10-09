@@ -14,6 +14,7 @@
  */
 
 #pragma once
+
 #include "C4Value.h"
 #include "C4ValueStandardRefCountedContainer.h"
 

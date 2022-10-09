@@ -142,9 +142,11 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 void C4FullScreen::CharIn(const char *c) { Game.pGUI->CharIn(c); }
 
 #elif defined(USE_X11)
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
+
 void C4FullScreen::HandleMessage(XEvent &e)
 {
 	// Parent handling

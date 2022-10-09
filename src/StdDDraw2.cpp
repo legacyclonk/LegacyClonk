@@ -230,7 +230,7 @@ bool CPattern::PatternClr(int iX, int iY, uint8_t &byClr, uint32_t &dwClr, CStdP
 
 CGammaControl::~CGammaControl()
 {
-	delete[] red;;
+	delete[] red;
 }
 
 void CGammaControl::SetClrChannel(uint16_t *pBuf, uint8_t c1, uint8_t c2, int c3, uint16_t *ref)
@@ -929,7 +929,6 @@ bool CStdDDraw::BlitRotate(C4Surface *sfcSource, int fx, int fy, int fwdt, int f
 	sfcTarget->Unlock();
 	return true;
 }
-
 
 bool CStdDDraw::Error(const char *szMsg)
 {

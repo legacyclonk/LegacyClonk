@@ -329,7 +329,7 @@ void ContextMenu::UpdateElementPositions()
 	Element *pCurr = GetFirst();
 	if (!pCurr) return;
 	pCurr->GetBounds().y = 0;
-	int32_t iMinWdt = std::max<int32_t>(20, pCurr->GetBounds().Wdt);;
+	int32_t iMinWdt = std::max<int32_t>(20, pCurr->GetBounds().Wdt);
 	int32_t iOverallHgt = pCurr->GetBounds().Hgt;
 	// others stacked under it
 	while (pCurr = pCurr->GetNext())

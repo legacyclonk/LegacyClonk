@@ -287,7 +287,7 @@ void C4RoundResults::EvaluateGoals(C4IDList &GoalList, C4IDList &FulfilledGoalLi
 	for (cnt = 0; idGoal = Game.Objects.GetListID(C4D_Goal, cnt); cnt++)
 	{
 		// determine if the goal is fulfilled - do the calls even if the menu is not to be opened to ensure synchronization
-		bool fFulfilled = false;;
+		bool fFulfilled = false;
 		C4Object *pObj;
 		if (pObj = Game.Objects.Find(idGoal))
 		{

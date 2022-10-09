@@ -377,7 +377,7 @@ bool Edit::KeyCursorOp(C4KeyCodeEx key, CursorOperation op)
 			{
 				// move one word
 				iMoveLength = 0;
-				bool fNoneSpaceFound = false, fSpaceFound = false;;
+				bool fNoneSpaceFound = false, fSpaceFound = false;
 				while (iCursorPos + iMoveLength + iMoveDir >= 0 && iCursorPos + iMoveLength + iMoveDir <= SLen(Text))
 					if (IsWholeWordSpacer(Text[iCursorPos + iMoveLength + (iMoveDir - 1) / 2]))
 					{

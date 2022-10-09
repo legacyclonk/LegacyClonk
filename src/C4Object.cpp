@@ -996,7 +996,7 @@ void C4Object::AutoSellContents()
 
 void C4Object::ExecBase()
 {
-	C4Object *flag;;
+	C4Object *flag;
 
 	// New base assignment by flag (no old base removal)
 	if (!Tick10)

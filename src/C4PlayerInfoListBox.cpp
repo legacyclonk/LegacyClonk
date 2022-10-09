@@ -126,7 +126,7 @@ C4PlayerInfoListBox::PlayerListItem::PlayerListItem(C4PlayerInfoListBox *pForLis
 			pTimeLabel = new C4GUI::Label(sTimeLabelText.getData(), 0, 0, ARight, dwTextColor, pForListBox->GetCustomFont(), false, true);
 		}
 		// Extra info set by script
-		C4RoundResultsPlayer *pEvaluationPlayer = Game.RoundResults.GetPlayers().GetByID(idPlayer);;
+		C4RoundResultsPlayer *pEvaluationPlayer = Game.RoundResults.GetPlayers().GetByID(idPlayer);
 		if (pEvaluationPlayer)
 		{
 			const char *szCustomEval = pEvaluationPlayer->GetCustomEvaluationStrings();
@@ -350,7 +350,7 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 		int32_t iScoreYPos = IconLabelSpacing;
 		// if evaluation and team lists, move score label into second line - TODO: some hack only, still needs to be done right
 
-		C4RoundResultsPlayer *pEvaluationPlayer = Game.RoundResults.GetPlayers().GetByID(pInfo->GetID());;
+		C4RoundResultsPlayer *pEvaluationPlayer = Game.RoundResults.GetPlayers().GetByID(pInfo->GetID());
 		bool fPlayerHasEvaluationData = false;
 		if (pEvaluationPlayer)
 		{

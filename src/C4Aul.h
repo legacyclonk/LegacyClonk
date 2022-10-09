@@ -29,8 +29,8 @@
 #include <C4Id.h>
 #include <C4Script.h>
 #include <C4StringTable.h>
-#include <cstdint>
 
+#include <cstdint>
 #include <vector>
 
 // class predefs

@@ -327,7 +327,8 @@ C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bo
 	return IR_Success;
 }
 
-C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2Address> &addrs, const C4ClientCore &HostCore, const char *szPassword){
+C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2Address> &addrs, const C4ClientCore &HostCore, const char *szPassword)
+{
 	// initialization
 	Status.Set(GS_Init, -1);
 	fHost = false;
@@ -499,7 +500,7 @@ bool C4Network2::DoLobby()
 
 	// notify lobby end
 	bool fGameGo = isEnabled();
-	if (fGameGo) Log(LoadResStr("IDS_PRC_GAMEGO"));;
+	if (fGameGo) Log(LoadResStr("IDS_PRC_GAMEGO"));
 
 	// disabled?
 	return fGameGo;

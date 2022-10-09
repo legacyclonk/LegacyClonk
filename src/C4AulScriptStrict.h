@@ -14,6 +14,7 @@
  */
 
 #pragma once
+
 #include <cstdint>
 
 enum class C4AulScriptStrict : std::uint8_t

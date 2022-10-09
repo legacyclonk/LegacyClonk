@@ -14,6 +14,7 @@
  */
 
 #pragma once
+
 #include "C4ValueContainer.h"
 
 template <typename T>

@@ -580,7 +580,7 @@ void C4PortraitSelDlg::OnClosed(bool fOK)
 C4FileSelDlg::ListItem *C4PortraitSelDlg::CreateListItem(const char *szFilename)
 {
 	// use own list item type
-	ListItem *pNew = new ListItem(szFilename);;
+	ListItem *pNew = new ListItem(szFilename);
 	// schedule image loading
 	ImageLoader.AddLoadItem(pNew);
 	return pNew;

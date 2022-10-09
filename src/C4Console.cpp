@@ -1277,8 +1277,8 @@ bool C4Console::AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool 
 	if (!fEnabled) minfo.fState |= MFS_GRAYED;
 	return InsertMenuItem(hMenu, 0, FALSE, &minfo);
 }
-
 #endif // _WIN32
+
 bool C4Console::UpdateModeCtrls(int iMode)
 {
 	if (!Active) return false;

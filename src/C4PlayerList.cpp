@@ -347,7 +347,7 @@ bool C4PlayerList::Save(C4Group &hGroup, bool fStoreTiny, const C4PlayerInfoList
 		// save only those in the list, and only those with a filename
 		C4PlayerInfo *pNfo = rStoreList.GetPlayerInfoByID(pPlr->ID);
 		if (!pNfo) continue;
-		if (!pNfo->GetFilename() || !*pNfo->GetFilename()) continue;;
+		if (!pNfo->GetFilename() || !*pNfo->GetFilename()) continue;
 		// save over original file?
 		bool fStoreOnOriginal = (!fStoreTiny && pNfo->GetType() == C4PT_User);
 		// Create temporary file
