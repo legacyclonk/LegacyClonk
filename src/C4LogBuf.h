@@ -19,6 +19,11 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
+
+#include <cstddef>
+#include <cstdint>
+
 // circular log buffer to holding line-wise log data
 class C4LogBuffer
 {

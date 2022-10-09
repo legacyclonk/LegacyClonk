@@ -18,7 +18,6 @@
 // generic user interface
 // dialog base classes and some user dialogs
 
-#include <C4Include.h>
 #include <C4Gui.h>
 
 #include <C4FullScreen.h>
@@ -31,6 +30,10 @@
 
 #include <StdGL.h>
 #include <StdRegistry.h>
+
+#ifdef _WIN32
+#include "res/engine_resource.h"
+#endif
 
 namespace C4GUI
 {

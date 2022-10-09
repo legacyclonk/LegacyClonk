@@ -219,7 +219,6 @@ src/C4PlayerList.cpp
 src/C4PlayerList.h
 src/C4PropertyDlg.cpp
 src/C4PropertyDlg.h
-src/C4Prototypes.h
 src/C4PuncherPacket.cpp
 src/C4PuncherPacket.h
 src/C4RTF.cpp

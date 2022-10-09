@@ -29,6 +29,7 @@
 #pragma once
 
 #include <C4FacetEx.h>
+#include "C4ForwardDeclarations.h"
 #include <C4Group.h>
 #include <C4Shape.h>
 

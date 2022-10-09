@@ -19,6 +19,10 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
+#include "Standard.h"
+#include "StdBuf.h"
+
 #include <cassert>
 #include <map>
 #include <vector>

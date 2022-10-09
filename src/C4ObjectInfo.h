@@ -22,6 +22,7 @@
 #include <C4InfoCore.h>
 #include <C4DefGraphics.h>
 #include <C4FacetEx.h>
+#include "StdFile.h"
 
 class C4Object;
 

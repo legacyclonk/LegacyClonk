@@ -16,7 +16,6 @@
 
 /* Drawing tools dialog for landscape editing in console mode */
 
-#include <C4Include.h>
 #include <C4ToolsDlg.h>
 #include <C4Console.h>
 #include <C4Application.h>
@@ -26,6 +25,10 @@
 #endif
 
 #include "C4Wrappers.h"
+
+#ifdef _WIN32
+#include "res/engine_resource.h"
+#endif
 
 #ifdef WITH_DEVELOPER_MODE
 

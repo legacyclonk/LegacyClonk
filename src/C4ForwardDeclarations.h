@@ -15,4 +15,26 @@
 
 #pragma once
 
+class C4AulFunc;
+class C4Def;
+class C4DefList;
+class C4Facet;
+class C4FacetEx;
+class C4FacetExSurface;
+class C4Fixed;
+class C4Game;
+class C4Graph;
+class C4Group;
+class C4Material;
+class C4MaterialMap;
+class C4Object;
+class C4ObjectList;
+class C4PathFinder;
+class C4Player;
+class C4TextureMap;
+class CStdFont;
+class CStdGLCtx;
+class CStdVectorFont;
+class CSurface8;
 class StdCompiler;
+class StdStrBuf;

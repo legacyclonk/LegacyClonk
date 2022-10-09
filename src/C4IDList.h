@@ -19,6 +19,7 @@
 #pragma once
 
 #include "C4DelegatedIterable.h"
+#include "C4ForwardDeclarations.h"
 #include "C4Id.h"
 
 #include <vector>

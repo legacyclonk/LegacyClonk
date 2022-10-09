@@ -19,6 +19,9 @@
 #pragma once
 
 #include <Standard.h>
+
+#include <ctime>
+
 #include <stdio.h>
 #include <stdlib.h>
 

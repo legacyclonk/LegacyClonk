@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
 #include "C4Network2.h"
 #include "C4Network2Client.h"
 

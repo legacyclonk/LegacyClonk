@@ -18,6 +18,10 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
+
+#include <cstdint>
+
 const int C4MaxFolderSort = 4096;
 
 class C4FolderHead

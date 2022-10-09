@@ -16,9 +16,11 @@
 
 // Loads StringTbl* and replaces $..$-strings by localized versions
 
-#include "C4Include.h"
+#include "C4Constants.h"
 #include "C4LangStringTable.h"
 #include "C4Log.h"
+
+#include <vector>
 
 struct C4StringTableEntry
 {

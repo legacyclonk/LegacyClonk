@@ -18,7 +18,9 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
 #include <C4Surface.h>
+#include "StdDDraw2.h"
 
 class C4Texture
 {

@@ -19,6 +19,11 @@
 
 #pragma once
 
+#include "Standard.h"
+
+#include <cassert>
+#include <cstdio>
+
 class C4Stat;
 
 // *** main statistic class

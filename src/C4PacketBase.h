@@ -18,6 +18,7 @@
 #pragma once
 
 #include "C4NetIO.h"
+#include "StdFile.h"
 
 // *** packet base class
 

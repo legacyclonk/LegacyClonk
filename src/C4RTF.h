@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "StdBuf.h"
+
 class C4RTFFile
 {
 public:

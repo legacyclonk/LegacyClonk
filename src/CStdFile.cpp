@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <cstring>
 
 CStdFile::CStdFile()
 {

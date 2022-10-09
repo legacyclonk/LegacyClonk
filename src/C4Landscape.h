@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "C4Id.h"
 #include "C4Sky.h"
 #include "C4Shape.h"
 

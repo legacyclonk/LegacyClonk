@@ -15,12 +15,12 @@
  * for the above references.
  */
 
-#include "C4Include.h"
 #include "C4NetIO.h"
 
 #include "C4Constants.h"
 #include "C4Config.h"
 #include "C4Network2Address.h"
+#include "Standard.h"
 
 #include <assert.h>
 #include <errno.h>

@@ -17,10 +17,11 @@
 
 /* Common window for drawing and property tool dialogs in console mode */
 
-#include <C4Include.h>
 #include <C4DevmodeDlg.h>
 
 #ifdef WITH_DEVELOPER_MODE
+
+#include <cassert>
 
 #include <gtk/gtknotebook.h>
 #include <gtk/gtklabel.h>

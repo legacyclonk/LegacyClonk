@@ -19,6 +19,12 @@
 
 #pragma once
 
+#include "C4Constants.h"
+#include "C4ForwardDeclarations.h"
+#include "StdBuf.h"
+
+#include <cstdint>
+
 class C4TeamList;
 
 // class predec

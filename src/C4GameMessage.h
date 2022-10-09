@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
 #include <C4Surface.h>
 #include <C4Gui.h>
 

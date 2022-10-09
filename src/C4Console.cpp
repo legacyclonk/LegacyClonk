@@ -16,7 +16,6 @@
 
 /* Handles engine execution in developer mode */
 
-#include <C4Include.h>
 #include <C4Console.h>
 #include <C4Application.h>
 
@@ -29,6 +28,10 @@
 
 #include <StdFile.h>
 #include <StdRegistry.h>
+
+#ifdef _WIN32
+#include "res/engine_resource.h"
+#endif
 
 #ifdef _WIN32
 

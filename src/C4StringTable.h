@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "StdBuf.h"
+
 class C4StringTable;
 class C4Group;
 

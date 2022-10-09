@@ -19,6 +19,10 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
+#include "StdBuf.h"
+#include "StdFile.h"
+
 #include <vector>
 
 class C4Group;

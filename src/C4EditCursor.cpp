@@ -16,7 +16,6 @@
 
 /* Handles viewport editing in console mode */
 
-#include <C4Include.h>
 #include <C4EditCursor.h>
 
 #include <C4Console.h>
@@ -24,6 +23,10 @@
 #include <C4Application.h>
 #include <C4Random.h>
 #include <C4Wrappers.h>
+
+#ifdef _WIN32
+#include "res/engine_resource.h"
+#endif
 
 #ifdef WITH_DEVELOPER_MODE
 #include <C4Language.h>

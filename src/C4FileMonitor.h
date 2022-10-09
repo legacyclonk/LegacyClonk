@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "StdBuf.h"
 #include <StdScheduler.h>
 #include <C4InteractiveThread.h>
 #include <map>

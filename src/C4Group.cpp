@@ -18,12 +18,12 @@
 
 /* Needs to be compiles as Objective C++ on OS X */
 
-#include <C4Include.h>
 #include <C4Group.h>
 
 #include <C4Components.h>
 #include <C4InputValidation.h>
 #include "C4Log.h"
+#include "StdConfig.h"
 
 #ifdef _WIN32
 #include <sys/utime.h>

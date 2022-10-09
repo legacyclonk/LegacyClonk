@@ -28,7 +28,9 @@
 #define ConsoleDlgWindowStyle (WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX)
 
 #include "C4FacetEx.h"
+#include "C4ForwardDeclarations.h"
 #include "C4GamePadCon.h"
+#include "C4Id.h"
 #include "C4KeyboardInput.h"
 #include "C4LogBuf.h"
 #include "C4Shape.h"
@@ -2019,7 +2021,7 @@ class FrameDecoration
 private:
 	int iRefCount;
 
-	bool SetFacetByAction(class C4Def *pOfDef, class C4FacetEx &rfctTarget, const char *szFacetName);
+	bool SetFacetByAction(C4Def *pOfDef, class C4FacetEx &rfctTarget, const char *szFacetName);
 
 public:
 	C4ID idSourceDef;

@@ -18,6 +18,10 @@
 
 #pragma once
 
+#include "C4Constants.h"
+#include "C4ForwardDeclarations.h"
+#include "StdBuf.h"
+
 class C4RankSystem
 {
 public:

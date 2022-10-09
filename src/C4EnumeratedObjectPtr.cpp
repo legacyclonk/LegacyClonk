@@ -15,14 +15,12 @@
 
 #include "C4EnumeratedObjectPtr.h"
 
-// TODO: once the include mess has been solved, the following block of includes can be removed
-#include "StdFile.h"
-#include "C4Prototypes.h"
-
 #include "C4Game.h"
 #include "C4Object.h"
 #include "StdAdaptors.h"
 #include "StdCompiler.h"
+
+#include <type_traits>
 
 static_assert(std::is_same_v<C4EnumeratedObjectPtr::Enumerated, decltype(C4Object::Number)>, "C4EnumeratedObjectPtr::Enumerated must match the type of C4Object::Number");
 

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "Fixed.h"
+
 const int StableRange = 10;
 const int AttachRange = 5;
 const int CornerRange = AttachRange + 2;

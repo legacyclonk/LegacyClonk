@@ -19,6 +19,8 @@
 #pragma once
 
 #include "C4GroupSet.h"
+#include "StdBuf.h"
+#include "StdFile.h"
 
 class C4ComponentHost
 {

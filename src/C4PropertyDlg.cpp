@@ -16,7 +16,6 @@
 
 /* Console mode dialog for object properties and script interface */
 
-#include <C4Include.h>
 #include <C4PropertyDlg.h>
 
 #include <C4Console.h>
@@ -26,6 +25,10 @@
 #include <C4Player.h>
 
 #include <StdRegistry.h>
+
+#ifdef _WIN32
+#include "res/engine_resource.h"
+#endif
 
 #ifdef WITH_DEVELOPER_MODE
 #include <C4DevmodeDlg.h>

@@ -22,6 +22,10 @@
 #include <C4Record.h>
 #endif
 
+#include <cstdint>
+#include <cstdlib>
+#include <ctime>
+
 inline int RandomCount{0};
 inline unsigned int RandomHold{0};
 

@@ -25,6 +25,7 @@
 #include <stdarg.h>
 
 #include <concepts>
+#include <cstring>
 #include <utility>
 #include <type_traits>
 

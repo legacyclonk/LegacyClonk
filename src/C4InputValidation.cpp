@@ -17,10 +17,13 @@
 
 // user input validation functions
 
-#include <C4Include.h>
 #include <C4InputValidation.h>
 #include <C4Log.h>
 #include <C4Config.h>
+
+#ifdef C4ENGINE
+#include "StdMarkup.h"
+#endif
 
 namespace C4InVal
 {

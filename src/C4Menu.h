@@ -18,11 +18,13 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
 #include "C4Id.h"
 #include "C4FacetEx.h"
 #include "C4Shape.h"
 #include "C4Gui.h"
 #include "C4IDList.h"
+#include "StdFile.h"
 
 class C4Viewport;
 

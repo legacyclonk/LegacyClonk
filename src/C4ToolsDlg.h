@@ -18,6 +18,14 @@
 
 #pragma once
 
+#include "C4Constants.h"
+
+#include <cstdint>
+
+#ifdef _WIN32
+#include "C4Windows.h"
+#endif
+
 #ifdef WITH_DEVELOPER_MODE
 #include <gtk/gtkwidget.h>
 #endif

@@ -21,6 +21,7 @@
 
 #include <C4EnumeratedObjectPtr.h>
 #include <C4FacetEx.h>
+#include "C4ForwardDeclarations.h"
 #include <C4Material.h>
 #include <C4Surface.h>
 

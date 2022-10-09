@@ -20,6 +20,10 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
+
+#include <cstdint>
+
 // group set priorities
 #define C4GSPrio_Base        0 // lowest priority for global system files
 #define C4GSPrio_Definitions 1 // overloads by scenario root definitions

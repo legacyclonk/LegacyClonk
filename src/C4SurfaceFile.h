@@ -18,6 +18,10 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
+
+#include <cstdint>
+
 class CStdStream;
 class C4Surface;
 

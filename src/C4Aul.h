@@ -31,6 +31,7 @@
 #include <C4StringTable.h>
 
 #include <cstdint>
+#include <list>
 #include <vector>
 
 // class predefs

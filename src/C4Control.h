@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
 #include "C4Id.h"
 #include "C4PacketBase.h"
 #include "C4PlayerInfo.h"

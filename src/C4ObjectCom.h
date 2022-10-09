@@ -18,7 +18,9 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
 #include <C4Id.h>
+#include "Fixed.h"
 
 void DrawCommandKey(C4Facet &cgo, int32_t iCom,
 	bool fPressed = false,

@@ -17,7 +17,6 @@
 /* a wrapper class to DirectDraw surfaces */
 
 #include <C4Config.h>
-#include <C4Include.h>
 #include <C4Group.h>
 #include <C4GroupSet.h>
 #include <C4Log.h>
@@ -28,6 +27,7 @@
 #include <StdGL.h>
 #include <StdJpeg.h>
 #include <StdPNG.h>
+#include "StdResStr2.h"
 #include <StdDDraw2.h>
 
 #include <algorithm>

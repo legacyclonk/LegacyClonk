@@ -16,12 +16,15 @@
 
 /* Holds a single text file component from a group */
 
-#include <C4Include.h>
 #include <C4ComponentHost.h>
 #include "C4Config.h"
 #include <C4Application.h>
 #include <C4Language.h>
 #include <StdRegistry.h>
+
+#ifdef _WIN32
+#include "res/engine_resource.h"
+#endif
 
 C4ComponentHost *pCmpHost = nullptr;
 

@@ -16,8 +16,10 @@
 
 /* A static list of strings and integer values, i.e. for material amounts */
 
-#include <C4Include.h>
 #include <C4NameList.h>
+
+#include "StdAdaptors.h"
+#include "StdCompiler.h"
 
 C4NameList::C4NameList()
 {

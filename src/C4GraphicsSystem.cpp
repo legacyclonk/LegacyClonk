@@ -16,7 +16,6 @@
 
 /* Operates viewports, message board and draws the game */
 
-#include <C4Include.h>
 #include <C4GraphicsSystem.h>
 
 #include <C4Viewport.h>
@@ -34,6 +33,10 @@
 
 #include <StdBitmap.h>
 #include <StdPNG.h>
+
+#ifdef _WIN32
+#include "res/engine_resource.h"
+#endif
 
 #include <algorithm>
 #include <stdexcept>

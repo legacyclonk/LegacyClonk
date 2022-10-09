@@ -18,11 +18,9 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
 #include <C4NameList.h>
 #include <C4IDList.h>
-#ifndef BIG_C4INCLUDE
-#include <C4Components.h>
-#endif
 
 #include <string>
 
