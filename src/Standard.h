@@ -201,7 +201,6 @@ bool SWildcardMatchEx(const char *szString, const char *szWildcard);
 bool IsSafeFormatString(const char *szFmt);
 
 // secure sprintf
-#define sprintf ssprintf
 template <std::size_t N, typename... Args>
 inline int ssprintf(char (&str)[N], const char *fmt, Args... args)
 {

@@ -3931,7 +3931,7 @@ void C4NetIOUDP::OpenDebugLog()
 	char szFilePath[_MAX_PATH + 1];
 	for (int i = 0; i < 1000; i++)
 	{
-		sprintf(szFilePath, szFileBase, i);
+		ssprintf(szFilePath, szFileBase, i);
 		hDebugLog = open(szFilePath, O_CREAT | O_EXCL | O_TRUNC | _O_SEQUENTIAL | _O_TEXT | O_WRONLY, S_IREAD | S_IWRITE);
 		if (hDebugLog != -1) break;
 	}

@@ -129,7 +129,7 @@ bool C4ComponentHost::Load(const char *szName,
 		for (int iLang = 0; SCopySegment(szLanguage ? szLanguage : "", iLang, strCode, ',', 2); iLang++)
 		{
 			// Insert language code
-			sprintf(strEntryWithLanguage, strEntry, strCode);
+			ssprintf(strEntryWithLanguage, strEntry, strCode);
 			if (hGroup.LoadEntryString(strEntryWithLanguage, Data))
 			{
 				if (Config.General.fUTF8) Data.EnsureUnicode();
@@ -169,7 +169,7 @@ bool C4ComponentHost::Load(const char *szName,
 		for (int iLang = 0; SCopySegment(szLanguage ? szLanguage : "", iLang, strCode, ',', 2); iLang++)
 		{
 			// Insert language code
-			sprintf(strEntryWithLanguage, strEntry, strCode);
+			ssprintf(strEntryWithLanguage, strEntry, strCode);
 			if (hGroupSet.LoadEntryString(strEntryWithLanguage, Data))
 			{
 				if (Config.General.fUTF8) Data.EnsureUnicode();
@@ -224,7 +224,7 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 		char szLang[3] = "";
 		for (size_t clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
 		{
-			sprintf(str2, str1, szLang);
+			ssprintf(str2, str1, szLang);
 			// Check existance
 			size_t iFileSize;
 			if (hGroup.FindEntry(str2, nullptr, &iFileSize))
@@ -250,7 +250,7 @@ bool C4ComponentHost::LoadAppend(const char *szName,
 		char szLang[3] = "";
 		for (size_t clseg = 0; SCopySegment(szLanguage ? szLanguage : "", clseg, szLang, ',', 2); clseg++)
 		{
-			sprintf(str2, str1, szLang);
+			ssprintf(str2, str1, szLang);
 			// Load data
 			char *pTemp;
 			if (hGroup.LoadEntry(str2, &pTemp, nullptr, 1))

@@ -1553,9 +1553,9 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 		if (pFound != nullptr)
 			*(pFound - 1) = 's';
 		// Compose left-click command
-		sprintf(command, dummy, parameter, 0);
+		ssprintf(command, dummy, parameter, 0);
 		// Compose right-click command
-		sprintf(command2, dummy, parameter, 1);
+		ssprintf(command2, dummy, parameter, 1);
 	}
 
 	// Old style: function name with id and parameter

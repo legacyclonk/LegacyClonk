@@ -1399,7 +1399,7 @@ bool C4Network2::Join(C4ClientCore &CCore, C4Network2IOConnection *pConn, const 
 		SCopy(CCore.getName(), szNameTmpl, 254); SAppend("%d", szNameTmpl, 256);
 		int32_t i = 1;
 		do
-			sprintf(szNewName, szNameTmpl, ++i);
+			ssprintf(szNewName, szNameTmpl, ++i);
 		while (Clients.GetClient(szNewName));
 		CCore.SetName(szNewName);
 	}
@@ -1916,7 +1916,7 @@ bool C4Network2::CreateDynamic(bool fInit)
 	Log(LoadResStr("IDS_NET_SAVING"));
 	// compose file name
 	char szDynamicBase[_MAX_PATH + 1], szDynamicFilename[_MAX_PATH + 1];
-	sprintf(szDynamicBase, Config.AtNetworkPath("Dyn%s"), GetFilename(Game.ScenarioFilename), _MAX_PATH);
+	ssprintf(szDynamicBase, Config.AtNetworkPath("Dyn%s"), GetFilename(Game.ScenarioFilename), _MAX_PATH);
 	if (!ResList.FindTempResFileName(szDynamicBase, szDynamicFilename))
 		Log(LoadResStr("IDS_NET_SAVE_ERR_CREATEDYNFILE"));
 	// save dynamic data
