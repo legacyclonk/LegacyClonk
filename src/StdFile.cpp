@@ -26,7 +26,7 @@
 #ifdef HAVE_IO_H
 #include <io.h>
 #endif
-#ifdef HAVE_DIRECT_H
+#ifdef _WIN32
 #include <direct.h>
 #endif
 #ifdef HAVE_UNISTD_H
