@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include <Standard.h>
-
 #include <ctime>
 
 #include <stdio.h>
@@ -40,9 +38,11 @@ bool CopyFile(const char *szSource, const char *szTarget, bool FailIfExists);
 #endif
 
 #ifdef _WIN32
+#define DirSep "\\"
 #define DirectorySeparator '\\'
 #define AltDirectorySeparator '/'
 #else
+#define DirSep "/"
 #define DirectorySeparator '/'
 #define AltDirectorySeparator '\\'
 #endif

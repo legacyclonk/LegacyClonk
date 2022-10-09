@@ -23,6 +23,7 @@
 #include "C4Math.h"
 #include "C4Strings.h"
 #include "StdColors.h"
+#include "StdFile.h"
 
 // These functions have to be provided by the application.
 bool Log(const char *szMessage);
@@ -66,9 +67,3 @@ To checked_cast(From from)
 
 	return static_cast<To>(from);
 }
-
-#ifdef _WIN32
-#define DirSep "\\"
-#else
-#define DirSep "/"
-#endif
