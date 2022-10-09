@@ -22,8 +22,8 @@
 #include <C4Record.h>
 #endif
 
-extern int RandomCount;
-extern unsigned int RandomHold;
+inline int RandomCount{0};
+inline unsigned int RandomHold{0};
 
 inline void FixedRandom(uint32_t dwSeed)
 {

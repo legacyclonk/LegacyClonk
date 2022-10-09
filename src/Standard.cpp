@@ -696,11 +696,6 @@ bool IsSafeFormatString(const char *szFmt)
 	return true;
 }
 
-// Global variables used by StdRandom
-
-/* extern */ int RandomCount = 0;
-/* extern */ unsigned int RandomHold = 0;
-
 /* Some part of the Winapi */
 
 #ifndef _WIN32
