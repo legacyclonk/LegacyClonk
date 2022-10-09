@@ -867,8 +867,8 @@ bool CStdGL::RestoreDeviceObjects()
 	// reset blit states
 	dwBlitMode = 0;
 
-	blitOffset = static_cast<float>(Config.Graphics.BlitOffset / 100);
-	texIndent = static_cast<float>(Config.Graphics.TexIndent / 1000);
+	blitOffset = static_cast<float>(Config.Graphics.BlitOffset) / 100;
+	texIndent = static_cast<float>(Config.Graphics.TexIndent) / 1000;
 
 	if (Config.Graphics.Shader && !BlitShader)
 	{
