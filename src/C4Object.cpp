@@ -951,10 +951,10 @@ bool C4Object::ExecLife()
 
 				int32_t iNewAge = iPlayingTime / 3600 / 5;
 
-				if (Info->Age != iNewAge && Info->Age)
+				if (Info->Age != iNewAge)
 				{
 					// message
-					GameMsgObject(FormatString(LoadResStr("IDS_OBJ_BIRTHDAY"), GetName(), Info->TotalPlayingTime / 3600 / 5).getData(), this);
+					GameMsgObject(FormatString(LoadResStr("IDS_OBJ_BIRTHDAY"), GetName(), iNewAge).getData(), this);
 					StartSoundEffect("Trumpet", false, 100, this);
 				}
 
