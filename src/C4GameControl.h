@@ -19,6 +19,7 @@
 #pragma once
 
 #include "C4Control.h"
+#include "C4GameControlNetwork.h"
 #include "C4Network2Client.h"
 #include "C4Record.h"
 
@@ -29,24 +30,6 @@ enum C4ControlMode
 	CM_Network, // control = input + network input
 	CM_Replay,  // control = replay
 };
-
-enum C4ControlDeliveryType
-{
-	CDT_Queue = 0,   // Send in control queue (sync)
-	CDT_Sync = 1,    // Send, delay execution until net is sync (sync)
-	CDT_Direct = 2,  // Send directly to all clients (not sync)
-	CDT_Private = 3, // Send only to some clients (not sync, obviously)
-
-	CDT_Decide,      // Use whatever sync mode seems fastest atm (sync)
-};
-
-// Additional notes / requirements:
-// * Direct control always reaches all clients faster than queue control.
-// * Sync is the only synchronous control mode were it's garantueed that
-//   the control is actually executed within a fixed time.
-// * CDT_Decide is guesswork, control isn't garantueed to be faster.
-
-#include "C4GameControlNetwork.h"
 
 #ifndef NDEBUG
 const int32_t C4SyncCheckRate = 1,
