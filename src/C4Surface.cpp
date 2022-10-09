@@ -1083,6 +1083,7 @@ C4TexRef::C4TexRef(int iSize, bool fSingle) : LockCount{0}
 	if (!lpDDraw) return;
 	if (!lpDDraw->DeviceReady()) return;
 
+#ifndef USE_CONSOLE
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	glGenTextures(1, &texName);
@@ -1099,6 +1100,7 @@ C4TexRef::C4TexRef(int iSize, bool fSingle) : LockCount{0}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, iSize, iSize, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, nullptr);
+#endif
 
 	// create mem array for texture creation
 	texLock.pBits = new unsigned char[iSize * iSize * 4];

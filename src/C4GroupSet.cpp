@@ -24,6 +24,7 @@
 #ifndef USE_CONSOLE
 #include <C4Game.h>
 #else
+#include "C4Components.h"
 #include "C4Group.h"
 #endif
 
