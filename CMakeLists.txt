@@ -419,6 +419,22 @@ foreach(MACRO_VAR
 	endif ()
 endforeach()
 
+# Define DEBUGREC_* macros if DEBUGREC is set
+if (DEBUGREC)
+	foreach(DEBUGREC_MACRO
+		MATSCAN=1
+		MENU=1
+		OBJCOM=1
+		OCF=1
+		PXS=1
+		#RECRUITMENT=1
+		SCRIPT=1
+		START_FRAME=0
+	)
+		target_compile_definitions(standard PUBLIC "DEBUGREC_${DEBUGREC_MACRO}")
+	endforeach()
+endif ()
+
 if (APPLE AND NOT USE_CONSOLE)
 	set(BUNDLE_RESOURCES
 		src/res/lc.icns

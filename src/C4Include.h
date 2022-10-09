@@ -20,17 +20,6 @@
 
 #ifdef C4ENGINE
 
-#ifdef DEBUGREC
-#define DEBUGREC_SCRIPT
-#define DEBUGREC_START_FRAME 0
-#define DEBUGREC_PXS
-#define DEBUGREC_OBJCOM
-#define DEBUGREC_MATSCAN
-//#define DEBUGREC_RECRUITMENT
-#define DEBUGREC_MENU
-#define DEBUGREC_OCF
-#endif
-
 // solidmask debugging
 //#define SOLIDMASK_DEBUG
 
