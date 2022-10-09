@@ -23,6 +23,7 @@
 
 #include "C4Breakpoint.h"
 #include "C4Chrono.h"
+#include "C4Math.h"
 
 #include <string.h>
 #include <string>
@@ -47,7 +48,6 @@ bool Log(const char *szMessage);
 bool LogSilent(const char *szMessage);
 
 #include <memory.h>
-#include <math.h>
 
 #include <algorithm>
 #include <concepts>
@@ -60,13 +60,6 @@ constexpr auto SizeMax = std::numeric_limits<size_t>::max();
 
 // Color triplets
 #define C4RGB(r, g, b) (((static_cast<uint32_t>(r) & 0xff) << 16) | ((static_cast<uint32_t>(g) & 0xff) << 8) | ((b) & 0xff))
-
-// Small helpers
-template <class T> inline T Abs(T val) { return val > 0 ? val : -val; }
-template <class T> inline constexpr bool Inside(T ival, T lbound, T rbound) { return ival >= lbound && ival <= rbound; }
-template <class T> inline T BoundBy(T bval, T lbound, T rbound) { return bval < lbound ? lbound : bval > rbound ? rbound : bval; }
-template <class T> inline int Sign(T val) { return val < 0 ? -1 : val > 0 ? 1 : 0; }
-template <class T> inline void Toggle(T &v) { v = !v; }
 
 template<std::integral To, std::integral From>
 To checked_cast(From from)
@@ -99,16 +92,6 @@ To checked_cast(From from)
 
 	return static_cast<To>(from);
 }
-
-inline int DWordAligned(int val)
-{
-	if (val % 4) { val >>= 2; val <<= 2; val += 4; }
-	return val;
-}
-
-int32_t Distance(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2);
-int Angle(int iX1, int iY1, int iX2, int iY2);
-int Pow(int base, int exponent);
 
 char CharCapital(char cChar);
 bool IsIdentifier(char cChar);
