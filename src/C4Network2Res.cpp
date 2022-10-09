@@ -23,6 +23,7 @@
 #include <C4Group.h>
 #include <C4Components.h>
 #include <C4Game.h>
+#include "StdAdaptors.h"
 
 #include <fcntl.h>
 #include <sys/types.h>
@@ -112,6 +113,16 @@ void C4Network2ResCore::Clear()
 
 void C4Network2ResCore::CompileFunc(StdCompiler *pComp)
 {
+	constexpr StdEnumEntry<C4Network2ResType> C4Network2ResType_EnumMap[] =
+	{
+		{ "Scenario",    NRT_Scenario },
+		{ "Dynamic",     NRT_Dynamic },
+		{ "Player",      NRT_Player },
+		{ "Definitions", NRT_Definitions },
+		{ "System",      NRT_System },
+		{ "Material",    NRT_Material },
+	};
+
 	pComp->Value(mkNamingAdapt(mkEnumAdaptT<uint8_t>(eType, C4Network2ResType_EnumMap), "Type",     NRT_Null));
 	pComp->Value(mkNamingAdapt(iID,                                                     "ID",       -1));
 	pComp->Value(mkNamingAdapt(iDerID,                                                  "DerID",    -1));

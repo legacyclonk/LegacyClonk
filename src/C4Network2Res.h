@@ -47,16 +47,6 @@ enum C4Network2ResType
 	NRT_Material,
 };
 
-const StdEnumEntry<C4Network2ResType> C4Network2ResType_EnumMap[] =
-{
-	{ "Scenario",    NRT_Scenario },
-	{ "Dynamic",     NRT_Dynamic },
-	{ "Player",      NRT_Player },
-	{ "Definitions", NRT_Definitions },
-	{ "System",      NRT_System },
-	{ "Material",    NRT_Material },
-};
-
 // damn circular dependencies
 #include "C4PacketBase.h"
 #include "C4Network2IO.h"
