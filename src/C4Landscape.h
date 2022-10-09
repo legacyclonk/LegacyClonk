@@ -23,6 +23,8 @@
 
 #include <StdSurface8.h>
 
+#include <cstdint>
+
 const uint8_t GBM        = 128,
               GBM_ColNum = 64,
               IFT        = 0x80,

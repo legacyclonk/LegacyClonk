@@ -39,8 +39,10 @@
 #include <StdBitmap.h>
 #include <StdPNG.h>
 
+#include <cmath>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 int32_t MVehic = MNone, MTunnel = MNone, MWater = MNone, MSnow = MNone, MEarth = MNone, MGranite = MNone;
 uint8_t MCVehic = 0;
@@ -1674,6 +1676,61 @@ void C4Landscape::Synchronize()
 {
 	ScanX = 0;
 	ClearBlastMatCount();
+}
+
+namespace
+{
+bool ForLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2,
+	bool(*fnCallback)(int32_t, int32_t, int32_t), int32_t iPar = 0,
+	int32_t *lastx = nullptr, int32_t *lasty = nullptr)
+{
+	int d, dx, dy, aincr, bincr, xincr, yincr, x, y;
+	if (std::abs(x2 - x1) < std::abs(y2 - y1))
+	{
+		if (y1 > y2) { std::swap(x1, x2); std::swap(y1, y2); }
+		xincr = (x2 > x1) ? 1 : -1;
+		dy = y2 - y1; dx = std::abs(x2 - x1);
+		d = 2 * dx - dy; aincr = 2 * (dx - dy); bincr = 2 * dx; x = x1; y = y1;
+		if (!fnCallback(x, y, iPar))
+		{
+			if (lastx) *lastx = x; if (lasty) *lasty = y;
+			return false;
+		}
+		for (y = y1 + 1; y <= y2; ++y)
+		{
+			if (d >= 0) { x += xincr; d += aincr; }
+			else d += bincr;
+			if (!fnCallback(x, y, iPar))
+			{
+				if (lastx) *lastx = x; if (lasty) *lasty = y;
+				return false;
+			}
+		}
+	}
+	else
+	{
+		if (x1 > x2) { std::swap(x1, x2); std::swap(y1, y2); }
+		yincr = (y2 > y1) ? 1 : -1;
+		dx = x2 - x1; dy = std::abs(y2 - y1);
+		d = 2 * dy - dx; aincr = 2 * (dy - dx); bincr = 2 * dy; x = x1; y = y1;
+		if (!fnCallback(x, y, iPar))
+		{
+			if (lastx) *lastx = x; if (lasty) *lasty = y;
+			return false;
+		}
+		for (x = x1 + 1; x <= x2; ++x)
+		{
+			if (d >= 0) { y += yincr; d += aincr; }
+			else d += bincr;
+			if (!fnCallback(x, y, iPar))
+			{
+				if (lastx) *lastx = x; if (lasty) *lasty = y;
+				return false;
+			}
+		}
+	}
+	return true;
+}
 }
 
 bool AboveSemiSolid(int32_t &rx, int32_t &ry) // Nearest free above semi solid

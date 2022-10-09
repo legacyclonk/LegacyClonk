@@ -127,10 +127,6 @@ int32_t Distance(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2);
 int Angle(int iX1, int iY1, int iX2, int iY2);
 int Pow(int base, int exponent);
 
-bool ForLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2,
-	bool(*fnCallback)(int32_t, int32_t, int32_t), int32_t iPar = 0,
-	int32_t *lastx = nullptr, int32_t *lasty = nullptr);
-
 char CharCapital(char cChar);
 bool IsIdentifier(char cChar);
 bool IsWhiteSpace(char cChar);
