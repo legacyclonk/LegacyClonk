@@ -26,5 +26,3 @@
 #include "StdFile.h"
 #include "StdHelpers.h"
 #include "StdLog.h"
-
-#include <algorithm>
