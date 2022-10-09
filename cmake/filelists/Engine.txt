@@ -198,6 +198,7 @@ src/C4ObjectListDlg.cpp
 src/C4ObjectListDlg.h
 src/C4ObjectMenu.cpp
 src/C4ObjectMenu.h
+src/C4OpenURL.h
 src/C4PXS.cpp
 src/C4PXS.h
 src/C4Packet2.cpp

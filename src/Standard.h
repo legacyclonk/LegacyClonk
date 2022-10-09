@@ -222,7 +222,4 @@ inline int ssprintf(char (&str)[N], const char *fmt, Args... args)
 	return m;
 }
 
-// open a weblink in an external browser
-bool OpenURL(const char *szURL);
-
 const char *GetCurrentTimeStamp(bool enableMarkupColor = true);
