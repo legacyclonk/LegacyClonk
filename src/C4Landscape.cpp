@@ -2487,10 +2487,6 @@ uint8_t C4Landscape::GetMapIndex(int32_t iX, int32_t iY)
 	return Map->GetPix(iX, iY);
 }
 
-#define C4LSLGT_1 16
-#define C4LSLGT_2 8
-#define C4LSLGT_3 4
-
 bool C4Landscape::DoRelights()
 {
 	if (!Relights[0].Wdt) return true;
