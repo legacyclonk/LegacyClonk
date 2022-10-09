@@ -20,9 +20,6 @@
 
 #ifdef C4ENGINE
 
-// solidmask debugging
-//#define SOLIDMASK_DEBUG
-
 #ifdef _WIN32
 // resources
 #include "res/engine_resource.h"

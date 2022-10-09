@@ -51,6 +51,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 # Define options
 
 option(DEBUGREC "Write additional debug control to records" OFF)
+option(SOLIDMASK_DEBUG "Solid mask debugging" OFF)
 option(USE_CONSOLE "Dedicated server mode (compile as pure console application)" OFF)
 option(USE_STAT "Enable internal performance statistics for developers" OFF)
 
@@ -403,6 +404,7 @@ foreach(MACRO_VAR
 	ENABLE_SOUND
 	HAVE_FREETYPE
 	HAVE_ICONV
+	SOLIDMASK_DEBUG
 	USE_FMOD
 	USE_LIBNOTIFY
 	USE_SDL_FOR_GAMEPAD
