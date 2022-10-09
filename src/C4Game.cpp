@@ -345,7 +345,7 @@ bool C4Game::Init()
 {
 	IsRunning = false;
 
-	InitProgress = 0; LastInitProgress = 0; LastInitProgressShowTime = 0;
+	InitProgress = 0; LastInitProgress = 0;
 	SetInitProgress(0);
 
 	// start log pos (used by startup)
@@ -1715,7 +1715,7 @@ void C4Game::Default()
 	TimeGo = false;
 	Time = 0;
 	StartTime = 0;
-	InitProgress = 0; LastInitProgress = 0; LastInitProgressShowTime = 0;
+	InitProgress = 0; LastInitProgress = 0;
 	FPS = cFPS = 0;
 	fScriptCreatedObjects = false;
 	fLobby = fObserve = false;
@@ -3986,7 +3986,6 @@ void C4Game::SetInitProgress(float fToProgress)
 	if (InitProgress > LastInitProgress)
 	{
 		LastInitProgress = InitProgress;
-		LastInitProgressShowTime = timeGetTime();
 		if (Application.IsMainThread())
 		{
 			GraphicsSystem.MessageBoard.LogNotify();
