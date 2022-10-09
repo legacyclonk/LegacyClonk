@@ -22,11 +22,15 @@ cmake_policy(SET CMP0072 NEW)
 # Enable <PackageName>_ROOT for find_package
 cmake_policy(SET CMP0074 NEW)
 
+if (APPLE)
+	set(LANGUAGE_OBJCXX OBJCXX)
+endif ()
+
 if (WIN32)
 	set(CMAKE_SYSTEM_VERSION 6.1) # Windows 7
 endif ()
 
-project("LegacyClonk")
+project("LegacyClonk" LANGUAGES CXX ${LANGUAGE_OBJCXX})
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -53,6 +57,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 option(DEBUGREC "Write additional debug control to records" OFF)
 option(SOLIDMASK_DEBUG "Solid mask debugging" OFF)
 option(USE_CONSOLE "Dedicated server mode (compile as pure console application)" OFF)
+option(USE_PCH "Precompile Headers" ON)
 option(USE_STAT "Enable internal performance statistics for developers" OFF)
 
 # ENABLE_SOUND
@@ -454,4 +459,46 @@ if (APPLE AND NOT USE_CONSOLE)
 
 	install(TARGETS clonk BUNDLE DESTINATION . RESOURCE DESTINATION ./clonk.app/Contents/Resources/)
 	install(TARGETS c4group RUNTIME DESTINATION .)
+endif ()
+
+# Precompile headers
+
+function(set_up_pch TARGET)
+	# Go through each source file of the target
+	get_target_property(SOURCES ${TARGET} SOURCES)
+	foreach(SOURCE ${SOURCES})
+		file(STRINGS "${SOURCE}" SOURCE_LINES ENCODING UTF-8)
+		# Include header files that use "#pragma once"
+		if (SOURCE MATCHES ".*\.h$")
+			foreach(SOURCE_LINE ${SOURCE_LINES})
+				if (SOURCE_LINE MATCHES "^[\t ]*#[\t ]*pragma[\t ]*once$")
+					list(APPEND PCH_LIST "${SOURCE}")
+					break()
+				endif ()
+			endforeach()
+		endif ()
+		# Find C++ standard library headers used by the target and add them to the PCH list
+		foreach(SOURCE_LINE ${SOURCE_LINES})
+			string(REGEX MATCH "^[\t ]*#[\t ]*include[\t ]*<[\t ]*([_a-z]+)[\t ]*>" INCLUDE_MATCH "${SOURCE_LINE}")
+			if (NOT INCLUDE_MATCH STREQUAL "")
+				list(APPEND PCH_LIST "<${CMAKE_MATCH_1}>")
+			endif ()
+		endforeach()
+	endforeach()
+	# Don't precompile certain headers
+	file(STRINGS "cmake/filelists/PchExclude.txt" PCH_EXCLUDE)
+	list(REMOVE_ITEM PCH_LIST ${PCH_EXCLUDE})
+	# Include headers of external libraries
+	list(APPEND PCH_LIST ${PCH_EXTRA})
+	# Clean up PCH list
+	list(REMOVE_DUPLICATES PCH_LIST)
+	list(SORT PCH_LIST)
+	# Enable PCH
+	target_precompile_headers(${TARGET} PRIVATE ${PCH_LIST})
+endfunction()
+
+if (USE_PCH)
+	foreach(TARGET c4group clonk standard)
+		set_up_pch(${TARGET})
+	endforeach()
 endif ()
