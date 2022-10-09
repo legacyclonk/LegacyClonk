@@ -1,4 +1,4 @@
-﻿/*
+/*
  * LegacyClonk
  *
  * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
