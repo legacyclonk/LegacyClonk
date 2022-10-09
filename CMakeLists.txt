@@ -378,13 +378,10 @@ if (USE_X11)
 	if (NOT X11_Xpm_FOUND)
 		message(FATAL_ERROR "libXpm not found.")
 	endif ()
-	if (NOT X11_xf86vmode_FOUND)
+	if (NOT X11_Xxf86vm_FOUND)
 		message(FATAL_ERROR "XF86VidMode not found.")
 	endif ()
-	target_include_directories(clonk PRIVATE
-		${X11_X11_INCLUDE_PATH} ${X11_Xpm_INCLUDE_PATH} ${X11_xf86vmode_INCLUDE_PATH})
-	target_link_libraries(clonk
-		${X11_X11_LIB}          ${X11_Xpm_LIB}          ${X11_Xxf86vm_LIB})
+	target_link_libraries(clonk X11::X11 X11::Xpm X11::Xxf86vm)
 endif ()
 
 # Link zlib
