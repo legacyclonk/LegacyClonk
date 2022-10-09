@@ -88,7 +88,6 @@ public:
 		SoundFile() = default;
 
 	public:
-		//SoundFile(const void *buf, std::size_t size);
 		SoundFile(const SoundFile &) = delete;
 		SoundFile(SoundFile &&) = delete;
 		virtual ~SoundFile() = default;
