@@ -52,9 +52,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 CHECK_INCLUDE_FILE_CXX(direct.h           HAVE_DIRECT_H)
 CHECK_INCLUDE_FILE_CXX(execinfo.h         HAVE_EXECINFO_H)
-if (NOT WIN32)
-	CHECK_INCLUDE_FILE_CXX(iconv.h            HAVE_ICONV)
-endif ()
 CHECK_INCLUDE_FILE_CXX(io.h               HAVE_IO_H)
 CHECK_INCLUDE_FILE_CXX(langinfo.h         HAVE_LANGINFO_H)
 CHECK_INCLUDE_FILE_CXX(locale.h           HAVE_LOCALE_H)
@@ -293,8 +290,10 @@ if (WITH_DEVELOPER_MODE)
 endif ()
 
 # Link iconv
-if (HAVE_ICONV AND APPLE)
-	target_link_libraries(clonk iconv)
+if (NOT WIN32)
+	find_package(Iconv REQUIRED)
+	target_link_libraries(clonk Iconv::Iconv)
+	set(HAVE_ICONV 1)
 endif ()
 
 # Link libjpeg
