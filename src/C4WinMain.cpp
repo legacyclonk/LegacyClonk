@@ -166,8 +166,11 @@ int main()
 #include <sys/types.h>
 #endif
 
-#ifdef HAVE_EXECINFO_H
+#ifndef _WIN32
+
 #include <execinfo.h>
+
+#define HAVE_EXECINFO_H
 
 static void crash_handler(int signo)
 {
