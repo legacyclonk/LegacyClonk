@@ -29,14 +29,18 @@
 #include <C4Config.h>
 #include <C4Game.h>
 
-#ifdef HAVE_ICONV
-#ifdef HAVE_LANGINFO_H
+#if defined(HAVE_ICONV) && !defined(_WIN32)
+
+#define HAVE_ICONV_AND_LANGINFO_H 1
+
+#include <cerrno>
+
 #include <langinfo.h>
-#endif
-#include <errno.h>
+
 iconv_t C4Language::host_to_local = iconv_t(-1);
 iconv_t C4Language::local_to_utf_8 = iconv_t(-1);
 iconv_t C4Language::local_to_host = iconv_t(-1);
+
 #endif
 
 C4Language Languages;
@@ -422,8 +426,7 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 	// Set the internal charset
 	SCopy(LoadResStr("IDS_LANG_CHARSET"), Config.General.LanguageCharset);
 
-#ifdef HAVE_ICONV
-#ifdef HAVE_LANGINFO_H
+#ifdef HAVE_ICONV_AND_LANGINFO_H
 	const char *const to_set = nl_langinfo(CODESET);
 	if (local_to_host == iconv_t(-1))
 		local_to_host = iconv_open(to_set ? to_set : "ASCII",
@@ -431,9 +434,6 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 	if (host_to_local == iconv_t(-1))
 		host_to_local = iconv_open(GetCharsetCodeName(Config.General.LanguageCharset),
 			to_set ? to_set : "ASCII");
-#else
-	const char *const to_set = "";
-#endif
 	if (local_to_utf_8 == iconv_t(-1))
 	{
 		if (SEqual(to_set, "UTF-8"))
