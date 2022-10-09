@@ -34,7 +34,7 @@ constexpr uint32_t RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { return (a 
 
 namespace
 {
-	struct Color
+	struct C4Color
 	{
 		uint8_t r;
 		uint8_t g;
@@ -42,7 +42,7 @@ namespace
 		uint8_t a;
 	};
 
-	constexpr Color SplitRGB(uint32_t color)
+	constexpr C4Color SplitRGB(uint32_t color)
 	{
 		return
 		{
