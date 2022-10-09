@@ -38,10 +38,6 @@
 	#include <sys/socket.h>
 #endif
 
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
 #ifndef SOCK_CLOEXEC
 #define SOCK_CLOEXEC 0
 #endif

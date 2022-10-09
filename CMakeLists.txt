@@ -51,8 +51,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 # Check which header files and functions are present
 
 CHECK_INCLUDE_FILE_CXX(stdint.h           HAVE_STDINT_H)
-CHECK_INCLUDE_FILE_CXX(sys/stat.h         HAVE_SYS_STAT_H)
-CHECK_INCLUDE_FILE_CXX(sys/types.h        HAVE_SYS_TYPES_H)
 CHECK_INCLUDE_FILE_CXX(unistd.h           HAVE_UNISTD_H)
 CHECK_CXX_SYMBOL_EXISTS(vasprintf stdio.h HAVE_VASPRINTF)
 

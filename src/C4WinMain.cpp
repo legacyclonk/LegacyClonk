@@ -162,10 +162,6 @@ int main()
 #include <fcntl.h>
 #include <signal.h>
 
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
 #ifndef _WIN32
 
 #include <execinfo.h>
