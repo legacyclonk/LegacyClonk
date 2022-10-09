@@ -2,6 +2,7 @@
  * LegacyClonk
  *
  * Copyright (c) RedWolf Design
+ * Copyright (c) 1998-2000, Matthes Bender (RedWolf Design)
  * Copyright (c) 2005, Sven2
  * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
  *
@@ -19,9 +20,13 @@
 
 #pragma once
 
-#include <Standard.h>
-
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
+
+#ifdef _WIN32
+#include "C4Windows.h"
+#endif
 
 // color definitions
 const int FTrans = -1, FWhite = 0, FBlack = 1, FPlayer = 2, FRed = 3;
@@ -29,8 +34,22 @@ const int CBlack = 0, CGray1 = 1, CGray2 = 2, CGray3 = 3, CGray4 = 4, CGray5 = 5
 	CDRed = 7, CDGreen = 8, CDBlue = 9, CRed = 10, CGreen = 11, CLBlue = 12, CYellow = 13, CBlue = 14;
 extern const uint8_t FColors[];
 
-// helper function
+// helper functions
+
 constexpr uint32_t RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { return (a << 24) | (r << 16) | (g << 8) | b; }
+
+#ifndef _WIN32
+
+#define GetRValue(rgb) (static_cast<unsigned char>(rgb))
+#define GetGValue(rgb) (static_cast<unsigned char>((static_cast<unsigned short>(rgb)) >> 8))
+#define GetBValue(rgb) (static_cast<unsigned char>((rgb) >> 16))
+
+constexpr uint32_t RGB(uint8_t r, uint8_t g, uint8_t b) { return r | (g << 8) | (b << 16); }
+
+#endif
+
+// Color triplets
+#define C4RGB(r, g, b) (((static_cast<uint32_t>(r) & 0xff) << 16) | ((static_cast<uint32_t>(g) & 0xff) << 8) | ((b) & 0xff))
 
 namespace
 {

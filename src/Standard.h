@@ -18,22 +18,11 @@
 
 #pragma once
 
-// Integer dataypes
-#include <stdint.h>
-
 #include "C4Breakpoint.h"
 #include "C4Chrono.h"
 #include "C4Math.h"
 #include "C4Strings.h"
-
-#ifdef _WIN32
-#include "C4Windows.h"
-#else
-#define GetRValue(rgb) (static_cast<unsigned char>(rgb))
-#define GetGValue(rgb) (static_cast<unsigned char>((static_cast<unsigned short>(rgb)) >> 8))
-#define GetBValue(rgb) (static_cast<unsigned char>((rgb) >> 16))
-constexpr uint32_t RGB(uint8_t r, uint8_t g, uint8_t b) { return r | (g << 8) | (b << 16); }
-#endif // _WIN32
+#include "StdColors.h"
 
 // These functions have to be provided by the application.
 bool Log(const char *szMessage);
@@ -45,9 +34,6 @@ bool LogSilent(const char *szMessage);
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-
-// Color triplets
-#define C4RGB(r, g, b) (((static_cast<uint32_t>(r) & 0xff) << 16) | ((static_cast<uint32_t>(g) & 0xff) << 8) | ((b) & 0xff))
 
 template<std::integral To, std::integral From>
 To checked_cast(From from)
