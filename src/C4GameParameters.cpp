@@ -199,7 +199,7 @@ bool C4GameResList::Load(const std::vector<std::string> &DefinitionFilenames)
 		for (const auto &def : DefinitionFilenames)
 		{
 			C4Group Def;
-			if (!Def.Open(def.c_str()))
+			if (!Reloc.Open(Def, def))
 			{
 				LogFatal(FormatString(LoadResStr("IDS_PRC_DEFNOTFOUND"), def.c_str()).getData());
 				Def.Close();

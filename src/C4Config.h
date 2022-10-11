@@ -56,9 +56,8 @@ public:
 	bool AllowScriptingInReplays; // allow /script in replays (scripts can cause desyncs)
 	char RXFontName[CFG_MaxString + 1];
 	int32_t RXFontSize;
-	char PlayerPath[CFG_MaxString + 1];
-	char DefinitionPath[CFG_MaxString + 1];
-	char UserPath[CFG_MaxString + 1]; // absolute path; environment variables are stored and only expanded upon evaluation
+	std::string UserDataPath; // absolute path; environment variables are stored and only expanded upon evaluation
+	std::string SystemDataPath;
 	StdStrBuf SaveGameFolder;
 	StdStrBuf SaveDemoFolder;
 	StdStrBuf ScreenshotFolder;
@@ -74,7 +73,6 @@ public:
 	// Determined at run-time
 	char ExePath[CFG_MaxString + 1];
 	char TempPath[CFG_MaxString + 1];
-	char LogPath[CFG_MaxString + 1];
 	char ScreenshotPath[CFG_MaxString + 1];
 	bool GamepadEnabled;
 	bool FirstStart;
@@ -89,7 +87,7 @@ public:
 	static int GetLanguageSequence(const char *strSource, char *strTarget);
 	void DefaultLanguage();
 	bool CreateSaveFolder(const char *strDirectory, const char *strLanguageTitle);
-	void DeterminePaths(bool forceWorkingDirectory);
+	void DeterminePaths();
 	void CompileFunc(StdCompiler *pComp);
 };
 
@@ -310,7 +308,7 @@ public:
 	const char *GetSubkeyPath(const char *strSubkey);
 	void Default();
 	bool Save();
-	bool Load(bool forceWorkingDirectory = true, const char *szConfigFile = nullptr);
+	bool Load(const char *szConfigFile = nullptr);
 	bool Init();
 	const char *AtExePath(const char *szFilename);
 	const char *AtTempPath(const char *szFilename);
@@ -331,7 +329,6 @@ public:
 		;
 	}
 
-protected:
 	void ExpandEnvironmentVariables(char *strPath, int iMaxLen);
 
 #ifdef C4ENGINE

@@ -451,6 +451,9 @@ protected:
 	timeval LastExecute;
 	unsigned int KeyMask;
 #endif
+#ifdef __APPLE__
+	std::string GetGameDataPath();
+#endif
 	const char *szCmdLine;
 	std::thread::id mainThread{};
 	bool InitTimer();

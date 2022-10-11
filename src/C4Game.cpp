@@ -155,11 +155,16 @@ bool C4Game::OpenScenario()
 		}
 	}
 	else
+	{
 		// open directly
-		if (!ScenarioFile.Open(ScenarioFilename))
+		if (!Reloc.Open(ScenarioFile, ScenarioFilename))
 		{
 			LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), ScenarioFilename); return false;
 		}
+	}
+
+	// Remember full (absolute) path
+	SCopy(ScenarioFile.GetFullName().getData(), ScenarioFilename, _MAX_PATH);
 
 	// add scenario to group
 	GroupSet.RegisterGroup(ScenarioFile, false, C4GSPrio_Scenario, C4GSCnt_Scenario);
@@ -194,20 +199,6 @@ bool C4Game::OpenScenario()
 		else
 		{
 			Log(LoadResStr("IDS_PRC_SCEOWNDEFS"));
-		}
-	}
-
-	// add any custom definition path
-	if (*Config.General.DefinitionPath)
-	{
-		StdStrBuf sDefPath; sDefPath.Copy(Config.General.DefinitionPath);
-		char *szDefPath = sDefPath.GrabPointer(); TruncateBackslash(szDefPath); sDefPath.Take(szDefPath);
-		if (DirectoryExists(sDefPath.getData()))
-		{
-			std::transform(DefinitionFilenames.begin(), DefinitionFilenames.end(), std::inserter(DefinitionFilenames, DefinitionFilenames.begin()), [](const std::string &def)
-			{
-				return std::string{Config.General.DefinitionPath} + def;
-			});
 		}
 	}
 
@@ -890,7 +881,7 @@ bool C4Game::InitMaterialTexture()
 		{
 			if (matRes == matRes.end()) break;
 			// Find next external material source
-			if (!Mats.Open(matRes->getFile()))
+			if (!Reloc.Open(Mats, matRes->getFile()))
 			{
 				LogFatal(FormatString(LoadResStr("IDS_ERR_EXTERNALMATERIALS"), matRes->getFile(), Mats.GetError()).getData());
 				return false;
@@ -2359,7 +2350,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 			for (const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
 			{
 				auto group = std::make_unique<C4Group>();
-				if (!group->Open(def.getFile()))
+				if (!Reloc.Open(*group, def.getFile()))
 				{
 					LogFatal(FormatString(LoadResStr("IDS_ERR_OPENRES"), def.getFile(), group->GetError()).getData());
 					return false;
@@ -3213,6 +3204,11 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 			Config.Network.PortUDP = 11113 + 2 * (atoi(szParameter + 8) + 1);
 		}
 #endif
+		// data path
+		if (SEqual2NoCase(szParameter, "/datapath:"))
+		{
+			Reloc.AddPath(szParameter + sizeof("/datapath") - 1);
+		}
 	}
 
 	// Check for fullscreen switch in command line
@@ -3907,7 +3903,7 @@ std::vector<std::string> C4Game::FoldersWithLocalsDefs(std::string path)
 		// Open folder
 		if (SEqualNoCase(GetExtension(folderName.c_str()), "c4f"))
 		{
-			if (group.Open(folderName.c_str()))
+			if (Reloc.Open(group, folderName.c_str()))
 			{
 				// Check for contained defs
 				// do not, however, add them to the group set:

@@ -153,6 +153,10 @@ function(make_includable INPUT_FILE OUTPUT_VAR)
 	set(${OUTPUT_VAR} "${RESULT}" PARENT_SCOPE)
 endfunction()
 
+# Add filesystem
+
+add_subdirectory(src/filesystem EXCLUDE_FROM_ALL)
+
 # Add engine target
 
 append_filelist(CLONK_SOURCES Engine.txt)
@@ -265,6 +269,7 @@ endif ()
 
 add_library(standard STATIC ${LIBSTANDARD_SOURCES})
 target_compile_definitions(standard PRIVATE C4ENGINE HAVE_CONFIG_H)
+target_link_libraries(standard ghc_filesystem)
 
 # Link OpenSSL crypto library
 if (NOT USE_MSCAPI)

@@ -33,5 +33,7 @@
 
 #cmakedefine _USE_MATH_DEFINES
 
+#cmakedefine SYSTEM_DATA_DIR ${SYSTEM_DATA_DIR}
+
 #define ICONV_CONST
 #define ZLIB_CONST

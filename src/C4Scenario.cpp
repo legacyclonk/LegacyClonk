@@ -457,20 +457,12 @@ std::vector<std::string> C4SDefinitions::GetModules() const
 	return LocalOnly ? std::vector<std::string>() : Definitions;
 }
 
-void C4SDefinitions::SetModules(const std::vector<std::string> &modules, const std::string &relativeToPath, const std::string &relativeToPath2)
+void C4SDefinitions::SetModules(const std::vector<std::string> &modules)
 {
 	Definitions.clear();
-	std::transform(modules.begin(), modules.end(), std::inserter(Definitions, Definitions.begin()), [relativeToPath, relativeToPath2](std::string def)
+	std::transform(modules.begin(), modules.end(), std::inserter(Definitions, Definitions.begin()), [](std::string def)
 	{
-		if (relativeToPath.size() && SEqualNoCase(def.c_str(), relativeToPath.c_str(), static_cast<int32_t>(relativeToPath.length())))
-		{
-			def = def.substr(relativeToPath.length());
-		}
-		if (relativeToPath2.size() && SEqualNoCase(def.c_str(), relativeToPath2.c_str(), static_cast<int32_t>(relativeToPath2.length())))
-		{
-			def = def.substr(relativeToPath2.length());
-		}
-		return def;
+		return Reloc.GetRelative(def).string();
 	});
 
 	LocalOnly = Definitions.empty();

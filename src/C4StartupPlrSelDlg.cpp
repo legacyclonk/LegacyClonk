@@ -61,7 +61,7 @@ static bool GetPortrait(char **ppBytes, size_t *ipSize)
 	C4Group GfxGroup;
 	int iCount;
 	StdStrBuf EntryName;
-	if (!GfxGroup.Open(Config.AtExePath(C4CFN_Graphics))) return false;
+	if (!Reloc.Open(GfxGroup, C4CFN_Graphics)) return false;
 	if ((iCount = GfxGroup.EntryCount("Portrait*.png")) < 1) return false;
 	EntryName.Format("Portrait%d.png", SafeRandom(iCount) + 1);
 	if (!GfxGroup.LoadEntry(EntryName.getData(), ppBytes, ipSize)) return false;
@@ -691,35 +691,39 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 	case PSDM_Player:
 	{
 		SetTitle(LoadResStrNoAmp("IDS_DLG_PLAYERSELECTION"));
+
 		// player mode: insert all players
-		const char *szFn;
-		StdStrBuf sSearchPath;
-		sSearchPath.Format("%s%s", Config.General.ExePath, Config.General.PlayerPath);
 		PlayerListItem *pFirstActivatedPlrItem = nullptr, *pFirstDeactivatedPlrItem = nullptr, *pPlrItem = nullptr;
-		for (DirectoryIterator i(sSearchPath.getData()); szFn = *i; i++)
+
+		for (const auto &pathInfo : Reloc)
 		{
-			szFn = Config.AtExeRelativePath(szFn);
-			if (*GetFilename(szFn) == '.') continue; // ignore ".", ".." and private files (".*")
-			if (!WildcardMatch(C4CFN_PlayerFiles, GetFilename(szFn))) continue;
-			bool fIsParticipating = !!SIsModule(Config.General.Participants, szFn, nullptr, false);
-			pPlrItem = new PlayerListItem(this, pPlrListBox, nullptr, fIsParticipating);
-			try
+			for (const auto &item : fs::directory_iterator{pathInfo.Path})
 			{
-				pPlrItem->Load(StdStrBuf::MakeRef(szFn));
+				const fs::path subPath{pathInfo.Path / item.path()};
+				const std::string fileName{subPath.filename().string()};
+				if (*GetFilename(fileName.c_str()) == '.') continue; // ignore ".", ".." and private files (".*")
+				if (!WildcardMatch(C4CFN_PlayerFiles, fileName.c_str())) continue;
+				bool fIsParticipating = !!SIsModule(Config.General.Participants, subPath.string().c_str(), nullptr, false);
+				pPlrItem = new PlayerListItem(this, pPlrListBox, nullptr, fIsParticipating);
+				try
+				{
+					pPlrItem->Load(StdStrBuf::MakeRef(subPath.string().c_str()));
+				}
+				catch (ListItem::LoadError &e)
+				{
+					// invalid player: ignore but log error message
+					DebugLog(e.getData());
+					delete pPlrItem;
+					continue;
+				}
+				if (fIsParticipating)
+				{
+					if (!pFirstActivatedPlrItem) pFirstActivatedPlrItem = pPlrItem;
+				}
+				else if (!pFirstDeactivatedPlrItem) pFirstDeactivatedPlrItem = pPlrItem;
 			}
-			catch (ListItem::LoadError &e)
-			{
-				// invalid player: ignore but log error message
-				DebugLog(e.getData());
-				delete pPlrItem;
-				continue;
-			}
-			if (fIsParticipating)
-			{
-				if (!pFirstActivatedPlrItem) pFirstActivatedPlrItem = pPlrItem;
-			}
-			else if (!pFirstDeactivatedPlrItem) pFirstDeactivatedPlrItem = pPlrItem;
 		}
+
 		// select first element; prefer activated player
 		if (!(pPlrItem = pFirstActivatedPlrItem))
 			pPlrItem = pFirstDeactivatedPlrItem;
@@ -897,17 +901,20 @@ bool C4StartupPlrSelDlg::CheckPlayerName(const StdStrBuf &Playername, StdStrBuf 
 	SReplaceChar(Filename.getMData(), '|', '_');
 	if (*Filename.getData() == '.') *Filename.getMData() = '_';
 	Filename.Append(".c4p");
-	StdStrBuf Path(""); // start at local path
-	Path.Append(Config.General.PlayerPath);
-	Path.Append(Filename);
+
 	// validity check: Must not exist yet if renamed
-	if (!pPrevFilename || !ItemIdentical(Path.getData(), pPrevFilename->getData())) if (ItemExists(Path.getData()))
+	const auto path = Reloc.LocateItem(Filename.getData());
+	if (!pPrevFilename || path != pPrevFilename->getData())
 	{
-		C4GUI::Screen::GetScreenS()->ShowMessage(FormatString(LoadResStr("IDS_ERR_PLRNAME_TAKEN"),
-			Playername.getData()).getData(), "", C4GUI::Ico_Error);
-		return false;
+		if (path)
+		{
+			C4GUI::Screen::GetScreenS()->ShowMessage(FormatString(LoadResStr("IDS_ERR_PLRNAME_TAKEN"),
+				Playername.getData()).getData(), "", C4GUI::Ico_Error);
+			return false;
+		}
 	}
-	Filename.Take(Path);
+
+	Filename.Copy(path ? path->string().c_str() : Config.AtUserPath(Filename.getData()));
 	return true;
 }
 
@@ -1237,9 +1244,9 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	{
 		// Set initial portrait and bigicon
 		C4Group hGroup;
-		StdStrBuf strPortrait; strPortrait.Format("Portrait%d.png", 1 + Random(5));
-		if (hGroup.Open(Config.AtExePath(C4CFN_Graphics)))
+		if (Reloc.Open(hGroup, C4CFN_Graphics))
 		{
+			StdStrBuf strPortrait; strPortrait.Format("Portrait%d.png", 1 + Random(5));
 			hGroup.Extract(strPortrait.getData(), Config.AtTempPath("Portrait.png"));
 			hGroup.Close();
 			SetNewPicture(Config.AtTempPath("Portrait.png"), true, true);
@@ -1446,7 +1453,7 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 					{
 						// no main player selection dialog: This means that this dlg was shown as a creation dialog from the main startup dlg
 						// Just set the newly created player as current selection
-						SCopy(Config.AtExeRelativePath(Filename.getData()), Config.General.Participants, sizeof(Config.General.Participants));
+						SCopy(Filename.getData(), Config.General.Participants, sizeof(Config.General.Participants));
 					}
 				}
 			}

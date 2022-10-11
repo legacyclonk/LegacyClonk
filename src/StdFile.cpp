@@ -39,6 +39,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "ghc/fs_std_fwd.hpp"
+
 /* Path & Filename */
 
 // Return pointer to position after last backslash.
@@ -403,6 +405,12 @@ bool FileExists(const char *szFilename)
 	return (!access(szFilename, F_OK));
 }
 
+bool FileExists(const fs::path &path)
+{
+	std::error_code ec;
+	return fs::exists(path, ec) && (fs::is_regular_file(path, ec) || fs::is_block_file(path, ec) || fs::is_character_file(path, ec));
+}
+
 size_t FileSize(const char *szFilename)
 {
 	struct stat stStats;
@@ -556,6 +564,12 @@ bool DirectoryExists(const char *szFilename)
 	return false;
 }
 
+bool DirectoryExists(const fs::path &path)
+{
+	std::error_code ec;
+	return fs::exists(path, ec) && fs::is_directory(path, ec);
+}
+
 bool CopyDirectory(const char *szSource, const char *szTarget, bool fResetAttributes)
 {
 	// Source check
@@ -645,6 +659,12 @@ bool EraseDirectory(const char *szDirName)
 }
 
 /* Items */
+
+bool ItemExists(const fs::path &path)
+{
+	std::error_code ec;
+	return fs::exists(path, ec);
+}
 
 bool RenameItem(const char *szItemName, const char *szNewItemName)
 {
@@ -846,6 +866,46 @@ DirectoryIterator::~DirectoryIterator()
 
 const char *DirectoryIterator::operator*() const { return filename[0] ? filename : nullptr; }
 void DirectoryIterator::operator++(int) { operator++(); }
+
+DirectoryIteratorSTLWrapper::ConstIterator::ConstIterator() : iterator{}, directoryName{}
+{
+}
+
+DirectoryIteratorSTLWrapper::ConstIterator::ConstIterator(std::string_view directoryName)
+	: iterator{(directoryName.size() > _MAX_PATH ? throw std::runtime_error{"directoryName too long"} : void(), directoryName.data())},
+	  directoryName{directoryName}
+{
+}
+
+DirectoryIteratorSTLWrapper::ConstIterator &DirectoryIteratorSTLWrapper::ConstIterator::operator++()
+{
+	++iterator;
+	currentEntry = *iterator ? std::optional{*iterator} : std::nullopt;
+	return *this;
+}
+
+auto DirectoryIteratorSTLWrapper::ConstIterator::operator *() const -> const_reference
+{
+	return *currentEntry;
+}
+
+bool operator==(const DirectoryIteratorSTLWrapper::ConstIterator &left, const DirectoryIteratorSTLWrapper::ConstIterator &right)
+{
+	return left.currentEntry == right.currentEntry && (
+				(left.directoryName == right.directoryName)
+				|| (left.directoryName.empty() && !right.currentEntry)
+				|| (right.directoryName.empty() && !left.currentEntry)
+				);
+}
+
+bool operator!=(const DirectoryIteratorSTLWrapper::ConstIterator &left, const DirectoryIteratorSTLWrapper::ConstIterator &right)
+{
+	return !(left == right);
+}
+
+DirectoryIteratorSTLWrapper::DirectoryIteratorSTLWrapper(std::string_view directoryName) : directoryName{directoryName}
+{
+}
 
 int ForEachFile(const char *szDirName, bool(*fnCallback)(const char *))
 {

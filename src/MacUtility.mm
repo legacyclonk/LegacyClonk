@@ -17,6 +17,8 @@
 #import <AppKit/AppKit.h>
 #import <Standard.h>
 
+#include <string>
+
 #ifndef USE_CONSOLE
 
 void requestUserAttention()
@@ -51,4 +53,9 @@ void restart(char *[])
 	NSString *filename = [[NSBundle mainBundle] bundlePath];
 	NSString *cmd = [@"open " stringByAppendingString: filename];
 	system([cmd UTF8String]);
+}
+
+std::string CStdApp::GetGameDataPath()
+{
+	return [[[NSBundle mainBundle] resourcePath] fileSystemRepresentation];
 }

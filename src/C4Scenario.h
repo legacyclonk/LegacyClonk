@@ -116,7 +116,7 @@ public:
 	C4IDList SkipDefs;
 
 public:
-	void SetModules(const std::vector<std::string> &modules, const std::string &relativeToPath = "", const std::string &relativeToPath2 = "");
+	void SetModules(const std::vector<std::string> &modules);
 	std::vector<std::string> GetModules() const;
 	void Default();
 	void CompileFunc(StdCompiler *pComp);

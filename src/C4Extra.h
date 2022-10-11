@@ -21,6 +21,9 @@
 
 #include <C4Group.h>
 
+#include <memory>
+#include <vector>
+
 class C4Extra
 {
 public:
@@ -32,7 +35,7 @@ public:
 	void Init(); // init extra group, using scneario presets
 	bool InitGroup(); // open extra group
 
-	C4Group ExtraGrp; // extra.c4g root folder
+	std::vector<std::unique_ptr<C4Group>> ExtraGroups;
 
 protected:
 	bool LoadDef(C4Group &hGroup, const char *szName); // load preset for definition

@@ -80,7 +80,7 @@ bool C4GameSave::SaveCore()
 	if (IsExact())
 	{
 		// Store used definitions
-		rC4S.Definitions.SetModules(Game.DefinitionFilenames, Config.General.ExePath, Config.General.DefinitionPath);
+		rC4S.Definitions.SetModules(Game.DefinitionFilenames);
 		// Save game parameters
 		if (!Game.Parameters.Save(*pSaveGroup, &Game.C4S)) return false;
 	}

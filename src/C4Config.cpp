@@ -71,15 +71,12 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	fUTF8 = SEqual(LanguageCharset, "UTF-8");
 	pComp->Value(mkNamingAdapt(s(Definitions),     "Definitions",    ""));
 	pComp->Value(mkNamingAdapt(s(Participants),    "Participants",   ""));
-	pComp->Value(mkNamingAdapt(s(LogPath),         "LogPath",        "",  false, true));
-	pComp->Value(mkNamingAdapt(s(PlayerPath),      "PlayerPath",     "",  false, true));
-	pComp->Value(mkNamingAdapt(s(DefinitionPath),  "DefinitionPath", "",  false, true));
 #ifdef _WIN32
-	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "%APPDATA%\\LegacyClonk",                        false, true));
+	pComp->Value(mkNamingAdapt(UserDataPath, "UserPath", "%APPDATA%\\LegacyClonk",                        false, true));
 #elif defined(__linux__)
-	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/.legacyclonk",                            false, true));
+	pComp->Value(mkNamingAdapt(UserDataPath, "UserPath", "$HOME/.legacyclonk",                            false, true));
 #elif defined(__APPLE__)
-	pComp->Value(mkNamingAdapt(s(UserPath), "UserPath", "$HOME/Library/Application Support/LegacyClonk", false, true));
+	pComp->Value(mkNamingAdapt(UserDataPath, "UserPath", "$HOME/Library/Application Support/LegacyClonk", false, true));
 #endif
 	pComp->Value(mkNamingAdapt(SaveGameFolder, "SaveGameFolder", "Savegames.c4f", false, true));
 	pComp->Value(mkNamingAdapt(SaveDemoFolder, "SaveDemoFolder", "Records.c4f",   false, true));
@@ -399,7 +396,7 @@ void C4Config::Default()
 	fConfigLoaded = false;
 }
 
-bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
+bool C4Config::Load(const char *szConfigFile)
 {
 	try
 	{
@@ -420,7 +417,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 				// Config filename is specified
 				filename.Ref(szConfigFile);
 				// make sure we're at the correct path to load it
-				if (forceWorkingDirectory) General.DeterminePaths(true);
+				General.DeterminePaths();
 			}
 			else
 			{
@@ -471,7 +468,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 	}
 
 	// Config postinit
-	General.DeterminePaths(forceWorkingDirectory);
+	General.DeterminePaths();
 #ifdef C4ENGINE
 	AdaptToCurrentVersion();
 #ifdef _WIN32
@@ -566,7 +563,7 @@ bool C4Config::Save()
 	return true;
 }
 
-void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
+void C4ConfigGeneral::DeterminePaths()
 {
 #ifdef _WIN32
 	// Exe path
@@ -598,13 +595,15 @@ void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 	AppendBackslash(ExePath);
 	SCopy("/tmp/", TempPath);
 #endif
-	// Force working directory to exe path if desired
-	if (forceWorkingDirectory)
-		SetWorkingDirectory(ExePath);
-	// Log path
-	SCopy(ExePath, LogPath);
-	if (LogPath[0]) AppendBackslash(LogPath);
-	else SCopy(ExePath, LogPath);
+
+	// Find system-wide data path
+#ifdef SYSTEM_DATA_DIR
+	SystemDataPath = SYSTEM_DATA_DIR;
+#elif defined(__APPLE__)
+	SystemDataPath = Application.GetGameDataPath();
+#else
+	SystemDataPath = ExePath;
+#endif
 	// Screenshot path
 	SCopy(ExePath, ScreenshotPath, CFG_MaxString - 1);
 	if (ScreenshotFolder.getLength() + SLen(ScreenshotPath) + 1 <= CFG_MaxString)
@@ -612,8 +611,7 @@ void C4ConfigGeneral::DeterminePaths(bool forceWorkingDirectory)
 		SAppend(ScreenshotFolder.getData(), ScreenshotPath);
 		AppendBackslash(ScreenshotPath);
 	}
-	// Player path
-	if (PlayerPath[0]) AppendBackslash(PlayerPath);
+
 #ifdef C4ENGINE
 	// Create user path if it doesn't already exist
 	if (!DirectoryExists(Config.AtUserPath("")))
@@ -632,7 +630,7 @@ const char *C4Config::AtExePath(const char *szFilename)
 
 const char *C4Config::AtUserPath(const char *szFilename)
 {
-	SCopy(General.UserPath, AtPathFilename, _MAX_PATH);
+	SCopy(General.UserDataPath.c_str(), AtPathFilename, _MAX_PATH);
 	ExpandEnvironmentVariables(AtPathFilename, _MAX_PATH);
 	AppendBackslash(AtPathFilename);
 	SAppend(szFilename, AtPathFilename, _MAX_PATH);
@@ -711,7 +709,7 @@ void C4ConfigControls::ResetKeys()
 
 #endif
 
-const char *C4Config::AtExeRelativePath(const char *szFilename)
+[[deprecated("Use C4Reloc::GetRelative")]] const char *C4Config::AtExeRelativePath(const char *szFilename)
 {
 	// Specified file is located in ExePath: return relative path
 	return GetRelativePathS(szFilename, General.ExePath);

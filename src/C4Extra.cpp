@@ -24,6 +24,7 @@
 #include <C4Components.h>
 #include <C4Game.h>
 #include <C4Log.h>
+#include "C4Wrappers.h"
 
 void C4Extra::Default()
 {
@@ -33,17 +34,20 @@ void C4Extra::Default()
 void C4Extra::Clear()
 {
 	// free class members
-	ExtraGrp.Close();
+	ExtraGroups.clear();
 }
 
 bool C4Extra::InitGroup()
 {
-	// exists?
-	if (!ItemExists(Config.AtExePath(C4CFN_Extra))) return false;
-	// open extra group
-	if (!ExtraGrp.Open(Config.AtExePath(C4CFN_Extra))) return false;
-	// register extra root into game group set
-	Game.GroupSet.RegisterGroup(ExtraGrp, false, C4GSPrio_ExtraRoot, C4GSCnt_ExtraRoot);
+	for (const auto &pathInfo : Reloc)
+	{
+		auto group = std::make_unique<C4Group>();
+		if (group->Open((pathInfo.Path / C4CFN_Extra).string().c_str()))
+		{
+			ExtraGroups.emplace_back(std::move(group));
+		}
+	}
+
 	// done, success
 	return true;
 }
@@ -51,16 +55,20 @@ bool C4Extra::InitGroup()
 void C4Extra::Init()
 {
 	// no group: OK
-	if (!ExtraGrp.IsOpen()) return;
+	if (ExtraGroups.empty()) return;
 	// load from all definitions that are activated
 	// add first definition first, so the priority will be lowest
 	// (according to definition load/overload order)
 	bool fAnythingLoaded = false;
 	for (const auto &def : Game.DefinitionFilenames)
 	{
-		if (LoadDef(ExtraGrp, GetFilename(def.c_str())))
+		for (const auto &group : ExtraGroups)
 		{
-			fAnythingLoaded = true;
+			if (LoadDef(*group.get(), GetFilename(def.c_str())))
+			{
+				fAnythingLoaded = true;
+				break;
+			}
 		}
 	}
 }
@@ -70,7 +78,7 @@ bool C4Extra::LoadDef(C4Group &hGroup, const char *szName)
 	// check if file exists
 	if (!hGroup.FindEntry(szName)) return false;
 	// log that extra group is loaded
-	LogF(LoadResStr("IDS_PRC_LOADEXTRA"), ExtraGrp.GetName(), szName);
+	LogF(LoadResStr("IDS_PRC_LOADEXTRA"), hGroup.GetName(), szName);
 	// open and add group to set
 	C4Group *pGrp = new C4Group;
 	if (!pGrp->OpenAsChild(&hGroup, szName)) { Log(LoadResStr("IDS_ERR_FAILURE")); delete pGrp; return false; }

@@ -131,20 +131,32 @@ C4GUI::ContextMenu *C4StartupMainDlg::OnPlayerSelContext(C4GUI::Element *pBtn, i
 
 C4GUI::ContextMenu *C4StartupMainDlg::OnPlayerSelContextAdd(C4GUI::Element *pBtn, int32_t iX, int32_t iY)
 {
-	C4GUI::ContextMenu *pCtx = new C4GUI::ContextMenu();
-	const char *szFn;
-	StdStrBuf sSearchPath;
-	sSearchPath.Format("%s%s", Config.General.ExePath, Config.General.PlayerPath);
-	for (DirectoryIterator i(sSearchPath.getData()); szFn = *i; i++)
+	auto contextMenu = std::make_unique<C4GUI::ContextMenu>();
+	for (const auto &pathInfo : Reloc)
 	{
-		szFn = Config.AtExeRelativePath(szFn);
-		if (*GetFilename(szFn) == '.') continue;
-		if (!WildcardMatch(C4CFN_PlayerFiles, GetFilename(szFn))) continue;
-		if (!SIsModule(Config.General.Participants, szFn, nullptr, false))
-			pCtx->AddItem(C4Language::IconvClonk(GetFilenameOnly(szFn)).getData(), "Let this player join in next game", C4GUI::Ico_Player,
-				new C4GUI::CBMenuHandlerEx<C4StartupMainDlg, StdStrBuf>(this, &C4StartupMainDlg::OnPlayerSelContextAddPlr, StdStrBuf(szFn)), nullptr);
+		for (const auto &item : fs::directory_iterator{pathInfo.Path})
+		{
+			const std::string pathString{(pathInfo.Path / item.path()).string()};
+			const std::string fileName{item.path().filename().string()};
+			if (fileName[0] == '.')
+			{
+				continue;
+			}
+
+			if (!WildcardMatch(C4CFN_PlayerFiles, fileName.c_str()))
+			{
+				continue;
+			}
+
+			if (!SIsModule(Config.General.Participants, pathString.c_str()))
+			{
+				contextMenu->AddItem(C4Language::IconvClonk(item.path().filename().replace_extension().string().c_str()).getData(), "Let this player join in next game", C4GUI::Ico_Player,
+					new C4GUI::CBMenuHandlerEx<C4StartupMainDlg, StdStrBuf>{this, &C4StartupMainDlg::OnPlayerSelContextAddPlr, StdStrBuf{pathString.c_str()}}, nullptr);
+			}
+		}
 	}
-	return pCtx;
+
+	return contextMenu.release();
 }
 
 C4GUI::ContextMenu *C4StartupMainDlg::OnPlayerSelContextRemove(C4GUI::Element *pBtn, int32_t iX, int32_t iY)
@@ -280,19 +292,28 @@ void C4StartupMainDlg::OnShown()
 	{
 		Config.General.FirstStart = false;
 	}
+
 	// first thing that's needed is a new player, if there's none - independent of first start
-	bool fHasPlayer = false;
-	StdStrBuf sSearchPath; const char *szFn;
-	sSearchPath.Format("%s%s", Config.General.ExePath, Config.General.PlayerPath);
-	for (DirectoryIterator i(sSearchPath.getData()); szFn = *i; i++)
+	bool hasPlayer{false};
+	for (const auto &pathInfo : Reloc)
 	{
-		szFn = Config.AtExeRelativePath(szFn);
-		if (*GetFilename(szFn) == '.') continue; // ignore ".", ".." and private files (".*")
-		if (!WildcardMatch(C4CFN_PlayerFiles, GetFilename(szFn))) continue;
-		fHasPlayer = true;
-		break;
+		for (const auto &item : fs::directory_iterator{pathInfo.Path})
+		{
+			const std::string fileName{item.path().filename().string()};
+			if (fileName[0] == '.')
+			{
+				continue;
+			}
+
+			if (WildcardMatch(C4CFN_PlayerFiles, fileName.c_str()))
+			{
+				hasPlayer = true;
+				break;
+			}
+		}
 	}
-	if (!fHasPlayer)
+
+	if (!hasPlayer)
 	{
 		// no player created yet: Create one
 		C4GUI::Dialog *pDlg;

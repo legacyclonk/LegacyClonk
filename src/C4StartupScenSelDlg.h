@@ -22,8 +22,10 @@
 #include "C4Startup.h"
 #include "C4Scenario.h"
 #include "C4Folder.h"
+#include "StdFile.h"
 
 #include <memory>
+#include <string_view>
 
 class C4StartupScenSelDlg;
 
@@ -192,9 +194,14 @@ public:
 
 		virtual StdStrBuf GetTypeName() override { return StdStrBuf(LoadResStr("IDS_TYPE_DIRECTORY")); }
 
+		void Merge(const fs::path &path);
+
 	protected:
 		virtual bool LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded) override; // load custom data for entry type - icon fallback to folder icon
 		virtual bool DoLoadContents(C4ScenarioListLoader *pLoader, C4Group *pFromGrp, const StdStrBuf &sFilename, bool fLoadEx) override; // load folder contents as child if pFromGrp, else directly from filename
+
+	private:
+		std::vector<fs::path> contents;
 	};
 
 private:

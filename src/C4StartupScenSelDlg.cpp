@@ -33,6 +33,8 @@
 #include <C4Language.h>
 #include <C4FileSelDlg.h>
 
+#include <set>
+
 // singleton
 C4StartupScenSelDlg *C4StartupScenSelDlg::pInstance = nullptr;
 
@@ -1022,6 +1024,11 @@ bool C4ScenarioListLoader::SubFolder::DoLoadContents(C4ScenarioListLoader *pLoad
 
 // RegularFolder
 
+void C4ScenarioListLoader::RegularFolder::Merge(const fs::path &path)
+{
+	contents.emplace_back(path);
+}
+
 bool C4ScenarioListLoader::RegularFolder::LoadCustom(C4Group &rGrp, bool fNameLoaded, bool fIconLoaded)
 {
 	// default icon fallback
@@ -1038,39 +1045,72 @@ bool C4ScenarioListLoader::RegularFolder::DoLoadContents(C4ScenarioListLoader *p
 	ClearChildren();
 	// regular folders must exist and not be within group!
 	assert(!pFromGrp);
-	if (!DirectoryExists(sFilename.getData())) return false;
-	DirectoryIterator DirIter(sFilename.getData());
-	const char *szChildFilename; StdStrBuf sChildFilename;
+	if (sFilename.getData() && sFilename[0])
+	{
+		Merge(sFilename.getData());
+	}
+
 	// get number of entries, to estimate progress
 	int32_t iCountLoaded = 0, iCountTotal = 0;
-	for (; szChildFilename = *DirIter; ++DirIter)
+
+	for (const auto &path : contents)
 	{
-		if (!*szChildFilename || *GetFilename(szChildFilename) == '.') continue;
-		++iCountTotal;
+		if (!DirectoryExists(path))
+		{
+			continue;
+		}
+
+		iCountTotal += static_cast<int32_t>(std::count_if(fs::directory_iterator{path}, fs::directory_iterator{}, [](const auto &item)
+		{
+			return item.path().string()[0] != '.';
+		}));
 	}
 	// initial progress estimate
 	if (!pLoader->DoProcessCallback(iCountLoaded, iCountTotal)) return false;
+
 	// do actual loading of files
-	for (DirIter.Reset(sFilename.getData()); szChildFilename = *DirIter; ++DirIter)
+	std::set<std::string> names;
+
+	for (const auto &path : contents)
 	{
-		// Ignore directory navigation entries and CVS folders
-		if (!*szChildFilename || *GetFilename(szChildFilename) == '.') continue;
-		if (SEqualNoCase(GetFilename(szChildFilename), "CVS")) continue;
-		sChildFilename.Ref(szChildFilename);
-		// filename okay; create this item
-		Entry *pNewEntry = Entry::CreateEntryForFile(sChildFilename, this);
-		if (pNewEntry)
+		if (!pLoader->DoProcessCallback(iCountLoaded, iCountTotal)) return false;
+		for (const auto &item : fs::directory_iterator{path})
 		{
-			// ...and load it
-			if (!pNewEntry->Load(nullptr, &sChildFilename, fLoadEx))
+			StdStrBuf childPathBuf{item.path().string().c_str()};
+			const std::string childFileName{item.path().filename().string()};
+
+			// Ignore directory navigation entries and CVS folders
+			if (C4Group_TestIgnore(childFileName.c_str()))
 			{
-				DebugLogF("Error loading entry \"%s\" in Folder \"%s\"!", sChildFilename.getData(), sFilename.getData());
-				delete pNewEntry;
+				continue;
 			}
+
+			if (names.find(childFileName) != std::cend(names))
+			{
+				continue;
+			}
+
+			names.insert(childFileName);
+
+			// filename okay; create this item
+			std::unique_ptr<Entry> newEntry{Entry::CreateEntryForFile(childPathBuf, this)};
+			if (newEntry)
+			{
+				if (!newEntry->Load(nullptr, &childPathBuf, fLoadEx))
+				{
+					// ...and load it
+					DebugLogF("Error loading entry \"%s\" in Folder \"%s\"!", childFileName.c_str(), path.string().c_str());
+				}
+				else
+				{
+					newEntry.release();
+				}
+			}
+
+			if (!pLoader->DoProcessCallback(++iCountLoaded, iCountTotal)) return false;
 		}
-		// progress callback
-		if (!pLoader->DoProcessCallback(++iCountLoaded, iCountTotal)) return false;
 	}
+
 	// done, success
 	fContentsLoaded = true;
 	return true;
@@ -1145,6 +1185,15 @@ bool C4ScenarioListLoader::Load(const StdStrBuf &sRootFolder)
 	if (!BeginActivity(true)) return false;
 	delete pRootFolder; pRootFolder = nullptr;
 	pCurrFolder = pRootFolder = new RegularFolder(nullptr);
+	// Load regular game data if no explicit path specified
+	if(!sRootFolder.getData())
+	{
+		for (const auto &pathInfo : Reloc)
+		{
+			static_cast<RegularFolder *>(pRootFolder)->Merge(pathInfo.Path);
+		}
+	}
+
 	bool fSuccess = pRootFolder->LoadContents(this, nullptr, &sRootFolder, false, false);
 	EndActivity();
 	return fSuccess;
@@ -1426,7 +1475,7 @@ void C4StartupScenSelDlg::OnShown()
 	// init file list
 	fIsInitialLoading = true;
 	if (!pScenLoader) pScenLoader = new C4ScenarioListLoader();
-	pScenLoader->Load(StdStrBuf(Config.General.ExePath));
+	pScenLoader->Load(StdStrBuf{});
 	UpdateList();
 	UpdateSelection();
 	fIsInitialLoading = false;

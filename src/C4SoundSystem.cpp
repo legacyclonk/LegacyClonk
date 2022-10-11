@@ -75,14 +75,23 @@ void StopSoundEffect(const char *const name, const C4Object *const obj)
 C4SoundSystem::C4SoundSystem()
 {
 	// Load Sound.c4g
-	C4Group soundFolder;
-	if (soundFolder.Open(Config.AtExePath(C4CFN_Sound)))
+	const auto soundFolders = Reloc.LocateItems(C4CFN_Sound);
+	if (soundFolders.empty())
 	{
-		LoadEffects(soundFolder);
+		Log(LoadResStr("IDS_PRC_NOSND"));
 	}
 	else
 	{
-		Log(LoadResStr("IDS_PRC_NOSND"));
+
+		for (const auto &soundFolder : soundFolders)
+		{
+			C4Group group;
+			if (group.Open(soundFolder.string().c_str()))
+			{
+				LoadEffects(group);
+				group.Close();
+			}
+		}
 	}
 }
 

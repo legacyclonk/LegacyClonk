@@ -381,7 +381,7 @@ LONG WINAPI GenerateDump(EXCEPTION_POINTERS *pExceptionPointers)
 	// Work on the assumption that the config isn't corrupted
 
 	char filenameBuffer[_MAX_PATH + sizeof("\\\\?\\")] = {'\0'}; // extra chars for GetFinalPathNameByHandleA, null byte space included
-	strncpy(filenameBuffer, Config.General.UserPath, strnlen(Config.General.UserPath, sizeof(Config.General.UserPath)));
+	strncpy(filenameBuffer, Config.General.UserDataPath.c_str(), _MAX_PATH);
 
 	auto *filename = reinterpret_cast<LPSTR>(DumpBuffer);
 

@@ -67,16 +67,17 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 	if (GfxR->fctPlayerClr.Surface)
 		GfxR->fctPlayerClr.Surface->SetClr(0xff);
 	InitRefSym(GfxR->fctPlayerClr, LoadResStr("IDS_MENU_NOPLRFILES"), iPlayer);
-	for (DirectoryIterator iter(Config.General.PlayerPath); *iter; ++iter)
-		if (WildcardMatch("*.c4p", *iter))
+	for (const auto &pathInfo : Reloc)
+	{
+		const std::string pathString{pathInfo.Path.string()};
+		if (WildcardMatch("*.c4p", pathString.c_str()))
 		{
-			char szFilename[_MAX_PATH + 1], szCommand[_MAX_PATH + 30 + 1];
-			SCopy(*iter, szFilename, _MAX_PATH);
-			if (DirectoryExists(szFilename)) continue;
-			if (Game.Players.FileInUse(szFilename)) continue;
+			char szCommand[_MAX_PATH + 30 + 1];
+			if (DirectoryExists(pathInfo.Path)) continue;
+			if (Game.Players.FileInUse(pathString.c_str())) continue;
 			// Open group
 			C4Group hGroup;
-			if (!hGroup.Open(szFilename)) continue;
+			if (!hGroup.Open(pathString.c_str())) continue;
 			// Load player info
 			C4PlayerInfoCore C4P;
 			if (!C4P.Load(hGroup)) { hGroup.Close(); continue; }
@@ -89,7 +90,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			// Close group
 			hGroup.Close();
 			// Add player item
-			sprintf(szCommand, "JoinPlayer:%s", szFilename);
+			sprintf(szCommand, "JoinPlayer:%s", pathString.c_str());
 			StdStrBuf sItemText;
 			sItemText.Format(LoadResStr("IDS_MENU_NEWPLAYER"), C4P.PrefName);
 			// No custom portrait: use default player image
@@ -110,6 +111,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			// Reset symbol facet (menu holds on to the surface)
 			fctSymbol.Default();
 		}
+	}
 
 	// Alignment
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);

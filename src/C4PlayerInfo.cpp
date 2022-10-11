@@ -73,7 +73,7 @@ bool C4PlayerInfo::LoadFromLocalFile(const char *szFilename)
 	Clear();
 	// open player file group
 	C4Group Grp;
-	if (!Grp.Open(szFilename)) return false;
+	if (!Reloc.Open(Grp, szFilename)) return false;
 	// read core
 	C4PlayerInfoCore C4P;
 	if (!C4P.Load(Grp)) return false;

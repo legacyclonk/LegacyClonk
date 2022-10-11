@@ -673,9 +673,9 @@ C4ControlJoinPlayer::C4ControlJoinPlayer(const char *szFilename, int32_t iAtClie
 	idInfo(iIDInfo), fByRes(false)
 {
 	// load from file if filename is given - which may not be the case for script players
-	if (szFilename)
+	if (const std::optional path{Reloc.LocateItem(szFilename)}; path)
 	{
-		if (!PlrData.LoadFromFile(szFilename))
+		if (!PlrData.LoadFromFile(path->string().c_str()))
 		{
 			LogF("WARNING: Failed loading player data from file %s", szFilename);
 			assert(!"PlrData.LoadFromFile failed");

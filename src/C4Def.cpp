@@ -1033,7 +1033,7 @@ int32_t C4DefList::Load(const char *szSearch,
 
 	// Load from specified file
 	C4Group hGroup;
-	if (!hGroup.Open(szSearch))
+	if (!Reloc.Open(hGroup, szSearch))
 	{
 		// Specified file not found (failure)
 		LogFatal(FormatString(LoadResStr("IDS_PRC_DEFNOTFOUND"), szSearch).getData());

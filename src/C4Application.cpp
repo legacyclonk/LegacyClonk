@@ -32,6 +32,7 @@
 #include <C4Log.h>
 #include <C4GamePadCon.h>
 #include <C4GameLobby.h>
+#include "C4Reloc.h"
 
 #include <StdRegistry.h> // For DDraw emulation warning
 
@@ -82,7 +83,7 @@ void C4Application::DoInit()
 			sConfigFilename.Copy(szParameter + 8);
 	// Config check
 	Config.Init();
-	Config.Load(true, sConfigFilename.getData());
+	Config.Load(sConfigFilename.getData());
 	Config.Save();
 	// sometimes, the configuration can become corrupted due to loading errors or w/e
 	// check this and reset defaults if necessary
@@ -112,8 +113,11 @@ void C4Application::DoInit()
 	// Open log
 	OpenLog();
 
+	// Init game data paths
+	Reloc.Init();
+
 	// init system group
-	if (!SystemGroup.Open(C4CFN_System))
+	if (!Reloc.Open(SystemGroup, C4CFN_System))
 	{
 		// Error opening system group - no LogFatal, because it needs language table.
 		// This will *not* use the FatalErrors stack, but this will cause the game

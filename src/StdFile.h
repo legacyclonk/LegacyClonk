@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <optional>
+
 #ifdef _WIN32
 #include <io.h>
 #define F_OK 0
@@ -43,6 +45,8 @@ bool CopyFile(const char *szSource, const char *szTarget, bool FailIfExists);
 #define DirectorySeparator '/'
 #define AltDirectorySeparator '\\'
 #endif
+
+#include "ghc/fs_std_fwd.hpp"
 
 const char *GetWorkingDirectory();
 bool SetWorkingDirectory(const char *szPath);
@@ -73,7 +77,9 @@ const char *GetRelativePathS(const char *strPath, const char *strRelativeTo);
 bool IsGlobalPath(const char *szPath);
 
 bool DirectoryExists(const char *szFileName);
+bool DirectoryExists(const fs::path &path);
 bool FileExists(const char *szFileName);
+bool FileExists(const fs::path &path);
 size_t FileSize(const char *fname);
 size_t FileSize(int fdes);
 time_t FileTime(const char *fname);
@@ -87,6 +93,7 @@ bool EraseDirectory(const char *szDirName);
 
 bool ItemIdentical(const char *szFilename1, const char *szFilename2);
 inline bool ItemExists(const char *szItemName) { return FileExists(szItemName); }
+bool ItemExists(const fs::path &path);
 bool RenameItem(const char *szItemName, const char *szNewItemName);
 bool EraseItem(const char *szItemName);
 bool CopyItem(const char *szSource, const char *szTarget, bool fResetAttributes = false);
@@ -121,5 +128,59 @@ protected:
 #endif
 };
 
+class DirectoryIteratorSTLWrapper
+{
+public:
+	class ConstIterator
+	{
+		using value_type = std::string_view;
+		using difference_type = std::ptrdiff_t;
+		using pointer = const value_type *;
+		using reference = value_type &;
+		using const_reference = const value_type &;
+		using iterator_category = std::forward_iterator_tag;
+
+	private:
+		ConstIterator();
+		ConstIterator(std::string_view directoryName);
+
+	public:
+		ConstIterator &operator++();
+		const_reference operator*() const;
+		pointer operator->() const { return &(**this); }
+
+		friend bool operator==(const ConstIterator &left, const ConstIterator &right);
+		friend bool operator!=(const ConstIterator &left, const ConstIterator &right);
+
+	private:
+		DirectoryIterator iterator;
+		std::string_view directoryName;
+		std::optional<std::string_view> currentEntry;
+
+		friend class DirectoryIteratorSTLWrapper;
+	};
+
+public:
+	using const_iterator = ConstIterator;
+	using iterator = const_iterator;
+
+public:
+	DirectoryIteratorSTLWrapper(std::string_view directoryName);
+
+	iterator begin() const { return ConstIterator{directoryName}; }
+	iterator end() const { return ConstIterator{}; }
+
+private:
+	std::string_view directoryName;
+};
+
 bool ReadFileLine(FILE *fhnd, char *tobuf, int maxlen);
 void AdvanceFileLine(FILE *fhnd);
+
+template<typename... Args>
+[[deprecated("Use fs::path")]] std::string CombinePath(std::string_view base, Args... args)
+{
+	std::string result{base.data()};
+	((result += DirectorySeparator).append(std::string_view{args}.data()), ...);
+	return result;
+}

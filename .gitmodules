@@ -1,3 +1,7 @@
+[submodule "src/filesystem"]
+    path = src/filesystem
+	url = https://github.com/gulrak/filesystem/
+
 [submodule "src/WinToast"]
 	path = src/WinToast
 	url = https://github.com/mohabouje/WinToast

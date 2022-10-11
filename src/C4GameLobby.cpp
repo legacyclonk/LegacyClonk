@@ -507,15 +507,15 @@ C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, 
 			if (SEqualNoCase(Command, "/joinplr"))
 			{
 				// compose path from given filename
-				StdStrBuf plrPath;
-				plrPath.Format("%s%s", Config.General.PlayerPath, szPar);
-				// player join - check filename
-				if (!ItemExists(plrPath.getData()))
+				const auto fileName = fs::path{szPar}.filename();
+				if (const auto path = Reloc.LocateItem(fileName); path)
 				{
-					LobbyError(FormatString(LoadResStr("IDS_MSG_CMD_JOINPLR_NOFILE"), plrPath.getData()).getData());
+					Game.Network.Players.JoinLocalPlayer(path->string().c_str(), true);
 				}
 				else
-					Game.Network.Players.JoinLocalPlayer(plrPath.getData(), true);
+				{
+					LobbyError(FormatString(LoadResStr("IDS_MSG_CMD_JOINPLR_NOFILE"), fileName.string().c_str()).getData());
+				}
 			}
 			else if (SEqualNoCase(Command, "/plrclr"))
 			{

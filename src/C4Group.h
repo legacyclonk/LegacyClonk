@@ -65,6 +65,7 @@ void C4Group_SetTempPath(const char *szPath);
 const char *C4Group_GetTempPath();
 void C4Group_SetSortList(const char **ppSortList);
 void C4Group_SetProcessCallback(bool(*fnCallback)(const char *, int));
+bool C4Group_TestIgnore(const char *szFilename);
 bool C4Group_IsGroup(const char *szFilename);
 bool C4Group_CopyItem(const char *szSource, const char *szTarget, bool fNoSort = false, bool fResetAttributes = false);
 bool C4Group_MoveItem(const char *szSource, const char *szTarget, bool fNoSort = false);

@@ -363,20 +363,21 @@ bool C4Network2Res::SetByFile(const char *strFilePath, bool fTemp, C4Network2Res
 {
 	CStdLock FileLock(&FileCSec);
 	// default ressource name: relative path
-	if (!szResName) szResName = Config.AtExeRelativePath(strFilePath);
+	if (!szResName) szResName = Reloc.GetRelative(strFilePath).string().c_str();
 	SCopy(strFilePath, szFile, sizeof(szFile) - 1);
 	// group?
 	C4Group Grp;
-	if (Grp.Open(strFilePath))
+	if (Reloc.Open(Grp, strFilePath))
 		return SetByGroup(&Grp, fTemp, eType, iResID, szResName, fSilent);
 	// so it needs to be a file
-	if (!FileExists(szFile))
+	const std::optional fullPath{Reloc.LocateItem(szFile)};
+	if (!fullPath)
 	{
 		if (!fSilent) LogF("SetByFile: file %s not found!", strFilePath); return false;
 	}
 	// calc checksum
 	uint32_t iCRC32;
-	if (!C4Group_GetFileCRC(szFile, &iCRC32)) return false;
+	if (!C4Group_GetFileCRC(fullPath->string().c_str(), &iCRC32)) return false;
 #ifdef C4NET2RES_DEBUG_LOG
 	// log
 	LogSilentF("Network: Resource: complete %d:%s is file %s (%s)", iResID, szResName, szFile, fTemp ? "temp" : "static");
@@ -406,7 +407,7 @@ bool C4Network2Res::SetByGroup(C4Group *pGrp, bool fTemp, C4Network2ResType eTyp
 	else
 	{
 		StdStrBuf sFullName = pGrp->GetFullName();
-		sResName.Copy(Config.AtExeRelativePath(sFullName.getData()));
+		sResName.Copy(Reloc.GetRelative(sFullName.getData()).string().c_str());
 	}
 	SCopy(pGrp->GetFullName().getData(), szFile, sizeof(szFile) - 1);
 	// set core

@@ -20,6 +20,7 @@
 #include <C4Config.h>
 #include <C4Group.h>
 #include <C4MusicSystem.h>
+#include "C4Reloc.h"
 #include <C4SoundSystem.h>
 #include <C4Components.h>
 #include <C4InteractiveThread.h>

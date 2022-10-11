@@ -219,6 +219,8 @@ src/C4PropertyDlg.h
 src/C4Prototypes.h
 src/C4PuncherPacket.cpp
 src/C4PuncherPacket.h
+src/C4Reloc.cpp
+src/C4Reloc.h
 src/C4RTF.cpp
 src/C4RTF.h
 src/C4Random.cpp

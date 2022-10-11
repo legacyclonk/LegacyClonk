@@ -39,9 +39,9 @@ void OpenLog()
 	// open
 	sLogFileName = C4CFN_Log; int iLog = 2;
 #ifdef _WIN32
-	while (!(C4LogFile = _fsopen(sLogFileName.getData(), "wt", _SH_DENYWR)))
+	while (!(C4LogFile = _fsopen(Config.AtUserPath(sLogFileName.getData()), "wt", _SH_DENYWR)))
 #else
-	while (!(C4LogFile = fopen(sLogFileName.getData(), "wb")))
+	while (!(C4LogFile = fopen(Config.AtUserPath(sLogFileName.getData()).getData(), "wb")))
 #endif
 	{
 		if (errno == EACCES)

@@ -379,13 +379,25 @@ void C4FileSelDlg::SetCurrentLocation(int32_t idx, bool fRefresh)
 // C4PlayerSelDlg
 
 C4PlayerSelDlg::C4PlayerSelDlg(C4FileSel_BaseCB *pSelCallback)
-	: C4FileSelDlg(Config.AtExePath(Config.General.PlayerPath), LoadResStr("IDS_MSG_SELECTPLR"), pSelCallback) {}
+	: C4FileSelDlg(Config.General.UserDataPath.c_str(), LoadResStr("IDS_MSG_SELECTPLR"), pSelCallback)
+{
+	for (const auto &pathInfo : Reloc)
+	{
+		const std::string str{pathInfo.Path.string()};
+		AddCheckedLocation(str.c_str(), str.c_str());
+	}
+}
 
 // C4DefinitionSelDlg
 
 C4DefinitionSelDlg::C4DefinitionSelDlg(C4FileSel_BaseCB *pSelCallback, const std::vector<std::string> &fixedSelection)
-	: C4FileSelDlg(Config.AtExePath(Config.General.DefinitionPath), FormatString(LoadResStr("IDS_MSG_SELECT"), LoadResStr("IDS_DLG_DEFINITIONS")).getData(), pSelCallback), fixedSelection(fixedSelection)
+	: C4FileSelDlg(Config.General.UserDataPath.c_str(), FormatString(LoadResStr("IDS_MSG_SELECT"), LoadResStr("IDS_DLG_DEFINITIONS")).getData(), pSelCallback), fixedSelection(fixedSelection)
 {
+	for (const auto &pathInfo : Reloc)
+	{
+		const std::string str{pathInfo.Path.string()};
+		AddCheckedLocation(str.c_str(), str.c_str());
+	}
 }
 
 void C4DefinitionSelDlg::OnShown()
@@ -533,11 +545,13 @@ C4PortraitSelDlg::C4PortraitSelDlg(C4FileSel_BaseCB *pSelCallback, bool fSetPict
 	char path[_MAX_PATH + 1];
 	// add common picture locations
 	StdStrBuf strLocation;
-	SCopy(Config.AtUserPath(""), path, _MAX_PATH); TruncateBackslash(path);
+	SCopy(Config.General.UserDataPath.c_str(), path, _MAX_PATH); TruncateBackslash(path);
 	strLocation.Format("%s %s", C4ENGINECAPTION, LoadResStr("IDS_TEXT_USERPATH"));
 	AddLocation(strLocation.getData(), path);
+
+	SCopy(Config.General.SystemDataPath.c_str(), path, _MAX_PATH); TruncateBackslash(path);
 	strLocation.Format("%s %s", C4ENGINECAPTION, LoadResStr("IDS_TEXT_PROGRAMDIRECTORY"));
-	AddCheckedLocation(strLocation.getData(), Config.General.ExePath);
+	AddCheckedLocation(strLocation.getData(), path);
 #ifdef _WIN32
 	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_PERSONAL,         FALSE)) AddCheckedLocation(LoadResStr("IDS_TEXT_MYDOCUMENTS"), path);
 	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_MYPICTURES,       FALSE)) AddCheckedLocation(LoadResStr("IDS_TEXT_MYPICTURES"),  path);
@@ -606,7 +620,7 @@ bool C4PortraitSelDlg::SelectPortrait(C4GUI::Screen *pOnScreen, std::string &sel
 	{
 		Log("Copying default portraits to user path...");
 		C4Group hGroup;
-		if (hGroup.Open(Config.AtExePath(C4CFN_Graphics)))
+		if (Reloc.Open(hGroup, C4CFN_Graphics))
 		{
 			hGroup.Extract("Portrait1.png", Config.AtUserPath("Clonk.png"));
 			hGroup.Extract("PortraitBandit.png", Config.AtUserPath("Bandit.png"));
