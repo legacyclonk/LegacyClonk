@@ -313,7 +313,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				// Secondary command: get/activate all objects of the chosen type
 				szCommand2[0] = 0; int32_t iAllCount;
 				if ((iAllCount = pTarget->Contents.ObjectCount(pDef->id)) > 1)
-					sprintf(szCommand2, "SetCommand(this, \"%s\", 0, %d,0, Object(%d), %s) && ExecuteCommand()", fGet ? "Get" : "Activate", iAllCount, pTarget->Number, C4IdText(pDef->id));
+					sprintf(szCommand2, "SetCommand(this, \"%s\", , %d,0, Object(%d), %s) && ExecuteCommand()", fGet ? "Get" : "Activate", iAllCount, pTarget->Number, C4IdText(pDef->id));
 				// Add menu item (with object)
 				Add(szCaption, fctSymbol, szCommand, iCount, pObj, pDef->GetDesc(), pDef->id, szCommand2);
 				fctSymbol.Default();
