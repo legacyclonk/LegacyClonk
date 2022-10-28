@@ -337,7 +337,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 {
 	if (!DeviceReady() || (!Active && !fForce)) return false;
 	if (pApp->xf86vmode_major_version < 2) return false;
-	if (gammasize != ramp.size || ramp.size == 0) return false;
+	if (gammasize != ramp.size || gammasize == 0) return false;
 	return XF86VidModeSetGammaRamp(pApp->dpy, DefaultScreen(pApp->dpy), ramp.size,
 		ramp.red, ramp.green, ramp.blue);
 }
@@ -348,19 +348,30 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 	// Get the Display
 	Display *const dpy = pWindow->dpy;
 	XF86VidModeGetGammaRampSize(dpy, DefaultScreen(dpy), &gammasize);
-	if (gammasize != 256)
+
+	if (gammasize != 0)
 	{
-		DefRamp.Set(0x000000, 0x808080, 0xffffff, gammasize, nullptr);
-		LogF("  Size of GammaRamp is %d, not 256", gammasize);
+		if (gammasize != 256)
+		{
+			DefRamp.Set(0x000000, 0x808080, 0xffffff, gammasize, nullptr);
+			LogF("  Size of GammaRamp is %d, not 256", gammasize);
+		}
+
+		// store default gamma
+		if (!XF86VidModeGetGammaRamp(pWindow->dpy, DefaultScreen(pWindow->dpy), DefRamp.size,
+			DefRamp.red, DefRamp.green, DefRamp.blue))
+		{
+			DefRamp.Default();
+			Log("  Error getting default gamma ramp; using standard");
+		}
 	}
-	// store default gamma
-	if (!XF86VidModeGetGammaRamp(pWindow->dpy, DefaultScreen(pWindow->dpy), DefRamp.size,
-		DefRamp.red, DefRamp.green, DefRamp.blue))
+	else
 	{
 		DefRamp.Default();
-		Log("  Error getting default gamma ramp; using standard");
+		Log("  Size of GammaRamp is 0, using default ramp");
 	}
-	Gamma.Set(0x000000, 0x808080, 0xffffff, gammasize, &DefRamp);
+
+	Gamma.Set(0x000000, 0x808080, 0xffffff, DefRamp.GetSize(), &DefRamp);
 	return true;
 }
 
