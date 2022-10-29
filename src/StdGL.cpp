@@ -905,7 +905,9 @@ void CStdGL::DrawPixInt(C4Surface *const sfcTarget,
 
 bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 {
-	if (GammaTexture)
+	if (Config.Graphics.DisableGamma) return true;
+
+	else if (GammaTexture)
 	{
 		glActiveTexture(GL_TEXTURE3);
 		GammaTexture.UpdateData(ramp.red);
@@ -918,7 +920,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 
 bool CStdGL::SaveDefaultGammaRamp(CStdWindow *window)
 {
-	if (GammaTexture)
+	if (GammaTexture || Config.Graphics.DisableGamma)
 	{
 		DefRamp.Default();
 		Gamma.Set(0x000000, 0x808080, 0xffffff, 256, &DefRamp);
@@ -983,7 +985,10 @@ bool CStdGL::RestoreDeviceObjects()
 				#version 120
 
 				uniform sampler2D textureSampler;
+
+				#ifdef LC_GAMMA
 				uniform sampler2D gamma;
+				#endif
 
 				void main()
 				{
@@ -998,14 +1003,21 @@ bool CStdGL::RestoreDeviceObjects()
 					fragColor.a = clamp(fragColor.a + gl_Color.a, 0.0, 1.0);
 				#endif
 
+				#ifdef LC_GAMMA
 					fragColor.r = texture2D(gamma, vec2(fragColor.r, 0)).r;
 					fragColor.g = texture2D(gamma, vec2(fragColor.g, 1)).r;
 					fragColor.b = texture2D(gamma, vec2(fragColor.b, 2)).r;
+				#endif
 
 					gl_FragColor = fragColor;
 				}
 				)"
 			};
+
+			if (!Config.Graphics.DisableGamma)
+			{
+				blitFragmentShader.SetMacro("LC_GAMMA", "1");
+			}
 
 			blitFragmentShader.Compile();
 
@@ -1014,6 +1026,7 @@ bool CStdGL::RestoreDeviceObjects()
 			BlitShader.Link();
 
 			blitFragmentShader.SetMacro("LC_MOD2", "1");
+
 			blitFragmentShader.Compile();
 
 			BlitShaderMod2.AddShader(&vertexShader);
@@ -1031,7 +1044,9 @@ bool CStdGL::RestoreDeviceObjects()
 				uniform vec4 modulation;
 				#endif
 
+				#ifdef LC_GAMMA
 				uniform sampler2D gamma;
+				#endif
 
 				void main()
 				{
@@ -1047,9 +1062,11 @@ bool CStdGL::RestoreDeviceObjects()
 					fragColor.rgb = clamp(fragColor.rgb, 0.0, 1.0) * gl_Color.rgb;
 					fragColor.a = clamp(fragColor.a + gl_Color.a, 0.0, 1.0);
 
+				#ifdef LC_GAMMA
 					fragColor.r = texture2D(gamma, vec2(fragColor.r, 0)).r;
 					fragColor.g = texture2D(gamma, vec2(fragColor.g, 1)).r;
 					fragColor.b = texture2D(gamma, vec2(fragColor.b, 2)).r;
+				#endif
 
 					gl_FragColor = fragColor;
 				}
@@ -1062,73 +1079,98 @@ bool CStdGL::RestoreDeviceObjects()
 				landscapeFragmentShader.SetMacro("LC_COLOR_ANIMATION", "1");
 			}
 
+			if (!Config.Graphics.DisableGamma)
+			{
+				landscapeFragmentShader.SetMacro("LC_GAMMA", "1");
+			}
+
 			landscapeFragmentShader.Compile();
 
 			LandscapeShader.AddShader(&vertexShader);
 			LandscapeShader.AddShader(&landscapeFragmentShader);
 			LandscapeShader.Link();
 
-			CStdGLShader dummyVertexShader{CStdShader::Type::Vertex,
-			R"(
-				#version 120
-
-				void main()
-				{
-					gl_Position = ftransform();
-					gl_FrontColor = gl_Color;
-				}
-			)"};
-
-			dummyVertexShader.Compile();
-
-			CStdGLShader dummyFragmentShader{CStdShader::Type::Fragment,
+			if (!Config.Graphics.DisableGamma)
+			{
+				CStdGLShader dummyVertexShader{CStdShader::Type::Vertex,
 				R"(
-				#version 120
+					#version 120
 
-				uniform sampler2D gamma;
+					void main()
+					{
+						gl_Position = ftransform();
+						gl_FrontColor = gl_Color;
+					}
+				)"};
 
-				void main()
+				dummyVertexShader.Compile();
+
+				CStdGLShader dummyFragmentShader{CStdShader::Type::Fragment,
+					R"(
+					#version 120
+
+					uniform sampler2D gamma;
+
+					void main()
+					{
+						gl_FragColor.r = texture2D(gamma, vec2(gl_Color.r, 0)).r;
+						gl_FragColor.g = texture2D(gamma, vec2(gl_Color.g, 0)).r;
+						gl_FragColor.b = texture2D(gamma, vec2(gl_Color.b, 0)).r;
+						gl_FragColor.a = gl_Color.a;
+					}
+					)"
+				};
+
+				dummyFragmentShader.Compile();
+
+				DummyShader.AddShader(&dummyVertexShader);
+				DummyShader.AddShader(&dummyFragmentShader);
+				DummyShader.Link();
+			}
+
+			const auto setUniforms = [this](CStdGLShaderProgram &program)
+			{
+				program.Select();
+				program.SetUniform("texIndent", texIndent);
+				program.SetUniform("blitOffset", blitOffset);
+				program.SetUniform("textureSampler", glUniform1i, 0);
+
+				if (!Config.Graphics.DisableGamma)
 				{
-					gl_FragColor.r = texture2D(gamma, vec2(gl_Color.r, 0)).r;
-					gl_FragColor.g = texture2D(gamma, vec2(gl_Color.g, 0)).r;
-					gl_FragColor.b = texture2D(gamma, vec2(gl_Color.b, 0)).r;
-					gl_FragColor.a = gl_Color.a;
+					program.SetUniform("gamma", glUniform1i, 3);
 				}
-				)"
 			};
 
-			dummyFragmentShader.Compile();
+			setUniforms(BlitShader);
+			setUniforms(BlitShaderMod2);
 
-			DummyShader.AddShader(&dummyVertexShader);
-			DummyShader.AddShader(&dummyFragmentShader);
-			DummyShader.Link();
-
-			for (auto *const shader : {&BlitShader, &BlitShaderMod2, &LandscapeShader, &DummyShader})
+			if (DummyShader)
 			{
-				shader->Select();
-				shader->SetUniform("texIndent", texIndent);
-				shader->SetUniform("blitOffset", blitOffset);
-				shader->SetUniform("textureSampler", glUniform1i, 0);
-				shader->SetUniform("gamma", glUniform1i, 3);
+				setUniforms(DummyShader);
 			}
+
+			setUniforms(LandscapeShader); // Last so that the shader is selected for the subsequent calls
 
 			LandscapeShader.SetUniform("maskSampler", glUniform1i, 1);
 			LandscapeShader.SetUniform("liquidSampler", glUniform1i, 2);
 
 			CStdShaderProgram::Deselect();
 
-			GammaTexture = {{Gamma.GetSize(), 3}, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
-			GammaTexture.Bind(3);
+			if (!Config.Graphics.DisableGamma)
+			{
+				GammaTexture = {{Gamma.GetSize(), 3}, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
+				GammaTexture.Bind(3);
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			GammaTexture.SetData(Gamma.red);
+				GammaTexture.SetData(Gamma.red);
 
-			glEnable(GL_TEXTURE_2D);
-			glActiveTexture(GL_TEXTURE0);
+				glEnable(GL_TEXTURE_2D);
+				glActiveTexture(GL_TEXTURE0);
+			}
 		}
 		catch (const CStdRenderException &e)
 		{
