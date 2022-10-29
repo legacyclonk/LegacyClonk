@@ -130,6 +130,69 @@ protected:
 	std::string group;
 };
 
+// one OpenGL texture
+template<GLenum T, std::size_t Dimensions>
+class CStdGLTexture
+{
+public:
+	static constexpr GLenum Target{T};
+public:
+	CStdGLTexture() = default;
+
+	CStdGLTexture(std::array<std::int32_t, Dimensions> dimensions, const GLenum internalFormat, const GLenum format, const GLenum type)
+		: dimensions{std::move(dimensions)}, internalFormat{internalFormat}, format{format}, type{type}
+	{
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glGenTextures(1, &texture);
+	}
+
+	CStdGLTexture(const CStdGLTexture &) = delete;
+	CStdGLTexture &operator=(const CStdGLTexture &) = delete;
+
+	CStdGLTexture(CStdGLTexture &&other)
+		: CStdGLTexture{}
+	{
+		swap(*this, other);
+	}
+
+	CStdGLTexture &operator=(CStdGLTexture &&other)
+	{
+		CStdGLTexture temp{std::move(other)};
+		swap(*this, temp);
+		return *this;
+	}
+
+	~CStdGLTexture();
+
+public:
+	GLuint GetTexture() const { return texture; }
+
+	void Bind(GLenum offset);
+	void SetData(const void *const data);
+	void UpdateData(const void *const data);
+
+public:
+	explicit operator bool() const { return texture; }
+
+private:
+	std::array<std::int32_t, Dimensions> dimensions;
+	GLenum internalFormat;
+	GLenum format;
+	GLenum type;
+	GLuint texture{GL_NONE};
+
+private:
+	friend void swap(CStdGLTexture &first, CStdGLTexture &second)
+	{
+		using std::swap;
+		swap(first.dimensions, second.dimensions);
+		swap(first.internalFormat, second.internalFormat);
+		swap(first.format, second.format);
+		swap(first.type, second.type);
+		swap(first.texture, second.texture);
+	}
+};
+
 // one OpenGL context
 class CStdGLCtx
 {
@@ -186,6 +249,8 @@ protected:
 	CStdGLShaderProgram BlitShader;
 	CStdGLShaderProgram BlitShaderMod2;
 	CStdGLShaderProgram LandscapeShader;
+	CStdGLShaderProgram DummyShader;
+	CStdGLTexture<GL_TEXTURE_2D, 2> GammaTexture;
 
 public:
 	// General
@@ -218,8 +283,8 @@ public:
 	void DrawPixInt(C4Surface *sfcDest, float tx, float ty, uint32_t dwCol) override;
 
 	// Gamma
-	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool fForce) override;
-	virtual bool SaveDefaultGammaRamp(CStdWindow *pWindow) override;
+	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool force) override;
+	virtual bool SaveDefaultGammaRamp(CStdWindow *window) override;
 
 	// device objects
 	bool RestoreDeviceObjects() override; // init/restore device dependent objects
@@ -242,6 +307,10 @@ protected:
 	// Size of gamma ramps
 	int gammasize{};
 #endif
+
+private:
+	bool ApplyGammaRampToMonitor(CGammaControl &ramp, bool force);
+	bool SaveDefaultGammaRampToMonitor(CStdWindow *window);
 
 	friend class C4Surface;
 	friend class C4TexRef;

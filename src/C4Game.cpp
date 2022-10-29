@@ -2099,7 +2099,7 @@ bool C4Game::SaveGameTitle(C4Group &hGroup)
 			0.0f, 0.0f, float(Application.DDraw->lpBack->Wdt), float(Application.DDraw->lpBack->Hgt),
 			surface.get(), 0, 0, surfaceWidth, surfaceHeight);
 
-		if (!surface->SavePNG(Config.AtTempPath(C4CFN_TempTitle), false, true, false))
+		if (!surface->SavePNG(Config.AtTempPath(C4CFN_TempTitle), false, !Config.Graphics.Shader, false))
 		{
 			return false;
 		}
