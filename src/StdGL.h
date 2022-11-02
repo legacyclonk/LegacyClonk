@@ -136,15 +136,18 @@ class CStdGLTexture
 {
 public:
 	static constexpr GLenum Target{T};
+
+public:
+	class Exception : public CStdRenderException
+	{
+	public:
+		using CStdRenderException::CStdRenderException;
+	};
+
 public:
 	CStdGLTexture() = default;
 
-	CStdGLTexture(std::array<std::int32_t, Dimensions> dimensions, const GLenum internalFormat, const GLenum format, const GLenum type)
-		: dimensions{std::move(dimensions)}, internalFormat{internalFormat}, format{format}, type{type}
-	{
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glGenTextures(1, &texture);
-	}
+	CStdGLTexture(std::array<std::int32_t, Dimensions> dimensions, GLenum internalFormat, GLenum format, GLenum type);
 
 	CStdGLTexture(const CStdGLTexture &) = delete;
 	CStdGLTexture &operator=(const CStdGLTexture &) = delete;
@@ -175,6 +178,9 @@ public:
 
 public:
 	explicit operator bool() const { return texture; }
+
+private:
+	static void ThrowIfGLError();
 
 private:
 	std::array<std::int32_t, Dimensions> dimensions;
