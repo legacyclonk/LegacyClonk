@@ -244,10 +244,7 @@ void CStdGLShaderProgram::OnDeselect()
 template<GLenum T, std::size_t Dimensions>
 CStdGLTexture<T, Dimensions>::~CStdGLTexture()
 {
-	if (texture)
-	{
-		glDeleteTextures(1, &texture);
-	}
+	Clear();
 }
 
 template<GLenum T, std::size_t Dimensions>
@@ -280,6 +277,15 @@ void CStdGLTexture<T, Dimensions>::UpdateData(const void *const data)
 	else
 	{
 		glTexSubImage3D(Target, 0, 0, 0, 0, dimensions[0], dimensions[1], dimensions[2], format, type, data);
+	}
+}
+
+template<GLenum T, std::size_t Dimensions>
+void CStdGLTexture<T, Dimensions>::Clear()
+{
+	if (texture)
+	{
+		glDeleteTextures(1, &texture);
 	}
 }
 
@@ -903,6 +909,54 @@ void CStdGL::DrawPixInt(C4Surface *const sfcTarget,
 	glEnd();
 }
 
+void CStdGL::DisableGamma()
+{
+	if (Config.Graphics.DisableGamma)
+	{
+		return;
+	}
+	else if (Config.Graphics.Shader)
+	{
+		GammaTexture.Clear();
+		glActiveTexture(GL_TEXTURE3);
+		glDisable(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE0);
+	}
+	else
+	{
+		CStdDDraw::DisableGamma();
+	}
+}
+
+void CStdGL::EnableGamma()
+{
+	if (Config.Graphics.DisableGamma)
+	{
+		return;
+	}
+	else if (Config.Graphics.Shader)
+	{
+		if (!GammaTexture)
+		{
+			GammaTexture = {{Gamma.GetSize(), 3}, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
+			GammaTexture.Bind(3);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+			GammaTexture.SetData(nullptr);
+		}
+
+		glActiveTexture(GL_TEXTURE3);
+		glEnable(GL_TEXTURE_2D);
+		// Don't switch back to GL_TEXTURE0 - ApplyGammaRamp does this
+	}
+
+	CStdDDraw::EnableGamma();
+}
+
 bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 {
 	if (Config.Graphics.DisableGamma) return true;
@@ -1155,22 +1209,6 @@ bool CStdGL::RestoreDeviceObjects()
 			LandscapeShader.SetUniform("liquidSampler", glUniform1i, 2);
 
 			CStdShaderProgram::Deselect();
-
-			if (!Config.Graphics.DisableGamma)
-			{
-				GammaTexture = {{Gamma.GetSize(), 3}, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
-				GammaTexture.Bind(3);
-
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-				GammaTexture.SetData(Gamma.red);
-
-				glEnable(GL_TEXTURE_2D);
-				glActiveTexture(GL_TEXTURE0);
-			}
 		}
 		catch (const CStdRenderException &e)
 		{
@@ -1187,9 +1225,10 @@ bool CStdGL::RestoreDeviceObjects()
 bool CStdGL::InvalidateDeviceObjects()
 {
 	// clear gamma
-#ifndef USE_SDL_MAINLOOP
-	DisableGamma();
+#ifdef USE_SDL_MAINLOOP
+	if (Config.Graphics.Shader)
 #endif
+		CStdGL::DisableGamma();
 	// deactivate
 	Active = false;
 	// invalidate font objects

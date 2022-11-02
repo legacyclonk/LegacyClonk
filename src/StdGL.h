@@ -171,6 +171,8 @@ public:
 	void SetData(const void *const data);
 	void UpdateData(const void *const data);
 
+	void Clear();
+
 public:
 	explicit operator bool() const { return texture; }
 
@@ -283,6 +285,8 @@ public:
 	void DrawPixInt(C4Surface *sfcDest, float tx, float ty, uint32_t dwCol) override;
 
 	// Gamma
+	void DisableGamma() override;
+	void EnableGamma() override;
 	virtual bool ApplyGammaRamp(CGammaControl &ramp, bool force) override;
 	virtual bool SaveDefaultGammaRamp(CStdWindow *window) override;
 
