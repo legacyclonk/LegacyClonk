@@ -242,6 +242,16 @@ void CStdGLShaderProgram::OnDeselect()
 }
 
 template<GLenum T, std::size_t Dimensions>
+CStdGLTexture<T, Dimensions>::CStdGLTexture(std::array<int32_t, Dimensions> dimensions, const GLenum internalFormat, const GLenum format, const GLenum type)
+	: dimensions{std::move(dimensions)}, internalFormat{internalFormat}, format{format}, type{type}
+{
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	ThrowIfGLError();
+	glGenTextures(1, &texture);
+	ThrowIfGLError();
+}
+
+template<GLenum T, std::size_t Dimensions>
 CStdGLTexture<T, Dimensions>::~CStdGLTexture()
 {
 	Clear();
@@ -265,6 +275,8 @@ void CStdGLTexture<T, Dimensions>::SetData(const void *const data)
 	{
 		glTexImage3D(Target, 0, internalFormat, dimensions[0], dimensions[1], dimensions[2], 0, format, type, data);
 	}
+
+	ThrowIfGLError();
 }
 
 template<GLenum T, std::size_t Dimensions>
@@ -278,6 +290,8 @@ void CStdGLTexture<T, Dimensions>::UpdateData(const void *const data)
 	{
 		glTexSubImage3D(Target, 0, 0, 0, 0, dimensions[0], dimensions[1], dimensions[2], format, type, data);
 	}
+
+	ThrowIfGLError();
 }
 
 template<GLenum T, std::size_t Dimensions>
@@ -286,6 +300,15 @@ void CStdGLTexture<T, Dimensions>::Clear()
 	if (texture)
 	{
 		glDeleteTextures(1, &texture);
+	}
+}
+
+template<GLenum T, std::size_t Dimensions>
+void CStdGLTexture<T, Dimensions>::ThrowIfGLError()
+{
+	if (const GLenum error{glGetError()}; error != GL_NO_ERROR)
+	{
+		throw Exception{reinterpret_cast<const char *>(gluErrorString(error))};
 	}
 }
 
@@ -936,22 +959,7 @@ void CStdGL::EnableGamma()
 	}
 	else if (Config.Graphics.Shader)
 	{
-		if (!GammaTexture)
-		{
-			GammaTexture = {{Gamma.GetSize(), 3}, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
-			GammaTexture.Bind(3);
-
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-			GammaTexture.SetData(nullptr);
-		}
-
-		glActiveTexture(GL_TEXTURE3);
-		glEnable(GL_TEXTURE_2D);
-		// Don't switch back to GL_TEXTURE0 - ApplyGammaRamp does this
+		assert(GammaTexture);
 	}
 
 	CStdDDraw::EnableGamma();
@@ -1209,6 +1217,23 @@ bool CStdGL::RestoreDeviceObjects()
 			LandscapeShader.SetUniform("liquidSampler", glUniform1i, 2);
 
 			CStdShaderProgram::Deselect();
+
+			if (!Config.Graphics.DisableGamma)
+			{
+				GammaTexture = {{Gamma.GetSize(), 3}, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
+				GammaTexture.Bind(3);
+
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+				GammaTexture.SetData(nullptr);
+
+				glActiveTexture(GL_TEXTURE3);
+				glEnable(GL_TEXTURE_2D);
+				// Don't switch back to GL_TEXTURE0 - EnableGamma does this
+			}
 		}
 		catch (const CStdRenderException &e)
 		{
