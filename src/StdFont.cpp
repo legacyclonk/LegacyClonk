@@ -151,7 +151,12 @@ bool CStdFont::AddSurface()
 	C4Surface *sfcNew = psfcFontData[iNumFontSfcs] = new C4Surface();
 	++iNumFontSfcs;
 	if (iSfcSizes) if (!sfcNew->Create(iSfcSizes, iSfcSizes)) return false;
+	if (sfcCurrent)
+	{
+		sfcCurrent->Unlock();
+	}
 	sfcCurrent = sfcNew;
+	sfcCurrent->Lock();
 	iCurrentSfcX = iCurrentSfcY = 0;
 	return true;
 }
@@ -215,7 +220,6 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, C4Facet *pfctTarget)
 	int at_y = iCurrentSfcY + dwDefFontHeight * (*pVectorFont)->ascender / (*pVectorFont)->units_per_EM - slot->bitmap_top;
 	int at_x = iCurrentSfcX + (std::max)(slot->bitmap_left, 0);
 	// Copy to the surface
-	if (!sfcCurrent->Lock()) return false;
 	for (unsigned int y = 0; y < slot->bitmap.rows + shadowSize; ++y)
 	{
 		for (unsigned int x = 0; x < slot->bitmap.width + shadowSize; ++x)
@@ -251,7 +255,6 @@ bool CStdFont::AddRenderedChar(uint32_t dwChar, C4Facet *pfctTarget)
 			sfcCurrent->SetPixDw(at_x + x, at_y + y, dwPixVal);
 		}
 	}
-	sfcCurrent->Unlock();
 	// Save the position of the glyph for the rendering code
 	pfctTarget->Set(sfcCurrent, iCurrentSfcX, iCurrentSfcY, width, iGfxLineHgt);
 
@@ -302,7 +305,12 @@ C4Facet &CStdFont::GetUnicodeCharacterFacet(uint32_t c)
 	// find/add facet in map
 	C4Facet &rFacet = fctUnicodeMap[c];
 	// create character on the fly if necessary and possible
-	if (!rFacet.Surface && !fPrerenderedFont) AddRenderedChar(c, &rFacet);
+	if (!rFacet.Surface && !fPrerenderedFont)
+	{
+		sfcCurrent->Lock();
+		AddRenderedChar(c, &rFacet);
+		sfcCurrent->Unlock();
+	}
 	// rendering might have failed, in which case rFacet remains empty. Should be OK; char won't be printed then
 	return rFacet;
 }
@@ -416,10 +424,14 @@ void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFo
 #endif // defined HAVE_ICONV
 		if (!AddRenderedChar(dwChar, &(fctAsciiTexCoords[c - ' '])))
 		{
+			sfcCurrent->Unlock();
 			Clear();
 			throw std::runtime_error(std::string("Cannot render characters for Font (") + szFontName + ")");
 		}
 	}
+
+	sfcCurrent->Unlock();
+
 	// adjust line height
 	iLineHgt /= iFontZoom;
 	this->scale = static_cast<float>(dwHeight) / realHeight;
@@ -452,7 +464,7 @@ void CStdFont::Init(const char *szFontName, C4Surface *psfcFontSfc, int iIndent)
 	if (!AddSurface()) { Clear(); throw std::runtime_error(std::string("Error creating surface for ") + szFontName); }
 	*sfcCurrent = std::move(*psfcFontSfc);
 	// extract character positions from image data
-	if (!sfcCurrent->Hgt || !sfcCurrent->Lock())
+	if (!sfcCurrent->Hgt)
 	{
 		Clear();
 		throw std::runtime_error(std::string("Error loading ") + szFontName);
