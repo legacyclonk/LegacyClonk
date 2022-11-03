@@ -131,8 +131,12 @@ protected:
 };
 
 // one OpenGL texture
+template<GLenum T, std::size_t Dimensions>
 class CStdGLTexture
 {
+public:
+	static constexpr GLenum Target{T};
+
 public:
 	class Exception : public CStdRenderException
 	{
@@ -142,7 +146,8 @@ public:
 
 public:
 	CStdGLTexture() = default;
-	CStdGLTexture(std::int32_t width, std::int32_t height, GLenum internalFormat, GLenum format, GLenum type);
+
+	CStdGLTexture(std::array<std::int32_t, Dimensions> dimensions, GLenum internalFormat, GLenum format, GLenum type);
 
 	CStdGLTexture(const CStdGLTexture &) = delete;
 	CStdGLTexture &operator=(const CStdGLTexture &) = delete;
@@ -165,9 +170,9 @@ public:
 public:
 	GLuint GetTexture() const { return texture; }
 
-	void Bind(GLenum target, GLenum offset);
-	void SetData(GLenum target, const void *data);
-	void UpdateData(GLenum target, const void *data);
+	void Bind(GLenum offset);
+	void SetData(const void *const data);
+	void UpdateData(const void *const data);
 
 	void Clear();
 
@@ -178,8 +183,7 @@ private:
 	static void ThrowIfGLError();
 
 private:
-	std::int32_t width;
-	std::int32_t height;
+	std::array<std::int32_t, Dimensions> dimensions;
 	GLenum internalFormat;
 	GLenum format;
 	GLenum type;
@@ -189,8 +193,7 @@ private:
 	friend void swap(CStdGLTexture &first, CStdGLTexture &second)
 	{
 		using std::swap;
-		swap(first.width, second.width);
-		swap(first.height, second.height);
+		swap(first.dimensions, second.dimensions);
 		swap(first.internalFormat, second.internalFormat);
 		swap(first.format, second.format);
 		swap(first.type, second.type);
@@ -255,7 +258,7 @@ protected:
 	CStdGLShaderProgram BlitShaderMod2;
 	CStdGLShaderProgram LandscapeShader;
 	CStdGLShaderProgram DummyShader;
-	CStdGLTexture GammaTexture;
+	CStdGLTexture<GL_TEXTURE_2D, 2> GammaTexture;
 
 public:
 	// General
