@@ -955,9 +955,16 @@ void CStdGL::DisableGamma()
 	}
 	else if (Config.Graphics.Shader)
 	{
-		GammaTexture.Clear();
+		GammaRedTexture.Clear();
+		GammaGreenTexture.Clear();
+		GammaBlueTexture.Clear();
+
 		glActiveTexture(GL_TEXTURE3);
-		glDisable(GL_TEXTURE_2D);
+		glDisable(GL_TEXTURE_1D);
+		glActiveTexture(GL_TEXTURE4);
+		glDisable(GL_TEXTURE_1D);
+		glActiveTexture(GL_TEXTURE5);
+		glDisable(GL_TEXTURE_1D);
 		glActiveTexture(GL_TEXTURE0);
 	}
 	else
@@ -974,7 +981,7 @@ void CStdGL::EnableGamma()
 	}
 	else if (Config.Graphics.Shader)
 	{
-		assert(GammaTexture);
+		assert(GammaRedTexture && GammaGreenTexture && GammaBlueTexture);
 	}
 
 	CStdDDraw::EnableGamma();
@@ -984,10 +991,14 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 {
 	if (Config.Graphics.DisableGamma) return true;
 
-	else if (GammaTexture)
+	else if (Config.Graphics.Shader)
 	{
 		glActiveTexture(GL_TEXTURE3);
-		GammaTexture.UpdateData(ramp.red);
+		GammaRedTexture.UpdateData(ramp.red);
+		glActiveTexture(GL_TEXTURE4);
+		GammaGreenTexture.UpdateData(ramp.green);
+		glActiveTexture(GL_TEXTURE5);
+		GammaBlueTexture.UpdateData(ramp.blue);
 		glActiveTexture(GL_TEXTURE0);
 		return true;
 	}
@@ -997,7 +1008,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 
 bool CStdGL::SaveDefaultGammaRamp(CStdWindow *window)
 {
-	if (GammaTexture || Config.Graphics.DisableGamma)
+	if (Config.Graphics.Shader || Config.Graphics.DisableGamma)
 	{
 		DefRamp.Default();
 		Gamma.Set(0x000000, 0x808080, 0xffffff, 256, &DefRamp);
@@ -1064,7 +1075,9 @@ bool CStdGL::RestoreDeviceObjects()
 				uniform sampler2D textureSampler;
 
 				#ifdef LC_GAMMA
-				uniform sampler2D gamma;
+				uniform sampler1D gammaRed;
+				uniform sampler1D gammaGreen;
+				uniform sampler1D gammaBlue;
 				#endif
 
 				void main()
@@ -1081,9 +1094,9 @@ bool CStdGL::RestoreDeviceObjects()
 				#endif
 
 				#ifdef LC_GAMMA
-					fragColor.r = texture2D(gamma, vec2(fragColor.r, 0)).r;
-					fragColor.g = texture2D(gamma, vec2(fragColor.g, 1)).r;
-					fragColor.b = texture2D(gamma, vec2(fragColor.b, 2)).r;
+					fragColor.r = texture1D(gammaRed, fragColor.r).r;
+					fragColor.g = texture1D(gammaGreen, fragColor.g).r;
+					fragColor.b = texture1D(gammaBlue, fragColor.b).r;
 				#endif
 
 					gl_FragColor = fragColor;
@@ -1122,7 +1135,9 @@ bool CStdGL::RestoreDeviceObjects()
 				#endif
 
 				#ifdef LC_GAMMA
-				uniform sampler2D gamma;
+				uniform sampler1D gammaRed;
+				uniform sampler1D gammaGreen;
+				uniform sampler1D gammaBlue;
 				#endif
 
 				void main()
@@ -1140,9 +1155,9 @@ bool CStdGL::RestoreDeviceObjects()
 					fragColor.a = clamp(fragColor.a + gl_Color.a, 0.0, 1.0);
 
 				#ifdef LC_GAMMA
-					fragColor.r = texture2D(gamma, vec2(fragColor.r, 0)).r;
-					fragColor.g = texture2D(gamma, vec2(fragColor.g, 1)).r;
-					fragColor.b = texture2D(gamma, vec2(fragColor.b, 2)).r;
+					fragColor.r = texture1D(gammaRed, fragColor.r).r;
+					fragColor.g = texture1D(gammaGreen, fragColor.g).r;
+					fragColor.b = texture1D(gammaBlue, fragColor.b).r;
 				#endif
 
 					gl_FragColor = fragColor;
@@ -1186,13 +1201,15 @@ bool CStdGL::RestoreDeviceObjects()
 					R"(
 					#version 120
 
-					uniform sampler2D gamma;
+					uniform sampler1D gammaRed;
+					uniform sampler1D gammaGreen;
+					uniform sampler1D gammaBlue;
 
 					void main()
 					{
-						gl_FragColor.r = texture2D(gamma, vec2(gl_Color.r, 0)).r;
-						gl_FragColor.g = texture2D(gamma, vec2(gl_Color.g, 1)).r;
-						gl_FragColor.b = texture2D(gamma, vec2(gl_Color.b, 2)).r;
+						gl_FragColor.r = texture1D(gammaRed, gl_FragColor.r).r;
+						gl_FragColor.g = texture1D(gammaGreen, gl_FragColor.g).r;
+						gl_FragColor.b = texture1D(gammaBlue, gl_FragColor.b).r;
 						gl_FragColor.a = gl_Color.a;
 					}
 					)"
@@ -1214,7 +1231,9 @@ bool CStdGL::RestoreDeviceObjects()
 
 				if (!Config.Graphics.DisableGamma)
 				{
-					program.SetUniform("gamma", glUniform1i, 3);
+					program.SetUniform("gammaRed", glUniform1i, 3);
+					program.SetUniform("gammaGreen", glUniform1i, 4);
+					program.SetUniform("gammaBlue", glUniform1i, 5);
 				}
 			};
 
@@ -1235,18 +1254,23 @@ bool CStdGL::RestoreDeviceObjects()
 
 			if (!Config.Graphics.DisableGamma)
 			{
-				GammaTexture = {{Gamma.GetSize(), 3}, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
-				GammaTexture.Bind(3);
+				const auto createTexture = [this](auto &texture, const std::int32_t offset)
+				{
+					texture = {{Gamma.GetSize()}, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
+					texture.Bind(offset);
+					glEnable(GL_TEXTURE_1D);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 
-				GammaTexture.SetData(nullptr);
+					texture.SetData(nullptr);
+				};
 
-				glActiveTexture(GL_TEXTURE3);
-				glEnable(GL_TEXTURE_2D);
+				createTexture(GammaRedTexture, 3);
+				createTexture(GammaGreenTexture, 4);
+				createTexture(GammaBlueTexture, 5);
+
 				// Don't switch back to GL_TEXTURE0 - EnableGamma does this
 			}
 		}

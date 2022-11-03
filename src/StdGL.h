@@ -262,7 +262,9 @@ protected:
 	CStdGLShaderProgram BlitShaderMod2;
 	CStdGLShaderProgram LandscapeShader;
 	CStdGLShaderProgram DummyShader;
-	CStdGLTexture<GL_TEXTURE_2D, 2> GammaTexture;
+	CStdGLTexture<GL_TEXTURE_1D, 1> GammaRedTexture;
+	CStdGLTexture<GL_TEXTURE_1D, 1> GammaGreenTexture;
+	CStdGLTexture<GL_TEXTURE_1D, 1> GammaBlueTexture;
 
 public:
 	// General
