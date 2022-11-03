@@ -60,6 +60,7 @@ public:
 	explicit operator bool() const override { return /*glIsProgram(*/shaderProgram/*)*/; }
 
 	void Link() override;
+	void Validate() override;
 	void Clear() override;
 
 	void EnsureProgram() override;
@@ -120,6 +121,9 @@ protected:
 
 		return true;
 	}
+
+private:
+	void CheckStatus(GLenum type);
 
 protected:
 	GLuint shaderProgram{GL_NONE};
