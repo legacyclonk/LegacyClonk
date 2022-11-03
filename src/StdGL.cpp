@@ -1153,8 +1153,8 @@ bool CStdGL::RestoreDeviceObjects()
 					void main()
 					{
 						gl_FragColor.r = texture2D(gamma, vec2(gl_Color.r, 0)).r;
-						gl_FragColor.g = texture2D(gamma, vec2(gl_Color.g, 0)).r;
-						gl_FragColor.b = texture2D(gamma, vec2(gl_Color.b, 0)).r;
+						gl_FragColor.g = texture2D(gamma, vec2(gl_Color.g, 1)).r;
+						gl_FragColor.b = texture2D(gamma, vec2(gl_Color.b, 2)).r;
 						gl_FragColor.a = gl_Color.a;
 					}
 					)"
