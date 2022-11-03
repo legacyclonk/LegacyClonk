@@ -267,30 +267,15 @@ void CStdGLTexture<T, Dimensions>::Bind(const GLenum offset)
 template<GLenum T, std::size_t Dimensions>
 void CStdGLTexture<T, Dimensions>::SetData(const void *const data)
 {
-	if constexpr (Dimensions == 2)
-	{
-		glTexImage2D(Target, 0, internalFormat, dimensions[0], dimensions[1], 0, format, type, data);
-	}
-	else
-	{
-		glTexImage3D(Target, 0, internalFormat, dimensions[0], dimensions[1], dimensions[2], 0, format, type, data);
-	}
-
+	std::apply(GetSetDataFunction(), std::tuple_cat(std::tuple{Target, 0, internalFormat}, dimensions, std::tuple{0, format, type, data}));
 	ThrowIfGLError();
 }
 
 template<GLenum T, std::size_t Dimensions>
 void CStdGLTexture<T, Dimensions>::UpdateData(const void *const data)
 {
-	if constexpr (Dimensions == 2)
-	{
-		glTexSubImage2D(Target, 0, 0, 0, dimensions[0], dimensions[1], format, type, data);
-	}
-	else
-	{
-		glTexSubImage3D(Target, 0, 0, 0, 0, dimensions[0], dimensions[1], dimensions[2], format, type, data);
-	}
-
+	constexpr std::array<std::int32_t, Dimensions> Offset{};
+	std::apply(GetUpdateDataFunction(), std::tuple_cat(std::tuple{Target, 0}, Offset, dimensions, std::tuple{format, type, data}));
 	ThrowIfGLError();
 }
 
@@ -309,6 +294,40 @@ void CStdGLTexture<T, Dimensions>::ThrowIfGLError()
 	if (const GLenum error{glGetError()}; error != GL_NO_ERROR)
 	{
 		throw Exception{reinterpret_cast<const char *>(gluErrorString(error))};
+	}
+}
+
+template<GLenum T, std::size_t Dimensions>
+auto CStdGLTexture<T, Dimensions>::GetSetDataFunction()
+{
+	if constexpr (Dimensions == 1)
+	{
+		return glTexImage1D;
+	}
+	else if constexpr (Dimensions == 2)
+	{
+		return glTexImage2D;
+	}
+	else if constexpr (Dimensions == 3)
+	{
+		return glTexImage3D;
+	}
+}
+
+template<GLenum T, std::size_t Dimensions>
+auto CStdGLTexture<T, Dimensions>::GetUpdateDataFunction()
+{
+	if constexpr (Dimensions == 1)
+	{
+		return glTexSubImage1D;
+	}
+	else if constexpr (Dimensions == 2)
+	{
+		return glTexSubImage2D;
+	}
+	else if constexpr (Dimensions == 3)
+	{
+		return glTexSubImage3D;
 	}
 }
 

@@ -134,6 +134,8 @@ protected:
 template<GLenum T, std::size_t Dimensions>
 class CStdGLTexture
 {
+	static_assert(Dimensions >= 1 && Dimensions <= 3);
+
 public:
 	static constexpr GLenum Target{T};
 
@@ -172,7 +174,7 @@ public:
 
 	void Bind(GLenum offset);
 	void SetData(const void *const data);
-	void UpdateData(const void *const data);
+	void UpdateData(const void *data);
 
 	void Clear();
 
@@ -181,6 +183,8 @@ public:
 
 private:
 	static void ThrowIfGLError();
+	static auto GetSetDataFunction();
+	static auto GetUpdateDataFunction();
 
 private:
 	std::array<std::int32_t, Dimensions> dimensions;
