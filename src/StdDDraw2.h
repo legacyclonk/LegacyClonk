@@ -249,6 +249,7 @@ public:
 	bool AddShader(CStdShader *shader);
 
 	virtual void Link() = 0;
+	virtual void Validate() = 0;
 	void Select();
 	static void Deselect();
 	virtual void Clear();

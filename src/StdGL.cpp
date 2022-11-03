@@ -143,45 +143,9 @@ void CStdGLShader::PrepareSource()
 void CStdGLShaderProgram::Link()
 {
 	EnsureProgram();
-
 	glLinkProgram(shaderProgram);
 
-	GLint status = 0;
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
-	if (!status)
-	{
-		GLint size = 0;
-		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &size);
-		assert(size);
-		if (size)
-		{
-			std::string errorMessage;
-			errorMessage.resize(size);
-			glGetProgramInfoLog(shaderProgram, size, nullptr, errorMessage.data());
-			errorMessage = errorMessage.c_str();
-			throw Exception{errorMessage};
-		}
-
-		throw Exception{"Link failed"};
-	}
-
-	glValidateProgram(shaderProgram);
-	glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &status);
-	if (!status)
-	{
-		GLint size = 0;
-		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &size);
-		if (size)
-		{
-			std::string errorMessage;
-			errorMessage.resize(size);
-			glGetProgramInfoLog(shaderProgram, size, nullptr, errorMessage.data());
-			errorMessage = errorMessage.c_str();
-			throw Exception{errorMessage};
-		}
-
-		throw Exception{"Validation failed"};
-	}
+	CheckStatus(GL_LINK_STATUS);
 
 	for (const auto &shader : shaders)
 	{
@@ -189,6 +153,13 @@ void CStdGLShaderProgram::Link()
 	}
 
 	shaders.clear();
+}
+
+void CStdGLShaderProgram::Validate()
+{
+	EnsureProgram();
+	glValidateProgram(shaderProgram);
+	CheckStatus(GL_VALIDATE_STATUS);
 }
 
 void CStdGLShaderProgram::Clear()
@@ -239,6 +210,27 @@ void CStdGLShaderProgram::OnSelect()
 void CStdGLShaderProgram::OnDeselect()
 {
 	glUseProgram(GL_NONE);
+}
+
+void CStdGLShaderProgram::CheckStatus(const GLenum type)
+{
+	GLint status{0};
+	glGetProgramiv(shaderProgram, type, &status);
+	if (!status)
+	{
+		GLint size = 0;
+		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &size);
+		if (size)
+		{
+			std::string errorMessage;
+			errorMessage.resize(size);
+			glGetProgramInfoLog(shaderProgram, size, NULL, errorMessage.data());
+			errorMessage = errorMessage.c_str();
+			throw Exception{errorMessage};
+		}
+
+		throw Exception{"Status error"};
+	}
 }
 
 template<GLenum T, std::size_t Dimensions>
@@ -1242,17 +1234,23 @@ bool CStdGL::RestoreDeviceObjects()
 			};
 
 			setUniforms(BlitShader);
+			BlitShader.Validate();
+
 			setUniforms(BlitShaderMod2);
+			BlitShaderMod2.Validate();
 
 			if (DummyShader)
 			{
 				setUniforms(DummyShader);
+				DummyShader.Validate();
 			}
 
 			setUniforms(LandscapeShader); // Last so that the shader is selected for the subsequent calls
 
 			LandscapeShader.SetUniform("maskSampler", glUniform1i, 1);
 			LandscapeShader.SetUniform("liquidSampler", glUniform1i, 2);
+
+			LandscapeShader.Validate();
 
 			CStdShaderProgram::Deselect();
 
