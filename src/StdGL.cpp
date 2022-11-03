@@ -241,9 +241,8 @@ void CStdGLShaderProgram::OnDeselect()
 	glUseProgram(GL_NONE);
 }
 
-template<GLenum T, std::size_t Dimensions>
-CStdGLTexture<T, Dimensions>::CStdGLTexture(std::array<int32_t, Dimensions> dimensions, const GLenum internalFormat, const GLenum format, const GLenum type)
-	: dimensions{std::move(dimensions)}, internalFormat{internalFormat}, format{format}, type{type}
+CStdGLTexture::CStdGLTexture(const std::int32_t width, const std::int32_t height, const GLenum internalFormat, const GLenum format, const GLenum type)
+	: width{width}, height{height}, internalFormat{internalFormat}, format{format}, type{type}
 {
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	ThrowIfGLError();
@@ -251,51 +250,30 @@ CStdGLTexture<T, Dimensions>::CStdGLTexture(std::array<int32_t, Dimensions> dime
 	ThrowIfGLError();
 }
 
-template<GLenum T, std::size_t Dimensions>
-CStdGLTexture<T, Dimensions>::~CStdGLTexture()
+CStdGLTexture::~CStdGLTexture()
 {
 	Clear();
 }
 
-template<GLenum T, std::size_t Dimensions>
-void CStdGLTexture<T, Dimensions>::Bind(const GLenum offset)
+void CStdGLTexture::Bind(const GLenum target, const GLenum offset)
 {
 	glActiveTexture(GL_TEXTURE0 + offset);
-	glBindTexture(Target, texture);
+	glBindTexture(target, texture);
 }
 
-template<GLenum T, std::size_t Dimensions>
-void CStdGLTexture<T, Dimensions>::SetData(const void *const data)
+void CStdGLTexture::SetData(const GLenum target, const void *const data)
 {
-	if constexpr (Dimensions == 2)
-	{
-		glTexImage2D(Target, 0, internalFormat, dimensions[0], dimensions[1], 0, format, type, data);
-	}
-	else
-	{
-		glTexImage3D(Target, 0, internalFormat, dimensions[0], dimensions[1], dimensions[2], 0, format, type, data);
-	}
-
+	glTexImage2D(target, 0, internalFormat, width, height, 0, format, type, data);
 	ThrowIfGLError();
 }
 
-template<GLenum T, std::size_t Dimensions>
-void CStdGLTexture<T, Dimensions>::UpdateData(const void *const data)
+void CStdGLTexture::UpdateData(const GLenum target, const void *const data)
 {
-	if constexpr (Dimensions == 2)
-	{
-		glTexSubImage2D(Target, 0, 0, 0, dimensions[0], dimensions[1], format, type, data);
-	}
-	else
-	{
-		glTexSubImage3D(Target, 0, 0, 0, 0, dimensions[0], dimensions[1], dimensions[2], format, type, data);
-	}
-
+	glTexSubImage2D(target, 0, 0, 0, width, height, format, type, data);
 	ThrowIfGLError();
 }
 
-template<GLenum T, std::size_t Dimensions>
-void CStdGLTexture<T, Dimensions>::Clear()
+void CStdGLTexture::Clear()
 {
 	if (texture)
 	{
@@ -303,8 +281,7 @@ void CStdGLTexture<T, Dimensions>::Clear()
 	}
 }
 
-template<GLenum T, std::size_t Dimensions>
-void CStdGLTexture<T, Dimensions>::ThrowIfGLError()
+void CStdGLTexture::ThrowIfGLError()
 {
 	if (const GLenum error{glGetError()}; error != GL_NO_ERROR)
 	{
@@ -972,7 +949,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool force)
 	else if (GammaTexture)
 	{
 		glActiveTexture(GL_TEXTURE3);
-		GammaTexture.UpdateData(ramp.red);
+		GammaTexture.UpdateData(GL_TEXTURE_2D, ramp.red);
 		glActiveTexture(GL_TEXTURE0);
 		return true;
 	}
@@ -1220,15 +1197,15 @@ bool CStdGL::RestoreDeviceObjects()
 
 			if (!Config.Graphics.DisableGamma)
 			{
-				GammaTexture = {{Gamma.GetSize(), 3}, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
-				GammaTexture.Bind(3);
+				GammaTexture = {Gamma.GetSize(), 3, GL_R16, GL_RED, GL_UNSIGNED_SHORT};
+				GammaTexture.Bind(GL_TEXTURE_2D, 3);
 
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-				GammaTexture.SetData(nullptr);
+				GammaTexture.SetData(GL_TEXTURE_2D, nullptr);
 
 				glActiveTexture(GL_TEXTURE3);
 				glEnable(GL_TEXTURE_2D);
