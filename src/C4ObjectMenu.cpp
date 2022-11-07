@@ -220,7 +220,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			// Caption
 			sprintf(szCaption, LoadResStr("IDS_MENU_BUY"), pDef->GetName());
 			// Picture
-			fctSymbol.Set(pDef->Graphics.GetBitmap(pBuyPlayer ? pBuyPlayer->ColorDw : 0), pDef->PictureRect.x, pDef->PictureRect.y, pDef->PictureRect.Wdt, pDef->PictureRect.Hgt);
+			pDef->Picture2Facet(fctSymbol, pBuyPlayer ? pBuyPlayer->ColorDw : 0);
 			// Command
 			sprintf(szCommand, "AppendCommand(this,\"Buy\",Object(%d),%d,0,,0,%s)&&ExecuteCommand()", pTarget->Number, 1, C4IdText(pDef->id));
 			sprintf(szCommand2, "AppendCommand(this,\"Buy\",Object(%d),%d,0,,0,%s)&&ExecuteCommand()", pTarget->Number, iCount, C4IdText(pDef->id));
