@@ -17,8 +17,6 @@
 
 #if defined(_WIN32) && !defined(_INC_WINDOWS)
 
-#define WIN32_LEAN_AND_MEAN
-
 #include <windows.h>
 
 #endif

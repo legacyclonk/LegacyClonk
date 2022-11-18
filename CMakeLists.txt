@@ -97,6 +97,9 @@ if (WIN32)
 	# Don't define min/max macros in Windows.h so that they don't conflict with std::min/max
 	add_compile_definitions(NOMINMAX)
 
+	# Don't include winsock.h in Windows.h so that Windows.h doesn't conflict with WinSock2.h
+	add_compile_definitions(WIN32_LEAN_AND_MEAN)
+
 	# Use Microsoft CryptoAPI instead of OpenSSL when compiling for Windows
 	set(USE_MSCAPI ON)
 
