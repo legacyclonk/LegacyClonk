@@ -26,8 +26,10 @@ if (APPLE)
 	set(LANGUAGE_OBJCXX OBJCXX)
 endif ()
 
+# Target Windows 7
 if (WIN32)
-	set(CMAKE_SYSTEM_VERSION 6.1) # Windows 7
+	set(CMAKE_SYSTEM_VERSION 6.1)
+	add_compile_definitions(NTDDI_VERSION=NTDDI_WIN7)
 endif ()
 
 project("LegacyClonk" LANGUAGES CXX ${LANGUAGE_OBJCXX})

@@ -17,14 +17,6 @@
 
 #if defined(_WIN32) && !defined(_INC_WINDOWS)
 
-#include <sdkddkver.h>
-
-#undef NTDDI_VERSION
-#define NTDDI_VERSION NTDDI_WIN7
-
-#undef _WIN32_WINNT
-#define _WIN32_WINNT _WIN32_WINNT_WIN7
-
 #define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX
 #define NOMINMAX
