@@ -94,6 +94,9 @@ CMAKE_DEPENDENT_OPTION(USE_LIBNOTIFY "Use libnotify for desktop notifications" O
 CMAKE_DEPENDENT_OPTION(USE_WINTOAST "Use WinToast for desktop notifications" ON "NOT USE_CONSOLE AND WIN32" OFF)
 
 if (WIN32)
+	# Don't define min/max macros in Windows.h so that they don't conflict with std::min/max
+	add_compile_definitions(NOMINMAX)
+
 	# Use Microsoft CryptoAPI instead of OpenSSL when compiling for Windows
 	set(USE_MSCAPI ON)
 
