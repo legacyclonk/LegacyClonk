@@ -115,7 +115,7 @@ endif ()
 
 # Disable some Visual C++ warnings
 if (MSVC)
-	add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS)
+	add_compile_definitions(_CRT_NONSTDC_NO_DEPRECATE _CRT_SECURE_NO_WARNINGS)
 	# "multiple copy constructors specified"
 	add_compile_options(/wd4521)
 endif ()
