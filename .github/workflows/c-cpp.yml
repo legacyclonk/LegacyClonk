@@ -42,7 +42,7 @@ jobs:
             env: Mac
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -76,7 +76,7 @@ jobs:
 
       - name: "Windows: Setup VS Dev Environment"
         if: ${{ matrix.env == 'Windows' }}
-        uses: seanmiddleditch/gha-setup-vsdevenv@v3
+        uses: seanmiddleditch/gha-setup-vsdevenv@v4
         with:
           arch: ${{ env.VS_ARCH }}
 
@@ -127,21 +127,21 @@ jobs:
           mv inst/usr/local/c4group inst/usr/local/clonk.app ../output
 
       - name: "Publish Main Artifact"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.CONFIG_SUFFIX }}
           path: output/*
 
       - name: "Publish System.c4g"
         if: ${{ matrix.env == 'Linux' && matrix.arch == 'x64' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: System.c4g
           path: System.c4g
 
       - name: "Publish Graphics.c4g"
         if: ${{ matrix.env == 'Linux' && matrix.arch == 'x64' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Graphics.c4g
           path: Graphics.c4g
