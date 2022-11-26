@@ -142,7 +142,7 @@ jobs:
           path: System.c4g
 
       - name: "Publish Graphics.c4g"
-        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x64' }}
+        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x64' && matrix.config != 'Debugrec' }}
         uses: actions/upload-artifact@v3
         with:
           name: Graphics.c4g
@@ -188,7 +188,7 @@ jobs:
 
       - name: "Release: c4gs"
         uses: ncipollo/release-action@v1.11.2
-        if: ${{ env.IS_RELEASE == 'true' && matrix.env == 'Linux' && matrix.arch == 'x64' }}
+        if: ${{ env.IS_RELEASE == 'true' && matrix.env == 'Linux' && matrix.arch == 'x64' && matrix.config != 'Debugrec' }}
         with:
           artifacts: |
             System.c4g
