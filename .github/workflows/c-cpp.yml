@@ -41,6 +41,8 @@ jobs:
             arch: x64
             env: Mac
     runs-on: ${{ matrix.os }}
+    env:
+      IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -165,27 +167,33 @@ jobs:
           zip -r LegacyClonk-$CONFIG_SUFFIX.zip *
 
       - name: "Release: Windows / Mac"
-        uses: softprops/action-gh-release@v1
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.env != 'Linux' }}
+        uses: ncipollo/release-action@v1.11.2
+        if: ${{ env.IS_RELEASE == 'true' && matrix.env != 'Linux' }}
         with:
-          files: output/LegacyClonk-${{ env.CONFIG_SUFFIX }}.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: output/LegacyClonk-${{ env.CONFIG_SUFFIX }}.zip
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          generateReleaseNotes: true
 
       - name: "Release: Linux"
-        uses: softprops/action-gh-release@v1
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.env == 'Linux' }}
+        uses: ncipollo/release-action@v1.11.2
+        if: ${{ env.IS_RELEASE == 'true' && matrix.env == 'Linux' }}
         with:
-          files: output/LegacyClonk-${{ env.CONFIG_SUFFIX }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: output/LegacyClonk-${{ env.CONFIG_SUFFIX }}.tar.gz
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          generateReleaseNotes: true
 
       - name: "Release: c4gs"
-        uses: softprops/action-gh-release@v1
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.env == 'Linux' && matrix.arch == 'x64' }}
+        uses: ncipollo/release-action@v1.11.2
+        if: ${{ env.IS_RELEASE == 'true' && matrix.env == 'Linux' && matrix.arch == 'x64' }}
         with:
-          files: |
+          artifacts: |
             System.c4g
             Graphics.c4g
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          generateReleaseNotes: true
