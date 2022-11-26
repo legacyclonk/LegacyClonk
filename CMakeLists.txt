@@ -120,6 +120,11 @@ if (MSVC)
 	add_compile_options(/wd4521)
 endif ()
 
+# Incompatible with CF_ENUM
+if (APPLE)
+	add_compile_options(-Wno-elaborated-enum-base)
+endif ()
+
 # Adds the lines of file LIST_FILE to variable TARGET_LIST
 function(append_filelist TARGET_LIST LIST_FILE)
 	file(STRINGS "cmake/filelists/${LIST_FILE}" FILE_CONTENTS)
