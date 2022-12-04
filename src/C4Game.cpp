@@ -4211,7 +4211,7 @@ bool C4Game::DrawTextSpecImage(C4FacetExSurface &fctTarget, const char *szSpec, 
 	{
 		C4Def *pDef = C4Id2Def(C4Id(szSpec));
 		if (!pDef) return false;
-		fctTarget.Set(pDef->Graphics.GetBitmap(dwClr), pDef->PictureRect.x, pDef->PictureRect.y, pDef->PictureRect.Wdt, pDef->PictureRect.Hgt);
+		pDef->Picture2Facet(fctTarget, dwClr);
 		return true;
 	}
 	// C4ID:Index?
@@ -4225,7 +4225,7 @@ bool C4Game::DrawTextSpecImage(C4FacetExSurface &fctTarget, const char *szSpec, 
 			{
 				C4Def *pDef = C4Id2Def(C4Id(idbuf));
 				if (!pDef) return false;
-				fctTarget.Set(pDef->Graphics.GetBitmap(dwClr), pDef->PictureRect.x + pDef->PictureRect.Wdt * iIndex, pDef->PictureRect.y, pDef->PictureRect.Wdt, pDef->PictureRect.Hgt);
+				pDef->Picture2Facet(fctTarget, dwClr, iIndex);
 				return true;
 			}
 		}
