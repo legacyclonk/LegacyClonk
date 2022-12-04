@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "C4Constants.h"
 #include "C4ForwardDeclarations.h"
 #include <C4Surface.h>
 #include "StdDDraw2.h"

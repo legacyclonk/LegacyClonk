@@ -18,6 +18,7 @@
 
 #include "C4Rect.h"
 
+#include "StdAdaptors.h"
 #include "StdCompiler.h"
 
 void C4Rect::Default()
