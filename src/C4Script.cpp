@@ -6527,7 +6527,11 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 
 	{ "RESTORE_None",          C4V_Int, C4NetworkRestartInfos::None },
 	{ "RESTORE_ScriptPlayers", C4V_Int, C4NetworkRestartInfos::ScriptPlayers },
-	{ "RESTORE_PlayerTeams",   C4V_Int, C4NetworkRestartInfos::PlayerTeams }
+	{ "RESTORE_PlayerTeams",   C4V_Int, C4NetworkRestartInfos::PlayerTeams },
+
+	{ "C4PVM_Cursor",    C4V_Int, C4PVM_Cursor },
+	{ "C4PVM_Target",    C4V_Int, C4PVM_Target },
+	{ "C4PVM_Scrolling", C4V_Int, C4PVM_Scrolling },
 };
 
 template <> struct C4ValueConv<C4Value>
