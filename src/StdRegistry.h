@@ -18,8 +18,6 @@
 
 #pragma once
 
-#ifdef _WIN32
-
 #include "C4Windows.h"
 #include "StdCompiler.h"
 
@@ -173,5 +171,3 @@ private:
 	uint32_t ReadDWord();
 	StdStrBuf ReadString();
 };
-
-#endif

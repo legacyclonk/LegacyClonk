@@ -259,6 +259,10 @@ target_compile_definitions(c4group PRIVATE USE_CONSOLE)
 
 append_filelist(LIBSTANDARD_SOURCES Std.txt)
 
+if (WIN32)
+	list(APPEND LIBSTANDARD_SOURCES src/StdRegistry.cpp src/StdRegistry.h)
+endif ()
+
 if (USE_MSCAPI)
 	list(APPEND LIBSTANDARD_SOURCES src/StdSha1MSCapi.cpp)
 else ()

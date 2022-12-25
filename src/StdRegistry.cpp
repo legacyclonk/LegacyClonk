@@ -19,8 +19,6 @@
 #include <Standard.h>
 #include <StdRegistry.h>
 
-#ifdef _WIN32
-
 #include <stdio.h>
 
 bool GetRegistryDWord(HKEY hKey, const char *szSubKey, const char *szValueName, DWORD *lpdwValue)
@@ -746,5 +744,3 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 	Result.SetLength(strlen(Result.getData()));
 	return Result;
 }
-
-#endif // _WIN32

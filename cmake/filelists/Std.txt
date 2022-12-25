@@ -21,6 +21,4 @@ src/StdGzCompressedFile.cpp
 src/StdGzCompressedFile.h
 src/StdHelpers.h
 src/StdLog.h
-src/StdRegistry.cpp
-src/StdRegistry.h
 src/StdSha1.h
