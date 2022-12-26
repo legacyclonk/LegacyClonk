@@ -18,8 +18,8 @@
 
 #ifdef USE_LIBNOTIFY
 #include "C4ToastLibNotify.h"
-#elif defined(USE_WINTOAST)
-#include "C4ToastWinToastLib.h"
+#elif defined(USE_WINDOWS_RUNTIME)
+#include "C4ToastWinRT.h"
 #endif
 
 C4ToastSystem *C4ToastSystem::NewInstance()
@@ -28,15 +28,15 @@ C4ToastSystem *C4ToastSystem::NewInstance()
 	{
 #ifdef USE_LIBNOTIFY
 		return new C4ToastSystemLibNotify{};
-#elif defined(USE_WINTOAST)
-		return new C4ToastSystemWinToastLib{};
+#elif defined(USE_WINDOWS_RUNTIME)
+		return new C4ToastSystemWinRT{};
 #else
 		return nullptr;
 #endif
 	}
 	catch (const std::runtime_error &e)
 	{
-		LogSilentF("%s", e.what());
+		LogSilentF("Failed to initialize toast system: %s", e.what());
 	}
 
 	return nullptr;
@@ -50,8 +50,8 @@ void C4ToastImpl::SetEventHandler(C4ToastEventHandler *const eventHandler)
 C4Toast::C4Toast() : impl{
 #ifdef USE_LIBNOTIFY
 						 new C4ToastImplLibNotify{}
-#elif defined(USE_WINTOAST)
-						 new C4ToastImplWinToastLib{}
+#elif defined(USE_WINDOWS_RUNTIME)
+						 new C4ToastImplWinRT{}
 #else
 						 new C4ToastImpl{}
 #endif

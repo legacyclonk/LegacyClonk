@@ -65,5 +65,7 @@ bool SetC4FileClasses(const char *szEnginePath)
 	// kill old App Paths registration
 	DeleteRegistryKey(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Clonk.exe");
 
+	if (!SetRegClassesRoot("AppUserModelId\\" STD_APPUSERMODELID, "DisplayName", STD_PRODUCT)) return false;
+
 	return true;
 }

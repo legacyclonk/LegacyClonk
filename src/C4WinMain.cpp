@@ -34,6 +34,7 @@
 #endif
 
 #ifdef WIN32
+#include "C4WinRT.h"
 #include <objbase.h>
 #endif
 
@@ -106,16 +107,19 @@ int WINAPI WinMain(HINSTANCE hInst,
 #endif
 #endif
 
-	// Initialize COM library for use by main thread
-	const auto resultCoInit = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-	// Make sure CoUninitialize gets called on exit
-	struct ComUninit { ~ComUninit() { CoUninitialize(); } } const comUninit;
-	// Quit if CoInitializeEx failed
-	if (resultCoInit != S_OK && resultCoInit != S_FALSE)
+	SetCurrentProcessExplicitAppUserModelID(_CRT_WIDE(STD_APPUSERMODELID));
+
+	try
 	{
-		fprintf(stderr, "Error: CoInitializeEx returned %08X\n", resultCoInit);
+		winrt::init_apartment();
+	}
+	catch (const winrt::hresult_error &e)
+	{
+		MessageBoxW(nullptr, (std::wstring{L"Failed to initialize COM: "} + e.message()).c_str(), _CRT_WIDE(STD_PRODUCT), MB_ICONERROR);
 		return C4XRV_Failure;
 	}
+
+	struct ComUninit { ~ComUninit() { winrt::uninit_apartment(); } } uninit;
 
 	// Init application
 	try

@@ -19,120 +19,109 @@
 #include <StdStringEncodingConverter.h>
 
 #include <winerror.h>
-#include <wrl.h>
 
 #include <stdexcept>
 
 StdWic::StdWic()
 {
-	CreateFactory();
+	MapHResultError(&StdWic::CreateFactory, this);
 }
 
 StdWic::StdWic(const bool decode, const std::string &filename)
 	: StdWic()
 {
 	if (decode) throw std::runtime_error("Decoding from filename is not supported yet");
-	CreateOutputStream(filename);
+	MapHResultError(&StdWic::CreateOutputStream, this, filename);
 }
 
 StdWic::StdWic(const bool decode, const void *const fileContents, const std::size_t fileSize)
 	: StdWic()
 {
 	if (!decode) throw std::runtime_error("Encoding to memory is not supported yet");
-	CreateInputStream(fileContents, fileSize);
+	MapHResultError(&StdWic::CreateInputStream, this, fileContents, fileSize);
 }
 
 void StdWic::CreateFactory()
 {
-	ThrowIfFailed(CoCreateInstance(
-		CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
-		IID_IWICImagingFactory, reinterpret_cast<LPVOID *>(factory.GetAddressOf())),
-		"CoCreateInstance failed to create an instance of IWICImagingFactory");
+	factory = winrt::create_instance<IWICImagingFactory>(CLSID_WICImagingFactory);
 }
 
 void StdWic::CreateStream()
 {
-	ThrowIfFailed(factory->CreateStream(stream.GetAddressOf()), "CreateStream failed");
+	winrt::check_hresult(factory->CreateStream(stream.put()));
 }
 
 void StdWic::CreateOutputStream(const std::string &filename)
 {
 	CreateStream();
-	ThrowIfFailed(stream->InitializeFromFilename(
-		StdStringEncodingConverter::WinAcpToUtf16(filename).c_str(), GENERIC_WRITE),
-		"InitializeFromFilename failed");
+	winrt::check_hresult(stream->InitializeFromFilename(StdStringEncodingConverter::WinAcpToUtf16(filename).c_str(), GENERIC_WRITE));
 }
 
 void StdWic::CreateInputStream(const void *const fileContents, const std::size_t size)
 {
 	CreateStream();
-	ThrowIfFailed(
-		stream->InitializeFromMemory(static_cast<BYTE *>(const_cast<void *>(fileContents)), size),
-		"InitializeFromMemory failed");
-}
-
-void StdWic::ThrowIfFailed(const HRESULT result, const std::string msg)
-{
-	if (FAILED(result))
-	{
-		throw std::runtime_error(msg + " (error " + std::to_string(result) + ")");
-	}
+	winrt::check_hresult(stream->InitializeFromMemory(static_cast<BYTE *>(const_cast<void *>(fileContents)), size));
 }
 
 void StdWic::PrepareEncode(const std::uint32_t width, const std::uint32_t height,
 	const GUID containerFormat, const WICPixelFormatGUID pixelFormat)
 {
-	// Create encoder, output file stream and frame
-	ThrowIfFailed(factory->CreateEncoder(containerFormat, nullptr, encoder.GetAddressOf()),
-		"CreateEncoder failed");
-	ThrowIfFailed(encoder->Initialize(stream.Get(), WICBitmapEncoderNoCache),
-		"IWICBitmapEncoder::Initialize failed");
-
-	// Create frame and set its pixel format and size
-	ThrowIfFailed(encoder->CreateNewFrame(frame.GetAddressOf(), nullptr),
-		"CreateNewFrame failed");
-	ThrowIfFailed(frame->Initialize(nullptr),
-		"IWICBitmapFrameEncode::Initialize failed");
-	WICPixelFormatGUID usedPixelFormat = pixelFormat;
-	ThrowIfFailed(frame->SetPixelFormat(&usedPixelFormat),
-		"SetPixelFormat failed");
-	if (usedPixelFormat != pixelFormat)
+	MapHResultError([&, this]
 	{
-		throw std::runtime_error("The specified pixel format cannot be used");
-	}
-	ThrowIfFailed(frame->SetSize(width, height),
-		"SetSize failed");
+		// Create encoder, output file stream and frame
+		winrt::check_hresult(factory->CreateEncoder(containerFormat, nullptr, encoder.put()));
+		winrt::check_hresult(encoder->Initialize(stream.get(), WICBitmapEncoderNoCache));
+
+		// Create frame and set its pixel format and size
+		winrt::check_hresult(encoder->CreateNewFrame(frame.put(), nullptr));
+		winrt::check_hresult(frame->Initialize(nullptr));
+
+		WICPixelFormatGUID usedPixelFormat = pixelFormat;
+		winrt::check_hresult(frame->SetPixelFormat(&usedPixelFormat));
+
+		if (usedPixelFormat != pixelFormat)
+		{
+			throw std::runtime_error{"The specified pixel format cannot be used"};
+		}
+
+		winrt::check_hresult(frame->SetSize(width, height));
+	});
 }
 
 void StdWic::Encode(const UINT lineCount, const UINT stride, const UINT bufferSize,
 	const void *const pixels)
 {
-	ThrowIfFailed(
-		frame->WritePixels(lineCount, stride, bufferSize,
-			static_cast<BYTE *>(const_cast<void *>(pixels))),
-		"WritePixels failed");
+	MapHResultError([&, this]
+	{
+		winrt::check_hresult(frame->WritePixels(lineCount, stride, bufferSize,
+				static_cast<BYTE *>(const_cast<void *>(pixels))));
 
-	ThrowIfFailed(frame->Commit(), "frame->Commit failed");
-	ThrowIfFailed(encoder->Commit(), "encoder->Commit failed");
+		winrt::check_hresult(frame->Commit());
+		winrt::check_hresult(encoder->Commit());
+	});
 }
 
 void StdWic::PrepareDecode(const GUID containerFormat)
 {
-	// Create and initialize decoder for the specified container format GUID
-	Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
-	ThrowIfFailed(factory->CreateDecoder(containerFormat, nullptr, decoder.GetAddressOf()),
-		"CreateDecoder failed");
-	ThrowIfFailed(decoder->Initialize(stream.Get(), WICDecodeMetadataCacheOnDemand),
-		"Initialize failed");
+	MapHResultError([&, this]
+	{
+		// Create and initialize decoder for the specified container format GUID
+		winrt::com_ptr<IWICBitmapDecoder> decoder;
+		winrt::check_hresult(factory->CreateDecoder(containerFormat, nullptr, decoder.put()));
+		winrt::check_hresult(decoder->Initialize(stream.get(), WICDecodeMetadataCacheOnDemand));
 
-	// Get bitmap frame
-	ThrowIfFailed(decoder->GetFrame(0, frameDecode.GetAddressOf()), "GetFrame failed");
-	source = frameDecode;
+		// Get bitmap frame
+		winrt::check_hresult(decoder->GetFrame(0, frameDecode.put()));
+		source = frameDecode;
+	});
 }
 
 void StdWic::GetSize(UINT *const width, UINT *const height)
 {
-	ThrowIfFailed(source->GetSize(width, height), "GetSize failed");
+	MapHResultError([=, this]
+	{
+		winrt::check_hresult(source->GetSize(width, height));
+	});
 }
 
 WICPixelFormatGUID StdWic::GetOutputFormat()
@@ -142,26 +131,33 @@ WICPixelFormatGUID StdWic::GetOutputFormat()
 
 void StdWic::SetOutputFormat(const WICPixelFormatGUID outputFormat)
 {
-	// Do nothing if the current output format is already the desired format
-	if (GetOutputFormat() == outputFormat) return;
+	MapHResultError([=, this]
+	{
+		// Do nothing if the current output format is already the desired format
+		if (GetOutputFormat() == outputFormat) return;
 
-	Microsoft::WRL::ComPtr<IWICBitmapSource> newSource;
-	ThrowIfFailed(WICConvertBitmapSource(outputFormat, frameDecode.Get(), newSource.GetAddressOf()),
-		"WICConvertBitmapSource failed");
-	source = newSource;
+		winrt::com_ptr<IWICBitmapSource> newSource;
+		winrt::check_hresult(WICConvertBitmapSource(outputFormat, frameDecode.get(), newSource.put()));
+		source = newSource;
+	});
 }
 
 void StdWic::CopyPixels(
 	const WICRect *const rect, const UINT stride, const UINT bufferSize, void *const pixels)
 {
-	// Copy pixels of decoded image
-	ThrowIfFailed(source->CopyPixels(rect, stride, bufferSize, static_cast<BYTE *>(pixels)),
-		"CopyPixels failed");
+	MapHResultError([=, this]
+	{
+		// Copy pixels of decoded image
+		winrt::check_hresult(source->CopyPixels(rect, stride, bufferSize, static_cast<BYTE *>(pixels)));
+	});
 }
 
-WICPixelFormatGUID StdWic::GetPixelFormat(const Microsoft::WRL::ComPtr<IWICBitmapSource> source)
+WICPixelFormatGUID StdWic::GetPixelFormat(const winrt::com_ptr<IWICBitmapSource> &source)
 {
-	WICPixelFormatGUID pixelFormat;
-	ThrowIfFailed(source->GetPixelFormat(&pixelFormat), "GetPixelFormat failed");
-	return pixelFormat;
+	return MapHResultError([&]
+	{
+		WICPixelFormatGUID pixelFormat;
+		winrt::check_hresult(source->GetPixelFormat(&pixelFormat));
+		return pixelFormat;
+	});
 }

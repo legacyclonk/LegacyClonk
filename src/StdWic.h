@@ -15,10 +15,11 @@
 
 #pragma once
 
+#include "C4WinRT.h"
+
 #include <cstdint>
 #include <wincodec.h>
 #include <winnt.h>
-#include <wrl.h>
 
 #include <string>
 
@@ -28,8 +29,6 @@ class StdWic
 public:
 	StdWic(bool decode, const std::string &filename);
 	StdWic(bool decode, const void *fileContents, std::size_t fileSize);
-
-	static void ThrowIfFailed(HRESULT result, const std::string msg);
 
 	void PrepareEncode(std::uint32_t width, std::uint32_t height,
 		GUID containerFormat, WICPixelFormatGUID pixelFormat);
@@ -42,10 +41,10 @@ public:
 	void CopyPixels(const WICRect *rect, UINT stride, UINT bufferSize, void *pixels);
 
 private:
-	Microsoft::WRL::ComPtr<IWICImagingFactory> factory;
-	Microsoft::WRL::ComPtr<IWICStream> stream;
-	Microsoft::WRL::ComPtr<IWICBitmapEncoder> encoder;
-	Microsoft::WRL::ComPtr<IWICBitmapFrameEncode> frame;
+	winrt::com_ptr<IWICImagingFactory> factory;
+	winrt::com_ptr<IWICStream> stream;
+	winrt::com_ptr<IWICBitmapEncoder> encoder;
+	winrt::com_ptr<IWICBitmapFrameEncode> frame;
 
 	StdWic();
 	void CreateFactory();
@@ -54,9 +53,9 @@ private:
 	void CreateInputStream(const void *fileContents, std::size_t size);
 
 	// Bitmap frame of the source file.
-	Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frameDecode;
+	winrt::com_ptr<IWICBitmapFrameDecode> frameDecode;
 	// Source bitmap when decoding. Points to frameDecode if no conversion is needed.
-	Microsoft::WRL::ComPtr<IWICBitmapSource> source;
+	winrt::com_ptr<IWICBitmapSource> source;
 
-	static WICPixelFormatGUID GetPixelFormat(Microsoft::WRL::ComPtr<IWICBitmapSource> source);
+	static WICPixelFormatGUID GetPixelFormat(const winrt::com_ptr<IWICBitmapSource> &source);
 };

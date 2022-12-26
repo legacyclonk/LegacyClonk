@@ -95,9 +95,11 @@ CStdWindow *CStdWindow::Init(CStdApp *pApp)
 
 	if (!taskBarList)
 	{
-		HRESULT hr = ::CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskBarList));
-
-		if (SUCCEEDED(hr) && FAILED(taskBarList->HrInit())) taskBarList = nullptr;
+		auto list = winrt::try_create_instance<ITaskbarList3>(CLSID_TaskbarList);
+		if (list && SUCCEEDED(list->HrInit()))
+		{
+			taskBarList = std::move(list);
+		}
 	}
 
 	return this;
@@ -110,7 +112,7 @@ void CStdWindow::Clear()
 	if (hWindow) DestroyWindow(hWindow);
 	hWindow = nullptr;
 	hRenderWindow = nullptr;
-	taskBarList.Reset();
+	taskBarList = nullptr;
 }
 
 bool CStdWindow::RestorePosition(const char *szWindowName, const char *szSubKey)

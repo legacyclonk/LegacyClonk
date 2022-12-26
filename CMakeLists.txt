@@ -90,8 +90,8 @@ CMAKE_DEPENDENT_OPTION(WITH_DEVELOPER_MODE "Use GTK for the developer mode" OFF
 	"NOT USE_CONSOLE" OFF)
 # USE_LIBNOTIFY
 CMAKE_DEPENDENT_OPTION(USE_LIBNOTIFY "Use libnotify for desktop notifications" ON "WITH_DEVELOPER_MODE AND NOT USE_CONSOLE AND NOT WIN32" OFF)
-# USE_WINTOAST
-CMAKE_DEPENDENT_OPTION(USE_WINTOAST "Use WinToast for desktop notifications" ON "NOT USE_CONSOLE AND WIN32" OFF)
+# USE_WINDOWS_RUNTIME
+CMAKE_DEPENDENT_OPTION(USE_WINDOWS_RUNTIME "Use Windows Runtime features" ON "WIN32" OFF)
 
 if (WIN32)
 	# Don't define min/max macros in Windows.h so that they don't conflict with std::min/max
@@ -228,10 +228,9 @@ if (USE_LIBNOTIFY)
 		src/C4ToastLibNotify.cpp src/C4ToastLibNotify.h)
 endif ()
 
-if (USE_WINTOAST)
+if (USE_WINDOWS_RUNTIME)
 	list(APPEND CLONK_SOURCES
-		src/C4ToastWinToastLib.cpp src/C4ToastWinToastLib.h
-		src/WinToast/src/wintoastlib.cpp src/WinToast/src/wintoastlib.h)
+		src/C4ToastWinRT.cpp src/C4ToastWinRT.h)
 endif ()
 
 if (USE_CONSOLE)
@@ -384,16 +383,34 @@ if (USE_LIBNOTIFY)
 	target_link_libraries(clonk PkgConfig::libnotify)
 endif ()
 
-if (USE_WINTOAST)
-	target_include_directories(clonk PRIVATE src/WinToast/src)
-endif ()
-
 # Link Windows libraries
 if (WIN32)
 	target_link_libraries(clonk dbghelp iphlpapi winmm ws2_32)
 
 	if (USE_SDL_MIXER)
 		target_link_libraries(clonk imm32.lib setupapi.lib version.lib)
+	endif ()
+endif ()
+
+# Link C++/WinRT
+if (WIN32)
+	find_program(CPPWINRT cppwinrt REQUIRED)
+	set(CPPWINRT_ARGS -base -optimize -output "${CMAKE_CURRENT_BINARY_DIR}/generated/cppwinrt")
+
+	if (USE_WINDOWS_RUNTIME)
+		list(APPEND CPPWINRT_ARGS -input sdk)
+	endif ()
+
+	execute_process(COMMAND "${CPPWINRT}" ${CPPWINRT_ARGS})
+
+	target_include_directories(clonk PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated/cppwinrt")
+
+	if (USE_WINDOWS_RUNTIME)
+		if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+			target_link_options(clonk PRIVATE "/alternatename:WINRT_IMPL_GetSystemTimePreciseAsFileTime=Clonk_GetSystemTimePreciseAsFileTime")
+		else ()
+			target_link_options(clonk PRIVATE "/alternatename:_WINRT_IMPL_GetSystemTimePreciseAsFileTime@4=_Clonk_GetSystemTimePreciseAsFileTime@4")
+		endif ()
 	endif ()
 endif ()
 
@@ -426,6 +443,7 @@ target_compile_definitions(standard PUBLIC
 	ICONV_CONST=
 	# A standard product name for this project which is used in window registration etc.
 	STD_PRODUCT="LegacyClonk"
+	STD_APPUSERMODELID="LegacyClonkTeam.LegacyClonk"
 	ZLIB_CONST=1
 )
 
@@ -442,8 +460,8 @@ foreach(MACRO_VAR
 	USE_SDL_MAINLOOP
 	USE_SDL_MIXER
 	USE_STAT
-	USE_WINTOAST
 	USE_X11
+	USE_WINDOWS_RUNTIME
 	WITH_DEVELOPER_MODE
 	WITH_GLIB
 )

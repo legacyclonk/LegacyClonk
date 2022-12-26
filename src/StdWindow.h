@@ -27,8 +27,9 @@
 #ifdef _WIN32
 const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 
+#include "C4WinRT.h"
+
 #include <shobjidl.h>
-#include <wrl/client.h>
 
 #endif
 
@@ -290,12 +291,12 @@ protected:
 private:
 	DWORD style = WS_OVERLAPPEDWINDOW;
 	DWORD styleEx = 0;
-	Microsoft::WRL::ComPtr<ITaskbarList3> taskBarList = nullptr;
+	winrt::com_ptr<ITaskbarList3> taskBarList{nullptr};
 
 	struct ComUnInit
 	{
-		ComUnInit() { CoInitializeEx(nullptr, COINIT_MULTITHREADED); }
-		~ComUnInit() { CoUninitialize(); }
+		ComUnInit() { winrt::init_apartment(); }
+		~ComUnInit() { winrt::uninit_apartment(); }
 	} const comUninit;
 
 #elif defined(USE_X11)
