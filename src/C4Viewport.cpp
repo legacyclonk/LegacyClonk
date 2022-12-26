@@ -37,9 +37,10 @@
 #include <C4ObjectMenu.h>
 
 #include <StdGL.h>
-#include <StdRegistry.h>
 
-#ifdef USE_X11
+#ifdef _WIN32
+#include "StdRegistry.h"
+#elif defined(USE_X11)
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 #ifdef WITH_DEVELOPER_MODE

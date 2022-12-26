@@ -29,9 +29,10 @@
 #endif
 
 #include <StdFile.h>
-#include <StdRegistry.h>
 
-#ifdef __linux__
+#ifdef _WIN32
+#include "StdRegistry.h"
+#elif defined(__linux__)
 #include <clocale>
 #endif
 

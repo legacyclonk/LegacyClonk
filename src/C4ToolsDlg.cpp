@@ -19,7 +19,6 @@
 #include <C4ToolsDlg.h>
 #include <C4Console.h>
 #include <C4Application.h>
-#include <StdRegistry.h>
 #ifndef USE_CONSOLE
 #include <StdGL.h>
 #endif
@@ -27,6 +26,7 @@
 #include "C4Wrappers.h"
 
 #ifdef _WIN32
+#include "StdRegistry.h"
 #include "res/engine_resource.h"
 #endif
 

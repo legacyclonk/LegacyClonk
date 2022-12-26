@@ -33,7 +33,9 @@
 #include <C4GamePadCon.h>
 #include <C4GameLobby.h>
 
-#include <StdRegistry.h> // For DDraw emulation warning
+#ifdef _WIN32
+#include "StdRegistry.h" // For DDraw emulation warning
+#endif
 
 #include <cassert>
 #include <stdexcept>

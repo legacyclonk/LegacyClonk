@@ -29,9 +29,9 @@
 #include <C4Wrappers.h>
 
 #include <StdGL.h>
-#include <StdRegistry.h>
 
 #ifdef _WIN32
+#include "StdRegistry.h"
 #include "res/engine_resource.h"
 #endif
 

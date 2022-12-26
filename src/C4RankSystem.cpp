@@ -25,7 +25,9 @@
 #include <C4FacetEx.h>
 #include <C4Game.h>
 
-#include <StdRegistry.h>
+#ifdef _WIN32
+#include "StdRegistry.h"
+#endif
 
 C4RankSystem::C4RankSystem()
 {
