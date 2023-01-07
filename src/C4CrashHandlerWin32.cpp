@@ -31,10 +31,6 @@
 
 #include <cinttypes>
 
-#if defined(__CRT_WIDE) || (defined(_MSC_VER) && _MSC_VER >= 1900)
-#define USE_WIDE_ASSERT
-#endif
-
 static bool FirstCrash = true;
 
 namespace
@@ -159,16 +155,10 @@ namespace
 				LOG_STATIC_TEXT("Additional information for the exception was not provided.\n");
 				break;
 			}
-#ifdef USE_WIDE_ASSERT
-#	define ASSERTION_INFO_FORMAT "%ls"
-#	define ASSERTION_INFO_TYPE wchar_t *
-#else
-#	define ASSERTION_INFO_FORMAT "%s"
-#	define ASSERTION_INFO_TYPE char *
-#endif
-			LOG_DYNAMIC_TEXT("Additional information for the exception:\n    Assertion that failed: " ASSERTION_INFO_FORMAT "\n    File: " ASSERTION_INFO_FORMAT "\n    Line: %d\n",
-							 reinterpret_cast<ASSERTION_INFO_TYPE>(exc->ExceptionRecord->ExceptionInformation[0]),
-							 reinterpret_cast<ASSERTION_INFO_TYPE>(exc->ExceptionRecord->ExceptionInformation[1]),
+
+			LOG_DYNAMIC_TEXT("Additional information for the exception:\n    Assertion that failed: %ls\n    File: %ls\n    Line: %d\n",
+							 reinterpret_cast<wchar_t *>(exc->ExceptionRecord->ExceptionInformation[0]),
+							 reinterpret_cast<wchar_t *>(exc->ExceptionRecord->ExceptionInformation[1]),
 							 (int) exc->ExceptionRecord->ExceptionInformation[2]);
 			break;
 		}
@@ -497,15 +487,9 @@ namespace
 	// replaces the trampoline with the original prologue, and calls the handler.
 	// If the standard handler returns control to assertionHandler(), it will then
 	// restore the hook.
-#ifdef USE_WIDE_ASSERT
 	typedef void(__cdecl *ASSERT_FUNC)(const wchar_t *, const wchar_t *, unsigned);
-	const ASSERT_FUNC assertFunc =
-		&_wassert;
-#else
-	typedef void(__cdecl *ASSERT_FUNC)(const char *, const char *, int);
-	const ASSERT_FUNC assertFunc =
-		&_assert;
-#endif
+	const ASSERT_FUNC assertFunc{&_wassert};
+
 	unsigned char trampoline[] = {
 #if LC_MACHINE == LC_MACHINE_X64
 		// MOV rax, 0xCCCCCCCCCCCCCCCC
@@ -553,12 +537,7 @@ namespace
 	struct dump_thread_t
 	{
 		HANDLE thread;
-#ifdef USE_WIDE_ASSERT
-		const wchar_t
-#else
-		const char
-#endif
-			*expression, *file;
+		const wchar_t *expression, *file;
 		size_t line;
 	};
 	// Helper function to get a valid thread context for the main thread
@@ -612,11 +591,7 @@ namespace
 	}
 
 	// Replacement assertion handler
-#ifdef USE_WIDE_ASSERT
 	void __cdecl assertionHandler(const wchar_t *expression, const wchar_t *file, unsigned line)
-#else
-	void __cdecl assertionHandler(const char *expression, const char *file, int line)
-#endif
 	{
 		// Dump thread status on a different thread because we can't get a valid thread context otherwise
 		HANDLE thisThread;
