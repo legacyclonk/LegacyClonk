@@ -667,7 +667,7 @@ void InstallCrashHandler()
 	FreeLibrary(kernel32);
 
 	SetUnhandledExceptionFilter(GenerateDump);
-	AddVectoredExceptionHandler(1, HandleHeapCorruption);
+	AddVectoredExceptionHandler(0, HandleHeapCorruption);
 
 #ifndef NDEBUG
 	// Hook _wassert/_assert, unless we're running under a debugger
