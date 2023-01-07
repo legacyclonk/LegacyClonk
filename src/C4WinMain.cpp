@@ -36,6 +36,10 @@
 #ifdef WIN32
 #include "C4Com.h"
 #include "C4WinRT.h"
+
+#include <span>
+#include <string_view>
+
 #include <objbase.h>
 #endif
 
@@ -54,10 +58,7 @@ C4Config Config;
 
 void InstallCrashHandler();
 
-int WINAPI WinMain(HINSTANCE hInst,
-	HINSTANCE hPrevInstance,
-	LPSTR lpszCmdParam,
-	int nCmdShow)
+int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, char **const argv, const LPSTR commandLine)
 {
 #if defined(_MSC_VER)
 	// enable debugheap!
@@ -68,11 +69,21 @@ int WINAPI WinMain(HINSTANCE hInst,
 
 	InstallCrashHandler();
 
-	auto allocConsole = []
+	const std::span args{argv, static_cast<std::size_t>(argc)};
+
+	const auto hasArgument = [&args](const std::string_view argument)
+	{
+		return std::ranges::find(args, argument) != std::ranges::end(args);
+	};
+
+#ifndef USE_CONSOLE
+#ifndef NDEBUG
+	if (hasArgument("/allocconsole"))
+#endif
 	{
 		if (!AllocConsole())
 		{
-			return false;
+			return C4XRV_Failure;
 		}
 
 		freopen("CONIN$", "r", stdin);
@@ -83,31 +94,7 @@ int WINAPI WinMain(HINSTANCE hInst,
 		SetStdHandle(STD_OUTPUT_HANDLE, out);
 		SetStdHandle(STD_ERROR_HANDLE, out);
 		SetStdHandle(STD_INPUT_HANDLE, CreateFile(_T("CONIN$"), GENERIC_READ, FILE_SHARE_READ , nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
-
-		return true;
-	};
-
-#ifndef USE_CONSOLE
-#ifndef NDEBUG
-	allocConsole();
-#else
-	constexpr char Parameter[]{"/allocconsole"};
-
-	char parameter[sizeof(Parameter)];
-	for (int32_t par = 0; SGetParameter(lpszCmdParam, par, parameter, sizeof(Parameter) - 1); ++par)
-	{
-		if (SEqual2NoCase(parameter, Parameter))
-		{
-			if (!allocConsole())
-			{
-				// console has been explicitely requested; fail if not available
-				return EXIT_FAILURE;
-			}
-
-			break;
-		}
 	}
-#endif
 #endif
 
 	C4Com com;
@@ -125,7 +112,7 @@ int WINAPI WinMain(HINSTANCE hInst,
 	// Init application
 	try
 	{
-		Application.Init(hInst, nCmdShow, lpszCmdParam);
+		Application.Init(instance, cmdShow, commandLine);
 	}
 	catch (const CStdApp::StartupException &e)
 	{
@@ -142,23 +129,44 @@ int WINAPI WinMain(HINSTANCE hInst,
 	return C4XRV_Completed;
 }
 
-int main()
+int WINAPI WinMain(HINSTANCE hInst,
+	HINSTANCE hPrevInstance,
+	LPSTR lpszCmdParam,
+	int nCmdShow)
+{
+	return ClonkMain(hInst, nCmdShow, __argc, __argv, lpszCmdParam);
+}
+
+int main(const int argc, char **const argv)
 {
 	// Get command line, go over program name
-	char *pCommandLine = GetCommandLine();
-	if (*pCommandLine == '"')
+	char *commandLine{GetCommandLine()};
+	if (*commandLine == L'"')
 	{
-		pCommandLine++;
-		while (*pCommandLine && *pCommandLine != '"')
-			pCommandLine++;
-		if (*pCommandLine == '"') pCommandLine++;
+		++commandLine;
+		while (*commandLine && *commandLine != '"')
+		{
+			++commandLine;
+		}
+
+		if (*commandLine == '"')
+		{
+			++commandLine;
+		}
 	}
 	else
-		while (*pCommandLine && *pCommandLine != ' ')
-			pCommandLine++;
-	while (*pCommandLine == ' ') pCommandLine++;
-	// Call
-	return WinMain(GetModuleHandle(nullptr), 0, pCommandLine, 0);
+	{
+		while (*commandLine && *commandLine != ' ')
+		{
+			++commandLine;
+		}
+	}
+	while (*commandLine == ' ')
+	{
+		++commandLine;
+	}
+
+	return ClonkMain(GetModuleHandle(nullptr), 0, argc, argv, commandLine);
 }
 
 #else
