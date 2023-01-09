@@ -37,6 +37,7 @@
 #include "C4Com.h"
 #include "C4WinRT.h"
 
+#include <ranges>
 #include <span>
 #include <string_view>
 
@@ -58,6 +59,7 @@ C4Config Config;
 #ifdef _WIN32
 
 void InstallCrashHandler();
+int GenerateParentProcessDump(std::wstring_view, const std::string &);
 
 int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, wchar_t **const argv, const LPWSTR commandLine)
 {
@@ -68,14 +70,39 @@ int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, wchar
 
 	SetCurrentProcessExplicitAppUserModelID(_CRT_WIDE(STD_APPUSERMODELID));
 
-	InstallCrashHandler();
-
-	const std::span args{argv, static_cast<std::size_t>(argc)};
+	const auto args = std::span{argv, static_cast<std::size_t>(argc)} | std::views::transform([](wchar_t *const arg) { return std::wstring_view{arg}; });
 
 	const auto hasArgument = [&args](const std::wstring_view argument)
 	{
 		return std::ranges::find(args, argument) != std::ranges::end(args);
 	};
+
+	const auto getArgument = [&args](const std::wstring_view argument) -> std::wstring_view
+	{
+		for (const auto arg : args)
+		{
+			if (arg.starts_with(argument))
+			{
+				return arg.substr(argument.size());
+			}
+		}
+
+		return {};
+	};
+
+	if (const auto arg = getArgument(L"/crashhandler:"); !arg.empty())
+	{
+		std::string configAnsi;
+
+		if (const auto config = getArgument(L"/config:"); !config.empty())
+		{
+			configAnsi = StdStringEncodingConverter{}.Utf16ToWinAcp(config.data());
+		}
+
+		return GenerateParentProcessDump(arg, configAnsi);
+	}
+
+	InstallCrashHandler();
 
 #ifndef USE_CONSOLE
 #ifndef NDEBUG
