@@ -181,20 +181,37 @@ LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 
 	CloseHandle(processInformation.hThread);
 
+	bool success{false};
 	const HANDLE handles[]{event.get(), processInformation.hProcess};
-	if (WaitForMultipleObjects(2, handles, false, 5000) == WAIT_OBJECT_0 + 1)
+
+	switch (WaitForMultipleObjects(std::size(handles), handles, false, 5000))
+	{
+	case WAIT_TIMEOUT: // Process hangs, terminate it
+		TerminateProcess(handles[1], STATUS_TIMEOUT);
+		break;
+
+	case WAIT_OBJECT_0: // Process succeeded
+		success = true;
+		break;
+
+	case WAIT_OBJECT_0 + 1: // Process exited
 	{
 		DWORD exitCode;
 		GetExitCodeProcess(handles[1], &exitCode);
-		if (exitCode != C4XRV_Completed)
-		{
-			MessageBoxW(nullptr, L"LegacyClonk crashed. Crash reporter non-functional.", _CRT_WIDE(STD_PRODUCT), MB_ICONERROR);
-		}
+		success = exitCode == C4XRV_Completed;
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	if (!success)
+	{
+		MessageBoxW(nullptr, L"LegacyClonk crashed. Crash reporter non-functional.", _CRT_WIDE(STD_PRODUCT), MB_ICONERROR);
 	}
 
 	TerminateProcess(GetCurrentProcess(), exceptionPointers->ExceptionRecord->ExceptionCode);
-	MessageBoxW(nullptr, L"LegacyClonk crashed. Crash reporter non-functional.", _CRT_WIDE(STD_PRODUCT), MB_ICONERROR);
-
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
