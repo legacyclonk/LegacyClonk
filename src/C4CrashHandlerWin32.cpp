@@ -33,6 +33,7 @@
 
 static bool FirstCrash = true;
 
+#ifndef NDEBUG
 #define LC_MACHINE_UNKNOWN 0x0
 #define LC_MACHINE_X86     0x1
 #define LC_MACHINE_X64     0x2
@@ -43,6 +44,7 @@ static bool FirstCrash = true;
 #define LC_MACHINE LC_MACHINE_X86
 #else
 #define LC_MACHINE LC_MACHINE_UNKNOWN
+#endif
 #endif
 
 static constexpr size_t DumpBufferSize = 1024;
@@ -227,7 +229,7 @@ static LONG WINAPI HandleHeapCorruption(PEXCEPTION_POINTERS exceptionPointers)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
-#ifndef NDEBUG
+#ifdef LC_MACHINE
 namespace
 {
 	// Assertion logging hook. This will replace the prologue of the standard assertion
@@ -329,7 +331,7 @@ void InstallCrashHandler()
 	SetUnhandledExceptionFilter(GenerateDump);
 	AddVectoredExceptionHandler(0, HandleHeapCorruption);
 
-#ifndef NDEBUG
+#ifdef LC_MACHINE
 	if (!IsDebuggerPresent())
 	{
 		HookAssert(&assertionHandler);
