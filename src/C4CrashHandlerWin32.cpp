@@ -36,18 +36,20 @@ static bool FirstCrash = true;
 #define LC_MACHINE_UNKNOWN 0x0
 #define LC_MACHINE_X86     0x1
 #define LC_MACHINE_X64     0x2
+
 #if defined(_M_X64) || defined(__amd64)
-#	define LC_MACHINE LC_MACHINE_X64
+#define LC_MACHINE LC_MACHINE_X64
 #elif defined(_M_IX86) || defined(__i386__)
-#	define LC_MACHINE LC_MACHINE_X86
+#define LC_MACHINE LC_MACHINE_X86
 #else
-#	define LC_MACHINE LC_MACHINE_UNKNOWN
+#define LC_MACHINE LC_MACHINE_UNKNOWN
 #endif
 
 static constexpr size_t DumpBufferSize = 1024;
 static wchar_t DumpBuffer[DumpBufferSize];
 
 #define FORMAT_STRING L"%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR)
+#define PROCESS_CALLBACK_FILTER_ENABLED 1
 
 template<std::intptr_t InvalidValue>
 using Handle = std::unique_ptr<std::remove_pointer_t<HANDLE>, decltype([](const HANDLE handle) { if (handle != std::bit_cast<HANDLE>(InvalidValue)) { CloseHandle(handle); } })>;
@@ -233,10 +235,9 @@ namespace
 	// replaces the trampoline with the original prologue, and calls the handler.
 	// If the standard handler returns control to assertionHandler(), it will then
 	// restore the hook.
-	typedef void(__cdecl *ASSERT_FUNC)(const wchar_t *, const wchar_t *, unsigned);
-	const ASSERT_FUNC assertFunc{&_wassert};
+	using AssertFunc = std::add_pointer_t<decltype(_wassert)>;
 
-	unsigned char trampoline[] = {
+	unsigned char trampoline[]{
 #if LC_MACHINE == LC_MACHINE_X64
 		// MOV rax, 0xCCCCCCCCCCCCCCCC
 		0x48 /* REX.W */, 0xB8, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
@@ -251,39 +252,49 @@ namespace
 		0xFF, 0xE0
 #endif
 	};
+
 	unsigned char trampolineBackup[sizeof(trampoline)];
-	void HookAssert(ASSERT_FUNC hook)
+
+	void HookAssert(const AssertFunc hook)
 	{
-		// Write hook function address to trampoline
-		memcpy(trampoline + 2, reinterpret_cast<void *>(&hook), sizeof(void *));
-		// Make target location writable
-		DWORD oldProtect = 0;
-		if (!VirtualProtect(reinterpret_cast<LPVOID>(assertFunc), sizeof(trampoline), PAGE_EXECUTE_READWRITE, &oldProtect))
+		auto *const assertFunc = reinterpret_cast<void *>(&_wassert);
+
+		std::memcpy(trampoline + 2, reinterpret_cast<const void *>(&hook), sizeof(void *));
+
+		DWORD oldProtect{0};
+		if (!VirtualProtect(reinterpret_cast<void *>(&_wassert), sizeof(trampoline), PAGE_EXECUTE_READWRITE, &oldProtect))
+		{
 			return;
-		// Take backup of old target function and replace it with trampoline
-		memcpy(trampolineBackup, reinterpret_cast<void *>(assertFunc), sizeof(trampolineBackup));
-		memcpy(reinterpret_cast<void *>(assertFunc), trampoline, sizeof(trampoline));
-		// Restore memory protection
-		VirtualProtect(reinterpret_cast<LPVOID>(assertFunc), sizeof(trampoline), oldProtect, &oldProtect);
-		// Flush processor caches. Not strictly necessary on x86 and x64.
-		FlushInstructionCache(GetCurrentProcess(), reinterpret_cast<LPCVOID>(assertFunc), sizeof(trampoline));
+		}
+
+		std::memcpy(trampolineBackup, assertFunc, sizeof(trampolineBackup));
+		std::memcpy(assertFunc, trampoline, sizeof(trampoline));
+
+		VirtualProtect(assertFunc, sizeof(trampoline), oldProtect, &oldProtect);
+		FlushInstructionCache(GetCurrentProcess(), assertFunc, sizeof(trampoline));
 	}
+
 	void UnhookAssert()
 	{
-		DWORD oldProtect = 0;
-		if (!VirtualProtect(reinterpret_cast<LPVOID>(assertFunc), sizeof(trampolineBackup), PAGE_EXECUTE_READWRITE, &oldProtect))
+		auto *const assertFunc = reinterpret_cast<void *>(&_wassert);
+
+		DWORD oldProtect{0};
+		if (!VirtualProtect(assertFunc, sizeof(trampolineBackup), PAGE_EXECUTE_READWRITE, &oldProtect))
+		{
 			// Couldn't make assert function writable. Abort program (it's what assert() is supposed to do anyway).
-			abort();
-		// Replace function with backup
-		memcpy(reinterpret_cast<void *>(assertFunc), trampolineBackup, sizeof(trampolineBackup));
-		VirtualProtect(reinterpret_cast<LPVOID>(assertFunc), sizeof(trampolineBackup), oldProtect, &oldProtect);
-		FlushInstructionCache(GetCurrentProcess(), reinterpret_cast<LPCVOID>(assertFunc), sizeof(trampolineBackup));
+			std::abort();
+		}
+
+		std::memcpy(assertFunc, trampolineBackup, sizeof(trampolineBackup));
+
+		VirtualProtect(assertFunc, sizeof(trampolineBackup), oldProtect, &oldProtect);
+		FlushInstructionCache(GetCurrentProcess(), assertFunc, sizeof(trampolineBackup));
 	}
 
 	// Replacement assertion handler
-	void __cdecl assertionHandler(const wchar_t *expression, const wchar_t *file, unsigned line)
+	static void __cdecl assertionHandler(const wchar_t *const expression, const wchar_t *const file, const unsigned line)
 	{
-		ULONG_PTR arguments[]{
+		const ULONG_PTR arguments[]{
 			reinterpret_cast<ULONG_PTR>(expression),
 			reinterpret_cast<ULONG_PTR>(file),
 			static_cast<ULONG_PTR>(line)
@@ -301,16 +312,11 @@ void InstallCrashHandler()
 	// manifest. Without turning this off, we won't be able to handle crashes
 	// inside window procedures on 64-bit Windows, regardless of whether we
 	// are 32 or 64 bit ourselves.
-	typedef BOOL(WINAPI *SetProcessUserModeExceptionPolicyProc)(DWORD);
-	typedef BOOL(WINAPI *GetProcessUserModeExceptionPolicyProc)(LPDWORD);
-	HMODULE kernel32 = LoadLibrary(TEXT("kernel32"));
-	const SetProcessUserModeExceptionPolicyProc SetProcessUserModeExceptionPolicy =
-		(SetProcessUserModeExceptionPolicyProc) GetProcAddress(kernel32, "SetProcessUserModeExceptionPolicy");
-	const GetProcessUserModeExceptionPolicyProc GetProcessUserModeExceptionPolicy =
-		(GetProcessUserModeExceptionPolicyProc) GetProcAddress(kernel32, "GetProcessUserModeExceptionPolicy");
-#ifndef PROCESS_CALLBACK_FILTER_ENABLED
-#	define PROCESS_CALLBACK_FILTER_ENABLED 0x1
-#endif
+
+	const HMODULE kernel32{GetModuleHandle("kernel32")};
+	auto *const SetProcessUserModeExceptionPolicy = reinterpret_cast<BOOL(WINAPI *)(DWORD)>(GetProcAddress(kernel32, "SetProcessUserModeExceptionPolicy"));
+	auto *const GetProcessUserModeExceptionPolicy = reinterpret_cast<BOOL(WINAPI *)(LPDWORD)>(GetProcAddress(kernel32, "GSetProcessUserModeExceptionPolicy"));
+
 	if (SetProcessUserModeExceptionPolicy && GetProcessUserModeExceptionPolicy)
 	{
 		DWORD flags;
@@ -319,15 +325,15 @@ void InstallCrashHandler()
 			SetProcessUserModeExceptionPolicy(flags & ~PROCESS_CALLBACK_FILTER_ENABLED);
 		}
 	}
-	FreeLibrary(kernel32);
 
 	SetUnhandledExceptionFilter(GenerateDump);
 	AddVectoredExceptionHandler(0, HandleHeapCorruption);
 
 #ifndef NDEBUG
-	// Hook _wassert/_assert, unless we're running under a debugger
 	if (!IsDebuggerPresent())
+	{
 		HookAssert(&assertionHandler);
+	}
 #endif
 }
 
