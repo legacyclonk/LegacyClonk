@@ -343,6 +343,7 @@ static bool ValidateHandle(HandleNull &handle)
 		return false;
 	}
 
+	CloseHandle(handleDuplicate);
 	return true;
 }
 
