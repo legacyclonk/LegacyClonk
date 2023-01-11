@@ -42,8 +42,21 @@
 bool StdBuf::LoadFromFile(const char *szFile) try
 {
 	std::ifstream file{szFile, std::ios::binary};
+	if (!file)
+	{
+		Clear();
+		return false;
+	}
+
+	const std::size_t fileSize{FileSize(szFile)};
+	if (!fileSize)
+	{
+		Clear();
+		return true;
+	}
+
 	// Create buf
-	New(FileSize(szFile));
+	New(fileSize);
 	return file && file.read(static_cast<char *>(getMData()), getSize());
 }
 catch (const std::ios_base::failure &)
@@ -64,8 +77,21 @@ catch (const std::ios_base::failure &)
 bool StdStrBuf::LoadFromFile(const char *szFile) try
 {
 	std::ifstream file{szFile, std::ios::binary};
+	if (!file)
+	{
+		Clear();
+		return false;
+	}
+
+	const std::size_t fileSize{FileSize(szFile)};
+	if (!fileSize)
+	{
+		Clear();
+		return true;
+	}
+
 	// Create buf
-	SetLength(FileSize(szFile));
+	SetLength(fileSize);
 	return file && file.read(getMData(), getLength());
 }
 catch (const std::ios_base::failure &)
