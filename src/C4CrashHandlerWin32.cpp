@@ -74,12 +74,10 @@ LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 	if (!FirstCrash) return EXCEPTION_CONTINUE_SEARCH;
 	FirstCrash = false;
 
+	wchar_t *applicationPath{nullptr};
+	if (_get_wpgmptr(&applicationPath))
 	{
-		wchar_t *buffer{DumpBuffer};
-		if (_get_wpgmptr(&buffer))
-		{
-			return EXCEPTION_CONTINUE_SEARCH;
-		}
+		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
 	const auto duplicateHandle = [](const HANDLE handle, const DWORD access) -> HandleNull
@@ -121,18 +119,16 @@ LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	const std::size_t pathSize{std::wcslen(DumpBuffer)};
-	wchar_t *const commandLineBuffer{DumpBuffer + pathSize + 1};
-
 	wchar_t *end;
 	std::size_t remaining;
 	if (FAILED(StringCchPrintfExW(
-				   commandLineBuffer,
-				   DumpBufferSize - pathSize - 1,
+				   DumpBuffer,
+				   DumpBufferSize,
 				   &end,
 				   &remaining,
 				   0,
-				   L"/crashhandler:" FORMAT_STRING,
+				   L"\"%s\" /crashhandler:" FORMAT_STRING,
+				   applicationPath,
 				   std::bit_cast<std::uintptr_t>(process.get()),
 				   std::bit_cast<std::uintptr_t>(thread.get()),
 				   std::bit_cast<std::uintptr_t>(event.get()),
@@ -169,8 +165,8 @@ LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 	PROCESS_INFORMATION processInformation{};
 
 	if (!CreateProcessW(
+					applicationPath,
 					DumpBuffer,
-					commandLineBuffer,
 					nullptr,
 					nullptr,
 					true,
