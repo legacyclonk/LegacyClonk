@@ -22,6 +22,7 @@
 
 // Dump generation on crash
 #include "C4Config.h"
+#include "C4Log.h"
 #include "C4Version.h"
 #include "C4Windows.h"
 
@@ -29,6 +30,7 @@
 #include <strsafe.h>
 #include <tlhelp32.h>
 
+#include <charconv>
 #include <cinttypes>
 
 static bool FirstCrash = true;
@@ -49,13 +51,16 @@ static bool FirstCrash = true;
 
 static constexpr size_t DumpBufferSize = 1024;
 static wchar_t DumpBuffer[DumpBufferSize];
+static constexpr auto LogStream = LastReservedStream + 1;
 
-#define FORMAT_STRING L"%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR)
+#define FORMAT_STRING L"%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNi32)
 #define PROCESS_CALLBACK_FILTER_ENABLED 1
 
 template<std::intptr_t InvalidValue>
 using Handle = std::unique_ptr<std::remove_pointer_t<HANDLE>, decltype([](const HANDLE handle) { if (handle != std::bit_cast<HANDLE>(InvalidValue)) { CloseHandle(handle); } })>;
 using HandleNull = Handle<0>;
+
+extern StdStrBuf sLogFileName;
 
 static bool PathValid(const char *const path)
 {
@@ -66,6 +71,33 @@ static bool PathValid(const char *const path)
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
 		return false;
+	}
+}
+static std::int32_t GetLogNumber()
+{
+	__try
+	{
+		std::int32_t result{0};
+		if (GetLogFD() != -1)
+		{
+			std::string_view logFilename{sLogFileName.getData(), sLogFileName.getLength()};
+
+			if (logFilename.starts_with("Clonk"))
+			{
+				logFilename.remove_prefix(std::char_traits<char>::length("Clonk"));
+				if (logFilename[0] == '.')
+				{
+					return 1;
+				}
+				std::from_chars(logFilename.data(), logFilename.data() + logFilename.size(), result);
+			}
+		}
+
+		return result;
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER)
+	{
+		return 0;
 	}
 }
 
@@ -132,7 +164,8 @@ LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 				   std::bit_cast<std::uintptr_t>(process.get()),
 				   std::bit_cast<std::uintptr_t>(thread.get()),
 				   std::bit_cast<std::uintptr_t>(event.get()),
-				   std::bit_cast<std::uintptr_t>(exceptionPointers)
+				   std::bit_cast<std::uintptr_t>(exceptionPointers),
+				   GetLogNumber()
 				)))
 	{
 		return EXCEPTION_CONTINUE_SEARCH;
@@ -347,12 +380,12 @@ static bool ValidateHandle(HandleNull &handle)
 	return true;
 }
 
-static bool ParseCommandLine(const std::wstring_view commandLine, HandleNull &process, HandleNull &thread, HandleNull &event, std::uintptr_t &exceptionPointerAddress)
+static bool ParseCommandLine(const std::wstring_view commandLine, HandleNull &process, HandleNull &thread, HandleNull &event, std::uintptr_t &exceptionPointerAddress, std::int32_t &logNumber)
 {
 	std::uintptr_t processRaw;
 	std::uintptr_t threadRaw;
 	std::uintptr_t eventRaw;
-	if (std::swscanf(commandLine.data(), FORMAT_STRING, &processRaw, &threadRaw, &eventRaw, &exceptionPointerAddress) != 4)
+	if (std::swscanf(commandLine.data(), FORMAT_STRING, &processRaw, &threadRaw, &eventRaw, &exceptionPointerAddress, &logNumber) != 5)
 	{
 		return false;
 	}
@@ -363,14 +396,22 @@ static bool ParseCommandLine(const std::wstring_view commandLine, HandleNull &pr
 	return true;
 }
 
+static StdStrBuf GetLogBuf(const std::int32_t logNumber)
+{
+	StdStrBuf buf;
+	buf.LoadFromFile(Config.AtExePath(logNumber == 1 ? C4CFN_Log : FormatString(C4CFN_LogEx, logNumber).getData()));
+	return buf;
+}
+
 int GenerateParentProcessDump(const std::wstring_view commandLine, const std::string &config)
 {
 	HandleNull process;
 	HandleNull thread;
 	HandleNull event;
 	std::uintptr_t exceptionPointerAddress;
+	std::int32_t logNumber;
 
-	if (!ParseCommandLine(commandLine, process, thread, event, exceptionPointerAddress))
+	if (!ParseCommandLine(commandLine, process, thread, event, exceptionPointerAddress, logNumber))
 	{
 		return C4XRV_Failure;
 	}
@@ -441,6 +482,17 @@ int GenerateParentProcessDump(const std::wstring_view commandLine, const std::st
 		return C4XRV_Failure;
 	}
 
+	MINIDUMP_USER_STREAM_INFORMATION userStreamInformation{};
+	MINIDUMP_USER_STREAM logStream;
+	StdStrBuf logBuf{GetLogBuf(logNumber)};
+
+	if (logBuf)
+	{
+		logStream.Type = LogStream;
+		logStream = {LogStream, static_cast<ULONG>(std::min(logBuf.getLength(), static_cast<std::size_t>(std::numeric_limits<ULONG>::max()))), logBuf.getMData()};
+		userStreamInformation = {1, &logStream};
+	}
+
 	MINIDUMP_EXCEPTION_INFORMATION information{
 		.ThreadId = GetThreadId(thread.get()),
 		.ExceptionPointers = std::bit_cast<PEXCEPTION_POINTERS>(exceptionPointerAddress),
@@ -453,7 +505,7 @@ int GenerateParentProcessDump(const std::wstring_view commandLine, const std::st
 				file.get(),
 				MiniDumpNormal,
 				&information,
-				nullptr,
+				logBuf.isNull() ? nullptr : &userStreamInformation,
 				nullptr
 				))
 	{
