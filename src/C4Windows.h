@@ -17,6 +17,7 @@
 
 #if defined(_WIN32) && !defined(_INC_WINDOWS)
 
+#include <sdkddkver.h>
 #include <windows.h>
 
 #endif
