@@ -59,7 +59,7 @@ void StdWic::CreateOutputStream(const std::string &filename)
 {
 	CreateStream();
 	ThrowIfFailed(stream->InitializeFromFilename(
-		StdStringEncodingConverter().WinAcpToUtf16(filename.c_str()).c_str(), GENERIC_WRITE),
+		StdStringEncodingConverter::WinAcpToUtf16(filename).c_str(), GENERIC_WRITE),
 		"InitializeFromFilename failed");
 }
 

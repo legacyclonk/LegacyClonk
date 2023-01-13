@@ -20,17 +20,13 @@
 #include "C4Windows.h"
 
 #include <string>
+#include <string_view>
 
 class StdStringEncodingConverter
 {
 public:
-	/* Converts a string encoded in the system default ACP to UTF-16.
-	   If "last" is nullptr, the string specified by "first" must be null-terminated. */
-	std::wstring WinAcpToUtf16(LPCCH first, LPCCH last = nullptr) const;
-
-	/* Converts a string encoded in UTF-16 to the system default ACP.
-	   If "last" is nullptr, the string specified by "first" must be null-terminated. */
-	std::string Utf16ToWinAcp(LPCWCH first, LPCWCH last = nullptr) const;
+	static std::wstring WinAcpToUtf16(std::string_view multiByte);
+	static std::string Utf16ToWinAcp(std::wstring_view wide);
 };
 
 #endif

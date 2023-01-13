@@ -13,100 +13,62 @@
  * for the above references.
  */
 
-#include <Standard.h>
-#include <StdStringEncodingConverter.h>
+#include "StdStringEncodingConverter.h"
 
-#include "C4Windows.h"
-
+#include <format>
 #include <memory>
 #include <stdexcept>
 #include <string>
 
-// Calls MultiByteToWideChar and throws an exception if it failed.
-static int CallMultiByteToWideChar(
-	const LPCCH lpMultiByteStr, const int cbMultiByte,
-	const LPWSTR lpWideCharStr, const int cchWideChar)
+namespace
 {
-	const auto result = MultiByteToWideChar(CP_ACP, 0,
-		lpMultiByteStr, cbMultiByte,
-		lpWideCharStr, cchWideChar);
+	template<typename T>
+	struct ConversionFuncHelper;
 
-	if (result == 0)
+	template<typename Ret, typename... Args>
+	struct ConversionFuncHelper<Ret(__stdcall *)(Args...)>
 	{
-		const DWORD errorNumber{GetLastError()};
-		throw std::runtime_error{std::string() +
-			"MultiByteToWideChar failed (error " + std::to_string(errorNumber) + ")"};
-	}
+		using ReturnType = Ret;
+		using ArgumentTypes = std::tuple<Args...>;
+		using InputType = std::remove_const_t<std::remove_pointer_t<std::tuple_element_t<2, ArgumentTypes>>>;
+		using OutputType = std::remove_pointer_t<std::tuple_element_t<4, ArgumentTypes>>;
+	};
 
-	return result;
+	template<auto ConversionFunc, typename... Args>
+	auto Convert(const std::basic_string_view<typename ConversionFuncHelper<decltype(ConversionFunc)>::InputType> input, Args &&...args)
+	{
+		using ReturnType = std::basic_string<typename ConversionFuncHelper<decltype(ConversionFunc)>::OutputType>;
+
+		if (input.empty()) return ReturnType{};
+		if (std::cmp_greater(input.size(), std::numeric_limits<int>::max()))
+		{
+			throw std::out_of_range{"Input size out of range"};
+		}
+
+		const int convertedSize{ConversionFunc(CP_ACP, 0, input.data(), static_cast<int>(input.size()), nullptr, 0, std::forward<Args>(args)...)};
+		if (!convertedSize)
+		{
+			throw std::runtime_error{std::format("Querying output size failed: {:x}", GetLastError())};
+		}
+
+		const auto converted = std::make_unique_for_overwrite<typename ReturnType::value_type[]>(static_cast<std::size_t>(convertedSize));
+		const int result{ConversionFunc(CP_ACP, 0, input.data(), static_cast<int>(input.size()), converted.get(), convertedSize, std::forward<Args>(args)...)};
+
+		if (result != convertedSize)
+		{
+			throw std::runtime_error{std::format("Conversion returned {} when it was expected to return {}", result, convertedSize)};
+		}
+
+		return ReturnType{converted.get(), static_cast<std::size_t>(convertedSize)};
+	}
 }
 
-// Calls WideCharToMultiByte and throws an exception if it failed.
-static int CallWideCharToMultiByte(
-	const LPCWSTR lpWideCharStr, const int cchWideChar,
-	const LPCH lpMultiByteStr, const int cbMultiByte)
+std::wstring StdStringEncodingConverter::WinAcpToUtf16(const std::string_view multiByte)
 {
-	const auto result = WideCharToMultiByte(CP_ACP, 0,
-		lpWideCharStr, cchWideChar,
-		lpMultiByteStr, cbMultiByte,
-		nullptr, nullptr);
-
-	if (result == 0)
-	{
-		const DWORD errorNumber{GetLastError()};
-		throw std::runtime_error(std::string{} +
-			"WideCharToMultiByte failed (error " + std::to_string(errorNumber) + ")");
-	}
-
-	return result;
+	return Convert<MultiByteToWideChar>(multiByte);
 }
 
-std::wstring StdStringEncodingConverter::WinAcpToUtf16(const LPCCH first, const LPCCH last) const
+std::string StdStringEncodingConverter::Utf16ToWinAcp(const std::wstring_view wide)
 {
-	// Get length of source string
-	const auto sourceLen = (last ? last - first : lstrlenA(first));
-	// Don't use MultiByteToWideChar if source string is empty
-	if (sourceLen == 0) return {};
-
-	// Get length of converted string and create array for it
-	const auto convertedLen = CallMultiByteToWideChar(first, sourceLen, nullptr, 0);
-	const auto converted = std::make_unique<wchar_t[]>(convertedLen);
-
-	// Convert
-	const auto resultMBTWC = CallMultiByteToWideChar(
-		first, sourceLen, converted.get(), convertedLen);
-	if (resultMBTWC != convertedLen)
-	{
-		throw std::runtime_error(std::string{} +
-			"MultiByteToWideChar returned " + std::to_string(resultMBTWC) +
-			" when it was expected to return " + std::to_string(convertedLen));
-	}
-
-	// Create wstring from array
-	return std::wstring{converted.get(), static_cast<std::size_t>(convertedLen)};
-}
-
-std::string StdStringEncodingConverter::Utf16ToWinAcp(LPCWCH first, LPCWCH last) const
-{
-	// Get length of source string
-	const auto sourceLen = (last ? last - first : lstrlenW(first));
-	// Don't use MultiByteToWideChar if source string is empty
-	if (sourceLen == 0) return {};
-
-	// Get length of converted string and create array for it
-	const auto convertedLen = CallWideCharToMultiByte(first, sourceLen, nullptr, 0);
-	const auto converted = std::make_unique<char[]>(convertedLen);
-
-	// Convert
-	const auto resultWCTMB = CallWideCharToMultiByte(
-			first, sourceLen, converted.get(), convertedLen);
-	if (resultWCTMB != convertedLen)
-	{
-		throw std::runtime_error(std::string{} +
-			"WideCharToMultiByte returned " + std::to_string(resultWCTMB) +
-			" when it was expected to return " + std::to_string(convertedLen));
-	}
-
-	// Create wstring from array
-	return std::string{converted.get(), static_cast<std::size_t>(convertedLen)};
+	return Convert<WideCharToMultiByte>(wide, nullptr, nullptr);
 }

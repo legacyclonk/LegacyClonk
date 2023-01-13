@@ -50,7 +50,7 @@ C4ToastImplWinToastLib::~C4ToastImplWinToastLib()
 
 void C4ToastImplWinToastLib::AddAction(const std::string_view action)
 {
-	toastTemplate.addAction(StdStringEncodingConverter{}.WinAcpToUtf16(action.data()));
+	toastTemplate.addAction(StdStringEncodingConverter::WinAcpToUtf16(action));
 	actions.emplace_back(action);
 }
 
@@ -74,12 +74,12 @@ void C4ToastImplWinToastLib::SetEventHandler(C4ToastEventHandler *const eventHan
 
 void C4ToastImplWinToastLib::SetText(const std::string_view text)
 {
-	toastTemplate.setSecondLine(StdStringEncodingConverter{}.WinAcpToUtf16(text.data()));
+	toastTemplate.setSecondLine(StdStringEncodingConverter::WinAcpToUtf16(text));
 }
 
 void C4ToastImplWinToastLib::SetTitle(const std::string_view text)
 {
-	toastTemplate.setFirstLine(StdStringEncodingConverter{}.WinAcpToUtf16(text.data()));
+	toastTemplate.setFirstLine(StdStringEncodingConverter::WinAcpToUtf16(text));
 }
 
 namespace
@@ -135,7 +135,7 @@ void C4ToastImplWinToastLib::Show()
 	id = WinToast::instance()->showToast(toastTemplate, new C4WinToastEventHandler{eventHandlerGuard, actions}, &error);
 	if (id == -1)
 	{
-		LogF("C4ToastImplWinToastLib: Failed to show toast: %s", StdStringEncodingConverter{}.Utf16ToWinAcp(WinToastLib::WinToast::strerror(error).c_str()).c_str());
+		LogF("C4ToastImplWinToastLib: Failed to show toast: %s", StdStringEncodingConverter::Utf16ToWinAcp(WinToastLib::WinToast::strerror(error)).c_str());
 	}
 }
 
