@@ -302,6 +302,11 @@ endif ()
 
 # Link libraries
 
+# Link fmt
+find_package(fmt REQUIRED)
+target_link_libraries(standard fmt::fmt)
+list(APPEND PCH_EXTRA <fmt/format.h> <fmt/printf.h>)
+
 # Link Freetype
 if (NOT USE_CONSOLE)
 	find_package(Freetype REQUIRED)
