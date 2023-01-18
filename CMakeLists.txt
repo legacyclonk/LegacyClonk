@@ -441,9 +441,9 @@ target_link_libraries(standard ZLIB::ZLIB)
 target_compile_definitions(standard PUBLIC
 	C4_OS="${C4_OS}"
 	ICONV_CONST=
+	STD_APPUSERMODELID="LegacyClonkTeam.LegacyClonk"
 	# A standard product name for this project which is used in window registration etc.
 	STD_PRODUCT="LegacyClonk"
-	STD_APPUSERMODELID="LegacyClonkTeam.LegacyClonk"
 	ZLIB_CONST=1
 )
 
@@ -460,8 +460,8 @@ foreach(MACRO_VAR
 	USE_SDL_MAINLOOP
 	USE_SDL_MIXER
 	USE_STAT
-	USE_X11
 	USE_WINDOWS_RUNTIME
+	USE_X11
 	WITH_DEVELOPER_MODE
 	WITH_GLIB
 )
