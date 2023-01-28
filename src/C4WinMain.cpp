@@ -34,6 +34,7 @@
 #endif
 
 #ifdef WIN32
+#include "C4Com.h"
 #include "C4WinRT.h"
 #include <objbase.h>
 #endif
@@ -109,17 +110,17 @@ int WINAPI WinMain(HINSTANCE hInst,
 
 	SetCurrentProcessExplicitAppUserModelID(_CRT_WIDE(STD_APPUSERMODELID));
 
+	C4Com com;
+
 	try
 	{
-		winrt::init_apartment();
+		com = C4Com{winrt::apartment_type::multi_threaded};
 	}
 	catch (const winrt::hresult_error &e)
 	{
 		MessageBoxW(nullptr, (std::wstring{L"Failed to initialize COM: "} + e.message()).c_str(), _CRT_WIDE(STD_PRODUCT), MB_ICONERROR);
 		return C4XRV_Failure;
 	}
-
-	struct ComUninit { ~ComUninit() { winrt::uninit_apartment(); } } uninit;
 
 	// Init application
 	try

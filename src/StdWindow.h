@@ -27,6 +27,7 @@
 #ifdef _WIN32
 const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 
+#include "C4Com.h"
 #include "C4WinRT.h"
 
 #include <shobjidl.h>
@@ -289,15 +290,10 @@ protected:
 	virtual bool Win32DialogMessageHandling(MSG *msg) { return false; };
 
 private:
+	C4Com com{winrt::apartment_type::multi_threaded};
 	DWORD style = WS_OVERLAPPEDWINDOW;
 	DWORD styleEx = 0;
 	winrt::com_ptr<ITaskbarList3> taskBarList{nullptr};
-
-	struct ComUnInit
-	{
-		ComUnInit() { winrt::init_apartment(); }
-		~ComUnInit() { winrt::uninit_apartment(); }
-	} const comUninit;
 
 #elif defined(USE_X11)
 
