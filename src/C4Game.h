@@ -54,6 +54,7 @@
 #include <C4Network2Reference.h>
 #include <C4RoundResults.h>
 #include <C4NetworkRestartInfos.h>
+#include "C4FileMonitor.h"
 
 class C4Game
 {
@@ -135,7 +136,6 @@ public:
 	C4Scoreboard Scoreboard;
 	class C4Network2Stats *pNetworkStatistics; // may be nullptr if no statistics are recorded
 	class C4KeyboardInput &KeyboardInput;
-	class C4FileMonitor *pFileMonitor;
 	char CurrentScenarioSection[C4MaxName + 1];
 	char ScenarioFilename[_MAX_PATH + 1];
 	char PlayerFilenames[20 * _MAX_PATH + 1];
@@ -222,7 +222,7 @@ public:
 	bool DropFile(const char *szFilename, int32_t iX, int32_t iY);
 	bool CreateViewport(int32_t iPlayer, bool fSilent = false);
 	bool DropDef(C4ID id, int32_t iX, int32_t iY);
-	bool ReloadFile(const char *szPath);
+	void ReloadFile(const char *path);
 	bool ReloadDef(C4ID id, uint32_t reloadWhat = C4D_Load_RX);
 	bool ReloadParticle(const char *szName);
 	// Object functions
@@ -346,6 +346,7 @@ public:
 	bool ToggleChart(); // chart dlg on/off
 	void SetMusicLevel(int32_t iToLvl); // change game music volume; multiplied by config volume for real volume
 	bool ToggleMusic(); // music on / off
+	void AddDirectoryForMonitoring(const char *directory);
 
 protected:
 	enum class PreloadLevel
@@ -359,6 +360,7 @@ protected:
 	PreloadLevel PreloadStatus;
 	CStdCSecEx PreloadMutex;
 	bool LandscapeLoaded;
+	std::unique_ptr<C4FileMonitor> FileMonitor;
 };
 
 const int32_t C4RULE_StructuresNeedEnergy      = 1,

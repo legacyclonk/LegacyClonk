@@ -589,6 +589,7 @@ IDS_ERR_EXTERNALMATERIALS=Error opening external material group %s: %s
 IDS_ERR_FAILURE=...failed.
 IDS_ERR_FATAL=FATAL ERROR: %s
 IDS_ERR_FILEEXISTS=A file with the name "%s" exists already.
+IDS_ERR_FILEMONITOR=Error monitoring file changes: %s
 IDS_ERR_FONTDEFS=Error loading font definitions
 IDS_ERR_GAMELEFTVIAPLAYERMENU=Game left via player menu.
 IDS_ERR_GBACK=Landscape error.

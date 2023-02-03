@@ -63,7 +63,7 @@ C4Game::C4Game()
 	Teams(Parameters.Teams),
 	PlayerInfos(Parameters.PlayerInfos),
 	RestorePlayerInfos(Parameters.RestorePlayerInfos),
-	Clients(Parameters.Clients), pFileMonitor(nullptr)
+	Clients(Parameters.Clients)
 {
 	Default();
 }
@@ -265,8 +265,10 @@ bool C4Game::OpenScenario()
 	}
 
 	// If scenario is a directory: Watch for changes
-	if (!ScenarioFile.IsPacked() && pFileMonitor)
-		Game.pFileMonitor->AddDirectory(ScenarioFile.GetFullName().getData());
+	if (!ScenarioFile.IsPacked())
+	{
+		AddDirectoryForMonitoring(ScenarioFile.GetFullName().getData());
+	}
 
 	PreloadStatus = PreloadLevel::Scenario;
 
@@ -524,7 +526,8 @@ void C4Game::Clear()
 		PreloadThread.join();
 	}
 
-	delete pFileMonitor; pFileMonitor = nullptr;
+	FileMonitor.reset();
+
 	if (Application.MusicSystem)
 	{
 		// fade out music
@@ -2213,26 +2216,20 @@ bool LandscapeFree(int32_t x, int32_t y)
 	return !DensitySolid(GBackDensity(x, y));
 }
 
-static void FileMonitorCallback(const char *file, const char *extrafile)
+void C4Game::ReloadFile(const char *const path)
 {
-	Game.ReloadFile(file);
-}
+	if (Game.Network.isEnabled()) return;
 
-bool C4Game::ReloadFile(const char *szFile)
-{
-	// not in network
-	if (Game.Network.isEnabled()) return false;
-	const char *szRelativePath = Config.AtExeRelativePath(szFile);
-	// a definition? or part of a definition?
-	C4Def *pDef;
-	if (pDef = Defs.GetByPath(szRelativePath))
-		return ReloadDef(pDef->id);
-	// script?
-	if (ScriptEngine.ReloadScript(szRelativePath, &Defs))
+	const char *const relativePath{Config.AtExeRelativePath(path)};
+
+	if (C4Def *const def{Defs.GetByPath(relativePath)}; def)
 	{
-		return true;
+		ReloadDef(def->id);
 	}
-	return true;
+	else
+	{
+		ScriptEngine.ReloadScript(relativePath, &Defs);
+	}
 }
 
 bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
@@ -2327,8 +2324,17 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 			}
 
 			// file monitor
-			if (Config.Developer.AutoFileReload && !Application.isFullScreen && !pFileMonitor)
-				pFileMonitor = new C4FileMonitor(FileMonitorCallback);
+			if (Config.Developer.AutoFileReload && !Application.isFullScreen && !FileMonitor)
+			{
+				try
+				{
+					FileMonitor = std::make_unique<C4FileMonitor>(std::bind(&C4Game::ReloadFile, this, std::placeholders::_1));
+				}
+				catch (const std::runtime_error &e)
+				{
+					LogF(LoadResStr("IDS_ERR_FILEMONITOR"), e.what());
+				}
+			}
 
 			CStdLock lock{&Game.PreloadMutex};
 			if (!InitGameFirstPart()) return false;
@@ -2673,7 +2679,10 @@ bool C4Game::InitGameFinal()
 				Players.Remove(Players.GetByIndex(cnt), true, false);
 
 	// It should be safe now to reload stuff
-	if (pFileMonitor) pFileMonitor->StartMonitoring();
+	if (FileMonitor)
+	{
+		FileMonitor->StartMonitoring();
+	}
 	return true;
 }
 
@@ -3274,8 +3283,10 @@ void C4Game::LoadScenarioScripts()
 			scr->Load(nullptr, SysGroup, fn, Config.General.LanguageEx, nullptr, &ScenarioSysLangStringTable);
 		}
 		// if it's a physical group: watch out for changes
-		if (!SysGroup.IsPacked() && Game.pFileMonitor)
-			Game.pFileMonitor->AddDirectory(SysGroup.GetFullName().getData());
+		if (!SysGroup.IsPacked())
+		{
+			AddDirectoryForMonitoring(SysGroup.GetFullName().getData());
+		}
 		SysGroup.Close();
 	}
 }
@@ -4317,6 +4328,14 @@ bool C4Game::ToggleMusic()
 {
 	Application.MusicSystem->ToggleOnOff(!IsRunning);
 	return true;
+}
+
+void C4Game::AddDirectoryForMonitoring(const char *const directory)
+{
+	if (FileMonitor)
+	{
+		FileMonitor->AddDirectory(directory);
+	}
 }
 
 bool C4Game::ToggleChat()

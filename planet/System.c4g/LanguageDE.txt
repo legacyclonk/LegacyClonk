@@ -589,6 +589,7 @@ IDS_ERR_EXTERNALMATERIALS=Fehler beim Öffnen der externen Materialgruppe %s: %s
 IDS_ERR_FAILURE=...fehlgeschlagen.
 IDS_ERR_FATAL=FATALER FEHLER: %s
 IDS_ERR_FILEEXISTS=Datei mit Namen "%s" existiert bereits.
+IDS_ERR_FILEMONITOR=Fehler beim Überwachen von Dateiänderungen: %s
 IDS_ERR_FONTDEFS=Fehler bei den Schriftdefinitionen
 IDS_ERR_GAMELEFTVIAPLAYERMENU=Spiel per Spielermenü verlassen.
 IDS_ERR_GBACK=Fehler beim Landschaftsgenerator.

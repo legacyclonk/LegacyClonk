@@ -522,9 +522,7 @@ bool C4Def::Load(C4Group &hGroup,
 	C4SoundSystem *pSoundSystem)
 {
 	bool fSuccess = true;
-	bool AddFileMonitoring = false;
-	if (Game.pFileMonitor && !SEqual(hGroup.GetFullName().getData(), Filename) && !hGroup.IsPacked())
-		AddFileMonitoring = true;
+	const bool addFileMonitoring{!hGroup.IsPacked() && !SEqual(hGroup.GetFullName().getData(), Filename)};
 
 	// Store filename, maker, creation
 	SCopy(hGroup.GetFullName().getData(), Filename);
@@ -535,7 +533,10 @@ bool C4Def::Load(C4Group &hGroup,
 	if (Config.Graphics.VerboseObjectLoading >= 3)
 		Log(hGroup.GetFullName().getData());
 
-	if (AddFileMonitoring) Game.pFileMonitor->AddDirectory(Filename);
+	if (addFileMonitoring)
+	{
+		Game.AddDirectoryForMonitoring(Filename);
+	}
 
 	// particle def?
 	if (hGroup.AccessEntry(C4CFN_ParticleCore))
@@ -963,9 +964,13 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 			scr->Reg2List(&Game.ScriptEngine, &Game.ScriptEngine);
 			scr->Load(nullptr, SysGroup, fn, Config.General.LanguageEx, nullptr, &SysGroupString);
 		}
+
 		// if it's a physical group: watch out for changes
-		if (!SysGroup.IsPacked() && Game.pFileMonitor)
-			Game.pFileMonitor->AddDirectory(SysGroup.GetFullName().getData());
+		if (!SysGroup.IsPacked())
+		{
+			Game.AddDirectoryForMonitoring(SysGroup.GetFullName().getData());
+		}
+
 		SysGroup.Close();
 	}
 

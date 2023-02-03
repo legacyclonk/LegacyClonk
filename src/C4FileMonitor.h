@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2008, guenther
- * Copyright (c) 2017-2020, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2023, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -15,28 +15,54 @@
  * for the above references.
  */
 
-// An inotify wrapper
-
 #pragma once
 
+#include "C4InteractiveThread.h"
 #include "StdBuf.h"
-#include <StdScheduler.h>
-#include <C4InteractiveThread.h>
+#include "StdScheduler.h"
+#include "StdSync.h"
+
+#include <array>
+#include <functional>
 #include <map>
 
 class C4FileMonitor : public StdSchedulerProc, public C4InteractiveThread::Callback
 {
 public:
-	typedef void(*ChangeNotify)(const char *, const char *);
+	using ChangeNotifyCallback = std::function<void(const char *)>;
 
-	C4FileMonitor(ChangeNotify pCallback);
+#ifdef _WIN32
+private:
+	class MonitoredDirectory
+	{
+	public:
+		MonitoredDirectory(winrt::file_handle &&handle, std::string path, HANDLE event);
+
+	public:
+		void Execute();
+
+	private:
+		bool ReadDirectoryChanges();
+
+	private:
+		winrt::file_handle handle;
+		std::string path;
+		OVERLAPPED overlapped{};
+		std::array<char, 1024> buffer{};
+
+		static constexpr DWORD NotificationFilter{FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE};
+	};
+#endif
+
+public:
+	C4FileMonitor(ChangeNotifyCallback &&callback);
 	~C4FileMonitor();
 
 	void StartMonitoring();
-	void AddDirectory(const char *szDir);
+	void AddDirectory(const char *path);
 
 	// StdSchedulerProc:
-	virtual bool Execute(int iTimeout = -1) override;
+	virtual bool Execute(int timeout = -1) override;
 
 	// Signal for calling Execute()
 #ifdef _WIN32
@@ -46,28 +72,17 @@ public:
 #endif
 
 	// C4InteractiveThread::Callback:
-	virtual void OnThreadEvent(C4InteractiveEventType eEvent, const std::any &eventData) override;
+	virtual void OnThreadEvent(C4InteractiveEventType event, const std::any &eventData) override;
 
 private:
-	bool fStarted;
-	ChangeNotify pCallback;
+	ChangeNotifyCallback callback;
+	bool started{false};
 
 #if defined(__linux__)
 	int fd;
-	std::map<int, const char *> watch_descriptors;
+	std::map<int, std::string> watchDescriptors;
 #elif defined(_WIN32)
-	HANDLE hEvent;
-
-	struct TreeWatch
-	{
-		HANDLE hDir;
-		StdStrBuf DirName;
-		OVERLAPPED ov;
-		char Buffer[1024];
-		TreeWatch *Next;
-	};
-	TreeWatch *pWatches;
-
-	void HandleNotify(const char *szDir, const struct _FILE_NOTIFY_INFORMATION *pNotify);
+	CStdEvent event;
+	std::vector<MonitoredDirectory> directories;
 #endif
 };
