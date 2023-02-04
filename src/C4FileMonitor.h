@@ -22,11 +22,21 @@
 #include "StdScheduler.h"
 #include "StdSync.h"
 
+#include <any>
 #include <array>
 #include <functional>
 #include <map>
 
-class C4FileMonitor : public StdSchedulerProc, public C4InteractiveThread::Callback
+#ifdef __APPLE__
+#include <CoreServices/CoreServices.h>
+#endif
+
+class C4FileMonitor
+		:
+#ifndef __APPLE__
+		public StdSchedulerProc,
+#endif
+		public C4InteractiveThread::Callback
 {
 public:
 	using ChangeNotifyCallback = std::function<void(const char *)>;
@@ -52,6 +62,20 @@ private:
 
 		static constexpr DWORD NotificationFilter{FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE};
 	};
+#elif defined(__APPLE__)
+	template<typename T>
+	struct CFRefDeleter
+	{
+		using pointer = T;
+
+		void operator()(T ref)
+		{
+			CFRelease(ref);
+		}
+	};
+
+	template<typename T>
+	using CFUniquePtr = std::unique_ptr<T, CFRefDeleter<T>>;
 #endif
 
 public:
@@ -61,6 +85,7 @@ public:
 	void StartMonitoring();
 	void AddDirectory(const char *path);
 
+#ifndef __APPLE__
 	// StdSchedulerProc:
 	virtual bool Execute(int timeout = -1) override;
 
@@ -69,6 +94,7 @@ public:
 	virtual HANDLE GetEvent() override;
 #else
 	virtual void GetFDs(fd_set *pFDs, int *pMaxFD) override;
+#endif
 #endif
 
 	// C4InteractiveThread::Callback:
@@ -84,5 +110,8 @@ private:
 #elif defined(_WIN32)
 	CStdEvent event;
 	std::vector<MonitoredDirectory> directories;
+#elif defined(__APPLE__)
+	std::vector<CFUniquePtr<CFStringRef>> paths;
+	FSEventStreamRef eventStream;
 #endif
 };

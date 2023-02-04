@@ -270,15 +270,81 @@ HANDLE C4FileMonitor::GetEvent()
 	return event.GetEvent();
 }
 
-#else
+#elif defined(__APPLE__)
 
-// Stubs
-C4FileMonitor::C4FileMonitor(ChangeNotifyCallback &&) {}
-C4FileMonitor::~C4FileMonitor() {}
-bool C4FileMonitor::Execute(const int timeout) { return false; /* blarg... function must return a value */ }
-void C4FileMonitor::StartMonitoring() {}
-void C4FileMonitor::OnThreadEvent(C4InteractiveEventType event, const std::any &eventData) {}
-void C4FileMonitor::AddDirectory(const char *directory) {}
-void C4FileMonitor::GetFDs(fd_set *pFDs, int *pMaxFD) {}
+C4FileMonitor::C4FileMonitor(ChangeNotifyCallback &&callback)
+	: callback{std::move(callback)}
+{
+}
+
+C4FileMonitor::~C4FileMonitor()
+{
+	if (started)
+	{
+		FSEventStreamStop(eventStream);
+		FSEventStreamSetDispatchQueue(eventStream, nullptr);
+		FSEventStreamRelease(eventStream);
+
+		Application.InteractiveThread.ClearCallback(Ev_FileChange, this);
+	}
+}
+
+static void EventStreamCallback(ConstFSEventStreamRef streamRef, void *const clientCallbackInfo, const std::size_t numEvents, void *const eventPaths, const FSEventStreamEventFlags *const eventFlags, const FSEventStreamEventId *const eventIds)
+{
+	for (std::size_t i{0}; i < numEvents; ++i)
+	{
+		if (eventFlags[i] & (kFSEventStreamEventFlagUserDropped | kFSEventStreamEventFlagKernelDropped))
+		{
+			continue;
+		}
+
+		std::string path{reinterpret_cast<const char **>(eventPaths)[i]};
+		if (path.ends_with(DirectorySeparator))
+		{
+			path.resize(path.size() - 1);
+		}
+
+		Application.InteractiveThread.PushEvent(Ev_FileChange, std::move(path));
+	}
+}
+
+void C4FileMonitor::StartMonitoring()
+{
+	const CFUniquePtr<CFArrayRef> array{CFArrayCreate(nullptr, reinterpret_cast<const void **>(paths.data()), paths.size(), &kCFTypeArrayCallBacks)};
+
+	FSEventStreamContext context{
+		0,
+		reinterpret_cast<void *>(this),
+		nullptr,
+		nullptr,
+		[](const void *) { return CFSTR("C4FileMonitor"); }
+	};
+
+	eventStream = FSEventStreamCreate(nullptr, &EventStreamCallback, &context, array.get(), kFSEventStreamEventIdSinceNow, 1, 0);
+
+	if (eventStream)
+	{
+		FSEventStreamSetDispatchQueue(eventStream, dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0));
+		FSEventStreamStart(eventStream);
+
+		Application.InteractiveThread.SetCallback(Ev_FileChange, this);
+		started = true;
+	}
+}
+
+void C4FileMonitor::OnThreadEvent(const C4InteractiveEventType event, const std::any &eventData)
+{
+	if (event != Ev_FileChange) return;
+
+	callback(std::any_cast<const std::string &>(eventData).c_str());
+}
+
+void C4FileMonitor::AddDirectory(const char *const path)
+{
+	if (!started)
+	{
+		paths.emplace_back(CFStringCreateWithCString(nullptr, path, kCFStringEncodingUTF8));
+	}
+}
 
 #endif
