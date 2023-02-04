@@ -38,6 +38,9 @@ class CStdApp;
 // Forward declarations because xlib.h is evil
 typedef union _XEvent XEvent;
 typedef struct _XDisplay Display;
+#elif defined(USE_SDL_MAINLOOP)
+struct SDL_Window;
+union SDL_Event;
 #endif
 
 enum class DisplayMode

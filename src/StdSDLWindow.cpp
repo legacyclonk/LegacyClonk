@@ -69,7 +69,7 @@ void CStdWindow::Clear() {}
 // Window size is automatically managed by CStdApp's display mode management.
 // Just remember the size for others to query.
 
-bool CStdWindow::GetRect(C4Rect &rect)
+bool CStdWindow::GetSize(C4Rect &rect)
 {
 	SDL_GL_GetDrawableSize(sdlWindow, &width, &height);
 	rect = {0, 0, width, height};
