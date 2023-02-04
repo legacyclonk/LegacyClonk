@@ -54,7 +54,7 @@ public:
 	HWND GetRenderWindow() const override { return hRenderWindow; }
 
 protected:
-	ATOM RegisterWindowClass(HINSTANCE instance) const override;
+	WNDCLASSEX GetWindowClass(HINSTANCE instance) const override;
 
 private:
 	HWND hRenderWindow{nullptr};

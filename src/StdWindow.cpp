@@ -35,18 +35,14 @@ CStdWindow::~CStdWindow()
 
 bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
-	// Register window class
-	const ATOM windowClass{RegisterWindowClass(app->hInstance)};
-	if (!windowClass)
-	{
-		return false;
-	}
+	const WNDCLASSEX windowClass{GetWindowClass(app->hInstance)};
+	RegisterClassEx(&windowClass);
 
 	// Create window
 	const auto [style, exStyle] = GetWindowStyle();
 	hWindow = CreateWindowEx(
 		exStyle,
-		MAKEINTATOM(windowClass),
+		windowClass.lpszClassName,
 		STD_PRODUCT,
 		style,
 		bounds.x, bounds.y, bounds.Wdt, bounds.Hgt,

@@ -234,9 +234,9 @@ LRESULT APIENTRY DialogWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	return CStdWindow::DefaultWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-ATOM DialogWindow::RegisterWindowClass(const HINSTANCE instance) const
+WNDCLASSEX DialogWindow::GetWindowClass(const HINSTANCE instance) const
 {
-	const WNDCLASSEX windowClass{
+	return {
 		.cbSize = sizeof(WNDCLASSEX),
 		.style = CS_DBLCLKS | CS_BYTEALIGNCLIENT,
 		.lpfnWndProc = &DialogWinProc,
@@ -250,8 +250,6 @@ ATOM DialogWindow::RegisterWindowClass(const HINSTANCE instance) const
 		.lpszClassName = "C4GUIdlg", // keep for backwards compatibility
 		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_00_C4X))
 	};
-
-	return RegisterClassEx(&windowClass);
 }
 
 bool DialogWindow::GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const

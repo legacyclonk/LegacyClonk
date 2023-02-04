@@ -200,9 +200,9 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 	return CStdWindow::DefaultWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-ATOM C4ViewportWindow::RegisterWindowClass(const HINSTANCE instance) const
+WNDCLASSEX C4ViewportWindow::GetWindowClass(const HINSTANCE instance) const
 {
-	const WNDCLASSEX windowClass{
+	return {
 		.cbSize = sizeof(WNDCLASSEX),
 		.style = CS_DBLCLKS | CS_BYTEALIGNCLIENT,
 		.lpfnWndProc = &C4ViewportWindow::WinProc,
@@ -213,11 +213,9 @@ ATOM C4ViewportWindow::RegisterWindowClass(const HINSTANCE instance) const
 		.hCursor = LoadCursor(nullptr, IDC_ARROW),
 		.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND),
 		.lpszMenuName = nullptr,
-		.lpszClassName = "C4FullScreen",
+		.lpszClassName = "C4ViewportWindow",
 		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_01_C4S))
 	};
-
-	return RegisterClassEx(&windowClass);
 }
 
 bool C4ViewportWindow::GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const

@@ -191,9 +191,9 @@ void C4FullScreen::SetSize(const unsigned int cx, const unsigned int cy)
 	}
 }
 
-ATOM C4FullScreen::RegisterWindowClass(const HINSTANCE instance) const
+WNDCLASSEX C4FullScreen::GetWindowClass(const HINSTANCE instance) const
 {
-	const WNDCLASSEX windowClass{
+	return {
 		.cbSize = sizeof(WNDCLASSEX),
 		.style = CS_DBLCLKS,
 		.lpfnWndProc = &FullScreenWinProc,
@@ -207,8 +207,6 @@ ATOM C4FullScreen::RegisterWindowClass(const HINSTANCE instance) const
 		.lpszClassName = "C4FullScreen",
 		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_00_C4X))
 	};
-
-	return RegisterClassEx(&windowClass);
 }
 
 #elif defined(USE_X11)

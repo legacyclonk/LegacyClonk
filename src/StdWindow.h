@@ -88,7 +88,7 @@ public:
 	static LRESULT DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
-	virtual ATOM RegisterWindowClass(HINSTANCE instance) const = 0;
+	virtual WNDCLASSEX GetWindowClass(HINSTANCE instance) const = 0;
 	virtual bool Win32DialogMessageHandling(MSG *msg) { return false; };
 	virtual bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const { return {}; }
 	virtual std::pair<DWORD, DWORD> GetWindowStyle() const { return {WS_OVERLAPPEDWINDOW, 0}; }

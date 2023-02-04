@@ -45,7 +45,7 @@ public:
 	C4ViewportWindow(C4Viewport *cvp) : cvp(cvp) {}
 #ifdef _WIN32
 	std::pair<DWORD, DWORD> GetWindowStyle() const override { return {WindowStyle, WS_EX_ACCEPTFILES}; }
-	ATOM RegisterWindowClass(HINSTANCE instance) const override;
+	WNDCLASSEX GetWindowClass(HINSTANCE instance) const override;
 	bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const override;
 #elif defined(WITH_DEVELOPER_MODE)
 	virtual GtkWidget *InitGUI() override;
