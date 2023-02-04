@@ -31,6 +31,8 @@
 #include <C4GameOverDlg.h>
 
 #ifdef _WIN32
+#include "res/engine_resource.h"
+
 #include <windowsx.h>
 
 LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -40,6 +40,7 @@
 
 #ifdef _WIN32
 #include "StdRegistry.h"
+#include "res/engine_resource.h"
 #elif defined(USE_X11)
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
@@ -794,7 +795,7 @@ bool C4Viewport::UpdateOutputSize()
 	rect.Wdt = pWindow->drawing_area->allocation.width;
 	rect.Hgt = pWindow->drawing_area->allocation.height;
 #else
-	if (!pWindow->GetRect(rect)) return false;
+	if (!pWindow->GetSize(rect)) return false;
 #endif
 	OutX = rect.x; OutY = rect.y;
 	const auto scale = Application.GetScale();
