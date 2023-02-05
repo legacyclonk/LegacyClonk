@@ -116,13 +116,6 @@ bool C4FileMonitor::Execute(const int timeout) // some other thread
 	return true;
 }
 
-void C4FileMonitor::OnThreadEvent(const C4InteractiveEventType event, const std::any &eventData) // main thread
-{
-	if (event != Ev_FileChange) return;
-
-	callback(std::any_cast<const std::string &>(eventData).c_str());
-}
-
 void C4FileMonitor::GetFDs(fd_set *pFDs, int *pMaxFD)
 {
 	FD_SET(fd, pFDs);
@@ -258,13 +251,6 @@ bool C4FileMonitor::Execute(const int timeout)
 	return true;
 }
 
-void C4FileMonitor::OnThreadEvent(const C4InteractiveEventType event, const std::any &eventData) // main thread
-{
-	if (event != Ev_FileChange) return;
-
-	callback(std::any_cast<const std::string &>(eventData).c_str());
-}
-
 HANDLE C4FileMonitor::GetEvent()
 {
 	return event.GetEvent();
@@ -332,13 +318,6 @@ void C4FileMonitor::StartMonitoring()
 	}
 }
 
-void C4FileMonitor::OnThreadEvent(const C4InteractiveEventType event, const std::any &eventData)
-{
-	if (event != Ev_FileChange) return;
-
-	callback(std::any_cast<const std::string &>(eventData).c_str());
-}
-
 void C4FileMonitor::AddDirectory(const char *const path)
 {
 	if (!started)
@@ -348,3 +327,10 @@ void C4FileMonitor::AddDirectory(const char *const path)
 }
 
 #endif
+
+void C4FileMonitor::OnThreadEvent(const C4InteractiveEventType event, const std::any &eventData)
+{
+	if (event != Ev_FileChange) return;
+
+	callback(std::any_cast<const std::string &>(eventData).c_str());
+}
