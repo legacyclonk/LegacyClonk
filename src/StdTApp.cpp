@@ -35,24 +35,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifdef HAVE_LIBREADLINE
-#if defined(HAVE_READLINE_READLINE_H)
-	#include <readline/readline.h>
-#elif defined(HAVE_READLINE_H)
-	#include <readline.h>
-#endif
-static void readline_callback(char *);
-static CStdApp *readline_callback_use_this_app = 0;
-#endif /* HAVE_LIBREADLINE */
-
-#ifdef HAVE_READLINE_HISTORY
-	#if defined(HAVE_READLINE_HISTORY_H)
-		#include <readline/history.h>
-	#elif defined(HAVE_HISTORY_H)
-		#include <history.h>
-	#endif
-#endif /* HAVE_READLINE_HISTORY */
-
 #include "StdXPrivate.h"
 
 /* CStdApp */
@@ -96,10 +78,6 @@ void CStdApp::Init(int argc, char *argv[])
 	s.append("\"");
 	szCmdLine = s.c_str();
 
-#if USE_CONSOLE && HAVE_LIBREADLINE
-	rl_callback_handler_install(">", readline_callback);
-	readline_callback_use_this_app = this;
-#endif
 	// create pipe
 	if (pipe(Priv->Pipe) != 0)
 	{
@@ -115,9 +93,6 @@ bool CStdApp::InitTimer() { gettimeofday(&LastExecute, 0); return true; }
 
 void CStdApp::Clear()
 {
-#if USE_CONSOLE && HAVE_LIBREADLINE
-	rl_callback_handler_remove();
-#endif
 	// close pipe
 	close(Priv->Pipe[0]);
 	close(Priv->Pipe[1]);
@@ -271,10 +246,6 @@ bool CStdApp::IsClipboardFull(bool fClipboard)
 
 bool CStdApp::ReadStdInCommand()
 {
-#if HAVE_LIBREADLINE
-	rl_callback_read_char();
-	return true;
-#else
 	// Surely not the most efficient way to do it, but we won't have to read much data anyway.
 	char c;
 	if (read(0, &c, 1) != 1)
@@ -289,29 +260,7 @@ bool CStdApp::ReadStdInCommand()
 	else if (isprint((unsigned char)c))
 		CmdBuf.AppendChar(c);
 	return true;
-#endif
 }
-
-#if HAVE_LIBREADLINE
-static void readline_callback(char *line)
-{
-	if (!line)
-	{
-		readline_callback_use_this_app->Quit();
-	}
-	else
-	{
-		readline_callback_use_this_app->OnCommand(line);
-	}
-#if HAVE_READLINE_HISTORY
-	if (line && *line)
-	{
-		add_history(line);
-	}
-#endif
-	free(line);
-}
-#endif
 
 bool CStdDDraw::SaveDefaultGammaRamp(CStdWindow *pWindow)
 {

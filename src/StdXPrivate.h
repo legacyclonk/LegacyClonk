@@ -28,7 +28,6 @@ public:
 	// IOChannels required to wake up the main loop
 	GIOChannel *pipe_channel;
 	GIOChannel *x_channel;
-	GIOChannel *stdin_channel;
 #endif
 
 	CStdAppPrivate() :

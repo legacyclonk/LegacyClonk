@@ -43,24 +43,6 @@
 #include <errno.h>
 #include <unistd.h>
 
-#ifdef HAVE_LIBREADLINE
-#if defined(HAVE_READLINE_READLINE_H)
-	#include <readline/readline.h>
-#elif defined(HAVE_READLINE_H)
-	#include <readline.h>
-#endif
-static void readline_callback(char *);
-static CStdApp *readline_callback_use_this_app = nullptr;
-#endif /* HAVE_LIBREADLINE */
-
-#ifdef HAVE_READLINE_HISTORY
-	#if defined(HAVE_READLINE_HISTORY_H)
-		#include <readline/history.h>
-	#elif defined(HAVE_HISTORY_H)
-		#include <history.h>
-	# endif
-#endif /* HAVE_READLINE_HISTORY */
-
 /* CStdApp */
 
 #ifdef WITH_GLIB
@@ -82,12 +64,6 @@ namespace
 	gboolean OnPipeInputStatic(GIOChannel *channel, GIOCondition condition, gpointer data)
 	{
 		static_cast<CStdApp *>(data)->OnPipeInput();
-		return TRUE;
-	}
-
-	gboolean OnStdInInputStatic(GIOChannel *channel, GIOCondition condition, gpointer data)
-	{
-		static_cast<CStdApp *>(data)->OnStdInInput();
 		return TRUE;
 	}
 #endif
@@ -158,7 +134,6 @@ void CStdApp::Init(int argc, char *argv[])
 
 	Priv->pipe_channel = nullptr;
 	Priv->x_channel = nullptr;
-	Priv->stdin_channel = nullptr;
 #endif
 
 	if (!(dpy = XOpenDisplay(nullptr)))
@@ -190,15 +165,7 @@ void CStdApp::Init(int argc, char *argv[])
 	Priv->x_channel = g_io_channel_unix_new(XConnectionNumber(dpy));
 	g_io_add_watch(Priv->x_channel, G_IO_IN, &OnXInputStatic, this);
 #endif
-#if USE_CONSOLE && HAVE_LIBREADLINE
-	rl_callback_handler_install(">", readline_callback);
-	readline_callback_use_this_app = this;
 
-#ifdef WITH_GLIB
-	Priv->stdin_channel = g_io_channel_unix_new(STDIN_FILENO);
-	g_io_add_watch(Priv->stdin_channel, G_IO_IN, &OnStdInInputStatic, this);
-#endif
-#endif
 	// create pipe
 	if (pipe(Priv->Pipe) != 0)
 	{
@@ -223,9 +190,7 @@ void CStdApp::Clear()
 		XCloseDisplay(dpy);
 		dpy = nullptr;
 	}
-#if USE_CONSOLE && HAVE_LIBREADLINE
-	rl_callback_handler_remove();
-#endif
+
 	// close pipe
 	close(Priv->Pipe[0]);
 	close(Priv->Pipe[1]);
@@ -234,7 +199,6 @@ void CStdApp::Clear()
 
 	if (Priv->pipe_channel) g_io_channel_unref(Priv->pipe_channel);
 	if (Priv->x_channel) g_io_channel_unref(Priv->x_channel);
-	if (Priv->stdin_channel) g_io_channel_unref(Priv->stdin_channel);
 #endif
 }
 
@@ -641,10 +605,6 @@ void CStdAppPrivate::SetWindow(unsigned long wnd, CStdWindow *pWindow)
 
 bool CStdApp::ReadStdInCommand()
 {
-#if HAVE_LIBREADLINE
-	rl_callback_read_char();
-	return true;
-#else
 	// Surely not the most efficient way to do it, but we won't have to read much data anyway.
 	char c;
 	if (read(0, &c, 1) != 1)
@@ -659,29 +619,7 @@ bool CStdApp::ReadStdInCommand()
 	else if (isprint(static_cast<unsigned char>(c)))
 		CmdBuf.AppendChar(c);
 	return true;
-#endif
 }
-
-#if HAVE_LIBREADLINE
-static void readline_callback(char *line)
-{
-	if (!line)
-	{
-		readline_callback_use_this_app->Quit();
-	}
-	else
-	{
-		readline_callback_use_this_app->OnCommand(line);
-	}
-#if HAVE_READLINE_HISTORY
-	if (line && *line)
-	{
-		add_history(line);
-	}
-#endif
-	free(line);
-}
-#endif
 
 void CStdApp::OnXInput()
 {
