@@ -22,6 +22,15 @@
 
 #ifdef _WIN32
 const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
+#elif defined(USE_X11)
+struct _XIC;
+struct _XIM;
+#include <unordered_map>
+#endif
+
+#ifdef WITH_GLIB
+struct _GMainLoop;
+struct _GIOChannel;
 #endif
 
 #include <thread>
@@ -119,6 +128,7 @@ const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 // from X.h:
 //#define ShiftMask (1 << 0)
 //#define ControlMask (1 << 2)
+#define MK_ALT (1 << 3)
 #define MK_CONTROL (1 << 2)
 #define MK_SHIFT (1 << 0)
 #elif defined(USE_SDL_MAINLOOP)
@@ -239,7 +249,7 @@ public:
 	CStdApp();
 	virtual ~CStdApp();
 
-	bool Active;
+	bool Active{false};
 	bool MMTimer;
 
 	virtual void Clear();
@@ -253,7 +263,7 @@ public:
 	void SetDisplayMode(DisplayMode mode) { pWindow->SetDisplayMode(mode); }
 	void ResetTimer(unsigned int uDelay);
 	CStdWindow *pWindow;
-	bool fQuitMsgReceived; // if true, a quit message has been received and the application should terminate
+	bool fQuitMsgReceived{false}; // if true, a quit message has been received and the application should terminate
 	const char *GetCommandLine() { return szCmdLine; }
 
 	// Copy the text to the clipboard or the primary selection
@@ -308,16 +318,13 @@ protected:
 	UINT idCriticalTimer;
 	UINT GetDelay() { return uCriticalTimerDelay; }
 #else
-#if defined(USE_X11)
-	Display *dpy = nullptr;
+#ifdef USE_X11
+	Display *dpy{nullptr};
 	int xf86vmode_major_version, xf86vmode_minor_version;
 #endif
-#if defined(USE_SDL_MAINLOOP)
-	void HandleSDLEvent(SDL_Event &event);
-#endif
-	const char *Location;
+	const char *Location{""};
 	void Init(int argc, char *argv[]);
-	bool DoNotDelay;
+	bool DoNotDelay{false};
 	void NextTick(bool fYield);
 	bool IsShiftDown() { return KeyMask & MK_SHIFT; }
 	bool IsControlDown() { return KeyMask & MK_CONTROL; }
@@ -330,21 +337,46 @@ protected:
 	void OnXInput();
 	void OnPipeInput();
 	void OnStdInInput();
+#endif
 
 protected:
-#if defined(USE_SDL_MAINLOOP)
-	int argc; char **argv;
+#ifndef _WIN32
+	unsigned int Delay{27777}; // 36 FPS
+	timeval LastExecute;
+	int argc;
+	char **argv;
 	int Pipe[2];
+	unsigned int KeyMask{0};
+
+#ifdef WITH_GLIB
+	_GMainLoop *loop{nullptr};
+#ifdef USE_X11
+	_GIOChannel *xChannel{nullptr};
+#endif
+	_GIOChannel *pipeChannel{nullptr};
+#endif
+
+#ifdef USE_X11
+	int detectable_autorepeat_supported;
+	_XIM *inputMethod{nullptr};
+	_XIC *inputContext{nullptr};
+	std::unordered_map<unsigned long, CStdWindow *> windows;
+	unsigned long LastEventTime{0};
+	std::string primarySelection;
+	std::string clipboardSelection;
+#elif defined(USE_SDL_MAINLOOP)
 	int nextWidth, nextHeight, nextBPP;
 	std::optional<StdSdlSubSystem> sdlVideoSubSys;
 #endif
-	class CStdAppPrivate *Priv;
-	void HandleXMessage();
 
-	unsigned int Delay;
-	timeval LastExecute;
-	unsigned int KeyMask;
+#ifdef USE_X11
+	void NewWindow(CStdWindow *window);
+	void HandleXMessage();
+#elif defined(USE_SDL_MAINLOOP)
+	void HandleSDLEvent(SDL_Event &event);
 #endif
+#endif
+
 	const char *szCmdLine;
 	std::thread::id mainThread{};
 	bool InitTimer();

@@ -45,8 +45,6 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include "StdXPrivate.h"
-
 /* CStdWindow */
 
 CStdWindow::~CStdWindow()
@@ -105,29 +103,29 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 		return false;
 	}
 	// Update the XWindow->CStdWindow-Map
-	CStdAppPrivate::SetWindow(wnd, this);
-	if (!app->Priv->xic && app->Priv->xim)
+	app->NewWindow(this);
+	if (!app->inputContext && app->inputMethod)
 	{
-		app->Priv->xic = XCreateIC(app->Priv->xim,
+		app->inputContext = XCreateIC(app->inputMethod,
 			XNClientWindow, wnd,
 			XNFocusWindow, wnd,
 			XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
 			XNResourceName, STD_PRODUCT,
 			XNResourceClass, STD_PRODUCT,
 			nullptr);
-		if (!app->Priv->xic)
+		if (!app->inputContext)
 		{
 			Log("Failed to create input context.");
-			XCloseIM(app->Priv->xim);
-			app->Priv->xim = nullptr;
+			XCloseIM(app->inputMethod);
+			app->inputMethod = nullptr;
 		}
 		else
 		{
 			long ic_event_mask;
-			if (XGetICValues(app->Priv->xic, XNFilterEvents, &ic_event_mask, nullptr) == nullptr)
+			if (XGetICValues(app->inputContext, XNFilterEvents, &ic_event_mask, nullptr) == nullptr)
 				attr.event_mask |= ic_event_mask;
 			XSelectInput(dpy, wnd, attr.event_mask);
-			XSetICFocus(app->Priv->xic);
+			XSetICFocus(app->inputContext);
 		}
 	}
 	// We want notification of closerequests and be killed if we hang
@@ -153,7 +151,7 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	XClassHint *class_hint = XAllocClassHint();
 	class_hint->res_name = const_cast<char *>(STD_PRODUCT);
 	class_hint->res_class = const_cast<char *>(STD_PRODUCT);
-	XSetWMProperties(dpy, wnd, &title_property, &title_property, app->Priv->argv, app->Priv->argc, nullptr, wm_hint, class_hint);
+	XSetWMProperties(dpy, wnd, &title_property, &title_property, app->argv, app->argc, nullptr, wm_hint, class_hint);
 	// Set "parent". Clonk does not use "real" parent windows, but multiple toplevel windows.
 	if (parent) XSetTransientForHint(dpy, wnd, parent->wnd);
 	// Show window
@@ -176,7 +174,6 @@ void CStdWindow::Clear()
 	// Destroy window
 	if (wnd)
 	{
-		CStdAppPrivate::SetWindow(wnd, nullptr);
 		XUnmapWindow(dpy, wnd);
 		XDestroyWindow(dpy, wnd);
 		if (Info) XFree(Info);

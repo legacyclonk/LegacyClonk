@@ -1,2 +1,1 @@
-src/StdSDLApp.cpp
 src/StdSDLWindow.cpp

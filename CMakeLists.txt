@@ -191,8 +191,12 @@ endif ()
 
 if (WIN32)
 	append_filelist(CLONK_SOURCES EngineWin32.txt)
-elseif (APPLE)
+else ()
+    if (APPLE)
 	append_filelist(CLONK_SOURCES EngineApple.txt)
+    endif ()
+
+    list(APPEND CLONK_SOURCES src/StdAppUnix.cpp)
 endif ()
 
 if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)

@@ -4,4 +4,3 @@ src/C4AudioSystemSdl.h
 src/C4ToastLibNotify.h
 src/C4ToastWinToastLib.h
 src/StdWic.h
-src/StdXPrivate.h
