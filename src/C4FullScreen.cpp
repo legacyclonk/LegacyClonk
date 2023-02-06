@@ -477,7 +477,11 @@ C4FullScreen::~C4FullScreen()
 
 bool C4FullScreen::Init(CStdApp *const app)
 {
+#ifdef _WIN32
+	return Init(app, STD_PRODUCT);
+#else
 	return CStdWindow::Init(app, STD_PRODUCT);
+#endif
 }
 
 void C4FullScreen::Close()

@@ -48,7 +48,7 @@ public:
 #elif USE_SDL_MAINLOOP
 	virtual void HandleMessage(SDL_Event &e) override;
 #elif defined(_WIN32)
-	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr) override;
+	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds = CStdWindow::DefaultBounds, CStdWindow *parent = nullptr) override;
 	void Clear() override;
 	void SetSize(unsigned int cx, unsigned int cy) override;
 	HWND GetRenderWindow() const override { return hRenderWindow; }
