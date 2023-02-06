@@ -1731,7 +1731,7 @@ bool C4Object::Build(int32_t iLevel, C4Object *pBuilder)
 		}
 		if (iBuildSpeed <= 1) iBuildSpeed = 100;
 	}
-	DoCon(iLevel * iBuildSpeed * 150 / Def->Mass, false, fNeedMaterial);
+	DoCon(iLevel * iBuildSpeed * 150 / (Def->Mass ? Def->Mass : 1), false, fNeedMaterial);
 
 	// TurnTo
 	if (Def->BuildTurnTo != C4ID_None)
