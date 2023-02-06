@@ -54,10 +54,14 @@
 #define IDC_STATICSCRIPT                2026
 #define IDC_STATICTEXTURE               2027
 #define IDC_STATICTIME                  2028
+#define IDC_BUTTONOPENDIRECTORY         2029
+#define IDC_CRASHHANDLERTEXT            2030
+#define IDC_CRASHHANDLERDIALOGICON      2031
 #define IDD_COMPONENT                   3000
 #define IDD_CONSOLE                     3001
 #define IDD_PROPERTIES                  3002
 #define IDD_TOOLS                       3003
+#define IDD_CRASHHANDLERDIALOG          3004
 #define IDI_00_C4X                      4000
 #define IDI_01_C4S                      4001
 #define IDI_02_C4G                      4002

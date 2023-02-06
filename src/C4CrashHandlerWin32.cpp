@@ -25,9 +25,12 @@
 #include "C4CrashHandlerWin32.h"
 #include "C4Log.h"
 #include "C4Version.h"
-#include "C4Windows.h"
+#include "C4WinRT.h"
+
+#include "res/engine_resource.h"
 
 #include <dbghelp.h>
+#include <shlobj_core.h>
 #include <strsafe.h>
 #include <tlhelp32.h>
 
@@ -441,6 +444,70 @@ static StdStrBuf GetLogBuf(const std::int32_t logNumber)
 	return buf;
 }
 
+namespace
+{
+	template<typename T>
+	struct PIDLDeleter
+	{
+		using pointer = T;
+
+		void operator()(T ptr)
+		{
+			ILFree(ptr);
+		}
+	};
+
+	template<typename T> using PIDLPtr = std::unique_ptr<T, PIDLDeleter<T>>;
+}
+
+static void OpenCrashDumpPath(const std::wstring path) try
+{
+	C4Com com{winrt::apartment_type::single_threaded};
+
+	PIDLIST_ABSOLUTE pidl;
+	SFGAOF flags;
+	winrt::check_hresult(SHParseDisplayName(path.c_str(), nullptr, &pidl, 0, &flags));
+	const PIDLPtr<PIDLIST_ABSOLUTE> pidlPtr{pidl};
+
+	winrt::check_hresult(SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0));
+}
+catch (const winrt::hresult_error &e)
+{
+}
+
+static INT_PTR CALLBACK DlgProc(const HWND hwnd, const UINT msg, const WPARAM wParam, const LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+	{
+		const HICON icon{LoadIcon(nullptr, IDI_ERROR)};
+		SendDlgItemMessage(hwnd, IDC_CRASHHANDLERDIALOGICON, STM_SETICON, reinterpret_cast<WPARAM>(icon), 0);
+		break;
+	}
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+			EndDialog(hwnd, false);
+			return 0;
+
+		case IDC_BUTTONOPENDIRECTORY:
+			EndDialog(hwnd, true);
+			return 0;
+		}
+
+		break;
+
+	case WM_QUIT:
+		EndDialog(hwnd, false);
+		return 0;
+	}
+
+	return 0;
+}
+
 CrashReporterErrorCode GenerateParentProcessDump(const std::wstring_view commandLine, const std::string &config)
 {
 	HandleNull process;
@@ -552,6 +619,10 @@ CrashReporterErrorCode GenerateParentProcessDump(const std::wstring_view command
 
 	SetEvent(event.get());
 
-	MessageBox(nullptr, "LegacyClonk has crashed", STD_PRODUCT, MB_ICONERROR);
+	if (DialogBox(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDD_CRASHHANDLERDIALOG), nullptr, &DlgProc))
+	{
+		std::thread(&OpenCrashDumpPath, StdStringEncodingConverter::WinAcpToUtf16(buffer.get())).join();
+	}
+
 	return CrashReporterErrorCode::Success;
 }

@@ -246,8 +246,12 @@ endif ()
 target_link_libraries(clonk standard)
 target_compile_definitions(clonk PRIVATE C4ENGINE)
 
-if (USE_SDL_MIXER AND WIN32)
-	target_compile_definitions(clonk PRIVATE SDL_MAIN_HANDLED)
+if (WIN32)
+	target_compile_definitions(clonk PRIVATE STRICT_TYPED_ITEMIDS)
+
+	if (USE_SDL_MIXER)
+		target_compile_definitions(clonk PRIVATE SDL_MAIN_HANDLED)
+	endif ()
 endif ()
 
 # Add c4group target
