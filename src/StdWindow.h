@@ -136,6 +136,9 @@ private:
 protected:
 	SDL_Window *sdlWindow;
 	virtual void HandleMessage(SDL_Event &) {}
+#elif defined(USE_CONSOLE)
+public:
+	static constexpr C4Rect DefaultBounds{0, 0, 100, 100};
 #endif
 
 	friend class CStdDDraw;
