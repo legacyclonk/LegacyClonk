@@ -35,6 +35,7 @@
 
 #ifdef WIN32
 #include "C4Com.h"
+#include "C4CrashHandlerWin32.h"
 #include "C4WinRT.h"
 
 #include <ranges>
@@ -57,9 +58,6 @@ C4Game Game;
 C4Config Config;
 
 #ifdef _WIN32
-
-void InstallCrashHandler();
-int GenerateParentProcessDump(std::wstring_view, const std::string &);
 
 int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, wchar_t **const argv, const LPWSTR commandLine)
 {
@@ -99,7 +97,7 @@ int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, wchar
 			configAnsi = StdStringEncodingConverter{}.Utf16ToWinAcp(config.data());
 		}
 
-		return GenerateParentProcessDump(arg, configAnsi);
+		return static_cast<std::underlying_type_t<CrashReporterErrorCode>>(GenerateParentProcessDump(arg, configAnsi));
 	}
 
 	InstallCrashHandler();

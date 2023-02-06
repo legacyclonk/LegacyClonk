@@ -1,5 +1,6 @@
 src/C4Com.h
 src/C4CrashHandlerWin32.cpp
+src/C4CrashHandlerWin32.h
 src/C4FileClasses.cpp
 src/C4Windows.h
 src/C4WinRT.h

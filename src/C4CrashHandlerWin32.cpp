@@ -22,6 +22,7 @@
 
 // Dump generation on crash
 #include "C4Config.h"
+#include "C4CrashHandlerWin32.h"
 #include "C4Log.h"
 #include "C4Version.h"
 #include "C4Windows.h"
@@ -55,6 +56,7 @@ static constexpr auto LogStream = LastReservedStream + 1;
 
 #define FORMAT_STRING L"%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNuPTR) L"|%" _CRT_WIDE(SCNi32)
 #define PROCESS_CALLBACK_FILTER_ENABLED 1
+#define ERROR_REPORTER_FAILURE_ERROR_MESSAGE L"LegacyClonk crashed.\nAdditionally, the crash reporter failed to create a minidump file"
 
 template<std::intptr_t InvalidValue>
 using Handle = std::unique_ptr<std::remove_pointer_t<HANDLE>, decltype([](const HANDLE handle) { if (handle != std::bit_cast<HANDLE>(InvalidValue)) { CloseHandle(handle); } })>;
@@ -100,6 +102,19 @@ static std::int32_t GetLogNumber()
 		return 0;
 	}
 }
+
+static constexpr std::array<const wchar_t *, 9> ErrorCodeMessages
+{
+	L"Error parsing command line.",
+	L"Error validating handles.",
+	L"Error loading config.",
+	L"Error expanding the environment variables.",
+	L"The user path directory could not be created.",
+	L"Error formatting the dump file filename with the current time.",
+	L"Error creating the minidump file.",
+	L"Error writing the minidump.",
+	L"The process did not respond within 5 seconds."
+};
 
 LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 {
@@ -214,24 +229,25 @@ LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 
 	CloseHandle(processInformation.hThread);
 
-	bool success{false};
+	CrashReporterErrorCode errorCode;
 	const HANDLE handles[]{event.get(), processInformation.hProcess};
 
 	switch (WaitForMultipleObjects(std::size(handles), handles, false, 5000))
 	{
 	case WAIT_TIMEOUT: // Process hangs, terminate it
 		TerminateProcess(handles[1], STATUS_TIMEOUT);
+		errorCode = CrashReporterErrorCode::Timeout;
 		break;
 
 	case WAIT_OBJECT_0: // Process succeeded
-		success = true;
+		errorCode = CrashReporterErrorCode::Success;
 		break;
 
 	case WAIT_OBJECT_0 + 1: // Process exited
 	{
 		DWORD exitCode;
 		GetExitCodeProcess(handles[1], &exitCode);
-		success = exitCode == C4XRV_Completed;
+		errorCode = static_cast<CrashReporterErrorCode>(exitCode);
 		break;
 	}
 
@@ -239,9 +255,31 @@ LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 		break;
 	}
 
-	if (!success)
+	if (errorCode != CrashReporterErrorCode::Success)
 	{
-		MessageBoxW(nullptr, L"LegacyClonk crashed. Crash reporter non-functional.", _CRT_WIDE(STD_PRODUCT), MB_ICONERROR);
+		const auto index = static_cast<std::size_t>(errorCode) - 1;
+		HRESULT result;
+
+		if (index >= 0 && index < ErrorCodeMessages.size())
+		{
+			result = StringCchPrintfW(
+						DumpBuffer,
+						DumpBufferSize,
+						ERROR_REPORTER_FAILURE_ERROR_MESSAGE L": %s",
+						ErrorCodeMessages[index]
+						);
+		}
+		else
+		{
+			result = StringCchPrintfW(
+						DumpBuffer,
+						DumpBufferSize,
+						ERROR_REPORTER_FAILURE_ERROR_MESSAGE L": %#08x",
+						static_cast<std::int32_t>(index)
+						);
+		}
+
+		MessageBoxW(nullptr, SUCCEEDED(result) ? DumpBuffer : ERROR_REPORTER_FAILURE_ERROR_MESSAGE L" due to an unknown error.", L"LegacyClonk crashed", MB_ICONERROR);
 	}
 
 	TerminateProcess(GetCurrentProcess(), exceptionPointers->ExceptionRecord->ExceptionCode);
@@ -403,7 +441,7 @@ static StdStrBuf GetLogBuf(const std::int32_t logNumber)
 	return buf;
 }
 
-int GenerateParentProcessDump(const std::wstring_view commandLine, const std::string &config)
+CrashReporterErrorCode GenerateParentProcessDump(const std::wstring_view commandLine, const std::string &config)
 {
 	HandleNull process;
 	HandleNull thread;
@@ -413,24 +451,24 @@ int GenerateParentProcessDump(const std::wstring_view commandLine, const std::st
 
 	if (!ParseCommandLine(commandLine, process, thread, event, exceptionPointerAddress, logNumber))
 	{
-		return C4XRV_Failure;
+		return CrashReporterErrorCode::ParseCommandLine;
 	}
 
 	if (!ValidateHandle(process) || !ValidateHandle(thread) || !ValidateHandle(event))
 	{
-		return C4XRV_Failure;
+		return CrashReporterErrorCode::ValidateHandle;
 	}
 
 	Config.Init();
 	if (!Config.Load(true, config.empty() ? nullptr : config.c_str()))
 	{
-		return C4XRV_Failure;
+		return CrashReporterErrorCode::LoadConfig;
 	}
 
 	DWORD size{ExpandEnvironmentStrings(Config.General.UserPath, nullptr, 0)};
 	if (!size)
 	{
-		return C4XRV_Failure;
+		return CrashReporterErrorCode::EnvironmentVariables;
 	}
 
 	const std::size_t sizeWithFilename{size + 1 + std::char_traits<char>::length(C4ENGINENAME "-crash-YYYY-MM-DD-HH-MM-SS.dmp")};
@@ -439,13 +477,13 @@ int GenerateParentProcessDump(const std::wstring_view commandLine, const std::st
 	size = ExpandEnvironmentStrings(Config.General.UserPath, buffer.get(), size);
 	if (!size)
 	{
-		return C4XRV_Failure;
+		return CrashReporterErrorCode::EnvironmentVariables;
 	}
 
 	// C4Config::Load will attempt to create the user path; abort if it failed
 	if (!DirectoryExists(buffer.get()))
 	{
-		return C4XRV_Failure;
+		return CrashReporterErrorCode::UserPathMissing;
 	}
 
 	buffer.get()[size - 1] = '\\';
@@ -465,7 +503,7 @@ int GenerateParentProcessDump(const std::wstring_view commandLine, const std::st
 				st.wSecond
 				) == -1)
 	{
-		return C4XRV_Failure;
+		return CrashReporterErrorCode::FormatSystemTime;
 	}
 
 	const Handle<-1> file{CreateFile(
@@ -479,7 +517,7 @@ int GenerateParentProcessDump(const std::wstring_view commandLine, const std::st
 
 	if (file.get() == INVALID_HANDLE_VALUE)
 	{
-		return C4XRV_Failure;
+		return CrashReporterErrorCode::CreateDumpFile;
 	}
 
 	MINIDUMP_USER_STREAM_INFORMATION userStreamInformation{};
@@ -509,11 +547,11 @@ int GenerateParentProcessDump(const std::wstring_view commandLine, const std::st
 				nullptr
 				))
 	{
-		return C4XRV_Failure;
+		return CrashReporterErrorCode::MiniDumpWriteDump;
 	}
 
 	SetEvent(event.get());
 
 	MessageBox(nullptr, "LegacyClonk has crashed", STD_PRODUCT, MB_ICONERROR);
-	return C4XRV_Completed;
+	return CrashReporterErrorCode::Success;
 }
