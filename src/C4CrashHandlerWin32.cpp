@@ -61,10 +61,6 @@ static constexpr auto LogStream = LastReservedStream + 1;
 #define PROCESS_CALLBACK_FILTER_ENABLED 1
 #define ERROR_REPORTER_FAILURE_ERROR_MESSAGE L"LegacyClonk crashed.\nAdditionally, the crash reporter failed to create a minidump file"
 
-template<std::intptr_t InvalidValue>
-using Handle = std::unique_ptr<std::remove_pointer_t<HANDLE>, decltype([](const HANDLE handle) { if (handle != std::bit_cast<HANDLE>(InvalidValue)) { CloseHandle(handle); } })>;
-using HandleNull = Handle<0>;
-
 extern StdStrBuf sLogFileName;
 
 static bool PathValid(const char *const path)
@@ -130,7 +126,7 @@ LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	const auto duplicateHandle = [](const HANDLE handle, const DWORD access) -> HandleNull
+	const auto duplicateHandle = [](const HANDLE handle, const DWORD access) -> winrt::handle
 	{
 		HANDLE target;
 		if (!DuplicateHandle(GetCurrentProcess(), handle, GetCurrentProcess(), &target, access, true, 0))
@@ -143,7 +139,7 @@ LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 			return {};
 		}
 
-		return HandleNull{target};
+		return winrt::handle{target};
 	};
 
 	const auto process = duplicateHandle(GetCurrentProcess(), PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_DUP_HANDLE);
@@ -158,7 +154,7 @@ LONG WINAPI GenerateDump(LPEXCEPTION_POINTERS exceptionPointers)
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	const HandleNull event{CreateEvent(nullptr, false, false, nullptr)};
+	const winrt::handle event{CreateEvent(nullptr, false, false, nullptr)};
 	if (!event)
 	{
 		return EXCEPTION_CONTINUE_SEARCH;
@@ -409,7 +405,7 @@ void InstallCrashHandler()
 #endif
 }
 
-static bool ValidateHandle(HandleNull &handle)
+static bool ValidateHandle(winrt::handle &handle)
 {
 	HANDLE handleDuplicate;
 	if (!DuplicateHandle(GetCurrentProcess(), handle.get(), GetCurrentProcess(), &handleDuplicate, 0, true, DUPLICATE_SAME_ACCESS))
@@ -421,7 +417,7 @@ static bool ValidateHandle(HandleNull &handle)
 	return true;
 }
 
-static bool ParseCommandLine(const std::wstring_view commandLine, HandleNull &process, HandleNull &thread, HandleNull &event, std::uintptr_t &exceptionPointerAddress, std::int32_t &logNumber)
+static bool ParseCommandLine(const std::wstring_view commandLine, winrt::handle &process, winrt::handle &thread, winrt::handle &event, std::uintptr_t &exceptionPointerAddress, std::int32_t &logNumber)
 {
 	std::uintptr_t processRaw;
 	std::uintptr_t threadRaw;
@@ -431,9 +427,9 @@ static bool ParseCommandLine(const std::wstring_view commandLine, HandleNull &pr
 		return false;
 	}
 
-	process.reset(std::bit_cast<HANDLE>(processRaw));
-	thread.reset(std::bit_cast<HANDLE>(threadRaw));
-	event.reset(std::bit_cast<HANDLE>(eventRaw));
+	process.attach(std::bit_cast<HANDLE>(processRaw));
+	thread.attach(std::bit_cast<HANDLE>(threadRaw));
+	event.attach(std::bit_cast<HANDLE>(eventRaw));
 	return true;
 }
 
@@ -510,9 +506,9 @@ static INT_PTR CALLBACK DlgProc(const HWND hwnd, const UINT msg, const WPARAM wP
 
 CrashReporterErrorCode GenerateParentProcessDump(const std::wstring_view commandLine, const std::string &config)
 {
-	HandleNull process;
-	HandleNull thread;
-	HandleNull event;
+	winrt::handle process;
+	winrt::handle thread;
+	winrt::handle event;
 	std::uintptr_t exceptionPointerAddress;
 	std::int32_t logNumber;
 
@@ -573,7 +569,7 @@ CrashReporterErrorCode GenerateParentProcessDump(const std::wstring_view command
 		return CrashReporterErrorCode::FormatSystemTime;
 	}
 
-	const Handle<-1> file{CreateFile(
+	const winrt::file_handle file{CreateFile(
 					buffer.get(),
 					GENERIC_WRITE,
 					FILE_SHARE_READ | FILE_SHARE_DELETE,
