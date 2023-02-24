@@ -615,6 +615,17 @@ void C4ToolsDlg::UpdatePreview()
 	if (!hbox) return;
 #endif
 
+
+#ifndef USE_CONSOLE
+	if (pGL && pGLCtx)
+	{
+		if (!pGLCtx->Select())
+		{
+			return;
+		}
+	}
+#endif
+
 	const auto surfacePreview = std::make_unique<C4Surface>(previewWidth, previewHeight);
 
 	// fill bg
@@ -670,12 +681,9 @@ void C4ToolsDlg::UpdatePreview()
 #ifndef USE_CONSOLE
 	if (pGL && pGLCtx)
 	{
-		if (pGLCtx->Select())
-		{
-			pGL->Blit(surfacePreview.get(), 0, 0, static_cast<float>(previewWidth), static_cast<float>(previewHeight), pGL->lpPrimary, left, top, previewWidth, previewHeight);
-			pGL->PageFlip();
-			pGL->GetMainCtx().Select();
-		}
+		pGL->Blit(surfacePreview.get(), 0, 0, static_cast<float>(previewWidth), static_cast<float>(previewHeight), pGL->lpPrimary, left, top, previewWidth, previewHeight);
+		pGL->PageFlip();
+		pGL->GetMainCtx().Select();
 	}
 #endif
 #elif defined(WITH_DEVELOPER_MODE)
