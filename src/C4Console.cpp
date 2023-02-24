@@ -340,16 +340,16 @@ bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &
 	// Set text
 	SetCaption(title);
 	// Load bitmaps
-	hbmMouse   = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_MOUSE));
-	hbmMouse2  = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_MOUSE2));
-	hbmCursor  = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_CURSOR));
-	hbmCursor2 = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_CURSOR2));
-	hbmBrush   = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_BRUSH));
-	hbmBrush2  = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_BRUSH2));
-	hbmPlay    = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_PLAY));
-	hbmPlay2   = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_PLAY2));
-	hbmHalt    = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_HALT));
-	hbmHalt2   = (HBITMAP)LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_HALT2));
+	hbmMouse   = LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_MOUSE));
+	hbmMouse2  = LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_MOUSE2));
+	hbmCursor  = LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_CURSOR));
+	hbmCursor2 = LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_CURSOR2));
+	hbmBrush   = LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_BRUSH));
+	hbmBrush2  = LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_BRUSH2));
+	hbmPlay    = LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_PLAY));
+	hbmPlay2   = LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_PLAY2));
+	hbmHalt    = LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_HALT));
+	hbmHalt2   = LoadBitmap(app->hInstance, MAKEINTRESOURCE(IDB_HALT2));
 	// Enable controls
 	UpdateHaltCtrls(true);
 	EnableControls(fGameOpen);
