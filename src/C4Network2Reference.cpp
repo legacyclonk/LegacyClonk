@@ -22,6 +22,8 @@
 
 #include <fcntl.h>
 
+constexpr std::chrono::milliseconds C4Network2HTTPHappyEyeballsTimeout{300};
+
 // *** C4Network2Reference
 
 C4Network2Reference::C4Network2Reference()
@@ -401,9 +403,9 @@ bool C4Network2HTTPClient::Execute(int iMaxTime)
 	// Check timeout
 	if (fBusy)
 	{
-		if (C4TimeMilliseconds::Now() > HappyEyeballsTimeout)
+		if (std::chrono::steady_clock::now() > HappyEyeballsTimeout)
 		{
-			HappyEyeballsTimeout = C4TimeMilliseconds::PositiveInfinity;
+			HappyEyeballsTimeout = decltype(HappyEyeballsTimeout)::max();
 			Application.InteractiveThread.ThreadLogSF("HTTP: Starting fallback connection to %s (%s)", Server.getData(), ServerAddrFallback.ToString().getData());
 			Connect(ServerAddrFallback);
 		}
@@ -492,11 +494,11 @@ bool C4Network2HTTPClient::Query(const StdBuf &Data, bool fBinary)
 	}
 	if (enableFallback)
 	{
-		HappyEyeballsTimeout = C4TimeMilliseconds::Now() + C4Network2HTTPHappyEyeballsTimeout;
+		HappyEyeballsTimeout = std::chrono::steady_clock::now() + C4Network2HTTPHappyEyeballsTimeout;
 	}
 	else
 	{
-		HappyEyeballsTimeout = C4TimeMilliseconds::PositiveInfinity;
+		HappyEyeballsTimeout = decltype(HappyEyeballsTimeout)::max();
 	}
 
 	// Okay, request will be performed when connection is complete
