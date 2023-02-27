@@ -611,10 +611,6 @@ void C4ToolsDlg::UpdatePreview()
 	top = clientRect.top;
 	previewWidth = clientRect.right - clientRect.left;
 	previewHeight = clientRect.bottom - clientRect.top;
-#elif defined(WITH_DEVELOPER_MODE)
-	if (!hbox) return;
-#endif
-
 
 #ifndef USE_CONSOLE
 	if (pGL && pGLCtx)
@@ -624,6 +620,9 @@ void C4ToolsDlg::UpdatePreview()
 			return;
 		}
 	}
+#endif
+#elif defined(WITH_DEVELOPER_MODE)
+	if (!hbox) return;
 #endif
 
 	const auto surfacePreview = std::make_unique<C4Surface>(previewWidth, previewHeight);
