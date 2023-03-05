@@ -1215,7 +1215,7 @@ static std::optional<C4ValueInt> FnGetVertex(C4AulContext *cthr, C4ValueInt iInd
 	case VTX_Friction: return {pObj->Shape.VtxFriction[iIndex]}; break;
 	default:
 		// old-style behaviour for any value != 0 (normally not used)
-		DebugLogF("FnGetVertex: Unknown vertex attribute: %d; getting VtxY", iValueToGet);
+		DebugLogF("GetVertex: Unknown vertex attribute: %d; getting VtxY", iValueToGet);
 		return {pObj->Shape.VtxY[iIndex]};
 		break;
 	}
@@ -1251,7 +1251,7 @@ static bool FnSetVertex(C4AulContext *cthr, C4ValueInt iIndex, C4ValueInt iValue
 	default:
 		// old-style behaviour for any value != 0 (normally not used)
 		pObj->Shape.VtxY[iIndex] = iValue;
-		DebugLogF("FnSetVertex: Unknown vertex attribute: %d; setting VtxY", iValueToSet);
+		DebugLogF("SetVertex: Unknown vertex attribute: %d; setting VtxY", iValueToSet);
 		break;
 	}
 	// vertex update desired?
