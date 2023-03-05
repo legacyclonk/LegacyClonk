@@ -64,6 +64,8 @@ int WINAPI WinMain(HINSTANCE hInst,
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+	SetCurrentProcessExplicitAppUserModelID(_CRT_WIDE(STD_APPUSERMODELID));
+
 	InstallCrashHandler();
 
 	auto allocConsole = []
@@ -107,8 +109,6 @@ int WINAPI WinMain(HINSTANCE hInst,
 	}
 #endif
 #endif
-
-	SetCurrentProcessExplicitAppUserModelID(_CRT_WIDE(STD_APPUSERMODELID));
 
 	C4Com com;
 
