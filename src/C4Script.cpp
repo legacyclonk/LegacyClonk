@@ -1215,7 +1215,7 @@ static std::optional<C4ValueInt> FnGetVertex(C4AulContext *cthr, C4ValueInt iInd
 	case VTX_Friction: return {pObj->Shape.VtxFriction[iIndex]}; break;
 	default:
 		// old-style behaviour for any value != 0 (normally not used)
-		DebugLogF("FnGetVertex: Unknown vertex attribute: %ld; getting VtxY", iValueToGet);
+		DebugLogF("FnGetVertex: Unknown vertex attribute: %d; getting VtxY", iValueToGet);
 		return {pObj->Shape.VtxY[iIndex]};
 		break;
 	}
@@ -1251,7 +1251,7 @@ static bool FnSetVertex(C4AulContext *cthr, C4ValueInt iIndex, C4ValueInt iValue
 	default:
 		// old-style behaviour for any value != 0 (normally not used)
 		pObj->Shape.VtxY[iIndex] = iValue;
-		DebugLogF("FnSetVertex: Unknown vertex attribute: %ld; setting VtxY", iValueToSet);
+		DebugLogF("FnSetVertex: Unknown vertex attribute: %d; setting VtxY", iValueToSet);
 		break;
 	}
 	// vertex update desired?
@@ -1567,8 +1567,8 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 			if (iExtra & C4MN_Add_PassValue)
 			{
 				// with value
-				sprintf(command, "%s(%s,%s,0,%ld)", szScriptCom, C4IdText(idItem), parameter, iValue);
-				sprintf(command2, "%s(%s,%s,1,%ld)", szScriptCom, C4IdText(idItem), parameter, iValue);
+				sprintf(command, "%s(%s,%s,0,%d)", szScriptCom, C4IdText(idItem), parameter, iValue);
+				sprintf(command2, "%s(%s,%s,1,%d)", szScriptCom, C4IdText(idItem), parameter, iValue);
 			}
 			else
 			{
@@ -3839,7 +3839,7 @@ static void FnSetLength(C4AulContext *cthr, C4Value *pArrayRef, C4ValueInt iNewS
 {
 	// safety
 	if (iNewSize < 0 || iNewSize > C4ValueList::MaxSize)
-		throw C4AulExecError(cthr->Obj, FormatString("SetLength: invalid array size (%ld)", iNewSize).getData());
+		throw C4AulExecError(cthr->Obj, FormatString("SetLength: invalid array size (%d)", iNewSize).getData());
 
 	// set new size
 	pArrayRef->SetArrayLength(iNewSize, cthr);
@@ -5778,7 +5778,7 @@ static std::optional<C4ValueInt> FnGetTeamConfig(C4AulContext *cthr, C4ValueInt 
 	case C4TeamList::TEAM_TeamColors:           return {Game.Teams.IsTeamColors()};
 	}
 	// undefined value
-	DebugLogF("GetTeamConfig: Unknown config value: %ld", iConfigValue);
+	DebugLogF("GetTeamConfig: Unknown config value: %d", iConfigValue);
 	return {};
 }
 
