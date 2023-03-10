@@ -817,7 +817,7 @@ void MainDlg::UpdatePreloadingGUIState(const bool isComplete)
 	}
 }
 
-void MainDlg::Preload()
+bool MainDlg::Preload()
 {
 	if (!Game.Preload())
 	{
@@ -826,7 +826,11 @@ void MainDlg::Preload()
 		// Don't use Log here since we want a red message
 		OnLog(message, C4GUI_ErrorFontClr);
 		LogSilent(message);
+
+		return false;
 	}
+
+	return true;
 }
 
 C4GUI::ContextMenu *MainDlg::OnRightTabContext(C4GUI::Element *pLabel, int32_t iX, int32_t iY)
@@ -988,18 +992,19 @@ void MainDlg::OnBtnChat(C4GUI::Control *btn)
 
 void MainDlg::OnBtnPreload(C4GUI::Control *)
 {
-	// disable it for the max. one second delay until C4Network2ResDlg's callback resets it again
-	const int32_t buttonHeight{btnPreload->GetHeight()};
-	RemoveElement(btnPreload);
-	delete btnPreload;
-	btnPreload = nullptr;
-
-	if (pResList)
+	if (Preload())
 	{
-		pResList->GetBounds().Hgt += buttonHeight;
-	}
+		// disable it for the max. one second delay until C4Network2ResDlg's callback resets it again
+		const int32_t buttonHeight{btnPreload->GetHeight()};
+		RemoveElement(btnPreload);
+		delete btnPreload;
+		btnPreload = nullptr;
 
-	Preload();
+		if (pResList)
+		{
+			pResList->GetBounds().Hgt += buttonHeight;
+		}
+	}
 }
 
 bool MainDlg::KeyHistoryUpDown(bool fUp)
