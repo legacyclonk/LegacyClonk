@@ -145,6 +145,7 @@ private:
 	void UpdatePlayerList();
 	void UpdateResourceProgress();
 	void UpdatePreloadingGUIState(bool isComplete);
+	void Preload();
 
 public:
 	MainDlg(bool fHost);

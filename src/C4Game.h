@@ -300,7 +300,7 @@ protected:
 
 public:
 	bool SaveGameTitle(C4Group &hGroup);
-	void Preload();
+	bool Preload();
 	bool CanPreload() const;
 
 protected:

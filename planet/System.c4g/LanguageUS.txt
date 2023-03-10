@@ -636,6 +636,7 @@ IDS_ERR_PLEASESELECTAFILEFIRST=Please select a file first!
 IDS_ERR_PLRNAME_EMPTY=You must specify a player name!
 IDS_ERR_PLRNAME_TAKEN=%s is already taken
 IDS_ERR_PLRNOCREW=%s does not have a crew yet!
+IDS_ERR_PRELOADING=Preloading error.
 IDS_ERR_PXS=PXS data error.
 IDS_ERR_RENAMEFILE=Error renaming file "%s" to "%s".
 IDS_ERR_REPLAYREAD=Could not read playback data!

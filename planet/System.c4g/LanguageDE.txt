@@ -636,6 +636,7 @@ IDS_ERR_PLEASESELECTAFILEFIRST=Bitte zuerst eine Datei wählen.
 IDS_ERR_PLRNAME_EMPTY=Spielername muss angegeben werden!
 IDS_ERR_PLRNAME_TAKEN=Spielername "%s" ist schon vergeben.
 IDS_ERR_PLRNOCREW=Spieler "%s" hat noch keine Mannschaft!
+IDS_ERR_PRELOADING=Fehler beim Vorladen.
 IDS_ERR_PXS=Fehler beim Laden der PXS-Daten.
 IDS_ERR_RENAMEFILE=Fehler beim Umbenennen der Datei "%s" in "%s".
 IDS_ERR_REPLAYREAD=Aufnahmedaten konnten nicht gelesen werden!

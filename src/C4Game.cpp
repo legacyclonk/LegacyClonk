@@ -1935,12 +1935,17 @@ bool C4Game::Decompile(StdStrBuf &rBuf, bool fSaveSection, bool fSaveExact)
 	return true;
 }
 
-void C4Game::Preload()
+bool C4Game::Preload()
 {
 	if (CanPreload())
 	{
 #ifndef USE_CONSOLE
 		std::unique_ptr<CStdGLCtx> context{lpDDraw->CreateContext(Application.pWindow, &Application)};
+		if (!context)
+		{
+			return false;
+		}
+
 		context->Deselect();
 		pGL->GetMainCtx().Select();
 		PreloadThread = std::thread{[](std::unique_ptr<CStdGLCtx> preloadContext)
@@ -1959,7 +1964,11 @@ void C4Game::Preload()
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
 		}};
 #endif
+
+		return true;
 	}
+
+	return false;
 }
 
 bool C4Game::CanPreload() const

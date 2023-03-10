@@ -807,13 +807,25 @@ void MainDlg::UpdatePreloadingGUIState(const bool isComplete)
 
 		if (Config.General.Preloading)
 		{
-			Game.Preload();
+			Preload();
 		}
 	}
 	else
 	{
 		checkReady->SetToolTip(LoadResStr("IDS_DLGTIP_READYNOTAVAILABLE"));
 		checkReady->SetCaption(LoadResStr("IDS_DLG_STILLLOADING"));
+	}
+}
+
+void MainDlg::Preload()
+{
+	if (!Game.Preload())
+	{
+		const char *const message{LoadResStr("IDS_ERR_PRELOADING")};
+
+		// Don't use Log here since we want a red message
+		OnLog(message, C4GUI_ErrorFontClr);
+		LogSilent(message);
 	}
 }
 
@@ -987,7 +999,7 @@ void MainDlg::OnBtnPreload(C4GUI::Control *)
 		pResList->GetBounds().Hgt += buttonHeight;
 	}
 
-	Game.Preload();
+	Preload();
 }
 
 bool MainDlg::KeyHistoryUpDown(bool fUp)
