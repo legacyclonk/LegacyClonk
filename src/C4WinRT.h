@@ -31,6 +31,6 @@ decltype(auto) MapHResultError(Func &&func, Args &&...args)
 	}
 	catch (const winrt::hresult_error &e)
 	{
-		throw std::runtime_error{winrt::to_string(e.message()).c_str()};
+		throw std::runtime_error{winrt::to_string(e.message())};
 	}
 }
