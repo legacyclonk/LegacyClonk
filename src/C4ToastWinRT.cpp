@@ -137,8 +137,13 @@ C4ToastImplWinRT::EventHandler::EventHandler(ToastNotification &notification, C4
 }
 
 #if NTDDI_VERSION < NTDDI_WIN8
-extern "C" void WINAPI Clonk_GetSystemTimePreciseAsFileTime(LPFILETIME lpSystemTimeAsFileTime) noexcept
+extern "C"
 {
-	*lpSystemTimeAsFileTime = winrt::file_time{static_cast<std::uint64_t>(std::chrono::file_clock::now().time_since_epoch().count())};
+	void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime);
+
+	void WINAPI Clonk_GetSystemTimePreciseAsFileTime(LPFILETIME lpSystemTimeAsFileTime) noexcept
+	{
+		__crtGetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime);
+	}
 }
 #endif
