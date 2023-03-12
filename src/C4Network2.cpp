@@ -119,8 +119,6 @@ void C4Network2Status::CompileFunc(StdCompiler *pComp, bool fReference)
 
 #ifndef USE_CONSOLE
 
-std::optional<C4Toast> C4Network2::ReadyCheckDialog::toast = {};
-
 C4Network2::ReadyCheckDialog::ReadyCheckDialog()
 	: TimedDialog{15, "", LoadResStr("IDS_DLG_READYCHECK"), btnYesNo, C4GUI::Ico_GameRunning}
 {
