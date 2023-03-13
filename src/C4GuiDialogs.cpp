@@ -189,46 +189,49 @@ bool DialogWindow::Init(CStdApp *const app, const char *const title, const C4Rec
 
 LRESULT APIENTRY DialogWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	Dialog *const dialog{&reinterpret_cast<DialogWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->dialog};
-	// Process message
-	switch (uMsg)
+	if (uMsg != WM_NCCREATE)
 	{
-	case WM_KEYDOWN:
-		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), dialog)) return 0;
-		break;
+		Dialog *const dialog{&reinterpret_cast<DialogWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->dialog};
+		// Process message
+		switch (uMsg)
+		{
+		case WM_KEYDOWN:
+			if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), dialog)) return 0;
+			break;
 
-	case WM_KEYUP:
-		if (Game.DoKeyboardInput(wParam, KEYEV_Up, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), false, dialog)) return 0;
-		break;
+		case WM_KEYUP:
+			if (Game.DoKeyboardInput(wParam, KEYEV_Up, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), false, dialog)) return 0;
+			break;
 
-	case WM_SYSKEYDOWN:
-		if (wParam == 18) break;
-		if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), dialog)) return 0;
-		break;
+		case WM_SYSKEYDOWN:
+			if (wParam == 18) break;
+			if (Game.DoKeyboardInput(wParam, KEYEV_Down, !!(lParam & 0x20000000), Application.IsControlDown(), Application.IsShiftDown(), !!(lParam & 0x40000000), dialog)) return 0;
+			break;
 
-	case WM_CLOSE:
-		dialog->Close(false);
-		break;
+		case WM_CLOSE:
+			dialog->Close(false);
+			break;
 
-	case WM_PAINT:
-		// 2do: only draw specific dlg?
-		break;
-		return 0;
+		case WM_PAINT:
+			// 2do: only draw specific dlg?
+			break;
+			return 0;
 
-	case WM_LBUTTONDOWN:   Game.pGUI->MouseInput(C4MC_Button_LeftDown,    LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
-	case WM_LBUTTONUP:     Game.pGUI->MouseInput(C4MC_Button_LeftUp,      LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
-	case WM_RBUTTONDOWN:   Game.pGUI->MouseInput(C4MC_Button_RightDown,   LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
-	case WM_RBUTTONUP:     Game.pGUI->MouseInput(C4MC_Button_RightUp,     LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
-	case WM_LBUTTONDBLCLK: Game.pGUI->MouseInput(C4MC_Button_LeftDouble,  LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
-	case WM_RBUTTONDBLCLK: Game.pGUI->MouseInput(C4MC_Button_RightDouble, LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+		case WM_LBUTTONDOWN:   Game.pGUI->MouseInput(C4MC_Button_LeftDown,    LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+		case WM_LBUTTONUP:     Game.pGUI->MouseInput(C4MC_Button_LeftUp,      LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+		case WM_RBUTTONDOWN:   Game.pGUI->MouseInput(C4MC_Button_RightDown,   LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+		case WM_RBUTTONUP:     Game.pGUI->MouseInput(C4MC_Button_RightUp,     LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+		case WM_LBUTTONDBLCLK: Game.pGUI->MouseInput(C4MC_Button_LeftDouble,  LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
+		case WM_RBUTTONDBLCLK: Game.pGUI->MouseInput(C4MC_Button_RightDouble, LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr); break;
 
-	case WM_MOUSEMOVE:
-		Game.pGUI->MouseInput(C4MC_Button_None, LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr);
-		break;
+		case WM_MOUSEMOVE:
+			Game.pGUI->MouseInput(C4MC_Button_None, LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr);
+			break;
 
-	case WM_MOUSEWHEEL:
-		Game.pGUI->MouseInput(C4MC_Button_Wheel, LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr);
-		break;
+		case WM_MOUSEWHEEL:
+			Game.pGUI->MouseInput(C4MC_Button_Wheel, LOWORD(lParam), HIWORD(lParam), wParam, dialog, nullptr);
+			break;
+		}
 	}
 
 	return CStdWindow::DefaultWindowProc(hwnd, uMsg, wParam, lParam);
