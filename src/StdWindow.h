@@ -95,6 +95,7 @@ protected:
 	virtual bool Win32DialogMessageHandling(MSG *msg) { return false; };
 	virtual bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const { return {}; }
 	virtual std::pair<DWORD, DWORD> GetWindowStyle() const { return {WS_OVERLAPPEDWINDOW, 0}; }
+	virtual bool SupportsDarkMode() const { return true; }
 
 private:
 	C4Com com{winrt::apartment_type::multi_threaded};

@@ -137,6 +137,7 @@ protected:
 	WNDCLASSEX GetWindowClass(const HINSTANCE instance) const override { return {}; }
 
 	bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const override;
+	bool SupportsDarkMode() const override { return false; }
 
 	HBITMAP hbmMouse;
 	HBITMAP hbmMouse2;
