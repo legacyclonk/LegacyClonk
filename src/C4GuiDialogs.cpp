@@ -257,10 +257,15 @@ WNDCLASSEX DialogWindow::GetWindowClass(const HINSTANCE instance) const
 
 bool DialogWindow::GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const
 {
-	id = std::string{"ConsoleGUI_"} + dialog.GetID();
-	subKey = Config.GetSubkeyPath("Console");
-	storeSize = true;
-	return true;
+	if (const char *const dialogID{dialog.GetID()}; dialogID && *dialogID)
+	{
+		id = std::string{"ConsoleGUI_"} + dialogID;
+		subKey = Config.GetSubkeyPath("Console");
+		storeSize = true;
+		return true;
+	}
+
+	return false;
 }
 
 #endif // _WIN32
