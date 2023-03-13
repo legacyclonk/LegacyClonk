@@ -761,13 +761,27 @@ void CStdApp::NewWindow(CStdWindow *const window)
 	windows.emplace(window->wnd, window);
 }
 #elif defined(USE_SDL_MAINLOOP)
+static void UpdateKeyMaskFromModifiers(const std::uint16_t modifiers)
+{
+}
+
 void CStdApp::HandleSDLEvent(SDL_Event &event)
 {
-	if (event.type == SDL_QUIT)
+	switch (event.type)
 	{
+	case SDL_QUIT:
 		Quit();
+		return;
+
+	case SDL_KEYDOWN:
+	case SDL_KEYUP:
+	{
+		KeyMask = event.key.keysym.mod;
+		break;
 	}
-	else if (pWindow)
+	}
+
+	if (pWindow)
 	{
 		pWindow->HandleMessage(event);
 	}

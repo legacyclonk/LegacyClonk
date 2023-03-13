@@ -177,8 +177,9 @@ struct _GIOChannel;
 #define KEY_X SDL_SCANCODE_X
 #define KEY_A SDL_SCANCODE_A
 #define KEY_F SDL_SCANCODE_F
-#define MK_SHIFT (KMOD_LSHIFT | KMOD_RSHIFT)
-#define MK_CONTROL (KMOD_LCTRL | KMOD_RCTRL)
+#define MK_ALT KMOD_ALT
+#define MK_CONTROL KMOD_CTRL
+#define MK_SHIFT KMOD_SHIFT
 #elif defined(USE_CONSOLE)
 #define K_F1 0
 #define K_F2 0
@@ -328,7 +329,8 @@ protected:
 	void NextTick(bool fYield);
 	bool IsShiftDown() { return KeyMask & MK_SHIFT; }
 	bool IsControlDown() { return KeyMask & MK_CONTROL; }
-	bool IsAltDown() { return KeyMask & (1 << 3); }
+	bool IsAltDown() { return KeyMask & MK_ALT; }
+	unsigned int GetModifiers() const { return KeyMask; }
 	bool SignalNetworkEvent();
 
 	// These must be public to be callable from callback functions from

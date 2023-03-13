@@ -323,12 +323,11 @@ void C4FullScreen::HandleMessage(XEvent &e)
 namespace
 {
 	void sdlToC4MCBtn(const SDL_MouseButtonEvent &e,
-		int32_t &button, uint32_t &flags)
+		int32_t &button)
 	{
 		static int lastLeftClick = 0, lastRightClick = 0;
 
 		button = C4MC_Button_None;
-		flags = 0;
 
 		switch (e.button)
 		{
@@ -389,22 +388,22 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 	case SDL_KEYDOWN:
 	{
 		Game.DoKeyboardInput(e.key.keysym.scancode, KEYEV_Down,
-			e.key.keysym.mod & (KMOD_LALT | KMOD_RALT),
-			e.key.keysym.mod & (KMOD_LCTRL | KMOD_RCTRL),
-			e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT),
+			Application.IsAltDown(),
+			Application.IsControlDown(),
+			Application.IsShiftDown(),
 			false, nullptr);
 		break;
 	}
 	case SDL_KEYUP:
 		Game.DoKeyboardInput(e.key.keysym.scancode, KEYEV_Up,
-			e.key.keysym.mod & (KMOD_LALT | KMOD_RALT),
-			e.key.keysym.mod & (KMOD_LCTRL | KMOD_RCTRL),
-			e.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT), false, nullptr);
+			Application.IsAltDown(),
+			Application.IsControlDown(),
+			Application.IsShiftDown(), false, nullptr);
 		break;
 	case SDL_MOUSEMOTION:
 	{
 		const auto scale = GetInputScale();
-		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.motion.x * scale, e.motion.y * scale, 0, nullptr);
+		Game.GraphicsSystem.MouseMove(C4MC_Button_None, e.motion.x * scale, e.motion.y * scale, Application.GetModifiers(), nullptr);
 		break;
 	}
 	case SDL_MOUSEWHEEL:
@@ -420,9 +419,8 @@ void C4FullScreen::HandleMessage(SDL_Event &e)
 	{
 		const auto scale = GetInputScale();
 		int32_t button;
-		uint32_t flags;
-		sdlToC4MCBtn(e.button, button, flags);
-		Game.GraphicsSystem.MouseMove(button, e.button.x * scale, e.button.y * scale, flags, nullptr);
+		sdlToC4MCBtn(e.button, button);
+		Game.GraphicsSystem.MouseMove(button, e.button.x * scale, e.button.y * scale, Application.GetModifiers(), nullptr);
 		break;
 	}
 	case SDL_JOYAXISMOTION:
