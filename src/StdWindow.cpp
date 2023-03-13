@@ -48,13 +48,6 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 		bounds.x, bounds.y, bounds.Wdt, bounds.Hgt,
 		nullptr, nullptr, app->hInstance, this);
 
-	SetLastError(0);
-	if (!SetWindowLongPtr(hWindow, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this)) && GetLastError())
-	{
-		DestroyWindow(hWindow);
-		return false;
-	}
-
 #ifndef USE_CONSOLE
 	RestorePosition();
 	SetFocus(hWindow);
@@ -208,6 +201,10 @@ LRESULT CStdWindow::DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 {
 	switch (uMsg)
 	{
+	case WM_NCCREATE:
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(reinterpret_cast<CREATESTRUCT *>(lParam)->lpCreateParams));
+		break;
+
 	case WM_DESTROY:
 	{
 		reinterpret_cast<CStdWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->StorePosition();
