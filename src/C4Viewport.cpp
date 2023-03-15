@@ -213,7 +213,7 @@ WNDCLASSEX C4ViewportWindow::GetWindowClass(const HINSTANCE instance) const
 		.hCursor = LoadCursor(nullptr, IDC_ARROW),
 		.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND),
 		.lpszMenuName = nullptr,
-		.lpszClassName = "C4ViewportWindow",
+		.lpszClassName = "C4Viewport",
 		.hIconSm = LoadIcon(instance, MAKEINTRESOURCE(IDI_01_C4S))
 	};
 }
