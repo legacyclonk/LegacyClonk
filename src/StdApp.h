@@ -223,6 +223,7 @@ struct _GIOChannel;
 #define KEY_X 0
 #define KEY_F 0
 #define KEY_A 0
+#define MK_ALT 0
 #define MK_SHIFT 0
 #define MK_CONTROL 0
 #else
