@@ -24,6 +24,10 @@
 
 #include <StdFile.h>
 
+#ifdef _WIN32
+#include "StdStringEncodingConverter.h"
+#endif
+
 #ifdef __linux__
 
 #include <cerrno>

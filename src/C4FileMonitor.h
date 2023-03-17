@@ -27,7 +27,9 @@
 #include <functional>
 #include <map>
 
-#ifdef __APPLE__
+#ifdef _WIN32
+#include "C4WinRT.h"
+#elif defined(__APPLE__)
 #include <CoreServices/CoreServices.h>
 #endif
 
