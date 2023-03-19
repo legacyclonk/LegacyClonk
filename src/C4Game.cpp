@@ -661,7 +661,7 @@ bool C4Game::GameOverCheck()
 			// Count objects, fullsize only
 			C4ObjectLink *cLnk;
 			int32_t iCount = 0;
-			for (cLnk = Game.Objects.First; cLnk; cLnk = cLnk->Next)
+			for (cLnk = Objects.First; cLnk; cLnk = cLnk->Next)
 				if (cLnk->Obj->Status)
 					if (cLnk->Obj->Def->id == c_id)
 						if (cLnk->Obj->GetCon() >= FullCon)
@@ -684,7 +684,7 @@ bool C4Game::GameOverCheck()
 		bool alive_only = false;
 		if (cdef && (cdef->Category & C4D_Living)) alive_only = true;
 		int32_t iCount = 0;
-		for (cLnk = Game.Objects.First; cLnk; cLnk = cLnk->Next)
+		for (cLnk = Objects.First; cLnk; cLnk = cLnk->Next)
 			if (cLnk->Obj->Status)
 				if (cLnk->Obj->Def->id == c_id)
 					if (!alive_only || cLnk->Obj->GetAlive())
@@ -700,10 +700,10 @@ bool C4Game::GameOverCheck()
 	condition_true = true;
 	for (cnt = 0; cnt < C4MaxNameList; cnt++)
 		if (C4S.Game.ClearMaterial.Name[cnt][0])
-			if (MatValid(mat = Game.Material.Get(C4S.Game.ClearMaterial.Name[cnt])))
+			if (MatValid(mat = Material.Get(C4S.Game.ClearMaterial.Name[cnt])))
 			{
 				condition_valid = true;
-				if (Game.Landscape.EffectiveMatCount[mat] > static_cast<uint32_t>(C4S.Game.ClearMaterial.Count[cnt]))
+				if (Landscape.EffectiveMatCount[mat] > static_cast<uint32_t>(C4S.Game.ClearMaterial.Count[cnt]))
 					condition_true = false;
 			}
 	if (condition_valid)
@@ -839,8 +839,8 @@ void C4Game::InitFullscreenComponents(bool fRunning)
 		cgo2.Set(Application.DDraw->lpBack, 0, 0, Config.Graphics.ResX, C4UpperBoard::Height());
 
 		C4Facet cgo;
-		cgo.Set(Application.DDraw->lpBack, 0, Config.Graphics.ResY - Game.GraphicsResource.FontRegular.GetLineHeight(),
-			Config.Graphics.ResX, Game.GraphicsResource.FontRegular.GetLineHeight());
+		cgo.Set(Application.DDraw->lpBack, 0, Config.Graphics.ResY - GraphicsResource.FontRegular.GetLineHeight(),
+			Config.Graphics.ResX, GraphicsResource.FontRegular.GetLineHeight());
 		GraphicsSystem.UpperBoard.Init(cgo2, cgo);
 		GraphicsSystem.MessageBoard.Init(cgo, false);
 
@@ -861,10 +861,10 @@ bool C4Game::InitMaterialTexture()
 	Material.Clear();
 
 	// Check for scenario local materials
-	bool fHaveScenMaterials = Game.ScenarioFile.FindEntry(C4CFN_Material);
+	bool fHaveScenMaterials = ScenarioFile.FindEntry(C4CFN_Material);
 
 	// Load all materials
-	auto matRes = Game.Parameters.GameRes.iterRes(NRT_Material);
+	auto matRes = Parameters.GameRes.iterRes(NRT_Material);
 	bool fFirst = true, fOverloadMaterials = true, fOverloadTextures = true;
 	long tex_count = 0, mat_count = 0;
 	while (fOverloadMaterials || fOverloadTextures)
@@ -873,7 +873,7 @@ bool C4Game::InitMaterialTexture()
 		C4Group Mats;
 		if (fHaveScenMaterials)
 		{
-			if (!Mats.OpenAsChild(&Game.ScenarioFile, C4CFN_Material))
+			if (!Mats.OpenAsChild(&ScenarioFile, C4CFN_Material))
 			{
 				LogFatal(FormatString(LoadResStr("IDS_ERR_SCENARIOMATERIALS"), Mats.GetError()).getData());
 				return false;
@@ -1000,22 +1000,22 @@ bool C4Game::Pause()
 	// already paused?
 	if (IsPaused()) return false;
 	// pause by net?
-	if (Game.Network.isEnabled())
+	if (Network.isEnabled())
 	{
 		// league? Vote...
-		if (Parameters.isLeague() && !Game.Evaluated)
+		if (Parameters.isLeague() && !Evaluated)
 		{
-			Game.Network.Vote(VT_Pause, true, true);
+			Network.Vote(VT_Pause, true, true);
 			return false;
 		}
 		// host only
-		if (!Game.Network.isHost()) return true;
-		Game.Network.Pause();
+		if (!Network.isHost()) return true;
+		Network.Pause();
 	}
 	else
 	{
 		// pause game directly
-		Game.HaltCount = true;
+		HaltCount = true;
 	}
 	Console.UpdateHaltCtrls(IsPaused());
 	return true;
@@ -1026,22 +1026,22 @@ bool C4Game::Unpause()
 	// already paused?
 	if (!IsPaused()) return false;
 	// pause by net?
-	if (Game.Network.isEnabled())
+	if (Network.isEnabled())
 	{
 		// league? Vote...
-		if (Parameters.isLeague() && !Game.Evaluated)
+		if (Parameters.isLeague() && !Evaluated)
 		{
-			Game.Network.Vote(VT_Pause, true, false);
+			Network.Vote(VT_Pause, true, false);
 			return false;
 		}
 		// host only
-		if (!Game.Network.isHost()) return true;
-		Game.Network.Start();
+		if (!Network.isHost()) return true;
+		Network.Start();
 	}
 	else
 	{
 		// unpause game directly
-		Game.HaltCount = false;
+		HaltCount = false;
 	}
 	Console.UpdateHaltCtrls(IsPaused());
 	return true;
@@ -1050,8 +1050,8 @@ bool C4Game::Unpause()
 bool C4Game::IsPaused()
 {
 	// pause state defined either by network or by game halt count
-	if (Game.Network.isEnabled())
-		return !Game.Network.isRunning();
+	if (Network.isEnabled())
+		return !Network.isRunning();
 	return !!HaltCount;
 }
 
@@ -1275,7 +1275,7 @@ C4Object *C4Game::OverlapObject(int32_t tx, int32_t ty, int32_t wdt, int32_t hgt
 	C4Object *cObj; C4ObjectLink *clnk;
 	C4Rect rect1, rect2;
 	rect1.x = tx; rect1.y = ty; rect1.Wdt = wdt; rect1.Hgt = hgt;
-	C4LArea Area(&Game.Objects.Sectors, tx, ty, wdt, hgt); C4LSector *pSector;
+	C4LArea Area(&Objects.Sectors, tx, ty, wdt, hgt); C4LSector *pSector;
 	for (C4ObjectList *pObjs = Area.FirstObjectShapes(&pSector); pSector; pObjs = Area.NextObjectShapes(pObjs, &pSector))
 		for (clnk = pObjs->First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
 			if (cObj->Status) if (!cObj->Contained)
@@ -1418,7 +1418,7 @@ C4Object *C4Game::FindVisObject(int32_t tx, int32_t ty, int32_t iPlr, const C4Fa
 												// Layer check: Layered objects are invisible to players whose cursor is in another layer
 												if (ValidPlr(iPlr))
 												{
-													C4Object *pCursor = Game.Players.Get(iPlr)->Cursor;
+													C4Object *pCursor = Players.Get(iPlr)->Cursor;
 													if (!pCursor || (pCursor->pLayer != cObj->pLayer)) continue;
 												}
 												// Full range
@@ -1619,7 +1619,7 @@ bool C4Game::DropDef(C4ID id, int32_t iX, int32_t iY)
 	// def exists?
 	if (C4Id2Def(id))
 	{
-		Game.Control.DoInput(CID_EMDropDef, new C4ControlEMDropDef(id, iX, iY), CDT_Decide);
+		Control.DoInput(CID_EMDropDef, new C4ControlEMDropDef(id, iX, iY), CDT_Decide);
 		return true;
 	}
 	else
@@ -1651,7 +1651,7 @@ bool C4Game::EnumerateMaterials()
 	}
 	// mapping to landscape palette will occur when landscape has been created
 	// set the pal
-	Game.GraphicsSystem.SetPalette();
+	GraphicsSystem.SetPalette();
 
 	return true;
 }
@@ -1813,14 +1813,14 @@ void C4Game::DrawCursors(C4FacetEx &cgo, int32_t iPlayer)
 						if (cursor->Info)
 						{
 							std::string text{cursor->GetName()};
-							int32_t texthgt = Game.GraphicsResource.FontRegular.GetLineHeight();
+							int32_t texthgt = GraphicsResource.FontRegular.GetLineHeight();
 							if (cursor->Info->Rank > 0)
 							{
 								text = FormatString("%s|%s", cursor->Info->sRankName.getData(), cursor->GetName()).getData();
 								texthgt += texthgt;
 							}
 
-							Application.DDraw->TextOut(text.c_str(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface,
+							Application.DDraw->TextOut(text.c_str(), GraphicsResource.FontRegular, 1.0, cgo.Surface,
 								cox,
 								coy - cursor->Def->Shape.Hgt / 2 - static_cast<int>(fctCursor.Hgt / scale) - 2 - texthgt,
 								0xffff0000, ACenter);
@@ -1992,7 +1992,7 @@ bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fS
 	if (PointersDenumerated)
 	{
 		Players.EnumeratePointers();
-		Game.ScriptEngine.Strings.EnumStrings();
+		ScriptEngine.Strings.EnumStrings();
 		if (pGlobalEffects) pGlobalEffects->EnumeratePointers();
 	}
 
@@ -2111,7 +2111,7 @@ bool C4Game::DoKeyboardInput(C4KeyCode vk_code, C4KeyEventType eEventType, bool 
 			{
 				if (FullScreen.pMenu && FullScreen.pMenu->IsActive()) // fullscreen menu
 					InScope |= KEYSCOPE_FullSMenu;
-				else if (Game.C4S.Head.Replay && C4S.Head.Film) // film view only
+				else if (C4S.Head.Replay && C4S.Head.Film) // film view only
 					InScope |= KEYSCOPE_FilmView;
 				else if (GraphicsSystem.GetViewport(NO_OWNER)) // NO_OWNER-viewport-controls
 					InScope |= KEYSCOPE_FreeView;
@@ -2227,7 +2227,7 @@ bool LandscapeFree(int32_t x, int32_t y)
 
 void C4Game::ReloadFile(const char *const path)
 {
-	if (Game.Network.isEnabled()) return;
+	if (Network.isEnabled()) return;
 
 	const char *const relativePath{Config.AtExeRelativePath(path)};
 
@@ -2245,7 +2245,7 @@ bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
 {
 	bool fSucc;
 	// not in network
-	if (Game.Network.isEnabled()) return false;
+	if (Network.isEnabled()) return false;
 	// syncronize (close menus with dead surfaces, etc.)
 	// no need to sync back player files, though
 	Synchronize(false);
@@ -2291,7 +2291,7 @@ bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
 bool C4Game::ReloadParticle(const char *szName)
 {
 	// not in network
-	if (Game.Network.isEnabled()) return false;
+	if (Network.isEnabled()) return false;
 	// safety
 	if (!szName) return false;
 	// get particle def
@@ -2317,7 +2317,7 @@ bool C4Game::ReloadParticle(const char *szName)
 
 bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky)
 {
-	const CStdLock lock{&Game.PreloadMutex};
+	const CStdLock lock{&PreloadMutex};
 	{
 		if (!section)
 		{
@@ -2345,13 +2345,13 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 				}
 			}
 
-			CStdLock lock{&Game.PreloadMutex};
+			CStdLock lock{&PreloadMutex};
 			if (!InitGameFirstPart()) return false;
 
 			// join local players for regular games
 			// should be done before record/replay is initialized, so the players are stored in PlayerInfos.txt
 			// for local savegame resumes, players are joined into PlayerInfos and later associated in InitPlayers
-			if (!Game.Network.isEnabled())
+			if (!Network.isEnabled())
 			{
 				PlayerInfos.InitLocal();
 			}
@@ -2811,16 +2811,16 @@ bool C4Game::InitPlayers()
 			}
 #endif
 		// Too many players
-		if (iPlrCnt > Game.Parameters.MaxPlayers)
+		if (iPlrCnt > Parameters.MaxPlayers)
 		{
 			if (Application.isFullScreen)
 			{
-				LogFatal(FormatString(LoadResStr("IDS_PRC_TOOMANYPLRS"), Game.Parameters.MaxPlayers).getData());
+				LogFatal(FormatString(LoadResStr("IDS_PRC_TOOMANYPLRS"), Parameters.MaxPlayers).getData());
 				return false;
 			}
 			else
 			{
-				Console.Message(FormatString(LoadResStr("IDS_PRC_TOOMANYPLRS"), Game.Parameters.MaxPlayers).getData());
+				Console.Message(FormatString(LoadResStr("IDS_PRC_TOOMANYPLRS"), Parameters.MaxPlayers).getData());
 			}
 		}
 	}
@@ -2853,7 +2853,7 @@ bool C4Game::InitControl()
 		{
 			// enforce league rules
 			if (Network.isHost())
-				if (!Game.Parameters.CheckLeagueRulesStart(true))
+				if (!Parameters.CheckLeagueRulesStart(true))
 					return false;
 		}
 	}
@@ -3454,7 +3454,7 @@ bool C4Game::InitSystem()
 	// But postponing initialization until then would mean a black screen for quite some time of the initialization progress.
 	// Peter wouldn't like this...
 #ifndef USE_CONSOLE
-	if (!FontLoader.InitFont(Game.GraphicsResource.FontRegular, Config.General.RXFontName, C4FontLoader::C4FT_Main, Config.General.RXFontSize, &GraphicsResource.Files))
+	if (!FontLoader.InitFont(GraphicsResource.FontRegular, Config.General.RXFontName, C4FontLoader::C4FT_Main, Config.General.RXFontSize, &GraphicsResource.Files))
 		return false;
 #endif
 	// init message input (default commands)
@@ -3654,7 +3654,7 @@ void C4Game::Synchronize(bool fSavePlayerFiles)
 	// callback to control (to start record)
 	Control.OnGameSynchronizing();
 	// Fix random
-	FixRandom(Game.Parameters.RandomSeed);
+	FixRandom(Parameters.RandomSeed);
 	// Synchronize members
 	Defs.Synchronize();
 	Landscape.Synchronize();
@@ -3746,12 +3746,12 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 	Log(Message.getData());
 	// Set up wait dialog
 	C4GUI::MessageDialog *pDlg = nullptr;
-	if (Game.pGUI && !Console.Active)
+	if (pGUI && !Console.Active)
 	{
 		// create & show
 		pDlg = new C4GUI::MessageDialog(Message.getData(), LoadResStr("IDS_NET_REFQUERY_QUERYTITLE"),
 			C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsMedium);
-		if (!pDlg || !pDlg->Show(Game.pGUI, true)) return false;
+		if (!pDlg || !pDlg->Show(pGUI, true)) return false;
 	}
 	// Wait for response
 	while (RefClient.isBusy())
@@ -3760,7 +3760,7 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 		if (Application.HandleMessage(100) == HR_Failure ||
 			(pDlg && pDlg->IsAborted()))
 		{
-			if (Game.pGUI) delete pDlg;
+			if (pGUI) delete pDlg;
 			return false;
 		}
 		// Check if reference is received
@@ -3768,7 +3768,7 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 			break;
 	}
 	// Close dialog
-	if (Game.pGUI) delete pDlg;
+	if (pGUI) delete pDlg;
 	// Error?
 	if (!RefClient.isSuccess())
 	{
@@ -4108,7 +4108,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 		if (dwFlags & C4S_SAVE_OBJECTS)
 		{
 			// strings; those will have to be merged when reloaded
-			if (!Game.ScriptEngine.Strings.Save(*pGrp))
+			if (!ScriptEngine.Strings.Save(*pGrp))
 			{
 				DebugLog("LoadScenarioSection: Error saving strings");
 				return false;
@@ -4203,12 +4203,12 @@ void C4Game::Abort(bool fApproved)
 	// league needs approval
 	if (Network.isEnabled() && Parameters.isLeague() && !fApproved)
 	{
-		if (Control.isCtrlHost() && !Game.GameOver)
+		if (Control.isCtrlHost() && !GameOver)
 		{
 			Network.Vote(VT_Cancel);
 			return;
 		}
-		if (!Control.isCtrlHost() && !Game.GameOver && Game.Players.GetLocalByIndex(0))
+		if (!Control.isCtrlHost() && !GameOver && Players.GetLocalByIndex(0))
 		{
 			Network.Vote(VT_Kick, true, Control.ClientID());
 			return;
@@ -4257,7 +4257,7 @@ bool C4Game::DrawTextSpecImage(C4FacetExSurface &fctTarget, const char *szSpec, 
 		C4ID idPortrait;
 		const char *szPortraitName = C4Portrait::EvaluatePortraitString(szSpec, idPortrait, C4ID_None, &dwClr);
 		if (idPortrait == C4ID_None) return false;
-		C4Def *pPortraitDef = Game.Defs.ID2Def(idPortrait);
+		C4Def *pPortraitDef = Defs.ID2Def(idPortrait);
 		if (!pPortraitDef || !pPortraitDef->Portraits) return false;
 		C4DefGraphics *pDefPortraitGfx = pPortraitDef->Portraits->Get(szPortraitName);
 		if (!pDefPortraitGfx) return false;
