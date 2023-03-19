@@ -16,7 +16,9 @@
 #pragma once
 
 #include <concepts>
+#include <functional>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -60,3 +62,32 @@ public:
 	StdOverloadedCallable(T... bases) : T{bases}... {}
 	using T::operator()...;
 };
+
+namespace detail
+{
+	template <typename Function>
+	struct FunctionSingleArgument_s;
+
+	template <typename Return, typename Argument>
+	struct FunctionSingleArgument_s<Return(*)(Argument)>
+	{
+		using type = Argument;
+	};
+
+	template <auto function>
+	using FunctionSingleArgument = typename FunctionSingleArgument_s<decltype(function)>::type;
+}
+
+template <auto function>
+struct C4SingleArgumentFunctionFunctor
+{
+	using Arg = detail::FunctionSingleArgument<function>;
+
+	void operator()(Arg arg)
+	{
+		std::invoke(function, std::forward<Arg>(arg));
+	}
+};
+
+template <auto free>
+using C4DeleterFunctionUniquePtr = std::unique_ptr<std::remove_pointer_t<detail::FunctionSingleArgument<free>>, C4SingleArgumentFunctionFunctor<free>>;
