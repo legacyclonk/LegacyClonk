@@ -280,6 +280,87 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 	return FALSE;
 }
 
+static INT_PTR CALLBACK ComponentDlgProc(const HWND hDlg, const UINT msg, const WPARAM wParam, const LPARAM lParam)
+{
+	const auto close = [hDlg](C4ComponentHost &host)
+	{
+		host.Close();
+		EndDialog(hDlg, 1);
+	};
+
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+	{
+		const auto &componentHost = *reinterpret_cast<C4ComponentHost *>(lParam);
+
+		SetWindowLongPtr(hDlg, DWLP_USER, lParam);
+		SetWindowText(hDlg, componentHost.Name);
+		SetDlgItemText(hDlg, IDOK, LoadResStr("IDS_BTN_OK"));
+		SetDlgItemText(hDlg, IDCANCEL, LoadResStr("IDS_BTN_CANCEL"));
+
+		if (const char *const data{componentHost.GetData()}; data)
+		{
+			SetDlgItemText(hDlg, IDC_EDITDATA, data);
+		}
+
+		RestoreWindowPosition(hDlg, "Component", Config.GetSubkeyPath("Console"));
+
+		return TRUE;
+	}
+
+	case WM_CLOSE:
+		close(*reinterpret_cast<C4ComponentHost *>(GetWindowLongPtr(hDlg, DWLP_USER)));
+		return 0;
+
+	case WM_DESTROY:
+		StoreWindowPosition(hDlg, "Component", Config.GetSubkeyPath("Console"), false);
+		return 0;
+
+	case WM_COMMAND:
+	{
+		auto &componentHost = *reinterpret_cast<C4ComponentHost *>(GetWindowLongPtr(hDlg, DWLP_USER));
+		switch (LOWORD(wParam))
+		{
+		case IDCANCEL:
+			close(componentHost);
+			return TRUE;
+
+		case IDOK:
+		{
+			StdStrBuf &data{componentHost.Data};
+			const auto size = static_cast<std::size_t>(SendDlgItemMessage(hDlg, IDC_EDITDATA, WM_GETTEXTLENGTH, 0, 0));
+			if (size == 0)
+			{
+				data.Clear();
+			}
+			else
+			{
+				StdStrBuf &data{componentHost.Data};
+				data.SetLength(size);
+				GetDlgItemText(hDlg, IDC_EDITDATA, data.getMData(), static_cast<int>(size + 1));
+
+				const std::size_t actualSize{std::strlen(data.getData())};
+				if (actualSize != size)
+				{
+					data.SetLength(size);
+				}
+			}
+
+			componentHost.Modified = true;
+			close(componentHost);
+
+			return TRUE;
+		}
+		}
+
+		return FALSE;
+	}
+	}
+
+	return FALSE;
+}
+
 #elif defined(USE_X11) && !WITH_DEVELOPER_MODE
 
 void C4Console::HandleMessage(XEvent &e)
@@ -1285,6 +1366,11 @@ bool C4Console::AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool 
 	return InsertMenuItem(hMenu, 0, FALSE, &minfo);
 }
 
+void C4Console::OpenComponentHostDialog(C4ComponentHost &host)
+{
+	DialogBoxParam(Application.hInstance, MAKEINTRESOURCE(IDD_COMPONENT), hWindow, &ComponentDlgProc, reinterpret_cast<LPARAM>(&host));
+}
+
 bool C4Console::GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const
 {
 	id = "Main";
@@ -1325,20 +1411,26 @@ bool C4Console::UpdateModeCtrls(int iMode)
 void C4Console::EditTitle()
 {
 	if (Game.Network.isEnabled()) return;
-	Game.Title.Open();
+#ifdef _WIN32
+	OpenComponentHostDialog(Game.Title);
+#endif
 }
 
 void C4Console::EditScript()
 {
 	if (Game.Network.isEnabled()) return;
-	Game.Script.Open();
+#ifdef _WIN32
+	OpenComponentHostDialog(Game.Script);
+#endif
 	Game.ScriptEngine.ReLink(&Game.Defs);
 }
 
 void C4Console::EditInfo()
 {
 	if (Game.Network.isEnabled()) return;
-	Game.Info.Open();
+#ifdef _WIN32
+	OpenComponentHostDialog(Game.Info);
+#endif
 }
 
 void C4Console::EditObjects()

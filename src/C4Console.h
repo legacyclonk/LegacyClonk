@@ -128,6 +128,7 @@ protected:
 
 	void UpdateMenuText(HMENU hMenu);
 	bool AddMenuItem(HMENU hMenu, DWORD dwID, const char *szString, bool fEnabled = true);
+	void OpenComponentHostDialog(C4ComponentHost &host);
 
 	virtual bool Win32DialogMessageHandling(MSG *msg) override
 	{
