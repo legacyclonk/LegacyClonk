@@ -414,6 +414,9 @@ public:
 
 private:
 	const FmodMusicFile *currentMusicFile{};
+
+	// Craftmanship.it crashes somewhere in fmod.dll if MaxChannels is > 470.
+	static constexpr int MaxChannelsNoCrash{470};
 };
 
 C4AudioSystemFmodRuntime::C4AudioSystemFmodRuntime(int maxChannels)
@@ -427,7 +430,7 @@ C4AudioSystemFmodRuntime::C4AudioSystemFmodRuntime(int maxChannels)
 	FSOUND_SetHWND(Application.pWindow->hWindow);
 	FSOUND_SetMixer(FSOUND_MIXER_QUALITY_AUTODETECT);
 
-	if (!FSOUND_Init(44100, maxChannels, 0))
+	if (!FSOUND_Init(44100, std::min(maxChannels, MaxChannelsNoCrash), 0))
 	{
 		throw std::runtime_error{std::string{"FMod: "} + FMOD_ErrorString(FSOUND_GetError())};
 	}
