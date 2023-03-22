@@ -26,63 +26,6 @@
 #include "res/engine_resource.h"
 #endif
 
-C4ComponentHost *pCmpHost = nullptr;
-
-#ifdef _WIN32
-
-INT_PTR CALLBACK ComponentDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
-{
-	if (!pCmpHost) return FALSE;
-
-	switch (Msg)
-	{
-	case WM_CLOSE:
-		pCmpHost->Close();
-		break;
-
-	case WM_DESTROY:
-		StoreWindowPosition(hDlg, "Component", Config.GetSubkeyPath("Console"), false);
-		break;
-
-	case WM_INITDIALOG:
-		pCmpHost->InitDialog(hDlg);
-		RestoreWindowPosition(hDlg, "Component", Config.GetSubkeyPath("Console"));
-		return TRUE;
-
-	case WM_COMMAND:
-		// Evaluate command
-		switch (LOWORD(wParam))
-		{
-		case IDCANCEL:
-			pCmpHost->Close();
-			return TRUE;
-
-		case IDOK:
-			// IDC_EDITDATA to Data
-			char buffer[65000];
-			GetDlgItemText(hDlg, IDC_EDITDATA, buffer, 65000);
-			pCmpHost->Modified = true;
-			pCmpHost->Data.Copy(buffer);
-			pCmpHost->Close();
-			return TRUE;
-		}
-		return FALSE;
-	}
-	return FALSE;
-}
-
-void C4ComponentHost::InitDialog(HWND hDlg)
-{
-	hDialog = hDlg;
-	// Set text
-	SetWindowText(hDialog, Name);
-	SetDlgItemText(hDialog, IDOK, LoadResStr("IDS_BTN_OK"));
-	SetDlgItemText(hDialog, IDCANCEL, LoadResStr("IDS_BTN_CANCEL"));
-	if (Data.getLength())   SetDlgItemText(hDialog, IDC_EDITDATA, Data.getData());
-}
-
-#endif
-
 C4ComponentHost::C4ComponentHost()
 {
 	Default();
@@ -100,17 +43,11 @@ void C4ComponentHost::Default()
 	Name[0] = 0;
 	Filename[0] = 0;
 	FilePath[0] = 0;
-#ifdef _WIN32
-	hDialog = nullptr;
-#endif
 }
 
 void C4ComponentHost::Clear()
 {
 	Data.Clear();
-#ifdef _WIN32
-	if (hDialog) DestroyWindow(hDialog); hDialog = nullptr;
-#endif
 }
 
 bool C4ComponentHost::Load(const char *szName,
@@ -289,20 +226,6 @@ bool C4ComponentHost::Save(C4Group &hGroup)
 	return hGroup.Add(Filename, Data);
 }
 
-void C4ComponentHost::Open()
-{
-	pCmpHost = this;
-
-#ifdef _WIN32
-	DialogBox(Application.hInstance,
-		MAKEINTRESOURCE(IDD_COMPONENT),
-		Application.pWindow->hWindow,
-		ComponentDlgProc);
-#endif
-
-	pCmpHost = nullptr;
-}
-
 bool C4ComponentHost::GetLanguageString(const char *szLanguage, StdStrBuf &rTarget)
 {
 	const char *cptr;
@@ -329,11 +252,6 @@ bool C4ComponentHost::GetLanguageString(const char *szLanguage, StdStrBuf &rTarg
 
 void C4ComponentHost::Close()
 {
-#ifdef _WIN32
-	if (!hDialog) return;
-	EndDialog(hDialog, 1);
-	hDialog = nullptr;
-#endif
 }
 
 void C4ComponentHost::TrimSpaces()
@@ -341,3 +259,91 @@ void C4ComponentHost::TrimSpaces()
 	Data.TrimSpaces();
 	Modified = true;
 }
+
+#ifdef _WIN32
+INT_PTR CALLBACK C4ComponentHost::ComponentDlgProc(const HWND hDlg, const UINT msg, const WPARAM wParam, const LPARAM lParam)
+{
+	const auto close = [hDlg](C4ComponentHost &host)
+	{
+		host.Close();
+		EndDialog(hDlg, 1);
+	};
+
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+	{
+		const auto &componentHost = *reinterpret_cast<C4ComponentHost *>(lParam);
+
+		SetWindowLongPtr(hDlg, DWLP_USER, lParam);
+		SetWindowText(hDlg, componentHost.Name);
+		SetDlgItemText(hDlg, IDOK, LoadResStr("IDS_BTN_OK"));
+		SetDlgItemText(hDlg, IDCANCEL, LoadResStr("IDS_BTN_CANCEL"));
+
+		if (const char *const data{componentHost.GetData()}; data)
+		{
+			SetDlgItemText(hDlg, IDC_EDITDATA, data);
+		}
+
+		RestoreWindowPosition(hDlg, "Component", Config.GetSubkeyPath("Console"));
+
+		return TRUE;
+	}
+
+	case WM_CLOSE:
+		close(*reinterpret_cast<C4ComponentHost *>(GetWindowLongPtr(hDlg, DWLP_USER)));
+		return 0;
+
+	case WM_DESTROY:
+		StoreWindowPosition(hDlg, "Component", Config.GetSubkeyPath("Console"), false);
+		return 0;
+
+	case WM_COMMAND:
+	{
+		auto &componentHost = *reinterpret_cast<C4ComponentHost *>(GetWindowLongPtr(hDlg, DWLP_USER));
+		switch (LOWORD(wParam))
+		{
+		case IDCANCEL:
+			close(componentHost);
+			return TRUE;
+
+		case IDOK:
+		{
+			StdStrBuf &data{componentHost.Data};
+			const auto size = static_cast<std::size_t>(SendDlgItemMessage(hDlg, IDC_EDITDATA, WM_GETTEXTLENGTH, 0, 0));
+			if (size == 0)
+			{
+				data.Clear();
+			}
+			else
+			{
+				StdStrBuf &data{componentHost.Data};
+				data.SetLength(size);
+				GetDlgItemText(hDlg, IDC_EDITDATA, data.getMData(), static_cast<int>(size + 1));
+
+				const std::size_t actualSize{std::strlen(data.getData())};
+				if (actualSize != size)
+				{
+					data.SetLength(size);
+				}
+			}
+
+			componentHost.Modified = true;
+			close(componentHost);
+
+			return TRUE;
+		}
+		}
+
+		return FALSE;
+	}
+	}
+
+	return FALSE;
+}
+
+void C4ComponentHost::ShowDialog(const HWND parent)
+{
+	DialogBoxParam(Application.hInstance, MAKEINTRESOURCE(IDD_COMPONENT), parent, &ComponentDlgProc, reinterpret_cast<LPARAM>(this));
+}
+#endif

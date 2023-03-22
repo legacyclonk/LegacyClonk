@@ -30,9 +30,8 @@ public:
 	const char *GetFilePath() const { return FilePath; }
 	void Default();
 	void Clear();
-	void Open();
-	const char *GetData() { return Data.getData(); }
-	size_t GetDataSize() { return Data.getLength(); }
+	const char *GetData() const { return Data.getData(); }
+	size_t GetDataSize() const { return Data.getLength(); }
 	virtual void Close();
 	bool Load(const char *szName, C4Group &hGroup, const char *szFilename, const char *szLanguage = nullptr);
 	bool Load(const char *szName, C4GroupSet &hGroupSet, const char *szFilename, const char *szLanguage = nullptr);
@@ -42,6 +41,13 @@ public:
 	bool GetLanguageString(const char *szLanguage, class StdStrBuf &rTarget);
 	void TrimSpaces();
 
+#ifdef _WIN32
+	void ShowDialog(HWND parent);
+
+private:
+	static INT_PTR CALLBACK ComponentDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif
+
 protected:
 	StdStrBuf Data;
 	bool Modified;
@@ -49,9 +55,4 @@ protected:
 	char Filename[_MAX_FNAME + 1];
 	char FilePath[_MAX_PATH + 1];
 	void CopyFilePathFromGroup(const C4Group &hGroup);
-#ifdef _WIN32
-	HWND hDialog;
-	void InitDialog(HWND hDlg);
-	friend INT_PTR CALLBACK ComponentDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
-#endif
 };

@@ -1325,20 +1325,26 @@ bool C4Console::UpdateModeCtrls(int iMode)
 void C4Console::EditTitle()
 {
 	if (Game.Network.isEnabled()) return;
-	Game.Title.Open();
+#ifdef _WIN32
+	Game.Title.ShowDialog(hWindow);
+#endif
 }
 
 void C4Console::EditScript()
 {
 	if (Game.Network.isEnabled()) return;
-	Game.Script.Open();
+#ifdef _WIN32
+	Game.Script.ShowDialog(hWindow);
+#endif
 	Game.ScriptEngine.ReLink(&Game.Defs);
 }
 
 void C4Console::EditInfo()
 {
 	if (Game.Network.isEnabled()) return;
-	Game.Info.Open();
+#ifdef _WIN32
+	Game.Info.ShowDialog(hWindow);
+#endif
 }
 
 void C4Console::EditObjects()
