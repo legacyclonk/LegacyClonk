@@ -93,7 +93,7 @@ int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, wchar
 
 		if (const auto config = getArgument(L"/config:"); !config.empty())
 		{
-			configAnsi = StdStringEncodingConverter{}.Utf16ToWinAcp(config.data());
+			configAnsi = StdStringEncodingConverter::Utf16ToWinAcp(config.data());
 		}
 
 		return static_cast<std::underlying_type_t<CrashReporterErrorCode>>(GenerateParentProcessDump(arg, configAnsi));
@@ -134,7 +134,7 @@ int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, wchar
 		return C4XRV_Failure;
 	}
 
-	std::string commandLineAnsi{StdStringEncodingConverter{}.Utf16ToWinAcp(commandLine)};
+	std::string commandLineAnsi{StdStringEncodingConverter::Utf16ToWinAcp(commandLine)};
 
 	// Init application
 	try
