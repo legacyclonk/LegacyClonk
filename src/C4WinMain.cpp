@@ -43,7 +43,6 @@
 #include <string_view>
 
 #include <objbase.h>
-#include <shellapi.h>
 #endif
 
 #ifdef __APPLE__
@@ -162,16 +161,7 @@ int WINAPI wWinMain(HINSTANCE hInst,
 	LPWSTR lpszCmdParam,
 	int nCmdShow)
 {
-	int numberOfArguments;
-	LPWSTR *const commandLine{CommandLineToArgvW(lpszCmdParam, &numberOfArguments)};
-	if (!commandLine)
-	{
-		return C4XRV_Failure;
-	}
-
-	const int exitCode{ClonkMain(hInst, nCmdShow, numberOfArguments, commandLine, lpszCmdParam)};
-	LocalFree(commandLine);
-	return exitCode;
+	return ClonkMain(hInst, nCmdShow, __argc, __wargv, lpszCmdParam);
 }
 
 int wmain(const int argc, wchar_t **const argv)
