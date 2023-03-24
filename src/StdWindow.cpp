@@ -30,6 +30,10 @@
 
 #include <dwmapi.h>
 
+#ifdef __MINGW32__
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+
 CStdWindow::~CStdWindow()
 {
 	CStdWindow::Clear();
