@@ -88,6 +88,7 @@ void CStdGLShader::Compile()
 			std::string errorMessage;
 			errorMessage.resize(size);
 			glGetShaderInfoLog(shader, size, NULL, errorMessage.data());
+			errorMessage = errorMessage.c_str();
 			throw Exception{errorMessage};
 		}
 
