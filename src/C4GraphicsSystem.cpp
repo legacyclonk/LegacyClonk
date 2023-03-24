@@ -92,10 +92,17 @@ bool C4GraphicsSystem::StartDrawing()
 	// only in main thread
 	if (!Application.IsMainThread()) return false;
 
-	// only if application is active or windowed (if config allows)
-	if (!Application.Active && (
-				(Application.isFullScreen && !(Config.Graphics.RenderInactive & C4ConfigGraphics::Fullscreen))
-				 || (!(Config.Graphics.RenderInactive & C4ConfigGraphics::Console)))) return false;
+	// Don't draw if application is inactive (unless enabled by config)
+	if (!Application.Active)
+	{
+		// Player mode
+		const auto &renderInactive = Config.Graphics.RenderInactive;
+		if (Application.isFullScreen && !(renderInactive & C4ConfigGraphics::Fullscreen))
+			return false;
+		// Developer mode
+		if (!Application.isFullScreen && !(renderInactive & C4ConfigGraphics::Console))
+			return false;
+	}
 
 	// drawing OK
 	return true;
