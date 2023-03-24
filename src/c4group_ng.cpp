@@ -448,9 +448,7 @@ int RegisterShellExtensions()
 int UnregisterShellExtensions()
 {
 #ifdef _WIN32
-	char strModule[2048];
 	char strClass[128];
-	GetModuleFileName(nullptr, strModule, 2048);
 	// Groups
 	const char *strClasses =
 		"Clonk4.Definition;Clonk4.Folder;Clonk4.Group;Clonk4.Player;Clonk4.Scenario;Clonk4.Update;Clonk4.Weblink";
