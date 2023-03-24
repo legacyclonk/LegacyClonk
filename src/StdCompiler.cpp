@@ -948,7 +948,7 @@ char StdCompilerINIRead::ReadEscapedChar()
 	if (*pPos >= 0 && iscntrl(static_cast<unsigned char>(*pPos)))
 	{
 		Warn("Nonprintable character found in string: %02x", static_cast<unsigned char>(*pPos));
-		return *pPos;
+		return *pPos++;
 	}
 	// Not escaped? Just return it
 	if (*pPos != '\\') return *pPos++;
