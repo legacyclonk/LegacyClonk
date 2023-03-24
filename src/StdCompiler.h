@@ -684,7 +684,6 @@ protected:
 		return iNum;
 	}
 
-	template<std::unsigned_integral T> T ReadUNum();
 	size_t GetStringLength(RawCompileType eTyped);
 	StdBuf ReadString(size_t iLength, RawCompileType eTyped, bool fAppendNull = true);
 	bool TestStringEnd(RawCompileType eType);
