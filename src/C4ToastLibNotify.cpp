@@ -52,7 +52,7 @@ void C4ToastImplLibNotify::AddAction(std::string_view action)
 	notify_notification_add_action(
 		notification,
 		FormatString("action-%lu", index).getData(),
-		C4Language::IconvUtf8(action.data()).getData(),
+		C4Language::IconvUtf8(std::string{action}.c_str()).getData(),
 		&C4ToastImplLibNotify::OnAction,
 		new UserData{this, index},
 		operator delete
