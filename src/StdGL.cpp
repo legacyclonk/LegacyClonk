@@ -87,7 +87,7 @@ void CStdGLShader::Compile()
 		{
 			std::string errorMessage;
 			errorMessage.resize(size);
-			glGetShaderInfoLog(shader, size, NULL, errorMessage.data());
+			glGetShaderInfoLog(shader, size, nullptr, errorMessage.data());
 			errorMessage = errorMessage.c_str();
 			throw Exception{errorMessage};
 		}
@@ -157,7 +157,7 @@ void CStdGLShaderProgram::Link()
 		{
 			std::string errorMessage;
 			errorMessage.resize(size);
-			glGetProgramInfoLog(shaderProgram, size, NULL, errorMessage.data());
+			glGetProgramInfoLog(shaderProgram, size, nullptr, errorMessage.data());
 			errorMessage = errorMessage.c_str();
 			throw Exception{errorMessage};
 		}
@@ -175,7 +175,7 @@ void CStdGLShaderProgram::Link()
 		{
 			std::string errorMessage;
 			errorMessage.resize(size);
-			glGetProgramInfoLog(shaderProgram, size, NULL, errorMessage.data());
+			glGetProgramInfoLog(shaderProgram, size, nullptr, errorMessage.data());
 			errorMessage = errorMessage.c_str();
 			throw Exception{errorMessage};
 		}

@@ -975,7 +975,7 @@ bool C4Network2Res::NeedsDiscover()
 {
 	// set timeout, if this is the first discover
 	if (!iDiscoverStartTime)
-		iDiscoverStartTime = time(NULL);
+		iDiscoverStartTime = time(nullptr);
 	// do discover
 	return true;
 }

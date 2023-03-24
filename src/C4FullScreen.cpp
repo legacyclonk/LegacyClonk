@@ -104,7 +104,7 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 		else
 		{
 			static HCURSOR arrowCursor{nullptr};
-			if (!arrowCursor) arrowCursor = LoadCursor(NULL, IDC_ARROW);
+			if (!arrowCursor) arrowCursor = LoadCursor(nullptr, IDC_ARROW);
 			SetCursor(arrowCursor);
 		}
 		break;
