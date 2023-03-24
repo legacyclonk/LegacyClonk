@@ -136,11 +136,11 @@ void C4Network2::ReadyCheckDialog::UpdateText()
 {
 	StdStrBuf text;
 	C4GUI::GetRes()->TextFont.BreakMessage(
-			FormatString(LoadResStr("IDS_DLG_READYCHECKTEXT"), GetRemainingTime()).getData(),
-			GetClientRect().Wdt,
-			&text,
-			false
-			);
+		FormatString(LoadResStr("IDS_DLG_READYCHECKTEXT"), GetRemainingTime()).getData(),
+		GetClientRect().Wdt,
+		&text,
+		false
+	);
 
 	if (Config.Toasts.ReadyCheck)
 	{

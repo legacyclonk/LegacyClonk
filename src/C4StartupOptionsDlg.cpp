@@ -81,11 +81,11 @@ void C4StartupOptionsDlg::ResChangeConfirmDlg::UpdateText()
 {
 	StdStrBuf text;
 	C4GUI::GetRes()->TextFont.BreakMessage(
-			FormatString(LoadResStr("IDS_MNU_SWITCHRESOLUTION_TEXT"), GetRemainingTime()).getData(),
-			GetClientRect().Wdt,
-			&text,
-			false
-			);
+		FormatString(LoadResStr("IDS_MNU_SWITCHRESOLUTION_TEXT"), GetRemainingTime()).getData(),
+		GetClientRect().Wdt,
+		&text,
+		false
+	);
 	SetText(text.getData());
 }
 

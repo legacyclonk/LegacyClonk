@@ -3221,7 +3221,6 @@ bool C4AulParseState::Parse_Expression3()
 					// done
 					break;
 				}
-
 				else if (pFunc->SFunc() && pFunc->SFunc()->Access < Fn->pOrgScript->GetAllowedAccess(pFunc, Fn->pOrgScript))
 				{
 					throw C4AulParseError(this, "insufficient access level", Idtf);

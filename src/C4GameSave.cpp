@@ -263,7 +263,7 @@ bool C4GameSave::SaveRuntimeData()
 namespace
 {
 	template<typename... Args>
-	std::string FormatEscape(const char *fmt, Args &&... args)
+	std::string FormatEscape(const char *fmt, Args &&...args)
 	{
 		return RtfEscape(FormatString(fmt, std::forward<Args>(args)...).getData());
 	}

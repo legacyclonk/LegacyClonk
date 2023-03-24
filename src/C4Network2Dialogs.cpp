@@ -550,10 +550,10 @@ bool C4Network2ClientListDlg::Toggle()
 
 C4Network2StartWaitDlg::C4Network2StartWaitDlg()
 	: C4GUI::Dialog(
-		  Config.Graphics.ResX > 800 ? DialogWidthLarge : DialogWidth,
-		  Config.Graphics.ResY > 600 ? DialogHeightLarge : DialogHeight,
-		  LoadResStr("IDS_NET_CAPTION"),
-		  false
+		Config.Graphics.ResX > 800 ? DialogWidthLarge : DialogWidth,
+		Config.Graphics.ResY > 600 ? DialogHeightLarge : DialogHeight,
+		LoadResStr("IDS_NET_CAPTION"),
+		false
 	), pClientListBox(nullptr)
 {
 	C4GUI::ComponentAligner caAll(GetContainedClientRect(), C4GUI_DefDlgIndent, C4GUI_DefDlgIndent);

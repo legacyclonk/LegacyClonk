@@ -289,11 +289,9 @@ void C4GameControlNetwork::ExecSyncControl(int32_t iControlTick) // by main thre
 	// Given control tick reached?
 	if (pParent->ControlTick == iControlTick)
 		pParent->ExecControl(Control);
-
 	else if (pParent->ControlTick > iControlTick)
 		// The host should make sure this doesn't happen.
 		LogF("Network: Fatal: got sync control to execute for ctrl tick %d, but already in ctrl tick %d!", iControlTick, pParent->ControlTick);
-
 	else
 		// This sync control must be executed later, so safe it back
 		AddSyncCtrlToQueue(Control, iControlTick);

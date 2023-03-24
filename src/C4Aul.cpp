@@ -385,18 +385,19 @@ C4AulAccess C4AulScript::GetAllowedAccess(C4AulFunc *func, C4AulScript *caller)
 {
 	C4AulScriptFunc *sfunc = func->SFunc();
 
-	if (!sfunc || sfunc->pOrgScript == caller
-			|| std::find(sfunc->pOrgScript->Includes.begin(), sfunc->pOrgScript->Includes.end(), caller->idDef) != sfunc->pOrgScript->Includes.end()
-			|| std::find(caller->Includes.begin(), caller->Includes.end(), sfunc->pOrgScript->idDef) != caller->Includes.end()
-			|| std::find(sfunc->pOrgScript->Appends.begin(), sfunc->pOrgScript->Appends.end(), caller->idDef) != sfunc->pOrgScript->Appends.end()
-			|| std::find(caller->Appends.begin(), caller->Appends.end(), sfunc->pOrgScript->idDef) != caller->Appends.end()
-			)
+	if (
+		!sfunc ||
+		sfunc->pOrgScript == caller ||
+		std::find(sfunc->pOrgScript->Includes.begin(), sfunc->pOrgScript->Includes.end(), caller->idDef) != sfunc->pOrgScript->Includes.end() ||
+		std::find(caller->Includes.begin(), caller->Includes.end(), sfunc->pOrgScript->idDef) != caller->Includes.end() ||
+		std::find(sfunc->pOrgScript->Appends.begin(), sfunc->pOrgScript->Appends.end(), caller->idDef) != sfunc->pOrgScript->Appends.end() ||
+		std::find(caller->Appends.begin(), caller->Appends.end(), sfunc->pOrgScript->idDef) != caller->Appends.end()
+	)
 	{
 		return AA_PRIVATE;
 	}
-
-	else if (sfunc->pOrgScript->Strict >= C4AulScriptStrict::STRICT3
-			 && caller->Strict >= C4AulScriptStrict::STRICT3)
+	else if (sfunc->pOrgScript->Strict >= C4AulScriptStrict::STRICT3 &&
+		caller->Strict >= C4AulScriptStrict::STRICT3)
 	{
 		return sfunc->Access;
 	}

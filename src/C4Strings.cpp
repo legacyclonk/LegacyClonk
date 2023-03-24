@@ -204,7 +204,7 @@ bool SCopySegment(const char *szString, size_t iSegment, char *sTarget,
 }
 
 bool SCopySegmentEx(const char *szString, size_t iSegment, char *sTarget,
-										char cSep1, char cSep2, size_t iMaxL, bool fSkipWhitespace)
+	char cSep1, char cSep2, size_t iMaxL, bool fSkipWhitespace)
 {
 	// Advance to indexed segment
 	while (iSegment > 0)

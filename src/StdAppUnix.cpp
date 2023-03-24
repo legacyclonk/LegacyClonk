@@ -109,8 +109,8 @@ void CStdApp::Init(const int argc, char **const argv)
 
 	int eventBase;
 	int errorBase;
-	if (!XF86VidModeQueryExtension(dpy, &eventBase, &errorBase)
-			|| !XF86VidModeQueryVersion(dpy, &xf86vmode_major_version, &xf86vmode_minor_version))
+	if (!XF86VidModeQueryExtension(dpy, &eventBase, &errorBase) ||
+		!XF86VidModeQueryVersion(dpy, &xf86vmode_major_version, &xf86vmode_minor_version))
 	{
 		xf86vmode_major_version = -1;
 		xf86vmode_minor_version = 0;
@@ -478,19 +478,19 @@ std::string CStdApp::Paste(const bool clipboard)
 	const auto getWindowProperty = [&](const bool deleteNow)
 	{
 		return XGetWindowProperty(
-					dpy,
-					pWindow->wnd,
-					XA_STRING,
-					0,
-					0,
-					deleteNow,
-					AnyPropertyType,
-					&type,
-					&format,
-					&size,
-					&bytesLeft,
-					&data
-					);
+			dpy,
+			pWindow->wnd,
+			XA_STRING,
+			0,
+			0,
+			deleteNow,
+			AnyPropertyType,
+			&type,
+			&format,
+			&size,
+			&bytesLeft,
+			&data
+		);
 	};
 
 	getWindowProperty(false);
@@ -672,15 +672,15 @@ void CStdApp::HandleXMessage()
 			{
 				response.xselection.property = event.xselectionrequest.property;
 				XChangeProperty(
-							dpy,
-							response.xselection.requestor,
-							response.xselection.property,
-							response.xselection.target,
-							8,
-							PropModeReplace,
-							reinterpret_cast<const unsigned char *>(clipboardData.c_str()),
-							clipboardData.size()
-							);
+					dpy,
+					response.xselection.requestor,
+					response.xselection.property,
+					response.xselection.target,
+					8,
+					PropModeReplace,
+					reinterpret_cast<const unsigned char *>(clipboardData.c_str()),
+					clipboardData.size()
+				);
 			}
 			else
 			{
@@ -787,4 +787,3 @@ void CStdApp::HandleSDLEvent(SDL_Event &event)
 	}
 }
 #endif
-

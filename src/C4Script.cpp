@@ -377,7 +377,6 @@ static bool FnExit(C4AulContext *cthr, C4Object *pObj, C4ValueInt tx, C4ValueInt
 
 static bool FnCollect(C4AulContext *cthr, C4Object *pItem, C4Object * pCollector)
 {
-
 	// local call / safety
 	if (!pCollector) pCollector = cthr->Obj;
 	if (!pItem || !pCollector) return false;
@@ -1196,11 +1195,11 @@ static std::optional<C4ValueInt> FnGetVertexNum(C4AulContext *cthr, C4Object *pO
 }
 
 static const C4ValueInt VTX_X = 0, // vertex data indices
-						VTX_Y = 1,
-						VTX_CNAT = 2,
-						VTX_Friction = 3,
-						VTX_SetPermanent = 1,
-						VTX_SetPermanentUpd = 2;
+                        VTX_Y = 1,
+                        VTX_CNAT = 2,
+                        VTX_Friction = 3,
+                        VTX_SetPermanent = 1,
+                        VTX_SetPermanentUpd = 2;
 
 static std::optional<C4ValueInt> FnGetVertex(C4AulContext *cthr, C4ValueInt iIndex, C4ValueInt iValueToGet, C4Object *pObj)
 {
@@ -1446,16 +1445,16 @@ static bool FnCreateMenu(C4AulContext *cthr, C4ID iSymbol, C4Object *pMenuObj, C
 }
 
 const C4ValueInt C4MN_Add_ImgRank     = 1,
-				 C4MN_Add_ImgIndexed  = 2,
-				 C4MN_Add_ImgObjRank  = 3,
-				 C4MN_Add_ImgObject   = 4,
-				 C4MN_Add_ImgTextSpec = 5,
-				 C4MN_Add_ImgColor    = 6,
-				 C4MN_Add_ImgIndexedColor = 7,
-				 C4MN_Add_MaxImage    = 127, // mask for param which decides what to draw as the menu symbol
-				 C4MN_Add_PassValue   = 128,
-				 C4MN_Add_ForceCount  = 256,
-				 C4MN_Add_ForceNoDesc = 512;
+                 C4MN_Add_ImgIndexed  = 2,
+                 C4MN_Add_ImgObjRank  = 3,
+                 C4MN_Add_ImgObject   = 4,
+                 C4MN_Add_ImgTextSpec = 5,
+                 C4MN_Add_ImgColor    = 6,
+                 C4MN_Add_ImgIndexedColor = 7,
+                 C4MN_Add_MaxImage    = 127, // mask for param which decides what to draw as the menu symbol
+                 C4MN_Add_PassValue   = 128,
+                 C4MN_Add_ForceCount  = 256,
+                 C4MN_Add_ForceNoDesc = 512;
 
 static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szCommand, C4ID idItem, C4Object *pMenuObj, C4ValueInt iCount, C4Value Parameter, C4String *szInfoCaption, C4ValueInt iExtra, C4Value XPar, C4Value XPar2)
 {
@@ -5079,7 +5078,7 @@ static bool FnSetObjectOrder(C4AulContext *ctx, C4Object *pObjBeforeOrAfter, C4O
 	// local call/safety
 	if (!pSortObj) pSortObj = ctx->Obj; if (!pSortObj) return false;
 	if (!pObjBeforeOrAfter) return false;
-	// don’t sort an object before or after itself, it messes up the object list and causes infinite loops
+	// don't sort an object before or after itself, it messes up the object list and causes infinite loops
 	if (pObjBeforeOrAfter == pSortObj) return false;
 	// note that no category check is done, so this call might corrupt the main list!
 	// the scripter must be wise enough not to call it for objects with different categories

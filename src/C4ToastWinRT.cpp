@@ -102,8 +102,8 @@ void C4ToastImplWinRT::SetTextNode(const std::uint32_t index, std::wstring &&tex
 	item.InnerText(std::move(text));
 }
 
-C4ToastImplWinRT::EventHandler::EventHandler(ToastNotification &notification, C4ToastEventHandler * const &eventHandler)
-	 : eventHandler{eventHandler}
+C4ToastImplWinRT::EventHandler::EventHandler(ToastNotification &notification, C4ToastEventHandler *const &eventHandler)
+	: eventHandler{eventHandler}
 {
 	notification.Activated([weak{get_weak()}](const ToastNotification &sender, const IInspectable &args)
 	{

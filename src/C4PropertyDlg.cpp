@@ -24,7 +24,6 @@
 #include <C4Wrappers.h>
 #include <C4Player.h>
 
-
 #ifdef _WIN32
 #include "StdRegistry.h"
 #include "res/engine_resource.h"

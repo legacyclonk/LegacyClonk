@@ -170,15 +170,15 @@ void C4FileMonitor::MonitoredDirectory::Execute()
 bool C4FileMonitor::MonitoredDirectory::ReadDirectoryChanges()
 {
 	return ReadDirectoryChangesW(
-				handle.get(),
-				buffer.data(),
-				buffer.size(),
-				false,
-				NotificationFilter,
-				nullptr,
-				&overlapped,
-				nullptr
-				);
+		handle.get(),
+		buffer.data(),
+		buffer.size(),
+		false,
+		NotificationFilter,
+		nullptr,
+		&overlapped,
+		nullptr
+	);
 }
 
 C4FileMonitor::C4FileMonitor(ChangeNotifyCallback &&callback)
@@ -205,14 +205,14 @@ void C4FileMonitor::StartMonitoring()
 void C4FileMonitor::AddDirectory(const char *const path)
 {
 	winrt::file_handle directory{CreateFile(
-					path,
-					FILE_LIST_DIRECTORY,
-					FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-					nullptr,
-					OPEN_EXISTING,
-					FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-					nullptr
-					)};
+		path,
+		FILE_LIST_DIRECTORY,
+		FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+		nullptr,
+		OPEN_EXISTING,
+		FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+		nullptr
+	)};
 
 	if (!directory)
 	{
@@ -222,10 +222,10 @@ void C4FileMonitor::AddDirectory(const char *const path)
 	try
 	{
 		directories.emplace_back(MonitoredDirectory{
-									 std::move(directory),
-									 path,
-									 event.GetEvent()
-								 });
+			std::move(directory),
+			path,
+			event.GetEvent()
+		});
 	}
 	catch (const winrt::hresult_error &)
 	{

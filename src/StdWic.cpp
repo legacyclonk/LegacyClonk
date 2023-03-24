@@ -94,7 +94,7 @@ void StdWic::Encode(const UINT lineCount, const UINT stride, const UINT bufferSi
 	MapHResultError([&, this]
 	{
 		winrt::check_hresult(frame->WritePixels(lineCount, stride, bufferSize,
-				static_cast<BYTE *>(const_cast<void *>(pixels))));
+			static_cast<BYTE *>(const_cast<void *>(pixels))));
 
 		winrt::check_hresult(frame->Commit());
 		winrt::check_hresult(encoder->Commit());

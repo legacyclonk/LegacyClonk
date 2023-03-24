@@ -46,10 +46,12 @@
 #define DIR_Left  0
 #define DIR_Right 1
 
-/* Action.ComDir tells an active object which way it ought to be going.
-	 If you set the ComDir to COMD_Stop, the object won't sit still immediately
-	 but will try to slow down according to it's current Action. ComDir values
-	 circle clockwise from COMD_Up 1 through COMD_UpLeft 8. */
+/*
+Action.ComDir tells an active object which way it ought to be going.
+If you set the ComDir to COMD_Stop, the object won't sit still immediately
+but will try to slow down according to it's current Action. ComDir values
+circle clockwise from COMD_Up 1 through COMD_UpLeft 8.
+*/
 
 #define COMD_None      0
 #define COMD_Stop      0

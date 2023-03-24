@@ -46,14 +46,14 @@ static std::string ErrorString()
 	const DWORD errorCode{GetLastError()};
 	LPSTR buffer{nullptr};
 	if (FormatMessageA(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM,
-				nullptr,
-				errorCode,
-				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				reinterpret_cast<LPSTR>(&buffer),
-				0,
-				nullptr
-				))
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM,
+		nullptr,
+		errorCode,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		reinterpret_cast<LPSTR>(&buffer),
+		0,
+		nullptr
+	))
 	{
 		std::string ret{buffer};
 		LocalFree(buffer);
@@ -120,7 +120,7 @@ protected:
 #endif
 			{}
 
-		Ret operator()(Args &&... args) const
+		Ret operator()(Args &&...args) const
 		{
 			return this->Get()(std::forward<Args>(args)...);
 		}

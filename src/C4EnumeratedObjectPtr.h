@@ -75,7 +75,7 @@ public:
 namespace
 {
 	template<typename... Args>
-	constexpr void CheckArgs(Args &... args) noexcept
+	constexpr void CheckArgs(Args &...args) noexcept
 	{
 		static_assert(sizeof...(args) > 0, "At least one argument is required");
 		static_assert((std::is_same_v<Args, C4EnumeratedObjectPtr> && ...), "Only C4EnumeratedObjectPtr& can be passed as arguments");
@@ -83,14 +83,14 @@ namespace
 }
 
 template<typename... Args>
-void EnumerateObjectPtrs(Args &... args)
+void EnumerateObjectPtrs(Args &...args)
 {
 	CheckArgs(args...);
 	(args.Enumerate(), ...);
 }
 
 template<typename... Args>
-void DenumerateObjectPtrs(Args &... args)
+void DenumerateObjectPtrs(Args &...args)
 {
 	CheckArgs(args...);
 	(args.Denumerate(), ...);

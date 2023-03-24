@@ -857,6 +857,7 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 
 	// Control overlays (if not film/replay)
 	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay)
+	{
 		// Mouse control
 		if (Game.MouseControl.IsViewport(this))
 		{
@@ -868,17 +869,18 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 			if (pWindow && Game.pGUI) Game.pGUI->RenderMouse(cgo);
 			C4ST_STOP(MouseStat)
 		}
-	// Keyboard/Gamepad
-			else
+		// Keyboard/Gamepad
+		else
+		{
+			// Player menu button
+			if (Config.Graphics.ShowCommands)
 			{
-				// Player menu button
-				if (Config.Graphics.ShowCommands)
-				{
-					int32_t iSymbolSize = C4SymbolSize * 2 / 3;
-					C4Facet ccgo; ccgo.Set(cgo.Surface, cgo.X + cgo.Wdt - iSymbolSize, cgo.Y + C4SymbolSize + 2 * C4SymbolBorder, iSymbolSize, iSymbolSize); ccgo.Y += iSymbolSize;
-					DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).getData());
-				}
+				int32_t iSymbolSize = C4SymbolSize * 2 / 3;
+				C4Facet ccgo; ccgo.Set(cgo.Surface, cgo.X + cgo.Wdt - iSymbolSize, cgo.Y + C4SymbolSize + 2 * C4SymbolBorder, iSymbolSize, iSymbolSize); ccgo.Y += iSymbolSize;
+				DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).getData());
 			}
+		}
+	}
 }
 
 void C4Viewport::DrawCursorInfo(C4FacetEx &cgo)

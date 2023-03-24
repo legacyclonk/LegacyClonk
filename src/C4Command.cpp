@@ -700,7 +700,7 @@ void C4Command::Grab()
 		}
 		else
 		{
-			// we don’t want any failure message if this is a direct command
+			// we don't want any failure message if this is a direct command
 			if (!GetBaseCommand())
 			{
 				BaseMode = C4CMD_Mode_SilentBase;

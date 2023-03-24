@@ -47,15 +47,16 @@ void C4ToastImpl::SetEventHandler(C4ToastEventHandler *const eventHandler)
 	this->eventHandler = eventHandler;
 }
 
-C4Toast::C4Toast() : impl{
+C4Toast::C4Toast()
+	: impl{
 #ifdef USE_LIBNOTIFY
-						 new C4ToastImplLibNotify{}
+		new C4ToastImplLibNotify{}
 #elif defined(USE_WINDOWS_RUNTIME)
-						 new C4ToastImplWinRT{}
+		new C4ToastImplWinRT{}
 #else
-						 new C4ToastImpl{}
+		new C4ToastImpl{}
 #endif
-						 }
+	}
 {
 }
 

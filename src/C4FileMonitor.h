@@ -34,11 +34,11 @@
 #endif
 
 class C4FileMonitor
-		:
+	:
 #ifndef __APPLE__
-		public StdSchedulerProc,
+	public StdSchedulerProc,
 #endif
-		public C4InteractiveThread::Callback
+	public C4InteractiveThread::Callback
 {
 public:
 	using ChangeNotifyCallback = std::function<void(const char *)>;

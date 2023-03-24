@@ -1266,7 +1266,6 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 						throw C4AulExecError(pCurCtx->Obj,
 							FormatString("Definition call: No function \"%s\" in definition \"%s\"!", szFuncName, pDestDef->Name.getData()).getData());
 				}
-
 				else if (C4AulScriptFunc *sfunc = pFunc->SFunc(); sfunc)
 				{
 					C4AulScript *script = sfunc->pOrgScript;

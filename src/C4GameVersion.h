@@ -66,7 +66,6 @@ struct C4GameVersion
 inline int CompareVersion(int iVer1, int iVer2, int iVer3, int iVer4, int iVerBuild,
 	int iRVer1 = C4XVER1, int iRVer2 = C4XVER2, int iRVer3 = C4XVER3, int iRVer4 = C4XVER4, int iRVerBuild = C4XVERBUILD)
 {
-
 	if (iVer1 > iRVer1) return 1; if (iVer1 < iRVer1) return -1;
 	if (iVer2 > iRVer2) return 1; if (iVer2 < iRVer2) return -1;
 	if (iVer3 > iRVer3) return 1; if (iVer3 < iRVer3) return -1;

@@ -4730,7 +4730,7 @@ void C4Object::ExecAction()
 				// No general DoEnergy-Process
 				NeedEnergy = 0;
 			}
-	// Insufficient energy for action: same as idle
+			// Insufficient energy for action: same as idle
 			else
 			{
 				NeedEnergy = 1;

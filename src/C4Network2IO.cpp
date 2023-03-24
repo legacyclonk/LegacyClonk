@@ -848,7 +848,7 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 #endif
 				}
 			}
-	// transfer to main thread?
+			// transfer to main thread?
 			else if (!pHData->ProcByThread && fThread)
 			{
 				fHandled = true;

@@ -48,8 +48,8 @@ public:
 	enum AxisPOV { X = 6, Y = 7 }; // virtual axises of the coolie hat
 
 	static constexpr int32_t MaxGamePad{15}, // maximum number of supported gamepads
-							 MaxCalAxis{6},  // maximum number of calibrated axises
-							 MaxAxis   {8};  // number of axises plus coolie hat axises
+	                         MaxCalAxis{6},  // maximum number of calibrated axises
+	                         MaxAxis   {8};  // number of axises plus coolie hat axises
 
 public:
 	C4GamePad(int id);

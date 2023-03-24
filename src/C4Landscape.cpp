@@ -1955,7 +1955,7 @@ bool FindLevelGround(int32_t &rx, int32_t &ry, int32_t width, int32_t hrange)
 				rl1 = 0; rh1 = cy1;
 			} // No run
 
-// Right search
+		// Right search
 		if (cx2 < GBackWdt) // Still going
 			if (!AboveSemiSolid(cx2, cy2)) cx2 = GBackWdt; // Abort right
 			else if (GBackSolid(cx2, cy2 + 1) && (Abs(cy2 - rh2) < hrange))
@@ -1965,7 +1965,7 @@ bool FindLevelGround(int32_t &rx, int32_t &ry, int32_t width, int32_t hrange)
 				rl2 = 0; rh2 = cy2;
 			} // No run
 
-// Check runs
+		// Check runs
 		if (rl1 >= width) { rx = cx1 + rl1 / 2; ry = cy1; fFound = true; break; }
 		if (rl2 >= width) { rx = cx2 - rl2 / 2; ry = cy2; fFound = true; break; }
 	}
@@ -2013,7 +2013,7 @@ bool FindConSiteSpot(int32_t &rx, int32_t &ry, int32_t wdt, int32_t hgt,
 				rl1 = 0; rh1 = cy1;
 			} // No run
 
-// Right search
+		// Right search
 		if (cx2 < GBackWdt) // Still going
 			if (!AboveSemiSolid(cx2, cy2))
 				cx2 = GBackWdt; // Abort right
@@ -2024,7 +2024,7 @@ bool FindConSiteSpot(int32_t &rx, int32_t &ry, int32_t wdt, int32_t hgt,
 				rl2 = 0; rh2 = cy2;
 			} // No run
 
-// Check runs & object overlap
+		// Check runs & object overlap
 		if (rl1 >= wdt) if (cx1 > 0)
 			if (!Game.OverlapObject(cx1, cy1 - hgt - 10, wdt, hgt + 40, category))
 			{

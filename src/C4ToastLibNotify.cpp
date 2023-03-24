@@ -50,12 +50,13 @@ void C4ToastImplLibNotify::AddAction(std::string_view action)
 	actions.emplace_back(action);
 
 	notify_notification_add_action(
-				notification,
-				FormatString("action-%lu", index).getData(),
-				C4Language::IconvUtf8(action.data()).getData(),
-				&C4ToastImplLibNotify::OnAction,
-				new UserData{this, index},
-				operator delete);
+		notification,
+		FormatString("action-%lu", index).getData(),
+		C4Language::IconvUtf8(action.data()).getData(),
+		&C4ToastImplLibNotify::OnAction,
+		new UserData{this, index},
+		operator delete
+	);
 }
 
 void C4ToastImplLibNotify::SetExpiration(std::uint32_t expiration)

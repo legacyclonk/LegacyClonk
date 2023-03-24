@@ -598,7 +598,7 @@ struct StdSTLContainerAdapt
 	C &rStruct; const StdCompiler::Sep eSep;
 
 	template<typename... Parameters>
-	inline void CompileFunc(StdCompiler *pComp, Parameters &&... parameters) const
+	inline void CompileFunc(StdCompiler *pComp, Parameters &&...parameters) const
 	{
 		typedef typename C::value_type T;
 		// Get compiler specs
