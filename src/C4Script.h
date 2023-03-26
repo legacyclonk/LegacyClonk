@@ -27,7 +27,7 @@ struct C4ScriptConstDef
 {
 	const char *Identifier; // constant name
 	C4V_Type ValType; // type value
-	long Data; // raw data
+	C4ValueInt Data; // raw data
 };
 
 void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
