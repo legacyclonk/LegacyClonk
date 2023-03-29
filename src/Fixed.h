@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <compare>
 #include <math.h>
 
 #include "StdCompiler.h"
@@ -165,10 +166,7 @@ public:
 	}
 
 	inline bool operator== (const C4Fixed &fVal2) const { return val == fVal2.val; }
-	inline bool operator<  (const C4Fixed &fVal2) const { return val <  fVal2.val; }
-	inline bool operator>  (const C4Fixed &fVal2) const { return val >  fVal2.val; }
-	inline bool operator<= (const C4Fixed &fVal2) const { return val <= fVal2.val; }
-	inline bool operator>= (const C4Fixed &fVal2) const { return val >= fVal2.val; }
+	inline std::strong_ordering operator<=>(const C4Fixed &value) const { return val <=> value.val; }
 
 	// and wrappers
 	inline C4Fixed &operator+=(int32_t iVal2) { return operator += (C4Fixed(iVal2)); }
@@ -185,10 +183,8 @@ public:
 	inline C4Fixed operator/(int32_t iVal2) const { return C4Fixed(*this) /= iVal2; }
 
 	inline bool operator==(int32_t iVal2) const { return operator==(C4Fixed(iVal2)); }
-	inline bool operator< (int32_t iVal2) const { return operator< (C4Fixed(iVal2)); }
-	inline bool operator> (int32_t iVal2) const { return operator> (C4Fixed(iVal2)); }
-	inline bool operator<=(int32_t iVal2) const { return operator<=(C4Fixed(iVal2)); }
-	inline bool operator>=(int32_t iVal2) const { return operator>=(C4Fixed(iVal2)); }
+	inline std::strong_ordering operator<=>(const std::int32_t value) const { return *this <=> C4Fixed{value}; }
+
 
 	C4Fixed sin_deg() const
 	{
