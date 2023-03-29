@@ -111,7 +111,6 @@ public:
 		StdStrBuf ToString(int flags = 0) const;
 
 		bool operator ==(const HostAddress &rhs) const;
-		bool operator !=(const HostAddress &rhs) const { return !(*this == rhs); }
 
 	protected:
 		// Data
@@ -187,7 +186,6 @@ public:
 		};
 
 		bool operator==(const EndpointAddress &rhs) const;
-		bool operator!=(const EndpointAddress &rhs) const { return !(*this == rhs); }
 
 		// Conversions
 		operator sockaddr() const { return gen; }

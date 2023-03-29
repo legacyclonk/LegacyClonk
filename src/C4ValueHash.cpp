@@ -191,8 +191,3 @@ bool C4ValueHash::Iterator::operator==(const C4ValueHash::Iterator &other) const
 {
 	return it == other.it;
 }
-
-bool C4ValueHash::Iterator::operator!=(const C4ValueHash::Iterator &other) const
-{
-	return it != other.it;
-}

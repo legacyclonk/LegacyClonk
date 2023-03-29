@@ -989,11 +989,6 @@ bool C4ObjectList::iterator::operator==(const iterator &iter) const
 	return &iter.List == &List && iter.pLink == pLink;
 }
 
-bool C4ObjectList::iterator::operator!=(const iterator &iter) const
-{
-	return &iter.List != &List || iter.pLink != pLink;
-}
-
 C4ObjectList::iterator &C4ObjectList::iterator::operator=(const iterator &iter)
 {
 	// Can only assign iterators into the same list

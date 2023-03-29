@@ -921,12 +921,6 @@ bool C4Value::operator==(const C4Value &Value2) const
 	return GetData() == Value2.GetData();
 }
 
-bool C4Value::operator!=(const C4Value &Value2) const
-{
-	// Fixme: implement faster
-	return !(*this == Value2);
-}
-
 namespace
 {
 	// based on boost container_hash's hashCombine

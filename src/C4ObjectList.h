@@ -64,7 +64,6 @@ public:
 		C4Object *operator*();
 		C4Object *operator->() { return operator*(); }
 		bool operator==(const iterator &iter) const;
-		bool operator!=(const iterator &iter) const;
 
 		iterator &operator=(const iterator &iter);
 

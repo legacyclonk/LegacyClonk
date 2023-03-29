@@ -84,7 +84,6 @@ public:
 		ResTypeIterator &operator++();
 
 		bool operator==(const ResTypeIterator &other) const;
-		bool operator!=(const ResTypeIterator &other) const { return !(*this == other); }
 
 		C4GameRes &operator*() const;
 		C4GameRes *operator->() const;

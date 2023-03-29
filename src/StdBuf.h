@@ -343,8 +343,6 @@ public:
 		return getSize() == Buf2.getSize() && !Compare(Buf2);
 	}
 
-	bool operator!=(const StdBuf &Buf2) const { return !operator==(Buf2); }
-
 	// Set (take if possible)
 	StdBuf &operator=(StdBuf &&Buf2)
 	{
@@ -515,10 +513,7 @@ public:
 		return getLength() == Buf2.getLength() && !Compare(Buf2);
 	}
 
-	bool operator!=(const StdStrBuf &Buf2) const { return !operator==(Buf2); }
-
 	bool operator==(const char *szString) const { return StdStrBuf(szString, false) == *this; }
-	bool operator!=(const char *szString) const { return !operator==(szString); }
 
 	// Note this references the data.
 	StdStrBuf &operator=(const StdStrBuf &Buf2) { Copy(Buf2);     return *this; }

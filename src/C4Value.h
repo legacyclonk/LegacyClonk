@@ -207,7 +207,6 @@ public:
 	bool Equals(const C4Value &other, C4AulScriptStrict strict) const;
 
 	bool operator==(const C4Value &Value2) const;
-	bool operator!=(const C4Value &Value2) const;
 
 	// Change and set Type to int in case it was any before (avoids GuessType())
 	C4Value &operator+=(C4ValueInt by) { GetData().Int += by;                        GetRefVal().Type = C4V_Int; return *this; }
