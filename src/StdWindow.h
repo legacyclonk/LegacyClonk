@@ -98,7 +98,7 @@ protected:
 	virtual bool SupportsDarkMode() const { return true; }
 
 private:
-	C4Com com{winrt::apartment_type::multi_threaded};
+	C4Com com;
 	DWORD style = WS_OVERLAPPEDWINDOW;
 	DWORD styleEx = 0;
 	winrt::com_ptr<ITaskbarList3> taskBarList{nullptr};

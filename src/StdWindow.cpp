@@ -41,6 +41,8 @@ CStdWindow::~CStdWindow()
 
 bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
+	com = C4Com{winrt::apartment_type::multi_threaded};
+
 	const WNDCLASSEX windowClass{GetWindowClass(app->hInstance)};
 	RegisterClassEx(&windowClass);
 
