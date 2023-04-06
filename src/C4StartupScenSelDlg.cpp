@@ -17,12 +17,12 @@
 
 // Startup screen for non-parameterized engine start: Scenario selection dialog
 
-#include <C4Include.h>
 #include <C4StartupScenSelDlg.h>
 
 #include <C4Network2Dialogs.h>
 #include <C4StartupMainDlg.h>
 #include <C4StartupNetDlg.h>
+#include "StdMarkup.h"
 #include <C4ComponentHost.h>
 #include <C4Components.h>
 #include <C4RTF.h>

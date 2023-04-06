@@ -41,6 +41,7 @@
 #include <string_view>
 
 #include <objbase.h>
+#include <tchar.h>
 #endif
 
 #ifdef __APPLE__

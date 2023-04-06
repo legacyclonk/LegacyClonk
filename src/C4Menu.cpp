@@ -16,10 +16,10 @@
 
 /* In-game menu as used by objects, players, and fullscreen options */
 
-#include <C4Include.h>
 #include <C4Menu.h>
 
 #include <C4Object.h>
+#include "StdMarkup.h"
 #include <C4FullScreen.h>
 #include <C4ObjectCom.h>
 #include <C4Viewport.h>

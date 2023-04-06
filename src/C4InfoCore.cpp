@@ -16,11 +16,11 @@
 
 /* Structures for object and player info components */
 
-#include <C4Include.h>
 #include <C4InfoCore.h>
 
 #include <C4Random.h>
 #include <C4RankSystem.h>
+#include "StdMarkup.h"
 #include <C4Group.h>
 #include <C4Components.h>
 #include <C4Wrappers.h>

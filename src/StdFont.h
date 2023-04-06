@@ -20,15 +20,11 @@
 #pragma once
 
 #include "C4Facet.h"
+#include "C4ForwardDeclarations.h"
+#include "C4Strings.h"
 
-#include <Standard.h>
-#include <StdMarkup.h>
-#include <StdBuf.h>
-#include <stdio.h>
+#include <cstdint>
 #include <map>
-#ifdef _WIN32
-#include <tchar.h>
-#endif
 
 // Font rendering flags
 #define STDFONT_CENTERED  0x0001
@@ -39,9 +35,6 @@
 #define FW_NORMAL 400
 #define FW_BOLD   700
 #endif
-
-class CMarkup;
-class CStdVectorFont;
 
 class CStdFont
 {
@@ -127,7 +120,7 @@ public:
 	// Sometimes, only the width of a text is needed
 	int32_t GetTextWidth(const char *szText, bool fCheckMarkup = true) { int32_t x, y; GetTextExtent(szText, x, y, fCheckMarkup); return x; }
 	// insert line breaks into a message and return overall height - uses and regards '|' as line breaks; maxLines = 0 means unlimited
-	int BreakMessage(const char *szMsg, int iWdt, class StdStrBuf *pOut, bool fCheckMarkup, float fZoom = 1.0f, size_t maxLines = 0);
+	int BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fCheckMarkup, float fZoom = 1.0f, size_t maxLines = 0);
 
 	CStdFont();
 	~CStdFont() { Clear(); }

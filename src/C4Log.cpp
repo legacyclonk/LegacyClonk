@@ -16,12 +16,12 @@
 
 /* Log file handling */
 
-#include <C4Include.h>
 #include <C4Log.h>
 
 #include <C4Console.h>
 #include <C4GameLobby.h>
 #include <C4LogBuf.h>
+#include "StdMarkup.h"
 #include <C4Language.h>
 
 #ifdef _WIN32
