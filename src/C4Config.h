@@ -170,6 +170,7 @@ public:
 	int32_t MusicVolume;
 	int32_t SoundVolume;
 	int32_t MaxChannels;
+	bool PreferLinearResampling;
 	bool MuteSoundCommand; // whether to mute /sound by default
 	void CompileFunc(StdCompiler *pComp);
 };

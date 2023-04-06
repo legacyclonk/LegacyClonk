@@ -32,7 +32,7 @@
 class C4AudioSystemSdl : public C4AudioSystem
 {
 public:
-	C4AudioSystemSdl(int maxChannels);
+	C4AudioSystemSdl(int maxChannels, bool preferLinearResampling);
 
 	void FadeOutMusic(std::int32_t ms) override;
 	bool IsMusicPlaying() const override;
@@ -114,7 +114,7 @@ public:
 // the selected volume is chosen to be similar to FMod's original volume
 static constexpr auto MaximumVolume = 80;
 
-C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels)
+C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinearResampling)
 {
 	// Check SDL_mixer version
 	SDL_version compile_version;
@@ -123,6 +123,13 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels)
 	LogF("SDL_mixer runtime version is %d.%d.%d (compiled with %d.%d.%d)",
 		link_version->major, link_version->minor, link_version->patch,
 		compile_version.major, compile_version.minor, compile_version.patch);
+
+	// Try to enable linear resampling if requested
+	if (preferLinearResampling)
+	{
+		if (!SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, "linear"))
+			LogF("SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, \"linear\") failed");
+	}
 
 	// Initialize SDL_mixer
 	StdSdlSubSystem system{SDL_INIT_AUDIO};
@@ -217,7 +224,7 @@ void C4AudioSystemSdl::SoundChannelSdl::SetVolumeAndPan(const float volume, cons
 
 void C4AudioSystemSdl::SoundChannelSdl::Unpause() { /* Not supported */ }
 
-C4AudioSystem *CreateC4AudioSystemSdl(int maxChannels)
+C4AudioSystem *CreateC4AudioSystemSdl(int maxChannels, const bool preferLinearResampling)
 {
-	return new C4AudioSystemSdl{maxChannels};
+	return new C4AudioSystemSdl{maxChannels, preferLinearResampling};
 }

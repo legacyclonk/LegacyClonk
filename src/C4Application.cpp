@@ -232,7 +232,10 @@ bool C4Application::PreInit()
 	{
 		if (!AudioSystem)
 		{
-			AudioSystem.reset(C4AudioSystem::NewInstance(Config.Sound.MaxChannels));
+			AudioSystem.reset(C4AudioSystem::NewInstance(
+				Config.Sound.MaxChannels,
+				Config.Sound.PreferLinearResampling
+			));
 		}
 	}
 	catch (const std::runtime_error &e)

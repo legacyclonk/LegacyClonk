@@ -192,6 +192,7 @@ void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(MusicVolume, "MusicVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(SoundVolume, "SoundVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(MaxChannels, "MaxChannels", C4AudioSystem::MaxChannels));
+	pComp->Value(mkNamingAdapt(PreferLinearResampling, "PreferLinearResampling", false));
 
 	if (pComp->isCompiler())
 	{

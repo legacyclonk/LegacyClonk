@@ -33,7 +33,7 @@ public:
 	virtual ~C4AudioSystem() = default;
 	C4AudioSystem &operator=(const C4AudioSystem &) = delete;
 
-	static C4AudioSystem *NewInstance(int maxChannels);
+	static C4AudioSystem *NewInstance(int maxChannels, bool preferLinearResampling);
 
 	class MusicFile;
 	class SoundFile;

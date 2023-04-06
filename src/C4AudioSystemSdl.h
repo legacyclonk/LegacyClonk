@@ -17,4 +17,4 @@
 
 #include "C4AudioSystem.h"
 
-C4AudioSystem *CreateC4AudioSystemSdl(int maxChannels);
+C4AudioSystem *CreateC4AudioSystemSdl(int maxChannels, bool preferLinearResampling);

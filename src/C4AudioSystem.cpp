@@ -26,7 +26,10 @@
 #include "C4AudioSystemSdl.h"
 #endif
 
-C4AudioSystem *C4AudioSystem::NewInstance(int maxChannels)
+C4AudioSystem *C4AudioSystem::NewInstance(
+	const int maxChannels,
+	[[maybe_unused]] const bool preferLinearResampling
+)
 {
 #ifdef USE_FMOD
 	try
@@ -43,7 +46,7 @@ C4AudioSystem *C4AudioSystem::NewInstance(int maxChannels)
 #ifdef USE_SDL_MIXER
 	try
 	{
-		return CreateC4AudioSystemSdl(maxChannels);
+		return CreateC4AudioSystemSdl(maxChannels, preferLinearResampling);
 	}
 	catch (const std::runtime_error &e)
 	{
