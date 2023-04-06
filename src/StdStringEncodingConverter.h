@@ -15,7 +15,7 @@
 
 #pragma once
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "C4Windows.h"
 

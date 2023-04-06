@@ -33,7 +33,7 @@
 #include <crtdbg.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "C4Com.h"
 #include "C4WinRT.h"
 

@@ -20,7 +20,7 @@
 #include <glib.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "C4Windows.h"
 #include <shellapi.h>
 #endif

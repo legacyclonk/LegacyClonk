@@ -139,7 +139,7 @@ void C4Application::DoInit()
 	// Parse command line
 	Game.ParseCommandLine(GetCommandLine());
 
-#ifdef WIN32
+#ifdef _WIN32
 	// Windows: handle incoming updates directly, even before starting up the gui
 	//          because updates will be applied in the console anyway.
 	if (Application.IncomingUpdate)
@@ -619,7 +619,7 @@ void C4Application::OnCommand(const char *szCmd)
 
 void C4Application::Activate()
 {
-#ifdef WIN32
+#ifdef _WIN32
 	// Activate the application to regain focus if it has been lost during loading.
 	// As this is officially not possible any more in new versions of Windows
 	// (BringWindowTopTop alone won't have any effect if the calling process is
