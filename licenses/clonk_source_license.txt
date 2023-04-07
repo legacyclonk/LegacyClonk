@@ -38,7 +38,6 @@ zlib: Jean-loup Gailly, Mark Adler
 libpng: Glenn Randers-Pehrson
 jpeglib: Independent JPEG Group
 OpenSSL: The OpenSSL Project, see OpenSSL.txt
-FMOD: Firelight Multimedia
 Freetype: The FreeType Project
 Allegro: Shawn Hargreaves
 GTK+: see LGPL.txt

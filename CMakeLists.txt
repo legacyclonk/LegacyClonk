@@ -65,9 +65,6 @@ option(USE_STAT "Enable internal performance statistics for developers" OFF)
 # ENABLE_SOUND
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
 	"NOT USE_CONSOLE" OFF)
-# USE_FMOD
-CMAKE_DEPENDENT_OPTION(USE_FMOD "Whether FMod should be tried to be loaded dynamically for sound" OFF
-	"ENABLE_SOUND AND WIN32" OFF)
 # USE_SDL_MIXER
 CMAKE_DEPENDENT_OPTION(USE_SDL_MIXER "Whether SDL2_mixer shall be used for sound" ON
 	"ENABLE_SOUND" OFF)
@@ -179,10 +176,6 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generated/licenses.h" "${LICENSES_TEXT}"
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 if (ENABLE_SOUND)
-	if (USE_FMOD)
-		list(APPEND CLONK_SOURCES src/C4AudioSystemFmodRuntime.cpp)
-		list(APPEND CLONK_SOURCES src/C4AudioSystemFmodRuntime.h)
-	endif ()
 	if (USE_SDL_MIXER)
 		list(APPEND CLONK_SOURCES src/C4AudioSystemSdl.cpp)
 		list(APPEND CLONK_SOURCES src/C4AudioSystemSdl.h)
@@ -458,7 +451,6 @@ foreach(MACRO_VAR
 	HAVE_FREETYPE
 	HAVE_ICONV
 	SOLIDMASK_DEBUG
-	USE_FMOD
 	USE_LIBNOTIFY
 	USE_SDL_FOR_GAMEPAD
 	USE_SDL_MAINLOOP
