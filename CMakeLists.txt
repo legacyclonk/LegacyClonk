@@ -49,6 +49,7 @@ include_directories(src)
 # Additional directory to search for library files
 set(EXTRA_DEPS_DIR "deps" CACHE PATH "Additional directory to search for libraries and headers")
 include_directories(${EXTRA_DEPS_DIR}/include)
+link_directories("${EXTRA_DEPS_DIR}/lib")
 list(APPEND CMAKE_PREFIX_PATH ${EXTRA_DEPS_DIR})
 
 # Add cmake directory to module path
