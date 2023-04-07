@@ -37,6 +37,9 @@ jobs:
           - arch: x86
             os: macos-12
 
+          - arch: x86
+            os: ubuntu-20.04
+
           - os: windows-latest
             windowing: X11
           - os: macos-12
@@ -75,14 +78,6 @@ jobs:
       - name: "Configure Platform Architecture"
         run: |
           autobuild/${{ matrix.env }}-${{ matrix.arch }}.sh
-
-      - name: "Linux x86: Setup chroot"
-        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x86' }}
-        run: |
-          curl -L https://github.com/legacyclonk/ubuntu-1804-x86-chroot/releases/download/2020-09-26/chroot.tar.xz | sudo tar -xJ
-          curl -L https://raw.githubusercontent.com/legacyclonk/ubuntu-1804-x86-chroot/master/setup_chroot.sh | sudo bash -e -
-          sudo mkdir -p chroot/$PWD
-          sudo mount --bind . chroot/$PWD
 
       - name: "Linux: Setup"
         if: ${{ matrix.env == 'Linux' }}

@@ -34,9 +34,6 @@ jobs:
             arch: x64
             env: Linux
             config: Debugrec
-          - os: ubuntu-20.04
-            arch: x86
-            env: Linux
           - os: macos-12
             arch: x64
             env: Mac
@@ -59,14 +56,6 @@ jobs:
       - name: "Configure Platform Architecture"
         run: |
           autobuild/${{ matrix.env }}-${{ matrix.arch }}.sh
-
-      - name: "Linux x86: Setup chroot"
-        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x86' }}
-        run: |
-          curl -L https://github.com/legacyclonk/ubuntu-1804-x86-chroot/releases/download/2020-09-26/chroot.tar.xz | sudo tar -xJ
-          curl -L https://raw.githubusercontent.com/legacyclonk/ubuntu-1804-x86-chroot/master/setup_chroot.sh | sudo bash -e -
-          sudo mkdir -p chroot/$PWD
-          sudo mount --bind . chroot/$PWD
 
       - name: "Linux: Setup"
         if: ${{ matrix.env == 'Linux' }}
@@ -104,7 +93,7 @@ jobs:
           $CHROOT cmake --build build $CMAKE_BUILD_ARGS
 
       - name: "Build c4gs"
-        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x64' }}
+        if: ${{ matrix.env == 'Linux' }}
         run: |
           C4GROUP=$PWD/build/c4group tools/make_Graphics.c4g.sh
           C4GROUP=$PWD/build/c4group tools/make_System.c4g.sh
@@ -135,14 +124,14 @@ jobs:
           path: output/*
 
       - name: "Publish System.c4g"
-        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x64' }}
+        if: ${{ matrix.env == 'Linux' }}
         uses: actions/upload-artifact@v3
         with:
           name: System.c4g
           path: System.c4g
 
       - name: "Publish Graphics.c4g"
-        if: ${{ matrix.env == 'Linux' && matrix.arch == 'x64' && matrix.config != 'Debugrec' }}
+        if: ${{ matrix.env == 'Linux' && matrix.config != 'Debugrec' }}
         uses: actions/upload-artifact@v3
         with:
           name: Graphics.c4g
@@ -188,7 +177,7 @@ jobs:
 
       - name: "Release: c4gs"
         uses: ncipollo/release-action@v1.11.2
-        if: ${{ env.IS_RELEASE == 'true' && matrix.env == 'Linux' && matrix.arch == 'x64' && matrix.config != 'Debugrec' }}
+        if: ${{ env.IS_RELEASE == 'true' && matrix.env == 'Linux' && matrix.config != 'Debugrec' }}
         with:
           artifacts: |
             System.c4g
