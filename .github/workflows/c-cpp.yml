@@ -45,6 +45,8 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: lukka/get-cmake@latest
+
       - name: "Setup Directories"
         run: mkdir output
 
