@@ -15,11 +15,10 @@
 
 #include "StdStringEncodingConverter.h"
 
+#include <format>
 #include <memory>
 #include <stdexcept>
 #include <string>
-
-#include <fmt/format.h>
 
 namespace
 {
@@ -49,7 +48,7 @@ namespace
 		const int convertedSize{ConversionFunc(CP_ACP, 0, input.data(), static_cast<int>(input.size()), nullptr, 0, std::forward<Args>(args)...)};
 		if (!convertedSize)
 		{
-			throw std::runtime_error{fmt::format("Querying output size failed: {:x}", GetLastError())};
+			throw std::runtime_error{std::format("Querying output size failed: {:x}", GetLastError())};
 		}
 
 		const auto converted = std::make_unique_for_overwrite<typename ReturnType::value_type[]>(static_cast<std::size_t>(convertedSize));
@@ -57,7 +56,7 @@ namespace
 
 		if (result != convertedSize)
 		{
-			throw std::runtime_error{fmt::format("Conversion returned {} when it was expected to return {}", result, convertedSize)};
+			throw std::runtime_error{std::format("Conversion returned {} when it was expected to return {}", result, convertedSize)};
 		}
 
 		return ReturnType{converted.get(), static_cast<std::size_t>(convertedSize)};
