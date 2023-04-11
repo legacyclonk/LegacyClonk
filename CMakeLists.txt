@@ -11,7 +11,7 @@
 # To redistribute this file separately, substitute the full license texts
 # for the above references.
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25)
 
 # Enable MACOSX_RPATH by default
 cmake_policy(SET CMP0042 NEW)
@@ -36,6 +36,17 @@ project("LegacyClonk" LANGUAGES CXX ${LANGUAGE_OBJCXX})
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
+
+if (CMAKE_VERSION VERSION_LESS "3.26")
+	set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "3c375311-a3c9-4396-a187-3227ef642046")
+elseif (CMAKE_VERSION VERSION_LESS "3.27")
+	set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
+else ()
+	if (NOT DEFINED CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API)
+		message(ERROR "Please set CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API to the value that corresponds to your CMake version (${CMAKE_VERSION})")
+	endif ()
+endif ()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -152,6 +163,14 @@ function(make_includable INPUT_FILE OUTPUT_VAR)
 	set(${OUTPUT_VAR} "${RESULT}" PARENT_SCOPE)
 endfunction()
 
+macro(setup_modules SOURCE_LIST)
+	set(${SOURCE_LIST}_CPP "${${SOURCE_LIST}}")
+	list(FILTER ${SOURCE_LIST}_CPP EXCLUDE REGEX "^.+\.ixx$")
+
+	set(${SOURCE_LIST}_MODULES "${${SOURCE_LIST}}")
+	list(FILTER ${SOURCE_LIST}_MODULES INCLUDE REGEX "^.+\.ixx$")
+endmacro()
+
 # Add engine target
 
 append_filelist(CLONK_SOURCES Engine.txt)
@@ -233,12 +252,16 @@ if (USE_WINDOWS_RUNTIME)
 		src/C4ToastWinRT.cpp src/C4ToastWinRT.h)
 endif ()
 
+setup_modules(CLONK_SOURCES)
+
 if (USE_CONSOLE)
-	add_executable(clonk ${CLONK_SOURCES})
+	add_executable(clonk ${CLONK_SOURCES_CPP})
 	target_compile_definitions(clonk PRIVATE USE_CONSOLE=1)
 else ()
-	add_executable(clonk WIN32 MACOSX_BUNDLE ${CLONK_SOURCES})
+	add_executable(clonk WIN32 MACOSX_BUNDLE ${CLONK_SOURCES_CPP})
 endif ()
+
+target_sources(clonk PUBLIC FILE_SET cxx_modules TYPE CXX_MODULES FILES ${CLONK_SOURCES_MODULES})
 target_link_libraries(clonk standard)
 target_compile_definitions(clonk PRIVATE C4ENGINE)
 
@@ -254,7 +277,11 @@ if (WIN32)
 else ()
 	list(APPEND C4GROUP_SOURCES src/c4group_ng.cpp)
 endif ()
-add_executable(c4group ${C4GROUP_SOURCES})
+
+setup_modules(C4GROUP_SOURCES)
+
+add_executable(c4group ${C4GROUP_SOURCES_CPP})
+target_sources(c4group PUBLIC FILE_SET cxx_modules TYPE CXX_MODULES FILES ${C4GROUP_SOURCES_MODULES})
 target_link_libraries(c4group standard)
 target_compile_definitions(c4group PRIVATE USE_CONSOLE)
 
@@ -272,7 +299,10 @@ else ()
 	list(APPEND LIBSTANDARD_SOURCES src/StdSha1OpenSSL.cpp)
 endif ()
 
-add_library(standard STATIC ${LIBSTANDARD_SOURCES})
+setup_modules(LIBSTANDARD_SOURCES)
+
+add_library(standard STATIC ${LIBSTANDARD_SOURCES_CPP})
+target_sources(standard PUBLIC FILE_SET cxx_modules TYPE CXX_MODULES FILES ${LIBSTANDARD_SOURCES_MODULES})
 target_compile_definitions(standard PRIVATE C4ENGINE)
 
 # Set C4_OS macro
