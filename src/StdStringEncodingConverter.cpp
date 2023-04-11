@@ -1,7 +1,7 @@
 /*
  * LegacyClonk
  *
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2023, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -13,12 +13,16 @@
  * for the above references.
  */
 
-#include "StdStringEncodingConverter.h"
+module;
+
+#include "C4Windows.h"
 
 #include <format>
 #include <memory>
 #include <stdexcept>
 #include <string>
+
+module StdStringEncodingConverter;
 
 namespace
 {

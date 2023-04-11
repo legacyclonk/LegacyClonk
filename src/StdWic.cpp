@@ -16,7 +16,7 @@
 #include <Standard.h>
 #include <StdWic.h>
 
-#include <StdStringEncodingConverter.h>
+import StdStringEncodingConverter;
 
 #include <winerror.h>
 

@@ -8,5 +8,5 @@ src/res/engine_resource.h
 
 src/StdAppWin32.cpp
 src/StdStringEncodingConverter.cpp
-src/StdStringEncodingConverter.h
+src/StdStringEncodingConverter.ixx
 src/StdWindow.cpp

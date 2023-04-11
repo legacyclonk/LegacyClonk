@@ -14,7 +14,8 @@
  */
 
 #include "C4ToastWinRT.h"
-#include "StdStringEncodingConverter.h"
+
+import StdStringEncodingConverter;
 
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Data.Xml.Dom.h>

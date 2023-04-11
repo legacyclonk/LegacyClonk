@@ -25,7 +25,7 @@
 #include <StdFile.h>
 
 #ifdef _WIN32
-#include "StdStringEncodingConverter.h"
+import StdStringEncodingConverter;
 #endif
 
 #ifdef __linux__
