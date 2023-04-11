@@ -21,6 +21,8 @@
 
 #include "StdBuf.h"
 
+#include <string_view>
+
 class C4RTFFile
 {
 public:

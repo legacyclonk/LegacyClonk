@@ -21,6 +21,7 @@
 
 #include <cstring>
 #include <algorithm>
+#include <array>
 
 CBitmapInfo::CBitmapInfo()
 {

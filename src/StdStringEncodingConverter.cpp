@@ -21,6 +21,7 @@ module;
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 module StdStringEncodingConverter;
 

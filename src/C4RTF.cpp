@@ -21,6 +21,7 @@
 #include "C4RTF.h"
 
 #include <algorithm>
+#include <string>
 
 extern C4RTFFile::KeywordTableEntry RTFKeywordTable[];
 

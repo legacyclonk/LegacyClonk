@@ -15,6 +15,8 @@
 
 #include "C4ToastWinRT.h"
 
+#include <cassert>
+
 import StdStringEncodingConverter;
 
 #include <winrt/Windows.Foundation.h>
