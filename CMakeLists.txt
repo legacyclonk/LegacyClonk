@@ -95,6 +95,9 @@ if (WIN32)
 	# Don't define min/max macros in Windows.h so that they don't conflict with std::min/max
 	add_compile_definitions(NOMINMAX)
 
+	# Disable deprecation and insecure function warnings
+	add_compile_definitions(_CRT_NONSTDC_NO_DEPRECATE _CRT_SECURE_NO_WARNINGS)
+
 	# Don't include winsock.h in Windows.h so that Windows.h doesn't conflict with WinSock2.h
 	add_compile_definitions(WIN32_LEAN_AND_MEAN)
 
@@ -113,7 +116,6 @@ endif ()
 
 # Disable some Visual C++ warnings
 if (MSVC)
-	add_compile_definitions(_CRT_NONSTDC_NO_DEPRECATE _CRT_SECURE_NO_WARNINGS)
 	# "multiple copy constructors specified"
 	add_compile_options(/wd4521)
 endif ()
