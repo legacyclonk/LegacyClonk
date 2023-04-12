@@ -76,14 +76,14 @@ bool CStdWindow::GetSize(C4Rect &rect)
 	return true;
 }
 
-void CStdWindow::SetSize(unsigned int X, unsigned int Y)
+void CStdWindow::SetSize(const unsigned int X, const unsigned int Y)
 {
 	const auto scale = GetInputScale();
 	width = X / scale, height = Y / scale;
 	SetDisplayMode(displayMode);
 }
 
-void CStdWindow::SetTitle(const char *Title)
+void CStdWindow::SetTitle(const char *const Title)
 {
 	SDL_SetWindowTitle(sdlWindow, Title);
 }
@@ -96,7 +96,7 @@ void CStdWindow::FlashWindow()
 #endif
 }
 
-void CStdWindow::SetDisplayMode(DisplayMode mode)
+void CStdWindow::SetDisplayMode(const DisplayMode mode)
 {
 	if (mode == DisplayMode::Fullscreen)
 	{

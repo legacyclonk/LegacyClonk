@@ -108,7 +108,7 @@ void CStdWindow::Clear()
 	taskBarList = nullptr;
 }
 
-void CStdWindow::SetTitle(const char *szToTitle)
+void CStdWindow::SetTitle(const char *const szToTitle)
 {
 	if (hWindow) SetWindowText(hWindow, szToTitle ? szToTitle : "");
 }
@@ -142,7 +142,7 @@ void CStdWindow::FlashWindow()
 		::FlashWindow(hWindow, FLASHW_ALL | FLASHW_TIMERNOFG);
 }
 
-void CStdWindow::SetDisplayMode(DisplayMode mode)
+void CStdWindow::SetDisplayMode(const DisplayMode mode)
 {
 	const auto fullscreen = mode == DisplayMode::Fullscreen;
 
@@ -179,7 +179,7 @@ void CStdWindow::SetDisplayMode(DisplayMode mode)
 	}
 }
 
-void CStdWindow::SetProgress(uint32_t progress)
+void CStdWindow::SetProgress(const uint32_t progress)
 {
 	if (taskBarList)
 	{
@@ -200,12 +200,12 @@ void CStdWindow::Maximize()
 	ShowWindow(hWindow, SW_SHOWMAXIMIZED);
 }
 
-void CStdWindow::SetPosition(int x, int y)
+void CStdWindow::SetPosition(const int x, const int y)
 {
 	SetWindowPos(hWindow, nullptr, x, y, 0, 0, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
 }
 
-LRESULT CStdWindow::DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CStdWindow::DefaultWindowProc(const HWND hwnd, const UINT uMsg, const WPARAM wParam, const LPARAM lParam)
 {
 	switch (uMsg)
 	{

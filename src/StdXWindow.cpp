@@ -250,14 +250,14 @@ bool CStdWindow::GetSize(C4Rect &rect)
 	return true;
 }
 
-void CStdWindow::SetSize(unsigned int X, unsigned int Y)
+void CStdWindow::SetSize(const unsigned int X, const unsigned int Y)
 {
 #ifdef USE_X11
 	XResizeWindow(dpy, wnd, X, Y);
 #endif
 }
 
-void CStdWindow::SetTitle(const char *Title)
+void CStdWindow::SetTitle(const char *const Title)
 {
 #ifdef USE_X11
 	XTextProperty title_property;
@@ -309,7 +309,7 @@ void CStdWindow::HandleMessage(XEvent &event)
 }
 #endif
 
-void CStdWindow::SetDisplayMode(DisplayMode mode)
+void CStdWindow::SetDisplayMode(const DisplayMode mode)
 {
 #ifdef USE_X11
 	const auto fullscreen = mode == DisplayMode::Fullscreen;
