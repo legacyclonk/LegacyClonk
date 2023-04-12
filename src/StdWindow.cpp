@@ -214,11 +214,8 @@ LRESULT CStdWindow::DefaultWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 		auto *const window = reinterpret_cast<CStdWindow *>(reinterpret_cast<CREATESTRUCT *>(lParam)->lpCreateParams);
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
 
-		if (BOOL enabled{true}; SUCCEEDED(DwmIsCompositionEnabled(&enabled)) && enabled)
-		{
-			const BOOL supportsDarkMode{window->SupportsDarkMode()};
-			DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &supportsDarkMode, sizeof(supportsDarkMode));
-		}
+		const BOOL supportsDarkMode{window->SupportsDarkMode()};
+		DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &supportsDarkMode, sizeof(supportsDarkMode));
 	}
 		break;
 
