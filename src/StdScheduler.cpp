@@ -14,6 +14,7 @@
  * for the above references.
  */
 
+#include "C4Thread.h"
 #include "StdScheduler.h"
 
 #include <cstring>
@@ -257,6 +258,8 @@ bool StdSchedulerThread::Start()
 	fRunThreadRun = true;
 	thread = std::thread{[this]
 	{
+		C4Thread::SetCurrentThreadName("StdSchedulerThread");
+
 		while (fRunThreadRun)
 		{
 			Execute();

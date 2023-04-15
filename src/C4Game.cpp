@@ -48,6 +48,7 @@
 #include <C4ObjectMenu.h>
 #include <C4GameLobby.h>
 #include <C4ChatDlg.h>
+#include "C4Thread.h"
 
 #include <StdFile.h>
 #include <StdGL.h>
@@ -1950,6 +1951,7 @@ bool C4Game::Preload()
 		pGL->GetMainCtx().Select();
 		PreloadThread = std::thread{[](std::unique_ptr<CStdGLCtx> preloadContext)
 		{
+			C4Thread::SetCurrentThreadName("PreloadThread");
 			preloadContext->Select(false, true);
 			CStdLock lock{&Game.PreloadMutex};
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
@@ -1960,6 +1962,7 @@ bool C4Game::Preload()
 #else
 		PreloadThread = std::thread{[]
 		{
+			C4Thread::SetCurrentThreadName("PreloadThread");
 			CStdLock lock{&Game.PreloadMutex};
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
 		}};
