@@ -140,7 +140,7 @@ class C4Network2
 		void OnAction(std::string_view action) override;
 
 	private:
-		std::optional<C4Toast> toast;
+		std::unique_ptr<C4Toast> toast;
 	};
 #endif
 

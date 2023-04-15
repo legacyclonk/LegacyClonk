@@ -22,56 +22,18 @@
 #include "C4ToastWinRT.h"
 #endif
 
-C4ToastSystem *C4ToastSystem::NewInstance()
+std::unique_ptr<C4ToastSystem> C4ToastSystem::NewInstance()
 {
-	try
-	{
 #ifdef USE_LIBNOTIFY
-		return new C4ToastSystemLibNotify{};
+	return std::make_unique<C4ToastSystemLibNotify>();
 #elif defined(USE_WINDOWS_RUNTIME)
-		return new C4ToastSystemWinRT{};
+	return std::make_unique<C4ToastSystemWinRT>();
 #else
-		return nullptr;
-#endif
-	}
-	catch (const std::runtime_error &e)
-	{
-		LogSilentF("Failed to initialize toast system: %s", e.what());
-	}
-
 	return nullptr;
+#endif
 }
 
-void C4ToastImpl::SetEventHandler(C4ToastEventHandler *const eventHandler)
+void C4Toast::SetEventHandler(C4ToastEventHandler *const eventHandler)
 {
 	this->eventHandler = eventHandler;
-}
-
-C4Toast::C4Toast()
-	: impl{
-#ifdef USE_LIBNOTIFY
-		new C4ToastImplLibNotify{}
-#elif defined(USE_WINDOWS_RUNTIME)
-		new C4ToastImplWinRT{}
-#else
-		new C4ToastImpl{}
-#endif
-	}
-{
-}
-
-void C4Toast::ShowToast(std::string_view title, std::string_view text, C4ToastEventHandler *const eventHandler, uint32_t expiration, std::initializer_list<std::string_view> actions)
-{
-	C4Toast toast;
-	toast.SetTitle(title);
-	toast.SetText(text);
-	toast.SetEventHandler(eventHandler);
-	toast.SetExpiration(expiration);
-
-	for (const auto &action : actions)
-	{
-		toast.AddAction(action);
-	}
-
-	toast.Show();
 }

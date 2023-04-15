@@ -28,14 +28,19 @@ C4ToastSystemWinRT::C4ToastSystemWinRT()
 	MapHResultError(&ToastNotificationManager::GetDefault);
 }
 
-C4ToastImplWinRT::C4ToastImplWinRT()
+std::unique_ptr<C4Toast> C4ToastSystemWinRT::CreateToast()
+{
+	return std::make_unique<C4ToastWinRT>();
+}
+
+C4ToastWinRT::C4ToastWinRT()
 	: notification{MapHResultError(&ToastNotificationManager::GetTemplateContent, ToastTemplateType::ToastText02)},
 	  notifier{MapHResultError([] { return ToastNotificationManager::CreateToastNotifier(_CRT_WIDE(STD_APPUSERMODELID)); })},
-	  eventHandler{std::move(MapHResultError([this] { return winrt::make_self<EventHandler>(notification, C4ToastImpl::eventHandler); }))}
+	  eventHandler{std::move(MapHResultError([this] { return winrt::make_self<EventHandler>(notification, C4Toast::eventHandler); }))}
 {
 }
 
-void C4ToastImplWinRT::AddAction(std::string_view action)
+void C4ToastWinRT::AddAction(std::string_view action)
 {
 	MapHResultError([&, this]
 	{
@@ -71,38 +76,38 @@ void C4ToastImplWinRT::AddAction(std::string_view action)
 	});
 }
 
-void C4ToastImplWinRT::SetExpiration(const std::uint32_t expiration)
+void C4ToastWinRT::SetExpiration(const std::uint32_t expiration)
 {
 	MapHResultError([expiration, this] { notification.ExpirationTime(winrt::clock::now() + std::chrono::milliseconds{expiration}); });
 }
 
-void C4ToastImplWinRT::SetText(std::string_view text)
+void C4ToastWinRT::SetText(std::string_view text)
 {
-	MapHResultError(&C4ToastImplWinRT::SetTextNode, this, 1, StdStringEncodingConverter::WinAcpToUtf16(text));
+	MapHResultError(&C4ToastWinRT::SetTextNode, this, 1, StdStringEncodingConverter::WinAcpToUtf16(text));
 }
 
-void C4ToastImplWinRT::SetTitle(std::string_view title)
+void C4ToastWinRT::SetTitle(std::string_view title)
 {
-	MapHResultError(&C4ToastImplWinRT::SetTextNode, this, 0, StdStringEncodingConverter::WinAcpToUtf16(title));
+	MapHResultError(&C4ToastWinRT::SetTextNode, this, 0, StdStringEncodingConverter::WinAcpToUtf16(title));
 }
 
-void C4ToastImplWinRT::Show()
+void C4ToastWinRT::Show()
 {
 	MapHResultError(&ToastNotifier::Show, notifier, notification);
 }
 
-void C4ToastImplWinRT::Hide()
+void C4ToastWinRT::Hide()
 {
 	MapHResultError(&ToastNotifier::Hide, notifier, notification);
 }
 
-void C4ToastImplWinRT::SetTextNode(const std::uint32_t index, std::wstring &&text)
+void C4ToastWinRT::SetTextNode(const std::uint32_t index, std::wstring &&text)
 {
 	const auto item = notification.Content().GetElementsByTagName(L"text").Item(index);
 	item.InnerText(std::move(text));
 }
 
-C4ToastImplWinRT::EventHandler::EventHandler(ToastNotification &notification, C4ToastEventHandler *const &eventHandler)
+C4ToastWinRT::EventHandler::EventHandler(ToastNotification &notification, C4ToastEventHandler *const &eventHandler)
 	: eventHandler{eventHandler}
 {
 	notification.Activated([weak{get_weak()}](const ToastNotification &sender, const IInspectable &args)

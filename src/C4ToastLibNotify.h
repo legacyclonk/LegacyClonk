@@ -26,21 +26,24 @@ class C4ToastSystemLibNotify : public C4ToastSystem
 {
 public:
 	C4ToastSystemLibNotify();
-	~C4ToastSystemLibNotify();
+	~C4ToastSystemLibNotify() override;
+
+public:
+	std::unique_ptr<C4Toast> CreateToast() override;
 };
 
-class C4ToastImplLibNotify: public C4ToastImpl
+class C4ToastLibNotify: public C4Toast
 {
 private:
 	struct UserData
 	{
-		C4ToastImplLibNotify *const toast;
+		C4ToastLibNotify *const toast;
 		const size_t index;
 	};
 
 public:
-	C4ToastImplLibNotify();
-	~C4ToastImplLibNotify();
+	C4ToastLibNotify();
+	~C4ToastLibNotify();
 
 public:
 	void AddAction(std::string_view action) override;

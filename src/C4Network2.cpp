@@ -142,20 +142,24 @@ void C4Network2::ReadyCheckDialog::UpdateText()
 		false
 	);
 
-	if (Config.Toasts.ReadyCheck)
+	if (Config.Toasts.ReadyCheck && !toast && Application.ToastSystem)
 	{
-		if (!toast)
+		try
 		{
+			toast = Application.ToastSystem->CreateToast();
+
 			StdStrBuf toastText;
 			toastText.Copy(text);
 			toastText.Replace("|", "\n");
 
-			toast.emplace();
 			toast->AddAction(LoadResStrNoAmp("IDS_DLG_YES"));
 			toast->AddAction(LoadResStrNoAmp("IDS_DLG_NO"));
 			toast->SetTitle(LoadResStr("IDS_DLG_READYCHECK"));
 			toast->SetText(toastText.getData());
 			toast->SetExpiration(1000 * GetRemainingTime());
+		}
+		catch (const std::runtime_error &)
+		{
 		}
 	}
 

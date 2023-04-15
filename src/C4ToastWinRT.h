@@ -25,9 +25,12 @@ class C4ToastSystemWinRT : public C4ToastSystem
 public:
 	C4ToastSystemWinRT();
 	virtual ~C4ToastSystemWinRT() = default;
+
+public:
+	std::unique_ptr<C4Toast> CreateToast() override;
 };
 
-class C4ToastImplWinRT : public C4ToastImpl
+class C4ToastWinRT : public C4Toast
 {
 private:
 	class EventHandler : public winrt::implements<EventHandler, winrt::Windows::Foundation::IInspectable>
@@ -40,7 +43,7 @@ private:
 	};
 
 public:
-	C4ToastImplWinRT();
+	C4ToastWinRT();
 
 protected:
 	void AddAction(std::string_view action) override;

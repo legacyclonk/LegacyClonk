@@ -26,7 +26,10 @@ public:
 	virtual ~C4ToastSystem() = default;
 
 public:
-	static C4ToastSystem *NewInstance();
+	virtual std::unique_ptr<C4Toast> CreateToast() = 0;
+
+public:
+	static std::unique_ptr<C4ToastSystem> NewInstance();
 };
 
 class C4ToastEventHandler
@@ -41,44 +44,21 @@ public:
 	virtual void OnAction(std::string_view action) { (void) action; }
 };
 
-class C4ToastImpl
-{
-public:
-	virtual ~C4ToastImpl() = default;
-
-protected:
-	virtual void AddAction(std::string_view action) { (void) action; }
-	virtual void SetEventHandler(C4ToastEventHandler *const eventHandler);
-	virtual void SetExpiration(std::uint32_t expiration) { (void) expiration; }
-	virtual void SetText(std::string_view text) { (void) text; }
-	virtual void SetTitle(std::string_view title) { (void) title; }
-
-	virtual void Show() {}
-	virtual void Hide() {}
-
-protected:
-	C4ToastEventHandler *eventHandler;
-
-	friend class C4Toast;
-};
-
 class C4Toast
 {
 public:
-	C4Toast();
-
-	static void ShowToast(std::string_view title, std::string_view text, C4ToastEventHandler *const eventHandler = nullptr, std::uint32_t expiration = 0, std::initializer_list<std::string_view> actions = {});
+	virtual ~C4Toast() = default;
 
 public:
-	void AddAction(std::string_view action) { return impl->AddAction(action); }
-	void SetEventHandler(C4ToastEventHandler *const eventHandler) { return impl->SetEventHandler(eventHandler); }
-	void SetExpiration(std::uint32_t expiration) { return impl->SetExpiration(expiration); }
-	void SetText(std::string_view text) { return impl->SetText(text); }
-	void SetTitle(std::string_view title) { return impl->SetTitle(title); }
+	virtual void AddAction(std::string_view action) = 0;
+	virtual void SetEventHandler(C4ToastEventHandler *eventHandler);
+	virtual void SetExpiration(std::uint32_t expiration) = 0;
+	virtual void SetText(std::string_view text) = 0;
+	virtual void SetTitle(std::string_view title) = 0;
 
-	void Show() { return impl->Show(); }
-	void Hide() { return impl->Hide(); }
+	virtual void Show() = 0;
+	virtual void Hide() = 0;
 
-private:
-	const std::unique_ptr<C4ToastImpl> impl;
+protected:
+	C4ToastEventHandler *eventHandler;
 };

@@ -254,9 +254,16 @@ bool C4Application::PreInit()
 	SoundSystem.emplace();
 
 	// Toasts
-	if (!ToastSystem)
+	try
 	{
-		ToastSystem.reset(C4ToastSystem::NewInstance());
+		if (!ToastSystem)
+		{
+			ToastSystem = C4ToastSystem::NewInstance();
+		}
+	}
+	catch (const std::runtime_error &e)
+	{
+		LogSilentF("Failed to initialize toast system: %s", e.what());
 	}
 
 	Game.SetInitProgress(fDoUseStartupDialog ? 30.0f : 3.0f);
