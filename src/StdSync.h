@@ -58,9 +58,6 @@ public:
 #else
 	std::array<int, 2> GetFDs() const { return {fd[0], fd[1]}; }
 
-private:
-	void Read();
-
 #endif
 
 private:
