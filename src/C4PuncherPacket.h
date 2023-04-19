@@ -44,7 +44,7 @@ class C4NetpuncherPacket
 {
 public:
 	using uptr = std::unique_ptr<C4NetpuncherPacket>;
-	static std::unique_ptr<C4NetpuncherPacket> Construct(const C4NetIOPacket &pkt);
+	static uptr Construct(const C4NetIOPacket &pkt);
 	virtual ~C4NetpuncherPacket() = default;
 	virtual C4NetpuncherPacketType GetType() const = 0;
 	C4NetIOPacket PackTo(const C4NetIO::addr_t &) const;

@@ -31,7 +31,7 @@ void C4NetpuncherID::CompileFunc(StdCompiler *const comp)
 	comp->Value(mkNamingAdapt(v6, "IPv6", 0u));
 }
 
-std::unique_ptr<C4NetpuncherPacket> C4NetpuncherPacket::Construct(const C4NetIOPacket &pkt)
+auto C4NetpuncherPacket::Construct(const C4NetIOPacket &pkt) -> uptr
 {
 	if (!pkt.getPData() || *pkt.getPData() != C4NetpuncherProtocolVersion) return nullptr;
 	try
