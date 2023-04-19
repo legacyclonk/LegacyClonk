@@ -22,9 +22,11 @@
 #include <CoreFoundation/CFString.h>
 #include <dlfcn.h>
 
+#include "StdHelpers.h"
+
 std::optional<std::string> GetNonTranslocatedPath(std::string_view path)
 {
-	const std::unique_ptr<void, decltype(&dlclose)> handle{dlopen("/System/Library/Frameworks/Security.framework/Security", RTLD_LAZY), dlclose};
+	const C4DeleterFunctionUniquePtr<dlclose> handle{dlopen("/System/Library/Frameworks/Security.framework/Security", RTLD_LAZY)};
 	if (!handle)
 	{
 		return {};

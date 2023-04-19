@@ -16,6 +16,7 @@
 // PNG encoding/decoding using Windows Imaging Component
 
 #include <Standard.h>
+#include <StdHelpers.h>
 #include <StdPNG.h>
 #include <StdWic.h>
 
@@ -43,7 +44,7 @@ struct CPNGFile::Impl
 	// Writes the specified image to the PNG file. Don't use this object after calling.
 	void Encode(const void *const pixels)
 	{
-		std::unique_ptr<void, void(*)(void *)> copy{nullptr, operator delete};
+		C4DeleterFunctionUniquePtr<static_cast<void(*)(void *)>(operator delete)> copy{nullptr};
 		const void *encodePixels = pixels;
 		// Invert alpha channel
 		if (useAlpha)

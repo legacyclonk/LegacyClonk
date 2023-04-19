@@ -18,6 +18,7 @@
 #include "C4Log.h"
 
 #include "Standard.h"
+#include "StdHelpers.h"
 #include "StdSdlSubSystem.h"
 
 #include <algorithm>
@@ -49,8 +50,8 @@ private:
 	Frequency * (SDL_AUDIO_BITSIZE(Format) / 8) * NumChannels;
 
 	// Smart pointers for SDL_mixer objects
-	using SDLMixChunkUniquePtr = std::unique_ptr<Mix_Chunk, decltype(&Mix_FreeChunk)>;
-	using SDLMixMusicUniquePtr = std::unique_ptr<Mix_Music, decltype(&Mix_FreeMusic)>;
+	using SDLMixChunkUniquePtr = C4DeleterFunctionUniquePtr<Mix_FreeChunk>;
+	using SDLMixMusicUniquePtr = C4DeleterFunctionUniquePtr<Mix_FreeMusic>;
 
 	std::optional<StdSdlSubSystem> system;
 
@@ -176,13 +177,13 @@ void C4AudioSystemSdl::StopMusic()
 void C4AudioSystemSdl::UnpauseMusic() { /* Not supported */ }
 
 C4AudioSystemSdl::MusicFileSdl::MusicFileSdl(const void *const buf, const std::size_t size)
-	: sample{Mix_LoadMUS_RW(SDL_RWFromConstMem(buf, size), SDL_TRUE), Mix_FreeMusic}
+	: sample{Mix_LoadMUS_RW(SDL_RWFromConstMem(buf, size), SDL_TRUE)}
 {
 	ThrowIfFailed("Mix_LoadMUS_RW", !sample);
 }
 
 C4AudioSystemSdl::SoundFileSdl::SoundFileSdl(const void *const buf, const std::size_t size)
-	: sample{Mix_LoadWAV_RW(SDL_RWFromConstMem(buf, size), SDL_TRUE), Mix_FreeChunk}
+	: sample{Mix_LoadWAV_RW(SDL_RWFromConstMem(buf, size), SDL_TRUE)}
 {
 	ThrowIfFailed("Mix_LoadWAV_RW", !sample);
 }
