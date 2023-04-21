@@ -20,6 +20,7 @@
 #include "C4Shape.h"
 #include <Standard.h>
 #include <StdWindow.h>
+#include <StdApp.h>
 #include <StdGL.h>
 #include <StdDDraw2.h>
 #include <StdFile.h>

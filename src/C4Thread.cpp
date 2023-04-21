@@ -22,6 +22,8 @@
 #include <pthread.h>
 #endif
 
+#include <string>
+
 void C4Thread::SetCurrentThreadName(const std::string_view name)
 {
 #ifdef _WIN32

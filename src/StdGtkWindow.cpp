@@ -18,6 +18,7 @@
 /* A wrapper class to OS dependent event and window interfaces, GTK+ version */
 
 #include <StdGtkWindow.h>
+#include <StdApp.h>
 
 #include "res/lc.xpm"
 #include <X11/Xlib.h>
