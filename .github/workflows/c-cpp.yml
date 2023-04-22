@@ -88,6 +88,11 @@ jobs:
           cmake -B build -DDEBUGREC=On
           echo "CONFIG_SUFFIX=${{ matrix.env }}-${{ matrix.arch }}-debugrec" >> $GITHUB_ENV
 
+      - name: "Disable PCH"
+        if: ${{ matrix.config == 'Debugrec' && matrix.env == 'Linux' }}
+        run: |
+          cmake -B build -DUSE_PCH=Off
+
       - name: Build
         run: |
           $CHROOT cmake --build build $CMAKE_BUILD_ARGS
