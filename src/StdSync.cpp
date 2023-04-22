@@ -153,7 +153,7 @@ bool CStdEvent::WaitFor(const std::uint32_t milliseconds)
 
 	timeval timeout{milliseconds / 1000, static_cast<decltype(timeval::tv_usec)>(milliseconds % 1000) * 1000};
 
-	switch (select(1, &set, nullptr, nullptr, milliseconds < 0 ? nullptr : &timeout))
+	switch (select(fd[0] + 1, &set, nullptr, nullptr, milliseconds < 0 ? nullptr : &timeout))
 	{
 	case -1:
 		ThrowError("select failed");
