@@ -23,13 +23,13 @@
 #include <C4SoundSystem.h>
 #include <C4Components.h>
 #include <C4InteractiveThread.h>
-#include "C4Toast.h"
 #include <C4Network2IRC.h>
 #include "StdApp.h"
 #include <StdWindow.h>
 
 #include <optional>
 
+class C4ToastSystem;
 class CStdDDraw;
 
 class C4Sec1Callback
