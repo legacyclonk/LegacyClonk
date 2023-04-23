@@ -32,7 +32,7 @@
 #include "C4Gui.h"
 
 #ifndef USE_CONSOLE
-#include "C4Toast.h"
+#include "C4ToastEventHandler.h"
 #endif
 
 #include <cstdint>
@@ -140,7 +140,7 @@ class C4Network2
 		void OnAction(std::string_view action) override;
 
 	private:
-		std::unique_ptr<C4Toast> toast;
+		std::unique_ptr<class C4Toast> toast;
 	};
 #endif
 

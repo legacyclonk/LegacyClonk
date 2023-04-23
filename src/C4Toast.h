@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "C4ToastEventHandler.h"
+
 #include <cstdint>
 #include <memory>
 #include <string_view>
@@ -31,18 +33,6 @@ public:
 
 public:
 	static std::unique_ptr<C4ToastSystem> NewInstance();
-};
-
-class C4ToastEventHandler
-{
-public:
-	virtual ~C4ToastEventHandler() = default;
-
-public:
-	virtual void Activated() {}
-	virtual void Dismissed() {}
-	virtual void Failed() { }
-	virtual void OnAction(std::string_view action) { (void) action; }
 };
 
 class C4Toast

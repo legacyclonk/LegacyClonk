@@ -281,6 +281,7 @@ src/C4Texture.cpp
 src/C4Texture.h
 src/C4Toast.cpp
 src/C4Toast.h
+src/C4ToastEventHandler.h
 src/C4ToolsDlg.cpp
 src/C4ToolsDlg.h
 src/C4TransferZone.cpp

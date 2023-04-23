@@ -32,6 +32,10 @@
 #include <C4Network2Dialogs.h>
 #include <C4League.h>
 
+#ifndef USE_CONSOLE
+#include "C4Toast.h"
+#endif
+
 #ifdef _WIN32
 #include <direct.h>
 #else
