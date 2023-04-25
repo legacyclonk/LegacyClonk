@@ -6,8 +6,6 @@ src/C4Math.cpp
 src/C4Math.h
 src/C4Strings.cpp
 src/C4Strings.h
-src/C4Thread.cpp
-src/C4Thread.h
 src/CStdFile.cpp
 src/CStdFile.h
 src/Standard.h
