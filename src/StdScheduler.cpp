@@ -51,13 +51,6 @@ static bool FD_INTERSECTS(int n, fd_set *a, fd_set *b)
 
 // *** StdScheduler
 
-std::size_t StdScheduler::getProcCnt() const
-{
-	UnBlock();
-	const std::lock_guard lock{procMutex};
-	return procs.size();
-}
-
 void StdScheduler::Clear()
 {
 	procs.clear();
@@ -69,22 +62,16 @@ void StdScheduler::Clear()
 
 void StdScheduler::Add(StdSchedulerProc *const proc)
 {
-	UnBlock();
-	const std::lock_guard lock{procMutex};
 	procs.insert(proc);
 }
 
 void StdScheduler::Remove(StdSchedulerProc *const proc)
 {
-	UnBlock();
-	const std::lock_guard lock{procMutex};
 	procs.erase(proc);
 }
 
 bool StdScheduler::Execute(int iTimeout)
 {
-	const std::lock_guard lock{procMutex};
-
 	// Needs at least one process to work properly
 	if (!procs.size()) return false;
 
@@ -215,7 +202,7 @@ bool StdScheduler::Execute(int iTimeout)
 	return success;
 }
 
-void StdScheduler::UnBlock() const
+void StdScheduler::UnBlock()
 {
 	unblocker.Set();
 }
