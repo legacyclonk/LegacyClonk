@@ -20,8 +20,8 @@
 
 #include <wincrypt.h>
 
+#include <format>
 #include <stdexcept>
-#include <string>
 
 struct StdSha1::Impl
 {
@@ -106,8 +106,7 @@ struct StdSha1::Impl
 		if (!succeeded)
 		{
 			const auto errorNumber = GetLastError();
-			throw std::runtime_error(std::string() +
-				msg + " (error " + std::to_string(errorNumber) + ")");
+			throw std::runtime_error{std::format("{} (error {})", msg, errorNumber)};
 		}
 	}
 };

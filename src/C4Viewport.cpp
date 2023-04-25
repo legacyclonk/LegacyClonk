@@ -55,6 +55,8 @@
 #endif
 #endif
 
+#include <format>
+
 namespace
 {
 	const int32_t ViewportScrollSpeed = 10;
@@ -219,7 +221,7 @@ WNDCLASSEX C4ViewportWindow::GetWindowClass(const HINSTANCE instance) const
 
 bool C4ViewportWindow::GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const
 {
-	id = std::string{"Viewport"} + std::to_string(cvp->Player + 1);
+	id = std::format("Viewport{}", cvp->Player + 1);
 	subKey = Config.GetSubkeyPath("Console");
 	storeSize = false;
 	return true;

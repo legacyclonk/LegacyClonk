@@ -20,6 +20,7 @@
 
 #ifndef _WIN32
 #include <cstring>
+#include <format>
 #include <limits>
 #include <stdexcept>
 
@@ -78,7 +79,7 @@ bool CStdEvent::WaitFor(const std::uint32_t milliseconds)
 
 [[noreturn]] static void ThrowError(const char *const message)
 {
-	throw std::runtime_error{std::string{message} + ": " + std::strerror(errno)};
+	throw std::runtime_error{std::format("{}: {}", message, std::strerror(errno))};
 }
 
 static void ThrowIfFailed(const bool result, const char *const message)

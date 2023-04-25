@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
+#include <format>
 #include <memory>
 
 namespace StdGzCompressedFile
@@ -27,7 +28,7 @@ Read::Read(const std::string &filename)
 	file = fopen(filename.c_str(), "rb");
 	if (!file)
 	{
-		throw Exception(std::string{"Opening \""} + filename + "\": " + std::strerror(errno));
+		throw Exception{std::format("Opening \"{}\": {}", filename, std::strerror(errno))};
 	}
 
 	gzStream.next_out = nullptr;
@@ -228,7 +229,7 @@ Write::Write(const std::string &filename)
 	file = fopen(filename.c_str(), "wb");
 	if (!file)
 	{
-		throw Exception(std::string{"Opening \""} + filename + "\": " + std::strerror(errno));
+		throw Exception{std::format("Opening \"{}\": {}", filename, std::strerror(errno))};
 	}
 
 	gzStream.zalloc = nullptr;

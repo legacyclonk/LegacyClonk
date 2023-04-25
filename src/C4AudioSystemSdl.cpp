@@ -23,8 +23,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <format>
 #include <stdexcept>
-#include <string>
 #include <memory>
 #include <optional>
 
@@ -144,8 +144,7 @@ void C4AudioSystemSdl::ThrowIfFailed(const char *const funcName, const bool fail
 {
 	if (failed)
 	{
-		throw std::runtime_error(std::string{"SDL_mixer: "} +
-			funcName + " failed: " + Mix_GetError());
+		throw std::runtime_error{std::format("SDL_mixer: {} failed: {}", funcName, Mix_GetError())};
 	}
 }
 
