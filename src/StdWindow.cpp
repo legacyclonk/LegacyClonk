@@ -54,7 +54,7 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 		title,
 		style,
 		bounds.x, bounds.y, bounds.Wdt, bounds.Hgt,
-		nullptr, nullptr, app->hInstance, this);
+		parent ? parent->hWindow : nullptr, nullptr, app->hInstance, this);
 
 #ifndef USE_CONSOLE
 	RestorePosition();
