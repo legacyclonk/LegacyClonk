@@ -57,7 +57,6 @@ src/C4FileSelDlg.cpp
 src/C4FileSelDlg.h
 src/C4FindObject.cpp
 src/C4FindObject.h
-src/C4FogOfWar.h
 src/C4Folder.cpp
 src/C4Folder.h
 src/C4Fonts.cpp

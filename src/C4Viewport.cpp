@@ -27,7 +27,6 @@
 #include <C4FullScreen.h>
 #include <C4Application.h>
 #include <C4ObjectCom.h>
-#include <C4FogOfWar.h>
 #include <C4Stat.h>
 #include <C4Gui.h>
 #include <C4Network2Dialogs.h>

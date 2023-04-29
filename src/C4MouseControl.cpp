@@ -24,7 +24,6 @@
 #include <C4Command.h>
 #include <C4Application.h>
 #include <C4FullScreen.h>
-#include <C4FogOfWar.h>
 #include <C4Gui.h>
 #include <C4Wrappers.h>
 #include <C4Player.h>
