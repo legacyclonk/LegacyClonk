@@ -19,6 +19,7 @@
 #include "StdApp.h"
 #include "res/engine_resource.h"
 
+#include <array>
 #include <mutex>
 #include <stdexcept>
 
@@ -75,8 +76,6 @@ void CStdApp::Quit()
 C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer)
 {
 	MSG msg;
-	int iEvents = 0;
-	HANDLE Events[3] = { hNetworkEvent, hTimerEvent };
 
 	// quit check for nested HandleMessage-calls
 	if (fQuitMsgReceived) return HR_Failure;
@@ -99,14 +98,10 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 		return HR_Failure;
 #endif
 
-	// Check network event
-	Events[iEvents++] = hNetworkEvent;
-	// Check timer
-	if (fCheckTimer)
-		Events[iEvents++] = hTimerEvent;
+	const std::array<HANDLE, 2> events{hNetworkEvent, hTimerEvent};
 
 	// Wait for something to happen
-	switch (MsgWaitForMultipleObjects(iEvents, Events, false, iMSecs, QS_ALLEVENTS))
+	switch (MsgWaitForMultipleObjects(fCheckTimer ? 2 : 1, events.data(), false, iMSecs, QS_ALLEVENTS))
 	{
 	case WAIT_OBJECT_0: // network event
 		// reset event
