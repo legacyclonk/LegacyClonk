@@ -289,6 +289,8 @@ src/C4Texture.cpp
 src/C4Texture.h
 src/C4Thread.cpp
 src/C4Thread.h
+src/C4ThreadPool.cpp
+src/C4ThreadPool.h
 src/C4Toast.cpp
 src/C4Toast.h
 src/C4ToastEventHandler.h
