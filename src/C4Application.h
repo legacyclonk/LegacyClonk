@@ -24,6 +24,7 @@
 #include <C4Components.h>
 #include <C4InteractiveThread.h>
 #include <C4Network2IRC.h>
+#include "C4ThreadPool.h"
 #include "StdApp.h"
 #include <StdWindow.h>
 
@@ -102,6 +103,8 @@ public:
 	C4GamePadControl *pGamePadControl;
 	// Thread for interactive processes (automatically starts as needed)
 	C4InteractiveThread InteractiveThread;
+	// Thread pool
+	std::shared_ptr<C4ThreadPool> ThreadPool;
 	// IRC client for global chat
 	C4Network2IRCClient IRCClient;
 	// Tick timing

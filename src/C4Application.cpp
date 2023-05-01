@@ -148,6 +148,8 @@ void C4Application::DoInit()
 			return;
 #endif
 
+	ThreadPool = C4ThreadPool::Global();
+
 	// activate
 	Active = true;
 
