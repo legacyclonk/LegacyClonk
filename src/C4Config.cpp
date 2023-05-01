@@ -103,6 +103,9 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 #else
 	pComp->Value(mkNamingAdapt(Preloading,           "Preloading",           true));
 #endif
+
+	pComp->Value(mkNamingAdapt(ThreadPoolMinimumThreadCount, "ThreadPoolMinimumThreadCount", 5));
+	pComp->Value(mkNamingAdapt(ThreadPoolMaximumThreadCount, "ThreadPoolMaximumThreadCount", 10));
 }
 
 #ifdef C4ENGINE
