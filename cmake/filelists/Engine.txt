@@ -12,6 +12,8 @@ src/C4AulExec.cpp
 src/C4AulLink.cpp
 src/C4AulParse.cpp
 src/C4AulScriptStrict.h
+src/C4Awaiter.cpp
+src/C4Awaiter.h
 src/C4ChatDlg.cpp
 src/C4ChatDlg.h
 src/C4Client.cpp
@@ -28,6 +30,7 @@ src/C4Console.h
 src/C4Constants.h
 src/C4Control.cpp
 src/C4Control.h
+src/C4Coroutine.h
 src/C4Cooldown.h
 src/C4Def.cpp
 src/C4Def.h
