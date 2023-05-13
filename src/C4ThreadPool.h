@@ -20,11 +20,14 @@
 #endif
 
 #include <bit>
+#include <coroutine>
 #include <cstdint>
 #include <memory>
 #include <utility>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <coroutine>
+#else
 #include <functional>
 #include <mutex>
 #include <queue>
@@ -123,6 +126,14 @@ public:
 		}
 	}
 
+	void SubmitCallback(const std::coroutine_handle<> handle)
+	{
+		SubmitCallback([](const PTP_CALLBACK_INSTANCE, void *const data)
+		{
+			std::coroutine_handle<>::from_address(data).resume();
+		}, handle.address());
+	}
+
 	void SubmitCallback(PTP_SIMPLE_CALLBACK callback, void *data);
 
 	template<typename Func>
@@ -142,6 +153,30 @@ public:
 		availableCallbacks.release();
 	}
 #endif
+
+	auto operator co_await() & noexcept
+	{
+		struct Awaiter
+		{
+			C4ThreadPool &ThreadPool;
+
+			constexpr bool await_ready() const noexcept
+			{
+				return false;
+			}
+
+			void await_suspend(const std::coroutine_handle<> handle) const noexcept
+			{
+				ThreadPool.SubmitCallback(handle);
+			}
+
+			constexpr void await_resume() const noexcept
+			{
+			}
+		};
+
+		return Awaiter{*this};
+	}
 
 public:
 	static std::shared_ptr<C4ThreadPool> Global();
