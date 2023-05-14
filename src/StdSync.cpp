@@ -26,8 +26,8 @@
 
 #ifdef _WIN32
 
-CStdEvent::CStdEvent(const bool initialState, const bool manualReset)
-	: event{CreateEvent(nullptr, manualReset, initialState, nullptr)}
+CStdEvent::CStdEvent(const bool initialState)
+	: event{CreateEvent(nullptr, true, initialState, nullptr)}
 {
 	if (!event)
 	{
@@ -86,8 +86,7 @@ static void ThrowIfFailed(const bool result, const char *const message)
 	}
 }
 
-CStdEvent::CStdEvent(const bool initialState, const bool manualReset)
-	: manualReset{manualReset}
+CStdEvent::CStdEvent(const bool initialState)
 {
 	ThrowIfFailed(pipe(fd) != -1, "pipe failed");
 
@@ -162,11 +161,6 @@ bool CStdEvent::WaitFor(const std::uint32_t milliseconds)
 		return false;
 
 	default:
-		if (!manualReset)
-		{
-			Reset();
-		}
-
 		return true;
 	}
 }

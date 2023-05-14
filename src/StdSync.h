@@ -45,7 +45,7 @@ public:
 	static constexpr auto Infinite = std::numeric_limits<std::uint32_t>::max();
 
 public:
-	CStdEvent(bool initialState = false, bool manualReset = true);
+	CStdEvent(bool initialState = false);
 	~CStdEvent();
 
 public:
@@ -65,7 +65,6 @@ private:
 	HANDLE event;
 #else
 	int fd[2]; // Not std::array in order to allow objects to be safely memcpy'd
-	bool manualReset;
 #endif
 };
 
