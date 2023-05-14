@@ -120,10 +120,9 @@ bool C4FileMonitor::Execute(const int timeout) // some other thread
 	return true;
 }
 
-void C4FileMonitor::GetFDs(fd_set *pFDs, int *pMaxFD)
+void C4FileMonitor::GetFDs(std::vector<pollfd> &fds)
 {
-	FD_SET(fd, pFDs);
-	if (pMaxFD) *pMaxFD = std::max(*pMaxFD, fd);
+	fds.push_back({.fd = fd, .events = POLLIN});
 }
 
 #elif defined(_WIN32)

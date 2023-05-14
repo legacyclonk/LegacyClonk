@@ -1032,23 +1032,19 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 	WSANETWORKEVENTS wsaEvents;
 #else
 
-	fd_set fds[2];
-
-	// build socket sets
-	int iMax = 0;
-	FD_ZERO(&fds[0]); FD_ZERO(&fds[1]);
-	GetFDs(fds, &iMax);
+	std::vector<pollfd> fds;
+	GetFDs(fds);
 
 	// build timeout value
 	timeval to = { iMaxTime / 1000, (iMaxTime % 1000) * 1000 };
 
 	// wait for something to happen
-	int ret = select(iMax + 1, &fds[0], &fds[1], nullptr, (iMaxTime == C4NetIO::TO_INF ? nullptr : &to));
+	int ret = StdSync::Poll(fds, iMaxTime);
 
 	// error
 	if (ret < 0)
 	{
-		SetError("select failed");
+		SetError("poll failed");
 		return false;
 	}
 
@@ -1057,7 +1053,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 		return true;
 
 	// flush pipe
-	if (FD_ISSET(Pipe[0], &fds[0]))
+	if (fds[0].revents & POLLIN)
 	{
 		char c;
 		::read(Pipe[0], &c, 1);
@@ -1078,7 +1074,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 		if (wsaEvents.lNetworkEvents & FD_ACCEPT)
 #else
 		// a connection waiting for accept?
-		if (FD_ISSET(lsock, &fds[0]))
+		if (fds[1].revents & POLLIN)
 #endif
 			if (!Accept())
 				return false;
@@ -1109,7 +1105,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 			if (wsaEvents.lNetworkEvents & FD_CONNECT)
 #else
 			// got connection?
-			if (FD_ISSET(pWait->sock, &fds[1]))
+			if (const auto it = std::ranges::find(fds, pWait->sock, &pollfd::fd); it != std::ranges::end(fds) && it->revents & POLLOUT)
 #endif
 			{
 				// remove from list
@@ -1161,7 +1157,8 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 			if (wsaEvents.lNetworkEvents & FD_READ)
 #else
 			// something to read from socket?
-			if (FD_ISSET(sock, &fds[0]))
+			const auto it = std::ranges::find(fds, sock, &pollfd::fd);
+			if (it != std::ranges::end(fds) && it->revents & POLLIN)
 #endif
 				for (;;)
 				{
@@ -1213,7 +1210,7 @@ bool C4NetIOTCP::Execute(int iMaxTime) // (mt-safe)
 			if (wsaEvents.lNetworkEvents & FD_WRITE)
 #else
 			// socket has become writeable?
-			if (FD_ISSET(sock, &fds[1]))
+			if (it != std::ranges::end(fds) && it->revents & POLLOUT)
 #endif
 				// send remaining data
 				pPeer->Send();
@@ -1436,38 +1433,30 @@ HANDLE C4NetIOTCP::GetEvent() // (mt-safe)
 
 #else
 
-void C4NetIOTCP::GetFDs(fd_set *pFDs, int *pMaxFD)
+void C4NetIOTCP::GetFDs(std::vector<pollfd> &fds)
 {
 	// add pipe
-	assert(!FD_ISSET(Pipe[0], &pFDs[0]));
-	FD_SET(Pipe[0], &pFDs[0]); if (pMaxFD) *pMaxFD = std::max<SOCKET>(*pMaxFD, Pipe[0]);
+	fds.push_back({.fd = Pipe[0], .events = POLLIN});
+
 	// add listener
 	if (lsock != INVALID_SOCKET)
 	{
-		assert(!FD_ISSET(lsock, &pFDs[0]));
-		FD_SET(lsock, &pFDs[0]); if (pMaxFD) *pMaxFD = std::max<int>(*pMaxFD, lsock);
+		fds.push_back({.fd = lsock, .events = POLLIN});
 	}
+
 	// add connect waits (wait for them to become writeable)
 	CStdShareLock PeerListLock(&PeerListCSec);
 	for (ConnectWait *pWait = pConnectWaits; pWait; pWait = pWait->Next)
 	{
-		assert(!FD_ISSET(pWait->sock, &pFDs[1]));
-		FD_SET(pWait->sock, &pFDs[1]); if (pMaxFD) *pMaxFD = std::max<int>(*pMaxFD, pWait->sock);
+		fds.push_back({.fd = pWait->sock, .events = POLLOUT});
 	}
 	// add sockets
 	for (Peer *pPeer = pPeerList; pPeer; pPeer = pPeer->Next)
 		if (pPeer->GetSocket() != INVALID_SOCKET)
 		{
 			// Wait for socket to become readable
-			assert(!FD_ISSET(pPeer->GetSocket(), &pFDs[0]));
-			FD_SET(pPeer->GetSocket(), &pFDs[0]);
 			// Wait for socket to become writeable, if there is data waiting
-			if (pPeer->hasWaitingData())
-			{
-				assert(!FD_ISSET(pPeer->GetSocket(), &pFDs[1]));
-				FD_SET(pPeer->GetSocket(), &pFDs[1]);
-			}
-			if (pMaxFD) *pMaxFD = std::max<int>(*pMaxFD, pPeer->GetSocket());
+			fds.push_back({.fd = pPeer->GetSocket(), .events = static_cast<short>(pPeer->hasWaitingData() ? POLLIN | POLLOUT : POLLIN)});
 		}
 }
 
@@ -2313,43 +2302,37 @@ void C4NetIOSimpleUDP::UnBlock() // (mt-safe)
 	write(Pipe[1], &c, 1);
 }
 
-void C4NetIOSimpleUDP::GetFDs(fd_set *pFDs, int *pMaxFD)
+void C4NetIOSimpleUDP::GetFDs(std::vector<pollfd> &fds)
 {
-	// add pipe
-	assert(!FD_ISSET(Pipe[0], &pFDs[0]));
-	FD_SET(Pipe[0], &pFDs[0]); if (pMaxFD) *pMaxFD = (std::max)(*pMaxFD, Pipe[0]);
+	fds.push_back({.fd = Pipe[0], .events = POLLIN});
 	// add socket
 	if (sock != INVALID_SOCKET)
 	{
-		assert(!FD_ISSET(sock, &pFDs[0]));
-		FD_SET(sock, &pFDs[0]); if (pMaxFD) *pMaxFD = std::max<int>(*pMaxFD, sock);
+		fds.push_back({.fd = sock, .events = POLLIN});
 	}
 }
 
 enum C4NetIOSimpleUDP::WaitResult C4NetIOSimpleUDP::WaitForSocket(int iTimeout)
 {
-	// get file descriptors
-	fd_set fds[2]; int iMaxFD = 0;
-	FD_ZERO(&fds[0]); FD_ZERO(&fds[1]);
-	GetFDs(fds, &iMaxFD);
-	// construct timeout
-	timeval to = { iTimeout / 1000, (iTimeout % 1000) * 1000 };
+	std::vector<pollfd> fds;
+	GetFDs(fds);
+
 	// wait for anything to happen
-	int ret = ::select(iMaxFD + 1, &fds[0], &fds[1], nullptr, (iTimeout == C4NetIO::TO_INF ? nullptr : &to));
+	int ret = poll(fds.data(), fds.size(), iTimeout);
 	// catch simple cases
 	if (ret < 0)
 	{
-		SetError("select failed", true); return WR_Error;
+		SetError("poll failed", true); return WR_Error;
 	}
 	if (!ret)
 		return WR_Timeout;
 	// flush pipe, if neccessary
-	if (FD_ISSET(Pipe[0], &fds[0]))
+	if (fds[0].revents & POLLIN)
 	{
 		char c; ::read(Pipe[0], &c, 1);
 	}
 	// socket readable?
-	return FD_ISSET(sock, &fds[0]) ? WR_Readable : WR_Cancelled;
+	return fds.size() > 1 && fds[1].revents & POLLIN ? WR_Readable : WR_Cancelled;
 }
 
 #endif

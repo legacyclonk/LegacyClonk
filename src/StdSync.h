@@ -26,6 +26,21 @@
 #include <chrono>
 #include <condition_variable>
 
+#ifndef _WIN32
+#include <span>
+
+#include <poll.h>
+#endif
+
+namespace StdSync
+{
+	static inline constexpr auto Infinite = std::numeric_limits<std::uint32_t>::max();
+
+#ifndef _WIN32
+	int Poll(std::span<pollfd> fds, std::uint32_t timeout);
+#endif
+}
+
 class CStdCSec
 {
 public:
@@ -42,7 +57,6 @@ public:
 class CStdEvent
 {
 public:
-	static constexpr auto Infinite = std::numeric_limits<std::uint32_t>::max();
 
 public:
 	CStdEvent(bool initialState = false);
@@ -130,7 +144,7 @@ public:
 			// leave section for waiting
 			CStdCSec::Leave();
 			// wait
-			ShareFreeEvent.WaitFor(CStdEvent::Infinite);
+			ShareFreeEvent.WaitFor(StdSync::Infinite);
 			// reenter section
 			CStdCSec::Enter();
 		}

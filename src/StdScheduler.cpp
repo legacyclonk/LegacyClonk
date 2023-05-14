@@ -33,21 +33,14 @@
 #endif
 
 #ifndef _WIN32
+#include <ranges>
+#include <unordered_map>
+
 // For pipe()
 #include <unistd.h>
 #endif
 
 // *** StdSchedulerProc
-
-#ifndef _WIN32
-static bool FD_INTERSECTS(int n, fd_set *a, fd_set *b)
-{
-	for (int i = 0; i < n; ++i)
-		if (FD_ISSET(i, a) && FD_ISSET(i, b))
-			return true;
-	return false;
-}
-#endif
 
 // *** StdScheduler
 
@@ -126,51 +119,36 @@ bool StdScheduler::Execute(int iTimeout)
 	}
 
 #else
+	fds.resize(1);
+	std::unordered_map<StdSchedulerProc *, std::span<pollfd>> fdMap;
 
-	// Initialize file descriptor sets
-	fd_set fds[2];
-	const auto unblockerFD = unblocker.GetFDs()[0];
-	int maxFDs{unblockerFD};
-
-	FD_ZERO(&fds[0]); FD_ZERO(&fds[1]);
-
-	// Add Unblocker
-	FD_SET(unblockerFD, &fds[0]);
-
-	// Collect file descriptors
 	for (auto *const proc : procs)
 	{
-		proc->GetFDs(fds, &maxFDs);
+		const std::size_t oldSize{fds.size()};
+		proc->GetFDs(fds);
+
+		if (fds.size() != oldSize)
+		{
+			fdMap.emplace(proc, std::span{fds}.subspan(oldSize));
+		}
 	}
 
-	// Build timeout structure
-	timeval to { iTimeout / 1000, (iTimeout % 1000) * 1000 };
-
 	// Wait for something to happen
-	const int cnt{select(maxFDs + 1, &fds[0], &fds[1], nullptr, iTimeout < 0 ? nullptr : &to)};
+	const int cnt{StdSync::Poll(fds, iTimeout)};
 
 	bool success{true};
 
 	if (cnt > 0)
 	{
 		// Unblocker? Flush
-		if (FD_ISSET(unblockerFD, &fds[0]))
+		if (fds[0].revents & POLLIN)
 		{
 			unblocker.Reset();
 		}
 
-		// Which process?
-		fd_set test_fds[2];
-		for (auto *const proc : procs)
+		for (const auto &[proc, span] : fdMap)
 		{
-			// Get FDs for this process alone
-			int test_iMaxFDs = 0;
-			FD_ZERO(&test_fds[0]); FD_ZERO(&test_fds[1]);
-			proc->GetFDs(test_fds, &test_iMaxFDs);
-
-			// Check intersection
-			if (FD_INTERSECTS(test_iMaxFDs + 1, &test_fds[0], &fds[0]) ||
-				FD_INTERSECTS(test_iMaxFDs + 1, &test_fds[1], &fds[1]))
+			if (std::ranges::any_of(span, std::identity{}, &pollfd::revents))
 			{
 				if (!proc->Execute(0))
 				{
@@ -182,7 +160,7 @@ bool StdScheduler::Execute(int iTimeout)
 	}
 	else if (cnt < 0)
 	{
-		printf("StdScheduler::Execute: select failed %s\n", strerror(errno));
+		printf("StdScheduler::Execute: poll failed %s\n", strerror(errno));
 	}
 
 #endif

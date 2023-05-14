@@ -20,6 +20,7 @@
 
 #ifndef _WIN32
 #include <cstring>
+#include <limits>
 
 #include <fcntl.h>
 #endif
@@ -72,6 +73,23 @@ bool CStdEvent::WaitFor(const std::uint32_t milliseconds)
 }
 
 #else
+
+int StdSync::Poll(const std::span<pollfd> fds, const std::uint32_t timeout)
+{
+	const auto clampedTimeout = std::clamp(static_cast<int>(timeout), static_cast<int>(Infinite), std::numeric_limits<int>::max());
+
+	for (;;)
+	{
+		const int result{poll(fds.data(), static_cast<nfds_t>(fds.size()), clampedTimeout)};
+
+		if (result == -1 && (errno == EINTR || errno == EAGAIN || errno == ENOMEM))
+		{
+			continue;
+		}
+
+		return result;
+	}
+}
 
 [[noreturn]] static void ThrowError(const char *const message)
 {
@@ -146,16 +164,12 @@ void CStdEvent::Reset()
 
 bool CStdEvent::WaitFor(const std::uint32_t milliseconds)
 {
-	fd_set set;
-	FD_ZERO(&set);
-	FD_SET(fd[0], &set);
+	std::array<pollfd, 1> pollFD{pollfd{.fd = fd[0], .events = POLLIN}};
 
-	timeval timeout{milliseconds / 1000, static_cast<decltype(timeval::tv_usec)>(milliseconds % 1000) * 1000};
-
-	switch (select(fd[0] + 1, &set, nullptr, nullptr, milliseconds < 0 ? nullptr : &timeout))
+	switch (StdSync::Poll(pollFD, milliseconds))
 	{
 	case -1:
-		ThrowError("select failed");
+		ThrowError("poll failed");
 
 	case 0:
 		return false;

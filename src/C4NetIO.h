@@ -359,7 +359,7 @@ public:
 #ifdef _WIN32
 	virtual HANDLE GetEvent() override;
 #else
-	virtual void GetFDs(fd_set *pSet, int *pMaxFD) override;
+	virtual void GetFDs(std::vector<pollfd> &fds) override;
 #endif
 	virtual int GetTimeout() override;
 
@@ -522,7 +522,7 @@ public:
 #ifdef _WIN32
 	virtual HANDLE GetEvent() override;
 #else
-	virtual void GetFDs(fd_set *pSet, int *pMaxFD) override;
+	virtual void GetFDs(std::vector<pollfd> &fds) override;
 #endif
 	virtual int GetTimeout() override;
 

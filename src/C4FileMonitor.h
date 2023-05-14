@@ -95,7 +95,7 @@ public:
 #ifdef _WIN32
 	virtual HANDLE GetEvent() override;
 #else
-	virtual void GetFDs(fd_set *pFDs, int *pMaxFD) override;
+	virtual void GetFDs(std::vector<pollfd> &fds) override;
 #endif
 #endif
 

@@ -23,7 +23,9 @@
 
 // Events are Windows-specific
 #ifndef _WIN32
-	#include <sys/select.h>
+#include <vector>
+
+#include <poll.h>
 #endif
 
 #include <thread>
@@ -49,7 +51,7 @@ public:
 #ifdef _WIN32
 	virtual HANDLE GetEvent() { return 0; }
 #else
-	virtual void GetFDs(fd_set *pFDs, int *pMaxFD) {}
+	virtual void GetFDs(std::vector<pollfd> &fds) {}
 #endif
 
 	// Call Execute() after this time has elapsed (no garantuees regarding accuracy)
@@ -75,6 +77,8 @@ private:
 #ifdef _WIN32
 	std::vector<HANDLE> eventHandles;
 	std::vector<StdSchedulerProc *> eventProcs;
+#else
+	std::vector<pollfd> fds{{.fd = unblocker.GetFDs()[0], .events = POLLIN}};
 #endif
 
 public:

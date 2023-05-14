@@ -16,10 +16,12 @@
  */
 
 #include "StdApp.h"
+#include "StdSync.h"
 
 #include <array>
 #include <string>
 
+#include <poll.h>
 #include <sys/time.h>
 
 #ifdef USE_X11
@@ -348,38 +350,25 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 
 	return timeoutElapsed ? (doExecute ? HR_Timer : HR_Timeout) : HR_Message;
 #else
-	// Watch dpy to see when it has input.
-	int maxFD{0};
-	fd_set fds;
-	FD_ZERO(&fds);
+	std::array<pollfd, 3> fds;
+	fds.fill({.fd = -1, .events = POLLIN});
 
-#ifdef USE_CONSOLE
-	FD_SET(STDIN_FILENO, &fds);
-#endif
-
-	const auto setFD = [&maxFD, &fds](const int fd)
-	{
-		FD_SET(fd, &fds);
-		maxFD = std::max(maxFD, fd);
-	};
+	fds[0].fd = Pipe[0];
 
 #ifdef USE_X11
 	// Stop waiting for the next frame when more events arrive
 	XFlush(dpy);
-	setFD(XConnectionNumber(dpy));
+	fds[1].fd = XConnectionNumber(dpy);
 #endif
 
-	setFD(Pipe[0]);
+#ifdef USE_CONSOLE
+	fds[2].fd = STDIN_FILENO;
+#endif
 
-	switch (select(maxFD + 1, &fds, nullptr, nullptr, (checkTimer || timeout != INFINITE) ? &tv : nullptr))
+	switch (StdSync::Poll(fds, (checkTimer || timeout != INFINITE) ? tv.tv_usec / 1000 : StdSync::Infinite))
 	{
 	case -1:
-		if (errno == EINTR)
-		{
-			return HR_Message;
-		}
-
-		LogF("select error: %s", std::strerror(errno));
+		LogF("poll error: %s", std::strerror(errno));
 		return HR_Failure;
 
 	// timeout
@@ -393,20 +382,20 @@ C4AppHandleResult CStdApp::HandleMessage(const unsigned int timeout, const bool 
 		return HR_Timeout;
 
 	default:
-		if (FD_ISSET(Pipe[0], &fds))
+		if (fds[0].revents & POLLIN)
 		{
 			OnPipeInput();
 		}
 
 #ifdef USE_X11
-		if (FD_ISSET(XConnectionNumber(dpy), &fds))
+		if (fds[1].revents & POLLIN)
 		{
 			OnXInput();
 		}
 #endif
 
 #ifdef USE_CONSOLE
-		if (FD_ISSET(STDIN_FILENO, &fds))
+		if (fds[2].revents & POLLIN)
 		{
 			if (!ReadStdInCommand())
 			{
