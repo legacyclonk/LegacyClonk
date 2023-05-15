@@ -16,19 +16,20 @@
 #pragma once
 
 #ifdef _WIN32
+#include "C4Coroutine.h"
 #include "C4WinRT.h"
 #endif
 
 #include <bit>
 #include <coroutine>
 #include <cstdint>
-#include <memory>
-#include <utility>
-
-#ifdef _WIN32
-#include <coroutine>
-#else
 #include <functional>
+#include <memory>
+#include <mutex>
+#include <utility>
+#include <unordered_map>
+
+#ifndef _WIN32
 #include <mutex>
 #include <queue>
 #include <semaphore>
@@ -83,6 +84,115 @@ private:
 	struct ThreadPoolCleanupTraits : ThreadPoolTraitsBase<PTP_CLEANUP_GROUP>
 	{
 		static void close(const type handle);
+	};
+
+	struct ThreadPoolIoTraits : ThreadPoolTraitsBase<PTP_IO>
+	{
+		static void close(const type handle);
+	};
+
+public:
+	class Io
+	{
+	public:
+		class Awaiter : public C4Task::CancellableAwaiter
+		{
+		public:
+			using IoFunction = std::function<bool(HANDLE, OVERLAPPED *)>;
+
+			enum class State
+			{
+				NotStarted,
+				Started,
+				Result,
+				Error,
+				Cancelled
+			};
+
+		public:
+			Awaiter(Io &io, IoFunction &&function, std::uint64_t offset) noexcept;
+			~Awaiter() noexcept;
+
+		public:
+			constexpr bool await_ready() const noexcept { return false; }
+			bool await_suspend(std::coroutine_handle<> handle);
+			std::uint64_t await_resume() const;
+
+			void Callback(PTP_CALLBACK_INSTANCE instance, ULONG result, ULONG numberOfBytesTransferred);
+
+		private:
+			Io &io;
+			IoFunction ioFunction;
+			OVERLAPPED overlapped{};
+			std::atomic<State> state{State::NotStarted};
+
+			union
+			{
+				std::uint64_t numberOfBytesTransferred;
+				DWORD error;
+			} result;
+
+			std::atomic<std::coroutine_handle<>> coroutineHandle;
+		};
+
+	public:
+		Io() noexcept = default;
+		Io(HANDLE fileHandle, PTP_CALLBACK_ENVIRON environment = nullptr);
+		~Io() noexcept;
+
+		Io(const Io &) = delete;
+		Io &operator=(const Io &) = delete;
+
+		Io(Io &&other) : Io{}
+		{
+			swap(*this, other);
+		}
+
+		Io &operator=(Io &&other)
+		{
+			Io temp{std::move(other)};
+			swap(*this, temp);
+			return *this;
+		}
+
+	public:
+		Awaiter ExecuteAsync(Awaiter::IoFunction &&ioFunction, const std::uint64_t offset = 0)
+		{
+			return {*this, std::move(ioFunction), offset};
+		}
+
+		explicit operator bool() const noexcept
+		{
+			return io.get();
+		}
+
+	private:
+		void Start();
+		void Cancel();
+
+		void SetAwaiter(OVERLAPPED *overlapped, Awaiter *handle);
+		Awaiter *PopAwaiter(OVERLAPPED *overlapped);
+
+		static void CALLBACK Callback(PTP_CALLBACK_INSTANCE instance, void *context, void *overlapped, ULONG result, ULONG_PTR numberOfBytesTransferred, PTP_IO poolIo);
+
+	private:
+		HANDLE fileHandle{nullptr};
+		winrt::handle_type<ThreadPoolIoTraits> io;
+		std::unordered_map<OVERLAPPED *, Awaiter *> awaiterMap;
+		std::mutex awaiterMapMutex;
+
+		friend void swap(Io &first, Io &second)
+		{
+			using std::swap;
+
+			swap(first.fileHandle, second.fileHandle);
+			swap(first.io, second.io);
+
+			{
+				const std::scoped_lock lock{first.awaiterMapMutex, second.awaiterMapMutex};
+				swap(first.awaiterMap, second.awaiterMap);
+			}
+		}
 	};
 #else
 private:

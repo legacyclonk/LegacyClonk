@@ -29,6 +29,7 @@
 #endif
 
 #ifdef __linux__
+#include "C4Awaiter.h"
 
 #include <cerrno>
 #include <utility>
@@ -46,13 +47,15 @@ C4FileMonitor::C4FileMonitor(ChangeNotifyCallback &&callback)
 	{
 		throw std::runtime_error{std::strerror(errno)};
 	}
+
+	task = Execute();
 }
 
 C4FileMonitor::~C4FileMonitor()
 {
-	if (started)
+	if (task)
 	{
-		Application.InteractiveThread.RemoveProc(this);
+		task.Cancel();
 		Application.InteractiveThread.ClearCallback(Ev_FileChange, this);
 	}
 
@@ -62,8 +65,7 @@ C4FileMonitor::~C4FileMonitor()
 void C4FileMonitor::StartMonitoring()
 {
 	Application.InteractiveThread.SetCallback(Ev_FileChange, this);
-	Application.InteractiveThread.AddProc(this);
-	started = true;
+	task.Start();
 }
 
 void C4FileMonitor::AddDirectory(const char *const path)
@@ -75,81 +77,113 @@ void C4FileMonitor::AddDirectory(const char *const path)
 	}
 }
 
-bool C4FileMonitor::Execute(const int timeout) // some other thread
+C4Task::Cold<void> C4FileMonitor::Execute()
 {
-	int bytesToRead;
-	if (ioctl(fd, FIONREAD, &bytesToRead) < 0)
-	{
-		return true;
-	}
-
-	if (std::cmp_less(bytesToRead, sizeof(inotify_event)))
-	{
-		return true;
-	}
-
-	const auto size = static_cast<std::size_t>(bytesToRead);
-	const auto buf = std::make_unique<char[]>(size);
-
-	if (read(fd, buf.get(), static_cast<std::size_t>(bytesToRead)) != bytesToRead)
-	{
-		return true;
-	}
-
-	std::size_t offset{0};
-	auto *event = reinterpret_cast<inotify_event *>(buf.get());
-
 	for (;;)
 	{
-		if (event->mask & NotificationMask)
+		co_await C4Awaiter::ResumeOnSignal({.fd = fd, .events = POLLIN});
+
+		int bytesToRead;
+		if (ioctl(fd, FIONREAD, &bytesToRead) < 0)
 		{
-			Application.InteractiveThread.PushEvent(Ev_FileChange, watchDescriptors[event->wd]);
+			continue;
 		}
 
-		const std::size_t eventSize{sizeof(inotify_event) + event->len};
-
-		offset += eventSize;
-		if (offset >= size)
+		if (std::cmp_less(bytesToRead, sizeof(inotify_event)))
 		{
-			break;
+			continue;
 		}
 
-		event = reinterpret_cast<inotify_event *>(reinterpret_cast<char *>(event) + offset);
+		const auto size = static_cast<std::size_t>(bytesToRead);
+		const auto buf = std::make_unique<char[]>(size);
+
+		if (read(fd, buf.get(), static_cast<std::size_t>(bytesToRead)) != bytesToRead)
+		{
+			continue;
+		}
+
+		std::size_t offset{0};
+		auto *event = reinterpret_cast<inotify_event *>(buf.get());
+
+		for (;;)
+		{
+			if (event->mask & NotificationMask)
+			{
+				Application.InteractiveThread.PushEvent(Ev_FileChange, watchDescriptors[event->wd]);
+			}
+
+			const std::size_t eventSize{sizeof(inotify_event) + event->len};
+
+			offset += eventSize;
+			if (offset >= size)
+			{
+				break;
+			}
+
+			event = reinterpret_cast<inotify_event *>(reinterpret_cast<char *>(event) + offset);
+		}
 	}
-
-	return true;
-}
-
-void C4FileMonitor::GetFDs(std::vector<pollfd> &fds)
-{
-	fds.push_back({.fd = fd, .events = POLLIN});
 }
 
 #elif defined(_WIN32)
 
-C4FileMonitor::MonitoredDirectory::MonitoredDirectory(winrt::file_handle &&handle, std::string path, const HANDLE event)
-	: handle{std::move(handle)}, path{std::move(path)}, overlapped{.hEvent = event}
+C4FileMonitor::MonitoredDirectory::MonitoredDirectory(winrt::file_handle &&handle, std::string path)
+	: handle{std::move(handle)}, path{std::move(path)}
 {
-	if (!ReadDirectoryChanges() && GetLastError() != ERROR_IO_PENDING)
+	task = Execute();
+}
+
+void C4FileMonitor::MonitoredDirectory::StartMonitoring()
+{
+	task.Start();
+}
+
+C4FileMonitor::MonitoredDirectory::~MonitoredDirectory()
+{
+	if (task)
 	{
-		winrt::throw_last_error();
+		task.Cancel();
 	}
 }
 
-void C4FileMonitor::MonitoredDirectory::Execute()
+C4Task::Cold<void> C4FileMonitor::MonitoredDirectory::Execute()
 {
-	DWORD bytes;
-	if (GetOverlappedResult(handle.get(), &overlapped, &bytes, false))
+	C4ThreadPool::Io io{handle.get()};
+
+	std::chrono::time_point<std::chrono::steady_clock> lastNotification{};
+	std::wstring lastNotificationFilename;
+
+	// Avoid multiple notifications in a very short time span
+	static constexpr std::chrono::milliseconds NotificationDebounce{10};
+
+	for (;;)
 	{
+		const std::uint64_t numberOfBytesTransferred{co_await io.ExecuteAsync([this](const HANDLE handle, OVERLAPPED *const overlapped)
+		{
+			if (ReadDirectoryChangesW(handle, buffer.data(), buffer.size(), false, NotificationFilter, nullptr, overlapped, nullptr))
+			{
+				SetLastError(ERROR_IO_PENDING);
+			}
+
+			return false;
+		})};
+
 		DWORD offset{0};
 		auto *information = reinterpret_cast<FILE_NOTIFY_INFORMATION *>(buffer.data());
 
 		for (;;)
 		{
-			const std::string filename{StdStringEncodingConverter::Utf16ToWinAcp({static_cast<wchar_t *>(information->FileName), information->FileNameLength / sizeof(wchar_t)})};
-			Application.InteractiveThread.PushEvent(Ev_FileChange, path + DirectorySeparator + filename);
+			const std::wstring_view filename{static_cast<wchar_t *>(information->FileName), information->FileNameLength / sizeof(wchar_t)};
+			const auto now = std::chrono::steady_clock::now();
 
-			if (!information->NextEntryOffset || offset + information->NextEntryOffset > std::min<std::size_t>(buffer.size(), bytes))
+			if (now - lastNotification >= NotificationDebounce || lastNotificationFilename != filename)
+			{
+				lastNotification = now;
+				lastNotificationFilename = filename;
+				Application.InteractiveThread.PushEvent(Ev_FileChange, path + DirectorySeparator + StdStringEncodingConverter::Utf16ToWinAcp(filename));
+			}
+
+			if (!information->NextEntryOffset || offset + information->NextEntryOffset > std::min<std::size_t>(buffer.size(), numberOfBytesTransferred))
 			{
 				break;
 			}
@@ -157,27 +191,6 @@ void C4FileMonitor::MonitoredDirectory::Execute()
 			information = reinterpret_cast<FILE_NOTIFY_INFORMATION *>(reinterpret_cast<char *>(information) + information->NextEntryOffset);
 		}
 	}
-
-	do
-	{
-		ReadDirectoryChanges();
-		bytes = 0;
-	}
-	while (GetOverlappedResult(handle.get(), &overlapped, &bytes, false));
-}
-
-bool C4FileMonitor::MonitoredDirectory::ReadDirectoryChanges()
-{
-	return ReadDirectoryChangesW(
-		handle.get(),
-		buffer.data(),
-		buffer.size(),
-		false,
-		NotificationFilter,
-		nullptr,
-		&overlapped,
-		nullptr
-	);
 }
 
 C4FileMonitor::C4FileMonitor(ChangeNotifyCallback &&callback)
@@ -189,7 +202,6 @@ C4FileMonitor::~C4FileMonitor()
 {
 	if (started)
 	{
-		Application.InteractiveThread.RemoveProc(this);
 		Application.InteractiveThread.ClearCallback(Ev_FileChange, this);
 	}
 }
@@ -197,7 +209,7 @@ C4FileMonitor::~C4FileMonitor()
 void C4FileMonitor::StartMonitoring()
 {
 	Application.InteractiveThread.SetCallback(Ev_FileChange, this);
-	Application.InteractiveThread.AddProc(this);
+	std::ranges::for_each(directories, &MonitoredDirectory::StartMonitoring);
 	started = true;
 }
 
@@ -220,43 +232,14 @@ void C4FileMonitor::AddDirectory(const char *const path)
 
 	try
 	{
-		directories.emplace_back(MonitoredDirectory{
+		directories.emplace_back(std::make_unique<MonitoredDirectory>(
 			std::move(directory),
-			path,
-			event.GetEvent()
-		});
+			path
+		));
 	}
 	catch (const winrt::hresult_error &)
 	{
 	}
-}
-
-bool C4FileMonitor::Execute(const int timeout)
-{
-	try
-	{
-		if (!event.WaitFor(static_cast<std::uint32_t>(timeout)))
-		{
-			return true;
-		}
-	}
-	catch (const std::runtime_error &)
-	{
-		return true;
-	}
-
-	for (auto &directory : directories)
-	{
-		directory.Execute();
-	}
-
-	event.Reset();
-	return true;
-}
-
-HANDLE C4FileMonitor::GetEvent()
-{
-	return event.GetEvent();
 }
 
 #elif defined(__APPLE__)

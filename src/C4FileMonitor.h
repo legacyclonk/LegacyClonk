@@ -28,17 +28,15 @@
 #include <map>
 
 #ifdef _WIN32
+#include "C4ThreadPool.h"
 #include "C4WinRT.h"
 #elif defined(__APPLE__)
 #include <CoreServices/CoreServices.h>
+#elif defined(__linux__)
+#include "C4Coroutine.h"
 #endif
 
-class C4FileMonitor
-	:
-#ifndef __APPLE__
-	public StdSchedulerProc,
-#endif
-	public C4InteractiveThread::Callback
+class C4FileMonitor : public C4InteractiveThread::Callback
 {
 public:
 	using ChangeNotifyCallback = std::function<void(const char *)>;
@@ -48,18 +46,22 @@ private:
 	class MonitoredDirectory
 	{
 	public:
-		MonitoredDirectory(winrt::file_handle &&handle, std::string path, HANDLE event);
+		MonitoredDirectory(winrt::file_handle &&handle, std::string path);
+		~MonitoredDirectory();
+
+		MonitoredDirectory(MonitoredDirectory &&) = delete;
+		MonitoredDirectory &operator=(MonitoredDirectory &&) = delete;
 
 	public:
-		void Execute();
+		void StartMonitoring();
 
 	private:
-		bool ReadDirectoryChanges();
+		C4Task::Cold<void> Execute();
 
 	private:
 		winrt::file_handle handle;
 		std::string path;
-		OVERLAPPED overlapped{};
+		C4Task::Cold<void> task;
 		std::array<char, 1024> buffer{};
 
 		static constexpr DWORD NotificationFilter{FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE};
@@ -87,31 +89,25 @@ public:
 	void StartMonitoring();
 	void AddDirectory(const char *path);
 
-#ifndef __APPLE__
-	// StdSchedulerProc:
-	virtual bool Execute(int timeout = -1) override;
-
-	// Signal for calling Execute()
-#ifdef _WIN32
-	virtual HANDLE GetEvent() override;
-#else
-	virtual void GetFDs(std::vector<pollfd> &fds) override;
-#endif
-#endif
-
 	// C4InteractiveThread::Callback:
 	virtual void OnThreadEvent(C4InteractiveEventType event, const std::any &eventData) override;
 
+#ifdef __linux__
+	C4Task::Cold<void> Execute();
+#endif
+
 private:
 	ChangeNotifyCallback callback;
+#ifndef __linux__
 	bool started{false};
+#endif
 
 #if defined(__linux__)
 	int fd;
+	C4Task::Cold<void> task;
 	std::map<int, std::string> watchDescriptors;
 #elif defined(_WIN32)
-	CStdEvent event;
-	std::vector<MonitoredDirectory> directories;
+	std::vector<std::unique_ptr<MonitoredDirectory>> directories;
 #elif defined(__APPLE__)
 	std::vector<CFUniquePtr<CFStringRef>> paths;
 	FSEventStreamRef eventStream;
