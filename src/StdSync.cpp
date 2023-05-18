@@ -21,8 +21,10 @@
 #ifndef _WIN32
 #include <cstring>
 #include <limits>
+#include <stdexcept>
 
 #include <fcntl.h>
+#include <unistd.h>
 #endif
 
 #ifdef _WIN32
