@@ -27,6 +27,7 @@
 #include <condition_variable>
 
 #ifndef _WIN32
+#include <ranges>
 #include <span>
 
 #include <poll.h>
@@ -37,7 +38,23 @@ namespace StdSync
 	static inline constexpr auto Infinite = std::numeric_limits<std::uint32_t>::max();
 
 #ifndef _WIN32
-	int Poll(std::span<pollfd> fds, std::uint32_t timeout);
+	template<typename T> requires std::ranges::contiguous_range<T> && std::ranges::sized_range<T>
+	int Poll(T &&fds, const std::uint32_t timeout)
+	{
+		const auto clampedTimeout = std::clamp(static_cast<int>(timeout), static_cast<int>(Infinite), std::numeric_limits<int>::max());
+
+		for (;;)
+		{
+			const int result{poll(std::ranges::data(fds), static_cast<nfds_t>(std::ranges::size(fds)), clampedTimeout)};
+
+			if (result == -1 && (errno == EINTR || errno == EAGAIN || errno == ENOMEM))
+			{
+				continue;
+			}
+
+			return result;
+		}
+	}
 #endif
 }
 

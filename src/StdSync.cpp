@@ -76,23 +76,6 @@ bool CStdEvent::WaitFor(const std::uint32_t milliseconds)
 
 #else
 
-int StdSync::Poll(const std::span<pollfd> fds, const std::uint32_t timeout)
-{
-	const auto clampedTimeout = std::clamp(static_cast<int>(timeout), static_cast<int>(Infinite), std::numeric_limits<int>::max());
-
-	for (;;)
-	{
-		const int result{poll(fds.data(), static_cast<nfds_t>(fds.size()), clampedTimeout)};
-
-		if (result == -1 && (errno == EINTR || errno == EAGAIN || errno == ENOMEM))
-		{
-			continue;
-		}
-
-		return result;
-	}
-}
-
 [[noreturn]] static void ThrowError(const char *const message)
 {
 	throw std::runtime_error{std::string{message} + ": " + std::strerror(errno)};
