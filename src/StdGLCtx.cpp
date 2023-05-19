@@ -101,7 +101,6 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *pApp, HWND hWindow)
 	hrc = wglCreateContext(hDC); if (!hrc) return !!pGL->Error("  gl: Error creating gl context");
 
 	// share textures
-	wglMakeCurrent(nullptr, nullptr); pGL->pCurrCtx = nullptr;
 	if (this != &pGL->MainCtx)
 	{
 		if (!wglShareLists(pGL->MainCtx.hrc, hrc)) pGL->Error("  gl: Textures for secondary context not available");
@@ -242,13 +241,17 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 		ctx = glXCreateContext(pWindow->dpy, reinterpret_cast<XVisualInfo *>(pWindow->Info), pGL->MainCtx.ctx, False);
 	// No luck at all?
 	if (!ctx) return pGL->Error("  gl: Unable to create context");
-	if (!Select(true)) return pGL->Error("  gl: Unable to select context");
-	// init extensions
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
+
+	if (this == &pGL->MainCtx)
 	{
-		// Problem: glewInit failed, something is seriously wrong.
-		pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
+		if (!Select(true)) return pGL->Error("  gl: Unable to select context");
+		// init extensions
+		GLenum err = glewInit();
+		if (GLEW_OK != err)
+		{
+			// Problem: glewInit failed, something is seriously wrong.
+			pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
+		}
 	}
 	return true;
 }
@@ -410,14 +413,18 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	// store window
 	this->pWindow = pWindow;
 	assert(!Config.Graphics.NoAcceleration);
-	// No luck at all?
-	if (!Select(true)) return pGL->Error("  gl: Unable to select context");
-	// init extensions
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
+
+	if (this == &pGL->MainCtx)
 	{
-		// Problem: glewInit failed, something is seriously wrong.
-		pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
+		// No luck at all?
+		if (!Select(true)) return pGL->Error("  gl: Unable to select context");
+		// init extensions
+		GLenum err = glewInit();
+		if (GLEW_OK != err)
+		{
+			// Problem: glewInit failed, something is seriously wrong.
+			pGL->Error(reinterpret_cast<const char *>(glewGetErrorString(err)));
+		}
 	}
 	return true;
 }
