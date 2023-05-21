@@ -178,9 +178,6 @@ public:
 		return Awaiter{*this};
 	}
 
-public:
-	static std::shared_ptr<C4ThreadPool> Global();
-
 private:
 #ifdef _WIN32
 	PTP_CALLBACK_ENVIRON GetCallbackEnvironment() noexcept
@@ -191,9 +188,10 @@ private:
 	void ThreadProc();
 #endif
 
-private:
-	static inline std::shared_ptr<C4ThreadPool> globalPool{};
+public:
+	static inline std::shared_ptr<C4ThreadPool> Global{};
 
+private:
 #ifdef _WIN32
 	CallbackEnvironment callbackEnvironment;
 	winrt::handle_type<ThreadPoolTraits> pool;

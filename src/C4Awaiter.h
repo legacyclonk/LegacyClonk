@@ -47,7 +47,12 @@ namespace C4Awaiter
 		struct ResumeInGlobalThreadPool
 		{
 			constexpr bool await_ready() const noexcept { return false; }
-			void await_suspend(const std::coroutine_handle<> handle) const noexcept;
+
+			void await_suspend(const std::coroutine_handle<> handle) const noexcept
+			{
+				C4ThreadPool::Global->SubmitCallback(handle);
+			}
+
 			constexpr void await_resume() const noexcept {}
 		};
 
