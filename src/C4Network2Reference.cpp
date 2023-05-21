@@ -20,6 +20,10 @@
 #include "C4Version.h"
 #include "C4Network2Reference.h"
 
+#ifndef _WIN32
+#include "StdSync.h"
+#endif
+
 #include <memory>
 #include <regex>
 #include <stdexcept>
