@@ -278,37 +278,36 @@ bool C4Network2HTTPClient::Execute(int)
 		}
 	}
 #else
-	fd_set fds[2];
+	std::vector<pollfd> fds;
+	GetFDs(fds);
 
-	// build socket sets
-	int max{0};
-	FD_ZERO(&fds[0]); FD_ZERO(&fds[1]);
-	GetFDs(fds, &max);
-
-	// build timeout value
-	timeval to{0, 0};
-
-	// wait for something to happen
-	int ret{select(max + 1, &fds[0], &fds[1], nullptr, &to)};
+	const int ret{StdSync::Poll(fds, 0)};
 
 	// error
 	if (ret < 0)
 	{
-		SetError("select failed");
+		SetError("poll failed");
 		return false;
 	}
-
 	else if (ret > 0)
 	{
 		// copy map to prevent crashes
 		auto tmp = sockets;
-		for (const auto &[socket, what] : tmp)
+		for (const auto fd : fds)
 		{
 			int eventBitmask{0};
-			if (FD_ISSET(socket, &fds[0])) eventBitmask |= CURL_CSELECT_IN;
-			if (FD_ISSET(socket, &fds[1])) eventBitmask |= CURL_CSELECT_OUT;
 
-			curl_multi_socket_action(multiHandle, socket, eventBitmask, &running);
+			if (fd.revents & POLLIN)
+			{
+				eventBitmask |= CURL_CSELECT_IN;
+			}
+
+			if (fd.revents & POLLOUT)
+			{
+				eventBitmask |= CURL_CSELECT_OUT;
+			}
+
+			curl_multi_socket_action(multiHandle, fd.fd, eventBitmask, &running);
 		}
 	}
 #endif
@@ -360,27 +359,25 @@ int C4Network2HTTPClient::GetTimeout()
 }
 
 #ifndef _WIN32
-void C4Network2HTTPClient::GetFDs(fd_set *FDs, int *maxFD)
+void C4Network2HTTPClient::GetFDs(std::vector<pollfd> &fds)
 {
-	for (const auto &[socket, what] : sockets)
+	fds.reserve(fds.size() + sockets.size());
+
+	for (const auto [socket, what] : sockets)
 	{
-		switch (what)
+		pollfd fd{.fd = socket};
+
+		if (what & CURL_POLL_IN)
 		{
-		case CURL_POLL_IN:
-			FD_SET(socket, &FDs[0]); if (maxFD) *maxFD = std::max<SOCKET>(*maxFD, socket);
-			break;
-
-		case CURL_POLL_OUT:
-			FD_SET(socket, &FDs[1]); if (maxFD) *maxFD = std::max<SOCKET>(*maxFD, socket);
-			break;
-
-		case CURL_POLL_INOUT:
-			FD_SET(socket, &FDs[0]); FD_SET(socket, &FDs[1]); if (maxFD) *maxFD = std::max<SOCKET>(*maxFD, socket);
-			break;
-
-		default:
-			break;;
+			fd.events |= POLLIN;
 		}
+
+		if (what & CURL_POLL_OUT)
+		{
+			fd.events |= POLLOUT;
+		}
+
+		fds.emplace_back(std::move(fd));
 	}
 }
 #endif

@@ -198,7 +198,7 @@ public:
 #ifdef _WIN32
 	HANDLE GetEvent() override { return event; }
 #else
-	void GetFDs(fd_set *FDs, int *maxFD) override;
+	void GetFDs(std::vector<pollfd> &fds) override;
 #endif
 
 private:
