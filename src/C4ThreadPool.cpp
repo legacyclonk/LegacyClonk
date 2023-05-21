@@ -74,16 +74,6 @@ void C4ThreadPool::SubmitCallback(const PTP_SIMPLE_CALLBACK callback, void *cons
 	}
 }
 
-std::shared_ptr<C4ThreadPool> C4ThreadPool::Global()
-{
-	if (!globalPool)
-	{
-		globalPool = std::make_shared<C4ThreadPool>();
-	}
-
-	return globalPool;
-}
-
 #else
 
 C4ThreadPool::C4ThreadPool(const std::uint32_t minimum, const std::uint32_t maximum)
@@ -129,16 +119,6 @@ void C4ThreadPool::ThreadProc()
 
 		callback();
 	}
-}
-
-std::shared_ptr<C4ThreadPool> C4ThreadPool::Global()
-{
-	if (!globalPool)
-	{
-		globalPool = std::make_shared<C4ThreadPool>(10, 10); // FIXME: Select good numbers
-	}
-
-	return globalPool;
 }
 
 #endif

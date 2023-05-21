@@ -103,8 +103,6 @@ public:
 	C4GamePadControl *pGamePadControl;
 	// Thread for interactive processes (automatically starts as needed)
 	C4InteractiveThread InteractiveThread;
-	// Thread pool
-	std::shared_ptr<C4ThreadPool> ThreadPool;
 	// IRC client for global chat
 	C4Network2IRCClient IRCClient;
 	// Tick timing

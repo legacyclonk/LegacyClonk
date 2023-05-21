@@ -148,7 +148,12 @@ void C4Application::DoInit()
 			return;
 #endif
 
-	ThreadPool = C4ThreadPool::Global();
+
+#ifdef _WIN32
+	C4ThreadPool::Global = std::make_shared<C4ThreadPool>();
+#else
+	C4ThreadPool::Global = std::make_shared<C4ThreadPool>(Config.General.ThreadPoolMinimumThreadCount, Config.General.ThreadPoolMaximumThreadCount);
+#endif
 
 	// activate
 	Active = true;

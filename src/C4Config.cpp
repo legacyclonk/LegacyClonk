@@ -104,8 +104,10 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Preloading,           "Preloading",           true));
 #endif
 
+#ifndef _WIN32
 	pComp->Value(mkNamingAdapt(ThreadPoolMinimumThreadCount, "ThreadPoolMinimumThreadCount", 5));
 	pComp->Value(mkNamingAdapt(ThreadPoolMaximumThreadCount, "ThreadPoolMaximumThreadCount", 10));
+#endif
 }
 
 #ifdef C4ENGINE

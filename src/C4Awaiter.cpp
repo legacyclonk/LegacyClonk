@@ -26,11 +26,6 @@ void C4Awaiter::Awaiter::ResumeInMainThread::await_suspend(const std::coroutine_
     Application.InteractiveThread.ExecuteInMainThread(handle);
 }
 
-void C4Awaiter::Awaiter::ResumeInGlobalThreadPool::await_suspend(const std::coroutine_handle<> handle) const noexcept
-{
-    Application.ThreadPool->SubmitCallback(handle);
-}
-
 #ifndef _WIN32
 bool C4Awaiter::Awaiter::ResumeOnSignal::await_ready() noexcept
 {
