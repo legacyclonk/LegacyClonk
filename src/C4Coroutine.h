@@ -35,9 +35,17 @@ namespace C4Task
 {
 
 class CancelledException : public std::exception
+#ifdef _WIN32
+	, public winrt::hresult_canceled
+#endif
 {
 public:
 	CancelledException() = default;
+
+#ifdef _WIN32
+	CancelledException(const winrt::hresult_canceled &e) : hresult_canceled{e} {}
+	CancelledException(winrt::hresult_canceled &&e) : hresult_canceled{std::move(e)} {}
+#endif
 
 public:
 	const char *what() const noexcept override { return "Cancelled"; }
@@ -152,10 +160,25 @@ private:
 };
 
 class CancellablePromise
+#ifdef _WIN32
+	: public winrt::cancellable_promise
+#endif
 {
 public:
+#ifdef _WIN32
+	CancellablePromise()
+	{
+		enable_cancellation_propagation(true);
+	}
+#endif
+
 	void Cancel()
 	{
+#ifdef _WIN32
+		cancelled.store(true, std::memory_order_release);
+		cancel();
+#else
+
 		const auto callback = cancellationCallback.exchange(CancellingSentinel, std::memory_order_acq_rel);
 
 		if (callback && callback != CancellingSentinel && callback != CancelledSentinel)
@@ -172,25 +195,42 @@ public:
 
 			callback(cancellationArgument);
 		}
-	}
-
-	bool IsCancelled() const noexcept
-	{
-		return cancellationCallback.load(std::memory_order_acquire) == CancelledSentinel;
+#endif
 	}
 
 	void SetCancellationCallback(void(*const callback)(void *), void *const argument) noexcept
 	{
+#ifdef _WIN32
+		set_canceller(callback, argument);
+#else
 		cancellationArgument = argument;
 		cancellationCallback.store(callback, std::memory_order_release);
+#endif
 	}
 
 	void ResetCancellationCallback() noexcept
 	{
+#ifdef _WIN32
+		revoke_canceller();
+#else
 		cancellationArgument = nullptr;
 		cancellationCallback.store(nullptr, std::memory_order_release);
+#endif
 	}
 
+	bool IsCancelled() const noexcept
+	{
+#ifdef _WIN32
+		return cancelled.load(std::memory_order_acquire);
+#else
+		return cancellationCallback.load(std::memory_order_acquire) == CancelledSentinel;
+#endif
+	}
+
+#ifdef _WIN32
+private:
+	std::atomic_bool cancelled{false};
+#else
 public:
 	static inline const auto CancellingSentinel = std::bit_cast<void(*)(void *)>(reinterpret_cast<void *>(0x01));
 	static inline const auto CancelledSentinel = std::bit_cast<void(*)(void *)>(reinterpret_cast<void *>(0x02));
@@ -198,12 +238,19 @@ public:
 protected:
 	std::atomic<void(*)(void *)> cancellationCallback{nullptr};
 	void *cancellationArgument{nullptr};
+#endif
 };
 
+template<typename Class>
 class CancellableAwaiter
+#ifdef _WIN32
+	: public winrt::cancellable_awaiter<Class>
+#endif
 {
 public:
 	CancellableAwaiter() noexcept = default;
+
+#ifndef _WIN32
 	~CancellableAwaiter() noexcept
 	{
 		if (promise)
@@ -211,10 +258,12 @@ public:
 			promise->ResetCancellationCallback();
 		}
 	}
+#endif
 
 	CancellableAwaiter(const CancellableAwaiter &) noexcept = delete;
 	CancellableAwaiter &operator=(const CancellableAwaiter &) noexcept = delete;
 
+#ifndef _WIN32
 	CancellableAwaiter(CancellableAwaiter &&other) noexcept : promise{std::exchange(other.promise, nullptr)} {}
 
 	CancellableAwaiter &operator=(CancellableAwaiter &&other) noexcept
@@ -222,15 +271,34 @@ public:
 		promise = std::exchange(other.promise, nullptr);
 		return *this;
 	}
+#endif
 
 public:
-	void SetPromise(CancellablePromise *const promise)
+	template<typename T>
+	void SetCancellablePromise(const std::coroutine_handle<T> handle)
 	{
-		this->promise = promise;
+#ifdef _WIN32
+		winrt::cancellable_awaiter<Class>::set_cancellable_promise_from_handle(handle);
+#else
+		if constexpr (std::derived_from<T, CancellablePromise>)
+		{
+			promise = &handle.promise();
+			static_cast<Class *>(this)->SetupCancellation(promise);
+		}
+#endif
 	}
 
-protected:
+#ifdef _WIN32
+	void enable_cancellation(winrt::cancellable_promise *const promise)
+	{
+		static_cast<Class *>(this)->SetupCancellation(static_cast<CancellablePromise *>(promise));
+	}
+#endif
+
+private:
+#ifndef _WIN32
 	CancellablePromise *promise{nullptr};
+#endif
 };
 
 template<typename T>
@@ -284,7 +352,24 @@ struct Promise : CancellablePromise
 
 	void unhandled_exception() const noexcept
 	{
-		result.SetException(std::current_exception());
+#ifdef _WIN32
+		std::exception_ptr ptr{std::current_exception()};
+
+		try
+		{
+			std::rethrow_exception(ptr);
+		}
+		catch (const winrt::hresult_canceled &e)
+		{
+			SetException(std::make_exception_ptr(CancelledException{e}));
+		}
+		catch (...)
+		{
+			SetException(ptr);
+		}
+#else
+		SetException(std::current_exception());
+#endif
 	}
 
 	template<typename Awaiter>
@@ -293,11 +378,6 @@ struct Promise : CancellablePromise
 		if (IsCancelled())
 		{
 			throw CancelledException{};
-		}
-
-		if constexpr (std::derived_from<std::remove_reference_t<Awaiter>, CancellableAwaiter>)
-		{
-			awaiter.SetPromise(this);
 		}
 
 		return std::forward<Awaiter>(awaiter);
@@ -312,6 +392,11 @@ struct Promise : CancellablePromise
 	void SetResult() const noexcept
 	{
 		this->result.SetResult();
+	}
+
+	void SetException(std::exception_ptr e) const noexcept
+	{
+		this->result.SetException(std::move(e));
 	}
 
 	void Start() noexcept
@@ -367,6 +452,7 @@ private:
 	std::atomic<void *> waiting{ColdSentinel};
 	ResumeFunction resumer;
 	mutable Result<T> result;
+	std::atomic_bool cancelled{false};
 };
 
 template<typename T>
@@ -450,6 +536,36 @@ class Cold : public TaskBase<Cold, T>
 public:
 	using TaskBase<Cold, T>::TaskBase;
 
+	struct ColdAwaiter : public CancellableAwaiter<ColdAwaiter>
+	{
+		typename Promise<T>::PromisePtr promisePtr;
+
+		constexpr bool await_ready() const
+		{
+			return false;
+		}
+
+		template<typename U>
+		bool await_suspend(const std::coroutine_handle<U> handle)
+		{
+			CancellableAwaiter<ColdAwaiter>::SetCancellablePromise(handle);
+			return promisePtr->ColdAwaitSuspend(handle.address());
+		}
+
+		decltype(auto) await_resume()
+		{
+			return promisePtr->AwaitResume();
+		}
+
+		void SetupCancellation(CancellablePromise *const promise)
+		{
+			promise->SetCancellationCallback([](void *const context)
+			{
+				reinterpret_cast<typename Promise<T>::PromisePtr::pointer>(context)->Cancel();
+			}, this->promisePtr.get());
+		}
+	};
+
 public:
 	void Start() noexcept
 	{
@@ -458,27 +574,7 @@ public:
 
 	auto operator co_await() && noexcept
 	{
-		struct ColdAwaiter
-		{
-			typename Promise<T>::PromisePtr promise;
-
-			constexpr bool await_ready() const
-			{
-				return false;
-			}
-
-			bool await_suspend(const std::coroutine_handle<> handle)
-			{
-				return promise->ColdAwaitSuspend(handle.address());
-			}
-
-			decltype(auto) await_resume()
-			{
-				return promise->AwaitResume();
-			}
-		};
-
-		return ColdAwaiter{std::move(TaskBase<Cold, T>::promise)};
+		return ColdAwaiter{.promisePtr = std::move(TaskBase<Cold, T>::promise)};
 	}
 
 public:
@@ -489,6 +585,37 @@ template<typename T>
 class Hot : public TaskBase<Hot, T>
 {
 public:
+	struct HotAwaiter : public CancellableAwaiter<HotAwaiter>
+	{
+		typename Promise<T>::PromisePtr promisePtr;
+
+		bool await_ready() const
+		{
+			return promisePtr->AwaitReady();
+		}
+
+		template<typename U>
+		bool await_suspend(const std::coroutine_handle<U> handle)
+		{
+			CancellableAwaiter<HotAwaiter>::SetCancellablePromise(handle);
+			return promisePtr->AwaitSuspend(handle.address());
+		}
+
+		decltype(auto) await_resume()
+		{
+			return promisePtr->AwaitResume();
+		}
+
+		void SetupCancellation(CancellablePromise *const promise)
+		{
+			promise->SetCancellationCallback([](void *const context)
+			{
+				reinterpret_cast<typename Promise<T>::PromisePtr::pointer>(context)->Cancel();
+			},
+			promisePtr.get());
+		}
+	};
+public:
 	Hot() = default;
 	Hot(Promise<T> *const promise) noexcept : TaskBase<Hot, T>{promise}
 	{
@@ -498,27 +625,8 @@ public:
 public:
 	auto operator co_await() && noexcept
 	{
-		struct HotAwaiter
-		{
-			typename Promise<T>::PromisePtr promise;
 
-			bool await_ready() const
-			{
-				return promise->AwaitReady();
-			}
-
-			bool await_suspend(const std::coroutine_handle<> handle)
-			{
-				return promise->AwaitSuspend(handle.address());
-			}
-
-			decltype(auto) await_resume()
-			{
-				return promise->AwaitResume();
-			}
-		};
-
-		return HotAwaiter{std::move(TaskBase<Hot, T>::promise)};
+		return HotAwaiter{.promisePtr = std::move(TaskBase<Hot, T>::promise)};
 	}
 };
 

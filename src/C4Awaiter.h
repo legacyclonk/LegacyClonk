@@ -57,15 +57,81 @@ namespace C4Awaiter
 		};
 
 #ifndef _WIN32
-		class ResumeOnSignal : public C4Task::CancellableAwaiter
+		class ResumeOnSignal : public C4Task::CancellableAwaiter<ResumeOnSignal>
 		{
 		public:
 			ResumeOnSignal(const pollfd fd, const std::uint32_t timeout) : fds{{fd, {.fd = -1}}}, timeout{timeout} {}
 
 		public:
-			bool await_ready() noexcept;
-			void await_suspend(std::coroutine_handle<> handle);
-			short await_resume() const;
+			bool await_ready() noexcept
+			{
+				return StdSync::Poll(std::span{fds.begin(), 1}, 0) == 1;
+			}
+
+			template<typename T>
+			void await_suspend(const std::coroutine_handle<T> handle)
+			{
+				const std::size_t size{fds.size()};
+				SetCancellablePromise(handle);
+
+				C4ThreadPool::Global->SubmitCallback([handle, size, this]
+				{
+					const struct Cleanup
+					{
+						~Cleanup()
+						{
+							handle.resume();
+						}
+
+						std::coroutine_handle<> handle;
+					} cleanup{handle};
+
+					try
+					{
+						switch (StdSync::Poll(fds, timeout))
+						{
+						case -1:
+							throw std::runtime_error{std::string{"poll failed: "} + std::strerror(errno)};
+
+						case 0:
+							return;
+
+						default:
+							if (cancellationEvent && fds[fds.size() - 1].revents & POLLIN)
+							{
+								throw C4Task::CancelledException{};
+							}
+
+							return;
+						}
+					}
+					catch (...)
+					{
+						exception = std::current_exception();
+					}
+				});
+			}
+
+			short await_resume() const
+			{
+				if (exception)
+				{
+					std::rethrow_exception(exception);
+				}
+
+				return fds[0].revents;
+			}
+
+			void SetupCancellation(C4Task::CancellablePromise *const promise)
+			{
+				cancellationEvent.emplace();
+				fds[1].fd = cancellationEvent->GetFDs()[0];
+
+				promise->SetCancellationCallback([](void *const argument)
+				{
+					reinterpret_cast<CStdEvent *>(argument)->Set();
+				}, &*cancellationEvent);
+			}
 
 		private:
 			std::array<pollfd, 2> fds;
@@ -74,16 +140,90 @@ namespace C4Awaiter
 			std::optional<CStdEvent> cancellationEvent;
 		};
 
-		class ResumeOnSignals : public C4Task::CancellableAwaiter
+		class ResumeOnSignals : public C4Task::CancellableAwaiter<ResumeOnSignals>
 		{
 		public:
 			template<std::ranges::range T>
 			ResumeOnSignals(T &&range, const std::uint32_t timeout) : fds{std::ranges::begin(range), std::ranges::end(range)}, timeout{timeout} {}
 
 		public:
-			bool await_ready() noexcept;
-			void await_suspend(std::coroutine_handle<> handle);
-			std::vector<pollfd> await_resume();
+			bool await_ready() noexcept
+			{
+				return StdSync::Poll(fds, 0) > 0;
+			}
+
+			template<typename T>
+			void await_suspend(const std::coroutine_handle<T> handle)
+			{
+				const std::size_t size{fds.size()};
+
+				SetCancellablePromise(handle);
+
+				C4ThreadPool::Global->SubmitCallback([handle, size, this]
+				{
+					const struct Cleanup
+					{
+						~Cleanup()
+						{
+							handle.resume();
+						}
+
+						std::coroutine_handle<> handle;
+					} cleanup{handle};
+
+					try
+					{
+						switch (StdSync::Poll(fds, timeout))
+						{
+						case -1:
+								throw std::runtime_error{std::string{"poll failed: "} + std::strerror(errno)};
+
+						case 0:
+							return;
+
+						default:
+							if (cancellationEvent && fds[fds.size() - 1].revents & POLLIN)
+							{
+								throw C4Task::CancelledException{};
+							}
+
+							return;
+						}
+					}
+					catch (...)
+					{
+						exception = std::current_exception();
+					}
+				});
+			}
+
+			std::vector<pollfd> await_resume()
+			{
+				if (exception)
+				{
+					std::rethrow_exception(exception);
+				}
+
+				if (cancellationEvent)
+				{
+					fds.resize(fds.size() - 1);
+				}
+
+				std::erase_if(fds, [](const auto &fd) { return fd.revents == 0; });
+
+				return std::move(fds);
+			}
+
+			void SetupCancellation(C4Task::CancellablePromise *const promise)
+			{
+				cancellationEvent.emplace();
+				fds.push_back({.fd = cancellationEvent->GetFDs()[0], .events = POLLIN});
+
+				promise->SetCancellationCallback([](void *const argument)
+				{
+					reinterpret_cast<CStdEvent *>(argument)->Set();
+				}, &*cancellationEvent);
+			}
 
 		private:
 			std::vector<pollfd> fds;
