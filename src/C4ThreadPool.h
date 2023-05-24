@@ -95,7 +95,7 @@ public:
 	class Io
 	{
 	public:
-		class Awaiter : public C4Task::CancellableAwaiter
+		class Awaiter : public C4Task::CancellableAwaiter<Awaiter>
 		{
 		public:
 			using IoFunction = std::function<bool(HANDLE, OVERLAPPED *)>;
@@ -117,6 +117,7 @@ public:
 			constexpr bool await_ready() const noexcept { return false; }
 			bool await_suspend(std::coroutine_handle<> handle);
 			std::uint64_t await_resume() const;
+			void SetupCancellation(C4Task::CancellablePromise *promise);
 
 			void Callback(PTP_CALLBACK_INSTANCE instance, ULONG result, ULONG numberOfBytesTransferred);
 
