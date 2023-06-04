@@ -17,29 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
-            arch: x86
-            env: Windows
-          - os: windows-latest
-            arch: x86
-            env: Windows
-            config: Debugrec
-          - os: windows-latest
-            arch: x64
-            env: Windows
           - os: ubuntu-20.04
             arch: x64
             env: Linux
-          - os: ubuntu-20.04
-            arch: x64
-            env: Linux
-            config: Debugrec
-          - os: ubuntu-20.04
-            arch: x86
-            env: Linux
-          - os: macos-12
-            arch: x64
-            env: Mac
     runs-on: ${{ matrix.os }}
     env:
       IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
