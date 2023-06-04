@@ -243,7 +243,17 @@ int main(int argc, char *argv[])
 		enginePath = *originalPath;
 	}
 	chdir(dirname(dirname(dirname(dirname(enginePath.data())))));
+#elif defined(__linux__)
+	if (std::getenv("APPIMAGE"))
+	{
+		const auto argv0 = std::getenv("ARGV0");
+		if (argv0)
+		{
+			argv[0] = argv0;
+		}
+	}
 #endif
+
 	if (!geteuid())
 	{
 		printf("Do not run %s as root!\n", argc ? argv[0] : "this program");
