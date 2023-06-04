@@ -192,6 +192,7 @@ else ()
 		append_filelist(CLONK_SOURCES EngineApple.txt)
 	endif ()
 
+	list(APPEND CLONK_SOURCES src/C4PosixSpawn.cpp)
 	list(APPEND CLONK_SOURCES src/StdAppUnix.cpp)
 endif ()
 
