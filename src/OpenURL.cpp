@@ -35,7 +35,11 @@ bool OpenURL(const char *szURL)
 #else
 	try
 	{
+#ifdef __APPLE__
+		C4PosixSpawn::SpawnP({"open", szURL});
+#else
 		C4PosixSpawn::SpawnP({"xdg-open", szURL});
+#endif
 		return true;
 	}
 	catch (const std::system_error &e)
