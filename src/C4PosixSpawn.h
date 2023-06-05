@@ -15,11 +15,12 @@
 
 #pragma once
 
-#include <spawn.h>
 #include <string>
 #include <vector>
 
+#include <sys/types.h>
+
 namespace C4PosixSpawn
 {
-	pid_t spawnp(const std::vector<std::string>& arguments);
+	pid_t SpawnP(const std::vector<std::string> &arguments);
 }

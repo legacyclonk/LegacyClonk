@@ -35,11 +35,11 @@ namespace
 	public:
 		Fd() = delete;
 
-		Fd(const Fd&) = delete;
-		Fd& operator=(const Fd&) = delete;
+		Fd(const Fd &) = delete;
+		Fd& operator=(const Fd &) = delete;
 
-		Fd(Fd&& other) noexcept : fd{std::exchange(other.fd, -1)} {}
-		Fd& operator=(Fd&& other) noexcept
+		Fd(Fd &&other) noexcept : fd{std::exchange(other.fd, -1)} {}
+		Fd& operator=(Fd &&other) noexcept
 		{
 			fd = std::exchange(other.fd, -1);
 			return *this;
@@ -63,9 +63,9 @@ namespace
 			return fd;
 		}
 
-		static Fd open(const char* path, int mode)
+		static Fd Open(const char *const path, const int mode)
 		{
-			int fd = ::open(path, mode);
+			const int fd{open(path, mode)};
 			if (fd == -1)
 			{
 				// TODO: use {:?} when available
@@ -81,7 +81,7 @@ namespace
 		int fd{-1};
 	};
 
-	void throwIfFailed(const char* name, int result)
+	void ThrowIfFailed(const char *const name, const int result)
 	{
 		if (result != 0)
 		{
@@ -91,12 +91,10 @@ namespace
 
 	class FileActions
 	{
-		posix_spawn_file_actions_t actions;
-
 	public:
 		FileActions()
 		{
-			throwIfFailed("posix_spawn_file_actions_init", posix_spawn_file_actions_init(&actions));
+			ThrowIfFailed("posix_spawn_file_actions_init", posix_spawn_file_actions_init(&actions));
 		}
 
 		~FileActions()
@@ -107,55 +105,60 @@ namespace
 			}
 		}
 
-		FileActions(const FileActions&) = delete;
-		FileActions(FileActions&&) = delete;
+		FileActions(const FileActions &) = delete;
+		FileActions(FileActions &&) = delete;
 
-		FileActions& operator=(const FileActions&) = delete;
-		FileActions& operator=(FileActions&&) = delete;
+		FileActions &operator=(const FileActions &) = delete;
+		FileActions &operator=(FileActions &&) = delete;
 
-
-		void addClose(int fd)
+	public:
+		void AddClose(const int fd)
 		{
-			throwIfFailed("posix_spawn_file_actions_addclose", posix_spawn_file_actions_addclose(&actions, fd));
+			ThrowIfFailed("posix_spawn_file_actions_addclose", posix_spawn_file_actions_addclose(&actions, fd));
 		}
 
-		void addDup2(int fd, int newFd)
+		void AddDup2(const int fd, const int newFd)
 		{
-			throwIfFailed("posix_spawn_file_actions_adddup2", posix_spawn_file_actions_adddup2(&actions, fd, newFd));
+			ThrowIfFailed("posix_spawn_file_actions_adddup2", posix_spawn_file_actions_adddup2(&actions, fd, newFd));
 		}
 
-		void addOpen(int fd, const char* path, int oflag, mode_t mode)
+		void AddOpen(const int fd, const char *const path, const int oflag, const mode_t mode)
 		{
-			throwIfFailed("posix_spawn_file_actions_addopen", posix_spawn_file_actions_addopen(&actions, fd, path, oflag, mode));
+			ThrowIfFailed("posix_spawn_file_actions_addopen", posix_spawn_file_actions_addopen(&actions, fd, path, oflag, mode));
 		}
 
 		operator posix_spawn_file_actions_t*()
 		{
 			return &actions;
 		}
+
+	private:
+		posix_spawn_file_actions_t actions;
 	};
 }
 
-pid_t spawnp(const std::vector<std::string>& arguments)
+pid_t SpawnP(const std::vector<std::string> &arguments)
 {
-	std::vector<const char*> argv;
+	std::vector<const char *> argv;
 	argv.reserve(arguments.size() + 1);
 
-	for (const auto& arg : arguments) {
+	for (const auto &arg : arguments)
+	{
 		argv.push_back(arg.c_str());
 	}
+
 	argv.push_back(nullptr);
 
 	FileActions fileActions;
 
-	const auto devNull = Fd::open("/dev/null", O_RDWR);
+	const auto devNull = Fd::Open("/dev/null", O_RDWR);
 
-	fileActions.addDup2(devNull.get(), STDIN_FILENO);
-	fileActions.addDup2(devNull.get(), STDOUT_FILENO);
-	fileActions.addDup2(devNull.get(), STDERR_FILENO);
+	fileActions.AddDup2(devNull.get(), STDIN_FILENO);
+	fileActions.AddDup2(devNull.get(), STDOUT_FILENO);
+	fileActions.AddDup2(devNull.get(), STDERR_FILENO);
 
 	pid_t pid;
-	throwIfFailed("posix_spawnp", posix_spawnp(&pid, argv[0], fileActions, nullptr, const_cast<char**>(argv.data()), environ));
+	ThrowIfFailed("posix_spawnp", posix_spawnp(&pid, argv[0], fileActions, nullptr, const_cast<char **>(argv.data()), environ));
 	return pid;
 }
 

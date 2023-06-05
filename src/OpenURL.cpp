@@ -35,10 +35,10 @@ bool OpenURL(const char *szURL)
 #else
 	try
 	{
-		C4PosixSpawn::spawnp({"xdg-open", szURL});
+		C4PosixSpawn::SpawnP({"xdg-open", szURL});
 		return true;
 	}
-	catch (const std::system_error& e)
+	catch (const std::system_error &e)
 	{
 		LogF("OpenURL failed: %s\n", e.what());
 		return false;
