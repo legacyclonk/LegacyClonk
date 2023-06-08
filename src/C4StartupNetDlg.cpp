@@ -1090,9 +1090,12 @@ void C4StartupNetDlg::DoRefresh()
 	// (Re-)Start discovery
 	if (!DiscoverClient.StartDiscovery())
 	{
+		const auto message = FormatString(LoadResStr("IDS_NET_NODISCOVERY_DESC"), DiscoverClient.GetError());
+		LogF("Warning: %s", message.getData());
+
 		StdStrBuf strNoDiscovery(LoadResStr("IDS_NET_NODISCOVERY"));
 		Game.pGUI->ShowMessageModal(
-			FormatString(LoadResStr("IDS_NET_NODISCOVERY_DESC"), DiscoverClient.GetError()).getData(),
+			message.getData(),
 			strNoDiscovery.getData(),
 			C4GUI::MessageDialog::btnAbort,
 			C4GUI::Ico_Error);
