@@ -115,6 +115,11 @@ jobs:
           cd build
           cp clonk c4group ../output
 
+      - name: "Linux: Create AppImage"
+        if: ${{ matrix.env == 'Linux' }}
+        run: |
+          tools/make_AppImage.sh
+
       - name: "Mac: Create Bundle"
         if: ${{ matrix.env == 'Mac' }}
         run: |
@@ -152,6 +157,7 @@ jobs:
         if: ${{ matrix.env == 'Linux' }}
         run: |
           cd output
+          mv clonk.AppImage clonk
           tar czf LegacyClonk-$CONFIG_SUFFIX.tar.gz *
 
       - name: "Pack: Mac"

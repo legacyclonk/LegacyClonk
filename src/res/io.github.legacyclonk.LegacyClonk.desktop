@@ -1,0 +1,23 @@
+[Desktop Entry]
+Name=LegacyClonk
+Type=Application
+Comment=A highly versatile multiplayer game of strategy, action, skill, and endless fun.
+Icon=legacyclonk
+Categories=Game;ActionGame;
+MimeType=application/x-vnd.clonk.c4key;application/vnd.clonk.c4group;application/vnd.clonk.c4group.definition;application/vnd.clonk.c4group.folder;application/vnd.clonk.c4group.player;application/vnd.clonk.c4group.update;application/vnd.clonk.c4group.scenario;x-scheme-handler/clonk;
+StartupNotify=true
+StartupWMClass=LegacyClonk
+Exec=clonk %u
+Actions=join;lobby;console;
+
+[Desktop Action join]
+Name=Join Game
+Exec=clonk /startup:net
+
+[Desktop Action lobby]
+Name=Create Lobby
+Exec=clonk /startup:netscen
+
+[Desktop Action console]
+Name=Developer Mode
+Exec=clonk /console
