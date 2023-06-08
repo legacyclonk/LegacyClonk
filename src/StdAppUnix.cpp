@@ -67,7 +67,7 @@ static gboolean ForwardPipeInput(GIOChannel *, GIOCondition, gpointer data)
 void CStdApp::Init(const int argc, char **const argv)
 {
 	setlocale(LC_ALL, "");
-	setlocale(LC_NUMERIC, "");
+	setlocale(LC_NUMERIC, "C");
 
 #ifdef USE_X11
 	// Clear XMODIFIERS as key input gets evaluated twice otherwise
