@@ -466,14 +466,14 @@ std::string CStdApp::Paste(const bool clipboard)
 	unsigned long bytesLeft;
 	unsigned char *data;
 
-	const auto getWindowProperty = [&](const bool deleteNow)
+	const auto getWindowProperty = [&](const bool deleteNow, unsigned long bytesToGet)
 	{
 		return XGetWindowProperty(
 			dpy,
 			pWindow->wnd,
 			XA_STRING,
 			0,
-			0,
+			bytesToGet,
 			deleteNow,
 			AnyPropertyType,
 			&type,
@@ -484,14 +484,14 @@ std::string CStdApp::Paste(const bool clipboard)
 		);
 	};
 
-	getWindowProperty(false);
+	getWindowProperty(false, 0);
 
 	if (bytesLeft == 0)
 	{
 		return "";
 	}
 
-	if (getWindowProperty(true) != Success)
+	if (getWindowProperty(true, bytesLeft) != Success)
 	{
 		return "";
 	}
@@ -654,7 +654,8 @@ void CStdApp::HandleXMessage()
 					.display = dpy,
 					.requestor = event.xselectionrequest.requestor,
 					.selection = event.xselectionrequest.selection,
-					.target = event.xselectionrequest.target
+					.target = event.xselectionrequest.target,
+					.time = event.xselectionrequest.time
 				}
 			};
 
