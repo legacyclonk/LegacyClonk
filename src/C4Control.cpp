@@ -254,16 +254,24 @@ void C4ControlSet::CompileFunc(StdCompiler *pComp)
 
 void C4ControlScript::Execute() const
 {
-	if (Game.Control.isReplay())
+	if (Game.Parameters.isLeague())
 	{
-		if (!Config.General.AllowScriptingInReplays)
+		return;
+	}
+
+	if (const auto byHost = iByClient == C4ClientIDHost; !byHost)
+	{
+		if (Game.Control.isReplay())
+		{
+			if (!Config.General.AllowScriptingInReplays)
+			{
+				return;
+			}
+		}
+		else if (!Console.Active)
 		{
 			return;
 		}
-	}
-	else if (Game.Parameters.isLeague() || (iByClient != C4ClientIDHost && !Console.Active))
-	{
-		return;
 	}
 
 	const char *szScript = Script.getData();
