@@ -108,7 +108,7 @@ void C4Network2ClientDlg::UpdateText()
 // C4Network2ClientListBox::ClientListItem
 
 C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientListBox *pForDlg, int iClientID)
-	: ListItem{pForDlg, iClientID}, pStatusIcon{nullptr}, pName{nullptr}, pPing{nullptr}, pMuteBtn{nullptr}, pActivateBtn{nullptr}, pKickBtn{nullptr}
+	: ListItem{pForDlg, iClientID}, pStatusIcon{nullptr}, pName{nullptr}, pPing{nullptr}, pMuteBtn{nullptr}, pActivateBtn{nullptr}, pKickBtn{nullptr}, fShownActive{false}
 {
 	// get associated client
 	const C4Client *pClient = GetClient();
