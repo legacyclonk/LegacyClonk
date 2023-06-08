@@ -1093,12 +1093,15 @@ void C4StartupNetDlg::DoRefresh()
 		const auto message = FormatString(LoadResStr("IDS_NET_NODISCOVERY_DESC"), DiscoverClient.GetError());
 		LogF("Warning: %s", message.getData());
 
-		StdStrBuf strNoDiscovery(LoadResStr("IDS_NET_NODISCOVERY"));
-		Game.pGUI->ShowMessageModal(
-			message.getData(),
-			strNoDiscovery.getData(),
-			C4GUI::MessageDialog::btnAbort,
-			C4GUI::Ico_Error);
+		if (!Config.Network.MasterServerSignUp)
+		{
+			StdStrBuf strNoDiscovery(LoadResStr("IDS_NET_NODISCOVERY"));
+			Game.pGUI->ShowMessageModal(
+				message.getData(),
+				strNoDiscovery.getData(),
+				C4GUI::MessageDialog::btnAbort,
+				C4GUI::Ico_Error);
+		}
 	}
 	iGameDiscoverInterval = C4NetGameDiscoveryInterval;
 	// restart masterserver query
