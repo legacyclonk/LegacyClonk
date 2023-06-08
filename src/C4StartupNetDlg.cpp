@@ -1095,10 +1095,12 @@ void C4StartupNetDlg::DoRefresh()
 	// (Re-)Start discovery
 	if (!DiscoverClient.StartDiscovery())
 	{
-		StdStrBuf strNoDiscovery(LoadResStr(C4ResStrTableKey::IDS_NET_NODISCOVERY));
+		const auto message = LoadResStr(C4ResStrTableKey::IDS_NET_NODISCOVERY_DESC, DiscoverClient.GetError());
+		LogNTr(spdlog::level::warn, message);
+
 		Game.pGUI->ShowMessageModal(
-			LoadResStr(C4ResStrTableKey::IDS_NET_NODISCOVERY_DESC, DiscoverClient.GetError()).c_str(),
-			strNoDiscovery.getData(),
+			message.c_str(),
+			LoadResStr(C4ResStrTableKey::IDS_NET_NODISCOVERY),
 			C4GUI::MessageDialog::btnAbort,
 			C4GUI::Ico_Error);
 	}
