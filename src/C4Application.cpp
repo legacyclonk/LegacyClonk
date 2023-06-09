@@ -660,3 +660,8 @@ void C4Application::SetNextMission(const char *szMissionFilename)
 	else
 		NextMission.Clear();
 }
+
+void C4Application::UpdateScreenSaverState()
+{
+	InhibitScreenSaver(Active && (Game.IsRunning || Game.Network.isEnabled()));
+}

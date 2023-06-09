@@ -267,6 +267,9 @@ bool C4Network2::InitHost(bool fLobby)
 	NetIO.SetAcceptMode(true);
 	// timer
 	pSec1Timer = new C4Sec1TimerCallback<C4Network2>(this);
+
+	Application.InhibitSuspend(true);
+
 	// ok
 	return true;
 }
@@ -329,6 +332,9 @@ C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bo
 	NetIO.SetAcceptMode(true);
 	// timer
 	pSec1Timer = new C4Sec1TimerCallback<C4Network2>(this);
+
+	Application.InhibitSuspend(true);
+
 	// ok, success
 	return IR_Success;
 }
@@ -735,6 +741,7 @@ void C4Network2::Execute()
 
 void C4Network2::Clear()
 {
+	Application.InhibitSuspend(false);
 	// stop timer
 	if (pSec1Timer) pSec1Timer->Release(); pSec1Timer = nullptr;
 	// stop streaming

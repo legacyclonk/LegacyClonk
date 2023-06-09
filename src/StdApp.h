@@ -300,6 +300,9 @@ public:
 		return true;
 	}
 
+	void InhibitSuspend(bool inhibit);
+	void InhibitScreenSaver(bool inhibit);
+
 #ifdef _WIN32
 	HINSTANCE hInstance;
 	int iLastExecute, iTimerOffset;
@@ -389,6 +392,14 @@ protected:
 	// commands from stdin (console only)
 	StdStrBuf CmdBuf;
 	bool ReadStdInCommand();
+
+#ifdef _WIN32
+private:
+	void UpdateExecutionState(EXECUTION_STATE flag, bool set);
+
+private:
+	EXECUTION_STATE executionState{};
+#endif
 
 	friend class CStdGL;
 	friend class CStdWindow;

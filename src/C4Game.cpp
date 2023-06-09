@@ -629,6 +629,8 @@ void C4Game::Clear()
 	QuitLogPos = GetLogPos();
 
 	fPreinited = false;
+
+	Application.UpdateScreenSaverState();
 }
 
 bool C4Game::GameOverCheck()

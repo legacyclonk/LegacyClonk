@@ -115,6 +115,7 @@ LRESULT APIENTRY FullScreenWinProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 		const auto oldActive = Application.Active;
 		Application.Active = (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED);
+		Application.UpdateScreenSaverState();
 
 		if (width != 0 && height != 0)
 		{

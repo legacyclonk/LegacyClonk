@@ -304,6 +304,16 @@ std::string CStdApp::Paste(bool fClipboard)
 	return "";
 }
 
+void CStdApp::InhibitSuspend(const bool inhibit)
+{
+	UpdateExecutionState(ES_SYSTEM_REQUIRED, inhibit);
+}
+
+void CStdApp::InhibitScreenSaver(const bool inhibit)
+{
+	UpdateExecutionState(ES_DISPLAY_REQUIRED, inhibit);
+}
+
 bool CStdApp::ReadStdInCommand()
 {
 	while (_kbhit())
@@ -321,4 +331,20 @@ bool CStdApp::ReadStdInCommand()
 			CmdBuf.AppendChar(c);
 	}
 	return true;
+}
+
+void CStdApp::UpdateExecutionState(const EXECUTION_STATE flag, const bool set)
+{
+	AssertMainThread();
+
+	if (set)
+	{
+		executionState |= flag;
+	}
+	else
+	{
+		executionState &= ~flag;
+	}
+
+	SetThreadExecutionState(executionState | ES_CONTINUOUS);
 }
