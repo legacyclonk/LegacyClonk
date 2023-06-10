@@ -301,12 +301,36 @@ private:
 #endif
 };
 
+struct PromiseAwaiterMarker {};
+
+inline PromiseAwaiterMarker GetPromise()
+{
+	return {};
+}
+
 template<typename T>
 struct Promise : CancellablePromise
 {
 	struct Deleter
 	{
 		void operator()(Promise *const promise) noexcept;
+	};
+
+	struct PromiseAwaiter
+	{
+		Promise<T> &promise;
+
+		constexpr bool await_ready() const noexcept
+		{
+			return true;
+		}
+
+		constexpr void await_suspend(const std::coroutine_handle<>) const noexcept {}
+
+		Promise<T> &await_resume() const noexcept
+		{
+			return promise;
+		}
 	};
 
 	using PromisePtr = std::unique_ptr<Promise, Deleter>;
@@ -381,6 +405,11 @@ struct Promise : CancellablePromise
 		}
 
 		return std::forward<Awaiter>(awaiter);
+	}
+
+	PromiseAwaiter await_transform(const PromiseAwaiterMarker)
+	{
+		return {*this};
 	}
 
 	template<typename U = T> requires(!std::same_as<T, void>)
