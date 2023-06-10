@@ -140,6 +140,12 @@ void C4Application::DoInit()
 	// Parse command line
 	Game.ParseCommandLine(GetCommandLine());
 
+#ifdef _WIN32
+	C4ThreadPool::Global = std::make_shared<C4ThreadPool>();
+#else
+	C4ThreadPool::Global = std::make_shared<C4ThreadPool>(Config.General.ThreadPoolMinimumThreadCount, Config.General.ThreadPoolMaximumThreadCount);
+#endif
+
 	// Initialize curl
 	CurlSystem.emplace();
 
@@ -149,13 +155,6 @@ void C4Application::DoInit()
 	if (Application.IncomingUpdate)
 		if (C4UpdateDlg::ApplyUpdate(Application.IncomingUpdate.getData(), false, nullptr))
 			return;
-#endif
-
-
-#ifdef _WIN32
-	C4ThreadPool::Global = std::make_shared<C4ThreadPool>();
-#else
-	C4ThreadPool::Global = std::make_shared<C4ThreadPool>(Config.General.ThreadPoolMinimumThreadCount, Config.General.ThreadPoolMaximumThreadCount);
 #endif
 
 	// activate
