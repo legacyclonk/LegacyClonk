@@ -20,6 +20,7 @@
 
 #include "C4Windows.h"
 
+#include <atomic>
 #include <array>
 #include <limits>
 #include <mutex>
@@ -93,15 +94,14 @@ public:
 public:
 	static CStdEvent AutoReset(bool initialState = false);
 #else
-	std::array<int, 2> GetFDs() const { return {fd[0], fd[1]}; }
-
+	std::array<int, 2> GetFDs() const { return {fd[0].load(std::memory_order_acquire), fd[1].load(std::memory_order_acquire)}; }
 #endif
 
 private:
 #ifdef _WIN32
 	HANDLE event;
 #else
-	int fd[2]; // Not std::array in order to allow objects to be safely memcpy'd
+	std::array<std::atomic_int, 2> fd;
 #endif
 };
 

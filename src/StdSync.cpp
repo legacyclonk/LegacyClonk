@@ -102,10 +102,14 @@ static void ThrowIfFailed(const bool result, const char *const message)
 
 CStdEvent::CStdEvent(const bool initialState)
 {
-	ThrowIfFailed(pipe(fd) != -1, "pipe failed");
+	int pipeFD[2];
+	ThrowIfFailed(pipe(pipeFD) != -1, "pipe failed");
 
-	ThrowIfFailed(fcntl(fd[0], F_SETFL, fcntl(fd[0], F_GETFL) | O_NONBLOCK) != -1, "fcntl failed");
-	ThrowIfFailed(fcntl(fd[1], F_SETFL, fcntl(fd[1], F_GETFL) | O_NONBLOCK) != -1, "fcntl failed");
+	ThrowIfFailed(fcntl(pipeFD[0], F_SETFL, fcntl(pipeFD[0], F_GETFL) | O_NONBLOCK) != -1, "fcntl failed");
+	ThrowIfFailed(fcntl(pipeFD[1], F_SETFL, fcntl(pipeFD[1], F_GETFL) | O_NONBLOCK) != -1, "fcntl failed");
+
+	fd[0].store(pipeFD[0], std::memory_order_release);
+	fd[1].store(pipeFD[1], std::memory_order_release);
 
 	if (initialState)
 	{
@@ -115,13 +119,13 @@ CStdEvent::CStdEvent(const bool initialState)
 
 CStdEvent::~CStdEvent()
 {
-	close(fd[0]);
-	close(fd[1]);
+	close(fd[0].load(std::memory_order_acquire));
+	close(fd[1].load(std::memory_order_acquire));
 }
 
 void CStdEvent::Set()
 {
-	for (char c{42}; write(fd[1], &c, 1) == -1; )
+	for (char c{42}; write(fd[1].load(std::memory_order_acquire), &c, 1) == -1; )
 	{
 		switch (errno)
 		{
@@ -141,7 +145,7 @@ void CStdEvent::Reset()
 {
 	for (char c; ;)
 	{
-		if (read(fd[0], &c, 1) == -1)
+		if (read(fd[0].load(std::memory_order_acquire), &c, 1) == -1)
 		{
 			switch (errno)
 			{
@@ -160,7 +164,7 @@ void CStdEvent::Reset()
 
 bool CStdEvent::WaitFor(const std::uint32_t milliseconds)
 {
-	std::array<pollfd, 1> pollFD{pollfd{.fd = fd[0], .events = POLLIN}};
+	std::array<pollfd, 1> pollFD{pollfd{.fd = fd[0].load(std::memory_order_acquire), .events = POLLIN}};
 
 	switch (StdSync::Poll(pollFD, milliseconds))
 	{
