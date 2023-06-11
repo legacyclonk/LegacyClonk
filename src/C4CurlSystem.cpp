@@ -148,6 +148,18 @@ void C4CurlSystem::RemoveHandle(CURL *const handle)
 
 C4CurlSystem::~C4CurlSystem()
 {
+	if (multiTask)
+	{
+		multiTask.Cancel();
+
+		try
+		{
+			std::move(multiTask).Get();
+		}
+		catch (const C4Task::CancelledException &)
+		{
+		}
+	}
 }
 
 C4Task::Hot<void> C4CurlSystem::Execute()
@@ -155,6 +167,8 @@ C4Task::Hot<void> C4CurlSystem::Execute()
 	int running{0};
 
 	curl_multi_socket_action(multiHandle.get(), CURL_SOCKET_TIMEOUT, 0, &running);
+
+	C4Task::Promise<void> &promise{co_await C4Task::GetPromise()};
 
 	for (;;)
 	{
@@ -164,8 +178,12 @@ C4Task::Hot<void> C4CurlSystem::Execute()
 		{
 			result = co_await Wait();
 		}
-		catch (C4Task::CancelledException &)
+		catch (const C4Task::CancelledException &)
 		{
+			if (promise.IsCancelled())
+			{
+				co_return;
+			}
 		}
 
 #ifdef _WIN32
@@ -222,7 +240,7 @@ C4Task::Hot<void> C4CurlSystem::Execute()
 	}
 }
 
-C4Task::Hot<C4CurlSystem::WaitReturnType> C4CurlSystem::Wait()
+C4Task::Cold<C4CurlSystem::WaitReturnType> C4CurlSystem::Wait()
 {
 	const struct Cleanup
 	{

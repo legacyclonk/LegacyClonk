@@ -182,7 +182,7 @@ public:
 
 private:
 	C4Task::Hot<void> Execute();
-	C4Task::Hot<WaitReturnType> Wait();
+	C4Task::Cold<WaitReturnType> Wait();
 	void ProcessMessages();
 	void CancelWait();
 
