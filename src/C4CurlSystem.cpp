@@ -76,6 +76,7 @@ C4CurlSystem::Awaiter::Awaiter(C4CurlSystem &system, EasyHandle &&easyHandle)
 	  result{std::unexpected{std::string(static_cast<std::size_t>(CURL_ERROR_SIZE), '\0')}}
 {
 	curl_easy_setopt(std::get<0>(this->easyHandle).get(), CURLOPT_ERRORBUFFER, result.error().data());
+	curl_easy_setopt(std::get<0>(this->easyHandle).get(), CURLOPT_PRIVATE, this);
 }
 
 void C4CurlSystem::Awaiter::Resume()
@@ -115,14 +116,10 @@ C4CurlSystem::C4CurlSystem()
 C4CurlSystem::AddedEasyHandle C4CurlSystem::AddHandle(Awaiter &awaiter, EasyHandle &&easyHandle)
 {
 	AddedEasyHandle addedEasyHandle{*this, std::move(easyHandle)};
-	const std::scoped_lock lock{socketMapMutex, awaiterMutex};
 
-	ThrowIfFailed(sockets.try_emplace(addedEasyHandle.get(), std::unordered_map<SOCKET, int>{}).second, "already added");
-
-	if (!awaiters.try_emplace(addedEasyHandle.get(), std::ref(awaiter)).second)
 	{
-		sockets.erase(easyHandle.get());
-		ThrowIfFailed(false, "could not add awaiter");
+		const std::lock_guard lock{socketMapMutex};
+		ThrowIfFailed(sockets.try_emplace(addedEasyHandle.get(), std::unordered_map<SOCKET, int>{}).second, "already added");
 	}
 
 	ThrowIfFailed(curl_multi_add_handle(multiHandle.get(), addedEasyHandle.get()) == CURLM_OK, "curl_multi_add_handle");
@@ -135,10 +132,8 @@ C4CurlSystem::AddedEasyHandle C4CurlSystem::AddHandle(Awaiter &awaiter, EasyHand
 void C4CurlSystem::RemoveHandle(CURL *const handle)
 {
 	{
-		const std::scoped_lock lock{socketMapMutex, awaiterMutex};
-
+		const std::lock_guard lock{socketMapMutex};
 		sockets.erase(handle);
-		awaiters.erase(handle);
 	}
 
 	curl_multi_remove_handle(multiHandle.get(), handle);
@@ -288,46 +283,29 @@ void C4CurlSystem::ProcessMessages()
 
 		if (message && message->msg == CURLMSG_DONE)
 		{
+			char *awaiterPtr{nullptr};
+			ThrowIfFailed(curl_easy_getinfo(message->easy_handle, CURLINFO_PRIVATE, &awaiterPtr) == CURLE_OK, "curl_easy_getinfo(CURLOPT_PRIVATE) failed");
+
+			auto &awaiter = *reinterpret_cast<Awaiter *>(awaiterPtr);
+
 			if (message->data.result != CURLE_OK)
 			{
-				const std::lock_guard lock{awaiterMutex};
-
-				if (const auto it = awaiters.find(message->easy_handle); it != awaiters.end())
-				{
-					it->second.get().SetErrorMessage(curl_easy_strerror(message->data.result));
-				}
+				awaiter.SetErrorMessage(curl_easy_strerror(message->data.result));
 			}
 
+			char *ip;
+			if (curl_easy_getinfo(message->easy_handle, CURLINFO_PRIMARY_IP, &ip) == CURLE_OK)
 			{
-				const std::lock_guard lock{socketMapMutex};
-				sockets.erase(message->easy_handle);
+				C4NetIO::addr_t serverAddress;
+				serverAddress.SetHost(StdStrBuf{ip});
+				awaiter.SetResult(std::move(serverAddress));
 			}
-
-			decltype(awaiters)::node_type type;
-
+			else
 			{
-				const std::lock_guard lock{awaiterMutex};
-				type = awaiters.extract(message->easy_handle);
+				awaiter.SetErrorMessage("curl_easy_getinfo(CURLINFO_PRIMARY_IP) failed");
 			}
 
-			if (type)
-			{
-				Awaiter &awaiter{type.mapped().get()};
-
-				char *ip;
-				if (curl_easy_getinfo(message->easy_handle, CURLINFO_PRIMARY_IP, &ip) == CURLE_OK)
-				{
-					C4NetIO::addr_t serverAddress;
-					serverAddress.SetHost(StdStrBuf{ip});
-					awaiter.SetResult(std::move(serverAddress));
-				}
-				else
-				{
-					awaiter.SetErrorMessage("curl_easy_getinfo(CURLINFO_PRIMARY_IP) failed");
-				}
-
-				awaiter.Resume();
-			}
+			awaiter.Resume();
 		}
 	}
 	while (message);
