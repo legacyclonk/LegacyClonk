@@ -211,7 +211,4 @@ private:
 
 	std::mutex socketMapMutex;
 	std::unordered_map<CURL *, std::unordered_map<SOCKET, int>> sockets;
-
-	std::mutex awaiterMutex;
-	std::unordered_map<CURL *, std::reference_wrapper<Awaiter>> awaiters;
 };
