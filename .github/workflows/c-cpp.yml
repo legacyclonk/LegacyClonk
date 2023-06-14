@@ -80,7 +80,7 @@ jobs:
 
       - name: Configure
         run: |
-          $CHROOT cmake -B build . $CMAKE_CONFIGURE_ARGS
+          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo $CMAKE_CONFIGURE_ARGS
 
       - name: "Enable Debugrec"
         if: ${{ matrix.config == 'Debugrec' }}
@@ -107,7 +107,7 @@ jobs:
         if: ${{ matrix.env == 'Windows' }}
         run: |
           cd build
-          mv RelWithDebInfo/*.{exe,pdb} ../output
+          mv *.{exe,pdb} ../output
 
       - name: "Linux: Collect binaries"
         if: ${{ matrix.env == 'Linux' }}
@@ -124,7 +124,7 @@ jobs:
         if: ${{ matrix.env == 'Mac' }}
         run: |
           cd build
-          make DESTDIR=inst install
+          DESTDIR=inst ninja install
           mv inst/usr/local/c4group inst/usr/local/clonk.app ../output
 
       - name: "Publish Main Artifact"

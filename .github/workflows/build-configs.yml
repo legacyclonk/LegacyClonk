@@ -126,7 +126,7 @@ jobs:
 
       - name: Configure
         run: |
-          $CHROOT cmake -B build . $CMAKE_CONFIGURE_ARGS $CONFIG_ARGS
+          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo $CMAKE_CONFIGURE_ARGS $CONFIG_ARGS
 
       - name: Build
         run: |
