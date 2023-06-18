@@ -96,7 +96,4 @@ private:
 
 	static std::size_t WriteFunction(char *ptr, std::size_t, std::size_t nmemb, void *userData);
 	static int XferInfoFunction(void *userData, std::int64_t downloadTotal, std::int64_t downloadNow, std::int64_t, std::int64_t);
-
-private:
-	std::uint16_t defaultPort{0};
 };
