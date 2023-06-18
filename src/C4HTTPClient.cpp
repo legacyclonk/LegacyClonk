@@ -43,6 +43,11 @@ static decltype(auto) ThrowIfFailed(T &&result, Args &&...args)
 	return std::forward<T>(result);
 }
 
+void C4HTTPClient::CURLSDeleter::operator()(CURLS *const share)
+{
+	curl_share_cleanup(share);
+}
+
 void C4HTTPClient::Uri::CURLUDeleter::operator()(CURLU * const uri)
 {
 	if (uri)
@@ -88,6 +93,16 @@ std::string C4HTTPClient::Uri::GetUriAsString() const
 
 	const std::unique_ptr<char, decltype([](char *const ptr) { curl_free(ptr); })> ptr{string};
 	return string;
+}
+
+C4HTTPClient::C4HTTPClient()
+	: shareHandle{ThrowIfFailed(curl_share_init(), "curl_share_init failed")}
+{
+	curl_share_setopt(shareHandle.get(), CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);
+	curl_share_setopt(shareHandle.get(), CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
+	curl_share_setopt(shareHandle.get(), CURLSHOPT_LOCKFUNC, &C4HTTPClient::LockFunction);
+	curl_share_setopt(shareHandle.get(), CURLSHOPT_UNLOCKFUNC, &C4HTTPClient::UnlockFunction);
+	curl_share_setopt(shareHandle.get(), CURLSHOPT_USERDATA, &shareMutexes);
 }
 
 C4Task::Hot<C4HTTPClient::Result> C4HTTPClient::GetAsync(Request request, ProgressCallback &&progressCallback, Headers headers)
@@ -136,6 +151,8 @@ C4CurlSystem::EasyHandle C4HTTPClient::PrepareRequest(const Request &request, He
 	curl_easy_setopt(curl.get(), CURLOPT_USERAGENT, C4ENGINENAME "/" C4VERSION );
 	curl_easy_setopt(curl.get(), CURLOPT_TIMEOUT, C4HTTPQueryTimeout);
 	curl_easy_setopt(curl.get(), CURLOPT_FAILONERROR, 1L);
+	curl_easy_setopt(curl.get(), CURLOPT_COOKIEFILE, "");
+	curl_easy_setopt(curl.get(), CURLOPT_SHARE, shareHandle.get());
 
 	const char *const charset{GetCharsetCodeName(Config.General.LanguageCharset)};
 
@@ -193,4 +210,44 @@ int C4HTTPClient::XferInfoFunction(void *const userData, const std::int64_t down
 	}
 
 	return CURL_PROGRESSFUNC_CONTINUE;
+}
+
+void C4HTTPClient::LockFunction(CURL *, const int data, const int access, void *const userData)
+{
+	static_assert(sizeof(curl_lock_data) == sizeof(int) && alignof(curl_lock_data) == alignof(int));
+	static_assert(sizeof(curl_lock_access) == sizeof(int) && alignof(curl_lock_access) == alignof(int));
+	static_assert(std::tuple_size_v<decltype(C4HTTPClient::shareMutexes)> == CURL_LOCK_DATA_LAST + 1, "Invalid mutex array size");
+
+	auto &[mutex, exclusive] = (*reinterpret_cast<decltype(C4HTTPClient::shareMutexes) *>(userData))[data];
+
+	switch (static_cast<curl_lock_access>(access))
+	{
+	case CURL_LOCK_ACCESS_SHARED:
+		mutex.lock_shared();
+		exclusive = false;
+		break;
+
+	case CURL_LOCK_ACCESS_SINGLE:
+		mutex.lock();
+		exclusive = true;
+		break;
+
+	default:
+		assert(false);
+		std::unreachable();
+	}
+}
+
+void C4HTTPClient::UnlockFunction(CURL *, const int data, void *const userData)
+{
+	auto &[mutex, exclusive] = (*reinterpret_cast<decltype(C4HTTPClient::shareMutexes) *>(userData))[data];
+
+	if (exclusive)
+	{
+		mutex.unlock();
+	}
+	else
+	{
+		mutex.unlock_shared();
+	}
 }
