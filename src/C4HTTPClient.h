@@ -27,6 +27,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -36,9 +37,16 @@ using CURLM = struct Curl_multi;
 using CURL = struct Curl_easy;
 using curl_socket_t = SOCKET;
 using CURLU = struct Curl_URL;
+using CURLS = struct Curl_share;
 
 class C4HTTPClient
 {
+private:
+	struct CURLSDeleter
+	{
+		void operator()(CURLS *share);
+	};
+
 public:
 	using Headers = std::unordered_map<std::string_view, std::string_view>;
 	using Notify = std::function<void(C4Network2HTTPClient *)>;
@@ -84,7 +92,7 @@ public:
 	};
 
 public:
-	C4HTTPClient() = default;
+	C4HTTPClient();
 
 public:
 	C4Task::Hot<Result> GetAsync(Request request, ProgressCallback &&progressCallback = {}, Headers headers = {});
@@ -96,4 +104,10 @@ private:
 
 	static std::size_t WriteFunction(char *ptr, std::size_t, std::size_t nmemb, void *userData);
 	static int XferInfoFunction(void *userData, std::int64_t downloadTotal, std::int64_t downloadNow, std::int64_t, std::int64_t);
+	static void LockFunction(CURL *, int data, int access, void *userData);
+	static void UnlockFunction(CURL *, int data, void *userData);
+
+private:
+	std::array<std::pair<std::shared_mutex, bool>, 9> shareMutexes{};
+	std::unique_ptr<CURLS, CURLSDeleter> shareHandle;
 };
