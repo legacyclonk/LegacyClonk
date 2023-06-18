@@ -239,10 +239,10 @@ bool C4Network2HTTPClient::Query(const StdBuf &Data, const bool binary)
 	{
 		C4HTTPClient::Request request{{url}, binary, {reinterpret_cast<const std::byte *>(this->data.getData()), this->data.getSize()}};
 
-		const auto progressCallback = [this](const std::size_t downloadedSize, const std::size_t totalSize)
+		const auto progressCallback = [this](const std::size_t totalSize, const std::size_t downloadedSize)
 		{
-			this->downloadedSize.store(downloadedSize, std::memory_order_release);
 			this->totalSize.store(totalSize, std::memory_order_release);
+			this->downloadedSize.store(downloadedSize, std::memory_order_release);
 			return true;
 		};
 
