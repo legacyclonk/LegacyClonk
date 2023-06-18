@@ -111,7 +111,8 @@ C4Task::Hot<C4HTTPClient::Result> C4HTTPClient::RequestAsync(Request request, co
 
 	if (progressCallback)
 	{
-		curl_easy_setopt(curl.get(), CURLOPT_XFERINFOFUNCTION, &C4HTTPClient::WriteFunction);
+		curl_easy_setopt(curl.get(), CURLOPT_NOPROGRESS, 0L);
+		curl_easy_setopt(curl.get(), CURLOPT_XFERINFOFUNCTION, &C4HTTPClient::XferInfoFunction);
 		curl_easy_setopt(curl.get(), CURLOPT_XFERINFODATA, &progressCallback);
 	}
 
