@@ -181,7 +181,7 @@ public:
 	void RemoveHandle(CURL *const handle);
 
 private:
-	C4Task::Hot<void> Execute();
+	C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> Execute();
 	C4Task::Cold<WaitReturnType> Wait();
 	void ProcessMessages();
 	void CancelWait();
@@ -205,9 +205,9 @@ private:
 	CStdEvent event;
 #endif
 
-	C4Task::Hot<void> multiTask;
+	C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> multiTask;
 
-	std::atomic<C4Task::Promise<WaitReturnType> *> wait{nullptr};
+	std::atomic<C4Task::CancellablePromise *> wait{nullptr};
 
 	std::mutex socketMapMutex;
 	std::unordered_map<CURL *, std::unordered_map<SOCKET, int>> sockets;

@@ -64,7 +64,7 @@ struct ValueWrapper<void>
 	void GetValue() const {}
 };
 
-template<typename T>
+template<typename T, bool IsNoExcept = false>
 class Result
 {
 private:
@@ -75,6 +75,7 @@ private:
 		Exception
 	};
 
+	template<bool C>
 	union Optional
 	{
 	public:
@@ -85,7 +86,17 @@ private:
 		std::exception_ptr Exception;
 	};
 
-	static_assert(std::is_default_constructible_v<Optional>);
+	template<>
+	union Optional<true>
+	{
+	public:
+		Optional() noexcept {}
+		~Optional() noexcept {}
+
+		ValueWrapper<T> Wrapper;
+	};
+
+	static_assert(std::is_default_constructible_v<Optional<IsNoExcept>>);
 
 public:
 	Result() = default;
@@ -98,7 +109,14 @@ public:
 			break;
 
 		case ResultState::Exception:
-			std::destroy_at(std::addressof(result.Exception));
+			if constexpr (!IsNoExcept)
+			{
+				std::destroy_at(std::addressof(result.Exception));
+			}
+			else
+			{
+				std::unreachable();
+			}
 			break;
 
 		default:
@@ -118,7 +136,14 @@ public:
 			return result.Wrapper.GetValue();
 
 		case ResultState::Exception:
-			std::rethrow_exception(result.Exception);
+			if constexpr (!IsNoExcept)
+			{
+				std::rethrow_exception(result.Exception);
+			}
+			else
+			{
+				std::unreachable();
+			}
 
 		default:
 			std::terminate();
@@ -144,7 +169,7 @@ public:
 		}
 	}
 
-	void SetException(std::exception_ptr &&exceptionPtr) noexcept
+	void SetException(std::exception_ptr &&exceptionPtr) noexcept requires (!IsNoExcept)
 	{
 		if (resultState == ResultState::NotPresent)
 		{
@@ -156,14 +181,66 @@ public:
 
 private:
 	ResultState resultState{ResultState::NotPresent};
-	Optional result;
+	Optional<IsNoExcept> result;
 };
+
+struct CancellationTokenMarker {};
+
+inline CancellationTokenMarker GetCancellationToken()
+{
+	return {};
+}
+
+struct PromiseAwaiterMarker {};
+
+inline PromiseAwaiterMarker GetPromise()
+{
+	return {};
+}
 
 class CancellablePromise
 #ifdef _WIN32
 	: public winrt::cancellable_promise
 #endif
 {
+public:
+	class CancellationToken
+	{
+	public:
+		constexpr CancellationToken(const CancellablePromise *const promise) : promise{promise} {}
+
+	public:
+		constexpr bool await_ready() const noexcept { return true; }
+		constexpr void await_suspend(const std::coroutine_handle<>) const noexcept {}
+		constexpr CancellationToken await_resume() const noexcept { return *this; }
+
+		bool operator()() const noexcept
+		{
+			return promise->IsCancelled();
+		}
+
+	private:
+		const CancellablePromise *promise;
+	};
+
+private:
+	struct PromiseAwaiter
+	{
+		CancellablePromise &promise;
+
+		constexpr bool await_ready() const noexcept
+		{
+			return true;
+		}
+
+		constexpr void await_suspend(const std::coroutine_handle<>) const noexcept {}
+
+		CancellablePromise &await_resume() const noexcept
+		{
+			return promise;
+		}
+	};
+
 public:
 #ifdef _WIN32
 	CancellablePromise()
@@ -225,6 +302,16 @@ public:
 #else
 		return cancellationCallback.load(std::memory_order_acquire) == CancelledSentinel;
 #endif
+	}
+
+	CancellationToken await_transform(const CancellationTokenMarker) noexcept
+	{
+		return {this};
+	}
+
+	PromiseAwaiter await_transform(const PromiseAwaiterMarker) noexcept
+	{
+		return {*this};
 	}
 
 #ifdef _WIN32
@@ -301,36 +388,22 @@ private:
 #endif
 };
 
-struct PromiseAwaiterMarker {};
-
-inline PromiseAwaiterMarker GetPromise()
+struct PromiseTraitsDefault
 {
-	return {};
-}
+	static constexpr bool IsNoExcept{false};
+};
 
-template<typename T>
+struct PromiseTraitsNoExcept : PromiseTraitsDefault
+{
+	static constexpr bool IsNoExcept{true};
+};
+
+template<typename T, typename PromiseTraits>
 struct Promise : CancellablePromise
 {
 	struct Deleter
 	{
 		void operator()(Promise *const promise) noexcept;
-	};
-
-	struct PromiseAwaiter
-	{
-		Promise<T> &promise;
-
-		constexpr bool await_ready() const noexcept
-		{
-			return true;
-		}
-
-		constexpr void await_suspend(const std::coroutine_handle<>) const noexcept {}
-
-		Promise<T> &await_resume() const noexcept
-		{
-			return promise;
-		}
 	};
 
 	using PromisePtr = std::unique_ptr<Promise, Deleter>;
@@ -376,24 +449,31 @@ struct Promise : CancellablePromise
 
 	void unhandled_exception() const noexcept
 	{
-#ifdef _WIN32
-		std::exception_ptr ptr{std::current_exception()};
+		if constexpr (PromiseTraits::IsNoExcept)
+		{
+			std::terminate();
+		}
+		else
+		{
+	#ifdef _WIN32
+			std::exception_ptr ptr{std::current_exception()};
 
-		try
-		{
-			std::rethrow_exception(ptr);
+			try
+			{
+				std::rethrow_exception(ptr);
+			}
+			catch (const winrt::hresult_canceled &e)
+			{
+				SetException(std::make_exception_ptr(CancelledException{e}));
+			}
+			catch (...)
+			{
+				SetException(ptr);
+			}
+	#else
+			SetException(std::current_exception());
+	#endif
 		}
-		catch (const winrt::hresult_canceled &e)
-		{
-			SetException(std::make_exception_ptr(CancelledException{e}));
-		}
-		catch (...)
-		{
-			SetException(ptr);
-		}
-#else
-		SetException(std::current_exception());
-#endif
 	}
 
 	template<typename Awaiter>
@@ -407,10 +487,7 @@ struct Promise : CancellablePromise
 		return std::forward<Awaiter>(awaiter);
 	}
 
-	PromiseAwaiter await_transform(const PromiseAwaiterMarker)
-	{
-		return {*this};
-	}
+	using CancellablePromise::await_transform;
 
 	template<typename U = T> requires(!std::same_as<T, void>)
 	void SetResult(U &&result) const noexcept
@@ -423,7 +500,7 @@ struct Promise : CancellablePromise
 		this->result.SetResult();
 	}
 
-	void SetException(std::exception_ptr e) const noexcept
+	void SetException(std::exception_ptr e) const noexcept requires (!PromiseTraits::IsNoExcept)
 	{
 		this->result.SetException(std::move(e));
 	}
@@ -480,12 +557,12 @@ public:
 private:
 	std::atomic<void *> waiting{ColdSentinel};
 	ResumeFunction resumer;
-	mutable Result<T> result;
+	mutable Result<T, PromiseTraits::IsNoExcept> result;
 	std::atomic_bool cancelled{false};
 };
 
-template<typename T>
-void Promise<T>::Deleter::operator()(Promise<T> *const promise) noexcept
+template<typename T, typename PromiseTraits>
+void Promise<T, PromiseTraits>::Deleter::operator()(Promise *const promise) noexcept
 {
 	if (promise)
 	{
@@ -493,12 +570,12 @@ void Promise<T>::Deleter::operator()(Promise<T> *const promise) noexcept
 	}
 }
 
-template<template<typename> typename Class, typename T>
+template<template<typename, typename> typename Class, typename T, typename PromiseTraits>
 class TaskBase
 {
 public:
 	TaskBase() = default;
-	TaskBase(Promise<T> *const promise) noexcept : promise{promise}
+	TaskBase(Promise<T, PromiseTraits> *const promise) noexcept : promise{promise}
 	{
 	}
 
@@ -510,7 +587,7 @@ public:
 public:
 	T Get() && noexcept(noexcept(promise->AwaitResume()))
 	{
-		if constexpr (Class<T>::IsColdStart)
+		if constexpr (Class<T, PromiseTraits>::IsColdStart)
 		{
 			promise->Start();
 		}
@@ -544,7 +621,7 @@ public:
 
 	auto operator co_await() && noexcept
 	{
-		return static_cast<Class<T> &&>(*this)->operator co_await();
+		return static_cast<Class<T, PromiseTraits> &&>(*this)->operator co_await();
 	}
 
 	explicit operator bool() const noexcept
@@ -556,18 +633,18 @@ public:
 	static constexpr inline bool IsColdStart{false};
 
 protected:
-	typename Promise<T>::PromisePtr promise;
+	typename Promise<T, PromiseTraits>::PromisePtr promise;
 };
 
-template<typename T>
-class Cold : public TaskBase<Cold, T>
+template<typename T, typename PromiseTraits = PromiseTraitsDefault>
+class Cold : public TaskBase<Cold, T, PromiseTraits>
 {
 public:
-	using TaskBase<Cold, T>::TaskBase;
+	using TaskBase<Cold, T, PromiseTraits>::TaskBase;
 
 	struct ColdAwaiter : public CancellableAwaiter<ColdAwaiter>
 	{
-		typename Promise<T>::PromisePtr promisePtr;
+		typename Promise<T, PromiseTraits>::PromisePtr promisePtr;
 
 		constexpr bool await_ready() const
 		{
@@ -590,7 +667,7 @@ public:
 		{
 			promise->SetCancellationCallback([](void *const context)
 			{
-				reinterpret_cast<typename Promise<T>::PromisePtr::pointer>(context)->Cancel();
+				reinterpret_cast<typename Promise<T, PromiseTraits>::PromisePtr::pointer>(context)->Cancel();
 			}, this->promisePtr.get());
 		}
 	};
@@ -598,25 +675,25 @@ public:
 public:
 	void Start() noexcept
 	{
-		TaskBase<Cold, T>::promise->Start();
+		TaskBase<Cold, T, PromiseTraits>::promise->Start();
 	}
 
 	auto operator co_await() && noexcept
 	{
-		return ColdAwaiter{.promisePtr = std::move(TaskBase<Cold, T>::promise)};
+		return ColdAwaiter{.promisePtr = std::move(TaskBase<Cold, T, PromiseTraits>::promise)};
 	}
 
 public:
 	static constexpr inline bool IsColdStart{true};
 };
 
-template<typename T>
-class Hot : public TaskBase<Hot, T>
+template<typename T, typename PromiseTraits = PromiseTraitsDefault>
+class Hot : public TaskBase<Hot, T, PromiseTraits>
 {
 public:
 	struct HotAwaiter : public CancellableAwaiter<HotAwaiter>
 	{
-		typename Promise<T>::PromisePtr promisePtr;
+		typename Promise<T, PromiseTraits>::PromisePtr promisePtr;
 
 		bool await_ready() const
 		{
@@ -639,14 +716,14 @@ public:
 		{
 			promise->SetCancellationCallback([](void *const context)
 			{
-				reinterpret_cast<typename Promise<T>::PromisePtr::pointer>(context)->Cancel();
+				reinterpret_cast<typename Promise<T, PromiseTraits>::PromisePtr::pointer>(context)->Cancel();
 			},
 			promisePtr.get());
 		}
 	};
 public:
 	Hot() = default;
-	Hot(Promise<T> *const promise) noexcept : TaskBase<Hot, T>{promise}
+	Hot(Promise<T, PromiseTraits> *const promise) noexcept : TaskBase<Hot, T, PromiseTraits>{promise}
 	{
 		promise->Start();
 	}
@@ -654,8 +731,7 @@ public:
 public:
 	auto operator co_await() && noexcept
 	{
-
-		return HotAwaiter{.promisePtr = std::move(TaskBase<Hot, T>::promise)};
+		return HotAwaiter{.promisePtr = std::move(TaskBase<Hot, T, PromiseTraits>::promise)};
 	}
 };
 
@@ -674,26 +750,26 @@ public:
 
 }
 
-template<template<typename> typename Task, typename T, typename... Args> requires std::derived_from<Task<T>, C4Task::TaskBase<Task, T>> && (!std::same_as<T, void>)
-struct std::coroutine_traits<Task<T>, Args...>
+template<template<typename, typename> typename Task, typename T, typename PromiseTraits, typename... Args> requires std::derived_from<Task<T, PromiseTraits>, C4Task::TaskBase<Task, T, PromiseTraits>> && (!std::same_as<T, void>)
+struct std::coroutine_traits<Task<T, PromiseTraits>, Args...>
 {
-	struct promise_type : C4Task::Promise<T>
+	struct promise_type : C4Task::Promise<T, PromiseTraits>
 	{
-		void return_value(T &&value) const noexcept(noexcept(C4Task::Promise<T>::SetResult(std::forward<T>(value))))
+		void return_value(T &&value) const noexcept(noexcept(C4Task::Promise<T, PromiseTraits>::SetResult(std::forward<T>(value))))
 		{
-			C4Task::Promise<T>::SetResult(std::forward<T>(value));
+			C4Task::Promise<T, PromiseTraits>::SetResult(std::forward<T>(value));
 		}
 	};
 };
 
-template<template<typename> typename Task, typename T, typename... Args> requires std::derived_from<Task<T>, C4Task::TaskBase<Task, T>> && std::same_as<T, void>
-struct std::coroutine_traits<Task<T>, Args...>
+template<template<typename, typename> typename Task, typename T, typename PromiseTraits, typename... Args> requires std::derived_from<Task<T, PromiseTraits>, C4Task::TaskBase<Task, T, PromiseTraits>> && std::same_as<T, void>
+struct std::coroutine_traits<Task<T, PromiseTraits>, Args...>
 {
-	struct promise_type : C4Task::Promise<T>
+	struct promise_type : C4Task::Promise<T, PromiseTraits>
 	{
-		void return_void() const noexcept(noexcept(C4Task::Promise<T>::SetResult()))
+		void return_void() const noexcept(noexcept(C4Task::Promise<T, PromiseTraits>::SetResult()))
 		{
-			C4Task::Promise<T>::SetResult();
+			C4Task::Promise<T, PromiseTraits>::SetResult();
 		}
 	};
 };
