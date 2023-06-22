@@ -184,54 +184,58 @@ C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> C4CurlSystem::Execute()
 			}
 		}
 
-#ifdef _WIN32
-		if (result)
 		{
-			// copy map to prevent crashes
-			const auto localSockets = GetSocketMapCopy();
+			const std::lock_guard lock{socketMapMutex};
 
-			for (const auto socket : localSockets | std::views::values | std::views::join | std::views::keys)
+	#ifdef _WIN32
+			if (result)
 			{
-				if (WSANETWORKEVENTS networkEvents; !WSAEnumNetworkEvents(socket, event.GetEvent(), &networkEvents))
+				// copy map to prevent crashes
+				const auto localSockets = sockets;
+
+				for (const auto socket : localSockets | std::views::values | std::views::join | std::views::keys)
+				{
+					if (WSANETWORKEVENTS networkEvents; !WSAEnumNetworkEvents(socket, event.GetEvent(), &networkEvents))
+					{
+						int eventBitmask{0};
+						if (networkEvents.lNetworkEvents & (FD_READ | FD_ACCEPT | FD_CLOSE))
+						{
+							eventBitmask |= CURL_CSELECT_IN;
+						}
+
+						if (networkEvents.lNetworkEvents & (FD_WRITE | FD_CONNECT))
+						{
+							eventBitmask |= CURL_CSELECT_OUT;
+						}
+
+						curl_multi_socket_action(multiHandle.get(), socket, eventBitmask, &running);
+					}
+				}
+			}
+	#else
+			if (!result.empty())
+			{
+				for (const auto event : result)
 				{
 					int eventBitmask{0};
-					if (networkEvents.lNetworkEvents & (FD_READ | FD_ACCEPT | FD_CLOSE))
+					if (event.revents & POLLIN)
 					{
 						eventBitmask |= CURL_CSELECT_IN;
 					}
 
-					if (networkEvents.lNetworkEvents & (FD_WRITE | FD_CONNECT))
+					if (event.revents & POLLOUT)
 					{
 						eventBitmask |= CURL_CSELECT_OUT;
 					}
 
-					curl_multi_socket_action(multiHandle.get(), socket, eventBitmask, &running);
+					curl_multi_socket_action(multiHandle.get(), event.fd, eventBitmask, &running);
 				}
 			}
-		}
-#else
-		if (!result.empty())
-		{
-			for (const auto event : result)
+	#endif
+			else
 			{
-				int eventBitmask{0};
-				if (event.revents & POLLIN)
-				{
-					eventBitmask |= CURL_CSELECT_IN;
-				}
-
-				if (event.revents & POLLOUT)
-				{
-					eventBitmask |= CURL_CSELECT_OUT;
-				}
-
-				curl_multi_socket_action(multiHandle.get(), event.fd, eventBitmask, &running);
+				curl_multi_socket_action(multiHandle.get(), CURL_SOCKET_TIMEOUT, 0, &running);
 			}
-		}
-#endif
-		else
-		{
-			curl_multi_socket_action(multiHandle.get(), CURL_SOCKET_TIMEOUT, 0, &running);
 		}
 
 		ProcessMessages();
@@ -371,8 +375,6 @@ int C4CurlSystem::SocketFunction(CURL *const curl, const curl_socket_t s, const 
 		return CURL_SOCKOPT_ERROR;
 	}
 #endif
-
-	const std::lock_guard lock{that.socketMapMutex};
 
 	if (what == CURL_POLL_REMOVE)
 	{
