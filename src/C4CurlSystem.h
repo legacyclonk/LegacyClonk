@@ -194,8 +194,8 @@ private:
 		return sockets;
 	}
 
-	static int SocketFunction(CURL *curl, curl_socket_t s, int what, void *userData);
-	static int TimerFunction(CURLM *, long timeout, void *userData);
+	static int SocketFunction(CURL *curl, curl_socket_t s, int what, void *userData) noexcept;
+	static int TimerFunction(CURLM *, long timeout, void *userData) noexcept;
 
 private:
 	std::atomic_uint32_t timeout{StdSync::Infinite};

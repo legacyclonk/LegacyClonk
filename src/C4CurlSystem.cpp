@@ -337,7 +337,7 @@ void C4CurlSystem::CancelWait()
 	}
 }
 
-int C4CurlSystem::SocketFunction(CURL *const curl, const curl_socket_t s, const int what, void *const userData)
+int C4CurlSystem::SocketFunction(CURL *const curl, const curl_socket_t s, const int what, void *const userData) noexcept
 {
 	auto &that = *reinterpret_cast<C4CurlSystem *>(userData);
 
@@ -391,7 +391,7 @@ int C4CurlSystem::SocketFunction(CURL *const curl, const curl_socket_t s, const 
 	return 0;
 }
 
-int C4CurlSystem::TimerFunction(CURLM *, const long timeout, void *const userData)
+int C4CurlSystem::TimerFunction(CURLM *, const long timeout, void *const userData) noexcept
 {
 	reinterpret_cast<C4CurlSystem *>(userData)->timeout.store(static_cast<std::uint32_t>(std::clamp(timeout, -1L, static_cast<long>(std::numeric_limits<std::int32_t>::max()))), std::memory_order_release);
 	return 0;
