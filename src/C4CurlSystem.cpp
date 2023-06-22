@@ -91,7 +91,10 @@ C4CurlSystem::AddedEasyHandle::AddedEasyHandle(C4CurlSystem &system, EasyHandle 
 
 C4CurlSystem::AddedEasyHandle::~AddedEasyHandle()
 {
-	system.get().RemoveHandle(get());
+	if (get())
+	{
+		system.get().RemoveHandle(get());
+	}
 }
 
 C4CurlSystem::C4CurlSystem()
