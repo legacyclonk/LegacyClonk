@@ -157,13 +157,13 @@ C4CurlSystem::~C4CurlSystem()
 	}
 }
 
-C4Task::Hot<void> C4CurlSystem::Execute()
+C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> C4CurlSystem::Execute()
 {
 	int running{0};
 
 	curl_multi_socket_action(multiHandle.get(), CURL_SOCKET_TIMEOUT, 0, &running);
 
-	C4Task::Promise<void> &promise{co_await C4Task::GetPromise()};
+	const auto cancellationToken = co_await C4Task::GetCancellationToken();
 
 	for (;;)
 	{
@@ -175,7 +175,7 @@ C4Task::Hot<void> C4CurlSystem::Execute()
 		}
 		catch (const C4Task::CancelledException &)
 		{
-			if (promise.IsCancelled())
+			if (cancellationToken())
 			{
 				co_return;
 			}
@@ -239,7 +239,7 @@ C4Task::Cold<C4CurlSystem::WaitReturnType> C4CurlSystem::Wait()
 {
 	const struct Cleanup
 	{
-		Cleanup(C4Task::Promise<WaitReturnType> &promise, std::atomic<C4Task::Promise<WaitReturnType> *> &wait)
+		Cleanup(C4Task::CancellablePromise &promise, std::atomic<C4Task::CancellablePromise *> &wait)
 			: promise{promise}, wait{wait}
 		{
 			wait.store(&promise, std::memory_order_release);
@@ -247,7 +247,7 @@ C4Task::Cold<C4CurlSystem::WaitReturnType> C4CurlSystem::Wait()
 
 		~Cleanup()
 		{
-			C4Task::Promise<WaitReturnType> *expected;
+			C4Task::CancellablePromise *expected;
 
 			do
 			{
@@ -256,8 +256,8 @@ C4Task::Cold<C4CurlSystem::WaitReturnType> C4CurlSystem::Wait()
 			while (!wait.compare_exchange_strong(expected, nullptr, std::memory_order_acq_rel));
 		}
 
-		C4Task::Promise<WaitReturnType> &promise;
-		std::atomic<C4Task::Promise<WaitReturnType> *> &wait;
+		C4Task::CancellablePromise &promise;
+		std::atomic<C4Task::CancellablePromise *> &wait;
 	} cleanup{co_await C4Task::GetPromise(), wait};
 
 #ifdef _WIN32
@@ -313,7 +313,7 @@ void C4CurlSystem::ProcessMessages()
 
 void C4CurlSystem::CancelWait()
 {
-	if (auto *const promise = wait.exchange(nullptr, std::memory_order_acq_rel); promise)
+	if (C4Task::CancellablePromise *const promise{wait.exchange(nullptr, std::memory_order_acq_rel)}; promise)
 	{
 		const struct Cleanup
 		{
@@ -322,8 +322,8 @@ void C4CurlSystem::CancelWait()
 				wait.store(promise, std::memory_order_release);
 			}
 
-			C4Task::Promise<WaitReturnType> *promise;
-			std::atomic<C4Task::Promise<WaitReturnType> *> &wait;
+			C4Task::CancellablePromise *promise;
+			std::atomic<C4Task::CancellablePromise *> &wait;
 		} cleanup{promise, wait};
 
 		promise->Cancel();
