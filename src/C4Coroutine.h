@@ -66,39 +66,112 @@ struct ValueWrapper<void>
 	void GetValue() const {}
 };
 
+template<typename T, bool IsNoExcept>
+union Optional
+{
+public:
+	Optional() noexcept {}
+	~Optional() noexcept {}
+
+	ValueWrapper<T> Wrapper;
+	std::exception_ptr Exception;
+};
+
+template<typename T>
+union Optional<T, true>
+{
+public:
+	Optional() noexcept {}
+	~Optional() noexcept {}
+
+	ValueWrapper<T> Wrapper;
+};
+
 template<typename T, bool IsNoExcept = false>
-class Result
+class ResultBase
+{
+protected:
+	decltype(auto) GetValue() const
+	{
+		return result.Wrapper.GetValue();
+	}
+
+	[[noreturn]] void ReThrowException() const
+	{
+		std::rethrow_exception(result.Exception);
+	}
+
+	template<typename U = std::type_identity_t<T>>
+	void CreateValue(U &&value) noexcept(noexcept(std::construct_at(std::addressof(result.Wrapper), std::forward<U>(value)))) requires (!std::same_as<U, void>)
+	{
+		std::construct_at(std::addressof(result.Wrapper), std::forward<U>(value));
+	}
+
+	void CreateValue() noexcept requires std::same_as<T, void>
+	{
+		std::construct_at(std::addressof(result.Wrapper));
+	}
+
+	void CreateException(std::exception_ptr &&ptr) requires (!IsNoExcept)
+	{
+		std::construct_at(std::addressof(this->result.Exception), std::move(ptr));
+	}
+
+	void DestroyWrapper() noexcept
+	{
+		std::destroy_at(std::addressof(result.Wrapper));
+	}
+
+	void DestroyException() noexcept requires (!IsNoExcept)
+	{
+		std::destroy_at(std::addressof(result.Exception));
+	}
+
+protected:
+	Optional<T, IsNoExcept> result;
+};
+
+template<>
+class ResultBase<void, true>
+{
+protected:
+	constexpr void GetValue() const noexcept {}
+	constexpr void CreateValue() const noexcept {}
+	constexpr void DestroyWrapper() const noexcept {}
+};
+
+template<typename U, bool IsNoExcept_>
+struct EnumBaseType
+{
+	using Type = int;
+};
+
+template<typename U>
+struct EnumBaseType<U, true>
+{
+	using Type = std::conditional_t<
+		sizeof(U) == 1, std::uint8_t, std::conditional_t<
+			sizeof(U) == 2, std::uint16_t, int
+			>
+		>;
+};
+
+template<>
+struct EnumBaseType<void, true>
+{
+	using Type = std::uint8_t;
+};
+
+template<typename T, bool IsNoExcept = false>
+class Result : protected ResultBase<T, IsNoExcept>
 {
 private:
-	enum ResultState
+	enum ResultState : typename EnumBaseType<T, IsNoExcept>::Type
 	{
 		NotPresent,
 		Present,
 		Exception
 	};
-
-	template<bool C>
-	union Optional
-	{
-	public:
-		Optional() noexcept {}
-		~Optional() noexcept {}
-
-		ValueWrapper<T> Wrapper;
-		std::exception_ptr Exception;
-	};
-
-	template<>
-	union Optional<true>
-	{
-	public:
-		Optional() noexcept {}
-		~Optional() noexcept {}
-
-		ValueWrapper<T> Wrapper;
-	};
-
-	static_assert(std::is_default_constructible_v<Optional<IsNoExcept>>);
 
 public:
 	Result() = default;
@@ -107,13 +180,13 @@ public:
 		switch (resultState)
 		{
 		case ResultState::Present:
-			std::destroy_at(std::addressof(result.Wrapper));
+			ResultBase<T, IsNoExcept>::DestroyWrapper();
 			break;
 
 		case ResultState::Exception:
 			if constexpr (!IsNoExcept)
 			{
-				std::destroy_at(std::addressof(result.Exception));
+				ResultBase<T, IsNoExcept>::DestroyException();
 			}
 			else
 			{
@@ -135,12 +208,12 @@ public:
 		switch (resultState)
 		{
 		case ResultState::Present:
-			return result.Wrapper.GetValue();
+			return ResultBase<T, IsNoExcept>::GetValue();
 
 		case ResultState::Exception:
 			if constexpr (!IsNoExcept)
 			{
-				std::rethrow_exception(result.Exception);
+				ResultBase<T, IsNoExcept>::ReThrowException();
 			}
 			else
 			{
@@ -153,11 +226,11 @@ public:
 	}
 
 	template<typename U = std::type_identity_t<T>>
-	void SetResult(U &&result) noexcept(noexcept(std::construct_at(std::addressof(this->result.Wrapper), std::forward<T>(result)))) requires (!std::same_as<U, void>)
+	void SetResult(U &&result) noexcept(noexcept(ResultBase<T, IsNoExcept>::CreateValue(std::forward<U>(result)))) requires (!std::same_as<U, void>)
 	{
 		if (resultState == ResultState::NotPresent)
 		{
-			std::construct_at(std::addressof(this->result.Wrapper), std::forward<T>(result));
+			ResultBase<T, IsNoExcept>::CreateValue(std::forward<U>(result));
 			resultState = ResultState::Present;
 		}
 	}
@@ -166,7 +239,7 @@ public:
 	{
 		if (resultState == ResultState::NotPresent)
 		{
-			std::construct_at(std::addressof(this->result.Wrapper));
+			ResultBase<T, IsNoExcept>::CreateValue();
 			resultState = ResultState::Present;
 		}
 	}
@@ -175,15 +248,13 @@ public:
 	{
 		if (resultState == ResultState::NotPresent)
 		{
-			std::construct_at(std::addressof(result.Exception), std::move(exceptionPtr));
-
+			ResultBase<T, IsNoExcept>::CreateException(std::move(exceptionPtr));
 			resultState = ResultState::Exception;
 		}
 	}
 
 private:
 	ResultState resultState{ResultState::NotPresent};
-	Optional<IsNoExcept> result;
 };
 
 struct CancellationTokenMarker {};
