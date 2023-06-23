@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "C4Attributes.h"
+
 #ifdef _WIN32
 #include "C4WinRT.h"
 #endif

@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "C4Attributes.h"
 #include "C4Coroutine.h"
 #include "C4NetIO.h"
 #include "StdSync.h"
@@ -199,7 +200,7 @@ private:
 
 private:
 	std::atomic_uint32_t timeout{StdSync::Infinite};
-	[[no_unique_address, msvc::no_unique_address]] GlobalInit globalInit;
+	[[no_unique_address]] GlobalInit globalInit;
 
 	MultiHandle multiHandle;
 
