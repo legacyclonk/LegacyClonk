@@ -1,3 +1,4 @@
+src/C4Attributes.h
 src/C4Breakpoint.h
 src/C4Chrono.cpp
 src/C4Chrono.h
