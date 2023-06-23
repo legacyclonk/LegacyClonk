@@ -495,7 +495,7 @@ struct Promise : CancellablePromise
 		{
 			Promise &promise;
 
-			void await_suspend(const std::coroutine_handle<>) const noexcept
+			std::coroutine_handle<> await_suspend(const std::coroutine_handle<>) const noexcept
 			{
 				const auto waiter = promise.waiting.exchange(CompletedSentinel, std::memory_order_acq_rel);
 				if (waiter == AbandonedSentinel)
@@ -511,9 +511,11 @@ struct Promise : CancellablePromise
 					}
 					else
 					{
-						std::coroutine_handle<>::from_address(waiter).resume();
+						return std::coroutine_handle<>::from_address(waiter);
 					}
 				}
+
+				return std::noop_coroutine();
 			}
 		};
 
