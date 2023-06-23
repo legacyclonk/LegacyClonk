@@ -560,7 +560,6 @@ private:
 	std::atomic<void *> waiting{ColdSentinel};
 	ResumeFunction resumer;
 	mutable Result<T, PromiseTraits::IsNoExcept> result;
-	std::atomic_bool cancelled{false};
 };
 
 template<typename T, typename PromiseTraits>
