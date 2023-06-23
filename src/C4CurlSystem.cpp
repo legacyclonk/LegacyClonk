@@ -123,9 +123,8 @@ C4CurlSystem::AddedEasyHandle C4CurlSystem::AddHandle(Awaiter &awaiter, EasyHand
 	{
 		const std::lock_guard lock{socketMapMutex};
 		ThrowIfFailed(sockets.try_emplace(addedEasyHandle.get(), std::unordered_map<SOCKET, int>{}).second, "already added");
+		ThrowIfFailed(curl_multi_add_handle(multiHandle.get(), addedEasyHandle.get()) == CURLM_OK, "curl_multi_add_handle");
 	}
-
-	ThrowIfFailed(curl_multi_add_handle(multiHandle.get(), addedEasyHandle.get()) == CURLM_OK, "curl_multi_add_handle");
 
 	CancelWait();
 
@@ -135,11 +134,10 @@ C4CurlSystem::AddedEasyHandle C4CurlSystem::AddHandle(Awaiter &awaiter, EasyHand
 void C4CurlSystem::RemoveHandle(CURL *const handle)
 {
 	{
+		curl_multi_remove_handle(multiHandle.get(), handle);
 		const std::lock_guard lock{socketMapMutex};
 		sockets.erase(handle);
 	}
-
-	curl_multi_remove_handle(multiHandle.get(), handle);
 
 	CancelWait();
 }
@@ -193,23 +191,30 @@ C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> C4CurlSystem::Execute()
 				// copy map to prevent crashes
 				const auto localSockets = sockets;
 
-				for (const auto socket : localSockets | std::views::values | std::views::join | std::views::keys)
+				if (!localSockets.empty())
 				{
-					if (WSANETWORKEVENTS networkEvents; !WSAEnumNetworkEvents(socket, event.GetEvent(), &networkEvents))
+					for (const auto socket : localSockets | std::views::values | std::views::join | std::views::keys)
 					{
-						int eventBitmask{0};
-						if (networkEvents.lNetworkEvents & (FD_READ | FD_ACCEPT | FD_CLOSE))
+						if (WSANETWORKEVENTS networkEvents; !WSAEnumNetworkEvents(socket, event.GetEvent(), &networkEvents))
 						{
-							eventBitmask |= CURL_CSELECT_IN;
-						}
+							int eventBitmask{0};
+							if (networkEvents.lNetworkEvents & (FD_READ | FD_ACCEPT | FD_CLOSE))
+							{
+								eventBitmask |= CURL_CSELECT_IN;
+							}
 
-						if (networkEvents.lNetworkEvents & (FD_WRITE | FD_CONNECT))
-						{
-							eventBitmask |= CURL_CSELECT_OUT;
-						}
+							if (networkEvents.lNetworkEvents & (FD_WRITE | FD_CONNECT))
+							{
+								eventBitmask |= CURL_CSELECT_OUT;
+							}
 
-						curl_multi_socket_action(multiHandle.get(), socket, eventBitmask, &running);
+							curl_multi_socket_action(multiHandle.get(), socket, eventBitmask, &running);
+						}
 					}
+				}
+				else
+				{
+					curl_multi_socket_action(multiHandle.get(), CURL_SOCKET_TIMEOUT, 0, &running);
 				}
 			}
 	#else
@@ -238,6 +243,8 @@ C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> C4CurlSystem::Execute()
 			}
 		}
 
+		// release the mutex for a short time to allow cancellation to remove easy
+		const std::lock_guard lock{socketMapMutex};
 		ProcessMessages();
 	}
 }
