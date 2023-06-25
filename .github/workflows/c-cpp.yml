@@ -20,6 +20,7 @@ jobs:
           - os: windows-latest
             arch: x86
             env: Windows
+            update: win32
           - os: windows-latest
             arch: x86
             env: Windows
@@ -27,9 +28,11 @@ jobs:
           - os: windows-latest
             arch: x64
             env: Windows
+            update: win64
           - os: ubuntu-20.04
             arch: x64
             env: Linux
+            update: linux64
           - os: ubuntu-20.04
             arch: x64
             env: Linux
@@ -37,6 +40,7 @@ jobs:
           - os: macos-12
             arch: x64
             env: Mac
+            update: mac
     runs-on: ${{ matrix.os }}
     env:
       IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
@@ -107,22 +111,33 @@ jobs:
           C4GROUP=$PWD/build/c4group tools/make_Graphics.c4g.sh
           C4GROUP=$PWD/build/c4group tools/make_System.c4g.sh
 
+      - name: "Create update directory"
+        run: |
+          mkdir update
+          cp tools/AutoUpdate.txt update
+          echo "UPDATE_PLATFORM=${{ matrix.update }}" >> $GITHUB_ENV
+
       - name: "Windows: Collect binaries"
         if: ${{ matrix.env == 'Windows' }}
         run: |
           cd build
+          cp *.{exe,pdb} ../update
           mv *.{exe,pdb} ../output
+          echo "C4GROUP_BINARY=output/c4group.exe" >> $GITHUB_ENV
 
       - name: "Linux: Collect binaries"
         if: ${{ matrix.env == 'Linux' }}
         run: |
           cd build
+          cp c4group ../update
           cp clonk c4group ../output
+          echo "C4GROUP_BINARY=output/c4group" >> $GITHUB_ENV
 
       - name: "Linux: Create AppImage"
         if: ${{ matrix.env == 'Linux' }}
         run: |
           tools/make_AppImage.sh
+          cp output/clonk.AppImage update/clonk
 
       - name: "Mac: Create Bundle"
         if: ${{ matrix.env == 'Mac' }}
@@ -130,6 +145,8 @@ jobs:
           cd build
           DESTDIR=inst ninja install
           mv inst/usr/local/c4group inst/usr/local/clonk.app ../output
+          cp -r ../output/{c4group,clonk.app} ../update
+          echo "C4GROUP_BINARY=output/c4group" >> $GITHUB_ENV
 
       - name: "Publish Main Artifact"
         uses: actions/upload-artifact@v3
@@ -170,6 +187,12 @@ jobs:
           cd output
           zip -r LegacyClonk-$CONFIG_SUFFIX.zip *
 
+      - name: "Build update"
+        if: ${{ matrix.config != 'Debugrec' }}
+        run: |
+          mv update lc_360_$UPDATE_PLATFORM.c4u
+          $C4GROUP_BINARY lc_360_$UPDATE_PLATFORM.c4u -p
+
       - name: "Release: Windows / Mac"
         uses: ncipollo/release-action@v1.11.2
         if: ${{ env.IS_RELEASE == 'true' && matrix.env != 'Linux' }}
@@ -197,6 +220,16 @@ jobs:
           artifacts: |
             System.c4g
             Graphics.c4g
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          generateReleaseNotes: true
+
+      - name: "Release: Update"
+        uses: ncipollo/release-action@v1.11.2
+        if: ${{ env.IS_RELEASE == 'true' && matrix.config != 'Debugrec' }}
+        with:
+          artifacts: lc_360_${{ env.UPDATE_PLATFORM }}.c4u
           allowUpdates: true
           artifactErrorsFailBuild: true
           replacesArtifacts: true
