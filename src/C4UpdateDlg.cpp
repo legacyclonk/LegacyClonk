@@ -23,6 +23,10 @@
 
 #include <C4Log.h>
 
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+
 #ifdef _WIN32
 #include <shellapi.h>
 #else
@@ -33,6 +37,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #endif
+
+#include <boost/json.hpp>
+
+#define C4XVERBUILD_STRING C4XVERTOC4XVERS(C4XVERBUILD)
+
+static constexpr auto UpdateFileName = "lc_" C4XVERBUILD_STRING "_" C4_OS ".c4u";
 
 int C4UpdateDlg::pid;
 int C4UpdateDlg::c4group_output[2];
@@ -123,47 +133,15 @@ void C4UpdateDlg::UpdateText()
 
 // static update application function
 
-bool C4UpdateDlg::DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *pScreen)
+bool C4UpdateDlg::DoUpdate(const std::int64_t assetId, C4GUI::Screen *pScreen)
 {
-	StdStrBuf strUpdateFile, strUpdateURL;
-	// Double check for valid update
-	if (!IsValidUpdate(rUpdateVersion)) return false;
-	// Objects major update: we will update to the first minor of the next major version - we can not skip major versions or jump directly to a higher minor of the next major version.
-	if (rUpdateVersion.iVer[2] > C4XVER3)
-		strUpdateFile.Format(C4CFG_UpdateMajor, static_cast<int>(rUpdateVersion.iVer[0]), static_cast<int>(rUpdateVersion.iVer[1]), C4XVER3 + 1, 0, C4_OS);
-	// Objects version match: engine update only
-	else if ((rUpdateVersion.iVer[2] == C4XVER3) && (rUpdateVersion.iVer[3] == C4XVER4))
-		strUpdateFile.Format(C4CFG_UpdateEngine, static_cast<int>(rUpdateVersion.iBuild), C4_OS);
-	// Objects version mismatch: full objects update
-	else
-		strUpdateFile.Format(C4CFG_UpdateObjects, static_cast<int>(rUpdateVersion.iVer[0]), static_cast<int>(rUpdateVersion.iVer[1]), static_cast<int>(rUpdateVersion.iVer[2]), static_cast<int>(rUpdateVersion.iVer[3]), static_cast<int>(rUpdateVersion.iBuild), C4_OS);
-	// Compose full update URL by using update server address and replacing last path element name with the update file
-	int iLastElement = SCharLastPos('/', Config.Network.UpdateServerAddress);
-	if (iLastElement > -1)
-	{
-		strUpdateURL = Config.Network.UpdateServerAddress;
-		strUpdateURL.ReplaceEnd(iLastElement + 1, "");
-		strUpdateURL.Append(strUpdateFile);
-	}
-	else
-	{
-		// No last slash in update server address?
-		// Append update file as new segment instead - maybe somebody wants
-		// to set up their update server this way
-		strUpdateURL = Config.Network.UpdateServerAddress;
-		strUpdateURL.Append("/");
-		strUpdateURL.Append(strUpdateFile);
-	}
-	// Determine local filename for update group
-	StdStrBuf strLocalFilename; strLocalFilename.Copy(GetFilename(strUpdateFile.getData()));
-	// Download update group to temp path
-	strLocalFilename.Copy(Config.AtTempPath(strLocalFilename.getData()));
+	const std::string filePath{Config.AtTempPath(UpdateFileName)};
 	// Download update group
-	if (!C4DownloadDlg::DownloadFile(LoadResStr("IDS_TYPE_UPDATE"), pScreen, strUpdateURL.getData(), strLocalFilename.getData(), LoadResStr("IDS_MSG_UPDATENOTAVAILABLE")))
+	if (!C4DownloadDlg::DownloadFile(LoadResStr("IDS_TYPE_UPDATE"), pScreen, std::format("https://api.github.com/repos/legacyclonk/LegacyClonk/releases/assets/{}", assetId).c_str(), filePath.c_str(), LoadResStr("IDS_MSG_UPDATENOTAVAILABLE")))
 		// Download failed (return success, because error message has already been shown)
 		return true;
 	// Apply downloaded update
-	return ApplyUpdate(strLocalFilename.getData(), true, pScreen);
+	return ApplyUpdate(filePath.c_str(), true, pScreen);
 }
 
 bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4GUI::Screen *pScreen)
@@ -240,22 +218,6 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	return succeeded;
 }
 
-bool C4UpdateDlg::IsValidUpdate(const C4GameVersion &rNewVer)
-{
-	// Engine or game version mismatch
-	if ((rNewVer.iVer[0] != C4XVER1) || (rNewVer.iVer[1] != C4XVER2)) return false;
-	// Objects major is higher...
-	if ((rNewVer.iVer[2] > C4XVER3)
-		// ...or objects major is the same and objects minor is higher...
-		|| ((rNewVer.iVer[2] == C4XVER3) && (rNewVer.iVer[3] > C4XVER4))
-		// ...or build number is higher
-		|| (rNewVer.iBuild > C4XVERBUILD))
-		// Update okay
-		return true;
-	// Otherwise
-	return false;
-}
-
 bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 {
 	// Automatic update only once a day
@@ -265,23 +227,44 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	// Store the time of this update check (whether it's automatic or not or successful or not)
 	Config.Network.LastUpdateTime = static_cast<int32_t>(time(nullptr));
 	// Get current update version from server
-	C4GameVersion UpdateVersion;
 	C4GUI::Dialog *pWaitDlg = nullptr;
+
+	const auto showErrorDialog = [pScreen](const char *const body, const char *const title)
+	{
+		if (pScreen)
+		{
+			std::string message{LoadResStr("IDS_MSG_UPDATEFAILED")};
+			if (body)
+			{
+				message.append(": ").append(body);
+			}
+
+			pScreen->ShowMessage(message.c_str(), title, C4GUI::Ico_Ex_Update);
+		}
+
+		return false;
+	};
+
+	C4Network2HTTPClient client;
+
+	if (!client.Init() || !client.SetServer("https://api.github.com/repos/legacyclonk/LegacyClonk/releases/tags/v" C4XVERBUILD_STRING "_curl_open_beta"))
+	{
+		return showErrorDialog(client.GetError(), LoadResStr("IDS_MSG_LOOKINGFORUPDATES"));
+	}
+
 	if (pScreen && C4GUI::IsGUIValid())
 	{
-		pWaitDlg = new C4GUI::MessageDialog(LoadResStr("IDS_MSG_LOOKINGFORUPDATES"), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnAbort, C4GUI::Ico_Ex_Update, C4GUI::MessageDialog::dsRegular);
+		pWaitDlg = new C4GUI::MessageDialog(LoadResStr("IDS_MSG_LOOKINGFORUPDATES"), client.getServerName(), C4GUI::MessageDialog::btnAbort, C4GUI::Ico_Ex_Update, C4GUI::MessageDialog::dsRegular);
 		pWaitDlg->SetDelOnClose(false);
 		pScreen->ShowDialog(pWaitDlg, false);
 	}
-	C4Network2VersionInfoClient VerChecker;
+
 	bool fSuccess = false, fAborted = false;
-	StdStrBuf strUpdateRedirect;
-	StdStrBuf strQuery; strQuery.Format("%s?action=version", Config.Network.UpdateServerAddress);
-	if (VerChecker.Init() && VerChecker.SetServer(strQuery.getData()) && VerChecker.QueryVersion())
+
+	if (client.Query(nullptr, false))
 	{
-		Application.InteractiveThread.AddProc(&VerChecker);
 		// wait for version check to terminate
-		while (VerChecker.isBusy())
+		while (client.isBusy())
 		{
 			C4AppHandleResult hr;
 			while ((hr = Application.HandleMessage()) == HR_Message) {}
@@ -292,10 +275,8 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 		}
 		if (!fAborted)
 		{
-			fSuccess = VerChecker.GetVersion(&UpdateVersion);
-			VerChecker.GetRedirect(strUpdateRedirect);
+			fSuccess = client.isSuccess();
 		}
-		Application.InteractiveThread.RemoveProc(&VerChecker);
 	}
 	if (pScreen && C4GUI::IsGUIValid()) delete pWaitDlg;
 	// User abort
@@ -303,63 +284,64 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	{
 		return false;
 	}
-	// Error during update check
+
 	if (!fSuccess)
 	{
-		if (pScreen)
-		{
-			StdStrBuf sError; sError.Copy(LoadResStr("IDS_MSG_UPDATEFAILED"));
-			const char *szErrMsg = VerChecker.GetError();
-			if (szErrMsg)
-			{
-				sError.Append(": ");
-				sError.Append(szErrMsg);
-			}
-			pScreen->ShowMessage(sError.getData(), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
-		}
-		return false;
+		return showErrorDialog(client.GetError(), client.getServerName());
 	}
 
-	// UpdateServer Redirection
-	if ((strUpdateRedirect.getLength() > 0) && !SEqual(strUpdateRedirect.getData(), Config.Network.UpdateServerAddress))
+	std::tm timePoint{};
+	std::int64_t assetId{0};
+
+	try
 	{
-		// this is a new redirect. Inform the user and auto-change servers if desired
-		const char *newServer = strUpdateRedirect.getData();
-		if (pScreen)
+		const auto parseDateTime = [](const std::string_view string)
 		{
-			StdStrBuf sMessage;
-			sMessage.Format(LoadResStr("IDS_NET_SERVERREDIRECTMSG"), newServer);
-			if (!pScreen->ShowMessageModal(sMessage.getData(), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
+			std::stringstream stream;
+			stream << string;
+
+			std::tm timePoint;
+			stream >> std::get_time(&timePoint, "%Y-%m-%dT%TZ");
+			timePoint.tm_isdst = -1;
+			return timePoint;
+		};
+
+		const auto assets = boost::json::parse(client.getResultString()).as_object().at("assets").as_array();
+
+		if (const auto it = std::find_if(assets.begin(), assets.end(), [](const auto &asset) { return asset.as_object().at("name").as_string() == UpdateFileName; }); it != assets.end())
+		{
+			const auto &asset = it->get_object();
+
+			auto updatedAt = parseDateTime(static_cast<std::string_view>(asset.at("updated_at").as_string()));
+			auto engineBuiltAt = parseDateTime(C4UPDATE_BUILD_TIMESTAMP);
+
+			if (std::mktime(&updatedAt) - std::mktime(&engineBuiltAt) > 10 * 60)
 			{
-				// apply new server setting
-				SCopy(newServer, Config.Network.UpdateServerAddress, CFG_MaxString);
-				Config.Save();
-				pScreen->ShowMessageModal(LoadResStr("IDS_NET_SERVERREDIRECTDONE"), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_OfficialServer);
-				// abort the update check - user should try again
-				return false;
+				timePoint = updatedAt;
+				assetId = asset.at("id").to_number<std::int64_t>();
 			}
 		}
-		else
-		{
-			SCopy(newServer, Config.Network.UpdateServerAddress, CFG_MaxString);
-			Config.Save();
-			return false;
-		}
+	}
+	catch (const std::exception &e)
+	{
+		return showErrorDialog(e.what(), client.getServerName());
 	}
 
 	if (!pScreen)
 	{
-		return C4UpdateDlg::IsValidUpdate(UpdateVersion);
+		return timePoint.tm_year > 0;
 	}
 
 	// Applicable update available
-	if (C4UpdateDlg::IsValidUpdate(UpdateVersion))
+	if (timePoint.tm_year > 0)
 	{
 		// Prompt user, then apply update
-		StdStrBuf strMsg; strMsg.Format(LoadResStr("IDS_MSG_ANUPDATETOVERSIONISAVAILA"), UpdateVersion.GetString().getData());
-		if (pScreen->ShowMessageModal(strMsg.getData(), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_Ex_Update))
-			if (!DoUpdate(UpdateVersion, pScreen))
-				pScreen->ShowMessage(LoadResStr("IDS_MSG_UPDATEFAILED"), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
+		std::ostringstream stream;
+		stream << std::put_time(&timePoint, "%c");
+		StdStrBuf strMsg; strMsg.Format(LoadResStr("IDS_MSG_ANUPDATETOVERSIONISAVAILA"), stream.str().c_str());
+		if (pScreen->ShowMessageModal(strMsg.getData(), client.getServerName(), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_Ex_Update))
+			if (!DoUpdate(assetId, pScreen))
+				pScreen->ShowMessage(LoadResStr("IDS_MSG_UPDATEFAILED"), client.getServerName(), C4GUI::Ico_Ex_Update);
 			else
 				return true;
 	}
@@ -368,72 +350,8 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	{
 		// Message (if not automatic)
 		if (!fAutomatic)
-			pScreen->ShowMessage(LoadResStr("IDS_MSG_NOUPDATEAVAILABLEFORTHISV"), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
+			pScreen->ShowMessage(LoadResStr("IDS_MSG_NOUPDATEAVAILABLEFORTHISV"), client.getServerName(), C4GUI::Ico_Ex_Update);
 	}
 	// Done (and no update has been done)
-	return false;
-}
-
-// *** C4Network2VersionInfoClient
-
-bool C4Network2VersionInfoClient::QueryVersion()
-{
-	// Perform an Query query
-	return Query(nullptr, false);
-}
-
-bool C4Network2VersionInfoClient::GetVersion(C4GameVersion *piVerOut)
-{
-	// Sanity check
-	if (isBusy() || !isSuccess()) return false;
-	// Parse response
-	piVerOut->Set("", 0, 0, 0, 0, 0);
-	try
-	{
-		CompileFromBuf<StdCompilerINIRead>(mkNamingAdapt(
-			mkNamingAdapt(
-				mkParAdapt(*piVerOut, false),
-				"Version"),
-			C4ENGINENAME), StdStrBuf::MakeRef(resultString.c_str()));
-	}
-	catch (const StdCompiler::Exception &e)
-	{
-		SetError(e.what());
-		return false;
-	}
-	// validate version
-	if (!piVerOut->iVer[0])
-	{
-		SetError(LoadResStr("IDS_ERR_INVALIDREPLYFROMSERVER"));
-		return false;
-	}
-	// done; version OK!
-	return true;
-}
-
-bool C4Network2VersionInfoClient::GetRedirect(StdStrBuf &rRedirect)
-{
-	// Sanity check
-	if (isBusy() || !isSuccess()) return false;
-	StdStrBuf strUpdateRedirect;
-	try
-	{
-		CompileFromBuf<StdCompilerINIRead>(mkNamingAdapt(
-			mkNamingAdapt(mkParAdapt(strUpdateRedirect, StdCompiler::RCT_All), "UpdateServerRedirect", ""),
-			C4ENGINENAME), StdStrBuf::MakeRef(resultString.c_str()));
-	}
-	catch (const StdCompiler::Exception &e)
-	{
-		SetError(e.what());
-		return false;
-	}
-	// did we get something?
-	if (strUpdateRedirect.getLength() > 0)
-	{
-		rRedirect.Copy(strUpdateRedirect);
-		return true;
-	}
-	// no, we didn't
-	rRedirect.Clear();
 	return false;
 }

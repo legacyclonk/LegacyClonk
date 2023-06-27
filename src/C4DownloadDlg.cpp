@@ -123,7 +123,7 @@ void C4DownloadDlg::OnIdle()
 		}
 	}
 	const char *szStatusString = LoadResStr("IDS_PRC_DOWNLOADINGFILE");
-	SetStatus(FormatString(szStatusString, GetFilename(HTTPClient.getURL())).getData(), iProgress);
+	SetStatus(FormatString(szStatusString, filename).getData(), iProgress);
 }
 
 void C4DownloadDlg::UserClose(bool fOK)
@@ -150,7 +150,8 @@ bool C4DownloadDlg::ShowModal(C4GUI::Screen *pScreen, const char *szURL, const c
 	// show dlg
 	if (!Show(pScreen, true)) return false;
 	// start query
-	if (!HTTPClient.Query(nullptr, true)) return false;
+	if (!HTTPClient.Query(nullptr, true, {{"Accept", "application/octet-stream"}})) return false;
+	filename = GetFilename(szSaveAsFilename);
 	// first time status update
 	OnIdle();
 	// cycle until query is finished or aborted
@@ -181,7 +182,7 @@ bool C4DownloadDlg::DownloadFile(const char *szDLType, C4GUI::Screen *pScreen, c
 		const char *szError = pDlg->GetError();
 		if (!szError || !*szError) szError = LoadResStr("IDS_PRC_UNKOWNERROR");
 		StdStrBuf sError;
-		sError.Format(LoadResStr("IDS_PRC_DOWNLOADERROR"), GetFilename(szURL), szError);
+		sError.Format(LoadResStr("IDS_PRC_DOWNLOADERROR"), GetFilename(szSaveAsFilename), szError);
 		// it's a 404: display extended message
 		if (SSearch(szError, "404") && szNotFoundMessage)
 		{
