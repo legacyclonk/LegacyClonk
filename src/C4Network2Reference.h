@@ -126,8 +126,8 @@ public:
 
 public:
 	bool Init();
-	bool Query(const StdBuf &Data, bool binary);
-	bool Query(const char *szData, bool binary) { return Query(StdBuf::MakeRef(szData, SLen(szData)), binary); }
+	bool Query(const StdBuf &Data, bool binary, C4HTTPClient::Headers headers = {});
+	bool Query(const char *szData, bool binary, C4HTTPClient::Headers headers = {}) { return Query(StdBuf::MakeRef(szData, SLen(szData)), binary, std::move(headers)); }
 
 	bool isBusy() const { return busy.load(std::memory_order_acquire); }
 	bool isSuccess() const { return success.load(std::memory_order_acquire); }
