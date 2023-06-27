@@ -221,7 +221,7 @@ catch (const std::runtime_error &e)
 	return false;
 }
 
-bool C4Network2HTTPClient::Query(const StdBuf &Data, const bool binary)
+bool C4Network2HTTPClient::Query(const StdBuf &Data, const bool binary, C4HTTPClient::Headers headers)
 {
 	if (!Cancel({}))
 	{
@@ -246,7 +246,7 @@ bool C4Network2HTTPClient::Query(const StdBuf &Data, const bool binary)
 			return true;
 		};
 
-		task = QueryAsync(this->data.isNull() ? client->GetAsync(std::move(request), progressCallback) : client->PostAsync(std::move(request), progressCallback));
+		task = QueryAsync(this->data.isNull() ? client->GetAsync(std::move(request), progressCallback, std::move(headers)) : client->PostAsync(std::move(request), progressCallback, std::move(headers)));
 		return true;
 	}
 	catch (const std::runtime_error &e)
