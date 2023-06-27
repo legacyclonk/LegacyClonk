@@ -332,6 +332,15 @@ endif ()
 
 # Link libraries
 
+# Link Boost
+find_package(Boost 1.82.0 REQUIRED COMPONENTS json)
+
+if (WIN32)
+	target_compile_definitions(clonk PRIVATE BOOST_ALL_NO_LIB)
+endif ()
+
+target_include_directories(clonk PRIVATE ${BOOST_INCLUDE_DIRS})
+
 # Link Catch2
 if (USE_TESTS)
 	find_package(Catch2 3 REQUIRED)

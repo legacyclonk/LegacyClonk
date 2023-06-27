@@ -14,6 +14,7 @@ src/C4AulParse.cpp
 src/C4AulScriptStrict.h
 src/C4Awaiter.cpp
 src/C4Awaiter.h
+src/C4Boost.cpp
 src/C4ChatDlg.cpp
 src/C4ChatDlg.h
 src/C4Client.cpp
