@@ -508,9 +508,17 @@ list(PREPEND MACRO_TARGETS standard)
 
 # Define macros
 
+function (set_timestamp)
+	string(TIMESTAMP C4UPDATE_TIMESTAMP UTC)
+	set(C4UPDATE_BUILD_TIMESTAMP ${C4UPDATE_TIMESTAMP} PARENT_SCOPE)
+endfunction ()
+
+set_timestamp()
+
 foreach (MACRO_TARGET ${MACRO_TARGETS})
 	target_compile_definitions(${MACRO_TARGET} PUBLIC
 		C4_OS="${C4_OS}"
+		C4UPDATE_BUILD_TIMESTAMP="${C4UPDATE_BUILD_TIMESTAMP}"
 		ICONV_CONST=
 		STD_APPUSERMODELID="LegacyClonkTeam.LegacyClonk"
 		# A standard product name for this project which is used in window registration etc.

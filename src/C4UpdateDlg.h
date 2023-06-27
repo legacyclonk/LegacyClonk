@@ -41,19 +41,7 @@ public:
 	C4UpdateDlg();
 
 public:
-	static bool IsValidUpdate(const C4GameVersion &rNewVer); // Returns whether we can update to the specified version
 	static bool CheckForUpdates(C4GUI::Screen *pScreen = nullptr, bool fAutomatic = false); // Checks for available updates and prompts the user whether to apply
-	static bool DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *pScreen); // Static funtion for downloading and applying updates
+	static bool DoUpdate(std::int64_t assetId, C4GUI::Screen *pScreen); // Static funtion for downloading and applying updates
 	static bool ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4GUI::Screen *pScreen); // Static funtion for applying updates
-};
-
-// Loads current version string (mini-HTTP-client)
-class C4Network2VersionInfoClient : public C4Network2HTTPClient
-{
-public:
-	C4Network2VersionInfoClient() : C4Network2HTTPClient() {}
-
-	bool QueryVersion();
-	bool GetVersion(C4GameVersion *pSaveToVer);
-	bool GetRedirect(StdStrBuf &rRedirect);
 };
