@@ -333,7 +333,7 @@ endif ()
 # Link libraries
 
 # Link Boost
-find_package(Boost 1.82.0 REQUIRED COMPONENTS json)
+find_package(Boost 1.82.0 REQUIRED)
 
 if (WIN32)
 	target_compile_definitions(clonk PRIVATE BOOST_ALL_NO_LIB)
