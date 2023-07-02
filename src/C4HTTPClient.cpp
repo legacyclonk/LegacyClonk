@@ -59,7 +59,13 @@ void C4HTTPClient::Uri::CURLUDeleter::operator()(CURLU * const uri)
 C4HTTPClient::Uri::Uri(const std::string &serverAddress, const std::uint16_t port)
 	: uri{ThrowIfFailed(curl_url(), "curl_url failed")}
 {
-	ThrowIfFailed(curl_url_set(uri.get(), CURLUPART_URL, serverAddress.c_str(), CURLU_DEFAULT_SCHEME) == CURLUE_OK, "malformed URL");
+	CURLUcode urlError{curl_url_set(uri.get(), CURLUPART_URL, serverAddress.c_str(), 0)};
+	if (urlError == CURLUE_UNSUPPORTED_SCHEME)
+	{
+		urlError = curl_url_set(uri.get(), CURLUPART_URL, std::format("http://{}", serverAddress).c_str(), 0);
+	}
+
+	ThrowIfFailed(urlError == CURLUE_OK, "malformed URL");
 
 	if (port > 0)
 	{
