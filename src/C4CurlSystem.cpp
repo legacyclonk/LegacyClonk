@@ -302,21 +302,23 @@ void C4CurlSystem::ProcessMessages()
 
 			auto &awaiter = *reinterpret_cast<Awaiter *>(awaiterPtr);
 
-			if (message->data.result != CURLE_OK)
+			if (message->data.result == CURLE_OK)
 			{
-				awaiter.SetErrorMessage(curl_easy_strerror(message->data.result));
-			}
-
-			char *ip;
-			if (curl_easy_getinfo(message->easy_handle, CURLINFO_PRIMARY_IP, &ip) == CURLE_OK)
-			{
-				C4NetIO::addr_t serverAddress;
-				serverAddress.SetHost(StdStrBuf{ip});
-				awaiter.SetResult(std::move(serverAddress));
+				char *ip;
+				if (curl_easy_getinfo(message->easy_handle, CURLINFO_PRIMARY_IP, &ip) == CURLE_OK)
+				{
+					C4NetIO::addr_t serverAddress;
+					serverAddress.SetHost(StdStrBuf{ip});
+					awaiter.SetResult(std::move(serverAddress));
+				}
+				else
+				{
+					awaiter.SetErrorMessage("curl_easy_getinfo(CURLINFO_PRIMARY_IP) failed");
+				}
 			}
 			else
 			{
-				awaiter.SetErrorMessage("curl_easy_getinfo(CURLINFO_PRIMARY_IP) failed");
+				awaiter.SetErrorMessage(curl_easy_strerror(message->data.result));
 			}
 
 			awaiter.Resume();
