@@ -19,7 +19,7 @@
 
 #include "StdBuf.h"
 
-#include <assert.h>
+#include <cassert>
 #include <concepts>
 #include <stdexcept>
 #include <string>
