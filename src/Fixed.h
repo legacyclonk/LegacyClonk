@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include <cmath>
 #include <compare>
-#include <math.h>
 
 #include "StdCompiler.h"
 #include "StdAdaptors.h"

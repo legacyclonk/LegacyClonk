@@ -20,14 +20,13 @@
 
 #include "Standard.h"
 
-#include <stdlib.h>
-#include <assert.h>
-#include <stdarg.h>
-
+#include <cassert>
 #include <concepts>
+#include <cstdarg>
+#include <cstdlib>
 #include <cstring>
-#include <utility>
 #include <type_traits>
+#include <utility>
 
 // Base buffer class. Either references or holds data.
 class StdBuf
@@ -163,7 +162,7 @@ public:
 	void New(size_t inSize)
 	{
 		Clear();
-		pMData = malloc(iSize = inSize);
+		pMData = std::malloc(iSize = inSize);
 		fRef = false;
 	}
 
@@ -171,21 +170,21 @@ public:
 	void Write(const void *pnData, size_t inSize, size_t iAt = 0)
 	{
 		assert(iAt + inSize <= iSize);
-		if (pnData && inSize) memcpy(getMPtr(iAt), pnData, inSize);
+		if (pnData && inSize) std::memcpy(getMPtr(iAt), pnData, inSize);
 	}
 
 	// Move data around inside the buffer (checks overlap)
 	void Move(size_t iFrom, size_t inSize, size_t iTo = 0)
 	{
 		assert(iFrom + inSize <= iSize); assert(iTo + inSize <= iSize);
-		memmove(getMPtr(iTo), getPtr(iFrom), inSize);
+		std::memmove(getMPtr(iTo), getPtr(iFrom), inSize);
 	}
 
 	// Compare to memory
 	int Compare(const void *pCData, size_t iCSize, size_t iAt = 0) const
 	{
 		assert(iAt + iCSize <= getSize());
-		return memcmp(getPtr(iAt), pCData, iCSize);
+		return std::memcmp(getPtr(iAt), pCData, iCSize);
 	}
 
 	// Grow the buffer
@@ -195,7 +194,7 @@ public:
 		if (fRef) { Copy(iSize + iGrow); return; }
 		if (!iGrow) return;
 		// Realloc
-		pMData = realloc(pMData, iSize += iGrow);
+		pMData = std::realloc(pMData, iSize += iGrow);
 	}
 
 	// Shrink the buffer
@@ -206,20 +205,20 @@ public:
 		if (fRef) { Copy(iSize - iShrink); return; }
 		if (!iShrink) return;
 		// Realloc
-		pMData = realloc(pMData, iSize -= iShrink);
+		pMData = std::realloc(pMData, iSize -= iShrink);
 	}
 
 	// Clear buffer
 	void Clear()
 	{
-		if (!fRef) free(pMData);
+		if (!fRef) std::free(pMData);
 		pMData = nullptr; fRef = true; iSize = 0;
 	}
 
 	// Free buffer that had been grabbed
 	static void DeletePointer(void *data)
 	{
-		free(data);
+		std::free(data);
 	}
 
 	// * Composed actions
@@ -388,7 +387,7 @@ public:
 	// references the string literal
 	template<size_t N>
 	StdStrBuf(const char(&str)[N])
-		: StdBuf(str, strlen(str) + 1, false) { }
+		: StdBuf(str, std::strlen(str) + 1, false) { }
 
 	// See StdBuf::StdBuf. Copies by default or references if desired.
 	StdStrBuf(const StdStrBuf &Buf2, bool fCopy = true) : StdBuf(Buf2, fCopy) {}
@@ -396,7 +395,7 @@ public:
 
 	// Set by constant data. Copies by default or references if desired.
 	explicit StdStrBuf(const char *pData, bool fCopy = true)
-		: StdBuf(pData, pData ? strlen(pData) + 1 : 0, fCopy) {}
+		: StdBuf(pData, pData ? std::strlen(pData) + 1 : 0, fCopy) {}
 
 	// As previous constructor, but set length manually.
 	StdStrBuf(const char *pData, size_t iLength, bool fCopy = true)
@@ -422,11 +421,11 @@ public:
 	char operator[](size_t i) const { return *getPtr(i); }
 
 	// Analogous to StdBuf
-	void Ref(const char *pnData) { StdBuf::Ref(pnData, pnData ? strlen(pnData) + 1 : 0); }
-	void Ref(const char *pnData, size_t iLength) { assert((!pnData && !iLength) || strlen(pnData) == iLength); StdBuf::Ref(pnData, iLength + 1); }
+	void Ref(const char *pnData) { StdBuf::Ref(pnData, pnData ? std::strlen(pnData) + 1 : 0); }
+	void Ref(const char *pnData, size_t iLength) { assert((!pnData && !iLength) || std::strlen(pnData) == iLength); StdBuf::Ref(pnData, iLength + 1); }
 	void Take(StdStrBuf &&Buf2) { StdBuf::Take(std::forward<StdStrBuf>(Buf2)); }
-	void Take(char *pnData) { StdBuf::Take(pnData, pnData ? strlen(pnData) + 1 : 0); }
-	void Take(char *pnData, size_t iLength) { assert((!pnData && !iLength) || strlen(pnData) == iLength); StdBuf::Take(pnData, iLength + 1); }
+	void Take(char *pnData) { StdBuf::Take(pnData, pnData ? std::strlen(pnData) + 1 : 0); }
+	void Take(char *pnData, size_t iLength) { assert((!pnData && !iLength) || std::strlen(pnData) == iLength); StdBuf::Take(pnData, iLength + 1); }
 	char *GrabPointer() { return reinterpret_cast<char *>(StdBuf::GrabPointer()); }
 
 	void Ref(const StdStrBuf &Buf2) { StdBuf::Ref(Buf2.getData(), Buf2.getSize()); }
@@ -435,7 +434,7 @@ public:
 
 	void Clear() { StdBuf::Clear(); }
 	void Copy() { StdBuf::Copy(); }
-	void Copy(const char *pnData) { StdBuf::Copy(pnData, pnData ? strlen(pnData) + 1 : 0); }
+	void Copy(const char *pnData) { StdBuf::Copy(pnData, pnData ? std::strlen(pnData) + 1 : 0); }
 	void Copy(const StdStrBuf &Buf2) { StdBuf::Copy(Buf2); }
 	StdStrBuf Duplicate() const { StdStrBuf Buf; Buf.Copy(*this); return Buf; }
 	void Move(size_t iFrom, size_t inSize, size_t iTo = 0) { StdBuf::Move(iFrom, inSize, iTo); }
@@ -531,7 +530,7 @@ public:
 	{
 		size_t iLen = getLength(), iLen2 = v2.getLength();
 		if (iLen == iLen2)
-			return iLen ? (strcmp(getData(), v2.getData()) < 0) : false;
+			return iLen ? (std::strcmp(getData(), v2.getData()) < 0) : false;
 		else
 			return iLen < iLen2;
 	}
@@ -562,7 +561,7 @@ public:
 	// Append data until given character (or string end) occurs.
 	void AppendUntil(const char *szString, char cUntil)
 	{
-		const char *pPos = strchr(szString, cUntil);
+		const char *pPos = std::strchr(szString, cUntil);
 		if (pPos)
 			Append(szString, pPos - szString);
 		else
@@ -580,7 +579,7 @@ public:
 	bool SplitAtChar(char cSplit, StdStrBuf *psSplit)
 	{
 		if (!getData()) return false;
-		const char *pPos = strchr(getData(), cSplit);
+		const char *pPos = std::strchr(getData(), cSplit);
 		if (!pPos) return false;
 		size_t iPos = pPos - getData();
 		if (psSplit) psSplit->Take(copyPart(iPos + 1, getLength() - iPos - 1));

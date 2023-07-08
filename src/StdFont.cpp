@@ -31,8 +31,9 @@
 #include <string>
 
 #ifdef _WIN32
+#include <cstdio>
+
 #include <tchar.h>
-#include <stdio.h>
 #else
 #define _T(x) x
 #endif // _WIN32
@@ -146,7 +147,7 @@ bool CStdFont::AddSurface()
 {
 	// add new surface as render target; copy old ones
 	C4Surface **pNewSfcs = new C4Surface *[iNumFontSfcs + 1];
-	if (iNumFontSfcs) memcpy(pNewSfcs, psfcFontData, iNumFontSfcs * sizeof(C4Surface *));
+	if (iNumFontSfcs) std::memcpy(pNewSfcs, psfcFontData, iNumFontSfcs * sizeof(C4Surface *));
 	delete[] psfcFontData;
 	psfcFontData = pNewSfcs;
 	C4Surface *sfcNew = psfcFontData[iNumFontSfcs] = new C4Surface();
@@ -709,7 +710,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 			{
 				// check whether linebreak possibility shall be marked here
 				// 2do: What about unicode-spaces?
-				if (c < 256) if (isspace(static_cast<unsigned char>(c)) || c == '-')
+				if (c < 256) if (std::isspace(static_cast<unsigned char>(c)) || c == '-')
 				{
 					szLastBreakPos = szPos;
 					iLastBreakOutLen = pOut->getLength();
@@ -729,7 +730,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 			// line must be broken now
 			// check if a linebreak is possible directly here, because it's a space
 			// only check for space and not for other breakable characters (such as '-'), because the break would happen after those characters instead of at them
-			if (c < 128 && isspace(static_cast<unsigned char>(c)))
+			if (c < 128 && std::isspace(static_cast<unsigned char>(c)))
 			{
 				szLastBreakPos = szPos - 1;
 				iLastBreakOutLen = pOut->getLength();
@@ -745,7 +746,7 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 			StdStrBuf tempPart;
 			// insert linebreak at linebreak pos
 			// was it a space? Then just overwrite space with a linebreak
-			if (static_cast<uint8_t>(*szLastBreakPos) < 128 && isspace(static_cast<unsigned char>(*szLastBreakPos)))
+			if (static_cast<uint8_t>(*szLastBreakPos) < 128 && std::isspace(static_cast<unsigned char>(*szLastBreakPos)))
 			{
 				*pOut->getMPtr(iLastBreakOutLen - 1) = '\n';
 				if (fCheckMarkup)
