@@ -28,9 +28,10 @@
 #ifdef _WIN32
 #include <shellapi.h>
 #else
+#include <cerrno>
+
 #include <unistd.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -67,7 +68,7 @@ void C4UpdateDlg::UpdateText()
 	{
 		if (errno == EAGAIN)
 			return;
-		const std::string errorMessage{std::format("read error from c4group: {}", strerror(errno))};
+		const std::string errorMessage{std::format("read error from c4group: {}", std::strerror(errno))};
 		LogNTr(spdlog::level::err, errorMessage);
 		AddLine(errorMessage.c_str());
 		UpdateRunning = false;
@@ -82,8 +83,8 @@ void C4UpdateDlg::UpdateText()
 		int child_status = 0;
 		if (waitpid(pid, &child_status, WNOHANG) == -1)
 		{
-			LogNTr(spdlog::level::err, "error in waitpid: {}", strerror(errno));
-			AddLine(std::format("error in waitpid: {}", strerror(errno)).c_str());
+			LogNTr(spdlog::level::err, "error in waitpid: {}", std::strerror(errno));
+			AddLine(std::format("error in waitpid: {}", std::strerror(errno)).c_str());
 			succeeded = false;
 		}
 		// check if c4group failed.
@@ -226,7 +227,7 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 		if (c4group_output[1] != STDOUT_FILENO && c4group_output[1] != STDERR_FILENO)
 			close(c4group_output[1]);
 		execl(C4CFN_UpdateProgram, C4CFN_UpdateProgram, "-v", strUpdateFile, (fDeleteUpdate ? "-yd" : "-y"), static_cast<char *>(0));
-		printf("execl failed: %s\n", strerror(errno));
+		printf("execl failed: %s\n", std::strerror(errno));
 		exit(1);
 	// Parent process
 	default:
