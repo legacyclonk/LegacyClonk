@@ -18,17 +18,15 @@
 
 #pragma once
 
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
-
-#include <stdio.h>
-#include <stdlib.h>
 
 #ifdef _WIN32
 #include <io.h>
 #define F_OK 0
 #else
 #include <dirent.h>
-#include <limits.h>
 #define _O_BINARY 0
 #define _MAX_PATH PATH_MAX
 #define _MAX_FNAME NAME_MAX

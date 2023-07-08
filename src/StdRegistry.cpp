@@ -19,7 +19,7 @@
 #include <Standard.h>
 #include <StdRegistry.h>
 
-#include <stdio.h>
+#include <cstdio>
 
 bool GetRegistryDWord(HKEY hKey, const char *szSubKey, const char *szValueName, DWORD *lpdwValue)
 {
@@ -229,15 +229,15 @@ bool SetRegShell(const char *szClassName,
 {
 	char szKeyName[256 + 1];
 	// Set shell caption
-	sprintf(szKeyName, "%s\\Shell\\%s", szClassName, szShellName);
+	std::sprintf(szKeyName, "%s\\Shell\\%s", szClassName, szShellName);
 	if (!SetRegClassesRoot(szKeyName, nullptr, szShellCaption)) return false;
 	// Set shell command
-	sprintf(szKeyName, "%s\\Shell\\%s\\Command", szClassName, szShellName);
+	std::sprintf(szKeyName, "%s\\Shell\\%s\\Command", szClassName, szShellName);
 	if (!SetRegClassesRoot(szKeyName, nullptr, szCommand)) return false;
 	// Set as default command
 	if (fMakeDefault)
 	{
-		sprintf(szKeyName, "%s\\Shell", szClassName);
+		std::sprintf(szKeyName, "%s\\Shell", szClassName);
 		if (!SetRegClassesRoot(szKeyName, nullptr, szShellName)) return false;
 	}
 	return true;
@@ -265,14 +265,14 @@ bool SetRegFileClass(const char *szClassRoot,
 	// Create root class entry
 	if (!SetRegClassesRoot(szClassRoot, nullptr, szClassName)) return false;
 	// Set root class icon
-	sprintf(keyname, "%s\\DefaultIcon", szClassRoot);
-	sprintf(iconpath, "%s,%d", szIconPath, iIconNum);
+	std::sprintf(keyname, "%s\\DefaultIcon", szClassRoot);
+	std::sprintf(iconpath, "%s,%d", szIconPath, iIconNum);
 	if (!SetRegClassesRoot(keyname, nullptr, iconpath)) return false;
 	// Set extension map entry
-	sprintf(keyname, ".%s", szExtension);
+	std::sprintf(keyname, ".%s", szExtension);
 	if (!SetRegClassesRoot(keyname, nullptr, szClassRoot)) return false;
 	// Set extension content type
-	sprintf(keyname, ".%s", szExtension);
+	std::sprintf(keyname, ".%s", szExtension);
 	if (!SetRegClassesRootString(keyname, "Content Type", szContentType)) return false;
 	// Success
 	return true;
@@ -292,8 +292,8 @@ bool StoreWindowPosition(HWND hwnd,
 	if (IsIconic(hwnd))
 		return SetRegistryString(szSubKey, szWindowName, "Minimized");
 	if (!GetWindowRect(hwnd, &winpos)) return false;
-	if (fStoreSize) sprintf(regstr, "%i,%i,%i,%i", winpos.left, winpos.top, winpos.right - winpos.left, winpos.bottom - winpos.top);
-	else sprintf(regstr, "%i,%i", winpos.left, winpos.top);
+	if (fStoreSize) std::sprintf(regstr, "%i,%i,%i,%i", winpos.left, winpos.top, winpos.right - winpos.left, winpos.bottom - winpos.top);
+	else std::sprintf(regstr, "%i,%i", winpos.left, winpos.top);
 	return SetRegistryString(szSubKey, szWindowName, regstr);
 }
 

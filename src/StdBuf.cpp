@@ -20,22 +20,24 @@
 #include <StdAdaptors.h>
 #include <StdFile.h>
 
-#include <stdarg.h>
-#include <stdio.h>
+#include <cctype>
+#include <cstdarg>
+#include <cstdio>
+#include <fstream>
+#include <ios>
+
 #ifdef _WIN32
 #include <io.h>
 #else
+#include <cstdlib>
+
 #define O_BINARY 0
 #define O_SEQUENTIAL 0
 #include <unistd.h>
-#include <stdlib.h>
 #endif
-#include <ctype.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include <ios>
-#include <fstream>
 
 // *** StdBuf
 
@@ -128,7 +130,7 @@ int StdStrBuf::Replace(const char *szOld, const char *szNew, size_t iStartSearch
 	if (!getPtr(0) || !szOld) return 0;
 	if (!szNew) szNew = "";
 	int cnt = 0;
-	size_t iOldLen = strlen(szOld), iNewLen = strlen(szNew);
+	size_t iOldLen = std::strlen(szOld), iNewLen = std::strlen(szNew);
 	if (iOldLen != iNewLen)
 	{
 		// count number of occurences to calculate new string length
@@ -147,15 +149,15 @@ int StdStrBuf::Replace(const char *szOld, const char *szNew, size_t iStartSearch
 		char *szWrite = sResult.getMPtr(0);
 		if (iStartSearch)
 		{
-			memcpy(szWrite, szRPos, iStartSearch * sizeof(char));
+			std::memcpy(szWrite, szRPos, iStartSearch * sizeof(char));
 			szRPos += iStartSearch;
 			szWrite += iStartSearch;
 		}
 		while (szRNextPos = SSearch(szRPos, szOld))
 		{
-			memcpy(szWrite, szRPos, (szRNextPos - szRPos - iOldLen) * sizeof(char));
+			std::memcpy(szWrite, szRPos, (szRNextPos - szRPos - iOldLen) * sizeof(char));
 			szWrite += (szRNextPos - szRPos - iOldLen);
-			memcpy(szWrite, szNew, iNewLen * sizeof(char));
+			std::memcpy(szWrite, szNew, iNewLen * sizeof(char));
 			szWrite += iNewLen;
 			szRPos = szRNextPos;
 		}
@@ -168,7 +170,7 @@ int StdStrBuf::Replace(const char *szOld, const char *szNew, size_t iStartSearch
 		char *szRPos = getMPtr(iStartSearch);
 		while (szRPos = const_cast<char *>(SSearch(szRPos, szOld)))
 		{
-			memcpy(szRPos - iOldLen, szNew, iOldLen * sizeof(char));
+			std::memcpy(szRPos - iOldLen, szNew, iOldLen * sizeof(char));
 			++cnt;
 		}
 	}
@@ -182,7 +184,7 @@ int StdStrBuf::ReplaceChar(char cOld, char cNew, size_t iStartSearch)
 	if (!cOld) return 0;
 	if (!cNew) cNew = '_';
 	int cnt = 0;
-	while (szPos = strchr(szPos, cOld))
+	while (szPos = std::strchr(szPos, cOld))
 	{
 		*szPos++ = cNew;
 		++cnt;
@@ -194,16 +196,16 @@ void StdStrBuf::ReplaceEnd(size_t iPos, const char *szNewEnd)
 {
 	size_t iLen = getLength();
 	assert(iPos <= iLen); if (iPos > iLen) return;
-	size_t iEndLen = strlen(szNewEnd);
+	size_t iEndLen = std::strlen(szNewEnd);
 	if (iLen - iPos != iEndLen) SetLength(iPos + iEndLen);
-	memcpy(getMPtr(iPos), szNewEnd, iEndLen * sizeof(char));
+	std::memcpy(getMPtr(iPos), szNewEnd, iEndLen * sizeof(char));
 }
 
 bool StdStrBuf::ValidateChars(const char *szInitialChars, const char *szMidChars)
 {
 	// only given chars may be in string
 	for (size_t i = 0; i < getLength(); ++i)
-		if (!strchr(i ? szMidChars : szInitialChars, getData()[i]))
+		if (!std::strchr(i ? szMidChars : szInitialChars, getData()[i]))
 			return false;
 	return true;
 }
@@ -214,7 +216,7 @@ bool StdStrBuf::GetSection(size_t idx, StdStrBuf *psOutSection, char cSeparator)
 	psOutSection->Clear();
 	const char *szStr = getData(), *szSepPos;
 	if (!szStr) return false; // invalid argument
-	while ((szSepPos = strchr(szStr, cSeparator)) && idx) { szStr = szSepPos + 1; --idx; }
+	while ((szSepPos = std::strchr(szStr, cSeparator)) && idx) { szStr = szSepPos + 1; --idx; }
 	if (idx) return false; // indexed section not found
 	// fill output buffer with section, if not empty
 	if (!szSepPos) szSepPos = getData() + getLength();
@@ -308,7 +310,7 @@ void StdStrBuf::EnsureUnicode()
 				"?", "‘", "’", "“", "”", "•", "–", "—", "˜", "™", "š", "›", "œ", "?", "ž", "Ÿ"
 			};
 			buf.Append(extra_chars[c - 0x80]);
-			j += strlen(extra_chars[c - 0x80]);
+			j += std::strlen(extra_chars[c - 0x80]);
 		}
 		buf.SetLength(j);
 		Take(buf);
@@ -322,7 +324,7 @@ bool StdStrBuf::TrimSpaces()
 	if (!iLength) return false;
 	const char *szStr = getData();
 	while (iSpaceLeftCount < iLength)
-		if (isspace(static_cast<unsigned char>(szStr[iSpaceLeftCount])))
+		if (std::isspace(static_cast<unsigned char>(szStr[iSpaceLeftCount])))
 			++iSpaceLeftCount;
 		else
 			break;
@@ -334,7 +336,7 @@ bool StdStrBuf::TrimSpaces()
 	}
 	// get right trim
 	size_t iSpaceRightCount = 0;
-	while (isspace(static_cast<unsigned char>(szStr[iLength - 1 - iSpaceRightCount]))) ++iSpaceRightCount;
+	while (std::isspace(static_cast<unsigned char>(szStr[iLength - 1 - iSpaceRightCount]))) ++iSpaceRightCount;
 	// anything to trim?
 	if (!iSpaceLeftCount && !iSpaceRightCount) return false;
 	// only right trim? Can do this by shortening
@@ -344,7 +346,7 @@ bool StdStrBuf::TrimSpaces()
 		return true;
 	}
 	// left trim involved - move text and shorten
-	memmove(getMPtr(0), szStr + iSpaceLeftCount, iLength - iSpaceLeftCount - iSpaceRightCount);
+	std::memmove(getMPtr(0), szStr + iSpaceLeftCount, iLength - iSpaceLeftCount - iSpaceRightCount);
 	SetLength(iLength - iSpaceLeftCount - iSpaceRightCount);
 	return true;
 }

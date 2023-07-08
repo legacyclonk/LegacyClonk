@@ -25,13 +25,14 @@
 #include <C4Game.h>
 #include "StdAdaptors.h"
 
+#include <cerrno>
+
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef _WIN32
 #include <direct.h>
 #endif
-#include <errno.h>
 
 // compile debug options
 // #define C4NET2RES_LOAD_ALL
@@ -976,11 +977,11 @@ void C4Network2Res::Clear()
 	if (fTempFile)
 		if (FileExists(szFile))
 			if (remove(szFile))
-				LogSilentF("Network: Could not delete temporary resource file (%s)", strerror(errno));
+				LogSilentF("Network: Could not delete temporary resource file (%s)", std::strerror(errno));
 	if (szStandalone[0] && !SEqual(szFile, szStandalone))
 		if (FileExists(szStandalone))
 			if (remove(szStandalone))
-				LogSilentF("Network: Could not delete temporary resource file (%s)", strerror(errno));
+				LogSilentF("Network: Could not delete temporary resource file (%s)", std::strerror(errno));
 	szFile[0] = szStandalone[0] = '\0';
 	fDirty = false;
 	fTempFile = false;
@@ -1274,7 +1275,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (f == -1)
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Open write file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
+		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Open write file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), std::strerror(errno));
 #endif
 		return false;
 	}
@@ -1283,7 +1284,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 		if (lseek(f, iOffset, SEEK_SET) != iOffset)
 		{
 #ifdef C4NET2RES_DEBUG_LOG
-			Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): lseek file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
+			Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): lseek file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), std::strerror(errno));
 #endif
 			close(f);
 			return false;
@@ -1292,7 +1293,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (write(f, Data.getData(), Data.getSize()) != int32_t(Data.getSize()))
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): write error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
+		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): write error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), std::strerror(errno));
 #endif
 		close(f);
 		return false;
