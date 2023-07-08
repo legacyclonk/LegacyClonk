@@ -17,12 +17,11 @@
 
 #include "StdCompiler.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-
 #include <algorithm>
+#include <cctype>
 #include <cinttypes>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <format>
 #include <utility>
@@ -114,7 +113,7 @@ void StdCompilerBinWrite::Character(char     &rChar)  { WriteValue(rChar); }
 
 void StdCompilerBinWrite::String(char *szString, size_t iMaxLength, RawCompileType eType)
 {
-	WriteData(szString, strlen(szString) + 1);
+	WriteData(szString, std::strlen(szString) + 1);
 }
 
 void StdCompilerBinWrite::String(std::string &str, RawCompileType type)
@@ -216,7 +215,7 @@ void StdCompilerBinRead::Raw(void *pData, size_t iSize, RawCompileType eType)
 		excEOF(); return;
 	}
 	// Copy data
-	memcpy(pData, Buf.getPtr(iPos), iSize);
+	std::memcpy(pData, Buf.getPtr(iPos), iSize);
 	iPos += iSize;
 }
 
@@ -428,7 +427,7 @@ void StdCompilerINIWrite::WriteEscaped(const char *szString, const char *pEnd)
 	const char *pStart, *pPos; pStart = pPos = szString;
 	bool fLastNumEscape = false; // catch "\1""1", which must become "\1\61"
 	for (; pPos < pEnd; pPos++)
-		if (!isprint(static_cast<unsigned char>(*pPos)) || *pPos == '\\' || *pPos == '"' || (fLastNumEscape && isdigit(static_cast<unsigned char>(*pPos))))
+		if (!std::isprint(static_cast<unsigned char>(*pPos)) || *pPos == '\\' || *pPos == '"' || (fLastNumEscape && std::isdigit(static_cast<unsigned char>(*pPos))))
 		{
 			// Write everything up to this point
 			if (pPos - pStart) buf.append(pStart, pPos - pStart);
@@ -503,13 +502,13 @@ StdCompiler::NameGuard StdCompilerINIRead::Name(const char *szName)
 	if (iDepth - 1 > iRealDepth)
 		return {this, false};
 	// Name must be alphanumerical and non-empty (force it)
-	if (!isalpha(static_cast<unsigned char>(*szName)))
+	if (!std::isalpha(static_cast<unsigned char>(*szName)))
 	{
 		assert(false); return {this, false};
 	}
 	for (const char *p = szName + 1; *p; p++)
 		// C4Update needs Name**...
-		if (!isalnum(static_cast<unsigned char>(*p)) && *p != ' ' && *p != '_' && *p != '*')
+		if (!std::isalnum(static_cast<unsigned char>(*p)) && *p != ' ' && *p != '_' && *p != '*')
 		{
 			assert(false); return {this, false};
 		}
@@ -692,11 +691,11 @@ void StdCompilerINIRead::Byte(uint8_t &rByte)
 void StdCompilerINIRead::Boolean(bool &rBool)
 {
 	if (!pPos) { notFound("Boolean"); return; }
-	if (*pPos == '1' && !isdigit(static_cast<unsigned char>(*(pPos + 1))))
+	if (*pPos == '1' && !std::isdigit(static_cast<unsigned char>(*(pPos + 1))))
 	{
 		rBool = true; pPos++;
 	}
-	else if (*pPos == '0' && !isdigit(static_cast<unsigned char>(*(pPos + 1))))
+	else if (*pPos == '0' && !std::isdigit(static_cast<unsigned char>(*(pPos + 1))))
 	{
 		rBool = false; pPos++;
 	}
@@ -716,7 +715,7 @@ void StdCompilerINIRead::Boolean(bool &rBool)
 
 void StdCompilerINIRead::Character(char &rChar)
 {
-	if (!pPos || !isalpha(static_cast<unsigned char>(*pPos)))
+	if (!pPos || !std::isalpha(static_cast<unsigned char>(*pPos)))
 	{
 		notFound("Character"); return;
 	}
@@ -809,8 +808,8 @@ void StdCompilerINIRead::CreateNameTree()
 			pPos++; iIndent++;
 		}
 		// Name/Section?
-		bool fSection = *pPos == '[' && isalpha(static_cast<unsigned char>(*(pPos + 1)));
-		if (fSection || isalpha(static_cast<unsigned char>(*pPos)))
+		bool fSection = *pPos == '[' && std::isalpha(static_cast<unsigned char>(*(pPos + 1)));
+		if (fSection || std::isalpha(static_cast<unsigned char>(*pPos)))
 		{
 			// Treat values as if they had more indention
 			// (so they become children of sections on the same level)
@@ -820,13 +819,13 @@ void StdCompilerINIRead::CreateNameTree()
 				pName = pName->Parent;
 			// Copy name
 			StdStrBuf Name;
-			while (isalnum(static_cast<unsigned char>(*pPos)) || *pPos == ' ' || *pPos == '_')
+			while (std::isalnum(static_cast<unsigned char>(*pPos)) || *pPos == ' ' || *pPos == '_')
 				Name.AppendChar(*pPos++);
 			while (*pPos == ' ' || *pPos == '\t') pPos++;
 			if (*pPos != (fSection ? ']' : '='))
 			{
 				// Warn, ignore
-				if (isprint(static_cast<unsigned char>(*pPos)))
+				if (std::isprint(static_cast<unsigned char>(*pPos)))
 				{
 					Warn("Unexpected character ('{}'): %s ignored", unsigned(*pPos), fSection ? "section" : "value");
 				}
@@ -1006,7 +1005,7 @@ bool StdCompilerINIRead::TestStringEnd(RawCompileType eType)
 char StdCompilerINIRead::ReadEscapedChar()
 {
 	// Catch some no-noes like \0, \n etc.
-	if (*pPos >= 0 && iscntrl(static_cast<unsigned char>(*pPos)))
+	if (*pPos >= 0 && std::iscntrl(static_cast<unsigned char>(*pPos)))
 	{
 		Warn("Nonprintable character found in string: {:02x}", static_cast<unsigned char>(*pPos));
 		return *pPos++;
@@ -1029,7 +1028,7 @@ char StdCompilerINIRead::ReadEscapedChar()
 	case '?': pPos++; return '?';
 	case 'x':
 		// Treat '\x' as 'x' - damn special cases
-		if (!isxdigit(static_cast<unsigned char>(*++pPos)))
+		if (!std::isxdigit(static_cast<unsigned char>(*++pPos)))
 			return 'x';
 		else
 		{
@@ -1037,14 +1036,14 @@ char StdCompilerINIRead::ReadEscapedChar()
 			int iCode = 0;
 			do
 			{
-				iCode = iCode * 16 + (isdigit(static_cast<unsigned char>(*pPos)) ? *pPos - '0' : *pPos - 'a' + 10); pPos++;
-			} while (isxdigit(static_cast<unsigned char>(*pPos)));
+				iCode = iCode * 16 + (std::isdigit(static_cast<unsigned char>(*pPos)) ? *pPos - '0' : *pPos - 'a' + 10); pPos++;
+			} while (std::isxdigit(static_cast<unsigned char>(*pPos)));
 			// Done. Don't bother to check the range (we aren't doing anything mission-critical here, are we?)
 			return char(iCode);
 		}
 	default:
 		// Not octal? Let it pass through.
-		if (!isdigit(static_cast<unsigned char>(*pPos)) || *pPos >= '8')
+		if (!std::isdigit(static_cast<unsigned char>(*pPos)) || *pPos >= '8')
 			return *pPos++;
 		else
 		{
@@ -1053,7 +1052,7 @@ char StdCompilerINIRead::ReadEscapedChar()
 			do
 			{
 				iCode = iCode * 8 + (*pPos - '0'); pPos++;
-			} while (isdigit(static_cast<unsigned char>(*pPos)) && *pPos < '8');
+			} while (std::isdigit(static_cast<unsigned char>(*pPos)) && *pPos < '8');
 			// Done. See above.
 			return char(iCode);
 		}

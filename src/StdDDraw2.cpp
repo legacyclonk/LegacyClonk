@@ -28,9 +28,8 @@
 #include <StdFont.h>
 #include <StdWindow.h>
 
-#include <stdio.h>
-#include <limits.h>
 #include <cmath>
+#include <cstdio>
 #include <numbers>
 
 // Global access pointer
@@ -44,7 +43,7 @@ void CBltTransform::SetRotate(int iAngle, float fOffX, float fOffY) // set by an
 	// determine sine and cos of reversed angle in radians
 	// fAngle = -iAngle/100 * pi/180 = iAngle * -pi/18000
 	float fAngle = static_cast<float>(iAngle) * (-1.7453292519943295769236907684886e-4f);
-	float fsin = sinf(fAngle); float fcos = cosf(fAngle);
+	float fsin = std::sin(fAngle); float fcos = std::cos(fAngle);
 	// set matrix values
 	mat[0] = +fcos; mat[1] = +fsin; mat[2] = (1 - fcos) * fOffX - fsin * fOffY;
 	mat[3] = -fsin; mat[4] = +fcos; mat[5] = (1 - fcos) * fOffY + fsin * fOffX;
@@ -104,7 +103,7 @@ CPattern &CPattern::operator=(const CPattern &nPattern)
 		}
 
 		CachedPattern = new uint32_t[sfcPattern32->Wdt * sfcPattern32->Hgt];
-		memcpy(CachedPattern, nPattern.CachedPattern, sfcPattern32->Wdt * sfcPattern32->Hgt * 4);
+		std::memcpy(CachedPattern, nPattern.CachedPattern, sfcPattern32->Wdt * sfcPattern32->Hgt * 4);
 	}
 	else
 	{
@@ -535,9 +534,9 @@ bool CStdDDraw::GetSurfaceSize(C4Surface *sfcSurface, int &iWdt, int &iHgt)
 bool CStdDDraw::SetPrimaryPalette(uint8_t *pBuf, uint8_t *pAlphaBuf)
 {
 	// store into loaded pal
-	memcpy(&Pal.Colors, pBuf, 768);
+	std::memcpy(&Pal.Colors, pBuf, 768);
 	// store alpha pal
-	if (pAlphaBuf) memcpy(Pal.Alpha, pAlphaBuf, 256);
+	if (pAlphaBuf) std::memcpy(Pal.Alpha, pAlphaBuf, 256);
 	// success
 	return true;
 }
@@ -813,10 +812,10 @@ bool CStdDDraw::Blit8(C4Surface *sfcSource, int fx, int fy, int fwdt, int fhgt,
 	pTransform->TransformPoint(ttx1, tty1);
 	pTransform->TransformPoint(ttx2, tty2);
 	pTransform->TransformPoint(ttx3, tty3);
-	int ttxMin = std::max<int>(static_cast<int>(floor((std::min)((std::min)(ttx0, ttx1), (std::min)(ttx2, ttx3)))), 0);
-	int ttxMax = std::min<int>(static_cast<int>(ceil((std::max)((std::max)(ttx0, ttx1), (std::max)(ttx2, ttx3)))), sfcTarget->Wdt);
-	int ttyMin = std::max<int>(static_cast<int>(floor((std::min)((std::min)(tty0, tty1), (std::min)(tty2, tty3)))), 0);
-	int ttyMax = std::min<int>(static_cast<int>(ceil((std::max)((std::max)(tty0, tty1), (std::max)(tty2, tty3)))), sfcTarget->Hgt);
+	int ttxMin = std::max<int>(static_cast<int>(std::floor((std::min)((std::min)(ttx0, ttx1), (std::min)(ttx2, ttx3)))), 0);
+	int ttxMax = std::min<int>(static_cast<int>(std::ceil((std::max)((std::max)(ttx0, ttx1), (std::max)(ttx2, ttx3)))), sfcTarget->Wdt);
+	int ttyMin = std::max<int>(static_cast<int>(std::floor((std::min)((std::min)(tty0, tty1), (std::min)(tty2, tty3)))), 0);
+	int ttyMax = std::min<int>(static_cast<int>(std::ceil((std::max)((std::max)(tty0, tty1), (std::max)(tty2, tty3)))), sfcTarget->Hgt);
 	// blit within target rect
 	for (int y = ttyMin; y < ttyMax; ++y)
 		for (int x = ttxMin; x < ttxMax; ++x)
@@ -899,8 +898,8 @@ bool CStdDDraw::BlitRotate(C4Surface *sfcSource, int fx, int fy, int fwdt, int f
 	default:
 		// Calculate rotation matrix
 		dang = std::numbers::pi * iAngle / 18000.0;
-		mtx[0] = cos(dang); mtx[1] = -sin(dang);
-		mtx[2] = sin(dang); mtx[3] = cos(dang);
+		mtx[0] = std::cos(dang); mtx[1] = -std::sin(dang);
+		mtx[2] = std::sin(dang); mtx[3] = std::cos(dang);
 		// Blit source rect
 		for (ycnt = 0; ycnt < fhgt; ycnt++)
 		{
@@ -1193,7 +1192,7 @@ void CStdDDraw::DrawPatternedCircle(C4Surface *sfcDest, int x, int y, int r, uin
 	if (!sfcDest->Lock()) return;
 	for (int ycnt = -r; ycnt < r; ycnt++)
 	{
-		int lwdt = static_cast<int>(sqrt(static_cast<float>(r * r - ycnt * ycnt)));
+		int lwdt = static_cast<int>(std::sqrt(static_cast<float>(r * r - ycnt * ycnt)));
 		// Set line
 		for (int xcnt = x - lwdt; xcnt < x + lwdt; ++xcnt)
 		{

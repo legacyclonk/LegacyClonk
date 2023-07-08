@@ -20,12 +20,12 @@
 #include <StdFile.h>
 #include <CStdFile.h>
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
 
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <assert.h>
 
 #include <algorithm>
 #include <cstring>
@@ -79,7 +79,7 @@ bool CStdFile::Create(const char *szFilename, bool fCompressed, bool fExecutable
 		}
 		else
 		{
-			if (!(hFile = fopen(Name, "wb"))) return false;
+			if (!(hFile = std::fopen(Name, "wb"))) return false;
 		}
 	}
 	// Reset buffer
@@ -108,7 +108,7 @@ bool CStdFile::Open(const char *szFilename, bool fCompressed)
 	}
 	else
 	{
-		if (!(hFile = fopen(Name, "rb"))) return false;
+		if (!(hFile = std::fopen(Name, "rb"))) return false;
 	}
 	// Reset buffer
 	ClearBuffer();
@@ -123,7 +123,7 @@ bool CStdFile::Append(const char *szFilename)
 	// Set modes
 	ModeWrite = true;
 	// Open standard file
-	if (!(hFile = fopen(Name, "ab"))) return false;
+	if (!(hFile = std::fopen(Name, "ab"))) return false;
 	// Reset buffer
 	ClearBuffer();
 	// Set status
@@ -142,7 +142,7 @@ bool CStdFile::Close()
 	// Close file(s)
 	readCompressedFile.reset();
 	writeCompressedFile.reset();
-	if (hFile) if (fclose(hFile) != 0) rval = false;
+	if (hFile) if (std::fclose(hFile) != 0) rval = false;
 	hFile = nullptr;
 	return !!rval;
 }
@@ -185,7 +185,7 @@ bool CStdFile::Read(void *pBuffer, size_t iSize, size_t *ipFSize)
 
 size_t CStdFile::LoadBuffer()
 {
-	if (hFile) BufferLoad = fread(Buffer, 1, CStdFileBufSize, hFile);
+	if (hFile) BufferLoad = std::fread(Buffer, 1, CStdFileBufSize, hFile);
 	if (readCompressedFile)
 	{
 		try
@@ -204,7 +204,7 @@ size_t CStdFile::LoadBuffer()
 bool CStdFile::SaveBuffer()
 {
 	size_t saved = 0;
-	if (hFile) saved = fwrite(Buffer, 1, BufferLoad, hFile);
+	if (hFile) saved = std::fwrite(Buffer, 1, BufferLoad, hFile);
 	if (writeCompressedFile)
 	{
 		try
@@ -264,7 +264,7 @@ bool CStdFile::Rewind()
 {
 	if (ModeWrite) return false;
 	ClearBuffer();
-	if (hFile) rewind(hFile);
+	if (hFile) std::rewind(hFile);
 	if (readCompressedFile)
 	{
 		readCompressedFile->Rewind();
@@ -287,7 +287,7 @@ bool CStdFile::Advance(size_t iOffset)
 		// Buffer empty: Load or skip
 		else
 		{
-			if (hFile) return !fseek(hFile, iOffset, SEEK_CUR); // uncompressed: Just skip
+			if (hFile) return !std::fseek(hFile, iOffset, SEEK_CUR); // uncompressed: Just skip
 			if (LoadBuffer() <= 0) return false; // compressed: Read...
 		}
 	}
@@ -336,10 +336,10 @@ size_t CStdFile::AccessedEntrySize()
 {
 	if (hFile)
 	{
-		long pos = ftell(hFile);
-		fseek(hFile, 0, SEEK_END);
-		long r = ftell(hFile);
-		fseek(hFile, pos, SEEK_SET);
+		long pos = std::ftell(hFile);
+		std::fseek(hFile, 0, SEEK_END);
+		long r = std::ftell(hFile);
+		std::fseek(hFile, pos, SEEK_SET);
 		return static_cast<size_t>(r);
 	}
 	assert(!readCompressedFile);

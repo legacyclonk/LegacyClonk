@@ -22,8 +22,9 @@
 #include "C4Network2Address.h"
 #include "Standard.h"
 
-#include <assert.h>
-#include <errno.h>
+#include <cassert>
+#include <cerrno>
+
 #include <fcntl.h>
 #include <format>
 #include <sys/stat.h>
@@ -198,7 +199,7 @@ void ReleaseWinSock()
 
 const char *GetSocketErrorMsg(int iError)
 {
-	return strerror(iError);
+	return std::strerror(iError);
 }
 
 const char *GetSocketErrorMsg()
