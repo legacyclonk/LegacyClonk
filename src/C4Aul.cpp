@@ -549,14 +549,6 @@ C4AulFunc *C4AulFuncMap::GetFirstFunc(const char *Name)
 	return Func;
 }
 
-C4AulFunc *C4AulFuncMap::GetNextSNFunc(const C4AulFunc *After)
-{
-	C4AulFunc *Func = After->MapNext;
-	while (Func && !SEqual(After->Name, Func->Name))
-		Func = Func->MapNext;
-	return Func;
-}
-
 C4AulFunc *C4AulFuncMap::GetFunc(const char *Name, const C4AulScript *Owner, const C4AulFunc *After)
 {
 	if (!Name) return nullptr;

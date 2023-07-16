@@ -376,7 +376,6 @@ public:
 	~C4AulFuncMap();
 	C4AulFunc *GetFunc(const char *Name, const C4AulScript *Owner, const C4AulFunc *After);
 	C4AulFunc *GetFirstFunc(const char *Name);
-	C4AulFunc *GetNextSNFunc(const C4AulFunc *After);
 
 private:
 	C4AulFunc **Funcs;
@@ -560,11 +559,6 @@ public:
 	C4AulFunc *GetFunc(const char *Name, const C4AulScript *Owner, const C4AulFunc *After)
 	{
 		return FuncLookUp.GetFunc(Name, Owner, After);
-	}
-
-	C4AulFunc *GetNextSNFunc(const C4AulFunc *After)
-	{
-		return FuncLookUp.GetNextSNFunc(After);
 	}
 
 	// For the list of functions in the PropertyDlg
