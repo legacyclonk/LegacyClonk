@@ -60,6 +60,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 option(DEBUGREC "Write additional debug control to records" OFF)
 option(SOLIDMASK_DEBUG "Solid mask debugging" OFF)
 option(USE_CONSOLE "Dedicated server mode (compile as pure console application)" OFF)
+option(USE_LTO "Enable Link Time Optimization" ON)
 option(USE_PCH "Precompile Headers" ON)
 option(USE_STAT "Enable internal performance statistics for developers" OFF)
 
@@ -90,6 +91,13 @@ CMAKE_DEPENDENT_OPTION(WITH_DEVELOPER_MODE "Use GTK for the developer mode" OFF
 CMAKE_DEPENDENT_OPTION(USE_LIBNOTIFY "Use libnotify for desktop notifications" ON "WITH_DEVELOPER_MODE AND NOT USE_CONSOLE AND NOT WIN32" OFF)
 # USE_WINDOWS_RUNTIME
 CMAKE_DEPENDENT_OPTION(USE_WINDOWS_RUNTIME "Use Windows Runtime features" ON "WIN32" OFF)
+
+if (USE_LTO)
+	include(CheckIPOSupported)
+	check_ipo_supported()
+
+	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+endif ()
 
 if (WIN32)
 	# Don't define min/max macros in Windows.h so that they don't conflict with std::min/max
