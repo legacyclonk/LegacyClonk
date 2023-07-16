@@ -2303,14 +2303,8 @@ int C4AulParseState::Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFu
 			Parse_Expression();
 			if (pFunc)
 			{
-				bool anyfunctakesref = pFunc->GetParCount() > size && (pFunc->GetParType()[size] == C4V_pC4Value);
-				// pFunc either was the return value from a GetFuncFast-Call or
-				// pFunc is the only function that could be called, so this loop is superflous
-				C4AulFunc *pFunc2 = pFunc;
-				while (pFunc2 = a->Engine->GetNextSNFunc(pFunc2))
-					if (pFunc2->GetParCount() > size && pFunc2->GetParType()[size] == C4V_pC4Value) anyfunctakesref = true;
 				// Change the bytecode to the equivalent that does not produce a reference.
-				if (!anyfunctakesref)
+				if (pFunc->GetParCount() <= size || pFunc->GetParType()[size] != C4V_pC4Value)
 					SetNoRef();
 			}
 			++size;
