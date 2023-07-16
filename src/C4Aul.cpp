@@ -264,10 +264,6 @@ C4AulFunc *C4AulScript::GetOverloadedFunc(C4AulFunc *ByFunc)
 		if (SEqual(ByFunc->Name, f->Name)) break;
 		f = f->Prev;
 	}
-#ifndef NDEBUG
-	C4AulFunc *f2 = Engine ? Engine->GetFunc(ByFunc->Name, this, ByFunc) : nullptr;
-	assert(f == f2);
-#endif
 	// nothing found? then search owner, if existent
 	if (!f && Owner)
 	{
@@ -292,7 +288,7 @@ C4AulFunc *C4AulScript::GetFuncRecursive(const char *pIdtf)
 
 C4AulFunc *C4AulScript::GetFunc(const char *pIdtf)
 {
-	return Engine ? Engine->GetFunc(pIdtf, this, nullptr) : nullptr;
+	return Engine ? Engine->GetFunc(pIdtf, this) : nullptr;
 }
 
 C4AulScriptFunc *C4AulScript::GetSFuncWarn(const char *pIdtf, C4AulAccess AccNeeded, const char *WarnStr)
@@ -549,17 +545,11 @@ C4AulFunc *C4AulFuncMap::GetFirstFunc(const char *Name)
 	return Func;
 }
 
-C4AulFunc *C4AulFuncMap::GetFunc(const char *Name, const C4AulScript *Owner, const C4AulFunc *After)
+C4AulFunc *C4AulFuncMap::GetFunc(const char *Name, const C4AulScript *Owner)
 {
 	if (!Name) return nullptr;
 	C4AulFunc *Func = Funcs[Hash(Name) % Capacity];
-	if (After)
-	{
-		while (Func && Func != After)
-			Func = Func->MapNext;
-		if (Func)
-			Func = Func->MapNext;
-	}
+
 	while (Func && (Func->Owner != Owner || !SEqual(Name, Func->Name)))
 		Func = Func->MapNext;
 	return Func;

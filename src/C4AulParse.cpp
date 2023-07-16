@@ -3191,7 +3191,7 @@ bool C4AulParseState::Parse_Expression3()
 				// search a function with the given name
 				if (eCallType == AB_CALLGLOBAL)
 				{
-					pFunc = a->Engine->GetFunc(Idtf, a->Engine, nullptr);
+					pFunc = a->Engine->GetFunc(Idtf, a->Engine);
 					// allocate space for return value, otherwise the call-target-variable is used, which is not present here
 					AddBCC(AB_STACK, +1);
 				}
