@@ -57,7 +57,7 @@ template<typename U>
 struct ValueWrapper
 {
 	[[no_unique_address]] U Value;
-	U GetValue() const { return static_cast<U>(Value); }
+	U &&GetValue() { return static_cast<U &&>(Value); }
 };
 
 template<>
@@ -91,7 +91,7 @@ template<typename T, bool IsNoExcept = false>
 class ResultBase
 {
 protected:
-	decltype(auto) GetValue() const
+	decltype(auto) GetValue()
 	{
 		return result.Wrapper.GetValue();
 	}
@@ -203,7 +203,7 @@ public:
 	Result &operator=(const Result &) = delete;
 
 public:
-	decltype(auto) GetResult() const
+	decltype(auto) GetResult()
 	{
 		switch (resultState)
 		{
