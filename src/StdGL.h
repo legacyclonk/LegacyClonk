@@ -30,6 +30,9 @@
 #endif
 #include <StdDDraw2.h>
 
+#include <concepts>
+#include <type_traits>
+
 class CStdWindow;
 
 class CStdGLShader : public CStdShader
@@ -51,9 +54,6 @@ protected:
 
 class CStdGLShaderProgram : public CStdShaderProgram
 {
-private:
-	template<typename T> static constexpr bool isFunctionPointer{std::is_function_v<std::remove_pointer_t<T>>};
-
 public:
 	using CStdShaderProgram::CStdShaderProgram;
 
@@ -64,12 +64,14 @@ public:
 
 	void EnsureProgram() override;
 
-	template<typename Func, typename... Args> typename std::enable_if_t<isFunctionPointer<Func>, bool> SetAttribute(std::string_view key, Func function, Args... args)
+	template<typename Func, typename... Args> requires std::invocable<Func, GLint, Args...>
+	bool SetAttribute(std::string_view key, Func function, Args... args)
 	{
 		return SetAttribute(key, &CStdGLShaderProgram::attributeLocations, glGetAttribLocation, function, args...);
 	}
 
-	template<typename Func, typename... Args> typename std::enable_if_t<isFunctionPointer<Func>, bool> SetUniform(std::string_view key, Func function, Args... args)
+	template<typename Func, typename... Args> requires std::invocable<Func, GLint, Args...>
+	bool SetUniform(std::string_view key, Func function, Args... args)
 	{
 		return SetAttribute(key, &CStdGLShaderProgram::uniformLocations, glGetUniformLocation, function, args...);
 	}
@@ -87,7 +89,10 @@ protected:
 	void OnDeselect() override;
 
 	using Locations = std::unordered_map<std::string, GLint>;
-	template<typename MapFunc, typename SetFunc, typename... Args> bool SetAttribute(std::string_view key, Locations CStdGLShaderProgram::*locationPointer, MapFunc mapFunction, SetFunc setFunction, Args... args)
+
+	template<typename MapFunc, typename SetFunc, typename... Args>
+		requires (std::is_invocable_r_v<GLint, MapFunc, GLuint, const char *> && std::invocable<SetFunc, GLint, Args...>)
+	bool SetAttribute(std::string_view key, Locations CStdGLShaderProgram::*locationPointer, MapFunc mapFunction, SetFunc setFunction, Args... args)
 	{
 		assert(shaderProgram);
 
