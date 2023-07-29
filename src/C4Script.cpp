@@ -85,8 +85,9 @@ namespace {
 
 
 	// Wrapper type, which is used to automatically do nullptr/nil checks on script function arguments before calling the actual function
+	// Also rejects zero values if nonZero = true.
 	// nullptr is used instead of C4VNull, because C4Value is not usable as non-type template parameter
-	template<typename T, auto failVal = nullptr>
+	template<typename T, auto failVal = nullptr, bool nonZero = false>
 	class Required
 	{
 		T value;
@@ -103,6 +104,9 @@ namespace {
 		template<typename U> requires std::convertible_to<T, U>
 		constexpr operator U() const { return static_cast<U>(value); }
 	};
+
+	template<typename T, auto failVal = nullptr>
+	using RequiredNonZero = Required<T, failVal, true>;
 }
 
 
@@ -3101,16 +3105,14 @@ static C4ValueInt FnMul(C4AulContext *cthr, C4ValueInt iVal1, C4ValueInt iVal2)
 	return (iVal1 * iVal2);
 }
 
-static C4ValueInt FnDiv(C4AulContext *cthr, C4ValueInt iVal1, C4ValueInt iVal2)
+static C4ValueInt FnDiv(C4AulContext *cthr, C4ValueInt iVal1, RequiredNonZero<C4ValueInt, 0> iVal2)
 {
-	if (!iVal2) return 0;
-	return (iVal1 / iVal2);
+	return (iVal1 / *iVal2);
 }
 
-static C4ValueInt FnMod(C4AulContext *cthr, C4ValueInt iVal1, C4ValueInt iVal2)
+static C4ValueInt FnMod(C4AulContext *cthr, C4ValueInt iVal1, RequiredNonZero<C4ValueInt, 0> iVal2)
 {
-	if (!iVal2) return 0;
-	return (iVal1 % iVal2);
+	return (iVal1 % *iVal2);
 }
 
 static C4ValueInt FnPow(C4AulContext *cthr, C4ValueInt iVal1, C4ValueInt iVal2)
@@ -3163,7 +3165,7 @@ static C4ValueInt FnAngle(C4AulContext *cthr, C4ValueInt iX1, C4ValueInt iY1, C4
 template<double Function(double)>
 static C4ValueInt FnArcus(C4AulContext *const ctx, const C4ValueInt value, const RequiredNonZero<C4ValueInt, 0> radius)
 {
-	if (value > radius) return 0;
+	if (value > *radius) return 0;
 
 	const double result{Function(static_cast<double>(value) / *radius) * 180.0 * std::numbers::inv_pi};
 	// return rounded angle
@@ -3308,11 +3310,10 @@ static C4Value FnObjectCall(C4AulContext *cthr,
 }
 
 static C4Value FnDefinitionCall(C4AulContext *cthr,
-	C4ID idID, Required<C4String *> szFunction,
+	RequiredNonZero<C4ValueInt> idID, Required<C4String *> szFunction,
 	C4Value par0, C4Value par1, C4Value par2, C4Value par3, C4Value par4,
 	C4Value par5, C4Value par6, C4Value par7)
 {
-	if (!idID) return C4VNull;
 	// Make failsafe
 	char szFunc2[C4AUL_MAX_Identifier + 1];
 	FormatWithNull(szFunc2, "~{}", FnStringPar(szFunction));
@@ -5668,13 +5669,11 @@ static void FnHideSettlementScoreInEvaluation(C4AulContext *cthr, bool fHide)
 	Game.RoundResults.HideSettlementScore(fHide);
 }
 
-static std::optional<C4ValueInt> FnGetUnusedOverlayID(C4AulContext *ctx, C4ValueInt iBaseIndex, Required<C4ObjectOrThis> pObj)
+static C4ValueInt FnGetUnusedOverlayID(C4AulContext *ctx, RequiredNonZero<C4ValueInt> iBaseIndex, Required<C4ObjectOrThis> pObj)
 {
-	// safety
-	if (!iBaseIndex) return {};
 	// find search first unused index from there on
-	int iSearchDir = (iBaseIndex < 0) ? -1 : 1;
-	while (pObj->GetGraphicsOverlay(iBaseIndex, false)) iBaseIndex += iSearchDir;
+	int iSearchDir = (*iBaseIndex < 0) ? -1 : 1;
+	while (pObj->GetGraphicsOverlay(iBaseIndex, false)) *iBaseIndex += iSearchDir;
 	return iBaseIndex;
 }
 
@@ -5891,11 +5890,11 @@ struct ArgumentConverter<Default<T, defaultVal, true>> : ArgumentConverter<Defau
 	}
 };
 
-template<typename T, auto failVal>
-struct ArgumentConverter<Required<T, failVal>>
+template<typename T, auto failVal, bool nonZero>
+struct ArgumentConverter<Required<T, failVal, nonZero>>
 {
 	static constexpr inline C4V_Type Type = ArgumentConverter<T>::Type;
-	static Required<T, failVal> Convert(C4AulContext *context, const C4Value& value)
+	static Required<T, failVal, nonZero> Convert(C4AulContext *context, const C4Value& value)
 	{
 		return ArgumentConverter<T>::Convert(context, value);
 	}
@@ -5907,8 +5906,8 @@ struct Condition
 	static constexpr inline bool HasCondition = false;
 };
 
-template<typename T, auto failVal>
-struct Condition<Required<T, failVal>>
+template<typename T, auto failVal, bool nonZero>
+struct Condition<Required<T, failVal, nonZero>>
 {
 	static constexpr inline bool HasCondition = true;
 	static constexpr inline auto FailValue = failVal;
@@ -5916,12 +5915,23 @@ struct Condition<Required<T, failVal>>
 
 	static bool Ok(C4AulContext *context, const C4Value& value) noexcept
 	{
-		return value.GetType() != C4V_Any;
+		if (value.GetType() == C4V_Any)
+		{
+			return false;
+		}
+		if constexpr (nonZero)
+		{
+			if (ArgumentConverter<T>::Convert(context, value) == T{})
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 };
 
-template<auto failVal>
-struct Condition<Required<C4ObjectOrThis, failVal>>
+template<auto failVal, bool nonZero>
+struct Condition<Required<C4ObjectOrThis, failVal, nonZero>>
 {
 	static constexpr inline bool HasCondition = true;
 	static constexpr inline auto FailValue = failVal;
