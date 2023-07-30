@@ -2506,11 +2506,6 @@ static bool FnDoHomebaseProduction(C4Player &player, C4ID id, C4ValueInt iChange
 	return player.HomeBaseProduction.SetIDCount(id, iLastcount + iChange, true);
 }
 
-static C4ValueInt FnGetPlrDownDouble(C4Player &player)
-{
-	return player.LastComDownDouble;
-}
-
 static bool FnClearLastPlrCom(C4Player &player)
 {
 	// reset last coms
@@ -2621,35 +2616,10 @@ static C4Value FnGetPlrMagic(C4Player &player, C4ID id, C4ValueInt iIndex)
 	return C4VID(player.Magic.GetID(Game.Defs, C4D_Magic, iIndex));
 }
 
-static C4ValueInt FnGetWealth(C4Player &player)
-{
-	return player.Wealth;
-}
-
 static bool FnSetWealth(C4Player &player, C4ValueInt iValue)
 {
 	player.Wealth = BoundBy<C4ValueInt>(iValue, 0, 100000);
 	return true;
-}
-
-static C4ValueInt FnDoScore(C4Player &player, C4ValueInt iChange)
-{
-	return player.DoPoints(iChange);
-}
-
-static C4ValueInt FnGetPlrValue(C4Player &player)
-{
-	return player.Value;
-}
-
-static C4ValueInt FnGetPlrValueGain(C4Player &player)
-{
-	return player.ValueGain;
-}
-
-static C4ValueInt FnGetScore(C4Player &player)
-{
-	return player.Points;
 }
 
 static C4Object *FnGetHiRank(C4Player &player)
@@ -2786,16 +2756,6 @@ static C4Object *FnGetCursor(C4Player &player, C4ValueInt iIndex)
 	return nullptr;
 }
 
-static C4Object *FnGetViewCursor(C4Player &player)
-{
-	return player.ViewCursor.Object();
-}
-
-static C4Object *FnGetCaptain(C4Player &player)
-{
-	return player.Captain;
-}
-
 static bool FnSetCursor(C4Player &player, C4Object &obj, bool fNoSelectMark, bool fNoSelectArrow, bool fNoSelectCrew)
 {
 	if (!obj.Status) return false;
@@ -2820,11 +2780,6 @@ static bool FnSelectCrew(C4Player &player, C4Object &obj, bool fSelect, bool fNo
 	else
 		player.SelectCrew(&obj, fSelect);
 	return true;
-}
-
-static C4ValueInt FnGetSelectCount(C4Player &player)
-{
-	return player.SelectCount;
 }
 
 static C4ValueInt FnSetCrewStatus(C4Player &player, bool fInCrew, Required<C4ObjectOrThis> pObj)
@@ -3424,12 +3379,6 @@ static C4ValueInt FnSetColor(C4ValueInt iValue, Required<C4ObjectOrThis> pObj)
 static C4ValueInt FnGetColorDw(Required<C4ObjectOrThis> pObj)
 {
 	return pObj->Color;
-}
-
-static C4ValueInt FnGetPlrColorDw(C4Player &player)
-{
-	// return player color
-	return player.ColorDw;
 }
 
 static bool FnSetColorDw(C4ValueInt iValue, Required<C4ObjectOrThis> pObj)
@@ -4528,14 +4477,6 @@ static bool FnSetCrewEnabled(bool fEnabled, Required<C4ObjectOrThis> pObj)
 	return true;
 }
 
-static bool FnUnselectCrew(C4Player &player)
-{
-	// unselect crew
-	player.UnselectCrew();
-	// success
-	return true;
-}
-
 static C4ValueInt FnDrawMap(C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt iHgt, C4String *szMapDef)
 {
 	// draw it!
@@ -5336,11 +5277,6 @@ static bool FnSetPreSend(C4ValueInt iToVal, C4String *pNewName)
 	return true;
 }
 
-static C4ValueInt FnGetPlayerID(C4Player &player)
-{
-	return player.ID;
-}
-
 static C4ValueInt FnGetPlayerTeam(C4Player &player)
 {
 	// search team containing this player
@@ -5444,11 +5380,6 @@ static std::optional<C4ValueInt> FnGetTeamByIndex(C4ValueInt iIndex)
 static C4ValueInt FnGetTeamCount()
 {
 	return Game.Teams.GetTeamCount();
-}
-
-static bool FnInitScenarioPlayer(C4Player &player, C4ValueInt idTeam)
-{
-	return player.ScenarioAndTeamInit(idTeam);
 }
 
 static bool FnOnOwnerRemoved(C4AulContext *cthr)
@@ -5746,6 +5677,21 @@ template <> struct C4ValueConv<std::nullptr_t>
 	inline static C4Value ToC4V(std::nullptr_t) { return C4VNull; }
 };
 
+template <> struct C4ValueConv<std::make_unsigned_t<C4ValueInt>>
+{
+	using C4ValueIntUnsigned = std::make_unsigned_t<C4ValueInt>;
+	constexpr static C4V_Type Type() { return C4V_Int; }
+	inline static C4ValueIntUnsigned FromC4V(C4Value &v) { return static_cast<C4ValueIntUnsigned>(v.getInt()); }
+	inline static C4ValueIntUnsigned _FromC4V(const C4Value &v) { return static_cast<C4ValueIntUnsigned>(v._getInt()); }
+	inline static C4Value ToC4V(C4ValueIntUnsigned v) { return C4VInt(static_cast<C4ValueInt>(v)); }
+};
+
+template <> struct C4ValueConv<C4EnumeratedObjectPtr>
+{
+	constexpr static C4V_Type Type() { return C4V_C4Object; }
+	inline static C4Value ToC4V(C4EnumeratedObjectPtr v) { return C4VObj(v.Object()); }
+};
+
 template <typename T> struct C4ValueConv<std::optional<T>>
 {
 	constexpr static C4V_Type Type() { return C4ValueConv<T>::Type(); }
@@ -5919,11 +5865,10 @@ public:
 	virtual bool GetPublic() noexcept override { return pub; }
 };
 
-template<bool NeedsContext, typename Ret, typename... Pars>
+template<typename Func, typename Ret, typename... Pars>
 class C4AulEngineFunc : public C4AulEngineFuncHelper<sizeof...(Pars)>
 {
 	constexpr static auto ParCount = sizeof...(Pars);
-	using Func = std::conditional_t<NeedsContext, Ret(&)(C4AulContext *context, Pars...), Ret(&)(Pars...)>;
 	constexpr auto static isVoid = std::is_same_v<Ret, void>;
 	Func func;
 
@@ -5968,13 +5913,13 @@ private:
 
 		const auto callHelper = [this, context, pars]
 		{
-			if constexpr (std::is_invocable_v<Func, C4AulContext*, Pars...>)
+			if constexpr (std::is_invocable_r_v<Ret, Func, C4AulContext*, Pars...>)
 			{
-				return std::invoke(func, context, ArgumentConverter<Pars>::Convert(context, pars[indices])...);
+				return std::invoke_r<Ret>(func, context, ArgumentConverter<Pars>::Convert(context, pars[indices])...);
 			}
 			else
 			{
-				return std::invoke(func, ArgumentConverter<Pars>::Convert(context, pars[indices])...);
+				return std::invoke_r<Ret>(func, ArgumentConverter<Pars>::Convert(context, pars[indices])...);
 			}
 		};
 
@@ -5993,13 +5938,25 @@ private:
 template <typename Ret, typename... Pars>
 static void AddFunc(C4AulScript *owner, const char *name, Ret (&func)(C4AulContext *context, Pars...), bool pub = true)
 {
-	new C4AulEngineFunc<true, Ret, Pars...>{owner, name, func, pub};
+	new C4AulEngineFunc<Ret (&)(C4AulContext *context, Pars...), Ret, Pars...>{owner, name, func, pub};
 }
 
 template <typename Ret, typename... Pars>
 static void AddFunc(C4AulScript *owner, const char *name, Ret (&func)(Pars...), bool pub = true)
 {
-	new C4AulEngineFunc<false, Ret, Pars...>{owner, name, func, pub};
+	new C4AulEngineFunc<Ret (&)(Pars...), Ret, Pars...>{owner, name, func, pub};
+}
+
+template <typename Class, typename Member>
+static void AddFunc(C4AulScript *owner, const char *name, Member Class::*member, bool pub = true)
+{
+	new C4AulEngineFunc<Member Class::*, Member, Class &>{owner, name, member, pub};
+}
+
+template <typename Class, typename Ret, typename... Pars>
+static void AddFunc(C4AulScript *owner, const char *name, Ret (Class::*member)(Pars...), bool pub = true)
+{
+	new C4AulEngineFunc<Ret (Class::*)(Pars...), Ret, Class &, Pars...>{owner, name, member, pub};
 }
 
 template<C4V_Type fromType, C4V_Type toType>
@@ -6597,17 +6554,17 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SetPlrView",                      FnSetPlrView);
 	AddFunc(pEngine, "SetPlrKnowledge",                 FnSetPlrKnowledge);
 	AddFunc(pEngine, "SetPlrMagic",                     FnSetPlrMagic);
-	AddFunc(pEngine, "GetPlrDownDouble",                FnGetPlrDownDouble);
+	AddFunc(pEngine, "GetPlrDownDouble",                &C4Player::LastComDownDouble);
 	AddFunc(pEngine, "ClearLastPlrCom",                 FnClearLastPlrCom);
 	AddFunc(pEngine, "GetPlrViewMode",                  FnGetPlrViewMode);
 	AddFunc(pEngine, "GetPlrView",                      FnGetPlrView);
-	AddFunc(pEngine, "GetWealth",                       FnGetWealth);
+	AddFunc(pEngine, "GetWealth",                       &C4Player::Wealth);
 	AddFunc(pEngine, "SetWealth",                       FnSetWealth);
 	AddFunc(pEngine, "SetComponent",                    FnSetComponent);
-	AddFunc(pEngine, "DoScore",                         FnDoScore);
-	AddFunc(pEngine, "GetScore",                        FnGetScore);
-	AddFunc(pEngine, "GetPlrValue",                     FnGetPlrValue);
-	AddFunc(pEngine, "GetPlrValueGain",                 FnGetPlrValueGain);
+	AddFunc(pEngine, "DoScore",                         &C4Player::DoPoints);
+	AddFunc(pEngine, "GetScore",                        &C4Player::Points);
+	AddFunc(pEngine, "GetPlrValue",                     &C4Player::Value);
+	AddFunc(pEngine, "GetPlrValueGain",                 &C4Player::ValueGain);
 	AddFunc(pEngine, "SetPlrShowControl",               FnSetPlrShowControl);
 	AddFunc(pEngine, "SetPlrShowControlPos",            FnSetPlrShowControlPos);
 	AddFunc(pEngine, "GetPlrControlName",               FnGetPlrControlName);
@@ -6649,12 +6606,12 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetLeagueProgressData",           FnGetLeagueProgressData);
 	AddFunc(pEngine, "CreateScriptPlayer",              FnCreateScriptPlayer);
 	AddFunc(pEngine, "GetCursor",                       FnGetCursor);
-	AddFunc(pEngine, "GetViewCursor",                   FnGetViewCursor);
-	AddFunc(pEngine, "GetCaptain",                      FnGetCaptain);
+	AddFunc(pEngine, "GetViewCursor",                   &C4Player::ViewCursor);
+	AddFunc(pEngine, "GetCaptain",                      &C4Player::Captain);
 	AddFunc(pEngine, "SetCursor",                       FnSetCursor);
 	AddFunc(pEngine, "SetViewCursor",                   FnSetViewCursor);
 	AddFunc(pEngine, "SelectCrew",                      FnSelectCrew);
-	AddFunc(pEngine, "GetSelectCount",                  FnGetSelectCount);
+	AddFunc(pEngine, "GetSelectCount",                  &C4Player::SelectCount);
 	AddFunc(pEngine, "SetCrewStatus",                   FnSetCrewStatus,                   false);
 	AddFunc(pEngine, "SetPosition",                     FnSetPosition);
 	AddFunc(pEngine, "ExtractLiquid",                   FnExtractLiquid);
@@ -6740,7 +6697,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetNeededMatStr",                 FnGetNeededMatStr);
 	AddFunc(pEngine, "GetCrewEnabled",                  FnGetCrewEnabled);
 	AddFunc(pEngine, "SetCrewEnabled",                  FnSetCrewEnabled);
-	AddFunc(pEngine, "UnselectCrew",                    FnUnselectCrew);
+	AddFunc(pEngine, "UnselectCrew",                    &C4Player::UnselectCrew);
 	AddFunc(pEngine, "DrawMap",                         FnDrawMap);
 	AddFunc(pEngine, "DrawDefMap",                      FnDrawDefMap);
 	AddFunc(pEngine, "CreateParticle",                  FnCreateParticle);
@@ -6764,7 +6721,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SetObjectOrder",                  FnSetObjectOrder);
 	AddFunc(pEngine, "SetColorDw",                      FnSetColorDw);
 	AddFunc(pEngine, "GetColorDw",                      FnGetColorDw);
-	AddFunc(pEngine, "GetPlrColorDw",                   FnGetPlrColorDw);
+	AddFunc(pEngine, "GetPlrColorDw",                   &C4Player::ColorDw);
 	AddFunc(pEngine, "DrawMaterialQuad",                FnDrawMaterialQuad);
 	AddFunc(pEngine, "FightWith",                       FnFightWith);
 	AddFunc(pEngine, "SetFilmView",                     FnSetFilmView);
@@ -6798,7 +6755,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetObjectBlitMode",               FnGetObjectBlitMode);
 	AddFunc(pEngine, "SetViewOffset",                   FnSetViewOffset);
 	AddFunc(pEngine, "SetPreSend",                      FnSetPreSend,                      false);
-	AddFunc(pEngine, "GetPlayerID",                     FnGetPlayerID,                     false);
+	AddFunc(pEngine, "GetPlayerID",                     &C4Player::ID,                     false);
 	AddFunc(pEngine, "GetPlayerTeam",                   FnGetPlayerTeam);
 	AddFunc(pEngine, "SetPlayerTeam",                   FnSetPlayerTeam);
 	AddFunc(pEngine, "GetTeamConfig",                   FnGetTeamConfig);
@@ -6806,7 +6763,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetTeamColor",                    FnGetTeamColor);
 	AddFunc(pEngine, "GetTeamByIndex",                  FnGetTeamByIndex);
 	AddFunc(pEngine, "GetTeamCount",                    FnGetTeamCount);
-	AddFunc(pEngine, "InitScenarioPlayer",              FnInitScenarioPlayer,              false);
+	AddFunc(pEngine, "InitScenarioPlayer",              &C4Player::ScenarioAndTeamInit,              false);
 	AddFunc(pEngine, PSF_OnOwnerRemoved,                FnOnOwnerRemoved,                  false);
 	AddFunc(pEngine, "SetScoreboardData",               FnSetScoreboardData,               false);
 	AddFunc(pEngine, "GetScoreboardString",             FnGetScoreboardString,             false);
