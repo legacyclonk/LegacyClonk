@@ -146,7 +146,7 @@ private:
 				auto &that = *reinterpret_cast<Awaiter *>(argument);
 				{
 					const std::lock_guard lock{that.resultMutex};
-					that.system.RemoveHandle(std::visit([](const auto &handle) { return handle.get(); }, that.easyHandle));
+					that.easyHandle = {};
 					that.cancelled.store(true, std::memory_order_release);
 				}
 				that.Resume();
