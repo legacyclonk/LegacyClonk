@@ -3263,12 +3263,6 @@ static C4ValueInt FnSetMass(C4ValueInt iValue, Required<C4ObjectOrThis> pObj)
 	return true;
 }
 
-static C4ValueInt FnGetColor(C4Object *pObj)
-{
-	// oldgfx
-	return 0;
-}
-
 static C4ValueInt FnSetColor(C4ValueInt iValue, Required<C4ObjectOrThis> pObj)
 {
 	if (!Inside<C4ValueInt>(iValue, 0, C4MaxColor - 1)) return false;
@@ -4169,9 +4163,6 @@ static C4Value FnGlobalN(C4String *name)
 	return pVarN->GetRef();
 }
 
-static C4ValueInt FnAnyContainer(C4AulContext *) { return ANY_CONTAINER; }
-static C4ValueInt FnNoContainer(C4AulContext *)  { return NO_CONTAINER; }
-
 static std::optional<C4ValueInt> FnGetTime(C4AulContext *)
 {
 	// check network, record, etc
@@ -4436,8 +4427,6 @@ static bool FnClearParticles(C4String *szName, C4Object *pObj)
 	// success
 	return true;
 }
-
-static bool FnIsNewgfx(C4AulContext *) { return true; }
 
 #define SkyPar_KEEP -163764
 
@@ -6201,6 +6190,12 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 	{ "C4PVM_Scrolling", C4V_Int, C4PVM_Scrolling },
 };
 
+template <auto val, typename... IgnorePars>
+auto Constant(IgnorePars...)
+{
+	return val;
+}
+
 void InitFunctionMap(C4AulScriptEngine *pEngine)
 {
 	// add all def constants (all Int)
@@ -6355,8 +6350,8 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "AddVertex",                       FnAddVertex);
 	AddFunc(pEngine, "RemoveVertex",                    FnRemoveVertex);
 	AddFunc(pEngine, "SetContactDensity",               FnSetContactDensity,               false);
-	AddFunc(pEngine, "AnyContainer",                    FnAnyContainer);
-	AddFunc(pEngine, "NoContainer",                     FnNoContainer);
+	AddFunc(pEngine, "AnyContainer",                    Constant<ANY_CONTAINER>);
+	AddFunc(pEngine, "NoContainer",                     Constant<NO_CONTAINER>);
 	AddFunc(pEngine, "GetController",                   FnGetController);
 	AddFunc(pEngine, "SetController",                   FnSetController);
 	AddFunc(pEngine, "GetKiller",                       FnGetKiller);
@@ -6532,7 +6527,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "OnMessageBoardAnswer",            FnOnMessageBoardAnswer,            false);
 	AddFunc(pEngine, "ScriptCounter",                   Game.Script, &C4GameScriptHost::Counter);
 	AddFunc(pEngine, "SetMass",                         FnSetMass);
-	AddFunc(pEngine, "GetColor",                        FnGetColor);
+	AddFunc(pEngine, "GetColor",                        Constant<0, C4Object *>); // oldgfx
 	AddFunc(pEngine, "SetColor",                        FnSetColor);
 	AddFunc(pEngine, "SetFoW",                          FnSetFoW);
 	AddFunc(pEngine, "SetPlrViewRange",                 FnSetPlrViewRange);
@@ -6575,7 +6570,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "CastBackParticles",               FnCastBackParticles);
 	AddFunc(pEngine, "PushParticles",                   FnPushParticles);
 	AddFunc(pEngine, "ClearParticles",                  FnClearParticles);
-	AddFunc(pEngine, "IsNewgfx",                        FnIsNewgfx,                        false);
+	AddFunc(pEngine, "IsNewgfx",                        Constant<true>,                        false);
 	AddFunc(pEngine, "SetSkyAdjust",                    Game.Landscape.Sky, &C4Sky::SetModulation);
 	AddFunc(pEngine, "SetMatAdjust",                    Game.Landscape, &C4Landscape::SetModulation);
 	AddFunc(pEngine, "GetSkyAdjust",                    Game.Landscape.Sky, &C4Sky::GetModulation);
