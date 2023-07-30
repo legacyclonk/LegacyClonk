@@ -53,7 +53,7 @@
 
 
 namespace {
-	// Simple C4Object * wrapper, which is used by script funtion adaptors to automatically fill in the context object instead of nil
+	// Simple C4Object * wrapper, which is used by script function adaptors to automatically fill in the context object instead of nil
 	class C4ObjectOrThis
 	{
 		C4Object *obj;
@@ -99,7 +99,7 @@ namespace {
 		constexpr T operator->() const noexcept { return value; }
 
 		template<equals_comparable_with<T> Other>
-		constexpr bool operator==(const Required<Other> &other) const { return value == *other; }
+		constexpr bool operator==(const Other &other) const { return value == other; }
 
 		template<typename U> requires std::convertible_to<T, U>
 		constexpr operator U() const { return static_cast<U>(value); }
@@ -135,9 +135,14 @@ static void StrictError(C4AulContext *const context, C4AulScriptStrict errorSinc
 
 const C4ValueInt MaxFnStringParLen = 500;
 
+inline const static char *FnStringPar(const C4String &string)
+{
+	return string.Data.getData();
+}
+
 inline const static char *FnStringPar(const C4String *const pString)
 {
-	return pString ? pString->Data.getData() : "";
+	return pString ? FnStringPar(*pString) : "";
 }
 
 inline C4String *String(const char *str)
@@ -379,10 +384,10 @@ static bool FnDeathAnnounce(C4AulContext *cthr)
 	return true;
 }
 
-static bool FnGrabContents(Required<C4Object *> from, Required<C4ObjectOrThis> pTo)
+static bool FnGrabContents(C4Object &from, Required<C4ObjectOrThis> pTo)
 {
-	if (pTo == from) return false;
-	pTo->GrabContents(from);
+	if (pTo == &from) return false;
+	pTo->GrabContents(&from);
 	return true;
 }
 
@@ -403,12 +408,12 @@ static bool FnKill(C4AulContext *cthr, Required<C4ObjectOrThis> pObj, bool fForc
 	return true;
 }
 
-static bool FnFling(C4AulContext *cthr, Required<C4Object *> pObj, C4ValueInt iXDir, C4ValueInt iYDir, Default<C4ValueInt, 1, true> iPrec, bool fAddSpeed)
+static bool FnFling(C4AulContext *cthr, C4Object &obj, C4ValueInt iXDir, C4ValueInt iYDir, Default<C4ValueInt, 1, true> iPrec, bool fAddSpeed)
 {
-	pObj->Fling(itofix(iXDir, iPrec), itofix(iYDir, iPrec), fAddSpeed, cthr->Obj ? cthr->Obj->Controller : NO_OWNER);
+	obj.Fling(itofix(iXDir, iPrec), itofix(iYDir, iPrec), fAddSpeed, cthr->Obj ? cthr->Obj->Controller : NO_OWNER);
 	// unstick from ground, because Fling command may be issued in an Action-callback,
 	// where attach-values have already been determined for that frame
-	pObj->Action.t_attach = 0;
+	obj.Action.t_attach = 0;
 	return true;
 }
 
@@ -417,9 +422,9 @@ static bool FnJump(Required<C4ObjectOrThis> pObj)
 	return ObjectComJump(pObj);
 }
 
-static bool FnEnter(Required<C4Object *> pTarget, Required<C4ObjectOrThis> pObj)
+static bool FnEnter(C4Object &target, Required<C4ObjectOrThis> pObj)
 {
-	return pObj->Enter(pTarget);
+	return pObj->Enter(&target);
 }
 
 static bool FnExit(C4AulContext *cthr, Required<C4ObjectOrThis> pObj, C4ValueInt tx, C4ValueInt ty, C4ValueInt tr, C4ValueInt txdir, C4ValueInt tydir, C4ValueInt trdir)
@@ -434,7 +439,7 @@ static bool FnExit(C4AulContext *cthr, Required<C4ObjectOrThis> pObj, C4ValueInt
 		itofix(trdir) / 10);
 }
 
-static bool FnCollect(Required<C4Object *> pItem, Required<C4ObjectOrThis> pCollector)
+static bool FnCollect(C4Object &item, Required<C4ObjectOrThis> pCollector)
 {
 	// Script function Collect ignores NoCollectDelay
 	int32_t iOldNoCollectDelay = pCollector->NoCollectDelay;
@@ -448,7 +453,7 @@ static bool FnCollect(Required<C4Object *> pItem, Required<C4ObjectOrThis> pColl
 	// check OCF of collector (MaxCarry)
 	if (pCollector->OCF & OCF_Collection)
 		// collect
-		success = pCollector->Collect(pItem);
+		success = pCollector->Collect(&item);
 	// restore NoCollectDelay
 	if (iOldNoCollectDelay > pCollector->NoCollectDelay) pCollector->NoCollectDelay = iOldNoCollectDelay;
 	// failure
@@ -754,7 +759,7 @@ static bool FnSetR(C4ValueInt nr, Required<C4ObjectOrThis> pObj)
 	return true;
 }
 
-static bool FnSetAction(C4AulContext *cthr, Required<C4String *> szAction,
+static bool FnSetAction(C4AulContext *cthr, C4String &szAction,
 	C4Object *pTarget, C4Object *pTarget2, bool fDirect)
 {
 	if (!cthr->Obj) return false;
@@ -788,11 +793,11 @@ static bool FnSetActionData(C4ValueInt iData, Required<C4ObjectOrThis> pObj)
 	return true;
 }
 
-static bool FnObjectSetAction(Required<C4Object *> pObj, Required<C4String *> szAction,
+static bool FnObjectSetAction(C4Object &obj, C4String &szAction,
 	C4Object *pTarget, C4Object *pTarget2, bool fDirect)
 {
 	// regular action change
-	return !!pObj->SetActionByName(FnStringPar(szAction), pTarget, pTarget2,
+	return !!obj.SetActionByName(FnStringPar(szAction), pTarget, pTarget2,
 		C4Object::SAC_StartCall | C4Object::SAC_AbortCall, !!fDirect);
 }
 
@@ -837,7 +842,7 @@ static bool FnExecuteCommand(Required<C4ObjectOrThis> pObj)
 	return !!pObj->ExecuteCommand();
 }
 
-static bool FnSetCommand(Required<C4ObjectOrThis> pObj, Required<C4String *> szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4Value data, C4ValueInt iRetries)
+static bool FnSetCommand(Required<C4ObjectOrThis> pObj, C4String &szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4Value data, C4ValueInt iRetries)
 {
 	// Command
 	C4ValueInt iCommand = CommandByName(FnStringPar(szCommand));
@@ -864,7 +869,7 @@ static bool FnSetCommand(Required<C4ObjectOrThis> pObj, Required<C4String *> szC
 	return true;
 }
 
-static bool FnAddCommand(Required<C4ObjectOrThis> pObj, Required<C4String *> szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4ValueInt iUpdateInterval, C4Value data, C4ValueInt iRetries, C4ValueInt iBaseMode)
+static bool FnAddCommand(Required<C4ObjectOrThis> pObj, C4String &szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4ValueInt iUpdateInterval, C4Value data, C4ValueInt iRetries, C4ValueInt iBaseMode)
 {
 	// Command
 	C4ValueInt iCommand = CommandByName(FnStringPar(szCommand));
@@ -885,7 +890,7 @@ static bool FnAddCommand(Required<C4ObjectOrThis> pObj, Required<C4String *> szC
 	return pObj->AddCommand(iCommand, pTarget, Tx, iTy, iUpdateInterval, pTarget2, true, iData, false, iRetries, szText, iBaseMode);
 }
 
-static bool FnAppendCommand(Required<C4ObjectOrThis> pObj, Required<C4String *> szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4ValueInt iUpdateInterval, C4Value Data, C4ValueInt iRetries, C4ValueInt iBaseMode)
+static bool FnAppendCommand(Required<C4ObjectOrThis> pObj, C4String &szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4ValueInt iUpdateInterval, C4Value Data, C4ValueInt iRetries, C4ValueInt iBaseMode)
 {
 	// Command
 	C4ValueInt iCommand = CommandByName(FnStringPar(szCommand));
@@ -1684,23 +1689,23 @@ static bool FnSelectMenuItem(C4ValueInt iItem, Required<C4ObjectOrThis> pMenuObj
 	return !!pMenuObj->Menu->SetSelection(iItem, false, true);
 }
 
-static bool FnSetMenuDecoration(C4ID idNewDeco, Required<C4Object *> pMenuObj)
+static bool FnSetMenuDecoration(C4ID idNewDeco, C4Object &menuObj)
 {
-	if (!pMenuObj->Menu) return false;
+	if (!menuObj.Menu) return false;
 	C4GUI::FrameDecoration *pNewDeco = new C4GUI::FrameDecoration();
 	if (!pNewDeco->SetByDef(idNewDeco))
 	{
 		delete pNewDeco;
 		return false;
 	}
-	pMenuObj->Menu->SetFrameDeco(pNewDeco);
+	menuObj.Menu->SetFrameDeco(pNewDeco);
 	return true;
 }
 
-static bool FnSetMenuTextProgress(C4ValueInt iNewProgress, Required<C4Object *> pMenuObj)
+static bool FnSetMenuTextProgress(C4ValueInt iNewProgress, C4Object &menuObj)
 {
-	if (!pMenuObj->Menu) return false;
-	return pMenuObj->Menu->SetTextProgress(iNewProgress, false);
+	if (!menuObj.Menu) return false;
+	return menuObj.Menu->SetTextProgress(iNewProgress, false);
 }
 
 // Check / Status
@@ -1804,11 +1809,11 @@ static bool FnOnFire(Required<C4ObjectOrThis> pObj)
 	return !!pObj->pEffects->Get(C4Fx_AnyFire);
 }
 
-static bool FnComponentAll(C4AulContext *cthr, Required<C4Object *> pObj, C4ID c_id)
+static bool FnComponentAll(C4AulContext *cthr, C4Object &obj, C4ID c_id)
 {
 	C4ValueInt cnt;
 	C4IDList Components;
-	pObj->Def->GetComponents(&Components, pObj, cthr->Obj);
+	obj.Def->GetComponents(&Components, &obj, cthr->Obj);
 	for (cnt = 0; Components.GetID(cnt); cnt++)
 		if (Components.GetID(cnt) != c_id)
 			if (Components.GetCount(cnt) > 0)
@@ -2077,10 +2082,10 @@ static bool FnMakeCrewMember(C4Object *pObj, C4ValueInt iPlayer)
 	return !!Game.Players.Get(iPlayer)->MakeCrewMember(pObj);
 }
 
-static bool FnGrabObjectInfo(Required<C4Object *> pFrom, Required<C4ObjectOrThis> pTo)
+static bool FnGrabObjectInfo(C4Object &from, Required<C4ObjectOrThis> pTo)
 {
 	// grab info
-	return !!pTo->GrabInfo(pFrom);
+	return !!pTo->GrabInfo(&from);
 }
 
 static bool FnFlameConsumeMaterial(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
@@ -2307,7 +2312,7 @@ static C4ID FnC4Id(C4String *szID)
 	return C4Id(FnStringPar(szID));
 }
 
-static bool FnPlayerMessage(C4AulContext *cthr, C4ValueInt iPlayer, Required<C4String *> szMessage, C4Object *pObj, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6)
+static bool FnPlayerMessage(C4AulContext *cthr, C4ValueInt iPlayer, C4String &szMessage, C4Object *pObj, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6)
 {
 	char buf[MaxFnStringParLen + 1];
 
@@ -2326,7 +2331,7 @@ static bool FnPlayerMessage(C4AulContext *cthr, C4ValueInt iPlayer, Required<C4S
 	return true;
 }
 
-static bool FnMessage(C4AulContext *cthr, Required<C4String *> szMessage, C4Object *pObj, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7)
+static bool FnMessage(C4AulContext *cthr, C4String &szMessage, C4Object *pObj, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7)
 {
 	char buf[MaxFnStringParLen + 1];
 
@@ -2345,7 +2350,7 @@ static bool FnMessage(C4AulContext *cthr, Required<C4String *> szMessage, C4Obje
 	return true;
 }
 
-static bool FnAddMessage(C4AulContext *cthr, Required<C4String *> szMessage, C4Object *pObj, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7)
+static bool FnAddMessage(C4AulContext *cthr, C4String &szMessage, C4Object *pObj, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7)
 {
 	if (pObj) Game.Messages.Append(C4GM_Target, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), pObj, NO_OWNER, 0, 0, FWhite);
 	else Game.Messages.Append(C4GM_Global, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), nullptr, ANY_OWNER, 0, 0, FWhite);
@@ -2353,7 +2358,7 @@ static bool FnAddMessage(C4AulContext *cthr, Required<C4String *> szMessage, C4O
 	return true;
 }
 
-static bool FnPlrMessage(C4AulContext *cthr, Required<C4String *> szMessage, C4ValueInt iPlr, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7)
+static bool FnPlrMessage(C4AulContext *cthr, C4String &szMessage, C4ValueInt iPlr, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7)
 {
 	char buf[MaxFnStringParLen + 1];
 
@@ -2784,10 +2789,10 @@ static const int32_t CSPF_FixedAttributes    = 1 << 0,
                      CSPF_NoEliminationCheck = 1 << 2,
                      CSPF_Invisible          = 1 << 3;
 
-static bool FnCreateScriptPlayer(Required<C4String *> szName, C4ValueInt dwColor, C4ValueInt idTeam, C4ValueInt dwFlags, C4ID idExtra)
+static bool FnCreateScriptPlayer(C4String &szName, C4ValueInt dwColor, C4ValueInt idTeam, C4ValueInt dwFlags, C4ID idExtra)
 {
 	// safety
-	if (!szName->Data.getLength()) return false;
+	if (!szName.Data.getLength()) return false;
 	// this script command puts a new script player info into the list
 	// the actual join will be delayed and synchronized via queue
 	// processed by control host only - clients/replay/etc. will perform the join via queue
@@ -2798,7 +2803,7 @@ static bool FnCreateScriptPlayer(Required<C4String *> szName, C4ValueInt dwColor
 	if (dwFlags & CSPF_NoScenarioInit) dwInfoFlags |= C4PlayerInfo::PIF_NoScenarioInit;
 	if (dwFlags & CSPF_NoEliminationCheck) dwInfoFlags |= C4PlayerInfo::PIF_NoEliminationCheck;
 	if (dwFlags & CSPF_Invisible) dwInfoFlags |= C4PlayerInfo::PIF_Invisible;
-	pScriptPlrInfo->SetAsScriptPlayer(szName->Data.getData(), dwColor, dwInfoFlags, idExtra);
+	pScriptPlrInfo->SetAsScriptPlayer(szName.Data.getData(), dwColor, dwInfoFlags, idExtra);
 	pScriptPlrInfo->SetTeam(idTeam);
 	C4ClientPlayerInfos JoinPkt(nullptr, true, pScriptPlrInfo);
 	// add to queue!
@@ -2867,16 +2872,16 @@ static bool FnSetViewCursor(C4ValueInt iPlr, C4Object *pObj)
 	return true;
 }
 
-static bool FnSelectCrew(C4ValueInt iPlr, Required<C4Object *> pObj, bool fSelect, bool fNoCursorAdjust)
+static bool FnSelectCrew(C4ValueInt iPlr, C4Object &obj, bool fSelect, bool fNoCursorAdjust)
 {
 	C4Player *pPlr = Game.Players.Get(iPlr);
 	if (!pPlr) return false;
 	if (fNoCursorAdjust)
 	{
-		if (fSelect) pObj->DoSelect(); else pObj->UnSelect();
+		if (fSelect) obj.DoSelect(); else obj.UnSelect();
 	}
 	else
-		pPlr->SelectCrew(pObj, fSelect);
+		pPlr->SelectCrew(&obj, fSelect);
 	return true;
 }
 
@@ -3187,9 +3192,9 @@ static C4ValueInt FnDistance(C4ValueInt iX1, C4ValueInt iY1, C4ValueInt iX2, C4V
 	return Distance(iX1, iY1, iX2, iY2);
 }
 
-static C4ValueInt FnObjectDistance(Required<C4Object *> pObj2, Required<C4ObjectOrThis> pObj)
+static C4ValueInt FnObjectDistance(C4Object &obj2, Required<C4ObjectOrThis> pObj)
 {
-	return Distance(pObj->x, pObj->y, pObj2->x, pObj2->y);
+	return Distance(pObj->x, pObj->y, obj2.x, obj2.y);
 }
 
 static C4ValueInt FnObjectNumber(Required<C4ObjectOrThis> pObj)
@@ -3283,7 +3288,7 @@ static C4Value FnLocal(C4ValueInt iIndex, Required<C4ObjectOrThis> pObj)
 	return pObj->Local[iIndex].GetRef();
 }
 
-static C4Value FnCall(C4AulContext *cthr, Required<C4String *> szFunction,
+static C4Value FnCall(C4AulContext *cthr, C4String &szFunction,
 	C4Value par0, C4Value par1, C4Value par2, C4Value par3, C4Value par4,
 	C4Value par5, C4Value par6, C4Value par7, C4Value par8)
 {
@@ -3294,23 +3299,23 @@ static C4Value FnCall(C4AulContext *cthr, Required<C4String *> szFunction,
 }
 
 static C4Value FnObjectCall(C4AulContext *cthr,
-	Required<C4Object *> pObj, Required<C4String *> szFunction,
+	C4Object &obj, C4String &szFunction,
 	C4Value par0, C4Value par1, C4Value par2, C4Value par3, C4Value par4,
 	C4Value par5, C4Value par6, C4Value par7)
 {
-	if (!pObj->Def) return C4VNull;
+	if (!obj.Def) return C4VNull;
 	// get func
 	C4AulFunc *f;
-	if (!(f = pObj->Def->Script.GetSFunc(FnStringPar(szFunction), AA_PUBLIC, true))) return C4VNull;
+	if (!(f = obj.Def->Script.GetSFunc(FnStringPar(szFunction), AA_PUBLIC, true))) return C4VNull;
 	// copy pars
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, Pars, true, true, !cthr->CalledWithStrictNil());
+	return f->Exec(&obj, Pars, true, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnDefinitionCall(C4AulContext *cthr,
-	RequiredNonZero<C4ValueInt> idID, Required<C4String *> szFunction,
+	RequiredNonZero<C4ValueInt> idID, C4String &szFunction,
 	C4Value par0, C4Value par1, C4Value par2, C4Value par3, C4Value par4,
 	C4Value par5, C4Value par6, C4Value par7)
 {
@@ -3328,7 +3333,7 @@ static C4Value FnDefinitionCall(C4AulContext *cthr,
 }
 
 static C4Value FnGameCall(C4AulContext *cthr,
-	Required<C4String *> szFunction,
+	C4String &szFunction,
 	C4Value par0, C4Value par1, C4Value par2, C4Value par3, C4Value par4,
 	C4Value par5, C4Value par6, C4Value par7, C4Value par8)
 {
@@ -3343,7 +3348,7 @@ static C4Value FnGameCall(C4AulContext *cthr,
 }
 
 static C4Value FnGameCallEx(C4AulContext *cthr,
-	Required<C4String *> szFunction,
+	C4String &szFunction,
 	C4Value par0, C4Value par1, C4Value par2, C4Value par3, C4Value par4,
 	C4Value par5, C4Value par6, C4Value par7, C4Value par8)
 {
@@ -3358,35 +3363,35 @@ static C4Value FnGameCallEx(C4AulContext *cthr,
 }
 
 static C4Value FnProtectedCall(C4AulContext *cthr,
-	Required<C4Object *> pObj, Required<C4String *> szFunction,
+	C4Object &obj, C4String &szFunction,
 	C4Value par0, C4Value par1, C4Value par2, C4Value par3, C4Value par4,
 	C4Value par5, C4Value par6, C4Value par7)
 {
-	if (!pObj->Def) return C4VNull;
+	if (!obj.Def) return C4VNull;
 	// get func
 	C4AulScriptFunc *f;
-	if (!(f = pObj->Def->Script.GetSFunc(FnStringPar(szFunction), AA_PROTECTED, true))) return C4VNull;
+	if (!(f = obj.Def->Script.GetSFunc(FnStringPar(szFunction), AA_PROTECTED, true))) return C4VNull;
 	// copy parameters
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, Pars, true, !cthr->CalledWithStrictNil());
+	return f->Exec(&obj, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnPrivateCall(C4AulContext *cthr,
-	Required<C4Object *> pObj, Required<C4String *> szFunction,
+	C4Object &obj, C4String &szFunction,
 	C4Value par0, C4Value par1, C4Value par2, C4Value par3, C4Value par4,
 	C4Value par5, C4Value par6, C4Value par7)
 {
-	if (!pObj->Def) return C4VNull;
+	if (!obj.Def) return C4VNull;
 	// get func
 	C4AulScriptFunc *f;
-	if (!(f = pObj->Def->Script.GetSFunc(FnStringPar(szFunction), AA_PRIVATE, true))) return C4VNull;
+	if (!(f = obj.Def->Script.GetSFunc(FnStringPar(szFunction), AA_PRIVATE, true))) return C4VNull;
 	// copy parameters
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, Pars, true, !cthr->CalledWithStrictNil());
+	return f->Exec(&obj, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Object *FnEditCursor()
@@ -3745,7 +3750,7 @@ static std::optional<C4ValueInt> FnGetClrModulation(Required<C4ObjectOrThis> pOb
 		return {pObj->ColorMod};
 }
 
-static bool FnGetMissionAccess(Required<C4String *> strMissionAccess)
+static bool FnGetMissionAccess(C4String &strMissionAccess)
 {
 	// non-sync mode: warn
 	if (Game.Control.SyncMode())
@@ -4126,7 +4131,7 @@ static C4ValueInt FnGetMenuSelection(Required<C4ObjectOrThis, -1> pObj)
 	return pObj->Menu->GetSelection();
 }
 
-static bool FnResortObjects(C4AulContext *cthr, Required<C4String *> szFunc, Default<C4ValueInt, C4D_SortLimit, true> Category)
+static bool FnResortObjects(C4AulContext *cthr, C4String &szFunc, Default<C4ValueInt, C4D_SortLimit, true> Category)
 {
 	// safety
 	if (!cthr->Caller) return false;
@@ -4145,7 +4150,7 @@ static bool FnResortObjects(C4AulContext *cthr, Required<C4String *> szFunc, Def
 	return true;
 }
 
-static bool FnResortObject(C4AulContext *cthr, Required<C4String *> szFunc, Required<C4ObjectOrThis> pObj)
+static bool FnResortObject(C4AulContext *cthr, C4String &szFunc, Required<C4ObjectOrThis> pObj)
 {
 	// safety
 	if (!cthr->Caller) return false;
@@ -4164,9 +4169,9 @@ static bool FnResortObject(C4AulContext *cthr, Required<C4String *> szFunc, Requ
 	return true;
 }
 
-static C4ValueInt FnGetChar(Required<C4String *> pString, C4ValueInt iIndex)
+static C4ValueInt FnGetChar(C4String &string, C4ValueInt iIndex)
 {
-	const char *szText = FnStringPar(pString);
+	const char *szText = FnStringPar(string);
 	// loop and check for end of string
 	for (C4ValueInt i = 0; i < iIndex; i++, szText++)
 		if (!*szText) return 0;
@@ -4864,16 +4869,16 @@ static void FnSetLandscapePixel(C4AulContext *ctx, C4ValueInt iX, C4ValueInt iY,
 	Game.Landscape.SetPixDw(iX, iY, dwValue);
 }
 
-static bool FnSetObjectOrder(Required<C4Object *> pObjBeforeOrAfter, Required<C4ObjectOrThis> pSortObj, bool fSortAfter)
+static bool FnSetObjectOrder(C4Object &objBeforeOrAfter, Required<C4ObjectOrThis> pSortObj, bool fSortAfter)
 {
 	// don’t sort an object before or after itself, it messes up the object list and causes infinite loops
-	if (pObjBeforeOrAfter == pSortObj) return false;
+	if (&objBeforeOrAfter == pSortObj) return false;
 	// note that no category check is done, so this call might corrupt the main list!
 	// the scripter must be wise enough not to call it for objects with different categories
 	// create object resort
 	C4ObjResort *pObjRes = new C4ObjResort();
 	pObjRes->pSortObj = pSortObj;
-	pObjRes->pObjBefore = pObjBeforeOrAfter;
+	pObjRes->pObjBefore = &objBeforeOrAfter;
 	pObjRes->fSortAfter = fSortAfter;
 	// insert into game resort proc list
 	pObjRes->Next = Game.Objects.ResortProc;
@@ -4888,16 +4893,16 @@ static bool FnDrawMaterialQuad(C4String *szMaterial, C4ValueInt iX1, C4ValueInt 
 	return !!Game.Landscape.DrawQuad(iX1, iY1, iX2, iY2, iX3, iY3, iX4, iY4, szMat, fSub);
 }
 
-static bool FnFightWith(Required<C4Object *> pTarget, Required<C4ObjectOrThis> pClonk)
+static bool FnFightWith(C4Object &target, Required<C4ObjectOrThis> pClonk)
 {
 	// check OCF
-	if (~(pTarget->OCF & pClonk->OCF) & OCF_FightReady) return false;
+	if (~(target.OCF & pClonk->OCF) & OCF_FightReady) return false;
 	// RejectFight callback
-	if (pTarget->Call(PSF_RejectFight, {C4VObj(pTarget)}, true).getBool()) return false;
+	if (target.Call(PSF_RejectFight, {C4VObj(&target)}, true).getBool()) return false;
 	if (pClonk->Call(PSF_RejectFight, {C4VObj(pClonk)}, true).getBool()) return false;
 	// begin fighting
-	ObjectActionFight(pClonk, pTarget);
-	ObjectActionFight(pTarget, pClonk);
+	ObjectActionFight(pClonk, &target);
+	ObjectActionFight(&target, pClonk);
 	// success
 	return true;
 }
@@ -4958,7 +4963,7 @@ static bool FnSetShape(C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt
 	return true;
 }
 
-static bool FnAddMsgBoardCmd(C4AulContext *ctx, Required<C4String *> pstrCommand, Required<C4String *> pstrScript, C4ValueInt iRestriction)
+static bool FnAddMsgBoardCmd(C4AulContext *ctx, C4String &strCommand, C4String &strScript, C4ValueInt iRestriction)
 {
 	// unrestricted commands cannot be set by direct-exec script (like /script).
 	if (iRestriction != C4MessageBoardCommand::C4MSGCMDR_Identifier)
@@ -4973,7 +4978,7 @@ static bool FnAddMsgBoardCmd(C4AulContext *ctx, Required<C4String *> pstrCommand
 	default: return false;
 	}
 	// add command
-	Game.MessageInput.AddCommand(FnStringPar(pstrCommand), FnStringPar(pstrScript), eRestriction);
+	Game.MessageInput.AddCommand(FnStringPar(strCommand), FnStringPar(strScript), eRestriction);
 	return true;
 }
 
@@ -5081,11 +5086,11 @@ static std::optional<bool> FnSimFlight(C4Value * pvrX, C4Value * pvrY, C4Value *
 	return {true};
 }
 
-static bool FnSetPortrait(Required<C4String *> pstrPortrait, Required<C4ObjectOrThis> pTarget, C4ID idSourceDef, bool fPermanent, bool fCopyGfx)
+static bool FnSetPortrait(C4String &strPortrait, Required<C4ObjectOrThis> pTarget, C4ID idSourceDef, bool fPermanent, bool fCopyGfx)
 {
 	// safety
 	const char *szPortrait;
-	if (!*(szPortrait = FnStringPar(pstrPortrait))) return false;
+	if (!*(szPortrait = FnStringPar(strPortrait))) return false;
 	if (!pTarget->Status || !pTarget->Info) return false;
 	// special case: clear portrait
 	if (SEqual(szPortrait, C4Portrait_None)) return pTarget->Info->ClearPortrait(!!fPermanent);
@@ -5146,11 +5151,11 @@ static C4Value FnGetPortrait(Required<C4ObjectOrThis> pObj, bool fGetID, bool fG
 	}
 }
 
-static C4ValueInt FnLoadScenarioSection(Required<C4String *> pstrSection, C4ValueInt dwFlags)
+static C4ValueInt FnLoadScenarioSection(C4String &strSection, C4ValueInt dwFlags)
 {
 	// safety
 	const char *szSection;
-	if (!*(szSection = FnStringPar(pstrSection))) return false;
+	if (!*(szSection = FnStringPar(strSection))) return false;
 	// try to load it
 	return Game.LoadScenarioSection(szSection, dwFlags);
 }
@@ -5183,9 +5188,9 @@ static bool FnAdjustWalkRotation(C4ValueInt iRangeX, C4ValueInt iRangeY, C4Value
 	return pObj->AdjustWalkRotation(iRangeX, iRangeY, iSpeed);
 }
 
-static C4ValueInt FnAddEffect(Required<C4String *> psEffectName, C4Object *pTarget, C4ValueInt iPrio, C4ValueInt iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, C4Value pvVal1, C4Value pvVal2, C4Value pvVal3, C4Value pvVal4)
+static C4ValueInt FnAddEffect(C4String &sEffectName, C4Object *pTarget, C4ValueInt iPrio, C4ValueInt iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, C4Value pvVal1, C4Value pvVal2, C4Value pvVal3, C4Value pvVal4)
 {
-	const char *szEffect = FnStringPar(psEffectName);
+	const char *szEffect = FnStringPar(sEffectName);
 	// safety
 	if (pTarget && !pTarget->Status) return 0;
 	if (!*szEffect || !iPrio) return 0;
@@ -5250,11 +5255,11 @@ static bool FnRemoveEffect(C4String *psEffectName, C4Object *pTarget, C4ValueInt
 	return true;
 }
 
-static bool FnChangeEffect(C4String *psEffectName, C4Object *pTarget, C4ValueInt iIndex, Required<C4String *> psNewEffectName, C4ValueInt iNewTimer)
+static bool FnChangeEffect(C4String *psEffectName, C4Object *pTarget, C4ValueInt iIndex, C4String &sNewEffectName, C4ValueInt iNewTimer)
 {
 	// evaluate parameters
 	const char *szEffect = FnStringPar(psEffectName);
-	const char *szNewEffect = FnStringPar(psNewEffectName);
+	const char *szNewEffect = FnStringPar(sNewEffectName);
 	if (!*szNewEffect) return false;
 	// get effects
 	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
@@ -5280,9 +5285,9 @@ static bool FnChangeEffect(C4String *psEffectName, C4Object *pTarget, C4ValueInt
 	return true;
 }
 
-static std::optional<C4ValueInt> FnCheckEffect(Required<C4String *> psEffectName, C4Object *pTarget, C4ValueInt iPrio, C4ValueInt iTimerIntervall, C4Value pvVal1, C4Value pvVal2, C4Value pvVal3, C4Value pvVal4)
+static std::optional<C4ValueInt> FnCheckEffect(C4String &sEffectName, C4Object *pTarget, C4ValueInt iPrio, C4ValueInt iTimerIntervall, C4Value pvVal1, C4Value pvVal2, C4Value pvVal3, C4Value pvVal4)
 {
-	const char *szEffect = FnStringPar(psEffectName);
+	const char *szEffect = FnStringPar(sEffectName);
 	// safety
 	if (pTarget && !pTarget->Status) return {};
 	if (!*szEffect) return {};
@@ -5317,9 +5322,9 @@ static C4Value FnEffectVar(C4ValueInt iVarIndex, C4Object *pObj, C4ValueInt iEff
 	return pEffect->EffectVars[iVarIndex].GetRef();
 }
 
-static C4Value FnEffectCall(C4AulContext *ctx, C4Object *pTarget, C4ValueInt iNumber, Required<C4String *> psCallFn, C4Value vVal1, C4Value vVal2, C4Value vVal3, C4Value vVal4, C4Value vVal5, C4Value vVal6, C4Value vVal7)
+static C4Value FnEffectCall(C4AulContext *ctx, C4Object *pTarget, C4ValueInt iNumber, C4String &sCallFn, C4Value vVal1, C4Value vVal2, C4Value vVal3, C4Value vVal4, C4Value vVal5, C4Value vVal6, C4Value vVal7)
 {
-	const char *szCallFn = FnStringPar(psCallFn);
+	const char *szCallFn = FnStringPar(sCallFn);
 	// safety
 	if (pTarget && !pTarget->Status) return C4VNull;
 	if (!*szCallFn) return C4VNull;
@@ -5351,19 +5356,19 @@ static C4ValueInt FnWildcardMatch(C4String *psString, C4String *psWildcard)
 	return SWildcardMatchEx(FnStringPar(psString), FnStringPar(psWildcard));
 }
 
-static std::optional<C4ValueInt> FnGetContact(Required<C4Object *> pObj, C4ValueInt iVertex, C4ValueInt dwCheck)
+static std::optional<C4ValueInt> FnGetContact(C4Object &obj, C4ValueInt iVertex, C4ValueInt dwCheck)
 {
 	// vertex not specified: check all
 	if (iVertex == -1)
 	{
 		C4ValueInt iResult = 0;
-		for (std::int32_t i = 0; i < pObj->Shape.VtxNum; ++i)
-			iResult |= pObj->Shape.GetVertexContact(i, dwCheck, pObj->x, pObj->y);
+		for (std::int32_t i = 0; i < obj.Shape.VtxNum; ++i)
+			iResult |= obj.Shape.GetVertexContact(i, dwCheck, obj.x, obj.y);
 		return iResult;
 	}
 	// vertex specified: check it
-	if (!Inside<C4ValueInt>(iVertex, 0, pObj->Shape.VtxNum - 1)) return {};
-	return pObj->Shape.GetVertexContact(iVertex, dwCheck, pObj->x, pObj->y);
+	if (!Inside<C4ValueInt>(iVertex, 0, obj.Shape.VtxNum - 1)) return {};
+	return obj.Shape.GetVertexContact(iVertex, dwCheck, obj.x, obj.y);
 }
 
 static std::optional<C4ValueInt> FnSetObjectBlitMode(C4ValueInt dwNewBlitMode, Required<C4ObjectOrThis> pObj, C4ValueInt iOverlayID)
@@ -5643,13 +5648,13 @@ static bool FnSortScoreboard(C4ValueInt iByColID, bool fReverse)
 	return Game.Scoreboard.SortBy(iByColID, !!fReverse);
 }
 
-static bool FnAddEvaluationData(Required<C4String *> pText, C4ValueInt idPlayer)
+static bool FnAddEvaluationData(C4String &text, C4ValueInt idPlayer)
 {
 	// safety
-	if (!pText->Data.getLength()) return false;
+	if (!text.Data.getLength()) return false;
 	if (idPlayer && !Game.PlayerInfos.GetPlayerInfoByID(idPlayer)) return false;
 	// add data
-	Game.RoundResults.AddCustomEvaluationString(pText->Data.getData(), idPlayer);
+	Game.RoundResults.AddCustomEvaluationString(text.Data.getData(), idPlayer);
 	return true;
 }
 
@@ -5719,11 +5724,11 @@ static void FnStopScriptProfiler()
 	C4AulProfiler::StopProfiling();
 }
 
-static bool FnCustomMessage(C4AulContext *ctx, Required<C4String *> pMsg, C4Object *pObj, C4ValueInt iOwner, C4ValueInt iOffX, C4ValueInt iOffY, Default<C4ValueInt, 0xffffff> clr, C4ID idDeco, C4String *sPortrait, C4ValueInt dwFlags, C4ValueInt iHSize)
+static bool FnCustomMessage(C4AulContext *ctx, C4String &msg, C4Object *pObj, C4ValueInt iOwner, C4ValueInt iOffX, C4ValueInt iOffY, Default<C4ValueInt, 0xffffff> clr, C4ID idDeco, C4String *sPortrait, C4ValueInt dwFlags, C4ValueInt iHSize)
 {
 	// safeties
 	if (pObj && !pObj->Status) return false;
-	const char *szMsg = pMsg->Data.getData();
+	const char *szMsg = msg.Data.getData();
 	if (!szMsg) return false;
 	if (idDeco && !C4Id2Def(idDeco)) return false;
 	// only one positioning flag per direction allowed
@@ -5844,6 +5849,42 @@ static void FnSetRestoreInfos(C4ValueInt what)
 	Game.RestartRestoreInfos.What = static_cast<std::underlying_type_t<C4NetworkRestartInfos::RestoreInfo>>(what);
 }
 
+template <> struct C4ValueConv<C4Value>
+{
+	constexpr static C4V_Type Type() { return C4V_Any; }
+	inline static C4Value FromC4V(C4Value &v) { return v; }
+	inline static C4Value _FromC4V(const C4Value &v) { return v; }
+	inline static C4Value ToC4V(C4Value v) { return v; }
+};
+
+template <> struct C4ValueConv<std::nullptr_t>
+{
+	constexpr static C4V_Type Type() { return C4V_Any; }
+	inline static std::nullptr_t FromC4V(C4Value &) { return nullptr; }
+	inline static std::nullptr_t _FromC4V(const C4Value &) { return nullptr; }
+	inline static C4Value ToC4V(std::nullptr_t) { return C4VNull; }
+};
+
+template <typename T> struct C4ValueConv<std::optional<T>>
+{
+	constexpr static C4V_Type Type() { return C4ValueConv<T>::Type(); }
+	inline static std::optional<T> FromC4V(C4Value &v)
+	{
+		if (v.GetType() != C4V_Any) return {C4ValueConv<T>::FromC4V(v)};
+		return {};
+	}
+	inline static std::optional<T> _FromC4V(const C4Value &v)
+	{
+		if (v.GetType() != C4V_Any) return {C4ValueConv<T>::_FromC4V(v)};
+		return {};
+	}
+	inline static C4Value ToC4V(const std::optional<T>& v)
+	{
+		if (v) return C4ValueConv<T>::ToC4V(*v);
+		return C4VNull;
+	}
+};
+
 template<typename T>
 struct ArgumentConverter
 {
@@ -5901,6 +5942,16 @@ struct ArgumentConverter<Required<T, failVal, nonZero>>
 };
 
 template<typename T>
+struct ArgumentConverter<T &>
+{
+	static constexpr inline C4V_Type Type = ArgumentConverter<T *>::Type;
+	static T &Convert(C4AulContext *context, const C4Value& value)
+	{
+		return *ArgumentConverter<T *>::Convert(context, value);
+	}
+};
+
+template<typename T>
 struct Condition
 {
 	static constexpr inline bool HasCondition = false;
@@ -5927,6 +5978,19 @@ struct Condition<Required<T, failVal, nonZero>>
 			}
 		}
 		return true;
+	}
+};
+
+template<typename T>
+struct Condition<T &>
+{
+	static constexpr inline bool HasCondition = true;
+	static constexpr inline auto FailValue = nullptr;
+	using FailType = std::nullptr_t;
+
+	static bool Ok(C4AulContext *context, const C4Value& value) noexcept
+	{
+		return ArgumentConverter<T *>::Convert(context, value) != nullptr;
 	}
 };
 
@@ -6410,42 +6474,6 @@ static constexpr C4ScriptConstDef C4ScriptConstMap[] =
 	{ "C4PVM_Cursor",    C4V_Int, C4PVM_Cursor },
 	{ "C4PVM_Target",    C4V_Int, C4PVM_Target },
 	{ "C4PVM_Scrolling", C4V_Int, C4PVM_Scrolling },
-};
-
-template <> struct C4ValueConv<C4Value>
-{
-	constexpr static C4V_Type Type() { return C4V_Any; }
-	inline static C4Value FromC4V(C4Value &v) { return v; }
-	inline static C4Value _FromC4V(const C4Value &v) { return v; }
-	inline static C4Value ToC4V(C4Value v) { return v; }
-};
-
-template <> struct C4ValueConv<std::nullptr_t>
-{
-	constexpr static C4V_Type Type() { return C4V_Any; }
-	inline static std::nullptr_t FromC4V(C4Value &) { return nullptr; }
-	inline static std::nullptr_t _FromC4V(const C4Value &) { return nullptr; }
-	inline static C4Value ToC4V(std::nullptr_t) { return C4VNull; }
-};
-
-template <typename T> struct C4ValueConv<std::optional<T>>
-{
-	constexpr static C4V_Type Type() { return C4ValueConv<T>::Type(); }
-	inline static std::optional<T> FromC4V(C4Value &v)
-	{
-		if (v.GetType() != C4V_Any) return {C4ValueConv<T>::FromC4V(v)};
-		return {};
-	}
-	inline static std::optional<T> _FromC4V(const C4Value &v)
-	{
-		if (v.GetType() != C4V_Any) return {C4ValueConv<T>::_FromC4V(v)};
-		return {};
-	}
-	inline static C4Value ToC4V(const std::optional<T>& v)
-	{
-		if (v) return C4ValueConv<T>::ToC4V(*v);
-		return C4VNull;
-	}
 };
 
 void InitFunctionMap(C4AulScriptEngine *pEngine)
