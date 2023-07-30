@@ -2923,11 +2923,6 @@ static C4ValueInt FnSub(C4ValueInt iVal1, C4ValueInt iVal2, C4ValueInt iVal3, C4
 	return (iVal1 - iVal2 - iVal3 - iVal4);
 }
 
-static C4ValueInt FnAbs(C4ValueInt iVal)
-{
-	return Abs(iVal);
-}
-
 static C4ValueInt FnMul(C4ValueInt iVal1, C4ValueInt iVal2)
 {
 	return (iVal1 * iVal2);
@@ -3010,11 +3005,6 @@ static C4ValueInt FnMax(C4ValueInt iVal1, C4ValueInt iVal2)
 	return (std::max)(iVal1, iVal2);
 }
 
-static C4ValueInt FnDistance(C4ValueInt iX1, C4ValueInt iY1, C4ValueInt iX2, C4ValueInt iY2)
-{
-	return Distance(iX1, iY1, iX2, iY2);
-}
-
 static C4ValueInt FnObjectDistance(C4Object &obj2, Required<C4ObjectOrThis> pObj)
 {
 	return Distance(pObj->x, pObj->y, obj2.x, obj2.y);
@@ -3029,16 +3019,6 @@ static C4ValueInt FnShowInfo(C4AulContext *cthr, C4ObjectOrThis pObj)
 {
 	if (!cthr->Obj) return false;
 	return cthr->Obj->ActivateMenu(C4MN_Info, 0, 0, 0, pObj);
-}
-
-static C4ValueInt FnBoundBy(C4ValueInt iVal, C4ValueInt iRange1, C4ValueInt iRange2)
-{
-	return BoundBy(iVal, iRange1, iRange2);
-}
-
-static bool FnInside(C4ValueInt iVal, C4ValueInt iRange1, C4ValueInt iRange2)
-{
-	return Inside(iVal, iRange1, iRange2);
 }
 
 static C4ValueInt FnSEqual(C4String *szString1, C4String *szString2)
@@ -5375,12 +5355,6 @@ static void FnFatalError(C4AulContext *ctx, C4String *pErrorMsg)
 	throw C4AulExecError(ctx->Obj, std::format("User error: {}", pErrorMsg ? pErrorMsg->Data.getData() : "(no error)"));
 }
 
-static void FnStartCallTrace()
-{
-	extern void C4AulStartTrace();
-	C4AulStartTrace();
-}
-
 static bool FnStartScriptProfiler(C4ID idScript)
 {
 	// get script to profile
@@ -5396,11 +5370,6 @@ static bool FnStartScriptProfiler(C4ID idScript)
 	// profile it
 	C4AulProfiler::StartProfiling(pScript);
 	return true;
-}
-
-static void FnStopScriptProfiler()
-{
-	C4AulProfiler::StopProfiling();
 }
 
 static bool FnCustomMessage(C4AulContext *ctx, C4String &msg, C4Object *pObj, C4ValueInt iOwner, C4ValueInt iOffX, C4ValueInt iOffY, Default<C4ValueInt, 0xffffff> clr, C4ID idDeco, C4String *sPortrait, C4ValueInt dwFlags, C4ValueInt iHSize)
@@ -6334,7 +6303,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "BitAnd",                          FnBitAnd,                          false);
 	AddFunc(pEngine, "Sum",                             FnSum,                             false);
 	AddFunc(pEngine, "Sub",                             FnSub,                             false);
-	AddFunc(pEngine, "Abs",                             FnAbs);
+	AddFunc(pEngine, "Abs",                             Abs<C4ValueInt>);
 	AddFunc(pEngine, "Min",                             FnMin);
 	AddFunc(pEngine, "Max",                             FnMax);
 	AddFunc(pEngine, "Mul",                             FnMul,                             false);
@@ -6348,8 +6317,8 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "ArcCos",                          FnArcus<std::acos>);
 	AddFunc(pEngine, "LessThan",                        FnLessThan,                        false);
 	AddFunc(pEngine, "GreaterThan",                     FnGreaterThan,                     false);
-	AddFunc(pEngine, "BoundBy",                         FnBoundBy);
-	AddFunc(pEngine, "Inside",                          FnInside);
+	AddFunc(pEngine, "BoundBy",                         BoundBy<C4ValueInt>);
+	AddFunc(pEngine, "Inside",                          Inside<C4ValueInt>);
 	AddFunc(pEngine, "SEqual",                          FnSEqual,                          false);
 	AddFunc(pEngine, "Random",                          FnRandom);
 	AddFunc(pEngine, "AsyncRandom",                     FnAsyncRandom);
@@ -6541,7 +6510,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetSeason",                       Game.Weather, &C4Weather::GetSeason);
 	AddFunc(pEngine, "SetClimate",                      Game.Weather, &C4Weather::SetClimate);
 	AddFunc(pEngine, "GetClimate",                      Game.Weather, &C4Weather::GetClimate);
-	AddFunc(pEngine, "Distance",                        FnDistance);
+	AddFunc(pEngine, "Distance",                        Distance);
 	AddFunc(pEngine, "ObjectDistance",                  FnObjectDistance);
 	AddFunc(pEngine, "GetValue",                        FnGetValue);
 	AddFunc(pEngine, "GetRank",                         FnGetRank);
@@ -6678,9 +6647,10 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "FatalError",                      FnFatalError,                      false);
 	AddFunc(pEngine, "ExtractMaterialAmount",           FnExtractMaterialAmount);
 	AddFunc(pEngine, "GetEffectCount",                  FnGetEffectCount);
-	AddFunc(pEngine, "StartCallTrace",                  FnStartCallTrace);
+	extern void C4AulStartTrace();
+	AddFunc(pEngine, "StartCallTrace",                  C4AulStartTrace);
 	AddFunc(pEngine, "StartScriptProfiler",             FnStartScriptProfiler);
-	AddFunc(pEngine, "StopScriptProfiler",              FnStopScriptProfiler);
+	AddFunc(pEngine, "StopScriptProfiler",              C4AulProfiler::StopProfiling);
 	AddFunc(pEngine, "CustomMessage",                   FnCustomMessage);
 	AddFunc(pEngine, "PauseGame",                       FnPauseGame);
 	AddFunc(pEngine, "ExecuteCommand",                  FnExecuteCommand);
