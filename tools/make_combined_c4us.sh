@@ -45,7 +45,7 @@ function mac() {
 	linux "$@"
 }
 
-for PLATFORM in "win32" "win64" "linux" "linux64" "mac"; do
+for PLATFORM in "win32" "win64" "linux64" "mac"; do
 	if [ -d "$TARGET_DIR/$PLATFORM" ]; then
 		rm -r "$TARGET_DIR/$PLATFORM"
 	fi
