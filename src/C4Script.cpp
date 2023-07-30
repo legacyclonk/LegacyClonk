@@ -2397,11 +2397,6 @@ C4Object *FnPlaceVegetation(C4AulContext *cthr, C4ID id, C4ValueInt iX, C4ValueI
 	return Game.PlaceVegetation(id, iX, iY, iWdt, iHgt, iGrowth);
 }
 
-C4Object *FnPlaceAnimal(C4ID id)
-{
-	return Game.PlaceAnimal(id);
-}
-
 static void FnDrawVolcanoBranch(C4ValueInt mat, C4ValueInt fx, C4ValueInt fy, C4ValueInt tx, C4ValueInt ty, C4ValueInt size)
 {
 	C4ValueInt cx, cx2, cy;
@@ -2796,41 +2791,6 @@ static C4ValueInt FnGetWind(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, bool
 	return Game.Weather.GetWind(x, y);
 }
 
-static void FnSetWind(C4ValueInt iWind)
-{
-	Game.Weather.SetWind(iWind);
-}
-
-static void FnSetTemperature(C4ValueInt iTemperature)
-{
-	Game.Weather.SetTemperature(iTemperature);
-}
-
-static C4ValueInt FnGetTemperature()
-{
-	return Game.Weather.GetTemperature();
-}
-
-static void FnSetSeason(C4ValueInt iSeason)
-{
-	Game.Weather.SetSeason(iSeason);
-}
-
-static C4ValueInt FnGetSeason()
-{
-	return Game.Weather.GetSeason();
-}
-
-static void FnSetClimate(C4ValueInt iClimate)
-{
-	Game.Weather.SetClimate(iClimate);
-}
-
-static C4ValueInt FnGetClimate()
-{
-	return Game.Weather.GetClimate();
-}
-
 static void FnSetSkyFade(C4ValueInt iFromRed, C4ValueInt iFromGreen, C4ValueInt iFromBlue, C4ValueInt iToRed, C4ValueInt iToGreen, C4ValueInt iToBlue)
 {
 	// newgfx: set modulation
@@ -2863,37 +2823,12 @@ static C4ValueInt FnGetSkyColor(C4ValueInt iIndex, C4ValueInt iRGB)
 	}
 }
 
-static C4ValueInt FnLandscapeWidth()
-{
-	return GBackWdt;
-}
-
-static C4ValueInt FnLandscapeHeight()
-{
-	return GBackHgt;
-}
-
-static C4ValueInt FnLaunchLightning(C4ValueInt x, C4ValueInt y, C4ValueInt xdir, C4ValueInt xrange, C4ValueInt ydir, C4ValueInt yrange, bool fDoGamma)
-{
-	return Game.Weather.LaunchLightning(x, y, xdir, xrange, ydir, yrange, fDoGamma);
-}
-
 static C4ValueInt FnLaunchVolcano(C4ValueInt x)
 {
 	return Game.Weather.LaunchVolcano(
 		Game.Material.Get("Lava"),
 		x, GBackHgt - 1,
 		BoundBy(15 * GBackHgt / 500 + Random(10), 10, 60));
-}
-
-static void FnLaunchEarthquake(C4ValueInt x, C4ValueInt y)
-{
-	Game.Weather.LaunchEarthquake(x, y);
-}
-
-static void FnShakeFree(C4ValueInt x, C4ValueInt y, C4ValueInt rad)
-{
-	Game.Landscape.ShakeFree(x, y, rad);
 }
 
 static void FnShakeObjects(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, C4ValueInt rad)
@@ -3088,11 +3023,6 @@ static C4ValueInt FnObjectDistance(C4Object &obj2, Required<C4ObjectOrThis> pObj
 static C4ValueInt FnObjectNumber(Required<C4ObjectOrThis> pObj)
 {
 	return pObj->Number;
-}
-
-static C4Object *FnObject(C4ValueInt iNumber)
-{
-	return Game.Objects.SafeObjectPointer(iNumber);
 }
 
 static C4ValueInt FnShowInfo(C4AulContext *cthr, C4ObjectOrThis pObj)
@@ -3298,8 +3228,6 @@ static void FnResort(C4ObjectOrThis pObj)
 		Game.Objects.SortByCategory();
 }
 
-static bool FnIsNetwork() { return Game.Parameters.IsNetworkGame; }
-
 static C4String *FnGetLeague(C4ValueInt idx)
 {
 	// get indexed league
@@ -3346,11 +3274,6 @@ static bool FnOnMessageBoardAnswer(C4Object *pObj, C4Player &forPlayer, C4String
 	if (pObj) scr = &pObj->Def->Script; else scr = &Game.Script;
 	// exec func
 	return static_cast<bool>(scr->ObjectCall(nullptr, pObj, PSF_InputCallback, {C4VString(FnStringPar(szAnswerString)), C4VInt(forPlayer.Number)}, true));
-}
-
-static C4ValueInt FnScriptCounter()
-{
-	return Game.Script.Counter;
 }
 
 static C4ValueInt FnSetMass(C4ValueInt iValue, Required<C4ObjectOrThis> pObj)
@@ -3405,11 +3328,6 @@ static C4ValueInt FnSetPlrViewRange(C4ValueInt iRange, Required<C4ObjectOrThis> 
 	pObj->SetPlrViewRange(iRange);
 	// success
 	return true;
-}
-
-static C4ValueInt FnGetMaxPlayer()
-{
-	return Game.Parameters.MaxPlayers;
 }
 
 static C4ValueInt FnSetMaxPlayer(C4ValueInt iTo)
@@ -4271,30 +4189,6 @@ static C4Value FnGlobalN(C4String *name)
 	return pVarN->GetRef();
 }
 
-static void FnSetSkyAdjust(C4ValueInt dwAdjust, C4ValueInt dwBackClr)
-{
-	// set adjust
-	Game.Landscape.Sky.SetModulation(dwAdjust, dwBackClr);
-}
-
-static void FnSetMatAdjust(C4ValueInt dwAdjust)
-{
-	// set adjust
-	Game.Landscape.SetModulation(dwAdjust);
-}
-
-static C4ValueInt FnGetSkyAdjust(bool fBackColor)
-{
-	// get adjust
-	return Game.Landscape.Sky.GetModulation(!!fBackColor);
-}
-
-static C4ValueInt FnGetMatAdjust()
-{
-	// get adjust
-	return Game.Landscape.GetModulation();
-}
-
 static C4ValueInt FnAnyContainer(C4AulContext *) { return ANY_CONTAINER; }
 static C4ValueInt FnNoContainer(C4AulContext *)  { return NO_CONTAINER; }
 
@@ -4612,17 +4506,10 @@ static C4ValueInt FnReloadParticle(C4String *szParticleName)
 	return Game.ReloadParticle(FnStringPar(szParticleName));
 }
 
-static void FnSetGamma(C4ValueInt dwClr1, C4ValueInt dwClr2, C4ValueInt dwClr3, C4ValueInt iRampIndex)
-{
-	Game.GraphicsSystem.SetGamma(dwClr1, dwClr2, dwClr3, iRampIndex);
-}
-
 static void FnResetGamma(C4ValueInt iRampIndex)
 {
 	Game.GraphicsSystem.SetGamma(0x000000, 0x808080, 0xffffff, iRampIndex);
 }
-
-static C4ValueInt FnFrameCounter(C4AulContext *) { return Game.FrameCounter; }
 
 static C4ValueHash *FnGetPath(C4ValueInt iFromX, C4ValueInt iFromY, C4ValueInt iToX, C4ValueInt iToY)
 {
@@ -4689,11 +4576,6 @@ static C4ValueInt FnSetTextureIndex(C4String *psMatTex, C4ValueInt iNewIndex, bo
 {
 	if (!Inside(iNewIndex, C4ValueInt{0}, C4ValueInt{255})) return false;
 	return Game.Landscape.SetTextureIndex(FnStringPar(psMatTex), uint8_t(iNewIndex), !!fInsert);
-}
-
-static void FnRemoveUnusedTexMapEntries()
-{
-	Game.Landscape.RemoveUnusedTexMapEntries();
 }
 
 static void FnSetLandscapePixel(C4AulContext *ctx, C4ValueInt iX, C4ValueInt iY, C4ValueInt dwValue)
@@ -5377,11 +5259,6 @@ static std::optional<C4ValueInt> FnGetTeamByIndex(C4ValueInt iIndex)
 	return pTeam ? std::make_optional(pTeam->GetID()) : std::nullopt;
 }
 
-static C4ValueInt FnGetTeamCount()
-{
-	return Game.Teams.GetTeamCount();
-}
-
 static bool FnOnOwnerRemoved(C4AulContext *cthr)
 {
 	// safety
@@ -5458,11 +5335,6 @@ static bool FnDoScoreboardShow(C4ValueInt iChange, C4ValueInt iForPlr)
 	return true;
 }
 
-static bool FnSortScoreboard(C4ValueInt iByColID, bool fReverse)
-{
-	return Game.Scoreboard.SortBy(iByColID, !!fReverse);
-}
-
 static bool FnAddEvaluationData(C4String &text, C4ValueInt idPlayer)
 {
 	// safety
@@ -5482,11 +5354,6 @@ static std::optional<int32_t> FnGetLeagueScore(C4ValueInt idPlayer)
 	if (!pInfo) return {};
 	// get league score
 	return {pInfo->getLeagueScore()};
-}
-
-static void FnHideSettlementScoreInEvaluation(bool fHide)
-{
-	Game.RoundResults.HideSettlementScore(fHide);
 }
 
 static C4ValueInt FnGetUnusedOverlayID(RequiredNonZero<C4ValueInt> iBaseIndex, Required<C4ObjectOrThis> pObj)
@@ -5957,6 +5824,40 @@ template <typename Class, typename Ret, typename... Pars>
 static void AddFunc(C4AulScript *owner, const char *name, Ret (Class::*member)(Pars...), bool pub = true)
 {
 	new C4AulEngineFunc<Ret (Class::*)(Pars...), Ret, Class &, Pars...>{owner, name, member, pub};
+}
+
+template <typename MemberPtr, typename Class, typename Ret, typename... Pars>
+static void AddInstanceMemberFunc(C4AulScript *owner, const char *name, Class &instance, MemberPtr member, bool pub = true)
+{
+	struct Callable {
+		Ret operator()(Pars... pars) const
+		{
+			return std::invoke(member, instance, pars...);
+		}
+
+		Class &instance;
+		MemberPtr member;
+	};
+
+	new C4AulEngineFunc<Callable, Ret, Pars...>{owner, name, {instance, member}, pub};
+}
+
+template <typename Class, typename Ret, typename... Pars>
+static void AddFunc(C4AulScript *owner, const char *name, std::derived_from<Class> auto &instance, Ret (Class:: *member)(Pars...), bool pub = true)
+{
+	return AddInstanceMemberFunc<Ret (Class:: *)(Pars...), Class, Ret, Pars...>(owner, name, instance, member, pub);
+}
+
+template <typename Class, typename Ret, typename... Pars>
+static void AddFunc(C4AulScript *owner, const char *name, std::derived_from<Class> auto &instance, Ret (Class:: *member)(Pars...) const, bool pub = true)
+{
+	return AddInstanceMemberFunc<Ret (Class:: *)(Pars...) const, Class, Ret, Pars...>(owner, name, instance, member, pub);
+}
+
+template <typename Class, typename Ret> requires (!std::is_member_function_pointer_v<Ret Class:: *>)
+static void AddFunc(C4AulScript *owner, const char *name, Class& instance, Ret Class:: *member, bool pub = true)
+{
+	return AddInstanceMemberFunc<Ret Class:: *, Class, Ret>(owner, name, instance, member, pub);
 }
 
 template<C4V_Type fromType, C4V_Type toType>
@@ -6571,16 +6472,16 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetPlrJumpAndRunControl",         FnGetPlrJumpAndRunControl);
 	AddFunc(pEngine, "SetPlrShowCommand",               FnSetPlrShowCommand);
 	AddFunc(pEngine, "GetWind",                         FnGetWind);
-	AddFunc(pEngine, "SetWind",                         FnSetWind);
+	AddFunc(pEngine, "SetWind",                         Game.Weather, &C4Weather::SetWind);
 	AddFunc(pEngine, "SetSkyFade",                      FnSetSkyFade);
 	AddFunc(pEngine, "SetSkyColor",                     FnSetSkyColor);
 	AddFunc(pEngine, "GetSkyColor",                     FnGetSkyColor);
-	AddFunc(pEngine, "GetTemperature",                  FnGetTemperature);
-	AddFunc(pEngine, "SetTemperature",                  FnSetTemperature);
-	AddFunc(pEngine, "LaunchLightning",                 FnLaunchLightning);
+	AddFunc(pEngine, "GetTemperature",                  Game.Weather, &C4Weather::GetTemperature);
+	AddFunc(pEngine, "SetTemperature",                  Game.Weather, &C4Weather::SetTemperature);
+	AddFunc(pEngine, "LaunchLightning",                 Game.Weather, &C4Weather::LaunchLightning);
 	AddFunc(pEngine, "LaunchVolcano",                   FnLaunchVolcano);
-	AddFunc(pEngine, "LaunchEarthquake",                FnLaunchEarthquake);
-	AddFunc(pEngine, "ShakeFree",                       FnShakeFree);
+	AddFunc(pEngine, "LaunchEarthquake",                Game.Weather, &C4Weather::LaunchEarthquake);
+	AddFunc(pEngine, "ShakeFree",                       Game.Landscape, &C4Landscape::ShakeFree);
 	AddFunc(pEngine, "ShakeObjects",                    FnShakeObjects);
 	AddFunc(pEngine, "DigFree",                         FnDigFree);
 	AddFunc(pEngine, "FreeRect",                        FnFreeRect);
@@ -6590,7 +6491,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "Hostile",                         FnHostile);
 	AddFunc(pEngine, "SetHostility",                    FnSetHostility);
 	AddFunc(pEngine, "PlaceVegetation",                 FnPlaceVegetation);
-	AddFunc(pEngine, "PlaceAnimal",                     FnPlaceAnimal);
+	AddFunc(pEngine, "PlaceAnimal",                     Game, &C4Game::PlaceAnimal);
 	AddFunc(pEngine, "GameOver",                        FnGameOver);
 	AddFunc(pEngine, "C4Id",                            FnC4Id);
 	AddFunc(pEngine, "ScriptGo",                        FnScriptGo);
@@ -6629,17 +6530,17 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "InsertMaterial",                  FnInsertMaterial);
 	AddFunc(pEngine, "DrawVolcanoBranch",               FnDrawVolcanoBranch,               false);
 	AddFunc(pEngine, "FlameConsumeMaterial",            FnFlameConsumeMaterial,            false);
-	AddFunc(pEngine, "LandscapeWidth",                  FnLandscapeWidth);
-	AddFunc(pEngine, "LandscapeHeight",                 FnLandscapeHeight);
+	AddFunc(pEngine, "LandscapeWidth",                  Game.Landscape, &C4Landscape::Width);
+	AddFunc(pEngine, "LandscapeHeight",                 Game.Landscape, &C4Landscape::Height);
 	AddFunc(pEngine, "Resort",                          FnResort);
 	AddFunc(pEngine, "CreateMenu",                      FnCreateMenu);
 	AddFunc(pEngine, "SelectMenuItem",                  FnSelectMenuItem);
 	AddFunc(pEngine, "SetMenuDecoration",               FnSetMenuDecoration);
 	AddFunc(pEngine, "SetMenuTextProgress",             FnSetMenuTextProgress);
-	AddFunc(pEngine, "SetSeason",                       FnSetSeason);
-	AddFunc(pEngine, "GetSeason",                       FnGetSeason);
-	AddFunc(pEngine, "SetClimate",                      FnSetClimate);
-	AddFunc(pEngine, "GetClimate",                      FnGetClimate);
+	AddFunc(pEngine, "SetSeason",                       Game.Weather, &C4Weather::SetSeason);
+	AddFunc(pEngine, "GetSeason",                       Game.Weather, &C4Weather::GetSeason);
+	AddFunc(pEngine, "SetClimate",                      Game.Weather, &C4Weather::SetClimate);
+	AddFunc(pEngine, "GetClimate",                      Game.Weather, &C4Weather::GetClimate);
 	AddFunc(pEngine, "Distance",                        FnDistance);
 	AddFunc(pEngine, "ObjectDistance",                  FnObjectDistance);
 	AddFunc(pEngine, "GetValue",                        FnGetValue);
@@ -6654,19 +6555,19 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetPhysical",                     FnGetPhysical);
 	AddFunc(pEngine, "ResetPhysical",                   FnResetPhysical);
 	AddFunc(pEngine, "SetTransferZone",                 FnSetTransferZone);
-	AddFunc(pEngine, "IsNetwork",                       FnIsNetwork);
+	AddFunc(pEngine, "IsNetwork",                       Game.Parameters, &C4GameParameters::IsNetworkGame);
 	AddFunc(pEngine, "GetLeague",                       FnGetLeague);
 	AddFunc(pEngine, "TestMessageBoard",                FnTestMessageBoard,                false);
 	AddFunc(pEngine, "CallMessageBoard",                FnCallMessageBoard,                false);
 	AddFunc(pEngine, "AbortMessageBoard",               FnAbortMessageBoard,               false);
 	AddFunc(pEngine, "OnMessageBoardAnswer",            FnOnMessageBoardAnswer,            false);
-	AddFunc(pEngine, "ScriptCounter",                   FnScriptCounter);
+	AddFunc(pEngine, "ScriptCounter",                   Game.Script, &C4GameScriptHost::Counter);
 	AddFunc(pEngine, "SetMass",                         FnSetMass);
 	AddFunc(pEngine, "GetColor",                        FnGetColor);
 	AddFunc(pEngine, "SetColor",                        FnSetColor);
 	AddFunc(pEngine, "SetFoW",                          FnSetFoW);
 	AddFunc(pEngine, "SetPlrViewRange",                 FnSetPlrViewRange);
-	AddFunc(pEngine, "GetMaxPlayer",                    FnGetMaxPlayer);
+	AddFunc(pEngine, "GetMaxPlayer",                    Game.Parameters, &C4GameParameters::MaxPlayers);
 	AddFunc(pEngine, "SetMaxPlayer",                    FnSetMaxPlayer);
 	AddFunc(pEngine, "SetPicture",                      FnSetPicture);
 	AddFunc(pEngine, "Buy",                             FnBuy);
@@ -6675,7 +6576,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetChar",                         FnGetChar);
 	AddFunc(pEngine, "ActivateGameGoalMenu",            FnActivateGameGoalMenu);
 	AddFunc(pEngine, "SetGraphics",                     FnSetGraphics);
-	AddFunc(pEngine, "Object",                          FnObject);
+	AddFunc(pEngine, "Object",                          Game.Objects, &C4GameObjects::SafeObjectPointer);
 	AddFunc(pEngine, "ObjectNumber",                    FnObjectNumber);
 	AddFunc(pEngine, "ShowInfo",                        FnShowInfo);
 	AddFunc(pEngine, "GetTime",                         FnGetTime);
@@ -6706,17 +6607,17 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "PushParticles",                   FnPushParticles);
 	AddFunc(pEngine, "ClearParticles",                  FnClearParticles);
 	AddFunc(pEngine, "IsNewgfx",                        FnIsNewgfx,                        false);
-	AddFunc(pEngine, "SetSkyAdjust",                    FnSetSkyAdjust);
-	AddFunc(pEngine, "SetMatAdjust",                    FnSetMatAdjust);
-	AddFunc(pEngine, "GetSkyAdjust",                    FnGetSkyAdjust);
-	AddFunc(pEngine, "GetMatAdjust",                    FnGetMatAdjust);
+	AddFunc(pEngine, "SetSkyAdjust",                    Game.Landscape.Sky, &C4Sky::SetModulation);
+	AddFunc(pEngine, "SetMatAdjust",                    Game.Landscape, &C4Landscape::SetModulation);
+	AddFunc(pEngine, "GetSkyAdjust",                    Game.Landscape.Sky, &C4Sky::GetModulation);
+	AddFunc(pEngine, "GetMatAdjust",                    Game.Landscape, &C4Landscape::GetModulation);
 	AddFunc(pEngine, "SetSkyParallax",                  FnSetSkyParallax);
 	AddFunc(pEngine, "DoCrewExp",                       FnDoCrewExp);
 	AddFunc(pEngine, "ReloadDef",                       FnReloadDef);
 	AddFunc(pEngine, "ReloadParticle",                  FnReloadParticle);
-	AddFunc(pEngine, "SetGamma",                        FnSetGamma);
+	AddFunc(pEngine, "SetGamma",                        Game.GraphicsSystem, &C4GraphicsSystem::SetGamma);
 	AddFunc(pEngine, "ResetGamma",                      FnResetGamma);
-	AddFunc(pEngine, "FrameCounter",                    FnFrameCounter);
+	AddFunc(pEngine, "FrameCounter",                    Game, &C4Game::FrameCounter);
 	AddFunc(pEngine, "SetLandscapePixel",               FnSetLandscapePixel);
 	AddFunc(pEngine, "SetObjectOrder",                  FnSetObjectOrder);
 	AddFunc(pEngine, "SetColorDw",                      FnSetColorDw);
@@ -6734,7 +6635,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "DrawMatChunks",                   FnDrawMatChunks,                   false);
 	AddFunc(pEngine, "GetPath",                         FnGetPath);
 	AddFunc(pEngine, "SetTextureIndex",                 FnSetTextureIndex,                 false);
-	AddFunc(pEngine, "RemoveUnusedTexMapEntries",       FnRemoveUnusedTexMapEntries,       false);
+	AddFunc(pEngine, "RemoveUnusedTexMapEntries",       Game.Landscape, &C4Landscape::RemoveUnusedTexMapEntries,       false);
 	AddFunc(pEngine, "SetObjDrawTransform",             FnSetObjDrawTransform);
 	AddFunc(pEngine, "SetObjDrawTransform2",            FnSetObjDrawTransform2,            false);
 	AddFunc(pEngine, "SetPortrait",                     FnSetPortrait);
@@ -6762,17 +6663,17 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetTeamName",                     FnGetTeamName);
 	AddFunc(pEngine, "GetTeamColor",                    FnGetTeamColor);
 	AddFunc(pEngine, "GetTeamByIndex",                  FnGetTeamByIndex);
-	AddFunc(pEngine, "GetTeamCount",                    FnGetTeamCount);
+	AddFunc(pEngine, "GetTeamCount",                    Game.Teams, &C4TeamList::GetTeamCount);
 	AddFunc(pEngine, "InitScenarioPlayer",              &C4Player::ScenarioAndTeamInit,              false);
 	AddFunc(pEngine, PSF_OnOwnerRemoved,                FnOnOwnerRemoved,                  false);
 	AddFunc(pEngine, "SetScoreboardData",               FnSetScoreboardData,               false);
 	AddFunc(pEngine, "GetScoreboardString",             FnGetScoreboardString,             false);
 	AddFunc(pEngine, "GetScoreboardData",               FnGetScoreboardData,               false);
 	AddFunc(pEngine, "DoScoreboardShow",                FnDoScoreboardShow,                false);
-	AddFunc(pEngine, "SortScoreboard",                  FnSortScoreboard,                  false);
+	AddFunc(pEngine, "SortScoreboard",                  Game.Scoreboard, &C4Scoreboard::SortBy,                  false);
 	AddFunc(pEngine, "AddEvaluationData",               FnAddEvaluationData,               false);
 	AddFunc(pEngine, "GetLeagueScore",                  FnGetLeagueScore,                  false);
-	AddFunc(pEngine, "HideSettlementScoreInEvaluation", FnHideSettlementScoreInEvaluation, false);
+	AddFunc(pEngine, "HideSettlementScoreInEvaluation", Game.RoundResults, &C4RoundResults::HideSettlementScore, false);
 	AddFunc(pEngine, "GetUnusedOverlayID",              FnGetUnusedOverlayID,              false);
 	AddFunc(pEngine, "FatalError",                      FnFatalError,                      false);
 	AddFunc(pEngine, "ExtractMaterialAmount",           FnExtractMaterialAmount);
