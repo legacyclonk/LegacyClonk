@@ -87,7 +87,7 @@ namespace {
 	// Wrapper type, which is used to automatically do nullptr/nil checks on script function arguments before calling the actual function
 	// Also rejects zero values if nonZero = true.
 	// nullptr is used instead of C4VNull, because C4Value is not usable as non-type template parameter
-	template<typename T, auto failVal = nullptr, bool nonZero = false>
+	template<typename T, auto failVal = nullptr, bool nonZero = false, bool allowNil = false>
 	class Required
 	{
 		T value;
@@ -106,7 +106,7 @@ namespace {
 	};
 
 	template<typename T, auto failVal = nullptr>
-	using RequiredNonZero = Required<T, failVal, true>;
+	using RequiredNonZero = Required<T, failVal, true, false>;
 }
 
 
@@ -950,11 +950,8 @@ static bool FnFinishCommand(Required<C4ObjectOrThis> pObj, bool fSuccess, C4Valu
 	return true;
 }
 
-static bool FnPlayerObjectCommand(C4AulContext *cthr, C4ValueInt iPlr, C4String *szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4Value data)
+static bool FnPlayerObjectCommand(C4AulContext *cthr, C4Player &plr, C4String &szCommand, C4Object *pTarget, C4Value Tx, C4ValueInt iTy, C4Object *pTarget2, C4Value data)
 {
-	// Player
-	if (!ValidPlr(iPlr) || !szCommand) return false;
-	C4Player *pPlr = Game.Players.Get(iPlr);
 	// Command
 	C4ValueInt iCommand = CommandByName(FnStringPar(szCommand));
 	if (!iCommand) return false;
@@ -970,7 +967,7 @@ static bool FnPlayerObjectCommand(C4AulContext *cthr, C4ValueInt iPlr, C4String 
 		iData = data.getIntOrID();
 	}
 	// Set
-	pPlr->ObjectCommand(iCommand, pTarget, iTx, iTy, pTarget2, iData, C4P_Command_Set);
+	plr.ObjectCommand(iCommand, pTarget, iTx, iTy, pTarget2, iData, C4P_Command_Set);
 	// Success
 	return true;
 }
@@ -1066,27 +1063,22 @@ static C4String *FnGetDesc(C4AulContext *cthr, C4Object *pObj, C4ID idDef)
 	return String(pDef->GetDesc());
 }
 
-static C4String *FnGetPlayerName(C4ValueInt iPlayer)
+static C4String *FnGetPlayerName(C4Player &player)
 {
-	if (!ValidPlr(iPlayer)) return nullptr;
-	return String(Game.Players.Get(iPlayer)->GetName());
+	return String(player.GetName());
 }
 
-static C4String *FnGetTaggedPlayerName(C4ValueInt iPlayer)
+static C4String *FnGetTaggedPlayerName(C4Player &player)
 {
-	C4Player *pPlr = Game.Players.Get(iPlayer);
-	if (!pPlr) return nullptr;
-	uint32_t dwClr = pPlr->ColorDw; C4GUI::MakeColorReadableOnBlack(dwClr);
+	uint32_t dwClr = player.ColorDw; C4GUI::MakeColorReadableOnBlack(dwClr);
 	static char szFnFormatBuf[1024 + 1];
-	FormatWithNull(szFnFormatBuf, "<c {:x}>{}</c>", dwClr & 0xffffff, pPlr->GetName());
+	FormatWithNull(szFnFormatBuf, "<c {:x}>{}</c>", dwClr & 0xffffff, player.GetName());
 	return String(szFnFormatBuf);
 }
 
-static std::optional<C4ValueInt> FnGetPlayerType(C4ValueInt iPlayer)
+static C4ValueInt FnGetPlayerType(C4Player &player)
 {
-	C4Player *pPlr = Game.Players.Get(iPlayer);
-	if (!pPlr) return {};
-	return {pPlr->GetType()};
+	return player.GetType();
 }
 
 static C4Object *FnGetActionTarget(C4ValueInt target_index, Required<C4ObjectOrThis> pObj)
@@ -2076,10 +2068,9 @@ static C4Object *FnFindObjectOwner(C4AulContext *cthr,
 		pFindNext);
 }
 
-static bool FnMakeCrewMember(C4Object *pObj, C4ValueInt iPlayer)
+static bool FnMakeCrewMember(C4Object *pObj, C4Player &player)
 {
-	if (!ValidPlr(iPlayer)) return false;
-	return !!Game.Players.Get(iPlayer)->MakeCrewMember(pObj);
+	return player.MakeCrewMember(pObj);
 }
 
 static bool FnGrabObjectInfo(C4Object &from, Required<C4ObjectOrThis> pTo)
@@ -2432,50 +2423,44 @@ static bool FnHostile(C4ValueInt iPlr1, C4ValueInt iPlr2, bool fCheckOneWayOnly)
 		return !!Hostile(iPlr1, iPlr2);
 }
 
-static bool FnSetHostility(C4ValueInt iPlr, C4ValueInt iPlr2, bool fHostile, bool fSilent, bool fNoCalls)
+static bool FnSetHostility(C4Player &plr1, C4ValueInt iPlr2, bool fHostile, bool fSilent, bool fNoCalls)
 {
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr) return false;
 	// do rejection test first
 	if (!fNoCalls)
 	{
-		if (Game.Script.GRBroadcast(PSF_RejectHostilityChange, {C4VInt(iPlr), C4VInt(iPlr2), C4VBool(fHostile)}, true, true))
+		if (Game.Script.GRBroadcast(PSF_RejectHostilityChange, {C4VInt(plr1.Number), C4VInt(iPlr2), C4VBool(fHostile)}, true, true))
 			return false;
 	}
 	// OK; set hostility
-	bool fOldHostility = Game.Players.HostilityDeclared(iPlr, iPlr2);
-	if (!pPlr->SetHostility(iPlr2, fHostile, fSilent)) return false;
+	bool fOldHostility = Game.Players.HostilityDeclared(plr1.Number, iPlr2);
+	if (!plr1.SetHostility(iPlr2, fHostile, fSilent)) return false;
 	// calls afterwards
-	Game.Script.GRBroadcast(PSF_OnHostilityChange, {C4VInt(iPlr), C4VInt(iPlr2), C4VBool(fHostile), C4VBool(fOldHostility)}, true);
+	Game.Script.GRBroadcast(PSF_OnHostilityChange, {C4VInt(plr1.Number), C4VInt(iPlr2), C4VBool(fHostile), C4VBool(fOldHostility)}, true);
 	return true;
 }
 
-static bool FnSetPlrView(C4ValueInt iPlr, C4Object *tobj)
+static bool FnSetPlrView(C4Player &player, C4Object *tobj)
 {
-	if (!ValidPlr(iPlr)) return false;
-	Game.Players.Get(iPlr)->SetViewMode(C4PVM_Target, tobj);
+	player.SetViewMode(C4PVM_Target, tobj);
 	return true;
 }
 
-static bool FnSetPlrShowControl(C4ValueInt iPlr, C4String *defstring)
+static bool FnSetPlrShowControl(C4Player &player, C4String *defstring)
 {
-	if (!ValidPlr(iPlr)) return false;
-	Game.Players.Get(iPlr)->ShowControl = StringBitEval(FnStringPar(defstring));
+	player.ShowControl = StringBitEval(FnStringPar(defstring));
 	return true;
 }
 
-static bool FnSetPlrShowCommand(C4ValueInt iPlr, C4ValueInt iCom)
+static bool FnSetPlrShowCommand(C4Player &player, C4ValueInt iCom)
 {
-	if (!ValidPlr(iPlr)) return false;
-	Game.Players.Get(iPlr)->FlashCom = iCom;
+	player.FlashCom = iCom;
 	if (!Config.Graphics.ShowCommands) Config.Graphics.ShowCommands = true;
 	return true;
 }
 
-static bool FnSetPlrShowControlPos(C4ValueInt iPlr, C4ValueInt pos)
+static bool FnSetPlrShowControlPos(C4Player &player, C4ValueInt pos)
 {
-	if (!ValidPlr(iPlr)) return false;
-	Game.Players.Get(iPlr)->ShowControlPos = pos;
+	player.ShowControlPos = pos;
 	return true;
 }
 
@@ -2484,83 +2469,69 @@ static C4String *FnGetPlrControlName(C4ValueInt iPlr, C4ValueInt iCon, bool fSho
 	return String(PlrControlKeyName(iPlr, iCon, fShort).c_str());
 }
 
-static C4ValueInt FnGetPlrJumpAndRunControl(C4ValueInt iPlr)
+static C4ValueInt FnGetPlrJumpAndRunControl(Required<C4Player *, -1, true, true> plr)
 {
-	C4Player *plr = Game.Players.Get(iPlr);
-	return plr ? plr->ControlStyle : -1;
+	return plr->ControlStyle;
 }
 
-static C4ValueInt FnGetPlrViewMode(C4ValueInt iPlr)
+static C4ValueInt FnGetPlrViewMode(Required<C4Player *, -1, true, true> plr)
 {
-	if (!ValidPlr(iPlr)) return -1;
-	if (Game.Control.SyncMode()) return -1;
-	return Game.Players.Get(iPlr)->ViewMode;
+	return plr->ViewMode;
 }
 
-static C4Object *FnGetPlrView(C4ValueInt iPlr)
+static C4Object *FnGetPlrView(C4Player &player)
 {
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr || pPlr->ViewMode != C4PVM_Target) return nullptr;
-	return pPlr->ViewTarget;
+	if (player.ViewMode != C4PVM_Target) return nullptr;
+	return player.ViewTarget;
 }
 
-static bool FnDoHomebaseMaterial(C4ValueInt iPlr, C4ID id, C4ValueInt iChange)
+static bool FnDoHomebaseMaterial(C4Player &player, C4ID id, C4ValueInt iChange)
 {
 	// validity check
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr) return false;
 	C4Def *pDef = C4Id2Def(id);
 	if (!pDef) return false;
 	// add to material
-	C4ValueInt iLastcount = pPlr->HomeBaseMaterial.GetIDCount(id);
-	if (!pPlr->HomeBaseMaterial.SetIDCount(id, iLastcount + iChange, true)) return false;
-	if (Game.Rules & C4RULE_TeamHombase) pPlr->SyncHomebaseMaterialToTeam();
+	C4ValueInt iLastcount = player.HomeBaseMaterial.GetIDCount(id);
+	if (!player.HomeBaseMaterial.SetIDCount(id, iLastcount + iChange, true)) return false;
+	if (Game.Rules & C4RULE_TeamHombase) player.SyncHomebaseMaterialToTeam();
 	return true;
 }
 
-static bool FnDoHomebaseProduction(C4ValueInt iPlr, C4ID id, C4ValueInt iChange)
+static bool FnDoHomebaseProduction(C4Player &player, C4ID id, C4ValueInt iChange)
 {
-	// validity check
-	if (!ValidPlr(iPlr)) return false;
 	C4Def *pDef = C4Id2Def(id);
 	if (!pDef) return false;
 	// add to material
-	C4ValueInt iLastcount = Game.Players.Get(iPlr)->HomeBaseProduction.GetIDCount(id);
-	return Game.Players.Get(iPlr)->HomeBaseProduction.SetIDCount(id, iLastcount + iChange, true);
+	C4ValueInt iLastcount = player.HomeBaseProduction.GetIDCount(id);
+	return player.HomeBaseProduction.SetIDCount(id, iLastcount + iChange, true);
 }
 
-static std::optional<C4ValueInt> FnGetPlrDownDouble(C4ValueInt iPlr)
+static C4ValueInt FnGetPlrDownDouble(C4Player &player)
 {
-	if (!ValidPlr(iPlr)) return {};
-	return Game.Players.Get(iPlr)->LastComDownDouble;
+	return player.LastComDownDouble;
 }
 
-static bool FnClearLastPlrCom(C4ValueInt iPlr)
+static bool FnClearLastPlrCom(C4Player &player)
 {
-	// get player
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr) return false;
 	// reset last coms
-	pPlr->LastCom = COM_None;
-	pPlr->LastComDownDouble = 0;
+	player.LastCom = COM_None;
+	player.LastComDownDouble = 0;
 	// done, success
 	return true;
 }
 
-static bool FnSetPlrKnowledge(C4ValueInt iPlr, C4ID id, bool fRemove)
+static bool FnSetPlrKnowledge(C4Player &player, C4ID id, bool fRemove)
 {
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr) return false;
 	if (fRemove)
 	{
-		C4ValueInt iIndex = pPlr->Knowledge.GetIndex(id);
+		C4ValueInt iIndex = player.Knowledge.GetIndex(id);
 		if (iIndex < 0) return false;
-		return pPlr->Knowledge.DeleteItem(iIndex);
+		return player.Knowledge.DeleteItem(iIndex);
 	}
 	else
 	{
 		if (!C4Id2Def(id)) return false;
-		return pPlr->Knowledge.SetIDCount(id, 1, true);
+		return player.Knowledge.SetIDCount(id, 1, true);
 	}
 }
 
@@ -2569,13 +2540,12 @@ static bool FnSetComponent(C4ID idComponent, C4ValueInt iCount, Required<C4Objec
 	return pObj->Component.SetIDCount(idComponent, iCount, true);
 }
 
-static C4Value FnGetPlrKnowledge(C4ValueInt iPlr, C4ID id, C4ValueInt iIndex, C4ValueInt dwCategory)
+static C4Value FnGetPlrKnowledge(C4Player &player, C4ID id, C4ValueInt iIndex, C4ValueInt dwCategory)
 {
-	if (!ValidPlr(iPlr)) return C4VNull;
 	// Search by id, check if available, return bool
-	if (id) return C4VBool(Game.Players.Get(iPlr)->Knowledge.GetIDCount(id, 1) != 0);
+	if (id) return C4VBool(player.Knowledge.GetIDCount(id, 1) != 0);
 	// Search indexed item of given category, return C4ID
-	return C4VID(Game.Players.Get(iPlr)->Knowledge.GetID(Game.Defs, dwCategory, iIndex));
+	return C4VID(player.Knowledge.GetID(Game.Defs, dwCategory, iIndex));
 }
 
 static C4ID FnGetDefinition(C4ValueInt iIndex, Default<C4ValueInt, C4D_All, true> dwCategory)
@@ -2612,103 +2582,89 @@ static C4Value FnGetComponent(C4AulContext *cthr, C4ID idComponent, C4ValueInt i
 	}
 }
 
-static C4Value FnGetHomebaseMaterial(C4ValueInt iPlr, C4ID id, C4ValueInt iIndex, C4ValueInt dwCategory)
+static C4Value FnGetHomebaseMaterial(C4Player &player, C4ID id, C4ValueInt iIndex, C4ValueInt dwCategory)
 {
-	if (!ValidPlr(iPlr)) return C4VNull;
 	// Search by id, return available count
-	if (id) return C4VInt(Game.Players.Get(iPlr)->HomeBaseMaterial.GetIDCount(id));
+	if (id) return C4VInt(player.HomeBaseMaterial.GetIDCount(id));
 	// Search indexed item of given category, return C4ID
-	return C4VID(Game.Players.Get(iPlr)->HomeBaseMaterial.GetID(Game.Defs, dwCategory, iIndex));
+	return C4VID(player.HomeBaseMaterial.GetID(Game.Defs, dwCategory, iIndex));
 }
 
-static C4Value FnGetHomebaseProduction(C4ValueInt iPlr, C4ID id, C4ValueInt iIndex, C4ValueInt dwCategory)
+static C4Value FnGetHomebaseProduction(C4Player &player, C4ID id, C4ValueInt iIndex, C4ValueInt dwCategory)
 {
-	if (!ValidPlr(iPlr)) return C4VNull;
 	// Search by id, return available count
-	if (id) return C4VInt(Game.Players.Get(iPlr)->HomeBaseProduction.GetIDCount(id));
+	if (id) return C4VInt(player.HomeBaseProduction.GetIDCount(id));
 	// Search indexed item of given category, return C4ID
-	return C4VID(Game.Players.Get(iPlr)->HomeBaseProduction.GetID(Game.Defs, dwCategory, iIndex));
+	return C4VID(player.HomeBaseProduction.GetID(Game.Defs, dwCategory, iIndex));
 }
 
-static C4ValueInt FnSetPlrMagic(C4ValueInt iPlr, C4ID id, bool fRemove)
+static C4ValueInt FnSetPlrMagic(C4Player &player, C4ID id, bool fRemove)
 {
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr) return false;
 	if (fRemove)
 	{
-		C4ValueInt iIndex = pPlr->Magic.GetIndex(id);
+		C4ValueInt iIndex = player.Magic.GetIndex(id);
 		if (iIndex < 0) return false;
-		return pPlr->Magic.DeleteItem(iIndex);
+		return player.Magic.DeleteItem(iIndex);
 	}
 	else
 	{
 		if (!C4Id2Def(id)) return false;
-		return pPlr->Magic.SetIDCount(id, 1, true);
+		return player.Magic.SetIDCount(id, 1, true);
 	}
 }
 
-static C4Value FnGetPlrMagic(C4ValueInt iPlr, C4ID id, C4ValueInt iIndex)
+static C4Value FnGetPlrMagic(C4Player &player, C4ID id, C4ValueInt iIndex)
 {
-	if (!ValidPlr(iPlr)) return C4VNull;
 	// Search by id, check if available, return bool
-	if (id) return C4VBool(Game.Players.Get(iPlr)->Magic.GetIDCount(id, 1) != 0);
+	if (id) return C4VBool(player.Magic.GetIDCount(id, 1) != 0);
 	// Search indexed item of given category, return C4ID
-	return C4VID(Game.Players.Get(iPlr)->Magic.GetID(Game.Defs, C4D_Magic, iIndex));
+	return C4VID(player.Magic.GetID(Game.Defs, C4D_Magic, iIndex));
 }
 
-static std::optional<C4ValueInt> FnGetWealth(C4ValueInt iPlr)
+static C4ValueInt FnGetWealth(C4Player &player)
 {
-	if (!ValidPlr(iPlr)) return {};
-	return {Game.Players.Get(iPlr)->Wealth};
+	return player.Wealth;
 }
 
-static bool FnSetWealth(C4ValueInt iPlr, C4ValueInt iValue)
+static bool FnSetWealth(C4Player &player, C4ValueInt iValue)
 {
-	if (!ValidPlr(iPlr)) return false;
-	Game.Players.Get(iPlr)->Wealth = BoundBy<C4ValueInt>(iValue, 0, 100000);
+	player.Wealth = BoundBy<C4ValueInt>(iValue, 0, 100000);
 	return true;
 }
 
-static C4ValueInt FnDoScore(C4ValueInt iPlr, C4ValueInt iChange)
+static C4ValueInt FnDoScore(C4Player &player, C4ValueInt iChange)
 {
-	if (!ValidPlr(iPlr)) return false;
-	return Game.Players.Get(iPlr)->DoPoints(iChange);
+	return player.DoPoints(iChange);
 }
 
-static std::optional<C4ValueInt> FnGetPlrValue(C4ValueInt iPlr)
+static C4ValueInt FnGetPlrValue(C4Player &player)
 {
-	if (!ValidPlr(iPlr)) return {};
-	return {Game.Players.Get(iPlr)->Value};
+	return player.Value;
 }
 
-static std::optional<C4ValueInt> FnGetPlrValueGain(C4ValueInt iPlr)
+static C4ValueInt FnGetPlrValueGain(C4Player &player)
 {
-	if (!ValidPlr(iPlr)) return {};
-	return {Game.Players.Get(iPlr)->ValueGain};
+	return player.ValueGain;
 }
 
-static std::optional<C4ValueInt> FnGetScore(C4ValueInt iPlr)
+static C4ValueInt FnGetScore(C4Player &player)
 {
-	if (!ValidPlr(iPlr)) return {};
-	return {Game.Players.Get(iPlr)->Points};
+	return player.Points;
 }
 
-static C4Object *FnGetHiRank(C4ValueInt iPlr)
+static C4Object *FnGetHiRank(C4Player &player)
 {
-	if (!ValidPlr(iPlr)) return nullptr;
-	return Game.Players.Get(iPlr)->GetHiRankActiveCrew(false);
+	return player.GetHiRankActiveCrew(false);
 }
 
-static C4Object *FnGetCrew(C4ValueInt iPlr, C4ValueInt index)
+static C4Object *FnGetCrew(C4Player &player, C4ValueInt index)
 {
-	if (!ValidPlr(iPlr)) return nullptr;
-	return Game.Players.Get(iPlr)->Crew.GetObject(index);
+	return player.Crew.GetObject(index);
 }
 
-static std::optional<C4ValueInt> FnGetCrewCount(C4ValueInt iPlr)
+static C4ValueInt FnGetCrewCount(C4Player &player)
 {
-	if (!ValidPlr(iPlr)) return {};
-	return {Game.Players.Get(iPlr)->Crew.ObjectCount()};
+	return player.Crew.ObjectCount();
 }
 
 static C4ValueInt FnGetPlayerCount(C4ValueInt iType)
@@ -2730,32 +2686,28 @@ static C4ValueInt FnGetPlayerByIndex(C4ValueInt iIndex, C4ValueInt iType)
 	return pPlayer->Number;
 }
 
-static C4ValueInt FnEliminatePlayer(C4ValueInt iPlr, bool fRemoveDirect)
+static C4ValueInt FnEliminatePlayer(C4Player &player, bool fRemoveDirect)
 {
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr) return false;
 	// direct removal?
 	if (fRemoveDirect)
 	{
 		// do direct removal (no fate)
-		if (Game.Control.isCtrlHost()) Game.Players.CtrlRemove(iPlr, false);
+		if (Game.Control.isCtrlHost()) Game.Players.CtrlRemove(player.Number, false);
 		return true;
 	}
 	else
 	{
 		// do regular elimination
-		if (pPlr->Eliminated) return false;
-		pPlr->Eliminate();
+		if (player.Eliminated) return false;
+		player.Eliminate();
 	}
 	return true;
 }
 
-static bool FnSurrenderPlayer(C4ValueInt iPlr)
+static bool FnSurrenderPlayer(C4Player &player)
 {
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr) return false;
-	if (pPlr->Eliminated) return false;
-	pPlr->Surrender();
+	if (player.Eliminated) return false;
+	player.Surrender();
 	return true;
 }
 
@@ -2812,24 +2764,20 @@ static bool FnCreateScriptPlayer(C4String &szName, C4ValueInt dwColor, C4ValueIn
 	return true;
 }
 
-static C4Object *FnGetCursor(C4ValueInt iPlr, C4ValueInt iIndex)
+static C4Object *FnGetCursor(C4Player &player, C4ValueInt iIndex)
 {
-	// get player
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	// invalid player?
-	if (!pPlr) return nullptr;
 	// first index is always the cursor
-	if (!iIndex) return pPlr->Cursor;
+	if (!iIndex) return player.Cursor;
 	// iterate through selected crew for iIndex times
 	// status needs not be checked, as dead objects are never in Crew list
 	C4Object *pCrew;
-	for (C4ObjectLink *pLnk = pPlr->Crew.First; pLnk; pLnk = pLnk->Next)
+	for (C4ObjectLink *pLnk = player.Crew.First; pLnk; pLnk = pLnk->Next)
 		// get crew object
 		if (pCrew = pLnk->Obj)
 			// is it selected?
 			if (pCrew->Select)
 				// is it not the cursor? (which is always first)
-				if (pCrew != pPlr->Cursor)
+				if (pCrew != player.Cursor)
 					// enough searched?
 					if (!--iIndex)
 						// return it
@@ -2838,66 +2786,51 @@ static C4Object *FnGetCursor(C4ValueInt iPlr, C4ValueInt iIndex)
 	return nullptr;
 }
 
-static C4Object *FnGetViewCursor(C4ValueInt iPlr)
+static C4Object *FnGetViewCursor(C4Player &player)
 {
-	// get player
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	// get viewcursor
-	return pPlr ? pPlr->ViewCursor.Object() : nullptr;
+	return player.ViewCursor.Object();
 }
 
-static C4Object *FnGetCaptain(C4ValueInt iPlr)
+static C4Object *FnGetCaptain(C4Player &player)
 {
-	if (!ValidPlr(iPlr)) return nullptr;
-	return Game.Players.Get(iPlr)->Captain;
+	return player.Captain;
 }
 
-static bool FnSetCursor(C4ValueInt iPlr, C4Object *pObj, bool fNoSelectMark, bool fNoSelectArrow, bool fNoSelectCrew)
+static bool FnSetCursor(C4Player &player, C4Object &obj, bool fNoSelectMark, bool fNoSelectArrow, bool fNoSelectCrew)
 {
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr || (pObj && !pObj->Status)) return false;
-	pPlr->SetCursor(pObj, !fNoSelectMark, !fNoSelectArrow);
-	if (!fNoSelectCrew) pPlr->SelectCrew(pObj, true);
+	if (!obj.Status) return false;
+	player.SetCursor(&obj, !fNoSelectMark, !fNoSelectArrow);
+	if (!fNoSelectCrew) player.SelectCrew(&obj, true);
 	return true;
 }
 
-static bool FnSetViewCursor(C4ValueInt iPlr, C4Object *pObj)
+static bool FnSetViewCursor(C4Player &player, C4Object *pObj)
 {
-	// get player
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	// invalid player?
-	if (!pPlr) return false;
 	// set viewcursor
-	pPlr->ViewCursor = pObj;
+	player.ViewCursor = pObj;
 	return true;
 }
 
-static bool FnSelectCrew(C4ValueInt iPlr, C4Object &obj, bool fSelect, bool fNoCursorAdjust)
+static bool FnSelectCrew(C4Player &player, C4Object &obj, bool fSelect, bool fNoCursorAdjust)
 {
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr) return false;
 	if (fNoCursorAdjust)
 	{
 		if (fSelect) obj.DoSelect(); else obj.UnSelect();
 	}
 	else
-		pPlr->SelectCrew(&obj, fSelect);
+		player.SelectCrew(&obj, fSelect);
 	return true;
 }
 
-static std::optional<C4ValueInt> FnGetSelectCount(C4ValueInt iPlr)
+static C4ValueInt FnGetSelectCount(C4Player &player)
 {
-	if (!ValidPlr(iPlr)) return {};
-	return {Game.Players.Get(iPlr)->SelectCount};
+	return player.SelectCount;
 }
 
-static C4ValueInt FnSetCrewStatus(C4ValueInt iPlr, bool fInCrew, Required<C4ObjectOrThis> pObj)
+static C4ValueInt FnSetCrewStatus(C4Player &player, bool fInCrew, Required<C4ObjectOrThis> pObj)
 {
-	// validate player
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	if (!pPlr) return false;
 	// set crew status
-	return pPlr->SetObjectCrewStatus(pObj, fInCrew);
+	return player.SetObjectCrewStatus(pObj, fInCrew);
 }
 
 static C4ValueInt FnGetWind(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, bool fGlobal)
@@ -3420,46 +3353,36 @@ static C4String *FnGetLeague(C4ValueInt idx)
 	return String(sIdxLeague.getData());
 }
 
-static std::optional<bool> FnTestMessageBoard(C4ValueInt iForPlr, bool fTestIfInUse)
+static bool FnTestMessageBoard(C4Player &forPlayer, bool fTestIfInUse)
 {
 	// multi-query-MessageBoard is always available if the player is valid =)
 	// (but it won't do anything in developer mode...)
-	C4Player *pPlr = Game.Players.Get(iForPlr);
-	if (!pPlr) return {};
-	if (!fTestIfInUse) return {true};
+	if (!fTestIfInUse) return true;
 	// single query only if no query is scheduled
-	return {pPlr->HasMessageBoardQuery()};
+	return forPlayer.HasMessageBoardQuery();
 }
 
-static bool FnCallMessageBoard(C4ObjectOrThis pObj, bool fUpperCase, C4String *szQueryString, C4ValueInt iForPlr)
+static bool FnCallMessageBoard(Required<C4ObjectOrThis> pObj, bool fUpperCase, C4String *szQueryString, C4Player &forPlayer)
 {
-	if (pObj && !pObj->Status) return false;
-	// check player
-	C4Player *pPlr = Game.Players.Get(iForPlr);
-	if (!pPlr) return false;
+	if (!pObj->Status) return false;
 	// remove any previous
-	pPlr->CallMessageBoard(pObj, StdStrBuf::MakeRef(FnStringPar(szQueryString)), !!fUpperCase);
+	forPlayer.CallMessageBoard(pObj, StdStrBuf::MakeRef(FnStringPar(szQueryString)), !!fUpperCase);
 	return true;
 }
 
-static bool FnAbortMessageBoard(C4ObjectOrThis pObj, C4ValueInt iForPlr)
+static bool FnAbortMessageBoard(C4ObjectOrThis pObj, C4Player &forPlayer)
 {
-	// check player
-	C4Player *pPlr = Game.Players.Get(iForPlr);
-	if (!pPlr) return false;
 	// close TypeIn if active
-	Game.MessageInput.AbortMsgBoardQuery(pObj, iForPlr);
+	Game.MessageInput.AbortMsgBoardQuery(pObj, forPlayer.Number);
 	// abort for it
-	return pPlr->RemoveMessageBoardQuery(pObj);
+	return forPlayer.RemoveMessageBoardQuery(pObj);
 }
 
-static bool FnOnMessageBoardAnswer(C4Object *pObj, C4ValueInt iForPlr, C4String *szAnswerString)
+static bool FnOnMessageBoardAnswer(C4Object *pObj, C4Player &forPlayer, C4String *szAnswerString)
 {
 	// remove query
 	// fail if query doesn't exist to prevent any doubled answers
-	C4Player *pPlr = Game.Players.Get(iForPlr);
-	if (!pPlr) return false;
-	if (!pPlr->RemoveMessageBoardQuery(pObj)) return false;
+	if (!forPlayer.RemoveMessageBoardQuery(pObj)) return false;
 	// if no answer string is provided, the user did not answer anything
 	// just remove the query
 	if (!szAnswerString || !szAnswerString->Data.getData()) return true;
@@ -3467,7 +3390,7 @@ static bool FnOnMessageBoardAnswer(C4Object *pObj, C4ValueInt iForPlr, C4String 
 	C4ScriptHost *scr;
 	if (pObj) scr = &pObj->Def->Script; else scr = &Game.Script;
 	// exec func
-	return static_cast<bool>(scr->ObjectCall(nullptr, pObj, PSF_InputCallback, {C4VString(FnStringPar(szAnswerString)), C4VInt(iForPlr)}, true));
+	return static_cast<bool>(scr->ObjectCall(nullptr, pObj, PSF_InputCallback, {C4VString(FnStringPar(szAnswerString)), C4VInt(forPlayer.Number)}, true));
 }
 
 static C4ValueInt FnScriptCounter()
@@ -3503,14 +3426,10 @@ static C4ValueInt FnGetColorDw(Required<C4ObjectOrThis> pObj)
 	return pObj->Color;
 }
 
-static std::optional<C4ValueInt> FnGetPlrColorDw(C4ValueInt iPlr)
+static C4ValueInt FnGetPlrColorDw(C4Player &player)
 {
-	// get player
-	C4Player *pPlr = Game.Players.Get(iPlr);
-	// safety
-	if (!pPlr) return {};
 	// return player color
-	return {pPlr->ColorDw};
+	return player.ColorDw;
 }
 
 static bool FnSetColorDw(C4ValueInt iValue, Required<C4ObjectOrThis> pObj)
@@ -3521,12 +3440,10 @@ static bool FnSetColorDw(C4ValueInt iValue, Required<C4ObjectOrThis> pObj)
 	return true;
 }
 
-static C4ValueInt FnSetFoW(bool fEnabled, C4ValueInt iPlr)
+static C4ValueInt FnSetFoW(bool fEnabled, C4Player &player)
 {
-	// safety
-	if (!ValidPlr(iPlr)) return false;
 	// set enabled
-	Game.Players.Get(iPlr)->SetFoW(!!fEnabled);
+	player.SetFoW(fEnabled);
 	// success
 	return true;
 }
@@ -3576,13 +3493,11 @@ static C4String *FnGetProcedure(Required<C4ObjectOrThis> pObj)
 	return String(ProcedureName[iProc]);
 }
 
-static C4Object *FnBuy(C4AulContext *cthr, C4ID idBuyObj, C4ValueInt iForPlr, C4ValueInt iPayPlr, C4Object *pToBase, bool fShowErrors)
+static C4Object *FnBuy(C4AulContext *cthr, C4ID idBuyObj, C4Player &forPlayer, C4Player &payPlayer, C4Object *pToBase, bool fShowErrors)
 {
-	// safety
-	if (!ValidPlr(iForPlr) || !ValidPlr(iPayPlr)) return nullptr;
 	// buy
 	C4Object *pThing;
-	if (!(pThing = Game.Players.Get(iPayPlr)->Buy(idBuyObj, fShowErrors, iForPlr, pToBase ? pToBase : cthr->Obj))) return nullptr;
+	if (!(pThing = payPlayer.Buy(idBuyObj, fShowErrors, forPlayer.Number, pToBase ? pToBase : cthr->Obj))) return nullptr;
 	// enter object, if supplied
 	if (pToBase)
 	{
@@ -3597,11 +3512,10 @@ static C4Object *FnBuy(C4AulContext *cthr, C4ID idBuyObj, C4ValueInt iForPlr, C4
 	return pThing;
 }
 
-static bool FnSell(C4ValueInt iToPlr, Required<C4ObjectOrThis> pObj)
+static bool FnSell(C4Player &toPlayer, Required<C4ObjectOrThis> pObj)
 {
-	if (!ValidPlr(iToPlr)) return false;
 	// sell
-	return Game.Players.Get(iToPlr)->Sell2Home(pObj);
+	return toPlayer.Sell2Home(pObj);
 }
 
 // ** additional funcs for references/type info
@@ -4069,35 +3983,25 @@ static C4Value FnGetScenarioVal(C4String *strEntry, C4String *section, C4ValueIn
 	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkParAdapt(Game.C4S, false));
 }
 
-static C4Value FnGetPlayerVal(C4String *strEntry, C4String *section, C4ValueInt iPlr, C4ValueInt iEntryNr)
+static C4Value FnGetPlayerVal(C4String *strEntry, C4String *section, C4Player &player, C4ValueInt iEntryNr)
 {
 	const char *strSection = FnStringPar(section);
 	if (strSection && !*strSection) strSection = nullptr;
 
-	if (!ValidPlr(iPlr)) return C4VNull;
-
-	// get player
-	C4Player *pPlayer = Game.Players.Get(iPlr);
-
 	// get value
-	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkNamingAdapt(*pPlayer, "Player"));
+	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkNamingAdapt(player, "Player"));
 }
 
-static C4Value FnGetPlayerInfoCoreVal(C4String *strEntry, C4String *section, C4ValueInt iPlr, C4ValueInt iEntryNr)
+static C4Value FnGetPlayerInfoCoreVal(C4String *strEntry, C4String *section, C4Player &player, C4ValueInt iEntryNr)
 {
 	const char *strSection = FnStringPar(section);
 	if (strSection && !*strSection) strSection = nullptr;
 
-	if (!ValidPlr(iPlr)) return C4VNull;
-
-	// get player
-	C4Player *pPlayer = Game.Players.Get(iPlr);
-
 	// get plr info core
-	C4PlayerInfoCore *pPlayerInfoCore = static_cast<C4PlayerInfoCore *>(pPlayer);
+	C4PlayerInfoCore &playerInfoCore = static_cast<C4PlayerInfoCore &>(player);
 
 	// get value
-	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, *pPlayerInfoCore);
+	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, playerInfoCore);
 }
 
 static C4Value FnGetMaterialVal(C4String *strEntry, C4String *section, C4ValueInt iMat, C4ValueInt iEntryNr)
@@ -4484,7 +4388,7 @@ static std::optional<C4ValueInt> FnGetSystemTime(C4ValueInt iWhat)
 #endif
 }
 
-static C4Value FnSetPlrExtraData(C4ValueInt iPlayer, C4String *DataName, C4Value Data)
+static C4Value FnSetPlrExtraData(C4Player &player, C4String *DataName, C4Value Data)
 {
 	const char *strDataName = FnStringPar(DataName);
 
@@ -4497,48 +4401,40 @@ static C4Value FnSetPlrExtraData(C4ValueInt iPlayer, C4String *DataName, C4Value
 		return C4VNull;
 	}
 
-	// valid player? (for great nullpointer prevention)
-	if (!ValidPlr(iPlayer)) return C4VNull;
 	// do not allow data type C4V_String or C4V_C4Object
 	if (Data.GetType() != C4V_Any &&
 		Data.GetType() != C4V_Int &&
 		Data.GetType() != C4V_Bool &&
 		Data.GetType() != C4V_C4ID) return C4VNull;
-	// get pointer on player...
-	C4Player *pPlayer = Game.Players.Get(iPlayer);
 	// no name list created yet?
-	if (!pPlayer->ExtraData.pNames)
+	if (!player.ExtraData.pNames)
 		// create name list
-		pPlayer->ExtraData.CreateTempNameList();
+		player.ExtraData.CreateTempNameList();
 	// data name already exists?
 	C4ValueInt ival;
-	if ((ival = pPlayer->ExtraData.pNames->GetItemNr(strDataName)) != -1)
-		pPlayer->ExtraData[ival] = Data;
+	if ((ival = player.ExtraData.pNames->GetItemNr(strDataName)) != -1)
+		player.ExtraData[ival] = Data;
 	else
 	{
 		// add name
-		pPlayer->ExtraData.pNames->AddName(strDataName);
+		player.ExtraData.pNames->AddName(strDataName);
 		// get val id & set
-		if ((ival = pPlayer->ExtraData.pNames->GetItemNr(strDataName)) == -1) return C4VNull;
-		pPlayer->ExtraData[ival] = Data;
+		if ((ival = player.ExtraData.pNames->GetItemNr(strDataName)) == -1) return C4VNull;
+		player.ExtraData[ival] = Data;
 	}
 	// ok, return the value that has been set
 	return Data;
 }
 
-static C4Value FnGetPlrExtraData(C4ValueInt iPlayer, C4String *DataName)
+static C4Value FnGetPlrExtraData(C4Player &player, C4String *DataName)
 {
 	const char *strDataName = FnStringPar(DataName);
-	// valid player?
-	if (!ValidPlr(iPlayer)) return C4VNull;
-	// get pointer on player...
-	C4Player *pPlayer = Game.Players.Get(iPlayer);
 	// no name list?
-	if (!pPlayer->ExtraData.pNames) return C4VNull;
+	if (!player.ExtraData.pNames) return C4VNull;
 	C4ValueInt ival;
-	if ((ival = pPlayer->ExtraData.pNames->GetItemNr(strDataName)) == -1) return C4VNull;
+	if ((ival = player.ExtraData.pNames->GetItemNr(strDataName)) == -1) return C4VNull;
 	// return data
-	return pPlayer->ExtraData[ival];
+	return player.ExtraData[ival];
 }
 
 static C4Value FnSetCrewExtraData(Required<C4ObjectOrThis> pCrew, C4String *dataName, C4Value Data)
@@ -4632,13 +4528,10 @@ static bool FnSetCrewEnabled(bool fEnabled, Required<C4ObjectOrThis> pObj)
 	return true;
 }
 
-static bool FnUnselectCrew(C4ValueInt iPlayer)
+static bool FnUnselectCrew(C4Player &player)
 {
-	// get player
-	C4Player *pPlr = Game.Players.Get(iPlayer);
-	if (!pPlr) return false;
 	// unselect crew
-	pPlr->UnselectCrew();
+	player.UnselectCrew();
 	// success
 	return true;
 }
@@ -5443,52 +5336,45 @@ static bool FnSetPreSend(C4ValueInt iToVal, C4String *pNewName)
 	return true;
 }
 
-static std::optional<C4ValueInt> FnGetPlayerID(C4ValueInt iPlayer)
+static C4ValueInt FnGetPlayerID(C4Player &player)
 {
-	C4Player *pPlr = Game.Players.Get(iPlayer);
-	return pPlr ? std::make_optional(pPlr->ID) : std::nullopt;
+	return player.ID;
 }
 
-static std::optional<C4ValueInt> FnGetPlayerTeam(C4ValueInt iPlayer)
+static C4ValueInt FnGetPlayerTeam(C4Player &player)
 {
-	// get player
-	C4Player *pPlr = Game.Players.Get(iPlayer);
-	if (!pPlr) return {};
 	// search team containing this player
-	C4Team *pTeam = Game.Teams.GetTeamByPlayerID(pPlr->ID);
-	if (pTeam) return {pTeam->GetID()};
+	C4Team *pTeam = Game.Teams.GetTeamByPlayerID(player.ID);
+	if (pTeam) return pTeam->GetID();
 	// special value of -1 indicating that the team is still to be chosen
-	if (pPlr->IsChosingTeam()) return {-1};
+	if (player.IsChosingTeam()) return -1;
 	// No team.
-	return {0};
+	return 0;
 }
 
-static bool FnSetPlayerTeam(C4ValueInt iPlayer, C4ValueInt idNewTeam, bool fNoCalls)
+static bool FnSetPlayerTeam(C4Player &player, C4ValueInt idNewTeam, bool fNoCalls)
 {
 	// no team changing in league games
 	if (Game.Parameters.isLeague()) return false;
-	// get player
-	C4Player *pPlr = Game.Players.Get(iPlayer);
-	if (!pPlr) return false;
-	C4PlayerInfo *pPlrInfo = pPlr->GetInfo();
+	C4PlayerInfo *pPlrInfo = player.GetInfo();
 	if (!pPlrInfo) return false;
 	// already in that team?
-	if (pPlr->Team == idNewTeam) return true;
+	if (player.Team == idNewTeam) return true;
 	// ask team setting if it's allowed (also checks for valid team)
 	if (!Game.Teams.IsJoin2TeamAllowed(idNewTeam)) return false;
 	// ask script if it's allowed
 	if (!fNoCalls)
 	{
-		if (Game.Script.GRBroadcast(PSF_RejectTeamSwitch, {C4VInt(iPlayer), C4VInt(idNewTeam)}, true, true))
+		if (Game.Script.GRBroadcast(PSF_RejectTeamSwitch, {C4VInt(player.Number), C4VInt(idNewTeam)}, true, true))
 			return false;
 	}
 	// exit previous team
-	C4Team *pOldTeam = Game.Teams.GetTeamByPlayerID(pPlr->ID);
+	C4Team *pOldTeam = Game.Teams.GetTeamByPlayerID(player.ID);
 	int32_t idOldTeam = 0;
 	if (pOldTeam)
 	{
 		idOldTeam = pOldTeam->GetID();
-		pOldTeam->RemovePlayerByID(pPlr->ID);
+		pOldTeam->RemovePlayerByID(player.ID);
 	}
 	// enter new team
 	if (idNewTeam)
@@ -5499,22 +5385,22 @@ static bool FnSetPlayerTeam(C4ValueInt iPlayer, C4ValueInt idNewTeam, bool fNoCa
 			pNewTeam->AddPlayer(*pPlrInfo, true);
 			idNewTeam = pNewTeam->GetID();
 			// Update common home base material
-			if (Game.Rules & C4RULE_TeamHombase && !fNoCalls) pPlr->SyncHomebaseMaterialFromTeam();
+			if (Game.Rules & C4RULE_TeamHombase && !fNoCalls) player.SyncHomebaseMaterialFromTeam();
 		}
 		else
 		{
 			// unknown error
-			pPlr->Team = idNewTeam = 0;
+			player.Team = idNewTeam = 0;
 		}
 	}
 	// update hositlities if this is not a "silent" change
 	if (!fNoCalls)
 	{
-		pPlr->SetTeamHostility();
+		player.SetTeamHostility();
 	}
 	// do callback to reflect change in scenario
 	if (!fNoCalls)
-		Game.Script.GRBroadcast(PSF_OnTeamSwitch, {C4VInt(iPlayer), C4VInt(idNewTeam), C4VInt(idOldTeam)}, true);
+		Game.Script.GRBroadcast(PSF_OnTeamSwitch, {C4VInt(player.Number), C4VInt(idNewTeam), C4VInt(idOldTeam)}, true);
 	return true;
 }
 
@@ -5560,11 +5446,9 @@ static C4ValueInt FnGetTeamCount()
 	return Game.Teams.GetTeamCount();
 }
 
-static bool FnInitScenarioPlayer(C4ValueInt iPlayer, C4ValueInt idTeam)
+static bool FnInitScenarioPlayer(C4Player &player, C4ValueInt idTeam)
 {
-	C4Player *pPlr = Game.Players.Get(iPlayer);
-	if (!pPlr) return false;
-	return pPlr->ScenarioAndTeamInit(idTeam);
+	return player.ScenarioAndTeamInit(idTeam);
 }
 
 static bool FnOnOwnerRemoved(C4AulContext *cthr)
@@ -5682,13 +5566,10 @@ static C4ValueInt FnGetUnusedOverlayID(RequiredNonZero<C4ValueInt> iBaseIndex, R
 	return iBaseIndex;
 }
 
-static C4ValueInt FnActivateGameGoalMenu(C4ValueInt iPlayer)
+static C4ValueInt FnActivateGameGoalMenu(C4Player &player)
 {
-	// get target player
-	C4Player *pPlr = Game.Players.Get(iPlayer);
-	if (!pPlr) return false;
 	// open menu
-	return pPlr->Menu.ActivateGoals(pPlr->Number, pPlr->LocalControl && !Game.Control.isReplay());
+	return player.Menu.ActivateGoals(player.Number, player.LocalControl && !Game.Control.isReplay());
 }
 
 static void FnFatalError(C4AulContext *ctx, C4String *pErrorMsg)
@@ -5885,6 +5766,20 @@ template <typename T> struct C4ValueConv<std::optional<T>>
 	}
 };
 
+// convert int to player by player number lookup
+template <> struct C4ValueConv<C4Player *>
+{
+	constexpr static C4V_Type Type() { return C4V_Int; }
+	inline static C4Player *FromC4V(C4Value &v)
+	{
+		return Game.Players.Get(v.getInt());
+	}
+	inline static C4Player *_FromC4V(const C4Value &v)
+	{
+		return Game.Players.Get(v._getInt());
+	}
+};
+
 template<typename T>
 struct ArgumentConverter
 {
@@ -5931,11 +5826,11 @@ struct ArgumentConverter<Default<T, defaultVal, true>> : ArgumentConverter<Defau
 	}
 };
 
-template<typename T, auto failVal, bool nonZero>
-struct ArgumentConverter<Required<T, failVal, nonZero>>
+template<typename T, auto failVal, bool nonZero, bool allowNil>
+struct ArgumentConverter<Required<T, failVal, nonZero, allowNil>>
 {
 	static constexpr inline C4V_Type Type = ArgumentConverter<T>::Type;
-	static Required<T, failVal, nonZero> Convert(C4AulContext *context, const C4Value& value)
+	static Required<T, failVal, nonZero, allowNil> Convert(C4AulContext *context, const C4Value& value)
 	{
 		return ArgumentConverter<T>::Convert(context, value);
 	}
@@ -5957,8 +5852,8 @@ struct Condition
 	static constexpr inline bool HasCondition = false;
 };
 
-template<typename T, auto failVal, bool nonZero>
-struct Condition<Required<T, failVal, nonZero>>
+template<typename T, auto failVal, bool nonZero, bool allowNil>
+struct Condition<Required<T, failVal, nonZero, allowNil>>
 {
 	static constexpr inline bool HasCondition = true;
 	static constexpr inline auto FailValue = failVal;
@@ -5966,9 +5861,12 @@ struct Condition<Required<T, failVal, nonZero>>
 
 	static bool Ok(C4AulContext *context, const C4Value& value) noexcept
 	{
-		if (value.GetType() == C4V_Any)
+		if constexpr (!allowNil)
 		{
-			return false;
+			if (value.GetType() == C4V_Any)
+			{
+				return false;
+			}
 		}
 		if constexpr (nonZero)
 		{
@@ -5994,8 +5892,8 @@ struct Condition<T &>
 	}
 };
 
-template<auto failVal, bool nonZero>
-struct Condition<Required<C4ObjectOrThis, failVal, nonZero>>
+template<auto failVal, bool nonZero, bool allowNil>
+struct Condition<Required<C4ObjectOrThis, failVal, nonZero, allowNil>>
 {
 	static constexpr inline bool HasCondition = true;
 	static constexpr inline auto FailValue = failVal;
