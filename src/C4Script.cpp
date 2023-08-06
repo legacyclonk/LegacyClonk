@@ -2676,29 +2676,25 @@ static bool FnSurrenderPlayer(C4Player &player)
 	return true;
 }
 
-static bool FnSetLeaguePerformance(C4ValueInt iScore, C4ValueInt idPlayer)
+static bool FnSetLeaguePerformance(C4ValueInt iScore, std::optional<C4PlayerInfo *> playerInfo)
 {
 	if (!Game.Parameters.isLeague()) return false;
-	if (idPlayer && !Game.PlayerInfos.GetPlayerInfoByID(idPlayer)) return false;
-	Game.RoundResults.SetLeaguePerformance(iScore, idPlayer);
+	if (playerInfo && !*playerInfo) return false;
+	Game.RoundResults.SetLeaguePerformance(iScore, playerInfo.transform(&C4PlayerInfo::GetID).value_or(0));
 	return true;
 }
 
-static bool FnSetLeagueProgressData(C4String *pNewData, C4ValueInt idPlayer)
+static bool FnSetLeagueProgressData(C4String *pNewData, C4PlayerInfo &info)
 {
 	if (!Game.Parameters.League.getLength()) return false;
-	C4PlayerInfo *info = Game.PlayerInfos.GetPlayerInfoByID(idPlayer);
-	if (!info) return false;
-	info->SetLeagueProgressData(pNewData ? pNewData->Data.getData() : nullptr);
+	info.SetLeagueProgressData(pNewData ? pNewData->Data.getData() : nullptr);
 	return true;
 }
 
-static C4String *FnGetLeagueProgressData(C4ValueInt idPlayer)
+static C4String *FnGetLeagueProgressData(C4PlayerInfo &info)
 {
 	if (!Game.Parameters.League.getLength()) return nullptr;
-	C4PlayerInfo *info = Game.PlayerInfos.GetPlayerInfoByID(idPlayer);
-	if (!info) return nullptr;
-	return String(info->GetLeagueProgressData());
+	return String(info.GetLeagueProgressData());
 }
 
 static const int32_t CSPF_FixedAttributes    = 1 << 0,
@@ -5304,25 +5300,14 @@ static bool FnDoScoreboardShow(C4ValueInt iChange, C4ValueInt iForPlr)
 	return true;
 }
 
-static bool FnAddEvaluationData(C4String &text, C4ValueInt idPlayer)
+static bool FnAddEvaluationData(C4String &text, std::optional<C4PlayerInfo *> playerInfo)
 {
 	// safety
 	if (!text.Data.getLength()) return false;
-	if (idPlayer && !Game.PlayerInfos.GetPlayerInfoByID(idPlayer)) return false;
+	if (playerInfo && !*playerInfo) return false;
 	// add data
-	Game.RoundResults.AddCustomEvaluationString(text.Data.getData(), idPlayer);
+	Game.RoundResults.AddCustomEvaluationString(text.Data.getData(), playerInfo.transform(&C4PlayerInfo::GetID).value_or(0));
 	return true;
-}
-
-static std::optional<int32_t> FnGetLeagueScore(C4ValueInt idPlayer)
-{
-	// security
-	if (idPlayer < 1) return {};
-	// get info
-	C4PlayerInfo *pInfo = Game.PlayerInfos.GetPlayerInfoByID(idPlayer);
-	if (!pInfo) return {};
-	// get league score
-	return {pInfo->getLeagueScore()};
 }
 
 static C4ValueInt FnGetUnusedOverlayID(RequiredNonZero<C4ValueInt> iBaseIndex, Required<C4ObjectOrThis> pObj)
@@ -5548,6 +5533,20 @@ template <> struct C4ValueConv<C4Player *>
 	inline static C4Player *_FromC4V(const C4Value &v)
 	{
 		return Game.Players.Get(v._getInt());
+	}
+};
+
+// convert int to player info by player id lookup
+template <> struct C4ValueConv<C4PlayerInfo *>
+{
+	constexpr static C4V_Type Type() { return C4V_Int; }
+	inline static C4PlayerInfo *FromC4V(C4Value &v)
+	{
+		return Game.PlayerInfos.GetPlayerInfoByID(v.getInt());
+	}
+	inline static C4PlayerInfo *_FromC4V(const C4Value &v)
+	{
+		return Game.PlayerInfos.GetPlayerInfoByID(v._getInt());
 	}
 };
 
@@ -5782,6 +5781,12 @@ template <typename Class, typename Ret, typename... Pars>
 static void AddFunc(C4AulScript *owner, const char *name, Ret (Class::*member)(Pars...), bool pub = true)
 {
 	new C4AulEngineFunc<Ret (Class::*)(Pars...), Ret, Class &, Pars...>{owner, name, member, pub};
+}
+
+template <typename Class, typename Ret, typename... Pars>
+static void AddFunc(C4AulScript *owner, const char *name, Ret (Class::*member)(Pars...) const, bool pub = true)
+{
+	new C4AulEngineFunc<Ret (Class::*)(Pars...) const, Ret, Class &, Pars...>{owner, name, member, pub};
 }
 
 template <typename MemberPtr, typename Class, typename Ret, typename... Pars>
@@ -6636,7 +6641,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "DoScoreboardShow",                FnDoScoreboardShow,                false);
 	AddFunc(pEngine, "SortScoreboard",                  Game.Scoreboard, &C4Scoreboard::SortBy,                  false);
 	AddFunc(pEngine, "AddEvaluationData",               FnAddEvaluationData,               false);
-	AddFunc(pEngine, "GetLeagueScore",                  FnGetLeagueScore,                  false);
+	AddFunc(pEngine, "GetLeagueScore",                  &C4PlayerInfo::getLeagueScore,                  false);
 	AddFunc(pEngine, "HideSettlementScoreInEvaluation", Game.RoundResults, &C4RoundResults::HideSettlementScore, false);
 	AddFunc(pEngine, "GetUnusedOverlayID",              FnGetUnusedOverlayID,              false);
 	AddFunc(pEngine, "FatalError",                      FnFatalError,                      false);
