@@ -53,12 +53,23 @@
 
 
 namespace {
+	template <typename T>
+	struct WrappedOrT_s { using type = T; };
+
+	template <typename T> requires requires { typename T::Wrapped; }
+	struct WrappedOrT_s<T> { using type = typename T::Wrapped; };
+
+	template <typename T>
+	using WrappedOrT = typename WrappedOrT_s<T>::type;
+
 	// Simple C4Object * wrapper, which is used by script function adaptors to automatically fill in the context object instead of nil
 	class C4ObjectOrThis
 	{
 		C4Object *obj;
 
 	public:
+		using Wrapped = C4Object *;
+
 		constexpr C4ObjectOrThis(C4Object *obj) noexcept : obj{obj} {}
 		constexpr C4Object &operator*() const noexcept { return *obj; }
 		constexpr C4Object *operator->() const noexcept { return obj; }
@@ -72,8 +83,12 @@ namespace {
 		T value;
 
 	public:
+		using Wrapped = WrappedOrT<T>;
+
 		constexpr Default(T value) noexcept : value{value} {}
 		constexpr operator T &() noexcept { return value; }
+		constexpr operator const T &() const noexcept { return value; }
+		constexpr operator Wrapped() const requires (!std::same_as<Wrapped, T>) { return value; }
 	};
 
 
@@ -93,6 +108,8 @@ namespace {
 		T value;
 
 	public:
+		using Wrapped = WrappedOrT<T>;
+
 		constexpr Required(T value) noexcept : value{value} {}
 		constexpr T &operator*() noexcept { return value; }
 		constexpr const T &operator*() const noexcept { return value; }
@@ -101,8 +118,9 @@ namespace {
 		template<equals_comparable_with<T> Other>
 		constexpr bool operator==(const Other &other) const { return value == other; }
 
-		template<typename U> requires std::convertible_to<T, U>
-		constexpr operator U() const { return static_cast<U>(value); }
+		constexpr operator T &() noexcept { return value; }
+		constexpr operator const T &() const noexcept { return value; }
+		constexpr operator Wrapped() const requires (!std::same_as<Wrapped, T>) { return value; }
 	};
 
 	template<typename T, auto failVal = nullptr>
@@ -2984,9 +3002,9 @@ static C4ValueInt FnAngle(C4ValueInt iX1, C4ValueInt iY1, C4ValueInt iX2, C4Valu
 template<double Function(double)>
 static C4ValueInt FnArcus(const C4ValueInt value, const RequiredNonZero<C4ValueInt, 0> radius)
 {
-	if (value > *radius) return 0;
+	if (value > radius) return 0;
 
-	const double result{Function(static_cast<double>(value) / *radius) * 180.0 * std::numbers::inv_pi};
+	const double result{Function(static_cast<double>(value) / radius) * 180.0 * std::numbers::inv_pi};
 	// return rounded angle
 	return static_cast<C4ValueInt>(std::floor(result + 0.5));
 }
