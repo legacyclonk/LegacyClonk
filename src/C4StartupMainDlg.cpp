@@ -304,8 +304,6 @@ void C4StartupMainDlg::OnShown()
 	// First show
 	if (fFirstShown)
 	{
-		// Activate the application (trying to prevent flickering half-focus in win32...)
-		Application.Activate();
 		// Set the focus to the start button (we might still not have the focus after the update-check sometimes... :/)
 		SetFocus(pStartButton, false);
 	}

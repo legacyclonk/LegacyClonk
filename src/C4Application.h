@@ -139,7 +139,6 @@ protected:
 public:
 	virtual void Quit() override;
 	void QuitGame(); // quit game only, but restart application if in fullscreen startup menu mode
-	void Activate(); // activate app to gain full focus in OS
 	void SetNextMission(const char *szMissionFilename);
 };
 

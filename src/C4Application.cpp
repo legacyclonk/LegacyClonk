@@ -628,30 +628,6 @@ void C4Application::OnCommand(const char *szCmd)
 	}
 }
 
-void C4Application::Activate()
-{
-#ifdef _WIN32
-	// Activate the application to regain focus if it has been lost during loading.
-	// As this is officially not possible any more in new versions of Windows
-	// (BringWindowTopTop alone won't have any effect if the calling process is
-	// not in the foreground itself), we are using an ugly OS hack.
-	DWORD nForeThread = GetWindowThreadProcessId(GetForegroundWindow(), 0);
-	DWORD nAppThread = GetCurrentThreadId();
-	if (nForeThread != nAppThread)
-	{
-		AttachThreadInput(nForeThread, nAppThread, TRUE);
-		BringWindowToTop(FullScreen.hWindow);
-		ShowWindow(FullScreen.hWindow, SW_SHOW);
-		AttachThreadInput(nForeThread, nAppThread, FALSE);
-	}
-	else
-	{
-		BringWindowToTop(FullScreen.hWindow);
-		ShowWindow(FullScreen.hWindow, SW_SHOW);
-	}
-#endif
-}
-
 void C4Application::SetNextMission(const char *szMissionFilename)
 {
 	// set next mission if any is desired
