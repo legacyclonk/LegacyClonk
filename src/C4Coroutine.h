@@ -329,9 +329,9 @@ public:
 		cancel();
 #else
 
-		const auto callback = cancellationCallback.exchange(CancellingSentinel, std::memory_order_acq_rel);
+		const auto callback = cancellationCallback.exchange(CancelledSentinel, std::memory_order_acq_rel);
 
-		if (callback && callback != CancellingSentinel && callback != CancelledSentinel)
+		if (callback && callback != CancelledSentinel)
 		{
 			const struct Cleanup
 			{
@@ -364,7 +364,17 @@ public:
 		revoke_canceller();
 #else
 		cancellationArgument = nullptr;
-		cancellationCallback.store(nullptr, std::memory_order_release);
+
+		auto callback = cancellationCallback.load(std::memory_order_acquire);
+
+		do
+		{
+			if (!callback || callback == CancelledSentinel)
+			{
+				return;
+			}
+		}
+		while (!cancellationCallback.compare_exchange_weak(callback, nullptr, std::memory_order_release));
 #endif
 	}
 
@@ -373,7 +383,8 @@ public:
 #ifdef _WIN32
 		return cancelled.load(std::memory_order_acquire);
 #else
-		return cancellationCallback.load(std::memory_order_acquire) == CancelledSentinel;
+		const auto callback = cancellationCallback.load(std::memory_order_acquire);
+		return callback == CancelledSentinel;
 #endif
 	}
 
@@ -392,7 +403,6 @@ private:
 	std::atomic_bool cancelled{false};
 #else
 public:
-	static inline const auto CancellingSentinel = std::bit_cast<void(*)(void *)>(reinterpret_cast<void *>(0x01));
 	static inline const auto CancelledSentinel = std::bit_cast<void(*)(void *)>(reinterpret_cast<void *>(0x02));
 
 protected:
