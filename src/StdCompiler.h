@@ -209,6 +209,14 @@ public:
 	void Value(bool &rBool) { Boolean(rBool); }
 	void Value(std::string &rString, StdCompiler::RawCompileType eRawType = StdCompiler::RCT_Escaped) { String(rString, eRawType); }
 
+	template<std::integral T> requires (!std::same_as<long long, std::int64_t> && std::same_as<std::make_signed_t<T>, long long>)
+	void Value(T &rInt)
+	{
+		std::conditional_t<std::is_signed_v<T>, std::int64_t, std::uint64_t> value{rInt};
+		Value(value);
+		rInt = value;
+	}
+
 	// Compiling/Decompiling (may throw a data format exception!)
 	template <class T> inline void Compile(T &&rStruct)
 	{
