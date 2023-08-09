@@ -460,7 +460,6 @@ if (USE_TESTS)
 endif ()
 
 list(PREPEND MACRO_TARGETS standard)
-message(STATUS ${MACRO_TARGETS})
 
 # Define macros
 
