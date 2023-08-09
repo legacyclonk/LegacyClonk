@@ -63,6 +63,7 @@ option(USE_CONSOLE "Dedicated server mode (compile as pure console application)"
 option(USE_LTO "Enable Link Time Optimization" ON)
 option(USE_PCH "Precompile Headers" ON)
 option(USE_STAT "Enable internal performance statistics for developers" OFF)
+option(USE_TESTS "Enable testing" OFF)
 
 # ENABLE_SOUND
 CMAKE_DEPENDENT_OPTION(ENABLE_SOUND "Compile with sound support" ON
@@ -309,6 +310,11 @@ endif ()
 
 # Link libraries
 
+# Link Catch2
+if (USE_TESTS)
+	find_package(Catch2 3 REQUIRED)
+endif ()
+
 # Link fmt
 find_package(fmt REQUIRED)
 target_link_libraries(standard fmt::fmt)
@@ -445,53 +451,68 @@ endif ()
 find_package(ZLIB REQUIRED)
 target_link_libraries(standard ZLIB::ZLIB)
 
-# Define macros
-target_compile_definitions(standard PUBLIC
-	C4_OS="${C4_OS}"
-	ICONV_CONST=
-	STD_APPUSERMODELID="LegacyClonkTeam.LegacyClonk"
-	# A standard product name for this project which is used in window registration etc.
-	STD_PRODUCT="LegacyClonk"
-	ZLIB_CONST=1
-)
+# Setup testing
 
-# Define macros if their variable is set
-foreach(MACRO_VAR
-	DEBUGREC
-	ENABLE_SOUND
-	HAVE_FREETYPE
-	HAVE_ICONV
-	SOLIDMASK_DEBUG
-	USE_LIBNOTIFY
-	USE_SDL_FOR_GAMEPAD
-	USE_SDL_MAINLOOP
-	USE_SDL_MIXER
-	USE_STAT
-	USE_WINDOWS_RUNTIME
-	USE_X11
-	WITH_DEVELOPER_MODE
-	WITH_GLIB
-)
-	if (${MACRO_VAR})
-		target_compile_definitions(standard PUBLIC ${MACRO_VAR}=1)
-	endif ()
-endforeach()
-
-# Define DEBUGREC_* macros if DEBUGREC is set
-if (DEBUGREC)
-	foreach(DEBUGREC_MACRO
-		MATSCAN=1
-		MENU=1
-		OBJCOM=1
-		OCF=1
-		PXS=1
-		#RECRUITMENT=1
-		SCRIPT=1
-		START_FRAME=0
-	)
-		target_compile_definitions(standard PUBLIC "DEBUGREC_${DEBUGREC_MACRO}")
-	endforeach()
+if (USE_TESTS)
+	enable_testing()
+	add_subdirectory(tests)
+	get_property(MACRO_TARGETS DIRECTORY tests PROPERTY BUILDSYSTEM_TARGETS)
 endif ()
+
+list(PREPEND MACRO_TARGETS standard)
+
+# Define macros
+
+foreach (MACRO_TARGET ${MACRO_TARGETS})
+	target_compile_definitions(${MACRO_TARGET} PUBLIC
+		C4_OS="${C4_OS}"
+		C4UPDATE_BUILD_TIMESTAMP="${C4UPDATE_TIMESTAMP}"
+		ICONV_CONST=
+		STD_APPUSERMODELID="LegacyClonkTeam.LegacyClonk"
+		# A standard product name for this project which is used in window registration etc.
+		STD_PRODUCT="LegacyClonk"
+		ZLIB_CONST=1
+	)
+
+	# Define macros if their variable is set
+	foreach(MACRO_VAR
+		C4UPDATE_BUILD_TIMESTAMP
+		DEBUGREC
+		ENABLE_SOUND
+		HAVE_FREETYPE
+		HAVE_ICONV
+		SOLIDMASK_DEBUG
+		USE_LIBNOTIFY
+		USE_SDL_FOR_GAMEPAD
+		USE_SDL_MAINLOOP
+		USE_SDL_MIXER
+		USE_STAT
+		USE_WINDOWS_RUNTIME
+		USE_X11
+		WITH_DEVELOPER_MODE
+		WITH_GLIB
+	)
+		if (${MACRO_VAR})
+			target_compile_definitions(${MACRO_TARGET} PUBLIC ${MACRO_VAR}=1)
+		endif ()
+	endforeach()
+
+	# Define DEBUGREC_* macros if DEBUGREC is set
+	if (DEBUGREC)
+		foreach(DEBUGREC_MACRO
+			MATSCAN=1
+			MENU=1
+			OBJCOM=1
+			OCF=1
+			PXS=1
+			#RECRUITMENT=1
+			SCRIPT=1
+			START_FRAME=0
+		)
+			target_compile_definitions(${MACRO_TARGET} PUBLIC "DEBUGREC_${DEBUGREC_MACRO}")
+		endforeach()
+	endif ()
+endforeach ()
 
 if (APPLE AND NOT USE_CONSOLE)
 	set(BUNDLE_RESOURCES

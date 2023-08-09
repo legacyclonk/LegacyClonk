@@ -126,8 +126,12 @@ jobs:
 
       - name: Configure
         run: |
-          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo $CMAKE_CONFIGURE_ARGS $CONFIG_ARGS
+          $CHROOT cmake -B build . -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_TESTS=On -DCMAKE_CTEST_ARGUMENTS=--output-on-failure $CMAKE_CONFIGURE_ARGS $CONFIG_ARGS
 
       - name: Build
         run: |
           $CHROOT cmake --build build -v $CMAKE_BUILD_ARGS
+
+      - name: Test
+        run: |
+          $CHROOT cmake --build build --target test
