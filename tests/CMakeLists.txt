@@ -15,12 +15,10 @@ function (add_test_target TEST_NAME)
 	set(TARGET "test_${TEST_NAME}")
 	cmake_parse_arguments(PARSE_ARGV 1 "ADD_TEST" "" "" "SOURCES;LIBRARIES")
 
-	list(PREPEND ADD_TEST_SOURCES "tests/${TARGET}.cpp" "tests/BoostTest.h")
+	list(PREPEND ADD_TEST_SOURCES "tests/${TARGET}.cpp")
 	list(TRANSFORM ADD_TEST_SOURCES PREPEND "${CMAKE_SOURCE_DIR}/")
 
 	add_executable("${TARGET}" "${ADD_TEST_SOURCES}")
-
-	target_compile_definitions("${TARGET}" PRIVATE BOOST_ALL_NO_LIB BOOST_TEST_MODULE="${TEST_NAME}")
 
 	if (MSVC)
 		target_compile_options("${TARGET}" PRIVATE /W4 /WX)
@@ -28,8 +26,8 @@ function (add_test_target TEST_NAME)
 		target_compile_options("${TARGET}" PRIVATE -Wall -Wextra -Werror)
 	endif ()
 
-	target_include_directories("${TARGET}" PRIVATE "${CMAKE_SOURCE_DIR}/src" ${BOOST_INCLUDE_DIRS})
-	target_link_libraries("${TARGET}" PRIVATE "${ADD_TEST_LIBRARIES}")
+	target_include_directories("${TARGET}" PRIVATE "${CMAKE_SOURCE_DIR}/src")
+	target_link_libraries("${TARGET}" PRIVATE Catch2::Catch2WithMain "${ADD_TEST_LIBRARIES}")
 
 	add_test(NAME "${TEST_NAME}" COMMAND "${TARGET}" WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 endfunction ()
