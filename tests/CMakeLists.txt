@@ -31,3 +31,5 @@ function (add_test_target TEST_NAME)
 
 	add_test(NAME "${TEST_NAME}" COMMAND "${TARGET}" WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 endfunction ()
+
+add_test_target(StdSync SOURCES src/StdSync.cpp src/StdSync.h)
