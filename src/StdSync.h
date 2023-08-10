@@ -118,7 +118,12 @@ protected:
 public:
 	void Clear()
 	{
-		if (sec) sec->Leave(); sec = nullptr;
+		if (sec)
+		{
+			sec->Leave();
+		}
+
+		sec = nullptr;
 	}
 };
 
@@ -222,6 +227,11 @@ protected:
 public:
 	void Clear()
 	{
-		if (sec) sec->LeaveShared(); sec = nullptr;
+		if (sec)
+		{
+			sec->LeaveShared();
+		}
+
+		sec = nullptr;
 	}
 };
