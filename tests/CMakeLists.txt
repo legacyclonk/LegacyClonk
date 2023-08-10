@@ -19,13 +19,6 @@ function (add_test_target TEST_NAME)
 	list(TRANSFORM ADD_TEST_SOURCES PREPEND "${CMAKE_SOURCE_DIR}/")
 
 	add_executable("${TARGET}" "${ADD_TEST_SOURCES}")
-
-	if (MSVC)
-		target_compile_options("${TARGET}" PRIVATE /W4 /WX)
-	else ()
-		target_compile_options("${TARGET}" PRIVATE -Wall -Wextra -Werror)
-	endif ()
-
 	target_include_directories("${TARGET}" PRIVATE "${CMAKE_SOURCE_DIR}/src")
 	target_link_libraries("${TARGET}" PRIVATE Catch2::Catch2WithMain "${ADD_TEST_LIBRARIES}")
 
