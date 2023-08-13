@@ -200,7 +200,7 @@ private:
 
 private:
 	std::atomic_uint32_t timeout{StdSync::Infinite};
-	[[no_unique_address]] GlobalInit globalInit;
+	[[NO_UNIQUE_ADDRESS]] GlobalInit globalInit;
 
 	MultiHandle multiHandle;
 
