@@ -13,13 +13,13 @@
 
 function (add_test_target TEST_NAME)
 	set(TARGET "test_${TEST_NAME}")
-	cmake_parse_arguments(PARSE_ARGV 1 "ADD_TEST" "" "" "SOURCES;LIBRARIES")
+	cmake_parse_arguments(PARSE_ARGV 1 "ADD_TEST" "" "" "SOURCES;INCLUDE_DIRS;LIBRARIES")
 
 	list(PREPEND ADD_TEST_SOURCES "tests/${TARGET}.cpp")
 	list(TRANSFORM ADD_TEST_SOURCES PREPEND "${CMAKE_SOURCE_DIR}/")
 
 	add_executable("${TARGET}" "${ADD_TEST_SOURCES}")
-	target_include_directories("${TARGET}" PRIVATE "${CMAKE_SOURCE_DIR}/src")
+	target_include_directories("${TARGET}" PRIVATE "${CMAKE_SOURCE_DIR}/src" "${ADD_TEST_INCLUDE_DIRS}")
 	target_link_libraries("${TARGET}" PRIVATE Catch2::Catch2WithMain "${ADD_TEST_LIBRARIES}")
 
 	add_test(NAME "${TEST_NAME}" COMMAND "${TARGET}" WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
