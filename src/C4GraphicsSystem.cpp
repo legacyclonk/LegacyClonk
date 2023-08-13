@@ -666,6 +666,7 @@ void C4GraphicsSystem::DrawHelp()
 	// main functions
 	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ToggleShowHelp").getData(), LoadResStr("IDS_CON_HELP"));
 	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("MusicToggle").getData(), LoadResStr("IDS_CTL_MUSIC"));
+	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("SoundToggle").getData(), LoadResStr("IDS_CTL_SOUND"));
 	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("NetClientListDlgToggle").getData(), LoadResStr("IDS_DLG_NETWORK"));
 	// messages
 	StdStrBuf strAltChatKey(GetKeyboardInputName("ChatOpen", false, 0));
