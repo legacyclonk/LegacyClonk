@@ -56,7 +56,7 @@ public:
 template<typename U>
 struct ValueWrapper
 {
-	[[no_unique_address]] U Value;
+	[[NO_UNIQUE_ADDRESS]] U Value;
 	U &&GetValue() { return static_cast<U &&>(Value); }
 };
 

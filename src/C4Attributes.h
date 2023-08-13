@@ -16,5 +16,7 @@
 #pragma once
 
 #if __has_cpp_attribute(msvc::no_unique_address)
-#define no_unique_address msvc::no_unique_address
+#define NO_UNIQUE_ADDRESS msvc::no_unique_address
+#else
+#define NO_UNIQUE_ADDRESS no_unique_address
 #endif
