@@ -346,6 +346,7 @@ public:
 	bool ToggleChart(); // chart dlg on/off
 	void SetMusicLevel(int32_t iToLvl); // change game music volume; multiplied by config volume for real volume
 	bool ToggleMusic(); // music on / off
+	bool ToggleSound(); // sound on / off
 	void AddDirectoryForMonitoring(const char *directory);
 
 protected:

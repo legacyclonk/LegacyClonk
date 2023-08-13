@@ -3311,6 +3311,7 @@ bool C4Game::InitKeyboard()
 
 	// globals
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F3),               "MusicToggle",  C4KeyScope(KEYSCOPE_Generic | KEYSCOPE_Gui),    new C4KeyCB  <C4Game>                (*this,                    &C4Game::ToggleMusic)));
+	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F3, KEYS_Control), "SoundToggle",  C4KeyScope(KEYSCOPE_Generic | KEYSCOPE_Gui),    new C4KeyCB  <C4Game>                (*this,                    &C4Game::ToggleSound)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F9),               "Screenshot",   C4KeyScope(KEYSCOPE_Fullscreen | KEYSCOPE_Gui), new C4KeyCBEx<C4GraphicsSystem, bool>(GraphicsSystem, false,    &C4GraphicsSystem::SaveScreenshot)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(K_F9, KEYS_Control), "ScreenshotEx",            KEYSCOPE_Fullscreen,                 new C4KeyCBEx<C4GraphicsSystem, bool>(GraphicsSystem, true,     &C4GraphicsSystem::SaveScreenshot)));
 	KeyboardInput.RegisterKey(new C4CustomKey(C4KeyCodeEx(KEY_C, KEYS_Alt),    "ToggleChat",   C4KeyScope(KEYSCOPE_Generic | KEYSCOPE_Gui),    new C4KeyCB  <C4Game>                (*this,                    &C4Game::ToggleChat)));
@@ -4338,6 +4339,12 @@ void C4Game::SetMusicLevel(int32_t iToLvl)
 bool C4Game::ToggleMusic()
 {
 	Application.MusicSystem->ToggleOnOff(!IsRunning);
+	return true;
+}
+
+bool C4Game::ToggleSound()
+{
+	Application.SoundSystem->ToggleOnOff();
 	return true;
 }
 
