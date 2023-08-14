@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "C4InputValidation.h"
 #include "C4Startup.h"
 
 // startup dialog: Options

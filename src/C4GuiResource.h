@@ -41,6 +41,7 @@ public:
 	C4FacetExID fctCheckbox;
 	C4FacetExID fctBigArrows;
 	C4FacetExID fctProgressBar;
+	C4FacetExID fctSpinBoxArrow;
 	ScrollBarFacets sfctScroll;
 	C4Facet fctContext;
 

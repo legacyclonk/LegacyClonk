@@ -2011,71 +2011,43 @@ protected:
 };
 
 // a keyboard event that's only executed if the dialog is activated
-template <class TargetClass> class DlgKeyCB : public C4KeyCB<TargetClass>
+template <class TargetClass, template <typename Class, typename...> typename BaseTemplate = C4KeyCB, typename... BasePars>
+class DlgKeyCB : public BaseTemplate<TargetClass, BasePars...>
 {
 private:
-	typedef C4KeyCB<TargetClass> Base;
-	typedef bool(TargetClass::*CallbackFunc)();
+	using Base = BaseTemplate<TargetClass, BasePars...>;
+	using CallbackFunc = Base::CallbackFunc;
 
 public:
-	DlgKeyCB(TargetClass &rTarget, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
-		: Base(rTarget, pFuncDown, pFuncUp, pFuncPressed) {}
+	DlgKeyCB(TargetClass &rTarget, const BasePars &... pars, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
+		: Base(rTarget, pars..., pFuncDown, pFuncUp, pFuncPressed) {}
 
 	virtual bool CheckCondition() override { return Base::rTarget.IsInActiveDlg(true) && Base::rTarget.IsVisible(); }
 };
 
-template <class TargetClass> class DlgKeyCBPassKey : public C4KeyCBPassKey<TargetClass>
-{
-private:
-	typedef C4KeyCBPassKey<TargetClass> Base;
-	typedef bool(TargetClass::*CallbackFunc)(C4KeyCodeEx key);
+template <class TargetClass>
+using DlgKeyCBPassKey = DlgKeyCB<TargetClass, C4KeyCBPassKey>;
 
-public:
-	DlgKeyCBPassKey(TargetClass &rTarget, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
-		: Base(rTarget, pFuncDown, pFuncUp, pFuncPressed) {}
-
-	virtual bool CheckCondition() override { return Base::rTarget.IsInActiveDlg(true) && Base::rTarget.IsVisible(); }
-};
-
-template <class TargetClass, class ParameterType> class DlgKeyCBEx : public C4KeyCBEx<TargetClass, ParameterType>
-{
-private:
-	typedef C4KeyCBEx<TargetClass, ParameterType> Base;
-	typedef bool(TargetClass::*CallbackFunc)(ParameterType par);
-
-public:
-	DlgKeyCBEx(TargetClass &rTarget, const ParameterType &par, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
-		: Base(rTarget, par, pFuncDown, pFuncUp, pFuncPressed) {}
-
-	virtual bool CheckCondition() override { return Base::rTarget.IsInActiveDlg(true) && Base::rTarget.IsVisible(); }
-};
+template <class TargetClass, class ParameterType>
+using DlgKeyCBEx = DlgKeyCB<TargetClass, C4KeyCBEx, ParameterType>;
 
 // a keyboard event that's only executed if the control has focus
-template <class TargetClass> class ControlKeyCB : public C4KeyCB<TargetClass>
+template <class TargetClass, template <typename Class, typename...> typename BaseTemplate = C4KeyCB, typename... BasePars>
+class ControlKeyCB : public BaseTemplate<TargetClass, BasePars...>
 {
 private:
-	typedef C4KeyCB<TargetClass> Base;
-	typedef bool(TargetClass::*CallbackFunc)();
+	using Base = BaseTemplate<TargetClass, BasePars...>;
+	using CallbackFunc = Base::CallbackFunc;
 
 public:
-	ControlKeyCB(TargetClass &rTarget, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
-		: Base(rTarget, pFuncDown, pFuncUp, pFuncPressed) {}
+	ControlKeyCB(TargetClass &rTarget, const BasePars &... pars, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
+		: Base(rTarget, pars..., pFuncDown, pFuncUp, pFuncPressed) {}
 
 	virtual bool CheckCondition() override { return Base::rTarget.HasDrawFocus(); }
 };
 
-template <class TargetClass, class ParameterType> class ControlKeyCBExPassKey : public C4KeyCBExPassKey<TargetClass, ParameterType>
-{
-private:
-	typedef C4KeyCBExPassKey<TargetClass, ParameterType> Base;
-	typedef bool(TargetClass::*CallbackFunc)(C4KeyCodeEx key, ParameterType par);
-
-public:
-	ControlKeyCBExPassKey(TargetClass &rTarget, const ParameterType &rPar, CallbackFunc pFuncDown, CallbackFunc pFuncUp = nullptr, CallbackFunc pFuncPressed = nullptr)
-		: Base(rTarget, rPar, pFuncDown, pFuncUp, pFuncPressed) {}
-
-	virtual bool CheckCondition() override { return Base::rTarget.HasDrawFocus(); }
-};
+template <class TargetClass, class ParameterType>
+using ControlKeyCBExPassKey = ControlKeyCB<TargetClass, C4KeyCBExPassKey, ParameterType>;
 
 // key event that checks whether a control is active, but forwards to the dialog
 template <class TargetClass> class ControlKeyDlgCB : public C4KeyCB<TargetClass>

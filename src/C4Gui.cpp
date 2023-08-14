@@ -1092,6 +1092,7 @@ bool Resource::Load(C4GroupSet &rFromGroup)
 	fctBigArrows.Set(fctBigArrows.Surface, 0, 0, fctBigArrows.Wdt / 4, fctBigArrows.Hgt);
 	if (!Game.GraphicsResource.LoadFile(fctProgressBar, "GUIProgress", rFromGroup)) return false;
 	fctProgressBar.Set(fctProgressBar.Surface, 1, 0, fctProgressBar.Wdt - 2, fctProgressBar.Hgt);
+	if (!Game.GraphicsResource.LoadFile(fctSpinBoxArrow, "GUISpinBoxArrow", rFromGroup)) return false;
 	// loaded sucessfully
 	pRes = this;
 	return true;
