@@ -27,13 +27,14 @@
 #define ConsoleDlgClassName "C4GUIdlg"
 #define ConsoleDlgWindowStyle (WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX)
 
+#include "C4Constants.h"
 #include "C4FacetEx.h"
 #include "C4ForwardDeclarations.h"
 #include "C4GamePadCon.h"
 #include "C4Id.h"
 #include "C4KeyboardInput.h"
 #include "C4LogBuf.h"
-#include "C4Shape.h"
+#include "C4Rect.h"
 
 #include "StdFont.h"
 #include "StdResStr2.h"
