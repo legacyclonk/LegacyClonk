@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "C4GuiSpinBox.h"
 #include "C4Startup.h"
 
 // startup dialog: Options
@@ -230,7 +231,7 @@ private:
 	private:
 		int32_t *pConfigValue; // pointer into config set
 		C4GUI::CheckBox *pEnableCheck; // check box for whether port is enabled
-		C4GUI::Edit *pPortEdit; // edit field for port number
+		C4GUI::SpinBox<std::int32_t> *pPortEdit; // edit field for port number
 
 	public:
 		void OnEnabledCheckChange(C4GUI::Element *pCheckBox); // callback when checkbox is ticked

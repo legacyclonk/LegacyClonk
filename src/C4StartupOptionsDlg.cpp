@@ -34,17 +34,16 @@
 
 #include <StdGL.h>
 
-class C4StartupOptionsDlg::ScaleEdit : public C4GUI::Edit
+class C4StartupOptionsDlg::ScaleEdit : public C4GUI::SpinBox<int32_t>
 {
-	using Base = C4GUI::Edit;
+	using Base = C4GUI::SpinBox<int32_t>;
 	C4StartupOptionsDlg *pDlg;
 
 public:
 	ScaleEdit(C4StartupOptionsDlg *pDlg, const C4Rect &rtBounds, bool fFocusEdit = false);
 
-	bool CharIn(const char *c) override;
-
 protected:
+	virtual void OnTextChange() override;
 	virtual C4GUI::InputResult OnFinishInput(bool fPasting, bool fPastingMore) override;
 };
 
@@ -128,56 +127,32 @@ void C4StartupOptionsDlg::ResChangeConfirmDlg::UpdateText()
 
 namespace
 {
-	unsigned long toUl(const char *str, unsigned long onFail)
-	{
-		char *endPtr = nullptr;
-		auto val = strtoul(str, &endPtr, 10);
-		if (endPtr == nullptr || *endPtr != '\0')
-		{
-			return onFail;
-		}
-
-		return val;
-	}
-
 	constexpr int minScale = 100;
 	constexpr int maxScale = 300;
 }
 
-C4StartupOptionsDlg::ScaleEdit::ScaleEdit(C4StartupOptionsDlg *pDlg, const C4Rect &rtBounds, bool fFocusEdit) : C4GUI::Edit{rtBounds, fFocusEdit}, pDlg{pDlg}
+C4StartupOptionsDlg::ScaleEdit::ScaleEdit(C4StartupOptionsDlg *pDlg, const C4Rect &rtBounds, bool fFocusEdit) : Base{rtBounds, fFocusEdit, minScale, maxScale}, pDlg{pDlg}
 {
-	SetMaxText(5);
 	SetColors(C4StartupEditBGColor, C4StartupFontClr, C4StartupEditBorderColor);
 }
 
-bool C4StartupOptionsDlg::ScaleEdit::CharIn(const char *c)
+void C4StartupOptionsDlg::ScaleEdit::OnTextChange()
 {
-	if (strlen(c) != 1 || !Inside(c[0], '0', '9')) return false;
-	if (C4GUI::Edit::CharIn(c))
-	{
-		int val = toUl(GetText(), 0);
-		if (Inside(val, minScale, maxScale))
-		{
-			auto sliderVal = val - minScale;
-			pDlg->pScaleSlider->SetScrollPos(sliderVal);
-			pDlg->iNewScale = val;
-		}
-		return true;
-	}
-	return false;
+	Base::OnTextChange();
+	const auto val = GetValue();
+	const auto sliderVal = val - minScale;
+	pDlg->pScaleSlider->SetScrollPos(sliderVal);
+	pDlg->iNewScale = val;
 }
 
 C4GUI::InputResult C4StartupOptionsDlg::ScaleEdit::OnFinishInput(bool fPasting, bool fPastingMore)
 {
-	int val = toUl(GetText(), 0);
-	if (!Inside(val, minScale, maxScale)) SetText(FormatString("%d", pDlg->iNewScale).getData(), true);
-	else
-	{
-		auto sliderVal = val - minScale;
-		pDlg->pScaleSlider->SetScrollPos(sliderVal);
-		pDlg->OnScaleSliderChanged(sliderVal);
-		pDlg->OnTestScaleBtn(nullptr);
-	}
+	Base::OnFinishInput(fPasting, fPastingMore);
+	const auto val = GetValue();
+	const auto sliderVal = val - minScale;
+	pDlg->pScaleSlider->SetScrollPos(sliderVal);
+	pDlg->OnScaleSliderChanged(sliderVal);
+	pDlg->OnTestScaleBtn(nullptr);
 	return C4GUI::IR_Abort;
 }
 
@@ -481,10 +456,12 @@ C4StartupOptionsDlg::NetworkPortConfig::NetworkPortConfig(const C4Rect &rcBounds
 	pEnableCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pEnableCheck->SetOnChecked(new C4GUI::CallbackHandler<C4StartupOptionsDlg::NetworkPortConfig>(this, &C4StartupOptionsDlg::NetworkPortConfig::OnEnabledCheckChange));
 	AddElement(pEnableCheck);
-	pPortEdit = new C4GUI::Edit(caBottomLine.GetAll(), true);
+	pPortEdit = new C4GUI::SpinBox<std::int32_t>(caBottomLine.GetAll(), true);
+	pPortEdit->SetMinimum(1);
+	pPortEdit->SetMaximum(65535);
 	pPortEdit->SetColors(C4StartupEditBGColor, C4StartupFontClr, C4StartupEditBorderColor);
 	pPortEdit->SetFont(pUseFont);
-	pPortEdit->InsertText(FormatString("%d", fEnabled ? static_cast<int>(*pConfigValue) : static_cast<int>(iDefault)).getData(), false);
+	pPortEdit->SetValue(fEnabled ? *pConfigValue : iDefault, false);
 	pPortEdit->SetMaxText(10); // 65535 is five characters long - but allow some more for easier editing
 	pPortEdit->SetVisibility(fEnabled);
 	AddElement(pPortEdit);
@@ -506,7 +483,7 @@ int32_t C4StartupOptionsDlg::NetworkPortConfig::GetPort()
 	if (!pEnableCheck->GetChecked())
 		return 0;
 	else
-		return atoi(pPortEdit->GetText());
+		return pPortEdit->GetValue();
 }
 
 bool C4StartupOptionsDlg::NetworkPortConfig::GetControlSize(int *piWdt, int *piHgt)
@@ -1145,7 +1122,7 @@ void C4StartupOptionsDlg::OnResetConfigBtn(C4GUI::Control *btn)
 void C4StartupOptionsDlg::OnScaleSliderChanged(int32_t val)
 {
 	iNewScale = val + minScale;
-	pScaleEdit->SetText(FormatString("%d", iNewScale).getData(), true);
+	pScaleEdit->SetValue(iNewScale, true);
 }
 
 void C4StartupOptionsDlg::OnTestScaleBtn(C4GUI::Control *)
