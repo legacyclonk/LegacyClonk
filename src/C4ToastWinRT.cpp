@@ -36,7 +36,7 @@ std::unique_ptr<C4Toast> C4ToastSystemWinRT::CreateToast()
 C4ToastWinRT::C4ToastWinRT()
 	: notification{MapHResultError(&ToastNotificationManager::GetTemplateContent, ToastTemplateType::ToastText02)},
 	  notifier{MapHResultError([] { return ToastNotificationManager::CreateToastNotifier(_CRT_WIDE(STD_APPUSERMODELID)); })},
-	  eventHandler{std::move(MapHResultError([this] { return winrt::make_self<EventHandler>(notification, C4Toast::eventHandler); }))}
+	  eventHandler{MapHResultError([this] { return winrt::make_self<EventHandler>(notification, C4Toast::eventHandler); })}
 {
 }
 
