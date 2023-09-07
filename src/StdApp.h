@@ -252,7 +252,6 @@ public:
 	virtual ~CStdApp();
 
 	bool Active{false};
-	bool MMTimer;
 
 	virtual void Clear();
 	virtual void Execute();

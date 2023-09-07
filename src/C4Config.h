@@ -65,7 +65,6 @@ public:
 	char MissionAccess[CFG_MaxString + 1];
 	bool FPS;
 	bool Record;
-	bool MMTimer;    // use multimedia-timers
 	bool FairCrew;   // don't use permanent crew physicals
 	int32_t FairCrewStrength; // strength of clonks in fair crew mode
 	int32_t MouseAScroll; // auto scroll strength
@@ -215,7 +214,6 @@ class C4ConfigStartup
 {
 public:
 	// config for do-not-show-this-msg-again-messages
-	bool HideMsgMMTimerChange;
 	bool HideMsgStartDedicated;
 	bool HideMsgPlrTakeOver;
 	bool HideMsgPlrNoTakeOver;

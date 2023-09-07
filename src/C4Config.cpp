@@ -87,9 +87,7 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ScrollSmooth,            "ScrollSmooth",            4));
 	pComp->Value(mkNamingAdapt(AlwaysDebug,             "DebugMode",               false,         false, true));
 	pComp->Value(mkNamingAdapt(AllowScriptingInReplays, "AllowScriptingInReplays", false));
-#ifdef _WIN32
-	pComp->Value(mkNamingAdapt(MMTimer, "MMTimer", true));
-#endif
+
 	pComp->Value(mkNamingAdapt(s(RXFontName),        "FontName",             "Endeavour", false, true));
 	pComp->Value(mkNamingAdapt(RXFontSize,           "FontSize",             14,          false, true));
 	pComp->Value(mkNamingAdapt(GamepadEnabled,       "GamepadEnabled",       true));
@@ -786,7 +784,6 @@ int C4ConfigGeneral::GetLanguageSequence(const char *strSource, char *strTarget)
 
 void C4ConfigStartup::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(HideMsgMMTimerChange,     "HideMsgMMTimerChange",     false));
 	pComp->Value(mkNamingAdapt(HideMsgStartDedicated,    "HideMsgStartDedicated",    false));
 	pComp->Value(mkNamingAdapt(HideMsgPlrTakeOver,       "HideMsgPlrTakeOver",       false));
 	pComp->Value(mkNamingAdapt(HideMsgPlrNoTakeOver,     "HideMsgPlrNoTakeOver",     false));

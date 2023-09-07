@@ -80,18 +80,6 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	// quit check for nested HandleMessage-calls
 	if (fQuitMsgReceived) return HR_Failure;
 
-	// Calculate timing (emulate it sleepy - gosu-style [pssst]).
-	unsigned int iMSecs;
-	if (fCheckTimer && !MMTimer)
-	{
-		iMSecs = std::max<int>(0, iLastExecute + GetDelay() + iTimerOffset - timeGetTime());
-		if (iTimeout != INFINITE && iTimeout < iMSecs) iMSecs = iTimeout;
-	}
-	else
-	{
-		iMSecs = iTimeout;
-	}
-
 #ifdef USE_CONSOLE
 	// Console input
 	if (!ReadStdInCommand())
@@ -101,7 +89,7 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	const std::array<HANDLE, 2> events{hNetworkEvent, hTimerEvent};
 
 	// Wait for something to happen
-	switch (MsgWaitForMultipleObjects(fCheckTimer ? 2 : 1, events.data(), false, iMSecs, QS_ALLEVENTS))
+	switch (MsgWaitForMultipleObjects(fCheckTimer ? 2 : 1, events.data(), false, iTimeout, QS_ALLEVENTS))
 	{
 	case WAIT_OBJECT_0: // network event
 		// reset event
@@ -110,15 +98,7 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 		OnNetworkEvents();
 		return HR_Message;
 	case WAIT_TIMEOUT: // timeout
-		// Timeout not changed? Real timeout
-		if (MMTimer || iMSecs == iTimeout)
-		{
-			return HR_Timeout;
-		}
-		// Try to make some adjustments. Still only as exact as timeGetTime().
-		if (iLastExecute + GetDelay() > timeGetTime()) iTimerOffset++;
-		if (iLastExecute + GetDelay() < timeGetTime()) iTimerOffset--;
-		// fallthru
+		return HR_Timeout;
 	case WAIT_OBJECT_0 + 1: // timer event / message
 		if (fCheckTimer)
 		{
@@ -154,9 +134,6 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 
 void CStdApp::Execute()
 {
-	// Timer emulation
-	if (!MMTimer)
-		iLastExecute = timeGetTime();
 }
 
 bool CStdApp::InitTimer()
@@ -177,17 +154,15 @@ bool CStdApp::SetCriticalTimer()
 	if (timeBeginPeriod(uCriticalTimerResolution) != TIMERR_NOERROR)
 		return false;
 	fTimePeriod = true;
-	if (MMTimer)
+	// Set critical timer
+	if (!(idCriticalTimer = timeSetEvent(
+		uCriticalTimerDelay, uCriticalTimerResolution,
+		reinterpret_cast<LPTIMECALLBACK>(hTimerEvent),
+		0, TIME_PERIODIC | TIME_CALLBACK_EVENT_SET)))
 	{
-		// Set critical timer
-		if (!(idCriticalTimer = timeSetEvent(
-			uCriticalTimerDelay, uCriticalTimerResolution,
-			reinterpret_cast<LPTIMECALLBACK>(hTimerEvent),
-			0, TIME_PERIODIC | TIME_CALLBACK_EVENT_SET)))
-		{
-			return false;
-		}
+		return false;
 	}
+
 	return true;
 }
 

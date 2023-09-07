@@ -746,11 +746,6 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pSheetGeneral->AddElement(pCheck);
 
-	// MM timer
-	pCheck = new BoolConfig(caSheetProgram.GetGridCell(0, 1, 6, 9, -1, iCheckHgt, true), LoadResStr("IDS_CTL_MMTIMER"), &Config.General.MMTimer, true, &Config.Startup.HideMsgMMTimerChange);
-	pCheck->SetToolTip(LoadResStr("IDS_MSG_MMTIMER_DESC"));
-	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-	pSheetGeneral->AddElement(pCheck);
 	// fair crew strength
 	C4GUI::GroupBox *pGroupFairCrewStrength = new C4GUI::GroupBox(caSheetProgram.GetGridCell(0, 2, 7, 9, -1, pUseFont->GetLineHeight() * 2 + iIndentY2 * 2 + C4GUI_ScrollBarHgt, true, 1, 2));
 	pGroupFairCrewStrength->SetTitle(LoadResStr("IDS_CTL_FAIRCREWSTRENGTH"));
