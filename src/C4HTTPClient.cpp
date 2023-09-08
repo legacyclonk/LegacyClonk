@@ -216,7 +216,7 @@ int C4HTTPClient::XferInfoFunction(void *const userData, const std::int64_t down
 		return 1;
 	}
 
-	return CURL_PROGRESSFUNC_CONTINUE;
+	return 0;
 }
 
 void C4HTTPClient::LockFunction(CURL *, const int data, const int access, void *const userData)
