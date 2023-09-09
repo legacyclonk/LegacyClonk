@@ -31,7 +31,12 @@
 #ifdef _WIN32
 
 CStdEvent::CStdEvent(const bool initialState)
-	: event{CreateEvent(nullptr, true, initialState, nullptr)}
+	: CStdEvent{initialState, true}
+{
+}
+
+CStdEvent::CStdEvent(const bool initialState, const bool manualReset)
+	: event{CreateEvent(nullptr, manualReset, initialState, nullptr)}
 {
 	if (!event)
 	{
@@ -73,6 +78,11 @@ bool CStdEvent::WaitFor(const std::uint32_t milliseconds)
 	default:
 		throw std::runtime_error{"WaitForSingleObject failed"};
 	}
+}
+
+CStdEvent CStdEvent::AutoReset(const bool initialState)
+{
+	return {initialState, false};
 }
 
 #else

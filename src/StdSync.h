@@ -74,10 +74,13 @@ public:
 class CStdEvent
 {
 public:
-
-public:
 	CStdEvent(bool initialState = false);
 	~CStdEvent();
+
+#ifdef _WIN32
+private:
+	CStdEvent(bool initialState, bool manualReset);
+#endif
 
 public:
 	void Set();
@@ -86,6 +89,9 @@ public:
 
 #ifdef _WIN32
 	HANDLE GetEvent() const { return event; }
+
+public:
+	static CStdEvent AutoReset(bool initialState = false);
 #else
 	std::array<int, 2> GetFDs() const { return {fd[0], fd[1]}; }
 
