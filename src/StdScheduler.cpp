@@ -221,15 +221,13 @@ bool StdSchedulerThread::Start()
 	if (fThread) Stop();
 	// begin thread
 	fRunThreadRun = true;
-	thread = std::thread{[this]
+	thread = C4Thread::Create({"StdSchedulerThread"}, [this]
 	{
-		C4Thread::SetCurrentThreadName("StdSchedulerThread");
-
 		while (fRunThreadRun)
 		{
 			Execute();
 		}
-	}};
+	});
 	fThread = true;
 	// success?
 	return true;

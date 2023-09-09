@@ -1948,23 +1948,21 @@ bool C4Game::Preload()
 
 		context->Deselect();
 		pGL->GetMainCtx().Select();
-		PreloadThread = std::thread{[](std::unique_ptr<CStdGLCtx> preloadContext)
+		PreloadThread = C4Thread::Create({"PreloadThread"}, [](std::unique_ptr<CStdGLCtx> preloadContext)
 		{
-			C4Thread::SetCurrentThreadName("PreloadThread");
 			preloadContext->Select(false, true);
 			CStdLock lock{&Game.PreloadMutex};
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
 			preloadContext->Finish();
 			preloadContext->Deselect(true);
 		},
-		std::move(context)};
+		std::move(context));
 #else
-		PreloadThread = std::thread{[]
+		PreloadThread = C4Thread::Create({"PreloadThread"}, []
 		{
-			C4Thread::SetCurrentThreadName("PreloadThread");
 			CStdLock lock{&Game.PreloadMutex};
 			Game.InitGameFirstPart() && Game.InitGameSecondPart(Game.ScenarioFile, nullptr, true, true);
-		}};
+		});
 #endif
 
 		return true;

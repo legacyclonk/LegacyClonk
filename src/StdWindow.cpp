@@ -41,7 +41,7 @@ CStdWindow::~CStdWindow()
 
 bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
 {
-	com = C4Com{winrt::apartment_type::multi_threaded};
+	com = C4Com{winrt::apartment_type::single_threaded};
 
 	const WNDCLASSEX windowClass{GetWindowClass(app->hInstance)};
 	RegisterClassEx(&windowClass);
@@ -67,6 +67,7 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 		if (list && SUCCEEDED(list->HrInit()))
 		{
 			taskBarList = std::move(list);
+			taskBarListRef = taskBarList;
 		}
 	}
 
@@ -173,9 +174,9 @@ void CStdWindow::SetDisplayMode(const DisplayMode mode)
 
 	ShowWindow(hWindow, SW_SHOW);
 
-	if (taskBarList)
+	if (taskBarListRef)
 	{
-		taskBarList->MarkFullscreenWindow(hWindow, fullscreen);
+		taskBarListRef.get()->MarkFullscreenWindow(hWindow, fullscreen);
 	}
 }
 
@@ -183,14 +184,16 @@ void CStdWindow::SetProgress(const uint32_t progress)
 {
 	if (taskBarList)
 	{
+		const auto list = taskBarListRef.get();
+
 		if (progress == 100)
 		{
-			taskBarList->SetProgressState(hWindow, TBPF_NOPROGRESS);
+			list->SetProgressState(hWindow, TBPF_NOPROGRESS);
 		}
 		else
 		{
-			taskBarList->SetProgressState(hWindow, TBPF_INDETERMINATE);
-			taskBarList->SetProgressValue(hWindow, progress, 100);
+			list->SetProgressState(hWindow, TBPF_INDETERMINATE);
+			list->SetProgressValue(hWindow, progress, 100);
 		}
 	}
 }

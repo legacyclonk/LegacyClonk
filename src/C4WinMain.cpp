@@ -102,7 +102,7 @@ int ClonkMain(const HINSTANCE instance, const int cmdShow, const int argc, char 
 
 	try
 	{
-		com = C4Com{winrt::apartment_type::multi_threaded};
+		com = C4Com{winrt::apartment_type::single_threaded};
 	}
 	catch (const winrt::hresult_error &e)
 	{
