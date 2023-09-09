@@ -70,14 +70,15 @@ private:
 	// Process list
 	std::unordered_set<StdSchedulerProc *> procs;
 
-	// Unblocker
-	CStdEvent unblocker;
+
+#ifdef _WIN32
+	CStdEvent unblocker{CStdEvent::AutoReset()};
 
 	// Dummy lists (preserved to reduce allocs)
-#ifdef _WIN32
 	std::vector<HANDLE> eventHandles;
 	std::vector<StdSchedulerProc *> eventProcs;
 #else
+	CStdEvent unblocker;
 	std::vector<pollfd> fds{{.fd = unblocker.GetFDs()[0], .events = POLLIN}};
 #endif
 
