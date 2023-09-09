@@ -85,12 +85,18 @@ bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, const std::an
 	PushLock.Clear();
 #ifdef _WIN32
 	// post message to main thread
-	bool fSuccess = !!SetEvent(Application.hNetworkEvent);
-	if (!fSuccess)
+	try
+	{
+		Application.NetworkEvent.Set();
+	}
+	catch (const std::runtime_error &)
+	{
 		// ThreadLog most likely won't work here, so Log will be used directly in hope
 		// it doesn't screw too much
 		LogFatal("Network: could not post message to main thread!");
-	return fSuccess;
+	}
+
+	return true;
 #else
 	return Application.SignalNetworkEvent();
 #endif

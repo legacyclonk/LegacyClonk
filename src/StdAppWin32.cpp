@@ -30,8 +30,6 @@
 #include <conio.h>
 
 CStdApp::CStdApp() : Active(false), hInstance(nullptr), fQuitMsgReceived(false),
-	hTimerEvent(CreateEvent(nullptr, TRUE, FALSE, nullptr)),
-	hNetworkEvent(CreateEvent(nullptr, TRUE, FALSE, nullptr)),
 	idCriticalTimer(0),
 	uCriticalTimerDelay(28),
 	uCriticalTimerResolution(5),
@@ -39,11 +37,7 @@ CStdApp::CStdApp() : Active(false), hInstance(nullptr), fQuitMsgReceived(false),
 	iLastExecute(0),
 	iTimerOffset(0) {}
 
-CStdApp::~CStdApp()
-{
-	// Close events
-	CloseHandle(hTimerEvent); CloseHandle(hNetworkEvent);
-}
+CStdApp::~CStdApp() = default;
 
 void CStdApp::Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine)
 {
@@ -86,14 +80,12 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 		return HR_Failure;
 #endif
 
-	const std::array<HANDLE, 2> events{hNetworkEvent, hTimerEvent};
+	const std::array<HANDLE, 2> events{NetworkEvent.GetEvent(), TimerEvent.GetEvent()};
 
 	// Wait for something to happen
 	switch (MsgWaitForMultipleObjects(fCheckTimer ? 2 : 1, events.data(), false, iTimeout, QS_ALLEVENTS))
 	{
 	case WAIT_OBJECT_0: // network event
-		// reset event
-		ResetEvent(hNetworkEvent);
 		// call network class to handle it
 		OnNetworkEvents();
 		return HR_Message;
@@ -102,8 +94,6 @@ C4AppHandleResult CStdApp::HandleMessage(unsigned int iTimeout, bool fCheckTimer
 	case WAIT_OBJECT_0 + 1: // timer event / message
 		if (fCheckTimer)
 		{
-			// reset event
-			ResetEvent(hTimerEvent);
 			// execute
 			Execute();
 			// return it
@@ -157,7 +147,7 @@ bool CStdApp::SetCriticalTimer()
 	// Set critical timer
 	if (!(idCriticalTimer = timeSetEvent(
 		uCriticalTimerDelay, uCriticalTimerResolution,
-		reinterpret_cast<LPTIMECALLBACK>(hTimerEvent),
+		reinterpret_cast<LPTIMECALLBACK>(TimerEvent.GetEvent()),
 		0, TIME_PERIODIC | TIME_CALLBACK_EVENT_SET)))
 	{
 		return false;

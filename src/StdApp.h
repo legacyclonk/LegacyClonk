@@ -302,10 +302,10 @@ public:
 #ifdef _WIN32
 	HINSTANCE hInstance;
 	int iLastExecute, iTimerOffset;
-	HANDLE hTimerEvent, // set periodically by critical timer (C4Engine)
-		hNetworkEvent; // set if a network event occured
+	CStdEvent TimerEvent{CStdEvent::AutoReset()}; // set periodically by critical timer (C4Engine)
+	CStdEvent NetworkEvent{CStdEvent::AutoReset()}; // set if a network event occured
 	void Init(HINSTANCE hInst, int nCmdShow, char *szCmdLine);
-	void NextTick(bool fYield) { SetEvent(hTimerEvent); if (fYield) Sleep(0); }
+	void NextTick(bool fYield) { TimerEvent.Set(); if (fYield) Sleep(0); }
 	bool IsShiftDown() { return GetKeyState(VK_SHIFT) < 0; }
 	bool IsControlDown() { return GetKeyState(VK_CONTROL) < 0; }
 	bool IsAltDown() { return GetKeyState(VK_MENU) < 0; }
