@@ -27,83 +27,8 @@
 class C4ChatControl : public C4GUI::Window, private C4InteractiveThread::Callback
 {
 private:
-	// one open channel or query
-	class ChatSheet : public C4GUI::Tabular::Sheet
-	{
-	public:
-		// one item in the nick list
-		class NickItem : public C4GUI::Window
-		{
-		private:
-			C4GUI::Icon *pStatusIcon; // status icon indicating channel status (e.g. operator)
-			C4GUI::Label *pNameLabel; // the nickname
-			bool fFlaggedExisting; // flagged for existance; used by user update func
-			int32_t iStatus;
-
-		public:
-			NickItem(class C4Network2IRCUser *pByUser);
-
-		protected:
-			virtual void UpdateOwnPos() override;
-
-		public:
-			const char *GetNick() const { return pNameLabel->GetText(); }
-			int32_t GetStatus() const { return iStatus; }
-
-			void Update(class C4Network2IRCUser *pByUser);
-			void SetFlaggedExisting(bool fToVal) { fFlaggedExisting = fToVal; }
-			bool IsFlaggedExisting() const { return fFlaggedExisting; }
-
-			static int32_t SortFunc(const C4GUI::Element *pEl1, const C4GUI::Element *pEl2, void *);
-		};
-
-		enum SheetType { CS_Server, CS_Channel, CS_Query };
-
-	private:
-		C4ChatControl *pChatControl;
-		C4GUI::TextWindow *pChatBox;
-		C4GUI::ListBox *pNickList;
-		C4GUI::WoodenLabel *pInputLbl;
-		C4GUI::Edit *pInputEdit;
-		int32_t iBackBufferIndex; // chat message history index
-		SheetType eType;
-		StdStrBuf sIdent;
-		bool fHasUnread;
-		StdStrBuf sChatTitle; // topic for channels; name+ident for queries; server name for server sheet
-
-		C4KeyBinding *pKeyHistoryUp, *pKeyHistoryDown; // keys used to scroll through chat history
-
-	public:
-		ChatSheet(C4ChatControl *pChatControl, const char *szTitle, const char *szIdent, SheetType eType);
-		virtual ~ChatSheet();
-
-		C4GUI::Edit *GetInputEdit() const { return pInputEdit; }
-		SheetType GetSheetType() const { return eType; }
-		const char *GetIdent() const { return sIdent.getData(); }
-		void SetIdent(const char *szToIdent) { sIdent.Copy(szToIdent); }
-		const char *GetChatTitle() const { return sChatTitle.getData(); }
-		void SetChatTitle(const char *szNewTitle) { sChatTitle.Copy(szNewTitle); }
-
-		void AddTextLine(const char *szText, uint32_t dwClr);
-		void DoError(const char *szError);
-		void Update(bool fLock);
-		void UpdateUsers(C4Network2IRCUser *pUsers);
-		void ResetUnread(); // mark messages as read
-
-	protected:
-		virtual void UpdateSize() override;
-		virtual void OnShown(bool fByUser) override;
-		virtual void UserClose() override; // user pressed close button: Close queries, part channels, etc.
-
-		C4GUI::Edit::InputResult OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore);
-		bool KeyHistoryUpDown(bool fUp);
-		void OnNickDblClick(class C4GUI::Element *pEl);
-
-	private:
-		NickItem *GetNickItem(const char *szByNick);
-		NickItem *GetFirstNickItem() { return pNickList ? static_cast<NickItem *>(pNickList->GetFirst()) : nullptr; }
-		NickItem *GetNextNickItem(NickItem *pPrev) { return static_cast<NickItem *>(pPrev->GetNext()); }
-	};
+	class ChatSheet;
+	enum SheetType { CS_Server, CS_Channel, CS_Query };
 
 private:
 	C4GUI::Tabular *pTabMain, *pTabChats;
@@ -124,7 +49,7 @@ public:
 
 protected:
 	virtual void UpdateSize() override;
-	C4GUI::Edit::InputResult OnLoginDataEnter(C4GUI::Edit *edt, bool fPasting, bool fPastingMore); // advance focus when user presses enter in one of the login edits
+	C4GUI::InputResult OnLoginDataEnter(C4GUI::Edit *edt, bool fPasting, bool fPastingMore); // advance focus when user presses enter in one of the login edits
 	void OnConnectBtn(C4GUI::Control *btn); // callback: connect button pressed
 
 public:
@@ -146,8 +71,8 @@ public:
 private:
 	static bool IsServiceName(const char *szName);
 	ChatSheet *GetActiveChatSheet();
-	ChatSheet *GetSheetByTitle(const char *szTitle, C4ChatControl::ChatSheet::SheetType eType);
-	ChatSheet *GetSheetByIdent(const char *szIdent, C4ChatControl::ChatSheet::SheetType eType);
+	ChatSheet *GetSheetByTitle(const char *szTitle, C4ChatControl::SheetType eType);
+	ChatSheet *GetSheetByIdent(const char *szIdent, C4ChatControl::SheetType eType);
 	ChatSheet *GetServerSheet();
 	void ClearChatSheets();
 

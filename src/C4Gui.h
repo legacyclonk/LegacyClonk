@@ -3,7 +3,7 @@
  *
  * Copyright (c) RedWolf Design
  * Copyright (c) 2001, Sven2
- * Copyright (c) 2017-2021, The LegacyClonk Team and contributors
+ * Copyright (c) 2017-2023, The LegacyClonk Team and contributors
  *
  * Distributed under the terms of the ISC license; see accompanying file
  * "COPYING" for details.
@@ -27,7 +27,6 @@
 #define ConsoleDlgClassName "C4GUIdlg"
 #define ConsoleDlgWindowStyle (WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX)
 
-#include "C4Constants.h"
 #include "C4FacetEx.h"
 #include "C4ForwardDeclarations.h"
 #include "C4GamePadCon.h"
@@ -191,6 +190,23 @@ class CloseIconButton; class OKIconButton; class CancelIconButton;
 
 // C4GuiEdit.cpp
 class Edit;
+class LabeledEdit;
+class RenameEdit;
+
+enum InputResult // action to be taken when text is confirmed with enter
+{
+	IR_None = 0,  // do nothing and continue pasting
+	IR_CloseDlg,  // stop any pastes and close parent dialog successfully
+	IR_CloseEdit, // stop any pastes and remove this control
+	IR_Abort,     // do nothing and stop any pastes
+};
+
+enum RenameResult
+{
+	RR_Invalid = 0, // rename not accepted; continue editing
+	RR_Accepted,    // rename accepted; delete control
+	RR_Deleted,     // control deleted - leave everything
+};
 
 // C4GuiCheckBox.cpp
 class CheckBox;
@@ -1204,209 +1220,6 @@ public:
 		: Base(fctBase, fctHighlight, rtfBounds, cHotkey), pCBTarget(pCBTarget), pCallbackFn(pFn) {}
 };
 
-// an edit control to type text in
-class Edit : public Control
-{
-public:
-	Edit(const C4Rect &rtBounds, bool fFocusEdit = false);
-	~Edit();
-
-	enum InputResult // action to be taken when text is confirmed with enter
-	{
-		IR_None = 0,  // do nothing and continue pasting
-		IR_CloseDlg,  // stop any pastes and close parent dialog successfully
-		IR_CloseEdit, // stop any pastes and remove this control
-		IR_Abort,     // do nothing and stop any pastes
-	};
-
-private:
-	enum CursorOperation { COP_BACK, COP_DELETE, COP_LEFT, COP_RIGHT, COP_HOME, COP_END, };
-
-	bool KeyCursorOp(C4KeyCodeEx key, CursorOperation op);
-	bool KeyEnter();
-	bool KeyCopy() { Copy(); return true; }
-	bool KeyPaste() { Paste(); return true; }
-	bool KeyCut() { Cut(); return true; }
-	bool KeySelectAll() { SelectAll(); return true; }
-
-	class C4KeyBinding *RegisterCursorOp(CursorOperation op, C4KeyCode key, const char *szName, C4CustomKey::Priority eKeyPrio);
-
-	class C4KeyBinding *pKeyCursorBack, *pKeyCursorDel, *pKeyCursorLeft, *pKeyCursorRight, *pKeyCursorHome, *pKeyCursorEnd,
-		*pKeyEnter, *pKeyCopy, *pKeyPaste, *pKeyCut, *pKeySelAll;
-
-protected:
-	// context callbacks
-	ContextMenu *OnContext(C4GUI::Element *pListItem, int32_t iX, int32_t iY);
-	void OnCtxCopy(C4GUI::Element *pThis)   { Copy(); }
-	void OnCtxPaste(C4GUI::Element *pThis)  { Paste(); }
-	void OnCtxCut(C4GUI::Element *pThis)    { Cut(); }
-	void OnCtxClear(C4GUI::Element *pThis)  { DeleteSelection(); }
-	void OnCtxSelAll(C4GUI::Element *pThis) { SelectAll(); }
-
-private:
-	void Deselect(); // clear selection range
-
-public:
-	bool InsertText(const char *szText, bool fUser); // insert text at cursor pos (returns whether all text could be inserted)
-	void ClearText(); // remove all the text
-	void DeleteSelection(); // deletes the selected text. Adjust cursor position if necessary
-	bool SetText(const char *szText, bool fUser) { ClearText(); return InsertText(szText, fUser); }
-	void SetPasswordMask(char cNewPasswordMask) { cPasswordMask = cNewPasswordMask; } // mask edit box contents using the given character
-
-private:
-	int32_t GetCharPos(int32_t iControlXPos); // get character index of pixel position; always resides within current text length
-	void EnsureBufferSize(int32_t iMinBufferSize); // ensure buffer has desired size
-	void ScrollCursorInView(); // ensure cursor pos is visible in edit control
-	bool DoFinishInput(bool fPasting, bool fPastingMore); // do OnFinishInput callback and process result - returns whether pasting operation should be continued
-
-	bool Copy(); bool Cut(); bool Paste(); // clipboard operations
-
-protected:
-	CStdFont *pFont; // font for edit
-	char *Text; // edit text
-	uint32_t dwBGClr, dwFontClr, dwBorderColor; // drawing colors for edit box
-	int32_t iBufferSize; // size of current buffer
-	int32_t iCursorPos; // cursor position: char, before which the cursor is located
-	int32_t iSelectionStart, iSelectionEnd; // selection range (start may be larger than end)
-	int32_t iMaxTextLength; // maximum number of characters to be input here
-	uint32_t dwLastInputTime; // time of last input (for cursor flashing)
-	int32_t iXScroll; // horizontal scrolling
-	char cPasswordMask; // character to be used for masking the contents. 0 for none.
-
-	bool fLeftBtnDown; // flag whether left mouse button is down or not
-
-	virtual bool CharIn(const char *c) override; // input: character key pressed - should return false for none-character-inputs
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam) override; // input: mouse movement or buttons
-	virtual void DoDragging(CMouse &rMouse, int32_t iX, int32_t iY, uint32_t dwKeyParam) override; // dragging: allow text selection outside the component
-	virtual bool IsFocusOnClick() override { return true; } // edit fields do get focus on click
-	virtual void OnGetFocus(bool fByMouse) override; // edit control gets focus
-	virtual void OnLooseFocus() override; // edit control looses focus
-
-	virtual void DrawElement(C4FacetEx &cgo) override; // draw edit control
-
-	// called when user presses enter in single-line edit control - closes the current dialog
-	virtual InputResult OnFinishInput(bool fPasting, bool fPastingMore) { return IR_CloseDlg; }
-	virtual void OnAbortInput() {}
-
-	// get margins from bounds to client rect
-	virtual int32_t GetMarginTop() override    { return 2; }
-	virtual int32_t GetMarginLeft() override   { return 4; }
-	virtual int32_t GetMarginRight() override  { return 4; }
-	virtual int32_t GetMarginBottom() override { return 2; }
-
-public:
-	const char *GetText() { return Text; }
-	void SelectAll(); // select all the text
-
-	static int32_t GetDefaultEditHeight();
-	static int32_t GetCustomEditHeight(CStdFont *pUseFont);
-
-	bool GetCurrentWord(char *szTargetBuf, int32_t iMaxTargetBufLen); // get word before cursor pos (for nick completion)
-
-	// layout
-	void SetFont(CStdFont *pToFont) { pFont = pToFont; ScrollCursorInView(); }
-
-	void SetColors(uint32_t dwNewBGClr, uint32_t dwNewFontClr, uint32_t dwNewBorderColor)
-	{
-		dwBGClr = dwNewBGClr; dwFontClr = dwNewFontClr; dwBorderColor = dwNewBorderColor;
-	}
-
-	void SetMaxText(int32_t iTo) { iMaxTextLength = iTo; }
-};
-
-// an edit doing some callback
-template <class CallbackCtrl> class CallbackEdit : public Edit
-{
-private:
-	CallbackCtrl *pCBCtrl;
-
-protected:
-	typedef InputResult(CallbackCtrl::*CBFunc)(Edit *, bool, bool);
-	typedef void (CallbackCtrl::*CBAbortFunc)();
-	CBFunc pCBFunc; CBAbortFunc pCBAbortFunc;
-
-	virtual InputResult OnFinishInput(bool fPasting, bool fPastingMore) override
-	{
-		if (pCBFunc && pCBCtrl) return (pCBCtrl->*pCBFunc)(this, fPasting, fPastingMore); else return IR_CloseDlg;
-	}
-
-	virtual void OnAbortInput() override
-	{
-		if (pCBAbortFunc && pCBCtrl)(pCBCtrl->*pCBAbortFunc)();
-	}
-
-public:
-	CallbackEdit(const C4Rect &rtBounds, CallbackCtrl *pCBCtrl, CBFunc pCBFunc, CBAbortFunc pCBAbortFunc = nullptr)
-		: Edit(rtBounds), pCBCtrl(pCBCtrl), pCBFunc(pCBFunc), pCBAbortFunc(pCBAbortFunc) {}
-};
-
-// an edit control that renames a label - some less decoration; abort on Escape and focus loss
-class RenameEdit : public Edit
-{
-private:
-	C4KeyBinding *pKeyAbort; // key bindings
-	bool fFinishing; // set during deletion process
-	Label *pForLabel; // label that is being renamed
-	Control *pPrevFocusCtrl; // previous focus element to be restored after rename
-
-public:
-	enum RenameResult
-	{
-		RR_Invalid = 0, // rename not accepted; continue editing
-		RR_Accepted,    // rename accepted; delete control
-		RR_Deleted,     // control deleted - leave everything
-	};
-
-public:
-	RenameEdit(Label *pLabel); // construct for label; add element; set focus
-	virtual ~RenameEdit();
-
-	void Abort();
-
-private:
-	void FinishRename(); // renaming aborted or finished - remove this element and restore label
-
-protected:
-	bool KeyAbort() { Abort(); return true; }
-	virtual InputResult OnFinishInput(bool fPasting, bool fPastingMore) override; // forward last input to OnOKRename
-	virtual void OnLooseFocus() override; // callback when control looses focus: OK input
-
-	virtual void OnCancelRename() {} // renaming was aborted
-	virtual RenameResult OnOKRename(const char *szNewName) = 0; // rename performed - return whether name was accepted
-};
-
-template <class CallbackDlg, class ParType> class CallbackRenameEdit : public RenameEdit
-{
-protected:
-	typedef void (CallbackDlg::*CBCancelFunc)(ParType);
-	typedef RenameResult(CallbackDlg::*CBOKFunc)(ParType, const char *);
-
-	CBCancelFunc pCBCancelFunc; CBOKFunc pCBOKFunc;
-	CallbackDlg *pDlg; ParType par;
-
-	virtual void OnCancelRename() override { if (pDlg && pCBCancelFunc)(pDlg->*pCBCancelFunc)(par); }
-	virtual RenameResult OnOKRename(const char *szNewName) override { return (pDlg && pCBOKFunc) ? (pDlg->*pCBOKFunc)(par, szNewName) : RR_Accepted; }
-
-public:
-	CallbackRenameEdit(Label *pForLabel, CallbackDlg *pDlg, const ParType &par, CBOKFunc pCBOKFunc, CBCancelFunc pCBCancelFunc)
-		: RenameEdit(pForLabel), pDlg(pDlg), par(par), pCBOKFunc(pCBOKFunc), pCBCancelFunc(pCBCancelFunc) {}
-};
-
-// editbox below descriptive label sharing one window for common tooltip
-class LabeledEdit : public C4GUI::Window
-{
-public:
-	LabeledEdit(const C4Rect &rcBounds, const char *szName, bool fMultiline, const char *szPrefText = nullptr, CStdFont *pUseFont = nullptr, uint32_t dwTextClr = C4GUI_CaptionFontClr);
-
-private:
-	C4GUI::Edit *pEdit;
-
-public:
-	const char *GetText() const { return pEdit->GetText(); }
-	C4GUI::Edit *GetEdit() const { return pEdit; }
-	static bool GetControlSize(int *piWdt, int *piHgt, const char *szForText, CStdFont *pForFont, bool fMultiline);
-};
-
 // checkbox with a text label right of it
 class CheckBox : public Control
 {
@@ -1456,243 +1269,6 @@ public:
 	}
 
 	static bool GetStandardCheckBoxSize(int *piWdt, int *piHgt, const char *szForCaptionText, CStdFont *pUseFont); // get needed size to construct a checkbox
-};
-
-// a vertical list of elements
-class ListBox : public Control
-{
-private:
-	class C4KeyBinding *pKeyContext, *pKeyUp, *pKeyDown, *pKeyPageUp, *pKeyPageDown, *pKeyHome, *pKeyEnd, *pKeyActivate, *pKeyLeft, *pKeyRight;
-
-	bool KeyContext();
-	bool KeyUp();
-	bool KeyDown();
-	bool KeyLeft();
-	bool KeyRight();
-	bool KeyPageUp();
-	bool KeyPageDown();
-	bool KeyHome();
-	bool KeyEnd();
-	bool KeyActivate();
-
-protected:
-	int32_t iMultiColItemWidth; // if nonzero, the listbox is multicolumn and the column count depends on how many items fit in
-	int32_t iColCount; // number of columns (usually 1)
-	ScrollWindow *pClientWindow; // client scrolling window
-	Element *pSelectedItem; // selected list item
-	BaseCallbackHandler *pSelectionChangeHandler, *pSelectionDblClickHandler;
-	bool fDrawBackground; // whether darker background is to be drawn
-	bool fDrawBorder; // whether 3D frame around box shall be drawn or nay
-	bool fSelectionDisabled; // if set, no entries can be selected
-
-	virtual void DrawElement(C4FacetEx &cgo) override; // draw listbox
-
-	virtual bool IsFocused(Control *pCtrl) override
-	{
-		// subcontrol also counts as focused if the list has focus and the subcontrol is selected
-		return Control::IsFocused(pCtrl) || (HasFocus() && pSelectedItem == pCtrl);
-	}
-
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam) override; // input: mouse movement or buttons
-	virtual bool IsFocusOnClick() override { return true; } // list boxes do get focus on click
-	virtual Control *IsFocusElement() override { return this; } // this control can gain focus
-	virtual void OnGetFocus(bool fByMouse) override; // callback when control gains focus - select a list item if none are selected
-	virtual bool CharIn(const char *c) override; // character input for direct list element selection
-
-	virtual void AfterElementRemoval() override
-	{
-		Container::AfterElementRemoval(); UpdateElementPositions();
-	} // called by ScrollWindow to parent after an element has been removed
-
-	void UpdateColumnCount();
-
-public:
-	ListBox(const C4Rect &rtBounds, int32_t iMultiColItemWidth = 0);
-	virtual ~ListBox();
-
-	virtual void RemoveElement(Element *pChild) override; // remove child component
-	bool AddElement(Element *pChild, int32_t iIndent = 0); // add element and adjust its pos
-	bool InsertElement(Element *pChild, Element *pInsertBefore, int32_t iIndent = 0); // insert element and adjust its pos
-	virtual void ElementSizeChanged(Element *pOfElement) override; // called when an element size is changed
-	virtual void ElementPosChanged(Element *pOfElement) override; // called when an element position is changed
-
-	int32_t GetItemWidth() { return iMultiColItemWidth ? iMultiColItemWidth : pClientWindow->GetClientRect().Wdt; }
-
-	void SelectionChanged(bool fByUser); // pSelectedItem changed: sound, tooltip, etc.
-
-	void SetSelectionChangeCallbackFn(BaseCallbackHandler *pToHandler) // update selection change handler
-	{
-		if (pSelectionChangeHandler) pSelectionChangeHandler->DeRef();
-		if ((pSelectionChangeHandler = pToHandler)) pToHandler->Ref();
-	}
-
-	void SetSelectionDblClickFn(BaseCallbackHandler *pToHandler) // update selection doubleclick handler
-	{
-		if (pSelectionDblClickHandler) pSelectionDblClickHandler->DeRef();
-		if ((pSelectionDblClickHandler = pToHandler)) pSelectionDblClickHandler->Ref();
-	}
-
-	void ScrollToBottom() // set scrolling to bottom range
-	{
-		if (pClientWindow) pClientWindow->ScrollToBottom();
-	}
-
-	void ScrollItemInView(Element *pItem); // set scrolling so a specific item is visible
-	void FreezeScrolling() { pClientWindow->Freeze(); }
-	void UnFreezeScrolling() { pClientWindow->UnFreeze(); }
-
-	// change style
-	void SetDecoration(bool fDrawBG, ScrollBarFacets *pToGfx, bool fAutoScroll, bool fDrawBorder = false)
-	{
-		fDrawBackground = fDrawBG; this->fDrawBorder = fDrawBorder; if (pClientWindow) pClientWindow->SetDecoration(pToGfx, fAutoScroll);
-	}
-
-	void SetSelectionDiabled(bool fToVal = true) { fSelectionDisabled = fToVal; }
-
-	// get head and tail list items
-	Element *GetFirst() { return pClientWindow ? pClientWindow->GetFirst() : nullptr; }
-	Element *GetLast()  { return pClientWindow ? pClientWindow->GetLast()  : nullptr; }
-
-	// get margins from bounds to client rect
-	virtual int32_t GetMarginTop() override    { return 3; }
-	virtual int32_t GetMarginLeft() override   { return 3; }
-	virtual int32_t GetMarginRight() override  { return 3; }
-	virtual int32_t GetMarginBottom() override { return 3; }
-
-	Element *GetSelectedItem() { return pSelectedItem; } // get focused listbox item
-	bool IsScrollingActive()    { return pClientWindow && pClientWindow->IsScrollingActive(); }
-	bool IsScrollingNecessary() { return pClientWindow && pClientWindow->IsScrollingNecessary(); }
-	void SelectEntry(Element *pNewSel, bool fByUser);
-	void SelectFirstEntry(bool fByUser) { SelectEntry(GetFirst(), fByUser); }
-	void SelectNone(bool fByUser) { SelectEntry(nullptr, fByUser); }
-	bool IsMultiColumn() const { return iColCount > 1; }
-	int32_t ContractToElementHeight(); // make smaller if elements don't use up all of the available height. Return amount by which list box got contracted
-
-	void UpdateElementPositions(); // reposition list items so they are stacked vertically
-	void UpdateElementPosition(Element *pOfElement, int32_t iIndent); // update pos for one specific element
-	virtual void UpdateSize() override { Control::UpdateSize(); if (pClientWindow) { pClientWindow->UpdateSize(); UpdateElementPositions(); } }
-
-	virtual bool IsSelectedChild(Element *pChild) override { return pChild == pSelectedItem || (pSelectedItem && pSelectedItem->IsParentOf(pChild)); }
-
-	typedef int32_t(*SortFunction)(const Element *pEl1, const Element *pEl2, void *par);
-	void SortElements(SortFunction SortFunc, void *par); // sort list items
-};
-
-// tabbing panel
-class Tabular : public Control
-{
-public:
-	// sheet covering the client area of a tabular
-	class Sheet : public Window
-	{
-	protected:
-		StdStrBuf sTitle; // sheet label
-		int32_t icoTitle; // sheet label icon
-		char cHotkey;
-		uint32_t dwCaptionClr; // caption color - default if 0
-		bool fHasCloseButton, fCloseButtonHighlighted;
-		bool fTitleMarkup;
-
-		Sheet(const char *szTitle, const C4Rect &rcBounds, int32_t icoTitle = Ico_None, bool fHasCloseButton = false, bool fTitleMarkup = true); // expands hotkey markup in title
-
-		void DrawCaption(C4FacetEx &cgo, int32_t x, int32_t y, int32_t iMaxWdt, bool fLarge, bool fActive, bool fFocus, C4FacetEx *pfctClip, C4FacetEx *pfctIcon, CStdFont *pUseFont);
-		void GetCaptionSize(int32_t *piWdt, int32_t *piHgt, bool fLarge, bool fActive, C4FacetEx *pfctClip, C4FacetEx *pfctIcon, CStdFont *pUseFont);
-		virtual void OnShown(bool fByUser) {} // calklback from tabular after sheet has been made visible
-		void SetCloseButtonHighlight(bool fToVal) { fCloseButtonHighlighted = fToVal; }
-		bool IsPosOnCloseButton(int32_t x, int32_t y, int32_t iCaptWdt, int32_t iCaptHgt, bool fLarge);
-		bool IsActiveSheet();
-
-	public:
-		const char *GetTitle() { return sTitle.getData(); }
-		char GetHotkey() { return cHotkey; }
-		void SetTitle(const char *szNewTitle);
-		void SetCaptionColor(uint32_t dwNewClr = 0) { dwCaptionClr = dwNewClr; }
-		virtual void UserClose() { delete this; } // user pressed close button
-		bool HasCloseButton() const { return fHasCloseButton; }
-
-		friend class Tabular;
-	};
-
-	enum TabPosition
-	{
-		tbNone = 0, // no tabs
-		tbTop,      // tabs on top
-		tbLeft,     // tabs to the left
-	};
-
-private:
-	Sheet *pActiveSheet; // currently selected sheet
-	TabPosition eTabPos; // whither tabs shalt be shown or nay, en where art thy shown?
-	int32_t iMaxTabWidth; // maximum tab length; used when tabs are positioned left and do not have gfx
-	int32_t iSheetSpacing, iSheetOff; // distances of sheet captions
-	int32_t iCaptionLengthTotal, iCaptionScrollPos; // scrolling in captions (top only)
-	bool fScrollingLeft, fScrollingRight, fScrollingLeftDown, fScrollingRightDown; // scrolling in captions (top only)
-	time_t tLastScrollTime; // set when fScrollingLeftDown or fScrollingRightDown are true: Time for next scrolling if mouse is held down
-	int iSheetMargin;
-	bool fDrawSelf; // if border and bg shall be drawn
-
-	C4FacetEx *pfctBack, *pfctClip, *pfctIcons; // set for tabulars that have custom gfx
-	CStdFont *pSheetCaptionFont; // font to be used for caption drawing; nullptr if default GUI font is to be used
-
-	C4KeyBinding *pKeySelUp, *pKeySelDown, *pKeySelUp2, *pKeySelDown2, *pKeyCloseTab; // key bindings
-
-	void SelectionChanged(bool fByUser); // pActiveSheet changed: sound, tooltip, etc.
-	void SheetsChanged(); // update iMaxTabWidth by new set of sheet labels
-	void UpdateScrolling();
-	void DoCaptionScroll(int32_t iDir);
-
-private:
-	bool HasGfx() { return pfctBack && pfctClip && pfctIcons; } // whether the control uses custom graphics
-
-protected:
-	bool KeySelUp(); // keyboard callback: Select previous sheet
-	bool KeySelDown(); // keyboard callback: Select next sheet
-	bool KeyCloseTab(); // keyboard callback: Close current sheet if possible
-
-	virtual void DrawElement(C4FacetEx &cgo) override;
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam) override;
-	void MouseLeaveCaptionArea();
-	virtual void MouseLeave(CMouse &rMouse) override;
-	virtual void OnGetFocus(bool fByMouse) override;
-
-	virtual Control *IsFocusElement() override { return eTabPos ? this : nullptr; } // this control can gain focus only if tabs are enabled only
-	virtual bool IsFocusOnClick() override { return false; } // but never get focus on single mouse click, because this would de-focus any contained controls!
-
-	int32_t GetTopSize() { return (eTabPos == tbTop) ? 20 : 0; } // vertical size of tab selection bar
-	int32_t GetLeftSize() { return (eTabPos == tbLeft) ? (HasGfx() ? GetLeftClipSize(pfctClip) : 20 + iMaxTabWidth) : 0; } // horizontal size of tab selection bar
-	bool HasLargeCaptions() { return eTabPos == tbLeft; }
-
-	virtual int32_t GetMarginTop() override    { return iSheetMargin + GetTopSize()  + (HasGfx() ? (rcBounds.Hgt - GetTopSize())  * 30 / 483 : 0); }
-	virtual int32_t GetMarginLeft() override   { return iSheetMargin + GetLeftSize() + (HasGfx() ? (rcBounds.Wdt - GetLeftSize()) * 13 / 628 : 0); }
-	virtual int32_t GetMarginRight() override  { return iSheetMargin + (HasGfx() ? (rcBounds.Wdt - GetLeftSize()) * 30 / 628 : 0); }
-	virtual int32_t GetMarginBottom() override { return iSheetMargin + (HasGfx() ? (rcBounds.Hgt - GetTopSize())  * 32 / 483 : 0); }
-
-	virtual void UpdateSize() override;
-
-	virtual bool IsSelectedChild(Element *pChild) override { return pChild == pActiveSheet || (pActiveSheet && pActiveSheet->IsParentOf(pChild)); }
-
-public:
-	Tabular(const C4Rect &rtBounds, TabPosition eTabPos);
-	~Tabular();
-
-	virtual void RemoveElement(Element *pChild) override; // clear ptr
-	Sheet *AddSheet(const char *szTitle, int32_t icoTitle = Ico_None);
-	void AddCustomSheet(Sheet *pAddSheet);
-	void ClearSheets(); // del all sheets
-	void SelectSheet(int32_t iIndex, bool fByUser);
-	void SelectSheet(Sheet *pSelSheet, bool fByUser);
-
-	Sheet *GetSheet(int32_t iIndex) { return static_cast<Sheet *>(GetElementByIndex(iIndex)); }
-	Sheet *GetActiveSheet() { return pActiveSheet; }
-	int32_t GetActiveSheetIndex();
-	int32_t GetSheetCount() { return GetElementCount(); }
-
-	void SetGfx(C4FacetEx *pafctBack, C4FacetEx *pafctClip, C4FacetEx *pafctIcons, CStdFont *paSheetCaptionFont, bool fResizeByAspect);
-	static int32_t GetLeftClipSize(C4FacetEx *pfctForClip) { return pfctForClip->Wdt * 95 / 120; } // left clip area size by gfx
-	void SetSheetMargin(int32_t iMargin) { iSheetMargin = iMargin; UpdateOwnPos(); }
-	void SetDrawDecoration(bool fToVal) { fDrawSelf = fToVal; }
-
-	friend class Sheet;
 };
 
 // scrollable text box
@@ -1936,76 +1512,6 @@ protected:
 public:
 	ComboBox_FillCallback(CB *pCBClass, ComboFillFunc FillFunc, ComboSelFunc SelFunc) :
 		pCBClass(pCBClass), FillFunc(FillFunc), SelFunc(SelFunc) {}
-};
-
-// dropdown box to select elements from a list
-class ComboBox : public Control
-{
-public:
-	struct ComboMenuCBStruct // struct used as menu callback parameter for dropdown menu
-	{
-		StdStrBuf sText;
-		int32_t id;
-
-		ComboMenuCBStruct() : sText(), id(0) {}
-		ComboMenuCBStruct(const char *szText, int32_t id) : sText(szText), id(id) {}
-	};
-
-private:
-	class C4KeyBinding *pKeyOpenCombo, *pKeyCloseCombo;
-
-private:
-	int32_t iOpenMenu; // associated menu (used to flag dropped down)
-	ComboBox_FillCB *pFillCallback; // callback used to display the dropdown
-	char Text[C4MaxTitle + 1]; // currently selected item
-	bool fReadOnly; // merely a label in ReadOnly-mode
-	bool fSimple; // combo without border and stuff
-	bool fMouseOver; // mouse hovering over this?
-	CStdFont *pUseFont; // font used to draw this control
-	uint32_t dwFontClr, dwBGClr, dwBorderClr; // colors used to draw this control
-	C4Facet *pFctSideArrow; // arrow gfx used to start combo-dropdown
-
-private:
-	bool DoDropdown(); // open dropdown menu (context menu)
-	bool KeyDropDown() { return DoDropdown(); }
-	bool KeyAbortDropDown() { return AbortDropdown(true); }
-	bool AbortDropdown(bool fByUser); // abort dropdown menu, if it's open
-
-protected:
-	virtual void DrawElement(C4FacetEx &cgo) override; // draw combo box
-
-	virtual void MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam) override; // input: mouse. left-click opens menu
-	virtual void MouseEnter(CMouse &rMouse) override; // called when mouse cursor enters element region
-	virtual void MouseLeave(CMouse &rMouse) override; // called when mouse cursor leaves element region
-
-	virtual bool IsFocusOnClick() override { return false; } // don't select control on click
-	virtual Control *IsFocusElement() override { return fReadOnly ? nullptr : this; } // this control can gain focus if not readonly
-
-	void OnCtxComboSelect(C4GUI::Element *pListItem, const ComboMenuCBStruct &rNewSel);
-
-public:
-	ComboBox(const C4Rect &rtBounds);
-	~ComboBox();
-
-	void SetComboCB(ComboBox_FillCB *pNewFillCallback);
-	static int32_t GetDefaultHeight();
-	void SetText(const char *szToText);
-	void SetReadOnly(bool fToVal) { if (fReadOnly = fToVal) AbortDropdown(false); }
-	void SetSimple(bool fToVal) { fSimple = fToVal; }
-	const StdStrBuf GetText() { return StdStrBuf(Text, false); }
-	void SetFont(CStdFont *pToFont) { pUseFont = pToFont; }
-
-	void SetColors(uint32_t dwFontClr, uint32_t dwBGClr, uint32_t dwBorderClr)
-	{
-		this->dwFontClr = dwFontClr; this->dwBGClr = dwBGClr; this->dwBorderClr = dwBorderClr;
-	}
-
-	void SetDecoration(C4Facet *pFctSideArrow)
-	{
-		this->pFctSideArrow = pFctSideArrow;
-	}
-
-	friend class ComboBox_FillCB;
 };
 
 // EM window class
@@ -2441,10 +1947,10 @@ public:
 	InputDialog(const char *szMessage, const char *szCaption, Icons icoIcon, BaseInputCallback *pCB, bool fChatLayout = false);
 	~InputDialog() { delete pCB; }
 
-	virtual void OnClosed(bool fOK) override { if (pCB && fOK) pCB->OnOK(StdStrBuf::MakeRef(pEdit->GetText())); Dialog::OnClosed(fOK); } // close CB
-	void SetMaxText(int32_t iMaxLen) { pEdit->SetMaxText(iMaxLen); }
+	virtual void OnClosed(bool fOK) override; // close CB
+	void SetMaxText(int32_t iMaxLen);
 	void SetInputText(const char *szToText);
-	const char *GetInputText() { return pEdit->GetText(); }
+	const char *GetInputText();
 	void SetCustomEdit(Edit *pCustomEdit);
 };
 
@@ -2851,54 +2357,6 @@ public:
 	void ExpandRight (int32_t iByWdt) { rcClientArea.Wdt += iByWdt; } // enlarge client rect
 	void ExpandBottom(int32_t iByHgt) { rcClientArea.Hgt += iByHgt; } // enlarge client rect
 };
-
-// graphical resources
-class Resource
-{
-private:
-	static Resource *pRes; // current GUI resources
-
-protected:
-	C4Surface sfcCaption, sfcButton, sfcButtonD;
-	C4Surface sfcScroll, sfcContext;
-	int32_t idSfcCaption, idSfcButton, idSfcButtonD, idSfcScroll, idSfcContext;
-
-public:
-	DynBarFacet barCaption, barButton, barButtonD;
-	C4FacetExID fctButtonHighlight;
-	C4FacetExID fctIcons, fctIconsEx;
-	C4FacetExID fctSubmenu;
-	C4FacetExID fctCheckbox;
-	C4FacetExID fctBigArrows;
-	C4FacetExID fctProgressBar;
-	ScrollBarFacets sfctScroll;
-	C4Facet fctContext;
-
-	CStdFont &CaptionFont; // small, bold font
-	CStdFont &TitleFont;   // large, bold font
-	CStdFont &TextFont;    // font for normal text
-	CStdFont &MiniFont;    // tiny font (logfont)
-	CStdFont &TooltipFont; // same as BookFont
-
-public:
-	Resource(CStdFont &rCaptionFont, CStdFont &rTitleFont, CStdFont &rTextFont, CStdFont &rMiniFont, CStdFont &rTooltipFont)
-		: idSfcCaption(0), idSfcButton(0), idSfcButtonD(0), idSfcScroll(0), idSfcContext(0),
-		CaptionFont(rCaptionFont), TitleFont(rTitleFont), TextFont(rTextFont), MiniFont(rMiniFont), TooltipFont(rTooltipFont) {}
-	~Resource() { Clear(); }
-
-	bool Load(C4GroupSet &rFromGroup); // load resources
-	void Clear(); // clear data
-
-public:
-	static Resource *Get() { return pRes; } // get res ptr - only set if successfully loaded
-	static void Unload() { delete pRes; } // unload any GUI resources
-
-	CStdFont &GetFontByHeight(int32_t iHgt, float *pfZoom = nullptr); // get optimal font for given control size
-};
-
-// shortcut for GUI resource gfx
-inline Resource *GetRes() { return Resource::Get(); }
-inline bool IsResLoaded() { return Resource::Get() != nullptr; }
 
 // shortcut for check whether GUI is active
 inline bool IsGUIValid() { return !!Screen::GetScreenS(); }

@@ -22,6 +22,9 @@
 #include "C4GameControl.h"
 
 #include "C4FullScreen.h"
+#include "C4GuiEdit.h"
+#include "C4GuiResource.h"
+#include "C4GuiTabular.h"
 #include "C4Network2Dialogs.h"
 #include "C4GameOptions.h"
 #include "C4GameDialogs.h"
@@ -463,7 +466,7 @@ void MainDlg::Start(int32_t iCountdownTime)
 		Game.Network.StartLobbyCountdown(iCountdownTime);
 }
 
-C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool fPastingMore)
+C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool fPastingMore)
 {
 	// get edit text
 	const char *szInputText = pEdt->GetText();
@@ -655,7 +658,7 @@ C4GUI::Edit::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, 
 	// reset backbuffer-index of chat history
 	iBackBufferIndex = -1;
 	// OK, on we go. Leave edit intact
-	return C4GUI::Edit::IR_None;
+	return C4GUI::IR_None;
 }
 
 void MainDlg::OnClientJoin(C4Client *pNewClient)
@@ -1084,6 +1087,11 @@ void MainDlg::CheckReady(bool check)
 {
 	checkReady->SetChecked(check);
 	UpdatePlayerList();
+}
+
+C4GUI::Control *MainDlg::GetDefaultControl()
+{
+	return pEdt;
 }
 
 void LobbyError(const char *szErrorMsg)

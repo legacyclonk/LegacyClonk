@@ -18,6 +18,8 @@
 // generic user interface
 // dialog base classes and some user dialogs
 
+#include "C4GuiEdit.h"
+#include "C4GuiResource.h"
 #include <C4Gui.h>
 
 #include <C4FullScreen.h>
@@ -1127,6 +1129,11 @@ InputDialog::InputDialog(const char *szMessage, const char *szCaption, Icons ico
 	SetDelOnClose();
 }
 
+void InputDialog::SetMaxText(int32_t iMaxLen)
+{
+	pEdit->SetMaxText(iMaxLen);
+}
+
 void InputDialog::SetInputText(const char *szToText)
 {
 	pEdit->SelectAll(); pEdit->DeleteSelection();
@@ -1151,6 +1158,20 @@ void InputDialog::SetCustomEdit(Edit *pCustomEdit)
 	}
 	AddElement(pEdit);
 	SetFocus(pEdit, false);
+}
+
+void InputDialog::OnClosed(bool fOK)
+{
+	if (pCB && fOK)
+	{
+		pCB->OnOK(StdStrBuf::MakeRef(pEdit->GetText()));
+	}
+	Dialog::OnClosed(fOK);
+}
+
+const char *InputDialog::GetInputText()
+{
+	return pEdit->GetText();
 }
 
 // InfoDialog

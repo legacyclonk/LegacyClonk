@@ -18,6 +18,8 @@
 // generic user interface
 // room for textual deconvolution
 
+#include "C4GuiEdit.h"
+#include "C4GuiResource.h"
 #include <C4Include.h>
 #include <C4Gui.h>
 #include <C4FullScreen.h>
@@ -699,7 +701,7 @@ void RenameEdit::Abort()
 	FinishRename();
 }
 
-Edit::InputResult RenameEdit::OnFinishInput(bool fPasting, bool fPastingMore)
+InputResult RenameEdit::OnFinishInput(bool fPasting, bool fPastingMore)
 {
 	// any text?
 	if (!Text || !*Text)

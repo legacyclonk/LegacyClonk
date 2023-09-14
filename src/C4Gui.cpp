@@ -18,6 +18,7 @@
 // generic user interface
 // all generic classes that do not fit into other C4Gui*-files
 
+#include "C4GuiResource.h"
 #include <C4Include.h>
 #include <C4Gui.h>
 

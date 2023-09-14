@@ -349,7 +349,7 @@ public:
 	protected:
 		struct RenameParams {};
 		void AbortRenaming(RenameParams par);
-		C4GUI::RenameEdit::RenameResult DoRenaming(RenameParams par, const char *szNewName);
+		C4GUI::RenameResult DoRenaming(RenameParams par, const char *szNewName);
 
 	public:
 		bool KeyRename();
@@ -431,9 +431,9 @@ protected:
 	void UpdateUseCrewBtn();
 	void OnButtonScenario(C4GUI::Control *pEl);
 
-	C4GUI::Edit::InputResult OnSearchBarEnter(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
+	C4GUI::InputResult OnSearchBarEnter(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
 	{
-		UpdateList(); return C4GUI::Edit::IR_Abort;
+		UpdateList(); return C4GUI::IR_Abort;
 	}
 
 	friend class C4MapFolderData;

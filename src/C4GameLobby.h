@@ -115,7 +115,7 @@ protected:
 	void OnRunBtn(C4GUI::Control *btn); // callback: run button pressed
 	void OnExitBtn(C4GUI::Control *btn); // callback: exit button pressed
 	bool KeyHistoryUpDown(bool fUp); // key callback
-	C4GUI::Edit::InputResult OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore); // callback: chat input performed
+	C4GUI::InputResult OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore); // callback: chat input performed
 
 	void OnClosed(bool fOK) override; // callback when dlg is closed
 	void OnSec1Timer(); // timer proc; update pings
@@ -135,7 +135,7 @@ protected:
 	void OnBtnChat(C4GUI::Control *btn);
 	void OnBtnPreload(C4GUI::Control *);
 
-	virtual class C4GUI::Control *GetDefaultControl() override { return pEdt; } // def focus chat input
+	virtual class C4GUI::Control *GetDefaultControl() override; // def focus chat input
 
 private:
 	void SetCountdownState(CountdownState eToState, int32_t iTimer);

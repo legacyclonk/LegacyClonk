@@ -17,6 +17,9 @@
 
 // file selection dialogs
 
+#include "C4GuiComboBox.h"
+#include "C4GuiListBox.h"
+#include "C4GuiResource.h"
 #include <C4Include.h>
 #include <C4FileSelDlg.h>
 

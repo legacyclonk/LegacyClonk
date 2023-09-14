@@ -257,9 +257,9 @@ public:
 	C4LeagueSignupDialog(const char *szPlayerName, const char *szLeagueName, const char *szLeagueServerName, const char *szAccountPref, const char *szPassPref, bool fWarnThirdParty, bool fRegister);
 	~C4LeagueSignupDialog() {}
 
-	const char *GetAccount() { return pEdtAccount->GetText(); }
-	bool HasPass() { return !pChkPassword || pChkPassword->GetChecked(); }
-	const char *GetPass() { return pEdtPass->GetText(); }
+	const char *GetAccount();
+	bool HasPass();
+	const char *GetPass();
 
 	// check for errors (overridden)
 	virtual void UserClose(bool fOK) override;

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "C4Gui.h"
+#include "C4GuiListBox.h"
 
 #include "C4ForwardDeclarations.h"
 #include "C4Scenario.h"

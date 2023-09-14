@@ -106,21 +106,8 @@ private:
 		BoolConfig(const C4Rect &rcBounds, const char *szName, bool *pbVal, bool fInvert = false, bool *pbRestartChangeCfgVal = nullptr);
 	};
 	// editbox below descriptive label sharing one window for common tooltip
-	class EditConfig : public C4GUI::LabeledEdit
-	{
-	public:
-		EditConfig(const C4Rect &rcBounds, const char *szName, ValidatedStdStrBufBase *psConfigVal, int32_t *piConfigVal, bool fMultiline);
-
-	private:
-		ValidatedStdStrBufBase *psConfigVal;
-		int32_t *piConfigVal;
-
-	public:
-		void Save2Config(); // control to config
-		static bool GetControlSize(int *piWdt, int *piHgt, const char *szForText, bool fMultiline);
-		int32_t GetIntVal() { return atoi(GetEdit()->GetText()); }
-		void SetIntVal(int32_t iToVal) { GetEdit()->SetText(FormatString("%d", static_cast<int>(iToVal)).getData(), false); }
-	} *pNetworkNameEdit, *pNetworkNickEdit;
+	class EditConfig;
+	EditConfig *pNetworkNameEdit, *pNetworkNickEdit;
 
 	// message dialog with a timer; used to restore the resolution if the user didn't press anything for a while
 	class ResChangeConfirmDlg : public C4GUI::TimedDialog
@@ -149,17 +136,7 @@ private:
 
 	void LoadGfxTroubleshoot(); void SaveGfxTroubleshoot();
 
-	class ScaleEdit : public C4GUI::Edit
-	{
-		C4StartupOptionsDlg *pDlg;
-
-	public:
-		ScaleEdit(C4StartupOptionsDlg *pDlg, const C4Rect &rtBounds, bool fFocusEdit = false);
-
-	protected:
-		virtual bool CharIn(const char *c) override;
-		virtual InputResult OnFinishInput(bool fPasting, bool fPastingMore) override;
-	};
+	class ScaleEdit;
 
 	C4GUI::ScrollBar *pScaleSlider;
 	ScaleEdit *pScaleEdit;

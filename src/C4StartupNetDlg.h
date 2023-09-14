@@ -178,9 +178,9 @@ protected:
 	void OnBtnRecord(C4GUI::Control *btn);
 	void OnBtnUpdate(C4GUI::Control *btn) { C4UpdateDlg::CheckForUpdates(GetScreen()); }
 
-	C4GUI::Edit::InputResult OnJoinAddressEnter(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
+	C4GUI::InputResult OnJoinAddressEnter(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
 	{
-		DoOK(); return C4GUI::Edit::IR_Abort;
+		DoOK(); return C4GUI::IR_Abort;
 	}
 
 	void OnChatTitleChange(const StdStrBuf &sNewTitle);

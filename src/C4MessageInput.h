@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "C4Constants.h"
 #include "C4EnumeratedObjectPtr.h"
 #include "C4Gui.h"
 #include "C4KeyboardInput.h"
@@ -65,7 +66,7 @@ private:
 
 protected:
 	// chat input callback
-	C4GUI::Edit::InputResult OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore);
+	C4GUI::InputResult OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore);
 	void OnChatCancel();
 	virtual void OnClosed(bool fOK) override;
 
@@ -100,7 +101,7 @@ public:
 	bool IsScriptQueried() const { return fObjInput; }
 	class C4Object *GetScriptTargetObject() const { return pTarget; }
 	int32_t GetScriptTargetPlayer() const { return iPlr; }
-	bool IsEmpty() const { return !*pEdit->GetText(); }
+	bool IsEmpty() const;
 };
 
 class C4MessageBoardCommand

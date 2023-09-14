@@ -17,6 +17,10 @@
 
 // IRC client dialog
 
+#include "C4GuiEdit.h"
+#include "C4GuiListBox.h"
+#include "C4GuiResource.h"
+#include "C4GuiTabular.h"
 #include "C4Include.h"
 #include "C4ChatDlg.h"
 #include "C4Game.h"
@@ -34,6 +38,82 @@ void convUTF8toWindows(StdStrBuf &sText)
 	sText.Replace("ü", "\xfc");
 	sText.Replace("ß", "\xdf");
 }
+
+// one open channel or query
+class C4ChatControl::ChatSheet : public C4GUI::Tabular::Sheet
+{
+public:
+	// one item in the nick list
+	class NickItem : public C4GUI::Window
+	{
+	private:
+		C4GUI::Icon *pStatusIcon; // status icon indicating channel status (e.g. operator)
+		C4GUI::Label *pNameLabel; // the nickname
+		bool fFlaggedExisting; // flagged for existance; used by user update func
+		int32_t iStatus;
+
+	public:
+		NickItem(class C4Network2IRCUser *pByUser);
+
+	protected:
+		virtual void UpdateOwnPos() override;
+
+	public:
+		const char *GetNick() const { return pNameLabel->GetText(); }
+		int32_t GetStatus() const { return iStatus; }
+
+		void Update(class C4Network2IRCUser *pByUser);
+		void SetFlaggedExisting(bool fToVal) { fFlaggedExisting = fToVal; }
+		bool IsFlaggedExisting() const { return fFlaggedExisting; }
+
+		static int32_t SortFunc(const C4GUI::Element *pEl1, const C4GUI::Element *pEl2, void *);
+	};
+
+private:
+	C4ChatControl *pChatControl;
+	C4GUI::TextWindow *pChatBox;
+	C4GUI::ListBox *pNickList;
+	C4GUI::WoodenLabel *pInputLbl;
+	C4GUI::Edit *pInputEdit;
+	int32_t iBackBufferIndex; // chat message history index
+	SheetType eType;
+	StdStrBuf sIdent;
+	bool fHasUnread;
+	StdStrBuf sChatTitle; // topic for channels; name+ident for queries; server name for server sheet
+
+	C4KeyBinding *pKeyHistoryUp, *pKeyHistoryDown; // keys used to scroll through chat history
+
+public:
+	ChatSheet(C4ChatControl *pChatControl, const char *szTitle, const char *szIdent, SheetType eType);
+	virtual ~ChatSheet();
+
+	C4GUI::Edit *GetInputEdit() const { return pInputEdit; }
+	SheetType GetSheetType() const { return eType; }
+	const char *GetIdent() const { return sIdent.getData(); }
+	void SetIdent(const char *szToIdent) { sIdent.Copy(szToIdent); }
+	const char *GetChatTitle() const { return sChatTitle.getData(); }
+	void SetChatTitle(const char *szNewTitle) { sChatTitle.Copy(szNewTitle); }
+
+	void AddTextLine(const char *szText, uint32_t dwClr);
+	void DoError(const char *szError);
+	void Update(bool fLock);
+	void UpdateUsers(C4Network2IRCUser *pUsers);
+	void ResetUnread(); // mark messages as read
+
+protected:
+	virtual void UpdateSize() override;
+	virtual void OnShown(bool fByUser) override;
+	virtual void UserClose() override; // user pressed close button: Close queries, part channels, etc.
+
+	C4GUI::InputResult OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore);
+	bool KeyHistoryUpDown(bool fUp);
+	void OnNickDblClick(class C4GUI::Element *pEl);
+
+private:
+	NickItem *GetNickItem(const char *szByNick);
+	NickItem *GetFirstNickItem() { return pNickList ? static_cast<NickItem *>(pNickList->GetFirst()) : nullptr; }
+	NickItem *GetNextNickItem(NickItem *pPrev) { return static_cast<NickItem *>(pPrev->GetNext()); }
+};
 
 /* C4ChatControl::ChatSheet::NickItem */
 
@@ -158,9 +238,9 @@ void C4ChatControl::ChatSheet::OnShown(bool fByUser)
 	}
 }
 
-C4GUI::Edit::InputResult C4ChatControl::ChatSheet::OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
+C4GUI::InputResult C4ChatControl::ChatSheet::OnChatInput(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
 {
-	C4GUI::Edit::InputResult eResult = C4GUI::Edit::IR_None;
+	C4GUI::InputResult eResult = C4GUI::IR_None;
 	// get edit text
 	const char *szInputText = pInputEdit->GetText();
 	// no input?
@@ -174,7 +254,7 @@ C4GUI::Edit::InputResult C4ChatControl::ChatSheet::OnChatInput(C4GUI::Edit *edt,
 		// remember in history
 		Game.MessageInput.StoreBackBuffer(szInputText);
 		// forward to chat control for processing
-		if (!pChatControl->ProcessInput(szInputText, this)) eResult = C4GUI::Edit::IR_Abort;
+		if (!pChatControl->ProcessInput(szInputText, this)) eResult = C4GUI::IR_Abort;
 	}
 	// clear edit field after text has been processed
 	pInputEdit->SelectAll(); pInputEdit->DeleteSelection();
@@ -452,7 +532,7 @@ C4ChatControl::ChatSheet *C4ChatControl::GetActiveChatSheet()
 	return nullptr;
 }
 
-C4ChatControl::ChatSheet *C4ChatControl::GetSheetByIdent(const char *szIdent, C4ChatControl::ChatSheet::SheetType eType)
+C4ChatControl::ChatSheet *C4ChatControl::GetSheetByIdent(const char *szIdent, C4ChatControl::SheetType eType)
 {
 	int32_t i = 0; C4GUI::Tabular::Sheet *pSheet; const char *szCheckIdent;
 	while (pSheet = pTabChats->GetSheet(i++))
@@ -466,7 +546,7 @@ C4ChatControl::ChatSheet *C4ChatControl::GetSheetByIdent(const char *szIdent, C4
 	return nullptr;
 }
 
-C4ChatControl::ChatSheet *C4ChatControl::GetSheetByTitle(const char *szTitle, C4ChatControl::ChatSheet::SheetType eType)
+C4ChatControl::ChatSheet *C4ChatControl::GetSheetByTitle(const char *szTitle, C4ChatControl::SheetType eType)
 {
 	int32_t i = 0; C4GUI::Tabular::Sheet *pSheet; const char *szCheckTitle;
 	while (pSheet = pTabChats->GetSheet(i++))
@@ -486,12 +566,12 @@ C4ChatControl::ChatSheet *C4ChatControl::GetServerSheet()
 	return static_cast<ChatSheet *>(pTabChats->GetSheet(0));
 }
 
-C4GUI::Edit::InputResult C4ChatControl::OnLoginDataEnter(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
+C4GUI::InputResult C4ChatControl::OnLoginDataEnter(C4GUI::Edit *edt, bool fPasting, bool fPastingMore)
 {
 	// advance focus when user presses enter in one of the login edits
 	GetDlg()->AdvanceFocus(false);
 	// no more pasting
-	return C4GUI::Edit::IR_Abort;
+	return C4GUI::IR_Abort;
 }
 
 void C4ChatControl::OnConnectBtn(C4GUI::Control *btn)
@@ -586,11 +666,11 @@ void C4ChatControl::Update()
 	// update channels
 	for (C4Network2IRCChannel *pChan = pIRCClient->getFirstChannel(); pChan; pChan = pIRCClient->getNextChannel(pChan))
 	{
-		ChatSheet *pChanSheet = GetSheetByIdent(pChan->getName(), ChatSheet::CS_Channel);
+		ChatSheet *pChanSheet = GetSheetByIdent(pChan->getName(), CS_Channel);
 		if (!pChanSheet)
 		{
 			// new channel! Create sheet for it
-			pTabChats->AddCustomSheet(pChanSheet = new ChatSheet(this, pChan->getName(), pChan->getName(), ChatSheet::CS_Channel));
+			pTabChats->AddCustomSheet(pChanSheet = new ChatSheet(this, pChan->getName(), pChan->getName(), CS_Channel));
 			// and show immediately
 			pTabChats->SelectSheet(pChanSheet, false);
 		}
@@ -601,7 +681,7 @@ void C4ChatControl::Update()
 	{
 		C4Network2IRCChannel *pIRCChan;
 		ChatSheet *pChatSheet = static_cast<ChatSheet *>(pSheet);
-		if (pChatSheet->GetSheetType() == ChatSheet::CS_Channel)
+		if (pChatSheet->GetSheetType() == CS_Channel)
 			if (!(pIRCChan = pIRCClient->getChannel(pChatSheet->GetTitle())))
 			{
 				delete pChatSheet;
@@ -638,7 +718,7 @@ void C4ChatControl::Update()
 			if (pMsg->isChannel())
 			{
 				// if no sheet is found, don't create - assume it's an outdated message with the cahnnel window already closed
-				pChatSheet = GetSheetByIdent(pMsg->getTarget(), ChatSheet::CS_Channel);
+				pChatSheet = GetSheetByIdent(pMsg->getTarget(), CS_Channel);
 			}
 			else if (IsServiceName(sUser.getData()))
 			{
@@ -740,13 +820,13 @@ void C4ChatControl::Update()
 C4ChatControl::ChatSheet *C4ChatControl::OpenQuery(const char *szForNick, bool fSelect, const char *szIdentFallback)
 {
 	// search existing query first
-	ChatSheet *pChatSheet = GetSheetByTitle(szForNick, ChatSheet::CS_Query);
+	ChatSheet *pChatSheet = GetSheetByTitle(szForNick, CS_Query);
 	// not found but ident given? Then search for ident as well
-	if (!pChatSheet && szIdentFallback) pChatSheet = GetSheetByIdent(szIdentFallback, ChatSheet::CS_Query);
+	if (!pChatSheet && szIdentFallback) pChatSheet = GetSheetByIdent(szIdentFallback, CS_Query);
 	// auto-open query if not found
 	if (!pChatSheet)
 	{
-		pTabChats->AddCustomSheet(pChatSheet = new ChatSheet(this, szForNick, szIdentFallback, ChatSheet::CS_Query));
+		pTabChats->AddCustomSheet(pChatSheet = new ChatSheet(this, szForNick, szIdentFallback, CS_Query));
 		// initial chat title just user name; changed to user name+ident if a message from the nick arrives
 		pChatSheet->SetChatTitle(szForNick);
 	}
@@ -798,7 +878,7 @@ void C4ChatControl::ClearChatSheets()
 {
 	pTabChats->ClearSheets();
 	// add server sheet
-	pTabChats->AddCustomSheet(new ChatSheet(this, LoadResStr("IDS_CHAT_SERVER"), nullptr, ChatSheet::CS_Server));
+	pTabChats->AddCustomSheet(new ChatSheet(this, LoadResStr("IDS_CHAT_SERVER"), nullptr, CS_Server));
 }
 
 bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
@@ -829,7 +909,7 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 		else if (SEqualNoCase(sCommand.getData(), "part"))
 		{
 			// part channel. Default to current channel if typed within a channel
-			if (!sParam.getLength() && pChatSheet->GetSheetType() == ChatSheet::CS_Channel)
+			if (!sParam.getLength() && pChatSheet->GetSheetType() == CS_Channel)
 			{
 				sParam.Copy(pChatSheet->GetIdent());
 				fResult = false;
@@ -901,8 +981,8 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 	{
 		// regular chat input: Send as message to current channel/user
 		const char *szMsgTarget;
-		ChatSheet::SheetType eSheetType = pChatSheet->GetSheetType();
-		if (eSheetType == ChatSheet::CS_Server)
+		SheetType eSheetType = pChatSheet->GetSheetType();
+		if (eSheetType == CS_Server)
 		{
 			pChatSheet->DoError(LoadResStr("IDS_ERR_NOTONACHANNEL"));
 		}

@@ -17,6 +17,8 @@
 
 // handles input dialogs, last-message-buffer, MessageBoard-commands
 
+#include "C4GuiEdit.h"
+#include "C4GuiResource.h"
 #include <C4Include.h>
 #include <C4MessageInput.h>
 
@@ -125,10 +127,10 @@ void C4ChatInputDialog::OnClosed(bool fOK)
 	BaseDlg::OnClosed(fOK);
 }
 
-C4GUI::Edit::InputResult C4ChatInputDialog::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool fPastingMore)
+C4GUI::InputResult C4ChatInputDialog::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool fPastingMore)
 {
 	// no double processing
-	if (fProcessed) return C4GUI::Edit::IR_CloseDlg;
+	if (fProcessed) return C4GUI::IR_CloseDlg;
 	// get edit text
 	char *szInputText = const_cast<char *>(pEdt->GetText());
 	// Store to back buffer
@@ -139,29 +141,29 @@ C4GUI::Edit::InputResult C4ChatInputDialog::OnChatInput(C4GUI::Edit *pEdt, bool 
 		fProcessed = true;
 		// check if the target input is still valid
 		C4Player *pPlr = Game.Players.Get(iPlr);
-		if (!pPlr) return C4GUI::Edit::IR_CloseDlg;
+		if (!pPlr) return C4GUI::IR_CloseDlg;
 		if (!pPlr->MarkMessageBoardQueryAnswered(pTarget))
 		{
 			// there was no associated query!
-			return C4GUI::Edit::IR_CloseDlg;
+			return C4GUI::IR_CloseDlg;
 		}
 		// then do a script callback, incorporating the input into the answer
 		if (fUppercase) SCapitalize(szInputText);
 		Game.Control.DoInput(CID_MessageBoardAnswer, new C4ControlMessageBoardAnswer(pTarget ? pTarget->Number : 0, iPlr, szInputText), CDT_Decide);
-		return C4GUI::Edit::IR_CloseDlg;
+		return C4GUI::IR_CloseDlg;
 	}
 	else
 		// reroute to message input class
 		Game.MessageInput.ProcessInput(szInputText);
 	// safety: message board commands may do strange things
-	if (!C4GUI::IsGUIValid() || this != pInstance) return C4GUI::Edit::IR_Abort;
+	if (!C4GUI::IsGUIValid() || this != pInstance) return C4GUI::IR_Abort;
 	// select all text to be removed with next keypress
 	// just for pasting mode; usually the dlg will be closed now anyway
 	pEdt->SelectAll();
 	// avoid dlg close, if more content is to be pasted
-	if (fPastingMore) return C4GUI::Edit::IR_None;
+	if (fPastingMore) return C4GUI::IR_None;
 	fProcessed = true;
-	return C4GUI::Edit::IR_CloseDlg;
+	return C4GUI::IR_CloseDlg;
 }
 
 bool C4ChatInputDialog::KeyHistoryUpDown(bool fUp)
@@ -797,4 +799,9 @@ void C4MessageBoardQuery::CompileFunc(StdCompiler *pComp)
 	pComp->Value(fIsUppercase);
 	// list end
 	pComp->Separator(StdCompiler::SEP_END); // ')'
+}
+
+bool C4ChatInputDialog::IsEmpty() const
+{
+	return !*pEdit->GetText();
 }

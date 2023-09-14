@@ -18,6 +18,8 @@
 // Startup screen for non-parameterized engine start: Player selection dialog
 // Also contains player creation, editing and crew management
 
+#include "C4GuiEdit.h"
+#include "C4GuiListBox.h"
 #include <C4Include.h>
 #include <C4StartupPlrSelDlg.h>
 
@@ -529,15 +531,15 @@ void C4StartupPlrSelDlg::CrewListItem::AbortRenaming(RenameParams par)
 	pPlrSelDlg->pRenameEdit = nullptr;
 }
 
-C4GUI::RenameEdit::RenameResult C4StartupPlrSelDlg::CrewListItem::DoRenaming(RenameParams par, const char *szNewName)
+C4GUI::RenameResult C4StartupPlrSelDlg::CrewListItem::DoRenaming(RenameParams par, const char *szNewName)
 {
 	// accept if name can be set; will fail if name is invalid or already given to another Crew member
-	if (!SetName(szNewName)) return C4GUI::RenameEdit::RR_Invalid;
+	if (!SetName(szNewName)) return C4GUI::RR_Invalid;
 	pPlrSelDlg->pRenameEdit = nullptr;
 	// update in selection
 	C4StartupPlrSelDlg *pDlg = static_cast<C4StartupPlrSelDlg *>(GetDlg());
 	if (pDlg && pDlg->GetSelection() == this) pDlg->UpdateSelection();
-	return C4GUI::RenameEdit::RR_Accepted;
+	return C4GUI::RR_Accepted;
 }
 
 // C4StartupPlrSelDlg

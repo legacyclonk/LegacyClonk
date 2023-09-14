@@ -17,6 +17,8 @@
 
 // Custom game options and configuration dialog
 
+#include "C4GuiComboBox.h"
+#include "C4GuiResource.h"
 #include "C4Include.h"
 #include "C4GameOptions.h"
 #include "C4Game.h"

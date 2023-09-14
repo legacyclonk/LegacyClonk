@@ -17,6 +17,8 @@
 
 // player listbox used in lobby and game over dlg
 
+#include "C4GuiComboBox.h"
+#include "C4GuiResource.h"
 #include <C4Include.h>
 #include <C4PlayerInfoListBox.h>
 

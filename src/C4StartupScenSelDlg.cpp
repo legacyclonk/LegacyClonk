@@ -22,6 +22,10 @@
 #include <C4Network2Dialogs.h>
 #include <C4StartupMainDlg.h>
 #include <C4StartupNetDlg.h>
+#include "C4GuiEdit.h"
+#include "C4GuiListBox.h"
+#include "C4GuiResource.h"
+#include "C4GuiTabular.h"
 #include "StdMarkup.h"
 #include <C4ComponentHost.h>
 #include <C4Components.h>
@@ -1269,10 +1273,10 @@ void C4StartupScenSelDlg::ScenListItem::AbortRenaming(RenameParams par)
 	C4StartupScenSelDlg::pInstance->SetRenamingDone();
 }
 
-C4GUI::RenameEdit::RenameResult C4StartupScenSelDlg::ScenListItem::DoRenaming(RenameParams par, const char *szNewName)
+C4GUI::RenameResult C4StartupScenSelDlg::ScenListItem::DoRenaming(RenameParams par, const char *szNewName)
 {
 	// check validity for new name
-	if (!GetEntry()->RenameTo(szNewName)) return C4GUI::RenameEdit::RR_Invalid;
+	if (!GetEntry()->RenameTo(szNewName)) return C4GUI::RR_Invalid;
 	// rename label
 	pNameLabel->SetText(GetEntry()->GetName().getData());
 	// main dlg update
@@ -1281,7 +1285,7 @@ C4GUI::RenameEdit::RenameResult C4StartupScenSelDlg::ScenListItem::DoRenaming(Re
 	C4StartupScenSelDlg::pInstance->UpdateSelection();
 	C4StartupScenSelDlg::pInstance->FocusScenList();
 	// done; rename accepted and control deleted by ResortFolder
-	return C4GUI::RenameEdit::RR_Deleted;
+	return C4GUI::RR_Deleted;
 }
 
 // C4StartupScenSelDlg

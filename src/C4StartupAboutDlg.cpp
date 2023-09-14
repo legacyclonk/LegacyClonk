@@ -17,6 +17,8 @@
 
 // Credits screen
 
+#include "C4GuiListBox.h"
+#include "C4GuiResource.h"
 #include "C4Include.h"
 #include "C4StartupAboutDlg.h"
 

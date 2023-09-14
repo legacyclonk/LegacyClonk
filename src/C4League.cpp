@@ -17,6 +17,8 @@
 
 /* engine handler of league system */
 
+#include "C4GuiEdit.h"
+#include "C4GuiResource.h"
 #include <C4Include.h>
 #include <C4League.h>
 
@@ -732,4 +734,19 @@ void C4LeagueSignupDialog::OnChkPassword()
 		bnds = pBtnAbort->GetBounds();
 		pBtnAbort->SetPos(bnds.x, bnds.y - iEdtPassSpace);
 	}
+}
+
+const char *C4LeagueSignupDialog::GetAccount()
+{
+	return pEdtAccount->GetText();
+}
+
+const char *C4LeagueSignupDialog::GetPass()
+{
+	return pEdtPass->GetText();
+}
+
+bool C4LeagueSignupDialog::HasPass()
+{
+	return !pChkPassword || pChkPassword->GetChecked();
 }

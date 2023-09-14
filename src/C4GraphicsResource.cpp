@@ -16,6 +16,7 @@
 
 /* Loads all standard graphics from Graphics.c4g */
 
+#include "C4GuiResource.h"
 #include <C4Include.h>
 #include <C4GraphicsResource.h>
 

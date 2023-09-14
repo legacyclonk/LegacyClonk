@@ -20,6 +20,7 @@
 #pragma once
 
 #include "C4Gui.h"
+#include "C4GuiListBox.h"
 
 // options dialog: created as listbox inside another dialog
 // used to configure some standard runtime options, as well as custom game options

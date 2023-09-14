@@ -17,6 +17,11 @@
 
 // Startup screen for non-parameterized engine start: Options dialog
 
+#include "C4GuiComboBox.h"
+#include "C4GuiEdit.h"
+#include "C4GuiResource.h"
+#include "C4GuiTabular.h"
+
 #include <C4Include.h>
 #include <C4StartupOptionsDlg.h>
 
@@ -28,6 +33,36 @@
 #include <C4Wrappers.h>
 
 #include <StdGL.h>
+
+class C4StartupOptionsDlg::ScaleEdit : public C4GUI::Edit
+{
+	using Base = C4GUI::Edit;
+	C4StartupOptionsDlg *pDlg;
+
+public:
+	ScaleEdit(C4StartupOptionsDlg *pDlg, const C4Rect &rtBounds, bool fFocusEdit = false);
+
+	bool CharIn(const char *c) override;
+
+protected:
+	virtual C4GUI::InputResult OnFinishInput(bool fPasting, bool fPastingMore) override;
+};
+
+class C4StartupOptionsDlg::EditConfig : public C4GUI::LabeledEdit
+{
+public:
+	EditConfig(const C4Rect &rcBounds, const char *szName, ValidatedStdStrBufBase *psConfigVal, int32_t *piConfigVal, bool fMultiline);
+
+private:
+	ValidatedStdStrBufBase *psConfigVal;
+	int32_t *piConfigVal;
+
+public:
+	void Save2Config(); // control to config
+	static bool GetControlSize(int *piWdt, int *piHgt, const char *szForText, bool fMultiline);
+	int32_t GetIntVal();
+	void SetIntVal(int32_t iToVal);
+};
 
 // C4StartupOptionsDlg::SmallButton
 
@@ -132,7 +167,7 @@ bool C4StartupOptionsDlg::ScaleEdit::CharIn(const char *c)
 	return false;
 }
 
-C4GUI::Edit::InputResult C4StartupOptionsDlg::ScaleEdit::OnFinishInput(bool fPasting, bool fPastingMore)
+C4GUI::InputResult C4StartupOptionsDlg::ScaleEdit::OnFinishInput(bool fPasting, bool fPastingMore)
 {
 	int val = toUl(GetText(), 0);
 	if (!Inside(val, minScale, maxScale)) SetText(FormatString("%d", pDlg->iNewScale).getData(), true);
@@ -143,7 +178,7 @@ C4GUI::Edit::InputResult C4StartupOptionsDlg::ScaleEdit::OnFinishInput(bool fPas
 		pDlg->OnScaleSliderChanged(sliderVal);
 		pDlg->OnTestScaleBtn(nullptr);
 	}
-	return C4GUI::Edit::IR_Abort;
+	return C4GUI::IR_Abort;
 }
 
 // C4StartupOptionsDlg::KeySelDialog
@@ -1422,4 +1457,14 @@ bool C4StartupOptionsDlg::KeyMusicToggle()
 	pFEMusicCheck->SetChecked(Application.MusicSystem->ToggleOnOff());
 	// key processed
 	return true;
+}
+
+int32_t C4StartupOptionsDlg::EditConfig::GetIntVal()
+{
+	return atoi(GetEdit()->GetText());
+}
+
+void C4StartupOptionsDlg::EditConfig::SetIntVal(int32_t iToVal)
+{
+	GetEdit()->SetText(FormatString("%d", static_cast<int>(iToVal)).getData(), false);
 }

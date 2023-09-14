@@ -26,6 +26,10 @@
 #include <C4Game.h>
 #include <C4Log.h>
 #include "C4ChatDlg.h"
+#include "C4GuiEdit.h"
+#include "C4GuiListBox.h"
+#include "C4GuiResource.h"
+#include "C4GuiTabular.h"
 
 #include <cassert>
 
