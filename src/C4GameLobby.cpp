@@ -145,7 +145,6 @@ MainDlg::MainDlg(bool fHost)
 	// timer
 	pSec1Timer = new C4Sec1TimerCallback<MainDlg>(this);
 	// indents / sizes
-	int32_t iDefBtnHeight = 32;
 	int32_t iIndentX1, iIndentX2, iIndentX3;
 	int32_t iIndentY1, iIndentY2, iIndentY3, iIndentY4;
 	int32_t iClientListWdt;
@@ -189,7 +188,7 @@ MainDlg::MainDlg(bool fHost)
 	C4GUI::ComponentAligner caMain(GetClientRect(), 0, 0, true);
 	caMain.GetFromBottom(iIndentY2);
 	// lower button-area
-	C4GUI::ComponentAligner caBottom(caMain.GetFromBottom(iDefBtnHeight + iIndentY1 * 2), iIndentX1, iIndentY1);
+	C4GUI::ComponentAligner caBottom(caMain.GetFromBottom(C4GUI_ButtonHgt + iIndentY1 * 2), iIndentX1, iIndentY1);
 	// add buttons
 	C4GUI::CallbackButton<MainDlg> *btnExit;
 	btnExit = new C4GUI::CallbackButton<MainDlg>(LoadResStr("IDS_DLG_EXIT"), caBottom.GetFromLeft(100), &MainDlg::OnExitBtn);
@@ -224,7 +223,7 @@ MainDlg::MainDlg(bool fHost)
 
 	if (!Config.General.Preloading)
 	{
-		resDlgBounds.Hgt -= iDefBtnHeight;
+		resDlgBounds.Hgt -= C4GUI_ButtonHgt;
 	}
 
 	pResList = new C4Network2ResDlg(resDlgBounds, false);
@@ -232,7 +231,7 @@ MainDlg::MainDlg(bool fHost)
 
 	if (!Config.General.Preloading)
 	{
-		const C4Rect btnPreloadBounds{resSheetBounds.x, resSheetBounds.Hgt - iDefBtnHeight, resSheetBounds.Wdt, iDefBtnHeight};
+		const C4Rect btnPreloadBounds{resSheetBounds.x, resSheetBounds.Hgt - C4GUI_ButtonHgt, resSheetBounds.Wdt, C4GUI_ButtonHgt};
 		btnPreload = new C4GUI::CallbackButton<MainDlg>{LoadResStr("IDS_DLG_PRELOAD"), btnPreloadBounds, &MainDlg::OnBtnPreload, this};
 		btnPreload->SetToolTip(LoadResStr("IDS_DLGTIP_PRELOAD"));
 		pResSheet->AddElement(btnPreload);
