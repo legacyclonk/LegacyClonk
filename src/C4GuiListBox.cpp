@@ -658,4 +658,21 @@ void ListBox::SortElements(SortFunction SortFunc, void *par)
 	UpdateElementPositions();
 }
 
+void ListBox::UpdateSize()
+{
+	Control::UpdateSize();
+	if (pClientWindow)
+	{
+		pClientWindow->UpdateSize();
+		UpdateElementPositions();
+
+		for (Element *pEl = pClientWindow->GetFirst(); pEl; pEl = pEl->GetNext())
+		{
+			C4Rect &rcChildBounds = pEl->GetBounds();
+			rcChildBounds.Wdt = GetItemWidth() - rcChildBounds.x;
+			pEl->SetBounds(rcChildBounds);
+		}
+	}
+}
+
 } // end of namespace

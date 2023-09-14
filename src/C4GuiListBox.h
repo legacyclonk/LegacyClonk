@@ -133,7 +133,7 @@ public:
 
 	void UpdateElementPositions(); // reposition list items so they are stacked vertically
 	void UpdateElementPosition(Element *pOfElement, int32_t iIndent); // update pos for one specific element
-	virtual void UpdateSize() override { Control::UpdateSize(); if (pClientWindow) { pClientWindow->UpdateSize(); UpdateElementPositions(); } }
+	virtual void UpdateSize() override;
 
 	virtual bool IsSelectedChild(Element *pChild) override { return pChild == pSelectedItem || (pSelectedItem && pSelectedItem->IsParentOf(pChild)); }
 
