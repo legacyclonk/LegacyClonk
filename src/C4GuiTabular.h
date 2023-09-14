@@ -129,6 +129,7 @@ public:
 	Sheet *GetActiveSheet() { return pActiveSheet; }
 	int32_t GetActiveSheetIndex();
 	int32_t GetSheetCount() { return GetElementCount(); }
+	int32_t GetTabButtonWidth() const; // return iMaxTabWidth; useful when tabs are positioned left
 
 	void SetGfx(C4FacetEx *pafctBack, C4FacetEx *pafctClip, C4FacetEx *pafctIcons, CStdFont *paSheetCaptionFont, bool fResizeByAspect);
 	static int32_t GetLeftClipSize(C4FacetEx *pfctForClip) { return pfctForClip->Wdt * 95 / 120; } // left clip area size by gfx

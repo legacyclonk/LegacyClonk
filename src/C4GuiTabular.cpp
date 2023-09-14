@@ -667,6 +667,11 @@ void Tabular::SetGfx(C4FacetEx *pafctBack, C4FacetEx *pafctClip, C4FacetEx *pafc
 	SheetsChanged();
 }
 
+int32_t Tabular::GetTabButtonWidth() const
+{
+	return iMaxTabWidth;
+}
+
 void Tabular::UpdateSize()
 {
 	Control::UpdateSize();
