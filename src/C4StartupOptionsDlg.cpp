@@ -24,6 +24,7 @@
 
 #include <C4Include.h>
 #include <C4StartupOptionsDlg.h>
+#include <C4StartupOptionsAdvancedConfigDialog.h>
 
 #include <C4StartupMainDlg.h>
 #include <C4Language.h>
@@ -759,7 +760,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pSheetGeneral->AddElement(pCheck);
 
 	// fair crew strength
-	C4GUI::GroupBox *pGroupFairCrewStrength = new C4GUI::GroupBox(caSheetProgram.GetGridCell(0, 2, 7, 9, -1, pUseFont->GetLineHeight() * 2 + iIndentY2 * 2 + C4GUI_ScrollBarHgt, true, 1, 2));
+	C4GUI::GroupBox *pGroupFairCrewStrength = new C4GUI::GroupBox(caSheetProgram.GetGridCell(0, 2, 6, 9, -1, pUseFont->GetLineHeight() * 2 + iIndentY2 * 2 + C4GUI_ScrollBarHgt, true, 1, 2));
 	pGroupFairCrewStrength->SetTitle(LoadResStr("IDS_CTL_FAIRCREWSTRENGTH"));
 	pGroupFairCrewStrength->SetFont(pUseFont);
 	pGroupFairCrewStrength->SetColors(C4StartupEditBorderColor, C4StartupFontClr);
@@ -784,6 +785,12 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	C4Rect rcResetBtn = caSheetProgram.GetGridCell(1, 2, 8, 9, std::min<int32_t>(iButtonWidth + iButtonHeight * 4, caSheetProgram.GetInnerWidth() * 2 / 5), SmallButton::GetDefaultButtonHeight(), true);
 	pSheetGeneral->AddElement(pSmallBtn = new C4GUI::CallbackButton<C4StartupOptionsDlg, SmallButton>(szBtnText, rcResetBtn, &C4StartupOptionsDlg::OnResetConfigBtn, this));
 	pSmallBtn->SetToolTip(LoadResStr("IDS_DESC_RESETCONFIG"));
+
+	szBtnText = LoadResStr("IDS_DLG_ADVANCED_SETTINGS");
+	C4GUI::GetRes()->CaptionFont.GetTextExtent(szBtnText, iButtonWidth, iButtonHeight, true);
+	C4Rect rcAdvancedBtn = caSheetProgram.GetGridCell(0, 2, 8, 9, std::min<int32_t>(iButtonWidth + iButtonHeight * 4, caSheetProgram.GetInnerWidth() * 2 / 5), SmallButton::GetDefaultButtonHeight(), true);
+	pSheetGeneral->AddElement(pSmallBtn = new C4GUI::CallbackButton<C4StartupOptionsDlg, SmallButton>(szBtnText, rcAdvancedBtn, &C4StartupOptionsDlg::OnAdvancedConfigBtn, this));
+	pSmallBtn->SetToolTip(LoadResStr("IDS_DESC_ADVANCED_SETTINGS"));
 
 	// page graphics
 	C4GUI::ComponentAligner caSheetGraphics(pSheetGraphics->GetClientRect(), iIndentX1, iIndentY1, true);
@@ -1117,6 +1124,14 @@ void C4StartupOptionsDlg::OnResetConfigBtn(C4GUI::Control *btn)
 	Config.fConfigLoaded = true;
 	// engine must be restarted now, because some crucial fields such as resolution and used gfx engine do not match their initialization
 	Application.Quit();
+}
+
+void C4StartupOptionsDlg::OnAdvancedConfigBtn(C4GUI::Control *)
+{
+	if (C4StartupOptionsAdvancedConfigDialog::ShowModal(Game.pGUI))
+	{
+		RecreateDialog(false);
+	}
 }
 
 void C4StartupOptionsDlg::OnScaleSliderChanged(int32_t val)

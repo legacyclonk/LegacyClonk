@@ -266,6 +266,8 @@ src/C4StartupMainDlg.cpp
 src/C4StartupMainDlg.h
 src/C4StartupNetDlg.cpp
 src/C4StartupNetDlg.h
+src/C4StartupOptionsAdvancedConfigDialog.cpp
+src/C4StartupOptionsAdvancedConfigDialog.h
 src/C4StartupOptionsDlg.cpp
 src/C4StartupOptionsDlg.h
 src/C4StartupPlrSelDlg.cpp

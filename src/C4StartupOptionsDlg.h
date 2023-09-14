@@ -88,6 +88,7 @@ private:
 	int32_t FairCrewStrength2Slider(int32_t iStrengthVal);
 	void OnFairCrewStrengthSliderChange(int32_t iNewVal);
 	void OnResetConfigBtn(C4GUI::Control *btn);
+	void OnAdvancedConfigBtn(C4GUI::Control *btn);
 	void OnDisplayModeComboFill(C4GUI::ComboBox_FillCB *pFiller);
 	bool OnDisplayModeComboSelChange(C4GUI::ComboBox *pForCombo, int32_t idNewSelection);
 
