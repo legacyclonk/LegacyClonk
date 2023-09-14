@@ -529,10 +529,11 @@ protected:
 	virtual int32_t GetLeftIndent() { return 0; }
 
 public:
-	Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign = ALeft, uint32_t dwFClr = 0xffffffff, CStdFont *pFont = nullptr, bool fMakeReadableOnBlack = true, bool fMarkup = true);
-	Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign = ALeft, uint32_t dwFClr = 0xffffffff, CStdFont *pFont = nullptr, bool fMakeReadableOnBlack = true, bool fAutosize = true, bool fMarkup = true);
+	Label(std::string_view lblText, int32_t iX0, int32_t iTop, int32_t iAlign = ALeft, uint32_t dwFClr = 0xffffffff, CStdFont *pFont = nullptr, bool fMakeReadableOnBlack = true, bool fMarkup = true);
+	Label(std::string_view lblText, const C4Rect &rcBounds, int32_t iAlign = ALeft, uint32_t dwFClr = 0xffffffff, CStdFont *pFont = nullptr, bool fMakeReadableOnBlack = true, bool fAutosize = true, bool fMarkup = true);
 
-	void SetText(const char *szToText, bool fAllowHotkey = true); // update text
+	void SetText(const char *szText, bool fAllowHotkey = true); // update text
+	void SetText(std::string_view toText, bool fAllowHotkey = true); // update text
 	const char *GetText() { return sText.getData(); } // retrieve current text
 	void SetClickFocusControl(Control *pToCtrl) { pClickFocusControl = pToCtrl; }
 	void SetColor(uint32_t dwToClr, bool fMakeReadableOnBlack = true) { dwFgClr = fMakeReadableOnBlack ? MakeColorReadableOnBlack(dwToClr) : dwToClr; } // update label color

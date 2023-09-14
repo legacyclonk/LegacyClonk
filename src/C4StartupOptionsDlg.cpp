@@ -715,7 +715,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pLangCombo->SetFont(pUseFont);
 	pLangCombo->SetDecoration(&(C4Startup::Get()->Graphics.fctContext));
 	pSheetGeneral->AddElement(pLangCombo);
-	pLangInfoLabel = new C4GUI::Label(nullptr, caLanguage.GetFromTop(C4GUI::GetRes()->TextFont.GetLineHeight() * 3), ALeft, C4StartupFontClr, pUseFont, false);
+	pLangInfoLabel = new C4GUI::Label("", caLanguage.GetFromTop(C4GUI::GetRes()->TextFont.GetLineHeight() * 3), ALeft, C4StartupFontClr, pUseFont, false);
 	pLangInfoLabel->SetToolTip(szLangTip);
 	pSheetGeneral->AddElement(pLangInfoLabel);
 	UpdateLanguage();

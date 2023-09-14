@@ -49,7 +49,7 @@ void Label::DrawElement(C4FacetEx &cgo)
 	}
 }
 
-Label::Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign, uint32_t dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fMarkup)
+Label::Label(std::string_view lblText, int32_t iX0, int32_t iTop, int32_t iAlign, uint32_t dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fMarkup)
 	: Element(), dwFgClr(dwFClr), x0(iX0), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(nullptr), fAutosize(true), fMarkup(fMarkup)
 {
 	// make color readable
@@ -59,10 +59,10 @@ Label::Label(const char *szLblText, int32_t iX0, int32_t iTop, int32_t iAlign, u
 	// set top
 	rcBounds.y = iTop;
 	// update text
-	SetText(szLblText);
+	SetText(lblText);
 }
 
-Label::Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign, uint32_t dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fAutosize, bool fMarkup)
+Label::Label(std::string_view lblText, const C4Rect &rcBounds, int32_t iAlign, uint32_t dwFClr, CStdFont *pFont, bool fMakeReadableOnBlack, bool fAutosize, bool fMarkup)
 	: Element(), dwFgClr(dwFClr), iAlign(iAlign), pFont(pFont), cHotkey(0), pClickFocusControl(nullptr), fAutosize(fAutosize), fMarkup(fMarkup)
 {
 	// make color readable
@@ -73,7 +73,7 @@ Label::Label(const char *szLblText, const C4Rect &rcBounds, int32_t iAlign, uint
 	// set x0
 	UpdateOwnPos();
 	// update text
-	SetText(szLblText);
+	SetText(lblText);
 }
 
 void Label::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
@@ -89,12 +89,17 @@ void Label::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, 
 	Element::MouseInput(rMouse, iButton, iX, iY, dwKeyParam);
 }
 
-void Label::SetText(const char *szToText, bool fAllowHotkey)
+void Label::SetText(const char *szText, bool fAllowHotkey)
+{
+	return SetText(szText ? std::string_view{szText} : std::string_view{}, fAllowHotkey);
+}
+
+void Label::SetText(std::string_view toText, bool fAllowHotkey)
 {
 	// set new text
-	if (szToText)
+	if (!toText.empty())
 	{
-		sText.Copy(szToText);
+		sText.Copy(toText.data(), toText.size());
 		// expand hotkey markup
 		if (fAllowHotkey && fMarkup) ExpandHotkeyMarkup(sText, cHotkey);
 	}
