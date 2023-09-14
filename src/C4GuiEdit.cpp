@@ -551,9 +551,8 @@ void Edit::DrawElement(C4FacetEx &cgo)
 		// default frame color
 		Draw3DFrame(cgo);
 	// clipping
-	int cx0, cy0, cx1, cy1; bool fClip, fOwnClip;
-	fClip = lpDDraw->GetPrimaryClipper(cx0, cy0, cx1, cy1);
-	fOwnClip = lpDDraw->SetPrimaryClipper(rcClientRect.x + cgo.TargetX - 2, rcClientRect.y + cgo.TargetY, rcClientRect.x + rcClientRect.Wdt + cgo.TargetX + 1, rcClientRect.y + rcClientRect.Hgt + cgo.TargetY);
+	const auto hadClip = lpDDraw->StorePrimaryClipper();
+	const auto haveOwnClip = lpDDraw->SubPrimaryClipper(rcClientRect.x + cgo.TargetX - 2, rcClientRect.y + cgo.TargetY, rcClientRect.x + rcClientRect.Wdt + cgo.TargetX + 1, rcClientRect.y + rcClientRect.Hgt + cgo.TargetY);
 	// get usable height of edit field
 	int32_t iHgt = pFont->GetLineHeight(), iY0;
 	if (rcClientRect.Hgt <= iHgt)
@@ -604,10 +603,17 @@ void Edit::DrawElement(C4FacetEx &cgo)
 		lpDDraw->TextOut("\xa6" /*¦*/, *pFont, 1.5f, cgo.Surface, rcClientRect.x + cgo.TargetX + w - wc - iXScroll, iY0 + cgo.TargetY - h / 3, dwFontClr, ALeft, false);
 	}
 	// unclip
-	if (fOwnClip) if (fClip)
-		lpDDraw->SetPrimaryClipper(cx0, cy0, cx1, cy1);
-	else
-		lpDDraw->NoPrimaryClipper();
+	if (haveOwnClip)
+	{
+		if (hadClip)
+		{
+			lpDDraw->RestorePrimaryClipper();
+		}
+		else
+		{
+			lpDDraw->NoPrimaryClipper();
+		}
+	}
 }
 
 void Edit::SelectAll()
