@@ -301,9 +301,12 @@ void Tabular::SheetsChanged()
 		// update sheet positioning
 		if (eTabPos == tbLeft && iTotalHgt > rcBounds.Hgt - GetMarginBottom())
 		{
-			// sheet captions dont fit - condense them
-			iSheetSpacing -= (iTotalHgt - rcBounds.Hgt + GetMarginBottom() - iSheetOff) / iSheetNum;
-			iSheetOff = 0;
+			if (iSheetNum > 0)
+			{
+				// sheet captions dont fit - condense them
+				iSheetSpacing -= (iTotalHgt - rcBounds.Hgt + GetMarginBottom() - iSheetOff) / iSheetNum;
+				iSheetOff = 0;
+			}
 		}
 	}
 	// update all sheet sizes
