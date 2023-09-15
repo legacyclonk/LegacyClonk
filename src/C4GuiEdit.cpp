@@ -26,8 +26,16 @@
 #include <C4LoaderScreen.h>
 #include <C4Application.h>
 
+#include <cstring>
+
 namespace C4GUI
 {
+
+namespace
+{
+	constexpr auto cursorChar = '\xa6'; // ¦
+	constexpr char cursorString[]{cursorChar, '\0'};
+}
 
 // Edit
 
@@ -219,7 +227,7 @@ void Edit::ScrollCursorInView()
 {
 	if (rcClientRect.Wdt < 5) return;
 	// get position of cursor
-	int32_t iScrollOff = std::min<int32_t>(20, rcClientRect.Wdt / 3);
+	static constexpr std::int32_t scrollOffset{2};
 	int32_t w, h;
 	if (!cPasswordMask)
 	{
@@ -230,16 +238,19 @@ void Edit::ScrollCursorInView()
 		StdStrBuf Buf; Buf.AppendChars(cPasswordMask, iCursorPos);
 		pFont->GetTextExtent(Buf.getData(), w, h, false);
 	}
+	std::int32_t wCursor;
+	pFont->GetTextExtent(cursorString, wCursor, h, false);
+	w += wCursor / 2;
 	// need to scroll?
-	while (w - iXScroll < rcClientRect.Wdt / 5 && w < iScrollOff + iXScroll && iXScroll > 0)
+	if (w < iXScroll && iXScroll > 0)
 	{
 		// left
-		iXScroll = (std::max)(iXScroll - (std::min)(100, rcClientRect.Wdt / 4), 0);
+		iXScroll = (std::max)(w - scrollOffset, 0);
 	}
-	while (w - iXScroll >= rcClientRect.Wdt / 5 && w >= rcClientRect.Wdt - iScrollOff + iXScroll)
+	if (w > iXScroll && w > rcClientRect.Wdt + iXScroll)
 	{
 		// right
-		iXScroll += (std::min)(100, rcClientRect.Wdt / 4);
+		iXScroll = w - rcClientRect.Wdt + (iCursorPos < strlen(Text) ? scrollOffset : 0);
 	}
 }
 
@@ -306,7 +317,7 @@ bool Edit::Paste()
 
 		// replace any '|'
 		int32_t iLBPos = 0, iLBPos2;
-		while ((iLBPos = SCharPos('|', text, iLBPos)) >= 0) text[iLBPos] = '\xa6';
+		while ((iLBPos = SCharPos('|', text, iLBPos)) >= 0) text[iLBPos] = cursorChar;
 		// caution when inserting line breaks: Those must be stripped, and sent as Enter-commands
 		iLBPos = 0;
 		for (;;)
@@ -435,7 +446,7 @@ bool Edit::CharIn(const char *c)
 
 	// all characters except '|' and extended characters are OK
 	// insert character at cursor position
-	return InsertText(c[0] == '|' ? "\xa6" : c, true);
+	return InsertText(c[0] == '|' ? cursorString : c, true);
 }
 
 void Edit::MouseInput(CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
@@ -599,8 +610,8 @@ void Edit::DrawElement(C4FacetEx &cgo)
 		char cAtCursor = pDrawText[iCursorPos]; pDrawText[iCursorPos] = 0; int32_t w, h, wc;
 		pFont->GetTextExtent(pDrawText, w, h, false);
 		pDrawText[iCursorPos] = cAtCursor;
-		pFont->GetTextExtent("\xa6" /*¦*/, wc, h, false); wc /= 2;
-		lpDDraw->TextOut("\xa6" /*¦*/, *pFont, 1.5f, cgo.Surface, rcClientRect.x + cgo.TargetX + w - wc - iXScroll, iY0 + cgo.TargetY - h / 3, dwFontClr, ALeft, false);
+		pFont->GetTextExtent(cursorString, wc, h, false); wc /= 2;
+		lpDDraw->TextOut(cursorString, *pFont, 1.5f, cgo.Surface, rcClientRect.x + cgo.TargetX + w - wc - iXScroll, iY0 + cgo.TargetY - h / 3, dwFontClr, ALeft, false);
 	}
 	// unclip
 	if (haveOwnClip)
