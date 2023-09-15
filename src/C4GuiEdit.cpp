@@ -131,6 +131,7 @@ void Edit::ClearText()
 	// reset cursor and selection
 	iCursorPos = iSelectionStart = iSelectionEnd = 0;
 	iXScroll = 0;
+	OnTextChange();
 }
 
 void Edit::Deselect()
@@ -153,6 +154,7 @@ void Edit::DeleteSelection()
 	dwLastInputTime = timeGetTime();
 	// nothing selected
 	iSelectionStart = iSelectionEnd = iSelBegin;
+	OnTextChange();
 }
 
 bool Edit::InsertText(const char *szText, bool fUser)
@@ -180,6 +182,7 @@ bool Edit::InsertText(const char *szText, bool fUser)
 		dwLastInputTime = timeGetTime();
 		ScrollCursorInView();
 	}
+	OnTextChange();
 	// done; return whether everything was inserted
 	return fBufferOK;
 }

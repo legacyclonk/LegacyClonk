@@ -96,6 +96,7 @@ protected:
 	// called when user presses enter in single-line edit control - closes the current dialog
 	virtual InputResult OnFinishInput(bool fPasting, bool fPastingMore) { return IR_CloseDlg; }
 	virtual void OnAbortInput() {}
+	virtual void OnTextChange() {}
 
 	// get margins from bounds to client rect
 	virtual int32_t GetMarginTop() override    { return 2; }
