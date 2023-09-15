@@ -157,12 +157,12 @@ void Edit::DeleteSelection()
 	OnTextChange();
 }
 
-bool Edit::InsertText(const char *szText, bool fUser)
+bool Edit::InsertText(std::string_view text, bool fUser)
 {
 	// empty previous selection
 	if (iSelectionStart != iSelectionEnd) DeleteSelection();
 	// check buffer length
-	auto iTextLen = SLen(szText);
+	auto iTextLen = text.size();
 	const auto iTextEnd = SLen(Text);
 	bool fBufferOK = (iTextLen + iTextEnd <= (iMaxTextLength - 1));
 	if (!fBufferOK) iTextLen -= iTextEnd + iTextLen - (iMaxTextLength - 1);
@@ -173,7 +173,7 @@ bool Edit::InsertText(const char *szText, bool fUser)
 	int32_t i;
 	for (i = iTextEnd; i >= iCursorPos; --i) Text[i + iTextLen] = Text[i];
 	// insert buffer into text
-	for (i = iTextLen; i; --i) Text[iCursorPos + i - 1] = szText[i - 1];
+	for (i = iTextLen; i; --i) Text[iCursorPos + i - 1] = text[i - 1];
 	if (fUser)
 	{
 		// advance cursor
