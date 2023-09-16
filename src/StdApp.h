@@ -21,6 +21,8 @@
 #include "StdWindow.h"
 
 #ifdef _WIN32
+#include "StdSync.h"
+
 const int SEC1_TIMER = 1, SEC1_MSEC = 1000;
 #elif defined(USE_X11)
 struct _XIC;
