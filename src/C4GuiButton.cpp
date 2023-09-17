@@ -313,5 +313,4 @@ void FacetButton::DrawElement(C4FacetEx &cgo)
 		lpDDraw->TextOut(sText.getData(), *pUseFont, fFontZoom, cgo.Surface, static_cast<int>(x0 + iTxtOffX), static_cast<int>(y0 + iTxtOffY), dwTextClr, byTxtAlign, true);
 	}
 }
-
 } // end of namespace

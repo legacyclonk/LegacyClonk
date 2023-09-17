@@ -22,6 +22,7 @@
 #pragma once
 
 #include "C4Gui.h"
+#include "C4GuiDialogs.h"
 #include "C4Client.h"
 #include "C4Cooldown.h"
 #include "C4PlayerInfo.h"

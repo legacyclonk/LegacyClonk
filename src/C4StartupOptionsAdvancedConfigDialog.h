@@ -16,6 +16,7 @@
 #pragma once
 
 #include "C4Gui.h"
+#include "C4GuiDialogs.h"
 
 #include <unordered_map>
 

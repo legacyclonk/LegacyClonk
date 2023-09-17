@@ -19,7 +19,8 @@
 
 #pragma once
 
-#include <C4Gui.h>
+#include "C4Gui.h"
+#include "C4GuiDialogs.h"
 
 class C4AbortGameDialog : public C4GUI::Dialog
 {

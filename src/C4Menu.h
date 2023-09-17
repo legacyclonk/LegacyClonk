@@ -23,6 +23,7 @@
 #include "C4FacetEx.h"
 #include "C4Shape.h"
 #include "C4Gui.h"
+#include "C4GuiDialogs.h"
 #include "C4IDList.h"
 #include "StdFile.h"
 

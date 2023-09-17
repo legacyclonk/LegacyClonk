@@ -104,6 +104,7 @@ src/C4GuiComboBox.cpp
 src/C4GuiComboBox.h
 src/C4GuiContainers.cpp
 src/C4GuiDialogs.cpp
+src/C4GuiDialogs.h
 src/C4GuiEdit.cpp
 src/C4GuiEdit.h
 src/C4GuiLabels.cpp

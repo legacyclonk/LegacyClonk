@@ -20,6 +20,7 @@
 #pragma once
 
 #include "C4Gui.h"
+#include "C4GuiDialogs.h"
 
 #define C4CFN_StartupBackgroundMain "LoaderGoldmine1"
 

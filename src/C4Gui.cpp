@@ -18,6 +18,7 @@
 // generic user interface
 // all generic classes that do not fit into other C4Gui*-files
 
+#include <C4GuiDialogs.h>
 #include "C4GuiResource.h"
 #include <C4Include.h>
 #include <C4Gui.h>
@@ -943,6 +944,19 @@ Dialog *Screen::GetFullscreenDialog(bool fIncludeFading)
 	return nullptr;
 }
 
+bool Screen::HasKeyboardFocus()
+{
+	// always hook keyboard in exclusive mode; only on exclusive top dialogs in shared mode
+	if (IsExclusive()) return true;
+	Dialog *pDlg = GetTopDialog();
+	return pDlg && pDlg->IsExclusiveDialog();
+}
+
+bool Screen::HasMouseFocus()
+{
+	return HasKeyboardFocus();
+}
+
 void Screen::UpdateGamepadGUIControlEnabled()
 {
 	// update pGamePadOpener to config value
@@ -1159,5 +1173,4 @@ void GUISound(const char *szSound)
 C4Rect ComponentAligner::rcTemp;
 Resource *Resource::pRes;
 Screen *Screen::pScreen;
-
-} // end of namespace
+} // namespace C4GUI

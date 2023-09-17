@@ -22,6 +22,7 @@
 #include "C4Constants.h"
 #include "C4EnumeratedObjectPtr.h"
 #include "C4Gui.h"
+#include "C4GuiDialogs.h"
 #include "C4KeyboardInput.h"
 
 #include <unordered_map>

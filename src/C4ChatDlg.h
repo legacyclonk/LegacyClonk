@@ -20,6 +20,7 @@
 #pragma once
 
 #include "C4Gui.h"
+#include "C4GuiDialogs.h"
 #include "C4InteractiveThread.h"
 #include "C4Network2IRC.h"
 

@@ -18,6 +18,7 @@
 // generic user interface
 // dialog base classes and some user dialogs
 
+#include "C4GuiDialogs.h"
 #include "C4GuiEdit.h"
 #include "C4GuiResource.h"
 #include <C4Gui.h>
@@ -39,6 +40,49 @@
 
 namespace C4GUI
 {
+namespace
+{
+	// regular close button
+	class DlgCloseButton : public CloseButton
+	{
+		public: DlgCloseButton(const C4Rect &rtBounds)
+			: CloseButton(LoadResStr("IDS_DLG_CLOSE"), rtBounds, true) {}
+	};
+
+	// Retry button
+	class RetryButton : public CloseButton
+	{
+		public: RetryButton(const C4Rect &rtBounds)
+			: CloseButton(LoadResStr("IDS_BTN_RETRY"), rtBounds, true) {}
+	};
+}
+
+// EM window class
+class DialogWindow : public CStdWindow
+{
+#ifdef _WIN32
+private:
+	static constexpr auto WindowStyle = WS_VISIBLE | WS_POPUP | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
+#endif
+public:
+	DialogWindow(Dialog &dialog) : dialog{dialog} {}
+	virtual void Close() override;
+
+#ifdef _WIN32
+	bool Init(CStdApp *app, const char *title, const class C4Rect &bounds, CStdWindow *parent = nullptr) override;
+
+	std::pair<DWORD, DWORD> GetWindowStyle() const override { return {WindowStyle, 0}; }
+	WNDCLASSEX GetWindowClass(HINSTANCE instance) const override;
+	bool GetPositionData(std::string &id, std::string &subKey, bool &storeSize) const override;
+#endif
+
+private:
+	Dialog &dialog;
+
+#ifdef _WIN32
+	friend LRESULT APIENTRY DialogWinProc(HWND, UINT, WPARAM, LPARAM);
+#endif
+};
 
 // FrameDecoration
 
@@ -1311,4 +1355,21 @@ void TimedDialog::SetText(const char *message)
 	UpdateSize();
 }
 
+void CloseButton::OnPress()
+{
+	Dialog *pDlg;
+	if ((pDlg = GetDlg()))
+	{
+		pDlg->UserClose(fCloseResult);
+	}
+}
+
+void CloseIconButton::OnPress()
+{
+	Dialog *pDlg;
+	if ((pDlg = GetDlg()))
+	{
+		pDlg->UserClose(fCloseResult);
+	}
+}
 } // end of namespace

@@ -21,6 +21,7 @@
 #pragma once
 
 #include "C4Gui.h"
+#include "C4GuiDialogs.h"
 #include "C4Network2Reference.h" // includes HTTP client
 
 // dialog to download a file

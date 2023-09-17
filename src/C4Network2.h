@@ -30,6 +30,7 @@
 #include "C4Teams.h"
 #include "C4Control.h"
 #include "C4Gui.h"
+#include "C4GuiDialogs.h"
 
 #ifndef USE_CONSOLE
 #include "C4ToastEventHandler.h"
