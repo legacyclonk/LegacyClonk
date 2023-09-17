@@ -148,55 +148,46 @@ bool FrameDecoration::UpdateGfx()
 
 void FrameDecoration::Draw(C4FacetEx &cgo, C4Rect &rcBounds)
 {
-	// draw BG
 	int ox = cgo.TargetX + rcBounds.x, oy = cgo.TargetY + rcBounds.y;
+
+	// draw BG
 	lpDDraw->DrawBoxDw(cgo.Surface, ox, oy, ox + rcBounds.Wdt - 1, oy + rcBounds.Hgt - 1, dwBackClr);
+
+	const auto drawHorizontal = [this, &cgo, &rcBounds, ox](C4FacetEx facet, std::int32_t y)
+	{
+		if (facet.Wdt <= 0)
+		{
+			return;
+		}
+
+		for (std::int32_t x = iBorderLeft; x < rcBounds.Wdt - iBorderRight; x += facet.Wdt)
+		{
+			int w = std::min<int>(facet.Wdt, rcBounds.Wdt - iBorderRight - x);
+			facet.Wdt = w;
+			facet.Draw(cgo.Surface, ox + x, y + facet.TargetY);
+		}
+	};
+	const auto drawVertical = [this, &cgo, &rcBounds, oy](C4FacetEx facet, std::int32_t x)
+	{
+		if (facet.Hgt <= 0)
+		{
+			return;
+		}
+
+		for (std::int32_t y = iBorderTop; y < rcBounds.Hgt - iBorderBottom; y += facet.Hgt)
+		{
+			int h = std::min<int>(facet.Hgt, rcBounds.Hgt - iBorderBottom - y);
+			facet.Hgt = h;
+			facet.Draw(cgo.Surface, x + facet.TargetX, oy + y);
+		}
+	};
+
 	// draw borders
-	int x, y, Q;
-	// top
-	if (Q = fctTop.Wdt)
-	{
-		for (x = iBorderLeft; x < rcBounds.Wdt - iBorderRight; x += fctTop.Wdt)
-		{
-			int w = std::min<int>(fctTop.Wdt, rcBounds.Wdt - iBorderRight - x);
-			fctTop.Wdt = w;
-			fctTop.Draw(cgo.Surface, ox + x, oy + fctTop.TargetY);
-		}
-		fctTop.Wdt = Q;
-	}
-	// left
-	if (Q = fctLeft.Hgt)
-	{
-		for (y = iBorderTop; y < rcBounds.Hgt - iBorderBottom; y += fctLeft.Hgt)
-		{
-			int h = std::min<int>(fctLeft.Hgt, rcBounds.Hgt - iBorderBottom - y);
-			fctLeft.Hgt = h;
-			fctLeft.Draw(cgo.Surface, ox + fctLeft.TargetX, oy + y);
-		}
-		fctLeft.Hgt = Q;
-	}
-	// right
-	if (Q = fctRight.Hgt)
-	{
-		for (y = iBorderTop; y < rcBounds.Hgt - iBorderBottom; y += fctRight.Hgt)
-		{
-			int h = std::min<int>(fctRight.Hgt, rcBounds.Hgt - iBorderBottom - y);
-			fctRight.Hgt = h;
-			fctRight.Draw(cgo.Surface, ox + rcBounds.Wdt - iBorderRight + fctRight.TargetX, oy + y);
-		}
-		fctRight.Hgt = Q;
-	}
-	// bottom
-	if (Q = fctBottom.Wdt)
-	{
-		for (x = iBorderLeft; x < rcBounds.Wdt - iBorderRight; x += fctBottom.Wdt)
-		{
-			int w = std::min<int>(fctBottom.Wdt, rcBounds.Wdt - iBorderRight - x);
-			fctBottom.Wdt = w;
-			fctBottom.Draw(cgo.Surface, ox + x, oy + rcBounds.Hgt - iBorderBottom + fctBottom.TargetY);
-		}
-		fctBottom.Wdt = Q;
-	}
+	drawHorizontal(fctTop, oy);
+	drawVertical(fctLeft, ox);
+	drawVertical(fctRight, ox + rcBounds.Wdt - iBorderRight);
+	drawHorizontal(fctBottom, oy + rcBounds.Hgt - iBorderBottom);
+
 	// draw edges
 	fctTopLeft.Draw(cgo.Surface, ox + fctTopLeft.TargetX, oy + fctTopLeft.TargetY);
 	fctTopRight.Draw(cgo.Surface, ox + rcBounds.Wdt - iBorderRight + fctTopRight.TargetX, oy + fctTopRight.TargetY);
