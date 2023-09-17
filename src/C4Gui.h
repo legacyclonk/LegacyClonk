@@ -185,8 +185,8 @@ class ScrollBar; class ScrollWindow;
 // C4GuiButton.cpp
 class Button; template <class CallbackDlg, class Base> class CallbackButton;
 class IconButton;
-class CloseButton; class OKButton; class CancelButton;
-class CloseIconButton; class OKIconButton; class CancelIconButton;
+class CloseButton;
+class CloseIconButton;
 
 // C4GuiEdit.cpp
 class Edit;
@@ -1568,45 +1568,13 @@ public:
 		: IconButton(eIcon, rtBounds, 0), fCloseResult(fResult) {}
 };
 
-// OK button
-class OKButton : public CloseButton
-{
-public: OKButton(const C4Rect &rtBounds)
-	: CloseButton(LoadResStr("IDS_DLG_OK"), rtBounds, true) {}
-};
+inline Button *newOKIconButton(const C4Rect &bounds, Icons icon) { return new CloseIconButton{bounds, icon, true}; }
+inline Button *newCancelIconButton(const C4Rect &bounds, Icons icon) { return new CloseIconButton{bounds, icon, false}; }
 
-class OKIconButton : public CloseIconButton
-{
-public: OKIconButton(const C4Rect &rtBounds, Icons eIcon)
-	: CloseIconButton(rtBounds, eIcon, true) {}
-};
-
-// cancel button
-class CancelButton : public CloseButton
-{
-public: CancelButton(const C4Rect &rtBounds)
-	: CloseButton(LoadResStr("IDS_DLG_CANCEL"), rtBounds, false) {}
-};
-
-class CancelIconButton : public CloseIconButton
-{
-public: CancelIconButton(const C4Rect &rtBounds, Icons eIcon)
-	: CloseIconButton(rtBounds, eIcon, false) {}
-};
-
-// Yes button
-class YesButton : public CloseButton
-{
-	public: YesButton(const C4Rect &rtBounds)
-		: CloseButton(LoadResStr("IDS_DLG_YES"), rtBounds, true) {}
-};
-
-// No button
-class NoButton : public CloseButton
-{
-	public: NoButton(const C4Rect &rtBounds)
-		: CloseButton(LoadResStr("IDS_DLG_NO"), rtBounds, false) {}
-};
+inline Button *newOKButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_DLG_OK"), bounds, true}; }
+inline Button *newCancelButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_DLG_CANCEL"), bounds, false}; }
+inline Button *newYesButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_DLG_YES"), bounds, true}; }
+inline Button *newNoButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_DLG_NO"), bounds, false}; }
 
 class BaseInputCallback
 {

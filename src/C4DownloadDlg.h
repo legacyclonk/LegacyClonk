@@ -33,7 +33,7 @@ private:
 	C4GUI::Icon *pIcon;
 	C4GUI::Label *pStatusLabel;
 	C4GUI::ProgressBar *pProgressBar;
-	C4GUI::CancelButton *pCancelBtn;
+	C4GUI::Button *pCancelBtn;
 	const char *szError;
 #ifdef _WIN32
 	bool fWinSock;

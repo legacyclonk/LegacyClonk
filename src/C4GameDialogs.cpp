@@ -60,7 +60,7 @@ C4AbortGameDialog::C4AbortGameDialog()
 	C4Rect rcBtn = caButtonArea.GetCentered(iButtonCount * C4GUI_DefButton2Wdt + (iButtonCount - 1) * C4GUI_DefButton2HSpace, C4GUI_ButtonHgt);
 	rcBtn.Wdt = C4GUI_DefButton2Wdt;
 
-	auto *const yesBtn = new C4GUI::YesButton{rcBtn};
+	auto *const yesBtn = C4GUI::newYesButton(rcBtn);
 	AddElement(yesBtn);
 	rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 
@@ -70,7 +70,7 @@ C4AbortGameDialog::C4AbortGameDialog()
 		rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 	}
 
-	AddElement(new C4GUI::NoButton{rcBtn});
+	AddElement(C4GUI::newNoButton(rcBtn));
 
 	SetFocus(yesBtn, false);
 	// resize to actually needed size

@@ -1229,10 +1229,10 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	UpdatePlayerMovement();
 	// place buttons
 	// OK
-	C4GUI::Button *pBtnOK = new C4GUI::OKIconButton(C4Rect(147 - GetMarginLeft(), 295 + 35 - GetMarginTop(), 54, 33), C4GUI::Ico_None);
+	C4GUI::Button *pBtnOK = C4GUI::newOKIconButton(C4Rect(147 - GetMarginLeft(), 295 + 35 - GetMarginTop(), 54, 33), C4GUI::Ico_None);
 	AddElement(pBtnOK);
 	// Cancel
-	C4GUI::Button *pBtnAbort = new C4GUI::CancelIconButton(C4Rect(317 - GetMarginLeft(), 16 - GetMarginTop(), 21, 21), C4GUI::Ico_None);
+	C4GUI::Button *pBtnAbort = C4GUI::newCancelIconButton(C4Rect(317 - GetMarginLeft(), 16 - GetMarginTop(), 21, 21), C4GUI::Ico_None);
 	AddElement(pBtnAbort);
 	// New player
 	if (!pForPlayer)

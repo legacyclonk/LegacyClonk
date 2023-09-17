@@ -42,19 +42,8 @@ namespace C4GUI
 {
 namespace
 {
-	// regular close button
-	class DlgCloseButton : public CloseButton
-	{
-		public: DlgCloseButton(const C4Rect &rtBounds)
-			: CloseButton(LoadResStr("IDS_DLG_CLOSE"), rtBounds, true) {}
-	};
-
-	// Retry button
-	class RetryButton : public CloseButton
-	{
-		public: RetryButton(const C4Rect &rtBounds)
-			: CloseButton(LoadResStr("IDS_BTN_RETRY"), rtBounds, true) {}
-	};
+	inline Button *newDlgCloseButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_DLG_CLOSE"), bounds, true}; }
+	inline Button *newRetryButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_BTN_RETRY"), bounds, true}; }
 }
 
 // EM window class
@@ -959,7 +948,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint3
 		// OK
 		if (dwButtons & btnOK)
 		{
-			Button *pBtnOK = new OKButton(rcBtn);
+			Button *pBtnOK = newOKButton(rcBtn);
 			AddElement(pBtnOK);
 			rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 			if (!fDefaultNo) btnFocus = pBtnOK;
@@ -967,7 +956,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint3
 		// Retry
 		if (dwButtons & btnRetry)
 		{
-			Button *pBtnRetry = new RetryButton(rcBtn);
+			Button *pBtnRetry = newRetryButton(rcBtn);
 			AddElement(pBtnRetry);
 			rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 			if (!btnFocus) btnFocus = pBtnRetry;
@@ -975,7 +964,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint3
 		// Cancel
 		if (dwButtons & btnAbort)
 		{
-			Button *pBtnAbort = new CancelButton(rcBtn);
+			Button *pBtnAbort = newCancelButton(rcBtn);
 			AddElement(pBtnAbort);
 			rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 			if (!btnFocus) btnFocus = pBtnAbort;
@@ -983,7 +972,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint3
 		// Yes
 		if (dwButtons & btnYes)
 		{
-			Button *pBtnYes = new YesButton(rcBtn);
+			Button *pBtnYes = newYesButton(rcBtn);
 			AddElement(pBtnYes);
 			rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 			if (!btnFocus && !fDefaultNo) btnFocus = pBtnYes;
@@ -991,7 +980,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint3
 		// No
 		if (dwButtons & btnNo)
 		{
-			Button *pBtnNo = new NoButton(rcBtn);
+			Button *pBtnNo = newNoButton(rcBtn);
 			AddElement(pBtnNo);
 			if (!btnFocus) btnFocus = pBtnNo;
 		}
@@ -1053,7 +1042,7 @@ ProgressDialog::ProgressDialog(const char *szMessage, const char *szCaption, int
 	pBar->SetToolTip(LoadResStr("IDS_DLGTIP_PROGRESS"));
 	AddElement(pBar);
 	// place abort button
-	Button *pBtnAbort = new CancelButton(caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_ButtonHgt));
+	Button *pBtnAbort = newCancelButton(caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_ButtonHgt));
 	AddElement(pBtnAbort);
 }
 
@@ -1161,11 +1150,11 @@ InputDialog::InputDialog(const char *szMessage, const char *szCaption, Icons ico
 		C4Rect rcBtn = caButtonArea.GetCentered(2 * C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace, C4GUI_ButtonHgt);
 		rcBtn.Wdt = C4GUI_DefButton2Wdt;
 		// OK
-		Button *pBtnOK = new OKButton(rcBtn);
+		Button *pBtnOK = newOKButton(rcBtn);
 		AddElement(pBtnOK);
 		rcBtn.x += rcBtn.Wdt + C4GUI_DefButton2HSpace;
 		// Cancel
-		Button *pBtnAbort = new CancelButton(rcBtn);
+		Button *pBtnAbort = newCancelButton(rcBtn);
 		AddElement(pBtnAbort);
 		rcBtn.x += rcBtn.Wdt + C4GUI_DefButton2HSpace;
 	}
@@ -1258,7 +1247,7 @@ void InfoDialog::CreateSubComponents()
 	pTextWin = new TextWindow(caMain.GetAll(), 0, 0, 0, 100, 4096, "  ", true, nullptr, 0);
 	AddElement(pTextWin);
 	// place close button
-	Button *pBtnClose = new DlgCloseButton(caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_ButtonHgt));
+	Button *pBtnClose = newDlgCloseButton(caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_ButtonHgt));
 	AddElement(pBtnClose); pBtnClose->SetToolTip(LoadResStr("IDS_MNU_CLOSE"));
 }
 

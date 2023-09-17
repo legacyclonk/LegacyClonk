@@ -573,7 +573,7 @@ C4Network2StartWaitDlg::C4Network2StartWaitDlg()
 	AddElement(new C4GUI::CallbackButton<C4Network2StartWaitDlg>{LoadResStr("IDS_BTN_RESTART"), bounds, &C4Network2StartWaitDlg::OnBtnRestart, this});
 	bounds.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
 	// place abort button
-	AddElement(new C4GUI::CancelButton{bounds});
+	AddElement(C4GUI::newCancelButton(bounds));
 }
 
 void C4Network2StartWaitDlg::OnBtnRestart(C4GUI::Control *)

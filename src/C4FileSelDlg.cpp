@@ -155,8 +155,8 @@ void C4FileSelDlg::InitElements()
 		pSelectionInfoBox->SetDecoration(true, true, nullptr, true);
 	}
 	// create button area
-	C4GUI::Button *btnAbort = new C4GUI::CancelButton(caButtonArea.GetFromRight(C4GUI_DefButton2Wdt));
-	btnOK = new C4GUI::OKButton(caButtonArea.GetFromRight(C4GUI_DefButton2Wdt));
+	C4GUI::Button *btnAbort = C4GUI::newCancelButton(caButtonArea.GetFromRight(C4GUI_DefButton2Wdt));
+	btnOK = C4GUI::newOKButton(caButtonArea.GetFromRight(C4GUI_DefButton2Wdt));
 	// add components in tab order
 	if (pLocationComboBox) AddElement(pLocationComboBox);
 	AddElement(pFileListBox);

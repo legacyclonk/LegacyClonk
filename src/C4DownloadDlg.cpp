@@ -35,7 +35,7 @@ C4DownloadDlg::C4DownloadDlg(const char *szDLType) : C4GUI::Dialog(C4GUI_Progres
 	AddElement(pIcon = new C4GUI::Icon(C4Rect(), C4GUI::Ico_NetWait));
 	AddElement(pStatusLabel = new C4GUI::Label("", C4Rect(), ACenter, C4GUI_MessageFontClr, &C4GUI::GetRes()->TextFont, false));
 	pProgressBar = nullptr; // created when necessary
-	AddElement(pCancelBtn = new C4GUI::CancelButton(C4Rect()));
+	AddElement(pCancelBtn = C4GUI::newCancelButton(C4Rect()));
 }
 
 C4DownloadDlg::~C4DownloadDlg()

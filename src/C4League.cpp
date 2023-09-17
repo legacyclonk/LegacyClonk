@@ -617,10 +617,10 @@ C4LeagueSignupDialog::C4LeagueSignupDialog(const char *szPlayerName, const char 
 	C4GUI::ComponentAligner caButtonArea(caMain.GetFromTop(C4GUI_ButtonAreaHgt), 0, 0);
 	C4Rect rcBtn = caButtonArea.GetCentered(2 * C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace, C4GUI_ButtonHgt);
 	rcBtn.Wdt = C4GUI_DefButton2Wdt;
-	pBtnOK = new C4GUI::OKButton(rcBtn);
+	pBtnOK = C4GUI::newOKButton(rcBtn);
 	AddElement(pBtnOK);
 	rcBtn.x += C4GUI_DefButton2Wdt + C4GUI_DefButton2HSpace;
-	pBtnAbort = new C4GUI::CancelButton(rcBtn);
+	pBtnAbort = C4GUI::newCancelButton(rcBtn);
 	AddElement(pBtnAbort);
 	// resize to actually needed size
 	SetClientSize(GetClientRect().Wdt, GetClientRect().Hgt - caMain.GetHeight());
