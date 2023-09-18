@@ -531,10 +531,7 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 
 	if ((!l_Permanent || fIsCloseCommand) && l_Object) l_Object->AutoContextMenu(l_LastSelection);
 
-	if (l_Object)
-	{
-		ClearObjectPtr = nullptr;
-	}
+	ClearObjectPtr = nullptr;
 
 	return true;
 }
