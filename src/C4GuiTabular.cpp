@@ -96,7 +96,7 @@ void Tabular::Sheet::DrawCaption(C4FacetEx &cgo, int32_t x, int32_t y, int32_t i
 		if (!fLarge && fHasCloseButton) x -= iTxtHgt / 2;
 		uint32_t dwClr = dwCaptionClr;
 		if (!dwClr) dwClr = fActive ? C4GUI_CaptionFontClr : C4GUI_InactCaptionFontClr;
-		lpDDraw->TextOut(sTitle.getData(), rUseFont, fLarge ? 1.2f : 1.0f, cgo.Surface, x, y, dwClr, fLarge ? ALeft : ACenter, fTitleMarkup);
+		lpDDraw->TextOut(sTitle.getData(), rUseFont, 1.0f, cgo.Surface, x, y, dwClr, fLarge ? ALeft : ACenter, fTitleMarkup);
 		// close button
 		if (fHasCloseButton)
 		{
