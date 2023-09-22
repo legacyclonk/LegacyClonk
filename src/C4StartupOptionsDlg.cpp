@@ -867,44 +867,12 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pSheetGraphics->AddElement(pGroupTrouble);
 	C4GUI::ComponentAligner caGroupTrouble(pGroupTrouble->GetClientRect(), iIndentX1, iIndentY2, true);
 	C4GUI::BaseCallbackHandler *pGfxGroubleCheckCB = new C4GUI::CallbackHandler<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnGfxTroubleCheck);
-	int32_t iNumGfxOptions = 6, iOpt = 0;
-	// no alpha adding
-	pCheckGfxNoAlphaAdd = new C4GUI::CheckBox(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_NOALPHAADD"), false);
-	pCheckGfxNoAlphaAdd->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-	pCheckGfxNoAlphaAdd->SetToolTip(LoadResStr("IDS_MSG_NOALPHAADD_DESC"));
-	pCheckGfxNoAlphaAdd->SetOnChecked(pGfxGroubleCheckCB);
-	pGroupTrouble->AddElement(pCheckGfxNoAlphaAdd);
-	// point filtering
-	pCheckGfxPointFilter = new C4GUI::CheckBox(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_POINTFILTERING"), false);
-	pCheckGfxPointFilter->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-	pCheckGfxPointFilter->SetToolTip(LoadResStr("IDS_MSG_POINTFILTERING_DESC"));
-	pCheckGfxPointFilter->SetOnChecked(pGfxGroubleCheckCB);
-	pGroupTrouble->AddElement(pCheckGfxPointFilter);
-	// no additive blitting
-	pCheckGfxNoAddBlit = new C4GUI::CheckBox(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_NOADDBLT"), false);
-	pCheckGfxNoAddBlit->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-	pCheckGfxNoAddBlit->SetToolTip(LoadResStr("IDS_MSG_NOADDBLT_DESC"));
-	pCheckGfxNoAddBlit->SetOnChecked(pGfxGroubleCheckCB);
-	pGroupTrouble->AddElement(pCheckGfxNoAddBlit);
-	// no box fades
-	pCheckGfxNoBoxFades = new C4GUI::CheckBox(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_NOCLRFADE"), false);
-	pCheckGfxNoBoxFades->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-	pCheckGfxNoBoxFades->SetToolTip(LoadResStr("IDS_MSG_NOCLRFADE_DESC"));
-	pCheckGfxNoBoxFades->SetOnChecked(pGfxGroubleCheckCB);
-	pGroupTrouble->AddElement(pCheckGfxNoBoxFades);
+	int32_t iNumGfxOptions = 1, iOpt = 0;
 	// enable gamma
 	pCheckGfxDisableGamma = new BoolConfig(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_DISABLEGAMMA"), &Config.Graphics.DisableGamma);
 	pCheckGfxDisableGamma->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pCheckGfxDisableGamma->SetToolTip(LoadResStr("IDS_MSG_DISABLEGAMMA_DESC"));
 	pGroupTrouble->AddElement(pCheckGfxDisableGamma);
-	// texture indent
-	pEdtGfxTexIndent = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 0, 3, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_TEXINDENT"), nullptr, &Config.Graphics.TexIndent, false);
-	pEdtGfxTexIndent->SetToolTip(LoadResStr("IDS_MSG_TEXINDENT_DESC"));
-	pGroupTrouble->AddElement(pEdtGfxTexIndent);
-	// blit offset
-	pEdtGfxBlitOff = new EditConfig(caGroupTrouble.GetGridCell(3, 5, 1, 3, -1, iEdit2Hgt, true, 2), LoadResStr("IDS_MSG_BLITOFFSET"), nullptr, &Config.Graphics.BlitOffset, false);
-	pEdtGfxBlitOff->SetToolTip(LoadResStr("IDS_MSG_BLITOFFSET_DESC"));
-	pGroupTrouble->AddElement(pEdtGfxBlitOff);
 
 	// load values of currently selected engine for troubleshooting
 	LoadGfxTroubleshoot();
@@ -1374,37 +1342,12 @@ void C4StartupOptionsDlg::RecreateDialog(bool fFade)
 
 void C4StartupOptionsDlg::LoadGfxTroubleshoot()
 {
-	// config to controls
-	pCheckGfxNoAlphaAdd->SetChecked(Config.Graphics.NoAlphaAdd);
-	pCheckGfxPointFilter->SetChecked(Config.Graphics.PointFiltering);
-	pCheckGfxNoBoxFades->SetChecked(Config.Graphics.NoBoxFades);
-	pCheckGfxNoAddBlit->SetChecked(!(Config.Graphics.AllowedBlitModes & C4GFXBLIT_ADDITIVE));
-	pEdtGfxTexIndent->SetIntVal(Config.Graphics.TexIndent);
-	pEdtGfxBlitOff->SetIntVal(Config.Graphics.BlitOffset);
 	// title of troubleshooting-box by config set
 	pGroupTrouble->SetTitle(LoadResStrNoAmp("IDS_CTL_TROUBLE"));
 }
 
 void C4StartupOptionsDlg::SaveGfxTroubleshoot()
 {
-	// copntrols to config
-	// get it from controls
-	pEdtGfxTexIndent->Save2Config();
-	pEdtGfxBlitOff->Save2Config();
-	// set config values into this set
-	Config.Graphics.NoAlphaAdd = pCheckGfxNoAlphaAdd->GetChecked();
-	Config.Graphics.PointFiltering = pCheckGfxPointFilter->GetChecked();
-	Config.Graphics.NoBoxFades = pCheckGfxNoBoxFades->GetChecked();
-
-	if (pCheckGfxNoAddBlit->GetChecked())
-	{
-		Config.Graphics.AllowedBlitModes &= ~C4GFXBLIT_ADDITIVE;
-	}
-	else
-	{
-		Config.Graphics.AllowedBlitModes |= C4GFXBLIT_ADDITIVE;
-	}
-
 	lpDDraw->InvalidateDeviceObjects();
 	lpDDraw->RestoreDeviceObjects();
 }

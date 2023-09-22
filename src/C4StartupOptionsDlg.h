@@ -130,9 +130,7 @@ private:
 	void OnEffectsSliderChange(int32_t iNewVal);
 
 	C4GUI::GroupBox *pGroupTrouble;
-	C4GUI::CheckBox *pCheckGfxNoAlphaAdd, *pCheckGfxPointFilter, *pCheckGfxNoAddBlit, *pCheckGfxNoBoxFades;
 	BoolConfig *pCheckGfxDisableGamma;
-	EditConfig *pEdtGfxTexIndent, *pEdtGfxBlitOff;
 	C4GUI::ScrollBar *pEffectLevelSlider;
 
 	void LoadGfxTroubleshoot(); void SaveGfxTroubleshoot();
