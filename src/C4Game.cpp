@@ -1645,7 +1645,33 @@ bool C4Game::EnumerateMaterials()
 	MWater = Material.Get("Water");
 	MSnow = Material.Get("Snow");
 	MGranite = Material.Get("Granite");
-	MEarth = Material.Get(C4S.Landscape.Material);
+
+	const std::string_view material{C4S.Landscape.Material};
+
+	if (const std::size_t pos = material.find('-'); pos != std::string_view::npos)
+	{
+		if (CompareVersion(
+					C4S.Head.C4XVer[0], C4S.Head.C4XVer[1], C4S.Head.C4XVer[2], C4S.Head.C4XVer[3], C4S.Head.C4XVer[4],
+					4, 9, 10, 15, 359)
+				== -1)
+		{
+			if (!C4S.Landscape.InEarth.IsClear() ||!C4S.Animals.EarthNest.IsClear())
+			{
+				DebugLogF("Scenario.txt: Material=%s specifies a texture, which breaks InEarth and Nest before [359]. Version=4,9,10,15,359 or higher enables the fixed behavior.", C4S.Landscape.Material);
+			}
+
+			MEarth = MNone;
+		}
+		else
+		{
+			MEarth = Material.Get(std::string{material.substr(0, pos)}.c_str());
+		}
+	}
+	else
+	{
+		MEarth = Material.Get(C4S.Landscape.Material);
+	}
+
 	if ((MVehic == MNone) || (MTunnel == MNone))
 	{
 		LogFatal(LoadResStr("IDS_PRC_NOSYSMATS")); return false;
