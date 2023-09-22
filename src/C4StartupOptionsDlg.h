@@ -123,17 +123,11 @@ private:
 		void UpdateText() override;
 	};
 
-	void OnGfxTroubleCheck(C4GUI::Element *pCheckBox)
-	{
-		SaveGfxTroubleshoot();
-	} // immediate save and test
 	void OnEffectsSliderChange(int32_t iNewVal);
 
-	C4GUI::GroupBox *pGroupTrouble;
-	BoolConfig *pCheckGfxDisableGamma;
 	C4GUI::ScrollBar *pEffectLevelSlider;
 
-	void LoadGfxTroubleshoot(); void SaveGfxTroubleshoot();
+	void SaveGfxTroubleshoot();
 
 	class ScaleEdit;
 

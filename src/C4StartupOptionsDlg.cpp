@@ -858,27 +858,10 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pGroupDisplaySettings->AddElement(pScaleSlider);
 
 	OnScaleSliderChanged(Config.Graphics.Scale - minScale);
-
-	// --subgroup troubleshooting
-	pGroupTrouble = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(0, 1, 1, 3));
-	pGroupTrouble->SetTitle(LoadResStrNoAmp("IDS_CTL_TROUBLE"));
-	pGroupTrouble->SetFont(pUseFont);
-	pGroupTrouble->SetColors(C4StartupEditBorderColor, C4StartupFontClr);
-	pSheetGraphics->AddElement(pGroupTrouble);
-	C4GUI::ComponentAligner caGroupTrouble(pGroupTrouble->GetClientRect(), iIndentX1, iIndentY2, true);
-	C4GUI::BaseCallbackHandler *pGfxGroubleCheckCB = new C4GUI::CallbackHandler<C4StartupOptionsDlg>(this, &C4StartupOptionsDlg::OnGfxTroubleCheck);
-	int32_t iNumGfxOptions = 1, iOpt = 0;
-	// enable gamma
-	pCheckGfxDisableGamma = new BoolConfig(caGroupTrouble.GetGridCell(0, 2, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_DISABLEGAMMA"), &Config.Graphics.DisableGamma);
-	pCheckGfxDisableGamma->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
-	pCheckGfxDisableGamma->SetToolTip(LoadResStr("IDS_MSG_DISABLEGAMMA_DESC"));
-	pGroupTrouble->AddElement(pCheckGfxDisableGamma);
-
-	// load values of currently selected engine for troubleshooting
-	LoadGfxTroubleshoot();
+;
 	// --subgroup options
-	iNumGfxOptions = 4; iOpt = 0;
-	C4GUI::GroupBox *pGroupOptions = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(0, 2, 2, 3));
+	int32_t iNumGfxOptions = 5, iOpt = 0;
+	C4GUI::GroupBox *pGroupOptions = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(0, 2, 1, 3));
 	pGroupOptions->SetTitle(LoadResStrNoAmp("IDS_DLG_OPTIONS"));
 	pGroupOptions->SetFont(pUseFont);
 	pGroupOptions->SetColors(C4StartupEditBorderColor, C4StartupFontClr);
@@ -904,8 +887,13 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp("IDS_D
 	pCheck->SetToolTip(LoadResStr("IDS_DESC_SHOWFOLDERMAPS"));
 	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
 	pGroupOptions->AddElement(pCheck);
+	// disable gamma
+	pCheck = new BoolConfig(caGroupOptions.GetGridCell(0, 1, iOpt++, iNumGfxOptions, -1, iCheckHgt, true), LoadResStr("IDS_CTL_DISABLEGAMMA"), &Config.Graphics.DisableGamma);
+	pCheck->SetToolTip(LoadResStr("IDS_MSG_DISABLEGAMMA_DESC"));
+	pCheck->SetFont(pUseFont, C4StartupFontClr, C4StartupFontClrDisabled);
+	pGroupOptions->AddElement(pCheck);
 	// --subgroup effects
-	C4GUI::GroupBox *pGroupEffects = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(1, 2, 2, 3));
+	C4GUI::GroupBox *pGroupEffects = new C4GUI::GroupBox(caSheetGraphics.GetGridCell(1, 2, 1, 3));
 	pGroupEffects->SetTitle(LoadResStrNoAmp("IDS_CTL_SMOKE"));
 	pGroupEffects->SetFont(pUseFont);
 	pGroupEffects->SetColors(C4StartupEditBorderColor, C4StartupFontClr);
@@ -1338,12 +1326,6 @@ void C4StartupOptionsDlg::RecreateDialog(bool fFade)
 	C4StartupOptionsDlg *pNewDlg = static_cast<C4StartupOptionsDlg *>(C4Startup::Get()->SwitchDialog(C4Startup::SDID_Options, fFade));
 	pNewDlg->pOptionsTabular->SelectSheet(iPage, false);
 	pNewDlg->fCanGoBack = false;
-}
-
-void C4StartupOptionsDlg::LoadGfxTroubleshoot()
-{
-	// title of troubleshooting-box by config set
-	pGroupTrouble->SetTitle(LoadResStrNoAmp("IDS_CTL_TROUBLE"));
 }
 
 void C4StartupOptionsDlg::SaveGfxTroubleshoot()
