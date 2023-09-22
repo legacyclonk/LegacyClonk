@@ -1147,8 +1147,6 @@ bool C4StartupOptionsDlg::SaveConfig(bool fForce, bool fKeepOpen)
 {
 	// prevent double save
 	if (fConfigSaved) return true;
-	// store some config values
-	SaveGfxTroubleshoot();
 	// save any config fields that are not stored directly; return whether all values are OK
 	// check port validity
 	if (!fForce)
@@ -1326,12 +1324,6 @@ void C4StartupOptionsDlg::RecreateDialog(bool fFade)
 	C4StartupOptionsDlg *pNewDlg = static_cast<C4StartupOptionsDlg *>(C4Startup::Get()->SwitchDialog(C4Startup::SDID_Options, fFade));
 	pNewDlg->pOptionsTabular->SelectSheet(iPage, false);
 	pNewDlg->fCanGoBack = false;
-}
-
-void C4StartupOptionsDlg::SaveGfxTroubleshoot()
-{
-	lpDDraw->InvalidateDeviceObjects();
-	lpDDraw->RestoreDeviceObjects();
 }
 
 void C4StartupOptionsDlg::OnEffectsSliderChange(int32_t iNewVal)
