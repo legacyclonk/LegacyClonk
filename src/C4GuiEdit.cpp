@@ -157,12 +157,15 @@ void Edit::DeleteSelection()
 	OnTextChange();
 }
 
-bool Edit::InsertText(std::string_view text, bool fUser)
+bool Edit::InsertText(const C4NullableStringView text, bool fUser)
 {
 	// empty previous selection
 	if (iSelectionStart != iSelectionEnd) DeleteSelection();
+
+	const std::string_view view{text};
+
 	// check buffer length
-	auto iTextLen = text.size();
+	auto iTextLen = view.size();
 	const auto iTextEnd = SLen(Text);
 	bool fBufferOK = (iTextLen + iTextEnd <= (iMaxTextLength - 1));
 	if (!fBufferOK) iTextLen -= iTextEnd + iTextLen - (iMaxTextLength - 1);
@@ -173,7 +176,7 @@ bool Edit::InsertText(std::string_view text, bool fUser)
 	int32_t i;
 	for (i = iTextEnd; i >= iCursorPos; --i) Text[i + iTextLen] = Text[i];
 	// insert buffer into text
-	for (i = iTextLen; i; --i) Text[iCursorPos + i - 1] = text[i - 1];
+	for (i = iTextLen; i; --i) Text[iCursorPos + i - 1] = view[i - 1];
 	if (fUser)
 	{
 		// advance cursor

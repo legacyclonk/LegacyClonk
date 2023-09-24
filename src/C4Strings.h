@@ -21,6 +21,8 @@
 #include <cstddef>
 #include <cstdio>
 #include <limits>
+#include <string_view>
+#include <utility>
 
 #ifdef _WIN32
 #include "C4Windows.h"
@@ -121,3 +123,42 @@ inline int ssprintf(char (&str)[N], const char *fmt, Args... args)
 	if (m >= N) { m = N - 1; str[m] = 0; }
 	return m;
 }
+
+template<typename Char, typename Traits = std::char_traits<Char>>
+struct C4NullableBasicStringView
+{
+	std::basic_string_view<Char, Traits> View;
+
+	constexpr C4NullableBasicStringView(auto &&...args)
+		: View{std::forward<decltype(args)>(args)...} {}
+
+	constexpr C4NullableBasicStringView(const Char *const ptr)
+	{
+		if (ptr)
+		{
+			View = ptr;
+		}
+		else
+		{
+			View = {};
+		}
+	}
+
+	constexpr C4NullableBasicStringView(const C4NullableBasicStringView &other) noexcept
+	{
+		View = other.View;
+	}
+
+	constexpr C4NullableBasicStringView &operator=(const C4NullableBasicStringView &other) noexcept
+	{
+		View = other.View;
+		return *this;
+	}
+
+	constexpr operator std::basic_string_view<Char, Traits>() const noexcept
+	{
+		return View;
+	}
+};
+
+using C4NullableStringView = C4NullableBasicStringView<char>;

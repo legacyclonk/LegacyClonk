@@ -56,10 +56,10 @@ private:
 	void Deselect(); // clear selection range
 
 public:
-	bool InsertText(std::string_view text, bool fUser); // insert text at cursor pos (returns whether all text could be inserted)
+	bool InsertText(C4NullableStringView text, bool fUser); // insert text at cursor pos (returns whether all text could be inserted)
 	void ClearText(); // remove all the text
 	void DeleteSelection(); // deletes the selected text. Adjust cursor position if necessary
-	bool SetText(std::string_view text, bool fUser) { ClearText(); return InsertText(text, fUser); }
+	bool SetText(const C4NullableStringView text, bool fUser) { ClearText(); return InsertText(text, fUser); }
 	void SetPasswordMask(char cNewPasswordMask) { cPasswordMask = cNewPasswordMask; } // mask edit box contents using the given character
 
 private:
