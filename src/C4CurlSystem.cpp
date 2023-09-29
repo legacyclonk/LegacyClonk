@@ -70,20 +70,6 @@ C4CurlSystem::GlobalInit::~GlobalInit()
 	curl_global_cleanup();
 }
 
-C4CurlSystem::Awaiter::Awaiter(C4CurlSystem &system, EasyHandle &&easyHandle)
-	: system{system},
-	  easyHandle{std::move(easyHandle)},
-	  result{std::unexpected{std::string(static_cast<std::size_t>(CURL_ERROR_SIZE), '\0')}}
-{
-	curl_easy_setopt(std::get<0>(this->easyHandle).get(), CURLOPT_ERRORBUFFER, result.error().data());
-	curl_easy_setopt(std::get<0>(this->easyHandle).get(), CURLOPT_PRIVATE, this);
-}
-
-void C4CurlSystem::Awaiter::Resume()
-{
-	C4ThreadPool::Global->SubmitCallback(coroutineHandle.load(std::memory_order_acquire));
-}
-
 C4CurlSystem::AddedEasyHandle::AddedEasyHandle(C4CurlSystem &system, EasyHandle &&easyHandle)
 	: system{system}, easyHandle{std::move(easyHandle)}
 {
@@ -95,6 +81,66 @@ C4CurlSystem::AddedEasyHandle::~AddedEasyHandle()
 	{
 		system.get().RemoveHandle(get());
 	}
+}
+
+C4CurlSystem::Awaiter::Awaiter(C4CurlSystem &system, EasyHandle &&easyHandle)
+	: system{system},
+	  easyHandle{std::move(easyHandle)},
+	  result{std::unexpected{std::string(static_cast<std::size_t>(CURL_ERROR_SIZE), '\0')}}
+{
+	curl_easy_setopt(std::get<0>(this->easyHandle).get(), CURLOPT_ERRORBUFFER, result.error().data());
+	curl_easy_setopt(std::get<0>(this->easyHandle).get(), CURLOPT_PRIVATE, this);
+}
+
+void C4CurlSystem::Awaiter::SetResult(C4NetIO::addr_t &&result)
+{
+	const std::lock_guard lock{resultMutex};
+	this->result = std::move(result);
+}
+
+void C4CurlSystem::Awaiter::SetErrorMessage(const char *const message)
+{
+	const std::lock_guard lock{resultMutex};
+	result = std::unexpected{message};
+}
+
+C4NetIO::addr_t C4CurlSystem::Awaiter::await_resume()
+{
+	if (cancelled.load(std::memory_order_acquire))
+	{
+		throw C4Task::CancelledException{};
+	}
+
+	const std::lock_guard lock{resultMutex};
+
+	if (result.has_value())
+	{
+		return std::move(result.value());
+	}
+	else
+	{
+		throw C4CurlSystem::Exception{std::move(result.error())};
+	}
+}
+
+void C4CurlSystem::Awaiter::SetupCancellation(C4Task::CancellablePromise *const promise)
+{
+	promise->SetCancellationCallback([](void *const argument)
+	{
+		auto &that = *reinterpret_cast<Awaiter *>(argument);
+		{
+			const std::lock_guard lock{that.resultMutex};
+			that.easyHandle = {};
+			that.cancelled.store(true, std::memory_order_release);
+		}
+
+		that.Resume();
+	}, this);
+}
+
+void C4CurlSystem::Awaiter::Resume()
+{
+	C4ThreadPool::Global->SubmitCallback(coroutineHandle.load(std::memory_order_acquire));
 }
 
 C4CurlSystem::C4CurlSystem()

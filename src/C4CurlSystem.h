@@ -90,23 +90,11 @@ private:
 	{
 	public:
 		Awaiter(C4CurlSystem &system, EasyHandle &&easyHandle);
-
-		~Awaiter()
-		{
-		}
+		~Awaiter() = default;
 
 	public:
-		void SetResult(C4NetIO::addr_t &&result)
-		{
-			const std::lock_guard lock{resultMutex};
-			this->result = std::move(result);
-		}
-
-		void SetErrorMessage(const char *const message)
-		{
-			const std::lock_guard lock{resultMutex};
-			result = std::unexpected{message};
-		}
+		void SetResult(C4NetIO::addr_t &&result);
+		void SetErrorMessage(const char *message);
 
 		constexpr bool await_ready() const noexcept { return false; }
 
@@ -120,39 +108,9 @@ private:
 			easyHandle.emplace<1>(system.AddHandle(*this, std::move(std::get<0>(easyHandle))));
 		}
 
-		C4NetIO::addr_t await_resume()
-		{
-			if (cancelled.load(std::memory_order_acquire))
-			{
-				throw C4Task::CancelledException{};
-			}
+		C4NetIO::addr_t await_resume();
 
-			const std::lock_guard lock{resultMutex};
-
-			if (result.has_value())
-			{
-				return std::move(result.value());
-			}
-			else
-			{
-				throw C4CurlSystem::Exception{std::move(result.error())};
-			}
-		}
-
-		void SetupCancellation(C4Task::CancellablePromise *const promise)
-		{
-			promise->SetCancellationCallback([](void *const argument)
-			{
-				auto &that = *reinterpret_cast<Awaiter *>(argument);
-				{
-					const std::lock_guard lock{that.resultMutex};
-					that.easyHandle = {};
-					that.cancelled.store(true, std::memory_order_release);
-				}
-				that.Resume();
-			}, this);
-		}
-
+		void SetupCancellation(C4Task::CancellablePromise *promise);
 		void Resume();
 
 	private:
