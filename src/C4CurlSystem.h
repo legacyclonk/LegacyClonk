@@ -105,7 +105,7 @@ private:
 
 			SetCancellablePromise(handle);
 
-			easyHandle.emplace<1>(system.AddHandle(*this, std::move(std::get<0>(easyHandle))));
+			easyHandle.emplace<1>(system.AddHandle(std::move(std::get<0>(easyHandle))));
 		}
 
 		C4NetIO::addr_t await_resume();
@@ -138,7 +138,7 @@ public:
 		return {*this, std::move(easyHandle)};
 	}
 
-	AddedEasyHandle AddHandle(Awaiter &awaiter, EasyHandle &&easyHandle);
+	AddedEasyHandle AddHandle(EasyHandle &&easyHandle);
 	void RemoveHandle(CURL *const handle);
 
 private:
