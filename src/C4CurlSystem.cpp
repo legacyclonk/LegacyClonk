@@ -162,7 +162,7 @@ C4CurlSystem::C4CurlSystem()
 	multiTask = Execute();
 }
 
-C4CurlSystem::AddedEasyHandle C4CurlSystem::AddHandle(Awaiter &awaiter, EasyHandle &&easyHandle)
+C4CurlSystem::AddedEasyHandle C4CurlSystem::AddHandle(EasyHandle &&easyHandle)
 {
 	AddedEasyHandle addedEasyHandle{*this, std::move(easyHandle)};
 
