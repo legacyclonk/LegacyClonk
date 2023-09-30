@@ -93,7 +93,7 @@ public:
 public:
 	static CStdEvent AutoReset(bool initialState = false);
 #else
-	int GetFD() const noexcept { return fd[0]; }
+	std::array<int, 2> GetFDs() const { return {fd[0], fd[1]}; }
 
 #endif
 
