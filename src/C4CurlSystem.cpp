@@ -134,8 +134,8 @@ C4CurlSystem::AddedEasyHandle C4CurlSystem::AddHandle(Awaiter &awaiter, EasyHand
 void C4CurlSystem::RemoveHandle(CURL *const handle)
 {
 	{
-		curl_multi_remove_handle(multiHandle.get(), handle);
 		const std::lock_guard lock{socketMapMutex};
+		curl_multi_remove_handle(multiHandle.get(), handle);
 		sockets.erase(handle);
 	}
 
@@ -162,7 +162,10 @@ C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> C4CurlSystem::Execute()
 {
 	int running{0};
 
-	curl_multi_socket_action(multiHandle.get(), CURL_SOCKET_TIMEOUT, 0, &running);
+	{
+		const std::lock_guard lock{socketMapMutex};
+		curl_multi_socket_action(multiHandle.get(), CURL_SOCKET_TIMEOUT, 0, &running);
+	}
 
 	const auto cancellationToken = co_await C4Task::GetCancellationToken();
 
