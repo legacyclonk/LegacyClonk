@@ -363,8 +363,6 @@ public:
 #ifdef _WIN32
 		revoke_canceller();
 #else
-		cancellationArgument = nullptr;
-
 		auto callback = cancellationCallback.load(std::memory_order_acquire);
 
 		do
