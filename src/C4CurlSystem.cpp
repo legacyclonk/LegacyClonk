@@ -259,6 +259,10 @@ C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> C4CurlSystem::Execute()
 
 							curl_multi_socket_action(multiHandle.get(), socket, eventBitmask, &running);
 						}
+						else
+						{
+							curl_multi_socket_action(multiHandle.get(), socket, CURL_CSELECT_ERR, &running);
+						}
 					}
 				}
 				else
