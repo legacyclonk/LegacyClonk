@@ -60,7 +60,7 @@ C4CurlSystem::GlobalInit::GlobalInit()
 	if (const auto ret = curl_global_init(CURL_GLOBAL_ALL); ret != CURLE_OK)
 	{
 		std::string message{std::vformat(LoadResStr("IDS_ERR_CURLGLOBALINIT"), std::make_format_args(curl_easy_strerror(ret)))};
-		LogF("%s", message.c_str());
+		Log(message.c_str());
 		throw CStdApp::StartupException{std::move(message)};
 	}
 }
@@ -149,7 +149,7 @@ C4CurlSystem::C4CurlSystem()
 	if (!multiHandle)
 	{
 		std::string message{std::vformat(LoadResStr("IDS_ERR_CURLGLOBALINIT"), std::make_format_args("curl_multi_init failed"))};
-		LogF("%s", message.c_str());
+		Log(message.c_str());
 		throw CStdApp::StartupException{std::move(message)};
 	}
 
