@@ -34,7 +34,7 @@ static decltype(auto) ThrowIfFailed(T &&result, Args &&...args)
 	{
 		if constexpr (sizeof...(Args) == 1)
 		{
-			throw std::runtime_error{std::forward<Args>(args)...};
+			throw C4CurlSystem::Exception{std::forward<Args>(args)...};
 		}
 		else
 		{
