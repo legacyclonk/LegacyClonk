@@ -106,7 +106,7 @@ public:
 
 private:
 	// thread control
-	bool fRunThreadRun;
+	std::atomic_bool runThreadRun{false};
 
 	bool fThread{false};
 	std::thread thread;

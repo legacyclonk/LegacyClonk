@@ -220,10 +220,10 @@ bool StdSchedulerThread::Start()
 	// already running? stop
 	if (fThread) Stop();
 	// begin thread
-	fRunThreadRun = true;
+	runThreadRun.store(true, std::memory_order_release);
 	thread = C4Thread::Create({"StdSchedulerThread"}, [this]
 	{
-		while (fRunThreadRun)
+		while (runThreadRun.load(std::memory_order_acquire))
 		{
 			Execute();
 		}
@@ -238,7 +238,7 @@ void StdSchedulerThread::Stop()
 	// Not running?
 	if (!fThread) return;
 	// Set flag
-	fRunThreadRun = false;
+	runThreadRun.store(false, std::memory_order_release);
 	// Unblock
 	UnBlock();
 	thread.join();
