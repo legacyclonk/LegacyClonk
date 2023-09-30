@@ -94,7 +94,7 @@ public:
 public:
 	static CStdEvent AutoReset(bool initialState = false);
 #else
-	std::array<int, 2> GetFDs() const { return {fd[0].load(std::memory_order_acquire), fd[1].load(std::memory_order_acquire)}; }
+	int GetFD() const noexcept { return fd[0].load(std::memory_order_acquire); }
 #endif
 
 private:

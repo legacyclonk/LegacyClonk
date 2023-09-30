@@ -125,7 +125,7 @@ namespace C4Awaiter
 			void SetupCancellation(C4Task::CancellablePromise *const promise)
 			{
 				cancellationEvent.emplace();
-				fds[1].fd = cancellationEvent->GetFDs()[0];
+				fds[1].fd = cancellationEvent->GetFD();
 
 				promise->SetCancellationCallback([](void *const argument)
 				{
@@ -217,7 +217,7 @@ namespace C4Awaiter
 			void SetupCancellation(C4Task::CancellablePromise *const promise)
 			{
 				cancellationEvent.emplace();
-				fds.push_back({.fd = cancellationEvent->GetFDs()[0], .events = POLLIN});
+				fds.push_back({.fd = cancellationEvent->GetFD(), .events = POLLIN});
 
 				promise->SetCancellationCallback([](void *const argument)
 				{
