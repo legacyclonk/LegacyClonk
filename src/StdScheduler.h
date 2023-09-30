@@ -79,7 +79,7 @@ private:
 	std::vector<StdSchedulerProc *> eventProcs;
 #else
 	CStdEvent unblocker;
-	std::vector<pollfd> fds{{.fd = unblocker.GetFDs()[0], .events = POLLIN}};
+	std::vector<pollfd> fds{{.fd = unblocker.GetFD(), .events = POLLIN}};
 #endif
 
 public:
