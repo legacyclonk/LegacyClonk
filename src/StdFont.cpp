@@ -18,6 +18,7 @@
 /* freetype support by JanL and Guenther */
 // text drawing facility for CStdDDraw
 
+#include "C4Config.h"
 #include <Standard.h>
 #include <StdBuf.h>
 #include "StdFont.h"
@@ -375,12 +376,12 @@ void CStdFont::Init(CStdVectorFont &VectorFont, uint32_t dwHeight, uint32_t dwFo
 		operator iconv_t() { return i; }
 	};
 #ifdef __BIG_ENDIAN__
-	iconv_t_wrapper iconv_handle("UCS-4BE", GetCharsetCodeName(szCharset));
+	iconv_t_wrapper iconv_handle("UCS-4BE", C4Config::GetCharsetCodeName(szCharset));
 #else
-	iconv_t_wrapper iconv_handle("UCS-4LE", GetCharsetCodeName(szCharset));
+	iconv_t_wrapper iconv_handle("UCS-4LE", C4Config::GetCharsetCodeName(szCharset));
 #endif
 #elif defined(_WIN32)
-	int32_t iCodePage = GetCharsetCodePage(szCharset);
+	int32_t iCodePage = C4Config::GetCharsetCodePage(szCharset);
 #endif
 	int cMax = fUTF8 ? 127 : 255;
 	for (int c = ' '; c <= cMax; ++c)
@@ -932,71 +933,4 @@ void CStdFont::DrawText(C4Surface *sfcDest, int iX, int iY, uint32_t dwColor, co
 int CStdFont::GetLineHeight() const
 {
 	return static_cast<int>(iLineHgt / scale);
-}
-
-// The internal clonk charset is one of the windows charsets
-// But to save the used one to the configuration, a string is used
-// So we need to convert this string to the windows number for windows
-// and RTF, and to the iconv name for iconv
-const char *GetCharsetCodeName(const char *strCharset)
-{
-	// Match charset name to WinGDI codes
-	if (SEqualNoCase(strCharset, "SHIFTJIS"))    return "CP932";
-	if (SEqualNoCase(strCharset, "HANGUL"))      return "CP949";
-	if (SEqualNoCase(strCharset, "JOHAB"))       return "CP1361";
-	if (SEqualNoCase(strCharset, "CHINESEBIG5")) return "CP950";
-	if (SEqualNoCase(strCharset, "GREEK"))       return "CP1253";
-	if (SEqualNoCase(strCharset, "TURKISH"))     return "CP1254";
-	if (SEqualNoCase(strCharset, "VIETNAMESE"))  return "CP1258";
-	if (SEqualNoCase(strCharset, "HEBREW"))      return "CP1255";
-	if (SEqualNoCase(strCharset, "ARABIC"))      return "CP1256";
-	if (SEqualNoCase(strCharset, "BALTIC"))      return "CP1257";
-	if (SEqualNoCase(strCharset, "RUSSIAN"))     return "CP1251";
-	if (SEqualNoCase(strCharset, "THAI"))        return "CP874";
-	if (SEqualNoCase(strCharset, "EASTEUROPE"))  return "CP1250";
-	if (SEqualNoCase(strCharset, "UTF-8"))       return "UTF-8";
-	// Default
-	return "CP1252";
-}
-
-uint8_t GetCharsetCode(const char *strCharset)
-{
-	// Match charset name to WinGDI codes
-	if (SEqualNoCase(strCharset, "SHIFTJIS"))    return 128; // SHIFTJIS_CHARSET
-	if (SEqualNoCase(strCharset, "HANGUL"))      return 129; // HANGUL_CHARSET
-	if (SEqualNoCase(strCharset, "JOHAB"))       return 130; // JOHAB_CHARSET
-	if (SEqualNoCase(strCharset, "CHINESEBIG5")) return 136; // CHINESEBIG5_CHARSET
-	if (SEqualNoCase(strCharset, "GREEK"))       return 161; // GREEK_CHARSET
-	if (SEqualNoCase(strCharset, "TURKISH"))     return 162; // TURKISH_CHARSET
-	if (SEqualNoCase(strCharset, "VIETNAMESE"))  return 163; // VIETNAMESE_CHARSET
-	if (SEqualNoCase(strCharset, "HEBREW"))      return 177; // HEBREW_CHARSET
-	if (SEqualNoCase(strCharset, "ARABIC"))      return 178; // ARABIC_CHARSET
-	if (SEqualNoCase(strCharset, "BALTIC"))      return 186; // BALTIC_CHARSET
-	if (SEqualNoCase(strCharset, "RUSSIAN"))     return 204; // RUSSIAN_CHARSET
-	if (SEqualNoCase(strCharset, "THAI"))        return 222; // THAI_CHARSET
-	if (SEqualNoCase(strCharset, "EASTEUROPE"))  return 238; // EASTEUROPE_CHARSET
-	if (SEqualNoCase(strCharset, "UTF-8"))       return 0;   // ANSI_CHARSET - UTF8 needs special handling
-	// Default
-	return 0; // ANSI_CHARSET
-}
-
-int32_t GetCharsetCodePage(const char *strCharset)
-{
-	// Match charset name to WinGDI codes
-	if (SEqualNoCase(strCharset, "SHIFTJIS"))    return 932;
-	if (SEqualNoCase(strCharset, "HANGUL"))      return 949;
-	if (SEqualNoCase(strCharset, "JOHAB"))       return 1361;
-	if (SEqualNoCase(strCharset, "CHINESEBIG5")) return 950;
-	if (SEqualNoCase(strCharset, "GREEK"))       return 1253;
-	if (SEqualNoCase(strCharset, "TURKISH"))     return 1254;
-	if (SEqualNoCase(strCharset, "VIETNAMESE"))  return 1258;
-	if (SEqualNoCase(strCharset, "HEBREW"))      return 1255;
-	if (SEqualNoCase(strCharset, "ARABIC"))      return 1256;
-	if (SEqualNoCase(strCharset, "BALTIC"))      return 1257;
-	if (SEqualNoCase(strCharset, "RUSSIAN"))     return 1251;
-	if (SEqualNoCase(strCharset, "THAI"))        return 874;
-	if (SEqualNoCase(strCharset, "EASTEUROPE"))  return 1250;
-	if (SEqualNoCase(strCharset, "UTF-8"))       return -1; // shouldn't be called
-	// Default
-	return 1252;
 }

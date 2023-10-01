@@ -187,7 +187,7 @@ void C4Network2RefServer::RespondReference(const C4NetIO::addr_t &addr)
 	// Pack
 	StdStrBuf PacketData = DecompileToBuf<StdCompilerINIWrite>(mkNamingPtrAdapt(pReference, "Reference"));
 	// Create header
-	const char *szCharset = GetCharsetCodeName(Config.General.LanguageCharset);
+	const char *szCharset = C4Config::GetCharsetCodeName(Config.General.LanguageCharset);
 	StdStrBuf Header = FormatString(
 		"HTTP/1.0 200 OK\r\n"
 		"Content-Length: %zu\r\n"

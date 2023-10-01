@@ -430,9 +430,9 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 	const char *const to_set = nl_langinfo(CODESET);
 	if (local_to_host == iconv_t(-1))
 		local_to_host = iconv_open(to_set ? to_set : "ASCII",
-			GetCharsetCodeName(Config.General.LanguageCharset));
+			C4Config::GetCharsetCodeName(Config.General.LanguageCharset));
 	if (host_to_local == iconv_t(-1))
-		host_to_local = iconv_open(GetCharsetCodeName(Config.General.LanguageCharset),
+		host_to_local = iconv_open(C4Config::GetCharsetCodeName(Config.General.LanguageCharset),
 			to_set ? to_set : "ASCII");
 	if (local_to_utf_8 == iconv_t(-1))
 	{
@@ -440,7 +440,7 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 			local_to_utf_8 = local_to_host;
 		else
 			local_to_utf_8 = iconv_open("UTF-8",
-				GetCharsetCodeName(Config.General.LanguageCharset));
+				C4Config::GetCharsetCodeName(Config.General.LanguageCharset));
 	}
 #endif
 	// Success

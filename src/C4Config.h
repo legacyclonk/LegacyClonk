@@ -344,6 +344,10 @@ public:
 		;
 	}
 
+	static const char *GetCharsetCodeName(const char *charset) noexcept;
+	static std::uint8_t GetCharsetCode(const char *charset) noexcept;
+	static std::int32_t GetCharsetCodePage(const char *charset) noexcept;
+
 protected:
 	void ExpandEnvironmentVariables(char *strPath, int iMaxLen);
 
