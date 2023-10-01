@@ -49,7 +49,6 @@ private:
 
 public:
 	using Headers = std::unordered_map<std::string_view, std::string_view>;
-	using Notify = std::function<void(C4Network2HTTPClient *)>;
 	using ProgressCallback = std::function<bool(std::int64_t, std::int64_t)>;
 
 	class Exception : public C4CurlSystem::Exception
