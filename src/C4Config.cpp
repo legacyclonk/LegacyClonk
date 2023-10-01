@@ -520,11 +520,11 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 #endif
 #endif
 	General.DefaultLanguage();
+#ifdef C4ENGINE
 #ifndef USE_CONSOLE
 	if (Graphics.Engine != GFXENGN_NOGFX) Graphics.Engine = GFXENGN_OPENGL;
 #endif
 	// Warning against invalid ports
-#ifdef C4ENGINE
 	for (const auto &port :
 		{
 			&Config.Network.PortTCP,
