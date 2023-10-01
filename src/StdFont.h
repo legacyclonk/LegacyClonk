@@ -154,7 +154,3 @@ public:
 		pCustomImages = pHandler;
 	}
 };
-
-uint8_t GetCharsetCode(const char *strCharset);
-const char *GetCharsetCodeName(const char *strCharset);
-int32_t GetCharsetCodePage(const char *strCharset);

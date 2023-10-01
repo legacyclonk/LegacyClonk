@@ -854,6 +854,74 @@ void C4Config::CompileFunc(StdCompiler *pComp)
 #endif
 }
 
+// The internal clonk charset is one of the windows charsets
+// But to save the used one to the configuration, a string is used
+// So we need to convert this string to the windows number for windows
+// and RTF, and to the iconv name for iconv
+const char *C4Config::GetCharsetCodeName(const char *const charset) noexcept
+{
+	// Match charset name to WinGDI codes
+	if (SEqualNoCase(charset, "SHIFTJIS"))    return "CP932";
+	if (SEqualNoCase(charset, "HANGUL"))      return "CP949";
+	if (SEqualNoCase(charset, "JOHAB"))       return "CP1361";
+	if (SEqualNoCase(charset, "CHINESEBIG5")) return "CP950";
+	if (SEqualNoCase(charset, "GREEK"))       return "CP1253";
+	if (SEqualNoCase(charset, "TURKISH"))     return "CP1254";
+	if (SEqualNoCase(charset, "VIETNAMESE"))  return "CP1258";
+	if (SEqualNoCase(charset, "HEBREW"))      return "CP1255";
+	if (SEqualNoCase(charset, "ARABIC"))      return "CP1256";
+	if (SEqualNoCase(charset, "BALTIC"))      return "CP1257";
+	if (SEqualNoCase(charset, "RUSSIAN"))     return "CP1251";
+	if (SEqualNoCase(charset, "THAI"))        return "CP874";
+	if (SEqualNoCase(charset, "EASTEUROPE"))  return "CP1250";
+	if (SEqualNoCase(charset, "UTF-8"))       return "UTF-8";
+	// Default
+	return "CP1252";
+}
+
+std::uint8_t C4Config::GetCharsetCode(const char *const charset) noexcept
+{
+	// Match charset name to WinGDI codes
+	if (SEqualNoCase(charset, "SHIFTJIS"))    return 128; // SHIFTJIS_CHARSET
+	if (SEqualNoCase(charset, "HANGUL"))      return 129; // HANGUL_CHARSET
+	if (SEqualNoCase(charset, "JOHAB"))       return 130; // JOHAB_CHARSET
+	if (SEqualNoCase(charset, "CHINESEBIG5")) return 136; // CHINESEBIG5_CHARSET
+	if (SEqualNoCase(charset, "GREEK"))       return 161; // GREEK_CHARSET
+	if (SEqualNoCase(charset, "TURKISH"))     return 162; // TURKISH_CHARSET
+	if (SEqualNoCase(charset, "VIETNAMESE"))  return 163; // VIETNAMESE_CHARSET
+	if (SEqualNoCase(charset, "HEBREW"))      return 177; // HEBREW_CHARSET
+	if (SEqualNoCase(charset, "ARABIC"))      return 178; // ARABIC_CHARSET
+	if (SEqualNoCase(charset, "BALTIC"))      return 186; // BALTIC_CHARSET
+	if (SEqualNoCase(charset, "RUSSIAN"))     return 204; // RUSSIAN_CHARSET
+	if (SEqualNoCase(charset, "THAI"))        return 222; // THAI_CHARSET
+	if (SEqualNoCase(charset, "EASTEUROPE"))  return 238; // EASTEUROPE_CHARSET
+	if (SEqualNoCase(charset, "UTF-8"))       return 0;   // ANSI_CHARSET - UTF8 needs special handling
+	// Default
+	return 0; // ANSI_CHARSET
+}
+
+
+std::int32_t C4Config::GetCharsetCodePage(const char *const charset) noexcept
+{
+	// Match charset name to WinGDI codes
+	if (SEqualNoCase(charset, "SHIFTJIS"))    return 932;
+	if (SEqualNoCase(charset, "HANGUL"))      return 949;
+	if (SEqualNoCase(charset, "JOHAB"))       return 1361;
+	if (SEqualNoCase(charset, "CHINESEBIG5")) return 950;
+	if (SEqualNoCase(charset, "GREEK"))       return 1253;
+	if (SEqualNoCase(charset, "TURKISH"))     return 1254;
+	if (SEqualNoCase(charset, "VIETNAMESE"))  return 1258;
+	if (SEqualNoCase(charset, "HEBREW"))      return 1255;
+	if (SEqualNoCase(charset, "ARABIC"))      return 1256;
+	if (SEqualNoCase(charset, "BALTIC"))      return 1257;
+	if (SEqualNoCase(charset, "RUSSIAN"))     return 1251;
+	if (SEqualNoCase(charset, "THAI"))        return 874;
+	if (SEqualNoCase(charset, "EASTEUROPE"))  return 1250;
+	if (SEqualNoCase(charset, "UTF-8"))       return -1; // shouldn't be called
+	// Default
+	return 1252;
+}
+
 void C4Config::ExpandEnvironmentVariables(char *strPath, int iMaxLen)
 {
 #ifdef _WIN32
