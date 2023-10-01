@@ -161,7 +161,7 @@ C4CurlSystem::EasyHandle C4HTTPClient::PrepareRequest(const Request &request, He
 	curl_easy_setopt(curl.get(), CURLOPT_SHARE, shareHandle.get());
 	curl_easy_setopt(curl.get(), CURLOPT_FOLLOWLOCATION, 1L);
 
-	const char *const charset{GetCharsetCodeName(Config.General.LanguageCharset)};
+	const char *const charset{C4Config::GetCharsetCodeName(Config.General.LanguageCharset)};
 
 	headers["Accept-Charset"] = charset;
 	headers["Accept-Language"] = Config.General.LanguageEx;

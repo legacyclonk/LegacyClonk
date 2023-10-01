@@ -71,7 +71,7 @@ bool C4VectorFont::Init(const char *szFacename, int32_t iSize, uint32_t dwWeight
 	if (hDC)
 	{
 		HFONT hFont = ::CreateFont(iSize, 0, 0, 0, dwWeight, FALSE,
-			FALSE, FALSE, GetCharsetCode(szCharSet), OUT_DEFAULT_PRECIS,
+			FALSE, FALSE, C4Config::GetCharsetCode(szCharSet), OUT_DEFAULT_PRECIS,
 			CLIP_DEFAULT_PRECIS, 5,
 			VARIABLE_PITCH, szFacename);
 		if (hFont)
