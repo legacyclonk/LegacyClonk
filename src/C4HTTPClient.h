@@ -81,7 +81,7 @@ public:
 	{
 		C4HTTPClient::Uri Uri;
 		bool Binary{false};
-		std::span<const std::byte> Data;
+		std::span<const std::byte> Data{};
 	};
 
 	struct Result
