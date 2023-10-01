@@ -416,10 +416,10 @@ bool C4Network2IO::InitPuncher(const C4NetIO::addr_t puncherAddr)
 	// save address
 	switch (puncherAddr.GetFamily())
 	{
-	case C4NetIO::HostAddress::IPv4:
+	case C4Network2HostAddress::IPv4:
 		PuncherAddrIPv4 = puncherAddr;
 		break;
-	case C4NetIO::HostAddress::IPv6:
+	case C4Network2HostAddress::IPv6:
 		PuncherAddrIPv6 = puncherAddr;
 		break;
 	default:
@@ -436,12 +436,12 @@ void C4Network2IO::Punch(const C4NetIO::addr_t &puncheeAddr)
 	dynamic_cast<C4NetIOUDP *>(pNetIO_UDP)->SendDirect(MkC4NetIOPacket(PID_Pong, C4PacketPing{}, puncheeAddr));
 }
 
-void C4Network2IO::SendPuncherPacket(const C4NetpuncherPacket &p, const C4NetIO::HostAddress::AddressFamily family)
+void C4Network2IO::SendPuncherPacket(const C4NetpuncherPacket &p, const C4Network2HostAddress::AddressFamily family)
 {
 	if (!pNetIO_UDP) return;
-	if (family == C4NetIO::HostAddress::IPv4 && !PuncherAddrIPv4.IsNull())
+	if (family == C4Network2HostAddress::IPv4 && !PuncherAddrIPv4.IsNull())
 		pNetIO_UDP->Send(p.PackTo(PuncherAddrIPv4));
-	else if (family == C4NetIO::HostAddress::IPv6 && !PuncherAddrIPv6.IsNull())
+	else if (family == C4Network2HostAddress::IPv6 && !PuncherAddrIPv6.IsNull())
 		pNetIO_UDP->Send(p.PackTo(PuncherAddrIPv6));
 }
 

@@ -279,7 +279,7 @@ bool C4Network2Client::AddAddr(const C4Network2Address &addr, bool fAnnounce, bo
 
 void C4Network2Client::AddLocalAddrs(const std::uint16_t iPortTCP, const std::uint16_t iPortUDP)
 {
-	C4NetIO::addr_t addr{C4NetIO::HostAddress::AnyIPv4};
+	C4NetIO::addr_t addr{C4Network2HostAddress::AnyIPv4};
 
 	if (iPortTCP != 0)
 	{

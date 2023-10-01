@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "C4Network2Address.h"
 #include "C4NetIO.h"
 #include "C4Client.h"
 #include "C4InteractiveThread.h"
@@ -27,11 +28,7 @@
 
 class C4Network2IOConnection;
 
-// enums & constants
-enum C4Network2IOProtocol
-{
-	P_UDP, P_TCP, P_NONE = -1
-};
+// constants
 
 const int C4NetTimer = 500, // ms
           C4NetPingFreq = 1000, // ms
@@ -136,7 +133,7 @@ public:
 
 	// punch
 	bool InitPuncher(C4NetIO::addr_t puncherAddr); // by main thread
-	void SendPuncherPacket(const C4NetpuncherPacket &, C4NetIO::HostAddress::AddressFamily family);
+	void SendPuncherPacket(const C4NetpuncherPacket &, C4Network2HostAddress::AddressFamily family);
 	void Punch(const C4NetIO::addr_t &); // Sends a ping packet
 
 	// stuff

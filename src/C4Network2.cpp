@@ -995,7 +995,7 @@ void C4Network2::HandleLobbyPacket(char cStatus, const C4PacketBase *pBasePkt, C
 	if (pLobby) pLobby->HandlePacket(cStatus, pBasePkt, pClient);
 }
 
-bool C4Network2::HandlePuncherPacket(const C4NetpuncherPacket::uptr pkt, const C4NetIO::HostAddress::AddressFamily family)
+bool C4Network2::HandlePuncherPacket(const C4NetpuncherPacket::uptr pkt, const C4Network2HostAddress::AddressFamily family)
 {
 	// TODO: is this all thread-safe?
 	assert(pkt);
@@ -1032,13 +1032,13 @@ bool C4Network2::HandlePuncherPacket(const C4NetpuncherPacket::uptr pkt, const C
 #pragma pop_macro("GETPKT")
 }
 
-C4NetpuncherID::value &C4Network2::getNetpuncherGameID(const C4NetIO::HostAddress::AddressFamily family)
+C4NetpuncherID::value &C4Network2::getNetpuncherGameID(const C4Network2HostAddress::AddressFamily family)
 {
 	switch (family)
 	{
-	case C4NetIO::HostAddress::IPv4: return NetpuncherGameID.v4;
-	case C4NetIO::HostAddress::IPv6: return NetpuncherGameID.v6;
-	case C4NetIO::HostAddress::UnknownFamily: ; // fallthrough
+	case C4Network2HostAddress::IPv4: return NetpuncherGameID.v4;
+	case C4Network2HostAddress::IPv6: return NetpuncherGameID.v6;
+	case C4Network2HostAddress::UnknownFamily: ; // fallthrough
 	}
 	assert(!"Unexpected address family");
 	// We need to return a valid reference to satisfy the compiler, even though the code here is unreachable.
@@ -1075,7 +1075,7 @@ void C4Network2::OnPuncherConnect(const C4NetIO::addr_t addr)
 void C4Network2::InitPuncher()
 {
 	// We have an internet connection, so let's punch the puncher server here in order to open an udp port
-	for (const auto &family : { C4NetIO::HostAddress::IPv4, C4NetIO::HostAddress::IPv6 })
+	for (const auto &family : { C4Network2HostAddress::IPv4, C4Network2HostAddress::IPv6 })
 	{
 		C4NetIO::addr_t puncherAddr{};
 		puncherAddr.SetAddress(getNetpuncherAddr(), family);

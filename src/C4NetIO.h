@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "C4Network2Address.h"
 #include "Standard.h"
 #include "StdSync.h"
 #include "StdBuf.h"
@@ -28,19 +29,6 @@
 #include <memory>
 #include <vector>
 
-#ifdef _WIN32
-	#include <winsock2.h>
-	#include <ws2tcpip.h>
-#else
-	#define SOCKET int
-	#define INVALID_SOCKET (-1)
-	#include <arpa/inet.h>
-	#include <sys/socket.h>
-#endif
-
-#ifndef SOCK_CLOEXEC
-#define SOCK_CLOEXEC 0
-#endif
 
 #include <cstring>
 
@@ -56,151 +44,9 @@ public:
 	// *** constants / types
 	static const int TO_INF; // = -1;
 
-	struct HostAddress
-	{
-		enum AddressFamily
-		{
-			IPv6 = AF_INET6,
-			IPv4 = AF_INET,
-			UnknownFamily = 0
-		};
-		enum SpecialAddress
-		{
-			Loopback, // IPv6 localhost (::1)
-			Any,      // IPv6 any-address (::)
-			AnyIPv4   // IPv4 any-address (0.0.0.0)
-		};
+	using addr_t = C4Network2EndpointAddress;
 
-		enum ToStringFlags
-		{
-			TSF_SkipZoneId = 1,
-			TSF_SkipPort = 2
-		};
-
-		HostAddress() { Clear(); }
-		HostAddress(const HostAddress &other) { SetHost(other); }
-		HostAddress(const SpecialAddress addr) { SetHost(addr); }
-		explicit HostAddress(const std::uint32_t addr) { SetHost(addr); }
-		HostAddress(const StdStrBuf &addr) { SetHost(addr); }
-		HostAddress(const sockaddr *const addr) { SetHost(addr); }
-
-		AddressFamily GetFamily() const;
-		std::size_t GetAddrLen() const;
-
-		void SetScopeId(int scopeId);
-		int GetScopeId() const;
-
-		void Clear();
-		void SetHost(const sockaddr *addr);
-		void SetHost(const HostAddress &host);
-		void SetHost(SpecialAddress host);
-		void SetHost(const StdStrBuf &host, AddressFamily family = UnknownFamily);
-		void SetHost(std::uint32_t host);
-
-		C4NetIO::HostAddress AsIPv6() const; // Convert an IPv4 address to an IPv6-mapped IPv4 address
-		bool IsIPv6MappedIPv4() const;
-		C4NetIO::HostAddress AsIPv4() const; // Try to convert an IPv6-mapped IPv4 address to an IPv4 address (returns unchanged address if not possible)
-
-		// General categories
-		bool IsNull() const;
-		bool IsMulticast() const;
-		bool IsLoopback() const;
-		bool IsLocal() const; // IPv6 link-local address
-		bool IsPrivate() const; // IPv6 ULA or IPv4 private address range
-
-		StdStrBuf ToString(int flags = 0) const;
-
-		bool operator ==(const HostAddress &rhs) const;
-
-	protected:
-		// Data
-		union
-		{
-			sockaddr gen;
-			sockaddr_in v4;
-			sockaddr_in6 v6;
-		};
-	};
-
-	struct EndpointAddress : public HostAddress // Host and port
-	{
-		static constexpr std::uint16_t IPPORT_NONE{0};
-
-		EndpointAddress() { Clear(); }
-		EndpointAddress(const EndpointAddress &other) : HostAddress{} { SetAddress(other); }
-		EndpointAddress(const HostAddress &host, const std::uint16_t port = IPPORT_NONE) : HostAddress{host} { SetPort(port); }
-		EndpointAddress(const HostAddress::SpecialAddress addr, const std::uint16_t port = IPPORT_NONE) : HostAddress{addr} { SetPort(port); }
-		explicit EndpointAddress(const StdStrBuf &addr) { SetAddress(addr); }
-
-		StdStrBuf ToString(int flags = 0) const;
-
-		void Clear();
-
-		void SetAddress(const sockaddr *addr);
-		void SetAddress(const EndpointAddress &other);
-		void SetAddress(HostAddress::SpecialAddress addr, std::uint16_t port = IPPORT_NONE);
-		void SetAddress(const HostAddress &host, std::uint16_t port = IPPORT_NONE);
-		void SetAddress(const StdStrBuf &addr, AddressFamily family = UnknownFamily);
-
-		HostAddress GetHost() const { return *this; } // HostAddress copy ctor slices off port information
-		EndpointAddress AsIPv6() const; // Convert an IPv4 address to an IPv6-mapped IPv4 address
-		EndpointAddress AsIPv4() const; // Try to convert an IPv6-mapped IPv4 address to an IPv4 address (returns unchanged address if not possible)
-
-		void SetPort(std::uint16_t port);
-		void SetDefaultPort(std::uint16_t port); // Set a port only if there is none
-		std::uint16_t GetPort() const;
-
-		bool IsNull() const;
-		bool IsNullHost() const { return HostAddress::IsNull(); }
-
-		// Pointer wrapper to be able to implicitly convert to sockaddr*
-		class EndpointAddressPtr;
-		const EndpointAddressPtr operator&() const;
-		EndpointAddressPtr operator&();
-
-		class EndpointAddressPtr
-		{
-			EndpointAddress *const p;
-			friend EndpointAddressPtr EndpointAddress::operator&();
-			friend const EndpointAddressPtr EndpointAddress::operator&() const;
-			EndpointAddressPtr(EndpointAddress *const p) : p(p) {}
-
-		public:
-			const EndpointAddress &operator*() const { return *p; }
-			EndpointAddress &operator*() { return *p; }
-
-			const EndpointAddress &operator->() const { return *p; }
-			EndpointAddress &operator->() { return *p; }
-
-			operator const EndpointAddress *() const { return p; }
-			operator EndpointAddress *() { return p; }
-
-			operator const sockaddr *() const { return &p->gen; }
-			operator sockaddr *() { return &p->gen; }
-
-			operator const sockaddr_in *() const { return &p->v4; }
-			operator sockaddr_in *() { return &p->v4; }
-
-			operator const sockaddr_in6 *() const { return &p->v6; }
-			operator sockaddr_in6 *() { return &p->v6; }
-		};
-
-		bool operator==(const EndpointAddress &rhs) const;
-
-		// Conversions
-		operator sockaddr() const { return gen; }
-		operator sockaddr_in() const { assert(gen.sa_family == AF_INET); return v4; }
-		operator sockaddr_in6() const { assert(gen.sa_family == AF_INET6); return v6; }
-
-		// StdCompiler
-		void CompileFunc(StdCompiler *comp);
-
-		friend class EndpointAddressPtr;
-	};
-
-	using addr_t = EndpointAddress;
-
-	static std::vector<HostAddress> GetLocalAddresses(bool unsorted = false);
+	static std::vector<C4Network2HostAddress> GetLocalAddresses(bool unsorted = false);
 	static void SortAddresses(std::vector<C4Network2Address> &addresses);
 
 	// callback class

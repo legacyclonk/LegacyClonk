@@ -18,6 +18,7 @@
 #include "C4PuncherPacket.h"
 
 #include "C4Network2Address.h"
+#include "StdAdaptors.h"
 
 #include <stdexcept>
 

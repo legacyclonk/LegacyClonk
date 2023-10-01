@@ -61,7 +61,7 @@ private:
 
 	// Network addresses
 	std::vector<C4Network2Address> Addrs;
-	C4NetIO::EndpointAddress source;
+	C4Network2EndpointAddress source;
 
 public:
 	const std::vector<C4Network2Address> &getAddresses() const { return Addrs; }
@@ -79,8 +79,8 @@ public:
 	C4NetpuncherID getNetpuncherGameID() const { return NetpuncherGameID; }
 	StdStrBuf getNetpuncherAddr() const { return NetpuncherAddr; }
 
-	void SetSourceAddress(const C4NetIO::EndpointAddress &ip);
-	const C4NetIO::EndpointAddress &GetSourceAddress() const { return source; }
+	void SetSourceAddress(const C4Network2EndpointAddress &ip);
+	const C4Network2EndpointAddress &GetSourceAddress() const { return source; }
 
 	void InitLocal(C4Game *pGame);
 

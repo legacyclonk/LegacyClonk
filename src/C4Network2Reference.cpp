@@ -33,7 +33,7 @@ C4Network2Reference::C4Network2Reference()
 
 C4Network2Reference::~C4Network2Reference() {}
 
-void C4Network2Reference::SetSourceAddress(const C4NetIO::EndpointAddress &ip)
+void C4Network2Reference::SetSourceAddress(const C4Network2EndpointAddress &ip)
 {
 	source = ip;
 	for (auto &addr : Addrs)
@@ -560,10 +560,10 @@ bool C4Network2HTTPClient::SetServer(const char *szServerAddress)
 	}
 	ServerAddr.SetDefaultPort(GetDefaultPort());
 
-	if (ServerAddr.GetFamily() == C4NetIO::HostAddress::IPv6)
+	if (ServerAddr.GetFamily() == C4Network2HostAddress::IPv6)
 	{
 		// Try to find a fallback IPv4 address for Happy Eyeballs.
-		ServerAddrFallback.SetAddress(Server, C4NetIO::HostAddress::IPv4);
+		ServerAddrFallback.SetAddress(Server, C4Network2HostAddress::IPv4);
 		ServerAddrFallback.SetDefaultPort(GetDefaultPort());
 	}
 	else

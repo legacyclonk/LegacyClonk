@@ -302,7 +302,7 @@ public:
 	void OnDisconn(C4Network2IOConnection *pConn);
 	void HandlePacket(char cStatus, const C4PacketBase *pBasePkt, C4Network2IOConnection *pConn);
 	void HandleLobbyPacket(char cStatus, const C4PacketBase *pBasePkt, C4Network2IOConnection *pConn);
-	bool HandlePuncherPacket(C4NetpuncherPacket::uptr, C4NetIO::HostAddress::AddressFamily family);
+	bool HandlePuncherPacket(C4NetpuncherPacket::uptr, C4Network2HostAddress::AddressFamily family);
 	void OnPuncherConnect(C4NetIO::addr_t addr);
 
 	// runtime join stuff
@@ -348,7 +348,7 @@ public:
 	bool StopStreaming();
 
 	// Netpuncher
-	C4NetpuncherID::value &getNetpuncherGameID(C4NetIO::HostAddress::AddressFamily family);
+	C4NetpuncherID::value &getNetpuncherGameID(C4Network2HostAddress::AddressFamily family);
 	C4NetpuncherID getNetpuncherGameID() const { return NetpuncherGameID; }
 	StdStrBuf getNetpuncherAddr() const { return NetpuncherAddr; }
 
