@@ -17,7 +17,7 @@
 
 #include "C4Coroutine.h"
 #include "C4CurlSystem.h"
-#include "C4Network2.h"
+#include "C4Network2Address.h"
 #include "StdBuf.h"
 #include "StdSync.h"
 
