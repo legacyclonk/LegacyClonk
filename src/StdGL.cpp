@@ -1203,9 +1203,9 @@ bool CStdGL::RestoreDeviceObjects()
 
 					void main()
 					{
-						gl_FragColor.r = texture1D(gammaRed, gl_FragColor.r).r;
-						gl_FragColor.g = texture1D(gammaGreen, gl_FragColor.g).r;
-						gl_FragColor.b = texture1D(gammaBlue, gl_FragColor.b).r;
+						gl_FragColor.r = texture1D(gammaRed, gl_Color.r).r;
+						gl_FragColor.g = texture1D(gammaGreen, gl_Color.g).r;
+						gl_FragColor.b = texture1D(gammaBlue, gl_Color.b).r;
 						gl_FragColor.a = gl_Color.a;
 					}
 					)"
