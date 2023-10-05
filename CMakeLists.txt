@@ -471,7 +471,6 @@ list(PREPEND MACRO_TARGETS standard)
 foreach (MACRO_TARGET ${MACRO_TARGETS})
 	target_compile_definitions(${MACRO_TARGET} PUBLIC
 		C4_OS="${C4_OS}"
-		C4UPDATE_BUILD_TIMESTAMP="${C4UPDATE_TIMESTAMP}"
 		ICONV_CONST=
 		STD_APPUSERMODELID="LegacyClonkTeam.LegacyClonk"
 		# A standard product name for this project which is used in window registration etc.
@@ -481,7 +480,6 @@ foreach (MACRO_TARGET ${MACRO_TARGETS})
 
 	# Define macros if their variable is set
 	foreach(MACRO_VAR
-		C4UPDATE_BUILD_TIMESTAMP
 		DEBUGREC
 		ENABLE_SOUND
 		HAVE_FREETYPE
