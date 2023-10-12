@@ -364,7 +364,7 @@ void C4ConfigCooldowns::CompileFunc(StdCompiler *comp)
 {
 	using namespace std::chrono_literals;
 
-	comp->Value(mkNamingAdapt(SoundCommand, "SoundCommand", 5s));
+	comp->Value(mkNamingAdapt(SoundCommand, "SoundCommand", 0s));
 	comp->Value(mkNamingAdapt(mkParAdapt(ReadyCheck, 5s), "ReadyCheck", 10s));
 }
 
