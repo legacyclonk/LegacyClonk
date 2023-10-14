@@ -200,10 +200,12 @@ T *C4AudioSystemSdl::LoadSampleCheckMpegLayer3Header(const SampleLoadFunc<T> loa
 	// According to http://www.idea2ic.com/File_Formats/MPEG%20Audio%20Frame%20Header.pdf
 	// Maximum possible frame size = 144 * max bit rate / min sample rate + padding
 	// chosen values are limited to layer 3
-	constexpr std::size_t MaxFrameSize = 144 * 320'000 / 8'000 + 1;
+	static constexpr std::size_t MaxFrameSize{144 * 320'000 / 8'000 + 1};
 
-	std::span data{reinterpret_cast<const std::byte *>(buf), size};
-	for (std::size_t i = 0, limit = std::min(data.size(), MaxFrameSize); i < limit - 4; ++i)
+	const std::span data{reinterpret_cast<const std::byte *>(buf), size};
+	const std::size_t limit{std::min(data.size(), MaxFrameSize)};
+
+	for (std::size_t i{0}; i < limit - 4; ++i)
 	{
 		// first 8 of 11 frame sync bits
 		if (data[i] != std::byte{0xFF}) continue;
