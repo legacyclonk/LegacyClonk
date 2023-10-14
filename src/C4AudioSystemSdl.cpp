@@ -27,6 +27,7 @@
 #include <stdexcept>
 #include <memory>
 #include <optional>
+#include <span>
 
 #include <SDL_mixer.h>
 
@@ -55,7 +56,13 @@ private:
 
 	std::optional<StdSdlSubSystem> system;
 
-	static void ThrowIfFailed(const char *funcName, bool failed);
+	static void ThrowIfFailed(const char *funcName, bool failed, std::string_view errorMessage = {});
+
+	template <typename T>
+	using SampleLoadFunc = T *(*)(SDL_RWops *, int);
+
+	template <typename T>
+	static T *LoadSampleCheckMpegLayer3Header(SampleLoadFunc<T> loadFunc, const char *funcName, const void *buf, const std::size_t size);
 
 public:
 
@@ -140,11 +147,16 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinea
 	this->system.emplace(std::move(system));
 }
 
-void C4AudioSystemSdl::ThrowIfFailed(const char *const funcName, const bool failed)
+void C4AudioSystemSdl::ThrowIfFailed(const char *const funcName, const bool failed, std::string_view errorMessage)
 {
 	if (failed)
 	{
-		throw std::runtime_error{std::format("SDL_mixer: {} failed: {}", funcName, Mix_GetError())};
+		if (errorMessage.empty())
+		{
+			errorMessage = Mix_GetError();
+		}
+
+		throw std::runtime_error{std::format("SDL_mixer: {} failed: {}", funcName, errorMessage)};
 	}
 }
 
@@ -175,17 +187,64 @@ void C4AudioSystemSdl::StopMusic()
 
 void C4AudioSystemSdl::UnpauseMusic() { /* Not supported */ }
 
-C4AudioSystemSdl::MusicFileSdl::MusicFileSdl(const void *const buf, const std::size_t size)
-	: sample{Mix_LoadMUS_RW(SDL_RWFromConstMem(buf, size), SDL_TRUE)}
+template <typename T>
+T *C4AudioSystemSdl::LoadSampleCheckMpegLayer3Header(const SampleLoadFunc<T> loadFunc, const char *const funcName, const void *const buf, const std::size_t size)
 {
-	ThrowIfFailed("Mix_LoadMUS_RW", !sample);
+	const auto direct = loadFunc(SDL_RWFromConstMem(buf, size), SDL_TRUE);
+	if (direct)
+	{
+		return direct;
+	}
+	const std::string error{Mix_GetError()};
+
+	// According to http://www.idea2ic.com/File_Formats/MPEG%20Audio%20Frame%20Header.pdf
+	// Maximum possible frame size = 144 * max bit rate / min sample rate + padding
+	// chosen values are limited to layer 3
+	static constexpr std::size_t MaxFrameSize{144 * 320'000 / 8'000 + 1};
+
+	const std::span data{reinterpret_cast<const std::byte *>(buf), size};
+	const std::size_t limit{std::min(data.size(), MaxFrameSize)};
+
+	for (std::size_t i{0}; i < limit - 4; ++i)
+	{
+		// first 8 of 11 frame sync bits
+		if (data[i] != std::byte{0xFF}) continue;
+
+		const auto byte2 = data[i + 1];
+		// rest of the sync bits + check for Layer 3 (SDL_mixer only accepts layer 3)
+		if ((byte2 & std::byte{0xE6}) != std::byte{0xE2}) continue;
+		// MPEG version bit value 01 is reserved
+		if ((byte2 & std::byte{0x18}) == std::byte{0x08}) continue;
+
+		const auto byte3 = data[i + 2];
+		// bitrate index 1111 is invalid
+		if ((byte3 & std::byte{0xF0}) == std::byte{0xF0}) continue;
+		// sampling rate index 11 is reserved
+		if ((byte3 & std::byte{0x0C}) == std::byte{0x0C}) continue;
+
+		const auto byte4 = data[i + 3];
+		// emphasis bit value 10 is reserved
+		if ((byte4 & std::byte{0x03}) == std::byte{0x02}) continue;
+
+		// at this point there seems to be a valid MPEG frame header
+		const auto sample = loadFunc(SDL_RWFromConstMem(data.data() + i, size - i), SDL_TRUE);
+		if (sample)
+		{
+			return sample;
+		}
+	}
+
+	ThrowIfFailed(funcName, true, error);
+	return nullptr;
 }
 
+C4AudioSystemSdl::MusicFileSdl::MusicFileSdl(const void *const buf, const std::size_t size)
+	: sample{LoadSampleCheckMpegLayer3Header(Mix_LoadMUS_RW, "Mix_LoadMUS_RW", buf, size)}
+{}
+
 C4AudioSystemSdl::SoundFileSdl::SoundFileSdl(const void *const buf, const std::size_t size)
-	: sample{Mix_LoadWAV_RW(SDL_RWFromConstMem(buf, size), SDL_TRUE)}
-{
-	ThrowIfFailed("Mix_LoadWAV_RW", !sample);
-}
+	: sample{LoadSampleCheckMpegLayer3Header(Mix_LoadWAV_RW, "Mix_LoadWAV_RW", buf, size)}
+{}
 
 std::uint32_t C4AudioSystemSdl::SoundFileSdl::GetDuration() const
 {
