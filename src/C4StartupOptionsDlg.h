@@ -127,6 +127,8 @@ private:
 
 	C4GUI::ScrollBar *pEffectLevelSlider;
 
+	void SaveGfxTroubleshoot();
+
 	class ScaleEdit;
 
 	C4GUI::ScrollBar *pScaleSlider;
