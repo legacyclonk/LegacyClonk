@@ -223,7 +223,7 @@ bool C4ViewportWindow::GetPositionData(std::string &id, std::string &subKey, boo
 {
 	id = std::format("Viewport{}", cvp->Player + 1);
 	subKey = Config.GetSubkeyPath("Console");
-	storeSize = false;
+	storeSize = true;
 	return true;
 }
 
