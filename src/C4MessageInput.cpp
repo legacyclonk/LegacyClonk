@@ -469,7 +469,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 		if (!Game.DebugMode) return false;
 		if (Game.Network.isEnabled() && !Game.Network.isHost()) return false;
 
-		Game.Control.DoInput(CID_Script, new C4ControlScript(pCmdPar, C4ControlScript::SCOPE_Console), CDT_Decide);
+		Game.Control.DoInput(CID_Script, new C4ControlScript(pCmdPar, C4ControlScript::SCOPE_Console, Config.Developer.ConsoleScriptStrictness), CDT_Decide);
 		return true;
 	}
 	// set runtimte properties

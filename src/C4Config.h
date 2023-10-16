@@ -24,6 +24,7 @@
 #include "StdConfig.h"
 
 #ifdef C4ENGINE
+#include "C4AulScriptStrict.h"
 #include "StdWindow.h"
 #endif
 
@@ -97,7 +98,21 @@ public:
 class C4ConfigDeveloper
 {
 public:
+	struct ConsoleScriptStrictnessWrapper
+	{
+		C4AulScriptStrict Strictness;
+
+		void CompileFunc(StdCompiler *comp);
+
+		operator C4AulScriptStrict() const noexcept { return Strictness == MaxStrictSentinel ? C4AulScriptStrict::MAXSTRICT : Strictness; }
+
+		static constexpr auto MaxStrictSentinel = static_cast<C4AulScriptStrict>(255);
+	};
+
+public:
 	bool AutoFileReload;
+	ConsoleScriptStrictnessWrapper ConsoleScriptStrictness;
+
 	void CompileFunc(StdCompiler *pComp);
 };
 

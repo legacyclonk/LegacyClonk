@@ -107,9 +107,29 @@ void C4ConfigGeneral::CompileFunc(StdCompiler *pComp)
 
 #ifdef C4ENGINE
 
+void C4ConfigDeveloper::ConsoleScriptStrictnessWrapper::CompileFunc(StdCompiler *const comp)
+{
+	StdEnumEntry<C4AulScriptStrict> ConsoleScriptStrictnessValues[] =
+	{
+		{"NonStrict", C4AulScriptStrict::NONSTRICT},
+		{"Strict1", C4AulScriptStrict::STRICT1},
+		{"Strict2", C4AulScriptStrict::STRICT2},
+		{"Strict3", C4AulScriptStrict::STRICT3},
+		{"MaxStrict", MaxStrictSentinel}
+	};
+
+	comp->Value(mkEnumAdaptT<C4AulScriptStrict>(Strictness, ConsoleScriptStrictnessValues));
+
+	if (comp->isCompiler() && Strictness != MaxStrictSentinel)
+	{
+		Strictness = static_cast<C4AulScriptStrict>(std::clamp(std::to_underlying(Strictness), std::to_underlying(C4AulScriptStrict::NONSTRICT), std::to_underlying(C4AulScriptStrict::MAXSTRICT)));
+	}
+}
+
 void C4ConfigDeveloper::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(AutoFileReload, "AutoFileReload", true, false, true));
+	pComp->Value(mkNamingAdapt(ConsoleScriptStrictness, "ConsoleScriptStrictness", ConsoleScriptStrictnessWrapper{ConsoleScriptStrictnessWrapper::MaxStrictSentinel}));
 }
 
 void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)

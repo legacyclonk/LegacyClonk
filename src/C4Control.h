@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "C4AulScriptStrict.h"
 #include "C4ForwardDeclarations.h"
 #include "C4Id.h"
 #include "C4PacketBase.h"
@@ -133,16 +134,20 @@ public:
 
 	C4ControlScript()
 		: iTargetObj(-1) {}
-	C4ControlScript(const char *szScript, int32_t iTargetObj = SCOPE_Global)
-		: iTargetObj(iTargetObj), Script(szScript, true) {}
+	C4ControlScript(const char *szScript, int32_t iTargetObj = SCOPE_Global, C4AulScriptStrict strict = C4AulScriptStrict::MAXSTRICT)
+		: iTargetObj(iTargetObj), Strict{strict}, Script(szScript, true) {}
 
 protected:
 	int32_t iTargetObj;
+	C4AulScriptStrict Strict;
 	StdStrBuf Script;
 
 public:
 	void SetTargetObj(int32_t iObj) { iTargetObj = iObj; }
 	DECLARE_C4CONTROL_VIRTUALS
+
+public:
+	static void CheckStrictness(const C4AulScriptStrict strict, StdCompiler &comp);
 };
 
 class C4ControlPlayerSelect : public C4ControlPacket // sync
@@ -341,7 +346,7 @@ class C4ControlEMMoveObject : public C4ControlPacket // sync
 public:
 	C4ControlEMMoveObject() : pObjects(nullptr) {}
 	C4ControlEMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj,
-		int32_t iObjectNum = 0, int32_t *pObjects = nullptr, const char *szScript = nullptr);
+		int32_t iObjectNum = 0, int32_t *pObjects = nullptr, const char *szScript = nullptr, C4AulScriptStrict strict = C4AulScriptStrict::MAXSTRICT);
 	~C4ControlEMMoveObject();
 
 protected:
@@ -349,6 +354,7 @@ protected:
 	int32_t tx, ty; // target position
 	int32_t iTargetObj; // enumerated ptr to target object
 	int32_t iObjectNum; // number of objects moved
+	C4AulScriptStrict Strict; // strictness for the script to execute
 	int32_t *pObjects; // pointer on array of objects moved
 	StdStrBuf Script; // script to execute
 

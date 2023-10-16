@@ -608,7 +608,7 @@ bool C4Console::In(const char *szText)
 	// editing enabled?
 	if (!EditCursor.EditingOK()) return false;
 	// pass through network queue
-	Game.Control.DoInput(CID_Script, new C4ControlScript(szText, C4ControlScript::SCOPE_Console), CDT_Decide);
+	Game.Control.DoInput(CID_Script, new C4ControlScript(szText, C4ControlScript::SCOPE_Console, Config.Developer.ConsoleScriptStrictness), CDT_Decide);
 	return true;
 }
 

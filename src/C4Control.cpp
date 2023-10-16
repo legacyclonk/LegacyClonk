@@ -287,7 +287,7 @@ void C4ControlScript::Execute() const
 	else
 		// default: Fallback to global context
 		pScript = &Game.ScriptEngine;
-	C4Value rVal(pScript->DirectExec(pObj, szScript, "console script"));
+	C4Value rVal(pScript->DirectExec(pObj, szScript, "console script", false, Strict));
 	// show messages
 	// print script
 	if (pObj)
@@ -312,6 +312,13 @@ void C4ControlScript::Execute() const
 void C4ControlScript::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(iTargetObj, "TargetObj", -1));
+	pComp->Value(mkNamingAdapt(Strict,     "Strict",    C4AulScriptStrict::MAXSTRICT));
+
+	if (pComp->isCompiler())
+	{
+		CheckStrictness(Strict, *pComp);
+	}
+
 	pComp->Value(mkNamingAdapt(Script,     "Script",    ""));
 	C4ControlPacket::CompileFunc(pComp);
 }
@@ -850,9 +857,9 @@ void C4ControlJoinPlayer::CompileFunc(StdCompiler *pComp)
 // *** C4ControlEMMoveObject
 
 C4ControlEMMoveObject::C4ControlEMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj,
-	int32_t iObjectNum, int32_t *pObjects, const char *szScript)
+	int32_t iObjectNum, int32_t *pObjects, const char *szScript, const C4AulScriptStrict strict)
 	: eAction(eAction), tx(tx), ty(ty), iTargetObj(Game.Objects.ObjectNumber(pTargetObj)),
-	iObjectNum(iObjectNum), pObjects(pObjects), Script(szScript, true) {}
+	iObjectNum(iObjectNum), Strict{strict}, pObjects(pObjects), Script(szScript, true) {}
 
 C4ControlEMMoveObject::~C4ControlEMMoveObject()
 {
@@ -918,7 +925,7 @@ void C4ControlEMMoveObject::Execute() const
 	{
 		if (!pObjects) return;
 		// execute script ...
-		C4ControlScript ScriptCtrl(Script.getData(), C4ControlScript::SCOPE_Global);
+		C4ControlScript ScriptCtrl(Script.getData(), C4ControlScript::SCOPE_Global, Strict);
 		ScriptCtrl.SetByClient(iByClient);
 		// ... for each object in selection
 		for (int i = 0; i < iObjectNum; ++i)
@@ -961,7 +968,15 @@ void C4ControlEMMoveObject::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ty,                                 "ty",         0));
 	pComp->Value(mkNamingAdapt(iTargetObj,                         "TargetObj", -1));
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iObjectNum),         "ObjectNum",  0));
-	if (pComp->isCompiler()) { delete[] pObjects; pObjects = new int32_t[iObjectNum]; }
+	pComp->Value(mkNamingAdapt(Strict,                             "Strict",     C4AulScriptStrict::MAXSTRICT));
+
+	if (pComp->isCompiler())
+	{
+		C4ControlScript::CheckStrictness(Strict, *pComp);
+
+		delete[] pObjects; pObjects = new int32_t[iObjectNum];
+	}
+
 	pComp->Value(mkNamingAdapt(mkArrayAdaptS(pObjects, iObjectNum), "Objs",      -1));
 	if (eAction == EMMO_Script)
 		pComp->Value(mkNamingAdapt(Script, "Script", ""));
@@ -1656,4 +1671,12 @@ void C4ControlSetPlayerTeam::CompileFunc(StdCompiler *pComp)
 {
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(team), "Team", 0));
 	C4ControlInternalPlayerScriptBase::CompileFunc(pComp);
+}
+
+void C4ControlScript::CheckStrictness(const C4AulScriptStrict strict, StdCompiler &comp)
+{
+	if (!Inside(std::to_underlying(strict), std::to_underlying(C4AulScriptStrict::NONSTRICT), std::to_underlying(C4AulScriptStrict::MAXSTRICT)))
+	{
+		comp.excCorrupt("Invalid strictness: %hhu", std::to_underlying(strict));
+	}
 }
