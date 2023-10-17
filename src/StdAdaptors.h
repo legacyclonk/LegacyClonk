@@ -1065,3 +1065,11 @@ inline void CompileFunc(std::chrono::duration<Rep, Period> &duration, StdCompile
 		comp->Value(temp);
 	}
 }
+
+template<typename T> requires std::is_scoped_enum_v<T>
+inline void CompileFunc(T &value, StdCompiler *const comp)
+{
+	auto underlying = std::to_underlying(value);
+	comp->Value(underlying);
+	value = static_cast<T>(underlying);
+}
