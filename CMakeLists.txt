@@ -370,17 +370,18 @@ endif ()
 
 # Link SDL2
 if (USE_SDL_MAINLOOP OR USE_SDL_MIXER)
-	find_package(SDL2 REQUIRED)
-	if (SDL2_FOUND AND USE_SDL_MAINLOOP)
+	find_package(SDL REQUIRED)
+	if (SDL_FOUND AND USE_SDL_MAINLOOP)
 		set(USE_SDL_FOR_GAMEPAD ON)
 	endif ()
-	target_link_libraries(clonk SDL2::SDL2)
+	target_link_libraries(clonk SDL::SDL)
 endif ()
 
 # Link SDL2_mixer
 if (USE_SDL_MIXER)
-	find_package(SDL2_mixer REQUIRED)
-	target_link_libraries(clonk SDL2_mixer::SDL2_mixer)
+	find_package(SDL_mixer REQUIRED)
+	target_link_libraries(clonk ${SDL_MIXER_LIBRARIES})
+	target_include_directories(clonk PUBLIC ${SDL_MIXER_INCLUDE_DIRECTORIES})
 endif ()
 
 # Link Windows Imaging Component

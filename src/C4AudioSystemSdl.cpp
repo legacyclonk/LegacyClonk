@@ -48,7 +48,7 @@ private:
 	static constexpr Uint16 Format = AUDIO_S16SYS;
 	static constexpr int NumChannels = 2;
 	static constexpr int BytesPerSecond =
-	Frequency * (SDL_AUDIO_BITSIZE(Format) / 8) * NumChannels;
+	Frequency * (16 / 8) * NumChannels;
 
 	// Smart pointers for SDL_mixer objects
 	using SDLMixChunkUniquePtr = C4DeleterFunctionUniquePtr<Mix_FreeChunk>;
@@ -58,11 +58,11 @@ private:
 
 	static void ThrowIfFailed(const char *funcName, bool failed, std::string_view errorMessage = {});
 
-	template <typename T>
-	using SampleLoadFunc = T *(*)(SDL_RWops *, int);
+	template <typename T, typename... extra>
+	using SampleLoadFunc = T *(*)(SDL_RWops *, extra...);
 
-	template <typename T>
-	static T *LoadSampleCheckMpegLayer3Header(SampleLoadFunc<T> loadFunc, const char *funcName, const void *buf, const std::size_t size);
+	template <typename T, typename... extra>
+	static T *LoadSampleCheckMpegLayer3Header(SampleLoadFunc<T, extra...> loadFunc, const char *funcName, const void *buf, const std::size_t size);
 
 public:
 
@@ -135,8 +135,8 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinea
 	// Try to enable linear resampling if requested
 	if (preferLinearResampling)
 	{
-		if (!SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, "linear"))
-			LogF("SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, \"linear\") failed");
+		//if (!SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, "linear"))
+//			LogF("SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, \"linear\") failed");
 	}
 
 	// Initialize SDL_mixer
@@ -187,10 +187,21 @@ void C4AudioSystemSdl::StopMusic()
 
 void C4AudioSystemSdl::UnpauseMusic() { /* Not supported */ }
 
-template <typename T>
-T *C4AudioSystemSdl::LoadSampleCheckMpegLayer3Header(const SampleLoadFunc<T> loadFunc, const char *const funcName, const void *const buf, const std::size_t size)
+template <typename T, typename... extra>
+T *C4AudioSystemSdl::LoadSampleCheckMpegLayer3Header(const SampleLoadFunc<T, extra...> loadFunc, const char *const funcName, const void *const buf, const std::size_t size)
 {
-	const auto direct = loadFunc(SDL_RWFromConstMem(buf, size), SDL_TRUE);
+	const auto loadIt = [loadFunc](auto buf, auto size)
+	{
+		if constexpr (sizeof...(extra) == 1)
+		{
+			return loadFunc(SDL_RWFromConstMem(buf, size), SDL_TRUE);
+		}
+		else
+		{
+			return loadFunc(SDL_RWFromConstMem(buf, size));
+		}
+	};
+	const auto direct = loadIt(buf, size);
 	if (direct)
 	{
 		return direct;
@@ -227,7 +238,7 @@ T *C4AudioSystemSdl::LoadSampleCheckMpegLayer3Header(const SampleLoadFunc<T> loa
 		if ((byte4 & std::byte{0x03}) == std::byte{0x02}) continue;
 
 		// at this point there seems to be a valid MPEG frame header
-		const auto sample = loadFunc(SDL_RWFromConstMem(data.data() + i, size - i), SDL_TRUE);
+		const auto sample = loadIt(buf, size);
 		if (sample)
 		{
 			return sample;
