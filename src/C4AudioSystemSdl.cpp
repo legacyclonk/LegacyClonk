@@ -21,6 +21,7 @@
 #include "StdSdlSubSystem.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <format>
 #include <stdexcept>
@@ -47,6 +48,7 @@ private:
 	static constexpr int NumChannels = 2;
 	static constexpr int BytesPerSecond =
 	Frequency * (SDL_AUDIO_BITSIZE(Format) / 8) * NumChannels;
+	static constexpr int InvalidChannel{-1};
 
 	// Smart pointers for SDL_mixer objects
 	using SDLMixChunkUniquePtr = C4DeleterFunctionUniquePtr<Mix_FreeChunk>;
@@ -91,12 +93,19 @@ public:
 		void SetPosition(std::uint32_t ms) override;
 		void SetVolumeAndPan(float volume, float pan) override;
 		void Unpause() override;
+		int GetChannelId() const { return channel.load(std::memory_order_acquire); }
+		void ClearChannelId() { channel.store(InvalidChannel, std::memory_order_release); }
 
 	private:
-		const int channel;
+		std::atomic_int channel;
 	};
 
-	SoundChannel *CreateSoundChannel(const SoundFile *const sound, bool loop) override { return new SoundChannelSdl{static_cast<const SoundFileSdl *>(sound), loop}; }
+	SoundChannel *CreateSoundChannel(const SoundFile *const sound, bool loop) override
+	{
+		const auto channel = new SoundChannelSdl{static_cast<const SoundFileSdl *>(sound), loop};
+		playingChannels[channel->GetChannelId()] = channel;
+		return channel;
+	}
 
 	class SoundFileSdl : public SoundFile
 	{
@@ -113,6 +122,12 @@ public:
 	};
 
 	virtual SoundFile *CreateSoundFile(const void *buf, std::size_t size) override { return new SoundFileSdl{buf, size}; }
+
+private:
+	std::vector<SoundChannelSdl *> playingChannels;
+
+	static inline C4AudioSystemSdl *instance{nullptr};
+	static void ChannelFinished(int channel);
 };
 
 // this is used instead of MIX_MAX_VOLUME, because MIX_MAX_VOLUME is very loud and easily leads to clipping
@@ -122,6 +137,9 @@ static constexpr auto MaximumVolume = 80;
 
 C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinearResampling)
 {
+	assert(!instance);
+	instance = this;
+
 	// Check SDL_mixer version
 	SDL_version compile_version;
 	MIX_VERSION(&compile_version);
@@ -142,7 +160,9 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinea
 	ThrowIfFailed("Mix_OpenAudio",
 		Mix_OpenAudio(Frequency, Format, NumChannels, 1024) != 0);
 	Mix_AllocateChannels(maxChannels);
+	Mix_ChannelFinished(ChannelFinished);
 	this->system.emplace(std::move(system));
+	playingChannels.resize(maxChannels);
 }
 
 void C4AudioSystemSdl::ThrowIfFailed(const char *const funcName, const bool failed, std::string_view errorMessage)
@@ -252,17 +272,21 @@ std::uint32_t C4AudioSystemSdl::SoundFileSdl::GetDuration() const
 C4AudioSystemSdl::SoundChannelSdl::SoundChannelSdl(const SoundFileSdl *const sound, const bool loop)
 	: channel{Mix_PlayChannel(-1, sound->sample.get(), (loop ? -1 : 0))}
 {
-	ThrowIfFailed("Mix_PlayChannel", channel == -1);
+	ThrowIfFailed("Mix_PlayChannel", GetChannelId() == InvalidChannel);
 }
 
 C4AudioSystemSdl::SoundChannelSdl::~SoundChannelSdl()
 {
-	Mix_HaltChannel(channel);
+	if (const auto ch = channel.load(std::memory_order::acquire); ch != InvalidChannel)
+	{
+		Mix_HaltChannel(ch);
+	}
 }
 
 bool C4AudioSystemSdl::SoundChannelSdl::IsPlaying() const
 {
-	return Mix_Playing(channel) == 1;
+	const auto ch = channel.load(std::memory_order::acquire);
+	return ch != InvalidChannel && Mix_Playing(ch) == 1;
 }
 
 void C4AudioSystemSdl::SoundChannelSdl::SetPosition(const std::uint32_t ms)
@@ -272,14 +296,24 @@ void C4AudioSystemSdl::SoundChannelSdl::SetPosition(const std::uint32_t ms)
 
 void C4AudioSystemSdl::SoundChannelSdl::SetVolumeAndPan(const float volume, const float pan)
 {
-	Mix_Volume(channel, std::lrint(volume * MaximumVolume));
+	const auto ch = channel.load(std::memory_order::acquire);
+	if (ch == InvalidChannel) return;
+
+	Mix_Volume(ch, std::lrint(volume * MaximumVolume));
 	const Uint8
 		left  = static_cast<Uint8>(std::clamp(std::lrint((1.0f - pan) * 255.0f), 0L, 255L)),
 		right = static_cast<Uint8>(std::clamp(std::lrint((1.0f + pan) * 255.0f), 0L, 255L));
-	ThrowIfFailed("Mix_SetPanning", Mix_SetPanning(channel, left, right) == 0);
+	ThrowIfFailed("Mix_SetPanning", Mix_SetPanning(ch, left, right) == 0);
 }
 
 void C4AudioSystemSdl::SoundChannelSdl::Unpause() { /* Not supported */ }
+
+void C4AudioSystemSdl::ChannelFinished(int channel)
+{
+	auto &soundInstance = instance->playingChannels[channel];
+	soundInstance->ClearChannelId();
+	soundInstance = nullptr;
+}
 
 C4AudioSystem *CreateC4AudioSystemSdl(int maxChannels, const bool preferLinearResampling)
 {
