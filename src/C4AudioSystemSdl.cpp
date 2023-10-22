@@ -17,7 +17,6 @@
 
 #include "C4Log.h"
 
-#include "Standard.h"
 #include "StdHelpers.h"
 #include "StdSdlSubSystem.h"
 
@@ -25,7 +24,6 @@
 #include <cmath>
 #include <format>
 #include <stdexcept>
-#include <memory>
 #include <optional>
 #include <span>
 
