@@ -102,7 +102,6 @@ private:
 	DWORD style = WS_OVERLAPPEDWINDOW;
 	DWORD styleEx = 0;
 	winrt::com_ptr<ITaskbarList3> taskBarList{nullptr};
-	winrt::agile_ref<ITaskbarList3> taskBarListRef;
 
 #elif defined(USE_X11)
 

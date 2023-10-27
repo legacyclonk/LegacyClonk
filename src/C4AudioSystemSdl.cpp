@@ -133,7 +133,10 @@ private:
 // this is used instead of MIX_MAX_VOLUME, because MIX_MAX_VOLUME is very loud and easily leads to clipping
 // the lower volume gives more headroom until clipping occurs
 // the selected volume is chosen to be similar to FMod's original volume
-static constexpr auto MaximumVolume = 80;
+static constexpr auto MaximumMusicVolume = 80;
+
+// higher than MaximumMusicVolume to compensate for lower maximum panning volume
+static constexpr auto MaximumSoundVolume = 100;
 
 C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinearResampling)
 {
@@ -195,7 +198,7 @@ void C4AudioSystemSdl::PlayMusic(const C4AudioSystem::MusicFile *const music, co
 
 void C4AudioSystemSdl::SetMusicVolume(const float volume)
 {
-	Mix_VolumeMusic(std::lrint(volume * MaximumVolume));
+	Mix_VolumeMusic(std::lrint(volume * MaximumMusicVolume));
 }
 
 void C4AudioSystemSdl::StopMusic()
@@ -299,10 +302,10 @@ void C4AudioSystemSdl::SoundChannelSdl::SetVolumeAndPan(const float volume, cons
 	const auto ch = channel.load(std::memory_order::acquire);
 	if (ch == InvalidChannel) return;
 
-	Mix_Volume(ch, std::lrint(volume * MaximumVolume));
+	Mix_Volume(ch, std::lrint(volume * MaximumSoundVolume));
 	const Uint8
-		left  = static_cast<Uint8>(std::clamp(std::lrint((1.0f - pan) * 255.0f), 0L, 255L)),
-		right = static_cast<Uint8>(std::clamp(std::lrint((1.0f + pan) * 255.0f), 0L, 255L));
+		left  = static_cast<Uint8>(std::clamp(std::lrint((1.0f - pan) * 192.0f), 0L, 192L)),
+		right = static_cast<Uint8>(std::clamp(std::lrint((1.0f + pan) * 192.0f), 0L, 192L));
 	ThrowIfFailed("Mix_SetPanning", Mix_SetPanning(ch, left, right) == 0);
 }
 
