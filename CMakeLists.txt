@@ -329,7 +329,7 @@ list(APPEND PCH_EXTRA <fmt/format.h> <fmt/printf.h>)
 if (NOT USE_CONSOLE)
 	find_package(Freetype REQUIRED)
 	target_link_libraries(clonk Freetype::Freetype)
-	set(HAVE_FREETYPE ${FREETYPE_FOUND})
+	set(HAVE_FREETYPE 1)
 endif ()
 
 # Link GTK2
