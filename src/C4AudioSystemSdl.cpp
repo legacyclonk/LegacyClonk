@@ -34,6 +34,7 @@ class C4AudioSystemSdl : public C4AudioSystem
 {
 public:
 	C4AudioSystemSdl(int maxChannels, bool preferLinearResampling);
+	~C4AudioSystemSdl() noexcept override;
 
 	void FadeOutMusic(std::int32_t ms) override;
 	bool IsMusicPlaying() const override;
@@ -166,6 +167,12 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinea
 	Mix_ChannelFinished(ChannelFinished);
 	this->system.emplace(std::move(system));
 	playingChannels.resize(maxChannels);
+}
+
+C4AudioSystemSdl::~C4AudioSystemSdl() noexcept
+{
+	Mix_CloseAudio();
+	Mix_Quit();
 }
 
 void C4AudioSystemSdl::ThrowIfFailed(const char *const funcName, const bool failed, std::string_view errorMessage)
