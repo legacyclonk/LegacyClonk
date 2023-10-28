@@ -160,8 +160,8 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinea
 
 	// Initialize SDL_mixer
 	StdSdlSubSystem system{SDL_INIT_AUDIO};
-	ThrowIfFailed("Mix_OpenAudio",
-		Mix_OpenAudio(Frequency, Format, NumChannels, 1024) != 0);
+	ThrowIfFailed("Mix_OpenAudioDevice",
+		Mix_OpenAudioDevice(Frequency, Format, NumChannels, 1024, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE & ~SDL_AUDIO_ALLOW_CHANNELS_CHANGE) != 0);
 	Mix_AllocateChannels(maxChannels);
 	Mix_ChannelFinished(ChannelFinished);
 	this->system.emplace(std::move(system));
