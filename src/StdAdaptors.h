@@ -860,7 +860,7 @@ struct StdEnumAdapt
 		// reading?
 		else
 		{
-			int_t val = 0;
+			int_t val{};
 			// Try to read as number
 			try
 			{
