@@ -338,7 +338,7 @@ public:
 };
 
 // Standard compile funcs
-template <class T>
+template <class T> requires (std::is_class_v<T> || std::is_union_v<T>)
 inline void CompileFunc(T &rStruct, StdCompiler *pComp)
 {
 	// If the compiler doesn't like this line, you tried to compile
