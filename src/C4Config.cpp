@@ -159,7 +159,6 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkEnumAdaptT<int32_t>(UpperBoard, UpperBoardDisplayModes), "UpperBoard", C4UpperBoard::Full, false, true));
 
 	pComp->Value(mkNamingAdapt(ShowClock,            "ShowClock",            false, false, true));
-	pComp->Default("ShowAllResolutions");
 	pComp->Value(mkNamingAdapt(ShowCrewNames,        "ShowCrewNames",        true,  false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewCNames,       "ShowCrewCNames",       true,  false, true));
 	pComp->Value(mkNamingAdapt(MsgBoard,             "MsgBoard",             true,  false, true));
@@ -175,7 +174,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(Gamma1,               "Gamma1",               0));
 	pComp->Value(mkNamingAdapt(Gamma2,               "Gamma2",               0x808080));
 	pComp->Value(mkNamingAdapt(Gamma3,               "Gamma3",               0xffffff));
-	pComp->Value(mkNamingAdapt(Currency,             "Currency",             false));
+	pComp->Default("Currency");
 	pComp->Value(mkNamingAdapt(RenderInactive,       "RenderInactive",       Console));
 	pComp->Value(mkNamingAdapt(DisableGamma,         "DisableGamma",         false, false, true));
 	pComp->Value(mkNamingAdapt(Monitor,              "Monitor",              0)); // 0 = D3DADAPTER_DEFAULT

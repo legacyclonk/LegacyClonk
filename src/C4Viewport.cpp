@@ -1295,7 +1295,7 @@ void C4Viewport::DrawPlayerInfo(C4FacetEx &cgo)
 			cgo.X + cgo.Wdt - wdt - C4SymbolBorder,
 			cgo.Y + C4SymbolBorder,
 			wdt, hgt);
-		Game.GraphicsResource.fctWealth.DrawValue(ccgo, Game.Players.Get(Player)->Wealth, 0, Config.Graphics.Currency);
+		Game.GraphicsResource.fctWealth.DrawValue(ccgo, Game.Players.Get(Player)->Wealth);
 	}
 
 	// Value gain

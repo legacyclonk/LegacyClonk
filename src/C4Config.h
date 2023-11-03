@@ -153,7 +153,6 @@ public:
 	std::int32_t BlitOffset;   // blit offset (percent) (OpenGL)
 	std::int32_t TexIndent; // blit offset (per mille) (OpenGL)
 	int32_t Gamma1, Gamma2, Gamma3; // gamma ramps
-	bool Currency; // default wealth symbolseb
 	uint32_t RenderInactive; // draw viewports even if inactive. 1 = Fullscreen, 2 = EM, 1 | 2 = both
 	bool DisableGamma;
 	int32_t Monitor; // monitor index to play on
