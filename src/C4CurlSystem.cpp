@@ -168,7 +168,6 @@ C4CurlSystem::AddedEasyHandle C4CurlSystem::AddHandle(EasyHandle &&easyHandle)
 
 	{
 		const std::lock_guard lock{socketMapMutex};
-		ThrowIfFailed(sockets.try_emplace(addedEasyHandle.get(), std::unordered_map<SOCKET, int>{}).second, "already added");
 		ThrowIfFailed(curl_multi_add_handle(multiHandle.get(), addedEasyHandle.get()) == CURLM_OK, "curl_multi_add_handle");
 	}
 
@@ -182,7 +181,7 @@ void C4CurlSystem::RemoveHandle(CURL *const handle)
 	{
 		const std::lock_guard lock{socketMapMutex};
 		curl_multi_remove_handle(multiHandle.get(), handle);
-		sockets.erase(handle);
+		std::erase_if(sockets, [handle](const auto &pair) { return pair.first.first == handle; });
 	}
 
 	CancelWait();
@@ -242,7 +241,7 @@ C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> C4CurlSystem::Execute()
 
 				if (!localSockets.empty())
 				{
-					for (const auto socket : localSockets | std::views::values | std::views::join | std::views::keys)
+					for (const auto socket : localSockets | std::views::keys | std::views::elements<1>)
 					{
 						if (WSANETWORKEVENTS networkEvents; !WSAEnumNetworkEvents(socket, event.GetEvent(), &networkEvents))
 						{
@@ -337,9 +336,7 @@ C4Task::Cold<C4CurlSystem::WaitReturnType> C4CurlSystem::Wait()
 #else
 	co_return co_await C4Awaiter::ResumeOnSignals(
 		GetSocketMapCopy()
-			| std::views::values
-			| std::views::join
-			| std::views::transform([](const auto &pair) { return pollfd{.fd = pair.first, .events = static_cast<short>(pair.second)}; }),
+			| std::views::transform([](const auto &pair) { return pollfd{.fd = pair.first.second, .events = static_cast<short>(pair.second)}; }),
 		timeout.load(std::memory_order_acquire)
 		);
 #endif
@@ -445,14 +442,11 @@ int C4CurlSystem::SocketFunction(CURL *const curl, const curl_socket_t s, const 
 
 	if (what == CURL_POLL_REMOVE)
 	{
-		if (const auto it = that.sockets.find(curl); it != that.sockets.end())
-		{
-			it->second.erase(s);
-		}
+		that.sockets.erase(std::pair{curl, s});
 	}
 	else
 	{
-		that.sockets.find(curl)->second.insert_or_assign(s, networkEvents);
+		that.sockets.insert_or_assign({curl, s}, networkEvents);
 	}
 
 	return 0;

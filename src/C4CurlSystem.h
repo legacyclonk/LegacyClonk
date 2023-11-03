@@ -29,6 +29,15 @@ using CURL = struct Curl_easy;
 using curl_socket_t = SOCKET;
 using CURLU = struct Curl_URL;
 
+template<>
+struct std::hash<std::pair<CURL *, SOCKET>>
+{
+	std::size_t operator()(const std::pair<CURL *, SOCKET> pair) const
+	{
+		return std::hash<CURL *>{}(pair.first) ^ std::hash<SOCKET>{}(pair.second);
+	}
+};
+
 class C4CurlSystem
 {
 private:
@@ -147,7 +156,7 @@ private:
 	void ProcessMessages();
 	void CancelWait();
 
-	std::unordered_map<CURL *, std::unordered_map<SOCKET, int>> GetSocketMapCopy()
+	std::unordered_map<std::pair<CURL *, SOCKET>, int> GetSocketMapCopy()
 	{
 		const std::lock_guard lock{socketMapMutex};
 		return sockets;
@@ -171,5 +180,5 @@ private:
 	std::atomic<C4Task::CancellablePromise *> wait{nullptr};
 
 	std::mutex socketMapMutex;
-	std::unordered_map<CURL *, std::unordered_map<SOCKET, int>> sockets;
+	std::unordered_map<std::pair<CURL *, SOCKET>, int> sockets;
 };
