@@ -137,7 +137,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(ResX,                 "ResolutionX",          800,   false, true));
 	pComp->Value(mkNamingAdapt(ResY,                 "ResolutionY",          600,   false, true));
 	pComp->Value(mkNamingAdapt(Scale,                "Scale",                100,   false, true));
-	pComp->Value(mkNamingAdapt(ShowAllResolutions,   "ShowAllResolutions",   false, false, true));
+	pComp->Default("ShowAllResolutions");
 	pComp->Value(mkNamingAdapt(SplitscreenDividers,  "SplitscreenDividers",  1));
 	pComp->Value(mkNamingAdapt(ShowPlayerHUDAlways,  "ShowPlayerHUDAlways",  true));
 	pComp->Value(mkNamingAdapt(ShowPortraits,        "ShowPortraits",        true,  false, true));
@@ -159,6 +159,7 @@ void C4ConfigGraphics::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkEnumAdaptT<int32_t>(UpperBoard, UpperBoardDisplayModes), "UpperBoard", C4UpperBoard::Full, false, true));
 
 	pComp->Value(mkNamingAdapt(ShowClock,            "ShowClock",            false, false, true));
+	pComp->Default("ShowAllResolutions");
 	pComp->Value(mkNamingAdapt(ShowCrewNames,        "ShowCrewNames",        true,  false, true));
 	pComp->Value(mkNamingAdapt(ShowCrewCNames,       "ShowCrewCNames",       true,  false, true));
 	pComp->Value(mkNamingAdapt(MsgBoard,             "MsgBoard",             true,  false, true));
@@ -206,7 +207,7 @@ void C4ConfigSound::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(RXMusic,     "Music",       true,  false, true));
 	pComp->Value(mkNamingAdapt(FEMusic,     "MenuMusic",   true,  false, true));
 	pComp->Value(mkNamingAdapt(FESamples,   "MenuSound",   true,  false, true));
-	pComp->Value(mkNamingAdapt(Verbose,     "Verbose",     false, false, true));
+	pComp->Default("Verbose");
 	pComp->Value(mkNamingAdapt(MusicVolume, "MusicVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(SoundVolume, "SoundVolume", 100, false, true));
 	pComp->Value(mkNamingAdapt(MaxChannels, "MaxChannels", C4AudioSystem::MaxChannels));

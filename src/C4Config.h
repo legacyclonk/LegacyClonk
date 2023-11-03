@@ -139,7 +139,6 @@ public:
 	bool ShowClock;
 	int32_t ResX, ResY;
 	int32_t Scale;
-	bool ShowAllResolutions;
 	bool ShowCrewNames; // show player name above clonks?
 	bool ShowCrewCNames; // show clonk names above clonks?
 	bool NoAlphaAdd; // always modulate alpha values instead of assing them (->no custom modulated alpha)
@@ -180,7 +179,6 @@ public:
 	bool RXMusic;
 	bool FEMusic;
 	bool FESamples;
-	bool Verbose; // show music files names
 	int32_t MusicVolume;
 	int32_t SoundVolume;
 	int32_t MaxChannels;
