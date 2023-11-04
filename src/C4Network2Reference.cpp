@@ -260,14 +260,9 @@ bool C4Network2HTTPClient::Cancel(const std::string_view reason)
 {
 	if (task)
 	{
-		task.Cancel();
-
 		try
 		{
-			std::move(task).Get();
-		}
-		catch (const C4Task::CancelledException &)
-		{
+			std::move(task).CancelAndWait();
 		}
 		catch (const std::runtime_error &)
 		{
