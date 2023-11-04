@@ -236,36 +236,49 @@ C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> C4CurlSystem::Execute()
 	#ifdef _WIN32
 			if (result)
 			{
-				// copy map to prevent crashes
-				const auto localSockets = sockets;
-
-				if (!localSockets.empty())
+				bool mapEmpty{sockets.empty()};
+				if (!mapEmpty)
 				{
-					for (const auto socket : localSockets | std::views::keys | std::views::elements<1>)
+
+					// copy map to prevent crashes
+					const auto localSockets = sockets;
+
+					auto range = localSockets | std::views::keys | std::views::elements<1>;
+
+					if (!range.empty())
 					{
-						if (WSANETWORKEVENTS networkEvents; !WSAEnumNetworkEvents(socket, event.GetEvent(), &networkEvents))
-						{
-							int eventBitmask{0};
-							if (networkEvents.lNetworkEvents & (FD_READ | FD_ACCEPT | FD_CLOSE))
-							{
-								eventBitmask |= CURL_CSELECT_IN;
-							}
+						mapEmpty = false;
 
-							if (networkEvents.lNetworkEvents & (FD_WRITE | FD_CONNECT))
-							{
-								eventBitmask |= CURL_CSELECT_OUT;
-							}
-
-							curl_multi_socket_action(multiHandle.get(), socket, eventBitmask, &running);
-						}
-						else
+						for (const auto socket : localSockets | std::views::keys | std::views::elements<1>)
 						{
-							curl_multi_socket_action(multiHandle.get(), socket, CURL_CSELECT_ERR, &running);
+							if (WSANETWORKEVENTS networkEvents; !WSAEnumNetworkEvents(socket, event.GetEvent(), &networkEvents))
+							{
+								int eventBitmask{0};
+								if (networkEvents.lNetworkEvents & (FD_READ | FD_ACCEPT | FD_CLOSE))
+								{
+									eventBitmask |= CURL_CSELECT_IN;
+								}
+
+								if (networkEvents.lNetworkEvents & (FD_WRITE | FD_CONNECT))
+								{
+									eventBitmask |= CURL_CSELECT_OUT;
+								}
+
+								curl_multi_socket_action(multiHandle.get(), socket, eventBitmask, &running);
+							}
+							else
+							{
+								curl_multi_socket_action(multiHandle.get(), socket, CURL_CSELECT_ERR, &running);
+							}
 						}
 					}
 				}
-				else
+
+				if (mapEmpty)
 				{
+					// Normally, WSAEnumNetworkEvents will reset the event as it needs to. However, if the map is empty,
+					// there is no WSAEnumNetworkEvents call to reset the event, so we do it manually here.
+					event.Reset();
 					curl_multi_socket_action(multiHandle.get(), CURL_SOCKET_TIMEOUT, 0, &running);
 				}
 			}
