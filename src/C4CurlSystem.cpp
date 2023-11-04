@@ -187,23 +187,7 @@ void C4CurlSystem::RemoveHandle(CURL *const handle)
 	CancelWait();
 }
 
-C4CurlSystem::~C4CurlSystem()
-{
-	if (multiTask)
-	{
-		multiTask.Cancel();
-
-		try
-		{
-			std::move(multiTask).Get();
-		}
-		catch (const C4Task::CancelledException &)
-		{
-		}
-	}
-}
-
-C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> C4CurlSystem::Execute()
+C4CurlSystem::TaskType C4CurlSystem::Execute()
 {
 	int running{0};
 

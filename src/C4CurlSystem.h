@@ -51,6 +51,8 @@ private:
 		void operator()(CURL *easy);
 	};
 
+	using TaskType = C4Task::Task<void, C4Task::TaskTraitsHotWaitOnDestruction, C4Task::PromiseTraitsTerminateOnException>;
+
 #ifdef _WIN32
 	using WaitReturnType = bool;
 #else
@@ -133,7 +135,7 @@ private:
 
 public:
 	C4CurlSystem();
-	~C4CurlSystem();
+	~C4CurlSystem() = default;
 
 	C4CurlSystem(const C4CurlSystem &) = delete;
 	C4CurlSystem &operator=(const C4CurlSystem &) = delete;
@@ -151,7 +153,7 @@ public:
 	void RemoveHandle(CURL *const handle);
 
 private:
-	C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> Execute();
+	TaskType Execute();
 	C4Task::Cold<WaitReturnType> Wait();
 	void ProcessMessages();
 	void CancelWait();
@@ -175,7 +177,7 @@ private:
 	CStdEvent event;
 #endif
 
-	C4Task::Hot<void, C4Task::PromiseTraitsNoExcept> multiTask;
+	TaskType multiTask;
 
 	std::atomic<C4Task::CancellablePromise *> wait{nullptr};
 

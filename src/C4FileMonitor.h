@@ -41,13 +41,15 @@ class C4FileMonitor : public C4InteractiveThread::Callback
 public:
 	using ChangeNotifyCallback = std::function<void(const char *)>;
 
+private:
+	using TaskType = C4Task::Task<void, C4Task::TaskTraitsColdWaitOnDestruction, C4Task::PromiseTraitsTerminateOnException>;
+
 #ifdef _WIN32
 private:
 	class MonitoredDirectory
 	{
 	public:
 		MonitoredDirectory(winrt::file_handle &&handle, std::string path);
-		~MonitoredDirectory();
 
 		MonitoredDirectory(MonitoredDirectory &&) = delete;
 		MonitoredDirectory &operator=(MonitoredDirectory &&) = delete;
@@ -56,12 +58,12 @@ private:
 		void StartMonitoring();
 
 	private:
-		C4Task::Cold<void> Execute();
+		TaskType Execute();
 
 	private:
 		winrt::file_handle handle;
 		std::string path;
-		C4Task::Cold<void> task;
+		TaskType task;
 		std::array<char, 1024> buffer{};
 
 		static constexpr DWORD NotificationFilter{FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE};
@@ -93,7 +95,7 @@ public:
 	virtual void OnThreadEvent(C4InteractiveEventType event, const std::any &eventData) override;
 
 #ifdef __linux__
-	C4Task::Cold<void> Execute();
+	TaskType Execute();
 #endif
 
 private:
@@ -104,7 +106,7 @@ private:
 
 #if defined(__linux__)
 	int fd;
-	C4Task::Cold<void> task;
+	TaskType task;
 	std::map<int, std::string> watchDescriptors;
 #elif defined(_WIN32)
 	std::vector<std::unique_ptr<MonitoredDirectory>> directories;

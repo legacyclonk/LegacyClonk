@@ -55,7 +55,7 @@ C4FileMonitor::~C4FileMonitor()
 {
 	if (task)
 	{
-		task.Cancel();
+		std::move(task).CancelAndWait();
 		Application.InteractiveThread.ClearCallback(Ev_FileChange, this);
 	}
 
@@ -77,7 +77,7 @@ void C4FileMonitor::AddDirectory(const char *const path)
 	}
 }
 
-C4Task::Cold<void> C4FileMonitor::Execute()
+C4FileMonitor::TaskType C4FileMonitor::Execute()
 {
 	for (;;)
 	{
@@ -138,15 +138,7 @@ void C4FileMonitor::MonitoredDirectory::StartMonitoring()
 	task.Start();
 }
 
-C4FileMonitor::MonitoredDirectory::~MonitoredDirectory()
-{
-	if (task)
-	{
-		task.Cancel();
-	}
-}
-
-C4Task::Cold<void> C4FileMonitor::MonitoredDirectory::Execute()
+auto C4FileMonitor::MonitoredDirectory::Execute() -> TaskType
 {
 	C4ThreadPool::Io io{handle.get()};
 
