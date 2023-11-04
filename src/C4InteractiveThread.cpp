@@ -67,14 +67,14 @@ void C4InteractiveThread::RemoveProc(StdSchedulerProc *pProc)
 	}
 }
 
-bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, const std::any &data)
+bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, std::any data)
 {
 	CStdLock PushLock(&EventPushCSec);
 	if (!pLastEvent) return false;
 	// create event
 	Event *pEvent = new Event;
 	pEvent->Type = eEvent;
-	pEvent->Data = data;
+	pEvent->Data = std::move(data);
 #ifndef NDEBUG
 	pEvent->Time = timeGetTime();
 #endif
@@ -117,7 +117,7 @@ bool C4InteractiveThread::PopEvent(C4InteractiveEventType *pEventType, std::any 
 	if (pEventType)
 		*pEventType = pEvent->Type;
 	if (data)
-		*data = pEvent->Data;
+		*data = std::move(pEvent->Data);
 #ifndef NDEBUG
 	if (Game.IsRunning)
 		AvgNetEvDelay += ((timeGetTime() - pEvent->Time) - AvgNetEvDelay) / 100;

@@ -85,7 +85,7 @@ public:
 	void RemoveProc(StdSchedulerProc *pProc);
 
 	// event queue
-	bool PushEvent(C4InteractiveEventType eEventType, const std::any &data);
+	bool PushEvent(C4InteractiveEventType eEventType, std::any data);
 	void ProcessEvents(); // by main thread
 
 	// special events
