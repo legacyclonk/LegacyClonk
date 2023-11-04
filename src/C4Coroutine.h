@@ -487,6 +487,34 @@ struct Promise : CancellablePromise
 		void operator()(Promise *const promise) noexcept;
 	};
 
+	struct FinalSuspendAwaiter : std::suspend_always
+	{
+		Promise &promise;
+
+		std::coroutine_handle<> await_suspend(const std::coroutine_handle<>) const noexcept
+		{
+			const auto waiter = promise.waiting.exchange(CompletedSentinel, std::memory_order_acq_rel);
+			if (waiter == AbandonedSentinel)
+			{
+				promise.GetHandle().destroy();
+			}
+
+			else if (waiter != StartedSentinel)
+			{
+				if (promise.resumer)
+				{
+					promise.resumer(waiter);
+				}
+				else
+				{
+					return std::coroutine_handle<>::from_address(waiter);
+				}
+			}
+
+			return std::noop_coroutine();
+		}
+	};
+
 	using PromisePtr = std::unique_ptr<Promise, Deleter>;
 	using ResumeFunction = void(*)(void *);
 
@@ -497,37 +525,9 @@ struct Promise : CancellablePromise
 		return {};
 	}
 
-	auto final_suspend() noexcept
+	FinalSuspendAwaiter final_suspend() noexcept
 	{
-		struct Awaiter : std::suspend_always
-		{
-			Promise &promise;
-
-			std::coroutine_handle<> await_suspend(const std::coroutine_handle<>) const noexcept
-			{
-				const auto waiter = promise.waiting.exchange(CompletedSentinel, std::memory_order_acq_rel);
-				if (waiter == AbandonedSentinel)
-				{
-					promise.GetHandle().destroy();
-				}
-
-				else if (waiter != StartedSentinel)
-				{
-					if (promise.resumer)
-					{
-						promise.resumer(waiter);
-					}
-					else
-					{
-						return std::coroutine_handle<>::from_address(waiter);
-					}
-				}
-
-				return std::noop_coroutine();
-			}
-		};
-
-		return Awaiter{.promise = *this};
+		return {.promise = *this};
 	}
 
 	void unhandled_exception() const noexcept
