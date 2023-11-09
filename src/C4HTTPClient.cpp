@@ -59,27 +59,20 @@ void C4HTTPClient::Uri::CURLUDeleter::operator()(CURLU * const uri)
 C4HTTPClient::Uri::Uri(const std::string &serverAddress, const std::uint16_t port)
 	: uri{ThrowIfFailed(curl_url(), "curl_url failed")}
 {
-	CURLUcode urlError{curl_url_set(uri.get(), CURLUPART_URL, serverAddress.c_str(), 0)};
-	if (urlError == CURLUE_UNSUPPORTED_SCHEME)
-	{
-		urlError = curl_url_set(uri.get(), CURLUPART_URL, std::format("http://{}", serverAddress).c_str(), 0);
-	}
-
-	ThrowIfFailed(urlError == CURLUE_OK, "malformed URL");
+	ThrowIfFailed(curl_url_set(uri.get(), CURLUPART_URL, serverAddress.c_str(), 0) == CURLUE_OK, "malformed URL");
 
 	if (port > 0)
 	{
-		char *portString;
-		const auto errGetPort = curl_url_get(uri.get(), CURLUPART_PORT, &portString, 0);
-		curl_free(portString);
-		if (errGetPort == CURLUE_NO_PORT)
-		{
-			ThrowIfFailed(curl_url_set(uri.get(), CURLUPART_PORT, std::to_string(port).c_str(), 0) == CURLUE_OK, "curl_url_set PORT failed");
-		}
-		else
-		{
-			ThrowIfFailed(errGetPort == CURLUE_OK, "curl_url_get PORT failed");
-		}
+		SetPort(port);
+	}
+}
+
+C4HTTPClient::Uri::Uri(std::unique_ptr<CURLU, CURLUDeleter> uri, const std::uint16_t port)
+	: uri{std::move(uri)}
+{
+	if (port > 0)
+	{
+		SetPort(port);
 	}
 }
 
@@ -99,6 +92,38 @@ std::string C4HTTPClient::Uri::GetUriAsString() const
 
 	const std::unique_ptr<char, decltype([](char *const ptr) { curl_free(ptr); })> ptr{string};
 	return string;
+}
+
+C4HTTPClient::Uri C4HTTPClient::Uri::ParseOldStyle(const std::string &serverAddress, const std::uint16_t port)
+{
+	std::unique_ptr<CURLU, CURLUDeleter> uri{ThrowIfFailed(curl_url(), "curl_url failed")};
+
+	CURLUcode result{curl_url_set(uri.get(), CURLUPART_URL, serverAddress.c_str(), 0)};
+
+	if (result == CURLUE_BAD_SCHEME || result == CURLUE_UNSUPPORTED_SCHEME)
+	{
+		result = curl_url_set(uri.get(), CURLUPART_URL, std::format("http://{}", serverAddress).c_str(), 0);
+	}
+
+	ThrowIfFailed(result == CURLUE_OK, "malformed URL");
+
+	return {std::move(uri), port};
+}
+
+void C4HTTPClient::Uri::SetPort(const std::uint16_t port)
+{
+	char *portString;
+	const auto errGetPort = curl_url_get(uri.get(), CURLUPART_PORT, &portString, 0);
+	curl_free(portString);
+
+	if (errGetPort == CURLUE_NO_PORT)
+	{
+		ThrowIfFailed(curl_url_set(uri.get(), CURLUPART_PORT, std::to_string(port).c_str(), 0) == CURLUE_OK, "curl_url_set PORT failed");
+	}
+	else
+	{
+		ThrowIfFailed(errGetPort == CURLUE_OK, "curl_url_get PORT failed");
+	}
 }
 
 C4HTTPClient::C4HTTPClient()

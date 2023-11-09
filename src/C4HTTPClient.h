@@ -67,11 +67,20 @@ public:
 	public:
 		Uri(const std::string &serverAddress, std::uint16_t port = 0);
 
+	private:
+		Uri(std::unique_ptr<CURLU, CURLUDeleter> uri, std::uint16_t port = 0);
+
 	public:
 		std::string GetServerAddress() const;
 		std::string GetUriAsString() const;
 
 		auto get() const { return uri.get(); }
+
+	public:
+		[[nodiscard]] static Uri ParseOldStyle(const std::string &serverAddress, std::uint16_t port = 0);
+
+	private:
+		void SetPort(std::uint16_t port);
 
 	private:
 		std::unique_ptr<CURLU, CURLUDeleter> uri;

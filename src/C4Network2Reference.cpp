@@ -287,7 +287,7 @@ void C4Network2HTTPClient::Clear()
 
 bool C4Network2HTTPClient::SetServer(const std::string_view serverAddress, const std::uint16_t defaultPort) try
 {
-	const C4HTTPClient::Uri uri{std::string{serverAddress}, defaultPort};
+	const auto uri = C4HTTPClient::Uri::ParseOldStyle(std::string{serverAddress}, defaultPort);
 	url = uri.GetUriAsString();
 	serverName = uri.GetServerAddress();
 	return true;
