@@ -20,7 +20,7 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
 #ifdef _WIN32
 LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
-#pragma code_page(1252)
+#pragma code_page(65001)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -99,7 +99,7 @@ BEGIN
             VALUE "SpecialBuild", C4BUILDOPT "\0"
             VALUE "ProductVersion", C4VERSION "\0"
             VALUE "InternalName", "LegacyClonk\0"
-            VALUE "LegalCopyright", "Copyright © 2017-2020 LegacyClonk Team"
+            VALUE "LegalCopyright", "Copyright Â© 2017-2020 LegacyClonk Team"
             VALUE "LegalTrademarks", "Clonk is a registered trademark of Matthes Bender.\0"
             VALUE "OriginalFilename", "clonk.exe\0"
             VALUE "PrivateBuild", "\0"
