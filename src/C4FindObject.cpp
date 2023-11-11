@@ -776,7 +776,7 @@ void C4SortObject::SortObjects(std::vector<C4Object *> &result)
 		std::span positionsSpan{positions.get(), result.size()};
 
 		// Initialize position array
-		std::ranges::iota(positionsSpan, 0);
+		std::iota(positionsSpan.begin(), positionsSpan.end(), 0);
 		// Sort
 		std::ranges::stable_sort(positionsSpan, C4SortObjectSTLCache{*this, result});
 		// Save actual object pointers in array (hacky).
