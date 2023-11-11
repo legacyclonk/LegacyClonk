@@ -874,7 +874,11 @@ int32_t C4SortObjectMultiple::Compare(C4Object *pObj1, C4Object *pObj2)
 
 bool C4SortObjectMultiple::PrepareCache(std::vector<C4Object *> &objects)
 {
-	return std::any_of(ppSorts, ppSorts + iCnt, [&objects](C4SortObject *const sort) { return sort->PrepareCache(objects); });
+	bool fCaches = false;
+	for (int32_t i = 0; i < iCnt; ++i)
+		fCaches |= ppSorts[i]->PrepareCache(objects);
+	// return wether a sort citerion uses a cache
+	return fCaches;
 }
 
 int32_t C4SortObjectMultiple::CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2)
