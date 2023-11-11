@@ -17,6 +17,7 @@
 
 #include <concepts>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <stdexcept>
@@ -91,3 +92,56 @@ struct C4SingleArgumentFunctionFunctor
 
 template <auto free>
 using C4DeleterFunctionUniquePtr = std::unique_ptr<std::remove_pointer_t<detail::FunctionSingleArgument<free>>, C4SingleArgumentFunctionFunctor<free>>;
+
+
+namespace detail
+{
+	template<typename T>
+	struct PointerToMember;
+
+	template<typename F, typename C>
+	struct PointerToMember<F C::*>
+	{
+		using FieldType = F;
+		using ClassType = C;
+	};
+}
+
+template<auto Member>
+class C4LinkedListIterator
+{
+public:
+	using iterator_category = std::forward_iterator_tag;
+	using value_type = typename detail::PointerToMember<decltype(Member)>::ClassType;
+	using difference_type = std::ptrdiff_t;
+	using pointer = value_type *;
+	using reference = value_type &;
+
+public:
+	C4LinkedListIterator(const pointer value = nullptr) noexcept : value{value} {}
+
+public:
+	C4LinkedListIterator &operator++() noexcept { value = value->*Member; return *this; }
+	C4LinkedListIterator operator++(int) noexcept { C4LinkedListIterator iterator{*this}; ++(*this); return iterator; }
+
+	bool operator==(const C4LinkedListIterator &other) const noexcept { return value == other.value; }
+	bool operator==(std::default_sentinel_t) const noexcept { return !value; }
+
+	reference operator*() const noexcept { return *value; }
+	pointer operator->() const noexcept { return value; }
+
+private:
+	pointer value;
+};
+
+template<auto Member>
+[[nodiscard]] inline C4LinkedListIterator<Member> begin(const C4LinkedListIterator<Member> iter) noexcept
+{
+	return iter;
+}
+
+template<auto Member>
+[[nodiscard]] inline C4LinkedListIterator<Member> end(const C4LinkedListIterator<Member>) noexcept
+{
+	return {};
+}
