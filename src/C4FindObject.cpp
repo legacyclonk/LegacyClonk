@@ -22,6 +22,10 @@
 #include <C4Wrappers.h>
 #include <C4Random.h>
 
+#include <algorithm>
+#include <numeric>
+#include <utility>
+
 // *** C4FindObject
 
 C4FindObject::~C4FindObject()
@@ -201,26 +205,25 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs)
 	if (IsImpossible())
 		return new C4ValueArray();
 	// Set up array
-	C4ValueArray *pArray = new C4ValueArray(32);
+	std::vector<C4Object *> result;
+
 	int32_t iSize = 0;
 	// Search
 	for (C4ObjectLink *pLnk = Objs.First; pLnk; pLnk = pLnk->Next)
 		if (pLnk->Obj->Status)
 			if (Check(pLnk->Obj))
 			{
-				// Grow the array, if neccessary
-				if (iSize >= pArray->GetSize())
-					pArray->SetSize(iSize * 2);
-				// Add object
-				(*pArray)[iSize++] = C4VObj(pLnk->Obj);
+				result.push_back(pLnk->Obj);
 			}
-	// Shrink array
-	pArray->SetSize(iSize);
 	// Recheck object status (may shrink array again)
-	CheckObjectStatus(pArray);
+	CheckObjectStatus(result);
 	// Apply sorting
-	if (pSort) pSort->SortObjects(pArray);
-	return pArray;
+	if (pSort)
+	{
+		pSort->SortObjects(result);
+		CheckObjectStatusAfterSort(result);
+	}
+	return new C4ValueArray{std::span{result}};
 }
 
 int32_t C4FindObject::Count(const C4ObjectList &Objs, const C4LSectors &Sct)
@@ -313,8 +316,8 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs, const C4LSectors 
 	C4Rect *pBounds = GetBounds();
 	if (!pBounds)
 		return FindMany(Objs);
-	// Prepare for array that may be generated
-	C4ValueArray *pArray; int32_t iSize;
+
+	std::vector<C4Object *> result;
 	// Check shape lists?
 	if (UseShapes())
 	{
@@ -325,7 +328,6 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs, const C4LSectors 
 		if (!Area.Next(pSct))
 			return FindMany(pSct->ObjectShapes);
 		// Set up array
-		pArray = new C4ValueArray(32); iSize = 0;
 		// Create marker, search all areas
 		uint32_t iMarker = ::Game.Objects.GetNextMarker();
 		for (; pLst; pLst = Area.NextObjectShapes(pLst, &pSct))
@@ -336,18 +338,12 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs, const C4LSectors 
 						pLnk->Obj->Marker = iMarker;
 						if (Check(pLnk->Obj))
 						{
-							// Grow the array, if neccessary
-							if (iSize >= pArray->GetSize())
-								pArray->SetSize(iSize * 2);
-							// Add object
-							(*pArray)[iSize++] = C4VObj(pLnk->Obj);
+							result.push_back(pLnk->Obj);
 						}
 					}
 	}
 	else
 	{
-		// Set up array
-		pArray = new C4ValueArray(32); iSize = 0;
 		// Search
 		C4LArea Area(&Game.Objects.Sectors, *pBounds); C4LSector *pSct;
 		for (C4ObjectList *pLst = Area.FirstObjects(&pSct); pLst; pLst = Area.NextObjects(pLst, &pSct))
@@ -355,37 +351,28 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs, const C4LSectors 
 				if (pLnk->Obj->Status)
 					if (Check(pLnk->Obj))
 					{
-						// Grow the array, if neccessary
-						if (iSize >= pArray->GetSize())
-							pArray->SetSize(iSize * 2);
-						// Add object
-						(*pArray)[iSize++] = C4VObj(pLnk->Obj);
+						result.push_back(pLnk->Obj);
 					}
 	}
-	// Shrink array
-	pArray->SetSize(iSize);
 	// Recheck object status (may shrink array again)
-	CheckObjectStatus(pArray);
+	CheckObjectStatus(result);
 	// Apply sorting
-	if (pSort) pSort->SortObjects(pArray);
-	return pArray;
+	if (pSort)
+	{
+		pSort->SortObjects(result);
+		CheckObjectStatusAfterSort(result);
+	}
+	return new C4ValueArray{std::span{result}};
 }
 
-void C4FindObject::CheckObjectStatus(C4ValueArray *pArray)
+void C4FindObject::CheckObjectStatus(std::vector<C4Object *> &objects)
 {
-	// Recheck object status
-	for (int32_t i = 0; i < pArray->GetSize(); i++)
-		if (!pArray->GetItem(i).getObj()->Status)
-		{
-			// This shouldn't happen really, so this is done as a separate loop.
-			int32_t j = i; i++;
-			for (; i < pArray->GetSize(); i++)
-				if (pArray->GetItem(i).getObj()->Status)
-					pArray->GetItem(j++) = pArray->GetItem(i);
-			// Set new size
-			pArray->SetSize(j);
-			break;
-		}
+	std::erase_if(objects, [](C4Object *const obj) { return !obj->Status; });
+}
+
+void C4FindObject::CheckObjectStatusAfterSort(std::vector<C4Object *> &objects)
+{
+	std::ranges::replace_if(objects, [](C4Object *const obj) { return !obj->Status; }, nullptr);
 }
 
 void C4FindObject::SetSort(C4SortObject *pToSort)
@@ -771,30 +758,77 @@ C4SortObject *C4SortObject::CreateByValue(C4ValueInt iType, const C4ValueArray &
 	return nullptr;
 }
 
-void C4SortObject::SortObjects(C4ValueArray *pArray)
+namespace
 {
-	pArray->Sort(*this);
+	class C4SortObjectSTL
+	{
+	private:
+		C4SortObject &rSorter;
+
+	public:
+		C4SortObjectSTL(C4SortObject &rSorter) : rSorter(rSorter) {}
+		bool operator()(C4Object *const v1, C4Object *const v2) { return rSorter.Compare(v1, v2) > 0; }
+	};
+
+	class C4SortObjectSTLCache
+	{
+	private:
+		C4SortObject &rSorter;
+		std::vector<C4Object *> &values;
+
+	public:
+		C4SortObjectSTLCache(C4SortObject &rSorter, std::vector<C4Object *> &values) : rSorter(rSorter), values{values} {}
+		bool operator()(int32_t n1, int32_t n2) { return rSorter.CompareCache(n1, n2, values[n1], values[n2]) > 0; }
+	};
+}
+
+void C4SortObject::SortObjects(std::vector<C4Object *> &result)
+{
+	if (PrepareCache(result))
+	{
+		auto positions = std::make_unique_for_overwrite<std::intptr_t[]>(result.size());
+		std::span positionsSpan{positions.get(), result.size()};
+
+		// Initialize position array
+		std::iota(positionsSpan.begin(), positionsSpan.end(), 0);
+		// Sort
+		std::ranges::stable_sort(positionsSpan, C4SortObjectSTLCache{*this, result});
+		// Save actual object pointers in array (hacky).
+		for (std::size_t i{0}; i < result.size(); ++i)
+		{
+			positions[i] = reinterpret_cast<std::intptr_t>(result[positions[i]]);
+		}
+		// Set the values
+		for (std::size_t i{0}; i < result.size(); ++i)
+		{
+			result[i] = reinterpret_cast<C4Object *>(positions[i]);
+		}
+	}
+	else
+	{
+		// Be sure to use stable sort, as otherweise the algorithm isn't garantueed
+		// to produce identical results on all platforms!
+		std::ranges::stable_sort(result, C4SortObjectSTL{*this});
+	}
 }
 
 // *** C4SortObjectByValue
 
 C4SortObjectByValue::C4SortObjectByValue()
-	: C4SortObject(), pVals(nullptr), iSize(0) {}
+	: C4SortObject() {}
 
-C4SortObjectByValue::~C4SortObjectByValue()
-{
-	delete[] pVals; pVals = nullptr;
-}
-
-bool C4SortObjectByValue::PrepareCache(const C4ValueList *pObjs)
+bool C4SortObjectByValue::PrepareCache(std::vector<C4Object *> &objects)
 {
 	// Clear old cache
-	delete[] pVals; pVals = nullptr; iSize = 0;
-	// Create new cache
-	iSize = pObjs->GetSize(); pVals = new int32_t[iSize];
-	for (int32_t i = 0; i < iSize; i++)
-		pVals[i] = CompareGetValue(pObjs->GetItem(i)._getObj());
-	// Okay
+
+	values.clear();
+	values.reserve(objects.size());
+
+	std::ranges::copy(objects | std::views::transform([this](C4Object *const obj)
+	{
+		return CompareGetValue(obj);
+	}), std::back_inserter(values));
+
 	return true;
 }
 
@@ -810,9 +844,9 @@ int32_t C4SortObjectByValue::Compare(C4Object *pObj1, C4Object *pObj2)
 
 int32_t C4SortObjectByValue::CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2)
 {
-	assert(pVals); assert(iObj1 >= 0 && iObj1 < iSize); assert(iObj2 >= 0 && iObj2 < iSize);
+	assert(iObj1 >= 0 && std::cmp_less(iObj1, values.size())); assert(iObj2 >= 0 && std::cmp_less(iObj2, values.size()));
 	// Might overflow for large values...!
-	return pVals[iObj2] - pVals[iObj1];
+	return values[iObj2] - values[iObj1];
 }
 
 C4SortObjectReverse::~C4SortObjectReverse()
@@ -825,9 +859,9 @@ int32_t C4SortObjectReverse::Compare(C4Object *pObj1, C4Object *pObj2)
 	return pSort->Compare(pObj2, pObj1);
 }
 
-bool C4SortObjectReverse::PrepareCache(const C4ValueList *pObjs)
+bool C4SortObjectReverse::PrepareCache(std::vector<C4Object *> &objects)
 {
-	return pSort->PrepareCache(pObjs);
+	return pSort->PrepareCache(objects);
 }
 
 int32_t C4SortObjectReverse::CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2)
@@ -852,11 +886,11 @@ int32_t C4SortObjectMultiple::Compare(C4Object *pObj1, C4Object *pObj2)
 	return 0;
 }
 
-bool C4SortObjectMultiple::PrepareCache(const C4ValueList *pObjs)
+bool C4SortObjectMultiple::PrepareCache(std::vector<C4Object *> &objects)
 {
 	bool fCaches = false;
 	for (int32_t i = 0; i < iCnt; ++i)
-		fCaches |= ppSorts[i]->PrepareCache(pObjs);
+		fCaches |= ppSorts[i]->PrepareCache(objects);
 	// return wether a sort citerion uses a cache
 	return fCaches;
 }

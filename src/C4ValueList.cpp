@@ -16,158 +16,97 @@
 
 #include <C4Include.h>
 #include <C4ValueList.h>
-#include <algorithm>
 #include <stdexcept>
 
 #include <C4Aul.h>
 #include <C4FindObject.h>
 
 #include <format>
+#include <compare>
+#include <ranges>
 
-C4ValueList::C4ValueList()
-	: iSize(0), pData(nullptr) {}
-
-C4ValueList::C4ValueList(int32_t inSize)
-	: iSize(0), pData(nullptr)
+C4ValueList::C4ValueList(const std::int32_t size)
 {
-	SetSize(inSize);
+	SetSize(size);
 }
 
-C4ValueList::C4ValueList(const C4ValueList &ValueList2)
-	: iSize(0), pData(nullptr)
+C4ValueList::C4ValueList(const C4ValueList &other)
+	: values{other.values}
 {
-	SetSize(ValueList2.GetSize());
-	for (int32_t i = 0; i < iSize; i++)
-		pData[i].Set(ValueList2.GetItem(i));
 }
 
-C4ValueList::~C4ValueList()
+C4ValueList &C4ValueList::operator=(const C4ValueList &other)
 {
-	delete[] pData; pData = nullptr;
-	iSize = 0;
-}
+	values.resize(other.values.size());
 
-C4ValueList &C4ValueList::operator=(const C4ValueList &ValueList2)
-{
-	this->SetSize(ValueList2.GetSize());
-	for (int32_t i = 0; i < iSize; i++)
-		pData[i].Set(ValueList2.GetItem(i));
+	for (std::size_t i{0}; i < values.size(); ++i)
+	{
+		values[i].Set(other.values[i]);
+	}
+
 	return *this;
 }
 
-class C4SortObjectSTL
+C4Value &C4ValueList::GetItem(std::int32_t index)
 {
-private:
-	C4SortObject &rSorter;
+	if (index < 0) index = 0;
 
-public:
-	C4SortObjectSTL(C4SortObject &rSorter) : rSorter(rSorter) {}
-	bool operator()(const C4Value &v1, const C4Value &v2) { return rSorter.Compare(v1._getObj(), v2._getObj()) > 0; }
-};
-
-class C4SortObjectSTLCache
-{
-private:
-	C4SortObject &rSorter;
-	C4Value *pVals;
-
-public:
-	C4SortObjectSTLCache(C4SortObject &rSorter, C4Value *pVals) : rSorter(rSorter), pVals(pVals) {}
-	bool operator()(int32_t n1, int32_t n2) { return rSorter.CompareCache(n1, n2, pVals[n1]._getObj(), pVals[n2]._getObj()) > 0; }
-};
-
-void C4ValueList::Sort(class C4SortObject &rSort)
-{
-	if (rSort.PrepareCache(this))
+	if (index >= GetSize() && index < MaxSize)
 	{
-		// Initialize position array
-		intptr_t i, *pPos = new intptr_t[iSize];
-		for (i = 0; i < iSize; i++) pPos[i] = i;
-		// Sort
-		std::stable_sort(pPos, pPos + iSize, C4SortObjectSTLCache(rSort, pData));
-		// Save actual object pointers in array (hacky).
-		for (i = 0; i < iSize; i++)
-			pPos[i] = reinterpret_cast<intptr_t>(pData[pPos[i]]._getObj());
-		// Set the values
-		for (i = 0; i < iSize; i++)
-			pData[i].SetObject(reinterpret_cast<C4Object *>(pPos[i]));
-		delete[] pPos;
+		SetSize(index + 1);
 	}
-	else
-		// Be sure to use stable sort, as otherweise the algorithm isn't garantueed
-		// to produce identical results on all platforms!
-		std::stable_sort(pData, pData + iSize, C4SortObjectSTL(rSort));
-}
 
-C4Value &C4ValueList::GetItem(int32_t iElem)
-{
-	if (iElem < 0) iElem = 0;
-	if (iElem >= iSize && iElem < MaxSize) this->SetSize(iElem + 1);
-	// out-of-memory? This might not be catched, but it's better than a segfault
-	if (iElem >= iSize)
-		throw C4AulExecError(nullptr, "out of memory");
-	// return
-	return pData[iElem];
-}
-
-void C4ValueList::SetSize(int32_t inSize)
-{
-	// array made smaller? Well, just ignore the additional allocated mem then
-	if (inSize <= iSize)
+	if (index >= GetSize())
 	{
-		// free values in undefined area
-		for (int i = inSize; i < iSize; i++) pData[i].Set0();
-		iSize = inSize;
+		throw C4AulExecError(nullptr, "out of memory");
+	}
+
+	return values[index];
+}
+
+void C4ValueList::SetSize(const std::int32_t size)
+{
+	const auto cmp = size <=> GetSize();
+
+	if (cmp == std::strong_ordering::equal || (cmp == std::strong_ordering::greater && size > MaxSize))
+	{
 		return;
 	}
 
-	// bounds check
-	if (inSize > MaxSize) return;
+	else if (cmp == std::strong_ordering::less)
+	{
+		values.resize(size);
+		return;
+	}
 
-	// create new array (initialises)
-	C4Value *pnData = new C4Value[inSize];
-	if (!pnData) return;
+	std::vector<C4Value> newValues(size);
 
-	// move existing values
-	int32_t i;
-	for (i = 0; i < iSize; i++)
-		pData[i].Move(&pnData[i]);
+	for (std::size_t i{0}; i < values.size(); ++i)
+	{
+		values[i].Move(&newValues[i]);
+	}
 
-	// replace
-	delete[] pData;
-	pData = pnData;
-	iSize = inSize;
-}
-
-bool C4ValueList::operator==(const C4ValueList &IntList2) const
-{
-	for (int32_t i = 0; i < (std::max)(iSize, IntList2.GetSize()); i++)
-		if (GetItem(i) != IntList2.GetItem(i))
-			return false;
-
-	return true;
+	values = std::move(newValues);
 }
 
 void C4ValueList::Reset()
 {
-	delete[] pData; pData = nullptr;
-	iSize = 0;
+	values.clear();
 }
 
 void C4ValueList::DenumeratePointers()
 {
-	for (int32_t i = 0; i < iSize; i++)
-		pData[i].DenumeratePointer();
+	std::ranges::for_each(values, &C4Value::DenumeratePointer);
 }
 
 void C4ValueList::CompileFunc(class StdCompiler *pComp)
 {
 	// FIXME: this should be one of C4ValueInt or (u)intptr_t (or C4ID), but which one?
-	int32_t inSize = iSize;
+	int32_t size{GetSize()};
 	// Size. Reset if not found.
 	try
 	{
-		pComp->Value(inSize);
+		pComp->Value(size);
 	}
 	catch (const StdCompiler::NotFoundException &)
 	{
@@ -181,22 +120,22 @@ void C4ValueList::CompileFunc(class StdCompiler *pComp)
 		pComp->Separator(StdCompiler::SEP_SEP);
 		this->SetSize(C4MaxVariable);
 		// First variable was misinterpreted as size
-		pData[0] = C4Value{C4V_Data{inSize}, C4V_Any};
+		values[0] = C4Value{C4V_Data{size}, C4V_Any};
 		// Read remaining data
-		pComp->Value(mkArrayAdaptS(pData + 1, C4MaxVariable - 1, C4Value()));
+		pComp->Value(mkArrayAdaptS(values.data() + 1, C4MaxVariable - 1, C4Value()));
 	}
 	else
 	{
 		if (pComp->isCompiler())
 		{
 			// Allocate
-			this->SetSize(inSize);
+			this->SetSize(size);
 			// Values
-			pComp->Value(mkArrayAdaptS(pData, iSize, C4Value()));
+			pComp->Value(mkArrayAdaptS(values.data(), size, C4Value()));
 		}
 		else
 		{
-			pComp->Value(mkArrayAdaptS(pData, iSize));
+			pComp->Value(mkArrayAdaptS(values.data(), size));
 		}
 	}
 }
@@ -217,8 +156,8 @@ C4ValueArray *C4ValueArray::SetLength(int32_t size)
 	if (GetRefCount() > 1)
 	{
 		C4ValueArray *pNew = static_cast<C4ValueArray *>((new C4ValueArray(size))->IncRef());
-		for (int32_t i = 0; i < (std::min)(size, iSize); i++)
-			pNew->pData[i].Set(pData[i]);
+		for (std::int32_t i = 0; i < (std::min)(size, GetSize()); i++)
+			pNew->values[i].Set(values[i]);
 		DecRef();
 		return pNew;
 	}
@@ -233,7 +172,7 @@ bool C4ValueArray::hasIndex(const C4Value &index) const
 {
 	C4Value copyIndex = index;
 	if (!copyIndex.ConvertTo(C4V_Int)) throw std::runtime_error{std::format("array access: can not convert \"{}\" to int", GetC4VName(index.GetType()))};
-	return copyIndex._getInt() < iSize;
+	return copyIndex._getInt() < GetSize();
 }
 
 C4Value &C4ValueArray::operator[](const C4Value &index)

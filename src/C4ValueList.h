@@ -21,43 +21,56 @@
 #include "C4Value.h"
 #include "C4ValueStandardRefCountedContainer.h"
 
+#include <span>
+#include <vector>
+
 class C4ValueList
 {
 public:
 	enum { MaxSize = 1000000, }; // ye shalt not create arrays larger than that!
 
-	C4ValueList();
-	C4ValueList(int32_t inSize);
-	C4ValueList(const C4ValueList &ValueList2);
-	~C4ValueList();
+	C4ValueList() = default;
+	C4ValueList(std::int32_t size);
+	C4ValueList(const C4ValueList &other);
+
+	template<typename T>
+	C4ValueList(const std::span<T> data)
+	{
+		values.reserve(data.size());
+
+		for (const auto value : data)
+		{
+			values.emplace_back(value);
+		}
+	}
 
 	C4ValueList &operator=(const C4ValueList &ValueList2);
 
 protected:
-	int32_t iSize;
-	C4Value *pData;
+	std::vector<C4Value> values;
 
 public:
-	int32_t GetSize() const { return iSize; }
+	std::int32_t GetSize() const { return static_cast<std::int32_t>(values.size()); }
 
-	void Sort(class C4SortObject &rSort);
+	const C4Value &GetItem(const std::int32_t index) const { return Inside(index, 0, GetSize() - 1) ? values[index] : C4VNull; }
+	C4Value &GetItem(std::int32_t index);
 
-	const C4Value &GetItem(int32_t iElem) const { return Inside<int32_t>(iElem, 0, iSize - 1) ? pData[iElem] : C4VNull; }
-	C4Value &GetItem(int32_t iElem);
-
-	C4Value operator[](int32_t iElem) const { return GetItem(iElem); }
-	C4Value &operator[](int32_t iElem) { return GetItem(iElem); }
+	C4Value operator[](const std::int32_t index) const { return GetItem(index); }
+	C4Value &operator[](const std::int32_t index) { return GetItem(index); }
 
 	void Reset();
-	void SetSize(int32_t inSize); // (enlarge only!)
+	void SetSize(std::int32_t size); // (enlarge only!)
 
 	void DenumeratePointers();
 
 	// comparison
-	bool operator==(const C4ValueList &IntList2) const;
+	bool operator==(const C4ValueList &other) const = default;
 
 	// Compilation
 	void CompileFunc(class StdCompiler *pComp);
+
+private:
+	friend class C4SortObject;
 };
 
 // value list with reference count, used for arrays
@@ -65,12 +78,15 @@ class C4ValueArray : public C4ValueList, public C4ValueStandardRefCountedContain
 {
 public:
 	C4ValueArray();
-	C4ValueArray(int32_t inSize);
+	C4ValueArray(std::int32_t size);
+
+	template<typename T>
+	C4ValueArray(const std::span<T> values) : C4ValueList{values} {}
 
 	~C4ValueArray();
 
 	// Change length, return self or new copy if necessary
-	C4ValueArray *SetLength(int32_t size);
+	C4ValueArray *SetLength(std::int32_t size);
 	virtual bool hasIndex(const C4Value &index) const override;
 	virtual C4Value &operator[](const C4Value &index) override;
 	using C4ValueList::operator[];
