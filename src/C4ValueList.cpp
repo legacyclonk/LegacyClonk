@@ -16,7 +16,6 @@
 
 #include <C4Include.h>
 #include <C4ValueList.h>
-#include <algorithm>
 #include <stdexcept>
 
 #include <C4Aul.h>
@@ -53,50 +52,6 @@ C4ValueList &C4ValueList::operator=(const C4ValueList &ValueList2)
 	for (int32_t i = 0; i < iSize; i++)
 		pData[i].Set(ValueList2.GetItem(i));
 	return *this;
-}
-
-class C4SortObjectSTL
-{
-private:
-	C4SortObject &rSorter;
-
-public:
-	C4SortObjectSTL(C4SortObject &rSorter) : rSorter(rSorter) {}
-	bool operator()(const C4Value &v1, const C4Value &v2) { return rSorter.Compare(v1._getObj(), v2._getObj()) > 0; }
-};
-
-class C4SortObjectSTLCache
-{
-private:
-	C4SortObject &rSorter;
-	C4Value *pVals;
-
-public:
-	C4SortObjectSTLCache(C4SortObject &rSorter, C4Value *pVals) : rSorter(rSorter), pVals(pVals) {}
-	bool operator()(int32_t n1, int32_t n2) { return rSorter.CompareCache(n1, n2, pVals[n1]._getObj(), pVals[n2]._getObj()) > 0; }
-};
-
-void C4ValueList::Sort(class C4SortObject &rSort)
-{
-	if (rSort.PrepareCache(this))
-	{
-		// Initialize position array
-		intptr_t i, *pPos = new intptr_t[iSize];
-		for (i = 0; i < iSize; i++) pPos[i] = i;
-		// Sort
-		std::stable_sort(pPos, pPos + iSize, C4SortObjectSTLCache(rSort, pData));
-		// Save actual object pointers in array (hacky).
-		for (i = 0; i < iSize; i++)
-			pPos[i] = reinterpret_cast<intptr_t>(pData[pPos[i]]._getObj());
-		// Set the values
-		for (i = 0; i < iSize; i++)
-			pData[i].SetObject(reinterpret_cast<C4Object *>(pPos[i]));
-		delete[] pPos;
-	}
-	else
-		// Be sure to use stable sort, as otherweise the algorithm isn't garantueed
-		// to produce identical results on all platforms!
-		std::stable_sort(pData, pData + iSize, C4SortObjectSTL(rSort));
 }
 
 C4Value &C4ValueList::GetItem(int32_t iElem)
