@@ -22,6 +22,8 @@
 #include <C4Wrappers.h>
 #include <C4Random.h>
 
+#include <algorithm>
+
 // *** C4FindObject
 
 C4FindObject::~C4FindObject()
@@ -771,9 +773,53 @@ C4SortObject *C4SortObject::CreateByValue(C4ValueInt iType, const C4ValueArray &
 	return nullptr;
 }
 
+namespace
+{
+	class C4SortObjectSTL
+	{
+	private:
+		C4SortObject &rSorter;
+
+	public:
+		C4SortObjectSTL(C4SortObject &rSorter) : rSorter(rSorter) {}
+		bool operator()(const C4Value &v1, const C4Value &v2) { return rSorter.Compare(v1._getObj(), v2._getObj()) > 0; }
+	};
+
+	class C4SortObjectSTLCache
+	{
+	private:
+		C4SortObject &rSorter;
+		C4Value *pVals;
+
+	public:
+		C4SortObjectSTLCache(C4SortObject &rSorter, C4Value *pVals) : rSorter(rSorter), pVals(pVals) {}
+		bool operator()(int32_t n1, int32_t n2) { return rSorter.CompareCache(n1, n2, pVals[n1]._getObj(), pVals[n2]._getObj()) > 0; }
+	};
+}
+
 void C4SortObject::SortObjects(C4ValueArray *pArray)
 {
-	pArray->Sort(*this);
+	if (PrepareCache(pArray))
+	{
+		const std::int32_t size{pArray->GetSize()};
+
+		// Initialize position array
+		intptr_t i, *pPos = new intptr_t[size];
+		for (i = 0; i < size; i++) pPos[i] = i;
+		// Sort
+		std::stable_sort(pPos, pPos + size, C4SortObjectSTLCache(*this, pArray->pData));
+		// Save actual object pointers in array (hacky).
+		for (i = 0; i < size; i++)
+			pPos[i] = reinterpret_cast<intptr_t>(pArray->pData[pPos[i]]._getObj());
+		// Set the values
+		for (i = 0; i < size; i++)
+			pArray->pData[i].SetObject(reinterpret_cast<C4Object *>(pPos[i]));
+		delete[] pPos;
+	}
+	else
+		// Be sure to use stable sort, as otherweise the algorithm isn't garantueed
+		// to produce identical results on all platforms!
+		std::stable_sort(pArray->pData, pArray->pData + pArray->GetSize(), C4SortObjectSTL(*this));
 }
 
 // *** C4SortObjectByValue

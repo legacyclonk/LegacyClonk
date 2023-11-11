@@ -40,8 +40,6 @@ protected:
 public:
 	int32_t GetSize() const { return iSize; }
 
-	void Sort(class C4SortObject &rSort);
-
 	const C4Value &GetItem(int32_t iElem) const { return Inside<int32_t>(iElem, 0, iSize - 1) ? pData[iElem] : C4VNull; }
 	C4Value &GetItem(int32_t iElem);
 
@@ -58,6 +56,9 @@ public:
 
 	// Compilation
 	void CompileFunc(class StdCompiler *pComp);
+
+private:
+	friend class C4SortObject;
 };
 
 // value list with reference count, used for arrays
