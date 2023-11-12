@@ -217,7 +217,11 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs)
 	// Recheck object status (may shrink array again)
 	CheckObjectStatus(result);
 	// Apply sorting
-	if (pSort) pSort->SortObjects(result);
+	if (pSort)
+	{
+		pSort->SortObjects(result);
+		CheckObjectStatusAfterSort(result);
+	}
 	return new C4ValueArray{std::span{result}};
 }
 
@@ -352,13 +356,22 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs, const C4LSectors 
 	// Recheck object status (may shrink array again)
 	CheckObjectStatus(result);
 	// Apply sorting
-	if (pSort) pSort->SortObjects(result);
+	if (pSort)
+	{
+		pSort->SortObjects(result);
+		CheckObjectStatusAfterSort(result);
+	}
 	return new C4ValueArray{std::span{result}};
 }
 
 void C4FindObject::CheckObjectStatus(std::vector<C4Object *> &objects)
 {
 	std::erase_if(objects, [](C4Object *const obj) { return !obj->Status; });
+}
+
+void C4FindObject::CheckObjectStatusAfterSort(std::vector<C4Object *> &objects)
+{
+	std::ranges::replace_if(objects, [](C4Object *const obj) { return !obj->Status; }, nullptr);
 }
 
 void C4FindObject::SetSort(C4SortObject *pToSort)

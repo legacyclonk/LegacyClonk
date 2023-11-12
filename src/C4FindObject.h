@@ -97,6 +97,7 @@ protected:
 
 private:
 	void CheckObjectStatus(std::vector<C4Object *> &objects);
+	void CheckObjectStatusAfterSort(std::vector<C4Object *> &objects);
 };
 
 // Combinators
