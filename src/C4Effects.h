@@ -166,5 +166,5 @@ class C4Value &FxFireVarCausedBy(C4Effect *pEffect);
 // some other hardcoded engine effects
 void Splash(int32_t tx, int32_t ty, int32_t amt, C4Object *pByObj);
 void Explosion(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t iCausedBy, C4Object *pByObj, C4ID idEffect, const char *szEffect);
-void Smoke(int32_t tx, int32_t ty, int32_t level, uint32_t dwClr = 0);
-void BubbleOut(int32_t tx, int32_t ty);
+void Smoke(C4Section &section, int32_t tx, int32_t ty, int32_t level, uint32_t dwClr = 0);
+void BubbleOut(C4Section &section, int32_t tx, int32_t ty);

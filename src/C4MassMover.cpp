@@ -35,7 +35,8 @@
 // running slower and smoother, overall MM counts are much lower,
 // hardly ever exceeding 1000. October 1997
 
-C4MassMoverSet::C4MassMoverSet()
+C4MassMoverSet::C4MassMoverSet(C4Section &section)
+	: section{section}
 {
 	Default();
 }
@@ -59,7 +60,7 @@ void C4MassMoverSet::Execute()
 		for (int32_t cnt = 0; cnt < C4MassMoverChunk; cnt++, cmm--)
 			if (cmm->Mat != MNone)
 			{
-				Count++; cmm->Execute();
+				Count++; cmm->Execute(section);
 			}
 	}
 }
@@ -79,92 +80,92 @@ bool C4MassMoverSet::Create(int32_t x, int32_t y, bool fExecute)
 		if (cptr >= C4MassMoverChunk) cptr = 0;
 		if (Set[cptr].Mat == MNone)
 		{
-			if (!Set[cptr].Init(x, y)) return false;
+			if (!Set[cptr].Init(section, x, y)) return false;
 			CreatePtr = cptr;
-			if (fExecute) Set[cptr].Execute();
+			if (fExecute) Set[cptr].Execute(section);
 			return true;
 		}
 	} while (cptr != CreatePtr);
 	return false;
 }
 
-bool C4MassMover::Init(int32_t tx, int32_t ty)
+bool C4MassMover::Init(C4Section &section, int32_t tx, int32_t ty)
 {
 	// Out of bounds check
-	if (!Inside<int32_t>(tx, 0, GBackWdt - 1) || !Inside<int32_t>(ty, 0, GBackHgt - 1))
+	if (!Inside<int32_t>(tx, 0, section.Landscape.Width - 1) || !Inside<int32_t>(ty, 0, section.Landscape.Height - 1))
 		return false;
 	// Check mat
-	Mat = GBackMat(tx, ty);
+	Mat = section.Landscape.GetMat(tx, ty);
 	x = tx; y = ty;
-	Game.MassMover.Count++;
+	section.MassMover.Count++;
 	return (Mat != MNone);
 }
 
-void C4MassMover::Cease()
+void C4MassMover::Cease(C4Section &section)
 {
 #ifdef DEBUGREC
 	C4RCMassMover rc;
 	rc.x = x; rc.y = y;
 	AddDbgRec(RCT_MMD, &rc, sizeof(rc));
 #endif
-	Game.MassMover.Count--;
+	section.MassMover.Count--;
 	Mat = MNone;
 }
 
-bool C4MassMover::Execute()
+bool C4MassMover::Execute(C4Section &section)
 {
 	int32_t tx, ty;
 
 	// Lost target material
-	if (GBackMat(x, y) != Mat) { Cease(); return false; }
+	if (section.Landscape.GetMat(x, y) != Mat) { Cease(section); return false; }
 
 	// Check for transfer target space
-	C4Material *pMat = Game.Material.Map + Mat;
+	C4Material *pMat = section.Material.Map + Mat;
 	tx = x; ty = y;
-	if (!Game.Landscape.FindMatPath(tx, ty, +1, pMat->Density, pMat->MaxSlide))
+	if (!section.Landscape.FindMatPath(tx, ty, +1, pMat->Density, pMat->MaxSlide))
 	{
 		// Contact material reaction check: corrosion/evaporation/inflammation/etc.
-		if (Corrosion(+0, +1) || Corrosion(-1, +0) || Corrosion(+1, +0))
+		if (Corrosion(section, +0, +1) || Corrosion(section, -1, +0) || Corrosion(section, +1, +0))
 		{
 			// material has been used up
-			Game.Landscape.ExtractMaterial(x, y);
+			section.Landscape.ExtractMaterial(x, y);
 			return true;
 		}
 
 		// No space, die
-		Cease(); return false;
+		Cease(section); return false;
 	}
 
 	// Save back material that is about to be overwritten.
 	int omat;
-	if (Game.C4S.Game.Realism.LandscapeInsertThrust)
-		omat = GBackMat(tx, ty);
+	if (section.C4S.Game.Realism.LandscapeInsertThrust)
+		omat = section.Landscape.GetMat(tx, ty);
 
 	// Transfer mass
 	if (Random(10))
-		SBackPix(tx, ty, Mat2PixColDefault(Game.Landscape.ExtractMaterial(x, y)) + GBackIFT(tx, ty));
+		section.Landscape.SetPix(tx, ty, section.Mat2PixColDefault(section.Landscape.ExtractMaterial(x, y)) + section.Landscape.GBackIFT(tx, ty));
 	else
-		Game.Landscape.InsertMaterial(Game.Landscape.ExtractMaterial(x, y), tx, ty, 0, 1);
+		section.Landscape.InsertMaterial(section.Landscape.ExtractMaterial(x, y), tx, ty, 0, 1);
 
 	// Reinsert material (thrusted aside)
-	if (Game.C4S.Game.Realism.LandscapeInsertThrust && MatValid(omat) && Game.Material.Map[omat].Density > 0)
-		Game.Landscape.InsertMaterial(omat, tx, ty + 1);
+	if (section.C4S.Game.Realism.LandscapeInsertThrust && section.MatValid(omat) && section.Material.Map[omat].Density > 0)
+		section.Landscape.InsertMaterial(omat, tx, ty + 1);
 
 	// Create new mover at target
-	Game.MassMover.Create(tx, ty, !Rnd3());
+	section.MassMover.Create(tx, ty, !Rnd3());
 
 	return true;
 }
 
-bool C4MassMover::Corrosion(int32_t dx, int32_t dy)
+bool C4MassMover::Corrosion(C4Section &section, int32_t dx, int32_t dy)
 {
 	// check reaction map of massmover-mat to target mat
-	int32_t tmat = GBackMat(x + dx, y + dy);
-	C4MaterialReaction *pReact = Game.Material.GetReactionUnsafe(Mat, tmat);
+	int32_t tmat = section.Landscape.GetMat(x + dx, y + dy);
+	C4MaterialReaction *pReact = section.Material.GetReactionUnsafe(Mat, tmat);
 	if (pReact)
 	{
 		C4Fixed xdir = Fix0, ydir = Fix0;
-		if ((*pReact->pFunc)(pReact, x, y, x + dx, y + dy, xdir, ydir, Mat, tmat, meeMassMove, nullptr))
+		if ((*pReact->pFunc)(pReact, section, x, y, x + dx, y + dy, xdir, ydir, Mat, tmat, meeMassMove, nullptr))
 			return true;
 	}
 	return false;

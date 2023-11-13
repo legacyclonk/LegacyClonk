@@ -27,6 +27,7 @@
 #include "C4ObjectInfo.h"
 #include "C4Particles.h"
 #include "C4Player.h"
+#include "C4Section.h"
 #include "C4Sector.h"
 #include "C4Value.h"
 #include "C4ValueList.h"
@@ -119,6 +120,15 @@ class C4Object
 public:
 	C4Object();
 	~C4Object();
+
+	C4Object(const C4Object &) = delete;
+	C4Object &operator=(const C4Object &) = delete;
+
+	C4Object(C4Object &&) = delete;
+	C4Object &operator=(C4Object &&) = delete;
+
+	C4Section *Section{nullptr};
+
 	int32_t Number; // int32_t, for sync safety on all machines
 	C4ID id;
 	int32_t Status; // NoSave //
@@ -208,6 +218,8 @@ protected:
 	int32_t Audible, AudiblePan; // NoSave //
 
 public:
+	static C4Section &GetSection(C4Object *const obj) noexcept;
+
 	void Resort();
 	void DigOutMaterialCast(bool fRequest);
 	void AddMaterialContents(int32_t iMaterial, int32_t iAmount);
@@ -256,6 +268,7 @@ public:
 		int32_t nx, int32_t ny, int32_t nr,
 		C4Fixed nxdir, C4Fixed nydir, C4Fixed nrdir, int32_t iController);
 	void CompileFunc(StdCompiler *pComp);
+	void PostCompileInit();
 	void DrawEnergy(C4Facet &cgo);
 	void DrawMagicEnergy(C4Facet &cgo);
 	void DrawBreath(C4Facet &cgo);

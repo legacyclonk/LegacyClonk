@@ -81,22 +81,22 @@ bool C4Sky::Init(bool fSavegame)
 
 	// Check for sky bitmap in scenario file
 	Surface = new C4Surface();
-	bool loaded = !!Surface->LoadAny(Game.ScenarioFile, C4CFN_Sky, true, true);
+	bool loaded = !!Surface->LoadAny(section.Group, C4CFN_Sky, true, true);
 
 	// Else, evaluate scenario core landscape sky default list
 	if (!loaded)
 	{
 		// Scan list sections
-		SReplaceChar(Game.C4S.Landscape.SkyDef, ',', ';'); // modifying the C4S here...!
-		skylistn = SCharCount(';', Game.C4S.Landscape.SkyDef) + 1;
+		SReplaceChar(section.C4S.Landscape.SkyDef, ',', ';'); // modifying the C4S here...!
+		skylistn = SCharCount(';', section.C4S.Landscape.SkyDef) + 1;
 		StdStrBuf sky;
-		StdStrBuf::MakeRef(Game.C4S.Landscape.SkyDef).GetSection(SeededRandom(Game.Parameters.RandomSeed, skylistn), &sky, ';');
+		StdStrBuf::MakeRef(section.C4S.Landscape.SkyDef).GetSection(SeededRandom(Game.Parameters.RandomSeed, skylistn), &sky, ';');
 		sky.TrimSpaces();
 		// Sky tile specified, try load
 		if (sky.getLength() && sky != "Default")
 		{
 			// Check for sky tile in scenario file
-			loaded = !!Surface->LoadAny(Game.ScenarioFile, sky.getData(), true, true);
+			loaded = !!Surface->LoadAny(section.Group, sky.getData(), true, true);
 			if (!loaded)
 			{
 				loaded = !!Surface->LoadAny(Game.GraphicsResource.Files, sky.getData(), true);
@@ -111,7 +111,7 @@ bool C4Sky::Init(bool fSavegame)
 		if (!SurfaceEnsureSize(&Surface, 128, 128)) return false;
 
 		// set parallax scroll mode
-		switch (Game.C4S.Landscape.SkyScrollMode)
+		switch (section.C4S.Landscape.SkyScrollMode)
 		{
 		case 0: // default: no scrolling
 			break;
@@ -128,7 +128,7 @@ bool C4Sky::Init(bool fSavegame)
 	// Else, try creating default Surface
 	if (!loaded)
 	{
-		SetFadePalette(Game.C4S.Landscape.SkyDefFade);
+		SetFadePalette(section.C4S.Landscape.SkyDefFade);
 		delete Surface;
 		Surface = nullptr;
 	}
@@ -178,7 +178,7 @@ bool C4Sky::Save(C4Group &hGroup)
 {
 	// Sky-saving disabled by scenario core
 	// (With this option enabled, script-defined changes to sky palette will not be saved!)
-	if (Game.C4S.Landscape.NoSky)
+	if (section.C4S.Landscape.NoSky)
 	{
 		hGroup.Delete(C4CFN_Sky);
 		return true;
@@ -200,7 +200,7 @@ void C4Sky::Execute()
 	if (x >= itofix(Width)) x -= itofix(Width);
 	if (y >= itofix(Height)) y -= itofix(Height);
 	// update speed
-	if (ParallaxMode == C4SkyPM_Wind) xdir = FIXED100(Game.Weather.Wind);
+	if (ParallaxMode == C4SkyPM_Wind) xdir = FIXED100(section.Weather.Wind);
 }
 
 void C4Sky::Draw(C4FacetEx &cgo)
@@ -229,7 +229,7 @@ void C4Sky::Draw(C4FacetEx &cgo)
 
 uint32_t C4Sky::GetSkyFadeClr(int32_t iY)
 {
-	int32_t iPos2 = (iY * 256) / GBackHgt; int32_t iPos1 = 256 - iPos2;
+	int32_t iPos2 = (iY * 256) / section.Landscape.Height; int32_t iPos1 = 256 - iPos2;
 	return (((((FadeClr1 & 0xff00ff) * iPos1 + (FadeClr2 & 0xff00ff) * iPos2) & 0xff00ff00)
 		| (((FadeClr1 & 0x00ff00) * iPos1 + (FadeClr2 & 0x00ff00) * iPos2) & 0x00ff0000)) >> 8)
 		| (FadeClr1 & 0xff000000);

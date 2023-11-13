@@ -210,12 +210,12 @@ void C4LSectors::Dump()
 			"Sector")));
 }
 
-bool C4LSectors::CheckSort()
+bool C4LSectors::CheckSort(C4ObjectList &list)
 {
 	for (int cnt = 0; cnt < Size; cnt++)
-		if (!Sectors[cnt].Objects.CheckSort(&Game.Objects))
+		if (!Sectors[cnt].Objects.CheckSort(&list))
 			return false;
-	if (!SectorOut.Objects.CheckSort(&Game.Objects)) return false;
+	if (!SectorOut.Objects.CheckSort(&list)) return false;
 	return true;
 }
 

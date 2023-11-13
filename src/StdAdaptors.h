@@ -486,6 +486,34 @@ struct StdParameter2Adapt
 template <class T, class P1, class P2>
 inline StdParameter2Adapt<T, P1, P2> mkParAdapt(T &rObj, const P1 &rPar1, const P2 &rPar2) { return StdParameter2Adapt<T, P1, P2>(rObj, rPar1, rPar2); }
 
+template<typename T, typename... Args>
+struct StdVariadicParameterAdapt
+{
+	template<typename... Pars>
+	StdVariadicParameterAdapt(T &obj, Pars &&...pars) : obj{obj}, args{std::forward<Pars>(pars)...} {}
+
+	void CompileFunc(StdCompiler *comp)
+	{
+		std::apply(&T::CompileFunc, std::tuple_cat(std::tuple<T &, StdCompiler *>{obj, comp}, args));
+	}
+
+	template<typename D>
+	bool operator==(const D &value) const { return std::get<0>(args) == value; }
+
+	template<typename D>
+	StdVariadicParameterAdapt operator=(const D &value) { std::get<0>(args) = value; return *this; }
+
+private:
+	T &obj;
+	std::tuple<Args...> args;
+};
+
+template<typename T, typename... Args>
+StdVariadicParameterAdapt<T, Args...> mkVariadicParAdapt(T &obj, Args &&...args)
+{
+	return {obj, std::forward<Args>(args)...};
+}
+
 // * Store pointer (contents)
 // Defaults to null
 template <class PointerWrapper>

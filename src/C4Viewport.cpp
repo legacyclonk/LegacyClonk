@@ -270,23 +270,36 @@ bool C4Viewport::TogglePlayerLock()
 bool C4Viewport::ScrollBarsByViewPosition()
 {
 	if (PlayerLock) return false;
+
+	const auto landscapeWidth = GetViewSection().Landscape.Width;
+
 	SCROLLINFO scroll;
 	scroll.cbSize = sizeof(SCROLLINFO);
 	// Vertical
 	scroll.fMask = SIF_ALL;
 	scroll.nMin = 0;
-	scroll.nMax = GBackHgt;
+	scroll.nMax = landscapeWidth;
 	scroll.nPage = ViewHgt;
 	scroll.nPos = ViewY;
 	SetScrollInfo(pWindow->hWindow, SB_VERT, &scroll, TRUE);
 	// Horizontal
 	scroll.fMask = SIF_ALL;
 	scroll.nMin = 0;
-	scroll.nMax = GBackWdt;
+	scroll.nMax = landscapeWidth;
 	scroll.nPage = ViewWdt;
 	scroll.nPos = ViewX;
 	SetScrollInfo(pWindow->hWindow, SB_HORZ, &scroll, TRUE);
 	return true;
+}
+
+C4Section &C4Viewport::GetViewSection()
+{
+	if (C4Player *const plr{Game.Players.Get(Player)}; plr)
+	{
+		return *plr->ViewSection.Denumerated();
+	}
+
+	return Game.MainSection;
 }
 
 #elif defined(WITH_DEVELOPER_MODE)
@@ -312,7 +325,7 @@ GtkWidget *C4ViewportWindow::InitGUI()
 
 	GtkAdjustment *adjustment = gtk_range_get_adjustment(GTK_RANGE(h_scrollbar));
 	gtk_adjustment_set_lower(adjustment, 0);
-	gtk_adjustment_set_upper(adjustment, GBackWdt);
+	gtk_adjustment_set_upper(adjustment, ViewSection->Landscape.Width);
 	gtk_adjustment_set_step_increment(adjustment, ViewportScrollSpeed);
 
 	g_signal_connect(
@@ -324,7 +337,7 @@ GtkWidget *C4ViewportWindow::InitGUI()
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(v_scrollbar));
 	gtk_adjustment_set_lower(adjustment, 0);
-	gtk_adjustment_set_upper(adjustment, GBackHgt);
+	gtk_adjustment_set_upper(adjustment, ViewSection->Landscape.Height);
 	gtk_adjustment_set_step_increment(adjustment, ViewportScrollSpeed);
 
 	g_signal_connect(
@@ -835,7 +848,7 @@ void C4Viewport::Clear()
 
 void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 {
-	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay)
+	if (!Game.MainSection.C4S.Head.Film || !Game.MainSection.C4S.Head.Replay)
 	{
 		// Player info
 		C4ST_STARTNEW(CInfoStat, "C4Viewport::DrawOverlay: Cursor Info")
@@ -854,7 +867,7 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 	C4ST_STOP(MsgStat)
 
 	// Control overlays (if not film/replay)
-	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay)
+	if (!Game.MainSection.C4S.Head.Film || !Game.MainSection.C4S.Head.Replay)
 	{
 		// Mouse control
 		if (Game.MouseControl.IsViewport(this))
@@ -1043,9 +1056,10 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 
 	// landscape mod by FoW
 	C4Player *pPlr = Game.Players.Get(Player);
+
 	if (pPlr && pPlr->fFogOfWar)
 	{
-		ClrModMap.Reset(Game.C4S.Landscape.FoWRes, Game.C4S.Landscape.FoWRes, ViewWdt, ViewHgt, cgo.TargetX, cgo.TargetY, 0, 0, cgo.X, cgo.Y, Game.FoWColor, cgo.Surface);
+		ClrModMap.Reset(pPlr->ViewSection->C4S.Landscape.FoWRes, pPlr->ViewSection->C4S.Landscape.FoWRes, ViewWdt, ViewHgt, cgo.TargetX, cgo.TargetY, 0, 0, cgo.X, cgo.Y, Game.FoWColor, cgo.Surface);
 		pPlr->FoW2Map(ClrModMap, cgo.X - cgo.TargetX, cgo.Y - cgo.TargetY);
 		lpDDraw->SetClrModMap(&ClrModMap);
 		lpDDraw->SetClrModMapEnabled(true);
@@ -1053,39 +1067,41 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	else
 		lpDDraw->SetClrModMapEnabled(false);
 
+	C4Section &section{GetViewSection()};
+
 	C4ST_STARTNEW(SkyStat, "C4Viewport::Draw: Sky")
-	Game.Landscape.Sky.Draw(cgo);
+	section.Landscape.Sky.Draw(cgo);
 	C4ST_STOP(SkyStat)
-	Game.BackObjects.DrawAll(cgo, Player);
+	section.Objects.BackObjects.DrawAll(cgo, Player);
 
 	// Draw Landscape
 	C4ST_STARTNEW(LandStat, "C4Viewport::Draw: Landscape")
-	Game.Landscape.Draw(cgo, Player);
+	section.Landscape.Draw(cgo, Player);
 	C4ST_STOP(LandStat)
 
 	// draw PXS (unclipped!)
 	C4ST_STARTNEW(PXSStat, "C4Viewport::Draw: PXS")
-	Game.PXS.Draw(cgo);
+	section.PXS.Draw(cgo);
 	C4ST_STOP(PXSStat)
 
 	// draw objects
 	C4ST_STARTNEW(ObjStat, "C4Viewport::Draw: Objects")
-	Game.Objects.Draw(cgo, Player);
+	section.Objects.Draw(cgo, Player);
 	C4ST_STOP(ObjStat)
 
 	// draw global particles
 	C4ST_STARTNEW(PartStat, "C4Viewport::Draw: Particles")
-	Game.Particles.GlobalParticles.Draw(cgo, nullptr);
+	section.Particles.GlobalParticles.Draw(cgo, nullptr);
 	C4ST_STOP(PartStat)
 
 	// draw foreground objects
-	Game.ForeObjects.DrawIfCategory(cgo, Player, C4D_Parallax, true);
+	section.Objects.ForeObjects.DrawIfCategory(cgo, Player, C4D_Parallax, true);
 
 	// Draw PathFinder
-	if (Game.GraphicsSystem.ShowPathfinder) Game.PathFinder.Draw(cgo);
+	if (Game.GraphicsSystem.ShowPathfinder) section.PathFinder.Draw(cgo);
 
 	// Draw overlay
-	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay) Game.DrawCursors(cgo, Player);
+	if (!Game.MainSection.C4S.Head.Film || !Game.MainSection.C4S.Head.Replay) Game.DrawCursors(cgo, Player);
 
 	// FogOfWar-mod off
 	lpDDraw->SetClrModMapEnabled(false);
@@ -1099,7 +1115,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	}
 
 	// draw custom GUI objects
-	Game.ForeObjects.DrawIfCategory(cgo, Player, C4D_Parallax, false);
+	section.Objects.ForeObjects.DrawIfCategory(cgo, Player, C4D_Parallax, false);
 
 	// Draw overlay
 	C4ST_STARTNEW(OvrStat, "C4Viewport::Draw: Overlay")
@@ -1173,12 +1189,12 @@ void C4Viewport::AdjustPosition()
 		{
 			// if view is close to border, allow scrolling
 			if (pPlr->ViewX < ViewportScrollBorder) iExtraBoundsX = std::min<int32_t>(ViewportScrollBorder - pPlr->ViewX, ViewportScrollBorder);
-			else if (pPlr->ViewX >= GBackWdt - ViewportScrollBorder) iExtraBoundsX = std::min<int32_t>(pPlr->ViewX - GBackWdt, 0) + ViewportScrollBorder;
+			else if (pPlr->ViewX >= pPlr->ViewSection->Landscape.Width - ViewportScrollBorder) iExtraBoundsX = std::min<int32_t>(pPlr->ViewX - pPlr->ViewSection->Landscape.Width, 0) + ViewportScrollBorder;
 			if (pPlr->ViewY < ViewportScrollBorder) iExtraBoundsY = std::min<int32_t>(ViewportScrollBorder - pPlr->ViewY, ViewportScrollBorder);
-			else if (pPlr->ViewY >= GBackHgt - ViewportScrollBorder) iExtraBoundsY = std::min<int32_t>(pPlr->ViewY - GBackHgt, 0) + ViewportScrollBorder;
+			else if (pPlr->ViewY >= pPlr->ViewSection->Landscape.Height - ViewportScrollBorder) iExtraBoundsY = std::min<int32_t>(pPlr->ViewY - pPlr->ViewSection->Landscape.Height, 0) + ViewportScrollBorder;
 		}
-		iExtraBoundsX = std::max<int32_t>(iExtraBoundsX, (ViewWdt - GBackWdt) / 2 + 1);
-		iExtraBoundsY = std::max<int32_t>(iExtraBoundsY, (ViewHgt - GBackHgt) / 2 + 1);
+		iExtraBoundsX = std::max<int32_t>(iExtraBoundsX, (ViewWdt - pPlr->ViewSection->Landscape.Width) / 2 + 1);
+		iExtraBoundsY = std::max<int32_t>(iExtraBoundsY, (ViewHgt - pPlr->ViewSection->Landscape.Height) / 2 + 1);
 		// calc target view position
 		int32_t iTargetViewX = pPlr->ViewX - ViewWdt / 2;
 		int32_t iTargetViewY = pPlr->ViewY - ViewHgt / 2;
@@ -1197,8 +1213,8 @@ void C4Viewport::AdjustPosition()
 		iTargetViewX = BoundBy(iPrefViewX, iTargetViewX - iScrollRange, iTargetViewX + iScrollRange);
 		iTargetViewY = BoundBy(iPrefViewY, iTargetViewY - iScrollRange, iTargetViewY + iScrollRange);
 		// bounds
-		iTargetViewX = BoundBy<int32_t>(iTargetViewX, -iExtraBoundsX, GBackWdt - ViewWdt + iExtraBoundsX);
-		iTargetViewY = BoundBy<int32_t>(iTargetViewY, -iExtraBoundsY, GBackHgt - ViewHgt + iExtraBoundsY);
+		iTargetViewX = BoundBy<int32_t>(iTargetViewX, -iExtraBoundsX, pPlr->ViewSection->Landscape.Width - ViewWdt + iExtraBoundsX);
+		iTargetViewY = BoundBy<int32_t>(iTargetViewY, -iExtraBoundsY, pPlr->ViewSection->Landscape.Height - ViewHgt + iExtraBoundsY);
 		// smooth
 		if (dViewX >= 0 && dViewY >= 0)
 		{
@@ -1223,41 +1239,42 @@ void C4Viewport::CenterPosition()
 {
 	// center viewport position on map
 	// set center position
-	ViewX = (GBackWdt - ViewWdt) / 2;
-	ViewY = (GBackHgt - ViewHgt) / 2;
+	ViewX = (GetViewSection().Landscape.Width - ViewWdt) / 2;
+	ViewY = (GetViewSection().Landscape.Height - ViewHgt) / 2;
 	// clips and updates
 	UpdateViewPosition();
 }
 
 void C4Viewport::UpdateViewPosition()
 {
+	C4Section &section{GetViewSection()};
 	// no-owner viewports should not scroll outside viewing area
 	if (fIsNoOwnerViewport)
 	{
-		if (Application.isFullScreen && GBackWdt < ViewWdt)
+		if (Application.isFullScreen && section.Landscape.Width < ViewWdt)
 		{
-			ViewX = (GBackWdt - ViewWdt) / 2;
+			ViewX = (section.Landscape.Width - ViewWdt) / 2;
 		}
 		else
 		{
-			ViewX = std::min<int32_t>(ViewX, GBackWdt - ViewWdt);
+			ViewX = std::min<int32_t>(ViewX, section.Landscape.Width - ViewWdt);
 			ViewX = std::max<int32_t>(ViewX, 0);
 		}
-		if (Application.isFullScreen && GBackHgt < ViewHgt)
+		if (Application.isFullScreen && section.Landscape.Height < ViewHgt)
 		{
-			ViewY = (GBackHgt - ViewHgt) / 2;
+			ViewY = (section.Landscape.Height - ViewHgt) / 2;
 		}
 		else
 		{
-			ViewY = std::min<int32_t>(ViewY, GBackHgt - ViewHgt);
+			ViewY = std::min<int32_t>(ViewY, section.Landscape.Height - ViewHgt);
 			ViewY = std::max<int32_t>(ViewY, 0);
 		}
 	}
 	// update borders
 	BorderLeft = std::max<int32_t>(-ViewX, 0);
 	BorderTop = std::max<int32_t>(-ViewY, 0);
-	BorderRight = std::max<int32_t>(ViewWdt - GBackWdt + ViewX, 0);
-	BorderBottom = std::max<int32_t>(ViewHgt - GBackHgt + ViewY, 0);
+	BorderRight = std::max<int32_t>(ViewWdt - section.Landscape.Width + ViewX, 0);
+	BorderBottom = std::max<int32_t>(ViewHgt - section.Landscape.Height + ViewY, 0);
 }
 
 void C4Viewport::Default()
@@ -1283,6 +1300,8 @@ void C4Viewport::DrawPlayerInfo(C4FacetEx &cgo)
 	C4Facet ccgo;
 	if (!ValidPlr(Player)) return;
 
+	C4Section &section{GetViewSection()};
+
 	// Wealth
 	if (Game.Players.Get(Player)->ViewWealth || Config.Graphics.ShowPlayerHUDAlways)
 	{
@@ -1296,7 +1315,7 @@ void C4Viewport::DrawPlayerInfo(C4FacetEx &cgo)
 	}
 
 	// Value gain
-	if ((Game.C4S.Game.ValueGain && Game.Players.Get(Player)->ViewValue)
+	if ((section.C4S.Game.ValueGain && Game.Players.Get(Player)->ViewValue)
 		|| Config.Graphics.ShowPlayerHUDAlways)
 	{
 		int32_t wdt = C4SymbolSize;
@@ -1333,7 +1352,10 @@ bool C4Viewport::Init(int32_t iPlayer, bool fSetTempOnly)
 	Player = iPlayer;
 	if (!fSetTempOnly) fIsNoOwnerViewport = (iPlayer == NO_OWNER);
 	// Owned viewport: clear any flash message explaining observer menu
-	if (ValidPlr(iPlayer)) Game.GraphicsSystem.FlashMessage("");
+	if (ValidPlr(iPlayer))
+	{
+		Game.GraphicsSystem.FlashMessage("");
+	}
 	return true;
 }
 
@@ -1540,7 +1562,7 @@ void C4Viewport::NextPlayer()
 		if (!(pPlr = Game.Players.First)) return;
 	}
 	else if (!(pPlr = pPlr->Next))
-		if (Game.C4S.Head.Film && Game.C4S.Head.Replay)
+		if (Game.MainSection.C4S.Head.Film && Game.MainSection.C4S.Head.Replay)
 			pPlr = Game.Players.First; // cycle to first in film mode only; in network obs mode allow NO_OWNER-view
 	if (pPlr) iPlr = pPlr->Number; else iPlr = NO_OWNER;
 	if (iPlr != Player) Init(iPlr, true);
