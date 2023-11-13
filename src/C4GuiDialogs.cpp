@@ -110,7 +110,7 @@ bool FrameDecoration::SetFacetByAction(C4Def *pOfDef, C4FacetEx &rfctTarget, con
 bool FrameDecoration::SetByDef(C4ID idSourceDef)
 {
 	// get source def
-	C4Def *pSrcDef = C4Id2Def(idSourceDef);
+	C4Def *pSrcDef = Game.Defs.ID2Def(idSourceDef);
 	if (!pSrcDef) return false;
 	// script compiled?
 	if (!pSrcDef->Script.IsReady()) return false;

@@ -107,12 +107,6 @@ bool C4TransferZones::Add(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, C4
 	return true;
 }
 
-void C4TransferZones::Synchronize()
-{
-	Clear();
-	Game.Objects.UpdateTransferZones();
-}
-
 C4TransferZone *C4TransferZones::Find(int32_t iX, int32_t iY)
 {
 	for (C4TransferZone *pZone = First; pZone; pZone = pZone->Next)
@@ -162,9 +156,9 @@ int32_t C4TransferZones::RemoveNullZones()
 	return iResult;
 }
 
-void AdjustMoveToTarget(int32_t &rX, int32_t &rY, bool fFreeMove, int32_t iShapeHgt);
+void AdjustMoveToTarget(C4Landscape &landscape, int32_t &rX, int32_t &rY, bool fFreeMove, int32_t iShapeHgt);
 
-bool C4TransferZone::GetEntryPoint(int32_t &rX, int32_t &rY, int32_t iToX, int32_t iToY)
+bool C4TransferZone::GetEntryPoint(C4Landscape &landscape, int32_t &rX, int32_t &rY, int32_t iToX, int32_t iToY)
 {
 	// Target inside zone: move outside horizontally
 	if (Inside<int32_t>(iToX - X, 0, Wdt - 1) && Inside<int32_t>(iToY - Y, 0, Hgt - 1))
@@ -179,8 +173,8 @@ bool C4TransferZone::GetEntryPoint(int32_t &rX, int32_t &rY, int32_t iToX, int32
 	for (cnt = 0; cnt < 2 * Wdt + 2 * Hgt; cnt++)
 	{
 		// Found free
-		if (!GBackSolid(iX1, iY1)) { rX = iX1; rY = iY1; break; }
-		if (!GBackSolid(iX2, iY2)) { rX = iX2; rY = iY2; break; }
+		if (!landscape.GBackSolid(iX1, iY1)) { rX = iX1; rY = iY1; break; }
+		if (!landscape.GBackSolid(iX2, iY2)) { rX = iX2; rY = iY2; break; }
 		// Advance
 		iX1 += iXIncr1; iY1 += iYIncr1;
 		iX2 += iXIncr2; iY2 += iYIncr2;
@@ -198,7 +192,7 @@ bool C4TransferZone::GetEntryPoint(int32_t &rX, int32_t &rY, int32_t iToX, int32
 	if (cnt >= 2 * Wdt + 2 * Hgt) return false;
 	// Vertical walk-to adjust (only if at the side of zone)
 	if (!Inside<int32_t>(rX - X, 0, Wdt - 1))
-		AdjustMoveToTarget(rX, rY, false, 20);
+		AdjustMoveToTarget(landscape, rX, rY, false, 20);
 	// Success
 	return true;
 }

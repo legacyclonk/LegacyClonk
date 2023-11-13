@@ -70,7 +70,7 @@ void C4PlayerInfo::DeleteTempFile()
 bool C4PlayerInfo::LoadFromLocalFile(const char *szFilename)
 {
 	// players should not be added in replay mode
-	assert(!Game.C4S.Head.Replay);
+	assert(!Game.MainSection.C4S.Head.Replay);
 	// clear previous
 	Clear();
 	// open player file group
@@ -88,7 +88,7 @@ bool C4PlayerInfo::LoadFromLocalFile(const char *szFilename)
 	dwColor = dwOriginalColor = C4P.PrefColorDw & 0xffffff; // ignore alpha
 	dwAlternateColor = C4P.PrefColor2Dw & 0xffffff; // ignore alpha
 	// network: ressource (not for replays, because everyone has the player files there...)
-	if (Game.Network.isEnabled() && !Game.C4S.Head.Replay)
+	if (Game.Network.isEnabled() && !Game.MainSection.C4S.Head.Replay)
 	{
 		// add ressource
 		// 2do: rejoining players need to update their ressource version when saving the player
@@ -280,7 +280,7 @@ void C4PlayerInfo::LoadResource()
 	// the PIF_InScenarioFile is not set for startup players in initial replays,
 	// because ressources are used for player joins but emulated in playback control
 	// if there will ever be ressources in replay mode, this special case can be removed
-	if (Game.C4S.Head.Replay || (dwFlags & PIF_InScenarioFile))
+	if (Game.MainSection.C4S.Head.Replay || (dwFlags & PIF_InScenarioFile))
 		dwFlags &= ~PIF_HasRes;
 	else
 		// create resource (will check if resource already exists)
@@ -1273,7 +1273,7 @@ bool C4PlayerInfoList::LoadFromGameText(const char *pSource)
 void C4PlayerInfoList::InitLocal()
 {
 	// not in replay
-	if (Game.C4S.Head.Replay) return;
+	if (Game.MainSection.C4S.Head.Replay) return;
 	// no double init
 	assert(!GetInfoCount());
 	// no network
@@ -1363,12 +1363,12 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 	if (rSavegamePlayers.GetPlayerCount())
 	{
 		// for runtime network joins, this should never happen!
-		assert(!Game.C4S.Head.NetworkRuntimeJoin);
+		assert(!Game.MainSection.C4S.Head.NetworkRuntimeJoin);
 
 		// do savegame player association of real players
 		// for non-lobby games do automatic association first
 		int32_t iNumGrabbed = 0, i;
-		if (!Game.Network.isEnabled() && Game.C4S.Head.SaveGame)
+		if (!Game.Network.isEnabled() && Game.MainSection.C4S.Head.SaveGame)
 		{
 			// do several passes: First passes using regular player matching; following passes matching anything but with a warning message
 			for (int eMatchingLevel = 0; eMatchingLevel <= PML_Any; ++eMatchingLevel)
@@ -1386,7 +1386,7 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 									// this is a "wild" match: Warn the player (but not in replays)
 									const std::string msg{LoadResStr(C4ResStrTableKey::IDS_MSG_PLAYERASSIGNMENT, pInfo->GetName(), pSavegameInfo->GetName())};
 									LogNTr(msg);
-									if (Game.pGUI && FullScreen.Active && !Game.C4S.Head.Replay)
+									if (Game.pGUI && FullScreen.Active && !Game.MainSection.C4S.Head.Replay)
 										Game.pGUI->ShowMessageModal(msg.c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_FREESAVEGAMEPLRS), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify, &Config.Startup.HideMsgPlrTakeOver);
 								}
 							}
@@ -1416,7 +1416,7 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 				{
 					// no association for this info: Joins as new player
 					// in savegames, this is unusual. For regular script player restore, it's not
-					if (Game.C4S.Head.SaveGame) Log(C4ResStrTableKey::IDS_PRC_RESUMENOPLRASSOCIATION, pInfo->GetName());
+					if (Game.MainSection.C4S.Head.SaveGame) Log(C4ResStrTableKey::IDS_PRC_RESUMENOPLRASSOCIATION, pInfo->GetName());
 				}
 		}
 		// otherwise any remaining players
@@ -1458,14 +1458,14 @@ bool C4PlayerInfoList::RecreatePlayerFiles()
 			if (pInfo->IsJoined())
 			{
 				// all players in replays and runtime joins; script players even in savegames need to be restored from the scenario goup
-				if (Game.C4S.Head.Replay || Game.C4S.Head.NetworkRuntimeJoin || pInfo->GetType() == C4PT_Script)
+				if (Game.MainSection.C4S.Head.Replay || Game.MainSection.C4S.Head.NetworkRuntimeJoin || pInfo->GetType() == C4PT_Script)
 				{
 					// in this case, a filename must have been assigned while saving
 					// and mark a file inside the scenario file
 					// get filename of joined player - this should always be valid!
 					const char *szCurrPlrFile;
 					std::string filenameInRecord;
-					if (Game.C4S.Head.Replay)
+					if (Game.MainSection.C4S.Head.Replay)
 					{
 						// replay of resumed savegame: RecreatePlayers saves used player files into the record group in this manner
 						filenameInRecord = std::format("Recreate-{}.c4p", pInfo->GetID());
@@ -1534,7 +1534,7 @@ bool C4PlayerInfoList::RecreatePlayers()
 		// so client-removal packets are executed correctly
 		int32_t idAtClient = pkInfo->GetClientID();
 		const char *szAtClientName;
-		if (Game.C4S.Head.Replay)
+		if (Game.MainSection.C4S.Head.Replay)
 			// the client name can currently not really be retrieved in replays
 			// but it's not used anyway
 			szAtClientName = "Replay";
@@ -1598,7 +1598,7 @@ bool C4PlayerInfoList::RecreatePlayers()
 					Game.Control.RecAddFile(szFilename, filenameInRecord.c_str());
 				}
 				// recreate join directly
-				Game.Players.Join(szFilename, false, idAtClient, szAtClientName, pInfo);
+				Game.Players.Join(szFilename, false, idAtClient, szAtClientName, pInfo, Game.MainSection);
 				// delete temporary files immediately
 				if (pInfo->IsTempFile()) pInfo->DeleteTempFile();
 			}

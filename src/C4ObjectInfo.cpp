@@ -67,7 +67,7 @@ bool C4ObjectInfo::Load(C4Group &hMother, const char *szEntryname, bool fLoadPor
 				hChild.Close(); return false;
 			}
 			// resolve definition, if possible
-			pDef = C4Id2Def(id);
+			pDef = Game.Defs.ID2Def(id);
 			hChild.Close();
 			return true;
 		}

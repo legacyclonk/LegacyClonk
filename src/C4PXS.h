@@ -33,8 +33,8 @@ protected:
 	C4Fixed x, y, xdir, ydir;
 
 protected:
-	void Execute();
-	void Deactivate();
+	void Execute(C4Section &section);
+	void Deactivate(C4Section &section);
 };
 
 const size_t PXSChunkSize = 500, PXSMaxChunk = 20;
@@ -42,8 +42,11 @@ const size_t PXSChunkSize = 500, PXSMaxChunk = 20;
 class C4PXSSystem
 {
 public:
-	C4PXSSystem();
+	C4PXSSystem(C4Section &section);
 	~C4PXSSystem();
+
+private:
+	C4Section &section;
 
 public:
 	int32_t Count;

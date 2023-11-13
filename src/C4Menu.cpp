@@ -52,9 +52,9 @@ void DrawMenuSymbol(int32_t iMenu, C4Facet &cgo, int32_t iOwner, C4Object *cObj)
 	case C4MN_Construction:
 	{
 		C4Def *pDef;
-		if (pDef = C4Id2Def(C4Id("CXCN")))
+		if (pDef = Game.Defs.ID2Def(C4Id("CXCN")))
 			pDef->Draw(cgo);
-		else if (pDef = C4Id2Def(C4Id("WKS1")))
+		else if (pDef = Game.Defs.ID2Def(C4Id("WKS1")))
 			pDef->Draw(cgo);
 	}
 	break;
@@ -92,7 +92,7 @@ C4MenuItem::C4MenuItem(C4Menu *pMenu, int32_t iIndex, const char *szCaption,
 	// components initialization
 	if (idID)
 	{
-		C4Def *pDef = C4Id2Def(idID);
+		C4Def *pDef = Game.Defs.ID2Def(idID);
 		if (pDef) pDef->GetComponents(&Components, nullptr, pMenu ? pMenu->GetParentObject() : nullptr);
 	}
 }
@@ -128,7 +128,7 @@ void C4MenuItem::DoTextProgress(int32_t &riByVal)
 bool C4MenuItem::IsDragElement()
 {
 	// any constructibles can be dragged
-	C4Def *pDef = C4Id2Def(id);
+	C4Def *pDef = Game.Defs.ID2Def(id);
 	return pDef && pDef->Constructable;
 }
 
@@ -829,7 +829,7 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 	// Get selected item id
 	C4ID idSelected; C4MenuItem *pItem;
 	if (pItem = GetSelectedItem()) idSelected = pItem->id; else idSelected = C4ID_None;
-	C4Def *pDef = C4Id2Def(idSelected);
+	C4Def *pDef = Game.Defs.ID2Def(idSelected);
 	// Get item value
 	int32_t iValue;
 	if (pDef)
@@ -884,7 +884,7 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 	int32_t iUseExtraData = 0;
 	if (Extra == C4MN_Extra_LiveMagicValue || Extra == C4MN_Extra_ComponentsLiveMagic)
 	{
-		C4Object *pMagicSourceObj = Game.Objects.SafeObjectPointer(ExtraData);
+		C4Object *pMagicSourceObj = Game.SafeObjectPointer(ExtraData);
 		if (pMagicSourceObj) iUseExtraData = pMagicSourceObj->MagicEnergy / MagicPhysicalFactor;
 	}
 	else

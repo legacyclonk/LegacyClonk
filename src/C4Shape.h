@@ -30,7 +30,7 @@
 class C4DensityProvider
 {
 public:
-	virtual int32_t GetDensity(int32_t x, int32_t y) const;
+	virtual int32_t GetDensity(C4Landscape &landscape, int32_t x, int32_t y) const;
 	virtual ~C4DensityProvider() {}
 };
 
@@ -64,15 +64,15 @@ public:
 	int32_t GetVertexY(int32_t iVertex);
 	int32_t GetVertexX(int32_t iVertex);
 	bool AddVertex(int32_t iX, int32_t iY);
-	bool CheckContact(int32_t cx, int32_t cy);
-	bool ContactCheck(int32_t cx, int32_t cy);
-	bool Attach(int32_t &cx, int32_t &cy, uint8_t cnat_pos);
-	bool LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int32_t oldx, int32_t oldy);
+	bool CheckContact(C4Landscape &landscape, int32_t cx, int32_t cy);
+	bool ContactCheck(C4Landscape &landscape, int32_t cx, int32_t cy);
+	bool Attach(C4Section &section, int32_t &cx, int32_t &cy, uint8_t cnat_pos);
+	bool LineConnect(C4Landscape &landscape, int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int32_t oldx, int32_t oldy);
 	bool InsertVertex(int32_t iPos, int32_t tx, int32_t ty);
 	bool RemoveVertex(int32_t iPos);
 	void CopyFrom(C4Shape rFrom, bool bCpyVertices, bool fCopyVerticesFromSelf);
 	int32_t GetBottomVertex();
-	int32_t GetVertexContact(int32_t iVtx, uint32_t dwCheckMask, int32_t tx, int32_t ty, const C4DensityProvider &rDensityProvider = DefaultDensityProvider); // get CNAT-mask for given vertex - does not check range for iVtx!
+	int32_t GetVertexContact(C4Landscape &landscape, int32_t iVtx, uint32_t dwCheckMask, int32_t tx, int32_t ty, const C4DensityProvider &rDensityProvider = DefaultDensityProvider); // get CNAT-mask for given vertex - does not check range for iVtx!
 	void CreateOwnOriginalCopy(C4Shape &rFrom); // create copy of all vertex members in back area of own buffers
 	void CompileFunc(StdCompiler *pComp, bool fRuntime);
 };

@@ -22,34 +22,22 @@
 
 #include <type_traits>
 
-static_assert(std::is_same_v<C4EnumeratedObjectPtr::Enumerated, decltype(C4Object::Number)>, "C4EnumeratedObjectPtr::Enumerated must match the type of C4Object::Number");
+static_assert(std::is_same_v<C4EnumeratedObjectPtrTraits::Enumerated, decltype(C4Object::Number)>, "C4EnumeratedObjectPtr::Enumerated must match the type of C4Object::Number");
 
-void C4EnumeratedObjectPtr::Enumerate()
+std::int32_t C4EnumeratedObjectPtrTraits::Enumerate(C4Object *const obj)
 {
-	number = Game.Objects.ObjectNumber(object);
+	return Game.ObjectNumber(obj);
 }
 
-void C4EnumeratedObjectPtr::Denumerate()
+C4Object *C4EnumeratedObjectPtrTraits::Denumerate(const std::int32_t number)
 {
 	// only for compatibility with old savegames where Game.Objects.Enumerated() has been used -.-
 	if (Inside(number, C4EnumPointer1, C4EnumPointer2))
 	{
-		object = Game.Objects.ObjectPointer(number - C4EnumPointer1);
+		return Game.ObjectPointer(number - C4EnumPointer1);
 	}
 	else
 	{
-		object = Game.Objects.ObjectPointer(number);
-	}
-}
-
-void C4EnumeratedObjectPtr::CompileFunc(StdCompiler *compiler, bool intPack)
-{
-	if (intPack)
-	{
-		compiler->Value(mkIntPackAdapt(number));
-	}
-	else
-	{
-		compiler->Value(number);
+		return Game.ObjectPointer(number);
 	}
 }

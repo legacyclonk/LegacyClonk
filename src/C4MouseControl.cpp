@@ -453,7 +453,7 @@ void C4MouseControl::UpdateCursorTarget()
 	}
 
 	// Check player cursor
-	C4Object *pPlrCursor = pPlayer ? pPlayer->Cursor.Object() : nullptr;
+	C4Object *pPlrCursor = pPlayer ? pPlayer->Cursor.Denumerated() : nullptr;
 
 	// Target object
 	uint32_t ocf = OCF_Grab | OCF_Chop | OCF_Container | OCF_Construct | OCF_Living | OCF_Carryable | OCF_Container | OCF_Exclusive;
@@ -464,8 +464,10 @@ void C4MouseControl::UpdateCursorTarget()
 	// Movement
 	if (!FogOfWar && !IsPassive()) Cursor = C4MC_Cursor_Crosshair;
 
+	C4Section &section{Viewport->GetViewSection()};
+
 	// Dig
-	if (!FogOfWar && GBackSolid(X, Y) && !IsPassive())
+	if (!FogOfWar && section.Landscape.GBackSolid(X, Y) && !IsPassive())
 	{
 		Cursor = C4MC_Cursor_Dig;
 		if (ControlDown) Cursor = C4MC_Cursor_DigMaterial;
@@ -595,9 +597,9 @@ void C4MouseControl::UpdateCursorTarget()
 				break;
 
 			case C4MC_Cursor_DigMaterial:
-				if (MatValid(GBackMat(X, Y)))
+				if (section.MatValid(section.Landscape.GetMat(X, Y)))
 				{
-					SetCaption<C4ResStrTableKey::IDS_CON_DIGOUT>(C4Id2Def(Game.Material.Map[GBackMat(X, Y)].Dig2Object), true);
+					SetCaption<C4ResStrTableKey::IDS_CON_DIGOUT>(Game.Defs.ID2Def(section.Material.Map[section.Landscape.GetMat(X, Y)].Dig2Object), true);
 				}
 				break;
 			}
@@ -628,7 +630,7 @@ int32_t C4MouseControl::UpdateObjectSelection()
 	Selection.Clear();
 	// Add all collectible objects in drag frame to Selection
 	C4Object *cObj; C4ObjectLink *cLnk;
-	for (cLnk = Game.Objects.First; cLnk && (cObj = cLnk->Obj); cLnk = cLnk->Next)
+	for (cLnk = Viewport->GetViewSection().Objects.First; cLnk && (cObj = cLnk->Obj); cLnk = cLnk->Next)
 		if (cObj->Status)
 			if (cObj->OCF & OCF_Carryable)
 				if (!cObj->Contained)
@@ -847,16 +849,17 @@ void C4MouseControl::DragMoving()
 			if (UpdatePutTarget(false))
 				return;
 		// In liquid: drop
-		if (GBackLiquid(X, Y))
+		C4Section &section{Viewport->GetViewSection()};
+		if (section.Landscape.GBackLiquid(X, Y))
 		{
 			Cursor = C4MC_Cursor_Drop; return;
 		}
 		// In free: drop or throw
-		if (!GBackSolid(X, Y))
+		if (!section.Landscape.GBackSolid(X, Y))
 		{
 			// Check drop
 			int32_t iX = X, iY = Y;
-			while ((iY < GBackHgt) && !GBackSolid(iX, iY)) iY++;
+			while ((iY < section.Landscape.Height) && !section.Landscape.GBackSolid(iX, iY)) iY++;
 			if (Inside<int32_t>(X - iX, -5, +5) && Inside<int32_t>(Y - iY, -5, +5))
 			{
 				Cursor = C4MC_Cursor_Drop; return;
@@ -869,8 +872,8 @@ void C4MouseControl::DragMoving()
 			// Throwing height
 			int32_t iHeight = 20; if (pPlayer->Cursor) iHeight = pPlayer->Cursor->Shape.Hgt;
 			// Check throw
-			if (FindThrowingPosition(X, Y, fixThrow * iDir, -fixThrow, iHeight, iX, iY)
-				|| FindThrowingPosition(X, Y, fixThrow * (iDir *= -1), -fixThrow, iHeight, iX, iY))
+			if (section.Landscape.FindThrowingPosition(X, Y, fixThrow * iDir, -fixThrow, iHeight, iX, iY)
+				|| section.Landscape.FindThrowingPosition(X, Y, fixThrow * (iDir *= -1), -fixThrow, iHeight, iX, iY))
 			{
 				Cursor = (iDir == -1) ? C4MC_Cursor_ThrowLeft : C4MC_Cursor_ThrowRight;
 				ShowPointX = iX; ShowPointY = iY;
@@ -962,7 +965,7 @@ void C4MouseControl::DragNone()
 			// Drag id (construction)
 			C4Def *pDef;
 			if (DownRegion.id)
-				if ((pDef = C4Id2Def(DownRegion.id)) && pDef->Constructable)
+				if ((pDef = Game.Defs.ID2Def(DownRegion.id)) && pDef->Constructable)
 				{
 					StartConstructionDrag(DownRegion.id); break;
 				}
@@ -1082,7 +1085,7 @@ void C4MouseControl::CreateDragImage(C4ID id)
 	// Clear old image
 	DragImage.Clear(); DragImage.Default();
 	// Get definition
-	C4Def *pDef = C4Id2Def(id); if (!pDef) return;
+	C4Def *pDef = Game.Defs.ID2Def(id); if (!pDef) return;
 	// in newgfx, it's just the base image, drawn differently...
 	if (pDef->DragImagePicture)
 		DragImage.Set(pDef->Graphics.GetBitmap(), pDef->PictureRect.x, pDef->PictureRect.y, pDef->PictureRect.Wdt, pDef->PictureRect.Hgt);
@@ -1095,7 +1098,7 @@ void C4MouseControl::DragConstruct()
 	Cursor = C4MC_Cursor_Construct;
 	// Check site
 	DragImagePhase = 1;
-	if (!FogOfWar && ConstructionCheck(DragID, X, Y)) DragImagePhase = 0;
+	if (!FogOfWar && Viewport->GetViewSection().Landscape.ConstructionCheck(DragID, X, Y)) DragImagePhase = 0;
 }
 
 void C4MouseControl::LeftUpDragNone()
@@ -1268,7 +1271,7 @@ void C4MouseControl::UpdateFogOfWar()
 	// Assume no fog of war
 	FogOfWar = false;
 	// Check for fog of war
-	if ((pPlayer->fFogOfWar && !pPlayer->FoWIsVisible(X, Y)) || X < 0 || Y < 0 || X >= GBackWdt || Y >= GBackHgt)
+	if ((pPlayer->fFogOfWar && !pPlayer->FoWIsVisible(X, Y)) || X < 0 || Y < 0 || X >= Viewport->GetViewSection().Landscape.Width || Y >= Viewport->GetViewSection().Landscape.Height)
 	{
 		FogOfWar = true;
 		// allow dragging, scrolling, region selection and manipulations of objects not affected by FoW
@@ -1318,7 +1321,7 @@ const char *C4MouseControl::GetCaption()
 C4Object *C4MouseControl::GetTargetObject(int32_t iX, int32_t iY, uint32_t &dwOCF, C4Object *pExclude)
 {
 	// find object
-	C4Object *pObj = Game.FindVisObject(ViewX, ViewY, Player, fctViewport, iX, iY, 0, 0, dwOCF, pExclude);
+	C4Object *pObj = Viewport->GetViewSection().FindVisObject(ViewX, ViewY, Player, fctViewport, iX, iY, 0, 0, dwOCF, pExclude);
 	if (!pObj) return nullptr;
 	// adjust OCF
 	pObj->GetOCFForPos(iX, iY, dwOCF);

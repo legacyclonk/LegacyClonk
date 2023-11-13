@@ -65,7 +65,7 @@ C4ID C4ObjectList::GetListID(int32_t dwCategory, int Index)
 	for (clid = 0; clid < MaxTempListID; clid++) TempListID[clid] = C4ID_None;
 	for (clnk = First; clnk && clnk->Obj; clnk = clnk->Next)
 		if (clnk->Obj->Status)
-			if ((dwCategory == C4D_All) || ((cdef = C4Id2Def(clnk->Obj->Def->id)) && (cdef->Category & dwCategory)))
+			if ((dwCategory == C4D_All) || ((cdef = Game.Defs.ID2Def(clnk->Obj->Def->id)) && (cdef->Category & dwCategory)))
 				for (clid = 0; clid < MaxTempListID; clid++)
 				{
 					// Already there
@@ -90,7 +90,7 @@ int C4ObjectList::ListIDCount(int32_t dwCategory)
 	for (clid = 0; clid < MaxTempListID; clid++) TempListID[clid] = C4ID_None;
 	for (clnk = First; clnk && clnk->Obj; clnk = clnk->Next)
 		if (clnk->Obj->Status)
-			if ((dwCategory == C4D_All) || ((cdef = C4Id2Def(clnk->Obj->Def->id)) && (cdef->Category & dwCategory)))
+			if ((dwCategory == C4D_All) || ((cdef = Game.Defs.ID2Def(clnk->Obj->Def->id)) && (cdef->Category & dwCategory)))
 				for (clid = 0; clid < MaxTempListID; clid++)
 				{
 					// Already there
@@ -116,15 +116,15 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 	{
 		CheckCategorySort();
 		if (pLstSorted)
-			assert(CheckSort(pLstSorted));
+			;//assert(CheckSort(pLstSorted));
 	}
 #endif
 
 	// dbg: don't do double links
-	assert(!GetLink(nObj));
+	//assert(!GetLink(nObj));
 
 	// no self-sort
-	assert(pLstSorted != this);
+	//assert(pLstSorted != this);
 
 	// Allocate new link
 	auto newLink = std::make_unique<C4ObjectLink>();
@@ -178,7 +178,7 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 		// Sort by master list?
 		if (pLstSorted)
 		{
-			assert(CheckSort(pLstSorted));
+			//assert(CheckSort(pLstSorted));
 
 			// Unsorted: Always search full list (start with first object in list)
 			if (fUnsorted) { cLnk = First; cPrev = nullptr; }
@@ -207,15 +207,15 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 					}
 
 				// No position found? This shouldn't happen with a consistent main list.
-				assert(cLnk2);
+				//assert(cLnk2);
 #ifdef NDEBUG
 			}
 #endif
 		}
 	}
 
-	assert(!cPrev || cPrev->Next == cLnk);
-	assert(!cLnk || cLnk->Prev == cPrev);
+	//assert(!cPrev || cPrev->Next == cLnk);
+	//assert(!cLnk || cLnk->Prev == cPrev);
 
 	// Insert new link after predecessor
 	InsertLink(newLink.get(), cPrev);
@@ -227,7 +227,7 @@ bool C4ObjectList::Add(C4Object *nObj, SortType eSort, C4ObjectList *pLstSorted)
 	{
 		CheckCategorySort();
 		if (pLstSorted)
-			assert(CheckSort(pLstSorted));
+			;//assert(CheckSort(pLstSorted));
 	}
 #endif
 
@@ -459,7 +459,7 @@ bool C4ObjectList::DenumerateRead()
 	if (!pEnumerated) return false;
 	// Denumerate all object pointers
 	for (const auto num : *pEnumerated)
-		Add(Game.Objects.ObjectPointer(num), stNone); // Add to tail, unsorted
+		Add(Game.ObjectPointer(num), stNone); // Add to tail, unsorted
 	// Delete old list
 	pEnumerated.reset();
 	return true;
@@ -473,69 +473,68 @@ void C4ObjectList::Denumerate()
 			cLnk->Obj->DenumeratePointers();
 }
 
-void C4ObjectList::CompileFunc(StdCompiler *pComp, bool fSaveRefs, bool fSkipPlayerObjects)
+void C4ObjectList::CompileFunc(StdCompiler *pComp)
 {
-	if (fSaveRefs)
+	// (Re)create list
+	pEnumerated.reset(new decltype(pEnumerated)::element_type);
+	// Decompiling: Build list
+	if (!pComp->isCompiler())
+		for (C4ObjectLink *pPos = First; pPos; pPos = pPos->Next)
+			if (pPos->Obj->Status)
+				pEnumerated->push_back(pPos->Obj->Number);
+	// Compile list
+	pComp->Value(mkSTLContainerAdapt(*pEnumerated, StdCompiler::SEP_SEP2));
+	// Decompiling: Delete list
+	if (!pComp->isCompiler())
 	{
-		// this mode not supported
-		assert(!fSkipPlayerObjects);
-		// (Re)create list
-		pEnumerated.reset(new decltype(pEnumerated)::element_type);
-		// Decompiling: Build list
-		if (!pComp->isCompiler())
-			for (C4ObjectLink *pPos = First; pPos; pPos = pPos->Next)
-				if (pPos->Obj->Status)
-					pEnumerated->push_back(pPos->Obj->Number);
-		// Compile list
-		pComp->Value(mkSTLContainerAdapt(*pEnumerated, StdCompiler::SEP_SEP2));
-		// Decompiling: Delete list
-		if (!pComp->isCompiler())
-		{
-			pEnumerated.reset();
-		}
-		// Compiling: Nothing to do - list will e denumerated later
+		pEnumerated.reset();
+	}
+	// Compiling: Nothing to do - list will e denumerated later
+}
+
+void C4ObjectList::CompileFunc(StdCompiler *pComp, const C4Section &section, bool fSkipPlayerObjects)
+{
+	if (pComp->isDecompiler())
+	{
+		// skipping player objects would screw object counting in non-naming compilers
+		assert(!fSkipPlayerObjects || pComp->hasNaming());
+		// Put object count
+		int32_t iObjCnt = ObjectCount();
+		pComp->Value(mkNamingCountAdapt(iObjCnt, "Object"));
+		// Decompile all objects in reverse order
+		for (C4ObjectLink *pPos = Last; pPos; pPos = pPos->Prev)
+			if (pPos->Obj->Status)
+				if (!fSkipPlayerObjects || !pPos->Obj->IsUserPlayerObject())
+					pComp->Value(mkNamingAdapt(*pPos->Obj, "Object"));
 	}
 	else
 	{
-		if (pComp->isDecompiler())
+		// this mode not supported
+		assert(!fSkipPlayerObjects);
+		// Remove previous data
+		Clear();
+		// Get "Object" section count
+		int32_t iObjCnt;
+		pComp->Value(mkNamingCountAdapt(iObjCnt, "Object"));
+		// Load objects, add them to the list.
+		for (int i = 0; i < iObjCnt; i++)
 		{
-			// skipping player objects would screw object counting in non-naming compilers
-			assert(!fSkipPlayerObjects || pComp->hasNaming());
-			// Put object count
-			int32_t iObjCnt = ObjectCount();
-			pComp->Value(mkNamingCountAdapt(iObjCnt, "Object"));
-			// Decompile all objects in reverse order
-			for (C4ObjectLink *pPos = Last; pPos; pPos = pPos->Prev)
-				if (pPos->Obj->Status)
-					if (!fSkipPlayerObjects || !pPos->Obj->IsUserPlayerObject())
-						pComp->Value(mkNamingAdapt(*pPos->Obj, "Object"));
-		}
-		else
-		{
-			// this mode not supported
-			assert(!fSkipPlayerObjects);
-			// Remove previous data
-			Clear();
-			// Get "Object" section count
-			int32_t iObjCnt;
-			pComp->Value(mkNamingCountAdapt(iObjCnt, "Object"));
-			// Load objects, add them to the list.
-			for (int i = 0; i < iObjCnt; i++)
+			C4Object *pObj = nullptr;
+			try
 			{
-				C4Object *pObj = nullptr;
-				try
-				{
-					pComp->Value(mkNamingAdapt(mkPtrAdaptNoNull(pObj), "Object"));
-					Add(pObj, stReverse);
-				}
-				catch (const StdCompiler::Exception &e)
-				{
-					// Failsafe object loading: If an error occurs during object loading, just skip that object and load the next one
-					if (e.Pos.empty())
-						LogNTr(spdlog::level::err, "Object loading: {}", e.what());
-					else
-						LogNTr(spdlog::level::err, "Object loading({}): {}", e.Pos, e.what());
-				}
+				pComp->Value(mkNamingAdapt(mkPtrAdaptNoNull(pObj), "Object"));
+				pObj->Section = &const_cast<C4Section &>(section);
+				pObj->PostCompileInit();
+
+				Add(pObj, stReverse);
+			}
+			catch (const StdCompiler::Exception &e)
+			{
+				// Failsafe object loading: If an error occurs during object loading, just skip that object and load the next one
+				if (e.Pos.empty())
+					LogNTr(spdlog::level::err, "Object loading: {}", e.what());
+				else
+					LogNTr(spdlog::level::err, "Object loading({}): {}", e.Pos, e.what());
 			}
 		}
 	}

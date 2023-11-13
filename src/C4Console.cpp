@@ -753,6 +753,7 @@ bool C4Console::SaveGame(bool fSaveGame)
 	gdk_window_set_cursor(gtk_widget_get_window(window), cursorWait);
 #endif
 
+#if 0
 	C4GameSave *pGameSave;
 	if (fSaveGame)
 		pGameSave = new C4GameSaveSavegame();
@@ -763,6 +764,7 @@ bool C4Console::SaveGame(bool fSaveGame)
 		Out("Game::Save failed"); fOkay = false;
 	}
 	delete pGameSave;
+#endif
 
 	// Close and reopen scenario file to fix file changes
 	if (!Game.ScenarioFile.Close())
@@ -799,7 +801,7 @@ bool C4Console::FileSave(bool fSaveGame)
 {
 	// Don't quicksave games over scenarios
 	if (fSaveGame)
-		if (!Game.C4S.Head.SaveGame)
+		if (!Game.MainSection.C4S.Head.SaveGame)
 		{
 			Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NOGAMEOVERSCEN));
 			return false;
