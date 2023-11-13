@@ -397,7 +397,7 @@ bool C4ToolsDlg::Open()
 #endif
 
 	Active = true;
-	Section = &Game.MainSection; // FIXME
+	Section = Game.Sections.front().get(); // FIXME
 	// Update contols
 	InitGradeCtrl();
 	UpdateLandscapeModeCtrls();

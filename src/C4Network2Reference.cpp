@@ -65,7 +65,7 @@ void C4Network2Reference::InitLocal(C4Game *pGame)
 		}
 
 	// Special additional information in reference
-	Icon = pGame->MainSection.C4S.Head.Icon;
+	Icon = pGame->C4S.Head.Icon;
 	GameStatus = pGame->Network.Status;
 	Time = pGame->Time;
 	Frame = pGame->FrameCounter;

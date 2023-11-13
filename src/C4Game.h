@@ -83,14 +83,11 @@ public:
 	C4Game();
 	~C4Game();
 
-private:
-	C4Section &CreateMainSection();
-
 public:
 	C4DefList Defs;
 	std::vector<std::unique_ptr<C4Section>> Sections;
-	C4Section &MainSection;
-	C4Group &ScenarioFile{MainSection.Group};
+	C4Group ScenarioFile;
+	C4Scenario C4S;
 	std::string Loader;
 	C4RankSystem Rank;
 	C4GraphicsSystem GraphicsSystem;

@@ -124,7 +124,7 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 
 	bool hideRestart = false;
 	int32_t buttonCount = 2;
-	if (Game.Control.isCtrlHost() || (Game.MainSection.C4S.Head.Film == 2))
+	if (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2))
 	{
 		++buttonCount;
 		if (Game.NextMission)
@@ -239,7 +239,7 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 
 	// not available for regular replay and network clients, obviously
 	// it is available for films though, so you can create cinematics for adventures
-	if (Game.Control.isCtrlHost() || (Game.MainSection.C4S.Head.Film == 2))
+	if (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2))
 	{
 		if (!hideRestart)
 		{

@@ -239,7 +239,7 @@ C4RoundResultsPlayers &C4RoundResultsPlayers::operator=(const C4RoundResultsPlay
 
 void C4RoundResults::Init()
 {
-	if (Game.MainSection.C4S.Game.IsMelee())
+	if (Game.C4S.Game.IsMelee())
 		fHideSettlementScore = true;
 	else fHideSettlementScore = false;
 }
@@ -262,7 +262,7 @@ void C4RoundResults::CompileFunc(StdCompiler *pComp)
 	if (fCompiler) Clear();
 	pComp->Value(mkNamingAdapt(Goals,                    "Goals",                   C4IDList()));
 	pComp->Value(mkNamingAdapt(iPlayingTime,             "PlayingTime",             0u));
-	pComp->Value(mkNamingAdapt(fHideSettlementScore,     "HideSettlementScore",     !!Game.MainSection.C4S.Game.IsMelee()));
+	pComp->Value(mkNamingAdapt(fHideSettlementScore,     "HideSettlementScore",     !!Game.C4S.Game.IsMelee()));
 	pComp->Value(mkNamingAdapt(sCustomEvaluationStrings, "CustomEvaluationStrings", StdStrBuf()));
 	pComp->Value(mkNamingAdapt(iLeaguePerformance,       "LeaguePerformance",       0));
 	pComp->Value(mkNamingAdapt(Players,                  "PlayerInfos",             C4RoundResultsPlayers()));
