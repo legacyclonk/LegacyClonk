@@ -157,7 +157,7 @@ void C4GraphicsSystem::Execute()
 	ScreenTick++; if (ScreenTick >= ScreenRate) ScreenTick = 0;
 
 	// Reset object audibility
-	Game.Objects.ResetAudibility();
+	Game.ResetAudibility();
 
 	// some hack to ensure the mouse is drawn after a dialog close and before any
 	// movement messages
@@ -382,17 +382,19 @@ void C4GraphicsSystem::RecalculateViewports()
 			cOffY = ViewportArea.Y;
 			cOffWdt = cOffHgt = 0;
 			int32_t ViewportScrollBorder = Application.isFullScreen ? C4ViewportScrollBorder : 0;
-			if (ciViewsX * std::min<int32_t>(cViewWdt, GBackWdt + 2 * ViewportScrollBorder) < ViewportArea.Wdt)
-				cOffX = (ViewportArea.Wdt - ciViewsX * std::min<int32_t>(cViewWdt, GBackWdt + 2 * ViewportScrollBorder)) / 2;
-			if (iViewsH * std::min<int32_t>(cViewHgt, GBackHgt + 2 * ViewportScrollBorder) < ViewportArea.Hgt)
-				cOffY = (ViewportArea.Hgt - iViewsH * std::min<int32_t>(cViewHgt, GBackHgt + 2 * ViewportScrollBorder)) / 2 + ViewportArea.Y;
+
+			C4Section &section{cvp->get()->GetViewSection()};
+			if (ciViewsX * std::min<int32_t>(cViewWdt, section.Landscape.Width + 2 * ViewportScrollBorder) < ViewportArea.Wdt)
+				cOffX = (ViewportArea.Wdt - ciViewsX * std::min<int32_t>(cViewWdt, section.Landscape.Width + 2 * ViewportScrollBorder)) / 2;
+			if (iViewsH * std::min<int32_t>(cViewHgt, section.Landscape.Height + 2 * ViewportScrollBorder) < ViewportArea.Hgt)
+				cOffY = (ViewportArea.Hgt - iViewsH * std::min<int32_t>(cViewHgt, section.Landscape.Height + 2 * ViewportScrollBorder)) / 2 + ViewportArea.Y;
 			if (Config.Graphics.SplitscreenDividers)
 			{
 				if (cViewX < ciViewsX - 1) cOffWdt = 4;
 				if (cViewH < iViewsH - 1) cOffHgt = 4;
 			}
-			int32_t coViewWdt = cViewWdt - cOffWdt; if (coViewWdt > GBackWdt + 2 * ViewportScrollBorder) { coViewWdt = GBackWdt + 2 * ViewportScrollBorder; }
-			int32_t coViewHgt = cViewHgt - cOffHgt; if (coViewHgt > GBackHgt + 2 * ViewportScrollBorder) { coViewHgt = GBackHgt + 2 * ViewportScrollBorder; }
+			int32_t coViewWdt = cViewWdt - cOffWdt; if (coViewWdt > section.Landscape.Width + 2 * ViewportScrollBorder) { coViewWdt = section.Landscape.Width + 2 * ViewportScrollBorder; }
+			int32_t coViewHgt = cViewHgt - cOffHgt; if (coViewHgt > section.Landscape.Height + 2 * ViewportScrollBorder) { coViewHgt = section.Landscape.Height + 2 * ViewportScrollBorder; }
 			C4Rect rcOut(cOffX + cViewX * cViewWdt, cOffY + cViewH * cViewHgt, coViewWdt, coViewHgt);
 			(*cvp)->SetOutputSize(rcOut.x, rcOut.y, rcOut.x, rcOut.y, rcOut.Wdt, rcOut.Hgt);
 			++cvp;
@@ -541,7 +543,8 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		// get viewport to draw in
 		const auto &pVP = Viewports.front();
 		// create image large enough to hold the landcape
-		int32_t lWdt = static_cast<int32_t>(ceilf(GBackWdt * scale)), lHgt = static_cast<int32_t>(ceilf(GBackHgt * scale));
+		C4Landscape &landscape{pVP->GetViewSection().Landscape};
+		int32_t lWdt = static_cast<int32_t>(ceilf(landscape.Width * scale)), lHgt = static_cast<int32_t>(ceilf(landscape.Height * scale));
 		StdBitmap bmp(lWdt, lHgt, false);
 		// get backbuffer size
 		int32_t bkWdt = static_cast<int32_t>(ceilf(Config.Graphics.ResX * scale)), bkHgt = static_cast<int32_t>(ceilf(Config.Graphics.ResY * scale));
@@ -551,8 +554,8 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		// mark background to be redrawn
 		InvalidateBg();
 		// backup and clear sky parallaxity
-		int32_t iParX = Game.Landscape.Sky.ParX; Game.Landscape.Sky.ParX = 10;
-		int32_t iParY = Game.Landscape.Sky.ParY; Game.Landscape.Sky.ParY = 10;
+		int32_t iParX = landscape.Sky.ParX; landscape.Sky.ParX = 10;
+		int32_t iParY = landscape.Sky.ParY; landscape.Sky.ParY = 10;
 		// temporarily change viewport player
 		int32_t iVpPlr = pVP->Player; pVP->Player = NO_OWNER;
 		// blit all tiles needed
@@ -585,8 +588,8 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		// restore viewport player
 		pVP->Player = iVpPlr;
 		// restore parallaxity
-		Game.Landscape.Sky.ParX = iParX;
-		Game.Landscape.Sky.ParY = iParY;
+		landscape.Sky.ParX = iParX;
+		landscape.Sky.ParY = iParY;
 		// Save bitmap to PNG file
 		try
 		{
@@ -865,7 +868,7 @@ bool C4GraphicsSystem::ToggleShowHelp()
 bool C4GraphicsSystem::ViewportNextPlayer()
 {
 	// safety: switch valid?
-	if ((!Game.C4S.Head.Film || !Game.C4S.Head.Replay) && !Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
+	if ((!Game.MainSection.C4S.Head.Film || !Game.MainSection.C4S.Head.Replay) && !Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
 	// do switch then
 	if (Viewports.empty()) return false;
 	Viewports.front()->NextPlayer();
@@ -875,7 +878,7 @@ bool C4GraphicsSystem::ViewportNextPlayer()
 bool C4GraphicsSystem::FreeScroll(C4Vec2D vScrollBy)
 {
 	// safety: move valid?
-	if ((!Game.C4S.Head.Replay || !Game.C4S.Head.Film) && !Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
+	if ((!Game.MainSection.C4S.Head.Replay || !Game.MainSection.C4S.Head.Film) && !Game.GraphicsSystem.GetViewport(NO_OWNER)) return false;
 	if (Viewports.empty()) return false;
 	const auto &vp = Viewports.front();
 	// move then (old static code crap...)

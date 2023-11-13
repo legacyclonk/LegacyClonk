@@ -573,8 +573,8 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	// In extinguishing material
 	bool fFireCaused = true;
 	int32_t iMat;
-	if (MatValid(iMat = GBackMat(pObj->x, pObj->y)))
-		if (Game.Material.Map[iMat].Extinguisher)
+	if (pObj->Section->MatValid(iMat = pObj->Section->Landscape.GetMat(pObj->x, pObj->y)))
+		if (pObj->Section->Material.Map[iMat].Extinguisher)
 		{
 			// blasts should changedef in water, too!
 			if (fBlasted) if (pObj->Def->BurnTurnTo != C4ID_None) pObj->ChangeDef(pObj->Def->BurnTurnTo);
@@ -595,7 +595,7 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	// Detach attached objects
 	cobj = nullptr;
 	if (!pObj->Def->IncompleteActivity && !pObj->Def->NoBurnDecay)
-		while (cobj = Game.FindObject(0, 0, 0, 0, 0, OCF_All, nullptr, pObj, nullptr, nullptr, ANY_OWNER, cobj))
+		while (cobj = pObj->Section->FindObject(0, 0, 0, 0, 0, OCF_All, nullptr, pObj, nullptr, nullptr, ANY_OWNER, cobj))
 			if ((cobj->Action.Act > ActIdle) && (cobj->Def->ActMap[cobj->Action.Act].Procedure == DFA_ATTACH))
 				cobj->SetAction(ActIdle);
 	// fire caused?
@@ -766,7 +766,7 @@ int32_t FnFxFireTimer(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 		}
 
 		// OK; create it!
-		Game.Particles.Create(pPartDef, float(iX) + fRot[0] * iPx + fRot[1] * iPy, float(iY) + fRot[2] * iPx + fRot[3] * iPy, iXDir / 10.0f, iYDir / 10.0f, iSize / 10.0f, dwClr, pParticleList, pObj);
+		pObj->Section->Particles.Create(pPartDef, float(iX) + fRot[0] * iPx + fRot[1] * iPy, float(iY) + fRot[2] * iPx + fRot[3] * iPy, iXDir / 10.0f, iYDir / 10.0f, iSize / 10.0f, dwClr, pParticleList, pObj);
 	}
 
 	return C4Fx_OK;
@@ -801,28 +801,28 @@ C4String *FnFxFireInfo(C4AulContext *ctx, C4Object *pObj, int32_t iNumber)
 void Splash(int32_t tx, int32_t ty, int32_t amt, C4Object *pByObj)
 {
 	// Splash only if there is free space above
-	if (GBackSemiSolid(tx, ty - 15)) return;
+	if (pByObj->Section->Landscape.GBackSemiSolid(tx, ty - 15)) return;
 	// get back mat
-	int32_t iMat = GBackMat(tx, ty);
+	int32_t iMat = pByObj->Section->Landscape.GetMat(tx, ty);
 	// check liquid
-	if (MatValid(iMat))
-		if (DensityLiquid(Game.Material.Map[iMat].Density) && Game.Material.Map[iMat].Instable)
+	if (pByObj->Section->MatValid(iMat))
+		if (DensityLiquid(pByObj->Section->Material.Map[iMat].Density) && pByObj->Section->Material.Map[iMat].Instable)
 		{
 			int32_t sy = ty;
-			while (GBackLiquid(tx, sy) && sy > ty - 20 && sy >= 0) sy--;
+			while (pByObj->Section->Landscape.GBackLiquid(tx, sy) && sy > ty - 20 && sy >= 0) sy--;
 			// Splash bubbles and liquid
 			for (int32_t cnt = 0; cnt < amt; cnt++)
 			{
 				// force argument evaluation order
 				const auto r2 = Random(16);
 				const auto r1 = Random(16);
-				BubbleOut(tx + r1 - 8, ty + r2 - 6);
-				if (GBackLiquid(tx, ty) && !GBackSemiSolid(tx, sy))
+				BubbleOut(*pByObj->Section, tx + r1 - 8, ty + r2 - 6);
+				if (pByObj->Section->Landscape.GBackLiquid(tx, ty) && !pByObj->Section->Landscape.GBackSemiSolid(tx, sy))
 				{
 					// force argument evaluation order
 					const auto r2 = FIXED100(-Random(200));
 					const auto r1 = FIXED100(Random(151) - 75);
-					Game.PXS.Create(Game.Landscape.ExtractMaterial(tx, ty),
+					pByObj->Section->PXS.Create(pByObj->Section->Landscape.ExtractMaterial(tx, ty),
 						itofix(tx), itofix(sy),
 						r1,
 						r2);
@@ -844,33 +844,33 @@ int32_t GetSmokeLevel()
 	return Config.Graphics.SmokeLevel;
 }
 
-void BubbleOut(int32_t tx, int32_t ty)
+void BubbleOut(C4Section &section, int32_t tx, int32_t ty)
 {
 	// No bubbles from nowhere
-	if (!GBackSemiSolid(tx, ty)) return;
+	if (!section.Landscape.GBackSemiSolid(tx, ty)) return;
 	// User-defined smoke level
 	int32_t SmokeLevel = GetSmokeLevel();
 	// Enough bubbles out there already
-	if (Game.Objects.ObjectCount(C4Id("FXU1")) >= SmokeLevel) return;
+	if (section.Objects.ObjectCount(C4Id("FXU1")) >= SmokeLevel) return;
 	// Create bubble
-	Game.CreateObject(C4Id("FXU1"), nullptr, NO_OWNER, tx, ty);
+	section.CreateObject(C4Id("FXU1"), nullptr, NO_OWNER, tx, ty);
 }
 
-void Smoke(int32_t tx, int32_t ty, int32_t level, uint32_t dwClr)
+void Smoke(C4Section &section, int32_t tx, int32_t ty, int32_t level, uint32_t dwClr)
 {
 	if (Game.Particles.pSmoke)
 	{
-		Game.Particles.Create(Game.Particles.pSmoke, float(tx), float(ty) - level / 2, 0.0f, 0.0f, float(level), dwClr);
+		section.Particles.Create(Game.Particles.pSmoke, float(tx), float(ty) - level / 2, 0.0f, 0.0f, float(level), dwClr);
 		return;
 	}
 	// User-defined smoke level
 	int32_t SmokeLevel = GetSmokeLevel();
 	// Enough smoke out there already
-	if (Game.Objects.ObjectCount(C4Id("FXS1")) >= SmokeLevel) return;
+	if (section.Objects.ObjectCount(C4Id("FXS1")) >= SmokeLevel) return;
 	// Create smoke
 	level = BoundBy<int32_t>(level, 3, 32);
 	C4Object *pObj;
-	if (pObj = Game.CreateObjectConstruction(C4Id("FXS1"), nullptr, NO_OWNER, tx, ty, FullCon * level / 32))
+	if (pObj = section.CreateObjectConstruction(C4Id("FXS1"), nullptr, NO_OWNER, tx, ty, FullCon * level / 32))
 		pObj->Call(PSF_Activate);
 }
 
@@ -886,10 +886,10 @@ void Explosion(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t i
 	if (!container)
 	{
 		// Incinerate landscape
-		if (!Game.Landscape.Incinerate(tx, ty))
-			if (!Game.Landscape.Incinerate(tx, ty - 10))
-				if (!Game.Landscape.Incinerate(tx - 5, ty - 5))
-					Game.Landscape.Incinerate(tx + 5, ty - 5);
+		if (!pByObj->Section->Landscape.Incinerate(tx, ty))
+			if (!pByObj->Section->Landscape.Incinerate(tx, ty - 10))
+				if (!pByObj->Section->Landscape.Incinerate(tx - 5, ty - 5))
+					pByObj->Section->Landscape.Incinerate(tx + 5, ty - 5);
 		// Create blast object or particle
 		C4Object *pBlast;
 		C4ParticleDef *pPrtDef = Game.Particles.pBlast;
@@ -903,19 +903,19 @@ void Explosion(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t i
 		// create particle
 		if (pPrtDef)
 		{
-			Game.Particles.Create(pPrtDef, static_cast<float>(tx), static_cast<float>(ty), 0.0f, 0.0f, static_cast<float>(level), 0);
+			pByObj->Section->Particles.Create(pPrtDef, static_cast<float>(tx), static_cast<float>(ty), 0.0f, 0.0f, static_cast<float>(level), 0);
 			if (SEqual2(pPrtDef->Name.getData(), "Blast"))
-				Game.Particles.Cast(Game.Particles.pFSpark, level / 5 + 1, static_cast<float>(tx), static_cast<float>(ty), level, level / 2 + 1.0f, 0x00ef0000, level + 1.0f, 0xffff1010);
+				pByObj->Section->Particles.Cast(Game.Particles.pFSpark, level / 5 + 1, static_cast<float>(tx), static_cast<float>(ty), level, level / 2 + 1.0f, 0x00ef0000, level + 1.0f, 0xffff1010);
 		}
-		else if (pBlast = Game.CreateObjectConstruction(idEffect ? idEffect : C4Id("FXB1"), pByObj, iCausedBy, tx, ty + level, FullCon * level / 20))
+		else if (pBlast = pByObj->Section->CreateObjectConstruction(idEffect ? idEffect : C4Id("FXB1"), pByObj, iCausedBy, tx, ty + level, FullCon * level / 20))
 			pBlast->Call(PSF_Activate);
 	}
 	// Blast objects
-	Game.BlastObjects(tx, ty, level, inobj, iCausedBy, pByObj);
-	if (container != inobj) Game.BlastObjects(tx, ty, level, container, iCausedBy, pByObj);
+	pByObj->Section->BlastObjects(tx, ty, level, inobj, iCausedBy, pByObj);
+	if (container != inobj) pByObj->Section->BlastObjects(tx, ty, level, container, iCausedBy, pByObj);
 	if (!container)
 	{
 		// Blast free landscape. After blasting objects so newly mined materials don't get flinged
-		Game.Landscape.BlastFree(tx, ty, level, grade, iCausedBy);
+		pByObj->Section->Landscape.BlastFree(tx, ty, level, grade, iCausedBy);
 	}
 }

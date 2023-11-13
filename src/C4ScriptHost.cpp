@@ -234,15 +234,19 @@ bool C4GameScriptHost::Execute()
 C4Value C4GameScriptHost::GRBroadcast(const char *szFunction, const C4AulParSet &pPars, bool fPassError, bool fRejectTest, bool convertNilToIntBool)
 {
 	// call objects first - scenario script might overwrite hostility, etc...
-	C4Object *pObj;
-	for (C4ObjectLink *clnk = Game.Objects.ObjectsInt().First; clnk; clnk = clnk->Next) if (pObj = clnk->Obj)
-		if (pObj->Category & (C4D_Goal | C4D_Rule | C4D_Environment))
-			if (pObj->Status)
-			{
-				C4Value vResult(pObj->Call(szFunction, pPars, fPassError, convertNilToIntBool));
-				// rejection tests abort on first nonzero result
-				if (fRejectTest) if (vResult) return vResult;
-			}
+
+	for (const auto &section : Game.Sections)
+	{
+		C4Object *pObj;
+		for (C4ObjectLink *clnk = section->Objects.ObjectsInt().First; clnk; clnk = clnk->Next) if (pObj = clnk->Obj)
+			if (pObj->Category & (C4D_Goal | C4D_Rule | C4D_Environment))
+				if (pObj->Status)
+				{
+					C4Value vResult(pObj->Call(szFunction, pPars, fPassError, convertNilToIntBool));
+					// rejection tests abort on first nonzero result
+					if (fRejectTest) if (vResult) return vResult;
+				}
+	}
 	// scenario script call
 	return Call(szFunction, pPars, fPassError, convertNilToIntBool);
 }

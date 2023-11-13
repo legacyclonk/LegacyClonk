@@ -200,7 +200,7 @@ bool C4ObjectInfoList::Save(C4Group &hGroup, bool fSavegame, bool fStoreTiny, C4
 		// don't safe TemporaryCrew in regular player files
 		if (!fSavegame)
 		{
-			C4Def *pDef = C4Id2Def(pInfo->id);
+			C4Def *pDef = Game.Defs.ID2Def(pInfo->id);
 			if (pDef) if (pDef->TemporaryCrew) continue;
 		}
 		// save
@@ -229,7 +229,9 @@ void C4ObjectInfoList::DetachFromObjects()
 {
 	C4ObjectInfo *cinf;
 	for (cinf = First; cinf; cinf = cinf->Next)
-		Game.Objects.ClearInfo(cinf);
+	{
+		std::ranges::for_each(Game.Sections, [cinf](C4ObjectList &objects) { objects.ClearInfo(cinf); }, &C4Section::Objects);
+	}
 }
 
 C4ObjectInfo *C4ObjectInfoList::GetLast()

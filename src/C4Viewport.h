@@ -112,6 +112,7 @@ public:
 	bool IsViewportMenu(class C4Menu *pMenu);
 	int32_t GetPlayer() { return Player; }
 	void CenterPosition();
+	C4Section &GetViewSection();
 
 protected:
 	int32_t Player;
