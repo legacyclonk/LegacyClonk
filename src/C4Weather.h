@@ -25,8 +25,11 @@
 class C4Weather
 {
 public:
-	C4Weather();
+	C4Weather(C4Section &section);
 	~C4Weather();
+
+private:
+	C4Section &section;
 
 public:
 	int32_t Season, YearSpeed, SeasonDelay;

@@ -91,24 +91,24 @@ int32_t CommandByName(const char *szCommand)
 	return C4CMD_None;
 }
 
-void AdjustMoveToTarget(int32_t &rX, int32_t &rY, bool fFreeMove, int32_t iShapeHgt)
+void AdjustMoveToTarget(C4Landscape &landscape, int32_t &rX, int32_t &rY, bool fFreeMove, int32_t iShapeHgt)
 {
 	// Above solid (always)
 	int32_t iY;
-	for (iY = rY; (iY >= 0) && GBackSolid(rX, iY); iY--);
+	for (iY = rY; (iY >= 0) && landscape.GBackSolid(rX, iY); iY--);
 	if (iY >= 0) rY = iY;
 	// No-free-move adjustments (i.e. if walking)
 	if (!fFreeMove)
 	{
 		// Drop down to bottom of free space
-		if (!GBackSemiSolid(rX, rY))
+		if (!landscape.GBackSemiSolid(rX, rY))
 		{
-			for (iY = rY; (iY < GBackHgt) && !GBackSemiSolid(rX, iY + 1); iY++);
-			if (iY < GBackHgt) rY = iY;
+			for (iY = rY; (iY < landscape.Height) && !landscape.GBackSemiSolid(rX, iY + 1); iY++);
+			if (iY < landscape.Height) rY = iY;
 		}
 		// Vertical shape offset above solid
-		if (GBackSolid(rX, rY + 1) || GBackSolid(rX, rY + 5))
-			if (!GBackSemiSolid(rX, rY - iShapeHgt / 2))
+		if (landscape.GBackSolid(rX, rY + 1) ||landscape. GBackSolid(rX, rY + 5))
+			if (!landscape.GBackSemiSolid(rX, rY - iShapeHgt / 2))
 				rY -= iShapeHgt / 2;
 	}
 }
@@ -123,34 +123,34 @@ bool FreeMoveTo(C4Object *cObj)
 	return false;
 }
 
-bool AdjustSolidOffset(int32_t &rX, int32_t &rY, int32_t iXOff, int32_t iYOff)
+bool AdjustSolidOffset(C4Landscape &landscape, int32_t &rX, int32_t &rY, int32_t iXOff, int32_t iYOff)
 {
 	// In solid: fail
-	if (GBackSolid(rX, rY)) return false;
+	if (landscape.GBackSolid(rX, rY)) return false;
 	// Y Offset
 	int32_t cnt;
 	for (cnt = 1; cnt < iYOff; cnt++)
 	{
-		if (GBackSolid(rX, rY + cnt) && !GBackSolid(rX, rY - cnt)) rY--;
-		if (GBackSolid(rX, rY - cnt) && !GBackSolid(rX, rY + cnt)) rY++;
+		if (landscape.GBackSolid(rX, rY + cnt) && !landscape.GBackSolid(rX, rY - cnt)) rY--;
+		if (landscape.GBackSolid(rX, rY - cnt) && !landscape.GBackSolid(rX, rY + cnt)) rY++;
 	}
 	// X Offset
 	for (cnt = 1; cnt < iXOff; cnt++)
 	{
-		if (GBackSolid(rX + cnt, rY) && !GBackSolid(rX - cnt, rY)) rX--;
-		if (GBackSolid(rX - cnt, rY) && !GBackSolid(rX + cnt, rY)) rX++;
+		if (landscape.GBackSolid(rX + cnt, rY) && !landscape.GBackSolid(rX - cnt, rY)) rX--;
+		if (landscape.GBackSolid(rX - cnt, rY) && !landscape.GBackSolid(rX + cnt, rY)) rX++;
 	}
 	// Done
 	return true;
 }
 
-int32_t SolidOnWhichSide(int32_t iX, int32_t iY)
+int32_t SolidOnWhichSide(C4Landscape &landscape, int32_t iX, int32_t iY)
 {
 	for (int32_t cx = 1; cx < 10; cx++)
 		for (int32_t cy = 0; cy < 10; cy++)
 		{
-			if (GBackSolid(iX - cx, iY - cy) || GBackSolid(iX - cx, iY + cy)) return -1;
-			if (GBackSolid(iX + cx, iY - cy) || GBackSolid(iX + cx, iY + cy)) return +1;
+			if (landscape.GBackSolid(iX - cx, iY - cy) || landscape.GBackSolid(iX - cx, iY + cy)) return -1;
+			if (landscape.GBackSolid(iX + cx, iY - cy) || landscape.GBackSolid(iX + cx, iY + cy)) return +1;
 		}
 	return 0;
 }
@@ -195,7 +195,7 @@ static bool ObjectAddWaypoint(int32_t iX, int32_t iY, intptr_t iTransferTarget, 
 		return cObj->AddCommand(C4CMD_Transfer, reinterpret_cast<C4Object *>(iTransferTarget), iX, iY, 0, nullptr, false);
 
 	// Solid offset
-	AdjustSolidOffset(iX, iY, cObj->Shape.Wdt / 2, cObj->Shape.Hgt / 2);
+	AdjustSolidOffset(cObj->Section->Landscape, iX, iY, cObj->Shape.Wdt / 2, cObj->Shape.Hgt / 2);
 
 	// Standard movement waypoint update interval
 	int32_t iUpdate = 25;
@@ -234,11 +234,11 @@ void C4Command::MoveTo()
 				if (!(Inside<C4ValueInt>(cx - Tx._getInt(), -PathRange, +PathRange) && Inside<C4ValueInt>(cy - Ty, -PathRange, +PathRange)))
 				{
 					// Path not free: find path
-					if (!PathFree(cx, cy, Tx._getInt(), Ty))
+					if (!cObj->Section->Landscape.PathFree(cx, cy, Tx._getInt(), Ty))
 					{
-						Game.PathFinder.EnableTransferZones(!cObj->Def->NoTransferZones);
-						Game.PathFinder.SetLevel(cObj->Def->Pathfinder);
-						if (!Game.PathFinder.Find(cObj->x, cObj->y,
+						cObj->Section->PathFinder.EnableTransferZones(!cObj->Def->NoTransferZones);
+						cObj->Section->PathFinder.SetLevel(cObj->Def->Pathfinder);
+						if (!cObj->Section->PathFinder.Find(cObj->x, cObj->y,
 							Tx._getInt(), Ty,
 							&ObjectAddWaypoint,
 							reinterpret_cast<intptr_t>(cObj))) // intptr for 64bit?
@@ -843,13 +843,13 @@ void C4Command::Build()
 		// Energy supply (if necessary and nobody else is doing so already)
 		if (Game.Rules & C4RULE_StructuresNeedEnergy)
 			if (Target->Def->LineConnect & C4D_Power_Input)
-				if (!Game.FindObjectByCommand(C4CMD_Energy, Target))
+				if (!cObj->Section->FindObjectByCommand(C4CMD_Energy, Target))
 				{
 					// if another Clonk is also building this structure and carries a linekit already, that Clonk should rather perform the energy command
 					C4Object *pOtherBuilder = nullptr;
 					if (!cObj->Contents.Find(C4ID_Linekit))
 					{
-						while (pOtherBuilder = Game.FindObjectByCommand(C4CMD_Build, Target, C4VNull, 0, nullptr, pOtherBuilder))
+						while (pOtherBuilder = cObj->Section->FindObjectByCommand(C4CMD_Build, Target, C4VNull, 0, nullptr, pOtherBuilder))
 							if (pOtherBuilder->Contents.Find(C4ID_Linekit))
 								break;
 					}
@@ -940,8 +940,8 @@ void C4Command::Throw()
 		int32_t iTx, iTy;
 		C4Fixed pthrow = ValByPhysical(400, cObj->GetPhysical()->Throw);
 		int32_t iHeight = cObj->Shape.Hgt;
-		if (!FindThrowingPosition(Tx._getInt(), Ty, pthrow * iDir, -pthrow, iHeight, iTx, iTy))
-			if (!FindThrowingPosition(Tx._getInt(), Ty, pthrow * iDir * -1, -pthrow, iHeight, iTx, iTy))
+		if (!cObj->Section->Landscape.FindThrowingPosition(Tx._getInt(), Ty, pthrow * iDir, -pthrow, iHeight, iTx, iTy))
+			if (!cObj->Section->Landscape.FindThrowingPosition(Tx._getInt(), Ty, pthrow * iDir * -1, -pthrow, iHeight, iTx, iTy))
 				// No throwing position: fail
 			{
 				Finish(); return;
@@ -1177,14 +1177,14 @@ void C4Command::Get()
 		// Check for closest free position
 		int32_t iX = Target->x, iY = Target->y;
 		// Find all-closest dig-out position
-		if (!FindClosestFree(iX, iY, -120, +120, -1, -1))
+		if (!cObj->Section->Landscape.FindClosestFree(iX, iY, -120, +120, -1, -1))
 			// None found
 		{
 			Finish(); return;
 		}
 		// Check good-angle left/right dig-out position
 		int32_t iX2 = Target->x, iY2 = Target->y;
-		if (FindClosestFree(iX2, iY2, -140, +140, -40, +40))
+		if (cObj->Section->Landscape.FindClosestFree(iX2, iY2, -140, +140, -40, +40))
 			// Use good-angle position if it's not way worse
 			if (Distance(Target->x, Target->y, iX2, iY2) < 10 * Distance(Target->x, Target->y, iX, iY))
 			{
@@ -1275,7 +1275,7 @@ void C4Command::Get()
 				{
 					int32_t iSideX = 1; if (Random(2)) iSideX = -1;
 					iSideX = cObj->x + iSideX * (cObj->y - Target->y);
-					if (PathFree(iSideX, cObj->y, Target->x, Target->y))
+					if (cObj->Section->Landscape.PathFree(iSideX, cObj->y, Target->x, Target->y))
 					{
 						// Side-move jump
 						cObj->AddCommand(C4CMD_Jump, nullptr, Tx._getInt(), Ty);
@@ -1473,8 +1473,8 @@ void C4Command::Put() // Notice: Put command is currently using Ty as an interna
 				int32_t iHeight = cObj->Shape.Hgt;
 				int32_t iPosX, iPosY;
 				int32_t iObjDist = Distance(cObj->x, cObj->y, Target->x, Target->y);
-				if ((FindThrowingPosition(iTx, iTy, pthrow, -pthrow, iHeight, iPosX, iPosY) && (Distance(iPosX, iPosY, cObj->x, cObj->y) < iObjDist))
-					|| (FindThrowingPosition(iTx, iTy, pthrow * -1, -pthrow, iHeight, iPosX, iPosY) && (Distance(iPosX, iPosY, cObj->x, cObj->y) < iObjDist)))
+				if ((cObj->Section->Landscape.FindThrowingPosition(iTx, iTy, pthrow, -pthrow, iHeight, iPosX, iPosY) && (Distance(iPosX, iPosY, cObj->x, cObj->y) < iObjDist))
+					|| (cObj->Section->Landscape.FindThrowingPosition(iTx, iTy, pthrow * -1, -pthrow, iHeight, iPosX, iPosY) && (Distance(iPosX, iPosY, cObj->x, cObj->y) < iObjDist)))
 				{
 					// Throw
 					cObj->AddCommand(C4CMD_Throw, Target2, iTx, iTy, 5);
@@ -1637,7 +1637,7 @@ bool C4Command::InitEvaluation()
 		if (Target) { Tx += Target->x; Ty += Target->y; Target = nullptr; }
 		// Adjust coordinates
 		int32_t iTx = Tx._getInt();
-		if (~Data & C4CMD_MoveTo_NoPosAdjust) AdjustMoveToTarget(iTx, Ty, FreeMoveTo(cObj), cObj->Shape.Hgt);
+		if (~Data & C4CMD_MoveTo_NoPosAdjust) AdjustMoveToTarget(cObj->Section->Landscape, iTx, Ty, FreeMoveTo(cObj), cObj->Shape.Hgt);
 		Tx.SetInt(iTx);
 		return true;
 	}
@@ -1646,7 +1646,7 @@ bool C4Command::InitEvaluation()
 	{
 		// Adjust coordinates
 		int32_t iTx = Tx._getInt();
-		AdjustMoveToTarget(iTx, Ty, FreeMoveTo(cObj), cObj->Shape.Hgt);
+		AdjustMoveToTarget(cObj->Section->Landscape, iTx, Ty, FreeMoveTo(cObj), cObj->Shape.Hgt);
 		Tx.SetInt(iTx);
 		return true;
 	}
@@ -1736,7 +1736,7 @@ void C4Command::Construct()
 	}
 
 	// No valid target type: fail
-	C4Def *pDef; if (!(pDef = C4Id2Def(Data))) { Finish(); return; }
+	C4Def *pDef; if (!(pDef = Game.Defs.ID2Def(Data))) { Finish(); return; }
 
 	// player has knowledge of this construction?
 	C4Player *pPlayer = Game.Players.Get(cObj->Owner);
@@ -1758,7 +1758,7 @@ void C4Command::Construct()
 	{
 		Tx.SetInt(cObj->x); Ty = cObj->y;
 		int32_t iTx = Tx._getInt();
-		if (!FindConSiteSpot(iTx, Ty, pDef->Shape.Wdt, pDef->Shape.Hgt, pDef->Category, 20))
+		if (!cObj->Section->Landscape.FindConSiteSpot(iTx, Ty, pDef->Shape.Wdt, pDef->Shape.Hgt, pDef->Category, 20))
 			// No site found: fail
 		{
 			Finish(); return;
@@ -1795,14 +1795,14 @@ void C4Command::Construct()
 	}
 
 	// Check construction site
-	if (!ConstructionCheck(Data, Tx._getInt(), Ty, cObj))
+	if (!cObj->Section->Landscape.ConstructionCheck(Data, Tx._getInt(), Ty, cObj))
 		// Site no good: fail
 	{
 		Finish(); return;
 	}
 
 	// Create construction
-	C4Object *pConstruction = Game.CreateObjectConstruction(Data, nullptr, cObj->Owner, Tx._getInt(), Ty, 1, true);
+	C4Object *pConstruction = cObj->Section->CreateObjectConstruction(Data, nullptr, cObj->Owner, Tx._getInt(), Ty, 1, true);
 
 	// Remove conkit
 	pKit->AssignRemoval();
@@ -1836,7 +1836,7 @@ bool C4Command::FlightControl() // Called by DFA_WALK, DFA_FLIGHT
 		if (Distance(cx, cy, Tx._getInt(), Ty) > 30)
 		{
 			int32_t iTopFree;
-			for (iTopFree = 0; (iTopFree < 50) && !GBackSolid(cx, cy + cObj->Shape.y - iTopFree); ++iTopFree);
+			for (iTopFree = 0; (iTopFree < 50) && !cObj->Section->Landscape.GBackSolid(cx, cy + cObj->Shape.y - iTopFree); ++iTopFree);
 			if (iTopFree >= 15)
 			{
 				// Take off
@@ -1860,11 +1860,11 @@ bool C4Command::JumpControl() // Called by DFA_WALK
 	// Diagonal free jump (if in angle range, minimum distance, and top free)
 	if (Inside(iAngle - JumpAngle, -JumpAngleRange, +JumpAngleRange)
 		|| Inside(iAngle + JumpAngle, -JumpAngleRange, +JumpAngleRange))
-		if (PathFree(cx, cy, Tx._getInt(), Ty))
+		if (cObj->Section->Landscape.PathFree(cx, cy, Tx._getInt(), Ty))
 			if (Distance(cx, cy, Tx._getInt(), Ty) > 30)
 			{
 				int32_t iTopFree;
-				for (iTopFree = 0; (iTopFree < 50) && !GBackSolid(cx, cy + cObj->Shape.y - iTopFree); ++iTopFree);
+				for (iTopFree = 0; (iTopFree < 50) && !cObj->Section->Landscape.GBackSolid(cx, cy + cObj->Shape.y - iTopFree); ++iTopFree);
 				if (iTopFree >= 15)
 				{
 					cObj->AddCommand(C4CMD_Jump, nullptr, Tx, Ty); return true;
@@ -1876,14 +1876,14 @@ bool C4Command::JumpControl() // Called by DFA_WALK
 		// Vertical range
 		if (Inside<int32_t>(cy - Ty, 10, 40))
 		{
-			int32_t iSide = SolidOnWhichSide(Tx._getInt(), Ty); // take jump height of side move position into consideration...!
+			int32_t iSide = SolidOnWhichSide(cObj->Section->Landscape, Tx._getInt(), Ty); // take jump height of side move position into consideration...!
 			int32_t iDist = 5 * Abs(cy - Ty) / 6;
-			int32_t iSideX = cx - iDist * iSide, iSideY = cy; AdjustMoveToTarget(iSideX, iSideY, false, 0);
+			int32_t iSideX = cx - iDist * iSide, iSideY = cy; AdjustMoveToTarget(cObj->Section->Landscape, iSideX, iSideY, false, 0);
 			// Side move target in range
 			if (Inside<int32_t>(iSideY - cy, -20, +20))
 			{
 				// Path free from side move target to jump target
-				if (PathFree(iSideX, iSideY, Tx._getInt(), Ty))
+				if (cObj->Section->Landscape.PathFree(iSideX, iSideY, Tx._getInt(), Ty))
 				{
 					cObj->AddCommand(C4CMD_Jump, nullptr, Tx, Ty);
 					cObj->AddCommand(C4CMD_MoveTo, nullptr, iSideX, iSideY, 50);
@@ -1917,12 +1917,12 @@ void C4Command::Transfer()
 	// Find transfer zone
 	C4TransferZone *pZone;
 	int32_t iEntryX, iEntryY;
-	if (!(pZone = Game.TransferZones.Find(Target))) { Finish(); return; }
+	if (!(pZone = cObj->Section->TransferZones.Find(Target))) { Finish(); return; }
 
 	// Not at or in transfer zone: move to entry point
 	if (!Inside<int32_t>(cObj->x - pZone->X, -5, pZone->Wdt - 1 + 5))
 	{
-		if (!pZone->GetEntryPoint(iEntryX, iEntryY, cObj->x, cObj->y)) { Finish(); return; }
+		if (!pZone->GetEntryPoint(cObj->Section->Landscape, iEntryX, iEntryY, cObj->x, cObj->y)) { Finish(); return; }
 		cObj->AddCommand(C4CMD_MoveTo, nullptr, iEntryX, iEntryY, 25);
 		return;
 	}
@@ -1987,11 +1987,11 @@ void C4Command::Attack()
 void C4Command::Buy()
 {
 	// Base buying disabled? Fail.
-	if (~Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy) { Finish(); return; }
+	if (~cObj->Section->C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy) { Finish(); return; }
 	// No target (base) object specified: find closest base
 	int32_t cnt; C4Object *pBase;
 	if (!Target)
-		for (cnt = 0; pBase = Game.FindFriendlyBase(cObj->Owner, cnt); cnt++)
+		for (cnt = 0; pBase = cObj->Section->FindFriendlyBase(cObj->Owner, cnt); cnt++)
 			if (!Target || Distance(cObj->x, cObj->y, pBase->x, pBase->y) < Distance(cObj->x, cObj->y, Target->x, Target->y))
 				Target = pBase;
 	// No target (base) object: fail
@@ -2008,7 +2008,7 @@ void C4Command::Buy()
 		Finish(); return;
 	}
 	// Target material undefined: fail
-	C4Def *pDef = C4Id2Def(Data);
+	C4Def *pDef = Game.Defs.ID2Def(Data);
 	if (!pDef) { Finish(); return; }
 	// Material not available for purchase at base: fail
 	if (Game.Players.Get(Target->Base)->HomeBaseMaterial.GetIDCount(Data) <= 0)
@@ -2040,11 +2040,11 @@ void C4Command::Buy()
 void C4Command::Sell()
 {
 	// Base sale disabled? Fail.
-	if (~Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell) { Finish(); return; }
+	if (~cObj->Section->C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell) { Finish(); return; }
 	// No target (base) object specified: find closest base
 	int32_t cnt; C4Object *pBase;
 	if (!Target)
-		for (cnt = 0; pBase = Game.FindBase(cObj->Owner, cnt); cnt++)
+		for (cnt = 0; pBase = cObj->Section->FindBase(cObj->Owner, cnt); cnt++)
 			if (!Target || Distance(cObj->x, cObj->y, pBase->x, pBase->y) < Distance(cObj->x, cObj->y, Target->x, Target->y))
 				Target = pBase;
 	// No target (base) object: fail
@@ -2108,15 +2108,15 @@ void C4Command::Acquire()
 	// Find available material
 	C4Object *pMaterial = nullptr;
 	// Next closest
-	while (pMaterial = Game.FindObject(Data, cObj->x, cObj->y, -1, -1, OCF_Available, nullptr, nullptr, nullptr, nullptr, ANY_OWNER, pMaterial))
+	while (pMaterial = cObj->Section->FindObject(Data, cObj->x, cObj->y, -1, -1, OCF_Available, nullptr, nullptr, nullptr, nullptr, ANY_OWNER, pMaterial))
 		// Object is not in container to be ignored
 		if (!Target2 || pMaterial->Contained != Target2)
 			// Object is near enough
 			if (Inside<C4ValueInt>(cObj->x - pMaterial->x, -Tx._getInt(), +Tx._getInt()))
 				if (Inside(cObj->y - pMaterial->y, -Ty, +Ty))
 					// Object is not connected to a pipe (for line construction kits)
-					if (!Game.FindObject(C4ID_SourcePipe, 0, 0, 0, 0, OCF_All, "Connect", pMaterial))
-						if (!Game.FindObject(C4ID_DrainPipe, 0, 0, 0, 0, OCF_All, "Connect", pMaterial))
+					if (!cObj->Section->FindObject(C4ID_SourcePipe, 0, 0, 0, 0, OCF_All, "Connect", pMaterial))
+						if (!cObj->Section->FindObject(C4ID_DrainPipe, 0, 0, 0, 0, OCF_All, "Connect", pMaterial))
 							// Must be complete
 							if (pMaterial->OCF & OCF_FullCon)
 								// Doesn't burn
@@ -2252,12 +2252,12 @@ void C4Command::Energy()
 	if (!(Target->Def->LineConnect & C4D_Power_Input)) { Finish(); return; }
 	// Target supplied
 	if (!(Game.Rules & C4RULE_StructuresNeedEnergy)
-		|| (Game.FindObject(C4ID_PowerLine, 0, 0, 0, 0, OCF_All, "Connect", Target) && !Target->NeedEnergy))
+		|| (cObj->Section->FindObject(C4ID_PowerLine, 0, 0, 0, 0, OCF_All, "Connect", Target) && !Target->NeedEnergy))
 	{
 		Finish(true); return;
 	}
 	// No energy supply specified: find one
-	if (!Target2) Target2 = Game.FindObject(0, Target->x, Target->y, -1, -1, OCF_PowerSupply, nullptr, nullptr, Target);
+	if (!Target2) Target2 = cObj->Section->FindObject(0, Target->x, Target->y, -1, -1, OCF_PowerSupply, nullptr, nullptr, Target);
 	// No energy supply: fail
 	if (!Target2) { Finish(); return; }
 	// Energy supply too far away: fail
@@ -2272,7 +2272,7 @@ void C4Command::Energy()
 	}
 	// Find line constructing kit
 	for (int32_t cnt = 0; pKitWithLine = cObj->Contents.GetObject(cnt); cnt++)
-		if ((pKitWithLine->id == C4ID_Linekit) && (pLine = Game.FindObject(C4ID_PowerLine, 0, 0, 0, 0, OCF_All, "Connect", pKitWithLine)))
+		if ((pKitWithLine->id == C4ID_Linekit) && (pLine = cObj->Section->FindObject(C4ID_PowerLine, 0, 0, 0, 0, OCF_All, "Connect", pKitWithLine)))
 			break;
 	// No line constructed yet
 	if (!pLine)
@@ -2323,7 +2323,7 @@ void C4Command::Home()
 	// No target (base) object specified: find closest base
 	int32_t cnt; C4Object *pBase;
 	if (!Target)
-		for (cnt = 0; pBase = Game.FindBase(cObj->Owner, cnt); cnt++)
+		for (cnt = 0; pBase = cObj->Section->FindBase(cObj->Owner, cnt); cnt++)
 			if (!Target || Distance(cObj->x, cObj->y, pBase->x, pBase->y) < Distance(cObj->x, cObj->y, Target->x, Target->y))
 				Target = pBase;
 	// No base: fail

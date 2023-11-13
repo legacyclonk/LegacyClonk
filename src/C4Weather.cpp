@@ -23,7 +23,8 @@
 #include <C4Random.h>
 #include <C4Wrappers.h>
 
-C4Weather::C4Weather()
+C4Weather::C4Weather(C4Section &section)
+	: section{section}
 {
 	Default();
 }
@@ -38,32 +39,32 @@ void C4Weather::Init(bool fScenario)
 	if (fScenario)
 	{
 		// Season
-		Season = Game.C4S.Weather.StartSeason.Evaluate();
-		YearSpeed = Game.C4S.Weather.YearSpeed.Evaluate();
+		Season = section.C4S.Weather.StartSeason.Evaluate();
+		YearSpeed = section.C4S.Weather.YearSpeed.Evaluate();
 		// Temperature
-		Climate = 100 - Game.C4S.Weather.Climate.Evaluate() - 50;
+		Climate = 100 - section.C4S.Weather.Climate.Evaluate() - 50;
 		Temperature = Climate;
 		// Wind
-		Wind = TargetWind = Game.C4S.Weather.Wind.Evaluate();
+		Wind = TargetWind = section.C4S.Weather.Wind.Evaluate();
 		// Precipitation
-		if (!Game.C4S.Head.NoInitialize)
-			if (Game.C4S.Weather.Rain.Evaluate())
-				for (int32_t iClouds = (std::min)(GBackWdt / 500, 5); iClouds > 0; iClouds--)
+		if (!section.C4S.Head.NoInitialize)
+			if (section.C4S.Weather.Rain.Evaluate())
+				for (int32_t iClouds = (std::min)(section.Landscape.Width / 500, 5); iClouds > 0; iClouds--)
 				{
-					volatile int iWidth = GBackWdt / 15 + Random(320);
-					volatile int iX = Random(GBackWdt);
+					volatile int iWidth = section.Landscape.Width / 15 + Random(320);
+					volatile int iX = Random(section.Landscape.Width);
 					LaunchCloud(iX, -1, iWidth,
-						Game.C4S.Weather.Rain.Evaluate(),
-						Game.C4S.Weather.Precipitation);
+						section.C4S.Weather.Rain.Evaluate(),
+						section.C4S.Weather.Precipitation);
 				}
 		// Lightning
-		LightningLevel = Game.C4S.Weather.Lightning.Evaluate();
+		LightningLevel = section.C4S.Weather.Lightning.Evaluate();
 		// Disasters
-		MeteoriteLevel = Game.C4S.Disasters.Meteorite.Evaluate();
-		VolcanoLevel = Game.C4S.Disasters.Volcano.Evaluate();
-		EarthquakeLevel = Game.C4S.Disasters.Earthquake.Evaluate();
+		MeteoriteLevel = section.C4S.Disasters.Meteorite.Evaluate();
+		VolcanoLevel = section.C4S.Disasters.Volcano.Evaluate();
+		EarthquakeLevel = section.C4S.Disasters.Earthquake.Evaluate();
 		// gamma?
-		NoGamma = Game.C4S.Weather.NoGamma;
+		NoGamma = section.C4S.Weather.NoGamma;
 	}
 	// set gamma
 	SetSeasonGamma();
@@ -79,8 +80,8 @@ void C4Weather::Execute()
 		{
 			SeasonDelay = 0;
 			Season++;
-			if (Season > Game.C4S.Weather.StartSeason.Max)
-				Season = Game.C4S.Weather.StartSeason.Min;
+			if (Season > section.C4S.Weather.StartSeason.Max)
+				Season = section.C4S.Weather.StartSeason.Min;
 			SetSeasonGamma();
 		}
 	}
@@ -93,11 +94,11 @@ void C4Weather::Execute()
 	}
 	// Wind
 	if (!Tick1000)
-		TargetWind = Game.C4S.Weather.Wind.Evaluate();
+		TargetWind = section.C4S.Weather.Wind.Evaluate();
 	if (!Tick10)
 		Wind = BoundBy<int32_t>(Wind + Sign(TargetWind - Wind),
-			Game.C4S.Weather.Wind.Min,
-			Game.C4S.Weather.Wind.Max);
+			section.C4S.Weather.Wind.Min,
+			section.C4S.Weather.Wind.Max);
 	if (!Tick10)
 		SoundLevel("Wind", nullptr, (std::max)(Abs(Wind) - 30, 0) * 2);
 	// Disaster launch
@@ -112,17 +113,17 @@ void C4Weather::Execute()
 				// (who activates meteors in cave landscapes anyway?)
 				// force argument evaluation order
 				const auto r2 = Random(100 + 1);
-				const auto r1 = Random(GBackWdt);
-				meto = Game.CreateObject(C4ID_Meteor, nullptr, NO_OWNER,
-					r1, Game.Landscape.TopOpen ? -20 : 5, 0,
+				const auto r1 = Random(section.Landscape.Width);
+				meto = section.CreateObject(C4ID_Meteor, nullptr, NO_OWNER,
+					r1, section.Landscape.TopOpen ? -20 : 5, 0,
 					itofix(r2 - 50) / 10,
-					Game.Landscape.TopOpen ? Fix0 : itofix(2), itofix(1) / 5);
+					section.Landscape.TopOpen ? Fix0 : itofix(2), itofix(1) / 5);
 			}
 		// Lightning
 		if (!Random(35))
 			if (Random(100) < LightningLevel)
 			{
-				LaunchLightning(Random(GBackWdt), 0,
+				LaunchLightning(Random(section.Landscape.Width), 0,
 					-20, 41, +5, 15, true);
 			}
 		// Earthquake
@@ -130,8 +131,8 @@ void C4Weather::Execute()
 			if (Random(100) < EarthquakeLevel)
 			{
 				// force argument evaluation order
-				const auto r2 = Random(GBackHgt);
-				const auto r1 = Random(GBackWdt);
+				const auto r2 = Random(section.Landscape.Height);
+				const auto r1 = Random(section.Landscape.Width);
 				LaunchEarthquake(r1, r2);
 			}
 		// Volcano
@@ -140,10 +141,10 @@ void C4Weather::Execute()
 			{
 				// force argument evaluation order
 				const auto r2 = Random(10);
-				const auto r1 = Random(GBackWdt);
-				LaunchVolcano(Game.Material.Get("Lava"),
-					r1, GBackHgt - 1,
-					BoundBy(15 * GBackHgt / 500 + r2, 10, 60));
+				const auto r1 = Random(section.Landscape.Width);
+				LaunchVolcano(section.Material.Get("Lava"),
+					r1, section.Landscape.Height - 1,
+					BoundBy(15 * section.Landscape.Height / 500 + r2, 10, 60));
 			}
 	}
 }
@@ -153,7 +154,7 @@ void C4Weather::Clear() {}
 bool C4Weather::LaunchLightning(int32_t x, int32_t y, int32_t xdir, int32_t xrange, int32_t ydir, int32_t yrange, bool fDoGamma)
 {
 	C4Object *pObj;
-	if (pObj = Game.CreateObject(C4Id("FXL1"), nullptr))
+	if (pObj = section.CreateObject(C4Id("FXL1"), nullptr))
 		pObj->Call(PSF_Activate, {C4VInt(x),
 			C4VInt(y),
 			C4VInt(xdir),
@@ -166,7 +167,7 @@ bool C4Weather::LaunchLightning(int32_t x, int32_t y, int32_t xdir, int32_t xran
 
 int32_t C4Weather::GetWind(int32_t x, int32_t y)
 {
-	if (GBackIFT(x, y)) return 0;
+	if (section.Landscape.GBackIFT(x, y)) return 0;
 	return Wind;
 }
 
@@ -178,7 +179,7 @@ int32_t C4Weather::GetTemperature()
 bool C4Weather::LaunchVolcano(int32_t mat, int32_t x, int32_t y, int32_t size)
 {
 	C4Object *pObj;
-	if (pObj = Game.CreateObject(C4Id("FXV1"), nullptr))
+	if (pObj = section.CreateObject(C4Id("FXV1"), nullptr))
 		pObj->Call(PSF_Activate, {C4VInt(x), C4VInt(y), C4VInt(size), C4VInt(mat)});
 	return true;
 }
@@ -196,7 +197,7 @@ void C4Weather::Default()
 bool C4Weather::LaunchEarthquake(int32_t iX, int32_t iY)
 {
 	C4Object *pObj;
-	if (pObj = Game.CreateObject(C4Id("FXQ1"), nullptr, NO_OWNER, iX, iY))
+	if (pObj = section.CreateObject(C4Id("FXQ1"), nullptr, NO_OWNER, iX, iY))
 		if (pObj->Call(PSF_Activate))
 			return true;
 	return false;
@@ -204,10 +205,10 @@ bool C4Weather::LaunchEarthquake(int32_t iX, int32_t iY)
 
 bool C4Weather::LaunchCloud(int32_t iX, int32_t iY, int32_t iWidth, int32_t iStrength, const char *szPrecipitation)
 {
-	if (Game.Material.Get(szPrecipitation) == MNone) return false;
+	if (section.Material.Get(szPrecipitation) == MNone) return false;
 	C4Object *pObj;
-	if (pObj = Game.CreateObject(C4Id("FXP1"), nullptr, NO_OWNER, iX, iY))
-		if (pObj->Call(PSF_Activate, {C4VInt(Game.Material.Get(szPrecipitation)),
+	if (pObj = section.CreateObject(C4Id("FXP1"), nullptr, NO_OWNER, iX, iY))
+		if (pObj->Call(PSF_Activate, {C4VInt(section.Material.Get(szPrecipitation)),
 			C4VInt(iWidth),
 			C4VInt(iStrength)}))
 			return true;

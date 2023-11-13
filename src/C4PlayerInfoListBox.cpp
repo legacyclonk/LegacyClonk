@@ -1327,7 +1327,7 @@ void C4PlayerInfoListBox::Update()
 	case PILBM_LobbyClientSort:
 		// sort by client
 		// replay players first?
-		if (Game.C4S.Head.Replay) UpdateReplayPlayers(&pCurrInList);
+		if (Game.MainSection.C4S.Head.Replay) UpdateReplayPlayers(&pCurrInList);
 		// script controlled players from the main list
 		UpdateScriptPlayers(&pCurrInList);
 		// regular players
@@ -1477,7 +1477,7 @@ void C4PlayerInfoListBox::UpdatePlayersByRandomTeam(ListItem **ppCurrInList)
 	while (pClient = Game.Clients.getClient(pClient))
 	{
 		// player infos for this client - not for deactivated, and never in replays
-		if (Game.C4S.Head.Replay || !pClient->isActivated()) continue;
+		if (Game.MainSection.C4S.Head.Replay || !pClient->isActivated()) continue;
 		C4ClientPlayerInfos *pInfoPacket = Game.PlayerInfos.GetInfoByClientID(pClient->getID());
 		if (pInfoPacket)
 		{
@@ -1509,7 +1509,7 @@ void C4PlayerInfoListBox::UpdatePlayersByClient(ListItem **ppCurrInList)
 			new ClientListItem(this, pClient->getCore(), *ppCurrInList);
 		// player infos for this client - not for observers, and never in replays
 		// could also check for activated here. However, non-observers will usually be activated later and thus be using their players
-		if (Game.C4S.Head.Replay || pClient->isObserver()) continue;
+		if (Game.MainSection.C4S.Head.Replay || pClient->isObserver()) continue;
 		C4ClientPlayerInfos *pInfoPacket = Game.PlayerInfos.GetInfoByClientID(pClient->getID());
 		if (pInfoPacket)
 		{

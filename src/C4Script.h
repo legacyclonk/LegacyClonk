@@ -44,6 +44,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 #define PSF_InitializeScriptPlayer "~InitializeScriptPlayer" // iPlayer, idTeam
 #define PSF_PreInitializePlayer    "~PreInitializePlayer" // iPlayer
 #define PSF_RemovePlayer           "~RemovePlayer" // iPlayer
+#define PSF_InitializePlayerSection "~InitializePlayerSection" // iPlayer, idTeam
 #define PSF_OnGameOver             "~OnGameOver"
 #define PSF_Hit                    "~Hit"
 #define PSF_Hit2                   "~Hit2"

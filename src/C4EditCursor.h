@@ -38,6 +38,7 @@ protected:
 	int32_t X, Y, X2, Y2;
 	bool Hold, DragFrame, DragLine;
 	C4Object *Target, *DropTarget;
+	C4Section *Section;
 #ifdef _WIN32
 	HMENU hMenu;
 #elif defined(WITH_DEVELOPER_MODE)

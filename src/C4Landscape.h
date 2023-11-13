@@ -19,8 +19,10 @@
 #pragma once
 
 #include "C4Id.h"
+#include "C4Material.h"
 #include "C4Sky.h"
 #include "C4Shape.h"
+#include "C4Wrappers.h"
 
 #include <StdSurface8.h>
 
@@ -42,16 +44,32 @@ const int32_t C4LSC_Undefined = 0,
 
 const int32_t C4LS_MaxRelights = 50;
 
+// IFT
+
+inline uint8_t PixColIFT(uint8_t pixc)
+{
+	return pixc & IFT;
+}
+
+// always use OldGfx-version (used for convert)
+inline uint8_t PixColIFTOld(uint8_t pixc)
+{
+	if (pixc >= GBM + IFTOld) return IFTOld;
+	return 0;
+}
+
 class C4MapCreatorS2;
 class C4Object;
+class C4Section;
 
 class C4Landscape
 {
 public:
-	C4Landscape();
+	C4Landscape(C4Section &section);
 	~C4Landscape();
 
 public:
+	C4Section &Section;
 	int32_t Mode;
 	int32_t Width, Height;
 	int32_t MapWidth, MapHeight, MapZoom;
@@ -72,6 +90,15 @@ public:
 	bool fMapChanged;
 	uint8_t *pInitial; // Initial landscape after creation - used for diff
 
+	std::int8_t MVehic{MNone};
+	std::int8_t MTunnel{MNone};
+	std::int8_t MWater{MNone};
+	std::int8_t MSnow{MNone};
+	std::int8_t MEarth{MNone};
+	std::int8_t MGranite{MNone};
+
+	std::uint8_t MCVehic{0};
+
 protected:
 	C4Surface *Surface32;
 	C4Surface *AnimationSurface;
@@ -88,6 +115,7 @@ public:
 	void Synchronize();
 	void Draw(C4FacetEx &cgo, int32_t iPlayer = -1);
 	void ScenarioInit();
+	bool EnumerateMaterials();
 	void ClearRect(int32_t iTx, int32_t iTy, int32_t iWdt, int32_t iHgt);
 	void ClearRectDensity(int32_t iTx, int32_t iTy, int32_t iWdt, int32_t iHgt, int32_t iOfDensity);
 	void ClearMatCount();
@@ -143,7 +171,6 @@ public:
 
 	inline uint8_t GetPix(int32_t x, int32_t y) // get landscape pixel (bounds checked)
 	{
-		extern uint8_t MCVehic;
 		// Border checks
 		if (x < 0)
 			if (y < LeftOpen) return 0;
@@ -212,6 +239,45 @@ public:
 	bool DoRelights();
 	void RemoveUnusedTexMapEntries();
 
+	inline bool MatVehicle(const std::int32_t mat)
+	{
+		return mat == MVehic;
+	}
+
+	inline std::uint8_t GBackIFT(const std::int32_t x, const std::int32_t y)
+	{
+		return PixColIFT(GetPix(x, y));
+	}
+
+	inline bool GBackSolid(int32_t x, int32_t y)
+	{
+		return DensitySolid(GetDensity(x, y));
+	}
+
+	inline bool GBackSemiSolid(int32_t x, int32_t y)
+	{
+		return DensitySemiSolid(GetDensity(x, y));
+	}
+
+	inline bool GBackLiquid(int32_t x, int32_t y)
+	{
+		return DensityLiquid(GetDensity(x, y));
+	}
+
+	bool AboveSolid(int32_t &rx, int32_t &ry);
+	bool AboveSemiSolid(int32_t &rx, int32_t &ry);
+	bool SemiAboveSolid(int32_t &rx, int32_t &ry);
+	bool FindSolidGround(int32_t &rx, int32_t &ry, int32_t width);
+	bool FindLiquid(int32_t &rx, int32_t &ry, int32_t width, int32_t height);
+	bool FindSurfaceLiquid(int32_t &rx, int32_t &ry, int32_t width, int32_t height);
+	bool FindLevelGround(int32_t &rx, int32_t &ry, int32_t width, int32_t hrange);
+	bool FindConSiteSpot(int32_t &rx, int32_t &ry, int32_t wdt, int32_t hgt, uint32_t category, int32_t hrange = -1);
+	bool FindThrowingPosition(int32_t iTx, int32_t iTy, C4Fixed fXDir, C4Fixed fYDir, int32_t iHeight, int32_t &rX, int32_t &rY);
+	bool PathFree(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t *ix = nullptr, int32_t *iy = nullptr);
+	bool PathFreeIgnoreVehicle(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t *ix = nullptr, int32_t *iy = nullptr);
+	bool FindClosestFree(int32_t &rX, int32_t &rY, int32_t iAngle1, int32_t iAngle2, int32_t iExcludeAngle1, int32_t iExcludeAngle2);
+	bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj = nullptr);
+
 protected:
 	void ExecuteScan();
 	int32_t DoScan(int32_t x, int32_t y, int32_t mat, int32_t dir);
@@ -243,24 +309,13 @@ protected:
 	void UpdateMatCnt(C4Rect Rect, bool fPlus);
 	void PrepareChange(C4Rect BoundingBox, bool updateMatCnt = true);
 	void FinishChange(C4Rect BoundingBox, bool updateMatAndPixCnt = true);
-	static bool DrawLineLandscape(int32_t iX, int32_t iY, int32_t iGrade);
+	bool DrawLineLandscape(int32_t iX, int32_t iY, int32_t iGrade);
+	bool DrawLineMap(int32_t iX, int32_t iY, int32_t iRadius);
+	bool PathFreePix(int32_t x, int32_t y, int32_t par);
+	bool PathFreeIgnoreVehiclePix(int32_t x, int32_t y, int32_t par);
+	int32_t TrajectoryDistance(int32_t iFx, int32_t iFy, C4Fixed iXDir, C4Fixed iYDir, int32_t iTx, int32_t iTy);
+	bool FindLiquidHeight(int32_t cx, int32_t &ry, int32_t hgt);
 
 public:
 	void CompileFunc(StdCompiler *pComp); // without landscape bitmaps and sky
 };
-
-/* Some global landscape functions */
-
-bool AboveSolid(int32_t &rx, int32_t &ry);
-bool AboveSemiSolid(int32_t &rx, int32_t &ry);
-bool SemiAboveSolid(int32_t &rx, int32_t &ry);
-bool FindSolidGround(int32_t &rx, int32_t &ry, int32_t width);
-bool FindLiquid(int32_t &rx, int32_t &ry, int32_t width, int32_t height);
-bool FindSurfaceLiquid(int32_t &rx, int32_t &ry, int32_t width, int32_t height);
-bool FindLevelGround(int32_t &rx, int32_t &ry, int32_t width, int32_t hrange);
-bool FindConSiteSpot(int32_t &rx, int32_t &ry, int32_t wdt, int32_t hgt, uint32_t category, int32_t hrange = -1);
-bool FindThrowingPosition(int32_t iTx, int32_t iTy, C4Fixed fXDir, C4Fixed fYDir, int32_t iHeight, int32_t &rX, int32_t &rY);
-bool PathFree(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t *ix = nullptr, int32_t *iy = nullptr);
-bool PathFreeIgnoreVehicle(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t *ix = nullptr, int32_t *iy = nullptr);
-bool FindClosestFree(int32_t &rX, int32_t &rY, int32_t iAngle1, int32_t iAngle2, int32_t iExcludeAngle1, int32_t iExcludeAngle2);
-bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj = nullptr);

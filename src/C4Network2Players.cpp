@@ -40,7 +40,7 @@ void C4Network2Players::Init()
 	// caution: In this call, only local players are joined
 	// remote players may have been added already for runtime joins
 	// not in replay
-	if (Game.C4S.Head.Replay) return;
+	if (Game.MainSection.C4S.Head.Replay) return;
 	// network only
 	assert(Game.Network.isEnabled());
 	// must init before game is running
@@ -79,8 +79,8 @@ bool C4Network2Players::JoinLocalPlayer(const char *szLocalPlayerFilename, bool 
 {
 	// ignore in replay
 	// shouldn't even come here though
-	assert(!Game.C4S.Head.Replay);
-	if (Game.C4S.Head.Replay) return false;
+	assert(!Game.MainSection.C4S.Head.Replay);
+	if (Game.MainSection.C4S.Head.Replay) return false;
 	// if observing: don't try
 	if (Game.Clients.getLocal()->isObserver()) return false;
 	// network only

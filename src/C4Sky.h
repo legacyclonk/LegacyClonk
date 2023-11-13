@@ -27,7 +27,7 @@
 class C4Sky
 {
 public:
-	C4Sky() { Default(); }
+	C4Sky(C4Section &section) : section{section} { Default(); }
 	~C4Sky();
 	void Default(); // zero fields
 
@@ -48,6 +48,7 @@ public:
 	void CompileFunc(StdCompiler *pComp);
 
 protected:
+	C4Section &section;
 	int32_t Width, Height;
 	uint32_t Modulation;
 	int32_t BackClr; // background color behind sky

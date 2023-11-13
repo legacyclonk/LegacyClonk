@@ -54,7 +54,7 @@ C4GoalDisplay::GoalPicture::GoalPicture(const C4Rect &rcBounds, C4ID idGoal, boo
 	{
 		Picture.Create(C4PictureSize, C4PictureSize);
 		// get an object instance to draw (optional; may be zero)
-		C4Object *pGoalObj = Game.Objects.FindInternal(idGoal);
+		C4Object *pGoalObj = Game.FindFirstInAllObjects([idGoal](C4GameObjects &objects) { return objects.FindInternal(idGoal); });
 		// draw goal def!
 		pDrawDef->Draw(Picture, false, 0, pGoalObj);
 	}
@@ -124,7 +124,7 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 
 	bool hideRestart = false;
 	int32_t buttonCount = 2;
-	if (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2))
+	if (Game.Control.isCtrlHost() || (Game.MainSection.C4S.Head.Film == 2))
 	{
 		++buttonCount;
 		if (Game.NextMission)
@@ -239,7 +239,7 @@ C4GameOverDlg::C4GameOverDlg() : C4GUI::Dialog((C4GUI::GetScreenWdt() < 800) ? (
 
 	// not available for regular replay and network clients, obviously
 	// it is available for films though, so you can create cinematics for adventures
-	if (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2))
+	if (Game.Control.isCtrlHost() || (Game.MainSection.C4S.Head.Film == 2))
 	{
 		if (!hideRestart)
 		{

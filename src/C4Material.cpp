@@ -27,6 +27,7 @@
 #include <C4Wrappers.h>
 #include <C4Physics.h> // For GravAccel
 
+#include <algorithm>
 #include <utility>
 
 // C4MaterialReaction
@@ -241,7 +242,8 @@ void C4Material::UpdateScriptPointers()
 
 // C4MaterialMap
 
-C4MaterialMap::C4MaterialMap() : DefReactConvert(&mrfConvert), DefReactPoof(&mrfPoof), DefReactCorrode(&mrfCorrode), DefReactIncinerate(&mrfIncinerate), DefReactInsert(&mrfInsert)
+C4MaterialMap::C4MaterialMap(C4Section &section)
+	: section{section}, DefReactConvert(&mrfConvert), DefReactPoof(&mrfPoof), DefReactCorrode(&mrfCorrode), DefReactIncinerate(&mrfIncinerate), DefReactInsert(&mrfInsert)
 {
 	Default();
 }
@@ -322,7 +324,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 			if (pMatPXS && pMatPXS->sInMatConvert.getLength() && SEqualNoCase(pMatPXS->sInMatConvert.getData(), pMatLS ? pMatLS->Name : C4TLS_MatSky))
 				pReaction = &DefReactConvert;
 			// the rest is happening for same/higher densities only
-			else if ((MatDensity(iMatPXS) <= MatDensity(iMatLS)) && pMatPXS && pMatLS)
+			else if ((section.MatDensity(iMatPXS) <= section.MatDensity(iMatLS)) && pMatPXS && pMatLS)
 			{
 				// incindiary vs extinguisher
 				if ((pMatPXS->Incindiary && pMatLS->Extinguisher) || (pMatPXS->Extinguisher && pMatLS->Incindiary))
@@ -349,7 +351,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 		const char *szTextureOverlay = nullptr;
 		// newgfx: init pattern
 		if (Map[cnt].sTextureOverlay.getLength())
-			if (Game.TextureMap.GetTexture(Map[cnt].sTextureOverlay.getData()))
+			if (section.TextureMap.GetTexture(Map[cnt].sTextureOverlay.getData()))
 			{
 				szTextureOverlay = Map[cnt].sTextureOverlay.getData();
 				// backwards compatibility: if a pattern was specified although the no-pattern flag was set, overwrite that flag
@@ -363,9 +365,9 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 		if (!szTextureOverlay)
 			szTextureOverlay = "Smooth";
 		// search/create entry in texmap
-		Map[cnt].DefaultMatTex = Game.TextureMap.GetIndex(Map[cnt].Name, szTextureOverlay, true,
+		Map[cnt].DefaultMatTex = section.TextureMap.GetIndex(Map[cnt].Name, szTextureOverlay, true,
 			std::format("DefaultMatTex of mat {}", +Map[cnt].Name).c_str());
-		const C4TexMapEntry *pTex = Game.TextureMap.GetEntry(Map[cnt].DefaultMatTex);
+		const C4TexMapEntry *pTex = section.TextureMap.GetEntry(Map[cnt].DefaultMatTex);
 		if (pTex)
 		{
 			// take pattern
@@ -377,7 +379,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 		C4Surface *sfcTexture;
 		C4Texture *Texture;
 		if (Map[cnt].sPXSGfx.getLength())
-			if (Texture = Game.TextureMap.GetTexture(Map[cnt].sPXSGfx.getData()))
+			if (Texture = section.TextureMap.GetTexture(Map[cnt].sPXSGfx.getData()))
 				if (sfcTexture = Texture->Surface32)
 					Map[cnt].PXSFace.Set(sfcTexture, Map[cnt].PXSGfxRt.x, Map[cnt].PXSGfxRt.y, Map[cnt].PXSGfxRt.Wdt, Map[cnt].PXSGfxRt.Hgt);
 		// evaluate reactions for that material
@@ -387,7 +389,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 			if (pReact->sConvertMat.getLength()) pReact->iConvertMat = Get(pReact->sConvertMat.getData()); else pReact->iConvertMat = -1;
 			// evaluate target spec
 			int32_t tmat;
-			if (MatValid(tmat = Get(pReact->TargetSpec.getData())))
+			if (section.MatValid(tmat = Get(pReact->TargetSpec.getData())))
 			{
 				// single material target
 				if (pReact->fInverseSpec)
@@ -472,13 +474,13 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 	for (cnt = 0; cnt < Num; cnt++)
 	{
 		if (Map[cnt].sBlastShiftTo.getLength())
-			Map[cnt].BlastShiftTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sBlastShiftTo.getData(), nullptr, true, std::format("BlastShiftTo of mat {}", +Map[cnt].Name).c_str());
+			Map[cnt].BlastShiftTo = section.TextureMap.GetIndexMatTex(Map[cnt].sBlastShiftTo.getData(), nullptr, true, std::format("BlastShiftTo of mat {}", +Map[cnt].Name).c_str());
 		if (Map[cnt].sInMatConvertTo.getLength())
 			Map[cnt].InMatConvertTo = Get(Map[cnt].sInMatConvertTo.getData());
 		if (Map[cnt].sBelowTempConvertTo.getLength())
-			Map[cnt].BelowTempConvertTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sBelowTempConvertTo.getData(), nullptr, true, std::format("BelowTempConvertTo of mat {}", +Map[cnt].Name).c_str());
+			Map[cnt].BelowTempConvertTo = section.TextureMap.GetIndexMatTex(Map[cnt].sBelowTempConvertTo.getData(), nullptr, true, std::format("BelowTempConvertTo of mat {}", +Map[cnt].Name).c_str());
 		if (Map[cnt].sAboveTempConvertTo.getLength())
-			Map[cnt].AboveTempConvertTo = Game.TextureMap.GetIndexMatTex(Map[cnt].sAboveTempConvertTo.getData(), nullptr, true, std::format("AboveTempConvertTo of mat {}", +Map[cnt].Name).c_str());
+			Map[cnt].AboveTempConvertTo = section.TextureMap.GetIndexMatTex(Map[cnt].sAboveTempConvertTo.getData(), nullptr, true, std::format("AboveTempConvertTo of mat {}", +Map[cnt].Name).c_str());
 	}
 }
 
@@ -561,14 +563,14 @@ void C4MaterialMap::Default()
 	ppReactionMap = nullptr;
 }
 
-bool mrfInsertCheck(int32_t &iX, int32_t &iY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, bool *pfPosChanged)
+bool mrfInsertCheck(C4Section &section, int32_t &iX, int32_t &iY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, bool *pfPosChanged)
 {
 	// always manipulating pos/speed here
 	if (pfPosChanged) *pfPosChanged = true;
 
 	// Rough contact? May splash
 	if (fYDir > itofix(1))
-		if (Game.Material.Map[iPxsMat].SplashRate && !Random(Game.Material.Map[iPxsMat].SplashRate))
+		if (section.Material.Map[iPxsMat].SplashRate && !Random(section.Material.Map[iPxsMat].SplashRate))
 		{
 			fYDir = -fYDir / 8;
 			fXDir = fXDir / 8 + FIXED100(Random(200) - 100);
@@ -579,12 +581,12 @@ bool mrfInsertCheck(int32_t &iX, int32_t &iY, C4Fixed &fXDir, C4Fixed &fYDir, in
 	fYDir = 0;
 
 	// Incindiary mats smoke on contact even before doing their slide
-	if (Game.Material.Map[iPxsMat].Incindiary)
-		if (!Random(25)) Smoke(iX, iY, 4 + Rnd3());
+	if (section.Material.Map[iPxsMat].Incindiary)
+		if (!Random(25)) Smoke(section, iX, iY, 4 + Rnd3());
 
 	// Move by mat path/slide
 	int32_t iSlideX = iX, iSlideY = iY;
-	if (Game.Landscape.FindMatSlide(iSlideX, iSlideY, Sign(GravAccel), Game.Material.Map[iPxsMat].Density, Game.Material.Map[iPxsMat].MaxSlide))
+	if (section.Landscape.FindMatSlide(iSlideX, iSlideY, Sign(section.Landscape.Gravity), section.Material.Map[iPxsMat].Density, section.Material.Map[iPxsMat].MaxSlide))
 	{
 		if (iPxsMat == iLsMat)
 		{
@@ -606,21 +608,21 @@ bool mrfInsertCheck(int32_t &iX, int32_t &iY, C4Fixed &fXDir, C4Fixed &fYDir, in
 	return true;
 }
 
-bool mrfUserCheck(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool mrfUserCheck(C4MaterialReaction *pReaction, C4Section &section, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
 	// check execution mask
 	if ((1 << evEvent) & ~pReaction->iExecMask) return false;
 	// do splash/slide check, if desired
 	if (pReaction->fInsertionCheck && evEvent == meePXSMove)
-		if (!mrfInsertCheck(iX, iY, fXDir, fYDir, iPxsMat, iLsMat, pfPosChanged))
+		if (!mrfInsertCheck(section, iX, iY, fXDir, fYDir, iPxsMat, iLsMat, pfPosChanged))
 			return false;
 	// checks OK; reaction may be applied
 	return true;
 }
 
-bool C4MaterialMap::mrfConvert(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfConvert(C4MaterialReaction *pReaction, C4Section &section, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
-	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
+	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, section, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
 	switch (evEvent)
 	{
 	case meePXSMove: // PXS movement
@@ -631,12 +633,12 @@ bool C4MaterialMap::mrfConvert(C4MaterialReaction *pReaction, int32_t &iX, int32
 	case meePXSPos: // PXS check before movement
 	{
 		// Check depth
-		int32_t iDepth = pReaction->fUserDefined ? pReaction->iDepth : Game.Material.Map[iPxsMat].InMatConvertDepth;
-		if (!iDepth || GBackMat(iX, iY - iDepth) == iLsMat)
+		int32_t iDepth = pReaction->fUserDefined ? pReaction->iDepth : section.Material.Map[iPxsMat].InMatConvertDepth;
+		if (!iDepth || section.Landscape.GetMat(iX, iY - iDepth) == iLsMat)
 		{
 			// Convert
-			iPxsMat = pReaction->fUserDefined ? pReaction->iConvertMat : Game.Material.Map[iPxsMat].InMatConvertTo;
-			if (!MatValid(iPxsMat))
+			iPxsMat = pReaction->fUserDefined ? pReaction->iConvertMat : section.Material.Map[iPxsMat].InMatConvertTo;
+			if (!section.MatValid(iPxsMat))
 				// Convert failure (target mat not be loaded, or target may be C4TLS_MatSky): Kill Pix
 				return true;
 			// stop movement after conversion
@@ -648,34 +650,34 @@ bool C4MaterialMap::mrfConvert(C4MaterialReaction *pReaction, int32_t &iX, int32
 
 	case meeMassMove: // MassMover-movement
 		// Conversion-transfer to PXS
-		Game.PXS.Create(iPxsMat, itofix(iX), itofix(iY));
+		section.PXS.Create(iPxsMat, itofix(iX), itofix(iY));
 		return true;
 	}
 	// not handled
 	return false;
 }
 
-bool C4MaterialMap::mrfPoof(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfPoof(C4MaterialReaction *pReaction, C4Section &section, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
-	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
+	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, section, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
 	switch (evEvent)
 	{
 	case meeMassMove: // MassMover-movement
 	case meePXSPos: // PXS check before movement: Kill both landscape and PXS mat
-		Game.Landscape.ExtractMaterial(iLSPosX, iLSPosY);
-		if (!Rnd3()) Smoke(iX, iY, 3);
+		section.Landscape.ExtractMaterial(iLSPosX, iLSPosY);
+		if (!Rnd3()) Smoke(section, iX, iY, 3);
 		if (!Rnd3()) StartSoundEffectAt("Pshshsh", iX, iY);
 		return true;
 
 	case meePXSMove: // PXS movement
 		// incindiary/extinguisher/corrosives are always same density proc; so do insertion check first
 		if (!pReaction->fUserDefined)
-			if (!mrfInsertCheck(iX, iY, fXDir, fYDir, iPxsMat, iLsMat, pfPosChanged))
+			if (!mrfInsertCheck(section, iX, iY, fXDir, fYDir, iPxsMat, iLsMat, pfPosChanged))
 				// either splash or slide prevented interaction
 				return false;
 		// Always kill both landscape and PXS mat
-		Game.Landscape.ExtractMaterial(iLSPosX, iLSPosY);
-		if (!Rnd3()) Smoke(iX, iY, 3);
+		section.Landscape.ExtractMaterial(iLSPosX, iLSPosY);
+		if (!Rnd3()) Smoke(section, iX, iY, 3);
 		if (!Rnd3()) StartSoundEffectAt("Pshshsh", iX, iY);
 		return true;
 	}
@@ -683,9 +685,9 @@ bool C4MaterialMap::mrfPoof(C4MaterialReaction *pReaction, int32_t &iX, int32_t 
 	return false;
 }
 
-bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, C4Section &section, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
-	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
+	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, section, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
 	switch (evEvent)
 	{
 	case meePXSPos: // PXS check before movement
@@ -698,11 +700,11 @@ bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, int32_t &iX, int32
 		if (pReaction->fUserDefined)
 			fDoCorrode = (Random(100) < pReaction->iCorrosionRate);
 		else
-			fDoCorrode = (Random(100) < Game.Material.Map[iPxsMat].Corrosive) && (Random(100) < Game.Material.Map[iLsMat].Corrode);
+			fDoCorrode = (Random(100) < section.Material.Map[iPxsMat].Corrosive) && (Random(100) < section.Material.Map[iLsMat].Corrode);
 		if (fDoCorrode)
 		{
-			ClearBackPix(iLSPosX, iLSPosY);
-			if (!Random(5)) Smoke(iX, iY, 3 + Random(3));
+			section.Landscape.ClearPix(iLSPosX, iLSPosY);
+			if (!Random(5)) Smoke(section, iX, iY, 3 + Random(3));
 			if (!Random(20)) StartSoundEffectAt("Corrode", iX, iY);
 			return true;
 		}
@@ -713,7 +715,7 @@ bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, int32_t &iX, int32
 	{
 		// corrodes to corrosives are always same density proc; so do insertion check first
 		if (!pReaction->fUserDefined)
-			if (!mrfInsertCheck(iX, iY, fXDir, fYDir, iPxsMat, iLsMat, pfPosChanged))
+			if (!mrfInsertCheck(section, iX, iY, fXDir, fYDir, iPxsMat, iLsMat, pfPosChanged))
 				// either splash or slide prevented interaction
 				return false;
 		// evaluate corrosion percentage
@@ -721,17 +723,17 @@ bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, int32_t &iX, int32
 		if (pReaction->fUserDefined)
 			fDoCorrode = (Random(100) < pReaction->iCorrosionRate);
 		else
-			fDoCorrode = (Random(100) < Game.Material.Map[iPxsMat].Corrosive) && (Random(100) < Game.Material.Map[iLsMat].Corrode);
+			fDoCorrode = (Random(100) < section.Material.Map[iPxsMat].Corrosive) && (Random(100) < section.Material.Map[iLsMat].Corrode);
 		if (fDoCorrode)
 		{
-			ClearBackPix(iLSPosX, iLSPosY);
-			Game.Landscape.CheckInstabilityRange(iLSPosX, iLSPosY);
-			if (!Random(5)) Smoke(iX, iY, 3 + Random(3));
+			section.Landscape.ClearPix(iLSPosX, iLSPosY);
+			section.Landscape.CheckInstabilityRange(iLSPosX, iLSPosY);
+			if (!Random(5)) Smoke(section, iX, iY, 3 + Random(3));
 			if (!Random(20)) StartSoundEffectAt("Corrode", iX, iY);
 			return true;
 		}
 		// Else: dead. Insert material here
-		Game.Landscape.InsertMaterial(iPxsMat, iX, iY);
+		section.Landscape.InsertMaterial(iPxsMat, iX, iY);
 		return true;
 	}
 	}
@@ -739,7 +741,7 @@ bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, int32_t &iX, int32
 	return false;
 }
 
-bool C4MaterialMap::mrfIncinerate(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfIncinerate(C4MaterialReaction *pReaction, C4Section &section, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
 	// not available as user reaction
 	assert(!pReaction->fUserDefined);
@@ -747,27 +749,27 @@ bool C4MaterialMap::mrfIncinerate(C4MaterialReaction *pReaction, int32_t &iX, in
 	{
 	case meeMassMove: // MassMover-movement
 	case meePXSPos: // PXS check before movement
-		if (Game.Landscape.Incinerate(iX, iY)) return true;
+		if (section.Landscape.Incinerate(iX, iY)) return true;
 		break;
 
 	case meePXSMove: // PXS movement
 		// incinerate to inflammables are always same density proc; so do insertion check first
-		if (!mrfInsertCheck(iX, iY, fXDir, fYDir, iPxsMat, iLsMat, pfPosChanged))
+		if (!mrfInsertCheck(section, iX, iY, fXDir, fYDir, iPxsMat, iLsMat, pfPosChanged))
 			// either splash or slide prevented interaction
 			return false;
 		// evaluate inflammation (should always succeed)
-		if (Game.Landscape.Incinerate(iX, iY)) return true;
+		if (section.Landscape.Incinerate(iX, iY)) return true;
 		// Else: dead. Insert material here
-		Game.Landscape.InsertMaterial(iPxsMat, iX, iY);
+		section.Landscape.InsertMaterial(iPxsMat, iX, iY);
 		return true;
 	}
 	// not handled
 	return false;
 }
 
-bool C4MaterialMap::mrfInsert(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfInsert(C4MaterialReaction *pReaction, C4Section &section, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
-	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
+	if (pReaction->fUserDefined) if (!mrfUserCheck(pReaction, section, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged)) return false;
 	switch (evEvent)
 	{
 	case meePXSPos: // PXS check before movement
@@ -777,11 +779,11 @@ bool C4MaterialMap::mrfInsert(C4MaterialReaction *pReaction, int32_t &iX, int32_
 	{
 		// check for bounce/slide
 		if (!pReaction->fUserDefined)
-			if (!mrfInsertCheck(iX, iY, fXDir, fYDir, iPxsMat, iLsMat, pfPosChanged))
+			if (!mrfInsertCheck(section, iX, iY, fXDir, fYDir, iPxsMat, iLsMat, pfPosChanged))
 				// continue existing
 				return false;
 		// Else: dead. Insert material here
-		Game.Landscape.InsertMaterial(iPxsMat, iX, iY);
+		section.Landscape.InsertMaterial(iPxsMat, iX, iY);
 		return true;
 	}
 
@@ -792,10 +794,10 @@ bool C4MaterialMap::mrfInsert(C4MaterialReaction *pReaction, int32_t &iX, int32_
 	return false;
 }
 
-bool C4MaterialMap::mrfScript(C4MaterialReaction *pReaction, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
+bool C4MaterialMap::mrfScript(C4MaterialReaction *pReaction, C4Section &section, int32_t &iX, int32_t &iY, int32_t iLSPosX, int32_t iLSPosY, C4Fixed &fXDir, C4Fixed &fYDir, int32_t &iPxsMat, int32_t iLsMat, MaterialInteractionEvent evEvent, bool *pfPosChanged)
 {
 	// do generic checks for user-defined reactions
-	if (!mrfUserCheck(pReaction, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged))
+	if (!mrfUserCheck(pReaction, section, iX, iY, iLSPosX, iLSPosY, fXDir, fYDir, iPxsMat, iLsMat, evEvent, pfPosChanged))
 		return false;
 
 	// check script func

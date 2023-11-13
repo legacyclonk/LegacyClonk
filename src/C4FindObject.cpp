@@ -225,7 +225,7 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs)
 	return new C4ValueArray{std::span{result}};
 }
 
-int32_t C4FindObject::Count(const C4ObjectList &Objs, const C4LSectors &Sct)
+int32_t C4FindObject::Count(C4GameObjects &Objs, const C4LSectors &Sct)
 {
 	// Trivial cases
 	if (IsImpossible())
@@ -239,13 +239,13 @@ int32_t C4FindObject::Count(const C4ObjectList &Objs, const C4LSectors &Sct)
 	else if (UseShapes())
 	{
 		// Get area
-		C4LArea Area(&Game.Objects.Sectors, *pBounds); C4LSector *pSct;
+		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
 		C4ObjectList *pLst = Area.FirstObjectShapes(&pSct);
 		// Check if a single-sector check is enough
 		if (!Area.Next(pSct))
 			return Count(pSct->ObjectShapes);
 		// Create marker, count over all areas
-		uint32_t iMarker = ::Game.Objects.GetNextMarker();
+		uint32_t iMarker = Objs.GetNextMarker();
 		int32_t iCount = 0;
 		for (; pLst; pLst = Area.NextObjectShapes(pLst, &pSct))
 			for (C4ObjectLink *pLnk = pLst->First; pLnk; pLnk = pLnk->Next)
@@ -261,7 +261,7 @@ int32_t C4FindObject::Count(const C4ObjectList &Objs, const C4LSectors &Sct)
 	else
 	{
 		// Count objects per area
-		C4LArea Area(&Game.Objects.Sectors, *pBounds); C4LSector *pSct;
+		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
 		int32_t iCount = 0;
 		for (C4ObjectList *pLst = Area.FirstObjects(&pSct); pLst; pLst = Area.NextObjects(pLst, &pSct))
 			iCount += Count(*pLst);
@@ -269,7 +269,7 @@ int32_t C4FindObject::Count(const C4ObjectList &Objs, const C4LSectors &Sct)
 	}
 }
 
-C4Object *C4FindObject::Find(const C4ObjectList &Objs, const C4LSectors &Sct)
+C4Object *C4FindObject::Find(C4GameObjects &Objs, const C4LSectors &Sct)
 {
 	// Trivial case
 	if (IsImpossible())
@@ -282,7 +282,7 @@ C4Object *C4FindObject::Find(const C4ObjectList &Objs, const C4LSectors &Sct)
 	// Traverse areas, return first matching object w/o sort or best with sort
 	else if (UseShapes())
 	{
-		C4LArea Area(&Game.Objects.Sectors, *pBounds); C4LSector *pSct;
+		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
 		C4Object *pObj;
 		for (C4ObjectList *pLst = Area.FirstObjectShapes(&pSct); pLst; pLst = Area.NextObjectShapes(pLst, &pSct))
 			if (pObj = Find(*pLst))
@@ -294,7 +294,7 @@ C4Object *C4FindObject::Find(const C4ObjectList &Objs, const C4LSectors &Sct)
 	}
 	else
 	{
-		C4LArea Area(&Game.Objects.Sectors, *pBounds); C4LSector *pSct;
+		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
 		C4Object *pObj;
 		for (C4ObjectList *pLst = Area.FirstObjects(&pSct); pLst; pLst = Area.NextObjects(pLst, &pSct))
 			if (pObj = Find(*pLst))
@@ -307,7 +307,7 @@ C4Object *C4FindObject::Find(const C4ObjectList &Objs, const C4LSectors &Sct)
 	return pBestResult;
 }
 
-C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs, const C4LSectors &Sct)
+C4ValueArray *C4FindObject::FindMany(C4GameObjects &Objs, const C4LSectors &Sct)
 {
 	// Trivial case
 	if (IsImpossible())
@@ -321,14 +321,14 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs, const C4LSectors 
 	if (UseShapes())
 	{
 		// Get area
-		C4LArea Area(&Game.Objects.Sectors, *pBounds); C4LSector *pSct;
+		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
 		C4ObjectList *pLst = Area.FirstObjectShapes(&pSct);
 		// Check if a single-sector check is enough
 		if (!Area.Next(pSct))
 			return FindMany(pSct->ObjectShapes);
 		// Set up array
 		// Create marker, search all areas
-		uint32_t iMarker = ::Game.Objects.GetNextMarker();
+		uint32_t iMarker = Objs.GetNextMarker();
 		for (; pLst; pLst = Area.NextObjectShapes(pLst, &pSct))
 			for (C4ObjectLink *pLnk = pLst->First; pLnk; pLnk = pLnk->Next)
 				if (pLnk->Obj->Status)
@@ -344,7 +344,7 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs, const C4LSectors 
 	else
 	{
 		// Search
-		C4LArea Area(&Game.Objects.Sectors, *pBounds); C4LSector *pSct;
+		C4LArea Area(&Objs.Sectors, *pBounds); C4LSector *pSct;
 		for (C4ObjectList *pLst = Area.FirstObjects(&pSct); pLst; pLst = Area.NextObjects(pLst, &pSct))
 			for (C4ObjectLink *pLnk = pLst->First; pLnk; pLnk = pLnk->Next)
 				if (pLnk->Obj->Status)
@@ -533,7 +533,7 @@ bool C4FindObjectID::Check(C4Object *pObj)
 
 bool C4FindObjectID::IsImpossible()
 {
-	C4Def *pDef = C4Id2Def(id);
+	C4Def *pDef = Game.Defs.ID2Def(id);
 	return !pDef || !pDef->Count;
 }
 

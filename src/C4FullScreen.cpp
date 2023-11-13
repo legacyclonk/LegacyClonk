@@ -502,7 +502,7 @@ bool C4FullScreen::ViewportCheck()
 	// Not active
 	if (!Active) return false;
 	// Determine film mode
-	bool fFilm = (Game.C4S.Head.Replay && Game.C4S.Head.Film);
+	bool fFilm = (Game.MainSection.C4S.Head.Replay && Game.MainSection.C4S.Head.Film);
 	// Check viewports
 	switch (Game.GraphicsSystem.GetViewportCount())
 	{
@@ -545,7 +545,7 @@ bool C4FullScreen::ViewportCheck()
 	else
 	{
 		// movie mode: player present, and no valid viewport assigned?
-		if (Game.C4S.Head.Replay && Game.C4S.Head.Film && (pPlr = Game.Players.First))
+		if (Game.MainSection.C4S.Head.Replay && Game.MainSection.C4S.Head.Film && (pPlr = Game.Players.First))
 			// assign viewport to joined player
 			pNoOwnerVp->Init(pPlr->Number, true);
 	}
