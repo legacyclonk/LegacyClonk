@@ -397,6 +397,7 @@ bool C4ToolsDlg::Open()
 #endif
 
 	Active = true;
+	Section = &Game.MainSection; // FIXME
 	// Update contols
 	InitGradeCtrl();
 	UpdateLandscapeModeCtrls();
@@ -484,8 +485,8 @@ void C4ToolsDlg::InitMaterialCtrls()
 	// Materials
 #ifdef _WIN32
 	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(_CRT_WIDE(C4TLS_MatSky)));
-	for (int32_t cnt = 0; cnt < Game.Material.Num; cnt++)
-		SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Game.Material.Map[cnt].Name).c_str()));
+	for (int32_t cnt = 0; cnt < Section->Material.Num; cnt++)
+		SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Section->Material.Map[cnt].Name).c_str()));
 	SendDlgItemMessage(hDialog, IDC_COMBOMATERIAL, CB_SELECTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(Material).c_str()));
 #elif defined(WITH_DEVELOPER_MODE)
 	GtkListStore *list = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(materials)));
@@ -494,9 +495,9 @@ void C4ToolsDlg::InitMaterialCtrls()
 	gtk_list_store_clear(list);
 
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(materials), C4TLS_MatSky);
-	for (int32_t cnt = 0; cnt < Game.Material.Num; cnt++)
+	for (int32_t cnt = 0; cnt < Section->Material.Num; cnt++)
 	{
-		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(materials), Game.Material.Map[cnt].Name);
+		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(materials), Section->Material.Map[cnt].Name);
 	}
 	g_signal_handler_unblock(materials, handlerMaterials);
 	SelectComboBoxText(GTK_COMBO_BOX(materials), Material);
@@ -516,10 +517,10 @@ void C4ToolsDlg::UpdateTextures()
 #endif
 	// bottom-most: any invalid textures
 	bool fAnyEntry = false; int32_t cnt; const char *szTexture;
-	if (Game.Landscape.Mode != C4LSC_Exact)
-		for (cnt = 0; (szTexture = Game.TextureMap.GetTexture(cnt)); cnt++)
+	if (Section->Landscape.Mode != C4LSC_Exact)
+		for (cnt = 0; (szTexture = Section->TextureMap.GetTexture(cnt)); cnt++)
 		{
-			if (!Game.TextureMap.GetIndex(Material, szTexture, false))
+			if (!Section->TextureMap.GetIndex(Material, szTexture, false))
 			{
 				fAnyEntry = true;
 #ifdef _WIN32
@@ -540,10 +541,10 @@ void C4ToolsDlg::UpdateTextures()
 	}
 
 	// atop: valid textures
-	for (cnt = 0; (szTexture = Game.TextureMap.GetTexture(cnt)); cnt++)
+	for (cnt = 0; (szTexture = Section->TextureMap.GetTexture(cnt)); cnt++)
 	{
 		// Current material-texture valid? Always valid for exact mode
-		if (Game.TextureMap.GetIndex(Material, szTexture, false) || Game.Landscape.Mode == C4LSC_Exact)
+		if (Section->TextureMap.GetIndex(Material, szTexture, false) || Section->Landscape.Mode == C4LSC_Exact)
 		{
 #ifdef _WIN32
 			SendDlgItemMessage(hDialog, IDC_COMBOTEXTURE, CB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(StdStringEncodingConverter::WinAcpToUtf16(szTexture).c_str()));
@@ -567,14 +568,14 @@ void C4ToolsDlg::SetMaterial(const char *szMaterial)
 	SCopy(szMaterial, Material, C4M_MaxName);
 	AssertValidTexture();
 	EnableControls();
-	if (Game.Landscape.Mode == C4LSC_Static) UpdateTextures();
+	if (Section->Landscape.Mode == C4LSC_Static) UpdateTextures();
 	UpdatePreview();
 }
 
 void C4ToolsDlg::SetTexture(const char *szTexture)
 {
 	// assert valid (for separator selection)
-	if (!Game.TextureMap.GetTexture(szTexture))
+	if (!Section->TextureMap.GetTexture(szTexture))
 	{
 		// ensure correct texture is in dlg
 #ifdef _WIN32
@@ -640,18 +641,18 @@ void C4ToolsDlg::UpdatePreview()
 	if (SEqual(Material, C4TLS_MatSky))
 	{
 		Pattern1.SetColors(nullptr, nullptr);
-		Pattern1.Set(Game.Landscape.Sky.Surface, 0, false);
+		Pattern1.Set(Section->Landscape.Sky.Surface, 0, false);
 	}
 	// Material-Texture
 	else
 	{
-		bCol = Mat2PixColDefault(Game.Material.Get(Material));
+		bCol = Section->Mat2PixColDefault(Section->Material.Get(Material));
 		// Get/Create TexMap entry
-		uint8_t iTex = Game.TextureMap.GetIndex(Material, Texture, true);
+		uint8_t iTex = Section->TextureMap.GetIndex(Material, Texture, true);
 		if (iTex)
 		{
 			// Define texture pattern
-			const C4TexMapEntry *pTex = Game.TextureMap.GetEntry(iTex);
+			const C4TexMapEntry *pTex = Section->TextureMap.GetEntry(iTex);
 			// Security
 			if (pTex)
 			{
@@ -674,7 +675,7 @@ void C4ToolsDlg::UpdatePreview()
 		Application.DDraw->DrawPatternedCircle(surfacePreview.get(),
 			previewWidth / 2, previewHeight / 2,
 			Grade,
-			bCol, Pattern1, Pattern2, *Game.Landscape.GetPal());
+			bCol, Pattern1, Pattern2, *Section->Landscape.GetPal());
 
 	Application.DDraw->AttachPrimaryPalette(surfacePreview.get());
 
@@ -795,7 +796,7 @@ void C4ToolsDlg::UpdateIFTControls()
 
 void C4ToolsDlg::UpdateLandscapeModeCtrls()
 {
-	int32_t iMode = Game.Landscape.Mode;
+	int32_t iMode = Section->Landscape.Mode;
 #ifdef _WIN32
 	// Dynamic: enable only if dynamic anyway
 	SendDlgItemMessage(hDialog, IDC_BUTTONMODEDYNAMIC, BM_SETSTATE, (iMode == C4LSC_Dynamic), 0);
@@ -803,7 +804,7 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONMODEDYNAMIC));
 	// Static: enable only if map available
 	SendDlgItemMessage(hDialog, IDC_BUTTONMODESTATIC, BM_SETSTATE, (iMode == C4LSC_Static), 0);
-	EnableWindow(GetDlgItem(hDialog, IDC_BUTTONMODESTATIC), (Game.Landscape.Map != nullptr));
+	EnableWindow(GetDlgItem(hDialog, IDC_BUTTONMODESTATIC), (Section->Landscape.Map != nullptr));
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONMODESTATIC));
 	// Exact: enable always
 	SendDlgItemMessage(hDialog, IDC_BUTTONMODEEXACT, BM_SETSTATE, (iMode == C4LSC_Exact), 0);
@@ -834,7 +835,7 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 	gtk_widget_set_sensitive(landscape_dynamic, iMode == C4LSC_Dynamic);
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(landscape_static), iMode == C4LSC_Static);
-	gtk_widget_set_sensitive(landscape_static, Game.Landscape.Map != nullptr);
+	gtk_widget_set_sensitive(landscape_static, Section->Landscape.Map != nullptr);
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(landscape_exact), iMode == C4LSC_Exact);
 
@@ -864,7 +865,7 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 
 bool C4ToolsDlg::SetLandscapeMode(int32_t iMode, bool fThroughControl)
 {
-	int32_t iLastMode = Game.Landscape.Mode;
+	int32_t iLastMode = Section->Landscape.Mode;
 	// Exact to static: confirm data loss warning
 	if (iLastMode == C4LSC_Exact)
 		if (iMode == C4LSC_Static)
@@ -878,11 +879,11 @@ bool C4ToolsDlg::SetLandscapeMode(int32_t iMode, bool fThroughControl)
 		return true;
 	}
 	// Set landscape mode
-	Game.Landscape.SetMode(iMode);
+	Section->Landscape.SetMode(iMode);
 	// Exact to static: redraw landscape from map
 	if (iLastMode == C4LSC_Exact)
 		if (iMode == C4LSC_Static)
-			Game.Landscape.MapToLandscape();
+			Section->Landscape.MapToLandscape();
 	// Assert valid tool
 	if (iMode != C4LSC_Exact)
 		if (SelectedTool == C4TLS_Fill)
@@ -897,7 +898,7 @@ bool C4ToolsDlg::SetLandscapeMode(int32_t iMode, bool fThroughControl)
 
 void C4ToolsDlg::EnableControls()
 {
-	int32_t iLandscapeMode = Game.Landscape.Mode;
+	int32_t iLandscapeMode = Section->Landscape.Mode;
 #ifdef _WIN32
 	// Set bitmap buttons
 	SendDlgItemMessage(hDialog, IDC_BUTTONBRUSH,       BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>((iLandscapeMode >= C4LSC_Static) ? hbmBrush  : hbmBrush2));
@@ -965,16 +966,16 @@ void C4ToolsDlg::LoadBitmaps()
 void C4ToolsDlg::AssertValidTexture()
 {
 	// Static map mode only
-	if (Game.Landscape.Mode != C4LSC_Static) return;
+	if (Section->Landscape.Mode != C4LSC_Static) return;
 	// Ignore if sky
 	if (SEqual(Material, C4TLS_MatSky)) return;
 	// Current material-texture valid
-	if (Game.TextureMap.GetIndex(Material, Texture, false)) return;
+	if (Section->TextureMap.GetIndex(Material, Texture, false)) return;
 	// Find valid material-texture
 	const char *szTexture;
-	for (int32_t iTexture = 0; szTexture = Game.TextureMap.GetTexture(iTexture); iTexture++)
+	for (int32_t iTexture = 0; szTexture = Section->TextureMap.GetTexture(iTexture); iTexture++)
 	{
-		if (Game.TextureMap.GetIndex(Material, szTexture, false))
+		if (Section->TextureMap.GetIndex(Material, szTexture, false))
 		{
 			SelectTexture(szTexture); return;
 		}

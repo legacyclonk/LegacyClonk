@@ -41,13 +41,11 @@ class C4ParticleChunk;
 class C4ParticleList;
 class C4ParticleSystem;
 
-typedef bool(*C4ParticleProc)(C4Particle *, C4Object *); // generic particle proc
+typedef bool(*C4ParticleProc)(C4Particle *, C4Section &, C4Object *); // generic particle proc
 typedef C4ParticleProc C4ParticleInitProc; // particle init proc - init and return whether particle could be created
 typedef C4ParticleProc C4ParticleExecProc; // particle execution proc - returns whether particle died
 typedef C4ParticleProc C4ParticleCollisionProc; // particle collision proc - returns whether particle died
 typedef void(*C4ParticleDrawProc)(C4Particle *, C4FacetEx &, C4Object *); // particle drawing code
-
-#define ParticleSystem Game.Particles
 
 // core for particle defs
 class C4ParticleDefCore
@@ -83,6 +81,8 @@ public:
 
 	bool Compile(const char *szSource, const char *szName); // compile from def file
 };
+
+class C4LoadedParticleList;
 
 // one particle definition
 class C4ParticleDef : public C4ParticleDefCore
@@ -158,12 +158,40 @@ public:
 
 	C4ParticleList() { pFirst = nullptr; }
 
-	void Exec(C4Object *pObj = nullptr); // execute all particles
+	void Exec(C4Section &section, C4Object *pObj = nullptr); // execute all particles
 	void Draw(C4FacetEx &cgo, C4Object *pObj = nullptr); // draw all particles
-	void Clear(); // remove all particles
-	int32_t Remove(C4ParticleDef *pOfDef); // remove all particles of def
+	void Clear(C4ParticleList &freeParticles); // remove all particles
+	int32_t Remove(C4ParticleList &freeParticles, C4ParticleDef *pOfDef); // remove all particles of def
 
 	operator bool() { return !!pFirst; } // checks whether list contains particles
+};
+
+class C4LoadedParticleList
+{
+public:
+	~C4LoadedParticleList();
+
+protected:
+	C4ParticleDef *pDef0, *pDefL; // linked list for particle defs
+	C4ParticleProc GetProc(const char *szName); // get init/exec proc for a particle type
+	C4ParticleDrawProc GetDrawProc(const char *szName); // get draw proc for a particle type
+
+public:
+	C4ParticleDef *pSmoke{nullptr};  // default particle: smoke
+	C4ParticleDef *pBlast{nullptr};  // default particle: blast
+	C4ParticleDef *pFSpark{nullptr}; // default particle: firy spark
+	C4ParticleDef *pFire1{nullptr};  // default particle: fire base
+	C4ParticleDef *pFire2{nullptr};  // default particle: fire additive
+
+	void Clear(); // remove all particle definitions and particles
+
+	C4ParticleDef *GetDef(const char *szName, C4ParticleDef *pExclude = nullptr); // get particle def by name
+	void SetDefParticles(); // seek and assign default particels (smoke, etc.)
+	bool IsFireParticleLoaded() { return pFire1 && pFire2; }
+
+	friend class C4ParticleDef;
+	friend class C4Particle;
+	friend class C4ParticleChunk;
 };
 
 // the main particle system
@@ -171,28 +199,19 @@ class C4ParticleSystem
 {
 protected:
 	C4ParticleChunk Chunk; // linked list for particle chunks
-	C4ParticleDef *pDef0, *pDefL; // linked list for particle defs
 
 	C4ParticleChunk *AddChunk(); // add a new chunk to the list
 
-	C4ParticleProc GetProc(const char *szName); // get init/exec proc for a particle type
-	C4ParticleDrawProc GetDrawProc(const char *szName); // get draw proc for a particle type
 
 public:
+	C4Section &section;
 	C4ParticleList FreeParticles; // list of free particles
 	C4ParticleList GlobalParticles; // list of free particles
 
-	C4ParticleDef *pSmoke;  // default particle: smoke
-	C4ParticleDef *pBlast;  // default particle: blast
-	C4ParticleDef *pFSpark; // default particle: firy spark
-	C4ParticleDef *pFire1;  // default particle: fire base
-	C4ParticleDef *pFire2;  // default particle: fire additive
-
-	C4ParticleSystem();
+	C4ParticleSystem(C4Section &section);
 	~C4ParticleSystem();
 
 	void ClearParticles(); // remove all particles
-	void Clear(); // remove all particle definitions and particles
 
 	C4Particle *Create(C4ParticleDef *pOfDef, // create one particle of given type
 		float x, float y, float xdir = 0.0f, float ydir = 0.0f,
@@ -203,21 +222,13 @@ public:
 		float a0 = 0.0f, uint32_t b0 = 0, float a1 = 0.0f, uint32_t b1 = 0,
 		C4ParticleList *pPxList = nullptr, C4Object *pObj = nullptr);
 
-	C4ParticleDef *GetDef(const char *szName, C4ParticleDef *pExclude = nullptr); // get particle def by name
-	void SetDefParticles(); // seek and assign default particels (smoke, etc.)
 
 	int32_t Push(C4ParticleDef *pOfDef, float dxdir, float dydir); // add movement to all particles of type
-
-	bool IsFireParticleLoaded() { return pFire1 && pFire2; }
-
-	friend class C4ParticleDef;
-	friend class C4Particle;
-	friend class C4ParticleChunk;
 };
 
 // default particle execution/drawing functions
-bool fxStdInit(C4Particle *pPrt, C4Object *pTarget);
-bool fxStdExec(C4Particle *pPrt, C4Object *pTarget);
+bool fxStdInit(C4Particle *pPrt, C4Section &section, C4Object *pTarget);
+bool fxStdExec(C4Particle *pPrt, C4Section &section, C4Object *pTarget);
 void fxStdDraw(C4Particle *pPrt, C4FacetEx &cgo, C4Object *pTarget);
 
 // structures used for static function maps

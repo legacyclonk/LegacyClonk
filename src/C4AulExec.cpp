@@ -1239,7 +1239,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					{
 						// definition call
 						pDestObj = nullptr;
-						pDestDef = C4Id2Def(pTargetVal->_getC4ID());
+						pDestDef = Game.Defs.ID2Def(pTargetVal->_getC4ID());
 						// definition must be known
 						if (!pDestDef)
 							throw C4AulExecError(pCurCtx->Obj,

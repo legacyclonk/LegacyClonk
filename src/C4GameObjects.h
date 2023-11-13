@@ -42,6 +42,8 @@ public:
 	C4LSectors Sectors; // section object lists
 	C4ObjectList InactiveObjects; // inactive objects (Status=2)
 	C4ObjResort *ResortProc; // current sheduled user resorts
+	C4ObjectList BackObjects; // objects in background (C4D_Background)
+	C4ObjectList ForeObjects; // objects in foreground (C4D_Foreground)
 
 	bool Add(C4Object *nObj); // add object
 	bool Remove(C4Object *pObj); // clear pointers to object
@@ -62,9 +64,9 @@ public:
 	void PutSolidMasks();
 	void RemoveSolidMasks();
 
-	int Load(C4Group &hGroup, bool fKeepInactive);
-	bool Save(const char *szFilename, bool fSaveGame, bool fSaveInactive);
-	bool Save(C4Group &hGroup, bool fSaveGame, bool fSaveInactive);
+	int Load(C4Section &section, C4Group &hGroup, bool fKeepInactive);
+	bool Save(C4Section &section, const char *szFilename, bool fSaveGame, bool fSaveInactive);
+	bool Save(C4Section &section, C4Group &hGroup, bool fSaveGame, bool fSaveInactive);
 
 	void UpdateScriptPointers(); // update pointers to C4AulScript *
 
@@ -89,13 +91,14 @@ class C4AulFunc;
 class C4ObjResort
 {
 public:
-	C4ObjResort();
+	C4ObjResort(C4GameObjects &objects);
 	~C4ObjResort();
 
 	void Execute(); // do the resort!
 	void Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast); // sort list between pFirst and pLast
 	void SortObject(); // sort single object within its category
 
+	C4GameObjects &Objects; // the object list to sort
 	int Category; // object category mask to be sorted
 	C4AulFunc *OrderFunc; // function determining new sort order
 	C4ObjResort *Next; // next resort holder

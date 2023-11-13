@@ -15,42 +15,44 @@
 
 #pragma once
 
+#include "StdCompiler.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
 
 class C4Object;
-class StdCompiler;
 
-class C4EnumeratedObjectPtr
+template<typename Traits>
+class C4EnumeratedPtr
 {
-public:
-	using Enumerated = std::int32_t;
-
 private:
-	C4Object *object{};
+	using Denum = Traits::Denumerated;
+	using Enumerated = Traits::Enumerated;
+
+	Denum *denumerated{};
 	Enumerated number{};
 
 public:
-	C4EnumeratedObjectPtr() = default;
-	C4EnumeratedObjectPtr(const C4EnumeratedObjectPtr &) = default;
-	C4EnumeratedObjectPtr(C4EnumeratedObjectPtr &&) = default;
-	explicit C4EnumeratedObjectPtr(C4Object *object) : object{object} {}
+	C4EnumeratedPtr() = default;
+	C4EnumeratedPtr(const C4EnumeratedPtr &) = default;
+	C4EnumeratedPtr(C4EnumeratedPtr &&) = default;
+	explicit C4EnumeratedPtr(Denum *denumerated) : denumerated{denumerated} {}
 
-	constexpr C4Object *operator->() const noexcept { return Object(); }
-	constexpr C4Object *operator*() const noexcept { return Object(); }
-	constexpr C4Object *Object() const noexcept { return object; }
+	constexpr Denum *operator->() const noexcept { return Denumerated(); }
+	constexpr Denum *operator*() const noexcept { return Denumerated(); }
+	constexpr Denum *Denumerated() const noexcept { return denumerated; }
 	constexpr Enumerated Number() const noexcept { return number; }
-	constexpr operator C4Object *() const noexcept { return Object(); }
+	constexpr operator Denum *() const noexcept { return Denumerated(); }
 
-	C4EnumeratedObjectPtr &operator=(const C4EnumeratedObjectPtr &) = default;
-	C4EnumeratedObjectPtr &operator=(C4EnumeratedObjectPtr &&) = default;
-	constexpr C4EnumeratedObjectPtr &operator=(C4Object *obj) noexcept
+	C4EnumeratedPtr &operator=(const C4EnumeratedPtr &) = default;
+	C4EnumeratedPtr &operator=(C4EnumeratedPtr &&) = default;
+	constexpr C4EnumeratedPtr &operator=(Denum *d) noexcept
 	{
-		object = obj;
+		SetDenumerated(d);
 		return *this;
 	}
-	constexpr C4EnumeratedObjectPtr &operator=(std::nullptr_t) noexcept
+	constexpr C4EnumeratedPtr &operator=(std::nullptr_t) noexcept
 	{
 		Reset();
 		return *this;
@@ -58,7 +60,7 @@ public:
 
 	constexpr void Reset() noexcept
 	{
-		object = nullptr;
+		denumerated = nullptr;
 		number = {};
 	}
 	constexpr void SetNumber(Enumerated enumerated) noexcept
@@ -66,11 +68,44 @@ public:
 		number = enumerated;
 	}
 
-	void Enumerate();
-	void Denumerate();
+	constexpr void SetDenumerated(Denum *d) noexcept
+	{
+		denumerated = d;
+	}
 
-	void CompileFunc(StdCompiler *compiler, bool intPack = false);
+	void CompileFunc(StdCompiler *compiler, bool intPack = false)
+	{
+		if (intPack)
+		{
+			compiler->Value(mkIntPackAdapt(number));
+		}
+		else
+		{
+			compiler->Value(number);
+		}
+	}
+
+	void Enumerate()
+	{
+		SetNumber(Traits::Enumerate(Denumerated()));
+	}
+
+	void Denumerate()
+	{
+		SetDenumerated(Traits::Denumerate(Number()));
+	}
 };
+
+struct C4EnumeratedObjectPtrTraits
+{
+	using Denumerated = C4Object;
+	using Enumerated = std::int32_t;
+
+	static std::int32_t Enumerate(C4Object *object);
+	static C4Object *Denumerate(std::int32_t number);
+};
+
+using C4EnumeratedObjectPtr = C4EnumeratedPtr<C4EnumeratedObjectPtrTraits>;
 
 namespace
 {

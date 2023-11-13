@@ -113,7 +113,8 @@ public:
 	std::string GetNameList(C4DefList &rDefs, uint32_t dwCategory = C4D_All);
 	bool IsClear() const;
 	bool DenumerateRead();
-	void CompileFunc(StdCompiler *pComp, bool fSaveRefs = true, bool fSkipPlayerObjects = false);
+	void CompileFunc(StdCompiler *pComp, const C4Section &section, bool fSkipPlayerObjects = false);
+	void CompileFunc(StdCompiler *pComp);
 
 	int32_t ObjectNumber(C4Object *pObj);
 	bool IsContained(C4Object *pObj);

@@ -583,7 +583,7 @@ bool C4Def::Load(C4Group &hGroup,
 	}
 
 	// skip def: don't even read sounds!
-	if (fSuccess && Game.C4S.Definitions.SkipDefs.GetIDCount(id, 1)) return false;
+	if (fSuccess && Game.MainSection.C4S.Definitions.SkipDefs.GetIDCount(id, 1)) return false;
 
 	// OldGfx is no longer supported
 	if (NeededGfxMode == C4DGFXMODE_OLDGFX) return false;

@@ -71,8 +71,8 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 			MaskPutRect.y = oy;
 			if (MaskPutRect.y < 0) { MaskPutRect.ty = -MaskPutRect.y; MaskPutRect.y = 0; }
 			else MaskPutRect.ty = 0;
-			MaskPutRect.Wdt = std::min<int32_t>(ox + pForObject->SolidMask.Wdt, GBackWdt) - MaskPutRect.x;
-			MaskPutRect.Hgt = std::min<int32_t>(oy + pForObject->SolidMask.Hgt, GBackHgt) - MaskPutRect.y;
+			MaskPutRect.Wdt = std::min<int32_t>(ox + pForObject->SolidMask.Wdt, pForObject->Section->Landscape.Width) - MaskPutRect.x;
+			MaskPutRect.Hgt = std::min<int32_t>(oy + pForObject->SolidMask.Hgt, pForObject->Section->Landscape.Height) - MaskPutRect.y;
 		}
 		// fill rect with mask
 		for (ycnt = 0; ycnt < pClipRect->Hgt; ++ycnt)
@@ -89,19 +89,19 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 					if (!MaskPut)
 					{
 						// get background pixel
-						byPixel = GBackPix(iTx, iTy);
+						byPixel = pForObject->Section->Landscape._GetPix(iTx, iTy);
 						// store it. If MCVehic, also store in initial put, but won't be used in restore
 						// do not overwrite current value in re-put issued by SolidMask-remover
-						if (byPixel != MCVehic || RegularPut)
+						if (byPixel != pForObject->Section->Landscape.MCVehic || RegularPut)
 							pSolidMaskMatBuff[(ycnt + pClipRect->ty) * MatBuffPitch + xcnt + pClipRect->tx] = byPixel;
 					}
 					// and set mask
-					_SBackPix(iTx, iTy, MCVehic);
+					pForObject->Section->Landscape._SetPix(iTx, iTy, pForObject->Section->Landscape.MCVehic);
 				}
 				else
 					// no SolidMask: mark buffer as unused here
 					if (!MaskPut)
-						pSolidMaskMatBuff[(ycnt + pClipRect->ty) * MatBuffPitch + xcnt + pClipRect->tx] = MCVehic;
+						pSolidMaskMatBuff[(ycnt + pClipRect->ty) * MatBuffPitch + xcnt + pClipRect->tx] = pForObject->Section->Landscape.MCVehic;
 			}
 		}
 	}
@@ -124,8 +124,8 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 			MaskPutRect.y = ystart;
 			if (MaskPutRect.y < 0) { MaskPutRect.ty = -MaskPutRect.y; MaskPutRect.Hgt = MaskPutRect.y; MaskPutRect.y = 0; }
 			else { MaskPutRect.ty = 0; MaskPutRect.Hgt = 0; }
-			MaskPutRect.Wdt = std::min<int32_t>(xstart + MatBuffPitch, GBackWdt) - MaskPutRect.x;
-			MaskPutRect.Hgt = std::min<int32_t>(ystart + MatBuffPitch, GBackHgt) - MaskPutRect.y;
+			MaskPutRect.Wdt = std::min<int32_t>(xstart + MatBuffPitch, pForObject->Section->Landscape.Width) - MaskPutRect.x;
+			MaskPutRect.Hgt = std::min<int32_t>(ystart + MatBuffPitch, pForObject->Section->Landscape.Height) - MaskPutRect.y;
 		}
 		// go through clipping rect
 		const C4Fixed y0 = itofix(pClipRect->ty - MatBuffPitch / 2);
@@ -153,18 +153,18 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 					if (!MaskPut)
 					{
 						// get background pixel
-						byPixel = _GBackPix(iTx, iTy);
+						byPixel = pForObject->Section->Landscape._GetPix(iTx, iTy);
 						// store it. If MCVehic, also store in initial put, but won't be used in restore
 						// do not overwrite current value in re-put issued by SolidMask-remover
-						if (byPixel != MCVehic || RegularPut)
+						if (byPixel != pForObject->Section->Landscape.MCVehic || RegularPut)
 							pSolidMaskMatBuff[i + xcnt] = byPixel;
 					}
 					// set mask pix
-					_SBackPix(iTx, iTy, MCVehic);
+					pForObject->Section->Landscape._SetPix(iTx, iTy, pForObject->Section->Landscape.MCVehic);
 				}
 				else if (!MaskPut)
 					// mark pix as unused in buf
-					pSolidMaskMatBuff[i + xcnt] = MCVehic;
+					pSolidMaskMatBuff[i + xcnt] = pForObject->Section->Landscape.MCVehic;
 				xa += Ma1; xb += Mb1;
 				++iTx;
 			}
@@ -184,7 +184,7 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 			{
 				C4Object *pObj = ppAttachingObjects[i];
 				if (pObj->IsMoveableBySolidMask())
-					if (!pObj->Shape.ContactCheck(pObj->x + dx, pObj->y + dy))
+					if (!pObj->Shape.ContactCheck(pObj->Section->Landscape, pObj->x + dx, pObj->y + dy))
 						if (pObj->iLastAttachMovementFrame != Game.FrameCounter)
 						{
 							pObj->iLastAttachMovementFrame = Game.FrameCounter;
@@ -197,7 +197,7 @@ void C4SolidMask::Put(bool fCauseInstability, C4TargetRect *pClipRect, bool fRes
 	if (fCauseInstability) CheckConsistency();
 }
 
-int32_t C4SolidMask::DensityProvider::GetDensity(int32_t x, int32_t y) const
+int32_t C4SolidMask::DensityProvider::GetDensity(C4Landscape &landscape, int32_t x, int32_t y) const
 {
 	// outside SolidMask: free
 	x -= rSolidMaskData.MaskPutRect.x;
@@ -220,7 +220,7 @@ int32_t C4SolidMask::DensityProvider::GetDensity(int32_t x, int32_t y) const
 		// Using put-buffer for rotated masks
 		// for SolidMask-pixels not put because there was another SolidMask already, this will not return solid
 		pPix = rSolidMaskData.pSolidMaskMatBuff + (y + rSolidMaskData.MaskPutRect.ty) * rSolidMaskData.MatBuffPitch + rSolidMaskData.MaskPutRect.tx + x;
-		if (*pPix == MCVehic)
+		if (*pPix == landscape.MCVehic)
 			return 0;
 		else
 			return C4M_Solid;
@@ -242,7 +242,7 @@ void C4SolidMask::Remove(bool fCauseInstability, bool fBackupAttachment)
 		uint8_t *pPix = pSolidMaskMatBuff + (ycnt + MaskPutRect.ty) * MatBuffPitch + MaskPutRect.tx;
 		for (int xcnt = 0; xcnt < MaskPutRect.Wdt; ++xcnt, ++pPix)
 			// only if mask was used here
-			if (*pPix != MCVehic)
+			if (*pPix != pForObject->Section->Landscape.MCVehic)
 			{
 				// calc position in landscape
 				int iTx = MaskPutRect.x + xcnt; int iTy = MaskPutRect.y + ycnt;
@@ -250,11 +250,11 @@ void C4SolidMask::Remove(bool fCauseInstability, bool fBackupAttachment)
 				// The pPix-check ensures that only pixels that hads been overwritten by this SolidMask are restored
 				// Non-SolidMask-pixels should not happen here, because all relevant landscape change routines should
 				// temp remove SolidMasks before
-				assert(_GBackPix(iTx, iTy) == MCVehic);
-				_SBackPixIfMask(iTx, iTy, *pPix, MCVehic);
+				assert(pForObject->Section->Landscape._GetPix(iTx, iTy) == pForObject->Section->Landscape.MCVehic);
+				pForObject->Section->Landscape._SetPixIfMask(iTx, iTy, *pPix, pForObject->Section->Landscape.MCVehic);
 				// Instability
 				if (fCauseInstability)
-					Game.Landscape.CheckInstabilityRange(iTx, iTy);
+					pForObject->Section->Landscape.CheckInstabilityRange(iTx, iTy);
 			}
 	}
 	// Mask not put flag
@@ -278,17 +278,17 @@ void C4SolidMask::Remove(bool fCauseInstability, bool fBackupAttachment)
 		MaskRemovalX = pForObject->x;
 		MaskRemovalY = pForObject->y;
 		iAttachingObjectsCount = 0;
-		C4LArea SolidArea(&Game.Objects.Sectors, MaskPutRect.x - 1, MaskPutRect.y - 1, MaskPutRect.Wdt + 2, MaskPutRect.Hgt + 2);
+		C4LArea SolidArea(&pForObject->Section->Objects.Sectors, MaskPutRect.x - 1, MaskPutRect.y - 1, MaskPutRect.Wdt + 2, MaskPutRect.Hgt + 2);
 		C4LSector *pSct; C4Object *pObj;
 		for (C4ObjectList *pLst = SolidArea.FirstObjectShapes(&pSct); pLst; pLst = SolidArea.NextObjectShapes(pLst, &pSct))
 			for (C4ObjectLink *clnk = pLst->First; clnk; clnk = clnk->Next)
-				if ((pObj = clnk->Obj) && pObj != pForObject && pObj->IsMoveableBySolidMask() && !pObj->Shape.CheckContact(pObj->x, pObj->y))
+				if ((pObj = clnk->Obj) && pObj != pForObject && pObj->IsMoveableBySolidMask() && !pObj->Shape.CheckContact(pObj->Section->Landscape, pObj->x, pObj->y))
 				{
 					// check for any contact to own SolidMask - attach-directions, bottom - "stuck" (CNAT_Center) is ignored, because that causes problems with things being stuck in basements :(
 					int iVtx = 0;
 					for (; iVtx < pObj->Shape.VtxNum; ++iVtx)
-						if (pObj->Shape.GetVertexContact(iVtx, pObj->Action.t_attach | CNAT_Bottom, pObj->x, pObj->y, DensityProvider(pForObject, *this)))
-							if (pObj->Shape.GetVertexContact(iVtx, pObj->Action.t_attach | CNAT_Bottom, pObj->x, pObj->y, DensityProvider(pForObject, *this)))
+						if (pObj->Shape.GetVertexContact(pObj->Section->Landscape, iVtx, pObj->Action.t_attach | CNAT_Bottom, pObj->x, pObj->y, DensityProvider(pForObject, *this)))
+							if (pObj->Shape.GetVertexContact(pObj->Section->Landscape, iVtx, pObj->Action.t_attach | CNAT_Bottom, pObj->x, pObj->y, DensityProvider(pForObject, *this)))
 								break;
 					if (iVtx == pObj->Shape.VtxNum) continue; // no contact
 					// contact: Add object to list
@@ -330,11 +330,11 @@ void C4SolidMask::RemoveTemporary(C4Rect where)
 		{
 			uint8_t *pPix = pSolidMaskMatBuff + (y - MaskPutRect.y + MaskPutRect.ty) * MatBuffPitch + x - MaskPutRect.x + MaskPutRect.tx;
 			// only if mask was used here
-			if (*pPix != MCVehic)
+			if (*pPix != pForObject->Section->Landscape.MCVehic)
 			{
 				// restore
-				assert(GBackPix(x, y) == MCVehic);
-				_SBackPix(x, y, *pPix);
+				assert(pForObject->Section->Landscape.GetPix(x, y) == pForObject->Section->Landscape.MCVehic);
+				pForObject->Section->Landscape._SetPix(x, y, *pPix);
 			}
 		}
 	}
@@ -351,11 +351,11 @@ void C4SolidMask::PutTemporary(C4Rect where)
 		{
 			uint8_t *pPix = pSolidMaskMatBuff + (y - MaskPutRect.y + MaskPutRect.ty) * MatBuffPitch + x - MaskPutRect.x + MaskPutRect.tx;
 			// only if mask was used here
-			if (*pPix != MCVehic)
+			if (*pPix != pForObject->Section->Landscape.MCVehic)
 			{
 				// put
-				assert(GBackPix(x, y) == *pPix);
-				_SBackPix(x, y, MCVehic);
+				assert(pForObject->Section->Landscape.GetPix(x, y) == *pPix);
+				pForObject->Section->Landscape._SetPix(x, y, pForObject->Section->Landscape.MCVehic);
 			}
 		}
 	}
@@ -372,12 +372,12 @@ void C4SolidMask::Repair(C4Rect where)
 		{
 			uint8_t *pPix = pSolidMaskMatBuff + (y - MaskPutRect.y + MaskPutRect.ty) * MatBuffPitch + x - MaskPutRect.x + MaskPutRect.tx;
 			// only if mask was used here
-			if (*pPix != MCVehic)
+			if (*pPix != pForObject->Section->Landscape.MCVehic)
 			{
 				// record changed landscape in MatBuff
-				*pPix = GBackPix(x, y);
+				*pPix = pForObject->Section->Landscape.GetPix(x, y);
 				// put
-				_SBackPix(x, y, MCVehic);
+				pForObject->Section->Landscape._SetPix(x, y, pForObject->Section->Landscape.MCVehic);
 			}
 		}
 	}

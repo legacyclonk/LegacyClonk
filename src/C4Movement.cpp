@@ -166,7 +166,7 @@ void C4Object::TargetBounds(int32_t &ctco, int32_t limit_low, int32_t limit_hi, 
 int32_t C4Object::ContactCheck(int32_t iAtX, int32_t iAtY)
 {
 	// Check shape contact at given position
-	Shape.ContactCheck(iAtX, iAtY);
+	Shape.ContactCheck(Section->Landscape, iAtX, iAtY);
 
 	// Store shape contact values in object t_contact
 	t_contact = Shape.ContactCNAT;
@@ -193,7 +193,7 @@ void C4Object::SideBounds(int32_t &ctcox)
 				TargetBounds(ctcox, pLayer->x + pLayer->Shape.x - Shape.x, pLayer->x + pLayer->Shape.x + pLayer->Shape.Wdt + Shape.x, CNAT_Left, CNAT_Right);
 	// landscape bounds
 	if (Def->BorderBound & C4D_Border_Sides)
-		TargetBounds(ctcox, 0 - Shape.x, GBackWdt + Shape.x, CNAT_Left, CNAT_Right);
+		TargetBounds(ctcox, 0 - Shape.x, Section->Landscape.Width + Shape.x, CNAT_Left, CNAT_Right);
 }
 
 void C4Object::VerticalBounds(int32_t &ctcoy)
@@ -209,7 +209,7 @@ void C4Object::VerticalBounds(int32_t &ctcoy)
 	if (Def->BorderBound & C4D_Border_Top)
 		TargetBounds(ctcoy, 0 - Shape.y, +1000000, CNAT_Top, CNAT_Bottom);
 	if (Def->BorderBound & C4D_Border_Bottom)
-		TargetBounds(ctcoy, -1000000, GBackHgt + Shape.y, CNAT_Top, CNAT_Bottom);
+		TargetBounds(ctcoy, -1000000, Section->Landscape.Height + Shape.y, CNAT_Top, CNAT_Bottom);
 }
 
 void C4Object::DoMovement()
@@ -232,7 +232,7 @@ void C4Object::DoMovement()
 			if (Def->ActMap[Action.Act].DigFree == 1)
 			{
 				ctcox = fixtoi(fix_x + xdir); ctcoy = fixtoi(fix_y + ydir);
-				Game.Landscape.DigFreeRect(ctcox + Shape.x, ctcoy + Shape.y, Shape.Wdt, Shape.Hgt, Action.Data, this);
+				Section->Landscape.DigFreeRect(ctcox + Shape.x, ctcoy + Shape.y, Shape.Wdt, Shape.Hgt, Action.Data, this);
 			}
 			// Free size round (variable size)
 			else
@@ -240,7 +240,7 @@ void C4Object::DoMovement()
 				ctcox = fixtoi(fix_x + xdir); ctcoy = fixtoi(fix_y + ydir);
 				int32_t rad = Def->ActMap[Action.Act].DigFree;
 				if (Con < FullCon) rad = rad * 6 * Con / 5 / FullCon;
-				Game.Landscape.DigFree(ctcox, ctcoy - 1, rad, Action.Data, this);
+				Section->Landscape.DigFree(ctcox, ctcoy - 1, rad, Action.Data, this);
 			}
 		}
 
@@ -343,7 +343,7 @@ void C4Object::DoMovement()
 			ctx = x + Sign(ctcox - x); cty = y + Sign(ctcoy - y);
 
 			// Attachment check
-			if (!Shape.Attach(ctx, cty, Action.t_attach))
+			if (!Shape.Attach(*Section, ctx, cty, Action.t_attach))
 				fNoAttach = true;
 			else
 			{
@@ -405,7 +405,7 @@ void C4Object::DoMovement()
 				ctx = x; cty = y;
 				// evaulate attachment, but do not bother about attachment loss
 				// that will then be done in next execution cycle
-				Shape.Attach(ctx, cty, Action.t_attach);
+				Shape.Attach(*Section, ctx, cty, Action.t_attach);
 			}
 			// check for contact
 			if (iContact = ContactCheck(ctx, cty)) // Contact
@@ -591,7 +591,7 @@ bool C4Object::ExecMovement() // Every Tick1 by Execute
 	if (!Def->Rotateable) r = 0;
 
 	// Out of bounds check
-	if ((!Inside<int32_t>(x, 0, GBackWdt) && !(Def->BorderBound & C4D_Border_Sides)) || (y > GBackHgt && !(Def->BorderBound & C4D_Border_Bottom)))
+	if ((!Inside<int32_t>(x, 0, Section->Landscape.Width) && !(Def->BorderBound & C4D_Border_Sides)) || (y > Section->Landscape.Height && !(Def->BorderBound & C4D_Border_Bottom)))
 		// Never remove attached objects: If they are truly outside landscape, their target will be removed,
 		// and the attached objects follow one frame later
 		if (Action.Act < 0 || !Action.Target || Def->ActMap[Action.Act].Procedure != DFA_ATTACH)
@@ -601,9 +601,9 @@ bool C4Object::ExecMovement() // Every Tick1 by Execute
 			if (Category & C4D_Parallax)
 			{
 				fRemove = false;
-				if (x > GBackWdt || y > GBackHgt) fRemove = true; // except if they are really out of the viewport to the right...
+				if (x > Section->Landscape.Width || y > Section->Landscape.Height) fRemove = true; // except if they are really out of the viewport to the right...
 				else if (x < 0 && Local[0].Data) fRemove = true; // ...or it's not HUD horizontally and it's out to the left
-				else if (!Local[0].Data && x < -GBackWdt) fRemove = true; // ...or it's HUD horizontally and it's out to the left
+				else if (!Local[0].Data && x < -Section->Landscape.Width) fRemove = true; // ...or it's HUD horizontally and it's out to the left
 			}
 			if (fRemove)
 			{
@@ -615,7 +615,7 @@ bool C4Object::ExecMovement() // Every Tick1 by Execute
 	return true;
 }
 
-bool SimFlight(C4Fixed &x, C4Fixed &y, C4Fixed &xdir, C4Fixed &ydir, int32_t iDensityMin, int32_t iDensityMax, int32_t iIter)
+bool SimFlight(C4Section &section, C4Fixed &x, C4Fixed &y, C4Fixed &xdir, C4Fixed &ydir, int32_t iDensityMin, int32_t iDensityMax, int32_t iIter)
 {
 	bool fBreak = false;
 	int32_t ctcox, ctcoy, cx, cy;
@@ -628,20 +628,20 @@ bool SimFlight(C4Fixed &x, C4Fixed &y, C4Fixed &xdir, C4Fixed &ydir, int32_t iDe
 		// Movement to target
 		ctcox = fixtoi(x); ctcoy = fixtoi(y);
 		// Bounds
-		if (!Inside<int32_t>(ctcox, 0, GBackWdt) || (ctcoy >= GBackHgt)) return false;
+		if (!Inside<int32_t>(ctcox, 0, section.Landscape.Width) || (ctcoy >= section.Landscape.Height)) return false;
 		// Move to target
 		do
 		{
 			// Set next step target
 			cx += Sign(ctcox - cx); cy += Sign(ctcoy - cy);
 			// Contact check
-			if (Inside(GBackDensity(cx, cy), iDensityMin, iDensityMax))
+			if (Inside(section.Landscape.GetDensity(cx, cy), iDensityMin, iDensityMax))
 			{
 				fBreak = true; break;
 			}
 		} while ((cx != ctcox) || (cy != ctcoy));
 		// Adjust GravAccel once per frame
-		ydir += GravAccel;
+		ydir += section.Landscape.Gravity;
 	} while (!fBreak);
 	// write position back
 	x = itofix(cx); y = itofix(cy);
@@ -649,15 +649,15 @@ bool SimFlight(C4Fixed &x, C4Fixed &y, C4Fixed &xdir, C4Fixed &ydir, int32_t iDe
 	return true;
 }
 
-bool SimFlightHitsLiquid(C4Fixed fcx, C4Fixed fcy, C4Fixed xdir, C4Fixed ydir)
+bool SimFlightHitsLiquid(C4Section &section, C4Fixed fcx, C4Fixed fcy, C4Fixed xdir, C4Fixed ydir)
 {
 	// Start in water?
-	if (DensityLiquid(GBackDensity(fixtoi(fcx), fixtoi(fcy))))
-		if (!SimFlight(fcx, fcy, xdir, ydir, 0, C4M_Liquid - 1, 10))
+	if (DensityLiquid(section.Landscape.GetDensity(fixtoi(fcx), fixtoi(fcy))))
+		if (!SimFlight(section, fcx, fcy, xdir, ydir, 0, C4M_Liquid - 1, 10))
 			return false;
 	// Hits liquid?
-	if (!SimFlight(fcx, fcy, xdir, ydir, C4M_Liquid, 100, -1))
+	if (!SimFlight(section, fcx, fcy, xdir, ydir, C4M_Liquid, 100, -1))
 		return false;
 	// liquid & deep enough?
-	return GBackLiquid(fixtoi(fcx), fixtoi(fcy)) && GBackLiquid(fixtoi(fcx), fixtoi(fcy) + 9);
+	return section.Landscape.GBackLiquid(fixtoi(fcx), fixtoi(fcy)) && section.Landscape.GBackLiquid(fixtoi(fcx), fixtoi(fcy) + 9);
 }
