@@ -227,16 +227,16 @@ C4GroupSet &C4Language::GetPackGroups(const char *strRelativePath)
 	SCopy(strRelativePath, strTargetLocation, _MAX_PATH);
 
 	// Adjust location by scenario origin
-	if (Game.MainSection.C4S.Head.Origin.getLength() && SEqualNoCase(GetExtension(Game.MainSection.C4S.Head.Origin.getData()), "c4s"))
+	if (Game.C4S.Head.Origin.getLength() && SEqualNoCase(GetExtension(Game.C4S.Head.Origin.getData()), "c4s"))
 	{
 		const char *szScenarioRelativePath = GetRelativePathS(strRelativePath, Config.AtExeRelativePath(Game.ScenarioFilename));
 		if (szScenarioRelativePath != strRelativePath)
 		{
 			// this is a path within the scenario! Change to origin.
 			size_t iRestPathLen = SLen(szScenarioRelativePath);
-			if (Game.MainSection.C4S.Head.Origin.getLength() + 1 + iRestPathLen <= _MAX_PATH)
+			if (Game.C4S.Head.Origin.getLength() + 1 + iRestPathLen <= _MAX_PATH)
 			{
-				SCopy(Game.MainSection.C4S.Head.Origin.getData(), strTargetLocation);
+				SCopy(Game.C4S.Head.Origin.getData(), strTargetLocation);
 				if (iRestPathLen)
 				{
 					SAppendChar(DirectorySeparator, strTargetLocation);

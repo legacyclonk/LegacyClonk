@@ -56,7 +56,7 @@ public:
 class C4LSectors
 {
 public:
-	C4LSector *Sectors; // mem holding the sector array
+	C4LSector *Sectors{}; // mem holding the sector array
 	int PxWdt, PxHgt; // size in px
 	int Wdt, Hgt, Size; // sector count
 
