@@ -35,7 +35,7 @@ C4Section::EnumeratedPtrTraits::Denumerated *C4Section::EnumeratedPtrTraits::Den
 C4Section::C4Section() noexcept
 	: Weather{*this}, TextureMap{*this}, Material{*this}, Landscape{*this}, MassMover{*this}, PXS{*this}, Particles{*this}
 {
-
+	Default();
 }
 
 C4Section::C4Section(const char *const name)
@@ -44,7 +44,7 @@ C4Section::C4Section(const char *const name)
 	this->name = name;
 }
 
-void C4Section::DefaultMain()
+void C4Section::Default()
 {
 	Material.Default();
 	Objects.Default();
@@ -60,7 +60,7 @@ void C4Section::DefaultMain()
 	TransferZones.Default();
 }
 
-void C4Section::ClearMain()
+void C4Section::Clear()
 {
 	Weather.Clear();
 	Landscape.Clear();
@@ -75,33 +75,38 @@ void C4Section::ClearMain()
 
 bool C4Section::InitSection(C4Group &scenario)
 {
-	C4Group group;
-	if (!group.OpenAsChild(&scenario, name.c_str()))
+	C4S = Game.C4S;
+
+	if (name.empty())
 	{
-		LogFatal("GROUP");
-		return false;
+		if (!Group.Open(scenario.GetFullName().getData()))
+		{
+			return false;
+		}
 	}
-
-	C4S = Game.MainSection.C4S;
-
-	if (!C4S.Load(group, true))
+	else
 	{
-		LogFatal("C4S");
-		return false;
-	}
 
-	if (!InitSecondPart(group))
-	{
-		return false;
+		if (!Group.OpenAsChild(&scenario, std::format("Sect{}.c4g", name).c_str()))
+		{
+			LogFatal("GROUP");
+			return false;
+		}
+
+		if (!C4S.Load(Group, true))
+		{
+			LogFatal("C4S");
+			return false;
+		}
 	}
 
 	return true;
 }
 
-bool C4Section::InitSecondPart(C4Group &group)
+bool C4Section::InitSecondPart()
 {
 	LandscapeLoaded = false;
-	if (!Landscape.Init(group, false, true, LandscapeLoaded, C4S.Head.SaveGame))
+	if (!Landscape.Init(Group, false, true, LandscapeLoaded, C4S.Head.SaveGame))
 	{
 		LogFatal(LoadResStr("IDS_ERR_GBACK"));
 		return false;
@@ -125,9 +130,9 @@ bool C4Section::InitSecondPart(C4Group &group)
 	}, &TransferZones);
 
 	// PXS
-	if (group.FindEntry(C4CFN_PXS))
+	if (Group.FindEntry(C4CFN_PXS))
 	{
-		if (!PXS.Load(group))
+		if (!PXS.Load(Group))
 		{
 		   LogFatal(LoadResStr("IDS_ERR_PXS"));
 		   return false;
@@ -140,9 +145,9 @@ bool C4Section::InitSecondPart(C4Group &group)
 	}
 
 	// MassMover
-	if (group.FindEntry(C4CFN_MassMover))
+	if (Group.FindEntry(C4CFN_MassMover))
 	{
-		if (!MassMover.Load(group))
+		if (!MassMover.Load(Group))
 		{
 			LogFatal(LoadResStr("IDS_ERR_MOVER")); return false;
 		}
@@ -155,7 +160,7 @@ bool C4Section::InitSecondPart(C4Group &group)
 	}
 
 	// Load objects
-	if (const std::int32_t loadedObjects{Objects.Load(*this, group, "")}; loadedObjects)
+	if (const std::int32_t loadedObjects{Objects.Load(*this, Group, "")}; loadedObjects)
 	{
 		LogF(LoadResStr("IDS_PRC_OBJECTSLOADED"), loadedObjects);
 	}

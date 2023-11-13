@@ -1697,7 +1697,10 @@ void C4Landscape::Default()
 	pMapCreator = nullptr;
 	Modulation = 0;
 	fMapChanged = false;
+	pInitial = nullptr;
 	ShadeMaterials = true;
+	PixCntPitch = 0;
+	PixCnt = nullptr;
 }
 
 void C4Landscape::ClearBlastMatCount()
