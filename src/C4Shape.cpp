@@ -162,7 +162,7 @@ void C4Shape::GetVertexOutline(C4Rect &rRect)
 	rRect.y = y;
 }
 
-bool C4Shape::Attach(int32_t &cx, int32_t &cy, uint8_t cnat_pos)
+bool C4Shape::Attach(C4Section &section, int32_t &cx, int32_t &cy, uint8_t cnat_pos)
 {
 	// Adjust given position to one pixel before contact
 	// at vertices matching CNAT request.
@@ -211,10 +211,10 @@ bool C4Shape::Attach(int32_t &cx, int32_t &cy, uint8_t cnat_pos)
 				for (xcnt = xcrng, ycnt = ycrng; (xcnt != -xcrng) || (ycnt != -ycrng); xcnt += xcd, ycnt += ycd)
 				{
 					int32_t ax = cx + VtxX[vtx] + xcnt + xcd, ay = cy + VtxY[vtx] + ycnt + ycd;
-					if (GBackDensity(ax, ay) >= ContactDensity && ax >= 0 && ax < GBackWdt)
+					if (section.Landscape.GetDensity(ax, ay) >= ContactDensity && ax >= 0 && ax < section.Landscape.Width)
 					{
-						cpix = GBackPix(ax, ay);
-						AttachMat = PixCol2Mat(cpix);
+						cpix = section.Landscape.GetPix(ax, ay);
+						AttachMat = section.PixCol2Mat(cpix);
 						iAttachX = ax; iAttachY = ay;
 						iAttachVtx = vtx;
 						cx += xcnt; cy += ycnt;
@@ -246,11 +246,11 @@ bool C4Shape::Attach(int32_t &cx, int32_t &cy, uint8_t cnat_pos)
 					// get new vertex pos
 					int32_t ax = cx + VtxX[vtx] + xcnt + xcd, ay = cy + VtxY[vtx] + ycnt + ycd;
 					// can attach here?
-					cpix = GBackPix(ax, ay);
-					if (MatDensity(PixCol2Mat(cpix)) >= ContactDensity && ax >= 0 && ax < GBackWdt)
+					cpix = section.Landscape.GetPix(ax, ay);
+					if (section.MatDensity(section.PixCol2Mat(cpix)) >= ContactDensity && ax >= 0 && ax < section.Landscape.Width)
 					{
 						// store attachment material
-						AttachMat = PixCol2Mat(cpix);
+						AttachMat = section.PixCol2Mat(cpix);
 						// store absolute attachment position
 						iAttachX = ax; iAttachY = ay;
 						iAttachVtx = vtx;
@@ -270,7 +270,7 @@ bool C4Shape::Attach(int32_t &cx, int32_t &cy, uint8_t cnat_pos)
 	return fAttached;
 }
 
-bool C4Shape::LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int32_t oldx, int32_t oldy)
+bool C4Shape::LineConnect(C4Landscape &landscape, int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int32_t oldx, int32_t oldy)
 {
 	if (VtxNum < 2) return false;
 
@@ -279,7 +279,7 @@ bool C4Shape::LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int3
 
 	// Check new path
 	int32_t ix, iy;
-	if (PathFree(tx, ty, VtxX[cvtx + ld], VtxY[cvtx + ld], &ix, &iy))
+	if (landscape.PathFree(tx, ty, VtxX[cvtx + ld], VtxY[cvtx + ld], &ix, &iy))
 	{
 		// Okay, set vertex
 		VtxX[cvtx] = tx; VtxY[cvtx] = ty;
@@ -295,7 +295,7 @@ bool C4Shape::LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int3
 			for (cix = ix - irange / 2; cix <= ix + irange; cix += irange)
 				for (ciy = iy - irange / 2; ciy <= iy + irange; ciy += irange)
 				{
-					if (PathFree(cix, ciy, tx, ty) && PathFree(cix, ciy, VtxX[cvtx + ld], VtxY[cvtx + ld]))
+					if (landscape.PathFree(cix, ciy, tx, ty) && landscape.PathFree(cix, ciy, VtxX[cvtx + ld], VtxY[cvtx + ld]))
 					{
 						found = true;
 						goto out;
@@ -308,8 +308,8 @@ bool C4Shape::LineConnect(int32_t tx, int32_t ty, int32_t cvtx, int32_t ld, int3
 			// allow going through vehicle in this case to allow lines through castles and elevator shafts
 			cix = oldx;
 			ciy = oldy;
-			if (!PathFreeIgnoreVehicle(cix, ciy, tx, ty) || !PathFreeIgnoreVehicle(cix, ciy, VtxX[cvtx + ld], VtxY[cvtx + ld]))
-				if (!PathFreeIgnoreVehicle(cix, ciy, tx, ty) || !PathFreeIgnoreVehicle(cix, ciy, VtxX[cvtx + ld], VtxY[cvtx + ld]))
+			if (!landscape.PathFreeIgnoreVehicle(cix, ciy, tx, ty) || !landscape.PathFreeIgnoreVehicle(cix, ciy, VtxX[cvtx + ld], VtxY[cvtx + ld]))
+				if (!landscape.PathFreeIgnoreVehicle(cix, ciy, tx, ty) || !landscape.PathFreeIgnoreVehicle(cix, ciy, VtxX[cvtx + ld], VtxY[cvtx + ld]))
 					return false; // Found no bend vertex
 		}
 		// Insert bend vertex
@@ -354,20 +354,20 @@ bool C4Shape::RemoveVertex(int32_t iPos)
 	return true;
 }
 
-bool C4Shape::CheckContact(int32_t cx, int32_t cy)
+bool C4Shape::CheckContact(C4Landscape &landscape, int32_t cx, int32_t cy)
 {
 	// Check all vertices at given object position.
 	// Return true on any contact.
 
 	for (int32_t cvtx = 0; cvtx < VtxNum; cvtx++)
 		if (!(VtxCNAT[cvtx] & CNAT_NoCollision))
-			if (GBackDensity(cx + VtxX[cvtx], cy + VtxY[cvtx]) >= ContactDensity)
+			if (landscape.GetDensity(cx + VtxX[cvtx], cy + VtxY[cvtx]) >= ContactDensity)
 				return true;
 
 	return false;
 }
 
-bool C4Shape::ContactCheck(int32_t cx, int32_t cy)
+bool C4Shape::ContactCheck(C4Landscape &landscape, int32_t cx, int32_t cy)
 {
 	// Check all vertices at given object position.
 	// Set ContactCNAT and ContactCount.
@@ -384,21 +384,21 @@ bool C4Shape::ContactCheck(int32_t cx, int32_t cy)
 
 		{
 			VtxContactCNAT[cvtx] = CNAT_None;
-			VtxContactMat[cvtx] = GBackMat(cx + VtxX[cvtx], cy + VtxY[cvtx]);
+			VtxContactMat[cvtx] = landscape.GetMat(cx + VtxX[cvtx], cy + VtxY[cvtx]);
 
-			if (GBackDensity(cx + VtxX[cvtx], cy + VtxY[cvtx]) >= ContactDensity)
+			if (landscape.GetDensity(cx + VtxX[cvtx], cy + VtxY[cvtx]) >= ContactDensity)
 			{
 				ContactCNAT |= VtxCNAT[cvtx];
 				VtxContactCNAT[cvtx] |= CNAT_Center;
 				ContactCount++;
 				// Vertex center contact, now check top,bottom,left,right
-				if (GBackDensity(cx + VtxX[cvtx], cy + VtxY[cvtx] - 1) >= ContactDensity)
+				if (landscape.GetDensity(cx + VtxX[cvtx], cy + VtxY[cvtx] - 1) >= ContactDensity)
 					VtxContactCNAT[cvtx] |= CNAT_Top;
-				if (GBackDensity(cx + VtxX[cvtx], cy + VtxY[cvtx] + 1) >= ContactDensity)
+				if (landscape.GetDensity(cx + VtxX[cvtx], cy + VtxY[cvtx] + 1) >= ContactDensity)
 					VtxContactCNAT[cvtx] |= CNAT_Bottom;
-				if (GBackDensity(cx + VtxX[cvtx] - 1, cy + VtxY[cvtx]) >= ContactDensity)
+				if (landscape.GetDensity(cx + VtxX[cvtx] - 1, cy + VtxY[cvtx]) >= ContactDensity)
 					VtxContactCNAT[cvtx] |= CNAT_Left;
-				if (GBackDensity(cx + VtxX[cvtx] + 1, cy + VtxY[cvtx]) >= ContactDensity)
+				if (landscape.GetDensity(cx + VtxX[cvtx] + 1, cy + VtxY[cvtx]) >= ContactDensity)
 					VtxContactCNAT[cvtx] |= CNAT_Right;
 			}
 		}
@@ -452,16 +452,15 @@ int32_t C4Shape::GetBottomVertex()
 				iMax = i;
 	return iMax;
 }
-
 C4DensityProvider DefaultDensityProvider;
 
-int32_t C4DensityProvider::GetDensity(int32_t x, int32_t y) const
+int32_t C4DensityProvider::GetDensity(C4Landscape &landscape, int32_t x, int32_t y) const
 {
 	// default density provider checks the landscape
-	return GBackDensity(x, y);
+	return landscape.GetDensity(x, y);
 }
 
-int32_t C4Shape::GetVertexContact(int32_t iVtx, uint32_t dwCheckMask, int32_t tx, int32_t ty, const C4DensityProvider &rDensityProvider)
+int32_t C4Shape::GetVertexContact(C4Landscape &landscape, int32_t iVtx, uint32_t dwCheckMask, int32_t tx, int32_t ty, const C4DensityProvider &rDensityProvider)
 {
 	// default check mask
 	if (!dwCheckMask) dwCheckMask = VtxCNAT[iVtx];
@@ -471,11 +470,11 @@ int32_t C4Shape::GetVertexContact(int32_t iVtx, uint32_t dwCheckMask, int32_t tx
 	// check all directions for solid mat
 	if (~VtxCNAT[iVtx] & CNAT_NoCollision)
 	{
-		if (dwCheckMask & CNAT_Center) if (rDensityProvider.GetDensity(tx, ty)     >= ContactDensity) iContact |= CNAT_Center;
-		if (dwCheckMask & CNAT_Left)   if (rDensityProvider.GetDensity(tx - 1, ty) >= ContactDensity) iContact |= CNAT_Left;
-		if (dwCheckMask & CNAT_Right)  if (rDensityProvider.GetDensity(tx + 1, ty) >= ContactDensity) iContact |= CNAT_Right;
-		if (dwCheckMask & CNAT_Top)    if (rDensityProvider.GetDensity(tx, ty - 1) >= ContactDensity) iContact |= CNAT_Top;
-		if (dwCheckMask & CNAT_Bottom) if (rDensityProvider.GetDensity(tx, ty + 1) >= ContactDensity) iContact |= CNAT_Bottom;
+		if (dwCheckMask & CNAT_Center) if (rDensityProvider.GetDensity(landscape, tx, ty)     >= ContactDensity) iContact |= CNAT_Center;
+		if (dwCheckMask & CNAT_Left)   if (rDensityProvider.GetDensity(landscape, tx - 1, ty) >= ContactDensity) iContact |= CNAT_Left;
+		if (dwCheckMask & CNAT_Right)  if (rDensityProvider.GetDensity(landscape, tx + 1, ty) >= ContactDensity) iContact |= CNAT_Right;
+		if (dwCheckMask & CNAT_Top)    if (rDensityProvider.GetDensity(landscape, tx, ty - 1) >= ContactDensity) iContact |= CNAT_Top;
+		if (dwCheckMask & CNAT_Bottom) if (rDensityProvider.GetDensity(landscape, tx, ty + 1) >= ContactDensity) iContact |= CNAT_Bottom;
 	}
 	// return resulting bitmask
 	return iContact;

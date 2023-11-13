@@ -113,10 +113,11 @@ void C4ObjectMenu::ClearPointers(C4Object *pObj)
 
 C4Object *C4ObjectMenu::GetParentObject()
 {
-	C4Object *cObj; C4ObjectLink *cLnk;
-	for (cLnk = Game.Objects.First; cLnk && (cObj = cLnk->Obj); cLnk = cLnk->Next)
-		if (cObj->Menu == this)
-			return cObj;
+	auto allObjects = Game.GetAllObjects();
+	if (const auto it = std::ranges::find(allObjects, this, &C4Object::Menu); it != std::ranges::end(allObjects))
+	{
+		return *it;
+	}
 	return nullptr;
 }
 
@@ -205,17 +206,17 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 	{
 		// Clear items
 		ClearItems();
-		// Base buying disabled? Fail.
-		if (~Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy) return false;
 		// Refill target
 		if (!(pTarget = RefillObject)) return false;
+		// Base buying disabled? Fail.
+		if (~pTarget->Section->C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy) return false;
 		// Add base owner's homebase material
 		if (!(pPlayer = Game.Players.Get(pTarget->Base))) return false;
 		C4Player *pBuyPlayer = Object ? Game.Players.Get(Object->Owner) : nullptr;
 		C4ID idDef;
 		for (cnt = 0; idDef = pPlayer->HomeBaseMaterial.GetID(Game.Defs, C4D_All, cnt, &iCount); cnt++)
 		{
-			pDef = C4Id2Def(idDef);
+			pDef = Game.Defs.ID2Def(idDef);
 			if (!pDef) continue; // skip invalid defs
 			// Caption
 			sprintf(szCaption, LoadResStr("IDS_MENU_BUY"), pDef->GetName());
@@ -235,10 +236,10 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 	case C4MN_Sell:
 		// Clear items
 		ClearItems();
-		// Base sale disabled? Fail.
-		if (~Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell) return false;
 		// Refill target
 		if (!(pTarget = RefillObject)) return false;
+		// Base sale disabled? Fail.
+		if (~pTarget->Section->C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell) return false;
 		{
 			// Add target contents items
 			C4ObjectListIterator iter(pTarget->Contents);
@@ -376,7 +377,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 		if (ValidPlr(pTarget->Base) && !Hostile(pTarget->Base, Object->Owner))
 		{
 			// Buy
-			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy)
+			if (pTarget->Section->C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy)
 			{
 				sprintf(szCommand, "SetCommand(this,\"Buy\",Object(%d))&&ExecuteCommand()", pTarget->Number);
 				fctSymbol.Create(symbolSize, symbolSize); DrawMenuSymbol(C4MN_Buy, fctSymbol, pTarget->Base, pTarget);
@@ -384,7 +385,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				fctSymbol.Default();
 			}
 			// Sell
-			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell)
+			if (pTarget->Section->C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell)
 			{
 				sprintf(szCommand, "SetCommand(this,\"Sell\",Object(%d))&&ExecuteCommand()", pTarget->Number);
 				fctSymbol.Create(symbolSize, symbolSize); DrawMenuSymbol(C4MN_Sell, fctSymbol, pTarget->Base, pTarget);
@@ -559,7 +560,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						if (!fCountOnly)
 						{
 							sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this,Object(%d))", cObj->Number, pFunction->Name, pTarget->Number);
-							if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
+							if (pDef = Game.Defs.ID2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 							Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 							iResult++;
 						}
@@ -579,7 +580,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 							if (!fCountOnly)
 							{
 								sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",Object(%d),%d,Object(%d),%s)", pEff->pCommandTarget->Number, pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
-								if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
+								if (pDef = Game.Defs.ID2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 								Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 								fctSymbol.Default();
 								iResult++;
@@ -588,8 +589,8 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 								iResult++;
 		}
 
-	// Script context functions of any objects attached to target (search global list, because attachment objects might be moved just about anywhere...)
-	for (clnk = Game.Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
+	// Script context functions of any objects attached to target (search section list, because attachment objects might be moved just about anywhere...)
+	for (clnk = pTarget->Section->Objects.First; clnk && (cObj = clnk->Obj); clnk = clnk->Next)
 		if (cObj->Status && cObj->Action.Target == pTarget)
 			if (cObj->Action.Act > ActIdle)
 				if (cObj->Def->ActMap[cObj->Action.Act].Procedure == DFA_ATTACH)
@@ -599,7 +600,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 								if (!fCountOnly)
 								{
 									sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this,Object(%d))", cObj->Number, pFunction->Name, pTarget->Number);
-									if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
+									if (pDef = Game.Defs.ID2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 									Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 									fctSymbol.Default();
 									iResult++;
@@ -637,7 +638,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						// Command
 						sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this)", pTarget->Number, pFunction->Name);
 						// Symbol
-						if (pDef = C4Id2Def(pFunction->idImage))
+						if (pDef = Game.Defs.ID2Def(pFunction->idImage))
 						{
 							pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 						}
@@ -661,7 +662,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						if (!fCountOnly)
 						{
 							sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this)", pTarget->Number, pFunction->Name);
-							if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
+							if (pDef = Game.Defs.ID2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
 							Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 							fctSymbol.Default();
 							iResult++;

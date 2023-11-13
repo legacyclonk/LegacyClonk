@@ -76,7 +76,7 @@ public:
 	int getShapeSum() const;
 
 	void Dump();
-	bool CheckSort();
+	bool CheckSort(C4ObjectList &list);
 };
 
 // a defined sector-area within the map

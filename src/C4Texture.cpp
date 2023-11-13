@@ -63,23 +63,23 @@ bool C4TexMapEntry::Create(const char *szMaterial, const char *szTexture)
 	return true;
 }
 
-bool C4TexMapEntry::Init()
+bool C4TexMapEntry::Init(C4Section &section)
 {
 	// Find material
-	iMaterialIndex = Game.Material.Get(Material.getData());
-	if (!MatValid(iMaterialIndex))
+	iMaterialIndex = section.Material.Get(Material.getData());
+	if (!section.MatValid(iMaterialIndex))
 	{
 		DebugLogF("Error initializing material %s-%s: Invalid material!", Material.getData(), Texture.getData());
 		return false;
 	}
-	pMaterial = &Game.Material.Map[iMaterialIndex];
+	pMaterial = &section.Material.Map[iMaterialIndex];
 	// Special, hardcoded crap: change <liquid>-Smooth to <liquid>-Liquid
 	const char *szTexture = Texture.getData();
 	if (DensityLiquid(pMaterial->Density))
 		if (SEqualNoCase(szTexture, "Smooth"))
 			szTexture = "Liquid";
 	// Find texture
-	C4Texture *sfcTexture = Game.TextureMap.GetTexture(szTexture);
+	C4Texture *sfcTexture = section.TextureMap.GetTexture(szTexture);
 	if (!sfcTexture)
 	{
 		DebugLogF("Error initializing material %s-%s: Invalid texture!", Material.getData(), Texture.getData());
@@ -101,7 +101,8 @@ bool C4TexMapEntry::Init()
 	return true;
 }
 
-C4TextureMap::C4TextureMap()
+C4TextureMap::C4TextureMap(C4Section &section)
+	: section{section}
 {
 	Default();
 }
@@ -122,14 +123,14 @@ bool C4TextureMap::AddEntry(uint8_t byIndex, const char *szMaterial, const char 
 	Entry[byIndex].Create(szMaterial, szTexture);
 	if (fInitialized)
 	{
-		if (!Entry[byIndex].Init())
+		if (!Entry[byIndex].Init(section))
 		{
 			// Clear entry if it could not be initialized
 			Entry[byIndex].Clear();
 			return false;
 		}
 		// Landscape must be notified (new valid pixel clr)
-		Game.Landscape.HandleTexMapUpdate();
+		section.Landscape.HandleTexMapUpdate();
 	}
 	return true;
 }
@@ -231,7 +232,7 @@ int32_t C4TextureMap::Init()
 	int32_t i;
 	for (i = 0; i < C4M_MaxTexIndex; i++)
 		if (!Entry[i].isNull())
-			if (!Entry[i].Init())
+			if (!Entry[i].Init(section))
 			{
 				LogF("Error in TextureMap initialization at entry %d", static_cast<int>(i));
 				Entry[i].Clear();
@@ -365,14 +366,14 @@ int32_t C4TextureMap::GetIndexMatTex(const char *szMaterialTexture, const char *
 		if (iMatTex = GetIndex(Material.getData(), szDefaultTexture, fAddIfNotExist))
 			return iMatTex;
 	// search material
-	const auto iMaterial = Game.Material.Get(szMaterialTexture);
-	if (!MatValid(iMaterial))
+	const auto iMaterial = section.Material.Get(szMaterialTexture);
+	if (!section.MatValid(iMaterial))
 	{
 		if (szErrorIfFailed) DebugLogF("Error getting MatTex for %s: Invalid material", szErrorIfFailed);
 		return 0;
 	}
 	// return default map entry
-	return Game.Material.Map[iMaterial].DefaultMatTex;
+	return section.Material.Map[iMaterial].DefaultMatTex;
 }
 
 C4Texture *C4TextureMap::GetTexture(const char *szTexture)

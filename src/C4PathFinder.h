@@ -69,7 +69,8 @@ public:
 	~C4PathFinder();
 
 protected:
-	bool(*PointFree)(int32_t, int32_t);
+	C4Landscape *Landscape;
+	bool(*PointFree)(C4Landscape &, int32_t, int32_t);
 	// iToX and iToY are intptr_t because there are stored object
 	// pointers sometimes
 	bool(*SetWaypoint)(int32_t, int32_t, intptr_t, intptr_t);
@@ -84,7 +85,7 @@ public:
 	void Draw(C4FacetEx &cgo);
 	void Clear();
 	void Default();
-	void Init(bool(*fnPointFree)(int32_t, int32_t), C4TransferZones *pTransferZones = nullptr);
+	void Init(C4Landscape &landscape, bool(*fnPointFree)(C4Landscape &, int32_t, int32_t), C4TransferZones *pTransferZones = nullptr);
 	bool Find(int32_t iFromX, int32_t iFromY, int32_t iToX, int32_t iToY, bool(*fnSetWaypoint)(int32_t, int32_t, intptr_t, intptr_t), intptr_t iWaypointParameter);
 	void EnableTransferZones(bool fEnabled);
 	void SetLevel(int iLevel);

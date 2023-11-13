@@ -54,6 +54,7 @@ public:
 
 public:
 	bool Active;
+	C4Section *Section;
 #ifdef _WIN32
 	HWND hDialog;
 #ifndef USE_CONSOLE
