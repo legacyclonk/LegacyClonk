@@ -58,7 +58,7 @@ bool C4GameSave::SaveCreateGroup(const char *szFilename, C4Group &hUseGroup)
 bool C4GameSave::SaveCore()
 {
 	// base on original, current core
-	rC4S = Game.MainSection.C4S;
+	rC4S = Game.C4S;
 	// Always mark current engine version
 	rC4S.Head.C4XVer[0] = C4XVER1; rC4S.Head.C4XVer[1] = C4XVER2;
 	rC4S.Head.C4XVer[2] = C4XVER3; rC4S.Head.C4XVer[3] = C4XVER4;
@@ -83,7 +83,7 @@ bool C4GameSave::SaveCore()
 		// Store used definitions
 		rC4S.Definitions.SetModules(Game.DefinitionFilenames, Config.General.ExePath, Config.General.DefinitionPath);
 		// Save game parameters
-		if (!Game.Parameters.Save(*pSaveGroup, &Game.MainSection.C4S)) return false;
+		if (!Game.Parameters.Save(*pSaveGroup, &Game.C4S)) return false;
 	}
 	// clear MissionAccess in save games and records (sulai)
 	*rC4S.Head.MissionAccess = 0;

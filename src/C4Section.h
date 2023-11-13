@@ -77,13 +77,15 @@ public:
 	C4Section(C4Section &&) = delete;
 	C4Section &operator=(C4Section &&) = delete;
 
+	~C4Section() { Clear(); }
+
 public:
-	void DefaultMain();
-	void ClearMain();
+	void Default();
+	void Clear();
 
 	bool InitSection(C4Group &scenario);
 
-	bool InitSecondPart(C4Group &group);
+	bool InitSecondPart();
 	bool InitThirdPart();
 	bool CheckObjectEnumeration();
 

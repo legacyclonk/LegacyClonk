@@ -378,7 +378,7 @@ bool C4PlayerList::Save(C4Group &hGroup, bool fStoreTiny, const C4PlayerInfoList
 bool C4PlayerList::Save(bool fSaveLocalOnly)
 {
 	// do not save in replays
-	if (Game.MainSection.C4S.Head.Replay) return true;
+	if (Game.C4S.Head.Replay) return true;
 	// Save to external player files
 	for (C4Player *pPlr = First; pPlr; pPlr = pPlr->Next)
 		if (pPlr->GetType() != C4PT_Script)

@@ -152,7 +152,7 @@ bool C4GraphicsResource::InitFonts()
 	// reinit main font
 	// this regards scenario-specific fonts or overloads in Extra.c4g
 	const char *szFont;
-	if (*Game.MainSection.C4S.Head.Font) szFont = Game.MainSection.C4S.Head.Font; else szFont = Config.General.RXFontName;
+	if (*Game.C4S.Head.Font) szFont = Game.C4S.Head.Font; else szFont = Config.General.RXFontName;
 #ifndef USE_CONSOLE
 	if (!Game.FontLoader.InitFont(FontRegular, szFont, C4FontLoader::C4FT_Main, Config.General.RXFontSize, &Files))
 		return false;
