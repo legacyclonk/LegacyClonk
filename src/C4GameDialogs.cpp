@@ -31,9 +31,9 @@ bool C4AbortGameDialog::is_shown = false;
 // C4GameAbortDlg
 
 C4AbortGameDialog::C4AbortGameDialog()
-	: C4GUI::Dialog((Game.Control.isCtrlHost() || (Game.MainSection.C4S.Head.Film == 2)) ? 400 : C4GUI::MessageDialog::dsSmall, 100, LoadResStr(C4ResStrTableKey::IDS_DLG_ABORT), false), fGameHalted(false)
+	: C4GUI::Dialog((Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2)) ? 400 : C4GUI::MessageDialog::dsSmall, 100, LoadResStr(C4ResStrTableKey::IDS_DLG_ABORT), false), fGameHalted(false)
 {
-	const auto showRestart = (Game.Control.isCtrlHost() || (Game.MainSection.C4S.Head.Film == 2));
+	const auto showRestart = (Game.Control.isCtrlHost() || (Game.C4S.Head.Film == 2));
 
 	is_shown = true; // assume dlg will be shown, soon
 

@@ -1159,7 +1159,7 @@ void C4ControlMessage::Execute(const std::shared_ptr<spdlog::logger> &) const
 		C4Object *pViewObject = pPlr->ViewTarget;
 		if (!pViewObject) pViewObject = pPlr->Cursor;
 		if (!pViewObject) break;
-		if (Game.MainSection.C4S.Head.Film == C4SFilm_Cinematic)
+		if (Game.C4S.Head.Film == C4SFilm_Cinematic)
 		{
 			const std::string message{std::format("<{}> {}", pPlr->Cursor ? pPlr->Cursor->GetName() : pPlr->GetName(), szMessage)};
 			uint32_t dwClr = pPlr->Cursor ? pPlr->Cursor->Color : pPlr->ColorDw;

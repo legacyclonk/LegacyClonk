@@ -146,7 +146,7 @@ bool C4Player::ScenarioAndTeamInit(int32_t idTeam)
 	// team selection OK; execute it!
 	if (pPrevTeam) pPrevTeam->RemovePlayerByID(pInfo->GetID());
 	if (pTeam) pTeam->AddPlayer(*pInfo, true);
-	if (!ScenarioInit(Game.MainSection)) return false;
+	if (!ScenarioInit(*Game.Sections.front())) return false;
 	if (Game.Rules & C4RULE_TeamHombase) SyncHomebaseMaterialFromTeam();
 	if (!FinalInit(false)) return false;
 	return true;
@@ -187,12 +187,12 @@ void C4Player::Execute()
 						if (iPlrStartIndex && Inside<int32_t>(iPlrStartIndex, 1, C4S_MaxPlayer))
 						{
 							// FIXME
-							if (Game.MainSection.C4S.PlrStart[iPlrStartIndex - 1].Position[0] > -1)
+							if (Game.C4S.PlrStart[iPlrStartIndex - 1].Position[0] > -1)
 							{
 								// player has selected a team that has a valid start position assigned
 								// set view to this position!
-								ViewX = Game.MainSection.C4S.PlrStart[iPlrStartIndex - 1].Position[0] * Game.MainSection.Landscape.MapZoom;
-								ViewY = Game.MainSection.C4S.PlrStart[iPlrStartIndex - 1].Position[1] * Game.MainSection.Landscape.MapZoom;
+								ViewX = Game.C4S.PlrStart[iPlrStartIndex - 1].Position[0] * Game.Sections.front()->Landscape.MapZoom;
+								ViewY = Game.C4S.PlrStart[iPlrStartIndex - 1].Position[1] * Game.Sections.front()->Landscape.MapZoom;
 							}
 						}
 					}
@@ -286,7 +286,7 @@ bool C4Player::Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientNa
 	Name.Copy(pInfo->GetName());
 
 	// section init: start on main section
-	ViewSection = &Game.MainSection;
+	ViewSection = Game.Sections.front().get();
 	// view pos init: Start at center pos
 	ViewX = ViewSection->Landscape.Width / 2; ViewY = ViewSection->Landscape.Height / 2;
 
@@ -365,7 +365,7 @@ bool C4Player::Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientNa
 			// for script players in non-savegames, this is OK - it means they get restored using default values
 			// this happens when the users saves a scenario using the "Save scenario"-option while a script player
 			// was joined
-			if (!Game.MainSection.C4S.Head.SaveGame && pInfo->GetType() == C4PT_Script)
+			if (!Game.C4S.Head.SaveGame && pInfo->GetType() == C4PT_Script)
 			{
 				Number = pInfo->GetInGameNumber();
 				ColorDw = pInfo->GetColor();
@@ -858,7 +858,7 @@ C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pB
 	// Reduce wealth
 	DoWealth(-iValue);
 	// Create object (for player)
-	if (!(pThing = (pBuyObj ? *pBuyObj->Section : Game.MainSection).CreateObject(id, pBuyObj, iForPlr))) return nullptr; // FIXME
+	if (!(pThing = (pBuyObj ? *pBuyObj->Section : *Game.Sections.front()).CreateObject(id, pBuyObj, iForPlr))) return nullptr; // FIXME
 	// Make crew member
 	if (pDef->CrewMember) if (ValidPlr(iForPlr))
 		Game.Players.Get(iForPlr)->MakeCrewMember(pThing);
@@ -951,7 +951,7 @@ void C4Player::Evaluate()
 	LastRound.Duration = Game.Time;
 	LastRound.Won = !Eliminated;
 	// Melee: personal value gain score ...check Game.Objects(C4D_Goal)
-	if (Game.MainSection.C4S.Game.IsMelee()) LastRound.Score = std::max<int32_t>(ValueGain, 0);
+	if (Game.C4S.Game.IsMelee()) LastRound.Score = std::max<int32_t>(ValueGain, 0);
 	// Cooperative: shared score
 	else LastRound.Score = (std::max)(Game.Players.AverageValueGain(), 0);
 	LastRound.Level = 0; // unknown...

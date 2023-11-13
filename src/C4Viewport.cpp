@@ -299,7 +299,7 @@ C4Section &C4Viewport::GetViewSection()
 		return *plr->ViewSection.Denumerated();
 	}
 
-	return Game.MainSection;
+	return *Game.Sections.front();
 }
 
 #elif defined(WITH_DEVELOPER_MODE)
@@ -848,7 +848,7 @@ void C4Viewport::Clear()
 
 void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 {
-	if (!Game.MainSection.C4S.Head.Film || !Game.MainSection.C4S.Head.Replay)
+	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay)
 	{
 		// Player info
 		C4ST_STARTNEW(CInfoStat, "C4Viewport::DrawOverlay: Cursor Info")
@@ -867,7 +867,7 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 	C4ST_STOP(MsgStat)
 
 	// Control overlays (if not film/replay)
-	if (!Game.MainSection.C4S.Head.Film || !Game.MainSection.C4S.Head.Replay)
+	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay)
 	{
 		// Mouse control
 		if (Game.MouseControl.IsViewport(this))
@@ -1101,7 +1101,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 	if (Game.GraphicsSystem.ShowPathfinder) section.PathFinder.Draw(cgo);
 
 	// Draw overlay
-	if (!Game.MainSection.C4S.Head.Film || !Game.MainSection.C4S.Head.Replay) Game.DrawCursors(cgo, Player);
+	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay) Game.DrawCursors(cgo, Player);
 
 	// FogOfWar-mod off
 	lpDDraw->SetClrModMapEnabled(false);
@@ -1562,7 +1562,7 @@ void C4Viewport::NextPlayer()
 		if (!(pPlr = Game.Players.First)) return;
 	}
 	else if (!(pPlr = pPlr->Next))
-		if (Game.MainSection.C4S.Head.Film && Game.MainSection.C4S.Head.Replay)
+		if (Game.C4S.Head.Film && Game.C4S.Head.Replay)
 			pPlr = Game.Players.First; // cycle to first in film mode only; in network obs mode allow NO_OWNER-view
 	if (pPlr) iPlr = pPlr->Number; else iPlr = NO_OWNER;
 	if (iPlr != Player) Init(iPlr, true);

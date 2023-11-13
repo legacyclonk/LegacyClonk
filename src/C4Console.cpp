@@ -795,7 +795,7 @@ bool C4Console::FileSave(bool fSaveGame)
 {
 	// Don't quicksave games over scenarios
 	if (fSaveGame)
-		if (!Game.MainSection.C4S.Head.SaveGame)
+		if (!Game.C4S.Head.SaveGame)
 		{
 			Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NOGAMEOVERSCEN));
 			return false;

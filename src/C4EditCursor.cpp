@@ -108,7 +108,7 @@ bool C4EditCursor::Init()
 	Console.UpdateModeCtrls(Mode);
 
 	// FIXME
-	Section = &Game.MainSection;
+	Section = Game.Sections.front().get();
 
 	return true;
 }

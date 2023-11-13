@@ -303,7 +303,7 @@ static bool FnDeathAnnounce(C4AulContext *cthr)
 {
 	static constexpr int MaxDeathMsg{7};
 	if (!cthr->Obj) return false;
-	if (Game.MainSection.C4S.Head.Film) return true;
+	if (Game.C4S.Head.Film) return true;
 	// Check if crew member has an own death message
 	if (cthr->Obj->Info && *(cthr->Obj->Info->DeathMessage))
 	{
