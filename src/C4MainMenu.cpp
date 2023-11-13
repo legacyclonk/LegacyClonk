@@ -61,7 +61,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 	const auto symbolSize = GetSymbolSize();
 
 	// league or replay game
-	if (Game.Parameters.isLeague() || Game.MainSection.C4S.Head.Replay) return false;
+	if (Game.Parameters.isLeague() || Game.C4S.Head.Replay) return false;
 	// Max player limit
 	if (Game.Players.GetCount() >= Game.Parameters.MaxPlayers) return false;
 
@@ -566,7 +566,7 @@ bool C4MainMenu::ActivateOptions(int32_t iPlayer, int32_t selection)
 	AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_MUSIC), GfxR->fctOptions.GetPhase(1 + Config.Sound.RXMusic), "Options:Music", C4MN_Item_NoCount);
 	// Mouse control
 	C4Player *pPlr = Game.Players.Get(iPlayer);
-	if (pPlr && !Game.MainSection.C4S.Head.DisableMouse)
+	if (pPlr && !Game.C4S.Head.DisableMouse)
 	{
 		if (pPlr->MouseControl)
 			AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MNU_MOUSECONTROL), GfxR->fctOptions.GetPhase(11 + 1), "Options:Mouse");
@@ -765,7 +765,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 	if (SEqual2(szCommand, "JoinPlayer:"))
 	{
 		// not in league or replay mode
-		if (Game.Parameters.isLeague() || Game.MainSection.C4S.Head.Replay) return false;
+		if (Game.Parameters.isLeague() || Game.C4S.Head.Replay) return false;
 		// join player
 		if (Game.Network.isEnabled())
 			// 2do: not for observers and such?

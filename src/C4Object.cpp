@@ -77,7 +77,7 @@ C4Object::C4Object()
 
 C4Section &C4Object::GetSection(C4Object *const obj) noexcept
 {
-	return obj ? *obj->Section : Game.MainSection;
+	return obj ? *obj->Section : *Game.Sections.front();
 }
 
 void C4Object::Default()
@@ -177,7 +177,7 @@ bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
 	}
 	else
 	{
-		Section = &Game.MainSection;
+		Section = Game.Sections.front().get();
 	}
 
 	// graphics
@@ -2572,7 +2572,7 @@ void C4Object::DrawTopFace(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode
 	int32_t cotx = cgo.TargetX, coty = cgo.TargetY; if (eDrawMode != ODM_Overlay) TargetPos(cotx, coty, cgo);
 	// Clonk name
 	// Name of Owner/Clonk (only when Crew Member; never in films)
-	if (OCF & OCF_CrewMember) if ((Config.Graphics.ShowCrewNames || Config.Graphics.ShowCrewCNames) && (!Game.MainSection.C4S.Head.Film || !Game.MainSection.C4S.Head.Replay)) if (!eDrawMode)
+	if (OCF & OCF_CrewMember) if ((Config.Graphics.ShowCrewNames || Config.Graphics.ShowCrewCNames) && (!Game.C4S.Head.Film || !Game.C4S.Head.Replay)) if (!eDrawMode)
 		if (Owner != iByPlayer && !Contained)
 		{
 			// inside screen range?
@@ -3847,7 +3847,7 @@ void C4Object::DrawSelectMark(C4FacetEx &cgo)
 	// Status
 	if (!Status) return;
 	// No select marks in film playback
-	if (Game.MainSection.C4S.Head.Film && Game.MainSection.C4S.Head.Replay) return;
+	if (Game.C4S.Head.Film && Game.C4S.Head.Replay) return;
 	// target pos (parallax)
 	int32_t cotx = cgo.TargetX, coty = cgo.TargetY; TargetPos(cotx, coty, cgo);
 	// Output boundary
