@@ -41,7 +41,7 @@ protected:
 	C4TransferZone *Next;
 
 public:
-	bool GetEntryPoint(int32_t &rX, int32_t &rY, int32_t iToX, int32_t iToY);
+	bool GetEntryPoint(C4Landscape &landscape, int32_t &rX, int32_t &rY, int32_t iToX, int32_t iToY);
 	void Draw(C4FacetEx &cgo, bool fHighlight = false);
 	void Default();
 	void Clear();
@@ -64,7 +64,6 @@ public:
 	void ClearUsed();
 	void ClearPointers(C4Object *pObj);
 	void Draw(C4FacetEx &cgo);
-	void Synchronize();
 	C4TransferZone *Find(C4Object *pObj);
 	C4TransferZone *Find(int32_t iX, int32_t iY);
 	bool Add(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, C4Object *pObj);

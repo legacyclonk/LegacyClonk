@@ -25,7 +25,7 @@
 
 static const C4Fixed WindDrift_Factor = itofix(1, 800);
 
-void C4PXS::Execute()
+void C4PXS::Execute(C4Section &section)
 {
 #ifdef DEBUGREC_PXS
 	{
@@ -38,38 +38,38 @@ void C4PXS::Execute()
 	int32_t inmat;
 
 	// Safety
-	if (!MatValid(Mat))
+	if (!section.MatValid(Mat))
 	{
-		Deactivate(); return;
+		Deactivate(section); return;
 	}
 
 	// Out of bounds
-	if ((x < 0) || (x >= GBackWdt) || (y < -10) || (y >= GBackHgt))
+	if ((x < 0) || (x >= section.Landscape.Width) || (y < -10) || (y >= section.Landscape.Height))
 	{
-		Deactivate(); return;
+		Deactivate(section); return;
 	}
 
 	// Material conversion
 	int32_t iX = fixtoi(x), iY = fixtoi(y);
-	inmat = GBackMat(iX, iY);
-	C4MaterialReaction *pReact = Game.Material.GetReactionUnsafe(Mat, inmat);
-	if (pReact && (*pReact->pFunc)(pReact, iX, iY, iX, iY, xdir, ydir, Mat, inmat, meePXSPos, nullptr))
+	inmat = section.Landscape.GetMat(iX, iY);
+	C4MaterialReaction *pReact = section.Material.GetReactionUnsafe(Mat, inmat);
+	if (pReact && (*pReact->pFunc)(pReact, section, iX, iY, iX, iY, xdir, ydir, Mat, inmat, meePXSPos, nullptr))
 	{
-		Deactivate(); return;
+		Deactivate(section); return;
 	}
 
 	// Gravity
-	ydir += GravAccel;
+	ydir += section.Landscape.Gravity;
 
-	if (GBackDensity(iX, iY + 1) < Game.Material.Map[Mat].Density)
+	if (section.Landscape.GetDensity(iX, iY + 1) < section.Material.Map[Mat].Density)
 	{
 		// Air speed: Wind plus some random
-		int32_t iWind = GBackWind(iX, iY);
+		int32_t iWind = section.GBackWind(iX, iY);
 		C4Fixed txdir = itofix(iWind, 15) + FIXED256(Random(1200) - 600);
 		C4Fixed tydir = FIXED256(Random(1200) - 600);
 
 		// Air friction, based on WindDrift. MaxSpeed is ignored.
-		int32_t iWindDrift = (std::max)(Game.Material.Map[Mat].WindDrift - 20, 0);
+		int32_t iWindDrift = (std::max)(section.Material.Map[Mat].WindDrift - 20, 0);
 		xdir += ((txdir - xdir) * iWindDrift) * WindDrift_Factor;
 		ydir += ((tydir - ydir) * iWindDrift) * WindDrift_Factor;
 	}
@@ -80,9 +80,9 @@ void C4PXS::Execute()
 	int32_t iToX = fixtoi(ctcox), iToY = fixtoi(ctcoy);
 
 	// In bounds?
-	if (Inside<int32_t>(iToX, 0, GBackWdt - 1) && Inside<int32_t>(iToY, 0, GBackHgt - 1))
+	if (Inside<int32_t>(iToX, 0, section.Landscape.Width - 1) && Inside<int32_t>(iToY, 0, section.Landscape.Height - 1))
 		// Check path
-		if (Game.Landscape._PathFree(iX, iY, iToX, iToY))
+		if (section.Landscape._PathFree(iX, iY, iToX, iToY))
 		{
 			x = ctcox; y = ctcoy;
 			return;
@@ -95,13 +95,13 @@ void C4PXS::Execute()
 		// Step
 		int32_t inX = iX + Sign(iToX - iX), inY = iY + Sign(iToY - iY);
 		// Contact?
-		inmat = GBackMat(inX, inY);
-		C4MaterialReaction *pReact = Game.Material.GetReactionUnsafe(Mat, inmat);
+		inmat = section.Landscape.GetMat(inX, inY);
+		C4MaterialReaction *pReact = section.Material.GetReactionUnsafe(Mat, inmat);
 		if (pReact)
-			if ((*pReact->pFunc)(pReact, iX, iY, inX, inY, xdir, ydir, Mat, inmat, meePXSMove, &fStopMovement))
+			if ((*pReact->pFunc)(pReact, section, iX, iY, inX, inY, xdir, ydir, Mat, inmat, meePXSMove, &fStopMovement))
 			{
 				// destructive contact
-				Deactivate();
+				Deactivate(section);
 				return;
 			}
 			else
@@ -130,7 +130,7 @@ void C4PXS::Execute()
 	return;
 }
 
-void C4PXS::Deactivate()
+void C4PXS::Deactivate(C4Section &section)
 {
 #ifdef DEBUGREC_PXS
 	C4RCExecPXS rc;
@@ -139,10 +139,11 @@ void C4PXS::Deactivate()
 	AddDbgRec(RCT_ExecPXS, &rc, sizeof(rc));
 #endif
 	Mat = MNone;
-	Game.PXS.Delete(this);
+	section.PXS.Delete(this);
 }
 
-C4PXSSystem::C4PXSSystem()
+C4PXSSystem::C4PXSSystem(C4Section &section)
+	: section{section}
 {
 	Default();
 }
@@ -201,7 +202,7 @@ C4PXS *C4PXSSystem::New()
 bool C4PXSSystem::Create(int32_t mat, C4Fixed ix, C4Fixed iy, C4Fixed ixdir, C4Fixed iydir)
 {
 	C4PXS *pxp;
-	if (!MatValid(mat)) return false;
+	if (!section.MatValid(mat)) return false;
 	if (!(pxp = New())) return false;
 	pxp->Mat = mat;
 	pxp->x = ix; pxp->y = iy;
@@ -227,7 +228,7 @@ void C4PXSSystem::Execute()
 				for (unsigned int cnt2 = 0; cnt2 < PXSChunkSize; cnt2++, pxp++)
 					if (pxp->Mat != MNone)
 					{
-						pxp->Execute();
+						pxp->Execute(section);
 						Count++;
 					}
 			}
@@ -249,11 +250,11 @@ void C4PXSSystem::Draw(C4FacetEx &cgo)
 			for (unsigned int cnt2 = 0; cnt2 < PXSChunkSize; cnt2++, pxp++)
 				if (pxp->Mat != MNone && VisibleRect.Contains(fixtoi(pxp->x), fixtoi(pxp->y)))
 				{
-					C4Material *pMat = &Game.Material.Map[pxp->Mat];
+					C4Material *pMat = &section.Material.Map[pxp->Mat];
 					if (pMat->PXSFace.Surface && Config.Graphics.PXSGfx)
 						continue;
 					// old-style: unicolored pixels or lines
-					uint32_t dwMatClr = Game.Landscape.GetPal()->GetClr(Mat2PixColDefault(pxp->Mat));
+					uint32_t dwMatClr = section.Landscape.GetPal()->GetClr(section.Mat2PixColDefault(pxp->Mat));
 					if (fixtoi(pxp->xdir) || fixtoi(pxp->ydir))
 					{
 						// lines for stuff that goes whooosh!
@@ -282,7 +283,7 @@ void C4PXSSystem::Draw(C4FacetEx &cgo)
 			for (unsigned int cnt2 = 0; cnt2 < PXSChunkSize; cnt2++, pxp++)
 				if (pxp->Mat != MNone && VisibleRect.Contains(fixtoi(pxp->x), fixtoi(pxp->y)))
 				{
-					C4Material *pMat = &Game.Material.Map[pxp->Mat];
+					C4Material *pMat = &section.Material.Map[pxp->Mat];
 					if (!pMat->PXSFace.Surface)
 						continue;
 					// new-style: graphics

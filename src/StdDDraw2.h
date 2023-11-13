@@ -139,6 +139,8 @@ public:
 	void Clear(); // clear pattern
 	CPattern();
 	~CPattern() { Clear(); }
+	CPattern(CPattern &&) = default;
+	CPattern &operator=(CPattern &&) = default;
 };
 
 // blit position on screen

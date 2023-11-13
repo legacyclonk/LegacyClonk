@@ -111,6 +111,9 @@ bool C4EditCursor::Init()
 #endif // _WIN32
 	Console.UpdateModeCtrls(Mode);
 
+	// FIXME
+	Section = &Game.MainSection;
+
 	return true;
 }
 
@@ -142,7 +145,7 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 			Target = ((wKeyFlags & MK_SHIFT) && Selection.Last) ? Selection.Last->Obj : nullptr;
 			do
 			{
-				Target = Game.FindObject(0, X, Y, 0, 0, OCF_NotContained, nullptr, nullptr, nullptr, nullptr, ANY_OWNER, Target);
+				Target = Section->FindObject(0, X, Y, 0, 0, OCF_NotContained, nullptr, nullptr, nullptr, nullptr, ANY_OWNER, Target);
 			} while ((wKeyFlags & MK_SHIFT) && Target && Selection.GetLink(Target));
 		}
 		break;
@@ -182,7 +185,7 @@ bool C4EditCursor::UpdateStatusBar()
 		break;
 
 	case C4CNS_ModeDraw:
-		text = FormatString("%i/%i (%s)", X, Y, (MatValid(GBackMat(X, Y)) ? Game.Material.Map[GBackMat(X, Y)].Name : LoadResStr("IDS_CNS_NOTHING")));
+		text = FormatString("%i/%i (%s)", X, Y, (Section->MatValid(Section->Landscape.GetMat(X, Y)) ? Section->Material.Map[Section->Landscape.GetMat(X, Y)].Name : LoadResStr("IDS_CNS_NOTHING")));
 		break;
 	}
 	return Console.UpdateCursorBar(text.getData());
@@ -455,7 +458,7 @@ void C4EditCursor::FrameSelection()
 {
 	Selection.Clear();
 	C4Object *cobj; C4ObjectLink *clnk;
-	for (clnk = Game.Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
+	for (clnk = Section->Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 		if (cobj->Status) if (cobj->OCF & OCF_NotContained)
 		{
 			if (Inside(cobj->x, (std::min)(X, X2), (std::max)(X, X2)) && Inside(cobj->y, (std::min)(Y, Y2), (std::max)(Y, Y2)))
@@ -482,6 +485,7 @@ void C4EditCursor::Default()
 	Hold = DragFrame = DragLine = false;
 	Selection.Default();
 	fSelectionChanged = false;
+	Section = nullptr;
 }
 
 void C4EditCursor::Clear()
@@ -556,7 +560,7 @@ void C4EditCursor::ApplyToolBrush()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Game.Landscape.Mode, X, Y, 0, 0, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Section->Landscape.Mode, X, Y, 0, 0, pTools->Grade, !!pTools->ModeIFT, Game.GetSectionIndex(*Section), pTools->Material, pTools->Texture));
 }
 
 void C4EditCursor::ApplyToolLine()
@@ -564,7 +568,7 @@ void C4EditCursor::ApplyToolLine()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Game.Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Section->Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, Game.GetSectionIndex(*Section), pTools->Material, pTools->Texture));
 }
 
 void C4EditCursor::ApplyToolRect()
@@ -572,7 +576,7 @@ void C4EditCursor::ApplyToolRect()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Game.Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Section->Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, Game.GetSectionIndex(*Section), pTools->Material, pTools->Texture));
 }
 
 void C4EditCursor::ApplyToolFill()
@@ -580,7 +584,7 @@ void C4EditCursor::ApplyToolFill()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Game.Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, pTools->Material));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Section->Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, Game.GetSectionIndex(*Section), pTools->Material));
 }
 
 bool C4EditCursor::DoContextMenu()
@@ -645,7 +649,7 @@ void C4EditCursor::UpdateDropTarget(uint16_t wKeyFlags)
 
 	if (wKeyFlags & MK_CONTROL)
 		if (Selection.GetObject())
-			for (clnk = Game.Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
+			for (clnk = Section->Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 				if (cobj->Status)
 					if (!cobj->Contained)
 						if (Inside<int32_t>(X - (cobj->x + cobj->Shape.x), 0, cobj->Shape.Wdt - 1))
@@ -687,13 +691,13 @@ void C4EditCursor::ApplyToolPicker()
 {
 	int32_t iMaterial;
 	uint8_t byIndex;
-	switch (Game.Landscape.Mode)
+	switch (Section->Landscape.Mode)
 	{
 	case C4LSC_Static:
 		// Material-texture from map
-		if (byIndex = Game.Landscape.GetMapIndex(X / Game.Landscape.MapZoom, Y / Game.Landscape.MapZoom))
+		if (byIndex = Section->Landscape.GetMapIndex(X /Section->Landscape.MapZoom, Y / Section->Landscape.MapZoom))
 		{
-			const C4TexMapEntry *pTex = Game.TextureMap.GetEntry(byIndex & (IFT - 1));
+			const C4TexMapEntry *pTex = Section->TextureMap.GetEntry(byIndex & (IFT - 1));
 			if (pTex)
 			{
 				Console.ToolsDlg.SelectMaterial(pTex->GetMaterialName());
@@ -706,10 +710,10 @@ void C4EditCursor::ApplyToolPicker()
 		break;
 	case C4LSC_Exact:
 		// Material only from landscape
-		if (MatValid(iMaterial = GBackMat(X, Y)))
+		if (Section->MatValid(iMaterial = Section->Landscape.GetMat(X, Y)))
 		{
-			Console.ToolsDlg.SelectMaterial(Game.Material.Map[iMaterial].Name);
-			Console.ToolsDlg.SetIFT(GBackIFT(X, Y));
+			Console.ToolsDlg.SelectMaterial(Section->Material.Map[iMaterial].Name);
+			Console.ToolsDlg.SetIFT(Section->Landscape.GBackIFT(X, Y));
 		}
 		else
 			Console.ToolsDlg.SelectMaterial(C4TLS_MatSky);

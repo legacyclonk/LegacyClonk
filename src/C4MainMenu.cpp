@@ -59,7 +59,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 	const auto symbolSize = GetSymbolSize();
 
 	// league or replay game
-	if (Game.Parameters.isLeague() || Game.C4S.Head.Replay) return false;
+	if (Game.Parameters.isLeague() || Game.MainSection.C4S.Head.Replay) return false;
 	// Max player limit
 	if (Game.Players.GetCount() >= Game.Parameters.MaxPlayers) return false;
 
@@ -356,7 +356,7 @@ bool C4MainMenu::ActivateGoals(int32_t iPlayer, bool fDoActivate)
 		C4ID idGoal; C4Def *pDef;
 		for (int32_t i = 0; i < iNumGoals; ++i)
 			if (idGoal = GoalList.GetID(i, &cnt))
-				if (pDef = C4Id2Def(idGoal))
+				if (pDef = Game.Defs.ID2Def(idGoal))
 				{
 					fctSymbol.Create(symbolSize, symbolSize);
 					// 2do: If an object instance is known, draw the object instead?
@@ -391,13 +391,17 @@ bool C4MainMenu::ActivateRules(int32_t iPlayer)
 	SetPermanent(false);
 	// Items
 	int32_t cnt; C4ID idGoal; C4Def *pDef;
-	for (cnt = 0; idGoal = Game.Objects.ObjectsInt().GetListID(C4D_Rule, cnt); cnt++)
-		if (pDef = C4Id2Def(idGoal))
-		{
-			fctSymbol.Create(symbolSize, symbolSize); pDef->Draw(fctSymbol);
-			sprintf(Command, "Player:Rule:%s", C4IdText(idGoal));
-			Add(pDef->GetName(), fctSymbol, Command, C4MN_Item_NoCount, nullptr, pDef->GetDesc());
-		}
+
+	for (const auto &section : Game.Sections)
+	{
+		for (cnt = 0; idGoal = section->Objects.ObjectsInt().GetListID(C4D_Rule, cnt); cnt++)
+			if (pDef = Game.Defs.ID2Def(idGoal))
+			{
+				fctSymbol.Create(symbolSize, symbolSize); pDef->Draw(fctSymbol);
+				sprintf(Command, "Player:Rule:%s", C4IdText(idGoal));
+				Add(pDef->GetName(), fctSymbol, Command, C4MN_Item_NoCount, nullptr, pDef->GetDesc());
+			}
+	}
 	// Go back to options menu on close
 	SetCloseCommand("ActivateMenu:Main");
 	// Done
@@ -564,7 +568,7 @@ bool C4MainMenu::ActivateOptions(int32_t iPlayer, int32_t selection)
 	AddRefSym(LoadResStr("IDS_MNU_MUSIC"), GfxR->fctOptions.GetPhase(1 + Config.Sound.RXMusic), "Options:Music", C4MN_Item_NoCount);
 	// Mouse control
 	C4Player *pPlr = Game.Players.Get(iPlayer);
-	if (pPlr && !Game.C4S.Head.DisableMouse)
+	if (pPlr && !Game.MainSection.C4S.Head.DisableMouse)
 	{
 		if (pPlr->MouseControl)
 			AddRefSym(LoadResStr("IDS_MNU_MOUSECONTROL"), GfxR->fctOptions.GetPhase(11 + 1), "Options:Mouse");
@@ -755,7 +759,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 	if (SEqual2(szCommand, "JoinPlayer:"))
 	{
 		// not in league or replay mode
-		if (Game.Parameters.isLeague() || Game.C4S.Head.Replay) return false;
+		if (Game.Parameters.isLeague() || Game.MainSection.C4S.Head.Replay) return false;
 		// join player
 		if (Game.Network.isEnabled())
 			// 2do: not for observers and such?
@@ -883,7 +887,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 		Close(true);
 		// TODO!
 		C4Object *pObj; C4ID idItem = C4Id(szCommand + 12);
-		if (pObj = Game.Objects.FindInternal(idItem))
+		if (pObj = Game.FindFirstInAllObjects([idItem](C4GameObjects &objects) { return objects.FindInternal(idItem); }))
 			Game.Control.DoInput(CID_ActivateGameGoalRule, new C4ControlActivateGameGoalRule(Player, pObj->Number), CDT_Queue);
 		else
 			return false;

@@ -354,70 +354,69 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 	{
 		const auto newSameGraphics = pNewGraphics->Get(Name);
 		// check all objects
-		C4Object *pObj;
-		for (C4ObjectLink *pLnk = Game.Objects.First; pLnk; pLnk = pLnk->Next)
-			if (pObj = pLnk->Obj) if (pObj->Status)
+		for (C4Object *pObj : Game.GetAllObjectsWithStatus())
+		{
+			if (pObj->pGraphics == pGraphicsPtr)
 			{
-				if (pObj->pGraphics == pGraphicsPtr)
-				{
-					// same graphics found: try to set them
-					if (!pObj->SetGraphics(Name, pDef))
-						if (!pObj->SetGraphics(Name, pObj->Def))
-						{
-							// shouldn't happen
-							pObj->AssignRemoval(); pObj->pGraphics = nullptr;
-						}
-				}
-				// remove any overlay graphics
-				for (;;)
-				{
-					C4GraphicsOverlay *pGfxOverlay;
-					for (pGfxOverlay = pObj->pGfxOverlay; pGfxOverlay; pGfxOverlay = pGfxOverlay->GetNext())
+				// same graphics found: try to set them
+				if (!pObj->SetGraphics(Name, pDef))
+					if (!pObj->SetGraphics(Name, pObj->Def))
 					{
-						if (pGfxOverlay->GetGfx() == pGraphicsPtr)
-						{
-							if (!newSameGraphics)
-							{
-								// then remove this overlay and redo the loop, because iterator has become invalid
-								pObj->RemoveGraphicsOverlay(pGfxOverlay->GetID());
-								break;
-							}
-
-							pGfxOverlay->UpdateSourceGraphics(newSameGraphics);
-						}
+						// shouldn't happen
+						pObj->AssignRemoval(); pObj->pGraphics = nullptr;
 					}
-					// looped through w/o removal?
-					if (!pGfxOverlay) break;
-				}
-				if (pDef && pObj->Menu)
+			}
+			// remove any overlay graphics
+			for (;;)
+			{
+				C4GraphicsOverlay *pGfxOverlay;
+				for (pGfxOverlay = pObj->pGfxOverlay; pGfxOverlay; pGfxOverlay = pGfxOverlay->GetNext())
 				{
-					// update menu frame decorations - may do multiple updates to the same deco if multiple menus share it...
-					if (C4GUI::FrameDecoration *pDeco = pObj->Menu->GetFrameDecoration(); pDeco && pDeco->idSourceDef == pDef->id)
+					if (pGfxOverlay->GetGfx() == pGraphicsPtr)
 					{
-						if (!pDeco->UpdateGfx())
+						if (!newSameGraphics)
 						{
-							pObj->Menu->SetFrameDeco(nullptr);
+							// then remove this overlay and redo the loop, because iterator has become invalid
+							pObj->RemoveGraphicsOverlay(pGfxOverlay->GetID());
+							break;
 						}
-					}
 
-					// update menu item icons
-					for (std::int32_t count = pObj->Menu->GetItemCount(), i = 0; i < count; ++i)
+						pGfxOverlay->UpdateSourceGraphics(newSameGraphics);
+					}
+				}
+				// looped through w/o removal?
+				if (!pGfxOverlay) break;
+			}
+			if (pDef && pObj->Menu)
+			{
+				// update menu frame decorations - may do multiple updates to the same deco if multiple menus share it...
+				if (C4GUI::FrameDecoration *pDeco = pObj->Menu->GetFrameDecoration(); pDeco && pDeco->idSourceDef == pDef->id)
+				{
+					if (!pDeco->UpdateGfx())
 					{
-						const auto item = pObj->Menu->GetItem(i);
-						if (item->Symbol.Surface == BitmapPtr)
+						pObj->Menu->SetFrameDeco(nullptr);
+					}
+				}
+
+				// update menu item icons
+				for (std::int32_t count = pObj->Menu->GetItemCount(), i = 0; i < count; ++i)
+				{
+					const auto item = pObj->Menu->GetItem(i);
+					if (item->Symbol.Surface == BitmapPtr)
+					{
+						if (newSameGraphics)
 						{
-							if (newSameGraphics)
-							{
-								item->Symbol.Surface = pDef->Graphics.GetBitmap();
-							}
-							else
-							{
-								item->Symbol.Clear();
-							}
+							item->Symbol.Surface = pDef->Graphics.GetBitmap();
+						}
+						else
+						{
+							item->Symbol.Clear();
 						}
 					}
 				}
 			}
+		}
+
 		// check all object infos for portraits
 		for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next)
 			for (C4ObjectInfo *pInfo = pPlr->CrewInfoList.GetFirst(); pInfo; pInfo = pInfo->Next)
@@ -449,33 +448,31 @@ void C4DefGraphicsPtrBackup::AssignRemoval()
 	if (pGraphicsPtr)
 	{
 		// check all objects
-		C4Object *pObj;
-		for (C4ObjectLink *pLnk = Game.Objects.First; pLnk; pLnk = pLnk->Next)
-			if (pObj = pLnk->Obj) if (pObj->Status)
+		for (C4Object *pObj : Game.GetAllObjectsWithStatus())
+		{
+			if (pObj->pGraphics == pGraphicsPtr)
+				// same graphics found: reset them
+				if (!pObj->SetGraphics()) { pObj->AssignRemoval(); pObj->pGraphics = nullptr; }
+			// remove any overlay graphics
+			for (;;)
 			{
-				if (pObj->pGraphics == pGraphicsPtr)
-					// same graphics found: reset them
-					if (!pObj->SetGraphics()) { pObj->AssignRemoval(); pObj->pGraphics = nullptr; }
-				// remove any overlay graphics
-				for (;;)
-				{
-					C4GraphicsOverlay *pGfxOverlay;
-					for (pGfxOverlay = pObj->pGfxOverlay; pGfxOverlay; pGfxOverlay = pGfxOverlay->GetNext())
-						if (pGfxOverlay->GetGfx() == pGraphicsPtr)
-						{
-							// then remove this overlay and redo the loop, because iterator has become invalid
-							pObj->RemoveGraphicsOverlay(pGfxOverlay->GetID());
-							break;
-						}
-					// looped through w/o removal?
-					if (!pGfxOverlay) break;
-				}
-				// remove menu frame decorations
-				C4GUI::FrameDecoration *pDeco;
-				if (pDef && pObj->Menu && (pDeco = pObj->Menu->GetFrameDecoration()))
-					if (pDeco->idSourceDef == pDef->id)
-						pObj->Menu->SetFrameDeco(nullptr);
+				C4GraphicsOverlay *pGfxOverlay;
+				for (pGfxOverlay = pObj->pGfxOverlay; pGfxOverlay; pGfxOverlay = pGfxOverlay->GetNext())
+					if (pGfxOverlay->GetGfx() == pGraphicsPtr)
+					{
+						// then remove this overlay and redo the loop, because iterator has become invalid
+						pObj->RemoveGraphicsOverlay(pGfxOverlay->GetID());
+						break;
+					}
+				// looped through w/o removal?
+				if (!pGfxOverlay) break;
 			}
+			// remove menu frame decorations
+			C4GUI::FrameDecoration *pDeco;
+			if (pDef && pObj->Menu && (pDeco = pObj->Menu->GetFrameDecoration()))
+				if (pDeco->idSourceDef == pDef->id)
+					pObj->Menu->SetFrameDeco(nullptr);
+		}
 		// done; reset field to indicate finished update
 		pGraphicsPtr = nullptr;
 	}

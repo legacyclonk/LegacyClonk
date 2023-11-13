@@ -23,6 +23,8 @@
 #include <C4Game.h>
 #include <C4Player.h>
 
+#include <numeric>
+
 C4Graph::C4Graph()
 	: szTitle(LoadResStr("IDS_NET_GRAPH"), false), dwColor(0x7fff0000) {}
 
@@ -325,7 +327,10 @@ C4Network2Stats::~C4Network2Stats()
 
 void C4Network2Stats::ExecuteFrame()
 {
-	statObjCount.RecordValue(C4Graph::ValueType(Game.Objects.ObjectCount()));
+	statObjCount.RecordValue(C4Graph::ValueType(std::accumulate(Game.Sections.begin(), Game.Sections.end(), 0, [](const std::int32_t result, const auto &section)
+	{
+		return result + section->Objects.ObjectCount();
+	})));
 }
 
 void C4Network2Stats::ExecuteSecond()
