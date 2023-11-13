@@ -60,16 +60,17 @@ public:
 	const CPattern &getPattern() const { return MatPattern; }
 	void Clear();
 	bool Create(const char *szMaterial, const char *szTexture);
-	bool Init();
+	bool Init(C4Section &section);
 };
 
 class C4TextureMap
 {
 public:
-	C4TextureMap();
+	C4TextureMap(C4Section &section);
 	~C4TextureMap();
 
 protected:
+	C4Section &section;
 	C4TexMapEntry Entry[C4M_MaxTexIndex];
 	C4Texture *FirstTexture;
 	bool fOverloadMaterials;

@@ -491,7 +491,7 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 				szFirstPlayer = pInfo->GetName();
 				fHaveTeam = true;
 			}
-			else if ((!Teams.IsCustom() && Game.C4S.Game.IsMelee()) || iTeam != iClientTeam)
+			else if ((!Teams.IsCustom() && Game.MainSection.C4S.Game.IsMelee()) || iTeam != iClientTeam)
 			{
 				error = LoadResStr(C4ResStrTableKey::IDS_MSG_NOSPLITSCREENINLEAGUE, szFirstPlayer, pInfo->GetName());
 				if (!fFixIt)
@@ -595,7 +595,7 @@ std::string C4GameParameters::GetGameGoalString()
 		{
 			if (Game.IsRunning)
 			{
-				C4Def *pDef = C4Id2Def(idGoal);
+				C4Def *pDef = Game.Defs.ID2Def(idGoal);
 				if (pDef)
 				{
 					if (!result.empty()) result += ", ";

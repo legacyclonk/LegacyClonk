@@ -22,28 +22,6 @@
 #include <C4Random.h>
 #include <C4Object.h>
 
-// Materials
-
-int32_t PixCol2MatOld(uint8_t pixc)
-{
-	if (pixc < GBM) return MNone;
-	pixc &= 63; // Substract GBM, ignore IFT
-	if (pixc > Game.Material.Num * C4M_ColsPerMat - 1) return MNone;
-	return pixc / C4M_ColsPerMat;
-}
-
-int32_t PixCol2MatOld2(uint8_t pixc)
-{
-	int32_t iMat = (pixc & 0x7f) - 1;
-	// if above MVehic, don't forget additional vehicle-colors
-	if (iMat <= MVehic) return iMat;
-	// equals middle vehicle-color
-	if (iMat == MVehic + 1) return MVehic;
-	// above: range check
-	iMat -= 2; if (iMat >= Game.Material.Num) return MNone;
-	return iMat;
-}
-
 // Graphics Resource
 
 #define GfxR (&(Game.GraphicsResource))

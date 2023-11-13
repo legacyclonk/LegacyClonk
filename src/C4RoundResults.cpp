@@ -239,7 +239,7 @@ C4RoundResultsPlayers &C4RoundResultsPlayers::operator=(const C4RoundResultsPlay
 
 void C4RoundResults::Init()
 {
-	if (Game.C4S.Game.IsMelee())
+	if (Game.MainSection.C4S.Game.IsMelee())
 		fHideSettlementScore = true;
 	else fHideSettlementScore = false;
 }
@@ -262,7 +262,7 @@ void C4RoundResults::CompileFunc(StdCompiler *pComp)
 	if (fCompiler) Clear();
 	pComp->Value(mkNamingAdapt(Goals,                    "Goals",                   C4IDList()));
 	pComp->Value(mkNamingAdapt(iPlayingTime,             "PlayingTime",             0u));
-	pComp->Value(mkNamingAdapt(fHideSettlementScore,     "HideSettlementScore",     !!Game.C4S.Game.IsMelee()));
+	pComp->Value(mkNamingAdapt(fHideSettlementScore,     "HideSettlementScore",     !!Game.MainSection.C4S.Game.IsMelee()));
 	pComp->Value(mkNamingAdapt(sCustomEvaluationStrings, "CustomEvaluationStrings", StdStrBuf()));
 	pComp->Value(mkNamingAdapt(iLeaguePerformance,       "LeaguePerformance",       0));
 	pComp->Value(mkNamingAdapt(Players,                  "PlayerInfos",             C4RoundResultsPlayers()));
@@ -282,24 +282,28 @@ void C4RoundResults::EvaluateGoals(C4IDList &GoalList, C4IDList &FulfilledGoalLi
 	// clear prev
 	GoalList.Clear(); FulfilledGoalList.Clear();
 	// Items
-	bool fRivalvry = !!Game.ObjectCount(C4Id("RVLR"));
+	bool fRivalvry = std::ranges::any_of(Game.Sections, [](C4GameObjects &objects) { return objects.Find("RVLR"_id); }, &C4Section::Objects);
 	int32_t cnt; C4ID idGoal;
-	for (cnt = 0; idGoal = Game.Objects.GetListID(C4D_Goal, cnt); cnt++)
+
+	for (const auto &section : Game.Sections)
 	{
-		// determine if the goal is fulfilled - do the calls even if the menu is not to be opened to ensure synchronization
-		bool fFulfilled = false;
-		C4Object *pObj;
-		if (pObj = Game.Objects.Find(idGoal))
+		for (cnt = 0; idGoal = section->Objects.GetListID(C4D_Goal, cnt); cnt++)
 		{
-			if (fRivalvry)
+			// determine if the goal is fulfilled - do the calls even if the menu is not to be opened to ensure synchronization
+			bool fFulfilled = false;
+			C4Object *pObj;
+			if (pObj = section->Objects.Find(idGoal))
 			{
-				fFulfilled = static_cast<bool>(pObj->Call(PSF_IsFulfilledforPlr, {C4VInt(iPlayerNumber)}));
+				if (fRivalvry)
+				{
+					fFulfilled = static_cast<bool>(pObj->Call(PSF_IsFulfilledforPlr, {C4VInt(iPlayerNumber)}));
+				}
+				else
+					fFulfilled = static_cast<bool>(pObj->Call(PSF_IsFulfilled));
 			}
-			else
-				fFulfilled = static_cast<bool>(pObj->Call(PSF_IsFulfilled));
+			GoalList.SetIDCount(idGoal, cnt, true);
+			if (fFulfilled) FulfilledGoalList.SetIDCount(idGoal, 1, true);
 		}
-		GoalList.SetIDCount(idGoal, cnt, true);
-		if (fFulfilled) FulfilledGoalList.SetIDCount(idGoal, 1, true);
 	}
 }
 

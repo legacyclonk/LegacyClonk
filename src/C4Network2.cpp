@@ -2241,7 +2241,7 @@ bool C4Network2::InitLeague(bool *pCancel)
 		{
 			Game.Parameters.LeagueAddress = MasterServerAddress;
 			// enforce some league rules
-			Game.Parameters.EnforceLeagueRules(&Game.C4S);
+			Game.Parameters.EnforceLeagueRules(&Game.MainSection.C4S);
 		}
 	}
 	else

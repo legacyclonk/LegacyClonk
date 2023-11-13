@@ -3169,7 +3169,7 @@ bool C4AulParseState::Parse_Expression3()
 				if (Type == PARSER)
 				{
 					// get def from id
-					C4Def *pDef = C4Id2Def(idNS);
+					C4Def *pDef = Game.Defs.ID2Def(idNS);
 					if (!pDef)
 					{
 						throw C4AulParseError(this, "direct object call: def not found: ", C4IdText(idNS));

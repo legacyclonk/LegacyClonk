@@ -294,7 +294,7 @@ void C4AulScriptEngine::Link(C4DefList *rDefs)
 		}
 
 		// update material pointers
-		Game.Material.UpdateScriptPointers();
+		Game.UpdateMaterialScriptPointers();
 
 		// display state
 		LogNTr(spdlog::level::info, "C4AulScriptEngine linked - {} line{}, {} warning{}, {} error{}",
@@ -324,11 +324,8 @@ void C4AulScriptEngine::ReLink(C4DefList *rDefs)
 	// re-link
 	Link(rDefs);
 
-	// update effect pointers
-	Game.Objects.UpdateScriptPointers();
-
-	// update material pointers
-	Game.Material.UpdateScriptPointers();
+	// update effect and material pointers
+	Game.UpdateScriptPointers();
 }
 
 bool C4AulScriptEngine::ReloadScript(const char *szScript, C4DefList *pDefs)

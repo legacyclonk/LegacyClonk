@@ -378,13 +378,14 @@ public:
 	C4ControlEMDrawTool() {}
 	C4ControlEMDrawTool(C4ControlEMDrawAction eAction, int32_t iMode,
 		int32_t iX = -1, int32_t iY = -1, int32_t iX2 = -1, int32_t iY2 = -1, int32_t iGrade = -1,
-		bool fIFT = true, const char *szMaterial = nullptr, const char *szTexture = nullptr);
+		bool fIFT = true, std::int32_t SectionIndex = 0, const char *szMaterial = nullptr, const char *szTexture = nullptr);
 
 protected:
 	C4ControlEMDrawAction eAction; // action to be performed
 	int32_t iMode; // new mode, or mode action was performed in (action will fail if changed)
 	int32_t iX, iY, iX2, iY2, iGrade; // drawing parameters
 	bool fIFT; // sky/tunnel-background
+	std::int32_t SectionIndex; // section index
 	StdStrBuf Material; // used material
 	StdStrBuf Texture; // used texture
 

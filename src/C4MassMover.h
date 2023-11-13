@@ -34,16 +34,16 @@ protected:
 	int32_t Mat, x, y;
 
 protected:
-	void Cease();
-	bool Execute();
-	bool Init(int32_t tx, int32_t ty);
-	bool Corrosion(int32_t dx, int32_t dy);
+	void Cease(C4Section &section);
+	bool Execute(C4Section &section);
+	bool Init(C4Section &section, int32_t tx, int32_t ty);
+	bool Corrosion(C4Section &section, int32_t dx, int32_t dy);
 };
 
 class C4MassMoverSet
 {
 public:
-	C4MassMoverSet();
+	C4MassMoverSet(C4Section &section);
 	~C4MassMoverSet();
 
 public:
@@ -51,6 +51,7 @@ public:
 	int32_t CreatePtr;
 
 protected:
+	C4Section &section;
 	C4MassMover Set[C4MassMoverChunk];
 
 public:

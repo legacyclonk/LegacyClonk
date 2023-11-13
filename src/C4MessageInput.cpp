@@ -410,7 +410,7 @@ bool C4MessageInput::ProcessInput(const char *szText)
 			const char *szEnd = szMsg + SLen(szMsg) - 1;
 			while (IsWhiteSpace(*szEnd) && szEnd >= szMsg) szEnd--;
 			// Say: Strip quotation marks in cinematic film mode
-			if (Game.C4S.Head.Film == C4SFilm_Cinematic)
+			if (Game.MainSection.C4S.Head.Film == C4SFilm_Cinematic)
 			{
 				if (eMsgType == C4CMT_Say) { ++szMsg; szEnd--; }
 			}

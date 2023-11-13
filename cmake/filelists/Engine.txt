@@ -259,6 +259,8 @@ src/C4Script.cpp
 src/C4Script.h
 src/C4ScriptHost.cpp
 src/C4ScriptHost.h
+src/C4Section.cpp
+src/C4Section.h
 src/C4Sector.cpp
 src/C4Sector.h
 src/C4Shape.cpp

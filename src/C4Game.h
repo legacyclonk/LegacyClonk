@@ -19,6 +19,7 @@
 #pragma once
 
 #include <C4Def.h>
+#include "C4Section.h"
 #include <C4Texture.h>
 #include <C4RankSystem.h>
 #include <C4GraphicsSystem.h>
@@ -82,9 +83,15 @@ public:
 	C4Game();
 	~C4Game();
 
+private:
+	C4Section &CreateMainSection();
+
 public:
 	C4DefList Defs;
-	C4TextureMap TextureMap;
+	std::vector<std::unique_ptr<C4Section>> Sections;
+	C4Section &MainSection;
+	C4Group &ScenarioFile{MainSection.Group};
+	std::string Loader;
 	C4RankSystem Rank;
 	C4GraphicsSystem GraphicsSystem;
 	C4MessageInput MessageInput;
@@ -98,13 +105,6 @@ public:
 	C4RoundResults RoundResults;
 	C4GameMessageList Messages;
 	C4MouseControl MouseControl;
-	C4Weather Weather;
-	C4MaterialMap Material;
-	C4GameObjects Objects;
-	C4ObjectList BackObjects; // objects in background (C4D_Background)
-	C4ObjectList ForeObjects; // objects in foreground (C4D_Foreground)
-	C4Landscape Landscape;
-	C4Scenario C4S;
 	C4ComponentHost Info;
 	C4ComponentHost Title;
 	C4ComponentHost Names;
@@ -112,17 +112,12 @@ public:
 	C4AulScriptEngine ScriptEngine;
 	C4GameScriptHost Script;
 	C4LangStringTable MainSysLangStringTable, ScenarioLangStringTable, ScenarioSysLangStringTable;
-	C4MassMoverSet MassMover;
-	C4PXSSystem PXS;
-	C4ParticleSystem Particles;
+	C4LoadedParticleList Particles;
 	C4PlayerList Players;
 	StdStrBuf PlayerNames;
 	C4GameControl Control;
 	C4Control &Input; // shortcut
 
-	C4PathFinder PathFinder;
-	C4TransferZones TransferZones;
-	C4Group ScenarioFile;
 	C4GroupSet GroupSet;
 	C4Group *pParentGroup;
 	C4Extra Extra;
@@ -227,49 +222,81 @@ public:
 	bool ReloadParticle(const char *szName);
 	// Object functions
 	void ClearPointers(C4Object *cobj);
-	C4Object *CreateObject(C4ID type, C4Object *pCreator, int32_t owner = NO_OWNER,
-		int32_t x = 50, int32_t y = 50, int32_t r = 0,
-		C4Fixed xdir = Fix0, C4Fixed ydir = Fix0, C4Fixed rdir = Fix0, int32_t iController = NO_OWNER);
-	C4Object *CreateObjectConstruction(C4ID type,
-		C4Object *pCreator,
-		int32_t owner,
-		int32_t ctx = 0, int32_t bty = 0,
-		int32_t con = 1, bool terrain = false);
-	C4Object *CreateInfoObject(C4ObjectInfo *cinf, int32_t owner,
-		int32_t tx = 50, int32_t ty = 50);
-	void BlastObjects(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t iCausedBy, C4Object *pByObj);
-	void ShakeObjects(int32_t tx, int32_t ry, int32_t range, int32_t iCausedBy);
-	C4Object *OverlapObject(int32_t tx, int32_t ty, int32_t wdt, int32_t hgt,
-		int32_t category);
-	C4Object *FindObject(C4ID id,
-		int32_t iX = 0, int32_t iY = 0, int32_t iWdt = 0, int32_t iHgt = 0,
-		uint32_t ocf = OCF_All,
-		const char *szAction = nullptr, C4Object *pActionTarget = nullptr,
-		C4Object *pExclude = nullptr,
-		C4Object *pContainer = nullptr,
-		int32_t iOwner = ANY_OWNER,
-		C4Object *pFindNext = nullptr);
-	C4Object *FindVisObject( // find object in view at pos, regarding parallaxity and visibility (but not distance)
-		int32_t tx, int32_t ty, int32_t iPlr, const C4Facet &fctViewport,
-		int32_t iX = 0, int32_t iY = 0, int32_t iWdt = 0, int32_t iHgt = 0,
-		uint32_t ocf = OCF_All,
-		C4Object *pExclude = nullptr,
-		int32_t iOwner = ANY_OWNER,
-		C4Object *pFindNext = nullptr);
-	int32_t ObjectCount(C4ID id,
-		int32_t x = 0, int32_t y = 0, int32_t wdt = 0, int32_t hgt = 0,
-		uint32_t ocf = OCF_All,
-		const char *szAction = nullptr, C4Object *pActionTarget = nullptr,
-		C4Object *pExclude = nullptr,
-		C4Object *pContainer = nullptr,
-		int32_t iOwner = ANY_OWNER);
-	C4Object *FindBase(int32_t iPlayer, int32_t iIndex);
-	C4Object *FindFriendlyBase(int32_t iPlayer, int32_t iIndex);
-	C4Object *FindObjectByCommand(int32_t iCommand, C4Object *pTarget = nullptr, C4Value iTx = C4VNull, int32_t iTy = 0, C4Object *pTarget2 = nullptr, C4Object *pFindNext = nullptr);
-	void CastObjects(C4ID id, C4Object *pCreator, int32_t num, int32_t level, int32_t tx, int32_t ty, int32_t iOwner = NO_OWNER, int32_t iController = NO_OWNER);
-	void BlastCastObjects(C4ID id, C4Object *pCreator, int32_t num, int32_t tx, int32_t ty, int32_t iController = NO_OWNER);
-	C4Object *PlaceVegetation(C4ID id, int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, int32_t iGrowth);
-	C4Object *PlaceAnimal(C4ID idAnimal);
+	void UpdateScriptPointers();
+	void UpdateMaterialScriptPointers();
+	C4Object *ObjectPointer(std::int32_t number);
+	C4Object *SafeObjectPointer(std::int32_t number);
+	std::int32_t ObjectNumber(C4Object *obj);
+
+	auto GetAllObjects()
+	{
+		return Sections
+				| std::views::transform([](const auto &section) { return C4LinkedListIterator<&C4ObjectLink::Next>{section->Objects.First}; })
+				| std::views::join
+				| std::views::transform(&C4ObjectLink::Obj);
+	}
+
+	auto GetAllObjectsWithStatus()
+	{
+		return GetAllObjects() | std::views::filter(&C4Object::Status);
+	}
+
+	std::int32_t GetSectionIndex(C4Section &section) const noexcept
+	{
+		for (std::size_t i{0}; i < Sections.size(); ++i)
+		{
+			if (&section == Sections[i].get())
+			{
+				return static_cast<std::int32_t>(i);
+			}
+		}
+
+		return -1;
+	}
+
+	C4Section *GetSectionByIndex(const std::int32_t index) noexcept
+	{
+		if (Inside(index, 0, static_cast<std::int32_t>(Sections.size())))
+		{
+			return Sections[index].get();
+		}
+
+		return nullptr;
+	}
+
+	void AssignPlrViewRange()
+	{
+		std::ranges::for_each(Sections, &C4ObjectList::AssignPlrViewRange, &C4Section::Objects);
+	}
+
+	template<typename Func, typename T = std::invoke_result_t<Func, C4GameObjects &>>
+	decltype(auto) FindFirstInAllObjects(Func &&func, T defaultValue = {})
+	{
+		for (const auto &section : Sections)
+		{
+			if (decltype(auto) value = std::invoke(std::forward<Func>(func), section->Objects); value)
+			{
+				return value;
+			}
+		}
+
+		return defaultValue;
+	}
+
+	void ResetAudibility()
+	{
+		std::ranges::for_each(Sections, &C4ObjectList::ResetAudibility, &C4Section::Objects);
+	}
+
+	void ValidateOwners()
+	{
+		std::ranges::for_each(Sections, &C4ObjectList::ValidateOwners, &C4Section::Objects);
+	}
+
+	void SortByCategory()
+	{
+		std::ranges::for_each(Sections, &C4ObjectList::SortByCategory, &C4Section::Objects);
+	}
 
 	bool LoadScenarioSection(const char *szSection, uint32_t dwFlags);
 
@@ -280,20 +307,13 @@ public:
 
 protected:
 	bool InitSystem();
-	void InitInEarth();
-	void InitVegetation();
-	void InitAnimals();
+	void InitValueOverloads();
 	void InitGoals();
 	void InitRules();
-	void InitValueOverloads();
-	void InitEnvironment();
 	void UpdateRules();
 	void CloseScenario();
-	void DeleteObjects(bool fDeleteInactive);
-	void ExecObjects();
 	void Ticks();
 	std::vector<std::string> FoldersWithLocalsDefs(std::string path);
-	bool CheckObjectEnumeration();
 	bool DefinitionFilenamesFromSaveGame();
 	bool LoadScenarioComponents();
 	void LoadScenarioScripts();
@@ -304,9 +324,9 @@ public:
 	bool CanPreload() const;
 
 protected:
-	bool InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky);
+	bool InitGame(C4Group &hGroup, bool fLoadSky);
 	bool InitGameFirstPart();
-	bool InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky, bool preloading);
+	bool InitGameSecondPart(C4Group &hGroup, bool fLoadSky, bool preloading);
 	bool InitGameFinal();
 	bool InitNetworkFromAddress(const char *szAddress);
 	bool InitNetworkFromReference(const C4Network2Reference &Reference);
@@ -317,10 +337,8 @@ protected:
 	bool InitPlayers();
 	bool OpenScenario();
 	bool InitDefs();
-	bool InitMaterialTexture();
 	bool EnumerateMaterials();
 	bool GameOverCheck();
-	bool PlaceInEarth(C4ID id);
 	bool Compile(const char *szSource);
 	bool Decompile(std::string &buf, bool fSaveSection, bool fSaveExact);
 
@@ -331,14 +349,6 @@ public:
 protected:
 	bool CompileRuntimeData(C4ComponentHost &rGameData);
 
-	// Object function internals
-	C4Object *NewObject(C4Def *ndef, C4Object *pCreator,
-		int32_t owner, C4ObjectInfo *info,
-		int32_t tx, int32_t ty, int32_t tr,
-		C4Fixed xdir, C4Fixed ydir, C4Fixed rdir,
-		int32_t con, int32_t iController);
-	void ClearObjectPtrs(C4Object *tptr);
-	void ObjectRemovalCheck();
 
 	bool ToggleDebugMode(); // dbg modeon/off if allowed
 

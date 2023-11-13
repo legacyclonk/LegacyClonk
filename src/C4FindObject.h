@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
 #include "C4Id.h"
 #include "C4Sector.h"
 #include "C4Shape.h"
@@ -81,9 +82,9 @@ public:
 	C4Object *Find(const C4ObjectList &Objs);   // Returns first object for which the condition is true
 	C4ValueArray *FindMany(const C4ObjectList &Objs); // Returns all objects for which the condition is true
 
-	int32_t Count(const C4ObjectList &Objs, const C4LSectors &Sct); // Counts objects for which the condition is true
-	C4Object *Find(const C4ObjectList &Objs, const C4LSectors &Sct); // Returns first object for which the condition is true
-	C4ValueArray *FindMany(const C4ObjectList &Objs, const C4LSectors &Sct); // Returns all objects for which the condition is true
+	int32_t Count(C4GameObjects &Objs, const C4LSectors &Sct); // Counts objects for which the condition is true
+	C4Object *Find(C4GameObjects &Objs, const C4LSectors &Sct); // Returns first object for which the condition is true
+	C4ValueArray *FindMany(C4GameObjects &Objs, const C4LSectors &Sct); // Returns all objects for which the condition is true
 
 	void SetSort(C4SortObject *pToSort);
 

@@ -29,7 +29,7 @@
 #include <C4Player.h>
 #include <C4SoundSystem.h>
 
-bool SimFlightHitsLiquid(C4Fixed fcx, C4Fixed fcy, C4Fixed xdir, C4Fixed ydir);
+bool SimFlightHitsLiquid(C4Section &, C4Fixed fcx, C4Fixed fcy, C4Fixed xdir, C4Fixed ydir);
 
 bool ObjectActionWalk(C4Object *cObj)
 {
@@ -300,7 +300,7 @@ bool ObjectComJump(C4Object *cObj) // by ObjectComUp, ExecCMDFMoveTo, FnJump
 	if (iBtmVtx != -1) { x += cObj->Shape.GetVertexX(iBtmVtx); y += cObj->Shape.GetVertexY(iBtmVtx); }
 	// Try dive
 	if (cObj->Shape.ContactDensity > C4M_Liquid)
-		if (SimFlightHitsLiquid(x, y, TXDir, -iPhysicalJump))
+		if (SimFlightHitsLiquid(*cObj->Section, x, y, TXDir, -iPhysicalJump))
 			if (ObjectActionDive(cObj, TXDir, -iPhysicalJump))
 				return true;
 	// Regular jump
@@ -323,7 +323,7 @@ bool ObjectComEnter(C4Object *cObj) // by pusher
 	// Check object entrance, try command enter
 	C4Object *pTarget;
 	uint32_t ocf = OCF_Entrance;
-	if ((pTarget = Game.Objects.AtObject(cObj->x, cObj->y, ocf, cObj)))
+	if ((pTarget = cObj->Section->Objects.AtObject(cObj->x, cObj->y, ocf, cObj)))
 		if (ocf & OCF_Entrance)
 		{
 			cObj->SetCommand(C4CMD_Enter, pTarget); return true;
@@ -339,7 +339,7 @@ bool ObjectComUp(C4Object *cObj) // by DFA_WALK or DFA_SWIM
 	// Check object entrance, try command enter
 	C4Object *pTarget;
 	uint32_t ocf = OCF_Entrance;
-	if ((pTarget = Game.Objects.AtObject(cObj->x, cObj->y, ocf, cObj)))
+	if ((pTarget = cObj->Section->Objects.AtObject(cObj->x, cObj->y, ocf, cObj)))
 		if (ocf & OCF_Entrance)
 			return PlayerObjectCommand(cObj->Owner, C4CMD_Enter, pTarget);
 
@@ -365,7 +365,7 @@ C4Object *CreateLine(C4ID idType, int32_t iOwner, C4Object *pFrom, C4Object *pTo
 {
 	C4Object *pLine;
 	if (!pFrom || !pTo) return nullptr;
-	if (!(pLine = Game.CreateObject(idType, pFrom, iOwner, 0, 0))) return nullptr;
+	if (!(pLine = pFrom->Section->CreateObject(idType, pFrom, iOwner, 0, 0))) return nullptr;
 	pLine->Shape.VtxNum = 2;
 	pLine->Shape.VtxX[0] = pFrom->x;
 	pLine->Shape.VtxY[0] = pFrom->y + pFrom->Shape.Hgt / 4;
@@ -398,9 +398,9 @@ bool ObjectComLineConstruction(C4Object *cObj)
 		if (cObj->Def->CollectionLimit && (cObj->Contents.ObjectCount() >= cObj->Def->CollectionLimit)) return false;
 		// Check line pickup
 		ocf = OCF_LineConstruct;
-		tstruct = Game.Objects.AtObject(cObj->x, cObj->y, ocf, cObj);
+		tstruct = cObj->Section->Objects.AtObject(cObj->x, cObj->y, ocf, cObj);
 		if (!tstruct || !(ocf & OCF_LineConstruct)) return false;
-		if (!(cline = Game.FindObject(C4ID_None, 0, 0, 0, 0, OCF_All, "Connect", tstruct))) return false;
+		if (!(cline = cObj->Section->FindObject(C4ID_None, 0, 0, 0, 0, OCF_All, "Connect", tstruct))) return false;
 		// Check line connected to linekit at other end
 		if ((cline->Action.Target && (cline->Action.Target->Def->id == C4ID_Linekit))
 			|| (cline->Action.Target2 && (cline->Action.Target2->Def->id == C4ID_Linekit)))
@@ -409,7 +409,7 @@ bool ObjectComLineConstruction(C4Object *cObj)
 			GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_NODOUBLEKIT, cline->GetName()).c_str(), cObj); return false;
 		}
 		// Create new linekit
-		if (!(linekit = Game.CreateObject(C4ID_Linekit, cObj, cline->Owner))) return false;
+		if (!(linekit = cObj->Section->CreateObject(C4ID_Linekit, cObj, cline->Owner))) return false;
 		// Enter linekit into clonk
 		bool fRejectCollect;
 		if (!linekit->Enter(cObj, true, true, &fRejectCollect))
@@ -429,11 +429,11 @@ bool ObjectComLineConstruction(C4Object *cObj)
 	// Active construction
 
 	// Active line construction
-	if (cline = Game.FindObject(C4ID_None, 0, 0, 0, 0, OCF_All, "Connect", linekit))
+	if (cline = cObj->Section->FindObject(C4ID_None, 0, 0, 0, 0, OCF_All, "Connect", linekit))
 	{
 		// Check for structure connection
 		ocf = OCF_LineConstruct;
-		tstruct = Game.Objects.AtObject(cObj->x, cObj->y, ocf, cObj);
+		tstruct = cObj->Section->Objects.AtObject(cObj->x, cObj->y, ocf, cObj);
 		// No structure
 		if (!tstruct || !(ocf & OCF_LineConstruct))
 		{
@@ -488,7 +488,7 @@ bool ObjectComLineConstruction(C4Object *cObj)
 
 	// Check for new structure connection
 	ocf = OCF_LineConstruct;
-	tstruct = Game.Objects.AtObject(cObj->x, cObj->y, ocf, cObj);
+	tstruct = cObj->Section->Objects.AtObject(cObj->x, cObj->y, ocf, cObj);
 	if (!tstruct || !(ocf & OCF_LineConstruct))
 	{
 		StartSoundEffect("Error", false, 100, cObj);
@@ -500,12 +500,12 @@ bool ObjectComLineConstruction(C4Object *cObj)
 	// Check source pipe
 	if (linetype == C4ID_None)
 		if (tstruct->Def->LineConnect & C4D_Liquid_Pump)
-			if (!Game.FindObject(C4ID_SourcePipe, 0, 0, 0, 0, OCF_All, "Connect", tstruct))
+			if (!cObj->Section->FindObject(C4ID_SourcePipe, 0, 0, 0, 0, OCF_All, "Connect", tstruct))
 				linetype = C4ID_SourcePipe;
 	// Check drain pipe
 	if (linetype == C4ID_None)
 		if (tstruct->Def->LineConnect & C4D_Liquid_Output)
-			if (!Game.FindObject(C4ID_DrainPipe, 0, 0, 0, 0, OCF_All, "Connect", tstruct))
+			if (!cObj->Section->FindObject(C4ID_DrainPipe, 0, 0, 0, 0, OCF_All, "Connect", tstruct))
 				linetype = C4ID_DrainPipe;
 	// Check power
 	if (linetype == C4ID_None)
@@ -550,7 +550,7 @@ void ObjectComDigDouble(C4Object *cObj) // "Activation" by DFA_WALK, DFA_DIG, DF
 	ocf = OCF_Chop;
 	if (phys->CanChop)
 		if (cObj->GetProcedure() != DFA_SWIM)
-			if ((pTarget = Game.Objects.AtObject(cObj->x, cObj->y, ocf, cObj)))
+			if ((pTarget = cObj->Section->Objects.AtObject(cObj->x, cObj->y, ocf, cObj)))
 				if (ocf & OCF_Chop)
 				{
 					PlayerObjectCommand(cObj->Owner, C4CMD_Chop, pTarget);
@@ -561,7 +561,7 @@ void ObjectComDigDouble(C4Object *cObj) // "Activation" by DFA_WALK, DFA_DIG, DF
 	ocf = OCF_LineConstruct;
 	if (phys->CanConstruct)
 		if (!cObj->Contents.GetObject())
-			if ((pTarget = Game.Objects.AtObject(cObj->x, cObj->y, ocf, cObj)))
+			if ((pTarget = cObj->Section->Objects.AtObject(cObj->x, cObj->y, ocf, cObj)))
 				if (ocf & OCF_LineConstruct)
 					if (ObjectComLineConstruction(cObj))
 						return;
@@ -574,7 +574,7 @@ bool ObjectComDownDouble(C4Object *cObj) // by DFA_WALK
 {
 	C4Object *pTarget;
 	uint32_t ocf = OCF_Construct | OCF_Grab;
-	if ((pTarget = Game.Objects.AtObject(cObj->x, cObj->y, ocf, cObj)))
+	if ((pTarget = cObj->Section->Objects.AtObject(cObj->x, cObj->y, ocf, cObj)))
 	{
 		if (ocf & OCF_Construct)
 		{
@@ -962,7 +962,7 @@ bool SellFromBase(int32_t iPlr, C4Object *pBaseObj, C4ID id, C4Object *pSellObj)
 	// Valid checks
 	if (!ValidPlr(iPlr)) return false;
 	if (!pBaseObj || !ValidPlr(pBaseObj->Base)) return false;
-	if (~Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell) return false;
+	if (~pBaseObj->Section->C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell) return false;
 	// Base owner eliminated
 	if (Game.Players.Get(pBaseObj->Base)->Eliminated)
 	{
@@ -994,7 +994,7 @@ bool Buy2Base(int32_t iPlr, C4Object *pBase, C4ID id, bool fShowErrors)
 	// Validity
 	if (!ValidPlr(iPlr)) return false;
 	if (!pBase || !ValidPlr(pBase->Base)) return false;
-	if (~Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy) return false;
+	if (~pBase->Section->C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy) return false;
 	// Base owner hostile
 	if (Hostile(iPlr, pBase->Base))
 	{
