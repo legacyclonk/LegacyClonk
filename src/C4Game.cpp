@@ -62,8 +62,7 @@
 constexpr unsigned int defaultIngameGameTickDelay = 28;
 
 C4Game::C4Game()
-	: MainSection{CreateMainSection()},
-	  Input(Control.Input), KeyboardInput(C4KeyboardInput_Init()), fQuitWithError(false), fPreinited(false),
+	: Input(Control.Input), KeyboardInput(C4KeyboardInput_Init()), fQuitWithError(false), fPreinited(false),
 	Teams(Parameters.Teams),
 	PlayerInfos(Parameters.PlayerInfos),
 	RestorePlayerInfos(Parameters.RestorePlayerInfos),
@@ -76,12 +75,6 @@ C4Game::~C4Game()
 {
 	// make sure no startup gfx remain loaded
 	C4Startup::Unload();
-}
-
-C4Section &C4Game::CreateMainSection()
-{
-	Sections.emplace_back(std::make_unique<C4Section>());
-	return *Sections.front().get();
 }
 
 bool C4Game::InitDefs()
@@ -167,26 +160,26 @@ bool C4Game::OpenScenario()
 	GroupSet.RegisterGroup(ScenarioFile, false, C4GSPrio_Scenario, C4GSCnt_Scenario);
 
 	// Read scenario core
-	if (!MainSection.C4S.Load(ScenarioFile))
+	if (!C4S.Load(ScenarioFile))
 	{
 		LogFatal(C4ResStrTableKey::IDS_PRC_FILEINVALID); return false;
 	}
 
 	// Check minimum engine version
-	if (CompareVersion(MainSection.C4S.Head.C4XVer[0], MainSection.C4S.Head.C4XVer[1], MainSection.C4S.Head.C4XVer[2], MainSection.C4S.Head.C4XVer[3], MainSection.C4S.Head.C4XVer[4]) > 0)
+	if (CompareVersion(C4S.Head.C4XVer[0], C4S.Head.C4XVer[1], C4S.Head.C4XVer[2], C4S.Head.C4XVer[3], C4S.Head.C4XVer[4]) > 0)
 	{
-		LogFatal(C4ResStrTableKey::IDS_PRC_NOREQC4X, MainSection.C4S.Head.C4XVer[0], MainSection.C4S.Head.C4XVer[1], MainSection.C4S.Head.C4XVer[2], MainSection.C4S.Head.C4XVer[3], MainSection.C4S.Head.C4XVer[4]);
+		LogFatal(C4ResStrTableKey::IDS_PRC_NOREQC4X, C4S.Head.C4XVer[0], C4S.Head.C4XVer[1], C4S.Head.C4XVer[2], C4S.Head.C4XVer[3], C4S.Head.C4XVer[4]);
 		return false;
 	}
 
 	// Add scenario origin to group set
-	if (MainSection.C4S.Head.Origin.getLength() && !ItemIdentical(MainSection.C4S.Head.Origin.getData(), ScenarioFilename))
-		GroupSet.RegisterParentFolders(MainSection.C4S.Head.Origin.getData());
+	if (C4S.Head.Origin.getLength() && !ItemIdentical(C4S.Head.Origin.getData(), ScenarioFilename))
+		GroupSet.RegisterParentFolders(C4S.Head.Origin.getData());
 
 	// Scenario definition preset
 	if (!FixedDefinitions)
 	{
-		const std::vector<std::string> &defs = MainSection.C4S.Definitions.GetModules();
+		const std::vector<std::string> &defs = C4S.Definitions.GetModules();
 		if (!defs.empty()) DefinitionFilenames = defs;
 
 		if (DefinitionFilenames.empty())
@@ -219,8 +212,8 @@ bool C4Game::OpenScenario()
 	DefinitionFilenames.insert(DefinitionFilenames.end(), localDefs.begin(), localDefs.end());
 
 	// Check mission access
-	if (MainSection.C4S.Head.MissionAccess[0])
-		if (!SIsModule(Config.General.MissionAccess, MainSection.C4S.Head.MissionAccess))
+	if (C4S.Head.MissionAccess[0])
+		if (!SIsModule(Config.General.MissionAccess, C4S.Head.MissionAccess))
 		{
 			LogFatal(C4ResStrTableKey::IDS_PRC_NOMISSIONACCESS); return false;
 		}
@@ -230,7 +223,7 @@ bool C4Game::OpenScenario()
 
 	// SaveGame definition preset override (not needed with new scenarios that
 	// have def specs in scenario core, keep for downward compatibility)
-	if (MainSection.C4S.Head.SaveGame) DefinitionFilenamesFromSaveGame();
+	if (C4S.Head.SaveGame) DefinitionFilenamesFromSaveGame();
 
 	// String tables
 	ScenarioLangStringTable.LoadEx("StringTbl", ScenarioFile, C4CFN_ScriptStringTbl, Config.General.LanguageEx);
@@ -238,13 +231,13 @@ bool C4Game::OpenScenario()
 	// Load parameters (not as network client, because then team info has already been sent by host)
 	if (!Network.isEnabled() || Network.isHost())
 	{
-		if (!Parameters.Load(ScenarioFile, &MainSection.C4S, GameText.GetData(), &ScenarioLangStringTable, DefinitionFilenames))
+		if (!Parameters.Load(ScenarioFile, &C4S, GameText.GetData(), &ScenarioLangStringTable, DefinitionFilenames))
 		{
 			LogFatal(C4ResStrTableKey::IDS_ERR_LOAD_PARAMETERS);
 			return false;
 		}
 
-		if (MainSection.C4S.Head.SaveGame)
+		if (C4S.Head.SaveGame)
 		{
 			// make sure that at least all players from the savegame can join
 			const auto restoreCount = Parameters.RestorePlayerInfos.GetPlayerCount();
@@ -258,7 +251,7 @@ bool C4Game::OpenScenario()
 	// Title
 	Title.LoadEx(LoadResStr(C4ResStrTableKey::IDS_CNS_TITLE), ScenarioFile, C4CFN_Title, Config.General.LanguageEx);
 	if (!Title.GetLanguageString(Config.General.LanguageEx, Parameters.ScenarioTitle))
-		Parameters.ScenarioTitle.CopyValidated(MainSection.C4S.Head.Title);
+		Parameters.ScenarioTitle.CopyValidated(C4S.Head.Title);
 
 	// Load Strings (since kept objects aren't denumerated in sect-load, no problems should occur...)
 	if (ScenarioFile.FindEntry(C4CFN_Strings))
@@ -267,6 +260,14 @@ bool C4Game::OpenScenario()
 			LogFatal(C4ResStrTableKey::IDS_ERR_STRINGS); return false;
 		}
 	SetInitProgress(4);
+
+	auto = std::make_unique<C4Section>();
+	if (!>InitSection(ScenarioFile))
+	{
+		LogFatal(LoadResStr("IDS_ERR_SECTION")); return false;
+	}
+
+	Sections.emplace_back(std::move();
 
 	// Compile runtime data
 	if (!CompileRuntimeData(GameText))
@@ -476,7 +477,7 @@ bool C4Game::Init()
 	else
 	{
 		// - would kill DebugRec-sync for runtime debugrec starts
-		C4DebugRecOff DBGRECOFF(!!MainSection.C4S.Head.SaveGame);
+		C4DebugRecOff DBGRECOFF(!!C4S.Head.SaveGame);
 		SyncClearance();
 		Synchronize(false);
 	}
@@ -517,11 +518,11 @@ bool C4Game::Init()
 	IsRunning = true;
 
 	// Start message
-	if (MainSection.C4S.Head.NetworkGame)
+	if (C4S.Head.NetworkGame)
 	{
 		Log(C4ResStrTableKey::IDS_PRC_JOIN);
 	}
-	else if (MainSection.C4S.Head.SaveGame)
+	else if (C4S.Head.SaveGame)
 	{
 		Log(C4ResStrTableKey::IDS_PRC_RESUME);
 	}
@@ -594,8 +595,8 @@ void C4Game::Clear()
 	// Clear the logger now that C4GameRes has also destroyed all C4Network2Res objects
 	Network.ResList.ClearLogger();
 	RoundResults.Clear();
-	Sections.resize(1);
-	MainSection.ClearMain();
+	Sections.clear();
+	C4S.Clear();
 	GraphicsSystem.Clear();
 	Defs.Clear();
 	delete pGlobalEffects; pGlobalEffects = nullptr;
@@ -1088,7 +1089,7 @@ void C4Game::Default()
 	FrameSkip = 1; DoSkipFrame = false;
 	PreloadStatus = PreloadLevel::None;
 	Defs.Clear();
-	MainSection.DefaultMain();
+	C4S.Default();
 	Players.Default();
 	Rank.Default();
 	GraphicsSystem.Default();
@@ -1259,9 +1260,9 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 
 	if (comp.fExact)
 	{
-		pComp->Value(mkNamingAdapt(MainSection.Weather,       "Weather")); // FIXME: sections
-		pComp->Value(mkNamingAdapt(MainSection.Landscape,     "Landscape"));
-		pComp->Value(mkNamingAdapt(MainSection.Landscape.Sky, "Sky"));
+		pComp->Value(mkNamingAdapt(Sections[0]->Weather,       "Weather")); // FIXME: sections
+		pComp->Value(mkNamingAdapt(Sections[0]->Landscape,     "Landscape"));
+		pComp->Value(mkNamingAdapt(Sections[0]->Landscape.Sky, "Sky"));
 	}
 
 	pComp->Value(mkNamingAdapt(mkNamingPtrAdapt(pGlobalEffects, "GlobalEffects"), "Effects"));
@@ -1467,7 +1468,7 @@ bool C4Game::DoKeyboardInput(C4KeyCode vk_code, C4KeyEventType eEventType, bool 
 			{
 				if (FullScreen.pMenu && FullScreen.pMenu->IsActive()) // fullscreen menu
 					InScope |= KEYSCOPE_FullSMenu;
-				else if (MainSection.C4S.Head.Replay && MainSection.C4S.Head.Film) // film view only
+				else if (C4S.Head.Replay && C4S.Head.Film) // film view only
 					InScope |= KEYSCOPE_FilmView;
 				else if (GraphicsSystem.GetViewport(NO_OWNER)) // NO_OWNER-viewport-controls
 					InScope |= KEYSCOPE_FreeView;
@@ -1710,7 +1711,7 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSky)
 		}
 
 		// for replays, make sure teams are assigned correctly
-		if (MainSection.C4S.Head.Replay)
+		if (C4S.Head.Replay)
 		{
 			PlayerInfos.RecheckAutoGeneratedTeams(); // checks that all teams used in playerinfos exist
 			Teams.RecheckPlayers();                  // syncs player list of teams with teams set in PlayerInfos
@@ -1775,7 +1776,7 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSky)
 	if (pGlobalEffects) pGlobalEffects->DenumeratePointers();
 
 	// Check object enumeration
-	if (!MainSection.CheckObjectEnumeration())
+	if (!std::ranges::all_of(Sections, &C4Section::CheckObjectEnumeration))
 	{
 		LogFatal(C4ResStrTableKey::IDS_ERR_CHECKOBJECTENUMERATION);
 		return false;
@@ -1784,23 +1785,23 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSky)
 	// Okay; everything in denumerated state from now on
 	PointersDenumerated = true;
 
-	if (!MainSection.C4S.Head.NoInitialize && MainSection.LandscapeLoaded)
+	if (!C4S.Head.NoInitialize && std::ranges::any_of(Sections, &C4Section::LandscapeLoaded))
 	{
 		Log(C4ResStrTableKey::IDS_PRC_ENVIRONMENT);
 		InitRules();
 		InitGoals();
 	}
 
-	MainSection.InitThirdPart();
+	std::ranges::for_each(Sections, &C4Section::InitThirdPart);
 
 	SetInitProgress(94);
 	SetInitProgress(95);
 
 	// goal objects exist, but no GOAL? create it
-	if (!MainSection.C4S.Head.SaveGame)
-		if (MainSection.Objects.ObjectsInt().ObjectCount(C4ID_None, C4D_Goal))
-			if (!MainSection.Objects.FindInternal(C4Id("GOAL")))
-				MainSection.CreateObject(C4Id("GOAL"), nullptr);
+	if (!C4S.Head.SaveGame)
+		if (Sections[0]->Objects.ObjectsInt().ObjectCount(C4ID_None, C4D_Goal))
+			if (!Sections[0]->Objects.FindInternal(C4Id("GOAL")))
+				Sections[0]->CreateObject(C4Id("GOAL"), nullptr);
 	SetInitProgress(96);
 
 	// close any gfx groups, because they are no longer needed (after sky is initialized)
@@ -1845,7 +1846,7 @@ bool C4Game::InitGameFirstPart()
 		}
 
 		// Check network game data scenario type (safety)
-		if (!MainSection.C4S.Head.NetworkGame)
+		if (!C4S.Head.NetworkGame)
 		{
 			LogFatal(C4ResStrTableKey::IDS_NET_NONETGAME); return false;
 		}
@@ -1889,14 +1890,14 @@ bool C4Game::InitGameFirstPart()
 	SetInitProgress(57);
 
 	// Materials
-	if (!MainSection.InitMaterialTexture())
+	if (!std::ranges::all_of(Sections, &C4Section::InitMaterialTexture))
 	{
 		return false;
 	}
 	SetInitProgress(58);
 
 	// Colorize defs by material
-	Defs.ColorizeByMaterial(MainSection.Material, GBM);
+	Defs.ColorizeByMaterial(Sections[0]->Material, GBM);
 	SetInitProgress(60);
 
 	PreloadStatus = PreloadLevel::Basic;
@@ -1906,32 +1907,39 @@ bool C4Game::InitGameFirstPart()
 
 bool C4Game::InitGameSecondPart(C4Group &hGroup, bool fLoadSky, bool preloading)
 {
-	if (PreloadStatus >= PreloadLevel::LandscapeObjects || (MainSection.C4S.Landscape.MapPlayerExtend && preloading))
+	if (PreloadStatus >= PreloadLevel::LandscapeObjects || (C4S.Landscape.MapPlayerExtend && preloading))
 	{
 		return true;
 	}
 
 	FixRandom(Parameters.RandomSeed);
 
-	return MainSection.InitSecondPart(hGroup);
+	return std::ranges::all_of(Sections, &C4Section::InitSecondPart);
 }
 
 bool C4Game::InitGameFinal()
 {
 	// Validate object owners & assign loaded info objects
-	MainSection.Objects.ValidateOwners();
-	MainSection.Objects.AssignInfo();
-	MainSection.Objects.AssignPlrViewRange(); // update FoW-repellers
+	std::int32_t objectCount{0};
+	for (C4GameObjects &objects : Sections | std::views::transform(&C4Section::Objects))
+	{
+		objects.ValidateOwners();
+		objects.AssignInfo();
+		objects.AssignPlrViewRange(); // update FoW-repellers
+		objectCount += objects.ObjectCount();
+	}
 
 	// Script constructor call
-	int32_t iObjCount = MainSection.Objects.ObjectCount();
-	if (!MainSection.C4S.Head.SaveGame) Script.Call(PSF_Initialize);
-	if (MainSection.Objects.ObjectCount() != iObjCount) fScriptCreatedObjects = true;
+	if (!C4S.Head.SaveGame) Script.Call(PSF_Initialize);
+	if (std::ranges::any_of(Sections, [objectCount](C4GameObjects &objects) { return objects.ObjectCount() != objectCount; }, &C4Section::Objects))
+	{
+		fScriptCreatedObjects = true;
+	}
 
 	// Player final init
 	C4Player *pPlr;
 	for (pPlr = Players.First; pPlr; pPlr = pPlr->Next)
-		pPlr->FinalInit(!MainSection.C4S.Head.SaveGame);
+		pPlr->FinalInit(!C4S.Head.SaveGame);
 
 	// Create viewports
 	for (pPlr = Players.First; pPlr; pPlr = pPlr->Next)
@@ -2001,7 +2009,7 @@ bool C4Game::InitPlayers()
 {
 	int32_t iPlrCnt = 0;
 
-	if (MainSection.C4S.Head.NetworkRuntimeJoin)
+	if (C4S.Head.NetworkRuntimeJoin)
 	{
 		// Load players to restore from scenario
 		C4PlayerInfoList LocalRestorePlayerInfos;
@@ -2096,7 +2104,7 @@ bool C4Game::InitPlayers()
 bool C4Game::InitControl()
 {
 	// Replay?
-	if (MainSection.C4S.Head.Replay)
+	if (C4S.Head.Replay)
 	{
 		// no joins
 		PlayerFilenames[0] = 0;
@@ -2127,7 +2135,7 @@ bool C4Game::InitControl()
 	}
 
 	// record?
-	if (!MainSection.C4S.Head.Replay && (Config.General.Record || Parameters.isLeague()))
+	if (!C4S.Head.Replay && (Config.General.Record || Parameters.isLeague()))
 		if (!Control.StartRecord(true, Parameters.doStreaming()))
 		{
 			// Special: If this happens for a league host, the game must not start.
@@ -2556,7 +2564,7 @@ C4Player *C4Game::JoinPlayer(const char *szFilename, int32_t iAtClient, const ch
 	assert(pInfo);
 	C4Player *pPlr;
 	// Join
-	if (!(pPlr = Players.Join(szFilename, true, iAtClient, szAtClientName, pInfo, MainSection))) return nullptr; // FIXME
+	if (!(pPlr = Players.Join(szFilename, true, iAtClient, szAtClientName, pInfo, *Sections.front()))) return nullptr; // FIXME
 	// Player final init
 	pPlr->FinalInit(true);
 	// Create player viewport
@@ -2840,17 +2848,17 @@ bool C4Game::InitNetworkHost()
 	if (!NetworkActive)
 	{
 		// Clear client list
-		if (!MainSection.C4S.Head.Replay)
+		if (!C4S.Head.Replay)
 			Clients.Init();
 		return true;
 	}
 	// network not active?
-	if (MainSection.C4S.Head.NetworkGame)
+	if (C4S.Head.NetworkGame)
 	{
 		LogFatal(C4ResStrTableKey::IDS_NET_NODIRECTSTART); Clients.Init();
 	}
 	// replay?
-	if (MainSection.C4S.Head.Replay)
+	if (C4S.Head.Replay)
 	{
 		LogFatal(C4ResStrTableKey::IDS_PRC_NONETREPLAY); return true;
 	}
@@ -2918,9 +2926,9 @@ void C4Game::InitValueOverloads()
 {
 	C4ID idOvrl; C4Def *pDef;
 	// set new values
-	for (int32_t cnt = 0; idOvrl = MainSection.C4S.Game.Realism.ValueOverloads.GetID(cnt); cnt++)
+	for (int32_t cnt = 0; idOvrl = C4S.Game.Realism.ValueOverloads.GetID(cnt); cnt++)
 		if (pDef = Defs.ID2Def(idOvrl))
-			pDef->Value = MainSection.C4S.Game.Realism.ValueOverloads.GetIDCount(idOvrl);
+			pDef->Value = C4S.Game.Realism.ValueOverloads.GetIDCount(idOvrl);
 }
 
 void C4Game::InitRules()
@@ -2930,7 +2938,7 @@ void C4Game::InitRules()
 	C4ID idType; int32_t iCount;
 	for (cnt = 0; (idType = Parameters.Rules.GetID(cnt, &iCount)); cnt++)
 		for (cnt2 = 0; cnt2 < std::max<int32_t>(iCount, 1); cnt2++)
-			MainSection.CreateObject(idType, nullptr);
+			Sections.front()->CreateObject(idType, nullptr);
 	// Update rule flags
 	UpdateRules();
 }
@@ -2942,18 +2950,24 @@ void C4Game::InitGoals()
 	C4ID idType; int32_t iCount;
 	for (cnt = 0; (idType = Parameters.Goals.GetID(cnt, &iCount)); cnt++)
 		for (cnt2 = 0; cnt2 < iCount; cnt2++)
-			MainSection.CreateObject(idType, nullptr);
+			Sections.front()->CreateObject(idType, nullptr);
 }
 
 void C4Game::UpdateRules()
 {
 	if (Tick255 && FrameCounter > 1) return;
 	Rules = 0;
-	if (MainSection.ObjectCount(C4ID_Energy))       Rules |= C4RULE_StructuresNeedEnergy;
-	if (MainSection.ObjectCount(C4ID_CnMaterial))   Rules |= C4RULE_ConstructionNeedsMaterial;
-	if (MainSection.ObjectCount(C4ID_FlagRemvbl))   Rules |= C4RULE_FlagRemoveable;
-	if (MainSection.ObjectCount(C4Id("STSN")))      Rules |= C4RULE_StructuresSnowIn;
-	if (MainSection.ObjectCount(C4ID_TeamHomebase)) Rules |= C4RULE_TeamHombase;
+
+	const auto checkForId = [this](const C4ID id)
+	{
+		return std::ranges::any_of(Sections, [id](const auto &section) { return section->ObjectCount(id); });
+	};
+
+	if (checkForId(C4ID_Energy))       Rules |= C4RULE_StructuresNeedEnergy;
+	if (checkForId(C4ID_CnMaterial))   Rules |= C4RULE_ConstructionNeedsMaterial;
+	if (checkForId(C4ID_FlagRemvbl))   Rules |= C4RULE_FlagRemoveable;
+	if (checkForId(C4Id("STSN")))      Rules |= C4RULE_StructuresSnowIn;
+	if (checkForId(C4ID_TeamHomebase)) Rules |= C4RULE_TeamHombase;
 }
 
 void C4Game::SetInitProgress(float fToProgress)
