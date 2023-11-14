@@ -846,7 +846,7 @@ void C4Viewport::Clear()
 	ViewOffsX = ViewOffsY = 0;
 }
 
-void C4Viewport::DrawOverlay(C4FacetEx &cgo)
+void C4Viewport::DrawOverlay(C4FacetEx &cgo, C4Section &viewSection)
 {
 	if (!Game.C4S.Head.Film || !Game.C4S.Head.Replay)
 	{
@@ -863,7 +863,7 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 	}
 	// Game messages
 	C4ST_STARTNEW(MsgStat, "C4Viewport::DrawOverlay: Messages")
-	Game.Messages.Draw(cgo, Player);
+	Game.Messages.Draw(cgo, Player, viewSection);
 	C4ST_STOP(MsgStat)
 
 	// Control overlays (if not film/replay)
@@ -1122,7 +1122,7 @@ void C4Viewport::Draw(C4FacetEx &cgo, bool fDrawOverlay)
 
 	if (!Application.isFullScreen) Console.EditCursor.Draw(cgo);
 
-	if (fDrawOverlay) DrawOverlay(cgo);
+	if (fDrawOverlay) DrawOverlay(cgo, section);
 
 	// Netstats
 	if (Game.GraphicsSystem.ShowNetstatus)
