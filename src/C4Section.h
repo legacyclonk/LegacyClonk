@@ -83,6 +83,8 @@ public:
 	void Default();
 	void Clear();
 
+	std::string_view GetName() const { return name; }
+
 	bool InitSection(C4Group &scenario);
 
 	bool InitSecondPart();
