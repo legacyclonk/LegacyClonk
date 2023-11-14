@@ -153,7 +153,7 @@ void C4Object::Default()
 	iLastAttachMovementFrame = -1;
 }
 
-bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
+bool C4Object::Init(C4Def *pDef, C4Section &section, C4Object *pCreator,
 	int32_t iOwner, C4ObjectInfo *pInfo,
 	int32_t nx, int32_t ny, int32_t nr,
 	C4Fixed nxdir, C4Fixed nydir, C4Fixed nrdir, int32_t iController)
@@ -170,14 +170,10 @@ bool C4Object::Init(C4Def *pDef, C4Object *pCreator,
 	Def = pDef;
 	Category = Def->Category;
 	Def->Count++;
+	Section = &section;
 	if (pCreator)
 	{
-		Section = pCreator->Section;
 		pLayer = pCreator->pLayer;
-	}
-	else
-	{
-		Section = Game.Sections.front().get();
 	}
 
 	// graphics
