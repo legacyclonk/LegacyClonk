@@ -263,7 +263,7 @@ public:
 	void DenumeratePointers();
 	void EnumeratePointers();
 	void Default();
-	bool Init(C4Def *ndef, C4Object *pCreator,
+	bool Init(C4Def *ndef, C4Section &section, C4Object *pCreator,
 		int32_t owner, C4ObjectInfo *info,
 		int32_t nx, int32_t ny, int32_t nr,
 		C4Fixed nxdir, C4Fixed nydir, C4Fixed nrdir, int32_t iController);

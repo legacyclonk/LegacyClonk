@@ -651,7 +651,7 @@ C4Object *C4Section::NewObject(C4Def *pDef, C4Object *pCreator,
 	C4Object *const objPtr{obj.get()};
 
 	// Initialize object
-	obj->Init(pDef, pCreator, iOwner, pInfo, iX, iY, iR, xdir, ydir, rdir, iController);
+	obj->Init(pDef, *this, pCreator, iOwner, pInfo, iX, iY, iR, xdir, ydir, rdir, iController);
 	// Enumerate object
 	obj->Number = ++Game.ObjectEnumerationIndex;
 	// Add to object list
