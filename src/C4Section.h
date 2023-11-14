@@ -270,5 +270,4 @@ public:
 
 private:
 	std::string name;
-	bool mainSection;
 };
