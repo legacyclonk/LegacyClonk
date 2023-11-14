@@ -1714,6 +1714,7 @@ void C4Player::UpdateView()
 		if (pViewObj)
 		{
 			ViewX = pViewObj->x; ViewY = pViewObj->y;
+			ViewSection = pViewObj->Section;
 		}
 		break;
 	}
@@ -1721,6 +1722,7 @@ void C4Player::UpdateView()
 		if (ViewTarget)
 		{
 			ViewX = ViewTarget->x; ViewY = ViewTarget->y;
+			ViewSection = ViewTarget->Section;
 		}
 		break;
 	case C4PVM_Scrolling:
