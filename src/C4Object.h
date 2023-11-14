@@ -285,6 +285,7 @@ public:
 	void DrawFace(C4FacetEx &cgo, int32_t cgoX, int32_t cgoY, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
 	void Execute();
 	void ClearPointers(C4Object *ptr);
+	void OnSectionMove(C4Object *obj, C4Section &newSection);
 	bool ExecMovement();
 	bool ExecFire(int32_t iIndex, int32_t iCausedByPlr);
 	void ExecAction();
@@ -463,4 +464,7 @@ public:
 	// This function is used for:
 	// -Objects that are not to be saved in "SaveScenario"-mode
 	bool IsUserPlayerObject(); // true for any object that belongs to any player (NO_OWNER) or a specified player
+
+
+	void MoveToSection(C4Section &newSection, bool checkContained = true);
 };
