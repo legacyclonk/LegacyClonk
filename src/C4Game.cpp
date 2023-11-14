@@ -2525,6 +2525,22 @@ bool C4Game::InitKeyboard()
 	return true;
 }
 
+bool C4Game::CreateScenarioSection(const char *const name)
+{
+	auto section = std::make_unique<C4Section>(name);
+
+	if (section->InitSection(ScenarioFile))
+	{
+		Sections.emplace_back(std::move(section));
+
+		return Sections.back()->InitMaterialTexture()
+				&& Sections.back()->InitSecondPart()
+				&& Sections.back()->InitThirdPart();
+	}
+
+	return false;
+}
+
 bool C4Game::InitSystem()
 {
 	// Timer flags
