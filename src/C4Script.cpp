@@ -6133,6 +6133,16 @@ static void FnSetRestoreInfos(C4AulContext *ctx, C4ValueInt what)
 	Game.RestartRestoreInfos.What = static_cast<std::underlying_type_t<C4NetworkRestartInfos::RestoreInfo>>(what);
 }
 
+static bool FnCreateScenarioSection(C4AulContext *ctx, C4String *name)
+{
+	if (const char *const par{FnStringPar(name)}; par)
+	{
+		return Game.CreateScenarioSection(par);
+	}
+
+	return false;
+}
+
 template<std::size_t ParCount>
 class C4AulEngineFuncHelper : public C4AulFunc
 {
@@ -7054,6 +7064,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetKeys",                         FnGetKeys);
 	AddFunc(pEngine, "GetValues",                       FnGetValues);
 	AddFunc(pEngine, "SetRestoreInfos",                 FnSetRestoreInfos);
+	AddFunc(pEngine, "CreateScenarioSection",           FnCreateScenarioSection);
 	new C4AulDefCastFunc<C4V_C4ID, C4V_Int>{pEngine, "ScoreboardCol"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Int>{pEngine, "CastInt"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Bool>{pEngine, "CastBool"};
