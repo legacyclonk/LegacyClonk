@@ -253,7 +253,7 @@ public:
 
 	C4Section *GetSectionByIndex(const std::int32_t index) noexcept
 	{
-		if (Inside(index, 0, static_cast<std::int32_t>(Sections.size())))
+		if (Inside(index, 0, static_cast<std::int32_t>(Sections.size() - 1)))
 		{
 			return Sections[index].get();
 		}
