@@ -96,7 +96,7 @@ int32_t DrawMessageOffset = -35; // For finding the optimum place to draw startu
 int32_t PortraitWidth = 64;
 int32_t PortraitIndent = 10;
 
-void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer)
+void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer, C4Section &viewSection)
 {
 	int32_t alignment = dwFlags & C4GM_ALeft ? ALeft : dwFlags & C4GM_ACenter ? ACenter : dwFlags & C4GM_ARight ? ARight : -1;
 
@@ -177,7 +177,7 @@ void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer)
 		}
 	}
 	// Positioned
-	else if (Type == C4GM_Target || ((Type == C4GM_TargetPlayer) && (iPlayer == Player)))
+	else if ((Type == C4GM_Target || ((Type == C4GM_TargetPlayer) && (iPlayer == Player))) && (Target->Section == &viewSection))
 	{
 		// adjust position by object; care about parallaxity
 		int32_t iMsgX, iMsgY;
@@ -345,10 +345,10 @@ void C4GameMessageList::UpdateDef(C4ID idUpdDef)
 	}
 }
 
-void C4GameMessageList::Draw(C4FacetEx &cgo, int32_t iPlayer)
+void C4GameMessageList::Draw(C4FacetEx &cgo, int32_t iPlayer, C4Section &viewSection)
 {
 	for (const auto &it : Messages)
 	{
-		it->Draw(cgo, iPlayer);
+		it->Draw(cgo, iPlayer, viewSection);
 	}
 }

@@ -126,7 +126,7 @@ protected:
 	void DrawMouseButtons(C4FacetEx &cgo);
 	void DrawPlayerStartup(C4FacetEx &cgo);
 	void Draw(C4FacetEx &cgo, bool fDrawOverlay);
-	void DrawOverlay(C4FacetEx &cgo);
+	void DrawOverlay(C4FacetEx &cgo, C4Section &viewSection);
 	void DrawMenu(C4FacetEx &cgo);
 	void DrawCursorInfo(C4FacetEx &cgo);
 	void DrawPlayerInfo(C4FacetEx &cgo);
