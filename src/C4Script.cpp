@@ -6143,6 +6143,21 @@ static bool FnCreateScenarioSection(C4AulContext *ctx, C4String *name)
 	return false;
 }
 
+
+static bool FnMoveObjectToSection(C4AulContext *ctx, C4ValueInt targetSection, C4Object *obj)
+{
+	if (!obj) if (!(obj = ctx->Obj)) return false;
+	C4Section *const section{Game.GetSectionByIndex(targetSection)};
+	if (!section)
+	{
+		return false;
+	}
+
+	obj->MoveToSection(*section);
+
+	return true;
+}
+
 template<std::size_t ParCount>
 class C4AulEngineFuncHelper : public C4AulFunc
 {
@@ -7065,6 +7080,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetValues",                       FnGetValues);
 	AddFunc(pEngine, "SetRestoreInfos",                 FnSetRestoreInfos);
 	AddFunc(pEngine, "CreateScenarioSection",           FnCreateScenarioSection);
+	AddFunc(pEngine, "MoveObjectToSection",             FnMoveObjectToSection);
 	new C4AulDefCastFunc<C4V_C4ID, C4V_Int>{pEngine, "ScoreboardCol"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Int>{pEngine, "CastInt"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Bool>{pEngine, "CastBool"};
