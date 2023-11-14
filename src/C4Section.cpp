@@ -112,8 +112,7 @@ bool C4Section::InitSecondPart()
 	}
 
 	// the savegame flag is set if runtime data is present, in which case this is to be used
-	// except for scenario sections
-	if (LandscapeLoaded && !(C4S.Head.SaveGame || !mainSection))
+	if (LandscapeLoaded && !C4S.Head.SaveGame)
 	{
 		Landscape.ScenarioInit();
 	}
