@@ -244,7 +244,8 @@ bool C4Section::InitMaterialTexture()
 	Material.Clear();
 
 	// Check for scenario local materials
-	bool fHaveScenMaterials = Group.FindEntry(C4CFN_Material);
+	bool haveSectionMaterials{Group.FindEntry(C4CFN_Material)};
+	bool haveScenarioFileMaterials{!name.empty() && Game.ScenarioFile.FindEntry(C4CFN_Material)};
 
 	// Load all materials
 	auto matRes = Game.Parameters.GameRes.iterRes(NRT_Material);
@@ -254,7 +255,7 @@ bool C4Section::InitMaterialTexture()
 	{
 		// Are there any scenario local materials that need to be looked at firs?
 		C4Group Mats;
-		if (fHaveScenMaterials)
+		if (haveSectionMaterials)
 		{
 			if (!Mats.OpenAsChild(&Group, C4CFN_Material))
 			{
@@ -262,7 +263,17 @@ bool C4Section::InitMaterialTexture()
 				return false;
 			}
 			// Once only
-			fHaveScenMaterials = false;
+			haveSectionMaterials = false;
+		}
+		else if (haveScenarioFileMaterials)
+		{
+			if (!Mats.OpenAsChild(&Game.ScenarioFile, C4CFN_Material))
+			{
+				LogFatal(FormatString(LoadResStr("IDS_ERR_SCENARIOMATERIALS"), Mats.GetError()).getData());
+				return false;
+			}
+
+			haveScenarioFileMaterials = false;
 		}
 		else
 		{
