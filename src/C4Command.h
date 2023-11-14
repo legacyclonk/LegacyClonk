@@ -100,6 +100,7 @@ public:
 	void Clear();
 	void Execute();
 	void ClearPointers(C4Object *pObj);
+	void OnSectionMove(C4Object *obj);
 	void Default();
 	void EnumeratePointers();
 	void DenumeratePointers();

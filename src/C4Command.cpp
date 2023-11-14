@@ -1518,6 +1518,12 @@ void C4Command::ClearPointers(C4Object *pObj)
 	if (Target2 == pObj) Target2 = nullptr;
 }
 
+void C4Command::OnSectionMove(C4Object *const obj)
+{
+	if (Target == obj) Target = nullptr;
+	if (Target2 == obj) Target2 = nullptr;
+}
+
 void C4Command::Execute()
 {
 	// Finished?!

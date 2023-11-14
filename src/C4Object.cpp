@@ -2210,6 +2210,35 @@ void C4Object::ClearPointers(C4Object *pObj)
 	}
 }
 
+void C4Object::OnSectionMove(C4Object *const obj, C4Section &newSection)
+{
+	if (Action.Target == obj || Action.Target2 == obj)
+	{
+		// attach target is moving to another section: move
+		if ((GetProcedure() == DFA_ATTACH))
+		{
+			MoveToSection(newSection);
+		}
+		else
+		{
+			if (Action.Target == obj)
+			{
+				Action.Target = nullptr;
+			}
+
+			if (Action.Target2 == obj)
+			{
+				Action.Target2 = nullptr;
+			}
+		}
+	}
+
+	for (C4Command *command{Command}; command; command = command->Next)
+	{
+		command->OnSectionMove(obj);
+	}
+}
+
 C4Value C4Object::Call(const char *szFunctionCall, const C4AulParSet &pPars, bool fPassError, bool convertNilToIntBool)
 {
 	if (!Status || !Def || !szFunctionCall[0]) return C4VNull;
@@ -6294,4 +6323,40 @@ bool C4Object::IsUserPlayerObject()
 	if (!pOwner || pOwner->GetType() != C4PT_User) return false;
 	// otherwise, it's a user playeer object
 	return true;
+}
+
+void C4Object::MoveToSection(C4Section &newSection, const bool checkContained)
+{
+	if (Section == &newSection) return;
+
+	if (checkContained && Contained && Contained->Section != &newSection)
+	{
+		Exit(0, 0, 0, Fix0, Fix0, Fix0, false);
+	}
+
+	if (pLayer && pLayer->Section != &newSection)
+	{
+		pLayer = nullptr;
+	}
+
+	for (C4ObjectLink *link{Contents.First}; link; link = link->Next)
+	{
+		link->Obj->MoveToSection(newSection, false);
+	}
+
+	if (pSolidMaskData)
+	{
+		pSolidMaskData->Remove(true, true);
+	}
+
+	Section->Objects.OnSectionMove(this, newSection);
+
+	Section->Objects.Remove(this);
+	Section = &newSection;
+	Section->Objects.Add(this);
+
+	if (pSolidMaskData)
+	{
+		pSolidMaskData->Put(true, nullptr, true);
+	}
 }
