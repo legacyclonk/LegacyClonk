@@ -609,7 +609,7 @@ void C4Section::DeleteObjects(const bool deleteInactive)
 void C4Section::ClearPointers(C4Object *const obj)
 {
 	Objects.BackObjects.ClearPointers(obj);
-	Objects.ClearPointers(obj);
+	Objects.ForeObjects.ClearPointers(obj);
 	ClearObjectPtrs(obj);
 	TransferZones.ClearPointers(obj);
 }
