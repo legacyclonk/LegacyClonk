@@ -6143,6 +6143,37 @@ static bool FnCreateScenarioSection(C4AulContext *ctx, C4String *name)
 	return false;
 }
 
+static C4ValueInt FnGetScenarioSectionCount(C4AulContext *ctx)
+{
+	return static_cast<C4ValueInt>(Game.Sections.size());
+}
+
+static C4ValueInt FnGetScenarioSectionByName(C4AulContext *ctx, C4String *name, std::optional<C4ValueInt> index)
+{
+	if (!name) return false;
+
+	for (std::size_t i{0}; i < Game.Sections.size(); ++i)
+	{
+		if (Game.Sections[i]->GetName() == FnStringPar(name))
+		{
+			if (index)
+			{
+				if (*index == 0)
+				{
+					return static_cast<C4ValueInt>(i);
+				}
+
+				--*index;
+			}
+			else
+			{
+				return static_cast<C4ValueInt>(i);
+			}
+		}
+	}
+
+	return -1;
+}
 
 static bool FnMoveObjectToSection(C4AulContext *ctx, C4ValueInt targetSection, C4Object *obj)
 {
@@ -6156,6 +6187,13 @@ static bool FnMoveObjectToSection(C4AulContext *ctx, C4ValueInt targetSection, C
 	obj->MoveToSection(*section);
 
 	return true;
+}
+
+static std::optional<C4ValueInt> FnGetSection(C4AulContext *ctx, C4Object *obj)
+{
+	if (!obj) if (!(obj = ctx->Obj)) return {};
+
+	return Game.GetSectionIndex(*obj->Section);
 }
 
 template<std::size_t ParCount>
@@ -7080,7 +7118,10 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetValues",                       FnGetValues);
 	AddFunc(pEngine, "SetRestoreInfos",                 FnSetRestoreInfos);
 	AddFunc(pEngine, "CreateScenarioSection",           FnCreateScenarioSection);
+	AddFunc(pEngine, "GetScenarioSectionCount",         FnGetScenarioSectionCount);
+	AddFunc(pEngine, "GetScenarioSectionByName",        FnGetScenarioSectionByName);
 	AddFunc(pEngine, "MoveObjectToSection",             FnMoveObjectToSection);
+	AddFunc(pEngine, "GetSection",                      FnGetSection);
 	new C4AulDefCastFunc<C4V_C4ID, C4V_Int>{pEngine, "ScoreboardCol"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Int>{pEngine, "CastInt"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Bool>{pEngine, "CastBool"};
