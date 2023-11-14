@@ -83,6 +83,8 @@ public:
 
 	bool ValidateOwners();
 	bool AssignInfo();
+
+	void OnSectionMove(C4Object *obj, C4Section &newSection);
 };
 
 class C4AulFunc;

@@ -908,6 +908,16 @@ bool C4GameObjects::AssignInfo()
 	return fSucc;
 }
 
+void C4GameObjects::OnSectionMove(C4Object *const obj, C4Section &newSection)
+{
+	for (C4ObjectLink *link{First}; link; )
+	{
+		C4Object *const linkObj{link->Obj};
+		link = link->Next;
+		linkObj->OnSectionMove(obj, newSection);
+	}
+}
+
 uint32_t C4GameObjects::GetNextMarker()
 {
 	// Get a new marker.
