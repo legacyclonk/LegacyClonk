@@ -6133,22 +6133,22 @@ static void FnSetRestoreInfos(C4AulContext *ctx, C4ValueInt what)
 	Game.RestartRestoreInfos.What = static_cast<std::underlying_type_t<C4NetworkRestartInfos::RestoreInfo>>(what);
 }
 
-static bool FnCreateScenarioSection(C4AulContext *ctx, C4String *name)
+static C4ValueInt FnCreateSection(C4AulContext *ctx, C4String *name)
 {
 	if (const char *const par{FnStringPar(name)}; par)
 	{
-		return Game.CreateScenarioSection(par);
+		return Game.CreateSection(par);
 	}
 
-	return false;
+	return -1;
 }
 
-static C4ValueInt FnGetScenarioSectionCount(C4AulContext *ctx)
+static C4ValueInt FnGetSectionCount(C4AulContext *ctx)
 {
 	return static_cast<C4ValueInt>(Game.Sections.size());
 }
 
-static C4ValueInt FnGetScenarioSectionByName(C4AulContext *ctx, C4String *name, std::optional<C4ValueInt> index)
+static C4ValueInt FnGetSectionByName(C4AulContext *ctx, C4String *name, std::optional<C4ValueInt> index)
 {
 	if (!name) return false;
 
@@ -6175,7 +6175,7 @@ static C4ValueInt FnGetScenarioSectionByName(C4AulContext *ctx, C4String *name, 
 	return -1;
 }
 
-static bool FnMoveObjectToSection(C4AulContext *ctx, C4ValueInt targetSection, C4Object *obj)
+static bool FnMoveToSection(C4AulContext *ctx, C4ValueInt targetSection, C4Object *obj)
 {
 	if (!obj) if (!(obj = ctx->Obj)) return false;
 	C4Section *const section{Game.GetSectionByIndex(targetSection)};
@@ -6189,9 +6189,24 @@ static bool FnMoveObjectToSection(C4AulContext *ctx, C4ValueInt targetSection, C
 	return true;
 }
 
-C4ValueInt FnGetSection(C4AulContext *ctx, C4Object *obj)
+C4ValueInt FnGetSection(C4AulContext *ctx)
 {
 	return Game.GetSectionIndex(ctx->GetSection());
+}
+
+bool FnSwitchToSection(C4AulContext *ctx, C4ValueInt sectionIndex)
+{
+	if (!ctx->Caller) return false;
+
+	C4Section *const section{Game.GetSectionByIndex(sectionIndex)};
+	if (!section)
+	{
+		return false;
+	}
+
+	ctx->Caller->Section = section;
+
+	return true;
 }
 
 template<std::size_t ParCount>
@@ -7115,11 +7130,12 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "GetKeys",                         FnGetKeys);
 	AddFunc(pEngine, "GetValues",                       FnGetValues);
 	AddFunc(pEngine, "SetRestoreInfos",                 FnSetRestoreInfos);
-	AddFunc(pEngine, "CreateScenarioSection",           FnCreateScenarioSection);
-	AddFunc(pEngine, "GetScenarioSectionCount",         FnGetScenarioSectionCount);
-	AddFunc(pEngine, "GetScenarioSectionByName",        FnGetScenarioSectionByName);
-	AddFunc(pEngine, "MoveObjectToSection",             FnMoveObjectToSection);
+	AddFunc(pEngine, "CreateSection",                   FnCreateSection);
+	AddFunc(pEngine, "GetSectionCount",                 FnGetSectionCount);
+	AddFunc(pEngine, "GetSectionByName",                FnGetSectionByName);
+	AddFunc(pEngine, "MoveToSection",                   FnMoveToSection);
 	AddFunc(pEngine, "GetSection",                      FnGetSection);
+	AddFunc(pEngine, "SwitchToSection",                 FnSwitchToSection);
 	new C4AulDefCastFunc<C4V_C4ID, C4V_Int>{pEngine, "ScoreboardCol"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Int>{pEngine, "CastInt"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Bool>{pEngine, "CastBool"};
