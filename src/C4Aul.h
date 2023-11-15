@@ -24,6 +24,7 @@
 #pragma once
 
 #include <C4AulScriptStrict.h>
+#include "C4ForwardDeclarations.h"
 #include <C4ValueList.h>
 #include <C4ValueMap.h>
 #include <C4Id.h>
