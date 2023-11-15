@@ -120,7 +120,6 @@ public:
 	C4Extra Extra;
 	C4GUI::Screen *pGUI;
 	C4ScenarioSection *pScenarioSections, *pCurrentScenarioSection;
-	C4Effect *pGlobalEffects;
 #ifndef USE_CONSOLE
 	// We don't need fonts when we don't have graphics
 	C4FontLoader FontLoader;
@@ -211,9 +210,9 @@ public:
 	void Synchronize(bool fSavePlayerFiles);
 	void SyncClearance();
 	// Editing
-	bool DropFile(const char *szFilename, int32_t iX, int32_t iY);
+	bool DropFile(C4Section &section, const char *szFilename, int32_t iX, int32_t iY);
 	bool CreateViewport(int32_t iPlayer, bool fSilent = false);
-	bool DropDef(C4ID id, int32_t iX, int32_t iY);
+	bool DropDef(C4Section &section, C4ID id, int32_t iX, int32_t iY);
 	void ReloadFile(const char *path);
 	bool ReloadDef(C4ID id, uint32_t reloadWhat = C4D_Load_RX);
 	bool ReloadParticle(const char *szName);
@@ -293,6 +292,17 @@ public:
 	void SortByCategory()
 	{
 		std::ranges::for_each(Sections, &C4ObjectList::SortByCategory, &C4Section::Objects);
+	}
+
+	void OnObjectChangedDef(C4Object *const obj)
+	{
+		for (const auto &section : Sections)
+		{
+			if (section->GlobalEffects)
+			{
+				section->GlobalEffects->OnObjectChangedDef(obj);
+			}
+		}
 	}
 
 	bool LoadScenarioSection(const char *szSection, uint32_t dwFlags);
