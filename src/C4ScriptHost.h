@@ -40,22 +40,18 @@ public:
 	void GetControlMethodMask(std::format_string<const char *> functionFormat, int32_t &first, int32_t &second);
 	int32_t GetControlMethod(int32_t com, int32_t first, int32_t second);
 
-	C4Value ObjectCall(C4Object *pCaller, C4Object *pObj, const char *szFunction, const C4AulParSet &pPars = C4AulParSet{}, bool fPassError = false, bool convertNilToIntBool = true)
-	{
-		if (!szFunction) return C4VNull;
-		return FunctionCall(pCaller, szFunction, pObj, pPars, false, fPassError, convertNilToIntBool);
-	}
+	C4Value ObjectCall(C4Object *pCaller, C4Object *pObj, const char *szFunction, const C4AulParSet &pPars = C4AulParSet{}, bool fPassError = false, bool convertNilToIntBool = true);
 
-	C4Value Call(const char *szFunction, const C4AulParSet &pPars = C4AulParSet{}, bool fPassError = false, bool convertNilToIntBool = true)
+	C4Value Call(C4Section &section, const char *szFunction, const C4AulParSet &pPars = C4AulParSet{}, bool fPassError = false, bool convertNilToIntBool = true)
 	{
 		if (!szFunction) return C4VNull;
-		return FunctionCall(nullptr, szFunction, nullptr, pPars, false, fPassError, convertNilToIntBool);
+		return FunctionCall(section, nullptr, szFunction, nullptr, pPars, false, fPassError, convertNilToIntBool);
 	}
 
 protected:
 	class C4LangStringTable *pStringTable;
 	void MakeScript();
-	C4Value FunctionCall(C4Object *pCaller, const char *szFunction, C4Object *pObj, const C4AulParSet &pPars = C4AulParSet{}, bool fPrivateCall = false, bool fPassError = false, bool convertNilToIntBool = true);
+	C4Value FunctionCall(C4Section &section, C4Object *pCaller, const char *szFunction, C4Object *pObj, const C4AulParSet &pPars = C4AulParSet{}, bool fPrivateCall = false, bool fPassError = false, bool convertNilToIntBool = true);
 	bool ReloadScript(const char *szPath) override;
 };
 

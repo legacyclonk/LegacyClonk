@@ -42,13 +42,13 @@ protected:
 	int32_t Player;
 
 public:
-	bool Init(C4FacetExSurface &fctSymbol, const char *szEmpty, int32_t iPlayer, int32_t iExtra = C4MN_Extra_None, int32_t iExtraData = 0, int32_t iId = 0, int32_t iStyle = C4MN_Style_Normal);
-	bool InitRefSym(const C4FacetEx &fctSymbol, const char *szEmpty, int32_t iPlayer, int32_t iExtra = C4MN_Extra_None, int32_t iExtraData = 0, int32_t iId = 0, int32_t iStyle = C4MN_Style_Normal);
+	bool Init(C4FacetExSurface &fctSymbol, C4Section &section, const char *szEmpty, int32_t iPlayer, int32_t iExtra = C4MN_Extra_None, int32_t iExtraData = 0, int32_t iId = 0, int32_t iStyle = C4MN_Style_Normal);
+	bool InitRefSym(const C4FacetEx &fctSymbol, C4Section &section, const char *szEmpty, int32_t iPlayer, int32_t iExtra = C4MN_Extra_None, int32_t iExtraData = 0, int32_t iId = 0, int32_t iStyle = C4MN_Style_Normal);
 
-	bool ActivateMain(int32_t iPlayer);
+	bool ActivateMain(C4Section &section, int32_t iPlayer);
 	bool ActivateNewPlayer(int32_t iPlayer);
 	bool ActivateHostility(int32_t iPlayer);
-	bool ActivateGoals(int32_t iPlayer, bool fDoActivate);
+	bool ActivateGoals(C4Section &section, int32_t iPlayer, bool fDoActivate);
 	bool ActivateRules(int32_t iPlayer);
 	bool ActivateSavegame(int32_t iPlayer);
 	bool ActivateHost(int32_t iPlayer);

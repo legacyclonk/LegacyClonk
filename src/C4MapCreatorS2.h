@@ -125,7 +125,7 @@ protected:
 
 public:
 	void EnablePixel(int32_t iX, int32_t iY); // enable pixel in map; create map if necessary
-	void Execute(int32_t iMapZoom); // evaluate the array
+	void Execute(C4Section &section, int32_t iMapZoom); // evaluate the array
 
 	friend class C4MCCallbackArrayList;
 };
@@ -143,7 +143,7 @@ protected:
 public:
 	void Add(C4MCCallbackArray *pNewArray); // add given array to list
 	void Clear(); // clear the list
-	void Execute(int32_t iMapZoom); // execute all arrays
+	void Execute(C4Section &section, int32_t iMapZoom); // execute all arrays
 };
 
 // generic map creator tree node
@@ -350,8 +350,9 @@ public:
 class C4MapCreatorS2 : public C4MCNode
 {
 public:
-	C4MapCreatorS2(C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount);
+	C4MapCreatorS2(C4Section &section, C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount);
 	C4MapCreatorS2(C4MapCreatorS2 &rTemplate, C4SLandscape *pLandscape); // construct of template
+	C4MapCreatorS2(C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount);
 	~C4MapCreatorS2();
 
 
@@ -365,8 +366,10 @@ public:
 
 public:
 	CSurface8 *Render(const char *szMapName); // create map surface
+	C4Section &GetSection() const noexcept { return section; }
 
 protected:
+	C4Section &section;
 	C4SLandscape  *Landscape; // landsape presets
 	C4TextureMap  *TexMap; // texture map
 	C4MaterialMap *MatMap; // material map
@@ -380,7 +383,7 @@ protected:
 	bool GlobalScope() override { return true; } // it's the global node
 
 public:
-	void ExecuteCallbacks(int32_t iMapZoom) { CallbackArrays.Execute(iMapZoom); }
+	void ExecuteCallbacks(int32_t iMapZoom) { CallbackArrays.Execute(section, iMapZoom); }
 
 	friend class C4MCOverlay;
 	friend class C4MCMap;

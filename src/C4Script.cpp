@@ -257,7 +257,7 @@ static bool FnIncinerateLandscape(C4AulContext *cthr, C4ValueInt iX, C4ValueInt 
 		iX += cthr->Obj->x;
 		iY += cthr->Obj->y;
 	}
-	return C4Object::GetSection(cthr->Obj).Landscape.Incinerate(iX, iY);
+	return cthr->GetSection().Landscape.Incinerate(iX, iY);
 }
 
 static bool FnExtinguish(C4AulContext *cthr, C4Object *pObj)
@@ -278,12 +278,12 @@ static bool FnSetSolidMask(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4V
 
 static void FnSetGravity(C4AulContext *cthr, C4ValueInt iGravity)
 {
-	C4Object::GetSection(cthr->Obj).Landscape.Gravity = itofix(BoundBy<C4ValueInt>(iGravity, -300, 300)) / 500;
+	cthr->GetSection().Landscape.Gravity = itofix(BoundBy<C4ValueInt>(iGravity, -300, 300)) / 500;
 }
 
 static C4ValueInt FnGetGravity(C4AulContext *cthr)
 {
-	return fixtoi(C4Object::GetSection(cthr->Obj).Landscape.Gravity * 500);
+	return fixtoi(cthr->GetSection().Landscape.Gravity * 500);
 }
 
 template<int N>
@@ -426,7 +426,7 @@ static bool FnSplit2Components(C4AulContext *cthr, C4Object *pObj)
 		else pThing->Exit(pThing->x, pThing->y);
 	// Destroy the object, create its components
 	C4IDList ObjComponents;
-	pObj->Def->GetComponents(&ObjComponents, pObj, cthr->Obj);
+	pObj->Def->GetComponents(&ObjComponents, *pObj->Section, pObj, cthr->Obj);
 	if (pObj->Contained) pObj->Exit(pObj->x, pObj->y);
 	for (cnt = 0; ObjComponents.GetID(cnt); cnt++)
 	{
@@ -437,7 +437,7 @@ static bool FnSplit2Components(C4AulContext *cthr, C4Object *pObj)
 			const auto r3 = itofix(Rnd3());
 			const auto r2 = itofix(Rnd3());
 			const auto r1 = Random(360);
-			if (pNew = C4Object::GetSection(pObj).CreateObject(ObjComponents.GetID(cnt),
+			if (pNew = pObj->Section->CreateObject(ObjComponents.GetID(cnt),
 				pObj,
 				pObj->Owner,
 				pObj->x, pObj->y,
@@ -669,9 +669,9 @@ static std::optional<C4ValueInt> FnGetPhysical(C4AulContext *cthr, C4String *szP
 		// In fair crew mode, scripts may not read permanent physical values - fallback to fair def physical instead!
 		if (Game.Parameters.UseFairCrew)
 			if (pObj->Info->pDef)
-				return {pObj->Info->pDef->GetFairCrewPhysicals()->*off};
+				return {pObj->Info->pDef->GetFairCrewPhysicals(*pObj->Section)->*off};
 			else
-				return {pObj->Def->GetFairCrewPhysicals()->*off};
+				return {pObj->Def->GetFairCrewPhysicals(*pObj->Section)->*off};
 		// Get physical
 		return {pObj->Info->Physical.*off};
 	// Temporary physical
@@ -760,7 +760,7 @@ static bool FnSetBridgeActionData(C4AulContext *cthr, C4ValueInt iBridgeLength, 
 	if (pObj->Action.Act <= ActIdle) return false;
 	if (pObj->Def->ActMap[pObj->Action.Act].Procedure != DFA_BRIDGE) return false;
 	// set data
-	pObj->Action.SetBridgeData(iBridgeLength, fMoveClonk, fWall, std::min<int32_t>(iBridgeMaterial, C4Object::GetSection(pObj).Material.Num - 1));
+	pObj->Action.SetBridgeData(iBridgeLength, fMoveClonk, fWall, std::min<int32_t>(iBridgeMaterial, pObj->Section->Material.Num - 1));
 	return true;
 }
 
@@ -1375,7 +1375,7 @@ static std::optional<C4ValueInt> FnGetValue(C4AulContext *cthr, C4Object *pObj, 
 	C4Def *pDef;
 	if (idDef)
 		// return Def value or 0 if def unloaded
-		if (pDef = Game.Defs.ID2Def(idDef)) return pDef->GetValue(pInBase, iForPlayer); else return {};
+		if (pDef = Game.Defs.ID2Def(idDef)) return pDef->GetValue(cthr->GetSection(), pInBase, iForPlayer); else return {}; // FIXME
 	// Object value
 	if (!pObj) pObj = cthr->Obj; if (!pObj) return {};
 	return {pObj->GetValue(pInBase, iForPlayer)};
@@ -1448,7 +1448,7 @@ static bool FnCreateMenu(C4AulContext *cthr, C4ID iSymbol, C4Object *pMenuObj, C
 	// Clear any old menu, init new menu
 	if (!pMenuObj->CloseMenu(false)) return false;
 	if (!pMenuObj->Menu) pMenuObj->Menu = new C4ObjectMenu; else pMenuObj->Menu->ClearItems(true);
-	pMenuObj->Menu->Init(fctSymbol, FnStringPar(szCaption), pCommandObj, iExtra, iExtraData, idMenuID ? idMenuID : iSymbol, iStyle, true);
+	pMenuObj->Menu->Init(fctSymbol, *pMenuObj->Section, FnStringPar(szCaption), pCommandObj, iExtra, iExtraData, idMenuID ? idMenuID : iSymbol, iStyle, true);
 
 	// Set permanent
 	pMenuObj->Menu->SetPermanent(fPermanent);
@@ -1744,7 +1744,7 @@ static bool FnSetMenuDecoration(C4AulContext *cthr, C4ID idNewDeco, C4Object *pM
 {
 	if (!pMenuObj || !pMenuObj->Menu) return false;
 	C4GUI::FrameDecoration *pNewDeco = new C4GUI::FrameDecoration();
-	if (!pNewDeco->SetByDef(idNewDeco))
+	if (!pNewDeco->SetByDef(cthr->GetSection(), idNewDeco))
 	{
 		delete pNewDeco;
 		return false;
@@ -1881,7 +1881,7 @@ static std::optional<bool> FnComponentAll(C4AulContext *cthr, C4Object *pObj, C4
 	C4ValueInt cnt;
 	if (!pObj) return {};
 	C4IDList Components;
-	pObj->Def->GetComponents(&Components, pObj, cthr->Obj);
+	pObj->Def->GetComponents(&Components, *pObj->Section, pObj, cthr->Obj);
 	for (cnt = 0; Components.GetID(cnt); cnt++)
 		if (Components.GetID(cnt) != c_id)
 			if (Components.GetCount(cnt) > 0)
@@ -1900,7 +1900,7 @@ static C4Object *FnCreateObject(C4AulContext *cthr,
 			iOwner = cthr->Obj->Owner;
 	}
 
-	C4Object *pNewObj = C4Object::GetSection(cthr->Obj).CreateObject(id, cthr->Obj, iOwner, iXOffset, iYOffset);
+	C4Object *pNewObj = cthr->GetSection().CreateObject(id, cthr->Obj, iOwner, iXOffset, iYOffset);
 
 	// Set initial controller to creating controller, so more complicated cause-effect-chains can be traced back to the causing player
 	if (pNewObj && cthr->Obj && cthr->Obj->Controller > NO_OWNER) pNewObj->Controller = cthr->Obj->Controller;
@@ -1923,11 +1923,11 @@ static C4Object *FnCreateConstruction(C4AulContext *cthr,
 
 	// Check site
 	if (fCheckSite)
-		if (!C4Object::GetSection(cthr->Obj).Landscape.ConstructionCheck(id, iXOffset, iYOffset, cthr->Obj))
+		if (!cthr->GetSection().Landscape.ConstructionCheck(id, iXOffset, iYOffset, cthr->Obj))
 			return nullptr;
 
 	// Create site object
-	C4Object *pNewObj = C4Object::GetSection(cthr->Obj).CreateObjectConstruction(id, cthr->Obj, iOwner, iXOffset, iYOffset, iCompletion * FullCon / 100, fTerrain);
+	C4Object *pNewObj = cthr->GetSection().CreateObjectConstruction(id, cthr->Obj, iOwner, iXOffset, iYOffset, iCompletion * FullCon / 100, fTerrain);
 
 	// Set initial controller to creating controller, so more complicated cause-effect-chains can be traced back to the causing player
 	if (pNewObj && cthr->Obj && cthr->Obj->Controller > NO_OWNER) pNewObj->Controller = cthr->Obj->Controller;
@@ -1967,7 +1967,7 @@ static std::optional<bool> FnFindConstructionSite(C4AulContext *cthr, C4ID id, C
 	C4Value &V1 = cthr->Caller->NumVars[iVarX];
 	C4Value &V2 = cthr->Caller->NumVars[iVarY];
 	// Construction check at starting position
-	C4Section &section{C4Object::GetSection(cthr->Caller->Obj)};
+	C4Section &section{cthr->Caller->GetSection()};
 	if (section.Landscape.ConstructionCheck(id, V1.getInt(), V2.getInt()))
 		return {true};
 	// Search for real
@@ -1983,7 +1983,7 @@ static std::optional<bool> FnFindConstructionSite(C4AulContext *cthr, C4ID id, C
 static C4Object *FnFindBase(C4AulContext *cthr, C4ValueInt iOwner, C4ValueInt iIndex)
 {
 	if (!ValidPlr(iOwner)) return nullptr;
-	return C4Object::GetSection(cthr->Obj).FindBase(iOwner, iIndex);
+	return cthr->GetSection().FindBase(iOwner, iIndex);
 }
 
 C4FindObject *CreateCriterionsFromPars(const C4Value *pPars, C4FindObject **pFOs, C4SortObject **pSOs)
@@ -2043,7 +2043,7 @@ static C4Value FnObjectCount2(C4AulContext *cthr, const C4Value *pPars)
 	if (!pFO)
 		throw C4AulExecError(cthr->Obj, "ObjectCount: No valid search criterions supplied!");
 	// Search
-	int32_t iCnt = pFO->Count(C4Object::GetSection(cthr->Obj).Objects, C4Object::GetSection(cthr->Obj).Objects.Sectors);
+	int32_t iCnt = pFO->Count(cthr->GetSection().Objects, cthr->GetSection().Objects.Sectors);
 	// Free
 	delete pFO;
 	// Return
@@ -2060,7 +2060,7 @@ static C4Value FnFindObject2(C4AulContext *cthr, const C4Value *pPars)
 	if (!pFO)
 		throw C4AulExecError(cthr->Obj, "FindObject: No valid search criterions supplied!");
 	// Search
-	C4Object *pObj = pFO->Find(C4Object::GetSection(cthr->Obj).Objects, C4Object::GetSection(cthr->Obj).Objects.Sectors);
+	C4Object *pObj = pFO->Find(cthr->GetSection().Objects, cthr->GetSection().Objects.Sectors);
 	// Free
 	delete pFO;
 	// Return
@@ -2077,7 +2077,7 @@ static C4Value FnFindObjects(C4AulContext *cthr, const C4Value *pPars)
 	if (!pFO)
 		throw C4AulExecError(cthr->Obj, "FindObjects: No valid search criterions supplied!");
 	// Search
-	C4ValueArray *pResult = pFO->FindMany(C4Object::GetSection(cthr->Obj).Objects, C4Object::GetSection(cthr->Obj).Objects.Sectors);
+	C4ValueArray *pResult = pFO->FindMany(cthr->GetSection().Objects, cthr->GetSection().Objects.Sectors);
 	// Free
 	delete pFO;
 	// Return
@@ -2103,7 +2103,7 @@ static C4ValueInt FnObjectCount(C4AulContext *cthr, C4ID id, C4ValueInt x, C4Val
 	if (vContainer.getInt() == ANY_CONTAINER)
 		pContainer = reinterpret_cast<C4Object *>(ANY_CONTAINER);
 	// Find object
-	return C4Object::GetSection(cthr->Obj).ObjectCount(id, x, y, wdt, hgt, dwOCF,
+	return cthr->GetSection().ObjectCount(id, x, y, wdt, hgt, dwOCF,
 		FnStringPar(szAction), pActionTarget,
 		cthr->Obj, // Local calls exclude self
 		pContainer,
@@ -2127,7 +2127,7 @@ static C4Object *FnFindObject(C4AulContext *cthr, C4ID id, C4ValueInt x, C4Value
 	if (vContainer.getInt() == ANY_CONTAINER)
 		pContainer = reinterpret_cast<C4Object *>(ANY_CONTAINER);
 	// Find object
-	return C4Object::GetSection(cthr->Obj).FindObject(id, x, y, wdt, hgt, dwOCF,
+	return cthr->GetSection().FindObject(id, x, y, wdt, hgt, dwOCF,
 		FnStringPar(szAction), pActionTarget,
 		cthr->Obj, // Local calls exclude self
 		pContainer,
@@ -2154,7 +2154,7 @@ static C4Object *FnFindObjectOwner(C4AulContext *cthr,
 	// Adjust default ocf
 	if (dwOCF == 0) dwOCF = OCF_All;
 	// Find object
-	return C4Object::GetSection(cthr->Obj).FindObject(id, x, y, wdt, hgt, dwOCF,
+	return cthr->GetSection().FindObject(id, x, y, wdt, hgt, dwOCF,
 		FnStringPar(szAction), pActionTarget,
 		cthr->Obj, // Local calls exclude self
 		nullptr,
@@ -2179,7 +2179,7 @@ static bool FnGrabObjectInfo(C4AulContext *cthr, C4Object *pFrom, C4Object *pTo)
 static bool FnFlameConsumeMaterial(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
 	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	C4ValueInt mat = section.Landscape.GetMat(x, y);
 	if (!section.MatValid(mat)) return false;
 	if (!section.Material.Map[mat].Inflammable) return false;
@@ -2190,20 +2190,20 @@ static bool FnFlameConsumeMaterial(C4AulContext *cthr, C4ValueInt x, C4ValueInt 
 static void FnSmoke(C4AulContext *cthr, C4ValueInt tx, C4ValueInt ty, C4ValueInt level, C4ValueInt dwClr)
 {
 	if (cthr->Obj) { tx += cthr->Obj->x; ty += cthr->Obj->y; }
-	Smoke(C4Object::GetSection(cthr->Obj), tx, ty, level, dwClr);
+	Smoke(cthr->GetSection(), tx, ty, level, dwClr);
 }
 
 static void FnBubble(C4AulContext *cthr, C4ValueInt tx, C4ValueInt ty)
 {
 	if (cthr->Obj) { tx += cthr->Obj->x; ty += cthr->Obj->y; }
-	BubbleOut(C4Object::GetSection(cthr->Obj), tx, ty);
+	BubbleOut(cthr->GetSection(), tx, ty);
 }
 
 static C4ValueInt FnExtractLiquid(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
 	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
 
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	if (!section.Landscape.GBackLiquid(x, y)) return MNone;
 	return section.Landscape.ExtractMaterial(x, y);
 }
@@ -2211,12 +2211,12 @@ static C4ValueInt FnExtractLiquid(C4AulContext *cthr, C4ValueInt x, C4ValueInt y
 static bool FnInsertMaterial(C4AulContext *cthr, C4ValueInt mat, C4ValueInt x, C4ValueInt y, C4ValueInt vx, C4ValueInt vy)
 {
 	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
-	return !!C4Object::GetSection(cthr->Obj).Landscape.InsertMaterial(mat, x, y, vx, vy);
+	return !!cthr->GetSection().Landscape.InsertMaterial(mat, x, y, vx, vy);
 }
 
 static C4ValueInt FnGetMaterialCount(C4AulContext *cthr, C4ValueInt iMaterial, bool fReal)
 {
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 
 	if (!section.MatValid(iMaterial)) return -1;
 	if (fReal || !section.Material.Map[iMaterial].MinHeightCount)
@@ -2228,12 +2228,12 @@ static C4ValueInt FnGetMaterialCount(C4AulContext *cthr, C4ValueInt iMaterial, b
 static C4ValueInt FnGetMaterial(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
 	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
-	return C4Object::GetSection(cthr->Obj).Landscape.GetMat(x, y);
+	return cthr->GetSection().Landscape.GetMat(x, y);
 }
 
 static C4String *FnGetTexture(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	// Get texture
 	int32_t iTex = section.PixCol2Tex(section.Landscape.GetPix(x, y));
 	if (!iTex) return nullptr;
@@ -2247,32 +2247,32 @@ static C4String *FnGetTexture(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 static bool FnGBackSolid(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
 	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
-	return C4Object::GetSection(cthr->Obj).Landscape.GBackSolid(x, y);
+	return cthr->GetSection().Landscape.GBackSolid(x, y);
 }
 
 static bool FnGBackSemiSolid(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
 	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
-	return C4Object::GetSection(cthr->Obj).Landscape.GBackSemiSolid(x, y);
+	return cthr->GetSection().Landscape.GBackSemiSolid(x, y);
 }
 
 static bool FnGBackLiquid(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
 	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
-	return C4Object::GetSection(cthr->Obj).Landscape.GBackLiquid(x, y);
+	return cthr->GetSection().Landscape.GBackLiquid(x, y);
 }
 
 static bool FnGBackSky(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
 	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
-	return !C4Object::GetSection(cthr->Obj).Landscape.GBackIFT(x, y);
+	return !cthr->GetSection().Landscape.GBackIFT(x, y);
 }
 
 static C4ValueInt FnExtractMaterialAmount(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, C4ValueInt mat, C4ValueInt amount){
 
 	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
 
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	C4ValueInt extracted = 0; for (; extracted < amount; extracted++)
 	{
 		if (section.Landscape.GetMat(x, y) != mat) return extracted;
@@ -2284,7 +2284,7 @@ static C4ValueInt FnExtractMaterialAmount(C4AulContext *cthr, C4ValueInt x, C4Va
 static void FnBlastObjects(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4ValueInt iLevel, C4Object *pInObj, C4ValueInt iCausedByPlusOne)
 {
 	C4ValueInt iCausedBy = iCausedByPlusOne - 1; if (!iCausedByPlusOne && cthr->Obj) iCausedBy = cthr->Obj->Controller;
-	C4Object::GetSection(cthr->Obj).BlastObjects(iX, iY, iLevel, pInObj, iCausedBy, cthr->Obj);
+	cthr->GetSection().BlastObjects(iX, iY, iLevel, pInObj, iCausedBy, cthr->Obj);
 }
 
 static bool FnBlastObject(C4AulContext *cthr, C4ValueInt iLevel, C4Object *pObj, C4ValueInt iCausedByPlusOne)
@@ -2306,7 +2306,7 @@ static void FnBlastFree(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4Valu
 		iY += cthr->Obj->y;
 	}
 	C4ValueInt grade = BoundBy<C4ValueInt>((iLevel / 10) - 1, 1, 3);
-	C4Object::GetSection(cthr->Obj).Landscape.BlastFree(iX, iY, iLevel, grade, iCausedBy);
+	cthr->GetSection().Landscape.BlastFree(iX, iY, iLevel, grade, iCausedBy);
 }
 
 static bool FnSound(C4AulContext *cthr, C4String *szSound, bool fGlobal, C4Object *pObj, C4ValueInt iLevel, C4ValueInt iAtPlayer, C4ValueInt iLoop, bool fMultiple, C4ValueInt iCustomFalloffDistance)
@@ -2451,8 +2451,8 @@ static bool FnAddMessage(C4AulContext *cthr, C4String *szMessage, C4Object *pObj
 {
 	if (!szMessage) return false;
 
-	if (pObj) Game.Messages.Append(C4GM_Target, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), pObj, NO_OWNER, 0, 0, FWhite);
-	else Game.Messages.Append(C4GM_Global, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), nullptr, ANY_OWNER, 0, 0, FWhite);
+	if (pObj) Game.Messages.Append(C4GM_Target, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), pObj->Section, pObj, NO_OWNER, 0, 0, FWhite);
+	else Game.Messages.Append(C4GM_Global, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), &cthr->GetSection(), nullptr, ANY_OWNER, 0, 0, FWhite);
 
 	return true;
 }
@@ -2485,18 +2485,18 @@ static void FnScriptGo(C4AulContext *cthr, bool go)
 static void FnCastPXS(C4AulContext *cthr, C4String *mat_name, C4ValueInt amt, C4ValueInt level, C4ValueInt tx, C4ValueInt ty)
 {
 	if (cthr->Obj) { tx += cthr->Obj->x; ty += cthr->Obj->y; }
-	C4Object::GetSection(cthr->Obj).PXS.Cast(C4Object::GetSection(cthr->Obj).Material.Get(FnStringPar(mat_name)), amt, tx, ty, level);
+	cthr->GetSection().PXS.Cast(cthr->GetSection().Material.Get(FnStringPar(mat_name)), amt, tx, ty, level);
 }
 
 static void FnCastObjects(C4AulContext *cthr, C4ID id, C4ValueInt amt, C4ValueInt level, C4ValueInt tx, C4ValueInt ty)
 {
 	if (cthr->Obj) { tx += cthr->Obj->x; ty += cthr->Obj->y; }
-	C4Object::GetSection(cthr->Obj).CastObjects(id, cthr->Obj, amt, level, tx, ty, cthr->Obj ? cthr->Obj->Owner : NO_OWNER, cthr->Obj ? cthr->Obj->Controller : NO_OWNER);
+	cthr->GetSection().CastObjects(id, cthr->Obj, amt, level, tx, ty, cthr->Obj ? cthr->Obj->Owner : NO_OWNER, cthr->Obj ? cthr->Obj->Controller : NO_OWNER);
 }
 
 static C4ValueInt FnMaterial(C4AulContext *cthr, C4String *mat_name)
 {
-	return C4Object::GetSection(cthr->Obj).Material.Get(FnStringPar(mat_name));
+	return cthr->GetSection().Material.Get(FnStringPar(mat_name));
 }
 
 C4Object *FnPlaceVegetation(C4AulContext *cthr, C4ID id, C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt iHgt, C4ValueInt iGrowth)
@@ -2504,17 +2504,17 @@ C4Object *FnPlaceVegetation(C4AulContext *cthr, C4ID id, C4ValueInt iX, C4ValueI
 	// Local call: relative coordinates
 	if (cthr->Obj) { iX += cthr->Obj->x; iY += cthr->Obj->y; }
 	// Place vegetation
-	return C4Object::GetSection(cthr->Obj).PlaceVegetation(id, iX, iY, iWdt, iHgt, iGrowth);
+	return cthr->GetSection().PlaceVegetation(id, iX, iY, iWdt, iHgt, iGrowth);
 }
 
 C4Object *FnPlaceAnimal(C4AulContext *cthr, C4ID id)
 {
-	return C4Object::GetSection(cthr->Obj).PlaceAnimal(id);
+	return cthr->GetSection().PlaceAnimal(id);
 }
 
 static void FnDrawVolcanoBranch(C4AulContext *cthr, C4ValueInt mat, C4ValueInt fx, C4ValueInt fy, C4ValueInt tx, C4ValueInt ty, C4ValueInt size)
 {
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	C4ValueInt cx, cx2, cy;
 	for (cy = ty; cy < fy; cy++)
 	{
@@ -2701,9 +2701,9 @@ static C4Value FnGetComponent(C4AulContext *cthr, C4ID idComponent, C4ValueInt i
 		C4Def *pDef = Game.Defs.ID2Def(idDef);
 		if (!pDef) return C4VNull;
 		// Component count
-		if (idComponent) return C4VInt(pDef->GetComponentCount(idComponent, cthr->Obj));
+		if (idComponent) return C4VInt(pDef->GetComponentCount(idComponent, cthr->GetSection(), cthr->Obj));
 		// Indexed component
-		return C4VID(pDef->GetIndexedComponent(iIndex, cthr->Obj));
+		return C4VID(pDef->GetIndexedComponent(iIndex, cthr->GetSection(), cthr->Obj));
 	}
 	// Object component
 	else
@@ -3011,52 +3011,52 @@ static C4ValueInt FnSetCrewStatus(C4AulContext *cthr, C4ValueInt iPlr, bool fInC
 static C4ValueInt FnGetWind(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, bool fGlobal)
 {
 	// global wind
-	if (fGlobal) return C4Object::GetSection(cthr->Obj).Weather.Wind;
+	if (fGlobal) return cthr->GetSection().Weather.Wind;
 	// local wind
 	if (cthr->Obj) { x += cthr->Obj->x; y += cthr->Obj->y; }
-	return C4Object::GetSection(cthr->Obj).Weather.GetWind(x, y);
+	return cthr->GetSection().Weather.GetWind(x, y);
 }
 
 static void FnSetWind(C4AulContext *cthr, C4ValueInt iWind)
 {
-	C4Object::GetSection(cthr->Obj).Weather.SetWind(iWind);
+	cthr->GetSection().Weather.SetWind(iWind);
 }
 
 static void FnSetTemperature(C4AulContext *cthr, C4ValueInt iTemperature)
 {
-	C4Object::GetSection(cthr->Obj).Weather.SetTemperature(iTemperature);
+	cthr->GetSection().Weather.SetTemperature(iTemperature);
 }
 
 static C4ValueInt FnGetTemperature(C4AulContext *cthr)
 {
-	return C4Object::GetSection(cthr->Obj).Weather.GetTemperature();
+	return cthr->GetSection().Weather.GetTemperature();
 }
 
 static void FnSetSeason(C4AulContext *cthr, C4ValueInt iSeason)
 {
-	return C4Object::GetSection(cthr->Obj).Weather.SetSeason(iSeason);
+	return cthr->GetSection().Weather.SetSeason(iSeason);
 }
 
 static C4ValueInt FnGetSeason(C4AulContext *cthr)
 {
-	return C4Object::GetSection(cthr->Obj).Weather.GetSeason();
+	return cthr->GetSection().Weather.GetSeason();
 }
 
 static void FnSetClimate(C4AulContext *cthr, C4ValueInt iClimate)
 {
-	C4Object::GetSection(cthr->Obj).Weather.SetClimate(iClimate);
+	cthr->GetSection().Weather.SetClimate(iClimate);
 }
 
 static C4ValueInt FnGetClimate(C4AulContext *cthr)
 {
-	return C4Object::GetSection(cthr->Obj).Weather.GetClimate();
+	return cthr->GetSection().Weather.GetClimate();
 }
 
 static void FnSetSkyFade(C4AulContext *cthr, C4ValueInt iFromRed, C4ValueInt iFromGreen, C4ValueInt iFromBlue, C4ValueInt iToRed, C4ValueInt iToGreen, C4ValueInt iToBlue)
 {
 	// newgfx: set modulation
-	uint32_t dwBack, dwMod = GetClrModulation(C4Object::GetSection(cthr->Obj).Landscape.Sky.FadeClr1, C4RGB(iFromRed, iFromGreen, iFromBlue), dwBack);
-	C4Object::GetSection(cthr->Obj).Landscape.Sky.SetModulation(dwMod, dwBack);
+	uint32_t dwBack, dwMod = GetClrModulation(cthr->GetSection().Landscape.Sky.FadeClr1, C4RGB(iFromRed, iFromGreen, iFromBlue), dwBack);
+	cthr->GetSection().Landscape.Sky.SetModulation(dwMod, dwBack);
 }
 
 static void FnSetSkyColor(C4AulContext *cthr, C4ValueInt iIndex, C4ValueInt iRed, C4ValueInt iGreen, C4ValueInt iBlue)
@@ -3064,8 +3064,8 @@ static void FnSetSkyColor(C4AulContext *cthr, C4ValueInt iIndex, C4ValueInt iRed
 	// set first index only
 	if (iIndex) return;
 	// get color difference
-	uint32_t dwBack, dwMod = GetClrModulation(C4Object::GetSection(cthr->Obj).Landscape.Sky.FadeClr1, C4RGB(iRed, iGreen, iBlue), dwBack);
-	C4Object::GetSection(cthr->Obj).Landscape.Sky.SetModulation(dwMod, dwBack);
+	uint32_t dwBack, dwMod = GetClrModulation(cthr->GetSection().Landscape.Sky.FadeClr1, C4RGB(iRed, iGreen, iBlue), dwBack);
+	cthr->GetSection().Landscape.Sky.SetModulation(dwMod, dwBack);
 	// success
 }
 
@@ -3074,8 +3074,8 @@ static C4ValueInt FnGetSkyColor(C4AulContext *cthr, C4ValueInt iIndex, C4ValueIn
 	// relict from OldGfx
 	if (iIndex || !Inside<C4ValueInt>(iRGB, 0, 2)) return 0;
 
-	uint32_t dwClr = C4Object::GetSection(cthr->Obj).Landscape.Sky.FadeClr1;
-	BltAlpha(dwClr, C4Object::GetSection(cthr->Obj).Landscape.Sky.FadeClr2 | ((iIndex * 0xff / 19) << 24));
+	uint32_t dwClr = cthr->GetSection().Landscape.Sky.FadeClr1;
+	BltAlpha(dwClr, cthr->GetSection().Landscape.Sky.FadeClr2 | ((iIndex * 0xff / 19) << 24));
 	switch (iRGB)
 	{
 	case 0: return (dwClr >> 16) & 0xff;
@@ -3087,22 +3087,22 @@ static C4ValueInt FnGetSkyColor(C4AulContext *cthr, C4ValueInt iIndex, C4ValueIn
 
 static C4ValueInt FnLandscapeWidth(C4AulContext *cthr)
 {
-	return C4Object::GetSection(cthr->Obj).Landscape.Width;
+	return cthr->GetSection().Landscape.Width;
 }
 
 static C4ValueInt FnLandscapeHeight(C4AulContext *cthr)
 {
-	return C4Object::GetSection(cthr->Obj).Landscape.Height;
+	return cthr->GetSection().Landscape.Height;
 }
 
 static C4ValueInt FnLaunchLightning(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, C4ValueInt xdir, C4ValueInt xrange, C4ValueInt ydir, C4ValueInt yrange, bool fDoGamma)
 {
-	return C4Object::GetSection(cthr->Obj).Weather.LaunchLightning(x, y, xdir, xrange, ydir, yrange, fDoGamma);
+	return cthr->GetSection().Weather.LaunchLightning(x, y, xdir, xrange, ydir, yrange, fDoGamma);
 }
 
 static C4ValueInt FnLaunchVolcano(C4AulContext *cthr, C4ValueInt x)
 {
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	return section.Weather.LaunchVolcano(
 		section.Material.Get("Lava"),
 		x, section.Landscape.Height - 1,
@@ -3111,47 +3111,47 @@ static C4ValueInt FnLaunchVolcano(C4AulContext *cthr, C4ValueInt x)
 
 static void FnLaunchEarthquake(C4AulContext *cthr, C4ValueInt x, C4ValueInt y)
 {
-	C4Object::GetSection(cthr->Obj).Weather.LaunchEarthquake(x, y);
+	cthr->GetSection().Weather.LaunchEarthquake(x, y);
 }
 
 static void FnShakeFree(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, C4ValueInt rad)
 {
-	C4Object::GetSection(cthr->Obj).Landscape.ShakeFree(x, y, rad);
+	cthr->GetSection().Landscape.ShakeFree(x, y, rad);
 }
 
 static void FnShakeObjects(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, C4ValueInt rad)
 {
-	C4Object::GetSection(cthr->Obj).ShakeObjects(x, y, rad, cthr->Obj);
+	cthr->GetSection().ShakeObjects(x, y, rad, cthr->Obj);
 }
 
 static void FnDigFree(C4AulContext *cthr, C4ValueInt x, C4ValueInt y, C4ValueInt rad, bool fRequest)
 {
-	C4Object::GetSection(cthr->Obj).Landscape.DigFree(x, y, rad, fRequest, cthr->Obj);
+	cthr->GetSection().Landscape.DigFree(x, y, rad, fRequest, cthr->Obj);
 }
 
 static void FnDigFreeRect(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt iHgt, bool fRequest)
 {
-	C4Object::GetSection(cthr->Obj).Landscape.DigFreeRect(iX, iY, iWdt, iHgt, fRequest, cthr->Obj);
+	cthr->GetSection().Landscape.DigFreeRect(iX, iY, iWdt, iHgt, fRequest, cthr->Obj);
 }
 
 static void FnFreeRect(C4AulContext *cthr, C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt iHgt, C4ValueInt iFreeDensity)
 {
 	if (iFreeDensity)
-		C4Object::GetSection(cthr->Obj).Landscape.ClearRectDensity(iX, iY, iWdt, iHgt, iFreeDensity);
+		cthr->GetSection().Landscape.ClearRectDensity(iX, iY, iWdt, iHgt, iFreeDensity);
 	else
-		C4Object::GetSection(cthr->Obj).Landscape.ClearRect(iX, iY, iWdt, iHgt);
+		cthr->GetSection().Landscape.ClearRect(iX, iY, iWdt, iHgt);
 }
 
 static bool FnPathFree(C4AulContext *cthr, C4ValueInt X1, C4ValueInt Y1, C4ValueInt X2, C4ValueInt Y2)
 {
-	return !!C4Object::GetSection(cthr->Obj).Landscape.PathFree(X1, Y1, X2, Y2);
+	return !!cthr->GetSection().Landscape.PathFree(X1, Y1, X2, Y2);
 }
 
 static bool FnPathFree2(C4AulContext *cthr, C4Value *X1, C4Value *Y1, C4ValueInt X2, C4ValueInt Y2)
 {
 	int32_t x = -1, y = -1;
 	// Do not use getInt on the references, because it destroys them.
-	bool r = C4Object::GetSection(cthr->Obj).Landscape.PathFree(X1->GetRefVal().getInt(), Y1->GetRefVal().getInt(), X2, Y2, &x, &y);
+	bool r = cthr->GetSection().Landscape.PathFree(X1->GetRefVal().getInt(), Y1->GetRefVal().getInt(), X2, Y2, &x, &y);
 	if (!r)
 	{
 		*X1 = C4VInt(x);
@@ -3457,7 +3457,7 @@ static C4Value FnObjectCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, Pars, true, true, !cthr->CalledWithStrictNil());
+	return f->Exec(*pObj->Section, pObj, Pars, true, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnDefinitionCall(C4AulContext *cthr,
@@ -3476,7 +3476,7 @@ static C4Value FnDefinitionCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// Call
-	return pDef->Script.Call(szFunc2, Pars, true, !cthr->CalledWithStrictNil());
+	return pDef->Script.Call(cthr->GetSection(), szFunc2, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnGameCall(C4AulContext *cthr,
@@ -3492,7 +3492,7 @@ static C4Value FnGameCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);
 	// Call
-	return Game.Script.Call(szFunc2, Pars, true, !cthr->CalledWithStrictNil());
+	return Game.Script.Call(cthr->GetSection(), szFunc2, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnGameCallEx(C4AulContext *cthr,
@@ -3525,7 +3525,7 @@ static C4Value FnProtectedCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, Pars, true, !cthr->CalledWithStrictNil());
+	return f->Exec(*pObj->Section, pObj, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnPrivateCall(C4AulContext *cthr,
@@ -3542,7 +3542,7 @@ static C4Value FnPrivateCall(C4AulContext *cthr,
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// exec
-	return f->Exec(pObj, Pars, true, !cthr->CalledWithStrictNil());
+	return f->Exec(*pObj->Section, pObj, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Object *FnEditCursor(C4AulContext *cth)
@@ -3746,7 +3746,7 @@ static C4Object *FnBuy(C4AulContext *cthr, C4ID idBuyObj, C4ValueInt iForPlr, C4
 	if (!ValidPlr(iForPlr) || !ValidPlr(iPayPlr)) return nullptr;
 	// buy
 	C4Object *pThing;
-	if (!(pThing = Game.Players.Get(iPayPlr)->Buy(idBuyObj, fShowErrors, iForPlr, pToBase ? pToBase : cthr->Obj))) return nullptr;
+	if (!(pThing = Game.Players.Get(iPayPlr)->Buy(idBuyObj, fShowErrors, iForPlr, cthr->GetSection(), pToBase ? pToBase : cthr->Obj))) return nullptr;
 	// enter object, if supplied
 	if (pToBase)
 	{
@@ -4257,7 +4257,7 @@ static C4Value FnGetScenarioVal(C4AulContext *cthr, C4String *strEntry, C4String
 	const char *strSection = FnStringPar(section);
 	if (strSection && !*strSection) strSection = nullptr;
 
-	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkParAdapt(C4Object::GetSection(cthr->Obj).C4S, false));
+	return GetValByStdCompiler(FnStringPar(strEntry), strSection, iEntryNr, mkParAdapt(cthr->GetSection().C4S, false));
 }
 
 static C4Value FnGetPlayerVal(C4AulContext *cthr, C4String *strEntry, C4String *section, C4ValueInt iPlr, C4ValueInt iEntryNr)
@@ -4296,7 +4296,7 @@ static C4Value FnGetMaterialVal(C4AulContext *cthr, C4String *strEntry, C4String
 	const char *strSection = FnStringPar(section);
 	if (strSection && !*strSection) strSection = nullptr;
 
-	C4MaterialMap &material{C4Object::GetSection(cthr->Obj).Material};
+	C4MaterialMap &material{cthr->GetSection().Material};
 
 	if (iMat < 0 || iMat >= material.Num) return C4VNull;
 
@@ -4340,7 +4340,7 @@ static bool FnResortObjects(C4AulContext *cthr, C4String *szFunc, C4ValueInt Cat
 	if (!pFn)
 		throw C4AulExecError(cthr->Obj, std::format("ResortObjects: Resort function {} not found", FnStringPar(szFunc)));
 	// create object resort
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	C4ObjResort *pObjRes = new C4ObjResort(section.Objects);
 	pObjRes->Category = Category;
 	pObjRes->OrderFunc = pFn;
@@ -4362,7 +4362,7 @@ static bool FnResortObject(C4AulContext *cthr, C4String *szFunc, C4Object *pObj)
 	if (!pFn)
 		throw C4AulExecError(cthr->Obj, std::format("ResortObjects: Resort function {} not found", FnStringPar(szFunc)));
 	// create object resort
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	C4ObjResort *pObjRes = new C4ObjResort(section.Objects);
 	pObjRes->OrderFunc = pFn;
 	pObjRes->pSortObj = pObj;
@@ -4465,7 +4465,7 @@ static std::optional<C4ValueInt> FnGetDefBottom(C4AulContext *cthr, C4Object *pO
 
 static bool FnSetMaterialColor(C4AulContext *cthr, C4ValueInt iMat, C4ValueInt iClr1R, C4ValueInt iClr1G, C4ValueInt iClr1B, C4ValueInt iClr2R, C4ValueInt iClr2G, C4ValueInt iClr2B, C4ValueInt iClr3R, C4ValueInt iClr3G, C4ValueInt iClr3B)
 {
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	// get mat
 	if (!section.MatValid(iMat)) return false;
 	C4Material *pMat = &section.Material.Map[iMat];
@@ -4481,7 +4481,7 @@ static bool FnSetMaterialColor(C4AulContext *cthr, C4ValueInt iMat, C4ValueInt i
 
 static std::optional<C4ValueInt> FnGetMaterialColor(C4AulContext *cthr, C4ValueInt iMat, C4ValueInt iNum, C4ValueInt iChannel)
 {
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	// get mat
 	if (!section.MatValid(iMat)) return {};
 	C4Material *pMat = &section.Material.Map[iMat];
@@ -4491,7 +4491,7 @@ static std::optional<C4ValueInt> FnGetMaterialColor(C4AulContext *cthr, C4ValueI
 
 static C4String *FnMaterialName(C4AulContext *cthr, C4ValueInt iMat)
 {
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	// mat valid?
 	if (!section.MatValid(iMat)) return nullptr;
 	// return mat name
@@ -4523,11 +4523,11 @@ static C4Value FnEval(C4AulContext *cthr, C4String *strScript)
 	if (cthr->Caller)
 		Strict = cthr->Caller->Func->pOrgScript->Strict;
 	if (cthr->Obj)
-		return cthr->Obj->Def->Script.DirectExec(cthr->Obj, FnStringPar(strScript), "eval", true, Strict);
+		return cthr->Obj->Def->Script.DirectExec(cthr->GetSection(), cthr->Obj, FnStringPar(strScript), "eval", true, Strict);
 	else if (cthr->Def)
-		return cthr->Def->Script.DirectExec(nullptr, FnStringPar(strScript), "eval", true, Strict);
+		return cthr->Def->Script.DirectExec(cthr->GetSection(), nullptr, FnStringPar(strScript), "eval", true, Strict);
 	else
-		return Game.Script.DirectExec(nullptr, FnStringPar(strScript), "eval", true, Strict);
+		return Game.Script.DirectExec(cthr->GetSection(), nullptr, FnStringPar(strScript), "eval", true, Strict);
 }
 
 static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj, C4ID idDef)
@@ -4638,25 +4638,25 @@ static C4Value FnGlobalN(C4AulContext *cthr, C4String *name)
 static void FnSetSkyAdjust(C4AulContext *cthr, C4ValueInt dwAdjust, C4ValueInt dwBackClr)
 {
 	// set adjust
-	C4Object::GetSection(cthr->Obj).Landscape.Sky.SetModulation(dwAdjust, dwBackClr);
+	cthr->GetSection().Landscape.Sky.SetModulation(dwAdjust, dwBackClr);
 }
 
 static void FnSetMatAdjust(C4AulContext *cthr, C4ValueInt dwAdjust)
 {
 	// set adjust
-	C4Object::GetSection(cthr->Obj).Landscape.SetModulation(dwAdjust);
+	cthr->GetSection().Landscape.SetModulation(dwAdjust);
 }
 
 static C4ValueInt FnGetSkyAdjust(C4AulContext *cthr, bool fBackColor)
 {
 	// get adjust
-	return C4Object::GetSection(cthr->Obj).Landscape.Sky.GetModulation(!!fBackColor);
+	return cthr->GetSection().Landscape.Sky.GetModulation(!!fBackColor);
 }
 
 static C4ValueInt FnGetMatAdjust(C4AulContext *cthr)
 {
 	// get adjust
-	return C4Object::GetSection(cthr->Obj).Landscape.GetModulation();
+	return cthr->GetSection().Landscape.GetModulation();
 }
 
 static C4ValueInt FnAnyContainer(C4AulContext *) { return ANY_CONTAINER; }
@@ -4819,7 +4819,7 @@ static C4Value FnGetCrewExtraData(C4AulContext *cthr, C4Object *pCrew, C4String 
 
 static C4ValueInt FnDrawMatChunks(C4AulContext *cctx, C4ValueInt tx, C4ValueInt ty, C4ValueInt twdt, C4ValueInt thgt, C4ValueInt icntx, C4ValueInt icnty, C4String *strMaterial, C4String *strTexture, bool bIFT)
 {
-	return C4Object::GetSection(cctx->Obj).Landscape.DrawChunks(tx, ty, twdt, thgt, icntx, icnty, FnStringPar(strMaterial), FnStringPar(strTexture), bIFT != 0);
+	return cctx->GetSection().Landscape.DrawChunks(tx, ty, twdt, thgt, icntx, icnty, FnStringPar(strMaterial), FnStringPar(strTexture), bIFT != 0);
 }
 
 static std::optional<bool> FnGetCrewEnabled(C4AulContext *cctx, C4Object *pObj)
@@ -4869,13 +4869,13 @@ static bool FnUnselectCrew(C4AulContext *cctx, C4ValueInt iPlayer)
 static C4ValueInt FnDrawMap(C4AulContext *cctx, C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt iHgt, C4String *szMapDef)
 {
 	// draw it!
-	return C4Object::GetSection(cctx->Obj).Landscape.DrawMap(iX, iY, iWdt, iHgt, FnStringPar(szMapDef));
+	return cctx->GetSection().Landscape.DrawMap(iX, iY, iWdt, iHgt, FnStringPar(szMapDef));
 }
 
 static C4ValueInt FnDrawDefMap(C4AulContext *cctx, C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt iHgt, C4String *szMapDef)
 {
 	// draw it!
-	return C4Object::GetSection(cctx->Obj).Landscape.DrawDefMap(iX, iY, iWdt, iHgt, FnStringPar(szMapDef));
+	return cctx->GetSection().Landscape.DrawDefMap(iX, iY, iWdt, iHgt, FnStringPar(szMapDef));
 }
 
 static bool FnCreateParticle(C4AulContext *cthr, C4String *szName, C4ValueInt iX, C4ValueInt iY, C4ValueInt iXDir, C4ValueInt iYDir, C4ValueInt a, C4ValueInt b, C4Object *pObj, bool fBack)
@@ -4892,7 +4892,7 @@ static bool FnCreateParticle(C4AulContext *cthr, C4String *szName, C4ValueInt iX
 	C4ParticleDef *pDef = Game.Particles.GetDef(FnStringPar(szName));
 	if (!pDef) return false;
 	// create
-	C4Object::GetSection(pObj ? pObj : cthr->Obj).Particles.Create(pDef, static_cast<float>(iX), static_cast<float>(iY), static_cast<float>(iXDir) / 10.0f, static_cast<float>(iYDir) / 10.0f, static_cast<float>(a) / 10.0f, b, pObj ? (fBack ? &pObj->BackParticles : &pObj->FrontParticles) : nullptr, pObj);
+	(pObj ? *pObj->Section : cthr->GetSection()).Particles.Create(pDef, static_cast<float>(iX), static_cast<float>(iY), static_cast<float>(iXDir) / 10.0f, static_cast<float>(iYDir) / 10.0f, static_cast<float>(a) / 10.0f, b, pObj ? (fBack ? &pObj->BackParticles : &pObj->FrontParticles) : nullptr, pObj);
 	// success, even if not created
 	return true;
 }
@@ -4911,7 +4911,7 @@ static bool FnCastAParticles(C4AulContext *cthr, C4String *szName, C4ValueInt iA
 	C4ParticleDef *pDef = Game.Particles.GetDef(FnStringPar(szName));
 	if (!pDef) return false;
 	// cast
-	C4Object::GetSection(pObj ? pObj : cthr->Obj).Particles.Cast(pDef, iAmount, static_cast<float>(iX), static_cast<float>(iY), iLevel, static_cast<float>(a0) / 10.0f, b0, static_cast<float>(a1) / 10.0f, b1, pObj ? (fBack ? &pObj->BackParticles : &pObj->FrontParticles) : nullptr, pObj);
+	(pObj ? *pObj->Section : cthr->GetSection()).Particles.Cast(pDef, iAmount, static_cast<float>(iX), static_cast<float>(iY), iLevel, static_cast<float>(a0) / 10.0f, b0, static_cast<float>(a1) / 10.0f, b1, pObj ? (fBack ? &pObj->BackParticles : &pObj->FrontParticles) : nullptr, pObj);
 	// success, even if not created
 	return true;
 }
@@ -4936,7 +4936,7 @@ static bool FnPushParticles(C4AulContext *cthr, C4String *szName, C4ValueInt iAX
 		if (!pDef) return false;
 	}
 	// push them
-	C4Object::GetSection(cthr->Obj).Particles.Push(pDef, static_cast<float>(iAX) / 10.0f, static_cast<float>(iAY) / 10.0f);
+	cthr->GetSection().Particles.Push(pDef, static_cast<float>(iAX) / 10.0f, static_cast<float>(iAY) / 10.0f);
 	// success
 	return true;
 }
@@ -4950,7 +4950,7 @@ static bool FnClearParticles(C4AulContext *cthr, C4String *szName, C4Object *pOb
 		pDef = Game.Particles.GetDef(FnStringPar(szName));
 		if (!pDef) return false;
 	}
-	C4Section &section{C4Object::GetSection(cthr->Obj)};
+	C4Section &section{cthr->GetSection()};
 	// delete them
 	if (pObj)
 	{
@@ -4969,7 +4969,7 @@ static bool FnIsNewgfx(C4AulContext *) { return true; }
 
 static void FnSetSkyParallax(C4AulContext *ctx, C4ValueInt iMode, C4ValueInt iParX, C4ValueInt iParY, C4ValueInt iXDir, C4ValueInt iYDir, C4ValueInt iX, C4ValueInt iY)
 {
-	C4Section &section{C4Object::GetSection(ctx->Obj)};
+	C4Section &section{ctx->GetSection()};
 	// set all parameters that aren't SkyPar_KEEP
 	if (iMode != SkyPar_KEEP)
 		if (Inside<C4ValueInt>(iMode, 0, 1)) section.Landscape.Sky.ParallaxMode = iMode;
@@ -5057,7 +5057,7 @@ static C4ValueHash *FnGetPath(C4AulContext *ctx, C4ValueInt iFromX, C4ValueInt i
 	PathInfo pathinfo;
 	pathinfo.path.push_back({static_cast<int32_t>(iFromX), static_cast<int32_t>(iFromY), nullptr});
 
-	if (!C4Object::GetSection(ctx->Obj).PathFinder.Find(iFromX, iFromY, iToX, iToY, SetWaypoint, reinterpret_cast<intptr_t>(&pathinfo)))
+	if (!ctx->GetSection().PathFinder.Find(iFromX, iFromY, iToX, iToY, SetWaypoint, reinterpret_cast<intptr_t>(&pathinfo)))
 	{
 		return nullptr;
 	}
@@ -5091,12 +5091,12 @@ static C4ValueHash *FnGetPath(C4AulContext *ctx, C4ValueInt iFromX, C4ValueInt i
 static C4ValueInt FnSetTextureIndex(C4AulContext *ctx, C4String *psMatTex, C4ValueInt iNewIndex, bool fInsert)
 {
 	if (!Inside(iNewIndex, C4ValueInt{0}, C4ValueInt{255})) return false;
-	return C4Object::GetSection(ctx->Obj).Landscape.SetTextureIndex(FnStringPar(psMatTex), uint8_t(iNewIndex), !!fInsert);
+	return ctx->GetSection().Landscape.SetTextureIndex(FnStringPar(psMatTex), uint8_t(iNewIndex), !!fInsert);
 }
 
 static void FnRemoveUnusedTexMapEntries(C4AulContext *ctx)
 {
-	C4Object::GetSection(ctx->Obj).Landscape.RemoveUnusedTexMapEntries();
+	ctx->GetSection().Landscape.RemoveUnusedTexMapEntries();
 }
 
 static void FnSetLandscapePixel(C4AulContext *ctx, C4ValueInt iX, C4ValueInt iY, C4ValueInt dwValue)
@@ -5104,7 +5104,7 @@ static void FnSetLandscapePixel(C4AulContext *ctx, C4ValueInt iX, C4ValueInt iY,
 	// local call
 	if (ctx->Obj) { iX += ctx->Obj->x; iY += ctx->Obj->y; }
 	// set pixel in 32bit-sfc only
-	C4Object::GetSection(ctx->Obj).Landscape.SetPixDw(iX, iY, dwValue);
+	ctx->GetSection().Landscape.SetPixDw(iX, iY, dwValue);
 }
 
 static bool FnSetObjectOrder(C4AulContext *ctx, C4Object *pObjBeforeOrAfter, C4Object *pSortObj, bool fSortAfter)
@@ -5131,7 +5131,7 @@ static bool FnSetObjectOrder(C4AulContext *ctx, C4Object *pObjBeforeOrAfter, C4O
 static bool FnDrawMaterialQuad(C4AulContext *ctx, C4String *szMaterial, C4ValueInt iX1, C4ValueInt iY1, C4ValueInt iX2, C4ValueInt iY2, C4ValueInt iX3, C4ValueInt iY3, C4ValueInt iX4, C4ValueInt iY4, bool fSub)
 {
 	const char *szMat = FnStringPar(szMaterial);
-	return !!C4Object::GetSection(ctx->Obj).Landscape.DrawQuad(iX1, iY1, iX2, iY2, iX3, iY3, iX4, iY4, szMat, fSub);
+	return !!ctx->GetSection().Landscape.DrawQuad(iX1, iY1, iX2, iY2, iX3, iY3, iX4, iY4, szMat, fSub);
 }
 
 static bool FnFightWith(C4AulContext *ctx, C4Object *pTarget, C4Object *pClonk)
@@ -5341,7 +5341,7 @@ static std::optional<bool> FnSimFlight(C4AulContext *ctx, C4Value *pvrX, C4Value
 	xdir = itofix(pvrXDir->getInt(), iPrec), ydir = itofix(pvrYDir->getInt(), iPrec);
 
 	// simulate
-	if (!SimFlight(C4Object::GetSection(ctx->Obj), x, y, xdir, ydir, iDensityMin, iDensityMax, iIter))
+	if (!SimFlight(ctx->GetSection(), x, y, xdir, ydir, iDensityMin, iDensityMax, iIter))
 		return {false};
 
 	// write results back
@@ -5469,7 +5469,7 @@ static C4ValueInt FnAddEffect(C4AulContext *ctx, C4String *psEffectName, C4Objec
 	if (!szEffect || !*szEffect || !iPrio) return 0;
 	// create effect
 	int32_t iEffectNumber;
-	new C4Effect(pTarget, szEffect, iPrio, iTimerIntervall, pCmdTarget, idCmdTarget, pvVal1, pvVal2, pvVal3, pvVal4, true, iEffectNumber, true);
+	new C4Effect(pTarget ? *pTarget->Section : ctx->GetSection(), pTarget, szEffect, iPrio, iTimerIntervall, pCmdTarget, idCmdTarget, pvVal1, pvVal2, pvVal3, pvVal4, true, iEffectNumber, true);
 	// return assigned effect number - may be 0 if he effect has been denied by another effect
 	// may also be the number of another effect
 	return iEffectNumber;
@@ -5479,7 +5479,7 @@ static C4Value FnGetEffect(C4AulContext *ctx, C4String *psEffectName, C4Object *
 {
 	const char *szEffect = FnStringPar(psEffectName);
 	// get effects
-	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
+	C4Effect *pEffect = pTarget ? pTarget->pEffects : ctx->GetSection().GlobalEffects;
 	if (!pEffect) return C4VNull;
 	// name/wildcard given: find effect by name and index
 	if (szEffect && *szEffect)
@@ -5509,7 +5509,7 @@ static bool FnRemoveEffect(C4AulContext *ctx, C4String *psEffectName, C4Object *
 	// evaluate parameters
 	const char *szEffect = FnStringPar(psEffectName);
 	// get effects
-	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
+	C4Effect *pEffect = pTarget ? pTarget->pEffects : ctx->GetSection().GlobalEffects;
 	if (!pEffect) return false;
 	// name/wildcard given: find effect by name and index
 	if (szEffect && *szEffect)
@@ -5535,7 +5535,7 @@ static bool FnChangeEffect(C4AulContext *ctx, C4String *psEffectName, C4Object *
 	const char *szNewEffect = FnStringPar(psNewEffectName);
 	if (!szNewEffect || !*szNewEffect) return false;
 	// get effects
-	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
+	C4Effect *pEffect = pTarget ? pTarget->pEffects : ctx->GetSection().GlobalEffects;
 	if (!pEffect) return false;
 	// name/wildcard given: find effect by name and index
 	if (szEffect && *szEffect)
@@ -5565,7 +5565,7 @@ static std::optional<C4ValueInt> FnCheckEffect(C4AulContext *ctx, C4String *psEf
 	if (pTarget && !pTarget->Status) return {};
 	if (!szEffect || !*szEffect) return {};
 	// get effects
-	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
+	C4Effect *pEffect = pTarget ? pTarget->pEffects : ctx->GetSection().GlobalEffects;
 	if (!pEffect) return {};
 	// let them check
 	return {pEffect->Check(pTarget, szEffect, iPrio, iTimerIntervall, pvVal1, pvVal2, pvVal3, pvVal4, true)};
@@ -5576,7 +5576,7 @@ static C4ValueInt FnGetEffectCount(C4AulContext *ctx, C4String *psEffectName, C4
 	// evaluate parameters
 	const char *szEffect = FnStringPar(psEffectName);
 	// get effects
-	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
+	C4Effect *pEffect = pTarget ? pTarget->pEffects : ctx->GetSection().GlobalEffects;
 	if (!pEffect) return false;
 	// count effects
 	if (!*szEffect) szEffect = nullptr;
@@ -5588,7 +5588,7 @@ static C4Value FnEffectVar(C4AulContext *cthr, C4ValueInt iVarIndex, C4Object *p
 	// safety
 	if (iVarIndex < 0) return C4VNull;
 	// get effect
-	C4Effect *pEffect = pObj ? pObj->pEffects : Game.pGlobalEffects;
+	C4Effect *pEffect = pObj ? pObj->pEffects : cthr->GetSection().GlobalEffects;
 	if (!pEffect) return C4VNull;
 	if (!(pEffect = pEffect->Get(iEffectNumber, true))) return C4VNull;
 	// return ref to var
@@ -5602,7 +5602,7 @@ static C4Value FnEffectCall(C4AulContext *ctx, C4Object *pTarget, C4ValueInt iNu
 	if (pTarget && !pTarget->Status) return C4VNull;
 	if (!szCallFn || !*szCallFn) return C4VNull;
 	// get effect
-	C4Effect *pEffect = pTarget ? pTarget->pEffects : Game.pGlobalEffects;
+	C4Effect *pEffect = pTarget ? pTarget->pEffects : ctx->GetSection().GlobalEffects;
 	if (!pEffect) return C4VNull;
 	if (!(pEffect = pEffect->Get(iNumber, true))) return C4VNull;
 	// do call
@@ -5971,7 +5971,7 @@ static C4ValueInt FnActivateGameGoalMenu(C4AulContext *ctx, C4ValueInt iPlayer)
 	C4Player *pPlr = Game.Players.Get(iPlayer);
 	if (!pPlr) return false;
 	// open menu
-	return pPlr->Menu.ActivateGoals(pPlr->Number, pPlr->LocalControl && !Game.Control.isReplay());
+	return pPlr->Menu.ActivateGoals(**pPlr->ViewSection, pPlr->Number, pPlr->LocalControl && !Game.Control.isReplay());
 }
 
 static void FnFatalError(C4AulContext *ctx, C4String *pErrorMsg)
@@ -6051,7 +6051,7 @@ static bool FnCustomMessage(C4AulContext *ctx, C4String *pMsg, C4Object *pObj, C
 	sMsg.Ref(szMsg);
 	if (dwFlags & C4GM_DropSpeech) sMsg.SplitAtChar('$', nullptr);
 	// create it!
-	return Game.Messages.New(iType, sMsg, pObj, iOwner, iOffX, iOffY, static_cast<uint32_t>(dwClr), idDeco, sPortrait ? sPortrait->Data.getData() : nullptr, dwFlags, iHSize);
+	return Game.Messages.New(iType, sMsg, pObj ? pObj->Section : &ctx->GetSection(), pObj, iOwner, iOffX, iOffY, static_cast<uint32_t>(dwClr), idDeco, sPortrait ? sPortrait->Data.getData() : nullptr, dwFlags, iHSize);
 }
 
 static void FnPauseGame(C4AulContext *ctx, bool fToggle)
@@ -6189,11 +6189,9 @@ static bool FnMoveObjectToSection(C4AulContext *ctx, C4ValueInt targetSection, C
 	return true;
 }
 
-static std::optional<C4ValueInt> FnGetSection(C4AulContext *ctx, C4Object *obj)
+C4ValueInt FnGetSection(C4AulContext *ctx, C4Object *obj)
 {
-	if (!obj) if (!(obj = ctx->Obj)) return {};
-
-	return Game.GetSectionIndex(*obj->Section);
+	return Game.GetSectionIndex(ctx->GetSection());
 }
 
 template<std::size_t ParCount>
