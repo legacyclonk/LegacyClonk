@@ -30,27 +30,27 @@
 
 void GameMsgObject(const char *szText, C4Object *pTarget, int32_t iFCol)
 {
-	Game.Messages.New(C4GM_Target, szText, pTarget, NO_OWNER, 0, 0, static_cast<uint8_t>(iFCol));
+	Game.Messages.New(C4GM_Target, szText, pTarget->Section, pTarget, NO_OWNER, 0, 0, static_cast<uint8_t>(iFCol));
 }
 
 void GameMsgObjectPlayer(const char *szText, C4Object *pTarget, int32_t iPlayer, int32_t iFCol)
 {
-	Game.Messages.New(C4GM_TargetPlayer, szText, pTarget, iPlayer, 0, 0, static_cast<uint8_t>(iFCol));
+	Game.Messages.New(C4GM_TargetPlayer, szText, pTarget->Section, pTarget, iPlayer, 0, 0, static_cast<uint8_t>(iFCol));
 }
 
 void GameMsgGlobal(const char *szText, int32_t iFCol)
 {
-	Game.Messages.New(C4GM_Global, szText, nullptr, ANY_OWNER, 0, 0, static_cast<uint8_t>(iFCol));
+	Game.Messages.New(C4GM_Global, szText, nullptr, nullptr, ANY_OWNER, 0, 0, static_cast<uint8_t>(iFCol));
 }
 
 void GameMsgPlayer(const char *szText, int32_t iPlayer, int32_t iFCol)
 {
-	Game.Messages.New(C4GM_GlobalPlayer, szText, nullptr, iPlayer, 0, 0, static_cast<uint8_t>(iFCol));
+	Game.Messages.New(C4GM_GlobalPlayer, szText, nullptr, nullptr, iPlayer, 0, 0, static_cast<uint8_t>(iFCol));
 }
 
 void GameMsgObjectDw(const char *szText, C4Object *pTarget, uint32_t dwClr)
 {
-	Game.Messages.New(C4GM_Target, szText, pTarget, NO_OWNER, 0, 0, dwClr);
+	Game.Messages.New(C4GM_Target, szText, pTarget->Section, pTarget, NO_OWNER, 0, 0, dwClr);
 }
 
 // Players

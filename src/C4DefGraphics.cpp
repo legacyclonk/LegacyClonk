@@ -392,7 +392,7 @@ void C4DefGraphicsPtrBackup::AssignUpdate(C4DefGraphics *pNewGraphics)
 				// update menu frame decorations - may do multiple updates to the same deco if multiple menus share it...
 				if (C4GUI::FrameDecoration *pDeco = pObj->Menu->GetFrameDecoration(); pDeco && pDeco->idSourceDef == pDef->id)
 				{
-					if (!pDeco->UpdateGfx())
+					if (!pDeco->UpdateGfx(*pObj->Section))
 					{
 						pObj->Menu->SetFrameDeco(nullptr);
 					}

@@ -807,7 +807,7 @@ bool C4MaterialMap::mrfScript(C4MaterialReaction *pReaction, C4Section &section,
 	int32_t iXDir1, iYDir1, iXDir2, iYDir2;
 	auto parX = C4VInt(iX), parY = C4VInt(iY), parXDir = C4VInt(iXDir1 = fixtoi(fXDir, 100)), parYDir = C4VInt(iYDir1 = fixtoi(fYDir, 100)), parPxsMat = C4VInt(iPxsMat);
 	const C4AulParSet pars{parX.GetRef(), parY.GetRef(), C4VInt(iLSPosX), C4VInt(iLSPosY), parXDir.GetRef(), parYDir.GetRef(), parPxsMat.GetRef(), C4VInt(iLsMat), C4VInt(evEvent)};
-	if (pReaction->pScriptFunc->Exec(nullptr, pars, false))
+	if (pReaction->pScriptFunc->Exec(section, nullptr, pars, false))
 	{
 		// PXS shall be killed!
 		return true;

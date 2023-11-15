@@ -218,8 +218,6 @@ protected:
 	int32_t Audible, AudiblePan; // NoSave //
 
 public:
-	static C4Section &GetSection(C4Object *const obj) noexcept;
-
 	void Resort();
 	void DigOutMaterialCast(bool fRequest);
 	void AddMaterialContents(int32_t iMaterial, int32_t iAmount);

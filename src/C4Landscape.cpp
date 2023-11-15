@@ -572,7 +572,7 @@ CSurface8 *C4Landscape::CreateMapS2(C4Group &ScenFile)
 
 	// create map creator
 	if (!pMapCreator)
-		pMapCreator = new C4MapCreatorS2(&Section.C4S.Landscape, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
+		pMapCreator = new C4MapCreatorS2(Section, &Section.C4S.Landscape, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
 
 	// read file
 	pMapCreator->ReadFile(C4CFN_DynLandscape, &ScenFile);
@@ -2708,7 +2708,7 @@ bool C4Landscape::DrawMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, co
 	}
 	else
 	{
-		mapCreator.emplace(&FakeLS, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
+		mapCreator.emplace(Section, &FakeLS, &Section.TextureMap, &Section.Material, Game.Parameters.StartupPlayerCount);
 	}
 	// read file
 	mapCreator->ReadScript(szMapDef);

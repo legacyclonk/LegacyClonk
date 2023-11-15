@@ -19,6 +19,7 @@ class C4AudioSystem;
 class C4AulFunc;
 class C4Def;
 class C4DefList;
+class C4Effect;
 class C4Facet;
 class C4FacetEx;
 class C4FacetExSurface;

@@ -226,7 +226,7 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		// Remove player
 		if (Inside((int)LOWORD(wParam), IDM_PLAYER_QUIT1, IDM_PLAYER_QUIT2))
 		{
-			Game.Control.Input.Add(CID_EliminatePlayer, new C4ControlEliminatePlayer(LOWORD(wParam) - IDM_PLAYER_QUIT1));
+			Game.Control.Input.Add(CID_EliminatePlayer, new C4ControlEliminatePlayer(0, LOWORD(wParam) - IDM_PLAYER_QUIT1));
 			return TRUE;
 		}
 		// Remove client
@@ -578,7 +578,7 @@ bool C4Console::In(const char *szText)
 	// editing enabled?
 	if (!EditCursor.EditingOK()) return false;
 	// pass through network queue
-	Game.Control.DoInput(CID_Script, new C4ControlScript(szText, C4ControlScript::SCOPE_Console, Config.Developer.ConsoleScriptStrictness), CDT_Decide);
+	Game.Control.DoInput(CID_Script, new C4ControlScript(0, szText, C4ControlScript::SCOPE_Console, Config.Developer.ConsoleScriptStrictness), CDT_Decide);
 	return true;
 }
 

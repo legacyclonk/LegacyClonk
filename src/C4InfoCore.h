@@ -63,7 +63,7 @@ public:
 
 public:
 	void Default();
-	void PromotionUpdate(int32_t iRank, bool fUpdateTrainablePhysicals = false, class C4Def *pTrainDef = nullptr);
+	void PromotionUpdate(int32_t iRank, bool fUpdateTrainablePhysicals = false, C4Section *section = nullptr, class C4Def *pTrainDef = nullptr);
 	void CompileFunc(StdCompiler *pComp);
 
 	// conversion of physical names to member pointers and vice versa
