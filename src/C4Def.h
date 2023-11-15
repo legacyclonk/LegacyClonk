@@ -348,8 +348,8 @@ public:
 		class C4SoundSystem *pSoundSystem = nullptr);
 	void Draw(C4Facet &cgo, bool fSelected = false, uint32_t iColor = 0, C4Object *pObj = nullptr, int32_t iPhaseX = 0, int32_t iPhaseY = 0);
 	inline C4Facet &GetMainFace(C4DefGraphics *pGraphics, uint32_t dwClr = 0) { MainFace.Surface = pGraphics->GetBitmap(dwClr); return MainFace; }
-	int32_t GetValue(C4Object *pInBase, int32_t iBuyPlayer); // get value of def; calling script functions if defined
-	C4PhysicalInfo *GetFairCrewPhysicals(); // get fair crew physicals at current fair crew strength
+	int32_t GetValue(C4Section &section, C4Object *pInBase, int32_t iBuyPlayer); // get value of def; calling script functions if defined
+	C4PhysicalInfo *GetFairCrewPhysicals(C4Section &section); // get fair crew physicals at current fair crew strength
 	void ClearFairCrewPhysicals(); // remove cached fair crew physicals, will be created fresh on demand
 	void Synchronize();
 	const char *GetDesc() { return Desc.GetData(); }
@@ -361,13 +361,13 @@ protected:
 	void CrossMapActMap();
 
 private:
-	C4ValueArray *GetCustomComponents(C4Value *pvArrayHolder, C4Object *pBuilder, C4Object *pObjInstance = nullptr);
+	C4ValueArray *GetCustomComponents(C4Value *pvArrayHolder, C4Section &section, C4Object *pBuilder, C4Object *pObjInstance = nullptr);
 
 public:
 	// return def components - may be overloaded by script callback
-	int32_t GetComponentCount(C4ID idComponent, C4Object *pBuilder = nullptr);
-	C4ID GetIndexedComponent(int32_t idx, C4Object *pBuilder = nullptr);
-	void GetComponents(C4IDList *pOutList, C4Object *pObjInstance = nullptr, C4Object *pBuilder = nullptr);
+	int32_t GetComponentCount(C4ID idComponent, C4Section &section, C4Object *pBuilder = nullptr);
+	C4ID GetIndexedComponent(int32_t idx, C4Section &section, C4Object *pBuilder = nullptr);
+	void GetComponents(C4IDList *pOutList, C4Section &section, C4Object *pObjInstance = nullptr, C4Object *pBuilder = nullptr);
 
 	void IncludeDefinition(C4Def *pIncludeDef); // inherit components from other definition
 	void ResetIncludeDependencies(); // resets all pointers into foreign definitions caused by include chains

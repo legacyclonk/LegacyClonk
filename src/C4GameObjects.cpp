@@ -430,7 +430,7 @@ void C4ObjResort::SortObject()
 		if (!(pObj2->Category & pSortObj->Category)) break;
 		// perform the check
 		Pars[0].Set(C4VObj(pObj2));
-		iResult = OrderFunc->Exec(nullptr, Pars).getInt();
+		iResult = OrderFunc->Exec(*pObj2->Section, nullptr, Pars).getInt();
 		if (iResult > 0) break;
 		if (iResult < 0) pMoveLink = pLnk;
 	}
@@ -458,7 +458,7 @@ void C4ObjResort::SortObject()
 			if (!(pObj2->Category & pSortObj->Category)) break;
 			// perform the check
 			Pars[1].Set(C4VObj(pObj2));
-			iResult = OrderFunc->Exec(nullptr, Pars).getInt();
+			iResult = OrderFunc->Exec(*pObj2->Section, nullptr, Pars).getInt();
 			if (iResult > 0) break;
 			if (iResult < 0) pMoveLink = pLnk;
 		}
@@ -503,7 +503,7 @@ void C4ObjResort::Sort(C4ObjectLink *pFirst, C4ObjectLink *pLast)
 			while (!pCurr2->Obj->Status) pCurr2 = pCurr2->Prev;
 			// perform the check
 			Pars[0].Set(C4VObj(pCurr->Obj)); Pars[1].Set(C4VObj(pCurr2->Obj));
-			if (OrderFunc->Exec(nullptr, Pars).getInt() < 0)
+			if (OrderFunc->Exec(*pCurr->Obj->Section, nullptr, Pars).getInt() < 0)
 			{
 				// so there's something to be reordered: swap the links
 				// FIXME: Inform C4ObjectList about this reorder
@@ -725,13 +725,13 @@ bool C4GameObjects::Save(C4Section &section, const char *szFilename, bool fSaveG
 	return StdStrBuf{buffer.c_str(), buffer.size(), false}.SaveToFile(szFilename);
 }
 
-void C4GameObjects::UpdateScriptPointers()
+void C4GameObjects::UpdateScriptPointers(C4Section &section)
 {
 	// call in sublists
 	C4ObjectList::UpdateScriptPointers();
 	InactiveObjects.UpdateScriptPointers();
 	// adjust global effects
-	if (Game.pGlobalEffects) Game.pGlobalEffects->ReAssignAllCallbackFunctions();
+	if (section.GlobalEffects) section.GlobalEffects->ReAssignAllCallbackFunctions();
 }
 
 void C4GameObjects::UpdatePos(C4Object *pObj)

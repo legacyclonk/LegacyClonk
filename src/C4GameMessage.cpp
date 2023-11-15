@@ -35,12 +35,13 @@ C4GameMessage::~C4GameMessage()
 	delete pFrameDeco;
 }
 
-void C4GameMessage::Init(int32_t iType, const StdStrBuf &sText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int width)
+void C4GameMessage::Init(int32_t iType, const StdStrBuf &sText, C4Section *section, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int width)
 {
 	// safety!
 	if (pTarget && !pTarget->Status) pTarget = nullptr;
 	// Set data
 	Text.Copy(sText);
+	Section = section;
 	Target = pTarget;
 	X = iX; Y = iY; Wdt = width;
 	Player = iPlayer;
@@ -62,7 +63,7 @@ void C4GameMessage::Init(int32_t iType, const StdStrBuf &sText, C4Object *pTarge
 	if (DecoID)
 	{
 		pFrameDeco = new C4GUI::FrameDecoration();
-		if (!pFrameDeco->SetByDef(DecoID))
+		if (!pFrameDeco->SetByDef(*Section, DecoID))
 		{
 			delete pFrameDeco;
 			pFrameDeco = nullptr;
@@ -96,7 +97,7 @@ int32_t DrawMessageOffset = -35; // For finding the optimum place to draw startu
 int32_t PortraitWidth = 64;
 int32_t PortraitIndent = 10;
 
-void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer, C4Section &viewSection)
+void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer)
 {
 	int32_t alignment = dwFlags & C4GM_ALeft ? ALeft : dwFlags & C4GM_ACenter ? ACenter : dwFlags & C4GM_ARight ? ARight : -1;
 
@@ -177,7 +178,7 @@ void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer, C4Section &viewSection
 		}
 	}
 	// Positioned
-	else if ((Type == C4GM_Target || ((Type == C4GM_TargetPlayer) && (iPlayer == Player))) && (Target->Section == &viewSection))
+	else if ((Type == C4GM_Target || ((Type == C4GM_TargetPlayer) && (iPlayer == Player))))
 	{
 		// adjust position by object; care about parallaxity
 		int32_t iMsgX, iMsgY;
@@ -235,7 +236,7 @@ void C4GameMessage::UpdateDef(C4ID idUpdDef)
 	// frame deco might be using updated/deleted def
 	if (pFrameDeco)
 	{
-		if (!pFrameDeco->UpdateGfx())
+		if (!pFrameDeco->UpdateGfx(*Section))
 		{
 			delete pFrameDeco;
 			pFrameDeco = nullptr;
@@ -274,21 +275,23 @@ void C4GameMessageList::Execute()
 	}), Messages.end());
 }
 
-bool C4GameMessageList::New(int32_t iType, const char *szText,
+bool C4GameMessageList::New(int32_t iType, const char *szText, C4Section *section,
 	C4Object *pTarget, int32_t iPlayer,
 	int32_t iX, int32_t iY,
 	uint8_t bCol)
 {
-	return New(iType, StdStrBuf::MakeRef(szText), pTarget, iPlayer, iX, iY, 0xff000000 | Application.DDraw->Pal.GetClr(FColors[bCol]));
+	return New(iType, StdStrBuf::MakeRef(szText), section, pTarget, iPlayer, iX, iY, 0xff000000 | Application.DDraw->Pal.GetClr(FColors[bCol]));
 }
 
-bool C4GameMessageList::New(int32_t iType, const char *szText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int32_t width)
+bool C4GameMessageList::New(int32_t iType, const char *szText, C4Section *section, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int32_t width)
 {
-	return New(iType, StdStrBuf::MakeRef(szText), pTarget, iPlayer, iX, iY, dwClr, idDecoID, szPortraitDef, dwFlags, width);
+	return New(iType, StdStrBuf::MakeRef(szText), section, pTarget, iPlayer, iX, iY, dwClr, idDecoID, szPortraitDef, dwFlags, width);
 }
 
-bool C4GameMessageList::New(int32_t iType, const StdStrBuf &sText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int32_t width)
+bool C4GameMessageList::New(int32_t iType, const StdStrBuf &sText, C4Section *section, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int32_t width)
 {
+	if (iType != C4GM_Global && !section) return false;
+
 	if (!(dwFlags & C4GM_Multiple))
 	{
 		// Clear messages with same target
@@ -305,26 +308,27 @@ bool C4GameMessageList::New(int32_t iType, const StdStrBuf &sText, C4Object *pTa
 	if (!sText.getLength()) return true;
 
 	// Add new message
-	C4GameMessage *msgNew = new C4GameMessage;
-	msgNew->Init(iType, sText, pTarget, iPlayer, iX, iY, dwClr, idDecoID, szPortraitDef, dwFlags, width);
+	C4GameMessage *msgNew = new C4GameMessage();
+	msgNew->Init(iType, sText, section, pTarget, iPlayer, iX, iY, dwClr, idDecoID, szPortraitDef, dwFlags, width);
 	Messages.emplace_back(msgNew);
 
 	return true;
 }
 
-bool C4GameMessageList::Append(int32_t iType, const char *szText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint8_t bCol, bool fNoDuplicates)
+bool C4GameMessageList::Append(int32_t iType, const char *szText, C4Section *section, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint8_t bCol, bool fNoDuplicates)
 {
-	if (const auto &msg = std::find_if(Messages.begin(), Messages.end(), [iType, pTarget, iPlayer](const auto &msg)
+	if (const auto &msg = std::find_if(Messages.begin(), Messages.end(), [section, iType, pTarget, iPlayer](const auto &msg)
 	{
-		return (iType == C4GM_Target && msg->Target == pTarget)
-			|| ((iType == C4GM_Global || iType == C4GM_GlobalPlayer) && msg->Player == iPlayer);
+		return msg->Section == section
+			&& ((iType == C4GM_Target && msg->Target == pTarget)
+				|| ((iType == C4GM_Global || iType == C4GM_GlobalPlayer) && msg->Player == iPlayer));
 	}); msg != Messages.end() && (*msg)->Target == pTarget)
 	{
 		(*msg)->Append(szText, fNoDuplicates);
 	}
 	else
 	{
-		New(iType, szText, pTarget, iPlayer, iX, iY, bCol);
+		New(iType, szText, section, pTarget, iPlayer, iX, iY, bCol);
 	}
 	return true;
 }
@@ -349,6 +353,9 @@ void C4GameMessageList::Draw(C4FacetEx &cgo, int32_t iPlayer, C4Section &viewSec
 {
 	for (const auto &it : Messages)
 	{
-		it->Draw(cgo, iPlayer, viewSection);
+		if (!it->Section || it->Section == &viewSection)
+		{
+			it->Draw(cgo, iPlayer);
+		}
 	}
 }
