@@ -190,7 +190,7 @@ public:
 	bool Load(const char *szFilename, bool fSavegame, bool fLoadPortraits);
 	static bool Strip(const char *szFilename, bool fAggressive);
 	bool ObjectInCrew(C4Object *tobj);
-	C4Object *Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pBuyObj = nullptr); // buy object of player's wealth
+	C4Object *Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Section &section, C4Object *pBuyObj = nullptr); // buy object of player's wealth
 	bool Sell2Home(C4Object *tobj);
 	bool CanSell(C4Object *obj) const;
 	bool DoWealth(int32_t change);
@@ -198,8 +198,8 @@ public:
 	void CompileFunc(StdCompiler *pComp);
 	bool LoadRuntimeData(C4Group &hGroup);
 	bool ActivateMenuMain();
-	bool ActivateMenuTeamSelection(bool fFromMain);
-	void DoTeamSelection(int32_t idTeam);
+	bool ActivateMenuTeamSelection(C4Section &section, bool fFromMain);
+	void DoTeamSelection(C4Section &section, int32_t idTeam);
 	C4Object *GetHiRankActiveCrew(bool fSelectedOnly);
 	void SetFoW(bool fEnable);
 	int32_t ActiveCrewCount();

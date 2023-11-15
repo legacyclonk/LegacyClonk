@@ -107,7 +107,7 @@ bool FrameDecoration::SetFacetByAction(C4Def *pOfDef, C4FacetEx &rfctTarget, con
 	return true;
 }
 
-bool FrameDecoration::SetByDef(C4ID idSourceDef)
+bool FrameDecoration::SetByDef(C4Section &section, C4ID idSourceDef)
 {
 	// get source def
 	C4Def *pSrcDef = Game.Defs.ID2Def(idSourceDef);
@@ -118,11 +118,11 @@ bool FrameDecoration::SetByDef(C4ID idSourceDef)
 	Clear();
 	this->idSourceDef = idSourceDef;
 	// query values
-	dwBackClr = pSrcDef->Script.Call(std::format(PSF_FrameDecoration, "BackClr").c_str()).getInt();
-	iBorderTop = pSrcDef->Script.Call(std::format(PSF_FrameDecoration, "BorderTop").c_str()).getInt();
-	iBorderLeft = pSrcDef->Script.Call(std::format(PSF_FrameDecoration, "BorderLeft").c_str()).getInt();
-	iBorderRight = pSrcDef->Script.Call(std::format(PSF_FrameDecoration, "BorderRight").c_str()).getInt();
-	iBorderBottom = pSrcDef->Script.Call(std::format(PSF_FrameDecoration, "BorderBottom").c_str()).getInt();
+	dwBackClr = pSrcDef->Script.Call(section, std::format(PSF_FrameDecoration, "BackClr").c_str()).getInt();
+	iBorderTop = pSrcDef->Script.Call(section, std::format(PSF_FrameDecoration, "BorderTop").c_str()).getInt();
+	iBorderLeft = pSrcDef->Script.Call(section, std::format(PSF_FrameDecoration, "BorderLeft").c_str()).getInt();
+	iBorderRight = pSrcDef->Script.Call(section, std::format(PSF_FrameDecoration, "BorderRight").c_str()).getInt();
+	iBorderBottom = pSrcDef->Script.Call(section, std::format(PSF_FrameDecoration, "BorderBottom").c_str()).getInt();
 	// get gfx
 	SetFacetByAction(pSrcDef, fctTop, "Top");
 	SetFacetByAction(pSrcDef, fctTopRight, "TopRight");
@@ -141,10 +141,10 @@ bool FrameDecoration::SetByDef(C4ID idSourceDef)
 	return true;
 }
 
-bool FrameDecoration::UpdateGfx()
+bool FrameDecoration::UpdateGfx(C4Section &section)
 {
 	// simply re-set by def
-	return SetByDef(idSourceDef);
+	return SetByDef(section, idSourceDef);
 }
 
 void FrameDecoration::Draw(C4FacetEx &cgo, C4Rect &rcBounds)

@@ -577,7 +577,7 @@ bool C4FullScreen::ActivateMenuMain()
 	CloseMenu();
 	// Open menu
 	pMenu = new C4MainMenu();
-	return pMenu->ActivateMain(NO_OWNER);
+	return pMenu->ActivateMain(*Game.Sections.front(), NO_OWNER); // FIXME
 }
 
 void C4FullScreen::CloseMenu()

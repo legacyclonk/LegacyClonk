@@ -56,7 +56,7 @@ class C4GameMessage
 	friend class C4GameMessageList;
 
 public:
-	void Draw(C4FacetEx &cgo, int32_t iPlayer, C4Section &viewSection);
+	void Draw(C4FacetEx &cgo, int32_t iPlayer);
 	C4GameMessage();
 	~C4GameMessage();
 
@@ -66,6 +66,7 @@ protected:
 	uint32_t ColorDw;
 	int32_t Player;
 	int32_t Type;
+	C4Section *Section{nullptr};
 	C4Object *Target;
 	StdStrBuf Text;
 	C4ID DecoID; StdStrBuf PortraitDef;
@@ -73,7 +74,7 @@ protected:
 	uint32_t dwFlags;
 
 protected:
-	void Init(int32_t iType, const StdStrBuf &Text, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwCol, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int width);
+	void Init(int32_t iType, const StdStrBuf &Text, C4Section *section, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwCol, C4ID idDecoID, const char *szPortraitDef, uint32_t dwFlags, int width);
 	void Append(const char *szText, bool fNoDuplicates = false);
 	bool Execute();
 	void UpdateDef(C4ID idUpdDef);
@@ -98,10 +99,10 @@ public:
 	void ClearPlayers(int32_t iPlayer, int32_t dwPositioningFlags);
 	void ClearPointers(C4Object *pObj);
 	void UpdateDef(C4ID idUpdDef); // called after reloaddef
-	bool New(int32_t iType, const StdStrBuf &Text, C4Object *pTarget, int32_t iPlayer, int32_t iX = -1, int32_t iY = -1, uint32_t dwClr = 0xffFFFFFF, C4ID idDecoID = C4ID_None, const char *szPortraitDef = nullptr, uint32_t dwFlags = 0u, int32_t width = 0);
-	bool New(int32_t iType, const char *szText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint8_t bCol);
-	bool New(int32_t iType, const char *szText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID = C4ID_None, const char *szPortraitDef = nullptr, uint32_t dwFlags = 0u, int32_t width = 0);
-	bool Append(int32_t iType, const char *szText, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint8_t bCol, bool fNoDuplicates = false);
+	bool New(int32_t iType, const StdStrBuf &Text, C4Section *section, C4Object *pTarget, int32_t iPlayer, int32_t iX = -1, int32_t iY = -1, uint32_t dwClr = 0xffFFFFFF, C4ID idDecoID = C4ID_None, const char *szPortraitDef = nullptr, uint32_t dwFlags = 0u, int32_t width = 0);
+	bool New(int32_t iType, const char *szText, C4Section *section, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint8_t bCol);
+	bool New(int32_t iType, const char *szText, C4Section *section, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint32_t dwClr, C4ID idDecoID = C4ID_None, const char *szPortraitDef = nullptr, uint32_t dwFlags = 0u, int32_t width = 0);
+	bool Append(int32_t iType, const char *szText, C4Section *section, C4Object *pTarget, int32_t iPlayer, int32_t iX, int32_t iY, uint8_t bCol, bool fNoDuplicates = false);
 };
 
 void GameMsgObject(const char *szText, C4Object *pTarget, int32_t iFCol = FWhite);

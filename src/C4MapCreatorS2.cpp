@@ -70,7 +70,7 @@ void C4MCCallbackArray::EnablePixel(int32_t iX, int32_t iY)
 	// done
 }
 
-void C4MCCallbackArray::Execute(int32_t iMapZoom)
+void C4MCCallbackArray::Execute(C4Section &section, int32_t iMapZoom)
 {
 	// safety
 	if (!pSF || !pMap) return;
@@ -85,7 +85,7 @@ void C4MCCallbackArray::Execute(int32_t iMapZoom)
 			Pars[0] = C4VInt((iIndex % iWdt) * iMapZoom - (iMapZoom / 2));
 			Pars[1] = C4VInt((iIndex / iWdt) * iMapZoom - (iMapZoom / 2));
 			// call
-			pSF->Exec(nullptr, Pars);
+			pSF->Exec(section, nullptr, Pars);
 		}
 	// done
 }
@@ -117,11 +117,11 @@ void C4MCCallbackArrayList::Clear()
 	pFirst = nullptr;
 }
 
-void C4MCCallbackArrayList::Execute(int32_t iMapZoom)
+void C4MCCallbackArrayList::Execute(C4Section &section, int32_t iMapZoom)
 {
 	// execute all arrays
 	for (C4MCCallbackArray *pArray = pFirst; pArray; pArray = pArray->pNext)
-		pArray->Execute(iMapZoom);
+		pArray->Execute(section, iMapZoom);
 }
 
 // C4MCNode
@@ -679,7 +679,8 @@ void C4MCMap::SetSize(int32_t iWdt, int32_t iHgt)
 
 // map creator
 
-C4MapCreatorS2::C4MapCreatorS2(C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount) : C4MCNode(nullptr)
+C4MapCreatorS2::C4MapCreatorS2(C4Section &section, C4SLandscape *pLandscape, C4TextureMap *pTexMap, C4MaterialMap *pMatMap, int iPlayerCount)
+	: C4MCNode(nullptr), section{section}
 {
 	// me r b creator
 	MapCreator = this;
@@ -1438,7 +1439,7 @@ bool AlgoScript(C4MCOverlay *pOvrl, int32_t iX, int32_t iY)
 	// catch error (damn insecure C4Aul)
 	try
 	{
-		return static_cast<bool>(pFunc->Exec(nullptr, Pars));
+		return static_cast<bool>(pFunc->Exec(pOvrl->Owner->MapCreator->GetSection(), nullptr, Pars));
 	}
 	catch (const C4AulError &)
 	{

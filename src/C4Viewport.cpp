@@ -109,7 +109,7 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 		break;
 
 	case WM_USER_DROPDEF:
-		Game.DropDef(lParam, cvp->ViewX + static_cast<int32_t>(LOWORD(wParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(wParam) / scale));
+		Game.DropDef(cvp->GetViewSection(), lParam, cvp->ViewX + static_cast<int32_t>(LOWORD(wParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(wParam) / scale));
 		break;
 
 	case WM_SIZE:
@@ -233,7 +233,7 @@ bool C4Viewport::DropFiles(HANDLE hDrop)
 	{
 		DragQueryFile((HDROP)hDrop, cnt, szFilename, 500);
 		DragQueryPoint((HDROP)hDrop, &pntPoint);
-		Game.DropFile(szFilename, ViewX + pntPoint.x, ViewY + pntPoint.y);
+		Game.DropFile(GetViewSection(), szFilename, ViewX + pntPoint.x, ViewY + pntPoint.y);
 	}
 	DragFinish((HDROP)hDrop);
 	return true;

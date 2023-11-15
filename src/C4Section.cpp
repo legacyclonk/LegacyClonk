@@ -58,6 +58,7 @@ void C4Section::Default()
 	C4S.Default();
 	PathFinder.Default();
 	TransferZones.Default();
+	GlobalEffects = nullptr;
 }
 
 void C4Section::Clear()
@@ -71,6 +72,8 @@ void C4Section::Clear()
 	TextureMap.Clear(); // texture map *MUST* be cleared after the materials, because of the patterns!
 	PathFinder.Clear();
 	TransferZones.Clear();
+	delete GlobalEffects;
+	GlobalEffects = nullptr;
 }
 
 bool C4Section::InitSection(C4Group &scenario)
@@ -173,7 +176,7 @@ bool C4Section::InitThirdPart()
 {
 	for (const auto &def : Game.Defs)
 	{
-		def->Script.Call(PSF_InitializeDef, {name.empty() ? C4VNull : C4VString(name.c_str())});
+		def->Script.Call(*this, PSF_InitializeDef, {name.empty() ? C4VNull : C4VString(name.c_str())});
 	}
 
 	// Environment
@@ -541,6 +544,11 @@ C4Object *C4Section::PlaceAnimal(C4ID idAnimal)
 
 void C4Section::Execute()
 {
+	if (GlobalEffects)
+	{
+		GlobalEffects->Execute(nullptr);
+	}
+
 	Particles.GlobalParticles.Exec(*this);
 	PXS.Execute();
 	MassMover.Execute();
@@ -612,6 +620,27 @@ void C4Section::ClearPointers(C4Object *const obj)
 	Objects.ForeObjects.ClearPointers(obj);
 	ClearObjectPtrs(obj);
 	TransferZones.ClearPointers(obj);
+
+	if (GlobalEffects)
+	{
+		GlobalEffects->ClearPointers(obj);
+	}
+}
+
+void C4Section::EnumeratePointers()
+{
+	if (GlobalEffects)
+	{
+		GlobalEffects->EnumeratePointers();
+	}
+}
+
+void C4Section::DenumeratePointers()
+{
+	if (GlobalEffects)
+	{
+		GlobalEffects->DenumeratePointers();
+	}
 }
 
 C4Object *C4Section::OverlapObject(const std::int32_t tx, const std::int32_t ty, const std::int32_t width, const std::int32_t height, const std::int32_t category)

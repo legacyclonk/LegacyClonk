@@ -68,7 +68,7 @@ public:
 	bool Save(C4Section &section, const char *szFilename, bool fSaveGame, bool fSaveInactive);
 	bool Save(C4Section &section, C4Group &hGroup, bool fSaveGame, bool fSaveInactive);
 
-	void UpdateScriptPointers(); // update pointers to C4AulScript *
+	void UpdateScriptPointers(C4Section &section); // update pointers to C4AulScript *
 
 	void UpdatePos(C4Object *pObj);
 	void UpdatePosResort(C4Object *pObj);

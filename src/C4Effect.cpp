@@ -56,9 +56,11 @@ C4AulScript *C4Effect::GetCallbackScript()
 	return pSrcScript;
 }
 
-C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, const C4Value &rVal1, const C4Value &rVal2, const C4Value &rVal3, const C4Value &rVal4, bool fDoCalls, int32_t &riStoredAsNumber, bool passErrors)
-	: EffectVars(0)
+C4Effect::C4Effect(C4Section &section, C4Object *pForObj, const char *szName, int32_t iPrio, int32_t iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, const C4Value &rVal1, const C4Value &rVal2, const C4Value &rVal3, const C4Value &rVal4, bool fDoCalls, int32_t &riStoredAsNumber, bool passErrors)
+	: EffectVars(0), section{&section}
 {
+	this->section.Enumerate();
+
 	C4Effect *pPrev, *pCheck;
 	// assign values
 	SCopy(szName, Name, C4MaxDefString);
@@ -71,7 +73,7 @@ C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t
 	idCommandTarget = idCmdTarget;
 	AssignCallbackFunctions();
 	// get effect target
-	C4Effect **ppEffectList = pForObj ? &pForObj->pEffects : &Game.pGlobalEffects;
+	C4Effect **ppEffectList = pForObj ? &pForObj->pEffects : &section.GlobalEffects;
 	// assign a unique number for that object
 	iNumber = 1;
 	for (pCheck = *ppEffectList; pCheck; pCheck = pCheck->pNext)
@@ -126,7 +128,7 @@ C4Effect::C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t
 		if (pForObj && !pForObj->Status) return; // this will be invalid!
 		iPriority = iPrio; // validate effect now
 		if (pFnStart)
-			if (pFnStart->Exec(pCommandTarget, {C4VObj(pForObj), C4VInt(iNumber), C4VInt(0), rVal1, rVal2, rVal3, rVal4}, true, true).getInt() == C4Fx_Start_Deny)
+			if (pFnStart->Exec(section, pCommandTarget, {C4VObj(pForObj), C4VInt(iNumber), C4VInt(0), rVal1, rVal2, rVal3, rVal4}, true, true).getInt() == C4Fx_Start_Deny)
 				// the effect denied to start: assume it hasn't, and mark it dead
 				SetDead();
 		if (fRemoveUpper && pNext && pFnStart)
@@ -181,6 +183,8 @@ void C4Effect::EnumeratePointers()
 		pEff->pCommandTarget.Enumerate();
 		// effect var denumeration: not necessary, because this is done while saving
 	} while (pEff = pEff->pNext);
+
+	section.Enumerate();
 }
 
 void C4Effect::DenumeratePointers()
@@ -196,6 +200,8 @@ void C4Effect::DenumeratePointers()
 		// assign any callback functions
 		pEff->AssignCallbackFunctions();
 	} while (pEff = pEff->pNext);
+
+	section.Denumerate();
 }
 
 void C4Effect::ClearPointers(C4Object *pObj)
@@ -279,7 +285,7 @@ int32_t C4Effect::Check(C4Object *pForObj, const char *szCheckEffect, int32_t iP
 	{
 		if (!pCheck->IsDead() && pCheck->pFnEffect && pCheck->iPriority >= iPrio)
 		{
-			int32_t iResult = pCheck->pFnEffect->Exec(pCheck->pCommandTarget, {C4VString(szCheckEffect), C4VObj(pForObj), C4VInt(pCheck->iNumber), C4Value(), rVal1, rVal2, rVal3, rVal4}, passErrors, true).getInt();
+			int32_t iResult = pCheck->pFnEffect->Exec(**pCheck->section, pCheck->pCommandTarget, {C4VString(szCheckEffect), C4VObj(pForObj), C4VInt(pCheck->iNumber), C4Value(), rVal1, rVal2, rVal3, rVal4}, passErrors, true).getInt();
 			if (iResult == C4Fx_Effect_Deny)
 				// effect denied
 				return C4Fx_Effect_Deny;
@@ -319,7 +325,7 @@ int32_t C4Effect::Check(C4Object *pForObj, const char *szCheckEffect, int32_t iP
 void C4Effect::Execute(C4Object *pObj)
 {
 	// get effect list
-	C4Effect **ppEffectList = pObj ? &pObj->pEffects : &Game.pGlobalEffects;
+	C4Effect **ppEffectList = pObj ? &pObj->pEffects : &section->GlobalEffects;
 	// execute all effects not marked as dead
 	C4Effect *pEffect = this, **ppPrevEffect = ppEffectList;
 	do
@@ -342,7 +348,7 @@ void C4Effect::Execute(C4Object *pObj)
 			if (pEffect->iIntervall && !(pEffect->iTime % pEffect->iIntervall))
 				if (pEffect->pFnTimer)
 				{
-					if (pEffect->pFnTimer->Exec(pEffect->pCommandTarget, {C4VObj(pObj), C4VInt(pEffect->iNumber), C4VInt(pEffect->iTime)}, false, true).getInt() == C4Fx_Execute_Kill)
+					if (pEffect->pFnTimer->Exec(**pEffect->section, pEffect->pCommandTarget, {C4VObj(pObj), C4VInt(pEffect->iNumber), C4VInt(pEffect->iTime)}, false, true).getInt() == C4Fx_Execute_Kill)
 					{
 						// safety: this class got deleted!
 						if (pObj && !pObj->Status) return;
@@ -372,11 +378,11 @@ void C4Effect::Kill(C4Object *pObj)
 	else
 		// otherwise: temp reactivate before real removal
 		// this happens only if a lower priority effect removes an upper priority effect in its add- or removal-call
-		if (pFnStart && iPriority != 1) pFnStart->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), C4VInt(C4FxCall_TempAddForRemoval)}, false, true);
+		if (pFnStart && iPriority != 1) pFnStart->Exec(**section, pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), C4VInt(C4FxCall_TempAddForRemoval)}, false, true);
 	// remove this effect
 	int32_t iPrevPrio = iPriority; SetDead();
 	if (pFnStop)
-		if (pFnStop->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber)}, false, true).getInt() == C4Fx_Stop_Deny)
+		if (pFnStop->Exec(**section, pCommandTarget, {C4VObj(pObj), C4VInt(iNumber)}, false, true).getInt() == C4Fx_Stop_Deny)
 			// effect denied to be removed: recover
 			iPriority = iPrevPrio;
 	// reactivate other effects
@@ -393,7 +399,7 @@ void C4Effect::ClearAll(C4Object *pObj, int32_t iClearFlag)
 	int32_t iPrevPrio = iPriority;
 	SetDead();
 	if (pFnStop)
-		if (pFnStop->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), C4VInt(iClearFlag)}, false, true).getInt() == C4Fx_Stop_Deny)
+		if (pFnStop->Exec(**section, pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), C4VInt(iClearFlag)}, false, true).getInt() == C4Fx_Stop_Deny)
 		{
 			// this stop-callback might have deleted the object and then denied its own removal
 			// must not modify self in this case...
@@ -410,7 +416,7 @@ void C4Effect::DoDamage(C4Object *pObj, int32_t &riDamage, int32_t iDamageType, 
 	do
 	{
 		if (!pEff->IsDead() && pEff->pFnDamage)
-			riDamage = pEff->pFnDamage->Exec(pEff->pCommandTarget, {C4VObj(pObj), C4VInt(pEff->iNumber), C4VInt(riDamage), C4VInt(iDamageType), C4VInt(iCausePlr)}, false, true).getInt();
+			riDamage = pEff->pFnDamage->Exec(**pEff->section, pEff->pCommandTarget, {C4VObj(pObj), C4VInt(pEff->iNumber), C4VInt(riDamage), C4VInt(iDamageType), C4VInt(iCausePlr)}, false, true).getInt();
 		if (pObj && !pObj->Status) return;
 	} while ((pEff = pEff->pNext) && riDamage);
 }
@@ -432,7 +438,7 @@ C4Value C4Effect::DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1,
 	// call it
 	C4AulFunc *pFn = pSrcScript->GetFuncRecursive(std::format(PSF_FxCustom, Name, szFn).c_str());
 	if (!pFn) return C4Value();
-	return pFn->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), rVal1, rVal2, rVal3, rVal4, rVal5, rVal6, rVal7}, passErrors, true, convertNilToIntBool);
+	return pFn->Exec(**section, pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), rVal1, rVal2, rVal3, rVal4, rVal5, rVal6, rVal7}, passErrors, true, convertNilToIntBool);
 }
 
 void C4Effect::OnObjectChangedDef(C4Object *pObj)
@@ -465,7 +471,7 @@ void C4Effect::TempRemoveUpperEffects(C4Object *pObj, bool fTempRemoveThis, C4Ef
 	{
 		FlipActive();
 		// temp callbacks only for higher priority effects
-		if (pFnStop && iPriority != 1) pFnStop->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), C4VInt(C4FxCall_Temp), C4VBool(true)}, false, true);
+		if (pFnStop && iPriority != 1) pFnStop->Exec(**section, pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), C4VInt(C4FxCall_Temp), C4VBool(true)}, false, true);
 		if (!*ppLastRemovedEffect) *ppLastRemovedEffect = this;
 	}
 }
@@ -481,7 +487,7 @@ void C4Effect::TempReaddUpperEffects(C4Object *pObj, C4Effect *pLastReaddEffect)
 		if (pEff->IsInactiveAndNotDead())
 		{
 			pEff->FlipActive();
-			if (pEff->pFnStart && pEff->iPriority != 1) pEff->pFnStart->Exec(pEff->pCommandTarget, {C4VObj(pObj), C4VInt(pEff->iNumber), C4VInt(C4FxCall_Temp)}, false, true);
+			if (pEff->pFnStart && pEff->iPriority != 1) pEff->pFnStart->Exec(**pEff->section, pEff->pCommandTarget, {C4VObj(pObj), C4VInt(pEff->iNumber), C4VInt(C4FxCall_Temp)}, false, true);
 		}
 		// done?
 		if (pEff == pLastReaddEffect) break;
@@ -504,6 +510,17 @@ void C4Effect::CompileFunc(StdCompiler *pComp)
 	pComp->Value(pCommandTarget); pComp->Separator();
 	// read ID
 	pComp->Value(mkC4IDAdapt(idCommandTarget));
+
+	// read section
+	if (pComp->Separator())
+	{
+		pComp->Value(section);
+	}
+	else
+	{
+		assert(pComp->isCompiler());
+	}
+
 	pComp->Separator(StdCompiler::SEP_END); // ')'
 	// read variables
 	if (pComp->isCompiler() || EffectVars.GetSize() > 0)

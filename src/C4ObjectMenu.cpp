@@ -72,7 +72,7 @@ bool C4ObjectMenu::IsCloseDenied()
 			if (Object) fResult = static_cast<bool>(Object->Call(PSF_MenuQueryCancel, pars));
 		}
 		else if (eCallbackType == CB_Scenario)
-			fResult = static_cast<bool>(Game.Script.Call(PSF_MenuQueryCancel, pars));
+			fResult = static_cast<bool>(Game.Script.Call(*section, PSF_MenuQueryCancel, pars));
 		CloseQuerying = false;
 		if (fResult) return true;
 	}
@@ -85,12 +85,19 @@ void C4ObjectMenu::LocalInit(C4Object *pObject, bool fUserMenu)
 	Object = pObject;
 	UserMenu = fUserMenu;
 	ParentObject = GetParentObject();
-	if (pObject) eCallbackType = CB_Object; else eCallbackType = CB_Scenario;
+	if (pObject)
+	{
+		eCallbackType = CB_Object;
+	}
+	else
+	{
+		eCallbackType = CB_Scenario;
+	}
 }
 
-bool C4ObjectMenu::Init(C4FacetExSurface &fctSymbol, const char *szEmpty, C4Object *pObject, int32_t iExtra, int32_t iExtraData, int32_t iId, int32_t iStyle, bool fUserMenu)
+bool C4ObjectMenu::Init(C4FacetExSurface &fctSymbol, C4Section &section, const char *szEmpty, C4Object *pObject, int32_t iExtra, int32_t iExtraData, int32_t iId, int32_t iStyle, bool fUserMenu)
 {
-	if (!DoInit(fctSymbol, szEmpty, iExtra, iExtraData, iId, iStyle)) return false;
+	if (!DoInit(fctSymbol, section, szEmpty, iExtra, iExtraData, iId, iStyle)) return false;
 	LocalInit(pObject, fUserMenu);
 	return true;
 }
@@ -104,7 +111,7 @@ void C4ObjectMenu::OnSelectionChanged(int32_t iNewSelection)
 		if (eCallbackType == CB_Object && Object)
 			Object->Call(PSF_MenuSelection, pars);
 		else if (eCallbackType == CB_Scenario)
-			Game.Script.Call(PSF_MenuSelection, pars);
+			Game.Script.Call(*section, PSF_MenuSelection, pars);
 	}
 }
 
@@ -234,7 +241,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			command = std::format("AppendCommand(this,\"Buy\",Object({}),{},0,,0,{})&&ExecuteCommand()", pTarget->Number, 1, C4IdText(pDef->id));
 			command2 = std::format("AppendCommand(this,\"Buy\",Object({}),{},0,,0,{})&&ExecuteCommand()", pTarget->Number, iCount, C4IdText(pDef->id));
 			// Buying value
-			int32_t iBuyValue = pDef->GetValue(pTarget, pPlayer->Number);
+			int32_t iBuyValue = pDef->GetValue(*pTarget->Section, pTarget, pPlayer->Number);
 			// Add menu item
 			Add(caption.c_str(), fctSymbol, command.c_str(), iCount, nullptr, pDef->GetDesc(), pDef->id, command2.c_str(), true, iBuyValue);
 		}
@@ -530,7 +537,7 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 
 	case CB_Scenario:
 		// Object menu with scenario script callback
-		Game.Script.DirectExec(nullptr, szCommand, "MenuCommand", false, Game.Script.Strict);
+		Game.Script.DirectExec(*section, nullptr, szCommand, "MenuCommand", false, Game.Script.Strict);
 		break;
 
 	case CB_None:
@@ -568,7 +575,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 		if (cObj = pTarget->Action.Target)
 			for (iFunction = 0; pFunction = cObj->Def->Script.GetSFunc(iFunction, "ActionContext"); iFunction++)
 				if (!pFunction->OverloadedBy)
-					if (!pFunction->Condition || pFunction->Condition->Exec(cObj, {C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget)}))
+					if (!pFunction->Condition || pFunction->Condition->Exec(*cObj->Section, cObj, {C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget)}))
 						if (!fCountOnly)
 						{
 							command = std::format("ProtectedCall(Object({}),\"{}\",this,Object({}))", cObj->Number, pFunction->Name, pTarget->Number);
@@ -587,7 +594,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 			if (pEffScript)
 				for (iFunction = 0; pFunction = pEffScript->GetSFunc(iFunction, std::format(PSF_FxCustom, pEff->Name, "Context").c_str()); iFunction++)
 					if (!pFunction->OverloadedBy)
-						if (!pFunction->Condition || pFunction->Condition->Exec(pEff->pCommandTarget, {C4VObj(pTarget), C4VInt(pEff->iNumber), C4VObj(Object), C4VID(pFunction->idImage)}))
+						if (!pFunction->Condition || pFunction->Condition->Exec(**pEff->section, pEff->pCommandTarget, {C4VObj(pTarget), C4VInt(pEff->iNumber), C4VObj(Object), C4VID(pFunction->idImage)}))
 							if (!fCountOnly)
 							{
 								command = std::format("ProtectedCall(Object({}),\"{}\",Object({}),{},Object({}),{})", pEff->pCommandTarget->Number, pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
@@ -607,7 +614,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 				if (cObj->Def->ActMap[cObj->Action.Act].Procedure == DFA_ATTACH)
 					for (iFunction = 0; pFunction = cObj->Def->Script.GetSFunc(iFunction, "AttachContext"); iFunction++)
 						if (!pFunction->OverloadedBy)
-							if (!pFunction->Condition || pFunction->Condition->Exec(cObj, {C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget)}))
+							if (!pFunction->Condition || pFunction->Condition->Exec(*cObj->Section, cObj, {C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget)}))
 								if (!fCountOnly)
 								{
 									command = std::format("ProtectedCall(Object({}),\"{}\",this,Object({}))", cObj->Number, pFunction->Name, pTarget->Number);
@@ -629,7 +636,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 				// Find function not overloaded
 				if (!pFunction->OverloadedBy)
 					// Function condition valid
-					if (!pFunction->Condition || pFunction->Condition->Exec(pTarget, {C4VObj(Object), C4VID(pFunction->idImage)}))
+					if (!pFunction->Condition || pFunction->Condition->Exec(*pTarget->Section, pTarget, {C4VObj(Object), C4VID(pFunction->idImage)}))
 					{
 						// Get function text
 						strDescText = pFunction->DescText.getData() ? pFunction->DescText.getData() : pTarget->GetName();
@@ -637,7 +644,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						bool fDouble = false;
 						for (iFunction = 0; pFunction2 = pTarget->Def->Script.GetSFunc(iFunction, "Context"); iFunction++)
 							if (!pFunction2->OverloadedBy)
-								if (!pFunction2->Condition || pFunction2->Condition->Exec(pTarget, {C4VObj(Object), C4VID(pFunction2->idImage)}))
+								if (!pFunction2->Condition || pFunction2->Condition->Exec(*pTarget->Section, pTarget, {C4VObj(Object), C4VID(pFunction2->idImage)}))
 									if (SEqual(strDescText, pFunction2->DescText.getData()))
 										fDouble = true;
 						// If so, skip this function to prevent duplicate entries
@@ -669,7 +676,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 		if (!(pTarget->Category & C4D_Living) || pTarget->GetAlive()) // No dead livings
 			for (iFunction = 0; pFunction = pTarget->Def->Script.GetSFunc(iFunction, "Context"); iFunction++)
 				if (!pFunction->OverloadedBy)
-					if (!pFunction->Condition || pFunction->Condition->Exec(pTarget, {C4VObj(Object), C4VID(pFunction->idImage)}))
+					if (!pFunction->Condition || pFunction->Condition->Exec(*pTarget->Section, pTarget, {C4VObj(Object), C4VID(pFunction->idImage)}))
 						if (!fCountOnly)
 						{
 							command = std::format("ProtectedCall(Object({}),\"{}\",this)", pTarget->Number, pFunction->Name);

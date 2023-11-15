@@ -596,7 +596,6 @@ void C4Game::Clear()
 	C4S.Clear();
 	GraphicsSystem.Clear();
 	Defs.Clear();
-	delete pGlobalEffects; pGlobalEffects = nullptr;
 	Particles.Clear();
 	GraphicsResource.Clear();
 	Messages.Clear();
@@ -807,10 +806,6 @@ bool C4Game::Execute() // Returns true if the game is over
 	// Game
 
 	std::ranges::for_each(Sections, &C4Section::ExecObjects);
-
-	if (pGlobalEffects)
-		EXEC_S_DR(pGlobalEffects->Execute(nullptr);, GEStats, "GEEx\0");
-
 	std::ranges::for_each(Sections, &C4Section::Execute);
 
 	EXEC_S_DR(Players.Execute();,                  PlayersStat,     "PlrEx")
@@ -890,14 +885,15 @@ void C4Game::ClearPointers(C4Object *pObj)
 	MessageInput.ClearPointers(pObj);
 	Console.ClearPointers(pObj);
 	MouseControl.ClearPointers(pObj);
-
-	if (pGlobalEffects)
-		pGlobalEffects->ClearPointers(pObj);
 }
 
 void C4Game::UpdateScriptPointers()
 {
-	std::ranges::for_each(Sections, &C4ObjectList::UpdateScriptPointers, &C4Section::Objects);
+	for (const auto &section : Sections)
+	{
+		section->Objects.UpdateScriptPointers(*section);
+	}
+
 	UpdateMaterialScriptPointers();
 }
 
@@ -1004,7 +1000,7 @@ C4ID DefFileGetID(const char *szFilename)
 	return DefCore.id;
 }
 
-bool C4Game::DropFile(const char *szFilename, int32_t iX, int32_t iY)
+bool C4Game::DropFile(C4Section &section, const char *szFilename, int32_t iX, int32_t iY)
 {
 	C4ID c_id; C4Def *cdef;
 	// Drop def to create object
@@ -1016,7 +1012,7 @@ bool C4Game::DropFile(const char *szFilename, int32_t iX, int32_t iY)
 			if ((cdef = Game.Defs.ID2Def(c_id))
 				|| (Defs.Load(szFilename, C4D_Load_RX, Config.General.LanguageEx, &*Application.SoundSystem) && (cdef = Game.Defs.ID2Def(c_id))))
 			{
-				return DropDef(c_id, iX, iY);
+				return DropDef(section, c_id, iX, iY);
 			}
 		// Failure
 		Console.Out(LoadResStr(C4ResStrTableKey::IDS_CNS_DROPNODEF, GetFilename(szFilename)).c_str());
@@ -1025,12 +1021,12 @@ bool C4Game::DropFile(const char *szFilename, int32_t iX, int32_t iY)
 	return false;
 }
 
-bool C4Game::DropDef(C4ID id, int32_t iX, int32_t iY)
+bool C4Game::DropDef(C4Section &section, C4ID id, int32_t iX, int32_t iY)
 {
 	// def exists?
 	if (Game.Defs.ID2Def(id))
 	{
-		Control.DoInput(CID_EMDropDef, new C4ControlEMDropDef(id, iX, iY), CDT_Decide);
+		Control.DoInput(CID_EMDropDef, new C4ControlEMDropDef(GetSectionIndex(section), id, iX, iY), CDT_Decide);
 		return true;
 	}
 	else
@@ -1109,7 +1105,6 @@ void C4Game::Default()
 	pGUI = nullptr;
 	pScenarioSections = pCurrentScenarioSection = nullptr;
 	*CurrentScenarioSection = 0;
-	pGlobalEffects = nullptr;
 	fResortAnyObject = false;
 	pNetworkStatistics = nullptr;
 	IsMusicEnabled = false;
@@ -1263,7 +1258,7 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 		pComp->Value(mkNamingAdapt(Sections[0]->Landscape.Sky, "Sky"));
 	}
 
-	pComp->Value(mkNamingAdapt(mkNamingPtrAdapt(pGlobalEffects, "GlobalEffects"), "Effects"));
+	pComp->Value(mkNamingAdapt(mkNamingPtrAdapt(Sections[0]->GlobalEffects, "GlobalEffects"), "Effects"));
 
 	// scoreboard compiles into main level [Scoreboard]
 	if (!comp.fScenarioSection && comp.fExact)
@@ -1347,7 +1342,7 @@ bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fS
 	{
 		Players.EnumeratePointers();
 		ScriptEngine.Strings.EnumStrings();
-		if (pGlobalEffects) pGlobalEffects->EnumeratePointers();
+		std::ranges::for_each(Sections, &C4Section::EnumeratePointers);
 	}
 
 	// Decompile
@@ -1360,7 +1355,7 @@ bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fS
 	{
 		ScriptEngine.DenumerateVariablePointers();
 		Players.DenumeratePointers();
-		if (pGlobalEffects) pGlobalEffects->DenumeratePointers();
+		std::ranges::for_each(Sections, &C4Section::DenumeratePointers);
 	}
 
 	// Initial?
@@ -1771,7 +1766,7 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSky)
 
 	// Denumerate game data pointers
 	ScriptEngine.DenumerateVariablePointers();
-	if (pGlobalEffects) pGlobalEffects->DenumeratePointers();
+	std::ranges::for_each(Sections, &C4Section::DenumeratePointers);
 
 	// Check object enumeration
 	if (!std::ranges::all_of(Sections, &C4Section::CheckObjectEnumeration))
@@ -1928,7 +1923,7 @@ bool C4Game::InitGameFinal()
 	}
 
 	// Script constructor call
-	if (!C4S.Head.SaveGame) Script.Call(PSF_Initialize);
+	if (!C4S.Head.SaveGame) Script.Call(*Sections.front(), PSF_Initialize); // FIXME
 	if (std::ranges::any_of(Sections, [objectCount](C4GameObjects &objects) { return objects.ObjectCount() != objectCount; }, &C4Section::Objects))
 	{
 		fScriptCreatedObjects = true;

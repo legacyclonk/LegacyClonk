@@ -49,14 +49,19 @@ void C4AulExecError::show() const
 	// debug mode object message
 	if (Game.DebugMode)
 		if (cObj)
-			Game.Messages.New(C4GM_Target, StdStrBuf{message.c_str(), message.size(), false}, cObj, NO_OWNER);
+			Game.Messages.New(C4GM_Target, StdStrBuf{message.c_str(), message.size(), false}, cObj->Section, cObj, NO_OWNER);
 		else
-			Game.Messages.New(C4GM_Global, StdStrBuf{message.c_str(), message.size(), false}, nullptr, ANY_OWNER);
+			Game.Messages.New(C4GM_Global, StdStrBuf{message.c_str(), message.size(), false}, nullptr, nullptr, ANY_OWNER);
 }
 
 bool C4AulContext::CalledWithStrictNil() const noexcept
 {
 	return Caller && Caller->Func->HasStrictNil();
+}
+
+C4Section &C4AulContext::GetSection() const noexcept
+{
+	return Obj ? *Obj->Section : *Section;
 }
 
 const int MAX_CONTEXT_STACK = 512;
@@ -127,7 +132,7 @@ private:
 	C4AulScript *pProfiledScript;
 
 public:
-	C4Value Exec(C4AulScriptFunc *pSFunc, C4Object *pObj, const C4Value pPars[], bool fPassErrors, bool fTemporaryScript = false);
+	C4Value Exec(C4AulScriptFunc *pSFunc, C4Section &section, C4Object *pObj, const C4Value pPars[], bool fPassErrors, bool fTemporaryScript = false);
 	C4Value Exec(C4AulBCC *pCPos, bool fPassErrors);
 
 	void StartTrace();
@@ -327,7 +332,7 @@ private:
 
 C4AulExec AulExec;
 
-C4Value C4AulExec::Exec(C4AulScriptFunc *pSFunc, C4Object *pObj, const C4Value *pnPars, bool fPassErrors, bool fTemporaryScript)
+C4Value C4AulExec::Exec(C4AulScriptFunc *pSFunc, C4Section &section, C4Object *pObj, const C4Value *pnPars, bool fPassErrors, bool fTemporaryScript)
 {
 	// Push parameters
 	C4Value *pPars = pCurVal + 1;
@@ -350,6 +355,7 @@ C4Value C4AulExec::Exec(C4AulScriptFunc *pSFunc, C4Object *pObj, const C4Value *
 	C4AulScriptContext ctx;
 	ctx.Obj = pObj;
 	ctx.Def = pDef;
+	ctx.Section = &section;
 	ctx.Return = nullptr;
 	ctx.Pars = pPars;
 	ctx.Vars = pVars;
@@ -1451,6 +1457,7 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 		C4AulScriptContext ctx;
 		ctx.Obj = pObj;
 		ctx.Def = pDef;
+		ctx.Section = pCurCtx->Section;
 		ctx.Caller = pCurCtx;
 		ctx.Return = pReturn;
 		ctx.Pars = pPars;
@@ -1469,6 +1476,7 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 		C4AulContext CallCtx;
 		CallCtx.Obj = pObj;
 		CallCtx.Def = pDef;
+		CallCtx.Section = pCurCtx->Section;
 		CallCtx.Caller = pCurCtx;
 
 #ifdef DEBUGREC_SCRIPT
@@ -1607,12 +1615,13 @@ void C4AulProfiler::Show()
 	// done!
 }
 
-C4Value C4AulFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors, bool nonStrict3WarnConversionOnly, bool convertNilToIntBool)
+C4Value C4AulFunc::Exec(C4Section &section, C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors, bool nonStrict3WarnConversionOnly, bool convertNilToIntBool)
 {
 	// construct a dummy caller context
 	C4AulContext ctx;
 	ctx.Obj = pObj;
 	ctx.Def = pObj ? pObj->Def : nullptr;
+	ctx.Section = &section; // FIXME: pobj->Section?
 	ctx.Caller = nullptr;
 
 	const auto sFunc = SFunc();
@@ -1632,10 +1641,10 @@ C4Value C4AulScriptFunc::Exec(C4AulContext *pCtx, const C4Value pPars[], bool fP
 	if (Owner->State != ASS_PARSED) return C4VNull;
 
 	// execute
-	return AulExec.Exec(this, pCtx->Obj, pPars, fPassErrors);
+	return AulExec.Exec(this, *pCtx->Section, pCtx->Obj, pPars, fPassErrors);
 }
 
-C4Value C4AulScriptFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors, bool nonStrict3WarnConversionOnly, bool convertNilToIntBool)
+C4Value C4AulScriptFunc::Exec(C4Section &section, C4Object *pObj, const C4AulParSet &pPars, bool fPassErrors, bool nonStrict3WarnConversionOnly, bool convertNilToIntBool)
 {
 	// handle easiest case first
 	if (Owner->State != ASS_PARSED) return C4VNull;
@@ -1645,7 +1654,7 @@ C4Value C4AulScriptFunc::Exec(C4Object *pObj, const C4AulParSet &pPars, bool fPa
 	if (TryCheckConvertFunctionParameters(pObj, this, pars.Par, !isAtLeastStrict3, isAtLeastStrict3 && convertNilToIntBool, fPassErrors, nonStrict3WarnConversionOnly && !isAtLeastStrict3))
 	{
 		// execute
-		return AulExec.Exec(this, pObj, pars.Par, fPassErrors);
+		return AulExec.Exec(this, section, pObj, pars.Par, fPassErrors);
 	}
 	return C4VNull;
 }
@@ -1655,7 +1664,7 @@ bool C4AulScriptFunc::HasStrictNil() const noexcept
 	return pOrgScript->Strict >= C4AulScriptStrict::STRICT3;
 }
 
-C4Value C4AulScript::DirectExec(C4Object *pObj, const char *szScript, const char *szContext, bool fPassErrors, C4AulScriptStrict Strict)
+C4Value C4AulScript::DirectExec(C4Section &section, C4Object *pObj, const char *szScript, const char *szContext, bool fPassErrors, C4AulScriptStrict Strict)
 {
 #ifdef DEBUGREC_SCRIPT
 	AddDbgRec(RCT_DirectExec, szScript, strlen(szScript) + 1);
@@ -1700,7 +1709,7 @@ C4Value C4AulScript::DirectExec(C4Object *pObj, const char *szScript, const char
 	pFunc->Code = pScript->Code;
 	pScript->State = ASS_PARSED;
 	// Execute. The TemporaryScript-parameter makes sure the script will be deleted later on.
-	C4Value vRetVal(AulExec.Exec(pFunc, pObj, nullptr, fPassErrors, true));
+	C4Value vRetVal(AulExec.Exec(pFunc, section, pObj, nullptr, fPassErrors, true));
 	// profiler
 	AulExec.StopDirectExec();
 	return vRetVal;

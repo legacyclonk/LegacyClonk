@@ -836,14 +836,14 @@ void C4Def::Draw(C4Facet &cgo, bool fSelected, uint32_t iColor, C4Object *pObj, 
 				pGfxOvrl->DrawPicture(cgo, pObj);
 }
 
-int32_t C4Def::GetValue(C4Object *pInBase, int32_t iBuyPlayer)
+int32_t C4Def::GetValue(C4Section &section, C4Object *pInBase, int32_t iBuyPlayer)
 {
 	// CalcDefValue defined?
 	C4AulFunc *pCalcValueFn = Script.GetSFunc(PSF_CalcDefValue, AA_PROTECTED);
 	int32_t iValue;
 	if (pCalcValueFn)
 		// then call it!
-		iValue = pCalcValueFn->Exec(nullptr, {C4VObj(pInBase), C4VInt(iBuyPlayer)}).getInt();
+		iValue = pCalcValueFn->Exec(section, nullptr, {C4VObj(pInBase), C4VInt(iBuyPlayer)}).getInt();
 	else
 		// otherwise, use default value
 		iValue = Value;
@@ -852,12 +852,12 @@ int32_t C4Def::GetValue(C4Object *pInBase, int32_t iBuyPlayer)
 	{
 		C4AulFunc *pFn;
 		if (pFn = pInBase->Def->Script.GetSFunc(PSF_CalcBuyValue, AA_PROTECTED))
-			iValue = pFn->Exec(pInBase, {C4VID(id), C4VInt(iValue)}).getInt();
+			iValue = pFn->Exec(*pInBase->Section, pInBase, {C4VID(id), C4VInt(iValue)}).getInt();
 	}
 	return iValue;
 }
 
-C4PhysicalInfo *C4Def::GetFairCrewPhysicals()
+C4PhysicalInfo *C4Def::GetFairCrewPhysicals(C4Section &section)
 {
 	// if fair crew physicals have been created, assume they are valid
 	if (!pFairCrewPhysical)
@@ -869,7 +869,7 @@ C4PhysicalInfo *C4Def::GetFairCrewPhysicals()
 		if (pRankNames) pRankSys = pRankNames;
 		int32_t iRank = pRankSys->RankByExperience(iExpGain);
 		// promote physicals for rank
-		pFairCrewPhysical->PromotionUpdate(iRank, true, this);
+		pFairCrewPhysical->PromotionUpdate(iRank, true, &section, this);
 	}
 	return pFairCrewPhysical;
 }
@@ -1263,23 +1263,23 @@ bool C4Def::LoadPortraits(C4Group &hGroup)
 	return true;
 }
 
-C4ValueArray *C4Def::GetCustomComponents(C4Value *pvArrayHolder, C4Object *pBuilder, C4Object *pObjInstance)
+C4ValueArray *C4Def::GetCustomComponents(C4Value *pvArrayHolder, C4Section &section, C4Object *pBuilder, C4Object *pObjInstance)
 {
 	// return custom components array if script function is defined and returns an array
 	if (Script.SFn_CustomComponents)
 	{
-		*pvArrayHolder = Script.SFn_CustomComponents->Exec(pObjInstance, {C4VObj(pBuilder)});
+		*pvArrayHolder = Script.SFn_CustomComponents->Exec(section, pObjInstance, {C4VObj(pBuilder)});
 		return pvArrayHolder->getArray();
 	}
 
 	return nullptr;
 }
 
-int32_t C4Def::GetComponentCount(C4ID idComponent, C4Object *pBuilder)
+int32_t C4Def::GetComponentCount(C4ID idComponent, C4Section &section, C4Object *pBuilder)
 {
 	// script overload?
 	C4Value vArrayHolder;
-	C4ValueArray *pArray = GetCustomComponents(&vArrayHolder, pBuilder);
+	C4ValueArray *pArray = GetCustomComponents(&vArrayHolder, section, pBuilder);
 	if (pArray)
 	{
 		int32_t iCount = 0;
@@ -1292,11 +1292,11 @@ int32_t C4Def::GetComponentCount(C4ID idComponent, C4Object *pBuilder)
 	return Component.GetIDCount(idComponent);
 }
 
-C4ID C4Def::GetIndexedComponent(int32_t idx, C4Object *pBuilder)
+C4ID C4Def::GetIndexedComponent(int32_t idx, C4Section &section, C4Object *pBuilder)
 {
 	// script overload?
 	C4Value vArrayHolder;
-	C4ValueArray *pArray = GetCustomComponents(&vArrayHolder, pBuilder);
+	C4ValueArray *pArray = GetCustomComponents(&vArrayHolder, section, pBuilder);
 	if (pArray)
 	{
 		// assume that components are always returned ordered ([a, a, b], but not [a, b, a])
@@ -1319,13 +1319,13 @@ C4ID C4Def::GetIndexedComponent(int32_t idx, C4Object *pBuilder)
 	return Component.GetID(idx);
 }
 
-void C4Def::GetComponents(C4IDList *pOutList, C4Object *pObjInstance, C4Object *pBuilder)
+void C4Def::GetComponents(C4IDList *pOutList, C4Section &section, C4Object *pObjInstance, C4Object *pBuilder)
 {
 	assert(pOutList);
 	assert(!pOutList->GetNumberOfIDs());
 	// script overload?
 	C4Value vArrayHolder;
-	C4ValueArray *pArray = GetCustomComponents(&vArrayHolder, pBuilder, pObjInstance);
+	C4ValueArray *pArray = GetCustomComponents(&vArrayHolder, section, pBuilder, pObjInstance);
 	if (pArray)
 	{
 		// transform array into IDList

@@ -97,6 +97,12 @@ int32_t C4ScriptHost::GetControlMethod(int32_t com, int32_t first, int32_t secon
 	return ((first >> com) & 0x01) | (((second >> com) & 0x01) << 1);
 }
 
+C4Value C4ScriptHost::ObjectCall(C4Object *pCaller, C4Object *pObj, const char *szFunction, const C4AulParSet &pPars, bool fPassError, bool convertNilToIntBool)
+{
+	if (!szFunction) return C4VNull;
+	return FunctionCall(*pObj->Section, pCaller, szFunction, pObj, pPars, false, fPassError, convertNilToIntBool);
+}
+
 void C4ScriptHost::GetControlMethodMask(const std::format_string<const char *> functionFormat, int32_t &first, int32_t &second)
 {
 	first = second = 0;
@@ -119,7 +125,7 @@ void C4ScriptHost::GetControlMethodMask(const std::format_string<const char *> f
 	}
 }
 
-C4Value C4ScriptHost::FunctionCall(C4Object *pCaller, const char *szFunction, C4Object *pObj, const C4AulParSet &Pars, bool fPrivateCall, bool fPassError, bool convertNilToIntBool)
+C4Value C4ScriptHost::FunctionCall(C4Section &section, C4Object *pCaller, const char *szFunction, C4Object *pObj, const C4AulParSet &Pars, bool fPrivateCall, bool fPassError, bool convertNilToIntBool)
 {
 	// get needed access
 	C4AulAccess Acc = AA_PRIVATE;
@@ -129,7 +135,7 @@ C4Value C4ScriptHost::FunctionCall(C4Object *pCaller, const char *szFunction, C4
 	C4AulScriptFunc *pFn;
 	if (!(pFn = GetSFunc(szFunction, Acc))) return C4VNull;
 	// Call code
-	return pFn->Exec(pObj, Pars, fPassError, true, convertNilToIntBool);
+	return pFn->Exec(section, pObj, Pars, fPassError, true, convertNilToIntBool);
 }
 
 bool C4ScriptHost::ReloadScript(const char *szPath)
@@ -226,7 +232,7 @@ bool C4GameScriptHost::Execute()
 	if (Go && !Tick10)
 	{
 		FormatWithNull(buffer, PSF_Script, Counter++);
-		return static_cast<bool>(Call(buffer));
+		return static_cast<bool>(Call(*Game.Sections.front(), buffer)); // FIXME
 	}
 	return false;
 }
@@ -248,7 +254,7 @@ C4Value C4GameScriptHost::GRBroadcast(const char *szFunction, const C4AulParSet 
 				}
 	}
 	// scenario script call
-	return Call(szFunction, pPars, fPassError, convertNilToIntBool);
+	return Call(*Game.Sections.front(), szFunction, pPars, fPassError, convertNilToIntBool); // FIXME
 }
 
 void C4GameScriptHost::CompileFunc(StdCompiler *pComp)

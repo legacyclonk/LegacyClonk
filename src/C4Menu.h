@@ -143,6 +143,7 @@ public:
 	virtual void Default();
 
 protected:
+	C4Section *section{nullptr};
 	bool LocationSet;
 	bool Permanent;
 	bool NeedRefill;
@@ -218,8 +219,8 @@ private:
 	bool InitMenu(const char *szEmpty, int32_t iExtra, int32_t iExtraData, int32_t iId, int32_t iStyle);
 
 protected:
-	bool DoInitRefSym(const C4FacetEx &fctSymbol, const char *szEmpty, int32_t iExtra = C4MN_Extra_None, int32_t iExtraData = 0, int32_t iId = 0, int32_t iStyle = C4MN_Style_Normal);
-	bool DoInit(C4FacetExSurface &fctSymbol, const char *szEmpty, int32_t iExtra = C4MN_Extra_None, int32_t iExtraData = 0, int32_t iId = 0, int32_t iStyle = C4MN_Style_Normal);
+	bool DoInitRefSym(const C4FacetEx &fctSymbol, C4Section &section, const char *szEmpty, int32_t iExtra = C4MN_Extra_None, int32_t iExtraData = 0, int32_t iId = 0, int32_t iStyle = C4MN_Style_Normal);
+	bool DoInit(C4FacetExSurface &fctSymbol, C4Section &section, const char *szEmpty, int32_t iExtra = C4MN_Extra_None, int32_t iExtraData = 0, int32_t iId = 0, int32_t iStyle = C4MN_Style_Normal);
 	void AdjustSelection();
 	void AdjustPosition();
 	bool RefillInternal();
