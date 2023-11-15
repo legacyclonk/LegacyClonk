@@ -1938,7 +1938,7 @@ void C4Command::Transfer()
 	{
 		C4AulScriptFunc *f;
 		bool fHandled = (f = Target->Def->Script.SFn_ControlTransfer) != nullptr;
-		if (fHandled) fHandled = f->Exec(Target, {C4VObj(cObj), Tx, C4VInt(Ty)}).getBool();
+		if (fHandled) fHandled = f->Exec(*Target->Section, Target, {C4VObj(cObj), Tx, C4VInt(Ty)}).getBool();
 
 		if (!fHandled)
 			// Transfer not handled by target: done
@@ -2023,7 +2023,7 @@ void C4Command::Buy()
 		return;
 	}
 	// Base owner has not enough funds: fail
-	if (Game.Players.Get(Target->Base)->Wealth < pDef->GetValue(Target, cObj->Owner))
+	if (Game.Players.Get(Target->Base)->Wealth < pDef->GetValue(*Target->Section, Target, cObj->Owner))
 	{
 		Finish(false, LoadResStr(C4ResStrTableKey::IDS_PLR_NOWEALTH)); return;
 	}
@@ -2237,7 +2237,7 @@ void C4Command::Fail(const char *szFailMessage)
 			// Message (if not empty)
 			if (!failMessage.empty())
 			{
-				Game.Messages.Append(C4GM_Target, failMessage.c_str(), l_Obj, NO_OWNER, 0, 0, FWhite, true);
+				Game.Messages.Append(C4GM_Target, failMessage.c_str(), l_Obj->Section, l_Obj, NO_OWNER, 0, 0, FWhite, true);
 			}
 			// Fail sound
 			StartSoundEffect("CommandFailure*", false, 100, l_Obj);

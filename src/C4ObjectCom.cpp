@@ -1003,7 +1003,7 @@ bool Buy2Base(int32_t iPlr, C4Object *pBase, C4ID id, bool fShowErrors)
 		GameMsgPlayer(LoadResStr(C4ResStrTableKey::IDS_PLR_HOSTILE, Game.Players.Get(pBase->Base)->GetName()).c_str(), iPlr); return false;
 	}
 	// buy
-	if (!(pThing = Game.Players.Get(pBase->Base)->Buy(id, fShowErrors, iPlr, pBase))) return false;
+	if (!(pThing = Game.Players.Get(pBase->Base)->Buy(id, fShowErrors, iPlr, *pBase->Section, pBase))) return false;
 	// Object enter target object
 	pThing->Enter(pBase);
 	// Success

@@ -658,7 +658,7 @@ bool C4FindObjectFunc::Check(C4Object *pObj)
 	C4AulFunc *pCallFunc = pFunc->FindSameNameFunc(pObj->Def);
 	if (!pCallFunc) return false;
 	// Call
-	return static_cast<bool>(pCallFunc->Exec(pObj, Pars, true));
+	return static_cast<bool>(pCallFunc->Exec(*pObj->Section, pObj, Pars, true));
 }
 
 bool C4FindObjectFunc::IsImpossible()
@@ -952,5 +952,5 @@ int32_t C4SortObjectFunc::CompareGetValue(C4Object *pObj)
 	C4AulFunc *pCallFunc = pFunc->FindSameNameFunc(pObj->Def);
 	if (!pCallFunc) return false;
 	// Call
-	return pCallFunc->Exec(pObj, Pars, true).getInt();
+	return pCallFunc->Exec(*pObj->Section, pObj, Pars, true).getInt();
 }
