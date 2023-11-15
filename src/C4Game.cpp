@@ -2520,20 +2520,28 @@ bool C4Game::InitKeyboard()
 	return true;
 }
 
-bool C4Game::CreateScenarioSection(const char *const name)
+std::int32_t C4Game::CreateSection(const char *const name)
 {
 	auto section = std::make_unique<C4Section>(name);
 
 	if (section->InitSection(ScenarioFile))
 	{
+		const auto size = static_cast<std::int32_t>(Sections.size());
 		Sections.emplace_back(std::move(section));
 
-		return Sections.back()->InitMaterialTexture()
+		if (Sections.back()->InitMaterialTexture()
 				&& Sections.back()->InitSecondPart()
-				&& Sections.back()->InitThirdPart();
+				&& Sections.back()->InitThirdPart())
+		{
+			return size;
+		}
+		else
+		{
+			Sections.pop_back();
+		}
 	}
 
-	return false;
+	return -1;
 }
 
 bool C4Game::InitSystem()

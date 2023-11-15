@@ -312,7 +312,7 @@ public:
 	bool SlowDown();
 	bool InitKeyboard(); // register main keyboard input functions
 
-	bool CreateScenarioSection(const char *name);
+	std::int32_t CreateSection(const char *name);
 
 protected:
 	bool InitSystem();
