@@ -167,10 +167,10 @@ void C4Player::Execute()
 			if (LocalControl && !Game.Control.isReplay())
 			{
 				// team selection done through queue because TeamSelection-status may not be in sync (may be TeamSelectionPending!)
-				DoTeamSelection(idSelectedTeam);
+				DoTeamSelection(**ViewSection, idSelectedTeam);
 			}
 		}
-		else if (!Menu.IsActive()) ActivateMenuTeamSelection(false);
+		else if (!Menu.IsActive()) ActivateMenuTeamSelection(**ViewSection, false);
 		else
 		{
 			// during team selection: Update view to selected team, if it has a position assigned
@@ -340,7 +340,7 @@ bool C4Player::Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientNa
 			C4Def *pDefCallback;
 			if (idCallback && (pDefCallback = Game.Defs.ID2Def(idCallback)))
 			{
-				pDefCallback->Script.Call(PSF_InitializeScriptPlayer, {C4VInt(Number), C4VInt(Team)});
+				pDefCallback->Script.Call(**ViewSection, PSF_InitializeScriptPlayer, {C4VInt(Number), C4VInt(Team)});
 			}
 		}
 		else
@@ -828,7 +828,7 @@ void C4Player::SetFoW(bool fEnable)
 	bForceFogOfWar = true;
 }
 
-C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pBuyObj)
+C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Section &section, C4Object *pBuyObj)
 {
 	int32_t iAvailable; C4Def *pDef; C4Object *pThing;
 	// Base owner eliminated
@@ -844,7 +844,7 @@ C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pB
 	// Object not available
 	if (iAvailable <= 0) return nullptr;
 	// get value
-	int32_t iValue = pDef->GetValue(pBuyObj, Number);
+	int32_t iValue = pDef->GetValue(section, pBuyObj, Number);
 	// Not enough wealth (base owner's wealth)
 	if (iValue > Wealth)
 	{
@@ -858,7 +858,7 @@ C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pB
 	// Reduce wealth
 	DoWealth(-iValue);
 	// Create object (for player)
-	if (!(pThing = (pBuyObj ? *pBuyObj->Section : *Game.Sections.front()).CreateObject(id, pBuyObj, iForPlr))) return nullptr; // FIXME
+	if (!(pThing = section.CreateObject(id, pBuyObj, iForPlr))) return nullptr; // FIXME
 	// Make crew member
 	if (pDef->CrewMember) if (ValidPlr(iForPlr))
 		Game.Players.Get(iForPlr)->MakeCrewMember(pThing);
@@ -885,7 +885,7 @@ bool C4Player::Sell2Home(C4Object *pObj)
 	C4Def *pSellDef = pObj->Def;
 	if (C4AulScriptFunc *f = pObj->Def->Script.SFn_SellTo)
 	{
-		id = f->Exec(pObj, {C4VInt(Number)}).getC4ID();
+		id = f->Exec(*pObj->Section, pObj, {C4VInt(Number)}).getC4ID();
 		pSellDef = Game.Defs.ID2Def(id);
 	}
 	// Add to homebase material
@@ -1774,11 +1774,11 @@ void C4Player::DefaultRuntimeData()
 	FlashCom = 0;
 }
 
-bool C4Player::ActivateMenuTeamSelection(bool fFromMain)
+bool C4Player::ActivateMenuTeamSelection(C4Section &section, bool fFromMain)
 {
 	// Menu symbol/init
 	bool fSwitch = !(Status == PS_TeamSelection);
-	Menu.InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Team), LoadResStr(C4ResStrTableKey::IDS_MSG_SELTEAM), Number, C4MN_Extra_None, 0, fSwitch ? C4MN_TeamSwitch : C4MN_TeamSelection);
+	Menu.InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Team), section, LoadResStr(C4ResStrTableKey::IDS_MSG_SELTEAM), Number, C4MN_Extra_None, 0, fSwitch ? C4MN_TeamSwitch : C4MN_TeamSelection);
 	Menu.SetAlignment(fSwitch ? C4MN_Align_Left | C4MN_Align_Bottom : 0);
 	Menu.Refill();
 	// Go back to options menu on close
@@ -1786,12 +1786,12 @@ bool C4Player::ActivateMenuTeamSelection(bool fFromMain)
 	return true;
 }
 
-void C4Player::DoTeamSelection(int32_t idTeam)
+void C4Player::DoTeamSelection(C4Section &section, int32_t idTeam)
 {
 	// stop team selection. This might close the menu forever if the control gets lost
 	// let's hope it doesn't!
 	Status = PS_TeamSelectionPending;
-	Game.Control.DoInput(CID_InitScenarioPlayer, new C4ControlInitScenarioPlayer(Number, idTeam), CDT_Queue);
+	Game.Control.DoInput(CID_InitScenarioPlayer, new C4ControlInitScenarioPlayer(Game.GetSectionIndex(section), Number, idTeam), CDT_Queue);
 }
 
 void C4Player::EnumeratePointers()
@@ -1836,7 +1836,7 @@ void C4Player::NotifyOwnedObjects()
 						C4AulFunc *pFn = cobj->Def->Script.GetFuncRecursive(PSF_OnOwnerRemoved);
 						// PSF_OnOwnerRemoved has an internal fallback function
 						assert(pFn);
-						if (pFn) pFn->Exec(cobj);
+						if (pFn) pFn->Exec(*section, cobj);
 					}
 	}
 }
@@ -2348,7 +2348,7 @@ bool C4Player::ActivateMenuMain()
 	// Not during game over dialog
 	if (C4GameOverDlg::IsShown()) return false;
 	// Open menu
-	return !!Menu.ActivateMain(Number);
+	return !!Menu.ActivateMain(**ViewSection, Number);
 }
 
 void C4Player::SyncHomebaseMaterialToTeam()

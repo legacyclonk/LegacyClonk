@@ -26,6 +26,7 @@
 #include "C4Constants.h"
 #include "C4DeletionTrackable.h"
 #include "C4EnumeratedObjectPtr.h"
+#include "C4Section.h"
 #include "C4ValueList.h"
 
 typedef unsigned long C4ID;
@@ -86,6 +87,8 @@ public:
 	int32_t iTime, iIntervall; // effect time; effect callback intervall
 	int32_t iNumber; // effect number for addressing
 
+	C4Section::EnumeratedPtr section;
+
 	C4Effect *pNext; // next effect in linked list
 
 protected:
@@ -98,7 +101,7 @@ protected:
 	void AssignCallbackFunctions(); // resolve callback function names
 
 public:
-	C4Effect(C4Object *pForObj, const char *szName, int32_t iPrio, int32_t iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, const C4Value &rVal1, const C4Value &rVal2, const C4Value &rVal3, const C4Value &rVal4, bool fDoCalls, int32_t &riStoredAsNumber, bool passErrors = false);
+	C4Effect(C4Section &section, C4Object *pForObj, const char *szName, int32_t iPrio, int32_t iTimerIntervall, C4Object *pCmdTarget, C4ID idCmdTarget, const C4Value &rVal1, const C4Value &rVal2, const C4Value &rVal3, const C4Value &rVal4, bool fDoCalls, int32_t &riStoredAsNumber, bool passErrors = false);
 	C4Effect(StdCompiler *pComp); // ctor: compile
 	~C4Effect(); // dtor - deletes all following effects
 

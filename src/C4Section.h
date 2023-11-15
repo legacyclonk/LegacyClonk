@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "C4ForwardDeclarations.h"
 #include "C4GameObjects.h"
 #include "C4Group.h"
 #include "C4Landscape.h"
@@ -22,6 +23,7 @@
 #include "C4Material.h"
 #include "C4Math.h"
 #include "C4ObjectInfo.h"
+#include "C4Particles.h"
 #include "C4PathFinder.h"
 #include "C4PlayerInfo.h"
 #include "C4PXS.h"
@@ -109,6 +111,8 @@ public:
 	void DeleteObjects(bool deleteInactive);
 
 	void ClearPointers(C4Object *obj);
+	void EnumeratePointers();
+	void DenumeratePointers();
 
 	C4Object *OverlapObject(std::int32_t tx, std::int32_t ty, std::int32_t width, std::int32_t height, std::int32_t category);
 
@@ -267,6 +271,7 @@ public:
 	C4ParticleSystem Particles;
 	C4PathFinder PathFinder;
 	C4TransferZones TransferZones;
+	C4Effect *GlobalEffects;
 	bool ResortAnyObject{false};
 	bool LandscapeLoaded{false};
 
