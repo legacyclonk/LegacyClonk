@@ -274,6 +274,12 @@ void C4ControlScript::Execute() const
 		}
 	}
 
+	C4Section *const section{Game.GetSectionByIndex(sectionIndex)};
+	if (!section)
+	{
+		return;
+	}
+
 	const char *szScript = Script.getData();
 	// execute
 	C4Object *pObj = nullptr;
@@ -287,7 +293,7 @@ void C4ControlScript::Execute() const
 	else
 		// default: Fallback to global context
 		pScript = &Game.ScriptEngine;
-	C4Value rVal(pScript->DirectExec(pObj, szScript, "console script", false, Strict));
+	C4Value rVal(pScript->DirectExec(*section, pObj, szScript, "console script", false, Strict));
 	// show messages
 	// print script
 	if (pObj)
@@ -311,6 +317,7 @@ void C4ControlScript::Execute() const
 
 void C4ControlScript::CompileFunc(StdCompiler *pComp)
 {
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(sectionIndex) , "Section", 0));
 	pComp->Value(mkNamingAdapt(iTargetObj, "TargetObj", -1));
 	pComp->Value(mkNamingAdapt(Strict,     "Strict",    C4AulScriptStrict::MAXSTRICT));
 
@@ -864,9 +871,9 @@ void C4ControlJoinPlayer::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlEMMoveObject
 
-C4ControlEMMoveObject::C4ControlEMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj,
+C4ControlEMMoveObject::C4ControlEMMoveObject(C4ControlEMObjectAction eAction,  int32_t tx, int32_t ty, const std::int32_t sectionIndex, C4Object *pTargetObj,
 	int32_t iObjectNum, int32_t *pObjects, const char *szScript, const C4AulScriptStrict strict)
-	: eAction(eAction), tx(tx), ty(ty), iTargetObj(Game.ObjectNumber(pTargetObj)),
+	: eAction(eAction), tx(tx), ty(ty), sectionIndex{sectionIndex}, iTargetObj(Game.ObjectNumber(pTargetObj)),
 	iObjectNum(iObjectNum), Strict{strict}, pObjects(pObjects), Script(szScript, true) {}
 
 C4ControlEMMoveObject::~C4ControlEMMoveObject()
@@ -918,7 +925,7 @@ void C4ControlEMMoveObject::Execute() const
 		for (int i = 0; i < iObjectNum; ++i)
 			if (pObj = Game.SafeObjectPointer(pObjects[i]))
 			{
-				pObj = C4Object::GetSection(pObj).CreateObject(pObj->id, pObj, pObj->Owner, pObj->x, pObj->y);
+				pObj = pObj->Section->CreateObject(pObj->id, pObj, pObj->Owner, pObj->x, pObj->y);
 				if (pObj && fLocalCall) Console.EditCursor.GetSelection().Add(pObj, C4ObjectList::stNone);
 			}
 		// update status
@@ -933,7 +940,7 @@ void C4ControlEMMoveObject::Execute() const
 	{
 		if (!pObjects) return;
 		// execute script ...
-		C4ControlScript ScriptCtrl(Script.getData(), C4ControlScript::SCOPE_Global, Strict);
+		C4ControlScript ScriptCtrl(sectionIndex, Script.getData(), C4ControlScript::SCOPE_Global, Strict);
 		ScriptCtrl.SetByClient(iByClient);
 		// ... for each object in selection
 		for (int i = 0; i < iObjectNum; ++i)
@@ -974,6 +981,7 @@ void C4ControlEMMoveObject::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkIntAdaptT<uint8_t>(eAction),      "Action"));
 	pComp->Value(mkNamingAdapt(tx,                                 "tx",         0));
 	pComp->Value(mkNamingAdapt(ty,                                 "ty",         0));
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(sectionIndex),       "Section",    0));
 	pComp->Value(mkNamingAdapt(iTargetObj,                         "TargetObj", -1));
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iObjectNum),         "ObjectNum",  0));
 	pComp->Value(mkNamingAdapt(Strict,                             "Strict",     C4AulScriptStrict::MAXSTRICT));
@@ -1539,6 +1547,12 @@ void C4ControlInternalScriptBase::Execute() const
 {
 	if (!Allowed()) return;
 
+	C4Section *const section{Game.GetSectionByIndex(sectionIndex)};
+	if (!section)
+	{
+		return;
+	}
+
 	const auto scope = Scope();
 	// execute
 	C4Object *pObj = nullptr;
@@ -1552,7 +1566,13 @@ void C4ControlInternalScriptBase::Execute() const
 	else
 		// default: Fallback to global context
 		pScript = &Game.ScriptEngine;
-	pScript->DirectExec(pObj, FormatScript().getData(), "internal script");
+	pScript->DirectExec(*section, pObj, FormatScript().getData(), "internal script");
+}
+
+void C4ControlInternalScriptBase::CompileFunc(StdCompiler *const comp)
+{
+	comp->Value(mkNamingAdapt(mkIntPackAdapt(sectionIndex), "Section", -1));
+	C4ControlPacket::CompileFunc(comp);
 }
 
 void C4ControlInternalPlayerScriptBase::CompileFunc(StdCompiler *pComp)

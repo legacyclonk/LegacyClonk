@@ -134,10 +134,11 @@ public:
 
 	C4ControlScript()
 		: iTargetObj(-1) {}
-	C4ControlScript(const char *szScript, int32_t iTargetObj = SCOPE_Global, C4AulScriptStrict strict = C4AulScriptStrict::MAXSTRICT)
-		: iTargetObj(iTargetObj), Strict{strict}, Script(szScript, true) {}
+	C4ControlScript(const std::int32_t sectionIndex, const char *szScript, int32_t iTargetObj = SCOPE_Global, C4AulScriptStrict strict = C4AulScriptStrict::MAXSTRICT)
+		: sectionIndex{sectionIndex}, iTargetObj(iTargetObj), Strict{strict}, Script(szScript, true) {}
 
 protected:
+	std::int32_t sectionIndex;
 	int32_t iTargetObj;
 	C4AulScriptStrict Strict;
 	StdStrBuf Script;
@@ -345,13 +346,14 @@ class C4ControlEMMoveObject : public C4ControlPacket // sync
 {
 public:
 	C4ControlEMMoveObject() : pObjects(nullptr) {}
-	C4ControlEMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj,
+	C4ControlEMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, std::int32_t sectionIndex, C4Object *pTargetObj,
 		int32_t iObjectNum = 0, int32_t *pObjects = nullptr, const char *szScript = nullptr, C4AulScriptStrict strict = C4AulScriptStrict::MAXSTRICT);
 	~C4ControlEMMoveObject();
 
 protected:
 	C4ControlEMObjectAction eAction; // action to be performed
 	int32_t tx, ty; // target position
+	std::int32_t sectionIndex{}; // section index
 	int32_t iTargetObj; // enumerated ptr to target object
 	int32_t iObjectNum; // number of objects moved
 	C4AulScriptStrict Strict; // strictness for the script to execute
@@ -499,10 +501,17 @@ public:
 class C4ControlInternalScriptBase : public C4ControlPacket
 {
 public:
+	C4ControlInternalScriptBase() noexcept = default;
+	C4ControlInternalScriptBase(const std::int32_t sectionIndex) noexcept : sectionIndex(sectionIndex) {}
+public:
 	virtual int32_t Scope() const { return C4ControlScript::SCOPE_Global; }
 	virtual bool Allowed() const { return true; }
 	virtual StdStrBuf FormatScript() const = 0;
-	virtual void Execute() const override;
+
+	DECLARE_C4CONTROL_VIRTUALS
+
+private:
+	std::int32_t sectionIndex{};
 };
 
 class C4ControlEMDropDef : public C4ControlInternalScriptBase
@@ -513,7 +522,7 @@ class C4ControlEMDropDef : public C4ControlInternalScriptBase
 
 public:
 	C4ControlEMDropDef() {}
-	C4ControlEMDropDef(C4ID id, int32_t x, int32_t y) : id(id), x(x), y(y) {}
+	C4ControlEMDropDef(const std::int32_t sectionIndex, C4ID id, int32_t x, int32_t y) : C4ControlInternalScriptBase{sectionIndex}, id(id), x(x), y(y) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual bool Allowed() const override;
 	virtual StdStrBuf FormatScript() const override;
@@ -526,7 +535,7 @@ protected:
 
 public:
 	C4ControlInternalPlayerScriptBase() {}
-	C4ControlInternalPlayerScriptBase(int32_t plr) : plr(plr) {}
+	C4ControlInternalPlayerScriptBase(const std::int32_t sectionIndex, int32_t plr) : C4ControlInternalScriptBase{sectionIndex}, plr(plr) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual bool Allowed() const override;
 };
@@ -538,7 +547,7 @@ class C4ControlMessageBoardAnswer : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlMessageBoardAnswer() {}
-	C4ControlMessageBoardAnswer(int32_t obj, int32_t plr, const std::string &answer) : obj(obj), answer(answer), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlMessageBoardAnswer(const std::int32_t sectionIndex, int32_t obj, int32_t plr, const std::string &answer) : C4ControlInternalPlayerScriptBase{sectionIndex, plr}, obj(obj), answer(answer) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual StdStrBuf FormatScript() const override;
 };
@@ -550,7 +559,7 @@ class C4ControlCustomCommand : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlCustomCommand() {}
-	C4ControlCustomCommand(int32_t plr, const std::string &command, const std::string &argument) : command(command), argument(argument), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlCustomCommand(const std::int32_t sectionIndex, int32_t plr, const std::string &command, const std::string &argument) : C4ControlInternalPlayerScriptBase(sectionIndex, plr), command(command), argument(argument) {}
 	virtual bool Allowed() const override;
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual StdStrBuf FormatScript() const override;
@@ -562,7 +571,7 @@ class C4ControlInitScenarioPlayer : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlInitScenarioPlayer() {}
-	C4ControlInitScenarioPlayer(int32_t plr, int32_t team) : team(team), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlInitScenarioPlayer(const std::int32_t sectionIndex, int32_t plr, int32_t team) : C4ControlInternalPlayerScriptBase(sectionIndex, plr), team(team) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual StdStrBuf FormatScript() const override { return FormatString("InitScenarioPlayer(%d,%d)", static_cast<int>(plr), static_cast<int>(team)); }
 };
@@ -571,7 +580,7 @@ class C4ControlActivateGameGoalMenu : public C4ControlInternalPlayerScriptBase
 {
 public:
 	C4ControlActivateGameGoalMenu() {}
-	C4ControlActivateGameGoalMenu(int32_t plr) : C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlActivateGameGoalMenu(const std::int32_t sectionIndex, int32_t plr) : C4ControlInternalPlayerScriptBase(sectionIndex, plr) {}
 	virtual StdStrBuf FormatScript() const override { return FormatString("ActivateGameGoalMenu(%d)", plr); }
 };
 
@@ -581,7 +590,7 @@ class C4ControlToggleHostility : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlToggleHostility() {}
-	C4ControlToggleHostility(int32_t plr, int32_t opponent) : opponent(opponent), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlToggleHostility(const std::int32_t sectionIndex, int32_t plr, int32_t opponent) : C4ControlInternalPlayerScriptBase(sectionIndex, plr), opponent(opponent) {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual StdStrBuf FormatScript() const override { return FormatString("SetHostility(%d,%d,!Hostile(%d,%d,true))", plr, opponent, plr, opponent); }
 };
@@ -590,7 +599,7 @@ class C4ControlSurrenderPlayer : public C4ControlInternalPlayerScriptBase
 {
 public:
 	C4ControlSurrenderPlayer() {}
-	C4ControlSurrenderPlayer(int32_t plr) : C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlSurrenderPlayer(const std::int32_t sectionIndex, int32_t plr) : C4ControlInternalPlayerScriptBase(sectionIndex, plr) {}
 	virtual StdStrBuf FormatScript() const override { return FormatString("SurrenderPlayer(%d)", plr); }
 };
 
@@ -600,7 +609,7 @@ class C4ControlActivateGameGoalRule : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlActivateGameGoalRule() {}
-	C4ControlActivateGameGoalRule(int32_t plr, int32_t obj) : obj(obj), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlActivateGameGoalRule(const std::int32_t sectionIndex, int32_t plr, int32_t obj) : C4ControlInternalPlayerScriptBase(sectionIndex, plr), obj(obj)  {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual StdStrBuf FormatScript() const override { return FormatString("Activate(%d)", plr); }
 	virtual int32_t Scope() const override { return obj; }
@@ -612,7 +621,7 @@ class C4ControlSetPlayerTeam : public C4ControlInternalPlayerScriptBase
 
 public:
 	C4ControlSetPlayerTeam() {}
-	C4ControlSetPlayerTeam(int32_t plr, int32_t team) : team(team), C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlSetPlayerTeam(const std::int32_t sectionIndex, int32_t plr, int32_t team) : C4ControlInternalPlayerScriptBase(sectionIndex, plr), team(team)  {}
 	virtual void CompileFunc(StdCompiler *pComp) override;
 	virtual StdStrBuf FormatScript() const override { return FormatString("SetPlayerTeam(%d,%d)", static_cast<int>(plr), static_cast<int>(team)); }
 };
@@ -621,7 +630,7 @@ class C4ControlEliminatePlayer : public C4ControlInternalPlayerScriptBase
 {
 public:
 	C4ControlEliminatePlayer() {}
-	C4ControlEliminatePlayer(int32_t plr) : C4ControlInternalPlayerScriptBase(plr) {}
+	C4ControlEliminatePlayer(const std::int32_t sectionIndex, int32_t plr) : C4ControlInternalPlayerScriptBase(sectionIndex, plr) {}
 	virtual bool Allowed() const override { return HostControl(); }
 	virtual StdStrBuf FormatScript() const override { return FormatString("EliminatePlayer(%d)", plr); }
 };

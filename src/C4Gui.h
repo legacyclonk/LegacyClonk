@@ -1534,8 +1534,8 @@ public:
 	void Clear(); // zero data
 
 	// create from ActMap and graphics of a definition (does some script callbacks to get parameters)
-	bool SetByDef(C4ID idSourceDef);
-	bool UpdateGfx(); // update Surface, e.g. after def reload
+	bool SetByDef(C4Section &section, C4ID idSourceDef);
+	bool UpdateGfx(C4Section &section); // update Surface, e.g. after def reload
 
 	void Ref() { ++iRefCount; }
 	void Deref() { if (!--iRefCount) delete this; }

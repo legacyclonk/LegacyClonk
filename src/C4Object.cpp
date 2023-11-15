@@ -74,11 +74,6 @@ C4Object::C4Object()
 	Default();
 }
 
-C4Section &C4Object::GetSection(C4Object *const obj) noexcept
-{
-	return obj ? *obj->Section : *Game.Sections.front();
-}
-
 void C4Object::Default()
 {
 	id = C4ID_None;
@@ -879,9 +874,9 @@ bool C4Object::ExecLife()
 						C4AulFunc *pMagicEnergyFn = Game.ScriptEngine.GetFuncRecursive(PSF_DoMagicEnergy);
 						if (pMagicEnergyFn) // should always be true
 						{
-							if (pMagicEnergyFn->Exec(nullptr, {C4VInt(-transfer), C4VObj(Contained)}))
+							if (pMagicEnergyFn->Exec(*Section, nullptr, {C4VInt(-transfer), C4VObj(Contained)}))
 							{
-								pMagicEnergyFn->Exec(nullptr, {C4VInt(+transfer), C4VObj(this)});
+								pMagicEnergyFn->Exec(*Section, nullptr, {C4VInt(+transfer), C4VObj(this)});
 							}
 						}
 					}
@@ -1098,7 +1093,7 @@ void C4Object::Execute()
 	{
 		Timer = 0;
 		// TimerCall
-		if (Def->TimerCall) Def->TimerCall->Exec(this);
+		if (Def->TimerCall) Def->TimerCall->Exec(*Section, this);
 	}
 	// Menu
 	if (Menu) Menu->Execute();
@@ -1230,7 +1225,7 @@ bool C4Object::ChangeDef(C4ID idNew)
 	SetOCF();
 	// Any effect callbacks to this object might need to reinitialize their target functions
 	// This is ugly, because every effect there is must be updated...
-	if (Game.pGlobalEffects) Game.pGlobalEffects->OnObjectChangedDef(this);
+	Game.OnObjectChangedDef(this);
 
 	for (C4Object *const obj : Game.GetAllObjects())
 	{
@@ -1251,7 +1246,7 @@ bool C4Object::Incinerate(int32_t iCausedBy, bool fBlasted, C4Object *pIncinerat
 	// add effect
 	int32_t iEffNumber;
 	C4Value Par1 = C4VInt(iCausedBy), Par2 = C4VBool(!!fBlasted), Par3 = C4VObj(pIncineratingObject), Par4;
-	new C4Effect(this, C4Fx_Fire, C4Fx_FirePriority, C4Fx_FireTimer, nullptr, 0, Par1, Par2, Par3, Par4, true, iEffNumber);
+	new C4Effect(*Section, this, C4Fx_Fire, C4Fx_FirePriority, C4Fx_FireTimer, nullptr, 0, Par1, Par2, Par3, Par4, true, iEffNumber);
 	return !!iEffNumber;
 }
 
@@ -1683,7 +1678,7 @@ bool C4Object::Build(int32_t iLevel, C4Object *pBuilder)
 	{
 		// Determine needed components (may be overloaded)
 		C4IDList NeededComponents;
-		Def->GetComponents(&NeededComponents, nullptr, pBuilder);
+		Def->GetComponents(&NeededComponents, *Section, nullptr, pBuilder);
 
 		// Grab any needed components from builder
 		C4ID idMat;
@@ -1729,7 +1724,7 @@ bool C4Object::Build(int32_t iLevel, C4Object *pBuilder)
 				// ...tell builder to acquire the material
 				pBuilder->AddCommand(C4CMD_Acquire, nullptr, 0, 0, 50, nullptr, true, NeededMaterial, false, 1);
 			// ...game message if not overloaded
-			Game.Messages.New(C4GM_Target, GetNeededMatStr(pBuilder), pBuilder, pBuilder->Controller);
+			Game.Messages.New(C4GM_Target, GetNeededMatStr(pBuilder), pBuilder->Section, pBuilder, pBuilder->Controller);
 		}
 		// Still in need: done/fail
 		return false;
@@ -1897,7 +1892,7 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		pTarget->Def->Draw(fctSymbol, false, pTarget->Color, pTarget);
 		sprintf(szCaption, LoadResStr("IDS_OBJ_EMPTY"), pTarget->GetName());
 		// Init
-		Menu->Init(fctSymbol, szCaption, this, C4MN_Extra_None, 0, iMenu);
+		Menu->Init(fctSymbol, *Section, szCaption, this, C4MN_Extra_None, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1910,7 +1905,7 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		DrawMenuSymbol(C4MN_Buy, fctSymbol, pTarget->Owner, pTarget);
 		// Init menu
-		Menu->Init(fctSymbol, LoadResStr("IDS_PLR_NOBUY"), this, C4MN_Extra_Value, 0, iMenu);
+		Menu->Init(fctSymbol, *Section, LoadResStr("IDS_PLR_NOBUY"), this, C4MN_Extra_Value, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1923,7 +1918,7 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		DrawMenuSymbol(C4MN_Sell, fctSymbol, pTarget->Owner, pTarget);
 		sprintf(szCaption, LoadResStr("IDS_OBJ_EMPTY"), pTarget->GetName());
-		Menu->Init(fctSymbol, szCaption, this, C4MN_Extra_Value, 0, iMenu);
+		Menu->Init(fctSymbol, *Section, szCaption, this, C4MN_Extra_Value, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1939,7 +1934,7 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		pTarget->Def->Draw(fctSymbol, false, pTarget->Color, pTarget);
 		sprintf(szCaption, LoadResStr("IDS_OBJ_EMPTY"), pTarget->GetName());
-		Menu->Init(fctSymbol, szCaption, this, C4MN_Extra_None, 0, iMenu);
+		Menu->Init(fctSymbol, *Section, szCaption, this, C4MN_Extra_None, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1954,7 +1949,7 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		pPlayer = Game.Players.Get(pTarget->Owner);
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		pTarget->Def->Draw(fctSymbol, false, pTarget->Color, pTarget);
-		Menu->Init(fctSymbol, pTarget->GetName(), this, C4MN_Extra_None, 0, iMenu, C4MN_Style_Context);
+		Menu->Init(fctSymbol, *Section, pTarget->GetName(), this, C4MN_Extra_None, 0, iMenu, C4MN_Style_Context);
 
 		Menu->SetPermanent(iMenuData);
 		Menu->SetRefillObject(pTarget);
@@ -1973,7 +1968,7 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		DrawMenuSymbol(C4MN_Construction, fctSymbol, -1, nullptr);
 		// Init menu
-		Menu->Init(fctSymbol, FormatString(LoadResStr("IDS_PLR_NOBKNOW"), pPlayer->GetName()).getData(), this, C4MN_Extra_Components, 0, iMenu);
+		Menu->Init(fctSymbol, *Section, FormatString(LoadResStr("IDS_PLR_NOBKNOW"), pPlayer->GetName()).getData(), this, C4MN_Extra_Components, 0, iMenu);
 		// Add player's structure build knowledge
 		for (cnt = 0; pDef = Game.Defs.ID2Def(pPlayer->Knowledge.GetID(Game.Defs, C4D_Structure, cnt, &iCount)); cnt++)
 		{
@@ -1998,7 +1993,7 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		pPlayer = Game.Players.Get(pTarget->Owner);
 		// Create symbol & init menu
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize); GfxR->fctOKCancel.Draw(fctSymbol, true, 0, 1);
-		Menu->Init(fctSymbol, pTarget->GetName(), this, C4MN_Extra_None, 0, iMenu, C4MN_Style_Info);
+		Menu->Init(fctSymbol, *Section, pTarget->GetName(), this, C4MN_Extra_None, 0, iMenu, C4MN_Style_Info);
 		Menu->SetPermanent(true);
 		Menu->SetAlignment(C4MN_Align_Free);
 		C4Viewport *pViewport = Game.GraphicsSystem.GetViewport(Owner); // Hackhackhack!!!
@@ -2108,13 +2103,13 @@ int32_t C4Object::GetValue(C4Object *pInBase, int32_t iForPlayer)
 
 	// value by script?
 	if (C4AulScriptFunc *f = Def->Script.SFn_CalcValue)
-		iValue = f->Exec(this, {C4VObj(pInBase), C4VInt(iForPlayer)}).getInt();
+		iValue = f->Exec(*Section, this, {C4VObj(pInBase), C4VInt(iForPlayer)}).getInt();
 	else
 	{
 		// get value of def
 		// Caution: Do not pass pInBase here, because the def base value is to be queried
 		//  - and not the value if you had to buy the object in this particular base
-		iValue = Def->GetValue(nullptr, iForPlayer);
+		iValue = Def->GetValue(*Section, nullptr, iForPlayer);
 	}
 	// Con percentage
 	iValue = iValue * Con / FullCon;
@@ -2123,7 +2118,7 @@ int32_t C4Object::GetValue(C4Object *pInBase, int32_t iForPlayer)
 	{
 		C4AulFunc *pFn;
 		if (pFn = pInBase->Def->Script.GetSFunc(PSF_CalcSellValue, AA_PROTECTED))
-			iValue = pFn->Exec(pInBase, {C4VObj(this), C4VInt(iValue)}).getInt();
+			iValue = pFn->Exec(*pInBase->Section, pInBase, {C4VObj(this), C4VInt(iValue)}).getInt();
 	}
 	// Return value
 	return iValue;
@@ -2138,11 +2133,11 @@ C4PhysicalInfo *C4Object::GetPhysical(bool fPermanent)
 		if (!Game.Parameters.UseFairCrew)
 			return &(Info->Physical);
 		else if (Info->pDef)
-			return Info->pDef->GetFairCrewPhysicals();
+			return Info->pDef->GetFairCrewPhysicals(*Section);
 		else
 			// shouldn't really happen, but who knows.
 			// Maybe some time it will be possible to have crew infos that aren't tied to a specific definition
-			return Def->GetFairCrewPhysicals();
+			return Def->GetFairCrewPhysicals(*Section);
 	// Definition physical
 	return &(Def->Physical);
 }
@@ -2896,7 +2891,7 @@ void C4Object::PostCompileInit()
 	// if on fire but no effect is present (old-style savegames), re-incinerate
 	int32_t iFireNumber;
 	C4Value Par1, Par2, Par3, Par4;
-	if (OnFire && !pEffects) new C4Effect(this, C4Fx_Fire, C4Fx_FirePriority, C4Fx_FireTimer, nullptr, 0, Par1, Par2, Par3, Par4, false, iFireNumber);
+	if (OnFire && !pEffects) new C4Effect(*Section, this, C4Fx_Fire, C4Fx_FirePriority, C4Fx_FireTimer, nullptr, 0, Par1, Par2, Par3, Par4, false, iFireNumber);
 
 	// blit mode not assigned? use definition default then
 	if (!BlitMode) BlitMode = Def->BlitMode;
@@ -3269,7 +3264,7 @@ bool C4Object::ContainedControl(uint8_t byCom)
 	C4Player *pPlr = Game.Players.Get(Controller);
 	if (fCallSfEarly)
 	{
-		if (sf && sf->Exec(Contained, {C4VObj(this)})) result = true;
+		if (sf && sf->Exec(*Contained->Section, Contained, {C4VObj(this)})) result = true;
 		// AutoStopControl: Also notify container about controlupdate
 		// Note Contained may be nulled now due to ContainedControl call
 		if (Contained && !(byCom & (COM_Single | COM_Double)) && pPlr->ControlStyle)
@@ -3313,7 +3308,7 @@ bool C4Object::ContainedControl(uint8_t byCom)
 	// Call container script if defined for old versions
 	if (!fCallSfEarly)
 	{
-		if (sf) sf->Exec(Contained, {C4VObj(this)});
+		if (sf) sf->Exec(*Contained->Section, Contained, {C4VObj(this)});
 		if (Contained && !(byCom & (COM_Single | COM_Double)) && pPlr->ControlStyle)
 		{
 			int32_t PressedComs = pPlr->PressedComs;
@@ -3775,7 +3770,7 @@ bool C4Object::MenuCommand(const char *szCommand)
 {
 	// Native script execution
 	if (!Def || !Status) return false;
-	return static_cast<bool>(Def->Script.DirectExec(this, szCommand, "MenuCommand", false, Def->Script.Strict));
+	return static_cast<bool>(Def->Script.DirectExec(*Section, this, szCommand, "MenuCommand", false, Def->Script.Strict));
 }
 
 C4Object *C4Object::ComposeContents(C4ID id)
@@ -3790,7 +3785,7 @@ C4Object *C4Object::ComposeContents(C4ID id)
 	C4Def *pDef = Game.Defs.ID2Def(id); if (!pDef) return nullptr;
 	// get needed contents
 	C4IDList NeededComponents;
-	pDef->GetComponents(&NeededComponents, nullptr, this);
+	pDef->GetComponents(&NeededComponents, *Section, nullptr, this);
 	// Check for sufficient components
 	StdStrBuf Needs; Needs.Format(LoadResStr("IDS_CON_BUILDMATNEED"), pDef->GetName());
 	for (cnt = 0; c_id = NeededComponents.GetID(cnt); cnt++)
@@ -4195,7 +4190,7 @@ bool C4Object::SetAction(int32_t iAct, C4Object *pTarget, C4Object *pTarget2, in
 			if (pAction->StartCall)
 			{
 				C4Def *pOldDef = Def;
-				pAction->StartCall->Exec(this);
+				pAction->StartCall->Exec(*Section, this);
 				// abort exeution if def changed
 				if (Def != pOldDef || !Status) return true;
 			}
@@ -4209,7 +4204,7 @@ bool C4Object::SetAction(int32_t iAct, C4Object *pTarget, C4Object *pTarget2, in
 			if (pAction->EndCall)
 			{
 				C4Def *pOldDef = Def;
-				pAction->EndCall->Exec(this);
+				pAction->EndCall->Exec(*Section, this);
 				// abort exeution if def changed
 				if (Def != pOldDef || !Status) return true;
 			}
@@ -4223,7 +4218,7 @@ bool C4Object::SetAction(int32_t iAct, C4Object *pTarget, C4Object *pTarget2, in
 			if (pAction->AbortCall)
 			{
 				C4Def *pOldDef = Def;
-				pAction->AbortCall->Exec(this, {C4VInt(iLastPhase)});
+				pAction->AbortCall->Exec(*Section, this, {C4VInt(iLastPhase)});
 				// abort exeution if def changed
 				if (Def != pOldDef || !Status) return true;
 			}
@@ -5493,7 +5488,7 @@ void C4Object::ExecAction()
 			// Phase call
 			if (pAction->PhaseCall)
 			{
-				pAction->PhaseCall->Exec(this);
+				pAction->PhaseCall->Exec(*Section, this);
 			}
 			// Phase end
 			if (Action.Phase >= pAction->Length)
@@ -5877,7 +5872,7 @@ bool C4Object::PutAwayUnusedObject(C4Object *pToMakeRoomForObject)
 	C4Object *pUnusedObject;
 	C4AulFunc *pFnObj2Drop;
 	if (pFnObj2Drop = Def->Script.GetSFunc(PSF_GetObject2Drop))
-		pUnusedObject = pFnObj2Drop->Exec(this, pToMakeRoomForObject ? C4AulParSet{C4VObj(pToMakeRoomForObject)} : C4AulParSet{}).getObj();
+		pUnusedObject = pFnObj2Drop->Exec(*Section, this, pToMakeRoomForObject ? C4AulParSet{C4VObj(pToMakeRoomForObject)} : C4AulParSet{}).getObj();
 	else
 	{
 		// is there any unused object to put away?
@@ -6262,7 +6257,7 @@ StdStrBuf C4Object::GetNeededMatStr(C4Object *pBuilder)
 	StdStrBuf NeededMats;
 
 	C4IDList NeededComponents;
-	Def->GetComponents(&NeededComponents, nullptr, pBuilder);
+	Def->GetComponents(&NeededComponents, *Section, nullptr, pBuilder);
 
 	C4ID idComponent;
 
