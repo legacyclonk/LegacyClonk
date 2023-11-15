@@ -788,7 +788,7 @@ bool C4Game::Execute() // Returns true if the game is over
 	if (HaltCount) return false;
 
 #ifdef DEBUGREC
-	Landscape.DoRelights();
+	std::ranges::for_each(Sections, &C4Landscape::DoRelights, &C4Section::Landscape);
 #endif
 
 	// Execute the control
@@ -838,7 +838,7 @@ bool C4Game::Execute() // Returns true if the game is over
 #ifdef DEBUGREC
 	AddDbgRec(RCT_Block, "eGame", 6);
 
-	Landscape.DoRelights();
+	std::ranges::for_each(Sections, &C4Landscape::DoRelights, &C4Section::Landscape);
 #endif
 
 	return true;
