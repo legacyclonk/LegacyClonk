@@ -138,6 +138,7 @@ public:
 	bool SaveInitial();
 	bool SaveTextures(C4Group &hGroup);
 	bool Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame);
+	bool InitEmpty(bool loadSky, bool &landscapeLoaded);
 	bool MapToLandscape();
 	bool ApplyDiff(C4Group &hGroup);
 	bool SetMode(int32_t iMode);
@@ -291,8 +292,12 @@ protected:
 	bool MapToLandscape(CSurface8 *sfcMap, int32_t iMapX, int32_t iMapY, int32_t iMapWdt, int32_t iMapHgt, int32_t iOffsX = 0, int32_t iOffsY = 0); // zoom map segment to surface (or sector surfaces)
 	bool GetMapColorIndex(const char *szMaterial, const char *szTexture, bool fIFT, uint8_t &rbyCol);
 	bool SkyToLandscape(int32_t iToX, int32_t iToY, int32_t iToWdt, int32_t iToHgt, int32_t iOffX, int32_t iOffY);
+	void PrepareInit(bool overloadCurrent);
+	bool AssignMap(CSurface8 *map, bool overloadCurrent, bool loadSky, bool savegame);
+	bool FinalizeInit(bool &landscapeLoaded, C4Group *groupForDiff);
 	CSurface8 *CreateMap(); // create map by landscape attributes
 	CSurface8 *CreateMapS2(C4Group &ScenFile); // create map by def file
+	CSurface8 *CreateEmptyMap(std::int32_t width, std::int32_t height);
 	bool Relight(C4Rect To);
 	bool ApplyLighting(C4Rect To);
 	bool UpdateAnimationSurface(C4Rect To);
