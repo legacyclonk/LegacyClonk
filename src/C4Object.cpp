@@ -234,12 +234,9 @@ C4Object::~C4Object()
 #ifndef NDEBUG
 	// debug: mustn't be listed in any list now
 
-	for (const auto &section : Game.Sections)
-	{
-		assert(!section->Objects.ObjectNumber(this));
-		assert(!section->Objects.InactiveObjects.ObjectNumber(this));
-		section->Objects.Sectors.AssertObjectNotInList(this);
-	}
+	assert(!Section->Objects.ObjectNumber(this));
+	assert(!Section->Objects.InactiveObjects.ObjectNumber(this));
+	Section->Objects.Sectors.AssertObjectNotInList(this);
 #endif
 }
 
