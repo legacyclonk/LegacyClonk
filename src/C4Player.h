@@ -151,6 +151,7 @@ public:
 	void Default();
 	void Clear();
 	void ClearPointers(C4Object *tptr, bool fDeath);
+	void ClearViewSection(C4Section &section);
 	void Execute();
 	void ExecuteControl();
 	void UpdateValue();

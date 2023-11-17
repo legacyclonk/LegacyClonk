@@ -109,7 +109,7 @@ void C4ChatInputDialog::OnChatCancel()
 		{
 			// there was an associated query - it must be removed on all clients synchronized via queue
 			// do this by calling OnMessageBoardAnswer without an answer
-			Game.Control.DoInput(CID_MessageBoardAnswer, new C4ControlMessageBoardAnswer(Game.GetSectionIndex(pTarget ? *pTarget->Section : **pPlr->ViewSection), pTarget ? pTarget->Number : 0, iPlr, ""), CDT_Decide);
+			Game.Control.DoInput(CID_MessageBoardAnswer, new C4ControlMessageBoardAnswer(pTarget ? pTarget->Section->Number : pPlr->ViewSection->Number, pTarget ? pTarget->Number : 0, iPlr, ""), CDT_Decide);
 		}
 	}
 }
@@ -149,7 +149,7 @@ C4GUI::InputResult C4ChatInputDialog::OnChatInput(C4GUI::Edit *pEdt, bool fPasti
 		}
 		// then do a script callback, incorporating the input into the answer
 		if (fUppercase) SCapitalize(szInputText);
-		Game.Control.DoInput(CID_MessageBoardAnswer, new C4ControlMessageBoardAnswer(Game.GetSectionIndex(pTarget ? *pTarget->Section : **pPlr->ViewSection), pTarget ? pTarget->Number : 0, iPlr, szInputText), CDT_Decide);
+		Game.Control.DoInput(CID_MessageBoardAnswer, new C4ControlMessageBoardAnswer(pTarget ? pTarget->Section->Number : pPlr->ViewSection->Number, pTarget ? pTarget->Number : 0, iPlr, szInputText), CDT_Decide);
 		return C4GUI::IR_CloseDlg;
 	}
 	else
@@ -471,7 +471,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 
 		const auto *const localPlr = Game.Players.GetLocalByIndex(0);
 
-		Game.Control.DoInput(CID_Script, new C4ControlScript(localPlr ? Game.GetSectionIndex(**localPlr->ViewSection) : 0, pCmdPar, C4ControlScript::SCOPE_Console, Config.Developer.ConsoleScriptStrictness), CDT_Decide);
+		Game.Control.DoInput(CID_Script, new C4ControlScript(localPlr ? localPlr->ViewSection->Number : 0, pCmdPar, C4ControlScript::SCOPE_Console, Config.Developer.ConsoleScriptStrictness), CDT_Decide);
 		return true;
 	}
 	// set runtimte properties
@@ -706,7 +706,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 		const auto *const pLocalPlr = Game.Players.GetLocalByIndex(0);
 		const std::int32_t localPlr = pLocalPlr ? pLocalPlr->Number : NO_OWNER;
 		// add custom command call
-		Game.Control.DoInput(CID_CustomCommand, new C4ControlCustomCommand(pLocalPlr ? Game.GetSectionIndex(**pLocalPlr->ViewSection) : 0, localPlr, szCmdName, pCmdPar), CDT_Decide);
+		Game.Control.DoInput(CID_CustomCommand, new C4ControlCustomCommand(pLocalPlr ? pLocalPlr->ViewSection->Number : 0, localPlr, szCmdName, pCmdPar), CDT_Decide);
 		// ok
 		return true;
 	}
