@@ -693,7 +693,7 @@ C4Object *C4Section::NewObject(C4Def *pDef, C4Object *pCreator,
 #ifdef DEBUGREC
 	C4RCCreateObj rc;
 	rc.id = pDef->id;
-	rc.oei = ObjectEnumerationIndex + 1;
+	rc.oei = Game.ObjectEnumerationIndex + 1;
 	rc.x = iX; rc.y = iY; rc.ownr = iOwner;
 	AddDbgRec(RCT_CrObj, &rc, sizeof(rc));
 #endif
