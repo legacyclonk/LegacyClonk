@@ -31,11 +31,18 @@
 #include "C4Texture.h"
 #include "C4Weather.h"
 
+#include <limits>
 #include <memory>
 
 class C4Section
 {
 public:
+	enum class Status
+	{
+		Deleted = 0,
+		Active = 1
+	};
+
 	struct EnumeratedPtrTraits
 	{
 		using Denumerated = C4Section;
@@ -115,6 +122,8 @@ public:
 	void ClearPointers(C4Object *obj);
 	void EnumeratePointers();
 	void DenumeratePointers();
+
+	bool AssignRemoval();
 
 	C4Object *OverlapObject(std::int32_t tx, std::int32_t ty, std::int32_t width, std::int32_t height, std::int32_t category);
 
@@ -248,6 +257,10 @@ public:
 		return Landscape.GBackIFT(x, y) ? 0 : Weather.Wind;
 	}
 
+	bool IsActive() const noexcept
+	{
+		return status == Status::Active;
+	}
 
 private:
 	// Object function internals
@@ -276,8 +289,20 @@ public:
 	C4Effect *GlobalEffects;
 	bool ResortAnyObject{false};
 	bool LandscapeLoaded{false};
+	std::uint32_t RemovalDelay{};
+	std::uint32_t Number;
+
+public:
+	static void ResetEnumerationIndex() noexcept;
+	static std::uint32_t AcquireEnumerationIndex() noexcept;
+
+	static inline constexpr std::uint32_t NoSectionSentinel{std::numeric_limits<std::uint32_t>::max()};
+
+private:
+	static inline std::uint32_t enumerationIndex{0};
 
 private:
 	std::string name;
 	bool emptyLandscape{false};
+	Status status{Status::Active};
 };

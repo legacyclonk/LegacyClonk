@@ -593,6 +593,7 @@ void C4Game::Clear()
 	Parameters.Clear();
 	RoundResults.Clear();
 	Sections.clear();
+	SectionsPendingDeletion.clear();
 	C4S.Clear();
 	GraphicsSystem.Clear();
 	Defs.Clear();
@@ -787,6 +788,8 @@ bool C4Game::Execute() // Returns true if the game is over
 	// Halt
 	if (HaltCount) return false;
 
+	SectionRemovalCheck();
+
 #ifdef DEBUGREC
 	std::ranges::for_each(Sections, &C4Landscape::DoRelights, &C4Section::Landscape);
 #endif
@@ -917,6 +920,29 @@ std::int32_t C4Game::ObjectNumber(C4Object *const obj)
 	return FindFirstInAllObjects([obj](C4ObjectList &objects) { return objects.ObjectNumber(obj); });
 }
 
+C4Section *C4Game::GetSectionByNumber(const uint32_t number)
+{
+	if (const auto it = GetSectionIteratorByNumber(number); it != Sections.end())
+	{
+		return it->get();
+	}
+
+	return nullptr;
+}
+
+bool C4Game::RemoveSection(uint32_t number)
+{
+	if (const auto it = GetSectionIteratorByNumber(number); it != Sections.end() && (*it)->AssignRemoval())
+	{
+		std::unique_ptr<C4Section> section{std::move(*it)};
+		Sections.erase(it);
+		SectionsPendingDeletion.emplace_back(std::move(section));
+		return true;
+	}
+
+	return false;
+}
+
 bool C4Game::TogglePause()
 {
 	// pause toggling disabled during round evaluation
@@ -1026,7 +1052,7 @@ bool C4Game::DropDef(C4Section &section, C4ID id, int32_t iX, int32_t iY)
 	// def exists?
 	if (Game.Defs.ID2Def(id))
 	{
-		Control.DoInput(CID_EMDropDef, new C4ControlEMDropDef(GetSectionIndex(section), id, iX, iY), CDT_Decide);
+		Control.DoInput(CID_EMDropDef, new C4ControlEMDropDef(section.Number, id, iX, iY), CDT_Decide);
 		return true;
 	}
 	else
@@ -1110,6 +1136,7 @@ void C4Game::Default()
 	IsMusicEnabled = false;
 	iMusicLevel = 100;
 	PlayList.Clear();
+	C4Section::ResetEnumerationIndex();
 }
 
 void C4Game::Evaluate()
@@ -2391,6 +2418,27 @@ void C4Game::LoadScenarioScripts()
 	}
 }
 
+void C4Game::SectionRemovalCheck()
+{
+	std::erase_if(SectionsPendingDeletion, [this](const auto &section)
+	{
+		if (!section->RemovalDelay)
+		{
+			for (C4Player *player{Players.First}; player; player = player->Next)
+			{
+				player->ClearViewSection(*section);
+			}
+
+			return true;
+		}
+		else
+		{
+			section->RemovalDelay--;
+			return false;
+		}
+	});
+}
+
 bool C4Game::InitKeyboard()
 {
 	C4CustomKey::CodeList Keys;
@@ -2520,21 +2568,22 @@ bool C4Game::InitKeyboard()
 	return true;
 }
 
-std::int32_t C4Game::CreateSection(const char *const name)
+std::uint32_t C4Game::CreateSection(const char *const name)
 {
 	auto section = std::make_unique<C4Section>(name);
 
 	if (section->InitFromTemplate(ScenarioFile))
 	{
-		const auto size = static_cast<std::int32_t>(Sections.size());
 		Sections.emplace_back(std::move(section));
 
-		if (Sections.back()->InitMaterialTexture()
-			&& Sections.back()->InitSecondPart()
-			&& Sections.back()->InitThirdPart()
+		const auto &back = Sections.back();
+
+		if (back->InitMaterialTexture()
+			&& back->InitSecondPart()
+			&& back->InitThirdPart()
 			)
 		{
-			return size;
+			return back->Number;
 		}
 		else
 		{
@@ -2542,10 +2591,10 @@ std::int32_t C4Game::CreateSection(const char *const name)
 		}
 	}
 
-	return -1;
+	return C4Section::NoSectionSentinel;
 }
 
-std::int32_t C4Game::CreateEmptySection(const char *const name, const C4SLandscape &landscape)
+std::uint32_t C4Game::CreateEmptySection(const char *const name, const C4SLandscape &landscape)
 {
 	auto section = std::make_unique<C4Section>(name);
 
@@ -2554,12 +2603,14 @@ std::int32_t C4Game::CreateEmptySection(const char *const name, const C4SLandsca
 		const auto size = static_cast<std::int32_t>(Sections.size());
 		Sections.emplace_back(std::move(section));
 
-		if (Sections.back()->InitMaterialTexture()
-				&& Sections.back()->InitSecondPart()
-				&& Sections.back()->InitThirdPart()
-				)
+		const auto &back = Sections.back();
+
+		if (back->InitMaterialTexture()
+			&& back->InitSecondPart()
+			&& back->InitThirdPart()
+			)
 		{
-			return size;
+			return back->Number;
 		}
 		else
 		{
@@ -2567,7 +2618,7 @@ std::int32_t C4Game::CreateEmptySection(const char *const name, const C4SLandsca
 		}
 	}
 
-	return -1;
+	return C4Section::NoSectionSentinel;
 }
 
 bool C4Game::InitSystem()

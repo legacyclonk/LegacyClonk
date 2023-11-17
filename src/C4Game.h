@@ -86,6 +86,7 @@ public:
 public:
 	C4DefList Defs;
 	std::vector<std::unique_ptr<C4Section>> Sections;
+	std::vector<std::unique_ptr<C4Section>> SectionsPendingDeletion;
 	C4Group ScenarioFile;
 	C4Scenario C4S;
 	std::string Loader;
@@ -237,28 +238,14 @@ public:
 		return GetAllObjects() | std::views::filter(&C4Object::Status);
 	}
 
-	std::int32_t GetSectionIndex(C4Section &section) const noexcept
-	{
-		for (std::size_t i{0}; i < Sections.size(); ++i)
-		{
-			if (&section == Sections[i].get())
-			{
-				return static_cast<std::int32_t>(i);
-			}
-		}
+	C4Section *GetSectionByNumber(std::uint32_t number);
 
-		return -1;
+	auto GetSectionIteratorByNumber(const std::uint32_t number)
+	{
+		return std::ranges::find(Sections, number, &C4Section::Number);
 	}
 
-	C4Section *GetSectionByIndex(const std::int32_t index) noexcept
-	{
-		if (Inside(index, 0, static_cast<std::int32_t>(Sections.size() - 1)))
-		{
-			return Sections[index].get();
-		}
-
-		return nullptr;
-	}
+	bool RemoveSection(std::uint32_t number);
 
 	void AssignPlrViewRange()
 	{
@@ -312,8 +299,8 @@ public:
 	bool SlowDown();
 	bool InitKeyboard(); // register main keyboard input functions
 
-	std::int32_t CreateSection(const char *name);
-	std::int32_t CreateEmptySection(const char *name, const C4SLandscape &landscape);
+	std::uint32_t CreateSection(const char *name);
+	std::uint32_t CreateEmptySection(const char *name, const C4SLandscape &landscape);
 
 protected:
 	bool InitSystem();
@@ -327,6 +314,7 @@ protected:
 	bool DefinitionFilenamesFromSaveGame();
 	bool LoadScenarioComponents();
 	void LoadScenarioScripts();
+	void SectionRemovalCheck();
 
 public:
 	bool SaveGameTitle(C4Group &hGroup);
