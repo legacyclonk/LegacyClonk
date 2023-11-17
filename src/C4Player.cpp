@@ -81,6 +81,14 @@ void C4Player::ClearPointers(C4Object *pObj, bool fDeath)
 	RemoveMessageBoardQuery(pObj);
 }
 
+void C4Player::ClearViewSection(C4Section &section)
+{
+	if (ViewSection == &section)
+	{
+		ViewSection.SetDenumerated(Game.Sections.front().get());
+	}
+}
+
 void C4Player::UpdateValue()
 {
 	int32_t lval = ValueGain, lobj = ObjectsOwned;
@@ -1791,7 +1799,7 @@ void C4Player::DoTeamSelection(C4Section &section, int32_t idTeam)
 	// stop team selection. This might close the menu forever if the control gets lost
 	// let's hope it doesn't!
 	Status = PS_TeamSelectionPending;
-	Game.Control.DoInput(CID_InitScenarioPlayer, new C4ControlInitScenarioPlayer(Game.GetSectionIndex(section), Number, idTeam), CDT_Queue);
+	Game.Control.DoInput(CID_InitScenarioPlayer, new C4ControlInitScenarioPlayer(section.Number, Number, idTeam), CDT_Queue);
 }
 
 void C4Player::EnumeratePointers()
