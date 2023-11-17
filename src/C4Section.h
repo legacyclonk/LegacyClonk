@@ -71,7 +71,7 @@ public:
 
 public:
 	C4Section() noexcept;
-	explicit C4Section(const char *name);
+	explicit C4Section(std::string_view name);
 
 	C4Section(const C4Section &) = delete;
 	C4Section &operator=(const C4Section &) = delete;
@@ -87,13 +87,15 @@ public:
 
 	std::string_view GetName() const { return name; }
 
-	bool InitSection(C4Group &scenario);
+	bool InitFromTemplate(C4Group &scenario);
+	bool InitFromEmptyLandscape(C4Group &scenario, const C4SLandscape &landscape);
+
+	bool InitMaterialTexture();
 
 	bool InitSecondPart();
 	bool InitThirdPart();
 	bool CheckObjectEnumeration();
 
-	bool InitMaterialTexture();
 
 private:
 	void InitInEarth();
@@ -277,4 +279,5 @@ public:
 
 private:
 	std::string name;
+	bool emptyLandscape{false};
 };
