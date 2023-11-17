@@ -297,16 +297,6 @@ bool C4Viewport::ScrollBarsByViewPosition()
 	return true;
 }
 
-C4Section &C4Viewport::GetViewSection()
-{
-	if (C4Player *const plr{Game.Players.Get(Player)}; plr)
-	{
-		return *plr->ViewSection.Denumerated();
-	}
-
-	return *Game.Sections.front();
-}
-
 #elif defined(WITH_DEVELOPER_MODE)
 static GtkTargetEntry drag_drop_entries[] =
 {
@@ -1246,6 +1236,16 @@ void C4Viewport::CenterPosition()
 	ViewY = (GetViewSection().Landscape.Height - ViewHgt) / 2;
 	// clips and updates
 	UpdateViewPosition();
+}
+
+C4Section &C4Viewport::GetViewSection()
+{
+	if (C4Player *const plr{Game.Players.Get(Player)}; plr)
+	{
+		return *plr->ViewSection.Denumerated();
+	}
+
+	return *Game.Sections.front();
 }
 
 void C4Viewport::UpdateViewPosition()
