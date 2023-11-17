@@ -260,13 +260,13 @@ bool C4Game::OpenScenario()
 		}
 	SetInitProgress(4);
 
-	auto = std::make_unique<C4Section>();
-	if (!>InitSection(ScenarioFile))
+	auto mainSection = std::make_unique<C4Section>();
+	if (!mainSection->InitFromTemplate(ScenarioFile))
 	{
-		LogFatal(LoadResStr("IDS_ERR_SECTION")); return false;
+		LogFatal(C4ResStrTableKey::IDS_ERR_SECTION); return false;
 	}
 
-	Sections.emplace_back(std::move();
+	Sections.emplace_back(std::move(mainSection));
 
 	// Compile runtime data
 	if (!CompileRuntimeData(GameText))
@@ -2524,14 +2524,40 @@ std::int32_t C4Game::CreateSection(const char *const name)
 {
 	auto section = std::make_unique<C4Section>(name);
 
-	if (section->InitSection(ScenarioFile))
+	if (section->InitFromTemplate(ScenarioFile))
+	{
+		const auto size = static_cast<std::int32_t>(Sections.size());
+		Sections.emplace_back(std::move(section));
+
+		if (Sections.back()->InitMaterialTexture()
+			&& Sections.back()->InitSecondPart()
+			&& Sections.back()->InitThirdPart()
+			)
+		{
+			return size;
+		}
+		else
+		{
+			Sections.pop_back();
+		}
+	}
+
+	return -1;
+}
+
+std::int32_t C4Game::CreateEmptySection(const char *const name, const C4SLandscape &landscape)
+{
+	auto section = std::make_unique<C4Section>(name);
+
+	if (section->InitFromEmptyLandscape(ScenarioFile, landscape))
 	{
 		const auto size = static_cast<std::int32_t>(Sections.size());
 		Sections.emplace_back(std::move(section));
 
 		if (Sections.back()->InitMaterialTexture()
 				&& Sections.back()->InitSecondPart()
-				&& Sections.back()->InitThirdPart())
+				&& Sections.back()->InitThirdPart()
+				)
 		{
 			return size;
 		}
