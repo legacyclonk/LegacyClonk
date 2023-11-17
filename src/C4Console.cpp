@@ -1809,7 +1809,10 @@ void C4Console::OnPlrJoin(GtkWidget *item, gpointer data)
 
 void C4Console::OnPlrQuit(GtkWidget *item, gpointer data)
 {
-	Game.Control.Input.Add(CID_EliminatePlayer, new C4ControlEliminatePlayer(GPOINTER_TO_INT(data)));
+	const std::int32_t playerNumber{GPOINTER_TO_INT(data)};
+	C4Player *const player{Game.Players.Get(playerNumber)};
+
+	Game.Control.Input.Add(CID_EliminatePlayer, new C4ControlEliminatePlayer(Game.GetSectionIndex(**player->ViewSection), GPOINTER_TO_INT(data)));
 }
 
 void C4Console::OnViewNew(GtkWidget *item, gpointer data)
