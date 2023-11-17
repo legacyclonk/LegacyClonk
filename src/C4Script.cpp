@@ -6172,7 +6172,7 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
 {
 	if (C4String *const name{data.getStr()}; name)
 	{
-		return Game.CreateSection(name->Data.getData());
+		return static_cast<C4ValueInt>(Game.CreateSection(name->Data.getData()));
 	}
 	else if (!data.ConvertTo(C4V_Map))
 	{
@@ -6251,12 +6251,22 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
 		assign(landscape.ShadeMaterials, "ShadeMaterials");
 	}
 
-	return Game.CreateEmptySection(FnStringPar(name), landscape);
+	return static_cast<C4ValueInt>(Game.CreateEmptySection(FnStringPar(name), landscape));
 }
 
 static C4ValueInt FnGetSectionCount(C4AulContext *ctx)
 {
 	return static_cast<C4ValueInt>(Game.Sections.size());
+}
+
+static C4ValueInt FnGetSectionByindex(C4AulContext *ctx, C4ValueInt i)
+{
+	if (Inside(i, 0, static_cast<std::int32_t>(Game.Sections.size()) - 1))
+	{
+		return static_cast<C4ValueInt>(Game.Sections[i]->Number);
+	}
+
+	return C4Section::NoSectionSentinel;
 }
 
 static C4ValueInt FnGetSectionByName(C4AulContext *ctx, C4String *name, std::optional<C4ValueInt> index)
@@ -6271,14 +6281,14 @@ static C4ValueInt FnGetSectionByName(C4AulContext *ctx, C4String *name, std::opt
 			{
 				if (*index == 0)
 				{
-					return static_cast<C4ValueInt>(i);
+					return static_cast<C4ValueInt>(Game.Sections[i]->Number);
 				}
 
 				--*index;
 			}
 			else
 			{
-				return static_cast<C4ValueInt>(i);
+				return static_cast<C4ValueInt>(Game.Sections[i]->Number);
 			}
 		}
 	}
@@ -6289,7 +6299,7 @@ static C4ValueInt FnGetSectionByName(C4AulContext *ctx, C4String *name, std::opt
 static bool FnMoveToSection(C4AulContext *ctx, C4ValueInt targetSection, C4Object *obj)
 {
 	if (!obj) if (!(obj = ctx->Obj)) return false;
-	C4Section *const section{Game.GetSectionByIndex(targetSection)};
+	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(targetSection))};
 	if (!section)
 	{
 		return false;
@@ -6302,14 +6312,14 @@ static bool FnMoveToSection(C4AulContext *ctx, C4ValueInt targetSection, C4Objec
 
 C4ValueInt FnGetSection(C4AulContext *ctx)
 {
-	return Game.GetSectionIndex(ctx->GetSection());
+	return ctx->GetSection().Number;
 }
 
-bool FnSwitchToSection(C4AulContext *ctx, C4ValueInt sectionIndex)
+bool FnSwitchToSection(C4AulContext *ctx, C4ValueInt sectionNumber)
 {
 	if (!ctx->Caller) return false;
 
-	C4Section *const section{Game.GetSectionByIndex(sectionIndex)};
+	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(sectionNumber))};
 	if (!section)
 	{
 		return false;
@@ -6318,6 +6328,12 @@ bool FnSwitchToSection(C4AulContext *ctx, C4ValueInt sectionIndex)
 	ctx->Caller->Section = section;
 
 	return true;
+}
+
+static bool FnRemoveSection(C4AulContext *ctx, C4ValueInt section)
+{
+	if (section == 0) return false;
+	return Game.RemoveSection(static_cast<std::uint32_t>(section));
 }
 
 template<std::size_t ParCount>
@@ -7243,10 +7259,12 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "SetRestoreInfos",                 FnSetRestoreInfos);
 	AddFunc(pEngine, "CreateSection",                   FnCreateSection);
 	AddFunc(pEngine, "GetSectionCount",                 FnGetSectionCount);
+	AddFunc(pEngine, "GetSectionByIndex",               FnGetSectionByindex);
 	AddFunc(pEngine, "GetSectionByName",                FnGetSectionByName);
 	AddFunc(pEngine, "MoveToSection",                   FnMoveToSection);
 	AddFunc(pEngine, "GetSection",                      FnGetSection);
 	AddFunc(pEngine, "SwitchToSection",                 FnSwitchToSection);
+	AddFunc(pEngine, "RemoveSection",                   FnRemoveSection);
 	new C4AulDefCastFunc<C4V_C4ID, C4V_Int>{pEngine, "ScoreboardCol"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Int>{pEngine, "CastInt"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Bool>{pEngine, "CastBool"};

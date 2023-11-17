@@ -748,7 +748,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 		if (SEqual(szCommand + 13, "NewPlayer")) return ActivateNewPlayer(Player);
 		if (SEqual(szCommand + 13, "Goals"))
 		{
-			Game.Control.DoInput(CID_ActivateGameGoalMenu, new C4ControlActivateGameGoalMenu(Game.GetSectionIndex(*section), Player), CDT_Queue);
+			Game.Control.DoInput(CID_ActivateGameGoalMenu, new C4ControlActivateGameGoalMenu(section->Number, Player), CDT_Queue);
 			return true;
 		}
 		if (SEqual(szCommand + 13, "Rules")) return ActivateRules(Player);
@@ -782,7 +782,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 		int32_t iOpponent; sscanf(szCommand + 13, "%i", &iOpponent);
 		C4Player *pOpponent = Game.Players.Get(iOpponent);
 		if (!pOpponent || pOpponent->GetType() != C4PT_User) return false;
-		Game.Input.Add(CID_ToggleHostility, new C4ControlToggleHostility(Game.GetSectionIndex(*section), Player, iOpponent));
+		Game.Input.Add(CID_ToggleHostility, new C4ControlToggleHostility(section->Number, Player, iOpponent));
 		return true;
 	}
 	// Abort
@@ -794,7 +794,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 	// Surrender
 	if (SEqual2(szCommand, "Surrender"))
 	{
-		Game.Control.DoInput(CID_SurrenderPlayer, new C4ControlSurrenderPlayer(Game.GetSectionIndex(*section), Player), CDT_Queue);
+		Game.Control.DoInput(CID_SurrenderPlayer, new C4ControlSurrenderPlayer(section->Number, Player), CDT_Queue);
 		return true;
 	}
 	// Save game
@@ -894,7 +894,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 		// TODO!
 		C4Object *pObj; C4ID idItem = C4Id(szCommand + 12);
 		if (pObj = Game.FindFirstInAllObjects([idItem](C4GameObjects &objects) { return objects.FindInternal(idItem); }))
-			Game.Control.DoInput(CID_ActivateGameGoalRule, new C4ControlActivateGameGoalRule(Game.GetSectionIndex(*pObj->Section), Player, pObj->Number), CDT_Queue);
+			Game.Control.DoInput(CID_ActivateGameGoalRule, new C4ControlActivateGameGoalRule(pObj->Section->Number, Player, pObj->Number), CDT_Queue);
 		else
 			return false;
 		return true;
@@ -918,7 +918,7 @@ bool C4MainMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 		// check if it's still allowed
 		if (!Game.Teams.IsTeamSwitchAllowed()) return false;
 		// OK, join this team
-		Game.Control.DoInput(CID_SetPlayerTeam, new C4ControlSetPlayerTeam(Game.GetSectionIndex(*section), Player, idTeam), CDT_Queue);
+		Game.Control.DoInput(CID_SetPlayerTeam, new C4ControlSetPlayerTeam(section->Number, Player, idTeam), CDT_Queue);
 		return true;
 	}
 	// Observe
