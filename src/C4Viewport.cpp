@@ -318,9 +318,11 @@ GtkWidget *C4ViewportWindow::InitGUI()
 	v_scrollbar = gtk_vscrollbar_new(nullptr);
 	table = gtk_table_new(2, 2, FALSE);
 
+	C4Section &section{cvp->GetViewSection()};
+
 	GtkAdjustment *adjustment = gtk_range_get_adjustment(GTK_RANGE(h_scrollbar));
 	adjustment->lower = 0;
-	adjustment->upper = ViewSection->Landscape.Width;
+	adjustment->upper = section.Landscape.Width;
 	adjustment->step_increment = ViewportScrollSpeed;
 
 	g_signal_connect(
@@ -332,7 +334,7 @@ GtkWidget *C4ViewportWindow::InitGUI()
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(v_scrollbar));
 	adjustment->lower = 0;
-	adjustment->upper = ViewSection->Landscape.Height;
+	adjustment->upper = section.Landscape.Height;
 	adjustment->step_increment = ViewportScrollSpeed;
 
 	g_signal_connect(
@@ -436,7 +438,7 @@ void C4ViewportWindow::OnDragDataReceivedStatic(GtkWidget *widget, GdkDragContex
 		gchar *file = g_filename_from_uri(*uri, nullptr, nullptr);
 		if (!file) continue;
 
-		Game.DropFile(file, window->cvp->ViewX + static_cast<int32_t>(x / scale), window->cvp->ViewY + static_cast<int32_t>(y / scale));
+		Game.DropFile(window->cvp->GetViewSection(), file, window->cvp->ViewX + static_cast<int32_t>(x / scale), window->cvp->ViewY + static_cast<int32_t>(y / scale));
 		g_free(file);
 	}
 
