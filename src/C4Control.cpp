@@ -274,7 +274,7 @@ void C4ControlScript::Execute() const
 		}
 	}
 
-	C4Section *const section{Game.GetSectionByIndex(sectionIndex)};
+	C4Section *const section{Game.GetSectionByNumber(sectionNumber)};
 	if (!section)
 	{
 		return;
@@ -317,7 +317,7 @@ void C4ControlScript::Execute() const
 
 void C4ControlScript::CompileFunc(StdCompiler *pComp)
 {
-	pComp->Value(mkNamingAdapt(mkIntPackAdapt(sectionIndex) , "Section", 0));
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(sectionNumber) , "Section", 0));
 	pComp->Value(mkNamingAdapt(iTargetObj, "TargetObj", -1));
 	pComp->Value(mkNamingAdapt(Strict,     "Strict",    C4AulScriptStrict::MAXSTRICT));
 
@@ -871,9 +871,9 @@ void C4ControlJoinPlayer::CompileFunc(StdCompiler *pComp)
 
 // *** C4ControlEMMoveObject
 
-C4ControlEMMoveObject::C4ControlEMMoveObject(C4ControlEMObjectAction eAction,  int32_t tx, int32_t ty, const std::int32_t sectionIndex, C4Object *pTargetObj,
+C4ControlEMMoveObject::C4ControlEMMoveObject(C4ControlEMObjectAction eAction,  int32_t tx, int32_t ty, const std::uint32_t sectionNumber, C4Object *pTargetObj,
 	int32_t iObjectNum, int32_t *pObjects, const char *szScript, const C4AulScriptStrict strict)
-	: eAction(eAction), tx(tx), ty(ty), sectionIndex{sectionIndex}, iTargetObj(Game.ObjectNumber(pTargetObj)),
+	: eAction(eAction), tx(tx), ty(ty), sectionNumber{sectionNumber}, iTargetObj(Game.ObjectNumber(pTargetObj)),
 	iObjectNum(iObjectNum), Strict{strict}, pObjects(pObjects), Script(szScript, true) {}
 
 C4ControlEMMoveObject::~C4ControlEMMoveObject()
@@ -940,7 +940,7 @@ void C4ControlEMMoveObject::Execute() const
 	{
 		if (!pObjects) return;
 		// execute script ...
-		C4ControlScript ScriptCtrl(sectionIndex, Script.getData(), C4ControlScript::SCOPE_Global, Strict);
+		C4ControlScript ScriptCtrl(sectionNumber, Script.getData(), C4ControlScript::SCOPE_Global, Strict);
 		ScriptCtrl.SetByClient(iByClient);
 		// ... for each object in selection
 		for (int i = 0; i < iObjectNum; ++i)
@@ -981,7 +981,7 @@ void C4ControlEMMoveObject::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(mkIntAdaptT<uint8_t>(eAction),      "Action"));
 	pComp->Value(mkNamingAdapt(tx,                                 "tx",         0));
 	pComp->Value(mkNamingAdapt(ty,                                 "ty",         0));
-	pComp->Value(mkNamingAdapt(mkIntPackAdapt(sectionIndex),       "Section",    0));
+	pComp->Value(mkNamingAdapt(mkIntPackAdapt(sectionNumber),       "Section",    0));
 	pComp->Value(mkNamingAdapt(iTargetObj,                         "TargetObj", -1));
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iObjectNum),         "ObjectNum",  0));
 	pComp->Value(mkNamingAdapt(Strict,                             "Strict",     C4AulScriptStrict::MAXSTRICT));
@@ -1003,9 +1003,9 @@ void C4ControlEMMoveObject::CompileFunc(StdCompiler *pComp)
 
 C4ControlEMDrawTool::C4ControlEMDrawTool(C4ControlEMDrawAction eAction, int32_t iMode,
 	int32_t iX, int32_t iY, int32_t iX2, int32_t iY2, int32_t iGrade,
-	bool fIFT, int32_t SectionIndex, const char *szMaterial, const char *szTexture)
+	bool fIFT, const std::uint32_t sectionNumber, const char *szMaterial, const char *szTexture)
 	: eAction(eAction), iMode(iMode), iX(iX), iY(iY), iX2(iX2), iY2(iY2), iGrade(iGrade),
-	fIFT(fIFT), SectionIndex{SectionIndex}, Material(szMaterial, true), Texture(szTexture, true) {}
+	fIFT(fIFT), sectionNumber{sectionNumber}, Material(szMaterial, true), Texture(szTexture, true) {}
 
 void C4ControlEMDrawTool::Execute() const
 {
@@ -1013,7 +1013,7 @@ void C4ControlEMDrawTool::Execute() const
 	if (Game.Parameters.isLeague())
 		return;
 
-	C4Section *section{Game.GetSectionByIndex(SectionIndex)};
+	C4Section *section{Game.GetSectionByNumber(sectionNumber)};
 	if (!section)
 	{
 		return;
@@ -1078,7 +1078,7 @@ void C4ControlEMDrawTool::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(iY2,                           "Y2",       0));
 	pComp->Value(mkNamingAdapt(mkIntPackAdapt(iGrade),        "Grade",    0));
 	pComp->Value(mkNamingAdapt(fIFT,                          "IFT",      false));
-	pComp->Value(mkNamingAdapt(SectionIndex,                  "Section",  0));
+	pComp->Value(mkNamingAdapt(sectionNumber,                  "Section",  0));
 	pComp->Value(mkNamingAdapt(Material,                      "Material", ""));
 	pComp->Value(mkNamingAdapt(Texture,                       "Texture",  ""));
 	C4ControlPacket::CompileFunc(pComp);
@@ -1547,7 +1547,7 @@ void C4ControlInternalScriptBase::Execute() const
 {
 	if (!Allowed()) return;
 
-	C4Section *const section{Game.GetSectionByIndex(sectionIndex)};
+	C4Section *const section{Game.GetSectionByNumber(sectionNumber)};
 	if (!section)
 	{
 		return;
@@ -1571,7 +1571,7 @@ void C4ControlInternalScriptBase::Execute() const
 
 void C4ControlInternalScriptBase::CompileFunc(StdCompiler *const comp)
 {
-	comp->Value(mkNamingAdapt(mkIntPackAdapt(sectionIndex), "Section", -1));
+	comp->Value(mkNamingAdapt(mkIntPackAdapt(sectionNumber), "Section", -1));
 	C4ControlPacket::CompileFunc(comp);
 }
 
