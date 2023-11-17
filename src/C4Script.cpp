@@ -6133,14 +6133,125 @@ static void FnSetRestoreInfos(C4AulContext *ctx, C4ValueInt what)
 	Game.RestartRestoreInfos.What = static_cast<std::underlying_type_t<C4NetworkRestartInfos::RestoreInfo>>(what);
 }
 
-static C4ValueInt FnCreateSection(C4AulContext *ctx, C4String *name)
+#if 0
+class C4ValueHashCompilerRead : public StdCompiler
 {
-	if (const char *const par{FnStringPar(name)}; par)
+public:
+	typedef C4ValueHash InT;
+	void setInput(C4ValueHash *in) { map = in; }
+
+	bool isCompiler() override { return true; }
+	bool hasNaming() override { return true; }
+
+	NameGuard Name(const char *name) override;
+	void NameEnd(bool fBreak = false) override;
+	bool FollowName(const char *szName) override;
+
+	void QWord(std::int64_t &rInt) override;
+	void QWord(std::uint64_t &rInt) override;
+	void DWord(std::int32_t &rInt) override;
+	void DWord(std::uint32_t &rInt) override;
+	void Word(std::int16_t &rShort) override;
+	void Word(std::uint16_t &rShort) override;
+	void Byte(std::int8_t &rByte) override;
+	void Boolean(bool &rBool) override;
+	virtual void String(char *string, std::size_t maxLength, RawCompileType type = RCT_Escaped) override;
+	virtual void String(std::string &str, RawCompileType type = RCT_Escaped) override;
+	virtual void Raw(void *data, std::size_t size, RawCompileType type = RCT_Escaped) override
 	{
-		return Game.CreateSection(par);
+		excCorrupt("Raw not supported");
 	}
 
-	return -1;
+
+private:
+	C4ValueHash *map;
+};
+#endif
+
+static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
+{
+	if (C4String *const name{data.getStr()}; name)
+	{
+		return Game.CreateSection(name->Data.getData());
+	}
+	else if (!data.ConvertTo(C4V_Map))
+	{
+		throw C4AulExecError{ctx->Obj, "CreateSection(): section name or section initialization map expected"};
+	}
+
+	C4ValueHash &map{*data._getMap()};
+
+	C4SLandscape landscape;
+	landscape.Default();
+
+	C4String *const name{map[C4VString("Name")].getStr()};
+	if (!name)
+	{
+		throw C4AulExecError{ctx->Obj, "CreateSection(): section name in initialization map expected"};
+	}
+
+	C4Value value{map[C4VString("Landscape")]};
+	if (value.ConvertTo(C4V_Map))
+	{
+		C4ValueHash &landscapeParams{*value._getMap()};
+
+		const auto assign = [&landscapeParams]<typename T>(T &field, const char *const key)
+		{
+			C4Value value{landscapeParams[C4VString(key)]};
+			if (value.GetType() != C4V_Any && value.ConvertTo(C4ValueConv<T>::Type()))
+			{
+				field = value.Get<T>();
+			}
+		};
+
+		assign(landscape.BottomOpen, "BottomOpen");
+		assign(landscape.TopOpen, "TopOpen");
+		assign(landscape.LeftOpen, "LeftOpen");
+		assign(landscape.RightOpen, "RightOpen");
+		assign(landscape.AutoScanSideOpen, "AutoScanSideOpen");
+
+		if (C4String *const skyDef{landscapeParams[C4VString("SkyDef")].getStr()}; skyDef)
+		{
+			const StdStrBuf &data{skyDef->Data};
+			landscape.SkyDef[std::string_view{data.getData(), data.getLength()}.copy(landscape.SkyDef, std::size(landscape.SkyDef) - 1)] = '\0';
+		}
+
+		if (C4ValueArray *const skyDefFade{landscapeParams[C4VString("SkyDefFade")].getArray()}; skyDefFade)
+		{
+			for (std::size_t i{0}; i < std::size(landscape.SkyDefFade); ++i)
+			{
+				landscape.SkyDefFade[i] = skyDefFade->GetItem(static_cast<std::int32_t>(i)).getInt();
+			}
+		}
+
+		assign(landscape.NoSky, "NoSky");
+
+		const auto assignArrayToC4S = [&landscapeParams](C4SVal &field, const char *const key)
+		{
+			if (C4ValueArray *const array{landscapeParams[C4VString(key)].getArray()}; array)
+			{
+				field = {
+					array->GetItem(0).getInt(),
+					array->GetItem(1).getInt(),
+					array->GetItem(2).getInt(),
+					array->GetItem(3).getInt()
+				};
+			}
+		};
+
+		assignArrayToC4S(landscape.Gravity, "Gravity");
+		assignArrayToC4S(landscape.MapWdt, "MapWdt");
+		assignArrayToC4S(landscape.MapHgt, "MapHgt");
+		assignArrayToC4S(landscape.MapZoom, "MapZoom");
+		assign(landscape.KeepMapCreator, "KeepMapCreator");
+		assign(landscape.SkyScrollMode, "SkyScrollMode");
+		landscape.NewStyleLandscape = 2;
+		landscape.FoWRes = CClrModAddMap::iDefResolutionX;
+		assign(landscape.FoWRes, "FoWRes");
+		assign(landscape.ShadeMaterials, "ShadeMaterials");
+	}
+
+	return Game.CreateEmptySection(FnStringPar(name), landscape);
 }
 
 static C4ValueInt FnGetSectionCount(C4AulContext *ctx)
