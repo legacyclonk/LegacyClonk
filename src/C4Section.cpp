@@ -21,19 +21,19 @@ C4Section::EnumeratedPtrTraits::Enumerated C4Section::EnumeratedPtrTraits::Enume
 {
 	if (section)
 	{
-		return Game.GetSectionIndex(*section);
+		return section->Number;
 	}
 
-	return -1;
+	return C4Section::NoSectionSentinel;
 }
 
 C4Section::EnumeratedPtrTraits::Denumerated *C4Section::EnumeratedPtrTraits::Denumerate(const Enumerated number)
 {
-	return Game.GetSectionByIndex(number);
+	return Game.GetSectionByNumber(number);
 }
 
 C4Section::C4Section() noexcept
-	: Weather{*this}, TextureMap{*this}, Material{*this}, Landscape{*this}, MassMover{*this}, PXS{*this}, Particles{*this}
+	: Weather{*this}, TextureMap{*this}, Material{*this}, Landscape{*this}, MassMover{*this}, PXS{*this}, Particles{*this}, Number{AcquireEnumerationIndex()}
 {
 	Default();
 }
@@ -665,6 +665,28 @@ void C4Section::DenumeratePointers()
 	}
 }
 
+bool C4Section::AssignRemoval()
+{
+	if (!IsActive()) return false;
+
+	for (C4ObjectLink *link{Objects.First}; link; link = link->Next)
+	{
+		link->Obj->AssignRemoval();
+	}
+
+	if (GlobalEffects)
+	{
+		GlobalEffects->ClearAll(nullptr, C4FxCall_RemoveClear);
+		delete GlobalEffects;
+		GlobalEffects = nullptr;
+	}
+
+	Particles.ClearParticles();
+	RemovalDelay = 3;
+
+	return true;
+}
+
 C4Object *C4Section::OverlapObject(const std::int32_t tx, const std::int32_t ty, const std::int32_t width, const std::int32_t height, const std::int32_t category)
 {
 	C4Object *cObj; C4ObjectLink *clnk;
@@ -1254,4 +1276,22 @@ void C4Section::ObjectRemovalCheck() // Every Tick255 by ExecObjects
 			delete cObj;
 		}
 	}
+}
+
+void C4Section::ResetEnumerationIndex() noexcept
+{
+	assert(!Game.IsRunning);
+	enumerationIndex = 0;
+}
+
+std::uint32_t C4Section::AcquireEnumerationIndex() noexcept
+{
+	const std::uint32_t index{enumerationIndex};
+
+	if (++enumerationIndex == NoSectionSentinel)
+	{
+		++enumerationIndex;
+	}
+
+	return index;
 }

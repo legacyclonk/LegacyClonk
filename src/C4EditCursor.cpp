@@ -556,7 +556,7 @@ void C4EditCursor::ApplyToolBrush()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Section->Landscape.Mode, X, Y, 0, 0, pTools->Grade, !!pTools->ModeIFT, Game.GetSectionIndex(*Section), pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Section->Landscape.Mode, X, Y, 0, 0, pTools->Grade, !!pTools->ModeIFT, Section->Number, pTools->Material, pTools->Texture));
 }
 
 void C4EditCursor::ApplyToolLine()
@@ -564,7 +564,7 @@ void C4EditCursor::ApplyToolLine()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Section->Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, Game.GetSectionIndex(*Section), pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Section->Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, Section->Number, pTools->Material, pTools->Texture));
 }
 
 void C4EditCursor::ApplyToolRect()
@@ -572,7 +572,7 @@ void C4EditCursor::ApplyToolRect()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Section->Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, Game.GetSectionIndex(*Section), pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Section->Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, Section->Number, pTools->Material, pTools->Texture));
 }
 
 void C4EditCursor::ApplyToolFill()
@@ -580,7 +580,7 @@ void C4EditCursor::ApplyToolFill()
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Section->Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, Game.GetSectionIndex(*Section), pTools->Material));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Section->Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, Section->Number, pTools->Material));
 }
 
 bool C4EditCursor::DoContextMenu()
@@ -740,7 +740,7 @@ void C4EditCursor::EMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int
 	}
 
 	// execute control
-	EMControl(CID_EMMoveObj, new C4ControlEMMoveObject(eAction, tx, ty, Game.GetSectionIndex(*Section), pTargetObj, iObjCnt, pObjIDs, szScript, Config.Developer.ConsoleScriptStrictness));
+	EMControl(CID_EMMoveObj, new C4ControlEMMoveObject(eAction, tx, ty, Section->Number, pTargetObj, iObjCnt, pObjIDs, szScript, Config.Developer.ConsoleScriptStrictness));
 }
 
 void C4EditCursor::EMControl(C4PacketType eCtrlType, C4ControlPacket *pCtrl)
