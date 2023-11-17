@@ -595,7 +595,7 @@ bool C4Landscape::PostInitMap()
 	return true;
 }
 
-bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame)
+void C4Landscape::PrepareInit(const bool overloadCurrent)
 {
 	// set map seed, if not pre-assigned
 	if (!MapSeed) MapSeed = Random(3133700);
@@ -606,104 +606,13 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	Section.C4S.Landscape.MapWdt.Max = 10000;
 	Section.C4S.Landscape.MapHgt.Max = 10000;
 
-	// map and landscape must be initialized with fixed random, so runtime joining clients may recreate it
-	// with same seed
-	// after map/landscape creation, the seed must be fixed again, so there's no difference between clients creating
-	// and not creating the map
-	// this, however, would cause syncloss to DebugRecs
-	C4DebugRecOff DBGRECOFF(!!Section.C4S.Landscape.ExactLandscape);
-
-	Game.FixRandom(Game.Parameters.RandomSeed);
-
 	// map is like it's loaded for regular gamestart
 	// but it's changed and would have to be saved if a new section is loaded
-	fMapChanged = fOverloadCurrent;
+	fMapChanged = overloadCurrent;
+}
 
-	// don't change landscape mode in runtime joins
-	bool fLandscapeModeSet = (Mode != C4LSC_Undefined);
-
-	Game.SetInitProgress(60);
-	// create map if necessary
-	if (!Section.C4S.Landscape.ExactLandscape)
-	{
-		CSurface8 *sfcMap = nullptr;
-		// Static map from scenario
-		if (hGroup.AccessEntry(C4CFN_Map))
-			if (sfcMap = GroupReadSurface8(hGroup))
-				if (!fLandscapeModeSet) Mode = C4LSC_Static;
-
-		// allow C4CFN_Landscape as map for downwards compatibility
-		if (!sfcMap)
-			if (hGroup.AccessEntry(C4CFN_Landscape))
-				if (sfcMap = GroupReadSurface8(hGroup))
-				{
-					if (!fLandscapeModeSet) Mode = C4LSC_Static;
-					fMapChanged = true;
-				}
-
-		// dynamic map from file
-		if (!sfcMap)
-			if (sfcMap = CreateMapS2(hGroup))
-				if (!fLandscapeModeSet) Mode = C4LSC_Dynamic;
-
-		// Dynamic map by scenario
-		if (!sfcMap && !fOverloadCurrent)
-			if (sfcMap = CreateMap())
-				if (!fLandscapeModeSet) Mode = C4LSC_Dynamic;
-
-		// No map failure
-		if (!sfcMap)
-		{
-			// no problem if only overloading
-			if (!fOverloadCurrent) return false;
-			if (fLoadSky) if (!Sky.Init(fSavegame)) return false;
-			return true;
-		}
-
-#ifdef DEBUGREC
-		AddDbgRec(RCT_Block, "|---MAP---|", 12);
-		AddDbgRec(RCT_Map, sfcMap->Bits, sfcMap->Pitch * sfcMap->Hgt);
-#endif
-
-		// Store map size and calculate map zoom
-		int iWdt, iHgt;
-		sfcMap->GetSurfaceSize(iWdt, iHgt);
-		MapWidth = iWdt; MapHeight = iHgt;
-		MapZoom = Section.C4S.Landscape.MapZoom.Evaluate();
-
-		// Calculate landscape size
-		Width = MapZoom * MapWidth;
-		Height = MapZoom * MapHeight;
-		Width = std::max<int32_t>(Width, 100);
-		Height = std::max<int32_t>(Height, 100);
-
-		// if overloading, clear current landscape (and sections, etc.)
-		// must clear, of course, before new sky is eventually read
-		if (fOverloadCurrent) Clear(!Section.C4S.Landscape.KeepMapCreator, fLoadSky);
-
-		// assign new map
-		Map = sfcMap;
-
-		// Sky (might need to know landscape height)
-		if (fLoadSky)
-		{
-			Game.SetInitProgress(70);
-			if (!Sky.Init(fSavegame)) return false;
-		}
-	}
-
-	// Exact landscape from scenario (no map or exact recreation)
-	else
-	{
-		C4DebugRecOff DBGRECOFF;
-		// if overloading, clear current
-		if (fOverloadCurrent) Clear(!Section.C4S.Landscape.KeepMapCreator, fLoadSky);
-		// load it
-		if (!fLandscapeModeSet) Mode = C4LSC_Exact;
-		rfLoaded = true;
-		if (!Load(hGroup, fLoadSky, fSavegame)) return false;
-	}
-
+bool C4Landscape::FinalizeInit(bool &landscapeLoaded, C4Group *const groupForDiff)
+{
 	// Make pixel maps
 	UpdatePixMaps();
 
@@ -761,8 +670,11 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	if (!SaveInitial())
 		return false;
 
-	// Load diff, if existent
-	ApplyDiff(hGroup);
+	if (groupForDiff)
+	{
+		// Load diff, if existent
+		ApplyDiff(*groupForDiff);
+	}
 
 	// enforce first color to be transparent
 	Surface8->EnforceC0Transparency();
@@ -772,8 +684,146 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	Game.FixRandom(Game.Parameters.RandomSeed);
 
 	// Success
-	rfLoaded = true;
+	landscapeLoaded = true;
 	return true;
+}
+
+bool C4Landscape::AssignMap(CSurface8 *const map, const bool overloadCurrent, const bool loadSky, const bool savegame)
+{
+	// Store map size and calculate map zoom
+	int iWdt, iHgt;
+	map->GetSurfaceSize(iWdt, iHgt);
+	MapWidth = iWdt; MapHeight = iHgt;
+	MapZoom = Section.C4S.Landscape.MapZoom.Evaluate();
+
+	// Calculate landscape size
+	Width = MapZoom * MapWidth;
+	Height = MapZoom * MapHeight;
+	Width = std::max<int32_t>(Width, 100);
+	Height = std::max<int32_t>(Height, 100);
+
+	// if overloading, clear current landscape (and sections, etc.)
+	// must clear, of course, before new sky is eventually read
+	if (overloadCurrent)
+	{
+		Clear(!Section.C4S.Landscape.KeepMapCreator, loadSky);
+	}
+
+	// assign new map
+	Map = map;
+
+	// Sky (might need to know landscape height)
+	if (loadSky)
+	{
+		Game.SetInitProgress(70);
+		if (!Sky.Init(savegame))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool C4Landscape::InitEmpty(const bool loadSky, bool &landscapeLoaded)
+{
+	assert(!Section.C4S.Landscape.ExactLandscape);
+	PrepareInit(false);
+
+	Game.FixRandom(Game.Parameters.RandomSeed);
+
+	std::int32_t width{0};
+	std::int32_t height{0};
+
+	// Create map surface
+	Section.C4S.Landscape.GetMapSize(width, height, Game.Parameters.StartupPlayerCount);
+	auto map = std::make_unique<CSurface8>(width, height);
+	if (!AssignMap(map.release(), false, loadSky, false))
+	{
+		return false;
+	}
+
+	return FinalizeInit(landscapeLoaded, nullptr);
+}
+
+bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bool &rfLoaded, bool fSavegame)
+{
+	PrepareInit(fOverloadCurrent);
+
+	// map and landscape must be initialized with fixed random, so runtime joining clients may recreate it
+	// with same seed
+	// after map/landscape creation, the seed must be fixed again, so there's no difference between clients creating
+	// and not creating the map
+	// this, however, would cause syncloss to DebugRecs
+	C4DebugRecOff DBGRECOFF(!!Section.C4S.Landscape.ExactLandscape);
+
+	Game.FixRandom(Game.Parameters.RandomSeed);
+
+	// don't change landscape mode in runtime joins
+	bool fLandscapeModeSet = (Mode != C4LSC_Undefined);
+
+	Game.SetInitProgress(60);
+	// create map if necessary
+	if (!Section.C4S.Landscape.ExactLandscape)
+	{
+		CSurface8 *sfcMap = nullptr;
+		// Static map from scenario
+		if (hGroup.AccessEntry(C4CFN_Map))
+			if (sfcMap = GroupReadSurface8(hGroup))
+				if (!fLandscapeModeSet) Mode = C4LSC_Static;
+
+		// allow C4CFN_Landscape as map for downwards compatibility
+		if (!sfcMap)
+			if (hGroup.AccessEntry(C4CFN_Landscape))
+				if (sfcMap = GroupReadSurface8(hGroup))
+				{
+					if (!fLandscapeModeSet) Mode = C4LSC_Static;
+					fMapChanged = true;
+				}
+
+		// dynamic map from file
+		if (!sfcMap)
+			if (sfcMap = CreateMapS2(hGroup))
+				if (!fLandscapeModeSet) Mode = C4LSC_Dynamic;
+
+		// Dynamic map by scenario
+		if (!sfcMap && !fOverloadCurrent)
+			if (sfcMap = CreateMap())
+				if (!fLandscapeModeSet) Mode = C4LSC_Dynamic;
+
+		// No map failure
+		if (!sfcMap)
+		{
+			// no problem if only overloading
+			if (!fOverloadCurrent) return false;
+			if (fLoadSky) if (!Sky.Init(fSavegame)) return false;
+			return true;
+		}
+
+#ifdef DEBUGREC
+		AddDbgRec(RCT_Block, "|---MAP---|", 12);
+		AddDbgRec(RCT_Map, sfcMap->Bits, sfcMap->Pitch * sfcMap->Hgt);
+#endif
+
+		if (!AssignMap(sfcMap, fOverloadCurrent, fLoadSky, fSavegame))
+		{
+			return false;
+		}
+	}
+
+	// Exact landscape from scenario (no map or exact recreation)
+	else
+	{
+		C4DebugRecOff DBGRECOFF;
+		// if overloading, clear current
+		if (fOverloadCurrent) Clear(!Section.C4S.Landscape.KeepMapCreator, fLoadSky);
+		// load it
+		if (!fLandscapeModeSet) Mode = C4LSC_Exact;
+		rfLoaded = true;
+		if (!Load(hGroup, fLoadSky, fSavegame)) return false;
+	}
+
+	return FinalizeInit(rfLoaded, &hGroup);
 }
 
 bool C4Landscape::SetPix(int32_t x, int32_t y, uint8_t npix)
