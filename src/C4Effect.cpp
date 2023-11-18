@@ -364,21 +364,42 @@ void C4Effect::Execute(C4Object *pObj)
 
 void C4Effect::Kill(C4Object *pObj)
 {
+	const auto deletionTracker = TrackDeletion();
 	// active?
 	C4Effect *pLastRemovedEffect = nullptr;
 	if (IsActive())
+	{
 		// then temp remove all higher priority effects
 		TempRemoveUpperEffects(pObj, false, &pLastRemovedEffect);
+	}
 	else
+	{
 		// otherwise: temp reactivate before real removal
 		// this happens only if a lower priority effect removes an upper priority effect in its add- or removal-call
-		if (pFnStart && iPriority != 1) pFnStart->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), C4VInt(C4FxCall_TempAddForRemoval)}, false, true);
+		if (pFnStart && iPriority != 1)
+		{
+			pFnStart->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), C4VInt(C4FxCall_TempAddForRemoval)}, false, true);
+			if (deletionTracker.IsDeleted())
+			{
+				return;
+			}
+		}
+	}
 	// remove this effect
 	int32_t iPrevPrio = iPriority; SetDead();
 	if (pFnStop)
+	{
 		if (pFnStop->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber)}, false, true).getInt() == C4Fx_Stop_Deny)
+		{
 			// effect denied to be removed: recover
 			iPriority = iPrevPrio;
+		}
+
+		if (deletionTracker.IsDeleted())
+		{
+			return;
+		}
+	}
 	// reactivate other effects
 	TempReaddUpperEffects(pObj, pLastRemovedEffect);
 }

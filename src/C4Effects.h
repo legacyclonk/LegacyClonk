@@ -24,6 +24,7 @@
 
 #include "C4Aul.h"
 #include "C4Constants.h"
+#include "C4DeletionTrackable.h"
 #include "C4EnumeratedObjectPtr.h"
 #include "C4ValueList.h"
 
@@ -73,7 +74,7 @@ typedef unsigned long C4ID;
 #define C4Fx_FireMode_Last      3 // largest valid fire mode
 
 // generic object effect
-class C4Effect
+class C4Effect : private C4DeletionTrackable
 {
 public:
 	char Name[C4MaxDefString + 1]; // name of effect
