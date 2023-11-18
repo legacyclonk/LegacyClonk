@@ -39,6 +39,7 @@ src/C4Def.h
 src/C4DefGraphics.cpp
 src/C4DefGraphics.h
 src/C4DelegatedIterable.h
+src/C4DeletionTrackable.h
 src/C4DevmodeDlg.cpp
 src/C4DevmodeDlg.h
 src/C4DownloadDlg.cpp
