@@ -41,11 +41,6 @@ C4ObjectMenu::~C4ObjectMenu()
 	{
 		*ClearObjectPtr = nullptr;
 	}
-
-	if (IsDeleted)
-	{
-		*IsDeleted = true;
-	}
 }
 
 void C4ObjectMenu::Default()
@@ -516,8 +511,7 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 	{
 		ClearObjectPtr = &l_Object;
 	}
-	bool isDeleted{false};
-	IsDeleted = &isDeleted;
+	const auto deletionTracker = TrackDeletion();
 
 	switch (eCallbackType)
 	{
@@ -538,10 +532,9 @@ bool C4ObjectMenu::MenuCommand(const char *szCommand, bool fIsCloseCommand)
 
 	if ((!l_Permanent || fIsCloseCommand) && l_Object) l_Object->AutoContextMenu(l_LastSelection);
 
-	if (!isDeleted)
+	if (!deletionTracker.IsDeleted())
 	{
 		ClearObjectPtr = nullptr;
-		IsDeleted = nullptr;
 	}
 
 	return true;
