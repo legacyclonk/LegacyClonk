@@ -63,6 +63,7 @@ protected:
 	CallbackType eCallbackType;
 	bool UserMenu; // set for script created menus; user menus do CloseQuery and MenuSelection callbacks
 	bool CloseQuerying; // recursion check for close query callback
+	bool *IsDeleted{nullptr};
 
 	void LocalInit(C4Object *pObject, bool fUserMenu);
 
