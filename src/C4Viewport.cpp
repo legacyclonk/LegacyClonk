@@ -178,18 +178,18 @@ LRESULT APIENTRY C4ViewportWindow::WinProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 		{
 		case WM_LBUTTONDOWN:
 			// movement update needed before, so target is always up-to-date
-			Console.EditCursor.Move(cvp->ViewX + static_cast<int32_t>(LOWORD(lParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(lParam) / scale), wParam);
-			Console.EditCursor.LeftButtonDown(wParam & MK_CONTROL); break;
+			Console.EditCursor.Move(cvp->GetViewSection(), cvp->ViewX + static_cast<int32_t>(LOWORD(lParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(lParam) / scale), wParam);
+			Console.EditCursor.LeftButtonDown(cvp->GetViewSection(), wParam & MK_CONTROL); break;
 
-		case WM_LBUTTONUP: Console.EditCursor.LeftButtonUp(); break;
+		case WM_LBUTTONUP: Console.EditCursor.LeftButtonUp(cvp->GetViewSection()); break;
 
 		case WM_RBUTTONDOWN: Console.EditCursor.RightButtonDown(wParam & MK_CONTROL); break;
 
 		case WM_RBUTTONUP: Console.EditCursor.RightButtonUp(); break;
 
-		case WM_MBUTTONUP: Console.EditCursor.MiddleButtonUp(); break;
+		case WM_MBUTTONUP: Console.EditCursor.MiddleButtonUp(cvp->GetViewSection()); break;
 
-		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp->ViewX + static_cast<int32_t>(LOWORD(lParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(lParam) / scale), wParam); break;
+		case WM_MOUSEMOVE: Console.EditCursor.Move(cvp->GetViewSection(), cvp->ViewX + static_cast<int32_t>(LOWORD(lParam) / scale), cvp->ViewY + static_cast<int32_t>(HIWORD(lParam) / scale), wParam); break;
 		}
 	}
 
