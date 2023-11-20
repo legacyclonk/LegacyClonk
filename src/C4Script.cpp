@@ -6263,7 +6263,9 @@ static C4ValueInt FnGetSectionByindex(C4AulContext *ctx, C4ValueInt i)
 {
 	if (Inside(i, 0, static_cast<std::int32_t>(Game.Sections.size()) - 1))
 	{
-		return static_cast<C4ValueInt>(Game.Sections[i]->Number);
+		auto it = Game.Sections.begin();
+		std::advance(it, i);
+		return static_cast<C4ValueInt>(it->get()->Number);
 	}
 
 	return C4Section::NoSectionSentinel;
@@ -6273,22 +6275,22 @@ static C4ValueInt FnGetSectionByName(C4AulContext *ctx, C4String *name, std::opt
 {
 	if (!name) return false;
 
-	for (std::size_t i{0}; i < Game.Sections.size(); ++i)
+	for (const auto &section : Game.Sections)
 	{
-		if (Game.Sections[i]->GetName() == FnStringPar(name))
+		if (section->GetName() == FnStringPar(name))
 		{
 			if (index)
 			{
 				if (*index == 0)
 				{
-					return static_cast<C4ValueInt>(Game.Sections[i]->Number);
+					return static_cast<C4ValueInt>(section->Number);
 				}
 
 				--*index;
 			}
 			else
 			{
-				return static_cast<C4ValueInt>(Game.Sections[i]->Number);
+				return static_cast<C4ValueInt>(section->Number);
 			}
 		}
 	}

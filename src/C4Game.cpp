@@ -1282,12 +1282,12 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 
 	if (comp.fExact)
 	{
-		pComp->Value(mkNamingAdapt(Sections[0]->Weather,       "Weather")); // FIXME: sections
-		pComp->Value(mkNamingAdapt(Sections[0]->Landscape,     "Landscape"));
-		pComp->Value(mkNamingAdapt(Sections[0]->Landscape.Sky, "Sky"));
+		pComp->Value(mkNamingAdapt(Sections.front()->Weather,       "Weather")); // FIXME: sections
+		pComp->Value(mkNamingAdapt(Sections.front()->Landscape,     "Landscape"));
+		pComp->Value(mkNamingAdapt(Sections.front()->Landscape.Sky, "Sky"));
 	}
 
-	pComp->Value(mkNamingAdapt(mkNamingPtrAdapt(Sections[0]->GlobalEffects, "GlobalEffects"), "Effects"));
+	pComp->Value(mkNamingAdapt(mkNamingPtrAdapt(Sections.front()->GlobalEffects, "GlobalEffects"), "Effects"));
 
 	// scoreboard compiles into main level [Scoreboard]
 	if (!comp.fScenarioSection && comp.fExact)
@@ -1821,9 +1821,9 @@ bool C4Game::InitGame(C4Group &hGroup, bool fLoadSky)
 
 	// goal objects exist, but no GOAL? create it
 	if (!C4S.Head.SaveGame)
-		if (Sections[0]->Objects.ObjectsInt().ObjectCount(C4ID_None, C4D_Goal))
-			if (!Sections[0]->Objects.FindInternal(C4Id("GOAL")))
-				Sections[0]->CreateObject(C4Id("GOAL"), nullptr);
+		if (Sections.front()->Objects.ObjectsInt().ObjectCount(C4ID_None, C4D_Goal))
+			if (!Sections.front()->Objects.FindInternal(C4Id("GOAL")))
+				Sections.front()->CreateObject(C4Id("GOAL"), nullptr);
 	SetInitProgress(96);
 
 	// close any gfx groups, because they are no longer needed (after sky is initialized)
@@ -1919,7 +1919,7 @@ bool C4Game::InitGameFirstPart()
 	SetInitProgress(58);
 
 	// Colorize defs by material
-	Defs.ColorizeByMaterial(Sections[0]->Material, GBM);
+	Defs.ColorizeByMaterial(Sections.front()->Material, GBM);
 	SetInitProgress(60);
 
 	PreloadStatus = PreloadLevel::Basic;
