@@ -62,7 +62,7 @@ void C4EditCursor::Execute()
 		switch (Console.ToolsDlg.Tool)
 		{
 		case C4TLS_Fill:
-			if (Hold) if (!Game.HaltCount) if (Console.Editing) ApplyToolFill();
+			//if (Hold) if (!Game.HaltCount) if (Console.Editing) ApplyToolFill();
 			break;
 		}
 		break;
@@ -107,9 +107,6 @@ bool C4EditCursor::Init()
 #endif // _WIN32
 	Console.UpdateModeCtrls(Mode);
 
-	// FIXME
-	Section = Game.Sections.front().get();
-
 	return true;
 }
 
@@ -120,7 +117,7 @@ void C4EditCursor::ClearPointers(C4Object *pObj)
 		OnSelectionChanged();
 }
 
-bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
+bool C4EditCursor::Move(C4Section &section, int32_t iX, int32_t iY, uint16_t wKeyFlags)
 {
 	// Offset movement
 	int32_t xoff = iX - X; int32_t yoff = iY - Y; X = iX; Y = iY;
@@ -132,7 +129,7 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 		if (!DragFrame && Hold)
 		{
 			MoveSelection(xoff, yoff);
-			UpdateDropTarget(wKeyFlags);
+			UpdateDropTarget(section, wKeyFlags);
 		}
 		// Update target
 		// Shift always indicates a target outside the current selection
@@ -141,7 +138,7 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 			Target = ((wKeyFlags & MK_SHIFT) && Selection.Last) ? Selection.Last->Obj : nullptr;
 			do
 			{
-				Target = Section->FindObject(0, X, Y, 0, 0, OCF_NotContained, nullptr, nullptr, nullptr, nullptr, ANY_OWNER, Target);
+				Target = section.FindObject(0, X, Y, 0, 0, OCF_NotContained, nullptr, nullptr, nullptr, nullptr, ANY_OWNER, Target);
 			} while ((wKeyFlags & MK_SHIFT) && Target && Selection.GetLink(Target));
 		}
 		break;
@@ -150,7 +147,7 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 		switch (Console.ToolsDlg.Tool)
 		{
 		case C4TLS_Brush:
-			if (Hold) ApplyToolBrush();
+			if (Hold) ApplyToolBrush(section);
 			break;
 		case C4TLS_Line: case C4TLS_Rect:
 			break;
@@ -181,7 +178,8 @@ bool C4EditCursor::UpdateStatusBar()
 		break;
 
 	case C4CNS_ModeDraw:
-		text = std::format("{}/{} ({})", X, Y, (Section->MatValid(Section->Landscape.GetMat(X, Y)) ? Section->Material.Map[Section->Landscape.GetMat(X, Y)].Name : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING)));
+		// text = std::format("{}/{} ({})", X, Y, (Section->MatValid(Section->Landscape.GetMat(X, Y)) ? Section->Material.Map[Section->Landscape.GetMat(X, Y)].Name : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING)));
+		text = "FIXME: C4CNS_ModeDraw"; // FIXME
 		break;
 	}
 	return Console.UpdateCursorBar(text.c_str());
@@ -192,7 +190,7 @@ void C4EditCursor::OnSelectionChanged()
 	fSelectionChanged = true;
 }
 
-bool C4EditCursor::LeftButtonDown(bool fControl)
+bool C4EditCursor::LeftButtonDown(C4Section &section, bool fControl)
 {
 	// Hold
 	Hold = true;
@@ -225,7 +223,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 	case C4CNS_ModeDraw:
 		switch (Console.ToolsDlg.Tool)
 		{
-		case C4TLS_Brush: ApplyToolBrush(); break;
+		case C4TLS_Brush: ApplyToolBrush(section); break;
 		case C4TLS_Line: DragLine  = true; X2 = X; Y2 = Y; break;
 		case C4TLS_Rect: DragFrame = true; X2 = X; Y2 = Y; break;
 		case C4TLS_Fill:
@@ -234,7 +232,7 @@ bool C4EditCursor::LeftButtonDown(bool fControl)
 				Hold = false; Console.Message(LoadResStr(C4ResStrTableKey::IDS_CNS_FILLNOHALT)); return false;
 			}
 			break;
-		case C4TLS_Picker: ApplyToolPicker(); break;
+		case C4TLS_Picker: ApplyToolPicker(section); break;
 		}
 		break;
 	}
@@ -278,13 +276,13 @@ bool C4EditCursor::RightButtonDown(bool fControl)
 	return true;
 }
 
-bool C4EditCursor::LeftButtonUp()
+bool C4EditCursor::LeftButtonUp(C4Section &section)
 {
 	// Finish edit/tool
 	switch (Mode)
 	{
 	case C4CNS_ModeEdit:
-		if (DragFrame) FrameSelection();
+		if (DragFrame) FrameSelection(section);
 		if (DropTarget) PutContents();
 		break;
 
@@ -292,10 +290,10 @@ bool C4EditCursor::LeftButtonUp()
 		switch (Console.ToolsDlg.Tool)
 		{
 		case C4TLS_Line:
-			if (DragLine) ApplyToolLine();
+			if (DragLine) ApplyToolLine(section);
 			break;
 		case C4TLS_Rect:
-			if (DragFrame) ApplyToolRect();
+			if (DragFrame) ApplyToolRect(section);
 			break;
 		}
 		break;
@@ -343,11 +341,11 @@ bool C4EditCursor::RightButtonUp()
 	return true;
 }
 
-void C4EditCursor::MiddleButtonUp()
+void C4EditCursor::MiddleButtonUp(C4Section &section)
 {
 	if (Hold) return;
 
-	ApplyToolPicker();
+	ApplyToolPicker(section);
 }
 
 bool C4EditCursor::Delete()
@@ -450,11 +448,11 @@ void C4EditCursor::MoveSelection(int32_t iXOff, int32_t iYOff)
 	EMMoveObject(EMMO_Move, iXOff, iYOff, nullptr, &Selection);
 }
 
-void C4EditCursor::FrameSelection()
+void C4EditCursor::FrameSelection(C4Section &section)
 {
 	Selection.Clear();
 	C4Object *cobj; C4ObjectLink *clnk;
-	for (clnk = Section->Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
+	for (clnk = section.Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 		if (cobj->Status) if (cobj->OCF & OCF_NotContained)
 		{
 			if (Inside(cobj->x, (std::min)(X, X2), (std::max)(X, X2)) && Inside(cobj->y, (std::min)(Y, Y2), (std::max)(Y, Y2)))
@@ -481,7 +479,6 @@ void C4EditCursor::Default()
 	Hold = DragFrame = DragLine = false;
 	Selection.Default();
 	fSelectionChanged = false;
-	Section = nullptr;
 }
 
 void C4EditCursor::Clear()
@@ -551,36 +548,36 @@ bool C4EditCursor::ToggleMode()
 	return true;
 }
 
-void C4EditCursor::ApplyToolBrush()
+void C4EditCursor::ApplyToolBrush(C4Section &section)
 {
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, Section->Landscape.Mode, X, Y, 0, 0, pTools->Grade, !!pTools->ModeIFT, Section->Number, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Brush, section.Landscape.Mode, X, Y, 0, 0, pTools->Grade, !!pTools->ModeIFT, section.Number, pTools->Material, pTools->Texture));
 }
 
-void C4EditCursor::ApplyToolLine()
+void C4EditCursor::ApplyToolLine(C4Section &section)
 {
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, Section->Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, Section->Number, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Line, section.Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, section.Number, pTools->Material, pTools->Texture));
 }
 
-void C4EditCursor::ApplyToolRect()
+void C4EditCursor::ApplyToolRect(C4Section &section)
 {
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, Section->Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, Section->Number, pTools->Material, pTools->Texture));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Rect, section.Landscape.Mode, X, Y, X2, Y2, pTools->Grade, !!pTools->ModeIFT, section.Number, pTools->Material, pTools->Texture));
 }
 
-void C4EditCursor::ApplyToolFill()
+void C4EditCursor::ApplyToolFill(C4Section &section)
 {
 	if (!EditingOK()) return;
 	C4ToolsDlg *pTools = &Console.ToolsDlg;
 	// execute/send control
-	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, Section->Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, Section->Number, pTools->Material));
+	EMControl(CID_EMDrawTool, new C4ControlEMDrawTool(EMDT_Fill, section.Landscape.Mode, X, Y, 0, Y2, pTools->Grade, false, section.Number, pTools->Material));
 }
 
 bool C4EditCursor::DoContextMenu()
@@ -637,7 +634,7 @@ void C4EditCursor::GrabContents()
 	EMMoveObject(EMMO_Exit, 0, 0, nullptr, &Selection);
 }
 
-void C4EditCursor::UpdateDropTarget(uint16_t wKeyFlags)
+void C4EditCursor::UpdateDropTarget(C4Section &section, uint16_t wKeyFlags)
 {
 	C4Object *cobj; C4ObjectLink *clnk;
 
@@ -645,7 +642,7 @@ void C4EditCursor::UpdateDropTarget(uint16_t wKeyFlags)
 
 	if (wKeyFlags & MK_CONTROL)
 		if (Selection.GetObject())
-			for (clnk = Section->Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
+			for (clnk = section.Objects.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
 				if (cobj->Status)
 					if (!cobj->Contained)
 						if (Inside<int32_t>(X - (cobj->x + cobj->Shape.x), 0, cobj->Shape.Wdt - 1))
@@ -683,17 +680,17 @@ int32_t C4EditCursor::GetMode()
 	return Mode;
 }
 
-void C4EditCursor::ApplyToolPicker()
+void C4EditCursor::ApplyToolPicker(C4Section &section)
 {
 	int32_t iMaterial;
 	uint8_t byIndex;
-	switch (Section->Landscape.Mode)
+	switch (section.Landscape.Mode)
 	{
 	case C4LSC_Static:
 		// Material-texture from map
-		if (byIndex = Section->Landscape.GetMapIndex(X /Section->Landscape.MapZoom, Y / Section->Landscape.MapZoom))
+		if (byIndex = section.Landscape.GetMapIndex(X / section.Landscape.MapZoom, Y / section.Landscape.MapZoom))
 		{
-			const C4TexMapEntry *pTex = Section->TextureMap.GetEntry(byIndex & (IFT - 1));
+			const C4TexMapEntry *pTex = section.TextureMap.GetEntry(byIndex & (IFT - 1));
 			if (pTex)
 			{
 				Console.ToolsDlg.SelectMaterial(pTex->GetMaterialName());
@@ -706,10 +703,10 @@ void C4EditCursor::ApplyToolPicker()
 		break;
 	case C4LSC_Exact:
 		// Material only from landscape
-		if (Section->MatValid(iMaterial = Section->Landscape.GetMat(X, Y)))
+		if (section.MatValid(iMaterial = section.Landscape.GetMat(X, Y)))
 		{
-			Console.ToolsDlg.SelectMaterial(Section->Material.Map[iMaterial].Name);
-			Console.ToolsDlg.SetIFT(Section->Landscape.GBackIFT(X, Y));
+			Console.ToolsDlg.SelectMaterial(section.Material.Map[iMaterial].Name);
+			Console.ToolsDlg.SetIFT(section.Landscape.GBackIFT(X, Y));
 		}
 		else
 			Console.ToolsDlg.SelectMaterial(C4TLS_MatSky);
@@ -733,7 +730,7 @@ void C4EditCursor::EMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int
 	}
 
 	// execute control
-	EMControl(CID_EMMoveObj, new C4ControlEMMoveObject(eAction, tx, ty, Section->Number, pTargetObj, iObjCnt, pObjIDs, szScript, Config.Developer.ConsoleScriptStrictness));
+	EMControl(CID_EMMoveObj, new C4ControlEMMoveObject(eAction, tx, ty, pTargetObj->Section->Number, pTargetObj, iObjCnt, pObjIDs, szScript, Config.Developer.ConsoleScriptStrictness));
 }
 
 void C4EditCursor::EMControl(C4PacketType eCtrlType, C4ControlPacket *pCtrl)
