@@ -85,7 +85,7 @@ public:
 
 public:
 	C4DefList Defs;
-	std::vector<std::unique_ptr<C4Section>> Sections;
+	std::list<std::unique_ptr<C4Section>> Sections;
 	std::vector<std::unique_ptr<C4Section>> SectionsPendingDeletion;
 	C4Group ScenarioFile;
 	C4Scenario C4S;
