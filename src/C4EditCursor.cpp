@@ -55,7 +55,7 @@ void C4EditCursor::Execute()
 	case C4CNS_ModeEdit:
 		// Hold selection
 		if (Hold)
-			EMMoveObject(EMMO_Move, 0, 0, nullptr, &Selection);
+			EMMoveObject(EMMO_Move, 0, 0, nullptr, Selection);
 		break;
 
 	case C4CNS_ModeDraw:
@@ -351,7 +351,7 @@ void C4EditCursor::MiddleButtonUp(C4Section &section)
 bool C4EditCursor::Delete()
 {
 	if (!EditingOK()) return false;
-	EMMoveObject(EMMO_Remove, 0, 0, nullptr, &Selection);
+	EMMoveObject(EMMO_Remove, 0, 0, nullptr, Selection);
 	if (Game.Control.isCtrlHost())
 	{
 		OnSelectionChanged();
@@ -376,7 +376,7 @@ bool C4EditCursor::OpenPropTools()
 
 bool C4EditCursor::Duplicate()
 {
-	EMMoveObject(EMMO_Duplicate, 0, 0, nullptr, &Selection);
+	EMMoveObject(EMMO_Duplicate, 0, 0, nullptr, Selection);
 	return true;
 }
 
@@ -445,7 +445,7 @@ void C4EditCursor::DrawSelectMark(C4Facet &cgo)
 
 void C4EditCursor::MoveSelection(int32_t iXOff, int32_t iYOff)
 {
-	EMMoveObject(EMMO_Move, iXOff, iYOff, nullptr, &Selection);
+	EMMoveObject(EMMO_Move, iXOff, iYOff, nullptr, Selection);
 }
 
 void C4EditCursor::FrameSelection(C4Section &section)
@@ -463,7 +463,7 @@ void C4EditCursor::FrameSelection(C4Section &section)
 
 bool C4EditCursor::In(const char *szText)
 {
-	EMMoveObject(EMMO_Script, 0, 0, nullptr, &Selection, szText);
+	EMMoveObject(EMMO_Script, 0, 0, nullptr, Selection, szText);
 	return true;
 }
 
@@ -631,7 +631,7 @@ void C4EditCursor::GrabContents()
 	Hold = true;
 
 	// Exit all objects
-	EMMoveObject(EMMO_Exit, 0, 0, nullptr, &Selection);
+	EMMoveObject(EMMO_Exit, 0, 0, nullptr, Selection);
 }
 
 void C4EditCursor::UpdateDropTarget(C4Section &section, uint16_t wKeyFlags)
@@ -656,7 +656,7 @@ void C4EditCursor::UpdateDropTarget(C4Section &section, uint16_t wKeyFlags)
 void C4EditCursor::PutContents()
 {
 	if (!DropTarget) return;
-	EMMoveObject(EMMO_Enter, 0, 0, DropTarget, &Selection);
+	EMMoveObject(EMMO_Enter, 0, 0, DropTarget, Selection);
 }
 
 C4Object *C4EditCursor::GetTarget()
@@ -715,16 +715,16 @@ void C4EditCursor::ApplyToolPicker(C4Section &section)
 	Hold = false;
 }
 
-void C4EditCursor::EMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList *pObjs, const char *szScript)
+void C4EditCursor::EMMoveObject(C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList &objects, const char *szScript)
 {
 	// construct object list
 	int32_t iObjCnt = 0; int32_t *pObjIDs = nullptr;
-	if (pObjs && (iObjCnt = pObjs->ObjectCount()))
+	if ((iObjCnt = objects.ObjectCount()))
 	{
 		pObjIDs = new int32_t[iObjCnt];
 		// fill
 		int32_t i = 0;
-		for (C4ObjectLink *pLnk = pObjs->First; pLnk; pLnk = pLnk->Next, i++)
+		for (C4ObjectLink *pLnk = objects.First; pLnk; pLnk = pLnk->Next, i++)
 			if (pLnk->Obj && pLnk->Obj->Status)
 				pObjIDs[i] = pLnk->Obj->Number;
 	}

@@ -92,7 +92,7 @@ protected:
 	void DrawSelectMark(C4Facet &cgo);
 	void FrameSelection(C4Section &section);
 	void MoveSelection(int32_t iXOff, int32_t iYOff);
-	void EMMoveObject(enum C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList *pObjs = nullptr, const char *szScript = nullptr);
+	void EMMoveObject(enum C4ControlEMObjectAction eAction, int32_t tx, int32_t ty, C4Object *pTargetObj, const C4ObjectList &objects, const char *szScript = nullptr);
 	void EMControl(enum C4PacketType eCtrlType, class C4ControlPacket *pCtrl);
 
 #ifdef WITH_DEVELOPER_MODE
