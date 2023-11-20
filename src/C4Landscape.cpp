@@ -1751,6 +1751,7 @@ void C4Landscape::Default()
 	ShadeMaterials = true;
 	PixCntPitch = 0;
 	PixCnt = nullptr;
+	std::ranges::fill(Relights, C4Rect{});
 }
 
 void C4Landscape::ClearBlastMatCount()
