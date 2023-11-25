@@ -3109,21 +3109,18 @@ static C4Value FnObjectCall(C4AulContext *cthr,
 }
 
 static C4Value FnDefinitionCall(C4AulContext *cthr,
-	RequiredNonZero<C4ValueInt> idID, C4String &szFunction,
+	C4Def &def, C4String &szFunction,
 	C4Value par0, C4Value par1, C4Value par2, C4Value par3, C4Value par4,
 	C4Value par5, C4Value par6, C4Value par7)
 {
 	// Make failsafe
 	char szFunc2[C4AUL_MAX_Identifier + 1];
 	FormatWithNull(szFunc2, "~{}", FnStringPar(szFunction));
-	// Get definition
-	C4Def *pDef;
-	if (!(pDef = C4Id2Def(idID))) return C4VNull;
 	// copy parameters
 	C4AulParSet Pars;
 	Copy2ParSet8(Pars, par);
 	// Call
-	return pDef->Script.Call(szFunc2, Pars, true, !cthr->CalledWithStrictNil());
+	return def.Script.Call(szFunc2, Pars, true, !cthr->CalledWithStrictNil());
 }
 
 static C4Value FnGameCall(C4AulContext *cthr,
@@ -5519,6 +5516,20 @@ template <typename T> struct C4ValueConv<std::optional<T>>
 	{
 		if (v) return C4ValueConv<T>::ToC4V(*v);
 		return C4VNull;
+	}
+};
+
+// convert id to definition with C4ID2Def
+template <> struct C4ValueConv<C4Def *>
+{
+	constexpr static C4V_Type Type() { return C4V_C4ID; }
+	inline static C4Def *FromC4V(C4Value &v)
+	{
+		return C4Id2Def(v.getC4ID());
+	}
+	inline static C4Def *_FromC4V(const C4Value &v)
+	{
+		return C4Id2Def(v._getC4ID());
 	}
 };
 
