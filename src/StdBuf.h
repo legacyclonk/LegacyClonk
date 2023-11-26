@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "C4Strings.h"
 #include "Standard.h"
 
 #include <cassert>
@@ -401,6 +402,8 @@ public:
 	StdStrBuf(const char *pData, size_t iLength, bool fCopy = true)
 		: StdBuf(pData, pData ? iLength + 1 : 0, fCopy) {}
 
+	explicit StdStrBuf(std::string_view view, bool copy = true) : StdStrBuf{view.data(), view.size(), copy} {}
+
 	static StdStrBuf MakeRef(const StdStrBuf &Buf2) { return Buf2.getRef(); }
 	static StdStrBuf MakeRef(const char *str) { return StdStrBuf(str, false); }
 
@@ -416,6 +419,8 @@ public:
 
 	const char *getPtr(size_t i) const { return StdBuf::getPtr<char>(i); }
 	char       *getMPtr(size_t i)      { return StdBuf::getMPtr<char>(i); }
+
+	constexpr std::string_view View() const noexcept { return C4NullableStringView{getData(), getLength()}.View; }
 
 	// For convenience. Note that writing can't be allowed.
 	char operator[](size_t i) const { return *getPtr(i); }
