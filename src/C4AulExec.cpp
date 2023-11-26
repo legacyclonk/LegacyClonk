@@ -26,22 +26,18 @@
 #include <C4ValueHash.h>
 #include <C4Wrappers.h>
 
-C4AulExecError::C4AulExecError(C4Object *pObj, const char *szError) : cObj(pObj)
-{
-	// direct error message string
-	sMessage.Format("ERROR: %s", szError ? szError : "(no error message)");
-}
+C4AulExecError::C4AulExecError(C4Object *const obj, const std::string_view message)
+	: C4AulError{std::format("ERROR: {}", message.empty() ? "(no error message)" : message)}, Obj{obj} {}
 
 void C4AulExecError::show() const
 {
 	// log
 	C4AulError::show();
-	// debug mode object message
+	// debug mode object/viewport message
 	if (Game.DebugMode)
-		if (cObj)
-			Game.Messages.New(C4GM_Target, sMessage, cObj, NO_OWNER);
-		else
-			Game.Messages.New(C4GM_Global, sMessage, nullptr, ANY_OWNER);
+	{
+		Game.Messages.New(Obj ? C4GM_Target : C4GM_Global, StdStrBuf{message, false}, Obj, Obj ? NO_OWNER : ANY_OWNER);
+	}
 }
 
 bool C4AulContext::CalledWithStrictNil() const noexcept
@@ -1330,17 +1326,17 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 	return C4VNull;
 }
 
-static void ErrorOrWarning(C4Object *context, const char *message, bool warning)
+static void ErrorOrWarning(C4Object *context, const std::string_view message, bool warning)
 {
 	if (warning)
 	{
 		if (context)
 		{
-			DebugLogF("WARNING: %s (obj %s)", message, C4VObj(context).GetDataString().getData());
+			DebugLog(std::format("WARNING: {} (obj {})", message, C4VObj(context).GetDataString().View()).c_str());
 		}
 		else
 		{
-			DebugLogF("WARNING: %s", message);
+			DebugLog(std::format("WARNING: {}", message).c_str());
 		}
 	}
 	else
@@ -1365,7 +1361,7 @@ static bool CheckConvertFunctionParameters(C4Object *const ctxObject, C4AulFunc 
 			ErrorOrWarning(ctxObject,
 				FormatString("call to \"%s\" parameter %d: got \"%s\", but expected \"%s\"!",
 					pFunc->Name, i + 1, pPars[i].GetTypeName(), GetC4VName(pTypes[i])
-				).getData(), onlyWarn);
+				).View(), onlyWarn);
 			ok = false;
 		}
 

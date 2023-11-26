@@ -25,13 +25,11 @@
 #include <C4Log.h>
 #include <C4Components.h>
 
-C4AulError::C4AulError() {}
-
 void C4AulError::show() const
 {
 	// simply log error message
-	if (sMessage)
-		DebugLog(sMessage.getData());
+	if (!message.empty())
+		DebugLog(message.c_str());
 }
 
 C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :

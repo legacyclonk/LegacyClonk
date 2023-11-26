@@ -28,10 +28,13 @@
 #include <C4ValueMap.h>
 #include <C4Id.h>
 #include <C4Script.h>
+#include <C4Strings.h>
 #include <C4StringTable.h>
 
 #include <cstdint>
 #include <list>
+#include <string>
+#include <string_view>
 #include <vector>
 
 // class predefs
@@ -60,34 +63,34 @@ class C4DefList;
 // generic C4Aul error class
 class C4AulError
 {
-protected:
-	StdStrBuf sMessage;
-
 public:
-	C4AulError();
-	C4AulError(const C4AulError &Error) { sMessage.Copy(Error.sMessage); }
 	virtual ~C4AulError() {}
-	virtual void show() const; // present error message
+	virtual void show() const;
+
+protected:
+	C4AulError(std::string message) : message{std::move(message)} {}
+
+	std::string message;
 };
 
 // parse error
 class C4AulParseError : public C4AulError
 {
-	C4AulParseError(const char *message, const char *identifier, bool warn);
+	C4AulParseError(std::string_view message, C4NullableStringView identifier, bool isWarning);
 
 public:
-	C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf = nullptr, bool Warn = false);
-	C4AulParseError(class C4AulParseState *state, const char *pMsg, const char *pIdtf = nullptr, bool Warn = false);
+	C4AulParseError(C4AulScript *script, std::string_view message, C4NullableStringView identifier = {}, bool isWarning = false);
+	C4AulParseError(class C4AulParseState *state, std::string_view message, C4NullableStringView identifier = {}, bool isWarning = false);
 };
 
 // execution error
 class C4AulExecError : public C4AulError
 {
-	C4Object *cObj;
+	C4Object *Obj;
 
 public:
-	C4AulExecError(C4Object *pObj, const char *szError);
-	virtual void show() const override; // present error message
+	C4AulExecError(C4Object *obj, std::string_view message);
+	void show() const override;
 };
 
 // function access
