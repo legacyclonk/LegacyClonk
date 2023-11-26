@@ -251,55 +251,44 @@ void C4AulParseState::Strict2Error(const std::string_view message, const char *i
 	return StrictError(message, C4AulScriptStrict::STRICT2, identifier);
 }
 
-C4AulParseError::C4AulParseError(const std::string_view message, const char *identifier, bool warn)
-{
-	if (identifier)
-	{
-		this->message = std::format("{}{}", message, identifier);
-	}
-	else
-	{
-		this->message = message;
-	}
+C4AulParseError::C4AulParseError(const std::string_view message, const C4NullableStringView identifier, const bool isWarning)
+	: C4AulError{std::format("{}{}", message, identifier.View), isWarning} {}
 
-	isWarning = warn;
+C4AulParseError::C4AulParseError(C4AulScript *const script, const std::string_view message, const C4NullableStringView identifier, const bool isWarning)
+	: C4AulParseError{message, identifier, isWarning}
+{
+	if (script)
+	{
+		// Script name
+		this->message.append(std::format(" ({})", script->ScriptName));
+	}
 }
 
-C4AulParseError::C4AulParseError(C4AulParseState *state, const std::string_view msg, const char *pIdtf, bool Warn)
-	: C4AulParseError{msg, pIdtf, Warn}
+C4AulParseError::C4AulParseError(C4AulParseState *const state, const std::string_view message, const C4NullableStringView identifier, const bool isWarning)
+	: C4AulParseError{message, identifier, isWarning}
 {
-	if (state->Fn && *(state->Fn->Name))
+	const auto formatPosition = [state](C4AulScript *script)
 	{
+		return std::format("({}:{}:{})",
+			script->ScriptName,
+			SGetLine(script->Script.getData(), state->SPos),
+			SLineGetCharacters(script->Script.getData(), state->SPos));
+	};
+
+	if (const auto fn = state->Fn; fn && *(fn->Name))
+	{
+		std::string exactPosition;
+		if (const auto orgScript = fn->pOrgScript; orgScript && state->SPos)
+		{
+			exactPosition = std::format(", {}", formatPosition(orgScript));
+		}
+
 		// Show function name
-		message += " (in ";
-		message += state->Fn->Name;
-
-		// Exact position
-		if (state->Fn->pOrgScript && state->SPos)
-			message += std::format(", {}:{}:{}",
-				state->Fn->pOrgScript->ScriptName,
-				SGetLine(state->Fn->pOrgScript->Script.getData(), state->SPos),
-				SLineGetCharacters(state->Fn->pOrgScript->Script.getData(), state->SPos));
-		else
-			message += ')';
+		this->message.append(std::format(" (in {}{})", fn->Name, exactPosition));
 	}
-	else if (state->a)
+	else if (const auto script = state->a; script)
 	{
-		// Script name
-		message += std::format(" ({}:{}:{})",
-			state->a->ScriptName,
-			SGetLine(state->a->Script.getData(), state->SPos),
-			SLineGetCharacters(state->a->Script.getData(), state->SPos));
-	}
-}
-
-C4AulParseError::C4AulParseError(C4AulScript *pScript, const std::string_view msg, const char *pIdtf, bool Warn)
-	: C4AulParseError{msg, pIdtf, Warn}
-{
-	if (pScript)
-	{
-		// Script name
-		message += std::format(" ({})", pScript->ScriptName);
+		this->message.append(std::format(" {}", formatPosition(script)));
 	}
 }
 

@@ -25,10 +25,6 @@
 #include <C4Log.h>
 #include <C4Components.h>
 
-#include <format>
-
-C4AulError::C4AulError() {}
-
 void C4AulError::show() const
 {
 	// simply log error message
