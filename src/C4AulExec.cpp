@@ -26,32 +26,18 @@
 #include <C4ValueHash.h>
 #include <C4Wrappers.h>
 
-#include <format>
-
-C4AulExecError::C4AulExecError(C4Object *pObj, const std::string_view error)
-	: cObj(pObj)
-{
-	// direct error message string
-	if (!error.empty())
-	{
-		message = error;
-	}
-	else
-	{
-		message = "(no error message)";
-	}
-}
+C4AulExecError::C4AulExecError(C4Object *const obj, const std::string_view message)
+	: C4AulError{std::string{message.empty() ? "(no error message)" : message}}, Obj{obj} {}
 
 void C4AulExecError::show() const
 {
 	// log
 	C4AulError::show();
-	// debug mode object message
+	// debug mode object/viewport message
 	if (Game.DebugMode)
-		if (cObj)
-			Game.Messages.New(C4GM_Target, StdStrBuf{message.c_str(), message.size(), false}, cObj, NO_OWNER);
-		else
-			Game.Messages.New(C4GM_Global, StdStrBuf{message.c_str(), message.size(), false}, nullptr, ANY_OWNER);
+	{
+		Game.Messages.New(Obj ? C4GM_Target : C4GM_Global, StdStrBuf{message, false}, Obj, Obj ? NO_OWNER : ANY_OWNER);
+	}
 }
 
 bool C4AulContext::CalledWithStrictNil() const noexcept
