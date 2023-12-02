@@ -469,10 +469,8 @@ protected:
 	C4AulScript *Owner, *Prev, *Next, *Child0, *ChildL; // tree structure
 
 	StdStrBuf Script; // script
-	C4AulBCC *Code, *CPos; // compiled script (/pos)
+	std::vector<C4AulBCC> Code; // compiled script
 	C4AulScriptState State; // script state
-	int CodeSize; // current number of byte code chunks in Code
-	int CodeBufSize; // size of Code buffer
 	bool Preparsing; // set while preparse
 	bool Resolving; // set while include-resolving, to catch circular includes
 
@@ -500,8 +498,8 @@ protected:
 
 	C4AulScript *FindFirstNonStrictScript(); // find first script that is not #strict
 
-	size_t GetCodePos() const { return CPos - Code; }
-	C4AulBCC *GetCodeByPos(size_t iPos) { return Code + iPos; }
+	size_t GetCodePos() const { return Code.size(); }
+	C4AulBCC *GetCodeByPos(size_t iPos) { return &Code[iPos]; }
 
 public:
 	std::string ScriptName; // script name
