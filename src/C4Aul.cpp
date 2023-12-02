@@ -179,8 +179,7 @@ void C4AulScript::Default()
 	// not compiled
 	State = ASS_NONE;
 	Script.Clear();
-	Code = CPos = nullptr;
-	CodeSize = CodeBufSize = 0;
+	Code.clear();
 	IncludesResolved = false;
 
 	// defaults
@@ -226,8 +225,7 @@ void C4AulScript::Clear()
 	while (Func0) delete Func0;
 	// delete script+code
 	Script.Clear();
-	delete[] Code; Code = nullptr;
-	CodeSize = CodeBufSize = 0;
+	Code.clear();
 	// reset flags
 	State = ASS_NONE;
 }
