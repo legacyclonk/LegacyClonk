@@ -904,25 +904,7 @@ static const char *GetTTName(C4AulBCCType e)
 
 void C4AulScript::AddBCC(C4AulBCCType eType, std::intptr_t X, const char *SPos)
 {
-	// range check
-	if (CodeSize >= CodeBufSize)
-	{
-		// create new buffer
-		CodeBufSize = CodeBufSize ? 2 * CodeBufSize : C4AUL_CodeBufSize;
-		C4AulBCC *nCode = new C4AulBCC[CodeBufSize];
-		// copy data
-		memcpy(nCode, Code, sizeof(*Code) * CodeSize);
-		// replace buffer
-		delete[] Code;
-		Code = nCode;
-		// adjust pointer
-		CPos = Code + CodeSize;
-	}
-	// store chunk
-	CPos->bccType = eType;
-	CPos->bccX = X;
-	CPos->SPos = SPos;
-	CPos++; CodeSize++;
+	Code.emplace_back(C4AulBCC{eType, X, SPos});
 }
 
 bool C4AulScript::Preparse()
@@ -933,7 +915,7 @@ bool C4AulScript::Preparse()
 
 	// clear stuff
 	Includes.clear(); Appends.clear();
-	CPos = Code;
+	Code.clear();
 	while (Func0)
 	{
 		// belongs to this script?
@@ -1098,20 +1080,17 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, std::intptr_t X)
 	}
 
 	// Join checks only if it's not a jump target
-	if (!fJump)
+	// Join together stack operations
+	if (!fJump && eType == AB_STACK && !a->Code.empty())
 	{
-		// Join together stack operations
-		if (eType == AB_STACK &&
-			a->CPos > a->Code &&
-			(a->CPos - 1)->bccType == AB_STACK
-			&& (X <= 0 || (a->CPos - 1)->bccX >= 0))
+		auto &back = a->Code.back();
+		if (back.bccType == AB_STACK && (X <= 0 || back.bccX >= 0))
 		{
-			(a->CPos - 1)->bccX += X;
+			back.bccX += X;
 			// Empty? Remove it.
-			if (!(a->CPos - 1)->bccX)
+			if (back.bccX == 0)
 			{
-				a->CPos--;
-				a->CodeSize--;
+				a->Code.pop_back();
 			}
 			return;
 		}
@@ -1126,14 +1105,14 @@ void C4AulParseState::AddBCC(C4AulBCCType eType, std::intptr_t X)
 
 namespace
 {
-	void SkipExpressions(intptr_t n, C4AulBCC *&CPos, C4AulBCC *const Code)
+	void SkipExpressions(intptr_t n, std::vector<C4AulBCC>::reverse_iterator &CPos, std::vector<C4AulBCC> &Code)
 	{
-		while (n > 0 && CPos > Code)
+		while (n > 0 && CPos != Code.rend())
 		{
 			switch (CPos->bccType)
 			{
 				case AB_STACK:
-					if (CPos->bccX > 0) n -= CPos--->bccX;
+					if (CPos->bccX > 0) n -= CPos++->bccX;
 					break;
 
 				case AB_INT: case AB_BOOL: case AB_STRING: case AB_C4ID:
@@ -1141,17 +1120,17 @@ namespace
 				case AB_LOCALN_R: case AB_LOCALN_V:
 				case AB_GLOBALN_R: case AB_GLOBALN_V:
 					--n;
-					--CPos;
+					++CPos;
 					break;
 
 				case AB_MAPA_R: case AB_MAPA_V: case AB_ARRAY_APPEND:
-					--CPos;
+					++CPos;
 					SkipExpressions(1, CPos, Code);
 					--n;
 					break;
 
 				case AB_ARRAYA_R: case AB_ARRAYA_V:
-					--CPos;
+					++CPos;
 					SkipExpressions(2, CPos, Code);
 					--n;
 					break;
@@ -1159,7 +1138,7 @@ namespace
 				case AB_ARRAY:
 				{
 					const auto size = CPos->bccX;
-					--CPos;
+					++CPos;
 					SkipExpressions(size, CPos, Code);
 					--n;
 					break;
@@ -1168,7 +1147,7 @@ namespace
 				case AB_MAP:
 				{
 					const auto size = 2 * CPos->bccX;
-					--CPos;
+					++CPos;
 					SkipExpressions(size, CPos, Code);
 					--n;
 					break;
@@ -1176,7 +1155,7 @@ namespace
 				}
 
 				case AB_PAR_R: case AB_PAR_V: case AB_VAR_R: case AB_VAR_V:
-					--CPos;
+					++CPos;
 					SkipExpressions(1, CPos, Code);
 					--n;
 					break;
@@ -1184,28 +1163,28 @@ namespace
 				case AB_FUNC:
 				{
 					const auto pars = reinterpret_cast<C4AulFunc *>(CPos->bccX)->GetParCount();
-					--CPos;
+					++CPos;
 					SkipExpressions(pars, CPos, Code);
 					--n;
 					break;
 				}
 
 				case AB_CALLNS:
-					--CPos;
+					++CPos;
 					break;
 
 				case AB_CALL: case AB_CALLFS: case AB_CALLGLOBAL:
-					--CPos;
+					++CPos;
 					SkipExpressions(C4AUL_MAX_Par + (CPos->bccType != AB_CALLGLOBAL ? 1 : 0), CPos, Code);
 					--n;
 					break;
 
 				default:
 					// operator?
-					if (Inside(CPos->bccType, AB_Inc1, AB_Set) && CPos > Code)
+					if (Inside(CPos->bccType, AB_Inc1, AB_Set) && CPos != Code.rend())
 					{
 						const auto &op = C4ScriptOpMap[CPos->bccX];
-						--CPos;
+						++CPos;
 						SkipExpressions(op.NoSecondStatement || !op.Postfix ? 1 : 2, CPos, Code);
 						--n;
 					}
@@ -1219,18 +1198,18 @@ namespace
 void C4AulParseState::SetNoRef()
 {
 	if (Type != PARSER) return;
-	for(C4AulBCC *CPos = a->CPos - 1; CPos >= a->Code; )
+	for(auto CPos = a->Code.rbegin(); CPos != a->Code.rend(); )
 	{
 		switch (CPos->bccType)
 		{
 		case AB_MAPA_R:
 			CPos->bccType = AB_MAPA_V;
-			--CPos;
+			++CPos;
 			// propagate back to the accessed map
 			break;
 		case AB_ARRAYA_R:
 			CPos->bccType = AB_ARRAYA_V;
-			--CPos;
+			++CPos;
 			// propagate back to the accessed array
 			SkipExpressions(1, CPos, a->Code);
 			break;
@@ -1390,7 +1369,7 @@ void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
 	// store byte code pos
 	// (relative position to code start; code pointer may change while
 	//  parsing)
-	Fn->Code = reinterpret_cast<C4AulBCC *>(CPos - Code);
+	Fn->Code = reinterpret_cast<C4AulBCC *>(Code.size());
 	// parse
 	C4AulParseState state(Fn, this, C4AulParseState::PARSER);
 	// get first token
@@ -2882,11 +2861,14 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 			break;
 		// negate constant?
 		if (Type == PARSER && SEqual(C4ScriptOpMap[OpID].Identifier, "-"))
-			if ((a->CPos - 1)->bccType == AB_INT)
+		{
+			auto &back = a->Code.back();
+			if (back.bccType == AB_INT)
 			{
-				(a->CPos - 1)->bccX = -(a->CPos - 1)->bccX;
+				back.bccX = -back.bccX;
 				break;
 			}
+		}
 
 		if (C4ScriptOpMap[OpID].Type1 != C4V_pC4Value)
 		{
@@ -3492,10 +3474,7 @@ bool C4AulScript::Parse()
 	// don't parse global funcs again, as they're parsed already through links
 	if (this == Engine) return false;
 	// delete existing code
-	delete[] Code;
-	CodeSize = CodeBufSize = 0;
-	// reset code and script pos
-	CPos = Code;
+	Code.clear();
 
 	// parse script funcs
 	C4AulFunc *f;
@@ -3531,12 +3510,12 @@ bool C4AulScript::Parse()
 				}
 				// make all jumps that don't have their destination yet jump here
 				// std::intptr_t to make it work on 64bit
-				for (std::intptr_t i = reinterpret_cast<std::intptr_t>(Fn->Code); i < CPos - Code; i++)
+				for (std::intptr_t i = reinterpret_cast<std::intptr_t>(Fn->Code); i < Code.size(); i++)
 				{
-					C4AulBCC *pBCC = Code + i;
-					if (IsJumpType(pBCC->bccType))
-						if (!pBCC->bccX)
-							pBCC->bccX = CPos - Code - i;
+					C4AulBCC &bcc = Code[i];
+					if (IsJumpType(bcc.bccType))
+						if (bcc.bccX == 0)
+							bcc.bccX = Code.size() - i;
 				}
 				// add an error chunk
 				AddBCC(AB_ERR);
@@ -3560,7 +3539,7 @@ bool C4AulScript::Parse()
 			if (Fn) if (Fn->Owner != Engine) Fn = nullptr;
 		}
 		if (Fn)
-			Fn->Code = Code + reinterpret_cast<std::intptr_t>(Fn->Code);
+			Fn->Code = &Code[reinterpret_cast<std::intptr_t>(Fn->Code)];
 	}
 
 	// save line count
