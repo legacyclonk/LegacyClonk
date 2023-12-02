@@ -130,13 +130,7 @@ public:
 		Done(false),
 		Type(Type),
 		fJump(false),
-		iStack(0),
-		pLoopStack(nullptr) {}
-
-	~C4AulParseState()
-	{
-		while (pLoopStack) PopLoop();
-	}
+		iStack(0) {}
 
 	C4AulScriptFunc *Fn; C4AulScript *a;
 	const char *SPos; // current position in the script
@@ -205,14 +199,13 @@ private:
 		{
 			bool Break;
 			size_t Pos;
-			Control *Next;
 		};
-		Control *Controls;
-		size_t StackSize;
-		Loop *Next;
+		std::vector<Control> Controls;
+		std::intptr_t StackSize;
 	};
-	Loop *pLoopStack;
+	std::vector<Loop> loopStack;
 
+	void EndLoop(std::size_t continueJumpPos);
 	void PushLoop();
 	void PopLoop();
 	void AddLoopControl(bool fBreak);
@@ -1292,42 +1285,41 @@ void C4AulParseState::AddJump(C4AulBCCType eType, size_t iWhere)
 	AddBCC(eType, iWhere - a->GetCodePos());
 }
 
+void C4AulParseState::EndLoop(std::size_t continueJumpPos)
+{
+	// Set targets for break/continue
+	for (auto &control : loopStack.back().Controls)
+	{
+		if (control.Break)
+		{
+			SetJumpHere(control.Pos);
+		}
+		else
+		{
+			SetJump(control.Pos, continueJumpPos);
+		}
+	}
+	PopLoop();
+}
+
 void C4AulParseState::PushLoop()
 {
 	if (Type != PARSER) return;
-	Loop *pNew = new Loop();
-	pNew->StackSize = iStack;
-	pNew->Controls = nullptr;
-	pNew->Next = pLoopStack;
-	pLoopStack = pNew;
+	loopStack.emplace_back(Loop{.StackSize = iStack});
 }
 
 void C4AulParseState::PopLoop()
 {
 	if (Type != PARSER) return;
-	// Delete loop controls
-	Loop *pLoop = pLoopStack;
-	while (pLoop->Controls)
-	{
-		// Unlink
-		Loop::Control *pCtrl = pLoop->Controls;
-		pLoop->Controls = pCtrl->Next;
-		// Delete
-		delete pCtrl;
-	}
-	// Unlink & delete
-	pLoopStack = pLoop->Next;
-	delete pLoop;
+	loopStack.pop_back();
 }
 
 void C4AulParseState::AddLoopControl(bool fBreak)
 {
 	if (Type != PARSER) return;
-	Loop::Control *pNew = new Loop::Control();
-	pNew->Break = fBreak;
-	pNew->Pos = a->GetCodePos();
-	pNew->Next = pLoopStack->Controls;
-	pLoopStack->Controls = pNew;
+	loopStack.back().Controls.emplace_back(
+		Loop::Control{.Break = fBreak, .Pos = a->GetCodePos()}
+	);
 }
 
 const char *C4AulParseState::GetTokenName(C4AulTokenType TokenType)
@@ -2101,15 +2093,15 @@ void C4AulParseState::Parse_Statement()
 			if (Type == PARSER)
 			{
 				// Must be inside a loop
-				if (!pLoopStack)
+				if (loopStack.empty())
 				{
 					Strict2Error("'break' is only allowed inside loops");
 				}
 				else
 				{
 					// Insert code
-					if (pLoopStack->StackSize != iStack)
-						AddBCC(AB_STACK, pLoopStack->StackSize - iStack);
+					if (loopStack.back().StackSize != iStack)
+						AddBCC(AB_STACK, loopStack.back().StackSize - iStack);
 					AddLoopControl(true);
 					AddBCC(AB_JUMP);
 				}
@@ -2121,15 +2113,15 @@ void C4AulParseState::Parse_Statement()
 			if (Type == PARSER)
 			{
 				// Must be inside a loop
-				if (!pLoopStack)
+				if (loopStack.empty())
 				{
 					Strict2Error("'continue' is only allowed inside loops");
 				}
 				else
 				{
 					// Insert code
-					if (pLoopStack->StackSize != iStack)
-						AddBCC(AB_STACK, pLoopStack->StackSize - iStack);
+					if (loopStack.back().StackSize != iStack)
+						AddBCC(AB_STACK, loopStack.back().StackSize - iStack);
 					AddLoopControl(false);
 					AddBCC(AB_JUMP);
 				}
@@ -2488,13 +2480,8 @@ void C4AulParseState::Parse_While()
 	AddJump(AB_JUMP, iStart);
 	// Set target for conditional jump
 	SetJumpHere(iCond);
-	// Set targets for break/continue
-	for (Loop::Control *pCtrl = pLoopStack->Controls; pCtrl; pCtrl = pCtrl->Next)
-		if (pCtrl->Break)
-			SetJumpHere(pCtrl->Pos);
-		else
-			SetJump(pCtrl->Pos, iStart);
-	PopLoop();
+
+	EndLoop(iStart);
 }
 
 void C4AulParseState::Parse_If()
@@ -2599,13 +2586,8 @@ void C4AulParseState::Parse_For()
 	// Set target for condition
 	if (iJumpOut != SizeMax)
 		SetJumpHere(iJumpOut);
-	// Set targets for break/continue
-	for (Loop::Control *pCtrl = pLoopStack->Controls; pCtrl; pCtrl = pCtrl->Next)
-		if (pCtrl->Break)
-			SetJumpHere(pCtrl->Pos);
-		else
-			SetJump(pCtrl->Pos, iJumpBack);
-	PopLoop();
+
+	EndLoop(iJumpBack);
 }
 
 void C4AulParseState::Parse_ForEach()
@@ -2677,13 +2659,8 @@ void C4AulParseState::Parse_ForEach()
 	AddJump(AB_JUMP, iStart);
 	// set condition jump target
 	SetJumpHere(iCond);
-	// set jump targets for break/continue
-	for (Loop::Control *pCtrl = pLoopStack->Controls; pCtrl; pCtrl = pCtrl->Next)
-		if (pCtrl->Break)
-			SetJumpHere(pCtrl->Pos);
-		else
-			SetJump(pCtrl->Pos, iStart);
-	PopLoop();
+
+	EndLoop(iStart);
 	// remove array/map and counter/iterator from stack
 	AddBCC(AB_STACK, forMap ? -3 : -2);
 }
