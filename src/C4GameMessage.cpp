@@ -97,7 +97,7 @@ int32_t PortraitIndent = 10;
 
 void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer)
 {
-	int32_t alignment = dwFlags & C4GM_ALeft ? ALeft : dwFlags & C4GM_ACenter ? ACenter : dwFlags & C4GM_ARight ? ARight : 0;
+	int32_t alignment = dwFlags & C4GM_ALeft ? ALeft : dwFlags & C4GM_ACenter ? ACenter : dwFlags & C4GM_ARight ? ARight : -1;
 
 	// Globals or player
 	if (Type == C4GM_Global || ((Type == C4GM_GlobalPlayer) && (iPlayer == Player)))
@@ -164,7 +164,7 @@ void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer)
 			C4Facet facet(cgo.Surface, iDrawX, iDrawY, PortraitWidth, PortraitWidth);
 			fctPortrait.Draw(facet);
 			// draw message
-			Application.DDraw->TextOut(sText.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, iDrawX + PortraitWidth + PortraitIndent, iDrawY, ColorDw, alignment ? alignment : ALeft);
+			Application.DDraw->TextOut(sText.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, iDrawX + PortraitWidth + PortraitIndent, iDrawY, ColorDw, alignment != -1 ? alignment : ALeft);
 		}
 		else
 		{
@@ -172,7 +172,7 @@ void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer)
 			iDrawX += cgo.Wdt / 2;
 			iDrawY += 2 * cgo.Hgt / 3 + 50;
 			if (!(dwFlags & C4GM_Bottom)) iDrawY += DrawMessageOffset;
-			Application.DDraw->TextOut(sText.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, iDrawX, iDrawY, ColorDw, alignment ? alignment : ACenter);
+			Application.DDraw->TextOut(sText.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, iDrawX, iDrawY, ColorDw, alignment != -1 ? alignment : ACenter);
 		}
 	}
 	// Positioned
@@ -224,7 +224,7 @@ void C4GameMessage::Draw(C4FacetEx &cgo, int32_t iPlayer)
 					cgo.Surface,
 					cgo.X + iTX,
 					cgo.Y + iTY,
-					ColorDw, alignment ? alignment : ACenter);
+					ColorDw, alignment != -1 ? alignment : ACenter);
 			}
 	}
 }
