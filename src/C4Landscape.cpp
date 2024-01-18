@@ -2699,6 +2699,34 @@ bool C4Landscape::DrawDefMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt,
 	return fSuccess;
 }
 
+bool C4Landscape::DrawCreatorMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, const char *szMapDef)
+{
+	// safety
+	if (!szMapDef || !pMapCreator) return false;
+	// clip to landscape size
+	if (!ClipRect(iX, iY, iWdt, iHgt)) return false;
+	// get needed map size
+	int32_t iMapWdt = (iWdt - 1) / MapZoom + 1;
+	int32_t iMapHgt = (iHgt - 1) / MapZoom + 1;
+	bool fSuccess = false;
+	// this will also append to the MapCreator Tree
+	pMapCreator->ReadScript(szMapDef);
+	C4MCMap *pMap = pMapCreator->GetMap(nullptr);
+	if (!pMap) return false;
+	pMap->SetSize(iMapWdt, iMapHgt);
+	// pMapCreator->Render() will use the last map in the MapCreator tree
+	CSurface8 *sfcMap = pMapCreator->Render(nullptr);
+	if (sfcMap)
+	{
+		// map to landscape
+		fSuccess = MapToLandscape(sfcMap, 0, 0, iMapWdt, iMapHgt, iX, iY);
+	}
+	// cleanup
+	delete sfcMap;
+	// done
+	return fSuccess;
+}
+
 bool C4Landscape::ClipRect(int32_t &rX, int32_t &rY, int32_t &rWdt, int32_t &rHgt)
 {
 	// clip by bounds
