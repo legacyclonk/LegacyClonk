@@ -3011,7 +3011,7 @@ void C4Object::DrawCommands(C4Facet &cgoBottom, C4Facet &cgoSide, C4RegionList *
 			}
 			// Buy
 			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy)
-			{
+			{ // TODO MENU: Correct button for gamepad?
 				Contained->DrawCommand(cgoBottom, C4FCT_Right, nullptr, COM_Up, pRegions, Owner, LoadResStr("IDS_CON_BUY"), &ccgo);
 				DrawMenuSymbol(C4MN_Buy, ccgo, Contained->Base, Contained);
 			}

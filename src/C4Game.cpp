@@ -3577,13 +3577,22 @@ bool C4Game::LocalControlGamepad(C4KeyCodeEx key, C4KeySetCtrl Ctrl)
 	C4Player* pPlr;
 	if (pPlr = Players.GetLocalByKbdSet(Ctrl.iKeySet))
 	{
-		// Swallow a event generated from Keyrepeat for AutoStopControl
-		if (pPlr->ControlStyle)
-		{
-			if (key.IsRepeated())
-				return true;
+		int32_t iCommand = Ctrl.iCtrl;
+		bool cursorMenuActive = pPlr->Cursor && pPlr->Cursor->Menu && pPlr->Cursor->Menu->IsActive();
+		if (Key_IsGamepadButton(key.Key) && (pPlr->Menu.IsActive() || cursorMenuActive)) {
+			int32_t iGamepad = Ctrl.iKeySet - C4P_Control_GamePad1;
+			int32_t iButton = Key_GetGamepadButtonIndex(key.Key);
+			iCommand = Config.Gamepads[iGamepad].ButtonMenuCommand[iButton];
 		}
-		LocalPlayerControl(pPlr->Number, Ctrl.iCtrl);
+		else { // No menu active, send normal command
+			// Swallow a event generated from Keyrepeat for AutoStopControl
+			if (pPlr->ControlStyle)
+			{
+				if (key.IsRepeated())
+					return true;
+			}
+		}
+		LocalPlayerControl(pPlr->Number, iCommand);
 		return true;
 	}
 	// not processed - must return false here, so unused keyboard control sets do not block used ones

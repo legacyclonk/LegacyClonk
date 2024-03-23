@@ -71,6 +71,41 @@ void DrawMenuSymbol(int32_t iMenu, C4Facet &cgo, int32_t iOwner, C4Object *cObj)
 	}
 }
 
+// Convert menu controls (not COMs) to the configured key name for a given player
+static StdStrBuf MenuCommandKeyName(int32_t iPlayer, int32_t iMenuCommand)
+{
+	C4Player* pPlr = Game.Players.Get(iPlayer);
+	if (pPlr && Inside(pPlr->Control, C4P_Control_GamePad1, C4P_Control_GamePadMax))
+	{
+		int32_t iGamepad = pPlr->Control - C4P_Control_GamePad1;
+		auto& config = Config.Gamepads[iGamepad];
+		uint8_t buttonSearchOrder[]{
+			// A command might have multiple buttons. Search A/B/X/Y buttons first, then in reverse order, so D-Pad is searched last
+			XINPUT_BUTTON_A, XINPUT_BUTTON_B, XINPUT_BUTTON_X, XINPUT_BUTTON_Y,
+			11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+		};
+		for (const auto &iButton : buttonSearchOrder) {
+			if (config.ButtonMenuCommand[iButton] == iMenuCommand) {
+				return C4KeyCodeEx::KeyCode2String(KEY_Gamepad(iGamepad, KEY_JOY_Button(iButton)), true, true);
+			}
+		}
+	}
+
+	int32_t iControl = CON_Throw;
+	switch (iMenuCommand)
+	{
+		case COM_MenuEnter: iControl = CON_Throw;
+		case COM_MenuEnterAll: iControl = CON_Special2;
+		case COM_MenuClose: iControl = CON_Dig;
+		case COM_MenuUp: iControl = CON_Up;
+		case COM_MenuDown: iControl = CON_Down;
+		case COM_MenuLeft: iControl = CON_Left;
+		case COM_MenuRight: iControl = CON_Right;
+	}
+
+	return PlrControlKeyName(pPlr->Number, iControl, true);
+}
+
 // C4MenuItem
 
 C4MenuItem::C4MenuItem(C4Menu *pMenu, int32_t iIndex, const char *szCaption,
@@ -856,21 +891,21 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 		{
 			// Normal enter
 			cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-			DrawCommandKey(cgoControl, COM_Throw, false, PlrControlKeyName(iPlayer, Com2Control(COM_Throw), true).getData());
+			DrawCommandKey(cgoControl, COM_Throw, false, MenuCommandKeyName(iPlayer, COM_MenuEnter).getData());
 			cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
 			GfxR->fctOKCancel.Draw(cgoControl, true, 0, 0);
 			// Enter-all on Special2
 			if (pItem && pItem->Command2[0])
 			{
 				cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-				DrawCommandKey(cgoControl, COM_Special2, false, PlrControlKeyName(iPlayer, Com2Control(COM_Special2), true).getData());
+				DrawCommandKey(cgoControl, COM_Special2, false, MenuCommandKeyName(iPlayer, COM_MenuEnterAll).getData());
 				cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
 				GfxR->fctOKCancel.Draw(cgoControl, true, 2, 1);
 			}
 		}
 		// Draw menu 'close' command
 		cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-		DrawCommandKey(cgoControl, COM_Dig, false, PlrControlKeyName(iPlayer, Com2Control(COM_Dig), true).getData());
+		DrawCommandKey(cgoControl, COM_Dig, false, MenuCommandKeyName(iPlayer, COM_MenuClose).getData());
 		cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
 		// Close command contains "Exit"? Show an exit symbol in the status bar.
 		if (SSearch(CloseCommand.getData(), "\"Exit\"")) GfxR->fctExit.Draw(cgoControl);

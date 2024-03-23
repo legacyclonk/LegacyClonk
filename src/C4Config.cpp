@@ -324,7 +324,7 @@ void C4ConfigGamepad::CompileFunc(StdCompiler *pComp, bool fButtonsOnly)
 	pComp->Value(mkNamingAdapt(ButtonMenuCommand[11], "ButtonMenuCommand11", COM_None));
 	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_A], "ButtonMenuCommand12", COM_MenuEnter));
 	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_B], "ButtonMenuCommand13", COM_MenuClose));
-	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_X], "ButtonMenuCommand14", COM_None));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_X], "ButtonMenuCommand14", COM_Throw));
 	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_Y], "ButtonMenuCommand15", COM_MenuEnterAll));
 }
 
