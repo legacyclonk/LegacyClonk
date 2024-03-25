@@ -344,8 +344,13 @@ bool ObjectComUp(C4Object *cObj) // by DFA_WALK or DFA_SWIM
 			return PlayerObjectCommand(cObj->Owner, C4CMD_Enter, pTarget);
 
 	// Try jump
-	if (cObj->GetProcedure() == DFA_WALK)
+	if (cObj->GetProcedure() == DFA_WALK) {
+		// Don't jump on the COM_Up key if the controlling player has configured a COM_Jump button
+		C4Player* pPlr = Game.Players.Get(cObj->Controller);
+		if (pPlr->HasExplicitJumpKey) return false;
+
 		return PlayerObjectCommand(cObj->Owner, C4CMD_Jump);
+	}
 
 	return false;
 }

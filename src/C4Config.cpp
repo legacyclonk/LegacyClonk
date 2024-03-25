@@ -304,7 +304,7 @@ void C4ConfigGamepad::CompileFunc(StdCompiler *pComp, bool fButtonsOnly)
 	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_RB], "ButtonCommand9", COM_CursorToggle));
 	pComp->Value(mkNamingAdapt(ButtonCommand[10], "ButtonCommand10", COM_None));
 	pComp->Value(mkNamingAdapt(ButtonCommand[11], "ButtonCommand11", COM_None));
-	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_A], "ButtonCommand12", COM_Up));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_A], "ButtonCommand12", COM_Jump));
 	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_B], "ButtonCommand13", COM_Dig));
 	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_X], "ButtonCommand14", COM_Throw));
 	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_Y], "ButtonCommand15", COM_Special2));
@@ -326,6 +326,13 @@ void C4ConfigGamepad::CompileFunc(StdCompiler *pComp, bool fButtonsOnly)
 	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_B], "ButtonMenuCommand13", COM_MenuClose));
 	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_X], "ButtonMenuCommand14", COM_None));
 	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_Y], "ButtonMenuCommand15", COM_MenuEnterAll));
+}
+
+bool C4ConfigGamepad::HasExplicitJumpButton() {
+	for (auto& command : this->AxisMaxCommand) if (command == COM_Jump) return true;
+	for (auto& command : this->AxisMinCommand) if (command == COM_Jump) return true;
+	for (auto& command : this->ButtonCommand) if (command == COM_Jump) return true;
+	return false;
 }
 
 void C4ConfigGamepad::Reset()

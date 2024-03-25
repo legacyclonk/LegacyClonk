@@ -264,6 +264,7 @@ public:
 	uint32_t AxisMinCommand[C4MaxGamePadAxis], AxisMaxCommand[C4MaxGamePadAxis];
 	void CompileFunc(StdCompiler *pComp, bool fButtonsOnly = false);
 	void Reset(); // reset all buttons and axis calibration to default
+	bool HasExplicitJumpButton();
 };
 
 class C4ConfigControls

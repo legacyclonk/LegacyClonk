@@ -3396,6 +3396,7 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 		case COM_Right:  ObjectComMovement(this, COMD_Right); break;
 		case COM_Down:   ObjectComMovement(this, COMD_Stop); break;
 		case COM_Up:     ObjectComUp(this); break;
+		case COM_Jump:   ObjectComJump(this); break;
 		case COM_Down_D: ObjectComDownDouble(this); break;
 		case COM_Dig_S:
 			if (ObjectComDig(this))
@@ -3430,6 +3431,7 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 			else { ObjectComMovement(this, COMD_Right); ObjectComLetGo(this, +1); }
 			break;
 		case COM_Up:   ObjectComMovement(this, COMD_Up); break;
+		case COM_Jump: ObjectComLetGo(this, (Action.Dir == DIR_Left) ? +1 : -1); break;
 		case COM_Down: ObjectComMovement(this, COMD_Down); break;
 		case COM_Throw: PlayerObjectCommand(Owner, C4CMD_Drop); break;
 		}
@@ -3441,6 +3443,7 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 		case COM_Left:  ObjectComMovement(this, COMD_Left); break;
 		case COM_Right: ObjectComMovement(this, COMD_Right); break;
 		case COM_Up:    ObjectComMovement(this, COMD_Stop); break;
+		case COM_Jump:
 		case COM_Down:  ObjectComLetGo(this, 0); break;
 		case COM_Throw: PlayerObjectCommand(Owner, C4CMD_Drop); break;
 		}
@@ -3462,6 +3465,7 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 		{
 		case COM_Left:  ObjectComMovement(this, COMD_Left); break;
 		case COM_Right: ObjectComMovement(this, COMD_Right); break;
+		case COM_Jump:
 		case COM_Up:
 			ObjectComMovement(this, COMD_Up);
 			ObjectComUp(this); break;
@@ -3549,6 +3553,7 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 	case DFA_WALK:
 		switch (byCom)
 		{
+		case COM_Jump:  ObjectComJump(this); break;
 		case COM_Up:    ObjectComUp(this); break;
 		case COM_Down:
 			// inhibit controldownsingle on freshly grabbed objects
@@ -3596,6 +3601,7 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 			if (Action.Dir == DIR_Left) ObjectComLetGo(this, +1);
 			else AutoStopUpdateComDir();
 			break;
+		case COM_Jump:   ObjectComLetGo(this, (Action.Dir == DIR_Left) ? +1 : -1);
 		case COM_Dig:    ObjectComLetGo(this, (Action.Dir == DIR_Left) ? +1 : -1);
 		case COM_Throw:  PlayerObjectCommand(Owner, C4CMD_Drop); break;
 		default: AutoStopUpdateComDir();
@@ -3605,7 +3611,8 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 	case DFA_HANGLE:
 		switch (byCom)
 		{
-		case COM_Down:    ObjectComLetGo(this, 0); break;
+		case COM_Jump:
+		case COM_Down:
 		case COM_Dig:     ObjectComLetGo(this, 0); break;
 		case COM_Throw:   PlayerObjectCommand(Owner, C4CMD_Drop); break;
 		default: AutoStopUpdateComDir();
@@ -3624,6 +3631,7 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 	case DFA_SWIM:
 		switch (byCom)
 		{
+		case COM_Jump:
 		case COM_Up:
 			AutoStopUpdateComDir();
 			ObjectComUp(this);
