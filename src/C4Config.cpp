@@ -275,28 +275,57 @@ void C4ConfigIRC::CompileFunc(StdCompiler *pComp)
 
 void C4ConfigGamepad::CompileFunc(StdCompiler *pComp, bool fButtonsOnly)
 {
-	/* The defaults here are for a Logitech Dual Action under Linux-SDL. Better than nothing, I guess. */
-	if (!fButtonsOnly)
-	{
-		for (int i = 0; i < 6; ++i)
-		{
-			pComp->Value(mkNamingAdapt(AxisMin[i],        FormatString("Axis%dMin",        i).getData(), 0u));
-			pComp->Value(mkNamingAdapt(AxisMax[i],        FormatString("Axis%dMax",        i).getData(), 0u));
-			pComp->Value(mkNamingAdapt(AxisCalibrated[i], FormatString("Axis%dCalibrated", i).getData(), false));
-		}
-	}
-	pComp->Value(mkNamingAdapt(Button[0],  "Button1",  -1));
-	pComp->Value(mkNamingAdapt(Button[1],  "Button2",  -1));
-	pComp->Value(mkNamingAdapt(Button[2],  "Button3",  -1));
-	pComp->Value(mkNamingAdapt(Button[3],  "Button4",  -1));
-	pComp->Value(mkNamingAdapt(Button[4],  "Button5",  -1));
-	pComp->Value(mkNamingAdapt(Button[5],  "Button6",  -1));
-	pComp->Value(mkNamingAdapt(Button[6],  "Button7",  -1));
-	pComp->Value(mkNamingAdapt(Button[7],  "Button8",  -1));
-	pComp->Value(mkNamingAdapt(Button[8],  "Button9",  -1));
-	pComp->Value(mkNamingAdapt(Button[9],  "Button10", -1));
-	pComp->Value(mkNamingAdapt(Button[10], "Button11", -1));
-	pComp->Value(mkNamingAdapt(Button[11], "Button12", -1));
+	// Left stick
+	pComp->Value(mkNamingAdapt(AxisMinCommand[XINPUT_AXIS_LS_X], "Axis0MinCommand", COM_Left));
+	pComp->Value(mkNamingAdapt(AxisMaxCommand[XINPUT_AXIS_LS_X], "Axis0MaxCommand", COM_Right));
+	pComp->Value(mkNamingAdapt(AxisMinCommand[XINPUT_AXIS_LS_Y], "Axis1MinCommand", COM_Down));
+	pComp->Value(mkNamingAdapt(AxisMaxCommand[XINPUT_AXIS_LS_Y], "Axis1MaxCommand", COM_Up));
+	// Right stick
+	pComp->Value(mkNamingAdapt(AxisMinCommand[XINPUT_AXIS_RS_X], "Axis2MinCommand", COM_Left));
+	pComp->Value(mkNamingAdapt(AxisMaxCommand[XINPUT_AXIS_RS_X], "Axis2MaxCommand", COM_Right));
+	pComp->Value(mkNamingAdapt(AxisMinCommand[XINPUT_AXIS_RS_Y], "Axis3MinCommand", COM_Up));
+	pComp->Value(mkNamingAdapt(AxisMaxCommand[XINPUT_AXIS_RS_Y], "Axis3MaxCommand", COM_Down));
+	// Triggers
+	pComp->Value(mkNamingAdapt(AxisMinCommand[XINPUT_AXIS_LT], "Axis4MinCommand", COM_None));
+	pComp->Value(mkNamingAdapt(AxisMaxCommand[XINPUT_AXIS_LT], "Axis4MaxCommand", COM_CursorLeft));
+	pComp->Value(mkNamingAdapt(AxisMinCommand[XINPUT_AXIS_RT], "Axis5MinCommand", COM_None));
+	pComp->Value(mkNamingAdapt(AxisMaxCommand[XINPUT_AXIS_RT], "Axis5MaxCommand", COM_None));
+
+	// Primary function for each button, used for normal control
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_UP], "ButtonCommand0", COM_Up));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_DOWN], "ButtonCommand1", COM_Down));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_LEFT], "ButtonCommand2", COM_Left));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_RIGHT], "ButtonCommand3", COM_Right));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_START], "ButtonCommand4", COM_PlayerMenu));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_BACK], "ButtonCommand5", COM_Special));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_LS], "ButtonCommand6", COM_None));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_RS], "ButtonCommand7", COM_None));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_LB], "ButtonCommand8", COM_CursorToggle));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_RB], "ButtonCommand9", COM_CursorToggle));
+	pComp->Value(mkNamingAdapt(ButtonCommand[10], "ButtonCommand10", COM_None));
+	pComp->Value(mkNamingAdapt(ButtonCommand[11], "ButtonCommand11", COM_None));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_A], "ButtonCommand12", COM_Up));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_B], "ButtonCommand13", COM_Dig));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_X], "ButtonCommand14", COM_Throw));
+	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_Y], "ButtonCommand15", COM_Special2));
+
+	// Possible secondary function for each button when in a menu
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_UP], "ButtonMenuCommand0", COM_MenuUp));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_DOWN], "ButtonMenuCommand1", COM_MenuDown));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_LEFT], "ButtonMenuCommand2", COM_MenuLeft));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_RIGHT], "ButtonMenuCommand3", COM_MenuRight));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_START], "ButtonMenuCommand4", COM_MenuClose));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_BACK], "ButtonMenuCommand5", COM_MenuClose));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_LS], "ButtonMenuCommand6", COM_None));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_RS], "ButtonMenuCommand7", COM_None));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_LB], "ButtonMenuCommand8", COM_CursorToggle));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_RB], "ButtonMenuCommand9", COM_CursorToggle));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[10], "ButtonMenuCommand10", COM_None));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[11], "ButtonMenuCommand11", COM_None));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_A], "ButtonMenuCommand12", COM_MenuEnter));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_B], "ButtonMenuCommand13", COM_MenuClose));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_X], "ButtonMenuCommand14", COM_None));
+	pComp->Value(mkNamingAdapt(ButtonMenuCommand[XINPUT_BUTTON_Y], "ButtonMenuCommand15", COM_MenuEnterAll));
 }
 
 void C4ConfigGamepad::Reset()

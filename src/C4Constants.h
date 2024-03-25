@@ -92,6 +92,9 @@ const int C4P_Control_None       = -1,
           C4P_Control_GamePad4   = 7,
           C4P_Control_GamePadMax = C4P_Control_GamePad4;
 
+constexpr int C4MaxGamePadButtons = 16,
+              C4MaxGamePadAxis = 6;
+
 const int C4ViewportScrollBorder = 40; // scrolling past landscape allowed at range of this border
 
 // Engine Return Values

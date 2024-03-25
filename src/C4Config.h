@@ -259,9 +259,9 @@ const int C4ConfigMaxGamepads = 4;
 class C4ConfigGamepad
 {
 public:
-	int32_t Button[C4MaxKey];
-	uint32_t AxisMin[6], AxisMax[6];
-	bool AxisCalibrated[6];
+	int32_t ButtonCommand[C4MaxGamePadButtons];
+	int32_t ButtonMenuCommand[C4MaxGamePadButtons];
+	uint32_t AxisMinCommand[C4MaxGamePadAxis], AxisMaxCommand[C4MaxGamePadAxis];
 	void CompileFunc(StdCompiler *pComp, bool fButtonsOnly = false);
 	void Reset(); // reset all buttons and axis calibration to default
 };

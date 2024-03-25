@@ -3429,18 +3429,30 @@ bool C4Game::InitKeyboard()
 		}
 
 	// Map player gamepad controls
-	int32_t iGamepad;
-	for (iGamepad = C4P_Control_GamePad1; iGamepad < C4P_Control_GamePad1 + C4ConfigMaxGamepads; iGamepad++)
+	for (int32_t iGamepad = 0; iGamepad < C4ConfigMaxGamepads; iGamepad++)
 	{
-		C4ConfigGamepad &cfg = Config.Gamepads[iGamepad - C4P_Control_GamePad1];
-		for (iCtrl = 0; iCtrl < C4MaxKey; iCtrl++)
+		int32_t iControlSet = iGamepad + C4P_Control_GamePad1;
+		C4ConfigGamepad &cfg = Config.Gamepads[iGamepad];
+
+		std::map<C4KeyCodeEx, uint32_t> keyToCommand;
+		for (int iButton = 0; iButton < C4MaxGamePadButtons; iButton++) {
+			C4KeyCodeEx keyCode = C4KeyCodeEx(KEY_Gamepad(iGamepad, KEY_JOY_Button(iButton)));
+			keyToCommand.insert_or_assign(keyCode, cfg.ButtonMenuCommand[iButton]); // Ensure that buttons with no normal command and only a menu-command are also registered
+			keyToCommand.insert_or_assign(keyCode, cfg.ButtonCommand[iButton]); // Normal command overrides menu command, and is converted back to menu command by C4Menu::ConvertCom
+		}
+		for (int iAxis = 0; iAxis < C4MaxGamePadAxis; iAxis++) {
+			keyToCommand.insert_or_assign(C4KeyCodeEx(KEY_Gamepad(iGamepad, KEY_JOY_Axis(iAxis, true))), cfg.AxisMaxCommand[iAxis]);
+			keyToCommand.insert_or_assign(C4KeyCodeEx(KEY_Gamepad(iGamepad, KEY_JOY_Axis(iAxis, false))), cfg.AxisMinCommand[iAxis]);
+		}
+
+		for (auto& [keyCodeEx, iCommand] : keyToCommand)
 		{
-			if (cfg.Button[iCtrl] == -1) continue;
-			sPlrCtrlName.Format("Joy%dBtn%d", iGamepad - C4P_Control_GamePad1 + 1, iCtrl + 1);
+			if (iCommand == COM_None) continue;
+			sPlrCtrlName = C4KeyCodeEx::KeyCode2String(keyCodeEx.Key, false, false);
 			KeyboardInput.RegisterKey(new C4CustomKey(
-				C4KeyCodeEx(cfg.Button[iCtrl]),
+				keyCodeEx,
 				sPlrCtrlName.getData(), KEYSCOPE_Control,
-				new C4KeyCBExPassKey<C4Game, C4KeySetCtrl>(*this, C4KeySetCtrl(iGamepad, iCtrl), &C4Game::LocalControlKey, &C4Game::LocalControlKeyUp),
+				new C4KeyCBExPassKey(*this, C4KeySetCtrl(iControlSet, iCommand), &C4Game::LocalControlGamepad, &C4Game::LocalControlGamepadUp),
 				C4CustomKey::PRIO_PlrControl));
 		}
 	}
@@ -3553,6 +3565,44 @@ bool C4Game::LocalControlKeyUp(C4KeyCodeEx key, C4KeySetCtrl Ctrl)
 	{
 		int iCom = Control2Com(Ctrl.iCtrl, true);
 		if (iCom != COM_None) LocalPlayerControl(pPlr->Number, iCom);
+		return true;
+	}
+	// not processed - must return false here, so unused keyboard control sets do not block used ones
+	return false;
+}
+
+bool C4Game::LocalControlGamepad(C4KeyCodeEx key, C4KeySetCtrl Ctrl)
+{
+	// keyboard callback: Perform local player control
+	C4Player* pPlr;
+	if (pPlr = Players.GetLocalByKbdSet(Ctrl.iKeySet))
+	{
+		// Swallow a event generated from Keyrepeat for AutoStopControl
+		if (pPlr->ControlStyle)
+		{
+			if (key.IsRepeated())
+				return true;
+		}
+		LocalPlayerControl(pPlr->Number, Ctrl.iCtrl);
+		return true;
+	}
+	// not processed - must return false here, so unused keyboard control sets do not block used ones
+	return false;
+}
+
+bool C4Game::LocalControlGamepadUp(C4KeyCodeEx key, C4KeySetCtrl Ctrl)
+{
+	// Direct callback for released key in AutoStopControl-mode (ignore repeated)
+	if (key.IsRepeated())
+		return true;
+	C4Player* pPlr;
+	if ((pPlr = Players.GetLocalByKbdSet(Ctrl.iKeySet)) && pPlr->ControlStyle)
+	{
+		// Normalize COM, so that Release events are only generate for "standard" buttons, not e.g. COM_MenuEnter
+		int32_t iCom = Control2Com(Com2Control(Ctrl.iCtrl), true);
+		if (iCom != COM_None) {
+			LocalPlayerControl(pPlr->Number, iCom);
+		}
 		return true;
 	}
 	// not processed - must return false here, so unused keyboard control sets do not block used ones

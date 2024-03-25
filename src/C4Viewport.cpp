@@ -1373,7 +1373,7 @@ StdStrBuf PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort)
 		if (Inside<int32_t>(pPlr->Control, C4P_Control_Keyboard1, C4P_Control_Keyboard4))
 			return C4KeyCodeEx::KeyCode2String(Config.Controls.Keyboard[pPlr->Control][iControl], true, fShort);
 		if (Inside<int32_t>(pPlr->Control, C4P_Control_GamePad1, C4P_Control_GamePadMax))
-			return C4KeyCodeEx::KeyCode2String(Config.Gamepads[pPlr->Control - C4P_Control_GamePad1].Button[iControl], true, fShort);
+			return ""; // C4KeyCodeEx::KeyCode2String(Config.Gamepads[pPlr->Control - C4P_Control_GamePad1].Button[iControl], true, fShort);
 	}
 	// global control
 	else
