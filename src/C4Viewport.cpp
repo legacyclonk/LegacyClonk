@@ -878,7 +878,7 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 			{
 				int32_t iSymbolSize = C4SymbolSize * 2 / 3;
 				C4Facet ccgo; ccgo.Set(cgo.Surface, cgo.X + cgo.Wdt - iSymbolSize, cgo.Y + C4SymbolSize + 2 * C4SymbolBorder, iSymbolSize, iSymbolSize); ccgo.Y += iSymbolSize;
-				DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).getData());
+				DrawCommandKey(ccgo, COM_PlayerMenu, Player);
 			}
 		}
 	}
@@ -1439,8 +1439,7 @@ void C4Viewport::DrawPlayerControls(C4FacetEx &cgo)
 				if (Tick35 > 18) showtext = false;
 			C4Facet ccgo;
 			ccgo.Set(cgo.Surface, tx + scwdt * (iCtrl % 3), ty + schgt * (iCtrl / 3), scwdt, schgt);
-			DrawControlKey(ccgo, iCtrl, (iLastCtrl == iCtrl) ? 1 : 0,
-				showtext ? PlrControlKeyName(Player, iCtrl, true).getData() : nullptr);
+			DrawCommandKey(ccgo, Control2Com(iCtrl, false), Player, (iLastCtrl == iCtrl), showtext);
 		}
 }
 
@@ -1523,7 +1522,7 @@ void C4Viewport::DrawMouseButtons(C4FacetEx &cgo)
 	if (SetRegions) { rgn.Default(); rgn.Set(ccgo, LoadResStr("IDS_CON_HELP")); rgn.Com = COM_Help; SetRegions->Add(rgn); }
 	// Player menu
 	ccgo.Y += iSymbolSize;
-	DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).getData());
+	DrawCommandKey(ccgo, COM_PlayerMenu, Player);
 	if (SetRegions) { rgn.Default(); rgn.Set(ccgo, LoadResStr("IDS_CON_PLAYERMENU")); rgn.Com = COM_PlayerMenu; SetRegions->Add(rgn); }
 	// Chat
 	if (C4ChatDlg::IsChatActive())

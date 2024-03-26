@@ -4061,8 +4061,7 @@ void C4Object::DrawCommand(C4Facet &cgoBar, int32_t iAlign, const char *szFuncti
 
 	// Command
 	if (!fFlash || Tick35 > 15)
-		DrawCommandKey(cgoLeft, iCom, false,
-			Config.Graphics.ShowCommandKeys ? PlrControlKeyName(iPlayer, Com2Control(iCom), true).getData() : nullptr);
+		DrawCommandKey(cgoLeft, iCom, iPlayer);
 
 	// Region (both symbols)
 	if (pRegions)
