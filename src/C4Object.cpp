@@ -3396,7 +3396,7 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 		case COM_Right:  ObjectComMovement(this, COMD_Right); break;
 		case COM_Down:   ObjectComMovement(this, COMD_Stop); break;
 		case COM_Up:     ObjectComUp(this); break;
-		case COM_Jump:   ObjectComJump(this); break;
+		case COM_Jump:   PlayerObjectCommand(Owner, C4CMD_Jump); break;
 		case COM_Down_D: ObjectComDownDouble(this); break;
 		case COM_Dig_S:
 			if (ObjectComDig(this))
@@ -3553,7 +3553,7 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 	case DFA_WALK:
 		switch (byCom)
 		{
-		case COM_Jump:  ObjectComJump(this); break;
+		case COM_Jump:  PlayerObjectCommand(Owner, C4CMD_Jump); break;
 		case COM_Up:    ObjectComUp(this); break;
 		case COM_Down:
 			// inhibit controldownsingle on freshly grabbed objects
