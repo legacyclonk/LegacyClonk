@@ -289,7 +289,7 @@ void C4ConfigGamepad::CompileFunc(StdCompiler *pComp, bool fButtonsOnly)
 	pComp->Value(mkNamingAdapt(AxisMinCommand[XINPUT_AXIS_LT], "Axis4MinCommand", COM_None));
 	pComp->Value(mkNamingAdapt(AxisMaxCommand[XINPUT_AXIS_LT], "Axis4MaxCommand", COM_CursorLeft));
 	pComp->Value(mkNamingAdapt(AxisMinCommand[XINPUT_AXIS_RT], "Axis5MinCommand", COM_None));
-	pComp->Value(mkNamingAdapt(AxisMaxCommand[XINPUT_AXIS_RT], "Axis5MaxCommand", COM_None));
+	pComp->Value(mkNamingAdapt(AxisMaxCommand[XINPUT_AXIS_RT], "Axis5MaxCommand", COM_CursorRight));
 
 	// Primary function for each button, used for normal control
 	pComp->Value(mkNamingAdapt(ButtonCommand[XINPUT_BUTTON_UP], "ButtonCommand0", COM_Up));
