@@ -375,8 +375,8 @@ void C4StartupOptionsDlg::ControlConfigArea::UpdateCtrlSet()
 	// update keys by config
 	if (fGamepad)
 	{
-		for (i = 0; i < C4MaxKey; ++i)
-			KeyControlBtns[i]->SetKey(Config.Gamepads[iSelectedCtrlSet].Button[i]);
+		//for (i = 0; i < C4MaxKey; ++i)
+			//KeyControlBtns[i]->SetKey(Config.Gamepads[iSelectedCtrlSet].Button[i]);
 	}
 	else
 		for (i = 0; i < C4MaxKey; ++i)
@@ -409,7 +409,7 @@ void C4StartupOptionsDlg::ControlConfigArea::OnCtrlKeyBtn(C4GUI::Control *btn)
 	KeyControlBtns[idKey]->SetKey(key);
 	// and update config
 	if (fGamepad)
-		Config.Gamepads[iSelectedCtrlSet].Button[idKey] = key;
+	{}//Config.Gamepads[iSelectedCtrlSet].Button[idKey] = key;
 	else
 		Config.Controls.Keyboard[iSelectedCtrlSet][idKey] = key;
 }

@@ -115,6 +115,7 @@ public:
 	// Control
 	int32_t AutoContextMenu;
 	int32_t ControlStyle;
+	bool HasExplicitJumpKey;
 	C4EnumeratedObjectPtr Cursor, ViewCursor;
 	int32_t SelectCount;
 	int32_t SelectFlash, CursorFlash;

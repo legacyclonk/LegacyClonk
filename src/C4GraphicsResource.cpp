@@ -227,6 +227,7 @@ bool C4GraphicsResource::Init()
 	if (!LoadFile(fctExit,            "Exit",         Files))                       return false;
 	if (!LoadFile(fctHand,            "Hand",         Files, C4FCT_Height))         return false;
 	if (!LoadFile(fctGamepad,         "Gamepad",      Files, 80))                   return false;
+	if (!LoadFile(fctXinputButtons,   "XinputButtons", Files, 32, 32))              return false;
 	if (!LoadFile(fctBuild,           "Build",        Files))                       return false;
 	if (!LoadFile(fctEnergyBars,      "EnergyBars",   Files))                       return false;
 	if (!LoadFile(sfcLiquidAnimation, "Liquid",       Files, idSfcLiquidAnimation)) return false;

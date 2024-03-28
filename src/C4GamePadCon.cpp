@@ -28,116 +28,58 @@
 #include <numbers>
 #include <windowsx.h>
 
-static uint32_t POV2Position(DWORD dwPOV, bool fVertical)
-{
-	// POV value is a 360° angle multiplied by 100
-	double dAxis;
-	// Centered
-	if (dwPOV == JOY_POVCENTERED)
-		dAxis = 0.0;
-	// Angle: convert to linear value -100 to +100
-	else
-	{
-		const auto angleRad = dwPOV * std::numbers::pi / (180.0 * 100);
-		dAxis = (fVertical ? -cos(angleRad) : sin(angleRad)) * 100.0;
-	}
-	// Gamepad configuration wants unsigned and gets 0 to 200
-	return static_cast<uint32_t>(dAxis + 100.0);
-}
-
 C4GamePad::C4GamePad(int id) : iRefCount{1}, Buttons{0}, id{id}
 {
 	std::fill(AxisPosis.begin(), AxisPosis.end(), Mid);
-	SetCalibration(&(Config.Gamepads[id].AxisMin[0]), &(Config.Gamepads[id].AxisMax[0]), &(Config.Gamepads[id].AxisCalibrated[0]));
 }
 
 C4GamePad::~C4GamePad()
 {
-	GetCalibration(&(Config.Gamepads[id].AxisMin[0]), &(Config.Gamepads[id].AxisMax[0]), &(Config.Gamepads[id].AxisCalibrated[0]));
-}
-
-void C4GamePad::SetCalibration(uint32_t *pdwAxisMin, uint32_t *pdwAxisMax, bool *pfAxisCalibrated)
-{
-	// params to calibration
-	for (int i = 0; i < MaxCalAxis; ++i)
-	{
-		dwAxisMin[i] = pdwAxisMin[i];
-		dwAxisMax[i] = pdwAxisMax[i];
-		fAxisCalibrated[i] = pfAxisCalibrated[i];
-	}
-}
-
-void C4GamePad::GetCalibration(uint32_t *pdwAxisMin, uint32_t *pdwAxisMax, bool *pfAxisCalibrated)
-{
-	// calibration to params
-	for (int i = 0; i < MaxCalAxis; ++i)
-	{
-		pdwAxisMin[i] = dwAxisMin[i];
-		pdwAxisMax[i] = dwAxisMax[i];
-		pfAxisCalibrated[i] = fAxisCalibrated[i];
-	}
 }
 
 bool C4GamePad::Update()
 {
-	joynfo.dwSize = sizeof(joynfo);
-	joynfo.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNRAWDATA | JOY_RETURNX | JOY_RETURNY | JOY_RETURNZ | JOY_RETURNR | JOY_RETURNU | JOY_RETURNV | JOY_RETURNPOV;
-	return joyGetPosEx(JOYSTICKID1 + id, &joynfo) == JOYERR_NOERROR;
+	ZeroMemory(&state, sizeof(XINPUT_STATE));
+	DWORD dwResult = XInputGetState(id, &state);
+	return dwResult == ERROR_SUCCESS;
 }
 
 uint32_t C4GamePad::GetCurrentButtons()
 {
-	return joynfo.dwButtons;
+	return state.Gamepad.wButtons;
 }
 
-constexpr DWORD GetAxisValue(const JOYINFOEX &info, const int axis) noexcept
+static constexpr int32_t GetAxisValue(const XINPUT_STATE &info, const int axis) noexcept
 {
-	assert(Inside(axis, 0, C4GamePad::MaxCalAxis - 1));
+	assert(Inside(axis, 0, C4GamePad::NumAxes - 1));
 	switch (axis)
 	{
-		case 0: return info.dwXpos;
-		case 1: return info.dwYpos;
-		case 2: return info.dwZpos;
-		case 3: return info.dwRpos;
-		case 4: return info.dwUpos;
-		case 5: return info.dwVpos;
+		case 0: return info.Gamepad.sThumbLX;
+		case 1: return info.Gamepad.sThumbLY;
+		case 2: return info.Gamepad.sThumbRX;
+		case 3: return info.Gamepad.sThumbRY;
+		case 4: return info.Gamepad.bLeftTrigger;
+		case 5: return info.Gamepad.bRightTrigger;
 	}
 	return -1;
 }
 
 C4GamePad::AxisPos C4GamePad::GetAxisPos(int idAxis)
 {
-	if (idAxis < 0 || idAxis >= MaxAxis) return Mid; // wrong axis
+	if (idAxis < 0 || idAxis >= NumAxes) return Mid; // wrong axis
+
+	constexpr int32_t MAX_AXIS_RANGE = 32767;
+	constexpr int32_t MAX_TRIGGER_RANGE = 255;
+	int32_t dwThreshold = MAX_AXIS_RANGE / 3;
+	if (idAxis >= NumStickAxes)
+	{
+		dwThreshold = MAX_TRIGGER_RANGE / 3;
+	}
+
 	// get raw axis data
-	if (idAxis < MaxCalAxis)
-	{
-		uint32_t dwPos = GetAxisValue(joynfo, idAxis);
-		// evaluate axis calibration
-		if (fAxisCalibrated[idAxis])
-		{
-			// update it
-			dwAxisMin[idAxis] = std::min<uint32_t>(dwAxisMin[idAxis], dwPos);
-			dwAxisMax[idAxis] = std::max<uint32_t>(dwAxisMax[idAxis], dwPos);
-			// Calculate center
-			uint32_t dwCenter = (dwAxisMin[idAxis] + dwAxisMax[idAxis]) / 2;
-			// Trigger range is 30% off center
-			uint32_t dwRange = (dwAxisMax[idAxis] - dwCenter) / 3;
-			if (dwPos < dwCenter - dwRange) return Low;
-			if (dwPos > dwCenter + dwRange) return High;
-		}
-		else
-		{
-			// init it
-			dwAxisMin[idAxis] = dwAxisMax[idAxis] = dwPos;
-			fAxisCalibrated[idAxis] = true;
-		}
-	}
-	else
-	{
-		// It's a POV head
-		uint32_t dwPos = POV2Position(joynfo.dwPOV, idAxis == AxisPOV::Y);
-		if (dwPos > 130) return High; else if (dwPos < 70) return Low;
-	}
+	int32_t dwPos = GetAxisValue(state, idAxis);
+	if (dwPos < -dwThreshold) return Low;
+	if (dwPos > dwThreshold) return High;
 	return Mid;
 }
 
@@ -208,11 +150,16 @@ void C4GamePadControl::CloseGamepad(int id)
 
 int C4GamePadControl::GetGamePadCount()
 {
-	JOYINFOEX joy{};
-	joy.dwSize = sizeof(JOYINFOEX); joy.dwFlags = JOY_RETURNALL;
-	int iCnt = 0;
-	while (iCnt < C4GamePad::MaxGamePad && ::joyGetPosEx(iCnt, &joy) == JOYERR_NOERROR) ++iCnt;
-	return iCnt;
+	XINPUT_STATE state;
+	ZeroMemory(&state, sizeof(XINPUT_STATE));
+	int iNumGamepads = 0;
+	for (int iCnt = 0; iCnt < C4GamePad::MaxGamePad; ++iCnt) {
+		if (::XInputGetState(iCnt, &state) == ERROR_SUCCESS) {
+			++iNumGamepads;
+		}
+		ZeroMemory(&state, sizeof(XINPUT_STATE));
+	}
+	return iNumGamepads;
 }
 
 const int MaxGamePadButton = 22;
@@ -223,7 +170,7 @@ void C4GamePadControl::Execute()
 	for (auto &pad : Gamepads)
 	{
 		if (!pad || !pad->Update()) continue;
-		for (int iAxis = 0; iAxis < C4GamePad::MaxAxis; ++iAxis)
+		for (int iAxis = 0; iAxis < C4GamePad::NumAxes; ++iAxis)
 		{
 			C4GamePad::AxisPos eAxisPos = pad->GetAxisPos(iAxis), ePrevAxisPos = pad->AxisPosis[iAxis];
 			// Evaluate changes and pass single controls

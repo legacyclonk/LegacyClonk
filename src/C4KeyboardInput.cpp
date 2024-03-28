@@ -330,6 +330,37 @@ C4KeyCode C4KeyCodeEx::String2KeyCode(const StdStrBuf &sName)
 #endif
 }
 
+static const std::map<int32_t, const char*>& GamePadButtonNames() {
+	// Meyer's singleton to enforce initialization before first use
+	static std::map<int32_t, const char*> instance {
+		{ KEY_XINPUT_ButtonUp , "Up" },
+		{ KEY_XINPUT_ButtonDown , "Down" },
+		{ KEY_XINPUT_ButtonLeft , "Left" },
+		{ KEY_XINPUT_ButtonRight , "Right" },
+		{ KEY_XINPUT_ButtonStart , "Start" },
+		{ KEY_XINPUT_ButtonBack , "Back" },
+		{ KEY_XINPUT_ButtonLS , "LS" },
+		{ KEY_XINPUT_ButtonRS , "RS" },
+		{ KEY_XINPUT_ButtonLB , "LB" },
+		{ KEY_XINPUT_ButtonRB , "RB" },
+		{ KEY_XINPUT_ButtonA , "A" },
+		{ KEY_XINPUT_ButtonB , "B" },
+		{ KEY_XINPUT_ButtonX , "X" },
+		{ KEY_XINPUT_ButtonY , "Y"  },
+		{ KEY_XINPUT_AxisLsLeft, "LS Left" },
+		{ KEY_XINPUT_AxisLsRight, "LS RIght" },
+		{ KEY_XINPUT_AxisLsUp, "LS Up" },
+		{ KEY_XINPUT_AxisLsDown, "LS Down" },
+		{ KEY_XINPUT_AxisRsLeft, "RS Left" },
+		{ KEY_XINPUT_AxisRsRight, "RS Right" },
+		{ KEY_XINPUT_AxisRsUp, "RS Up" },
+		{ KEY_XINPUT_AxisRsDown, "RS Down" },
+		{ KEY_XINPUT_AxisLt, "LT" },
+		{ KEY_XINPUT_AxisRt, "RT" },
+	};
+	return instance;
+}
+
 StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool fShort)
 {
 	// Gamepad keys
@@ -344,6 +375,9 @@ StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool
 		case KEY_JOY_Down:  return FormatString("Joy%dDown",  iGamepad + 1);
 		case KEY_JOY_Right: return FormatString("Joy%dRight", iGamepad + 1);
 		default:
+			if (fHumanReadable && GamePadButtonNames().contains(iGamepadButton)) {
+				return StdStrBuf(GamePadButtonNames().at(iGamepadButton), false);
+			}
 			if (Key_IsGamepadAxis(wCode))
 			{
 				if (fHumanReadable)
@@ -355,11 +389,13 @@ StdStrBuf C4KeyCodeEx::KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool
 			else
 			{
 				// button
-				if (fHumanReadable)
-					// If there should be gamepads around with A B C D... on the buttons, we might create a display option to show letters instead...
-					return FormatString("< %d >", 1 + Key_GetGamepadButtonIndex(wCode));
-				else
-					return FormatString("Joy%d%c", iGamepad + 1, static_cast<char>(Key_GetGamepadButtonIndex(wCode) + 'A'));
+				int32_t iButtonNumber = Key_GetGamepadButtonIndex(wCode);
+				if (fHumanReadable) {
+					return FormatString("< %d >", 1 + iButtonNumber);
+				}
+				else {
+					return FormatString("Joy%d%c", iGamepad + 1, static_cast<char>(iButtonNumber + 'A'));
+				}
 			}
 		}
 	}

@@ -54,6 +54,30 @@ enum C4KeyEventType
 // keyboard code
 typedef unsigned long C4KeyCode;
 
+constexpr uint8_t
+	XINPUT_BUTTON_UP = 0,
+	XINPUT_BUTTON_DOWN = 1,
+	XINPUT_BUTTON_LEFT = 2,
+	XINPUT_BUTTON_RIGHT = 3,
+	XINPUT_BUTTON_START = 4,
+	XINPUT_BUTTON_BACK = 5,
+	XINPUT_BUTTON_LS = 6,
+	XINPUT_BUTTON_RS = 7,
+	XINPUT_BUTTON_LB = 8,
+	XINPUT_BUTTON_RB = 9,
+	XINPUT_BUTTON_A = 12,
+	XINPUT_BUTTON_B = 13,
+	XINPUT_BUTTON_X = 14,
+	XINPUT_BUTTON_Y = 15;
+
+constexpr uint8_t
+	XINPUT_AXIS_LS_X = 0,
+	XINPUT_AXIS_LS_Y = 1,
+	XINPUT_AXIS_RS_X = 2,
+	XINPUT_AXIS_RS_Y = 3,
+	XINPUT_AXIS_LT = 4,
+	XINPUT_AXIS_RT = 5;
+
 const C4KeyCode KEY_Default           = 0,        // no key
                 KEY_Any               = ~0,       // used for default key processing
                 KEY_Undefined         = (~0) ^ 1, // used to indicate an unknown key
@@ -69,7 +93,31 @@ const C4KeyCode KEY_Default           = 0,        // no key
                 KEY_JOY_AnyOddButton  = 0xfe,     // joypad buttons 1, 3, 5, etc.
                 KEY_JOY_AnyEvenButton = 0xfd,     // joypad buttons 2, 4, 6, etc.
                 KEY_JOY_AnyLowButton  = 0xfc,     // joypad buttons 1 - 4
-                KEY_JOY_AnyHighButton = 0xfb;     // joypad buttons > 4
+                KEY_JOY_AnyHighButton = 0xfb,     // joypad buttons > 4
+                KEY_XINPUT_ButtonUp    = KEY_JOY_Button1 + XINPUT_BUTTON_UP,
+                KEY_XINPUT_ButtonDown  = KEY_JOY_Button1 + XINPUT_BUTTON_DOWN,
+                KEY_XINPUT_ButtonLeft  = KEY_JOY_Button1 + XINPUT_BUTTON_LEFT,
+                KEY_XINPUT_ButtonRight = KEY_JOY_Button1 + XINPUT_BUTTON_RIGHT,
+                KEY_XINPUT_ButtonStart = KEY_JOY_Button1 + XINPUT_BUTTON_START,
+                KEY_XINPUT_ButtonBack  = KEY_JOY_Button1 + XINPUT_BUTTON_BACK,
+                KEY_XINPUT_ButtonLS    = KEY_JOY_Button1 + XINPUT_BUTTON_LS,
+                KEY_XINPUT_ButtonRS    = KEY_JOY_Button1 + XINPUT_BUTTON_RS,
+                KEY_XINPUT_ButtonLB    = KEY_JOY_Button1 + XINPUT_BUTTON_LB,
+                KEY_XINPUT_ButtonRB    = KEY_JOY_Button1 + XINPUT_BUTTON_RB,
+                KEY_XINPUT_ButtonA     = KEY_JOY_Button1 + XINPUT_BUTTON_A,
+                KEY_XINPUT_ButtonB     = KEY_JOY_Button1 + XINPUT_BUTTON_B,
+                KEY_XINPUT_ButtonX     = KEY_JOY_Button1 + XINPUT_BUTTON_X,
+                KEY_XINPUT_ButtonY     = KEY_JOY_Button1 + XINPUT_BUTTON_Y,
+                KEY_XINPUT_AxisLsLeft  = KEY_JOY_Axis1Min + 0 + 2 * XINPUT_AXIS_LS_X,
+                KEY_XINPUT_AxisLsRight = KEY_JOY_Axis1Min + 1 + 2 * XINPUT_AXIS_LS_X,
+                KEY_XINPUT_AxisLsUp    = KEY_JOY_Axis1Min + 0 + 2 * XINPUT_AXIS_LS_Y,
+                KEY_XINPUT_AxisLsDown  = KEY_JOY_Axis1Min + 1 + 2 * XINPUT_AXIS_LS_Y,
+                KEY_XINPUT_AxisRsLeft  = KEY_JOY_Axis1Min + 0 + 2 * XINPUT_AXIS_RS_X,
+                KEY_XINPUT_AxisRsRight = KEY_JOY_Axis1Min + 1 + 2 * XINPUT_AXIS_RS_X,
+                KEY_XINPUT_AxisRsUp    = KEY_JOY_Axis1Min + 0 + 2 * XINPUT_AXIS_RS_Y,
+                KEY_XINPUT_AxisRsDown  = KEY_JOY_Axis1Min + 1 + 2 * XINPUT_AXIS_RS_Y,
+                KEY_XINPUT_AxisLt      = KEY_JOY_Axis1Min + 1 + 2 * XINPUT_AXIS_LT,
+                KEY_XINPUT_AxisRt      = KEY_JOY_Axis1Min + 1 + 2 * XINPUT_AXIS_RT;
 
 inline uint8_t KEY_JOY_Button(uint8_t idx) { return KEY_JOY_Button1 + idx; }
 inline uint8_t KEY_JOY_Axis(uint8_t idx, bool fMax) { return KEY_JOY_Axis1Min + 2 * idx + fMax; }
