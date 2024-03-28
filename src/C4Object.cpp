@@ -3601,7 +3601,7 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 			if (Action.Dir == DIR_Left) ObjectComLetGo(this, +1);
 			else AutoStopUpdateComDir();
 			break;
-		case COM_Jump:   ObjectComLetGo(this, (Action.Dir == DIR_Left) ? +1 : -1);
+		case COM_Jump:   ObjectComLetGo(this, (Action.Dir == DIR_Left) ? +1 : -1); break;
 		case COM_Dig:    ObjectComLetGo(this, (Action.Dir == DIR_Left) ? +1 : -1);
 		case COM_Throw:  PlayerObjectCommand(Owner, C4CMD_Drop); break;
 		default: AutoStopUpdateComDir();
