@@ -3543,6 +3543,10 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 {
 	C4Player *pPlayer = Game.Players.Get(Controller);
+	auto LetGoAndForgetCom = [&](int xdir) {
+		// Suppress unwanted dropping of items or digging after releasing from scale/hangle
+		if (ObjectComLetGo(this, xdir)) pPlayer->LastCom = COM_None;
+	};
 	// Control by procedure
 	switch (GetProcedure())
 	{
@@ -3589,14 +3593,14 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 		switch (byCom)
 		{
 		case COM_Left:
-			if (Action.Dir == DIR_Right) ObjectComLetGo(this, -1);
+			if (Action.Dir == DIR_Right) LetGoAndForgetCom(-1);
 			else AutoStopUpdateComDir();
 			break;
 		case COM_Right:
-			if (Action.Dir == DIR_Left) ObjectComLetGo(this, +1);
+			if (Action.Dir == DIR_Left) LetGoAndForgetCom(+1);
 			else AutoStopUpdateComDir();
 			break;
-		case COM_Dig:    ObjectComLetGo(this, (Action.Dir == DIR_Left) ? +1 : -1);
+		case COM_Dig:    LetGoAndForgetCom(Action.Dir == DIR_Left ? +1 : -1); break;
 		case COM_Throw:  PlayerObjectCommand(Owner, C4CMD_Drop); break;
 		default: AutoStopUpdateComDir();
 		}
@@ -3605,8 +3609,8 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 	case DFA_HANGLE:
 		switch (byCom)
 		{
-		case COM_Down:    ObjectComLetGo(this, 0); break;
-		case COM_Dig:     ObjectComLetGo(this, 0); break;
+		case COM_Down:    LetGoAndForgetCom(0); break;
+		case COM_Dig:     LetGoAndForgetCom(0); break;
 		case COM_Throw:   PlayerObjectCommand(Owner, C4CMD_Drop); break;
 		default: AutoStopUpdateComDir();
 		}
