@@ -982,12 +982,12 @@ void DrawCommandKey(C4Facet &cgo, int32_t iCom, int32_t iPlayer, bool fPressed, 
 		else {
 			Game.GraphicsResource.fctXinputButtons.Draw(cgo, true, iButton % 4, iButton / 4);
 		}
-		// Show the action symbol on top of the button, in the bottom left corner. Really necessary?
 		if (iCom == COM_PlayerMenu) {
 			DrawOffsetScaled(Game.GraphicsResource.fctOKCancel, cgo, 1, 1, 0.0, 0.5, 0.5);
 		}
 		else {
-			DrawOffsetScaled(Game.GraphicsResource.fctCommand, cgo, Com2Control(iBaseCom), isDouble, -0.05, 0.45, 0.6); // This slightly protrudes, but it looks better
+			// Show the action symbol on top of the button, in the bottom left corner. Really necessary?
+			//DrawOffsetScaled(Game.GraphicsResource.fctCommand, cgo, Com2Control(iBaseCom), isDouble, -0.05, 0.45, 0.6); // This slightly protrudes, but it looks better
 		}
 		return;
 	}
