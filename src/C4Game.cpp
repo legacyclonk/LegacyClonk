@@ -3607,9 +3607,9 @@ bool C4Game::LocalControlGamepadUp(C4KeyCodeEx key, C4KeySetCtrl Ctrl)
 	C4Player* pPlr;
 	if ((pPlr = Players.GetLocalByKbdSet(Ctrl.iKeySet)) && pPlr->ControlStyle)
 	{
-		// Normalize COM, so that Release events are only generate for "standard" buttons, not e.g. COM_MenuEnter
-		int32_t iCom = Control2Com(Com2Control(Ctrl.iCtrl), true);
-		if (iCom != COM_None) {
+		// Ensure that Release events are only generate for "standard" control buttons, not e.g. COM_MenuEnter
+		int32_t iCom = Ctrl.iCtrl | COM_Release;
+		if (Inside<int>(iCom, COM_ReleaseFirst, COM_ReleaseLast)) {
 			LocalPlayerControl(pPlr->Number, iCom);
 		}
 		return true;
