@@ -905,10 +905,13 @@ int32_t Control2Com(int32_t iControl, bool fUp)
 	return COM_None;
 }
 
-int32_t Coms2ComDir(int32_t iComs)
+int32_t Coms2ComDir(int32_t iComs, bool fJumpIsUp)
 {
 	// This is possible because COM_Left - COM_Down are < 32
+	static_assert((COM_Left | COM_Right | COM_Up | COM_Down) < 32);
 	static int32_t DirComs = (1 << COM_Left) | (1 << COM_Right) | (1 << COM_Up) | (1 << COM_Down);
+	// Allow swimming up with the jump key
+	if (fJumpIsUp && (iComs & (1 << COM_Jump))) iComs |= (1 << COM_Up);
 	switch (iComs & DirComs)
 	{
 	case (1 << COM_Up):                      return COMD_Up;

@@ -3726,7 +3726,8 @@ void C4Object::AutoStopUpdateComDir()
 {
 	C4Player *pPlr = Game.Players.Get(Controller);
 	if (!pPlr || pPlr->Cursor != this) return;
-	int32_t NewComDir = Coms2ComDir(pPlr->PressedComs);
+	bool fJumpMeansUp = GetProcedure() == DFA_SWIM;
+	int32_t NewComDir = Coms2ComDir(pPlr->PressedComs, fJumpMeansUp);
 	if (Action.ComDir == NewComDir) return;
 	if (NewComDir == COMD_Stop && GetProcedure() == DFA_DIG)
 	{
