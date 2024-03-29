@@ -3636,6 +3636,8 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 		switch (byCom)
 		{
 		case COM_Jump:
+			CallControl(pPlayer, COM_Up); // Hack to call DolphinJump in CLNK
+			[[fallthrough]];
 		case COM_Up:
 			AutoStopUpdateComDir();
 			ObjectComUp(this);
