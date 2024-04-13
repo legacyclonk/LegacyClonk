@@ -1948,7 +1948,7 @@ void C4Player::FoW2Map(CClrModAddMap &rMap, int iOffX, int iOffY)
 	bool fAnyGenerators = false;
 	C4Object *cobj; C4ObjectLink *clnk;
 	for (clnk = FoWViewObjs.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
-		if (!cobj->Contained || cobj->Contained->Def->ClosedContainer != 1)
+		if (cobj->Section == ViewSection && (!cobj->Contained || cobj->Contained->Def->ClosedContainer != 1))
 			if (cobj->PlrViewRange > 0)
 				rMap.ReduceModulation(cobj->x + iOffX, cobj->y + iOffY, cobj->PlrViewRange * 2 / 3, cobj->PlrViewRange);
 			else
@@ -1973,7 +1973,7 @@ void C4Player::FoWGenerators2Map(CClrModAddMap &rMap, int iOffX, int iOffY)
 	// add fog to any generator pos (view range
 	C4Object *cobj; C4ObjectLink *clnk;
 	for (clnk = FoWViewObjs.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
-		if (!cobj->Contained || cobj->Contained->Def->ClosedContainer != 1)
+		if (cobj->Section == ViewSection && (!cobj->Contained || cobj->Contained->Def->ClosedContainer != 1))
 			if (cobj->PlrViewRange < 0)
 				rMap.AddModulation(cobj->x + iOffX, cobj->y + iOffY, -cobj->PlrViewRange, -cobj->PlrViewRange + 200, cobj->ColorMod >> 24);
 }
@@ -2002,7 +2002,7 @@ bool C4Player::FoWIsVisible(int32_t x, int32_t y)
 			if (!iRange && Cursor) iRange = Cursor->PlrViewRange;
 			if (!iRange) iRange = C4FOW_Def_View_RangeX;
 		}
-		if (!cobj->Contained || cobj->Contained->Def->ClosedContainer != 1)
+		if (cobj->Section == ViewSection && (!cobj->Contained || cobj->Contained->Def->ClosedContainer != 1))
 			if (Distance(cobj->x, cobj->y, x, y) < Abs(iRange))
 				if (iRange < 0)
 				{
