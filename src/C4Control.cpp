@@ -459,6 +459,7 @@ void C4ControlSyncCheck::Set()
 	PXSCount = 0;
 	MassMoverIndex = 0;
 	ObjectCount = 0;
+	SectShapeSum = 0;
 
 	for (const auto &section : Game.Sections)
 	{
