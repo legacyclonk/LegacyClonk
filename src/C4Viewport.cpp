@@ -537,7 +537,7 @@ gboolean C4ViewportWindow::OnButtonPressStatic(GtkWidget *widget, GdkEventButton
 		switch (event->button)
 		{
 		case 1:
-			Console.EditCursor.LeftButtonDown(event->state & MK_CONTROL);
+			Console.EditCursor.LeftButtonDown(window->cvp->GetViewSection(), event->state & MK_CONTROL);
 			break;
 		case 3:
 			Console.EditCursor.RightButtonDown(event->state & MK_CONTROL);
@@ -572,10 +572,10 @@ gboolean C4ViewportWindow::OnButtonReleaseStatic(GtkWidget *widget, GdkEventButt
 		switch (event->button)
 		{
 		case 1:
-			Console.EditCursor.LeftButtonUp();
+			Console.EditCursor.LeftButtonUp(window->cvp->GetViewSection());
 			break;
 		case 2:
-			Console.EditCursor.MiddleButtonUp();
+			Console.EditCursor.MiddleButtonUp(window->cvp->GetViewSection());
 			break;
 		case 3:
 			Console.EditCursor.RightButtonUp();
@@ -598,7 +598,7 @@ gboolean C4ViewportWindow::OnMotionNotifyStatic(GtkWidget *widget, GdkEventMotio
 	{
 		const auto scale = Application.GetScale();
 
-		Console.EditCursor.Move(window->cvp->ViewX + static_cast<int32_t>(event->x / scale), window->cvp->ViewY + static_cast<int32_t>(event->y / scale), event->state);
+		Console.EditCursor.Move(window->cvp->GetViewSection(), window->cvp->ViewX + static_cast<int32_t>(event->x / scale), window->cvp->ViewY + static_cast<int32_t>(event->y / scale), event->state);
 	}
 
 	return TRUE;
