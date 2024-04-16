@@ -2586,9 +2586,9 @@ std::uint32_t C4Game::CreateSection(const char *const name)
 	return C4Section::NoSectionSentinel;
 }
 
-std::uint32_t C4Game::CreateEmptySection(const char *const name, const C4SLandscape &landscape)
+std::uint32_t C4Game::CreateEmptySection(const C4SLandscape &landscape)
 {
-	auto section = std::make_unique<C4Section>(name);
+	auto section = std::make_unique<C4Section>();
 
 	if (section->InitFromEmptyLandscape(ScenarioFile, landscape))
 	{
