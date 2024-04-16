@@ -284,7 +284,7 @@ void C4Landscape::Clear(bool fClearMapCreator, bool fClearSky)
 	delete Surface32;        Surface32        = nullptr;
 	delete AnimationSurface; AnimationSurface = nullptr;
 	delete Surface8;         Surface8         = nullptr;
-	delete Map;              Map              = nullptr;
+	Map.reset();
 	// clear initial landscape
 	delete[] pInitial;       pInitial         = nullptr;
 	// clear scan
@@ -547,7 +547,7 @@ bool C4Landscape::MapToLandscape(CSurface8 *sfcMap, int32_t iMapX, int32_t iMapY
 	return true;
 }
 
-CSurface8 *C4Landscape::CreateMap()
+std::unique_ptr<CSurface8> C4Landscape::CreateMap()
 {
 	std::int32_t width{0};
 	std::int32_t height{0};
@@ -562,10 +562,10 @@ CSurface8 *C4Landscape::CreateMap()
 		Section.C4S.Landscape, Section.TextureMap,
 		true, Game.Parameters.StartupPlayerCount);
 
-	return surfaceMap.release();
+	return surfaceMap;
 }
 
-CSurface8 *C4Landscape::CreateMapS2(C4Group &ScenFile)
+std::unique_ptr<CSurface8> C4Landscape::CreateMapS2(C4Group &ScenFile)
 {
 	// file present?
 	if (!ScenFile.AccessEntry(C4CFN_DynLandscape)) return nullptr;
@@ -577,10 +577,8 @@ CSurface8 *C4Landscape::CreateMapS2(C4Group &ScenFile)
 	// read file
 	pMapCreator->ReadFile(C4CFN_DynLandscape, &ScenFile);
 	// render landscape
-	CSurface8 *sfc = pMapCreator->Render(nullptr);
-
 	// keep map creator until script callbacks have been done
-	return sfc;
+	return pMapCreator->Render(nullptr);
 }
 
 bool C4Landscape::PostInitMap()
@@ -688,7 +686,7 @@ bool C4Landscape::FinalizeInit(bool &landscapeLoaded, C4Group *const groupForDif
 	return true;
 }
 
-bool C4Landscape::AssignMap(CSurface8 *const map, const bool overloadCurrent, const bool loadSky, const bool savegame)
+bool C4Landscape::AssignMap(std::unique_ptr<CSurface8> map, const bool overloadCurrent, const bool loadSky, const bool savegame)
 {
 	// Store map size and calculate map zoom
 	int iWdt, iHgt;
@@ -710,7 +708,7 @@ bool C4Landscape::AssignMap(CSurface8 *const map, const bool overloadCurrent, co
 	}
 
 	// assign new map
-	Map = map;
+	Map = std::move(map);
 
 	// Sky (might need to know landscape height)
 	if (loadSky)
@@ -737,8 +735,7 @@ bool C4Landscape::InitEmpty(const bool loadSky, bool &landscapeLoaded)
 
 	// Create map surface
 	Section.C4S.Landscape.GetMapSize(width, height, Game.Parameters.StartupPlayerCount);
-	auto map = std::make_unique<CSurface8>(width, height);
-	if (!AssignMap(map.release(), false, loadSky, false))
+	if (!AssignMap(std::make_unique<CSurface8>(width, height), false, loadSky, false))
 	{
 		return false;
 	}
@@ -766,7 +763,7 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 	// create map if necessary
 	if (!Section.C4S.Landscape.ExactLandscape)
 	{
-		CSurface8 *sfcMap = nullptr;
+		std::unique_ptr<CSurface8> sfcMap;
 		// Static map from scenario
 		if (hGroup.AccessEntry(C4CFN_Map))
 			if (sfcMap = GroupReadSurface8(hGroup))
@@ -805,7 +802,7 @@ bool C4Landscape::Init(C4Group &hGroup, bool fOverloadCurrent, bool fLoadSky, bo
 		AddDbgRec(RCT_Map, sfcMap->Bits, sfcMap->Pitch * sfcMap->Hgt);
 #endif
 
-		if (!AssignMap(sfcMap, fOverloadCurrent, fLoadSky, fSavegame))
+		if (!AssignMap(std::move(sfcMap), fOverloadCurrent, fLoadSky, fSavegame))
 		{
 			return false;
 		}
@@ -2381,7 +2378,7 @@ bool C4Landscape::SetMode(int32_t iMode)
 bool C4Landscape::MapToLandscape()
 {
 	// zoom map to landscape
-	return MapToLandscape(Map, 0, 0, MapWidth, MapHeight);
+	return MapToLandscape(Map.get(), 0, 0, MapWidth, MapHeight);
 }
 
 bool C4Landscape::GetMapColorIndex(const char *szMaterial, const char *szTexture, bool fIFT, uint8_t &rbyCol)
@@ -2416,7 +2413,7 @@ bool C4Landscape::DrawBrush(int32_t iX, int32_t iY, int32_t iGrade, const char *
 		if (iRadius == 1) { if (Map) Map->SetPix(iX / MapZoom, iY / MapZoom, byCol); }
 		else Map->Circle(iX / MapZoom, iY / MapZoom, iRadius, byCol);
 		// Update landscape
-		MapToLandscape(Map, iX / MapZoom - iRadius - 1, iY / MapZoom - iRadius - 1, 2 * iRadius + 2, 2 * iRadius + 2);
+		MapToLandscape(Map.get(), iX / MapZoom - iRadius - 1, iY / MapZoom - iRadius - 1, 2 * iRadius + 2, 2 * iRadius + 2);
 		SetMapChanged();
 		break;
 	// Exact: draw directly to landscape by color & pattern
@@ -2467,7 +2464,7 @@ bool C4Landscape::DrawLine(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2, i
 		int32_t iUpX, iUpY, iUpWdt, iUpHgt;
 		iUpX = (std::min)(iX1, iX2) - iRadius - 1; iUpY = (std::min)(iY1, iY2) - iRadius - 1;
 		iUpWdt = Abs(iX2 - iX1) + 2 * iRadius + 2; iUpHgt = Abs(iY2 - iY1) + 2 * iRadius + 2;
-		MapToLandscape(Map, iUpX, iUpY, iUpWdt, iUpHgt);
+		MapToLandscape(Map.get(), iUpX, iUpY, iUpWdt, iUpHgt);
 		SetMapChanged();
 		break;
 	// Exact: draw directly to landscape by color & pattern
@@ -2504,7 +2501,7 @@ bool C4Landscape::DrawBox(int32_t iX1, int32_t iY1, int32_t iX2, int32_t iY2, in
 		iX1 /= MapZoom; iY1 /= MapZoom; iX2 /= MapZoom; iY2 /= MapZoom;
 		Map->Box(iX1, iY1, iX2, iY2, byCol);
 		// Update landscape
-		MapToLandscape(Map, iX1 - 1, iY1 - 1, iX2 - iX1 + 3, iY2 - iY1 + 3);
+		MapToLandscape(Map.get(), iX1 - 1, iY1 - 1, iX2 - iX1 + 3, iY2 - iY1 + 3);
 		SetMapChanged();
 		break;
 	// Exact: draw directly to landscape by color & pattern
@@ -2764,12 +2761,10 @@ bool C4Landscape::DrawMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt, co
 	// read file
 	mapCreator->ReadScript(szMapDef);
 	// render map
-	CSurface8 *sfcMap = mapCreator->Render(nullptr);
+	const auto sfcMap = mapCreator->Render(nullptr);
 	if (!sfcMap) return false;
 	// map it to the landscape
-	bool fSuccess = MapToLandscape(sfcMap, 0, 0, iMapWdt, iMapHgt, iX, iY);
-	// cleanup
-	delete sfcMap;
+	bool fSuccess = MapToLandscape(sfcMap.get(), 0, 0, iMapWdt, iMapHgt, iX, iY);
 	// return whether successful
 	return fSuccess;
 }
@@ -2788,14 +2783,12 @@ bool C4Landscape::DrawDefMap(int32_t iX, int32_t iY, int32_t iWdt, int32_t iHgt,
 	C4MCMap *pMap = pMapCreator->GetMap(szMapDef);
 	if (!pMap) return false;
 	pMap->SetSize(iMapWdt, iMapHgt);
-	CSurface8 *sfcMap = pMapCreator->Render(szMapDef);
+	const auto sfcMap = pMapCreator->Render(szMapDef);
 	if (sfcMap)
 	{
 		// map to landscape
-		fSuccess = MapToLandscape(sfcMap, 0, 0, iMapWdt, iMapHgt, iX, iY);
+		fSuccess = MapToLandscape(sfcMap.get(), 0, 0, iMapWdt, iMapHgt, iX, iY);
 	}
-	// cleanup
-	delete sfcMap;
 	// done
 	return fSuccess;
 }
