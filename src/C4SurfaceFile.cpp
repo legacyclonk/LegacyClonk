@@ -33,15 +33,16 @@ C4Surface *GroupReadSurface(C4Group &hGroup, uint8_t *bpPalette)
 	return pSfc;
 }
 
-CSurface8 *GroupReadSurface8(C4Group &hGroup)
+std::unique_ptr<CSurface8> GroupReadSurface8(C4Group &hGroup)
 {
 	// create surface
-	CSurface8 *pSfc = new CSurface8();
-	if (!pSfc->Read(hGroup, false))
+	auto sfc = std::make_unique<CSurface8>();
+	if (!sfc->Read(hGroup, false))
 	{
-		delete pSfc; return nullptr;
+		return nullptr;
 	}
-	return pSfc;
+
+	return std::move(sfc);
 }
 
 CSurface8 *GroupReadSurfaceOwnPal8(C4Group &hGroup)
@@ -55,10 +56,14 @@ CSurface8 *GroupReadSurfaceOwnPal8(C4Group &hGroup)
 	return pSfc;
 }
 
-C4Surface *GroupReadSurfacePNG(C4Group &hGroup)
+std::unique_ptr<C4Surface> GroupReadSurfacePNG(C4Group &hGroup)
 {
 	// create surface
-	C4Surface *pSfc = new C4Surface();
-	pSfc->ReadPNG(hGroup);
-	return pSfc;
+	auto sfc = std::make_unique<C4Surface>();
+	if (!sfc->ReadPNG(hGroup))
+	{
+		return nullptr;
+	}
+
+	return std::move(sfc);
 }
