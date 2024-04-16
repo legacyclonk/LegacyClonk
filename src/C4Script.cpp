@@ -6184,12 +6184,6 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
 	C4SLandscape landscape;
 	landscape.Default();
 
-	C4String *const name{map[C4VString("Name")].getStr()};
-	if (!name)
-	{
-		throw C4AulExecError{ctx->Obj, "CreateSection(): section name in initialization map expected"};
-	}
-
 	C4Value value{map[C4VString("Landscape")]};
 	if (value.ConvertTo(C4V_Map))
 	{
@@ -6251,7 +6245,7 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
 		assign(landscape.ShadeMaterials, "ShadeMaterials");
 	}
 
-	return static_cast<C4ValueInt>(Game.CreateEmptySection(FnStringPar(name), landscape));
+	return static_cast<C4ValueInt>(Game.CreateEmptySection(landscape));
 }
 
 static C4ValueInt FnGetSectionCount(C4AulContext *ctx)
@@ -6269,33 +6263,6 @@ static C4ValueInt FnGetSectionByindex(C4AulContext *ctx, C4ValueInt i)
 	}
 
 	return C4Section::NoSectionSentinel;
-}
-
-static C4ValueInt FnGetSectionByName(C4AulContext *ctx, C4String *name, std::optional<C4ValueInt> index)
-{
-	if (!name) return false;
-
-	for (const auto &section : Game.Sections)
-	{
-		if (section->GetName() == FnStringPar(name))
-		{
-			if (index)
-			{
-				if (*index == 0)
-				{
-					return static_cast<C4ValueInt>(section->Number);
-				}
-
-				--*index;
-			}
-			else
-			{
-				return static_cast<C4ValueInt>(section->Number);
-			}
-		}
-	}
-
-	return -1;
 }
 
 static bool FnMoveToSection(C4AulContext *ctx, C4ValueInt targetSection, C4Object *obj)
@@ -7262,7 +7229,6 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "CreateSection",                   FnCreateSection);
 	AddFunc(pEngine, "GetSectionCount",                 FnGetSectionCount);
 	AddFunc(pEngine, "GetSectionByIndex",               FnGetSectionByindex);
-	AddFunc(pEngine, "GetSectionByName",                FnGetSectionByName);
 	AddFunc(pEngine, "MoveToSection",                   FnMoveToSection);
 	AddFunc(pEngine, "GetSection",                      FnGetSection);
 	AddFunc(pEngine, "SwitchToSection",                 FnSwitchToSection);
