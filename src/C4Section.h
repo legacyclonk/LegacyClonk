@@ -78,7 +78,7 @@ public:
 
 public:
 	C4Section() noexcept;
-	explicit C4Section(std::string_view name);
+	explicit C4Section(std::string name);
 
 	C4Section(const C4Section &) = delete;
 	C4Section &operator=(const C4Section &) = delete;
