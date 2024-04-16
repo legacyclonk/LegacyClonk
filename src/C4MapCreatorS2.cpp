@@ -795,7 +795,7 @@ C4MCMap *C4MapCreatorS2::GetMap(const char *szMapName)
 	return pMap;
 }
 
-CSurface8 *C4MapCreatorS2::Render(const char *szMapName)
+std::unique_ptr<CSurface8> C4MapCreatorS2::Render(const char *szMapName)
 {
 	// get map
 	C4MCMap *pMap = GetMap(szMapName);
@@ -807,7 +807,7 @@ CSurface8 *C4MapCreatorS2::Render(const char *szMapName)
 	if (!sfcWdt || !sfcHgt) return nullptr;
 
 	// create surface
-	CSurface8 *sfc = new CSurface8(sfcWdt, sfcHgt);
+	auto sfc = std::make_unique<CSurface8>(sfcWdt, sfcHgt);
 
 	// render map to surface
 	pMap->RenderTo(sfc->Bits, sfc->Pitch);
