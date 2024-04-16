@@ -25,6 +25,7 @@
 #include <C4Surface.h>
 
 #include <format>
+#include <memory>
 
 #define C4MC_SizeRes 100 // positions in percent
 #define C4MC_ZoomRes 100 // zoom resolution (-100 to +99)
@@ -362,7 +363,7 @@ public:
 	C4MCMap *GetMap(const char *szMapName); // get map by name
 
 public:
-	CSurface8 *Render(const char *szMapName); // create map surface
+	std::unique_ptr<CSurface8> Render(const char *szMapName); // create map surface
 	C4Section &GetSection() const noexcept { return section; }
 
 protected:

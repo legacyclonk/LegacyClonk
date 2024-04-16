@@ -73,7 +73,7 @@ public:
 	int32_t Mode;
 	int32_t Width, Height;
 	int32_t MapWidth, MapHeight, MapZoom;
-	CSurface8 *Map;
+	std::unique_ptr<CSurface8> Map;
 	uint32_t MatCount[C4MaxMaterial]; // NoSave //
 	uint32_t EffectiveMatCount[C4MaxMaterial]; // NoSave //
 	int32_t BlastMatCount[C4MaxMaterial]; // SyncClearance-NoSave //
@@ -293,10 +293,10 @@ protected:
 	bool GetMapColorIndex(const char *szMaterial, const char *szTexture, bool fIFT, uint8_t &rbyCol);
 	bool SkyToLandscape(int32_t iToX, int32_t iToY, int32_t iToWdt, int32_t iToHgt, int32_t iOffX, int32_t iOffY);
 	void PrepareInit(bool overloadCurrent);
-	bool AssignMap(CSurface8 *map, bool overloadCurrent, bool loadSky, bool savegame);
+	bool AssignMap(std::unique_ptr<CSurface8> map, bool overloadCurrent, bool loadSky, bool savegame);
 	bool FinalizeInit(bool &landscapeLoaded, C4Group *groupForDiff);
-	CSurface8 *CreateMap(); // create map by landscape attributes
-	CSurface8 *CreateMapS2(C4Group &ScenFile); // create map by def file
+	std::unique_ptr<CSurface8> CreateMap(); // create map by landscape attributes
+	std::unique_ptr<CSurface8> CreateMapS2(C4Group &ScenFile); // create map by def file
 	CSurface8 *CreateEmptyMap(std::int32_t width, std::int32_t height);
 	bool Relight(C4Rect To);
 	bool ApplyLighting(C4Rect To);
