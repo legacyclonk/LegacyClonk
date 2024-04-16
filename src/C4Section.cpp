@@ -38,10 +38,10 @@ C4Section::C4Section() noexcept
 	Default();
 }
 
-C4Section::C4Section(const std::string_view name)
+C4Section::C4Section(std::string name)
 	: C4Section{}
 {
-	this->name = name;
+	this->name = std::move(name);
 }
 
 void C4Section::Default()
@@ -112,6 +112,8 @@ bool C4Section::InitFromEmptyLandscape(C4Group &scenario, const C4SLandscape &la
 		LogFatal("GROUP");
 		return false;
 	}
+
+	name = std::format("Empty{}", Number);
 
 	C4S = Game.C4S;
 	C4S.Head = Game.C4S.Head;
