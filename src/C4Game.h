@@ -299,7 +299,7 @@ public:
 	bool InitKeyboard(); // register main keyboard input functions
 
 	std::uint32_t CreateSection(const char *name);
-	std::uint32_t CreateEmptySection(const char *name, const C4SLandscape &landscape);
+	std::uint32_t CreateEmptySection(const C4SLandscape &landscape);
 
 protected:
 	bool InitSystem();
