@@ -31,18 +31,16 @@
 
 #include <format>
 
-C4Texture::C4Texture()
+C4Texture::C4Texture(const char *const name, std::unique_ptr<C4Surface> surface32)
+	: Surface32{std::move(surface32)}
 {
-	Name[0] = 0;
-	Surface8 = nullptr;
-	Surface32 = nullptr;
-	Next = nullptr;
+	SCopy(name, Name, C4M_MaxName);
 }
 
-C4Texture::~C4Texture()
+C4Texture::C4Texture(const char *const name, std::unique_ptr<CSurface8> surface8)
+	: Surface8{std::move(surface8)}
 {
-	delete Surface8;
-	delete Surface32;
+	SCopy(name, Name, C4M_MaxName);
 }
 
 C4TexMapEntry::C4TexMapEntry()
@@ -96,9 +94,9 @@ bool C4TexMapEntry::Init(C4Section &section)
 	if (iOverlayType & C4MatOv_HugeZoom) iZoom = 4;
 	// Create pattern
 	if (sfcTexture->Surface32)
-		MatPattern.Set(sfcTexture->Surface32, iZoom, fMono);
+		MatPattern.Set(sfcTexture->Surface32.get(), iZoom, fMono);
 	else
-		MatPattern.Set(sfcTexture->Surface8, iZoom, fMono);
+		MatPattern.Set(sfcTexture->Surface8.get(), iZoom, fMono);
 	MatPattern.SetColors(pMaterial->Color, pMaterial->Alpha);
 	return true;
 }
@@ -137,37 +135,11 @@ bool C4TextureMap::AddEntry(uint8_t byIndex, const char *szMaterial, const char 
 	return true;
 }
 
-bool C4TextureMap::AddTexture(const char *szTexture, C4Surface *sfcSurface)
-{
-	auto texture = std::make_unique<C4Texture>();
-	SCopy(szTexture, texture->Name, C4M_MaxName);
-	texture->Surface32 = sfcSurface;
-	texture->Next = FirstTexture;
-	FirstTexture = texture.release();
-	return true;
-}
-
-bool C4TextureMap::AddTexture(const char *szTexture, CSurface8 *sfcSurface)
-{
-	auto texture = std::make_unique<C4Texture>();
-	SCopy(szTexture, texture->Name, C4M_MaxName);
-	texture->Surface8 = sfcSurface;
-	texture->Next = FirstTexture;
-	FirstTexture = texture.release();
-	return true;
-}
-
 void C4TextureMap::Clear()
 {
 	for (int32_t i = 1; i < C4M_MaxTexIndex; i++)
 		Entry[i].Clear();
-	C4Texture *ctex, *next2;
-	for (ctex = FirstTexture; ctex; ctex = next2)
-	{
-		next2 = ctex->Next;
-		delete ctex;
-	}
-	FirstTexture = nullptr;
+	textures.clear();
 	fInitialized = false;
 }
 
@@ -272,7 +244,7 @@ int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group *OverloadFile)
 	if (OverloadFile) texnum += LoadTextures(*OverloadFile);
 
 	char texname[256 + 1];
-	C4Surface *ctex;
+	std::unique_ptr<C4Surface> ctex;
 	size_t binlen;
 	// newgfx: load PNG-textures first
 	hGroup.ResetSearch();
@@ -286,13 +258,13 @@ int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group *OverloadFile)
 		if (ctex = GroupReadSurfacePNG(hGroup))
 		{
 			SReplaceChar(texname, '.', 0);
-			if (AddTexture(texname, ctex)) texnum++;
-			else delete ctex;
+			textures.emplace_back(texname, std::move(ctex));
+			++texnum;
 		}
 	}
 	// Load all bitmap files from group
 	hGroup.ResetSearch();
-	CSurface8 *ctex8;
+	std::unique_ptr<CSurface8> ctex8;
 	while (hGroup.AccessNextEntry(C4CFN_BitmapFiles, &binlen, texname))
 	{
 		// check if it already exists in the map
@@ -303,8 +275,8 @@ int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group *OverloadFile)
 		{
 			ctex8->AllowColor(0, 2, true);
 			SReplaceChar(texname, '.', 0);
-			if (AddTexture(texname, ctex8)) texnum++;
-			else delete ctex;
+			textures.emplace_back(texname, std::move(ctex8));
+			++texnum;
 		}
 	}
 
@@ -371,35 +343,38 @@ int32_t C4TextureMap::GetIndexMatTex(const char *szMaterialTexture, const char *
 
 C4Texture *C4TextureMap::GetTexture(const char *szTexture)
 {
-	C4Texture *pTexture;
-	for (pTexture = FirstTexture; pTexture; pTexture = pTexture->Next)
-		if (SEqualNoCase(pTexture->Name, szTexture))
-			return pTexture;
+	for (auto &texture : textures)
+	{
+		if (SEqualNoCase(texture.Name, szTexture))
+		{
+			return &texture;
+		}
+	}
+
 	return nullptr;
 }
 
 bool C4TextureMap::CheckTexture(const char *szTexture)
 {
-	C4Texture *pTexture;
-	for (pTexture = FirstTexture; pTexture; pTexture = pTexture->Next)
-		if (SEqualNoCase(pTexture->Name, szTexture))
+	for (auto &texture : textures)
+	{
+		if (SEqualNoCase(texture.Name, szTexture))
+		{
 			return true;
+		}
+	}
+
 	return false;
 }
 
 const char *C4TextureMap::GetTexture(size_t iIndex)
 {
-	C4Texture *pTexture;
-	size_t cindex;
-	for (pTexture = FirstTexture, cindex = 0; pTexture; pTexture = pTexture->Next, cindex++)
-		if (cindex == iIndex)
-			return pTexture->Name;
-	return nullptr;
+	return iIndex < textures.size() ? textures[iIndex].Name : nullptr;
 }
 
 void C4TextureMap::Default()
 {
-	FirstTexture = nullptr;
+	textures.clear();
 	fEntriesAdded = false;
 	fOverloadMaterials = false;
 	fOverloadTextures = false;

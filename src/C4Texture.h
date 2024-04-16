@@ -28,14 +28,15 @@ class C4Texture
 	friend class C4TextureMap;
 
 public:
-	C4Texture();
-	~C4Texture();
-	C4Surface *Surface32;
-	CSurface8 *Surface8;
+	C4Texture(const char *name, std::unique_ptr<C4Surface> surface32);
+	C4Texture(const char *name, std::unique_ptr<CSurface8> surface8);
+
+public:
+	std::unique_ptr<C4Surface> Surface32;
+	std::unique_ptr<CSurface8> Surface8;
 
 protected:
 	char Name[C4M_MaxName + 1];
-	C4Texture *Next;
 };
 
 class C4TexMapEntry
@@ -72,7 +73,7 @@ public:
 protected:
 	C4Section &section;
 	C4TexMapEntry Entry[C4M_MaxTexIndex];
-	C4Texture *FirstTexture;
+	std::vector<C4Texture> textures;
 	bool fOverloadMaterials;
 	bool fOverloadTextures;
 	bool fInitialized; // Set after Init() - newly added entries initialized automatically
