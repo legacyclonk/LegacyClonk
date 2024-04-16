@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "StdAdaptors.h"
 #include "StdCompiler.h"
 
 #include <cstddef>
