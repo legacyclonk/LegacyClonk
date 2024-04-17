@@ -129,98 +129,107 @@ bool C4Section::InitFromEmptyLandscape(C4Group &scenario, const C4SLandscape &la
 	return true;
 }
 
-bool C4Section::InitMaterialTexture()
+bool C4Section::InitMaterialTexture(C4Section *const fallback)
 {
 	// Clear old data
 	TextureMap.Clear();
 	Material.Clear();
 
 	// Check for scenario local materials
-	bool haveSectionMaterials{Group.FindEntry(C4CFN_Material)};
-	bool haveScenarioFileMaterials{!name.empty() && Game.ScenarioFile.FindEntry(C4CFN_Material)};
+	bool haveSectionMaterials{!emptyLandscape && Group.FindEntry(C4CFN_Material)};
 
-	// Load all materials
-	auto matRes = Game.Parameters.GameRes.iterRes(NRT_Material);
-	bool fFirst = true, fOverloadMaterials = true, fOverloadTextures = true;
-	long tex_count = 0, mat_count = 0;
-	while (fOverloadMaterials || fOverloadTextures)
+	if (!haveSectionMaterials && fallback)
 	{
-		// Are there any scenario local materials that need to be looked at firs?
-		C4Group Mats;
-		if (haveSectionMaterials)
-		{
-			if (!Mats.OpenAsChild(&Group, C4CFN_Material))
-			{
-				LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
-				return false;
-			}
-			// Once only
-			haveSectionMaterials = false;
-		}
-		else if (haveScenarioFileMaterials)
-		{
-			if (!Mats.OpenAsChild(&Game.ScenarioFile, C4CFN_Material))
-			{
-				LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
-				return false;
-			}
-
-			haveScenarioFileMaterials = false;
-		}
-		else
-		{
-			if (matRes == matRes.end()) break;
-			// Find next external material source
-			if (!Mats.Open(matRes->getFile()))
-			{
-				LogFatal(C4ResStrTableKey::IDS_ERR_EXTERNALMATERIALS, matRes->getFile(), Mats.GetError());
-				return false;
-			}
-			++matRes;
-		}
-
-		// First material file? Load texture map.
-		bool fNewOverloadMaterials = false, fNewOverloadTextures = false;
-		if (fFirst)
-		{
-			long tme_count = TextureMap.LoadMap(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures);
-			Log(C4ResStrTableKey::IDS_PRC_TEXMAPENTRIES, tme_count);
-			// Only once
-			fFirst = false;
-		}
-		else
-		{
-			// Check overload-flags only
-			if (!C4TextureMap::LoadFlags(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures))
-				fOverloadMaterials = fOverloadTextures = false;
-		}
-
-		// Load textures
-		if (fOverloadTextures)
-		{
-			int iTexs = TextureMap.LoadTextures(Mats);
-			// Automatically continue search if no texture was found
-			if (!iTexs) fNewOverloadTextures = true;
-			tex_count += iTexs;
-		}
-
-		// Load materials
-		if (fOverloadMaterials)
-		{
-			int iMats = Material.Load(Mats);
-			// Automatically continue search if no material was found
-			if (!iMats) fNewOverloadMaterials = true;
-			mat_count += iMats;
-		}
-
-		// Set flags
-		fOverloadTextures = fNewOverloadTextures;
-		fOverloadMaterials = fNewOverloadMaterials;
+		Material.CopyMaterials(fallback->Material);
+		TextureMap = fallback->TextureMap;
 	}
+	else
+	{
+		bool haveScenarioFileMaterials{!name.empty() && Game.ScenarioFile.FindEntry(C4CFN_Material)};
 
-	// Logs
-	Log(C4ResStrTableKey::IDS_PRC_TEXTURES, tex_count);
-	Log(C4ResStrTableKey::IDS_PRC_MATERIALS, mat_count);
+		// Load all materials
+		auto matRes = Game.Parameters.GameRes.iterRes(NRT_Material);
+		bool fFirst = true, fOverloadMaterials = true, fOverloadTextures = true;
+		long tex_count = 0, mat_count = 0;
+		while (fOverloadMaterials || fOverloadTextures)
+		{
+			// Are there any scenario local materials that need to be looked at firs?
+			C4Group Mats;
+			if (haveSectionMaterials)
+			{
+				if (!Mats.OpenAsChild(&Group, C4CFN_Material))
+				{
+					LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
+					return false;
+				}
+				// Once only
+				haveSectionMaterials = false;
+			}
+			else if (haveScenarioFileMaterials)
+			{
+				if (!Mats.OpenAsChild(&Game.ScenarioFile, C4CFN_Material))
+				{
+					LogFatal(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError());
+					return false;
+				}
+
+				haveScenarioFileMaterials = false;
+			}
+			else
+			{
+				if (matRes == matRes.end()) break;
+				// Find next external material source
+				if (!Mats.Open(matRes->getFile()))
+				{
+					LogFatal(C4ResStrTableKey::IDS_ERR_EXTERNALMATERIALS, matRes->getFile(), Mats.GetError());
+					return false;
+				}
+				++matRes;
+			}
+
+			// First material file? Load texture map.
+			bool fNewOverloadMaterials = false, fNewOverloadTextures = false;
+			if (fFirst)
+			{
+				long tme_count = TextureMap.LoadMap(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures);
+				Log(C4ResStrTableKey::IDS_PRC_TEXMAPENTRIES, tme_count);
+				// Only once
+				fFirst = false;
+			}
+			else
+			{
+				// Check overload-flags only
+				if (!C4TextureMap::LoadFlags(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures))
+					fOverloadMaterials = fOverloadTextures = false;
+			}
+
+			// Load textures
+			if (fOverloadTextures)
+			{
+				int iTexs = TextureMap.LoadTextures(Mats);
+				// Automatically continue search if no texture was found
+				if (!iTexs) fNewOverloadTextures = true;
+				tex_count += iTexs;
+			}
+
+			// Load materials
+			if (fOverloadMaterials)
+			{
+				int iMats = Material.Load(Mats);
+				// Automatically continue search if no material was found
+				if (!iMats) fNewOverloadMaterials = true;
+				mat_count += iMats;
+			}
+
+			// Set flags
+			fOverloadTextures = fNewOverloadTextures;
+			fOverloadMaterials = fNewOverloadMaterials;
+		}
+
+		// Logs
+		Log(C4ResStrTableKey::IDS_PRC_TEXTURES, tex_count);
+		Log(C4ResStrTableKey::IDS_PRC_MATERIALS, mat_count);
+	}
 
 	// Load material enumeration
 	if (!Material.LoadEnumeration(Group))
