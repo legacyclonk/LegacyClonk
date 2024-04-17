@@ -97,7 +97,7 @@ public:
 	bool InitFromTemplate(C4Group &scenario);
 	bool InitFromEmptyLandscape(C4Group &scenario, const C4SLandscape &landscape);
 
-	bool InitMaterialTexture();
+	bool InitMaterialTexture(C4Section *fallback);
 
 	bool InitSecondPart();
 	bool InitThirdPart();
