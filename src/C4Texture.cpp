@@ -29,16 +29,16 @@
 #include <C4Landscape.h>
 #include <C4Wrappers.h>
 
-C4Texture::C4Texture(const char *const name, std::unique_ptr<C4Surface> surface32)
+C4Texture::C4Texture(const char *const name, std::shared_ptr<C4Surface> surface32)
 	: Surface32{std::move(surface32)}
 {
-	SCopy(name, Name, C4M_MaxName);
+	SCopy(name, Name.data(), C4M_MaxName);
 }
 
-C4Texture::C4Texture(const char *const name, std::unique_ptr<CSurface8> surface8)
+C4Texture::C4Texture(const char *const name, std::shared_ptr<CSurface8> surface8)
 	: Surface8{std::move(surface8)}
 {
-	SCopy(name, Name, C4M_MaxName);
+	SCopy(name, Name.data(), C4M_MaxName);
 }
 
 C4TexMapEntry::C4TexMapEntry()
@@ -108,6 +108,28 @@ C4TextureMap::C4TextureMap(C4Section &section)
 C4TextureMap::~C4TextureMap()
 {
 	Clear();
+}
+
+C4TextureMap::C4TextureMap(const C4TextureMap &other)
+	: section{other.section},
+	  Entry{other.Entry},
+	  textures{other.textures},
+	  fOverloadMaterials{other.fOverloadMaterials},
+	  fOverloadTextures{other.fOverloadTextures},
+	  fInitialized{other.fInitialized},
+	  fEntriesAdded{other.fEntriesAdded}
+{
+}
+
+C4TextureMap &C4TextureMap::operator=(const C4TextureMap &other)
+{
+	Entry = other.Entry;
+	textures = other.textures;
+	fOverloadMaterials = other.fOverloadMaterials;
+	fOverloadTextures = other.fOverloadTextures;
+	fInitialized = other.fInitialized;
+	fEntriesAdded = other.fEntriesAdded;
+	return *this;
 }
 
 bool C4TextureMap::AddEntry(uint8_t byIndex, const char *szMaterial, const char *szTexture)
@@ -349,7 +371,7 @@ C4Texture *C4TextureMap::GetTexture(const char *szTexture)
 {
 	for (auto &texture : textures)
 	{
-		if (SEqualNoCase(texture.Name, szTexture))
+		if (SEqualNoCase(texture.Name.data(), szTexture))
 		{
 			return &texture;
 		}
@@ -362,7 +384,7 @@ bool C4TextureMap::CheckTexture(const char *szTexture)
 {
 	for (auto &texture : textures)
 	{
-		if (SEqualNoCase(texture.Name, szTexture))
+		if (SEqualNoCase(texture.Name.data(), szTexture))
 		{
 			return true;
 		}
@@ -373,7 +395,7 @@ bool C4TextureMap::CheckTexture(const char *szTexture)
 
 const char *C4TextureMap::GetTexture(size_t iIndex)
 {
-	return iIndex < textures.size() ? textures[iIndex].Name : nullptr;
+	return iIndex < textures.size() ? textures[iIndex].Name.data() : nullptr;
 }
 
 void C4TextureMap::Default()
