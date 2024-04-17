@@ -236,12 +236,9 @@ bool C4TextureMap::SaveMap(C4Group &hGroup, const char *szEntryName)
 	return hGroup.Add(szEntryName, buf, false, true);
 }
 
-int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group *OverloadFile)
+int32_t C4TextureMap::LoadTextures(C4Group &hGroup)
 {
 	int32_t texnum = 0;
-
-	// overload: load from other file
-	if (OverloadFile) texnum += LoadTextures(*OverloadFile);
 
 	char texname[256 + 1];
 	std::unique_ptr<C4Surface> ctex;
