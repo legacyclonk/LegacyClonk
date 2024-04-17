@@ -650,7 +650,7 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 				if (C >= '!' && C <= '~')
 					throw C4AulParseError(this, FormatString("unexpected character '%c' found", C).getData());
 				else
-					throw C4AulParseError(this, FormatString("unexpected character 0x%x found", C).getData());
+					throw C4AulParseError(this, FormatString("unexpected character 0x%" PRIx8 " found", C).getData());
 			}
 			break;
 		}
