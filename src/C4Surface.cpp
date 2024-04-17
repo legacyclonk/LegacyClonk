@@ -870,7 +870,7 @@ bool C4Surface::LoadAny(C4GroupSet &hGroupset, const char *szName, bool fOwnPal,
 	char szFilename[_MAX_FNAME + 1];
 	SCopy(szName, szFilename, _MAX_FNAME);
 	char *szExt = GetExtension(szFilename);
-	C4Group *pGroup;
+	C4Group *pGroup{nullptr};
 	if (!*szExt)
 	{
 		// no extension: Default to extension that is found as file in group
