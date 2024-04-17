@@ -140,6 +140,7 @@ public:
 	void Clear(); // clear pattern
 	CPattern();
 	~CPattern() { Clear(); }
+	CPattern(const CPattern &);
 	CPattern(CPattern &&) = default;
 	CPattern &operator=(CPattern &&) = default;
 };

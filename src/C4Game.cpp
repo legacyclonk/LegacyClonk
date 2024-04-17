@@ -592,8 +592,10 @@ void C4Game::Clear()
 	Players.Clear();
 	Parameters.Clear();
 	RoundResults.Clear();
-	Sections.clear();
+	// Ensure the main section is destroyed last
 	SectionsPendingDeletion.clear();
+	Sections.resize(1);
+	Sections.clear();
 	C4S.Clear();
 	GraphicsSystem.Clear();
 	Defs.Clear();
@@ -1909,15 +1911,26 @@ bool C4Game::InitGameFirstPart()
 
 	SetInitProgress(57);
 
+	auto *const front = Sections.front().get();
+
 	// Materials
-	if (!std::ranges::all_of(Sections, &C4Section::InitMaterialTexture))
+	if (!front->InitMaterialTexture(nullptr))
 	{
 		return false;
 	}
+
+	for (auto &section : Sections | std::views::drop(1))
+	{
+		if (!section->InitMaterialTexture(front))
+		{
+			return false;
+		}
+	}
+
 	SetInitProgress(58);
 
 	// Colorize defs by material
-	Defs.ColorizeByMaterial(Sections.front()->Material, GBM);
+	Defs.ColorizeByMaterial(front->Material, GBM);
 	SetInitProgress(60);
 
 	PreloadStatus = PreloadLevel::Basic;
@@ -2578,7 +2591,7 @@ std::uint32_t C4Game::CreateSection(const char *const name)
 
 		const auto &back = Sections.back();
 
-		if (back->InitMaterialTexture()
+		if (back->InitMaterialTexture(Sections.front().get())
 			&& back->InitSecondPart()
 			&& back->InitThirdPart()
 			)
@@ -2605,7 +2618,7 @@ std::uint32_t C4Game::CreateEmptySection(const C4SLandscape &landscape)
 
 		const auto &back = Sections.back();
 
-		if (back->InitMaterialTexture()
+		if (back->InitMaterialTexture(Sections.front().get())
 			&& back->InitSecondPart()
 			&& back->InitThirdPart()
 			)
