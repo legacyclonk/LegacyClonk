@@ -285,7 +285,7 @@ bool C4Section::InitSecondPart()
 	}, &TransferZones);
 
 	// PXS
-	if (Group.FindEntry(C4CFN_PXS))
+	if (!emptyLandscape && Group.FindEntry(C4CFN_PXS))
 	{
 		if (!PXS.Load(Group))
 		{
@@ -300,7 +300,7 @@ bool C4Section::InitSecondPart()
 	}
 
 	// MassMover
-	if (Group.FindEntry(C4CFN_MassMover))
+	if (!emptyLandscape && Group.FindEntry(C4CFN_MassMover))
 	{
 		if (!MassMover.Load(Group))
 		{
@@ -315,9 +315,12 @@ bool C4Section::InitSecondPart()
 	}
 
 	// Load objects
-	if (const std::int32_t loadedObjects{Objects.Load(*this, Group, "")}; loadedObjects)
+	if (!emptyLandscape)
 	{
-		LogF(LoadResStr("IDS_PRC_OBJECTSLOADED"), loadedObjects);
+		if (const std::int32_t loadedObjects{Objects.Load(*this, Group, "")}; loadedObjects)
+		{
+			LogF(LoadResStr("IDS_PRC_OBJECTSLOADED"), loadedObjects);
+		}
 	}
 
 	// Weather
