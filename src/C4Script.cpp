@@ -6133,41 +6133,6 @@ static void FnSetRestoreInfos(C4AulContext *ctx, C4ValueInt what)
 	Game.RestartRestoreInfos.What = static_cast<std::underlying_type_t<C4NetworkRestartInfos::RestoreInfo>>(what);
 }
 
-#if 0
-class C4ValueHashCompilerRead : public StdCompiler
-{
-public:
-	typedef C4ValueHash InT;
-	void setInput(C4ValueHash *in) { map = in; }
-
-	bool isCompiler() override { return true; }
-	bool hasNaming() override { return true; }
-
-	NameGuard Name(const char *name) override;
-	void NameEnd(bool fBreak = false) override;
-	bool FollowName(const char *szName) override;
-
-	void QWord(std::int64_t &rInt) override;
-	void QWord(std::uint64_t &rInt) override;
-	void DWord(std::int32_t &rInt) override;
-	void DWord(std::uint32_t &rInt) override;
-	void Word(std::int16_t &rShort) override;
-	void Word(std::uint16_t &rShort) override;
-	void Byte(std::int8_t &rByte) override;
-	void Boolean(bool &rBool) override;
-	virtual void String(char *string, std::size_t maxLength, RawCompileType type = RCT_Escaped) override;
-	virtual void String(std::string &str, RawCompileType type = RCT_Escaped) override;
-	virtual void Raw(void *data, std::size_t size, RawCompileType type = RCT_Escaped) override
-	{
-		excCorrupt("Raw not supported");
-	}
-
-
-private:
-	C4ValueHash *map;
-};
-#endif
-
 static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
 {
 	if (C4String *const name{data.getStr()}; name)
