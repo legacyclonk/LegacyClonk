@@ -6174,7 +6174,7 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
 	{
 		return static_cast<C4ValueInt>(Game.CreateSection(name->Data.getData()));
 	}
-	else if (!data.ConvertTo(C4V_Map))
+	else if (data.GetType() != C4V_Map)
 	{
 		throw C4AulExecError{ctx->Obj, "CreateSection(): section name or section initialization map expected"};
 	}
@@ -6185,7 +6185,7 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
 	landscape.Default();
 
 	C4Value value{map[C4VString("Landscape")]};
-	if (value.ConvertTo(C4V_Map))
+	if (value.GetType() == C4V_Map)
 	{
 		C4ValueHash &landscapeParams{*value._getMap()};
 
