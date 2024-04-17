@@ -88,6 +88,28 @@ void CBltTransform::TransformPoint(float &rX, float &rY)
 	rX = fX; // apply temp
 }
 
+CPattern::CPattern(const CPattern &pattern)
+	: sfcPattern32{pattern.sfcPattern32},
+	  sfcPattern8{pattern.sfcPattern8},
+	  Wdt{pattern.Wdt},
+	  Hgt{pattern.Hgt},
+	  Zoom{pattern.Zoom},
+	  Monochrome{pattern.Monochrome},
+	  pClrs{pattern.pClrs},
+	  pAlpha{pattern.pAlpha}
+{
+	if (pattern.CachedPattern)
+	{
+		if (!sfcPattern32)
+		{
+			throw std::runtime_error{"Cached pattern without surface to back it"};
+		}
+
+		CachedPattern = std::make_unique_for_overwrite<std::uint32_t[]>(sfcPattern32->Wdt * sfcPattern32->Hgt);
+		memcpy(CachedPattern.get(), pattern.CachedPattern.get(), sfcPattern32->Wdt * sfcPattern32->Hgt * 4);
+	}
+}
+
 CPattern &CPattern::operator=(const CPattern &nPattern)
 {
 	pClrs        = nPattern.pClrs;
