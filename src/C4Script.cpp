@@ -6185,9 +6185,20 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
 
 		assign(landscape.NoSky, "NoSky");
 
-		const auto assignArrayToC4S = [&landscapeParams](C4SVal &field, const char *const key)
+		const auto assignToC4S = [&landscapeParams](C4SVal &field, const char *const key)
 		{
-			if (C4ValueArray *const array{landscapeParams[C4VString(key)].getArray()}; array)
+			auto value = landscapeParams[C4VString(key)];
+
+			if (value.GetType() == C4V_Int)
+			{
+				field= {
+					value._getInt(),
+					0,
+					value._getInt(),
+					value._getInt()
+				};
+			}
+			else if (C4ValueArray *const array{value.getArray()}; array)
 			{
 				field = {
 					array->GetItem(0).getInt(),
@@ -6198,10 +6209,10 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
 			}
 		};
 
-		assignArrayToC4S(landscape.Gravity, "Gravity");
-		assignArrayToC4S(landscape.MapWdt, "MapWdt");
-		assignArrayToC4S(landscape.MapHgt, "MapHgt");
-		assignArrayToC4S(landscape.MapZoom, "MapZoom");
+		assignToC4S(landscape.Gravity, "Gravity");
+		assignToC4S(landscape.MapWdt, "MapWdt");
+		assignToC4S(landscape.MapHgt, "MapHgt");
+		assignToC4S(landscape.MapZoom, "MapZoom");
 		assign(landscape.KeepMapCreator, "KeepMapCreator");
 		assign(landscape.SkyScrollMode, "SkyScrollMode");
 		landscape.NewStyleLandscape = 2;
