@@ -534,6 +534,13 @@ bool C4MaterialMap::LoadEnumeration(C4Group &hGroup)
 	return true;
 }
 
+void C4MaterialMap::CopyMaterials(const C4MaterialMap &source)
+{
+	Num = source.Num;
+	Map = new C4Material[Num];
+	std::ranges::uninitialized_copy_n(source.Map, source.Num, Map, Map + Num);
+}
+
 bool C4MaterialMap::SortEnumeration(int32_t iMat, const char *szMatName)
 {
 	// Not enough materials loaded

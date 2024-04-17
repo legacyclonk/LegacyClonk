@@ -179,6 +179,8 @@ public:
 	bool SaveEnumeration(C4Group &hGroup);
 	bool LoadEnumeration(C4Group &hGroup);
 
+	void CopyMaterials(const C4MaterialMap &source);
+
 	C4MaterialReaction *GetReactionUnsafe(int32_t iPXSMat, int32_t iLandscapeMat)
 	{
 		assert(ppReactionMap); assert(Inside<int32_t>(iPXSMat, -1, Num - 1)); assert(Inside<int32_t>(iLandscapeMat, -1, Num - 1));

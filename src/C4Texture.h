@@ -28,15 +28,22 @@ class C4Texture
 	friend class C4TextureMap;
 
 public:
-	C4Texture(const char *name, std::unique_ptr<C4Surface> surface32);
-	C4Texture(const char *name, std::unique_ptr<CSurface8> surface8);
+	C4Texture(const char *name, std::shared_ptr<C4Surface> surface32);
+	C4Texture(const char *name, std::shared_ptr<CSurface8> surface8);
 
 public:
-	std::unique_ptr<C4Surface> Surface32;
-	std::unique_ptr<CSurface8> Surface8;
+	C4Texture(const C4Texture &) = default;
+	C4Texture &operator=(const C4Texture &) = default;
+	C4Texture(C4Texture &&) = default;
+	C4Texture &operator=(C4Texture &&) = default;
+
+
+public:
+	std::shared_ptr<C4Surface> Surface32;
+	std::shared_ptr<CSurface8> Surface8;
 
 protected:
-	char Name[C4M_MaxName + 1];
+	std::array<char, C4M_MaxName + 1> Name;
 };
 
 class C4TexMapEntry
@@ -70,9 +77,15 @@ public:
 	C4TextureMap(C4Section &section);
 	~C4TextureMap();
 
+	C4TextureMap(const C4TextureMap &other);
+	C4TextureMap &operator=(const C4TextureMap &other);
+
+	C4TextureMap(C4TextureMap &&other);
+	C4TextureMap &operator=(C4TextureMap &&other);
+
 protected:
 	C4Section &section;
-	C4TexMapEntry Entry[C4M_MaxTexIndex];
+	std::array<C4TexMapEntry, C4M_MaxTexIndex> Entry;
 	std::vector<C4Texture> textures;
 	bool fOverloadMaterials;
 	bool fOverloadTextures;
