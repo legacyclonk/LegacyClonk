@@ -6260,19 +6260,17 @@ C4ValueInt FnGetSection(C4AulContext *ctx)
 	return ctx->GetSection().Number;
 }
 
-bool FnSwitchToSection(C4AulContext *ctx, C4ValueInt sectionNumber)
+std::optional<C4ValueInt> FnSwitchToSection(C4AulContext *ctx, C4ValueInt sectionNumber)
 {
-	if (!ctx->Caller) return false;
+	if (!ctx->Caller) return {};
 
 	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(sectionNumber))};
 	if (!section)
 	{
-		return false;
+		return {};
 	}
 
-	ctx->Caller->Section = section;
-
-	return true;
+	return std::exchange(ctx->Caller->Section, section)->Number;
 }
 
 static bool FnRemoveSection(C4AulContext *ctx, C4ValueInt section)
