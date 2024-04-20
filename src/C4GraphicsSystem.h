@@ -73,7 +73,7 @@ public:
 	bool SetPalette();
 	bool CreateViewport(int32_t iPlayer, bool fSilent);
 	bool CloseViewport(int32_t iPlayer, bool fSilent);
-	int32_t GetAudibility(int32_t iX, int32_t iY, int32_t *iPan, int32_t iAudibilityRadius = 0);
+	int32_t GetAudibility(C4Section &section, int32_t iX, int32_t iY, int32_t *iPan, int32_t iAudibilityRadius = 0);
 	int32_t GetViewportCount();
 	C4Viewport *GetViewport(int32_t iPlayer);
 	const std::vector<std::unique_ptr<C4Viewport>> &GetViewports() { return Viewports; }
