@@ -2594,13 +2594,13 @@ bool C4Landscape::DoRelights()
 		SolidMaskRect.x -= 2 * C4LS_MaxLightDistX; SolidMaskRect.y -= 2 * C4LS_MaxLightDistY;
 		SolidMaskRect.Wdt += 4 * C4LS_MaxLightDistX; SolidMaskRect.Hgt += 4 * C4LS_MaxLightDistY;
 		C4SolidMask *pSolid;
-		for (pSolid = C4SolidMask::Last; pSolid; pSolid = pSolid->Prev)
+		for (pSolid = LastSolidMask; pSolid; pSolid = pSolid->Prev)
 		{
 			pSolid->RemoveTemporary(SolidMaskRect);
 		}
 		Relight(Relights[i]);
 		// Restore Solidmasks
-		for (pSolid = C4SolidMask::First; pSolid; pSolid = pSolid->Next)
+		for (pSolid = FirstSolidMask; pSolid; pSolid = pSolid->Next)
 		{
 			pSolid->PutTemporary(SolidMaskRect);
 		}
@@ -2943,7 +2943,7 @@ void C4Landscape::PrepareChange(C4Rect BoundingBox, const bool updateMatCnt)
 	C4Rect SolidMaskRect = BoundingBox;
 	SolidMaskRect.x -= 2 * C4LS_MaxLightDistX; SolidMaskRect.y -= 2 * C4LS_MaxLightDistY;
 	SolidMaskRect.Wdt += 4 * C4LS_MaxLightDistX; SolidMaskRect.Hgt += 4 * C4LS_MaxLightDistY;
-	for (C4SolidMask *pSolid = C4SolidMask::Last; pSolid; pSolid = pSolid->Prev)
+	for (C4SolidMask *pSolid = LastSolidMask; pSolid; pSolid = pSolid->Prev)
 	{
 		pSolid->RemoveTemporary(SolidMaskRect);
 	}
@@ -2959,7 +2959,7 @@ void C4Landscape::FinishChange(C4Rect BoundingBox, const bool updateMatAndPixCnt
 	C4Rect SolidMaskRect = BoundingBox;
 	SolidMaskRect.x -= 2 * C4LS_MaxLightDistX; SolidMaskRect.y -= 2 * C4LS_MaxLightDistY;
 	SolidMaskRect.Wdt += 4 * C4LS_MaxLightDistX; SolidMaskRect.Hgt += 4 * C4LS_MaxLightDistY;
-	for (C4SolidMask *pSolid = C4SolidMask::First; pSolid; pSolid = pSolid->Next)
+	for (C4SolidMask *pSolid = FirstSolidMask; pSolid; pSolid = pSolid->Next)
 	{
 		pSolid->Repair(SolidMaskRect);
 	}
