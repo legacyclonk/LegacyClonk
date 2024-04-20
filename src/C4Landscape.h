@@ -61,6 +61,7 @@ inline uint8_t PixColIFTOld(uint8_t pixc)
 class C4MapCreatorS2;
 class C4Object;
 class C4Section;
+class C4SolidMask;
 
 class C4Landscape
 {
@@ -98,6 +99,9 @@ public:
 	std::int8_t MGranite{MNone};
 
 	std::uint8_t MCVehic{0};
+
+	C4SolidMask *FirstSolidMask{nullptr};
+	C4SolidMask *LastSolidMask{nullptr};
 
 protected:
 	C4Surface *Surface32;
