@@ -29,11 +29,13 @@
 #include <string>
 #include <variant>
 
+class C4Section;
+
 bool IsSoundPlaying(const char *name, const C4Object *obj);
 void SoundLevel(const char *name, C4Object *obj, std::int32_t iLevel);
 bool StartSoundEffect(const char *name, bool loop = false, std::int32_t volume = 100,
 	C4Object *obj = nullptr, std::int32_t falloffDistance = 0);
-void StartSoundEffectAt(const char *name, std::int32_t x, std::int32_t y);
+void StartSoundEffectAt(const char *name, C4Section &section, std::int32_t x, std::int32_t y);
 void StopSoundEffect(const char *name, const C4Object *obj);
 
 class C4SoundSystem
@@ -130,8 +132,8 @@ private:
 		const char *wildcard, const C4Object *obj);
 	// Returns a reference to the "sound enabled" config entry of the current game mode
 	static bool &GetCfgSoundEnabled();
-	static void GetVolumeByPos(std::int32_t x, std::int32_t y,
-		std::int32_t &volume, std::int32_t &pan);
+	static void GetVolumeByPos(C4Section &section, std::int32_t x, std::int32_t y,
+							   std::int32_t &volume, std::int32_t &pan);
 	Instance *NewInstance(const char *filename, bool loop,
 		std::int32_t volume, std::int32_t pan, C4Object *obj, std::int32_t falloffDistance);
 	// Adds default file extension if missing and replaces "*" with "?"
@@ -140,6 +142,6 @@ private:
 	friend bool IsSoundPlaying(const char *, const C4Object *);
 	friend void SoundLevel(const char *, C4Object *, std::int32_t);
 	friend bool StartSoundEffect(const char *, bool, std::int32_t, C4Object *, std::int32_t);
-	friend void StartSoundEffectAt(const char *, std::int32_t, std::int32_t);
+	friend void StartSoundEffectAt(const char *, C4Section &, std::int32_t, std::int32_t);
 	friend void StopSoundEffect(const char *, const C4Object *);
 };

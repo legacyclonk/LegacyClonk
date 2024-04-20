@@ -673,7 +673,7 @@ bool C4MaterialMap::mrfPoof(C4MaterialReaction *pReaction, C4Section &section, i
 	case meePXSPos: // PXS check before movement: Kill both landscape and PXS mat
 		section.Landscape.ExtractMaterial(iLSPosX, iLSPosY);
 		if (!Rnd3()) Smoke(section, iX, iY, 3);
-		if (!Rnd3()) StartSoundEffectAt("Pshshsh", iX, iY);
+		if (!Rnd3()) StartSoundEffectAt("Pshshsh", section, iX, iY);
 		return true;
 
 	case meePXSMove: // PXS movement
@@ -685,7 +685,7 @@ bool C4MaterialMap::mrfPoof(C4MaterialReaction *pReaction, C4Section &section, i
 		// Always kill both landscape and PXS mat
 		section.Landscape.ExtractMaterial(iLSPosX, iLSPosY);
 		if (!Rnd3()) Smoke(section, iX, iY, 3);
-		if (!Rnd3()) StartSoundEffectAt("Pshshsh", iX, iY);
+		if (!Rnd3()) StartSoundEffectAt("Pshshsh", section, iX, iY);
 		return true;
 	}
 	// not handled
@@ -712,7 +712,7 @@ bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, C4Section &section
 		{
 			section.Landscape.ClearPix(iLSPosX, iLSPosY);
 			if (!Random(5)) Smoke(section, iX, iY, 3 + Random(3));
-			if (!Random(20)) StartSoundEffectAt("Corrode", iX, iY);
+			if (!Random(20)) StartSoundEffectAt("Corrode", section, iX, iY);
 			return true;
 		}
 	}
@@ -736,7 +736,7 @@ bool C4MaterialMap::mrfCorrode(C4MaterialReaction *pReaction, C4Section &section
 			section.Landscape.ClearPix(iLSPosX, iLSPosY);
 			section.Landscape.CheckInstabilityRange(iLSPosX, iLSPosY);
 			if (!Random(5)) Smoke(section, iX, iY, 3 + Random(3));
-			if (!Random(20)) StartSoundEffectAt("Corrode", iX, iY);
+			if (!Random(20)) StartSoundEffectAt("Corrode", section, iX, iY);
 			return true;
 		}
 		// Else: dead. Insert material here
