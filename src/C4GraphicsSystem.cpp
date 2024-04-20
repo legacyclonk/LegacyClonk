@@ -40,6 +40,7 @@
 
 #include <algorithm>
 #include <format>
+#include <ranges>
 #include <stdexcept>
 
 C4GraphicsSystem::C4GraphicsSystem()
@@ -731,13 +732,13 @@ void C4GraphicsSystem::DrawHelp()
 		iX + iWdt / 2 + 64, iY + 64, CStdDDraw::DEFAULT_MESSAGE_COLOR, ALeft);
 }
 
-int32_t C4GraphicsSystem::GetAudibility(int32_t iX, int32_t iY, int32_t *iPan, int32_t iAudibilityRadius)
+int32_t C4GraphicsSystem::GetAudibility(C4Section &section, int32_t iX, int32_t iY, int32_t *iPan, int32_t iAudibilityRadius)
 {
 	// default audibility radius
 	if (!iAudibilityRadius) iAudibilityRadius = C4SoundSystem::AudibilityRadius;
 	// Accumulate audibility by viewports
 	int32_t iAudible = 0; *iPan = 0;
-	for (const auto &cvp : Viewports)
+	for (const auto &cvp : Viewports | std::views::filter([&section](const auto &cvp) { return &cvp->GetViewSection() == &section; }))
 	{
 		auto listenerX = cvp->ViewX + cvp->ViewWdt / 2;
 		auto listenerY = cvp->ViewY + cvp->ViewHgt / 2;

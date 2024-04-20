@@ -57,10 +57,10 @@ bool StartSoundEffect(const char *const name, const bool loop, const std::int32_
 	return Application.SoundSystem->NewInstance(name, loop, volume, 0, obj, falloffDistance) != nullptr;
 }
 
-void StartSoundEffectAt(const char *const name, const std::int32_t x, const std::int32_t y)
+void StartSoundEffectAt(const char *const name, C4Section &section, const std::int32_t x, const std::int32_t y)
 {
 	std::int32_t volume, pan;
-	Application.SoundSystem->GetVolumeByPos(x, y, volume, pan);
+	Application.SoundSystem->GetVolumeByPos(section, x, y, volume, pan);
 	Application.SoundSystem->NewInstance(name, false, volume, pan, nullptr, 0);
 }
 
@@ -157,7 +157,7 @@ bool C4SoundSystem::Instance::DetachObj()
 	// Otherwise: set volume by last position
 	const auto detachedObj = GetObj();
 	obj.emplace<const ObjPos>(*detachedObj);
-	GetVolumeByPos(detachedObj->x, detachedObj->y, volume, pan);
+	GetVolumeByPos(*detachedObj->Section, detachedObj->x, detachedObj->y, volume, pan);
 
 	// Do not stop instance
 	return true;
@@ -292,10 +292,10 @@ bool &C4SoundSystem::GetCfgSoundEnabled()
 	return Game.IsRunning ? Config.Sound.RXSound : Config.Sound.FESamples;
 }
 
-void C4SoundSystem::GetVolumeByPos(std::int32_t x, std::int32_t y,
+void C4SoundSystem::GetVolumeByPos(C4Section &section, std::int32_t x, std::int32_t y,
 	std::int32_t &volume, std::int32_t &pan)
 {
-	volume = Game.GraphicsSystem.GetAudibility(x, y, &pan);
+	volume = Game.GraphicsSystem.GetAudibility(section, x, y, &pan);
 }
 
 auto C4SoundSystem::NewInstance(const char *filename, const bool loop,
