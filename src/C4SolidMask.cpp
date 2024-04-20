@@ -261,7 +261,7 @@ void C4SolidMask::Remove(bool fCauseInstability, bool fBackupAttachment)
 	MaskPut = false;
 	// update surrounding masks in that range
 	C4TargetRect ClipRect;
-	for (C4SolidMask *pSolid = C4SolidMask::Last; pSolid; pSolid = pSolid->Prev)
+	for (C4SolidMask *pSolid = pForObject->Section->Landscape.LastSolidMask; pSolid; pSolid = pSolid->Prev)
 		if (pSolid->MaskPut) if (pSolid->MaskPutRect.Overlap(MaskPutRect))
 		{
 			// set clipping rect for all calls, since they may modify it
@@ -393,10 +393,10 @@ C4SolidMask::C4SolidMask(C4Object *pForObject) : pForObject(pForObject)
 	iAttachingObjectsCount = iAttachingObjectsCapacity = 0;
 	// Update linked list
 	Next = nullptr;
-	Prev = Last;
-	Last = this;
+	Prev = pForObject->Section->Landscape.LastSolidMask;
+	pForObject->Section->Landscape.LastSolidMask = this;
 	if (Prev) Prev->Next = this;
-	else First = this;
+	else pForObject->Section->Landscape.FirstSolidMask = this;
 	// copy solid mask from bitmap
 	int iNeededBufSize = pForObject->SolidMask.Wdt * pForObject->SolidMask.Hgt;
 	pSolidMask = new uint8_t[iNeededBufSize];
@@ -422,14 +422,13 @@ C4SolidMask::~C4SolidMask()
 	// Update linked list
 	if (Next) Next->Prev = Prev;
 	if (Prev) Prev->Next = Next;
-	if (First == this) First = Next;
-	if (Last == this) Last = Prev;
+
+	C4Landscape &landscape{pForObject->Section->Landscape};
+	if (landscape.FirstSolidMask == this) landscape.FirstSolidMask = Next;
+	if (landscape.LastSolidMask == this) landscape.LastSolidMask = Prev;
 	// clear fields
 	Clear();
 }
-
-C4SolidMask *C4SolidMask::First = nullptr;
-C4SolidMask *C4SolidMask::Last = nullptr;
 
 #ifdef SOLIDMASK_DEBUG
 
