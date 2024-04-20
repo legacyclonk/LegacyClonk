@@ -5591,7 +5591,7 @@ void C4Object::SetAudibilityAt(C4FacetEx &cgo, int32_t iX, int32_t iY)
 	}
 	else
 	{
-		Audible = Game.GraphicsSystem.GetAudibility(iX, iY, &AudiblePan);
+		Audible = Game.GraphicsSystem.GetAudibility(*Section, iX, iY, &AudiblePan);
 	}
 }
 
@@ -5599,7 +5599,7 @@ int32_t C4Object::GetAudibility()
 {
 	if (Audible == -1)
 	{
-		Audible = Game.GraphicsSystem.GetAudibility(x, y, &AudiblePan);
+		Audible = Game.GraphicsSystem.GetAudibility(*Section, x, y, &AudiblePan);
 	}
 	return Audible;
 }
