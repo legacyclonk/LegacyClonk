@@ -65,8 +65,6 @@ protected:
 
 public:
 	// Linked list of all solidmasks
-	static C4SolidMask *First;
-	static C4SolidMask *Last;
 	C4SolidMask *Prev;
 	C4SolidMask *Next;
 
