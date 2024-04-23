@@ -3543,9 +3543,13 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 {
 	C4Player *pPlayer = Game.Players.Get(Controller);
-	auto LetGoAndForgetCom = [&](int xdir) {
+	const auto LetGoAndForgetCom = [pPlayer, this](const int xdir)
+	{
 		// Suppress unwanted dropping of items or digging after releasing from scale/hangle
-		if (ObjectComLetGo(this, xdir)) pPlayer->LastCom = COM_None;
+		if (ObjectComLetGo(this, xdir))
+		{
+			pPlayer->LastCom = COM_None;
+		}
 	};
 	// Control by procedure
 	switch (GetProcedure())
