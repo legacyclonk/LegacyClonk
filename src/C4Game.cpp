@@ -1133,7 +1133,6 @@ void C4Game::Default()
 	pGUI = nullptr;
 	pScenarioSections = pCurrentScenarioSection = nullptr;
 	*CurrentScenarioSection = 0;
-	fResortAnyObject = false;
 	pNetworkStatistics = nullptr;
 	IsMusicEnabled = false;
 	iMusicLevel = 100;
@@ -1269,7 +1268,6 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 		pComp->Value(mkNamingAdapt(Rules,                                   "Rules",                  0));
 		pComp->Value(mkNamingAdapt(PlayList,                                "PlayList",               ""));
 		pComp->Value(mkNamingAdapt(mkStringAdaptMA(CurrentScenarioSection), "CurrentScenarioSection", ""));
-		pComp->Value(mkNamingAdapt(fResortAnyObject,                        "ResortAnyObj",           false));
 		pComp->Value(mkNamingAdapt(IsMusicEnabled,                          "MusicEnabled",           false));
 		pComp->Value(mkNamingAdapt(iMusicLevel,                             "MusicLevel",             100));
 		pComp->Value(mkNamingAdapt(NextMission,                             "NextMission",            StdStrBuf()));
