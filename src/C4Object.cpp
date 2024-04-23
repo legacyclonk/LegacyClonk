@@ -234,9 +234,12 @@ C4Object::~C4Object()
 #ifndef NDEBUG
 	// debug: mustn't be listed in any list now
 
-	assert(!Section->Objects.ObjectNumber(this));
-	assert(!Section->Objects.InactiveObjects.ObjectNumber(this));
-	Section->Objects.Sectors.AssertObjectNotInList(this);
+	if (Section)
+	{
+		assert(!Section->Objects.ObjectNumber(this));
+		assert(!Section->Objects.InactiveObjects.ObjectNumber(this));
+		Section->Objects.Sectors.AssertObjectNotInList(this);
+	}
 #endif
 }
 
