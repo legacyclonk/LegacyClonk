@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <utility>
 
 // *** C4FindObject
 
@@ -843,7 +844,7 @@ int32_t C4SortObjectByValue::Compare(C4Object *pObj1, C4Object *pObj2)
 
 int32_t C4SortObjectByValue::CompareCache(int32_t iObj1, int32_t iObj2, C4Object *pObj1, C4Object *pObj2)
 {
-	assert(pVals); assert(iObj1 >= 0 && iObj1 < iSize); assert(iObj2 >= 0 && iObj2 < iSize);
+	assert(iObj1 >= 0 && std::cmp_less(iObj1, values.size())); assert(iObj2 >= 0 && std::cmp_less(iObj2, values.size()));
 	// Might overflow for large values...!
 	return values[iObj2] - values[iObj1];
 }
