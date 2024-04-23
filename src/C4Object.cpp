@@ -2894,7 +2894,7 @@ void C4Object::PostCompileInit()
 	if (!BlitMode) BlitMode = Def->BlitMode;
 
 	// object needs to be resorted? May happen if there's unsorted objects in savegame
-	if (Unsorted) Game.fResortAnyObject = true;
+	if (Unsorted) Section->ResortAnyObject = true;
 
 	// initial OCF update
 	SetOCF();
@@ -4104,8 +4104,8 @@ void C4Object::Resort()
 {
 	// Flag resort
 	Unsorted = true;
-	Game.fResortAnyObject = true;
-	// Must not immediately resort - link change/removal would crash Game::ExecObjects
+	Section->ResortAnyObject = true;
+	// Must not immediately resort - link change/removal would crash C4Section::ExecObjects
 }
 
 bool C4Object::SetAction(int32_t iAct, C4Object *pTarget, C4Object *pTarget2, int32_t iCalls, bool fForce)
