@@ -206,8 +206,6 @@ C4ValueArray *C4FindObject::FindMany(const C4ObjectList &Objs)
 		return new C4ValueArray();
 	// Set up array
 	std::vector<C4Object *> result;
-
-	int32_t iSize = 0;
 	// Search
 	for (C4ObjectLink *pLnk = Objs.First; pLnk; pLnk = pLnk->Next)
 		if (pLnk->Obj->Status)
