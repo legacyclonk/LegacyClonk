@@ -6133,11 +6133,11 @@ static void FnSetRestoreInfos(C4AulContext *ctx, C4ValueInt what)
 	Game.RestartRestoreInfos.What = static_cast<std::underlying_type_t<C4NetworkRestartInfos::RestoreInfo>>(what);
 }
 
-static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
+static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data, C4String *callback, C4Object *obj)
 {
 	if (C4String *const name{data.getStr()}; name)
 	{
-		return static_cast<C4ValueInt>(Game.CreateSection(name->Data.getData()));
+		return static_cast<C4ValueInt>(Game.CreateSection(name->Data.getData(), FnStringPar(callback), ctx->GetSection(), obj ? obj : ctx->Obj));
 	}
 	else if (data.GetType() != C4V_Map)
 	{
@@ -6221,7 +6221,7 @@ static C4ValueInt FnCreateSection(C4AulContext *ctx, C4Value data)
 		assign(landscape.ShadeMaterials, "ShadeMaterials");
 	}
 
-	return static_cast<C4ValueInt>(Game.CreateEmptySection(landscape));
+	return static_cast<C4ValueInt>(Game.CreateEmptySection(landscape, FnStringPar(callback), ctx->GetSection(), obj ? obj : ctx->Obj));
 }
 
 static C4ValueInt FnGetSectionCount(C4AulContext *ctx)

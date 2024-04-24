@@ -164,6 +164,8 @@ enum C4PacketType
 	CID_PlrControl = CID_First | 0x21,
 	CID_PlrCommand = CID_First | 0x22,
 	CID_Message    = CID_First | 0x23,
+	CID_SectionLoaded = CID_First | 0x24,
+	CID_SectionLoadFinished = CID_First | 0x25,
 
 	CID_EMMoveObj  = CID_First | 0x30,
 	CID_EMDrawTool = CID_First | 0x31,

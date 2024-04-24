@@ -66,7 +66,8 @@ C4Game::C4Game()
 	Teams(Parameters.Teams),
 	PlayerInfos(Parameters.PlayerInfos),
 	RestorePlayerInfos(Parameters.RestorePlayerInfos),
-	Clients(Parameters.Clients)
+	Clients(Parameters.Clients),
+	SectionLoadSemaphore{0}
 {
 	Default();
 }
@@ -544,11 +545,34 @@ bool C4Game::Init()
 	// and redraw background
 	GraphicsSystem.InvalidateBg();
 
+	// start section load thread
+#ifndef USE_CONSOLE
+	try
+	{
+		SectionLoadThread = C4Thread::CreateJ({"SectionLoadThread"}, &C4Game::SectionLoadProc, this, SectionGLCtx{});
+	}
+	catch (const std::runtime_error &e)
+	{
+		LogFatalNTr(e.what());
+		return false;
+	}
+
+#else
+	SectionLoadThread = C4Thread::CreateJ({"SectionLoadThread"}, &C4Game::SectionLoadProc, this);
+#endif
+
 	return true;
 }
 
 void C4Game::Clear()
 {
+	SectionLoadThread.request_stop();
+	SectionLoadSemaphore.release();
+	if (SectionLoadThread.joinable())
+	{
+		SectionLoadThread.join();
+	}
+
 	// join the thread first as it will mess with the cleared state otherwise
 	if (PreloadThread.joinable())
 	{
@@ -792,6 +816,8 @@ bool C4Game::Execute() // Returns true if the game is over
 
 	// Halt
 	if (HaltCount) return false;
+
+	CheckLoadedSections();
 
 	SectionRemovalCheck();
 
@@ -2571,57 +2597,207 @@ bool C4Game::InitKeyboard()
 	return true;
 }
 
-std::uint32_t C4Game::CreateSection(const char *const name)
+#define MAIN_THREAD
+
+std::uint32_t C4Game::CreateSection(const char *const name, std::string callback, C4Section &sourceSection, C4Object *const	target)
 {
-	auto section = std::make_unique<C4Section>(name);
+	C4Section *const section{SectionsLoading.emplace_back(std::make_unique<C4Section>(name), std::move(callback), sourceSection.Number, target ? target->Number : 0).Section.get()};
 
-	if (section->InitFromTemplate(ScenarioFile))
+#ifdef MAIN_THREAD
+	const bool success{
+			section->InitFromTemplate(ScenarioFile)
+			&& section->InitMaterialTexture(Sections.front().get())
+			&& section->InitSecondPart()};
+
 	{
-		Sections.emplace_back(std::move(section));
-
-		const auto &back = Sections.back();
-
-		if (back->InitMaterialTexture(Sections.front().get())
-			&& back->InitSecondPart()
-			&& back->InitThirdPart()
-			)
-		{
-			return back->Number;
-		}
-		else
-		{
-			Sections.pop_back();
-		}
+		const std::lock_guard lock{SectionDoneMutex};
+		SectionDoneVector.emplace_back(section, success);
 	}
+#else
+	const std::lock_guard lock{SectionLoadMutex};
+	SectionLoadQueue.emplace(section, std::nullopt);
+	SectionLoadSemaphore.release();
+#endif
 
-	return C4Section::NoSectionSentinel;
+
+	return section->Number;
 }
 
-std::uint32_t C4Game::CreateEmptySection(const C4SLandscape &landscape)
+std::uint32_t C4Game::CreateEmptySection(const C4SLandscape &landscape, std::string callback, C4Section &sourceSection, C4Object *const	target)
 {
-	auto section = std::make_unique<C4Section>();
+	C4Section *const section{SectionsLoading.emplace_back(std::make_unique<C4Section>(), std::move(callback), sourceSection.Number, target ? target->Number : 0).Section.get()};
 
-	if (section->InitFromEmptyLandscape(ScenarioFile, landscape))
+#ifdef MAIN_THREAD
+	const bool success{
+			section->InitFromEmptyLandscape(ScenarioFile, landscape)
+			&& section->InitMaterialTexture(Sections.front().get())
+			&& section->InitSecondPart()};
+
 	{
-		const auto size = static_cast<std::int32_t>(Sections.size());
-		Sections.emplace_back(std::move(section));
+		const std::lock_guard lock{SectionDoneMutex};
+		SectionDoneVector.emplace_back(section, success);
+	}
+#else
+	const std::lock_guard lock{SectionLoadMutex};
+	SectionLoadQueue.emplace(section, landscape);
+	SectionLoadSemaphore.release();
+#endif
 
-		const auto &back = Sections.back();
+	return section->Number;
+}
 
-		if (back->InitMaterialTexture(Sections.front().get())
-			&& back->InitSecondPart()
-			&& back->InitThirdPart()
-			)
+void C4Game::OnSectionLoaded(const std::uint32_t sectionNumber, const std::int32_t byClient, const bool success)
+{
+	if (Network.isEnabled() && !Network.isHost()) return;
+
+	C4Section *section;
+	if (const auto it = std::ranges::find(SectionsLoading, sectionNumber, [](const auto &sectionWithCallback) { return sectionWithCallback.Section->Number; }); it != SectionsLoading.end())
+	{
+		section = it->Section.get();
+	}
+	else
+	{
+		return;
+	}
+
+	std::unordered_map<std::int32_t, bool> *clients;
+
+	if (SectionsLoadingClients.contains(section))
+	{
+		clients = &SectionsLoadingClients.at(section);
+		clients->try_emplace(byClient, success);
+	}
+	else
+	{
+		clients = &SectionsLoadingClients.try_emplace(section, std::unordered_map{std::pair{byClient, success}}).first->second;
+	}
+
+	bool allClientsLoadedSuccessful{true};
+
+	for (C4Client *client{nullptr}; (client = Game.Clients.getClient(client)); )
+	{
+		if (const auto it = clients->find(client->getID()); it != clients->end())
 		{
-			return back->Number;
+			allClientsLoadedSuccessful &= it->second;
 		}
 		else
 		{
-			Sections.pop_back();
+			return;
 		}
 	}
 
-	return C4Section::NoSectionSentinel;
+	// all clients have loaded; send control
+	Control.DoInput(CID_SectionLoadFinished, new C4ControlSectionLoadFinished{sectionNumber, allClientsLoadedSuccessful}, CDT_Sync);
+}
+
+void C4Game::OnSectionLoadFinished(const std::uint32_t sectionNumber, bool success)
+{
+	auto it = std::ranges::find(SectionsLoading, sectionNumber, [](const auto &sectionWithCallback) { return sectionWithCallback.Section->Number; });
+	if (it == SectionsLoading.end())
+	{
+		return;
+	}
+
+	SectionWithCallback sectionWithCallback{std::move(*it)};
+	SectionsLoading.erase(it);
+
+	C4AulScript *script;
+	C4Object *obj{nullptr};
+	if (sectionWithCallback.Target)
+	{
+		obj = Game.SafeObjectPointer(sectionWithCallback.Target);
+		if (!obj)
+		{
+			return;
+		}
+
+		script = &obj->Def->Script;
+	}
+	else
+	{
+		script = &ScriptEngine;
+	}
+
+	C4Section *callbackSection{GetSectionByNumber(sectionWithCallback.CallbackSection)};
+	if (!callbackSection)
+	{
+		callbackSection = Sections.front().get();
+	}
+
+	const std::uint32_t newSectionNumber{sectionWithCallback.Section->Number};
+
+	if (success)
+	{
+		auto it = Sections.emplace(Sections.end(), std::move(sectionWithCallback.Section));
+		success = it->get()->InitThirdPart();
+
+		if (!success)
+		{
+			Sections.erase(it);
+		}
+	}
+
+	C4AulScriptFunc *const func{script->GetSFuncWarn(sectionWithCallback.Callback.c_str(), AA_PROTECTED, "section callback")};
+	if (func)
+	{
+		func->Exec(*callbackSection, obj, C4AulParSet{C4VInt(static_cast<C4ValueInt>(newSectionNumber)), C4VBool(success)});
+	}
+}
+
+#ifndef USE_CONSOLE
+void C4Game::SectionLoadProc(SectionGLCtx context, std::stop_token stopToken)
+#else
+void C4Game::SectionLoadProc(std::stop_token stopToken)
+#endif
+{
+	context.Select();
+
+	for (;;)
+	{
+		SectionLoadSemaphore.acquire();
+		if (stopToken.stop_requested())
+		{
+			break;
+		}
+
+		SectionLoadArgs sectionLoadArgs;
+
+		{
+			const std::lock_guard lock{SectionLoadMutex};
+			sectionLoadArgs = std::move(SectionLoadQueue.front());
+			SectionLoadQueue.pop();
+		}
+
+		const bool success{(sectionLoadArgs.Landscape
+				? sectionLoadArgs.Section->InitFromEmptyLandscape(ScenarioFile, *sectionLoadArgs.Landscape)
+				: sectionLoadArgs.Section->InitFromTemplate(ScenarioFile))
+				&& sectionLoadArgs.Section->InitMaterialTexture(Sections.front().get())
+				&& sectionLoadArgs.Section->InitSecondPart()};
+
+		{
+			const std::lock_guard lock{SectionDoneMutex};
+			SectionDoneVector.emplace_back(sectionLoadArgs.Section, success);
+		}
+
+		//&& sectionLoadArgs.Section->Number <= 1
+	}
+}
+
+void C4Game::CheckLoadedSections()
+{
+	const std::lock_guard lock{SectionDoneMutex};
+	if (!SectionDoneVector.empty())
+	{
+		for (auto &sectionDoneArgs : SectionDoneVector)
+		{
+			Control.DoInput(CID_SectionLoaded, new C4ControlSectionLoaded{
+								sectionDoneArgs.Section->Number,
+								sectionDoneArgs.Success
+							}, CDT_Sync);
+		}
+
+		SectionDoneVector.clear();
+	}
 }
 
 bool C4Game::InitSystem()
@@ -3447,4 +3623,36 @@ void C4Game::AddDirectoryForMonitoring(const char *const directory)
 bool C4Game::ToggleChat()
 {
 	return C4ChatDlg::ToggleChat();
+}
+
+C4Game::SectionGLCtx::SectionGLCtx()
+	: context{lpDDraw->CreateContext(Application.pWindow, &Application)}
+{
+	if (!context)
+	{
+		throw std::runtime_error{"TODO"};
+	}
+
+	context->Deselect();
+	pGL->GetMainCtx().Select();
+}
+
+C4Game::SectionGLCtx::~SectionGLCtx()
+{
+	if (context)
+	{
+		context->Finish();
+		context->Deselect(true);
+	}
+}
+
+void C4Game::SectionGLCtx::Finish() const
+{
+	glFlush();
+	context->Finish();
+}
+
+void C4Game::SectionGLCtx::Select() const
+{
+	context->Select(false, true);
 }
