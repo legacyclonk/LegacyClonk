@@ -325,6 +325,8 @@ bool C4Section::InitSecondPart()
 	// Weather
 	if (LandscapeLoaded) Weather.Init(!C4S.Head.SaveGame);
 
+	Group.Close();
+
 	return true;
 }
 

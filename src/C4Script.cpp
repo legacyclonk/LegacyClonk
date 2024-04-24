@@ -6241,7 +6241,7 @@ static C4ValueInt FnGetSectionByindex(C4AulContext *ctx, C4ValueInt i)
 	return C4Section::NoSectionSentinel;
 }
 
-static bool FnMoveToSection(C4AulContext *ctx, C4ValueInt targetSection, C4Object *obj)
+static bool FnSetSection(C4AulContext *ctx, C4ValueInt targetSection, C4Object *obj)
 {
 	if (!obj) if (!(obj = ctx->Obj)) return false;
 	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(targetSection))};
@@ -6255,14 +6255,25 @@ static bool FnMoveToSection(C4AulContext *ctx, C4ValueInt targetSection, C4Objec
 	return true;
 }
 
-C4ValueInt FnGetSection(C4AulContext *ctx)
+std::optional<C4ValueInt> FnGetSection(C4AulContext *ctx, C4Object *obj)
+{
+	if (!obj) if (!(obj = ctx->Obj)) return {};
+	return obj->Section->Number;
+}
+
+C4ValueInt FnGetSectionContext(C4AulContext *ctx)
 {
 	return ctx->GetSection().Number;
 }
 
-std::optional<C4ValueInt> FnSwitchToSection(C4AulContext *ctx, C4ValueInt sectionNumber)
+std::optional<C4ValueInt> FnSetSectionContext(C4AulContext *ctx, C4ValueInt sectionNumber)
 {
 	if (!ctx->Caller) return {};
+
+	if (ctx->Caller->Obj)
+	{
+		throw new C4AulExecError{ctx->Obj, "SetSectionContext: Cannot set section context when called in an object context"};
+	}
 
 	C4Section *const section{Game.GetSectionByNumber(static_cast<std::uint32_t>(sectionNumber))};
 	if (!section)
@@ -6271,6 +6282,23 @@ std::optional<C4ValueInt> FnSwitchToSection(C4AulContext *ctx, C4ValueInt sectio
 	}
 
 	return std::exchange(ctx->Caller->Section, section)->Number;
+}
+
+static void FnSetObjectContext(C4AulContext *ctx, C4Object *obj)
+{
+	if (!ctx->Caller) return;
+
+	if (!ctx->Caller->Def)
+	{
+		throw new C4AulExecError{ctx->Caller->Obj, "SetObjectContext: Cannot set object context when called in a global context"};
+	}
+
+	if (obj && obj->Def != ctx->Caller->Def)
+	{
+		throw new C4AulExecError{ctx->Caller->Obj, "SetObjectContext: Object definition mismatch"};
+	}
+
+	ctx->Caller->Obj = obj;
 }
 
 static bool FnRemoveSection(C4AulContext *ctx, C4ValueInt section)
@@ -7203,9 +7231,11 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "CreateSection",                   FnCreateSection);
 	AddFunc(pEngine, "GetSectionCount",                 FnGetSectionCount);
 	AddFunc(pEngine, "GetSectionByIndex",               FnGetSectionByindex);
-	AddFunc(pEngine, "MoveToSection",                   FnMoveToSection);
+	AddFunc(pEngine, "SetSection",                      FnSetSection);
 	AddFunc(pEngine, "GetSection",                      FnGetSection);
-	AddFunc(pEngine, "SwitchToSection",                 FnSwitchToSection);
+	AddFunc(pEngine, "GetSectionContext",               FnGetSectionContext);
+	AddFunc(pEngine, "SetSectionContext",               FnSetSectionContext);
+	AddFunc(pEngine, "SetObjectContext",                FnSetObjectContext);
 	AddFunc(pEngine, "RemoveSection",                   FnRemoveSection);
 	new C4AulDefCastFunc<C4V_C4ID, C4V_Int>{pEngine, "ScoreboardCol"};
 	new C4AulDefCastFunc<C4V_Any, C4V_Int>{pEngine, "CastInt"};
