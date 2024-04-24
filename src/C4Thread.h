@@ -46,8 +46,42 @@ namespace C4Thread
 			const C4Com com{options.ApartmentType};
 #endif
 
-			std::move(func)(std::forward<Args>(args)...);
+			std::invoke(std::move(func), std::forward<Args>(args)...);
 		},
 		std::move(options), std::move(func), std::forward<Args>(args)...);
+	}
+
+	template<typename Func, typename... Args>
+	std::jthread CreateJ(CreateOptions options, Func &&func, Args &&...args)
+	{
+		static_assert(std::is_invocable_v<std::decay_t<Func>, std::decay_t<Args>..., std::stop_token>);
+		if constexpr (std::is_invocable_v<std::decay_t<Func>, std::decay_t<Args>..., std::stop_token>)
+		{
+			return std::jthread{[](std::stop_token token, const CreateOptions &options, Func &&func, Args &&...args) mutable
+			{
+				SetCurrentThreadName(options.Name);
+
+	#ifdef _WIN32
+				const C4Com com{options.ApartmentType};
+	#endif
+
+				std::invoke(std::move(func), std::forward<Args>(args)..., std::move(token));
+			},
+			std::move(options), std::move(func), std::forward<Args>(args)...};
+		}
+		else
+		{
+			return std::jthread{[](const CreateOptions &options, Func &&func, Args &&...args) mutable
+			{
+				SetCurrentThreadName(options.Name);
+
+	#ifdef _WIN32
+				const C4Com com{options.ApartmentType};
+	#endif
+
+				std::invoke(std::move(func), std::forward<Args>(args)...);
+			},
+			std::move(options), std::move(func), std::forward<Args>(args)...};
+		}
 	}
 }
