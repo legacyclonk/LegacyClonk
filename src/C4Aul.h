@@ -447,7 +447,7 @@ public:
 	virtual bool Delete() { return true; } // allow deletion on pure class
 
 protected:
-	struct Append
+	struct AppendOrInclude
 	{
 		const C4ID id;
 		const bool nowarn;
@@ -467,8 +467,8 @@ protected:
 	bool Preparsing; // set while preparse
 	bool Resolving; // set while include-resolving, to catch circular includes
 
-	std::list<C4ID> Includes; // include list
-	std::list<Append> Appends; // append list
+	std::list<AppendOrInclude> Includes; // include list
+	std::list<AppendOrInclude> Appends; // append list
 
 	// internal function used to find overloaded functions
 	C4AulFunc *GetOverloadedFunc(C4AulFunc *ByFunc);
