@@ -1450,10 +1450,17 @@ void C4AulParseState::Parse_Script()
 				// get id of script to include
 				if (TokenType != ATT_C4ID)
 					UnexpectedToken("id constant");
+				bool nowarn{false};
 				C4ID Id = static_cast<C4ID>(cInt);
 				Shift();
+				if (TokenType == ATT_IDTF && SEqual(Idtf, C4AUL_NoWarn))
+				{
+					nowarn = true;
+					Shift();
+				}
+
 				// add to include list
-				a->Includes.push_front(Id);
+				a->Includes.push_front({Id, nowarn});
 			}
 			else if (SEqual(Idtf, C4AUL_Append))
 			{
