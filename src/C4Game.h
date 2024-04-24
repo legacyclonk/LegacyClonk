@@ -57,6 +57,11 @@
 #include <C4NetworkRestartInfos.h>
 #include "C4FileMonitor.h"
 
+#include <mutex>
+#include <queue>
+#include <semaphore>
+#include <thread>
+
 class C4Game
 {
 private:
@@ -79,6 +84,20 @@ private:
 		C4KeySetCtrl(int32_t iKeySet, int32_t iCtrl) : iKeySet(iKeySet), iCtrl(iCtrl) {}
 	};
 
+	struct SectionCallback
+	{
+		std::string Callback;
+		std::int32_t Target;
+	};
+
+	struct SectionWithCallback
+	{
+		std::unique_ptr<C4Section> Section;
+		std::string Callback;
+		std::uint32_t CallbackSection;
+		std::int32_t Target;
+	};
+
 public:
 	C4Game();
 	~C4Game();
@@ -87,6 +106,8 @@ public:
 	C4DefList Defs;
 	std::list<std::unique_ptr<C4Section>> Sections;
 	std::vector<std::unique_ptr<C4Section>> SectionsPendingDeletion;
+	std::vector<SectionWithCallback> SectionsLoading;
+	std::unordered_map<C4Section *, std::unordered_map<std::int32_t, bool>> SectionsLoadingClients;
 	C4Group ScenarioFile;
 	C4Scenario C4S;
 	std::string Loader;
@@ -298,8 +319,10 @@ public:
 	bool SlowDown();
 	bool InitKeyboard(); // register main keyboard input functions
 
-	std::uint32_t CreateSection(const char *name);
-	std::uint32_t CreateEmptySection(const C4SLandscape &landscape);
+	std::uint32_t CreateSection(const char *name, std::string callback, C4Section &sourceSection, C4Object *target);
+	std::uint32_t CreateEmptySection(const C4SLandscape &landscape, std::string callback, C4Section &sourceSection, C4Object *target);
+	void OnSectionLoaded(std::uint32_t sectionNumber, std::int32_t byClient, bool success);
+	void OnSectionLoadFinished(std::uint32_t sectionNumber, bool success);
 
 protected:
 	bool InitSystem();
@@ -356,6 +379,30 @@ public:
 	bool ToggleSound(); // sound on / off
 	void AddDirectoryForMonitoring(const char *directory);
 
+private:
+	class SectionGLCtx
+	{
+	public:
+		SectionGLCtx();
+		~SectionGLCtx();
+
+		SectionGLCtx(SectionGLCtx &&) = default;
+		SectionGLCtx &operator=(SectionGLCtx &&) = default;
+
+	public:
+		void Finish() const;
+		void Select() const;
+
+	private:
+		std::unique_ptr<CStdGLCtx> context;
+	};
+#ifndef USE_CONSOLE
+	void SectionLoadProc(SectionGLCtx context, std::stop_token stopToken);
+#else
+	void SectionLoadProc(std::stop_token stopToken);
+#endif
+	void CheckLoadedSections();
+
 protected:
 	enum class PreloadLevel
 	{
@@ -369,6 +416,25 @@ protected:
 	CStdCSecEx PreloadMutex;
 	bool LandscapeLoaded;
 	std::unique_ptr<C4FileMonitor> FileMonitor;
+
+	struct SectionLoadArgs
+	{
+		C4Section *Section;
+		std::optional<C4SLandscape> Landscape;
+	};
+
+	struct SectionDoneArgs
+	{
+		C4Section *Section;
+		bool Success;
+	};
+
+	std::jthread SectionLoadThread;
+	std::mutex SectionLoadMutex;
+	std::counting_semaphore<> SectionLoadSemaphore;
+	std::queue<SectionLoadArgs> SectionLoadQueue;
+	std::mutex SectionDoneMutex;
+	std::vector<SectionDoneArgs> SectionDoneVector;
 };
 
 const int32_t C4RULE_StructuresNeedEnergy      = 1,

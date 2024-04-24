@@ -1717,3 +1717,27 @@ void C4ControlScript::CheckStrictness(const C4AulScriptStrict strict, StdCompile
 		comp.excCorrupt("Invalid strictness: %hhu", std::to_underlying(strict));
 	}
 }
+
+void C4ControlSectionLoaded::Execute() const
+{
+	Game.OnSectionLoaded(sectionNumber, iByClient, success);
+}
+
+void C4ControlSectionLoaded::CompileFunc(StdCompiler *const comp)
+{
+	comp->Value(mkNamingAdapt(mkIntPackAdapt(sectionNumber), "Section",     0));
+	comp->Value(mkNamingAdapt(success,                       "Success", false));
+	C4ControlPacket::CompileFunc(comp);
+}
+
+void C4ControlSectionLoadFinished::Execute() const
+{
+	Game.OnSectionLoadFinished(sectionNumber, success);
+}
+
+void C4ControlSectionLoadFinished::CompileFunc(StdCompiler *const comp)
+{
+	comp->Value(mkNamingAdapt(mkIntPackAdapt(sectionNumber), "Section",     0));
+	comp->Value(mkNamingAdapt(success,                       "Success", false));
+	C4ControlPacket::CompileFunc(comp);
+}
