@@ -81,7 +81,7 @@ bool C4AulScript::ResolveIncludes(C4DefList *rDefs)
 	}
 	Resolving = true;
 	// append all includes to local script
-	for (const auto i : Includes)
+	for (const auto [i, nowarn] : Includes)
 	{
 		C4Def *Def = rDefs->ID2Def(i);
 		if (Def)
@@ -93,7 +93,7 @@ bool C4AulScript::ResolveIncludes(C4DefList *rDefs)
 
 			Def->Script.AppendTo(*this, false);
 		}
-		else
+		else if (!nowarn)
 		{
 			// save id in buffer because AulWarn will use the buffer of C4IdText
 			// to get the id of the object in which the error occurs...
