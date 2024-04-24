@@ -635,3 +635,35 @@ public:
 	virtual bool Allowed() const override { return HostControl(); }
 	virtual std::string FormatScript() const override { return std::format("EliminatePlayer({})", plr); }
 };
+
+class C4ControlSectionLoaded : public C4ControlPacket
+{
+public:
+	C4ControlSectionLoaded(const std::uint32_t sectionNumber, const bool success)
+		: sectionNumber{sectionNumber}, success{success} {}
+
+public:
+	virtual bool Sync() const override { return true; }
+
+	DECLARE_C4CONTROL_VIRTUALS
+
+private:
+	std::uint32_t sectionNumber;
+	bool success;
+};
+
+class C4ControlSectionLoadFinished : public C4ControlPacket
+{
+public:
+	C4ControlSectionLoadFinished(const std::uint32_t sectionNumber, const bool success)
+		: sectionNumber{sectionNumber}, success{success} {}
+
+public:
+	virtual bool Sync() const override { return true; }
+
+	DECLARE_C4CONTROL_VIRTUALS
+
+private:
+	std::uint32_t sectionNumber;
+	bool success;
+};
