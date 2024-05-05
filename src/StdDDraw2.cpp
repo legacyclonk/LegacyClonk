@@ -91,6 +91,7 @@ void CBltTransform::TransformPoint(float &rX, float &rY)
 CPattern::CPattern(const CPattern &pattern)
 	: sfcPattern32{pattern.sfcPattern32},
 	  sfcPattern8{pattern.sfcPattern8},
+	  CachedPattern{pattern.CachedPattern},
 	  Wdt{pattern.Wdt},
 	  Hgt{pattern.Hgt},
 	  Zoom{pattern.Zoom},
@@ -98,16 +99,6 @@ CPattern::CPattern(const CPattern &pattern)
 	  pClrs{pattern.pClrs},
 	  pAlpha{pattern.pAlpha}
 {
-	if (pattern.CachedPattern)
-	{
-		if (!sfcPattern32)
-		{
-			throw std::runtime_error{"Cached pattern without surface to back it"};
-		}
-
-		CachedPattern = std::make_unique_for_overwrite<std::uint32_t[]>(sfcPattern32->Wdt * sfcPattern32->Hgt);
-		memcpy(CachedPattern.get(), pattern.CachedPattern.get(), sfcPattern32->Wdt * sfcPattern32->Hgt * 4);
-	}
 }
 
 CPattern &CPattern::operator=(const CPattern &nPattern)
@@ -117,21 +108,7 @@ CPattern &CPattern::operator=(const CPattern &nPattern)
 	sfcPattern8  = nPattern.sfcPattern8;
 	sfcPattern32 = nPattern.sfcPattern32;
 	if (sfcPattern32) sfcPattern32->Lock();
-	CachedPattern.reset();
-	if (nPattern.CachedPattern)
-	{
-		if (!sfcPattern32)
-		{
-			throw std::runtime_error{"Cached pattern without surface to back it"};
-		}
-
-		CachedPattern = std::make_unique_for_overwrite<std::uint32_t[]>(sfcPattern32->Wdt * sfcPattern32->Hgt);
-		memcpy(CachedPattern.get(), nPattern.CachedPattern.get(), sfcPattern32->Wdt * sfcPattern32->Hgt * 4);
-	}
-	else
-	{
-		CachedPattern.reset();
-	}
+	CachedPattern = nPattern.CachedPattern;
 	Wdt        = nPattern.Wdt;
 	Hgt        = nPattern.Hgt;
 	Zoom       = nPattern.Zoom;
@@ -154,7 +131,7 @@ bool CPattern::Set(C4Surface *sfcSource, int iZoom, bool fMonochrome)
 	Zoom = iZoom;
 	// set flags
 	Monochrome = fMonochrome;
-	CachedPattern= std::make_unique_for_overwrite<std::uint32_t[]>(Wdt * Hgt);
+	CachedPattern= std::make_shared_for_overwrite<std::uint32_t[]>(Wdt * Hgt);
 	for (int y = 0; y < Hgt; ++y)
 		for (int x = 0; x < Wdt; ++x)
 		{

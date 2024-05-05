@@ -120,7 +120,7 @@ private:
 	class C4Surface *sfcPattern32;
 	class CSurface8 *sfcPattern8;
 	// Faster access
-	std::unique_ptr<std::uint32_t[]> CachedPattern; int Wdt; int Hgt;
+	std::shared_ptr<std::uint32_t[]> CachedPattern; int Wdt; int Hgt;
 	// pattern zoom factor; 0 means no zoom
 	int Zoom;
 	// pattern is to be applied monochromatic
