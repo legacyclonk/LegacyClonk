@@ -229,16 +229,16 @@ bool C4Section::InitMaterialTexture(C4Section *const fallback)
 		// Logs
 		Log(C4ResStrTableKey::IDS_PRC_TEXTURES, tex_count);
 		Log(C4ResStrTableKey::IDS_PRC_MATERIALS, mat_count);
-	}
 
-	// Load material enumeration
-	if (!Material.LoadEnumeration(Group))
-	{
-		LogFatal(C4ResStrTableKey::IDS_PRC_NOMATENUM); return false;
-	}
+		// Load material enumeration
+		if (!Material.LoadEnumeration(Group))
+		{
+			LogFatal(C4ResStrTableKey::IDS_PRC_NOMATENUM); return false;
+		}
 
-	// Initialize texture map
-	TextureMap.Init();
+		// Initialize texture map
+		TextureMap.Init();
+	}
 
 	// Cross map mats (after texture init, because Material-Texture-combinations are used)
 	Material.CrossMapMaterials();
