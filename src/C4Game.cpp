@@ -1543,14 +1543,15 @@ void C4Game::ExecObjects() // Every Tick1 by Execute
 #endif
 
 	// Execute objects - reverse order to ensure
-	C4Object *cObj; C4ObjectLink *clnk;
-	for (clnk = Objects.Last; clnk && (cObj = clnk->Obj); clnk = clnk->Prev)
-		if (cObj->Status)
+	for (auto it = Objects.BeginLast(); it != std::default_sentinel; ++it)
+	{
+		if ((*it)->Status)
 			// Execute object
-			cObj->Execute();
+			(*it)->Execute();
 		else
 			// Status reset: process removal delay
-			if (cObj->RemovalDelay > 0) cObj->RemovalDelay--;
+			if ((*it)->RemovalDelay > 0) (*it)->RemovalDelay--;
+	}
 
 #ifdef DEBUGREC
 	AddDbgRec(RCT_Block, "ObjCC", 6);

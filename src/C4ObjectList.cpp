@@ -247,7 +247,7 @@ bool C4ObjectList::Remove(C4Object *pObj)
 	// Fix iterators
 	for (iterator *i = FirstIter; i; i = i->Next)
 	{
-		if (i->pLink == cLnk) i->pLink = cLnk->Next;
+		if (i->pLink == cLnk) i->pLink = cLnk->*(i->direction);
 	}
 
 	// Remove link from list
@@ -950,20 +950,20 @@ void C4ObjectList::CheckCategorySort()
 		}
 }
 
-C4ObjectList::iterator::iterator(C4ObjectList &List) :
-	List(List), pLink(List.First)
+C4ObjectList::iterator::iterator(C4ObjectList &List, C4ObjectLink *C4ObjectLink::*const direction) :
+	List(List), pLink(direction == &C4ObjectLink::Next ? List.First : List.Last), direction{direction}
 {
 	Next = List.AddIter(this);
 }
 
-C4ObjectList::iterator::iterator(C4ObjectList &List, C4ObjectLink *pLink) :
-	List(List), pLink(pLink)
+C4ObjectList::iterator::iterator(C4ObjectList &List, C4ObjectLink *pLink, C4ObjectLink *C4ObjectLink::*const direction) :
+	List(List), pLink(pLink), direction{direction}
 {
 	Next = List.AddIter(this);
 }
 
 C4ObjectList::iterator::iterator(const C4ObjectList::iterator &iter) :
-	List(iter.List), pLink(iter.pLink), Next()
+	List(iter.List), pLink(iter.pLink), Next(), direction{iter.direction}
 {
 	Next = List.AddIter(this);
 }
@@ -975,7 +975,7 @@ C4ObjectList::iterator::~iterator()
 
 C4ObjectList::iterator &C4ObjectList::iterator::operator++()
 {
-	pLink = pLink ? pLink->Next : pLink;
+	pLink = pLink ? pLink->*direction : pLink;
 	return *this;
 }
 
@@ -987,6 +987,11 @@ C4Object *C4ObjectList::iterator::operator*()
 bool C4ObjectList::iterator::operator==(const iterator &iter) const
 {
 	return &iter.List == &List && iter.pLink == pLink;
+}
+
+bool C4ObjectList::iterator::operator==(std::default_sentinel_t) const noexcept
+{
+	return pLink == nullptr;
 }
 
 C4ObjectList::iterator &C4ObjectList::iterator::operator=(const iterator &iter)
@@ -1005,7 +1010,17 @@ C4ObjectList::iterator C4ObjectList::begin()
 
 const C4ObjectList::iterator C4ObjectList::end()
 {
-	return iterator(*this, nullptr);
+	return iterator(*this, nullptr, &C4ObjectLink::Next);
+}
+
+C4ObjectList::iterator C4ObjectList::BeginLast()
+{
+	return iterator(*this, &C4ObjectLink::Prev);
+}
+
+std::default_sentinel_t C4ObjectList::EndLast()
+{
+	return {};
 }
 
 C4ObjectList::iterator *C4ObjectList::AddIter(iterator *iter)

@@ -64,20 +64,25 @@ public:
 		C4Object *operator*();
 		C4Object *operator->() { return operator*(); }
 		bool operator==(const iterator &iter) const;
+		bool operator==(std::default_sentinel_t) const noexcept;
 
 		iterator &operator=(const iterator &iter);
 
 	private:
-		explicit iterator(C4ObjectList &List);
-		iterator(C4ObjectList &List, C4ObjectLink *pLink);
+		explicit iterator(C4ObjectList &List, C4ObjectLink *C4ObjectLink::*const direction = &C4ObjectLink::Next);
+		iterator(C4ObjectList &List, C4ObjectLink *pLink, C4ObjectLink *C4ObjectLink::*const direction = &C4ObjectLink::Next);
 		C4ObjectList &List;
 		C4ObjectLink *pLink;
 		iterator *Next;
+		C4ObjectLink *C4ObjectLink::*direction;
 
 		friend class C4ObjectList;
 	};
 	iterator begin();
 	const iterator end();
+
+	iterator BeginLast();
+	std::default_sentinel_t EndLast();
 
 	void SortByCategory();
 	void Default();
