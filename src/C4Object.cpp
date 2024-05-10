@@ -5986,12 +5986,11 @@ bool C4Object::StatusDeactivate(bool fClearPointers)
 void C4Object::ClearContentsAndContained(bool fDoCalls)
 {
 	// exit contents from container
-	C4Object *cobj; C4ObjectLink *clnk, *next;
-	for (clnk = Contents.First; clnk && (cobj = clnk->Obj); clnk = next)
+	for (auto it = Contents.begin(); it != std::default_sentinel; ++it)
 	{
-		next = clnk->Next;
-		cobj->Exit(x, y, 0, Fix0, Fix0, Fix0, fDoCalls);
+		(*it)->Exit(x, y, 0, Fix0, Fix0, Fix0, fDoCalls);
 	}
+
 	// remove from container *after* contents have been removed!
 	if (Contained) Exit(x, y, 0, Fix0, Fix0, Fix0, fDoCalls);
 }
