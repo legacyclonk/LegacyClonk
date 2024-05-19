@@ -1070,6 +1070,7 @@ void C4Player::Default()
 	pstatControls = pstatActions = nullptr;
 	ControlCount = ActionCount = 0;
 	AutoContextMenu = ControlStyle = 0;
+	HasExplicitJumpKey = false;
 	LastControlType = PCID_None;
 	LastControlID = 0;
 	PressedComs = 0;
@@ -1565,6 +1566,7 @@ void C4Player::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(MouseControl,             "MouseControl",      0));
 	pComp->Value(mkNamingAdapt(AutoContextMenu,          "AutoContextMenu",   0));
 	pComp->Value(mkNamingAdapt(ControlStyle,             "AutoStopControl",   0));
+	pComp->Value(mkNamingAdapt(HasExplicitJumpKey,       "HasExplicitJumpKey", 0));
 	pComp->Value(mkNamingAdapt(Position,                 "Position",          0));
 	pComp->Value(mkNamingAdapt(ViewMode,                 "ViewMode",          C4PVM_Cursor));
 	pComp->Value(mkNamingAdapt(ViewX,                    "ViewX",             0));
@@ -1897,6 +1899,8 @@ void C4Player::InitControl()
 	if (Inside<int32_t>(Control, C4P_Control_GamePad1, C4P_Control_GamePadMax))
 	{
 		pGamepad = new C4GamePadOpener(Control - C4P_Control_GamePad1);
+		// Check if the control set has a COM_Jump key configured, and if found, disable the jump function on COM_Up
+		HasExplicitJumpKey = Config.Gamepads[Control - C4P_Control_GamePad1].HasExplicitJumpButton();
 	}
 	// Mouse
 	if (PrefMouse && !Game.Control.isReplay())

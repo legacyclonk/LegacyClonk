@@ -92,6 +92,9 @@ const int C4P_Control_None       = -1,
           C4P_Control_GamePad4   = 7,
           C4P_Control_GamePadMax = C4P_Control_GamePad4;
 
+constexpr int C4MaxGamePadButtons = 16,
+              C4MaxGamePadAxis = 6;
+
 const int C4ViewportScrollBorder = 40; // scrolling past landscape allowed at range of this border
 
 // Engine Return Values
@@ -195,7 +198,9 @@ const uint8_t COM_Left  = 1,
               COM_CursorToggle = 14,
               COM_CursorFirst = COM_CursorLeft,
               COM_CursorLast = COM_CursorToggle,
+              COM_Jump = 15,
 
+              COM_Release      = 16, // TODO: Change all "+16" to "|COM_Release"
               COM_Left_R       = COM_Left     + 16,
               COM_Right_R      = COM_Right    + 16,
               COM_Up_R         = COM_Up       + 16,
@@ -207,8 +212,9 @@ const uint8_t COM_Left  = 1,
               COM_CursorLeft_R   = COM_CursorLeft   + 16,
               COM_CursorToggle_R = COM_CursorToggle + 16,
               COM_CursorRight_R  = COM_CursorRight  + 16,
+              COM_Jump_R       = COM_Jump     + 16,
               COM_ReleaseFirst = COM_Left_R,
-              COM_ReleaseLast  = COM_CursorToggle_R,
+              COM_ReleaseLast  = COM_Jump_R,
 
               COM_Left_S     = COM_Left     | COM_Single,
               COM_Right_S    = COM_Right    | COM_Single,
@@ -216,6 +222,7 @@ const uint8_t COM_Left  = 1,
               COM_Down_S     = COM_Down     | COM_Single,
               COM_Throw_S    = COM_Throw    | COM_Single,
               COM_Dig_S      = COM_Dig      | COM_Single,
+              COM_Jump_S     = COM_Jump     | COM_Single,
               COM_Special_S  = COM_Special  | COM_Single,
               COM_Special2_S = COM_Special2 | COM_Single,
               COM_CursorLeft_S   = COM_CursorLeft   | COM_Single,
@@ -228,6 +235,7 @@ const uint8_t COM_Left  = 1,
               COM_Down_D     = COM_Down     | COM_Double,
               COM_Throw_D    = COM_Throw    | COM_Double,
               COM_Dig_D      = COM_Dig      | COM_Double,
+	          COM_Jump_D     = COM_Jump     | COM_Double,
               COM_Special_D  = COM_Special  | COM_Double,
               COM_Special2_D = COM_Special2 | COM_Double,
               COM_CursorLeft_D   = COM_CursorLeft   | COM_Double,

@@ -22,17 +22,14 @@
 #include <C4Id.h>
 #include "Fixed.h"
 
-void DrawCommandKey(C4Facet &cgo, int32_t iCom,
+void DrawCommandKey(C4Facet& cgo, int32_t iCom,
+	int32_t iPlayer,
 	bool fPressed = false,
-	const char *szText = nullptr);
-
-void DrawControlKey(C4Facet &cgo, int32_t iControl,
-	bool fPressed = false,
-	const char *szText = nullptr);
+	bool showText = true);
 
 int32_t Control2Com(int32_t iControl, bool fUp);
 int32_t Com2Control(int32_t iCom);
-int32_t Coms2ComDir(int32_t iComs);
+int32_t Coms2ComDir(int32_t iComs, bool fJumpIsUp = false);
 bool ComDirLike(int32_t iComDir, int32_t iSample);
 const char *ComName(int32_t iCom);
 int32_t ComOrder(int32_t iCom);

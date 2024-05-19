@@ -71,6 +71,7 @@ void DrawMenuSymbol(int32_t iMenu, C4Facet &cgo, int32_t iOwner, C4Object *cObj)
 	}
 }
 
+
 // C4MenuItem
 
 C4MenuItem::C4MenuItem(C4Menu *pMenu, int32_t iIndex, const char *szCaption,
@@ -856,21 +857,21 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 		{
 			// Normal enter
 			cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-			DrawCommandKey(cgoControl, COM_Throw, false, PlrControlKeyName(iPlayer, Com2Control(COM_Throw), true).getData());
+			DrawCommandKey(cgoControl, COM_MenuEnter, iPlayer);
 			cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
 			GfxR->fctOKCancel.Draw(cgoControl, true, 0, 0);
 			// Enter-all on Special2
 			if (pItem && pItem->Command2[0])
 			{
 				cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-				DrawCommandKey(cgoControl, COM_Special2, false, PlrControlKeyName(iPlayer, Com2Control(COM_Special2), true).getData());
+				DrawCommandKey(cgoControl, COM_MenuEnterAll, iPlayer);
 				cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
 				GfxR->fctOKCancel.Draw(cgoControl, true, 2, 1);
 			}
 		}
 		// Draw menu 'close' command
 		cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-		DrawCommandKey(cgoControl, COM_Dig, false, PlrControlKeyName(iPlayer, Com2Control(COM_Dig), true).getData());
+		DrawCommandKey(cgoControl, COM_MenuClose, iPlayer);
 		cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
 		// Close command contains "Exit"? Show an exit symbol in the status bar.
 		if (SSearch(CloseCommand.getData(), "\"Exit\"")) GfxR->fctExit.Draw(cgoControl);
@@ -1034,6 +1035,7 @@ void C4Menu::AdjustSelection()
 		SetSelection(iSel, iSel != Selection, true);
 }
 
+// TODO: Get rid of unused parameter rData after checking its purpose at call sites?
 bool C4Menu::ConvertCom(int32_t &rCom, int32_t &rData, bool fAsyncConversion)
 {
 	// This function converts normal Coms to menu Coms before they are send to the queue
@@ -1064,6 +1066,22 @@ bool C4Menu::ConvertCom(int32_t &rCom, int32_t &rData, bool fAsyncConversion)
 
 	// Done
 	return true;
+}
+
+int32_t C4Menu::ConvertMenuComToCom(int32_t iCom)
+{
+	// This function converts menu Coms to normal Coms for DrawCommandKey
+	switch (iCom)
+	{
+	case COM_MenuEnter:    return COM_Throw;
+	case COM_MenuClose:    return COM_Dig;
+	case COM_MenuEnterAll: return COM_Special2;
+	case COM_MenuUp:       return COM_Up;
+	case COM_MenuLeft:     return COM_Left;
+	case COM_MenuDown:     return COM_Down;
+	case COM_MenuRight:    return COM_Right;
+	}
+	return iCom;
 }
 
 bool C4Menu::SetLocation(int32_t iX, int32_t iY)

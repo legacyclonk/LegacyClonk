@@ -344,8 +344,13 @@ bool ObjectComUp(C4Object *cObj) // by DFA_WALK or DFA_SWIM
 			return PlayerObjectCommand(cObj->Owner, C4CMD_Enter, pTarget);
 
 	// Try jump
-	if (cObj->GetProcedure() == DFA_WALK)
+	if (cObj->GetProcedure() == DFA_WALK) {
+		// Don't jump on the COM_Up key if the controlling player has configured a COM_Jump button
+		C4Player* pPlr = Game.Players.Get(cObj->Controller);
+		if (pPlr->HasExplicitJumpKey) return false;
+
 		return PlayerObjectCommand(cObj->Owner, C4CMD_Jump);
+	}
 
 	return false;
 }
@@ -900,10 +905,13 @@ int32_t Control2Com(int32_t iControl, bool fUp)
 	return COM_None;
 }
 
-int32_t Coms2ComDir(int32_t iComs)
+int32_t Coms2ComDir(int32_t iComs, bool fJumpIsUp)
 {
 	// This is possible because COM_Left - COM_Down are < 32
+	static_assert((COM_Left | COM_Right | COM_Up | COM_Down) < 32);
 	static int32_t DirComs = (1 << COM_Left) | (1 << COM_Right) | (1 << COM_Up) | (1 << COM_Down);
+	// Allow swimming up with the jump key
+	if (fJumpIsUp && (iComs & (1 << COM_Jump))) iComs |= (1 << COM_Up);
 	switch (iComs & DirComs)
 	{
 	case (1 << COM_Up):                      return COMD_Up;
@@ -927,33 +935,80 @@ bool ComDirLike(int32_t iComDir, int32_t iSample)
 	return false;
 }
 
-void DrawCommandKey(C4Facet &cgo, int32_t iCom, bool fPressed, const char *szText)
+// Convert menu controls (not COMs) to the configured key name for a given player
+static int32_t GetXInputControlForCommand(int32_t iPlayer, int32_t iCom)
 {
-	// Draw key
-	Game.GraphicsResource.fctKey.Draw(cgo, false, fPressed);
-	// Draw control symbol
-	if (iCom == COM_PlayerMenu)
-		Game.GraphicsResource.fctOKCancel.Draw(cgo, true, 1, 1);
-	else
-		Game.GraphicsResource.fctCommand.Draw(cgo, true, Com2Control(iCom), ((iCom & COM_Double) != 0));
-	// Use smaller font on smaller buttons
-	CStdFont &rFont = (cgo.Hgt <= C4MN_SymbolSize) ? Game.GraphicsResource.FontTiny : Game.GraphicsResource.FontRegular;
-	// Draw text
-	if (szText && Config.Graphics.ShowCommandKeys)
-		Application.DDraw->TextOut(szText, rFont, 1.0, cgo.Surface, cgo.X + cgo.Wdt / 2, cgo.Y + cgo.Hgt - rFont.GetLineHeight() - 2, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
+	C4Player* pPlr = Game.Players.Get(iPlayer);
+	if (!pPlr || !Inside(pPlr->Control, C4P_Control_GamePad1, C4P_Control_GamePadMax)) {
+		return -1;
+	}
+
+	int32_t iGamepad = pPlr->Control - C4P_Control_GamePad1;
+	auto& conf = Config.Gamepads[iGamepad];
+	uint8_t buttonSearchOrder[]{
+		// A command might have multiple buttons. Search A/B/X/Y buttons first, then in reverse order, so D-Pad is searched last
+		XINPUT_BUTTON_A, XINPUT_BUTTON_B, XINPUT_BUTTON_X, XINPUT_BUTTON_Y,
+		11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+	};
+	for (const auto& iButton : buttonSearchOrder) {
+		if (conf.ButtonCommand[iButton] == iCom) return iButton;
+		if (conf.ButtonMenuCommand[iButton] == iCom) return iButton;
+	}
+	for (int iAxis = 0; iAxis < C4MaxGamePadAxis; iAxis++) {
+		if (conf.AxisMinCommand[iAxis] == iCom) return C4MaxGamePadButtons + iAxis * 2 + 1;
+		if (conf.AxisMaxCommand[iAxis] == iCom) return C4MaxGamePadButtons + iAxis * 2 + 0;
+	}
+
+	return -1;
 }
 
-void DrawControlKey(C4Facet &cgo, int32_t iControl, bool fPressed, const char *szText)
+static void DrawOffsetScaled(C4Facet &img, C4Facet& cgo, int32_t iPhaseX, int32_t iPhaseY, float dx, float dy, float scale) {
+	C4DrawTransform t;
+	t.SetMoveScale(cgo.X * (1 - scale) + dx * cgo.Wdt, cgo.Y * (1 - scale) + dy * cgo.Hgt, scale, scale);
+	img.DrawT(cgo, true, iPhaseX, iPhaseY, &t);
+}
+
+void DrawCommandKey(C4Facet &cgo, int32_t iCom, int32_t iPlayer, bool fPressed, bool showText)
 {
+	bool isDouble = iCom & COM_Double;
+	iCom = iCom & ~(COM_Double | COM_Single);
+	int32_t iButton = GetXInputControlForCommand(iPlayer, iCom);
+	// Convert menu commands to their respective base command key for displaying the respective symbol
+	int32_t iBaseCom = C4Menu::ConvertMenuComToCom(iCom);
+	if (iButton >= 0) {
+		// For gamepad buttons, don't draw the "Key" icon and the "Control type" icon
+		if (isDouble) {
+			// Draw the icon twice, a bit shifted and overlapping
+			DrawOffsetScaled(Game.GraphicsResource.fctXinputButtons, cgo, iButton % 4, iButton / 4, 0, 0, 0.75);
+			DrawOffsetScaled(Game.GraphicsResource.fctXinputButtons, cgo, iButton % 4, iButton / 4, 0.1, 0.1, 0.9);
+		}
+		else {
+			Game.GraphicsResource.fctXinputButtons.Draw(cgo, true, iButton % 4, iButton / 4);
+		}
+		if (iCom == COM_PlayerMenu) {
+			DrawOffsetScaled(Game.GraphicsResource.fctOKCancel, cgo, 1, 1, 0.0, 0.5, 0.5);
+		}
+		else {
+			// Show the action symbol on top of the button, in the bottom left corner. Really necessary?
+			//DrawOffsetScaled(Game.GraphicsResource.fctCommand, cgo, Com2Control(iBaseCom), isDouble, -0.05, 0.45, 0.6); // This slightly protrudes, but it looks better
+		}
+		return;
+	}
+
 	// Draw key
 	Game.GraphicsResource.fctKey.Draw(cgo, false, fPressed);
 	// Draw control symbol
-	Game.GraphicsResource.fctCommand.Draw(cgo, true, iControl);
-	// Use smaller font on smaller buttons
-	CStdFont &rFont = (cgo.Hgt <= C4MN_SymbolSize) ? Game.GraphicsResource.FontRegular : Game.GraphicsResource.FontTiny;
+	if (iBaseCom == COM_PlayerMenu)
+		Game.GraphicsResource.fctOKCancel.Draw(cgo, true, 1, 1);
+	else
+		Game.GraphicsResource.fctCommand.Draw(cgo, true, Com2Control(iBaseCom), isDouble);
 	// Draw text
-	if (szText)
-		Application.DDraw->TextOut(szText, rFont, 1.0, cgo.Surface, cgo.X + cgo.Wdt / 2, cgo.Y + cgo.Hgt - rFont.GetLineHeight() - 2, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
+	if (Config.Graphics.ShowCommandKeys && showText) {
+		// Use smaller font on smaller buttons
+		CStdFont &rFont = (cgo.Hgt <= C4MN_SymbolSize) ? Game.GraphicsResource.FontTiny : Game.GraphicsResource.FontRegular;
+		StdStrBuf text = PlrControlKeyName(iPlayer, Com2Control(iBaseCom), true);
+		Application.DDraw->TextOut(text.getData(), rFont, 1.0, cgo.Surface, cgo.X + cgo.Wdt / 2, cgo.Y + cgo.Hgt - rFont.GetLineHeight() - 2, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
+	}
 }
 
 bool SellFromBase(int32_t iPlr, C4Object *pBaseObj, C4ID id, C4Object *pSellObj)

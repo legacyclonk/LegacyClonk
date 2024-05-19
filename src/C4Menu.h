@@ -169,6 +169,7 @@ protected:
 
 public:
 	bool ConvertCom(int32_t &rCom, int32_t &rData, bool fAsyncConversion);
+	static int32_t ConvertMenuComToCom(int32_t iCom);
 	void ClearPointers(C4Object *pObj);
 	bool Refill();
 	void Execute();

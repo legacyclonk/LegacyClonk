@@ -196,6 +196,8 @@ public:
 	void DrawCursors(C4FacetEx &cgo, int32_t iPlayer);
 	bool LocalControlKey(C4KeyCodeEx key, C4KeySetCtrl Ctrl);
 	bool LocalControlKeyUp(C4KeyCodeEx key, C4KeySetCtrl Ctrl);
+	bool LocalControlGamepad(C4KeyCodeEx key, C4KeySetCtrl Ctrl);
+	bool LocalControlGamepadUp(C4KeyCodeEx key, C4KeySetCtrl Ctrl);
 	void LocalPlayerControl(int32_t iPlayer, int32_t iCom);
 	void FixRandom(int32_t iSeed);
 	bool Init();
