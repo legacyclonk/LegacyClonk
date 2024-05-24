@@ -84,11 +84,6 @@ namespace C4Awaiter
 			{
 			}
 
-			~ResumeOnSignals()
-			{
-				assert(state.load(std::memory_order_acquire) == State::Idle);
-			}
-
 		public:
 			bool await_ready() noexcept
 			{
