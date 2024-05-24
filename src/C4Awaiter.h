@@ -115,23 +115,9 @@ namespace C4Awaiter
 						std::coroutine_handle<> handle;
 					} cleanup{handle};
 
-					try
+					if (StdSync::Poll(fds, timeout) == -1)
 					{
-						switch (StdSync::Poll(fds, timeout))
-						{
-						case -1:
-								throw std::runtime_error{std::string{"poll failed: "} + std::strerror(errno)};
-
-						case 0:
-							return;
-
-						default:
-							return;
-						}
-					}
-					catch (...)
-					{
-						exception = std::current_exception();
+						exception = std::make_exception_ptr(std::runtime_error{std::string{"poll failed: "} + std::strerror(errno)});
 					}
 				});
 			}
