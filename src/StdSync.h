@@ -40,7 +40,7 @@ namespace StdSync
 
 #ifndef _WIN32
 	template<typename T> requires std::ranges::contiguous_range<T> && std::ranges::sized_range<T>
-	int Poll(T &&fds, const std::uint32_t timeout)
+	int Poll(T &&fds, const std::uint32_t timeout) noexcept
 	{
 		const auto clampedTimeout = std::clamp(static_cast<int>(timeout), static_cast<int>(Infinite), std::numeric_limits<int>::max());
 
