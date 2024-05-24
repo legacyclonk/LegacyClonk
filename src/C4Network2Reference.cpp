@@ -302,43 +302,43 @@ C4Task::Hot<void> C4Network2HTTPClient::QueryAsync(C4Task::Hot<C4HTTPClient::Res
 {
 	busy.store(true, std::memory_order_release);
 
-	const struct Cleanup
 	{
-		~Cleanup()
+		const struct Cleanup
 		{
-			busy.store(false, std::memory_order_release);
+			~Cleanup()
+			{
+				busy.store(false, std::memory_order_release);
+			}
+
+			std::atomic_bool &busy;
+		} cleanup{busy};
+
+		try
+		{
+			auto result = co_await std::move(queryTask);
+
+			if (binary)
+			{
+				resultBin = std::move(result.Buffer);
+			}
+			else
+			{
+				resultString = {reinterpret_cast<const char *>(result.Buffer.getData()), result.Buffer.getSize()};
+			}
+
+			success.store(true, std::memory_order_release);
+			serverAddress = result.ServerAddress;
 		}
-
-		std::atomic_bool &busy;
-	} cleanup{busy};
-
-	try
-	{
-		auto result = co_await std::move(queryTask);
-
-		const std::lock_guard lock{dataMutex};
-		if (binary)
+		catch (const std::runtime_error &e)
 		{
-			resultBin = std::move(result.Buffer);
-		}
-		else
-		{
-			resultString = {reinterpret_cast<const char *>(result.Buffer.getData()), result.Buffer.getSize()};
-		}
-
-		success.store(true, std::memory_order_release);
-		serverAddress = result.ServerAddress;
-
-		if (auto *const thread = this->thread.load(std::memory_order_acquire); thread)
-		{
-			thread->PushEvent(Ev_HTTP_Response, this);
+			SetError(e.what());
+			success.store(false, std::memory_order_release);
 		}
 	}
-	catch (const std::runtime_error &e)
+
+	if (auto *const thread = this->thread.load(std::memory_order_acquire); thread)
 	{
-		const std::lock_guard lock{dataMutex};
-		SetError(e.what());
-		success.store(false, std::memory_order_release);
+		thread->PushEvent(Ev_HTTP_Response, this);
 	}
 }
 

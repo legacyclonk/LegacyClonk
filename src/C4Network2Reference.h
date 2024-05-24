@@ -179,7 +179,6 @@ private:
 	std::atomic_bool busy{false};
 	std::atomic_bool success{false};
 
-	std::mutex dataMutex;
 	std::string error;
 	C4NetIO::addr_t serverAddress;
 
