@@ -180,7 +180,7 @@ bool CStdGLCtx::PageFlip()
 	return true;
 }
 
-bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
+bool CStdGL::SaveDefaultGammaRampToMonitor(CStdWindow *pWindow)
 {
 	HDC hDC = GetDC(pWindow->GetRenderWindow());
 	if (hDC)
@@ -196,7 +196,7 @@ bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
 	return false;
 }
 
-bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
+bool CStdGL::ApplyGammaRampToMonitor(CGammaControl &ramp, bool fForce)
 {
 	if (!MainCtx.hDC || (!Active && !fForce)) return false;
 	if (!SetDeviceGammaRamp(MainCtx.hDC, ramp.red))
@@ -340,7 +340,7 @@ bool CStdGLCtx::PageFlip()
 	return true;
 }
 
-bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
+bool CStdGL::ApplyGammaRampToMonitor(CGammaControl &ramp, bool fForce)
 {
 	if (!DeviceReady() || (!Active && !fForce)) return false;
 	if (pApp->xf86vmode_major_version < 2) return false;
@@ -349,7 +349,7 @@ bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
 		ramp.red, ramp.green, ramp.blue);
 }
 
-bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
+bool CStdGL::SaveDefaultGammaRampToMonitor(CStdWindow *pWindow)
 {
 	if (pApp->xf86vmode_major_version < 2) return false;
 	// Get the Display
@@ -493,13 +493,13 @@ bool CStdGLCtx::PageFlip()
 	return true;
 }
 
-bool CStdGL::ApplyGammaRamp(CGammaControl &ramp, bool fForce)
+bool CStdGL::ApplyGammaRampToMonitor(CGammaControl &ramp, bool fForce)
 {
 	assert(ramp.size == 256);
 	return SDL_SetWindowGammaRamp(MainCtx.pWindow->sdlWindow, ramp.red, ramp.green, ramp.blue) == 0;
 }
 
-bool CStdGL::SaveDefaultGammaRamp(CStdWindow *pWindow)
+bool CStdGL::SaveDefaultGammaRampToMonitor(CStdWindow *pWindow)
 {
 	assert(DefRamp.size == 256);
 	return SDL_GetWindowGammaRamp(MainCtx.pWindow->sdlWindow, DefRamp.red, DefRamp.green, DefRamp.blue) == 0;
