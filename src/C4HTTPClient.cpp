@@ -56,6 +56,34 @@ void C4HTTPClient::Uri::CURLUDeleter::operator()(CURLU * const uri)
 	}
 }
 
+namespace
+{
+	class CURLString
+	{
+	public:
+		CURLString() = default;
+		~CURLString()
+		{
+			if (ptr)
+			{
+				curl_free(ptr);
+			}
+		}
+
+		CURLString(const CURLString &) = delete;
+		CURLString &operator=(const CURLString &) = delete;
+		CURLString(CURLString &&) = delete;
+		CURLString &operator=(CURLString &&) = delete;
+
+	public:
+		char **operator &() noexcept { return &ptr; }
+		operator std::string() && { return ptr; }
+
+	private:
+		char *ptr{nullptr};
+	};
+}
+
 C4HTTPClient::Uri::Uri(const std::string &serverAddress, const std::uint16_t port)
 	: uri{ThrowIfFailed(curl_url(), "curl_url failed")}
 {
@@ -78,20 +106,16 @@ C4HTTPClient::Uri::Uri(std::unique_ptr<CURLU, CURLUDeleter> uri, const std::uint
 
 std::string C4HTTPClient::Uri::GetServerAddress() const
 {
-	char *host{nullptr};
+	CURLString host;
 	ThrowIfFailed(curl_url_get(uri.get(), CURLUPART_HOST, &host, 0) == CURLUE_OK, "curl_url_get HOST failed");
-
-	const std::unique_ptr<char, decltype([](char *const ptr) { curl_free(ptr); })> ptr{host};
-	return host;
+	return std::move(host);
 }
 
 std::string C4HTTPClient::Uri::GetUriAsString() const
 {
-	char *string{nullptr};
-	ThrowIfFailed(curl_url_get(uri.get(), CURLUPART_URL, &string, 0) == CURLUE_OK, "curl_url_get URL failed");
-
-	const std::unique_ptr<char, decltype([](char *const ptr) { curl_free(ptr); })> ptr{string};
-	return string;
+	CURLString url;
+	ThrowIfFailed(curl_url_get(uri.get(), CURLUPART_URL, &url, 0) == CURLUE_OK, "curl_url_get URL failed");
+	return std::move(url);
 }
 
 C4HTTPClient::Uri C4HTTPClient::Uri::ParseOldStyle(const std::string &serverAddress, const std::uint16_t port)
@@ -112,9 +136,8 @@ C4HTTPClient::Uri C4HTTPClient::Uri::ParseOldStyle(const std::string &serverAddr
 
 void C4HTTPClient::Uri::SetPort(const std::uint16_t port)
 {
-	char *portString;
+	CURLString portString;
 	const auto errGetPort = curl_url_get(uri.get(), CURLUPART_PORT, &portString, 0);
-	curl_free(portString);
 
 	if (errGetPort == CURLUE_NO_PORT)
 	{
