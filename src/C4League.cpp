@@ -305,7 +305,7 @@ bool C4LeagueClient::GetStartReply(StdStrBuf *pMessage, StdStrBuf *pLeague, StdS
 	if (!isSuccess() || eCurrAction != C4LA_Start) return false;
 	// Parse response head
 	C4LeagueResponseHeadStart Head;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Head, "Response"), StdStrBuf::MakeRef(resultString.c_str()), "Start Reply"))
+	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Head, "Response"), getResultString(), "Start Reply"))
 		return false;
 	// Get message, league and seed
 	if (pMessage)
@@ -353,7 +353,7 @@ bool C4LeagueClient::Update(const C4Network2Reference &Ref)
 bool C4LeagueClient::GetUpdateReply(StdStrBuf *pMessage, C4ClientPlayerInfos *pPlayerLeagueInfos)
 {
 	C4LeagueResponseHeadUpdate Reply;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Reply, "Response"), StdStrBuf::MakeRef(resultString.c_str()), "Update Reply"))
+	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Reply, "Response"), getResultString(), "Update Reply"))
 		return false;
 	// Get message
 	if (pMessage)
@@ -386,13 +386,13 @@ bool C4LeagueClient::GetEndReply(StdStrBuf *pMessage, C4RoundResultsPlayers *pRo
 {
 	// Parse response head
 	C4LeagueResponseHead Head;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Head, "Response"), StdStrBuf::MakeRef(resultString.c_str()), "End Reply"))
+	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Head, "Response"), getResultString(), "End Reply"))
 		return false;
 	// Get message
 	if (pMessage)
 		pMessage->Copy(Head.getMessage());
 	if (pRoundResults)
-		CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(mkNamingAdapt(*pRoundResults, "PlayerInfos"), "Response"), StdStrBuf::MakeRef(resultString.c_str()), "Round Results");
+		CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(mkNamingAdapt(*pRoundResults, "PlayerInfos"), "Response"), getResultString(), "Round Results");
 	// Done
 	return Head.isSuccess();
 }
@@ -422,7 +422,7 @@ bool C4LeagueClient::Auth(const C4PlayerInfo &PlrInfo, const char *szAccount, co
 bool C4LeagueClient::GetAuthReply(StdStrBuf *pMessage, StdStrBuf *pAUID, StdStrBuf *pAccount, bool *pRegister)
 {
 	C4LeagueResponseHead Head;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Head, "Response"), StdStrBuf::MakeRef(resultString.c_str()), "Auth Reply"))
+	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Head, "Response"), getResultString(), "Auth Reply"))
 		return false;
 	// Get message & account
 	if (pMessage)
@@ -469,7 +469,7 @@ bool C4LeagueClient::GetAuthCheckReply(StdStrBuf *pMessage, const char *szLeague
 {
 	// Parse response head
 	C4LeagueResponseHeadAuthCheck Head;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Head, "Response"), StdStrBuf::MakeRef(resultString.c_str()), "Auth Check Reply"))
+	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Head, "Response"), getResultString(), "Auth Check Reply"))
 		return false;
 	// Get message and additional data
 	if (pMessage)
@@ -500,7 +500,7 @@ bool C4LeagueClient::GetReportDisconnectReply(StdStrBuf *pMessage)
 {
 	// Parse response head
 	C4LeagueResponseHead Head;
-	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Head, "Response"), StdStrBuf::MakeRef(resultString.c_str()), "Report Disconnect"))
+	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(mkNamingAdapt(Head, "Response"), getResultString(), "Report Disconnect"))
 		return false;
 	// Get message
 	if (pMessage)

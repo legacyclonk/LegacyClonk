@@ -394,7 +394,7 @@ bool C4Network2VersionInfoClient::GetVersion(C4GameVersion *piVerOut)
 			mkNamingAdapt(
 				mkParAdapt(*piVerOut, false),
 				"Version"),
-			C4ENGINENAME), StdStrBuf::MakeRef(resultString.c_str()));
+			C4ENGINENAME), getResultString());
 	}
 	catch (const StdCompiler::Exception &e)
 	{
@@ -420,7 +420,7 @@ bool C4Network2VersionInfoClient::GetRedirect(StdStrBuf &rRedirect)
 	{
 		CompileFromBuf<StdCompilerINIRead>(mkNamingAdapt(
 			mkNamingAdapt(mkParAdapt(strUpdateRedirect, StdCompiler::RCT_All), "UpdateServerRedirect", ""),
-			C4ENGINENAME), StdStrBuf::MakeRef(resultString.c_str()));
+			C4ENGINENAME), getResultString());
 	}
 	catch (const StdCompiler::Exception &e)
 	{

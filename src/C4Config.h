@@ -218,6 +218,7 @@ public:
 	bool AutomaticUpdate;
 	uint64_t LastUpdateTime;
 	int32_t AsyncMaxWait;
+	bool UseCurl;
 
 public:
 	void CompileFunc(StdCompiler *pComp);
