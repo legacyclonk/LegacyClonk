@@ -525,8 +525,8 @@ void C4Network2HTTPClientImplCurl::Clear()
 bool C4Network2HTTPClientImplCurl::SetServer(const std::string_view serverAddress, const std::uint16_t defaultPort) try
 {
 	const auto uri = C4HTTPClient::Uri::ParseOldStyle(std::string{serverAddress}, defaultPort);
-	url = uri.GetUriAsString();
-	serverName = uri.GetServerAddress();
+	url = uri.GetPart(C4HTTPClient::Uri::Part::Uri);
+	serverName = uri.GetPart(C4HTTPClient::Uri::Part::Host);
 	return true;
 }
 catch (const std::runtime_error &e)

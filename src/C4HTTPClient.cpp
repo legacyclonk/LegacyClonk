@@ -43,6 +43,25 @@ static decltype(auto) ThrowIfFailed(T &&result, Args &&...args)
 	return std::forward<T>(result);
 }
 
+C4HTTPClient::Uri::String::~String()
+{
+	if (ptr)
+	{
+		curl_free(ptr);
+	}
+}
+
+C4HTTPClient::Uri::String::String(String &&other) noexcept
+	: ptr{std::exchange(other.ptr, nullptr)}
+{
+}
+
+C4HTTPClient::Uri::String &C4HTTPClient::Uri::String::operator=(String &&other) noexcept
+{
+	ptr = std::exchange(other.ptr, nullptr);
+	return *this;
+}
+
 void C4HTTPClient::CURLSDeleter::operator()(CURLS *const share)
 {
 	curl_share_cleanup(share);
@@ -54,34 +73,6 @@ void C4HTTPClient::Uri::CURLUDeleter::operator()(CURLU * const uri)
 	{
 		curl_url_cleanup(uri);
 	}
-}
-
-namespace
-{
-	class CURLString
-	{
-	public:
-		CURLString() = default;
-		~CURLString()
-		{
-			if (ptr)
-			{
-				curl_free(ptr);
-			}
-		}
-
-		CURLString(const CURLString &) = delete;
-		CURLString &operator=(const CURLString &) = delete;
-		CURLString(CURLString &&) = delete;
-		CURLString &operator=(CURLString &&) = delete;
-
-	public:
-		char **operator &() noexcept { return &ptr; }
-		operator std::string() && { return ptr; }
-
-	private:
-		char *ptr{nullptr};
-	};
 }
 
 C4HTTPClient::Uri::Uri(const std::string &serverAddress, const std::uint16_t port)
@@ -104,18 +95,11 @@ C4HTTPClient::Uri::Uri(std::unique_ptr<CURLU, CURLUDeleter> uri, const std::uint
 	}
 }
 
-std::string C4HTTPClient::Uri::GetServerAddress() const
+C4HTTPClient::Uri::String C4HTTPClient::Uri::GetPart(const Part part) const
 {
-	CURLString host;
-	ThrowIfFailed(curl_url_get(uri.get(), CURLUPART_HOST, &host, 0) == CURLUE_OK, "curl_url_get HOST failed");
-	return std::move(host);
-}
-
-std::string C4HTTPClient::Uri::GetUriAsString() const
-{
-	CURLString url;
-	ThrowIfFailed(curl_url_get(uri.get(), CURLUPART_URL, &url, 0) == CURLUE_OK, "curl_url_get URL failed");
-	return std::move(url);
+	String result;
+	ThrowIfFailed(curl_url_get(uri.get(), static_cast<CURLUPart>(part), &result, 0) == CURLUE_OK, "curl_url_get failed");
+	return result;
 }
 
 C4HTTPClient::Uri C4HTTPClient::Uri::ParseOldStyle(const std::string &serverAddress, const std::uint16_t port)
@@ -136,7 +120,7 @@ C4HTTPClient::Uri C4HTTPClient::Uri::ParseOldStyle(const std::string &serverAddr
 
 void C4HTTPClient::Uri::SetPort(const std::uint16_t port)
 {
-	CURLString portString;
+	String portString;
 	const auto errGetPort = curl_url_get(uri.get(), CURLUPART_PORT, &portString, 0);
 
 	if (errGetPort == CURLUE_NO_PORT)
