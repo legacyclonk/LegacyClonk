@@ -255,29 +255,11 @@ void C4ConfigNetwork::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(LastUpdateTime,            "LastUpdateTime",         0,    false, true));
 	pComp->Value(mkNamingAdapt(AsyncMaxWait,              "AsyncMaxWait",           2,    false, true));
 
-	constexpr auto defaultPuncherServer = "netpuncher.openclonk.org:11115";
-	pComp->Value(mkNamingAdapt(s(PuncherAddress), "PuncherAddress", defaultPuncherServer, false, true));
+	pComp->Value(mkNamingAdapt(s(PuncherAddress), "PuncherAddress", DefaultPuncherServer, false, true));
 
 	pComp->Value(mkNamingAdapt(LeagueAccount,     "LeagueNick",      "",               false, false));
 	pComp->Value(mkNamingAdapt(LeagueAutoLogin,   "LeagueAutoLogin", true,             false, false));
 	pComp->Value(mkNamingAdapt(UseCurl,           "UseCurl",         true));
-
-	if (pComp->isCompiler())
-	{
-		auto migrate = [](char *const field, const char *const oldAddress, const char *const newAddress)
-		{
-			if (SEqual(field, oldAddress))
-			{
-				strncpy(field, newAddress, CFG_MaxString);
-			}
-		};
-
-		migrate(ServerAddress, "league.clonkspot.org:80", C4CFG_LeagueServer);
-		migrate(AlternateServerAddress, "league.clonkspot.org:80", C4CFG_FallbackServer);
-		migrate(UpdateServerAddress, "update.clonkspot.org/lc/update", C4CFG_UpdateServer);
-		migrate(PuncherAddress, "clonk.de:11115", defaultPuncherServer);
-		migrate(PuncherAddress, "https://netpuncher.openclonk.org:11115", defaultPuncherServer);
-	}
 }
 
 void C4ConfigLobby::CompileFunc(StdCompiler *pComp)
@@ -965,6 +947,22 @@ void C4Config::AdaptToCurrentVersion()
 
 	default:
 		break;
+	}
+
+	if (General.Version <= 359)
+	{
+		constexpr auto migrate = [](char *const field, const char *const oldAddress, const char *const newAddress)
+		{
+			if (SEqual(field, oldAddress))
+			{
+				std::strncpy(field, newAddress, CFG_MaxString);
+			}
+		};
+
+		migrate(Network.ServerAddress, "league.clonkspot.org:80", C4CFG_LeagueServer);
+		migrate(Network.AlternateServerAddress, "league.clonkspot.org:80", C4CFG_FallbackServer);
+		migrate(Network.UpdateServerAddress, "update.clonkspot.org/lc/update", C4CFG_UpdateServer);
+		migrate(Network.PuncherAddress, "clonk.de:11115", C4ConfigNetwork::DefaultPuncherServer);
 	}
 
 	General.Version = C4XVERBUILD;

@@ -220,6 +220,8 @@ public:
 	int32_t AsyncMaxWait;
 	bool UseCurl;
 
+	static constexpr auto DefaultPuncherServer = "netpuncher.openclonk.org:11115";
+
 public:
 	void CompileFunc(StdCompiler *pComp);
 	const char *GetLeagueServerAddress();
