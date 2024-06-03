@@ -121,7 +121,10 @@ private:
 class C4Network2HTTPClient : public StdSchedulerProc
 {
 public:
-	C4Network2HTTPClient() = default;
+	class Impl;
+
+public:
+	C4Network2HTTPClient();
 	~C4Network2HTTPClient() override;
 
 public:
@@ -129,63 +132,38 @@ public:
 	bool Query(const StdBuf &Data, bool binary, C4HTTPClient::Headers headers = {});
 	bool Query(const char *szData, bool binary, C4HTTPClient::Headers headers = {}) { return Query(StdBuf::MakeRef(szData, SLen(szData)), binary, std::move(headers)); }
 
-	bool isBusy() const { return busy.load(std::memory_order_acquire); }
-	bool isSuccess() const { return success.load(std::memory_order_acquire); }
-	bool isConnected() const { return downloadedSize.load(std::memory_order_acquire) + totalSize.load(std::memory_order_acquire) != 0; }
-	std::size_t getTotalSize() const { return totalSize.load(std::memory_order_acquire); }
-	std::size_t getDownloadedSize() const { return downloadedSize.load(std::memory_order_acquire); }
-	const auto &getResultBin() const { assert(binary); return resultBin; }
-	const auto &getResultString() const { assert(!binary); return resultString; }
-	const char *getURL() const { return url.c_str(); }
-	const char *getServerName() const { return serverName.c_str(); }
-	const C4NetIO::addr_t &getServerAddress() const { return serverAddress; }
-	virtual const char *GetError() const { return !error.empty() && *error.c_str() ? error.c_str() : nullptr; }
-	void ResetError() { error.clear(); }
+	bool isBusy() const;
+	bool isSuccess() const;
+	bool isConnected() const;
+	std::size_t getTotalSize() const;
+	std::size_t getDownloadedSize() const;
+	const StdBuf &getResultBin() const;
+	const StdStrBuf &getResultString() const;
+	const char *getURL() const;
+	const char *getServerName() const;
+	const C4NetIO::addr_t &getServerAddress() const;
+	virtual const char *GetError() const;
+	void ResetError();
 	bool Cancel(std::string_view reason);
 	void Clear();
 
 	bool SetServer(std::string_view serverAddress, std::uint16_t defaultPort = 0);
-	void SetNotify(class C4InteractiveThread *thread) { this->thread.store(thread, std::memory_order_release); }
+	void SetNotify(class C4InteractiveThread *thread);
 
-	bool Execute(int iMaxTime = C4NetIO::TO_INF) override final { return true; }
-	int GetTimeout() override final { return C4NetIO::TO_INF; }
+	bool Execute(int iMaxTime = C4NetIO::TO_INF) override;
+	int GetTimeout() override;
 
 #ifdef _WIN32
-	HANDLE GetEvent() override final { return nullptr; }
+	HANDLE GetEvent() override;
 #else
-	void GetFDs(std::vector<pollfd> &fds) override final {}
+	void GetFDs(std::vector<pollfd> &fds) override;
 #endif
 
 protected:
-	void SetError(std::string_view error) { this->error = error; }
+	void SetError(const char *error);
 
 private:
-	C4Task::Hot<void> QueryAsync(C4Task::Hot<C4HTTPClient::Result> &&queryTask);
-
-protected:
-	StdBuf resultBin;
-	std::string resultString;
-
-private:
-	std::optional<C4HTTPClient> client;
-	C4Task::Hot<void> task;
-	StdBuf data;
-
-private:
-	std::string url;
-	std::string serverName;
-	std::atomic_bool binary{false};
-
-	std::atomic_bool busy{false};
-	std::atomic_bool success{false};
-
-	std::string error;
-	C4NetIO::addr_t serverAddress;
-
-	std::atomic_size_t totalSize;
-	std::atomic_size_t downloadedSize;
-
-	std::atomic<class C4InteractiveThread *> thread{nullptr};
+	std::unique_ptr<Impl> impl;
 };
 
 // Loads references (mini-HTTP-client)
