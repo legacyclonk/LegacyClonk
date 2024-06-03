@@ -58,6 +58,42 @@ public:
 
 	class Uri
 	{
+	public:
+		enum class Part
+		{
+			Uri,
+			Scheme,
+			User,
+			Password,
+			Options,
+			Host,
+			Port,
+			Path,
+			Query,
+			Fragment,
+			ZoneId
+		};
+
+		class String
+		{
+		public:
+			String() = default;
+			~String();
+
+			String(const String &) = delete;
+			String &operator=(const String &) = delete;
+			String(String &&other) noexcept;
+			String &operator=(String &&other) noexcept;
+
+		public:
+			char **operator &() noexcept { return &ptr; }
+			operator std::string() && { return ptr; }
+			operator StdStrBuf() && { return StdStrBuf{ptr}; }
+
+		private:
+			char *ptr{nullptr};
+		};
+
 	private:
 		struct CURLUDeleter
 		{
@@ -71,8 +107,7 @@ public:
 		Uri(std::unique_ptr<CURLU, CURLUDeleter> uri, std::uint16_t port = 0);
 
 	public:
-		std::string GetServerAddress() const;
-		std::string GetUriAsString() const;
+		[[nodiscard]] String GetPart(Part part) const;
 
 		auto get() const { return uri.get(); }
 
