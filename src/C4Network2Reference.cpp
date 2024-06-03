@@ -925,20 +925,19 @@ bool C4Network2HTTPClientImplNetIO::SetServer(const std::string_view serverAddre
 		defaultPort = GetDefaultPort();
 	}
 
-	// Split address
-	if (const std::size_t pos{serverAddress.find('/')}; pos != std::string_view::npos)
+	try
 	{
-		std::string_view slice{serverAddress.substr(0, pos)};
-		Server.Copy(slice.data(), slice.size());
+		const auto uri = C4HTTPClient::Uri::ParseOldStyle(std::string{serverAddress}, defaultPort);
 
-		slice = serverAddress.substr(pos);
-		RequestPath.Copy(slice.data(), slice.size());
+		Server = std::format("{}:{}", static_cast<std::string>(uri.GetPart(C4HTTPClient::Uri::Part::Host)), static_cast<std::string>(uri.GetPart(C4HTTPClient::Uri::Part::Port))).c_str();
+		RequestPath = uri.GetPart(C4HTTPClient::Uri::Part::Path);
 	}
-	else
+	catch (const std::runtime_error &e)
 	{
-		Server.Copy(serverAddress.data(), serverAddress.size());
-		RequestPath = "/";
+		SetError(e.what());
+		return false;
 	}
+
 	// Resolve address
 	ServerAddr.SetAddress(Server);
 	if (ServerAddr.IsNull())
