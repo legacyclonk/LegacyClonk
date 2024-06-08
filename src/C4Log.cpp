@@ -28,15 +28,24 @@
 #include <share.h>
 #endif
 
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/base_sink.h>
+
+class C4LogSink : public spdlog::sinks::base_sink<std::mutex>
+{
+private:
+	FILE *file{nullptr};
+};
+
 FILE *C4LogFile = nullptr;
-StdStrBuf sLogFileName;
 
 StdStrBuf sFatalError;
 
 void OpenLog()
 {
+	StdStrBuf sLogFileName{C4CFN_Log};
 	// open
-	sLogFileName = C4CFN_Log; int iLog = 2;
+	int iLog = 2;
 #ifdef _WIN32
 	while (!(C4LogFile = _fsopen(sLogFileName.getData(), "wt", _SH_DENYWR)))
 #else
