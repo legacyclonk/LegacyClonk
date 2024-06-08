@@ -29,7 +29,6 @@
 #endif
 
 FILE *C4LogFile = nullptr;
-time_t C4LogStartTime;
 StdStrBuf sLogFileName;
 
 StdStrBuf sFatalError;
@@ -61,8 +60,6 @@ void OpenLog()
 		// try different name
 		sLogFileName.Format(C4CFN_LogEx, iLog++);
 	}
-	// save start time
-	time(&C4LogStartTime);
 }
 
 bool CloseLog()
