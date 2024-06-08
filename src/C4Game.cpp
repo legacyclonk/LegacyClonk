@@ -60,7 +60,7 @@
 constexpr unsigned int defaultIngameGameTickDelay = 28;
 
 C4Game::C4Game()
-	: Input(Control.Input), KeyboardInput(C4KeyboardInput_Init()), StartupLogPos(0), QuitLogPos(0), fQuitWithError(false), fPreinited(false),
+	: Input(Control.Input), KeyboardInput(C4KeyboardInput_Init()), fQuitWithError(false), fPreinited(false),
 	Teams(Parameters.Teams),
 	PlayerInfos(Parameters.PlayerInfos),
 	RestorePlayerInfos(Parameters.RestorePlayerInfos),
@@ -343,8 +343,6 @@ bool C4Game::Init()
 	InitProgress = 0; LastInitProgress = 0;
 	SetInitProgress(0);
 
-	// start log pos (used by startup)
-	StartupLogPos = GetLogPos();
 	fQuitWithError = false;
 	C4GameLobby::UserAbort = false;
 
@@ -624,9 +622,6 @@ void C4Game::Clear()
 
 	// join reference
 	delete pJoinReference; pJoinReference = nullptr;
-
-	// okay, game cleared now. Remember log section
-	QuitLogPos = GetLogPos();
 
 	fPreinited = false;
 }
