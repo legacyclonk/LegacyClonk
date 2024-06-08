@@ -284,11 +284,7 @@ bool C4Startup::DoStartup()
 		}
 		else
 		{
-			// fallback to showing complete log
-			StdStrBuf sLastLog;
-			if (GetLogSection(Game.StartupLogPos, Game.QuitLogPos - Game.StartupLogPos, sLastLog))
-				if (!sLastLog.isNull())
-					Game.pGUI->ShowRemoveDlg(new C4GUI::InfoDialog(LoadResStr("IDS_DLG_LOG"), 10, sLastLog));
+			Game.pGUI->ShowMessage("(no error)", LoadResStr("IDS_DLG_LOG"), C4GUI::Ico_Error);
 		}
 		ResetFatalError();
 	}
