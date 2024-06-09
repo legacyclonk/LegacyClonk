@@ -387,6 +387,10 @@ if (USE_SDL_MIXER)
 	target_link_libraries(clonk SDL2_mixer::SDL2_mixer)
 endif ()
 
+# Link spdlog
+find_package(spdlog REQUIRED)
+target_link_libraries(standard spdlog::spdlog)
+
 # Link Windows Imaging Component
 if (USE_WIC)
 	target_link_libraries(clonk windowscodecs)
