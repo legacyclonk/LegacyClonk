@@ -20,6 +20,7 @@
 #include <C4Config.h>
 #include "C4CurlSystem.h"
 #include <C4Group.h>
+#include "C4Log.h"
 #include <C4MusicSystem.h>
 #include <C4SoundSystem.h>
 #include <C4Components.h>
@@ -99,6 +100,7 @@ public:
 	C4Group SystemGroup;
 	std::unique_ptr<C4AudioSystem> AudioSystem;
 	std::optional<C4CurlSystem> CurlSystem;
+	C4LogSystem LogSystem;
 	std::optional<C4MusicSystem> MusicSystem;
 	std::optional<C4SoundSystem> SoundSystem;
 	std::unique_ptr<C4ToastSystem> ToastSystem;
