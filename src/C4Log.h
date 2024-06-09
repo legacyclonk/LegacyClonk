@@ -21,8 +21,67 @@
 #include <StdBuf.h>
 #include <StdCompiler.h>
 
-void OpenLog();
-bool CloseLog();
+#include <span>
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/base_sink.h>
+
+class C4LogSystem
+{
+public:
+	class LogSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex>
+	{
+	public:
+		LogSink();
+		~LogSink();
+
+		LogSink(const LogSink &) = delete;
+		LogSink &operator=(const LogSink &) = delete;
+
+		LogSink(LogSink &&) = delete;
+		LogSink &operator=(LogSink &&) = delete;
+
+	public:
+		int GetFD() const noexcept { return fileno(file); }
+
+	protected:
+		void sink_it_(const spdlog::details::log_msg &msg) override;
+		void flush_() override;
+
+	private:
+		FILE *file{nullptr};
+	};
+
+public:
+	C4LogSystem();
+
+	C4LogSystem(const C4LogSystem &) = delete;
+	C4LogSystem &operator=(const C4LogSystem &) = delete;
+
+	C4LogSystem(C4LogSystem &&) = delete;
+	C4LogSystem &operator=(C4LogSystem &&) = delete;
+
+public:
+	void OpenLog();
+	int GetLogFD() const noexcept { return clonkLogSink ? clonkLogSink->GetFD() : -1; }
+
+public:
+	template<typename Logger, typename... Args>
+	std::shared_ptr<spdlog::logger> CreateLogger(std::string name, std::initializer_list<spdlog::sink_ptr> sinks)
+	{
+		const auto logger = std::make_shared<Logger>(name, defaultLogSinks.begin(), defaultLogSinks.end());
+		logger->sinks().insert(logger->sinks().end(), sinks.begin(), sinks.end());
+		return logger;
+	}
+
+	std::span<const spdlog::sink_ptr> GetDefaultLogSinks() const noexcept { return defaultLogSinks; }
+
+	const std::shared_ptr<spdlog::logger> &GetLogger() const noexcept { return logger; }
+private:
+	std::vector<spdlog::sink_ptr> defaultLogSinks;
+	std::shared_ptr<spdlog::logger> logger;
+	std::shared_ptr<LogSink> clonkLogSink;
+};
 
 template<typename... Args>
 bool LogF(const char *strMessage, Args... args)

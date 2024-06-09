@@ -59,8 +59,8 @@ C4Application::~C4Application()
 {
 	// clear gamepad
 	delete pGamePadControl;
-	// Close log
-	CloseLog();
+	// flush loggers
+	spdlog::apply_all([](const auto &logger) { logger->flush(); });
 	// Launch editor
 	if (launchEditor)
 	{
@@ -113,7 +113,7 @@ void C4Application::DoInit()
 	C4Group_SetSortList(C4CFN_FLS);
 
 	// Open log
-	OpenLog();
+	LogSystem.OpenLog();
 
 	// init system group
 	if (!SystemGroup.Open(C4CFN_System))

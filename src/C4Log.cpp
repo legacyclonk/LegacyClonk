@@ -28,28 +28,21 @@
 #include <share.h>
 #endif
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/base_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
-class C4LogSink : public spdlog::sinks::base_sink<std::mutex>
-{
-private:
-	FILE *file{nullptr};
-};
+#ifdef _WIN32
+#include <spdlog/sinks/msvc_sink.h>
+#endif
 
-FILE *C4LogFile = nullptr;
-
-StdStrBuf sFatalError;
-
-void OpenLog()
+C4LogSystem::LogSink::LogSink()
 {
 	StdStrBuf sLogFileName{C4CFN_Log};
 	// open
 	int iLog = 2;
 #ifdef _WIN32
-	while (!(C4LogFile = _fsopen(sLogFileName.getData(), "wt", _SH_DENYWR)))
+	while (!(file = _fsopen(sLogFileName.getData(), "wt", _SH_DENYWR)))
 #else
-	while (!(C4LogFile = fopen(sLogFileName.getData(), "wb")))
+	while (!(file = fopen(sLogFileName.getData(), "wb")))
 #endif
 	{
 		if (errno == EACCES)
@@ -71,21 +64,96 @@ void OpenLog()
 	}
 }
 
-bool CloseLog()
+C4LogSystem::LogSink::~LogSink()
 {
-	// close
-	if (C4LogFile) fclose(C4LogFile); C4LogFile = nullptr;
-	// ok
-	return true;
+	std::fclose(file);
 }
 
-int GetLogFD()
+void C4LogSystem::LogSink::sink_it_(const spdlog::details::log_msg &msg)
 {
-	if (C4LogFile)
-		return fileno(C4LogFile);
-	else
-		return -1;
+	std::string formatted;
+	formatter_->format(msg, formatted);
+	std::fwrite(formatted.data(), sizeof(char), formatted.size(), file);
 }
+
+void C4LogSystem::LogSink::flush_()
+{
+	std::fflush(file);
+}
+
+class C4InternalLogSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex>, public std::enable_shared_from_this<C4InternalLogSink>
+{
+protected:
+	void sink_it_(const spdlog::details::log_msg &msg) override
+	{
+		if (!Application.IsMainThread())
+		{
+			Application.InteractiveThread.ExecuteInMainThread([msg, weak{weak_from_this()}]
+			{
+				if (auto strong = weak.lock())
+				{
+					strong->sink_it_(msg);
+				}
+			});
+
+			return;
+		}
+
+		std::string formatted;
+		formatter_->format(msg, formatted);
+
+		if (C4GameLobby::MainDlg *const lobby{Game.Network.GetLobby()}; lobby && Game.pGUI)
+		{
+			lobby->OnLog(formatted.c_str());
+		}
+
+		Console.Out(formatted.c_str());
+
+		if (Game.GraphicsSystem.MessageBoard.Active)
+		{
+			Game.GraphicsSystem.MessageBoard.AddLog(formatted.c_str());
+			Game.GraphicsSystem.MessageBoard.LogNotify();
+		}
+	}
+
+	void flush_() override {}
+};
+
+C4LogSystem::C4LogSystem()
+	: defaultLogSinks{
+		std::make_shared<C4InternalLogSink>(),
+		std::make_shared<spdlog::sinks::stdout_color_sink_mt>()
+	}
+{
+#ifndef NDEBUG
+	static constexpr auto logLevel = spdlog::level::debug;
+#else
+	const auto logLevel = Game.Verbose || Game.DebugMode ? spdlog::level::info : spdlog::level::warn;
+#endif
+
+	defaultLogSinks[0]->set_level(logLevel);
+	defaultLogSinks[0]->set_pattern("%v");
+	defaultLogSinks[1]->set_level(logLevel);
+
+#ifdef _WIN32
+	defaultLogSinks.emplace_back(std::make_shared<spdlog::sinks::msvc_sink_mt>());
+	defaultLogSinks.back()->set_level(spdlog::level::trace);
+#endif
+
+	logger = std::make_shared<spdlog::logger>("", defaultLogSinks.begin(), defaultLogSinks.end());
+	logger->set_level(spdlog::level::trace);
+	spdlog::set_default_logger(logger);
+	spdlog::flush_on(spdlog::level::debug);
+}
+
+void C4LogSystem::OpenLog()
+{
+	clonkLogSink = std::make_shared<LogSink>();
+	defaultLogSinks.emplace_back(clonkLogSink);
+	logger->sinks().emplace_back(clonkLogSink);
+}
+
+StdStrBuf sFatalError;
 
 bool LogSilent(const char *szMessage, bool fConsole)
 {
@@ -104,56 +172,7 @@ bool LogSilent(const char *szMessage, bool fConsole)
 		}
 	}
 
-	// add timestamp
-	StdStrBuf TimeMessage;
-	TimeMessage.SetLength(11 + SLen(szMessage) + 1);
-	strncpy(TimeMessage.getMData(), GetCurrentTimeStamp(false), 10);
-	strncpy(TimeMessage.getMData() + 10, " ", 2);
-
-	// output until all data is written
-	const char *pSrc = szMessage;
-	do
-	{
-		// timestamp will always be that length
-		char *pDest = TimeMessage.getMData() + 11;
-
-		// copy rest of message, skip tags
-		CMarkup Markup(false);
-		while (*pSrc)
-		{
-			Markup.SkipTags(&pSrc);
-			// break on crlf
-			while (*pSrc == '\r') pSrc++;
-			if (*pSrc == '\n') { pSrc++; break; }
-			// copy otherwise
-			if (*pSrc) *pDest++ = *pSrc++;
-		}
-		*pDest++ = '\n'; *pDest = '\0';
-
-#ifdef HAVE_ICONV
-		StdStrBuf Line = Languages.IconvSystem(TimeMessage.getData());
-#else
-		StdStrBuf &Line = TimeMessage;
-#endif
-
-		// Save into log file
-		if (C4LogFile)
-		{
-			fputs(Line.getData(), C4LogFile);
-			fflush(C4LogFile);
-		}
-
-		// Write to console
-		if (fConsole || Game.Verbose)
-		{
-#if !defined(NDEBUG) && defined(_WIN32)
-			// debug: output to VC console
-			OutputDebugString(Line.getData());
-#endif
-			fputs(Line.getData(), stdout);
-			fflush(stdout);
-		}
-	} while (*pSrc);
+	spdlog::log(fConsole ? spdlog::level::info : spdlog::level::debug, szMessage);
 
 	return true;
 }
@@ -176,25 +195,7 @@ bool Log(const char *szMessage)
 		return Application.InteractiveThread.ThreadLog(szMessage);
 	}
 
-	// Pass on to console
-	Console.Out(szMessage);
-	// pass on to lobby
-	C4GameLobby::MainDlg *pLobby = Game.Network.GetLobby();
-	if (pLobby && Game.pGUI) pLobby->OnLog(szMessage);
-
-	// Add message to log buffer
-	bool fNotifyMsgBoard = false;
-	if (Game.GraphicsSystem.MessageBoard.Active)
-	{
-		Game.GraphicsSystem.MessageBoard.AddLog(szMessage);
-		fNotifyMsgBoard = true;
-	}
-
-	// log
-	LogSilent(szMessage, true);
-
-	// Notify message board
-	if (fNotifyMsgBoard) Game.GraphicsSystem.MessageBoard.LogNotify();
+	spdlog::info("{}", szMessage);
 
 	return true;
 }
@@ -209,7 +210,8 @@ bool LogFatal(const char *szMessage)
 		sFatalError.Append(szMessage);
 	}
 	// write to log - note that Log might overwrite a static buffer also used in szMessage
-	return !!LogF(LoadResStr("IDS_ERR_FATAL"), szMessage);
+	spdlog::critical("{}", FormatString(LoadResStr("IDS_ERR_FATAL"), szMessage).getData());
+	return true;
 }
 
 void ResetFatalError()
@@ -224,8 +226,11 @@ const char *GetFatalError()
 
 bool DebugLog(const char *strMessage)
 {
-	if (Game.DebugMode)
-		return Log(strMessage);
-	else
-		return LogSilent(strMessage);
+	spdlog::debug("{}", strMessage);
+	return true;
+}
+
+int GetLogFD()
+{
+	return Application.LogSystem.GetLogFD();
 }
