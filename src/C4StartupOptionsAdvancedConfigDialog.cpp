@@ -24,7 +24,7 @@
 #include "C4GuiResource.h"
 #include "C4GuiTabular.h"
 #include "StdCompiler.h"
-#include "StdResStr2.h"
+#include "C4ResStrTable.h"
 
 #include <algorithm>
 #include <format>

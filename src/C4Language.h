@@ -21,7 +21,7 @@
 #include "C4DelegatedIterable.h"
 #include <C4Group.h>
 #include <C4GroupSet.h>
-#include <StdResStr2.h>
+#include "C4ResStrTable.h"
 
 #include <vector>
 

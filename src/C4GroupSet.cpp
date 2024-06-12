@@ -28,7 +28,7 @@
 #endif
 
 #include <C4Log.h>
-#include "StdResStr2.h"
+#include "C4ResStrTable.h"
 
 C4GroupSetNode::C4GroupSetNode(C4GroupSet &rParent, C4GroupSetNode *pPrev, C4Group &rGroup, bool fGrpOwned, int32_t id)
 {
