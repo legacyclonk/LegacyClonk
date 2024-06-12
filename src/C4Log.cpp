@@ -125,11 +125,7 @@ C4LogSystem::C4LogSystem()
 		std::make_shared<spdlog::sinks::stdout_color_sink_mt>()
 	}
 {
-#ifndef NDEBUG
-	static constexpr auto logLevel = spdlog::level::debug;
-#else
-	const auto logLevel = Game.Verbose || Game.DebugMode ? spdlog::level::info : spdlog::level::warn;
-#endif
+	const auto logLevel = Game.Verbose ? spdlog::level::debug : spdlog::level::info;
 
 	defaultLogSinks[0]->set_level(logLevel);
 	defaultLogSinks[0]->set_pattern("%v");
@@ -144,13 +140,25 @@ C4LogSystem::C4LogSystem()
 	logger->set_level(spdlog::level::trace);
 	spdlog::set_default_logger(logger);
 	spdlog::flush_on(spdlog::level::debug);
+
+	loggerSilent = logger;
 }
 
 void C4LogSystem::OpenLog()
 {
+	if (!(Game.Verbose || Game.DebugMode))
+	{
+		loggerSilent = logger->clone("silent");
+	}
+
 	clonkLogSink = std::make_shared<LogSink>();
 	defaultLogSinks.emplace_back(clonkLogSink);
 	logger->sinks().emplace_back(clonkLogSink);
+
+	if (Game.Verbose || Game.DebugMode)
+	{
+		loggerSilent = logger->clone("silent");
+	}
 }
 
 StdStrBuf sFatalError;
@@ -172,7 +180,7 @@ bool LogSilent(const char *szMessage, bool fConsole)
 		}
 	}
 
-	spdlog::log(fConsole ? spdlog::level::info : spdlog::level::debug, szMessage);
+	(fConsole ? Application.LogSystem.GetLogger() : Application.LogSystem.GetLoggerSilent())->info(szMessage);
 
 	return true;
 }

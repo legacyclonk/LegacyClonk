@@ -77,9 +77,12 @@ public:
 	std::span<const spdlog::sink_ptr> GetDefaultLogSinks() const noexcept { return defaultLogSinks; }
 
 	const std::shared_ptr<spdlog::logger> &GetLogger() const noexcept { return logger; }
+	const std::shared_ptr<spdlog::logger> &GetLoggerSilent() const noexcept { return loggerSilent; }
+
 private:
 	std::vector<spdlog::sink_ptr> defaultLogSinks;
 	std::shared_ptr<spdlog::logger> logger;
+	std::shared_ptr<spdlog::logger> loggerSilent;
 	std::shared_ptr<LogSink> clonkLogSink;
 };
 
