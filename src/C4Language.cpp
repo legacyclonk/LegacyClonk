@@ -420,7 +420,7 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 		hGroup.Close(); return false;
 	}
 	// Set string table
-	SetResStrTable(strTable.getData());
+	Application.ResStrTable.emplace(strTable.getData());
 	// Close group
 	hGroup.Close();
 	// Set the internal charset
@@ -450,5 +450,5 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 void C4Language::ClearLanguage()
 {
 	// Clear resource string table
-	ClearResStrTable();
+	Application.ResStrTable.reset();
 }

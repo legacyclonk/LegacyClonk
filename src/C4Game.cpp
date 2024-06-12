@@ -614,7 +614,7 @@ void C4Game::Clear()
 	// avoid double message by not printing it if no restbl is loaded
 	// this would log an "[Undefined]" only, anyway
 	// (could abort the whole clear-procedure here, btw?)
-	if (IsResStrTableLoaded()) Log(LoadResStr("IDS_CNS_GAMECLOSED"));
+	if (Application.ResStrTable) Log(LoadResStr("IDS_CNS_GAMECLOSED"));
 
 	// clear game starting parameters
 	DefinitionFilenames.clear();

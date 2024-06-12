@@ -28,7 +28,7 @@
 #include <StdGL.h>
 #include <StdJpeg.h>
 #include <StdPNG.h>
-#include "StdResStr2.h"
+#include "C4ResStrTable.h"
 #include <StdDDraw2.h>
 
 #include <algorithm>

@@ -25,7 +25,7 @@
 #include <C4Application.h>
 #include <C4Network2.h>
 #include <C4Language.h>
-#include <StdResStr2.h>
+#include "C4ResStrTable.h"
 #endif
 
 #include <StdFile.h>

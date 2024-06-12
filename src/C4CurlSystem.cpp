@@ -18,7 +18,7 @@
 #include "C4Log.h"
 #include "C4ThreadPool.h"
 #include "StdApp.h"
-#include "StdResStr2.h"
+#include "C4ResStrTable.h"
 
 #include <format>
 #include <ranges>

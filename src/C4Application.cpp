@@ -134,7 +134,7 @@ void C4Application::DoInit()
 	// Load language string table
 	if (!Languages.LoadLanguage(Config.General.LanguageEx))
 		// No language table was loaded - bad luck...
-		if (!IsResStrTableLoaded())
+		if (!ResStrTable)
 			Log("WARNING: No language string table loaded!");
 
 	// Parse command line
@@ -298,7 +298,7 @@ void C4Application::Clear()
 	// Close timers
 	sec1TimerCallbacks.clear();
 	// Log
-	if (IsResStrTableLoaded()) // Avoid (double and undefined) message on (second?) shutdown...
+	if (ResStrTable) // Avoid (double and undefined) message on (second?) shutdown...
 		Log(LoadResStr("IDS_PRC_DEINIT"));
 	// Clear external language packs and string table
 	Languages.Clear();

@@ -36,7 +36,7 @@
 #include "C4Rect.h"
 
 #include "StdFont.h"
-#include "StdResStr2.h"
+#include "C4ResStrTable.h"
 #include "StdWindow.h"
 
 #include <cmath>

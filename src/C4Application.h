@@ -98,6 +98,7 @@ public:
 	bool restartAtEnd;
 	// main System.c4g in working folder
 	C4Group SystemGroup;
+	std::optional<C4ResStrTable> ResStrTable;
 	std::unique_ptr<C4AudioSystem> AudioSystem;
 	std::optional<C4CurlSystem> CurlSystem;
 	C4LogSystem LogSystem;
