@@ -143,9 +143,9 @@ bool C4Record::Start(bool fInitial)
 	sFilename.Format("%s" DirSep "%03i-%s.c4s", sDemoFolder.getData(), Index, sScenName);
 
 	// log
-	StdStrBuf sLog; sLog.Format(LoadResStr(C4ResStrTableKey::IDS_PRC_RECORDINGTO), sFilename.getData());
-	if (Game.FrameCounter) sLog.AppendFormat(" (Frame %d)", Game.FrameCounter);
-	Log(sLog.getData());
+	std::string log{LoadResStr(C4ResStrTableKey::IDS_PRC_RECORDINGTO), sFilename.getData()};
+	if (Game.FrameCounter) log += std::format(" (Frame {})", Game.FrameCounter);
+	Log(log);
 
 	// save game - this also saves player info list
 	C4GameSaveRecord saveRec(fInitial, Index, Game.Parameters.isLeague());

@@ -301,15 +301,14 @@ void C4StartupPlrSelDlg::PlayerListItem::SetSelectionInfo(C4GUI::TextWindow *pSe
 	pSelectionInfo->UpdateHeight();
 }
 
-StdStrBuf C4StartupPlrSelDlg::PlayerListItem::GetDelWarning()
+std::string C4StartupPlrSelDlg::PlayerListItem::GetDelWarning()
 {
-	StdStrBuf sWarning;
-	sWarning.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETEPLR), Core.PrefName);
+	std::string warning{LoadResStr(C4ResStrTableKey::IDS_MSG_DELETEPLR, Core.PrefName)};
 	int32_t iPlrTime = Core.TotalPlayingTime;
 	if (iPlrTime > 60 * 60 * 10)
-		sWarning.Append(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETEPLR_PLAYTIME,
-			TimeString(iPlrTime).getData()).c_str());
-	return sWarning;
+		warning += LoadResStr(C4ResStrTableKey::IDS_MSG_DELETEPLR_PLAYTIME,
+			TimeString(iPlrTime).getData());
+	return warning;
 }
 
 bool C4StartupPlrSelDlg::PlayerListItem::MoveFilename(const char *szToFilename)
@@ -435,15 +434,15 @@ bool C4StartupPlrSelDlg::CrewListItem::SetName(const char *szNewName)
 		// check for duplicate filename
 		if (pParentGrp->FindEntry(fn))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_CLONKCOLLISION), fn);
-			Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_CLONKCOLLISION, fn)};
+			Game.pGUI->ShowMessageModal(msg.c_str(), LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		// OK; then rename
 		if (!pParentGrp->Rename(GetFilename().getData(), fn) || !pParentGrp->Save(true))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_RENAMEFILE), GetFilename().getData(), fn);
-			Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_RENAMEFILE, GetFilename().getData(), fn)};
+			Game.pGUI->ShowMessageModal(msg.c_str(), LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		const char *szConstFn = fn;
@@ -470,15 +469,15 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 	// write info text for player
 	pSelectionInfo->ClearText(false);
 	pSelectionInfo->AddTextLine(FormatString("%s %s", Core.sRankName.getData(), Core.Name).getData(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
-	StdStrBuf sPromo;
+	std::string promo;
 	int32_t iNextRankExp; StdStrBuf sNextRankName;
 	if (Core.GetNextRankInfo(Game.Rank, &iNextRankExp, &sNextRankName))
-		sPromo.Format(LoadResStr(C4ResStrTableKey::IDS_DESC_PROMO), sNextRankName.getData(), static_cast<int>(iNextRankExp));
+		promo = LoadResStr(C4ResStrTableKey::IDS_DESC_PROMO, sNextRankName.getData(), static_cast<int>(iNextRankExp));
 	else
-		sPromo.Copy(LoadResStr(C4ResStrTableKey::IDS_DESC_NOPROMO));
+		promo = LoadResStr(C4ResStrTableKey::IDS_DESC_NOPROMO);
 	pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_DESC_OBJECT,
 		Core.TypeName, Core.Experience, Core.Rounds, Core.DeathCount,
-		sPromo.getData(), TimeString(Core.TotalPlayingTime).getData(), DateString(Core.Birthday).getData()).c_str(),
+		promo.c_str(), TimeString(Core.TotalPlayingTime).getData(), DateString(Core.Birthday).getData()).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Energy, C4ResStrTableKey::IDS_DESC_ENERGY).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
@@ -507,15 +506,14 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 	pSelectionInfo->UpdateHeight();
 }
 
-StdStrBuf C4StartupPlrSelDlg::CrewListItem::GetDelWarning()
+std::string C4StartupPlrSelDlg::CrewListItem::GetDelWarning()
 {
-	StdStrBuf sWarning;
-	sWarning.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK),
-		Core.sRankName.getData(), Core.Name, GetFilename().getData());
+	std::string warning{LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK,
+		Core.sRankName.getData(), Core.Name, GetFilename().getData())};
 	int32_t iPlrTime = Core.TotalPlayingTime;
 	if (iPlrTime > 60 * 60 * 10)
-		sWarning.Append(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK_PLAYTIME, TimeString(iPlrTime).getData()).c_str());
-	return sWarning;
+		warning += LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK_PLAYTIME, TimeString(iPlrTime).getData());
+	return warning;
 }
 
 void C4StartupPlrSelDlg::CrewListItem::CrewRename()
@@ -962,8 +960,8 @@ void C4StartupPlrSelDlg::OnDelBtn(C4GUI::Control *btn)
 	// delete selected player
 	ListItem *pSel = GetSelection();
 	if (!pSel) return;
-	StdStrBuf sWarning; sWarning.Take(pSel->GetDelWarning());
-	GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(sWarning.getData(), LoadResStr(C4ResStrTableKey::IDS_BTN_DELETE),
+	const std::string warning{pSel->GetDelWarning()};
+	GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(warning.c_str(), LoadResStr(C4ResStrTableKey::IDS_BTN_DELETE),
 		new C4GUI::CallbackHandlerExPar<C4StartupPlrSelDlg, ListItem *>(this, &C4StartupPlrSelDlg::OnDelBtnConfirm, pSel), C4GUI::MessageDialog::btnYesNo));
 }
 

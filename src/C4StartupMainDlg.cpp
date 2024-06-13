@@ -116,9 +116,7 @@ void C4StartupMainDlg::DrawElement(C4FacetEx &cgo)
 	float fLogoZoom = 0.4f;
 	fctLogo.DrawX(cgo.Surface, rcBounds.Wdt * 30 / 31 - int32_t(fLogoZoom * fctLogo.Wdt), rcBounds.Hgt / 21 - 5, int32_t(fLogoZoom * fctLogo.Wdt), int32_t(fLogoZoom * fctLogo.Hgt));
 	// draw version info
-	StdStrBuf sVer;
-	sVer.Format(LoadResStr(C4ResStrTableKey::IDS_DLG_VERSION), C4VERSION);
-	lpDDraw->TextOut(sVer.getData(), C4GUI::GetRes()->TextFont, 1.0f, cgo.Surface, rcBounds.Wdt * 39 / 40, rcBounds.Hgt / 18 + int32_t(fLogoZoom * fctLogo.Hgt), 0xffffffff, ARight, true);
+	lpDDraw->TextOut(LoadResStr(C4ResStrTableKey::IDS_DLG_VERSION, C4VERSION).c_str(), C4GUI::GetRes()->TextFont, 1.0f, cgo.Surface, rcBounds.Wdt * 39 / 40, rcBounds.Hgt / 18 + int32_t(fLogoZoom * fctLogo.Hgt), 0xffffffff, ARight, true);
 }
 
 C4GUI::ContextMenu *C4StartupMainDlg::OnPlayerSelContext(C4GUI::Element *pBtn, int32_t iX, int32_t iY)

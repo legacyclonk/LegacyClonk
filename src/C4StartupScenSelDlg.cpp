@@ -617,15 +617,15 @@ bool C4ScenarioListLoader::Entry::RenameTo(const char *szNewName)
 		// check for duplicate filename
 		if (ItemExists(fullfn))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_FILEEXISTS), fullfn);
-			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_FILEEXISTS, fullfn)};
+			Game.pGUI->ShowMessageModal(msg.c_str(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		// OK; then rename
 		if (!C4Group_MoveItem(sFilename.getData(), fullfn, true))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_RENAMEFILE), sFilename.getData(), fullfn);
-			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_RENAMEFILE, sFilename.getData(), fullfn)};
+			Game.pGUI->ShowMessageModal(msg.c_str(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		sFilename.Copy(fullfn);
@@ -636,21 +636,22 @@ bool C4ScenarioListLoader::Entry::RenameTo(const char *szNewName)
 		C4Group Grp;
 		if (!Grp.Open(fullfn))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_OPENFILE), sFilename.getData(), Grp.GetError());
-			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_OPENFILE, sFilename.getData(), Grp.GetError())};
+			Game.pGUI->ShowMessageModal(msg.c_str(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		if (!Grp.Delete(C4CFN_Title))
 		{
+			const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_DELOLDTITLE, sFilename.getData(), Grp.GetError())};
 			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_DELOLDTITLE), sFilename.getData(), Grp.GetError());
-			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			Game.pGUI->ShowMessageModal(msg.c_str(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		if (!SetTitleInGroup(Grp, szNewName)) return false;
 		if (!Grp.Close())
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_WRITENEWTITLE), sFilename.getData(), Grp.GetError());
-			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_WRITENEWTITLE, sFilename.getData(), Grp.GetError())};
+			Game.pGUI->ShowMessageModal(msg.c_str(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 	}
@@ -676,8 +677,8 @@ bool C4ScenarioListLoader::Entry::SetTitleInGroup(C4Group &rGrp, const char *szN
 	StdStrBuf sTitle; sTitle.Format("%.2s:%s", Config.General.Language, szNewTitle);
 	if (!rGrp.Add(C4CFN_WriteTitle, sTitle, false, true))
 	{
-		StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_ERRORADDINGNEWTITLEFORFIL), sFilename.getData(), rGrp.GetError());
-		Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+		const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_ERRORADDINGNEWTITLEFORFIL, sFilename.getData(), rGrp.GetError())};
+		Game.pGUI->ShowMessageModal(msg.c_str(), LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 		return false;
 	}
 	return true;
@@ -767,19 +768,19 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 			{
 				// network game: Players may yet join in lobby
 				// only issue a warning for too few players (by setting the error but not returning false here)
-				sErrOut.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOFEWPLAYERSNET), static_cast<int>(iMinPlrCount));
+				sErrOut.Copy(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOFEWPLAYERSNET, static_cast<int>(iMinPlrCount)).c_str());
 			}
 			else
 			{
 				// for regular games, this is a fatal no-start-cause
-				sErrOut.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOFEWPLAYERS), static_cast<int>(iMinPlrCount));
+				sErrOut.Copy(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOFEWPLAYERS, static_cast<int>(iMinPlrCount)).c_str());
 				return false;
 			}
 		}
 		// scenarios (both normal and savegame) may also impose a maximum player restriction
 		if (iPlrCount > iMaxPlrCount)
 		{
-			sErrOut.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOMANYPLAYERS), static_cast<int>(C4S.Head.MaxPlayer));
+			sErrOut.Copy(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOMANYPLAYERS, static_cast<int>(C4S.Head.MaxPlayer)).c_str());
 			return false;
 		}
 	}
@@ -1486,9 +1487,8 @@ void C4StartupScenSelDlg::UpdateList()
 	if (!pScenLoader) return;
 	if (pScenLoader->IsLoading())
 	{
-		StdStrBuf sProgressText;
-		sProgressText.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_SCENARIODESC_LOADING), static_cast<int32_t>(pScenLoader->GetProgressPercent()));
-		pScenSelProgressLabel->SetText(sProgressText.getData());
+		const std::string progressText{LoadResStr(C4ResStrTableKey::IDS_MSG_SCENARIODESC_LOADING, static_cast<int32_t>(pScenLoader->GetProgressPercent()))};
+		pScenSelProgressLabel->SetText(progressText.c_str());
 		pScenSelProgressLabel->SetVisibility(true);
 		return;
 	}
@@ -1760,7 +1760,6 @@ bool C4StartupScenSelDlg::KeyDelete()
 	ScenListItem *pSel = GetSelectedItem();
 	if (!pSel) return false;
 	C4ScenarioListLoader::Entry *pEnt = pSel->GetEntry();
-	StdStrBuf sWarning;
 	bool fOriginal = false;
 	if (C4Group_IsGroup(pEnt->GetEntryFilename().getData()))
 	{
@@ -1771,8 +1770,8 @@ bool C4StartupScenSelDlg::KeyDelete()
 		}
 		Grp.Close();
 	}
-	sWarning.Format(LoadResStr(fOriginal ? C4ResStrTableKey::IDS_MSG_DELETEORIGINAL : C4ResStrTableKey::IDS_MSG_PROMPTDELETE), FormatString("%s %s", pEnt->GetTypeName().getData(), pEnt->GetName().getData()).getData());
-	GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(sWarning.getData(), LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE),
+	const std::string warning{LoadResStr(fOriginal ? C4ResStrTableKey::IDS_MSG_DELETEORIGINAL : C4ResStrTableKey::IDS_MSG_PROMPTDELETE, std::format("{} {}", pEnt->GetTypeName().getData(), pEnt->GetName().getData()))};
+	GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(warning.c_str(), LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE),
 		new C4GUI::CallbackHandlerExPar<C4StartupScenSelDlg, ScenListItem *>(this, &C4StartupScenSelDlg::DeleteConfirm, pSel), C4GUI::MessageDialog::btnYesNo));
 	return true;
 }

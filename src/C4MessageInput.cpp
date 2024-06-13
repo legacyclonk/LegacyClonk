@@ -710,8 +710,8 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 	}
 
 	// unknown command
-	StdStrBuf sErr; sErr.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_UNKNOWNCMD), szCmdName);
-	if (pLobby) pLobby->OnError(sErr.getData()); else Log(sErr.getData());
+	const std::string error{LoadResStr(C4ResStrTableKey::IDS_ERR_UNKNOWNCMD, szCmdName)};
+	if (pLobby) pLobby->OnError(error.c_str()); else Log(error);
 	return false;
 }
 

@@ -1713,7 +1713,7 @@ bool C4Object::Build(int32_t iLevel, C4Object *pBuilder)
 				// ...tell builder to acquire the material
 				pBuilder->AddCommand(C4CMD_Acquire, nullptr, 0, 0, 50, nullptr, true, NeededMaterial, false, 1);
 			// ...game message if not overloaded
-			Game.Messages.New(C4GM_Target, GetNeededMatStr(pBuilder), pBuilder, pBuilder->Controller);
+			Game.Messages.New(C4GM_Target, StdStrBuf{GetNeededMatStr(pBuilder).c_str()}, pBuilder, pBuilder->Controller);
 		}
 		// Still in need: done/fail
 		return false;
@@ -3745,11 +3745,11 @@ C4Object *C4Object::ComposeContents(C4ID id)
 	C4IDList NeededComponents;
 	pDef->GetComponents(&NeededComponents, nullptr, this);
 	// Check for sufficient components
-	StdStrBuf Needs; Needs.Format(LoadResStr(C4ResStrTableKey::IDS_CON_BUILDMATNEED), pDef->GetName());
+	std::string needs{LoadResStr(C4ResStrTableKey::IDS_CON_BUILDMATNEED, pDef->GetName())};
 	for (cnt = 0; c_id = NeededComponents.GetID(cnt); cnt++)
 		if (NeededComponents.GetCount(cnt) > Contents.ObjectCount(c_id))
 		{
-			Needs.AppendFormat("|%ix %s", NeededComponents.GetCount(cnt) - Contents.ObjectCount(c_id), C4Id2Def(c_id) ? C4Id2Def(c_id)->GetName() : C4IdText(c_id));
+			needs += std::format("|{}x {}", NeededComponents.GetCount(cnt) - Contents.ObjectCount(c_id), C4Id2Def(c_id) ? C4Id2Def(c_id)->GetName() : C4IdText(c_id));
 			if (!idNeeded) { idNeeded = c_id; iNeeded = NeededComponents.GetCount(cnt) - Contents.ObjectCount(c_id); }
 			fInsufficient = true;
 		}
@@ -3759,7 +3759,7 @@ C4Object *C4Object::ComposeContents(C4ID id)
 		// BuildNeedsMaterial call to object...
 		if (!Call(PSF_BuildNeedsMaterial, {C4VID(idNeeded), C4VInt(iNeeded)}))
 			// ...game message if not overloaded
-			GameMsgObject(Needs.getData(), this);
+			GameMsgObject(needs.c_str(), this);
 		// Return
 		return nullptr;
 	}
@@ -6205,11 +6205,11 @@ void C4Object::UpdateScriptPointers()
 		pEffects->ReAssignAllCallbackFunctions();
 }
 
-StdStrBuf C4Object::GetNeededMatStr(C4Object *pBuilder)
+std::string C4Object::GetNeededMatStr(C4Object *pBuilder)
 {
 	C4Def *pComponent;
 	int32_t cnt, ncnt;
-	StdStrBuf NeededMats;
+	std::string neededMats;
 
 	C4IDList NeededComponents;
 	Def->GetComponents(&NeededComponents, nullptr, pBuilder);
@@ -6223,24 +6223,19 @@ StdStrBuf C4Object::GetNeededMatStr(C4Object *pBuilder)
 			ncnt = NeededComponents.GetCount(cnt) - Component.GetIDCount(idComponent);
 			if (ncnt > 0)
 			{
-				NeededMats.AppendFormat("|%dx ", ncnt);
-				if ((pComponent = C4Id2Def(idComponent)))
-					NeededMats.Append(pComponent->GetName());
-				else
-					NeededMats.Append(C4IdText(idComponent));
+				neededMats += std::format("|%dx {}", ncnt, (pComponent = C4Id2Def(idComponent)) ? pComponent->GetName() : C4IdText(idComponent));
 			}
 		}
 	}
 
-	StdStrBuf result;
-	if (!!NeededMats)
+	if (!neededMats.empty())
 	{
-		result.Format(LoadResStr(C4ResStrTableKey::IDS_CON_BUILDMATNEED), GetName()); result.Append(NeededMats.getData());
+		return LoadResStr(C4ResStrTableKey::IDS_CON_BUILDMATNEED, GetName()).append(std::move(neededMats));
 	}
 	else
-		result.Format(LoadResStr(C4ResStrTableKey::IDS_CON_BUILDMATNONE), GetName());
-
-	return result;
+	{
+		return LoadResStr(C4ResStrTableKey::IDS_CON_BUILDMATNONE, GetName());
+	}
 }
 
 bool C4Object::IsPlayerObject(int32_t iPlayerNumber)

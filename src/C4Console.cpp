@@ -1222,12 +1222,11 @@ bool C4Console::UpdateViewportMenu()
 #endif
 	for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next)
 	{
-		StdStrBuf sText;
-		sText.Format(LoadResStr(C4ResStrTableKey::IDS_CNS_NEWPLRVIEWPORT), pPlr->GetName());
+		const std::string text{LoadResStr(C4ResStrTableKey::IDS_CNS_NEWPLRVIEWPORT, pPlr->GetName())};
 #ifdef _WIN32
-		AddMenuItem(hMenu, IDM_VIEWPORT_NEW1 + pPlr->Number, sText.getData());
+		AddMenuItem(hMenu, IDM_VIEWPORT_NEW1 + pPlr->Number, text.c_str());
 #elif WITH_DEVELOPER_MODE
-		GtkWidget *menuItem = gtk_menu_item_new_with_label(Languages.IconvUtf8(sText.getData()).getData());
+		GtkWidget *menuItem = gtk_menu_item_new_with_label(Languages.IconvUtf8(text.c_str()).getData());
 		gtk_menu_shell_append(GTK_MENU_SHELL(menuViewport), menuItem);
 		g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(OnViewNewPlr), GINT_TO_POINTER(pPlr->Number));
 		gtk_widget_show(menuItem);
@@ -1396,16 +1395,16 @@ bool C4Console::UpdatePlayerMenu()
 #endif
 	for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next)
 	{
-		StdStrBuf sText;
-		if (Game.Network.isEnabled())
-			sText.Format(LoadResStr(C4ResStrTableKey::IDS_CNS_PLRQUITNET), pPlr->GetName(), pPlr->AtClientName);
-		else
-			sText.Format(LoadResStr(C4ResStrTableKey::IDS_CNS_PLRQUIT), pPlr->GetName());
+		const std::string text{
+			Game.Network.isEnabled()
+					? LoadResStr(C4ResStrTableKey::IDS_CNS_PLRQUITNET, pPlr->GetName(), pPlr->AtClientName)
+					: LoadResStr(C4ResStrTableKey::IDS_CNS_PLRQUIT, pPlr->GetName())
+		};
 #ifdef _WIN32
-		AddMenuItem(hMenu, IDM_PLAYER_QUIT1 + pPlr->Number, sText.getData(), (!Game.Network.isEnabled() || Game.Network.isHost()) && Editing);
+		AddMenuItem(hMenu, IDM_PLAYER_QUIT1 + pPlr->Number, text.c_str(), (!Game.Network.isEnabled() || Game.Network.isHost()) && Editing);
 #elif WITH_DEVELOPER_MODE
 		// TODO: Implement AddMenuItem...
-		GtkWidget *menuItem = gtk_menu_item_new_with_label(Languages.IconvUtf8(sText.getData()).getData());
+		GtkWidget *menuItem = gtk_menu_item_new_with_label(Languages.IconvUtf8(text.c_str()).getData());
 		gtk_menu_shell_append(GTK_MENU_SHELL(menuPlayer), menuItem);
 		g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(OnPlrQuit), GINT_TO_POINTER(pPlr->Number));
 		gtk_widget_show(menuItem);

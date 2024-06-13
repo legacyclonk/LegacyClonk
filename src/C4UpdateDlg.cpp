@@ -327,9 +327,8 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 		const char *newServer = strUpdateRedirect.getData();
 		if (pScreen)
 		{
-			StdStrBuf sMessage;
-			sMessage.Format(LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECTMSG), newServer);
-			if (!pScreen->ShowMessageModal(sMessage.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECT), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
+			const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECTMSG, newServer)};
+			if (!pScreen->ShowMessageModal(message.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECT), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
 			{
 				// apply new server setting
 				SCopy(newServer, Config.Network.UpdateServerAddress, CFG_MaxString);
@@ -356,8 +355,8 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	if (C4UpdateDlg::IsValidUpdate(UpdateVersion))
 	{
 		// Prompt user, then apply update
-		StdStrBuf strMsg; strMsg.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_ANUPDATETOVERSIONISAVAILA), UpdateVersion.GetString().getData());
-		if (pScreen->ShowMessageModal(strMsg.getData(), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_Ex_Update))
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_ANUPDATETOVERSIONISAVAILA, UpdateVersion.GetString().getData())};
+		if (pScreen->ShowMessageModal(message.c_str(), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_Ex_Update))
 			if (!DoUpdate(UpdateVersion, pScreen))
 				pScreen->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_UPDATEFAILED), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
 			else

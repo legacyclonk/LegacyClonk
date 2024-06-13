@@ -4480,7 +4480,7 @@ static C4String *FnGetNeededMatStr(C4AulContext *cthr, C4Object *pObj)
 {
 	// local/safety
 	if (!pObj) if (!(pObj = cthr->Obj)) return nullptr;
-	return String(pObj->GetNeededMatStr(cthr->Obj).getData());
+	return String(pObj->GetNeededMatStr(cthr->Obj).c_str());
 }
 
 static C4Value FnEval(C4AulContext *cthr, C4String *strScript)

@@ -1781,10 +1781,10 @@ void C4Network2::OnClientDisconnect(C4Network2Client *pClient)
 	// host disconnected? Clear up
 	if (!isHost() && pClient->isHost())
 	{
-		StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_NET_HOSTDISCONNECTED), pClient->getName());
-		Log(sMsg.getData());
+		const std::string msg{LoadResStr(C4ResStrTableKey::IDS_NET_HOSTDISCONNECTED, pClient->getName())};
+		Log(msg);
 		// host connection lost: clear up everything
-		Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, sMsg.getData());
+		Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, msg.c_str());
 		Clear();
 	}
 }
@@ -2932,12 +2932,10 @@ void C4Network2::OpenVoteDialog()
 		{
 			// Compose message
 			C4Client *pSrcClient = Game.Clients.getClientByID(pVote->getByClient());
-			StdStrBuf Msg; Msg.Format(LoadResStr(C4ResStrTableKey::IDS_VOTE_WANTSTOALLOW), pSrcClient ? pSrcClient->getName() : "???", pVote->getDesc().getData());
-			Msg.AppendChar('|');
-			Msg.Append(pVote->getDescWarning());
+			const std::string msg{std::format("{}|{}", LoadResStr(C4ResStrTableKey::IDS_VOTE_WANTSTOALLOW, pSrcClient ? pSrcClient->getName() : "???", pVote->getDesc().getData()), pVote->getDescWarning().getData())};
 
 			// Open dialog
-			pVoteDialog = new C4VoteDialog(Msg.getData(), pVote->getType(), pVote->getData(), false);
+			pVoteDialog = new C4VoteDialog(msg.c_str(), pVote->getType(), pVote->getData(), false);
 			pVoteDialog->SetDelOnClose();
 			pVoteDialog->Show(Game.pGUI, true);
 

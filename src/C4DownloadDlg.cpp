@@ -180,15 +180,15 @@ bool C4DownloadDlg::DownloadFile(const char *szDLType, C4GUI::Screen *pScreen, c
 		// otherwise, show an appropriate error
 		const char *szError = pDlg->GetError();
 		if (!szError || !*szError) szError = LoadResStr(C4ResStrTableKey::IDS_PRC_UNKOWNERROR);
-		StdStrBuf sError;
-		sError.Format(LoadResStr(C4ResStrTableKey::IDS_PRC_DOWNLOADERROR), GetFilename(szURL), szError);
+		std::string error{LoadResStr(C4ResStrTableKey::IDS_PRC_DOWNLOADERROR, GetFilename(szURL), szError)};
 		// it's a 404: display extended message
-		if (SSearch(szError, "404") && szNotFoundMessage)
+		if (error.contains("404") && szNotFoundMessage)
 		{
-			sError.Append("|"); sError.Append(szNotFoundMessage);
+			error += '|';
+			error += szNotFoundMessage;
 		}
 		// display message
-		pScreen->ShowMessageModal(sError.getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_DL_TITLE, szDLType).c_str(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error, nullptr);
+		pScreen->ShowMessageModal(error.c_str(), LoadResStr(C4ResStrTableKey::IDS_CTL_DL_TITLE, szDLType).c_str(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error, nullptr);
 		delete pDlg;
 		return false;
 	}
