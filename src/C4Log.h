@@ -23,6 +23,7 @@
 
 #include <span>
 
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/base_sink.h>
 
@@ -89,13 +90,13 @@ private:
 template<typename... Args>
 bool LogF(const char *strMessage, Args... args)
 {
-	return Log(FormatString(strMessage, args...).getData());
+	return Log(fmt::sprintf(strMessage, args...).c_str());
 }
 
 template<typename... Args>
 bool LogSilentF(const char *strMessage, Args... args)
 {
-	return LogSilent(FormatString(strMessage, args...).getData());
+	return LogSilent(fmt::sprintf(strMessage, args...).c_str());
 }
 
 bool DebugLog(const char *strMessage);
@@ -103,7 +104,7 @@ bool DebugLog(const char *strMessage);
 template<typename... Args>
 bool DebugLogF(const char *strMessage, Args... args)
 {
-	return DebugLog(FormatString(strMessage, args...).getData());
+	return DebugLog(fmt::sprintf(strMessage, args...).c_str());
 }
 
 bool LogFatal(const char *szMessage); // log message and store it as a fatal error
