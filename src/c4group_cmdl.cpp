@@ -39,6 +39,8 @@
 #include <C4Version.h>
 #include <C4Update.h>
 
+#include <string_view>
+
 #include <shellapi.h>
 #include <conio.h>
 
@@ -413,10 +415,10 @@ int UnregisterShellExtensions()
 	return 1;
 }
 
-bool Log(const char *msg)
+bool Log(const std::string_view msg)
 {
 	if (!fQuiet)
-		printf("%s\n", msg);
+		printf("%.*s\n", static_cast<int>(msg.size()), msg.data());
 	return 1;
 }
 

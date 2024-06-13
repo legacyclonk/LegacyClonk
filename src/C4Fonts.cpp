@@ -253,7 +253,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 			{
 				// reloading
 				rFont.Clear();
-				Log(LoadResStr(C4ResStrTableKey::IDS_PRC_UPDATEFONT, FontFaceName, iIndent, 0).c_str());
+				Log(LoadResStr(C4ResStrTableKey::IDS_PRC_UPDATEFONT, FontFaceName, iIndent, 0));
 			}
 			C4Surface sfc;
 			if (!sfc.Load(*pGrp, FontFaceName))
@@ -302,7 +302,7 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 			{
 				// reloading
 				rFont.Clear();
-				Log(LoadResStr(C4ResStrTableKey::IDS_PRC_UPDATEFONT, FontFaceName, iDefFontSize, dwDefWeight).c_str());
+				Log(LoadResStr(C4ResStrTableKey::IDS_PRC_UPDATEFONT, FontFaceName, iDefFontSize, dwDefWeight));
 			}
 			// init with given font name
 			try

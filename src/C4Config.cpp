@@ -574,7 +574,7 @@ bool C4Config::Save()
 	catch ([[maybe_unused]] const StdCompiler::Exception &e)
 	{
 #ifdef C4ENGINE
-		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_CONFSAVE, e.what()).c_str());
+		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_CONFSAVE, e.what()));
 #endif
 		return false;
 	}

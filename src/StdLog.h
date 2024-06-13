@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <string_view>
+
 // These functions have to be provided by the application.
-bool Log(const char *szMessage);
-bool LogSilent(const char *szMessage);
+bool Log(std::string_view message);
+bool LogSilent(std::string_view message);

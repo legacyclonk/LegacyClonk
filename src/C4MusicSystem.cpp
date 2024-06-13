@@ -96,7 +96,7 @@ void C4MusicSystem::Play(const char *const songname, const bool loop)
 	// Stop old music
 	Stop();
 
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_PLAYMUSIC, GetFilename(newSong->name.c_str())).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_PLAYMUSIC, GetFilename(newSong->name.c_str())));
 
 	// Load and play music file
 	try
@@ -164,7 +164,7 @@ void C4MusicSystem::PlayScenarioMusic(C4Group &group)
 	for (const auto &musicDir : musicDirs)
 	{
 		LoadDir(musicDir.c_str());
-		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LOCALMUSIC, Config.AtExeRelativePath(musicDir.c_str())).c_str());
+		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LOCALMUSIC, Config.AtExeRelativePath(musicDir.c_str())));
 	}
 
 	if (Config.Sound.RXMusic)
@@ -370,7 +370,7 @@ void C4MusicSystem::LoadDir(const char *const path)
 	if (!success) success = dirGroup.Open(dir.c_str());
 	if (!success)
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_MUSICFILENOTFOUND, path).c_str());
+		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_MUSICFILENOTFOUND, path));
 		return;
 	}
 

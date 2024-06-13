@@ -603,7 +603,7 @@ bool C4Network2Res::GetStandalone(char *pTo, int32_t iMaxL, bool fSetOfficial, b
 			}
 		}
 		// log - this may take a few seconds
-		if (!fSilent) Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NETPACKING, GetFilename(szFile)).c_str());
+		if (!fSilent) Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NETPACKING, GetFilename(szFile)));
 		// pack inplace?
 		if (!fTempFile)
 		{
@@ -1172,7 +1172,7 @@ bool C4Network2Res::OptimizeStandalone(bool fSilent)
 	if (Core.getType() == NRT_Player)
 	{
 		// log - this may take a few seconds
-		if (!fSilent) Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NETPREPARING, GetFilename(szFile)).c_str());
+		if (!fSilent) Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NETPREPARING, GetFilename(szFile)));
 		// copy to temp file, if needed
 		if (!fTempFile && SEqual(szFile, szStandalone))
 		{

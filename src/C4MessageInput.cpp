@@ -536,7 +536,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 				if (pScenario)
 					if (C4Group_CopyItem(pScenario->getFile(), Config.AtExePath(GetFilename(Game.ScenarioFilename))))
 					{
-						Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_NETGETSCEN_SAVED, Config.AtExePath(GetFilename(Game.ScenarioFilename))).c_str());
+						Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_NETGETSCEN_SAVED, Config.AtExePath(GetFilename(Game.ScenarioFilename))));
 						return true;
 					}
 			}
@@ -570,7 +570,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 			C4Client *pClient = Game.Clients.getClientByName(pCmdPar);
 			if (!pClient)
 			{
-				Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_NOCLIENT, pCmdPar).c_str());
+				Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_NOCLIENT, pCmdPar));
 				return false;
 			}
 			// league: Kick needs voting
@@ -644,7 +644,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 		C4Client *pClient = Game.Clients.getClientByName(pCmdPar);
 		if (!pClient)
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_NOCLIENT, pCmdPar).c_str());
+			Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_NOCLIENT, pCmdPar));
 			return false;
 		}
 		// what to do?

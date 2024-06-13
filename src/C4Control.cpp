@@ -556,7 +556,7 @@ void C4ControlClientJoin::Execute() const
 	C4Client *pClient = Game.Clients.Add(Core);
 	if (!pClient) return;
 	// log
-	Log(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_JOIN, Core.getName()).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_JOIN, Core.getName()));
 	// lobby callback
 	C4GameLobby::MainDlg *pLobby = Game.Network.GetLobby();
 	if (pLobby) pLobby->OnClientJoin(pClient);
@@ -587,7 +587,7 @@ void C4ControlClientUpdate::Execute() const
 		// nothing to do?
 		if (pClient->isActivated() == !!iData) break;
 		// log
-		Log(LoadResStr(iData ? C4ResStrTableKey::IDS_NET_CLIENT_ACTIVATED : C4ResStrTableKey::IDS_NET_CLIENT_DEACTIVATED, strClient.getData(), pClient->getName()).c_str());
+		Log(LoadResStr(iData ? C4ResStrTableKey::IDS_NET_CLIENT_ACTIVATED : C4ResStrTableKey::IDS_NET_CLIENT_DEACTIVATED, strClient.getData(), pClient->getName()));
 		// activate/deactivate
 		pClient->SetActivated(!!iData);
 		// local?
@@ -598,7 +598,7 @@ void C4ControlClientUpdate::Execute() const
 		// nothing to do?
 		if (pClient->isObserver()) break;
 		// log
-		Log(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_OBSERVE, strClient.getData(), pClient->getName()).c_str());
+		Log(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_OBSERVE, strClient.getData(), pClient->getName()));
 		// set observer (will deactivate)
 		pClient->SetObserver();
 		// local?
@@ -652,7 +652,7 @@ void C4ControlClientRemove::Execute() const
 	// remove client
 	if (!Game.Clients.Remove(pClient)) return;
 	// log
-	Log(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_REMOVED, strClient.getData(), pClient->getName(), strReason.getData()).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_REMOVED, strClient.getData(), pClient->getName(), strReason.getData()));
 	// remove all players
 	Game.Players.RemoveAtClient(iID, true);
 	// remove all resources
@@ -1340,9 +1340,9 @@ void C4ControlVote::Execute() const
 	// Log
 	C4Client *pClient = Game.Clients.getClientByID(iByClient);
 	if (fApprove)
-		Log(LoadResStr(C4ResStrTableKey::IDS_VOTE_WANTSTO, pClient->getName(), getDesc().getData()).c_str());
+		Log(LoadResStr(C4ResStrTableKey::IDS_VOTE_WANTSTO, pClient->getName(), getDesc().getData()));
 	else
-		Log(LoadResStr(C4ResStrTableKey::IDS_VOTE_DOESNOTWANTTO, pClient->getName(), getDesc().getData()).c_str());
+		Log(LoadResStr(C4ResStrTableKey::IDS_VOTE_DOESNOTWANTTO, pClient->getName(), getDesc().getData()));
 	// Save vote back
 	if (Game.Network.isEnabled())
 		Game.Network.AddVote(*this);

@@ -39,6 +39,8 @@
 #include <C4Update.h>
 #include <C4Config.h>
 
+#include <string_view>
+
 // from http://cboard.cprogramming.com/archive/index.php/t-27714.html
 #include <stdio.h>
 #include <termios.h>
@@ -75,10 +77,10 @@ C4Config *GetCfg()
 	return &Config;
 }
 
-bool Log(const char *msg)
+bool Log(const std::string_view msg)
 {
 	if (!fQuiet)
-		printf("%s\n", msg);
+		printf("%.*s\n", static_cast<int>(msg.size()), msg.data());
 	return 1;
 }
 

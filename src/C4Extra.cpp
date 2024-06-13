@@ -70,7 +70,7 @@ bool C4Extra::LoadDef(C4Group &hGroup, const char *szName)
 	// check if file exists
 	if (!hGroup.FindEntry(szName)) return false;
 	// log that extra group is loaded
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LOADEXTRA, ExtraGrp.GetName(), szName).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LOADEXTRA, ExtraGrp.GetName(), szName));
 	// open and add group to set
 	C4Group *pGrp = new C4Group;
 	if (!pGrp->OpenAsChild(&hGroup, szName)) { Log(LoadResStr(C4ResStrTableKey::IDS_ERR_FAILURE)); delete pGrp; return false; }

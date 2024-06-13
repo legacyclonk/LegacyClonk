@@ -88,23 +88,23 @@ private:
 };
 
 template<typename... Args>
-bool LogF(const char *strMessage, Args... args)
+bool LogF(const std::string_view message, Args... args)
 {
-	return Log(fmt::sprintf(strMessage, args...).c_str());
+	return Log(fmt::sprintf(message, args...));
 }
 
 template<typename... Args>
-bool LogSilentF(const char *strMessage, Args... args)
+bool LogSilentF(const std::string_view message, Args... args)
 {
-	return LogSilent(fmt::sprintf(strMessage, args...).c_str());
+	return LogSilent(fmt::sprintf(message, args...));
 }
 
-bool DebugLog(const char *strMessage);
+bool DebugLog(std::string_view message);
 
 template<typename... Args>
-bool DebugLogF(const char *strMessage, Args... args)
+bool DebugLogF(const std::string_view message, Args... args)
 {
-	return DebugLog(fmt::sprintf(strMessage, args...).c_str());
+	return DebugLog(fmt::sprintf(message, args...));
 }
 
 bool LogFatal(const char *szMessage); // log message and store it as a fatal error

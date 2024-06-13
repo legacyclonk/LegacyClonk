@@ -400,7 +400,7 @@ C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2
 	}
 	// log
 	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_CONNECTHOST, strAddresses.getData())};
-	Log(message.c_str());
+	Log(message);
 	// show box
 	C4GUI::MessageDialog *pDlg = nullptr;
 	if (Game.pGUI && !Console.Active)
@@ -1687,7 +1687,7 @@ void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
 
 	if (!client->isLocal())
 	{
-		Log(LoadResStr(ready ? C4ResStrTableKey::IDS_NET_CLIENT_READY : C4ResStrTableKey::IDS_NET_CLIENT_UNREADY, client->getName()).c_str());
+		Log(LoadResStr(ready ? C4ResStrTableKey::IDS_NET_CLIENT_READY : C4ResStrTableKey::IDS_NET_CLIENT_UNREADY, client->getName()));
 	}
 
 	if (ready != client->isLobbyReady())
@@ -1847,7 +1847,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 		else if (!pRes->isLoading())
 		{
 			// log
-			if (fLog) Log(LoadResStr(C4ResStrTableKey::IDS_NET_RECEIVED, szResName, pRes->getCore().getFileName()).c_str());
+			if (fLog) Log(LoadResStr(C4ResStrTableKey::IDS_NET_RECEIVED, szResName, pRes->getCore().getFileName()));
 			// return
 			delete pDlg;
 			return pRes;
@@ -1873,7 +1873,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 		// log
 		if (!fLog)
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_NET_WAITFORRES, szResName).c_str());
+			Log(LoadResStr(C4ResStrTableKey::IDS_NET_WAITFORRES, szResName));
 			fLog = true;
 		}
 		// show progress dialog
@@ -2298,7 +2298,7 @@ bool C4Network2::LeagueStart(bool *pCancel)
 
 	// Let's wait for response
 	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_LEAGUE_REGGAME, pLeagueClient->getServerName())};
-	Log(message.c_str());
+	Log(message);
 	// Set up a dialog
 	C4GUI::MessageDialog *pDlg = nullptr;
 	if (Game.pGUI && !Console.Active)
@@ -2340,7 +2340,7 @@ bool C4Network2::LeagueStart(bool *pCancel)
 			LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_EMPTYREPLY);
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_REGGAME, pError)};
 		// Log message
-		Log(message.c_str());
+		Log(message);
 		// Show message
 		if (Game.pGUI && !Console.Active)
 		{
@@ -2362,7 +2362,7 @@ bool C4Network2::LeagueStart(bool *pCancel)
 	{
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEGAMESIGNUP, pLeagueClient->getServerName(), LeagueServerMessage.getData())};
 		// Log message
-		Log(message.c_str());
+		Log(message);
 		// Show message
 		if (Game.pGUI && !Console.Active)
 		{
@@ -2426,7 +2426,7 @@ bool C4Network2::LeagueUpdate()
 	if (!pLeagueClient->Update(Ref))
 	{
 		// Log
-		Log(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_UPDATEGAME, pLeagueClient->GetError()).c_str());
+		Log(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_UPDATEGAME, pLeagueClient->GetError()));
 		return false;
 	}
 
@@ -2456,7 +2456,7 @@ bool C4Network2::LeagueUpdateProcessReply()
 			LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_EMPTYREPLY);
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_UPDATEGAME, pError)};
 		// Show message - no dialog, because it's not really fatal and might happen in the running game
-		Log(message.c_str());
+		Log(message);
 		return false;
 	}
 	// evaluate reply: Transfer data to players
@@ -2506,7 +2506,7 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 		{
 			// Log message
 			resultMessage = LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_FINISHGAME, pLeagueClient->GetError());
-			Log(resultMessage.c_str());
+			Log(resultMessage);
 			// Show message, allow retry
 			if (!Game.pGUI || Console.Active) break;
 			bool fRetry = Game.pGUI->ShowMessageModal(resultMessage.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
@@ -2516,7 +2516,7 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 		}
 		// Let's wait for response
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_LEAGUE_SENDRESULT, pLeagueClient->getServerName())};
-		Log(message.c_str());
+		Log(message);
 		// Wait for response
 		while (pLeagueClient->isBusy())
 		{
@@ -2551,7 +2551,7 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 	}
 
 	// Show message
-	Log(resultMessage.c_str());
+	Log(resultMessage);
 
 	// Take round results
 	Game.RoundResults.EvaluateLeague(resultMessage.c_str(), !fIsError, RoundResults);
@@ -2618,7 +2618,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 
 		// Wait for a response
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_TRYLEAGUESIGNUP, pInfo->GetName(), Account.getData(), pLeagueClient->getServerName())};
-		Log(message.c_str());
+		Log(message);
 		// Set up a dialog
 		C4GUI::MessageDialog *pDlg = nullptr;
 		if (Game.pGUI && !Console.Active)
@@ -2690,7 +2690,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 			// Error with first-time registration or manual password entry
 			if (!fUnregistered || fRegister)
 			{
-				Log(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESIGNUPERROR, Message.getData()).c_str());
+				Log(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESIGNUPERROR, Message.getData()));
 				Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESERVERMSG, Message.getData()).c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUPFAILED), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 				Config.Network.LeaguePassword.Clear();
 				// after a league server error message, always fall-through to try again
@@ -2724,7 +2724,7 @@ bool C4Network2::LeaguePlrAuthCheck(C4PlayerInfo *pInfo)
 
 	// Log
 	const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEJOINING, pInfo->GetName())};
-	Log(message.c_str());
+	Log(message);
 
 	// Wait for response
 	while (pLeagueClient->isBusy())
@@ -2765,7 +2765,7 @@ void C4Network2::LeagueNotifyDisconnect(int32_t iClientID, C4LeagueDisconnectRea
 	// Make sure league client is avilable
 	LeagueWaitNotBusy();
 	// report the disconnect!
-	Log(LoadResStr(C4ResStrTableKey::IDS_LEAGUE_LEAGUEREPORTINGUNEXPECTED, static_cast<int>(eReason)).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_LEAGUE_LEAGUEREPORTINGUNEXPECTED, static_cast<int>(eReason)));
 	pLeagueClient->ReportDisconnect(*pInfos, eReason);
 	// wait for the reply
 	LeagueWaitNotBusy();
@@ -2808,7 +2808,7 @@ void C4Network2::LeagueShowError(const char *szMsg)
 	}
 	else
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_LGA_SERVERFAILURE, szMsg).c_str());
+		Log(LoadResStr(C4ResStrTableKey::IDS_LGA_SERVERFAILURE, szMsg));
 	}
 }
 
