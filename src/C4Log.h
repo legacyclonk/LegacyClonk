@@ -67,14 +67,6 @@ public:
 	int GetLogFD() const noexcept { return clonkLogSink ? clonkLogSink->GetFD() : -1; }
 
 public:
-	template<typename Logger, typename... Args>
-	std::shared_ptr<spdlog::logger> CreateLogger(std::string name, std::initializer_list<spdlog::sink_ptr> sinks)
-	{
-		const auto logger = std::make_shared<Logger>(name, defaultLogSinks.begin(), defaultLogSinks.end());
-		logger->sinks().insert(logger->sinks().end(), sinks.begin(), sinks.end());
-		return logger;
-	}
-
 	std::span<const spdlog::sink_ptr> GetDefaultLogSinks() const noexcept { return defaultLogSinks; }
 
 	const std::shared_ptr<spdlog::logger> &GetLogger() const noexcept { return logger; }

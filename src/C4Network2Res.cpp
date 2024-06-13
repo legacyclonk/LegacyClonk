@@ -507,7 +507,7 @@ bool C4Network2Res::SetLoad(const C4Network2ResCore &nCore) // by main thread
 		return false;
 #ifdef C4NET2RES_DEBUG_LOG
 	// log
-	Application.InteractiveThread.ThreadLogSF("Network: Resource: loading %d:%s to file %s", Core.getID(), Core.getFileName(), szFile);
+	LogSilentF("Network: Resource: loading %d:%s to file %s", Core.getID(), Core.getFileName(), szFile);
 #endif
 	// set standalone (result is going to be binary-compatible)
 	SCopy(szFile, szStandalone, sizeof(szStandalone) - 1);
@@ -756,7 +756,7 @@ C4Network2Res::Ref C4Network2Res::Derive()
 		fTempFile = true;
 	}
 
-	Application.InteractiveThread.ThreadLogSF("Network: Ressource: deriving from %d:%s, original at %s", getResID(), Core.getFileName(), szFile);
+	LogSilentF("Network: Ressource: deriving from %d:%s, original at %s", getResID(), Core.getFileName(), szFile);
 
 	// (note: should remove temp file if something fails after this point)
 
@@ -918,7 +918,7 @@ void C4Network2Res::OnChunk(const C4Network2ResChunk &rChunk)
 	bool fSuccess = rChunk.AddTo(this, pParent->getIOClass());
 #ifdef C4NET2RES_DEBUG_LOG
 	// log
-	Application.InteractiveThread.ThreadLogSF("Network: Res: %s chunk %d to ressource %s (%s)%s", fSuccess ? "added" : "could not add", rChunk.getChunkNr(), Core.getFileName(), szFile, fSuccess ? "" : "!");
+	LogSilentF("Network: Res: %s chunk %d to ressource %s (%s)%s", fSuccess ? "added" : "could not add", rChunk.getChunkNr(), Core.getFileName(), szFile, fSuccess ? "" : "!");
 #endif
 	if (fSuccess)
 	{
@@ -1097,7 +1097,7 @@ bool C4Network2Res::StartLoad(int32_t iFromClient, const C4Network2ResChunkData 
 	pConn->DelRef();
 #ifdef C4NET2RES_DEBUG_LOG
 	// log
-	Application.InteractiveThread.ThreadLogSF("Network: Res: requesting chunk %d of %d:%s (%s) from client %d",
+	LogSilentF("Network: Res: requesting chunk %d of %d:%s (%s) from client %d",
 		iRetrieveChunk, Core.getID(), Core.getFileName(), szFile, iFromClient);
 #endif
 	// create load class
@@ -1267,7 +1267,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (iResID != pRes->getResID())
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Ressource ID mismatch!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID());
+		LogSilentF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Ressource ID mismatch!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID());
 #endif
 		return false;
 	}
@@ -1276,7 +1276,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (iOffset + Data.getSize() > Core.getFileSize())
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Adding %d bytes at offset %d exceeds expected file size of %d!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), (int)Data.getSize(), (int)iOffset, (int)Core.getFileSize());
+		LogSilentF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Adding %d bytes at offset %d exceeds expected file size of %d!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), (int)Data.getSize(), (int)iOffset, (int)Core.getFileSize());
 #endif
 		return false;
 	}
@@ -1285,7 +1285,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (f == -1)
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Open write file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
+		LogSilentF("C4Network2ResChunk(%d)::AddTo(%s [%d]): Open write file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
 #endif
 		return false;
 	}
@@ -1294,7 +1294,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 		if (lseek(f, iOffset, SEEK_SET) != iOffset)
 		{
 #ifdef C4NET2RES_DEBUG_LOG
-			Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): lseek file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
+			LogSilentF("C4Network2ResChunk(%d)::AddTo(%s [%d]): lseek file error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
 #endif
 			close(f);
 			return false;
@@ -1303,7 +1303,7 @@ bool C4Network2ResChunk::AddTo(C4Network2Res *pRes, C4Network2IO *pIO) const
 	if (write(f, Data.getData(), Data.getSize()) != int32_t(Data.getSize()))
 	{
 #ifdef C4NET2RES_DEBUG_LOG
-		Application.InteractiveThread.ThreadLogSF("C4Network2ResChunk(%d)::AddTo(%s [%d]): write error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
+		LogSilentF("C4Network2ResChunk(%d)::AddTo(%s [%d]): write error: %s!", (int)iResID, (const char *)Core.getFileName(), (int)pRes->getResID(), strerror(errno));
 #endif
 		close(f);
 		return false;
@@ -1480,7 +1480,7 @@ C4Network2Res::Ref C4Network2ResList::AddByCore(const C4Network2ResCore &Core, b
 		return fLoad ? AddLoad(Core) : nullptr;
 	}
 	// log
-	Application.InteractiveThread.ThreadLogSF("Network: Found identical %s. Not loading.", pRes->getCore().getFileName());
+	LogSilentF("Network: Found identical %s. Not loading.", pRes->getCore().getFileName());
 	// add to list
 	Add(pRes);
 	// ok
@@ -1493,7 +1493,7 @@ C4Network2Res::Ref C4Network2ResList::AddLoad(const C4Network2ResCore &Core) // 
 	if (!Core.isLoadable())
 	{
 		// show error msg
-		Application.InteractiveThread.ThreadLogF("Network: Cannot load %s (marked unloadable)", Core.getFileName());
+		LogF("Network: Cannot load %s (marked unloadable)", Core.getFileName());
 		return nullptr;
 	}
 	// create new
@@ -1501,7 +1501,7 @@ C4Network2Res::Ref C4Network2ResList::AddLoad(const C4Network2ResCore &Core) // 
 	// initialize
 	pRes->SetLoad(Core);
 	// log
-	Application.InteractiveThread.ThreadLogSF("Network: loading %s...", Core.getFileName());
+	LogSilentF("Network: loading %s...", Core.getFileName());
 	// add to list
 	Add(pRes);
 	return pRes;
@@ -1690,8 +1690,8 @@ bool C4Network2ResList::SendDiscover(C4Network2IOConnection *pTo) // by both
 
 void C4Network2ResList::OnResComplete(C4Network2Res *pRes)
 {
-	// log (network thread -> ThreadLog)
-	Application.InteractiveThread.ThreadLogSF("Network: %s received.", pRes->getCore().getFileName());
+	// log
+	LogSilentF("Network: %s received.", pRes->getCore().getFileName());
 	// call handler (ctrl might wait for this ressource)
 	Game.Control.Network.OnResComplete(pRes);
 }

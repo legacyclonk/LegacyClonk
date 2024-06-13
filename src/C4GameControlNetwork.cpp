@@ -165,11 +165,11 @@ void C4GameControlNetwork::DoInput(const C4Control &Input) // by main thread
 	{
 		if (!fHost)
 			if (!pNetwork->Clients.SendMsgToHost(CtrlPkt))
-				Application.InteractiveThread.ThreadLog("Failed to send control to host!");
+				Log("Failed to send control to host!");
 	}
 	// decentral mode: always broadcast to everybody
 	else if (!pNetwork->Clients.BroadcastMsgToClients(CtrlPkt))
-		Application.InteractiveThread.ThreadLog("Failed to broadcast control!");
+		Log("Failed to broadcast control!");
 	// add to list
 	AddCtrl(pCtrl);
 	// ok, control is sent for this control tick
@@ -725,7 +725,7 @@ void C4GameControlNetwork::CheckCompleteCtrl(bool fSetEvent) // by both
 		(!fActivated || iControlSent > iControlReady) &&
 		timeGetTime() >= iNextControlReqeust)
 	{
-		Application.InteractiveThread.ThreadLogSF("Network: Recovering: Requesting control for tick %d...", iControlReady + 1);
+		LogSilentF("Network: Recovering: Requesting control for tick %d...", iControlReady + 1);
 		// make request
 		C4NetIOPacket Pkt = MkC4NetIOPacket(PID_ControlReq, C4PacketControlReq(iControlReady + 1));
 		// send control requests
