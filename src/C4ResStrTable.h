@@ -24,7 +24,7 @@
 #include <string_view>
 #include <unordered_map>
 
-#include <fmt/format.h>
+#include <fmt/printf.h>
 
 const char *LoadResStr(C4ResStrTableKey id);
 std::string LoadResStrNoAmp(C4ResStrTableKey id);
