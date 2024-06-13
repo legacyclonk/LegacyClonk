@@ -417,7 +417,7 @@ bool C4Player::Save()
 		if (Game.Parameters.MaxPlayers <= 0) return false;
 	}
 	// Log
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_SAVEPLR, Config.AtExeRelativePath(Filename)).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_SAVEPLR, Config.AtExeRelativePath(Filename)));
 	Game.GraphicsSystem.MessageBoard.EnsureLastMessage();
 	// copy player to save somewhere else
 	char szPath[_MAX_PATH + 1];
@@ -975,7 +975,7 @@ void C4Player::Surrender()
 	Eliminated = true;
 	RetireDelay = C4RetireDelay;
 	StartSoundEffect("Eliminated");
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRSURRENDERED, GetName()).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRSURRENDERED, GetName()));
 }
 
 bool C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent)
@@ -2012,7 +2012,7 @@ void C4Player::Eliminate()
 	Eliminated = true;
 	RetireDelay = C4RetireDelay;
 	StartSoundEffect("Eliminated");
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRELIMINATED, GetName()).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRELIMINATED, GetName()));
 
 	// Early client deactivation check
 	if (Game.Control.isCtrlHost() && AtClient > C4ClientIDHost)

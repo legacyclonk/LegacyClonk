@@ -103,7 +103,7 @@ bool C4Game::InitDefs()
 
 	// Check def engine version (should be done immediately on def load)
 	iDefs = Defs.CheckEngineVersion(C4XVER1, C4XVER2, C4XVER3, C4XVER4, C4XVERBUILD);
-	if (iDefs > 0) { Log(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSINVC4X, iDefs).c_str()); }
+	if (iDefs > 0) { Log(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSINVC4X, iDefs)); }
 
 	// sort before CheckRequireDef for better id-lookup performance
 	Defs.SortByID();
@@ -133,7 +133,7 @@ bool C4Game::OpenScenario()
 
 	// Scenario filename check & log
 	if (!ScenarioFilename[0]) { LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NOC4S)); return false; }
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LOADC4S, ScenarioFilename).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LOADC4S, ScenarioFilename));
 
 	// get parent folder, if it's c4f
 	pParentGroup = GroupSet.RegisterParentFolders(ScenarioFilename);
@@ -894,7 +894,7 @@ bool C4Game::InitMaterialTexture()
 		if (fFirst)
 		{
 			long tme_count = TextureMap.LoadMap(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures);
-			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_TEXMAPENTRIES, tme_count).c_str());
+			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_TEXMAPENTRIES, tme_count));
 			// Only once
 			fFirst = false;
 		}
@@ -929,8 +929,8 @@ bool C4Game::InitMaterialTexture()
 	}
 
 	// Logs
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_TEXTURES, tex_count).c_str());
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_MATERIALS, mat_count).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_TEXTURES, tex_count));
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_MATERIALS, mat_count));
 
 	// Load material enumeration
 	if (!Material.LoadEnumeration(ScenarioFile))
@@ -2360,7 +2360,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 				}
 				catch (const std::runtime_error &e)
 				{
-					Log(LoadResStr(C4ResStrTableKey::IDS_ERR_FILEMONITOR, e.what()).c_str());
+					Log(LoadResStr(C4ResStrTableKey::IDS_ERR_FILEMONITOR, e.what()));
 				}
 			}
 
@@ -2663,7 +2663,7 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, boo
 
 	// Load objects
 	int32_t iObjects = Objects.Load(hGroup, section);
-	if (iObjects) { Log(LoadResStr(C4ResStrTableKey::IDS_PRC_OBJECTSLOADED, iObjects).c_str()); }
+	if (iObjects) { Log(LoadResStr(C4ResStrTableKey::IDS_PRC_OBJECTSLOADED, iObjects)); }
 	SetInitProgress(93);
 
 	if (!section)
@@ -3763,7 +3763,7 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 	}
 	// We have to wait for the answer
 	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_QUERYMSG, szAddress)};
-	Log(message.c_str());
+	Log(message);
 	// Set up wait dialog
 	C4GUI::MessageDialog *pDlg = nullptr;
 	if (pGUI && !Console.Active)
@@ -3817,7 +3817,7 @@ bool C4Game::InitNetworkFromReference(const C4Network2Reference &Reference)
 	// Save scenario title
 	Parameters.ScenarioTitle.CopyValidated(Reference.getTitle());
 	// Log
-	Log(LoadResStr(C4ResStrTableKey::IDS_NET_JOINGAMEBY, pHostData->getName()).c_str());
+	Log(LoadResStr(C4ResStrTableKey::IDS_NET_JOINGAMEBY, pHostData->getName()));
 	// Init clients
 	Clients.Init();
 	// Connect

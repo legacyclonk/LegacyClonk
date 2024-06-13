@@ -163,47 +163,25 @@ void C4LogSystem::OpenLog()
 
 StdStrBuf sFatalError;
 
-bool LogSilent(const char *szMessage, bool fConsole)
+bool LogSilent(const std::string_view message, bool fConsole)
 {
-	// security
-	if (!szMessage) return false;
-
-	if (!Application.IsMainThread())
-	{
-		if (fConsole)
-		{
-			return Application.InteractiveThread.ThreadLog(szMessage);
-		}
-		else
-		{
-			return Application.InteractiveThread.ThreadLogS(szMessage);
-		}
-	}
-
-	(fConsole ? Application.LogSystem.GetLogger() : Application.LogSystem.GetLoggerSilent())->info(szMessage);
+	(fConsole ? Application.LogSystem.GetLogger() : Application.LogSystem.GetLoggerSilent())->info(message);
 
 	return true;
 }
 
-bool LogSilent(const char *szMessage)
+bool LogSilent(const std::string_view message)
 {
-	return LogSilent(szMessage, false);
+	return LogSilent(message, false);
 }
 
 int iDisableLog = 0;
 
-bool Log(const char *szMessage)
+bool Log(const std::string_view message)
 {
 	if (iDisableLog) return true;
-	// security
-	if (!szMessage) return false;
 
-	if (!Application.IsMainThread())
-	{
-		return Application.InteractiveThread.ThreadLog(szMessage);
-	}
-
-	spdlog::info("{}", szMessage);
+	spdlog::info(message);
 
 	return true;
 }
@@ -232,9 +210,9 @@ const char *GetFatalError()
 	return sFatalError.getData();
 }
 
-bool DebugLog(const char *strMessage)
+bool DebugLog(const std::string_view message)
 {
-	spdlog::debug("{}", strMessage);
+	spdlog::debug(message);
 	return true;
 }
 
