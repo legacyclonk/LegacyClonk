@@ -78,7 +78,7 @@ C4Game::~C4Game()
 bool C4Game::InitDefs()
 {
 	int32_t iDefs = 0;
-	Log(LoadResStr("IDS_PRC_INITDEFS"));
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_INITDEFS));
 	int iDefResCount = 0;
 	for ([[maybe_unused]] const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
 		++iDefResCount;
@@ -99,11 +99,11 @@ bool C4Game::InitDefs()
 	iDefs += Defs.Load(ScenarioFile, C4D_Load_RX, Config.General.LanguageEx, &*Application.SoundSystem, true, true, 35, 40, false);
 
 	// Absolutely no defs: we don't like that
-	if (!iDefs) { LogFatal(LoadResStr("IDS_PRC_NODEFS")); return false; }
+	if (!iDefs) { LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NODEFS)); return false; }
 
 	// Check def engine version (should be done immediately on def load)
 	iDefs = Defs.CheckEngineVersion(C4XVER1, C4XVER2, C4XVER3, C4XVER4, C4XVERBUILD);
-	if (iDefs > 0) { LogF(LoadResStr("IDS_PRC_DEFSINVC4X"), iDefs); }
+	if (iDefs > 0) { LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSINVC4X), iDefs); }
 
 	// sort before CheckRequireDef for better id-lookup performance
 	Defs.SortByID();
@@ -132,8 +132,8 @@ bool C4Game::OpenScenario()
 	}
 
 	// Scenario filename check & log
-	if (!ScenarioFilename[0]) { LogFatal(LoadResStr("IDS_PRC_NOC4S")); return false; }
-	LogF(LoadResStr("IDS_PRC_LOADC4S"), ScenarioFilename);
+	if (!ScenarioFilename[0]) { LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NOC4S)); return false; }
+	LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_LOADC4S), ScenarioFilename);
 
 	// get parent folder, if it's c4f
 	pParentGroup = GroupSet.RegisterParentFolders(ScenarioFilename);
@@ -144,14 +144,14 @@ bool C4Game::OpenScenario()
 		// open from parent group
 		if (!ScenarioFile.OpenAsChild(pParentGroup, GetFilename(ScenarioFilename)))
 		{
-			LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), ScenarioFilename); return false;
+			LogF("%s: %s", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), ScenarioFilename); return false;
 		}
 	}
 	else
 		// open directly
 		if (!ScenarioFile.Open(ScenarioFilename))
 		{
-			LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), ScenarioFilename); return false;
+			LogF("%s: %s", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), ScenarioFilename); return false;
 		}
 
 	// add scenario to group
@@ -160,13 +160,13 @@ bool C4Game::OpenScenario()
 	// Read scenario core
 	if (!C4S.Load(ScenarioFile))
 	{
-		LogFatal(LoadResStr("IDS_PRC_FILEINVALID")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_FILEINVALID)); return false;
 	}
 
 	// Check minimum engine version
 	if (CompareVersion(C4S.Head.C4XVer[0], C4S.Head.C4XVer[1], C4S.Head.C4XVer[2], C4S.Head.C4XVer[3], C4S.Head.C4XVer[4]) > 0)
 	{
-		LogFatal(FormatString(LoadResStr("IDS_PRC_NOREQC4X"), C4S.Head.C4XVer[0], C4S.Head.C4XVer[1], C4S.Head.C4XVer[2], C4S.Head.C4XVer[3], C4S.Head.C4XVer[4]).getData());
+		LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_NOREQC4X), C4S.Head.C4XVer[0], C4S.Head.C4XVer[1], C4S.Head.C4XVer[2], C4S.Head.C4XVer[3], C4S.Head.C4XVer[4]).getData());
 		return false;
 	}
 
@@ -182,11 +182,11 @@ bool C4Game::OpenScenario()
 
 		if (DefinitionFilenames.empty())
 		{
-			Log(LoadResStr("IDS_PRC_LOCALONLY"));
+			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LOCALONLY));
 		}
 		else
 		{
-			Log(LoadResStr("IDS_PRC_SCEOWNDEFS"));
+			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_SCEOWNDEFS));
 		}
 	}
 
@@ -213,7 +213,7 @@ bool C4Game::OpenScenario()
 	if (C4S.Head.MissionAccess[0])
 		if (!SIsModule(Config.General.MissionAccess, C4S.Head.MissionAccess))
 		{
-			LogFatal(LoadResStr("IDS_PRC_NOMISSIONACCESS")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NOMISSIONACCESS)); return false;
 		}
 
 	// Game (runtime data)
@@ -231,7 +231,7 @@ bool C4Game::OpenScenario()
 	{
 		if (!Parameters.Load(ScenarioFile, &C4S, GameText.GetData(), &ScenarioLangStringTable, DefinitionFilenames))
 		{
-			LogFatal(LoadResStr("IDS_ERR_LOAD_PARAMETERS"));
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_PARAMETERS));
 			return false;
 		}
 
@@ -247,7 +247,7 @@ bool C4Game::OpenScenario()
 	}
 
 	// Title
-	Title.LoadEx(LoadResStr("IDS_CNS_TITLE"), ScenarioFile, C4CFN_Title, Config.General.LanguageEx);
+	Title.LoadEx(LoadResStr(C4ResStrTableKey::IDS_CNS_TITLE), ScenarioFile, C4CFN_Title, Config.General.LanguageEx);
 	if (!Title.GetLanguageString(Config.General.LanguageEx, Parameters.ScenarioTitle))
 		Parameters.ScenarioTitle.CopyValidated(C4S.Head.Title);
 
@@ -255,14 +255,14 @@ bool C4Game::OpenScenario()
 	if (ScenarioFile.FindEntry(C4CFN_Strings))
 		if (!ScriptEngine.Strings.Load(ScenarioFile))
 		{
-			LogFatal(LoadResStr("IDS_ERR_STRINGS")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_STRINGS)); return false;
 		}
 	SetInitProgress(4);
 
 	// Compile runtime data
 	if (!CompileRuntimeData(GameText))
 	{
-		LogFatal(LoadResStr("IDS_ERR_LOAD_RUNTIMEDATA")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_RUNTIMEDATA)); return false;
 	}
 
 	// If scenario is a directory: Watch for changes
@@ -316,7 +316,7 @@ bool C4Game::PreInit()
 	Log(TRADEMARKTEXT);
 
 	// gfx resource file preinit (global files only)
-	Log(LoadResStr("IDS_PRC_GFXRES"));
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_GFXRES));
 	if (!GraphicsResource.Init())
 		// Error was already logged
 		return false;
@@ -324,7 +324,7 @@ bool C4Game::PreInit()
 	// Graphics system (required for GUI)
 	if (!GraphicsSystem.Init())
 	{
-		LogFatal(LoadResStr("IDS_ERR_NOGFXSYS")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NOGFXSYS)); return false;
 	}
 
 	// load GUI
@@ -360,13 +360,13 @@ bool C4Game::Init()
 		if (!GraphicsSystem.pLoaderScreen)
 		{
 			// init extra; needed for loader screen
-			Log(LoadResStr("IDS_PRC_INITEXTRA"));
+			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_INITEXTRA));
 			Extra.Init();
 
 			// init loader
 			if (Application.isFullScreen && !GraphicsSystem.InitLoaderScreen(C4S.Head.Loader))
 			{
-				LogFatal(LoadResStr("IDS_PRC_ERRLOADER")); return false;
+				LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_ERRLOADER)); return false;
 			}
 		}
 
@@ -391,7 +391,7 @@ bool C4Game::Init()
 		// check wether console mode is allowed
 		if (!Application.isFullScreen && !Parameters.AllowDebug)
 		{
-			LogFatal(LoadResStr("IDS_TEXT_JOININCONSOLEMODENOTALLOW")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_TEXT_JOININCONSOLEMODENOTALLOW)); return false;
 		}
 
 		// do lobby (if desired)
@@ -416,13 +416,13 @@ bool C4Game::Init()
 		}
 
 		// init extra; needed for loader screen
-		Log(LoadResStr("IDS_PRC_INITEXTRA"));
+		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_INITEXTRA));
 		Extra.Init();
 
 		// init loader
 		if (Application.isFullScreen && !GraphicsSystem.InitLoaderScreen(C4S.Head.Loader))
 		{
-			LogFatal(LoadResStr("IDS_PRC_ERRLOADER")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_ERRLOADER)); return false;
 		}
 
 		// Init network
@@ -449,7 +449,7 @@ bool C4Game::Init()
 	{
 		if (!Network.FinalInit())
 		{
-			LogFatal(LoadResStr("IDS_ERR_NETWORKFINALINIT"));
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NETWORKFINALINIT));
 			return false;
 		}
 	}
@@ -499,7 +499,7 @@ bool C4Game::Init()
 	IsRunning = true;
 
 	// Start message
-	Log(LoadResStr(C4S.Head.NetworkGame ? "IDS_PRC_JOIN" : C4S.Head.SaveGame ? "IDS_PRC_RESUME" : "IDS_PRC_START"));
+	Log(LoadResStr(C4S.Head.NetworkGame ? C4ResStrTableKey::IDS_PRC_JOIN : C4S.Head.SaveGame ? C4ResStrTableKey::IDS_PRC_RESUME : C4ResStrTableKey::IDS_PRC_START));
 
 	// set non-exclusive GUI
 	if (pGUI)
@@ -614,7 +614,7 @@ void C4Game::Clear()
 	// avoid double message by not printing it if no restbl is loaded
 	// this would log an "[Undefined]" only, anyway
 	// (could abort the whole clear-procedure here, btw?)
-	if (Application.ResStrTable) Log(LoadResStr("IDS_CNS_GAMECLOSED"));
+	if (Application.ResStrTable) Log(LoadResStr(C4ResStrTableKey::IDS_CNS_GAMECLOSED));
 
 	// clear game starting parameters
 	DefinitionFilenames.clear();
@@ -871,7 +871,7 @@ bool C4Game::InitMaterialTexture()
 		{
 			if (!Mats.OpenAsChild(&ScenarioFile, C4CFN_Material))
 			{
-				LogFatal(FormatString(LoadResStr("IDS_ERR_SCENARIOMATERIALS"), Mats.GetError()).getData());
+				LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS), Mats.GetError()).getData());
 				return false;
 			}
 			// Once only
@@ -883,7 +883,7 @@ bool C4Game::InitMaterialTexture()
 			// Find next external material source
 			if (!Mats.Open(matRes->getFile()))
 			{
-				LogFatal(FormatString(LoadResStr("IDS_ERR_EXTERNALMATERIALS"), matRes->getFile(), Mats.GetError()).getData());
+				LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_EXTERNALMATERIALS), matRes->getFile(), Mats.GetError()).getData());
 				return false;
 			}
 			++matRes;
@@ -894,7 +894,7 @@ bool C4Game::InitMaterialTexture()
 		if (fFirst)
 		{
 			long tme_count = TextureMap.LoadMap(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures);
-			LogF(LoadResStr("IDS_PRC_TEXMAPENTRIES"), tme_count);
+			LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_TEXMAPENTRIES), tme_count);
 			// Only once
 			fFirst = false;
 		}
@@ -929,13 +929,13 @@ bool C4Game::InitMaterialTexture()
 	}
 
 	// Logs
-	LogF(LoadResStr("IDS_PRC_TEXTURES"), tex_count);
-	LogF(LoadResStr("IDS_PRC_MATERIALS"), mat_count);
+	LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_TEXTURES), tex_count);
+	LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_MATERIALS), mat_count);
 
 	// Load material enumeration
 	if (!Material.LoadEnumeration(ScenarioFile))
 	{
-		LogFatal(LoadResStr("IDS_PRC_NOMATENUM")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NOMATENUM)); return false;
 	}
 
 	// Initialize texture map
@@ -1605,7 +1605,7 @@ bool C4Game::DropFile(const char *szFilename, int32_t iX, int32_t iY)
 				return DropDef(c_id, iX, iY);
 			}
 		// Failure
-		Console.Out(FormatString(LoadResStr("IDS_CNS_DROPNODEF"), GetFilename(szFilename)).getData());
+		Console.Out(FormatString(LoadResStr(C4ResStrTableKey::IDS_CNS_DROPNODEF), GetFilename(szFilename)).getData());
 		return false;
 	}
 	return false;
@@ -1622,7 +1622,7 @@ bool C4Game::DropDef(C4ID id, int32_t iX, int32_t iY)
 	else
 	{
 		// Failure
-		Console.Out(FormatString(LoadResStr("IDS_CNS_DROPNODEF"), C4IdText(id)).getData());
+		Console.Out(FormatString(LoadResStr(C4ResStrTableKey::IDS_CNS_DROPNODEF), C4IdText(id)).getData());
 	}
 	return false;
 }
@@ -1632,7 +1632,7 @@ bool C4Game::EnumerateMaterials()
 	// Check material number
 	if (Material.Num > C4MaxMaterial)
 	{
-		LogFatal(LoadResStr("IDS_PRC_TOOMANYMATS")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_TOOMANYMATS)); return false;
 	}
 
 	// Get hardcoded system material indices
@@ -1667,7 +1667,7 @@ bool C4Game::EnumerateMaterials()
 
 	if ((MVehic == MNone) || (MTunnel == MNone))
 	{
-		LogFatal(LoadResStr("IDS_PRC_NOSYSMATS")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NOSYSMATS)); return false;
 	}
 	// mapping to landscape palette will occur when landscape has been created
 	// set the pal
@@ -1805,7 +1805,7 @@ void C4Game::Evaluate()
 	RoundResults.EvaluateGame();
 
 	// Set game flag
-	Log(LoadResStr("IDS_PRC_EVALUATED"));
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_EVALUATED));
 	Evaluated = true;
 }
 
@@ -2168,7 +2168,7 @@ bool C4Game::CanQuickSave()
 		// Network hosts only
 		if (!Network.isHost())
 		{
-			Log(LoadResStr("IDS_GAME_NOCLIENTSAVE")); return false;
+			Log(LoadResStr(C4ResStrTableKey::IDS_GAME_NOCLIENTSAVE)); return false;
 		}
 
 		// Not for league games
@@ -2190,9 +2190,9 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 	SetWorkingDirectory(Config.General.ExePath);
 
 	// Create savegame folder
-	if (!Config.General.CreateSaveFolder(Config.General.SaveGameFolder.getData(), LoadResStr("IDS_GAME_SAVEGAMESTITLE")))
+	if (!Config.General.CreateSaveFolder(Config.General.SaveGameFolder.getData(), LoadResStr(C4ResStrTableKey::IDS_GAME_SAVEGAMESTITLE)))
 	{
-		Log(LoadResStr("IDS_GAME_FAILSAVEGAME")); return false;
+		Log(LoadResStr(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME)); return false;
 	}
 
 	// Create savegame subfolder(s)
@@ -2203,7 +2203,7 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 		SCopyUntil(strFilename, strSaveFolder + SLen(strSaveFolder), DirectorySeparator, _MAX_PATH, i);
 		if (!Config.General.CreateSaveFolder(strSaveFolder, strTitle))
 		{
-			Log(LoadResStr("IDS_GAME_FAILSAVEGAME")); return false;
+			Log(LoadResStr(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME)); return false;
 		}
 	}
 
@@ -2215,13 +2215,13 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 	if (ItemIdentical(ScenarioFilename, strSavePath.getData()))
 	{
 		StartSoundEffect("Error");
-		GameMsgGlobal(LoadResStr("IDS_GAME_NOSAVEONCURR"), FRed);
-		Log(LoadResStr("IDS_GAME_FAILSAVEGAME"));
+		GameMsgGlobal(LoadResStr(C4ResStrTableKey::IDS_GAME_NOSAVEONCURR), FRed);
+		Log(LoadResStr(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME));
 		return false;
 	}
 
 	// Wait message
-	Log(LoadResStr("IDS_HOLD_SAVINGGAME"));
+	Log(LoadResStr(C4ResStrTableKey::IDS_HOLD_SAVINGGAME));
 	GraphicsSystem.MessageBoard.EnsureLastMessage();
 
 	// Save to target scenario file
@@ -2229,12 +2229,12 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 	pGameSave = new C4GameSaveSavegame();
 	if (!pGameSave->Save(strSavePath.getData()))
 	{
-		Log(LoadResStr("IDS_GAME_FAILSAVEGAME")); delete pGameSave; return false;
+		Log(LoadResStr(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME)); delete pGameSave; return false;
 	}
 	delete pGameSave;
 
 	// Success
-	Log(LoadResStr("IDS_CNS_GAMESAVED"));
+	Log(LoadResStr(C4ResStrTableKey::IDS_CNS_GAMESAVED));
 	return true;
 }
 
@@ -2360,7 +2360,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 				}
 				catch (const std::runtime_error &e)
 				{
-					LogF(LoadResStr("IDS_ERR_FILEMONITOR"), e.what());
+					LogF(LoadResStr(C4ResStrTableKey::IDS_ERR_FILEMONITOR), e.what());
 				}
 			}
 
@@ -2387,7 +2387,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 				auto group = std::make_unique<C4Group>();
 				if (!group->Open(def.getFile()))
 				{
-					LogFatal(FormatString(LoadResStr("IDS_ERR_OPENRES"), def.getFile(), group->GetError()).getData());
+					LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_OPENRES), def.getFile(), group->GetError()).getData());
 					return false;
 				}
 
@@ -2396,7 +2396,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 			// Graphics and fonts (may reinit main font, too)
 			// Call it here for overloads by C4GroupSet (definitions, Extra.c4g, scenario, folders etc.)
-			Log(LoadResStr("IDS_PRC_GFXRES"));
+			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_GFXRES));
 			if (!GraphicsResource.Init())
 			{
 				return false;
@@ -2422,7 +2422,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		// set up control (inits Record/Replay)
 		if (!InitControl())
 		{
-			LogFatal("IDS_ERR_INITCONTROL");
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_INITCONTROL));
 			return false;
 		}
 	}
@@ -2433,7 +2433,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 		{
 			if (!RoundResults.Load(hGroup, C4CFN_RoundResults))
 			{
-				LogFatal(LoadResStr("IDS_ERR_ERRORLOADINGROUNDRESULTS")); return false;
+				LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_ERRORLOADINGROUNDRESULTS)); return false;
 			}
 		}
 		else
@@ -2448,7 +2448,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	// Check object enumeration
 	if (!CheckObjectEnumeration())
 	{
-		LogFatal(LoadResStr("IDS_ERR_CHECKOBJECTENUMERATION"));
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_CHECKOBJECTENUMERATION));
 		return false;
 	}
 
@@ -2463,7 +2463,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	// Environment
 	if (!C4S.Head.NoInitialize && LandscapeLoaded)
 	{
-		Log(LoadResStr("IDS_PRC_ENVIRONMENT"));
+		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_ENVIRONMENT));
 		InitVegetation();
 		InitInEarth();
 		InitAnimals();
@@ -2516,7 +2516,7 @@ bool C4Game::InitGameFirstPart()
 
 		if (!Network.RetrieveScenario(scenario))
 		{
-			LogFatal(LoadResStr("IDS_ERR_RETRIEVESCENARIO"));
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_RETRIEVESCENARIO));
 			return false;
 		}
 
@@ -2528,14 +2528,14 @@ bool C4Game::InitGameFirstPart()
 		// get everything else
 		if (!Parameters.GameRes.RetrieveFiles())
 		{
-			LogFatal(LoadResStr("IDS_ERR_RETRIEVEFILES"));
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_RETRIEVEFILES));
 			return false;
 		}
 
 		// Check network game data scenario type (safety)
 		if (!C4S.Head.NetworkGame)
 		{
-			LogFatal(LoadResStr("IDS_NET_NONETGAME")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_NONETGAME)); return false;
 		}
 
 		SetInitProgress(7);
@@ -2544,7 +2544,7 @@ bool C4Game::InitGameFirstPart()
 	// system scripts
 	if (!InitScriptEngine())
 	{
-		LogFatal(LoadResStr("IDS_ERR_INITSCRIPTENGINE"));
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_INITSCRIPTENGINE));
 		return false;
 	}
 
@@ -2559,7 +2559,7 @@ bool C4Game::InitGameFirstPart()
 	// Definitions
 	if (!InitDefs())
 	{
-		LogFatal(LoadResStr("IDS_ERR_INITDEFS"));
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_INITDEFS));
 		return false;
 	}
 
@@ -2605,11 +2605,11 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, boo
 	}
 
 	// Landscape
-	Log(LoadResStr("IDS_PRC_LANDSCAPE"));
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LANDSCAPE));
 	LandscapeLoaded = false;
 	if (!Landscape.Init(hGroup, section, fLoadSky, LandscapeLoaded, !!C4S.Head.SaveGame))
 	{
-		LogFatal(LoadResStr("IDS_ERR_GBACK")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_GBACK)); return false;
 	}
 	SetInitProgress(88);
 	// the savegame flag is set if runtime data is present, in which case this is to be used
@@ -2629,7 +2629,7 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, boo
 	{
 		if (!PXS.Load(hGroup))
 		{
-			LogFatal(LoadResStr("IDS_ERR_PXS")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_PXS)); return false;
 		}
 	}
 	else if (LandscapeLoaded)
@@ -2644,7 +2644,7 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, boo
 	{
 		if (!MassMover.Load(hGroup))
 		{
-			LogFatal(LoadResStr("IDS_ERR_MOVER")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_MOVER)); return false;
 		}
 	}
 	else if (LandscapeLoaded)
@@ -2663,7 +2663,7 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, boo
 
 	// Load objects
 	int32_t iObjects = Objects.Load(hGroup, section);
-	if (iObjects) { LogF(LoadResStr("IDS_PRC_OBJECTSLOADED"), iObjects); }
+	if (iObjects) { LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_OBJECTSLOADED), iObjects); }
 	SetInitProgress(93);
 
 	if (!section)
@@ -2722,7 +2722,7 @@ bool C4Game::InitScriptEngine()
 	// system functions: check if system group is open
 	if (!Application.OpenSystemGroup())
 	{
-		LogFatal(LoadResStr("IDS_ERR_INVALIDSYSGRP")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_INVALIDSYSGRP)); return false;
 	}
 	C4Group &File = Application.SystemGroup;
 
@@ -2741,7 +2741,7 @@ bool C4Game::InitScriptEngine()
 	}
 
 	// load standard clonk names
-	Names.Load(LoadResStr("IDS_CNS_NAMES"), File, C4CFN_Names);
+	Names.Load(LoadResStr(C4ResStrTableKey::IDS_CNS_NAMES), File, C4CFN_Names);
 
 	return true;
 }
@@ -2769,12 +2769,12 @@ bool C4Game::InitPlayers()
 		// extract all players to temp store and update filenames to point there
 		if (!LocalRestorePlayerInfos.RecreatePlayerFiles())
 		{
-			LogFatal(LoadResStr("IDS_ERR_NOPLRFILERECR")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NOPLRFILERECR)); return false;
 		}
 		// recreate the files
 		if (!LocalRestorePlayerInfos.RecreatePlayers())
 		{
-			LogFatal(LoadResStr("IDS_ERR_NOPLRNETRECR")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NOPLRNETRECR)); return false;
 		}
 	}
 	else if (RestorePlayerInfos.GetActivePlayerCount(true))
@@ -2788,18 +2788,18 @@ bool C4Game::InitPlayers()
 		// for all savegames, script players get restored by adding one new script player for earch savegame script player to the host
 		if (!PlayerInfos.RestoreSavegameInfos(RestorePlayerInfos))
 		{
-			LogFatal(LoadResStr("IDS_ERR_NOPLRSAVEINFORECR")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NOPLRSAVEINFORECR)); return false;
 		}
 		RestorePlayerInfos.Clear();
 		// try to associate local filenames (non-net+replay) or ressources (net) with all player infos
 		if (!PlayerInfos.RecreatePlayerFiles())
 		{
-			LogFatal(LoadResStr("IDS_ERR_NOPLRFILERECR")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NOPLRFILERECR)); return false;
 		}
 		// recreate players by joining all players whose joined-flag is already set
 		if (!PlayerInfos.RecreatePlayers())
 		{
-			LogFatal(LoadResStr("IDS_ERR_NOPLRSAVERECR")); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NOPLRSAVERECR)); return false;
 		}
 	}
 
@@ -2825,7 +2825,7 @@ bool C4Game::InitPlayers()
 		if (iPlrCnt == 0)
 			if (Application.isFullScreen && !Control.NoInput())
 			{
-				LogFatal(LoadResStr("IDS_CNS_NOFULLSCREENPLRS"));
+				LogFatal(LoadResStr(C4ResStrTableKey::IDS_CNS_NOFULLSCREENPLRS));
 				return false;
 			}
 #endif
@@ -2834,12 +2834,12 @@ bool C4Game::InitPlayers()
 		{
 			if (Application.isFullScreen)
 			{
-				LogFatal(FormatString(LoadResStr("IDS_PRC_TOOMANYPLRS"), Parameters.MaxPlayers).getData());
+				LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_TOOMANYPLRS), Parameters.MaxPlayers).getData());
 				return false;
 			}
 			else
 			{
-				Console.Message(FormatString(LoadResStr("IDS_PRC_TOOMANYPLRS"), Parameters.MaxPlayers).getData());
+				Console.Message(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_TOOMANYPLRS), Parameters.MaxPlayers).getData());
 			}
 		}
 	}
@@ -2891,12 +2891,12 @@ bool C4Game::InitControl()
 			// Special: If this happens for a league host, the game must not start.
 			if (Network.isEnabled() && Network.isHost() && Parameters.isLeague())
 			{
-				LogFatal(LoadResStr("IDS_ERR_NORECORD"));
+				LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NORECORD));
 				return false;
 			}
 			else
 			{
-				Log(LoadResStr("IDS_ERR_NORECORD"));
+				Log(LoadResStr(C4ResStrTableKey::IDS_ERR_NORECORD));
 			}
 		}
 
@@ -3259,10 +3259,10 @@ void C4Game::ParseCommandLine(const char *szCmdLine)
 bool C4Game::LoadScenarioComponents()
 {
 	// Info
-	Info.Load(LoadResStr("IDS_CNS_INFO"), ScenarioFile, C4CFN_Info);
+	Info.Load(LoadResStr(C4ResStrTableKey::IDS_CNS_INFO), ScenarioFile, C4CFN_Info);
 	// Overload clonk names from scenario file
 	if (ScenarioFile.EntryCount(C4CFN_Names))
-		Names.Load(LoadResStr("IDS_CNS_NAMES"), ScenarioFile, C4CFN_Names);
+		Names.Load(LoadResStr(C4ResStrTableKey::IDS_CNS_NAMES), ScenarioFile, C4CFN_Names);
 	// scenario sections
 	char fn[_MAX_FNAME + 1] = { 0 };
 	ScenarioFile.ResetSearch(); *fn = 0;
@@ -3276,13 +3276,13 @@ bool C4Game::LoadScenarioComponents()
 		if (SLen(SctName) > C4MaxName || !*SctName)
 		{
 			DebugLog("invalid section name");
-			LogFatal(FormatString(LoadResStr("IDS_ERR_SCENSECTION"), fn).getData()); return false;
+			LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_SCENSECTION), fn).getData()); return false;
 		}
 		// load this section into temp store
 		C4ScenarioSection *pSection = new C4ScenarioSection(SctName);
 		if (!pSection->ScenarioLoad(fn))
 		{
-			LogFatal(FormatString(LoadResStr("IDS_ERR_SCENSECTION"), fn).getData()); return false;
+			LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_SCENSECTION), fn).getData()); return false;
 		}
 	}
 
@@ -3294,7 +3294,7 @@ void C4Game::LoadScenarioScripts()
 {
 	// Script
 	Script.Reg2List(&ScriptEngine, &ScriptEngine);
-	Script.Load(LoadResStr("IDS_CNS_SCRIPT"), ScenarioFile, C4CFN_Script, Config.General.LanguageEx, nullptr, &ScenarioLangStringTable);
+	Script.Load(LoadResStr(C4ResStrTableKey::IDS_CNS_SCRIPT), ScenarioFile, C4CFN_Script, Config.General.LanguageEx, nullptr, &ScenarioLangStringTable);
 	// additional system scripts?
 	C4Group SysGroup;
 	char fn[_MAX_FNAME + 1] = { 0 };
@@ -3460,7 +3460,7 @@ bool C4Game::InitSystem()
 #ifndef USE_CONSOLE
 	if (!FontLoader.LoadDefs(Application.SystemGroup, Config))
 	{
-		LogFatal(LoadResStr("IDS_ERR_FONTDEFS")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_FONTDEFS)); return false;
 	}
 #endif
 	// init extra root group
@@ -3482,10 +3482,10 @@ bool C4Game::InitSystem()
 	// init keyboard input (default keys, plus overloads)
 	if (!InitKeyboard())
 	{
-		LogFatal(LoadResStr("IDS_ERR_NOKEYBOARD")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NOKEYBOARD)); return false;
 	}
 	// Rank system
-	Rank.Init(Config.GetSubkeyPath("ClonkRanks"), LoadResStr("IDS_GAME_DEFRANKS"), 1000);
+	Rank.Init(Config.GetSubkeyPath("ClonkRanks"), LoadResStr(C4ResStrTableKey::IDS_GAME_DEFRANKS), 1000);
 	// done, success
 	return true;
 }
@@ -3625,7 +3625,7 @@ bool C4Game::DoGameOver()
 	if (GameOver) return false;
 	// Flag, log, call
 	GameOver = true;
-	Log(LoadResStr("IDS_PRC_GAMEOVER"));
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_GAMEOVER));
 	Script.GRBroadcast(PSF_OnGameOver);
 	// Flag all surviving players as winners
 	for (C4Player *pPlayer = Players.First; pPlayer; pPlayer = pPlayer->Next)
@@ -3752,7 +3752,7 @@ C4Object *C4Game::FindObjectByCommand(int32_t iCommand, C4Object *pTarget, C4Val
 
 bool C4Game::InitNetworkFromAddress(const char *szAddress)
 {
-	StdStrBuf strRefQueryFailed(LoadResStr("IDS_NET_REFQUERY_FAILED"));
+	StdStrBuf strRefQueryFailed(LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_FAILED));
 	// Query reference
 	C4Network2RefClient RefClient;
 	if (!RefClient.Init() ||
@@ -3762,14 +3762,14 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 		LogFatal(FormatString(strRefQueryFailed.getData(), RefClient.GetError()).getData()); return false;
 	}
 	// We have to wait for the answer
-	StdStrBuf Message = FormatString(LoadResStr("IDS_NET_REFQUERY_QUERYMSG"), szAddress);
+	StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_QUERYMSG), szAddress);
 	Log(Message.getData());
 	// Set up wait dialog
 	C4GUI::MessageDialog *pDlg = nullptr;
 	if (pGUI && !Console.Active)
 	{
 		// create & show
-		pDlg = new C4GUI::MessageDialog(Message.getData(), LoadResStr("IDS_NET_REFQUERY_QUERYTITLE"),
+		pDlg = new C4GUI::MessageDialog(Message.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_QUERYTITLE),
 			C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsMedium);
 		if (!pDlg || !pDlg->Show(pGUI, true)) return false;
 	}
@@ -3798,7 +3798,7 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 	C4Network2Reference **ppRefs = nullptr; int32_t iRefCount;
 	if (!RefClient.GetReferences(ppRefs, iRefCount) || iRefCount <= 0)
 	{
-		LogFatal(FormatString(strRefQueryFailed.getData(), LoadResStr("IDS_NET_REFQUERY_NOREF")).getData()); return false;
+		LogFatal(FormatString(strRefQueryFailed.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_NOREF)).getData()); return false;
 	}
 	// Connect to first reference
 	bool fSuccess = InitNetworkFromReference(*ppRefs[0]);
@@ -3813,17 +3813,17 @@ bool C4Game::InitNetworkFromReference(const C4Network2Reference &Reference)
 {
 	// Find host data
 	C4Client *pHostData = Reference.Parameters.Clients.getClientByID(C4ClientIDHost);
-	if (!pHostData) { LogFatal(LoadResStr("IDS_NET_INVALIDREF")); return false; }
+	if (!pHostData) { LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_INVALIDREF)); return false; }
 	// Save scenario title
 	Parameters.ScenarioTitle.CopyValidated(Reference.getTitle());
 	// Log
-	LogF(LoadResStr("IDS_NET_JOINGAMEBY"), pHostData->getName());
+	LogF(LoadResStr(C4ResStrTableKey::IDS_NET_JOINGAMEBY), pHostData->getName());
 	// Init clients
 	Clients.Init();
 	// Connect
 	if (Network.InitClient(Reference, false) != C4Network2::IR_Success)
 	{
-		LogFatal(FormatString(LoadResStr("IDS_NET_NOHOSTCON"), pHostData->getName()).getData());
+		LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_NOHOSTCON), pHostData->getName()).getData());
 		return false;
 	}
 	// init control
@@ -3846,12 +3846,12 @@ bool C4Game::InitNetworkHost()
 	// network not active?
 	if (C4S.Head.NetworkGame)
 	{
-		LogFatal(LoadResStr("IDS_NET_NODIRECTSTART")); Clients.Init();
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_NODIRECTSTART)); Clients.Init();
 	}
 	// replay?
 	if (C4S.Head.Replay)
 	{
-		LogFatal(LoadResStr("IDS_PRC_NONETREPLAY")); return true;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NONETREPLAY)); return true;
 	}
 	// clear client list
 	Clients.Init();
@@ -4205,10 +4205,10 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 bool C4Game::ToggleDebugMode()
 {
 	// debug mode not allowed
-	if (!Parameters.AllowDebug && !DebugMode) { GraphicsSystem.FlashMessage(LoadResStr("IDS_MSG_DEBUGMODENOTALLOWED")); return false; }
+	if (!Parameters.AllowDebug && !DebugMode) { GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_DEBUGMODENOTALLOWED)); return false; }
 	Toggle(DebugMode);
 	if (!DebugMode) GraphicsSystem.DeactivateDebugOutput();
-	GraphicsSystem.FlashMessageOnOff(LoadResStr("IDS_CTL_DEBUGMODE"), DebugMode);
+	GraphicsSystem.FlashMessageOnOff(LoadResStr(C4ResStrTableKey::IDS_CTL_DEBUGMODE), DebugMode);
 	return true;
 }
 
@@ -4333,7 +4333,7 @@ bool C4Game::SpeedUp()
 	// Use /fast to set to even higher speeds.
 	FrameSkip = BoundBy<int32_t>(FrameSkip + 1, 1, 50);
 	FullSpeed = true;
-	GraphicsSystem.FlashMessage(FormatString(LoadResStr("IDS_MSG_SPEED"), FrameSkip).getData());
+	GraphicsSystem.FlashMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_SPEED), FrameSkip).getData());
 	return true;
 }
 
@@ -4342,7 +4342,7 @@ bool C4Game::SlowDown()
 	FrameSkip = BoundBy<int32_t>(FrameSkip - 1, 1, 50);
 	if (FrameSkip == 1)
 		FullSpeed = false;
-	GraphicsSystem.FlashMessage(FormatString(LoadResStr("IDS_MSG_SPEED"), FrameSkip).getData());
+	GraphicsSystem.FlashMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_SPEED), FrameSkip).getData());
 	return true;
 }
 

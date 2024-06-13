@@ -19,6 +19,7 @@
 #pragma once
 
 #include "C4EnumeratedObjectPtr.h"
+#include "C4ResStrTable.h"
 #include "C4Value.h"
 
 #include <string>
@@ -70,7 +71,7 @@ const int32_t C4CMD_MoveTo_NoPosAdjust = 1,
 const int32_t C4CMD_Enter_PushTarget = 2;
 
 const char *CommandName(int32_t iCommand);
-const char *CommandNameID(int32_t iCommand);
+C4ResStrTableKey CommandNameID(int32_t iCommand);
 int32_t CommandByName(const char *szCommand);
 
 class C4Command

@@ -654,20 +654,20 @@ ContextMenu *Edit::OnContext(C4GUI::Element *pListItem, int32_t iX, int32_t iY)
 	bool fAnythingSelected = (iSelBegin != iSelEnd);
 	if (fAnythingSelected)
 	{
-		pCtx->AddItem(LoadResStr("IDS_DLG_CUT"), LoadResStr("IDS_DLGTIP_CUT"), Ico_None, new CBMenuHandler<Edit>(this, &Edit::OnCtxCut));
-		pCtx->AddItem(LoadResStr("IDS_DLG_COPY"), LoadResStr("IDS_DLGTIP_COPY"), Ico_None, new CBMenuHandler<Edit>(this, &Edit::OnCtxCopy));
+		pCtx->AddItem(LoadResStr(C4ResStrTableKey::IDS_DLG_CUT), LoadResStr(C4ResStrTableKey::IDS_DLGTIP_CUT), Ico_None, new CBMenuHandler<Edit>(this, &Edit::OnCtxCut));
+		pCtx->AddItem(LoadResStr(C4ResStrTableKey::IDS_DLG_COPY), LoadResStr(C4ResStrTableKey::IDS_DLGTIP_COPY), Ico_None, new CBMenuHandler<Edit>(this, &Edit::OnCtxCopy));
 	}
 #ifdef _WIN32
 	if (IsClipboardFormatAvailable(CF_TEXT))
 #else
 	if (Application.IsClipboardFull())
 #endif
-		pCtx->AddItem(LoadResStr("IDS_DLG_PASTE"), LoadResStr("IDS_DLGTIP_PASTE"), Ico_None, new CBMenuHandler<Edit>(this, &Edit::OnCtxPaste));
+		pCtx->AddItem(LoadResStr(C4ResStrTableKey::IDS_DLG_PASTE), LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PASTE), Ico_None, new CBMenuHandler<Edit>(this, &Edit::OnCtxPaste));
 
 	if (fAnythingSelected)
-		pCtx->AddItem(LoadResStr("IDS_DLG_CLEAR"), LoadResStr("IDS_DLGTIP_CLEAR"), Ico_None, new CBMenuHandler<Edit>(this, &Edit::OnCtxClear));
+		pCtx->AddItem(LoadResStr(C4ResStrTableKey::IDS_DLG_CLEAR), LoadResStr(C4ResStrTableKey::IDS_DLGTIP_CLEAR), Ico_None, new CBMenuHandler<Edit>(this, &Edit::OnCtxClear));
 	if (*Text && (iSelBegin != 0 || iSelEnd != SLen(Text)))
-		pCtx->AddItem(LoadResStr("IDS_DLG_SELALL"), LoadResStr("IDS_DLGTIP_SELALL"), Ico_None, new CBMenuHandler<Edit>(this, &Edit::OnCtxSelAll));
+		pCtx->AddItem(LoadResStr(C4ResStrTableKey::IDS_DLG_SELALL), LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SELALL), Ico_None, new CBMenuHandler<Edit>(this, &Edit::OnCtxSelAll));
 	// return ctx menu
 	return pCtx;
 }

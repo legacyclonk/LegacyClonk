@@ -48,7 +48,7 @@ C4Network2ResDlg::ListItem::ListItem(C4Network2ResDlg *pForResDlg, const C4Netwo
 	// add components
 	AddElement(pFileIcon); AddElement(pLabel);
 	// tooltip
-	SetToolTip(LoadResStr("IDS_DESC_RESOURCE"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_RESOURCE));
 	// add to listbox (will eventually get moved)
 	pForResDlg->AddElement(this);
 	// first-time update
@@ -67,7 +67,7 @@ void C4Network2ResDlg::ListItem::Update(const C4Network2Res *pByRes)
 		else
 		{
 			pProgress = new C4GUI::Label(text.c_str(), GetBounds().Wdt - IconLabelSpacing, 0, ARight);
-			pProgress->SetToolTip(LoadResStr("IDS_NET_RESPROGRESS_DESC"));
+			pProgress->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_NET_RESPROGRESS_DESC));
 			AddElement(pProgress);
 		}
 	}
@@ -101,10 +101,10 @@ void C4Network2ResDlg::ListItem::LocalSaveResource(bool fDoOverwrite)
 	C4Network2Res::Ref pRes = GetRefRes();
 	if (!pRes) return;
 	const char *szResFile = pRes->getFile();
-	StdStrBuf strErrCopyFile(LoadResStr("IDS_NET_ERR_COPYFILE"));
+	StdStrBuf strErrCopyFile(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_COPYFILE));
 	if (!SEqual2(szResFile, Config.Network.WorkPath))
 	{
-		GetScreen()->ShowMessage(LoadResStr("IDS_NET_ERR_COPYFILE_LOCAL"), strErrCopyFile.getData(), C4GUI::Ico_Error);
+		GetScreen()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_COPYFILE_LOCAL), strErrCopyFile.getData(), C4GUI::Ico_Error);
 		return;
 	}
 	const char *szFilename = GetFilename(pRes->getCore().getFileName());
@@ -116,7 +116,7 @@ void C4Network2ResDlg::ListItem::LocalSaveResource(bool fDoOverwrite)
 	if (!fDoOverwrite && ItemExists(szTarget))
 	{
 		// show a confirmation dlg, asking whether the ressource should be overwritten
-		GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(FormatString(LoadResStr("IDS_NET_RES_SAVE_OVERWRITE"), GetFilename(szTarget)).getData(), LoadResStr("IDS_NET_RES_SAVE"),
+		GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVE_OVERWRITE), GetFilename(szTarget)).getData(), LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVE),
 			new C4GUI::CallbackHandler<C4Network2ResDlg::ListItem>(this, &C4Network2ResDlg::ListItem::OnButtonSaveConfirm), C4GUI::MessageDialog::btnYesNo));
 		return;
 	}
@@ -124,7 +124,7 @@ void C4Network2ResDlg::ListItem::LocalSaveResource(bool fDoOverwrite)
 		GetScreen()->ShowMessage(strErrCopyFile.getData(), strErrCopyFile.getData(), C4GUI::Ico_Error);
 	else
 	{
-		GetScreen()->ShowMessage(FormatString(LoadResStr("IDS_NET_RES_SAVED_DESC"), GetFilename(szTarget)).getData(), LoadResStr("IDS_NET_RES_SAVED"), C4GUI::Ico_Save);
+		GetScreen()->ShowMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVED_DESC), GetFilename(szTarget)).getData(), LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVED), C4GUI::Ico_Save);
 	}
 }
 

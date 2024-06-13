@@ -40,7 +40,7 @@ bool C4UpdateDlg::succeeded;
 
 // C4UpdateDlg
 
-C4UpdateDlg::C4UpdateDlg() : C4GUI::InfoDialog(LoadResStr("IDS_TYPE_UPDATE"), 10)
+C4UpdateDlg::C4UpdateDlg() : C4GUI::InfoDialog(LoadResStr(C4ResStrTableKey::IDS_TYPE_UPDATE), 10)
 {
 	// initial text update
 	UpdateText();
@@ -159,7 +159,7 @@ bool C4UpdateDlg::DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *p
 	// Download update group to temp path
 	strLocalFilename.Copy(Config.AtTempPath(strLocalFilename.getData()));
 	// Download update group
-	if (!C4DownloadDlg::DownloadFile(LoadResStr("IDS_TYPE_UPDATE"), pScreen, strUpdateURL.getData(), strLocalFilename.getData(), LoadResStr("IDS_MSG_UPDATENOTAVAILABLE")))
+	if (!C4DownloadDlg::DownloadFile(LoadResStr(C4ResStrTableKey::IDS_TYPE_UPDATE), pScreen, strUpdateURL.getData(), strLocalFilename.getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_UPDATENOTAVAILABLE)))
 		// Download failed (return success, because error message has already been shown)
 		return true;
 	// Apply downloaded update
@@ -190,7 +190,7 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 			}
 	UpdateGroup.Close();
 	// Execute update program
-	Log(LoadResStr("IDS_PRC_LAUNCHINGUPDATE"));
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LAUNCHINGUPDATE));
 	succeeded = true;
 #ifdef _WIN32
 	// Close editor if open
@@ -269,7 +269,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	C4GUI::Dialog *pWaitDlg = nullptr;
 	if (pScreen && C4GUI::IsGUIValid())
 	{
-		pWaitDlg = new C4GUI::MessageDialog(LoadResStr("IDS_MSG_LOOKINGFORUPDATES"), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnAbort, C4GUI::Ico_Ex_Update, C4GUI::MessageDialog::dsRegular);
+		pWaitDlg = new C4GUI::MessageDialog(LoadResStr(C4ResStrTableKey::IDS_MSG_LOOKINGFORUPDATES), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnAbort, C4GUI::Ico_Ex_Update, C4GUI::MessageDialog::dsRegular);
 		pWaitDlg->SetDelOnClose(false);
 		pScreen->ShowDialog(pWaitDlg, false);
 	}
@@ -308,7 +308,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	{
 		if (pScreen)
 		{
-			StdStrBuf sError; sError.Copy(LoadResStr("IDS_MSG_UPDATEFAILED"));
+			StdStrBuf sError; sError.Copy(LoadResStr(C4ResStrTableKey::IDS_MSG_UPDATEFAILED));
 			const char *szErrMsg = VerChecker.GetError();
 			if (szErrMsg)
 			{
@@ -328,13 +328,13 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 		if (pScreen)
 		{
 			StdStrBuf sMessage;
-			sMessage.Format(LoadResStr("IDS_NET_SERVERREDIRECTMSG"), newServer);
-			if (!pScreen->ShowMessageModal(sMessage.getData(), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
+			sMessage.Format(LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECTMSG), newServer);
+			if (!pScreen->ShowMessageModal(sMessage.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECT), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
 			{
 				// apply new server setting
 				SCopy(newServer, Config.Network.UpdateServerAddress, CFG_MaxString);
 				Config.Save();
-				pScreen->ShowMessageModal(LoadResStr("IDS_NET_SERVERREDIRECTDONE"), LoadResStr("IDS_NET_SERVERREDIRECT"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_OfficialServer);
+				pScreen->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECTDONE), LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECT), C4GUI::MessageDialog::btnOK, C4GUI::Ico_OfficialServer);
 				// abort the update check - user should try again
 				return false;
 			}
@@ -356,10 +356,10 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	if (C4UpdateDlg::IsValidUpdate(UpdateVersion))
 	{
 		// Prompt user, then apply update
-		StdStrBuf strMsg; strMsg.Format(LoadResStr("IDS_MSG_ANUPDATETOVERSIONISAVAILA"), UpdateVersion.GetString().getData());
+		StdStrBuf strMsg; strMsg.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_ANUPDATETOVERSIONISAVAILA), UpdateVersion.GetString().getData());
 		if (pScreen->ShowMessageModal(strMsg.getData(), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_Ex_Update))
 			if (!DoUpdate(UpdateVersion, pScreen))
-				pScreen->ShowMessage(LoadResStr("IDS_MSG_UPDATEFAILED"), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
+				pScreen->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_UPDATEFAILED), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
 			else
 				return true;
 	}
@@ -368,7 +368,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	{
 		// Message (if not automatic)
 		if (!fAutomatic)
-			pScreen->ShowMessage(LoadResStr("IDS_MSG_NOUPDATEAVAILABLEFORTHISV"), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
+			pScreen->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_NOUPDATEAVAILABLEFORTHISV), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);
 	}
 	// Done (and no update has been done)
 	return false;
@@ -404,7 +404,7 @@ bool C4Network2VersionInfoClient::GetVersion(C4GameVersion *piVerOut)
 	// validate version
 	if (!piVerOut->iVer[0])
 	{
-		SetError(LoadResStr("IDS_ERR_INVALIDREPLYFROMSERVER"));
+		SetError(LoadResStr(C4ResStrTableKey::IDS_ERR_INVALIDREPLYFROMSERVER));
 		return false;
 	}
 	// done; version OK!

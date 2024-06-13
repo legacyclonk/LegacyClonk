@@ -108,7 +108,7 @@ namespace
 		operator const char *() const { return getData(); }
 	};
 
-	inline ImplicitStrBuf LoadResStrUtf8I(const char *ident)
+	inline ImplicitStrBuf LoadResStrUtf8I(const C4ResStrTableKey ident)
 	{
 		return ImplicitStrBuf(Languages.IconvUtf8(LoadResStr(ident)));
 	}
@@ -259,7 +259,7 @@ INT_PTR CALLBACK ConsoleDlgProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		if (Inside((int)LOWORD(wParam), IDM_NET_CLIENT1, IDM_NET_CLIENT2))
 		{
 			if (!Game.Control.isCtrlHost()) return FALSE;
-			Game.Clients.CtrlRemove(Game.Clients.getClientByID(LOWORD(wParam) - IDM_NET_CLIENT1), LoadResStr("IDS_MSG_KICKBYMENU"));
+			Game.Clients.CtrlRemove(Game.Clients.getClientByID(LOWORD(wParam) - IDM_NET_CLIENT1), LoadResStr(C4ResStrTableKey::IDS_MSG_KICKBYMENU));
 			return TRUE;
 		}
 		return FALSE;
@@ -302,7 +302,7 @@ void C4Console::HandleMessage(XEvent &e)
 
 bool C4Console::Init(CStdApp *const app)
 {
-	return Init(app, LoadResStr("IDS_CNS_CONSOLE"));
+	return Init(app, LoadResStr(C4ResStrTableKey::IDS_CNS_CONSOLE));
 }
 
 bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &bounds, CStdWindow *const parent)
@@ -376,7 +376,7 @@ bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &
 	ClearViewportMenu();
 	return true;
 #else
-	return C4ConsoleBase::Init(app, LoadResStr("IDS_CNS_CONSOLE"), bounds);
+	return C4ConsoleBase::Init(app, LoadResStr(C4ResStrTableKey::IDS_CNS_CONSOLE), bounds);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 
@@ -463,10 +463,10 @@ GtkWidget *C4Console::InitGUI()
 
 	menuBar = gtk_menu_bar_new();
 
-	GtkWidget *itemFile       = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_FILE"));
-	GtkWidget *itemComponents = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_COMPONENTS"));
-	GtkWidget *itemPlayer     = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_PLAYER"));
-	GtkWidget *itemViewport   = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_VIEWPORT"));
+	GtkWidget *itemFile       = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_FILE));
+	GtkWidget *itemComponents = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_COMPONENTS));
+	GtkWidget *itemPlayer     = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_PLAYER));
+	GtkWidget *itemViewport   = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_VIEWPORT));
 	GtkWidget *itemHelp       = gtk_menu_item_new_with_label("?");
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuBar), itemFile);
@@ -488,58 +488,58 @@ GtkWidget *C4Console::InitGUI()
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(itemViewport),   menuViewport);
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(itemHelp),       menuHelp);
 
-	fileOpen = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_OPEN"));
+	fileOpen = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_OPEN));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), fileOpen);
 
-	fileOpenWithPlayers = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_OPENWPLRS"));
+	fileOpenWithPlayers = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_OPENWPLRS));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), fileOpenWithPlayers);
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), GTK_WIDGET(gtk_separator_menu_item_new()));
 
-	fileSave = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_SAVESCENARIO"));
+	fileSave = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_SAVESCENARIO));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), fileSave);
 
-	fileSaveAs = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_SAVESCENARIOAS"));
+	fileSaveAs = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_SAVESCENARIOAS));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), fileSaveAs);
 
-	fileSaveGame = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_SAVEGAME"));
+	fileSaveGame = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_SAVEGAME));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), fileSaveGame);
 
-	fileSaveGameAs = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_SAVEGAMEAS"));
+	fileSaveGameAs = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_SAVEGAMEAS));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), fileSaveGameAs);
 
-	fileRecord = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_RECORD"));
+	fileRecord = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_RECORD));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), fileRecord);
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), GTK_WIDGET(gtk_separator_menu_item_new()));
 
-	fileClose = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_CLOSE"));
+	fileClose = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_CLOSE));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), fileClose);
 
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), GTK_WIDGET(gtk_separator_menu_item_new()));
 
-	fileQuit = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_QUIT"));
+	fileQuit = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_QUIT));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuFile), fileQuit);
 
-	compObjects = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_BTN_OBJECTS"));
+	compObjects = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_BTN_OBJECTS));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuComponents), compObjects);
 
-	compScript = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_SCRIPT"));
+	compScript = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_SCRIPT));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuComponents), compScript);
 
-	compTitle = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_TITLE"));
+	compTitle = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_TITLE));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuComponents), compTitle);
 
-	compInfo = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_INFO"));
+	compInfo = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_INFO));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuComponents), compInfo);
 
-	plrJoin = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_JOIN"));
+	plrJoin = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_JOIN));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuPlayer), plrJoin);
 
-	viewNew = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_NEW"));
+	viewNew = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_NEW));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuViewport), viewNew);
 
-	helpAbout = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MENU_ABOUT"));
+	helpAbout = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MENU_ABOUT));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuHelp), helpAbout);
 
 	// Window
@@ -744,13 +744,13 @@ bool C4Console::SaveGame(bool fSaveGame)
 	// Network hosts only
 	if (Game.Network.isEnabled() && !Game.Network.isHost())
 	{
-		Message(LoadResStr("IDS_GAME_NOCLIENTSAVE")); return false;
+		Message(LoadResStr(C4ResStrTableKey::IDS_GAME_NOCLIENTSAVE)); return false;
 	}
 
 	// Can't save to child groups
 	if (Game.ScenarioFile.GetMother())
 	{
-		Message(FormatString(LoadResStr("IDS_CNS_NOCHILDSAVE"), GetFilename(Game.ScenarioFile.GetName())).getData());
+		Message(FormatString(LoadResStr(C4ResStrTableKey::IDS_CNS_NOCHILDSAVE), GetFilename(Game.ScenarioFile.GetName())).getData());
 		return false;
 	}
 
@@ -794,13 +794,13 @@ bool C4Console::SaveGame(bool fSaveGame)
 	if (Game.fScriptCreatedObjects)
 		if (!fSaveGame)
 		{
-			Message((std::string{LoadResStr("IDS_CNS_SCRIPTCREATEDOBJECTS")} + LoadResStr("IDS_CNS_WARNDOUBLE")).c_str());
+			Message((std::string{LoadResStr(C4ResStrTableKey::IDS_CNS_SCRIPTCREATEDOBJECTS)} + LoadResStr(C4ResStrTableKey::IDS_CNS_WARNDOUBLE)).c_str());
 			Game.fScriptCreatedObjects = false;
 		}
 
 	// Status report
-	if (!fOkay) Message(LoadResStr("IDS_CNS_SAVERROR"));
-	else Out(LoadResStr(fSaveGame ? "IDS_CNS_GAMESAVED" : "IDS_CNS_SCENARIOSAVED"));
+	if (!fOkay) Message(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVERROR));
+	else Out(LoadResStr(fSaveGame ? C4ResStrTableKey::IDS_CNS_GAMESAVED : C4ResStrTableKey::IDS_CNS_SCENARIOSAVED));
 
 	return fOkay;
 }
@@ -811,7 +811,7 @@ bool C4Console::FileSave(bool fSaveGame)
 	if (fSaveGame)
 		if (!Game.C4S.Head.SaveGame)
 		{
-			Message(LoadResStr("IDS_CNS_NOGAMEOVERSCEN"));
+			Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NOGAMEOVERSCEN));
 			return false;
 		}
 	// Save game
@@ -841,7 +841,7 @@ bool C4Console::FileSaveAs(bool fSaveGame)
 	// Failure message
 	if (!fOkay)
 	{
-		Message(FormatString(LoadResStr("IDS_CNS_SAVEASERROR"), Game.ScenarioFilename).getData());
+		Message(FormatString(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR), Game.ScenarioFilename).getData());
 		return false;
 	}
 	// Save game
@@ -1240,7 +1240,7 @@ bool C4Console::UpdateViewportMenu()
 	for (C4Player *pPlr = Game.Players.First; pPlr; pPlr = pPlr->Next)
 	{
 		StdStrBuf sText;
-		sText.Format(LoadResStr("IDS_CNS_NEWPLRVIEWPORT"), pPlr->GetName());
+		sText.Format(LoadResStr(C4ResStrTableKey::IDS_CNS_NEWPLRVIEWPORT), pPlr->GetName());
 #ifdef _WIN32
 		AddMenuItem(hMenu, IDM_VIEWPORT_NEW1 + pPlr->Number, sText.getData());
 #elif WITH_DEVELOPER_MODE
@@ -1415,9 +1415,9 @@ bool C4Console::UpdatePlayerMenu()
 	{
 		StdStrBuf sText;
 		if (Game.Network.isEnabled())
-			sText.Format(LoadResStr("IDS_CNS_PLRQUITNET"), pPlr->GetName(), pPlr->AtClientName);
+			sText.Format(LoadResStr(C4ResStrTableKey::IDS_CNS_PLRQUITNET), pPlr->GetName(), pPlr->AtClientName);
 		else
-			sText.Format(LoadResStr("IDS_CNS_PLRQUIT"), pPlr->GetName());
+			sText.Format(LoadResStr(C4ResStrTableKey::IDS_CNS_PLRQUIT), pPlr->GetName());
 #ifdef _WIN32
 		AddMenuItem(hMenu, IDM_PLAYER_QUIT1 + pPlr->Number, sText.getData(), (!Game.Network.isEnabled() || Game.Network.isHost()) && Editing);
 #elif WITH_DEVELOPER_MODE
@@ -1503,34 +1503,34 @@ void C4Console::UpdateMenuText(HMENU hMenu)
 	HMENU hSubMenu;
 	if (!Active) return;
 	// File
-	ModifyMenu(hMenu, MenuIndexFile, MF_BYPOSITION | MF_STRING, 0, LoadResStr("IDS_MNU_FILE"));
+	ModifyMenu(hMenu, MenuIndexFile, MF_BYPOSITION | MF_STRING, 0, LoadResStr(C4ResStrTableKey::IDS_MNU_FILE));
 	hSubMenu = GetSubMenu(hMenu, MenuIndexFile);
-	SetMenuItemText(hSubMenu, IDM_FILE_OPEN,       LoadResStr("IDS_MNU_OPEN"));
-	SetMenuItemText(hSubMenu, IDM_FILE_OPENWPLRS,  LoadResStr("IDS_MNU_OPENWPLRS"));
-	SetMenuItemText(hSubMenu, IDM_FILE_RECORD,     LoadResStr("IDS_MNU_RECORD"));
-	SetMenuItemText(hSubMenu, IDM_FILE_SAVE,       LoadResStr("IDS_MNU_SAVESCENARIO"));
-	SetMenuItemText(hSubMenu, IDM_FILE_SAVEAS,     LoadResStr("IDS_MNU_SAVESCENARIOAS"));
-	SetMenuItemText(hSubMenu, IDM_FILE_SAVEGAME,   LoadResStr("IDS_MNU_SAVEGAME"));
-	SetMenuItemText(hSubMenu, IDM_FILE_SAVEGAMEAS, LoadResStr("IDS_MNU_SAVEGAMEAS"));
-	SetMenuItemText(hSubMenu, IDM_FILE_CLOSE,      LoadResStr("IDS_MNU_CLOSE"));
-	SetMenuItemText(hSubMenu, IDM_FILE_QUIT,       LoadResStr("IDS_MNU_QUIT"));
+	SetMenuItemText(hSubMenu, IDM_FILE_OPEN,       LoadResStr(C4ResStrTableKey::IDS_MNU_OPEN));
+	SetMenuItemText(hSubMenu, IDM_FILE_OPENWPLRS,  LoadResStr(C4ResStrTableKey::IDS_MNU_OPENWPLRS));
+	SetMenuItemText(hSubMenu, IDM_FILE_RECORD,     LoadResStr(C4ResStrTableKey::IDS_MNU_RECORD));
+	SetMenuItemText(hSubMenu, IDM_FILE_SAVE,       LoadResStr(C4ResStrTableKey::IDS_MNU_SAVESCENARIO));
+	SetMenuItemText(hSubMenu, IDM_FILE_SAVEAS,     LoadResStr(C4ResStrTableKey::IDS_MNU_SAVESCENARIOAS));
+	SetMenuItemText(hSubMenu, IDM_FILE_SAVEGAME,   LoadResStr(C4ResStrTableKey::IDS_MNU_SAVEGAME));
+	SetMenuItemText(hSubMenu, IDM_FILE_SAVEGAMEAS, LoadResStr(C4ResStrTableKey::IDS_MNU_SAVEGAMEAS));
+	SetMenuItemText(hSubMenu, IDM_FILE_CLOSE,      LoadResStr(C4ResStrTableKey::IDS_MNU_CLOSE));
+	SetMenuItemText(hSubMenu, IDM_FILE_QUIT,       LoadResStr(C4ResStrTableKey::IDS_MNU_QUIT));
 	// Components
-	ModifyMenu(hMenu, MenuIndexComponents, MF_BYPOSITION | MF_STRING, 0, LoadResStr("IDS_MNU_COMPONENTS"));
+	ModifyMenu(hMenu, MenuIndexComponents, MF_BYPOSITION | MF_STRING, 0, LoadResStr(C4ResStrTableKey::IDS_MNU_COMPONENTS));
 	hSubMenu = GetSubMenu(hMenu, MenuIndexComponents);
-	SetMenuItemText(hSubMenu, IDM_COMPONENTS_SCRIPT, LoadResStr("IDS_MNU_SCRIPT"));
-	SetMenuItemText(hSubMenu, IDM_COMPONENTS_TITLE,  LoadResStr("IDS_MNU_TITLE"));
-	SetMenuItemText(hSubMenu, IDM_COMPONENTS_INFO,   LoadResStr("IDS_MNU_INFO"));
+	SetMenuItemText(hSubMenu, IDM_COMPONENTS_SCRIPT, LoadResStr(C4ResStrTableKey::IDS_MNU_SCRIPT));
+	SetMenuItemText(hSubMenu, IDM_COMPONENTS_TITLE,  LoadResStr(C4ResStrTableKey::IDS_MNU_TITLE));
+	SetMenuItemText(hSubMenu, IDM_COMPONENTS_INFO,   LoadResStr(C4ResStrTableKey::IDS_MNU_INFO));
 	// Player
-	ModifyMenu(hMenu, MenuIndexPlayer, MF_BYPOSITION | MF_STRING, 0, LoadResStr("IDS_MNU_PLAYER"));
+	ModifyMenu(hMenu, MenuIndexPlayer, MF_BYPOSITION | MF_STRING, 0, LoadResStr(C4ResStrTableKey::IDS_MNU_PLAYER));
 	hSubMenu = GetSubMenu(hMenu, MenuIndexPlayer);
-	SetMenuItemText(hSubMenu, IDM_PLAYER_JOIN, LoadResStr("IDS_MNU_JOIN"));
+	SetMenuItemText(hSubMenu, IDM_PLAYER_JOIN, LoadResStr(C4ResStrTableKey::IDS_MNU_JOIN));
 	// Viewport
-	ModifyMenu(hMenu, MenuIndexViewport, MF_BYPOSITION | MF_STRING, 0, LoadResStr("IDS_MNU_VIEWPORT"));
+	ModifyMenu(hMenu, MenuIndexViewport, MF_BYPOSITION | MF_STRING, 0, LoadResStr(C4ResStrTableKey::IDS_MNU_VIEWPORT));
 	hSubMenu = GetSubMenu(hMenu, MenuIndexViewport);
-	SetMenuItemText(hSubMenu, IDM_VIEWPORT_NEW, LoadResStr("IDS_MNU_NEW"));
+	SetMenuItemText(hSubMenu, IDM_VIEWPORT_NEW, LoadResStr(C4ResStrTableKey::IDS_MNU_NEW));
 	// Help
 	hSubMenu = GetSubMenu(hMenu, MenuIndexHelp);
-	SetMenuItemText(hSubMenu, IDM_HELP_ABOUT, LoadResStr("IDS_MENU_ABOUT"));
+	SetMenuItemText(hSubMenu, IDM_HELP_ABOUT, LoadResStr(C4ResStrTableKey::IDS_MENU_ABOUT));
 }
 #endif // _WIN32
 
@@ -1543,9 +1543,9 @@ void C4Console::UpdateNetMenu()
 	ClearNetMenu();
 	// Insert menu
 #ifdef _WIN32
-	if (!InsertMenu(GetMenu(hWindow), MenuIndexHelp, MF_BYPOSITION | MF_POPUP, reinterpret_cast<UINT_PTR>(CreateMenu()), LoadResStr("IDS_MNU_NET"))) return;
+	if (!InsertMenu(GetMenu(hWindow), MenuIndexHelp, MF_BYPOSITION | MF_POPUP, reinterpret_cast<UINT_PTR>(CreateMenu()), LoadResStr(C4ResStrTableKey::IDS_MNU_NET))) return;
 #elif WITH_DEVELOPER_MODE
-	itemNet = gtk_menu_item_new_with_label(LoadResStrUtf8I("IDS_MNU_NET"));
+	itemNet = gtk_menu_item_new_with_label(LoadResStrUtf8I(C4ResStrTableKey::IDS_MNU_NET));
 	GtkWidget *menuNet = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(itemNet), menuNet);
 	gtk_menu_shell_insert(GTK_MENU_SHELL(menuBar), itemNet, MenuIndexHelp);
@@ -1560,7 +1560,7 @@ void C4Console::UpdateNetMenu()
 #endif
 
 	// Host
-	const auto &text = FormatString(LoadResStr("IDS_MNU_NETHOST"), Game.Clients.getLocalName(), Game.Clients.getLocalID());
+	const auto &text = FormatString(LoadResStr(C4ResStrTableKey::IDS_MNU_NETHOST), Game.Clients.getLocalName(), Game.Clients.getLocalID());
 #ifdef _WIN32
 	AddMenuItem(hMenu, IDM_NET_CLIENT1 + Game.Clients.getLocalID(), text.getData());
 #elif WITH_DEVELOPER_MODE
@@ -1571,7 +1571,7 @@ void C4Console::UpdateNetMenu()
 	// Clients
 	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(nullptr); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
 	{
-		const auto &text = FormatString(LoadResStr(pClient->isActivated() ? "IDS_MNU_NETCLIENT" : "IDS_MNU_NETCLIENTDE"),
+		const auto &text = FormatString(LoadResStr(pClient->isActivated() ? C4ResStrTableKey::IDS_MNU_NETCLIENT : C4ResStrTableKey::IDS_MNU_NETCLIENTDE),
 			pClient->getName(), pClient->getID());
 #ifdef _WIN32
 		AddMenuItem(hMenu, IDM_NET_CLIENT1 + pClient->getID(), text.getData());
@@ -1673,7 +1673,7 @@ bool C4Console::CloseGame()
 	Game.GameOverDlgShown = false;
 	fGameOpen = false;
 	EnableControls(fGameOpen);
-	SetCaption(LoadResStr("IDS_CNS_CONSOLE"));
+	SetCaption(LoadResStr(C4ResStrTableKey::IDS_CNS_CONSOLE));
 	return true;
 }
 
@@ -1818,7 +1818,7 @@ void C4Console::OnHelpAbout(GtkWidget *item, gpointer data)
 void C4Console::OnNetClient(GtkWidget *item, gpointer data)
 {
 	if (!Game.Control.isCtrlHost()) return;
-	Game.Clients.CtrlRemove(Game.Clients.getClientByID(GPOINTER_TO_INT(data)), LoadResStr("IDS_MSG_KICKBYMENU"));
+	Game.Clients.CtrlRemove(Game.Clients.getClientByID(GPOINTER_TO_INT(data)), LoadResStr(C4ResStrTableKey::IDS_MSG_KICKBYMENU));
 }
 
 #endif // WITH_DEVELOPER_MODE

@@ -70,7 +70,7 @@ bool C4GameControl::InitReplay(C4Group &rGroup)
 	pPlayback = new C4Playback();
 	if (!pPlayback->Open(rGroup))
 	{
-		LogFatal(LoadResStr("IDS_ERR_REPLAYREAD"));
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_REPLAYREAD));
 		delete pPlayback; pPlayback = nullptr;
 		return false;
 	}

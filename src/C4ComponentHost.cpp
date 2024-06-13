@@ -277,8 +277,8 @@ INT_PTR CALLBACK C4ComponentHost::ComponentDlgProc(const HWND hDlg, const UINT m
 
 		SetWindowLongPtr(hDlg, DWLP_USER, lParam);
 		SetWindowText(hDlg, componentHost.Name);
-		SetDlgItemText(hDlg, IDOK, LoadResStr("IDS_BTN_OK"));
-		SetDlgItemText(hDlg, IDCANCEL, LoadResStr("IDS_BTN_CANCEL"));
+		SetDlgItemText(hDlg, IDOK, LoadResStr(C4ResStrTableKey::IDS_BTN_OK));
+		SetDlgItemText(hDlg, IDCANCEL, LoadResStr(C4ResStrTableKey::IDS_BTN_CANCEL));
 
 		if (const char *const data{componentHost.GetData()}; data)
 		{

@@ -2144,14 +2144,14 @@ bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj)
 	if (!(ndef = C4Id2Def(id)))
 	{
 		GetC4IdText(id, idostr);
-		if (pByObj) GameMsgObject(FormatString(LoadResStr("IDS_OBJ_UNDEF"), idostr).getData(), pByObj, FRed);
+		if (pByObj) GameMsgObject(FormatString(LoadResStr(C4ResStrTableKey::IDS_OBJ_UNDEF), idostr).getData(), pByObj, FRed);
 		return false;
 	}
 
 	// Constructable?
 	if (!ndef->Constructable)
 	{
-		if (pByObj) GameMsgObject(FormatString(LoadResStr("IDS_OBJ_NOCON"), ndef->GetName()).getData(), pByObj, FRed);
+		if (pByObj) GameMsgObject(FormatString(LoadResStr(C4ResStrTableKey::IDS_OBJ_NOCON), ndef->GetName()).getData(), pByObj, FRed);
 		return false;
 	}
 
@@ -2161,12 +2161,12 @@ bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj)
 	rtx = iX - wdt / 2; rty = iY - hgt;
 	if (Game.Landscape.AreaSolidCount(rtx, rty, wdt, hgt) > (wdt * hgt / 20))
 	{
-		if (pByObj) GameMsgObject(LoadResStr("IDS_OBJ_NOROOM"), pByObj, FRed);
+		if (pByObj) GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_NOROOM), pByObj, FRed);
 		return false;
 	}
 	if (Game.Landscape.AreaSolidCount(rtx, rty + hgt, wdt, 5) < (wdt * 2))
 	{
-		if (pByObj) GameMsgObject(LoadResStr("IDS_OBJ_NOLEVEL"), pByObj, FRed);
+		if (pByObj) GameMsgObject(LoadResStr(C4ResStrTableKey::IDS_OBJ_NOLEVEL), pByObj, FRed);
 		return false;
 	}
 
@@ -2174,7 +2174,7 @@ bool ConstructionCheck(C4ID id, int32_t iX, int32_t iY, C4Object *pByObj)
 	C4Object *other;
 	if (other = Game.OverlapObject(rtx, rty, wdt, hgt, ndef->Category))
 	{
-		if (pByObj) GameMsgObject(FormatString(LoadResStr("IDS_OBJ_NOOTHER"), other->GetName()).getData(), pByObj, FRed);
+		if (pByObj) GameMsgObject(FormatString(LoadResStr(C4ResStrTableKey::IDS_OBJ_NOOTHER), other->GetName()).getData(), pByObj, FRed);
 		return false;
 	}
 

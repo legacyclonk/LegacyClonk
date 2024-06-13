@@ -248,6 +248,7 @@ src/C4Region.cpp
 src/C4Region.h
 src/C4ResStrTable.cpp
 src/C4ResStrTable.h
+src/C4ResStrTable.txt
 src/C4RoundResults.cpp
 src/C4RoundResults.h
 src/C4Scenario.cpp

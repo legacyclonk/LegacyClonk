@@ -70,7 +70,7 @@ void C4MapFolderData::AccessGfx::CompileFunc(StdCompiler *pComp)
 C4MapFolderData::MapPic::MapPic(const C4GUI::FLOAT_RECT &rcfBounds, const C4Facet &rfct) : C4GUI::Picture(C4Rect(rcfBounds), false), rcfBounds(rcfBounds)
 {
 	SetFacet(rfct);
-	SetToolTip(LoadResStr("IDS_MSG_MAP_DESC"));
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MSG_MAP_DESC));
 }
 
 void C4MapFolderData::MapPic::MouseInput(C4GUI::CMouse &rMouse, int32_t iButton, int32_t iX, int32_t iY, uint32_t dwKeyParam)
@@ -360,7 +360,7 @@ void C4MapFolderData::CreateGUIElements(C4StartupScenSelDlg *pMainDlg, C4GUI::Wi
 				(pScen->fctBase, pScen->fctOverlay, pScen->rcfOverlayPos, 0, pMainDlg, &C4StartupScenSelDlg::OnButtonScenario);
 			ppScenList[i]->pBtn = pBtn;
 			if (pScen->pScenEntry)
-				pBtn->SetToolTip(FormatString(LoadResStr("IDS_MSG_MAP_STARTSCEN"), pScen->pScenEntry->GetName().getData()).getData());
+				pBtn->SetToolTip(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_MAP_STARTSCEN), pScen->pScenEntry->GetName().getData()).getData());
 			if (pScen->sTitle.getLength() > 0)
 			{
 				pBtn->SetText(pScen->sTitle.getData());
@@ -610,21 +610,21 @@ bool C4ScenarioListLoader::Entry::RenameTo(const char *szNewName)
 	SCopy(sFilename.getData(), fullfn, _MAX_PATH);
 	char *fullfn_fn = GetFilename(fullfn);
 	SCopy(fn, fullfn_fn, _MAX_PATH - (fullfn_fn - fullfn));
-	StdStrBuf strErr(LoadResStr("IDS_FAIL_RENAME"));
+	StdStrBuf strErr(LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME));
 	// check if a rename is due
 	if (!ItemIdentical(sFilename.getData(), fullfn))
 	{
 		// check for duplicate filename
 		if (ItemExists(fullfn))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_FILEEXISTS"), fullfn);
+			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_FILEEXISTS), fullfn);
 			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		// OK; then rename
 		if (!C4Group_MoveItem(sFilename.getData(), fullfn, true))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_RENAMEFILE"), sFilename.getData(), fullfn);
+			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_RENAMEFILE), sFilename.getData(), fullfn);
 			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
@@ -636,20 +636,20 @@ bool C4ScenarioListLoader::Entry::RenameTo(const char *szNewName)
 		C4Group Grp;
 		if (!Grp.Open(fullfn))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_OPENFILE"), sFilename.getData(), Grp.GetError());
+			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_OPENFILE), sFilename.getData(), Grp.GetError());
 			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		if (!Grp.Delete(C4CFN_Title))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_DELOLDTITLE"), sFilename.getData(), Grp.GetError());
+			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_DELOLDTITLE), sFilename.getData(), Grp.GetError());
 			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		if (!SetTitleInGroup(Grp, szNewName)) return false;
 		if (!Grp.Close())
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_WRITENEWTITLE"), sFilename.getData(), Grp.GetError());
+			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_WRITENEWTITLE), sFilename.getData(), Grp.GetError());
 			Game.pGUI->ShowMessageModal(sMsg.getData(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
@@ -676,8 +676,8 @@ bool C4ScenarioListLoader::Entry::SetTitleInGroup(C4Group &rGrp, const char *szN
 	StdStrBuf sTitle; sTitle.Format("%.2s:%s", Config.General.Language, szNewTitle);
 	if (!rGrp.Add(C4CFN_WriteTitle, sTitle, false, true))
 	{
-		StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_ERRORADDINGNEWTITLEFORFIL"), sFilename.getData(), rGrp.GetError());
-		Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr("IDS_FAIL_RENAME"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+		StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_ERRORADDINGNEWTITLEFORFIL), sFilename.getData(), rGrp.GetError());
+		Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 		return false;
 	}
 	return true;
@@ -734,7 +734,7 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 	// check mission access
 	if (C4S.Head.MissionAccess[0] && !SIsModule(Config.General.MissionAccess, C4S.Head.MissionAccess))
 	{
-		sErrOut.Copy(LoadResStr("IDS_PRC_NOMISSIONACCESS"));
+		sErrOut.Copy(LoadResStr(C4ResStrTableKey::IDS_PRC_NOMISSIONACCESS));
 		return false;
 	}
 	// replay
@@ -743,7 +743,7 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 		// replays can currently not be launched in network mode
 		if (pDlg->IsNetworkStart())
 		{
-			sErrOut.Copy(LoadResStr("IDS_PRC_NONETREPLAY"));
+			sErrOut.Copy(LoadResStr(C4ResStrTableKey::IDS_PRC_NONETREPLAY));
 			return false;
 		}
 	}
@@ -767,19 +767,19 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 			{
 				// network game: Players may yet join in lobby
 				// only issue a warning for too few players (by setting the error but not returning false here)
-				sErrOut.Format(LoadResStr("IDS_MSG_TOOFEWPLAYERSNET"), static_cast<int>(iMinPlrCount));
+				sErrOut.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOFEWPLAYERSNET), static_cast<int>(iMinPlrCount));
 			}
 			else
 			{
 				// for regular games, this is a fatal no-start-cause
-				sErrOut.Format(LoadResStr("IDS_MSG_TOOFEWPLAYERS"), static_cast<int>(iMinPlrCount));
+				sErrOut.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOFEWPLAYERS), static_cast<int>(iMinPlrCount));
 				return false;
 			}
 		}
 		// scenarios (both normal and savegame) may also impose a maximum player restriction
 		if (iPlrCount > iMaxPlrCount)
 		{
-			sErrOut.Format(LoadResStr("IDS_MSG_TOOMANYPLAYERS"), static_cast<int>(C4S.Head.MaxPlayer));
+			sErrOut.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOMANYPLAYERS), static_cast<int>(C4S.Head.MaxPlayer));
 			return false;
 		}
 	}
@@ -789,12 +789,12 @@ bool C4ScenarioListLoader::Scenario::CanOpen(StdStrBuf &sErrOut)
 
 StdStrBuf C4ScenarioListLoader::Scenario::GetOpenText()
 {
-	return StdStrBuf(LoadResStr("IDS_BTN_STARTGAME"));
+	return StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_BTN_STARTGAME));
 }
 
 StdStrBuf C4ScenarioListLoader::Scenario::GetOpenTooltip()
 {
-	return StdStrBuf(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
+	return StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SCENSELNEXT));
 }
 
 // Folder
@@ -921,12 +921,12 @@ C4ScenarioListLoader::Entry *C4ScenarioListLoader::Folder::FindEntryByName(const
 
 StdStrBuf C4ScenarioListLoader::Folder::GetOpenText()
 {
-	return StdStrBuf(LoadResStr("IDS_BTN_OPEN"));
+	return StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_BTN_OPEN));
 }
 
 StdStrBuf C4ScenarioListLoader::Folder::GetOpenTooltip()
 {
-	return StdStrBuf(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
+	return StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SCENSELNEXT));
 }
 
 bool C4ScenarioListLoader::Folder::LoadCustomPre(C4Group &rGrp)
@@ -1290,7 +1290,7 @@ C4GUI::RenameResult C4StartupScenSelDlg::ScenListItem::DoRenaming(RenameParams p
 
 // C4StartupScenSelDlg
 
-C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResStrNoAmp(fNetwork ? "IDS_DLG_NETSTART" : "IDS_DLG_STARTGAME")), pScenLoader(nullptr), fIsInitialLoading(false), fStartNetworkGame(fNetwork), pMapData(nullptr), pRenameEdit(nullptr), pfctBackground(nullptr), btnAllowUserChange{nullptr}
+C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResStrNoAmp(fNetwork ? C4ResStrTableKey::IDS_DLG_NETSTART : C4ResStrTableKey::IDS_DLG_STARTGAME).c_str()), pScenLoader(nullptr), fIsInitialLoading(false), fStartNetworkGame(fNetwork), pMapData(nullptr), pRenameEdit(nullptr), pfctBackground(nullptr), btnAllowUserChange{nullptr}
 {
 	// assign singleton
 	pInstance = this;
@@ -1327,24 +1327,24 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 	CStdFont &rScenSelCaptionFont = C4Startup::Get()->Graphics.BookFontTitle;
 	pScenSelCaption = new C4GUI::Label("", caBookLeft.GetFromTop(rScenSelCaptionFont.GetLineHeight()), ACenter, ClrScenarioItem, &rScenSelCaptionFont, false);
 	pSheetBook->AddElement(pScenSelCaption);
-	pScenSelCaption->SetToolTip(LoadResStr("IDS_DLGTIP_SELECTSCENARIO"));
+	pScenSelCaption->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SELECTSCENARIO));
 
 	// search bar
-	const char *labelText = LoadResStr("IDS_DLG_SEARCH");
+	const char *labelText = LoadResStr(C4ResStrTableKey::IDS_DLG_SEARCH);
 	int32_t width = 100, height;
 	C4GUI::GetRes()->TextFont.GetTextExtent(labelText, width, height, true);
 	C4GUI::ComponentAligner caSearchBar(caBookLeft.GetFromBottom(height), 0, 0);
 	auto *searchLabel = new C4GUI::WoodenLabel(labelText, caSearchBar.GetFromLeft(width + 10), C4GUI_Caption2FontClr, &C4GUI::GetRes()->TextFont);
-	searchLabel->SetToolTip(LoadResStr("IDS_DLGTIP_SEARCHLIST"));
+	searchLabel->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SEARCHLIST));
 	pSheetBook->AddElement(searchLabel);
 
 	searchBar = new C4GUI::CallbackEdit<C4StartupScenSelDlg>(caSearchBar.GetAll(), this, &C4StartupScenSelDlg::OnSearchBarEnter);
-	searchBar->SetToolTip(LoadResStr("IDS_DLGTIP_SEARCHLIST"));
+	searchBar->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SEARCHLIST));
 	pSheetBook->AddElement(searchBar);
 
 	// scenario selection list box
 	pScenSelList = new C4GUI::ListBox(caBookLeft.GetAll());
-	pScenSelList->SetToolTip(LoadResStr("IDS_DLGTIP_SELECTSCENARIO"));
+	pScenSelList->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SELECTSCENARIO));
 	pScenSelList->SetDecoration(false, &C4Startup::Get()->Graphics.sfctBookScroll, true);
 	pSheetBook->AddElement(pScenSelList);
 	pScenSelList->SetSelectionChangeCallbackFn(new C4GUI::CallbackHandler<C4StartupScenSelDlg>(this, &C4StartupScenSelDlg::OnSelChange));
@@ -1361,15 +1361,15 @@ C4StartupScenSelDlg::C4StartupScenSelDlg(bool fNetwork) : C4StartupDlg(LoadResSt
 
 	// back button
 	C4GUI::CallbackButton<C4StartupScenSelDlg> *btn;
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupScenSelDlg>(LoadResStr("IDS_BTN_BACK"), caButtonArea.GetFromLeft(iButtonWidth, iButtonHeight), &C4StartupScenSelDlg::OnBackBtn));
-	btn->SetToolTip(LoadResStr("IDS_DLGTIP_BACKMAIN"));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupScenSelDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_BACK), caButtonArea.GetFromLeft(iButtonWidth, iButtonHeight), &C4StartupScenSelDlg::OnBackBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_BACKMAIN));
 	AddElement(btn);
 	// next button
-	pOpenBtn = new C4GUI::CallbackButton<C4StartupScenSelDlg>(LoadResStr("IDS_BTN_OPEN"), caButtonArea.GetFromRight(iButtonWidth, iButtonHeight), &C4StartupScenSelDlg::OnNextBtn);
-	pOpenBtn->SetToolTip(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
+	pOpenBtn = new C4GUI::CallbackButton<C4StartupScenSelDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_OPEN), caButtonArea.GetFromRight(iButtonWidth, iButtonHeight), &C4StartupScenSelDlg::OnNextBtn);
+	pOpenBtn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SCENSELNEXT));
 
 	// allow user change button
-	AddElement(btnAllowUserChange = new C4GUI::CheckBox(caButtonArea.GetFromRight(iButtonWidth, iButtonHeight), LoadResStr("IDS_DLG_ALLOWUSERCHANGE"), false));
+	AddElement(btnAllowUserChange = new C4GUI::CheckBox(caButtonArea.GetFromRight(iButtonWidth, iButtonHeight), LoadResStr(C4ResStrTableKey::IDS_DLG_ALLOWUSERCHANGE), false));
 
 	// game options boxes
 	pGameOptionButtons = new C4GameOptionButtons(caButtonArea.GetAll(), fNetwork, true, false);
@@ -1421,7 +1421,7 @@ void C4StartupScenSelDlg::HideTitle(bool hide)
 		return;
 	}
 
-	FullscreenDialog::SetTitle(hide ? "" : LoadResStrNoAmp(fStartNetworkGame ? "IDS_DLG_NETSTART" : "IDS_DLG_STARTGAME"));
+	FullscreenDialog::SetTitle(hide ? "" : LoadResStrNoAmp(fStartNetworkGame ? C4ResStrTableKey::IDS_DLG_NETSTART : C4ResStrTableKey::IDS_DLG_STARTGAME).c_str());
 }
 
 void C4StartupScenSelDlg::OnShown()
@@ -1487,7 +1487,7 @@ void C4StartupScenSelDlg::UpdateList()
 	if (pScenLoader->IsLoading())
 	{
 		StdStrBuf sProgressText;
-		sProgressText.Format(LoadResStr("IDS_MSG_SCENARIODESC_LOADING"), static_cast<int32_t>(pScenLoader->GetProgressPercent()));
+		sProgressText.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_SCENARIODESC_LOADING), static_cast<int32_t>(pScenLoader->GetProgressPercent()));
 		pScenSelProgressLabel->SetText(sProgressText.getData());
 		pScenSelProgressLabel->SetVisibility(true);
 		return;
@@ -1528,7 +1528,7 @@ void C4StartupScenSelDlg::UpdateList()
 		else
 		{
 			// special root title
-			pScenSelCaption->SetText(LoadResStr("IDS_DLG_SCENARIOS"));
+			pScenSelCaption->SetText(LoadResStr(C4ResStrTableKey::IDS_DLG_SCENARIOS));
 		}
 		// new list has been loaded: Select first entry if nothing else had been selected
 		if (!pOldSelection) pScenSelList->SelectFirstEntry(false);
@@ -1606,9 +1606,9 @@ void C4StartupScenSelDlg::UpdateSelection()
 	pSelectionInfo->SetPicture(fctTitle);
 	if (!!sTitle && (!sDesc || !*sDesc.getData())) pSelectionInfo->AddTextLine(sTitle.getData(), &C4Startup::Get()->Graphics.BookFontCapt, ClrScenarioItem, false, false);
 	if (!!sDesc) pSelectionInfo->AddTextLine(sDesc.getData(), &C4Startup::Get()->Graphics.BookFont, ClrScenarioItem, false, false, &C4Startup::Get()->Graphics.BookFontCapt);
-	if (!!sAuthor) pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_CTL_AUTHOR"), sAuthor.getData()).getData(),
+	if (!!sAuthor) pSelectionInfo->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_CTL_AUTHOR), sAuthor.getData()).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrScenarioItemXtra, false, false);
-	if (!!sVersion) pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_DLG_VERSION"), sVersion.getData()).getData(),
+	if (!!sVersion) pSelectionInfo->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_DLG_VERSION), sVersion.getData()).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrScenarioItemXtra, false, false);
 	pSelectionInfo->UpdateHeight();
 	// usecrew-button
@@ -1685,13 +1685,13 @@ bool C4StartupScenSelDlg::DoOK()
 	StdStrBuf sError;
 	if (!pSel->CanOpen(sError))
 	{
-		GetScreen()->ShowMessage(sError.getData(), LoadResStr("IDS_MSG_CANNOTSTARTSCENARIO"), C4GUI::Ico_Error);
+		GetScreen()->ShowMessage(sError.getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_CANNOTSTARTSCENARIO), C4GUI::Ico_Error);
 		return false;
 	}
 	// if CanOpen returned true but set an error message, that means it's a warning. Display it!
 	if (sError.getLength())
 	{
-		if (!GetScreen()->ShowMessageModal(sError.getData(), LoadResStrNoAmp("IDS_DLG_STARTGAME"), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Notify, &Config.Startup.HideMsgStartDedicated))
+		if (!GetScreen()->ShowMessageModal(sError.getData(), LoadResStrNoAmp(C4ResStrTableKey::IDS_DLG_STARTGAME).c_str(), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Notify, &Config.Startup.HideMsgStartDedicated))
 			// user chose to not start it
 			return false;
 	}
@@ -1734,8 +1734,8 @@ void C4StartupScenSelDlg::DoRefresh()
 
 void C4StartupScenSelDlg::SetOpenButtonDefaultText()
 {
-	pOpenBtn->SetText(LoadResStr("IDS_BTN_OPEN"));
-	pOpenBtn->SetToolTip(LoadResStr("IDS_DLGTIP_SCENSELNEXT"));
+	pOpenBtn->SetText(LoadResStr(C4ResStrTableKey::IDS_BTN_OPEN));
+	pOpenBtn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SCENSELNEXT));
 }
 
 bool C4StartupScenSelDlg::KeyRename()
@@ -1771,8 +1771,8 @@ bool C4StartupScenSelDlg::KeyDelete()
 		}
 		Grp.Close();
 	}
-	sWarning.Format(LoadResStr(fOriginal ? "IDS_MSG_DELETEORIGINAL" : "IDS_MSG_PROMPTDELETE"), FormatString("%s %s", pEnt->GetTypeName().getData(), pEnt->GetName().getData()).getData());
-	GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(sWarning.getData(), LoadResStr("IDS_MNU_DELETE"),
+	sWarning.Format(LoadResStr(fOriginal ? C4ResStrTableKey::IDS_MSG_DELETEORIGINAL : C4ResStrTableKey::IDS_MSG_PROMPTDELETE), FormatString("%s %s", pEnt->GetTypeName().getData(), pEnt->GetName().getData()).getData());
+	GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(sWarning.getData(), LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE),
 		new C4GUI::CallbackHandlerExPar<C4StartupScenSelDlg, ScenListItem *>(this, &C4StartupScenSelDlg::DeleteConfirm, pSel), C4GUI::MessageDialog::btnYesNo));
 	return true;
 }
@@ -1783,8 +1783,8 @@ void C4StartupScenSelDlg::DeleteConfirm(ScenListItem *pSel)
 	C4ScenarioListLoader::Entry *pEnt = pSel->GetEntry();
 	if (!C4Group_DeleteItem(pEnt->GetEntryFilename().getData(), true))
 	{
-		StdStrBuf sMsg; sMsg.Format("%s", LoadResStr("IDS_FAIL_DELETE"));
-		Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr("IDS_MNU_DELETE"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+		StdStrBuf sMsg; sMsg.Format("%s", LoadResStr(C4ResStrTableKey::IDS_FAIL_DELETE));
+		Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 		return;
 	}
 	// remove from scenario list
@@ -1795,7 +1795,7 @@ void C4StartupScenSelDlg::DeleteConfirm(ScenListItem *pSel)
 
 bool C4StartupScenSelDlg::KeyCheat()
 {
-	return Game.pGUI->ShowRemoveDlg(new C4GUI::InputDialog(LoadResStr("IDS_TEXT_ENTERMISSIONPASSWORD"), LoadResStr("IDS_DLG_MISSIONACCESS"), C4GUI::Ico_Options,
+	return Game.pGUI->ShowRemoveDlg(new C4GUI::InputDialog(LoadResStr(C4ResStrTableKey::IDS_TEXT_ENTERMISSIONPASSWORD), LoadResStr(C4ResStrTableKey::IDS_DLG_MISSIONACCESS), C4GUI::Ico_Options,
 		new C4GUI::InputCallback<C4StartupScenSelDlg>(this, &C4StartupScenSelDlg::KeyCheat2),
 		false));
 }

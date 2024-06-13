@@ -543,7 +543,7 @@ void C4MouseControl::UpdateCursorTarget()
 		TimeOnTargetObject++;
 		if (TimeOnTargetObject >= C4MC_Time_on_Target)
 		{
-			const char *idCaption = nullptr;
+			C4ResStrTableKey idCaption{C4ResStrTableKey::NumberOfEntries};
 			const char *szName = "";
 			bool fDouble = false;
 			C4Def *pDef;
@@ -551,31 +551,31 @@ void C4MouseControl::UpdateCursorTarget()
 			// Target caption by cursor
 			switch (Cursor)
 			{
-			case C4MC_Cursor_Select:                               idCaption = "IDS_CON_SELECT";                  break;
-			case C4MC_Cursor_JumpLeft: case C4MC_Cursor_JumpRight: idCaption = "IDS_CON_JUMP";                    break;
-			case C4MC_Cursor_Grab:                                 idCaption = "IDS_CON_GRAB";    fDouble = true; break;
-			case C4MC_Cursor_Ungrab:                               idCaption = "IDS_CON_UNGRAB";  fDouble = true; break;
-			case C4MC_Cursor_Build:                                idCaption = "IDS_CON_BUILD";   fDouble = true; break;
-			case C4MC_Cursor_Chop:                                 idCaption = "IDS_CON_CHOP";    fDouble = true; break;
-			case C4MC_Cursor_Object:                               idCaption = "IDS_CON_COLLECT"; fDouble = true; break;
-			case C4MC_Cursor_DigObject:                            idCaption = "IDS_CON_DIGOUT";  fDouble = true; break;
-			case C4MC_Cursor_Enter:                                idCaption = "IDS_CON_ENTER";   fDouble = true; break;
-			case C4MC_Cursor_Attack:                               idCaption = "IDS_CON_ATTACK";  fDouble = true; break;
-			case C4MC_Cursor_Help:                                 idCaption = "IDS_CON_NAME";                    break;
+			case C4MC_Cursor_Select:                               idCaption = C4ResStrTableKey::IDS_CON_SELECT;                  break;
+			case C4MC_Cursor_JumpLeft: case C4MC_Cursor_JumpRight: idCaption = C4ResStrTableKey::IDS_CON_JUMP;                    break;
+			case C4MC_Cursor_Grab:                                 idCaption = C4ResStrTableKey::IDS_CON_GRAB;    fDouble = true; break;
+			case C4MC_Cursor_Ungrab:                               idCaption = C4ResStrTableKey::IDS_CON_UNGRAB;  fDouble = true; break;
+			case C4MC_Cursor_Build:                                idCaption = C4ResStrTableKey::IDS_CON_BUILD;   fDouble = true; break;
+			case C4MC_Cursor_Chop:                                 idCaption = C4ResStrTableKey::IDS_CON_CHOP;    fDouble = true; break;
+			case C4MC_Cursor_Object:                               idCaption = C4ResStrTableKey::IDS_CON_COLLECT; fDouble = true; break;
+			case C4MC_Cursor_DigObject:                            idCaption = C4ResStrTableKey::IDS_CON_DIGOUT;  fDouble = true; break;
+			case C4MC_Cursor_Enter:                                idCaption = C4ResStrTableKey::IDS_CON_ENTER;   fDouble = true; break;
+			case C4MC_Cursor_Attack:                               idCaption = C4ResStrTableKey::IDS_CON_ATTACK;  fDouble = true; break;
+			case C4MC_Cursor_Help:                                 idCaption = C4ResStrTableKey::IDS_CON_NAME;                    break;
 			case C4MC_Cursor_DigMaterial:
 				if (MatValid(GBackMat(X, Y)))
 					if (pDef = C4Id2Def(Game.Material.Map[GBackMat(X, Y)].Dig2Object))
 					{
-						idCaption = "IDS_CON_DIGOUT"; fDouble = true; szName = pDef->GetName();
+						idCaption = C4ResStrTableKey::IDS_CON_DIGOUT; fDouble = true; szName = pDef->GetName();
 					}
 				break;
 			}
 			// Set caption
-			if (idCaption) if (!KeepCaption)
+			if (idCaption != C4ResStrTableKey::NumberOfEntries) if (!KeepCaption)
 			{
 				// Caption by cursor
 				Caption.Format(LoadResStr(idCaption), szName);
-				if (fDouble) { Caption.AppendChar('|'); Caption.Append(LoadResStr("IDS_CON_DOUBLECLICK")); }
+				if (fDouble) { Caption.AppendChar('|'); Caption.Append(LoadResStr(C4ResStrTableKey::IDS_CON_DOUBLECLICK)); }
 				IsHelpCaption = false;
 			}
 		}
@@ -731,12 +731,12 @@ bool C4MouseControl::UpdatePutTarget(bool fVehicle)
 		{
 			if (Selection.ObjectCount() > 1)
 				// Multiple object name
-				sName.Format("%d %s", Selection.ObjectCount(), LoadResStr(fVehicle ? "IDS_CON_VEHICLES" : "IDS_CON_ITEMS"));
+				sName.Format("%d %s", Selection.ObjectCount(), LoadResStr(fVehicle ? C4ResStrTableKey::IDS_CON_VEHICLES : C4ResStrTableKey::IDS_CON_ITEMS));
 			else
 				// Single object name
 				sName.Ref(Selection.GetObject()->GetName());
 			// Set caption
-			Caption.Format(LoadResStr(fVehicle ? "IDS_CON_VEHICLEPUT" : "IDS_CON_PUT"), sName.getData(), TargetObject->GetName());
+			Caption.Format(LoadResStr(fVehicle ? C4ResStrTableKey::IDS_CON_VEHICLEPUT : C4ResStrTableKey::IDS_CON_PUT), sName.getData(), TargetObject->GetName());
 			IsHelpCaption = false;
 		}
 		// Put target found

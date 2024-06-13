@@ -137,7 +137,7 @@ void C4ControlSet::Execute() const
 		if (Game.Control.isCtrlHost() && !Game.Control.isReplay() && Game.Control.isNetwork())
 			Config.Network.ControlRate = Game.Control.ControlRate;
 		// always show msg
-		Game.GraphicsSystem.FlashMessage(FormatString(LoadResStr("IDS_NET_CONTROLRATE"), Game.Control.ControlRate, Game.FrameCounter).getData());
+		Game.GraphicsSystem.FlashMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_CONTROLRATE), Game.Control.ControlRate, Game.FrameCounter).getData());
 		break;
 
 	case C4CVT_DisableDebug: // force debug mode disabled
@@ -196,7 +196,7 @@ void C4ControlSet::Execute() const
 		// deny setting if it's fixed by scenario
 		if (Game.Parameters.FairCrewForced)
 		{
-			if (Game.Control.isCtrlHost()) Log(LoadResStr("IDS_MSG_NOMODIFYFAIRCREW"));
+			if (Game.Control.isCtrlHost()) Log(LoadResStr(C4ResStrTableKey::IDS_MSG_NOMODIFYFAIRCREW));
 			break;
 		}
 		// set new value
@@ -220,10 +220,10 @@ void C4ControlSet::Execute() const
 			if (Game.Parameters.UseFairCrew)
 			{
 				int iRank = Game.Rank.RankByExperience(Game.Parameters.FairCrewStrength);
-				Game.GraphicsSystem.FlashMessage(FormatString(LoadResStr("IDS_MSG_FAIRCREW_ACTIVATED"), Game.Rank.GetRankName(iRank, true).getData()).getData());
+				Game.GraphicsSystem.FlashMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_FAIRCREW_ACTIVATED), Game.Rank.GetRankName(iRank, true).getData()).getData());
 			}
 			else
-				Game.GraphicsSystem.FlashMessage(LoadResStr("IDS_MSG_FAIRCREW_DEACTIVATED"));
+				Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_FAIRCREW_DEACTIVATED));
 		}
 		// lobby updates
 #ifndef USE_CONSOLE
@@ -556,7 +556,7 @@ void C4ControlClientJoin::Execute() const
 	C4Client *pClient = Game.Clients.Add(Core);
 	if (!pClient) return;
 	// log
-	LogF(LoadResStr("IDS_NET_CLIENT_JOIN"), Core.getName());
+	LogF(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_JOIN), Core.getName());
 	// lobby callback
 	C4GameLobby::MainDlg *pLobby = Game.Network.GetLobby();
 	if (pLobby) pLobby->OnClientJoin(pClient);
@@ -579,7 +579,7 @@ void C4ControlClientUpdate::Execute() const
 	// find client
 	C4Client *pClient = Game.Clients.getClientByID(iID);
 	if (!pClient) return;
-	StdStrBuf strClient(LoadResStr(pClient->isLocal() ? "IDS_NET_LOCAL_CLIENT" : "IDS_NET_CLIENT"));
+	StdStrBuf strClient(LoadResStr(pClient->isLocal() ? C4ResStrTableKey::IDS_NET_LOCAL_CLIENT : C4ResStrTableKey::IDS_NET_CLIENT));
 	// do whatever specified
 	switch (eType)
 	{
@@ -587,7 +587,7 @@ void C4ControlClientUpdate::Execute() const
 		// nothing to do?
 		if (pClient->isActivated() == !!iData) break;
 		// log
-		LogF(LoadResStr(iData ? "IDS_NET_CLIENT_ACTIVATED" : "IDS_NET_CLIENT_DEACTIVATED"), strClient.getData(), pClient->getName());
+		LogF(LoadResStr(iData ? C4ResStrTableKey::IDS_NET_CLIENT_ACTIVATED : C4ResStrTableKey::IDS_NET_CLIENT_DEACTIVATED), strClient.getData(), pClient->getName());
 		// activate/deactivate
 		pClient->SetActivated(!!iData);
 		// local?
@@ -598,7 +598,7 @@ void C4ControlClientUpdate::Execute() const
 		// nothing to do?
 		if (pClient->isObserver()) break;
 		// log
-		LogF(LoadResStr("IDS_NET_CLIENT_OBSERVE"), strClient.getData(), pClient->getName());
+		LogF(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_OBSERVE), strClient.getData(), pClient->getName());
 		// set observer (will deactivate)
 		pClient->SetObserver();
 		// local?
@@ -638,12 +638,12 @@ void C4ControlClientRemove::Execute() const
 		if (Game.Control.isReplay()) Game.Players.RemoveAtClient(iID, true);
 		return;
 	}
-	StdStrBuf strClient(LoadResStr(pClient->isLocal() ? "IDS_NET_LOCAL_CLIENT" : "IDS_NET_CLIENT"));
+	StdStrBuf strClient(LoadResStr(pClient->isLocal() ? C4ResStrTableKey::IDS_NET_LOCAL_CLIENT : C4ResStrTableKey::IDS_NET_CLIENT));
 	// local?
 	if (pClient->isLocal())
 	{
 		StdStrBuf sMsg;
-		sMsg.Format(LoadResStr("IDS_NET_CLIENT_REMOVED"), strClient.getData(), pClient->getName(), strReason.getData());
+		sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_REMOVED), strClient.getData(), pClient->getName(), strReason.getData());
 		Log(sMsg.getData());
 		Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, sMsg.getData());
 		Game.Control.ChangeToLocal();
@@ -652,7 +652,7 @@ void C4ControlClientRemove::Execute() const
 	// remove client
 	if (!Game.Clients.Remove(pClient)) return;
 	// log
-	LogF(LoadResStr("IDS_NET_CLIENT_REMOVED"), strClient.getData(), pClient->getName(), strReason.getData());
+	LogF(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_REMOVED), strClient.getData(), pClient->getName(), strReason.getData());
 	// remove all players
 	Game.Players.RemoveAtClient(iID, true);
 	// remove all resources
@@ -1294,21 +1294,21 @@ StdStrBuf C4ControlVote::getDesc() const
 	switch (eType)
 	{
 	case VT_Cancel:
-		Action.Ref(LoadResStr("IDS_VOTE_CANCELTHEROUND")); break;
+		Action.Ref(LoadResStr(C4ResStrTableKey::IDS_VOTE_CANCELTHEROUND)); break;
 	case VT_Kick:
 		if (iData == iByClient)
-			Action.Ref(LoadResStr("IDS_VOTE_LEAVETHEGAME"));
+			Action.Ref(LoadResStr(C4ResStrTableKey::IDS_VOTE_LEAVETHEGAME));
 		else
 		{
 			C4Client *pTargetClient = Game.Clients.getClientByID(iData);
-			Action.Format(LoadResStr("IDS_VOTE_KICKCLIENT"), pTargetClient ? pTargetClient->getName() : "???");
+			Action.Format(LoadResStr(C4ResStrTableKey::IDS_VOTE_KICKCLIENT), pTargetClient ? pTargetClient->getName() : "???");
 		}
 		break;
 	case VT_Pause:
 		if (iData)
-			Action.Ref(LoadResStr("IDS_TEXT_PAUSETHEGAME"));
+			Action.Ref(LoadResStr(C4ResStrTableKey::IDS_TEXT_PAUSETHEGAME));
 		else
-			Action.Ref(LoadResStr("IDS_TEXT_UNPAUSETHEGAME"));
+			Action.Ref(LoadResStr(C4ResStrTableKey::IDS_TEXT_UNPAUSETHEGAME));
 		break;
 	case VT_None:
 		; // fallthrough
@@ -1326,9 +1326,9 @@ StdStrBuf C4ControlVote::getDescWarning() const
 	switch (eType)
 	{
 	case VT_Cancel:
-		Warning.Ref(LoadResStr("IDS_TEXT_WARNINGIFTHEGAMEISCANCELL")); break;
+		Warning.Ref(LoadResStr(C4ResStrTableKey::IDS_TEXT_WARNINGIFTHEGAMEISCANCELL)); break;
 	case VT_Kick:
-		Warning.Ref(LoadResStr("IDS_TEXT_WARNINGNOLEAGUEPOINTSWILL")); break;
+		Warning.Ref(LoadResStr(C4ResStrTableKey::IDS_TEXT_WARNINGNOLEAGUEPOINTSWILL)); break;
 	default:
 		Warning = ""; break;
 	}
@@ -1340,9 +1340,9 @@ void C4ControlVote::Execute() const
 	// Log
 	C4Client *pClient = Game.Clients.getClientByID(iByClient);
 	if (fApprove)
-		LogF(LoadResStr("IDS_VOTE_WANTSTO"), pClient->getName(), getDesc().getData());
+		LogF(LoadResStr(C4ResStrTableKey::IDS_VOTE_WANTSTO), pClient->getName(), getDesc().getData());
 	else
-		LogF(LoadResStr("IDS_VOTE_DOESNOTWANTTO"), pClient->getName(), getDesc().getData());
+		LogF(LoadResStr(C4ResStrTableKey::IDS_VOTE_DOESNOTWANTTO), pClient->getName(), getDesc().getData());
 	// Save vote back
 	if (Game.Network.isEnabled())
 		Game.Network.AddVote(*this);
@@ -1434,9 +1434,9 @@ void C4ControlVoteEnd::Execute() const
 	// Log
 	StdStrBuf sMsg;
 	if (isApprove())
-		sMsg.Format(LoadResStr("IDS_TEXT_ITWASDECIDEDTO"), getDesc().getData());
+		sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDTO), getDesc().getData());
 	else
-		sMsg.Format(LoadResStr("IDS_TEXT_ITWASDECIDEDNOTTO"), getDesc().getData());
+		sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDNOTTO), getDesc().getData());
 	Log(sMsg.getData());
 	// Approved?
 	if (!isApprove()) return;
@@ -1468,14 +1468,14 @@ void C4ControlVoteEnd::Execute() const
 		{
 			C4Client *pClient = Game.Clients.getClientByID(getData());
 			if (pClient)
-				Game.Clients.CtrlRemove(pClient, LoadResStr("IDS_VOTE_VOTEDOUT"));
+				Game.Clients.CtrlRemove(pClient, LoadResStr(C4ResStrTableKey::IDS_VOTE_VOTEDOUT));
 		}
 		// It is ourselves that have been voted out?
 		if (getData() == Game.Clients.getLocalID())
 		{
 			// otherwise, we have been kicked by the host.
 			// Do a regular disconnect and display reason in game over dialog, so the client knows what has happened!
-			Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, FormatString(LoadResStr("IDS_ERR_YOUHAVEBEENREMOVEDBYVOTIN"), sMsg.getData()).getData());
+			Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_YOUHAVEBEENREMOVEDBYVOTIN), sMsg.getData()).getData());
 			Game.Network.Clear();
 			// Game over immediately, so poor player won't continue game alone
 			Game.DoGameOver();

@@ -82,7 +82,7 @@ C4SoundSystem::C4SoundSystem()
 	}
 	else
 	{
-		Log(LoadResStr("IDS_PRC_NOSND"));
+		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOSND));
 	}
 }
 

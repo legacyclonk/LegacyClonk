@@ -280,11 +280,11 @@ bool C4Startup::DoStartup()
 		const char *szErr = GetFatalError();
 		if (szErr)
 		{
-			Game.pGUI->ShowMessage(szErr, LoadResStr("IDS_DLG_LOG"), C4GUI::Ico_Error);
+			Game.pGUI->ShowMessage(szErr, LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), C4GUI::Ico_Error);
 		}
 		else
 		{
-			Game.pGUI->ShowMessage("(no error)", LoadResStr("IDS_DLG_LOG"), C4GUI::Ico_Error);
+			Game.pGUI->ShowMessage("(no error)", LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), C4GUI::Ico_Error);
 		}
 		ResetFatalError();
 	}
@@ -321,7 +321,7 @@ bool C4Startup::DoStartup()
 
 	// reinit keyboard to reflect any config changes that might have been done
 	// this is a good time to do it, because no GUI dialogs are opened
-	if (Game.pGUI) if (!Game.InitKeyboard()) LogFatal(LoadResStr("IDS_ERR_NOKEYBOARD"));
+	if (Game.pGUI) if (!Game.InitKeyboard()) LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NOKEYBOARD));
 
 	// all okay; return whether startup finished with a game start selection
 	return !fAborted;
@@ -338,7 +338,7 @@ C4Startup *C4Startup::EnsureLoaded()
 		// load startup specific gfx
 		if (!pStartup->Graphics.Init())
 		{
-			LogFatal(LoadResStr("IDS_ERR_NOGFXSYS")); delete pStartup; return nullptr;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_NOGFXSYS)); delete pStartup; return nullptr;
 		}
 	}
 	return pInstance;

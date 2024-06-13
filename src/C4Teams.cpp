@@ -389,7 +389,7 @@ bool C4TeamList::GenerateDefaultTeams(int32_t iUpToID)
 	while (iLastTeamID < iUpToID)
 	{
 		char TeamName[C4MaxName + 1];
-		sprintf(TeamName, LoadResStr("IDS_MSG_TEAM"), iLastTeamID + 1);
+		sprintf(TeamName, LoadResStr(C4ResStrTableKey::IDS_MSG_TEAM), iLastTeamID + 1);
 		if (!CreateTeam(TeamName)) return false;
 	}
 	return true;
@@ -773,11 +773,11 @@ StdStrBuf C4TeamList::GetTeamDistName(TeamDist eTeamDist) const
 {
 	switch (eTeamDist)
 	{
-	case TEAMDIST_Free:      return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_FREE"),   true));
-	case TEAMDIST_Host:      return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_HOST"),   true));
-	case TEAMDIST_None:      return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_NONE"),   true));
-	case TEAMDIST_Random:    return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_RND"),    true));
-	case TEAMDIST_RandomInv: return (StdStrBuf(LoadResStr("IDS_MSG_TEAMDIST_RNDINV"), true));
+	case TEAMDIST_Free:      return (StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_FREE),   true));
+	case TEAMDIST_Host:      return (StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_HOST),   true));
+	case TEAMDIST_None:      return (StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_NONE),   true));
+	case TEAMDIST_Random:    return (StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_RND),    true));
+	case TEAMDIST_RandomInv: return (StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_RNDINV), true));
 	}
 	return (FormatString("TEAMDIST_undefined(%d)", static_cast<int>(eTeamDist)));
 }
@@ -913,7 +913,7 @@ int32_t C4TeamList::GetForcedTeamSelection(int32_t idForPlayer) const
 StdStrBuf C4TeamList::GetScriptPlayerName() const
 {
 	// get a name to assign to a new script player. Try to avoid name conflicts
-	if (!sScriptPlayerNames.getLength()) return StdStrBuf::MakeRef(LoadResStr("IDS_TEXT_COMPUTER")); // default name
+	if (!sScriptPlayerNames.getLength()) return StdStrBuf::MakeRef(LoadResStr(C4ResStrTableKey::IDS_TEXT_COMPUTER)); // default name
 	// test available script names
 	int32_t iNameIdx = 0; StdStrBuf sOut;
 	while (sScriptPlayerNames.GetSection(iNameIdx++, &sOut, '|'))

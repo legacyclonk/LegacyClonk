@@ -251,8 +251,8 @@ C4GUI::ContextMenu *C4StartupPlrSelDlg::PlayerListItem::ContextMenu()
 	pPlrSelDlg->SetSelection(this);
 	// context menu operations
 	C4GUI::ContextMenu *pCtx = new C4GUI::ContextMenu();
-	pCtx->AddItem(LoadResStr("IDS_BTN_PROPERTIES"), LoadResStr("IDS_DLGTIP_PLAYERPROPERTIES"), C4GUI::Ico_None, new C4GUI::CBMenuHandler<C4StartupPlrSelDlg>(pPlrSelDlg, &C4StartupPlrSelDlg::OnPropertyCtx));
-	pCtx->AddItem(LoadResStr("IDS_BTN_DELETE"), LoadResStr("IDS_DLGTIP_PLAYERDELETE"), C4GUI::Ico_None, new C4GUI::CBMenuHandler<C4StartupPlrSelDlg>(pPlrSelDlg, &C4StartupPlrSelDlg::OnDelCtx));
+	pCtx->AddItem(LoadResStr(C4ResStrTableKey::IDS_BTN_PROPERTIES), LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERPROPERTIES), C4GUI::Ico_None, new C4GUI::CBMenuHandler<C4StartupPlrSelDlg>(pPlrSelDlg, &C4StartupPlrSelDlg::OnPropertyCtx));
+	pCtx->AddItem(LoadResStr(C4ResStrTableKey::IDS_BTN_DELETE), LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERDELETE), C4GUI::Ico_None, new C4GUI::CBMenuHandler<C4StartupPlrSelDlg>(pPlrSelDlg, &C4StartupPlrSelDlg::OnDelCtx));
 	return pCtx;
 }
 
@@ -271,7 +271,7 @@ void C4StartupPlrSelDlg::PlayerListItem::UpdateCore(C4PlayerInfoCore &NewCore)
 		|| !NewCore.Save(PlrGroup)
 		|| !PlrGroup.Close())
 	{
-		GetScreen()->ShowMessage(LoadResStr("IDS_FAIL_MODIFY"), "", C4GUI::Ico_Error);
+		GetScreen()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_FAIL_MODIFY), "", C4GUI::Ico_Error);
 		return;
 	}
 	Core = NewCore;
@@ -295,19 +295,19 @@ void C4StartupPlrSelDlg::PlayerListItem::SetSelectionInfo(C4GUI::TextWindow *pSe
 	// write info text for player
 	pSelectionInfo->ClearText(false);
 	pSelectionInfo->AddTextLine(FormatString("%s", Core.PrefName).getData(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_DESC_PLAYER"), static_cast<int>(Core.Score), static_cast<int>(Core.Rounds), static_cast<int>(Core.RoundsWon), static_cast<int>(Core.RoundsLost), TimeString(Core.TotalPlayingTime).getData(), Core.Comment).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
+	pSelectionInfo->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_DESC_PLAYER), static_cast<int>(Core.Score), static_cast<int>(Core.Rounds), static_cast<int>(Core.RoundsWon), static_cast<int>(Core.RoundsLost), TimeString(Core.TotalPlayingTime).getData(), Core.Comment).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	if (Core.LastRound.Title[0])
-		pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_DESC_LASTGAME"), Core.LastRound.Title.getData(), DateString(Core.LastRound.Date).getData(), TimeString(Core.LastRound.Duration).getData(), static_cast<int>(Core.LastRound.FinalScore)).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
+		pSelectionInfo->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_DESC_LASTGAME), Core.LastRound.Title.getData(), DateString(Core.LastRound.Date).getData(), TimeString(Core.LastRound.Duration).getData(), static_cast<int>(Core.LastRound.FinalScore)).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	pSelectionInfo->UpdateHeight();
 }
 
 StdStrBuf C4StartupPlrSelDlg::PlayerListItem::GetDelWarning()
 {
 	StdStrBuf sWarning;
-	sWarning.Format(LoadResStr("IDS_MSG_DELETEPLR"), Core.PrefName);
+	sWarning.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETEPLR), Core.PrefName);
 	int32_t iPlrTime = Core.TotalPlayingTime;
 	if (iPlrTime > 60 * 60 * 10)
-		sWarning.Append(FormatString(LoadResStr("IDS_MSG_DELETEPLR_PLAYTIME"),
+		sWarning.Append(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETEPLR_PLAYTIME),
 			TimeString(iPlrTime).getData()).getData());
 	return sWarning;
 }
@@ -379,9 +379,9 @@ C4GUI::ContextMenu *C4StartupPlrSelDlg::CrewListItem::ContextMenu()
 	pPlrSelDlg->SetSelection(this);
 	// context menu operations
 	C4GUI::ContextMenu *pCtx = new C4GUI::ContextMenu();
-	pCtx->AddItem(LoadResStr("IDS_BTN_RENAME"), LoadResStr("IDS_DESC_CREWRENAME"), C4GUI::Ico_None, new C4GUI::CBMenuHandler<C4StartupPlrSelDlg>(pPlrSelDlg, &C4StartupPlrSelDlg::OnPropertyCtx));
-	pCtx->AddItem(LoadResStr("IDS_BTN_DELETE"), LoadResStr("IDS_MSG_DELETECLONK_DESC"), C4GUI::Ico_None, new C4GUI::CBMenuHandler<C4StartupPlrSelDlg>(pPlrSelDlg, &C4StartupPlrSelDlg::OnDelCtx));
-	pCtx->AddItem(LoadResStr("IDS_MSG_SETDEATHMESSAGE"), LoadResStr("IDS_MSG_SETTHEMESSAGETHATAPPEARWH"), C4GUI::Ico_None, new C4GUI::CBMenuHandler<C4StartupPlrSelDlg::CrewListItem>(this, &C4StartupPlrSelDlg::CrewListItem::OnDeathMessageCtx));
+	pCtx->AddItem(LoadResStr(C4ResStrTableKey::IDS_BTN_RENAME), LoadResStr(C4ResStrTableKey::IDS_DESC_CREWRENAME), C4GUI::Ico_None, new C4GUI::CBMenuHandler<C4StartupPlrSelDlg>(pPlrSelDlg, &C4StartupPlrSelDlg::OnPropertyCtx));
+	pCtx->AddItem(LoadResStr(C4ResStrTableKey::IDS_BTN_DELETE), LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK_DESC), C4GUI::Ico_None, new C4GUI::CBMenuHandler<C4StartupPlrSelDlg>(pPlrSelDlg, &C4StartupPlrSelDlg::OnDelCtx));
+	pCtx->AddItem(LoadResStr(C4ResStrTableKey::IDS_MSG_SETDEATHMESSAGE), LoadResStr(C4ResStrTableKey::IDS_MSG_SETTHEMESSAGETHATAPPEARWH), C4GUI::Ico_None, new C4GUI::CBMenuHandler<C4StartupPlrSelDlg::CrewListItem>(this, &C4StartupPlrSelDlg::CrewListItem::OnDeathMessageCtx));
 	return pCtx;
 }
 
@@ -389,7 +389,7 @@ void C4StartupPlrSelDlg::CrewListItem::OnDeathMessageCtx(C4GUI::Element *el)
 {
 	// Death message dialog
 	C4GUI::InputDialog *pDlg;
-	GetScreen()->ShowRemoveDlg(pDlg = new C4GUI::InputDialog(LoadResStr("IDS_MSG_ENTERNEWDEATHMESSAGE"), LoadResStr("IDS_MSG_SETDEATHMESSAGE"), C4GUI::Ico_Ex_Comment, new C4GUI::InputCallback<C4StartupPlrSelDlg::CrewListItem>(this, &C4StartupPlrSelDlg::CrewListItem::OnDeathMessageSet), false));
+	GetScreen()->ShowRemoveDlg(pDlg = new C4GUI::InputDialog(LoadResStr(C4ResStrTableKey::IDS_MSG_ENTERNEWDEATHMESSAGE), LoadResStr(C4ResStrTableKey::IDS_MSG_SETDEATHMESSAGE), C4GUI::Ico_Ex_Comment, new C4GUI::InputCallback<C4StartupPlrSelDlg::CrewListItem>(this, &C4StartupPlrSelDlg::CrewListItem::OnDeathMessageSet), false));
 	pDlg->SetMaxText(C4MaxDeathMsg);
 	pDlg->SetInputText(Core.DeathMessage);
 }
@@ -412,7 +412,7 @@ void C4StartupPlrSelDlg::CrewListItem::RewriteCore()
 		|| !Core.Save(CrewGroup, nullptr)
 		|| !CrewGroup.Close() || !pParentGrp->Save(true))
 	{
-		GetScreen()->ShowMessage(LoadResStr("IDS_FAIL_MODIFY"), "", C4GUI::Ico_Error);
+		GetScreen()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_FAIL_MODIFY), "", C4GUI::Ico_Error);
 		return;
 	}
 }
@@ -435,15 +435,15 @@ bool C4StartupPlrSelDlg::CrewListItem::SetName(const char *szNewName)
 		// check for duplicate filename
 		if (pParentGrp->FindEntry(fn))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_CLONKCOLLISION"), fn);
-			Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr("IDS_FAIL_RENAME"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_CLONKCOLLISION), fn);
+			Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		// OK; then rename
 		if (!pParentGrp->Rename(GetFilename().getData(), fn) || !pParentGrp->Save(true))
 		{
-			StdStrBuf sMsg; sMsg.Format(LoadResStr("IDS_ERR_RENAMEFILE"), GetFilename().getData(), fn);
-			Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr("IDS_FAIL_RENAME"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_RENAMEFILE), GetFilename().getData(), fn);
+			Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
 		const char *szConstFn = fn;
@@ -456,7 +456,7 @@ bool C4StartupPlrSelDlg::CrewListItem::SetName(const char *szNewName)
 	return true;
 }
 
-StdStrBuf C4StartupPlrSelDlg::CrewListItem::GetPhysicalTextLine(int32_t iPhysValue, const char *idsName)
+StdStrBuf C4StartupPlrSelDlg::CrewListItem::GetPhysicalTextLine(int32_t iPhysValue, const C4ResStrTableKey idsName)
 {
 	const int32_t iMaxBars = 10;
 	StdStrBuf sResult;
@@ -473,36 +473,36 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 	StdStrBuf sPromo;
 	int32_t iNextRankExp; StdStrBuf sNextRankName;
 	if (Core.GetNextRankInfo(Game.Rank, &iNextRankExp, &sNextRankName))
-		sPromo.Format(LoadResStr("IDS_DESC_PROMO"), sNextRankName.getData(), static_cast<int>(iNextRankExp));
+		sPromo.Format(LoadResStr(C4ResStrTableKey::IDS_DESC_PROMO), sNextRankName.getData(), static_cast<int>(iNextRankExp));
 	else
-		sPromo.Copy(LoadResStr("IDS_DESC_NOPROMO"));
-	pSelectionInfo->AddTextLine(FormatString(LoadResStr("IDS_DESC_OBJECT"),
+		sPromo.Copy(LoadResStr(C4ResStrTableKey::IDS_DESC_NOPROMO));
+	pSelectionInfo->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_DESC_OBJECT),
 		Core.TypeName, Core.Experience, Core.Rounds, Core.DeathCount,
 		sPromo.getData(), TimeString(Core.TotalPlayingTime).getData(), DateString(Core.Birthday).getData()).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Energy, "IDS_DESC_ENERGY").getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Energy, C4ResStrTableKey::IDS_DESC_ENERGY).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Breath, "IDS_DESC_BREATH").getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Breath, C4ResStrTableKey::IDS_DESC_BREATH).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Walk, "IDS_DESC_WALK").getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Walk, C4ResStrTableKey::IDS_DESC_WALK).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Jump, "IDS_DESC_JUMP").getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Jump, C4ResStrTableKey::IDS_DESC_JUMP).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	if (Core.Physical.CanScale) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Scale, "IDS_DESC_SCALE").getData(),
+	if (Core.Physical.CanScale) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Scale, C4ResStrTableKey::IDS_DESC_SCALE).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	if (Core.Physical.CanHangle) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Hangle, "IDS_DESC_HANGLE").getData(),
+	if (Core.Physical.CanHangle) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Hangle, C4ResStrTableKey::IDS_DESC_HANGLE).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Dig, "IDS_DESC_DIG").getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Dig, C4ResStrTableKey::IDS_DESC_DIG).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Swim, "IDS_DESC_SWIM").getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Swim, C4ResStrTableKey::IDS_DESC_SWIM).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Throw, "IDS_DESC_THROW").getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Throw, C4ResStrTableKey::IDS_DESC_THROW).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Push, "IDS_DESC_PUSH").getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Push, C4ResStrTableKey::IDS_DESC_PUSH).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Fight, "IDS_DESC_FIGHT").getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Fight, C4ResStrTableKey::IDS_DESC_FIGHT).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	if (Core.Physical.Magic) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Magic, "IDS_DESC_MAGIC").getData(),
+	if (Core.Physical.Magic) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Magic, C4ResStrTableKey::IDS_DESC_MAGIC).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	pSelectionInfo->UpdateHeight();
 }
@@ -510,11 +510,11 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 StdStrBuf C4StartupPlrSelDlg::CrewListItem::GetDelWarning()
 {
 	StdStrBuf sWarning;
-	sWarning.Format(LoadResStr("IDS_MSG_DELETECLONK"),
+	sWarning.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK),
 		Core.sRankName.getData(), Core.Name, GetFilename().getData());
 	int32_t iPlrTime = Core.TotalPlayingTime;
 	if (iPlrTime > 60 * 60 * 10)
-		sWarning.Append(static_cast<const StdStrBuf &>(FormatString(LoadResStr("IDS_MSG_DELETECLONK_PLAYTIME"), TimeString(iPlrTime).getData())));
+		sWarning.Append(static_cast<const StdStrBuf &>(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK_PLAYTIME), TimeString(iPlrTime).getData())));
 	return sWarning;
 }
 
@@ -564,7 +564,7 @@ C4StartupPlrSelDlg::C4StartupPlrSelDlg() : C4StartupDlg("W"), eMode(PSDM_Player)
 	C4Rect rcPictureArea = C4Rect(rcMain.Wdt * 613 / 768 - iPictureWidth, rcMain.Hgt * 197 / 451 - iPictureHeight, iPictureWidth, iPictureHeight);
 
 	AddElement(pPlrListBox = new C4GUI::ListBox(rcPlrList));
-	pPlrListBox->SetToolTip(LoadResStr("IDS_DLGTIP_PLAYERFILES"));
+	pPlrListBox->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERFILES));
 	pPlrListBox->SetDecoration(false, &C4Startup::Get()->Graphics.sfctBookScroll, true);
 	pPlrListBox->UpdateElementPositions();
 	pPlrListBox->SetSelectionChangeCallbackFn(new C4GUI::CallbackHandler<C4StartupPlrSelDlg>(this, &C4StartupPlrSelDlg::OnSelChange));
@@ -576,14 +576,14 @@ C4StartupPlrSelDlg::C4StartupPlrSelDlg() : C4StartupDlg("W"), eMode(PSDM_Player)
 
 	// bottom line buttons - positioning done in UpdateBottomButtons by UpdatePlayerList
 	C4Rect rcDefault(0, 0, 10, 10);
-	AddElement(btnBack = new C4GUI::CallbackButton<C4StartupPlrSelDlg>(LoadResStr("IDS_BTN_BACK"), rcDefault, &C4StartupPlrSelDlg::OnBackBtn));
-	AddElement(btnNew = new C4GUI::CallbackButton<C4StartupPlrSelDlg>(LoadResStr("IDS_BTN_NEW"), rcDefault, &C4StartupPlrSelDlg::OnNewBtn));
-	btnNew->SetToolTip(LoadResStr("IDS_DLGTIP_NEWPLAYER"));
+	AddElement(btnBack = new C4GUI::CallbackButton<C4StartupPlrSelDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_BACK), rcDefault, &C4StartupPlrSelDlg::OnBackBtn));
+	AddElement(btnNew = new C4GUI::CallbackButton<C4StartupPlrSelDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_NEW), rcDefault, &C4StartupPlrSelDlg::OnNewBtn));
+	btnNew->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_NEWPLAYER));
 	AddElement(btnActivatePlr = new C4GUI::CallbackButton<C4StartupPlrSelDlg>(nullptr, rcDefault, &C4StartupPlrSelDlg::OnActivateBtn));
-	AddElement(btnDelete = new C4GUI::CallbackButton<C4StartupPlrSelDlg>(LoadResStr("IDS_BTN_DELETE"), rcDefault, &C4StartupPlrSelDlg::OnDelBtn));
+	AddElement(btnDelete = new C4GUI::CallbackButton<C4StartupPlrSelDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_DELETE), rcDefault, &C4StartupPlrSelDlg::OnDelBtn));
 	AddElement(btnProperties = new C4GUI::CallbackButton<C4StartupPlrSelDlg>(nullptr, rcDefault, &C4StartupPlrSelDlg::OnPropertyBtn));
-	AddElement(btnCrew = new C4GUI::CallbackButton<C4StartupPlrSelDlg>(LoadResStr("IDS_SELECT_CREW"), rcDefault, &C4StartupPlrSelDlg::OnCrewBtn));
-	btnCrew->SetToolTip(LoadResStr("IDS_DLGTIP_PLAYERCREW"));
+	AddElement(btnCrew = new C4GUI::CallbackButton<C4StartupPlrSelDlg>(LoadResStr(C4ResStrTableKey::IDS_SELECT_CREW), rcDefault, &C4StartupPlrSelDlg::OnCrewBtn));
+	btnCrew->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERCREW));
 
 	// refill listboxes
 	UpdatePlayerList();
@@ -644,12 +644,12 @@ void C4StartupPlrSelDlg::UpdateBottomButtons()
 	case PSDM_Player:
 	{
 		// update some buttons for player mode
-		btnProperties->SetText(LoadResStr("IDS_BTN_PROPERTIES"));
-		btnProperties->SetToolTip(LoadResStr("IDS_DLGTIP_PLAYERPROPERTIES"));
+		btnProperties->SetText(LoadResStr(C4ResStrTableKey::IDS_BTN_PROPERTIES));
+		btnProperties->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERPROPERTIES));
 		btnNew->SetVisibility(true);
 		btnCrew->SetVisibility(true);
-		btnDelete->SetToolTip(LoadResStr("IDS_DLGTIP_PLAYERDELETE"));
-		btnBack->SetToolTip(LoadResStr("IDS_DLGTIP_BACKMAIN"));
+		btnDelete->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERDELETE));
+		btnBack->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_BACKMAIN));
 		btnBack->SetBounds(caBottomButtons.GetGridCell(0, 6, 0, 1, iBottomButtonWidth, C4GUI_ButtonHgt, true));
 		btnNew->SetBounds(caBottomButtons.GetGridCell(1, 6, 0, 1, iBottomButtonWidth, C4GUI_ButtonHgt, true));
 		btnActivatePlr->SetBounds(caBottomButtons.GetGridCell(2, 6, 0, 1, iBottomButtonWidth, C4GUI_ButtonHgt, true));
@@ -662,12 +662,12 @@ void C4StartupPlrSelDlg::UpdateBottomButtons()
 	case PSDM_Crew:
 	{
 		// update some buttons for player mode
-		btnProperties->SetText(LoadResStr("IDS_BTN_RENAME"));
-		btnProperties->SetToolTip(LoadResStr("IDS_DESC_CREWRENAME"));
+		btnProperties->SetText(LoadResStr(C4ResStrTableKey::IDS_BTN_RENAME));
+		btnProperties->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_CREWRENAME));
 		btnNew->SetVisibility(false);
 		btnCrew->SetVisibility(false);
-		btnDelete->SetToolTip(LoadResStr("IDS_MSG_DELETECLONK_DESC"));
-		btnBack->SetToolTip(LoadResStr("IDS_MSG_BACKTOPLAYERDLG"));
+		btnDelete->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK_DESC));
+		btnBack->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MSG_BACKTOPLAYERDLG));
 		btnBack->SetBounds(caBottomButtons.GetGridCell(0, 4, 0, 1, iBottomButtonWidth, C4GUI_ButtonHgt, true));
 		btnActivatePlr->SetBounds(caBottomButtons.GetGridCell(1, 4, 0, 1, iBottomButtonWidth, C4GUI_ButtonHgt, true));
 		btnDelete->SetBounds(caBottomButtons.GetGridCell(2, 4, 0, 1, iBottomButtonWidth, C4GUI_ButtonHgt, true));
@@ -692,7 +692,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 	{
 	case PSDM_Player:
 	{
-		SetTitle(LoadResStrNoAmp("IDS_DLG_PLAYERSELECTION"));
+		SetTitle(LoadResStrNoAmp(C4ResStrTableKey::IDS_DLG_PLAYERSELECTION).c_str());
 		// player mode: insert all players
 		const char *szFn;
 		StdStrBuf sSearchPath;
@@ -734,7 +734,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 
 	case PSDM_Crew:
 	{
-		SetTitle(FormatString("%s %s", LoadResStrNoAmp("IDS_CTL_CREW"), CurrPlayer.Core.PrefName).getData());
+		SetTitle(FormatString("%s %s", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW).c_str(), CurrPlayer.Core.PrefName).getData());
 		// crew mode: Insert complete crew of player (2do: sort)
 		bool fSucc; char szFn[_MAX_PATH + 1];
 		for (fSucc = CurrPlayer.Grp.FindEntry(C4CFN_ObjectInfoFiles, szFn); fSucc; fSucc = CurrPlayer.Grp.FindNextEntry(C4CFN_ObjectInfoFiles, szFn, nullptr, nullptr, true))
@@ -781,13 +781,13 @@ void C4StartupPlrSelDlg::UpdateSelection()
 	// button text 'activate' if current player is deactivated; 'deactivate' otherwise
 	if (pSel && pSel->IsActivated())
 	{
-		btnActivatePlr->SetText(LoadResStr("IDS_BTN_DEACTIVATE"));
-		btnActivatePlr->SetToolTip(FormatString(LoadResStr("IDS_MSG_NOPARTICIPATE_DESC"), pSel->GetName()).getData());
+		btnActivatePlr->SetText(LoadResStr(C4ResStrTableKey::IDS_BTN_DEACTIVATE));
+		btnActivatePlr->SetToolTip(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_NOPARTICIPATE_DESC), pSel->GetName()).getData());
 	}
 	else
 	{
-		btnActivatePlr->SetText(LoadResStr("IDS_BTN_ACTIVATE"));
-		btnActivatePlr->SetToolTip(FormatString(LoadResStr("IDS_MSG_PARTICIPATE_DESC"), pSel ? pSel->GetName() : "").getData());
+		btnActivatePlr->SetText(LoadResStr(C4ResStrTableKey::IDS_BTN_ACTIVATE));
+		btnActivatePlr->SetToolTip(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_PARTICIPATE_DESC), pSel ? pSel->GetName() : "").getData());
 	}
 	// no item selected?
 	if (!pSel)
@@ -835,7 +835,7 @@ void C4StartupPlrSelDlg::UpdateActivatedPlayers()
 			else
 			{
 				pPlrItem->SetActivated(false);
-				GetScreen()->ShowMessage(FormatString(LoadResStr("IDS_ERR_PLAYERSTOOLONG"), pPlrItem->GetName()).getData(), LoadResStr("IDS_ERR_TITLE"), C4GUI::Ico_Error);
+				GetScreen()->ShowMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_PLAYERSTOOLONG), pPlrItem->GetName()).getData(), LoadResStr(C4ResStrTableKey::IDS_ERR_TITLE), C4GUI::Ico_Error);
 			}
 		}
 }
@@ -882,7 +882,7 @@ bool C4StartupPlrSelDlg::CheckPlayerName(const StdStrBuf &Playername, StdStrBuf 
 	// must not be empty
 	if (!Playername.getLength())
 	{
-		if (fWarnEmpty) C4GUI::Screen::GetScreenS()->ShowMessage(LoadResStr("IDS_ERR_PLRNAME_EMPTY"), "", C4GUI::Ico_Error);
+		if (fWarnEmpty) C4GUI::Screen::GetScreenS()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_PLRNAME_EMPTY), "", C4GUI::Ico_Error);
 		return false;
 	}
 	// generate valid filename
@@ -905,7 +905,7 @@ bool C4StartupPlrSelDlg::CheckPlayerName(const StdStrBuf &Playername, StdStrBuf 
 	// validity check: Must not exist yet if renamed
 	if (!pPrevFilename || !ItemIdentical(Path.getData(), pPrevFilename->getData())) if (ItemExists(Path.getData()))
 	{
-		C4GUI::Screen::GetScreenS()->ShowMessage(FormatString(LoadResStr("IDS_ERR_PLRNAME_TAKEN"),
+		C4GUI::Screen::GetScreenS()->ShowMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_PLRNAME_TAKEN),
 			Playername.getData()).getData(), "", C4GUI::Ico_Error);
 		return false;
 	}
@@ -942,9 +942,9 @@ void C4StartupPlrSelDlg::SetCrewMode(PlayerListItem *pSel)
 	if (!CurrPlayer.Grp.Open(pSel->GetFilename().getData())) return;
 	if (!CurrPlayer.Grp.FindEntry(C4CFN_ObjectInfoFiles))
 	{
-		StdStrBuf strCrew(FormatString("%s %s", LoadResStrNoAmp("IDS_CTL_CREW"), CurrPlayer.Core.PrefName));
+		StdStrBuf strCrew(FormatString("%s %s", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW).c_str(), CurrPlayer.Core.PrefName));
 		// player has no crew!
-		GetScreen()->ShowMessage(FormatString(LoadResStr("IDS_ERR_PLRNOCREW"),
+		GetScreen()->ShowMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_PLRNOCREW),
 			CurrPlayer.Core.PrefName).getData(),
 			strCrew.getData(), C4GUI::Ico_Player);
 		return;
@@ -963,7 +963,7 @@ void C4StartupPlrSelDlg::OnDelBtn(C4GUI::Control *btn)
 	ListItem *pSel = GetSelection();
 	if (!pSel) return;
 	StdStrBuf sWarning; sWarning.Take(pSel->GetDelWarning());
-	GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(sWarning.getData(), LoadResStr("IDS_BTN_DELETE"),
+	GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(sWarning.getData(), LoadResStr(C4ResStrTableKey::IDS_BTN_DELETE),
 		new C4GUI::CallbackHandlerExPar<C4StartupPlrSelDlg, ListItem *>(this, &C4StartupPlrSelDlg::OnDelBtnConfirm, pSel), C4GUI::MessageDialog::btnYesNo));
 }
 
@@ -974,16 +974,16 @@ void C4StartupPlrSelDlg::OnDelBtnConfirm(ListItem *pSel)
 	case PSDM_Player:
 		if (!C4Group_DeleteItem(pSel->GetFilename().getData()))
 		{
-			StdStrBuf sMsg; sMsg.Copy(LoadResStr("IDS_FAIL_DELETE"));
-			GetScreen()->ShowMessage(sMsg.getData(), LoadResStr("IDS_DLG_CLEAR"), C4GUI::Ico_Error);
+			StdStrBuf sMsg; sMsg.Copy(LoadResStr(C4ResStrTableKey::IDS_FAIL_DELETE));
+			GetScreen()->ShowMessage(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_CLEAR), C4GUI::Ico_Error);
 		}
 		break;
 
 	case PSDM_Crew:
 		if (!CurrPlayer.Grp.Delete(pSel->GetFilename().getData()))
 		{
-			StdStrBuf sMsg; sMsg.Copy(LoadResStr("IDS_FAIL_DELETE"));
-			GetScreen()->ShowMessage(sMsg.getData(), LoadResStr("IDS_DLG_CLEAR"), C4GUI::Ico_Error);
+			StdStrBuf sMsg; sMsg.Copy(LoadResStr(C4ResStrTableKey::IDS_FAIL_DELETE));
+			GetScreen()->ShowMessage(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_CLEAR), C4GUI::Ico_Error);
 		}
 		break;
 	}
@@ -1109,7 +1109,7 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 		// FIXME: Use Player, not Clonkranks
 		C4P.Default(&Game.Rank);
 		// Set name, color, comment
-		SCopy(LoadResStr("IDS_PLR_NEWCOMMENT"), C4P.Comment, C4MaxComment);
+		SCopy(LoadResStr(C4ResStrTableKey::IDS_PLR_NEWCOMMENT), C4P.Comment, C4MaxComment);
 		C4P.PrefColor = SafeRandom(8);
 		C4P.PrefColorDw = C4P.GetPrefColorValue(C4P.PrefColor);
 		C4P.PrefControlStyle = 1;
@@ -1128,17 +1128,17 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	const char *szTitle;
 	if (pForPlayer)
 	{
-		szTitle = LoadResStr("IDS_DLG_PLAYER2");
+		szTitle = LoadResStr(C4ResStrTableKey::IDS_DLG_PLAYER2);
 	}
 	else
 	{
-		szTitle = LoadResStr("IDS_PLR_NEWPLAYER");
+		szTitle = LoadResStr(C4ResStrTableKey::IDS_PLR_NEWPLAYER);
 	}
 	C4GUI::Label *pLbl = new C4GUI::Label(szTitle, caMain.GetFromTop(pUseFont->GetLineHeight()), ALeft, C4StartupFontClr, pUseFont, false);
 	AddElement(pLbl);
 	caMain.ExpandTop(-BetweenElementDist);
 	// place name label
-	AddElement(new C4GUI::Label(LoadResStr("IDS_CTL_NAME2"), caMain.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
+	AddElement(new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_CTL_NAME2), caMain.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
 	// place name edit
 	pNameEdit = new C4GUI::Edit(caMain.GetFromTop(C4GUI::Edit::GetCustomEditHeight(pUseFont)));
 	pNameEdit->SetFont(pUseFont);
@@ -1149,12 +1149,12 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	SetFocus(pNameEdit, false);
 	caMain.ExpandTop(-BetweenElementDist);
 	// place color label
-	AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr("IDS_CTL_COLOR")).getData(), caMain.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
+	AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr(C4ResStrTableKey::IDS_CTL_COLOR)).getData(), caMain.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
 	// place color controls
 	C4GUI::ComponentAligner caColorArea(caMain.GetFromTop(C4GUI::ArrowButton::GetDefaultHeight()), 2, 0);
 	caColorArea.ExpandLeft(2);
 	C4GUI::Button *pBtn; const char *szTip;
-	szTip = LoadResStr("IDS_DLGTIP_PLAYERCOLORS");
+	szTip = LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERCOLORS);
 	AddElement(pBtn = new C4GUI::CallbackButton<C4StartupPlrPropertiesDlg, C4GUI::ArrowButton>(C4GUI::ArrowButton::Left, caColorArea.GetFromLeft(C4GUI::ArrowButton::GetDefaultWidth()), &C4StartupPlrPropertiesDlg::OnClrChangeLeft));
 	pBtn->SetToolTip(szTip);
 	C4Facet &rfctClrPreviewPic = Game.GraphicsResource.fctFlagClr;
@@ -1163,7 +1163,7 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	AddElement(pClrPreview);
 	AddElement(pBtn = new C4GUI::CallbackButton<C4StartupPlrPropertiesDlg, C4GUI::ArrowButton>(C4GUI::ArrowButton::Right, caColorArea.GetFromLeft(C4GUI::ArrowButton::GetDefaultWidth()), &C4StartupPlrPropertiesDlg::OnClrChangeRight));
 	pBtn->SetToolTip(szTip);
-	szTip = LoadResStr("IDS_DLGTIP_PLAYERCOLORSTGB");
+	szTip = LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERCOLORSTGB);
 	int32_t iSliderYDiff = (caColorArea.GetHeight() - 3 * C4GUI_ScrollBarHgt) / 2;
 	pClrSliderR = new C4GUI::ScrollBar(caColorArea.GetFromTop(C4GUI_ScrollBarHgt), true, new C4GUI::ParCallbackHandler<C4StartupPlrPropertiesDlg, int32_t>(this, &C4StartupPlrPropertiesDlg::OnClrSliderRChange));
 	pClrSliderR->SetDecoration(&C4Startup::Get()->Graphics.sfctBookScrollR, false);
@@ -1185,12 +1185,12 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	int32_t iControlPicSize = C4GUI::ArrowButton::GetDefaultHeight();
 	C4GUI::ComponentAligner caControlArea(caMain.GetFromTop(iControlPicSize + pSmallFont->GetLineHeight() + BetweenElementDist), 0, 0, false);
 	C4GUI::ComponentAligner caPictureArea(caControlArea.GetFromRight(iControlPicSize), 0, 0, false);
-	AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr("IDS_CTL_CONTROL")).getData(), caControlArea.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
-	AddElement(new C4GUI::Label(LoadResStr("IDS_CTL_PICTURE"), caPictureArea.GetFromTop(pSmallFont->GetLineHeight()), ACenter, C4StartupFontClr, pSmallFont, false));
+	AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr(C4ResStrTableKey::IDS_CTL_CONTROL)).getData(), caControlArea.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
+	AddElement(new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_CTL_PICTURE), caPictureArea.GetFromTop(pSmallFont->GetLineHeight()), ACenter, C4StartupFontClr, pSmallFont, false));
 	caControlArea.ExpandTop(-BetweenElementDist); caPictureArea.ExpandTop(-BetweenElementDist);
 	// place control controls
 	C4GUI::ComponentAligner caControl(caControlArea.GetFromTop(iControlPicSize), 2, 0);
-	szTip = LoadResStr("IDS_DLGTIP_PLAYERCONTROL");
+	szTip = LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERCONTROL);
 	AddElement(pBtn = new C4GUI::CallbackButton<C4StartupPlrPropertiesDlg, C4GUI::ArrowButton>(C4GUI::ArrowButton::Left, caControl.GetFromLeft(C4GUI::ArrowButton::GetDefaultWidth()), &C4StartupPlrPropertiesDlg::OnCtrlChangeLeft));
 	pBtn->SetToolTip(szTip);
 	C4Facet &rfctCtrlPic = Game.GraphicsResource.fctKeyboard; // UpdatePlayerControl() will alternatively set fctGamepad
@@ -1200,29 +1200,29 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	pBtn->SetToolTip(szTip);
 	caControl.ExpandLeft(-10);
 	AddElement(pMouseBtn = new C4GUI::CallbackButton<C4StartupPlrPropertiesDlg, C4GUI::IconButton>(C4GUI::Ico_MouseOff, caControl.GetFromLeft(caControl.GetHeight()), 'M' /* 2do */, &C4StartupPlrPropertiesDlg::OnCtrlChangeMouse));
-	pMouseBtn->SetToolTip(LoadResStr("IDS_DLGTIP_PLAYERCONTROLMOUSE"));
+	pMouseBtn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERCONTROLMOUSE));
 	C4P.PrefControl = BoundBy<int32_t>(C4P.PrefControl, 0, C4MaxControlSet - 1);
 	UpdatePlayerControl();
 	// place picture button
 	AddElement(pPictureBtn = new C4GUI::CallbackButton<C4StartupPlrPropertiesDlg, C4GUI::IconButton>(C4GUI::Ico_Player, caPictureArea.GetAll(), 'P' /* 2do */, &C4StartupPlrPropertiesDlg::OnPictureBtn));
-	pPictureBtn->SetToolTip(LoadResStr("IDS_DESC_SELECTAPICTUREANDORLOBBYI"));
+	pPictureBtn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_SELECTAPICTUREANDORLOBBYI));
 	UpdateBigIcon();
 	UpdatePlayerColor(true);
 	caMain.ExpandTop(-BetweenElementDist);
 	// place AutoStopControl label
-	AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr("IDS_DLG_MOVEMENT")).getData(), caMain.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
+	AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr(C4ResStrTableKey::IDS_DLG_MOVEMENT)).getData(), caMain.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
 	// place AutoStopControl controls
 	C4Facet &rfctMovementIcons = C4Startup::Get()->Graphics.fctPlrCtrlType;
 	C4GUI::ComponentAligner caMovement(caMain.GetFromTop(rfctMovementIcons.Hgt), 5, 0);
 	C4Rect rcBtn = caMovement.GetFromLeft(rfctMovementIcons.GetWidthByHeight(caMovement.GetHeight()));
-	AddElement(pLbl = new C4GUI::Label(LoadResStr("IDS_DLG_JUMPANDRUN"), rcBtn.x + rcBtn.Wdt / 2, rcBtn.y + rcBtn.Hgt - 6, ACenter, C4StartupFontClr, pSmallFont, false));
-	szTip = LoadResStr("IDS_DLGTIP_JUMPANDRUN");
+	AddElement(pLbl = new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_DLG_JUMPANDRUN), rcBtn.x + rcBtn.Wdt / 2, rcBtn.y + rcBtn.Hgt - 6, ACenter, C4StartupFontClr, pSmallFont, false));
+	szTip = LoadResStr(C4ResStrTableKey::IDS_DLGTIP_JUMPANDRUN);
 	pLbl->SetToolTip(szTip);
 	AddElement(pJumpNRunBtn = new C4GUI::CallbackButton<C4StartupPlrPropertiesDlg, C4GUI::IconButton>(C4GUI::Ico_None, rcBtn, 'J' /* 2do */, &C4StartupPlrPropertiesDlg::OnMovementBtn));
 	pJumpNRunBtn->SetToolTip(szTip);
 	rcBtn = caMovement.GetFromRight(rfctMovementIcons.GetWidthByHeight(caMovement.GetHeight()));
-	AddElement(pLbl = new C4GUI::Label(LoadResStr("IDS_DLG_CLASSIC"), rcBtn.x + rcBtn.Wdt / 2, rcBtn.y + rcBtn.Hgt - 6, ACenter, C4StartupFontClr, pSmallFont, false));
-	szTip = LoadResStr("IDS_DLGTIP_CLASSIC");
+	AddElement(pLbl = new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_DLG_CLASSIC), rcBtn.x + rcBtn.Wdt / 2, rcBtn.y + rcBtn.Hgt - 6, ACenter, C4StartupFontClr, pSmallFont, false));
+	szTip = LoadResStr(C4ResStrTableKey::IDS_DLGTIP_CLASSIC);
 	pLbl->SetToolTip(szTip);
 	AddElement(pClassicBtn = new C4GUI::CallbackButton<C4StartupPlrPropertiesDlg, C4GUI::IconButton>(C4GUI::Ico_None, rcBtn, 'C' /* 2do */, &C4StartupPlrPropertiesDlg::OnMovementBtn));
 	pClassicBtn->SetToolTip(szTip);
@@ -1384,7 +1384,7 @@ void C4StartupPlrPropertiesDlg::OnClosed(bool fOK)
 			if (pForPlayer)
 			{
 				if (!pForPlayer->MoveFilename(Filename.getData()))
-					GetScreen()->ShowMessage(LoadResStr("IDS_FAIL_RENAME"), "", C4GUI::Ico_Error);
+					GetScreen()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), "", C4GUI::Ico_Error);
 				// update picture/bigicon
 				if (fClearPicture || fClearBigIcon || fctNewPicture.Surface || fctNewBigIcon.Surface)
 				{
@@ -1501,7 +1501,7 @@ void C4StartupPlrPropertiesDlg::SetNewPicture(const char *szFromFilename, bool f
 		if (!fSucc)
 		{
 			// error!
-			GetScreen()->ShowErrorMessage(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), szFromFilename, SrcGrp.GetError()).getData());
+			GetScreen()->ShowErrorMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), szFromFilename, SrcGrp.GetError()).getData());
 		}
 	}
 	// update icon

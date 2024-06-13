@@ -511,7 +511,7 @@ bool C4GraphicsSystem::SaveScreenshot(bool fSaveAll)
 	bool fSuccess = DoSaveScreenshot(fSaveAll, strFilePath);
 
 	// log if successful/where it has been stored
-	LogF(LoadResStr(fSuccess ? "IDS_PRC_SCREENSHOT" : "IDS_PRC_SCREENSHOTERR"), Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
+	LogF(LoadResStr(fSuccess ? C4ResStrTableKey::IDS_PRC_SCREENSHOT : C4ResStrTableKey::IDS_PRC_SCREENSHOTERR), Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
 
 	// return success
 	return !!fSuccess;
@@ -636,7 +636,7 @@ void C4GraphicsSystem::FlashMessage(const char *szMessage)
 void C4GraphicsSystem::FlashMessageOnOff(const char *strWhat, bool fOn)
 {
 	StdStrBuf strMessage;
-	strMessage.Format("%s: %s", strWhat, LoadResStr(fOn ? "IDS_CTL_ON" : "IDS_CTL_OFF"));
+	strMessage.Format("%s: %s", strWhat, LoadResStr(fOn ? C4ResStrTableKey::IDS_CTL_ON : C4ResStrTableKey::IDS_CTL_OFF));
 	FlashMessage(strMessage.getData());
 }
 
@@ -662,24 +662,24 @@ void C4GraphicsSystem::DrawHelp()
 	int32_t iWdt = ViewportArea.Wdt;
 	StdStrBuf strText;
 	// left coloumn
-	strText.AppendFormat("[%s]\n\n", LoadResStr("IDS_CTL_GAMEFUNCTIONS"));
+	strText.AppendFormat("[%s]\n\n", LoadResStr(C4ResStrTableKey::IDS_CTL_GAMEFUNCTIONS));
 	// main functions
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ToggleShowHelp").getData(), LoadResStr("IDS_CON_HELP"));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("MusicToggle").getData(), LoadResStr("IDS_CTL_MUSIC"));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("SoundToggle").getData(), LoadResStr("IDS_CTL_SOUND"));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("NetClientListDlgToggle").getData(), LoadResStr("IDS_DLG_NETWORK"));
+	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ToggleShowHelp").getData(), LoadResStr(C4ResStrTableKey::IDS_CON_HELP));
+	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("MusicToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MUSIC));
+	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("SoundToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SOUND));
+	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("NetClientListDlgToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_NETWORK));
 	// messages
 	StdStrBuf strAltChatKey(GetKeyboardInputName("ChatOpen", false, 0));
-	strText.AppendFormat("\n<c ffff00>%s/%s</c> - %s\n", GetKeyboardInputName("ChatOpen", false, 1).getData(), strAltChatKey.getData(), LoadResStr("IDS_CTL_SENDMESSAGE"));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("MsgBoardScrollUp").getData(), LoadResStr("IDS_CTL_MESSAGEBOARDBACK"));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("MsgBoardScrollDown").getData(), LoadResStr("IDS_CTL_MESSAGEBOARDFORWARD"));
+	strText.AppendFormat("\n<c ffff00>%s/%s</c> - %s\n", GetKeyboardInputName("ChatOpen", false, 1).getData(), strAltChatKey.getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SENDMESSAGE));
+	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("MsgBoardScrollUp").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MESSAGEBOARDBACK));
+	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("MsgBoardScrollDown").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MESSAGEBOARDFORWARD));
 	// irc chat
-	strText.AppendFormat("\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ToggleChat").getData(), LoadResStr("IDS_CTL_IRCCHAT"));
+	strText.AppendFormat("\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ToggleChat").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_IRCCHAT));
 	// scoreboard
-	strText.AppendFormat("\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ScoreboardToggle").getData(), LoadResStr("IDS_CTL_SCOREBOARD"));
+	strText.AppendFormat("\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ScoreboardToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCOREBOARD));
 	// screenshots
-	strText.AppendFormat("\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("Screenshot").getData(), LoadResStr("IDS_CTL_SCREENSHOT"));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ScreenshotEx").getData(), LoadResStr("IDS_CTL_SCREENSHOTEX"));
+	strText.AppendFormat("\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("Screenshot").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCREENSHOT));
+	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ScreenshotEx").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCREENSHOTEX));
 
 	Application.DDraw->TextOut(strText.getData(), Game.GraphicsResource.FontRegular, 1.0, Application.DDraw->lpBack,
 		iX + 128, iY + 64, CStdDDraw::DEFAULT_MESSAGE_COLOR, ALeft);
@@ -687,11 +687,11 @@ void C4GraphicsSystem::DrawHelp()
 	// right coloumn
 	strText.Clear();
 	// game speed
-	strText.AppendFormat("\n\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("GameSpeedUp").getData(), LoadResStr("IDS_CTL_GAMESPEEDUP"));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("GameSlowDown").getData(), LoadResStr("IDS_CTL_GAMESPEEDDOWN"));
+	strText.AppendFormat("\n\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("GameSpeedUp").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDUP));
+	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("GameSlowDown").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDDOWN));
 	// debug
 	strText.AppendFormat("\n\n[%s]\n\n", "Debug");
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("DbgModeToggle").getData(), LoadResStr("IDS_CTL_DEBUGMODE"));
+	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("DbgModeToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_DEBUGMODE));
 	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("DbgShowVtxToggle").getData(), "Entrance+Vertices");
 	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("DbgShowActionToggle").getData(), "Actions/Commands/Pathfinder");
 	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("DbgShowSolidMaskToggle").getData(), "SolidMasks");
@@ -785,7 +785,7 @@ bool C4GraphicsSystem::ToggleShowNetStatus()
 
 bool C4GraphicsSystem::ToggleShowVertices()
 {
-	if (!Game.DebugMode && !Console.Active) { FlashMessage(LoadResStr("IDS_MSG_NODEBUGMODE")); return false; }
+	if (!Game.DebugMode && !Console.Active) { FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_NODEBUGMODE)); return false; }
 	Toggle(ShowVertices);
 	Toggle(ShowEntrance); // vertices and entrance now toggled together
 	FlashMessageOnOff("Entrance+Vertices", ShowVertices || ShowEntrance);
@@ -794,7 +794,7 @@ bool C4GraphicsSystem::ToggleShowVertices()
 
 bool C4GraphicsSystem::ToggleShowAction()
 {
-	if (!Game.DebugMode && !Console.Active) { FlashMessage(LoadResStr("IDS_MSG_NODEBUGMODE")); return false; }
+	if (!Game.DebugMode && !Console.Active) { FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_NODEBUGMODE)); return false; }
 	if (!(ShowAction || ShowCommand || ShowPathfinder))
 	{
 		ShowAction = true; FlashMessage("Actions");
@@ -816,7 +816,7 @@ bool C4GraphicsSystem::ToggleShowAction()
 
 bool C4GraphicsSystem::ToggleShowSolidMask()
 {
-	if (!Game.DebugMode && !Console.Active) { FlashMessage(LoadResStr("IDS_MSG_NODEBUGMODE")); return false; }
+	if (!Game.DebugMode && !Console.Active) { FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_NODEBUGMODE)); return false; }
 	Toggle(ShowSolidMask);
 	FlashMessageOnOff("SolidMasks", !!ShowSolidMask);
 	return true;
