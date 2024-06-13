@@ -532,11 +532,11 @@ void C4Object::SetOCF()
 #ifndef NDEBUG
 	if (Contained && !Game.Objects.ObjectNumber(Contained))
 	{
-		LogF("Warning: contained in wild object %p!", Contained.Object());
+		LogF("Warning: contained in wild object %p!", static_cast<void *>(Contained.Object()));
 	}
 	else if (Contained && !Contained->Status)
 	{
-		LogF("Warning: contained in deleted object %p (%s)!", Contained.Object(), Contained->GetName());
+		LogF("Warning: contained in deleted object %p (%s)!", static_cast<void *>(Contained.Object()), Contained->GetName());
 	}
 #endif
 	if (Contained)
@@ -674,11 +674,11 @@ void C4Object::UpdateOCF()
 #ifndef NDEBUG
 	if (Contained && !Game.Objects.ObjectNumber(Contained))
 	{
-		LogF("Warning: contained in wild object %p!", Contained.Object());
+		LogF("Warning: contained in wild object %p!", static_cast<void *>(Contained.Object()));
 	}
 	else if (Contained && !Contained->Status)
 	{
-		LogF("Warning: contained in deleted object %p (%s)!", Contained.Object(), Contained->GetName());
+		LogF("Warning: contained in deleted object %p (%s)!", static_cast<void *>(Contained.Object()), Contained->GetName());
 	}
 #endif
 	if (Contained)
@@ -6118,7 +6118,7 @@ StdStrBuf C4Object::GetInfoString()
 		if (!vInfo) continue;
 		// debug: warn for wrong return types
 		if (vInfo.GetType() != C4V_String)
-			DebugLogF("Effect %s(%d) on object %s (#%d) returned wrong info type %d.", pEff->Name, pEff->iNumber, Def->GetName(), Number, vInfo.GetType());
+			DebugLogF("Effect %s(%d) on object %s (#%d) returned wrong info type %d.", pEff->Name, pEff->iNumber, Def->GetName(), Number, std::to_underlying(vInfo.GetType()));
 		// get string val
 		C4String *psInfo = vInfo.getStr(); const char *szEffInfo;
 		if (psInfo && (szEffInfo = psInfo->Data.getData()))

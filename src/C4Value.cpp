@@ -88,11 +88,11 @@ void C4Value::AddDataRef()
 		// check if the object actually exists
 		if (!Game.Objects.ObjectNumber(Data.Obj))
 		{
-			LogF("Warning: using wild object ptr %p!", Data.Obj);
+			LogF("Warning: using wild object ptr %p!", static_cast<void *>(Data.Obj));
 		}
 		else if (!Data.Obj->Status)
 		{
-			LogF("Warning: using ptr on deleted object %p (%s)!", Data.Obj, Data.Obj->GetName());
+			LogF("Warning: using ptr on deleted object %p (%s)!", static_cast<void *>(Data.Obj), Data.Obj->GetName());
 		}
 #endif
 		break;

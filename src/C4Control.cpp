@@ -81,7 +81,7 @@ bool C4Control::PreExecute() const
 		}
 		else
 		{
-			LogF("C4Control::PreExecute: WARNING: Ignoring packet type %2x (not control.)", pPkt->getPktType());
+			LogF("C4Control::PreExecute: WARNING: Ignoring packet type %2x (not control.)", std::to_underlying(pPkt->getPktType()));
 		}
 	}
 	return fReady;
@@ -100,7 +100,7 @@ void C4Control::Execute() const
 		}
 		else
 		{
-			LogF("C4Control::Execute: WARNING: Ignoring packet type %2x (not control.)", pPkt->getPktType());
+			LogF("C4Control::Execute: WARNING: Ignoring packet type %2x (not control.)", std::to_underlying(pPkt->getPktType()));
 		}
 	}
 }
