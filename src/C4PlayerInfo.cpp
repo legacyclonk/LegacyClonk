@@ -787,7 +787,7 @@ bool C4PlayerInfoList::AssignPlayerIDs(C4ClientPlayerInfos *pNewClientInfo)
 			if (GetFreePlayerSlotCount() - iJoinsGranted < 1)
 			{
 				// nope - then deny this join!
-				LogF(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOMANYPLAYERS), static_cast<int>(Game.Parameters.MaxPlayers));
+				Log(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOMANYPLAYERS, static_cast<int>(Game.Parameters.MaxPlayers)).c_str());
 				pNewClientInfo->RemoveIndexedInfo(--i);
 				continue;
 			}
@@ -1229,7 +1229,7 @@ bool C4PlayerInfoList::LoadFromGameText(const char *pSource)
 				// load info from there
 				if (!pNewInfo->LoadFromLocalFile(szPlrInSzenName))
 				{
-					LogF(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_PLRINFO), szPlayerFilename);
+					Log(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_PLRINFO, szPlayerFilename).c_str());
 					delete pNewInfo;
 				}
 				else
@@ -1309,7 +1309,7 @@ bool C4PlayerInfoList::LocalJoinUnjoinedPlayersInQueue()
 			{
 				// failure for user players
 				const char *szPlrName = pInfo->GetName(); if (!szPlrName) szPlrName = "???";
-				LogF(LoadResStr(C4ResStrTableKey::IDS_ERR_JOINQUEUEPLRS), szPlrName);
+				Log(LoadResStr(C4ResStrTableKey::IDS_ERR_JOINQUEUEPLRS, szPlrName).c_str());
 				continue;
 			}
 			Game.Input.Add(CID_JoinPlr,
@@ -1413,7 +1413,7 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 				{
 					// no association for this info: Joins as new player
 					// in savegames, this is unusual. For regular script player restore, it's not
-					if (Game.C4S.Head.SaveGame) LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_RESUMENOPLRASSOCIATION), pInfo->GetName());
+					if (Game.C4S.Head.SaveGame) Log(LoadResStr(C4ResStrTableKey::IDS_PRC_RESUMENOPLRASSOCIATION, pInfo->GetName()).c_str());
 				}
 		}
 		// otherwise any remaining players
@@ -1430,7 +1430,7 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 			else
 			{
 				// in regular mode, these players must be removed
-				LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_RESUMEREMOVEPLRS), iCountRemaining);
+				Log(LoadResStr(C4ResStrTableKey::IDS_PRC_RESUMEREMOVEPLRS, iCountRemaining).c_str());
 				// remove them directly from the game
 				RemoveUnassociatedPlayers(rSavegamePlayers);
 			}
@@ -1476,7 +1476,7 @@ bool C4PlayerInfoList::RecreatePlayerFiles()
 						// that's okay for script players, because those may join w/o recreation files
 						if (pInfo->GetType() != C4PT_Script)
 						{
-							LogF(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOFILE), szPlrName);
+							Log(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOFILE, szPlrName).c_str());
 						}
 						continue;
 					}
@@ -1489,7 +1489,7 @@ bool C4PlayerInfoList::RecreatePlayerFiles()
 						// that's okay for script players, because those may join w/o recreation files
 						if (pInfo->GetType() != C4PT_Script)
 						{
-							LogF(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOEXTRACT), szPlrName, GetFilename(szCurrPlrFile));
+							Log(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOEXTRACT, szPlrName, GetFilename(szCurrPlrFile)).c_str());
 						}
 						continue;
 					}
@@ -1551,7 +1551,7 @@ bool C4PlayerInfoList::RecreatePlayers()
 				else
 				{
 					// this shouldn't happen - remove the player info
-					LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_RESUMENOCLIENT), idAtClient, pkInfo->GetPlayerCount());
+					Log(LoadResStr(C4ResStrTableKey::IDS_PRC_RESUMENOCLIENT, idAtClient, pkInfo->GetPlayerCount()).c_str());
 					continue;
 				}
 			}
@@ -1579,7 +1579,7 @@ bool C4PlayerInfoList::RecreatePlayers()
 					{
 						// for user players, this could happen only if the user cancelled the ressource
 						const char *szPlrName = pInfo->GetName(); if (!szPlrName) szPlrName = "???";
-						LogF(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOFILEFROMNET), szPlrName);
+						Log(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOFILEFROMNET, szPlrName).c_str());
 						continue;
 					}
 					else
@@ -1620,7 +1620,7 @@ bool C4PlayerInfoList::RemoveUnassociatedPlayers(C4PlayerInfoList &rSavegamePlay
 			{
 				if (Game.Players.RemoveUnjoined(pInfo->GetInGameNumber()))
 				{
-					LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_REMOVEPLR), pInfo->GetName());
+					Log(LoadResStr(C4ResStrTableKey::IDS_PRC_REMOVEPLR, pInfo->GetName()).c_str());
 				}
 				else
 					fSuccess = false;

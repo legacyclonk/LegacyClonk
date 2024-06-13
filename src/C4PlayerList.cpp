@@ -276,13 +276,13 @@ C4Player *C4PlayerList::Join(const char *szFilename, bool fScenarioInit, int iAt
 	if (szFilename && !*szFilename) szFilename = nullptr;
 
 	// Log
-	LogF(LoadResStr(fScenarioInit ? C4ResStrTableKey::IDS_PRC_JOINPLR : C4ResStrTableKey::IDS_PRC_RECREATE), pInfo->GetName());
+	Log(LoadResStr(fScenarioInit ? C4ResStrTableKey::IDS_PRC_JOINPLR : C4ResStrTableKey::IDS_PRC_RECREATE, pInfo->GetName()).c_str());
 
 	// Too many players
 	if (1) // replay needs to check, too!
 		if (GetCount() + 1 > Game.Parameters.MaxPlayers)
 		{
-			LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_TOOMANYPLRS), Game.Parameters.MaxPlayers);
+			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_TOOMANYPLRS, Game.Parameters.MaxPlayers).c_str());
 			return nullptr;
 		}
 
@@ -463,7 +463,7 @@ bool C4PlayerList::RemoveAtClient(int iClient, bool fDisconnect)
 	while (pPlr = GetAtClient(iClient))
 	{
 		// Log
-		LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_REMOVEPLR), pPlr->GetName());
+		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_REMOVEPLR, pPlr->GetName()).c_str());
 		// Remove
 		Remove(pPlr, fDisconnect, false);
 	}
@@ -496,7 +496,7 @@ bool C4PlayerList::RemoveAtRemoteClient(bool fDisconnect, bool fNoCalls)
 	while (pPlr = GetAtRemoteClient())
 	{
 		// Log
-		LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_REMOVEPLR), pPlr->GetName());
+		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_REMOVEPLR, pPlr->GetName()).c_str());
 		// Remove
 		Remove(pPlr, fDisconnect, fNoCalls);
 	}
@@ -524,7 +524,7 @@ bool C4PlayerList::RemoveLocal(bool fDisconnect, bool fNoCalls)
 			if (pPlr->LocalControl)
 			{
 				// Log
-				LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_REMOVEPLR), pPlr->GetName());
+				Log(LoadResStr(C4ResStrTableKey::IDS_PRC_REMOVEPLR, pPlr->GetName()).c_str());
 				// Remove
 				Remove(pPlr, fDisconnect, fNoCalls);
 				break;

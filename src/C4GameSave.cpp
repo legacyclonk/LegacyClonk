@@ -41,13 +41,13 @@ bool C4GameSave::SaveCreateGroup(const char *szFilename, C4Group &hUseGroup)
 		if (!ItemIdentical(Game.ScenarioFilename, szFilename))
 			if (!C4Group_CopyItem(Game.ScenarioFilename, szFilename))
 			{
-				LogF(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR), szFilename); return false;
+				Log(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR, szFilename).c_str()); return false;
 			}
 	// open it
 	if (!hUseGroup.Open(szFilename, !GetCopyScenario()))
 	{
 		EraseItem(szFilename);
-		LogF(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR), szFilename);
+		Log(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR, szFilename).c_str());
 		return false;
 	}
 	// done, success
@@ -459,7 +459,7 @@ bool C4GameSave::Save(const char *szFilename)
 	C4Group *pLSaveGroup = new C4Group();
 	if (!SaveCreateGroup(szFilename, *pLSaveGroup))
 	{
-		LogF(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_TARGETGRP), szFilename ? szFilename : "nullptr!");
+		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_TARGETGRP, szFilename ? szFilename : "nullptr!").c_str());
 		delete pLSaveGroup;
 		return false;
 	}

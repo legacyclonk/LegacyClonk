@@ -511,7 +511,7 @@ bool C4GraphicsSystem::SaveScreenshot(bool fSaveAll)
 	bool fSuccess = DoSaveScreenshot(fSaveAll, strFilePath);
 
 	// log if successful/where it has been stored
-	LogF(LoadResStr(fSuccess ? C4ResStrTableKey::IDS_PRC_SCREENSHOT : C4ResStrTableKey::IDS_PRC_SCREENSHOTERR), Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
+	Log(LoadResStr(fSuccess ? C4ResStrTableKey::IDS_PRC_SCREENSHOT : C4ResStrTableKey::IDS_PRC_SCREENSHOTERR, Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename))).c_str());
 
 	// return success
 	return !!fSuccess;
