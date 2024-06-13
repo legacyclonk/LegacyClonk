@@ -1569,7 +1569,7 @@ bool C4PlayerInfoList::RecreatePlayers()
 				{
 					const char *szName = pInfo->GetName();
 					if (!Game.Network.RetrieveRes(pJoinRes->getCore(), C4NetResRetrieveTimeout,
-						FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_RES_PLRFILE), szName).getData()))
+						LoadResStr(C4ResStrTableKey::IDS_NET_RES_PLRFILE, szName).c_str()))
 						szFilename = nullptr;
 				}
 				// file present?

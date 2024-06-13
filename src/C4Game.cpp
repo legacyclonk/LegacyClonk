@@ -166,7 +166,7 @@ bool C4Game::OpenScenario()
 	// Check minimum engine version
 	if (CompareVersion(C4S.Head.C4XVer[0], C4S.Head.C4XVer[1], C4S.Head.C4XVer[2], C4S.Head.C4XVer[3], C4S.Head.C4XVer[4]) > 0)
 	{
-		LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_NOREQC4X), C4S.Head.C4XVer[0], C4S.Head.C4XVer[1], C4S.Head.C4XVer[2], C4S.Head.C4XVer[3], C4S.Head.C4XVer[4]).getData());
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NOREQC4X, C4S.Head.C4XVer[0], C4S.Head.C4XVer[1], C4S.Head.C4XVer[2], C4S.Head.C4XVer[3], C4S.Head.C4XVer[4]).c_str());
 		return false;
 	}
 
@@ -871,7 +871,7 @@ bool C4Game::InitMaterialTexture()
 		{
 			if (!Mats.OpenAsChild(&ScenarioFile, C4CFN_Material))
 			{
-				LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS), Mats.GetError()).getData());
+				LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_SCENARIOMATERIALS, Mats.GetError()).c_str());
 				return false;
 			}
 			// Once only
@@ -883,7 +883,7 @@ bool C4Game::InitMaterialTexture()
 			// Find next external material source
 			if (!Mats.Open(matRes->getFile()))
 			{
-				LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_EXTERNALMATERIALS), matRes->getFile(), Mats.GetError()).getData());
+				LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_EXTERNALMATERIALS, matRes->getFile(), Mats.GetError()).c_str());
 				return false;
 			}
 			++matRes;
@@ -1605,7 +1605,7 @@ bool C4Game::DropFile(const char *szFilename, int32_t iX, int32_t iY)
 				return DropDef(c_id, iX, iY);
 			}
 		// Failure
-		Console.Out(FormatString(LoadResStr(C4ResStrTableKey::IDS_CNS_DROPNODEF), GetFilename(szFilename)).getData());
+		Console.Out(LoadResStr(C4ResStrTableKey::IDS_CNS_DROPNODEF, GetFilename(szFilename)).c_str());
 		return false;
 	}
 	return false;
@@ -1622,7 +1622,7 @@ bool C4Game::DropDef(C4ID id, int32_t iX, int32_t iY)
 	else
 	{
 		// Failure
-		Console.Out(FormatString(LoadResStr(C4ResStrTableKey::IDS_CNS_DROPNODEF), C4IdText(id)).getData());
+		Console.Out(LoadResStr(C4ResStrTableKey::IDS_CNS_DROPNODEF, C4IdText(id)).c_str());
 	}
 	return false;
 }
@@ -2387,7 +2387,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 				auto group = std::make_unique<C4Group>();
 				if (!group->Open(def.getFile()))
 				{
-					LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_OPENRES), def.getFile(), group->GetError()).getData());
+					LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_OPENRES, def.getFile(), group->GetError()).c_str());
 					return false;
 				}
 
@@ -2834,12 +2834,12 @@ bool C4Game::InitPlayers()
 		{
 			if (Application.isFullScreen)
 			{
-				LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_TOOMANYPLRS), Parameters.MaxPlayers).getData());
+				LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_TOOMANYPLRS, Parameters.MaxPlayers).c_str());
 				return false;
 			}
 			else
 			{
-				Console.Message(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_TOOMANYPLRS), Parameters.MaxPlayers).getData());
+				Console.Message(LoadResStr(C4ResStrTableKey::IDS_PRC_TOOMANYPLRS, Parameters.MaxPlayers).c_str());
 			}
 		}
 	}
@@ -3276,13 +3276,13 @@ bool C4Game::LoadScenarioComponents()
 		if (SLen(SctName) > C4MaxName || !*SctName)
 		{
 			DebugLog("invalid section name");
-			LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_SCENSECTION), fn).getData()); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_SCENSECTION, fn).c_str()); return false;
 		}
 		// load this section into temp store
 		C4ScenarioSection *pSection = new C4ScenarioSection(SctName);
 		if (!pSection->ScenarioLoad(fn))
 		{
-			LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_SCENSECTION), fn).getData()); return false;
+			LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_SCENSECTION, fn).c_str()); return false;
 		}
 	}
 
@@ -3762,14 +3762,14 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 		LogFatal(FormatString(strRefQueryFailed.getData(), RefClient.GetError()).getData()); return false;
 	}
 	// We have to wait for the answer
-	StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_QUERYMSG), szAddress);
-	Log(Message.getData());
+	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_QUERYMSG, szAddress)};
+	Log(message.c_str());
 	// Set up wait dialog
 	C4GUI::MessageDialog *pDlg = nullptr;
 	if (pGUI && !Console.Active)
 	{
 		// create & show
-		pDlg = new C4GUI::MessageDialog(Message.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_QUERYTITLE),
+		pDlg = new C4GUI::MessageDialog(message.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_QUERYTITLE),
 			C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsMedium);
 		if (!pDlg || !pDlg->Show(pGUI, true)) return false;
 	}
@@ -3823,7 +3823,7 @@ bool C4Game::InitNetworkFromReference(const C4Network2Reference &Reference)
 	// Connect
 	if (Network.InitClient(Reference, false) != C4Network2::IR_Success)
 	{
-		LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_NOHOSTCON), pHostData->getName()).getData());
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_NOHOSTCON, pHostData->getName()).c_str());
 		return false;
 	}
 	// init control
@@ -4333,7 +4333,7 @@ bool C4Game::SpeedUp()
 	// Use /fast to set to even higher speeds.
 	FrameSkip = BoundBy<int32_t>(FrameSkip + 1, 1, 50);
 	FullSpeed = true;
-	GraphicsSystem.FlashMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_SPEED), FrameSkip).getData());
+	GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_SPEED, FrameSkip).c_str());
 	return true;
 }
 
@@ -4342,7 +4342,7 @@ bool C4Game::SlowDown()
 	FrameSkip = BoundBy<int32_t>(FrameSkip - 1, 1, 50);
 	if (FrameSkip == 1)
 		FullSpeed = false;
-	GraphicsSystem.FlashMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_SPEED), FrameSkip).getData());
+	GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_SPEED, FrameSkip).c_str());
 	return true;
 }
 

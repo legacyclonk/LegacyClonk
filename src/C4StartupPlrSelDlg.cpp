@@ -295,9 +295,9 @@ void C4StartupPlrSelDlg::PlayerListItem::SetSelectionInfo(C4GUI::TextWindow *pSe
 	// write info text for player
 	pSelectionInfo->ClearText(false);
 	pSelectionInfo->AddTextLine(FormatString("%s", Core.PrefName).getData(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_DESC_PLAYER), static_cast<int>(Core.Score), static_cast<int>(Core.Rounds), static_cast<int>(Core.RoundsWon), static_cast<int>(Core.RoundsLost), TimeString(Core.TotalPlayingTime).getData(), Core.Comment).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
+	pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_DESC_PLAYER, static_cast<int>(Core.Score), static_cast<int>(Core.Rounds), static_cast<int>(Core.RoundsWon), static_cast<int>(Core.RoundsLost), TimeString(Core.TotalPlayingTime).getData(), Core.Comment).c_str(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	if (Core.LastRound.Title[0])
-		pSelectionInfo->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_DESC_LASTGAME), Core.LastRound.Title.getData(), DateString(Core.LastRound.Date).getData(), TimeString(Core.LastRound.Duration).getData(), static_cast<int>(Core.LastRound.FinalScore)).getData(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
+		pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_DESC_LASTGAME, Core.LastRound.Title.getData(), DateString(Core.LastRound.Date).getData(), TimeString(Core.LastRound.Duration).getData(), static_cast<int>(Core.LastRound.FinalScore)).c_str(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	pSelectionInfo->UpdateHeight();
 }
 
@@ -307,8 +307,8 @@ StdStrBuf C4StartupPlrSelDlg::PlayerListItem::GetDelWarning()
 	sWarning.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETEPLR), Core.PrefName);
 	int32_t iPlrTime = Core.TotalPlayingTime;
 	if (iPlrTime > 60 * 60 * 10)
-		sWarning.Append(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETEPLR_PLAYTIME),
-			TimeString(iPlrTime).getData()).getData());
+		sWarning.Append(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETEPLR_PLAYTIME,
+			TimeString(iPlrTime).getData()).c_str());
 	return sWarning;
 }
 
@@ -476,9 +476,9 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 		sPromo.Format(LoadResStr(C4ResStrTableKey::IDS_DESC_PROMO), sNextRankName.getData(), static_cast<int>(iNextRankExp));
 	else
 		sPromo.Copy(LoadResStr(C4ResStrTableKey::IDS_DESC_NOPROMO));
-	pSelectionInfo->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_DESC_OBJECT),
+	pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_DESC_OBJECT,
 		Core.TypeName, Core.Experience, Core.Rounds, Core.DeathCount,
-		sPromo.getData(), TimeString(Core.TotalPlayingTime).getData(), DateString(Core.Birthday).getData()).getData(),
+		sPromo.getData(), TimeString(Core.TotalPlayingTime).getData(), DateString(Core.Birthday).getData()).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Energy, C4ResStrTableKey::IDS_DESC_ENERGY).getData(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
@@ -514,7 +514,7 @@ StdStrBuf C4StartupPlrSelDlg::CrewListItem::GetDelWarning()
 		Core.sRankName.getData(), Core.Name, GetFilename().getData());
 	int32_t iPlrTime = Core.TotalPlayingTime;
 	if (iPlrTime > 60 * 60 * 10)
-		sWarning.Append(static_cast<const StdStrBuf &>(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK_PLAYTIME), TimeString(iPlrTime).getData())));
+		sWarning.Append(LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK_PLAYTIME, TimeString(iPlrTime).getData()).c_str());
 	return sWarning;
 }
 
@@ -782,12 +782,12 @@ void C4StartupPlrSelDlg::UpdateSelection()
 	if (pSel && pSel->IsActivated())
 	{
 		btnActivatePlr->SetText(LoadResStr(C4ResStrTableKey::IDS_BTN_DEACTIVATE));
-		btnActivatePlr->SetToolTip(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_NOPARTICIPATE_DESC), pSel->GetName()).getData());
+		btnActivatePlr->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MSG_NOPARTICIPATE_DESC, pSel->GetName()).c_str());
 	}
 	else
 	{
 		btnActivatePlr->SetText(LoadResStr(C4ResStrTableKey::IDS_BTN_ACTIVATE));
-		btnActivatePlr->SetToolTip(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_PARTICIPATE_DESC), pSel ? pSel->GetName() : "").getData());
+		btnActivatePlr->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MSG_PARTICIPATE_DESC, pSel ? pSel->GetName() : "").c_str());
 	}
 	// no item selected?
 	if (!pSel)
@@ -835,7 +835,7 @@ void C4StartupPlrSelDlg::UpdateActivatedPlayers()
 			else
 			{
 				pPlrItem->SetActivated(false);
-				GetScreen()->ShowMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_PLAYERSTOOLONG), pPlrItem->GetName()).getData(), LoadResStr(C4ResStrTableKey::IDS_ERR_TITLE), C4GUI::Ico_Error);
+				GetScreen()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_PLAYERSTOOLONG, pPlrItem->GetName()).c_str(), LoadResStr(C4ResStrTableKey::IDS_ERR_TITLE), C4GUI::Ico_Error);
 			}
 		}
 }
@@ -905,8 +905,8 @@ bool C4StartupPlrSelDlg::CheckPlayerName(const StdStrBuf &Playername, StdStrBuf 
 	// validity check: Must not exist yet if renamed
 	if (!pPrevFilename || !ItemIdentical(Path.getData(), pPrevFilename->getData())) if (ItemExists(Path.getData()))
 	{
-		C4GUI::Screen::GetScreenS()->ShowMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_PLRNAME_TAKEN),
-			Playername.getData()).getData(), "", C4GUI::Ico_Error);
+		C4GUI::Screen::GetScreenS()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_PLRNAME_TAKEN,
+			Playername.getData()).c_str(), "", C4GUI::Ico_Error);
 		return false;
 	}
 	Filename.Take(Path);
@@ -944,8 +944,8 @@ void C4StartupPlrSelDlg::SetCrewMode(PlayerListItem *pSel)
 	{
 		StdStrBuf strCrew(FormatString("%s %s", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW).c_str(), CurrPlayer.Core.PrefName));
 		// player has no crew!
-		GetScreen()->ShowMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_PLRNOCREW),
-			CurrPlayer.Core.PrefName).getData(),
+		GetScreen()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_PLRNOCREW,
+			CurrPlayer.Core.PrefName).c_str(),
 			strCrew.getData(), C4GUI::Ico_Player);
 		return;
 	}
@@ -1501,7 +1501,7 @@ void C4StartupPlrPropertiesDlg::SetNewPicture(const char *szFromFilename, bool f
 		if (!fSucc)
 		{
 			// error!
-			GetScreen()->ShowErrorMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), szFromFilename, SrcGrp.GetError()).getData());
+			GetScreen()->ShowErrorMessage(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, szFromFilename, SrcGrp.GetError()).c_str());
 		}
 	}
 	// update icon

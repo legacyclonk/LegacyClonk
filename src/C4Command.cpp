@@ -831,7 +831,7 @@ void C4Command::Build()
 	// Lost the ability to build? Fail.
 	if (cObj->GetPhysical() && !cObj->GetPhysical()->CanConstruct)
 	{
-		Finish(false, FormatString(LoadResStr(C4ResStrTableKey::IDS_TEXT_CANTBUILD), cObj->GetName()).getData());
+		Finish(false, LoadResStr(C4ResStrTableKey::IDS_TEXT_CANTBUILD, cObj->GetName()).c_str());
 		return;
 	}
 	// Target complete: Command fulfilled
@@ -1298,7 +1298,7 @@ bool C4Command::CheckMinimumCon(C4Object *pObj)
 		if (pObj->Category & C4D_SelectKnowledge)
 			if (pObj->GetCon() < FullCon)
 			{
-				Finish(false, FormatString(LoadResStr(C4ResStrTableKey::IDS_OBJ_NOCONACTIV), pObj->GetName()).getData());
+				Finish(false, LoadResStr(C4ResStrTableKey::IDS_OBJ_NOCONACTIV, pObj->GetName()).c_str());
 				return true;
 			}
 	return false;
@@ -1692,7 +1692,7 @@ void C4Command::Construct()
 	// Only those who can
 	if (cObj->GetPhysical() && !cObj->GetPhysical()->CanConstruct)
 	{
-		Finish(false, FormatString(LoadResStr(C4ResStrTableKey::IDS_TEXT_CANTBUILD), cObj->GetName()).getData());
+		Finish(false, LoadResStr(C4ResStrTableKey::IDS_TEXT_CANTBUILD, cObj->GetName()).c_str());
 		return;
 	}
 	// No target type to construct: open menu & done
@@ -2013,7 +2013,7 @@ void C4Command::Buy()
 	// Material not available for purchase at base: fail
 	if (Game.Players.Get(Target->Base)->HomeBaseMaterial.GetIDCount(Data) <= 0)
 	{
-		Finish(false, FormatString(LoadResStr(C4ResStrTableKey::IDS_PLR_NOTAVAIL), pDef->GetName()).getData());
+		Finish(false, LoadResStr(C4ResStrTableKey::IDS_PLR_NOTAVAIL, pDef->GetName()).c_str());
 		return;
 	}
 	// Base owner has not enough funds: fail
@@ -2199,7 +2199,7 @@ void C4Command::Fail(const char *szFailMessage)
 			if (CallFailed()) return;
 			// Fail-function not available or returned zero: standard message
 			SCopy(LoadResStr(CommandNameID(l_Command)), szCommandName);
-			failMessage = FormatString(LoadResStr(C4ResStrTableKey::IDS_CON_FAILURE), szCommandName).getData();
+			failMessage = LoadResStr(C4ResStrTableKey::IDS_CON_FAILURE, szCommandName).c_str();
 			break;
 		}
 		case C4CMD_Exit:
@@ -2216,14 +2216,14 @@ void C4Command::Fail(const char *szFailMessage)
 			SCopy(LoadResStr(CommandNameID(Command)), szCommandName);
 			C4Def *pDef; pDef = Game.Defs.ID2Def(Data);
 			SCopy(pDef ? pDef->GetName() : LoadResStr(C4ResStrTableKey::IDS_OBJ_UNKNOWN), szObjectName, C4MaxName);
-			failMessage = FormatString(LoadResStr(C4ResStrTableKey::IDS_CON_FAILUREOF), szCommandName, szObjectName).getData();
+			failMessage = LoadResStr(C4ResStrTableKey::IDS_CON_FAILUREOF, szCommandName, szObjectName).c_str();
 			break;
 		default:
 			// Already has a fail message
 			if (szFailMessage) break;
 			// Standard no-can-do message
 			SCopy(LoadResStr(CommandNameID(Command)), szCommandName);
-			failMessage = FormatString(LoadResStr(C4ResStrTableKey::IDS_CON_FAILURE), szCommandName).getData();
+			failMessage = LoadResStr(C4ResStrTableKey::IDS_CON_FAILURE, szCommandName).c_str();
 			break;
 		}
 		if (l_Obj) if (l_Obj->Status && !l_Obj->Def->SilentCommands)

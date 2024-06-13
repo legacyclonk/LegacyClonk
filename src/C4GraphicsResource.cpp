@@ -366,7 +366,7 @@ bool C4GraphicsResource::RegisterGlobalGraphics()
 	if (!pMainGfxGrp->Open(C4CFN_Graphics) || !Files.RegisterGroup(*pMainGfxGrp, true, C4GSPrio_Base, C4GSCnt_Graphics, 1))
 	{
 		// error
-		LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), C4CFN_Graphics, pMainGfxGrp->GetError()).getData());
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, C4CFN_Graphics, pMainGfxGrp->GetError()).c_str());
 		delete pMainGfxGrp;
 		return false;
 	}

@@ -360,7 +360,7 @@ void C4MapFolderData::CreateGUIElements(C4StartupScenSelDlg *pMainDlg, C4GUI::Wi
 				(pScen->fctBase, pScen->fctOverlay, pScen->rcfOverlayPos, 0, pMainDlg, &C4StartupScenSelDlg::OnButtonScenario);
 			ppScenList[i]->pBtn = pBtn;
 			if (pScen->pScenEntry)
-				pBtn->SetToolTip(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_MAP_STARTSCEN), pScen->pScenEntry->GetName().getData()).getData());
+				pBtn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MSG_MAP_STARTSCEN, pScen->pScenEntry->GetName().getData()).c_str());
 			if (pScen->sTitle.getLength() > 0)
 			{
 				pBtn->SetText(pScen->sTitle.getData());
@@ -1606,9 +1606,9 @@ void C4StartupScenSelDlg::UpdateSelection()
 	pSelectionInfo->SetPicture(fctTitle);
 	if (!!sTitle && (!sDesc || !*sDesc.getData())) pSelectionInfo->AddTextLine(sTitle.getData(), &C4Startup::Get()->Graphics.BookFontCapt, ClrScenarioItem, false, false);
 	if (!!sDesc) pSelectionInfo->AddTextLine(sDesc.getData(), &C4Startup::Get()->Graphics.BookFont, ClrScenarioItem, false, false, &C4Startup::Get()->Graphics.BookFontCapt);
-	if (!!sAuthor) pSelectionInfo->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_CTL_AUTHOR), sAuthor.getData()).getData(),
+	if (!!sAuthor) pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_CTL_AUTHOR, sAuthor.getData()).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrScenarioItemXtra, false, false);
-	if (!!sVersion) pSelectionInfo->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_DLG_VERSION), sVersion.getData()).getData(),
+	if (!!sVersion) pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_DLG_VERSION, sVersion.getData()).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrScenarioItemXtra, false, false);
 	pSelectionInfo->UpdateHeight();
 	// usecrew-button

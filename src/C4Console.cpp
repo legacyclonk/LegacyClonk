@@ -750,7 +750,7 @@ bool C4Console::SaveGame(bool fSaveGame)
 	// Can't save to child groups
 	if (Game.ScenarioFile.GetMother())
 	{
-		Message(FormatString(LoadResStr(C4ResStrTableKey::IDS_CNS_NOCHILDSAVE), GetFilename(Game.ScenarioFile.GetName())).getData());
+		Message(LoadResStr(C4ResStrTableKey::IDS_CNS_NOCHILDSAVE, GetFilename(Game.ScenarioFile.GetName())).c_str());
 		return false;
 	}
 
@@ -841,7 +841,7 @@ bool C4Console::FileSaveAs(bool fSaveGame)
 	// Failure message
 	if (!fOkay)
 	{
-		Message(FormatString(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR), Game.ScenarioFilename).getData());
+		Message(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR, Game.ScenarioFilename).c_str());
 		return false;
 	}
 	// Save game
@@ -1560,23 +1560,23 @@ void C4Console::UpdateNetMenu()
 #endif
 
 	// Host
-	const auto &text = FormatString(LoadResStr(C4ResStrTableKey::IDS_MNU_NETHOST), Game.Clients.getLocalName(), Game.Clients.getLocalID());
+	const auto text = LoadResStr(C4ResStrTableKey::IDS_MNU_NETHOST, Game.Clients.getLocalName(), Game.Clients.getLocalID());
 #ifdef _WIN32
-	AddMenuItem(hMenu, IDM_NET_CLIENT1 + Game.Clients.getLocalID(), text.getData());
+	AddMenuItem(hMenu, IDM_NET_CLIENT1 + Game.Clients.getLocalID(), text.c_str());
 #elif WITH_DEVELOPER_MODE
-	GtkWidget *item = gtk_menu_item_new_with_label(text.getData());
+	GtkWidget *item = gtk_menu_item_new_with_label(text.c_str());
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuNet), item);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(OnNetClient), GINT_TO_POINTER(Game.Clients.getLocalID()));
 #endif
 	// Clients
 	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(nullptr); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
 	{
-		const auto &text = FormatString(LoadResStr(pClient->isActivated() ? C4ResStrTableKey::IDS_MNU_NETCLIENT : C4ResStrTableKey::IDS_MNU_NETCLIENTDE),
+		const auto text = LoadResStr(pClient->isActivated() ? C4ResStrTableKey::IDS_MNU_NETCLIENT : C4ResStrTableKey::IDS_MNU_NETCLIENTDE,
 			pClient->getName(), pClient->getID());
 #ifdef _WIN32
-		AddMenuItem(hMenu, IDM_NET_CLIENT1 + pClient->getID(), text.getData());
+		AddMenuItem(hMenu, IDM_NET_CLIENT1 + pClient->getID(), text.c_str());
 #elif WITH_DEVELOPER_MODE
-		item = gtk_menu_item_new_with_label(text.getData());
+		item = gtk_menu_item_new_with_label(text.c_str());
 		gtk_menu_shell_append(GTK_MENU_SHELL(menuNet), item);
 		g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(OnNetClient), GINT_TO_POINTER(pClient->getID()));
 #endif

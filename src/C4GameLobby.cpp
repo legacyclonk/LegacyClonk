@@ -103,7 +103,7 @@ void ScenDesc::Update()
 	}
 	else
 	{
-		pDescBox->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_SCENARIODESC_LOADING), static_cast<int>(pRes->getPresentPercent())).getData(),
+		pDescBox->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_MSG_SCENARIODESC_LOADING, static_cast<int>(pRes->getPresentPercent())).c_str(),
 			&rTextFont, C4GUI_MessageFontClr, false, true);
 	}
 	pDescBox->UpdateHeight();
@@ -211,7 +211,7 @@ MainDlg::MainDlg(bool fHost)
 	pRightTabLbl = new C4GUI::WoodenLabel("", caRight.GetFromTop(C4GUI::WoodenLabel::GetDefaultHeight(&(C4GUI::GetRes()->TextFont))), C4GUI_CaptionFontClr, &C4GUI::GetRes()->TextFont, ALeft);
 	caRight.ExpandTop(iIndentY4 * 2 + 1); // undo margin, so client list is located directly under label
 	pRightTab = new C4GUI::Tabular(caRight.GetAll(), C4GUI::Tabular::tbNone);
-	C4GUI::Tabular::Sheet *pPlayerSheet = pRightTab->AddSheet(FormatString(LoadResStr(C4ResStrTableKey::IDS_DLG_PLAYERS), -1, -1).getData());
+	C4GUI::Tabular::Sheet *pPlayerSheet = pRightTab->AddSheet(LoadResStr(C4ResStrTableKey::IDS_DLG_PLAYERS, -1, -1).c_str());
 	C4GUI::Tabular::Sheet *pResSheet = pRightTab->AddSheet(LoadResStr(C4ResStrTableKey::IDS_DLG_RESOURCES));
 	C4GUI::Tabular::Sheet *pOptionsSheet = pRightTab->AddSheet(LoadResStr(C4ResStrTableKey::IDS_DLG_OPTIONS));
 	C4GUI::Tabular::Sheet *pScenarioSheet = pRightTab->AddSheet(LoadResStr(C4ResStrTableKey::IDS_DLG_SCENARIO));
@@ -514,7 +514,7 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 				// player join - check filename
 				if (!ItemExists(plrPath.getData()))
 				{
-					LobbyError(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_JOINPLR_NOFILE), plrPath.getData()).getData());
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_JOINPLR_NOFILE, plrPath.getData()).c_str());
 				}
 				else
 					Game.Network.Players.JoinLocalPlayer(plrPath.getData(), true);
@@ -617,7 +617,7 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 				}
 				else
 				{
-					LobbyError(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_COOLDOWN), std::to_string(Config.Cooldowns.ReadyCheck.GetRemainingTime().count()).c_str()).getData());
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_COOLDOWN, std::to_string(Config.Cooldowns.ReadyCheck.GetRemainingTime().count()).c_str()).c_str());
 				}
 			}
 			else if (SEqualNoCase(Command, "/help"))
@@ -892,13 +892,13 @@ void MainDlg::OnClientAddPlayer(const char *szFilename, int32_t idClient)
 	// check client number
 	if (idClient != Game.Clients.getLocalID())
 	{
-		LobbyError(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_JOINPLR_NOLOCALCLIENT), szFilename, idClient).getData());
+		LobbyError(LoadResStr(C4ResStrTableKey::IDS_ERR_JOINPLR_NOLOCALCLIENT, szFilename, idClient).c_str());
 		return;
 	}
 	// player join - check filename
 	if (!ItemExists(szFilename))
 	{
-		LobbyError(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_JOINPLR_NOFILE), szFilename).getData());
+		LobbyError(LoadResStr(C4ResStrTableKey::IDS_ERR_JOINPLR_NOFILE, szFilename).c_str());
 		return;
 	}
 	// check countdown state
@@ -1041,7 +1041,7 @@ void MainDlg::UpdatePlayerCountDisplay()
 {
 	if (pRightTab)
 	{
-		pRightTab->GetSheet(0)->SetTitle(FormatString(LoadResStr(C4ResStrTableKey::IDS_DLG_PLAYERS), Game.PlayerInfos.GetActivePlayerCount(true), Game.Parameters.MaxPlayers).getData());
+		pRightTab->GetSheet(0)->SetTitle(LoadResStr(C4ResStrTableKey::IDS_DLG_PLAYERS, Game.PlayerInfos.GetActivePlayerCount(true), Game.Parameters.MaxPlayers).c_str());
 		if (pRightTab->GetActiveSheetIndex() == SheetIdx_PlayerList)
 		{
 			UpdateRightTabTitle();

@@ -387,7 +387,7 @@ C4PlayerSelDlg::C4PlayerSelDlg(C4FileSel_BaseCB *pSelCallback)
 // C4DefinitionSelDlg
 
 C4DefinitionSelDlg::C4DefinitionSelDlg(C4FileSel_BaseCB *pSelCallback, const std::vector<std::string> &fixedSelection)
-	: C4FileSelDlg(Config.AtExePath(Config.General.DefinitionPath), FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_SELECT), LoadResStr(C4ResStrTableKey::IDS_DLG_DEFINITIONS)).getData(), pSelCallback), fixedSelection(fixedSelection)
+	: C4FileSelDlg(Config.AtExePath(Config.General.DefinitionPath), LoadResStr(C4ResStrTableKey::IDS_MSG_SELECT, LoadResStr(C4ResStrTableKey::IDS_DLG_DEFINITIONS)).c_str(), pSelCallback), fixedSelection(fixedSelection)
 {
 }
 
@@ -530,7 +530,7 @@ void C4PortraitSelDlg::ImageLoader::Execute()
 // C4PortraitSelDlg
 
 C4PortraitSelDlg::C4PortraitSelDlg(C4FileSel_BaseCB *pSelCallback, bool fSetPicture, bool fSetBigIcon)
-	: C4FileSelDlg(Config.General.ExePath, FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_SELECT), LoadResStr(C4ResStrTableKey::IDS_TYPE_PORTRAIT)).getData(), pSelCallback, false)
+	: C4FileSelDlg(Config.General.ExePath, LoadResStr(C4ResStrTableKey::IDS_MSG_SELECT, LoadResStr(C4ResStrTableKey::IDS_TYPE_PORTRAIT)).c_str(), pSelCallback, false)
 	, pCheckSetPicture(nullptr), pCheckSetBigIcon(nullptr), fDefSetPicture(fSetPicture), fDefSetBigIcon(fSetBigIcon)
 {
 	char path[_MAX_PATH + 1];

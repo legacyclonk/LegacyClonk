@@ -1008,7 +1008,7 @@ bool C4StartupNetDlg::DoOK()
 	{
 		// erroneous ref selected: Oh noes!
 		Game.pGUI->ShowMessageModal(
-			FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN_BADREF), szError).getData(),
+			LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN_BADREF, szError).c_str(),
 			strNoJoin.getData(),
 			C4GUI::MessageDialog::btnOK,
 			C4GUI::Ico_Error);
@@ -1034,9 +1034,9 @@ bool C4StartupNetDlg::DoOK()
 		if (!(pRef->getGameVersion() == verThis))
 		{
 			Game.pGUI->ShowMessageModal(
-				FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN_BADVER),
+				LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN_BADVER,
 					pRef->getGameVersion().GetString().getData(),
-					verThis.GetString().getData()).getData(),
+					verThis.GetString().getData()).c_str(),
 				strNoJoin.getData(),
 				C4GUI::MessageDialog::btnOK,
 				C4GUI::Ico_Error);
@@ -1096,7 +1096,7 @@ void C4StartupNetDlg::DoRefresh()
 	{
 		StdStrBuf strNoDiscovery(LoadResStr(C4ResStrTableKey::IDS_NET_NODISCOVERY));
 		Game.pGUI->ShowMessageModal(
-			FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_NODISCOVERY_DESC), DiscoverClient.GetError()).getData(),
+			LoadResStr(C4ResStrTableKey::IDS_NET_NODISCOVERY_DESC, DiscoverClient.GetError()).c_str(),
 			strNoDiscovery.getData(),
 			C4GUI::MessageDialog::btnAbort,
 			C4GUI::Ico_Error);
