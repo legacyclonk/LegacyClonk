@@ -26,12 +26,11 @@
 
 const char *LoadResStr(C4ResStrTableKey id);
 std::string LoadResStrNoAmp(C4ResStrTableKey id);
-const char *GetResStr(C4ResStrTableKey id, const char *strTable);
 
 class C4ResStrTable
 {
 public:
-	C4ResStrTable(std::string_view table);
+	C4ResStrTable(std::string_view code, std::string_view table);
 
 public:
 	std::string_view GetEntry(C4ResStrTableKey key) const;

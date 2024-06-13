@@ -23,13 +23,13 @@
 #include <C4GroupSet.h>
 #include "C4ResStrTable.h"
 
+#include <array>
+#include <string>
 #include <vector>
 
 #ifdef HAVE_ICONV
 #include <iconv.h>
 #endif
-
-const int C4MaxLanguageInfo = 1024;
 
 class C4Language;
 
@@ -38,11 +38,11 @@ class C4LanguageInfo
 	friend class C4Language;
 
 public:
-	char Code[2 + 1];
-	char Name[C4MaxLanguageInfo + 1];
-	char Info[C4MaxLanguageInfo + 1];
-	char Fallback[C4MaxLanguageInfo + 1];
-	char Charset[C4MaxLanguageInfo + 1];
+	std::array<char, 2> Code;
+	std::string Name;
+	std::string Info;
+	std::string Fallback;
+	std::string Charset;
 
 protected:
 	C4LanguageInfo *Next;

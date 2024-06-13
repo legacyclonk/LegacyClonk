@@ -22,7 +22,7 @@
 #include <format>
 #include <optional>
 
-C4ResStrTable::C4ResStrTable(std::string_view table)
+C4ResStrTable::C4ResStrTable(const std::string_view code, std::string_view table)
 {
 	const auto keyStringMap = GetKeyStringMap();
 
@@ -54,6 +54,11 @@ C4ResStrTable::C4ResStrTable(std::string_view table)
 	{
 		if (entries[static_cast<std::size_t>(value)].empty())
 		{
+			if (!code.empty())
+			{
+				spdlog::warn("Missing entry in string table {} for key {}", code, key);
+			}
+
 			entries[static_cast<std::size_t>(value)] = std::format("[Undefined: {}]", key);
 		}
 	}
@@ -64,15 +69,10 @@ std::string_view C4ResStrTable::GetEntry(const C4ResStrTableKey key) const
 	return entries[static_cast<std::size_t>(key)];
 }
 
-static std::string_view GetResStr(const C4ResStrTableKey id, const std::optional<C4ResStrTable> &Table)
-{
-	if (!Table.has_value()) return "Language string table not loaded.";
-	return Table->GetEntry(id);
-}
-
 const char *LoadResStr(const C4ResStrTableKey id)
 {
-	return GetResStr(id, Application.ResStrTable).data();
+	if (!Application.ResStrTable.has_value()) return "Language string table not loaded.";
+	return Application.ResStrTable->GetEntry(id).data();
 }
 
 std::string LoadResStrNoAmp(const C4ResStrTableKey id)
@@ -80,9 +80,4 @@ std::string LoadResStrNoAmp(const C4ResStrTableKey id)
 	std::string result{LoadResStr(id)};
 	result.erase(std::remove(result.begin(), result.end(), '&'), result.end());
 	return result;
-}
-
-const char *GetResStr(const C4ResStrTableKey id, const char *strTable)
-{
-	return GetResStr(id, {C4ResStrTable{strTable}}).data();
 }
