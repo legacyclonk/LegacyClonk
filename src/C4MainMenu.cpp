@@ -90,8 +90,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			hGroup.Close();
 			// Add player item
 			sprintf(szCommand, "JoinPlayer:%s", szFilename);
-			StdStrBuf sItemText;
-			sItemText.Format(LoadResStr(C4ResStrTableKey::IDS_MENU_NEWPLAYER), C4P.PrefName);
+			const std::string itemText{LoadResStr(C4ResStrTableKey::IDS_MENU_NEWPLAYER, C4P.PrefName)};
 			// No custom portrait: use default player image
 			if (!fctPortrait.Surface)
 			{
@@ -106,7 +105,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			fctSymbol.Create(symbolSize, symbolSize);
 			fctPortraitClr.DrawClr(fctSymbol, true, C4P.PrefColorDw);
 			// Add menu item
-			Add(sItemText.getData(), fctSymbol, szCommand);
+			Add(itemText.c_str(), fctSymbol, szCommand);
 			// Reset symbol facet (menu holds on to the surface)
 			fctSymbol.Default();
 		}
@@ -149,11 +148,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				fctSymbol.Create(symbolSize, symbolSize);
 				pPlayer->DrawHostility(fctSymbol, iIndex);
 				// Message
-				StdStrBuf sMsg;
-				if (pPlayer->Hostility.GetIDCount(pPlr->Number + 1))
-					sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACK), pPlr->GetName());
-				else
-					sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_MENU_NOATTACK), pPlr->GetName());
+				const std::string msg{LoadResStr(pPlayer->Hostility.GetIDCount(pPlr->Number + 1) ? C4ResStrTableKey::IDS_MENU_ATTACK : C4ResStrTableKey::IDS_MENU_NOATTACK, pPlr->GetName())};
 				// Command
 				char szCommand[1000];
 				sprintf(szCommand, "SetHostility:%i", pPlr->Number);
@@ -163,7 +158,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				if (!pPlayer->Hostility.GetIDCount(pPlr->Number + 1)) SCopy(LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKNOT), szNot);
 				sprintf(szInfoCaption, LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKINFO), pPlr->GetName(), szFriendly, szNot);
 				// Add item
-				Add(sMsg.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, szInfoCaption);
+				Add(msg.c_str(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, szInfoCaption);
 				fctSymbol.Default();
 			}
 		break;
@@ -257,10 +252,9 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				StdStrBuf sCommand;
 				sCommand.Format("Observe:%d", static_cast<int>(pPlr->Number));
 				// Info caption
-				StdStrBuf sInfo;
-				sInfo.Format(LoadResStr(C4ResStrTableKey::IDS_TEXT_FOLLOWVIEWOFPLAYER), pPlr->GetName());
+				const std::string info{LoadResStr(C4ResStrTableKey::IDS_TEXT_FOLLOWVIEWOFPLAYER, pPlr->GetName())};
 				// Add item
-				Add(sMsg.getData(), fctSymbol, sCommand.getData(), C4MN_Item_NoCount, nullptr, sInfo.getData());
+				Add(sMsg.getData(), fctSymbol, sCommand.getData(), C4MN_Item_NoCount, nullptr, info.c_str());
 				fctSymbol.Default();
 				// check if this is the currently selected player
 				if (pVP->GetPlayer() == pPlr->Number) iInitialSelection = GetItemCount() - 1;

@@ -121,11 +121,10 @@ C4PlayerInfoListBox::PlayerListItem::PlayerListItem(C4PlayerInfoListBox *pForLis
 		// Total playing time (not in team filter because then the second line is taken by the score label)
 		if (!pList->IsTeamFilter())
 		{
-			StdStrBuf sTimeLabelText;
 			C4RoundResultsPlayer *pRoundResultsPlr = Game.RoundResults.GetPlayers().GetByID(idPlayer);
 			uint32_t iTimeTotal = pRoundResultsPlr ? pRoundResultsPlr->GetTotalPlayingTime() : 0 /* unknown - should not happen */;
-			sTimeLabelText.Format(LoadResStr(C4ResStrTableKey::IDS_CTL_TOTALPLAYINGTIME), iTimeTotal / 3600, (iTimeTotal / 60) % 60, iTimeTotal % 60);
-			pTimeLabel = new C4GUI::Label(sTimeLabelText.getData(), 0, 0, ARight, dwTextColor, pForListBox->GetCustomFont(), false, true);
+			const std::string timeLabelText{LoadResStr(C4ResStrTableKey::IDS_CTL_TOTALPLAYINGTIME, iTimeTotal / 3600, (iTimeTotal / 60) % 60, iTimeTotal % 60)};
+			pTimeLabel = new C4GUI::Label(timeLabelText.c_str(), 0, 0, ARight, dwTextColor, pForListBox->GetCustomFont(), false, true);
 		}
 		// Extra info set by script
 		C4RoundResultsPlayer *pEvaluationPlayer = Game.RoundResults.GetPlayers().GetByID(idPlayer);

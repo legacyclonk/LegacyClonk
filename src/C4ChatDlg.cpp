@@ -605,9 +605,8 @@ void C4ChatControl::OnConnectBtn(C4GUI::Control *btn)
 	SCopy(sRealName.getData(), Config.IRC.RealName, CFG_MaxString);
 	SCopy(sChannel.getData(), Config.IRC.Channel, CFG_MaxString);
 	// show chat warning
-	StdStrBuf sWarnMsg;
-	sWarnMsg.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_YOUAREABOUTTOCONNECTTOAPU), sServer.getData());
-	if (!GetScreen()->ShowMessageModal(sWarnMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_CHATDISCLAIMER), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Notify, &Config.Startup.HideMsgIRCDangerous))
+	const std::string warnMsg{LoadResStr(C4ResStrTableKey::IDS_MSG_YOUAREABOUTTOCONNECTTOAPU, sServer.getData())};
+	if (!GetScreen()->ShowMessageModal(warnMsg.c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_CHATDISCLAIMER), C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Notify, &Config.Startup.HideMsgIRCDangerous))
 		return;
 	// set up IRC callback
 	pIRCClient->SetNotify(&Application.InteractiveThread);

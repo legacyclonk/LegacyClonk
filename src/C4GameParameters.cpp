@@ -472,7 +472,7 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 	if (!isLeague()) return true;
 
 	bool fError = false;
-	StdStrBuf Error;
+	std::string error;
 
 	// league games: enforce one team per client
 	C4ClientPlayerInfos *pClient; C4PlayerInfo *pInfo;
@@ -493,7 +493,7 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 			}
 			else if ((!Teams.IsCustom() && Game.C4S.Game.IsMelee()) || iTeam != iClientTeam)
 			{
-				Error.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_NOSPLITSCREENINLEAGUE), szFirstPlayer, pInfo->GetName());
+				error = LoadResStr(C4ResStrTableKey::IDS_MSG_NOSPLITSCREENINLEAGUE, szFirstPlayer, pInfo->GetName());
 				if (!fFixIt)
 				{
 					fError = true;
@@ -504,7 +504,7 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 					if (!pClient2 || pClient2->isHost())
 						fError = true;
 					else
-						Game.Clients.CtrlRemove(pClient2, Error.getData());
+						Game.Clients.CtrlRemove(pClient2, error.c_str());
 				}
 			}
 		}
@@ -514,9 +514,9 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 	if (fError)
 	{
 		if (Game.pGUI)
-			Game.pGUI->ShowMessageModal(Error.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE), C4GUI::MessageDialog::btnOK, C4GUI::Ico_MeleeLeague);
+			Game.pGUI->ShowMessageModal(error.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE), C4GUI::MessageDialog::btnOK, C4GUI::Ico_MeleeLeague);
 		else
-			Log(Error.getData());
+			Log(error);
 		return false;
 	}
 	// All okay

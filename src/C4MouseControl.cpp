@@ -574,7 +574,7 @@ void C4MouseControl::UpdateCursorTarget()
 			if (idCaption != C4ResStrTableKey::NumberOfEntries) if (!KeepCaption)
 			{
 				// Caption by cursor
-				Caption.Format(LoadResStr(idCaption), szName);
+				Caption.Copy(LoadResStr(idCaption, szName).c_str());
 				if (fDouble) { Caption.AppendChar('|'); Caption.Append(LoadResStr(C4ResStrTableKey::IDS_CON_DOUBLECLICK)); }
 				IsHelpCaption = false;
 			}
@@ -736,7 +736,7 @@ bool C4MouseControl::UpdatePutTarget(bool fVehicle)
 				// Single object name
 				sName.Ref(Selection.GetObject()->GetName());
 			// Set caption
-			Caption.Format(LoadResStr(fVehicle ? C4ResStrTableKey::IDS_CON_VEHICLEPUT : C4ResStrTableKey::IDS_CON_PUT), sName.getData(), TargetObject->GetName());
+			Caption.Copy(LoadResStr(fVehicle ? C4ResStrTableKey::IDS_CON_VEHICLEPUT : C4ResStrTableKey::IDS_CON_PUT, sName.getData(), TargetObject->GetName()).c_str());
 			IsHelpCaption = false;
 		}
 		// Put target found

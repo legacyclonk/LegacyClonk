@@ -155,7 +155,7 @@ void C4StartupNetListEntry::SetRefQuery(const char *szAddress, enum QueryType eQ
 		return;
 	}
 	// set info
-	sInfoText[0].Format(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTONNET), GetQueryTypeName(eQueryType), pRefClient->getServerName());
+	sInfoText[0].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTONNET, GetQueryTypeName(eQueryType), pRefClient->getServerName()).c_str());
 	sInfoText[1].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_INFOQUERY));
 	UpdateSmallState(); UpdateText();
 	pRefClient->SetNotify(&Application.InteractiveThread);
@@ -275,7 +275,7 @@ bool C4StartupNetListEntry::OnReference()
 			iPlayerCount += ppNewRefs[i]->Parameters.PlayerInfos.GetActivePlayerCount(false);
 		}
 		// Update text accordingly
-		sInfoText[1].Format(LoadResStr(C4ResStrTableKey::IDS_NET_INFOGAMES), static_cast<int>(iNewRefCount), iPlayerCount);
+		sInfoText[1].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_INFOGAMES, static_cast<int>(iNewRefCount), iPlayerCount).c_str());
 		UpdateText();
 	}
 	delete[] ppNewRefs;
@@ -285,7 +285,7 @@ bool C4StartupNetListEntry::OnReference()
 		// show message of the day, if any
 		int32_t iMasterServerMessages = 0;
 		if (pRefClient->GetMessageOfTheDay() && *pRefClient->GetMessageOfTheDay())
-			sInfoText[1 + ++iMasterServerMessages].Format(LoadResStr(C4ResStrTableKey::IDS_NET_MOTD), pRefClient->GetMessageOfTheDay());
+			sInfoText[1 + ++iMasterServerMessages].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_MOTD, pRefClient->GetMessageOfTheDay()).c_str());
 		const char *szMotDLink = pRefClient->GetMessageOfTheDayHyperlink();
 		if (szMotDLink && *szMotDLink)
 		{
@@ -305,9 +305,8 @@ bool C4StartupNetListEntry::OnReference()
 			if (newLeagueServer && !SEqual(newLeagueServer, Config.Network.ServerAddress))
 			{
 				// this is a new redirect. Inform the user and auto-change servers if desired
-				StdStrBuf sMessage;
-				sMessage.Format(LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECTMSG), newLeagueServer);
-				if (GetScreen()->ShowMessageModal(sMessage.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECT), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
+				const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECTMSG, newLeagueServer)};
+				if (GetScreen()->ShowMessageModal(message.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_SERVERREDIRECT), C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_OfficialServer))
 				{
 					// apply new server setting
 					SCopy(newLeagueServer, Config.Network.ServerAddress, CFG_MaxString);
@@ -451,19 +450,19 @@ void C4StartupNetListEntry::SetReference(C4Network2Reference *pRef)
 	pIcon->SetBounds(rctIconSmall);
 	int32_t iPlrCnt = pRef->Parameters.PlayerInfos.GetActivePlayerCount(false);
 	C4Client *pHost = pRef->Parameters.Clients.getHost();
-	sInfoText[0].Format(LoadResStr(C4ResStrTableKey::IDS_NET_REFONCLIENT), pRef->getTitle(), pHost ? pHost->getName() : "unknown");
-	sInfoText[1].Format(LoadResStr(C4ResStrTableKey::IDS_NET_INFOPLRSGOALDESC),
+	sInfoText[0].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_REFONCLIENT, pRef->getTitle(), pHost ? pHost->getName() : "unknown").c_str());
+	sInfoText[1].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_INFOPLRSGOALDESC,
 		static_cast<int>(iPlrCnt),
 		static_cast<int>(pRef->Parameters.MaxPlayers),
 		pRef->Parameters.GetGameGoalString().getData(),
-		StdStrBuf(pRef->getGameStatus().getDescription(), true).getData());
+		StdStrBuf(pRef->getGameStatus().getDescription(), true).getData()).c_str());
 	if (pRef->getTime() > 0)
 	{
 		StdStrBuf strDuration; strDuration.Format("%02d:%02d:%02d", pRef->getTime() / 3600, (pRef->getTime() % 3600) / 60, pRef->getTime() % 60);
 		sInfoText[1].Append(" - "); sInfoText[1].Append(strDuration);
 	}
-	sInfoText[2].Format(LoadResStr(C4ResStrTableKey::IDS_DESC_VERSION), pRef->getGameVersion().GetString().getData());
-	sInfoText[3].Format("%s: %s", LoadResStr(C4ResStrTableKey::IDS_CTL_COMMENT), pRef->getComment());
+	sInfoText[2].Copy(LoadResStr(C4ResStrTableKey::IDS_DESC_VERSION, pRef->getGameVersion().GetString().getData()).c_str());
+	sInfoText[3].Copy(std::format("{}: {}", LoadResStr(C4ResStrTableKey::IDS_CTL_COMMENT), pRef->getComment()).c_str());
 	// password
 	if (pRef->isPasswordNeeded())
 		AddStatusIcon(C4GUI::Ico_Ex_LockedFrontal, LoadResStr(C4ResStrTableKey::IDS_NET_INFOPASSWORD));

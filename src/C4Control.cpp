@@ -642,10 +642,9 @@ void C4ControlClientRemove::Execute() const
 	// local?
 	if (pClient->isLocal())
 	{
-		StdStrBuf sMsg;
-		sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_REMOVED), strClient.getData(), pClient->getName(), strReason.getData());
-		Log(sMsg.getData());
-		Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, sMsg.getData());
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_REMOVED, strClient.getData(), pClient->getName(), strReason.getData())};
+		Log(message);
+		Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, message.c_str());
 		Game.Control.ChangeToLocal();
 		return;
 	}
@@ -1301,7 +1300,7 @@ StdStrBuf C4ControlVote::getDesc() const
 		else
 		{
 			C4Client *pTargetClient = Game.Clients.getClientByID(iData);
-			Action.Format(LoadResStr(C4ResStrTableKey::IDS_VOTE_KICKCLIENT), pTargetClient ? pTargetClient->getName() : "???");
+			Action.Copy(LoadResStr(C4ResStrTableKey::IDS_VOTE_KICKCLIENT, pTargetClient ? pTargetClient->getName() : "???").c_str());
 		}
 		break;
 	case VT_Pause:
@@ -1432,12 +1431,8 @@ void C4ControlVoteEnd::Execute() const
 	if (Game.Network.isEnabled())
 		Game.Network.EndVote(getType(), isApprove(), getData());
 	// Log
-	StdStrBuf sMsg;
-	if (isApprove())
-		sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDTO), getDesc().getData());
-	else
-		sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDNOTTO), getDesc().getData());
-	Log(sMsg.getData());
+	const std::string msg{LoadResStr(isApprove() ? C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDTO : C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDNOTTO, getDesc().getData())};
+	Log(msg);
 	// Approved?
 	if (!isApprove()) return;
 	// Do it
@@ -1475,7 +1470,7 @@ void C4ControlVoteEnd::Execute() const
 		{
 			// otherwise, we have been kicked by the host.
 			// Do a regular disconnect and display reason in game over dialog, so the client knows what has happened!
-			Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, LoadResStr(C4ResStrTableKey::IDS_ERR_YOUHAVEBEENREMOVEDBYVOTIN, sMsg.getData()).c_str());
+			Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, LoadResStr(C4ResStrTableKey::IDS_ERR_YOUHAVEBEENREMOVEDBYVOTIN, msg).c_str());
 			Game.Network.Clear();
 			// Game over immediately, so poor player won't continue game alone
 			Game.DoGameOver();

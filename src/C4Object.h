@@ -440,7 +440,7 @@ public:
 			(Action.Act <= ActIdle || Def->ActMap[Action.Act].Procedure != DFA_FLOAT);
 	}
 
-	StdStrBuf GetNeededMatStr(C4Object *pBuilder);
+	std::string GetNeededMatStr(C4Object *pBuilder);
 
 	// This function is used for:
 	// -Objects to be removed when a player is removed

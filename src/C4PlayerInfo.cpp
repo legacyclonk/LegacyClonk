@@ -1381,10 +1381,10 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 								if (eMatchingLevel > PML_PlrName)
 								{
 									// this is a "wild" match: Warn the player (but not in replays)
-									StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_PLAYERASSIGNMENT), pInfo->GetName(), pSavegameInfo->GetName());
-									Log(sMsg.getData());
+									const std::string msg{LoadResStr(C4ResStrTableKey::IDS_MSG_PLAYERASSIGNMENT, pInfo->GetName(), pSavegameInfo->GetName())};
+									Log(msg);
 									if (Game.pGUI && FullScreen.Active && !Game.C4S.Head.Replay)
-										Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_FREESAVEGAMEPLRS), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify, &Config.Startup.HideMsgPlrTakeOver);
+										Game.pGUI->ShowMessageModal(msg.c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_FREESAVEGAMEPLRS), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify, &Config.Startup.HideMsgPlrTakeOver);
 								}
 							}
 				}

@@ -2190,7 +2190,7 @@ void C4Command::Fail(const char *szFailMessage)
 				C4VID(Target->Component.GetID(0)), C4VInt(Target->Component.GetCount(0))})) // WTF? This is passing current components. Not needed ones!
 				break; // no message
 			if (szFailMessage) break;
-			failMessage = Target->GetNeededMatStr(cObj).getData();
+			failMessage = Target->GetNeededMatStr(cObj);
 			break;
 		case C4CMD_Call:
 		{
