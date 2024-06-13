@@ -116,7 +116,7 @@ void C4StartupOptionsDlg::ResChangeConfirmDlg::UpdateText()
 {
 	StdStrBuf text;
 	C4GUI::GetRes()->TextFont.BreakMessage(
-		FormatString(LoadResStr(C4ResStrTableKey::IDS_MNU_SWITCHRESOLUTION_TEXT), GetRemainingTime()).getData(),
+		LoadResStr(C4ResStrTableKey::IDS_MNU_SWITCHRESOLUTION_TEXT, GetRemainingTime()).c_str(),
 		GetClientRect().Wdt,
 		&text,
 		false
@@ -173,8 +173,8 @@ const char *KeyID2Desc(int32_t iKeyID)
 }
 
 C4StartupOptionsDlg::KeySelDialog::KeySelDialog(int32_t iKeyID, int32_t iCtrlSet, bool fGamepad)
-	: C4GUI::MessageDialog(FormatString(LoadResStr(!fGamepad ? C4ResStrTableKey::IDS_MSG_PRESSKEY : C4ResStrTableKey::IDS_MSG_PRESSBTN),
-		KeyID2Desc(iKeyID), iCtrlSet + 1).getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_DEFINEKEY),
+	: C4GUI::MessageDialog(LoadResStr(!fGamepad ? C4ResStrTableKey::IDS_MSG_PRESSKEY : C4ResStrTableKey::IDS_MSG_PRESSBTN,
+		KeyID2Desc(iKeyID), iCtrlSet + 1).c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_DEFINEKEY),
 		C4GUI::MessageDialog::btnAbort, fGamepad ? C4GUI::Ico_Gamepad : C4GUI::Ico_Keyboard, C4GUI::MessageDialog::dsRegular),
 	key(KEY_Undefined), fGamepad(fGamepad), iCtrlSet(iCtrlSet)
 {

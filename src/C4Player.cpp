@@ -831,7 +831,7 @@ C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pB
 	{
 		if (!fShowErrors) return nullptr;
 		StartSoundEffect("Error", false, 100, pBuyObj);
-		GameMsgPlayer(FormatString(LoadResStr(C4ResStrTableKey::IDS_PLR_ELIMINATED), GetName()).getData(), Number); return nullptr;
+		GameMsgPlayer(LoadResStr(C4ResStrTableKey::IDS_PLR_ELIMINATED, GetName()).c_str(), Number); return nullptr;
 	}
 	// Get def (base owner's homebase material)
 	iAvailable = HomeBaseMaterial.GetIDCount(id);

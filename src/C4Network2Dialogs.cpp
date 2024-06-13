@@ -152,7 +152,7 @@ C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientLi
 	{
 		// mute button
 		pMuteBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>{C4GUI::Ico_Sound, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, pos++), 0, this, &ClientListItem::OnButtonToggleMute};
-		pMuteBtn->SetToolTip(FormatString(LoadResStrNoAmp(pClient && pClient->isMuted() ? C4ResStrTableKey::IDS_NET_UNMUTE_DESC : C4ResStrTableKey::IDS_NET_MUTE_DESC).c_str(), sNameLabel.getData()).getData());
+		pMuteBtn->SetToolTip(LoadResStrNoAmp(pClient && pClient->isMuted() ? C4ResStrTableKey::IDS_NET_UNMUTE_DESC : C4ResStrTableKey::IDS_NET_MUTE_DESC, sNameLabel.getData()).c_str());
 
 		// wait time
 		pPing = new C4GUI::Label("???", GetBounds().Wdt - IconLabelSpacing - pos * 24, iVerticalIndent, ARight);
@@ -280,7 +280,7 @@ void C4Network2ClientListBox::ClientListItem::UpdateMuteButton()
 {
 	auto *client = GetClient();
 	pMuteBtn->SetIcon(client->isMuted() ? C4GUI::Ico_NoSound : C4GUI::Ico_Sound);
-	pMuteBtn->SetToolTip(FormatString(LoadResStrNoAmp(client && client->isMuted() ? C4ResStrTableKey::IDS_NET_UNMUTE_DESC : C4ResStrTableKey::IDS_NET_MUTE_DESC).c_str(), GetNameLabel().getData()).getData());
+	pMuteBtn->SetToolTip(LoadResStrNoAmp(client && client->isMuted() ? C4ResStrTableKey::IDS_NET_UNMUTE_DESC : C4ResStrTableKey::IDS_NET_MUTE_DESC, GetNameLabel().getData()).c_str());
 }
 
 const StdStrBuf C4Network2ClientListBox::ClientListItem::GetNameLabel() const

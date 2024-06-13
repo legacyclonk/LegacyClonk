@@ -137,7 +137,7 @@ void C4ControlSet::Execute() const
 		if (Game.Control.isCtrlHost() && !Game.Control.isReplay() && Game.Control.isNetwork())
 			Config.Network.ControlRate = Game.Control.ControlRate;
 		// always show msg
-		Game.GraphicsSystem.FlashMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_CONTROLRATE), Game.Control.ControlRate, Game.FrameCounter).getData());
+		Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_NET_CONTROLRATE, Game.Control.ControlRate, Game.FrameCounter).c_str());
 		break;
 
 	case C4CVT_DisableDebug: // force debug mode disabled
@@ -220,7 +220,7 @@ void C4ControlSet::Execute() const
 			if (Game.Parameters.UseFairCrew)
 			{
 				int iRank = Game.Rank.RankByExperience(Game.Parameters.FairCrewStrength);
-				Game.GraphicsSystem.FlashMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_FAIRCREW_ACTIVATED), Game.Rank.GetRankName(iRank, true).getData()).getData());
+				Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_FAIRCREW_ACTIVATED, Game.Rank.GetRankName(iRank, true).getData()).c_str());
 			}
 			else
 				Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_FAIRCREW_DEACTIVATED));
@@ -1475,7 +1475,7 @@ void C4ControlVoteEnd::Execute() const
 		{
 			// otherwise, we have been kicked by the host.
 			// Do a regular disconnect and display reason in game over dialog, so the client knows what has happened!
-			Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_YOUHAVEBEENREMOVEDBYVOTIN), sMsg.getData()).getData());
+			Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, LoadResStr(C4ResStrTableKey::IDS_ERR_YOUHAVEBEENREMOVEDBYVOTIN, sMsg.getData()).c_str());
 			Game.Network.Clear();
 			// Game over immediately, so poor player won't continue game alone
 			Game.DoGameOver();

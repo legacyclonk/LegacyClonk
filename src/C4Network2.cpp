@@ -141,7 +141,7 @@ void C4Network2::ReadyCheckDialog::UpdateText()
 {
 	StdStrBuf text;
 	C4GUI::GetRes()->TextFont.BreakMessage(
-		FormatString(LoadResStr(C4ResStrTableKey::IDS_DLG_READYCHECKTEXT), GetRemainingTime()).getData(),
+		LoadResStr(C4ResStrTableKey::IDS_DLG_READYCHECKTEXT, GetRemainingTime()).c_str(),
 		GetClientRect().Wdt,
 		&text,
 		false
@@ -399,14 +399,14 @@ C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2
 		Clear(); return IR_Error;
 	}
 	// log
-	StdStrBuf strMessage = FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_CONNECTHOST), strAddresses.getData());
-	Log(strMessage.getData());
+	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_CONNECTHOST, strAddresses.getData())};
+	Log(message.c_str());
 	// show box
 	C4GUI::MessageDialog *pDlg = nullptr;
 	if (Game.pGUI && !Console.Active)
 	{
 		// create & show
-		pDlg = new C4GUI::MessageDialog(strMessage.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_JOINGAME),
+		pDlg = new C4GUI::MessageDialog(message.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_JOINGAME),
 			C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsRegular);
 		if (!pDlg->Show(Game.pGUI, true)) { Clear(); return IR_Fatal; }
 	}
@@ -1864,7 +1864,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 			// if not: check timeout
 			if (timeGetTime() > iTimeout)
 			{
-				LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_RESTIMEOUT), szResName).getData());
+				LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_RESTIMEOUT, szResName).c_str());
 				delete pDlg;
 				return nullptr;
 			}
@@ -1880,7 +1880,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 		if (!pDlg && !Console.Active && Game.pGUI)
 		{
 			// create
-			pDlg = new C4GUI::ProgressDialog(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_WAITFORRES), szResName).getData(),
+			pDlg = new C4GUI::ProgressDialog(LoadResStr(C4ResStrTableKey::IDS_NET_WAITFORRES, szResName).c_str(),
 				LoadResStr(C4ResStrTableKey::IDS_NET_CAPTION), 100, 0, C4GUI::Ico_NetWait);
 			// show dialog
 			if (!pDlg->Show(Game.pGUI, true)) { delete pDlg; return nullptr; }
@@ -2232,8 +2232,8 @@ bool C4Network2::InitLeague(bool *pCancel)
 		!pLeagueClient->SetServer(MasterServerAddress.getData()))
 	{
 		// Log message
-		StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUEINIT), pLeagueClient->GetError());
-		LogFatal(Message.getData());
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUEINIT, pLeagueClient->GetError())};
+		LogFatal(message.c_str());
 		// Clear league
 		delete pLeagueClient; pLeagueClient = nullptr;
 		if (fHost)
@@ -2241,7 +2241,7 @@ bool C4Network2::InitLeague(bool *pCancel)
 		// Show message, allow abort
 		bool fResult = true;
 		if (Game.pGUI && !Console.Active)
-			fResult = Game.pGUI->ShowMessageModal(Message.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
+			fResult = Game.pGUI->ShowMessageModal(message.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
 			(pCancel ? C4GUI::MessageDialog::btnOK : 0) | C4GUI::MessageDialog::btnAbort,
 				C4GUI::Ico_Error);
 		if (pCancel) *pCancel = fResult;
@@ -2276,14 +2276,14 @@ bool C4Network2::LeagueStart(bool *pCancel)
 	if (!pLeagueClient->Start(Ref))
 	{
 		// Log message
-		StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_STARTGAME), pLeagueClient->GetError());
-		LogFatal(Message.getData());
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_STARTGAME, pLeagueClient->GetError())};
+		LogFatal(message.c_str());
 		// Show message
 		if (Game.pGUI && !Console.Active)
 		{
 			// Show option to cancel, if possible
 			bool fResult = Game.pGUI->ShowMessageModal(
-				Message.getData(),
+				message.c_str(),
 				LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
 				pCancel ? (C4GUI::MessageDialog::btnOK | C4GUI::MessageDialog::btnAbort) : C4GUI::MessageDialog::btnOK,
 				C4GUI::Ico_Error);
@@ -2297,14 +2297,14 @@ bool C4Network2::LeagueStart(bool *pCancel)
 	InitPuncher();
 
 	// Let's wait for response
-	StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_LEAGUE_REGGAME), pLeagueClient->getServerName());
-	Log(Message.getData());
+	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_LEAGUE_REGGAME, pLeagueClient->getServerName())};
+	Log(message.c_str());
 	// Set up a dialog
 	C4GUI::MessageDialog *pDlg = nullptr;
 	if (Game.pGUI && !Console.Active)
 	{
 		// create & show
-		pDlg = new C4GUI::MessageDialog(Message.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_LEAGUE_STARTGAME),
+		pDlg = new C4GUI::MessageDialog(message.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_LEAGUE_STARTGAME),
 			C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsRegular);
 		if (!pDlg || !pDlg->Show(Game.pGUI, true)) return false;
 	}
@@ -2338,15 +2338,15 @@ bool C4Network2::LeagueStart(bool *pCancel)
 		const char *pError = pLeagueClient->GetError() ? pLeagueClient->GetError() :
 			LeagueServerMessage.getLength() ? LeagueServerMessage.getData() :
 			LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_EMPTYREPLY);
-		StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_REGGAME), pError);
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_REGGAME, pError)};
 		// Log message
-		Log(Message.getData());
+		Log(message.c_str());
 		// Show message
 		if (Game.pGUI && !Console.Active)
 		{
 			// Show option to cancel, if possible
 			bool fResult = Game.pGUI->ShowMessageModal(
-				Message.getData(),
+				message.c_str(),
 				LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
 				pCancel ? (C4GUI::MessageDialog::btnOK | C4GUI::MessageDialog::btnAbort) : C4GUI::MessageDialog::btnOK,
 				C4GUI::Ico_Error);
@@ -2360,15 +2360,15 @@ bool C4Network2::LeagueStart(bool *pCancel)
 	// Show message
 	if (LeagueServerMessage.getLength())
 	{
-		StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEGAMESIGNUP), pLeagueClient->getServerName(), LeagueServerMessage.getData());
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEGAMESIGNUP, pLeagueClient->getServerName(), LeagueServerMessage.getData())};
 		// Log message
-		Log(Message.getData());
+		Log(message.c_str());
 		// Show message
 		if (Game.pGUI && !Console.Active)
 		{
 			// Show option to cancel, if possible
 			bool fResult = Game.pGUI->ShowMessageModal(
-				Message.getData(),
+				message.c_str(),
 				LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
 				pCancel ? (C4GUI::MessageDialog::btnOK | C4GUI::MessageDialog::btnAbort) : C4GUI::MessageDialog::btnOK,
 				C4GUI::Ico_Error);
@@ -2454,9 +2454,9 @@ bool C4Network2::LeagueUpdateProcessReply()
 		const char *pError = pLeagueClient->GetError() ? pLeagueClient->GetError() :
 			LeagueServerMessage.getLength() ? LeagueServerMessage.getData() :
 			LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_EMPTYREPLY);
-		StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_UPDATEGAME), pError);
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_UPDATEGAME, pError)};
 		// Show message - no dialog, because it's not really fatal and might happen in the running game
-		Log(Message.getData());
+		Log(message.c_str());
 		return false;
 	}
 	// evaluate reply: Transfer data to players
@@ -2485,7 +2485,7 @@ bool C4Network2::LeagueUpdateProcessReply()
 bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 {
 	C4RoundResultsPlayers RoundResults;
-	StdStrBuf sResultMessage;
+	std::string resultMessage;
 	bool fIsError = true;
 
 	// Not needed?
@@ -2505,18 +2505,18 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 		if (!pLeagueClient->End(Ref, szRecordName, pRecordSHA))
 		{
 			// Log message
-			sResultMessage.Take(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_FINISHGAME), pLeagueClient->GetError()));
-			Log(sResultMessage.getData());
+			resultMessage = LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_FINISHGAME, pLeagueClient->GetError());
+			Log(resultMessage.c_str());
 			// Show message, allow retry
 			if (!Game.pGUI || Console.Active) break;
-			bool fRetry = Game.pGUI->ShowMessageModal(sResultMessage.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
+			bool fRetry = Game.pGUI->ShowMessageModal(resultMessage.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
 				C4GUI::MessageDialog::btnRetryAbort, C4GUI::Ico_Error);
 			if (fRetry) continue;
 			break;
 		}
 		// Let's wait for response
-		StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_LEAGUE_SENDRESULT), pLeagueClient->getServerName());
-		Log(Message.getData());
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_LEAGUE_SENDRESULT, pLeagueClient->getServerName())};
+		Log(message.c_str());
 		// Wait for response
 		while (pLeagueClient->isBusy())
 		{
@@ -2531,11 +2531,11 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 			const char *pError = pLeagueClient->GetError() ? pLeagueClient->GetError() :
 				LeagueServerMessage.getLength() ? LeagueServerMessage.getData() :
 				LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_EMPTYREPLY);
-			sResultMessage.Take(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_SENDRESULT), pError));
+			resultMessage = LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_SENDRESULT, pError);
 			if (!Game.pGUI || Console.Active) continue;
 			// Only retry if we didn't get an answer from the league server
 			bool fRetry = !pLeagueClient->isSuccess();
-			fRetry = Game.pGUI->ShowMessageModal(sResultMessage.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
+			fRetry = Game.pGUI->ShowMessageModal(resultMessage.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
 				fRetry ? C4GUI::MessageDialog::btnRetryAbort : C4GUI::MessageDialog::btnAbort,
 				C4GUI::Ico_Error);
 			if (fRetry) continue;
@@ -2543,7 +2543,7 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 		else
 		{
 			// All OK!
-			sResultMessage.Copy(LoadResStr(Game.Parameters.isLeague() ? C4ResStrTableKey::IDS_MSG_LEAGUEEVALUATIONSUCCESSFU : C4ResStrTableKey::IDS_MSG_INTERNETGAMEEVALUATED));
+			resultMessage = LoadResStr(Game.Parameters.isLeague() ? C4ResStrTableKey::IDS_MSG_LEAGUEEVALUATIONSUCCESSFU : C4ResStrTableKey::IDS_MSG_INTERNETGAMEEVALUATED);
 			fIsError = false;
 		}
 		// Done
@@ -2551,13 +2551,13 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 	}
 
 	// Show message
-	Log(sResultMessage.getData());
+	Log(resultMessage.c_str());
 
 	// Take round results
-	Game.RoundResults.EvaluateLeague(sResultMessage.getData(), !fIsError, RoundResults);
+	Game.RoundResults.EvaluateLeague(resultMessage.c_str(), !fIsError, RoundResults);
 
 	// Send round results to other clients
-	C4PacketLeagueRoundResults LeagueUpdatePacket(sResultMessage.getData(), !fIsError, RoundResults);
+	C4PacketLeagueRoundResults LeagueUpdatePacket(resultMessage.c_str(), !fIsError, RoundResults);
 	Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_LeagueRoundResults, LeagueUpdatePacket));
 
 	// All done
@@ -2617,14 +2617,14 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 		if (!pLeagueClient) return false;
 
 		// Wait for a response
-		StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_TRYLEAGUESIGNUP), pInfo->GetName(), Account.getData(), pLeagueClient->getServerName());
-		Log(Message.getData());
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_TRYLEAGUESIGNUP, pInfo->GetName(), Account.getData(), pLeagueClient->getServerName())};
+		Log(message.c_str());
 		// Set up a dialog
 		C4GUI::MessageDialog *pDlg = nullptr;
 		if (Game.pGUI && !Console.Active)
 		{
 			// create & show
-			pDlg = new C4GUI::MessageDialog(Message.getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUP), C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsRegular);
+			pDlg = new C4GUI::MessageDialog(message.c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUP), C4GUI::MessageDialog::btnAbort, C4GUI::Ico_NetWait, C4GUI::MessageDialog::dsRegular);
 			if (!pDlg || !pDlg->Show(Game.pGUI, true)) return false;
 		}
 		// Wait for response
@@ -2651,7 +2651,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 
 		// Success?
 		StdStrBuf AUID, AccountMaster; bool fUnregistered = false;
-		if (pLeagueClient->GetAuthReply(&Message, &AUID, &AccountMaster, &fUnregistered))
+		if (StdStrBuf Message; pLeagueClient->GetAuthReply(&Message, &AUID, &AccountMaster, &fUnregistered))
 		{
 			// Set AUID
 			pInfo->SetAuthID(AUID.getData());
@@ -2667,11 +2667,11 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 					C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Ex_League);
 			else if (AccountMaster.getLength())
 				fSuccess = Game.pGUI->ShowMessageModal(
-					FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEPLAYERSIGNUPAS), pInfo->GetName(), AccountMaster.getData(), pLeagueClient->getServerName()).getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUPCONFIRM),
+					LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEPLAYERSIGNUPAS, pInfo->GetName(), AccountMaster.getData(), pLeagueClient->getServerName()).c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUPCONFIRM),
 					C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Ex_League);
 			else
 				fSuccess = Game.pGUI->ShowMessageModal(
-					FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEPLAYERSIGNUP), pInfo->GetName(), pLeagueClient->getServerName()).getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUPCONFIRM),
+					LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEPLAYERSIGNUP, pInfo->GetName(), pLeagueClient->getServerName()).c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUPCONFIRM),
 					C4GUI::MessageDialog::btnOKAbort, C4GUI::Ico_Ex_League);
 
 			// Approved?
@@ -2681,7 +2681,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 			else
 			{
 				// Sign-up was cancelled by user
-				Game.pGUI->ShowMessageModal(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESIGNUPCANCELLED), pInfo->GetName()).getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUP), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify);
+				Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESIGNUPCANCELLED, pInfo->GetName()).c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUP), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify);
 				Config.Network.LeaguePassword.Clear();
 			}
 		}
@@ -2691,7 +2691,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 			if (!fUnregistered || fRegister)
 			{
 				LogF(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESIGNUPERROR), Message.getData());
-				Game.pGUI->ShowMessageModal(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESERVERMSG), Message.getData()).getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUPFAILED), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+				Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESERVERMSG, Message.getData()).c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUPFAILED), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 				Config.Network.LeaguePassword.Clear();
 				// after a league server error message, always fall-through to try again
 			}
@@ -2723,8 +2723,8 @@ bool C4Network2::LeaguePlrAuthCheck(C4PlayerInfo *pInfo)
 		return false;
 
 	// Log
-	StdStrBuf Message = FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEJOINING), pInfo->GetName());
-	Log(Message.getData());
+	const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEJOINING, pInfo->GetName())};
+	Log(message.c_str());
 
 	// Wait for response
 	while (pLeagueClient->isBusy())
@@ -2739,9 +2739,9 @@ bool C4Network2::LeaguePlrAuthCheck(C4PlayerInfo *pInfo)
 	}
 
 	// Check if league server approves. pInfo will have league info if this call is successful.
-	if (!pLeagueClient->GetAuthCheckReply(&Message, Game.Parameters.League.getData(), pInfo))
+	if (StdStrBuf Message; !pLeagueClient->GetAuthCheckReply(&Message, Game.Parameters.League.getData(), pInfo))
 	{
-		LeagueShowError(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEJOINREFUSED), pInfo->GetName(), Message.getData()).getData());
+		LeagueShowError(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEJOINREFUSED, pInfo->GetName(), Message.getData()).c_str());
 		return false;
 	}
 

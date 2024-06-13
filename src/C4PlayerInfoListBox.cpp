@@ -545,7 +545,7 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::PlayerListItem::OnContextTakeOver(C4GUI
 			if (!pInfo->HasJoinIssued())
 				if (!pInfo->GetAssociatedSavegamePlayerID())
 				{
-					pMenu->AddItem(FormatString(LoadResStr(C4ResStrTableKey::IDS_MSG_USINGPLR), pInfo->GetName()).getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_USINGPLR_DESC), C4GUI::Ico_Player,
+					pMenu->AddItem(LoadResStr(C4ResStrTableKey::IDS_MSG_USINGPLR, pInfo->GetName()).c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_USINGPLR_DESC), C4GUI::Ico_Player,
 						new C4GUI::CBMenuHandlerEx<PlayerListItem, int32_t>(this, &PlayerListItem::OnCtxTakeOver, pInfo->GetID()));
 				}
 	}
@@ -1030,7 +1030,7 @@ C4PlayerInfoListBox::TeamListItem::TeamListItem(C4PlayerInfoListBox *pForListBox
 	// add components
 	AddElement(pIcon); AddElement(pNameLabel);
 	// tooltip
-	SetToolTip(FormatString(LoadResStr(C4ResStrTableKey::IDS_DESC_TEAM), szTeamName).getData());
+	SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_TEAM, szTeamName).c_str());
 	// insert into listbox at correct order
 	// (will eventually get resized horizontally and moved)
 	pForListBox->InsertElement(this, pInsertBefore);

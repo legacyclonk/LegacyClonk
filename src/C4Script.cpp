@@ -298,7 +298,7 @@ static bool FnDeathAnnounce(C4AulContext *cthr)
 	}
 	else
 	{
-		GameMsgObject(FormatString(LoadResStr(static_cast<C4ResStrTableKey>(std::to_underlying(C4ResStrTableKey::IDS_OBJ_DEATH1) + SafeRandom(MaxDeathMsg))), cthr->Obj->GetName()).getData(), cthr->Obj);
+		GameMsgObject(LoadResStr(static_cast<C4ResStrTableKey>(std::to_underlying(C4ResStrTableKey::IDS_OBJ_DEATH1) + SafeRandom(MaxDeathMsg)), cthr->Obj->GetName()).c_str(), cthr->Obj);
 	}
 	return true;
 }

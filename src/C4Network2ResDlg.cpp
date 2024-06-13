@@ -116,7 +116,7 @@ void C4Network2ResDlg::ListItem::LocalSaveResource(bool fDoOverwrite)
 	if (!fDoOverwrite && ItemExists(szTarget))
 	{
 		// show a confirmation dlg, asking whether the ressource should be overwritten
-		GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVE_OVERWRITE), GetFilename(szTarget)).getData(), LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVE),
+		GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVE_OVERWRITE, GetFilename(szTarget)).c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVE),
 			new C4GUI::CallbackHandler<C4Network2ResDlg::ListItem>(this, &C4Network2ResDlg::ListItem::OnButtonSaveConfirm), C4GUI::MessageDialog::btnYesNo));
 		return;
 	}
@@ -124,7 +124,7 @@ void C4Network2ResDlg::ListItem::LocalSaveResource(bool fDoOverwrite)
 		GetScreen()->ShowMessage(strErrCopyFile.getData(), strErrCopyFile.getData(), C4GUI::Ico_Error);
 	else
 	{
-		GetScreen()->ShowMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVED_DESC), GetFilename(szTarget)).getData(), LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVED), C4GUI::Ico_Save);
+		GetScreen()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVED_DESC, GetFilename(szTarget)).c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_RES_SAVED), C4GUI::Ico_Save);
 	}
 }
 

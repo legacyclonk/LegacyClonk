@@ -614,7 +614,7 @@ void C4ChatControl::OnConnectBtn(C4GUI::Control *btn)
 	// initiate connection
 	if (!pIRCClient->Connect(sServer.getData(), sNick.getData(), sRealName.getData(), sPass.getData(), sChannel.getData()))
 	{
-		GetScreen()->ShowErrorMessage(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_IRCCONNECTIONFAILED), pIRCClient->GetError()).getData());
+		GetScreen()->ShowErrorMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_IRCCONNECTIONFAILED, pIRCClient->GetError()).c_str());
 		return;
 	}
 	// enable client execution
@@ -626,7 +626,7 @@ void C4ChatControl::OnConnectBtn(C4GUI::Control *btn)
 	if (pServerSheet)
 	{
 		pServerSheet->SetChatTitle(sServer.getData());
-		pServerSheet->AddTextLine(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_CONNECTING), sServer.getData(), "").getData(), C4GUI_MessageFontClr);
+		pServerSheet->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_NET_CONNECTING, sServer.getData(), "").c_str(), C4GUI_MessageFontClr);
 	}
 	// switch to server window
 	UpdateShownPage();
@@ -927,7 +927,7 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 			StdStrBuf sMsg;
 			if (!sParam.SplitAtChar(' ', &sMsg) || !sMsg.getLength())
 			{
-				pChatSheet->DoError(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS), sCommand.getData()).getData());
+				pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS, sCommand.getData()).c_str());
 			}
 			else
 			{
@@ -940,14 +940,14 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 		else if (SEqualNoCase(sCommand.getData(), "raw"))
 		{
 			if (!sParam.getLength())
-				pChatSheet->DoError(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS), sCommand.getData()).getData());
+				pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS, sCommand.getData()).c_str());
 			else
 				fIRCSuccess = pIRCClient->Send(sParam.getData());
 		}
 		else if (SEqualNoCase(sCommand.getData(), "ns") || SEqualNoCase(sCommand.getData(), "cs") || SEqualNoCase(sCommand.getData(), "ms"))
 		{
 			if (!sParam.getLength())
-				pChatSheet->DoError(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS), sCommand.getData()).getData());
+				pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS, sCommand.getData()).c_str());
 			else
 			{
 				const char *szMsgTarget;
@@ -960,21 +960,21 @@ bool C4ChatControl::ProcessInput(const char *szInput, ChatSheet *pChatSheet)
 		else if (SEqualNoCase(sCommand.getData(), "query") || SEqualNoCase(sCommand.getData(), "q"))
 		{
 			if (!sParam.getLength())
-				pChatSheet->DoError(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS), sCommand.getData()).getData());
+				pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_INSUFFICIENTPARAMETERS, sCommand.getData()).c_str());
 			else
 				OpenQuery(sParam.getData(), true, nullptr);
 		}
 		else if (SEqualNoCase(sCommand.getData(), "nick"))
 		{
 			if (C4InVal::ValidateString(sParam, C4InVal::VAL_IRCName))
-				pChatSheet->DoError(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_INVALIDNICKNAME2), sCommand.getData()).getData());
+				pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_INVALIDNICKNAME2, sCommand.getData()).c_str());
 			else
 				fIRCSuccess = pIRCClient->ChangeNick(sParam.getData());
 		}
 		else
 		{
 			// unknown command
-			pChatSheet->DoError(FormatString(LoadResStr(C4ResStrTableKey::IDS_ERR_UNKNOWNCMD), sCommand.getData()).getData());
+			pChatSheet->DoError(LoadResStr(C4ResStrTableKey::IDS_ERR_UNKNOWNCMD, sCommand.getData()).c_str());
 		}
 	}
 	else

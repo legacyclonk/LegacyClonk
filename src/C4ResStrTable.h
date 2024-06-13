@@ -24,8 +24,22 @@
 #include <string_view>
 #include <unordered_map>
 
+#include <fmt/format.h>
+
 const char *LoadResStr(C4ResStrTableKey id);
 std::string LoadResStrNoAmp(C4ResStrTableKey id);
+
+template<typename... Args>
+std::string LoadResStr(const C4ResStrTableKey id, Args &&...args)
+{
+	return fmt::sprintf(LoadResStr(id), std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+std::string LoadResStrNoAmp(const C4ResStrTableKey id, Args &&...args)
+{
+	return fmt::sprintf(LoadResStrNoAmp(id), std::forward<Args>(args)...);
+}
 
 class C4ResStrTable
 {

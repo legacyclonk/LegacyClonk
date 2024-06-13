@@ -26,7 +26,7 @@
 C4GUI::Label *pStatusLabel;
 C4GUI::ProgressBar *pProgressBar;
 
-C4DownloadDlg::C4DownloadDlg(const char *szDLType) : C4GUI::Dialog(C4GUI_ProgressDlgWdt, 100, FormatString(LoadResStr(C4ResStrTableKey::IDS_CTL_DL_TITLE), szDLType).getData(), false), szError(nullptr)
+C4DownloadDlg::C4DownloadDlg(const char *szDLType) : C4GUI::Dialog(C4GUI_ProgressDlgWdt, 100, LoadResStr(C4ResStrTableKey::IDS_CTL_DL_TITLE, szDLType).c_str(), false), szError(nullptr)
 {
 #ifdef _WIN32
 	fWinSock = AcquireWinSock();
@@ -188,7 +188,7 @@ bool C4DownloadDlg::DownloadFile(const char *szDLType, C4GUI::Screen *pScreen, c
 			sError.Append("|"); sError.Append(szNotFoundMessage);
 		}
 		// display message
-		pScreen->ShowMessageModal(sError.getData(), FormatString(LoadResStr(C4ResStrTableKey::IDS_CTL_DL_TITLE), szDLType).getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error, nullptr);
+		pScreen->ShowMessageModal(sError.getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_DL_TITLE, szDLType).c_str(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error, nullptr);
 		delete pDlg;
 		return false;
 	}
