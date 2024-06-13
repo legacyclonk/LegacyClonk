@@ -146,7 +146,7 @@ bool C4GraphicsResource::InitFonts()
 	// update group set
 	if (!RegisterMainGroups())
 	{
-		LogFatal(LoadResStr("IDS_ERR_GFX_REGISTERMAIN"));
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_GFX_REGISTERMAIN));
 		return false;
 	}
 	// reinit main font
@@ -176,7 +176,7 @@ bool C4GraphicsResource::Init()
 	// Game palette - could perhaps be eliminated...
 	int32_t idNewPalGrp;
 	C4Group *pPalGrp = Files.FindEntry("C4.pal", nullptr, &idNewPalGrp);
-	if (!pPalGrp) { LogF("%s: %s", LoadResStr("IDS_PRC_FILENOTFOUND"), "C4.pal"); return false; }
+	if (!pPalGrp) { LogF("%s: %s", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), "C4.pal"); return false; }
 	if (idPalGrp != idNewPalGrp)
 	{
 		if (!pPalGrp->AccessEntry("C4.pal")) { LogFatal("Pal error!"); return false; }
@@ -366,7 +366,7 @@ bool C4GraphicsResource::RegisterGlobalGraphics()
 	if (!pMainGfxGrp->Open(C4CFN_Graphics) || !Files.RegisterGroup(*pMainGfxGrp, true, C4GSPrio_Base, C4GSCnt_Graphics, 1))
 	{
 		// error
-		LogFatal(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), C4CFN_Graphics, pMainGfxGrp->GetError()).getData());
+		LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), C4CFN_Graphics, pMainGfxGrp->GetError()).getData());
 		delete pMainGfxGrp;
 		return false;
 	}
@@ -423,7 +423,7 @@ bool C4GraphicsResource::LoadFile(C4FacetExID &fct, const char *szName, C4GroupS
 		// FIXME: Use LogFatal here
 		if (!fNoWarnIfNotFound)
 		{
-			LogF(LoadResStr("IDS_PRC_NOGFXFILE"), szName, LoadResStr("IDS_PRC_FILENOTFOUND"));
+			LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), szName, LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND));
 		}
 		return false;
 	}
@@ -434,7 +434,7 @@ bool C4GraphicsResource::LoadFile(C4FacetExID &fct, const char *szName, C4GroupS
 	// load
 	if (!fct.Load(*pGrp, FileName, iWdt, iHgt))
 	{
-		LogF(LoadResStr("IDS_PRC_NOGFXFILE"), FileName, LoadResStr("IDS_ERR_NOFILE"));
+		LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE));
 		return false;
 	}
 	fct.idSourceGroup = ID;
@@ -448,7 +448,7 @@ bool C4GraphicsResource::LoadFile(C4Surface &sfc, const char *szName, C4GroupSet
 	C4Group *pGrp = FindSuitableFile(szName, rGfxSet, FileName, ID);
 	if (!pGrp)
 	{
-		LogF(LoadResStr("IDS_PRC_NOGFXFILE"), szName, LoadResStr("IDS_PRC_FILENOTFOUND"));
+		LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), szName, LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND));
 		return false;
 	}
 	// check group
@@ -458,7 +458,7 @@ bool C4GraphicsResource::LoadFile(C4Surface &sfc, const char *szName, C4GroupSet
 	// load
 	if (!sfc.Load(*pGrp, FileName))
 	{
-		LogF(LoadResStr("IDS_PRC_NOGFXFILE"), FileName, LoadResStr("IDS_ERR_NOFILE"));
+		LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE));
 		return false;
 	}
 	ridCurrSfc = ID;

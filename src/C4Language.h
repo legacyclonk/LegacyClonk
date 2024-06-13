@@ -97,7 +97,7 @@ protected:
 
 extern C4Language Languages;
 
-static inline StdStrBuf LoadResStrUtf8(const char *ident)
+static inline StdStrBuf LoadResStrUtf8(const C4ResStrTableKey ident)
 {
 	return Languages.IconvUtf8(LoadResStr(ident));
 }

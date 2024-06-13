@@ -563,14 +563,14 @@ bool C4Def::Load(C4Group &hGroup,
 		{
 			// wie geth ID?????ßßßß
 			if (!Name[0]) Name = GetFilename(hGroup.GetName());
-			LogF(LoadResStr("IDS_ERR_INVALIDID"), Name.getData());
+			LogF(LoadResStr(C4ResStrTableKey::IDS_ERR_INVALIDID), Name.getData());
 
 			fSuccess = false;
 		}
 
 		if (CompareVersion(rC4XVer[0], rC4XVer[1], rC4XVer[2], rC4XVer[3], rC4XVer[4], 4, 0, 0, 0, 0) == -1)
 		{
-			DebugLogF(LoadResStr("IDS_PRC_DEFSINVVERSION"), fSuccess ? FormatString("%s (%s)", Name.getData(), C4IdText(id)).getData() : Name.getData());
+			DebugLogF(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSINVVERSION), fSuccess ? FormatString("%s (%s)", Name.getData(), C4IdText(id)).getData() : Name.getData());
 			// assume Clonk Rage 4.9.10.7
 			rC4XVer[0] = 4;
 			rC4XVer[1] = 9;
@@ -645,7 +645,7 @@ bool C4Def::Load(C4Group &hGroup,
 		{
 			// create new
 			pClonkNames = new C4ComponentHost();
-			if (!pClonkNames->LoadEx(LoadResStr("IDS_CNS_NAMES"), hGroup, C4CFN_ClonkNames, szLanguage))
+			if (!pClonkNames->LoadEx(LoadResStr(C4ResStrTableKey::IDS_CNS_NAMES), hGroup, C4CFN_ClonkNames, szLanguage))
 			{
 				delete pClonkNames; pClonkNames = nullptr;
 			}
@@ -974,7 +974,7 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 		SysGroup.Close();
 	}
 
-	if (fThisSearchMessage) { LogF(LoadResStr("IDS_PRC_DEFSLOADED"), iResult); }
+	if (fThisSearchMessage) { LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSLOADED), iResult); }
 
 	// progress (could go down one level of recursion...)
 	if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress));
@@ -1041,7 +1041,7 @@ int32_t C4DefList::Load(const char *szSearch,
 	if (!hGroup.Open(szSearch))
 	{
 		// Specified file not found (failure)
-		LogFatal(FormatString(LoadResStr("IDS_PRC_DEFNOTFOUND"), szSearch).getData());
+		LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFNOTFOUND), szSearch).getData());
 		LoadFailure = true;
 		return iResult;
 	}
@@ -1067,7 +1067,7 @@ bool C4DefList::Add(C4Def *pDef, bool fOverload)
 	if (Config.Graphics.VerboseObjectLoading >= 1)
 		if (hasOld)
 		{
-			LogF(LoadResStr("IDS_PRC_DEFOVERLOAD"), pDef->GetName(), C4IdText((*old)->id));
+			LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD), pDef->GetName(), C4IdText((*old)->id));
 			if (Config.Graphics.VerboseObjectLoading >= 2)
 			{
 				LogF("      Old def at %s", (*old)->Filename);

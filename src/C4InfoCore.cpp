@@ -147,7 +147,7 @@ void C4PlayerInfoCore::CompileFunc(StdCompiler *pComp)
 		pComp->Value(mkNamingAdapt(toC4CStr(PrefName), "Name",             "Neuling"));
 		pComp->Value(mkNamingAdapt(toC4CStr(Comment),  "Comment",          ""));
 		pComp->Value(mkNamingAdapt(Rank,               "Rank",             0));
-		pComp->Value(mkNamingAdapt(toC4CStr(RankName), "RankName",         LoadResStr("IDS_MSG_RANK")));
+		pComp->Value(mkNamingAdapt(toC4CStr(RankName), "RankName",         LoadResStr(C4ResStrTableKey::IDS_MSG_RANK)));
 		pComp->Value(mkNamingAdapt(Score,              "Score",            0));
 		pComp->Value(mkNamingAdapt(Rounds,             "Rounds",           0));
 		pComp->Value(mkNamingAdapt(RoundsWon,          "RoundsWon",        0));

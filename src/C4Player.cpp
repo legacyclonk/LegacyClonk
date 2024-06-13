@@ -417,7 +417,7 @@ bool C4Player::Save()
 		if (Game.Parameters.MaxPlayers <= 0) return false;
 	}
 	// Log
-	LogF(LoadResStr("IDS_PRC_SAVEPLR"), Config.AtExeRelativePath(Filename));
+	LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_SAVEPLR), Config.AtExeRelativePath(Filename));
 	Game.GraphicsSystem.MessageBoard.EnsureLastMessage();
 	// copy player to save somewhere else
 	char szPath[_MAX_PATH + 1];
@@ -831,7 +831,7 @@ C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pB
 	{
 		if (!fShowErrors) return nullptr;
 		StartSoundEffect("Error", false, 100, pBuyObj);
-		GameMsgPlayer(FormatString(LoadResStr("IDS_PLR_ELIMINATED"), GetName()).getData(), Number); return nullptr;
+		GameMsgPlayer(FormatString(LoadResStr(C4ResStrTableKey::IDS_PLR_ELIMINATED), GetName()).getData(), Number); return nullptr;
 	}
 	// Get def (base owner's homebase material)
 	iAvailable = HomeBaseMaterial.GetIDCount(id);
@@ -844,7 +844,7 @@ C4Object *C4Player::Buy(C4ID id, bool fShowErrors, int32_t iForPlr, C4Object *pB
 	if (iValue > Wealth)
 	{
 		if (!fShowErrors) return nullptr;
-		GameMsgPlayer(LoadResStr("IDS_PLR_NOWEALTH"), Number);
+		GameMsgPlayer(LoadResStr(C4ResStrTableKey::IDS_PLR_NOWEALTH), Number);
 		StartSoundEffect("Error", false, 100, pBuyObj); return nullptr;
 	}
 	// Decrease homebase material count
@@ -975,7 +975,7 @@ void C4Player::Surrender()
 	Eliminated = true;
 	RetireDelay = C4RetireDelay;
 	StartSoundEffect("Eliminated");
-	LogF(LoadResStr("IDS_PRC_PLRSURRENDERED"), GetName());
+	LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRSURRENDERED), GetName());
 }
 
 bool C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent)
@@ -988,7 +988,7 @@ bool C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent)
 	if (!Game.FrameCounter || fSilent) return true;
 	// Announce
 	StartSoundEffect("Trumpet");
-	LogF(LoadResStr(iHostility ? "IDS_PLR_HOSTILITY" : "IDS_PLR_NOHOSTILITY"),
+	LogF(LoadResStr(iHostility ? C4ResStrTableKey::IDS_PLR_HOSTILITY : C4ResStrTableKey::IDS_PLR_NOHOSTILITY),
 		GetName(), Game.Players.Get(iOpponent)->GetName());
 	// Success
 	return true;
@@ -1757,7 +1757,7 @@ bool C4Player::ActivateMenuTeamSelection(bool fFromMain)
 {
 	// Menu symbol/init
 	bool fSwitch = !(Status == PS_TeamSelection);
-	Menu.InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Team), LoadResStr("IDS_MSG_SELTEAM"), Number, C4MN_Extra_None, 0, fSwitch ? C4MN_TeamSwitch : C4MN_TeamSelection);
+	Menu.InitRefSym(C4GUI::Icon::GetIconFacet(C4GUI::Ico_Team), LoadResStr(C4ResStrTableKey::IDS_MSG_SELTEAM), Number, C4MN_Extra_None, 0, fSwitch ? C4MN_TeamSwitch : C4MN_TeamSelection);
 	Menu.SetAlignment(fSwitch ? C4MN_Align_Left | C4MN_Align_Bottom : 0);
 	Menu.Refill();
 	// Go back to options menu on close
@@ -2012,7 +2012,7 @@ void C4Player::Eliminate()
 	Eliminated = true;
 	RetireDelay = C4RetireDelay;
 	StartSoundEffect("Eliminated");
-	LogF(LoadResStr("IDS_PRC_PLRELIMINATED"), GetName());
+	LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRELIMINATED), GetName());
 
 	// Early client deactivation check
 	if (Game.Control.isCtrlHost() && AtClient > C4ClientIDHost)

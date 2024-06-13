@@ -19,11 +19,13 @@
 
 #include <Standard.h>
 
-#include <iostream>
+#include <format>
 #include <optional>
 
 C4ResStrTable::C4ResStrTable(std::string_view table)
 {
+	const auto keyStringMap = GetKeyStringMap();
+
 	for (auto pos = table.find_first_of('='); pos != std::string_view::npos; pos = table.find_first_of('='))
 	{
 		const auto key = table.substr(0, pos);
@@ -34,14 +36,10 @@ C4ResStrTable::C4ResStrTable(std::string_view table)
 		table.remove_prefix(value.size());
 		value = value.substr(0, value.find_last_not_of("\r\n") + 1);
 
-		const auto [it, inserted] = entries.emplace(key, value);
-		if (!inserted)
+		if (const auto it = keyStringMap.find(key); it != keyStringMap.end())
 		{
-			std::cerr << "LanguageXX entry \"" << key << "\" not inserted (duplicate?)\n";
-		}
-		else
-		{
-			std::string &valueStr = it->second;
+			std::string &valueStr{entries[static_cast<std::size_t>(it->second)] = value};
+
 			for (auto backslashPos = valueStr.find_first_of('\\'); backslashPos < valueStr.size() - 1; backslashPos = valueStr.find_first_of('\\', backslashPos + 1))
 			{
 				if (valueStr[backslashPos + 1] == 'n')
@@ -51,46 +49,40 @@ C4ResStrTable::C4ResStrTable(std::string_view table)
 			}
 		}
 	}
-}
 
-const char *C4ResStrTable::GetEntry(const std::string_view key) const
-{
-	if (const auto it = entries.find(key); it != entries.end())
+	for (const auto &[key, value] : keyStringMap)
 	{
-		return it->second.c_str();
+		if (entries[static_cast<std::size_t>(value)].empty())
+		{
+			entries[static_cast<std::size_t>(value)] = std::format("[Undefined: {}]", key);
+		}
 	}
-	return nullptr;
 }
 
-static std::string result;
-static const char *GetResStr(const char *id, const std::optional<C4ResStrTable> &Table)
+std::string_view C4ResStrTable::GetEntry(const C4ResStrTableKey key) const
+{
+	return entries[static_cast<std::size_t>(key)];
+}
+
+static std::string_view GetResStr(const C4ResStrTableKey id, const std::optional<C4ResStrTable> &Table)
 {
 	if (!Table.has_value()) return "Language string table not loaded.";
-	const char *r = Table->GetEntry(id);
-	if (!r)
-	{
-		result = "[Undefined:";
-		result += id;
-		result += ']';
-		return result.c_str();
-	}
-	return r;
+	return Table->GetEntry(id);
 }
 
-const char *LoadResStr(const char *id)
+const char *LoadResStr(const C4ResStrTableKey id)
 {
-	return GetResStr(id, Application.ResStrTable);
+	return GetResStr(id, Application.ResStrTable).data();
 }
 
-const char *LoadResStrNoAmp(const char *id)
+std::string LoadResStrNoAmp(const C4ResStrTableKey id)
 {
-	result = LoadResStr(id);
+	std::string result{LoadResStr(id)};
 	result.erase(std::remove(result.begin(), result.end(), '&'), result.end());
-	return result.c_str();
+	return result;
 }
 
-const char *GetResStr(const char *id, const char *strTable)
+const char *GetResStr(const C4ResStrTableKey id, const char *strTable)
 {
-	result = GetResStr(id, {C4ResStrTable{strTable}});
-	return result.c_str();
+	return GetResStr(id, {C4ResStrTable{strTable}}).data();
 }

@@ -44,28 +44,28 @@ C4StartupMainDlg::C4StartupMainDlg() : C4StartupDlg(nullptr) // create w/o title
 	C4GUI::ComponentAligner caButtons(caRightPanel.GetAll(), 0, iButtonPadding);
 	// main menu buttons
 	C4GUI::CallbackButton<C4StartupMainDlg> *btn;
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr("IDS_BTN_LOCALGAME"), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnStartBtn));
-	btn->SetToolTip(LoadResStr("IDS_DLGTIP_STARTGAME"));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_LOCALGAME), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnStartBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_STARTGAME));
 	btn->SetCustomGraphics(&C4Startup::Get()->Graphics.barMainButtons, &C4Startup::Get()->Graphics.barMainButtonsDown);
 	pStartButton = btn;
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr("IDS_BTN_NETWORKGAME"), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnNetJoinBtn));
-	btn->SetToolTip(LoadResStr("IDS_DLGTIP_NETWORKGAME"));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr(C4ResStrTableKey::IDS_BTN_NETWORKGAME), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnNetJoinBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_NETWORKGAME));
 	btn->SetCustomGraphics(&C4Startup::Get()->Graphics.barMainButtons, &C4Startup::Get()->Graphics.barMainButtonsDown);
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr("IDS_DLG_PLAYERSELECTION"), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnPlayerSelectionBtn));
-	btn->SetToolTip(LoadResStr("IDS_DLGTIP_PLAYERSELECTION"));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr(C4ResStrTableKey::IDS_DLG_PLAYERSELECTION), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnPlayerSelectionBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PLAYERSELECTION));
 	btn->SetCustomGraphics(&C4Startup::Get()->Graphics.barMainButtons, &C4Startup::Get()->Graphics.barMainButtonsDown);
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr("IDS_DLG_OPTIONS"), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnOptionsBtn));
-	btn->SetToolTip(LoadResStr("IDS_DLGTIP_OPTIONS"));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr(C4ResStrTableKey::IDS_DLG_OPTIONS), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnOptionsBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_OPTIONS));
 	btn->SetCustomGraphics(&C4Startup::Get()->Graphics.barMainButtons, &C4Startup::Get()->Graphics.barMainButtonsDown);
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr("IDS_DLG_ABOUT"), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnAboutBtn));
-	btn->SetToolTip(LoadResStr("IDS_DLGTIP_ABOUT"));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr(C4ResStrTableKey::IDS_DLG_ABOUT), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnAboutBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_ABOUT));
 	btn->SetCustomGraphics(&C4Startup::Get()->Graphics.barMainButtons, &C4Startup::Get()->Graphics.barMainButtonsDown);
-	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr("IDS_DLG_EXIT"), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnExitBtn));
-	btn->SetToolTip(LoadResStr("IDS_DLGTIP_EXIT"));
+	AddElement(btn = new C4GUI::CallbackButton<C4StartupMainDlg>(LoadResStr(C4ResStrTableKey::IDS_DLG_EXIT), caButtons.GetFromTop(iButtonHeight), &C4StartupMainDlg::OnExitBtn));
+	btn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_EXIT));
 	btn->SetCustomGraphics(&C4Startup::Get()->Graphics.barMainButtons, &C4Startup::Get()->Graphics.barMainButtonsDown);
 	// list of selected players
 	AddElement(pParticipantsLbl = new C4GUI::Label("test", GetClientRect().Wdt * 39 / 40, GetClientRect().Hgt * 9 / 10, ARight, 0xffffffff, &C4GUI::GetRes()->TitleFont, false));
-	pParticipantsLbl->SetToolTip(LoadResStr("IDS_DLGTIP_SELECTEDPLAYERS"));
+	pParticipantsLbl->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_SELECTEDPLAYERS));
 
 	CStdFont &trademarkFont = C4GUI::GetRes()->MiniFont;
 	AddElement(new C4GUI::Label(FANPROJECTTEXT "   " TRADEMARKTEXT,
@@ -117,7 +117,7 @@ void C4StartupMainDlg::DrawElement(C4FacetEx &cgo)
 	fctLogo.DrawX(cgo.Surface, rcBounds.Wdt * 30 / 31 - int32_t(fLogoZoom * fctLogo.Wdt), rcBounds.Hgt / 21 - 5, int32_t(fLogoZoom * fctLogo.Wdt), int32_t(fLogoZoom * fctLogo.Hgt));
 	// draw version info
 	StdStrBuf sVer;
-	sVer.Format(LoadResStr("IDS_DLG_VERSION"), C4VERSION);
+	sVer.Format(LoadResStr(C4ResStrTableKey::IDS_DLG_VERSION), C4VERSION);
 	lpDDraw->TextOut(sVer.getData(), C4GUI::GetRes()->TextFont, 1.0f, cgo.Surface, rcBounds.Wdt * 39 / 40, rcBounds.Hgt / 18 + int32_t(fLogoZoom * fctLogo.Hgt), 0xffffffff, ARight, true);
 }
 
@@ -188,9 +188,9 @@ void C4StartupMainDlg::UpdateParticipants()
 	// Draw selected players - we are currently displaying the players stored in Config.General.Participants.
 	// Existence of the player files is not validated and player filenames are displayed directly
 	// (names are not loaded from the player core).
-	strPlayers = LoadResStr("IDS_DESC_PLRS");
+	strPlayers = LoadResStr(C4ResStrTableKey::IDS_DESC_PLRS);
 	if (!Config.General.Participants[0])
-		strPlayers.Append(LoadResStr("IDS_DLG_NOPLAYERSSELECTED"));
+		strPlayers.Append(LoadResStr(C4ResStrTableKey::IDS_DLG_NOPLAYERSSELECTED));
 	else
 		for (int i = 0; SCopySegment(Config.General.Participants, i, strPlayer.getMData(), ';', 1024, true); i++)
 		{

@@ -42,8 +42,8 @@ namespace C4GUI
 {
 namespace
 {
-	inline Button *newDlgCloseButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_DLG_CLOSE"), bounds, true}; }
-	inline Button *newRetryButton(const C4Rect &bounds) { return new CloseButton{LoadResStr("IDS_BTN_RETRY"), bounds, true}; }
+	inline Button *newDlgCloseButton(const C4Rect &bounds) { return new CloseButton{LoadResStr(C4ResStrTableKey::IDS_DLG_CLOSE), bounds, true}; }
+	inline Button *newRetryButton(const C4Rect &bounds) { return new CloseButton{LoadResStr(C4ResStrTableKey::IDS_BTN_RETRY), bounds, true}; }
 }
 
 // EM window class
@@ -414,7 +414,7 @@ void Dialog::SetTitle(const char *szTitle, bool fShowCloseButton)
 			if (!pCloseBtn)
 			{
 				AddElement(pCloseBtn = new CallbackButton<Dialog, IconButton>(Ico_Close, pTitle->GetToprightCornerRect(16, 16, 4, 4, 0), 0, &Dialog::OnUserClose));
-				pCloseBtn->SetToolTip(LoadResStr("IDS_MNU_CLOSE"));
+				pCloseBtn->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MNU_CLOSE));
 			}
 			else
 				pCloseBtn->GetBounds() = pTitle->GetToprightCornerRect(16, 16, 4, 4, 0);
@@ -919,7 +919,7 @@ MessageDialog::MessageDialog(const char *szMessage, const char *szCaption, uint3
 	if (piConfigDontShowAgainSetting)
 	{
 		int w = 100, h = 20;
-		const char *szCheckText = LoadResStr("IDS_MSG_DONTSHOW");
+		const char *szCheckText = LoadResStr(C4ResStrTableKey::IDS_MSG_DONTSHOW);
 		CheckBox::GetStandardCheckBoxSize(&w, &h, szCheckText, nullptr);
 		CheckBox *pCheck = new C4GUI::CheckBox(caMain.GetFromTop(h, w), szCheckText, !!*piConfigDontShowAgainSetting);
 		pCheck->SetOnChecked(new C4GUI::CallbackHandler<MessageDialog>(this, &MessageDialog::OnDontShowAgainCheck));
@@ -1030,7 +1030,7 @@ ProgressDialog::ProgressDialog(const char *szMessage, const char *szCaption, int
 	// place progress bar
 	pBar = new ProgressBar(rtProgressBar, iMaxProgress);
 	pBar->SetProgress(iInitialProgress);
-	pBar->SetToolTip(LoadResStr("IDS_DLGTIP_PROGRESS"));
+	pBar->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_PROGRESS));
 	AddElement(pBar);
 	// place abort button
 	Button *pBtnAbort = newCancelButton(caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_ButtonHgt));
@@ -1053,7 +1053,7 @@ bool Screen::ShowMessage(const char *szMessage, const char *szCaption, Icons ico
 
 bool Screen::ShowErrorMessage(const char *szMessage)
 {
-	return ShowMessage(szMessage, LoadResStr("IDS_DLG_ERROR"), Ico_Error);
+	return ShowMessage(szMessage, LoadResStr(C4ResStrTableKey::IDS_DLG_ERROR), Ico_Error);
 }
 
 bool Screen::ShowMessageModal(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, bool *pbConfigDontShowAgainSetting)
@@ -1115,7 +1115,7 @@ InputDialog::InputDialog(const char *szMessage, const char *szCaption, Icons ico
 		caChat.ExpandLeft(2); // undo margin
 		rcEditBounds = caChat.GetAll();
 		SetCustomEdit(new Edit(rcEditBounds));
-		pChatLbl->SetToolTip(LoadResStr("IDS_DLGTIP_CHAT"));
+		pChatLbl->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_CHAT));
 		AddElement(pChatLbl);
 	}
 	else
@@ -1177,7 +1177,7 @@ void InputDialog::SetCustomEdit(Edit *pCustomEdit)
 	pEdit->SetBounds(rcEditBounds);
 	if (fChatLayout)
 	{
-		pEdit->SetToolTip(LoadResStr("IDS_DLGTIP_CHAT"));
+		pEdit->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DLGTIP_CHAT));
 		pChatLbl->SetClickFocusControl(pEdit); // 2do: to all, to allies, etc.
 	}
 	AddElement(pEdit);
@@ -1239,7 +1239,7 @@ void InfoDialog::CreateSubComponents()
 	AddElement(pTextWin);
 	// place close button
 	Button *pBtnClose = newDlgCloseButton(caButtonArea.GetCentered(C4GUI_DefButtonWdt, C4GUI_ButtonHgt));
-	AddElement(pBtnClose); pBtnClose->SetToolTip(LoadResStr("IDS_MNU_CLOSE"));
+	AddElement(pBtnClose); pBtnClose->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_MNU_CLOSE));
 }
 
 void InfoDialog::AddLine(const char *szText)

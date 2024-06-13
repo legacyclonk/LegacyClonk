@@ -190,7 +190,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					if (pObj2) if (pObj2->CanConcatPictureWith(pObj)) pObj = pObj2;
 				}
 				// Caption
-				sprintf(szCaption, LoadResStr("IDS_MENU_ACTIVATE"), pObj->GetName());
+				sprintf(szCaption, LoadResStr(C4ResStrTableKey::IDS_MENU_ACTIVATE), pObj->GetName());
 				// Picture
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
@@ -223,7 +223,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			pDef = C4Id2Def(idDef);
 			if (!pDef) continue; // skip invalid defs
 			// Caption
-			sprintf(szCaption, LoadResStr("IDS_MENU_BUY"), pDef->GetName());
+			sprintf(szCaption, LoadResStr(C4ResStrTableKey::IDS_MENU_BUY), pDef->GetName());
 			// Picture
 			pDef->Picture2Facet(fctSymbol, pBuyPlayer ? pBuyPlayer->ColorDw : 0);
 			// Command
@@ -260,7 +260,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					if (pObj2) if (pObj2->CanConcatPictureWith(pObj)) pObj = pObj2;
 				}
 				// Caption
-				sprintf(szCaption, LoadResStr("IDS_MENU_SELL"), pObj->GetName());
+				sprintf(szCaption, LoadResStr(C4ResStrTableKey::IDS_MENU_SELL), pObj->GetName());
 				// Picture
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
@@ -309,7 +309,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				}
 				if (!(pTarget->OCF & OCF_Entrance)) fGet = true; // target object has no entrance: cannot activate - force get
 				// Caption
-				sprintf(szCaption, LoadResStr(fGet ? "IDS_MENU_GET" : "IDS_MENU_ACTIVATE"), pObj->GetName());
+				sprintf(szCaption, LoadResStr(fGet ? C4ResStrTableKey::IDS_MENU_GET : C4ResStrTableKey::IDS_MENU_ACTIVATE), pObj->GetName());
 				// Picture
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
@@ -356,7 +356,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					fctTarget = fctSymbol.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom);
 					Game.GraphicsResource.fctHand.Draw(fctTarget, true, 0);
 					// Add menu item
-					Add(LoadResStr("IDS_CON_PUT2"), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, nullptr, C4ID_None, szCommand2);
+					Add(LoadResStr(C4ResStrTableKey::IDS_CON_PUT2), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, nullptr, C4ID_None, szCommand2);
 					// Preserve symbol
 					fctSymbol.Default();
 				}
@@ -372,7 +372,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			{
 				sprintf(szCommand, "SetCommand(this,\"Get\",Object(%d),0,0,,2)&&ExecuteCommand()", pTarget->Number);
 				fctSymbol.Create(symbolSize, symbolSize); pTarget->DrawPicture(fctSymbol);
-				Add(LoadResStr("IDS_CON_CONTENTS"), fctSymbol, szCommand);
+				Add(LoadResStr(C4ResStrTableKey::IDS_CON_CONTENTS), fctSymbol, szCommand);
 				fctSymbol.Default();
 			}
 
@@ -385,7 +385,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			{
 				sprintf(szCommand, "SetCommand(this,\"Buy\",Object(%d))&&ExecuteCommand()", pTarget->Number);
 				fctSymbol.Create(symbolSize, symbolSize); DrawMenuSymbol(C4MN_Buy, fctSymbol, pTarget->Base, pTarget);
-				Add(LoadResStr("IDS_CON_BUY"), fctSymbol, szCommand);
+				Add(LoadResStr(C4ResStrTableKey::IDS_CON_BUY), fctSymbol, szCommand);
 				fctSymbol.Default();
 			}
 			// Sell
@@ -393,7 +393,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			{
 				sprintf(szCommand, "SetCommand(this,\"Sell\",Object(%d))&&ExecuteCommand()", pTarget->Number);
 				fctSymbol.Create(symbolSize, symbolSize); DrawMenuSymbol(C4MN_Sell, fctSymbol, pTarget->Base, pTarget);
-				Add(LoadResStr("IDS_CON_SELL"), fctSymbol, szCommand);
+				Add(LoadResStr(C4ResStrTableKey::IDS_CON_SELL), fctSymbol, szCommand);
 				fctSymbol.Default();
 			}
 		}
@@ -406,7 +406,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 		{
 			sprintf(szCommand, "PlayerMessage(GetOwner(), Object(%d)->GetNeededMatStr(), Object(%d))", pTarget->Number, pTarget->Number);
 			fctSymbol.Create(symbolSize, symbolSize); GfxR->fctConstruction.Draw(fctSymbol, true);
-			Add(LoadResStr("IDS_CON_BUILDINFO"), fctSymbol, szCommand);
+			Add(LoadResStr(C4ResStrTableKey::IDS_CON_BUILDINFO), fctSymbol, szCommand);
 			fctSymbol.Default();
 		}
 
@@ -422,7 +422,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			// Command
 			sprintf(szCommand, "ShowInfo(Object(%d))", pTarget->Number);
 			// Add item
-			Add(LoadResStr("IDS_CON_INFO"), fctSymbol, szCommand);
+			Add(LoadResStr(C4ResStrTableKey::IDS_CON_INFO), fctSymbol, szCommand);
 			fctSymbol.Default();
 		}
 
@@ -433,7 +433,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				sprintf(szCommand, "PlayerObjectCommand(GetOwner(), \"Exit\") && ExecuteCommand()"); // Exit all selected clonks...
 				fctSymbol.Create(symbolSize, symbolSize);
 				Game.GraphicsResource.fctExit.Draw(fctSymbol);
-				Add(LoadResStr("IDS_COMM_EXIT"), fctSymbol, szCommand);
+				Add(LoadResStr(C4ResStrTableKey::IDS_COMM_EXIT), fctSymbol, szCommand);
 				fctSymbol.Default();
 			}
 	}
@@ -701,7 +701,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 				{
 					sprintf(szCommand, "SetCommand(this,\"Context\",,0,0,this)&&ExecuteCommand()");
 					Object->Def->Picture2Facet(fctSymbol, Object->Color);
-					Add(Object->Def->GetName(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, LoadResStr("IDS_MENU_CONTEXTSUBCLONKDESC"));
+					Add(Object->Def->GetName(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CONTEXTSUBCLONKDESC));
 					fctSymbol.Default();
 					iResult++;
 				}

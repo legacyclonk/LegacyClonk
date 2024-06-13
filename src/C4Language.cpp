@@ -335,10 +335,10 @@ void C4Language::LoadInfos(C4Group &hGroup)
 				SCopy(GetFilenameOnly(strEntry) + SLen(GetFilenameOnly(strEntry)) - 2, info.Code, 2);
 				SCapitalize(info.Code);
 				// Get language name, info, fallback from table
-				SCopy(GetResStr("IDS_LANG_NAME", strTable), info.Name, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_INFO", strTable), info.Info, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_FALLBACK", strTable), info.Fallback, C4MaxLanguageInfo);
-				SCopy(GetResStr("IDS_LANG_CHARSET", strTable), info.Charset, C4MaxLanguageInfo);
+				SCopy(GetResStr(C4ResStrTableKey::IDS_LANG_NAME, strTable), info.Name, C4MaxLanguageInfo);
+				SCopy(GetResStr(C4ResStrTableKey::IDS_LANG_INFO, strTable), info.Info, C4MaxLanguageInfo);
+				SCopy(GetResStr(C4ResStrTableKey::IDS_LANG_FALLBACK, strTable), info.Fallback, C4MaxLanguageInfo);
+				SCopy(GetResStr(C4ResStrTableKey::IDS_LANG_CHARSET, strTable), info.Charset, C4MaxLanguageInfo);
 				// Safety: pipe character is not allowed in any language info string
 				SReplaceChar(info.Name, '|', ' ');
 				SReplaceChar(info.Info, '|', ' ');
@@ -424,7 +424,7 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 	// Close group
 	hGroup.Close();
 	// Set the internal charset
-	SCopy(LoadResStr("IDS_LANG_CHARSET"), Config.General.LanguageCharset);
+	SCopy(LoadResStr(C4ResStrTableKey::IDS_LANG_CHARSET), Config.General.LanguageCharset);
 
 #ifdef HAVE_ICONV_AND_LANGINFO_H
 	const char *const to_set = nl_langinfo(CODESET);

@@ -18,34 +18,27 @@
 
 #pragma once
 
+#include "generated/C4ResStrTableGenerated.h"
+
 #include <string>
 #include <string_view>
 #include <unordered_map>
 
-const char *LoadResStr(const char *id);
-const char *LoadResStrNoAmp(const char *id);
-const char *GetResStr(const char *id, const char *strTable);
+const char *LoadResStr(C4ResStrTableKey id);
+std::string LoadResStrNoAmp(C4ResStrTableKey id);
+const char *GetResStr(C4ResStrTableKey id, const char *strTable);
 
 class C4ResStrTable
 {
-private:
-	struct TransparentHash
-	{
-		using is_transparent = int;
-
-		template<typename T>
-		std::size_t operator()(const T &t) const
-		{
-			return std::hash<T>{}(t);
-		}
-	};
-
 public:
 	C4ResStrTable(std::string_view table);
 
 public:
-	const char *GetEntry(std::string_view key) const;
+	std::string_view GetEntry(C4ResStrTableKey key) const;
 
 private:
-	std::unordered_map<std::string, std::string, TransparentHash, std::equal_to<>> entries;
+	static std::unordered_map<std::string_view, C4ResStrTableKey> GetKeyStringMap();
+
+private:
+	std::array<std::string, static_cast<std::size_t>(C4ResStrTableKey::NumberOfEntries)> entries;
 };

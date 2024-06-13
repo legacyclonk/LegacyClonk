@@ -298,8 +298,7 @@ static bool FnDeathAnnounce(C4AulContext *cthr)
 	}
 	else
 	{
-		char idDeathMsg[128 + 1]; sprintf(idDeathMsg, "IDS_OBJ_DEATH%d", 1 + SafeRandom(MaxDeathMsg));
-		GameMsgObject(FormatString(LoadResStr(idDeathMsg), cthr->Obj->GetName()).getData(), cthr->Obj);
+		GameMsgObject(FormatString(LoadResStr(static_cast<C4ResStrTableKey>(std::to_underlying(C4ResStrTableKey::IDS_OBJ_DEATH1) + SafeRandom(MaxDeathMsg))), cthr->Obj->GetName()).getData(), cthr->Obj);
 	}
 	return true;
 }
@@ -6049,7 +6048,7 @@ static void FnSetNextMission(C4AulContext *ctx, C4String *szNextMission, C4Strin
 		}
 		else
 		{
-			Game.NextMissionText.Copy(LoadResStr("IDS_BTN_NEXTSCENARIO"));
+			Game.NextMissionText.Copy(LoadResStr(C4ResStrTableKey::IDS_BTN_NEXTSCENARIO));
 		}
 		if (szNextMissionDesc && szNextMissionDesc->Data.getData())
 		{
@@ -6057,7 +6056,7 @@ static void FnSetNextMission(C4AulContext *ctx, C4String *szNextMission, C4Strin
 		}
 		else
 		{
-			Game.NextMissionDesc.Copy(LoadResStr("IDS_DESC_NEXTSCENARIO"));
+			Game.NextMissionDesc.Copy(LoadResStr(C4ResStrTableKey::IDS_DESC_NEXTSCENARIO));
 		}
 	}
 }

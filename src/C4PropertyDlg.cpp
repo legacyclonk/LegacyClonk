@@ -104,7 +104,7 @@ bool C4PropertyDlg::Open()
 		PropertyDlgProc);
 	if (!hDialog) return false;
 	// Set text
-	SetWindowText(hDialog, LoadResStr("IDS_DLG_PROPERTIES"));
+	SetWindowText(hDialog, LoadResStr(C4ResStrTableKey::IDS_DLG_PROPERTIES));
 	// Enable controls
 	EnableWindow(GetDlgItem(hDialog, IDOK), Console.Editing);
 	EnableWindow(GetDlgItem(hDialog, IDC_COMBOINPUT), Console.Editing);
@@ -135,7 +135,7 @@ bool C4PropertyDlg::Open()
 
 		gtk_widget_show_all(vbox);
 
-		C4DevmodeDlg::AddPage(vbox, GTK_WINDOW(Console.window), LoadResStrUtf8("IDS_DLG_PROPERTIES").getData());
+		C4DevmodeDlg::AddPage(vbox, GTK_WINDOW(Console.window), LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_PROPERTIES).getData());
 
 		g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(OnScriptActivate), this);
 
@@ -173,32 +173,32 @@ bool C4PropertyDlg::Update()
 	{
 	// No selection
 	case 0:
-		Output.Ref(LoadResStr("IDS_CNS_NOOBJECT"));
+		Output.Ref(LoadResStr(C4ResStrTableKey::IDS_CNS_NOOBJECT));
 		break;
 	// One selected object
 	case 1:
 	{
 		C4Object *cobj = Selection.GetObject();
 		// Type
-		Output.AppendFormat(LoadResStr("IDS_CNS_TYPE"), cobj->GetName(), C4IdText(cobj->Def->id));
+		Output.AppendFormat(LoadResStr(C4ResStrTableKey::IDS_CNS_TYPE), cobj->GetName(), C4IdText(cobj->Def->id));
 		// Owner
 		if (ValidPlr(cobj->Owner))
 		{
 			Output.Append(LineFeed);
-			Output.AppendFormat(LoadResStr("IDS_CNS_OWNER"), Game.Players.Get(cobj->Owner)->GetName());
+			Output.AppendFormat(LoadResStr(C4ResStrTableKey::IDS_CNS_OWNER), Game.Players.Get(cobj->Owner)->GetName());
 		}
 		// Contents
 		if (cobj->Contents.ObjectCount())
 		{
 			Output.Append(LineFeed);
-			Output.Append(LoadResStr("IDS_CNS_CONTENTS"));
+			Output.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_CONTENTS));
 			Output.Append(static_cast<const StdStrBuf &>(cobj->Contents.GetNameList(Game.Defs)));
 		}
 		// Action
 		if (cobj->Action.Act != ActIdle)
 		{
 			Output.Append(LineFeed);
-			Output.Append(LoadResStr("IDS_CNS_ACTION"));
+			Output.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_ACTION));
 			Output.Append(cobj->Def->ActMap[cobj->Action.Act].Name);
 		}
 		// Locals
@@ -207,7 +207,7 @@ bool C4PropertyDlg::Update()
 			if (cobj->Local[cnt])
 			{
 				// Header
-				if (fFirstLocal) { Output.Append(LineFeed); Output.Append(LoadResStr("IDS_CNS_LOCALS")); fFirstLocal = false; }
+				if (fFirstLocal) { Output.Append(LineFeed); Output.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_LOCALS)); fFirstLocal = false; }
 				Output.Append(LineFeed);
 				// Append id
 				Output.AppendFormat(" Local(%d) = ", cnt);
@@ -218,7 +218,7 @@ bool C4PropertyDlg::Update()
 		for (cnt = 0; cnt < cobj->LocalNamed.GetAnzItems(); cnt++)
 		{
 			// Header
-			if (fFirstLocal) { Output.Append(LineFeed); Output.Append(LoadResStr("IDS_CNS_LOCALS")); fFirstLocal = false; }
+			if (fFirstLocal) { Output.Append(LineFeed); Output.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_LOCALS)); fFirstLocal = false; }
 			Output.Append(LineFeed);
 			// Append name
 			Output.AppendFormat(" %s = ", cobj->LocalNamed.pNames->pNames[cnt]);
@@ -232,7 +232,7 @@ bool C4PropertyDlg::Update()
 			if (pEffect == cobj->pEffects)
 			{
 				Output.Append(LineFeed);
-				Output.Append(LoadResStr("IDS_CNS_EFFECTS"));
+				Output.Append(LoadResStr(C4ResStrTableKey::IDS_CNS_EFFECTS));
 			}
 			Output.Append(LineFeed);
 			// Effect name
@@ -244,7 +244,7 @@ bool C4PropertyDlg::Update()
 	}
 	// Multiple selected objects
 	default:
-		Output.Format(LoadResStr("IDS_CNS_MULTIPLEOBJECTS"), Selection.ObjectCount());
+		Output.Format(LoadResStr(C4ResStrTableKey::IDS_CNS_MULTIPLEOBJECTS), Selection.ObjectCount());
 		break;
 	}
 	// Update info edit control

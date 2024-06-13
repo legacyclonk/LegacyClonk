@@ -893,7 +893,7 @@ bool C4Surface::Load(C4Group &hGroup, const char *szFilename, bool fOwnPal, bool
 	if (!hGroup.AccessEntry(szFilename))
 	{
 		// file not found
-		if (!fNoErrIfNotFound) LogF("%s: %s%c%s", LoadResStr("IDS_PRC_FILENOTFOUND"), hGroup.GetFullName().getData(), DirectorySeparator, szFilename);
+		if (!fNoErrIfNotFound) LogF("%s: %s%c%s", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), hGroup.GetFullName().getData(), DirectorySeparator, szFilename);
 		return false;
 	}
 	// determine file type by file extension and load accordingly
@@ -907,7 +907,7 @@ bool C4Surface::Load(C4Group &hGroup, const char *szFilename, bool fOwnPal, bool
 		fSuccess = !!Read(hGroup, fOwnPal);
 	// loading error? log!
 	if (!fSuccess)
-		LogF("%s: %s%c%s", LoadResStr("IDS_ERR_NOFILE"), hGroup.GetFullName().getData(), DirectorySeparator, szFilename);
+		LogF("%s: %s%c%s", LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE), hGroup.GetFullName().getData(), DirectorySeparator, szFilename);
 	// done, success
 	return fSuccess;
 }

@@ -41,13 +41,13 @@ bool C4GameSave::SaveCreateGroup(const char *szFilename, C4Group &hUseGroup)
 		if (!ItemIdentical(Game.ScenarioFilename, szFilename))
 			if (!C4Group_CopyItem(Game.ScenarioFilename, szFilename))
 			{
-				LogF(LoadResStr("IDS_CNS_SAVEASERROR"), szFilename); return false;
+				LogF(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR), szFilename); return false;
 			}
 	// open it
 	if (!hUseGroup.Open(szFilename, !GetCopyScenario()))
 	{
 		EraseItem(szFilename);
-		LogF(LoadResStr("IDS_CNS_SAVEASERROR"), szFilename);
+		LogF(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVEASERROR), szFilename);
 		return false;
 	}
 	// done, success
@@ -189,40 +189,40 @@ bool C4GameSave::SaveRuntimeData()
 	// scenario sections (exact only)
 	if (IsExact()) if (!SaveScenarioSections())
 	{
-		Log(LoadResStr("IDS_ERR_SAVE_SCENSECTIONS")); return false;
+		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_SCENSECTIONS)); return false;
 	}
 	// landscape
-	if (!SaveLandscape()) { Log(LoadResStr("IDS_ERR_SAVE_LANDSCAPE")); return false; }
+	if (!SaveLandscape()) { Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_LANDSCAPE)); return false; }
 	// Strings
 	Game.ScriptEngine.Strings.EnumStrings();
 	if (!Game.ScriptEngine.Strings.Save((*pSaveGroup)))
 	{
-		Log(LoadResStr("IDS_ERR_SAVE_SCRIPTSTRINGS")); return false;
+		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_SCRIPTSTRINGS)); return false;
 	}
 	// Objects
 	if (!Game.Objects.Save((*pSaveGroup), IsExact(), true))
 	{
-		Log(LoadResStr("IDS_ERR_SAVE_OBJECTS")); return false;
+		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_OBJECTS)); return false;
 	}
 	// Round results
 	if (GetSaveUserPlayers()) if (!Game.RoundResults.Save(*pSaveGroup))
 	{
-		Log(LoadResStr("IDS_ERR_ERRORSAVINGROUNDRESULTS")); return false;
+		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_ERRORSAVINGROUNDRESULTS)); return false;
 	}
 	// Teams
 	if (!Game.Teams.Save(*pSaveGroup))
 	{
-		Log(LoadResStr(LoadResStr("IDS_ERR_ERRORSAVINGTEAMS"))); return false;
+		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_ERRORSAVINGTEAMS)); return false;
 	}
 	// some scenario components possiby modified in console mode
 	// such modifications cannot possibly be done before game start
 	// so it's runtime data
 	// Script
-	if (!Game.Script.Save((*pSaveGroup))) Log(LoadResStr("IDS_ERR_SAVE_SCRIPT")); /* nofail */
+	if (!Game.Script.Save((*pSaveGroup))) Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_SCRIPT)); /* nofail */
 	// Title - unexact only, because in savegames, the title will be set in core
-	if (!IsExact()) if (!Game.Title.Save((*pSaveGroup))) Log(LoadResStr("IDS_ERR_SAVE_TITLE")); /* nofail */
+	if (!IsExact()) if (!Game.Title.Save((*pSaveGroup))) Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_TITLE)); /* nofail */
 	// Info
-	if (!Game.Info.Save((*pSaveGroup))) Log(LoadResStr("IDS_ERR_SAVE_INFO")); /* nofail */
+	if (!Game.Info.Save((*pSaveGroup))) Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_INFO)); /* nofail */
 	if (GetSaveUserPlayers() || GetSaveScriptPlayers())
 	{
 		// player infos
@@ -233,7 +233,7 @@ bool C4GameSave::SaveRuntimeData()
 		RestoreInfos.SetAsRestoreInfos(Game.PlayerInfos, GetSaveUserPlayers(), GetSaveScriptPlayers(), GetSaveUserPlayerFiles(), GetSaveScriptPlayerFiles());
 		if (!RestoreInfos.Save(*pSaveGroup, C4CFN_SavePlayerInfos))
 		{
-			Log(LoadResStr("IDS_ERR_SAVE_RESTOREPLAYERINFOS")); return false;
+			Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_RESTOREPLAYERINFOS)); return false;
 		}
 		// Players
 		// this will save the player files to the savegame scenario group only
@@ -243,7 +243,7 @@ bool C4GameSave::SaveRuntimeData()
 		{
 			if (!Game.Players.Save((*pSaveGroup), GetCreateSmallFile(), RestoreInfos))
 			{
-				Log(LoadResStr("IDS_ERR_SAVE_PLAYERS")); return false;
+				Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_PLAYERS)); return false;
 			}
 		}
 	}
@@ -312,7 +312,7 @@ void C4GameSave::WriteDescDate(StdStrBuf &sBuf, bool fRecord)
 	time_t tTime; time(&tTime);
 	struct tm *pLocalTime;
 	pLocalTime = localtime(&tTime);
-	sBuf.Append(FormatEscape(LoadResStr(fRecord ? "IDS_DESC_DATEREC" : (Game.Network.isEnabled() ? "IDS_DESC_DATENET" : "IDS_DESC_DATE")),
+	sBuf.Append(FormatEscape(LoadResStr(fRecord ? C4ResStrTableKey::IDS_DESC_DATEREC : (Game.Network.isEnabled() ? C4ResStrTableKey::IDS_DESC_DATENET : C4ResStrTableKey::IDS_DESC_DATE)),
 		pLocalTime->tm_mday,
 		pLocalTime->tm_mon + 1,
 		pLocalTime->tm_year + 1900,
@@ -326,7 +326,7 @@ void C4GameSave::WriteDescGameTime(StdStrBuf &sBuf)
 	// Write game duration
 	if (Game.Time)
 	{
-		sBuf.Append(FormatEscape(LoadResStr("IDS_DESC_DURATION"),
+		sBuf.Append(FormatEscape(LoadResStr(C4ResStrTableKey::IDS_DESC_DURATION),
 			Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60).c_str());
 		WriteDescLineFeed(sBuf);
 	}
@@ -335,7 +335,7 @@ void C4GameSave::WriteDescGameTime(StdStrBuf &sBuf)
 void C4GameSave::WriteDescEngine(StdStrBuf &sBuf)
 {
 	char ver[5]; sprintf(ver, "%03d", static_cast<int>(C4XVERBUILD));
-	sBuf.Append(FormatEscape(LoadResStr("IDS_DESC_VERSION"), ver).c_str());
+	sBuf.Append(FormatEscape(LoadResStr(C4ResStrTableKey::IDS_DESC_VERSION), ver).c_str());
 	WriteDescLineFeed(sBuf);
 }
 
@@ -343,7 +343,7 @@ void C4GameSave::WriteDescLeague(StdStrBuf &sBuf, bool fLeague, const char *strL
 {
 	if (fLeague)
 	{
-		sBuf.Append(FormatEscape(LoadResStr("IDS_PRC_LEAGUE"), strLeagueName).c_str());
+		sBuf.Append(FormatEscape(LoadResStr(C4ResStrTableKey::IDS_PRC_LEAGUE), strLeagueName).c_str());
 		WriteDescLineFeed(sBuf);
 	}
 }
@@ -354,7 +354,7 @@ void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 	if (Game.DefinitionFilenames.size())
 	{
 		// Desc
-		sBuf.Append(RtfEscape(LoadResStr("IDS_DESC_DEFSPECS")).c_str());
+		sBuf.Append(RtfEscape(LoadResStr(C4ResStrTableKey::IDS_DESC_DEFSPECS)).c_str());
 		// Get definition modules
 		int32_t i = 0;
 		for (const auto &def : Game.DefinitionFilenames)
@@ -377,7 +377,7 @@ void C4GameSave::WriteDescDefinitions(StdStrBuf &sBuf)
 void C4GameSave::WriteDescNetworkClients(StdStrBuf &sBuf)
 {
 	// Desc
-	sBuf.Append(RtfEscape(LoadResStr("IDS_DESC_CLIENTS")).c_str());
+	sBuf.Append(RtfEscape(LoadResStr(C4ResStrTableKey::IDS_DESC_CLIENTS)).c_str());
 	// Client names
 	bool comma{false};
 	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(nullptr); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
@@ -430,7 +430,7 @@ void C4GameSave::WriteDescPlayers(StdStrBuf &sBuf)
 	// New style using Game.PlayerInfos
 	if (Game.PlayerInfos.GetPlayerCount())
 	{
-		sBuf.Append(RtfEscape(LoadResStr("IDS_DESC_PLRS")).c_str());
+		sBuf.Append(RtfEscape(LoadResStr(C4ResStrTableKey::IDS_DESC_PLRS)).c_str());
 		if (Game.Teams.IsMultiTeams() && !Game.Teams.IsAutoGenerateTeams())
 		{
 			// Teams defined: Print players sorted by teams
@@ -459,7 +459,7 @@ bool C4GameSave::Save(const char *szFilename)
 	C4Group *pLSaveGroup = new C4Group();
 	if (!SaveCreateGroup(szFilename, *pLSaveGroup))
 	{
-		LogF(LoadResStr("IDS_ERR_SAVE_TARGETGRP"), szFilename ? szFilename : "nullptr!");
+		LogF(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_TARGETGRP), szFilename ? szFilename : "nullptr!");
 		delete pLSaveGroup;
 		return false;
 	}
@@ -476,7 +476,7 @@ bool C4GameSave::Save(C4Group &hToGroup, bool fKeepGroup)
 	// PreSave-actions (virtual call)
 	if (!OnSaving()) return false;
 	// always save core
-	if (!SaveCore()) { Log(LoadResStr("IDS_ERR_SAVE_CORE")); return false; }
+	if (!SaveCore()) { Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_CORE)); return false; }
 	// cleanup group
 	pSaveGroup->Delete(C4CFN_PlayerFiles);
 	// remove: Title text, image and icon if specified
@@ -491,14 +491,14 @@ bool C4GameSave::Save(C4Group &hToGroup, bool fKeepGroup)
 	// Always save Game.txt; even for saved scenarios, because global effects need to be saved
 	if (!Game.SaveData(*pSaveGroup, false, fInitial, IsExact()))
 	{
-		Log(LoadResStr("IDS_ERR_SAVE_RUNTIMEDATA")); return false;
+		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_RUNTIMEDATA)); return false;
 	}
 	// save additional runtime data
 	if (GetSaveRuntimeData()) if (!SaveRuntimeData()) return false;
 	// Desc
 	if (GetSaveDesc())
 		if (!SaveDesc(*pSaveGroup))
-			Log(LoadResStr("IDS_ERR_SAVE_DESC")); /* nofail */
+			Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_DESC)); /* nofail */
 	// save specialized components (virtual call)
 	if (!SaveComponents()) return false;
 	// done, success
@@ -559,7 +559,7 @@ bool C4GameSaveSavegame::SaveComponents()
 {
 	// special for savegames: save a screenshot
 	if (!Game.SaveGameTitle((*pSaveGroup)))
-		Log(LoadResStr("IDS_ERR_SAVE_GAMETITLE")); /* nofail */
+		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_SAVE_GAMETITLE)); /* nofail */
 	// done, success
 	return true;
 }

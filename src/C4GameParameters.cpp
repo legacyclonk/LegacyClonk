@@ -133,7 +133,7 @@ bool C4GameRes::InitNetwork(C4Network2ResList *pNetResList)
 		// Publish on network
 		if (!Publish(pNetResList))
 		{
-			LogFatal(FormatString(LoadResStr("IDS_NET_NOFILEPUBLISH"), getFile()).getData());
+			LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_NOFILEPUBLISH), getFile()).getData());
 			return false;
 		}
 	}
@@ -147,12 +147,12 @@ bool C4GameRes::InitNetwork(C4Network2ResList *pNetResList)
 			const char *szFilename = pResCore->getFileName();
 			if (!pResCore->isLoadable())
 				if (pResCore->getType() == NRT_System)
-					LogFatal(FormatString(LoadResStr("IDS_NET_NOSAMESYSTEM"), szFilename).getData());
+					LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_NOSAMESYSTEM), szFilename).getData());
 				else
-					LogFatal(FormatString(LoadResStr("IDS_NET_NOSAMEANDTOOLARGE"), szFilename).getData());
+					LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_NOSAMEANDTOOLARGE), szFilename).getData());
 			// Should not happen
 			else
-				LogFatal(FormatString(LoadResStr("IDS_NET_NOVALIDCORE"), szFilename).getData());
+				LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_NET_NOVALIDCORE), szFilename).getData());
 			return false;
 		}
 	}
@@ -201,7 +201,7 @@ bool C4GameResList::Load(const std::vector<std::string> &DefinitionFilenames)
 			C4Group Def;
 			if (!Def.Open(def.c_str()))
 			{
-				LogFatal(FormatString(LoadResStr("IDS_PRC_DEFNOTFOUND"), def.c_str()).getData());
+				LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFNOTFOUND), def.c_str()).getData());
 				Def.Close();
 				return false;
 			}
@@ -259,7 +259,7 @@ bool C4GameResList::RetrieveFiles()
 	{
 		if (const C4Network2ResCore *const core{it->getResCore()}; core)
 		{
-			StdStrBuf ResNameBuf = FormatString("%s: %s", LoadResStr("IDS_DLG_DEFINITION"), GetFilename(core->getFileName()));
+			StdStrBuf ResNameBuf = FormatString("%s: %s", LoadResStr(C4ResStrTableKey::IDS_DLG_DEFINITION), GetFilename(core->getFileName()));
 			if (!Game.Network.RetrieveRes(*core, C4NetResRetrieveTimeout, ResNameBuf.getData()))
 				return false;
 		}
@@ -402,7 +402,7 @@ bool C4GameParameters::Load(C4Group &hGroup, C4Scenario *pScenario, const char *
 	// Load teams
 	if (!Teams.Load(hGroup, pScenario, pLang))
 	{
-		LogFatal(LoadResStr("IDS_PRC_ERRORLOADINGTEAMS")); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_ERRORLOADINGTEAMS)); return false;
 	}
 
 	// Compile data
@@ -493,7 +493,7 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 			}
 			else if ((!Teams.IsCustom() && Game.C4S.Game.IsMelee()) || iTeam != iClientTeam)
 			{
-				Error.Format(LoadResStr("IDS_MSG_NOSPLITSCREENINLEAGUE"), szFirstPlayer, pInfo->GetName());
+				Error.Format(LoadResStr(C4ResStrTableKey::IDS_MSG_NOSPLITSCREENINLEAGUE), szFirstPlayer, pInfo->GetName());
 				if (!fFixIt)
 				{
 					fError = true;
@@ -514,7 +514,7 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 	if (fError)
 	{
 		if (Game.pGUI)
-			Game.pGUI->ShowMessageModal(Error.getData(), LoadResStr("IDS_NET_ERR_LEAGUE"), C4GUI::MessageDialog::btnOK, C4GUI::Ico_MeleeLeague);
+			Game.pGUI->ShowMessageModal(Error.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE), C4GUI::MessageDialog::btnOK, C4GUI::Ico_MeleeLeague);
 		else
 			Log(Error.getData());
 		return false;
@@ -611,7 +611,7 @@ StdStrBuf C4GameParameters::GetGameGoalString()
 	if (sResult.getLength() > C4MaxTitle) sResult.SetLength(C4MaxTitle);
 	// Compose desc string
 	if (sResult.getLength())
-		return FormatString("%s: %s", LoadResStr("IDS_MENU_CPGOALS"), sResult.getData());
+		return FormatString("%s: %s", LoadResStr(C4ResStrTableKey::IDS_MENU_CPGOALS), sResult.getData());
 	else
-		return StdStrBuf(LoadResStr("IDS_CTL_NOGOAL"));
+		return StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_CTL_NOGOAL));
 }

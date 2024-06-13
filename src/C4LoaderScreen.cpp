@@ -62,7 +62,7 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 		GfxGrp.Close();
 		if (!GfxGrp.Open(Config.AtExePath(C4CFN_Graphics)))
 		{
-			LogFatal(FormatString(LoadResStr("IDS_PRC_NOGFXFILE"), C4CFN_Graphics, GfxGrp.GetError()).getData());
+			LogFatal(FormatString(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), C4CFN_Graphics, GfxGrp.GetError()).getData());
 			return false;
 		}
 		// seek for png-loaders
