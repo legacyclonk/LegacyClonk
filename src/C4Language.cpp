@@ -332,17 +332,19 @@ void C4Language::LoadInfos(C4Group &hGroup)
 				// New language info
 				C4LanguageInfo info;
 				// Get language code by entry name
-				SCopy(GetFilenameOnly(strEntry) + SLen(GetFilenameOnly(strEntry)) - 2, info.Code, 2);
-				SCapitalize(info.Code);
+				std::strncpy(info.Code.data(), GetFilenameOnly(strEntry) + SLen(GetFilenameOnly(strEntry)) - 2, 2);
+				info.Code[0] = CharCapital(info.Code[0]);
+				info.Code[1] = CharCapital(info.Code[1]);
 				// Get language name, info, fallback from table
-				SCopy(GetResStr(C4ResStrTableKey::IDS_LANG_NAME, strTable), info.Name, C4MaxLanguageInfo);
-				SCopy(GetResStr(C4ResStrTableKey::IDS_LANG_INFO, strTable), info.Info, C4MaxLanguageInfo);
-				SCopy(GetResStr(C4ResStrTableKey::IDS_LANG_FALLBACK, strTable), info.Fallback, C4MaxLanguageInfo);
-				SCopy(GetResStr(C4ResStrTableKey::IDS_LANG_CHARSET, strTable), info.Charset, C4MaxLanguageInfo);
+				C4ResStrTable table{std::string_view{}, strTable};
+				info.Name = table.GetEntry(C4ResStrTableKey::IDS_LANG_NAME);
+				info.Info = table.GetEntry(C4ResStrTableKey::IDS_LANG_INFO);
+				info.Fallback = table.GetEntry(C4ResStrTableKey::IDS_LANG_FALLBACK);
+				info.Charset = table.GetEntry(C4ResStrTableKey::IDS_LANG_CHARSET);
 				// Safety: pipe character is not allowed in any language info string
-				SReplaceChar(info.Name, '|', ' ');
-				SReplaceChar(info.Info, '|', ' ');
-				SReplaceChar(info.Fallback, '|', ' ');
+				SReplaceChar(info.Name.data(), '|', ' ');
+				SReplaceChar(info.Info.data(), '|', ' ');
+				SReplaceChar(info.Fallback.data(), '|', ' ');
 				// Delete table
 				delete[] strTable;
 				// Add info to list
@@ -354,7 +356,8 @@ const C4LanguageInfo *C4Language::FindInfo(const char *const code)
 {
 	if (const auto it = std::find_if(begin(), end(), [code](auto &info)
 	{
-		return SEqualNoCase(info.Code, code, 2);
+		if (CharCapital(info.Code[0]) != CharCapital(*code)) return false;
+		return *code && CharCapital(info.Code[1]) == CharCapital(code[1]);
 	}); it != end())
 	{
 		return &*it;
@@ -420,7 +423,7 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 		hGroup.Close(); return false;
 	}
 	// Set string table
-	Application.ResStrTable.emplace(strTable.getData());
+	Application.ResStrTable.emplace(strCode, strTable.getData());
 	// Close group
 	hGroup.Close();
 	// Set the internal charset
