@@ -1687,7 +1687,7 @@ void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
 
 	if (!client->isLocal())
 	{
-		LogF(LoadResStr(ready ? C4ResStrTableKey::IDS_NET_CLIENT_READY : C4ResStrTableKey::IDS_NET_CLIENT_UNREADY), client->getName());
+		Log(LoadResStr(ready ? C4ResStrTableKey::IDS_NET_CLIENT_READY : C4ResStrTableKey::IDS_NET_CLIENT_UNREADY, client->getName()).c_str());
 	}
 
 	if (ready != client->isLobbyReady())
@@ -1847,7 +1847,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 		else if (!pRes->isLoading())
 		{
 			// log
-			if (fLog) LogF(LoadResStr(C4ResStrTableKey::IDS_NET_RECEIVED), szResName, pRes->getCore().getFileName());
+			if (fLog) Log(LoadResStr(C4ResStrTableKey::IDS_NET_RECEIVED, szResName, pRes->getCore().getFileName()).c_str());
 			// return
 			delete pDlg;
 			return pRes;
@@ -1873,7 +1873,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 		// log
 		if (!fLog)
 		{
-			LogF(LoadResStr(C4ResStrTableKey::IDS_NET_WAITFORRES), szResName);
+			Log(LoadResStr(C4ResStrTableKey::IDS_NET_WAITFORRES, szResName).c_str());
 			fLog = true;
 		}
 		// show progress dialog
@@ -2426,7 +2426,7 @@ bool C4Network2::LeagueUpdate()
 	if (!pLeagueClient->Update(Ref))
 	{
 		// Log
-		LogF(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_UPDATEGAME), pLeagueClient->GetError());
+		Log(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_UPDATEGAME, pLeagueClient->GetError()).c_str());
 		return false;
 	}
 
@@ -2690,7 +2690,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 			// Error with first-time registration or manual password entry
 			if (!fUnregistered || fRegister)
 			{
-				LogF(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESIGNUPERROR), Message.getData());
+				Log(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESIGNUPERROR, Message.getData()).c_str());
 				Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESERVERMSG, Message.getData()).c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUPFAILED), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 				Config.Network.LeaguePassword.Clear();
 				// after a league server error message, always fall-through to try again
@@ -2765,7 +2765,7 @@ void C4Network2::LeagueNotifyDisconnect(int32_t iClientID, C4LeagueDisconnectRea
 	// Make sure league client is avilable
 	LeagueWaitNotBusy();
 	// report the disconnect!
-	LogF(LoadResStr(C4ResStrTableKey::IDS_LEAGUE_LEAGUEREPORTINGUNEXPECTED), static_cast<int>(eReason));
+	Log(LoadResStr(C4ResStrTableKey::IDS_LEAGUE_LEAGUEREPORTINGUNEXPECTED, static_cast<int>(eReason)).c_str());
 	pLeagueClient->ReportDisconnect(*pInfos, eReason);
 	// wait for the reply
 	LeagueWaitNotBusy();
@@ -2808,7 +2808,7 @@ void C4Network2::LeagueShowError(const char *szMsg)
 	}
 	else
 	{
-		LogF(LoadResStr(C4ResStrTableKey::IDS_LGA_SERVERFAILURE), szMsg);
+		Log(LoadResStr(C4ResStrTableKey::IDS_LGA_SERVERFAILURE, szMsg).c_str());
 	}
 }
 

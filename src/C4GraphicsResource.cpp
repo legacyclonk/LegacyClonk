@@ -423,7 +423,7 @@ bool C4GraphicsResource::LoadFile(C4FacetExID &fct, const char *szName, C4GroupS
 		// FIXME: Use LogFatal here
 		if (!fNoWarnIfNotFound)
 		{
-			LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), szName, LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND));
+			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, szName, LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND)).c_str());
 		}
 		return false;
 	}
@@ -434,7 +434,7 @@ bool C4GraphicsResource::LoadFile(C4FacetExID &fct, const char *szName, C4GroupS
 	// load
 	if (!fct.Load(*pGrp, FileName, iWdt, iHgt))
 	{
-		LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE));
+		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE)).c_str());
 		return false;
 	}
 	fct.idSourceGroup = ID;
@@ -448,7 +448,7 @@ bool C4GraphicsResource::LoadFile(C4Surface &sfc, const char *szName, C4GroupSet
 	C4Group *pGrp = FindSuitableFile(szName, rGfxSet, FileName, ID);
 	if (!pGrp)
 	{
-		LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), szName, LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND));
+		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, szName, LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND)).c_str());
 		return false;
 	}
 	// check group
@@ -458,7 +458,7 @@ bool C4GraphicsResource::LoadFile(C4Surface &sfc, const char *szName, C4GroupSet
 	// load
 	if (!sfc.Load(*pGrp, FileName))
 	{
-		LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE), FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE));
+		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE)).c_str());
 		return false;
 	}
 	ridCurrSfc = ID;

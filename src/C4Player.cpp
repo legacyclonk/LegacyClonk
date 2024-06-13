@@ -417,7 +417,7 @@ bool C4Player::Save()
 		if (Game.Parameters.MaxPlayers <= 0) return false;
 	}
 	// Log
-	LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_SAVEPLR), Config.AtExeRelativePath(Filename));
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_SAVEPLR, Config.AtExeRelativePath(Filename)).c_str());
 	Game.GraphicsSystem.MessageBoard.EnsureLastMessage();
 	// copy player to save somewhere else
 	char szPath[_MAX_PATH + 1];
@@ -975,7 +975,7 @@ void C4Player::Surrender()
 	Eliminated = true;
 	RetireDelay = C4RetireDelay;
 	StartSoundEffect("Eliminated");
-	LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRSURRENDERED), GetName());
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRSURRENDERED, GetName()).c_str());
 }
 
 bool C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent)
@@ -988,8 +988,8 @@ bool C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent)
 	if (!Game.FrameCounter || fSilent) return true;
 	// Announce
 	StartSoundEffect("Trumpet");
-	LogF(LoadResStr(iHostility ? C4ResStrTableKey::IDS_PLR_HOSTILITY : C4ResStrTableKey::IDS_PLR_NOHOSTILITY),
-		GetName(), Game.Players.Get(iOpponent)->GetName());
+	Log(LoadResStr(iHostility ? C4ResStrTableKey::IDS_PLR_HOSTILITY : C4ResStrTableKey::IDS_PLR_NOHOSTILITY,
+		GetName(), Game.Players.Get(iOpponent)->GetName()).c_str());
 	// Success
 	return true;
 }
@@ -2012,7 +2012,7 @@ void C4Player::Eliminate()
 	Eliminated = true;
 	RetireDelay = C4RetireDelay;
 	StartSoundEffect("Eliminated");
-	LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRELIMINATED), GetName());
+	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRELIMINATED, GetName()).c_str());
 
 	// Early client deactivation check
 	if (Game.Control.isCtrlHost() && AtClient > C4ClientIDHost)

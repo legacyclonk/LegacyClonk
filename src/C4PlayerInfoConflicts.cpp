@@ -296,7 +296,7 @@ void C4PlayerInfoListAttributeConflictResolver::ResolveInInfo()
 			uint32_t dwNewClr;
 			if (++iTries > C4MaxPlayerColorChangeTries)
 			{
-				LogF(LoadResStr(C4ResStrTableKey::IDS_PRC_NOREPLPLRCLR), pResolveInfo->GetName() ? pResolveInfo->GetName() : "<NONAME>");
+				Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOREPLPLRCLR, pResolveInfo->GetName() ? pResolveInfo->GetName() : "<NONAME>").c_str());
 				// since there's a conflict anyway, change to original
 				pResolveInfo->SetColor(pResolveInfo->GetOriginalColor());
 				break;
