@@ -1049,7 +1049,7 @@ void C4Network2::OnPuncherConnect(const C4NetIO::addr_t addr)
 {
 	// NAT punching is only relevant for IPv4, so convert here to show a proper address.
 	const auto &maybeV4 = addr.AsIPv4();
-	Application.InteractiveThread.ThreadLogSF("Adding address from puncher: %s", maybeV4.ToString().getData());
+	LogSilentF("Adding address from puncher: %s", maybeV4.ToString().getData());
 	// Add for local client
 	if (const auto &local = Clients.GetLocal())
 	{

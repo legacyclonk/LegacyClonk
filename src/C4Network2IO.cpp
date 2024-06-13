@@ -465,7 +465,7 @@ bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t
 	}
 #if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
-	Application.InteractiveThread.ThreadLogSF("OnConn: %d:%02d:%02d:%03d: %s",
+	LogSilentF("OnConn: %d:%02d:%02d:%03d: %s",
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
 		getNetIOName(pNetIO));
 #endif
@@ -501,7 +501,7 @@ bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t
 	SendConnPackets();
 #if (C4NET2IO_DUMP_LEVEL > 0)
 	// log
-	Application.InteractiveThread.ThreadLogSF("Network: got %s connection from %s", getNetIOName(pNetIO), PeerAddr.ToString().getData());
+	LogSilentF("Network: got %s connection from %s", getNetIOName(pNetIO), PeerAddr.ToString().getData());
 #endif
 	// ok
 	return true;
@@ -519,7 +519,7 @@ void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const
 	}
 #if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
-	Application.InteractiveThread.ThreadLogSF("OnDisconn: %d:%02d:%02d:%03d: %s",
+	LogSilentF("OnDisconn: %d:%02d:%02d:%03d: %s",
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
 		getNetIOName(pNetIO));
 #endif
@@ -528,7 +528,7 @@ void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const
 	if (!pConn) pConn = GetConnectionByConnAddr(addr, pNetIO);
 	if (!pConn) return;
 	// log
-	Application.InteractiveThread.ThreadLogSF("Network: %s connection to %s %s (%s)",
+	LogSilentF("Network: %s connection to %s %s (%s)",
 		getNetIOName(pNetIO), addr.ToString().getData(), (pConn->isConnecting() ? "failed" : "closed"), szReason);
 	// already closed? ignore
 	if (!pConn->isClosed())
@@ -547,7 +547,7 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 {
 #if (C4NET2IO_DUMP_LEVEL > 1)
 	unsigned int iTime = timeGetTime();
-	Application.InteractiveThread.ThreadLogSF("OnPacket: %d:%02d:%02d:%03d: status %02x %s",
+	LogSilentF("OnPacket: %d:%02d:%02d:%03d: status %02x %s",
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
 		rPacket.getStatus(), getNetIOName(pNetIO));
 #endif
@@ -561,12 +561,12 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 	C4Network2IOConnection *pConn = GetConnection(rPacket.getAddr(), pNetIO);
 	if (!pConn)
 	{
-		Application.InteractiveThread.ThreadLogF("Network: could not find connection for %s packet (status %02x) from %s!", getNetIOName(pNetIO), rPacket.getStatus(), rPacket.getAddr().ToString().getData());
+		LogF("Network: could not find connection for %s packet (status %02x) from %s!", getNetIOName(pNetIO), rPacket.getStatus(), rPacket.getAddr().ToString().getData());
 		return;
 	}
 #if (C4NET2IO_DUMP_LEVEL > 2)
 	if (timeGetTime() - iTime > 100)
-		Application.InteractiveThread.ThreadLogSF("OnPacket: ... blocked %d ms for finding the connection!", timeGetTime() - iTime);
+		LogSilentF("OnPacket: ... blocked %d ms for finding the connection!", timeGetTime() - iTime);
 #endif
 	// notify
 	pConn->OnPacketReceived(rPacket.getStatus());
@@ -575,14 +575,14 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 	// log time
 #if (C4NET2IO_DUMP_LEVEL > 1)
 	if (timeGetTime() - iTime > 100)
-		Application.InteractiveThread.ThreadLogSF("OnPacket: ... blocked %d ms for handling!", timeGetTime() - iTime);
+		LogSilentF("OnPacket: ... blocked %d ms for handling!", timeGetTime() - iTime);
 #endif
 }
 
 void C4Network2IO::OnError(const char *strError, C4NetIO *pNetIO)
 {
 	// let's log it
-	Application.InteractiveThread.ThreadLogF("Network: %s error: %s", getNetIOName(pNetIO), strError);
+	LogF("Network: %s error: %s", getNetIOName(pNetIO), strError);
 }
 
 bool C4Network2IO::Execute(int iTimeout)
@@ -803,7 +803,7 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 	}
 	catch (const StdCompiler::Exception &e)
 	{
-		Application.InteractiveThread.ThreadLogF("Network: error: Failed to unpack packet id %02x: %s", rPacket.getStatus(), e.what());
+		LogF("Network: error: Failed to unpack packet id %02x: %s", rPacket.getStatus(), e.what());
 #ifdef NDEBUG
 		pConn->Close();
 #endif
@@ -820,7 +820,7 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 			pConn->getPeerAddr().ToString().getData(),
 			rPacket.getSize(), pConn->getInPacketCounter());
 		StdStrBuf Dump = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(Pkt, PacketHeader.getData()));
-		Application.InteractiveThread.ThreadLogS(Dump.getData());
+		LogSilent(Dump.getData());
 	}
 #endif
 
@@ -844,7 +844,7 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 
 #if (C4NET2IO_DUMP_LEVEL > 2)
 					if (fThread && timeGetTime() - iStart > 100)
-						Application.InteractiveThread.ThreadLogSF("HandlePacket: ... blocked for %d ms!", timeGetTime() - iStart);
+						LogSilentF("HandlePacket: ... blocked for %d ms!", timeGetTime() - iStart);
 #endif
 				}
 			}
@@ -864,12 +864,12 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 		pEvData->Conn = pConn; pConn->AddRef();
 		// trigger event
 		if (!Application.InteractiveThread.PushEvent(Ev_Net_Packet, pEvData))
-			Application.InteractiveThread.ThreadLogS("...push event ");
+			LogSilent("...push event ");
 	}
 
 	// unhandled?
 	if (!fHandled && !pConn->isClosed())
-		Application.InteractiveThread.ThreadLogF("Network: Unhandled packet (status %02x)", rPacket.getStatus());
+		LogF("Network: Unhandled packet (status %02x)", rPacket.getStatus());
 
 	// remove connection reference
 	pConn->DelRef();
@@ -1035,7 +1035,7 @@ void C4Network2IO::HandlePacket(char cStatus, const C4PacketBase *pPacket, C4Net
 		}
 		// Log
 		if (iCounter > pConn->getInPacketCounter())
-			Application.InteractiveThread.ThreadLogSF("Network: Recovered %d packets", iCounter - pConn->getInPacketCounter());
+			LogSilentF("Network: Recovered %d packets", iCounter - pConn->getInPacketCounter());
 		// Remove the connection from our list
 		if (!pConn->isClosed())
 			pConn->Close();
@@ -1137,7 +1137,7 @@ void C4Network2IO::CheckTimeout()
 		if (!pConn->isClosed() && !pConn->isAccepted())
 			if (difftime(time(nullptr), pConn->getTimestamp()) > C4NetAcceptTimeout)
 			{
-				Application.InteractiveThread.ThreadLogSF("Network: connection accept timeout to %s", pConn->getPeerAddr().ToString().getData());
+				LogSilentF("Network: connection accept timeout to %s", pConn->getPeerAddr().ToString().getData());
 				pConn->Close();
 			}
 		// ping timeout
@@ -1145,7 +1145,7 @@ void C4Network2IO::CheckTimeout()
 			if ((pConn->getLag() != -1 ? pConn->getLag() : 1000 * (time(nullptr) - pConn->getTimestamp()))
 		> C4NetPingTimeout)
 			{
-				Application.InteractiveThread.ThreadLogSF("Network: ping timeout to %s", pConn->getPeerAddr().ToString().getData());
+				LogSilentF("Network: ping timeout to %s", pConn->getPeerAddr().ToString().getData());
 				pConn->Close();
 			}
 		// delayed connection removal

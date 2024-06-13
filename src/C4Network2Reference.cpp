@@ -780,7 +780,7 @@ bool C4Network2HTTPClientImplNetIO::Execute(int iMaxTime)
 		if (std::chrono::steady_clock::now() > HappyEyeballsTimeout)
 		{
 			HappyEyeballsTimeout = decltype(HappyEyeballsTimeout)::max();
-			Application.InteractiveThread.ThreadLogSF("HTTP: Starting fallback connection to %s (%s)", Server.getData(), ServerAddrFallback.ToString().getData());
+			LogSilentF("HTTP: Starting fallback connection to %s (%s)", Server.getData(), ServerAddrFallback.ToString().getData());
 			Connect(ServerAddrFallback);
 		}
 

@@ -27,10 +27,6 @@ enum C4InteractiveEventType
 {
 	Ev_None = 0,
 
-	Ev_Log,
-	Ev_LogSilent,
-	Ev_LogFatal,
-
 	Ev_FileChange,
 
 	Ev_HTTP_Response,
@@ -92,23 +88,6 @@ public:
 	void ProcessEvents(); // by main thread
 
 	// special events
-	bool ThreadLog(const char *szMessage);
-	bool ThreadLogS(const char *szMessage);
-
-	template<typename... Args>
-	bool ThreadLogF(const char *szMessage, Args... args)
-	{
-		// send to main thread
-		return PushEvent(Ev_Log, FormatString(szMessage, args...));
-	}
-
-	template<typename... Args>
-	bool ThreadLogSF(const char *szMessage, Args... args)
-	{
-		// send to main thread
-		return PushEvent(Ev_LogSilent, FormatString(szMessage, args...));
-	}
-
 	bool ExecuteInMainThread(std::function<void()> function)
 	{
 		// send to main thread
