@@ -30,6 +30,8 @@
 #include <C4FileSelDlg.h>
 #include <C4Log.h>
 
+#include <format>
+
 // font clrs
 const uint32_t ClrPlayerItem = 0xff000000;
 
@@ -62,11 +64,9 @@ static bool GetPortrait(char **ppBytes, size_t *ipSize)
 	// select random portrait from Graphics.c4g
 	C4Group GfxGroup;
 	int iCount;
-	StdStrBuf EntryName;
 	if (!GfxGroup.Open(Config.AtExePath(C4CFN_Graphics))) return false;
 	if ((iCount = GfxGroup.EntryCount("Portrait*.png")) < 1) return false;
-	EntryName.Format("Portrait%d.png", SafeRandom(iCount) + 1);
-	if (!GfxGroup.LoadEntry(EntryName.getData(), ppBytes, ipSize)) return false;
+	if (!GfxGroup.LoadEntry(std::format("Portrait{}.png", SafeRandom(iCount) + 1).c_str(), ppBytes, ipSize)) return false;
 	GfxGroup.Close();
 	return true;
 }
@@ -455,13 +455,13 @@ bool C4StartupPlrSelDlg::CrewListItem::SetName(const char *szNewName)
 	return true;
 }
 
-StdStrBuf C4StartupPlrSelDlg::CrewListItem::GetPhysicalTextLine(int32_t iPhysValue, const C4ResStrTableKey idsName)
+std::string C4StartupPlrSelDlg::CrewListItem::GetPhysicalTextLine(int32_t iPhysValue, const C4ResStrTableKey idsName)
 {
 	const int32_t iMaxBars = 10;
-	StdStrBuf sResult;
-	sResult.Format("%s ", LoadResStr(idsName));
-	sResult.AppendChars('\xb7' /*·*/, iMaxBars * iPhysValue / C4MaxPhysical);
-	return sResult;
+	std::string result{LoadResStr(idsName)};
+	result += ' ';
+	result.append('\xb7' /*·*/, iMaxBars * iPhysValue / C4MaxPhysical);
+	return result;
 }
 
 void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSelectionInfo)
@@ -479,29 +479,29 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 		Core.TypeName, Core.Experience, Core.Rounds, Core.DeathCount,
 		promo.c_str(), TimeString(Core.TotalPlayingTime).getData(), DateString(Core.Birthday).getData()).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Energy, C4ResStrTableKey::IDS_DESC_ENERGY).getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Energy, C4ResStrTableKey::IDS_DESC_ENERGY).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Breath, C4ResStrTableKey::IDS_DESC_BREATH).getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Breath, C4ResStrTableKey::IDS_DESC_BREATH).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Walk, C4ResStrTableKey::IDS_DESC_WALK).getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Walk, C4ResStrTableKey::IDS_DESC_WALK).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Jump, C4ResStrTableKey::IDS_DESC_JUMP).getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Jump, C4ResStrTableKey::IDS_DESC_JUMP).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	if (Core.Physical.CanScale) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Scale, C4ResStrTableKey::IDS_DESC_SCALE).getData(),
+	if (Core.Physical.CanScale) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Scale, C4ResStrTableKey::IDS_DESC_SCALE).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	if (Core.Physical.CanHangle) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Hangle, C4ResStrTableKey::IDS_DESC_HANGLE).getData(),
+	if (Core.Physical.CanHangle) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Hangle, C4ResStrTableKey::IDS_DESC_HANGLE).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Dig, C4ResStrTableKey::IDS_DESC_DIG).getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Dig, C4ResStrTableKey::IDS_DESC_DIG).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Swim, C4ResStrTableKey::IDS_DESC_SWIM).getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Swim, C4ResStrTableKey::IDS_DESC_SWIM).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Throw, C4ResStrTableKey::IDS_DESC_THROW).getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Throw, C4ResStrTableKey::IDS_DESC_THROW).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Push, C4ResStrTableKey::IDS_DESC_PUSH).getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Push, C4ResStrTableKey::IDS_DESC_PUSH).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Fight, C4ResStrTableKey::IDS_DESC_FIGHT).getData(),
+	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Fight, C4ResStrTableKey::IDS_DESC_FIGHT).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
-	if (Core.Physical.Magic) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Magic, C4ResStrTableKey::IDS_DESC_MAGIC).getData(),
+	if (Core.Physical.Magic) pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Magic, C4ResStrTableKey::IDS_DESC_MAGIC).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	pSelectionInfo->UpdateHeight();
 }
@@ -693,10 +693,9 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 		SetTitle(LoadResStrNoAmp(C4ResStrTableKey::IDS_DLG_PLAYERSELECTION).c_str());
 		// player mode: insert all players
 		const char *szFn;
-		StdStrBuf sSearchPath;
-		sSearchPath.Format("%s%s", Config.General.ExePath, Config.General.PlayerPath);
+		const std::string searchPath{std::format("{}{}", Config.General.ExePath, Config.General.PlayerPath)};
 		PlayerListItem *pFirstActivatedPlrItem = nullptr, *pFirstDeactivatedPlrItem = nullptr, *pPlrItem = nullptr;
-		for (DirectoryIterator i(sSearchPath.getData()); szFn = *i; i++)
+		for (DirectoryIterator i(searchPath.c_str()); szFn = *i; i++)
 		{
 			szFn = Config.AtExeRelativePath(szFn);
 			if (*GetFilename(szFn) == '.') continue; // ignore ".", ".." and private files (".*")
@@ -1237,10 +1236,10 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	{
 		// Set initial portrait and bigicon
 		C4Group hGroup;
-		StdStrBuf strPortrait; strPortrait.Format("Portrait%d.png", 1 + Random(5));
+		const std::string portrait{std::format("Portrait{}.png", 1 + Random(5))};
 		if (hGroup.Open(Config.AtExePath(C4CFN_Graphics)))
 		{
-			hGroup.Extract(strPortrait.getData(), Config.AtTempPath("Portrait.png"));
+			hGroup.Extract(portrait.c_str(), Config.AtTempPath("Portrait.png"));
 			hGroup.Close();
 			SetNewPicture(Config.AtTempPath("Portrait.png"), true, true);
 			EraseItem(Config.AtTempPath("Portrait.png"));

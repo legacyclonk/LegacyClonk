@@ -29,6 +29,8 @@
 
 #include <StdFile.h>
 
+#include <format>
+
 #define IMMEDIATEREC
 
 //#define DEBUGREC_EXTFILE "DbgRec.c4b" // if defined, an external file is used for debugrec writing (replays only)
@@ -140,10 +142,10 @@ bool C4Record::Start(bool fInitial)
 			Index++;
 
 	// compose record filename
-	sFilename.Format("%s" DirSep "%03i-%s.c4s", sDemoFolder.getData(), Index, sScenName);
+	sFilename.Copy(std::format("{}" DirSep "{:03}-{}.c4s", sDemoFolder.getData(), Index, sScenName).c_str());
 
 	// log
-	std::string log{LoadResStr(C4ResStrTableKey::IDS_PRC_RECORDINGTO), sFilename.getData()};
+	std::string log{LoadResStr(C4ResStrTableKey::IDS_PRC_RECORDINGTO, sFilename.getData())};
 	if (Game.FrameCounter) log += std::format(" (Frame {})", Game.FrameCounter);
 	Log(log);
 
@@ -439,9 +441,14 @@ bool C4Playback::Open(C4Group &rGrp)
 	if (Game.RecordDumpFile.getLength())
 	{
 		if (SEqualNoCase(GetExtension(Game.RecordDumpFile.getData()), "txt"))
-			ReWriteText().SaveToFile(Game.RecordDumpFile.getData());
+		{
+			const std::string text{ReWriteText()};
+			StdStrBuf{text.c_str(), text.size(), false}.SaveToFile(Game.RecordDumpFile.getData());
+		}
 		else
+		{
 			ReWriteBinary().SaveToFile(Game.RecordDumpFile.getData());
+		}
 	}
 	// reset status
 	currChunk = chunks.begin();
@@ -604,15 +611,15 @@ bool C4Playback::NextSequentialChunk()
 	return false;
 }
 
-StdStrBuf C4Playback::ReWriteText()
+std::string C4Playback::ReWriteText()
 {
-	StdStrBuf Output;
-	for (chunks_t::const_iterator i = chunks.begin(); i != chunks.end(); i++)
+	std::string output;
+	for (const auto &chunk : chunks)
 	{
-		Output.Append(static_cast<const StdStrBuf &>(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(mkDecompileAdapt(*i), "Rec"))));
-		Output.Append("\n\n");
+		output += DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(mkDecompileAdapt(chunk), "Rec"));
+		output += "\n\n";
 	}
-	return Output;
+	return output;
 }
 
 StdBuf C4Playback::ReWriteBinary()
@@ -721,7 +728,7 @@ void C4Playback::Strip()
 				case CID_Script:
 				case CID_EMMoveObj:
 				case CID_EMDrawTool:
-					if (fCheckCheat) Log(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*pPkt, FormatString("Frame %d", i->Frame).getData())).getData());
+					if (fCheckCheat) Log(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*pPkt, FormatString("Frame %d", i->Frame).getData())));
 					break;
 				// Strip sync check
 				case CID_SyncCheck:
@@ -754,7 +761,7 @@ void C4Playback::Strip()
 			case CID_Script:
 			case CID_EMMoveObj:
 			case CID_EMDrawTool:
-				if (fCheckCheat) Log(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*i->pPkt, FormatString("Frame %d", i->Frame).getData())).getData());
+				if (fCheckCheat) Log(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*i->pPkt, FormatString("Frame %d", i->Frame).getData())));
 				break;
 			// Strip some stuff
 			case CID_SyncCheck:
@@ -927,16 +934,16 @@ const char *GetRecordChunkTypeName(C4RecordChunkType eType)
 	return "Undefined";
 }
 
-StdStrBuf GetDbgRecPktData(C4RecordChunkType eType, const StdBuf &RawData)
+std::string GetDbgRecPktData(C4RecordChunkType eType, const StdBuf &RawData)
 {
-	StdStrBuf r;
+	std::string r;
 	switch (eType)
 	{
-	case RCT_AulFunc: r.Ref(reinterpret_cast<const char *>(RawData.getData()), RawData.getSize() - 1);
+	case RCT_AulFunc: r.assign(reinterpret_cast<const char *>(RawData.getData()), RawData.getSize() - 1);
 		break;
 	default:
 		for (std::size_t i = 0; i < RawData.getSize(); ++i)
-			r.AppendFormat("%02x ", static_cast<uint32_t>(reinterpret_cast<const uint8_t *>(RawData.getData())[i]));
+			r += std::format("{:02x} ", reinterpret_cast<const uint8_t *>(RawData.getData())[i]);
 		break;
 	}
 	return r;
@@ -1030,15 +1037,14 @@ void C4Playback::Check(C4RecordChunkType eType, const uint8_t *pData, int iSize)
 	// check packet data
 	if (memcmp(PktInReplay.getData(), pData, iSize))
 	{
-		StdStrBuf sErr;
-		sErr.Format("DbgRecPkt Type %s, size %d", GetRecordChunkTypeName(eType), iSize);
-		sErr.Append(" Replay: ");
-		StdBuf replay(PktInReplay.getData(), PktInReplay.getSize());
-		sErr.Append(GetDbgRecPktData(eType, replay));
-		sErr.Append(" Here: ");
-		StdBuf here(pData, iSize);
-		sErr.Append(GetDbgRecPktData(eType, here));
-		DebugRecError(sErr.getData());
+		const std::string error{std::format(
+						"DbgRectPkt Type {}, size {} Replay: {} Here: {}",
+						GetRecordChunkTypeName(eType),
+						iSize,
+						GetDbgRecPktData(eType, StdBuf{PktInReplay.getData(), PktInReplay.getSize(), false}),
+						GetDbgRecPktData(eType, StdBuf{pData, static_cast<std::size_t>(iSize), false})
+						)};
+		DebugRecError(error.c_str());
 	}
 	// packet is fine, jump over it
 	if (fHasPacketFromHead)

@@ -24,6 +24,8 @@
 #include <C4Wrappers.h>
 #include <C4Player.h>
 
+#include <format>
+
 #ifdef _WIN32
 #include "StdRegistry.h"
 #include "res/engine_resource.h"
@@ -192,7 +194,7 @@ bool C4PropertyDlg::Update()
 		{
 			output += LineFeed;
 			output += LoadResStr(C4ResStrTableKey::IDS_CNS_CONTENTS);
-			output += cobj->Contents.GetNameList(Game.Defs).getData();
+			output += cobj->Contents.GetNameList(Game.Defs);
 		}
 		// Action
 		if (cobj->Action.Act != ActIdle)
@@ -212,7 +214,7 @@ bool C4PropertyDlg::Update()
 				// Append id
 				output += std::format(" Local({}) = ", cnt);
 				// write value
-				output += cobj->Local[cnt].GetDataString().getData();
+				output += cobj->Local[cnt].GetDataString();
 			}
 		// Locals (named)
 		for (cnt = 0; cnt < cobj->LocalNamed.GetAnzItems(); cnt++)
@@ -224,7 +226,7 @@ bool C4PropertyDlg::Update()
 			output += cobj->LocalNamed.pNames->pNames[cnt];
 			output += " = ";
 			// write value
-			output += cobj->LocalNamed.pData[cnt].GetDataString().getData();
+			output += cobj->LocalNamed.pData[cnt].GetDataString();
 		}
 		// Effects
 		for (C4Effect *pEffect = cobj->pEffects; pEffect; pEffect = pEffect->pNext)

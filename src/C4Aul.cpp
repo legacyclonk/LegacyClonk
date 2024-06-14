@@ -25,13 +25,15 @@
 #include <C4Log.h>
 #include <C4Components.h>
 
+#include <format>
+
 C4AulError::C4AulError() {}
 
 void C4AulError::show() const
 {
 	// simply log error message
-	if (sMessage)
-		DebugLog(sMessage.getData());
+	if (!message.empty())
+		DebugLog(message);
 }
 
 C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :
@@ -145,29 +147,29 @@ C4AulFunc *C4AulFunc::FindSameNameFunc(C4Def *pScope)
 	return pResult;
 }
 
-StdStrBuf C4AulScriptFunc::GetFullName()
+std::string C4AulScriptFunc::GetFullName()
 {
 	// "lost" function?
-	StdStrBuf sOwner;
+	std::string owner;
 	if (!Owner)
 	{
-		sOwner.Ref("(unknown) ");
+		owner = "(unknown) ";
 	}
 	else if (Owner->Def)
 	{
-		sOwner.Format("%s::", C4IdText(Owner->Def->id));
+		owner = std::format("{}::", C4IdText(Owner->Def->id));
 	}
 	else if (Owner->Engine == Owner)
 	{
-		sOwner.Ref("global ");
+		owner = "global ";
 	}
 	else
 	{
-		sOwner.Ref("game ");
+		owner = "game ";
 	}
-	StdStrBuf sResult;
-	sResult.Format("%s%s", sOwner.getData(), Name);
-	return sResult;
+
+	owner += Name;
+	return owner;
 }
 
 C4AulScript::C4AulScript()

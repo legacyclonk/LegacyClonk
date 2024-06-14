@@ -23,6 +23,7 @@
 
 #include <cinttypes>
 #include <functional>
+#include <format>
 #include <string_view>
 
 #include <C4Game.h>
@@ -604,7 +605,7 @@ C4VCnvFn C4Value::C4ScriptCnvMap[C4V_Last + 1][C4V_Last + 1] =
 #undef CnvDeref
 
 // Humanreadable debug output
-StdStrBuf C4Value::GetDataString() const
+std::string C4Value::GetDataString() const
 {
 	if (Type == C4V_pC4Value)
 		return GetRefVal().GetDataString() + "*";
@@ -613,59 +614,56 @@ StdStrBuf C4Value::GetDataString() const
 	switch (GetType())
 	{
 	case C4V_Any:
-		return StdStrBuf("nil");
+		return "nil";
 	case C4V_Int:
-		return FormatString("%" PRId32, Data.Int);
+		return std::to_string(Data.Int);
 	case C4V_Bool:
-		return StdStrBuf::MakeRef(Data ? "true" : "false");
+		return Data ? "true" : "false";
 	case C4V_C4ID:
-		return StdStrBuf(C4IdText(Data.ID));
+		return C4IdText(Data.ID);
 	case C4V_C4Object:
 	{
 		// obj exists?
 		if (!Game.Objects.ObjectNumber(Data.Obj) && !Game.Objects.InactiveObjects.ObjectNumber(Data.Obj))
-			return FormatString("%" PRIdPTR, Data.Raw);
+			return std::to_string(Data.Raw);
 		else if (Data.Obj)
 			if (Data.Obj->Status == C4OS_NORMAL)
-				return FormatString("%s #%d", Data.Obj->GetName(), static_cast<int>(Data.Obj->Number));
+				return std::format("{} #{}", Data.Obj->GetName(), static_cast<int>(Data.Obj->Number));
 			else
-				return FormatString("{%s #%d}", Data.Obj->GetName(), static_cast<int>(Data.Obj->Number));
+				return std::format("{{{} #{}}}", Data.Obj->GetName(), static_cast<int>(Data.Obj->Number));
 		else
-			return StdStrBuf("0"); // (impossible)
+			return "0"; // (impossible)
 	}
 	case C4V_String:
-		return (Data.Str && Data.Str->Data.getData()) ? FormatString("\"%s\"", Data.Str->Data.getData()) : StdStrBuf("(nullstring)");
+		return (Data.Str && Data.Str->Data.getData()) ? std::format("\"{}\"", Data.Str->Data.getData()) : "(nullstring)";
 	case C4V_Array:
 	{
-		StdStrBuf DataString;
-		DataString = "[";
+		std::string dataString{"["};
 		for (int32_t i = 0; i < Data.Array->GetSize(); i++)
 		{
-			if (i) DataString.Append(", ");
-			DataString.Append(static_cast<const StdStrBuf &>(Data.Array->GetItem(i).GetDataString()));
+			if (i) dataString += ", ";
+			dataString += Data.Array->GetItem(i).GetDataString();
 		}
-		DataString.AppendChar(']');
-		return DataString;
+		dataString += ']';
+		return dataString;
 	}
 	case C4V_Map:
 	{
-		if (Data.Map->size() == 0) return StdStrBuf("{}");
-		StdStrBuf DataString("{ ");
+		if (Data.Map->size() == 0) return "{}";
+		std::string dataString{"{ "};
 		bool first = true;
 		for (auto [key, value] : *Data.Map)
 		{
-			if (!first) DataString.Append(", ");
+			if (!first) dataString += ", ";
 			else first = false;
 
-			DataString.Append(key.GetDataString());
-			DataString.Append(" = ");
-			DataString.Append(value.GetDataString());
+			dataString += std::format("{} = {}", key.GetDataString(), value.GetDataString());
 		}
-		DataString.Append(" }");
-		return DataString;
+		dataString += " }";
+		return dataString;
 	}
 	default:
-		return StdStrBuf("-unknown type- ");
+		return "-unknown type- ";
 	}
 }
 

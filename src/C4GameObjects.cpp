@@ -696,16 +696,16 @@ bool C4GameObjects::Save(const char *szFilename, bool fSaveGame, bool fSaveInact
 	Game.ScriptEngine.Strings.EnumStrings();
 
 	// Decompile objects to buffer
-	StdStrBuf Buffer;
-	bool fSuccess = DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(*this, false, !fSaveGame), &Buffer, szFilename);
+	std::string buffer;
+	bool fSuccess = DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(*this, false, !fSaveGame), &buffer, szFilename);
 
 	// Decompile inactives
 	if (fSaveInactive)
 	{
-		StdStrBuf InactiveBuffer;
-		fSuccess &= DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(InactiveObjects, false, !fSaveGame), &InactiveBuffer, szFilename);
-		Buffer.Append("\r\n");
-		Buffer.Append(InactiveBuffer);
+		std::string inactiveBuffer;
+		fSuccess &= DecompileToBuf_Log<StdCompilerINIWrite>(mkParAdapt(InactiveObjects, false, !fSaveGame), &inactiveBuffer, szFilename);
+		buffer += "\r\n";
+		buffer += std::move(inactiveBuffer);
 	}
 
 	// Denumerate
@@ -717,7 +717,7 @@ bool C4GameObjects::Save(const char *szFilename, bool fSaveGame, bool fSaveInact
 		return false;
 
 	// Write
-	return Buffer.SaveToFile(szFilename);
+	return StdStrBuf{buffer.c_str(), buffer.size(), false}.SaveToFile(szFilename);
 }
 
 void C4GameObjects::UpdateScriptPointers()

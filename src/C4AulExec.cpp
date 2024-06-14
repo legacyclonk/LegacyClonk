@@ -26,10 +26,19 @@
 #include <C4ValueHash.h>
 #include <C4Wrappers.h>
 
-C4AulExecError::C4AulExecError(C4Object *pObj, const char *szError) : cObj(pObj)
+#include <format>
+
+C4AulExecError::C4AulExecError(C4Object *pObj, const std::string_view error) : cObj(pObj)
 {
 	// direct error message string
-	sMessage.Format("ERROR: %s", szError ? szError : "(no error message)");
+	if (!error.empty())
+	{
+		message = std::format("ERROR: {}", error);
+	}
+	else
+	{
+		message = "ERROR: (no error message)";
+	}
 }
 
 void C4AulExecError::show() const
@@ -39,9 +48,9 @@ void C4AulExecError::show() const
 	// debug mode object message
 	if (Game.DebugMode)
 		if (cObj)
-			Game.Messages.New(C4GM_Target, sMessage, cObj, NO_OWNER);
+			Game.Messages.New(C4GM_Target, StdStrBuf{message.c_str()}, cObj, NO_OWNER);
 		else
-			Game.Messages.New(C4GM_Global, sMessage, nullptr, ANY_OWNER);
+			Game.Messages.New(C4GM_Global, StdStrBuf{message.c_str()}, nullptr, ANY_OWNER);
 }
 
 bool C4AulContext::CalledWithStrictNil() const noexcept
@@ -52,15 +61,15 @@ bool C4AulContext::CalledWithStrictNil() const noexcept
 const int MAX_CONTEXT_STACK = 512;
 const int MAX_VALUE_STACK = 1024;
 
-void C4AulScriptContext::dump(StdStrBuf Dump)
+void C4AulScriptContext::dump(std::string Dump)
 {
 	bool fDirectExec = !*Func->Name;
 	if (!fDirectExec)
 	{
 		// Function name
-		Dump.Append(Func->Name);
+		Dump += Func->Name;
 		// Parameters
-		Dump.AppendChar('(');
+		Dump += '(';
 		int iNullPars = 0;
 		for (int i = 0; i < C4AUL_MAX_Par; i++)
 			if (Pars + i < Vars)
@@ -69,32 +78,32 @@ void C4AulScriptContext::dump(StdStrBuf Dump)
 				else
 				{
 					if (i > iNullPars)
-						Dump.AppendChar(',');
+						Dump += ',';
 					// Insert missing null parameters
 					while (iNullPars > 0)
 					{
-						Dump.Append("nil,");
+						Dump += "nil,";
 						iNullPars--;
 					}
 					// Insert parameter
-					Dump.Append(Pars[i].GetDataString());
+					Dump += Pars[i].GetDataString();
 				}
-		Dump.AppendChar(')');
+		Dump += ')';
 	}
 	else
-		Dump.Append(Func->Owner->ScriptName);
+		Dump += Func->Owner->ScriptName.getData();
 	// Context
 	if (Obj)
-		Dump.AppendFormat(" (obj %s)", C4VObj(Obj).GetDataString().getData());
+		Dump += std::format(" (obj {})", C4VObj(Obj).GetDataString());
 	else if (Func->Owner->Def != nullptr)
-		Dump.AppendFormat(" (def %s)", Func->Owner->Def->Name.getData());
+		Dump += std::format(" (def {})", Func->Owner->Def->Name.getData());
 	// Script
 	if (!fDirectExec && Func->Owner)
-		Dump.AppendFormat(" (%s:%d)",
+		Dump += std::format(" ({}:{})",
 			Func->pOrgScript->ScriptName.getData(),
 			SGetLine(Func->pOrgScript->GetScript(), CPos ? CPos->SPos : Func->Script));
 	// Log it
-	DebugLog(Dump.getData());
+	DebugLog(Dump);
 }
 
 class C4AulExec
@@ -135,9 +144,9 @@ private:
 		// Trace?
 		if (iTraceStart >= 0)
 		{
-			StdStrBuf Buf("T");
-			Buf.AppendChars('>', ContextStackSize() - iTraceStart);
-			pCurCtx->dump(std::move(Buf));
+			std::string buf{"T"};
+			buf.append('>', ContextStackSize() - iTraceStart);
+			pCurCtx->dump(std::move(buf));
 		}
 		// Profiler: Safe time to measure difference afterwards
 		if (fProfiling) pCurCtx->tTime = timeGetTime();
@@ -419,7 +428,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					if (!SEqual(localName, actualLocalName))
 					{
 						DebugLogF("WARNING: accessing local variable \"%s\" actually accesses \"%s\" because of illegal access after ChangeDef", localName, actualLocalName);
-						pCurCtx->dump(StdStrBuf(" by: "));
+						pCurCtx->dump(" by: ");
 					}
 				}
 				if (pCPos->bccType == AB_LOCALN_R)
@@ -1047,9 +1056,9 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				// Trace
 				if (iTraceStart >= 0)
 				{
-					StdStrBuf Buf("T");
-					Buf.AppendChars('>', ContextStackSize() - iTraceStart);
-					LogF("%s%s returned %s", Buf.getData(), pCurCtx->Func->Name, pCurVal->GetDataString().getData());
+					std::string buf{"T"};
+					buf.append('>', ContextStackSize() - iTraceStart);
+					LogF("{}{} returned {}", buf, pCurCtx->Func->Name, pCurVal->GetDataString());
 				}
 
 				// External call?
@@ -1261,17 +1270,17 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 					const char *szFuncName = reinterpret_cast<C4AulFunc *>(pCPos->bccX)->Name;
 					if (pDestObj)
 						throw C4AulExecError(pCurCtx->Obj,
-							FormatString("Object call: No function \"%s\" in object \"%s\"!", szFuncName, pTargetVal->GetDataString().getData()).getData());
+							std::format("Object call: No function \"{}\" in object \"{}\"!", szFuncName, pTargetVal->GetDataString()));
 					else
 						throw C4AulExecError(pCurCtx->Obj,
-							FormatString("Definition call: No function \"%s\" in definition \"%s\"!", szFuncName, pDestDef->Name.getData()).getData());
+							std::format("Definition call: No function \"{}\" in definition \"{}\"!", szFuncName, pDestDef->Name.getData()));
 				}
 				else if (C4AulScriptFunc *sfunc = pFunc->SFunc(); sfunc)
 				{
 					C4AulScript *script = sfunc->pOrgScript;
 					if (sfunc->Access < script->GetAllowedAccess(pFunc, sfunc->pOrgScript))
 					{
-						throw C4AulExecError(pCurCtx->Obj, FormatString("Insufficient access level for function \"%s\"!", pFunc->Name).getData());
+						throw C4AulExecError(pCurCtx->Obj, std::format("Insufficient access level for function \"{}\"!", pFunc->Name));
 					}
 				}
 
@@ -1314,7 +1323,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 		e.show();
 		// Trace
 		for (C4AulScriptContext *pCtx = pCurCtx; pCtx >= Contexts; pCtx--)
-			pCtx->dump(StdStrBuf(" by: "));
+			pCtx->dump(" by: ");
 		// Unwind stack
 		C4Value *pUntil = nullptr;
 		while (pCurCtx >= pOldCtx)
@@ -1336,7 +1345,7 @@ static void ErrorOrWarning(C4Object *context, const char *message, bool warning)
 	{
 		if (context)
 		{
-			DebugLogF("WARNING: %s (obj %s)", message, C4VObj(context).GetDataString().getData());
+			DebugLogF("WARNING: %s (obj %s)", message, C4VObj(context).GetDataString());
 		}
 		else
 		{
@@ -1462,33 +1471,33 @@ C4AulBCC *C4AulExec::Call(C4AulFunc *pFunc, C4Value *pReturn, C4Value *pPars, C4
 #ifdef DEBUGREC_SCRIPT
 		if (Game.FrameCounter >= DEBUGREC_START_FRAME)
 		{
-			StdStrBuf sCallText;
+			std::string callText;
 			if (pObj)
-				sCallText.AppendFormat("Object(%d): ", pObj->Number);
-			sCallText.Append(pFunc->Name);
-			sCallText.AppendChar('(');
+				callText = std::format("Object({}): ", pObj->Number);
+			callText += pFunc->Name;
+			callText += '(';
 			for (int i = 0; i < C4AUL_MAX_Par; ++i)
 			{
-				if (i) sCallText.AppendChar(',');
+				if (i) callText += ',';
 				C4Value &rV = pPars[i];
 				if (rV.GetType() == C4V_String)
 				{
 					C4String *s = rV.getStr();
 					if (!s)
-						sCallText.Append("(Snull)");
+						callText += "(Snull)";
 					else
 					{
-						sCallText.Append("\"");
-						sCallText.Append(s->Data);
-						sCallText.Append("\"");
+						callText += "\"";
+						callText += s->Data.getData();
+						callText += "\"";
 					}
 				}
 				else
-					sCallText.Append(rV.GetDataString());
+					callText += rV.GetDataString();
 			}
-			sCallText.AppendChar(')');
-			sCallText.AppendChar(';');
-			AddDbgRec(RCT_AulFunc, sCallText.getData(), sCallText.getLength() + 1);
+			callText += ')';
+			callText += ';';
+			AddDbgRec(RCT_AulFunc, callText.c_str(), callText.size() + 1);
 		}
 #endif
 		// Execute
@@ -1586,7 +1595,7 @@ void C4AulProfiler::Show()
 	for (EntryList::iterator i = Times.begin(); i != Times.end(); ++i)
 	{
 		Entry &e = (*i);
-		LogF("%05dms\t%s", static_cast<int>(e.tProfileTime), e.pFunc ? (e.pFunc->GetFullName().getData()) : "Direct exec");
+		LogF("%05dms\t%s", static_cast<int>(e.tProfileTime), e.pFunc ? (e.pFunc->GetFullName().c_str()) : "Direct exec");
 	}
 	Log("==============================");
 	// done!

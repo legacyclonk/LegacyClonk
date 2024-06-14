@@ -29,6 +29,8 @@
 #include <C4Game.h>
 #include <C4FileSelDlg.h>
 
+#include <format>
+
 uint32_t GenerateRandomPlayerColor(int32_t iTry); // in C4PlayerInfoConflicts.cpp
 
 // ListItem
@@ -371,7 +373,7 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 			else
 				pScoreLabel->SetToolTip(LoadResStr(C4ResStrTableKey::IDS_DESC_LEAGUESCOREANDPROJECTEDGA));
 		}
-		StdStrBuf sText;
+		std::string text;
 		// Evaluation (GameOver)
 		if (pList->IsEvaluation())
 		{
@@ -385,34 +387,33 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 					int32_t iDiscrepancy = iNewScore - (iOldScore + iScoreGain);
 					if (!iDiscrepancy)
 					{
-						sText.Format("{{Ico:League}}<c afafaf>%d (%+d)</c> %d %s", static_cast<int>(iOldScore), static_cast<int>(iScoreGain), static_cast<int>(iNewScore), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
+						text = std::format("{{{{Ico:League}}}}<c afafaf>{} ({:+})</c> {} {}", iOldScore, iScoreGain, iNewScore, LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
 					}
 					else
 					{
 						// If there's a discrepancy, there must have been some kind of admin intervention during the game - display it in red!
-						sText.Format("{{Ico:League}}<c afafaf>%d (%+d)</c><c ff0000>(%+d)</c> %d %s", static_cast<int>(iOldScore), static_cast<int>(iScoreGain), static_cast<int>(iDiscrepancy), static_cast<int>(iNewScore), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
+						text = std::format("{{{{Ico:League}}}}<c afafaf>{} ({:+})</c><c ff0000>({:+})</c> {} {}", iOldScore, iScoreGain, iDiscrepancy, iNewScore, LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
 					}
 				}
 				// Show old league score only
 				else
 				{
-					sText.Format("{{Ico:League}}<c afafaf>(%d)</c> %s", static_cast<int>(pInfo->getLeagueScore()), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
+					text = std::format("{{{{Ico:League}}}}<c afafaf>({})</c> {}", pInfo->getLeagueScore(), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
 				}
 			}
 			else if (pRoundResultsPlr && pRoundResultsPlr->IsScoreNewValid() && !Game.RoundResults.SettlementScoreIsHidden())
 			{
 				// new score known
-				sText.Format("{{Ico:Settlement}}<c afafaf>%d (%+d)</c> %d %s", static_cast<int>(pRoundResultsPlr->GetScoreOld()), static_cast<int>(pRoundResultsPlr->GetScoreNew() - pRoundResultsPlr->GetScoreOld()), static_cast<int>(pRoundResultsPlr->GetScoreNew()), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
+				text = std::format("{{{{Ico:Settlement}}}}<c afafaf>{} ({:+})</c> {} {}", pRoundResultsPlr->GetScoreOld(), pRoundResultsPlr->GetScoreNew() - pRoundResultsPlr->GetScoreOld(), pRoundResultsPlr->GetScoreNew(), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
 			}
 			else if (pRoundResultsPlr && !pRoundResultsPlr->IsScoreNewValid() && !Game.RoundResults.SettlementScoreIsHidden())
 			{
 				// only old score known (e.g., player disconnected)
-				sText.Format("{{Ico:Settlement}}<c afafaf>(%d)</c> %s", static_cast<int>(pRoundResultsPlr->GetScoreOld()), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
+				text = std::format("{{{{Ico:Settlement}}}}<c afafaf>({})</c> {}", pRoundResultsPlr->GetScoreOld(), LoadResStr(C4ResStrTableKey::IDS_TEXT_SCORE));
 			}
 			else
 			{
 				// nothing known. Shouldn't really happen.
-				sText.Ref("");
 			}
 		}
 		// Pre-evaluation (Lobby)
@@ -421,13 +422,13 @@ void C4PlayerInfoListBox::PlayerListItem::UpdateScoreLabel(C4PlayerInfo *pInfo)
 			// Show current league score and projected gain
 			// Don't show if team invisible, so random surprise teams don't get spoiled
 			if (pInfo->IsLeagueProjectedGainValid() && Game.Teams.IsTeamVisible())
-				sText.Format("%d (%+d)", static_cast<int>(pInfo->getLeagueScore()), static_cast<int>(pInfo->GetLeagueProjectedGain()));
+				text = std::format("{} ({:+})", pInfo->getLeagueScore(), pInfo->GetLeagueProjectedGain());
 			// Show current league score only
 			else
-				sText.Format("%d", static_cast<int>(pInfo->getLeagueScore()));
+				text = std::format("{}", pInfo->getLeagueScore());
 		}
 		pScoreLabel->SetX0(iScoreRightPos);
-		pScoreLabel->SetText(sText.getData(), false);
+		pScoreLabel->SetText(text.c_str(), false);
 	}
 	else
 	{
@@ -811,7 +812,7 @@ void C4PlayerInfoListBox::ClientListItem::UpdateInfo()
 		StdStrBuf sCaption;
 		if (pNetClient->isConnected())
 		{
-			sCaption.Format("(%d%%) %s", Game.Network.ResList.GetClientProgress(pClient->getID()), pClient->getName());
+			sCaption.Copy(std::format("({}%) {}", Game.Network.ResList.GetClientProgress(pClient->getID()), pClient->getName()).c_str());
 		}
 		else
 		{

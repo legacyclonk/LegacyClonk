@@ -23,6 +23,8 @@
 #include <C4Game.h>
 #include <C4Player.h>
 
+#include <format>
+
 C4Graph::C4Graph()
 	: szTitle(LoadResStr(C4ResStrTableKey::IDS_NET_GRAPH), false), dwColor(0x7fff0000) {}
 
@@ -167,11 +169,9 @@ bool C4TableGraph::DumpToFile(const StdStrBuf &rszFilename, bool fAppend) const
 	}
 	// write out current timeframe
 	int iEndTime = GetEndTime();
-	StdStrBuf buf;
 	for (int iWriteTime = GetStartTime(); iWriteTime < iEndTime; ++iWriteTime)
 	{
-		buf.Format("%d\t%d\r\n", static_cast<int>(iWriteTime), static_cast<int>(GetValue(iWriteTime)));
-		out.WriteString(buf.getData());
+		out.WriteString(std::format("{}\t{}\r\n", iWriteTime, GetValue(iWriteTime)).c_str());
 	}
 	return true;
 }

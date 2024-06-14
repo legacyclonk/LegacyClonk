@@ -131,10 +131,15 @@ bool C4PlayerInfoCore::Load(C4Group &hGroup)
 
 bool C4PlayerInfoCore::Save(C4Group &hGroup)
 {
-	StdStrBuf Source, Name = hGroup.GetFullName(); Name.Append(DirSep C4CFN_PlayerInfoCore);
-	if (!DecompileToBuf_Log<StdCompilerINIWrite>(*this, &Source, Name.getData()))
+	std::string source;
+
+	StdStrBuf name{hGroup.GetFullName()};
+	name.Append(DirSep C4CFN_PlayerInfoCore);
+
+	if (!DecompileToBuf_Log<StdCompilerINIWrite>(*this, &source, name.getData()))
 		return false;
-	if (!hGroup.Add(C4CFN_PlayerInfoCore, Source, false, true))
+	StdStrBuf buf{source.c_str(), source.size()};
+	if (!hGroup.Add(C4CFN_PlayerInfoCore, buf, false, true))
 		return false;
 	hGroup.Delete("C4Player.c4b");
 	return true;
@@ -500,17 +505,18 @@ bool C4ObjectInfoCore::Save(C4Group &hGroup, C4DefList *pDefs)
 	// rank overload by def: Update any NextRank-stuff
 	if (pDefs) UpdateCustomRanks(pDefs);
 
-	StdStrBuf Buf;
+	std::string buf;
 	try
 	{
-		Buf.Take(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "ObjectInfo")));
+		buf = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "ObjectInfo"));
 	}
 	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}
 
-	if (!hGroup.Add(C4CFN_ObjectInfoCore, Buf, false, true))
+	StdStrBuf copy{buf.c_str(), buf.size()};
+	if (!hGroup.Add(C4CFN_ObjectInfoCore, copy, false, true))
 	{
 		return false;
 	}

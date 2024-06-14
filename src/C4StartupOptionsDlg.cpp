@@ -1253,8 +1253,7 @@ void C4StartupOptionsDlg::UpdateFontControls()
 {
 	// display current language and size in comboboxes
 	pFontFaceCombo->SetText(Config.General.RXFontName);
-	StdStrBuf sSize; sSize.Format("%d", static_cast<int>(Config.General.RXFontSize));
-	pFontSizeCombo->SetText(sSize.getData());
+	pFontSizeCombo->SetText(std::to_string(Config.General.RXFontSize).c_str());
 }
 
 const char *DefaultFonts[] = { "Arial Unicode MS", "Comic Sans MS", "Endeavour", "Verdana", nullptr };

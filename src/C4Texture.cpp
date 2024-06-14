@@ -29,6 +29,8 @@
 #include <C4Landscape.h>
 #include <C4Wrappers.h>
 
+#include <format>
+
 C4Texture::C4Texture()
 {
 	Name[0] = 0;
@@ -244,30 +246,21 @@ int32_t C4TextureMap::Init()
 bool C4TextureMap::SaveMap(C4Group &hGroup, const char *szEntryName)
 {
 	// build file in memory
-	StdStrBuf sTexMapFile;
-	// add desc
-	sTexMapFile.Append("# Automatically generated texture map" LineFeed);
-	sTexMapFile.Append("# Contains material-texture-combinations added at runtime" LineFeed);
+	std::string texMapFile{"# Automatically generated texture map" LineFeed "# Contains material-texture-combinations added at runtime" LineFeed};
 	// add overload-entries
-	if (fOverloadMaterials) sTexMapFile.Append("# Import materials from global file as well" LineFeed "OverloadMaterials" LineFeed);
-	if (fOverloadTextures) sTexMapFile.Append("# Import textures from global file as well" LineFeed "OverloadTextures" LineFeed);
-	sTexMapFile.Append(LineFeed);
+	if (fOverloadMaterials) texMapFile += "# Import materials from global file as well" LineFeed "OverloadMaterials" LineFeed;
+	if (fOverloadTextures) texMapFile += "# Import textures from global file as well" LineFeed "OverloadTextures" LineFeed;
+	texMapFile += LineFeed;
 	// add entries
 	for (int32_t i = 0; i < C4M_MaxTexIndex; i++)
 		if (!Entry[i].isNull())
 		{
 			// compose line
-			sTexMapFile.AppendFormat("%d=%s-%s" LineFeed, i, Entry[i].GetMaterialName(), Entry[i].GetTextureName());
+			texMapFile += std::format("{}={}-{}" LineFeed, i, Entry[i].GetMaterialName(), Entry[i].GetTextureName());
 		}
-	// create new buffer allocated with new [], because C4Group cannot handle StdStrBuf-buffers
-	size_t iBufSize = sTexMapFile.getLength();
-	uint8_t *pBuf = new uint8_t[iBufSize];
-	memcpy(pBuf, sTexMapFile.getData(), iBufSize);
+	StdStrBuf buf{texMapFile.c_str(), texMapFile.size()};
 	// add to group
-	bool fSuccess = !!hGroup.Add(szEntryName, pBuf, iBufSize, false, true);
-	if (!fSuccess) delete[] pBuf;
-	// done
-	return fSuccess;
+	return hGroup.Add(szEntryName, buf, false, true);
 }
 
 int32_t C4TextureMap::LoadTextures(C4Group &hGroup, C4Group *OverloadFile)

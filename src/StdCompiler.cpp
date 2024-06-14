@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cinttypes>
 #include <cstring>
+#include <format>
 #include <utility>
 
 StdCompiler::NameGuard::NameGuard(NameGuard &&other) noexcept
@@ -263,7 +264,7 @@ void StdCompilerINIWrite::NameEnd(bool fBreak)
 {
 	// Append newline
 	if (!fPutName && !fInSection)
-		Buf.Append("\r\n");
+		buf += "\r\n";
 	fPutName = false;
 	// Note this makes it impossible to distinguish an empty name section from
 	// a non-existing name section.
@@ -288,7 +289,7 @@ bool StdCompilerINIWrite::Separator(Sep eSep)
 	else
 	{
 		PrepareForValue();
-		Buf.AppendChar(SeparatorToChar(eSep));
+		buf += SeparatorToChar(eSep);
 	}
 	return true;
 }
@@ -296,61 +297,61 @@ bool StdCompilerINIWrite::Separator(Sep eSep)
 void StdCompilerINIWrite::QWord(int64_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%" PRId64, rInt);
+	buf += std::format("{}", rInt);
 }
 
 void StdCompilerINIWrite::QWord(uint64_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%" PRIu64, rInt);
+	buf += std::format("{}", rInt);
 }
 
 void StdCompilerINIWrite::DWord(int32_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%" PRId32, rInt);
+	buf += std::format("{}", rInt);
 }
 
 void StdCompilerINIWrite::DWord(uint32_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%" PRIu32, rInt);
+	buf += std::format("{}", rInt);
 }
 
 void StdCompilerINIWrite::Word(int16_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%" PRId16, rInt);
+	buf += std::format("{}", rInt);
 }
 
 void StdCompilerINIWrite::Word(uint16_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%" PRIu16, rInt);
+	buf += std::format("{}", rInt);
 }
 
 void StdCompilerINIWrite::Byte(int8_t &rByte)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%" PRId8, rByte);
+	buf += std::format("{}", rByte);
 }
 
 void StdCompilerINIWrite::Byte(uint8_t &rInt)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%" PRIu8, rInt);
+	buf += std::format("{}", rInt);
 }
 
 void StdCompilerINIWrite::Boolean(bool &rBool)
 {
 	PrepareForValue();
-	Buf.Append(rBool ? "true" : "false");
+	buf += rBool ? "true" : "false";
 }
 
 void StdCompilerINIWrite::Character(char &rChar)
 {
 	PrepareForValue();
-	Buf.AppendFormat("%c", rChar);
+	buf += rChar;
 }
 
 void StdCompilerINIWrite::String(char *szString, size_t iMaxLength, RawCompileType eType)
@@ -370,7 +371,7 @@ void StdCompilerINIWrite::StringN(const char *szString, size_t iMaxLength, RawCo
 	case RCT_Idtf:
 	case RCT_IdtfAllowEmpty:
 	case RCT_ID:
-		Buf.Append(szString);
+		buf += szString;
 	}
 }
 
@@ -390,7 +391,7 @@ void StdCompilerINIWrite::Raw(void *pData, size_t iSize, RawCompileType eType)
 	case RCT_Idtf:
 	case RCT_IdtfAllowEmpty:
 	case RCT_ID:
-		Buf.Append(reinterpret_cast<char *>(pData), iSize);
+		buf.append(reinterpret_cast<char *>(pData), iSize);
 	}
 }
 
@@ -400,7 +401,7 @@ void StdCompilerINIWrite::Begin()
 	fPutName = false;
 	iDepth = 0;
 	fInSection = false;
-	Buf.Clear();
+	buf.clear();
 }
 
 void StdCompilerINIWrite::End()
@@ -421,7 +422,7 @@ void StdCompilerINIWrite::PrepareForValue()
 
 void StdCompilerINIWrite::WriteEscaped(const char *szString, const char *pEnd)
 {
-	Buf.AppendChar('"');
+	buf += '"';
 	// Try to write chunks as huge as possible of "normal" chars.
 	// Note this excludes '\0', so the standard Append() can be used.
 	const char *pStart, *pPos; pStart = pPos = szString;
@@ -430,22 +431,22 @@ void StdCompilerINIWrite::WriteEscaped(const char *szString, const char *pEnd)
 		if (!isprint(static_cast<unsigned char>(*pPos)) || *pPos == '\\' || *pPos == '"' || (fLastNumEscape && isdigit(static_cast<unsigned char>(*pPos))))
 		{
 			// Write everything up to this point
-			if (pPos - pStart) Buf.Append(pStart, pPos - pStart);
+			if (pPos - pStart) buf.append(pStart, pPos - pStart);
 			// Escape
 			fLastNumEscape = false;
 			switch (*pPos)
 			{
-			case '\a': Buf.Append("\\a"); break;
-			case '\b': Buf.Append("\\b"); break;
-			case '\f': Buf.Append("\\f"); break;
-			case '\n': Buf.Append("\\n"); break;
-			case '\r': Buf.Append("\\r"); break;
-			case '\t': Buf.Append("\\t"); break;
-			case '\v': Buf.Append("\\v"); break;
-			case '\"': Buf.Append("\\\""); break;
-			case '\\': Buf.Append("\\\\"); break;
+			case '\a': buf += "\\a"; break;
+			case '\b': buf += "\\b"; break;
+			case '\f': buf += "\\f"; break;
+			case '\n': buf += "\\n"; break;
+			case '\r': buf += "\\r"; break;
+			case '\t': buf += "\\t"; break;
+			case '\v': buf += "\\v"; break;
+			case '\"': buf += "\\\""; break;
+			case '\\': buf += "\\\\"; break;
 			default:
-				Buf.AppendFormat("\\%o", *reinterpret_cast<const unsigned char *>(pPos));
+				buf += std::format("\\{:o}", *reinterpret_cast<const unsigned char *>(pPos));
 				fLastNumEscape = true;
 			}
 			// Set pointer
@@ -454,8 +455,8 @@ void StdCompilerINIWrite::WriteEscaped(const char *szString, const char *pEnd)
 		else
 			fLastNumEscape = false;
 	// Write the rest
-	if (pEnd - pStart) Buf.Append(pStart, pEnd - pStart);
-	Buf.AppendChar('"');
+	if (pEnd - pStart) buf.append(pStart, pEnd - pStart);
+	buf += '"';
 }
 
 void StdCompilerINIWrite::WriteIndent(bool fSection)
@@ -466,19 +467,19 @@ void StdCompilerINIWrite::WriteIndent(bool fSection)
 	if (!fSection) iIndent--;
 	// Do indention
 	if (iIndent <= 0) return;
-	Buf.AppendChars(' ', iIndent * 2);
+	buf.append(' ', iIndent * 2);
 }
 
 void StdCompilerINIWrite::PutName(bool fSection)
 {
-	if (fSection && Buf.getLength())
-		Buf.Append("\r\n");
+	if (fSection && !buf.empty())
+		buf += "\r\n";
 	WriteIndent(fSection);
 	// Put name
 	if (fSection)
-		Buf.AppendFormat("[%s]\r\n", pNaming->Name.getData());
+		buf += std::format("[{}]\r\n", pNaming->Name.getData());
 	else
-		Buf.AppendFormat("%s=", pNaming->Name.getData());
+		buf += std::format("{}=", pNaming->Name.getData());
 	// Set flag
 	fPutName = false;
 }

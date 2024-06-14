@@ -1185,13 +1185,11 @@ bool C4Console::FileQuit()
 
 void C4Console::HelpAbout()
 {
-	StdStrBuf strCopyright;
-	strCopyright.Format("Copyright (c) %s %s", C4COPYRIGHT_YEAR, C4COPYRIGHT_COMPANY);
 #ifdef _WIN32
-	StdStrBuf strMessage; strMessage.Format("%s %s\n\n%s", C4ENGINECAPTION, C4VERSION, strCopyright.getData());
-	MessageBox(nullptr, strMessage.getData(), C4ENGINECAPTION, MB_ICONINFORMATION | MB_TASKMODAL);
+	static constexpr auto Message = C4ENGINECAPTION " " C4VERSION "\n\nCopyright (c) " C4COPYRIGHT_YEAR " " C4COPYRIGHT_COMPANY;
+	MessageBox(nullptr, Message, C4ENGINECAPTION, MB_ICONINFORMATION | MB_TASKMODAL);
 #elif WITH_DEVELOPER_MODE
-	gtk_show_about_dialog(GTK_WINDOW(window), "name", C4ENGINECAPTION, "version", C4VERSION, "copyright", strCopyright.getData(), nullptr);
+	gtk_show_about_dialog(GTK_WINDOW(window), "name", C4ENGINECAPTION, "version", C4VERSION, "copyright", "Copyright (c) " C4COPYRIGHT_YEAR " " C4COPYRIGHT_COMPANY", nullptr);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 

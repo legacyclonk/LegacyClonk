@@ -33,6 +33,8 @@
 #include "C4ChatDlg.h"
 #include "C4PlayerInfoListBox.h"
 
+#include <format>
+
 namespace C4GameLobby
 {
 
@@ -509,15 +511,14 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 			if (SEqualNoCase(Command, "/joinplr"))
 			{
 				// compose path from given filename
-				StdStrBuf plrPath;
-				plrPath.Format("%s%s", Config.General.PlayerPath, szPar);
+				const std::string plrPath{std::format("{}{}", Config.General.PlayerPath, szPar)};
 				// player join - check filename
-				if (!ItemExists(plrPath.getData()))
+				if (!ItemExists(plrPath.c_str()))
 				{
-					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_JOINPLR_NOFILE, plrPath.getData()).c_str());
+					LobbyError(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_JOINPLR_NOFILE, plrPath.c_str()).c_str());
 				}
 				else
-					Game.Network.Players.JoinLocalPlayer(plrPath.getData(), true);
+					Game.Network.Players.JoinLocalPlayer(plrPath.c_str(), true);
 			}
 			else if (SEqualNoCase(Command, "/plrclr"))
 			{

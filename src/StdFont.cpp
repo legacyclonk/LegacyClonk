@@ -775,7 +775,10 @@ int CStdFont::BreakMessage(const char *szMsg, int iWdt, StdStrBuf *pOut, bool fC
 					while (*lastLine == '<' && markup.Read(&lastLine));
 					if (*lastLine) ++lastLine;
 				}
-				(*pOut) += markup.ToCloseMarkup() + "\n" + markup.ToMarkup() + tempPart;
+				pOut->Append(markup.ToCloseMarkup().c_str());
+				pOut->AppendChar('\n');
+				pOut->Append(markup.ToMarkup().c_str());
+				pOut->Append(tempPart);
 			}
 			// calc next line usage
 			iX -= iXBreak;

@@ -61,11 +61,11 @@ class C4DefList;
 class C4AulError
 {
 protected:
-	StdStrBuf sMessage;
+	std::string message;
 
 public:
 	C4AulError();
-	C4AulError(const C4AulError &Error) { sMessage.Copy(Error.sMessage); }
+	C4AulError(const C4AulError &Error) : message{Error.message} {}
 	virtual ~C4AulError() {}
 	virtual void show() const; // present error message
 };
@@ -86,7 +86,7 @@ class C4AulExecError : public C4AulError
 	C4Object *cObj;
 
 public:
-	C4AulExecError(C4Object *pObj, const char *szError);
+	C4AulExecError(C4Object *pObj, std::string_view error);
 	virtual void show() const override; // present error message
 };
 
@@ -269,7 +269,7 @@ struct C4AulScriptContext : public C4AulContext
 	time_t tTime; // initialized only by profiler if active
 
 	size_t ParCnt() const { return Vars - Pars; }
-	void dump(StdStrBuf Dump = "");
+	void dump(std::string Dump = "");
 };
 
 // base function class
@@ -360,7 +360,7 @@ public:
 
 	void CopyBody(C4AulScriptFunc &FromFunc); // copy script/code, etc from given func
 
-	StdStrBuf GetFullName(); // get a fully classified name (C4ID::Name) for debug output
+	std::string GetFullName(); // get a fully classified name (C4ID::Name) for debug output
 
 	time_t tProfileTime; // internally set by profiler
 

@@ -30,6 +30,8 @@
 #include <shlobj.h>
 #endif
 
+#include <format>
+
 // C4FileSelDlg::ListItem
 
 C4FileSelDlg::ListItem::ListItem(const char *szFilename) : C4GUI::Control(C4Rect(0, 0, 0, 0))
@@ -537,10 +539,8 @@ C4PortraitSelDlg::C4PortraitSelDlg(C4FileSel_BaseCB *pSelCallback, bool fSetPict
 	// add common picture locations
 	StdStrBuf strLocation;
 	SCopy(Config.AtUserPath(""), path, _MAX_PATH); TruncateBackslash(path);
-	strLocation.Format("%s %s", C4ENGINECAPTION, LoadResStr(C4ResStrTableKey::IDS_TEXT_USERPATH));
-	AddLocation(strLocation.getData(), path);
-	strLocation.Format("%s %s", C4ENGINECAPTION, LoadResStr(C4ResStrTableKey::IDS_TEXT_PROGRAMDIRECTORY));
-	AddCheckedLocation(strLocation.getData(), Config.General.ExePath);
+	AddLocation(std::format(C4ENGINECAPTION " {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_USERPATH)).c_str(), path);
+	AddCheckedLocation(std::format(C4ENGINECAPTION " {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PROGRAMDIRECTORY)).c_str(), Config.General.ExePath);
 #ifdef _WIN32
 	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_PERSONAL,         FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_MYDOCUMENTS), path);
 	if (SHGetSpecialFolderPath(nullptr, path, CSIDL_MYPICTURES,       FALSE)) AddCheckedLocation(LoadResStr(C4ResStrTableKey::IDS_TEXT_MYPICTURES),  path);

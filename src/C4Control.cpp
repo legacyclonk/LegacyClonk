@@ -30,6 +30,9 @@
 
 #include <cassert>
 #include <cinttypes>
+#include <format>
+
+#include <fmt/printf.h>
 
 // *** C4ControlPacket
 C4ControlPacket::C4ControlPacket()
@@ -301,12 +304,12 @@ void C4ControlScript::Execute() const
 		if (Game.Network.isEnabled())
 			pClient = Game.Network.Clients.GetClientByID(iByClient);
 		if (pClient)
-			LogF(" = %s (by %s)", rVal.GetDataString().getData(), pClient->getName());
+			LogF(" = %s (by %s)", rVal.GetDataString(), pClient->getName());
 		else
-			LogF(" = %s (by client %d)", rVal.GetDataString().getData(), iByClient);
+			LogF(" = %s (by client %d)", rVal.GetDataString(), iByClient);
 	}
 	else
-		LogF(" = %s", rVal.GetDataString().getData());
+		LogF(" = %s", rVal.GetDataString());
 }
 
 void C4ControlScript::CompileFunc(StdCompiler *pComp)
@@ -723,13 +726,13 @@ void C4ControlJoinPlayer::Execute() const
 		if (PlrData.getSize())
 		{
 			// create temp file
-			StdStrBuf PlayerFilename; PlayerFilename.Format("%s-%s", pClient->getName(), GetFilename(szFilename));
-			PlayerFilename.Ref(Config.AtTempPath(PlayerFilename.getData()));
+			std::string playerFilename{std::format("{}-{}", pClient->getName(), GetFilename(szFilename))};
+			playerFilename = Config.AtTempPath(playerFilename.c_str());
 			// copy to it
-			if (PlrData.SaveToFile(PlayerFilename.getData()))
+			if (PlrData.SaveToFile(playerFilename.c_str()))
 			{
-				Game.JoinPlayer(PlayerFilename.getData(), iAtClient, pClient->getName(), pInfo);
-				EraseFile(PlayerFilename.getData());
+				Game.JoinPlayer(playerFilename.c_str(), iAtClient, pClient->getName(), pInfo);
+				EraseFile(playerFilename.c_str());
 			}
 		}
 		else if (pInfo->GetType() == C4PT_Script)
@@ -755,8 +758,7 @@ void C4ControlJoinPlayer::Execute() const
 	else if (Game.Control.isReplay())
 	{
 		// Expect player in scenario file
-		StdStrBuf PlayerFilename; PlayerFilename.Format("%s" DirSep "%d-%s", Game.ScenarioFilename, ResCore.getID(), GetFilename(ResCore.getFileName()));
-		Game.JoinPlayer(PlayerFilename.getData(), iAtClient, pClient ? pClient->getName() : "Unknown", pInfo);
+		Game.JoinPlayer(std::format("{}" DirSep "{}-{}", Game.ScenarioFilename, ResCore.getID(), GetFilename(ResCore.getFileName())).c_str(), iAtClient, pClient ? pClient->getName() : "Unknown", pInfo);
 	}
 	else
 		// Shouldn't happen
@@ -1134,10 +1136,10 @@ void C4ControlMessage::Execute() const
 		if (!pViewObject) break;
 		if (Game.C4S.Head.Film == C4SFilm_Cinematic)
 		{
-			StdStrBuf sMessage; sMessage.Format("<%s> %s", pPlr->Cursor ? pPlr->Cursor->GetName() : pPlr->GetName(), szMessage);
+			const std::string message{std::format("<{}> {}", pPlr->Cursor ? pPlr->Cursor->GetName() : pPlr->GetName(), szMessage)};
 			uint32_t dwClr = pPlr->Cursor ? pPlr->Cursor->Color : pPlr->ColorDw;
 			if (!dwClr) dwClr = 0xff;
-			GameMsgObjectDw(sMessage.getData(), pViewObject, dwClr | 0xff000000);
+			GameMsgObjectDw(message.c_str(), pViewObject, dwClr | 0xff000000);
 		}
 		else
 			GameMsgObjectDw(szMessage, pViewObject, pPlr->ColorDw | 0xff000000);
@@ -1505,13 +1507,13 @@ bool C4ControlEMDropDef::Allowed() const
 	return !Game.Parameters.isLeague() && C4Id2Def(id);
 }
 
-StdStrBuf C4ControlEMDropDef::FormatScript() const
+std::string C4ControlEMDropDef::FormatScript() const
 {
 	const auto def = C4Id2Def(id);
 	if (def->Category & C4D_Structure)
-		return FormatString("CreateConstruction(%s,%d,%d,-1,%d,true)", C4IdText(id), x, y, FullCon);
+		return std::format("CreateConstruction({},{},{},-1,{},true)", C4IdText(id), x, y, FullCon);
 	else
-		return FormatString("CreateObject(%s,%d,%d,-1)", C4IdText(id), x, y);
+		return std::format("CreateObject({},{},{},-1)", C4IdText(id), x, y);
 }
 
 void C4ControlInternalScriptBase::Execute() const
@@ -1531,7 +1533,7 @@ void C4ControlInternalScriptBase::Execute() const
 	else
 		// default: Fallback to global context
 		pScript = &Game.ScriptEngine;
-	pScript->DirectExec(pObj, FormatScript().getData(), "internal script");
+	pScript->DirectExec(pObj, FormatScript().c_str(), "internal script");
 }
 
 void C4ControlInternalPlayerScriptBase::CompileFunc(StdCompiler *pComp)
@@ -1555,13 +1557,13 @@ void C4ControlMessageBoardAnswer::CompileFunc(StdCompiler *pComp)
 	C4ControlInternalPlayerScriptBase::CompileFunc(pComp);
 }
 
-StdStrBuf C4ControlMessageBoardAnswer::FormatScript() const
+std::string C4ControlMessageBoardAnswer::FormatScript() const
 {
-	if (answer.empty()) return FormatString("OnMessageBoardAnswer(Object(%d),%d,)", obj, plr);
+	if (answer.empty()) return std::format("OnMessageBoardAnswer(Object({}),{},)", obj, plr);
 
 	StdStrBuf escapedAnswer(answer.c_str(), false);
 	escapedAnswer.EscapeString();
-	return FormatString("OnMessageBoardAnswer(Object(%d),%d,\"%s\")", obj, plr, escapedAnswer.getData());
+	return std::format("OnMessageBoardAnswer(Object({}),{},\"{}\")", obj, plr, escapedAnswer.getData());
 }
 
 void C4ControlCustomCommand::CompileFunc(StdCompiler *pComp)
@@ -1578,28 +1580,36 @@ bool C4ControlCustomCommand::Allowed() const
 	return Game.IsRunning && Game.MessageInput.GetCommand(command.c_str());
 }
 
-StdStrBuf C4ControlCustomCommand::FormatScript() const
+std::string C4ControlCustomCommand::FormatScript() const
 {
 	// the existence of cmd is checked already in Allowed()
 	const auto cmd = Game.MessageInput.GetCommand(command.c_str());
-	StdStrBuf Script, CmdScript;
+	std::string script;
+	std::string cmdScript;
 	// replace %player% by calling player number
-	if (SSearch(cmd->script.c_str(), "%player%"))
+	if (cmd->script.contains("%player%"))
 	{
-		CmdScript.Copy(cmd->script.c_str());
-		CmdScript.Replace("%player%", FormatString("%d", plr).getData());
+		cmdScript = ReplaceInString(static_cast<std::string_view>(cmd->script), static_cast<std::string_view>("%player%"), static_cast<std::string_view>(std::to_string(plr)));
 	}
 	else
 	{
-		CmdScript.Copy(cmd->script.c_str());
+		cmdScript = cmd->script;
 	}
 	// insert parameters
-	if (SSearch(CmdScript.getData(), "%d"))
+	if (cmdScript.contains("%d"))
 	{
 		// make sure it's a number by converting
-		Script.Format(CmdScript.getData(), atoi(argument.c_str()));
+		std::string_view arg{argument};
+		if (arg.starts_with('+'))
+		{
+			arg.remove_prefix(1);
+		}
+
+		int result{};
+		std::from_chars(arg.data(), arg.data() + arg.size(), result);
+		script = fmt::sprintf(cmdScript, result);
 	}
-	else if (SSearch(CmdScript.getData(), "%s"))
+	else if (cmdScript.contains("%s"))
 	{
 		// Unrestricted parameters?
 		// That's kind of a security risk as it will allow anyone to execute code
@@ -1612,13 +1622,13 @@ StdStrBuf C4ControlCustomCommand::FormatScript() const
 				Par.Copy(argument.c_str());
 				Par.EscapeString();
 				// compose script
-				Script.Format(CmdScript.getData(), Par.getData());
+				script = fmt::sprintf(cmdScript, Par.getData());
 			}
 			break;
 
 			case C4MessageBoardCommand::C4MSGCMDR_Plain:
 				// unescaped
-				Script.Format(CmdScript.getData(), argument.c_str());
+				script = fmt::sprintf(cmdScript, argument);
 				break;
 
 			case C4MessageBoardCommand::C4MSGCMDR_Identifier:
@@ -1631,17 +1641,17 @@ StdStrBuf C4ControlCustomCommand::FormatScript() const
 					par.push_back(c);
 				}
 				// compose script
-				Script.Format(CmdScript.getData(), par.c_str());
+				script = fmt::sprintf(cmdScript, par);
 			}
 			break;
 		}
 	}
 	else
 	{
-		return CmdScript;
+		return cmdScript;
 	}
 
-	return Script;
+	return script;
 }
 
 void C4ControlInitScenarioPlayer::CompileFunc(StdCompiler *pComp)

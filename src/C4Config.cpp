@@ -36,6 +36,8 @@
 #include <clocale>
 #endif
 
+#include <format>
+
 bool isGermanSystem()
 {
 #ifdef _WIN32
@@ -568,7 +570,8 @@ bool C4Config::Save()
 			}
 			StdCompilerINIWrite IniWrite;
 			IniWrite.Decompile(*this);
-			IniWrite.getOutput().SaveToFile(filename.getData());
+			const std::string output{IniWrite.getOutput()};
+			StdStrBuf{output.c_str(), output.size(), false}.SaveToFile(filename.getData());
 		}
 	}
 	catch ([[maybe_unused]] const StdCompiler::Exception &e)
@@ -699,11 +702,11 @@ bool C4ConfigGeneral::CreateSaveFolder(const char *strDirectory, const char *str
 			return false;
 	// Create title component if needed
 	char lang[3]; SCopy(Config.General.Language, lang, 2);
-	StdStrBuf strTitleFile; strTitleFile.Format("%s%c%s", strDirectory, DirectorySeparator, C4CFN_WriteTitle);
-	StdStrBuf strTitleData; strTitleData.Format("%s:%s", lang, strLanguageTitle);
+	const std::string titleFile{std::format("{}" DirSep C4CFN_WriteTitle, strDirectory)};
+	const std::string titleData{std::format("{}:{}", lang, strLanguageTitle)};
 	CStdFile hFile;
-	if (!FileExists(strTitleFile.getData()))
-		if (!hFile.Create(strTitleFile.getData()) || !hFile.WriteString(strTitleData.getData()) || !hFile.Close())
+	if (!FileExists(titleFile.c_str()))
+		if (!hFile.Create(titleFile.c_str()) || !hFile.WriteString(titleData.c_str()) || !hFile.Close())
 			return false;
 	// Save folder seems okay
 	return true;

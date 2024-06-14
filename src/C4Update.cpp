@@ -22,6 +22,8 @@
 #include "C4Group.h"
 #include "C4Log.h"
 
+#include <format>
+
 C4Config *GetCfg();
 
 #ifdef _WIN32
@@ -253,11 +255,11 @@ bool C4UpdatePackageCore::Save(C4Group &hGroup)
 	try
 	{
 		// decompile data
-		StdStrBuf Core = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "Update"));
-		char *stupid_buffer = new char[Core.getLength() + 1];
-		memcpy(stupid_buffer, Core.getMData(), Core.getLength() + 1);
+		std::string Core = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*this, "Update"));
+		char *stupid_buffer = new char[Core.size() + 1];
+		memcpy(stupid_buffer, Core.c_str(), Core.size() + 1);
 		// add to group
-		return hGroup.Add(C4CFN_UpdateCore, stupid_buffer, Core.getLength(), false, true);
+		return hGroup.Add(C4CFN_UpdateCore, stupid_buffer, Core.size(), false, true);
 	}
 	catch (const StdCompiler::Exception &)
 	{
@@ -737,15 +739,16 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 	// set header
 	pUpGrp->SetHead(*pGrp2);
 	// compare entries
-	char strItemName[_MAX_PATH], strItemName2[_MAX_PATH]; StdStrBuf EntryList;
+	char strItemName[_MAX_PATH], strItemName2[_MAX_PATH];
+	std::string entryList;
 	strItemName[0] = strItemName2[0] = 0;
 	pGrp2->ResetSearch(); if (!*fModified) pGrp1->ResetSearch();
 	int iChangedEntries = 0;
 	while (pGrp2->FindNextEntry("*", strItemName, nullptr, nullptr, !!strItemName[0]))
 	{
 		// add to entry list
-		if (!!EntryList) EntryList.AppendChar('|');
-		EntryList.AppendFormat("%s=%d", strItemName, pGrp2->EntryTime(strItemName));
+		if (!entryList.empty()) entryList += '|';
+		entryList += std::format("{}={}", strItemName, pGrp2->EntryTime(strItemName));
 		// no modification detected yet? then check order
 		if (!*fModified)
 		{
@@ -849,7 +852,8 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 		}
 	}
 	// write entries list (always)
-	if (!pUpGrp->Add(C4CFN_UpdateEntries, EntryList, false, true))
+	StdStrBuf buf{entryList.c_str(), entryList.size()};
+	if (!pUpGrp->Add(C4CFN_UpdateEntries, buf, false, true))
 	{
 		WriteLog("Error: could not save entry list!");
 		return false;

@@ -22,6 +22,8 @@
 #include <Standard.h>
 #include <StdBuf.h>
 
+#include <format>
+
 class CBltTransform;
 
 // one markup tag
@@ -35,7 +37,7 @@ public:
 
 	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr) = 0; // assign markup
 	virtual const char *TagName() = 0; // get character string for this tag
-	virtual StdStrBuf ToMarkup() { return FormatString("<%s>", TagName()); }
+	virtual std::string ToMarkup() { return std::format("<{}>", TagName()); }
 };
 
 // markup tag for italic text
@@ -59,7 +61,7 @@ public:
 
 	virtual void Apply(CBltTransform &rBltTrf, bool fDoClr, uint32_t &dwClr) override; // assign markup
 	virtual const char *TagName() override { return "c"; }
-	virtual StdStrBuf ToMarkup() override { return FormatString("<%s %x>", TagName(), dwClr); }
+	virtual std::string ToMarkup() override { return std::format("<{} {:x}>", TagName(), dwClr); }
 };
 
 // markup rendering functionality for text
@@ -95,8 +97,8 @@ public:
 		for (CMarkupTag *pTag = pTags; pTag; pTag = pTag->pNext) pTag->Apply(rBltTrf, fDoClr, dwClr);
 	}
 
-	StdStrBuf ToMarkup();
-	StdStrBuf ToCloseMarkup();
+	std::string ToMarkup();
+	std::string ToCloseMarkup();
 
 	bool Clean() { return !pTags; } // empty?
 

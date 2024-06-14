@@ -27,6 +27,8 @@
 #include "C4InputValidation.h"
 #include "C4Network2IRC.h"
 
+#include <format>
+
 void convUTF8toWindows(StdStrBuf &sText)
 {
 	// workaround until we have UTF-8 support: convert German umlauts and ß
@@ -92,7 +94,7 @@ public:
 	const char *GetIdent() const { return sIdent.getData(); }
 	void SetIdent(const char *szToIdent) { sIdent.Copy(szToIdent); }
 	const char *GetChatTitle() const { return sChatTitle.getData(); }
-	void SetChatTitle(const char *szNewTitle) { sChatTitle.Copy(szNewTitle); }
+	void SetChatTitle(const char *szNewTitle) { sChatTitle = szNewTitle; }
 
 	void AddTextLine(const char *szText, uint32_t dwClr);
 	void DoError(const char *szError);
@@ -345,7 +347,12 @@ void C4ChatControl::ChatSheet::Update(bool fLock)
 			if (!pIRCChan->isUsersLocked()) UpdateUsers(pIRCChan->getUsers());
 			// update topic
 			const char *szTopic = pIRCChan->getTopic();
-			sChatTitle.Format("%s%s%s", sIdent.getData(), szTopic ? ": " : "", szTopic ? szTopic : "");
+			sChatTitle.Append(sIdent);
+			if (szTopic)
+			{
+				sChatTitle.Append(": ");
+				sChatTitle.Append(szTopic);
+			}
 			convUTF8toWindows(sChatTitle);
 		}
 	}
@@ -760,51 +767,51 @@ void C4ChatControl::Update()
 		if (pChatSheet)
 		{
 			// get message formatting and color
-			StdStrBuf sMsg; uint32_t dwClr = C4GUI_MessageFontClr;
+			std::string msg; uint32_t dwClr = C4GUI_MessageFontClr;
 			switch (pMsg->getType())
 			{
 			case MSG_Server:
-				sMsg.Format("- %s", pMsg->getData());
+				msg = std::format("- {}", pMsg->getData());
 				break;
 
 			case MSG_Status:
-				sMsg.Format("- %s", pMsg->getData());
+				msg = std::format("- {}", pMsg->getData());
 				dwClr = C4GUI_InactMessageFontClr;
 				break;
 
 			case MSG_Notice:
 				if (sUser.getLength())
 					if (sUser != pIRCClient->getUserName())
-						sMsg.Format("-%s- %s", sUser.getData(), pMsg->getData());
+						msg = std::format("-{}- {}", sUser.getData(), pMsg->getData());
 					else
-						sMsg.Format("-> -%s- %s", pMsg->getTarget(), pMsg->getData());
+						msg = std::format("-> -{}- {}", pMsg->getTarget(), pMsg->getData());
 				else
-					sMsg.Format("* %s", pMsg->getData());
+					msg = std::format("* {}", pMsg->getData());
 				dwClr = C4GUI_NotifyFontClr;
 				break;
 
 			case MSG_Message:
 				if (fMsgToService)
-					sMsg.Format("-> *%s* %s", pMsg->getTarget(), pMsg->getData());
+					msg = std::format("-> *{}* {}", pMsg->getTarget(), pMsg->getData());
 				else if (sUser.getLength())
-					sMsg.Format("<%s> %s", sUser.getData(), pMsg->getData());
+					msg = std::format("<{}> {}", sUser.getData(), pMsg->getData());
 				else
-					sMsg.Format("* %s", pMsg->getData());
+					msg = std::format("* {}", pMsg->getData());
 				break;
 
 			case MSG_Action:
 				if (sUser.getLength())
-					sMsg.Format("* %s %s", sUser.getData(), pMsg->getData());
+					msg = std::format("* {} {}", sUser.getData(), pMsg->getData());
 				else
-					sMsg.Format("* %s", pMsg->getData());
+					msg = std::format("* {}", pMsg->getData());
 				break;
 
 			default:
-				sMsg.Format("??? %s", pMsg->getData());
+				msg = std::format("??? {}", pMsg->getData());
 				dwClr = C4GUI_ErrorFontClr;
 				break;
 			}
-			pChatSheet->AddTextLine(sMsg.getData(), dwClr);
+			pChatSheet->AddTextLine(msg.c_str(), dwClr);
 		}
 	}
 	// OK; all messages processed. Delete overflow messages.
@@ -841,11 +848,11 @@ C4ChatControl::ChatSheet *C4ChatControl::OpenQuery(const char *szForNick, bool f
 
 void C4ChatControl::UpdateTitle()
 {
-	StdStrBuf sNewTitle;
+	std::string newTitle;
 	if (pTabMain->GetActiveSheetIndex() == 0)
 	{
 		// login title
-		sNewTitle = LoadResStr(C4ResStrTableKey::IDS_CHAT_NOTCONNECTED);
+		newTitle = LoadResStr(C4ResStrTableKey::IDS_CHAT_NOTCONNECTED);
 	}
 	else
 	{
@@ -853,15 +860,13 @@ void C4ChatControl::UpdateTitle()
 		ChatSheet *pActiveSheet = GetActiveChatSheet();
 		if (pActiveSheet)
 		{
-			sNewTitle = pActiveSheet->GetChatTitle();
+			newTitle = pActiveSheet->GetChatTitle();
 		}
-		else
-			sNewTitle = "";
 	}
 	// call update proc only if title changed
-	if (sTitle != sNewTitle)
+	if (sTitle.isNull() || newTitle.compare(sTitle.getData()))
 	{
-		sTitle.Take(sNewTitle);
+		sTitle.Copy(newTitle.c_str());
 		if (pTitleChangeBC) pTitleChangeBC->OnOK(sTitle);
 	}
 }

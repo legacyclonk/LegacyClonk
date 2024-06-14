@@ -111,7 +111,7 @@
 #define C4CFN_KeyConfig "KeyConfig.txt"
 
 #define C4CFN_Log    "Clonk.log"
-#define C4CFN_LogEx  "Clonk%d.log" // created if regular logfile is in use
+#define C4CFN_LogEx  "Clonk{}.log" // created if regular logfile is in use
 #define C4CFN_Names  "Names.txt"
 #define C4CFN_Titles "Title*.txt|Title.txt"
 

@@ -200,7 +200,7 @@ StdStrBuf C4RankSystem::GetRankName(int iRank, bool fReturnLastIfOver)
 			// extended rank composed of two parts
 			int iExtension = iRank / iRankNum - 1;
 			iRank = iRank % iRankNum;
-			sResult.Format(pszRankExtensions[iExtension], pszRankNames[iRank]);
+			sResult.Copy(fmt::sprintf(pszRankExtensions[iExtension], pszRankNames[iRank]).c_str());
 		}
 		else
 		{

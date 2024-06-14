@@ -27,6 +27,8 @@
 #include <C4PlayerInfo.h>
 #include <C4PlayerInfoListBox.h>
 
+#include <format>
+
 // C4GoalDisplay
 
 C4GoalDisplay::GoalPicture::GoalPicture(const C4Rect &rcBounds, C4ID idGoal, bool fFulfilled)
@@ -292,7 +294,7 @@ void C4GameOverDlg::SetNetResult(const char *szResultString, C4RoundResults::Net
 	if (fIsStreaming)
 	{
 		sResult.AppendChar('|');
-		sResult.AppendFormat("[!]Transmitting record to league server... (%d kb remaining)", int(iPendingStreamingData / 1024));
+		sResult.Append(std::format("[!]Transmitting record to league server... ({} kb remaining)", iPendingStreamingData / 1024).c_str());
 	}
 	// message linebreak into box
 	StdStrBuf sBrokenResult;

@@ -316,10 +316,8 @@ public:
 	{
 		// Got warning callback?
 		if (!pWarnCB) return;
-		// Format message
-		StdStrBuf Msg; Msg.Format(szWarning, args...);
 		// do callback
-		(*pWarnCB)(pWarnData, getPosition().getData(), Msg.getData());
+		(*pWarnCB)(pWarnData, getPosition().getData(), fmt::sprintf(szWarning, args...).c_str());
 	}
 
 private:
@@ -338,8 +336,8 @@ public:
 };
 
 // Standard compile funcs
-template <class T> requires (std::is_class_v<T> || std::is_union_v<T>)
-inline void CompileFunc(T &rStruct, StdCompiler *pComp)
+template <class T, typename... Args> requires (std::is_class_v<T> || std::is_union_v<T>)
+inline void CompileFunc(T &rStruct, StdCompiler *pComp, Args &&...args)
 {
 	// If the compiler doesn't like this line, you tried to compile
 	// something the compiler doesn't know how to handle.
@@ -349,12 +347,17 @@ inline void CompileFunc(T &rStruct, StdCompiler *pComp)
 	// b) You are trying to compile a pointer. Use a PtrAdapt instead.
 	// c) You are trying to compile a simple value that has no
 	//    fixed representation (float, int). Use safe types instead.
-	rStruct.CompileFunc(pComp);
+	rStruct.CompileFunc(pComp, std::forward<Args>(args)...);
 }
 
-inline void CompileFunc(std::string &s, StdCompiler *comp)
+inline void CompileFunc(std::string &s, StdCompiler *comp, const StdCompiler::RawCompileType type = StdCompiler::RCT_Escaped)
 {
-	comp->String(s);
+	comp->String(s, type);
+}
+
+inline void CompileFunc(std::string &s, StdCompiler *comp, const int type = 0)
+{
+	comp->String(s, static_cast<StdCompiler::RawCompileType>(type));
 }
 
 template <class T>
@@ -547,8 +550,8 @@ class StdCompilerINIWrite : public StdCompiler
 {
 public:
 	// Input
-	typedef StdStrBuf OutT;
-	inline const OutT &getOutput() { return Buf; }
+	typedef std::string OutT;
+	inline const OutT &getOutput() { return buf; }
 
 	// Properties
 	virtual bool hasNaming() override { return true; }
@@ -582,7 +585,7 @@ public:
 
 protected:
 	// Result
-	StdStrBuf Buf;
+	std::string buf;
 
 	// Naming stack
 	struct Naming

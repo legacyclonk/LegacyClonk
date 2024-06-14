@@ -20,6 +20,7 @@
 #include "C4Version.h"
 #include "C4Network2Reference.h"
 
+#include <format>
 #include <stdexcept>
 
 #include <fcntl.h>
@@ -185,20 +186,21 @@ void C4Network2RefServer::RespondReference(const C4NetIO::addr_t &addr)
 {
 	CStdLock RefLock(&RefCSec);
 	// Pack
-	StdStrBuf PacketData = DecompileToBuf<StdCompilerINIWrite>(mkNamingPtrAdapt(pReference, "Reference"));
+	const std::string packetData{DecompileToBuf<StdCompilerINIWrite>(mkNamingPtrAdapt(pReference, "Reference"))};
 	// Create header
-	const char *szCharset = C4Config::GetCharsetCodeName(Config.General.LanguageCharset);
-	StdStrBuf Header = FormatString(
+	const char *const charset{C4Config::GetCharsetCodeName(Config.General.LanguageCharset)};
+
+	const std::string header{std::format(
 		"HTTP/1.0 200 OK\r\n"
-		"Content-Length: %zu\r\n"
-		"Content-Type: text/plain; charset=%s\r\n"
+		"Content-Length: {}\r\n"
+		"Content-Type: text/plain; charset={}\r\n"
 		"Server: " C4ENGINENAME "/" C4VERSION "\r\n"
 		"\r\n",
-		PacketData.getLength(),
-		szCharset);
+		packetData.size(),
+		charset)};
 	// Send back
-	Send(C4NetIOPacket(Header.getData(), Header.getLength(), false, addr));
-	Send(C4NetIOPacket(PacketData.getData(), PacketData.getLength(), false, addr));
+	Send(C4NetIOPacket(header.c_str(), header.size(), false, addr));
+	Send(C4NetIOPacket(packetData.c_str(), packetData.size(), false, addr));
 	// Close the connection
 	Close(addr);
 }
@@ -660,7 +662,7 @@ bool C4Network2HTTPClientImplNetIO::ReadHeader(const StdStrBuf &Data)
 	// Check HTTP version
 	if (iHTTPVer1 != 1)
 	{
-		Error.Format("Unsupported HTTP version: %d.%d!", iHTTPVer1, iHTTPVer2);
+		Error.Copy(std::format("Unsupported HTTP version: {}.{}!", iHTTPVer1, iHTTPVer2).c_str());
 		return false;
 	}
 	// Check code
@@ -669,7 +671,7 @@ bool C4Network2HTTPClientImplNetIO::ReadHeader(const StdStrBuf &Data)
 		// Get status string
 		StdStrBuf StatusString; StatusString.CopyUntil(pData + iStatusStringPtr, '\r');
 		// Create error message
-		Error.Format("HTTP server responded %d: %s", iResponseCode, StatusString.getData());
+		Error.Copy(std::format("HTTP server responded {}: {}", iResponseCode, StatusString.getData()).c_str());
 		return false;
 	}
 	// Get content length
@@ -678,7 +680,7 @@ bool C4Network2HTTPClientImplNetIO::ReadHeader(const StdStrBuf &Data)
 	if (!pContentLength || pContentLength > pContent ||
 		sscanf(pContentLength, "%d", &iContentLength) != 1)
 	{
-		Error.Format("Invalid server response: Content-Length is missing!");
+		Error.Copy("Invalid server response: Content-Length is missing!");
 		return false;
 	}
 	iTotalSize = iContentLength;
@@ -716,14 +718,14 @@ bool C4Network2HTTPClientImplNetIO::Decompress(StdBuf *pData)
 	// Inflate...
 	if (inflateInit2(&zstrm, 15 + 16) != Z_OK)
 	{
-		Error.Format("Could not decompress data!");
+		Error.Copy("Could not decompress data!");
 		return false;
 	}
 	// Inflate!
 	if (inflate(&zstrm, Z_FINISH) != Z_STREAM_END)
 	{
 		inflateEnd(&zstrm);
-		Error.Format("Could not decompress data!");
+		Error.Copy("Could not decompress data!");
 		return false;
 	}
 	// Return the buffer
@@ -744,7 +746,7 @@ bool C4Network2HTTPClientImplNetIO::OnConn(const C4NetIO::addr_t &AddrPeer, cons
 	// Send the request
 	if (!Send(C4NetIOPacket(Request, AddrPeer)))
 	{
-		Error.Format("Unable to send HTTP request: %s", Error.getData());
+		Error.Copy(std::format("Unable to send HTTP request: {}", Error.getData()).c_str());
 	}
 	Request.Clear();
 	fConnected = true;
@@ -757,7 +759,8 @@ void C4Network2HTTPClientImplNetIO::OnDisconn(const C4NetIO::addr_t &AddrPeer, C
 	if (!fSuccess && Error.isNull())
 	{
 		fBusy = false;
-		Error.Format("Unexpected disconnect: %s", szReason);
+		Error.Copy("Unexpected disconnect: ");
+		Error.Append(szReason);
 	}
 	fConnected = false;
 	// Notify
@@ -813,17 +816,17 @@ bool C4Network2HTTPClientImplNetIO::Query(const StdBuf &Data, bool fBinary, C4HT
 	this->fBinary = fBinary;
 	// Create request
 	const char *szCharset = C4Config::GetCharsetCodeName(Config.General.LanguageCharset);
-	StdStrBuf Header;
+	std::string header;
 	if (Data.getSize())
-		Header.Format(
-			"POST %s HTTP/1.0\r\n"
-			"Host: %s\r\n"
+		header = std::format(
+			"POST {} HTTP/1.0\r\n"
+			"Host: {}\r\n"
 			"Connection: Close\r\n"
-			"Content-Length: %zu\r\n"
-			"Content-Type: text/plain; encoding=%s\r\n"
-			"Accept-Charset: %s\r\n"
+			"Content-Length: {}\r\n"
+			"Content-Type: text/plain; encoding={}\r\n"
+			"Accept-Charset: {}\r\n"
 			"Accept-Encoding: gzip\r\n"
-			"Accept-Language: %s\r\n"
+			"Accept-Language: {}\r\n"
 			"User-Agent: " C4ENGINENAME "/" C4VERSION "\r\n"
 			"\r\n",
 			RequestPath.getData(),
@@ -833,13 +836,13 @@ bool C4Network2HTTPClientImplNetIO::Query(const StdBuf &Data, bool fBinary, C4HT
 			szCharset,
 			Config.General.LanguageEx);
 	else
-		Header.Format(
-			"GET %s HTTP/1.0\r\n"
-			"Host: %s\r\n"
+		header = std::format(
+			"GET {} HTTP/1.0\r\n"
+			"Host: {}\r\n"
 			"Connection: Close\r\n"
-			"Accept-Charset: %s\r\n"
+			"Accept-Charset: {}\r\n"
 			"Accept-Encoding: gzip\r\n"
-			"Accept-Language: %s\r\n"
+			"Accept-Language: {}\r\n"
 			"User-Agent: " C4ENGINENAME "/" C4VERSION "\r\n"
 			"\r\n",
 			RequestPath.getData(),
@@ -849,11 +852,11 @@ bool C4Network2HTTPClientImplNetIO::Query(const StdBuf &Data, bool fBinary, C4HT
 
 	for (const auto &[key, value] : headers)
 	{
-		Header.AppendFormat("%.*s: %.*s\r\n", key.size(), key.data(), value.size(), value.data());
+		header += std::format("{}: {}\r\n", key, value);
 	}
 
 	// Compose query
-	Request.Take(Header.GrabPointer(), Header.getLength());
+	Request.Copy(header.c_str(), header.size());
 	Request.Append(Data);
 
 	bool enableFallback{!ServerAddrFallback.IsNull()};
@@ -980,7 +983,7 @@ bool C4Network2RefClient::QueryReferences()
 	// invalidate version
 	fVerSet = false;
 	// Perform an Query query
-	return Query(nullptr, false);
+	return Query(StdBuf{}, false);
 }
 
 bool C4Network2RefClient::GetReferences(C4Network2Reference ** &rpReferences, int32_t &rRefCount)

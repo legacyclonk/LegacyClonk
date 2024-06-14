@@ -90,7 +90,7 @@ inline C4String *String(StdStrBuf &&str)
 	return str ? new C4String(std::forward<StdStrBuf>(str), &Game.ScriptEngine.Strings) : nullptr;
 }
 
-static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4Value *Par0 = nullptr, C4Value *Par1 = nullptr, C4Value *Par2 = nullptr, C4Value *Par3 = nullptr,
+static std::string FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4Value *Par0 = nullptr, C4Value *Par1 = nullptr, C4Value *Par2 = nullptr, C4Value *Par3 = nullptr,
 	C4Value *Par4 = nullptr, C4Value *Par5 = nullptr, C4Value *Par6 = nullptr, C4Value *Par7 = nullptr, C4Value *Par8 = nullptr, C4Value *Par9 = nullptr)
 {
 	C4Value *Par[11];
@@ -99,7 +99,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 	Par[10] = nullptr;
 	int cPar = 0;
 
-	StdStrBuf StringBuf("", false);
+	std::string stringBuf;
 	const char *cpFormat = szFormatPar;
 	const char *cpType;
 	char szField[MaxFnStringParLen + 1];
@@ -107,7 +107,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 	{
 		// Copy normal stuff
 		while (*cpFormat && (*cpFormat != '%'))
-			StringBuf.AppendChar(*cpFormat++);
+			stringBuf += *cpFormat++;
 		// Field
 		if (*cpFormat == '%')
 		{
@@ -122,7 +122,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			case 'd': case 'x': case 'X': case 'c':
 			{
 				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
-				StringBuf.AppendFormat(szField, Par[cPar++]->getInt());
+				stringBuf += fmt::sprintf(szField, Par[cPar++]->getInt());
 				cpFormat += SLen(szField);
 				break;
 			}
@@ -131,7 +131,7 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 			{
 				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
 				C4ID id = Par[cPar++]->getC4ID();
-				StringBuf.Append(C4IdText(id));
+				stringBuf += C4IdText(id);
 				cpFormat += SLen(szField);
 				break;
 			}
@@ -141,11 +141,11 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 				if (!Par[cPar]) throw C4AulExecError(cthr->Obj, "format placeholder without parameter");
 				if (!Par[cPar]->_getRaw() && !cthr->CalledWithStrictNil())
 				{
-					StringBuf.Append("0");
+					stringBuf += '0';
 				}
 				else
 				{
-					StringBuf.Append(static_cast<const StdStrBuf &>(Par[cPar++]->GetDataString()));
+					stringBuf += Par[cPar++]->GetDataString();
 				}
 				cpFormat += SLen(szField);
 				break;
@@ -162,23 +162,23 @@ static StdStrBuf FnStringFormat(C4AulContext *cthr, const char *szFormatPar, C4V
 					if (!pStr) throw C4AulExecError(cthr->Obj, "string format placeholder without string");
 					szStr = pStr->Data.getData();
 				}
-				StringBuf.AppendFormat(szField, szStr);
+				stringBuf += fmt::sprintf(szField, szStr);
 				cpFormat += SLen(szField);
 				break;
 			}
 			case '%':
-				StringBuf.AppendChar('%');
+				stringBuf += '%';
 				cpFormat += SLen(szField);
 				break;
 			// Undefined / Empty
 			default:
-				StringBuf.AppendChar('%');
+				stringBuf += '%';
 				cpFormat++;
 				break;
 			}
 		}
 	}
-	return StringBuf;
+	return stringBuf;
 }
 
 bool CheckEnergyNeedChain(C4Object *pObj, C4ObjectList &rEnergyChainChecked)
@@ -2369,17 +2369,17 @@ static bool FnGainMissionAccess(C4AulContext *cthr, C4String *szPassword)
 
 static void FnLog(C4AulContext *cthr, C4String *szMessage, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7, C4Value iPar8)
 {
-	Log(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8).getData());
+	Log(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8));
 }
 
 static void FnDebugLog(C4AulContext *cthr, C4String *szMessage, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7, C4Value iPar8)
 {
-	DebugLog(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8).getData());
+	DebugLog(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8));
 }
 
 static C4String *FnFormat(C4AulContext *cthr, C4String *szFormat, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7, C4Value iPar8)
 {
-	return String(FnStringFormat(cthr, FnStringPar(szFormat), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8));
+	return String(StdStrBuf{FnStringFormat(cthr, FnStringPar(szFormat), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8).c_str()});
 }
 
 static C4ID FnC4Id(C4AulContext *cthr, C4String *szID)
@@ -2400,7 +2400,7 @@ static bool FnPlayerMessage(C4AulContext *cthr, C4ValueInt iPlayer, C4String *sz
 
 	// Text
 	if (!fSpoken)
-		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6).getData(), 0, buf, '$', MaxFnStringParLen))
+		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6).c_str(), 0, buf, '$', MaxFnStringParLen))
 			if (pObj) GameMsgObjectPlayer(buf, pObj, iPlayer);
 			else GameMsgPlayer(buf, iPlayer);
 
@@ -2420,7 +2420,7 @@ static bool FnMessage(C4AulContext *cthr, C4String *szMessage, C4Object *pObj, C
 
 	// Text
 	if (!fSpoken)
-		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), 0, buf, '$', MaxFnStringParLen))
+		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), 0, buf, '$', MaxFnStringParLen))
 			if (pObj) GameMsgObject(buf, pObj);
 			else GameMsgGlobal(buf);
 
@@ -2431,8 +2431,8 @@ static bool FnAddMessage(C4AulContext *cthr, C4String *szMessage, C4Object *pObj
 {
 	if (!szMessage) return false;
 
-	if (pObj) Game.Messages.Append(C4GM_Target, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), pObj, NO_OWNER, 0, 0, FWhite);
-	else Game.Messages.Append(C4GM_Global, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), nullptr, ANY_OWNER, 0, 0, FWhite);
+	if (pObj) Game.Messages.Append(C4GM_Target, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), pObj, NO_OWNER, 0, 0, FWhite);
+	else Game.Messages.Append(C4GM_Global, FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), nullptr, ANY_OWNER, 0, 0, FWhite);
 
 	return true;
 }
@@ -2450,7 +2450,7 @@ static bool FnPlrMessage(C4AulContext *cthr, C4String *szMessage, C4ValueInt iPl
 
 	// Text
 	if (!fSpoken)
-		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).getData(), 0, buf, '$', MaxFnStringParLen))
+		if (SCopySegment(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7).c_str(), 0, buf, '$', MaxFnStringParLen))
 			if (ValidPlr(iPlr)) GameMsgPlayer(buf, iPlr);
 			else GameMsgGlobal(buf);
 

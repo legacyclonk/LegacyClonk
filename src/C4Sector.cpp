@@ -207,7 +207,7 @@ void C4LSectors::Dump()
 	LogSilent(DecompileToBuf<StdCompilerINIWrite>(
 		mkNamingAdapt(
 			mkArrayAdaptS(Sectors, Size),
-			"Sector")).getData());
+			"Sector")));
 }
 
 bool C4LSectors::CheckSort()

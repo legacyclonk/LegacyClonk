@@ -25,6 +25,7 @@
 #include <C4Game.h>
 #include <C4Wrappers.h>
 
+#include <format>
 #include <numbers>
 
 void C4Effect::AssignCallbackFunctions()
@@ -429,11 +430,8 @@ C4Value C4Effect::DoCall(C4Object *pObj, const char *szFn, const C4Value &rVal1,
 		pSrcScript = &pDef->Script;
 	else
 		pSrcScript = &Game.ScriptEngine;
-	// compose function name
-	char fn[C4AUL_MAX_Identifier + 1];
-	sprintf(fn, PSF_FxCustom, Name, szFn);
 	// call it
-	C4AulFunc *pFn = pSrcScript->GetFuncRecursive(fn);
+	C4AulFunc *pFn = pSrcScript->GetFuncRecursive(std::format(PSF_FxCustom, Name, szFn).c_str());
 	if (!pFn) return C4Value();
 	return pFn->Exec(pCommandTarget, {C4VObj(pObj), C4VInt(iNumber), rVal1, rVal2, rVal3, rVal4, rVal5, rVal6, rVal7}, passErrors, true, convertNilToIntBool);
 }
