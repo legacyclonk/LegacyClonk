@@ -321,7 +321,7 @@ protected:
 	bool GameOverCheck();
 	bool PlaceInEarth(C4ID id);
 	bool Compile(const char *szSource);
-	bool Decompile(StdStrBuf &rBuf, bool fSaveSection, bool fSaveExact);
+	bool Decompile(std::string &buf, bool fSaveSection, bool fSaveExact);
 
 public:
 	void CompileFunc(StdCompiler *pComp, CompileSettings comp);

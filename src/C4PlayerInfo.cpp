@@ -28,6 +28,8 @@
 #include <C4Player.h>
 #include <C4FullScreen.h>
 
+#include <format>
+
 // *** C4PlayerInfo
 
 void C4PlayerInfo::Clear()
@@ -149,7 +151,7 @@ StdStrBuf C4PlayerInfo::GetLobbyName() const
 		if (sClanTag.getLength())
 		{
 			// gray team tag color used in lobby and game evaluation dialog!
-			sResult.Format("<c afafaf>%s</c> %s", sClanTag.getData(), sLeagueAccount.getData());
+			sResult.Copy(std::format("<c afafaf>{}</c> {}", sClanTag.getData(), sLeagueAccount.getData()).c_str());
 		}
 		else
 			sResult.Ref(sLeagueAccount);
@@ -1190,10 +1192,11 @@ bool C4PlayerInfoList::Save(C4Group &hGroup, const char *szToFile)
 	try
 	{
 		// decompile
-		StdStrBuf Buf = DecompileToBuf<StdCompilerINIWrite>(
-			mkNamingAdapt(*this, "PlayerInfoList"));
+		const std::string buf{DecompileToBuf<StdCompilerINIWrite>(
+			mkNamingAdapt(*this, "PlayerInfoList"))};
 		// save buffer to group
-		hGroup.Add(szToFile, Buf, false, true);
+		StdStrBuf copy{buf.c_str(), buf.size()};
+		hGroup.Add(szToFile, copy, false, true);
 	}
 	catch (const StdCompiler::Exception &)
 	{
@@ -1242,8 +1245,8 @@ bool C4PlayerInfoList::LoadFromGameText(const char *pSource)
 					// store "Player1"
 					StdStrBuf sPlrIndex; sPlrIndex.Copy(szLinebuf, SCharPos('=', szLinebuf));
 					// search for section "[Player1]" in game text
-					StdStrBuf sPlrSect; sPlrSect.Format("[%s]", sPlrIndex.getData());
-					const char *szPlrSect = SSearch(pSource, sPlrSect.getData());
+					const std::string plrSect{std::format("[{}]", sPlrIndex.getData())};
+					const char *szPlrSect = SSearch(pSource, plrSect.c_str());
 					// get "Index=%d" from that section
 					if (szPlrSect && (szPlrSect = SSearch(szPlrSect, "Index="))) sscanf(szPlrSect, "%d", &iJoinedNumber);
 					// this info is already joined
@@ -1461,12 +1464,12 @@ bool C4PlayerInfoList::RecreatePlayerFiles()
 					// and mark a file inside the scenario file
 					// get filename of joined player - this should always be valid!
 					const char *szCurrPlrFile;
-					StdStrBuf sFilenameInRecord;
+					std::string filenameInRecord;
 					if (Game.C4S.Head.Replay)
 					{
 						// replay of resumed savegame: RecreatePlayers saves used player files into the record group in this manner
-						sFilenameInRecord.Format("Recreate-%d.c4p", pInfo->GetID());
-						szCurrPlrFile = sFilenameInRecord.getData();
+						filenameInRecord = std::format("Recreate-{}.c4p", pInfo->GetID());
+						szCurrPlrFile = filenameInRecord.c_str();
 					}
 					else
 						szCurrPlrFile = pInfo->GetFilename();
@@ -1591,9 +1594,8 @@ bool C4PlayerInfoList::RecreatePlayers()
 				// record file handling: Save to the record file in the manner it's expected by C4PlayerInfoList::RecreatePlayers
 				if (Game.Control.isRecord() && szFilename)
 				{
-					StdStrBuf sFilenameInRecord;
-					sFilenameInRecord.Format("Recreate-%d.c4p", pInfo->GetID());
-					Game.Control.RecAddFile(szFilename, sFilenameInRecord.getData());
+					const std::string filenameInRecord{std::format("Recreate-{}.c4p", pInfo->GetID())};
+					Game.Control.RecAddFile(szFilename, filenameInRecord.c_str());
 				}
 				// recreate join directly
 				Game.Players.Join(szFilename, false, idAtClient, szAtClientName, pInfo);
@@ -1655,19 +1657,19 @@ bool C4PlayerInfoList::SetAsRestoreInfos(C4PlayerInfoList &rFromPlayers, bool fS
 					if (fSetUserPlrRefToLocalGroup)
 					{
 						// in the game: Set filename for inside savegame file
-						StdStrBuf sNewName;
+						std::string newName;
 						if (Game.Network.isEnabled())
 						{
 							C4Client *pGameClient = Game.Clients.getClientByID(pClient->GetClientID());
 							const char *szName = pGameClient ? pGameClient->getName() : "Unknown";
-							sNewName.Format("%s-%s", szName, GetFilename(pInfo->GetLocalJoinFilename()));
+							newName = std::format("{}-{}", szName, GetFilename(pInfo->GetLocalJoinFilename()));
 						}
 						else
-							sNewName.Copy(GetFilename(pInfo->GetFilename()));
+							newName = GetFilename(pInfo->GetFilename());
 
 						// O(n) is fast.
 						// If not, blame whoever wrote Replace! ;)
-						sNewName.Replace("%", "%25", 0);
+						newName = ReplaceInString(std::string_view{newName}, std::string_view{"%"}, std::string_view{"%25"});
 						for (int ch = 128; ch < 256; ++ch)
 						{
 							const char *hexChars = "0123456789abcdef";
@@ -1675,10 +1677,10 @@ bool C4PlayerInfoList::SetAsRestoreInfos(C4PlayerInfoList &rFromPlayers, bool fS
 							char safe[] = { '%', 'x', 'x', 0 };
 							safe[1] = hexChars[ch / 16];
 							safe[2] = hexChars[ch % 16];
-							sNewName.Replace(old, safe, 0);
+							newName = ReplaceInString(std::string_view{newName}, std::string_view{old}, std::string_view{safe});
 						}
 
-						pInfo->SetFilename(sNewName.getData());
+						pInfo->SetFilename(newName.c_str());
 					}
 				}
 				else if (pInfo->GetType() == C4PT_Script)

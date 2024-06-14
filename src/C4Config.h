@@ -37,9 +37,9 @@
 
 #define C4CFG_UpdateServer "https://update.clonkspot.org/lc/update" // for download files, replace 'update' with the below
 
-#define C4CFG_UpdateEngine  "lc_%d_%s.c4u"
-#define C4CFG_UpdateObjects "lc_%d%d%d%d_%d_%s.c4u"
-#define C4CFG_UpdateMajor   "lc_%d%d%d%d_%s.c4u"
+#define C4CFG_UpdateEngine  "lc_{}_{}.c4u"
+#define C4CFG_UpdateObjects "lc_{}{}{}{}_{}_{}.c4u"
+#define C4CFG_UpdateMajor   "lc_{}{}{}{}_{}.c4u"
 
 class C4ConfigGeneral
 {

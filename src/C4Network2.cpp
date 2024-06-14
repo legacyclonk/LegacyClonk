@@ -46,6 +46,7 @@
 #endif
 
 #include <cassert>
+#include <format>
 
 // *** C4Network2Status
 
@@ -636,12 +637,11 @@ bool C4Network2::RetrieveScenario(char *szScenario)
 		return false;
 
 	// unpack Material.c4g if materials need to be merged
-	StdStrBuf MaterialScenario, MaterialDynamic;
-	MaterialScenario.Format("%s" DirSep C4CFN_Material, szScenario);
-	MaterialDynamic.Format("%s" DirSep C4CFN_Material, szTempDynamic);
-	if (FileExists(MaterialScenario.getData()) && FileExists(MaterialDynamic.getData()))
-		if (!C4Group_UnpackDirectory(MaterialScenario.getData()) ||
-			!C4Group_UnpackDirectory(MaterialDynamic.getData()))
+	const std::string materialScenario{std::format("{}" DirSep C4CFN_Material, szScenario)};
+	const std::string materialDynamic{std::format("{}" DirSep C4CFN_Material, szTempDynamic)};
+	if (FileExists(materialScenario.c_str()) && FileExists(materialDynamic.c_str()))
+		if (!C4Group_UnpackDirectory(materialScenario.c_str()) ||
+			!C4Group_UnpackDirectory(materialDynamic.c_str()))
 			return false;
 
 	// move all dynamic files to scenario
@@ -1113,17 +1113,12 @@ void C4Network2::DrawStatus(C4FacetEx &cgo)
 
 	C4Network2Client *pLocal = Clients.GetLocal();
 
-	StdStrBuf Stat;
-
-	// local client status
-	Stat.AppendFormat("Local: %s %s %s (ID %d)",
-		pLocal->isObserver() ? "Observing" : pLocal->isActivated() ? "Active" : "Inactive", pLocal->isHost() ? "host" : "client",
-		pLocal->getName(), pLocal->getID());
-
-	// game status
-	Stat.AppendFormat("|Game Status: %s (tick %d)%s%s",
-		Status.getStateName(), Status.getTargetCtrlTick(),
-		fStatusReached ? " reached" : "", fStatusAck ? " ack" : "");
+	std::string stat{std::format("Local: {} {} {} (ID {})|Game Status: {} (tick {}){}{}",
+								 pLocal->isObserver() ? "Observing" : pLocal->isActivated() ? "Active" : "Inactive", pLocal->isHost() ? "host" : "client",
+								 pLocal->getName(), pLocal->getID(),
+								 Status.getStateName(), Status.getTargetCtrlTick(),
+								 fStatusReached ? " reached" : "", fStatusAck ? " ack" : ""
+								 )};
 
 	// available protocols
 	C4NetIO *pMsgIO = NetIO.MsgIO(), *pDataIO = NetIO.DataIO();
@@ -1148,34 +1143,34 @@ void C4Network2::DrawStatus(C4FacetEx &cgo)
 			assert(!"C4Network2IOProtocol of protocol P_NONE");
 			break;
 		}
-		Stat.AppendFormat("|Protocols: %s: %s (%d i%d o%d bc%d)",
+		stat += std::format("|Protocols: {}: {} ({} i{} o{} bc{})",
 			pMsgIO != pDataIO ? "Msg" : "Msg/Data",
 			NetIO.getNetIOName(pMsgIO), iMsgPort,
 			NetIO.getProtIRate(eMsgProt), NetIO.getProtORate(eMsgProt), NetIO.getProtBCRate(eMsgProt));
 		if (pMsgIO != pDataIO)
-			Stat.AppendFormat(", Data: %s (%d i%d o%d bc%d)",
+			stat += std::format(", Data: {} ({} i{} o{} bcv)",
 				NetIO.getNetIOName(pDataIO), iDataPort,
 				NetIO.getProtIRate(eDataProt), NetIO.getProtORate(eDataProt), NetIO.getProtBCRate(eDataProt));
 	}
 	else
-		Stat.Append("|Protocols: none");
+		stat += "|Protocols: none";
 
 	// some control statistics
-	Stat.AppendFormat("|Control: %s, Tick %d, Behind %d, Rate %d, PreSend %d, ACT: %d",
+	stat += std::format("|Control: {}, Tick {}, Behind {}, Rate {}, PreSend {}, ACT: {}",
 		Status.getCtrlMode() == CNM_Decentral ? "Decentral" : Status.getCtrlMode() == CNM_Central ? "Central" : "Async",
 		Game.Control.ControlTick, pControl->GetBehind(Game.Control.ControlTick),
 		Game.Control.ControlRate, pControl->getControlPreSend(), pControl->getAvgControlSendTime());
 
 	// Streaming statistics
 	if (fStreaming)
-		Stat.AppendFormat("|Streaming: %zu waiting, %d in, %zu out, %d sent",
+		stat += std::format("|Streaming: {} waiting, {} in, {} out, {} sent",
 			pStreamedRecord ? pStreamedRecord->GetStreamingBuf().getSize() : 0,
 			pStreamedRecord ? pStreamedRecord->GetStreamingPos() : 0,
 			getPendingStreamData(),
 			iCurrentStreamPosition);
 
 	// clients
-	Stat.Append("|Clients:");
+	stat += "|Clients:";
 	for (C4Network2Client *pClient = Clients.GetNextClient(nullptr); pClient; pClient = Clients.GetNextClient(pClient))
 	{
 		// ignore local
@@ -1191,7 +1186,7 @@ void C4Network2::DrawStatus(C4FacetEx &cgo)
 		case NCS_Remove: szClientStatus = " (removed)"; break;
 		case NCS_Ready: szClientStatus = " (ready to start)"; break;
 		}
-		Stat.AppendFormat("|- %s %s %s (ID %d) (wait %d ms, behind %d)%s%s",
+		stat += std::format("|- {} {} {} (ID {}) (wait {} ms, behind {}){}{}",
 			Core.isObserver() ? "Observing" : Core.isActivated() ? "Active" : "Inactive", Core.isHost() ? "host" : "client",
 			Core.getName(), Core.getID(),
 			pControl->ClientPerfStat(pClient->getID()),
@@ -1201,27 +1196,27 @@ void C4Network2::DrawStatus(C4FacetEx &cgo)
 		// connections
 		if (pClient->isConnected())
 		{
-			Stat.AppendFormat( "|   Connections: %s: %s (%s p%d l%d)",
+			stat += std::format( "|   Connections: {}: {} ({} p{} l{})",
 				pClient->getMsgConn() == pClient->getDataConn() ? "Msg/Data" : "Msg",
 				NetIO.getNetIOName(pClient->getMsgConn()->getNetClass()),
 				pClient->getMsgConn()->getPeerAddr().ToString().getData(),
 				pClient->getMsgConn()->getPingTime(),
 				pClient->getMsgConn()->getPacketLoss());
 			if (pClient->getMsgConn() != pClient->getDataConn())
-				Stat.AppendFormat(", Data: %s (%s p%d l%d)",
+				stat += std::format(", Data: {} ({} p{} l{})",
 					NetIO.getNetIOName(pClient->getDataConn()->getNetClass()),
 					pClient->getDataConn()->getPeerAddr().ToString().getData(),
 					pClient->getDataConn()->getPingTime(),
 					pClient->getDataConn()->getPacketLoss());
 		}
 		else
-			Stat.Append("|   Not connected");
+			stat += "|   Not connected";
 	}
 	if (!Clients.GetNextClient(nullptr))
-		Stat.Append("| - none -");
+		stat += "| - none -";
 
 	// draw
-	Application.DDraw->TextOut(Stat.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + 20, cgo.Y + 50);
+	Application.DDraw->TextOut(stat.c_str(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + 20, cgo.Y + 50);
 }
 
 bool C4Network2::InitNetIO(bool fNoClientID, bool fHost)
@@ -3173,10 +3168,8 @@ bool C4Network2::StreamOut()
 	}
 
 	// Set stream address
-	StdStrBuf StreamAddr;
-	StreamAddr.Copy(Game.Parameters.StreamAddress);
-	StreamAddr.AppendFormat("pos=%d&end=%d", iCurrentStreamPosition, !pStreamedRecord);
-	pStreamer->SetServer(StreamAddr.getData());
+	const std::string streamAddress{std::format("{}pos={}&end={}", Game.Parameters.StreamAddress.getData(), iCurrentStreamPosition, !pStreamedRecord)};
+	pStreamer->SetServer(streamAddress);
 
 	// Send data
 	size_t iStreamAmount = getPendingStreamData();

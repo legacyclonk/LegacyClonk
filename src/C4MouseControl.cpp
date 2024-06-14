@@ -29,6 +29,8 @@
 #include <C4Player.h>
 #include "C4ChatDlg.h"
 
+#include <format>
+
 const int32_t C4MC_Drag_None      = 0,
               C4MC_Drag_Selecting = 1,
               C4MC_Drag_Moving    = 2,
@@ -692,7 +694,7 @@ void C4MouseControl::UpdateTargetRegion()
 		if (TargetRegion->Target)
 		{
 			if (TargetRegion->Target->Def->GetDesc())
-				Caption.Format("%s: %s", TargetRegion->Target->GetName(), TargetRegion->Target->Def->GetDesc());
+				Caption.Copy(std::format("{}: {}", TargetRegion->Target->GetName(), TargetRegion->Target->Def->GetDesc()).c_str());
 			else
 				Caption.Copy(TargetRegion->Target->GetName());
 			IsHelpCaption = true;
@@ -731,7 +733,7 @@ bool C4MouseControl::UpdatePutTarget(bool fVehicle)
 		{
 			if (Selection.ObjectCount() > 1)
 				// Multiple object name
-				sName.Format("%d %s", Selection.ObjectCount(), LoadResStr(fVehicle ? C4ResStrTableKey::IDS_CON_VEHICLES : C4ResStrTableKey::IDS_CON_ITEMS));
+				sName.Copy(std::format("{} {}", Selection.ObjectCount(), LoadResStr(fVehicle ? C4ResStrTableKey::IDS_CON_VEHICLES : C4ResStrTableKey::IDS_CON_ITEMS)).c_str());
 			else
 				// Single object name
 				sName.Ref(Selection.GetObject()->GetName());
@@ -1112,7 +1114,7 @@ void C4MouseControl::LeftUpDragNone()
 		if (DownTarget)
 		{
 			if (DownTarget->Def->GetDesc())
-				Caption.Format("%s: %s", DownTarget->GetName(), DownTarget->Def->GetDesc());
+				Caption.Copy(std::format("{}: {}", DownTarget->GetName(), DownTarget->Def->GetDesc()).c_str());
 			else
 				Caption.Copy(DownTarget->GetName());
 			KeepCaption = Caption.getLength() / 2;

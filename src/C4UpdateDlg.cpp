@@ -23,6 +23,8 @@
 
 #include <C4Log.h>
 
+#include <format>
+
 #ifdef _WIN32
 #include <shellapi.h>
 #else
@@ -125,41 +127,42 @@ void C4UpdateDlg::UpdateText()
 
 bool C4UpdateDlg::DoUpdate(const C4GameVersion &rUpdateVersion, C4GUI::Screen *pScreen)
 {
-	StdStrBuf strUpdateFile, strUpdateURL;
+	std::string updateFile;
+	std::string updateURL;
 	// Double check for valid update
 	if (!IsValidUpdate(rUpdateVersion)) return false;
 	// Objects major update: we will update to the first minor of the next major version - we can not skip major versions or jump directly to a higher minor of the next major version.
 	if (rUpdateVersion.iVer[2] > C4XVER3)
-		strUpdateFile.Format(C4CFG_UpdateMajor, static_cast<int>(rUpdateVersion.iVer[0]), static_cast<int>(rUpdateVersion.iVer[1]), C4XVER3 + 1, 0, C4_OS);
+		updateFile = std::format(C4CFG_UpdateMajor, rUpdateVersion.iVer[0], rUpdateVersion.iVer[1], C4XVER3 + 1, 0, C4_OS);
 	// Objects version match: engine update only
 	else if ((rUpdateVersion.iVer[2] == C4XVER3) && (rUpdateVersion.iVer[3] == C4XVER4))
-		strUpdateFile.Format(C4CFG_UpdateEngine, static_cast<int>(rUpdateVersion.iBuild), C4_OS);
+		updateFile = std::format(C4CFG_UpdateEngine, rUpdateVersion.iBuild, C4_OS);
 	// Objects version mismatch: full objects update
 	else
-		strUpdateFile.Format(C4CFG_UpdateObjects, static_cast<int>(rUpdateVersion.iVer[0]), static_cast<int>(rUpdateVersion.iVer[1]), static_cast<int>(rUpdateVersion.iVer[2]), static_cast<int>(rUpdateVersion.iVer[3]), static_cast<int>(rUpdateVersion.iBuild), C4_OS);
+		updateFile = std::format(C4CFG_UpdateObjects, rUpdateVersion.iVer[0], rUpdateVersion.iVer[1], rUpdateVersion.iVer[2], rUpdateVersion.iVer[3], rUpdateVersion.iBuild, C4_OS);
 	// Compose full update URL by using update server address and replacing last path element name with the update file
 	int iLastElement = SCharLastPos('/', Config.Network.UpdateServerAddress);
 	if (iLastElement > -1)
 	{
-		strUpdateURL = Config.Network.UpdateServerAddress;
-		strUpdateURL.ReplaceEnd(iLastElement + 1, "");
-		strUpdateURL.Append(strUpdateFile);
+		updateURL = Config.Network.UpdateServerAddress;
+		updateURL.resize(iLastElement + 1);
+		updateURL += updateFile;
 	}
 	else
 	{
 		// No last slash in update server address?
 		// Append update file as new segment instead - maybe somebody wants
 		// to set up their update server this way
-		strUpdateURL = Config.Network.UpdateServerAddress;
-		strUpdateURL.Append("/");
-		strUpdateURL.Append(strUpdateFile);
+		updateURL = Config.Network.UpdateServerAddress;
+		updateURL += '/';
+		updateURL += updateFile;
 	}
 	// Determine local filename for update group
-	StdStrBuf strLocalFilename; strLocalFilename.Copy(GetFilename(strUpdateFile.getData()));
+	StdStrBuf strLocalFilename; strLocalFilename.Copy(GetFilename(updateFile.c_str()));
 	// Download update group to temp path
 	strLocalFilename.Copy(Config.AtTempPath(strLocalFilename.getData()));
 	// Download update group
-	if (!C4DownloadDlg::DownloadFile(LoadResStr(C4ResStrTableKey::IDS_TYPE_UPDATE), pScreen, strUpdateURL.getData(), strLocalFilename.getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_UPDATENOTAVAILABLE)))
+	if (!C4DownloadDlg::DownloadFile(LoadResStr(C4ResStrTableKey::IDS_TYPE_UPDATE), pScreen, updateURL.c_str(), strLocalFilename.getData(), LoadResStr(C4ResStrTableKey::IDS_MSG_UPDATENOTAVAILABLE)))
 		// Download failed (return success, because error message has already been shown)
 		return true;
 	// Apply downloaded update
@@ -196,8 +199,8 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	// Close editor if open
 	HWND hwnd = FindWindow(nullptr, C4EDITORCAPTION);
 	if (hwnd) PostMessage(hwnd, WM_CLOSE, 0, 0);
-	StdStrBuf strUpdateArgs; strUpdateArgs.Format("\"%s\" /p -w \"" C4ENGINECAPTION "\" -w \"" C4EDITORCAPTION "\" -w 2000 %s", strUpdateFile, fDeleteUpdate ? "-yd" : "-y");
-	const auto iError = ShellExecute(nullptr, "runas", strUpdateProg.getData(), strUpdateArgs.getData(), Config.General.ExePath, SW_SHOW);
+	const std::string updateArgs{std::format("\"{}\" /p -w \"" C4ENGINECAPTION "\" -w \"" C4EDITORCAPTION "\" -w 2000 {}", strUpdateFile, fDeleteUpdate ? "-yd" : "-y")};
+	const auto iError = ShellExecute(nullptr, "runas", strUpdateProg.getData(), updateArgs.c_str(), Config.General.ExePath, SW_SHOW);
 	if (reinterpret_cast<intptr_t>(iError) <= 32) return false;
 	// must quit ourselves for update program to work
 	if (succeeded) Application.Quit();
@@ -276,8 +279,8 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	C4Network2VersionInfoClient VerChecker;
 	bool fSuccess = false, fAborted = false;
 	StdStrBuf strUpdateRedirect;
-	StdStrBuf strQuery; strQuery.Format("%s?action=version", Config.Network.UpdateServerAddress);
-	if (VerChecker.Init() && VerChecker.SetServer(strQuery.getData()) && VerChecker.QueryVersion())
+	const std::string query{std::format("{}?action=version", Config.Network.UpdateServerAddress)};
+	if (VerChecker.Init() && VerChecker.SetServer(query) && VerChecker.QueryVersion())
 	{
 		Application.InteractiveThread.AddProc(&VerChecker);
 		// wait for version check to terminate
@@ -378,7 +381,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 bool C4Network2VersionInfoClient::QueryVersion()
 {
 	// Perform an Query query
-	return Query(nullptr, false);
+	return Query(StdBuf{}, false);
 }
 
 bool C4Network2VersionInfoClient::GetVersion(C4GameVersion *piVerOut)

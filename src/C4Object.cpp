@@ -35,6 +35,7 @@
 #include <C4ObjectMenu.h>
 
 #include <cstring>
+#include <format>
 #include <limits>
 #include <utility>
 
@@ -2262,8 +2263,8 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 		C4Command *pCom;
 		int32_t ccx = x, ccy = y;
 		int32_t x1, y1, x2, y2;
-		char szCommand[200];
-		StdStrBuf Cmds;
+		std::string command;
+		std::string commands;
 		int32_t iMoveTos = 0;
 		for (pCom = Command; pCom; pCom = pCom->Next)
 		{
@@ -2280,26 +2281,27 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 				if (x1 > x2) std::swap(x1, x2); if (y1 > y2) std::swap(y1, y2);
 				ccx = pCom->Tx._getInt(); ccy = pCom->Ty;
 				// Message
-				iMoveTos++; szCommand[0] = 0;
+				iMoveTos++;
+				command.clear();
 				break;
 			case C4CMD_Put:
-				sprintf(szCommand, "%s %s to %s", CommandName(pCom->Command), pCom->Target2 ? pCom->Target2->GetName() : pCom->Data ? C4IdText(pCom->Data) : "Content", pCom->Target ? pCom->Target->GetName() : "");
+				command = std::format("{} {} to {}", CommandName(pCom->Command), pCom->Target2 ? pCom->Target2->GetName() : pCom->Data ? C4IdText(pCom->Data) : "Content", pCom->Target ? pCom->Target->GetName() : "");
 				break;
 			case C4CMD_Buy: case C4CMD_Sell:
-				sprintf(szCommand, "%s %s at %s", CommandName(pCom->Command), C4IdText(pCom->Data), pCom->Target ? pCom->Target->GetName() : "closest base");
+				command = std::format("{} {} at {}", CommandName(pCom->Command), C4IdText(pCom->Data), pCom->Target ? pCom->Target->GetName() : "closest base");
 				break;
 			case C4CMD_Acquire:
-				sprintf(szCommand, "%s %s", CommandName(pCom->Command), C4IdText(pCom->Data));
+				command = std::format("{} {}", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
 				break;
 			case C4CMD_Call:
-				sprintf(szCommand, "%s %s in %s", CommandName(pCom->Command), pCom->Text.c_str(), pCom->Target ? pCom->Target->GetName() : "(null)");
+				command = std::format("{} {} in {}", CommandName(pCom->Command), pCom->Text, pCom->Target ? pCom->Target->GetName() : "(null)");
 				break;
 			case C4CMD_Construct:
 				C4Def *pDef; pDef = C4Id2Def(pCom->Data);
-				sprintf(szCommand, "%s %s", CommandName(pCom->Command), pDef ? pDef->GetName() : "");
+				command = std::format("{} {}", CommandName(pCom->Command), pDef ? pDef->GetName() : "");
 				break;
 			case C4CMD_None:
-				szCommand[0] = 0;
+				command.clear();
 				break;
 			case C4CMD_Transfer:
 				// Path
@@ -2310,29 +2312,29 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 				if (x1 > x2) std::swap(x1, x2); if (y1 > y2) std::swap(y1, y2);
 				ccx = pCom->Tx._getInt(); ccy = pCom->Ty;
 				// Message
-				sprintf(szCommand, "%s %s", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
+				command = std::format("{} {}", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
 				break;
 			default:
-				sprintf(szCommand, "%s %s", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
+				command = std::format("{} {}", CommandName(pCom->Command), pCom->Target ? pCom->Target->GetName() : "");
 				break;
 			}
 			// Compose command stack message
-			if (szCommand[0])
+			if (!command.empty())
 			{
 				// End MoveTo stack first
-				if (iMoveTos) { Cmds.AppendChar('|'); Cmds.AppendFormat("%dx MoveTo", iMoveTos); iMoveTos = 0; }
+				if (iMoveTos) { commands += std::format("|{}x MoveTo", std::exchange(iMoveTos, 0)); }
 				// Current message
-				Cmds.AppendChar('|');
-				if (pCom->Finished) Cmds.Append("<i>");
-				Cmds.Append(szCommand);
-				if (pCom->Finished) Cmds.Append("</i>");
+				commands += '|';
+				if (pCom->Finished) commands += "<i>";
+				commands += std::move(command);
+				if (pCom->Finished) commands += "</i>";
 			}
 		}
 		// Open MoveTo stack
-		if (iMoveTos) { Cmds.AppendChar('|'); Cmds.AppendFormat("%dx MoveTo", iMoveTos); iMoveTos = 0; }
+		if (iMoveTos) { commands += std::format("|{}x MoveTo", std::exchange(iMoveTos, 0)); }
 		// Draw message
-		int32_t cmwdt, cmhgt; Game.GraphicsResource.FontRegular.GetTextExtent(Cmds.getData(), cmwdt, cmhgt, true);
-		Application.DDraw->TextOut(Cmds.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cox - Shape.x, cgo.Y + coy - 10 - cmhgt, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
+		int32_t cmwdt, cmhgt; Game.GraphicsResource.FontRegular.GetTextExtent(commands.c_str(), cmwdt, cmhgt, true);
+		Application.DDraw->TextOut(commands.c_str(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cox - Shape.x, cgo.Y + coy - 10 - cmhgt, CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
 	}
 
 	// Don't draw (show solidmask)

@@ -313,7 +313,7 @@ public:
 	bool ReadText(const StdStrBuf &Buf);
 	void NextChunk(); // point to next prepared chunk in mem or read it
 	bool NextSequentialChunk(); // read from seq file until a new chunk has been filled
-	StdStrBuf ReWriteText();
+	std::string ReWriteText();
 	StdBuf ReWriteBinary();
 	void Strip();
 	bool ExecuteControl(C4Control *pCtrl, int iFrame); // assign control

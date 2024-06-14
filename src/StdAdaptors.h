@@ -449,7 +449,7 @@ struct StdParameterAdapt
 
 	void CompileFunc(StdCompiler *pComp) const
 	{
-		rObj.CompileFunc(pComp, Par);
+		::CompileFunc(rObj, pComp, Par);
 	}
 
 	// Operators for default checking/setting
@@ -474,7 +474,7 @@ struct StdParameter2Adapt
 
 	void CompileFunc(StdCompiler *pComp) const
 	{
-		rObj.CompileFunc(pComp, rPar1, rPar2);
+		::CompileFunc(rObj, pComp, rPar1, rPar2);
 	}
 
 	// Operators for default checking/setting

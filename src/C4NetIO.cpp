@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <format>
 #include <sys/stat.h>
 
 // platform specifics
@@ -425,7 +426,7 @@ void C4NetIO::SetError(const char *strnError, bool fSockErr)
 {
 	fSockErr &= HaveSocketError();
 	if (fSockErr)
-		Error.Format("%s (%s)", strnError, GetSocketErrorMsg());
+		Error.Copy(std::format("{} ({})", strnError, GetSocketErrorMsg()).c_str());
 	else
 		Error.Copy(strnError);
 }

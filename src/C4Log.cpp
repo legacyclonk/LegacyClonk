@@ -36,13 +36,13 @@
 
 C4LogSystem::LogSink::LogSink()
 {
-	StdStrBuf sLogFileName{C4CFN_Log};
+	std::string logFileName{C4CFN_Log};
 	// open
 	int iLog = 2;
 #ifdef _WIN32
-	while (!(file = _fsopen(sLogFileName.getData(), "wt", _SH_DENYWR)))
+	while (!(file = _fsopen(logFileName.c_str(), "wt", _SH_DENYWR)))
 #else
-	while (!(file = fopen(sLogFileName.getData(), "wb")))
+	while (!(file = fopen(logFileName.c_str(), "wb")))
 #endif
 	{
 		if (errno == EACCES)
@@ -60,7 +60,8 @@ C4LogSystem::LogSink::LogSink()
 		}
 
 		// try different name
-		sLogFileName.Format(C4CFN_LogEx, iLog++);
+		logFileName = std::vformat(C4CFN_LogEx, std::make_format_args(iLog));
+		++iLog;
 	}
 }
 

@@ -110,7 +110,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 #define PSF_FxTimer                "Fx%sTimer" // C4Object *pTarget, int iEffectNumber, int iEffectTime
 #define PSF_FxEffect               "Fx%sEffect" // C4String *szNewEffect, C4Object *pTarget, int iEffectNumber, int iNewEffectNumber, C4Value vNewEffectVar1, C4Value vNewEffectVar2, C4Value vNewEffectVar3, C4Value vNewEffectVar4
 #define PSF_FxDamage               "Fx%sDamage" // C4Object *pTarget, int iEffectNumber, int iDamage, int iCause, int iCausePlayer
-#define PSF_FxCustom               "Fx%s%s" // C4Object *pTarget, int iEffectNumber, C4Value vVar1, C4Value vVar2, C4Value vVar3, C4Value vVar4, C4Value vVar5, C4Value vVar6, C4Value vVar7
+#define PSF_FxCustom               "Fx{}{}" // C4Object *pTarget, int iEffectNumber, C4Value vVar1, C4Value vVar2, C4Value vVar3, C4Value vVar4, C4Value vVar5, C4Value vVar6, C4Value vVar7
 #define PSF_FireMode               "~FireMode"
 #define PSF_FrameDecoration        "~FrameDecoration%s"
 #define PSF_GetFairCrewPhysical    "~GetFairCrewPhysical" // C4String *szPhysicalName, int iRank, int iPrevPhysical

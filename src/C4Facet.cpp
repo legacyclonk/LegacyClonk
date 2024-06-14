@@ -400,16 +400,16 @@ void C4DrawTransform::CompileFunc(StdCompiler *pComp)
 	for (i = 0; i < 6; i++)
 	{
 		if (i) pComp->Separator();
-		StdStrBuf val; if (!fCompiler) val.Format("%g", mat[i]);
+		std::string val; if (!fCompiler) val = fmt::sprintf("%g", mat[i]);
 		pComp->Value(mkParAdapt(val, StdCompiler::RCT_Idtf));
 		if (fCompiler && pComp->hasNaming())
 			if (pComp->Separator(StdCompiler::SEP_PART))
 			{
-				StdStrBuf val2;
+				std::string val2;
 				pComp->Value(mkParAdapt(val2, StdCompiler::RCT_Idtf));
-				val.AppendChar('.'); val.Append(val2);
+				val += '.'; val += val2;
 			}
-		if (fCompiler) sscanf(val.getData(), "%g", &mat[i]);
+		if (fCompiler) sscanf(val.c_str(), "%g", &mat[i]);
 	}
 	pComp->Separator();
 	pComp->Value(FlipDir);
@@ -423,16 +423,16 @@ void C4DrawTransform::CompileFunc(StdCompiler *pComp)
 		}
 		else
 		{
-			StdStrBuf val; if (!fCompiler) val.Format("%g", mat[i]);
+			std::string val; if (!fCompiler) val = fmt::sprintf("%g", mat[i]);
 			pComp->Value(mkParAdapt(val, StdCompiler::RCT_Idtf));
 			if (fCompiler && pComp->hasNaming())
 				if (pComp->Separator(StdCompiler::SEP_PART))
 				{
-					StdStrBuf val2;
+					std::string val2;
 					pComp->Value(mkParAdapt(val2, StdCompiler::RCT_Idtf));
-					val.AppendChar('.'); val.Append(val2);
+					val += '.'; val += val2;
 				}
-			if (fCompiler) sscanf(val.getData(), "%g", &mat[i]);
+			if (fCompiler) sscanf(val.c_str(), "%g", &mat[i]);
 		}
 	}
 }

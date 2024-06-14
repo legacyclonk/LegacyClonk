@@ -27,6 +27,8 @@
 #include <C4GameOverDlg.h>
 #include <C4Object.h>
 
+#include <format>
+
 // C4MainMenu
 
 C4MainMenu::C4MainMenu() : C4Menu() // will be re-adjusted later
@@ -247,14 +249,13 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				// Message
 				StdStrBuf sMsg;
 				uint32_t dwClr = pPlr->ColorDw;
-				sMsg.Format("<c %x>%s</c>", C4GUI::MakeColorReadableOnBlack(dwClr), pPlr->GetName());
+				const std::string msg{std::format("<c {:x}>{}</c>", C4GUI::MakeColorReadableOnBlack(dwClr), pPlr->GetName())};
 				// Command
-				StdStrBuf sCommand;
-				sCommand.Format("Observe:%d", static_cast<int>(pPlr->Number));
+				const std::string command{std::format("Observe:{}", pPlr->Number)};
 				// Info caption
 				const std::string info{LoadResStr(C4ResStrTableKey::IDS_TEXT_FOLLOWVIEWOFPLAYER, pPlr->GetName())};
 				// Add item
-				Add(sMsg.getData(), fctSymbol, sCommand.getData(), C4MN_Item_NoCount, nullptr, info.c_str());
+				Add(msg.c_str(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, info.c_str());
 				fctSymbol.Default();
 				// check if this is the currently selected player
 				if (pVP->GetPlayer() == pPlr->Number) iInitialSelection = GetItemCount() - 1;
@@ -363,8 +364,7 @@ bool C4MainMenu::ActivateGoals(int32_t iPlayer, bool fDoActivate)
 						fctGF.Surface = fctSymbol.Surface;
 						Game.GraphicsResource.fctCaptain.Draw(fctGF);
 					}
-					StdStrBuf Command; Command.Format("Player:Goal:%s", C4IdText(idGoal));
-					Add(pDef->GetName(), fctSymbol, Command.getData(), C4MN_Item_NoCount, nullptr, pDef->GetDesc());
+					Add(pDef->GetName(), fctSymbol, std::format("Player:Goal:{}", C4IdText(idGoal)).c_str(), C4MN_Item_NoCount, nullptr, pDef->GetDesc());
 				}
 		// Go back to options menu on close
 		SetCloseCommand("ActivateMenu:Main");
@@ -467,25 +467,24 @@ bool C4MainMenu::ActivateSavegame(int32_t iPlayer)
 	// New Style 2007:
 	// * scenarios are saved into ScenName.c4f/ScenName123.c4s to keep umlauts out of filenames
 	// * language titles are stored in folders as title component
-	StdStrBuf strFilename, strTitle;
-	strFilename.Format("%s.c4f%c%s%%d.c4s", ScenName, DirectorySeparator, ScenName);
-	strTitle.Ref(Game.Parameters.ScenarioTitle);
+	const std::string filename{std::format("{}.c4f" DirSep "{}{{}}.c4s", ScenName, ScenName)};
 
 	// Create menu items
-	StdStrBuf strFilenameIndexed, strCommand, strCaption, strSavePath;
+	std::string filenameIndexed;
+	std::string command;
+	std::string savePath;
+
 	for (int32_t i = 1; i <= 10; i++)
 	{
 		// Index filename
-		strFilenameIndexed.Format(strFilename.getData(), i);
+		filenameIndexed = std::vformat(filename, std::make_format_args(i));
 		// Compose commmand
-		strCommand.Format("Save:Game:%s:%s", strFilenameIndexed.getData(), strTitle.getData()); // Notice: the language title might contain ':' and thus confuse the segment list - but C4Menu::MenuCommand will try to handle this...
+		command = std::format("Save:Game:{}:{}", filenameIndexed, Game.Parameters.ScenarioTitle.getData()); // Notice: the language title might contain ':' and thus confuse the segment list - but C4Menu::MenuCommand will try to handle this...
 		// Check free slot
-		strSavePath.Format("%s%c%s", Config.General.SaveGameFolder.getData(), DirectorySeparator, strFilenameIndexed.getData());
-		bool fFree = !C4Group_IsGroup(strSavePath.getData());
-		// Item caption
-		strCaption.Ref(LoadResStr(C4ResStrTableKey::IDS_MENU_CPSAVEGAME));
+		savePath = std::format("{}" DirSep "{}", Config.General.SaveGameFolder.getData(), filenameIndexed);
+		bool fFree = !C4Group_IsGroup(savePath.c_str());
 		// add menu item
-		AddRefSym(strCaption.getData(), GfxR->fctMenu.GetPhase(i - 1, fFree ? 2 : 1), strCommand.getData(), C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CPSAVEGAMEINFO));
+		AddRefSym(LoadResStr(C4ResStrTableKey::IDS_MENU_CPSAVEGAME), GfxR->fctMenu.GetPhase(i - 1, fFree ? 2 : 1), command.c_str(), C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CPSAVEGAMEINFO));
 	}
 
 	// Go back to options menu on close
@@ -504,11 +503,10 @@ bool C4MainMenu::ActivateHost(int32_t iPlayer)
 	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(nullptr); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
 	{
 		bool fHost = (pClient->getID() == 0);
-		StdStrBuf strText, strCommand;
-		strText.Format("%s (%s)", pClient->getName(), pClient->getCore().getNick());
-		strCommand.Format("Host:Kick:%d", pClient->getID());
+		const std::string text{std::format("{} ({})", pClient->getName(), pClient->getCore().getNick())};
+		const std::string command{std::format("Host:Kick:{}", pClient->getID())};
 		C4GUI::Icons iIcon = fHost ? C4GUI::Ico_Host : (pClient->isActivated() ? C4GUI::Ico_Client : C4GUI::Ico_ObserverClient);
-		AddRefSym(strText.getData(), C4GUI::Icon::GetIconFacet(iIcon), strCommand.getData());
+		AddRefSym(text.c_str(), C4GUI::Icon::GetIconFacet(iIcon), command.c_str());
 	}
 	// Go back to options menu on close
 	SetCloseCommand("ActivateMenu:Main");

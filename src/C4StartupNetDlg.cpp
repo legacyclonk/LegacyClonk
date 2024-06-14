@@ -32,6 +32,7 @@
 #include "C4GuiTabular.h"
 
 #include <cassert>
+#include <format>
 
 // C4StartupNetListEntry
 
@@ -458,8 +459,8 @@ void C4StartupNetListEntry::SetReference(C4Network2Reference *pRef)
 		StdStrBuf(pRef->getGameStatus().getDescription(), true).getData()).c_str());
 	if (pRef->getTime() > 0)
 	{
-		StdStrBuf strDuration; strDuration.Format("%02d:%02d:%02d", pRef->getTime() / 3600, (pRef->getTime() % 3600) / 60, pRef->getTime() % 60);
-		sInfoText[1].Append(" - "); sInfoText[1].Append(strDuration);
+		const std::string duration{std::format("{:02}:{:02}:{:02}", pRef->getTime() / 3600, (pRef->getTime() % 3600) / 60, pRef->getTime() % 60)};
+		sInfoText[1].Append(" - "); sInfoText[1].Append(duration.c_str());
 	}
 	sInfoText[2].Copy(LoadResStr(C4ResStrTableKey::IDS_DESC_VERSION, pRef->getGameVersion().GetString().getData()).c_str());
 	sInfoText[3].Copy(std::format("{}: {}", LoadResStr(C4ResStrTableKey::IDS_CTL_COMMENT), pRef->getComment()).c_str());
@@ -488,7 +489,7 @@ void C4StartupNetListEntry::SetReference(C4Network2Reference *pRef)
 		AddStatusIcon(C4GUI::Ico_OfficialServer, LoadResStr(C4ResStrTableKey::IDS_NET_OFFICIALSERVER));
 	}
 	// list participating player names
-	sInfoText[4].Format("%s: %s", LoadResStr(C4ResStrTableKey::IDS_CTL_PLAYER), iPlrCnt ? pRef->Parameters.PlayerInfos.GetActivePlayerNames(false).getData() : LoadResStr(C4ResStrTableKey::IDS_CTL_NONE));
+	sInfoText[4].Copy(std::format("{}: {}", LoadResStr(C4ResStrTableKey::IDS_CTL_PLAYER), iPlrCnt ? pRef->Parameters.PlayerInfos.GetActivePlayerNames(false).getData() : LoadResStr(C4ResStrTableKey::IDS_CTL_NONE)).c_str());
 	// disabled if join is not possible for some reason
 	C4GameVersion verThis;
 	if (!pRef->isJoinAllowed() || !(pRef->getGameVersion() == verThis))

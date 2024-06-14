@@ -39,6 +39,7 @@
 #endif
 
 #include <algorithm>
+#include <format>
 #include <stdexcept>
 
 C4GraphicsSystem::C4GraphicsSystem()
@@ -635,9 +636,7 @@ void C4GraphicsSystem::FlashMessage(const char *szMessage)
 
 void C4GraphicsSystem::FlashMessageOnOff(const char *strWhat, bool fOn)
 {
-	StdStrBuf strMessage;
-	strMessage.Format("%s: %s", strWhat, LoadResStr(fOn ? C4ResStrTableKey::IDS_CTL_ON : C4ResStrTableKey::IDS_CTL_OFF));
-	FlashMessage(strMessage.getData());
+	FlashMessage(std::format("{}: {}", strWhat, LoadResStr(fOn ? C4ResStrTableKey::IDS_CTL_ON : C4ResStrTableKey::IDS_CTL_OFF)).c_str());
 }
 
 void C4GraphicsSystem::DrawFlashMessage()
@@ -660,42 +659,65 @@ void C4GraphicsSystem::DrawHelp()
 	if (!Application.isFullScreen) return;
 	int32_t iX = ViewportArea.X, iY = ViewportArea.Y;
 	int32_t iWdt = ViewportArea.Wdt;
-	StdStrBuf strText;
-	// left coloumn
-	strText.AppendFormat("[%s]\n\n", LoadResStr(C4ResStrTableKey::IDS_CTL_GAMEFUNCTIONS));
-	// main functions
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ToggleShowHelp").getData(), LoadResStr(C4ResStrTableKey::IDS_CON_HELP));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("MusicToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MUSIC));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("SoundToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SOUND));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("NetClientListDlgToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_NETWORK));
-	// messages
-	StdStrBuf strAltChatKey(GetKeyboardInputName("ChatOpen", false, 0));
-	strText.AppendFormat("\n<c ffff00>%s/%s</c> - %s\n", GetKeyboardInputName("ChatOpen", false, 1).getData(), strAltChatKey.getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SENDMESSAGE));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("MsgBoardScrollUp").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MESSAGEBOARDBACK));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("MsgBoardScrollDown").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MESSAGEBOARDFORWARD));
-	// irc chat
-	strText.AppendFormat("\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ToggleChat").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_IRCCHAT));
-	// scoreboard
-	strText.AppendFormat("\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ScoreboardToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCOREBOARD));
-	// screenshots
-	strText.AppendFormat("\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("Screenshot").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCREENSHOT));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("ScreenshotEx").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCREENSHOTEX));
 
-	Application.DDraw->TextOut(strText.getData(), Game.GraphicsResource.FontRegular, 1.0, Application.DDraw->lpBack,
+	std::string text{std::format(
+				// left coloumn
+				"[{}]\n\n",
+				// main functions
+				"<c ffff00>{}</c> - {}\n"
+				"<c ffff00>{}</c> - {}\n"
+				"<c ffff00>{}</c> - {}\n"
+				"<c ffff00>{}</c> - {}\n"
+				// messages
+				"\n<c ffff00>{}/{}</c> - {}\n"
+				"<c ffff00>{}</c> - {}\n"
+				"<c ffff00>{}</c> - {}\n"
+				// irc chat
+				"\n<c ffff00>{}</c> - {}\n"
+				// scoreboard
+				"\n<c ffff00>{}</c> - {}\n"
+				// screenshots
+				"\n<c ffff00>{}</c> - {}\n"
+				"<c ffff00>{}</c> - {}\n",
+
+				LoadResStr(C4ResStrTableKey::IDS_CTL_GAMEFUNCTIONS),
+				GetKeyboardInputName("ToggleShowHelp").getData(), LoadResStr(C4ResStrTableKey::IDS_CON_HELP),
+				GetKeyboardInputName("MusicToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MUSIC),
+				GetKeyboardInputName("SoundToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SOUND),
+				GetKeyboardInputName("NetClientListDlgToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_NETWORK),
+				GetKeyboardInputName("ChatOpen", false, 1).getData(), GetKeyboardInputName("ChatOpen", false, 0).getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SENDMESSAGE),
+				GetKeyboardInputName("MsgBoardScrollUp").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MESSAGEBOARDBACK),
+				GetKeyboardInputName("MsgBoardScrollDown").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MESSAGEBOARDFORWARD),
+				GetKeyboardInputName("ToggleChat").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_IRCCHAT),
+				GetKeyboardInputName("ScoreboardToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCOREBOARD),
+				GetKeyboardInputName("Screenshot").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCREENSHOT),
+				GetKeyboardInputName("ScreenshotEx").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCREENSHOTEX)
+				)};
+
+	Application.DDraw->TextOut(text.c_str(), Game.GraphicsResource.FontRegular, 1.0, Application.DDraw->lpBack,
 		iX + 128, iY + 64, CStdDDraw::DEFAULT_MESSAGE_COLOR, ALeft);
 
-	// right coloumn
-	strText.Clear();
-	// game speed
-	strText.AppendFormat("\n\n<c ffff00>%s</c> - %s\n", GetKeyboardInputName("GameSpeedUp").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDUP));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("GameSlowDown").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDDOWN));
-	// debug
-	strText.AppendFormat("\n\n[%s]\n\n", "Debug");
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("DbgModeToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_DEBUGMODE));
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("DbgShowVtxToggle").getData(), "Entrance+Vertices");
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("DbgShowActionToggle").getData(), "Actions/Commands/Pathfinder");
-	strText.AppendFormat("<c ffff00>%s</c> - %s\n", GetKeyboardInputName("DbgShowSolidMaskToggle").getData(), "SolidMasks");
-	Application.DDraw->TextOut(strText.getData(), Game.GraphicsResource.FontRegular, 1.0, Application.DDraw->lpBack,
+	text = std::format(
+			   // right coloumn
+			   // game speed
+			   "\n\n<c ffff00>{}</c> - {}\n"
+			   "<c ffff00>{}</c> - {}\n"
+				// debug
+			   "\n\n[Debug]\n\n"
+			   "<c ffff00>{}</c> - {}\n"
+			   "<c ffff00>{}</c> - {}\n"
+			   "<c ffff00>{}</c> - {}\n"
+			   "<c ffff00>{}</c> - {}\n",
+
+			   GetKeyboardInputName("GameSpeedUp").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDUP),
+			   GetKeyboardInputName("GameSpeedDown").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDDOWN),
+			   GetKeyboardInputName("DbgModeToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_DEBUGMODE),
+			   GetKeyboardInputName("DbgShowVtxToggle").getData(), "Entrance+Vertices",
+			   GetKeyboardInputName("DbgShowActionToggle").getData(), "Actions/Commands/Pathfinder",
+			   GetKeyboardInputName("DbgShowSolidMaskToggle").getData(), "SolidMasks"
+			   );
+
+	Application.DDraw->TextOut(text.c_str(), Game.GraphicsResource.FontRegular, 1.0, Application.DDraw->lpBack,
 		iX + iWdt / 2 + 64, iY + 64, CStdDDraw::DEFAULT_MESSAGE_COLOR, ALeft);
 }
 

@@ -114,17 +114,17 @@ bool CMarkup::SkipTags(const char **ppText)
 	return !**ppText;
 }
 
-StdStrBuf CMarkup::ToMarkup()
+std::string CMarkup::ToMarkup()
 {
-	StdStrBuf result;
+	std::string result;
 	for (CMarkupTag *pTag = pTags; pTag; pTag = pTag->pNext) result += pTag->ToMarkup();
 	return result;
 }
 
-StdStrBuf CMarkup::ToCloseMarkup()
+std::string CMarkup::ToCloseMarkup()
 {
-	StdStrBuf result;
-	for (CMarkupTag *pTag = pLast; pTag; pTag = pTag->pPrev) result.AppendFormat("</%s>", pTag->TagName());
+	std::string result;
+	for (CMarkupTag *pTag = pLast; pTag; pTag = pTag->pPrev) result += std::format("</{}>", pTag->TagName());
 	return result;
 }
 

@@ -37,6 +37,8 @@
 #include <C4Language.h>
 #include <C4FileSelDlg.h>
 
+#include <format>
+
 // singleton
 C4StartupScenSelDlg *C4StartupScenSelDlg::pInstance = nullptr;
 
@@ -643,7 +645,6 @@ bool C4ScenarioListLoader::Entry::RenameTo(const char *szNewName)
 		if (!Grp.Delete(C4CFN_Title))
 		{
 			const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_DELOLDTITLE, sFilename.getData(), Grp.GetError())};
-			StdStrBuf sMsg; sMsg.Format(LoadResStr(C4ResStrTableKey::IDS_ERR_DELOLDTITLE), sFilename.getData(), Grp.GetError());
 			Game.pGUI->ShowMessageModal(msg.c_str(), strErr.getData(), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 			return false;
 		}
@@ -674,8 +675,8 @@ bool C4ScenarioListLoader::Entry::SetTitleInGroup(C4Group &rGrp, const char *szN
 		if (SEqual(szNewTitle, sNameByFile.getData())) return true;
 	}
 	// okay, make a title
-	StdStrBuf sTitle; sTitle.Format("%.2s:%s", Config.General.Language, szNewTitle);
-	if (!rGrp.Add(C4CFN_WriteTitle, sTitle, false, true))
+	StdStrBuf title{std::format("{:2}:{}", Config.General.Language, szNewTitle).c_str()};
+	if (!rGrp.Add(C4CFN_WriteTitle, title, false, true))
 	{
 		const std::string msg{LoadResStr(C4ResStrTableKey::IDS_ERR_ERRORADDINGNEWTITLEFORFIL, sFilename.getData(), rGrp.GetError())};
 		Game.pGUI->ShowMessageModal(msg.c_str(), LoadResStr(C4ResStrTableKey::IDS_FAIL_RENAME), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
@@ -1782,8 +1783,7 @@ void C4StartupScenSelDlg::DeleteConfirm(ScenListItem *pSel)
 	C4ScenarioListLoader::Entry *pEnt = pSel->GetEntry();
 	if (!C4Group_DeleteItem(pEnt->GetEntryFilename().getData(), true))
 	{
-		StdStrBuf sMsg; sMsg.Format("%s", LoadResStr(C4ResStrTableKey::IDS_FAIL_DELETE));
-		Game.pGUI->ShowMessageModal(sMsg.getData(), LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
+		Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_FAIL_DELETE), LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 		return;
 	}
 	// remove from scenario list

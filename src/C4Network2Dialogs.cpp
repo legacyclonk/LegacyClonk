@@ -29,6 +29,8 @@
 #include "C4Viewport.h"
 #include "C4GameOptions.h"
 
+#include <format>
+
 #ifndef _WIN32
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -529,13 +531,12 @@ C4Network2ClientListDlg::~C4Network2ClientListDlg()
 void C4Network2ClientListDlg::Update()
 {
 	// Compose status text
-	StdStrBuf sStatusText;
-	sStatusText.Format("Tick %d, Behind %d, Rate %d, PreSend %d, ACT: %d",
-		static_cast<int>(Game.Control.ControlTick), static_cast<int>(Game.Control.Network.GetBehind(Game.Control.ControlTick)),
-		static_cast<int>(Game.Control.ControlRate), static_cast<int>(Game.Control.Network.getControlPreSend()),
-		static_cast<int>(Game.Control.Network.getAvgControlSendTime()));
+	const std::string statusText{std::format("Tick {}, Behind {}, Rate {}, PreSend {}, ACT: {}",
+		Game.Control.ControlTick, Game.Control.Network.GetBehind(Game.Control.ControlTick),
+		Game.Control.ControlRate, Game.Control.Network.getControlPreSend(),
+		Game.Control.Network.getAvgControlSendTime())};
 	// Update status label
-	pStatusLabel->SetText(sStatusText.getData());
+	pStatusLabel->SetText(statusText.c_str());
 }
 
 bool C4Network2ClientListDlg::Toggle()
@@ -847,7 +848,7 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 	int iSeriesCount = pDisplayGraph->GetSeriesCount();
 	if (!iSeriesCount) return;
 	assert(iSeriesCount > 0);
-	StdStrBuf sbuf;
+	std::string sbuf;
 	pDisplayGraph->Update(); // update averages, etc.
 	// calc metrics
 	CStdFont &rFont = C4GUI::GetRes()->MiniFont;
@@ -874,8 +875,8 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 		iMinVal = ((iMinVal - (iMinVal < 0)) / ddv + (iMinVal < 0)) * ddv;
 	ValueType dv = iMaxVal - iMinVal; TimeType dt = iMaxTime - iMinTime;
 	// axis calculations
-	sbuf.Format("-%d", static_cast<int>((std::max)(Abs(iMaxVal), Abs(iMinVal))));
-	rFont.GetTextExtent(sbuf.getData(), XAxisMinStepWdt, YAxisMinStepHgt, false);
+	sbuf = std::format("-{}", static_cast<int>((std::max)(Abs(iMaxVal), Abs(iMinVal))));
+	rFont.GetTextExtent(sbuf.c_str(), XAxisMinStepWdt, YAxisMinStepHgt, false);
 	YAxisWdt += XAxisMinStepWdt; XAxisHgt += YAxisMinStepHgt;
 	XAxisMinStepWdt += 2; YAxisMinStepHgt += 2;
 	int tw = rcBounds.Wdt - YAxisWdt;
@@ -921,16 +922,16 @@ void C4Chart::DrawElement(C4FacetEx &cgo)
 	{
 		iX = tx + tw * (iTime - iMinTime) / dt;
 		lpDDraw->DrawVerticalLine(cgo.Surface, iX, ty + th + 1, ty + th + AxisMarkerLen, CGray3);
-		sbuf.Format("%d", static_cast<int>(iTime));
-		lpDDraw->TextOut(sbuf.getData(), rFont, 1.0f, cgo.Surface, iX, ty + th + AxisMarkerLen, 0xff7f7f7f, ACenter, false);
+		sbuf = std::to_string(static_cast<int>(iTime));
+		lpDDraw->TextOut(sbuf.c_str(), rFont, 1.0f, cgo.Surface, iX, ty + th + AxisMarkerLen, 0xff7f7f7f, ACenter, false);
 	}
 	iVal = int(((iMinVal - (iMinVal > 0)) / iYAxisSteps + (iMinVal > 0)) * iYAxisSteps);
 	for (; iVal <= iMaxVal; iVal += iYAxisSteps)
 	{
 		iY = ty + th - int((iVal - iMinVal) / dv * th);
 		lpDDraw->DrawHorizontalLine(cgo.Surface, tx - AxisMarkerLen, tx - 1, iY, CGray3);
-		sbuf.Format("%d", static_cast<int>(iVal));
-		lpDDraw->TextOut(sbuf.getData(), rFont, 1.0f, cgo.Surface, tx - AxisMarkerLen, iY - rFont.GetLineHeight() / 2, 0xff7f7f7f, ARight, false);
+		sbuf = std::to_string(static_cast<int>(iVal));
+		lpDDraw->TextOut(sbuf.c_str(), rFont, 1.0f, cgo.Surface, tx - AxisMarkerLen, iY - rFont.GetLineHeight() / 2, 0xff7f7f7f, ARight, false);
 	}
 	// draw graph series(es)
 	int iSeries = 0;

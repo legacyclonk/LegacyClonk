@@ -290,14 +290,15 @@ bool C4LeagueClient::Start(const C4Network2Reference &Ref)
 	eCurrAction = C4LA_Start;
 	C4LeagueRequestHead Head(eCurrAction);
 	Head.SetChecksum("-----");
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(mkDecompileAdapt(Ref), "Reference"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetStartReply(StdStrBuf *pMessage, StdStrBuf *pLeague, StdStrBuf *pStreamingAddr, int32_t *pSeed, int32_t *pMaxPlayers)
@@ -340,14 +341,14 @@ bool C4LeagueClient::Update(const C4Network2Reference &Ref)
 	eCurrAction = C4LA_Update;
 	C4LeagueRequestHead Head(eCurrAction, CSID.getData());
 	Head.SetChecksum("-----");
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(mkDecompileAdapt(Ref), "Reference"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetUpdateReply(StdStrBuf *pMessage, C4ClientPlayerInfos *pPlayerLeagueInfos)
@@ -372,14 +373,14 @@ bool C4LeagueClient::End(const C4Network2Reference &Ref, const char *szRecordNam
 	eCurrAction = C4LA_End;
 	C4LeagueRequestHeadEnd Head(eCurrAction, CSID.getData(), szRecordName, pRecordSHA);
 	Head.SetChecksum("-----");
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(mkDecompileAdapt(Ref), "Reference"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetEndReply(StdStrBuf *pMessage, C4RoundResultsPlayers *pRoundResults)
@@ -409,14 +410,14 @@ bool C4LeagueClient::Auth(const C4PlayerInfo &PlrInfo, const char *szAccount, co
 	if (szNewPassword)
 		Head.SetNewPassword(szNewPassword);
 	// Create query
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(mkDecompileAdapt(PlrInfo), "PlrInfo"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetAuthReply(StdStrBuf *pMessage, StdStrBuf *pAUID, StdStrBuf *pAccount, bool *pRegister)
@@ -455,14 +456,14 @@ bool C4LeagueClient::AuthCheck(const C4PlayerInfo &PlrInfo)
 	C4LeagueRequestHead Head(eCurrAction, CSID.getData(), PlrInfo.getAuthID());
 	Head.SetChecksum("-----");
 	// Create query
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(mkDecompileAdapt(PlrInfo), "PlrInfo"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetAuthCheckReply(StdStrBuf *pMessage, const char *szLeague, C4PlayerInfo *pPlrInfo)
@@ -486,14 +487,14 @@ bool C4LeagueClient::ReportDisconnect(const C4ClientPlayerInfos &rFeedbackClient
 	C4LeagueReportDisconnectHead Head(CSID.getData(), eReason);
 	Head.SetChecksum("-----");
 	// Create query
-	StdStrBuf QueryText = DecompileToBuf<StdCompilerINIWrite>(
+	std::string queryText{DecompileToBuf<StdCompilerINIWrite>(
 		mkInsertAdapt(
 			mkNamingAdapt(Head, "Request"),
 			mkNamingAdapt(DisconnectData(FBIDList, rFeedbackClient), "PlayerInfos"),
-			false));
-	ModifyForChecksum(&QueryText, "-----");
+			false))};
+	ModifyForChecksum(queryText, "-----");
 	// Perform query
-	return Query(QueryText.getData(), false);
+	return Query(queryText, false);
 }
 
 bool C4LeagueClient::GetReportDisconnectReply(StdStrBuf *pMessage)
@@ -509,10 +510,10 @@ bool C4LeagueClient::GetReportDisconnectReply(StdStrBuf *pMessage)
 	return Head.isSuccess();
 }
 
-void C4LeagueClient::ModifyForChecksum(StdStrBuf *pData, const char *szReplace)
+void C4LeagueClient::ModifyForChecksum(std::string &data, const char *replace)
 {
-	char *pReplace = strstr(pData->getMData(), szReplace);
-	ModifyForChecksum(pData->getData(), pData->getLength(), pReplace, 0x7A69, 0xF0FF);
+	char *const ptr{std::strstr(data.data(), replace)};
+	ModifyForChecksum(data.c_str(), data.size(), ptr, 0x7A69, 0xF0FF);
 }
 
 void C4LeagueClient::ModifyForChecksum(const void *pData, size_t iDataSize, char *pReplace, uint32_t iChecksum, uint32_t iCheckMask)

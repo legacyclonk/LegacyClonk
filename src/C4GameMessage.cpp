@@ -78,7 +78,8 @@ void C4GameMessage::Append(const char *szText, bool fNoDuplicates)
 			if (SEqual2(pPos, szText))
 				return;
 	// Append new line
-	Text.AppendFormat("|%s", szText);
+	Text.AppendChar('|');
+	Text.Append(szText);
 	Delay += SLen(szText) * TextMsgDelayFactor;
 }
 

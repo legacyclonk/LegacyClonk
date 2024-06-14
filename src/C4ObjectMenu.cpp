@@ -27,6 +27,7 @@
 #include <C4Viewport.h>
 
 #include <cassert>
+#include <format>
 
 // C4ObjectMenu
 
@@ -582,9 +583,8 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 		if (pEff->IsActive())
 		{
 			C4AulScript *pEffScript = pEff->GetCallbackScript();
-			StdStrBuf sPattern; sPattern.Format(PSF_FxCustom, pEff->Name, "Context");
 			if (pEffScript)
-				for (iFunction = 0; pFunction = pEffScript->GetSFunc(iFunction, sPattern.getData()); iFunction++)
+				for (iFunction = 0; pFunction = pEffScript->GetSFunc(iFunction, std::format(PSF_FxCustom, pEff->Name, "Context").c_str()); iFunction++)
 					if (!pFunction->OverloadedBy)
 						if (!pFunction->Condition || pFunction->Condition->Exec(pEff->pCommandTarget, {C4VObj(pTarget), C4VInt(pEff->iNumber), C4VObj(Object), C4VID(pFunction->idImage)}))
 							if (!fCountOnly)

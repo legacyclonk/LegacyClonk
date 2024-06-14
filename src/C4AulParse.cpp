@@ -253,7 +253,7 @@ void C4AulParseState::Strict2Error(const char *message, const char *identifier)
 
 C4AulParseError::C4AulParseError(const char *message, const char *identifier, bool warn)
 {
-	sMessage.Format("%s: %s%s", warn ? "WARNING" : "ERROR", message, identifier ? identifier : "");
+	this->message = std::format("{}: {}{}", warn ? "WARNING" : "ERROR", message, identifier ? identifier : "");
 }
 
 C4AulParseError::C4AulParseError(C4AulParseState *state, const char *pMsg, const char *pIdtf, bool Warn)
@@ -262,21 +262,22 @@ C4AulParseError::C4AulParseError(C4AulParseState *state, const char *pMsg, const
 	if (state->Fn && *(state->Fn->Name))
 	{
 		// Show function name
-		sMessage.AppendFormat(" (in %s", state->Fn->Name);
+		message += " (in ";
+		message += state->Fn->Name;
 
 		// Exact position
 		if (state->Fn->pOrgScript && state->SPos)
-			sMessage.AppendFormat(", %s:%d:%d)",
+			message += std::format(", {}:{}:{}",
 				state->Fn->pOrgScript->ScriptName.getData(),
 				SGetLine(state->Fn->pOrgScript->Script.getData(), state->SPos),
 				SLineGetCharacters(state->Fn->pOrgScript->Script.getData(), state->SPos));
 		else
-			sMessage.AppendChar(')');
+			message += ')';
 	}
 	else if (state->a)
 	{
 		// Script name
-		sMessage.AppendFormat(" (%s:%d:%d)",
+		message += std::format(" ({}:{}:{})",
 			state->a->ScriptName.getData(),
 			SGetLine(state->a->Script.getData(), state->SPos),
 			SLineGetCharacters(state->a->Script.getData(), state->SPos));
@@ -289,8 +290,7 @@ C4AulParseError::C4AulParseError(C4AulScript *pScript, const char *pMsg, const c
 	if (pScript)
 	{
 		// Script name
-		sMessage.AppendFormat(" (%s)",
-			pScript->ScriptName.getData());
+		message += std::format(" ({})", pScript->ScriptName.getData());
 	}
 }
 

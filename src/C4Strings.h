@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <limits>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -99,6 +100,33 @@ int SLineGetCharacters(const char *szText, const char *cpPosition);
 // case sensitive wildcard match with some extra functionality
 // can match strings like  "*Cl?nk*vour" to "Clonk Endeavour"
 bool SWildcardMatchEx(const char *szString, const char *szWildcard);
+
+template<typename Char, typename Traits>
+std::basic_string<Char, Traits> ReplaceInString(std::basic_string_view<Char, Traits> string, std::basic_string_view<Char, Traits> needle, std::basic_string_view<Char, Traits> value)
+{
+	std::basic_string<Char, Traits> result;
+	std::size_t previousPos{0};
+	std::size_t pos{0};
+
+	string.find(needle);
+
+	for (;;)
+	{
+		previousPos = pos;
+		pos = string.find(needle, pos);
+		if (pos == decltype(string)::npos)
+		{
+			return result;
+		}
+
+		result.append(string, previousPos, pos - previousPos);
+		result.append(value);
+		pos += value.size();
+	}
+
+	result.append(string, previousPos, string.size() - previousPos);
+	return result;
+}
 
 #define LineFeed "\x00D\x00A"
 #define EndOfFile "\x020"

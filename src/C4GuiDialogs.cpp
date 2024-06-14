@@ -33,6 +33,8 @@
 
 #include <StdGL.h>
 
+#include <format>
+
 #ifdef _WIN32
 #include "StdRegistry.h"
 #include "res/engine_resource.h"
@@ -94,11 +96,10 @@ void FrameDecoration::Clear()
 bool FrameDecoration::SetFacetByAction(C4Def *pOfDef, C4FacetEx &rfctTarget, const char *szFacetName)
 {
 	// get action
-	StdStrBuf sActName;
-	sActName.Format("FrameDeco%s", szFacetName);
+	const std::string actName{std::format("FrameDeco{}", szFacetName)};
 	int cnt; C4ActionDef *pAct = pOfDef->ActMap;
 	for (cnt = pOfDef->ActNum; cnt; --cnt, ++pAct)
-		if (sActName == pAct->Name)
+		if (actName == pAct->Name)
 			break;
 	if (!cnt) return false;
 	// set facet by it

@@ -23,6 +23,8 @@
 #include <C4Wrappers.h>
 #include <C4Application.h>
 
+#include <format>
+
 C4ObjectList::C4ObjectList() : FirstIter(nullptr)
 {
 	Default();
@@ -553,20 +555,20 @@ C4Object *C4ObjectList::SafeObjectPointer(int32_t iNumber)
 	return pObj;
 }
 
-StdStrBuf C4ObjectList::GetNameList(C4DefList &rDefs, uint32_t dwCategory)
+std::string C4ObjectList::GetNameList(C4DefList &rDefs, uint32_t dwCategory)
 {
 	int cpos, idcount;
 	C4ID c_id;
 	C4Def *cdef;
-	StdStrBuf Buf;
+	std::string result;
 	for (cpos = 0; c_id = GetListID(dwCategory, cpos); cpos++)
 		if (cdef = rDefs.ID2Def(c_id))
 		{
 			idcount = ObjectCount(c_id);
-			if (cpos > 0) Buf.Append(", ");
-			Buf.AppendFormat("%dx %s", idcount, cdef->GetName());
+			if (cpos > 0) result += ", ";
+			result += std::format("{}x {}", idcount, cdef->GetName());
 		}
-	return Buf;
+	return result;
 }
 
 bool C4ObjectList::ValidateOwners()
@@ -922,8 +924,8 @@ bool C4ObjectList::CheckSort(C4ObjectList *pList)
 		if (!cLnk2)
 		{
 			Log("CheckSort failure");
-			LogSilent(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(this), "SectorList")).getData());
-			LogSilent(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(pList), "MainList")).getData());
+			LogSilent(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(this), "SectorList")));
+			LogSilent(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(pList), "MainList")));
 			return false;
 		}
 		else

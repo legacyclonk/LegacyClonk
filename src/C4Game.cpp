@@ -53,6 +53,7 @@
 #include <StdFile.h>
 #include <StdGL.h>
 
+#include <format>
 #include <iterator>
 #include <sstream>
 #include <utility>
@@ -1947,10 +1948,10 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 
 void SetClientPrefix(char *szFilename, const char *szClient);
 
-bool C4Game::Decompile(StdStrBuf &rBuf, bool fSaveSection, bool fSaveExact)
+bool C4Game::Decompile(std::string &buf, bool fSaveSection, bool fSaveExact)
 {
 	// Decompile (without players for scenario sections)
-	rBuf.Take(DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, CompileSettings(fSaveSection, !fSaveSection && fSaveExact, fSaveExact))));
+	buf = DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, CompileSettings(fSaveSection, !fSaveSection && fSaveExact, fSaveExact)));
 	return true;
 }
 
@@ -2016,8 +2017,8 @@ bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fS
 	}
 
 	// Decompile
-	StdStrBuf Buf;
-	if (!Decompile(Buf, fSaveSection, fSaveExact))
+	std::string buf;
+	if (!Decompile(buf, fSaveSection, fSaveExact))
 		return false;
 
 	// Denumerate pointers, if game is in denumerated state
@@ -2035,20 +2036,21 @@ bool C4Game::SaveData(C4Group &hGroup, bool fSaveSection, bool fInitial, bool fS
 		const char *pPlayerSections = strstr(GameText.GetData(), "[Player");
 		if (pPlayerSections)
 		{
-			Buf.Append("\r\n\r\n");
-			Buf.Append(pPlayerSections);
+			buf += "\r\n\r\n";
+			buf += pPlayerSections;
 		}
 	}
 
 	// Empty? All default; just remove from group then
-	if (!Buf.getLength())
+	if (buf.empty())
 	{
 		hGroup.Delete(C4CFN_Game);
 		return true;
 	}
 
 	// Save
-	return hGroup.Add(C4CFN_Game, Buf, false, true);
+	StdStrBuf copy{buf.c_str(), buf.size()};
+	return hGroup.Add(C4CFN_Game, copy, false, true);
 }
 
 bool C4Game::SaveGameTitle(C4Group &hGroup)
@@ -2208,11 +2210,10 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 	}
 
 	// Compose savegame filename
-	StdStrBuf strSavePath;
-	strSavePath.Format("%s%c%s", Config.General.SaveGameFolder.getData(), DirectorySeparator, strFilename);
+	const std::string savePath{std::format("{}" DirSep "{}", Config.General.SaveGameFolder.getData(), strFilename)};
 
 	// Must not be the scenario file that is currently open
-	if (ItemIdentical(ScenarioFilename, strSavePath.getData()))
+	if (ItemIdentical(ScenarioFilename, savePath.c_str()))
 	{
 		StartSoundEffect("Error");
 		GameMsgGlobal(LoadResStr(C4ResStrTableKey::IDS_GAME_NOSAVEONCURR), FRed);
@@ -2227,7 +2228,7 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 	// Save to target scenario file
 	C4GameSave *pGameSave;
 	pGameSave = new C4GameSaveSavegame();
-	if (!pGameSave->Save(strSavePath.getData()))
+	if (!pGameSave->Save(savePath.c_str()))
 	{
 		Log(LoadResStr(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME)); delete pGameSave; return false;
 	}
@@ -3412,14 +3413,14 @@ bool C4Game::InitKeyboard()
 
 	// Map player keyboard controls
 	int32_t iKdbSet, iCtrl;
-	StdStrBuf sPlrCtrlName;
+	std::string plrCtrlName;
 	for (iKdbSet = C4P_Control_Keyboard1; iKdbSet <= C4P_Control_Keyboard4; iKdbSet++)
 		for (iCtrl = 0; iCtrl < C4MaxKey; iCtrl++)
 		{
-			sPlrCtrlName.Format("Kbd%dKey%d", iKdbSet - C4P_Control_Keyboard1 + 1, iCtrl + 1);
+			plrCtrlName = std::format("Kbd{}Key{}", iKdbSet - C4P_Control_Keyboard1 + 1, iCtrl + 1);
 			KeyboardInput.RegisterKey(new C4CustomKey(
 				C4KeyCodeEx(Config.Controls.Keyboard[iKdbSet][iCtrl]),
-				sPlrCtrlName.getData(), KEYSCOPE_Control,
+				plrCtrlName.c_str(), KEYSCOPE_Control,
 				new C4KeyCBExPassKey<C4Game, C4KeySetCtrl>(*this, C4KeySetCtrl(iKdbSet, iCtrl), &C4Game::LocalControlKey, &C4Game::LocalControlKeyUp),
 				C4CustomKey::PRIO_PlrControl));
 		}
@@ -3432,10 +3433,10 @@ bool C4Game::InitKeyboard()
 		for (iCtrl = 0; iCtrl < C4MaxKey; iCtrl++)
 		{
 			if (cfg.Button[iCtrl] == -1) continue;
-			sPlrCtrlName.Format("Joy%dBtn%d", iGamepad - C4P_Control_GamePad1 + 1, iCtrl + 1);
+			plrCtrlName = std::format("Joy{}Btn{}", iGamepad - C4P_Control_GamePad1 + 1, iCtrl + 1);
 			KeyboardInput.RegisterKey(new C4CustomKey(
 				C4KeyCodeEx(cfg.Button[iCtrl]),
-				sPlrCtrlName.getData(), KEYSCOPE_Control,
+				plrCtrlName.c_str(), KEYSCOPE_Control,
 				new C4KeyCBExPassKey<C4Game, C4KeySetCtrl>(*this, C4KeySetCtrl(iGamepad, iCtrl), &C4Game::LocalControlKey, &C4Game::LocalControlKeyUp),
 				C4CustomKey::PRIO_PlrControl));
 		}

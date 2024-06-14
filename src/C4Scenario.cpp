@@ -99,17 +99,18 @@ bool C4Scenario::Load(C4Group &hGroup, bool fLoadSection)
 
 bool C4Scenario::Save(C4Group &hGroup, bool fSaveSection)
 {
-	StdStrBuf Buf;
+	std::string buf;
 	try
 	{
-		Buf.Take(DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, fSaveSection)));
+		buf = DecompileToBuf<StdCompilerINIWrite>(mkParAdapt(*this, fSaveSection));
 	}
 	catch (const StdCompiler::Exception &)
 	{
 		return false;
 	}
 
-	if (!hGroup.Add(C4CFN_ScenarioCore, Buf, false, true))
+	StdStrBuf copy{buf.c_str(), buf.size()};
+	if (!hGroup.Add(C4CFN_ScenarioCore, copy, false, true))
 	{
 		return false;
 	}

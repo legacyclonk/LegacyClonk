@@ -24,6 +24,7 @@
 #include "C4Gui.h" // for clearly visible error message
 
 #include <cctype> // for isdigit
+#include <format>
 
 // Helper for IRC command parameter parsing
 StdStrBuf ircExtractPar(const char **ppPar)
@@ -352,13 +353,13 @@ bool C4Network2IRCClient::Send(const char *szCommand, const char *szParameters)
 		SetError("not connected"); return false;
 	}
 	// Create message
-	StdStrBuf Msg;
+	std::string msg;
 	if (szParameters)
-		Msg.Format("%s %s", szCommand, szParameters);
+		msg = std::format("{} {}", szCommand, szParameters);
 	else
-		Msg.Ref(szCommand);
+		msg = szCommand;
 	// Send
-	return C4NetIOTCP::Send(C4NetIOPacket(Msg.getData(), Msg.getLength(), false, PeerAddr));
+	return C4NetIOTCP::Send(C4NetIOPacket(msg.c_str(), msg.size(), false, PeerAddr));
 }
 
 bool C4Network2IRCClient::Quit(const char *szReason)

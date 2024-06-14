@@ -56,7 +56,9 @@ bool C4ScriptHost::Load(const char *szName, C4Group &hGroup, const char *szFilen
 	if (pStringTable && fLoadTable)
 		pStringTable->LoadEx("StringTbl", hGroup, C4CFN_ScriptStringTbl, szLanguage);
 	// set name
-	ScriptName.Format("%s" DirSep "%s", hGroup.GetFullName().getData(), Filename);
+	ScriptName.Copy(hGroup.GetFullName());
+	ScriptName.AppendChar(DirectorySeparator);
+	ScriptName.Append(Filename);
 	// preparse script
 	MakeScript();
 	// Success

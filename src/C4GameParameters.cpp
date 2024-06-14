@@ -526,9 +526,10 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 bool C4GameParameters::Save(C4Group &hGroup, C4Scenario *pScenario)
 {
 	// Write Parameters.txt
-	StdStrBuf ParData = DecompileToBuf<StdCompilerINIWrite>(
-		mkNamingAdapt(mkParAdapt(*this, pScenario), "Parameters"));
-	if (!hGroup.Add(C4CFN_Parameters, ParData, false, true))
+	const std::string parData{DecompileToBuf<StdCompilerINIWrite>(
+		mkNamingAdapt(mkParAdapt(*this, pScenario), "Parameters"))};
+	StdStrBuf buf{parData.c_str(), parData.size()};
+	if (!hGroup.Add(C4CFN_Parameters, buf, false, true))
 		return false;
 
 	// Done
