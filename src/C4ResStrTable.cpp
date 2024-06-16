@@ -24,7 +24,7 @@
 
 C4ResStrTable::C4ResStrTable(const std::string_view code, std::string_view table)
 {
-	const auto keyStringMap = GetKeyStringMap();
+	auto keyStringMap = GetKeyStringMap();
 
 	for (auto pos = table.find_first_of('='); pos != std::string_view::npos; pos = table.find_first_of('='))
 	{
@@ -39,6 +39,7 @@ C4ResStrTable::C4ResStrTable(const std::string_view code, std::string_view table
 		if (const auto it = keyStringMap.find(key); it != keyStringMap.end())
 		{
 			std::string &valueStr{entries[static_cast<std::size_t>(it->second)] = value};
+			keyStringMap.erase(it);
 
 			for (auto backslashPos = valueStr.find_first_of('\\'); backslashPos < valueStr.size() - 1; backslashPos = valueStr.find_first_of('\\', backslashPos + 1))
 			{
@@ -52,15 +53,12 @@ C4ResStrTable::C4ResStrTable(const std::string_view code, std::string_view table
 
 	for (const auto &[key, value] : keyStringMap)
 	{
-		if (entries[static_cast<std::size_t>(value)].empty())
+		if (!code.empty())
 		{
-			if (!code.empty())
-			{
-				spdlog::warn("Missing entry in string table {} for key {}", code, key);
-			}
-
-			entries[static_cast<std::size_t>(value)] = std::format("[Undefined: {}]", key);
+			spdlog::warn("Missing entry in string table {} for key {}", code, key);
 		}
+
+		entries[static_cast<std::size_t>(value)] = std::format("[Undefined: {}]", key);
 	}
 }
 
