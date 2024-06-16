@@ -1568,7 +1568,7 @@ void C4Console::UpdateNetMenu()
 	// Clients
 	for (C4Network2Client *pClient = Game.Network.Clients.GetNextClient(nullptr); pClient; pClient = Game.Network.Clients.GetNextClient(pClient))
 	{
-		const auto text = LoadResStr(pClient->isActivated() ? C4ResStrTableKey::IDS_MNU_NETCLIENT : C4ResStrTableKey::IDS_MNU_NETCLIENTDE,
+		const auto text = LoadResStrChoice(pClient->isActivated(), C4ResStrTableKey::IDS_MNU_NETCLIENT, C4ResStrTableKey::IDS_MNU_NETCLIENTDE,
 			pClient->getName(), pClient->getID());
 #ifdef _WIN32
 		AddMenuItem(hMenu, IDM_NET_CLIENT1 + pClient->getID(), text.c_str());

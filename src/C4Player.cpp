@@ -988,7 +988,7 @@ bool C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent)
 	if (!Game.FrameCounter || fSilent) return true;
 	// Announce
 	StartSoundEffect("Trumpet");
-	Log(LoadResStr(iHostility ? C4ResStrTableKey::IDS_PLR_HOSTILITY : C4ResStrTableKey::IDS_PLR_NOHOSTILITY,
+	Log(LoadResStrChoice(iHostility, C4ResStrTableKey::IDS_PLR_HOSTILITY, C4ResStrTableKey::IDS_PLR_NOHOSTILITY,
 		GetName(), Game.Players.Get(iOpponent)->GetName()).c_str());
 	// Success
 	return true;

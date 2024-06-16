@@ -173,7 +173,7 @@ const char *KeyID2Desc(int32_t iKeyID)
 }
 
 C4StartupOptionsDlg::KeySelDialog::KeySelDialog(int32_t iKeyID, int32_t iCtrlSet, bool fGamepad)
-	: C4GUI::MessageDialog(LoadResStr(!fGamepad ? C4ResStrTableKey::IDS_MSG_PRESSKEY : C4ResStrTableKey::IDS_MSG_PRESSBTN,
+	: C4GUI::MessageDialog(LoadResStrChoice(!fGamepad, C4ResStrTableKey::IDS_MSG_PRESSKEY, C4ResStrTableKey::IDS_MSG_PRESSBTN,
 		KeyID2Desc(iKeyID), iCtrlSet + 1).c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_DEFINEKEY),
 		C4GUI::MessageDialog::btnAbort, fGamepad ? C4GUI::Ico_Gamepad : C4GUI::Ico_Keyboard, C4GUI::MessageDialog::dsRegular),
 	key(KEY_Undefined), fGamepad(fGamepad), iCtrlSet(iCtrlSet)
@@ -969,7 +969,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp(C4ResS
 	for (i = 0; i < 2; ++i)
 	{
 		C4GUI::ComponentAligner caVolumeSlider(caGroupVolume.GetGridCell(0, 1, i, 2, -1, pUseFont->GetLineHeight() + iIndentY2 * 2 + C4GUI_ScrollBarHgt, true), 1, 0, false);
-		pGroupVolume->AddElement(new C4GUI::Label(std::format("{}:", LoadResStr(i ? C4ResStrTableKey::IDS_CTL_SOUNDFX : C4ResStrTableKey::IDS_CTL_MUSIC)).c_str(), caVolumeSlider.GetFromTop(pUseFont->GetLineHeight()), ALeft, C4StartupFontClr, pUseFont, false, false));
+		pGroupVolume->AddElement(new C4GUI::Label(std::format("{}:", LoadResStrChoice(i, C4ResStrTableKey::IDS_CTL_SOUNDFX, C4ResStrTableKey::IDS_CTL_MUSIC)).c_str(), caVolumeSlider.GetFromTop(pUseFont->GetLineHeight()), ALeft, C4StartupFontClr, pUseFont, false, false));
 		sLabelTxt.Copy(LoadResStr(C4ResStrTableKey::IDS_CTL_SILENT));
 		w = 20; q = 12; pUseFont->GetTextExtent(sLabelTxt.getData(), w, q, true);
 		pGroupVolume->AddElement(new C4GUI::Label(sLabelTxt.getData(), caVolumeSlider.GetFromLeft(w, q), ACenter, C4StartupFontClr, pUseFont, false, false));

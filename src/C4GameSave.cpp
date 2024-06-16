@@ -302,12 +302,18 @@ void C4GameSave::WriteDescDate(std::string &desc, bool fRecord)
 	time_t tTime; time(&tTime);
 	struct tm *pLocalTime;
 	pLocalTime = localtime(&tTime);
-	desc.append(RtfEscape(LoadResStr(fRecord ? C4ResStrTableKey::IDS_DESC_DATEREC : (Game.Network.isEnabled() ? C4ResStrTableKey::IDS_DESC_DATENET : C4ResStrTableKey::IDS_DESC_DATE),
-		pLocalTime->tm_mday,
-		pLocalTime->tm_mon + 1,
-		pLocalTime->tm_year + 1900,
-		pLocalTime->tm_hour,
-		pLocalTime->tm_min)));
+
+	std::string msg;
+	if (fRecord)
+	{
+		msg = LoadResStr(C4ResStrTableKey::IDS_DESC_DATEREC, pLocalTime->tm_mday, pLocalTime->tm_mon + 1, pLocalTime->tm_year + 1900, pLocalTime->tm_hour, pLocalTime->tm_min);
+	}
+	else
+	{
+		msg = LoadResStrChoice(Game.Network.isEnabled(), C4ResStrTableKey::IDS_DESC_DATENET, C4ResStrTableKey::IDS_DESC_DATE, pLocalTime->tm_mday, pLocalTime->tm_mon + 1, pLocalTime->tm_year + 1900, pLocalTime->tm_hour, pLocalTime->tm_min);
+	}
+
+	desc.append(RtfEscape(msg));
 	WriteDescLineFeed(desc);
 }
 

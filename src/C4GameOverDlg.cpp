@@ -46,7 +46,7 @@ C4GoalDisplay::GoalPicture::GoalPicture(const C4Rect &rcBounds, C4ID idGoal, boo
 		strGoalDesc.Copy(pGoalDef->GetDesc());
 	}
 	// get tooltip
-	const std::string toolTip{LoadResStr(fFulfilled ? C4ResStrTableKey::IDS_DESC_GOALFULFILLED : C4ResStrTableKey::IDS_DESC_GOALNOTFULFILLED, strGoalName.getData(), strGoalDesc.getData())};
+	const std::string toolTip{LoadResStrChoice(fFulfilled, C4ResStrTableKey::IDS_DESC_GOALFULFILLED, C4ResStrTableKey::IDS_DESC_GOALNOTFULFILLED, strGoalName.getData(), strGoalDesc.getData())};
 	SetToolTip(toolTip.c_str());
 	// create buffered picture of goal definition
 	C4Def *pDrawDef = Game.Defs.ID2Def(idGoal);

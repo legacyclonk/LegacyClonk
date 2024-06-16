@@ -286,9 +286,22 @@ static C4ValueInt FnGetGravity(C4AulContext *cthr)
 	return fixtoi(Game.Landscape.Gravity * 500);
 }
 
+template<int N>
+static void DeathAnnounceMessageHelper(C4Object *const obj, const int n)
+{
+	if (N == n)
+	{
+		GameMsgObject(LoadResStr(static_cast<C4ResStrTableKey>(std::to_underlying(C4ResStrTableKey::IDS_OBJ_DEATH1) + N), obj->GetName()).c_str(), obj);
+	}
+	else if constexpr (N > 0)
+	{
+		DeathAnnounceMessageHelper<N - 1>(obj, n);
+	}
+}
+
 static bool FnDeathAnnounce(C4AulContext *cthr)
 {
-	const int MaxDeathMsg = 7;
+	static constexpr int MaxDeathMsg{7};
 	if (!cthr->Obj) return false;
 	if (Game.C4S.Head.Film) return true;
 	// Check if crew member has an own death message
@@ -298,7 +311,7 @@ static bool FnDeathAnnounce(C4AulContext *cthr)
 	}
 	else
 	{
-		GameMsgObject(LoadResStr(static_cast<C4ResStrTableKey>(std::to_underlying(C4ResStrTableKey::IDS_OBJ_DEATH1) + SafeRandom(MaxDeathMsg)), cthr->Obj->GetName()).c_str(), cthr->Obj);
+		DeathAnnounceMessageHelper<MaxDeathMsg - 1>(cthr->Obj, SafeRandom(MaxDeathMsg));
 	}
 	return true;
 }
