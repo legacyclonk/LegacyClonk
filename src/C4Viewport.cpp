@@ -877,7 +877,7 @@ void C4Viewport::DrawOverlay(C4FacetEx &cgo)
 			{
 				int32_t iSymbolSize = C4SymbolSize * 2 / 3;
 				C4Facet ccgo; ccgo.Set(cgo.Surface, cgo.X + cgo.Wdt - iSymbolSize, cgo.Y + C4SymbolSize + 2 * C4SymbolBorder, iSymbolSize, iSymbolSize); ccgo.Y += iSymbolSize;
-				DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).getData());
+				DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).c_str());
 			}
 		}
 	}
@@ -1362,7 +1362,7 @@ bool C4Viewport::Init(CStdWindow *pParent, CStdApp *pApp, int32_t iPlayer)
 	return true;
 }
 
-StdStrBuf PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort)
+std::string PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort)
 {
 	// determine player
 	C4Player *pPlr = Game.Players.Get(iPlayer);
@@ -1390,7 +1390,7 @@ StdStrBuf PlrControlKeyName(int32_t iPlayer, int32_t iControl, bool fShort)
 		if (szKeyID) return Game.KeyboardInput.GetKeyCodeNameByKeyName(szKeyID, fShort);
 	}
 	// undefined control
-	return StdStrBuf();
+	return "";
 }
 
 void C4Viewport::DrawPlayerControls(C4FacetEx &cgo)
@@ -1439,7 +1439,7 @@ void C4Viewport::DrawPlayerControls(C4FacetEx &cgo)
 			C4Facet ccgo;
 			ccgo.Set(cgo.Surface, tx + scwdt * (iCtrl % 3), ty + schgt * (iCtrl / 3), scwdt, schgt);
 			DrawControlKey(ccgo, iCtrl, (iLastCtrl == iCtrl) ? 1 : 0,
-				showtext ? PlrControlKeyName(Player, iCtrl, true).getData() : nullptr);
+				showtext ? PlrControlKeyName(Player, iCtrl, true).c_str() : nullptr);
 		}
 }
 
@@ -1522,7 +1522,7 @@ void C4Viewport::DrawMouseButtons(C4FacetEx &cgo)
 	if (SetRegions) { rgn.Default(); rgn.Set(ccgo, LoadResStr(C4ResStrTableKey::IDS_CON_HELP)); rgn.Com = COM_Help; SetRegions->Add(rgn); }
 	// Player menu
 	ccgo.Y += iSymbolSize;
-	DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).getData());
+	DrawCommandKey(ccgo, COM_PlayerMenu, false, PlrControlKeyName(Player, Com2Control(COM_PlayerMenu), true).c_str());
 	if (SetRegions) { rgn.Default(); rgn.Set(ccgo, LoadResStr(C4ResStrTableKey::IDS_CON_PLAYERMENU)); rgn.Com = COM_PlayerMenu; SetRegions->Add(rgn); }
 	// Chat
 	if (C4ChatDlg::IsChatActive())

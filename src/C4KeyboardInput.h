@@ -154,9 +154,9 @@ struct C4KeyCodeEx
 	// helpers
 	static C4KeyShiftState String2KeyShift(const StdStrBuf &sName);
 	static C4KeyCode String2KeyCode(const StdStrBuf &sName);
-	static StdStrBuf KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool fShort);
-	StdStrBuf ToString(bool fHumanReadable, bool fShort);
-	static StdStrBuf KeyShift2String(C4KeyShiftState eShift);
+	static std::string KeyCode2String(C4KeyCode wCode, bool fHumanReadable, bool fShort);
+	std::string ToString(bool fHumanReadable, bool fShort);
+	static std::string KeyShift2String(C4KeyShiftState eShift);
 
 	// comparison operator for map access
 	inline bool operator<(const C4KeyCodeEx &v2) const
@@ -426,7 +426,7 @@ public:
 	bool LoadCustomConfig(); // load keyboard customization file
 
 	C4CustomKey *GetKeyByName(const char *szKeyName);
-	StdStrBuf GetKeyCodeNameByKeyName(const char *szKeyName, bool fShort = false, int32_t iIndex = 0);
+	std::string GetKeyCodeNameByKeyName(const char *szKeyName, bool fShort = false, int32_t iIndex = 0);
 };
 
 // keyboardinput-initializer-helper

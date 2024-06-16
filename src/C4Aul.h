@@ -73,11 +73,11 @@ public:
 // parse error
 class C4AulParseError : public C4AulError
 {
-	C4AulParseError(const char *message, const char *identifier, bool warn);
+	C4AulParseError(std::string_view message, const char *identifier, bool warn);
 
 public:
-	C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf = nullptr, bool Warn = false);
-	C4AulParseError(class C4AulParseState *state, const char *pMsg, const char *pIdtf = nullptr, bool Warn = false);
+	C4AulParseError(C4AulScript *pScript, std::string_view msg, const char *pIdtf = nullptr, bool Warn = false);
+	C4AulParseError(class C4AulParseState *state, std::string_view msg, const char *pIdtf = nullptr, bool Warn = false);
 };
 
 // execution error
@@ -487,7 +487,7 @@ protected:
 	C4AulBCC *GetCodeByPos(size_t iPos) { return Code + iPos; }
 
 public:
-	StdStrBuf ScriptName; // script name
+	std::string ScriptName; // script name
 	C4Def *Def; // owning def file
 	C4ValueMapNames LocalNamed;
 	C4ID idDef; // script id (to resolve includes)
@@ -512,7 +512,7 @@ public:
 	bool IsReady() { return State == ASS_PARSED; } // whether script calls may be done
 
 	// helper functions
-	void Warn(const char *pMsg, const char *pIdtf);
+	void Warn(std::string_view msg, const char *pIdtf);
 
 	friend class C4AulParseError;
 	friend class C4AulFunc;

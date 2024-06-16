@@ -655,7 +655,7 @@ void C4PlayerInfoListBox::PlayerListItem::Update()
 	{
 		UpdateScoreLabel(pNfo);
 		// update name + color
-		StdStrBuf sShowName(pNfo->GetLobbyName());
+		std::string showName{pNfo->GetLobbyName().getData()};
 		if (pList->IsEvaluation())
 		{
 			bool fShowWinners = (pList->GetMode() != PILBM_EvaluationNoWinners);
@@ -663,7 +663,7 @@ void C4PlayerInfoListBox::PlayerListItem::Update()
 			// Append "winner" or "loser" to player name
 			if (fShowWinners)
 			{
-				sShowName.Take(FormatString("%s (%s)", sShowName.getData(), LoadResStr(fHasWon ? C4ResStrTableKey::IDS_CTL_WON : C4ResStrTableKey::IDS_CTL_LOST)));
+				showName = std::format("{} ({})", showName, LoadResStr(fHasWon ? C4ResStrTableKey::IDS_CTL_WON : C4ResStrTableKey::IDS_CTL_LOST));
 			}
 			// evaluation: Golden color+background for winners; gray for losers or no winner show
 			if (fHasWon)
@@ -682,7 +682,7 @@ void C4PlayerInfoListBox::PlayerListItem::Update()
 			// lobby: Label color by player color
 			pNameLabel->SetColor(pNfo->GetLobbyColor());
 		}
-		pNameLabel->SetText(sShowName.getData(), false);
+		pNameLabel->SetText(showName.c_str(), false);
 	}
 }
 
@@ -763,7 +763,7 @@ C4PlayerInfoListBox::ClientListItem::ClientListItem(C4PlayerInfoListBox *pForLis
 	AddElement(pStatusIcon); AddElement(pNameLabel);
 	if (btnAddPlayer) AddElement(btnAddPlayer);
 	// tooltip (same for all components for now. separate tooltip for status icon later?)
-	SetToolTip(FormatString("Client %s (%s)", rClientInfo.getName(), rClientInfo.getNick()).getData());
+	SetToolTip(std::format("Client {} ({})", rClientInfo.getName(), rClientInfo.getNick()).c_str());
 	// insert into listbox at correct order
 	// (will eventually get resized horizontally and moved)
 	pForListBox->InsertElement(this, pInsertBefore);

@@ -68,11 +68,11 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 #define PSF_ActivateEntrance       "~ActivateEntrance" // pByObject
 #define PSF_Activate               "~Activate" // pByObject
 #define PSF_LiftTop                "~LiftTop"
-#define PSF_Control                "~Control%s" // pByObject
-#define PSF_ContainedControl       "~Contained%s" // pByObject
+#define PSF_Control                "~Control{}" // pByObject
+#define PSF_ContainedControl       "~Contained{}" // pByObject
 #define PSF_ControlUpdate          "~ControlUpdate" // pByObject, iComs
 #define PSF_ContainedControlUpdate "~ContainedUpdate" // pByObject, iComs
-#define PSF_Contact                "~Contact%s"
+#define PSF_Contact                "~Contact{}"
 #define PSF_ControlCommand         "~ControlCommand" // szCommand, pTarget, iTx, iTy
 #define PSF_ControlCommandFinished "~ControlCommandFinished" // szCommand, pTarget, iTx, iTy, pTarget2, iData
 #define PSF_DeepBreath             "~DeepBreath"
@@ -112,7 +112,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 #define PSF_FxDamage               "Fx%sDamage" // C4Object *pTarget, int iEffectNumber, int iDamage, int iCause, int iCausePlayer
 #define PSF_FxCustom               "Fx{}{}" // C4Object *pTarget, int iEffectNumber, C4Value vVar1, C4Value vVar2, C4Value vVar3, C4Value vVar4, C4Value vVar5, C4Value vVar6, C4Value vVar7
 #define PSF_FireMode               "~FireMode"
-#define PSF_FrameDecoration        "~FrameDecoration%s"
+#define PSF_FrameDecoration        "~FrameDecoration{}"
 #define PSF_GetFairCrewPhysical    "~GetFairCrewPhysical" // C4String *szPhysicalName, int iRank, int iPrevPhysical
 #define PSF_DoMagicEnergy          "DoMagicEnergy" // int iChange, C4Object *pObj, bool fAllowPartial
 #define PSF_GetCustomComponents    "~GetCustomComponents" // C4Object *pBuilder

@@ -498,8 +498,8 @@ void C4ControlSyncCheck::Execute() const
 		}
 		// Message
 		LogFatal("Network: Synchronization loss!");
-		LogFatal(FormatString("Network: %s Frm %i Ctrl %i Rnc %i Rn3 %i Cpx %i PXS %i MMi %i Obc %i Oei %i Sct %i", szThis,            Frame,           ControlTick,           RandomCount,           Random3,           AllCrewPosX,           PXSCount,           MassMoverIndex,           ObjectCount,           ObjectEnumerationIndex,           SectShapeSum).getData());
-		LogFatal(FormatString("Network: %s Frm %i Ctrl %i Rnc %i Rn3 %i Cpx %i PXS %i MMi %i Obc %i Oei %i Sct %i", szOther, SyncCheck.Frame, SyncCheck.ControlTick, SyncCheck.RandomCount, SyncCheck.Random3, SyncCheck.AllCrewPosX, SyncCheck.PXSCount, SyncCheck.MassMoverIndex, SyncCheck.ObjectCount, SyncCheck.ObjectEnumerationIndex, SyncCheck.SectShapeSum).getData());
+		LogFatal(std::format("Network: {} Frm {} Ctrl {} Rnc {} Rn3 {} Cpx {} PXS {} MMi {} Obc {} Oei {} Sct {}", szThis,            Frame,           ControlTick,           RandomCount,           Random3,           AllCrewPosX,           PXSCount,           MassMoverIndex,           ObjectCount,           ObjectEnumerationIndex,           SectShapeSum));
+		LogFatal(std::format("Network: {} Frm {} Ctrl {} Rnc {} Rn3 {} Cpx {} PXS {} MMi {} Obc {} Oei {} Sct {}", szOther, SyncCheck.Frame, SyncCheck.ControlTick, SyncCheck.RandomCount, SyncCheck.Random3, SyncCheck.AllCrewPosX, SyncCheck.PXSCount, SyncCheck.MassMoverIndex, SyncCheck.ObjectCount, SyncCheck.ObjectEnumerationIndex, SyncCheck.SectShapeSum));
 		StartSoundEffect("SyncError");
 #ifndef NDEBUG
 		// Debug safe
@@ -832,8 +832,8 @@ void C4ControlJoinPlayer::PreRec(C4Record *pRecord)
 		if (C4Group_CopyItem(pRes->getFile(), szTemp.getData()))
 		{
 			// add to record
-			StdStrBuf szTarget = FormatString("%d-%s", ResCore.getID(), GetFilename(ResCore.getFileName()));
-			pRecord->AddFile(szTemp.getData(), szTarget.getData(), true);
+			const std::string target{std::format("{}-{}", ResCore.getID(), GetFilename(ResCore.getFileName()))};
+			pRecord->AddFile(szTemp.getData(), target.c_str(), true);
 		}
 	}
 	else
@@ -1102,27 +1102,29 @@ void C4ControlMessage::Execute() const
 	case C4CMT_Normal:
 	case C4CMT_Me:
 	{
-		StdStrBuf log;
+		std::string log;
 		// log it
 		if (pPlr)
 		{
 			if (pPlr->AtClient != iByClient) break;
-			log = FormatString((eType == C4CMT_Normal ? (Config.General.UseWhiteIngameChat ? "<c %x><%s></c> %s" : "<c %x><%s> %s") : (Config.General.UseWhiteIngameChat ? "<c %x> * %s</c> %s" : "<c %x> * %s %s")),
-				pPlr->ColorDw, pPlr->GetName(), szMessage);
+			const char *const plrName{pPlr->GetName()};
+			log = std::vformat((eType == C4CMT_Normal ? (Config.General.UseWhiteIngameChat ? "<c {:x}><{}></c> {}" : "<c {:x}><{}> {}") : (Config.General.UseWhiteIngameChat ? "<c {:x}> * {}</c> {}" : "<c {:x}> * {} {}")),
+				std::make_format_args(pPlr->ColorDw, plrName, szMessage));
 		}
 		else
 		{
 			const auto white = pLobby && Config.General.UseWhiteLobbyChat;
 			C4Client *pClient = Game.Clients.getClientByID(iByClient);
-			log = FormatString((eType == C4CMT_Normal ? (white ? "<%s> <c ffffff>%s" : "<%s> %s") : (white ? " * %s <c ffffff>%s" : " * %s %s")),
-				pClient ? pClient->getNick() : "???", szMessage);
+			const char *const nick{pClient ? pClient->getNick() : "???"};
+			log = std::vformat((eType == C4CMT_Normal ? (white ? "<{}> <c ffffff>{}" : "<{}> {}") : (white ? " * {} <c ffffff>{}" : " * {} {}")),
+				std::make_format_args(nick, szMessage));
 		}
 		// 2 lobby
 		if (pLobby)
-			pLobby->OnMessage(Game.Clients.getClientByID(iByClient), log.getData());
+			pLobby->OnMessage(Game.Clients.getClientByID(iByClient), log.c_str());
 		// or 2 log
 		else
-			Log(log.getData());
+			Log(log);
 
 		checkAlert();
 		break;
@@ -1164,8 +1166,9 @@ void C4ControlMessage::Execute() const
 			if (!Game.PlayerInfos.HasSameTeamPlayers(iByClient, Game.Clients.getLocalID())) break;
 			// OK - permit message
 			C4Client *pClient = Game.Clients.getClientByID(iByClient);
+			const char *const nick{pClient ? pClient->getNick() : "???"};
 			pLobby->OnMessage(Game.Clients.getClientByID(iByClient),
-				FormatString(Config.General.UseWhiteLobbyChat ? "{%s} <c ffffff>%s" : "{%s} %s", pClient ? pClient->getNick() : "???", szMessage).getData());
+				std::vformat(Config.General.UseWhiteLobbyChat ? "{{{}}} <c ffffff>{}" : "{{{}}} {}", std::make_format_args(nick, szMessage)).c_str());
 		}
 
 		checkAlert();
@@ -1682,6 +1685,6 @@ void C4ControlScript::CheckStrictness(const C4AulScriptStrict strict, StdCompile
 {
 	if (!Inside(std::to_underlying(strict), std::to_underlying(C4AulScriptStrict::NONSTRICT), std::to_underlying(C4AulScriptStrict::MAXSTRICT)))
 	{
-		comp.excCorrupt("Invalid strictness: %hhu", std::to_underlying(strict));
+		comp.excCorrupt("Invalid strictness: {}", std::to_underlying(strict));
 	}
 }

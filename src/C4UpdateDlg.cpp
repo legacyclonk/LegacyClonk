@@ -67,9 +67,9 @@ void C4UpdateDlg::UpdateText()
 	{
 		if (errno == EAGAIN)
 			return;
-		StdStrBuf Errormessage = FormatString("read error from c4group: %s", strerror(errno));
-		Log(Errormessage.getData());
-		AddLine(Errormessage.getData());
+		const std::string errorMessage{std::format("read error from c4group: {}", strerror(errno))};
+		Log(errorMessage);
+		AddLine(Errormessage.c_str());
 		UpdateRunning = false;
 		succeeded = false;
 	}
@@ -83,20 +83,20 @@ void C4UpdateDlg::UpdateText()
 		if (waitpid(pid, &child_status, WNOHANG) == -1)
 		{
 			LogF("error in waitpid: %s", strerror(errno));
-			AddLineFmt("error in waitpid: %s", strerror(errno));
+			AddLine(std::format("error in waitpid: {}", strerror(errno)).c_str());
 			succeeded = false;
 		}
 		// check if c4group failed.
 		else if (WIFEXITED(child_status) && WEXITSTATUS(child_status))
 		{
 			LogF("c4group returned status %d", WEXITSTATUS(child_status));
-			AddLineFmt("c4group returned status %d", WEXITSTATUS(child_status));
+			AddLine(std::format("c4group returned status {}", WEXITSTATUS(child_status)).c_str());
 			succeeded = false;
 		}
 		else if (WIFSIGNALED(child_status))
 		{
 			LogF("c4group killed with signal %d", WTERMSIG(child_status));
-			AddLineFmt("c4group killed with signal %d", WTERMSIG(child_status));
+			AddLine(std::format("c4group killed with signal {}", WTERMSIG(child_status)).c_str());
 			succeeded = false;
 		}
 		else
@@ -111,7 +111,7 @@ void C4UpdateDlg::UpdateText()
 		c4group_output_buf[amount_read] = 0;
 		// Fixme: This adds spurious newlines in the middle of the output.
 		LogF("%s", c4group_output_buf);
-		AddLineFmt("%s", c4group_output_buf);
+		AddLine(c4group_output_buf);
 	}
 #endif
 
@@ -184,7 +184,7 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 	// Look for update program at top level
 	if (!UpdateGroup.ExtractEntry(strUpdateProg.getData(), strUpdateProg.getData()))
 		// Not found: look for an engine update pack one level down
-		if (UpdateGroup.FindEntry(FormatString("cr_*_%s.c4u", C4_OS).getData(), strSubGroup))
+		if (UpdateGroup.FindEntry(std::format("cr_*_%s.c4u", C4_OS).c_str(), strSubGroup))
 			// Extract update program from sub group
 			if (SubGroup.OpenAsChild(&UpdateGroup, strSubGroup))
 			{
@@ -358,7 +358,7 @@ bool C4UpdateDlg::CheckForUpdates(C4GUI::Screen *pScreen, bool fAutomatic)
 	if (C4UpdateDlg::IsValidUpdate(UpdateVersion))
 	{
 		// Prompt user, then apply update
-		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_ANUPDATETOVERSIONISAVAILA, UpdateVersion.GetString().getData())};
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_ANUPDATETOVERSIONISAVAILA, UpdateVersion.GetString())};
 		if (pScreen->ShowMessageModal(message.c_str(), Config.Network.UpdateServerAddress, C4GUI::MessageDialog::btnYesNo, C4GUI::Ico_Ex_Update))
 			if (!DoUpdate(UpdateVersion, pScreen))
 				pScreen->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_UPDATEFAILED), Config.Network.UpdateServerAddress, C4GUI::Ico_Ex_Update);

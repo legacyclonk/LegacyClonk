@@ -64,7 +64,7 @@ C4GameOptionsList::OptionDropdown::OptionDropdown(C4GameOptionsList *pForDlg, co
 	SetBounds(C4Rect(0, 0, pForDlg->GetItemWidth(), (!fTabular) * (iCaptHeight + iVerticalMargin * 2) + iVerticalMargin * 2 + iSelComboHgt));
 	C4GUI::ComponentAligner ca(GetContainedClientRect(), iHorizontalMargin, iVerticalMargin);
 	// create subcomponents
-	AddElement(pCaption = new C4GUI::Label(FormatString("%s:", szCaption).getData(), fTabular ? ca.GetFromLeft(iCaptWidth, iCaptHeight) : ca.GetFromTop(iCaptHeight), ALeft));
+	AddElement(pCaption = new C4GUI::Label(std::format("{}:", szCaption).c_str(), fTabular ? ca.GetFromLeft(iCaptWidth, iCaptHeight) : ca.GetFromTop(iCaptHeight), ALeft));
 	ca.ExpandLeft(-iComboMargin);
 	AddElement(pPrimarySubcomponent = pDropdownList = new C4GUI::ComboBox(ca.GetAll()));
 	pDropdownList->SetReadOnly(fReadOnly);
@@ -131,7 +131,7 @@ C4GameOptionsList::OptionControlRate::OptionControlRate(C4GameOptionsList *pForD
 void C4GameOptionsList::OptionControlRate::DoDropdownFill(C4GUI::ComboBox_FillCB *pFiller)
 {
 	for (int i = 1; i < (std::min)(C4MaxControlRate, 10); ++i)
-		pFiller->AddEntry(FormatString("%d", i).getData(), i);
+		pFiller->AddEntry(std::format("{}", i).c_str(), i);
 }
 
 void C4GameOptionsList::OptionControlRate::DoDropdownSelChange(int32_t idNewSelection)
@@ -145,7 +145,7 @@ void C4GameOptionsList::OptionControlRate::DoDropdownSelChange(int32_t idNewSele
 void C4GameOptionsList::OptionControlRate::Update()
 {
 	if (atoi(pDropdownList->GetText().getData()) == Game.Control.ControlRate) return;
-	pDropdownList->SetText(FormatString("%d", Game.Control.ControlRate).getData());
+	pDropdownList->SetText(std::format("{}", Game.Control.ControlRate).c_str());
 }
 
 // C4GameOptionsList::OptionRuntimeJoin
@@ -202,8 +202,7 @@ void C4GameOptionsList::OptionTeamDist::DoDropdownSelChange(int32_t idNewSelecti
 
 void C4GameOptionsList::OptionTeamDist::Update()
 {
-	StdStrBuf sOption; sOption.Take(Game.Teams.GetTeamDistString());
-	pDropdownList->SetText(sOption.getData());
+	pDropdownList->SetText(Game.Teams.GetTeamDistString().c_str());
 }
 
 // C4GameOptionsList::OptionTeamColors

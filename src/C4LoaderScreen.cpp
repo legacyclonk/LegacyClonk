@@ -82,7 +82,7 @@ bool C4LoaderScreen::Init(const char *szLoaderSpec)
 		// Not even default loaders available? Fail.
 		if (!iLoaders)
 		{
-			LogFatal(FormatString("No loaders found for loader specification: %s/%s/%s/%s", szLoaderSpecPng, szLoaderSpecBmp, szLoaderSpecJpg, szLoaderSpecJpeg).getData());
+			LogFatal(std::format("No loaders found for loader specification: {}/{}/{}/{}", szLoaderSpecPng, szLoaderSpecBmp, szLoaderSpecJpg, szLoaderSpecJpeg));
 			return false;
 		}
 	}

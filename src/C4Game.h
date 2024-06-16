@@ -372,7 +372,7 @@ const int32_t C4RULE_StructuresNeedEnergy      = 1,
 extern C4Game Game;
 
 // a global wrapper
-inline StdStrBuf GetKeyboardInputName(const char *szKeyName, bool fShort = false, int32_t iIndex = 0)
+inline std::string GetKeyboardInputName(const char *szKeyName, bool fShort = false, int32_t iIndex = 0)
 {
 	return Game.KeyboardInput.GetKeyCodeNameByKeyName(szKeyName, fShort, iIndex);
 }

@@ -54,7 +54,7 @@ std::optional<StdStrBuf> C4Value::toString() const
 
 	case C4V_Bool:
 	case C4V_Int:
-		return {FormatString("%d", val._getInt())};
+		return {StdStrBuf{std::format("{}", val._getInt()).c_str()}};
 
 	case C4V_C4ID:
 		return {StdStrBuf(C4IdText(val._getC4ID()))};

@@ -770,17 +770,17 @@ void C4TeamList::ReassignAllTeams()
 	}
 }
 
-StdStrBuf C4TeamList::GetTeamDistName(TeamDist eTeamDist) const
+std::string C4TeamList::GetTeamDistName(TeamDist eTeamDist) const
 {
 	switch (eTeamDist)
 	{
-	case TEAMDIST_Free:      return (StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_FREE),   true));
-	case TEAMDIST_Host:      return (StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_HOST),   true));
-	case TEAMDIST_None:      return (StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_NONE),   true));
-	case TEAMDIST_Random:    return (StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_RND),    true));
-	case TEAMDIST_RandomInv: return (StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_RNDINV), true));
+	case TEAMDIST_Free:      return LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_FREE);
+	case TEAMDIST_Host:      return LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_HOST);
+	case TEAMDIST_None:      return LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_NONE);
+	case TEAMDIST_Random:    return LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_RND);
+	case TEAMDIST_RandomInv: return LoadResStr(C4ResStrTableKey::IDS_MSG_TEAMDIST_RNDINV);
 	}
-	return (FormatString("TEAMDIST_undefined(%d)", static_cast<int>(eTeamDist)));
+	return std::format("TEAMDIST_undefined({})", std::to_underlying(eTeamDist));
 }
 
 void C4TeamList::FillTeamDistOptions(C4GUI::ComboBox_FillCB *pFiller) const
@@ -788,11 +788,11 @@ void C4TeamList::FillTeamDistOptions(C4GUI::ComboBox_FillCB *pFiller) const
 	// no teams if disabled
 	if (!fActive) return;
 	// team distribution options
-	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Free).getData(), TEAMDIST_Free);
-	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Host).getData(), TEAMDIST_Host);
-	if (IsAutoGenerateTeams()) pFiller->AddEntry(GetTeamDistName(TEAMDIST_None).getData(), TEAMDIST_None); // no teams: only for regular melees
-	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Random).getData(), TEAMDIST_Random);
-	pFiller->AddEntry(GetTeamDistName(TEAMDIST_RandomInv).getData(), TEAMDIST_RandomInv);
+	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Free).c_str(), TEAMDIST_Free);
+	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Host).c_str(), TEAMDIST_Host);
+	if (IsAutoGenerateTeams()) pFiller->AddEntry(GetTeamDistName(TEAMDIST_None).c_str(), TEAMDIST_None); // no teams: only for regular melees
+	pFiller->AddEntry(GetTeamDistName(TEAMDIST_Random).c_str(), TEAMDIST_Random);
+	pFiller->AddEntry(GetTeamDistName(TEAMDIST_RandomInv).c_str(), TEAMDIST_RandomInv);
 }
 
 void C4TeamList::SendSetTeamDist(TeamDist eNewTeamDist)
@@ -802,7 +802,7 @@ void C4TeamList::SendSetTeamDist(TeamDist eNewTeamDist)
 	Game.Control.DoInput(CID_Set, new C4ControlSet(C4CVT_TeamDistribution, eNewTeamDist), CDT_Sync);
 }
 
-StdStrBuf C4TeamList::GetTeamDistString() const
+std::string C4TeamList::GetTeamDistString() const
 {
 	// return name of current team distribution setting
 	return GetTeamDistName(eTeamDist);

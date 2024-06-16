@@ -56,7 +56,7 @@ void C4ToastLibNotify::AddAction(std::string_view action)
 
 	notify_notification_add_action(
 		notification,
-		FormatString("action-%lu", index).getData(),
+		std::format("action-{}", index).c_str(),
 		C4Language::IconvUtf8(std::string{action}.c_str()).getData(),
 		&C4ToastLibNotify::OnAction,
 		new UserData{this, index},

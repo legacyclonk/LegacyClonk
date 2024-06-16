@@ -71,10 +71,10 @@ protected:
 	CStdFile Log;
 
 	template<typename... Args>
-	void WriteLog(const char *strMsg, Args... args)
+	void WriteLog(const std::format_string<Args...> fmt, Args &&... args)
 	{
-		const auto output = FormatString(strMsg, args...);
-		Log.Write(output.getData(), output.getLength());
+		const std::string output{std::format(fmt, std::forward<Args>(args)...)};
+		Log.Write(output.c_str(), output.size());
 		Log.Flush();
 	}
 };

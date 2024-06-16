@@ -246,7 +246,7 @@ bool C4Network2IRCClient::OnConn(const C4NetIO::addr_t &AddrPeer, const C4NetIO:
 	if (!Password.isNull())
 		Send("PASS", Password.getData());
 	Send("NICK", Nick.getData());
-	Send("USER", FormatString("clonk x x :%s", RealName.getData()).getData());
+	Send("USER", std::format("clonk x x :{}", RealName.getData()).c_str());
 	// Okay
 	return true;
 }
@@ -364,7 +364,7 @@ bool C4Network2IRCClient::Send(const char *szCommand, const char *szParameters)
 
 bool C4Network2IRCClient::Quit(const char *szReason)
 {
-	if (!Send("QUIT", FormatString(":%s", szReason).getData()))
+	if (!Send("QUIT", std::format(":{}", szReason).c_str()))
 		return false;
 	// Must be last message
 	return Close();
@@ -382,7 +382,7 @@ bool C4Network2IRCClient::Part(const char *szChannel)
 
 bool C4Network2IRCClient::Message(const char *szTarget, const char *szText)
 {
-	if (!Send("PRIVMSG", FormatString("%s :%s", szTarget, szText).getData()))
+	if (!Send("PRIVMSG", std::format("{} :{}", szTarget, szText).c_str()))
 		return false;
 	PushMessage(MSG_Message, Nick.getData(), szTarget, szText);
 	return true;
@@ -390,7 +390,7 @@ bool C4Network2IRCClient::Message(const char *szTarget, const char *szText)
 
 bool C4Network2IRCClient::Notice(const char *szTarget, const char *szText)
 {
-	if (!Send("NOTICE", FormatString("%s :%s", szTarget, szText).getData()))
+	if (!Send("NOTICE", std::format("{} :{}", szTarget, szText).c_str()))
 		return false;
 	PushMessage(MSG_Notice, Nick.getData(), szTarget, szText);
 	return true;
@@ -398,7 +398,7 @@ bool C4Network2IRCClient::Notice(const char *szTarget, const char *szText)
 
 bool C4Network2IRCClient::Action(const char *szTarget, const char *szText)
 {
-	if (!Send("PRIVMSG", FormatString("%s :\1ACTION %s\1", szTarget, szText).getData()))
+	if (!Send("PRIVMSG", std::format("{} :\1ACTION {}\1", szTarget, szText).c_str()))
 		return false;
 	PushMessage(MSG_Action, Nick.getData(), szTarget, szText);
 	return true;
@@ -700,11 +700,11 @@ void C4Network2IRCClient::OnMessage(bool fNotice, const char *szSender, const ch
 			if (SEqualNoCase(Tag.getData(), "ACTION"))
 				PushMessage(MSG_Action, szSender, szTarget, szData);
 			if (SEqualNoCase(Tag.getData(), "VERSION") && !fNotice)
-				Send("NOTICE", FormatString("%s :%cVERSION " C4ENGINECAPTION ":" C4VERSION ":" C4_OS "%c",
-					Sender.getData(), X_DELIM, X_DELIM).getData());
+				Send("NOTICE", std::format("{} :{}VERSION " C4ENGINECAPTION ":" C4VERSION ":" C4_OS "{}",
+					Sender.getData(), X_DELIM, X_DELIM).c_str());
 			if (SEqualNoCase(Tag.getData(), "PING") && !fNotice)
-				Send("NOTICE", FormatString("%s :%cPING %s%c",
-					Sender.getData(), X_DELIM, szData, X_DELIM).getData());
+				Send("NOTICE", std::format("{} :{}PING {}{}",
+					Sender.getData(), X_DELIM, szData, X_DELIM).c_str());
 			// Get next message
 			pMsg = pEnd;
 			if (*pMsg == X_DELIM) pMsg++;

@@ -325,13 +325,13 @@ bool C4FontLoader::InitFont(CStdFont &rFont, const char *szFontName, FontType eT
 					{
 						AddVectorFont(pFont);
 						if (!InitFont(rFont, pFont, iDefFontSize, dwDefWeight, fDoShadow))
-							throw std::runtime_error(FormatString("Error initializing font %s", FontFaceName).getData());
+							throw std::runtime_error(std::format("Error initializing font {}", FontFaceName));
 					}
 					else
 					{
 						delete pFont;
 						// no match for font face found
-						throw std::runtime_error(FormatString("Font face %s undefined", FontFaceName).getData());
+						throw std::runtime_error(std::format("Font face {} undefined", FontFaceName));
 					}
 				}
 			}

@@ -1995,7 +1995,7 @@ struct C4NetIOUDP::BinAddr
 		return result;
 	}
 
-	StdStrBuf ToString() const
+	std::string ToString() const
 	{
 		return static_cast<C4NetIO::addr_t>(*this).ToString();
 	}
@@ -3527,7 +3527,7 @@ void C4NetIOUDP::DebugLogPkt(bool fOut, const C4NetIOPacket &Pkt)
 		switch (Hdr.StatusByte)
 		{
 		case IPID_Test: { UPACK(TestPacket); O.AppendFormat(" (%d)", P.TestNr); break; }
-		case IPID_Conn: { UPACK(ConnPacket); O.AppendFormat(" (Ver %d, MC: %s)", P.ProtocolVer, P.MCAddr.ToString().getData()); break; }
+		case IPID_Conn: { UPACK(ConnPacket); O.AppendFormat(" (Ver %d, MC: %s)", P.ProtocolVer, P.MCAddr.ToString()); break; }
 		case IPID_ConnOK:
 		{
 			UPACK(ConnOKPacket);

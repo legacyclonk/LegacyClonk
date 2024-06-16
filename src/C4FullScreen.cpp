@@ -525,7 +525,7 @@ bool C4FullScreen::ViewportCheck()
 			// Activate mouse control
 			Game.MouseControl.Init(iPlrNum);
 			// Display message for how to open observer menu (this message will be cleared if any owned viewport opens)
-			const std::string key{std::format("<c ffff00><{}></c>", Game.KeyboardInput.GetKeyCodeNameByKeyName("FullscreenMenuOpen", false).getData())};
+			const std::string key{std::format("<c ffff00><{}></c>", Game.KeyboardInput.GetKeyCodeNameByKeyName("FullscreenMenuOpen", false))};
 			Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_MSG_PRESSORPUSHANYGAMEPADBUTT, key).c_str());
 		}
 		break;

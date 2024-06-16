@@ -858,8 +858,7 @@ void Explosion(int32_t tx, int32_t ty, int32_t level, C4Object *inobj, int32_t i
 {
 	int32_t grade = BoundBy((level / 10) - 1, 1, 3);
 	// Sound
-	StdStrBuf sound = FormatString("Blast%c", '0' + grade);
-	StartSoundEffect(sound.getData(), false, 100, pByObj);
+	StartSoundEffect(std::format("Blast{}", '0' + grade).c_str(), false, 100, pByObj);
 	// Check blast containment
 	C4Object *container = inobj;
 	while (container && !container->Def->ContainBlast) container = container->Contained;

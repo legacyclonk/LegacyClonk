@@ -64,7 +64,7 @@ static struct DeveloperList : public PersonList
 
 		for (auto &p : developers)
 		{
-			textbox->AddTextLine(p.nick ? FormatString("%s <c f7f76f>(%s)</c>", p.name, p.nick).getData() : p.name, &font, C4GUI_MessageFontClr, false, true);
+			textbox->AddTextLine(p.nick ? std::format("{} <c f7f76f>({})</c>", p.name, p.nick).c_str() : p.name, &font, C4GUI_MessageFontClr, false, true);
 		}
 	}
 

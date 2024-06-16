@@ -290,13 +290,13 @@ C4Group *C4GroupSet::RegisterParentFolders(const char *szScenFilename)
 			{
 				if (!pGroup->OpenAsChild(pParentGroup, szParentfolder + iPos))
 				{
-					LogFatal(FormatString("%s: %s", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), szParentfolder + iPos).getData());
+					LogFatal(std::format("{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), szParentfolder + iPos));
 					delete pGroup; return nullptr;
 				}
 			}
 			else if (!pGroup->Open(szParentfolder + iPos))
 			{
-				LogFatal(FormatString("%s: %s", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), szParentfolder + iPos).getData());
+				LogFatal(std::format("{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), szParentfolder + iPos));
 				delete pGroup; return nullptr;
 			}
 			// set this group as new parent

@@ -122,8 +122,7 @@ void C4DownloadDlg::OnIdle()
 			iProgress = static_cast<int32_t>(100 * HTTPClient.getDownloadedSize() / iSize);
 		}
 	}
-	const char *szStatusString = LoadResStr(C4ResStrTableKey::IDS_PRC_DOWNLOADINGFILE);
-	SetStatus(FormatString(szStatusString, GetFilename(HTTPClient.getURL())).getData(), iProgress);
+	SetStatus(LoadResStr(C4ResStrTableKey::IDS_PRC_DOWNLOADINGFILE, GetFilename(HTTPClient.getURL())).c_str(), iProgress);
 }
 
 void C4DownloadDlg::UserClose(bool fOK)

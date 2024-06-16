@@ -185,7 +185,7 @@ public:
 
 	// * Position
 	// May return information about the current position of compilation (used for errors and warnings)
-	virtual StdStrBuf getPosition() const { return StdStrBuf(); }
+	virtual std::string getPosition() const { return ""; }
 
 	// * Passes
 	virtual void Begin() {}
@@ -253,35 +253,35 @@ public:
 	class Exception : public std::runtime_error
 	{
 	protected:
-		Exception(StdStrBuf &&Pos, StdStrBuf &&Msg) : runtime_error{Msg.getData()}, Pos(std::forward<StdStrBuf>(Pos)) {}
+		Exception(std::string pos, std::string msg) : runtime_error{std::move(msg)}, Pos{std::move(pos)} {}
 
 	private:
 		// do not copy
 		Exception(const Exception &Exc) = delete;
 
 	public:
-		StdStrBuf Pos;
+		std::string Pos;
 	};
 
 	class NotFoundException : public Exception
 	{
 		friend class StdCompiler;
 
-		NotFoundException(StdStrBuf &&Pos, StdStrBuf &&Msg) : Exception(std::forward<StdStrBuf>(Pos), std::forward<StdStrBuf>(Msg)) {}
+		NotFoundException(std::string pos, std::string msg) : Exception(std::move(pos), std::move(msg)) {}
 	};
 
 	class EOFException : public Exception
 	{
 		friend class StdCompiler;
 
-		EOFException(StdStrBuf &&Pos, StdStrBuf &&Msg) : Exception(std::forward<StdStrBuf>(Pos), std::forward<StdStrBuf>(Msg)) {}
+		EOFException(std::string pos, std::string msg) : Exception(std::move(pos), std::move(msg)) {}
 	};
 
 	class CorruptException : public Exception
 	{
 		friend class StdCompiler;
 
-		CorruptException(StdStrBuf &&Pos, StdStrBuf &&Msg) : Exception(std::forward<StdStrBuf>(Pos), std::forward<StdStrBuf>(Msg)) {}
+		CorruptException(std::string pos, std::string msg) : Exception(std::move(pos), std::move(msg)) {}
 	};
 
 	// Throw helpers (might redirect)
@@ -289,21 +289,21 @@ public:
 	void excNotFound(const char *szMessage, Args... args)
 	{
 		// Throw the appropriate exception
-		throw NotFoundException(getPosition(), FormatString(szMessage, args...));
+		throw NotFoundException(getPosition(), std::vformat(szMessage, std::make_format_args(args...)));
 	}
 
 	template<typename... Args>
 	void excEOF(const char *szMessage = "EOF", Args... args)
 	{
 		// Throw the appropriate exception
-		throw EOFException(getPosition(), FormatString(szMessage, args...));
+		throw EOFException(getPosition(), std::vformat(szMessage, std::make_format_args(args...)));
 	}
 
 	template<typename... Args>
 	void excCorrupt(const char *szMessage, Args... args)
 	{
 		// Throw the appropriate exception
-		throw CorruptException(getPosition(), FormatString(szMessage, args...));
+		throw CorruptException(getPosition(), std::vformat(szMessage, std::make_format_args(args...)));
 	}
 
 public:
@@ -317,7 +317,7 @@ public:
 		// Got warning callback?
 		if (!pWarnCB) return;
 		// do callback
-		(*pWarnCB)(pWarnData, getPosition().getData(), fmt::sprintf(szWarning, args...).c_str());
+		(*pWarnCB)(pWarnData, getPosition().c_str(), fmt::sprintf(szWarning, args...).c_str());
 	}
 
 private:
@@ -501,7 +501,7 @@ public:
 	virtual void Raw(void *pData, size_t iSize, RawCompileType eType = RCT_Escaped) override;
 
 	// Position
-	virtual StdStrBuf getPosition() const override;
+	virtual std::string getPosition() const override;
 
 	// Passes
 	virtual void Begin() override;
@@ -651,7 +651,7 @@ public:
 	virtual void Raw(void *pData, size_t iSize, RawCompileType eType = RCT_Escaped) override;
 
 	// Position
-	virtual StdStrBuf getPosition() const override;
+	virtual std::string getPosition() const override;
 
 	// Passes
 	virtual void Begin() override;

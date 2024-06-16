@@ -1689,7 +1689,7 @@ bool C4PlayerInfoList::SetAsRestoreInfos(C4PlayerInfoList &rFromPlayers, bool fS
 					if (fSetScriptPlrRefToLocalGroup)
 					{
 						// just compose a unique filename for script player
-						pInfo->SetFilename(FormatString("ScriptPlr-%d.c4p", static_cast<int>(pInfo->GetID())).getData());
+						pInfo->SetFilename(std::format("ScriptPlr-{}.c4p", pInfo->GetID()).c_str());
 					}
 				}
 			}

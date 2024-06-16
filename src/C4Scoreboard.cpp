@@ -277,8 +277,8 @@ void C4Scoreboard::CompileFunc(StdCompiler *pComp)
 			for (int32_t iCol = 0; iCol < iCols; ++iCol)
 			{
 				Entry *pEnt = GetCell(iCol, iRow);
-				pComp->Value(mkNamingAdapt(pEnt->Text, FormatString("Cell%i_%iString", iCol, iRow).getData()));
-				pComp->Value(mkNamingAdapt(pEnt->iVal, FormatString("Cell%i_%iValue",  iCol, iRow).getData()));
+				pComp->Value(mkNamingAdapt(pEnt->Text, std::format("Cell{}_{}String", iCol, iRow).c_str()));
+				pComp->Value(mkNamingAdapt(pEnt->iVal, std::format("Cell{}_{}Value",  iCol, iRow).c_str()));
 			}
 		// recheck dlg show in read mode
 		// will usually not do anything, because reading is done before enetering shared mode

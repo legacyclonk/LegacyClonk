@@ -118,11 +118,11 @@ bool FrameDecoration::SetByDef(C4ID idSourceDef)
 	Clear();
 	this->idSourceDef = idSourceDef;
 	// query values
-	dwBackClr = pSrcDef->Script.Call(FormatString(PSF_FrameDecoration, "BackClr").getData()).getInt();
-	iBorderTop = pSrcDef->Script.Call(FormatString(PSF_FrameDecoration, "BorderTop").getData()).getInt();
-	iBorderLeft = pSrcDef->Script.Call(FormatString(PSF_FrameDecoration, "BorderLeft").getData()).getInt();
-	iBorderRight = pSrcDef->Script.Call(FormatString(PSF_FrameDecoration, "BorderRight").getData()).getInt();
-	iBorderBottom = pSrcDef->Script.Call(FormatString(PSF_FrameDecoration, "BorderBottom").getData()).getInt();
+	dwBackClr = pSrcDef->Script.Call(std::format(PSF_FrameDecoration, "BackClr").c_str()).getInt();
+	iBorderTop = pSrcDef->Script.Call(std::format(PSF_FrameDecoration, "BorderTop").c_str()).getInt();
+	iBorderLeft = pSrcDef->Script.Call(std::format(PSF_FrameDecoration, "BorderLeft").c_str()).getInt();
+	iBorderRight = pSrcDef->Script.Call(std::format(PSF_FrameDecoration, "BorderRight").c_str()).getInt();
+	iBorderBottom = pSrcDef->Script.Call(std::format(PSF_FrameDecoration, "BorderBottom").c_str()).getInt();
 	// get gfx
 	SetFacetByAction(pSrcDef, fctTop, "Top");
 	SetFacetByAction(pSrcDef, fctTopRight, "TopRight");

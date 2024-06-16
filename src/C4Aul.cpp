@@ -304,7 +304,7 @@ C4AulScriptFunc *C4AulScript::GetSFuncWarn(const char *pIdtf, C4AulAccess AccNee
 	// get func?
 	C4AulScriptFunc *pFn = GetSFunc(pIdtf, AccNeeded, true);
 	if (!pFn)
-		Warn(FormatString("Error getting %s function '%s'", WarnStr, pIdtf).getData(), nullptr);
+		Warn(std::format("Error getting {} function '{}'", WarnStr, pIdtf), nullptr);
 	return pFn;
 }
 
@@ -437,7 +437,7 @@ C4AulScriptEngine::C4AulScriptEngine() :
 {
 	// /me r b engine
 	Engine = this;
-	ScriptName.Ref(C4CFN_System);
+	ScriptName = C4CFN_System;
 	Strict = C4AulScriptStrict::MAXSTRICT;
 
 	Global.Reset();

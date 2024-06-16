@@ -681,17 +681,17 @@ void C4GraphicsSystem::DrawHelp()
 				"<c ffff00>{}</c> - {}\n",
 
 				LoadResStr(C4ResStrTableKey::IDS_CTL_GAMEFUNCTIONS),
-				GetKeyboardInputName("ToggleShowHelp").getData(), LoadResStr(C4ResStrTableKey::IDS_CON_HELP),
-				GetKeyboardInputName("MusicToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MUSIC),
-				GetKeyboardInputName("SoundToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SOUND),
-				GetKeyboardInputName("NetClientListDlgToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_NETWORK),
-				GetKeyboardInputName("ChatOpen", false, 1).getData(), GetKeyboardInputName("ChatOpen", false, 0).getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SENDMESSAGE),
-				GetKeyboardInputName("MsgBoardScrollUp").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MESSAGEBOARDBACK),
-				GetKeyboardInputName("MsgBoardScrollDown").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_MESSAGEBOARDFORWARD),
-				GetKeyboardInputName("ToggleChat").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_IRCCHAT),
-				GetKeyboardInputName("ScoreboardToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCOREBOARD),
-				GetKeyboardInputName("Screenshot").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCREENSHOT),
-				GetKeyboardInputName("ScreenshotEx").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_SCREENSHOTEX)
+				GetKeyboardInputName("ToggleShowHelp"), LoadResStr(C4ResStrTableKey::IDS_CON_HELP),
+				GetKeyboardInputName("MusicToggle"), LoadResStr(C4ResStrTableKey::IDS_CTL_MUSIC),
+				GetKeyboardInputName("SoundToggle"), LoadResStr(C4ResStrTableKey::IDS_CTL_SOUND),
+				GetKeyboardInputName("NetClientListDlgToggle"), LoadResStr(C4ResStrTableKey::IDS_DLG_NETWORK),
+				GetKeyboardInputName("ChatOpen", false, 1), GetKeyboardInputName("ChatOpen", false, 0), LoadResStr(C4ResStrTableKey::IDS_CTL_SENDMESSAGE),
+				GetKeyboardInputName("MsgBoardScrollUp"), LoadResStr(C4ResStrTableKey::IDS_CTL_MESSAGEBOARDBACK),
+				GetKeyboardInputName("MsgBoardScrollDown"), LoadResStr(C4ResStrTableKey::IDS_CTL_MESSAGEBOARDFORWARD),
+				GetKeyboardInputName("ToggleChat"), LoadResStr(C4ResStrTableKey::IDS_CTL_IRCCHAT),
+				GetKeyboardInputName("ScoreboardToggle"), LoadResStr(C4ResStrTableKey::IDS_CTL_SCOREBOARD),
+				GetKeyboardInputName("Screenshot"), LoadResStr(C4ResStrTableKey::IDS_CTL_SCREENSHOT),
+				GetKeyboardInputName("ScreenshotEx"), LoadResStr(C4ResStrTableKey::IDS_CTL_SCREENSHOTEX)
 				)};
 
 	Application.DDraw->TextOut(text.c_str(), Game.GraphicsResource.FontRegular, 1.0, Application.DDraw->lpBack,
@@ -709,12 +709,12 @@ void C4GraphicsSystem::DrawHelp()
 			   "<c ffff00>{}</c> - {}\n"
 			   "<c ffff00>{}</c> - {}\n",
 
-			   GetKeyboardInputName("GameSpeedUp").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDUP),
-			   GetKeyboardInputName("GameSpeedDown").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDDOWN),
-			   GetKeyboardInputName("DbgModeToggle").getData(), LoadResStr(C4ResStrTableKey::IDS_CTL_DEBUGMODE),
-			   GetKeyboardInputName("DbgShowVtxToggle").getData(), "Entrance+Vertices",
-			   GetKeyboardInputName("DbgShowActionToggle").getData(), "Actions/Commands/Pathfinder",
-			   GetKeyboardInputName("DbgShowSolidMaskToggle").getData(), "SolidMasks"
+			   GetKeyboardInputName("GameSpeedUp"), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDUP),
+			   GetKeyboardInputName("GameSpeedDown"), LoadResStr(C4ResStrTableKey::IDS_CTL_GAMESPEEDDOWN),
+			   GetKeyboardInputName("DbgModeToggle"), LoadResStr(C4ResStrTableKey::IDS_CTL_DEBUGMODE),
+			   GetKeyboardInputName("DbgShowVtxToggle"), "Entrance+Vertices",
+			   GetKeyboardInputName("DbgShowActionToggle"), "Actions/Commands/Pathfinder",
+			   GetKeyboardInputName("DbgShowSolidMaskToggle"), "SolidMasks"
 			   );
 
 	Application.DDraw->TextOut(text.c_str(), Game.GraphicsResource.FontRegular, 1.0, Application.DDraw->lpBack,

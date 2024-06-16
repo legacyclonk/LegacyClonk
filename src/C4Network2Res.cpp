@@ -485,8 +485,8 @@ bool C4Network2Res::SetByCore(const C4Network2ResCore &nCore, bool fSilent, cons
 				if (!szNetPath || !*szNetPath || !ItemIdentical(*i, szNetPath)) // ignore network path
 				{
 					// search for complete name at subpath (e.g. MyFolder\Easy.c4f\Castle.c4s)
-					const auto sFilename = FormatString("%s%c%s", *i, DirectorySeparator, szFilenameC4);
-					if (SetByCore(nCore, fSilent, sFilename.getData(), iRecursion + 1))
+					const std::string filename{std::format("{}" DirSep "{}", *i, szFilenameC4)};
+					if (SetByCore(nCore, fSilent, filename.c_str(), iRecursion + 1))
 						return true;
 				}
 	// file could not be found locally

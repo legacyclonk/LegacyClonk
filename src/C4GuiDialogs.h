@@ -317,12 +317,6 @@ protected:
 	// add text to the info window
 	void AddLine(const char *szText);
 
-	template<typename... Args>
-	void AddLineFmt(const char *szFmtString, Args... args)
-	{
-		AddLine(FormatString(szFmtString, args...).getData());
-	}
-
 	void BeginUpdateText(); // backup scrolling and clear text window
 	void EndUpdateText();   // restore scroll pos; set last update time
 

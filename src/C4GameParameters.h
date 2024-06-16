@@ -173,7 +173,7 @@ public:
 	bool isLeague() const { return !!LeagueAddress.getLength(); }
 	bool doStreaming() const { return !!StreamAddress.getLength(); }
 	const char *getLeague() { return League.getData(); }
-	StdStrBuf GetGameGoalString();
+	std::string GetGameGoalString();
 	void EnforceLeagueRules(class C4Scenario *pScenario);
 	bool CheckLeagueRulesStart(bool fFixIt);
 

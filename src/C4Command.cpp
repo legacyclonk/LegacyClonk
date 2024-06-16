@@ -2430,7 +2430,7 @@ int32_t C4Command::CallFailed()
 	// No function name or no target object: cannot call fail-function
 	if (Text.empty() || !Target) return 0;
 	// Call failed-function
-	return Target->Call(FormatString("~%sFailed", Text.c_str()).getData(),
+	return Target->Call(std::format("~{}Failed", Text).c_str(),
 		{C4VObj(cObj), Tx, C4VInt(Ty), C4VObj(Target2)})._getInt();
 	// Extreme caution notice: the script call might do just about anything
 	// including clearing all commands (including this) i.e. through a call

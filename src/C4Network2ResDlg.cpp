@@ -112,7 +112,7 @@ void C4Network2ResDlg::ListItem::LocalSaveResource(bool fDoOverwrite)
 	if (WildcardMatch(C4CFN_PlayerFiles, szFilename))
 		// write players to player path
 		szSpecialPath = Config.General.PlayerPath;
-	const char *szTarget = Config.AtExePath(FormatString("%s%s", szSpecialPath, szFilename).getData());
+	const char *szTarget = Config.AtExePath(std::format("{}{}", szSpecialPath, szFilename).c_str());
 	if (!fDoOverwrite && ItemExists(szTarget))
 	{
 		// show a confirmation dlg, asking whether the ressource should be overwritten

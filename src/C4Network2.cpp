@@ -363,7 +363,7 @@ C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2
 	// Warm up netpuncher
 	InitPuncher();
 	// try to connect host
-	StdStrBuf strAddresses; int iSuccesses = 0;
+	std::string addresses; int iSuccesses = 0;
 	for (const auto &addr : addrs)
 	{
 		if (!addr.isIPNull())
@@ -388,9 +388,9 @@ C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2
 				return NetIO.Connect(a, addr.GetProtocol(), HostCore, szPassword); });
 			if (cnt == 0) continue;
 			// format for message
-			if (strAddresses.getLength())
-				strAddresses.Append(", ");
-			strAddresses.Append(addr.toString());
+			if (!addresses.empty())
+				addresses += ", ";
+			addresses += addr.ToString();
 			++iSuccesses;
 		}
 	}
@@ -400,7 +400,7 @@ C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2
 		Clear(); return IR_Error;
 	}
 	// log
-	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_CONNECTHOST, strAddresses.getData())};
+	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_CONNECTHOST, addresses)};
 	Log(message);
 	// show box
 	C4GUI::MessageDialog *pDlg = nullptr;
@@ -624,7 +624,7 @@ bool C4Network2::RetrieveScenario(char *szScenario)
 		return false;
 
 	// create unpacked copy of scenario
-	if (!ResList.FindTempResFileName(FormatString("Combined%d.c4s", Game.Clients.getLocalID()).getData(), szScenario) ||
+	if (!ResList.FindTempResFileName(std::format("Combined{}.c4s", Game.Clients.getLocalID()).c_str(), szScenario) ||
 		!C4Group_CopyItem(pScenario->getFile(), szScenario) ||
 		!C4Group_UnpackDirectory(szScenario))
 		return false;
@@ -1049,7 +1049,7 @@ void C4Network2::OnPuncherConnect(const C4NetIO::addr_t addr)
 {
 	// NAT punching is only relevant for IPv4, so convert here to show a proper address.
 	const auto &maybeV4 = addr.AsIPv4();
-	LogSilentF("Adding address from puncher: %s", maybeV4.ToString().getData());
+	LogSilentF("Adding address from puncher: %s", maybeV4.ToString());
 	// Add for local client
 	if (const auto &local = Clients.GetLocal())
 	{
@@ -1199,13 +1199,13 @@ void C4Network2::DrawStatus(C4FacetEx &cgo)
 			stat += std::format( "|   Connections: {}: {} ({} p{} l{})",
 				pClient->getMsgConn() == pClient->getDataConn() ? "Msg/Data" : "Msg",
 				NetIO.getNetIOName(pClient->getMsgConn()->getNetClass()),
-				pClient->getMsgConn()->getPeerAddr().ToString().getData(),
+				pClient->getMsgConn()->getPeerAddr().ToString(),
 				pClient->getMsgConn()->getPingTime(),
 				pClient->getMsgConn()->getPacketLoss());
 			if (pClient->getMsgConn() != pClient->getDataConn())
 				stat += std::format(", Data: {} ({} p{} l{})",
 					NetIO.getNetIOName(pClient->getDataConn()->getNetClass()),
-					pClient->getDataConn()->getPeerAddr().ToString().getData(),
+					pClient->getDataConn()->getPeerAddr().ToString(),
 					pClient->getDataConn()->getPingTime(),
 					pClient->getDataConn()->getPacketLoss());
 		}
@@ -1278,13 +1278,13 @@ void C4Network2::HandleConn(const C4PacketConn &Pkt, C4Network2IOConnection *pCo
 	if (!pClient && Pkt.getCCore().getID() != C4ClientIDUnknown)
 		pClient = Clients.GetClient(Pkt.getCCore());
 
-	StdStrBuf tmp;
+	std::string tmp;
 	// check engine version
 	bool fWrongPassword = false;
 	if (Pkt.getVer() != C4XVERBUILD)
 	{
-		tmp = FormatString("wrong engine (%d, I have %d)", Pkt.getVer(), C4XVERBUILD);
-		szReply = tmp.getData();
+		tmp = std::format("wrong engine ({}, I have {})", Pkt.getVer(), C4XVERBUILD);
+		szReply = tmp.c_str();
 		fOK = false;
 	}
 	else
@@ -1349,7 +1349,7 @@ void C4Network2::HandleConn(const C4PacketConn &Pkt, C4Network2IOConnection *pCo
 	else
 	{
 		// log & close
-		LogSilentF("Network: connection by %s (%s) blocked: %s", CCore.getName(), pConn->getPeerAddr().ToString().getData(), szReply);
+		LogSilentF("Network: connection by %s (%s) blocked: %s", CCore.getName(), pConn->getPeerAddr().ToString(), szReply);
 		pConn->Close();
 	}
 }
@@ -1437,7 +1437,7 @@ void C4Network2::HandleConnRe(const C4PacketConnRe &Pkt, C4Network2IOConnection 
 		// wrong password?
 		fWrongPassword = Pkt.isPasswordWrong();
 		// show message
-		LogSilentF("Network: connection to %s (%s) refused: %s", pClient->getName(), pConn->getPeerAddr().ToString().getData(), Pkt.getMsg());
+		LogSilentF("Network: connection to %s (%s) refused: %s", pClient->getName(), pConn->getPeerAddr().ToString(), Pkt.getMsg());
 		// close connection
 		pConn->Close();
 		return;
@@ -1702,7 +1702,7 @@ void C4Network2::OnConnect(C4Network2Client *pClient, C4Network2IOConnection *pC
 {
 	// log
 	LogSilentF("Network: %s %s connected (%s/%s) (%s)", (pClient->isHost() ? "host" : "client"),
-		pClient->getName(), pConn->getPeerAddr().ToString().getData(),
+		pClient->getName(), pConn->getPeerAddr().ToString(),
 		NetIO.getNetIOName(pConn->getNetClass()), (szMsg ? szMsg : ""));
 
 	// first connection for this peer? call special handler
@@ -1712,7 +1712,7 @@ void C4Network2::OnConnect(C4Network2Client *pClient, C4Network2IOConnection *pC
 void C4Network2::OnConnectFail(C4Network2IOConnection *pConn)
 {
 	LogSilentF("Network: %s connection to %s failed!", NetIO.getNetIOName(pConn->getNetClass()),
-		pConn->getPeerAddr().ToString().getData());
+		pConn->getPeerAddr().ToString());
 
 	// maybe client connection failure
 	// (happens if the connection is not fully accepted and the client disconnects.
@@ -1725,7 +1725,7 @@ void C4Network2::OnConnectFail(C4Network2IOConnection *pConn)
 void C4Network2::OnDisconnect(C4Network2Client *pClient, C4Network2IOConnection *pConn)
 {
 	LogSilentF("Network: %s connection to %s (%s) lost!", NetIO.getNetIOName(pConn->getNetClass()),
-		pClient->getName(), pConn->getPeerAddr().ToString().getData());
+		pClient->getName(), pConn->getPeerAddr().ToString());
 
 	// connection lost?
 	if (!pClient->isConnected())

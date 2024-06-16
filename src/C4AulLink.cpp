@@ -290,7 +290,7 @@ void C4AulScriptEngine::Link(C4DefList *rDefs)
 				Warn("non-#strict script detected, but def is lost", nullptr);
 				Warn("please contact piracy@treffpunktclonk.net for further instructions", nullptr);
 			}
-			Warn(FormatString("%d script%s use non-#strict syntax!", nonStrictCnt, (nonStrictCnt != 1 ? "s" : "")).getData(), nullptr);
+			Warn(std::format("{} script{} use non-#strict syntax!", nonStrictCnt, (nonStrictCnt != 1 ? "s" : "")), nullptr);
 		}
 
 		// update material pointers

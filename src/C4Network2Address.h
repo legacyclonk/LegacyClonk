@@ -92,7 +92,7 @@ public:
 	bool IsLocal() const; // IPv6 link-local address
 	bool IsPrivate() const; // IPv6 ULA or IPv4 private address range
 
-	StdStrBuf ToString(int flags = 0) const;
+	std::string ToString(int flags = 0) const;
 
 	bool operator ==(const C4Network2HostAddress &rhs) const;
 
@@ -119,7 +119,7 @@ public:
 	explicit C4Network2EndpointAddress(const StdStrBuf &addr) { SetAddress(addr); }
 
 public:
-	StdStrBuf ToString(int flags = 0) const;
+	std::string ToString(int flags = 0) const;
 
 	void Clear();
 
@@ -128,6 +128,7 @@ public:
 	void SetAddress(C4Network2HostAddress::SpecialAddress addr, std::uint16_t port = IPPORT_NONE);
 	void SetAddress(const C4Network2HostAddress &host, std::uint16_t port = IPPORT_NONE);
 	void SetAddress(const StdStrBuf &addr, AddressFamily family = UnknownFamily);
+	void SetAddress(const std::string &addr, AddressFamily family = UnknownFamily);
 
 	C4Network2HostAddress GetHost() const { return *this; } // HostAddress copy ctor slices off port information
 	C4Network2EndpointAddress AsIPv6() const; // Convert an IPv4 address to an IPv6-mapped IPv4 address
@@ -216,7 +217,7 @@ public:
 	std::uint16_t GetPort() const { return addr.GetPort(); }
 	C4Network2IOProtocol GetProtocol() const { return protocol; }
 
-	StdStrBuf toString() const;
+	std::string ToString() const;
 
 	void SetAddr(const C4Network2EndpointAddress naddr) { addr = naddr.AsIPv4(); }
 	void SetIP(const C4Network2EndpointAddress ip) { addr.SetAddress(ip.AsIPv4()); }

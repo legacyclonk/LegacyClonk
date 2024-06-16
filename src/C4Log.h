@@ -21,6 +21,7 @@
 #include <StdBuf.h>
 #include <StdCompiler.h>
 
+#include <mutex>
 #include <span>
 
 #include <fmt/printf.h>
@@ -30,7 +31,7 @@
 class C4LogSystem
 {
 public:
-	class LogSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex>
+	class LogSink : public spdlog::sinks::base_sink<std::mutex>
 	{
 	public:
 		LogSink();
@@ -99,9 +100,9 @@ bool DebugLogF(const std::string_view message, Args &&... args)
 	return DebugLog(fmt::sprintf(message, std::forward<Args>(args)...));
 }
 
-bool LogFatal(const char *szMessage); // log message and store it as a fatal error
+bool LogFatal(std::string_view message); // log message and store it as a fatal error
 void ResetFatalError();               // clear any fatal error message
-const char *GetFatalError();          // return message that was set as fatal error, if any
+std::string_view GetFatalError();          // return message that was set as fatal error, if any
 
 // Used to print a backtrace after a crash
 int GetLogFD();
