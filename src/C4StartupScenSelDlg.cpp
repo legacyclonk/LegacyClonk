@@ -1771,7 +1771,7 @@ bool C4StartupScenSelDlg::KeyDelete()
 		}
 		Grp.Close();
 	}
-	const std::string warning{LoadResStr(fOriginal ? C4ResStrTableKey::IDS_MSG_DELETEORIGINAL : C4ResStrTableKey::IDS_MSG_PROMPTDELETE, std::format("{} {}", pEnt->GetTypeName().getData(), pEnt->GetName().getData()))};
+	const std::string warning{LoadResStrChoice(fOriginal, C4ResStrTableKey::IDS_MSG_DELETEORIGINAL, C4ResStrTableKey::IDS_MSG_PROMPTDELETE, std::format("{} {}", pEnt->GetTypeName().getData(), pEnt->GetName().getData()))};
 	GetScreen()->ShowRemoveDlg(new C4GUI::ConfirmationDialog(warning.c_str(), LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE),
 		new C4GUI::CallbackHandlerExPar<C4StartupScenSelDlg, ScenListItem *>(this, &C4StartupScenSelDlg::DeleteConfirm, pSel), C4GUI::MessageDialog::btnYesNo));
 	return true;

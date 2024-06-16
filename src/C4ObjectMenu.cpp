@@ -140,7 +140,8 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 	// Variables
 	C4FacetExSurface fctSymbol;
 	C4Object *pObj;
-	char szCaption[256 + 1], szCommand[256 + 1], szCommand2[256 + 1];
+	std::string caption;
+	char szCommand[256 + 1], szCommand2[256 + 1];
 	int32_t cnt, iCount;
 	C4Def *pDef;
 	C4Player *pPlayer;
@@ -191,7 +192,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					if (pObj2) if (pObj2->CanConcatPictureWith(pObj)) pObj = pObj2;
 				}
 				// Caption
-				sprintf(szCaption, LoadResStr(C4ResStrTableKey::IDS_MENU_ACTIVATE), pObj->GetName());
+				caption = LoadResStr(C4ResStrTableKey::IDS_MENU_ACTIVATE, pObj->GetName());
 				// Picture
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
@@ -199,7 +200,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				sprintf(szCommand, "SetCommand(this,\"Activate\",Object(%d))&&ExecuteCommand()", pObj->Number);
 				sprintf(szCommand2, "SetCommand(this,\"Activate\", ,%d,0,Object(%d),%s)&&ExecuteCommand()", pTarget->Contents.ObjectCount(pDef->id), pTarget->Number, C4IdText(pDef->id));
 				// Add menu item
-				Add(szCaption, fctSymbol, szCommand, iCount, pObj, pDef->GetDesc(), pDef->id, szCommand2, true, pObj->GetValue(pTarget, NO_OWNER));
+				Add(caption.c_str(), fctSymbol, szCommand, iCount, pObj, pDef->GetDesc(), pDef->id, szCommand2, true, pObj->GetValue(pTarget, NO_OWNER));
 				// facet taken over (arrg!)
 				fctSymbol.Default();
 			}
@@ -224,7 +225,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			pDef = C4Id2Def(idDef);
 			if (!pDef) continue; // skip invalid defs
 			// Caption
-			sprintf(szCaption, LoadResStr(C4ResStrTableKey::IDS_MENU_BUY), pDef->GetName());
+			caption = LoadResStr(C4ResStrTableKey::IDS_MENU_BUY, pDef->GetName());
 			// Picture
 			pDef->Picture2Facet(fctSymbol, pBuyPlayer ? pBuyPlayer->ColorDw : 0);
 			// Command
@@ -233,7 +234,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			// Buying value
 			int32_t iBuyValue = pDef->GetValue(pTarget, pPlayer->Number);
 			// Add menu item
-			Add(szCaption, fctSymbol, szCommand, iCount, nullptr, pDef->GetDesc(), pDef->id, szCommand2, true, iBuyValue);
+			Add(caption.c_str(), fctSymbol, szCommand, iCount, nullptr, pDef->GetDesc(), pDef->id, szCommand2, true, iBuyValue);
 		}
 		break;
 	}
@@ -261,7 +262,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					if (pObj2) if (pObj2->CanConcatPictureWith(pObj)) pObj = pObj2;
 				}
 				// Caption
-				sprintf(szCaption, LoadResStr(C4ResStrTableKey::IDS_MENU_SELL), pObj->GetName());
+				caption = LoadResStr(C4ResStrTableKey::IDS_MENU_SELL, pObj->GetName());
 				// Picture
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
@@ -271,7 +272,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				// Selling value
 				int32_t iSellValue = pObj->GetValue(pTarget, Object ? Object->Owner : NO_OWNER);
 				// Add menu item
-				Add(szCaption, fctSymbol, szCommand, iCount, nullptr, pDef->GetDesc(), pDef->id, szCommand2, true, iSellValue);
+				Add(caption.c_str(), fctSymbol, szCommand, iCount, nullptr, pDef->GetDesc(), pDef->id, szCommand2, true, iSellValue);
 				fctSymbol.Default();
 			}
 			checkIDSelection();
@@ -310,7 +311,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				}
 				if (!(pTarget->OCF & OCF_Entrance)) fGet = true; // target object has no entrance: cannot activate - force get
 				// Caption
-				sprintf(szCaption, LoadResStr(fGet ? C4ResStrTableKey::IDS_MENU_GET : C4ResStrTableKey::IDS_MENU_ACTIVATE), pObj->GetName());
+				caption = LoadResStrChoice(fGet, C4ResStrTableKey::IDS_MENU_GET, C4ResStrTableKey::IDS_MENU_ACTIVATE, pObj->GetName());
 				// Picture
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
@@ -321,7 +322,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				if ((iAllCount = pTarget->Contents.ObjectCount(pDef->id)) > 1)
 					sprintf(szCommand2, "SetCommand(this, \"%s\", , %d,0, Object(%d), %s) && ExecuteCommand()", fGet ? "Get" : "Activate", iAllCount, pTarget->Number, C4IdText(pDef->id));
 				// Add menu item (with object)
-				Add(szCaption, fctSymbol, szCommand, iCount, pObj, pDef->GetDesc(), pDef->id, szCommand2);
+				Add(caption.c_str(), fctSymbol, szCommand, iCount, pObj, pDef->GetDesc(), pDef->id, szCommand2);
 				fctSymbol.Default();
 			}
 		}

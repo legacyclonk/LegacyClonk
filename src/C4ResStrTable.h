@@ -30,15 +30,51 @@ const char *LoadResStr(C4ResStrTableKey id);
 std::string LoadResStrNoAmp(C4ResStrTableKey id);
 
 template<typename... Args>
-std::string LoadResStr(const C4ResStrTableKey id, Args &&...args)
+struct C4ResStrTableKeyFormat
 {
-	return fmt::sprintf(LoadResStr(id), std::forward<Args>(args)...);
+	consteval C4ResStrTableKeyFormat(const C4ResStrTableKey id) : Id{id}
+	{
+		if (sizeof...(Args) != C4ResStrTableKeyFormatStringArgsCount[std::to_underlying(id)])
+		{
+			throw id;
+		}
+	}
+
+	C4ResStrTableKey Id;
+};
+
+template<typename... Args>
+std::string LoadResStr(const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Args &&...args)
+{
+	return fmt::sprintf(LoadResStr(id.Id), std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-std::string LoadResStrNoAmp(const C4ResStrTableKey id, Args &&...args)
+std::string LoadResStrChoice(const bool condition, const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> ifTrue, const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> ifFalse, Args &&...args)
 {
-	return fmt::sprintf(LoadResStrNoAmp(id), std::forward<Args>(args)...);
+	return fmt::sprintf(LoadResStr(condition ? ifTrue.Id : ifFalse.Id), std::forward<Args>(args)...);
+}
+
+inline const char *LoadResStrChoice(const bool condition, const C4ResStrTableKeyFormat<> ifTrue, const C4ResStrTableKeyFormat<> ifFalse)
+{
+	return LoadResStr(condition ? ifTrue.Id : ifFalse.Id);
+}
+
+template<typename... Args>
+std::string LoadResStrNoAmp(const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Args &&...args)
+{
+	return fmt::sprintf(LoadResStrNoAmp(id.Id), std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+std::string LoadResStrNoAmpChoice(const bool condition, const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> ifTrue, const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> ifFalse, Args &&...args)
+{
+	return fmt::sprintf(LoadResStrNoAmp(condition ? ifTrue.Id : ifFalse.Id), std::forward<Args>(args)...);
+}
+
+inline std::string LoadResStrNoAmpChoice(const bool condition, const C4ResStrTableKeyFormat<> ifTrue, const C4ResStrTableKeyFormat<> ifFalse)
+{
+	return LoadResStrNoAmp(condition ? ifTrue.Id : ifFalse.Id);
 }
 
 class C4ResStrTable

@@ -558,7 +558,7 @@ C4LeagueSignupDialog::C4LeagueSignupDialog(const char *szPlayerName, const char 
 	caMain.GetFromRight(C4GUI_IconWdt / 2);
 	// place message label
 	// use text with line breaks
-	const std::string msg{LoadResStr(fRegister ? C4ResStrTableKey::IDS_MSG_LEAGUE_REGISTRATION : C4ResStrTableKey::IDS_MSG_PASSWORDFORPLAYER, szPlayerName)};
+	const std::string msg{LoadResStrChoice(fRegister, C4ResStrTableKey::IDS_MSG_LEAGUE_REGISTRATION, C4ResStrTableKey::IDS_MSG_PASSWORDFORPLAYER, szPlayerName)};
 	StdStrBuf sMsgBroken;
 	int32_t iLabelHgt = C4GUI::GetRes()->TextFont.BreakMessage(msg.c_str(), caMain.GetInnerWidth(), &sMsgBroken, true);
 	C4GUI::Label *pLblMessage = new C4GUI::Label(sMsgBroken.getData(), caMain.GetFromTop(iLabelHgt), ALeft, C4GUI_MessageFontClr, &C4GUI::GetRes()->TextFont);

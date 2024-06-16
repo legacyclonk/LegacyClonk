@@ -49,7 +49,7 @@ protected:
 	int32_t Player;
 	C4Player *pPlayer; // valid during Move()
 	C4Viewport *Viewport; // valid during Move()
-	StdStrBuf Caption;
+	std::string Caption;
 	bool IsHelpCaption;
 	int32_t Cursor;
 	int32_t DownCursor;
@@ -129,6 +129,13 @@ protected:
 	C4Object *GetTargetObject(int32_t iX, int32_t iY, uint32_t &dwOCF, C4Object *pExclude = nullptr);
 	bool IsPassive(); // return whether mouse is only used to look around
 	void ScrollView(int32_t iX, int32_t iY, int32_t ViewWdt, int32_t ViewHgt);
+
+private:
+	template<C4ResStrTableKey Id, typename T>
+	void SetCaption(T *nameSource, bool isDouble);
+
+	template<C4ResStrTableKey Id>
+	void SetCaption(bool isDouble);
 
 public:
 	bool IsHelp() { return Help; }

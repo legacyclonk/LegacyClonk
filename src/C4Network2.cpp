@@ -1682,7 +1682,7 @@ void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
 
 	if (!client->isLocal())
 	{
-		Log(LoadResStr(ready ? C4ResStrTableKey::IDS_NET_CLIENT_READY : C4ResStrTableKey::IDS_NET_CLIENT_UNREADY, client->getName()));
+		Log(LoadResStrChoice(ready, C4ResStrTableKey::IDS_NET_CLIENT_READY, C4ResStrTableKey::IDS_NET_CLIENT_UNREADY, client->getName()));
 	}
 
 	if (ready != client->isLobbyReady())
@@ -2612,7 +2612,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 		if (!pLeagueClient) return false;
 
 		// Wait for a response
-		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_TRYLEAGUESIGNUP, pInfo->GetName(), Account.getData(), pLeagueClient->getServerName())};
+		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_TRYLEAGUESIGNUP, pInfo->GetName(), pLeagueClient->getServerName())};
 		Log(message);
 		// Set up a dialog
 		C4GUI::MessageDialog *pDlg = nullptr;

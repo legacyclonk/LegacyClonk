@@ -509,7 +509,7 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 std::string C4StartupPlrSelDlg::CrewListItem::GetDelWarning()
 {
 	std::string warning{LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK,
-		Core.sRankName.getData(), Core.Name, GetFilename().getData())};
+		Core.sRankName.getData(), Core.Name)};
 	int32_t iPlrTime = Core.TotalPlayingTime;
 	if (iPlrTime > 60 * 60 * 10)
 		warning += LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK_PLAYTIME, TimeString(iPlrTime));

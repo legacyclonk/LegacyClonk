@@ -276,7 +276,7 @@ C4Player *C4PlayerList::Join(const char *szFilename, bool fScenarioInit, int iAt
 	if (szFilename && !*szFilename) szFilename = nullptr;
 
 	// Log
-	Log(LoadResStr(fScenarioInit ? C4ResStrTableKey::IDS_PRC_JOINPLR : C4ResStrTableKey::IDS_PRC_RECREATE, pInfo->GetName()));
+	Log(LoadResStrChoice(fScenarioInit, C4ResStrTableKey::IDS_PRC_JOINPLR, C4ResStrTableKey::IDS_PRC_RECREATE, pInfo->GetName()));
 
 	// Too many players
 	if (1) // replay needs to check, too!

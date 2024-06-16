@@ -140,7 +140,7 @@ void C4ControlSet::Execute() const
 		if (Game.Control.isCtrlHost() && !Game.Control.isReplay() && Game.Control.isNetwork())
 			Config.Network.ControlRate = Game.Control.ControlRate;
 		// always show msg
-		Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_NET_CONTROLRATE, Game.Control.ControlRate, Game.FrameCounter).c_str());
+		Game.GraphicsSystem.FlashMessage(LoadResStr(C4ResStrTableKey::IDS_NET_CONTROLRATE, Game.Control.ControlRate).c_str());
 		break;
 
 	case C4CVT_DisableDebug: // force debug mode disabled
@@ -590,7 +590,7 @@ void C4ControlClientUpdate::Execute() const
 		// nothing to do?
 		if (pClient->isActivated() == !!iData) break;
 		// log
-		Log(LoadResStr(iData ? C4ResStrTableKey::IDS_NET_CLIENT_ACTIVATED : C4ResStrTableKey::IDS_NET_CLIENT_DEACTIVATED, strClient.getData(), pClient->getName()));
+		Log(LoadResStrChoice(iData, C4ResStrTableKey::IDS_NET_CLIENT_ACTIVATED, C4ResStrTableKey::IDS_NET_CLIENT_DEACTIVATED, strClient.getData(), pClient->getName()));
 		// activate/deactivate
 		pClient->SetActivated(!!iData);
 		// local?
@@ -1436,7 +1436,7 @@ void C4ControlVoteEnd::Execute() const
 	if (Game.Network.isEnabled())
 		Game.Network.EndVote(getType(), isApprove(), getData());
 	// Log
-	const std::string msg{LoadResStr(isApprove() ? C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDTO : C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDNOTTO, getDesc().getData())};
+	const std::string msg{LoadResStrChoice(isApprove(), C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDTO, C4ResStrTableKey::IDS_TEXT_ITWASDECIDEDNOTTO, getDesc().getData())};
 	Log(msg);
 	// Approved?
 	if (!isApprove()) return;

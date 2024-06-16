@@ -150,13 +150,13 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				fctSymbol.Create(symbolSize, symbolSize);
 				pPlayer->DrawHostility(fctSymbol, iIndex);
 				// Message
-				const std::string msg{LoadResStr(pPlayer->Hostility.GetIDCount(pPlr->Number + 1) ? C4ResStrTableKey::IDS_MENU_ATTACK : C4ResStrTableKey::IDS_MENU_NOATTACK, pPlr->GetName())};
+				const std::string msg{LoadResStrChoice(pPlayer->Hostility.GetIDCount(pPlr->Number + 1), C4ResStrTableKey::IDS_MENU_ATTACK, C4ResStrTableKey::IDS_MENU_NOATTACK, pPlr->GetName())};
 				// Command
 				char szCommand[1000];
 				sprintf(szCommand, "SetHostility:%i", pPlr->Number);
 				// Info caption
 				char szInfoCaption[C4MaxTitle + 1], szFriendly[50], szNot[30] = "";
-				SCopy(LoadResStr(pPlr->Hostility.GetIDCount(pPlayer->Number + 1) ? C4ResStrTableKey::IDS_MENU_ATTACKHOSTILE : C4ResStrTableKey::IDS_MENU_ATTACKFRIENDLY), szFriendly);
+				SCopy(LoadResStrChoice(pPlr->Hostility.GetIDCount(pPlayer->Number + 1), C4ResStrTableKey::IDS_MENU_ATTACKHOSTILE, C4ResStrTableKey::IDS_MENU_ATTACKFRIENDLY), szFriendly);
 				if (!pPlayer->Hostility.GetIDCount(pPlr->Number + 1)) SCopy(LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKNOT), szNot);
 				sprintf(szInfoCaption, LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKINFO), pPlr->GetName(), szFriendly, szNot);
 				// Add item
@@ -636,7 +636,7 @@ bool C4MainMenu::ActivateMain(int32_t iPlayer)
 	C4FacetExSurface fctSymbol;
 	fctSymbol.Create(symbolSize, symbolSize);
 	GfxR->fctOKCancel.Draw(fctSymbol, true, 1, 1);
-	Init(fctSymbol, LoadResStr(pPlr ? C4ResStrTableKey::IDS_MENU_CPMAIN : C4ResStrTableKey::IDS_MENU_OBSERVER), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
+	Init(fctSymbol, LoadResStrChoice(pPlr, C4ResStrTableKey::IDS_MENU_CPMAIN, C4ResStrTableKey::IDS_MENU_OBSERVER), iPlayer, C4MN_Extra_None, 0, 0, C4MN_Style_Context);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
 	// Goals+Rules (player menu only)
 	// Goal menu can't be shown because of script callbacks
