@@ -127,15 +127,13 @@ private:
 
 C4LogSystem::C4LogSystem()
 	: defaultLogSinks{
-		std::make_shared<C4InternalLogSink>(),
-		std::make_shared<spdlog::sinks::stdout_color_sink_mt>()
+		std::make_shared<C4InternalLogSink>()
 	}
 {
 	const auto logLevel = Game.Verbose ? spdlog::level::debug : spdlog::level::info;
 
 	defaultLogSinks[0]->set_level(logLevel);
 	defaultLogSinks[0]->set_pattern("%v");
-	defaultLogSinks[1]->set_level(logLevel);
 
 #ifdef _WIN32
 	defaultLogSinks.emplace_back(std::make_shared<spdlog::sinks::msvc_sink_mt>());
@@ -152,6 +150,12 @@ C4LogSystem::C4LogSystem()
 
 void C4LogSystem::OpenLog()
 {
+	auto stdoutColorSink = std::static_pointer_cast<spdlog::sinks::sink>(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+	stdoutColorSink->set_level(Game.Verbose ? spdlog::level::debug : spdlog::level::info);
+
+	defaultLogSinks.emplace_back(stdoutColorSink);
+	logger->sinks().emplace_back(std::move(stdoutColorSink));
+
 	if (!(Game.Verbose || Game.DebugMode))
 	{
 		loggerSilent = logger->clone("silent");
