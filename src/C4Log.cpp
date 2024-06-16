@@ -60,8 +60,7 @@ C4LogSystem::LogSink::LogSink()
 		}
 
 		// try different name
-		logFileName = std::vformat(C4CFN_LogEx, std::make_format_args(iLog));
-		++iLog;
+		logFileName = std::format(C4CFN_LogEx, iLog++);
 	}
 }
 
