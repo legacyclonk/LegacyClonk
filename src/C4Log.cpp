@@ -88,37 +88,43 @@ class C4InternalLogSink : public spdlog::sinks::base_sink<spdlog::details::null_
 protected:
 	void sink_it_(const spdlog::details::log_msg &msg) override
 	{
-		if (!Application.IsMainThread())
-		{
-			Application.InteractiveThread.ExecuteInMainThread([msg, weak{weak_from_this()}]
-			{
-				if (auto strong = weak.lock())
-				{
-					strong->sink_it_(msg);
-				}
-			});
-
-			return;
-		}
-
 		std::string formatted;
 		formatter_->format(msg, formatted);
 
-		if (C4GameLobby::MainDlg *const lobby{Game.Network.GetLobby()}; lobby && Game.pGUI)
+		if (Application.IsMainThread())
 		{
-			lobby->OnLog(formatted.c_str());
+			DoLog(formatted);
 		}
-
-		Console.Out(formatted.c_str());
-
-		if (Game.GraphicsSystem.MessageBoard.Active)
+		else
 		{
-			Game.GraphicsSystem.MessageBoard.AddLog(formatted.c_str());
-			Game.GraphicsSystem.MessageBoard.LogNotify();
+			Application.InteractiveThread.ExecuteInMainThread([formatted{std::move(formatted)}, weak{weak_from_this()}]
+			{
+				if (auto strong = weak.lock())
+				{
+					strong->DoLog(formatted);
+				}
+			});
 		}
 	}
 
 	void flush_() override {}
+
+private:
+	void DoLog(const std::string &message)
+	{
+		if (C4GameLobby::MainDlg *const lobby{Game.Network.GetLobby()}; lobby && Game.pGUI)
+		{
+			lobby->OnLog(message.c_str());
+		}
+
+		Console.Out(message.c_str());
+
+		if (Game.GraphicsSystem.MessageBoard.Active)
+		{
+			Game.GraphicsSystem.MessageBoard.AddLog(message.c_str());
+			Game.GraphicsSystem.MessageBoard.LogNotify();
+		}
+	}
 };
 
 C4LogSystem::C4LogSystem()
