@@ -164,7 +164,7 @@ void C4ChatControl::ChatSheet::NickItem::Update(class C4Network2IRCUser *pByUser
 	// set name
 	pNameLabel->SetText(pByUser->getName());
 	// tooltip is status+name
-	SetToolTip(FormatString("%s%s", szPrefix, pByUser->getName()).getData());
+	SetToolTip(std::format("{}{}", szPrefix, pByUser->getName()).c_str());
 }
 
 int32_t C4ChatControl::ChatSheet::NickItem::SortFunc(const C4GUI::Element *pEl1, const C4GUI::Element *pEl2, void *)
@@ -468,6 +468,7 @@ C4ChatControl::C4ChatControl(C4Network2IRCClient *pnIRCClient) : C4GUI::Window()
 	ClearChatSheets();
 	// set IRC event callback
 	Application.InteractiveThread.SetCallback(Ev_IRC_Message, this);
+	sTitle.Ref("");
 }
 
 C4ChatControl::~C4ChatControl()
@@ -1129,5 +1130,5 @@ void C4ChatDlg::UpdateSize()
 
 void C4ChatDlg::OnChatTitleChange(const StdStrBuf &sNewTitle)
 {
-	SetTitle(FormatString("%s - %s", LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT), sNewTitle.getData()).getData());
+	SetTitle(std::format("{} - {}", LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT), sNewTitle.getData()).c_str());
 }

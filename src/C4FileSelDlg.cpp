@@ -268,7 +268,7 @@ void C4FileSelDlg::UpdateFileList()
 	EndFileListUpdate();
 	// path into title
 	const char *szPath = sPath.getData();
-	SetTitle(*szPath ? FormatString("%s [%s]", sTitle.getData(), szPath).getData() : sTitle.getData());
+	SetTitle(*szPath ? std::format("{} [{}]", sTitle.getData(), szPath).c_str() : sTitle.getData());
 	// initial no-selection
 	UpdateSelection();
 }

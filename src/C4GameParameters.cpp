@@ -259,8 +259,8 @@ bool C4GameResList::RetrieveFiles()
 	{
 		if (const C4Network2ResCore *const core{it->getResCore()}; core)
 		{
-			StdStrBuf ResNameBuf = FormatString("%s: %s", LoadResStr(C4ResStrTableKey::IDS_DLG_DEFINITION), GetFilename(core->getFileName()));
-			if (!Game.Network.RetrieveRes(*core, C4NetResRetrieveTimeout, ResNameBuf.getData()))
+			const std::string resName{std::format("{}: {}", LoadResStr(C4ResStrTableKey::IDS_DLG_DEFINITION), GetFilename(core->getFileName()))};
+			if (!Game.Network.RetrieveRes(*core, C4NetResRetrieveTimeout, resName.c_str()))
 				return false;
 		}
 		else
@@ -584,11 +584,11 @@ void C4GameParameters::CompileFunc(StdCompiler *pComp, C4Scenario *pScenario)
 	pComp->Value(Clients);
 }
 
-StdStrBuf C4GameParameters::GetGameGoalString()
+std::string C4GameParameters::GetGameGoalString()
 {
 	// getting game goals from the ID list
 	// unfortunately, names cannot be deduced before object definitions are loaded
-	StdStrBuf sResult;
+	std::string result;
 	C4ID idGoal;
 	for (int32_t i = 0; i < Goals.GetNumberOfIDs(); ++i)
 		if (idGoal = Goals.GetID(i)) if (idGoal != C4ID_None)
@@ -598,21 +598,21 @@ StdStrBuf C4GameParameters::GetGameGoalString()
 				C4Def *pDef = C4Id2Def(idGoal);
 				if (pDef)
 				{
-					if (sResult.getLength()) sResult.Append(", ");
-					sResult.Append(pDef->GetName());
+					if (!result.empty()) result += ", ";
+					result += pDef->GetName();
 				}
 			}
 			else
 			{
-				if (sResult.getLength()) sResult.Append(", ");
-				sResult.Append(C4IdText(idGoal));
+				if (!result.empty()) result += ", ";
+				result += C4IdText(idGoal);
 			}
 		}
 	// Max length safety
-	if (sResult.getLength() > C4MaxTitle) sResult.SetLength(C4MaxTitle);
+	if (result.size() > C4MaxTitle) result.resize(C4MaxTitle);
 	// Compose desc string
-	if (sResult.getLength())
-		return FormatString("%s: %s", LoadResStr(C4ResStrTableKey::IDS_MENU_CPGOALS), sResult.getData());
+	if (!result.empty())
+		return std::format("{}: {}", LoadResStr(C4ResStrTableKey::IDS_MENU_CPGOALS), result);
 	else
-		return StdStrBuf(LoadResStr(C4ResStrTableKey::IDS_CTL_NOGOAL));
+		return LoadResStr(C4ResStrTableKey::IDS_CTL_NOGOAL);
 }

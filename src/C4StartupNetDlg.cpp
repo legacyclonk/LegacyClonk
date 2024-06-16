@@ -455,14 +455,14 @@ void C4StartupNetListEntry::SetReference(C4Network2Reference *pRef)
 	sInfoText[1].Copy(LoadResStr(C4ResStrTableKey::IDS_NET_INFOPLRSGOALDESC,
 		static_cast<int>(iPlrCnt),
 		static_cast<int>(pRef->Parameters.MaxPlayers),
-		pRef->Parameters.GetGameGoalString().getData(),
+		pRef->Parameters.GetGameGoalString(),
 		StdStrBuf(pRef->getGameStatus().getDescription(), true).getData()).c_str());
 	if (pRef->getTime() > 0)
 	{
 		const std::string duration{std::format("{:02}:{:02}:{:02}", pRef->getTime() / 3600, (pRef->getTime() % 3600) / 60, pRef->getTime() % 60)};
 		sInfoText[1].Append(" - "); sInfoText[1].Append(duration.c_str());
 	}
-	sInfoText[2].Copy(LoadResStr(C4ResStrTableKey::IDS_DESC_VERSION, pRef->getGameVersion().GetString().getData()).c_str());
+	sInfoText[2].Copy(LoadResStr(C4ResStrTableKey::IDS_DESC_VERSION, pRef->getGameVersion().GetString()).c_str());
 	sInfoText[3].Copy(std::format("{}: {}", LoadResStr(C4ResStrTableKey::IDS_CTL_COMMENT), pRef->getComment()).c_str());
 	// password
 	if (pRef->isPasswordNeeded())
@@ -904,8 +904,7 @@ void C4StartupNetDlg::UpdateList(bool fGotReference)
 	C4NetIO::addr_t Discover;
 	while (DiscoverClient.PopDiscover(Discover))
 	{
-		StdStrBuf Address(Discover.ToString());
-		AddReferenceQuery(Address.getData(), C4StartupNetListEntry::NRQT_GameDiscovery);
+		AddReferenceQuery(Discover.ToString().c_str(), C4StartupNetListEntry::NRQT_GameDiscovery);
 	}
 
 	// check whether view needs to be collapsed or uncollapsed
@@ -1035,8 +1034,8 @@ bool C4StartupNetDlg::DoOK()
 		{
 			Game.pGUI->ShowMessageModal(
 				LoadResStr(C4ResStrTableKey::IDS_NET_NOJOIN_BADVER,
-					pRef->getGameVersion().GetString().getData(),
-					verThis.GetString().getData()).c_str(),
+					pRef->getGameVersion().GetString(),
+					verThis.GetString()).c_str(),
 				strNoJoin.getData(),
 				C4GUI::MessageDialog::btnOK,
 				C4GUI::Ico_Error);
@@ -1164,5 +1163,5 @@ void C4StartupNetDlg::OnReferenceEntryAdd(C4StartupNetListEntry *pEntry)
 void C4StartupNetDlg::OnChatTitleChange(const StdStrBuf &sNewTitle)
 {
 	// update label
-	if (pChatTitleLabel) pChatTitleLabel->SetText(FormatString("%s - %s", LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT), sNewTitle.getData()).getData());
+	if (pChatTitleLabel) pChatTitleLabel->SetText(std::format("{} - {}", LoadResStr(C4ResStrTableKey::IDS_DLG_CHAT), sNewTitle.getData()).c_str());
 }

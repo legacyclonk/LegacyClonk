@@ -208,7 +208,9 @@ bool C4DefCore::Load(C4Group &hGroup)
 	StdStrBuf Source;
 	if (hGroup.LoadEntryString(C4CFN_DefCore, Source))
 	{
-		StdStrBuf Name = hGroup.GetFullName() + FormatString("%cDefCore.txt", DirectorySeparator);
+		StdStrBuf Name = hGroup.GetFullName();
+		Name.AppendChar(DirectorySeparator);
+		Name.Append("DefCore.txt");
 		if (!Compile(Source.getData(), Name.getData()))
 			return false;
 		Source.Clear();
@@ -570,7 +572,7 @@ bool C4Def::Load(C4Group &hGroup,
 
 		if (CompareVersion(rC4XVer[0], rC4XVer[1], rC4XVer[2], rC4XVer[3], rC4XVer[4], 4, 0, 0, 0, 0) == -1)
 		{
-			DebugLog(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSINVVERSION, fSuccess ? FormatString("%s (%s)", Name.getData(), C4IdText(id)).getData() : Name.getData()));
+			DebugLog(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSINVVERSION, fSuccess ? std::string_view{std::format("{} ({})", Name.getData(), C4IdText(id))} : Name.getData()));
 			// assume Clonk Rage 4.9.10.7
 			rC4XVer[0] = 4;
 			rC4XVer[1] = 9;

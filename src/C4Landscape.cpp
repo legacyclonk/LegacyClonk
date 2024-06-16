@@ -1606,7 +1606,7 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 			int32_t iMat = PixCol2Mat(byPix);
 			if (byPix && !MatValid(iMat))
 			{
-				LogFatal(FormatString("Landscape loading error at (%d/%d): Pixel value %d not a valid material!", static_cast<int>(x), static_cast<int>(y), static_cast<int>(byPix)).getData());
+				LogFatal(std::format("Landscape loading error at ({}/{}): Pixel value {} not a valid material!", x, y, byPix));
 				return false;
 			}
 		}

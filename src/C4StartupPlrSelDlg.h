@@ -90,10 +90,10 @@ private:
 
 		virtual bool CheckNameHotkey(const char *c) override; // return whether this item can be selected by entering given char
 
-		class LoadError : public StdStrBuf
+		class LoadError : public std::runtime_error
 		{
 		public:
-			LoadError(StdStrBuf &&rTakeFrom) { Take(rTakeFrom); }
+			using runtime_error::runtime_error;
 		}; // class thrown off load function if load failed
 	};
 

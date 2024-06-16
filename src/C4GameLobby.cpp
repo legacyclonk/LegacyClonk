@@ -47,11 +47,16 @@ void C4PacketCountdown::CompileFunc(StdCompiler *pComp)
 	pComp->Value(mkNamingAdapt(iCountdown, "Countdown", 0));
 }
 
-StdStrBuf C4PacketCountdown::GetCountdownMsg(bool fInitialMsg) const
+std::string C4PacketCountdown::GetCountdownMsg(bool fInitialMsg) const
 {
-	const char *szCountdownMsg;
-	if (iCountdown < AlmostStartCountdownTime && !fInitialMsg) szCountdownMsg = "%d..."; else szCountdownMsg = LoadResStr(C4ResStrTableKey::IDS_PRC_COUNTDOWN);
-	return FormatString(szCountdownMsg, static_cast<int>(iCountdown));
+	if (iCountdown < AlmostStartCountdownTime && !fInitialMsg)
+	{
+		return std::format("{}...", iCountdown);
+	}
+	else
+	{
+		return LoadResStr(C4ResStrTableKey::IDS_PRC_COUNTDOWN, iCountdown);
+	}
 }
 
 // ScenDescs
@@ -136,7 +141,7 @@ void ScenDesc::Deactivate()
 MainDlg::MainDlg(bool fHost)
 	: C4GUI::FullscreenDialog(!Game.Parameters.ScenarioTitle ?
 	LoadResStr(C4ResStrTableKey::IDS_DLG_LOBBY) :
-		FormatString("%s - %s", Game.Parameters.ScenarioTitle.getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_LOBBY)).getData(),
+		std::format("{} - {}", Game.Parameters.ScenarioTitle.getData(), LoadResStr(C4ResStrTableKey::IDS_DLG_LOBBY)).c_str(),
 		Game.Parameters.ScenarioTitle.getData()),
 	pPlayerList(nullptr), pResList(nullptr), pChatBox(nullptr), pRightTabLbl(nullptr), pRightTab(nullptr),
 	pEdt(nullptr), btnRun(nullptr), btnPlayers(nullptr), btnResources(nullptr), btnTeams(nullptr), btnChat(nullptr)
@@ -407,7 +412,7 @@ void MainDlg::OnCountdownPacket(const C4PacketCountdown &Pkt)
 	if (iTimer)
 	{
 		// first countdown message
-		OnLog(Pkt.GetCountdownMsg(!fWasCountdown).getData(), C4GUI_LogFontClr2);
+		OnLog(Pkt.GetCountdownMsg(!fWasCountdown).c_str(), C4GUI_LogFontClr2);
 		StartSoundEffect("Command");
 	}
 }
@@ -1119,7 +1124,7 @@ Countdown::Countdown(int32_t iStartTimer) : iStartTimer(iStartTimer), pSec1Timer
 	else
 	{
 		// no lobby: Message to log for dedicated/console hosts
-		Log(pck.GetCountdownMsg().getData());
+		Log(pck.GetCountdownMsg());
 	}
 
 	// init timer callback
@@ -1150,7 +1155,7 @@ void Countdown::OnSec1Timer()
 		else if (iStartTimer)
 		{
 			// no lobby: Message to log for dedicated/console hosts
-			Log(pck.GetCountdownMsg().getData());
+			Log(pck.GetCountdownMsg());
 		}
 	}
 	// countdown done

@@ -181,9 +181,9 @@ public:
 	void UnexpectedToken(const char *Expected);
 	const char *GetTokenName(C4AulTokenType TokenType);
 
-	void Warn(const char *pMsg, const char *pIdtf = nullptr);
-	void StrictError(const char *message, C4AulScriptStrict errorSince, const char *identifier = nullptr);
-	void Strict2Error(const char *message, const char *identifier = nullptr);
+	void Warn(std::string_view msg, const char *pIdtf = nullptr);
+	void StrictError(std::string_view message, C4AulScriptStrict errorSince, const char *identifier = nullptr);
+	void Strict2Error(std::string_view message, const char *identifier = nullptr);
 
 	void SetNoRef(); // Switches the bytecode to generate a value instead of a reference
 
@@ -218,26 +218,26 @@ private:
 	void AddLoopControl(bool fBreak);
 };
 
-void C4AulScript::Warn(const char *pMsg, const char *pIdtf)
+void C4AulScript::Warn(const std::string_view msg, const char *pIdtf)
 {
-	C4AulParseError{this, pMsg, pIdtf, true}.show();
+	C4AulParseError{this, msg, pIdtf, true}.show();
 	++Game.ScriptEngine.warnCnt;
 }
 
-void C4AulParseState::Warn(const char *pMsg, const char *pIdtf)
+void C4AulParseState::Warn(const std::string_view msg, const char *pIdtf)
 {
 	// do not show errors for System.c4g scripts that appear to be pure #appendto scripts
 	if (Fn && !Fn->Owner->Def && !Fn->Owner->Appends.empty()) return;
 
-	C4AulParseError{this, pMsg, pIdtf, true}.show();
+	C4AulParseError{this, msg, pIdtf, true}.show();
 	if (Fn && Fn->pOrgScript != a)
 	{
-		DebugLogF("  (as #appendto/#include to %s)", Fn->Owner->ScriptName.getData());
+		DebugLogF("  (as #appendto/#include to %s)", Fn->Owner->ScriptName);
 	}
 	++Game.ScriptEngine.warnCnt;
 }
 
-void C4AulParseState::StrictError(const char *message, C4AulScriptStrict errorSince, const char *identifier)
+void C4AulParseState::StrictError(const std::string_view message, C4AulScriptStrict errorSince, const char *identifier)
 {
 	const auto strictness = Fn ? Fn->pOrgScript->Strict : a->Strict;
 	if (strictness < errorSince)
@@ -246,18 +246,18 @@ void C4AulParseState::StrictError(const char *message, C4AulScriptStrict errorSi
 		throw C4AulParseError(this, message, identifier);
 }
 
-void C4AulParseState::Strict2Error(const char *message, const char *identifier)
+void C4AulParseState::Strict2Error(const std::string_view message, const char *identifier)
 {
 	return StrictError(message, C4AulScriptStrict::STRICT2, identifier);
 }
 
-C4AulParseError::C4AulParseError(const char *message, const char *identifier, bool warn)
+C4AulParseError::C4AulParseError(const std::string_view message, const char *identifier, bool warn)
 {
 	this->message = std::format("{}: {}{}", warn ? "WARNING" : "ERROR", message, identifier ? identifier : "");
 }
 
-C4AulParseError::C4AulParseError(C4AulParseState *state, const char *pMsg, const char *pIdtf, bool Warn)
-	: C4AulParseError{pMsg, pIdtf, Warn}
+C4AulParseError::C4AulParseError(C4AulParseState *state, const std::string_view msg, const char *pIdtf, bool Warn)
+	: C4AulParseError{msg, pIdtf, Warn}
 {
 	if (state->Fn && *(state->Fn->Name))
 	{
@@ -268,7 +268,7 @@ C4AulParseError::C4AulParseError(C4AulParseState *state, const char *pMsg, const
 		// Exact position
 		if (state->Fn->pOrgScript && state->SPos)
 			message += std::format(", {}:{}:{}",
-				state->Fn->pOrgScript->ScriptName.getData(),
+				state->Fn->pOrgScript->ScriptName,
 				SGetLine(state->Fn->pOrgScript->Script.getData(), state->SPos),
 				SLineGetCharacters(state->Fn->pOrgScript->Script.getData(), state->SPos));
 		else
@@ -278,19 +278,19 @@ C4AulParseError::C4AulParseError(C4AulParseState *state, const char *pMsg, const
 	{
 		// Script name
 		message += std::format(" ({}:{}:{})",
-			state->a->ScriptName.getData(),
+			state->a->ScriptName,
 			SGetLine(state->a->Script.getData(), state->SPos),
 			SLineGetCharacters(state->a->Script.getData(), state->SPos));
 	}
 }
 
-C4AulParseError::C4AulParseError(C4AulScript *pScript, const char *pMsg, const char *pIdtf, bool Warn)
-	: C4AulParseError{pMsg, pIdtf, Warn}
+C4AulParseError::C4AulParseError(C4AulScript *pScript, const std::string_view msg, const char *pIdtf, bool Warn)
+	: C4AulParseError{msg, pIdtf, Warn}
 {
 	if (pScript)
 	{
 		// Script name
-		message += std::format(" ({})", pScript->ScriptName.getData());
+		message += std::format(" ({})", pScript->ScriptName);
 	}
 }
 
@@ -648,9 +648,9 @@ C4AulTokenType C4AulParseState::GetNextToken(char *pToken, std::intptr_t *pInt, 
 				// unrecognized char
 				// show appropriate error message
 				if (C >= '!' && C <= '~')
-					throw C4AulParseError(this, FormatString("unexpected character '%c' found", C).getData());
+					throw C4AulParseError(this, std::format("unexpected character '{}' found", C));
 				else
-					throw C4AulParseError(this, FormatString("unexpected character 0x%" PRIx8 " found", C).getData());
+					throw C4AulParseError(this, std::format("unexpected character {:#x} found", C));
 			}
 			break;
 		}
@@ -1379,13 +1379,13 @@ void C4AulParseState::Match(C4AulTokenType RefTokenType, const char *Message)
 	if (TokenType != RefTokenType)
 		// error
 		throw C4AulParseError(this, Message ? Message :
-			FormatString("%s expected, but found %s", GetTokenName(RefTokenType), GetTokenName(TokenType)).getData());
+			std::format("{} expected, but found {}", GetTokenName(RefTokenType), GetTokenName(TokenType)));
 	Shift();
 }
 
 void C4AulParseState::UnexpectedToken(const char *Expected)
 {
-	throw C4AulParseError(this, FormatString("%s expected, but found %s", Expected, GetTokenName(TokenType)).getData());
+	throw C4AulParseError(this, std::format("{} expected, but found {}", Expected, GetTokenName(TokenType)));
 }
 
 void C4AulScript::ParseFn(C4AulScriptFunc *Fn, bool fExprOnly)
@@ -1725,7 +1725,7 @@ void C4AulParseState::Parse_FuncHead()
 	SCopy(Idtf, FuncIdtf);
 	Shift();
 	if (TokenType != ATT_COLON)
-		throw C4AulParseError(this, FormatString("declaration expected, but found identifier '%s'", FuncIdtf).getData());
+		throw C4AulParseError(this, std::format("declaration expected, but found identifier '{}'", FuncIdtf));
 	// create script fn
 	if (Acc == AA_GLOBAL)
 	{
@@ -2329,7 +2329,7 @@ int C4AulParseState::Parse_Params(int iMaxCnt, const char *sWarn, C4AulFunc *pFu
 	while (!fDone);
 	// too many parameters?
 	if (sWarn && size > iMaxCnt && Type == PARSER)
-		Warn(FormatString("%s: passing %d parameters, but only %d are used", sWarn, size, iMaxCnt).getData(), nullptr);
+		Warn(std::format("{}: passing {} parameters, but only {} are used", sWarn, size, iMaxCnt), nullptr);
 	// Balance stack
 	if (size != iMaxCnt)
 		AddBCC(AB_STACK, iMaxCnt - size);
@@ -2838,7 +2838,7 @@ void C4AulParseState::Parse_Expression(int iParentPrio)
 					case C4V_Any:    AddBCC(AB_NIL); break;
 					default:
 					{
-						throw C4AulParseError(this, FormatString("internal error: constant %s has undefined type %d", Idtf, val.GetType()).getData());
+						throw C4AulParseError(this, std::format("internal error: constant {} has undefined type {}", Idtf, std::to_underlying(val.GetType())));
 					}
 					}
 					Shift();
@@ -3034,8 +3034,8 @@ void C4AulParseState::Parse_Expression2(int iParentPrio)
 					break;
 				default:
 					// Stuff like foo(42+,1) used to silently work
-					Strict2Error(FormatString("Operator %s: Second expression expected, but %s found",
-						C4ScriptOpMap[OpID].Identifier, GetTokenName(TokenType)).getData());
+					Strict2Error(std::format("Operator {}: Second expression expected, but {} found",
+						C4ScriptOpMap[OpID].Identifier, GetTokenName(TokenType)));
 					AddBCC(AB_INT, 0);
 					break;
 				}
@@ -3168,7 +3168,7 @@ bool C4AulParseState::Parse_Expression3()
 					// search func
 					if (!(pFunc = pDef->Script.GetSFunc(Idtf)))
 					{
-						throw C4AulParseError(this, FormatString("direct object call: function %s::%s not found", C4IdText(idNS), Idtf).getData());
+						throw C4AulParseError(this, std::format("direct object call: function {}::{} not found", C4IdText(idNS), Idtf));
 					}
 
 					if (pFunc->SFunc() && pFunc->SFunc()->Access < pDef->Script.GetAllowedAccess(pFunc, Fn->pOrgScript))
@@ -3210,7 +3210,7 @@ bool C4AulParseState::Parse_Expression3()
 					// not failsafe?
 					if (!failSafe && Type == PARSER)
 					{
-						throw C4AulParseError(this, FormatString("direct object call: function %s not found", Idtf).getData());
+						throw C4AulParseError(this, std::format("direct object call: function {} not found", Idtf));
 					}
 					// otherwise: nothing to call - just execute parameters and discard them
 					Shift();
@@ -3548,7 +3548,7 @@ bool C4AulScript::Parse()
 					err.show();
 					// show a warning if the error is in a remote script
 					if (Fn->pOrgScript != this)
-						DebugLogF("  (as #appendto/#include to %s)", Fn->Owner->ScriptName.getData());
+						DebugLogF("  (as #appendto/#include to %s)", Fn->Owner->ScriptName);
 					// and count (visible only ;) )
 					++Game.ScriptEngine.errCnt;
 				}

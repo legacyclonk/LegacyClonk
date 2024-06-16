@@ -622,30 +622,5 @@ public:
 	bool TrimSpaces(); // kill spaces at beginning and end. Return if changed.
 
 	// * Compiling
-
 	void CompileFunc(class StdCompiler *pComp, int iRawType = 0);
 };
-
-// Wrappers
-template<typename... Args>
-extern StdStrBuf FormatString(const char *format, Args... args)
-{
-	StdStrBuf buf;
-	static_assert(std::conjunction_v<std::is_trivial<Args>...>, "Cannot pass arguments of non-trivial types");
-
-	if (!IsSafeFormatString(format))
-	{
-		BREAKPOINT_HERE;
-		format = "<UNSAFE FORMAT STRING>";
-	}
-
-	const auto neededBytes{snprintf(nullptr, 0, format, args...)};
-	if (neededBytes == -1)
-	{
-		return buf;
-	}
-
-	buf.Grow(neededBytes + 1);
-	snprintf(buf.getMData(), neededBytes + 1, format, args...);
-	return buf;
-}

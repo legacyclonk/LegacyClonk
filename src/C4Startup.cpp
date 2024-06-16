@@ -273,14 +273,13 @@ bool C4Startup::DoStartup()
 	if (!SwitchDialog(eLastDlgID)) return false;
 
 	// show error dlg if restart
-	if (Game.fQuitWithError || GetFatalError())
+	if (const std::string_view fatalError{GetFatalError()}; Game.fQuitWithError || !fatalError.empty())
 	{
 		Game.fQuitWithError = false;
 		// preferred: Show fatal error
-		const char *szErr = GetFatalError();
-		if (szErr)
+		if (!fatalError.empty())
 		{
-			Game.pGUI->ShowMessage(szErr, LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), C4GUI::Ico_Error);
+			Game.pGUI->ShowMessage(fatalError.data(), LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), C4GUI::Ico_Error);
 		}
 		else
 		{

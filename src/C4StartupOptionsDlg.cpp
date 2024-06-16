@@ -240,8 +240,7 @@ void C4StartupOptionsDlg::KeySelButton::DrawElement(C4FacetEx &cgo)
 	float fZoom;
 	CStdFont &rUseFont = C4Startup::Get()->Graphics.GetBlackFontByHeight(cgoDraw.Hgt / 2 + 5, &fZoom);
 	lpDDraw->TextOut(KeyID2Desc(iKeyID), rUseFont, fZoom, cgo.Surface, cgo.TargetX + rcBounds.x + rcBounds.Wdt + 5, cgoDraw.Y - 3, fDoHightlight ? 0xffff0000 : C4StartupFontClr, ALeft, false);
-	StdStrBuf strKey; strKey.Copy(C4KeyCodeEx::KeyCode2String(key, true, false));
-	lpDDraw->TextOut(strKey.getData(), rUseFont, fZoom, cgo.Surface, cgo.TargetX + rcBounds.x + rcBounds.Wdt + 5, cgoDraw.Y + cgoDraw.Hgt / 2, fDoHightlight ? 0xffff0000 : C4StartupFontClr, ALeft, false);
+	lpDDraw->TextOut(C4KeyCodeEx::KeyCode2String(key, true, false).c_str(), rUseFont, fZoom, cgo.Surface, cgo.TargetX + rcBounds.x + rcBounds.Wdt + 5, cgoDraw.Y + cgoDraw.Hgt / 2, fDoHightlight ? 0xffff0000 : C4StartupFontClr, ALeft, false);
 }
 
 C4StartupOptionsDlg::KeySelButton::KeySelButton(int32_t iKeyID, const C4Rect &rcBounds, char cHotkey)
@@ -970,7 +969,7 @@ C4StartupOptionsDlg::C4StartupOptionsDlg() : C4StartupDlg(LoadResStrNoAmp(C4ResS
 	for (i = 0; i < 2; ++i)
 	{
 		C4GUI::ComponentAligner caVolumeSlider(caGroupVolume.GetGridCell(0, 1, i, 2, -1, pUseFont->GetLineHeight() + iIndentY2 * 2 + C4GUI_ScrollBarHgt, true), 1, 0, false);
-		pGroupVolume->AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr(i ? C4ResStrTableKey::IDS_CTL_SOUNDFX : C4ResStrTableKey::IDS_CTL_MUSIC)).getData(), caVolumeSlider.GetFromTop(pUseFont->GetLineHeight()), ALeft, C4StartupFontClr, pUseFont, false, false));
+		pGroupVolume->AddElement(new C4GUI::Label(std::format("{}:", LoadResStr(i ? C4ResStrTableKey::IDS_CTL_SOUNDFX : C4ResStrTableKey::IDS_CTL_MUSIC)).c_str(), caVolumeSlider.GetFromTop(pUseFont->GetLineHeight()), ALeft, C4StartupFontClr, pUseFont, false, false));
 		sLabelTxt.Copy(LoadResStr(C4ResStrTableKey::IDS_CTL_SILENT));
 		w = 20; q = 12; pUseFont->GetTextExtent(sLabelTxt.getData(), w, q, true);
 		pGroupVolume->AddElement(new C4GUI::Label(sLabelTxt.getData(), caVolumeSlider.GetFromLeft(w, q), ACenter, C4StartupFontClr, pUseFont, false, false));
@@ -1195,12 +1194,12 @@ void C4StartupOptionsDlg::UpdateLanguage()
 	const C4LanguageInfo *const info{Languages.FindInfo(Config.General.Language)};
 	if (info)
 	{
-		pLangCombo->SetText(FormatString("%c%c - %s", info->Code[0], info->Code[1], info->Name.c_str()).getData());
+		pLangCombo->SetText(std::format("{}{} - {}", info->Code[0], info->Code[1], info->Name.c_str()).c_str());
 		pLangInfoLabel->SetText(info->Info);
 	}
 	else
 	{
-		pLangCombo->SetText(FormatString("unknown (%s)", Config.General.Language).getData());
+		pLangCombo->SetText(std::format("unknown ({})", Config.General.Language).c_str());
 		pLangInfoLabel->SetText(LoadResStr(C4ResStrTableKey::IDS_CTL_NOLANGINFO));
 		return; // no need to mess with fallbacks
 	}
@@ -1232,7 +1231,7 @@ void C4StartupOptionsDlg::OnLangComboFill(C4GUI::ComboBox_FillCB *pFiller)
 	// fill with all possible languages
 	for (const auto &info : Languages)
 	{
-		pFiller->AddEntry(FormatString("%c%c - %s", info.Code[0], info.Code[1], info.Name.c_str()).getData(), static_cast<unsigned char>(info.Code[0]) + (static_cast<unsigned char>(info.Code[1]) << 8));
+		pFiller->AddEntry(std::format("{}{} - {}", info.Code[0], info.Code[1], info.Name.c_str()).c_str(), static_cast<unsigned char>(info.Code[0]) + (static_cast<unsigned char>(info.Code[1]) << 8));
 	}
 }
 
@@ -1384,5 +1383,5 @@ int32_t C4StartupOptionsDlg::EditConfig::GetIntVal()
 
 void C4StartupOptionsDlg::EditConfig::SetIntVal(int32_t iToVal)
 {
-	GetEdit()->SetText(FormatString("%d", static_cast<int>(iToVal)).getData(), false);
+	GetEdit()->SetText(std::format("{}", iToVal).c_str(), false);
 }

@@ -1614,11 +1614,11 @@ bool C4Player::LoadRuntimeData(C4Group &hGroup)
 	// Use loaded game text component
 	if (!(pSource = Game.GameText.GetData())) return false;
 	// safety: Do nothing if playeer section is not even present (could kill initialized values)
-	if (!SSearch(pSource, FormatString("[Player%i]", ID).getData())) return false;
+	if (!SSearch(pSource, std::format("[Player{}]", ID).c_str())) return false;
 	// Compile (Search player section - runtime data is stored by unique player ID)
 	assert(ID);
 	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(
-		mkNamingAdapt(*this, FormatString("Player%i", ID).getData()),
+		mkNamingAdapt(*this, std::format("Player{}", ID).c_str()),
 		StdStrBuf::MakeRef(pSource),
 		Game.GameText.GetFilePath()))
 		return false;

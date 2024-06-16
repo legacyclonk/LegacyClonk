@@ -55,7 +55,7 @@ void C4Network2ClientDlg::UpdateText()
 	if (!pClient)
 	{
 		// client ID unknown
-		AddLineFmt(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_UNKNOWNID), iClientID);
+		AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_UNKNOWNID, iClientID).c_str());
 	}
 	else
 	{
@@ -65,10 +65,10 @@ void C4Network2ClientDlg::UpdateText()
 		StdStrBuf strActivated(LoadResStr(pClient->isActivated() ? C4ResStrTableKey::IDS_MSG_ACTIVE : C4ResStrTableKey::IDS_MSG_INACTIVE));
 		StdStrBuf strLocal(LoadResStr(pClient->isLocal() ? C4ResStrTableKey::IDS_MSG_LOCAL : C4ResStrTableKey::IDS_MSG_REMOTE));
 		StdStrBuf strHost(LoadResStr(pClient->isHost() ? C4ResStrTableKey::IDS_MSG_HOST : C4ResStrTableKey::IDS_MSG_CLIENT));
-		AddLineFmt(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_FORMAT),
+		AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_FORMAT,
 			strActivated.getData(), strLocal.getData(), strHost.getData(),
 			pClient->getName(), iClientID,
-			Game.Network.isHost() && pNetClient && !pNetClient->isReady() ? " (!ack)" : "");
+			Game.Network.isHost() && pNetClient && !pNetClient->isReady() ? " (!ack)" : "").c_str());
 		// show addresses
 		int iCnt;
 		if (iCnt = pNetClient->getAddrCnt())
@@ -77,9 +77,9 @@ void C4Network2ClientDlg::UpdateText()
 			for (int i = 0; i < iCnt; ++i)
 			{
 				C4Network2Address addr = pNetClient->getAddr(i);
-				AddLineFmt("  %d: %s",
+				AddLine(std::format("  {}: {}",
 					i, // adress index
-					addr.toString().getData());
+					addr.ToString()).c_str());
 			}
 		}
 		else
@@ -90,16 +90,16 @@ void C4Network2ClientDlg::UpdateText()
 			// connections
 			if (pNetClient->isConnected())
 			{
-				AddLineFmt(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_CONNECTIONS),
+				AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_CONNECTIONS,
 					pNetClient->getMsgConn() == pNetClient->getDataConn() ? "Msg/Data" : "Msg",
 					Game.Network.NetIO.getNetIOName(pNetClient->getMsgConn()->getNetClass()),
-					pNetClient->getMsgConn()->getPeerAddr().ToString().getData(),
-					pNetClient->getMsgConn()->getPingTime());
+					pNetClient->getMsgConn()->getPeerAddr().ToString(),
+					pNetClient->getMsgConn()->getPingTime()).c_str());
 				if (pNetClient->getMsgConn() != pNetClient->getDataConn())
-					AddLineFmt(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_CONNDATA),
+					AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_CONNDATA,
 						Game.Network.NetIO.getNetIOName(pNetClient->getDataConn()->getNetClass()),
-						pNetClient->getDataConn()->getPeerAddr().ToString().getData(),
-						pNetClient->getDataConn()->getPingTime());
+						pNetClient->getDataConn()->getPeerAddr().ToString(),
+						pNetClient->getDataConn()->getPingTime()).c_str());
 			}
 			else
 				AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_NOCONNECTIONS));
@@ -132,9 +132,9 @@ C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientLi
 	pStatusIcon = new C4GUI::Icon(ca.GetFromLeft(iIconSize), fIsHost ? C4GUI::Ico_Host : C4GUI::Ico_Client);
 
 	bool local{pClient->isLocal()};
-	StdStrBuf sNameLabel{GetNameLabel()};
+	const std::string nameLabel{GetNameLabel()};
 
-	pName = new C4GUI::Label(sNameLabel.getData(), iIconSize + IconLabelSpacing, iVerticalIndent, ALeft);
+	pName = new C4GUI::Label(nameLabel.c_str(), iIconSize + IconLabelSpacing, iVerticalIndent, ALeft);
 
 	auto pos = 0;
 	if (Game.Network.isHost() && !fIsHost)
@@ -154,7 +154,7 @@ C4Network2ClientListBox::ClientListItem::ClientListItem(class C4Network2ClientLi
 	{
 		// mute button
 		pMuteBtn = new C4GUI::CallbackButtonEx<C4Network2ClientListBox::ClientListItem, C4GUI::IconButton>{C4GUI::Ico_Sound, GetToprightCornerRect((std::max)(iIconSize, 16), (std::max)(iIconSize, 16), 2, 1, pos++), 0, this, &ClientListItem::OnButtonToggleMute};
-		pMuteBtn->SetToolTip(LoadResStrNoAmp(pClient && pClient->isMuted() ? C4ResStrTableKey::IDS_NET_UNMUTE_DESC : C4ResStrTableKey::IDS_NET_MUTE_DESC, sNameLabel.getData()).c_str());
+		pMuteBtn->SetToolTip(LoadResStrNoAmp(pClient && pClient->isMuted() ? C4ResStrTableKey::IDS_NET_UNMUTE_DESC : C4ResStrTableKey::IDS_NET_MUTE_DESC, nameLabel).c_str());
 
 		// wait time
 		pPing = new C4GUI::Label("???", GetBounds().Wdt - IconLabelSpacing - pos * 24, iVerticalIndent, ARight);
@@ -282,25 +282,25 @@ void C4Network2ClientListBox::ClientListItem::UpdateMuteButton()
 {
 	auto *client = GetClient();
 	pMuteBtn->SetIcon(client->isMuted() ? C4GUI::Ico_NoSound : C4GUI::Ico_Sound);
-	pMuteBtn->SetToolTip(LoadResStrNoAmp(client && client->isMuted() ? C4ResStrTableKey::IDS_NET_UNMUTE_DESC : C4ResStrTableKey::IDS_NET_MUTE_DESC, GetNameLabel().getData()).c_str());
+	pMuteBtn->SetToolTip(LoadResStrNoAmp(client && client->isMuted() ? C4ResStrTableKey::IDS_NET_UNMUTE_DESC : C4ResStrTableKey::IDS_NET_MUTE_DESC, GetNameLabel()).c_str());
 }
 
-const StdStrBuf C4Network2ClientListBox::ClientListItem::GetNameLabel() const
+std::string C4Network2ClientListBox::ClientListItem::GetNameLabel() const
 {
 	if (auto *client = GetClient(); client)
 	{
 		if (pForDlg->IsStartup())
 		{
-			return StdStrBuf::MakeRef(client->getName());
+			return client->getName();
 		}
 		else
 		{
-			return FormatString("%s:%s", client->getName(), client->getNick());
+			return std::format("{}:{}", client->getName(), client->getNick());
 		}
 	}
 	else
 	{
-		return StdStrBuf::MakeRef("???");
+		return "???";
 	}
 }
 
@@ -379,11 +379,11 @@ void C4Network2ClientListBox::ConnectionListItem::Update()
 	else
 		szConnType = "Data";
 	// display info
-	pDesc->SetText(FormatString("%s: %s (%s l%d)",
+	pDesc->SetText(std::format("{}: {} ({} l{})",
 		szConnType,
 		Game.Network.NetIO.getNetIOName(pConn->getNetClass()),
-		pConn->getPeerAddr().ToString().getData(),
-		pConn->getPacketLoss()).getData());
+		pConn->getPeerAddr().ToString(),
+		pConn->getPacketLoss()).c_str());
 }
 
 void C4Network2ClientListBox::ConnectionListItem::OnButtonDisconnect(C4GUI::Control *pButton)

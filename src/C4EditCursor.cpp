@@ -166,26 +166,26 @@ bool C4EditCursor::Move(int32_t iX, int32_t iY, uint16_t wKeyFlags)
 
 bool C4EditCursor::UpdateStatusBar()
 {
-	StdStrBuf text{""};
+	std::string text;
 	switch (Mode)
 	{
 	case C4CNS_ModePlay:
 		if (Game.MouseControl.GetCaption())
 		{
-			const std::string caption{Game.MouseControl.GetCaption()};
-			text = caption.substr(0, caption.find('|')).c_str();
+			std::string caption{Game.MouseControl.GetCaption()};
+			text = std::move(caption).substr(0, caption.find('|'));
 		}
 		break;
 
 	case C4CNS_ModeEdit:
-		text = FormatString("%i/%i (%s)", X, Y, (Target ? (Target->GetName()) : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING)));
+		text = std::format("{}/{} ({})", X, Y, (Target ? (Target->GetName()) : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING)));
 		break;
 
 	case C4CNS_ModeDraw:
-		text = FormatString("%i/%i (%s)", X, Y, (MatValid(GBackMat(X, Y)) ? Game.Material.Map[GBackMat(X, Y)].Name : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING)));
+		text = std::format("{}/{} ({})", X, Y, (MatValid(GBackMat(X, Y)) ? Game.Material.Map[GBackMat(X, Y)].Name : LoadResStr(C4ResStrTableKey::IDS_CNS_NOTHING)));
 		break;
 	}
-	return Console.UpdateCursorBar(text.getData());
+	return Console.UpdateCursorBar(text.c_str());
 }
 
 void C4EditCursor::OnSelectionChanged()

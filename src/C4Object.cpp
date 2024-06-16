@@ -2530,10 +2530,10 @@ void C4Object::Draw(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode)
 	{
 		if (Action.Act > ActIdle)
 		{
-			const auto &message = FormatString("%s (%d)", Def->ActMap[Action.Act].Name, Action.Phase);
+			const std::string message{std::format("{} ({})", Def->ActMap[Action.Act].Name, Action.Phase)};
 			int32_t cmwdt, cmhgt;
-			Game.GraphicsResource.FontRegular.GetTextExtent(message.getData(), cmwdt, cmhgt, true);
-			Application.DDraw->TextOut(message.getData(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cox - Shape.x, cgo.Y + coy - cmhgt, InLiquid ? 0xfa0000FF : CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
+			Game.GraphicsResource.FontRegular.GetTextExtent(message.c_str(), cmwdt, cmhgt, true);
+			Application.DDraw->TextOut(message.c_str(), Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, cgo.X + cox - Shape.x, cgo.Y + coy - cmhgt, InLiquid ? 0xfa0000FF : CStdDDraw::DEFAULT_MESSAGE_COLOR, ACenter);
 		}
 	}
 
@@ -2808,8 +2808,8 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 			for (int i = 1; ; i++)
 			{
 				// Every command has its own naming environment
-				StdStrBuf Naming = FormatString("Command%d", i);
-				pComp->Value(mkNamingPtrAdapt(pCmd ? pCmd->Next : Command, Naming.getData()));
+				const std::string naming{std::format("Command{}", i)};
+				pComp->Value(mkNamingPtrAdapt(pCmd ? pCmd->Next : Command, naming.c_str()));
 				// Last command?
 				pCmd = (pCmd ? pCmd->Next : Command);
 				if (!pCmd)
@@ -2822,8 +2822,8 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 			C4Command *pCmd = Command;
 			for (int i = 1; pCmd; i++, pCmd = pCmd->Next)
 			{
-				StdStrBuf Naming = FormatString("Command%d", i);
-				pComp->Value(mkNamingAdapt(*pCmd, Naming.getData()));
+				const std::string naming{std::format("Command{}", i)};
+				pComp->Value(mkNamingAdapt(*pCmd, naming.c_str()));
 			}
 		}
 
@@ -3215,7 +3215,7 @@ bool C4Object::ContainedControl(uint8_t byCom)
 			if (Contained->Category & C4D_Structure)
 				return false; // or true? Currently it doesn't matter.
 	// get script function if defined
-	C4AulFunc *sf = Contained->Def->Script.GetSFunc(FormatString(PSF_ContainedControl, ComName(byCom)).getData());
+	C4AulFunc *sf = Contained->Def->Script.GetSFunc(std::format(PSF_ContainedControl, ComName(byCom)).c_str());
 	// in old versions, do hardcoded actions first (until gwe3)
 	// new objects may overload them
 	C4Def *pCDef = Contained->Def;
@@ -3244,7 +3244,7 @@ bool C4Object::ContainedControl(uint8_t byCom)
 		break;
 	case COM_Throw_D:
 		// avoid breaking objects with non-default behavior on ContainedThrow
-		if (Contained->Def->Script.GetSFunc(FormatString(PSF_ContainedControl, ComName(COM_Throw)).getData()))
+		if (Contained->Def->Script.GetSFunc(std::format(PSF_ContainedControl, ComName(COM_Throw)).c_str()))
 		{
 			break;
 		}
@@ -3294,7 +3294,7 @@ bool C4Object::CallControl(C4Player *pPlr, uint8_t byCom, const C4AulParSet &pPa
 {
 	assert(pPlr);
 
-	bool result = static_cast<bool>(Call(FormatString(PSF_Control, ComName(byCom)).getData(), pPars));
+	bool result = static_cast<bool>(Call(std::format(PSF_Control, ComName(byCom)).c_str(), pPars));
 
 	// Call ControlUpdate when using Jump'n'Run control
 	if (pPlr->ControlStyle)
@@ -3524,7 +3524,7 @@ void C4Object::DirectCom(uint8_t byCom, int32_t iData) // By player ObjectCom
 		case COM_Down_D: ObjectComUnGrab(this); break;
 		case COM_Throw_D:
 			// avoid breaking objects with non-default behavior on ControlThrow
-			if (!fGrabControlOverload || !Action.Target || Action.Target->Def->Script.GetSFunc(FormatString(PSF_Control, ComName(COM_Throw)).getData()))
+			if (!fGrabControlOverload || !Action.Target || Action.Target->Def->Script.GetSFunc(std::format(PSF_Control, ComName(COM_Throw)).c_str()))
 			{
 				break;
 			}
@@ -3695,7 +3695,7 @@ void C4Object::AutoStopDirectCom(uint8_t byCom, int32_t iData) // By DirecCom
 		case COM_Down_D:  ObjectComUnGrab(this); break;
 		case COM_Throw_D:
 			// avoid breaking objects with non-default behavior on ControlThrow
-			if (!fGrabControlOverload || !Action.Target || Action.Target->Def->Script.GetSFunc(FormatString(PSF_Control, ComName(COM_Throw)).getData()))
+			if (!fGrabControlOverload || !Action.Target || Action.Target->Def->Script.GetSFunc(std::format(PSF_Control, ComName(COM_Throw)).c_str()))
 			{
 				break;
 			}
@@ -4056,7 +4056,7 @@ void C4Object::DrawCommand(C4Facet &cgoBar, int32_t iAlign, const char *szFuncti
 	// Command
 	if (!fFlash || Tick35 > 15)
 		DrawCommandKey(cgoLeft, iCom, false,
-			Config.Graphics.ShowCommandKeys ? PlrControlKeyName(iPlayer, Com2Control(iCom), true).getData() : nullptr);
+			Config.Graphics.ShowCommandKeys ? PlrControlKeyName(iPlayer, Com2Control(iCom), true).c_str() : nullptr);
 
 	// Region (both symbols)
 	if (pRegions)

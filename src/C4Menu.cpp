@@ -856,21 +856,21 @@ void C4Menu::DrawElement(C4FacetEx &cgo)
 		{
 			// Normal enter
 			cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-			DrawCommandKey(cgoControl, COM_Throw, false, PlrControlKeyName(iPlayer, Com2Control(COM_Throw), true).getData());
+			DrawCommandKey(cgoControl, COM_Throw, false, PlrControlKeyName(iPlayer, Com2Control(COM_Throw), true).c_str());
 			cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
 			GfxR->fctOKCancel.Draw(cgoControl, true, 0, 0);
 			// Enter-all on Special2
 			if (pItem && pItem->Command2[0])
 			{
 				cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-				DrawCommandKey(cgoControl, COM_Special2, false, PlrControlKeyName(iPlayer, Com2Control(COM_Special2), true).getData());
+				DrawCommandKey(cgoControl, COM_Special2, false, PlrControlKeyName(iPlayer, Com2Control(COM_Special2), true).c_str());
 				cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
 				GfxR->fctOKCancel.Draw(cgoControl, true, 2, 1);
 			}
 		}
 		// Draw menu 'close' command
 		cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
-		DrawCommandKey(cgoControl, COM_Dig, false, PlrControlKeyName(iPlayer, Com2Control(COM_Dig), true).getData());
+		DrawCommandKey(cgoControl, COM_Dig, false, PlrControlKeyName(iPlayer, Com2Control(COM_Dig), true).c_str());
 		cgoControl = cgoExtra.TruncateSection(C4FCT_Left);
 		// Close command contains "Exit"? Show an exit symbol in the status bar.
 		if (SSearch(CloseCommand.getData(), "\"Exit\"")) GfxR->fctExit.Draw(cgoControl);

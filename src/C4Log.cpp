@@ -72,6 +72,7 @@ C4LogSystem::LogSink::~LogSink()
 
 void C4LogSystem::LogSink::sink_it_(const spdlog::details::log_msg &msg)
 {
+	const std::lock_guard lock{mutex_};
 	std::string formatted;
 	formatter_->format(msg, formatted);
 	std::fwrite(formatted.data(), sizeof(char), formatted.size(), file);
@@ -162,7 +163,7 @@ void C4LogSystem::OpenLog()
 	}
 }
 
-StdStrBuf sFatalError;
+std::string sFatalError;
 
 bool LogSilent(const std::string_view message, bool fConsole)
 {
@@ -187,28 +188,28 @@ bool Log(const std::string_view message)
 	return true;
 }
 
-bool LogFatal(const char *szMessage)
+bool LogFatal(std::string_view message)
 {
-	if (!szMessage) szMessage = "(null)";
+	if (message.empty()) message = "(null)";
 	// add to fatal error message stack - if not already in there (avoid duplication)
-	if (!SSearch(sFatalError.getData(), szMessage))
+	if (!sFatalError.contains(message))
 	{
-		if (!sFatalError.isNull()) sFatalError.AppendChar('|');
-		sFatalError.Append(szMessage);
+		if (!sFatalError.empty()) sFatalError += '|';
+		sFatalError += message;
 	}
 	// write to log - note that Log might overwrite a static buffer also used in szMessage
-	spdlog::critical("{}", LoadResStr(C4ResStrTableKey::IDS_ERR_FATAL, szMessage).c_str());
+	spdlog::critical("{}", LoadResStr(C4ResStrTableKey::IDS_ERR_FATAL, message).c_str());
 	return true;
 }
 
 void ResetFatalError()
 {
-	sFatalError.Clear();
+	sFatalError.clear();
 }
 
-const char *GetFatalError()
+std::string_view GetFatalError()
 {
-	return sFatalError.getData();
+	return sFatalError;
 }
 
 bool DebugLog(const std::string_view message)

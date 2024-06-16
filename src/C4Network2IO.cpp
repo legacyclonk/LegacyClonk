@@ -230,7 +230,7 @@ bool C4Network2IO::ConnectWithSocket(const C4NetIO::addr_t &addr, C4Network2IOPr
 	if (!pConn->Connect())
 	{
 		// show error
-		LogSilentF("Network: could not connect to %s using %s: %s", addr.ToString().getData(),
+		LogSilentF("Network: could not connect to %s using %s: %s", addr.ToString(),
 			getNetIOName(pNetIO), pNetIO->GetError() ? pNetIO->GetError() : "");
 		pNetIO->ResetError();
 		// remove class
@@ -501,7 +501,7 @@ bool C4Network2IO::OnConn(const C4NetIO::addr_t &PeerAddr, const C4NetIO::addr_t
 	SendConnPackets();
 #if (C4NET2IO_DUMP_LEVEL > 0)
 	// log
-	LogSilentF("Network: got %s connection from %s", getNetIOName(pNetIO), PeerAddr.ToString().getData());
+	LogSilentF("Network: got %s connection from %s", getNetIOName(pNetIO), PeerAddr.ToString());
 #endif
 	// ok
 	return true;
@@ -529,7 +529,7 @@ void C4Network2IO::OnDisconn(const C4NetIO::addr_t &addr, C4NetIO *pNetIO, const
 	if (!pConn) return;
 	// log
 	LogSilentF("Network: %s connection to %s %s (%s)",
-		getNetIOName(pNetIO), addr.ToString().getData(), (pConn->isConnecting() ? "failed" : "closed"), szReason);
+		getNetIOName(pNetIO), addr.ToString(), (pConn->isConnecting() ? "failed" : "closed"), szReason);
 	// already closed? ignore
 	if (!pConn->isClosed())
 		// not accepted yet? count as connection failure
@@ -561,7 +561,7 @@ void C4Network2IO::OnPacket(const class C4NetIOPacket &rPacket, C4NetIO *pNetIO)
 	C4Network2IOConnection *pConn = GetConnection(rPacket.getAddr(), pNetIO);
 	if (!pConn)
 	{
-		LogF("Network: could not find connection for %s packet (status %02x) from %s!", getNetIOName(pNetIO), rPacket.getStatus(), rPacket.getAddr().ToString().getData());
+		LogF("Network: could not find connection for %s packet (status %02x) from %s!", getNetIOName(pNetIO), rPacket.getStatus(), rPacket.getAddr().ToString());
 		return;
 	}
 #if (C4NET2IO_DUMP_LEVEL > 2)
@@ -815,12 +815,12 @@ bool C4Network2IO::HandlePacket(const C4NetIOPacket &rPacket, C4Network2IOConnec
 	if (fThread && Pkt.getPktType() != PID_Ping && Pkt.getPktType() != PID_Pong && Pkt.getPktType() != PID_NetResData)
 	{
 		unsigned int iTime = timeGetTime();
-		StdStrBuf PacketHeader = FormatString("HandlePacket: %d:%02d:%02d:%03d by %s (%zu bytes, counter %d)",
+		const std::string packetHeader{std::format("HandlePacket: {}:{:02}:{:02}:{:03} by {} ({} bytes, counter {})",
 			(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
-			pConn->getPeerAddr().ToString().getData(),
-			rPacket.getSize(), pConn->getInPacketCounter());
-		StdStrBuf Dump = DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(Pkt, PacketHeader.getData()));
-		LogSilent(Dump.getData());
+			pConn->getPeerAddr().ToString(),
+			rPacket.getSize(), pConn->getInPacketCounter())};
+		const std::string dump{DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(Pkt, packetHeader.c_str()))};
+		LogSilent(dump);
 	}
 #endif
 
@@ -1137,7 +1137,7 @@ void C4Network2IO::CheckTimeout()
 		if (!pConn->isClosed() && !pConn->isAccepted())
 			if (difftime(time(nullptr), pConn->getTimestamp()) > C4NetAcceptTimeout)
 			{
-				LogSilentF("Network: connection accept timeout to %s", pConn->getPeerAddr().ToString().getData());
+				LogSilentF("Network: connection accept timeout to %s", pConn->getPeerAddr().ToString());
 				pConn->Close();
 			}
 		// ping timeout
@@ -1145,7 +1145,7 @@ void C4Network2IO::CheckTimeout()
 			if ((pConn->getLag() != -1 ? pConn->getLag() : 1000 * (time(nullptr) - pConn->getTimestamp()))
 		> C4NetPingTimeout)
 			{
-				LogSilentF("Network: ping timeout to %s", pConn->getPeerAddr().ToString().getData());
+				LogSilentF("Network: ping timeout to %s", pConn->getPeerAddr().ToString());
 				pConn->Close();
 			}
 		// delayed connection removal

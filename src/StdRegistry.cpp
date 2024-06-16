@@ -437,7 +437,7 @@ void StdCompilerConfigWrite::Boolean(bool &rBool)
 
 void StdCompilerConfigWrite::Character(char &rChar)
 {
-	WriteString(FormatString("%c", rChar).getData());
+	WriteString(std::format("{}", rChar).c_str());
 }
 
 void StdCompilerConfigWrite::String(char *szString, size_t iMaxLength, RawCompileType eType)
@@ -476,7 +476,7 @@ void StdCompilerConfigWrite::CreateKey(HKEY hParent)
 		0, nullptr, REG_OPTION_NON_VOLATILE,
 		KEY_WRITE, nullptr,
 		&pKey->Handle, nullptr) != ERROR_SUCCESS)
-		excCorrupt("Could not create key %s!", pKey->Name.getData());
+		excCorrupt("Could not create key {}!", pKey->Name.getData());
 }
 
 template<typename T>
@@ -489,7 +489,7 @@ void StdCompilerConfigWrite::WriteInteger(T value)
 	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
 		0, type, reinterpret_cast<const BYTE *>(&value),
 		sizeof(value)) != ERROR_SUCCESS)
-		excCorrupt("Could not write key %s!", pKey->Name.getData());
+		excCorrupt("Could not write key {}!", pKey->Name.getData());
 }
 
 void StdCompilerConfigWrite::WriteDWord(uint32_t iVal)
@@ -503,7 +503,7 @@ void StdCompilerConfigWrite::WriteString(const char *szString)
 	if (RegSetValueEx(pKey->Parent->Handle, pKey->Name.getData(),
 		0, REG_SZ, reinterpret_cast<const BYTE *>(szString),
 		checked_cast<DWORD>(strlen(szString) + 1)) != ERROR_SUCCESS)
-		excCorrupt("Could not write key %s!", pKey->Name.getData());
+		excCorrupt("Could not write key {}!", pKey->Name.getData());
 }
 
 // *** StdCompilerConfigRead
@@ -670,7 +670,7 @@ T StdCompilerConfigRead::ReadInteger(DWORD type, DWORD alternativeType)
 	// Virtual key?
 	if (pKey->Virtual)
 	{
-		excNotFound("Could not read value %s! Parent key doesn't exist!", pKey->Name.getData()); return 0;
+		excNotFound("Could not read value {}! Parent key doesn't exist!", pKey->Name.getData()); return 0;
 	}
 	// Wrong type?
 	if (pKey->Type != type && pKey->Type != alternativeType)
@@ -684,7 +684,7 @@ T StdCompilerConfigRead::ReadInteger(DWORD type, DWORD alternativeType)
 		reinterpret_cast<LPBYTE>(&iVal),
 		&iSize) != ERROR_SUCCESS)
 	{
-		excNotFound("Could not read value %s!", pKey->Name.getData()); return 0;
+		excNotFound("Could not read value {}!", pKey->Name.getData()); return 0;
 	}
 	// Check size
 	if (iSize != sizeof(iVal))
@@ -705,7 +705,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 	// Virtual key?
 	if (pKey->Virtual)
 	{
-		excNotFound("Could not read value %s! Parent key doesn't exist!", pKey->Name.getData()); return StdStrBuf();
+		excNotFound("Could not read value {}! Parent key doesn't exist!", pKey->Name.getData()); return StdStrBuf();
 	}
 	// Wrong type?
 	if (pKey->Type != REG_SZ)
@@ -719,7 +719,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 		nullptr,
 		&iSize) != ERROR_SUCCESS)
 	{
-		excNotFound("Could not read value %s!", pKey->Name.getData()); return StdStrBuf();
+		excNotFound("Could not read value {}!", pKey->Name.getData()); return StdStrBuf();
 	}
 	// Allocate string
 	StdStrBuf Result; Result.SetLength(iSize);
@@ -729,7 +729,7 @@ StdStrBuf StdCompilerConfigRead::ReadString()
 		reinterpret_cast<BYTE *>(Result.getMData()),
 		&iSize) != ERROR_SUCCESS)
 	{
-		excNotFound("Could not read value %s!", pKey->Name.getData()); return StdStrBuf();
+		excNotFound("Could not read value {}!", pKey->Name.getData()); return StdStrBuf();
 	}
 	Result.SetLength(strlen(Result.getData()));
 	return Result;

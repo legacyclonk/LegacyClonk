@@ -1837,7 +1837,7 @@ void C4Game::DrawCursors(C4FacetEx &cgo, int32_t iPlayer)
 							int32_t texthgt = GraphicsResource.FontRegular.GetLineHeight();
 							if (cursor->Info->Rank > 0)
 							{
-								text = FormatString("%s|%s", cursor->Info->sRankName.getData(), cursor->GetName()).getData();
+								text = std::format("{}|{}", cursor->Info->sRankName.getData(), cursor->GetName());
 								texthgt += texthgt;
 							}
 
@@ -1942,7 +1942,7 @@ void C4Game::CompileFunc(StdCompiler *pComp, CompileSettings comp)
 		// Primary player ininitialization (also setting ID) is done by player info list
 		// Won't work this way for binary mode!
 		for (C4Player *pPlr = Players.First; pPlr; pPlr = pPlr->Next)
-			pComp->Value(mkNamingAdapt(*pPlr, FormatString("Player%d", pPlr->ID).getData()));
+			pComp->Value(mkNamingAdapt(*pPlr, std::format("Player{}", pPlr->ID).c_str()));
 	}
 }
 
@@ -3753,14 +3753,13 @@ C4Object *C4Game::FindObjectByCommand(int32_t iCommand, C4Object *pTarget, C4Val
 
 bool C4Game::InitNetworkFromAddress(const char *szAddress)
 {
-	StdStrBuf strRefQueryFailed(LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_FAILED));
 	// Query reference
 	C4Network2RefClient RefClient;
 	if (!RefClient.Init() ||
 		!RefClient.SetServer(szAddress, Config.Network.PortRefServer) ||
 		!RefClient.QueryReferences())
 	{
-		LogFatal(FormatString(strRefQueryFailed.getData(), RefClient.GetError()).getData()); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_FAILED, RefClient.GetError())); return false;
 	}
 	// We have to wait for the answer
 	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_QUERYMSG, szAddress)};
@@ -3793,13 +3792,13 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 	// Error?
 	if (!RefClient.isSuccess())
 	{
-		LogFatal(FormatString(strRefQueryFailed.getData(), RefClient.GetError()).getData()); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_FAILED, RefClient.GetError())); return false;
 	}
 	// Get references
 	C4Network2Reference **ppRefs = nullptr; int32_t iRefCount;
 	if (!RefClient.GetReferences(ppRefs, iRefCount) || iRefCount <= 0)
 	{
-		LogFatal(FormatString(strRefQueryFailed.getData(), LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_NOREF)).getData()); return false;
+		LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_FAILED, LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_NOREF))); return false;
 	}
 	// Connect to first reference
 	bool fSuccess = InitNetworkFromReference(*ppRefs[0]);

@@ -37,20 +37,20 @@ const uint32_t ClrPlayerItem = 0xff000000;
 
 // C4Utilities
 
-StdStrBuf TimeString(int iSeconds)
+static std::string TimeString(int iSeconds)
 {
 	int iHours = iSeconds / 3600; iSeconds -= 3600 * iHours;
 	int iMinutes = iSeconds / 60; iSeconds -= 60 * iMinutes;
-	return FormatString("%02d:%02d:%02d", iHours, iMinutes, iSeconds);
+	return std::format("{:02}{:02}{:02}", iHours, iMinutes, iSeconds);
 }
 
-StdStrBuf DateString(int iTime)
+static std::string DateString(int iTime)
 {
-	if (!iTime) return StdStrBuf("", true);
+	if (!iTime) return "";
 	time_t tTime = iTime;
 	struct tm *pLocalTime;
 	pLocalTime = localtime(&tTime);
-	return FormatString("%02d.%02d.%d %02d:%02d",
+	return std::format("{:02}.{:02}.{} {:02}:{:02}",
 		pLocalTime->tm_mday,
 		pLocalTime->tm_mon + 1,
 		pLocalTime->tm_year + 1900,
@@ -221,9 +221,9 @@ void C4StartupPlrSelDlg::PlayerListItem::Load(const StdStrBuf &rsFilename)
 	// load player info
 	C4Group PlrGroup;
 	if (!PlrGroup.Open(rsFilename.getData()))
-		throw LoadError(FormatString("Error loading player file from %s: Error opening group: %s", rsFilename.getData(), PlrGroup.GetError()));
+		throw LoadError(std::format("Error loading player file from {}: Error opening group: {}", rsFilename.getData(), PlrGroup.GetError()));
 	if (!Core.Load(PlrGroup))
-		throw LoadError(FormatString("Error loading player file from %s: Core data invalid or missing (Group: %s)!", rsFilename.getData(), PlrGroup.GetError()));
+		throw LoadError(std::format("Error loading player file from {}: Core data invalid or missing (Group: {})!", rsFilename.getData(), PlrGroup.GetError()));
 	// load icon
 	C4FacetExSurface fctIcon;
 	if (PlrGroup.FindEntry(C4CFN_BigIcon) && fctIcon.Load(PlrGroup, C4CFN_BigIcon))
@@ -239,7 +239,7 @@ void C4StartupPlrSelDlg::PlayerListItem::Load(const StdStrBuf &rsFilename)
 	LoadPortrait(PlrGroup, true);
 	// done loading
 	if (!PlrGroup.Close())
-		throw LoadError(FormatString("Error loading player file from %s: Error closing group: %s", rsFilename.getData(), PlrGroup.GetError()));
+		throw LoadError(std::format("Error loading player file from {}: Error closing group: {}", rsFilename.getData(), PlrGroup.GetError()));
 	// default name
 	if (!*Core.PrefName) SCopy(GetFilenameOnly(rsFilename.getData()), Core.PrefName, sizeof(Core.PrefName) - 1);
 	SetName(Core.PrefName);
@@ -294,10 +294,10 @@ void C4StartupPlrSelDlg::PlayerListItem::SetSelectionInfo(C4GUI::TextWindow *pSe
 {
 	// write info text for player
 	pSelectionInfo->ClearText(false);
-	pSelectionInfo->AddTextLine(FormatString("%s", Core.PrefName).getData(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
-	pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_DESC_PLAYER, static_cast<int>(Core.Score), static_cast<int>(Core.Rounds), static_cast<int>(Core.RoundsWon), static_cast<int>(Core.RoundsLost), TimeString(Core.TotalPlayingTime).getData(), Core.Comment).c_str(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
+	pSelectionInfo->AddTextLine(Core.PrefName, &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
+	pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_DESC_PLAYER, static_cast<int>(Core.Score), static_cast<int>(Core.Rounds), static_cast<int>(Core.RoundsWon), static_cast<int>(Core.RoundsLost), TimeString(Core.TotalPlayingTime), Core.Comment).c_str(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	if (Core.LastRound.Title[0])
-		pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_DESC_LASTGAME, Core.LastRound.Title.getData(), DateString(Core.LastRound.Date).getData(), TimeString(Core.LastRound.Duration).getData(), static_cast<int>(Core.LastRound.FinalScore)).c_str(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
+		pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_DESC_LASTGAME, Core.LastRound.Title.getData(), DateString(Core.LastRound.Date), TimeString(Core.LastRound.Duration), static_cast<int>(Core.LastRound.FinalScore)).c_str(), &C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	pSelectionInfo->UpdateHeight();
 }
 
@@ -307,7 +307,7 @@ std::string C4StartupPlrSelDlg::PlayerListItem::GetDelWarning()
 	int32_t iPlrTime = Core.TotalPlayingTime;
 	if (iPlrTime > 60 * 60 * 10)
 		warning += LoadResStr(C4ResStrTableKey::IDS_MSG_DELETEPLR_PLAYTIME,
-			TimeString(iPlrTime).getData());
+			TimeString(iPlrTime));
 	return warning;
 }
 
@@ -345,10 +345,10 @@ void C4StartupPlrSelDlg::CrewListItem::Load(C4Group &rGrp, const StdStrBuf &rsFi
 	// load core
 	C4Group CrewGroup;
 	if (!CrewGroup.OpenAsChild(&rGrp, rsFilename.getData()))
-		throw LoadError(FormatString("Error loading crew file from %s in %s: Error opening group: %s",
+		throw LoadError(std::format("Error loading crew file from {} in {}: Error opening group: {}",
 			rsFilename.getData(), rGrp.GetFullName().getData(), CrewGroup.GetError()));
 	if (!Core.Load(CrewGroup))
-		throw LoadError(FormatString("Error loading crew file from %s: Core data invalid or missing (Group: %s)!",
+		throw LoadError(std::format("Error loading crew file from {}: Core data invalid or missing (Group: {})!",
 			CrewGroup.GetFullName().getData(), CrewGroup.GetError()));
 	ListItem::SetName(Core.Name);
 	pCheck->SetChecked(!!Core.Participation);
@@ -468,7 +468,7 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 {
 	// write info text for player
 	pSelectionInfo->ClearText(false);
-	pSelectionInfo->AddTextLine(FormatString("%s %s", Core.sRankName.getData(), Core.Name).getData(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
+	pSelectionInfo->AddTextLine(std::format("{} {}", Core.sRankName.getData(), Core.Name).c_str(), &C4Startup::Get()->Graphics.BookFontCapt, ClrPlayerItem, false, false);
 	std::string promo;
 	int32_t iNextRankExp; StdStrBuf sNextRankName;
 	if (Core.GetNextRankInfo(Game.Rank, &iNextRankExp, &sNextRankName))
@@ -477,7 +477,7 @@ void C4StartupPlrSelDlg::CrewListItem::SetSelectionInfo(C4GUI::TextWindow *pSele
 		promo = LoadResStr(C4ResStrTableKey::IDS_DESC_NOPROMO);
 	pSelectionInfo->AddTextLine(LoadResStr(C4ResStrTableKey::IDS_DESC_OBJECT,
 		Core.TypeName, Core.Experience, Core.Rounds, Core.DeathCount,
-		promo.c_str(), TimeString(Core.TotalPlayingTime).getData(), DateString(Core.Birthday).getData()).c_str(),
+		promo.c_str(), TimeString(Core.TotalPlayingTime), DateString(Core.Birthday)).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
 	pSelectionInfo->AddTextLine(GetPhysicalTextLine(Core.Physical.Energy, C4ResStrTableKey::IDS_DESC_ENERGY).c_str(),
 		&C4Startup::Get()->Graphics.BookFont, ClrPlayerItem, false, false);
@@ -512,7 +512,7 @@ std::string C4StartupPlrSelDlg::CrewListItem::GetDelWarning()
 		Core.sRankName.getData(), Core.Name, GetFilename().getData())};
 	int32_t iPlrTime = Core.TotalPlayingTime;
 	if (iPlrTime > 60 * 60 * 10)
-		warning += LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK_PLAYTIME, TimeString(iPlrTime).getData());
+		warning += LoadResStr(C4ResStrTableKey::IDS_MSG_DELETECLONK_PLAYTIME, TimeString(iPlrTime));
 	return warning;
 }
 
@@ -709,7 +709,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 			catch (ListItem::LoadError &e)
 			{
 				// invalid player: ignore but log error message
-				DebugLog(e.getData());
+				DebugLog(e.what());
 				delete pPlrItem;
 				continue;
 			}
@@ -731,7 +731,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 
 	case PSDM_Crew:
 	{
-		SetTitle(FormatString("%s %s", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW).c_str(), CurrPlayer.Core.PrefName).getData());
+		SetTitle(std::format("{} {}", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW).c_str(), CurrPlayer.Core.PrefName).c_str());
 		// crew mode: Insert complete crew of player (2do: sort)
 		bool fSucc; char szFn[_MAX_PATH + 1];
 		for (fSucc = CurrPlayer.Grp.FindEntry(C4CFN_ObjectInfoFiles, szFn); fSucc; fSucc = CurrPlayer.Grp.FindNextEntry(C4CFN_ObjectInfoFiles, szFn, nullptr, nullptr, true))
@@ -744,7 +744,7 @@ void C4StartupPlrSelDlg::UpdatePlayerList()
 			catch (ListItem::LoadError &e)
 			{
 				// invalid player: ignore but log error message
-				DebugLog(e.getData());
+				DebugLog(e.what());
 				delete pCrewItem;
 				continue;
 			}
@@ -939,11 +939,11 @@ void C4StartupPlrSelDlg::SetCrewMode(PlayerListItem *pSel)
 	if (!CurrPlayer.Grp.Open(pSel->GetFilename().getData())) return;
 	if (!CurrPlayer.Grp.FindEntry(C4CFN_ObjectInfoFiles))
 	{
-		StdStrBuf strCrew(FormatString("%s %s", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW).c_str(), CurrPlayer.Core.PrefName));
+		const std::string crew{std::format("{} {}", LoadResStrNoAmp(C4ResStrTableKey::IDS_CTL_CREW), CurrPlayer.Core.PrefName)};
 		// player has no crew!
 		GetScreen()->ShowMessage(LoadResStr(C4ResStrTableKey::IDS_ERR_PLRNOCREW,
 			CurrPlayer.Core.PrefName).c_str(),
-			strCrew.getData(), C4GUI::Ico_Player);
+			crew.c_str(), C4GUI::Ico_Player);
 		return;
 	}
 	C4GUI::GUISound("DoorOpen");
@@ -1146,7 +1146,7 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	SetFocus(pNameEdit, false);
 	caMain.ExpandTop(-BetweenElementDist);
 	// place color label
-	AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr(C4ResStrTableKey::IDS_CTL_COLOR)).getData(), caMain.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
+	AddElement(new C4GUI::Label(std::format("{}:", LoadResStr(C4ResStrTableKey::IDS_CTL_COLOR)).c_str(), caMain.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
 	// place color controls
 	C4GUI::ComponentAligner caColorArea(caMain.GetFromTop(C4GUI::ArrowButton::GetDefaultHeight()), 2, 0);
 	caColorArea.ExpandLeft(2);
@@ -1182,7 +1182,7 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	int32_t iControlPicSize = C4GUI::ArrowButton::GetDefaultHeight();
 	C4GUI::ComponentAligner caControlArea(caMain.GetFromTop(iControlPicSize + pSmallFont->GetLineHeight() + BetweenElementDist), 0, 0, false);
 	C4GUI::ComponentAligner caPictureArea(caControlArea.GetFromRight(iControlPicSize), 0, 0, false);
-	AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr(C4ResStrTableKey::IDS_CTL_CONTROL)).getData(), caControlArea.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
+	AddElement(new C4GUI::Label(std::format("{}:", LoadResStr(C4ResStrTableKey::IDS_CTL_CONTROL)).c_str(), caControlArea.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
 	AddElement(new C4GUI::Label(LoadResStr(C4ResStrTableKey::IDS_CTL_PICTURE), caPictureArea.GetFromTop(pSmallFont->GetLineHeight()), ACenter, C4StartupFontClr, pSmallFont, false));
 	caControlArea.ExpandTop(-BetweenElementDist); caPictureArea.ExpandTop(-BetweenElementDist);
 	// place control controls
@@ -1207,7 +1207,7 @@ C4StartupPlrPropertiesDlg::C4StartupPlrPropertiesDlg(C4StartupPlrSelDlg::PlayerL
 	UpdatePlayerColor(true);
 	caMain.ExpandTop(-BetweenElementDist);
 	// place AutoStopControl label
-	AddElement(new C4GUI::Label(FormatString("%s:", LoadResStr(C4ResStrTableKey::IDS_DLG_MOVEMENT)).getData(), caMain.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
+	AddElement(new C4GUI::Label(std::format("{}:", LoadResStr(C4ResStrTableKey::IDS_DLG_MOVEMENT)).c_str(), caMain.GetFromTop(pSmallFont->GetLineHeight()), ALeft, C4StartupFontClr, pSmallFont, false));
 	// place AutoStopControl controls
 	C4Facet &rfctMovementIcons = C4Startup::Get()->Graphics.fctPlrCtrlType;
 	C4GUI::ComponentAligner caMovement(caMain.GetFromTop(rfctMovementIcons.Hgt), 5, 0);

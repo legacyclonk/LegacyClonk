@@ -261,15 +261,6 @@ bool C4GameSave::SaveRuntimeData()
 	return true;
 }
 
-namespace
-{
-	template<typename... Args>
-	std::string FormatEscape(const char *fmt, Args &&...args)
-	{
-		return RtfEscape(FormatString(fmt, std::forward<Args>(args)...).getData());
-	}
-}
-
 bool C4GameSave::SaveDesc(C4Group &hToGroup)
 {
 	// Scenario title
@@ -482,7 +473,7 @@ bool C4GameSave::Save(C4Group &hToGroup, bool fKeepGroup)
 	{
 		pSaveGroup->Delete(C4CFN_ScenarioTitle);
 		pSaveGroup->Delete(C4CFN_ScenarioIcon);
-		pSaveGroup->Delete(FormatString(C4CFN_ScenarioDesc, "*").getData());
+		pSaveGroup->Delete(fmt::sprintf(C4CFN_ScenarioDesc, "*").c_str());
 		pSaveGroup->Delete(C4CFN_Titles);
 		pSaveGroup->Delete(C4CFN_Info);
 	}

@@ -208,10 +208,10 @@ bool CompileFromBuf_LogWarn(StructT &&TargetStruct, const typename CompT::InT &S
 	}
 	catch (const StdCompiler::Exception &e)
 	{
-		if (!e.Pos.getLength())
+		if (e.Pos.empty())
 			LogF("ERROR: %s (in %s)", e.what(), szName);
 		else
-			LogF("ERROR: %s (in %s, %s)", e.what(), e.Pos.getData(), szName);
+			LogF("ERROR: %s (in %s, %s)", e.what(), e.Pos, szName);
 		return false;
 	}
 }

@@ -680,24 +680,24 @@ bool C4Console::UpdateStatusBars()
 	if (Game.FrameCounter != FrameCounter)
 	{
 		FrameCounter = Game.FrameCounter;
-		const auto &text = FormatString("Frame: %i", FrameCounter);
+		const std::string text{std::format("Frame: {}", FrameCounter)};
 #ifdef _WIN32
-		SetDlgItemText(hWindow, IDC_STATICFRAME, text.getData());
+		SetDlgItemText(hWindow, IDC_STATICFRAME, text.c_str());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICFRAME));
 #elif WITH_DEVELOPER_MODE
-		gtk_label_set_label(GTK_LABEL(lblFrame), text.getData());
+		gtk_label_set_label(GTK_LABEL(lblFrame), text.c_str());
 #endif // WITH_DEVELOPER_MODE / _WIN32
 	}
 	// Script counter
 	if (Game.Script.Counter != ScriptCounter)
 	{
 		ScriptCounter = Game.Script.Counter;
-		const auto &text = FormatString("Script: %i", ScriptCounter);
+		const std::string text{std::format("Script: {}", ScriptCounter)};
 #ifdef _WIN32
-		SetDlgItemText(hWindow, IDC_STATICSCRIPT, text.getData());
+		SetDlgItemText(hWindow, IDC_STATICSCRIPT, text.c_str());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICSCRIPT));
 #elif WITH_DEVELOPER_MODE
-		gtk_label_set_label(GTK_LABEL(lblScript), text.getData());
+		gtk_label_set_label(GTK_LABEL(lblScript), text.c_str());
 #endif // WITH_DEVELOPER_MODE / _WIN32
 	}
 	// Time & FPS
@@ -705,12 +705,12 @@ bool C4Console::UpdateStatusBars()
 	{
 		Time = Game.Time;
 		FPS = Game.FPS;
-		const auto &text = FormatString("%02d:%02d:%02d (%i FPS)", Time / 3600, (Time % 3600) / 60, Time % 60, FPS);
+		const std::string text{std::format("{:02}:{:02}:{:02} ({} FPS)", Time / 3600, (Time % 3600) / 60, Time % 60, FPS)};
 #ifdef _WIN32
-		SetDlgItemText(hWindow, IDC_STATICTIME, text.getData());
+		SetDlgItemText(hWindow, IDC_STATICTIME, text.c_str());
 		UpdateWindow(GetDlgItem(hWindow, IDC_STATICTIME));
 #elif WITH_DEVELOPER_MODE
-		gtk_label_set_label(GTK_LABEL(lblTime), text.getData());
+		gtk_label_set_label(GTK_LABEL(lblTime), text.c_str());
 #endif // WITH_DEVELOPER_MODE
 	}
 	return true;
@@ -1083,7 +1083,7 @@ bool C4Console::FileSelect(char *sFilename, int iSize, const char *szFilter, uin
 
 			if ((dwFlags & OFN_FILEMUSTEXIST) && !g_file_test(filename, G_FILE_TEST_IS_REGULAR))
 			{
-				Message(FormatString("File \"%s\" does not exist", filename).getData(), false);
+				Message(std::format("File \"{}\" does not exist", filename).c_str(), false);
 				error = true;
 			}
 

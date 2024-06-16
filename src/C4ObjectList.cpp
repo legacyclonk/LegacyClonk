@@ -529,10 +529,10 @@ void C4ObjectList::CompileFunc(StdCompiler *pComp, bool fSaveRefs, bool fSkipPla
 				catch (const StdCompiler::Exception &e)
 				{
 					// Failsafe object loading: If an error occurs during object loading, just skip that object and load the next one
-					if (!e.Pos.getLength())
+					if (e.Pos.empty())
 						LogF("ERROR: Object loading: %s", e.what());
 					else
-						LogF("ERROR: Object loading(%s): %s", e.Pos.getData(), e.what());
+						LogF("ERROR: Object loading(%s): %s", e.Pos, e.what());
 				}
 			}
 		}

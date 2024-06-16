@@ -2591,7 +2591,7 @@ void C4Group::PrintInternals(const char *szIndent)
 		{
 			C4Group hChildGroup;
 			if (hChildGroup.OpenAsChild(this, p->FileName))
-				hChildGroup.PrintInternals(FormatString("%s%s", szIndent, "    ").getData());
+				hChildGroup.PrintInternals(std::format("{}{}", szIndent, "    ").c_str());
 		}
 	}
 }

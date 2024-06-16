@@ -52,24 +52,24 @@
 
 // Some Support Functions
 
-static void Warn(C4Object *const obj, const char *const message)
+static void Warn(C4Object *const obj, const std::string_view message)
 {
 	C4AulExecError{obj, message}.show();
 }
 
 template<typename... Args>
-static void StrictError(C4AulContext *const context, C4AulScriptStrict errorSince, const char *const message, Args... args)
+static void StrictError(C4AulContext *const context, C4AulScriptStrict errorSince, const std::format_string<Args...> message, Args &&... args)
 {
 	const auto strictness = context->Caller ? context->Caller->Func->Owner->Strict : C4AulScriptStrict::NONSTRICT;
 
-	const StdStrBuf result{FormatString(message, std::forward<Args>(args)...)};
+	const std::string result{std::format(message, std::forward<Args>(args)...)};
 	if (strictness < errorSince)
 	{
-		Warn(context->Obj, result.getData());
+		Warn(context->Obj, result);
 	}
 	else
 	{
-		throw C4AulExecError{context->Obj, result.getData()};
+		throw C4AulExecError{context->Obj, result};
 	}
 }
 
@@ -2562,7 +2562,7 @@ static bool FnSetPlrShowControlPos(C4AulContext *cthr, C4ValueInt iPlr, C4ValueI
 
 static C4String *FnGetPlrControlName(C4AulContext *cthr, C4ValueInt iPlr, C4ValueInt iCon, bool fShort)
 {
-	return String(PlrControlKeyName(iPlr, iCon, fShort).getData());
+	return String(PlrControlKeyName(iPlr, iCon, fShort).c_str());
 }
 
 static C4ValueInt FnGetPlrJumpAndRunControl(C4AulContext *cthr, C4ValueInt iPlr)
@@ -3837,7 +3837,7 @@ static void FnSetLength(C4AulContext *cthr, C4Value *pArrayRef, C4ValueInt iNewS
 {
 	// safety
 	if (iNewSize < 0 || iNewSize > C4ValueList::MaxSize)
-		throw C4AulExecError(cthr->Obj, FormatString("SetLength: invalid array size (%d)", iNewSize).getData());
+		throw C4AulExecError(cthr->Obj, std::format("SetLength: invalid array size ({})", iNewSize));
 
 	// set new size
 	pArrayRef->SetArrayLength(iNewSize, cthr);
@@ -4041,7 +4041,7 @@ protected:
 	// get values as C4Value
 	virtual void ProcessInt(int32_t &rInt) override { Res = C4VInt(rInt); }
 	virtual void ProcessBool(bool &rBool) override { Res = C4VBool(rBool); }
-	virtual void ProcessChar(char &rChar) override { Res = C4VString(FormatString("%c", rChar)); }
+	virtual void ProcessChar(char &rChar) override { Res = C4VString(std::format("{}", rChar).c_str()); }
 
 	virtual void ProcessString(char *szString, size_t iMaxLength, bool fIsID) override
 	{
@@ -4310,7 +4310,7 @@ static bool FnResortObjects(C4AulContext *cthr, C4String *szFunc, C4ValueInt Cat
 	// get function
 	C4AulFunc *pFn = cthr->Caller->Func->GetLocalSFunc(FnStringPar(szFunc));
 	if (!pFn)
-		throw C4AulExecError(cthr->Obj, FormatString("ResortObjects: Resort function %s not found", FnStringPar(szFunc)).getData());
+		throw C4AulExecError(cthr->Obj, std::format("ResortObjects: Resort function {} not found", FnStringPar(szFunc)));
 	// create object resort
 	C4ObjResort *pObjRes = new C4ObjResort();
 	pObjRes->Category = Category;
@@ -4331,7 +4331,7 @@ static bool FnResortObject(C4AulContext *cthr, C4String *szFunc, C4Object *pObj)
 	// get function
 	C4AulFunc *pFn = cthr->Caller->Func->GetLocalSFunc(FnStringPar(szFunc));
 	if (!pFn)
-		throw C4AulExecError(cthr->Obj, FormatString("ResortObjects: Resort function %s not found", FnStringPar(szFunc)).getData());
+		throw C4AulExecError(cthr->Obj, std::format("ResortObjects: Resort function {} not found", FnStringPar(szFunc)));
 	// create object resort
 	C4ObjResort *pObjRes = new C4ObjResort();
 	pObjRes->OrderFunc = pFn;
@@ -4549,7 +4549,7 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 			else
 			{
 				int32_t iLine = SGetLine(pSFunc->pOrgScript->GetScript(), pSFunc->Script);
-				LogF("%s%s (%s:%d)", szPrefix, pFunc->Name, pSFunc->pOrgScript->ScriptName.getData(), static_cast<int>(iLine));
+				LogF("%s%s (%s:%d)", szPrefix, pFunc->Name, pSFunc->pOrgScript->ScriptName.c_str(), static_cast<int>(iLine));
 			}
 			// next func in overload chain
 			pFunc = pSFunc ? pSFunc->OwnerOverloaded : nullptr;
@@ -5941,7 +5941,7 @@ static C4ValueInt FnActivateGameGoalMenu(C4AulContext *ctx, C4ValueInt iPlayer)
 
 static void FnFatalError(C4AulContext *ctx, C4String *pErrorMsg)
 {
-	throw C4AulExecError(ctx->Obj, FormatString("User error: %s", pErrorMsg ? pErrorMsg->Data.getData() : "(no error)").getData());
+	throw C4AulExecError(ctx->Obj, std::format("User error: {}", pErrorMsg ? pErrorMsg->Data.getData() : "(no error)"));
 }
 
 static void FnStartCallTrace(C4AulContext *ctx)

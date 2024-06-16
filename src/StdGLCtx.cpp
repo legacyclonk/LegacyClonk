@@ -408,7 +408,7 @@ bool CStdGLCtx::Init(CStdWindow *pWindow, CStdApp *)
 	ctx = SDL_GL_CreateContext(pWindow->sdlWindow);
 	if (!ctx)
 	{
-		return pGL->Error(FormatString("  gl: Unable to create context: %s", SDL_GetError()).getData());
+		return pGL->Error(std::format("  gl: Unable to create context: {}", SDL_GetError()).c_str());
 	}
 	// store window
 	this->pWindow = pWindow;

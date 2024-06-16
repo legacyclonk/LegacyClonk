@@ -220,9 +220,9 @@ void StdCompilerBinRead::Raw(void *pData, size_t iSize, RawCompileType eType)
 	iPos += iSize;
 }
 
-StdStrBuf StdCompilerBinRead::getPosition() const
+std::string StdCompilerBinRead::getPosition() const
 {
-	return FormatString("byte %zu", iPos);
+	return std::format("byte %zu", iPos);
 }
 
 template <class T>
@@ -753,16 +753,25 @@ void StdCompilerINIRead::Raw(void *pData, size_t iSize, RawCompileType eType)
 	std::memmove(pData, Buf.getData(), iSize);
 }
 
-StdStrBuf StdCompilerINIRead::getPosition() const
+std::string StdCompilerINIRead::getPosition() const
 {
 	if (pPos)
-		return FormatString("line %d", SGetLine(Buf.getData(), pPos));
+		return std::format("line {}", SGetLine(Buf.getData(), pPos));
 	else if (iDepth == iRealDepth)
-		return FormatString(pName->Section ? "section \"%s\", after line %d" : "value \"%s\", line %d", pName->Name.getData(), SGetLine(Buf.getData(), pName->Pos));
+	{
+		if (pName->Section)
+		{
+			return std::format("section \"{}\", after line {}", pName->Name.getData(), SGetLine(Buf.getData(), pName->Pos));
+		}
+		else
+		{
+			return std::format("value \"{}\", line {}", pName->Name.getData(), SGetLine(Buf.getData(), pName->Pos));
+		}
+	}
 	else if (iRealDepth)
-		return FormatString("missing value/section \"%s\" inside section \"%s\" (line %d)", NotFoundName.getData(), pName->Name.getData(), SGetLine(Buf.getData(), pName->Pos));
+		return  std::format("missing value/section \"{}\" inside section \"{}\" (line {})", NotFoundName.getData(), pName->Name.getData(), SGetLine(Buf.getData(), pName->Pos));
 	else
-		return FormatString("missing value/section \"%s\"", NotFoundName.getData());
+		return  std::format("missing value/section \"{}\"", NotFoundName.getData());
 }
 
 void StdCompilerINIRead::Begin()
@@ -1046,5 +1055,5 @@ char StdCompilerINIRead::ReadEscapedChar()
 
 void StdCompilerINIRead::notFound(const char *szWhat)
 {
-	excNotFound("%s expected", szWhat);
+	excNotFound("{} expected", szWhat);
 }

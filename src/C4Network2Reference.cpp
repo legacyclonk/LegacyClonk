@@ -783,7 +783,7 @@ bool C4Network2HTTPClientImplNetIO::Execute(int iMaxTime)
 		if (std::chrono::steady_clock::now() > HappyEyeballsTimeout)
 		{
 			HappyEyeballsTimeout = decltype(HappyEyeballsTimeout)::max();
-			LogSilentF("HTTP: Starting fallback connection to %s (%s)", Server.getData(), ServerAddrFallback.ToString().getData());
+			LogSilentF("HTTP: Starting fallback connection to %s (%s)", Server.getData(), ServerAddrFallback.ToString());
 			Connect(ServerAddrFallback);
 		}
 
@@ -945,7 +945,7 @@ bool C4Network2HTTPClientImplNetIO::SetServer(const std::string_view serverAddre
 	ServerAddr.SetAddress(Server);
 	if (ServerAddr.IsNull())
 	{
-		SetError(FormatString("Could not resolve server address %s!", Server.getData()).getData());
+		SetError(std::format("Could not resolve server address {}!", Server.getData()).c_str());
 		return false;
 	}
 	ServerAddr.SetDefaultPort(defaultPort);
