@@ -71,7 +71,6 @@ C4LogSystem::LogSink::~LogSink()
 
 void C4LogSystem::LogSink::sink_it_(const spdlog::details::log_msg &msg)
 {
-	const std::lock_guard lock{mutex_};
 	std::string formatted;
 	formatter_->format(msg, formatted);
 	std::fwrite(formatted.data(), sizeof(char), formatted.size(), file);
