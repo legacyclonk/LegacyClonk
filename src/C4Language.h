@@ -97,7 +97,12 @@ protected:
 
 extern C4Language Languages;
 
-static inline StdStrBuf LoadResStrUtf8(const C4ResStrTableKey ident)
+static inline StdStrBuf LoadResStrUtf8(const C4ResStrTableKeyFormat<> ident)
 {
 	return Languages.IconvUtf8(LoadResStr(ident));
+}
+
+static inline StdStrBuf LoadResStrUtf8Choice(const bool condition, const C4ResStrTableKeyFormat<> ifTrue, const C4ResStrTableKeyFormat<> ifFalse)
+{
+	return Languages.IconvUtf8(LoadResStrV(condition ? ifTrue.Id : ifFalse.Id));
 }

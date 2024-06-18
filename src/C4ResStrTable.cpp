@@ -67,15 +67,15 @@ std::string_view C4ResStrTable::GetEntry(const C4ResStrTableKey key) const
 	return entries[static_cast<std::size_t>(key)];
 }
 
-const char *LoadResStr(const C4ResStrTableKey id)
+const char *LoadResStrV(const C4ResStrTableKey id)
 {
 	if (!Application.ResStrTable.has_value()) return "Language string table not loaded.";
 	return Application.ResStrTable->GetEntry(id).data();
 }
 
-std::string LoadResStrNoAmp(const C4ResStrTableKey id)
+std::string LoadResStrNoAmpV(const C4ResStrTableKey id)
 {
-	std::string result{LoadResStr(id)};
+	std::string result{LoadResStrV(id)};
 	result.erase(std::remove(result.begin(), result.end(), '&'), result.end());
 	return result;
 }

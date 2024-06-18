@@ -181,7 +181,7 @@ bool C4ParticleDef::Load(C4Group &rGrp)
 		{
 			if (Config.Graphics.VerboseObjectLoading >= 1)
 			{
-				char ostr[250]; sprintf(ostr, LoadResStr(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD), pDefOverload->Name.getData(), "<particle>"); Log(ostr);
+				Log(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD, pDefOverload->Name.getData(), "<particle>"));
 			}
 			delete pDefOverload;
 		}

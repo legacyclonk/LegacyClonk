@@ -636,7 +636,7 @@ void C4GraphicsSystem::FlashMessage(const char *szMessage)
 
 void C4GraphicsSystem::FlashMessageOnOff(const char *strWhat, bool fOn)
 {
-	FlashMessage(std::format("{}: {}", strWhat, LoadResStr(fOn ? C4ResStrTableKey::IDS_CTL_ON : C4ResStrTableKey::IDS_CTL_OFF)).c_str());
+	FlashMessage(std::format("{}: {}", strWhat, LoadResStrChoice(fOn, C4ResStrTableKey::IDS_CTL_ON, C4ResStrTableKey::IDS_CTL_OFF)).c_str());
 }
 
 void C4GraphicsSystem::DrawFlashMessage()

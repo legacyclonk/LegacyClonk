@@ -150,7 +150,7 @@ private:
 		C4GUI::RenameResult DoRenaming(RenameParams par, const char *szNewName);
 
 	private:
-		std::string GetPhysicalTextLine(int32_t iPhysValue, C4ResStrTableKey idsName); // get string for physical info bar
+		std::string GetPhysicalTextLine(int32_t iPhysValue, C4ResStrTableKeyFormat<> idsName); // get string for physical info bar
 
 	public:
 		void UpdateClonkEnabled();

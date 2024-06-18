@@ -26,9 +26,6 @@
 
 #include <fmt/printf.h>
 
-const char *LoadResStr(C4ResStrTableKey id);
-std::string LoadResStrNoAmp(C4ResStrTableKey id);
-
 template<typename... Args>
 struct C4ResStrTableKeyFormat
 {
@@ -43,38 +40,51 @@ struct C4ResStrTableKeyFormat
 	C4ResStrTableKey Id;
 };
 
+const char *LoadResStrV(C4ResStrTableKey id);
+std::string LoadResStrNoAmpV(C4ResStrTableKey id);
+
 template<typename... Args>
 std::string LoadResStr(const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Args &&...args)
 {
-	return fmt::sprintf(LoadResStr(id.Id), std::forward<Args>(args)...);
+	return fmt::sprintf(LoadResStrV(id.Id), std::forward<Args>(args)...);
+}
+
+inline const char *LoadResStr(const C4ResStrTableKeyFormat<> id)
+{
+	return LoadResStrV(id.Id);
 }
 
 template<typename... Args>
 std::string LoadResStrChoice(const bool condition, const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> ifTrue, const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> ifFalse, Args &&...args)
 {
-	return fmt::sprintf(LoadResStr(condition ? ifTrue.Id : ifFalse.Id), std::forward<Args>(args)...);
+	return fmt::sprintf(LoadResStrV(condition ? ifTrue.Id : ifFalse.Id), std::forward<Args>(args)...);
 }
 
 inline const char *LoadResStrChoice(const bool condition, const C4ResStrTableKeyFormat<> ifTrue, const C4ResStrTableKeyFormat<> ifFalse)
 {
-	return LoadResStr(condition ? ifTrue.Id : ifFalse.Id);
+	return LoadResStrV(condition ? ifTrue.Id : ifFalse.Id);
 }
 
 template<typename... Args>
 std::string LoadResStrNoAmp(const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Args &&...args)
 {
-	return fmt::sprintf(LoadResStrNoAmp(id.Id), std::forward<Args>(args)...);
+	return fmt::sprintf(LoadResStrNoAmpV(id.Id), std::forward<Args>(args)...);
+}
+
+inline std::string LoadResStrNoAmp(const C4ResStrTableKeyFormat<> id)
+{
+	return LoadResStrNoAmpV(id.Id);
 }
 
 template<typename... Args>
 std::string LoadResStrNoAmpChoice(const bool condition, const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> ifTrue, const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> ifFalse, Args &&...args)
 {
-	return fmt::sprintf(LoadResStrNoAmp(condition ? ifTrue.Id : ifFalse.Id), std::forward<Args>(args)...);
+	return fmt::sprintf(LoadResStrNoAmpV(condition ? ifTrue.Id : ifFalse.Id), std::forward<Args>(args)...);
 }
 
 inline std::string LoadResStrNoAmpChoice(const bool condition, const C4ResStrTableKeyFormat<> ifTrue, const C4ResStrTableKeyFormat<> ifFalse)
 {
-	return LoadResStrNoAmp(condition ? ifTrue.Id : ifFalse.Id);
+	return LoadResStrNoAmpV(condition ? ifTrue.Id : ifFalse.Id);
 }
 
 class C4ResStrTable

@@ -582,7 +582,7 @@ void C4ControlClientUpdate::Execute() const
 	// find client
 	C4Client *pClient = Game.Clients.getClientByID(iID);
 	if (!pClient) return;
-	StdStrBuf strClient(LoadResStr(pClient->isLocal() ? C4ResStrTableKey::IDS_NET_LOCAL_CLIENT : C4ResStrTableKey::IDS_NET_CLIENT));
+	StdStrBuf strClient(LoadResStrChoice(pClient->isLocal(), C4ResStrTableKey::IDS_NET_LOCAL_CLIENT, C4ResStrTableKey::IDS_NET_CLIENT));
 	// do whatever specified
 	switch (eType)
 	{
@@ -641,7 +641,7 @@ void C4ControlClientRemove::Execute() const
 		if (Game.Control.isReplay()) Game.Players.RemoveAtClient(iID, true);
 		return;
 	}
-	StdStrBuf strClient(LoadResStr(pClient->isLocal() ? C4ResStrTableKey::IDS_NET_LOCAL_CLIENT : C4ResStrTableKey::IDS_NET_CLIENT));
+	StdStrBuf strClient(LoadResStrChoice(pClient->isLocal(), C4ResStrTableKey::IDS_NET_LOCAL_CLIENT, C4ResStrTableKey::IDS_NET_CLIENT));
 	// local?
 	if (pClient->isLocal())
 	{

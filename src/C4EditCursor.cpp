@@ -596,7 +596,7 @@ bool C4EditCursor::DoContextMenu()
 	SetMenuItemText(hContext, IDM_VIEWPORT_DELETE,     LoadResStr(C4ResStrTableKey::IDS_MNU_DELETE));
 	SetMenuItemText(hContext, IDM_VIEWPORT_DUPLICATE,  LoadResStr(C4ResStrTableKey::IDS_MNU_DUPLICATE));
 	SetMenuItemText(hContext, IDM_VIEWPORT_CONTENTS,   LoadResStr(C4ResStrTableKey::IDS_MNU_CONTENTS));
-	SetMenuItemText(hContext, IDM_VIEWPORT_PROPERTIES, LoadResStr((Mode == C4CNS_ModeEdit) ? C4ResStrTableKey::IDS_CNS_PROPERTIES : C4ResStrTableKey::IDS_CNS_TOOLS));
+	SetMenuItemText(hContext, IDM_VIEWPORT_PROPERTIES, LoadResStrChoice(Mode == C4CNS_ModeEdit, C4ResStrTableKey::IDS_CNS_PROPERTIES, C4ResStrTableKey::IDS_CNS_TOOLS));
 	int32_t iItem = TrackPopupMenu(
 		hContext,
 		TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON | TPM_NONOTIFY,
@@ -617,7 +617,7 @@ bool C4EditCursor::DoContextMenu()
 	gtk_widget_set_sensitive(itemProperties,   Mode != C4CNS_ModePlay);
 
 	GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(itemProperties)));
-	gtk_label_set_text(label, LoadResStrUtf8((Mode == C4CNS_ModeEdit) ? C4ResStrTableKey::IDS_CNS_PROPERTIES : C4ResStrTableKey::IDS_CNS_TOOLS).getData());
+	gtk_label_set_text(label, LoadResStrUtf8Choice(Mode == C4CNS_ModeEdit, C4ResStrTableKey::IDS_CNS_PROPERTIES, C4ResStrTableKey::IDS_CNS_TOOLS).getData());
 
 	gtk_menu_popup(GTK_MENU(menuContext), nullptr, nullptr, nullptr, nullptr, 3, 0);
 #endif

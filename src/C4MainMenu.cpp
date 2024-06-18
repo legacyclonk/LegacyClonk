@@ -155,12 +155,18 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				char szCommand[1000];
 				sprintf(szCommand, "SetHostility:%i", pPlr->Number);
 				// Info caption
-				char szInfoCaption[C4MaxTitle + 1], szFriendly[50], szNot[30] = "";
-				SCopy(LoadResStrChoice(pPlr->Hostility.GetIDCount(pPlayer->Number + 1), C4ResStrTableKey::IDS_MENU_ATTACKHOSTILE, C4ResStrTableKey::IDS_MENU_ATTACKFRIENDLY), szFriendly);
-				if (!pPlayer->Hostility.GetIDCount(pPlr->Number + 1)) SCopy(LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKNOT), szNot);
-				sprintf(szInfoCaption, LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKINFO), pPlr->GetName(), szFriendly, szNot);
+				const std::string friendly{LoadResStrChoice(pPlr->Hostility.GetIDCount(pPlayer->Number + 1), C4ResStrTableKey::IDS_MENU_ATTACKHOSTILE, C4ResStrTableKey::IDS_MENU_ATTACKFRIENDLY)};
+				std::string notFriendly;
+
+				if (!pPlayer->Hostility.GetIDCount(pPlr->Number + 1))
+				{
+					notFriendly = LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKNOT);
+				}
+
+				const std::string infoCaption{LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKINFO, pPlr->GetName(), friendly, notFriendly)};
+
 				// Add item
-				Add(msg.c_str(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, szInfoCaption);
+				Add(msg.c_str(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, infoCaption.c_str());
 				fctSymbol.Default();
 			}
 		break;
@@ -594,18 +600,26 @@ bool C4MainMenu::ActivateDisplay(int32_t iPlayer, int32_t selection)
 	{
 		std::string text{LoadResStr(C4ResStrTableKey::IDS_MNU_UPPERBOARD)};
 		text += ": ";
-		auto modeName = "???";
+
+		std::string_view modeName;
+
 		if (Config.Graphics.UpperBoard >= C4UpperBoard::First && Config.Graphics.UpperBoard <= C4UpperBoard::Last)
 		{
-			modeName = LoadResStr(std::map<decltype(Config.Graphics.UpperBoard), C4ResStrTableKey>
-				{
-					{C4UpperBoard::Full, C4ResStrTableKey::IDS_MNU_UPPERBOARD_NORMAL},
-					{C4UpperBoard::Small, C4ResStrTableKey::IDS_MNU_UPPERBOARD_SMALL},
-					{C4UpperBoard::Mini, C4ResStrTableKey::IDS_MNU_UPPERBOARD_MINI},
-					{C4UpperBoard::Hide, C4ResStrTableKey::IDS_MNU_UPPERBOARD_OFF}
-				}.at(Config.Graphics.UpperBoard)
-			);
+			static constexpr std::array<C4ResStrTableKeyFormat<>, 4> ModeNames
+			{
+				C4ResStrTableKey::IDS_MNU_UPPERBOARD_OFF,
+				C4ResStrTableKey::IDS_MNU_UPPERBOARD_NORMAL,
+				C4ResStrTableKey::IDS_MNU_UPPERBOARD_SMALL,
+				C4ResStrTableKey::IDS_MNU_UPPERBOARD_MINI
+			};
+
+			modeName = LoadResStr(ModeNames[Config.Graphics.UpperBoard]);
 		}
+		else
+		{
+			modeName = "???";
+		}
+
 		text += modeName;
 		AddRefSym(text.c_str(), GfxR->fctOptions.GetPhase(3 + (Config.Graphics.UpperBoard != C4UpperBoard::Hide)), "Display:UpperBoard", C4MN_Item_NoCount);
 	}
