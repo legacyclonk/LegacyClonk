@@ -333,13 +333,13 @@ void StdCompilerINIWrite::Word(uint16_t &rInt)
 void StdCompilerINIWrite::Byte(int8_t &rByte)
 {
 	PrepareForValue();
-	buf += std::format("{}", rByte);
+	buf += std::format("{:d}", rByte);
 }
 
 void StdCompilerINIWrite::Byte(uint8_t &rInt)
 {
 	PrepareForValue();
-	buf += std::format("{}", rInt);
+	buf += std::format("{:d}", rInt);
 }
 
 void StdCompilerINIWrite::Boolean(bool &rBool)
