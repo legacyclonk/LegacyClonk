@@ -460,7 +460,7 @@ std::string C4StartupPlrSelDlg::CrewListItem::GetPhysicalTextLine(int32_t iPhysV
 	const int32_t iMaxBars = 10;
 	std::string result{LoadResStr(idsName)};
 	result += ' ';
-	result.append('\xb7' /*·*/, iMaxBars * iPhysValue / C4MaxPhysical);
+	result.append(iMaxBars * iPhysValue / C4MaxPhysical, '\xb7' /*·*/);
 	return result;
 }
 

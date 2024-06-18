@@ -467,7 +467,7 @@ void StdCompilerINIWrite::WriteIndent(bool fSection)
 	if (!fSection) iIndent--;
 	// Do indention
 	if (iIndent <= 0) return;
-	buf.append(' ', iIndent * 2);
+	buf.append(iIndent * 2, ' ');
 }
 
 void StdCompilerINIWrite::PutName(bool fSection)

@@ -145,7 +145,7 @@ private:
 		if (iTraceStart >= 0)
 		{
 			std::string buf{"T"};
-			buf.append('>', ContextStackSize() - iTraceStart);
+			buf.append(ContextStackSize() - iTraceStart, '>');
 			pCurCtx->dump(std::move(buf));
 		}
 		// Profiler: Safe time to measure difference afterwards
