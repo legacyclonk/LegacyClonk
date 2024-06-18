@@ -388,9 +388,7 @@ bool C4TeamList::GenerateDefaultTeams(int32_t iUpToID)
 	// generate until last team ID matches given
 	while (iLastTeamID < iUpToID)
 	{
-		char TeamName[C4MaxName + 1];
-		sprintf(TeamName, LoadResStr(C4ResStrTableKey::IDS_MSG_TEAM), iLastTeamID + 1);
-		if (!CreateTeam(TeamName)) return false;
+		if (!CreateTeam(LoadResStr(C4ResStrTableKey::IDS_MSG_TEAM, iLastTeamID + 1).c_str())) return false;
 	}
 	return true;
 }

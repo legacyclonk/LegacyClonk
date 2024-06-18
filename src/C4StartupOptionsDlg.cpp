@@ -159,9 +159,9 @@ C4GUI::InputResult C4StartupOptionsDlg::ScaleEdit::OnFinishInput(bool fPasting, 
 
 // C4StartupOptionsDlg::KeySelDialog
 
-const char *KeyID2Desc(int32_t iKeyID)
+const char *LoadKeyDescResStr(const int32_t iKeyID)
 {
-	C4ResStrTableKey KeyIDStringIDs[C4MaxKey] =
+	static constexpr C4ResStrTableKeyFormat<> KeyIDStringIDs[C4MaxKey]
 	{
 		C4ResStrTableKey::IDS_CTL_SELECTLEFT, C4ResStrTableKey::IDS_CTL_SELECTTOGGLE, C4ResStrTableKey::IDS_CTL_SELECTRIGHT,
 		C4ResStrTableKey::IDS_CTL_THROW,      C4ResStrTableKey::IDS_CTL_UPJUMP,       C4ResStrTableKey::IDS_CTL_DIG,
@@ -174,7 +174,7 @@ const char *KeyID2Desc(int32_t iKeyID)
 
 C4StartupOptionsDlg::KeySelDialog::KeySelDialog(int32_t iKeyID, int32_t iCtrlSet, bool fGamepad)
 	: C4GUI::MessageDialog(LoadResStrChoice(!fGamepad, C4ResStrTableKey::IDS_MSG_PRESSKEY, C4ResStrTableKey::IDS_MSG_PRESSBTN,
-		KeyID2Desc(iKeyID), iCtrlSet + 1).c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_DEFINEKEY),
+		LoadKeyDescResStr(iKeyID), iCtrlSet + 1).c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_DEFINEKEY),
 		C4GUI::MessageDialog::btnAbort, fGamepad ? C4GUI::Ico_Gamepad : C4GUI::Ico_Keyboard, C4GUI::MessageDialog::dsRegular),
 	key(KEY_Undefined), fGamepad(fGamepad), iCtrlSet(iCtrlSet)
 {
@@ -239,7 +239,7 @@ void C4StartupOptionsDlg::KeySelButton::DrawElement(C4FacetEx &cgo)
 	// draw the labels - beside the key
 	float fZoom;
 	CStdFont &rUseFont = C4Startup::Get()->Graphics.GetBlackFontByHeight(cgoDraw.Hgt / 2 + 5, &fZoom);
-	lpDDraw->TextOut(KeyID2Desc(iKeyID), rUseFont, fZoom, cgo.Surface, cgo.TargetX + rcBounds.x + rcBounds.Wdt + 5, cgoDraw.Y - 3, fDoHightlight ? 0xffff0000 : C4StartupFontClr, ALeft, false);
+	lpDDraw->TextOut(LoadKeyDescResStr(iKeyID), rUseFont, fZoom, cgo.Surface, cgo.TargetX + rcBounds.x + rcBounds.Wdt + 5, cgoDraw.Y - 3, fDoHightlight ? 0xffff0000 : C4StartupFontClr, ALeft, false);
 	lpDDraw->TextOut(C4KeyCodeEx::KeyCode2String(key, true, false).c_str(), rUseFont, fZoom, cgo.Surface, cgo.TargetX + rcBounds.x + rcBounds.Wdt + 5, cgoDraw.Y + cgoDraw.Hgt / 2, fDoHightlight ? 0xffff0000 : C4StartupFontClr, ALeft, false);
 }
 
@@ -316,7 +316,7 @@ C4StartupOptionsDlg::ControlConfigArea::ControlConfigArea(const C4Rect &rcArea, 
 			if ((iKeyNum = iKeyPosis[iY][iX]) < 0) continue;
 			KeySelButton *pKeyBtn = new C4GUI::CallbackButton<C4StartupOptionsDlg::ControlConfigArea, KeySelButton>(iKeyNum, rcKey, 0 /* no hotkey :( */, &C4StartupOptionsDlg::ControlConfigArea::OnCtrlKeyBtn, this);
 			AddElement(KeyControlBtns[iKeyNum] = pKeyBtn);
-			pKeyBtn->SetToolTip(KeyID2Desc(iKeyNum));
+			pKeyBtn->SetToolTip(LoadKeyDescResStr(iKeyNum));
 		}
 	}
 	// bottom area controls
@@ -596,9 +596,9 @@ bool C4StartupOptionsDlg::EditConfig::GetControlSize(int *piWdt, int *piHgt, con
 
 struct
 {
-	C4ResStrTableKey caption;
+	C4ResStrTableKeyFormat<> caption;
 	DisplayMode mode;
-} static const DisplayModes[] =
+} static constexpr DisplayModes[]
 {
 	{C4ResStrTableKey::IDS_MSG_FULLSCREEN, DisplayMode::Fullscreen},
 	{C4ResStrTableKey::IDS_MSG_WINDOW, DisplayMode::Window}

@@ -52,9 +52,9 @@ const char *CommandName(int32_t iCommand)
 	return szCommandName[iCommand];
 }
 
-C4ResStrTableKey CommandNameID(int32_t iCommand)
+const char *LoadCommandNameResStr(const std::int32_t command)
 {
-	static C4ResStrTableKey dwCommandNameID[] =
+	static constexpr C4ResStrTableKeyFormat<> CommandNameIds[]
 	{
 		C4ResStrTableKey::IDS_COMM_NONE, C4ResStrTableKey::IDS_COMM_FOLLOW, C4ResStrTableKey::IDS_COMM_MOVETO, C4ResStrTableKey::IDS_COMM_ENTER,
 		C4ResStrTableKey::IDS_COMM_EXIT, C4ResStrTableKey::IDS_COMM_GRAB, C4ResStrTableKey::IDS_COMM_BUILD, C4ResStrTableKey::IDS_COMM_THROW, C4ResStrTableKey::IDS_COMM_CHOP,
@@ -65,9 +65,9 @@ C4ResStrTableKey CommandNameID(int32_t iCommand)
 		C4ResStrTableKey::IDS_CON_HOME, C4ResStrTableKey::IDS_COMM_CALL, C4ResStrTableKey::IDS_COMM_TAKE, C4ResStrTableKey::IDS_COMM_TAKE2
 	};
 
-	if (!Inside<int32_t>(iCommand, C4CMD_First, C4CMD_Last)) return C4ResStrTableKey::IDS_COMM_NONE;
+	if (!Inside<int32_t>(command, C4CMD_First, C4CMD_Last)) return LoadResStr(C4ResStrTableKey::IDS_COMM_NONE);
 
-	return dwCommandNameID[iCommand];
+	return LoadResStr(CommandNameIds[command]);
 }
 
 bool InitEnumAdaptCommandEntries()
@@ -2198,7 +2198,7 @@ void C4Command::Fail(const char *szFailMessage)
 			int32_t l_Command = Command;
 			if (CallFailed()) return;
 			// Fail-function not available or returned zero: standard message
-			SCopy(LoadResStr(CommandNameID(l_Command)), szCommandName);
+			SCopy(LoadCommandNameResStr(l_Command), szCommandName);
 			failMessage = LoadResStr(C4ResStrTableKey::IDS_CON_FAILURE, szCommandName).c_str();
 			break;
 		}
@@ -2213,7 +2213,7 @@ void C4Command::Fail(const char *szFailMessage)
 			// Already has a fail message
 			if (szFailMessage) break;
 			// Fail message with name of target type
-			SCopy(LoadResStr(CommandNameID(Command)), szCommandName);
+			SCopy(LoadCommandNameResStr(Command), szCommandName);
 			C4Def *pDef; pDef = Game.Defs.ID2Def(Data);
 			SCopy(pDef ? pDef->GetName() : LoadResStr(C4ResStrTableKey::IDS_OBJ_UNKNOWN), szObjectName, C4MaxName);
 			failMessage = LoadResStr(C4ResStrTableKey::IDS_CON_FAILUREOF, szCommandName, szObjectName).c_str();
@@ -2222,7 +2222,7 @@ void C4Command::Fail(const char *szFailMessage)
 			// Already has a fail message
 			if (szFailMessage) break;
 			// Standard no-can-do message
-			SCopy(LoadResStr(CommandNameID(Command)), szCommandName);
+			SCopy(LoadCommandNameResStr(Command), szCommandName);
 			failMessage = LoadResStr(C4ResStrTableKey::IDS_CON_FAILURE, szCommandName).c_str();
 			break;
 		}

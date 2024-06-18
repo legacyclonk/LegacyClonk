@@ -829,7 +829,7 @@ void C4Network2::AllowJoin(bool fAllow)
 	fAllowJoin = fAllow;
 	if (Game.IsRunning)
 	{
-		Game.GraphicsSystem.FlashMessage(LoadResStr(fAllowJoin ? C4ResStrTableKey::IDS_NET_RUNTIMEJOINFREE : C4ResStrTableKey::IDS_NET_RUNTIMEJOINBARRED));
+		Game.GraphicsSystem.FlashMessage(LoadResStrChoice(fAllowJoin, C4ResStrTableKey::IDS_NET_RUNTIMEJOINFREE, C4ResStrTableKey::IDS_NET_RUNTIMEJOINBARRED));
 		Config.Network.NoRuntimeJoin = !fAllowJoin;
 	}
 }
@@ -1759,7 +1759,7 @@ void C4Network2::OnClientDisconnect(C4Network2Client *pClient)
 	{
 		bool fHadPlayers = !!Game.PlayerInfos.GetPrimaryInfoByClientID(pClient->getID());
 		// log
-		LogSilentF(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTDISCONNECTED), pClient->getName()); // silent, because a duplicate message with disconnect reason will follow
+		LogSilent(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTDISCONNECTED, pClient->getName())); // silent, because a duplicate message with disconnect reason will follow
 		// remove the client
 		Game.Clients.CtrlRemove(pClient->getClient(), LoadResStr(C4ResStrTableKey::IDS_MSG_DISCONNECTED));
 		// stop lobby countdown if players where removed
@@ -2538,7 +2538,7 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 		else
 		{
 			// All OK!
-			resultMessage = LoadResStr(Game.Parameters.isLeague() ? C4ResStrTableKey::IDS_MSG_LEAGUEEVALUATIONSUCCESSFU : C4ResStrTableKey::IDS_MSG_INTERNETGAMEEVALUATED);
+			resultMessage = LoadResStrChoice(Game.Parameters.isLeague(), C4ResStrTableKey::IDS_MSG_LEAGUEEVALUATIONSUCCESSFU, C4ResStrTableKey::IDS_MSG_INTERNETGAMEEVALUATED);
 			fIsError = false;
 		}
 		// Done
@@ -2768,10 +2768,9 @@ void C4Network2::LeagueNotifyDisconnect(int32_t iClientID, C4LeagueDisconnectRea
 	const char *szMsg;
 	StdStrBuf sMessage;
 	if (pLeagueClient->GetReportDisconnectReply(&sMessage))
-		szMsg = LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEUNEXPECTEDDISCONNEC);
+		Log(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEUNEXPECTEDDISCONNEC, sMessage.getData()));
 	else
-		szMsg = LoadResStr(C4ResStrTableKey::IDS_ERR_LEAGUEERRORREPORTINGUNEXP);
-	LogF(szMsg, sMessage.getData());
+		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_LEAGUEERRORREPORTINGUNEXP, sMessage.getData()));
 }
 
 void C4Network2::LeagueWaitNotBusy()

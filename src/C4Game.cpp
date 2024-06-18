@@ -500,7 +500,7 @@ bool C4Game::Init()
 	IsRunning = true;
 
 	// Start message
-	Log(LoadResStr(C4S.Head.NetworkGame ? C4ResStrTableKey::IDS_PRC_JOIN : C4S.Head.SaveGame ? C4ResStrTableKey::IDS_PRC_RESUME : C4ResStrTableKey::IDS_PRC_START));
+	Log(C4S.Head.NetworkGame ? LoadResStr(C4ResStrTableKey::IDS_PRC_JOIN) : LoadResStrChoice(C4S.Head.SaveGame, C4ResStrTableKey::IDS_PRC_RESUME, C4ResStrTableKey::IDS_PRC_START));
 
 	// set non-exclusive GUI
 	if (pGUI)

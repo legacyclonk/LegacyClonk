@@ -455,7 +455,7 @@ bool C4StartupPlrSelDlg::CrewListItem::SetName(const char *szNewName)
 	return true;
 }
 
-std::string C4StartupPlrSelDlg::CrewListItem::GetPhysicalTextLine(int32_t iPhysValue, const C4ResStrTableKey idsName)
+std::string C4StartupPlrSelDlg::CrewListItem::GetPhysicalTextLine(int32_t iPhysValue, const C4ResStrTableKeyFormat<> idsName)
 {
 	const int32_t iMaxBars = 10;
 	std::string result{LoadResStr(idsName)};

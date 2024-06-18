@@ -754,7 +754,7 @@ bool C4MouseControl::UpdatePutTarget(bool fVehicle)
 		{
 			if (Selection.ObjectCount() > 1)
 				// Multiple object name
-				sName.Copy(std::format("{} {}", Selection.ObjectCount(), LoadResStr(fVehicle ? C4ResStrTableKey::IDS_CON_VEHICLES : C4ResStrTableKey::IDS_CON_ITEMS)).c_str());
+				sName.Copy(std::format("{} {}", Selection.ObjectCount(), LoadResStrChoice(fVehicle, C4ResStrTableKey::IDS_CON_VEHICLES, C4ResStrTableKey::IDS_CON_ITEMS)).c_str());
 			else
 				// Single object name
 				sName.Ref(Selection.GetObject()->GetName());

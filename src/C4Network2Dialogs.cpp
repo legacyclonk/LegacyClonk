@@ -62,11 +62,11 @@ void C4Network2ClientDlg::UpdateText()
 		// get client (may be nullptr for local info)
 		C4Network2Client *pNetClient = pClient->getNetClient();
 		// show some info
-		StdStrBuf strActivated(LoadResStr(pClient->isActivated() ? C4ResStrTableKey::IDS_MSG_ACTIVE : C4ResStrTableKey::IDS_MSG_INACTIVE));
-		StdStrBuf strLocal(LoadResStr(pClient->isLocal() ? C4ResStrTableKey::IDS_MSG_LOCAL : C4ResStrTableKey::IDS_MSG_REMOTE));
-		StdStrBuf strHost(LoadResStr(pClient->isHost() ? C4ResStrTableKey::IDS_MSG_HOST : C4ResStrTableKey::IDS_MSG_CLIENT));
+		const std::string_view activated{LoadResStrChoice(pClient->isActivated(), C4ResStrTableKey::IDS_MSG_ACTIVE, C4ResStrTableKey::IDS_MSG_INACTIVE)};
+		const std::string_view local{LoadResStrChoice(pClient->isLocal(), C4ResStrTableKey::IDS_MSG_LOCAL, C4ResStrTableKey::IDS_MSG_REMOTE)};
+		const std::string_view host{LoadResStrChoice(pClient->isHost(), C4ResStrTableKey::IDS_MSG_HOST, C4ResStrTableKey::IDS_MSG_CLIENT)};
 		AddLine(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENT_INFO_FORMAT,
-			strActivated.getData(), strLocal.getData(), strHost.getData(),
+			activated.data(), local.data(), host.data(),
 			pClient->getName(), iClientID,
 			Game.Network.isHost() && pNetClient && !pNetClient->isReady() ? " (!ack)" : "").c_str());
 		// show addresses
@@ -196,7 +196,7 @@ void C4Network2ClientListBox::ClientListItem::Update()
 		if (pActivateBtn)
 		{
 			pActivateBtn->SetIcon(fIsActive ? C4GUI::Ico_Active : C4GUI::Ico_Inactive);
-			pActivateBtn->SetToolTip(LoadResStrNoAmp(fIsActive ? C4ResStrTableKey::IDS_NET_DEACTIVATECLIENT : C4ResStrTableKey::IDS_NET_ACTIVATECLIENT).c_str());
+			pActivateBtn->SetToolTip(LoadResStrNoAmpChoice(fIsActive, C4ResStrTableKey::IDS_NET_DEACTIVATECLIENT, C4ResStrTableKey::IDS_NET_ACTIVATECLIENT).c_str());
 		}
 	}
 	// update players in tooltip
@@ -275,7 +275,7 @@ void C4Network2ClientListBox::ClientListItem::OnButtonKick(C4GUI::Control *pButt
 	if (Game.Parameters.isLeague() && Game.Players.GetAtClient(iClientID))
 		Game.Network.Vote(VT_Kick, true, iClientID);
 	else
-		Game.Clients.CtrlRemove(GetClient(), LoadResStr(pForDlg->IsStartup() ? C4ResStrTableKey::IDS_MSG_KICKFROMSTARTUPDLG : C4ResStrTableKey::IDS_MSG_KICKFROMCLIENTLIST));
+		Game.Clients.CtrlRemove(GetClient(), LoadResStrChoice(pForDlg->IsStartup(), C4ResStrTableKey::IDS_MSG_KICKFROMSTARTUPDLG, C4ResStrTableKey::IDS_MSG_KICKFROMCLIENTLIST));
 }
 
 void C4Network2ClientListBox::ClientListItem::UpdateMuteButton()
@@ -811,7 +811,7 @@ void C4GameOptionButtons::UpdateFairCrewBtn()
 	btnFairCrew->SetIcon(fChoiceFree ?
 		(!fFairCrew ? C4GUI::Ico_Ex_NormalCrew : C4GUI::Ico_Ex_FairCrew) // fair crew setting by user
 		: (!fFairCrew ? C4GUI::Ico_Ex_NormalCrewGray : C4GUI::Ico_Ex_FairCrewGray)); // fair crew setting by scenario preset or host
-	btnFairCrew->SetToolTip(LoadResStr(fFairCrew ? C4ResStrTableKey::IDS_CTL_FAIRCREW_DESC : C4ResStrTableKey::IDS_CTL_NORMALCREW_DESC));
+	btnFairCrew->SetToolTip(LoadResStrChoice(fFairCrew, C4ResStrTableKey::IDS_CTL_FAIRCREW_DESC, C4ResStrTableKey::IDS_CTL_NORMALCREW_DESC));
 	btnFairCrew->SetEnabled(fChoiceFree);
 }
 

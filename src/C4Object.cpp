@@ -1860,7 +1860,8 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 {
 	// Variables
 	C4FacetExSurface fctSymbol;
-	char szCaption[256 + 1], szCommand[256 + 1];
+	std::string caption;
+	std::string command;
 	int32_t cnt, iCount;
 	C4Def *pDef;
 	C4Player *pPlayer;
@@ -1880,9 +1881,9 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		// Create symbol
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		pTarget->Def->Draw(fctSymbol, false, pTarget->Color, pTarget);
-		sprintf(szCaption, LoadResStr(C4ResStrTableKey::IDS_OBJ_EMPTY), pTarget->GetName());
+		caption = LoadResStr(C4ResStrTableKey::IDS_OBJ_EMPTY, pTarget->GetName());
 		// Init
-		Menu->Init(fctSymbol, szCaption, this, C4MN_Extra_None, 0, iMenu);
+		Menu->Init(fctSymbol, caption.c_str(), this, C4MN_Extra_None, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1907,8 +1908,8 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		// Create symbol & init
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		DrawMenuSymbol(C4MN_Sell, fctSymbol, pTarget->Owner, pTarget);
-		sprintf(szCaption, LoadResStr(C4ResStrTableKey::IDS_OBJ_EMPTY), pTarget->GetName());
-		Menu->Init(fctSymbol, szCaption, this, C4MN_Extra_Value, 0, iMenu);
+		caption = LoadResStr(C4ResStrTableKey::IDS_OBJ_EMPTY, pTarget->GetName());
+		Menu->Init(fctSymbol, caption.c_str(), this, C4MN_Extra_Value, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1923,8 +1924,8 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		// Create symbol & init
 		fctSymbol.Create(C4SymbolSize, C4SymbolSize);
 		pTarget->Def->Draw(fctSymbol, false, pTarget->Color, pTarget);
-		sprintf(szCaption, LoadResStr(C4ResStrTableKey::IDS_OBJ_EMPTY), pTarget->GetName());
-		Menu->Init(fctSymbol, szCaption, this, C4MN_Extra_None, 0, iMenu);
+		caption = LoadResStr(C4ResStrTableKey::IDS_OBJ_EMPTY, pTarget->GetName());
+		Menu->Init(fctSymbol, caption.c_str(), this, C4MN_Extra_None, 0, iMenu);
 		Menu->SetPermanent(true);
 		Menu->SetRefillObject(pTarget);
 		// Success
@@ -1963,13 +1964,13 @@ bool C4Object::ActivateMenu(int32_t iMenu, int32_t iMenuSelect,
 		for (cnt = 0; pDef = C4Id2Def(pPlayer->Knowledge.GetID(Game.Defs, C4D_Structure, cnt, &iCount)); cnt++)
 		{
 			// Caption
-			sprintf(szCaption, LoadResStr(C4ResStrTableKey::IDS_MENU_CONSTRUCT), pDef->GetName());
+			caption = LoadResStr(C4ResStrTableKey::IDS_MENU_CONSTRUCT, pTarget->GetName());
 			// Picture
 			pDef->Picture2Facet(fctSymbol);
 			// Command
-			sprintf(szCommand, "SetCommand(this,\"Construct\",,0,0,,%s)", C4IdText(pDef->id));
+			command = std::format("SetCommand(this, \"Construct\",,0,0,,{}", C4IdText(pDef->id));
 			// Add menu item
-			Menu->AddRefSym(szCaption, fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pDef->GetDesc(), pDef->id);
+			Menu->AddRefSym(caption.c_str(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pDef->GetDesc(), pDef->id);
 		}
 		// Preselect
 		Menu->SetSelection(iMenuSelect, false, true);
@@ -2715,7 +2716,7 @@ void C4Object::CompileFunc(StdCompiler *pComp)
 		Def = Game.Defs.ID2Def(id);
 		if (!Def)
 		{
-			pComp->excNotFound(LoadResStr(C4ResStrTableKey::IDS_PRC_UNDEFINEDOBJECT), C4IdText(id)); return;
+			pComp->excNotFound(LoadResStr(C4ResStrTableKey::IDS_PRC_UNDEFINEDOBJECT, C4IdText(id))); return;
 		}
 	}
 

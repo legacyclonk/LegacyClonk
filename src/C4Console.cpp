@@ -783,7 +783,7 @@ bool C4Console::SaveGame(bool fSaveGame)
 
 	// Status report
 	if (!fOkay) Message(LoadResStr(C4ResStrTableKey::IDS_CNS_SAVERROR));
-	else Out(LoadResStr(fSaveGame ? C4ResStrTableKey::IDS_CNS_GAMESAVED : C4ResStrTableKey::IDS_CNS_SCENARIOSAVED));
+	else Out(LoadResStrChoice(fSaveGame, C4ResStrTableKey::IDS_CNS_GAMESAVED, C4ResStrTableKey::IDS_CNS_SCENARIOSAVED));
 
 	return fOkay;
 }

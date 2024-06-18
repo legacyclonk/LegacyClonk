@@ -663,7 +663,7 @@ void C4PlayerInfoListBox::PlayerListItem::Update()
 			// Append "winner" or "loser" to player name
 			if (fShowWinners)
 			{
-				showName = std::format("{} ({})", showName, LoadResStr(fHasWon ? C4ResStrTableKey::IDS_CTL_WON : C4ResStrTableKey::IDS_CTL_LOST));
+				showName = std::format("{} ({})", showName, LoadResStrChoice(fHasWon, C4ResStrTableKey::IDS_CTL_WON, C4ResStrTableKey::IDS_CTL_LOST));
 			}
 			// evaluation: Golden color+background for winners; gray for losers or no winner show
 			if (fHasWon)
@@ -924,9 +924,9 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::ClientListItem::OnContext(C4GUI::Elemen
 	// create context menu
 	C4GUI::ContextMenu *pMenu = new C4GUI::ContextMenu();
 	// helper function
-	auto AddMenuItem = [this, pMenu](const C4ResStrTableKey text, const C4ResStrTableKey description, auto callbackFn)
+	auto AddMenuItem = [this, pMenu](const char *const text, const char *const description, auto callbackFn)
 	{
-		pMenu->AddItem(LoadResStr(text), LoadResStr(description), C4GUI::Ico_None,
+		pMenu->AddItem(text, description, C4GUI::Ico_None,
 			new C4GUI::CBMenuHandler<ClientListItem>{this, callbackFn});
 	};
 
@@ -934,17 +934,17 @@ C4GUI::ContextMenu *C4PlayerInfoListBox::ClientListItem::OnContext(C4GUI::Elemen
 	if (!pClient->isLocal())
 	{
 		bool muted = pClient->isMuted();
-		AddMenuItem(muted ? C4ResStrTableKey::IDS_NET_UNMUTE : C4ResStrTableKey::IDS_NET_MUTE, muted ? C4ResStrTableKey::IDS_NET_UNMUTE_DESC : C4ResStrTableKey::IDS_NET_MUTE_DESC, &ClientListItem::OnCtxToggleMute);
+		AddMenuItem(LoadResStrChoice(muted, C4ResStrTableKey::IDS_NET_UNMUTE, C4ResStrTableKey::IDS_NET_MUTE), LoadResStrChoice(muted, C4ResStrTableKey::IDS_NET_UNMUTE_DESC, C4ResStrTableKey::IDS_NET_MUTE_DESC), &ClientListItem::OnCtxToggleMute);
 	}
 
 	// host options
 	if (Game.Network.isHost() && GetNetClient())
 	{
-		AddMenuItem(C4ResStrTableKey::IDS_NET_KICKCLIENT, C4ResStrTableKey::IDS_NET_KICKCLIENT_DESC, &ClientListItem::OnCtxKick);
-		AddMenuItem(pClient->isActivated() ? C4ResStrTableKey::IDS_NET_DEACTIVATECLIENT : C4ResStrTableKey::IDS_NET_ACTIVATECLIENT, C4ResStrTableKey::IDS_NET_ACTIVATECLIENT_DESC, &ClientListItem::OnCtxActivate);
+		AddMenuItem(LoadResStr(C4ResStrTableKey::IDS_NET_KICKCLIENT), LoadResStr(C4ResStrTableKey::IDS_NET_KICKCLIENT_DESC), &ClientListItem::OnCtxKick);
+		AddMenuItem(LoadResStrChoice(pClient->isActivated(), C4ResStrTableKey::IDS_NET_DEACTIVATECLIENT, C4ResStrTableKey::IDS_NET_ACTIVATECLIENT), LoadResStr(C4ResStrTableKey::IDS_NET_ACTIVATECLIENT_DESC), &ClientListItem::OnCtxActivate);
 	}
 	// info
-	AddMenuItem(C4ResStrTableKey::IDS_NET_CLIENTINFO, C4ResStrTableKey::IDS_NET_CLIENTINFO_DESC, &ClientListItem::OnCtxInfo);
+	AddMenuItem(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTINFO), LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTINFO_DESC), &ClientListItem::OnCtxInfo);
 	// open it
 	return pMenu;
 }

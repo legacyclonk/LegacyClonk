@@ -799,7 +799,22 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 	SendDlgItemMessage(hDialog, IDC_BUTTONMODEEXACT, BM_SETSTATE, (iMode == C4LSC_Exact), 0);
 	UpdateWindow(GetDlgItem(hDialog, IDC_BUTTONMODEEXACT));
 	// Set dialog caption
-	SetWindowText(hDialog, LoadResStr(iMode == C4LSC_Dynamic ? C4ResStrTableKey::IDS_DLG_DYNAMIC : iMode == C4LSC_Static ? C4ResStrTableKey::IDS_DLG_STATIC : C4ResStrTableKey::IDS_DLG_EXACT));
+	const char *caption;
+	switch (iMode)
+	{
+	case C4LSC_Dynamic:
+		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+
+	case C4LSC_Static:
+		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+
+	default:
+		caption = LoadResStr(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+	}
+	SetWindowText(hDialog, caption);
 #elif defined(WITH_DEVELOPER_MODE)
 	g_signal_handler_block(landscape_dynamic, handlerDynamic);
 	g_signal_handler_block(landscape_static,  handlerStatic);
@@ -817,7 +832,23 @@ void C4ToolsDlg::UpdateLandscapeModeCtrls()
 	g_signal_handler_unblock(landscape_static,  handlerStatic);
 	g_signal_handler_unblock(landscape_exact,   handlerExact);
 
-	C4DevmodeDlg::SetTitle(hbox, LoadResStrUtf8(iMode == C4LSC_Dynamic ? C4ResStrTableKey::IDS_DLG_DYNAMIC : iMode == C4LSC_Static ? C4ResStrTableKey::IDS_DLG_STATIC : C4ResStrTableKey::IDS_DLG_EXACT).getData());
+	StdStrBuf title;
+	switch (iMode)
+	{
+	case C4LSC_Dynamic:
+		title = LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+
+	case C4LSC_Static:
+		title = LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+
+	default:
+		title = LoadResStrUtf8(C4ResStrTableKey::IDS_DLG_EXACT);
+		break;
+	}
+
+	C4DevmodeDlg::SetTitle(hbox, title.getData());
 #endif
 }
 
