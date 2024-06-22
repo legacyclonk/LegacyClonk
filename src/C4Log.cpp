@@ -28,6 +28,7 @@
 #include <share.h>
 #endif
 
+#include <spdlog/cfg/helpers.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 #ifdef _WIN32
@@ -81,71 +82,66 @@ void C4LogSystem::LogSink::flush_()
 	std::fflush(file);
 }
 
-class C4InternalLogSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex>, public std::enable_shared_from_this<C4InternalLogSink>
+void C4LogSystem::GuiSink::sink_it_(const spdlog::details::log_msg &msg)
 {
-protected:
-	void sink_it_(const spdlog::details::log_msg &msg) override
-	{
-		std::string formatted;
-		formatter_->format(msg, formatted);
+	std::string formatted;
+	formatter_->format(msg, formatted);
 
-		if (Application.IsMainThread())
+	if (Application.IsMainThread())
+	{
+		DoLog(formatted);
+	}
+	else
+	{
+		Application.InteractiveThread.ExecuteInMainThread([formatted{std::move(formatted)}, weak{weak_from_this()}]
 		{
-			DoLog(formatted);
-		}
-		else
-		{
-			Application.InteractiveThread.ExecuteInMainThread([formatted{std::move(formatted)}, weak{weak_from_this()}]
+			if (auto strong = weak.lock())
 			{
-				if (auto strong = weak.lock())
-				{
-					strong->DoLog(formatted);
-				}
-			});
-		}
+				strong->DoLog(formatted);
+			}
+		});
 	}
+}
 
-	void flush_() override {}
-
-private:
-	void DoLog(const std::string &message)
+void C4LogSystem::GuiSink::DoLog(const std::string &message)
+{
+	if (C4GameLobby::MainDlg *const lobby{Game.Network.GetLobby()}; lobby && Game.pGUI)
 	{
-		if (C4GameLobby::MainDlg *const lobby{Game.Network.GetLobby()}; lobby && Game.pGUI)
-		{
-			lobby->OnLog(message.c_str());
-		}
-
-		Console.Out(message.c_str());
-
-		if (Game.GraphicsSystem.MessageBoard.Active)
-		{
-			Game.GraphicsSystem.MessageBoard.AddLog(message.c_str());
-			Game.GraphicsSystem.MessageBoard.LogNotify();
-		}
+		lobby->OnLog(message.c_str());
 	}
-};
+
+	Console.Out(message.c_str());
+
+	if (Game.GraphicsSystem.MessageBoard.Active)
+	{
+		Game.GraphicsSystem.MessageBoard.AddLog(message.c_str());
+		Game.GraphicsSystem.MessageBoard.LogNotify();
+	}
+}
 
 C4LogSystem::C4LogSystem()
-	: defaultLogSinks{
-		std::make_shared<C4InternalLogSink>()
-	}
 {
-	const auto logLevel = Game.Verbose ? spdlog::level::debug : spdlog::level::info;
+	spdlog::set_automatic_registration(false);
 
-	defaultLogSinks[0]->set_level(logLevel);
-	defaultLogSinks[0]->set_pattern("%v");
+	const auto logLevel = Game.Verbose ? spdlog::level::debug : spdlog::level::warn;
+
+	auto guiSink = std::make_shared<GuiSink>();
+
+	guiSink->set_level(logLevel);
+	guiSink->set_pattern("[%L] %v");
 
 #ifdef _WIN32
-	defaultLogSinks.emplace_back(std::make_shared<spdlog::sinks::msvc_sink_mt>());
-	defaultLogSinks.back()->set_level(spdlog::level::trace);
+	loggerSilent = std::make_shared<spdlog::logger>("", std::initializer_list<spdlog::sink_ptr>{guiSink, std::make_shared<spdlog::sinks::msvc_sink_mt>()});
+#else
+	loggerSilent = std::make_shared<spdlog::logger>("", guiSink);
 #endif
 
-	logger = std::make_shared<spdlog::logger>("", defaultLogSinks.begin(), defaultLogSinks.end());
-	logger->set_level(spdlog::level::trace);
-	spdlog::set_default_logger(logger);
+	loggerSilent->set_level(spdlog::level::trace);
+
+	spdlog::set_default_logger(loggerSilent);
 	spdlog::flush_on(spdlog::level::debug);
 
-	loggerSilent = logger;
+	logger = loggerSilent;
 }
 
 void C4LogSystem::OpenLog()
@@ -153,47 +149,32 @@ void C4LogSystem::OpenLog()
 	auto stdoutColorSink = std::static_pointer_cast<spdlog::sinks::sink>(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 	stdoutColorSink->set_level(Game.Verbose ? spdlog::level::debug : spdlog::level::info);
 
-	defaultLogSinks.emplace_back(stdoutColorSink);
-	logger->sinks().emplace_back(std::move(stdoutColorSink));
+	auto clonkLogSink = std::make_shared<LogSink>();
+	clonkLogFD = clonkLogSink->GetFD();
 
-	if (!(Game.Verbose || Game.DebugMode))
-	{
-		loggerSilent = logger->clone("silent");
-	}
+	loggerSilent->sinks().emplace_back(std::move(stdoutColorSink));
+	loggerSilent->sinks().emplace_back(std::move(clonkLogSink));
 
-	clonkLogSink = std::make_shared<LogSink>();
-	defaultLogSinks.emplace_back(clonkLogSink);
-	logger->sinks().emplace_back(clonkLogSink);
+	logger = std::make_shared<spdlog::logger>("", loggerSilent->sinks().begin() + 1, loggerSilent->sinks().end());
 
-	if (Game.Verbose || Game.DebugMode)
-	{
-		loggerSilent = logger->clone("silent");
-	}
+	auto guiSink = std::make_shared<GuiSink>();
+	guiSink->set_pattern("%v");
+
+	logger->sinks().insert(logger->sinks().begin(), std::move(guiSink));
+}
+
+std::shared_ptr<spdlog::logger> C4LogSystem::CreateLogger(std::string name)
+{
+	return loggerSilent->clone(std::move(name));
 }
 
 std::string sFatalError;
 
-bool LogSilent(const std::string_view message, bool fConsole)
-{
-	(fConsole ? Application.LogSystem.GetLogger() : Application.LogSystem.GetLoggerSilent())->info(message);
-
-	return true;
-}
-
-bool LogSilent(const std::string_view message)
-{
-	return LogSilent(message, false);
-}
-
 int iDisableLog = 0;
 
-bool Log(const std::string_view message)
+void LogNTr(const spdlog::level::level_enum level, const std::string_view message)
 {
-	if (iDisableLog) return true;
-
-	spdlog::info(message);
-
-	return true;
+	Application.LogSystem.GetLogger()->log(level, message);
 }
 
 bool LogFatal(std::string_view message)
@@ -222,7 +203,7 @@ std::string_view GetFatalError()
 
 bool DebugLog(const std::string_view message)
 {
-	spdlog::debug(message);
+	(Game.DebugMode ? Application.LogSystem.GetLogger() : Application.LogSystem.GetLoggerSilent())->debug(message);
 	return true;
 }
 

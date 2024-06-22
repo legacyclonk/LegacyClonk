@@ -167,7 +167,7 @@ bool C4DownloadDlg::ShowModal(C4GUI::Screen *pScreen, const char *szURL, const c
 bool C4DownloadDlg::DownloadFile(const char *szDLType, C4GUI::Screen *pScreen, const char *szURL, const char *szSaveAsFilename, const char *szNotFoundMessage)
 {
 	// log it
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_DOWNLOADINGFILE, szURL));
+	Log(C4ResStrTableKey::IDS_PRC_DOWNLOADINGFILE, szURL);
 	// show download dialog
 	C4DownloadDlg *pDlg = new C4DownloadDlg(szDLType);
 	if (!pDlg->ShowModal(pScreen, szURL, szSaveAsFilename))
@@ -191,7 +191,7 @@ bool C4DownloadDlg::DownloadFile(const char *szDLType, C4GUI::Screen *pScreen, c
 		delete pDlg;
 		return false;
 	}
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_DOWNLOADCOMPLETE, szURL));
+	Log(C4ResStrTableKey::IDS_PRC_DOWNLOADCOMPLETE, szURL);
 	delete pDlg;
 	return true;
 }

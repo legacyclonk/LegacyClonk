@@ -119,6 +119,7 @@ private:
 	C4AulScriptContext *pCurCtx;
 	C4Value *pCurVal;
 
+	std::shared_ptr<spdlog::logger> traceLogger;
 	int iTraceStart;
 	bool fProfiling;
 	time_t tDirectExecStart, tDirectExecTotal; // profiler time for DirectExec
@@ -169,6 +170,7 @@ private:
 			if (ContextStackSize() <= iTraceStart)
 			{
 				iTraceStart = -1;
+				traceLogger.reset();
 			}
 		}
 		if (pCurCtx->TemporaryScript)
@@ -1058,7 +1060,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				{
 					std::string buf{"T"};
 					buf.append('>', ContextStackSize() - iTraceStart);
-					LogF("{}{} returned {}", buf, pCurCtx->Func->Name, pCurVal->GetDataString());
+					traceLogger->info("{}{} returned {}", buf, pCurCtx->Func->Name, pCurVal->GetDataString());
 				}
 
 				// External call?
@@ -1528,7 +1530,10 @@ void C4AulStartTrace()
 void C4AulExec::StartTrace()
 {
 	if (iTraceStart < 0)
+	{
 		iTraceStart = ContextStackSize();
+		traceLogger = Application.LogSystem.CreateLogger("C4AulExec");
+	}
 }
 
 void C4AulExec::StartProfiling(C4AulScript *pProfiledScript)
@@ -1552,7 +1557,7 @@ void C4AulExec::StopProfiling()
 	if (!fProfiling) return;
 	fProfiling = false;
 	// collect profiler times
-	C4AulProfiler Profiler;
+	C4AulProfiler Profiler{Application.LogSystem.CreateLogger("C4AulProfiler")};
 	Profiler.CollectEntry(nullptr, tDirectExecTotal);
 	pProfiledScript->CollectProfilerTimes(Profiler);
 	Profiler.Show();
@@ -1589,15 +1594,16 @@ void C4AulProfiler::Show()
 	// sort by time
 	std::sort(Times.rbegin(), Times.rend());
 	// display them
-	Log("Profiler statistics:");
-	Log("==============================");
+	logger->info("Profiler statistics:");
+	logger->info("Profiler statistics:");
+	logger->info("==============================");
 	typedef std::vector<Entry> EntryList;
 	for (EntryList::iterator i = Times.begin(); i != Times.end(); ++i)
 	{
 		Entry &e = (*i);
-		LogF("%05dms\t%s", static_cast<int>(e.tProfileTime), e.pFunc ? (e.pFunc->GetFullName().c_str()) : "Direct exec");
+		logger->info("{:05}ms\t{}", e.tProfileTime, e.pFunc ? (e.pFunc->GetFullName().c_str()) : "Direct exec");
 	}
-	Log("==============================");
+	logger->info("==============================");
 	// done!
 }
 

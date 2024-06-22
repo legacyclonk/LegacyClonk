@@ -79,7 +79,7 @@ C4Game::~C4Game()
 bool C4Game::InitDefs()
 {
 	int32_t iDefs = 0;
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_INITDEFS));
+	Log(C4ResStrTableKey::IDS_PRC_INITDEFS);
 	int iDefResCount = 0;
 	for ([[maybe_unused]] const auto &def : Parameters.GameRes.iterRes(NRT_Definitions))
 		++iDefResCount;
@@ -104,7 +104,7 @@ bool C4Game::InitDefs()
 
 	// Check def engine version (should be done immediately on def load)
 	iDefs = Defs.CheckEngineVersion(C4XVER1, C4XVER2, C4XVER3, C4XVER4, C4XVERBUILD);
-	if (iDefs > 0) { Log(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSINVC4X, iDefs)); }
+	if (iDefs > 0) { Log(C4ResStrTableKey::IDS_PRC_DEFSINVC4X, iDefs); }
 
 	// sort before CheckRequireDef for better id-lookup performance
 	Defs.SortByID();
@@ -134,7 +134,7 @@ bool C4Game::OpenScenario()
 
 	// Scenario filename check & log
 	if (!ScenarioFilename[0]) { LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NOC4S)); return false; }
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LOADC4S, ScenarioFilename));
+	Log(C4ResStrTableKey::IDS_PRC_LOADC4S, ScenarioFilename);
 
 	// get parent folder, if it's c4f
 	pParentGroup = GroupSet.RegisterParentFolders(ScenarioFilename);
@@ -145,14 +145,14 @@ bool C4Game::OpenScenario()
 		// open from parent group
 		if (!ScenarioFile.OpenAsChild(pParentGroup, GetFilename(ScenarioFilename)))
 		{
-			LogF("%s: %s", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), ScenarioFilename); return false;
+			LogNTr("{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), ScenarioFilename); return false;
 		}
 	}
 	else
 		// open directly
 		if (!ScenarioFile.Open(ScenarioFilename))
 		{
-			LogF("%s: %s", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), ScenarioFilename); return false;
+			LogNTr("{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), ScenarioFilename); return false;
 		}
 
 	// add scenario to group
@@ -183,11 +183,11 @@ bool C4Game::OpenScenario()
 
 		if (DefinitionFilenames.empty())
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LOCALONLY));
+			Log(C4ResStrTableKey::IDS_PRC_LOCALONLY);
 		}
 		else
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_SCEOWNDEFS));
+			Log(C4ResStrTableKey::IDS_PRC_SCEOWNDEFS);
 		}
 	}
 
@@ -313,11 +313,11 @@ bool C4Game::PreInit()
 		GraphicsSystem.MessageBoard.Init(cgo, true);
 	}
 
-	Log(FANPROJECTTEXT);
-	Log(TRADEMARKTEXT);
+	LogNTr(FANPROJECTTEXT);
+	LogNTr(TRADEMARKTEXT);
 
 	// gfx resource file preinit (global files only)
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_GFXRES));
+	Log(C4ResStrTableKey::IDS_PRC_GFXRES);
 	if (!GraphicsResource.Init())
 		// Error was already logged
 		return false;
@@ -361,7 +361,7 @@ bool C4Game::Init()
 		if (!GraphicsSystem.pLoaderScreen)
 		{
 			// init extra; needed for loader screen
-			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_INITEXTRA));
+			Log(C4ResStrTableKey::IDS_PRC_INITEXTRA);
 			Extra.Init();
 
 			// init loader
@@ -417,7 +417,7 @@ bool C4Game::Init()
 		}
 
 		// init extra; needed for loader screen
-		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_INITEXTRA));
+		Log(C4ResStrTableKey::IDS_PRC_INITEXTRA);
 		Extra.Init();
 
 		// init loader
@@ -500,7 +500,18 @@ bool C4Game::Init()
 	IsRunning = true;
 
 	// Start message
-	Log(C4S.Head.NetworkGame ? LoadResStr(C4ResStrTableKey::IDS_PRC_JOIN) : LoadResStrChoice(C4S.Head.SaveGame, C4ResStrTableKey::IDS_PRC_RESUME, C4ResStrTableKey::IDS_PRC_START));
+	if (C4S.Head.NetworkGame)
+	{
+		Log(C4ResStrTableKey::IDS_PRC_JOIN);
+	}
+	else if (C4S.Head.SaveGame)
+	{
+		Log(C4ResStrTableKey::IDS_PRC_RESUME);
+	}
+	else
+	{
+		Log(C4ResStrTableKey::IDS_PRC_START);
+	}
 
 	// set non-exclusive GUI
 	if (pGUI)
@@ -615,7 +626,7 @@ void C4Game::Clear()
 	// avoid double message by not printing it if no restbl is loaded
 	// this would log an "[Undefined]" only, anyway
 	// (could abort the whole clear-procedure here, btw?)
-	if (Application.ResStrTable) Log(LoadResStr(C4ResStrTableKey::IDS_CNS_GAMECLOSED));
+	if (Application.ResStrTable) Log(C4ResStrTableKey::IDS_CNS_GAMECLOSED);
 
 	// clear game starting parameters
 	DefinitionFilenames.clear();
@@ -895,7 +906,7 @@ bool C4Game::InitMaterialTexture()
 		if (fFirst)
 		{
 			long tme_count = TextureMap.LoadMap(Mats, C4CFN_TexMap, &fNewOverloadMaterials, &fNewOverloadTextures);
-			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_TEXMAPENTRIES, tme_count));
+			Log(C4ResStrTableKey::IDS_PRC_TEXMAPENTRIES, tme_count);
 			// Only once
 			fFirst = false;
 		}
@@ -930,8 +941,8 @@ bool C4Game::InitMaterialTexture()
 	}
 
 	// Logs
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_TEXTURES, tex_count));
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_MATERIALS, mat_count));
+	Log(C4ResStrTableKey::IDS_PRC_TEXTURES, tex_count);
+	Log(C4ResStrTableKey::IDS_PRC_MATERIALS, mat_count);
 
 	// Load material enumeration
 	if (!Material.LoadEnumeration(ScenarioFile))
@@ -1806,7 +1817,7 @@ void C4Game::Evaluate()
 	RoundResults.EvaluateGame();
 
 	// Set game flag
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_EVALUATED));
+	Log(C4ResStrTableKey::IDS_PRC_EVALUATED);
 	Evaluated = true;
 }
 
@@ -2170,13 +2181,13 @@ bool C4Game::CanQuickSave()
 		// Network hosts only
 		if (!Network.isHost())
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_GAME_NOCLIENTSAVE)); return false;
+			Log(C4ResStrTableKey::IDS_GAME_NOCLIENTSAVE); return false;
 		}
 
 		// Not for league games
 		if (Parameters.isLeague() && !Control.isReplay())
 		{
-			Log("[!] It's not allowed to save running league games"); return false;
+			LogNTr("[!] It's not allowed to save running league games"); return false;
 		}
 	}
 
@@ -2194,7 +2205,7 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 	// Create savegame folder
 	if (!Config.General.CreateSaveFolder(Config.General.SaveGameFolder.getData(), LoadResStr(C4ResStrTableKey::IDS_GAME_SAVEGAMESTITLE)))
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME)); return false;
+		Log(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME); return false;
 	}
 
 	// Create savegame subfolder(s)
@@ -2205,7 +2216,7 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 		SCopyUntil(strFilename, strSaveFolder + SLen(strSaveFolder), DirectorySeparator, _MAX_PATH, i);
 		if (!Config.General.CreateSaveFolder(strSaveFolder, strTitle))
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME)); return false;
+			Log(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME); return false;
 		}
 	}
 
@@ -2217,12 +2228,12 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 	{
 		StartSoundEffect("Error");
 		GameMsgGlobal(LoadResStr(C4ResStrTableKey::IDS_GAME_NOSAVEONCURR), FRed);
-		Log(LoadResStr(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME));
+		Log(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME);
 		return false;
 	}
 
 	// Wait message
-	Log(LoadResStr(C4ResStrTableKey::IDS_HOLD_SAVINGGAME));
+	Log(C4ResStrTableKey::IDS_HOLD_SAVINGGAME);
 	GraphicsSystem.MessageBoard.EnsureLastMessage();
 
 	// Save to target scenario file
@@ -2230,12 +2241,12 @@ bool C4Game::QuickSave(const char *strFilename, const char *strTitle, bool fForc
 	pGameSave = new C4GameSaveSavegame();
 	if (!pGameSave->Save(savePath.c_str()))
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME)); delete pGameSave; return false;
+		Log(C4ResStrTableKey::IDS_GAME_FAILSAVEGAME); delete pGameSave; return false;
 	}
 	delete pGameSave;
 
 	// Success
-	Log(LoadResStr(C4ResStrTableKey::IDS_CNS_GAMESAVED));
+	Log(C4ResStrTableKey::IDS_CNS_GAMESAVED);
 	return true;
 }
 
@@ -2274,7 +2285,7 @@ bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
 	C4Def *pDef = Defs.ID2Def(id);
 	if (!pDef) return false;
 	// Message
-	LogF("Reloading %s from %s", C4IdText(pDef->id), GetFilename(pDef->Filename));
+	LogNTr("Reloading {} from {}", C4IdText(pDef->id), GetFilename(pDef->Filename));
 	// Reload def
 	if (Defs.Reload(pDef, reloadWhat, Config.General.LanguageEx, &*Application.SoundSystem))
 	{
@@ -2299,7 +2310,7 @@ bool C4Game::ReloadDef(C4ID id, uint32_t reloadWhat)
 		// Kill def
 		Defs.Remove(pDef);
 		// Log
-		Log("Reloading failure. All objects of this type removed.");
+		LogNTr("Reloading failure. All objects of this type removed.");
 		fSucc = false;
 	}
 	// update game messages
@@ -2318,7 +2329,7 @@ bool C4Game::ReloadParticle(const char *szName)
 	C4ParticleDef *pDef = Particles.GetDef(szName);
 	if (!pDef) return false;
 	// verbose
-	LogF("Reloading particle %s from %s", pDef->Name.getData(), GetFilename(pDef->Filename.getData()));
+	LogNTr("Reloading particle {} from {}", pDef->Name.getData(), GetFilename(pDef->Filename.getData()));
 	// reload it
 	if (!pDef->Reload())
 	{
@@ -2327,7 +2338,7 @@ bool C4Game::ReloadParticle(const char *szName)
 		// clear def
 		delete pDef;
 		// log
-		Log("Reloading failure. All particles removed.");
+		LogNTr("Reloading failure. All particles removed.");
 		// failure
 		return false;
 	}
@@ -2361,7 +2372,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 				}
 				catch (const std::runtime_error &e)
 				{
-					Log(LoadResStr(C4ResStrTableKey::IDS_ERR_FILEMONITOR, e.what()));
+					Log(C4ResStrTableKey::IDS_ERR_FILEMONITOR, e.what());
 				}
 			}
 
@@ -2397,7 +2408,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 
 			// Graphics and fonts (may reinit main font, too)
 			// Call it here for overloads by C4GroupSet (definitions, Extra.c4g, scenario, folders etc.)
-			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_GFXRES));
+			Log(C4ResStrTableKey::IDS_PRC_GFXRES);
 			if (!GraphicsResource.Init())
 			{
 				return false;
@@ -2464,7 +2475,7 @@ bool C4Game::InitGame(C4Group &hGroup, C4ScenarioSection *section, bool fLoadSky
 	// Environment
 	if (!C4S.Head.NoInitialize && LandscapeLoaded)
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_ENVIRONMENT));
+		Log(C4ResStrTableKey::IDS_PRC_ENVIRONMENT);
 		InitVegetation();
 		InitInEarth();
 		InitAnimals();
@@ -2606,7 +2617,7 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, boo
 	}
 
 	// Landscape
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LANDSCAPE));
+	Log(C4ResStrTableKey::IDS_PRC_LANDSCAPE);
 	LandscapeLoaded = false;
 	if (!Landscape.Init(hGroup, section, fLoadSky, LandscapeLoaded, !!C4S.Head.SaveGame))
 	{
@@ -2664,7 +2675,7 @@ bool C4Game::InitGameSecondPart(C4Group &hGroup, C4ScenarioSection *section, boo
 
 	// Load objects
 	int32_t iObjects = Objects.Load(hGroup, section);
-	if (iObjects) { Log(LoadResStr(C4ResStrTableKey::IDS_PRC_OBJECTSLOADED, iObjects)); }
+	if (iObjects) { Log(C4ResStrTableKey::IDS_PRC_OBJECTSLOADED, iObjects); }
 	SetInitProgress(93);
 
 	if (!section)
@@ -2897,7 +2908,7 @@ bool C4Game::InitControl()
 			}
 			else
 			{
-				Log(LoadResStr(C4ResStrTableKey::IDS_ERR_NORECORD));
+				Log(C4ResStrTableKey::IDS_ERR_NORECORD);
 			}
 		}
 
@@ -3078,7 +3089,7 @@ void C4Game::InitAnimals()
 
 void C4Game::ParseCommandLine(const char *szCmdLine)
 {
-	Log("Command line: "); Log(szCmdLine);
+	LogNTr("Command line: "); LogNTr(szCmdLine);
 
 	// Definitions by registry config
 	DefinitionFilenames.clear();
@@ -3626,7 +3637,7 @@ bool C4Game::DoGameOver()
 	if (GameOver) return false;
 	// Flag, log, call
 	GameOver = true;
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_GAMEOVER));
+	Log(C4ResStrTableKey::IDS_PRC_GAMEOVER);
 	Script.GRBroadcast(PSF_OnGameOver);
 	// Flag all surviving players as winners
 	for (C4Player *pPlayer = Players.First; pPlayer; pPlayer = pPlayer->Next)
@@ -3671,7 +3682,7 @@ void C4Game::SyncClearance()
 void C4Game::Synchronize(bool fSavePlayerFiles)
 {
 	// Log
-	LogSilentF("Network: Synchronization (Frame %i) [PlrSave: %d]", FrameCounter, fSavePlayerFiles);
+	spdlog::debug("Network: Synchronization (Frame {}) [PlrSave: {}]", FrameCounter, fSavePlayerFiles);
 	// callback to control (to start record)
 	Control.OnGameSynchronizing();
 	// Fix random
@@ -3763,7 +3774,7 @@ bool C4Game::InitNetworkFromAddress(const char *szAddress)
 	}
 	// We have to wait for the answer
 	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_REFQUERY_QUERYMSG, szAddress)};
-	Log(message);
+	LogNTr(message);
 	// Set up wait dialog
 	C4GUI::MessageDialog *pDlg = nullptr;
 	if (pGUI && !Console.Active)
@@ -3817,7 +3828,7 @@ bool C4Game::InitNetworkFromReference(const C4Network2Reference &Reference)
 	// Save scenario title
 	Parameters.ScenarioTitle.CopyValidated(Reference.getTitle());
 	// Log
-	Log(LoadResStr(C4ResStrTableKey::IDS_NET_JOINGAMEBY, pHostData->getName()));
+	Log(C4ResStrTableKey::IDS_NET_JOINGAMEBY, pHostData->getName());
 	// Init clients
 	Clients.Init();
 	// Connect
@@ -3890,7 +3901,7 @@ bool C4Game::CheckObjectEnumeration()
 		cObj = clnk->Obj;
 		if (cObj->Number < 1)
 		{
-			LogF("Invalid object enumeration number (%d) of object %s (x=%d)", cObj->Number, C4IdText(cObj->id), cObj->x);
+			LogNTr(spdlog::level::err, "Invalid object enumeration number ({}) of object {} (x={})", cObj->Number, C4IdText(cObj->id), cObj->x);
 			return false;
 		}
 		// Max
@@ -3900,14 +3911,14 @@ bool C4Game::CheckObjectEnumeration()
 			if (cObj2 != cObj)
 				if (cObj->Number == cObj2->Number)
 				{
-					LogF("Duplicate object enumeration number %d (%s and %s)", cObj2->Number, cObj->GetName(), cObj2->GetName());
+					LogNTr(spdlog::level::err, "Duplicate object enumeration number {} ({} and {})", cObj2->Number, cObj->GetName(), cObj2->GetName());
 					return false;
 				}
 		for (clnk2 = Objects.InactiveObjects.First; clnk2 && (cObj2 = clnk2->Obj); clnk2 = clnk2->Next)
 			if (cObj2 != cObj)
 				if (cObj->Number == cObj2->Number)
 				{
-					LogF("Duplicate object enumeration number %d (%s and %s(i))", cObj2->Number, cObj->GetName(), cObj2->GetName());
+					LogNTr(spdlog::level::err, "Duplicate object enumeration number {} ({} and {}(i))", cObj2->Number, cObj->GetName(), cObj2->GetName());
 					return false;
 				}
 		// next

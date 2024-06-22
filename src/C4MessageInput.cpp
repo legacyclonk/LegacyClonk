@@ -330,7 +330,7 @@ bool C4MessageInput::ProcessInput(const char *szText)
 		if (!Game.Teams.IsTeamVisible())
 		{
 			// team not known; can't send!
-			Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CANTSENDTEAMMESSAGETEAMSN));
+			Log(C4ResStrTableKey::IDS_MSG_CANTSENDTEAMMESSAGETEAMSN);
 			return false;
 		}
 		else
@@ -441,25 +441,25 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 	// dev-scripts
 	if (SEqual(szCmdName, "help"))
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_TEXT_COMMANDSAVAILABLEDURINGGA));
-		LogF("/private [player] [message] - %s", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOTHES));
-		LogF("/team [message] - %s", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOYOUR));
-		LogF("/me [action] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_PERFORMANACTIONINYOURNAME));
-		LogF("/sound [sound] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_PLAYASOUNDFROMTHEGLOBALSO));
-		LogF("/mute [client] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_MUTESOUNDCOMMANDSBYTHESPE));
-		LogF("/unmute [client] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_UNMUTESOUNDCOMMANDSBYTHESP));
-		LogF("/kick [client] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_KICKTHESPECIFIEDCLIENT));
-		LogF("/observer [client] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETTHESPECIFIEDCLIENTTOOB));
-		LogF("/fast [x] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETTOFASTMODESKIPPINGXFRA));
-		LogF("/slow - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETTONORMALSPEEDMODE));
-		LogF("/chart - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_DISPLAYNETWORKSTATISTICS));
-		LogF("/nodebug - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_PREVENTDEBUGMODEINTHISROU));
-		LogF("/set comment [comment] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWNETWORKCOMMENT));
-		LogF("/set password [password] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWNETWORKPASSWORD));
-		LogF("/set faircrew [on/off] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_ENABLEORDISABLEFAIRCREW));
-		LogF("/set maxplayer [4] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWMAXIMUMNUMBEROFPLA));
-		LogF("/script [script] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_EXECUTEASCRIPTCOMMAND));
-		LogF("/clear - %s", LoadResStr(C4ResStrTableKey::IDS_MSG_CLEARTHEMESSAGEBOARD));
+		Log(C4ResStrTableKey::IDS_TEXT_COMMANDSAVAILABLEDURINGGA);
+		LogNTr("/private [player] [message] - %s", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOTHES));
+		LogNTr("/team [message] - %s", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOYOUR));
+		LogNTr("/me [action] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PERFORMANACTIONINYOURNAME));
+		LogNTr("/sound [sound] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PLAYASOUNDFROMTHEGLOBALSO));
+		LogNTr("/mute [client] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_MUTESOUNDCOMMANDSBYTHESPE));
+		LogNTr("/unmute [client] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_UNMUTESOUNDCOMMANDSBYTHESP));
+		LogNTr("/kick [client] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_KICKTHESPECIFIEDCLIENT));
+		LogNTr("/observer [client] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETTHESPECIFIEDCLIENTTOOB));
+		LogNTr("/fast [x] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETTOFASTMODESKIPPINGXFRA));
+		LogNTr("/slow - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETTONORMALSPEEDMODE));
+		LogNTr("/chart - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_DISPLAYNETWORKSTATISTICS));
+		LogNTr("/nodebug - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PREVENTDEBUGMODEINTHISROU));
+		LogNTr("/set comment [comment] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWNETWORKCOMMENT));
+		LogNTr("/set password [password] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWNETWORKPASSWORD));
+		LogNTr("/set faircrew [on/off] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_ENABLEORDISABLEFAIRCREW));
+		LogNTr("/set maxplayer [4] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWMAXIMUMNUMBEROFPLA));
+		LogNTr("/script [script] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_EXECUTEASCRIPTCOMMAND));
+		LogNTr("/clear - {}", LoadResStr(C4ResStrTableKey::IDS_MSG_CLEARTHEMESSAGEBOARD));
 		return true;
 	}
 	// dev-scripts
@@ -481,7 +481,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 			{
 				if (atoi(pCmdPar + 10) == 0 && !SEqual(pCmdPar + 10, "0"))
 				{
-					Log("Syntax: /set maxplayer count");
+					LogNTr("Syntax: /set maxplayer count");
 					return false;
 				}
 				Game.Control.DoInput(CID_Set,
@@ -496,7 +496,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 			// Set in configuration, update reference
 			Config.Network.Comment.CopyValidated(pCmdPar[7] ? (pCmdPar + 8) : "");
 			Game.Network.InvalidateReference();
-			Log(LoadResStr(C4ResStrTableKey::IDS_NET_COMMENTCHANGED));
+			Log(C4ResStrTableKey::IDS_NET_COMMENTCHANGED);
 			return true;
 		}
 		if (SEqual2(pCmdPar, "password ") || SEqual(pCmdPar, "password"))
@@ -536,7 +536,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 				if (pScenario)
 					if (C4Group_CopyItem(pScenario->getFile(), Config.AtExePath(GetFilename(Game.ScenarioFilename))))
 					{
-						Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_NETGETSCEN_SAVED, Config.AtExePath(GetFilename(Game.ScenarioFilename))));
+						Log(C4ResStrTableKey::IDS_MSG_CMD_NETGETSCEN_SAVED, Config.AtExePath(GetFilename(Game.ScenarioFilename)));
 						return true;
 					}
 			}
@@ -570,7 +570,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 			C4Client *pClient = Game.Clients.getClientByName(pCmdPar);
 			if (!pClient)
 			{
-				Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_NOCLIENT, pCmdPar));
+				Log(C4ResStrTableKey::IDS_MSG_CMD_NOCLIENT, pCmdPar);
 				return false;
 			}
 			// league: Kick needs voting
@@ -588,7 +588,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 		if (!Game.IsRunning) return false;
 		if (Game.Parameters.isLeague())
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_LOG_COMMANDNOTALLOWEDINLEAGUE));
+			Log(C4ResStrTableKey::IDS_LOG_COMMANDNOTALLOWEDINLEAGUE);
 			return false;
 		}
 		int32_t iFS;
@@ -638,13 +638,13 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 	{
 		if (!Game.Network.isEnabled() || !Game.Network.isHost())
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_HOSTONLY)); return false;
+			Log(C4ResStrTableKey::IDS_MSG_CMD_HOSTONLY); return false;
 		}
 		// search for client
 		C4Client *pClient = Game.Clients.getClientByName(pCmdPar);
 		if (!pClient)
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_NOCLIENT, pCmdPar));
+			Log(C4ResStrTableKey::IDS_MSG_CMD_NOCLIENT, pCmdPar);
 			return false;
 		}
 		// what to do?
@@ -659,7 +659,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 		if (pCtrl)
 			Game.Control.DoInput(CID_ClientUpdate, pCtrl, CDT_Sync);
 		else
-			Log(LoadResStr(C4ResStrTableKey::IDS_LOG_COMMANDNOTALLOWEDINLEAGUE));
+			Log(C4ResStrTableKey::IDS_LOG_COMMANDNOTALLOWEDINLEAGUE);
 		return true;
 	}
 
@@ -668,11 +668,11 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 	{
 		if (!Game.Network.isEnabled() || !Game.Network.isHost())
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_HOSTONLY)); return false;
+			Log(C4ResStrTableKey::IDS_MSG_CMD_HOSTONLY); return false;
 		}
 		if (Game.Parameters.isLeague() && *szCmdName == 'a')
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_LOG_COMMANDNOTALLOWEDINLEAGUE)); return false;
+			Log(C4ResStrTableKey::IDS_LOG_COMMANDNOTALLOWEDINLEAGUE); return false;
 		}
 		Game.Network.SetCtrlMode(*szCmdName == 'c' ? CNM_Central : *szCmdName == 'd' ? CNM_Decentral : CNM_Async);
 		return true;
@@ -711,7 +711,7 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 
 	// unknown command
 	const std::string error{LoadResStr(C4ResStrTableKey::IDS_ERR_UNKNOWNCMD, szCmdName)};
-	if (pLobby) pLobby->OnError(error.c_str()); else Log(error);
+	if (pLobby) pLobby->OnError(error.c_str()); else LogNTr(error);
 	return false;
 }
 

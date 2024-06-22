@@ -379,7 +379,7 @@ bool C4Language::LoadLanguage(const char *strLanguages)
 	if (InitStringTable("US"))
 		return true;
 	// No string table present: this is really bad
-	Log("Error loading language string table.");
+	LogNTr(spdlog::level::err, "Error loading language string table.");
 	return false;
 }
 

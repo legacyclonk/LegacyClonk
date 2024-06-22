@@ -249,7 +249,7 @@ public:
 class C4Network2HTTPClientImplCurl : public C4Network2HTTPClient::Impl
 {
 public:
-	C4Network2HTTPClientImplCurl() = default;
+	C4Network2HTTPClientImplCurl(std::shared_ptr<spdlog::logger> logger) : logger{std::move(logger)} {}
 	~C4Network2HTTPClientImplCurl() override = default;
 
 public:
@@ -294,6 +294,7 @@ protected:
 	StdStrBuf resultString;
 
 private:
+	std::shared_ptr<spdlog::logger> logger;
 	std::optional<C4HTTPClient> client;
 	C4Task::Hot<void> task;
 	StdBuf data;
@@ -319,10 +320,11 @@ private:
 class C4Network2HTTPClientImplNetIO : public C4Network2HTTPClient::Impl, public C4NetIOTCP, private C4NetIO::CBClass
 {
 public:
-	C4Network2HTTPClientImplNetIO();
+	C4Network2HTTPClientImplNetIO(std::shared_ptr<spdlog::logger> logger);
 	virtual ~C4Network2HTTPClientImplNetIO() override;
 
 private:
+	std::shared_ptr<spdlog::logger> logger;
 	// Address information
 	C4NetIO::addr_t ServerAddr, ServerAddrFallback, PeerAddr;
 	StdStrBuf Server, RequestPath;
@@ -406,8 +408,8 @@ private:
 
 C4Network2HTTPClient::C4Network2HTTPClient()
 	: impl{Config.Network.UseCurl
-		   ? static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<C4Network2HTTPClientImplCurl>())
-		   : static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<C4Network2HTTPClientImplNetIO>())
+		   ? static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<C4Network2HTTPClientImplCurl>(Application.LogSystem.CreateLogger("C4Network2HTTPClientImplCurl")))
+		   : static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<C4Network2HTTPClientImplNetIO>(Application.LogSystem.CreateLogger("C4Network2HTTPClientImplNetIO")))
 	  }
 {
 }
@@ -581,8 +583,8 @@ C4Task::Hot<void> C4Network2HTTPClientImplCurl::QueryAsync(C4Task::Hot<C4HTTPCli
 	}
 }
 
-C4Network2HTTPClientImplNetIO::C4Network2HTTPClientImplNetIO()
-	: fBusy(false), fSuccess(false), fConnected(false), iDownloadedSize(0), iTotalSize(0), fBinary(false), iDataOffset(0),
+C4Network2HTTPClientImplNetIO::C4Network2HTTPClientImplNetIO(std::shared_ptr<spdlog::logger> logger)
+	: logger{std::move(logger)}, fBusy(false), fSuccess(false), fConnected(false), iDownloadedSize(0), iTotalSize(0), fBinary(false), iDataOffset(0),
 	pNotify(nullptr)
 {
 	C4NetIOTCP::SetCallback(this);
@@ -783,7 +785,7 @@ bool C4Network2HTTPClientImplNetIO::Execute(int iMaxTime)
 		if (std::chrono::steady_clock::now() > HappyEyeballsTimeout)
 		{
 			HappyEyeballsTimeout = decltype(HappyEyeballsTimeout)::max();
-			LogSilentF("HTTP: Starting fallback connection to %s (%s)", Server.getData(), ServerAddrFallback.ToString());
+			logger->info("Starting fallback connection to {} ({})", Server.getData(), ServerAddrFallback.ToString());
 			Connect(ServerAddrFallback);
 		}
 

@@ -628,26 +628,26 @@ C4GUI::InputResult MainDlg::OnChatInput(C4GUI::Edit *pEdt, bool fPasting, bool f
 			}
 			else if (SEqualNoCase(Command, "/help"))
 			{
-				Log(LoadResStr(C4ResStrTableKey::IDS_TEXT_COMMANDSAVAILABLEDURINGLO));
-				LogF("/start [time] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_STARTTHEROUNDWITHSPECIFIE));
-				LogF("/abort - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_ABORTSTARTCOUNTDOWN));
-				LogF("/alert - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_ALERTTHEHOSTIFTHEHOSTISAW));
-				LogF("/joinplr [filename] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_JOINALOCALPLAYERFROMTHESP));
-				LogF("/kick [client] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_KICKTHESPECIFIEDCLIENT));
-				LogF("/observer [client] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETTHESPECIFIEDCLIENTTOOB));
-				LogF("/me [action] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_PERFORMANACTIONINYOURNAME));
-				LogF("/sound [sound] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_PLAYASOUNDFROMTHEGLOBALSO));
-				LogF("/mute [client] - %s", LoadResStr(C4ResStrTableKey::IDS_NET_MUTE_DESC));
-				LogF("/unmute [client] - %s", LoadResStr(C4ResStrTableKey::IDS_NET_UNMUTE_DESC));
-				LogF("/team [message] - %s", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOYOUR));
-				LogF("/plrclr [player] [RGB] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_CHANGETHECOLOROFTHESPECIF));
-				LogF("/plrclr [RGB] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_CHANGEYOUROWNPLAYERCOLOR));
-				LogF("/set comment [comment] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWNETWORKCOMMENT));
-				LogF("/set password [password] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWNETWORKPASSWORD));
-				LogF("/set faircrew [on/off] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_ENABLEORDISABLEFAIRCREW));
-				LogF("/set maxplayer [number] - %s", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWMAXIMUMNUMBEROFPLA));
-				LogF("/clear - %s", LoadResStr(C4ResStrTableKey::IDS_MSG_CLEARTHEMESSAGEBOARD));
-				LogF("/readycheck - %s", LoadResStr(C4ResStrTableKey::IDS_MSG_READYCHECK));
+				Log(C4ResStrTableKey::IDS_TEXT_COMMANDSAVAILABLEDURINGLO);
+				LogNTr("/start [time] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_STARTTHEROUNDWITHSPECIFIE));
+				LogNTr("/abort - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_ABORTSTARTCOUNTDOWN));
+				LogNTr("/alert - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_ALERTTHEHOSTIFTHEHOSTISAW));
+				LogNTr("/joinplr [filename] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_JOINALOCALPLAYERFROMTHESP));
+				LogNTr("/kick [client] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_KICKTHESPECIFIEDCLIENT));
+				LogNTr("/observer [client] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETTHESPECIFIEDCLIENTTOOB));
+				LogNTr("/me [action] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PERFORMANACTIONINYOURNAME));
+				LogNTr("/sound [sound] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PLAYASOUNDFROMTHEGLOBALSO));
+				LogNTr("/mute [client] - {}", LoadResStr(C4ResStrTableKey::IDS_NET_MUTE_DESC));
+				LogNTr("/unmute [client] - {}", LoadResStr(C4ResStrTableKey::IDS_NET_UNMUTE_DESC));
+				LogNTr("/team [message] - {}", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOYOUR));
+				LogNTr("/plrclr [player] [RGB] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_CHANGETHECOLOROFTHESPECIF));
+				LogNTr("/plrclr [RGB] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_CHANGEYOUROWNPLAYERCOLOR));
+				LogNTr("/set comment [comment] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWNETWORKCOMMENT));
+				LogNTr("/set password [password] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWNETWORKPASSWORD));
+				LogNTr("/set faircrew [on/off] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_ENABLEORDISABLEFAIRCREW));
+				LogNTr("/set maxplayer [number] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_SETANEWMAXIMUMNUMBEROFPLA));
+				LogNTr("/clear - {}", LoadResStr(C4ResStrTableKey::IDS_MSG_CLEARTHEMESSAGEBOARD));
+				LogNTr("/readycheck - {}", LoadResStr(C4ResStrTableKey::IDS_MSG_READYCHECK));
 			}
 			else
 			{
@@ -721,7 +721,7 @@ bool MainDlg::OnMessage(C4Client *pOfClient, const char *szMessage)
 		pChatBox->ScrollToBottom();
 	}
 	// log it
-	LogSilent(szMessage);
+	spdlog::info(szMessage);
 	// done, success
 	return true;
 }
@@ -833,7 +833,7 @@ bool MainDlg::Preload()
 
 		// Don't use Log here since we want a red message
 		OnLog(message, C4GUI_ErrorFontClr);
-		LogSilent(message);
+		spdlog::info(message);
 
 		return false;
 	}
@@ -1124,7 +1124,7 @@ Countdown::Countdown(int32_t iStartTimer) : iStartTimer(iStartTimer), pSec1Timer
 	else
 	{
 		// no lobby: Message to log for dedicated/console hosts
-		Log(pck.GetCountdownMsg());
+		LogNTr(pck.GetCountdownMsg());
 	}
 
 	// init timer callback
@@ -1155,7 +1155,7 @@ void Countdown::OnSec1Timer()
 		else if (iStartTimer)
 		{
 			// no lobby: Message to log for dedicated/console hosts
-			Log(pck.GetCountdownMsg());
+			LogNTr(pck.GetCountdownMsg());
 		}
 	}
 	// countdown done
@@ -1164,7 +1164,7 @@ void Countdown::OnSec1Timer()
 		// Dedicated server: if there are not enough players for this game, abort and quit the application
 		if (!Game.Network.GetLobby() && (Game.PlayerInfos.GetPlayerCount() < Game.C4S.GetMinPlayer()))
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_MSG_NOTENOUGHPLAYERSFORTHISRO)); // it would also be nice to send this message to all clients...
+			Log(C4ResStrTableKey::IDS_MSG_NOTENOUGHPLAYERSFORTHISRO); // it would also be nice to send this message to all clients...
 			Application.Quit();
 		}
 		// Start the game
@@ -1188,7 +1188,7 @@ void Countdown::Abort()
 	else
 	{
 		// no lobby: Message to log for dedicated/console hosts
-		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_STARTABORTED));
+		Log(C4ResStrTableKey::IDS_PRC_STARTABORTED);
 	}
 }
 

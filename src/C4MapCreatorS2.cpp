@@ -813,7 +813,7 @@ C4MCParserErr::C4MCParserErr(C4MCParser *pParser, const char *szMsg, const char 
 void C4MCParserErr::show() const
 {
 	// log error
-	Log(Msg);
+	LogNTr(Msg);
 }
 
 // parser

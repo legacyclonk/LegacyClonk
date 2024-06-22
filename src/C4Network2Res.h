@@ -337,9 +337,12 @@ protected:
 	// object used for network i/o
 	C4Network2IO *pIO;
 
+	// logger
+	std::shared_ptr<spdlog::logger> logger;
+
 public:
 	// initialization
-	bool Init(int32_t iClientID, C4Network2IO *pIOClass); // by main thread
+	bool Init(std::shared_ptr<spdlog::logger> logger, int32_t iClientID, C4Network2IO *pIOClass); // by main thread
 	void SetLocalID(int32_t iClientID); // by both
 
 protected:
@@ -376,6 +379,8 @@ public:
 	C4Network2IO *getIOClass() { return pIO; }
 
 	int32_t GetClientProgress(int32_t clientID);
+
+	const std::shared_ptr<spdlog::logger> &GetLogger() const noexcept { return logger; }
 
 protected:
 	void OnResComplete(C4Network2Res *pRes);

@@ -989,7 +989,7 @@ ConfirmationDialog::ConfirmationDialog(const char *szMessage, const char *szCapt
 {
 	if (this->pCB = pCB) pCB->Ref();
 	// always log confirmation messages
-	LogSilentF("[Cnf] %s: %s", szCaption, szMessage);
+	spdlog::debug("[Cnf] {}: {}", szCaption, szMessage);
 	// confirmations always get deleted on close
 	SetDelOnClose();
 }
@@ -1043,7 +1043,7 @@ ProgressDialog::ProgressDialog(const char *szMessage, const char *szCaption, int
 bool Screen::ShowMessage(const char *szMessage, const char *szCaption, Icons icoIcon, bool *piConfigDontShowAgainSetting)
 {
 	// always log messages
-	LogSilentF("[Msg] %s: %s", szCaption, szMessage);
+	spdlog::debug("[Msg] {}: {}", szCaption, szMessage);
 	if (piConfigDontShowAgainSetting && *piConfigDontShowAgainSetting) return true;
 #ifdef USE_CONSOLE
 	// skip in console mode
@@ -1060,7 +1060,7 @@ bool Screen::ShowErrorMessage(const char *szMessage)
 bool Screen::ShowMessageModal(const char *szMessage, const char *szCaption, uint32_t dwButtons, Icons icoIcon, bool *pbConfigDontShowAgainSetting)
 {
 	// always log messages
-	LogSilentF("[Modal] %s: %s", szCaption, szMessage);
+	spdlog::debug("[Modal] {}: {}", szCaption, szMessage);
 	// skip if user doesn't want to see it
 	if (pbConfigDontShowAgainSetting && *pbConfigDontShowAgainSetting) return true;
 	// create message dlg and show modal

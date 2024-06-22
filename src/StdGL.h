@@ -192,6 +192,7 @@ public:
 	void Clear() override;
 	void Default() override;
 	virtual int GetEngine() override { return 1; } // get indexed engine
+	std::string_view GetEngineName() const override { return "CStdGL"; }
 	virtual bool OnResolutionChanged() override; // reinit OpenGL and window for new resolution
 
 	// Clipper

@@ -533,7 +533,7 @@ bool C4Def::Load(C4Group &hGroup,
 
 	// Verbose log filename
 	if (Config.Graphics.VerboseObjectLoading >= 3)
-		Log(hGroup.GetFullName().getData());
+		LogNTr(spdlog::level::info, hGroup.GetFullName().getData());
 
 	if (addFileMonitoring)
 	{
@@ -565,7 +565,7 @@ bool C4Def::Load(C4Group &hGroup,
 		{
 			// wie geth ID?????ßßßß
 			if (!Name[0]) Name = GetFilename(hGroup.GetName());
-			Log(LoadResStr(C4ResStrTableKey::IDS_ERR_INVALIDID, Name.getData()));
+			Log(C4ResStrTableKey::IDS_ERR_INVALIDID, Name.getData());
 
 			fSuccess = false;
 		}
@@ -803,7 +803,7 @@ bool C4Def::ColorizeByMaterial(C4MaterialMap &rMats, uint8_t bGBM)
 	if (ColorByMaterial[0])
 	{
 		int32_t mat = rMats.Get(ColorByMaterial);
-		if (mat == MNone) { LogF("C4Def::ColorizeByMaterial: mat %s not defined", ColorByMaterial); return false; }
+		if (mat == MNone) { LogNTr(spdlog::level::err, "C4Def::ColorizeByMaterial: mat {} not defined", ColorByMaterial); return false; }
 		if (!Graphics.ColorizeByMaterial(mat, rMats, bGBM)) return false;
 	}
 	// success
@@ -922,7 +922,7 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 			fSearchMessage = false;
 		}
 
-	if (fThisSearchMessage) { LogF("%s...", GetFilename(hGroup.GetName())); }
+	if (fThisSearchMessage) { LogNTr("{}...", GetFilename(hGroup.GetName())); }
 
 	auto def = std::make_unique<C4Def>();
 	// Load primary definition
@@ -976,7 +976,7 @@ int32_t C4DefList::Load(C4Group &hGroup, uint32_t dwLoadWhat,
 		SysGroup.Close();
 	}
 
-	if (fThisSearchMessage) { Log(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSLOADED, iResult)); }
+	if (fThisSearchMessage) { Log(C4ResStrTableKey::IDS_PRC_DEFSLOADED, iResult); }
 
 	// progress (could go down one level of recursion...)
 	if (iMinProgress != iMaxProgress) Game.SetInitProgress(float(iMaxProgress));
@@ -1069,11 +1069,11 @@ bool C4DefList::Add(C4Def *pDef, bool fOverload)
 	if (Config.Graphics.VerboseObjectLoading >= 1)
 		if (hasOld)
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD, pDef->GetName(), C4IdText((*old)->id)));
+			Log(C4ResStrTableKey::IDS_PRC_DEFOVERLOAD, pDef->GetName(), C4IdText((*old)->id));
 			if (Config.Graphics.VerboseObjectLoading >= 2)
 			{
-				LogF("      Old def at %s", (*old)->Filename);
-				LogF("     Overload by %s", pDef->Filename);
+				LogNTr("      Old def at {}", (*old)->Filename);
+				LogNTr("     Overload by {}", pDef->Filename);
 			}
 		}
 

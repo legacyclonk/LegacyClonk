@@ -221,6 +221,7 @@ C4Network2::C4Network2()
 bool C4Network2::InitHost(bool fLobby)
 {
 	if (isEnabled()) Clear();
+	Logger = Application.LogSystem.CreateLogger("Network");
 	// initialize everything
 	Status.Set(fLobby ? GS_Lobby : GS_Go, Game.Control.ControlTick);
 	Status.SetCtrlMode(Config.Network.ControlMode);
@@ -232,9 +233,9 @@ bool C4Network2::InitHost(bool fLobby)
 	NetpuncherGameID = {};
 	NetpuncherAddr = Config.Network.PuncherAddress;
 	// initialize client list
-	Clients.Init(&Game.Clients, true);
+	Clients.Init(Logger, &Game.Clients, true);
 	// initialize resource list
-	if (!ResList.Init(Game.Clients.getLocalID(), &NetIO))
+	if (!ResList.Init(Logger, Game.Clients.getLocalID(), &NetIO))
 	{
 		LogFatal("Network: failed to initialize resource list!"); Clear(); return false;
 	}
@@ -276,6 +277,7 @@ bool C4Network2::InitHost(bool fLobby)
 C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bool fObserver)
 {
 	if (isEnabled()) Clear();
+	Logger = Application.LogSystem.CreateLogger("Network");
 	// Get host core
 	const C4ClientCore &HostCore = Ref.Parameters.Clients.getHost()->getCore();
 	// repeat if wrong password
@@ -313,7 +315,7 @@ C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bo
 		// Retry only for wrong password
 		if (!fWrongPassword)
 		{
-			LogSilent("Network: Could not connect!");
+			Logger->error("Could not connect!");
 			return IR_Error;
 		}
 	}
@@ -345,9 +347,9 @@ C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2
 	fAllowJoin = false;
 	// initialize client list
 	Game.Clients.Init(C4ClientIDUnknown);
-	Clients.Init(&Game.Clients, false);
+	Clients.Init(Logger, &Game.Clients, false);
 	// initialize resource list
-	if (!ResList.Init(Game.Clients.getLocalID(), &NetIO))
+	if (!ResList.Init(Logger, Game.Clients.getLocalID(), &NetIO))
 	{
 		LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_INITRESLIST)); Clear(); return IR_Fatal;
 	}
@@ -401,7 +403,7 @@ C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2
 	}
 	// log
 	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_CONNECTHOST, addresses)};
-	Log(message);
+	LogNTr(message);
 	// show box
 	C4GUI::MessageDialog *pDlg = nullptr;
 	if (Game.pGUI && !Console.Active)
@@ -442,7 +444,7 @@ bool C4Network2::DoLobby()
 	// lobby runs
 	fLobbyRunning = true;
 	fAllowJoin = true;
-	Log(LoadResStr(C4ResStrTableKey::IDS_NET_LOBBYWAITING));
+	Log(C4ResStrTableKey::IDS_NET_LOBBYWAITING);
 
 	// client: lobby status reached, message to host
 	if (!isHost())
@@ -508,7 +510,7 @@ bool C4Network2::DoLobby()
 
 	// notify lobby end
 	bool fGameGo = isEnabled();
-	if (fGameGo) Log(LoadResStr(C4ResStrTableKey::IDS_PRC_GAMEGO));
+	if (fGameGo) Log(C4ResStrTableKey::IDS_PRC_GAMEGO);
 
 	// disabled?
 	return fGameGo;
@@ -554,7 +556,7 @@ bool C4Network2::FinalInit()
 	if (fStatusReached && !fStatusAck)
 	{
 		// wait for go acknowledgement
-		Log(LoadResStr(C4ResStrTableKey::IDS_NET_JOINREADY));
+		Log(C4ResStrTableKey::IDS_NET_JOINREADY);
 
 		// any pending keyboard commands should not be routed to cancel the wait dialog - flish the message queue!
 		while (Application.HandleMessage(0, false) == HR_Message) {}
@@ -598,7 +600,7 @@ bool C4Network2::FinalInit()
 		}
 		if (Game.pGUI) delete pDlg;
 		// log
-		Log(LoadResStr(C4ResStrTableKey::IDS_NET_START));
+		Log(C4ResStrTableKey::IDS_NET_START);
 	}
 	// synchronize
 	Game.SyncClearance();
@@ -778,6 +780,7 @@ void C4Network2::Clear()
 	NetpuncherGameID = {};
 	Votes.Clear();
 	// don't clear fPasswordNeeded here, it's needed by InitClient
+	Logger.reset();
 }
 
 bool C4Network2::ToggleAllowJoin()
@@ -885,7 +888,7 @@ void C4Network2::OnDisconn(C4Network2IOConnection *pConn)
 	C4PacketPostMortem PostMortem;
 	if (pConn->CreatePostMortem(&PostMortem))
 	{
-		LogSilentF("Network: Sending %d packets for recovery (%d-%d)", PostMortem.getPacketCount(), pConn->getOutPacketCounter() - PostMortem.getPacketCount(), pConn->getOutPacketCounter() - 1);
+		Logger->info("Sending {} packets for recovery ({}-{})", PostMortem.getPacketCount(), pConn->getOutPacketCounter() - PostMortem.getPacketCount(), pConn->getOutPacketCounter() - 1);
 		// This might fail because of this disconnect
 		// (If it's the only host connection. We're toast then anyway.)
 		if (!Clients.SendMsgToClient(pConn->getClientID(), MkC4NetIOPacket(PID_PostMortem, PostMortem)))
@@ -1049,7 +1052,7 @@ void C4Network2::OnPuncherConnect(const C4NetIO::addr_t addr)
 {
 	// NAT punching is only relevant for IPv4, so convert here to show a proper address.
 	const auto &maybeV4 = addr.AsIPv4();
-	LogSilentF("Adding address from puncher: %s", maybeV4.ToString());
+	Logger->info("Adding address from puncher: {}", maybeV4.ToString());
 	// Add for local client
 	if (const auto &local = Clients.GetLocal())
 	{
@@ -1226,13 +1229,13 @@ bool C4Network2::InitNetIO(bool fNoClientID, bool fHost)
 	// check for port collisions
 	if (Config.Network.PortTCP != 0 && Config.Network.PortTCP == Config.Network.PortRefServer)
 	{
-		LogSilentF("Network: TCP Port collision, setting defaults");
+		Logger->info("TCP Port collision, setting defaults");
 		Config.Network.PortTCP = C4NetStdPortTCP;
 		Config.Network.PortRefServer = C4NetStdPortRefServer;
 	}
 	if (Config.Network.PortUDP != 0 && Config.Network.PortUDP == Config.Network.PortDiscovery)
 	{
-		LogSilentF("Network: UDP Port collision, setting defaults");
+		Logger->info("UDP Port collision, setting defaults");
 		Config.Network.PortUDP = C4NetStdPortUDP;
 		Config.Network.PortDiscovery = C4NetStdPortDiscovery;
 	}
@@ -1240,7 +1243,7 @@ bool C4Network2::InitNetIO(bool fNoClientID, bool fHost)
 	const std::uint16_t iPortDiscovery = fHost ? Config.Network.PortDiscovery : 0;
 	const std::uint16_t iPortRefServer = fHost ? Config.Network.PortRefServer : 0;
 	// init subclass
-	if (!NetIO.Init(Config.Network.PortTCP, Config.Network.PortUDP, iPortDiscovery, iPortRefServer))
+	if (!NetIO.Init(Logger, Config.Network.PortTCP, Config.Network.PortUDP, iPortDiscovery, iPortRefServer))
 		return false;
 	// set core (unset ID if sepecified, has to be set later)
 	C4ClientCore Core = Game.Clients.getLocalCore();
@@ -1349,7 +1352,7 @@ void C4Network2::HandleConn(const C4PacketConn &Pkt, C4Network2IOConnection *pCo
 	else
 	{
 		// log & close
-		LogSilentF("Network: connection by %s (%s) blocked: %s", CCore.getName(), pConn->getPeerAddr().ToString(), szReply);
+		Logger->info("connection by {} ({}) blocked: {}", CCore.getName(), pConn->getPeerAddr().ToString(), szReply);
 		pConn->Close();
 	}
 }
@@ -1437,7 +1440,7 @@ void C4Network2::HandleConnRe(const C4PacketConnRe &Pkt, C4Network2IOConnection 
 		// wrong password?
 		fWrongPassword = Pkt.isPasswordWrong();
 		// show message
-		LogSilentF("Network: connection to %s (%s) refused: %s", pClient->getName(), pConn->getPeerAddr().ToString(), Pkt.getMsg());
+		Logger->info("connection to {} ({}) refused: {}", pClient->getName(), pConn->getPeerAddr().ToString(), Pkt.getMsg());
 		// close connection
 		pConn->Close();
 		return;
@@ -1477,7 +1480,7 @@ void C4Network2::HandleStatus(const C4Network2Status &nStatus)
 	// set
 	Status = nStatus;
 	// log
-	LogSilentF("Network: going into status %s (tick %d)", Status.getStateName(), nStatus.getTargetCtrlTick());
+	Logger->info("going into status {} (tick {})", Status.getStateName(), nStatus.getTargetCtrlTick());
 	// reset flags
 	fStatusReached = fStatusAck = false;
 	// check: reached?
@@ -1550,12 +1553,12 @@ void C4Network2::HandleJoinData(const C4PacketJoinData &rPkt)
 	// init only
 	if (Status.getState() != GS_Init)
 	{
-		LogSilentF("Network: unexpected join data received!"); return;
+		Logger->info("unexpected join data received!"); return;
 	}
 	// get client ID
 	if (rPkt.getClientID() == C4ClientIDUnknown)
 	{
-		LogSilentF("Network: host didn't set client ID!"); Clear(); return;
+		Logger->info("host didn't set client ID!"); Clear(); return;
 	}
 	// set local ID
 	ResList.SetLocalID(rPkt.getClientID());
@@ -1564,7 +1567,7 @@ void C4Network2::HandleJoinData(const C4PacketJoinData &rPkt)
 	HandleStatus(rPkt.getStatus());
 	if (Status.getState() != GS_Lobby && Status.getState() != GS_Pause && Status.getState() != GS_Go)
 	{
-		LogSilentF("Network: join data has bad game status: %s", Status.getStateName()); Clear(); return;
+		Logger->info("join data has bad game status: {}", Status.getStateName()); Clear(); return;
 	}
 	// copy parameters
 	Game.Parameters = rPkt.Parameters;
@@ -1572,7 +1575,7 @@ void C4Network2::HandleJoinData(const C4PacketJoinData &rPkt)
 	C4Client *pLocalClient = Game.Clients.getClientByID(rPkt.getClientID());
 	if (!pLocalClient)
 	{
-		LogSilentF("Network: Could not find local client in join data!"); Clear(); return;
+		Logger->info("Could not find local client in join data!"); Clear(); return;
 	}
 	// save back dynamic data
 	ResDynamic = rPkt.getDynamicCore();
@@ -1619,12 +1622,12 @@ void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
 
 		if (!client->isHost())
 		{
-			LogF("Network: Got ready check request from non-host client %s!", client->getName());
+			Logger->error("Got ready check request from non-host client {}!", client->getName());
 			return;
 		}
 		else if (isHost())
 		{
-			LogF("Network: Got ready check request from client %s, but is host!", client->getName());
+			Logger->error("Got ready check request from client {}, but is host!", client->getName());
 			return;
 		}
 
@@ -1682,7 +1685,14 @@ void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
 
 	if (!client->isLocal())
 	{
-		Log(LoadResStrChoice(ready, C4ResStrTableKey::IDS_NET_CLIENT_READY, C4ResStrTableKey::IDS_NET_CLIENT_UNREADY, client->getName()));
+		if (ready)
+		{
+			Log(C4ResStrTableKey::IDS_NET_CLIENT_READY, client->getName());
+		}
+		else
+		{
+			Log(C4ResStrTableKey::IDS_NET_CLIENT_UNREADY, client->getName());
+		}
 	}
 
 	if (ready != client->isLobbyReady())
@@ -1701,7 +1711,7 @@ void C4Network2::HandleReadyCheck(const C4PacketReadyCheck &packet)
 void C4Network2::OnConnect(C4Network2Client *pClient, C4Network2IOConnection *pConn, const char *szMsg, bool fFirstConnection)
 {
 	// log
-	LogSilentF("Network: %s %s connected (%s/%s) (%s)", (pClient->isHost() ? "host" : "client"),
+	Logger->info("{} {} connected ({}/{}) ({})", (pClient->isHost() ? "host" : "client"),
 		pClient->getName(), pConn->getPeerAddr().ToString(),
 		NetIO.getNetIOName(pConn->getNetClass()), (szMsg ? szMsg : ""));
 
@@ -1711,7 +1721,7 @@ void C4Network2::OnConnect(C4Network2Client *pClient, C4Network2IOConnection *pC
 
 void C4Network2::OnConnectFail(C4Network2IOConnection *pConn)
 {
-	LogSilentF("Network: %s connection to %s failed!", NetIO.getNetIOName(pConn->getNetClass()),
+	Logger->info("{} connection to {} failed", NetIO.getNetIOName(pConn->getNetClass()),
 		pConn->getPeerAddr().ToString());
 
 	// maybe client connection failure
@@ -1724,7 +1734,7 @@ void C4Network2::OnConnectFail(C4Network2IOConnection *pConn)
 
 void C4Network2::OnDisconnect(C4Network2Client *pClient, C4Network2IOConnection *pConn)
 {
-	LogSilentF("Network: %s connection to %s (%s) lost!", NetIO.getNetIOName(pConn->getNetClass()),
+	Logger->info("{} connection to {} ({}) lost", NetIO.getNetIOName(pConn->getNetClass()),
 		pClient->getName(), pConn->getPeerAddr().ToString());
 
 	// connection lost?
@@ -1759,7 +1769,7 @@ void C4Network2::OnClientDisconnect(C4Network2Client *pClient)
 	{
 		bool fHadPlayers = !!Game.PlayerInfos.GetPrimaryInfoByClientID(pClient->getID());
 		// log
-		LogSilent(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTDISCONNECTED, pClient->getName())); // silent, because a duplicate message with disconnect reason will follow
+		Logger->info(LoadResStr(C4ResStrTableKey::IDS_NET_CLIENTDISCONNECTED, pClient->getName())); // silent, because a duplicate message with disconnect reason will follow
 		// remove the client
 		Game.Clients.CtrlRemove(pClient->getClient(), LoadResStr(C4ResStrTableKey::IDS_MSG_DISCONNECTED));
 		// stop lobby countdown if players where removed
@@ -1773,11 +1783,11 @@ void C4Network2::OnClientDisconnect(C4Network2Client *pClient)
 			if (Status.getState() == GS_Go || Status.getState() == GS_Pause)
 				ChangeGameStatus(Status.getState(), Game.Control.ControlTick);
 	}
-	// host disconnected? Clear up
+	// host disconnected? Clear up#
 	if (!isHost() && pClient->isHost())
 	{
 		const std::string msg{LoadResStr(C4ResStrTableKey::IDS_NET_HOSTDISCONNECTED, pClient->getName())};
-		Log(msg);
+		LogNTr(msg);
 		// host connection lost: clear up everything
 		Game.RoundResults.EvaluateNetwork(C4RoundResults::NR_NetError, msg.c_str());
 		Clear();
@@ -1842,7 +1852,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 		else if (!pRes->isLoading())
 		{
 			// log
-			if (fLog) Log(LoadResStr(C4ResStrTableKey::IDS_NET_RECEIVED, szResName, pRes->getCore().getFileName()));
+			if (fLog) Log(C4ResStrTableKey::IDS_NET_RECEIVED, szResName, pRes->getCore().getFileName());
 			// return
 			delete pDlg;
 			return pRes;
@@ -1868,7 +1878,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 		// log
 		if (!fLog)
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_NET_WAITFORRES, szResName));
+			Log(C4ResStrTableKey::IDS_NET_WAITFORRES, szResName);
 			fLog = true;
 		}
 		// show progress dialog
@@ -1915,21 +1925,21 @@ bool C4Network2::CreateDynamic(bool fInit)
 	// remove all existing dynamic data
 	RemoveDynamic();
 	// log
-	Log(LoadResStr(C4ResStrTableKey::IDS_NET_SAVING));
+	Log(C4ResStrTableKey::IDS_NET_SAVING);
 	// compose file name
 	char szDynamicBase[_MAX_PATH + 1], szDynamicFilename[_MAX_PATH + 1];
 	ssprintf(szDynamicBase, Config.AtNetworkPath("Dyn%s"), GetFilename(Game.ScenarioFilename), _MAX_PATH);
 	if (!ResList.FindTempResFileName(szDynamicBase, szDynamicFilename))
-		Log(LoadResStr(C4ResStrTableKey::IDS_NET_SAVE_ERR_CREATEDYNFILE));
+		Log(C4ResStrTableKey::IDS_NET_SAVE_ERR_CREATEDYNFILE);
 	// save dynamic data
 	C4GameSaveNetwork SaveGame(fInit);
 	if (!SaveGame.Save(szDynamicFilename) || !SaveGame.Close())
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_NET_SAVE_ERR_SAVEDYNFILE)); return false;
+		Log(C4ResStrTableKey::IDS_NET_SAVE_ERR_SAVEDYNFILE); return false;
 	}
 	// add ressource
 	C4Network2Res::Ref pRes = ResList.AddByFile(szDynamicFilename, true, NRT_Dynamic);
-	if (!pRes) { Log(LoadResStr(C4ResStrTableKey::IDS_NET_SAVE_ERR_ADDDYNDATARES)); return false; }
+	if (!pRes) { Log(C4ResStrTableKey::IDS_NET_SAVE_ERR_ADDDYNDATARES); return false; }
 	// save
 	ResDynamic = pRes->getCore();
 	iDynamicTick = Game.Control.getNextControlTick();
@@ -1969,7 +1979,7 @@ bool C4Network2::ChangeGameStatus(C4NetGameState enState, int32_t iTargetCtrlTic
 	// control mode change?
 	if (iCtrlMode >= 0) Status.SetCtrlMode(iCtrlMode);
 	// log
-	LogSilentF("Network: going into status %s (tick %d)", Status.getStateName(), iTargetCtrlTick);
+	Logger->info("going into status {} (tick {})", Status.getStateName(), iTargetCtrlTick);
 	// set flags
 	Clients.ResetReady();
 	fStatusReached = fStatusAck = false;
@@ -2058,7 +2068,7 @@ void C4Network2::OnStatusReached()
 void C4Network2::OnStatusAck()
 {
 	// log it
-	LogSilentF("Network: status %s (tick %d) reached", Status.getStateName(), Status.getTargetCtrlTick());
+	Logger->info("status {} (tick {}) reached", Status.getStateName(), Status.getTargetCtrlTick());
 	// pause?
 	if (Status.getState() == GS_Pause)
 	{
@@ -2293,7 +2303,7 @@ bool C4Network2::LeagueStart(bool *pCancel)
 
 	// Let's wait for response
 	const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_LEAGUE_REGGAME, pLeagueClient->getServerName())};
-	Log(message);
+	LogNTr(message);
 	// Set up a dialog
 	C4GUI::MessageDialog *pDlg = nullptr;
 	if (Game.pGUI && !Console.Active)
@@ -2335,7 +2345,7 @@ bool C4Network2::LeagueStart(bool *pCancel)
 			LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_EMPTYREPLY);
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_REGGAME, pError)};
 		// Log message
-		Log(message);
+		LogNTr(message);
 		// Show message
 		if (Game.pGUI && !Console.Active)
 		{
@@ -2357,7 +2367,7 @@ bool C4Network2::LeagueStart(bool *pCancel)
 	{
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEGAMESIGNUP, pLeagueClient->getServerName(), LeagueServerMessage.getData())};
 		// Log message
-		Log(message);
+		LogNTr(message);
 		// Show message
 		if (Game.pGUI && !Console.Active)
 		{
@@ -2421,7 +2431,7 @@ bool C4Network2::LeagueUpdate()
 	if (!pLeagueClient->Update(Ref))
 	{
 		// Log
-		Log(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_UPDATEGAME, pLeagueClient->GetError()));
+		Log(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_UPDATEGAME, pLeagueClient->GetError());
 		return false;
 	}
 
@@ -2451,7 +2461,7 @@ bool C4Network2::LeagueUpdateProcessReply()
 			LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_EMPTYREPLY);
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_UPDATEGAME, pError)};
 		// Show message - no dialog, because it's not really fatal and might happen in the running game
-		Log(message);
+		LogNTr(message);
 		return false;
 	}
 	// evaluate reply: Transfer data to players
@@ -2501,7 +2511,7 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 		{
 			// Log message
 			resultMessage = LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_FINISHGAME, pLeagueClient->GetError());
-			Log(resultMessage);
+			LogNTr(resultMessage);
 			// Show message, allow retry
 			if (!Game.pGUI || Console.Active) break;
 			bool fRetry = Game.pGUI->ShowMessageModal(resultMessage.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE),
@@ -2511,7 +2521,7 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 		}
 		// Let's wait for response
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_LEAGUE_SENDRESULT, pLeagueClient->getServerName())};
-		Log(message);
+		LogNTr(message);
 		// Wait for response
 		while (pLeagueClient->isBusy())
 		{
@@ -2546,7 +2556,7 @@ bool C4Network2::LeagueEnd(const char *szRecordName, const uint8_t *pRecordSHA)
 	}
 
 	// Show message
-	Log(resultMessage);
+	LogNTr(resultMessage);
 
 	// Take round results
 	Game.RoundResults.EvaluateLeague(resultMessage.c_str(), !fIsError, RoundResults);
@@ -2613,7 +2623,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 
 		// Wait for a response
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_TRYLEAGUESIGNUP, pInfo->GetName(), pLeagueClient->getServerName())};
-		Log(message);
+		LogNTr(message);
 		// Set up a dialog
 		C4GUI::MessageDialog *pDlg = nullptr;
 		if (Game.pGUI && !Console.Active)
@@ -2685,7 +2695,7 @@ bool C4Network2::LeaguePlrAuth(C4PlayerInfo *pInfo)
 			// Error with first-time registration or manual password entry
 			if (!fUnregistered || fRegister)
 			{
-				Log(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESIGNUPERROR, Message.getData()));
+				Log(C4ResStrTableKey::IDS_MSG_LEAGUESIGNUPERROR, Message.getData());
 				Game.pGUI->ShowMessageModal(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUESERVERMSG, Message.getData()).c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LEAGUESIGNUPFAILED), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Error);
 				Config.Network.LeaguePassword.Clear();
 				// after a league server error message, always fall-through to try again
@@ -2719,7 +2729,7 @@ bool C4Network2::LeaguePlrAuthCheck(C4PlayerInfo *pInfo)
 
 	// Log
 	const std::string message{LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEJOINING, pInfo->GetName())};
-	Log(message);
+	LogNTr(message);
 
 	// Wait for response
 	while (pLeagueClient->isBusy())
@@ -2760,7 +2770,7 @@ void C4Network2::LeagueNotifyDisconnect(int32_t iClientID, C4LeagueDisconnectRea
 	// Make sure league client is avilable
 	LeagueWaitNotBusy();
 	// report the disconnect!
-	Log(LoadResStr(C4ResStrTableKey::IDS_LEAGUE_LEAGUEREPORTINGUNEXPECTED, static_cast<int>(eReason)));
+	Log(C4ResStrTableKey::IDS_LEAGUE_LEAGUEREPORTINGUNEXPECTED, static_cast<int>(eReason));
 	pLeagueClient->ReportDisconnect(*pInfos, eReason);
 	// wait for the reply
 	LeagueWaitNotBusy();
@@ -2768,9 +2778,9 @@ void C4Network2::LeagueNotifyDisconnect(int32_t iClientID, C4LeagueDisconnectRea
 	const char *szMsg;
 	StdStrBuf sMessage;
 	if (pLeagueClient->GetReportDisconnectReply(&sMessage))
-		Log(LoadResStr(C4ResStrTableKey::IDS_MSG_LEAGUEUNEXPECTEDDISCONNEC, sMessage.getData()));
+		Log(C4ResStrTableKey::IDS_MSG_LEAGUEUNEXPECTEDDISCONNEC, sMessage.getData());
 	else
-		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_LEAGUEERRORREPORTINGUNEXP, sMessage.getData()));
+		Log(C4ResStrTableKey::IDS_ERR_LEAGUEERRORREPORTINGUNEXP, sMessage.getData());
 }
 
 void C4Network2::LeagueWaitNotBusy()
@@ -2778,7 +2788,7 @@ void C4Network2::LeagueWaitNotBusy()
 	// league client busy?
 	if (!pLeagueClient || !pLeagueClient->isBusy()) return;
 	// wait for it
-	Log(LoadResStr(C4ResStrTableKey::IDS_LEAGUE_WAITINGFORLASTLEAGUESERVE));
+	Log(C4ResStrTableKey::IDS_LEAGUE_WAITINGFORLASTLEAGUESERVE);
 	while (pLeagueClient->isBusy())
 		if (!pLeagueClient->Execute(100))
 			break;
@@ -2802,7 +2812,7 @@ void C4Network2::LeagueShowError(const char *szMsg)
 	}
 	else
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_LGA_SERVERFAILURE, szMsg));
+		Log(C4ResStrTableKey::IDS_LGA_SERVERFAILURE, szMsg);
 	}
 }
 
@@ -2814,7 +2824,7 @@ void C4Network2::Vote(C4ControlVoteType eType, bool fApprove, int32_t iData)
 		// Too fast?
 		if (time(nullptr) < static_cast<time_t>(iLastOwnVoting + C4NetMinVotingInterval))
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_TEXT_YOUCANONLYSTARTONEVOTINGE));
+			Log(C4ResStrTableKey::IDS_TEXT_YOUCANONLYSTARTONEVOTINGE);
 			if ((eType == VT_Kick && iData == Game.Clients.getLocalID()) || eType == VT_Cancel)
 				OpenSurrenderDialog(eType, iData);
 			return;

@@ -482,7 +482,7 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 	{
 		// Configuration file syntax error?
 #ifdef C4ENGINE
-		LogF("Error loading configuration: %s"/*restbl not yet loaded*/, e.what());
+		spdlog::critical("Error loading configuration: {}", e.what());
 #endif
 		return false;
 	}
@@ -523,13 +523,13 @@ bool C4Config::Load(bool forceWorkingDirectory, const char *szConfigFile)
 	}
 	if (Config.Network.PortTCP > 0 && Config.Network.PortTCP == Config.Network.PortRefServer)
 	{
-		Log("Warning: Network TCP port and reference server port both set to same value - increasing reference server port!");
+		spdlog::warn("Network TCP port and reference server port both set to same value - increasing reference server port!");
 		++Config.Network.PortRefServer;
 		if (Config.Network.PortRefServer >= 65536) Config.Network.PortRefServer = C4NetStdPortRefServer;
 	}
 	if (Config.Network.PortUDP > 0 && Config.Network.PortUDP == Config.Network.PortDiscovery)
 	{
-		Log("Warning: Network UDP port and LAN game discovery port both set to same value - increasing discovery port!");
+		spdlog::warn("Network UDP port and LAN game discovery port both set to same value - increasing discovery port!");
 		++Config.Network.PortDiscovery;
 		if (Config.Network.PortDiscovery >= 65536) Config.Network.PortDiscovery = C4NetStdPortDiscovery;
 	}
@@ -577,7 +577,7 @@ bool C4Config::Save()
 	catch ([[maybe_unused]] const StdCompiler::Exception &e)
 	{
 #ifdef C4ENGINE
-		Log(LoadResStr(C4ResStrTableKey::IDS_ERR_CONFSAVE, e.what()));
+		Log(C4ResStrTableKey::IDS_ERR_CONFSAVE, e.what());
 #endif
 		return false;
 	}

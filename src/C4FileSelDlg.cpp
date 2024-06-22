@@ -607,7 +607,7 @@ bool C4PortraitSelDlg::SelectPortrait(C4GUI::Screen *pOnScreen, std::string &sel
 	// copy some default potraits to UserPath (but only try this once, no real error handling)
 	if (!Config.General.UserPortraitsWritten)
 	{
-		Log("Copying default portraits to user path...");
+		LogNTr(spdlog::level::trace, "Copying default portraits to user path...");
 		C4Group hGroup;
 		if (hGroup.Open(Config.AtExePath(C4CFN_Graphics)))
 		{

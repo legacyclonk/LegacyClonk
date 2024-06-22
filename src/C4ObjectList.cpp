@@ -530,9 +530,9 @@ void C4ObjectList::CompileFunc(StdCompiler *pComp, bool fSaveRefs, bool fSkipPla
 				{
 					// Failsafe object loading: If an error occurs during object loading, just skip that object and load the next one
 					if (e.Pos.empty())
-						LogF("ERROR: Object loading: %s", e.what());
+						LogNTr(spdlog::level::err, "Object loading: {}", e.what());
 					else
-						LogF("ERROR: Object loading(%s): %s", e.Pos, e.what());
+						LogNTr(spdlog::level::err, "Object loading({}): {}", e.Pos, e.what());
 				}
 			}
 		}
@@ -923,9 +923,9 @@ bool C4ObjectList::CheckSort(C4ObjectList *pList)
 	while (cLnk)
 		if (!cLnk2)
 		{
-			Log("CheckSort failure");
-			LogSilent(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(this), "SectorList")));
-			LogSilent(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(pList), "MainList")));
+			LogNTr(spdlog::level::err, "CheckSort failure");
+			spdlog::error(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(this), "SectorList")));
+			spdlog::error(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(C4ObjectListDumpHelper(pList), "MainList")));
 			return false;
 		}
 		else

@@ -99,7 +99,7 @@ void C4Application::DoInit()
 		else
 		{
 			// default config corrupted: Restore default
-			Log("Warning: Configuration corrupted - restoring default!\n");
+			spdlog::warn("Configuration corrupted - restoring default!");
 			Config.Default();
 			Config.Save();
 			Config.Load();
@@ -135,7 +135,7 @@ void C4Application::DoInit()
 	if (!Languages.LoadLanguage(Config.General.LanguageEx))
 		// No language table was loaded - bad luck...
 		if (!ResStrTable)
-			Log("WARNING: No language string table loaded!");
+			spdlog::warn("No language string table loaded!");
 
 	// Parse command line
 	Game.ParseCommandLine(GetCommandLine());
@@ -197,8 +197,8 @@ void C4Application::DoInit()
 	}
 
 	// Engine header message
-	Log(C4ENGINEINFOLONG);
-	LogF("Version: %s %s", C4VERSION, C4_OS);
+	spdlog::info(C4ENGINEINFOLONG);
+	spdlog::info("Version: " C4VERSION " " C4_OS);
 
 	// Initialize OpenGL
 	DDraw = DDrawInit(this, Config.Graphics.Engine);
@@ -250,8 +250,8 @@ bool C4Application::PreInit()
 	}
 	catch (const std::runtime_error &e)
 	{
-		Log(e.what());
-		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOAUDIO));
+		spdlog::error(e.what());
+		Log(C4ResStrTableKey::IDS_PRC_NOAUDIO);
 	}
 #endif
 
@@ -273,7 +273,7 @@ bool C4Application::PreInit()
 	}
 	catch (const std::runtime_error &e)
 	{
-		LogSilentF("Failed to initialize toast system: %s", e.what());
+		spdlog::warn("Failed to initialize toast system: {}", e.what());
 	}
 
 	Game.SetInitProgress(fDoUseStartupDialog ? 30.0f : 3.0f);
@@ -299,7 +299,7 @@ void C4Application::Clear()
 	sec1TimerCallbacks.clear();
 	// Log
 	if (ResStrTable) // Avoid (double and undefined) message on (second?) shutdown...
-		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_DEINIT));
+		Log(C4ResStrTableKey::IDS_PRC_DEINIT);
 	// Clear external language packs and string table
 	Languages.Clear();
 	Languages.ClearLanguage();
@@ -618,9 +618,9 @@ void C4Application::OnCommand(const char *szCmd)
 				// timeout given?
 				int32_t iTimeout = Config.Lobby.CountdownTime;
 				if (!Game.Network.isHost())
-					Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_HOSTONLY));
+					Log(C4ResStrTableKey::IDS_MSG_CMD_HOSTONLY);
 				else if (szPar && (!sscanf(szPar, "%d", &iTimeout) || iTimeout < 0))
-					Log(LoadResStr(C4ResStrTableKey::IDS_MSG_CMD_START_USAGE));
+					Log(C4ResStrTableKey::IDS_MSG_CMD_START_USAGE);
 				else
 					// start new countdown (aborts previous if necessary)
 					Game.Network.StartLobbyCountdown(iTimeout);

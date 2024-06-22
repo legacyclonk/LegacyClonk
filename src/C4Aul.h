@@ -416,8 +416,11 @@ private:
 
 	// items
 	std::vector<Entry> Times;
+	std::shared_ptr<spdlog::logger> logger;
 
 public:
+	C4AulProfiler(std::shared_ptr<spdlog::logger> logger) : logger{std::move(logger)} {}
+
 	void CollectEntry(C4AulScriptFunc *pFunc, time_t tProfileTime);
 	void Show();
 

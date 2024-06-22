@@ -235,7 +235,7 @@ int32_t C4TextureMap::Init()
 		if (!Entry[i].isNull())
 			if (!Entry[i].Init())
 			{
-				LogF("Error in TextureMap initialization at entry %d", static_cast<int>(i));
+				LogNTr(spdlog::level::err, "Error in TextureMap initialization at entry {}", static_cast<int>(i));
 				Entry[i].Clear();
 				iRemoved++;
 			}

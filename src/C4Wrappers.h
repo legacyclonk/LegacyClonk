@@ -209,9 +209,9 @@ bool CompileFromBuf_LogWarn(StructT &&TargetStruct, const typename CompT::InT &S
 	catch (const StdCompiler::Exception &e)
 	{
 		if (e.Pos.empty())
-			LogF("ERROR: %s (in %s)", e.what(), szName);
+			spdlog::error("{} (in {})", e.what(), szName);
 		else
-			LogF("ERROR: %s (in %s, %s)", e.what(), e.Pos, szName);
+			spdlog::error("{} (in {}, {})", e.what(), e.Pos, szName);
 		return false;
 	}
 }
@@ -235,7 +235,7 @@ bool DecompileToBuf_Log(StructT &&TargetStruct, typename CompT::OutT *pOut, cons
 	}
 	catch (const StdCompiler::Exception &e)
 	{
-		LogF("ERROR: %s (in %s)", e.what(), szName);
+		spdlog::error("{} (in {})", e.what(), szName);
 		return false;
 	}
 }
