@@ -310,7 +310,7 @@ bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &
 			(LPTSTR)&lpMsgBuf,
 			0,
 			nullptr);
-		LogF("Error creating dialog window: %s", lpMsgBuf);
+		spdlog::critical("Error creating dialog window: {}", lpMsgBuf);
 		// Free the buffer.
 		LocalFree(lpMsgBuf);
 		return false;

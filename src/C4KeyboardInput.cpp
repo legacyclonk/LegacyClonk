@@ -781,7 +781,7 @@ bool C4KeyboardInput::LoadCustomConfig()
 	if (!GrpExtra.LoadEntryString(C4CFN_KeyConfig, sFileContentsString)) return false;
 	if (!CompileFromBuf_LogWarn<StdCompilerINIRead>(*this, sFileContentsString, "Custom keys from" C4CFN_Extra DirSep C4CFN_KeyConfig))
 		return false;
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_LOADEDKEYCONF, C4CFN_Extra DirSep C4CFN_KeyConfig));
+	Log(C4ResStrTableKey::IDS_PRC_LOADEDKEYCONF, C4CFN_Extra DirSep C4CFN_KeyConfig);
 	return true;
 }
 

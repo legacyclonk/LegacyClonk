@@ -2382,7 +2382,7 @@ static bool FnGainMissionAccess(C4AulContext *cthr, C4String *szPassword)
 
 static void FnLog(C4AulContext *cthr, C4String *szMessage, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7, C4Value iPar8)
 {
-	Log(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8));
+	LogNTr(FnStringFormat(cthr, FnStringPar(szMessage), &iPar0, &iPar1, &iPar2, &iPar3, &iPar4, &iPar5, &iPar6, &iPar7, &iPar8));
 }
 
 static void FnDebugLog(C4AulContext *cthr, C4String *szMessage, C4Value iPar0, C4Value iPar1, C4Value iPar2, C4Value iPar3, C4Value iPar4, C4Value iPar5, C4Value iPar6, C4Value iPar7, C4Value iPar8)
@@ -3926,7 +3926,7 @@ static bool FnGetMissionAccess(C4AulContext *cthr, C4String *strMissionAccess)
 
 	// non-sync mode: warn
 	if (Game.Control.SyncMode())
-		Log("Warning: using GetMissionAccess may cause desyncs when playing records!");
+		LogNTr(spdlog::level::warn, "using GetMissionAccess may cause desyncs when playing records!");
 
 	return SIsModule(Config.General.MissionAccess, FnStringPar(strMissionAccess));
 }
@@ -4379,7 +4379,7 @@ static bool FnSetGraphics(C4AulContext *pCtx, C4String *pGfxName, C4Object *pObj
 	if (iOverlayID)
 	{
 		// any overlays must be positive for now
-		if (iOverlayID < 0) { Log("SetGraphics: Background overlays not implemented!"); return false; }
+		if (iOverlayID < 0) { LogNTr(spdlog::level::err, "SetGraphics: Background overlays not implemented!"); return false; }
 		// deleting overlay?
 		C4DefGraphics *pGrp;
 		if (iOverlayMode == C4GraphicsOverlay::MODE_Object)
@@ -4515,7 +4515,7 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 	// safety
 	if (!funcname || !funcname->Data.getData())
 	{
-		Log("No func name");
+		LogNTr(spdlog::level::err, "No func name");
 		return false;
 	}
 	// determine script context
@@ -4527,14 +4527,14 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 	else if (idDef)
 	{
 		C4Def *pDef = C4Id2Def(idDef);
-		if (!pDef) { Log("Invalid or unloaded def"); return false; }
+		if (!pDef) { LogNTr(spdlog::level::err, "Invalid or unloaded def"); return false; }
 		pCheckScript = &pDef->Script;
 	}
 	else
 	{
 		if (!cthr || !cthr->Caller || !cthr->Caller->Func || !cthr->Caller->Func->Owner)
 		{
-			Log("No valid script context");
+			LogNTr(spdlog::level::err, "No valid script context");
 			return false;
 		}
 		pCheckScript = cthr->Caller->Func->Owner;
@@ -4543,7 +4543,7 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 	C4AulFunc *pFunc = pCheckScript->GetFuncRecursive(funcname->Data.getData());
 	if (!pFunc)
 	{
-		LogF("Func %s not found", funcname->Data.getData());
+		LogNTr(spdlog::level::err, "Func {} not found", funcname->Data.getData());
 	}
 	else
 	{
@@ -4553,16 +4553,16 @@ static bool FnLocateFunc(C4AulContext *cthr, C4String *funcname, C4Object *pObj,
 			C4AulScriptFunc *pSFunc = pFunc->SFunc();
 			if (!pSFunc)
 			{
-				LogF("%s%s (engine)", szPrefix, pFunc->Name);
+				LogNTr("{}{} (engine)", szPrefix, pFunc->Name);
 			}
 			else if (!pSFunc->pOrgScript)
 			{
-				LogF("%s%s (no owner)", szPrefix, pSFunc->Name);
+				LogNTr("{}{} (no owner)", szPrefix, pSFunc->Name);
 			}
 			else
 			{
 				int32_t iLine = SGetLine(pSFunc->pOrgScript->GetScript(), pSFunc->Script);
-				LogF("%s%s (%s:%d)", szPrefix, pFunc->Name, pSFunc->pOrgScript->ScriptName.c_str(), static_cast<int>(iLine));
+				LogNTr("{}{} ({}:{})", szPrefix, pFunc->Name, pSFunc->pOrgScript->ScriptName.c_str(), static_cast<int>(iLine));
 			}
 			// next func in overload chain
 			pFunc = pSFunc ? pSFunc->OwnerOverloaded : nullptr;

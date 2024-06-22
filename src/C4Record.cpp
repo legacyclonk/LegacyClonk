@@ -147,7 +147,7 @@ bool C4Record::Start(bool fInitial)
 	// log
 	std::string log{LoadResStr(C4ResStrTableKey::IDS_PRC_RECORDINGTO, sFilename.getData())};
 	if (Game.FrameCounter) log += std::format(" (Frame {})", Game.FrameCounter);
-	Log(log);
+	LogNTr(log);
 
 	// save game - this also saves player info list
 	C4GameSaveRecord saveRec(fInitial, Index, Game.Parameters.isLeague());
@@ -378,7 +378,12 @@ bool C4Record::StreamFile(const char *szLocalFilename, const char *szAddAs)
 }
 
 // set defaults
-C4Playback::C4Playback() : Finished(true), fLoadSequential(false) {}
+C4Playback::C4Playback(std::shared_ptr<spdlog::logger> logger) : logger{std::move(logger)}, Finished(true),fLoadSequential(false)
+{
+#ifdef DEBUGREC
+	loggerDebugRec = logger->clone("DbgRec");
+#endif
+}
 
 C4Playback::~C4Playback()
 {
@@ -461,14 +466,14 @@ bool C4Playback::Open(C4Group &rGrp)
 		LogFatal("DbgRec: Creation of external file \"" DEBUGREC_EXTFILE "\" failed!");
 		return false;
 	}
-	else Log("DbgRec: Writing to \"" DEBUGREC_EXTFILE "\"...");
+	else loggerDebugRec->info("Writing to \"" DEBUGREC_EXTFILE "\"...");
 #else
 	if (!DbgRecFile.Open(DEBUGREC_EXTFILE))
 	{
 		LogFatal("DbgRec: Opening of external file \"" DEBUGREC_EXTFILE "\" failed!");
 		return false;
 	}
-	else Log("DbgRec: Checking against \"" DEBUGREC_EXTFILE "\"...");
+	else loggerDebugRec->info("Checking against \"" DEBUGREC_EXTFILE "\"...");
 #endif
 #endif
 	// ok
@@ -542,13 +547,13 @@ bool C4Playback::ReadBinary(const StdBuf &Buf)
 				iFrame -= pHead->iFrm;
 				break;
 			}
-			LogF("Record: Binary unpack error: %s", e.what());
+			logger->error("Binary unpack error: {}", e.what());
 			c.Delete();
 			return false;
 		}
 		catch (const StdCompiler::Exception &e)
 		{
-			LogF("Record: Binary unpack error: %s", e.what());
+			logger->error("Binary unpack error: {}", e.what());
 			c.Delete();
 			return false;
 		}
@@ -632,7 +637,7 @@ StdBuf C4Playback::ReWriteBinary()
 	{
 		// Check frame difference
 		if (i->Frame - iFrame < 0 || i->Frame - iFrame > 0xff)
-			LogF("ERROR: Invalid frame difference between chunks (0-255 allowed)! Data will be invalid!");
+			logger->error("Invalid frame difference between chunks (0-255 allowed)! Data will be invalid!");
 		// Pack data
 		StdBuf Chunk;
 		try
@@ -656,7 +661,7 @@ StdBuf C4Playback::ReWriteBinary()
 		}
 		catch (const StdCompiler::Exception &e)
 		{
-			LogF("Record: Binary unpack error: %s", e.what());
+			logger->error("Binary unpack error: {}", e.what());
 			return StdBuf();
 		}
 		// Grow output
@@ -728,7 +733,7 @@ void C4Playback::Strip()
 				case CID_Script:
 				case CID_EMMoveObj:
 				case CID_EMDrawTool:
-					if (fCheckCheat) Log(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*pPkt, std::format("Frame {}", i->Frame).c_str())));
+					if (fCheckCheat) LogNTr(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*pPkt, std::format("Frame {}", i->Frame).c_str())));
 					break;
 				// Strip sync check
 				case CID_SyncCheck:
@@ -761,7 +766,7 @@ void C4Playback::Strip()
 			case CID_Script:
 			case CID_EMMoveObj:
 			case CID_EMDrawTool:
-				if (fCheckCheat) Log(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*i->pPkt, std::format("Frame {}", i->Frame).c_str())));
+				if (fCheckCheat) LogNTr(DecompileToBuf<StdCompilerINIWrite>(mkNamingAdapt(*i->pPkt, std::format("Frame {}", i->Frame).c_str())));
 				break;
 			// Strip some stuff
 			case CID_SyncCheck:
@@ -1003,14 +1008,14 @@ void C4Playback::Check(C4RecordChunkType eType, const uint8_t *pData, int iSize)
 		// record end?
 		if (currChunk == chunks.end() || currChunk->Type == RCT_End || Finished)
 		{
-			Log("DebugRec end: All in sync!");
+			loggerDebugRec->info("end: All in sync!");
 			++DoNoDebugRec;
 			return;
 		}
 		// unpack directly from head
 		if (currChunk->Type != eType)
 		{
-			DebugRecError(std::format("Playback type {:x}, this type {:x}", std::to_underlying(currChunk->Type), std::to_underlying(eType)).c_str());
+			DebugRecError(std::format("Playback type {:x}, this type {:x}", currChunk->Type, std::to_underlying(eType)));
 			return;
 		}
 		PktInReplay = *currChunk->pDbg;
@@ -1020,19 +1025,19 @@ void C4Playback::Check(C4RecordChunkType eType, const uint8_t *pData, int iSize)
 	// record end?
 	if (PktInReplay.getType() == RCT_End)
 	{
-		Log("DebugRec end: All in sync (2)!");
+		loggerDebugRec->info("end: All in sync (2)!");
 		++DoNoDebugRec;
 		return;
 	}
 	// replay packet is unpacked to PktInReplay now; check it
 	if (PktInReplay.getType() != eType)
 	{
-		DebugRecError(std::format("Type {} != {}", GetRecordChunkTypeName(PktInReplay.getType()), GetRecordChunkTypeName(eType)).c_str());
+		DebugRecError(std::format("Type {} != {}", GetRecordChunkTypeName(PktInReplay.getType()), GetRecordChunkTypeName(eType)));
 		return;
 	}
 	if (PktInReplay.getSize() != iSize)
 	{
-		DebugRecError(std::format("Size {} != {}", PktInReplay.getSize(), iSize).c_str());
+		DebugRecError(std::format("Size {} != {}", PktInReplay.getSize(), iSize));
 	}
 	// check packet data
 	if (memcmp(PktInReplay.getData(), pData, iSize))
@@ -1044,16 +1049,16 @@ void C4Playback::Check(C4RecordChunkType eType, const uint8_t *pData, int iSize)
 						GetDbgRecPktData(eType, StdBuf{PktInReplay.getData(), PktInReplay.getSize(), false}),
 						GetDbgRecPktData(eType, StdBuf{pData, static_cast<std::size_t>(iSize), false})
 						)};
-		DebugRecError(error.c_str());
+		DebugRecError(error);
 	}
 	// packet is fine, jump over it
 	if (fHasPacketFromHead)
 		NextChunk();
 }
 
-void C4Playback::DebugRecError(const char *szError)
+void C4Playback::DebugRecError(const std::string_view error)
 {
-	LogF("Playback error: %s", szError);
+	loggerDebugRec->error("Playback error: {}", error);
 	BREAKPOINT_HERE;
 }
 
@@ -1061,9 +1066,10 @@ void C4Playback::DebugRecError(const char *szError)
 
 bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 {
+	auto logger = Application.LogSystem.CreateLogger("C4Playback");
 	// Load data
 	StdBuf CompressedData;
-	Log("Reading stream...");
+	logger->info("Reading stream...");
 	if (!CompressedData.LoadFromFile(szStream))
 		return false;
 
@@ -1095,7 +1101,7 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 		iStreamSize = strm.total_out;
 		if (strm.avail_in == 0)
 		{
-			Log("Stream data incomplete, using as much data as possible");
+			logger->error("Stream data incomplete, using as much data as possible");
 			break;
 		}
 
@@ -1106,9 +1112,9 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 	StreamData.SetSize(iStreamSize);
 
 	// Parse
-	C4Playback Playback;
+	C4Playback Playback{logger};
 	Playback.ReadBinary(StreamData);
-	LogF("Got %zu chunks from stream", Playback.chunks.size());
+	logger->info("Got {} chunks from stream", Playback.chunks.size());
 
 	// Get first chunk, which must contain the initial
 	chunks_t::iterator chunkIter = Playback.chunks.begin();
@@ -1139,7 +1145,7 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 	if (GetExtension(szRecord))
 		*(GetExtension(szRecord) - 1) = 0;
 	SAppend(".c4s", szRecord, _MAX_PATH);
-	LogF("Original scenario is %s, creating %s.", szOrigin, szRecord);
+	logger->info("Original scenario is {}, creating {}.", szOrigin, szRecord);
 	if (!C4Group_CopyItem(szOrigin, szRecord, false, false))
 		return false;
 
@@ -1154,7 +1160,7 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 	while (chunkIter != Playback.chunks.end())
 		if (chunkIter->Type == RCT_File)
 		{
-			LogF("Inserting %s...", chunkIter->Filename.getData());
+			logger->info("Inserting {}...", chunkIter->Filename.getData());
 			StdStrBuf Temp; Temp.Copy(chunkIter->Filename);
 			MakeTempFilename(&Temp);
 			if (!chunkIter->pFileData->SaveToFile(Temp.getData()))
@@ -1172,7 +1178,7 @@ bool C4Playback::StreamToRecord(const char *szStream, StdStrBuf *pRecordFile)
 		return false;
 
 	// Done
-	Log("Writing record file...");
+	logger->info("Writing record file...");
 	Grp.Close();
 	pRecordFile->Copy(szRecord);
 	return true;

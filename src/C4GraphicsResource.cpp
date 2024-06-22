@@ -176,7 +176,7 @@ bool C4GraphicsResource::Init()
 	// Game palette - could perhaps be eliminated...
 	int32_t idNewPalGrp;
 	C4Group *pPalGrp = Files.FindEntry("C4.pal", nullptr, &idNewPalGrp);
-	if (!pPalGrp) { LogF("%s: %s", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), "C4.pal"); return false; }
+	if (!pPalGrp) { LogNTr(spdlog::level::err, "{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), "C4.pal"); return false; }
 	if (idPalGrp != idNewPalGrp)
 	{
 		if (!pPalGrp->AccessEntry("C4.pal")) { LogFatal("Pal error!"); return false; }
@@ -423,7 +423,7 @@ bool C4GraphicsResource::LoadFile(C4FacetExID &fct, const char *szName, C4GroupS
 		// FIXME: Use LogFatal here
 		if (!fNoWarnIfNotFound)
 		{
-			Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, szName, LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND)));
+			Log(C4ResStrTableKey::IDS_PRC_NOGFXFILE, szName, LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND));
 		}
 		return false;
 	}
@@ -434,7 +434,7 @@ bool C4GraphicsResource::LoadFile(C4FacetExID &fct, const char *szName, C4GroupS
 	// load
 	if (!fct.Load(*pGrp, FileName, iWdt, iHgt))
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE)));
+		Log(C4ResStrTableKey::IDS_PRC_NOGFXFILE, FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE));
 		return false;
 	}
 	fct.idSourceGroup = ID;
@@ -448,7 +448,7 @@ bool C4GraphicsResource::LoadFile(C4Surface &sfc, const char *szName, C4GroupSet
 	C4Group *pGrp = FindSuitableFile(szName, rGfxSet, FileName, ID);
 	if (!pGrp)
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, szName, LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND)));
+		Log(C4ResStrTableKey::IDS_PRC_NOGFXFILE, szName, LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND));
 		return false;
 	}
 	// check group
@@ -458,7 +458,7 @@ bool C4GraphicsResource::LoadFile(C4Surface &sfc, const char *szName, C4GroupSet
 	// load
 	if (!sfc.Load(*pGrp, FileName))
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE)));
+		Log(C4ResStrTableKey::IDS_PRC_NOGFXFILE, FileName, LoadResStr(C4ResStrTableKey::IDS_ERR_NOFILE));
 		return false;
 	}
 	ridCurrSfc = ID;

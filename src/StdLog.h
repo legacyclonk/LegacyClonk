@@ -15,9 +15,3 @@
  */
 
 #pragma once
-
-#include <string_view>
-
-// These functions have to be provided by the application.
-bool Log(std::string_view message);
-bool LogSilent(std::string_view message);

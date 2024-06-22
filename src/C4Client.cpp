@@ -257,7 +257,7 @@ C4Client *C4ClientList::Add(const C4ClientCore &Core)
 	// client with same ID in list?
 	if (getClientByID(Core.getID()))
 	{
-		Log("ClientList: Duplicated client ID!"); return nullptr;
+		spdlog::error("ClientList: Duplicated client ID!"); return nullptr;
 	}
 	// create, add
 	C4Client *pClient = new C4Client(Core);

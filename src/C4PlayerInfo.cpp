@@ -288,7 +288,7 @@ void C4PlayerInfo::LoadResource()
 		{
 			dwFlags &= ~PIF_HasRes;
 			// add failed? invalid ressource??! -- TODO: may be too large to load
-			LogF("Error: Could not add resource %d for player %s! Player file too large to load?", static_cast<int>(ResCore.getID()), GetFilename());
+			LogNTr(spdlog::level::err, "Could not add resource {} for player {}! Player file too large to load?", ResCore.getID(), GetFilename());
 		}
 }
 
@@ -789,7 +789,7 @@ bool C4PlayerInfoList::AssignPlayerIDs(C4ClientPlayerInfos *pNewClientInfo)
 			if (GetFreePlayerSlotCount() - iJoinsGranted < 1)
 			{
 				// nope - then deny this join!
-				Log(LoadResStr(C4ResStrTableKey::IDS_MSG_TOOMANYPLAYERS, static_cast<int>(Game.Parameters.MaxPlayers)));
+				Log(C4ResStrTableKey::IDS_MSG_TOOMANYPLAYERS, static_cast<int>(Game.Parameters.MaxPlayers));
 				pNewClientInfo->RemoveIndexedInfo(--i);
 				continue;
 			}
@@ -1232,7 +1232,7 @@ bool C4PlayerInfoList::LoadFromGameText(const char *pSource)
 				// load info from there
 				if (!pNewInfo->LoadFromLocalFile(szPlrInSzenName))
 				{
-					Log(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_PLRINFO, szPlayerFilename));
+					Log(C4ResStrTableKey::IDS_ERR_LOAD_PLRINFO, szPlayerFilename);
 					delete pNewInfo;
 				}
 				else
@@ -1312,7 +1312,7 @@ bool C4PlayerInfoList::LocalJoinUnjoinedPlayersInQueue()
 			{
 				// failure for user players
 				const char *szPlrName = pInfo->GetName(); if (!szPlrName) szPlrName = "???";
-				Log(LoadResStr(C4ResStrTableKey::IDS_ERR_JOINQUEUEPLRS, szPlrName));
+				Log(C4ResStrTableKey::IDS_ERR_JOINQUEUEPLRS, szPlrName);
 				continue;
 			}
 			Game.Input.Add(CID_JoinPlr,
@@ -1339,12 +1339,12 @@ void C4PlayerInfoList::CreateRestoreInfosForJoinedScriptPlayers(C4PlayerInfoList
 				C4PlayerInfo *pRejoinInfo;
 				if (pRejoinInfo = GetPlayerInfoBySavegameID(pInfo->GetID()))
 				{
-					LogF("Warning: User player %s takes over script player %s!", pRejoinInfo->GetName(), pInfo->GetName());
+					LogNTr(spdlog::level::warn, "User player {} takes over script player {}!", pRejoinInfo->GetName(), pInfo->GetName());
 					continue;
 				}
 				if (!pHostInfo)
 				{
-					LogF("Error restoring savegame script players: No host player infos to add to!");
+					LogNTr(spdlog::level::err, "Error restoring savegame script players: No host player infos to add to!");
 					continue;
 				}
 				// generate takeover info
@@ -1385,7 +1385,7 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 								{
 									// this is a "wild" match: Warn the player (but not in replays)
 									const std::string msg{LoadResStr(C4ResStrTableKey::IDS_MSG_PLAYERASSIGNMENT, pInfo->GetName(), pSavegameInfo->GetName())};
-									Log(msg);
+									LogNTr(msg);
 									if (Game.pGUI && FullScreen.Active && !Game.C4S.Head.Replay)
 										Game.pGUI->ShowMessageModal(msg.c_str(), LoadResStr(C4ResStrTableKey::IDS_MSG_FREESAVEGAMEPLRS), C4GUI::MessageDialog::btnOK, C4GUI::Ico_Notify, &Config.Startup.HideMsgPlrTakeOver);
 								}
@@ -1416,7 +1416,7 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 				{
 					// no association for this info: Joins as new player
 					// in savegames, this is unusual. For regular script player restore, it's not
-					if (Game.C4S.Head.SaveGame) Log(LoadResStr(C4ResStrTableKey::IDS_PRC_RESUMENOPLRASSOCIATION, pInfo->GetName()));
+					if (Game.C4S.Head.SaveGame) Log(C4ResStrTableKey::IDS_PRC_RESUMENOPLRASSOCIATION, pInfo->GetName());
 				}
 		}
 		// otherwise any remaining players
@@ -1433,7 +1433,7 @@ bool C4PlayerInfoList::RestoreSavegameInfos(C4PlayerInfoList &rSavegamePlayers)
 			else
 			{
 				// in regular mode, these players must be removed
-				Log(LoadResStr(C4ResStrTableKey::IDS_PRC_RESUMEREMOVEPLRS, iCountRemaining));
+				Log(C4ResStrTableKey::IDS_PRC_RESUMEREMOVEPLRS, iCountRemaining);
 				// remove them directly from the game
 				RemoveUnassociatedPlayers(rSavegamePlayers);
 			}
@@ -1479,7 +1479,7 @@ bool C4PlayerInfoList::RecreatePlayerFiles()
 						// that's okay for script players, because those may join w/o recreation files
 						if (pInfo->GetType() != C4PT_Script)
 						{
-							Log(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOFILE, szPlrName));
+							Log(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOFILE, szPlrName);
 						}
 						continue;
 					}
@@ -1492,7 +1492,7 @@ bool C4PlayerInfoList::RecreatePlayerFiles()
 						// that's okay for script players, because those may join w/o recreation files
 						if (pInfo->GetType() != C4PT_Script)
 						{
-							Log(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOEXTRACT, szPlrName, GetFilename(szCurrPlrFile)));
+							Log(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOEXTRACT, szPlrName, GetFilename(szCurrPlrFile));
 						}
 						continue;
 					}
@@ -1554,7 +1554,7 @@ bool C4PlayerInfoList::RecreatePlayers()
 				else
 				{
 					// this shouldn't happen - remove the player info
-					Log(LoadResStr(C4ResStrTableKey::IDS_PRC_RESUMENOCLIENT, idAtClient, pkInfo->GetPlayerCount()));
+					Log(C4ResStrTableKey::IDS_PRC_RESUMENOCLIENT, idAtClient, pkInfo->GetPlayerCount());
 					continue;
 				}
 			}
@@ -1582,7 +1582,7 @@ bool C4PlayerInfoList::RecreatePlayers()
 					{
 						// for user players, this could happen only if the user cancelled the ressource
 						const char *szPlrName = pInfo->GetName(); if (!szPlrName) szPlrName = "???";
-						Log(LoadResStr(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOFILEFROMNET, szPlrName));
+						Log(C4ResStrTableKey::IDS_ERR_LOAD_RECR_NOFILEFROMNET, szPlrName);
 						continue;
 					}
 					else
@@ -1622,7 +1622,7 @@ bool C4PlayerInfoList::RemoveUnassociatedPlayers(C4PlayerInfoList &rSavegamePlay
 			{
 				if (Game.Players.RemoveUnjoined(pInfo->GetInGameNumber()))
 				{
-					Log(LoadResStr(C4ResStrTableKey::IDS_PRC_REMOVEPLR, pInfo->GetName()));
+					Log(C4ResStrTableKey::IDS_PRC_REMOVEPLR, pInfo->GetName());
 				}
 				else
 					fSuccess = false;

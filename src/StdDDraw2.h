@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "C4Log.h"
 #include <C4Surface.h>
 #include <StdSurface8.h>
 #include <StdBuf.h>
@@ -283,9 +284,9 @@ public:
 	bool Active; // set if device is ready to render, etc.
 	CGammaControl Gamma; // gamma
 	CGammaControl DefRamp; // default gamma ramp
-	StdStrBuf sLastError;
 
 protected:
+	std::shared_ptr<spdlog::logger> logger;
 	int ClipX1, ClipY1, ClipX2, ClipY2;
 	int StClipX1, StClipY1, StClipX2, StClipY2;
 	bool ClipAll; // set if clipper clips everything away
@@ -309,8 +310,8 @@ public:
 #endif
 	virtual void PageFlip() = 0;
 	virtual int GetEngine() = 0; // get indexed engine
+	virtual std::string_view GetEngineName() const = 0;
 	virtual bool OnResolutionChanged() = 0; // reinit window for new resolution
-	const char *GetLastError() { return sLastError.getData(); }
 
 	// Palette
 	bool SetPrimaryPalette(uint8_t *pBuf, uint8_t *pAlphaBuf = nullptr);
@@ -416,16 +417,8 @@ protected:
 	virtual void DrawPixInt(C4Surface *sfcDest, float tx, float ty, uint32_t dwCol) = 0; // without ClrModMap
 	bool CreatePrimaryClipper();
 	virtual bool CreatePrimarySurfaces() = 0;
-	bool Error(const char *szMsg);
 	virtual bool CreateDirectDraw() = 0;
 	bool CalculateClipper(int *iX, int *iY, int *iWdt, int *iHgt);
-
-	void DebugLog(const char *szMsg)
-	{
-#ifndef NDEBUG
-		Log(szMsg);
-#endif
-	}
 
 	friend class C4Surface;
 	friend class C4TexRef;

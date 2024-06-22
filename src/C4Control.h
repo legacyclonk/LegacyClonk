@@ -48,8 +48,8 @@ public:
 
 	void SetByClient(int32_t iByClient);
 
-	virtual bool PreExecute() const { return true; }
-	virtual void Execute() const = 0;
+	virtual bool PreExecute(const std::shared_ptr<spdlog::logger> &logger) const { return true; }
+	virtual void Execute(const std::shared_ptr<spdlog::logger> &logger) const = 0;
 	virtual void PreRec(C4Record *pRecord) {}
 
 	// allowed in lobby (without dynamic loaded)?
@@ -61,7 +61,7 @@ public:
 };
 
 #define DECLARE_C4CONTROL_VIRTUALS \
-	virtual void Execute() const override; \
+	virtual void Execute(const std::shared_ptr<spdlog::logger> &logger) const override; \
 	virtual void CompileFunc(StdCompiler *pComp) override;
 
 class C4Control : public C4PacketBase
@@ -89,8 +89,8 @@ public:
 	void Delete(C4IDPacket *pPkt) { Pkts.Delete(pPkt); }
 
 	// control execution
-	bool PreExecute() const;
-	void Execute() const;
+	bool PreExecute(const std::shared_ptr<spdlog::logger> &logger) const;
+	void Execute(const std::shared_ptr<spdlog::logger> &logger) const;
 	void PreRec(C4Record *pRecord) const;
 
 	virtual void CompileFunc(StdCompiler *pComp) override;
@@ -327,7 +327,7 @@ protected:
 
 public:
 	DECLARE_C4CONTROL_VIRTUALS
-	virtual bool PreExecute() const override;
+	virtual bool PreExecute(const std::shared_ptr<spdlog::logger> &logger) const override;
 	virtual void PreRec(C4Record *pRecord) override;
 	void Strip();
 };
@@ -502,7 +502,7 @@ public:
 	virtual int32_t Scope() const { return C4ControlScript::SCOPE_Global; }
 	virtual bool Allowed() const { return true; }
 	virtual std::string FormatScript() const = 0;
-	virtual void Execute() const override;
+	virtual void Execute(const std::shared_ptr<spdlog::logger> &logger) const override;
 };
 
 class C4ControlEMDropDef : public C4ControlInternalScriptBase

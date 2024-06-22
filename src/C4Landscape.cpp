@@ -1562,7 +1562,7 @@ bool C4Landscape::Load(C4Group &hGroup, bool fLoadSky, bool fSavegame)
 		}
 		catch (const std::runtime_error &e)
 		{
-			LogF("Could not load 32 bit landscape surface from PNG file: %s", e.what());
+			LogNTr(spdlog::level::err, "Could not load 32 bit landscape surface from PNG file: {}", e.what());
 		}
 		if (locked) Surface32->Unlock();
 		UpdateAnimationSurface({0, 0, Width, Height});
@@ -2780,7 +2780,7 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 				// new insertion
 				if (!Game.TextureMap.AddEntry(iNewIndex, Material.getData(), Texture.getData()))
 				{
-					LogF("Cannot insert new texture %s to index %d: Texture map entry error", szMatTex, static_cast<int>(iNewIndex));
+					LogNTr(spdlog::level::err, "Cannot insert new texture %s to index {}: Texture map entry error", szMatTex, iNewIndex);
 					return false;
 				}
 			}

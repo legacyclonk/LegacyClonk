@@ -516,7 +516,7 @@ bool C4GameParameters::CheckLeagueRulesStart(bool fFixIt)
 		if (Game.pGUI)
 			Game.pGUI->ShowMessageModal(error.c_str(), LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE), C4GUI::MessageDialog::btnOK, C4GUI::Ico_MeleeLeague);
 		else
-			Log(error);
+			LogNTr(error);
 		return false;
 	}
 	// All okay

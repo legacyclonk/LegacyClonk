@@ -96,12 +96,15 @@ protected:
 	C4NetIO::addr_t PuncherAddrIPv4, PuncherAddrIPv6;
 	bool IsPuncherAddr(const C4NetIO::addr_t &addr) const;
 
+	// logger
+	std::shared_ptr<spdlog::logger> logger;
+
 public:
 	bool hasTCP() const { return !!pNetIO_TCP; }
 	bool hasUDP() const { return !!pNetIO_UDP; }
 
 	// initialization
-	bool Init(std::uint16_t iPortTCP, std::uint16_t iPortUDP, std::uint16_t iPortDiscovery = 0, std::uint16_t iPortRefServer = 0); // by main thread
+	bool Init(std::shared_ptr<spdlog::logger> logger, std::uint16_t iPortTCP, std::uint16_t iPortUDP, std::uint16_t iPortDiscovery = 0, std::uint16_t iPortRefServer = 0); // by main thread
 	void Clear(); // by main thread
 	void SetLocalCCore(const C4ClientCore &CCore); // by main thread
 

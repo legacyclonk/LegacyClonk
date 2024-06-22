@@ -297,7 +297,7 @@ void C4AulScriptEngine::Link(C4DefList *rDefs)
 		Game.Material.UpdateScriptPointers();
 
 		// display state
-		LogF("C4AulScriptEngine linked - %d line%s, %d warning%s, %d error%s",
+		LogNTr(spdlog::level::info, "C4AulScriptEngine linked - {} line{}, {} warning{}, {} error{}",
 			lineCnt, (lineCnt != 1 ? "s" : ""), warnCnt, (warnCnt != 1 ? "s" : ""), errCnt, (errCnt != 1 ? "s" : ""));
 
 		// reset counters

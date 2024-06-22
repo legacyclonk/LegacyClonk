@@ -261,7 +261,7 @@ void C4Network2ClientListBox::ClientListItem::OnButtonActivate(C4GUI::Control *p
 	// league: Do not deactivate clients with players
 	if (Game.Parameters.isLeague() && Game.Players.GetAtClient(iClientID))
 	{
-		Log(LoadResStr(C4ResStrTableKey::IDS_LOG_COMMANDNOTALLOWEDINLEAGUE));
+		Log(C4ResStrTableKey::IDS_LOG_COMMANDNOTALLOWEDINLEAGUE);
 		return;
 	}
 	// change to status that is not currently shown
@@ -776,7 +776,7 @@ void C4GameOptionButtons::OnCommentSet(const StdStrBuf &rsNewComment)
 	Config.Network.Comment.CopyValidated(rsNewComment.getData());
 	Game.Network.InvalidateReference();
 	// message feedback
-	Log(LoadResStr(C4ResStrTableKey::IDS_NET_COMMENTCHANGED));
+	Log(C4ResStrTableKey::IDS_NET_COMMENTCHANGED);
 	// acoustic feedback
 	C4GUI::GUISound("Connect");
 }

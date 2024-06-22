@@ -30,6 +30,7 @@ public:
 public:
 	void PageFlip() override {}
 	virtual int GetEngine() override { return GFXENGN_NOGFX; }
+	std::string_view GetEngineName() const override { return "CStdNoGfx"; }
 	virtual bool UpdateClipper() override { return true; }
 	virtual bool OnResolutionChanged() override { return true; }
 	virtual bool PrepareRendering(C4Surface *) override { return true; }

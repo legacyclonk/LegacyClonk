@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "C4ResStrTable.h"
+
 #include <StdBuf.h>
 #include <StdCompiler.h>
 
@@ -54,6 +56,16 @@ public:
 		FILE *file{nullptr};
 	};
 
+	class GuiSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex>, public std::enable_shared_from_this<GuiSink>
+	{
+	protected:
+		void sink_it_(const spdlog::details::log_msg &msg) override;
+		void flush_() override {}
+
+	private:
+		void DoLog(const std::string &message);
+	};
+
 public:
 	C4LogSystem();
 
@@ -65,31 +77,49 @@ public:
 
 public:
 	void OpenLog();
-	int GetLogFD() const noexcept { return clonkLogSink ? clonkLogSink->GetFD() : -1; }
+	int GetLogFD() const noexcept { return clonkLogFD; }
 
 public:
-	std::span<const spdlog::sink_ptr> GetDefaultLogSinks() const noexcept { return defaultLogSinks; }
-
 	const std::shared_ptr<spdlog::logger> &GetLogger() const noexcept { return logger; }
 	const std::shared_ptr<spdlog::logger> &GetLoggerSilent() const noexcept { return loggerSilent; }
 
+	std::shared_ptr<spdlog::logger> CreateLogger(std::string name);
+
 private:
-	std::vector<spdlog::sink_ptr> defaultLogSinks;
 	std::shared_ptr<spdlog::logger> logger;
 	std::shared_ptr<spdlog::logger> loggerSilent;
-	std::shared_ptr<LogSink> clonkLogSink;
+	int clonkLogFD{-1};
 };
 
-template<typename... Args>
-bool LogF(const std::string_view message, Args &&... args)
+void LogNTr(spdlog::level::level_enum level, std::string_view message);
+
+inline void LogNTr(const std::string_view message)
 {
-	return Log(fmt::sprintf(message, std::forward<Args>(args)...));
+	LogNTr(spdlog::level::info, message);
 }
 
 template<typename... Args>
-bool LogSilentF(const std::string_view message, Args &&... args)
+void LogNTr(const spdlog::level::level_enum level, std::format_string<Args...> fmt, Args &&...args)
 {
-	return LogSilent(fmt::sprintf(message, std::forward<Args>(args)...));
+	LogNTr(level, std::format(fmt, std::forward<Args>(args)...));
+}
+
+template<typename... Args>
+void LogNTr(const std::format_string<Args...> fmt, Args &&...args)
+{
+	LogNTr(spdlog::level::info, std::format(fmt, std::forward<Args>(args)...));
+}
+
+template<typename... Args>
+void Log(const spdlog::level::level_enum level, const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Args &&...args)
+{
+	LogNTr(level, LoadResStr(id, std::forward<Args>(args)...));
+}
+
+template<typename... Args>
+void Log(const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Args &&...args)
+{
+	LogNTr(spdlog::level::info, LoadResStr(id, std::forward<Args>(args)...));
 }
 
 bool DebugLog(std::string_view message);

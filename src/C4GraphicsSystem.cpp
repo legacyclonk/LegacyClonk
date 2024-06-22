@@ -512,7 +512,14 @@ bool C4GraphicsSystem::SaveScreenshot(bool fSaveAll)
 	bool fSuccess = DoSaveScreenshot(fSaveAll, strFilePath);
 
 	// log if successful/where it has been stored
-	Log(LoadResStrChoice(fSuccess, C4ResStrTableKey::IDS_PRC_SCREENSHOT, C4ResStrTableKey::IDS_PRC_SCREENSHOTERR, Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename))));
+	if (fSuccess)
+	{
+		Log(C4ResStrTableKey::IDS_PRC_SCREENSHOT, Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
+	}
+	else
+	{
+		Log(C4ResStrTableKey::IDS_PRC_SCREENSHOTERR, Config.AtExeRelativePath(Config.AtScreenshotPath(szFilename)));
+	}
 
 	// return success
 	return !!fSuccess;
@@ -584,7 +591,7 @@ bool C4GraphicsSystem::DoSaveScreenshot(bool fSaveAll, const char *szFilename)
 		}
 		catch (const std::runtime_error &e)
 		{
-			LogF("Could not write screenshot to PNG file: %s", e.what());
+			LogNTr(spdlog::level::err, "Could not write screenshot to PNG file: {}", e.what());
 			return false;
 		}
 		return true;

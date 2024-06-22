@@ -249,7 +249,7 @@ bool C4Player::Init(int32_t iNumber, int32_t iAtClient, const char *szAtClientNa
 	// safety
 	if (!pInfo)
 	{
-		LogF("ERROR: Init player %s failed: No info!", szFilename);
+		spdlog::error("Init player {} failed: No info!", szFilename);
 		assert(false);
 		return false;
 	}
@@ -417,7 +417,7 @@ bool C4Player::Save()
 		if (Game.Parameters.MaxPlayers <= 0) return false;
 	}
 	// Log
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_SAVEPLR, Config.AtExeRelativePath(Filename)));
+	Log(C4ResStrTableKey::IDS_PRC_SAVEPLR, Config.AtExeRelativePath(Filename));
 	Game.GraphicsSystem.MessageBoard.EnsureLastMessage();
 	// copy player to save somewhere else
 	char szPath[_MAX_PATH + 1];
@@ -685,7 +685,7 @@ bool C4Player::ScenarioInit()
 	Color = iColor;
 
 	C4PlayerInfo *pInfo = GetInfo();
-	if (!pInfo) { assert(false); LogF("Internal error: ScenarioInit for ghost player %s!", GetName()); return false; }
+	if (!pInfo) { assert(false); spdlog::error("Internal error: ScenarioInit for ghost player {}", GetName()); return false; }
 
 	// set color by player info class
 	// re-setting, because runtime team choice may have altered color
@@ -975,7 +975,7 @@ void C4Player::Surrender()
 	Eliminated = true;
 	RetireDelay = C4RetireDelay;
 	StartSoundEffect("Eliminated");
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRSURRENDERED, GetName()));
+	Log(C4ResStrTableKey::IDS_PRC_PLRSURRENDERED, GetName());
 }
 
 bool C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent)
@@ -988,8 +988,14 @@ bool C4Player::SetHostility(int32_t iOpponent, int32_t iHostility, bool fSilent)
 	if (!Game.FrameCounter || fSilent) return true;
 	// Announce
 	StartSoundEffect("Trumpet");
-	Log(LoadResStrChoice(iHostility, C4ResStrTableKey::IDS_PLR_HOSTILITY, C4ResStrTableKey::IDS_PLR_NOHOSTILITY,
-		GetName(), Game.Players.Get(iOpponent)->GetName()).c_str());
+	if (iHostility)
+	{
+		Log(C4ResStrTableKey::IDS_PLR_HOSTILITY, GetName(), Game.Players.Get(iOpponent)->GetName());
+	}
+	else
+	{
+		Log(C4ResStrTableKey::IDS_PLR_NOHOSTILITY, GetName(), Game.Players.Get(iOpponent)->GetName());
+	}
 	// Success
 	return true;
 }
@@ -2012,7 +2018,7 @@ void C4Player::Eliminate()
 	Eliminated = true;
 	RetireDelay = C4RetireDelay;
 	StartSoundEffect("Eliminated");
-	Log(LoadResStr(C4ResStrTableKey::IDS_PRC_PLRELIMINATED, GetName()));
+	Log(C4ResStrTableKey::IDS_PRC_PLRELIMINATED, GetName());
 
 	// Early client deactivation check
 	if (Game.Control.isCtrlHost() && AtClient > C4ClientIDHost)

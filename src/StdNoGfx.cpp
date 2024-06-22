@@ -19,7 +19,7 @@
 
 bool CStdNoGfx::CreateDirectDraw()
 {
-	Log("  Graphics disabled");
+	logger->info("Graphics disabled");
 	return true;
 }
 

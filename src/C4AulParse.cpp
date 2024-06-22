@@ -3500,13 +3500,15 @@ loopEnd:
 
 bool C4AulScript::Parse()
 {
-	if (DEBUG_BYTECODE_DUMP)
-	{
-		C4ScriptHost *scripthost{nullptr};
-		if (Def) scripthost = &Def->Script;
-		if (scripthost) LogSilentF("parsing %s...\n", scripthost->GetFilePath());
-		else LogSilentF("parsing unknown...\n");
-	}
+#if DEBUG_BYTECODE_DUMP
+	const auto logger = Application.LogSystem.GetOrCreate("C4AulScript");
+
+	C4ScriptHost *scripthost{nullptr};
+	if (Def) scripthost = &Def->Script;
+	if (scripthost) logger->info("parsing {}...", scripthost->GetFilePath());
+	else logger->info("parsing unknown..");
+#endif
+
 	// parse children
 	C4AulScript *s = Child0;
 	while (s) { s->Parse(); s = s->Next; }
@@ -3590,35 +3592,36 @@ bool C4AulScript::Parse()
 	Engine->lineCnt += SGetLine(Script.getData(), Script.getPtr(Script.getLength()));
 
 	// dump bytecode
-	if (DEBUG_BYTECODE_DUMP)
-		for (f = Func0; f; f = f->Next)
+#if DEBUG_BYTECODE_DUMP
+	for (f = Func0; f; f = f->Next)
+	{
+		C4AulScriptFunc *Fn;
+		if (!(Fn = f->SFunc()))
 		{
-			C4AulScriptFunc *Fn;
-			if (!(Fn = f->SFunc()))
+			if (f->LinkedTo) Fn = f->LinkedTo->SFunc();
+			if (Fn) if (Fn->Owner != Engine) Fn = nullptr;
+		}
+		if (Fn)
+		{
+			logger->info("{}:", Fn->Name);
+			for (C4AulBCC *pBCC = Fn->Code;; pBCC++)
 			{
-				if (f->LinkedTo) Fn = f->LinkedTo->SFunc();
-				if (Fn) if (Fn->Owner != Engine) Fn = nullptr;
-			}
-			if (Fn)
-			{
-				LogSilentF("%s:", Fn->Name);
-				for (C4AulBCC *pBCC = Fn->Code;; pBCC++)
+				C4AulBCCType eType = pBCC->bccType;
+				const auto X = pBCC->bccX;
+				switch (eType)
 				{
-					C4AulBCCType eType = pBCC->bccType;
-					const auto X = pBCC->bccX;
-					switch (eType)
-					{
-					case AB_FUNC: case AB_CALL: case AB_CALLFS: case AB_CALLGLOBAL:
-						LogSilentF("%s\t'%s'\n", GetTTName(eType), X ? (reinterpret_cast<C4AulFunc *>(X))->Name : ""); break;
-					case AB_STRING:
-						LogSilentF("%s\t'%s'\n", GetTTName(eType), X ? (reinterpret_cast<C4String *>(X))->Data.getData() : ""); break;
-					default:
-						LogSilentF("%s\t%" PRIdPTR "\n", GetTTName(eType), X); break;
-					}
-					if (eType == AB_EOFN) break;
+				case AB_FUNC: case AB_CALL: case AB_CALLFS: case AB_CALLGLOBAL:
+					logger->info("{}\t'{}'", GetTTName(eType), X ? (reinterpret_cast<C4AulFunc *>(X))->Name : ""); break;
+				case AB_STRING:
+					logger->info("{}\t'{}'", GetTTName(eType), X ? (reinterpret_cast<C4String *>(X))->Data.getData() : ""); break;
+				default:
+					logger->info("{}\t{}", GetTTName(eType), X); break;
 				}
+				if (eType == AB_EOFN) break;
 			}
 		}
+	}
+#endif
 
 	// finished
 	State = ASS_PARSED;
