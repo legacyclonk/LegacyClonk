@@ -156,6 +156,7 @@ void C4LogSystem::OpenLog()
 	loggerSilent->sinks().emplace_back(std::move(clonkLogSink));
 
 	logger = std::make_shared<spdlog::logger>("", loggerSilent->sinks().begin() + 1, loggerSilent->sinks().end());
+	logger->set_level(spdlog::level::trace);
 
 	auto guiSink = std::make_shared<GuiSink>();
 	guiSink->set_pattern("%v");
