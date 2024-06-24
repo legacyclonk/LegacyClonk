@@ -70,7 +70,7 @@ bool C4GameControl::InitReplay(C4Group &rGroup)
 	pPlayback = new C4Playback(logger->clone("C4Playback"));
 	if (!pPlayback->Open(rGroup))
 	{
-		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_REPLAYREAD));
+		LogFatal(C4ResStrTableKey::IDS_ERR_REPLAYREAD);
 		delete pPlayback; pPlayback = nullptr;
 		return false;
 	}
@@ -289,7 +289,7 @@ void C4GameControl::Execute()
 		// control = network input
 		if (!Network.GetControl(&Control, ControlTick))
 		{
-			LogFatal("Network: could not retrieve control from C4GameControlNetwork!");
+			LogFatalNTr("Network: could not retrieve control from C4GameControlNetwork!");
 			return;
 		}
 	}

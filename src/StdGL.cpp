@@ -990,7 +990,7 @@ bool CStdGL::RestoreDeviceObjects()
 		}
 		catch (const CStdRenderException &e)
 		{
-			LogFatal(e.what());
+			LogFatalNTr(e.what());
 			return Active = false;
 		}
 	}

@@ -1043,7 +1043,7 @@ int32_t C4DefList::Load(const char *szSearch,
 	if (!hGroup.Open(szSearch))
 	{
 		// Specified file not found (failure)
-		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFNOTFOUND, szSearch).c_str());
+		LogFatal(C4ResStrTableKey::IDS_PRC_DEFNOTFOUND, szSearch);
 		LoadFailure = true;
 		return iResult;
 	}

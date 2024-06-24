@@ -91,7 +91,7 @@ bool C4InteractiveThread::PushEvent(C4InteractiveEventType eEvent, std::any data
 	}
 	catch (const std::runtime_error &)
 	{
-		LogFatal("Network: could not post message to main thread!");
+		LogFatalNTr("Network: could not post message to main thread!");
 	}
 
 	return true;

@@ -192,8 +192,8 @@ void C4Application::DoInit()
 	// init timers (needs window)
 	if (!InitTimer())
 	{
-		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_TIMER));
-		Clear(); throw StartupException{std::string{GetFatalError()}};
+		LogFatal(C4ResStrTableKey::IDS_ERR_TIMER);
+		Clear(); throw StartupException{LogSystem.GetFatalErrorString()};
 	}
 
 	// Engine header message
@@ -202,7 +202,7 @@ void C4Application::DoInit()
 
 	// Initialize OpenGL
 	DDraw = DDrawInit(this, Config.Graphics.Engine);
-	if (!DDraw) { LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_DDRAW)); Clear(); throw StartupException{std::string{GetFatalError()}}; }
+	if (!DDraw) { LogFatal(C4ResStrTableKey::IDS_ERR_DDRAW); Clear(); throw StartupException{LogSystem.GetFatalErrorString()}; }
 
 #if defined(_WIN32) && !defined(USE_CONSOLE)
 	// Register clonk file classes - notice: this will only work if we have administrator rights
@@ -231,7 +231,7 @@ bool C4Application::PreInit()
 	{
 		if (!Game.GraphicsSystem.InitLoaderScreen(C4CFN_StartupBackgroundMain))
 		{
-			LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_ERRLOADER)); return false;
+			LogFatal(C4ResStrTableKey::IDS_PRC_ERRLOADER); return false;
 		}
 	}
 

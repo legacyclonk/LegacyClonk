@@ -28,6 +28,8 @@
 #include <share.h>
 #endif
 
+#include <ranges>
+
 #include <spdlog/cfg/helpers.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -191,7 +193,25 @@ void C4LogSystem::EnableDebugLog(const bool enable)
 	loggerDebugGuiSink->set_level(enable ? spdlog::level::debug : spdlog::level::off);
 }
 
-std::string sFatalError;
+void C4LogSystem::AddFatalError(std::string message)
+{
+	logger->critical("{}", LoadResStr(C4ResStrTableKey::IDS_ERR_FATAL, message));
+
+	if (!std::ranges::contains(fatalErrors, message))
+	{
+		fatalErrors.emplace_back(std::move(message));
+	}
+}
+
+void C4LogSystem::ResetFatalErrors()
+{
+	fatalErrors.clear();
+}
+
+std::string C4LogSystem::GetFatalErrorString()
+{
+	return fatalErrors | std::views::join_with('|') | std::ranges::to<std::string>();
+}
 
 int iDisableLog = 0;
 
@@ -200,28 +220,9 @@ void LogNTr(const spdlog::level::level_enum level, const std::string_view messag
 	Application.LogSystem.GetLogger()->log(level, message);
 }
 
-bool LogFatal(std::string_view message)
+void LogFatalNTr(std::string message)
 {
-	if (message.empty()) message = "(null)";
-	// add to fatal error message stack - if not already in there (avoid duplication)
-	if (!sFatalError.contains(message))
-	{
-		if (!sFatalError.empty()) sFatalError += '|';
-		sFatalError += message;
-	}
-	// write to log - note that Log might overwrite a static buffer also used in szMessage
-	spdlog::critical("{}", LoadResStr(C4ResStrTableKey::IDS_ERR_FATAL, message).c_str());
-	return true;
-}
-
-void ResetFatalError()
-{
-	sFatalError.clear();
-}
-
-std::string_view GetFatalError()
-{
-	return sFatalError;
+	Application.LogSystem.AddFatalError(std::move(message));
 }
 
 bool DebugLog(const spdlog::level::level_enum level, const std::string_view message)

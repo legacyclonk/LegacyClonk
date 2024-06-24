@@ -123,7 +123,7 @@ bool C4Network2IO::Init(std::shared_ptr<spdlog::logger> logger, const std::uint1
 	// no protocols?
 	if (!pNetIO_TCP && !pNetIO_UDP)
 	{
-		LogFatal("Network: fatal - no protocols available!");
+		LogFatalNTr("Network: fatal - no protocols available!");
 		Thread.ClearCallback(Ev_Net_Conn, this);
 		Thread.ClearCallback(Ev_Net_Disconn, this);
 		Thread.ClearCallback(Ev_Net_Packet, this);
