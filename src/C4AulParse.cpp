@@ -232,7 +232,7 @@ void C4AulParseState::Warn(const std::string_view msg, const char *pIdtf)
 	C4AulParseError{this, msg, pIdtf, true}.show();
 	if (Fn && Fn->pOrgScript != a)
 	{
-		DebugLogF("  (as #appendto/#include to %s)", Fn->Owner->ScriptName);
+		DebugLog("  (as #appendto/#include to {})", Fn->Owner->ScriptName);
 	}
 	++Game.ScriptEngine.warnCnt;
 }
@@ -3550,7 +3550,7 @@ bool C4AulScript::Parse()
 					err.show();
 					// show a warning if the error is in a remote script
 					if (Fn->pOrgScript != this)
-						DebugLogF("  (as #appendto/#include to %s)", Fn->Owner->ScriptName);
+						DebugLog("  (as #appendto/#include to {})", Fn->Owner->ScriptName);
 					// and count (visible only ;) )
 					++Game.ScriptEngine.errCnt;
 				}

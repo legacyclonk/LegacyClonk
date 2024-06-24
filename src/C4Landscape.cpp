@@ -2738,7 +2738,7 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 {
 	if (((!szMatTex || !*szMatTex) && !fInsert) || !Inside<int>(iNewIndex, 0x01, 0x7f))
 	{
-		DebugLogF("Cannot insert new texture %s to index %d: Invalid parameters.", szMatTex, static_cast<int>(iNewIndex));
+		DebugLog(spdlog::level::err, "Cannot insert new texture {} to index {}: Invalid parameters.", szMatTex, static_cast<int>(iNewIndex));
 		return false;
 	}
 	// get last mat index - returns zero for not found (valid for insertion mode)
@@ -2753,7 +2753,7 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 		while (Game.TextureMap.GetEntry(byLastMoveIndex))
 			if (--byLastMoveIndex == iNewIndex)
 			{
-				DebugLogF("Cannot insert new texture %s to index %d: No room for insertion.", szMatTex, static_cast<int>(iNewIndex));
+				DebugLog(spdlog::level::err, "Cannot insert new texture {} to index {}: No room for insertion.", szMatTex, static_cast<int>(iNewIndex));
 				return false;
 			}
 		// then move up all other textures first
@@ -2780,7 +2780,7 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 				// new insertion
 				if (!Game.TextureMap.AddEntry(iNewIndex, Material.getData(), Texture.getData()))
 				{
-					LogNTr(spdlog::level::err, "Cannot insert new texture %s to index {}: Texture map entry error", szMatTex, iNewIndex);
+					LogNTr(spdlog::level::err, "Cannot insert new texture {} to index {}: Texture map entry error", szMatTex, iNewIndex);
 					return false;
 				}
 			}
@@ -2794,13 +2794,13 @@ bool C4Landscape::SetTextureIndex(const char *szMatTex, uint8_t iNewIndex, bool 
 		const C4TexMapEntry *pOld;
 		if ((pOld = Game.TextureMap.GetEntry(iNewIndex)) && !pOld->isNull())
 		{
-			DebugLogF("Cannot move texture %s to index %d: Index occupied by %s-%s.", szMatTex, static_cast<int>(iNewIndex), pOld->GetMaterialName(), pOld->GetTextureName());
+			DebugLog(spdlog::level::err, "Cannot move texture {} to index {}: Index occupied by {}-{}.", szMatTex, static_cast<int>(iNewIndex), pOld->GetMaterialName(), pOld->GetTextureName());
 			return false;
 		}
 		// must only move existing textures
 		if (!iOldIndex)
 		{
-			DebugLogF("Cannot move texture %s to index %d: Texture not found.", szMatTex, iNewIndex);
+			DebugLog(spdlog::level::err, "Cannot move texture {} to index {}: Texture not found.", szMatTex, iNewIndex);
 			return false;
 		}
 		// update map

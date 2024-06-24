@@ -82,12 +82,17 @@ public:
 public:
 	const std::shared_ptr<spdlog::logger> &GetLogger() const noexcept { return logger; }
 	const std::shared_ptr<spdlog::logger> &GetLoggerSilent() const noexcept { return loggerSilent; }
+	const std::shared_ptr<spdlog::logger> &GetLoggerDebug() const noexcept { return loggerDebug; }
 
 	std::shared_ptr<spdlog::logger> CreateLogger(std::string name);
+
+	void EnableDebugLog(bool enable);
 
 private:
 	std::shared_ptr<spdlog::logger> logger;
 	std::shared_ptr<spdlog::logger> loggerSilent;
+	std::shared_ptr<spdlog::logger> loggerDebug;
+	std::shared_ptr<GuiSink> loggerDebugGuiSink;
 	int clonkLogFD{-1};
 };
 
@@ -122,12 +127,23 @@ void Log(const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Args &&
 	LogNTr(spdlog::level::info, LoadResStr(id, std::forward<Args>(args)...));
 }
 
-bool DebugLog(std::string_view message);
+bool DebugLog(spdlog::level::level_enum level, std::string_view message);
+
+inline bool DebugLog(std::string_view message)
+{
+	return DebugLog(spdlog::level::info, message);
+}
 
 template<typename... Args>
-bool DebugLogF(const std::string_view message, Args &&... args)
+bool DebugLog(const std::format_string<Args...> fmt, Args &&... args)
 {
-	return DebugLog(fmt::sprintf(message, std::forward<Args>(args)...));
+	return DebugLog(spdlog::level::info, std::format(fmt, std::forward<Args>(args)...));
+}
+
+template<typename... Args>
+bool DebugLog(const spdlog::level::level_enum level, const std::format_string<Args...> fmt, Args &&... args)
+{
+	return DebugLog(level, std::format(fmt, std::forward<Args>(args)...));
 }
 
 bool LogFatal(std::string_view message); // log message and store it as a fatal error

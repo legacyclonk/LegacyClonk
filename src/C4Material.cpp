@@ -355,7 +355,7 @@ void C4MaterialMap::CrossMapMaterials() // Called after load
 				// backwards compatibility: if a pattern was specified although the no-pattern flag was set, overwrite that flag
 				if (Map[cnt].OverlayType & C4MatOv_None)
 				{
-					DebugLogF("Error in overlay of material %s: Flag C4MatOv_None ignored because a custom overlay (%s) was specified!", Map[cnt].Name, szTextureOverlay);
+					DebugLog(spdlog::level::err, "Error in overlay of material {}: Flag C4MatOv_None ignored because a custom overlay ({}) was specified!", Map[cnt].Name, szTextureOverlay);
 					Map[cnt].OverlayType &= ~C4MatOv_None;
 				}
 			}

@@ -601,7 +601,7 @@ int32_t FnFxFireStart(C4AulContext *ctx, C4Object *pObj, int32_t iNumber, int32_
 	}
 	else if (!Inside<int32_t>(iFireMode, 1, C4Fx_FireMode_Last))
 	{
-		DebugLogF("Warning: FireMode %d of object %s (%s) is invalid!", iFireMode, pObj->GetName(), pObj->Def->GetName());
+		DebugLog(spdlog::level::warn, "FireMode {} of object {} ({}) is invalid!", iFireMode, pObj->GetName(), pObj->Def->GetName());
 		iFireMode = C4Fx_FireMode_Object;
 	}
 	// store causes in effect vars

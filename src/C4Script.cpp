@@ -1226,7 +1226,7 @@ static std::optional<C4ValueInt> FnGetVertex(C4AulContext *cthr, C4ValueInt iInd
 	case VTX_Friction: return {pObj->Shape.VtxFriction[iIndex]}; break;
 	default:
 		// old-style behaviour for any value != 0 (normally not used)
-		DebugLogF("GetVertex: Unknown vertex attribute: %d; getting VtxY", iValueToGet);
+		DebugLog("GetVertex: Unknown vertex attribute: {}; getting VtxY", iValueToGet);
 		return {pObj->Shape.VtxY[iIndex]};
 		break;
 	}
@@ -1262,7 +1262,7 @@ static bool FnSetVertex(C4AulContext *cthr, C4ValueInt iIndex, C4ValueInt iValue
 	default:
 		// old-style behaviour for any value != 0 (normally not used)
 		pObj->Shape.VtxY[iIndex] = iValue;
-		DebugLogF("SetVertex: Unknown vertex attribute: %d; setting VtxY", iValueToSet);
+		DebugLog("SetVertex: Unknown vertex attribute: {}; setting VtxY", iValueToSet);
 		break;
 	}
 	// vertex update desired?
@@ -3885,7 +3885,7 @@ static bool FnSetClrModulation(C4AulContext *cthr, C4ValueInt dwClr, C4Object *p
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("SetClrModulation: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
+			DebugLog(spdlog::level::err, "SetClrModulation: Overlay %d not defined for object {} ({})", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return false;
 		}
 		pOverlay->SetClrModulation(dwClr);
@@ -3909,7 +3909,7 @@ static std::optional<C4ValueInt> FnGetClrModulation(C4AulContext *cthr, C4Object
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("GetClrModulation: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
+			DebugLog(spdlog::level::err, "GetClrModulation: Overlay {} not defined for object {} ({})", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return {};
 		}
 		return {pOverlay->GetClrModulation()};
@@ -4690,7 +4690,7 @@ static C4Value FnSetPlrExtraData(C4AulContext *cthr, C4ValueInt iPlayer, C4Strin
 	{
 		StdStrBuf name{strDataName};
 		name.EscapeString();
-		DebugLogF("WARNING: SetPlrExtraData: Ignoring invalid data name \"%s\"! Only alphanumerics, _ and - are allowed.", name.getData());
+		DebugLog(spdlog::level::warn, "SetPlrExtraData: Ignoring invalid data name \"{}\"! Only alphanumerics, _ and - are allowed.", name.getData());
 		return C4VNull;
 	}
 
@@ -4748,7 +4748,7 @@ static C4Value FnSetCrewExtraData(C4AulContext *cthr, C4Object *pCrew, C4String 
 	{
 		StdStrBuf name{strDataName};
 		name.EscapeString();
-		DebugLogF("WARNING: SetCrewExtraData: Ignoring invalid data name \"%s\"! Only alphanumerics, _ and - are allowed.", name.getData());
+		DebugLog(spdlog::level::err, "SetCrewExtraData: Ignoring invalid data name \"{}\"! Only alphanumerics, _ and - are allowed.", name.getData());
 		return C4VNull;
 	}
 
@@ -5634,7 +5634,7 @@ static std::optional<C4ValueInt> FnSetObjectBlitMode(C4AulContext *ctx, C4ValueI
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("SetObjectBlitMode: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
+			DebugLog(spdlog::level::err, "SetObjectBlitMode: Overlay {} not defined for object {} ({})", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return {};
 		}
 		pOverlay->SetBlitMode(dwNewBlitMode);
@@ -5663,7 +5663,7 @@ static std::optional<C4ValueInt> FnGetObjectBlitMode(C4AulContext *ctx, C4Object
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLogF("SetObjectBlitMode: Overlay %d not defined for object %d (%s)", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
+			DebugLog(spdlog::level::err, "SetObjectBlitMode: Overlay {} not defined for object {} ({})", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return {};
 		}
 		return {pOverlay->GetBlitMode()};
@@ -5789,7 +5789,7 @@ static std::optional<C4ValueInt> FnGetTeamConfig(C4AulContext *cthr, C4ValueInt 
 	case C4TeamList::TEAM_TeamColors:           return {Game.Teams.IsTeamColors()};
 	}
 	// undefined value
-	DebugLogF("GetTeamConfig: Unknown config value: %d", iConfigValue);
+	DebugLog(spdlog::level::err, "GetTeamConfig: Unknown config value: {}", iConfigValue);
 	return {};
 }
 

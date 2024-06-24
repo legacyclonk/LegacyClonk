@@ -71,7 +71,7 @@ bool C4TexMapEntry::Init()
 	iMaterialIndex = Game.Material.Get(Material.getData());
 	if (!MatValid(iMaterialIndex))
 	{
-		DebugLogF("Error initializing material %s-%s: Invalid material!", Material.getData(), Texture.getData());
+		DebugLog(spdlog::level::err, "Error initializing material {}-{}: Invalid material!", Material.getData(), Texture.getData());
 		return false;
 	}
 	pMaterial = &Game.Material.Map[iMaterialIndex];
@@ -84,7 +84,7 @@ bool C4TexMapEntry::Init()
 	C4Texture *sfcTexture = Game.TextureMap.GetTexture(szTexture);
 	if (!sfcTexture)
 	{
-		DebugLogF("Error initializing material %s-%s: Invalid texture!", Material.getData(), Texture.getData());
+		DebugLog(spdlog::level::err, "Error initializing material {}-{}: Invalid texture!", Material.getData(), Texture.getData());
 		Clear();
 		return false;
 	}
@@ -335,11 +335,11 @@ int32_t C4TextureMap::GetIndex(const char *szMaterial, const char *szTexture, bo
 					fEntriesAdded = true;
 					return byIndex;
 				}
-				if (szErrorIfFailed) DebugLogF("Error getting MatTex %s-%s for %s from TextureMap: Init failed.", szMaterial, szTexture, szErrorIfFailed);
+				if (szErrorIfFailed) DebugLog(spdlog::level::err, "Error getting MatTex {}-{} for {} from TextureMap: Init failed.", szMaterial, szTexture, szErrorIfFailed);
 				return 0;
 			}
 	// Else, fail
-	if (szErrorIfFailed) DebugLogF("Error getting MatTex %s-%s for %s from TextureMap: %s.", szMaterial, szTexture, szErrorIfFailed, fAddIfNotExist ? "Map is full!" : "Entry not found.");
+	if (szErrorIfFailed) DebugLog(spdlog::level::err, "Error getting MatTex {}-{} for {} from TextureMap: {}.", szMaterial, szTexture, szErrorIfFailed, fAddIfNotExist ? "Map is full!" : "Entry not found.");
 	return 0;
 }
 
@@ -361,7 +361,7 @@ int32_t C4TextureMap::GetIndexMatTex(const char *szMaterialTexture, const char *
 	const auto iMaterial = Game.Material.Get(szMaterialTexture);
 	if (!MatValid(iMaterial))
 	{
-		if (szErrorIfFailed) DebugLogF("Error getting MatTex for %s: Invalid material", szErrorIfFailed);
+		if (szErrorIfFailed) DebugLog(spdlog::level::err, "Error getting MatTex for {}: Invalid material", szErrorIfFailed);
 		return 0;
 	}
 	// return default map entry
