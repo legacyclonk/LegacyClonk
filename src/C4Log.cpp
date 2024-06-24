@@ -31,6 +31,7 @@
 #include <ranges>
 
 #include <spdlog/cfg/helpers.h>
+#include <spdlog/sinks/ringbuffer_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 #ifdef _WIN32
@@ -121,6 +122,38 @@ void C4LogSystem::GuiSink::DoLog(const std::string &message)
 	}
 }
 
+std::vector<std::string> C4LogSystem::RingbufferSink::TakeMessages()
+{
+	const std::lock_guard lock{mutex_};
+
+	const std::size_t size{ringbuffer.size()};
+	std::vector<std::string> result;
+	result.reserve(size);
+
+	std::ranges::generate_n(std::back_inserter(result), size, [this]
+	{
+		auto &msg = ringbuffer.front();
+		std::string formatted;
+		formatter_->format(msg, formatted);
+
+		ringbuffer.pop_front();
+		return formatted;
+	});
+
+	return result;
+}
+
+void C4LogSystem::RingbufferSink::Clear()
+{
+	const std::lock_guard lock{mutex_};
+	ringbuffer = spdlog::details::circular_q<spdlog::details::log_msg_buffer>{size};
+}
+
+void C4LogSystem::RingbufferSink::sink_it_(const spdlog::details::log_msg &msg)
+{
+	ringbuffer.push_back(spdlog::details::log_msg_buffer{msg});
+}
+
 C4LogSystem::C4LogSystem()
 {
 	spdlog::set_automatic_registration(false);
@@ -152,6 +185,9 @@ C4LogSystem::C4LogSystem()
 	loggerDebug = std::make_shared<spdlog::logger>("");
 #endif
 	loggerDebug->set_level(spdlog::level::trace);
+
+	ringbufferSink = std::make_shared<RingbufferSink>(100);
+	logger->sinks().emplace_back(ringbufferSink);
 }
 
 void C4LogSystem::OpenLog()
@@ -175,6 +211,7 @@ void C4LogSystem::OpenLog()
 
 	loggerDebug->sinks().emplace_back(std::move(stdoutColorSink));
 	loggerDebug->sinks().emplace_back(clonkLogSink);
+	loggerDebug->sinks().emplace_back(ringbufferSink);
 
 	loggerDebugGuiSink = std::make_shared<GuiSink>();
 	loggerDebugGuiSink->set_pattern("%v");
@@ -203,14 +240,24 @@ void C4LogSystem::AddFatalError(std::string message)
 	}
 }
 
+std::string C4LogSystem::GetFatalErrorString()
+{
+	return fatalErrors | std::views::join_with('|') | std::ranges::to<std::string>();
+}
+
 void C4LogSystem::ResetFatalErrors()
 {
 	fatalErrors.clear();
 }
 
-std::string C4LogSystem::GetFatalErrorString()
+std::vector<std::string> C4LogSystem::GetRingbufferLogEntries()
 {
-	return fatalErrors | std::views::join_with('|') | std::ranges::to<std::string>();
+	return ringbufferSink->TakeMessages();
+}
+
+void C4LogSystem::ClearRingbuffer()
+{
+	ringbufferSink->Clear();
 }
 
 int iDisableLog = 0;

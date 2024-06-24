@@ -66,6 +66,24 @@ public:
 		void DoLog(const std::string &message);
 	};
 
+	class RingbufferSink : public spdlog::sinks::base_sink<std::mutex>
+	{
+	public:
+		RingbufferSink(const std::size_t size) : size{size}, ringbuffer{size} {}
+
+	public:
+		std::vector<std::string> TakeMessages();
+		void Clear();
+
+	protected:
+		void sink_it_(const spdlog::details::log_msg &msg) override;
+		void flush_() override {}
+
+	private:
+		std::size_t size;
+		spdlog::details::circular_q<spdlog::details::log_msg_buffer> ringbuffer;
+	};
+
 public:
 	C4LogSystem();
 
@@ -87,6 +105,8 @@ public:
 	void AddFatalError(std::string message);
 	void ResetFatalErrors();
 	std::string GetFatalErrorString();
+	std::vector<std::string> GetRingbufferLogEntries();
+	void ClearRingbuffer();
 
 	std::shared_ptr<spdlog::logger> CreateLogger(std::string name);
 
@@ -97,6 +117,7 @@ private:
 	std::shared_ptr<spdlog::logger> loggerSilent;
 	std::shared_ptr<spdlog::logger> loggerDebug;
 	std::shared_ptr<GuiSink> loggerDebugGuiSink;
+	std::shared_ptr<RingbufferSink> ringbufferSink;
 	int clonkLogFD{-1};
 	std::vector<std::string> fatalErrors;
 };
