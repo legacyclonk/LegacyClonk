@@ -84,6 +84,10 @@ public:
 	const std::shared_ptr<spdlog::logger> &GetLoggerSilent() const noexcept { return loggerSilent; }
 	const std::shared_ptr<spdlog::logger> &GetLoggerDebug() const noexcept { return loggerDebug; }
 
+	void AddFatalError(std::string message);
+	void ResetFatalErrors();
+	std::string GetFatalErrorString();
+
 	std::shared_ptr<spdlog::logger> CreateLogger(std::string name);
 
 	void EnableDebugLog(bool enable);
@@ -94,6 +98,7 @@ private:
 	std::shared_ptr<spdlog::logger> loggerDebug;
 	std::shared_ptr<GuiSink> loggerDebugGuiSink;
 	int clonkLogFD{-1};
+	std::vector<std::string> fatalErrors;
 };
 
 void LogNTr(spdlog::level::level_enum level, std::string_view message);
@@ -146,9 +151,19 @@ bool DebugLog(const spdlog::level::level_enum level, const std::format_string<Ar
 	return DebugLog(level, std::format(fmt, std::forward<Args>(args)...));
 }
 
-bool LogFatal(std::string_view message); // log message and store it as a fatal error
-void ResetFatalError();               // clear any fatal error message
-std::string_view GetFatalError();          // return message that was set as fatal error, if any
+void LogFatalNTr(std::string message); // log message and store it as a fatal error
+
+template<typename... Args>
+void LogFatalNTr(const std::format_string<Args...> fmt, Args &&...args)
+{
+	LogFatalNTr(std::format(fmt, std::forward<Args>(args)...));
+}
+
+template<typename... Args>
+void LogFatal(const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Args &&...args)
+{
+	LogFatalNTr(LoadResStr(id, std::forward<Args>(args)...));
+}
 
 // Used to print a backtrace after a crash
 int GetLogFD();

@@ -195,7 +195,7 @@ void C4GameControlNetwork::DoInput(C4PacketType eCtrlType, C4ControlPacket *pCtr
 			// Client: send to host
 			if (!Game.Network.Clients.SendMsgToHost(MkC4NetIOPacket(PID_ControlPkt, CtrlPkt)))
 			{
-				LogFatal("Network: could not send direct control packet!"); break;
+				LogFatalNTr("Network: could not send direct control packet!"); break;
 			}
 			delete pCtrl;
 		}
@@ -229,7 +229,7 @@ void C4GameControlNetwork::DoInput(C4PacketType eCtrlType, C4ControlPacket *pCtr
 		// Send to all clients
 		if (!Game.Network.Clients.BroadcastMsgToClients(MkC4NetIOPacket(PID_ControlPkt, CtrlPkt)))
 		{
-			LogFatal("Network: could not send direct control packet!"); break;
+			LogFatalNTr("Network: could not send direct control packet!"); break;
 		}
 		// Exec at once
 		pParent->ExecControlPacket(eCtrlType, pCtrl);

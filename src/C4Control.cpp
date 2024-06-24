@@ -497,9 +497,9 @@ void C4ControlSyncCheck::Execute(const std::shared_ptr<spdlog::logger> &) const
 			const char *szTemp = szThis; szThis = szOther; szOther = szTemp;
 		}
 		// Message
-		LogFatal("Network: Synchronization loss!");
-		LogFatal(std::format("Network: {} Frm {} Ctrl {} Rnc {} Rn3 {} Cpx {} PXS {} MMi {} Obc {} Oei {} Sct {}", szThis,            Frame,           ControlTick,           RandomCount,           Random3,           AllCrewPosX,           PXSCount,           MassMoverIndex,           ObjectCount,           ObjectEnumerationIndex,           SectShapeSum));
-		LogFatal(std::format("Network: {} Frm {} Ctrl {} Rnc {} Rn3 {} Cpx {} PXS {} MMi {} Obc {} Oei {} Sct {}", szOther, SyncCheck.Frame, SyncCheck.ControlTick, SyncCheck.RandomCount, SyncCheck.Random3, SyncCheck.AllCrewPosX, SyncCheck.PXSCount, SyncCheck.MassMoverIndex, SyncCheck.ObjectCount, SyncCheck.ObjectEnumerationIndex, SyncCheck.SectShapeSum));
+		LogFatalNTr("Network: Synchronization loss!");
+		LogFatalNTr("Network: {} Frm {} Ctrl {} Rnc {} Rn3 {} Cpx {} PXS {} MMi {} Obc {} Oei {} Sct {}", szThis,            Frame,           ControlTick,           RandomCount,           Random3,           AllCrewPosX,           PXSCount,           MassMoverIndex,           ObjectCount,           ObjectEnumerationIndex,           SectShapeSum);
+		LogFatalNTr("Network: {} Frm {} Ctrl {} Rnc {} Rn3 {} Cpx {} PXS {} MMi {} Obc {} Oei {} Sct {}", szOther, SyncCheck.Frame, SyncCheck.ControlTick, SyncCheck.RandomCount, SyncCheck.Random3, SyncCheck.AllCrewPosX, SyncCheck.PXSCount, SyncCheck.MassMoverIndex, SyncCheck.ObjectCount, SyncCheck.ObjectEnumerationIndex, SyncCheck.SectShapeSum);
 		StartSoundEffect("SyncError");
 #ifndef NDEBUG
 		// Debug safe

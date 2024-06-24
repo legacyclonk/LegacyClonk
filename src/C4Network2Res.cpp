@@ -1715,7 +1715,7 @@ bool C4Network2ResList::CreateNetworkFolder()
 	{
 		if (!CreateDirectory(szNetworkPath, nullptr))
 		{
-			LogFatal("could not create network path!"); return false;
+			LogFatalNTr("could not create network path!"); return false;
 		}
 		return true;
 	}
@@ -1723,12 +1723,12 @@ bool C4Network2ResList::CreateNetworkFolder()
 	struct stat s;
 	if (stat(szNetworkPath, &s))
 	{
-		LogFatal("could not stat network path!"); return false;
+		LogFatalNTr("could not stat network path!"); return false;
 	}
 	// not a subdir?
 	if (!(s.st_mode & S_IFDIR))
 	{
-		LogFatal("could not create network path: blocked by a file!"); return false;
+		LogFatalNTr("could not create network path: blocked by a file!"); return false;
 	}
 	// ok
 	return true;

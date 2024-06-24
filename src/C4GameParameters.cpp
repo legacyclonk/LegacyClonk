@@ -133,7 +133,7 @@ bool C4GameRes::InitNetwork(C4Network2ResList *pNetResList)
 		// Publish on network
 		if (!Publish(pNetResList))
 		{
-			LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_NOFILEPUBLISH, getFile()).c_str());
+			LogFatal(C4ResStrTableKey::IDS_NET_NOFILEPUBLISH, getFile());
 			return false;
 		}
 	}
@@ -147,12 +147,12 @@ bool C4GameRes::InitNetwork(C4Network2ResList *pNetResList)
 			const char *szFilename = pResCore->getFileName();
 			if (!pResCore->isLoadable())
 				if (pResCore->getType() == NRT_System)
-					LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_NOSAMESYSTEM, szFilename).c_str());
+					LogFatal(C4ResStrTableKey::IDS_NET_NOSAMESYSTEM, szFilename);
 				else
-					LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_NOSAMEANDTOOLARGE, szFilename).c_str());
+					LogFatal(C4ResStrTableKey::IDS_NET_NOSAMEANDTOOLARGE, szFilename);
 			// Should not happen
 			else
-				LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_NOVALIDCORE, szFilename).c_str());
+				LogFatal(C4ResStrTableKey::IDS_NET_NOVALIDCORE, szFilename);
 			return false;
 		}
 	}
@@ -201,7 +201,7 @@ bool C4GameResList::Load(const std::vector<std::string> &DefinitionFilenames)
 			C4Group Def;
 			if (!Def.Open(def.c_str()))
 			{
-				LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFNOTFOUND, def.c_str()).c_str());
+				LogFatal(C4ResStrTableKey::IDS_PRC_DEFNOTFOUND, def);
 				Def.Close();
 				return false;
 			}
@@ -402,7 +402,7 @@ bool C4GameParameters::Load(C4Group &hGroup, C4Scenario *pScenario, const char *
 	// Load teams
 	if (!Teams.Load(hGroup, pScenario, pLang))
 	{
-		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_ERRORLOADINGTEAMS)); return false;
+		LogFatal(C4ResStrTableKey::IDS_PRC_ERRORLOADINGTEAMS); return false;
 	}
 
 	// Compile data

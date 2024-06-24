@@ -237,7 +237,7 @@ bool C4Network2::InitHost(bool fLobby)
 	// initialize resource list
 	if (!ResList.Init(Logger, Game.Clients.getLocalID(), &NetIO))
 	{
-		LogFatal("Network: failed to initialize resource list!"); Clear(); return false;
+		LogFatalNTr("Network: failed to initialize resource list!"); Clear(); return false;
 	}
 	if (!Game.Parameters.InitNetwork(&ResList))
 		return false;
@@ -351,7 +351,7 @@ C4Network2::InitResult C4Network2::InitClient(const std::vector<class C4Network2
 	// initialize resource list
 	if (!ResList.Init(Logger, Game.Clients.getLocalID(), &NetIO))
 	{
-		LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_INITRESLIST)); Clear(); return IR_Fatal;
+		LogFatal(C4ResStrTableKey::IDS_NET_ERR_INITRESLIST); Clear(); return IR_Fatal;
 	}
 	// initialize net i/o
 	if (!InitNetIO(true, false))
@@ -1591,7 +1591,7 @@ void C4Network2::HandleJoinData(const C4PacketJoinData &rPkt)
 	// load dynamic
 	if (!ResList.AddByCore(ResDynamic))
 	{
-		LogFatal("Network: can not not retrieve dynamic!"); Clear(); return;
+		LogFatalNTr("Network: can not not retrieve dynamic!"); Clear(); return;
 	}
 	// load player ressources
 	Game.Parameters.PlayerInfos.LoadResources();
@@ -1869,7 +1869,7 @@ C4Network2Res::Ref C4Network2::RetrieveRes(const C4Network2ResCore &Core, int32_
 			// if not: check timeout
 			if (timeGetTime() > iTimeout)
 			{
-				LogFatal(LoadResStr(C4ResStrTableKey::IDS_NET_ERR_RESTIMEOUT, szResName).c_str());
+				LogFatal(C4ResStrTableKey::IDS_NET_ERR_RESTIMEOUT, szResName);
 				delete pDlg;
 				return nullptr;
 			}
@@ -2238,7 +2238,7 @@ bool C4Network2::InitLeague(bool *pCancel)
 	{
 		// Log message
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUEINIT, pLeagueClient->GetError())};
-		LogFatal(message.c_str());
+		LogFatalNTr(message.c_str());
 		// Clear league
 		delete pLeagueClient; pLeagueClient = nullptr;
 		if (fHost)
@@ -2282,7 +2282,7 @@ bool C4Network2::LeagueStart(bool *pCancel)
 	{
 		// Log message
 		const std::string message{LoadResStr(C4ResStrTableKey::IDS_NET_ERR_LEAGUE_STARTGAME, pLeagueClient->GetError())};
-		LogFatal(message.c_str());
+		LogFatalNTr(message.c_str());
 		// Show message
 		if (Game.pGUI && !Console.Active)
 		{

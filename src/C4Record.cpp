@@ -420,7 +420,7 @@ bool C4Playback::Open(C4Group &rGrp)
 			if (!NextSequentialChunk())
 			{
 				// empty replay??!
-				LogFatal("Record: Binary read error.");
+				LogFatalNTr("Record: Binary read error.");
 				return false;
 			}
 		}
@@ -436,7 +436,7 @@ bool C4Playback::Open(C4Group &rGrp)
 			else
 			{
 				// no control data?
-				LogFatal("Record: No control data found!");
+				LogFatalNTr("Record: No control data found!");
 				return false;
 			}
 		}
@@ -463,14 +463,14 @@ bool C4Playback::Open(C4Group &rGrp)
 #ifdef DEBUGREC_EXTFILE_WRITE
 	if (!DbgRecFile.Create(DEBUGREC_EXTFILE))
 	{
-		LogFatal("DbgRec: Creation of external file \"" DEBUGREC_EXTFILE "\" failed!");
+		LogFatalNTr("DbgRec: Creation of external file \"" DEBUGREC_EXTFILE "\" failed!");
 		return false;
 	}
 	else loggerDebugRec->info("Writing to \"" DEBUGREC_EXTFILE "\"...");
 #else
 	if (!DbgRecFile.Open(DEBUGREC_EXTFILE))
 	{
-		LogFatal("DbgRec: Opening of external file \"" DEBUGREC_EXTFILE "\" failed!");
+		LogFatalNTr("DbgRec: Opening of external file \"" DEBUGREC_EXTFILE "\" failed!");
 		return false;
 	}
 	else loggerDebugRec->info("Checking against \"" DEBUGREC_EXTFILE "\"...");

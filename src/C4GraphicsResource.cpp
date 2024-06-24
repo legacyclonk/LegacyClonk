@@ -146,7 +146,7 @@ bool C4GraphicsResource::InitFonts()
 	// update group set
 	if (!RegisterMainGroups())
 	{
-		LogFatal(LoadResStr(C4ResStrTableKey::IDS_ERR_GFX_REGISTERMAIN));
+		LogFatal(C4ResStrTableKey::IDS_ERR_GFX_REGISTERMAIN);
 		return false;
 	}
 	// reinit main font
@@ -179,8 +179,8 @@ bool C4GraphicsResource::Init()
 	if (!pPalGrp) { LogNTr(spdlog::level::err, "{}: {}", LoadResStr(C4ResStrTableKey::IDS_PRC_FILENOTFOUND), "C4.pal"); return false; }
 	if (idPalGrp != idNewPalGrp)
 	{
-		if (!pPalGrp->AccessEntry("C4.pal")) { LogFatal("Pal error!"); return false; }
-		if (!pPalGrp->Read(GamePalette, 256 * 3)) { LogFatal("Pal error!"); return false; }
+		if (!pPalGrp->AccessEntry("C4.pal")) { LogFatalNTr("Pal error!"); return false; }
+		if (!pPalGrp->Read(GamePalette, 256 * 3)) { LogFatalNTr("Pal error!"); return false; }
 		for (int32_t cnt = 0; cnt < 256 * 3; cnt++) GamePalette[cnt] <<= 2;
 		std::fill_n(AlphaPalette, 256, 0);
 		// Set default force field color
@@ -192,7 +192,7 @@ bool C4GraphicsResource::Init()
 		AlphaPalette[0] = 255;
 		AlphaPalette[191] = 127;
 		// update game pal
-		if (!Game.GraphicsSystem.SetPalette()) { LogFatal("Pal error (2)!"); return false; }
+		if (!Game.GraphicsSystem.SetPalette()) { LogFatalNTr("Pal error (2)!"); return false; }
 		idPalGrp = idNewPalGrp;
 	}
 
@@ -236,21 +236,21 @@ bool C4GraphicsResource::Init()
 	{
 		int32_t bar_wdt = fctEnergyBars.Surface->Wdt / 6;
 		int32_t bar_hgt = fctEnergyBars.Surface->Hgt / 3;
-		if (!bar_wdt || !bar_hgt) { LogFatal("EnergyBars.png invalid or too small!"); return false; }
+		if (!bar_wdt || !bar_hgt) { LogFatalNTr("EnergyBars.png invalid or too small!"); return false; }
 		fctEnergyBars.Set(fctEnergyBars.Surface, 0, 0, bar_wdt, bar_hgt);
 	}
 
 	// create ColorByOwner overlay surfaces
 	if (fctCrew.idSourceGroup != fctCrewClr.idSourceGroup)
 	{
-		if (!fctCrewClr.CreateClrByOwner(fctCrew.Surface)) { LogFatal("ClrByOwner error! (1)"); return false; }
+		if (!fctCrewClr.CreateClrByOwner(fctCrew.Surface)) { LogFatalNTr("ClrByOwner error! (1)"); return false; }
 		fctCrewClr.Wdt = fctCrew.Wdt;
 		fctCrewClr.Hgt = fctCrew.Hgt;
 		fctCrewClr.idSourceGroup = fctCrew.idSourceGroup;
 	}
 	if (fctFlag.idSourceGroup != fctFlagClr.idSourceGroup)
 	{
-		if (!fctFlagClr.CreateClrByOwner(fctFlag.Surface)) { LogFatal("ClrByOwner error! (1)"); return false; }
+		if (!fctFlagClr.CreateClrByOwner(fctFlag.Surface)) { LogFatalNTr("ClrByOwner error! (1)"); return false; }
 		fctFlagClr.Wdt = fctFlag.Wdt;
 		fctFlagClr.Hgt = fctFlag.Hgt;
 		fctFlagClr.idSourceGroup = fctFlag.idSourceGroup;
@@ -264,7 +264,7 @@ bool C4GraphicsResource::Init()
 	}
 	if (fctPlayer.idSourceGroup != fctPlayerClr.idSourceGroup)
 	{
-		if (!fctPlayerClr.CreateClrByOwner(fctPlayer.Surface)) { LogFatal("ClrByOwner error! (1)"); return false; }
+		if (!fctPlayerClr.CreateClrByOwner(fctPlayer.Surface)) { LogFatalNTr("ClrByOwner error! (1)"); return false; }
 		fctPlayerClr.Wdt = fctPlayer.Wdt;
 		fctPlayerClr.Hgt = fctPlayer.Hgt;
 		fctPlayerClr.idSourceGroup = fctPlayer.idSourceGroup;
@@ -366,7 +366,7 @@ bool C4GraphicsResource::RegisterGlobalGraphics()
 	if (!pMainGfxGrp->Open(C4CFN_Graphics) || !Files.RegisterGroup(*pMainGfxGrp, true, C4GSPrio_Base, C4GSCnt_Graphics, 1))
 	{
 		// error
-		LogFatal(LoadResStr(C4ResStrTableKey::IDS_PRC_NOGFXFILE, C4CFN_Graphics, pMainGfxGrp->GetError()).c_str());
+		LogFatal(C4ResStrTableKey::IDS_PRC_NOGFXFILE, C4CFN_Graphics, pMainGfxGrp->GetError());
 		delete pMainGfxGrp;
 		return false;
 	}
