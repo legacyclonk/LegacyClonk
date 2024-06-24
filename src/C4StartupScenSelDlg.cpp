@@ -132,7 +132,7 @@ bool C4MapFolderData::Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenL
 	// load images
 	if (!fctBackgroundPicture.Load(hGroup, C4CFN_MapFolderBG))
 	{
-		DebugLogF("C4MapFolderData::Load(%s): Could not load background graphic \"%s\"", hGroup.GetName(), C4CFN_MapFolderBG);
+		DebugLog(spdlog::level::err, "C4MapFolderData::Load({}): Could not load background graphic \"{}\"", hGroup.GetName(), C4CFN_MapFolderBG);
 		return false;
 	}
 	int i;
@@ -158,13 +158,13 @@ bool C4MapFolderData::Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenL
 				fSuccess = fctDump.Surface->SavePNG(pScen->sBaseImage.getData(), true, false, false);
 			}
 			if (!fSuccess)
-				DebugLogF("C4MapFolderData::Load(%s): Could not dump graphic \"%s\"", hGroup.GetName(), pScen->sBaseImage.getData());
+				DebugLog(spdlog::level::err, "C4MapFolderData::Load({}): Could not dump graphic \"{}\"", hGroup.GetName(), pScen->sBaseImage.getData());
 			continue;
 		}
 		// load images
 		if (pScen->sBaseImage.getLength() > 0) if (!pScen->fctBase.Load(hGroup, pScen->sBaseImage.getData()))
 		{
-			DebugLogF("C4MapFolderData::Load(%s): Could not load base graphic \"%s\"", hGroup.GetName(), pScen->sBaseImage.getData());
+			DebugLog(spdlog::level::err, "C4MapFolderData::Load({}): Could not load base graphic \"{}\"", hGroup.GetName(), pScen->sBaseImage.getData());
 			return false;
 		}
 	}
@@ -173,7 +173,7 @@ bool C4MapFolderData::Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenL
 		Scenario *pScen = ppScenList[i];
 		if (pScen->sOverlayImage.getLength() > 0) if (!pScen->fctOverlay.Load(hGroup, pScen->sOverlayImage.getData()))
 		{
-			DebugLogF("C4MapFolderData::Load(%s): Could not load graphic \"%s\"", hGroup.GetName(), pScen->sOverlayImage.getData());
+			DebugLog(spdlog::level::err, "C4MapFolderData::Load({}): Could not load graphic \"{}\"", hGroup.GetName(), pScen->sOverlayImage.getData());
 			return false;
 		}
 	}
@@ -182,7 +182,7 @@ bool C4MapFolderData::Load(C4Group &hGroup, C4ScenarioListLoader::Folder *pScenL
 		AccessGfx *pGfx = ppAccessGfxList[i];
 		if (pGfx->sOverlayImage.getLength() > 0) if (!pGfx->fctOverlay.Load(hGroup, pGfx->sOverlayImage.getData()))
 		{
-			DebugLogF("C4MapFolderData::Load(%s): Could not load graphic \"%s\"", hGroup.GetName(), pGfx->sOverlayImage.getData());
+			DebugLog(spdlog::level::err, "C4MapFolderData::Load({}): Could not load graphic \"{}\"", hGroup.GetName(), pGfx->sOverlayImage.getData());
 			return false;
 		}
 	}
@@ -997,7 +997,7 @@ bool C4ScenarioListLoader::SubFolder::DoLoadContents(C4ScenarioListLoader *pLoad
 				// ...and load it
 				if (!pNewEntry->Load(&Group, &sChildFilename, fLoadEx))
 				{
-					DebugLogF("Error loading entry \"%s\" in SubFolder \"%s\"!", sChildFilename.getData(), Group.GetFullName().getData());
+					DebugLog(spdlog::level::err, "Error loading entry \"{}\" in SubFolder \"{}\"!", sChildFilename.getData(), Group.GetFullName().getData());
 					delete pNewEntry;
 				}
 			}
@@ -1070,7 +1070,7 @@ bool C4ScenarioListLoader::RegularFolder::DoLoadContents(C4ScenarioListLoader *p
 			// ...and load it
 			if (!pNewEntry->Load(nullptr, &sChildFilename, fLoadEx))
 			{
-				DebugLogF("Error loading entry \"%s\" in Folder \"%s\"!", sChildFilename.getData(), sFilename.getData());
+				DebugLog(spdlog::level::err, "Error loading entry \"{}\" in Folder \"{}\"!", sChildFilename.getData(), sFilename.getData());
 				delete pNewEntry;
 			}
 		}

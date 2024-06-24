@@ -442,6 +442,8 @@ bool C4Game::Init()
 	if (!Parameters.AllowDebug)
 		DebugMode = false;
 
+	Application.LogSystem.EnableDebugLog(DebugMode);
+
 	// Init game
 	if (!InitGame(ScenarioFile, nullptr, true)) return false;
 
@@ -636,6 +638,7 @@ void C4Game::Clear()
 	delete pJoinReference; pJoinReference = nullptr;
 
 	fPreinited = false;
+	Application.LogSystem.EnableDebugLog(false);
 }
 
 bool C4Game::GameOverCheck()
@@ -1662,7 +1665,7 @@ bool C4Game::EnumerateMaterials()
 		{
 			if (!C4S.Landscape.InEarth.IsClear() || !C4S.Animals.EarthNest.IsClear())
 			{
-				DebugLogF("Scenario.txt: Material=%s specifies a texture, which breaks InEarth and Nest before [359]. Version=4,9,10,15,359 or higher enables the fixed behavior.", C4S.Landscape.Material);
+				DebugLog(spdlog::level::warn, "Scenario.txt: Material={} specifies a texture, which breaks InEarth and Nest before [359]. Version=4,9,10,15,359 or higher enables the fixed behavior.", C4S.Landscape.Material);
 			}
 
 			MEarth = MNone;
@@ -4077,7 +4080,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	while (pLoadSect) if (SEqualNoCase(pLoadSect->GetName(), szSection)) break; else pLoadSect = pLoadSect->pNext;
 	if (!pLoadSect)
 	{
-		DebugLogF("LoadScenarioSection: scenario section %s not found!", szSection);
+		DebugLog(spdlog::level::err, "LoadScenarioSection: scenario section {} not found!", szSection);
 		return false;
 	}
 
@@ -4087,13 +4090,13 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 		// ensure that the section file does point to temp store
 		if (!pCurrentScenarioSection->EnsureTempStore(!(dwFlags & C4S_SAVE_LANDSCAPE), !(dwFlags & C4S_SAVE_OBJECTS)))
 		{
-			DebugLogF("LoadScenarioSection(%s): could not extract section files of current section %s", szSection, pCurrentScenarioSection->GetName());
+			DebugLog(spdlog::level::err, "LoadScenarioSection({}): could not extract section files of current section {}", szSection, pCurrentScenarioSection->GetName());
 			return false;
 		}
 		// open current group
 		if (!(pGrp = pCurrentScenarioSection->GetGroupfile(hGroup)))
 		{
-			DebugLog("LoadScenarioSection: error opening current group file");
+			DebugLog(spdlog::level::err, "LoadScenarioSection: error opening current group file");
 			return false;
 		}
 		// store landscape, if desired (w/o material enumeration - that's assumed to stay consistent during the game)
@@ -4106,7 +4109,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 			rC4S.SetExactLandscape();
 			if (!rC4S.Save(*pGrp, true))
 			{
-				DebugLog("LoadScenarioSection: Error saving C4S");
+				DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving C4S");
 				return false;
 			}
 			// landscape
@@ -4115,7 +4118,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 				Objects.RemoveSolidMasks();
 				if (!Landscape.Save(*pGrp))
 				{
-					DebugLog("LoadScenarioSection: Error saving Landscape");
+					DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving Landscape");
 					return false;
 				}
 				Objects.PutSolidMasks();
@@ -4123,7 +4126,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 			// PXS
 			if (!PXS.Save(*pGrp))
 			{
-				DebugLog("LoadScenarioSection: Error saving PXS");
+				DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving PXS");
 				return false;
 			}
 			// MassMover (create copy, may not modify running data)
@@ -4131,7 +4134,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 			MassMoverSet.Copy(MassMover);
 			if (!MassMoverSet.Save(*pGrp))
 			{
-				DebugLog("LoadScenarioSection: Error saving MassMover");
+				DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving MassMover");
 				return false;
 			}
 		}
@@ -4141,13 +4144,13 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 			// strings; those will have to be merged when reloaded
 			if (!ScriptEngine.Strings.Save(*pGrp))
 			{
-				DebugLog("LoadScenarioSection: Error saving strings");
+				DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving strings");
 				return false;
 			}
 			// objects: do not save info objects or inactive objects
 			if (!Objects.Save(*pGrp, false, false))
 			{
-				DebugLog("LoadScenarioSection: Error saving objects");
+				DebugLog(spdlog::level::err, "LoadScenarioSection: Error saving objects");
 				return false;
 			}
 		}
@@ -4159,7 +4162,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	// open section group
 	if (!(pGrp = pLoadSect->GetGroupfile(hGroup)))
 	{
-		DebugLog("LoadScenarioSection: error opening group file");
+		DebugLog(spdlog::level::err, "LoadScenarioSection: error opening group file");
 		return false;
 	}
 	// remove all objects (except inactive)
@@ -4169,7 +4172,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	for (clnk = Objects.First; clnk; clnk = clnk->Next)
 		if (clnk->Obj->Status)
 		{
-			DebugLogF("LoadScenarioSection: WARNING: Object %d created in destruction process!", static_cast<int>(clnk->Obj->Number));
+			DebugLog(spdlog::level::err, "LoadScenarioSection: WARNING: Object %d created in destruction process!", static_cast<int>(clnk->Obj->Number));
 			ClearPointers(clnk->Obj);
 			// clnk->Obj->AssignRemoval(); - this could create additional objects in endless recursion...
 		}
@@ -4195,7 +4198,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	// re-init game in new section
 	if (!InitGame(*pGrp, pLoadSect, fLoadNewSky))
 	{
-		DebugLog("LoadScenarioSection: Error reiniting game");
+		DebugLog(spdlog::level::err, "LoadScenarioSection: Error reiniting game");
 		return false;
 	}
 	// set new current section

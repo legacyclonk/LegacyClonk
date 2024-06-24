@@ -429,7 +429,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 
 					if (!SEqual(localName, actualLocalName))
 					{
-						DebugLogF("WARNING: accessing local variable \"%s\" actually accesses \"%s\" because of illegal access after ChangeDef", localName, actualLocalName);
+						DebugLog(spdlog::level::warn, "accessing local variable \"{}\" actually accesses \"{}\" because of illegal access after ChangeDef", localName, actualLocalName);
 						pCurCtx->dump(" by: ");
 					}
 				}
@@ -1347,11 +1347,11 @@ static void ErrorOrWarning(C4Object *context, const std::string_view message, bo
 	{
 		if (context)
 		{
-			DebugLogF("WARNING: %s (obj %s)", message, C4VObj(context).GetDataString());
+			DebugLog(spdlog::level::warn, "{} (obj {})", message, C4VObj(context).GetDataString());
 		}
 		else
 		{
-			DebugLogF("WARNING: %s", message);
+			DebugLog(spdlog::level::warn, message);
 		}
 	}
 	else
@@ -1408,7 +1408,7 @@ static bool TryCheckConvertFunctionParameters(C4Object *const ctxObject, C4AulFu
 			throw;
 		// Show
 		e.show();
-		DebugLogF(" by: internal call to %s", pFunc->Name);
+		DebugLog(" by: internal call to {}", pFunc->Name);
 		return false;
 	}
 }

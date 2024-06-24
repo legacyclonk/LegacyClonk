@@ -227,14 +227,14 @@ bool C4DefCore::Load(C4Group &hGroup)
 		{
 			// special: Allow this for spells
 			if (~Category & C4D_Magic)
-				DebugLogF("WARNING: Def %s (%s) at %s has invalid category!", GetName(), C4IdText(id), hGroup.GetFullName().getData());
+				DebugLog(spdlog::level::warn, "Def {} ({}) at {} has invalid category!", GetName(), C4IdText(id), hGroup.GetFullName().getData());
 			// assign a default category here
 			Category = (Category & ~C4D_SortLimit) | 1;
 		}
 		// Check mass
 		if (Mass < 0)
 		{
-			DebugLogF("WARNING: Def %s (%s) at %s has invalid mass!", GetName(), C4IdText(id), hGroup.GetFullName().getData());
+			DebugLog(spdlog::level::warn, "WARNING: Def {} ({}) at {} has invalid mass!", GetName(), C4IdText(id), hGroup.GetFullName().getData());
 			Mass = 0;
 		}
 
@@ -602,7 +602,7 @@ bool C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_Bitmap)
 		if (!Graphics.LoadAllGraphics(hGroup, !!ColorByOwner))
 		{
-			DebugLogF("  Error loading graphics of %s (%s)", hGroup.GetFullName().getData(), C4IdText(id));
+			DebugLog(spdlog::level::err, "Error loading graphics of {} ({})", hGroup.GetFullName().getData(), C4IdText(id));
 			return false;
 		}
 
@@ -610,7 +610,7 @@ bool C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_Bitmap)
 		if (!LoadPortraits(hGroup))
 		{
-			DebugLogF("  Error loading portrait graphics of %s (%s)", hGroup.GetFullName().getData(), C4IdText(id));
+			DebugLog(spdlog::level::err, "Error loading portrait graphics of {} ({})", hGroup.GetFullName().getData(), C4IdText(id));
 			return false;
 		}
 
@@ -618,7 +618,7 @@ bool C4Def::Load(C4Group &hGroup,
 	if (dwLoadWhat & C4D_Load_ActMap)
 		if (!LoadActMap(hGroup))
 		{
-			DebugLogF("  Error loading ActMap of %s (%s)", hGroup.GetFullName().getData(), C4IdText(id));
+			DebugLog(spdlog::level::err, "Error loading ActMap of {} ({})", hGroup.GetFullName().getData(), C4IdText(id));
 			return false;
 		}
 
@@ -737,7 +737,7 @@ bool C4Def::Load(C4Group &hGroup,
 	{
 		TopFace.Default();
 		// warn in debug mode
-		DebugLogF("invalid TopFace in %s(%s)", Name.getData(), C4IdText(id));
+		DebugLog(spdlog::level::warn, "invalid TopFace in {}({})", Name.getData(), C4IdText(id));
 	}
 
 	return true;
