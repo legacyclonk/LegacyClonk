@@ -6226,7 +6226,7 @@ std::string C4Object::GetNeededMatStr(C4Object *pBuilder)
 			ncnt = NeededComponents.GetCount(cnt) - Component.GetIDCount(idComponent);
 			if (ncnt > 0)
 			{
-				neededMats += std::format("|%dx {}", ncnt, (pComponent = C4Id2Def(idComponent)) ? pComponent->GetName() : C4IdText(idComponent));
+				neededMats += std::format("|{}x {}", ncnt, (pComponent = C4Id2Def(idComponent)) ? pComponent->GetName() : C4IdText(idComponent));
 			}
 		}
 	}

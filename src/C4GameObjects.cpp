@@ -797,7 +797,7 @@ void C4GameObjects::FixObjectOrder()
 				while (~dwCat2 & 1) { dwCat2 = dwCat2 >> 1; ++i; }
 				if (dwCat2 != 1)
 				{
-					DebugLog(spdlog::level::err, "Objects.txt: Object #{} has invalid sorting category %x!", static_cast<int>(pObj->Number), static_cast<unsigned int>(dwCategory));
+					DebugLog(spdlog::level::err, "Objects.txt: Object #{} has invalid sorting category {:x}!", static_cast<int>(pObj->Number), static_cast<unsigned int>(dwCategory));
 					dwCategory = (1 << i);
 					pObj->Category = (pObj->Category & ~C4D_SortLimit) | dwCategory;
 				}

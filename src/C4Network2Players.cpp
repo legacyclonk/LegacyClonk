@@ -371,7 +371,7 @@ void C4Network2Players::JoinUnjoinedPlayersInControlQueue(C4ClientPlayerInfos *p
 				{
 					// failure: Non-script players must have a res to join from!
 					const char *szPlrName = pInfo->GetName(); if (!szPlrName) szPlrName = "???";
-					LogNTr(spdlog::level::err, "Network: C4Network2Players::JoinUnjoinedPlayersInControlQueue failed to join player %s!", szPlrName);
+					LogNTr(spdlog::level::err, "Network: C4Network2Players::JoinUnjoinedPlayersInControlQueue failed to join player {}!", szPlrName);
 					continue;
 				}
 			if (pPlrRes)

@@ -442,8 +442,8 @@ bool C4MessageInput::ProcessCommand(const char *szCommand)
 	if (SEqual(szCmdName, "help"))
 	{
 		Log(C4ResStrTableKey::IDS_TEXT_COMMANDSAVAILABLEDURINGGA);
-		LogNTr("/private [player] [message] - %s", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOTHES));
-		LogNTr("/team [message] - %s", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOYOUR));
+		LogNTr("/private [player] [message] - {}", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOTHES));
+		LogNTr("/team [message] - {}", LoadResStr(C4ResStrTableKey::IDS_MSG_SENDAPRIVATEMESSAGETOYOUR));
 		LogNTr("/me [action] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PERFORMANACTIONINYOURNAME));
 		LogNTr("/sound [sound] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_PLAYASOUNDFROMTHEGLOBALSO));
 		LogNTr("/mute [client] - {}", LoadResStr(C4ResStrTableKey::IDS_TEXT_MUTESOUNDCOMMANDSBYTHESPE));

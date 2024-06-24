@@ -312,12 +312,12 @@ public:
 	void setWarnCallback(WarnCBT pnWarnCB, void *pData) { pWarnCB = pnWarnCB; pWarnData = pData; }
 
 	template<typename... Args>
-	void Warn(const char *szWarning, Args... args)
+	void Warn(const std::format_string<Args...> fmt, Args &&...args)
 	{
 		// Got warning callback?
 		if (!pWarnCB) return;
 		// do callback
-		(*pWarnCB)(pWarnData, getPosition().c_str(), fmt::sprintf(szWarning, args...).c_str());
+		(*pWarnCB)(pWarnData, getPosition().c_str(), std::format(fmt, std::forward<Args>(args)...).c_str());
 	}
 
 private:
