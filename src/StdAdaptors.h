@@ -883,7 +883,7 @@ struct StdEnumAdapt
 					}
 				// Not found? Warn
 				if (i >= N || !pName->Name)
-					pComp->Warn("Unknown bit name: %s", Name.getData());
+					pComp->Warn("Unknown bit name: {}", Name.getData());
 			}
 		}
 	}
@@ -976,7 +976,7 @@ struct StdBitfieldAdapt
 						}
 					// Not found? Warn
 					if (i >= N || !pName->Name)
-						pComp->Warn("Unknown bit name: %s", Name.getData());
+						pComp->Warn("Unknown bit name: {}", Name.getData());
 				}
 				// Expect separation
 			} while (pComp->Separator(StdCompiler::SEP_VLINE));

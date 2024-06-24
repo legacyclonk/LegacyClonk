@@ -222,7 +222,7 @@ void StdCompilerBinRead::Raw(void *pData, size_t iSize, RawCompileType eType)
 
 std::string StdCompilerBinRead::getPosition() const
 {
-	return std::format("byte %zu", iPos);
+	return std::format("byte {}", iPos);
 }
 
 template <class T>
@@ -542,7 +542,7 @@ void StdCompilerINIRead::NameEnd(bool fBreak)
 		{
 			// Report unused entries
 			if (pNode->Pos && !fBreak)
-				Warn("Unexpected %s \"%s\"!", pNode->Section ? "section" : "value", pNode->Name.getData());
+				Warn("Unexpected {} \"{}\"!", pNode->Section ? "section" : "value", pNode->Name.getData());
 			// delete node
 			pNext = pNode->NextChild;
 			delete pNode;
@@ -658,7 +658,7 @@ void StdCompilerINIRead::Word(int16_t &rShort)
 	const int MIN = -(1 << 15), MAX = (1 << 15) - 1;
 	int iNum = ReadNum(strtol);
 	if (iNum < MIN || iNum > MAX)
-		Warn("number out of range (%d to %d): %d ", MIN, MAX, iNum);
+		Warn("number out of range ({} to {}): {} ", MIN, MAX, iNum);
 	rShort = BoundBy(iNum, MIN, MAX);
 }
 
@@ -667,7 +667,7 @@ void StdCompilerINIRead::Word(uint16_t &rShort)
 	const unsigned int MIN = 0, MAX = (1 << 16) - 1;
 	unsigned int iNum = ReadNum(strtoul);
 	if (iNum > MAX)
-		Warn("number out of range (%u to %u): %u ", MIN, MAX, iNum);
+		Warn("number out of range ({} to {}): {} ", MIN, MAX, iNum);
 	rShort = BoundBy(iNum, MIN, MAX);
 }
 
@@ -676,7 +676,7 @@ void StdCompilerINIRead::Byte(int8_t &rByte)
 	const int MIN = -(1 << 7), MAX = (1 << 7) - 1;
 	int iNum = ReadNum(strtol);
 	if (iNum < MIN || iNum > MAX)
-		Warn("number out of range (%d to %d): %d ", MIN, MAX, iNum);
+		Warn("number out of range ({} to {}): {} ", MIN, MAX, iNum);
 	rByte = BoundBy(iNum, MIN, MAX);
 }
 
@@ -685,7 +685,7 @@ void StdCompilerINIRead::Byte(uint8_t &rByte)
 	const unsigned int MIN = 0, MAX = (1 << 8) - 1;
 	unsigned int iNum = ReadNum(strtoul);
 	if (iNum > MAX)
-		Warn("number out of range (%u to %u): %u ", MIN, MAX, iNum);
+		Warn("number out of range ({} to {}): {} ", MIN, MAX, iNum);
 	rByte = BoundBy(iNum, MIN, MAX);
 }
 
@@ -748,7 +748,7 @@ void StdCompilerINIRead::Raw(void *pData, size_t iSize, RawCompileType eType)
 	StdBuf Buf = ReadString(iSize, eType, false);
 	// Correct size?
 	if (Buf.getSize() != iSize)
-		Warn("got %u bytes raw data, but %u bytes expected!", Buf.getSize(), iSize);
+		Warn("got {} bytes raw data, but {} bytes expected!", Buf.getSize(), iSize);
 	// Copy
 	std::memmove(pData, Buf.getData(), iSize);
 }
@@ -824,8 +824,17 @@ void StdCompilerINIRead::CreateNameTree()
 				Name.AppendChar(*pPos++);
 			while (*pPos == ' ' || *pPos == '\t') pPos++;
 			if (*pPos != (fSection ? ']' : '='))
+			{
 				// Warn, ignore
-				Warn(isprint(static_cast<unsigned char>(*pPos)) ? "Unexpected character ('%c'): %s ignored" : "Unexpected character ('0x%02x'): %s ignored", unsigned(*pPos), fSection ? "section" : "value");
+				if (isprint(static_cast<unsigned char>(*pPos)))
+				{
+					Warn("Unexpected character ('{}'): %s ignored", unsigned(*pPos), fSection ? "section" : "value");
+				}
+				else
+				{
+					Warn("Unexpected character ('{:#02x}'): %s ignored", unsigned(*pPos), fSection ? "section" : "value");
+				}
+			}
 			else
 			{
 				pPos++;
@@ -999,7 +1008,7 @@ char StdCompilerINIRead::ReadEscapedChar()
 	// Catch some no-noes like \0, \n etc.
 	if (*pPos >= 0 && iscntrl(static_cast<unsigned char>(*pPos)))
 	{
-		Warn("Nonprintable character found in string: %02x", static_cast<unsigned char>(*pPos));
+		Warn("Nonprintable character found in string: {:02x}", static_cast<unsigned char>(*pPos));
 		return *pPos++;
 	}
 	// Not escaped? Just return it

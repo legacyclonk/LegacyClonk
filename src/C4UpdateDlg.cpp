@@ -68,7 +68,7 @@ void C4UpdateDlg::UpdateText()
 		if (errno == EAGAIN)
 			return;
 		const std::string errorMessage{std::format("read error from c4group: {}", strerror(errno))};
-		Log(errorMessage);
+		LogNTr(spdlog::level::err, errorMessage);
 		AddLine(Errormessage.c_str());
 		UpdateRunning = false;
 		succeeded = false;
@@ -82,26 +82,26 @@ void C4UpdateDlg::UpdateText()
 		int child_status = 0;
 		if (waitpid(pid, &child_status, WNOHANG) == -1)
 		{
-			LogF("error in waitpid: %s", strerror(errno));
+			LogNTr(spdlog::level::err, "error in waitpid: {}", strerror(errno));
 			AddLine(std::format("error in waitpid: {}", strerror(errno)).c_str());
 			succeeded = false;
 		}
 		// check if c4group failed.
 		else if (WIFEXITED(child_status) && WEXITSTATUS(child_status))
 		{
-			LogF("c4group returned status %d", WEXITSTATUS(child_status));
+			LogNTr(spdlog::level::err, ("c4group returned status {}", WEXITSTATUS(child_status));
 			AddLine(std::format("c4group returned status {}", WEXITSTATUS(child_status)).c_str());
 			succeeded = false;
 		}
 		else if (WIFSIGNALED(child_status))
 		{
-			LogF("c4group killed with signal %d", WTERMSIG(child_status));
+			LogNTr(spdlog::level::err, ("c4group killed with signal {}", WTERMSIG(child_status));
 			AddLine(std::format("c4group killed with signal {}", WTERMSIG(child_status)).c_str());
 			succeeded = false;
 		}
 		else
 		{
-			Log("Done.");
+			LogNTr("Done.");
 			AddLine("Done.");
 		}
 		UpdateRunning = false;
@@ -110,7 +110,7 @@ void C4UpdateDlg::UpdateText()
 	{
 		c4group_output_buf[amount_read] = 0;
 		// Fixme: This adds spurious newlines in the middle of the output.
-		LogF("%s", c4group_output_buf);
+		LogNTr(c4group_output_buf);
 		AddLine(c4group_output_buf);
 	}
 #endif

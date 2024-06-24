@@ -3659,7 +3659,7 @@ void C4Game::ShowGameOverDlg()
 	// wait for streaming to finish
 	if (Network.isEnabled() && Network.isStreaming())
 	{
-		LogF("Network: Sending %d bytes pending for stream...", Network.getPendingStreamData());
+		Network.Logger->info("Sending {} bytes pending for stream...", Network.getPendingStreamData());
 		while (Network.isStreaming())
 			if (!Application.HandleMessage(100, false))
 				break;
@@ -4172,7 +4172,7 @@ bool C4Game::LoadScenarioSection(const char *szSection, uint32_t dwFlags)
 	for (clnk = Objects.First; clnk; clnk = clnk->Next)
 		if (clnk->Obj->Status)
 		{
-			DebugLog(spdlog::level::err, "LoadScenarioSection: WARNING: Object %d created in destruction process!", static_cast<int>(clnk->Obj->Number));
+			DebugLog(spdlog::level::warn, "LoadScenarioSection: Object {} created in destruction process!", static_cast<int>(clnk->Obj->Number));
 			ClearPointers(clnk->Obj);
 			// clnk->Obj->AssignRemoval(); - this could create additional objects in endless recursion...
 		}

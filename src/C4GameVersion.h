@@ -39,7 +39,7 @@ struct C4GameVersion
 
 	std::string GetString() const
 	{
-		return std::format("{} {}.{}.{}.{} [{}] %", sEngineName.getData(), iVer[0], iVer[1], iVer[2], iVer[3], iBuild);
+		return std::format("{} {}.{}.{}.{} [{}]", sEngineName.getData(), iVer[0], iVer[1], iVer[2], iVer[3], iBuild);
 	}
 
 	bool operator==(const C4GameVersion &rCmp) const

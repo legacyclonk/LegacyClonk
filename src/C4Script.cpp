@@ -3885,7 +3885,7 @@ static bool FnSetClrModulation(C4AulContext *cthr, C4ValueInt dwClr, C4Object *p
 		C4GraphicsOverlay *pOverlay = pObj->GetGraphicsOverlay(iOverlayID, false);
 		if (!pOverlay)
 		{
-			DebugLog(spdlog::level::err, "SetClrModulation: Overlay %d not defined for object {} ({})", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
+			DebugLog(spdlog::level::err, "SetClrModulation: Overlay {} not defined for object {} ({})", static_cast<int>(iOverlayID), static_cast<int>(pObj->Number), pObj->GetName());
 			return false;
 		}
 		pOverlay->SetClrModulation(dwClr);

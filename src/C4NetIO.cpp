@@ -3499,35 +3499,35 @@ void C4NetIOUDP::DebugLogPkt(bool fOut, const C4NetIOPacket &Pkt)
 {
 	StdStrBuf O;
 	unsigned int iTime = timeGetTime();
-	O.Format("%s %d:%02d:%02d:%03d %s:", fOut ? "out" : "in ",
+	std::string output{std::format("{} {}:{:02}:{:02}:{:03} {}", fOut ? "out" : "in ",
 		(iTime / 1000 / 60 / 60), (iTime / 1000 / 60) % 60, (iTime / 1000) % 60, iTime % 1000,
-		Pkt.getAddr().ToString().getData());
+		Pkt.getAddr().ToString())};
 
 	// header?
 	if (Pkt.getSize() >= sizeof(PacketHdr))
 	{
-		const PacketHdr &Hdr = *getBufPtr<PacketHdr>(Pkt);
+		const PacketHdr &Hdr = *Pkt.getPtr<PacketHdr>();
 
 		switch (Hdr.StatusByte & 0x07f)
 		{
-		case IPID_Ping:   O.Append(" PING"); break;
-		case IPID_Test:   O.Append(" TEST"); break;
-		case IPID_Conn:   O.Append(" CONN"); break;
-		case IPID_ConnOK: O.Append(" CONO"); break;
-		case IPID_Data:   O.Append(" DATA"); break;
-		case IPID_Check:  O.Append(" CHCK"); break;
-		case IPID_Close:  O.Append(" CLSE"); break;
-		default:          O.Append(" UNKN"); break;
+		case IPID_Ping:   output += " PING"; break;
+		case IPID_Test:   output += " TEST"; break;
+		case IPID_Conn:   output += " CONN"; break;
+		case IPID_ConnOK: output += " CONO"; break;
+		case IPID_Data:   output += " DATA"; break;
+		case IPID_Check:  output += " CHCK"; break;
+		case IPID_Close:  output += " CLSE"; break;
+		default:          output += " UNKN"; break;
 		}
-		O.AppendFormat(" %s %04d", (Hdr.StatusByte & 0x80) ? "MC" : "DU", Hdr.Nr);
+		output += std::format(" {} {:04}", (Hdr.StatusByte & 0x80) ? "MC" : "DU", Hdr.Nr);
 
 		#define UPACK(type) \
-			const type &P = *getBufPtr<type>(Pkt);
+			const type &P = *Pkt.getPtr<type>();
 
 		switch (Hdr.StatusByte)
 		{
-		case IPID_Test: { UPACK(TestPacket); O.AppendFormat(" (%d)", P.TestNr); break; }
-		case IPID_Conn: { UPACK(ConnPacket); O.AppendFormat(" (Ver %d, MC: %s)", P.ProtocolVer, P.MCAddr.ToString()); break; }
+		case IPID_Test: { UPACK(TestPacket); output += std::format(" ({})", P.TestNr); break; }
+		case IPID_Conn: { UPACK(ConnPacket); output += std::format(" (Ver {}, MC: {})", P.ProtocolVer, P.MCAddr.ToString()); break; }
 		case IPID_ConnOK:
 		{
 			UPACK(ConnOKPacket);
@@ -3542,30 +3542,30 @@ void C4NetIOUDP::DebugLogPkt(bool fOut, const C4NetIOPacket &Pkt)
 		}
 		case IPID_Data:
 		{
-			UPACK(DataPacketHdr); O.AppendFormat(" (f: %d s: %d)", P.FNr, P.Size);
+			UPACK(DataPacketHdr); output += std::format(" (f: {} s: {})", P.FNr, P.Size);
 			for (int iPos = sizeof(DataPacketHdr); iPos < std::min<int>(Pkt.getSize(), sizeof(DataPacketHdr) + 16); iPos++)
-				O.AppendFormat(" %02x", *getBufPtr<unsigned char>(Pkt, iPos));
+				output += std::format(" {:02x}", *Pkt.getPtr<unsigned char>(iPos));
 			break;
 		}
 		case IPID_Check:
 		{
 			UPACK(CheckPacketHdr);
-			O.AppendFormat(" (ack: %d, mcack: %d, ask: %d mcask: %d, ", P.AckNr, P.MCAckNr, P.AskCount, P.MCAskCount);
+			output += std::format(" (ack: %d, mcack: %d, ask: %d mcask: %d, ", P.AckNr, P.MCAckNr, P.AskCount, P.MCAskCount);
 			if (Pkt.getSize() < sizeof(CheckPacketHdr) + sizeof(unsigned int) * (P.AskCount + P.MCAskCount))
-				O.AppendFormat("too small)");
+				output += "too small)";
 			else
 			{
-				O.Append("[");
+				output += '[';
 				for (unsigned int i = 0; i < P.AskCount + P.MCAskCount; i++)
-					O.AppendFormat("%s%d", i ? ", " : "", *getBufPtr<unsigned int>(Pkt, sizeof(CheckPacketHdr) + i * sizeof(unsigned int)));
-				O.Append("])");
+					output += std::format("{}{}", i ? ", " : "", *Pkt.getPtr<unsigned int>(sizeof(CheckPacketHdr) + i * sizeof(unsigned int)));
+				output += "])";
 			}
 			break;
 		}
 		}
 	}
-	O.AppendFormat(" (%d bytes)\n", Pkt.getSize());
-	write(hDebugLog, O.getData(), O.getLength());
+	output += " ({} bytes)\n", Pkt.getSize();
+	write(hDebugLog, output.c_str(), output.size());
 }
 
 #endif

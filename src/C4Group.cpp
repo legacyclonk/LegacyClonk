@@ -1908,7 +1908,7 @@ bool C4Group::AccessEntry(const char *szWildCard,
 	bool *fChild)
 {
 #ifdef C4GROUP_DUMP_ACCESS
-	LogF("Group access in %s: %s", GetFullName().getData(), szWildCard);
+	LogNTr(spdlog::level::debug, "Group access in {}: {}", GetFullName().getData(), szWildCard);
 #endif
 	char fname[_MAX_FNAME + 1];
 	if (!FindEntry(szWildCard, fname, &iCurrFileSize, fChild))
