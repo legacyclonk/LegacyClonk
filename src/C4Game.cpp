@@ -344,6 +344,8 @@ bool C4Game::Init()
 	InitProgress = 0; LastInitProgress = 0;
 	SetInitProgress(0);
 
+	Application.LogSystem.ClearRingbuffer();
+
 	fQuitWithError = false;
 	C4GameLobby::UserAbort = false;
 

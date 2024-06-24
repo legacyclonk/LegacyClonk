@@ -279,11 +279,20 @@ bool C4Startup::DoStartup()
 		// preferred: Show fatal error
 		if (!fatalError.empty())
 		{
+			Application.LogSystem.ClearRingbuffer();
 			Game.pGUI->ShowMessage(fatalError.c_str(), LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), C4GUI::Ico_Error);
 		}
 		else
 		{
-			Game.pGUI->ShowMessage("(no error)", LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), C4GUI::Ico_Error);
+			if (const auto logEntries = Application.LogSystem.GetRingbufferLogEntries(); !logEntries.empty())
+			{
+				const auto logEntriesString = logEntries | std::views::join_with('|') | std::ranges::to<std::string>();
+				Game.pGUI->ShowRemoveDlg(new C4GUI::InfoDialog(LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), 10, StdStrBuf{logEntriesString.c_str(), logEntriesString.size(), false}));
+			}
+			else
+			{
+				Game.pGUI->ShowMessage("(no error)", LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), C4GUI::Ico_Error);
+			}
 		}
 		Application.LogSystem.ResetFatalErrors();
 	}
