@@ -204,7 +204,7 @@ class LoggerNameIfExistsFormatterFlag : public spdlog::custom_flag_formatter
 public:
 	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
 	{
-		if (!msg.logger_name.empty())
+		if (!msg.logger_name.empty() && msg.logger_name != "DebugLog")
 		{
 			dest += std::format("[{}] ", msg.logger_name);
 		}
