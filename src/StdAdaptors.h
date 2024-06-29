@@ -20,6 +20,7 @@
 #include "Standard.h"
 #include "StdCompiler.h"
 
+#include <charconv>
 #include <chrono>
 #include <limits>
 #include <memory>
@@ -1033,12 +1034,15 @@ public:
 		for (size_t i = 0; i < iSize; i++)
 		{
 			uint8_t *pByte = reinterpret_cast<uint8_t *>(pData) + i;
-			if (!fCompiler) sprintf(szData, "%02x", *pByte);
+			if (!fCompiler)
+			{
+				*std::to_chars(szData, szData + 2, *pByte, 16).ptr = '\0';
+			}
 			pComp->String(szData, 2, StdCompiler::RCT_Idtf);
 			if (fCompiler)
 			{
 				int b;
-				if (sscanf(szData, "%02x", &b) != 1)
+				if (std::from_chars(szData, szData + 2, b, 16).ec != std::errc{})
 					pComp->excNotFound(i ? "hexadecimal data: bytes missing!" : "hexadecimal data missing!");
 				*pByte = b;
 			}

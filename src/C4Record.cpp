@@ -160,9 +160,8 @@ bool C4Record::Start(bool fInitial)
 		return false;
 
 	// open control record file
-	char szCtrlRecFilename[_MAX_PATH + 1 + _MAX_FNAME];
-	sprintf(szCtrlRecFilename, "%s" DirSep C4CFN_CtrlRec, sFilename.getData());
-	if (!CtrlRec.Create(szCtrlRecFilename)) return false;
+	const std::string ctrlRecFilename{std::format("{}" DirSep C4CFN_CtrlRec, sFilename.getData())};
+	if (!CtrlRec.Create(ctrlRecFilename.c_str())) return false;
 
 	// open record group
 	if (!RecordGrp.Open(sFilename.getData()))

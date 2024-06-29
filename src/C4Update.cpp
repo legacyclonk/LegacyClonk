@@ -58,7 +58,7 @@ bool C4Group_ApplyUpdate(C4Group &hGroup)
 			{
 			// Bad version - checks against version of the applying executable (major version must match, minor version must be equal or higher)
 			case C4UpdatePackage::CheckResult::BadVersion:
-				std::println(stderr, "This update {} can only be applied using version %d.%d.%d.%d or higher.", Upd.Name, Upd.RequireVersion[0], Upd.RequireVersion[1], Upd.RequireVersion[2], Upd.RequireVersion[3]);
+				std::println(stderr, "This update {} can only be applied using version {}.{}.{}.{} or higher.", Upd.Name, Upd.RequireVersion[0], Upd.RequireVersion[1], Upd.RequireVersion[2], Upd.RequireVersion[3]);
 				return false;
 			// Target not found: keep going
 			case C4UpdatePackage::CheckResult::NoSource:
@@ -661,7 +661,7 @@ bool C4UpdatePackage::MakeUpdate(const char *strFile1, const char *strFile2, con
 	if (strName)
 		SCopy(strName, Name, C4MaxName);
 	else
-		sprintf(Name, "%s Update", GetFilename(strFile1));
+		FormatWithNull(Name, "{} Update", GetFilename(strFile1));
 	SCopy(strFile1, DestPath, _MAX_PATH);
 	GrpUpdate = true;
 	if (!C4Group_GetFileCRC(strFile1, &GrpChks1[UpGrpCnt]))
@@ -860,7 +860,7 @@ bool C4UpdatePackage::MkUp(C4Group *pGrp1, C4Group *pGrp2, C4GroupEx *pUpGrp, bo
 	}
 
 	if (iChangedEntries > 0)
-		WriteLog("{}: %d/%d changed ({})\n", pGrp2->GetFullName().getData(), iChangedEntries, pGrp2->EntryCount(), *fModified ? "update" : "skip");
+		WriteLog("{}: {}/{} changed ({})\n", pGrp2->GetFullName().getData(), iChangedEntries, pGrp2->EntryCount(), *fModified ? "update" : "skip");
 
 	// success
 	return true;

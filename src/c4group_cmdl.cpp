@@ -375,10 +375,10 @@ int RegisterShellExtensions()
 	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
 	{
 		// Unpack
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-u\"", strModule);
+		FormatWithNull(strCommand, "\"{}\" \"%1\" \"-u\"", strModule);
 		if (!SetRegShell(strClass, "MakeFolder", "C4Group Unpack", strCommand)) return 0;
 		// Explode
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-x\"", strModule);
+		FormatWithNull(strCommand, "\"{}\" \"%1\" \"-x\"", strModule);
 		if (!SetRegShell(strClass, "ExplodeFolder", "C4Group Explode", strCommand)) return 0;
 	}
 	// Directories
@@ -386,7 +386,7 @@ int RegisterShellExtensions()
 	for (int i = 0; SCopySegment(strClasses2, i, strClass); i++)
 	{
 		// Pack
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-p\"", strModule);
+		FormatWithNull(strCommand, "\"{}\" \"%1\" \"-p\"", strModule);
 		if (!SetRegShell(strClass, "MakeGroupFile", "C4Group Pack", strCommand)) return 0;
 	}
 	// Done
@@ -438,9 +438,9 @@ void StdCompilerWarnCallback(void *pData, const char *szPosition, const char *sz
 {
 	const char *szName = reinterpret_cast<const char *>(pData);
 	if (!szPosition || !*szPosition)
-		LogF("WARNING: %s: %s", szName, szError);
+		LogF("WARNING: {}: {}", szName, szError);
 	else
-		LogF("WARNING: %s (%s): %s", szName, szPosition, szError);
+		LogF("WARNING: {} ({}): {}", szName, szPosition, szError);
 }
 
 int main(int argc, char *argv[])

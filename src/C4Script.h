@@ -34,7 +34,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 
 /* Engine-Calls */
 
-#define PSF_Script                 "~Script%i"
+#define PSF_Script                 "~Script{}"
 #define PSF_Initialize             "~Initialize"
 #define PSF_InitializeDef          "~InitializeDef"
 #define PSF_Construction           "~Construction"
@@ -105,11 +105,11 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 #define PSF_MouseSelection         "~MouseSelection" // int iByPlr
 #define PSF_OnOwnerChanged         "~OnOwnerChanged" // iNewOwner, iOldOwner
 #define PSF_OnJoinCrew             "~Recruitment" // int Player
-#define PSF_FxStart                "Fx%sStart" // C4Object *pTarget, int iEffectNumber, int iTemp, C4Value vVar1, C4Value vVar2, C4Value vVar3, C4Value vVar4
-#define PSF_FxStop                 "Fx%sStop" // C4Object *pTarget, int iEffectNumber, int iReason, bool fTemp
-#define PSF_FxTimer                "Fx%sTimer" // C4Object *pTarget, int iEffectNumber, int iEffectTime
-#define PSF_FxEffect               "Fx%sEffect" // C4String *szNewEffect, C4Object *pTarget, int iEffectNumber, int iNewEffectNumber, C4Value vNewEffectVar1, C4Value vNewEffectVar2, C4Value vNewEffectVar3, C4Value vNewEffectVar4
-#define PSF_FxDamage               "Fx%sDamage" // C4Object *pTarget, int iEffectNumber, int iDamage, int iCause, int iCausePlayer
+#define PSF_FxStart                "Fx{}Start" // C4Object *pTarget, int iEffectNumber, int iTemp, C4Value vVar1, C4Value vVar2, C4Value vVar3, C4Value vVar4
+#define PSF_FxStop                 "Fx{}Stop" // C4Object *pTarget, int iEffectNumber, int iReason, bool fTemp
+#define PSF_FxTimer                "Fx{}Timer" // C4Object *pTarget, int iEffectNumber, int iEffectTime
+#define PSF_FxEffect               "Fx{}Effect" // C4String *szNewEffect, C4Object *pTarget, int iEffectNumber, int iNewEffectNumber, C4Value vNewEffectVar1, C4Value vNewEffectVar2, C4Value vNewEffectVar3, C4Value vNewEffectVar4
+#define PSF_FxDamage               "Fx{}Damage" // C4Object *pTarget, int iEffectNumber, int iDamage, int iCause, int iCausePlayer
 #define PSF_FxCustom               "Fx{}{}" // C4Object *pTarget, int iEffectNumber, C4Value vVar1, C4Value vVar2, C4Value vVar3, C4Value vVar4, C4Value vVar5, C4Value vVar6, C4Value vVar7
 #define PSF_FireMode               "~FireMode"
 #define PSF_FrameDecoration        "~FrameDecoration{}"
@@ -122,7 +122,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine); // add functions to engine
 #define PSF_OnTeamSwitch           "~OnTeamSwitch" // int iPlr1, int idNewTeam, int idOldTeam
 #define PSF_OnOwnerRemoved         "~OnOwnerRemoved"
 
-// Fx%s is automatically prefixed
+// Fx{} is automatically prefixed
 #define PSFS_FxAdd  "Add" // C4Object *pTarget, int iEffectNumber, C4String *szNewEffect, int iNewTimer, C4Value vNewEffectVar1, C4Value vNewEffectVar2, C4Value vNewEffectVar3, C4Value vNewEffectVar4
 #define PSFS_FxInfo "Info" // C4Object *pTarget, int iEffectNumber
 

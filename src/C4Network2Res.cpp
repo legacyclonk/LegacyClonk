@@ -1761,11 +1761,14 @@ bool C4Network2ResList::FindTempResFileName(const char *szFilename, char *pTarge
 	// find another file name
 	char szFileMask[_MAX_PATH + 1];
 	SCopy(pTarget, szFileMask, GetExtension(pTarget) - 1 - pTarget);
-	SAppend("_%d", szFileMask, _MAX_PATH);
-	SAppend(GetExtension(pTarget) - 1, szFileMask, _MAX_PATH);
+	char *const end{szFileMask + std::strlen(szFileMask) + 1};
+	end[-1] = '_';
+
 	for (int32_t i = 2; i < 1000; i++)
 	{
-		snprintf(pTarget, _MAX_PATH, szFileMask, i);
+		char *const extPtr{std::to_chars(end, szFileMask + std::size(szFileMask) - 1, i).ptr};
+		SCopy(GetExtension(pTarget) - 1, extPtr, _MAX_PATH - (extPtr - szFileMask));
+		SCopy(szFileMask, pTarget, _MAX_PATH);
 		// doesn't exist?
 		if (access(pTarget, F_OK))
 			return true;

@@ -3461,23 +3461,22 @@ void C4NetIOUDP::DoCheck() // (mt-safe)
 
 void C4NetIOUDP::OpenDebugLog()
 {
-	const char *szFileBase = Config.AtExePath("NetIOUDP%d.log");
-	char szFilePath[_MAX_PATH + 1];
+	const std::string fileBase{Config.AtExePath("NetIOUDP")};
 	for (int i = 0; i < 1000; i++)
 	{
-		ssprintf(szFilePath, szFileBase, i);
-		hDebugLog = open(szFilePath, O_CREAT | O_EXCL | O_TRUNC | _O_SEQUENTIAL | _O_TEXT | O_WRONLY, S_IREAD | S_IWRITE);
+		const std::string filePath{fileBase + std::format("{}.log", i)};
+		hDebugLog = open(filePath.c_str(), O_CREAT | O_EXCL | O_TRUNC | _O_SEQUENTIAL | _O_TEXT | O_WRONLY, S_IREAD | S_IWRITE);
 		if (hDebugLog != -1) break;
 	}
 	// initial timestamp
 	if (hDebugLog != -1)
 	{
-		char O[1024 + 1];
+		std::string output;
 		time_t tTime; time(&tTime);
 		struct tm *pLocalTime;
 		pLocalTime = localtime(&tTime);
 		if (pLocalTime)
-			sprintf(O, "C4NetIOUDP debuglog starting at %d/%d/%d  %d:%2d:%2d - (Daylight %d)\n",
+			output = std::format("C4NetIOUDP debuglog starting at {}/{}/{}  {}:{:2}:{:2} - (Daylight {})\n",
 				pLocalTime->tm_mon + 1,
 				pLocalTime->tm_mday,
 				pLocalTime->tm_year + 1900,
@@ -3485,8 +3484,8 @@ void C4NetIOUDP::OpenDebugLog()
 				pLocalTime->tm_min,
 				pLocalTime->tm_sec,
 				pLocalTime->tm_isdst);
-		else sprintf(O, "C4NetIOUDP debuglog; time not available\n");
-		write(hDebugLog, O, strlen(O));
+		else output = "C4NetIOUDP debuglog; time not available\n";
+		write(hDebugLog, output.c_str(), output.size());
 	}
 }
 
@@ -3550,7 +3549,7 @@ void C4NetIOUDP::DebugLogPkt(bool fOut, const C4NetIOPacket &Pkt)
 		case IPID_Check:
 		{
 			UPACK(CheckPacketHdr);
-			output += std::format(" (ack: %d, mcack: %d, ask: %d mcask: %d, ", P.AckNr, P.MCAckNr, P.AskCount, P.MCAskCount);
+			output += std::format(" (ack: {}, mcack: {}, ask: {} mcask: {}, ", P.AckNr, P.MCAckNr, P.AskCount, P.MCAskCount);
 			if (Pkt.getSize() < sizeof(CheckPacketHdr) + sizeof(unsigned int) * (P.AskCount + P.MCAskCount))
 				output += "too small)";
 			else

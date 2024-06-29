@@ -350,7 +350,7 @@ void C4ObjectList::DrawIDList(C4Facet &cgo, int iSelection,
 	int32_t iCount;
 	C4Facet cgo2;
 	C4Object *pFirstObj;
-	char szCount[10];
+	std::array<char, C4Strings::NumberOfCharactersForDigits<std::int32_t> + 1 + 1> buf;
 	// objects are sorted in the list already, so just draw them!
 	C4ObjectListIterator iter(*this);
 	while (pFirstObj = iter.GetNext(&iCount))
@@ -360,9 +360,11 @@ void C4ObjectList::DrawIDList(C4Facet &cgo, int iSelection,
 		// draw picture
 		pFirstObj->DrawPicture(cgo2, cSec == iSelection);
 		// Draw count
-		sprintf(szCount, "%dx", iCount);
+		char *const ptr{std::to_chars(buf.data(), buf.data() + buf.size() - 2, iCount).ptr};
+		ptr[0] = 'x';
+		ptr[1] = '\0';
 		if ((iCount != 1) || fDrawOneCounts)
-			Application.DDraw->TextOut(szCount, Game.GraphicsResource.FontRegular, 1.0, cgo2.Surface, cgo2.X + cgo2.Wdt - 1, cgo2.Y + cgo2.Hgt - 1 - Game.GraphicsResource.FontRegular.GetLineHeight(), CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
+			Application.DDraw->TextOut(buf.data(), Game.GraphicsResource.FontRegular, 1.0, cgo2.Surface, cgo2.X + cgo2.Wdt - 1, cgo2.Y + cgo2.Hgt - 1 - Game.GraphicsResource.FontRegular.GetLineHeight(), CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 		// Region
 		if (pRegions) pRegions->Add(cgo2.X, cgo2.Y, cgo2.Wdt, cgo2.Hgt, pFirstObj->GetName(), iRegionCom, pFirstObj, COM_None, COM_None, pFirstObj->Number);
 		// Next section

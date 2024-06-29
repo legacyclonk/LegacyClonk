@@ -19,6 +19,8 @@
 #include <C4Include.h>
 #include <C4Id.h>
 
+#include <charconv>
+
 static char C4IdTextBuffer[5];
 
 const char *C4IdText(C4ID id)
@@ -36,7 +38,7 @@ void GetC4IdText(C4ID id, char *sBuf)
 	// Numerical id
 	if (Inside(static_cast<int>(id), 0, 9999))
 	{
-		snprintf(sBuf, 5, "%04i", static_cast<unsigned int>(id));
+		std::to_chars(sBuf, sBuf + 4, static_cast<unsigned int>(id));
 	}
 	// Literal id
 	else
@@ -45,8 +47,9 @@ void GetC4IdText(C4ID id, char *sBuf)
 		sBuf[1] = static_cast<char>((id & 0x0000FF00) >> 8);
 		sBuf[2] = static_cast<char>((id & 0x00FF0000) >> 16);
 		sBuf[3] = static_cast<char>((id & 0xFF000000) >> 24);
-		sBuf[4] = 0;
 	}
+
+	sBuf[4] = 0;
 }
 
 bool LooksLikeID(C4ID id)

@@ -507,7 +507,7 @@ bool C4GraphicsSystem::SaveScreenshot(bool fSaveAll)
 	int32_t iScreenshotIndex = 1;
 	const char *strFilePath = nullptr;
 	do
-		sprintf(szFilename, "Screenshot%03i.png", iScreenshotIndex++);
+		FormatWithNull(szFilename, "Screenshot{:03}.png", iScreenshotIndex++);
 	while (FileExists(strFilePath = Config.AtScreenshotPath(szFilename)));
 	bool fSuccess = DoSaveScreenshot(fSaveAll, strFilePath);
 

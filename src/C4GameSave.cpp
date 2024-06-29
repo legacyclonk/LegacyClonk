@@ -579,9 +579,9 @@ void C4GameSaveRecord::AdjustCore(C4Scenario &rC4S)
 	rC4S.Head.Replay = true;
 	rC4S.Head.Icon = 29;
 	// default record title
-	char buf[1024 + 1];
-	sprintf(buf, "%03i %s [%d]", iNum, Game.Parameters.ScenarioTitle.getData(), static_cast<int>(C4XVERBUILD));
-	SCopy(buf, rC4S.Head.Title, C4MaxTitle);
+	std::array<char, C4MaxTitle + 1> buf;
+	FormatWithNull(buf, "{:03} {} [{}]", iNum, Game.Parameters.ScenarioTitle.getData(), C4XVERBUILD);
+	SCopy(buf.data(), rC4S.Head.Title, C4MaxTitle);
 }
 
 bool C4GameSaveRecord::SaveComponents()

@@ -71,7 +71,7 @@ bool C4Language::Init()
 	if (PackDirectory.Open(C4CFN_Languages))
 		while (PackDirectory.FindNextEntry("*.c4g", strEntry))
 		{
-			sprintf(strPackFilename, "%s" DirSep "%s", C4CFN_Languages, strEntry);
+			FormatWithNull(strPackFilename, "{}" DirSep "{}", C4CFN_Languages, strEntry);
 			pPack = new C4Group();
 			if (pPack->Open(strPackFilename))
 			{
@@ -415,7 +415,7 @@ bool C4Language::LoadStringTable(C4Group &hGroup, const char *strCode)
 {
 	// Compose entry name
 	char strEntry[_MAX_FNAME + 1];
-	sprintf(strEntry, "Language%s.txt", strCode); // ...should use C4CFN_Language here
+	FormatWithNull(strEntry, "Language{}.txt", strCode); // ...should use C4CFN_Language here
 	// Load string table
 	StdStrBuf strTable;
 	if (!hGroup.LoadEntryString(strEntry, strTable))

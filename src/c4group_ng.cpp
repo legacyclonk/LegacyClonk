@@ -108,7 +108,7 @@ bool ProcessGroup(const char *FilenamePar)
 	size_t len = strlen(szFilename);
 	if (szFilename[len - 1] == DirectorySeparator) szFilename[len - 1] = 0;
 	// Current filename
-	LogF("Group: %s", szFilename);
+	LogF("Group: {}", szFilename);
 
 	// Open group file
 	if (hGroup.Open(szFilename, true))
@@ -379,37 +379,37 @@ bool ProcessGroup(const char *FilenamePar)
 #endif
 					// Undefined
 					default:
-						std::println(stderr, "Unknown command: %s", argv[iArg]);
+						std::println(stderr, "Unknown command: {}", argv[iArg]);
 						break;
 					}
 				}
 				else
 				{
-					std::println(stderr, "Invalid parameter %s", argv[iArg]);
+					std::println(stderr, "Invalid parameter {}", argv[iArg]);
 				}
 			}
 		}
 		// Error: output status
 		if (!SEqual(hGroup.GetError(), "No Error"))
 		{
-			std::println(stderr, "Status: %s", hGroup.GetError());
+			std::println(stderr, "Status: {}", hGroup.GetError());
 		}
 		// Close group file
 		if (!hGroup.Close())
 		{
-			std::println(stderr, "Closing: %s", hGroup.GetError());
+			std::println(stderr, "Closing: {}", hGroup.GetError());
 		}
 		// Delete group file if desired (i.e. after apply update)
 		if (fDeleteGroup)
 		{
-			LogF("Deleting %s...", GetFilename(szFilename));
+			LogF("Deleting {}...", GetFilename(szFilename));
 			EraseItem(szFilename);
 		}
 	}
 	// Couldn't open group
 	else
 	{
-		std::println(stderr, "Status: %s", hGroup.GetError());
+		std::println(stderr, "Status: {}", hGroup.GetError());
 	}
 	free(szFilename);
 	// Done
@@ -429,11 +429,11 @@ int RegisterShellExtensions()
 	for (int i = 0; SCopySegment(strClasses, i, strClass); i++)
 	{
 		// Unpack
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-u\"", strModule);
+		FormatWithNull(strCommand, "\"{}\" \"%1\" \"-u\"", strModule);
 		if (!SetRegShell(strClass, "MakeFolder", "C4Group Unpack", strCommand))
 			return 0;
 		// Explode
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-x\"", strModule);
+		FormatWithNull(strCommand, "\"{}\" \"%1\" \"-x\"", strModule);
 		if (!SetRegShell(strClass, "ExplodeFolder", "C4Group Explode", strCommand))
 			return 0;
 	}
@@ -442,7 +442,7 @@ int RegisterShellExtensions()
 	for (i = 0; SCopySegment(strClasses2, i, strClass); i++)
 	{
 		// Pack
-		sprintf(strCommand, "\"%s\" \"%%1\" \"-p\"", strModule);
+		FormatWithNull(strCommand, "\"{}\" \"%1\" \"-p\"", strModule);
 		if (!SetRegShell(strClass, "MakeGroupFile", "C4Group Pack", strCommand))
 			return 0;
 	}
@@ -531,7 +531,7 @@ int main(int argc, char *argv[])
 		++iFirstCommand;
 
 	// Program info
-	LogF("LegacyClonk C4Group %s", C4VERSION);
+	LogF("LegacyClonk C4Group {}", C4VERSION);
 
 	// Load configuration
 	Config.Init();
@@ -611,7 +611,7 @@ int main(int argc, char *argv[])
 	// Execute when done
 	if (strExecuteAtEnd[0])
 	{
-		printf("Executing: %s\n", strExecuteAtEnd);
+		printf("Executing: {}\n", strExecuteAtEnd);
 		switch (fork())
 		{
 		// Error
