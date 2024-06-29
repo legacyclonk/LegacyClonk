@@ -22,8 +22,11 @@
 
 #include <C4Components.h>
 #include <C4InputValidation.h>
-#include "C4Log.h"
 #include "StdConfig.h"
+
+#ifdef C4ENGINE
+#include "C4Log.h"
+#endif
 
 #ifdef _WIN32
 #include <sys/utime.h>
