@@ -1360,6 +1360,7 @@ bool C4Group::View(const char *szFiles)
 {
 	C4GroupEntry *centry;
 	int fcount = 0, bcount = 0; // Virtual counts
+	std::size_t maxFilenameLength{0};
 
 	if (!StdOutput) return false;
 
@@ -1373,6 +1374,7 @@ bool C4Group::View(const char *szFiles)
 	{
 		fcount++;
 		bcount += centry->Size;
+		maxFilenameLength = std::max(maxFilenameLength, std::strlen(centry->FileName));
 	}
 
 	std::println("Maker: {}  Creation: {}  {}\n\rVersion: {}.{}  CRC: {} ({:X})",
@@ -1391,7 +1393,7 @@ bool C4Group::View(const char *szFiles)
 		if (pcoretm) coretm = *pcoretm; else std::print("(invalid timestamp) ");
 		centry->Time = static_cast<int32_t>(cur_time);
 
-		std::println("{} {:8} Bytes {:02}.{:02}.{:02} {:02}:{:02}:{:02} {}{:08X} {}", centry->FileName,
+		std::println("{:>{}} {:8} Bytes {:02}.{:02}.{:02} {:02}:{:02}:{:02} {}{:08X} {}", centry->FileName, maxFilenameLength,
 			centry->Size,
 			coretm.tm_mday, coretm.tm_mon + 1, coretm.tm_year % 100,
 			coretm.tm_hour, coretm.tm_min, coretm.tm_sec,
