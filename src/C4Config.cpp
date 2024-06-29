@@ -782,9 +782,9 @@ const char *C4Config::GetSubkeyPath(const char *strSubkey)
 {
 	static char key[1024 + 1];
 #ifdef _WIN32
-	sprintf(key, "Software\\%s\\%s\\%s", C4CFG_Company, C4CFG_Product, strSubkey);
+	FormatWithNull(key, "Software\\{}\\{}\\{}", C4CFG_Company, C4CFG_Product, strSubkey);
 #else
-	sprintf(key, "%s", strSubkey);
+	SCopy(key, strSubkey, 1024);
 #endif
 	return key;
 }

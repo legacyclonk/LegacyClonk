@@ -215,13 +215,15 @@ void C4IDList::Draw(C4Facet &cgo, int32_t selection,
 	int32_t idcount;
 	C4ID id;
 	C4Facet cgo2;
-	char buf[10];
+	std::array<char, C4Strings::NumberOfCharactersForDigits<std::int32_t> + 1 + 1> buf;
 	for (int32_t cnt = 0; (cnt < sections) && (id = GetID(defs, category, firstid + cnt, &idcount)); ++cnt)
 	{
 		cgo2 = cgo.TruncateSection(align);
 		defs.Draw(id, cgo2, (firstid + cnt == selection), 0);
-		sprintf(buf, "%dx", idcount);
-		if (counts) Application.DDraw->TextOut(buf, Game.GraphicsResource.FontRegular, 1.0, cgo2.Surface, cgo2.X + cgo2.Wdt - 1, cgo2.Y + cgo2.Hgt - 1 - Game.GraphicsResource.FontRegular.GetLineHeight(), CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
+		char *const ptr{std::to_chars(buf.data(), buf.data() + buf.size() - 2, idcount).ptr};
+		ptr[0] = 'x';
+		ptr[1] = '\0';
+		if (counts) Application.DDraw->TextOut(buf.data(), Game.GraphicsResource.FontRegular, 1.0, cgo2.Surface, cgo2.X + cgo2.Wdt - 1, cgo2.Y + cgo2.Hgt - 1 - Game.GraphicsResource.FontRegular.GetLineHeight(), CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 	}
 #endif
 }

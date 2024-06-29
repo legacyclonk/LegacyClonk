@@ -39,7 +39,7 @@ void C4UpperBoard::Execute()
 {
 	if (Config.Graphics.UpperBoard == Hide) return;
 	// Make the time strings
-	sprintf(cTimeString, "%02d:%02d:%02d", Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60);
+	FormatWithNull(cTimeString, "{:02}:{:02}:{:02}", Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60);
 	time_t t = time(nullptr); strftime(cTimeString2, sizeof(cTimeString2), "[%H:%M:%S]", localtime(&t));
 	Draw(Output);
 }
@@ -81,7 +81,7 @@ void C4UpperBoard::Draw(C4Facet &cgo)
 	// FPS
 	if (Config.General.FPS)
 	{
-		sprintf(cTimeString, "%d FPS", Game.FPS);
+		FormatWithNull(cTimeString, "{} FPS", Game.FPS);
 		Application.DDraw->TextOut(cTimeString, Game.GraphicsResource.FontRegular, 1.0, cgo.Surface, Output.X + Output.Wdt - (iRightOff++) * TextWidth - 30, TextYPosition, 0xFFFFFFFF);
 	}
 	if (mode != Mini)
@@ -101,7 +101,7 @@ int C4UpperBoard::Height()
 
 void C4UpperBoard::Init(C4Facet &cgo, C4Facet &messageBoardCgo)
 {
-	sprintf(cTimeString, "%02d:%02d:%02d", Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60);
+	FormatWithNull(cTimeString, "{:02}:{:02}:{:02}", Game.Time / 3600, (Game.Time % 3600) / 60, Game.Time % 60);
 	TextWidth = Game.GraphicsResource.FontRegular.GetTextWidth(cTimeString);
 	if (Config.Graphics.UpperBoard == Mini)
 	{

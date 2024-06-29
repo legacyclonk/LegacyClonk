@@ -141,7 +141,8 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 	C4FacetExSurface fctSymbol;
 	C4Object *pObj;
 	std::string caption;
-	char szCommand[256 + 1], szCommand2[256 + 1];
+	std::string command;
+	std::string command2;
 	int32_t cnt, iCount;
 	C4Def *pDef;
 	C4Player *pPlayer;
@@ -197,10 +198,10 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
 				// Commands
-				sprintf(szCommand, "SetCommand(this,\"Activate\",Object(%d))&&ExecuteCommand()", pObj->Number);
-				sprintf(szCommand2, "SetCommand(this,\"Activate\", ,%d,0,Object(%d),%s)&&ExecuteCommand()", pTarget->Contents.ObjectCount(pDef->id), pTarget->Number, C4IdText(pDef->id));
+				command = std::format("SetCommand(this,\"Activate\",Object({}))&&ExecuteCommand()", pObj->Number);
+				command2 = std::format("SetCommand(this,\"Activate\", ,{},0,Object({}),{})&&ExecuteCommand()", pTarget->Contents.ObjectCount(pDef->id), pTarget->Number, C4IdText(pDef->id));
 				// Add menu item
-				Add(caption.c_str(), fctSymbol, szCommand, iCount, pObj, pDef->GetDesc(), pDef->id, szCommand2, true, pObj->GetValue(pTarget, NO_OWNER));
+				Add(caption.c_str(), fctSymbol, command.c_str(), iCount, pObj, pDef->GetDesc(), pDef->id, command2.c_str(), true, pObj->GetValue(pTarget, NO_OWNER));
 				// facet taken over (arrg!)
 				fctSymbol.Default();
 			}
@@ -229,12 +230,12 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			// Picture
 			pDef->Picture2Facet(fctSymbol, pBuyPlayer ? pBuyPlayer->ColorDw : 0);
 			// Command
-			sprintf(szCommand, "AppendCommand(this,\"Buy\",Object(%d),%d,0,,0,%s)&&ExecuteCommand()", pTarget->Number, 1, C4IdText(pDef->id));
-			sprintf(szCommand2, "AppendCommand(this,\"Buy\",Object(%d),%d,0,,0,%s)&&ExecuteCommand()", pTarget->Number, iCount, C4IdText(pDef->id));
+			command = std::format("AppendCommand(this,\"Buy\",Object({}),{},0,,0,{})&&ExecuteCommand()", pTarget->Number, 1, C4IdText(pDef->id));
+			command2 = std::format("AppendCommand(this,\"Buy\",Object({}),{},0,,0,{})&&ExecuteCommand()", pTarget->Number, iCount, C4IdText(pDef->id));
 			// Buying value
 			int32_t iBuyValue = pDef->GetValue(pTarget, pPlayer->Number);
 			// Add menu item
-			Add(caption.c_str(), fctSymbol, szCommand, iCount, nullptr, pDef->GetDesc(), pDef->id, szCommand2, true, iBuyValue);
+			Add(caption.c_str(), fctSymbol, command.c_str(), iCount, nullptr, pDef->GetDesc(), pDef->id, command2.c_str(), true, iBuyValue);
 		}
 		break;
 	}
@@ -267,12 +268,12 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
 				// Commands
-				sprintf(szCommand, "AppendCommand(this,\"Sell\",Object(%d),%d,0,Object(%d),0,%s)&&ExecuteCommand()", pTarget->Number, 1, pObj->Number, C4IdText(pDef->id));
-				sprintf(szCommand2, "AppendCommand(this,\"Sell\",Object(%d),%d,0,,0,%s)&&ExecuteCommand()", pTarget->Number, pTarget->Contents.ObjectCount(pDef->id), C4IdText(pDef->id));
+				command = std::format("AppendCommand(this,\"Sell\",Object({}),{},0,Object({}),0,{})&&ExecuteCommand()", pTarget->Number, 1, pObj->Number, C4IdText(pDef->id));
+				command2 = std::format("AppendCommand(this,\"Sell\",Object({}),{},0,Object({}),0,{})&&ExecuteCommand()", pTarget->Number, pObj->Contents.ObjectCount(pDef->id), pObj->Number, C4IdText(pDef->id));
 				// Selling value
 				int32_t iSellValue = pObj->GetValue(pTarget, Object ? Object->Owner : NO_OWNER);
 				// Add menu item
-				Add(caption.c_str(), fctSymbol, szCommand, iCount, nullptr, pDef->GetDesc(), pDef->id, szCommand2, true, iSellValue);
+				Add(caption.c_str(), fctSymbol, command.c_str(), iCount, nullptr, pDef->GetDesc(), pDef->id, command2.c_str(), true, iSellValue);
 				fctSymbol.Default();
 			}
 			checkIDSelection();
@@ -316,13 +317,13 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				fctSymbol.Set(fctSymbol.Surface, 0, 0, symbolSize, symbolSize);
 				pObj->Picture2Facet(fctSymbol);
 				// Primary command: get/activate single object
-				sprintf(szCommand, "SetCommand(this, \"%s\", Object(%d)) && ExecuteCommand()", fGet ? "Get" : "Activate", pObj->Number);
+				command = std::format("SetCommand(this, \"{}\", Object({})) && ExecuteCommand()", fGet ? "Get" : "Activate", pObj->Number);
 				// Secondary command: get/activate all objects of the chosen type
-				szCommand2[0] = 0; int32_t iAllCount;
+				int32_t iAllCount;
 				if ((iAllCount = pTarget->Contents.ObjectCount(pDef->id)) > 1)
-					sprintf(szCommand2, "SetCommand(this, \"%s\", , %d,0, Object(%d), %s) && ExecuteCommand()", fGet ? "Get" : "Activate", iAllCount, pTarget->Number, C4IdText(pDef->id));
+					command2 = std::format("SetCommand(this, \"{}\", , {},0, Object({}), {}) && ExecuteCommand()", fGet ? "Get" : "Activate", iAllCount, pTarget->Number, C4IdText(pDef->id));
 				// Add menu item (with object)
-				Add(caption.c_str(), fctSymbol, szCommand, iCount, pObj, pDef->GetDesc(), pDef->id, szCommand2);
+				Add(caption.c_str(), fctSymbol, command.c_str(), iCount, pObj, pDef->GetDesc(), pDef->id, command2.c_str());
 				fctSymbol.Default();
 			}
 		}
@@ -346,11 +347,10 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					|| ((Object->GetProcedure() == DFA_PUSH) && (Object->Action.Target == pTarget) && (pTarget->Def->GrabPutGet & C4D_Grab_Put)))
 				{
 					// Primary command: put first inventory item (all selected clonks)
-					sprintf(szCommand, "PlayerObjectCommand(%d, \"Put\", Object(%d), 0, 0) && ExecuteCommand()", Object->Owner, pTarget->Number);
+					command = std::format("PlayerObjectCommand({}, \"Put\", Object({}), 0, 0) && ExecuteCommand()", Object->Owner, pTarget->Number);
 					// Secondary command: put all inventory items (all selected clonks)
-					szCommand2[0] = 0;
 					if ((Object->Contents.ObjectCount() > 1) || (Game.Players.Get(Object->Owner)->GetSelectedCrewCount() > 1))
-						sprintf(szCommand2, "PlayerObjectCommand(%d, \"Put\", Object(%d), 1000, 0) && ExecuteCommand()", Object->Owner, pTarget->Number); // Workaround: specifying a really high put count here; will be adjusted later by C4Menu::ObjectCommand...
+						command2 = std::format("PlayerObjectCommand({}, \"Put\", Object({}), 1000, 0) && ExecuteCommand()", Object->Owner, pTarget->Number); // Workaround: specifying a really high put count here; will be adjusted later by C4Menu::ObjectCommand...
 					// Create symbol
 					fctSymbol.Create(symbolSize, symbolSize);
 					fctTarget = fctSymbol.GetFraction(85, 85, C4FCT_Right, C4FCT_Top);
@@ -358,7 +358,7 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 					fctTarget = fctSymbol.GetFraction(85, 85, C4FCT_Left, C4FCT_Bottom);
 					Game.GraphicsResource.fctHand.Draw(fctTarget, true, 0);
 					// Add menu item
-					Add(LoadResStr(C4ResStrTableKey::IDS_CON_PUT2), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, nullptr, C4ID_None, szCommand2);
+					Add(LoadResStr(C4ResStrTableKey::IDS_CON_PUT2), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, nullptr, C4ID_None, command2.c_str());
 					// Preserve symbol
 					fctSymbol.Default();
 				}
@@ -372,9 +372,9 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 				// ...or if the container is owned by us or a friendly player - this is for remote mouse-button-clicks
 				|| (ValidPlr(pTarget->Owner) && !Hostile(pTarget->Owner, Object->Owner)))
 			{
-				sprintf(szCommand, "SetCommand(this,\"Get\",Object(%d),0,0,,2)&&ExecuteCommand()", pTarget->Number);
+				command = std::format("SetCommand(this,\"Get\",Object({}),0,0,,2)&&ExecuteCommand()", pTarget->Number);
 				fctSymbol.Create(symbolSize, symbolSize); pTarget->DrawPicture(fctSymbol);
-				Add(LoadResStr(C4ResStrTableKey::IDS_CON_CONTENTS), fctSymbol, szCommand);
+				Add(LoadResStr(C4ResStrTableKey::IDS_CON_CONTENTS), fctSymbol, command.c_str());
 				fctSymbol.Default();
 			}
 
@@ -385,17 +385,17 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			// Buy
 			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Buy)
 			{
-				sprintf(szCommand, "SetCommand(this,\"Buy\",Object(%d))&&ExecuteCommand()", pTarget->Number);
+				command = std::format("SetCommand(this,\"Buy\",Object({}))&&ExecuteCommand()", pTarget->Number);
 				fctSymbol.Create(symbolSize, symbolSize); DrawMenuSymbol(C4MN_Buy, fctSymbol, pTarget->Base, pTarget);
-				Add(LoadResStr(C4ResStrTableKey::IDS_CON_BUY), fctSymbol, szCommand);
+				Add(LoadResStr(C4ResStrTableKey::IDS_CON_BUY), fctSymbol, command.c_str());
 				fctSymbol.Default();
 			}
 			// Sell
 			if (Game.C4S.Game.Realism.BaseFunctionality & BASEFUNC_Sell)
 			{
-				sprintf(szCommand, "SetCommand(this,\"Sell\",Object(%d))&&ExecuteCommand()", pTarget->Number);
+				command = std::format("SetCommand(this,\"Sell\",Object({}))&&ExecuteCommand()", pTarget->Number);
 				fctSymbol.Create(symbolSize, symbolSize); DrawMenuSymbol(C4MN_Sell, fctSymbol, pTarget->Base, pTarget);
-				Add(LoadResStr(C4ResStrTableKey::IDS_CON_SELL), fctSymbol, szCommand);
+				Add(LoadResStr(C4ResStrTableKey::IDS_CON_SELL), fctSymbol, command.c_str());
 				fctSymbol.Default();
 			}
 		}
@@ -406,9 +406,9 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 		// Show needed material (if construction site)
 		if (pTarget->OCF & OCF_Construct && Object->r == 0 && (Game.Rules & C4RULE_ConstructionNeedsMaterial))
 		{
-			sprintf(szCommand, "PlayerMessage(GetOwner(), Object(%d)->GetNeededMatStr(), Object(%d))", pTarget->Number, pTarget->Number);
+			command = std::format("PlayerMessage(GetOwner(), Object({})->GetNeededMatStr(), Object({}))", pTarget->Number, pTarget->Number);
 			fctSymbol.Create(symbolSize, symbolSize); GfxR->fctConstruction.Draw(fctSymbol, true);
-			Add(LoadResStr(C4ResStrTableKey::IDS_CON_BUILDINFO), fctSymbol, szCommand);
+			Add(LoadResStr(C4ResStrTableKey::IDS_CON_BUILDINFO), fctSymbol, command.c_str());
 			fctSymbol.Default();
 		}
 
@@ -422,9 +422,9 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 			C4Facet fctTarget = fctSymbol.GetFraction(85, 85, C4FCT_Right, C4FCT_Top);
 			GfxR->fctOKCancel.Draw(fctTarget, true, 0, 1);
 			// Command
-			sprintf(szCommand, "ShowInfo(Object(%d))", pTarget->Number);
+			command = std::format("ShowInfo(Object({}))", pTarget->Number);
 			// Add item
-			Add(LoadResStr(C4ResStrTableKey::IDS_CON_INFO), fctSymbol, szCommand);
+			Add(LoadResStr(C4ResStrTableKey::IDS_CON_INFO), fctSymbol, command.c_str());
 			fctSymbol.Default();
 		}
 
@@ -432,10 +432,9 @@ bool C4ObjectMenu::DoRefillInternal(bool &rfRefilled)
 		if (pTarget->OCF & OCF_Container)
 			if (pTarget == Object->Contained)
 			{
-				sprintf(szCommand, "PlayerObjectCommand(GetOwner(), \"Exit\") && ExecuteCommand()"); // Exit all selected clonks...
 				fctSymbol.Create(symbolSize, symbolSize);
 				Game.GraphicsResource.fctExit.Draw(fctSymbol);
-				Add(LoadResStr(C4ResStrTableKey::IDS_COMM_EXIT), fctSymbol, szCommand);
+				Add(LoadResStr(C4ResStrTableKey::IDS_COMM_EXIT), fctSymbol, "PlayerObjectCommand(GetOwner(), \"Exit\") && ExecuteCommand()"); // Exit all selected clonks...
 				fctSymbol.Default();
 			}
 	}
@@ -557,7 +556,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 	C4AulScriptFunc *pFunction, *pFunction2;
 	C4Object *cObj; C4ObjectLink *clnk;
 	const char *strDescText;
-	char szCommand[256 + 1];
+	std::string command;
 	C4Def *pDef;
 	C4IDList ListItems;
 	C4Facet fctTarget;
@@ -571,9 +570,9 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 					if (!pFunction->Condition || pFunction->Condition->Exec(cObj, {C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget)}))
 						if (!fCountOnly)
 						{
-							sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this,Object(%d))", cObj->Number, pFunction->Name, pTarget->Number);
+							command = std::format("ProtectedCall(Object({}),\"{}\",this,Object({}))", cObj->Number, pFunction->Name, pTarget->Number);
 							if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
-							Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
+							Add(pFunction->DescText.getData(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 							iResult++;
 						}
 						else
@@ -590,9 +589,9 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						if (!pFunction->Condition || pFunction->Condition->Exec(pEff->pCommandTarget, {C4VObj(pTarget), C4VInt(pEff->iNumber), C4VObj(Object), C4VID(pFunction->idImage)}))
 							if (!fCountOnly)
 							{
-								sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",Object(%d),%d,Object(%d),%s)", pEff->pCommandTarget->Number, pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
+								command = std::format("ProtectedCall(Object({}),\"{}\",Object({}),{},Object({}),{})", pEff->pCommandTarget->Number, pFunction->Name, pTarget->Number, static_cast<int>(pEff->iNumber), Object->Number, C4IdText(pFunction->idImage));
 								if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
-								Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
+								Add(pFunction->DescText.getData(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 								fctSymbol.Default();
 								iResult++;
 							}
@@ -610,9 +609,9 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 							if (!pFunction->Condition || pFunction->Condition->Exec(cObj, {C4VObj(Object), C4VID(pFunction->idImage), C4VObj(pTarget)}))
 								if (!fCountOnly)
 								{
-									sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this,Object(%d))", cObj->Number, pFunction->Name, pTarget->Number);
+									command = std::format("ProtectedCall(Object({}),\"{}\",this,Object({}))", cObj->Number, pFunction->Name, pTarget->Number);
 									if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
-									Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
+									Add(pFunction->DescText.getData(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 									fctSymbol.Default();
 									iResult++;
 								}
@@ -647,7 +646,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 						// Count only: don't actually add
 						if (fCountOnly) continue;
 						// Command
-						sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this)", pTarget->Number, pFunction->Name);
+						command = std::format("ProtectedCall(Object({}),\"{}\",this)", pTarget->Number, pFunction->Name);
 						// Symbol
 						if (pDef = C4Id2Def(pFunction->idImage))
 						{
@@ -659,7 +658,7 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 							pTarget->DrawPicture(fctSymbol);
 						}
 						// Add menu item
-						Add(strDescText, fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
+						Add(strDescText, fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 						// Preserve symbol
 						fctSymbol.Default();
 					}
@@ -672,9 +671,9 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 					if (!pFunction->Condition || pFunction->Condition->Exec(pTarget, {C4VObj(Object), C4VID(pFunction->idImage)}))
 						if (!fCountOnly)
 						{
-							sprintf(szCommand, "ProtectedCall(Object(%d),\"%s\",this)", pTarget->Number, pFunction->Name);
+							command = std::format("ProtectedCall(Object({}),\"{}\",this)", pTarget->Number, pFunction->Name);
 							if (pDef = C4Id2Def(pFunction->idImage)) pDef->Picture2Facet(fctSymbol, 0, pFunction->iImagePhase);
-							Add(pFunction->DescText.getData(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
+							Add(pFunction->DescText.getData(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pFunction->DescLong.getData());
 							fctSymbol.Default();
 							iResult++;
 						}
@@ -700,9 +699,8 @@ int32_t C4ObjectMenu::AddContextFunctions(C4Object *pTarget, bool fCountOnly)
 				// Above threshold: create sub-menu entry for the clonk
 				else if (!fCountOnly)
 				{
-					sprintf(szCommand, "SetCommand(this,\"Context\",,0,0,this)&&ExecuteCommand()");
 					Object->Def->Picture2Facet(fctSymbol, Object->Color);
-					Add(Object->Def->GetName(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CONTEXTSUBCLONKDESC));
+					Add(Object->Def->GetName(), fctSymbol, "SetCommand(this,\"Context\",,0,0,this)&&ExecuteCommand()", C4MN_Item_NoCount, nullptr, LoadResStr(C4ResStrTableKey::IDS_MENU_CONTEXTSUBCLONKDESC));
 					fctSymbol.Default();
 					iResult++;
 				}

@@ -201,9 +201,12 @@ void C4MenuItem::DrawElement(C4FacetEx &cgo)
 	// Draw count
 	if (Count != C4MN_Item_NoCount)
 	{
-		char szCount[10 + 1];
-		sprintf(szCount, "%ix", Count);
-		Application.DDraw->TextOut(szCount, Game.GraphicsResource.FontRegular, 1.0, cgoItemText.Surface, cgoItemText.X + cgoItemText.Wdt - 1, cgoItemText.Y + cgoItemText.Hgt - 1 - Game.GraphicsResource.FontRegular.GetLineHeight(), CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
+		std::array<char, C4Strings::NumberOfCharactersForDigits<decltype(Count)> + 1 + 1> buf;
+		char *const ptr{std::to_chars(buf.data(), buf.data() + buf.size() - 2, Count).ptr};
+		ptr[0] = 'x';
+		ptr[1] = '\0';
+		std::to_chars(buf.data(), buf.data() + buf.size() - 2, Count);
+		Application.DDraw->TextOut(buf.data(), Game.GraphicsResource.FontRegular, 1.0, cgoItemText.Surface, cgoItemText.X + cgoItemText.Wdt - 1, cgoItemText.Y + cgoItemText.Hgt - 1 - Game.GraphicsResource.FontRegular.GetLineHeight(), CStdDDraw::DEFAULT_MESSAGE_COLOR, ARight);
 	}
 }
 

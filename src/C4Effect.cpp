@@ -32,12 +32,11 @@ void C4Effect::AssignCallbackFunctions()
 {
 	C4AulScript *pSrcScript = GetCallbackScript();
 	// compose function names and search them
-	char fn[C4AUL_MAX_Identifier + 1];
-	sprintf(fn, PSF_FxStart,  Name); pFnStart  = pSrcScript->GetFuncRecursive(fn);
-	sprintf(fn, PSF_FxStop,   Name); pFnStop   = pSrcScript->GetFuncRecursive(fn);
-	sprintf(fn, PSF_FxTimer,  Name); pFnTimer  = pSrcScript->GetFuncRecursive(fn);
-	sprintf(fn, PSF_FxEffect, Name); pFnEffect = pSrcScript->GetFuncRecursive(fn);
-	sprintf(fn, PSF_FxDamage, Name); pFnDamage = pSrcScript->GetFuncRecursive(fn);
+	pFnStart  = pSrcScript->GetFuncRecursive(std::format(PSF_FxStart, Name).c_str());
+	pFnStop   = pSrcScript->GetFuncRecursive(std::format(PSF_FxStop, Name).c_str());
+	pFnTimer  = pSrcScript->GetFuncRecursive(std::format(PSF_FxTimer, Name).c_str());
+	pFnEffect = pSrcScript->GetFuncRecursive(std::format(PSF_FxEffect, Name).c_str());
+	pFnDamage = pSrcScript->GetFuncRecursive(std::format(PSF_FxDamage, Name).c_str());
 }
 
 C4AulScript *C4Effect::GetCallbackScript()

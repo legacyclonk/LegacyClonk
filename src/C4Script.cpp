@@ -1086,7 +1086,7 @@ static C4String *FnGetTaggedPlayerName(C4AulContext *cthr, C4ValueInt iPlayer)
 	if (!pPlr) return nullptr;
 	uint32_t dwClr = pPlr->ColorDw; C4GUI::MakeColorReadableOnBlack(dwClr);
 	static char szFnFormatBuf[1024 + 1];
-	sprintf(szFnFormatBuf, "<c %x>%s</c>", dwClr & 0xffffff, pPlr->GetName());
+	FormatWithNull(szFnFormatBuf, "<c {:x}>{}</c>", dwClr & 0xffffff, pPlr->GetName());
 	return String(szFnFormatBuf);
 }
 
@@ -1477,8 +1477,8 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	char caption[256 + 1];
 	char parameter[256 + 1];
 	char dummy[256 + 1];
-	char command[512 + 1];
-	char command2[512 + 1];
+	std::string command;
+	std::string command2;
 	char infocaption[C4MaxTitle + 1];
 
 	// get needed symbol size
@@ -1513,16 +1513,16 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	switch (Parameter.GetType())
 	{
 	case C4V_Int:
-		sprintf(parameter, "%d", Parameter.getInt());
+		FormatWithNull(parameter, "{}", Parameter.getInt());
 		break;
 	case C4V_Bool:
 		SCopy(Parameter.getBool() ? "true" : "false", parameter);
 		break;
 	case C4V_C4ID:
-		sprintf(parameter, "%s", C4IdText(Parameter.getC4ID()));
+		FormatWithNull(parameter, "{}", C4IdText(Parameter.getC4ID()));
 		break;
 	case C4V_C4Object:
-		sprintf(parameter, "Object(%d)", Parameter.getObj()->Number);
+		FormatWithNull(parameter, "Object({})", Parameter.getObj()->Number);
 		break;
 	case C4V_String:
 		// note this breaks if there is '"' in the string.
@@ -1531,7 +1531,7 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 		SAppendChar('"', parameter);
 		break;
 	case C4V_Any:
-		sprintf(parameter, "CastAny(%" PRIdPTR ")", Parameter._getRaw());
+		FormatWithNull(parameter, "CastAny({})", Parameter._getRaw());
 		break;
 	case C4V_Array:
 		// Arrays were never allowed, so tell the scripter
@@ -1564,9 +1564,8 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 		if (pFound != nullptr)
 			*(pFound - 1) = 's';
 		// Compose left-click command
-		ssprintf(command, dummy, parameter, 0);
-		// Compose right-click command
-		ssprintf(command2, dummy, parameter, 1);
+		command = fmt::sprintf(dummy, parameter, 0);
+		command2 = fmt::sprintf(dummy, parameter, 1);
 	}
 
 	// Old style: function name with id and parameter
@@ -1578,20 +1577,19 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 			if (iExtra & C4MN_Add_PassValue)
 			{
 				// with value
-				sprintf(command, "%s(%s,%s,0,%d)", szScriptCom, C4IdText(idItem), parameter, iValue);
-				sprintf(command2, "%s(%s,%s,1,%d)", szScriptCom, C4IdText(idItem), parameter, iValue);
+				command = std::format("{}({},{},0,{})", szScriptCom, C4IdText(idItem), parameter, iValue);
+				command2 = std::format("{}({},{},1,{})", szScriptCom, C4IdText(idItem), parameter, iValue);
 			}
 			else
 			{
 				// without value
-				sprintf(command, "%s(%s,%s)", szScriptCom, C4IdText(idItem), parameter);
-				sprintf(command2, "%s(%s,%s,1)", szScriptCom, C4IdText(idItem), parameter);
+				command = std::format("{}({},{})", szScriptCom, C4IdText(idItem), parameter);
+				command2 = std::format("{}({},{},1)", szScriptCom, C4IdText(idItem), parameter);
 			}
 		}
 		else
 		{
 			// no command
-			*command = *command2 = '\0';
 		}
 	}
 
@@ -1727,10 +1725,10 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	if (iCount == 0 && !(iExtra & C4MN_Add_ForceCount)) iCount = C4MN_Item_NoCount;
 
 	// menuitems without commands are never selectable
-	bool fIsSelectable = !!*command;
+	bool fIsSelectable = command.empty();
 
 	// Add menu item
-	pMenuObj->Menu->Add(caption, fctSymbol, command, iCount, nullptr, infocaption, idItem, command2, fOwnValue, iValue, fIsSelectable);
+	pMenuObj->Menu->Add(caption, fctSymbol, command.c_str(), iCount, nullptr, infocaption, idItem, command2.c_str(), fOwnValue, iValue, fIsSelectable);
 
 	return true;
 }
@@ -3457,7 +3455,8 @@ static C4Value FnDefinitionCall(C4AulContext *cthr,
 {
 	if (!idID || !szFunction) return C4VNull;
 	// Make failsafe
-	char szFunc2[500 + 1]; sprintf(szFunc2, "~%s", FnStringPar(szFunction));
+	char szFunc2[C4AUL_MAX_Identifier + 1];
+	FormatWithNull(szFunc2, "~{}", FnStringPar(szFunction));
 	// Get definition
 	C4Def *pDef;
 	if (!(pDef = C4Id2Def(idID))) return C4VNull;
@@ -3475,7 +3474,8 @@ static C4Value FnGameCall(C4AulContext *cthr,
 {
 	if (!szFunction) return C4VNull;
 	// Make failsafe
-	char szFunc2[500 + 1]; sprintf(szFunc2, "~%s", FnStringPar(szFunction));
+	char szFunc2[C4AUL_MAX_Identifier + 1];
+	FormatWithNull(szFunc2, "~{}", FnStringPar(szFunction));
 	// copy parameters
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);
@@ -3490,7 +3490,8 @@ static C4Value FnGameCallEx(C4AulContext *cthr,
 {
 	if (!szFunction) return C4VNull;
 	// Make failsafe
-	char szFunc2[500 + 1]; sprintf(szFunc2, "~%s", FnStringPar(szFunction));
+	char szFunc2[C4AUL_MAX_Identifier + 1];
+	FormatWithNull(szFunc2, "~{}", FnStringPar(szFunction));
 	// copy parameters
 	C4AulParSet Pars;
 	Copy2ParSet9(Pars, par);

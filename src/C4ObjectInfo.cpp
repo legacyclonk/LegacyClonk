@@ -171,7 +171,7 @@ bool C4ObjectInfo::Save(C4Group &hGroup, bool fStoreTiny, C4DefList *pDefs)
 				int32_t iFinNum = GetTrailingNumber(Filename), iLen = SLen(Filename);
 				while (iLen && Inside(Filename[iLen - 1], '0', '9')) --iLen;
 				if (iLen > _MAX_PATH - 22) { LogNTr(spdlog::level::err, "Error generating unique filename for {}({}): Path overflow", Name, hGroup.GetFullName().getData()); break; }
-				snprintf(Filename + iLen, 22, "%d", iFinNum + 1);
+				*std::to_chars(Filename + iLen, Filename + std::size(Filename) - 1, iFinNum + 1).ptr = '\0';
 				EnforceExtension(Filename, "c4i");
 			}
 		}

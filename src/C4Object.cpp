@@ -2568,7 +2568,7 @@ void C4Object::DrawTopFace(C4FacetEx &cgo, int32_t iByPlayer, DrawMode eDrawMode
 				char szText[C4GM_MaxText + 1];
 				if (Config.Graphics.ShowCrewNames)
 					if (Config.Graphics.ShowCrewCNames)
-						sprintf(szText, "%s (%s)", GetName(), pOwner->GetName());
+						FormatWithNull(szText, "{} ({})", GetName(), pOwner->GetName());
 					else
 						SCopy(pOwner->GetName(), szText);
 				else

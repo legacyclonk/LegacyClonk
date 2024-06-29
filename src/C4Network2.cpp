@@ -47,6 +47,7 @@
 
 #include <cassert>
 #include <format>
+#include <ranges>
 
 // *** C4Network2Status
 
@@ -1400,13 +1401,21 @@ bool C4Network2::Join(C4ClientCore &CCore, C4Network2IOConnection *pConn, const 
 	// Name already in use? Find unused one
 	if (Clients.GetClient(CCore.getName()))
 	{
-		char szNameTmpl[256 + 1], szNewName[256 + 1];
-		SCopy(CCore.getName(), szNameTmpl, 254); SAppend("%d", szNameTmpl, 256);
-		int32_t i = 1;
+		static_assert(C4Strings::NumberOfCharactersForDigits<std::int32_t> <= C4MaxName);
+
+		std::array<char, C4MaxName + 1> newName;
+		std::int32_t i{1};
 		do
-			ssprintf(szNewName, szNameTmpl, ++i);
-		while (Clients.GetClient(szNewName));
-		CCore.SetName(szNewName);
+		{
+			const std::string numberString{std::format("{}", ++i)};
+			const std::size_t numberStartIndex{newName.size() - 1 - numberString.size()};
+
+			numberString.copy(newName.data() + numberStartIndex, numberString.size());
+			SCopy(CCore.getName(), newName.data(), numberStartIndex);
+		}
+		while (Clients.GetClient(newName.data()));
+
+		CCore.SetName(newName.data());
 	}
 	// join client
 	Game.Control.DoInput(CID_ClientJoin, new C4ControlClientJoin(CCore), CDT_Direct);
@@ -1928,7 +1937,7 @@ bool C4Network2::CreateDynamic(bool fInit)
 	Log(C4ResStrTableKey::IDS_NET_SAVING);
 	// compose file name
 	char szDynamicBase[_MAX_PATH + 1], szDynamicFilename[_MAX_PATH + 1];
-	ssprintf(szDynamicBase, Config.AtNetworkPath("Dyn%s"), GetFilename(Game.ScenarioFilename), _MAX_PATH);
+	FormatWithNull(szDynamicBase, "{}Dyn{}", Config.Network.WorkPath, GetFilename(Game.ScenarioFilename), _MAX_PATH);
 	if (!ResList.FindTempResFileName(szDynamicBase, szDynamicFilename))
 		Log(C4ResStrTableKey::IDS_NET_SAVE_ERR_CREATEDYNFILE);
 	// save dynamic data

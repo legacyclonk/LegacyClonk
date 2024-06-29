@@ -69,10 +69,11 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 	if (GfxR->fctPlayerClr.Surface)
 		GfxR->fctPlayerClr.Surface->SetClr(0xff);
 	InitRefSym(GfxR->fctPlayerClr, LoadResStr(C4ResStrTableKey::IDS_MENU_NOPLRFILES), iPlayer);
+	std::string command;
 	for (DirectoryIterator iter(Config.General.PlayerPath); *iter; ++iter)
 		if (WildcardMatch("*.c4p", *iter))
 		{
-			char szFilename[_MAX_PATH + 1], szCommand[_MAX_PATH + 30 + 1];
+			char szFilename[_MAX_PATH + 1];
 			SCopy(*iter, szFilename, _MAX_PATH);
 			if (DirectoryExists(szFilename)) continue;
 			if (Game.Players.FileInUse(szFilename)) continue;
@@ -91,7 +92,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			// Close group
 			hGroup.Close();
 			// Add player item
-			sprintf(szCommand, "JoinPlayer:%s", szFilename);
+			command = std::format("JoinPlayer:{}", szFilename);
 			const std::string itemText{LoadResStr(C4ResStrTableKey::IDS_MENU_NEWPLAYER, C4P.PrefName)};
 			// No custom portrait: use default player image
 			if (!fctPortrait.Surface)
@@ -107,7 +108,7 @@ bool C4MainMenu::ActivateNewPlayer(int32_t iPlayer)
 			fctSymbol.Create(symbolSize, symbolSize);
 			fctPortraitClr.DrawClr(fctSymbol, true, C4P.PrefColorDw);
 			// Add menu item
-			Add(itemText.c_str(), fctSymbol, szCommand);
+			Add(itemText.c_str(), fctSymbol, command.c_str());
 			// Reset symbol facet (menu holds on to the surface)
 			fctSymbol.Default();
 		}
@@ -152,8 +153,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				// Message
 				const std::string msg{LoadResStrChoice(pPlayer->Hostility.GetIDCount(pPlr->Number + 1), C4ResStrTableKey::IDS_MENU_ATTACK, C4ResStrTableKey::IDS_MENU_NOATTACK, pPlr->GetName())};
 				// Command
-				char szCommand[1000];
-				sprintf(szCommand, "SetHostility:%i", pPlr->Number);
+				const std::string command{std::format("SetHostility:{}", pPlr->Number)};
 				// Info caption
 				const std::string friendly{LoadResStrChoice(pPlr->Hostility.GetIDCount(pPlayer->Number + 1), C4ResStrTableKey::IDS_MENU_ATTACKHOSTILE, C4ResStrTableKey::IDS_MENU_ATTACKFRIENDLY)};
 				std::string notFriendly;
@@ -166,7 +166,7 @@ bool C4MainMenu::DoRefillInternal(bool &rfRefilled)
 				const std::string infoCaption{LoadResStr(C4ResStrTableKey::IDS_MENU_ATTACKINFO, pPlr->GetName(), friendly, notFriendly)};
 
 				// Add item
-				Add(msg.c_str(), fctSymbol, szCommand, C4MN_Item_NoCount, nullptr, infoCaption.c_str());
+				Add(msg.c_str(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, infoCaption.c_str());
 				fctSymbol.Default();
 			}
 		break;
@@ -384,7 +384,7 @@ bool C4MainMenu::ActivateRules(int32_t iPlayer)
 	const auto symbolSize = GetSymbolSize();
 
 	// Menu symbol/init
-	char Command[256];
+	std::string command;
 	C4FacetExSurface fctSymbol;
 	InitRefSym(GfxR->fctMenu.GetPhase(5), LoadResStr(C4ResStrTableKey::IDS_MENU_CPRULES), iPlayer);
 	SetAlignment(C4MN_Align_Left | C4MN_Align_Bottom);
@@ -395,8 +395,8 @@ bool C4MainMenu::ActivateRules(int32_t iPlayer)
 		if (pDef = C4Id2Def(idGoal))
 		{
 			fctSymbol.Create(symbolSize, symbolSize); pDef->Draw(fctSymbol);
-			sprintf(Command, "Player:Rule:%s", C4IdText(idGoal));
-			Add(pDef->GetName(), fctSymbol, Command, C4MN_Item_NoCount, nullptr, pDef->GetDesc());
+			command = std::format("Player:Rule:{}", C4IdText(idGoal));
+			Add(pDef->GetName(), fctSymbol, command.c_str(), C4MN_Item_NoCount, nullptr, pDef->GetDesc());
 		}
 	// Go back to options menu on close
 	SetCloseCommand("ActivateMenu:Main");
