@@ -31,6 +31,7 @@
 #include <ranges>
 
 #include <spdlog/cfg/helpers.h>
+#include <spdlog/pattern_formatter.h>
 #include <spdlog/sinks/ringbuffer_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -154,6 +155,69 @@ void C4LogSystem::RingbufferSink::sink_it_(const spdlog::details::log_msg &msg)
 	ringbuffer.push_back(spdlog::details::log_msg_buffer{msg});
 }
 
+namespace
+{
+class LogLevelPrefixFormatterFlag : public spdlog::custom_flag_formatter
+{
+public:
+	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
+	{
+		switch (msg.level)
+		{
+		case spdlog::level::trace:
+			dest += "TRACE: ";
+			break;
+
+		case spdlog::level::debug:
+			dest += "DEBUG: ";
+			break;
+
+		case spdlog::level::info:
+			break;
+
+		case spdlog::level::warn:
+			dest += "WARNING: ";
+			break;
+
+		case spdlog::level::err:
+			dest += "ERROR: ";
+			break;
+
+		case spdlog::level::critical:
+			dest += "CRITICAL: ";
+			break;
+
+		default:
+			std::unreachable();
+		}
+	}
+
+	std::unique_ptr<custom_flag_formatter> clone() const override
+	{
+		return std::make_unique<LogLevelPrefixFormatterFlag>();
+	}
+};
+
+
+class LoggerNameIfExistsFormatterFlag : public spdlog::custom_flag_formatter
+{
+public:
+	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
+	{
+		if (!msg.logger_name.empty())
+		{
+			dest += std::format("[{}] ", msg.logger_name);
+		}
+	}
+
+	std::unique_ptr<custom_flag_formatter> clone() const override
+	{
+		return std::make_unique<LoggerNameIfExistsFormatterFlag>();
+	}
+};
+
+}
+
 C4LogSystem::C4LogSystem()
 {
 	spdlog::set_automatic_registration(false);
@@ -163,7 +227,13 @@ C4LogSystem::C4LogSystem()
 	auto guiSink = std::make_shared<GuiSink>();
 
 	guiSink->set_level(logLevel);
-	guiSink->set_pattern("[%L] %v");
+
+	auto guiFormatter = std::make_unique<spdlog::pattern_formatter>();
+	guiFormatter
+			->add_flag<LoggerNameIfExistsFormatterFlag>('~').
+			add_flag<LogLevelPrefixFormatterFlag>('*')
+			.set_pattern("%~%*%v");
+	guiSink->set_formatter(std::move(guiFormatter));
 
 #ifdef _WIN32
 	auto debugSink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
@@ -182,7 +252,7 @@ C4LogSystem::C4LogSystem()
 #ifdef _WIN32
 	loggerDebug = std::make_shared<spdlog::logger>("DebugLog", std::move(debugSink));
 #else
-	loggerDebug = std::make_shared<spdlog::logger>("");
+	loggerDebug = std::make_shared<spdlog::logger>("DebugLog");
 #endif
 	loggerDebug->set_level(spdlog::level::trace);
 
@@ -214,7 +284,14 @@ void C4LogSystem::OpenLog()
 	loggerDebug->sinks().emplace_back(ringbufferSink);
 
 	loggerDebugGuiSink = std::make_shared<GuiSink>();
-	loggerDebugGuiSink->set_pattern("%v");
+
+	auto debugFormatter = std::make_unique<spdlog::pattern_formatter>();
+	debugFormatter
+			->add_flag<LoggerNameIfExistsFormatterFlag>('~').
+			add_flag<LogLevelPrefixFormatterFlag>('*')
+			.set_pattern("%~%*%v");
+
+	loggerDebugGuiSink->set_formatter(std::move(debugFormatter));
 	loggerDebugGuiSink->set_level(spdlog::level::off);
 
 	loggerDebug->sinks().insert(loggerDebug->sinks().begin(), loggerDebugGuiSink);

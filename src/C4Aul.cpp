@@ -33,7 +33,7 @@ void C4AulError::show() const
 {
 	// simply log error message
 	if (!message.empty())
-		DebugLog(message);
+		DebugLog(isWarning ? spdlog::level::warn : spdlog::level::err, message);
 }
 
 C4AulFunc::C4AulFunc(C4AulScript *pOwner, const char *pName, bool bAtEnd) :

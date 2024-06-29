@@ -62,10 +62,11 @@ class C4AulError
 {
 protected:
 	std::string message;
+	bool isWarning{false};
 
 public:
 	C4AulError();
-	C4AulError(const C4AulError &Error) : message{Error.message} {}
+	C4AulError(const C4AulError &Error) : message{Error.message}, isWarning{Error.isWarning} {}
 	virtual ~C4AulError() {}
 	virtual void show() const; // present error message
 };
