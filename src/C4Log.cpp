@@ -337,8 +337,6 @@ void C4LogSystem::ClearRingbuffer()
 	ringbufferSink->Clear();
 }
 
-int iDisableLog = 0;
-
 void LogNTr(const spdlog::level::level_enum level, const std::string_view message)
 {
 	Application.LogSystem.GetLogger()->log(level, message);
