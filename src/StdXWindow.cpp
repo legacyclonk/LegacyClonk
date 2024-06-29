@@ -100,7 +100,7 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 	}
 	if (!wnd)
 	{
-		Log("Error creating window.");
+		LogNTr(spdlog::level::err, "Error creating window.");
 		return false;
 	}
 	// Update the XWindow->CStdWindow-Map
@@ -116,7 +116,7 @@ bool CStdWindow::Init(CStdApp *const app, const char *const title, const C4Rect 
 			nullptr);
 		if (!app->inputContext)
 		{
-			Log("Failed to create input context.");
+			LogNTr(spdlog::level::err, "Failed to create input context.");
 			XCloseIM(app->inputMethod);
 			app->inputMethod = nullptr;
 		}
@@ -207,14 +207,14 @@ bool CStdWindow::FindInfo()
 	Info = glXChooseVisual(dpy, DefaultScreen(dpy), attrListDbl);
 	if (!Info)
 	{
-		Log("  gl: no doublebuffered visual.");
+		pGL->logger->error("no doublebuffered visual");
 		// a singlebuffered is probably better than the default
 		Info = glXChooseVisual(dpy, DefaultScreen(dpy), attrListSgl);
 	}
 #endif
 	if (!Info)
 	{
-		Log("  gl: no singlebuffered visual, either.");
+		pGL->logger->error("no singlebuffered visual, either.");
 		// just try to get the default
 		XVisualInfo vitmpl; int blub;
 		vitmpl.visual = DefaultVisual(dpy, DefaultScreen(dpy));
@@ -223,7 +223,7 @@ bool CStdWindow::FindInfo()
 	}
 	if (!Info)
 	{
-		Log("  gl: no visual at all.");
+		pGL->logger->error("no visual at all.");
 		return false;
 	}
 
