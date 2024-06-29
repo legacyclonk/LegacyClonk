@@ -253,7 +253,16 @@ void C4AulParseState::Strict2Error(const std::string_view message, const char *i
 
 C4AulParseError::C4AulParseError(const std::string_view message, const char *identifier, bool warn)
 {
-	this->message = std::format("{}: {}{}", warn ? "WARNING" : "ERROR", message, identifier ? identifier : "");
+	if (identifier)
+	{
+		this->message = std::format("{}{}", message, identifier);
+	}
+	else
+	{
+		this->message = message;
+	}
+
+	isWarning = warn;
 }
 
 C4AulParseError::C4AulParseError(C4AulParseState *state, const std::string_view msg, const char *pIdtf, bool Warn)

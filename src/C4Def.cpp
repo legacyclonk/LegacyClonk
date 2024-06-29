@@ -234,7 +234,7 @@ bool C4DefCore::Load(C4Group &hGroup)
 		// Check mass
 		if (Mass < 0)
 		{
-			DebugLog(spdlog::level::warn, "WARNING: Def {} ({}) at {} has invalid mass!", GetName(), C4IdText(id), hGroup.GetFullName().getData());
+			DebugLog(spdlog::level::warn, "Def {} ({}) at {} has invalid mass!", GetName(), C4IdText(id), hGroup.GetFullName().getData());
 			Mass = 0;
 		}
 
@@ -572,7 +572,7 @@ bool C4Def::Load(C4Group &hGroup,
 
 		if (CompareVersion(rC4XVer[0], rC4XVer[1], rC4XVer[2], rC4XVer[3], rC4XVer[4], 4, 0, 0, 0, 0) == -1)
 		{
-			DebugLog(LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSINVVERSION, fSuccess ? std::string_view{std::format("{} ({})", Name.getData(), C4IdText(id))} : Name.getData()));
+			DebugLog(spdlog::level::warn, LoadResStr(C4ResStrTableKey::IDS_PRC_DEFSINVVERSION, fSuccess ? std::string_view{std::format("{} ({})", Name.getData(), C4IdText(id))} : Name.getData()));
 			// assume Clonk Rage 4.9.10.7
 			rC4XVer[0] = 4;
 			rC4XVer[1] = 9;
