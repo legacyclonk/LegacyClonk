@@ -1322,7 +1322,7 @@ CStdDDraw *DDrawInit(CStdApp *pApp, int Engine)
 bool CStdDDraw::Init(CStdApp *pApp)
 {
 	this->pApp = pApp;
-	logger = static_cast<C4Application *>(pApp)->LogSystem.CreateLogger(std::string{GetEngineName()});
+	logger = CreateLogger(std::string{GetEngineName()});
 
 	logger->debug("Init DDraw");
 	logger->debug("  Create DirectDraw...");

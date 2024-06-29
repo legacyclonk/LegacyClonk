@@ -186,5 +186,8 @@ void LogFatal(const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Ar
 	LogFatalNTr(LoadResStr(id, std::forward<Args>(args)...));
 }
 
+
+std::shared_ptr<spdlog::logger> CreateLogger(std::string name);
+
 // Used to print a backtrace after a crash
 int GetLogFD();

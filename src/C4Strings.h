@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <format>
 #include <limits>
 #include <span>
 #include <string>
