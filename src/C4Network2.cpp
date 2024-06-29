@@ -222,7 +222,7 @@ C4Network2::C4Network2()
 bool C4Network2::InitHost(bool fLobby)
 {
 	if (isEnabled()) Clear();
-	Logger = Application.LogSystem.CreateLogger("Network");
+	Logger = CreateLogger("Network");
 	// initialize everything
 	Status.Set(fLobby ? GS_Lobby : GS_Go, Game.Control.ControlTick);
 	Status.SetCtrlMode(Config.Network.ControlMode);
@@ -278,7 +278,7 @@ bool C4Network2::InitHost(bool fLobby)
 C4Network2::InitResult C4Network2::InitClient(const C4Network2Reference &Ref, bool fObserver)
 {
 	if (isEnabled()) Clear();
-	Logger = Application.LogSystem.CreateLogger("Network");
+	Logger = CreateLogger("Network");
 	// Get host core
 	const C4ClientCore &HostCore = Ref.Parameters.Clients.getHost()->getCore();
 	// repeat if wrong password

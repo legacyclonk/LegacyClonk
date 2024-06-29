@@ -224,7 +224,7 @@ void C4GameControl::Default()
 	DoSync = false;
 	fRecordNeeded = false;
 	pExecutingControl = nullptr;
-	logger = Application.LogSystem.CreateLogger("C4GameControl");
+	logger = CreateLogger("C4GameControl");
 }
 
 bool C4GameControl::Prepare()

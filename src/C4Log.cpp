@@ -363,6 +363,11 @@ bool DebugLog(const spdlog::level::level_enum level, const std::string_view mess
 	return true;
 }
 
+std::shared_ptr<spdlog::logger> CreateLogger(std::string name)
+{
+	return Application.LogSystem.CreateLogger(std::move(name));
+}
+
 int GetLogFD()
 {
 	return Application.LogSystem.GetLogFD();

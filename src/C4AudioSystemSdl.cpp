@@ -144,7 +144,7 @@ C4AudioSystemSdl::C4AudioSystemSdl(const int maxChannels, const bool preferLinea
 	assert(!instance);
 	instance = this;
 
-	auto logger = Application.LogSystem.CreateLogger("C4AudioSystemSdl");
+	auto logger = CreateLogger("C4AudioSystemSdl");
 
 	// Check SDL_mixer version
 	SDL_version compile_version;

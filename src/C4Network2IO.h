@@ -21,6 +21,7 @@
 #include "C4NetIO.h"
 #include "C4Client.h"
 #include "C4InteractiveThread.h"
+#include "C4Log.h"
 #include "C4PuncherPacket.h"
 
 #include <atomic>

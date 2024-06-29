@@ -408,8 +408,8 @@ private:
 
 C4Network2HTTPClient::C4Network2HTTPClient()
 	: impl{Config.Network.UseCurl
-		   ? static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<C4Network2HTTPClientImplCurl>(Application.LogSystem.CreateLogger("C4Network2HTTPClientImplCurl")))
-		   : static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<C4Network2HTTPClientImplNetIO>(Application.LogSystem.CreateLogger("C4Network2HTTPClientImplNetIO")))
+		   ? static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<C4Network2HTTPClientImplCurl>(CreateLogger("C4Network2HTTPClientImplCurl")))
+		   : static_cast<std::unique_ptr<C4Network2HTTPClient::Impl>>(std::make_unique<C4Network2HTTPClientImplNetIO>(CreateLogger("C4Network2HTTPClientImplNetIO")))
 	  }
 {
 }
