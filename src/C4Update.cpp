@@ -20,7 +20,6 @@
 #include "C4Config.h"
 #include "C4Components.h"
 #include "C4Group.h"
-#include "C4Log.h"
 
 #include <format>
 #include <print>
