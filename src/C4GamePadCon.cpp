@@ -288,12 +288,12 @@ C4GamePadControl::C4GamePadControl()
 	}
 	catch (const std::runtime_error &e)
 	{
-		LogF("SDL: %s", e.what());
+		LogNTr(spdlog::level::err, "SDL: {}", e.what());
 		// TODO: Handle
 		throw;
 	}
 	SDL_JoystickEventState(SDL_ENABLE);
-	if (!SDL_NumJoysticks()) Log("No Gamepad found");
+	if (!SDL_NumJoysticks()) LogNTr("No Gamepad found");
 }
 
 C4GamePadControl::~C4GamePadControl() {}
@@ -442,7 +442,7 @@ int C4GamePadControl::GetGamePadCount()
 C4GamePadOpener::C4GamePadOpener(int iGamepad)
 {
 	Joy = SDL_JoystickOpen(iGamepad);
-	if (!Joy) LogF("SDL: %s", SDL_GetError());
+	if (!Joy) LogNTr(spdlog::level::err, "SDL: {}", SDL_GetError());
 }
 
 C4GamePadOpener::~C4GamePadOpener()
@@ -456,14 +456,14 @@ void C4GamePadOpener::SetGamePad(int iGamepad)
 		SDL_JoystickClose(Joy);
 	Joy = SDL_JoystickOpen(iGamepad);
 	if (!Joy)
-		LogF("SDL: %s", SDL_GetError());
+		LogNTr(spdlog::level::err, "SDL: {}", SDL_GetError());
 }
 
 #else
 
 // Dedicated server and everything else with neither Win32 nor SDL.
 
-C4GamePadControl::C4GamePadControl() { Log("WARNING: Engine without Gamepad support"); }
+C4GamePadControl::C4GamePadControl() { LogNTr(spdlog::level::warn, "without Gamepad support"); }
 C4GamePadControl::~C4GamePadControl() {}
 void C4GamePadControl::Execute() {}
 int C4GamePadControl::GetGamePadCount() { return 0; }

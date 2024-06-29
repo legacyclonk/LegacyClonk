@@ -249,6 +249,7 @@ protected:
 	friend class CStdGLCtx;
 	friend class C4StartupOptionsDlg;
 	friend class C4FullScreen;
+	friend class CStdWindow;
 };
 
 // Global access pointer

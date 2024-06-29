@@ -286,7 +286,17 @@ bool C4Startup::DoStartup()
 		{
 			if (const auto logEntries = Application.LogSystem.GetRingbufferLogEntries(); !logEntries.empty())
 			{
-				const auto logEntriesString = logEntries | std::views::join_with('|') | std::ranges::to<std::string>();
+				std::string logEntriesString;
+				for (const auto &error : logEntries)
+				{
+					if (!logEntriesString.empty())
+					{
+						logEntriesString += '|';
+					}
+
+					logEntriesString += error;
+				}
+
 				Game.pGUI->ShowRemoveDlg(new C4GUI::InfoDialog(LoadResStr(C4ResStrTableKey::IDS_DLG_LOG), 10, StdStrBuf{logEntriesString.c_str(), logEntriesString.size(), false}));
 			}
 			else

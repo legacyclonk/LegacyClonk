@@ -69,7 +69,7 @@ void C4UpdateDlg::UpdateText()
 			return;
 		const std::string errorMessage{std::format("read error from c4group: {}", strerror(errno))};
 		LogNTr(spdlog::level::err, errorMessage);
-		AddLine(Errormessage.c_str());
+		AddLine(errorMessage.c_str());
 		UpdateRunning = false;
 		succeeded = false;
 	}
@@ -89,13 +89,13 @@ void C4UpdateDlg::UpdateText()
 		// check if c4group failed.
 		else if (WIFEXITED(child_status) && WEXITSTATUS(child_status))
 		{
-			LogNTr(spdlog::level::err, ("c4group returned status {}", WEXITSTATUS(child_status));
+			LogNTr(spdlog::level::err, "c4group returned status {}", WEXITSTATUS(child_status));
 			AddLine(std::format("c4group returned status {}", WEXITSTATUS(child_status)).c_str());
 			succeeded = false;
 		}
 		else if (WIFSIGNALED(child_status))
 		{
-			LogNTr(spdlog::level::err, ("c4group killed with signal {}", WTERMSIG(child_status));
+			LogNTr(spdlog::level::err, "c4group killed with signal {}", WTERMSIG(child_status));
 			AddLine(std::format("c4group killed with signal {}", WTERMSIG(child_status)).c_str());
 			succeeded = false;
 		}
@@ -207,14 +207,14 @@ bool C4UpdateDlg::ApplyUpdate(const char *strUpdateFile, bool fDeleteUpdate, C4G
 #else
 	if (pipe(c4group_output) == -1)
 	{
-		Log("Error creating pipe");
+		LogNTr(spdlog::level::err, "Error creating pipe");
 		return false;
 	}
 	switch (pid = fork())
 	{
 	// Error
 	case -1:
-		Log("Error creating update child process.");
+		LogNTr(spdlog::level::err, "Error creating update child process.");
 		return false;
 	// Child process
 	case 0:

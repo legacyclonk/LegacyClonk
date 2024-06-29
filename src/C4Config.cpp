@@ -19,10 +19,10 @@
 #include <C4Config.h>
 
 #include <C4UpperBoard.h>
-#include <C4Log.h>
 #include "C4Version.h"
 #ifdef C4ENGINE
 #include <C4Application.h>
+#include <C4Log.h>
 #include <C4Network2.h>
 #include <C4Language.h>
 #include "C4ResStrTable.h"
@@ -784,7 +784,7 @@ const char *C4Config::GetSubkeyPath(const char *strSubkey)
 #ifdef _WIN32
 	FormatWithNull(key, "Software\\{}\\{}\\{}", C4CFG_Company, C4CFG_Product, strSubkey);
 #else
-	SCopy(key, strSubkey, 1024);
+	SCopy(strSubkey, key, 1024);
 #endif
 	return key;
 }

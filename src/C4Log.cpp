@@ -319,7 +319,17 @@ void C4LogSystem::AddFatalError(std::string message)
 
 std::string C4LogSystem::GetFatalErrorString()
 {
-	return fatalErrors | std::views::join_with('|') | std::ranges::to<std::string>();
+	std::string result;
+	for (const auto &error : fatalErrors)
+	{
+		if (!result.empty())
+		{
+			result += '|';
+		}
+
+		result += error;
+	}
+	return result;
 }
 
 void C4LogSystem::ResetFatalErrors()

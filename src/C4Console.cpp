@@ -91,7 +91,7 @@ namespace
 		operator const char *() const { return getData(); }
 	};
 
-	inline ImplicitStrBuf LoadResStrUtf8I(const C4ResStrTableKey ident)
+	inline ImplicitStrBuf LoadResStrUtf8I(const C4ResStrTableKeyFormat<> ident)
 	{
 		return ImplicitStrBuf(Languages.IconvUtf8(LoadResStr(ident)));
 	}
@@ -1189,7 +1189,7 @@ void C4Console::HelpAbout()
 	static constexpr auto Message = C4ENGINECAPTION " " C4VERSION "\n\nCopyright (c) " C4COPYRIGHT_YEAR " " C4COPYRIGHT_COMPANY;
 	MessageBox(nullptr, Message, C4ENGINECAPTION, MB_ICONINFORMATION | MB_TASKMODAL);
 #elif WITH_DEVELOPER_MODE
-	gtk_show_about_dialog(GTK_WINDOW(window), "name", C4ENGINECAPTION, "version", C4VERSION, "copyright", "Copyright (c) " C4COPYRIGHT_YEAR " " C4COPYRIGHT_COMPANY", nullptr);
+	gtk_show_about_dialog(GTK_WINDOW(window), "name", C4ENGINECAPTION, "version", C4VERSION, "copyright", "Copyright (c) " C4COPYRIGHT_YEAR " " C4COPYRIGHT_COMPANY, nullptr);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 
