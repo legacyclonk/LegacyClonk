@@ -4846,6 +4846,12 @@ static C4ValueInt FnDrawDefMap(C4AulContext *cctx, C4ValueInt iX, C4ValueInt iY,
 	return Game.Landscape.DrawDefMap(iX, iY, iWdt, iHgt, FnStringPar(szMapDef));
 }
 
+static C4ValueInt FnDrawCreatorMap(C4AulContext *cctx, C4ValueInt iX, C4ValueInt iY, C4ValueInt iWdt, C4ValueInt iHgt, C4String *szMapDef)
+{
+	// draw it!
+	return Game.Landscape.DrawCreatorMap(iX, iY, iWdt, iHgt, FnStringPar(szMapDef));
+}
+
 static bool FnCreateParticle(C4AulContext *cthr, C4String *szName, C4ValueInt iX, C4ValueInt iY, C4ValueInt iXDir, C4ValueInt iYDir, C4ValueInt a, C4ValueInt b, C4Object *pObj, bool fBack)
 {
 	// safety
@@ -6930,6 +6936,7 @@ void InitFunctionMap(C4AulScriptEngine *pEngine)
 	AddFunc(pEngine, "UnselectCrew",                    FnUnselectCrew);
 	AddFunc(pEngine, "DrawMap",                         FnDrawMap);
 	AddFunc(pEngine, "DrawDefMap",                      FnDrawDefMap);
+	AddFunc(pEngine, "DrawCreatorMap",                  FnDrawCreatorMap);
 	AddFunc(pEngine, "CreateParticle",                  FnCreateParticle);
 	AddFunc(pEngine, "CastParticles",                   FnCastParticles);
 	AddFunc(pEngine, "CastBackParticles",               FnCastBackParticles);
