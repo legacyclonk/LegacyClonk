@@ -272,6 +272,7 @@ int main(int argc, char *argv[])
 
 	// FIXME: This should only be done in developer mode.
 #ifdef WITH_DEVELOPER_MODE
+	gdk_set_allowed_backends("x11");
 	gtk_init(&argc, &argv);
 #endif
 
