@@ -25,4 +25,3 @@
 #include "StdColors.h"
 #include "StdFile.h"
 #include "StdHelpers.h"
-#include "StdLog.h"
