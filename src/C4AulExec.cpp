@@ -1596,7 +1596,6 @@ void C4AulProfiler::Show()
 	std::sort(Times.rbegin(), Times.rend());
 	// display them
 	logger->info("Profiler statistics:");
-	logger->info("Profiler statistics:");
 	logger->info("==============================");
 	typedef std::vector<Entry> EntryList;
 	for (EntryList::iterator i = Times.begin(); i != Times.end(); ++i)
