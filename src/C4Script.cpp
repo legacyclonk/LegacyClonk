@@ -1725,7 +1725,7 @@ static bool FnAddMenuItem(C4AulContext *cthr, C4String *szCaption, C4String *szC
 	if (iCount == 0 && !(iExtra & C4MN_Add_ForceCount)) iCount = C4MN_Item_NoCount;
 
 	// menuitems without commands are never selectable
-	bool fIsSelectable = command.empty();
+	bool fIsSelectable = !command.empty();
 
 	// Add menu item
 	pMenuObj->Menu->Add(caption, fctSymbol, command.c_str(), iCount, nullptr, infocaption, idItem, command2.c_str(), fOwnValue, iValue, fIsSelectable);
