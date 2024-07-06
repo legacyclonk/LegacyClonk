@@ -322,6 +322,17 @@ std::shared_ptr<spdlog::logger> C4LogSystem::CreateLogger(std::string name, cons
 	return newLogger;
 }
 
+std::shared_ptr<spdlog::logger> C4LogSystem::GetOrCreate(std::string name, C4LogSystemCreateLoggerOptions options)
+{
+	const std::lock_guard lock{getOrCreateMutex};
+	if (const auto logger = spdlog::get(name); logger)
+	{
+		return logger;
+	}
+
+	return CreateLogger(std::move(name), std::move(options));
+}
+
 void C4LogSystem::EnableDebugLog(const bool enable)
 {
 	loggerDebugGuiSink->set_level(enable ? spdlog::level::debug : spdlog::level::off);

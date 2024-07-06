@@ -121,6 +121,7 @@ public:
 	void ClearRingbuffer();
 
 	std::shared_ptr<spdlog::logger> CreateLogger(std::string name, C4LogSystemCreateLoggerOptions options = {});
+	std::shared_ptr<spdlog::logger> GetOrCreate(std::string name, C4LogSystemCreateLoggerOptions options = {});
 
 	void EnableDebugLog(bool enable);
 
@@ -141,6 +142,7 @@ private:
 
 	int clonkLogFD{-1};
 	std::vector<std::string> fatalErrors;
+	std::mutex getOrCreateMutex;
 };
 
 void LogNTr(spdlog::level::level_enum level, std::string_view message);
