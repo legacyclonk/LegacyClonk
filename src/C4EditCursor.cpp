@@ -615,7 +615,7 @@ bool C4EditCursor::DoContextMenu()
 	GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(itemProperties)));
 	gtk_label_set_text(label, LoadResStrUtf8((Mode == C4CNS_ModeEdit) ? "IDS_CNS_PROPERTIES" : "IDS_CNS_TOOLS").getData());
 
-	gtk_menu_popup(GTK_MENU(menuContext), nullptr, nullptr, nullptr, nullptr, 3, 0);
+	gtk_menu_popup_at_pointer(GTK_MENU(menuContext), nullptr);
 #endif
 	return true;
 }

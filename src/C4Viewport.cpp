@@ -392,13 +392,11 @@ bool C4Viewport::ScrollBarsByViewPosition()
 	gtk_adjustment_set_page_increment(adjustment, allocation.width);
 	gtk_adjustment_set_page_size(adjustment, allocation.width);
 	gtk_adjustment_set_value(adjustment, ViewX);
-	gtk_adjustment_changed(adjustment);
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(pWindow->v_scrollbar));
 	gtk_adjustment_set_page_increment(adjustment, allocation.height);
 	gtk_adjustment_set_page_size(adjustment, allocation.height);
 	gtk_adjustment_set_value(adjustment, ViewY);
-	gtk_adjustment_changed(adjustment);
 
 	return true;
 }

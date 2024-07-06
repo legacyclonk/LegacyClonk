@@ -145,8 +145,8 @@ C4Console::~C4Console()
 	if (hbmHalt)    DeleteObject(hbmHalt);
 	if (hbmHalt2)   DeleteObject(hbmHalt2);
 #elif WITH_DEVELOPER_MODE
-	if (cursorDefault) gdk_cursor_unref(cursorDefault);
-	if (cursorWait)    gdk_cursor_unref(cursorWait);
+	if (cursorDefault) g_object_unref(cursorDefault);
+	if (cursorWait)    g_object_unref(cursorWait);
 #endif // WITH_DEVELOPER_MODE / _WIN32
 }
 
@@ -350,8 +350,9 @@ bool C4Console::Init(CStdApp *const app, const char *const title, const C4Rect &
 		return false;
 	}
 
-	cursorWait = gdk_cursor_new(GDK_WATCH);
-	cursorDefault = gdk_cursor_new(GDK_ARROW);
+	GdkDisplay *const display{gtk_widget_get_display(window)};
+	cursorWait = gdk_cursor_new_for_display(display, GDK_WATCH);
+	cursorDefault = gdk_cursor_new_for_display(display, GDK_ARROW);
 
 	// Calls InitGUI
 	UpdateHaltCtrls(true);
@@ -398,7 +399,7 @@ GtkWidget *C4Console::InitGUI()
 	gtk_box_pack_start(GTK_BOX(mode_hbox), btnModeDraw, FALSE, TRUE, 0);
 
 	lblCursor = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(lblCursor), 0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(lblCursor), 0.0f);
 
 	gtk_box_pack_start(GTK_BOX(top_hbox), lblCursor, TRUE,  TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(top_hbox), play_hbox, FALSE, TRUE, 0);
@@ -416,9 +417,9 @@ GtkWidget *C4Console::InitGUI()
 	lblScript = gtk_label_new("Script: 0");
 	lblTime = gtk_label_new("00:00:00 (0 FPS)");
 
-	gtk_misc_set_alignment(GTK_MISC(lblFrame), 0.0, 0.5);
-	gtk_misc_set_alignment(GTK_MISC(lblScript), 0.0, 0.5);
-	gtk_misc_set_alignment(GTK_MISC(lblTime), 0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(lblFrame), 0.0f);
+	gtk_label_set_xalign(GTK_LABEL(lblScript), 0.0f);
+	gtk_label_set_xalign(GTK_LABEL(lblTime), 0.0f);
 
 	GtkWidget *sep1 = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
 	GtkWidget *sep2 = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
