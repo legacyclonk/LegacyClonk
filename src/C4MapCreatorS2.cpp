@@ -804,7 +804,7 @@ C4MCParserErr::C4MCParserErr(C4MCParser *pParser, const std::string_view msg)
 void C4MCParserErr::show() const
 {
 	// log error
-	LogNTr(Msg);
+	LogNTr(spdlog::level::err, Msg);
 }
 
 // parser
