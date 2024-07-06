@@ -1060,7 +1060,7 @@ C4Value C4AulExec::Exec(C4AulBCC *pCPos, bool fPassErrors)
 				if (iTraceStart >= 0)
 				{
 					std::string buf{"T"};
-					buf.append('>', ContextStackSize() - iTraceStart);
+					buf.append(ContextStackSize() - iTraceStart, '>');
 					traceLogger->info("{}{} returned {}", buf, pCurCtx->Func->Name, pCurVal->GetDataString());
 				}
 
