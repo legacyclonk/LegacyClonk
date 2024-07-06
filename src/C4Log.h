@@ -30,9 +30,17 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/base_sink.h>
 
+
+struct C4LogSystemCreateLoggerOptions
+{
+	spdlog::level::level_enum GuiLogLevel{spdlog::level::n_levels};
+	bool ShowLoggerNameInGui{false};
+};
+
 class C4LogSystem
 {
 public:
+
 	class LogSink : public spdlog::sinks::base_sink<std::mutex>
 	{
 	public:
@@ -58,6 +66,10 @@ public:
 
 	class GuiSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex>, public std::enable_shared_from_this<GuiSink>
 	{
+	public:
+		GuiSink() = default;
+		GuiSink(spdlog::level::level_enum level, bool showLoggerNameInGui);
+
 	protected:
 		void sink_it_(const spdlog::details::log_msg &msg) override;
 		void flush_() override {}
@@ -108,7 +120,7 @@ public:
 	std::vector<std::string> GetRingbufferLogEntries();
 	void ClearRingbuffer();
 
-	std::shared_ptr<spdlog::logger> CreateLogger(std::string name);
+	std::shared_ptr<spdlog::logger> CreateLogger(std::string name, C4LogSystemCreateLoggerOptions options = {});
 
 	void EnableDebugLog(bool enable);
 
@@ -116,8 +128,17 @@ private:
 	std::shared_ptr<spdlog::logger> logger;
 	std::shared_ptr<spdlog::logger> loggerSilent;
 	std::shared_ptr<spdlog::logger> loggerDebug;
+
+#ifdef _WIN32
+	spdlog::sink_ptr debugSink;
+#endif
+	spdlog::sink_ptr stdoutSink;
+	std::shared_ptr<LogSink> clonkLogSink;
+	std::shared_ptr<GuiSink> loggerSilentGuiSink;
+
 	std::shared_ptr<GuiSink> loggerDebugGuiSink;
 	std::shared_ptr<RingbufferSink> ringbufferSink;
+
 	int clonkLogFD{-1};
 	std::vector<std::string> fatalErrors;
 };
@@ -187,7 +208,7 @@ void LogFatal(const C4ResStrTableKeyFormat<std::type_identity_t<Args>...> id, Ar
 }
 
 
-std::shared_ptr<spdlog::logger> CreateLogger(std::string name);
+std::shared_ptr<spdlog::logger> CreateLogger(std::string name, C4LogSystemCreateLoggerOptions options = {});
 
 // Used to print a backtrace after a crash
 int GetLogFD();

@@ -1533,7 +1533,7 @@ void C4AulExec::StartTrace()
 	if (iTraceStart < 0)
 	{
 		iTraceStart = ContextStackSize();
-		traceLogger = CreateLogger("C4AulExec");
+		traceLogger = CreateLogger("C4AulExec", {.GuiLogLevel = spdlog::level::info, .ShowLoggerNameInGui = false});
 	}
 }
 
@@ -1558,7 +1558,7 @@ void C4AulExec::StopProfiling()
 	if (!fProfiling) return;
 	fProfiling = false;
 	// collect profiler times
-	C4AulProfiler Profiler{CreateLogger("C4AulProfiler")};
+	C4AulProfiler Profiler{CreateLogger("C4AulProfiler", {.GuiLogLevel = spdlog::level::info, .ShowLoggerNameInGui = false})};
 	Profiler.CollectEntry(nullptr, tDirectExecTotal);
 	pProfiledScript->CollectProfilerTimes(Profiler);
 	Profiler.Show();

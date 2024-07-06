@@ -39,6 +39,69 @@
 #include <spdlog/sinks/msvc_sink.h>
 #endif
 
+namespace
+{
+class LogLevelPrefixFormatterFlag : public spdlog::custom_flag_formatter
+{
+public:
+	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
+	{
+		switch (msg.level)
+		{
+		case spdlog::level::trace:
+			dest += "TRACE: ";
+			break;
+
+		case spdlog::level::debug:
+			dest += "DEBUG: ";
+			break;
+
+		case spdlog::level::info:
+			break;
+
+		case spdlog::level::warn:
+			dest += "WARNING: ";
+			break;
+
+		case spdlog::level::err:
+			dest += "ERROR: ";
+			break;
+
+		case spdlog::level::critical:
+			dest += "CRITICAL: ";
+			break;
+
+		default:
+			std::unreachable();
+		}
+	}
+
+	std::unique_ptr<custom_flag_formatter> clone() const override
+	{
+		return std::make_unique<LogLevelPrefixFormatterFlag>();
+	}
+};
+
+
+class LoggerNameIfExistsFormatterFlag : public spdlog::custom_flag_formatter
+{
+public:
+	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
+	{
+		if (!msg.logger_name.empty())
+		{
+			dest += std::format("[{}] ", msg.logger_name);
+		}
+	}
+
+	std::unique_ptr<custom_flag_formatter> clone() const override
+	{
+		return std::make_unique<LoggerNameIfExistsFormatterFlag>();
+	}
+};
+
+}
+
 C4LogSystem::LogSink::LogSink()
 {
 	std::string logFileName{C4CFN_Log};
@@ -84,6 +147,25 @@ void C4LogSystem::LogSink::sink_it_(const spdlog::details::log_msg &msg)
 void C4LogSystem::LogSink::flush_()
 {
 	std::fflush(file);
+}
+
+C4LogSystem::GuiSink::GuiSink(const spdlog::level::level_enum level, const bool showLoggerNameInGui)
+{
+	set_level(level);
+
+	auto guiFormatter = std::make_unique<spdlog::pattern_formatter>();
+	guiFormatter->add_flag<LogLevelPrefixFormatterFlag>('*');
+
+	if (showLoggerNameInGui)
+	{
+		guiFormatter->add_flag<LoggerNameIfExistsFormatterFlag>('~').set_pattern("%~%*%v");
+	}
+	else
+	{
+		guiFormatter->set_pattern("%*%v");
+	}
+
+	set_formatter(std::move(guiFormatter));
 }
 
 void C4LogSystem::GuiSink::sink_it_(const spdlog::details::log_msg &msg)
@@ -155,91 +237,19 @@ void C4LogSystem::RingbufferSink::sink_it_(const spdlog::details::log_msg &msg)
 	ringbuffer.push_back(spdlog::details::log_msg_buffer{msg});
 }
 
-namespace
-{
-class LogLevelPrefixFormatterFlag : public spdlog::custom_flag_formatter
-{
-public:
-	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
-	{
-		switch (msg.level)
-		{
-		case spdlog::level::trace:
-			dest += "TRACE: ";
-			break;
-
-		case spdlog::level::debug:
-			dest += "DEBUG: ";
-			break;
-
-		case spdlog::level::info:
-			break;
-
-		case spdlog::level::warn:
-			dest += "WARNING: ";
-			break;
-
-		case spdlog::level::err:
-			dest += "ERROR: ";
-			break;
-
-		case spdlog::level::critical:
-			dest += "CRITICAL: ";
-			break;
-
-		default:
-			std::unreachable();
-		}
-	}
-
-	std::unique_ptr<custom_flag_formatter> clone() const override
-	{
-		return std::make_unique<LogLevelPrefixFormatterFlag>();
-	}
-};
-
-
-class LoggerNameIfExistsFormatterFlag : public spdlog::custom_flag_formatter
-{
-public:
-	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
-	{
-		if (!msg.logger_name.empty())
-		{
-			dest += std::format("[{}] ", msg.logger_name);
-		}
-	}
-
-	std::unique_ptr<custom_flag_formatter> clone() const override
-	{
-		return std::make_unique<LoggerNameIfExistsFormatterFlag>();
-	}
-};
-
-}
-
 C4LogSystem::C4LogSystem()
 {
 	spdlog::set_automatic_registration(false);
 
 	const auto logLevel = Game.Verbose ? spdlog::level::debug : spdlog::level::warn;
 
-	auto guiSink = std::make_shared<GuiSink>();
-
-	guiSink->set_level(logLevel);
-
-	auto guiFormatter = std::make_unique<spdlog::pattern_formatter>();
-	guiFormatter
-			->add_flag<LoggerNameIfExistsFormatterFlag>('~').
-			add_flag<LogLevelPrefixFormatterFlag>('*')
-			.set_pattern("%~%*%v");
-	guiSink->set_formatter(std::move(guiFormatter));
+	loggerSilentGuiSink = std::make_shared<GuiSink>(logLevel, true);
 
 #ifdef _WIN32
-	auto debugSink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
-	loggerSilent = std::make_shared<spdlog::logger>("", std::initializer_list<spdlog::sink_ptr>{guiSink, debugSink});
+	debugSink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
+	loggerSilent = std::make_shared<spdlog::logger>("", std::initializer_list<spdlog::sink_ptr>{loggerSilentGuiSink, debugSink});
 #else
-	loggerSilent = std::make_shared<spdlog::logger>("", guiSink);
+	loggerSilent = std::make_shared<spdlog::logger>("", loggerSilentGuiSink);
 #endif
 
 	loggerSilent->set_level(spdlog::level::trace);
@@ -250,7 +260,7 @@ C4LogSystem::C4LogSystem()
 	logger = loggerSilent;
 
 #ifdef _WIN32
-	loggerDebug = std::make_shared<spdlog::logger>("DebugLog", std::move(debugSink));
+	loggerDebug = std::make_shared<spdlog::logger>("DebugLog", debugSink);
 #else
 	loggerDebug = std::make_shared<spdlog::logger>("DebugLog");
 #endif
@@ -262,13 +272,13 @@ C4LogSystem::C4LogSystem()
 
 void C4LogSystem::OpenLog()
 {
-	auto stdoutColorSink = std::static_pointer_cast<spdlog::sinks::sink>(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-	stdoutColorSink->set_level(Game.Verbose ? spdlog::level::debug : spdlog::level::info);
+	stdoutSink = std::static_pointer_cast<spdlog::sinks::sink>(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+	stdoutSink->set_level(Game.Verbose ? spdlog::level::debug : spdlog::level::info);
 
-	auto clonkLogSink = std::make_shared<LogSink>();
+	clonkLogSink = std::make_shared<LogSink>();
 	clonkLogFD = clonkLogSink->GetFD();
 
-	loggerSilent->sinks().emplace_back(stdoutColorSink);
+	loggerSilent->sinks().emplace_back(stdoutSink);
 	loggerSilent->sinks().emplace_back(clonkLogSink);
 
 	logger = std::make_shared<spdlog::logger>("", loggerSilent->sinks().begin() + 1, loggerSilent->sinks().end());
@@ -279,26 +289,37 @@ void C4LogSystem::OpenLog()
 
 	logger->sinks().insert(logger->sinks().begin(), std::move(guiSink));
 
-	loggerDebug->sinks().emplace_back(std::move(stdoutColorSink));
+	loggerDebug->sinks().emplace_back(stdoutSink);
 	loggerDebug->sinks().emplace_back(clonkLogSink);
 	loggerDebug->sinks().emplace_back(ringbufferSink);
 
-	loggerDebugGuiSink = std::make_shared<GuiSink>();
-
-	auto debugFormatter = std::make_unique<spdlog::pattern_formatter>();
-	debugFormatter
-			->add_flag<LogLevelPrefixFormatterFlag>('*')
-			.set_pattern("%*%v");
-
-	loggerDebugGuiSink->set_formatter(std::move(debugFormatter));
-	loggerDebugGuiSink->set_level(spdlog::level::off);
-
+	loggerDebugGuiSink = std::make_shared<GuiSink>(spdlog::level::off, false);
 	loggerDebug->sinks().insert(loggerDebug->sinks().begin(), loggerDebugGuiSink);
 }
 
-std::shared_ptr<spdlog::logger> C4LogSystem::CreateLogger(std::string name)
+std::shared_ptr<spdlog::logger> C4LogSystem::CreateLogger(std::string name, const C4LogSystemCreateLoggerOptions options)
 {
-	return loggerSilent->clone(std::move(name));
+	auto newLogger = std::make_shared<spdlog::logger>(std::move(name));
+	newLogger->set_level(spdlog::level::trace);
+
+	if (options.GuiLogLevel != spdlog::level::n_levels && !options.ShowLoggerNameInGui)
+	{
+		newLogger->sinks().emplace_back(loggerSilentGuiSink);
+	}
+	else
+	{
+		const auto level = options.GuiLogLevel != spdlog::level::n_levels ? std::min(options.GuiLogLevel, loggerSilentGuiSink->level()) : loggerSilentGuiSink->level();
+		newLogger->sinks().emplace_back(std::make_shared<GuiSink>(level, options.ShowLoggerNameInGui));
+	}
+
+#ifdef _WIN32
+	newLogger->sinks().emplace_back(debugSink);
+#endif
+
+	newLogger->sinks().emplace_back(stdoutSink);
+	newLogger->sinks().emplace_back(clonkLogSink);
+
+	return newLogger;
 }
 
 void C4LogSystem::EnableDebugLog(const bool enable)
@@ -362,9 +383,9 @@ bool DebugLog(const spdlog::level::level_enum level, const std::string_view mess
 	return true;
 }
 
-std::shared_ptr<spdlog::logger> CreateLogger(std::string name)
+std::shared_ptr<spdlog::logger> CreateLogger(std::string name, C4LogSystemCreateLoggerOptions options)
 {
-	return Application.LogSystem.CreateLogger(std::move(name));
+	return Application.LogSystem.CreateLogger(std::move(name), std::move(options));
 }
 
 int GetLogFD()
