@@ -49,9 +49,9 @@ void C4AulExecError::show() const
 	// debug mode object message
 	if (Game.DebugMode)
 		if (cObj)
-			Game.Messages.New(C4GM_Target, StdStrBuf{message.c_str()}, cObj, NO_OWNER);
+			Game.Messages.New(C4GM_Target, StdStrBuf{message.c_str(), message.size(), false}, cObj, NO_OWNER);
 		else
-			Game.Messages.New(C4GM_Global, StdStrBuf{message.c_str()}, nullptr, ANY_OWNER);
+			Game.Messages.New(C4GM_Global, StdStrBuf{message.c_str(), message.size(), false}, nullptr, ANY_OWNER);
 }
 
 bool C4AulContext::CalledWithStrictNil() const noexcept
