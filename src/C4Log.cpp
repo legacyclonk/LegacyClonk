@@ -204,7 +204,7 @@ class LoggerNameIfExistsFormatterFlag : public spdlog::custom_flag_formatter
 public:
 	void format(const spdlog::details::log_msg &msg, const tm &, std::string &dest) override
 	{
-		if (!msg.logger_name.empty() && msg.logger_name != "DebugLog")
+		if (!msg.logger_name.empty())
 		{
 			dest += std::format("[{}] ", msg.logger_name);
 		}
@@ -287,9 +287,8 @@ void C4LogSystem::OpenLog()
 
 	auto debugFormatter = std::make_unique<spdlog::pattern_formatter>();
 	debugFormatter
-			->add_flag<LoggerNameIfExistsFormatterFlag>('~').
-			add_flag<LogLevelPrefixFormatterFlag>('*')
-			.set_pattern("%~%*%v");
+			->add_flag<LogLevelPrefixFormatterFlag>('*')
+			.set_pattern("%*%v");
 
 	loggerDebugGuiSink->set_formatter(std::move(debugFormatter));
 	loggerDebugGuiSink->set_level(spdlog::level::off);
