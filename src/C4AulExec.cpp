@@ -28,16 +28,17 @@
 
 #include <format>
 
-C4AulExecError::C4AulExecError(C4Object *pObj, const std::string_view error) : cObj(pObj)
+C4AulExecError::C4AulExecError(C4Object *pObj, const std::string_view error)
+	: cObj(pObj)
 {
 	// direct error message string
 	if (!error.empty())
 	{
-		message = std::format("ERROR: {}", error);
+		message = error;
 	}
 	else
 	{
-		message = "ERROR: (no error message)";
+		message = "(no error message)";
 	}
 }
 
