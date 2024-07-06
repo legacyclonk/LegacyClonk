@@ -603,8 +603,11 @@ struct Promise : CancellablePromise
 
 	void Start() noexcept
 	{
-		waiting.store(StartedSentinel, std::memory_order_release);
-		GetHandle().resume();
+		void *expected{ColdSentinel};
+		if (waiting.compare_exchange_strong(expected, StartedSentinel, std::memory_order_acq_rel))
+		{
+			GetHandle().resume();
+		}
 	}
 
 	void Abandon() noexcept
