@@ -5423,8 +5423,8 @@ static C4ValueInt FnLoadScenarioSection(C4AulContext *ctx, C4String *pstrSection
 	// safety
 	const char *szSection;
 	if (!pstrSection || !*(szSection = FnStringPar(pstrSection))) return false;
-	// try to load it
-	return Game.LoadScenarioSection(szSection, dwFlags);
+
+	throw C4AulExecError{ctx->Obj, "LoadScenarioSection broken"};
 }
 
 static bool FnSetObjectStatus(C4AulContext *ctx, C4ValueInt iNewStatus, C4Object *pObj, bool fClearPointers)
