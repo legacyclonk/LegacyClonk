@@ -19,6 +19,7 @@
 #include "C4Com.h"
 #endif
 
+#include <functional>
 #include <string_view>
 #include <thread>
 

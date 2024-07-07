@@ -16,6 +16,8 @@
 
 /* That which fills the world with life */
 
+#include "C4Application.h"
+#include "C4Game.h"
 #include <C4Include.h>
 #include <C4Object.h>
 #include <C4Version.h>
