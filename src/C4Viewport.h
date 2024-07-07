@@ -21,6 +21,7 @@
 #include "C4ForwardDeclarations.h"
 #include "C4Rect.h"
 #include <C4Region.h>
+#include "C4Section.h"
 #include "Fixed.h"
 #include "StdColors.h"
 #include <StdWindow.h>

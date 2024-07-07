@@ -18,6 +18,7 @@
 
 #include <C4Include.h>
 #include <C4Def.h>
+#include "C4Game.h"
 #include <C4Version.h>
 #include <C4GameVersion.h>
 #include <C4FileMonitor.h>

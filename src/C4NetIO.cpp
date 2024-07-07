@@ -44,6 +44,7 @@
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define ioctlsocket ioctl
 #define closesocket close
