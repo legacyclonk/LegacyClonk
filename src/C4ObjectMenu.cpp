@@ -17,6 +17,7 @@
 
 // Menus attached to objects; script created or internal
 
+#include "C4Game.h"
 #include <C4Include.h>
 #include <C4ObjectMenu.h>
 

@@ -18,6 +18,7 @@
 // generic user interface
 // context menu
 
+#include "C4Config.h"
 #include "C4GuiResource.h"
 #include <C4Include.h>
 #include <C4Gui.h>
@@ -25,6 +26,7 @@
 #include <C4Wrappers.h>
 #include <C4MouseControl.h>
 
+#include "StdApp.h"
 #include <StdWindow.h>
 
 namespace C4GUI

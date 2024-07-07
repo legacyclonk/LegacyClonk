@@ -55,6 +55,7 @@
 
 #include <format>
 #include <iterator>
+#include <numeric>
 #include <sstream>
 #include <utility>
 
