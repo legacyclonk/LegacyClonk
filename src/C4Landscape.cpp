@@ -697,8 +697,6 @@ bool C4Landscape::AssignMap(std::unique_ptr<CSurface8> map, const bool overloadC
 	// Calculate landscape size
 	Width = MapZoom * MapWidth;
 	Height = MapZoom * MapHeight;
-	Width = std::max<int32_t>(Width, 100);
-	Height = std::max<int32_t>(Height, 100);
 
 	// if overloading, clear current landscape (and sections, etc.)
 	// must clear, of course, before new sky is eventually read
