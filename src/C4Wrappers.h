@@ -20,6 +20,7 @@
 
 #include <C4Id.h>
 #include <C4Log.h>
+#include "C4Material.h"
 
 // Graphics Resource
 

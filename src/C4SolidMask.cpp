@@ -17,6 +17,7 @@
 
 /* Solid areas of objects, put into the landscape */
 
+#include "C4Game.h"
 #include <C4Include.h>
 #include <C4SolidMask.h>
 

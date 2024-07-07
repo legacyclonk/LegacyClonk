@@ -17,10 +17,14 @@
 /* Basic class for vertex outlines */
 
 #include <C4Include.h>
+#ifdef DEBUGREC
+#include "C4Record.h"
+#endif
 #include <C4Shape.h>
 
 #include <C4Physics.h>
 #include <C4Material.h>
+#include "C4Section.h"
 #include <C4Wrappers.h>
 
 bool C4Shape::AddVertex(int32_t iX, int32_t iY)
