@@ -16,6 +16,7 @@
 
 /* Dynamic object list */
 
+#include "C4Game.h"
 #include <C4Include.h>
 #include <C4ObjectList.h>
 
