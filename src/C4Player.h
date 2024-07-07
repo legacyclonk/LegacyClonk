@@ -233,7 +233,7 @@ public:
 	void EvaluateLeague(bool fDisconnected, bool fWon);
 
 	void FoW2Map(CClrModAddMap &rMap, int iOffX, int iOffY);
-	void FoWGenerators2Map(CClrModAddMap &rMap, int iOffX, int iOffY);
+	void FoWGenerators2Map(CClrModAddMap &rMap, C4Section &viewRootSection, int iOffX, int iOffY);
 	bool FoWIsVisible(int32_t x, int32_t y); // check whether a point in the landscape is visible
 
 	// runtime statistics
