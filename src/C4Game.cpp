@@ -965,6 +965,12 @@ bool C4Game::RemoveSection(uint32_t number)
 		std::unique_ptr<C4Section> section{std::move(*it)};
 		Sections.erase(it);
 		SectionsPendingDeletion.emplace_back(std::move(section));
+
+		for (const auto &otherSection : Sections)
+		{
+			otherSection->ClearSectionPointers(*section);
+		}
+
 		return true;
 	}
 
@@ -1205,7 +1211,7 @@ void C4Game::DrawCursors(C4FacetEx &cgo, int32_t iPlayer)
 	for (C4Player *pPlr = Players.First; pPlr; pPlr = pPlr->Next)
 		if (pPlr->Number == iPlayer || iPlayer == NO_OWNER)
 			if (pPlr->CursorFlash || pPlr->SelectFlash)
-				if (pPlr->Cursor)
+				if (pPlr->Cursor && pPlr->Cursor->Section == pPlr->ViewSection)
 				{
 					cursor = pPlr->Cursor;
 					if (Inside<int32_t>(cursor->x - fctCursor.Wdt / 2 - cgo.TargetX, 1 - fctCursor.Wdt, cgo.Wdt) && Inside<int32_t>(cursor->y - cursor->Def->Shape.Hgt / 2 - fctCursor.Hgt - cgo.TargetY, 1 - fctCursor.Hgt, cgo.Hgt))
