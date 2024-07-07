@@ -1723,6 +1723,7 @@ void C4Player::UpdateView()
 		{
 			ViewX = pViewObj->x; ViewY = pViewObj->y;
 			ViewSection = pViewObj->Section;
+			ViewSection->PointToParentPoint(ViewX, ViewY);
 		}
 		break;
 	}
@@ -1731,6 +1732,7 @@ void C4Player::UpdateView()
 		{
 			ViewX = ViewTarget->x; ViewY = ViewTarget->y;
 			ViewSection = ViewTarget->Section;
+			ViewSection->PointToParentPoint(ViewX, ViewY);
 		}
 		break;
 	case C4PVM_Scrolling:
@@ -1945,48 +1947,106 @@ void C4Player::InitControl(C4Section &initialSection)
 	PressedComs = 0;
 }
 
+namespace
+{
+	struct ObjectInSection
+	{
+		ObjectInSection(const C4Section &viewRootSection, const C4Object &obj) noexcept
+			: ObjX{obj.x}, ObjY{obj.y}
+		{
+			if (obj.Contained && obj.Contained->Def->ClosedContainer == 1)
+			{
+				visibleToEachOther = false;
+			}
+			else if (&viewRootSection == obj.Section)
+			{
+				visibleToEachOther = true;
+			}
+			else if (obj.Section->IsChildOf(viewRootSection))
+			{
+				visibleToEachOther = true;
+				obj.Section->PointToParentPoint(ObjX, ObjY, &viewRootSection);
+			}
+			else
+			{
+				visibleToEachOther = false;
+			}
+		}
+
+		explicit operator bool() const noexcept { return visibleToEachOther; }
+
+	public:
+		std::int32_t ObjX;
+		std::int32_t ObjY;
+
+	private:
+		bool visibleToEachOther;
+	};
+}
+
 void C4Player::FoW2Map(CClrModAddMap &rMap, int iOffX, int iOffY)
 {
 	// No fog of war
 	if (!fFogOfWar) return;
 	// Add view for all FoW-repellers - keep track of FoW-generators, which should be avaluated finally
 	// so they override repellers
+	C4Section &viewRootSection{ViewSection->GetRootSection()};
 	bool fAnyGenerators = false;
 	C4Object *cobj; C4ObjectLink *clnk;
 	for (clnk = FoWViewObjs.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
-		if (cobj->Section == ViewSection && (!cobj->Contained || cobj->Contained->Def->ClosedContainer != 1))
+	{
+		if (const ObjectInSection objInSection{viewRootSection, *cobj}; objInSection)
+		{
 			if (cobj->PlrViewRange > 0)
-				rMap.ReduceModulation(cobj->x + iOffX, cobj->y + iOffY, cobj->PlrViewRange * 2 / 3, cobj->PlrViewRange);
+			{
+				rMap.ReduceModulation(objInSection.ObjX + iOffX, objInSection.ObjY + iOffY, cobj->PlrViewRange * 2 / 3, cobj->PlrViewRange);
+			}
 			else
+			{
 				fAnyGenerators = true;
+			}
+		}
+	}
 	// Add view for target view object
 	if (ViewMode == C4PVM_Target)
+	{
 		if (ViewTarget)
-			if (!ViewTarget->Contained || ViewTarget->Contained->Def->ClosedContainer != 1)
+		{
+			if (const ObjectInSection objInSection{viewRootSection, *ViewTarget}; objInSection)
 			{
 				int iRange = ViewTarget->PlrViewRange;
 				if (!iRange && Cursor) iRange = Cursor->PlrViewRange;
 				if (!iRange) iRange = C4FOW_Def_View_RangeX;
-				rMap.ReduceModulation(ViewTarget->x + iOffX, ViewTarget->y + iOffY, iRange * 2 / 3, iRange);
+
+				rMap.ReduceModulation(objInSection.ObjX	+ iOffX, objInSection.ObjY + iOffY, iRange * 2 / 3, iRange);
 			}
+		}
+	}
 	// apply generators
 	// do this check, be cause in 99% of all normal scenarios, there will be no FoW-generators
-	if (fAnyGenerators) FoWGenerators2Map(rMap, iOffX, iOffY);
+	if (fAnyGenerators) FoWGenerators2Map(rMap, viewRootSection, iOffX, iOffY);
 }
 
-void C4Player::FoWGenerators2Map(CClrModAddMap &rMap, int iOffX, int iOffY)
+void C4Player::FoWGenerators2Map(CClrModAddMap &rMap, C4Section &viewRootSection, int iOffX, int iOffY)
 {
 	// add fog to any generator pos (view range
 	C4Object *cobj; C4ObjectLink *clnk;
 	for (clnk = FoWViewObjs.First; clnk && (cobj = clnk->Obj); clnk = clnk->Next)
-		if (cobj->Section == ViewSection && (!cobj->Contained || cobj->Contained->Def->ClosedContainer != 1))
-			if (cobj->PlrViewRange < 0)
-				rMap.AddModulation(cobj->x + iOffX, cobj->y + iOffY, -cobj->PlrViewRange, -cobj->PlrViewRange + 200, cobj->ColorMod >> 24);
+	{
+		if (cobj->PlrViewRange < 0)
+		{
+			if (const ObjectInSection objInSection{viewRootSection, *cobj}; objInSection)
+			{
+				rMap.AddModulation(objInSection.ObjX + iOffX, objInSection.ObjY + iOffY, -cobj->PlrViewRange, -cobj->PlrViewRange + 200, cobj->ColorMod >> 24);
+			}
+		}
+	}
 }
 
 bool C4Player::FoWIsVisible(int32_t x, int32_t y)
 {
 	// check repellers and generators and ViewTarget
+	C4Section &viewRootSection{ViewSection->GetRootSection()};
 	bool fSeen = false;
 	C4Object *cobj = nullptr; C4ObjectLink *clnk;
 	clnk = FoWViewObjs.First;
@@ -2008,8 +2068,9 @@ bool C4Player::FoWIsVisible(int32_t x, int32_t y)
 			if (!iRange && Cursor) iRange = Cursor->PlrViewRange;
 			if (!iRange) iRange = C4FOW_Def_View_RangeX;
 		}
-		if (cobj->Section == ViewSection && (!cobj->Contained || cobj->Contained->Def->ClosedContainer != 1))
-			if (Distance(cobj->x, cobj->y, x, y) < Abs(iRange))
+		if (const ObjectInSection objInSection{viewRootSection, *cobj}; objInSection)
+		{
+			if (Distance(objInSection.ObjX, objInSection.ObjY, x, y) < Abs(iRange))
 				if (iRange < 0)
 				{
 					if (!(cobj->ColorMod & 0xff000000)) // faded generators generate darkness only; no FoW blocking
@@ -2017,6 +2078,7 @@ bool C4Player::FoWIsVisible(int32_t x, int32_t y)
 				}
 				else
 					fSeen = true; // made visible by FoW-repeller
+		}
 	}
 	return fSeen;
 }
